@@ -63,7 +63,9 @@ pyright tools/convert-artifact-mods.py
 改配色改两处并保持一致：
 
 - `tools/convert-artifact-mods.py` 的 `COLOR_MAP`：51 个源色值 → 23 个语义 token。
-- `assets/site.css` 的 `:root`：23 个 token → 10 个渲染色。
+- `assets/site.css` 的 `:root`：23 个 token → 7 个元素色相 + 3 个机制色 + `--c-term`。
+
+**色相只发给元素。**不属于任何元素的游戏术语（`--enemy` 战斗人员/勇士/精英、`--pickup` 元素拾取物/技能能量/护盾）走 `--c-term`，只提亮度与字重。给它们色相就要从元素那里借一个，借来的色相会让「颜色即元素编码」失效。机制色 `--c-orb`／`--c-health`／`--ammo-heavy` 是例外：它们在游戏内本来就是那个颜色。
 
 元素色相是游戏的既有编码、属于内容，只调亮度不改色相。`--note`（作者注释）与 `--unsure`（`[?]` 待测值）共用 `--c-aside`，字重回到正文，`.unsure` 带虚下划线。
 

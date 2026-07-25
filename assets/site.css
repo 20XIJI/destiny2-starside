@@ -35,8 +35,8 @@
     "Noto Sans SC", sans-serif;
   --font-cn: "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
 
-  /* 渲染色板：整页 10 个饱和槽位。元素色相是游戏的既有编码，属于内容，
-     只做亮度拉平，不改色相。 */
+  /* 渲染色板：7 个元素色相 + 3 个机制色 + 1 个中性强调。元素色相是游戏的既有
+     编码，属于内容，只做亮度拉平，不改色相。 */
   --c-arc: #5fd8e0;
   --c-stasis: #7fb4ff;
   --c-void: #c08cff;
@@ -47,6 +47,9 @@
   --c-orb: #f2ce5b;
   --c-health: #ff8e86;
   --c-aside: #a2848c;              /* 批注与待测值：读作限定语，不是警报 */
+  /* 不属于任何元素的游戏术语。给它色相就要从元素那里借一个，借来的色相会让
+     「颜色即元素编码」失效——这一类只提亮度与字重，不占色相。 */
+  --c-term: var(--bone-hi);
 
   /* 语义 token → 渲染色。想让某一类单独出色，只改这一行的右值。
      左侧 23 个 token 由 tools/convert-artifact-mods.py 的 COLOR_MAP 产出，两边要对齐。 */
@@ -54,17 +57,17 @@
   --deb-arc: var(--c-arc);           /* 震颤、致盲 */
   --el-stasis: var(--c-stasis);
   --deb-stasis: var(--c-stasis);     /* 冻结、碎裂 */
-  --enemy: var(--c-stasis);          /* 战斗人员/勇士/精英/盟友/数值 */
+  --enemy: var(--c-term);            /* 战斗人员/勇士/精英/盟友/数值 */
   --el-void: var(--c-void);
-  --ammo-heavy: var(--c-void);       /* 威能弹药 */
+  --deb-void: var(--c-void);         /* 削弱：虚空机制，跟虚空走 */
+  --ammo-heavy: var(--c-void);       /* 威能弹药，游戏内即紫 */
   --el-strand: var(--c-strand);      /* 缚丝；原表格同色也用于特殊弹药 */
   --deb-strand: var(--c-strand);     /* 割裂、瓦解 */
   --el-solar: var(--c-solar);
   --deb-solar: var(--c-solar);       /* 暗影 */
   --el-kinetic: var(--c-kinetic);
-  --el-prismatic: var(--c-prism);
-  --deb-void: var(--c-prism);        /* 削弱 */
-  --pickup: var(--c-prism);          /* 元素拾取物/技能能量/护盾 */
+  --el-prismatic: var(--c-prism);    /* 棱镜粉只服务棱镜与超凡 */
+  --pickup: var(--c-term);           /* 元素拾取物/技能能量/护盾 */
   --joke: var(--c-prism);
   --orb: var(--c-orb);               /* 能量球/超能能量 */
   --stack: var(--c-orb);             /* 精准命中/增益层数 */
