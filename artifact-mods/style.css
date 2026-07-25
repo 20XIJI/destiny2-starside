@@ -12,23 +12,6 @@ main {
   padding: 0 22px clamp(40px, 5vw, 72px);
 }
 
-/* ── 页首 ── */
-.page-head {
-  max-width: 1500px;
-  margin: 0 auto;
-  padding: clamp(40px, 5.5vw, 76px) 22px clamp(30px, 3.6vw, 46px);
-}
-
-.page-head h1 {
-  margin: 0;
-  color: var(--bone-hi);
-  font-family: var(--font-cn);
-  font-size: clamp(34px, 4.4vw, 56px);
-  font-weight: 600;
-  line-height: 1.15;
-  letter-spacing: .04em;
-}
-
 /* ── 介绍块 ── */
 .intro { margin-bottom: clamp(28px, 3.4vw, 48px); }
 

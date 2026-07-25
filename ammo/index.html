@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>弹药生成机制 · Starside</title>
+<meta name="description" content="击杀生成弹药的基础百分比、技能与手雷的固定值，以及 Perk、模组、套装加成的叠加方式。">
+<meta name="theme-color" content="#0b0d14">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Starside">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:title" content="弹药生成机制 · Starside">
+<meta property="og:description" content="击杀生成弹药的基础百分比、技能与手雷的固定值，以及 Perk、模组、套装加成的叠加方式。">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="site-head">
+<nav class="site-nav">
+<span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>
+<a class="home" href="../index.html">Starside</a>
+<span class="sep">/</span>
+<span aria-current="page">弹药生成机制</span>
+</nav>
+</div>
+
+<header class="page-head">
+<h1>弹药生成机制</h1>
+</header>
+
+<main>
+<section class="block">
+<h2 class="sect-label">武器弹药生成</h2>
+<p>击杀敌人时，会基于基础百分比生成弹药。其中涉及多个变量，例如所使用的弹药类型、生成的弹药类型、敌人等级以及弹药生成属性。</p>
+
+<table class="gen">
+<thead>
+<tr>
+<th scope="col">弹药生成属性</th>
+<th scope="col" class="t-red">红血</th>
+<th scope="col" class="t-orange">橙血</th>
+<th scope="col" class="t-yellow">黄血</th>
+</tr>
+</thead>
+<tbody>
+<tr><th scope="row"><span class="a-white">白弹</span> → <span class="a-green">绿弹</span></th><td>6%–16%</td><td>12%–24%</td><td>24%–50%</td></tr>
+<tr><th scope="row"><span class="a-white">白弹</span> → <span class="a-heavy">重弹</span></th><td>3%–8%</td><td>6%–16%</td><td>12%–32%</td></tr>
+<tr><th scope="row"><span class="a-green">绿弹</span> → <span class="a-green">绿弹</span></th><td>3%–12%</td><td>6%–18%</td><td>12%–40%</td></tr>
+<tr><th scope="row"><span class="a-green">绿弹</span> → <span class="a-heavy">重弹</span></th><td>3%–8%</td><td>6%–16%</td><td>12%–32%</td></tr>
+<tr><th scope="row"><span class="a-heavy">重弹</span> → <span class="a-green">绿弹</span></th><td>3%–16%</td><td>6%–24%</td><td>12%–50%</td></tr>
+<tr><th scope="row"><span class="a-heavy">重弹</span> → <span class="a-heavy">重弹</span></th><td>3%–4%</td><td>6%–8%</td><td>12%–16%</td></tr>
+</tbody>
+<tbody class="fixed">
+<tr><th scope="row">技能 → <span class="a-green">绿弹</span></th><td>4%</td><td>8%</td><td>16%</td></tr>
+<tr><th scope="row">技能 → <span class="a-heavy">重弹</span></th><td>4%</td><td>8%</td><td>16%</td></tr>
+<tr><th scope="row">手雷 → <span class="a-green">绿弹</span></th><td>6%</td><td>12%</td><td>24%</td></tr>
+<tr><th scope="row">手雷 → <span class="a-heavy">重弹</span></th><td>4%</td><td>8%</td><td>16%</td></tr>
+</tbody>
+</table>
+
+<p>上表中的范围为基于武器弹药生成属性的线性变化。使用弹药生成属性为 100 的特殊武器击杀一名<span class="t-orange">橙血</span>敌人，将生成 18% 的<span class="a-green">特殊弹药</span>和 16% 的<span class="a-heavy">重型弹药</span>。建议重点关注<span class="t-red">红血</span>敌人的数值，同时可认为<span class="t-orange">橙血</span>敌人约为此数值的两倍，<span class="t-yellow">黄血</span>敌人约为四倍。</p>
+</section>
+
+<section class="block">
+<h2 class="sect-label">技能弹药生成</h2>
+<p>Bungie 显然不希望玩家仅通过技能生成弹药，因为技能产生的弹药能量远低于任何拥有合格弹药生成属性的武器。几乎所有技能对<span class="t-red">红血</span>、<span class="t-orange">橙血</span>、<span class="t-yellow">黄血</span>敌人分别生成 4%、8%、16% 的<span class="a-green">特殊</span>和<span class="a-heavy">重型弹药</span>。唯一的例外是手雷生成<span class="a-green">特殊弹药</span>的速度高出 50%，即手雷对<span class="t-red">红血</span>、<span class="t-orange">橙血</span>、<span class="t-yellow">黄血</span>敌人分别生成 6%、12%、24% 的<span class="a-green">特殊弹药</span>。</p>
+</section>
+
+<section class="block">
+<h2 class="sect-label">武器 Perk</h2>
+<dl class="rules">
+<dt>光中藏弹</dt>
+<dd><span class="a-green">特殊弹药</span>生成系数 ×1.25<span class="note">（目前存在 Bug，所有武器都能享受此加成，且额外效果是其他武器不会消耗层数）</span>。</dd>
+<dt>即兴弹药</dt>
+<dd><span class="a-green">特殊弹药</span>生成系数 ×1.15，<span class="a-heavy">重型弹药</span>生成系数 ×1.1。</dd>
+</dl>
+</section>
+
+<section class="block">
+<h2 class="sect-label">护甲模组</h2>
+<dl class="rules">
+<dt>特殊弹药搜寻者</dt>
+<dd><span class="a-green">特殊弹药</span>生成系数 ×1.25 | ×1.40 | ×1.50</dd>
+<dt>重型弹药搜寻者</dt>
+<dd><span class="a-heavy">重型弹药</span>生成系数 ×1.33 | ×1.66 | ×2.00</dd>
+</dl>
+<p>有趣的是，这些 Perk 若同时装备在多把武器上可以叠加。例如，你可以在一把枪上装备<em>光中藏弹</em>，另一把上也装备，由于 Bug，你会获得两个 ×1.25 的<span class="a-green">特殊弹药</span>生成系数；再搭配一把带有<em>即兴弹药</em>的武器，获得 ×1.15 的<span class="a-green">特殊弹药</span>系数。结合头盔上的三个<em>特殊弹药搜寻器</em>，每次使用带有<em>即兴弹药</em>的武器击杀<span class="t-red">红血</span>敌人时，弹药生成率将达到：</p>
+<p class="formula">12% × (1 + 0.5 + 0.25 + 0.25 + 0.15) = <strong>26%</strong></p>
+</section>
+
+<section class="block">
+<h2 class="sect-label">护甲套装加成</h2>
+<p>需要更多测试。潜在增益效果：</p>
+<dl class="rules">
+<dt>能量装填</dt>
+<dd>拾取光球时<span class="a-green">特殊弹药</span> +6%<span class="note">（无法被加成）</span>。</dd>
+<dt>年事已高</dt>
+<dd>终结<span class="t-orange">橙血</span>敌人 +15%，终结小 Boss +20%。</dd>
+<dt>白手起家</dt>
+<dd>当备弹低于 20% 时，获得 ×1.2 的弹药生成加成。</dd>
+</dl>
+</section>
+
+<section class="block">
+<h2 class="sect-label">备注</h2>
+<p>Bungie 确实不希望玩家使用双特殊武器并通过技能生成弹药。因此，如果你用未充能的近战攻击将敌人打到终结状态，终结将不会提供任何弹药能量。</p>
+<p>终结的机制较为微妙，我很难得到一致的结果。我 99% 确定终结时的弹药生成取决于你进行终结时所持的武器，这一点相当离谱。</p>
+<p>还测试了武器属性为 200 时的额外弹药量，看起来几乎使弹药量翻倍。但各武器之间存在较多异常值，因此未能找到一致的公式。</p>
+</section>
+</main>
+
+<footer class="site-foot">
+<p><a href="../index.html">← Starside</a></p>
+<p>数据由 <a href="https://discord.com/channels/591927598255439873/1453807417430245518" target="_blank" rel="noopener">DIM 社区</a>支持测试。<span class="note">该链接指向 Discord 频道内页，需登录并已加入该服务器才能打开。</span></p>
+<p>© 2026 Eliver · <a href="https://space.bilibili.com/26117485" target="_blank" rel="noopener">哔哩哔哩</a></p>
+<p class="legal">Starside 为非官方资料站，与 Bungie, Inc. 无从属关系。Destiny 2 及相关名称、标识为 Bungie, Inc. 的商标。</p>
+</footer>
+</body>
+</html>
