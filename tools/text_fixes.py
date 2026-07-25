@@ -60,6 +60,383 @@ SUBS = [
     ('<span class="note">无效果 ' + '-' * 34 + '</span>', '<span class="note">无效果</span>', 1),
 ]
 
+
+# 整条描述改写，键是（分节 id, 模组名）。跑在 SUBS 之后，所以这里写的是已经统一过
+# 术语的文本。改写红线：只改表达与着色范围，不改数值、不改机制断言、不删原作者的
+# 存疑标记（[?]）与注释（note 类整句）。
+#
+# 重名模组以「最完整的那一份」为基准，其余向它对齐；真有机制差异的保留差异（苦痛
+# 之力在杀手公爵药剂师背包上多生成一个虚空裂口，元素虹吸原文就写明与废墟石板不同）。
+DESCS = {
+    # 「刀剑获得 +20 防御抗性」整句被染成威能紫，收到「刀剑」一词
+    ('art-1', '乘胜追击'):
+        '<p>击破<span class="enemy">战斗人员护盾</span>：</p>\n'
+        '<p>+20 稳定性，<br>+20 操控性，<br>+20 装填速度，持续 10 秒。<br>'
+        '<span class="ammo-heavy">刀剑</span>获得 +20 防御抗性。</p>',
+
+    # 「电弧减益敌人」两次出现着色不一，统一为 deb-arc
+    ('art-1', '电介质'):
+        '<p>击杀<span class="deb-arc">电弧减益敌人</span>：</p>\n'
+        '<p>获得 <span class="el-arc">x1 电光充能</span>。</p>\n'
+        '<p>在 6 秒内连续击杀 3 名<span class="deb-arc">电弧减益敌人</span>：<br>'
+        '生成一个<span class="orb">能量球</span>，提供 <span class="orb">7.15% 超能能量</span>，'
+        '并<span class="health">恢复 40 点生命值</span>。</p>',
+
+    ('art-1', '元素能量球：电弧'):
+        '<p>使用<span class="el-arc">电弧武器</span>击杀 6 <span class="unsure">[2?]</span> '
+        '名敌人：<br>生成一个<span class="el-arc">电弧元素能量球</span>。</p>\n'
+        '<p><span class="el-arc">电弧元素能量球</span>：<br>'
+        '落地后最多停留 20 秒，随后消失。<br>拾取后最多可持有 20 秒。</p>\n'
+        '<p>造成最多 405 <span class="unsure">[101]</span> 点伤害，'
+        '随距离最低衰减至 90%，并在 8 米范围内施加<span class="deb-arc">震颤</span>。</p>',
+
+    # 「红血击杀」＝页内别处的「普通敌人」；弯引号补回、句末半角句点改全角
+    ('art-1', '动能合成'):
+        '<p>造成<span class="el-kinetic">动能武器伤害</span>或完成'
+        '<span class="el-kinetic">动能武器击杀</span>会推进计数器，达到 100% 时生成一个独特的'
+        '<span class="el-kinetic">动能弹药盒</span>。<br>计数器持续 15 秒，'
+        '每次造成<span class="el-kinetic">动能武器伤害</span>都会刷新。</p>\n'
+        '<p>每点伤害提供 0.0265% 进度，即需要造成 3770 点伤害才能生成一个弹药盒。<br>'
+        '<span class="ammo-heavy">A499</span> 提供的进度减少 75%，'
+        '需要 15000 点伤害才能生成一个弹药盒。<br>'
+        '<span class="enemy">普通敌人 = 8% | 精英 = 15% | 小头目 = 25%</span><br>'
+        '伤害需求<span class="note">忽略光等差距</span>，但计入实际伤害系数——'
+        '也就是说，无论<span class="note">光等差距</span>把伤害压低多少，'
+        '需要的“基础伤害”都一样。</p>\n'
+        '<p>收集一个<span class="el-kinetic">动能弹药盒</span>时：<br>'
+        '获得 <span class="el-strand">+5% 特殊弹药</span>与 '
+        '<span class="ammo-heavy">+5% 威能弹药</span>进度。<br>'
+        '装填当前装备的<span class="el-kinetic">动能武器</span>，并为它们生成'
+        '<span class="el-strand">特殊</span>／<span class="ammo-heavy">威能</span>弹药。<br>'
+        '每次生成（弹匣容量的 1/3）+ 1 发弹药，个别武器例外。<br>'
+        '计入弹药拾取效果。<span class="el-kinetic">动能弹药生成</span>不受回收器影响。</p>\n'
+        '<p><span class="orb">堡垒</span> = <span class="el-strand">+1 弹药</span> | '
+        '<span class="orb">库尔之影</span> = <span class="el-strand">+2 弹药</span> | '
+        '<span class="orb">英勇利刃</span> = <span class="el-strand">+2 弹药</span> | '
+        '<span class="orb">缩影</span> = <span class="ammo-heavy">+12 弹药</span>。</p>',
+
+    # 半角括号改全角；「也会提高超能近战伤害」是作者补注，金色改 note
+    ('art-1', '护甲匠'):
+        '<p>击破一个<span class="enemy">战斗人员护盾</span>时：</p>\n'
+        '<p><span class="enemy">10%</span> <span class="unsure">[2.5%]</span> '
+        '伤害抗性（抗性 x1），持续 6 秒。<br>'
+        '<span class="el-arc">近战伤害提高 100%</span>，持续 6 秒。<br>'
+        '<span class="note">超能近战伤害同样提高</span>。</p>',
+
+    # 「会击退战斗人员」是机制不是批注，去掉 note 降级
+    ('art-1', '动能裂口'):
+        '<p>对<span class="enemy">精英 +</span> <span class="enemy">战斗人员</span>造成足够次数的'
+        '<span class="el-kinetic">动能武器伤害</span>时：<br>'
+        '生成一个<span class="el-kinetic">动能裂口</span>，持续 ? 秒。</p>\n'
+        '<p><span class="el-kinetic">动能裂口</span>可以被攻击，受到伤害 ? 秒后'
+        '<span class="el-kinetic">激活</span>。</p>\n'
+        '<p><span class="el-kinetic">动能裂口</span>的爆炸伤害等于它受到的伤害的 '
+        '<span class="unsure">[?]%</span>，可眩晕势不可挡勇士，并会击退战斗人员。</p>',
+
+    # 三行「xN | +? 装填速度」信息量为零，并成一句；层数上限由该表本身给出
+    ('art-1', '远距填装'):
+        '<p>使用弓或狙击步枪造成<span class="stack">精准命中</span>时：</p>\n'
+        '<p>获得一层<span class="stack">远距填装</span>，持续 ? 秒，'
+        '最多 <span class="stack">3 层</span>。</p>\n'
+        '<p><span class="stack">远距填装</span>：每层提供 +? 装填速度。</p>',
+
+    ('art-1', '反制能量'):
+        '<p>每当<span class="enemy">勇士</span>被<span class="enemy">眩晕</span>时：</p>\n'
+        '<p>为<span class="pickup">充能最少的技能</span>提供 '
+        '<span class="pickup">25% 技能能量</span>。<br>'
+        '<span class="note">不包括超能技能</span>。</p>',
+
+    # 数值表的标签原本吊在行尾，提到行首；Buff 一律改「效果」
+    ('art-1', '狙击手冥想'):
+        '<p>狙击步枪命中时：<br>获得一层<span class="orb">狙击手冥想</span>，持续 7 秒。<br>'
+        '<span class="ammo-heavy">威能狙击步枪</span>命中获得 <span class="orb">2 层</span>。<br>'
+        '<span class="orb">狙击手冥想</span>在收起武器后仍然保留。</p>\n'
+        '<p><span class="orb">狙击手冥想</span>按层数提高伤害、稳定性与装填速度：<br>'
+        '伤害：2.8% | 5.7% | 9% | 12% | 15%<br>'
+        '稳定性：+? | +? | +? | +? | +?<br>'
+        '装填速度：+15 | +30 | +35 | +40 | +45</p>',
+
+    ('art-1', '组合银白利刃'):
+        '<p>攻击后等待 0.5 秒再次攻击：<br>'
+        '获得<span class="el-arc">银白利刃</span>，持续 5 秒。<br>该效果无法刷新。</p>\n'
+        '<p><span class="el-arc">银白利刃</span>：<br>刀剑伤害提高 15%，充能效率 +100。</p>',
+
+    ('art-1', '刀剑风暴连击'):
+        '<p>连续 3 次轻攻击后再打出一次重攻击：<br>'
+        '获得<span class="el-kinetic">刀剑风暴连击</span>，持续 5 秒。<br>'
+        '额外的刀剑击杀会刷新该效果。</p>\n'
+        '<p><span class="el-kinetic">刀剑风暴连击</span>：<br>'
+        '自动对使用者周围 6 米内的敌人每 0.53 秒造成 103 <span class="unsure">[?]</span> 点'
+        '<span class="el-kinetic">刀剑动能伤害</span>并施加<span class="el-kinetic">迷惑</span>，'
+        '持续 3 秒。<br>距离小于 4 米时，伤害最多提高 15%。</p>',
+
+    ('art-1', '苦痛之力'):
+        '<p>在 4 秒内连续击杀 <span class="deb-void">3 名被削弱的敌人</span>：</p>\n'
+        '<p>获得<span class="el-void">吞食</span>，持续 5 <span class="el-void">+2.5</span> 秒。</p>\n'
+        '<p>本应造成<span class="deb-void">削弱</span>的命中，即使当场击杀敌人也计入。</p>',
+
+    ('art-1', '奇点利刃'):
+        '<p>当拥有<span class="el-void">虚空元素增益</span>'
+        '（<span class="el-void">吞食</span>、<span class="el-void">隐身</span>或'
+        '<span class="pickup">覆盖护盾</span>）时：<br>'
+        '<span class="el-arc">近战</span>与刀剑命中造成<span class="deb-void">削弱</span>，'
+        '持续 6 秒。<br><span class="note">在命中时检测，而非在使用时快照</span>。</p>\n'
+        '<p>当拥有<span class="el-void">虚空元素增益</span>时，用'
+        '<span class="el-arc">近战</span>或刀剑击杀：<br>'
+        '触发一次<span class="deb-void">削弱爆发</span>，对 4 米内的敌人造成'
+        '<span class="deb-void">削弱</span>，持续 6 秒。</p>',
+
+    ('art-1', '虚空感染'):
+        '<p>击杀一个<span class="deb-void">被削弱的敌人</span>后：</p>\n'
+        '<p>生成一个<span class="el-void">追踪弹头</span>，寻找 15 米内的敌人。</p>\n'
+        '<p><span class="el-void">弹头</span>造成 87 <span class="unsure">[?]</span> 点'
+        '<span class="el-void">虚空伤害</span>，并在 ? 米范围内施加'
+        '<span class="deb-void">削弱</span>。</p>',
+
+    ('art-1', '凶险距离'):
+        '<p><span class="enemy">使用终结技</span>：</p>\n'
+        '<p>获得 <span class="el-solar">25% 手雷</span>与<span class="el-arc">近战</span>'
+        '技能能量。</p>',
+
+    ('art-1', '致盲震颤'):
+        '<p><span class="deb-arc">击杀被震颤的敌人</span>时：</p>\n'
+        '<p>对 8 米内的敌人施加<span class="deb-arc">致盲</span>，持续 10 秒。</p>',
+
+    # 「约 ~800」重复表意；感叹号改分号，注释归 note
+    ('art-1', '泰瑟电触'):
+        '<p>造成<span class="el-arc">电弧近战伤害</span>时：</p>\n'
+        '<p>施加<span class="deb-arc">震颤</span>，并每 0.25 秒造成 '
+        '<span class="el-arc">23 点电弧持续伤害</span>，'
+        '8.75 秒内合计约 <span class="el-arc">800 点电弧伤害</span>。<br>'
+        '<span class="note">此数值不含震颤伤害；计入震颤后总伤害为 1245 点</span>。</p>',
+
+    ('art-1', '快速治疗'):
+        '<p>在 3 秒内取得 <span class="ammo-heavy">3 次机枪击杀</span>时：</p>\n'
+        '<p><span class="health">恢复 15 点生命值</span>，并'
+        '<span class="health">开始生命回复</span>。</p>',
+
+    ('art-1', '精准平等'):
+        '<p><span class="stack">精准击杀</span>提供<span class="orb">精准平等</span>'
+        '<span class="stack">层数</span>，最高 <span class="stack">10 层</span>。<br>'
+        '<span class="enemy">普通敌人</span> = <span class="stack">1</span> | '
+        '<span class="enemy">精英</span> = <span class="stack">2</span> | '
+        '<span class="enemy">小头目</span> = <span class="stack">5</span> | '
+        '<span class="enemy">勇士 +</span> = <span class="stack">10</span><br>'
+        '<span class="note">层数不会溢出，也不会超过 x10</span>。</p>\n'
+        '<p>达到 <span class="stack">x10 层数</span>时：<br>'
+        '<span class="stack">消耗全部层数</span>，生成一个<span class="orb">大型能量球</span>，'
+        '该<span class="orb">能量球</span>提供 <span class="orb">12.5% 超能能量</span>。</p>\n'
+        '<p>拾取<span class="orb">大型能量球</span>时：<br>'
+        '获得<span class="pickup">武器激涌 x2</span>，持续 11 秒。<br>'
+        '<span class="note">不会覆盖更强的武器激涌，对所有伤害类型均生效</span>。</p>',
+
+    ('art-1', '黏附冲击'):
+        '<p><span class="el-arc">电弧粘性电浆手雷</span>、<span class="el-solar">融合手雷</span>与'
+        '<span class="el-void">磁性手雷</span>的直接命中伤害提高。<br>'
+        '<span class="el-arc">电弧粘性电浆手雷 = 60%</span> | '
+        '<span class="el-solar">融合手雷 = 30%</span> | '
+        '<span class="el-void">磁性手雷 = 总计提升 22.5%</span><br>'
+        '其中只有第一次<span class="el-void">磁性手雷</span>获得 45% 的加成。<br>'
+        '<span class="note">不会提高融合手雷的烈日效果伤害</span>。</p>\n'
+        '<p>用上述<span class="el-solar">手雷</span>击杀敌人时：<br>'
+        '在<span class="health">敌人死亡位置</span>上方生成 '
+        '<span class="el-kinetic">4 枚追踪动能微型导弹</span>，'
+        '追踪 30 米内最近的敌人。</p>\n'
+        '<p><span class="el-kinetic">微型导弹</span>命中时造成 216 '
+        '<span class="unsure">[?]</span> 点<span class="el-kinetic">动能伤害</span>。<br>'
+        '<span class="note">行为与辅助炸药的导弹完全相同</span>。</p>',
+
+    # ── art-2 好奇之器（溯回）────────────────────────────────────────
+    # 本节是六个重名模组的基准：发热寒颤、线织爆破、护盾粉碎、冰霜复兴、
+    # 群敌飞梭、极寒凝视，后面几件神器上的同名模组向这里对齐。
+
+    # 注释块把两段挤进一个 span，拆成独立段落
+    ('art-2', '发热寒颤'):
+        '<p>在 3 秒内对同一目标造成<span class="stack">多次精准命中</span>时：<br>'
+        '<span class="el-solar">烈日武器</span>：获得<span class="orb">焕光</span>，'
+        '持续 10 <span class="el-solar">+5</span> 秒。<br>'
+        '<span class="el-stasis">冰影武器</span>：获得一层'
+        '<span class="el-stasis">冰霜护甲</span>。</p>\n'
+        '<p><span class="note">触发后有 1.5 秒冷却，冷却期间的额外命中不计</span>。</p>\n'
+        '<p><span class="stack">多次精准命中</span>的次数要求：<br>'
+        '（弹匣容量的 25%）+ 1，向下取整；弓为 3 次。</p>',
+
+    ('art-2', '线织爆破'):
+        '<p>使用<span class="el-strand">缚丝</span>摧毁<span class="el-strand">缠结</span>时：</p>\n'
+        '<p><span class="el-strand">爆炸</span>额外造成一次 288 '
+        '<span class="unsure">[?]</span> 点<span class="el-strand">伤害</span>，'
+        '在 17 米半径内衰减至 75%。<br>'
+        '<span class="note">额外伤害计为缠结伤害，在所有交互中均如此</span>。</p>',
+
+    ('art-2', '焕光碎片'):
+        '<p>处于<span class="orb">焕光</span>状态时，造成相当于敌人'
+        '<span class="health">生命值</span>与<span class="pickup">护盾</span>之和 10% 的武器伤害，'
+        '或用武器击杀<span class="el-solar">灼烧状态战斗人员</span>：</p>\n'
+        '<p>目标释放 <span class="el-solar">1 枚烈日弹片</span>，造成 54 '
+        '<span class="unsure">[?]</span> 点伤害与最多 289 <span class="unsure">[20]</span> '
+        '点爆炸伤害，并在 ? 米范围内施加 <span class="el-solar">x20+0 灼烧</span>。</p>\n'
+        '<p><span class="note">弹片生成有 1 秒冷却时间</span>。<br>'
+        '<span class="note">弹片有轻微追踪，但经常会错过生成时瞄准的那个敌人</span>。</p>',
+
+    ('art-2', '元素仁慈'):
+        '<p>向<span class="enemy">盟友</span>施加<span class="pickup">元素增益</span>时：</p>\n'
+        '<p>获得约 15% <span class="unsure">[?]</span> '
+        '<span class="el-void">职业技能能量</span>。</p>\n'
+        '<p><span class="note">每个盟友触发后各有 ? 秒冷却时间</span>。</p>',
+
+    # 「表现为黄色数字」「与其他削弱叠加」是作者补注，金色与紫色改 note
+    ('art-2', '灼烧暗影'):
+        '<p>对<span class="enemy">非首领战斗人员</span>施加'
+        '<span class="deb-solar">暗影减益</span>时：</p>\n'
+        '<p><span class="el-solar">造成的烈日伤害提高 75%</span>。<br>'
+        '<span class="note">表现为烈日伤害跳出黄色数字</span>。<br>'
+        '<span class="note">与其他削弱来源按层数叠加</span>。</p>\n'
+        '<p><span class="note">重复施加暗影减益以再次触发，需要 2? 秒冷却时间</span>。</p>',
+
+    # 「50% 提升充能近战伤害」一律改成「…提高 50%」，与全页句式看齐
+    ('art-2', '护盾粉碎'):
+        '<p>当<span class="el-stasis">冰霜护甲</span>、'
+        '<span class="pickup">虚空覆盖护盾</span>或<span class="el-strand">织造铠甲</span>激活时：<br>'
+        '<span class="el-arc">近战充能速率</span>额外提高 ?% '
+        '<span class="unsure">[?%]</span>。<br>'
+        '<span class="el-arc">充能近战伤害</span>提高 50% '
+        '<span class="unsure">[5%]</span>。<br>'
+        '<span class="note">超能近战伤害同样提高</span>。</p>\n'
+        '<p>当<span class="el-arc">增幅</span>或<span class="el-solar">焕光</span>激活时：<br>'
+        '<span class="el-solar">手雷充能速率</span>额外提高 ?% '
+        '<span class="unsure">[?%]</span>。<br>'
+        '<span class="el-solar">手雷伤害</span>提高 25% <span class="unsure">[5%]</span>。</p>\n'
+        '<p><span class="note">抓钩近战改为提高 12% 伤害，特性的两半各提供一半</span>。</p>',
+
+    ('art-2', '冰霜复兴'):
+        '<p><span class="el-stasis">冰霜护甲</span>激活期间，'
+        '<span class="enemy">护盾被战斗人员的伤害击破</span>时：</p>\n'
+        '<p>在 10 米范围内释放<span class="el-stasis">冰影爆发</span>。<br>'
+        '<span class="el-stasis">冰影爆发</span><span class="deb-stasis">冻结</span>敌人，'
+        '并为使用者与<span class="enemy">范围内的盟友</span>各提供一层'
+        '<span class="el-stasis">冰霜护甲</span>。</p>',
+
+    # 元素对照表里「烈日」被染成电弧色，各归各的元素
+    ('art-2', '元素眩晕'):
+        '<p>用<span class="pickup">元素武器</span><span class="enemy">眩晕勇士</span>时：</p>\n'
+        '<p>触发一次<span class="pickup">元素匹配爆炸</span>，造成最多 '
+        '<span class="pickup">315 点元素伤害</span>，并在 5 米范围内施加'
+        '<span class="pickup">对应的元素减益</span>（伤害向外递减至 0%）。</p>\n'
+        '<p><span class="el-arc">电弧</span>：<span class="deb-arc">震颤</span> | '
+        '<span class="el-solar">烈日</span>：<span class="deb-solar">点燃</span> | '
+        '<span class="el-void">虚空</span>：<span class="deb-void">不稳定</span><br>'
+        '<span class="el-stasis">冰影</span>：<span class="deb-stasis">冻结</span> | '
+        '<span class="el-strand">缚丝</span>：<span class="deb-strand">割裂</span></p>\n'
+        '<p><span class="note">对动能武器无效</span>。</p>',
+
+    ('art-2', '元素超驰'):
+        '<p>拾取<span class="pickup">元素拾取物</span>时：</p>\n'
+        '<p><span class="pickup">与拾取物类型匹配的武器伤害</span>提高 22% '
+        '<span class="unsure">[?%]</span>，持续 7 秒。<br>'
+        '<span class="note">显示为武器激涌，但与武器激涌是乘算</span>。</p>',
+
+    ('art-2', '群敌飞梭'):
+        '<p>对<span class="deb-strand">被瓦解的敌人</span>造成相当于其'
+        '<span class="health">生命值</span>与<span class="el-stasis">护盾</span>之和 10% '
+        '<span class="unsure">[100? 生命值]</span> 的武器伤害时：</p>\n'
+        '<p>生成一个<span class="el-strand">线虫</span>。<br>'
+        '<span class="note">生成线虫有 0.5 秒冷却时间</span>。</p>\n'
+        '<p><span class="el-strand">线虫</span>造成伤害时施加'
+        '<span class="deb-strand">割裂</span>。</p>',
+
+    ('art-2', '并肩作战'):
+        '<p>在 <span class="enemy">2 名盟友</span> 15 米范围内持续造成'
+        '<span class="stack">精准伤害</span>时：</p>\n'
+        '<p>获得 <span class="enemy">25% 伤害抗性（抗性 x2）</span>，持续 10 ? 秒。</p>',
+
+    ('art-2', '纠缠罗网'):
+        '<p>击杀<span class="deb-strand">受到缚丝减益的战斗人员</span>时：</p>\n'
+        '<p>触发一次<span class="deb-strand">悬停爆破</span>。<br>'
+        '<span class="note">仅在生成<span class="deb-strand">缠结</span>时触发</span>。</p>',
+
+    ('art-2', '醒神丝线'):
+        '<p>拾取一个<span class="orb">与超能元素匹配的</span>'
+        '<span class="pickup">元素拾取物</span>时：</p>\n'
+        '<p>为充能最少的技能提供 <span class="pickup">25% 技能能量</span>。<br>'
+        '<span class="el-strand">缠结</span>也会触发。</p>\n'
+        '<p><span class="note">两次触发之间有 0.3 秒冷却</span>。<br>'
+        '<span class="note">不会对已有至少 1 层充能的技能触发</span>。</p>',
+
+    ('art-2', '元素聚合'):
+        '<p>击杀足够数量的敌人后：<br>生成一个与<span class="orb">超能元素</span>匹配的'
+        '<span class="pickup">元素拾取物</span>。</p>\n'
+        '<p>所需击杀数因<span class="pickup">元素拾取物</span>而异：<br>'
+        '<span class="el-solar">焰灵</span>、<span class="el-void">虚空裂口</span>：'
+        '4–7 次击杀。<br><span class="el-arc">离子轨迹</span>、'
+        '<span class="el-stasis">冰影碎片</span>、<span class="el-strand">缠结</span>：'
+        '9–11 次击杀。</p>\n'
+        '<p>会触发<span class="el-solar">焰灵</span>、<span class="el-void">虚空裂口</span>'
+        '与<span class="el-strand">缠结</span>的<span class="note">全局冷却</span>。<br>'
+        '<span class="note">冷却期间的击杀不计入下一个拾取物</span>。</p>\n'
+        '<p><span class="note">伤害类型与超能元素匹配时没有额外加成</span>。</p>',
+
+    ('art-2', '极寒凝视'):
+        '<p><span class="el-stasis">冰霜护甲</span>激活期间，用'
+        '<span class="el-stasis">冰影武器</span>取得<span class="stack">精准击杀</span>：</p>\n'
+        '<p>在敌人死亡位置触发一次<span class="deb-stasis">冰冻爆发</span>，'
+        '影响 7 米内的敌人。</p>',
+
+    ('art-2', '集群战术'):
+        '<p>造成<span class="el-strand">线虫伤害</span>时：<br>'
+        '获得一层<span class="el-strand">集群战术</span>，持续 10 秒，'
+        '最多叠加至 <span class="el-strand">2 层</span>。<br>'
+        '再次造成<span class="el-strand">线虫伤害</span>会刷新持续时间。</p>\n'
+        '<p><span class="el-strand">集群战术 x1</span> | '
+        '<span class="el-strand">线虫伤害提高 15%</span>。<br>'
+        '<span class="el-strand">集群战术 x2</span> | '
+        '<span class="el-strand">线虫伤害提高 30%</span>。</p>\n'
+        '<p><span class="el-strand">线虫伤害</span>会眩晕'
+        '<span class="enemy">势不可挡勇士</span>。</p>',
+
+    ('art-2', '鲜弹芬芳'):
+        '<p>拾取<span class="ammo-heavy">弹药盒</span>时：</p>\n'
+        '<p>获得<span class="el-kinetic">动能武器激涌</span>，持续 11 秒。<br>'
+        '<span class="el-strand">特殊弹药盒</span> = '
+        '<span class="el-kinetic">x2 动能武器激涌</span>。<br>'
+        '<span class="ammo-heavy">威能弹药盒</span> = '
+        '<span class="el-kinetic">x3 动能武器激涌</span>。</p>\n'
+        '<p><span class="note">不会覆盖更强的武器激涌</span>。</p>',
+
+    ('art-2', '钢铁领主的活力'):
+        '<p>在 3 秒内用刀剑取得 3 次击杀：</p>\n'
+        '<p>获得 <span class="ammo-heavy">+3 弹药</span>。<br>'
+        '<span class="orb">英勇利刃</span>与<span class="orb">故我在</span>改为获得 '
+        '<span class="ammo-heavy">+1 弹药</span>。</p>\n'
+        '<p><span class="note">与描述相反，它不提供任何伤害抗性</span>。</p>',
+
+    ('art-2', '半自动强袭'):
+        '<p><span class="enemy">护甲充能</span>低于 <span class="el-stasis">2</span> 层，'
+        '且在 3 秒内用弓、狙击步枪或斥候步枪造成'
+        '<span class="stack">多次精准命中</span>时：</p>\n'
+        '<p>获得一层<span class="enemy">护甲充能</span>。</p>\n'
+        '<p><span class="stack">多次精准命中</span>的次数要求：<br>'
+        '斥候步枪 = 5 | 弓 = 3 | 狙击步枪 = 2</p>',
+
+    ('art-2', '能量加速'):
+        '<p>在 3 秒内造成 2 次非同时的微型导弹伤害，或取得一次微型导弹击杀后：</p>\n'
+        '<p>目标释放一道<span class="el-kinetic">动能冲击波</span>，对 7 米范围内的敌人造成 '
+        '120 <span class="unsure">[20]</span> 点<span class="el-kinetic">动能伤害</span>，'
+        '并<span class="enemy">眩晕势不可挡勇士</span>。<br>'
+        '<span class="el-kinetic">冲击波</span>无伤害衰减。<br>'
+        '<span class="note">触发后进入 ? 秒冷却时间</span>。</p>',
+
+    # 「弑神狩猎箭头」只此一处，与全篇的「弑神箭头」并轨
+    ('art-2', '银白箭袋'):
+        '<p><span class="enemy">护甲充能</span>激活时：</p>\n'
+        '<p>装填弓可获得 3 层<span class="deb-arc">弑神箭头</span>。<br>'
+        '收起武器会移除所有层数。</p>\n'
+        '<p>持有<span class="deb-arc">弑神箭头</span>时开火：<br>'
+        '消耗 1 层以提高伤害，并获得 +? 装填速度。</p>\n'
+        '<p><span class="el-kinetic">主武器</span> = 对战斗人员伤害提高 35%。<br>'
+        '<span class="ammo-heavy">威能武器</span> = 对战斗人员伤害提高 25%。<br>'
+        '<span class="note">层数与所有效果叠加</span>。</p>',
+}
+
 # 改完仍出现即中止。新写的文本再引入这些写法会被当场拦下。
 FORBIDDEN = [
     '%%%', '动能决裂', '配合时', '----',

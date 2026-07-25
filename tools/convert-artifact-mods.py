@@ -22,7 +22,7 @@ import sys
 from collections import Counter
 from typing import NoReturn
 
-from text_fixes import FORBIDDEN, SUBS
+from text_fixes import DESCS, FORBIDDEN, SUBS
 
 # 配色：源表格的色值 → 语义 token。基准色取每族出现最多的那个，浅深变体并入基准色。
 # 改这里等于改站点色板，assets/site.css 的 :root 要同步。
@@ -209,8 +209,8 @@ def colorize(frag, stats):
 # 这一层只搬空白与标签边界，chars_of() 前后逐字相等，两道保真比对都看不见它。
 CJK = '㐀-鿿'                  # 汉字本身；中文标点在此范围之外
 TAGS = r'(?:<[^>]*>)*'         # 标签不算字间隔，否则空格躲在 </span> 后面就删不掉
-CLOSE = '：，。、；！？）」』'    # 前面不留空格、后面也不留
-OPEN = '（「『'                 # 后面不留空格、前面也不留
+CLOSE = '：，。、；！？）」』”'   # 前面不留空格、后面也不留
+OPEN = '（「『“'                # 后面不留空格、前面也不留
 
 
 def chars_of(frag):
@@ -252,7 +252,9 @@ def space_cjk(frag):
 
 def tidy(frag):
     before = chars_of(frag)
-    frag = space_cjk(unwrap_edges(frag.replace('&nbsp;', ' ')))
+    # 源表格零星用 <b> 加重着色词。字重由 site.css 的语义 class 统一给，删掉
+    frag = re.sub(r'</?b>', '', frag.replace('&nbsp;', ' '))
+    frag = space_cjk(unwrap_edges(frag))
     if chars_of(frag) != before:
         die('tidy() 改动了文本字符，这一层只许搬空白与标签：%r' % frag[:160])
     return frag
@@ -623,6 +625,20 @@ def revise(out):
             die('修订 %r 命中 %d 处，期望 %d 处；核对 tools/text_fixes.py 里的这一条'
                 % (old[:60], got, want))
         out = out.replace(old, new)
+    # 整条描述改写。跑在 SUBS 之后：这里写的是已经统一过术语的文本，改写掉的内容
+    # 也就不会再扰动 SUBS 的命中数。
+    for (art, name), new in DESCS.items():
+        head, sep, rest = out.partition('<section class="artifact" id="%s">' % art)
+        if not sep:
+            die('修订层找不到分节 %s' % art)
+        body, sep2, tail = rest.partition('</section>')
+        # 按 h4 的文本定位，不按其标记——有 18 个模组名自带着色
+        pat = re.compile(r'<h4>(.*?)</h4>\n<div class="mod-desc">\n(.*?)\n</div>', re.S)
+        hits = [m for m in pat.finditer(body) if text_of(m.group(1)) == name]
+        if len(hits) != 1:
+            die('修订层在 %s 里定位「%s」得到 %d 处，期望 1 处' % (art, name, len(hits)))
+        m = hits[0]
+        out = head + sep + body[:m.start(2)] + new + body[m.end(2):] + sep2 + tail
     # 改完文本要重走一遍空格规矩：tidy() 跑在修订之前，看不到这里换出来的新相邻
     # 关系（「恢复 15 HP 并…」改成「恢复 15 点生命值」后，才成了汉字挨汉字）。
     # 占位问号顶替的是一个数字，就跟数字一样与汉字分开——「持续 ? 秒」对齐「持续 7 秒」。
@@ -658,7 +674,7 @@ if __name__ == '__main__':
     with open(os.path.join(outdir, 'index.html'), 'w', encoding='utf-8') as f:
         f.write(out)
     print('index.html %.1f KB（原 %.1f KB），图标 %d 个，着色 span %d 处 → %d 个 token，'
-          '文本修订 %d 条'
+          '文本修订 %d 条 + 改写 %d 条描述'
           % (len(out.encode()) / 1024, len(src.encode()) / 1024,
              len(icons.written), sum(STATS.values()), len(set(COLOR_MAP.values())),
-             len(SUBS)))
+             len(SUBS), len(DESCS)))
