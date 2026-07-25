@@ -842,6 +842,180 @@ DESCS = {
         '<span class="el-void">540 点伤害</span>，'
         '<span class="enemy">小头目 +</span> 每枚受到 '
         '<span class="el-void">180 点伤害</span>。</p>',
+
+    # ── art-5 猎人日志（回响）────────────────────────────────────────
+    # 本节是持续火力、瞄准自动填装器、震慑行动的基准，NPA 斥力调节器向这里对齐。
+
+    # 原文自己写明与废墟石板的版本不同，这处差异保留，只把整句归回 note
+    ('art-5', '元素虹吸'):
+        '<p>用<span class="el-kinetic">动能武器</span>或'
+        '<span class="orb">与超能元素匹配的武器</span>在 3 秒内连续击杀 3 名敌人时：</p>\n'
+        '<p>生成一个与所装备<span class="orb">超能元素</span>匹配的'
+        '<span class="pickup">元素拾取物</span>。</p>\n'
+        '<p><span class="note">与废墟石板上的同名模组不同，此处不提供超能能量</span>。</p>',
+
+    ('art-5', '反制能量'):
+        '<p>每当<span class="enemy">勇士</span>被<span class="enemy">眩晕</span>时：</p>\n'
+        '<p>为<span class="pickup">充能最少的技能</span>提供 '
+        '<span class="pickup">25% 技能能量</span>。</p>',
+
+    ('art-5', '棱镜转移'):
+        '<p><span class="orb">释放超能</span>时：</p>\n'
+        '<p>15 米内<span class="orb">超能元素</span>与<span class="orb">施法者</span>不同的'
+        '<span class="enemy">盟友</span>获得 20% <span class="unsure">[10%]</span> 伤害加成，'
+        '持续 10 <span class="unsure">[5]</span> 秒。</p>\n'
+        '<p><span class="note">伤害加成不可刷新，也不与'
+        '<span class="orb">焕光</span>一类的强化增益叠加</span>。</p>',
+
+    ('art-5', '能量扩散基质'):
+        '<p>获得 5%? 对<span class="enemy">战斗人员</span>的伤害抗性。</p>',
+
+    ('art-5', '利刃耐力'):
+        '<p>用<span class="ammo-heavy">刀剑</span>在 5 秒内连续击杀 '
+        '<span class="enemy">3 名战斗人员</span>时：</p>\n'
+        '<p>获得 <span class="ammo-heavy">+3 弹药</span>。<br>'
+        '<span class="orb">英勇利刃</span>与<span class="orb">故我在</span>改为获得 '
+        '<span class="ammo-heavy">+2 弹药</span>。</p>',
+
+    ('art-5', '银白利刃'):
+        '<p>造成<span class="ammo-heavy">刀剑伤害</span>时：<br>'
+        '<span class="armor-charge">消耗</span>一层<span class="enemy">护甲充能</span>，'
+        '获得<span class="ammo-heavy">银白利刃</span>，持续 5 秒。</p>\n'
+        '<p><span class="ammo-heavy">银白利刃</span>：<br>'
+        '刀剑伤害提高 15%，充能效率 +100。</p>\n'
+        '<p><span class="note">与其他增益叠加；持续期间不会再'
+        '<span class="armor-charge">消耗</span>额外的'
+        '<span class="enemy">护甲充能</span></span>。</p>',
+
+    ('art-5', '凉意袭人'):
+        '<p>对<span class="el-stasis">冰影减益敌人</span>取得'
+        '<span class="el-stasis">冰影击杀</span>时：<br>'
+        '在 6 米范围内触发<span class="el-stasis">减速爆发</span>。</p>\n'
+        '<p><span class="el-stasis">减速爆发</span>：<br>'
+        '对敌人施加 <span class="el-stasis">x20 减速</span>，'
+        '持续 2? <span class="el-stasis">+?</span> 秒。<br>'
+        '为使用者与<span class="enemy">盟友</span>提供 '
+        '<span class="enemy">x? 冰霜护甲</span>。</p>\n'
+        '<p><span class="note">冰霜护甲部分实测无效</span>。</p>',
+
+    ('art-5', '虚空霸权'):
+        '<p>装备<span class="el-void">虚空</span>或'
+        '<span class="el-prismatic">棱镜</span>分支职业时：</p>\n'
+        '<p>击杀<span class="deb-void">被削弱的敌人</span>可获得 '
+        '<span class="pickup">15 点生命值的覆盖护盾</span>。</p>',
+
+    ('art-5', '扩展深渊'):
+        '<p>对<span class="deb-void">被削弱的敌人</span>造成的'
+        '<span class="el-void">虚空伤害</span>提高。<br>'
+        '削弱强度随之变化，括号内为实际伤害增幅：</p>\n'
+        '<p><span class="unsure">7.5% → 10%（伤害提升 2.3%）</span><br>'
+        '<span class="unsure">15% → 25%（伤害提升 8.7%）</span><br>'
+        '<span class="deb-void">30% → 35%（伤害提升 3.8%）</span><br>'
+        '<span class="deb-void">35% → 40%（伤害提升 3.7%）</span></p>\n'
+        '<p><span class="note">神圣裁决的削弱效果不受影响</span>。</p>',
+
+    ('art-5', '乘胜追击'):
+        '<p>击破<span class="enemy">战斗人员护盾</span>：</p>\n'
+        '<p><span class="el-kinetic">+20 稳定性，<br>+20 操控性，<br>'
+        '+20 装填速度，持续 10 秒。<br>刀剑获得 +20 防御抗性</span>。</p>',
+
+    ('art-5', '焕光能量球'):
+        '<p>装备<span class="el-solar">烈日</span>或'
+        '<span class="el-prismatic">棱镜</span>分支职业时：</p>\n'
+        '<p><span class="orb">能量球</span>额外提供<span class="orb">焕光</span>。</p>',
+
+    ('art-5', '护盾粉碎'):
+        '<p>当<span class="el-stasis">冰霜护甲</span>、'
+        '<span class="pickup">虚空覆盖护盾</span>或<span class="el-strand">织造铠甲</span>激活时：<br>'
+        '<span class="el-arc">近战充能速率</span>额外提高 ?% '
+        '<span class="unsure">[?%]</span>。<br>'
+        '<span class="el-arc">充能近战伤害</span>提高 50% '
+        '<span class="unsure">[5%]</span>。<br>'
+        '<span class="note">超能近战伤害同样提高</span>。</p>\n'
+        '<p>当<span class="el-arc">增幅</span>或<span class="el-solar">焕光</span>激活时：<br>'
+        '<span class="el-solar">手雷充能速率</span>额外提高 ?% '
+        '<span class="unsure">[?%]</span>。<br>'
+        '<span class="el-solar">手雷伤害</span>提高 25% <span class="unsure">[5%]</span>。</p>\n'
+        '<p><span class="note">抓钩近战改为提高 12% 伤害，特性的两半各提供一半</span>。</p>',
+
+    ('art-5', '线织爆破'):
+        '<p>使用<span class="el-strand">缚丝</span>摧毁<span class="el-strand">缠结</span>时：</p>\n'
+        '<p><span class="el-strand">爆炸</span>额外造成一次 288 '
+        '<span class="unsure">[?]</span> 点<span class="el-strand">伤害</span>，'
+        '在 17 米半径内衰减至 75%。<br>'
+        '<span class="note">额外伤害计为缠结伤害，在所有交互中均如此</span>。</p>',
+
+    ('art-5', '妨害振幅'):
+        '<p>对<span class="enemy">勇士</span>造成<span class="el-arc">电弧技能伤害</span>时：</p>\n'
+        '<p>对该<span class="enemy">勇士</span>施加<span class="deb-arc">震颤</span>。</p>',
+
+    ('art-5', '转移'):
+        '<p><span class="el-prismatic">超凡</span>激活期间：<br>'
+        '手雷与近战伤害提高 <span class="el-solar">10%</span>。</p>\n'
+        '<p><span class="el-prismatic">超凡</span>结束后：<br>'
+        '每次武器击杀返还 <span class="el-prismatic">4.2%</span> 的'
+        '<span class="el-arc">光能</span>与<span class="deb-solar">暗影</span>能量，'
+        '最多累计至 <span class="el-prismatic">50%</span>（需要 12 次击杀）。</p>',
+
+    ('art-5', '燃烧步枪弹药'):
+        '<p>用<span class="el-solar">烈日狙击步枪</span>造成'
+        '<span class="stack">精准命中</span>时：<br>'
+        '施加 <span class="el-solar">x30+15 灼烧</span>。</p>\n'
+        '<p><span class="note">不受武器框架与弹药类型影响</span>。</p>',
+
+    ('art-5', '烈日爆发'):
+        '<p><span class="el-solar">点燃</span>会额外造成一次伤害。</p>\n'
+        '<p><span class="el-solar">爆燃</span>在 12 米半径内造成 171 '
+        '<span class="unsure">[30]</span> 点<span class="el-solar">烈日伤害</span>，'
+        '并视为<span class="el-solar">点燃</span>效果，'
+        '没有伤害衰减 <span class="unsure">[待确认]</span>。</p>\n'
+        '<p>装备<span class="el-solar">烧焦余烬</span>时：<br>'
+        '<span class="el-solar">爆燃</span>额外施加 '
+        '<span class="el-solar">x40+20 灼烧</span>。</p>',
+
+    ('art-5', '狙击手冥想'):
+        '<p>狙击步枪直接命中时：<br>获得一层<span class="orb">狙击手冥想</span>，持续 7 秒。<br>'
+        '<span class="ammo-heavy">威能狙击步枪</span>命中提供 <span class="orb">2 层</span>。<br>'
+        '<span class="orb">狙击手冥想</span>在收起武器后仍然保留。</p>\n'
+        '<p><span class="orb">狙击手冥想</span>按层数提高伤害、稳定性与装填速度：<br>'
+        '伤害：2.8% | 5.7% | 9% | 12% | 15%<br>'
+        '稳定性：+? | +? | +? | +? | +?<br>'
+        '装填速度：+15 | +30 | +35 | +40 | +45</p>',
+
+    # 「抗性 x2（25% 伤害减免）」与全页别处的「N% 伤害抗性（抗性 xN）」并轨
+    ('art-5', '持续火力'):
+        '<p>在 1.5 秒内对<span class="enemy">同一名战斗人员</span>造成 '
+        '10 次自动步枪命中时：</p>\n'
+        '<p>获得 <span class="enemy">25% 伤害抗性（抗性 x2）</span>，持续 6 秒。<br>'
+        '<span class="note">该效果可刷新，收起武器后仍然保留</span>。</p>\n'
+        '<p><span class="health">支援型自动步枪</span>可通过'
+        '<span class="health">治疗受伤的盟友</span>触发。</p>',
+
+    ('art-5', '瞄准自动填装器'):
+        '<p>用自动步枪<span class="enemy">击杀战斗人员</span>会推进'
+        '<span class="deb-void">计数器</span>：<br>'
+        '普通击杀提供 <span class="deb-void">50% 进度</span>；<br>'
+        '15 米内有 3 名敌人时，或已有 <span class="deb-void">5 层</span>时，'
+        '击杀提供 <span class="deb-void">100% 进度</span>。<br>'
+        '<span class="note">计数器进度在收起武器后保留</span>。</p>\n'
+        '<p><span class="deb-void">计数器进度达到 100%</span> 时：<br>'
+        '获得一层<span class="deb-void">瞄准自动填装器</span>，持续 15 秒，'
+        '最多叠加至 <span class="deb-void">5 层</span>，可刷新。</p>\n'
+        '<p><span class="deb-void">瞄准自动填装器</span>按层数生效：<br>'
+        '装填弹匣：20% | 20% | 30% | 40% | 40%<br>'
+        '自动步枪伤害提高：10% | 13% | 16% | 18% | 20%<br>'
+        '<span class="note">与其他增益叠加；切换到<span class="note">非自动步枪</span>'
+        '武器时移除</span>。</p>',
+
+    ('art-5', '震慑行动'):
+        '<p>装备<span class="el-arc">电弧</span>或'
+        '<span class="el-prismatic">棱镜</span>分支职业，且处于'
+        '<span class="el-arc">增幅</span>状态时：</p>\n'
+        '<p><span class="el-arc">电弧击杀</span>会触发一次'
+        '<span class="el-arc">闪电爆发</span>，在 8 米半径内造成最多 126 '
+        '<span class="unsure">[?]</span> 点<span class="el-arc">电弧伤害</span>，'
+        '并施加<span class="deb-arc">震颤</span>。</p>\n'
+        '<p><span class="note">两次触发之间有 5 秒冷却时间</span>。</p>',
 }
 
 # 改完仍出现即中止。新写的文本再引入这些写法会被当场拦下。
