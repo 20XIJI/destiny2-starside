@@ -654,6 +654,194 @@ DESCS = {
         '各<span class="health">恢复 15 点生命值</span>，并为使用者与 10 米内的'
         '<span class="enemy">盟友</span>提供<span class="el-strand">织造铠甲</span>，'
         '持续 <span class="el-strand">10 秒</span>。</p>',
+
+    # ── art-4 杀手公爵药剂师背包（怨魂）──────────────────────────────
+    ('art-4', '风寒'):
+        '<p>在 3 秒内对同一目标造成<span class="el-stasis">多次'
+        '<span class="note">非同时的</span>冰影武器伤害</span>时：<br>'
+        '获得一层<span class="el-stasis">冰霜护甲</span>。</p>\n'
+        '<p><span class="note">两次触发之间有 0.45 秒冷却，冷却期间的额外命中不计；'
+        '收起武器时计数器重置</span>。</p>\n'
+        '<p>触发<span class="el-stasis">冰霜护甲</span>所需的命中次数：<br>'
+        '弓：3 | 单发榴弹发射器、刀剑：2 | 其余为（弹匣的 35%，向下取整）+ 2<br>'
+        '<span class="note">无需手持冰影武器，按当前武器的弹匣计算</span>。</p>\n'
+        '<p>在 3 秒内对<span class="el-stasis">减速的敌人</span>造成'
+        '<span class="el-stasis">多次冰影武器伤害</span>时：<br>'
+        '在敌人上方生成一个<span class="el-stasis">冰影碎片</span>。<br>'
+        '所需命中次数为弓：3 | 单发榴弹发射器、刀剑：2 | '
+        '其余为（弹匣的 25%，向下取整）+ 2。</p>',
+
+    ('art-4', '冰霜复兴'):
+        '<p><span class="el-stasis">冰霜护甲</span>激活期间，'
+        '<span class="enemy">护盾被战斗人员的伤害击破</span>时：</p>\n'
+        '<p>在 10 米范围内释放<span class="el-stasis">冰影爆发</span>。<br>'
+        '<span class="el-stasis">冰影爆发</span><span class="deb-stasis">冻结</span>敌人，'
+        '并为使用者与<span class="enemy">范围内的盟友</span>各提供一层'
+        '<span class="el-stasis">冰霜护甲</span>。</p>',
+
+    ('art-4', '寒脑凝滞'):
+        '<p><span class="deb-stasis">被冻结的敌人</span>会对 4 米内'
+        '<span class="el-stasis">尚未受冰影减益影响</span>的敌人施加 '
+        '<span class="el-stasis">x? 减速</span>。</p>',
+
+    # 源表格里混着英文 or；碎片数与水晶数两行本是一张对照表
+    ('art-4', '晶体转换器'):
+        '<p>拾取<span class="el-stasis">冰影碎片</span>会推进'
+        '<span class="el-stasis">晶体转换器计数器</span>。</p>\n'
+        '<p>造成<span class="el-stasis">冰影近战伤害</span>或'
+        '<span class="el-stasis">钻石长矛伤害</span>时：<br>'
+        '消耗<span class="el-stasis">晶体转换器计数器</span>，'
+        '按已拾取的<span class="el-stasis">碎片</span>数量生成'
+        '<span class="el-stasis">水晶</span>——<br>'
+        '<span class="el-stasis">拾取 8 | 12 | 15 个碎片，'
+        '分别生成 1 | 2 | 3 个水晶</span>。</p>\n'
+        '<p>使用<span class="pickup">职业技能</span>时：<br>'
+        '下一次<span class="el-stasis">冰影武器击杀</span>会生成一个'
+        '<span class="el-stasis">冰影碎片</span>。</p>',
+
+    ('art-4', '迎接风暴'):
+        '<p><span class="deb-stasis">击碎</span><span class="el-stasis">冰影水晶</span>时：</p>\n'
+        '<p>呈 * 形释放 <span class="el-stasis">5 枚追踪冰刺</span>，每枚造成 46 点伤害，'
+        '并施加 <span class="el-stasis">x? <span class="unsure">[x10]</span> 减速</span>，'
+        '持续 ? 秒。<br>'
+        '<span class="note">冰刺均匀散开，其中一枚会飞向最近的敌人</span>。</p>\n'
+        '<p>在<span class="deb-stasis">敌人身上击碎</span>额外造成 12.5% '
+        '<span class="unsure">[?%]</span> 伤害；'
+        '<span class="el-stasis">击碎水晶</span>额外造成 25% '
+        '<span class="unsure">[?%]</span> 伤害。</p>',
+
+    ('art-4', '超新星'):
+        '<p>拾取<span class="el-void">虚空裂口</span>时：</p>\n'
+        '<p>10 秒内的下一次<span class="el-void">虚空</span>伤害会释放一个'
+        '<span class="deb-void">削弱爆发</span>，对 5 米内的敌人施加'
+        '<span class="deb-void">削弱</span>。</p>',
+
+    ('art-4', '大肆屠杀'):
+        '<p><span class="enemy">消灭</span>一个<span class="enemy">精英 + 战斗人员</span>时：</p>\n'
+        '<p><span class="health">恢复 100 点生命值</span>，并'
+        '<span class="health">开始生命回复</span>。<br>'
+        '获得 <span class="health">25% 伤害抗性</span>'
+        '<span class="enemy">（抗性 x2）</span>，持续 11 秒。</p>',
+
+    ('art-4', '弱化波'):
+        '<p><span class="enemy">消灭</span>一个<span class="enemy">战斗人员</span>时：</p>\n'
+        '<p>触发一道波形，造成 <span class="enemy">180 点超能元素匹配伤害</span>，'
+        '最远波及 15 米。<br>'
+        '<span class="note">波会朝终结技的方向推进，并追踪敌人</span>。</p>\n'
+        '<p>装备<span class="el-arc">电弧</span>、<span class="el-void">虚空</span>或'
+        '<span class="el-stasis">冰影超能</span>时，'
+        '<span class="pickup">波</span>会额外施加'
+        '<span class="pickup">与超能元素匹配的减益</span>：</p>\n'
+        '<p><span class="el-arc">电弧</span> = <span class="deb-arc">致盲</span><br>'
+        '<span class="el-void">虚空</span> = <span class="deb-void">削弱</span><br>'
+        '<span class="el-stasis">冰影</span> = <span class="deb-stasis">减速</span></p>',
+
+    ('art-4', '传导宇宙水晶'):
+        '<p>对<span class="el-stasis">冰影减益敌人</span>：</p>\n'
+        '<p><span class="el-arc">电弧</span>与<span class="el-void">虚空</span>'
+        '技能伤害提高 5%?</p>',
+
+    ('art-4', '苦痛之力'):
+        '<p>在 4 秒内连续击杀 <span class="deb-void">3 名被削弱的敌人</span>：</p>\n'
+        '<p>获得<span class="el-void">吞食</span>，持续 5 <span class="el-void">+2.5</span> 秒，'
+        '并生成一个<span class="el-void">虚空裂口</span>。</p>\n'
+        '<p>本应造成<span class="deb-void">削弱</span>的命中，即使当场击杀敌人也计入。</p>',
+
+    ('art-4', '削弱清敌'):
+        '<p>用榴弹发射器对<span class="enemy">首领</span>或<span class="enemy">勇士</span>'
+        '造成伤害，或击破<span class="enemy">战斗人员的护盾</span>时：</p>\n'
+        '<p>施加<span class="deb-void">削弱</span>，持续 20 秒，'
+        '同时装填已收起的武器。</p>\n'
+        '<p><span class="note">该减益无法由榴弹发射器自己刷新，但可以由任何其他来源重新施加；'
+        '施加削弱与装填各有 10 秒冷却时间</span>。</p>',
+
+    ('art-4', '冰冷伺候'):
+        '<p><span class="el-stasis">冰影碎片</span>额外提供 '
+        '<span class="el-void">10% 职业技能能量</span>。</p>\n'
+        '<p><span class="el-void">虚空裂口</span>额外提供 '
+        '<span class="el-arc">10?% 近战技能能量</span>。</p>',
+
+    ('art-4', '轨迹证据'):
+        '<p>在 1? 秒内对<span class="el-arc">受到电弧减益的敌人</span>造成 '
+        '<span class="stack">2 次精准命中</span>，或在 ? 秒内击杀 '
+        '<span class="el-arc">3 名受到电弧减益的敌人</span>：</p>\n'
+        '<p>生成一个<span class="el-arc">离子轨迹</span>。<br>'
+        '<span class="note">离子轨迹生成有 4 秒冷却时间</span>。</p>\n'
+        '<p>拾取<span class="el-arc">离子轨迹</span>时：<br>'
+        '获得一层<span class="enemy">护甲充能</span>。</p>',
+
+    ('art-4', '视网膜灼烧'):
+        '<p><span class="enemy">护甲充能</span>激活期间，于 ? 秒内对'
+        '<span class="enemy">尚未致盲的战斗人员</span>造成 <span class="stack">2 次</span>'
+        '<span class="el-arc">电弧武器</span><span class="stack">精准命中</span>：</p>\n'
+        '<p><span class="armor-charge">消耗 1 层护甲充能</span>，触发'
+        '<span class="deb-arc">致盲爆发</span>，对 ? 米半径内的敌人施加'
+        '<span class="deb-arc">致盲</span>，持续 ? 秒。</p>',
+
+    # 末段两行数值表的标签原本吊在行尾
+    ('art-4', '动能冲击'):
+        '<p>在 3 秒内用<span class="ammo-heavy">威能榴弹发射器</span>造成 3 次非同时伤害，'
+        '或用<span class="orb">主武器</span>／<span class="el-strand">特殊</span>榴弹发射器'
+        '造成单次<span class="note">非致命</span>伤害：</p>\n'
+        '<p>在敌人脚下触发一次<span class="el-kinetic">冲击波</span>，造成 '
+        '<span class="el-kinetic">227x2 = 454 点动能伤害</span>，'
+        '并在 7 米范围内<span class="enemy">踉跄并眩晕势不可挡勇士</span>。<br>'
+        '来自<span class="orb">主武器</span>与<span class="el-strand">特殊</span>'
+        '榴弹发射器的冲击波只造成 <span class="el-kinetic">150x2 伤害</span>。<br>'
+        '<span class="note">冲击波无伤害衰减；两次结算之间有 1 秒冷却时间</span>。</p>\n'
+        '<p>造成榴弹发射器伤害时：<br>'
+        '获得一层<span class="stack">快速冲击</span>，持续 5 秒，最多叠加 5 层。<br>'
+        '装填速度：+5 | +10 | +15? | +20? | +30<br>'
+        '装填持续时间倍率：0.99x | 0.99x | 0.98x | 0.96x | 0.94x</p>',
+
+    ('art-4', '置身其中'):
+        '<p>15? 米范围内有 3? 名敌人，且在 ? 秒内击杀 3 名敌人时：<br>'
+        '获得一层<span class="enemy">护甲充能</span>。</p>\n'
+        '<p>15? 米范围内有 3? 名敌人时：<br>获得 +? 操控性与 +? 充能效率。</p>',
+
+    ('art-4', '治疗能量球'):
+        '<p>首次击破<span class="enemy">战斗人员护盾</span>或'
+        '<span class="orb">超能状态下的</span><span class="unsure">守护者护盾</span>时：</p>\n'
+        '<p>生成一个<span class="orb">能量球</span>，提供 '
+        '<span class="orb">7.15% 超能能量</span>。<br>'
+        '对尚未触发过该效果的<span class="enemy">战斗人员</span>使用'
+        '<span class="enemy">终结技</span>也会生成一个<span class="orb">能量球</span>。</p>\n'
+        '<p>拾取<span class="orb">能量球</span>、<span class="pickup">元素拾取物</span>'
+        '或摧毁<span class="el-strand">缠结</span>时：<br>'
+        '<span class="health">恢复 40 点生命值</span>。</p>',
+
+    ('art-4', '电弧复合'):
+        '<p><span class="el-arc">对致盲敌人造成的电弧伤害</span>提高 15% '
+        '<span class="unsure">[7.5%]</span>。<br>'
+        '<span class="note">与所有效果叠加</span>。</p>',
+
+    ('art-4', '杀戮之风'):
+        '<p>在 3 秒内用武器击杀 3 名敌人：</p>\n'
+        '<p>获得 +? 敏捷，持续 7 秒。<br><span class="note">再次触发会刷新</span>。</p>',
+
+    ('art-4', '虚空复兴'):
+        '<p><span class="el-void">吞食</span>激活时：</p>\n'
+        '<p><span class="el-void">虚空武器击杀</span>会推进计数器，'
+        '达到 100% 时生成一个<span class="el-void">虚空裂口</span>：<br>'
+        '<span class="enemy">普通战斗人员</span> = <span class="el-void">16.7%</span> | '
+        '<span class="enemy">精英</span> = <span class="el-void">34%</span> | '
+        '<span class="enemy">小头目 +</span> = <span class="el-void">50%</span> | '
+        '<span class="unsure">守护者</span> = <span class="el-void">?%</span></p>\n'
+        '<p>拾取<span class="el-void">虚空裂口</span>时：<br>'
+        '获得 +? 操控性与 +? 装填速度，持续 ? 秒，'
+        '并装满霰弹枪与榴弹发射器的弹药。</p>',
+
+    ('art-4', '古神仪式'):
+        '<p>拾取<span class="el-void">虚空裂口</span>时：</p>\n'
+        '<p>10 秒内的下一次<span class="el-void">虚空武器伤害</span>会开启一个'
+        '<span class="el-void">虚空门户</span>。</p>\n'
+        '<p><span class="el-void">虚空门户</span>：<br>'
+        '向约 10 米内的敌人释放 <span class="el-void">8 枚追踪虚空球</span>，'
+        '每枚在约 3 米范围内造成最多 334 <span class="unsure">[?]</span> 点溅射伤害。<br>'
+        '<span class="enemy">普通战斗人员</span>每枚<span class="el-void">球</span>受到 '
+        '<span class="el-void">540 点伤害</span>，'
+        '<span class="enemy">小头目 +</span> 每枚受到 '
+        '<span class="el-void">180 点伤害</span>。</p>',
 }
 
 # 改完仍出现即中止。新写的文本再引入这些写法会被当场拦下。
