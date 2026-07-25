@@ -2,9 +2,8 @@
    通用主题、字体与 23 个配色 token 在 /assets/site.css。 */
 
 /* 三档并排的最小内容宽度 1020px + main 左右各 22px 内边距。
-   横向溢出交给页面本身，不在 main 上开 overflow-x——
-   一旦 main 成为滚动容器，其内部的 position: sticky 便不再相对视口生效，
-   且滚动条落在约 20000px 高元素的底部、实际不可达。 */
+   横向溢出交给页面本身：main 上一旦开 overflow-x，它就成了滚动容器，
+   内部的 position: sticky 不再相对视口生效，滚动条也会落到页底不可达处。 */
 body { min-width: 1064px; }
 
 main {
@@ -41,8 +40,8 @@ main {
   line-height: 1.95;
 }
 
-/* 两枚徽章是竞技场与试炼，对应「多人竞技和奥斯里斯试炼被禁用」——它们是内容。
-   源表格把两枚分列文字左右两侧求对称，此处并到一处：两枚徽章即被排除的两个玩法。 */
+/* 两枚徽章是竞技场与试炼，对应「多人竞技和奥斯里斯试炼被禁用」，属于内容。
+   并到一处：两枚徽章即被排除的两个玩法。 */
 .notice {
   display: flex;
   align-items: center;
@@ -142,9 +141,8 @@ main {
   text-align: right;
 }
 
-/* ── 档位轨：站点母题，三枚菱形点亮 1/2/3 枚 ──
-   原先用 ⯁（U+2BC1）表示档位，该字形在中文字体栈下无字形、渲染为空白，
-   整条档位表头是一条空带。改为 CSS 绘制，不依赖字形覆盖。 */
+/* 档位轨：站点母题，三枚菱形点亮 1/2/3 枚。菱形一律 CSS 绘制——
+   ⯁（U+2BC1）一类字形在中文字体栈下无覆盖，会渲染成一条空带。 */
 .tier-rail,
 .mod-row {
   display: grid;
@@ -181,11 +179,9 @@ main {
 .tier-head[data-tier="2"]::after { content: "二级"; }
 .tier-head[data-tier="3"]::after { content: "三级"; }
 
-/* ── 模组行 ──
-   一级/二级/三级模组按「行」成组（游戏内逻辑）。行是结构，
-   每个模组用 grid-column 钉在自己的档位列上——不靠自动布局的行主序，
-   否则搜索隐藏任一模组都会让其后所有模组列位偏移。
-   行内两带（名称带、描述带）用 subgrid 让同行三档各自跨列对齐。 */
+/* 模组行：一级/二级/三级按「行」成组（游戏内逻辑）。行是结构，每个模组用
+   grid-column 钉在自己的档位列上——靠自动布局的行主序的话，搜索隐藏任一模组
+   都会让其后所有模组列位偏移。行内两带用 subgrid 让同行三档各自跨列对齐。 */
 .mod-row {
   grid-template-rows: auto auto;
   border-top: 1px solid var(--hair);
@@ -260,9 +256,7 @@ main {
 
 .mod:hover::after { background: #ffffff0d; }
 
-/* ── 搜索态 ──
-   命中即显示；整行三档皆不命中则整行隐藏，整节不命中则整节隐藏。
-   隐藏用 [hidden]，由 app.js 施加。 */
+/* 搜索态：[hidden] 由 app.js 施加 */
 .mod[hidden],
 .mod-row[hidden],
 .artifact[hidden] { display: none; }

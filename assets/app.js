@@ -1,7 +1,7 @@
 /* 工具条构建、搜索过滤、当前分节高亮。零依赖。
 
-   工具条从 DOM 读取神器名，不在 HTML 里重复任何源文本——
-   生成器 tools/convert-artifact-mods.py 的保真自检因此维持原强度。
+   工具条从 DOM 读取神器名，不在 HTML 里重复任何源文本，否则生成器
+   tools/convert-artifact-mods.py 的保真自检会报重复。
    无 JS 时工具条为空容器（.toolbar:empty 收起），正文与档位轨完整可读。 */
 (function () {
   'use strict';
@@ -64,7 +64,7 @@
   slot.appendChild(chipNav);
 
   /* 命中即显示；整行三档皆不命中则整行隐藏，整节不命中则整节与其 chip 一同隐藏。
-     检索期间三档并排对照关系失效——此时的目标是「找到」而非「对照」，清空即恢复。 */
+     检索期间三档并排对照关系失效，清空即恢复。 */
   function filter(query) {
     var hits = 0;
     mods.forEach(function (mod, i) {

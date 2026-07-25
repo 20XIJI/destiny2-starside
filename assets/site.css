@@ -1,7 +1,5 @@
 /* 站点通用：字体、主题 token、配色、页首、导航、工具条、首页。各组件页共用这一份。
-
-   视觉命题：外壳全部去饱和为骨白／石墨发丝线，整页唯一的饱和色来自游戏自身的
-   元素编码（电弧青、烈日橙、虚空紫…）。外壳不与数据争夺注意力。 */
+   外壳去饱和为骨白／石墨发丝线，整页唯一的饱和色来自游戏的元素编码。 */
 
 @font-face {
   font-family: "Chakra Petch";
@@ -30,16 +28,15 @@
   --hair: #2a3040;
   --hair-lit: #3c4457;
 
-  /* ── 字体三分工 ──
-     Chakra Petch / SF Mono 均不含中文，浏览器按字符逐族回退：
-     拉丁与数字取前者的字面，中文自动落到 PingFang，无需拆标签。 */
+  /* 字体三分工。Chakra Petch 与 SF Mono 均不含中文，浏览器按字符逐族回退：
+     拉丁与数字取前者的字面，中文落到 PingFang，无需拆标签。 */
   --font-disp: "Chakra Petch", "PingFang SC", "Noto Sans SC", sans-serif;
   --font-body: ui-monospace, "SF Mono", SFMono-Regular, Menlo, "PingFang SC",
     "Noto Sans SC", sans-serif;
   --font-cn: "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
 
-  /* ── 渲染色板：整页 10 个饱和槽位 ──
-     元素色相是游戏的既有编码，属于内容，只做亮度拉平，不改色相。 */
+  /* 渲染色板：整页 10 个饱和槽位。元素色相是游戏的既有编码，属于内容，
+     只做亮度拉平，不改色相。 */
   --c-arc: #5fd8e0;
   --c-stasis: #7fb4ff;
   --c-void: #c08cff;
@@ -78,7 +75,7 @@
   --plain: var(--bone);              /* 原色近正文色，跟随正文 */
 
   /* 分节 sticky 单元贴 .site-head 下沿。app.js 按实测高度覆写；
-     无 JS 时这个默认值对应只有导航行的高度。 */
+     无 JS 时取这个默认值（只有导航行的高度）。 */
   --stick: 45px;
 }
 
@@ -95,19 +92,17 @@ body {
   color: var(--bone);
   font: 400 15px/1.85 var(--font-body);
   font-variant-numeric: tabular-nums;
-  /* 88px 刻线网格作为基底。不用 background-attachment: fixed——
-     该页约 20000px 高、163 张图，固定背景会让滚动逐帧重绘。 */
+  /* 88px 刻线网格。不加 background-attachment: fixed——组件页约 20000px 高、
+     163 张图，固定背景会让滚动逐帧重绘。 */
   background:
     repeating-linear-gradient(0deg, #ffffff06 0 1px, transparent 1px 88px),
     repeating-linear-gradient(90deg, #ffffff06 0 1px, transparent 1px 88px),
     var(--ink);
 }
 
-/* body 是 flex 列（页脚贴底），而 flex 子项上的 margin: 0 auto 会吸收剩余空间、
-   把子项压成 fit-content 并居中。显式给满宽，让内部的 max-width 决定版心。 */
+/* body 是 flex 列，其子项上的 margin: 0 auto 会吸收剩余空间、把子项压成
+   fit-content 并居中。显式给满宽，让内部的 max-width 决定版心。 */
 body > * { width: 100%; }
-
-.disp { font-family: var(--font-disp); }
 
 a { color: var(--bone); }
 
@@ -178,8 +173,8 @@ main { flex: 1 0 auto; }
   letter-spacing: .12em;
 }
 
-/* ── 工具条：搜索 + 神器跳转。整块由 assets/app.js 按 DOM 构建 ──
-   工具条不在 HTML 里重复任何源文本，生成器的保真自检因此维持原强度。 */
+/* 工具条：搜索 + 神器跳转，整块由 assets/app.js 按 DOM 构建。
+   不在 HTML 里重复任何源文本，否则生成器的保真自检会报重复。 */
 .toolbar:empty { display: none; }
 
 .toolbar {
@@ -250,8 +245,7 @@ main { flex: 1 0 auto; }
 
 .chip[hidden] { display: none; }
 
-/* ── 通用小构件 ── */
-/* 区段标签：一条发丝线 + 一个短标签，替代原先的整块渐变横幅 */
+/* 区段标签：一个短标签 + 一条发丝线 */
 .sect-label {
   display: flex;
   align-items: center;
@@ -288,9 +282,8 @@ main { flex: 1 0 auto; }
 
 .rhombi i.on { background: currentcolor; }
 
-/* ── 配色工具类：着色文字全部经由这些 class，不再有内联 color ──
-   统一 600 字重、无阴影。原先 23 个 class 一律 800 + text-shadow，
-   1176 处着色同等响度，语义色因此不传达优先级。 */
+/* 配色工具类：着色文字全部经由这些 class，不写内联 color。
+   统一 600 字重、无阴影——全页着色处逾千，字重与阴影一齐上阵会让语义色失去分级。 */
 .el-arc, .deb-arc, .el-stasis, .deb-stasis, .enemy, .el-void, .ammo-heavy,
 .el-strand, .deb-strand, .el-solar, .deb-solar, .el-kinetic, .el-prismatic,
 .deb-void, .pickup, .joke, .orb, .stack, .armor-charge, .health {

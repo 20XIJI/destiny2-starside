@@ -37,7 +37,7 @@ pyright tools/convert-artifact-mods.py
 - 分节内的外壳文字（如档位标签）用 CSS `content` 生成，不进 HTML 文本。
 - 改了徽章数、图标数一类的结构，同步改 `check()` 里的常量，不要放宽比对。
 - 源导出与产出都含 42 个 `⯁`，`check()` 先断言计数再从两侧移除。新增类似的"两侧恰好抵消"的字符时照此显式处理。
-- 有两处源文本按设计不显示，`check()` 从源侧显式扣除，扣多了会出现负计数并当场报错：源 `<h1>`（写的是已弃用的说法，页首改用源副标题）。站点补充的 `EXTRA_TAGS` 则是从产出侧按 `data-source="site"` 整块剥离。**不要**为了让比对通过而放宽这两处，扣除量必须来自 `parse()` 实际读到的字符串。
+- 页首取源表格的副标题作 h1，源 `<h1>` 不显示，`check()` 从源侧按解析结果扣除，扣多了出现负计数即报错。站点补充的 `EXTRA_TAGS` 反向处理：从产出侧按 `data-source="site"` 整块剥离并核对块数。**不要**为了让比对通过而放宽这两处，扣除量必须来自 `parse()` 实际读到的字符串。
 
 改动后必须重跑脚本并确认退出码 0，且 `git status --porcelain artifact-mods/icons/` 为空。
 
@@ -93,7 +93,7 @@ pyright tools/convert-artifact-mods.py
    模组页有 163 张图，必须后台起进程再轮询产物，前台调用会超时。用 `sips -c H W --cropOffset Y X` 裁剪长图看局部。
 3. **JS 行为断言** — 在 scratchpad 写断言页（复制生成物 + 追加 `<script>`，结果写进 `<pre>`），用 `--dump-dom` 取回。断言页留在 scratchpad，不进仓库。
 
-headless Chrome 无法滚动视口，`--dump-dom` 与 `--screenshot` 都不行。滚动类行为改为断言其配置：`position`、`top` 解析值、底色不透明、祖先链无 overflow 容器、`scroll-margin-top`。
+headless Chrome 无法滚动视口，`--dump-dom` 与 `--screenshot` 都不行。滚动类行为靠断言其配置来验证：`position`、`top` 解析值、底色不透明、祖先链无 overflow 容器、`scroll-margin-top`。
 
 ## 工作流
 

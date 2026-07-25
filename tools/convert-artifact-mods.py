@@ -9,9 +9,7 @@
     python3 tools/convert-artifact-mods.py /tmp/sheet-export.html artifact-mods/
 
 产出 <输出目录>/index.html 与 <输出目录>/icons/*.png。
-每赛季重新导出后原地重跑即可；样式不在产物里，改样式改 CSS 文件。
-
-任何解析不上的结构、映射表外的颜色、对不上的自检都直接抛错中止，不出半成品。
+解析不上的结构、映射表外的颜色、对不上的自检一律抛错中止，不出半成品。
 """
 
 import base64
@@ -24,9 +22,8 @@ import sys
 from collections import Counter
 from typing import NoReturn
 
-# ── 配色：原表格 50 个色值 → 22 个语义 token ──────────────────────────────
-# 基准色取每族出现次数最多的那个；同族浅深变体并入基准色。
-# 详见 plans 里的映射表；改这里等于改站点色板，CSS 侧的 class 名要同步。
+# 配色：源表格的色值 → 语义 token。基准色取每族出现最多的那个，浅深变体并入基准色。
+# 改这里等于改站点色板，assets/site.css 的 :root 要同步。
 COLOR_MAP = {
     # 元素主色
     '#89cdd1': 'el-arc',        # 74 电弧/增幅/电弧武器
@@ -88,9 +85,8 @@ COLOR_MAP = {
 
 PAGE_TITLE = '神器模组 · Starside'
 
-# 顶部 sticky 单元：导航行 + 空工具条槽位。
-# 工具条内容由 assets/app.js 从 DOM 构建，此处不写任何源文本，
-# 否则页面里会出现源表格文本的第二份副本、保真自检立即报重复。
+# 顶部 sticky 单元：导航行 + 空工具条槽位（内容由 assets/app.js 从 DOM 构建）。
+# 此处不写任何源文本，否则页面出现源表格文本的第二份副本，保真自检报重复。
 NAV = ('<div class="site-head">'
        '<nav class="site-nav">'
        '<span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>'
@@ -102,14 +98,9 @@ NAV = ('<div class="site-head">'
        '</div>')
 
 
-# ── 站点补充：源表格缺失、由本站补上的分节标签 ──────────────────────────
-# 键是分节序号（1-based，对应 id="art-N"），值是 .art-tags 的内容。
-# 写法照源表格的约定：第一行元素、各自套语义 class，第二行武器类型不着色，
-# 分隔符是 " | "，两行之间一个 <br>；「动能」在源表格里也不着色，保持一致。
-#
-# 这些文本不在源导出里。产出侧带 data-source="site" 标记，check() 在字符比对前
-# 按标记整块剥离并核对块数——保真自检的强度不因此下降，只是明确了作用域。
-# 若某赛季的源表格补上了同一分节的标签，render() 会当场报错，要求删掉这里的条目。
+# 站点补充的分节标签：键是分节序号（对应 id="art-N"），值是 .art-tags 的内容。
+# 写法照源表格：第一行元素套语义 class，第二行武器类型不着色，分隔符 " | "。
+# 不在源导出里，故产出侧带 data-source="site"，由 check() 按标记整块剥离并核对块数。
 EXTRA_TAGS = {
     1: ('动能 | <span class="el-void">虚空</span> | <span class="el-arc">电弧</span>'
         '<br>刀剑 | 狙击步枪 | 机枪'),
@@ -162,7 +153,7 @@ def canon_color(raw):
 
 
 # ── 内联着色 → 语义 class ───────────────────────────────────────────────
-# 着色以外可安全丢弃的内联声明：本站由 site.css 统一控制，源表格的写法不再生效
+# 着色以外可丢弃的内联声明：字重与阴影由 site.css 的语义 class 统一控制
 DROP_DECLS = {'font-weight', 'text-shadow'}
 
 
@@ -187,9 +178,7 @@ def colorize(frag, stats):
         if key not in COLOR_MAP:
             die('颜色 %s（原写法 %s）不在 COLOR_MAP 里，先决定它的语义 token' % (key, raw))
         stats[key] += 1
-        # 除颜色外余下的声明是 Google Sheets 的渲染残留：字重与文字阴影。
-        # 本站由 assets/site.css 的语义 class 统一定字重、正文一律不加阴影，故丢弃。
-        # 出现 DROP_DECLS 以外的声明即中止——不静默丢掉可能承载语义的样式。
+        # DROP_DECLS 以外的声明即中止，不静默丢掉可能承载语义的样式
         for d in decls:
             name = d.split(':', 1)[0].replace('!important', '').strip().lower()
             if name not in DROP_DECLS:
@@ -385,13 +374,11 @@ def render(page, prefix):
          '<link rel="stylesheet" href="%sstyle.css">' % prefix,
          '<script src="../assets/app.js" defer></script>',
          '</head>', '<body>', NAV,
-         # 页首大标题取源表格的副标题——它用的就是全站统一的说法「神器模组」。
-         # 源 <h1>（「赛季神器 · …」）用的是已弃用的说法，不再显示；
-         # check() 从源侧比对文本里按实际读到的字符串显式扣除。
+         # 页首大标题取源表格的副标题；源 <h1> 不显示，由 check() 从源侧扣除
          '<header class="page-head">',
          '<h1>%s</h1>' % page['sub'],
          '</header>', '<main>', '<section class="intro">']
-    units = []   # 逐块文本，与导出文件的单元格文本对账；h1/副标题不在表格里，只走字符级比对
+    units = []   # 逐块文本，与导出的单元格文本对账；标题不在表格里，只走字符级比对
 
     o.append('<h2 class="sect-label">%s</h2>' % page['lede'][0])
     units.append(text_of(page['lede'][0]))
@@ -407,8 +394,8 @@ def render(page, prefix):
     units += [n['title'], n['body']]
 
     for i, s in enumerate(page['sections'], 1):
-        # 神器名与档位轨合为一个 sticky 单元（.art-bar）。
-        # 徽章只输出一枚：源表格左右两侧是同一张图，对称是表格的排版手段而非内容。
+        # 神器名与档位轨合为一个 sticky 单元。徽章只输出一枚——源表格左右两侧
+        # 是同一张图，对称属于表格的排版手段而非内容。
         o += ['<section class="artifact" id="art-%d">' % i,
               '<div class="art-bar">',
               '<header class="art-head">', s['emblems'][0],
@@ -426,9 +413,8 @@ def render(page, prefix):
             # 站点补充：不进 units，字符比对时按 data-source 标记整块剥离
             o.append('<p class="art-tags" data-source="site">%s</p>' % extra)
         o.append('</header>')
-        # 档位轨：三枚 CSS 绘制的菱形，点亮枚数 = 档位。
-        # 档位文字由 CSS content 生成，不进 HTML，因此既不进 units 也不进字符比对。
-        # 原先用 ⯁（U+2BC1）表示档位，该字形在中文字体栈下无字形、整条表头渲染为空带。
+        # 档位轨：三枚 CSS 绘制的菱形，点亮枚数 = 档位。档位文字由 CSS content
+        # 生成，不进 HTML，因此既不进 units 也不进字符比对。
         o.append('<div class="tier-rail">')
         for tier in (1, 2, 3):
             pips = ''.join('<i class="on"></i>' if t <= tier else '<i></i>'
@@ -436,7 +422,7 @@ def render(page, prefix):
             o.append('<div class="tier-head" data-tier="%d">'
                      '<span class="rhombi" aria-hidden="true">%s</span></div>' % (tier, pips))
         o += ['</div>', '</div>', '<div class="tiers">']
-        # 行是结构：按行包裹后，搜索隐藏任一模组都不会让其后模组的列位偏移
+        # 行是结构：搜索隐藏任一模组时，其后模组的列位不受影响
         for row in rows_of(s['mods']):
             o.append('<div class="mod-row">')
             for mod in row:
@@ -498,24 +484,21 @@ def check(src, out, page, units, icons):
     old_body = src[src.find('<body'):]
     # 扩展注入的死 CSS 与 shadowroot 模板不是页面内容，比对前剥掉
     old_body = re.sub(r'<(style|template|script)[^>]*>.*?</\1>', '', old_body, flags=re.S)
-    # 比对窗口 = 页首 + 正文。导航条与页脚是站点外壳、不含源文本，落在窗口外。
+    # 比对窗口 = 页首 + 正文；导航条与页脚是站点外壳，落在窗口外
     new_body = out[out.find('<header'):out.rindex('</main>')]
-    # 站点补充的分节标签不在源导出里，比对前按标记整块剥离。
-    # 剥掉的块数必须与 EXTRA_TAGS 相等——多剥少剥都说明标记或渲染出了问题。
+    # 站点补充的分节标签不在源导出里，比对前按标记整块剥离并核对块数
     new_body, stripped = re.subn(r'<p class="art-tags" data-source="site">.*?</p>', '',
                                  new_body, flags=re.S)
     eq('剥离的站点补充标签块数', stripped, len(EXTRA_TAGS))
     a = Counter(text_of(old_body).replace(' ', ''))
     b = Counter(text_of(new_body).replace(' ', ''))
-    # 档位表头属于外壳而非内容：源导出用 ⯁ 表示档位，产出改为 CSS 绘制的菱形 +
-    # CSS content 生成的档位文字。两侧都不参与字符比对——先断言各自计数再移除，
-    # 不放宽比对强度（原先两侧各 42 个恰好相互抵消，掩盖了这一点）。
+    # 档位表头属于外壳：源导出用 ⯁ 表示，产出用 CSS 绘制。两侧都不参与字符比对,
+    # 先断言各自计数再移除，不靠「恰好相互抵消」蒙混。
     eq('源导出档位表头 ⯁ 数', a.get('⯁', 0), 42)
     eq('产出残留 ⯁ 数', b.get('⯁', 0), 0)
     del a['⯁']
-    # 页首大标题改用源副标题，源 <h1> 不再显示（见 render()）。
-    # 按 parse() 实际读到的那一串扣除，不是按写死的字面量——源表格改了标题也跟着走。
-    # 扣多了会出现负计数，当场报错，不让它悄悄抵消掉别处真实的丢字。
+    # 源 <h1> 不显示（见 render()）。扣除量取自 parse() 实际读到的那一串而非
+    # 写死的字面量；扣多了出现负计数即报错，不让它抵消掉别处真实的丢字。
     a.subtract(Counter(page['h1'].replace(' ', '')))
     over = {c: n for c, n in a.items() if n < 0}
     if over:
