@@ -86,7 +86,7 @@ COLOR_MAP = {
     '#d5e1e3': 'plain',         # 1  致盲
 }
 
-PAGE_TITLE = '赛季神器模组 · Starside'
+PAGE_TITLE = '神器模组 · Starside'
 
 # 顶部 sticky 单元：导航行 + 空工具条槽位。
 # 工具条内容由 assets/app.js 从 DOM 构建，此处不写任何源文本，
@@ -96,7 +96,7 @@ NAV = ('<div class="site-head">'
        '<span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>'
        '<a class="home" href="../index.html">Starside</a>'
        '<span class="sep">/</span>'
-       '<span aria-current="page">赛季神器模组</span>'
+       '<span aria-current="page">神器模组</span>'
        '</nav>'
        '<div class="toolbar"></div>'
        '</div>')
@@ -385,11 +385,11 @@ def render(page, prefix):
          '<link rel="stylesheet" href="%sstyle.css">' % prefix,
          '<script src="../assets/app.js" defer></script>',
          '</head>', '<body>', NAV,
-         # 源表格的三串标题各担一个角色：副标题降为 eyebrow，主标题作 h1，
-         # 「神器模组」作正文区段标签。三串文本全部保留，不再叠三层同义标题。
+         # 页首大标题取源表格的副标题——它用的就是全站统一的说法「神器模组」。
+         # 源 <h1>（「赛季神器 · …」）用的是已弃用的说法，不再显示；
+         # check() 从源侧比对文本里按实际读到的字符串显式扣除。
          '<header class="page-head">',
-         '<p class="eyebrow">%s</p>' % page['sub'],
-         '<h1>%s</h1>' % page['h1'],
+         '<h1>%s</h1>' % page['sub'],
          '</header>', '<main>', '<section class="intro">']
     units = []   # 逐块文本，与导出文件的单元格文本对账；h1/副标题不在表格里，只走字符级比对
 
@@ -513,6 +513,14 @@ def check(src, out, page, units, icons):
     eq('源导出档位表头 ⯁ 数', a.get('⯁', 0), 42)
     eq('产出残留 ⯁ 数', b.get('⯁', 0), 0)
     del a['⯁']
+    # 页首大标题改用源副标题，源 <h1> 不再显示（见 render()）。
+    # 按 parse() 实际读到的那一串扣除，不是按写死的字面量——源表格改了标题也跟着走。
+    # 扣多了会出现负计数，当场报错，不让它悄悄抵消掉别处真实的丢字。
+    a.subtract(Counter(page['h1'].replace(' ', '')))
+    over = {c: n for c, n in a.items() if n < 0}
+    if over:
+        die('扣除源 <h1> 时多扣了字符（源表格里这些字只出现在 h1 之外）：%r' % over)
+    a = +a                                     # 去掉计数归零的键
     if a != b:
         print('  多出:', dict((b - a).most_common(12)), file=sys.stderr)
         print('  缺失:', dict((a - b).most_common(12)), file=sys.stderr)

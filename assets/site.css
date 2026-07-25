@@ -251,18 +251,6 @@ main { flex: 1 0 auto; }
 .chip[hidden] { display: none; }
 
 /* ── 通用小构件 ── */
-/* 字距 .2em：eyebrow 与区段标签两处都可能是纯中文（组件页的标题来自源表格），
-   中文本身是等宽方块，拉丁那档 .34em 的字距会把它拉散。 */
-.eyebrow {
-  margin: 0;
-  color: var(--bone-dim);
-  font-family: var(--font-disp);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: .2em;
-  text-transform: uppercase;
-}
-
 /* 区段标签：一条发丝线 + 一个短标签，替代原先的整块渐变横幅 */
 .sect-label {
   display: flex;
@@ -346,8 +334,6 @@ main { flex: 1 0 auto; }
   margin: 0 auto;
   padding: clamp(54px, 8vw, 108px) 22px clamp(38px, 5vw, 62px);
 }
-
-.hero .eyebrow { margin-bottom: 20px; }
 
 /* 字标：大写 + 宽字距，取游戏内 HUD 标题的排法；右侧配一行技术信息压住构图。 */
 .wordmark-row {

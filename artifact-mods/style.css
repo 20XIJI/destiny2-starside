@@ -1,4 +1,4 @@
-/* 赛季神器模组组件：介绍块、分节 sticky 单元、档位轨、模组行与模组卡片。
+/* 神器模组组件：介绍块、分节 sticky 单元、档位轨、模组行与模组卡片。
    通用主题、字体与 23 个配色 token 在 /assets/site.css。 */
 
 /* 三档并排的最小内容宽度 1020px + main 左右各 22px 内边距。
@@ -19,8 +19,6 @@ main {
   margin: 0 auto;
   padding: clamp(40px, 5.5vw, 76px) 22px clamp(30px, 3.6vw, 46px);
 }
-
-.page-head .eyebrow { margin-bottom: 18px; }
 
 .page-head h1 {
   margin: 0;

@@ -14,7 +14,7 @@ assets/
   fonts/chakra-petch-{600,700}.woff2   显示字体（Google Fonts latin 子集，各约 10 KB）
   fonts/OFL.txt                   Chakra Petch 许可（SIL OFL 1.1）
 artifact-mods/
-  index.html                      赛季神器模组组件（由转换脚本生成，勿手改）
+  index.html                      神器模组组件（由转换脚本生成，勿手改）
   style.css                       该组件专属样式
   icons/*.png                     133 个模组图标
 tools/convert-artifact-mods.py    Google Sheets 导出 → 组件页
@@ -42,21 +42,21 @@ npm start          # npx serve . -l 3000
 
 `--font-disp` 与 `--font-body` 都靠浏览器按字符逐族回退：拉丁与数字取前一族的字面，中文自动落到 PingFang，不需要拆标签。正文首选等宽字族即为此——模组数值（`405`、`7.15%`、`0.0265%`）取等宽字面，配合 `font-variant-numeric: tabular-nums` 纵向对齐。
 
-字距只施加于拉丁与数字。中文本身是等宽方块，`.eyebrow` 与 `.sect-label` 这类可能是纯中文的位置用 `.2em` 封顶。
+字距只施加于拉丁与数字。中文本身是等宽方块，`.sect-label` 这类可能是纯中文的位置用 `.2em` 封顶。
 
 ## 新增一个组件
 
 1. 建目录 `<组件名>/`，放 `index.html`，`<head>` 里先 `<link rel="stylesheet" href="/assets/site.css">`，再 link 组件自己的 CSS。
 2. 页面骨架照 `artifact-mods/index.html`：
    - `<div class="site-head">` 包住 `<nav class="site-nav">` 与 `<div class="toolbar"></div>`，整块 sticky。
-   - `<header class="page-head">` 放 eyebrow 与 h1，`<main>` 放正文，`<footer class="site-foot">` 收尾。
+   - `<header class="page-head">` 放 h1，`<main>` 放正文，`<footer class="site-foot">` 收尾。
    - 需要工具条就引 `<script src="/assets/app.js" defer></script>`。`app.js` 从 DOM 读取 `.artifact` 分节与其 `.art-head h2`，构建搜索框与跳转 chip，并把 `.site-head` 实测高度写回 `--stick`。工具条不在 HTML 里写任何源文本。
 3. 着色文字用 `site.css` 里的语义 class（`.el-arc` `.enemy` `.note` 等），不写内联 `style="color:…"`。
 4. 分节内需要 sticky 表头时，把表头包进 `position: sticky; top: var(--stick)` 的容器，底色取不透明的 `--ink-lift`，并给分节 `scroll-margin-top: var(--stick)`。
 5. 首页 `index.html` 的 `.entries` 里加一条 `<li><a class="entry">`。
 6. 不要在承载 sticky 表头的祖先上开 `overflow`。一旦祖先成为滚动容器，其内部的 `position: sticky` 不再相对视口生效。横向溢出交给页面本身，用 `body { min-width: … }` 表达最小内容宽度。
 
-## 更新赛季神器模组
+## 更新神器模组
 
 模组表的内容源是 Google 表格。表格改动后重新导出，再跑转换脚本覆盖生成：
 
@@ -83,6 +83,8 @@ python3 tools/convert-artifact-mods.py <导出的.html> artifact-mods/
 | 剥离的站点补充标签块数 | `len(EXTRA_TAGS)` | 见「站点补充内容」 |
 
 保真比对两道：导出文件每个非空单元格的文本都要在产出里对应到一个块；全文字符多重集比对，顺序无关，任何丢字都会暴露。比对窗口是「页首 + 正文」，导航条与页脚是站点外壳、不含源文本，落在窗口外。
+
+页首大标题取源表格的**副标题**（「✦ 神器模组 · 凯旋纪念碑 ✦」），它用的就是全站统一的说法。源 `<h1>` 用的是已弃用的说法，不再显示，`check()` 按 `parse()` 实际读到的那一串从源侧扣除——扣除量不写死字面量，源表格改了标题也跟着走；扣多了会出现负计数并当场报错，不会悄悄抵消掉别处真实的丢字。
 
 赛季更替后若计数变化，改 `check()` 里对应的期望值；若结构变化（例如某行不足三档），`rows_of()` 会当场报错，先决定新结构怎么表达再改。
 
