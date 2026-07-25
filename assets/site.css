@@ -35,21 +35,21 @@
     "Noto Sans SC", sans-serif;
   --font-cn: "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
 
-  /* 渲染色板：7 个元素色相 + 3 个机制色 + 1 个中性强调。元素色相是游戏的既有
+  /* 渲染色板：7 个元素色相 + 3 个机制色 + 1 个术语色。元素色相是游戏的既有
      编码，属于内容，只做亮度拉平，不改色相。 */
   --c-arc: #5fd8e0;
   --c-stasis: #7fb4ff;
   --c-void: #c08cff;
   --c-strand: #7fdc86;
   --c-solar: #ffb35c;
-  --c-kinetic: #c3cbd2;
+  --c-kinetic: #eef3f9;            /* 动能在游戏内即是白，取冷白 */
   --c-prism: #f58fc8;
   --c-orb: #f2ce5b;
   --c-health: #ff8e86;
   --c-aside: #a2848c;              /* 批注与待测值：读作限定语，不是警报 */
-  /* 不属于任何元素的游戏术语。给它色相就要从元素那里借一个，借来的色相会让
-     「颜色即元素编码」失效——这一类只提亮度与字重，不占色相。 */
-  --c-term: var(--bone-hi);
+  /* 不属于任何元素的游戏术语。低饱和暖沙，与七个元素色相最小 ΔE 20，不借用其中
+     任何一个；与正文骨白 ΔE 20（此前跟随 --bone-hi 时只有 5.5，等于没分开）。 */
+  --c-term: #d6c39a;
 
   /* 语义 token → 渲染色。想让某一类单独出色，只改这一行的右值。
      左侧 23 个 token 由 tools/convert-artifact-mods.py 的 COLOR_MAP 产出，两边要对齐。 */

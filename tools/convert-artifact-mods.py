@@ -92,6 +92,9 @@ PAGE_DESC = '7 件神器、147 个模组的效果与数值，一级／二级／�
 FOOT = ('<footer class="site-foot">'
         '<p><a href="../index.html">← Starside</a> · '
         '数值以游戏内实测为准，标注 <span class="unsure">[?]</span> 的条目尚待核实。</p>'
+        '<p>数据源：<a href="https://docs.google.com/spreadsheets/u/0/d/'
+        '1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4" target="_blank" rel="noopener">'
+        '社区共享表格</a>。本页在其基础上统一了术语、标点与排版，数值未作改动。</p>'
         '<p>© 2026 Eliver · '
         '<a href="https://space.bilibili.com/26117485" target="_blank" rel="noopener">'
         '哔哩哔哩</a></p>'
@@ -561,8 +564,8 @@ def check(src, out, page, units, icons):
     # 源表格有 32 个只包着空白或换行的着色壳，tidy() 剥掉后不进产出。
     # 全文计数：正文 1144 + EXTRA_TAGS 2 + 页脚 1。
     eq('产出着色 span 数', out.count('<span class='), 1147)
-    # 描述按双 <br> 分段（paras()）。全文计数：正文 364 + 页脚 2。
-    eq('描述段落数', out.count('<p>'), 366)
+    # 描述按双 <br> 分段（paras()）。全文计数：正文 364 + 页脚 3。
+    eq('描述段落数', out.count('<p>'), 367)
 
     # 保真一：导出文件每个非空单元格的文本，都要在产出里对应到一个块。
     # 口径与保真二一致：空格不算内容——中文里的空格是表格导出的产物，由 tidy() 清掉。
