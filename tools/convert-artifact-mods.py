@@ -84,6 +84,18 @@ COLOR_MAP = {
 }
 
 PAGE_TITLE = '神器模组 · Starside'
+PAGE_DESC = '7 件神器、147 个模组的效果与数值，一级／二级／三级并排对照。'
+
+# 站点页脚。落在保真比对窗口（页首…</main>）之外，可自由编辑。
+FOOT = ('<footer class="site-foot">'
+        '<p><a href="../index.html">← Starside</a> · '
+        '数值以游戏内实测为准，标注 <span class="unsure">[?]</span> 的条目尚待核实。</p>'
+        '<p>© 2026 Eliver · '
+        '<a href="https://space.bilibili.com/26117485" target="_blank" rel="noopener">'
+        '哔哩哔哩</a></p>'
+        '<p class="legal">Starside 为非官方资料站，与 Bungie, Inc. 无从属关系。'
+        'Destiny 2 及相关名称、标识为 Bungie, Inc. 的商标。</p>'
+        '</footer>')
 
 # 顶部 sticky 单元：导航行 + 空工具条槽位（内容由 assets/app.js 从 DOM 构建）。
 # 此处不写任何源文本，否则页面出现源表格文本的第二份副本，保真自检报重复。
@@ -368,7 +380,13 @@ def render(page, prefix):
          '<meta charset="utf-8">',
          '<meta name="viewport" content="width=device-width, initial-scale=1">',
          '<title>%s</title>' % PAGE_TITLE,
+         '<meta name="description" content="%s">' % PAGE_DESC,
          '<meta name="theme-color" content="#0b0d14">',
+         '<meta property="og:type" content="article">',
+         '<meta property="og:site_name" content="Starside">',
+         '<meta property="og:locale" content="zh_CN">',
+         '<meta property="og:title" content="%s">' % PAGE_TITLE,
+         '<meta property="og:description" content="%s">' % PAGE_DESC,
          '<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">',
          '<link rel="stylesheet" href="../assets/site.css">',
          '<link rel="stylesheet" href="%sstyle.css">' % prefix,
@@ -433,12 +451,7 @@ def render(page, prefix):
             o.append('</div>')
         o += ['</div>', '</section>']
 
-    o += ['</main>',
-          '<footer class="site-foot">',
-          '<a href="../index.html">← Starside</a> · '
-          '数值以游戏内实测为准，标注 <span class="unsure">[?]</span> 的条目尚待核实。',
-          '</footer>',
-          '</body>', '</html>', '']
+    o += ['</main>', FOOT, '</body>', '</html>', '']
     return '\n'.join(o), units
 
 
