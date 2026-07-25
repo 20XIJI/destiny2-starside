@@ -244,15 +244,20 @@ main {
   overflow-wrap: anywhere;
 }
 
-.mod p {
+/* 描述分段：源表格用连续换行撑段距，生成器把它还原成真正的段落，
+   段距交给 margin，行距才不必替空行背书。 */
+.mod-desc {
   grid-area: desc;
   align-self: start;
-  margin: 0;
   padding: 15px 20px 20px;
   font-size: 14px;
-  line-height: 1.92;
+  line-height: 1.85;
   overflow-wrap: anywhere;
 }
+
+.mod-desc p { margin: 0; }
+
+.mod-desc p + p { margin-top: .95em; }
 
 .mod:hover::after { background: #ffffff0d; }
 

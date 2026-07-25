@@ -202,11 +202,54 @@ def colorize(frag, stats):
     return frag.replace('</font>', '</span>')
 
 
+# ── 排版规整 ────────────────────────────────────────────────────────────
+# 源表格把空格塞进着色 span、也塞在中文标点两侧，导出后原样渲染成字间空洞。
+# 这一层只搬空白与标签边界，chars_of() 前后逐字相等，两道保真比对都看不见它。
+CJK = '㐀-鿿'                  # 汉字本身；中文标点在此范围之外
+TAGS = r'(?:<[^>]*>)*'         # 标签不算字间隔，否则空格躲在 </span> 后面就删不掉
+CLOSE = '：，。、；！？）」』'    # 前面不留空格、后面也不留
+OPEN = '（「『'                 # 后面不留空格、前面也不留
+
+
+def chars_of(frag):
+    """去空格的文本视图。tidy() 的不变量，也是保真比对的口径。"""
+    return text_of(frag).replace(' ', '')
+
+
+def tidy(frag):
+    before = chars_of(frag)
+    frag = frag.replace('&nbsp;', ' ')
+    # 着色只覆盖词本身：空白、句读、换行一律移出 span，剥空剩下的壳。这些规则互相
+    # 制造新的可匹配位置（移出句号会重新露出尾随空格），所以跑到不动点为止。
+    while True:
+        prev = frag
+        frag = re.sub(r'\s*(<br>)\s*', r'\1', frag)   # 换行两侧的空白不成其为间隔
+        frag = re.sub(r'(<span class="[a-z-]+">)((?:\s|<br>)+)', r'\2\1', frag)
+        frag = re.sub(r'((?:\s|<br>)+)(</span>)', r'\2\1', frag)
+        frag = re.sub(r'([%s])(</span>)' % CLOSE, r'\2\1', frag)
+        frag = re.sub(r'<span class="[a-z-]+">(?:\s|<br>)*</span>', '', frag)
+        if frag == prev:
+            break
+    # 中文标点自带边距，两侧不再留空格
+    frag = re.sub(r'\s+(%s)(?=[%s])' % (TAGS, CLOSE), r'\1', frag)
+    frag = re.sub(r'(?<=[%s])(%s)\s+' % (CLOSE, TAGS), r'\1', frag)
+    frag = re.sub(r'\s+(%s)(?=[%s])' % (TAGS, OPEN), r'\1', frag)
+    frag = re.sub(r'(?<=[%s])(%s)\s+' % (OPEN, TAGS), r'\1', frag)
+    # 中文之间不分词
+    frag = re.sub(r'(?<=[%s])(%s)\s+(%s)(?=[%s])' % (CJK, TAGS, TAGS, CJK), r'\1\2', frag)
+    # 半角括号内侧紧贴内容（半角/全角混用是字面问题，留给修订层）
+    frag = re.sub(r'(?<=\()\s+', '', frag)
+    frag = re.sub(r'\s+(?=\))', '', frag)
+    if chars_of(frag) != before:
+        die('tidy() 改动了文本字符，这一层只许搬空白与标签：%r' % frag[:160])
+    return frag
+
+
 def clean_frag(frag):
     """描述/标签单元格：转着色，删 Sheets 残留属性，压掉多余空白。"""
     frag = re.sub(r'\s*title=Image\b', '', frag)
     frag = re.sub(r'\s+', ' ', frag).strip()
-    return frag
+    return tidy(frag)
 
 
 # ── 图标 ────────────────────────────────────────────────────────────────
@@ -280,13 +323,13 @@ def parse(src, icons):
 
         # 页首介绍块
         if any('intro-title' in a for a, _ in cs):
-            page['notice']['title'] = next(text_of(c) for a, c in cs if 'intro-title' in a)
+            page['notice']['title'] = tidy(next(text_of(c) for a, c in cs if 'intro-title' in a))
             page['notice']['emblems'] = [icons.img(c, 'emblem')
                                          for _, c in cs if '<img' in c]
             last_was_section = False
             continue
         if any('intro-message' in a for a, _ in cs):
-            page['notice']['body'] = next(text_of(c) for a, c in cs if 'intro-message' in a)
+            page['notice']['body'] = tidy(next(text_of(c) for a, c in cs if 'intro-message' in a))
             last_was_section = False
             continue
 
@@ -303,8 +346,8 @@ def parse(src, icons):
             name = next(t for t, i in zip(texts, has_img) if not i and t)
             m = re.match(r'^(.*?)\s*(\(.*\)|（.*）)$', name)
             page['sections'].append({
-                'name': m.group(1) if m else name,
-                'paren': m.group(2) if m else '',
+                'name': tidy(m.group(1) if m else name),
+                'paren': tidy(m.group(2)) if m else '',
                 'emblems': [icons.img(c, 'art-emblem') for _, c in cs if '<img' in c],
                 'tags': '',
                 'mods': [],
@@ -373,6 +416,28 @@ def rows_of(mods):
         if tiers != [1, 2, 3]:
             die('第 %d 行不是完整的一/二/三级三档：%s' % (i // 3 + 1, tiers))
         yield row
+
+
+def paras(desc):
+    """描述按双 <br> 分段，段距交给 CSS，不靠连续换行撑开。
+
+    只在着色 span 之外断开——span 内部也有双换行，从那里切会切出未闭合标签。
+    """
+    parts, depth, last = [], 0, 0
+    for m in re.finditer(r'<span\b[^>]*>|</span>|(?:<br>\s*){2,}', desc):
+        if m.group(0).startswith('<span'):
+            depth += 1
+        elif m.group(0).startswith('</span'):
+            depth -= 1
+        elif depth == 0:
+            parts.append(desc[last:m.start()])
+            last = m.end()
+    parts.append(desc[last:])
+    parts = [re.sub(r'^(?:<br>\s*)+|(?:<br>\s*)+$', '', p.strip()) for p in parts]
+    parts = [p for p in parts if p]
+    if chars_of(''.join(parts)) != chars_of(desc):
+        die('分段丢了字符：%r' % desc[:160])
+    return parts
 
 
 def render(page, prefix):
@@ -445,8 +510,9 @@ def render(page, prefix):
             o.append('<div class="mod-row">')
             for mod in row:
                 o += ['<article class="mod" data-tier="%d">' % mod['tier'], mod['icon'],
-                      '<h4>%s</h4>' % mod['name'],
-                      '<p>%s</p>' % mod['desc'], '</article>']
+                      '<h4>%s</h4>' % mod['name'], '<div class="mod-desc">']
+                o += ['<p>%s</p>' % p for p in paras(mod['desc'])]
+                o += ['</div>', '</article>']
                 units += [text_of(mod['name']), text_of(mod['desc'])]
             o.append('</div>')
         o += ['</div>', '</section>']
@@ -477,14 +543,21 @@ def check(src, out, page, units, icons):
         eq('残留 %s' % junk, out.count(junk), 0)
     eq('着色 span 总数', sum(STATS.values()), 1176)
     eq('用到的色值数', len(STATS), 51)
+    # 源表格有 32 个只包着空白或换行的着色壳，tidy() 剥掉后不进产出。
+    # 全文计数：正文 1144 + EXTRA_TAGS 2 + 页脚 1。
+    eq('产出着色 span 数', out.count('<span class='), 1147)
+    # 描述按双 <br> 分段（paras()）。全文计数：正文 364 + 页脚 2。
+    eq('描述段落数', out.count('<p>'), 366)
 
-    # 保真一：导出文件每个非空单元格的文本，都要在产出里对应到一个块
-    old_units = Counter(t for t in (text_of(c) for _, c in
-                                    re.findall(r'<td([^>]*)>(.*?)</td>',
-                                               src[src.find('<tbody>'):src.find('</table>')],
-                                               re.S))
+    # 保真一：导出文件每个非空单元格的文本，都要在产出里对应到一个块。
+    # 口径与保真二一致：空格不算内容——中文里的空格是表格导出的产物，由 tidy() 清掉。
+    old_units = Counter(t.replace(' ', '')
+                        for t in (text_of(c) for _, c in
+                                  re.findall(r'<td([^>]*)>(.*?)</td>',
+                                             src[src.find('<tbody>'):src.find('</table>')],
+                                             re.S))
                         if t and '⯁' not in t)
-    new_units = Counter(t for t in units if t and '⯁' not in t)
+    new_units = Counter(t.replace(' ', '') for t in units if t and '⯁' not in t)
     # 分节标题在导出里是「名称 ( 副本 )」一格，产出里是 h2 + small，文本一致
     if old_units != new_units:
         for t, n in (old_units - new_units).items():
