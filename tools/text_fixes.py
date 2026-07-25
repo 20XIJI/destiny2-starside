@@ -1016,15 +1016,334 @@ DESCS = {
         '<span class="unsure">[?]</span> 点<span class="el-arc">电弧伤害</span>，'
         '并施加<span class="deb-arc">震颤</span>。</p>\n'
         '<p><span class="note">两次触发之间有 5 秒冷却时间</span>。</p>',
+
+    # ── art-6 女王兰香炉（终愿）──────────────────────────────────────
+    ('art-6', '发热寒颤'):
+        '<p>在 3 秒内对同一目标造成<span class="stack">多次精准命中</span>时：<br>'
+        '<span class="el-solar">烈日武器</span>：获得<span class="orb">焕光</span>，'
+        '持续 10 <span class="el-solar">+5</span> 秒。<br>'
+        '<span class="el-stasis">冰影武器</span>：获得一层'
+        '<span class="el-stasis">冰霜护甲</span>。</p>\n'
+        '<p><span class="note">触发后有 1.5 秒冷却，冷却期间的额外命中不计</span>。</p>\n'
+        '<p><span class="stack">多次精准命中</span>的次数要求：<br>'
+        '（弹匣容量的 25%）+ 1，向下取整；弓为 3 次。</p>',
+
+    ('art-6', '瓦解能量球'):
+        '<p>拾取<span class="orb">能量球</span>或投掷<span class="el-strand">缠结</span>时：</p>\n'
+        '<p>获得<span class="deb-strand">瓦解弹药</span>，'
+        '持续 14 <span class="unsure">[?]</span> 秒。</p>',
+
+    ('art-6', '群敌飞梭'):
+        '<p>对<span class="deb-strand">被瓦解的敌人</span>造成相当于其'
+        '<span class="health">生命值</span>与<span class="el-stasis">护盾</span>之和 10% '
+        '<span class="unsure">[100? 生命值]</span> 的武器伤害时：</p>\n'
+        '<p>生成一个<span class="el-strand">线虫</span>。<br>'
+        '<span class="note">生成线虫有 0.5 秒冷却时间</span>。</p>\n'
+        '<p><span class="el-strand">线虫</span>造成伤害时施加'
+        '<span class="deb-strand">割裂</span>。</p>',
+
+    ('art-6', '火炬'):
+        '<p>处于<span class="orb">焕光</span>状态时：</p>\n'
+        '<p>对受<span class="el-strand">缚丝</span>或<span class="el-stasis">冰影</span>'
+        '减益影响的<span class="enemy">非头目战斗人员</span>，武器伤害提高 5%。</p>\n'
+        '<p><span class="el-strand">缚丝减益</span>：'
+        '<span class="deb-strand">瓦解、割裂、悬停</span><br>'
+        '<span class="el-stasis">冰影减益</span>：'
+        '<span class="deb-stasis">减速或冻结</span>。</p>',
+
+    ('art-6', '冰柱'):
+        '<p>击杀一个<span class="deb-stasis">被冻结的敌人</span>时：</p>\n'
+        '<p>生成 <span class="el-stasis">1 个冰影水晶</span>，'
+        '<span class="enemy">头目</span>则生成 <span class="el-stasis">2 个</span>。<br>'
+        '<span class="note">水晶生成在敌人死亡位置附近</span>。</p>',
+
+    ('art-6', '迎接风暴'):
+        '<p>击碎<span class="el-stasis">冰影水晶</span>时：</p>\n'
+        '<p>呈 * 形释放 <span class="el-stasis">5 枚追踪冰刺</span>，每枚造成 46 点伤害，'
+        '并施加 <span class="el-stasis">x? <span class="unsure">[x10]</span> 减速</span>，'
+        '持续 ? 秒。<br>'
+        '<span class="note">冰刺均匀散开，其中一枚会飞向最近的敌人</span>。</p>\n'
+        '<p>在<span class="deb-stasis">敌人身上击碎</span>额外造成 12.5% '
+        '<span class="unsure">[?%]</span> 伤害；'
+        '<span class="el-stasis">击碎水晶</span>额外造成 25% '
+        '<span class="unsure">[?%]</span> 伤害。</p>',
+
+    # 「超能伤害提高」的六档数值原本吊在标签之后，标签提到行首
+    ('art-6', '烈焰之心'):
+        '<p>释放<span class="el-solar">烈日超能</span>时：<br>'
+        '<span class="orb">施法者</span>与 15 米内的<span class="enemy">盟友</span>获得'
+        '<span class="orb">焕光</span>。</p>\n'
+        '<p>按<span class="enemy">盟友数量</span>提供<span class="orb">超能伤害加成</span>，'
+        '<span class="note">施法者本人也算一名盟友</span>：<br>'
+        '<span class="enemy">6% | ?% | ?% | ?% | ?% | 15?%</span></p>\n'
+        '<p><span class="note">光焰之井的施法者只受益 5 秒</span>。</p>',
+
+    ('art-6', '复苏爆破'):
+        '<p><span class="enemy">眩晕</span>一名<span class="enemy">勇士</span>时：<br>'
+        '该<span class="enemy">勇士</span>被<span class="deb-solar">点燃</span>。</p>',
+
+    ('art-6', '精密射线'):
+        '<p>处于<span class="orb">焕光</span>状态时：</p>\n'
+        '<p><span class="el-solar">烈日精准击杀</span><span class="enemy">战斗人员</span>'
+        '会触发<span class="deb-solar">点燃</span>。</p>',
+
+    ('art-6', '护甲匠'):
+        '<p>击破一个<span class="enemy">战斗人员护盾</span>时：</p>\n'
+        '<p><span class="enemy">10%</span> <span class="unsure">[2.5%]</span> '
+        '伤害抗性（抗性 x1），持续 6 秒。<br>'
+        '<span class="el-arc">近战伤害提高 100%</span>，持续 6 秒。<br>'
+        '<span class="note">超能近战伤害同样提高</span>。</p>',
+
+    ('art-6', '反勇士弹头'):
+        '<p><span class="ammo-heavy">火箭发射器</span>对<span class="enemy">勇士</span>的'
+        '<span class="enemy">伤害提高 33%</span>。</p>',
+
+    ('art-6', '单人特工'):
+        '<p>单人游玩时：</p>\n'
+        '<p><span class="stack">精准击杀</span>叠加一层<span class="stack">伤害增益</span>，'
+        '层数无上限（<span class="stack">∞</span>），'
+        '<span class="note">死亡时全部失去</span>。</p>\n'
+        '<p>每层提供 1.2% 对<span class="enemy">战斗人员</span>的武器伤害加成，'
+        '<span class="stack">x25 层</span>时即 '
+        '<span class="enemy">30% 武器伤害加成</span>。<br>'
+        '<span class="note">该加成与所有效果叠加</span>。</p>',
+
+    ('art-6', '愿望成真'):
+        '<p><span class="orb">超能能量</span>高于 60% 但'
+        '<span class="note">尚未充满</span>时：</p>\n'
+        '<p><span class="pickup">技能击杀</span>会生成 '
+        '<span class="orb">3 个能量球</span>，每个提供 '
+        '<span class="orb">7.15% 超能能量</span>。<br>'
+        '<span class="note">生成能量球有 30 秒冷却时间</span>。</p>\n'
+        '<p><span class="note">只要<span class="orb">超能能量</span>高于 60%，'
+        '就能与<span class="orb">漫游超能</span>配合使用</span>。</p>',
+
+    ('art-6', '龙之啮'):
+        '<p>每用<span class="el-strand">缚丝</span>或<span class="el-stasis">冰影</span>'
+        '武器击破第 3 个<span class="enemy">战斗人员护盾</span>时：</p>\n'
+        '<p><span class="el-strand">缚丝</span>施加'
+        '<span class="deb-strand">悬停</span>，'
+        '<span class="el-stasis">冰影</span>施加'
+        '<span class="deb-stasis">冻结</span>。</p>',
+
+    ('art-6', '银白重炮'):
+        '<p>发射火箭发射器时：<br>'
+        '<span class="armor-charge">消耗 x1 护甲充能</span>，获得'
+        '<span class="stack">弑神弹头</span>，持续 4.5 秒。</p>\n'
+        '<p><span class="stack">弑神弹头</span>：<br>'
+        '伤害提高 15%，可叠加；<br>+? 装填速度，0.?x 装填持续时间倍率。</p>\n'
+        '<p><span class="note">持续期间不会再<span class="armor-charge">消耗</span>额外的'
+        '<span class="armor-charge">护甲充能</span></span>。</p>',
+
+    ('art-6', '火种扳机'):
+        '<p>处于<span class="orb">焕光</span>状态时：</p>\n'
+        '<p><span class="el-solar">烈日武器</span>对尚无'
+        '<span class="el-solar">灼烧层数</span>的<span class="enemy">战斗人员</span>'
+        '施加 <span class="el-solar">x30+15 灼烧</span>。</p>\n'
+        '<p><span class="note">由火种扳机首次触发的灼烧不受武器或技能伤害加成影响；'
+        '在光焰之井内无效</span>。</p>',
+
+    ('art-6', '凉意袭人'):
+        '<p>对<span class="el-stasis">冰影减益敌人</span>取得'
+        '<span class="el-stasis">冰影击杀</span>时：<br>'
+        '在 6 米范围内触发一次<span class="el-stasis">减速爆发</span>。</p>\n'
+        '<p><span class="el-stasis">减速爆发</span>：<br>'
+        '对敌人施加 <span class="el-stasis">x20 减速</span>，'
+        '持续 2? <span class="el-stasis">+?</span> 秒。<br>'
+        '为使用者与<span class="enemy">盟友</span>提供 '
+        '<span class="el-stasis">x? 冰霜护甲</span>。</p>\n'
+        '<p><span class="note">冰霜护甲部分实测无效</span>。</p>',
+
+    ('art-6', '极寒凝视'):
+        '<p><span class="el-stasis">冰霜护甲</span>激活期间，用'
+        '<span class="el-stasis">冰影武器</span>取得<span class="stack">精准击杀</span>：</p>\n'
+        '<p>在<span class="health">敌人死亡位置</span>触发一次'
+        '<span class="deb-stasis">冰冻爆发</span>，影响 7 米内的敌人。</p>',
+
+    ('art-6', '爆炸范围'):
+        '<p>在 ? 秒内用榴弹发射器或<span class="ammo-heavy">火箭发射器</span>'
+        '取得 2 次击杀时：</p>\n'
+        '<p>获得一层<span class="enemy">护甲充能</span>。</p>',
+
+    ('art-6', '永恒毁灭'):
+        '<p>2–3? 秒内的每次<span class="note">非异域火箭发射器击杀</span>都会'
+        '<span class="ammo-heavy">推进计数器</span>：<br>'
+        '<span class="enemy">普通敌人</span> = <span class="ammo-heavy">25%</span> | '
+        '<span class="enemy">精英</span> = <span class="ammo-heavy">34%</span> | '
+        '<span class="enemy">小头目</span> = <span class="ammo-heavy">100%</span></p>\n'
+        '<p><span class="ammo-heavy">计数器达到 100%</span> 时：<br>'
+        '<span class="ammo-heavy">火箭发射器</span>获得 '
+        '<span class="ammo-heavy">+1 弹药</span>，'
+        '<span class="ammo-heavy">精密框架火箭发射器（或任何带双脚架的框架）</span>'
+        '获得 <span class="ammo-heavy">+2 弹药</span>。<br>'
+        '同时获得 +? 装填速度与 0.?x 装填持续时间倍率，持续 10 秒。<br>'
+        '<span class="note">不受回收器模组影响</span>。</p>',
+
+    ('art-6', '崩解'):
+        '<p>对<span class="deb-strand">割裂状态的敌人</span>造成 6 次武器伤害时：<br>'
+        '施加<span class="deb-strand">瓦解</span>。</p>\n'
+        '<p>击杀<span class="deb-strand">割裂状态的敌人</span>时：<br>'
+        '在敌人死亡位置释放 <span class="health">3 个治疗脉冲</span>，每 2 秒一次，'
+        '各<span class="health">恢复 15 点生命值</span>，并为使用者与 10 米内的'
+        '<span class="enemy">盟友</span>提供<span class="el-strand">织造铠甲</span>，'
+        '持续 <span class="el-strand">10 秒</span>。</p>',
+
+    # ── art-7 NPA 斥力调节器（深渊）─────────────────────────────────
+    ('art-7', '改良版瓦解'):
+        '<p><span class="deb-strand">瓦解织线</span>额外造成 15% 伤害。</p>',
+
+    ('art-7', '缚丝士兵'):
+        '<p>装备<span class="el-strand">缚丝</span>或'
+        '<span class="el-prismatic">棱镜</span>分支职业，'
+        '并获得<span class="el-strand">织造铠甲</span>时：</p>\n'
+        '<p>获得<span class="deb-strand">瓦解弹药</span>，持续 8 秒。</p>',
+
+    ('art-7', '传导宇宙织针'):
+        '<p>对<span class="el-strand">受缚丝减益影响的敌人</span>：</p>\n'
+        '<p><span class="el-arc">电弧</span>与<span class="el-void">虚空</span>'
+        '技能伤害提高 5%。</p>',
+
+    ('art-7', '不稳定流动'):
+        '<p>拾取<span class="orb">能量球</span>或<span class="el-void">虚空裂口</span>时：</p>\n'
+        '<p>获得<span class="pickup">不稳定弹药</span>，持续 9 '
+        '<span class="unsure">[?]</span> 秒。</p>',
+
+    ('art-7', '压制偃月'):
+        '<p>用<span class="el-strand">偃月</span>对<span class="enemy">战斗人员</span>'
+        '造成伤害时：<br>施加<span class="el-void">压制</span>，持续 10 秒。</p>\n'
+        '<p><span class="el-arc">偃月近战</span>会消耗 '
+        '<span class="pickup">10% 偃月能量</span>来施加'
+        '<span class="el-void">压制</span>；'
+        '<span class="note">敌人已被压制时不消耗能量</span>。</p>',
+
+    ('art-7', '震慑行动'):
+        '<p>装备<span class="el-arc">电弧</span>或'
+        '<span class="el-prismatic">棱镜</span>分支职业，且处于'
+        '<span class="el-arc">增幅</span>状态时：</p>\n'
+        '<p><span class="el-arc">电弧击杀</span>会触发一次'
+        '<span class="el-arc">闪电爆发</span>，在 8 米半径内造成最多 126 '
+        '<span class="unsure">[?]</span> 点<span class="el-arc">电弧伤害</span>，'
+        '并施加<span class="deb-arc">震颤</span>。</p>\n'
+        '<p><span class="note">两次触发之间有 5 秒冷却时间</span>。</p>',
+
+    ('art-7', '朝向裂口'):
+        '<p>装备<span class="el-void">虚空</span>或'
+        '<span class="el-prismatic">棱镜</span>分支职业时，'
+        '击杀<span class="el-void">虚空减益敌人</span>：</p>\n'
+        '<p>生成一个<span class="el-void">虚空裂口</span>。</p>',
+
+    ('art-7', '防护裂口'):
+        '<p>拾取<span class="el-void">虚空裂口</span>时：</p>\n'
+        '<p><span class="pickup">虚空覆盖护盾 +45</span>，'
+        '持续 <span class="pickup">10 +5</span> 秒。</p>',
+
+    ('art-7', '超新星'):
+        '<p>拾取<span class="el-void">虚空裂口</span>时：</p>\n'
+        '<p>10 秒内的下一次<span class="el-void">虚空</span>伤害会释放一次'
+        '<span class="deb-void">削弱爆发</span>，对 5 米内的敌人施加'
+        '<span class="deb-void">削弱</span>，持续 8 秒。</p>',
+
+    ('art-7', '持久增幅'):
+        '<p>装备<span class="el-arc">电弧</span>或'
+        '<span class="el-prismatic">棱镜</span>分支职业时：</p>\n'
+        '<p><span class="el-arc">增幅</span>的持续时间延长至 20 秒。</p>',
+
+    ('art-7', '反制充能'):
+        '<p><span class="enemy">眩晕</span>一名<span class="enemy">勇士</span>时：</p>\n'
+        '<p>获得一层<span class="enemy">护甲充能</span>。</p>',
+
+    ('art-7', '小队目标'):
+        '<p>在<span class="orb">超能元素匹配增益</span>的影响下使用'
+        '<span class="enemy">终结技</span>时：</p>\n'
+        '<p>? 米范围内的<span class="enemy">盟友</span>获得'
+        '<span class="pickup">对应分支职业的增益</span>：<br>'
+        '<span class="el-arc">电弧：增幅</span> | '
+        '<span class="el-void">虚空：吞食</span> | '
+        '<span class="el-strand">缚丝：织造铠甲</span></p>',
+
+    ('art-7', '雷霆反击'):
+        '<p>处于<span class="health">重伤</span>或<span class="el-arc">增幅</span>状态时：</p>\n'
+        '<p><span class="el-arc">电弧超能</span>伤害提高 30%。</p>\n'
+        '<p><span class="note">只影响超能动画期间造成的伤害，'
+        '因此<span class="orb">雷霆冲击</span>与<span class="orb">风起云涌</span>'
+        '实际吃到的加成偏低</span>。</p>',
+
+    ('art-7', '远方砖块'):
+        '<p>每取得 <span class="ammo-heavy">3? 次对精英 + 敌人的虚空武器击杀</span>：</p>\n'
+        '<p>为使用者与 ? 米范围内的<span class="enemy">盟友</span>提供 '
+        '<span class="ammo-heavy">50?% 威能弹药进度</span>。</p>',
+
+    ('art-7', '两次闪电打击'):
+        '<p>使用<span class="el-arc">电弧手雷技能</span>时：</p>\n'
+        '<p>5 秒内<span class="el-arc">手雷基础充能速率额外提高 130%</span>。</p>\n'
+        '<p><span class="el-arc">电弧击杀</span>会为该效果延长 +3? 秒，'
+        '最多累计至 20 秒。</p>',
+
+    ('art-7', '持续火力'):
+        '<p>在 1.5 秒内对<span class="enemy">同一名战斗人员</span>造成 '
+        '10 次自动步枪命中时：</p>\n'
+        '<p>获得 <span class="enemy">25% 伤害抗性（抗性 x2）</span>，持续 6 秒。<br>'
+        '<span class="note">该效果可刷新，收起武器后仍然保留</span>。</p>\n'
+        '<p><span class="health">支援型自动步枪</span>也可通过'
+        '<span class="health">治疗盟友</span>触发。</p>',
+
+    ('art-7', '超载手雷'):
+        '<p><span class="el-void">虚空手雷技能伤害</span>会施加'
+        '<span class="el-void">干扰</span>。</p>',
+
+    ('art-7', '被动攻击刀剑格'):
+        '<p>装备偃月时：</p>\n'
+        '<p>对 ? 米范围内的<span class="enemy">战斗人员</span>获得 '
+        '<span class="enemy">50% 伤害抗性</span>。</p>',
+
+    ('art-7', '碎裂能量球'):
+        '<p>首次击破<span class="enemy">战斗人员护盾</span>时：</p>\n'
+        '<p>生成一个<span class="orb">能量球</span>，提供 '
+        '<span class="orb">7.15% 超能能量</span>。<br>'
+        '对尚未触发过该效果的<span class="enemy">战斗人员</span>使用'
+        '<span class="enemy">终结技</span>也会生成一个<span class="orb">能量球</span>。</p>\n'
+        '<p><span class="note">每个敌人只生效一次</span>。</p>',
+
+    ('art-7', '瞄准自动填装器'):
+        '<p>用自动步枪<span class="enemy">击杀战斗人员</span>会推进'
+        '<span class="deb-void">计数器</span>：<br>'
+        '普通击杀提供 <span class="deb-void">50% 进度</span>；<br>'
+        '15 米内有 3 名敌人时，或已有 <span class="deb-void">5 层</span>时，'
+        '击杀提供 <span class="deb-void">100% 进度</span>。<br>'
+        '<span class="note">计数器进度在收起武器后保留</span>。</p>\n'
+        '<p><span class="deb-void">计数器进度达到 100%</span> 时：<br>'
+        '获得一层<span class="deb-void">瞄准自动填装器</span>，持续 15 秒，'
+        '最多叠加至 <span class="deb-void">5 层</span>，可刷新。</p>\n'
+        '<p><span class="deb-void">瞄准自动填装器</span>按层数生效：<br>'
+        '装填弹匣：20% | 20% | 30% | 40% | 40%<br>'
+        '自动步枪伤害提高：10% | 13% | 16% | 18% | 20%<br>'
+        '<span class="note">与其他增益叠加；切换到<span class="note">非自动步枪</span>'
+        '武器时移除</span>。</p>',
+
+    ('art-7', '虚空武器输能'):
+        '<p>持有至少 1 层<span class="el-void">虚空技能</span>充能时，'
+        '用<span class="el-void">虚空武器</span>取得击杀：</p>\n'
+        '<p>按<span class="ammo-heavy">虚空手雷、近战与超能技能</span>的充能层数，'
+        '获得等量的<span class="el-stasis">武器激涌</span>，持续 11 秒。</p>\n'
+        '<p>拥有 <span class="ammo-heavy">4 层虚空技能充能</span>时最多获得 '
+        '<span class="el-stasis">x4 武器激涌</span>，'
+        '例如 2 手雷 + 2 近战 = x4 激涌。</p>\n'
+        '<p><span class="note">只有当前<span class="el-stasis">层数</span>不超过'
+        '<span class="el-void">虚空技能充能</span>数量时才能刷新；'
+        '<span class="el-prismatic">在棱镜上表现正常</span></span>。</p>',
 }
 
 # 改完仍出现即中止。新写的文本再引入这些写法会被当场拦下。
 FORBIDDEN = [
-    '%%%', '动能决裂', '配合时', '----',
-    '填装速度', '填装持续时间',
+    # 硬伤与占位
+    '%%%', '动能决裂', '配合时', '----', ' or ',
+    # 术语：装填、战斗人员、精准、瓦解弹药、悬停
+    '填装速度', '填装持续时间', '填装弹匣',
     '战斗单位', '战斗员护盾', '普通战斗员',
     '精确命中', '精确击杀',
-    '瓦解弹匣', '悬浮',
-    '抵抗x1', '抵抗 x2', '抗性x2',
+    '瓦解弹匣', '悬浮', '弓箭',
+    # 记法：抗性 xN、伤害抗性、增益、半角问号与冒号、生命值
+    '抵抗x1', '抵抗 x2', '抗性x2', '伤害减免',
+    'Buff', 'buff',
     '？', ' :', ' HP', '超能能量.',
 ]
