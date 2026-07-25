@@ -374,11 +374,20 @@ main { flex: 1 0 auto; }
 }
 
 .hero-note {
-  max-width: 46em;
+  max-width: 60em;
   margin: 22px 0 0;
   color: var(--bone-dim);
   font-size: 14px;
   line-height: 1.95;
+}
+
+/* 数据约定：与定位句分行分级，两者性质不同，也免得挤成一行断在词中间 */
+.hero-sub {
+  max-width: 60em;
+  margin: 7px 0 0;
+  color: var(--bone-faint);
+  font-size: 12.5px;
+  line-height: 1.9;
 }
 
 .index {
