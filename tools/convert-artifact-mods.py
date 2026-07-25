@@ -86,11 +86,20 @@ COLOR_MAP = {
     '#d5e1e3': 'plain',         # 1  致盲
 }
 
-PAGE_TITLE = '赛季神器模组 · 凯旋纪念碑'
-NAV = ('<nav class="site-nav">'
-       '<a href="../index.html">星侧</a>'
+PAGE_TITLE = '赛季神器模组 · Starside'
+
+# 顶部 sticky 单元：导航行 + 空工具条槽位。
+# 工具条内容由 assets/app.js 从 DOM 构建，此处不写任何源文本，
+# 否则页面里会出现源表格文本的第二份副本、保真自检立即报重复。
+NAV = ('<div class="site-head">'
+       '<nav class="site-nav">'
+       '<span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>'
+       '<a class="home" href="../index.html">Starside</a>'
+       '<span class="sep">/</span>'
        '<span aria-current="page">赛季神器模组</span>'
-       '</nav>')
+       '</nav>'
+       '<div class="toolbar"></div>'
+       '</div>')
 
 
 def die(msg) -> NoReturn:
@@ -139,6 +148,10 @@ def canon_color(raw):
 
 
 # ── 内联着色 → 语义 class ───────────────────────────────────────────────
+# 着色以外可安全丢弃的内联声明：本站由 site.css 统一控制，源表格的写法不再生效
+DROP_DECLS = {'font-weight', 'text-shadow'}
+
+
 def colorize(frag, stats):
     def repl(m):
         tag, attrs = m.group(1), m.group(2)
@@ -160,10 +173,15 @@ def colorize(frag, stats):
         if key not in COLOR_MAP:
             die('颜色 %s（原写法 %s）不在 COLOR_MAP 里，先决定它的语义 token' % (key, raw))
         stats[key] += 1
-        # 保留 font-weight / text-shadow 之类的其它声明，去掉已无竞争的 !important
-        rest = '; '.join(d.replace('!important', '').strip() for d in decls)
-        style_attr = ' style="%s"' % rest if rest else ''
-        return '<span class="%s"%s>' % (COLOR_MAP[key], style_attr)
+        # 除颜色外余下的声明是 Google Sheets 的渲染残留：字重与文字阴影。
+        # 本站由 assets/site.css 的语义 class 统一定字重、正文一律不加阴影，故丢弃。
+        # 出现 DROP_DECLS 以外的声明即中止——不静默丢掉可能承载语义的样式。
+        for d in decls:
+            name = d.split(':', 1)[0].replace('!important', '').strip().lower()
+            if name not in DROP_DECLS:
+                die('<%s> 带未知内联声明 %r，先决定它归站点样式还是归内容：%s'
+                    % (tag, d.strip(), m.group(0)[:120]))
+        return '<span class="%s">' % COLOR_MAP[key]
 
     frag = re.sub(TAG % '(span|font)', repl, frag)
     return frag.replace('</font>', '</span>')
@@ -328,21 +346,40 @@ def parse(src, icons):
 
 
 # ── 生成 HTML ───────────────────────────────────────────────────────────
+def rows_of(mods):
+    """模组按行成组：一行 = 游戏内同一组的一级 / 二级 / 三级。
+
+    s['mods'] 已是行主序，按 3 切块即得行。档位对不上就报错——
+    行分组错位会让搜索隐藏模组时列位串档，宁可中止也不静默错组。
+    """
+    for i in range(0, len(mods), 3):
+        row = mods[i:i + 3]
+        tiers = [m['tier'] for m in row]
+        if tiers != [1, 2, 3]:
+            die('第 %d 行不是完整的一/二/三级三档：%s' % (i // 3 + 1, tiers))
+        yield row
+
+
 def render(page, prefix):
     o = ['<!doctype html>', '<html lang="zh-CN">', '<head>',
          '<meta charset="utf-8">',
          '<meta name="viewport" content="width=device-width, initial-scale=1">',
          '<title>%s</title>' % PAGE_TITLE,
+         '<meta name="theme-color" content="#0b0d14">',
+         '<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">',
          '<link rel="stylesheet" href="../assets/site.css">',
          '<link rel="stylesheet" href="%sstyle.css">' % prefix,
+         '<script src="../assets/app.js" defer></script>',
          '</head>', '<body>', NAV,
-         '<header class="monument-header">',
+         # 源表格的三串标题各担一个角色：副标题降为 eyebrow，主标题作 h1，
+         # 「神器模组」作正文区段标签。三串文本全部保留，不再叠三层同义标题。
+         '<header class="page-head">',
+         '<p class="eyebrow">%s</p>' % page['sub'],
          '<h1>%s</h1>' % page['h1'],
-         '<p class="en-sub">%s</p>' % page['sub'],
          '</header>', '<main>', '<section class="intro">']
     units = []   # 逐块文本，与导出文件的单元格文本对账；h1/副标题不在表格里，只走字符级比对
 
-    o.append('<h2>%s</h2>' % page['lede'][0])
+    o.append('<h2 class="sect-label">%s</h2>' % page['lede'][0])
     units.append(text_of(page['lede'][0]))
     for p in page['lede'][1:]:
         o.append('<p class="lede">%s</p>' % p)
@@ -356,30 +393,45 @@ def render(page, prefix):
     units += [n['title'], n['body']]
 
     for i, s in enumerate(page['sections'], 1):
+        # 神器名与档位轨合为一个 sticky 单元（.art-bar）。
+        # 徽章只输出一枚：源表格左右两侧是同一张图，对称是表格的排版手段而非内容。
         o += ['<section class="artifact" id="art-%d">' % i,
+              '<div class="art-bar">',
               '<header class="art-head">', s['emblems'][0],
               '<h2>%s%s</h2>' % (s['name'],
-                                 ' <small>%s</small>' % s['paren'] if s['paren'] else ''),
-              s['emblems'][1], '</header>']
+                                 ' <small>%s</small>' % s['paren'] if s['paren'] else '')]
         units.append((s['name'] + ' ' + s['paren']).strip())
         if s['tags']:
             o.append('<p class="art-tags">%s</p>' % s['tags'])
             units.append(text_of(s['tags']))
-        # 行主序输出：同一行的一级/二级/三级模组是游戏里的一组，靠 CSS Grid 横向对齐，
-        # 所以按「行」而不是按「列」排（s['mods'] 本身就是行主序）
-        o.append('<div class="tiers">')
+        o.append('</header>')
+        # 档位轨：三枚 CSS 绘制的菱形，点亮枚数 = 档位。
+        # 档位文字由 CSS content 生成，不进 HTML，因此既不进 units 也不进字符比对。
+        # 原先用 ⯁（U+2BC1）表示档位，该字形在中文字体栈下无字形、整条表头渲染为空带。
+        o.append('<div class="tier-rail">')
         for tier in (1, 2, 3):
-            label = '⯁' * tier
-            o.append('<h3 class="tier-label" data-tier="%d">%s</h3>' % (tier, label))
-            units.append(label)
-        for mod in s['mods']:
-            o += ['<article class="mod" data-tier="%d">' % mod['tier'], mod['icon'],
-                  '<h4>%s</h4>' % mod['name'],
-                  '<p>%s</p>' % mod['desc'], '</article>']
-            units += [text_of(mod['name']), text_of(mod['desc'])]
+            pips = ''.join('<i class="on"></i>' if t <= tier else '<i></i>'
+                           for t in (1, 2, 3))
+            o.append('<div class="tier-head" data-tier="%d">'
+                     '<span class="rhombi" aria-hidden="true">%s</span></div>' % (tier, pips))
+        o += ['</div>', '</div>', '<div class="tiers">']
+        # 行是结构：按行包裹后，搜索隐藏任一模组都不会让其后模组的列位偏移
+        for row in rows_of(s['mods']):
+            o.append('<div class="mod-row">')
+            for mod in row:
+                o += ['<article class="mod" data-tier="%d">' % mod['tier'], mod['icon'],
+                      '<h4>%s</h4>' % mod['name'],
+                      '<p>%s</p>' % mod['desc'], '</article>']
+                units += [text_of(mod['name']), text_of(mod['desc'])]
+            o.append('</div>')
         o += ['</div>', '</section>']
 
-    o += ['</main>', '</body>', '</html>', '']
+    o += ['</main>',
+          '<footer class="site-foot">',
+          '<a href="../index.html">← Starside</a> · '
+          '数值以游戏内实测为准，标注 <span class="unsure">[?]</span> 的条目尚待核实。',
+          '</footer>',
+          '</body>', '</html>', '']
     return '\n'.join(o), units
 
 
@@ -395,10 +447,11 @@ def check(src, out, page, units, icons):
     for m in mods:
         if not (m['icon'] and m['name'] and m['desc']):
             die('模组字段有空：%r' % m)
-    eq('图标引用数', out.count('<img '), 163)
-    eq('图标文件数', len(icons.written), 133)   # 163 处引用去重后；部分模组共用图标
+    eq('图标引用数', out.count('<img '), 156)   # 147 模组 + 7 神器徽章 + 2 使用限制徽章
+    eq('图标文件数', len(icons.written), 133)   # 引用去重后；部分模组共用图标
     eq('残留 data: 图片', out.count('data:image'), 0)
     eq('残留内联着色', len(re.findall(r'style="[^"]*color:', out)), 0)
+    eq('残留内联样式', out.count('style="'), 0)   # 全部表现层声明都归 CSS
     for junk in ('immersive-translate', 'sf-hidden', 'shadowrootmode', 'sf-img',
                  'contenteditable', 'content-security-policy', 'waffle', 'ritz', 'csep'):
         eq('残留 %s' % junk, out.count(junk), 0)
@@ -424,9 +477,16 @@ def check(src, out, page, units, icons):
     old_body = src[src.find('<body'):]
     # 扩展注入的死 CSS 与 shadowroot 模板不是页面内容，比对前剥掉
     old_body = re.sub(r'<(style|template|script)[^>]*>.*?</\1>', '', old_body, flags=re.S)
-    new_body = out[out.find('<header'):]
+    # 比对窗口 = 页首 + 正文。导航条与页脚是站点外壳、不含源文本，落在窗口外。
+    new_body = out[out.find('<header'):out.rindex('</main>')]
     a = Counter(text_of(old_body).replace(' ', ''))
     b = Counter(text_of(new_body).replace(' ', ''))
+    # 档位表头属于外壳而非内容：源导出用 ⯁ 表示档位，产出改为 CSS 绘制的菱形 +
+    # CSS content 生成的档位文字。两侧都不参与字符比对——先断言各自计数再移除，
+    # 不放宽比对强度（原先两侧各 42 个恰好相互抵消，掩盖了这一点）。
+    eq('源导出档位表头 ⯁ 数', a.get('⯁', 0), 42)
+    eq('产出残留 ⯁ 数', b.get('⯁', 0), 0)
+    del a['⯁']
     if a != b:
         print('  多出:', dict((b - a).most_common(12)), file=sys.stderr)
         print('  缺失:', dict((a - b).most_common(12)), file=sys.stderr)

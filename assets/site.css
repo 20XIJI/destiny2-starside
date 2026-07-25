@@ -1,81 +1,312 @@
-/* 站点通用：主题、配色 token、页首、导航。各组件页共用这一份。 */
+/* 站点通用：字体、主题 token、配色、页首、导航、工具条、首页。各组件页共用这一份。
+
+   视觉命题：外壳全部去饱和为骨白／石墨发丝线，整页唯一的饱和色来自游戏自身的
+   元素编码（电弧青、烈日橙、虚空紫…）。外壳不与数据争夺注意力。 */
+
+@font-face {
+  font-family: "Chakra Petch";
+  src: url("fonts/chakra-petch-600.woff2") format("woff2");
+  font-weight: 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Chakra Petch";
+  src: url("fonts/chakra-petch-700.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
 
 :root {
-  --ink: #e6f3f5;
-  --muted: #9bb3bc;
-  --cyan: #28b7c4;
-  --panel: #071923;
-  --frame: #061721;
-  --line: #177886;
+  /* ── 外壳 ── */
+  --ink: #0b0d14;
+  --ink-lift: #0e1119;             /* sticky 层底色，须不透明 */
+  --panel-a: #161b28;
+  --panel-b: #12151f;
+  --bone-hi: #f4f1e8;
+  --bone: #e6e2d6;
+  --bone-dim: #9aa0ac;
+  --bone-faint: #5b6472;
+  --hair: #2a3040;
+  --hair-lit: #3c4457;
 
-  /* 渲染色板：页面实际显示的 9 色（原表格用 span[style*=] 覆盖压成这 9 色） */
-  --c-cyan: #73e5e9;
-  --c-blue: #8ecbff;
-  --c-purple: #d0aaff;
-  --c-green: #9adf92;
-  --c-gold: #ffe483;
-  --c-orange: #ffc57d;
-  --c-red: #ff9f9c;
-  --c-pink: #f4aad2;
-  --c-grey: #b6c4c7;
+  /* ── 字体三分工 ──
+     Chakra Petch / SF Mono 均不含中文，浏览器按字符逐族回退：
+     拉丁与数字取前者的字面，中文自动落到 PingFang，无需拆标签。 */
+  --font-disp: "Chakra Petch", "PingFang SC", "Noto Sans SC", sans-serif;
+  --font-body: ui-monospace, "SF Mono", SFMono-Regular, Menlo, "PingFang SC",
+    "Noto Sans SC", sans-serif;
+  --font-cn: "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+
+  /* ── 渲染色板：整页 10 个饱和槽位 ──
+     元素色相是游戏的既有编码，属于内容，只做亮度拉平，不改色相。 */
+  --c-arc: #5fd8e0;
+  --c-stasis: #7fb4ff;
+  --c-void: #c08cff;
+  --c-strand: #7fdc86;
+  --c-solar: #ffb35c;
+  --c-kinetic: #c3cbd2;
+  --c-prism: #f58fc8;
+  --c-orb: #f2ce5b;
+  --c-health: #ff8e86;
+  --c-aside: #a2848c;              /* 批注与待测值：读作限定语，不是警报 */
 
   /* 语义 token → 渲染色。想让某一类单独出色，只改这一行的右值。
      左侧 23 个 token 由 tools/convert-artifact-mods.py 的 COLOR_MAP 产出，两边要对齐。 */
-  --el-arc: var(--c-cyan);
-  --deb-arc: var(--c-cyan);          /* 震颤、致盲 */
-  --el-stasis: var(--c-blue);
-  --deb-stasis: var(--c-blue);       /* 冻结、碎裂 */
-  --enemy: var(--c-blue);            /* 战斗人员/勇士/精英/盟友/数值 */
-  --el-void: var(--c-purple);
-  --ammo-heavy: var(--c-purple);     /* 威能弹药 */
-  --el-strand: var(--c-green);       /* 缚丝；原表格同色也用于特殊弹药 */
-  --deb-strand: var(--c-green);      /* 割裂、瓦解 */
-  --el-solar: var(--c-orange);
-  --deb-solar: var(--c-orange);      /* 暗影 */
-  --el-kinetic: var(--c-grey);
-  --el-prismatic: var(--c-pink);
-  --deb-void: var(--c-pink);         /* 削弱 */
-  --pickup: var(--c-pink);           /* 元素拾取物/技能能量/护盾 */
-  --joke: var(--c-pink);
-  --orb: var(--c-gold);              /* 能量球/超能能量 */
-  --stack: var(--c-gold);            /* 精准命中/增益层数 */
-  --armor-charge: var(--c-gold);
-  --health: var(--c-red);            /* 生命值/治疗 */
-  --note: var(--c-red);              /* 作者注释与限制说明 */
-  --unsure: var(--c-red);            /* [?] 待测数值 */
-  --plain: var(--ink);               /* 原色近正文色，跟随正文 */
+  --el-arc: var(--c-arc);
+  --deb-arc: var(--c-arc);           /* 震颤、致盲 */
+  --el-stasis: var(--c-stasis);
+  --deb-stasis: var(--c-stasis);     /* 冻结、碎裂 */
+  --enemy: var(--c-stasis);          /* 战斗人员/勇士/精英/盟友/数值 */
+  --el-void: var(--c-void);
+  --ammo-heavy: var(--c-void);       /* 威能弹药 */
+  --el-strand: var(--c-strand);      /* 缚丝；原表格同色也用于特殊弹药 */
+  --deb-strand: var(--c-strand);     /* 割裂、瓦解 */
+  --el-solar: var(--c-solar);
+  --deb-solar: var(--c-solar);       /* 暗影 */
+  --el-kinetic: var(--c-kinetic);
+  --el-prismatic: var(--c-prism);
+  --deb-void: var(--c-prism);        /* 削弱 */
+  --pickup: var(--c-prism);          /* 元素拾取物/技能能量/护盾 */
+  --joke: var(--c-prism);
+  --orb: var(--c-orb);               /* 能量球/超能能量 */
+  --stack: var(--c-orb);             /* 精准命中/增益层数 */
+  --armor-charge: var(--c-orb);
+  --health: var(--c-health);         /* 生命值/治疗 */
+  --note: var(--c-aside);            /* 作者注释与限制说明 */
+  --unsure: var(--c-aside);          /* [?] 待测数值 */
+  --plain: var(--bone);              /* 原色近正文色，跟随正文 */
+
+  /* 分节 sticky 单元贴 .site-head 下沿。app.js 按实测高度覆写；
+     无 JS 时这个默认值对应只有导航行的高度。 */
+  --stick: 45px;
 }
 
 * { box-sizing: border-box; }
 
-html, body {
+html { scroll-behavior: smooth; }
+
+body {
   min-height: 100vh;
-  /* 撑满视口宽：不写这行时 align-items:center 会让 body 收成 fit-content，
-     被 1020px 的三档网格顶宽，整页横向滚动、页首被切掉（原页面就是这毛病） */
-  width: 100%;
   margin: 0;
-  padding: clamp(14px, 2.8vw, 42px);
+  /* 页脚贴底：内容不足一屏时不让页脚悬在页面中间 */
   display: flex;
   flex-direction: column;
-  align-items: center;
-  color: var(--ink);
-  font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+  color: var(--bone);
+  font: 400 15px/1.85 var(--font-body);
+  font-variant-numeric: tabular-nums;
+  /* 88px 刻线网格作为基底。不用 background-attachment: fixed——
+     该页约 20000px 高、163 张图，固定背景会让滚动逐帧重绘。 */
   background:
-    radial-gradient(ellipse at 74% 15%, rgba(22, 71, 92, .48), transparent 38%),
-    radial-gradient(ellipse at 10% 88%, rgba(9, 83, 96, .25), transparent 43%),
-    linear-gradient(122deg, transparent 0 49%, rgba(47, 118, 139, .12) 49.1% 49.25%, transparent 49.4%) 0 0 / 310px 310px,
-    linear-gradient(24deg, transparent 0 49%, rgba(47, 118, 139, .08) 49.1% 49.25%, transparent 49.4%) 0 0 / 250px 250px,
-    #020b13;
-  background-attachment: fixed;
+    repeating-linear-gradient(0deg, #ffffff06 0 1px, transparent 1px 88px),
+    repeating-linear-gradient(90deg, #ffffff06 0 1px, transparent 1px 88px),
+    var(--ink);
 }
 
-/* ── 配色工具类：着色文字全部经由这些 class，不再有内联 color ── */
+/* body 是 flex 列（页脚贴底），而 flex 子项上的 margin: 0 auto 会吸收剩余空间、
+   把子项压成 fit-content 并居中。显式给满宽，让内部的 max-width 决定版心。 */
+body > * { width: 100%; }
+
+.disp { font-family: var(--font-disp); }
+
+a { color: var(--bone); }
+
+:focus-visible {
+  outline: 2px solid var(--c-arc);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { transition: none !important; animation: none !important; }
+}
+
+/* ── 通栏：sticky 顶部（导航行 + 组件页的工具条） ── */
+.site-head {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--ink-lift);
+  border-bottom: 1px solid var(--hair);
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 12px 22px;
+  font-family: var(--font-disp);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.site-nav .mark {
+  display: flex;
+  gap: 3px;
+  margin-right: 2px;
+}
+
+.site-nav .mark i {
+  width: 6px;
+  height: 6px;
+  background: var(--bone-dim);
+  transform: rotate(45deg);
+}
+
+.site-nav a {
+  color: var(--bone);
+  letter-spacing: .12em;
+  text-decoration: none;
+}
+
+.site-nav a:hover { color: var(--bone-hi); }
+
+.site-nav .home {
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+.site-nav .sep { color: var(--hair-lit); }
+
+main { flex: 1 0 auto; }
+
+.site-nav [aria-current="page"] {
+  color: var(--bone-dim);
+  font-weight: 600;
+  letter-spacing: .12em;
+}
+
+/* ── 工具条：搜索 + 神器跳转。整块由 assets/app.js 按 DOM 构建 ──
+   工具条不在 HTML 里重复任何源文本，生成器的保真自检因此维持原强度。 */
+.toolbar:empty { display: none; }
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 0 22px 11px;
+}
+
+.tool-search {
+  flex: none;
+  width: 236px;
+  padding: 7px 11px;
+  color: var(--bone-hi);
+  font: 400 13px/1.5 var(--font-body);
+  background: #ffffff08;
+  border: 1px solid var(--hair-lit);
+  border-radius: 0;
+}
+
+.tool-search::placeholder { color: var(--bone-faint); }
+
+/* 只提亮底色与边框，不动 outline——:focus-visible 的描边是键盘可达性底线 */
+.tool-search:focus {
+  background: #ffffff0d;
+  border-color: var(--c-arc);
+}
+
+.tool-count {
+  flex: none;
+  min-width: 7em;
+  margin: 0;
+  color: var(--bone-faint);
+  font-family: var(--font-disp);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .14em;
+}
+
+.tool-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-left: auto;
+}
+
+.chip {
+  padding: 5px 11px;
+  color: var(--bone-dim);
+  font-family: var(--font-cn);
+  font-size: 12.5px;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: color .15s ease, border-color .15s ease;
+}
+
+.chip:hover {
+  color: var(--bone-hi);
+  border-color: var(--hair-lit);
+}
+
+.chip[aria-current="true"] {
+  color: var(--c-arc);
+  border-color: color-mix(in srgb, var(--c-arc) 45%, transparent);
+}
+
+.chip[hidden] { display: none; }
+
+/* ── 通用小构件 ── */
+/* 字距 .2em：eyebrow 与区段标签两处都可能是纯中文（组件页的标题来自源表格），
+   中文本身是等宽方块，拉丁那档 .34em 的字距会把它拉散。 */
+.eyebrow {
+  margin: 0;
+  color: var(--bone-dim);
+  font-family: var(--font-disp);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+}
+
+/* 区段标签：一条发丝线 + 一个短标签，替代原先的整块渐变横幅 */
+.sect-label {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 18px;
+  color: var(--bone-dim);
+  font-family: var(--font-disp);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+}
+
+.sect-label::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--hair);
+}
+
+/* 三枚菱形：站点母题。点亮枚数 = 档位。 */
+.rhombi {
+  display: flex;
+  flex: none;
+  gap: 4px;
+}
+
+.rhombi i {
+  width: 8px;
+  height: 8px;
+  border: 1px solid currentcolor;
+  transform: rotate(45deg);
+}
+
+.rhombi i.on { background: currentcolor; }
+
+/* ── 配色工具类：着色文字全部经由这些 class，不再有内联 color ──
+   统一 600 字重、无阴影。原先 23 个 class 一律 800 + text-shadow，
+   1176 处着色同等响度，语义色因此不传达优先级。 */
 .el-arc, .deb-arc, .el-stasis, .deb-stasis, .enemy, .el-void, .ammo-heavy,
 .el-strand, .deb-strand, .el-solar, .deb-solar, .el-kinetic, .el-prismatic,
-.deb-void, .pickup, .joke, .orb, .stack, .armor-charge, .health, .note,
-.unsure, .plain {
-  font-weight: 800;
-  text-shadow: 0 1px 2px #000;
+.deb-void, .pickup, .joke, .orb, .stack, .armor-charge, .health {
+  font-weight: 600;
 }
 
 .el-arc { color: var(--el-arc); }
@@ -98,132 +329,166 @@ html, body {
 .stack { color: var(--stack); }
 .armor-charge { color: var(--armor-charge); }
 .health { color: var(--health); }
-.note { color: var(--note); }
-.unsure { color: var(--unsure); }
 .plain { color: var(--plain); }
 
-/* ── 顶部导航 ── */
-.site-nav {
-  width: 100%;
-  max-width: 1440px;
+/* 批注类降一级：字重回到正文，待测值带虚下划线 */
+.note { color: var(--note); font-weight: 400; }
+
+.unsure {
+  color: var(--unsure);
+  font-weight: 400;
+  border-bottom: 1px dotted color-mix(in srgb, var(--unsure) 55%, transparent);
+}
+
+/* ── 首页 ── */
+.hero {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: clamp(54px, 8vw, 108px) 22px clamp(38px, 5vw, 62px);
+}
+
+.hero .eyebrow { margin-bottom: 20px; }
+
+/* 字标：大写 + 宽字距，取游戏内 HUD 标题的排法；右侧配一行技术信息压住构图。 */
+.wordmark-row {
   display: flex;
-  gap: 18px;
+  align-items: flex-end;
+  gap: 30px;
+}
+
+.wordmark {
+  margin: 0;
+  color: var(--bone-hi);
+  font-family: var(--font-disp);
+  font-size: clamp(34px, 6vw, 74px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: .26em;
+  text-transform: uppercase;
+  /* 字距会在末字母后也补一个间隔，整体因此偏右，减回去 */
+  margin-right: -.26em;
+}
+
+.wordmark-meta {
+  margin: 0 0 .6em auto;
+  color: var(--bone-faint);
+  font-family: var(--font-disp);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.8;
+  letter-spacing: .24em;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.wordmark-meta span { display: block; }
+
+.wordmark-meta .cn {
+  font-family: var(--font-cn);
+  letter-spacing: .12em;      /* 中文不吃拉丁那档字距 */
+}
+
+.hero-rule {
+  height: 1px;
+  margin-top: 22px;
+  background: linear-gradient(90deg, var(--hair-lit), transparent 72%);
+}
+
+.hero-note {
+  max-width: 46em;
+  margin: 22px 0 0;
+  color: var(--bone-dim);
+  font-size: 14px;
+  line-height: 1.95;
+}
+
+.index {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 0 22px clamp(50px, 7vw, 90px);
+}
+
+.entries {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--hair);
+}
+
+.entry {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  margin-bottom: 14px;
-  padding: 10px 16px;
-  font-size: 13px;
-  letter-spacing: 2px;
-  background: linear-gradient(112deg, rgba(8, 29, 42, .9), rgba(13, 43, 57, .8));
-  border: 1px solid rgba(61, 184, 196, .3);
+  gap: clamp(18px, 2.6vw, 38px);
+  padding: clamp(22px, 2.6vw, 34px) clamp(4px, 1vw, 14px);
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--hair);
+  transition: background .18s ease, border-color .18s ease;
 }
 
-.site-nav a { color: var(--c-cyan); text-decoration: none; }
-.site-nav a:hover { color: #b8f6fa; text-decoration: underline; }
-.site-nav [aria-current="page"] { color: var(--muted); }
-
-/* ── 页首 ── */
-.monument-header {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  width: 100%;
-  max-width: 1440px;
-  margin: 0 0 clamp(18px, 2.2vw, 30px);
-  padding: clamp(30px, 4.5vw, 54px) clamp(18px, 3.5vw, 44px) clamp(26px, 3vw, 36px);
-  text-align: center;
-  background: linear-gradient(112deg, rgba(8, 29, 42, .98), rgba(13, 43, 57, .92));
-  border: 1px solid rgba(61, 184, 196, .5);
-  border-bottom: 3px solid #20bdca;
-  box-shadow: 0 13px 40px rgba(0, 0, 0, .5), inset 0 1px rgba(207, 250, 252, .1);
+.entry:hover {
+  background: linear-gradient(90deg, #ffffff08, transparent 62%);
+  border-bottom-color: var(--hair-lit);
 }
 
-.monument-header::before,
-.monument-header::after {
-  content: "◈";
-  position: absolute;
-  z-index: -1;
-  top: 13px;
-  color: #2ac2cf;
-  opacity: .1;
-  font-family: serif;
-  font-size: clamp(80px, 13vw, 180px);
+.entry .rhombi { color: var(--bone-faint); }
+
+.entry:hover .rhombi { color: var(--c-arc); }
+
+.entry h3 {
+  margin: 0 0 8px;
+  color: var(--bone-hi);
+  font-family: var(--font-disp);
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: .04em;
+}
+
+.entry p {
+  margin: 0;
+  max-width: 54em;
+  color: var(--bone-dim);
+  font-size: 14px;
+  line-height: 1.85;
+}
+
+.entry-meta {
+  display: flex;
+  gap: clamp(16px, 2vw, 30px);
+  margin: 0;
+  text-align: right;
+}
+
+.entry-meta div { flex: none; }
+
+.entry-meta dt {
+  color: var(--bone-faint);
+  font-family: var(--font-disp);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+}
+
+.entry-meta dd {
+  margin: 4px 0 0;
+  color: var(--bone);
+  font-family: var(--font-disp);
+  font-size: 25px;
+  font-weight: 700;
   line-height: 1;
 }
 
-.monument-header::before { left: 3%; transform: rotate(-28deg); }
-.monument-header::after { right: 3%; transform: scaleX(-1) rotate(-28deg); }
-
-.monument-header h1 {
-  margin: 0;
-  color: #f1fbfc;
-  font-size: clamp(25px, 4.2vw, 52px);
-  font-weight: 800;
-  letter-spacing: clamp(4px, 1.2vw, 16px);
-  line-height: 1.25;
-  text-shadow: 0 0 20px rgba(69, 218, 229, .27);
+/* ── 页脚 ── */
+.site-foot {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 26px 22px 44px;
+  color: var(--bone-faint);
+  font-size: 12px;
+  line-height: 1.9;
+  border-top: 1px solid var(--hair);
 }
 
-.monument-header h1::before {
-  content: "◆";
-  margin-right: 18px;
-  color: #40d3de;
-  font-size: .75em;
-}
-
-.monument-header .en-sub {
-  margin: 14px 0 0;
-  color: #70d1d9;
-  font-family: Georgia, "Times New Roman", "Noto Serif SC", serif;
-  font-size: clamp(10px, 1.5vw, 14px);
-  font-weight: 600;
-  letter-spacing: clamp(2px, .55vw, 8px);
-  line-height: 1.65;
-}
-
-/* ── 首页组件卡片 ── */
-.cards {
-  width: 100%;
-  max-width: 1440px;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 18px;
-}
-
-.card {
-  display: block;
-  padding: clamp(20px, 2.5vw, 32px);
-  color: inherit;
-  text-decoration: none;
-  background: linear-gradient(112deg, rgba(8, 29, 42, .98), rgba(13, 43, 57, .92));
-  border: 1px solid rgba(61, 184, 196, .5);
-  border-bottom: 3px solid #20bdca;
-  box-shadow: 0 13px 40px rgba(0, 0, 0, .5);
-  transition: background .2s ease;
-}
-
-.card:hover { background: #15515f; }
-
-.card h2 {
-  margin: 0 0 10px;
-  color: #eaffff;
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: 4px;
-  text-shadow: 0 0 12px rgba(45, 205, 214, .24);
-}
-
-.card p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.78;
-}
-
-@media (max-width: 700px) {
-  html, body { padding: 10px; }
-  .monument-header {
-    margin-bottom: 16px;
-    padding: 28px 16px 24px;
-  }
-  .monument-header .en-sub { margin-top: 12px; }
-}
+.site-foot a { color: var(--bone-dim); }

@@ -1,198 +1,224 @@
-/* 赛季神器模组组件：外框、分节、三档网格、模组卡片。
-   通用主题与配色 token 在 /assets/site.css。 */
+/* 赛季神器模组组件：介绍块、分节 sticky 单元、档位轨、模组行与模组卡片。
+   通用主题、字体与 23 个配色 token 在 /assets/site.css。 */
+
+/* 三档并排的最小内容宽度 1020px + main 左右各 22px 内边距。
+   横向溢出交给页面本身，不在 main 上开 overflow-x——
+   一旦 main 成为滚动容器，其内部的 position: sticky 便不再相对视口生效，
+   且滚动条落在约 20000px 高元素的底部、实际不可达。 */
+body { min-width: 1064px; }
 
 main {
-  width: 100%;
   max-width: 1500px;
-  overflow-x: auto;                 /* 窄屏横向滚动，三档始终并排，不收单列 */
-  background: var(--frame);
-  border: 1px solid rgba(43, 173, 188, .62);
-  box-shadow: 0 20px 52px rgba(0, 0, 0, .58), inset 0 0 0 5px rgba(17, 63, 76, .38);
-  scrollbar-color: #2993a1 var(--panel);
-  scrollbar-width: thin;
+  margin: 0 auto;
+  padding: 0 22px clamp(40px, 5vw, 72px);
 }
 
-main::-webkit-scrollbar { height: 10px; }
-main::-webkit-scrollbar-track { background: var(--panel); }
-main::-webkit-scrollbar-thumb {
-  background: #247e8b;
-  border: 2px solid var(--panel);
-  border-radius: 999px;
+/* ── 页首 ── */
+.page-head {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: clamp(40px, 5.5vw, 76px) 22px clamp(30px, 3.6vw, 46px);
 }
 
-.intro, .artifact { min-width: 1020px; }
+.page-head .eyebrow { margin-bottom: 18px; }
 
-/* ── 页内介绍块 ── */
-.intro h2 {
+.page-head h1 {
   margin: 0;
-  padding: 23px 22px;
-  color: #efffff;
-  font-size: clamp(25px, 3vw, 38px);
-  font-weight: 800;
-  letter-spacing: clamp(7px, 1.5vw, 18px);
-  text-align: center;
-  background: linear-gradient(90deg, #123b48, #255563 50%, #123b48);
-  border-bottom: 2px solid #23c1ce;
-  text-shadow: 0 0 14px rgba(82, 232, 239, .38);
+  color: var(--bone-hi);
+  font-family: var(--font-cn);
+  font-size: clamp(34px, 4.4vw, 56px);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: .04em;
 }
+
+/* ── 介绍块 ── */
+.intro { margin-bottom: clamp(28px, 3.4vw, 48px); }
 
 .intro .lede {
+  max-width: 60em;
   margin: 0;
-  padding: 12px 20px;
-  color: #a9c6cc;
+  color: var(--bone-dim);
   font-size: 14px;
-  font-style: italic;
-  font-weight: 600;
-  letter-spacing: .4px;
-  text-align: center;
-  background: #102a35;
-  border-bottom: 1px solid rgba(71, 174, 188, .38);
+  line-height: 1.95;
 }
 
-/* 使用限制：两侧徽章 + 中间说明 */
+/* 两枚徽章是竞技场与试炼，对应「多人竞技和奥斯里斯试炼被禁用」——它们是内容。
+   源表格把两枚分列文字左右两侧求对称，此处并到一处：两枚徽章即被排除的两个玩法。 */
 .notice {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+  display: flex;
   align-items: center;
-  gap: clamp(14px, 2vw, 28px);
-  padding: clamp(14px, 1.35vw, 20px) clamp(14px, 1.55vw, 22px);
-  border-top: 1px solid #39bdc9;
-  border-bottom: 1px solid #218e9c;
-  background: #0e3743;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 16px 20px;
+  background: linear-gradient(90deg, #ffffff07, transparent 70%);
+  border: 1px solid var(--hair);
+  border-left: 2px solid var(--c-aside);
+}
+
+.notice-body {
+  order: 1;                         /* 排到两枚徽章之后（DOM 里徽章夹着文字） */
+  margin-left: 8px;
 }
 
 .notice .emblem {
-  width: 64px;
-  height: 64px;
+  flex: none;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
-  filter: drop-shadow(0 0 5px rgba(46, 207, 217, .3));
+  opacity: .85;
 }
 
-.notice-body { text-align: center; }
-
 .notice-body h3 {
-  margin: 0 0 6px;
-  color: #b8e4e8;
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 2px;
+  margin: 0 0 4px;
+  color: var(--bone-dim);
+  font-family: var(--font-disp);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .28em;
+  text-transform: uppercase;
 }
 
 .notice-body p {
   margin: 0;
-  color: #dcecef;
-  font-size: 15px;
-  line-height: 1.78;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, .8);
+  color: var(--bone);
+  font-size: 14px;
+  line-height: 1.8;
 }
 
-/* ── 神器分节 ── */
+/* ── 分节 ── */
+.artifact {
+  margin-bottom: clamp(30px, 3.6vw, 52px);
+  border: 1px solid var(--hair);
+  background: linear-gradient(180deg, var(--panel-a), var(--panel-b));
+  scroll-margin-top: var(--stick);
+}
+
+/* 神器名与档位轨合为一个 sticky 单元：滚动中同时回答
+   「在哪件神器」与「哪一列是哪档」。底色须不透明，模组会从其下穿过。 */
+.art-bar {
+  position: sticky;
+  top: var(--stick);
+  z-index: 10;
+  background: var(--ink-lift);
+  border-bottom: 1px solid var(--hair);
+}
+
 .art-head {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+  display: flex;
   align-items: center;
-  gap: clamp(14px, 2vw, 28px);
-  padding: clamp(18px, 2vw, 26px) clamp(18px, 2.2vw, 28px);
-  background: linear-gradient(110deg, #17414d, #225866 55%, #143944);
-  border-top: 1px solid #39bdc9;
-  border-bottom: 1px solid #39bdc9;
+  gap: 16px;
+  padding: 14px 20px;
 }
 
 .art-emblem {
-  width: 59px;
-  height: 59px;
+  flex: none;
+  width: 42px;
+  height: 42px;
   object-fit: contain;
-  filter: drop-shadow(0 0 5px rgba(46, 207, 217, .3));
 }
 
 .art-head h2 {
   margin: 0;
-  color: #eaffff;
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: 4px;
-  line-height: 1.55;
-  text-align: center;
-  text-shadow: 0 0 12px rgba(45, 205, 214, .24);
+  color: var(--bone-hi);
+  font-family: var(--font-cn);
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: .05em;
 }
 
 .art-head h2 small {
-  font-size: .8em;
-  letter-spacing: 2px;
-  opacity: .85;
+  margin-left: 8px;
+  color: var(--bone-dim);
+  font-size: .74em;
+  font-weight: 400;
+  letter-spacing: .12em;
 }
 
 .art-tags {
-  margin: 0;
-  padding: 13px 18px;
-  color: #b8e4e8;
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 2px;
-  line-height: 1.55;
-  text-align: center;
-  background: #0e3743;
-  border-bottom: 1px solid #218e9c;
+  margin: 0 0 0 auto;
+  padding-left: 20px;
+  color: var(--bone-dim);
+  font-size: 12.5px;
+  line-height: 1.7;
+  text-align: right;
 }
 
-/* ── 三档并排 ──
-   一级/二级/三级模组按「行」成组（游戏内逻辑），所以模组是 .tiers 的直接子项、
-   按行主序排列，由网格保证同一行三档横向对齐；每个模组占两行（名称带 + 描述带），
-   用 subgrid 让这两带各自也跨列对齐——等同原表格里名称行、描述行是两个 <tr>。 */
-.tiers {
+/* ── 档位轨：站点母题，三枚菱形点亮 1/2/3 枚 ──
+   原先用 ⯁（U+2BC1）表示档位，该字形在中文字体栈下无字形、渲染为空白，
+   整条档位表头是一条空带。改为 CSS 绘制，不依赖字形覆盖。 */
+.tier-rail,
+.mod-row {
   display: grid;
   grid-template-columns: repeat(3, minmax(280px, 1fr));
 }
 
-.tier-label, .mod { min-width: 0; position: relative; }
-
-/* 档间分隔：原表格 6px 占位列的竖向渐变光条，逐行一段（与原页面同样呈串珠状） */
-.tier-label:not([data-tier="1"])::before,
-.mod:not([data-tier="1"])::before {
-  content: "";
-  position: absolute;
-  inset: 0 auto 0 -3px;
-  width: 6px;
-  background: linear-gradient(#06303d, #1daaba, #06303d);
-  box-shadow: 0 0 8px rgba(39, 199, 211, .3);
-  z-index: 2;
+.tier-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 20px;
+  border-left: 1px solid var(--hair);
 }
 
-[data-tier="1"] { background: rgba(9, 43, 55, .94); }
-[data-tier="2"] { background: rgba(8, 37, 50, .94); }
-[data-tier="3"] { background: rgba(10, 43, 48, .94); }
+.tier-head:first-child { border-left: 0; }
 
-.tier-label {
-  margin: 0;
-  padding: 8px;
-  color: #dcecef;
-  font-size: 15px;
-  font-weight: 500;
-  letter-spacing: 2px;
-  text-align: center;
-  border-bottom: 1px solid rgba(82, 171, 181, .24);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, .8);
+.tier-head .rhombi { color: var(--bone-faint); }
+
+.tier-head .rhombi i.on {
+  color: var(--c-arc);
+  border-color: var(--c-arc);
 }
 
-/* ── 模组卡片：图标 + 名称一行，描述整行 ── */
+/* 档位文字由 CSS 生成，不进 HTML——生成器的全文保真比对只认源表格文本 */
+.tier-head::after {
+  color: var(--bone-dim);
+  font-family: var(--font-cn);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: .2em;
+}
+
+.tier-head[data-tier="1"]::after { content: "一级"; }
+.tier-head[data-tier="2"]::after { content: "二级"; }
+.tier-head[data-tier="3"]::after { content: "三级"; }
+
+/* ── 模组行 ──
+   一级/二级/三级模组按「行」成组（游戏内逻辑）。行是结构，
+   每个模组用 grid-column 钉在自己的档位列上——不靠自动布局的行主序，
+   否则搜索隐藏任一模组都会让其后所有模组列位偏移。
+   行内两带（名称带、描述带）用 subgrid 让同行三档各自跨列对齐。 */
+.mod-row {
+  grid-template-rows: auto auto;
+  border-top: 1px solid var(--hair);
+}
+
+.mod-row:first-child { border-top: 0; }
+
 .mod {
   display: grid;
-  grid-row: span 2;                 /* 占父网格两行：名称带、描述带 */
-  grid-template-rows: subgrid;      /* 两带的行高由整行三档共同决定 */
+  grid-row: span 2;
+  grid-template-rows: subgrid;
   grid-template-columns: auto 1fr;
   grid-template-areas:
     "icon name"
     "desc desc";
-  border-bottom: 1px solid rgba(82, 171, 181, .24);
+  min-width: 0;
+  border-left: 1px solid var(--hair);
 }
 
-/* 名称行底色：跨列铺满整行，图标与名称浮在其上（<img> 自身有固有宽高比，
-   拉伸不了，所以底色不能挂在图标上） */
+.mod[data-tier="1"] { grid-column: 1; border-left: 0; }
+.mod[data-tier="2"] { grid-column: 2; }
+.mod[data-tier="3"] { grid-column: 3; }
+
+/* 名称带底色：跨列铺满整行，图标与名称浮在其上
+   （<img> 有固有宽高比，拉伸不了，底色不能挂在图标上） */
 .mod::after {
   content: "";
   grid-row: 1;
   grid-column: 1 / -1;
-  background: #11404d;
+  background: #ffffff06;
+  border-bottom: 1px solid var(--hair);
   z-index: 0;
 }
 
@@ -201,12 +227,11 @@ main::-webkit-scrollbar-thumb {
   align-self: center;
   position: relative;
   z-index: 1;
-  width: 48px;
-  height: 48px;
+  width: 34px;
+  height: 34px;
   object-fit: contain;
-  padding: clamp(14px, 1.35vw, 20px) 0 clamp(14px, 1.35vw, 20px) clamp(14px, 1.55vw, 22px);
+  padding: 13px 0 13px 20px;
   box-sizing: content-box;
-  filter: drop-shadow(0 0 5px rgba(46, 207, 217, .3));
 }
 
 .mod h4 {
@@ -215,37 +240,31 @@ main::-webkit-scrollbar-thumb {
   position: relative;
   z-index: 1;
   margin: 0;
-  padding: clamp(14px, 1.35vw, 20px) clamp(14px, 1.55vw, 22px);
-  color: #eefeff;
-  font-size: 16px;
-  font-weight: 800;
-  line-height: 1.78;
-  text-align: center;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, .8);
+  padding: 13px 20px;
+  color: var(--bone-hi);
+  font-family: var(--font-cn);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.6;
+  letter-spacing: .03em;
   overflow-wrap: anywhere;
 }
 
 .mod p {
   grid-area: desc;
-  align-self: stretch;              /* 顶对齐并铺满行高 */
+  align-self: start;
   margin: 0;
-  padding: clamp(14px, 1.35vw, 20px) clamp(14px, 1.55vw, 22px);
-  color: #dcecef;
-  font-size: 15px;
-  font-weight: 500;
-  line-height: 1.78;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, .8);
+  padding: 15px 20px 20px;
+  font-size: 14px;
+  line-height: 1.92;
   overflow-wrap: anywhere;
 }
 
-.mod:hover { background: #15515f; }
-.mod:hover::after { background: #15515f; }
+.mod:hover::after { background: #ffffff0d; }
 
-@media (max-width: 700px) {
-  main {
-    box-shadow: 0 12px 32px rgba(0, 0, 0, .46), inset 0 0 0 3px rgba(17, 63, 76, .38);
-  }
-  .notice .emblem { width: 52px; height: 52px; }
-  .mod h4, .mod p { padding: 13px 14px; line-height: 1.72; }
-  .mod-icon { padding: 13px 0 13px 14px; }
-}
+/* ── 搜索态 ──
+   命中即显示；整行三档皆不命中则整行隐藏，整节不命中则整节隐藏。
+   隐藏用 [hidden]，由 app.js 施加。 */
+.mod[hidden],
+.mod-row[hidden],
+.artifact[hidden] { display: none; }

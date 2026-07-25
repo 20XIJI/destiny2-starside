@@ -3,19 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>赛季神器模组 · 凯旋纪念碑</title>
+<title>赛季神器模组 · Starside</title>
+<meta name="theme-color" content="#0b0d14">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../assets/site.css">
 <link rel="stylesheet" href="style.css">
+<script src="../assets/app.js" defer></script>
 </head>
 <body>
-<nav class="site-nav"><a href="../index.html">星侧</a><span aria-current="page">赛季神器模组</span></nav>
-<header class="monument-header">
+<div class="site-head"><nav class="site-nav"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span><a class="home" href="../index.html">Starside</a><span class="sep">/</span><span aria-current="page">赛季神器模组</span></nav><div class="toolbar"></div></div>
+<header class="page-head">
+<p class="eyebrow">✦ 神器模组 · 凯旋纪念碑 ✦</p>
 <h1>赛季神器 · 凯旋纪念碑</h1>
-<p class="en-sub">✦ 神器模组 · 凯旋纪念碑 ✦</p>
 </header>
 <main>
 <section class="intro">
-<h2>神器模组</h2>
+<h2 class="sect-label">神器模组</h2>
 <p class="lede">来自过去赛季的神器可装备， 每件专注于特定元素 、 武器 类型和独特机制。</p>
 <aside class="notice">
 <img class="emblem" src="icons/fb1c7b1a35.png" alt="" width="38" height="29" loading="lazy">
@@ -27,15 +30,19 @@
 </aside>
 </section>
 <section class="artifact" id="art-1">
+<div class="art-bar">
 <header class="art-head">
 <img class="art-emblem" src="icons/83afa7207d.png" alt="" width="59" height="59" loading="lazy">
 <h2>加密数据盘 <small>( 反叛 )</small></h2>
-<img class="art-emblem" src="icons/83afa7207d.png" alt="" width="59" height="59" loading="lazy">
 </header>
+<div class="tier-rail">
+<div class="tier-head" data-tier="1"><span class="rhombi" aria-hidden="true"><i class="on"></i><i></i><i></i></span></div>
+<div class="tier-head" data-tier="2"><span class="rhombi" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i></span></div>
+<div class="tier-head" data-tier="3"><span class="rhombi" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</div>
+</div>
 <div class="tiers">
-<h3 class="tier-label" data-tier="1">⯁</h3>
-<h3 class="tier-label" data-tier="2">⯁⯁</h3>
-<h3 class="tier-label" data-tier="3">⯁⯁⯁</h3>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/676c93b296.png" alt="" width="47" height="47" loading="lazy">
 <h4>乘胜追击</h4>
@@ -44,17 +51,19 @@
 <article class="mod" data-tier="2">
 <img class="mod-icon" src="icons/a19d39fd46.png" alt="" width="47" height="47" loading="lazy">
 <h4>电介质</h4>
-<p>击杀<span class="deb-arc"> 电弧减益敌人 </span>：<br><br>获得&nbsp;<span class="el-arc">x1 电光充能</span>。<br><br>在 6 秒内连续击杀 <span class="deb-arc">3 名&nbsp;</span><span class="el-arc" style="font-weight:800">电弧减益敌人 </span>：<br>生成一个<span class="orb"> 能量球</span>， 提供&nbsp;<span class="orb">7.15% 超能能量</span>。<br> <span class="health">恢复 40 点生命值。</span></p>
+<p>击杀<span class="deb-arc"> 电弧减益敌人 </span>：<br><br>获得&nbsp;<span class="el-arc">x1 电光充能</span>。<br><br>在 6 秒内连续击杀 <span class="deb-arc">3 名&nbsp;</span><span class="el-arc">电弧减益敌人 </span>：<br>生成一个<span class="orb"> 能量球</span>， 提供&nbsp;<span class="orb">7.15% 超能能量</span>。<br> <span class="health">恢复 40 点生命值。</span></p>
 </article>
 <article class="mod" data-tier="3">
 <img class="mod-icon" src="icons/5993e150a4.png" alt="" width="47" height="47" loading="lazy">
 <h4>元素能量球 ： 电弧</h4>
 <p>使用<span class="el-arc"> 电弧武器</span> 击杀&nbsp;<span class="deb-arc">6</span> <span class="unsure">[2？] </span>名敌人 ：<br>生成一个<span class="el-arc"> 电弧元素能量球</span>。<br><br> <span class="el-arc">电弧元素能量球 ：</span><br><span class="el-arc"> 电弧元素能量球</span> 在地面停留最多 20 秒后消失。<br> <span class="el-arc">拾取的电弧能量球</span> 可持有最多 20 秒。<br><br> <span class="el-arc">电弧能量球</span> 造成最多 <span class="enemy">405</span> <span class="unsure">[101] 伤害</span>， 最低降至 90% 伤害， 并在 8 米范围内施加<span class="deb-arc"> 震颤</span> 效果。</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/04e6add312.png" alt="" width="47" height="47" loading="lazy">
 <h4>动能合成</h4>
-<p>造成<span class="el-kinetic"> 动能武器伤害</span> 和完成<span class="el-kinetic"> 动能武器击杀</span> 会推进计数器， 达到 100% 时生成一个独特的<span class="el-kinetic"> 动能弹药盒</span>。<br>计数器持续 15 秒， 并在造成<span class="el-kinetic"> 动能武器伤害</span> 时刷新。<br><br>每点伤害提供 0.0265% 进度， 需要造成 3770 点伤害才能 生成一个弹药盒。<br> <span class="ammo-heavy">A499 </span>提供的进度减少 75%（ 需要 15000 点伤害才能生成一个弹药盒 ）。<br> <span class="enemy">红血击杀 = 8% | 精英 = 15% | 小头目 = 25%</span><br><span class="enemy"></span> 伤害需求<span class="note"> 忽略光等差距</span>， 但考虑实际伤害系数。<br>这意味着无论因<span class="note" style="font-weight:800"> 光等差距</span> 造成的伤害降低幅度， 它都需要相同的 “ 基础伤害 ”。<br><br>收集一个<span class="el-kinetic"> 动能弹药盒</span> 时 ：<br> <span class="el-strand">+5% 特殊弹药</span> 和 <span class="ammo-heavy">+5% 威能</span> 弹药进度。<br>装填当前装备的<span class="el-kinetic"> 动能武器</span> 并为它们生成<span class="el-strand"> 特殊 </span><span class="el-kinetic">/</span><span class="ammo-heavy"> 威能</span><span class="el-kinetic">弹药</span>。<br>生成 （ 弹匣容量的 1/3）+ 1 发弹药， 某些例外情况除外。<br>计入弹药拾取效果。<span class="el-kinetic"> 动能弹药生成</span> 不受回收器影响。<br><br> <span class="orb">堡垒 </span>= <span class="el-strand">+1 弹药</span> | <span class="orb">库尔之影 </span>= <span class="el-strand">+2 弹药</span> | <span class="orb"><b>英勇利刃 </b></span>= <span class="el-strand">+2 弹药</span> | <span class="orb">缩影 </span>= <span class="ammo-heavy">+12 弹药</span>.</p>
+<p>造成<span class="el-kinetic"> 动能武器伤害</span> 和完成<span class="el-kinetic"> 动能武器击杀</span> 会推进计数器， 达到 100% 时生成一个独特的<span class="el-kinetic"> 动能弹药盒</span>。<br>计数器持续 15 秒， 并在造成<span class="el-kinetic"> 动能武器伤害</span> 时刷新。<br><br>每点伤害提供 0.0265% 进度， 需要造成 3770 点伤害才能 生成一个弹药盒。<br> <span class="ammo-heavy">A499 </span>提供的进度减少 75%（ 需要 15000 点伤害才能生成一个弹药盒 ）。<br> <span class="enemy">红血击杀 = 8% | 精英 = 15% | 小头目 = 25%</span><br><span class="enemy"></span> 伤害需求<span class="note"> 忽略光等差距</span>， 但考虑实际伤害系数。<br>这意味着无论因<span class="note"> 光等差距</span> 造成的伤害降低幅度， 它都需要相同的 “ 基础伤害 ”。<br><br>收集一个<span class="el-kinetic"> 动能弹药盒</span> 时 ：<br> <span class="el-strand">+5% 特殊弹药</span> 和 <span class="ammo-heavy">+5% 威能</span> 弹药进度。<br>装填当前装备的<span class="el-kinetic"> 动能武器</span> 并为它们生成<span class="el-strand"> 特殊 </span><span class="el-kinetic">/</span><span class="ammo-heavy"> 威能</span><span class="el-kinetic">弹药</span>。<br>生成 （ 弹匣容量的 1/3）+ 1 发弹药， 某些例外情况除外。<br>计入弹药拾取效果。<span class="el-kinetic"> 动能弹药生成</span> 不受回收器影响。<br><br> <span class="orb">堡垒 </span>= <span class="el-strand">+1 弹药</span> | <span class="orb">库尔之影 </span>= <span class="el-strand">+2 弹药</span> | <span class="orb"><b>英勇利刃 </b></span>= <span class="el-strand">+2 弹药</span> | <span class="orb">缩影 </span>= <span class="ammo-heavy">+12 弹药</span>.</p>
 </article>
 <article class="mod" data-tier="2">
 <img class="mod-icon" src="icons/397a65f580.png" alt="" width="47" height="47" loading="lazy">
@@ -66,6 +75,8 @@
 <h4>动能裂口</h4>
 <p>对<span class="enemy"> 精英 + 战斗人员</span> 造成足够的<span class="el-kinetic"> 动能武器伤害次数</span> 时 ：<br>生成一个<span class="el-kinetic"> 动能裂口</span>， 持续？ 秒。<br><br> <span class="el-kinetic">动能决裂</span> 可以被伤害， 在被造成伤害？ 秒后<span class="el-kinetic"> 激活</span>。<br><br> <span class="el-kinetic">动能裂口</span> 的爆炸伤害等于其受到的伤害的 %%%, 可眩晕势不可挡勇士， 并且<span class="note"> 会击退战斗人员</span>。</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/685d37f38b.png" alt="" width="47" height="47" loading="lazy">
 <h4>远距填装</h4>
@@ -81,6 +92,8 @@
 <h4>狙击手冥想</h4>
 <p>狙击步枪命中 :<br>获得 1 层 <span class="orb">狙击手冥想</span>， 持续 7 秒。<br> <span class="ammo-heavy">威能 狙击步枪</span> 命中获得 <span class="orb">2 层数</span>。<br> <span class="orb">狙击手冥想 Buff</span> 在收起武器后仍然持续。<br><br> <span class="orb">狙击手冥想 </span><br><span class="orb"></span> 增加伤害 、 稳定性和填装速度。<br>2.8% | 5.7% | 9% | 12% | 15% 伤害<br>+? | +? | +? | +? | +? 稳定性<br>+15 | +30 | +35 | +40 | +45 填装速度</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/08a8a252a9.png" alt="" width="47" height="47" loading="lazy">
 <h4>还击</h4>
@@ -96,6 +109,8 @@
 <h4>刀剑风暴连击</h4>
 <p>在进行 3 次 轻攻击 后， 再进行一次 重攻击 ：<br>获得 <span class="el-kinetic">刀剑风暴连击</span>， 持续 5 秒。<br>额外的 刀剑 击杀会刷新该 Buff。<br> <span class="el-kinetic"></span><br><span class="el-kinetic">刀剑风暴连击 </span>:<br>自动对使用者周围 6 米内的敌人每 0.53 秒造成 <span class="enemy">103 </span> <span class="unsure">[?]</span> <span class="el-kinetic">刀剑动能</span>&nbsp;并 <span class="el-kinetic">迷惑</span>， 持续 3 秒。<br>在距离 &lt;4 米时， 伤害最多提高 15%。</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/8e42c7d2d8.png" alt="" width="47" height="47" loading="lazy">
 <h4><span class="el-void">苦痛之力</span></h4>
@@ -104,13 +119,15 @@
 <article class="mod" data-tier="2">
 <img class="mod-icon" src="icons/62c1658ec0.png" alt="" width="47" height="47" loading="lazy">
 <h4>奇点利刃</h4>
-<p>当拥有&nbsp;<span class="el-void" style="font-weight:800">虚空元素增益 </span><span class="el-void">(</span><span class="el-void" style="font-weight:800; text-shadow:rgb(0,0,0) 0px 1px 2px"> 吞食 </span>、<span class="el-void" style="font-weight:800; text-shadow:rgb(0,0,0) 0px 1px 2px"> 隐身</span> 或 <span class="pickup" style="font-weight:800; text-shadow:rgb(0,0,0) 0px 1px 2px">覆盖护盾 </span>)&nbsp;时 ：<span class="el-void"></span><br><span class="el-void"></span> <span class="el-arc">近战 </span> 和 刀剑 命中造成 <span class="deb-void">削弱</span>， 持续 6 秒。<br>在命中时检测， 而非在使用时快照。<br><br>当拥有 <span class="el-void" style="font-weight:800; text-shadow:rgb(0,0,0) 0px 1px 2px">虚空元素增益&nbsp;</span>时， 通过 <span class="el-arc">近战 </span> 或 刀剑 击杀 ：<br>触发一次 <span class="deb-void">削弱爆发</span>， 对 4 米内的敌人造成 <span class="deb-void">削弱</span>， 持续 6 秒。</p>
+<p>当拥有&nbsp;<span class="el-void">虚空元素增益 </span><span class="el-void">(</span><span class="el-void"> 吞食 </span>、<span class="el-void"> 隐身</span> 或 <span class="pickup">覆盖护盾 </span>)&nbsp;时 ：<span class="el-void"></span><br><span class="el-void"></span> <span class="el-arc">近战 </span> 和 刀剑 命中造成 <span class="deb-void">削弱</span>， 持续 6 秒。<br>在命中时检测， 而非在使用时快照。<br><br>当拥有 <span class="el-void">虚空元素增益&nbsp;</span>时， 通过 <span class="el-arc">近战 </span> 或 刀剑 击杀 ：<br>触发一次 <span class="deb-void">削弱爆发</span>， 对 4 米内的敌人造成 <span class="deb-void">削弱</span>， 持续 6 秒。</p>
 </article>
 <article class="mod" data-tier="3">
 <img class="mod-icon" src="icons/b20e6717c5.png" alt="" width="47" height="47" loading="lazy">
 <h4>虚空感染</h4>
 <p>击杀一个 <span class="deb-void">被削弱的敌人</span> 后 ：<br><br>生成一个 <span class="el-void">追踪弹头</span>， 寻找 15 米内的敌人。<br><br> <span class="el-void">弹头 </span> 造成 <span class="enemy">87</span> <span class="unsure">[?]</span> <span class="el-void">虚空</span>&nbsp;并在? 米范围内造成 <span class="deb-void">削弱</span>。</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/211844a078.png" alt="" width="47" height="47" loading="lazy">
 <h4><span class="el-solar">凶险距离</span></h4>
@@ -119,13 +136,15 @@
 <article class="mod" data-tier="2">
 <img class="mod-icon" src="icons/aec0b5b9fb.png" alt="" width="47" height="47" loading="lazy">
 <h4>致盲震颤</h4>
-<p>在 <span class="deb-arc">击杀 被震颤的敌人</span>&nbsp;时 :<br><br>对 8 米内的敌人造成&nbsp;<span class="plain" style="font-weight:800">致盲</span><span class="el-kinetic">&nbsp;</span>效果， 持续 10 秒。</p>
+<p>在 <span class="deb-arc">击杀 被震颤的敌人</span>&nbsp;时 :<br><br>对 8 米内的敌人造成&nbsp;<span class="plain">致盲</span><span class="el-kinetic">&nbsp;</span>效果， 持续 10 秒。</p>
 </article>
 <article class="mod" data-tier="3">
 <img class="mod-icon" src="icons/1a95639243.png" alt="" width="47" height="47" loading="lazy">
 <h4>泰瑟电触</h4>
 <p>在造成 <span class="el-arc">电弧近战伤害</span> 时 :<br><br>施加&nbsp;<span class="deb-arc">震颤</span>， 并每 0.25 秒造成 <span class="el-arc">23 点电弧 持续伤害&nbsp;</span><br>在 8.75 秒内总计造成约 <span class="el-arc">~800 点电弧</span>。<br> <span class="el-arc">不包括震颤伤害！ 有震颤时， 总伤害为 1245 点。</span></p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/be47bd50cd.png" alt="" width="47" height="47" loading="lazy">
 <h4>快速治疗</h4>
@@ -134,26 +153,31 @@
 <article class="mod" data-tier="2">
 <img class="mod-icon" src="icons/5c528ae496.png" alt="" width="47" height="47" loading="lazy">
 <h4>精准平等</h4>
-<p><span class="stack">精准击杀</span> 提供&nbsp;<span class="orb" style="font-weight:800">精准平等</span><span class="stack">&nbsp;</span>的 <span class="stack">层数</span>， 最高 <span class="stack">10 层</span>。<br> <span class="enemy">普通敌人 </span>= <span class="stack">1</span> | <span class="enemy">精英 </span>= <span class="stack">2</span> | <span class="enemy">小头目 </span>= <span class="stack">5 </span> | <span class="enemy">勇士 + </span>= <span class="stack">10</span><br><span class="stack"></span> <span class="note">不会溢出或保留超过 x10 的层数。</span> <span class="note"></span><br><span class="note"><br></span> 达到 <span class="stack">x10 层数</span> 时 :<br> <span class="stack">消耗所有层数</span> 以生成一个 <span class="orb">大型能量球</span>。<br> <span class="orb">能量球</span> 提供 <span class="orb">12.5% 超能能量</span>。<br><br>在拾取&nbsp;<span class="orb" style="font-weight:800">大型能量球</span>&nbsp;时 :<br> <span class="pickup">武器激涌 x2</span> 持续 11 秒。<br>不会覆盖更强的武器激涌效果。<br>适用于所有伤害类型。</p>
+<p><span class="stack">精准击杀</span> 提供&nbsp;<span class="orb">精准平等</span><span class="stack">&nbsp;</span>的 <span class="stack">层数</span>， 最高 <span class="stack">10 层</span>。<br> <span class="enemy">普通敌人 </span>= <span class="stack">1</span> | <span class="enemy">精英 </span>= <span class="stack">2</span> | <span class="enemy">小头目 </span>= <span class="stack">5 </span> | <span class="enemy">勇士 + </span>= <span class="stack">10</span><br><span class="stack"></span> <span class="note">不会溢出或保留超过 x10 的层数。</span> <span class="note"></span><br><span class="note"><br></span> 达到 <span class="stack">x10 层数</span> 时 :<br> <span class="stack">消耗所有层数</span> 以生成一个 <span class="orb">大型能量球</span>。<br> <span class="orb">能量球</span> 提供 <span class="orb">12.5% 超能能量</span>。<br><br>在拾取&nbsp;<span class="orb">大型能量球</span>&nbsp;时 :<br> <span class="pickup">武器激涌 x2</span> 持续 11 秒。<br>不会覆盖更强的武器激涌效果。<br>适用于所有伤害类型。</p>
 </article>
 <article class="mod" data-tier="3">
 <img class="mod-icon" src="icons/667d626010.png" alt="" width="47" height="47" loading="lazy">
 <h4>黏附冲击</h4>
-<p><span class="el-arc">电弧粘性电浆手雷 </span>、<span class="el-solar"> 融合手雷</span> 和&nbsp;&nbsp;<span class="el-void" style="font-weight:800; text-shadow:rgb(0,0,0) 0px 1px 2px">磁性手雷</span><span class="el-void">&nbsp;</span>的直接命中伤害提高。<br><span class="el-arc" style="font-weight:800">电弧粘性电浆手雷</span><span class="el-arc">&nbsp;= 60%</span> | <span class="el-solar">融合 = 30%</span> | <span class="el-void" style="font-weight:800; text-shadow:rgb(0,0,0) 0px 1px 2px">磁性手雷</span><span class="el-void">&nbsp;= 总计提升 22.5%</span><br><span class="el-void"></span> 只有第一次&nbsp;&nbsp;<span class="el-void" style="font-weight:800; text-shadow:rgb(0,0,0) 0px 1px 2px">磁性手雷</span>&nbsp;获得 45% 的加成。<br> <span class="note">不会增加融合手雷的烈日效果伤害。</span><br><span class="note"></span><br>使用上述 <span class="el-solar">手雷</span> 击杀敌人时 :<br>在 <span class="health">敌人死亡位置</span> 上方生成 <span class="el-kinetic">4 枚追踪 动能 微型导弹</span>。<br> <span class="el-kinetic">微型导弹</span> 追踪 30 米内最近的敌人。<br><br> <span class="el-kinetic">微型导弹</span> 在命中时造成 <span class="enemy">216</span> <span class="unsure">[?]</span> <span class="el-kinetic">动能</span>。<br>它们的行为与辅助炸药的导弹完全相同。</p>
+<p><span class="el-arc">电弧粘性电浆手雷 </span>、<span class="el-solar"> 融合手雷</span> 和&nbsp;&nbsp;<span class="el-void">磁性手雷</span><span class="el-void">&nbsp;</span>的直接命中伤害提高。<br><span class="el-arc">电弧粘性电浆手雷</span><span class="el-arc">&nbsp;= 60%</span> | <span class="el-solar">融合 = 30%</span> | <span class="el-void">磁性手雷</span><span class="el-void">&nbsp;= 总计提升 22.5%</span><br><span class="el-void"></span> 只有第一次&nbsp;&nbsp;<span class="el-void">磁性手雷</span>&nbsp;获得 45% 的加成。<br> <span class="note">不会增加融合手雷的烈日效果伤害。</span><br><span class="note"></span><br>使用上述 <span class="el-solar">手雷</span> 击杀敌人时 :<br>在 <span class="health">敌人死亡位置</span> 上方生成 <span class="el-kinetic">4 枚追踪 动能 微型导弹</span>。<br> <span class="el-kinetic">微型导弹</span> 追踪 30 米内最近的敌人。<br><br> <span class="el-kinetic">微型导弹</span> 在命中时造成 <span class="enemy">216</span> <span class="unsure">[?]</span> <span class="el-kinetic">动能</span>。<br>它们的行为与辅助炸药的导弹完全相同。</p>
 </article>
+</div>
 </div>
 </section>
 <section class="artifact" id="art-2">
+<div class="art-bar">
 <header class="art-head">
 <img class="art-emblem" src="icons/daa57a1ccb.png" alt="" width="59" height="59" loading="lazy">
 <h2>好奇之器 <small>( 溯回 )</small></h2>
-<img class="art-emblem" src="icons/daa57a1ccb.png" alt="" width="59" height="59" loading="lazy">
-</header>
 <p class="art-tags">动能 | <span class="el-solar">烈日</span> | <span class="el-stasis">冰影 </span> | <span class="el-strand">缚丝 </span><br>弓 | 刀剑 | 微型导弹</p>
+</header>
+<div class="tier-rail">
+<div class="tier-head" data-tier="1"><span class="rhombi" aria-hidden="true"><i class="on"></i><i></i><i></i></span></div>
+<div class="tier-head" data-tier="2"><span class="rhombi" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i></span></div>
+<div class="tier-head" data-tier="3"><span class="rhombi" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</div>
+</div>
 <div class="tiers">
-<h3 class="tier-label" data-tier="1">⯁</h3>
-<h3 class="tier-label" data-tier="2">⯁⯁</h3>
-<h3 class="tier-label" data-tier="3">⯁⯁⯁</h3>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/cd3c9df362.png" alt="" width="47" height="47" loading="lazy">
 <h4><span class="el-solar">发热寒颤</span></h4>
@@ -169,6 +193,8 @@
 <h4><span class="orb">焕光碎片</span></h4>
 <p>在<span class="orb"> 焕光</span> 状态下， 造成相当于敌人<span class="enemy">&nbsp;</span><span class="health">生命值 +</span> <span class="pickup">护盾 </span>10% 的武器伤害时， 或使用武器击杀<span class="el-solar"> 灼烧状态战斗人员</span> 时 ：<br><br>目标释放 <span class="el-solar">1 枚烈日弹片</span>， 造成 <span class="enemy">54</span> <span class="unsure">[?] 伤害</span> 和最多 <span class="enemy">289</span> <span class="unsure">[20] 爆炸伤害</span>， 在? 米范围内施加<span class="el-solar"> x20+0</span> <span class="el-solar">灼烧</span>。<br><br> <span class="note">弹片生成有 1 秒冷却时间。</span><br><span class="note"></span><br>弹片有轻微追踪效果， 但经常会错过其生成时瞄准的敌人</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/568d54c6df.png" alt="" width="47" height="47" loading="lazy">
 <h4>元素仁慈</h4>
@@ -184,6 +210,8 @@
 <h4>护盾粉碎</h4>
 <p>当<span class="el-stasis"> 冰霜护甲 </span>、<span class="pickup"> 虚空覆盖护盾</span> 或<span class="el-strand"> 织造铠甲</span> 激活时 ：<br><span class="enemy">?%</span> <span class="unsure">[?%]</span> <span class="el-arc">额外基础近战充能速率</span><br><span class="el-arc"> 50%</span> <span class="unsure"> [5%]</span> <span class="el-arc">提升充能近战伤害</span>。<br> <span class="orb">同时提升超能近战伤害。</span><br><span class="orb"><br></span> 当<span class="el-arc"> 增幅 </span>或<span class="el-solar"> 焕光 </span>激活时 ：<br><span class="enemy">?% [?%]</span> <span class="el-solar">额外基础手雷充能速率</span><br><span class="el-solar">25% [5%]</span> <span class="el-solar">提升手雷伤害</span>。<br><br> <span class="el-strand">抓钩近战改为获得 12% 增伤， 每半段 特性各提供一半加成。</span></p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/7523b2fec7.png" alt="" width="47" height="47" loading="lazy">
 <h4>冰霜复兴</h4>
@@ -199,6 +227,8 @@
 <h4>元素超驰</h4>
 <p>拾取<span class="pickup"> 元素拾取物</span> 时 ：<br><br> <span class="enemy">22%</span> <span class="unsure"> [?%]</span> <span class="pickup">匹配拾取物类型的武器伤害</span> 提升， 持续 7 秒。<br> <span class="note">显示为武器激涌， 但与其叠加方式为乘法。</span></p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/f8caf4bd4e.png" alt="" width="47" height="47" loading="lazy">
 <h4>群敌飞梭</h4>
@@ -214,6 +244,8 @@
 <h4>纠缠罗网</h4>
 <p>击杀<span class="deb-strand"> 受到缚丝减益的战斗人员</span> 时 ：<br><br>触发一次<span class="deb-strand"> 悬停爆破</span>。<br> <span class="note">仅在生成<span class="deb-strand">缠结</span>时触发。</span></p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/b6306c1bf1.png" alt="" width="47" height="47" loading="lazy">
 <h4>醒神丝线</h4>
@@ -229,6 +261,8 @@
 <h4>极寒凝视</h4>
 <p>在<span class="el-stasis"> 冰霜护甲</span> 激活时， 使用<span class="el-stasis"> 冰影武器</span> 造成<span class="stack"> 精确击杀 </span>：<br><br>在敌人死亡位置触发一次<span class="deb-stasis"> 冰冻爆发</span>。<br> <span class="deb-stasis">冰冻爆发</span> 影响 7 米内的敌人。</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/cc9e22c042.png" alt="" width="47" height="47" loading="lazy">
 <h4>集群战术</h4>
@@ -244,10 +278,12 @@
 <h4>钢铁领主的活力</h4>
 <p>在 3 秒内使用刀剑造成 3 次击杀 ：<br>获得 <span class="ammo-heavy">+3 弹药</span>。<br> <span class="orb">英勇利刃</span> 和<span class="orb"> 故我在</span> 改为获得 <span class="el-strand">+1 弹药</span>。<br><br> <span class="note">不会提供任何伤害抗性， 与描述相反。</span></p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/40bbe79886.png" alt="" width="47" height="47" loading="lazy">
 <h4>半自动强袭</h4>
-<p>当 <span class="enemy">&nbsp;护甲充能 </span><span class="el-stasis" style="font-weight:800">&lt;2&nbsp;</span>时 ：<br><br>在 3 秒内使用弓箭 、 狙击步枪或斥候步枪造成<span class="stack"> 多次精确命中 </span>：<br><br>获得一层<span class="enemy"> 护甲充能</span>。<br><br> <span class="stack">精确命中要求 </span>：<br>斥候步枪 = 5 | 弓箭 = 3 | 狙击枪 = 2</p>
+<p>当 <span class="enemy">&nbsp;护甲充能 </span><span class="el-stasis">&lt;2&nbsp;</span>时 ：<br><br>在 3 秒内使用弓箭 、 狙击步枪或斥候步枪造成<span class="stack"> 多次精确命中 </span>：<br><br>获得一层<span class="enemy"> 护甲充能</span>。<br><br> <span class="stack">精确命中要求 </span>：<br>斥候步枪 = 5 | 弓箭 = 3 | 狙击枪 = 2</p>
 </article>
 <article class="mod" data-tier="2">
 <img class="mod-icon" src="icons/74d8848d03.png" alt="" width="47" height="47" loading="lazy">
@@ -260,18 +296,23 @@
 <p>当<span class="enemy"> 护甲充能</span> 激活时 ：<br><br>装填弓可获得 3 层<span class="deb-arc"> 弑神箭头</span>。<br>收起武器移除所有层数。<br><br>当<span class="deb-arc"> 弑神狩猎箭头</span> 激活时开火 ：<br>消耗 1 层<span class="deb-arc"> 弑神箭头</span> 以提升<span class="enemy"> 伤害</span> 和 +？<span class="enemy"> 填装速度</span>。<br><br> <span class="el-kinetic">主武器 </span>= <span class="enemy">对战斗人员伤害提高 35%。</span><br><span class="enemy">威能武器 </span>= <span class="enemy">对战斗人员伤害提高 25%。</span><br>层数与所有效果叠加。</p>
 </article>
 </div>
+</div>
 </section>
 <section class="artifact" id="art-3">
+<div class="art-bar">
 <header class="art-head">
 <img class="art-emblem" src="icons/b23a1a4c51.png" alt="" width="59" height="59" loading="lazy">
 <h2>废墟石板 <small>( 异端 )</small></h2>
-<img class="art-emblem" src="icons/b23a1a4c51.png" alt="" width="59" height="59" loading="lazy">
-</header>
 <p class="art-tags"><span class="el-arc">电弧</span> | <span class="el-void">虚空</span> | <span class="el-strand">缚丝</span> | <span class="el-prismatic">棱镜</span><br>融合步枪 | 偃月 | 追踪步枪</p>
+</header>
+<div class="tier-rail">
+<div class="tier-head" data-tier="1"><span class="rhombi" aria-hidden="true"><i class="on"></i><i></i><i></i></span></div>
+<div class="tier-head" data-tier="2"><span class="rhombi" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i></span></div>
+<div class="tier-head" data-tier="3"><span class="rhombi" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</div>
+</div>
 <div class="tiers">
-<h3 class="tier-label" data-tier="1">⯁</h3>
-<h3 class="tier-label" data-tier="2">⯁⯁</h3>
-<h3 class="tier-label" data-tier="3">⯁⯁⯁</h3>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/5f4f90674d.png" alt="" width="47" height="47" loading="lazy">
 <h4>死守防线</h4>
@@ -287,6 +328,8 @@
 <h4><span class="el-strand">粒子重建</span></h4>
 <p>( 线性 ) 融合步枪命中施加一个<span class="deb-void"> 独特的叠加削弱</span>， 可增加 ( 线性 ) 融合步枪伤害。<br> <span class="deb-void">5% | 10.25% | 15.8% | 21.6% | 27.6%</span><br><span class="deb-void"></span> <span class="deb-void">30% 削弱</span> 会覆盖<span class="el-strand"> 粒子</span><span class="ammo-heavy">重建</span><span class="deb-void">削弱</span>。<br> <span class="orb">神圣裁决的泡泡 </span>会将其<span class="note"> 降低 </span>至 <span class="pickup">15%</span>。<br><br>多次直接命中会补充 10% 的弹匣， 向上取整。<br> <span class="el-strand">融合步枪 : 弹匣中的每一发弹药 通常都算。 </span><br><span class="el-strand">攻击融合步枪 </span> <span class="orb">(+ 库尔之影 ) </span> <span class="el-strand">独特地每两次点射触发一次。 </span><br><span class="el-strand"><br></span> <span class="ammo-heavy">精密线性融合步枪 : 弹匣 + 2</span><br><span class="ammo-heavy">适配点射线性融合步枪 : 3 x ( 弹匣 + 4)<br><br></span>堡垒 <span class="orb">每 7 次点射触发一次。</span><br><span class="orb"></span> <span class="el-strand">悦耳之声 线虫 </span> <span class="orb">算作命中， 否则需要 30 次命中。 (8 次点射触发 )</span><br><span class="orb">精致坟墓</span> <span class="orb">每 3 次完整点射触发一次。 <br>冰霜巨人 在 8 次射击后触发。</span><br><span class="orb">Vex揭秘者&nbsp; 每 25 次命中触发一次</span></p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/a19d39fd46.png" alt="" width="47" height="47" loading="lazy">
 <h4>电介质</h4>
@@ -302,10 +345,12 @@
 <h4><span class="orb">元素超充器</span></h4>
 <p>使用<span class="orb"> 与超能匹配的武器</span> 击杀<span class="health"> 疲惫 </span>或<span class="deb-strand"> 割裂 </span>敌人时 ：<br><br>获得 <span class="orb">2?% 额外超能技能能量</span>。</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/958a000c06.png" alt="" width="47" height="47" loading="lazy">
 <h4>不稳定神枪手</h4>
-<p>在 3 秒内使用<span class="el-void"> 虚空武器</span> 造成多次<span class="stack"> 精准命中</span>， 或在 3 秒内完成 3 次击杀时 ：<br><br>获得<span class="pickup"> 不稳定弹药</span>， 持续 <span class="enemy">10 </span> <span class="unsure">[6]</span> 秒。<br><br> <span class="stack">精准命中</span> 触发<span class="pickup"> 不稳定弹药 </span>： <br> <span class="stack">(25% 弹匣容量 ) + 1</span>， 向下取整。 弓箭 ：<span class="stack" style="font-weight:800; text-shadow:rgb(0,0,0) 0px 1px 2px"> 2</span><br><br>触发<span class="pickup"> 不稳定爆炸</span> 可获得 <span class="el-void">10% 职业技能能量</span>。</p>
+<p>在 3 秒内使用<span class="el-void"> 虚空武器</span> 造成多次<span class="stack"> 精准命中</span>， 或在 3 秒内完成 3 次击杀时 ：<br><br>获得<span class="pickup"> 不稳定弹药</span>， 持续 <span class="enemy">10 </span> <span class="unsure">[6]</span> 秒。<br><br> <span class="stack">精准命中</span> 触发<span class="pickup"> 不稳定弹药 </span>： <br> <span class="stack">(25% 弹匣容量 ) + 1</span>， 向下取整。 弓箭 ：<span class="stack"> 2</span><br><br>触发<span class="pickup"> 不稳定爆炸</span> 可获得 <span class="el-void">10% 职业技能能量</span>。</p>
 </article>
 <article class="mod" data-tier="2">
 <img class="mod-icon" src="icons/bc86bf15db.png" alt="" width="47" height="47" loading="lazy">
@@ -317,6 +362,8 @@
 <h4>重型军械回复</h4>
 <p>在 7 秒内造成 <span class="ammo-heavy">8 次 机枪伤害</span>&nbsp;或 <span class="ammo-heavy">2 次 火箭发射器伤害</span>&nbsp;时 ：<br> <span class="enemy">25%[5%]</span> 伤害抗性 ( 抗性x2) 持续 15.5 秒<br>85% 额外基础 <span class="el-solar">手雷 </span> 和 <span class="el-arc">近战 </span> 技能再生速率， 持续 10 秒。<br><br>当 <span class="ammo-heavy">威能军械</span> 激活时 ：<br> <span class="enemy">精英 + 战斗人员 击杀</span> <span class="el-kinetic">使 10 米内的普通敌人战斗人员迷失方向</span>。</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/3792cee7d7.png" alt="" width="47" height="47" loading="lazy">
 <h4>瓦解能量球</h4>
@@ -332,6 +379,8 @@
 <h4>除颤爆破</h4>
 <p>在 <span class="enemy">眩晕 </span> 一名 <span class="enemy">勇士</span> 时 ：<br>获得 <span class="el-arc">x10 电光充能</span>。<br><br> <span class="el-arc">闪电过载的闪电溅射伤害部分</span> 现在施加 <span class="deb-arc">震颤</span> 效果。<br><br>触发 <span class="el-arc">闪电过载</span> 时 ：<br> <span class="health">恢复约 55 点生命值。</span><br><span class="health">开始关键生命恢复<br></span> <span class="note">不会开始重新充能 </span> <span class="el-stasis">护盾</span><span class="note">。</span></p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/5ab68da921.png" alt="" width="47" height="47" loading="lazy">
 <h4>光子耀斑</h4>
@@ -345,8 +394,10 @@
 <article class="mod" data-tier="3">
 <img class="mod-icon" src="icons/e13d94acfe.png" alt="" width="47" height="47" loading="lazy">
 <h4><span class="deb-void">虚空助焊</span></h4>
-<p>使用<span class="el-void">&nbsp;虚空武器</span><span class="deb-void" style="font-weight:800; text-shadow:rgb(0,0,0) 0px 1px 2px">&nbsp;击杀 被削弱敌人<span class="plain" style="font-weight:500">&nbsp;配合时 ：</span><br></span><br>对? 米内的敌人施加<span class="pickup"> 不稳定</span> 效果。<br> <span class="enemy">精英 +? 战斗人员</span> 和<span class="unsure"> 守护者?</span> 会将范围扩大至? 米。</p>
+<p>使用<span class="el-void">&nbsp;虚空武器</span><span class="deb-void">&nbsp;击杀 被削弱敌人<span class="plain">&nbsp;配合时 ：</span><br></span><br>对? 米内的敌人施加<span class="pickup"> 不稳定</span> 效果。<br> <span class="enemy">精英 +? 战斗人员</span> 和<span class="unsure"> 守护者?</span> 会将范围扩大至? 米。</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/797649e150.png" alt="" width="47" height="47" loading="lazy">
 <h4>元素虹吸</h4>
@@ -362,6 +413,8 @@
 <h4>极限突破</h4>
 <p>在<span class="orb"> 释放超能</span> 时， 处于<span class="health"> 低生命值</span> 或拥有<span class="pickup"> 元素匹配增益&nbsp;</span>时 ：<br><br> <span class="orb">超能技能伤害提升 15%</span>。<br> <span class="orb">一次性超能</span> 仅获得 8 秒加成。<br> <span class="orb">持续超能</span> 的加成持续至结束。<br><br> <span class="el-arc">电弧</span> = <span class="el-strand">↑</span> <span class="el-arc">增幅</span> <span class="el-strand">↑</span> <span class="el-arc">电光充能</span><br><span class="el-solar">烈日</span> = <span class="el-strand">↑</span> <span class="health">治愈</span> <span class="el-strand">↑ 焕光</span> <span class="el-strand">↑</span> <span class="health">恢复</span><br><span class="el-void">虚空</span> = <span class="el-strand">↑</span> <span class="el-void">吞食 ↑</span> <span class="el-void">隐身</span> <span class="el-strand">↑ 虚空覆盖护盾</span><br><span class="el-stasis">冰影</span> = <span class="el-strand">↑</span> <span class="el-stasis">冰霜护甲</span><br><span class="el-strand">缚丝</span> = <span class="el-strand">↑ 织造铠甲</span></p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/141b80d94e.png" alt="" width="47" height="47" loading="lazy">
 <h4>永恒毁灭</h4>
@@ -378,18 +431,23 @@
 <p>对 <span class="deb-strand">割裂 敌人</span> 造成 6 次 武器 伤害 实例 时 ：<br>施加 <span class="deb-strand">瓦解</span>。<br><br>击杀 <span class="deb-strand">割裂 敌人</span> 时 ：<br>在敌人死亡位置释放 <span class="health">3 个 治疗脉冲</span>，<span class="health"> 恢复 15 HP</span> 并为使用者及 10 米内的 <span class="enemy">盟友</span> 提供 <span class="el-strand">织造铠甲</span>， 持续 <span class="el-strand">10 秒</span>， 每 2 秒触发一次。</p>
 </article>
 </div>
+</div>
 </section>
 <section class="artifact" id="art-4">
+<div class="art-bar">
 <header class="art-head">
 <img class="art-emblem" src="icons/2da5cfab8d.png" alt="" width="59" height="59" loading="lazy">
 <h2>杀手公爵药剂师背包 <small>( 怨魂 )</small></h2>
-<img class="art-emblem" src="icons/2da5cfab8d.png" alt="" width="59" height="59" loading="lazy">
-</header>
 <p class="art-tags"><span class="el-arc">电弧 </span> | <span class="el-void">虚空 </span> | <span class="el-stasis">冰影 </span><br>榴弹发射器 | 霰弹枪</p>
+</header>
+<div class="tier-rail">
+<div class="tier-head" data-tier="1"><span class="rhombi" aria-hidden="true"><i class="on"></i><i></i><i></i></span></div>
+<div class="tier-head" data-tier="2"><span class="rhombi" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i></span></div>
+<div class="tier-head" data-tier="3"><span class="rhombi" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</div>
+</div>
 <div class="tiers">
-<h3 class="tier-label" data-tier="1">⯁</h3>
-<h3 class="tier-label" data-tier="2">⯁⯁</h3>
-<h3 class="tier-label" data-tier="3">⯁⯁⯁</h3>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/f2308dda7d.png" alt="" width="47" height="47" loading="lazy">
 <h4>风寒</h4>
@@ -405,6 +463,8 @@
 <h4>寒脑凝滞</h4>
 <p><span class="deb-stasis">冻结的敌人</span> 对 4 米内未受<span class="el-stasis"> 冰影减益</span>&nbsp;影响的敌人施加<span class="el-stasis"> x? 减速</span>。</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/e0645a4887.png" alt="" width="47" height="47" loading="lazy">
 <h4>晶体转换器</h4>
@@ -420,6 +480,8 @@
 <h4>超新星</h4>
 <p>拾取<span class="el-void"> 虚空裂口</span> 时 ：<br><br>10 秒内的下一次<span class="el-void"> 虚空</span> 会释放一个<span class="deb-void"> 削弱爆发</span>， 对 5 米内的 敌人施加<span class="deb-void"> 削弱</span>。</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/9ac826f29b.png" alt="" width="47" height="47" loading="lazy">
 <h4>大肆屠杀</h4>
@@ -435,6 +497,8 @@
 <h4>传导宇宙水晶</h4>
 <p>对<span class="el-stasis"> 冰影减益敌人 :</span><br><span class="el-arc"><br>电弧 </span>和<span class="el-void"> 虚空技能伤害</span> 提升 5%？</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/8e42c7d2d8.png" alt="" width="47" height="47" loading="lazy">
 <h4><span class="el-void">苦痛之力</span></h4>
@@ -450,6 +514,8 @@
 <h4><span class="el-void">冰冷伺候</span></h4>
 <p><span class="el-stasis">冰影碎片</span> 额外提供 <span class="el-void">10% 职业技能能量</span>。<br><br><span class="el-void">虚空裂口</span> 额外提供 <span class="el-arc">10?% 近战技能能量</span>。</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/b7790e04e7.png" alt="" width="47" height="47" loading="lazy">
 <h4>轨迹证据</h4>
@@ -465,6 +531,8 @@
 <h4>动能冲击</h4>
 <p>在 3 秒内使用<span class="ammo-heavy">&nbsp;威能榴弹发射器</span> 造成 3 次非同时伤害， 或使用<span class="orb"> 主武器 </span>/<span class="el-strand"> 特殊</span> 榴弹发射器造成单次<span class="note"> 非致命</span> 伤害 ：<br><br>在敌人脚下触发一次<span class="el-kinetic"> 冲击波</span>。<br><span class="el-kinetic">冲击波</span> 造成 <span class="el-kinetic">227x2 = 454 动能</span>， 并在 7 米范围内<span class="enemy"> 踉跄并眩晕势不可挡勇士</span>。<br>来自<span class="orb"> 主武器</span> 和<span class="el-strand"> 特殊</span> 榴弹发射器的冲击波仅造成 <span class="el-kinetic">150x2 伤害</span>。<br>冲击波无伤害衰减。<br><span class="note">后续伤害计算前有 1 秒冷却时间。</span><br>-------------------------------------------<br>造成榴弹发射器伤害时 ：<br>获得一层快速冲击， 持续 5 秒， 最多叠加 5 层。<br><br>+5 | +10 | +15? | +20? | +30 装填速度<br>0.99x | 0.99x | 0.98x | 0.96x | 0.94x 持续时间倍率</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/d146542665.png" alt="" width="47" height="47" loading="lazy">
 <h4>置身其中</h4>
@@ -480,6 +548,8 @@
 <h4>电弧复合</h4>
 <p><span class="enemy">15%</span> <span class="unsure">[7.5%]</span> <span class="el-arc">对致盲敌人造成的电弧提高</span>。<br>与所有效果叠加。</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/bba5125097.png" alt="" width="47" height="47" loading="lazy">
 <h4>杀戮之风</h4>
@@ -496,22 +566,27 @@
 <p>拾取 <span class="el-void">虚空裂口</span> 时 ：<br><br>在 10 秒内的下一次 <span class="el-void">虚空武器伤害</span>&nbsp;会创造一个 <span class="el-void">虚空门户</span>。<br><br> <span class="el-void">虚空门户 ：</span><br><span class="el-void"></span> 向约 10 米内的敌人释放 <span class="el-void">8 枚追踪虚空球</span>。<br> <span class="el-void">虚空球</span> 在约 3 米范围内造成最多 <span class="enemy">334 </span> 点 <span class="unsure">[?] 溅射伤害</span>。<br> <span class="enemy">普通敌人 战斗人员 </span> 每个 <span class="el-void">球</span> 受到 <span class="el-void">540 点伤害</span>。<br> <span class="enemy">小头目 +</span> 每个 <span class="el-void">球</span> 受到 <span class="el-void">180 点伤害</span>。</p>
 </article>
 </div>
+</div>
 </section>
 <section class="artifact" id="art-5">
+<div class="art-bar">
 <header class="art-head">
 <img class="art-emblem" src="icons/3949494ddb.png" alt="" width="59" height="59" loading="lazy">
 <h2>猎人日志 <small>( 回响 )</small></h2>
-<img class="art-emblem" src="icons/3949494ddb.png" alt="" width="59" height="59" loading="lazy">
-</header>
 <p class="art-tags"><span class="el-solar">烈日 </span> | <span class="el-arc">电弧 </span> | <span class="el-void">虚空 </span> | <span class="el-prismatic">棱镜 </span><br>自动步枪 | 狙击步枪 | 刀剑</p>
+</header>
+<div class="tier-rail">
+<div class="tier-head" data-tier="1"><span class="rhombi" aria-hidden="true"><i class="on"></i><i></i><i></i></span></div>
+<div class="tier-head" data-tier="2"><span class="rhombi" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i></span></div>
+<div class="tier-head" data-tier="3"><span class="rhombi" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</div>
+</div>
 <div class="tiers">
-<h3 class="tier-label" data-tier="1">⯁</h3>
-<h3 class="tier-label" data-tier="2">⯁⯁</h3>
-<h3 class="tier-label" data-tier="3">⯁⯁⯁</h3>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/0e557c212e.png" alt="" width="47" height="47" loading="lazy">
 <h4>元素虹吸</h4>
-<p>使用 <span class="el-kinetic">动能武器</span> 或 <span class="orb">超能元素匹配 武器</span> 在 3 秒内连续击杀 3 个敌人时 ：<br><br>创造一个与已装备&nbsp;&nbsp;<span class="orb" style="font-weight:800; text-shadow:rgb(0,0,0) 0px 1px 2px">超能元素匹配&nbsp;</span>的 <span class="pickup">元素拾取物</span>。<br><br> <span class="note">与 </span> <span class="el-strand">废墟石板 的版本不同， 此效果不会提供超能能量.</span></p>
+<p>使用 <span class="el-kinetic">动能武器</span> 或 <span class="orb">超能元素匹配 武器</span> 在 3 秒内连续击杀 3 个敌人时 ：<br><br>创造一个与已装备&nbsp;&nbsp;<span class="orb">超能元素匹配&nbsp;</span>的 <span class="pickup">元素拾取物</span>。<br><br> <span class="note">与 </span> <span class="el-strand">废墟石板 的版本不同， 此效果不会提供超能能量.</span></p>
 </article>
 <article class="mod" data-tier="2">
 <img class="mod-icon" src="icons/342d876a48.png" alt="" width="47" height="47" loading="lazy">
@@ -523,6 +598,8 @@
 <h4>棱镜转移</h4>
 <p>在 <span class="orb">超能施放</span> 时 ：<br><br>15 米内拥有与 <span class="orb">施法者</span> 不同 <span class="orb">超能元素</span> 的 <span class="enemy">盟友</span> 在 <span class="enemy">10</span> <span class="unsure">[5]</span> 秒内受到 <span class="enemy">20%</span> <span class="unsure">[10%]</span> 的伤害加成。<br>伤害加成不可刷新。<br><br>不与 <span class="orb">焕光</span> 或其他类似的强化增益叠加。</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/c71ce11262.png" alt="" width="47" height="47" loading="lazy">
 <h4>能量扩散基质</h4>
@@ -538,6 +615,8 @@
 <h4>银白利刃</h4>
 <p>造成 <span class="ammo-heavy">刀剑伤害</span> 时 <span class="armor-charge">消耗</span> 一层 <span class="enemy">护甲充能</span> 以获得持续 5 秒的 <span class="ammo-heavy">银白利刃</span>。<br><br> <span class="ammo-heavy">银白利刃 ：</span><br><span class="ammo-heavy"></span> 刀剑伤害提高 15%<br>充能效率 +100。<br>与其他增益叠加。<br><br>在 <span class="ammo-heavy">银白利刃</span> 激活期间不会 <span class="armor-charge">消耗</span> 额外的 <span class="enemy">护甲充能</span></p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/46a3fb8f4a.png" alt="" width="47" height="47" loading="lazy">
 <h4>凉意袭人</h4>
@@ -553,6 +632,8 @@
 <h4>扩展深渊</h4>
 <p>使用者对<span class="deb-void"> 削弱敌人</span> 造成<span class="el-void"> 额外虚空</span>。<br><br> <span class="unsure">7.5% -&gt; 10%（ 伤害提升 2.3%）</span><br><span class="unsure">15% -&gt; 25%（ 伤害提升 8.7%）</span> <span class="deb-void"></span><br><span class="deb-void">30% -&gt; 35%（ 伤害提升 3.8%）<br>35% -&gt; 40% （ 伤害提升 3.7%）<br><br></span> <span class="note">神圣裁决的削弱效果不受影响。</span></p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/676c93b296.png" alt="" width="47" height="47" loading="lazy">
 <h4>乘胜追击</h4>
@@ -568,6 +649,8 @@
 <h4>护盾粉碎</h4>
 <p>当<span class="el-stasis"> 冰霜护甲 </span>、<span class="pickup"> 虚空覆盖护盾</span> 或<span class="el-strand"> 织造铠甲</span> 激活时 ：<br><span class="enemy">?%</span> <span class="unsure">[?%]</span> <span class="el-arc">额外基础近战充能速率</span><br><span class="el-arc"></span> <span class="enemy">50%</span> <span class="unsure">[5%]</span> <span class="el-arc">充能近战伤害提高</span>。<br> <span class="orb">同时提高超能近战伤害。</span><br><span class="orb"><br></span> 当<span class="el-arc"> 增幅</span> 或<span class="el-solar"> 焕光</span> 激活时 ：<br><span class="enemy">?%</span> <span class="unsure">[?%] 额外基础手雷充能速率</span><br><span class="unsure"></span> <span class="enemy">25% [5%]</span> <span class="el-solar">手雷伤害提高</span>。<br><br> <span class="el-strand">抓钩近战会根据特性的每一半获得 12% 的伤害提高。</span></p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/8ac13b6e1e.png" alt="" width="47" height="47" loading="lazy">
 <h4>线织爆破</h4>
@@ -583,6 +666,8 @@
 <h4>转移</h4>
 <p>当<span class="el-prismatic"> 超凡</span> 状态激活时 ：<br>手雷和近战伤害提高 <span class="el-solar">10%</span>。<br><br><span class="el-prismatic">超凡</span> 结束后 ：<br>每次武器击杀返还 <span class="el-prismatic">4.2%</span> 的<span class="el-arc"> 光能</span> 和<span class="deb-solar"> 暗影</span> 能量， 最多叠加至 <span class="el-prismatic">50%</span> （ 需要 12 次击杀 ）。</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/7280ae47b5.png" alt="" width="47" height="47" loading="lazy">
 <h4>燃烧步枪弹药</h4>
@@ -598,6 +683,8 @@
 <h4>狙击手冥想</h4>
 <p>狙击步枪直接命中时 ：<br>获得一层<span class="orb"> 狙击手冥想</span> 效果， 持续 7 秒。<br> <span class="ammo-heavy">威能狙击步枪</span> 命中提供 <span class="orb">2 层</span>。<br> <span class="orb">狙击手冥想Buff</span> 在收起武器后依然存在。<br><br> <span class="orb">狙击手冥想效果 ：</span><br><span class="orb"></span>提高伤害 、 稳定性和填装速度。<br>伤害提高 ：2.8% | 5.7% | 9% | 12% | 15%<br>稳定性提高 ：+? | +? | +? | +? | +?<br>填装速度提高 ：+15 | +30 | +35 | +40 | +45</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/16d6402d81.png" alt="" width="47" height="47" loading="lazy">
 <h4>持续火力</h4>
@@ -614,22 +701,27 @@
 <p>当装备了<span class="el-arc"> 电弧 </span>或<span class="el-prismatic"> 棱镜 </span>分支职业时， 处于<span class="el-arc"> 增幅</span> 状态下 ：<br><br> <span class="el-arc">电弧击杀</span> 会触发一次<span class="el-arc"> 闪电爆发</span>， 在 8 米半径内造成最多 <span class="enemy">126 </span> <span class="unsure">[?] 电弧</span> 并施加<span class="deb-arc"> 震颤</span> 效果。<br><br> <span class="note">触发间有 5 秒冷却时间。</span></p>
 </article>
 </div>
+</div>
 </section>
 <section class="artifact" id="art-6">
+<div class="art-bar">
 <header class="art-head">
 <img class="art-emblem" src="icons/e4aae669eb.png" alt="" width="59" height="59" loading="lazy">
 <h2>女王兰香炉 <small>( 终愿 )</small></h2>
-<img class="art-emblem" src="icons/e4aae669eb.png" alt="" width="59" height="59" loading="lazy">
-</header>
 <p class="art-tags"><span class="el-solar">烈日 </span> | <span class="el-stasis">冰影 </span> | <span class="el-arc"> 缚丝 </span><br>火箭发射器 | 榴弹发射器</p>
+</header>
+<div class="tier-rail">
+<div class="tier-head" data-tier="1"><span class="rhombi" aria-hidden="true"><i class="on"></i><i></i><i></i></span></div>
+<div class="tier-head" data-tier="2"><span class="rhombi" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i></span></div>
+<div class="tier-head" data-tier="3"><span class="rhombi" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</div>
+</div>
 <div class="tiers">
-<h3 class="tier-label" data-tier="1">⯁</h3>
-<h3 class="tier-label" data-tier="2">⯁⯁</h3>
-<h3 class="tier-label" data-tier="3">⯁⯁⯁</h3>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/cd3c9df362.png" alt="" width="47" height="47" loading="lazy">
 <h4><span class="el-solar">发热寒颤</span></h4>
-<p>在 3 秒内对同一目标造成<span class="stack" style="font-weight:800; text-shadow:rgb(0,0,0) 0px 1px 2px"> 多次精准命中</span> 时 ：<br><span class="el-solar" style="font-weight:800; text-shadow:rgb(0,0,0) 0px 1px 2px">烈日武器 </span>： 获得<span class="orb" style="font-weight:800; text-shadow:rgb(0,0,0) 0px 1px 2px"> 焕光</span> 持续 10 <span class="el-solar" style="font-weight:800; text-shadow:rgb(0,0,0) 0px 1px 2px">+5</span> 秒。<br><span class="el-stasis" style="font-weight:800; text-shadow:rgb(0,0,0) 0px 1px 2px">冰影武器 </span>： 获得一层<span class="el-stasis" style="font-weight:800; text-shadow:rgb(0,0,0) 0px 1px 2px"> 冰霜护甲</span>。<br><span class="note" style="font-weight:800; text-shadow:rgb(0,0,0) 0px 1px 2px">触发后有 1.5 秒冷却时间。</span><br><span class="note" style="font-weight:800; text-shadow:rgb(0,0,0) 0px 1px 2px">冷却期间额外命中不计。<br><br>精准命中触发 ：<br>( 弹匣容量的 25%) + 1， 向下取整, 弓箭为三次精准</span></p>
+<p>在 3 秒内对同一目标造成<span class="stack"> 多次精准命中</span> 时 ：<br><span class="el-solar">烈日武器 </span>： 获得<span class="orb"> 焕光</span> 持续 10 <span class="el-solar">+5</span> 秒。<br><span class="el-stasis">冰影武器 </span>： 获得一层<span class="el-stasis"> 冰霜护甲</span>。<br><span class="note">触发后有 1.5 秒冷却时间。</span><br><span class="note">冷却期间额外命中不计。<br><br>精准命中触发 ：<br>( 弹匣容量的 25%) + 1， 向下取整, 弓箭为三次精准</span></p>
 </article>
 <article class="mod" data-tier="2">
 <img class="mod-icon" src="icons/3792cee7d7.png" alt="" width="47" height="47" loading="lazy">
@@ -641,6 +733,8 @@
 <h4>群敌飞梭</h4>
 <p>对一个<span class="deb-strand"> 被瓦解</span> 造成相当于其<span class="health">&nbsp;生命值 </span>+ <span class="el-stasis">护盾</span> 的 <span class="enemy">10%</span> <span class="unsure">[100? HP]</span> 的武器伤害时， 会生成一个<span class="el-strand"> 线虫</span>。<br> <span class="health">线虫生成有 0.5 秒冷却时间。</span><br><span class="health"><br></span> <span class="el-strand">线虫 </span>造成伤害时会施加<span class="deb-strand"> 割裂 </span>效果。</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/fa08d7d64c.png" alt="" width="47" height="47" loading="lazy">
 <h4>火炬</h4>
@@ -656,6 +750,8 @@
 <h4>迎接风暴</h4>
 <p>击碎 <span class="el-stasis">冰影水晶</span> 时 ：<br><br>以 * 形释放 <span class="el-stasis">5 枚追踪冰刺</span>， 每枚造成 46 点伤害， 并 施加 <span class="enemy">x? </span> <span class="unsure">[x10] 减速</span>， 持续? 秒。<br>碎片均匀分布， 其中 一枚碎片飞向最近的敌人， 其余碎片散开。<br><br> <span class="deb-stasis">敌人碎裂</span> 造成 <span class="enemy">12.5%</span> <span class="unsure">[?%]</span> 额外伤害。<br> <span class="el-stasis">水晶碎裂</span> 造成 <span class="enemy">25%[?%]</span> 额外伤害。</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/79bd16969e.png" alt="" width="47" height="47" loading="lazy">
 <h4>烈焰之心</h4>
@@ -671,6 +767,8 @@
 <h4><span class="stack">精密射线</span></h4>
 <p>在 <span class="orb">焕光</span> 状态下 ：<br><br> <span class="el-solar">烈日精准击杀</span> <span class="enemy">战斗人员</span> 会触发 <span class="el-solar">点燃</span>。</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/397a65f580.png" alt="" width="47" height="47" loading="lazy">
 <h4>护甲匠</h4>
@@ -686,6 +784,8 @@
 <h4>单人特工</h4>
 <p>在 单人 状态下 ：<br><br> <span class="stack">精准击杀</span> 会叠加一层 <span class="stack">伤害增益</span>， 最高 <span class="stack">∞ 层数</span>。<br> <span class="note">死亡时失去所有层数。</span><br><span class="note"><br>每层 <span class="stack">层数</span> 提供 1.2% 对 <span class="enemy">战斗人员</span> 的武器伤害提高。</span><br>在 <span class="stack">x25 层数</span> 时， 最高提供 <span class="enemy">30% 武器伤害增益</span>。<br> <span class="enemy">武器伤害增益</span> 层数与所有效果叠加。</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/0a80a72205.png" alt="" width="47" height="47" loading="lazy">
 <h4>愿望成真</h4>
@@ -701,6 +801,8 @@
 <h4>银白重炮</h4>
 <p>发射火箭发射器时，<span class="armor-charge"> 消耗x1 护甲充能</span> 以在 4.5 秒内获得<span class="stack"> 弑神弹头</span> 效果 :<br><br> <span class="stack">弑神弹头 </span>:<br>15% 叠加增伤。<br> +? 填装速度<br>0.?x 装填持续时间 倍率。<br><br>在该buff激活期间， 不会&nbsp;<span class="armor-charge">消耗&nbsp;</span>额外的<span class="armor-charge"> 护甲充能</span>。</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/aadda9e83a.png" alt="" width="47" height="47" loading="lazy">
 <h4>火种扳机</h4>
@@ -716,6 +818,8 @@
 <h4>极寒凝视</h4>
 <p>在<span class="el-stasis"> 冰霜护甲</span> 激活时， 使用<span class="el-stasis"> 冰影武器</span> 造成<span class="stack"> 精准击杀</span> 时 :<br><br>在<span class="health"> 敌人死亡位置</span> 触发一次<span class="deb-stasis"> 冰冻爆发</span>。<br> <span class="deb-stasis">冰冻爆发</span> 影响 7 米范围内的敌人。</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/ee7c3b5d9a.png" alt="" width="47" height="47" loading="lazy">
 <h4>爆炸范围</h4>
@@ -732,18 +836,23 @@
 <p>对 <span class="deb-strand">割裂 敌人</span> 造成 6 次 武器 伤害后 ：<br>施加 <span class="deb-strand">瓦解</span>。<br><br>击杀 <span class="deb-strand">割裂 敌人</span> 时 ：<br>在敌人死亡位置释放 <span class="health">3 个 治疗脉冲</span>， 每 2 秒 <span class="health">恢复 15 生命值</span>， 并为使用者及 <span class="enemy">盟友</span> 在 10 米范围内提供 <span class="el-strand">织造铠甲</span>， 持续 <span class="el-strand">10 秒</span>。</p>
 </article>
 </div>
+</div>
 </section>
 <section class="artifact" id="art-7">
+<div class="art-bar">
 <header class="art-head">
 <img class="art-emblem" src="icons/38f46cb26e.png" alt="" width="59" height="59" loading="lazy">
 <h2>NPA斥力调节器 <small>( 深渊 )</small></h2>
-<img class="art-emblem" src="icons/38f46cb26e.png" alt="" width="59" height="59" loading="lazy">
-</header>
 <p class="art-tags"><span class="el-arc">电弧 </span> | <span class="el-void">虚空 </span> | <span class="el-strand">缚丝 </span><br> 偃月 | 自动步枪</p>
+</header>
+<div class="tier-rail">
+<div class="tier-head" data-tier="1"><span class="rhombi" aria-hidden="true"><i class="on"></i><i></i><i></i></span></div>
+<div class="tier-head" data-tier="2"><span class="rhombi" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i></span></div>
+<div class="tier-head" data-tier="3"><span class="rhombi" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i></span></div>
+</div>
+</div>
 <div class="tiers">
-<h3 class="tier-label" data-tier="1">⯁</h3>
-<h3 class="tier-label" data-tier="2">⯁⯁</h3>
-<h3 class="tier-label" data-tier="3">⯁⯁⯁</h3>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/c878e5b2ed.png" alt="" width="47" height="47" loading="lazy">
 <h4>改良版瓦解</h4>
@@ -759,6 +868,8 @@
 <h4><span class="el-arc">传导宇宙织针</span></h4>
 <p>对 <span class="el-strand">受缚丝 减益 影响的敌人 </span>：<br><br> <span class="el-arc">电弧 </span> 和 <span class="el-void">虚空 </span> 技能伤害提高 5%。</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/87cd42d0e4.png" alt="" width="47" height="47" loading="lazy">
 <h4>不稳定流动</h4>
@@ -774,6 +885,8 @@
 <h4>震慑行动</h4>
 <p>装备 <span class="el-arc">电弧 </span> 或 <span class="el-prismatic">棱镜 </span>分支职业时， 若处于 <span class="el-arc">增幅</span> 状态 ： <br><br> <span class="el-arc">电弧击杀</span> 会触发 <span class="el-arc">闪电爆发</span>， 在 8 米半径内造成最多 <span class="enemy">126 [?] 电弧</span> 并施加 <span class="deb-arc">震颤</span>。<br><br> <span class="note">每次触发有 5 秒冷却时间。</span></p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/9fc5c97d71.png" alt="" width="47" height="47" loading="lazy">
 <h4>朝向裂口</h4>
@@ -789,6 +902,8 @@
 <h4>超新星</h4>
 <p>拾取 <span class="el-void">虚空裂口</span> 时 ：<br><br>10 秒内的下一次 <span class="el-void">虚空</span>&nbsp;会释放一次 <span class="deb-void">削弱爆发</span>， 对 5 米内的敌人施加 <span class="deb-void">削弱</span> 效果， 持续 8 秒。</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/52c7f844b6.png" alt="" width="47" height="47" loading="lazy">
 <h4>持久增幅</h4>
@@ -802,8 +917,10 @@
 <article class="mod" data-tier="3">
 <img class="mod-icon" src="icons/50ddc7cb46.png" alt="" width="47" height="47" loading="lazy">
 <h4>小队目标</h4>
-<p>在 <span class="orb">超能元素匹配增益</span> 效果影响下施放 <span class="enemy">终结技</span> 时 ：<br><br>? 米范围内的 <span class="enemy">盟友</span> 将获得 <span class="pickup">分支职业特定增益</span>。 <br><br> <span class="pickup">分支职业特定增益 ：</span><br><span class="el-arc">电弧 ： 增幅</span> | <span class="el-void" style="font-weight:800">虚空 : 吞食</span> | <span class="el-strand">缚丝 : 织造铠甲</span></p>
+<p>在 <span class="orb">超能元素匹配增益</span> 效果影响下施放 <span class="enemy">终结技</span> 时 ：<br><br>? 米范围内的 <span class="enemy">盟友</span> 将获得 <span class="pickup">分支职业特定增益</span>。 <br><br> <span class="pickup">分支职业特定增益 ：</span><br><span class="el-arc">电弧 ： 增幅</span> | <span class="el-void">虚空 : 吞食</span> | <span class="el-strand">缚丝 : 织造铠甲</span></p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/827b2fdb6c.png" alt="" width="47" height="47" loading="lazy">
 <h4>雷霆反击</h4>
@@ -819,6 +936,8 @@
 <h4>两次闪电打击</h4>
 <p>使用 <span class="el-arc">电弧手雷技能</span> 时 ：<br><br>在 5 秒内获得 <span class="el-solar">130% 额外手雷基础充能速率</span>。<br><br> <span class="el-arc">电弧击杀</span> 会使该buff持续时间增加 +3? 秒， 最多可叠加至 20 秒。</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/16d6402d81.png" alt="" width="47" height="47" loading="lazy">
 <h4>持续火力</h4>
@@ -834,6 +953,8 @@
 <h4>被动攻击刀剑格</h4>
 <p>装备偃月时 ：<br><br>对? 米范围内的 <span class="enemy">战斗单位</span> 获得 <span class="enemy">50% 伤害抗性</span>。</p>
 </article>
+</div>
+<div class="mod-row">
 <article class="mod" data-tier="1">
 <img class="mod-icon" src="icons/d95e084ff9.png" alt="" width="47" height="47" loading="lazy">
 <h4><span class="pickup">碎裂能量球</span></h4>
@@ -850,7 +971,11 @@
 <p>在拥有至少 1 层充能的 <span class="el-void">虚空技能</span> 时， 使用 <span class="el-void">虚空武器</span> 造成击杀 ：<br><br>根据 <span class="ammo-heavy">虚空手雷 、 近战和超能技能充能</span> 的数量， 获得等量的 <span class="el-stasis">武器激涌层数</span>， 持续 11 秒。<br><br>拥有 <span class="ammo-heavy">4 虚空技能充能</span> 时， 最多获得 <span class="el-stasis">x4 武器激涌</span>。<br>2 手雷 + 2 近战 = x4 激涌<br><br>只有当 <span class="el-stasis">层数</span> 小于或等于 (≤) <span class="el-void">虚空 技能充能</span> 的数量时，Buff 才能被刷新。<br><br><span class="el-prismatic">在棱镜上表现正常！</span></p>
 </article>
 </div>
+</div>
 </section>
 </main>
+<footer class="site-foot">
+<a href="../index.html">← Starside</a> · 数值以游戏内实测为准，标注 <span class="unsure">[?]</span> 的条目尚待核实。
+</footer>
 </body>
 </html>
