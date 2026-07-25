@@ -388,40 +388,108 @@ main { flex: 1 0 auto; }
 }
 
 .entries {
+  display: grid;
+  gap: 12px;
   margin: 0;
   padding: 0;
   list-style: none;
-  border-top: 1px solid var(--hair);
 }
 
+/* 条目按游戏内物品框来读：左侧节点图标 + 名称与类型行 + 右侧数值。
+   右上切角与左缘亮边是框的形状语言，切角靠 ::before 单独画——
+   clip-path 会把 border 一起裁掉。 */
 .entry {
+  position: relative;
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: clamp(18px, 2.6vw, 38px);
-  padding: clamp(22px, 2.6vw, 34px) clamp(4px, 1vw, 14px);
+  gap: clamp(18px, 2.4vw, 32px);
+  padding: 22px clamp(20px, 2vw, 28px) 22px clamp(16px, 1.6vw, 22px);
   color: inherit;
   text-decoration: none;
-  border-bottom: 1px solid var(--hair);
-  transition: background .18s ease, border-color .18s ease;
+  background: linear-gradient(100deg, #171c29, #12151f 64%);
+  border: 1px solid var(--hair);
+  clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 0 100%);
+  transition: background .18s ease, box-shadow .18s ease;
+}
+
+/* 左缘亮边：选中态指示 */
+.entry::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 2px;
+  background: var(--c-arc);
+  opacity: .38;
+  transition: opacity .18s ease;
+}
+
+/* 切角处补一道斜线，接上被 clip-path 截断的框线 */
+.entry::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 22px;
+  height: 22px;
+  background: linear-gradient(225deg, var(--hair) 0 1px, transparent 1px);
 }
 
 .entry:hover {
-  background: linear-gradient(90deg, #ffffff08, transparent 62%);
-  border-bottom-color: var(--hair-lit);
+  background: linear-gradient(100deg, #1d2432, #14182333 64%);
+  box-shadow: inset 0 0 0 1px var(--hair-lit);
 }
 
-.entry .rhombi { color: var(--bone-faint); }
+/* clip-path 把 outline 连带裁掉（实测完全不可见），焦点环改用内嵌环 */
+.entry:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--c-arc);
+}
 
-.entry:hover .rhombi { color: var(--c-arc); }
+.entry:hover::after,
+.entry:focus-visible::after { opacity: 1; }
+
+/* 节点图标：六边形框 + 中心菱形，与档位轨、favicon 同一套母题 */
+.entry-node {
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  color: var(--bone-faint);
+  background: #ffffff05;
+  border: 1px solid var(--hair);
+  transition: color .18s ease, background .18s ease;
+}
+
+.entry-node svg {
+  width: 37px;
+  height: 40px;
+}
+
+.entry:hover .entry-node,
+.entry:focus-visible .entry-node {
+  color: var(--c-arc);
+  background: color-mix(in srgb, var(--c-arc) 9%, transparent);
+}
+
+.entry-kind {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--bone-faint);
+  font-family: var(--font-disp);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .26em;
+  text-transform: uppercase;
+}
 
 .entry h3 {
-  margin: 0 0 8px;
+  margin: 0 0 7px;
   color: var(--bone-hi);
-  font-family: var(--font-disp);
-  font-size: 21px;
+  font-family: var(--font-cn);
+  font-size: 22px;
   font-weight: 600;
-  letter-spacing: .04em;
+  letter-spacing: .05em;
 }
 
 .entry p {
@@ -432,6 +500,17 @@ main { flex: 1 0 auto; }
   line-height: 1.85;
 }
 
+/* 限制标签：游戏内把这类限制单独标出，不混在描述句里 */
+.entry-tag {
+  display: inline-block;
+  margin-top: 11px;
+  padding: 3px 9px;
+  color: var(--c-aside);
+  font-size: 11.5px;
+  line-height: 1.6;
+  border: 1px solid color-mix(in srgb, var(--c-aside) 38%, transparent);
+}
+
 .entry-meta {
   display: flex;
   gap: clamp(16px, 2vw, 30px);
@@ -439,7 +518,14 @@ main { flex: 1 0 auto; }
   text-align: right;
 }
 
-.entry-meta div { flex: none; }
+/* 发丝线分隔两组数值，靠拢成一块读，不各自飘着 */
+.entry-meta div {
+  flex: none;
+  padding-left: clamp(16px, 2vw, 30px);
+  border-left: 1px solid var(--hair);
+}
+
+.entry-meta div:first-child { border-left: 0; padding-left: 0; }
 
 .entry-meta dt {
   color: var(--bone-faint);
@@ -451,13 +537,17 @@ main { flex: 1 0 auto; }
 }
 
 .entry-meta dd {
-  margin: 4px 0 0;
-  color: var(--bone);
+  margin: 5px 0 0;
+  color: var(--bone-hi);
   font-family: var(--font-disp);
-  font-size: 25px;
+  font-size: 27px;
   font-weight: 700;
   line-height: 1;
+  transition: color .18s ease;
 }
+
+.entry:hover .entry-meta dd,
+.entry:focus-visible .entry-meta dd { color: var(--c-arc); }
 
 /* ── 页脚 ── */
 .site-foot {
