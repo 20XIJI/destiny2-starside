@@ -102,6 +102,20 @@ NAV = ('<div class="site-head">'
        '</div>')
 
 
+# ── 站点补充：源表格缺失、由本站补上的分节标签 ──────────────────────────
+# 键是分节序号（1-based，对应 id="art-N"），值是 .art-tags 的内容。
+# 写法照源表格的约定：第一行元素、各自套语义 class，第二行武器类型不着色，
+# 分隔符是 " | "，两行之间一个 <br>；「动能」在源表格里也不着色，保持一致。
+#
+# 这些文本不在源导出里。产出侧带 data-source="site" 标记，check() 在字符比对前
+# 按标记整块剥离并核对块数——保真自检的强度不因此下降，只是明确了作用域。
+# 若某赛季的源表格补上了同一分节的标签，render() 会当场报错，要求删掉这里的条目。
+EXTRA_TAGS = {
+    1: ('动能 | <span class="el-void">虚空</span> | <span class="el-arc">电弧</span>'
+        '<br>刀剑 | 狙击步枪 | 机枪'),
+}
+
+
 def die(msg) -> NoReturn:
     raise SystemExit('转换中止：' + msg)
 
@@ -401,9 +415,16 @@ def render(page, prefix):
               '<h2>%s%s</h2>' % (s['name'],
                                  ' <small>%s</small>' % s['paren'] if s['paren'] else '')]
         units.append((s['name'] + ' ' + s['paren']).strip())
+        extra = EXTRA_TAGS.get(i)
+        if s['tags'] and extra:
+            die('分节 %d（%s）的源表格已带标签，与 EXTRA_TAGS 里的补充重复；'
+                '源表格已补上就删掉 EXTRA_TAGS 里的这条' % (i, s['name']))
         if s['tags']:
             o.append('<p class="art-tags">%s</p>' % s['tags'])
             units.append(text_of(s['tags']))
+        elif extra:
+            # 站点补充：不进 units，字符比对时按 data-source 标记整块剥离
+            o.append('<p class="art-tags" data-source="site">%s</p>' % extra)
         o.append('</header>')
         # 档位轨：三枚 CSS 绘制的菱形，点亮枚数 = 档位。
         # 档位文字由 CSS content 生成，不进 HTML，因此既不进 units 也不进字符比对。
@@ -479,6 +500,11 @@ def check(src, out, page, units, icons):
     old_body = re.sub(r'<(style|template|script)[^>]*>.*?</\1>', '', old_body, flags=re.S)
     # 比对窗口 = 页首 + 正文。导航条与页脚是站点外壳、不含源文本，落在窗口外。
     new_body = out[out.find('<header'):out.rindex('</main>')]
+    # 站点补充的分节标签不在源导出里，比对前按标记整块剥离。
+    # 剥掉的块数必须与 EXTRA_TAGS 相等——多剥少剥都说明标记或渲染出了问题。
+    new_body, stripped = re.subn(r'<p class="art-tags" data-source="site">.*?</p>', '',
+                                 new_body, flags=re.S)
+    eq('剥离的站点补充标签块数', stripped, len(EXTRA_TAGS))
     a = Counter(text_of(old_body).replace(' ', ''))
     b = Counter(text_of(new_body).replace(' ', ''))
     # 档位表头属于外壳而非内容：源导出用 ⯁ 表示档位，产出改为 CSS 绘制的菱形 +
