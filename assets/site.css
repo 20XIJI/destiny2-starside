@@ -1,0 +1,229 @@
+/* 站点通用：主题、配色 token、页首、导航。各组件页共用这一份。 */
+
+:root {
+  --ink: #e6f3f5;
+  --muted: #9bb3bc;
+  --cyan: #28b7c4;
+  --panel: #071923;
+  --frame: #061721;
+  --line: #177886;
+
+  /* 渲染色板：页面实际显示的 9 色（原表格用 span[style*=] 覆盖压成这 9 色） */
+  --c-cyan: #73e5e9;
+  --c-blue: #8ecbff;
+  --c-purple: #d0aaff;
+  --c-green: #9adf92;
+  --c-gold: #ffe483;
+  --c-orange: #ffc57d;
+  --c-red: #ff9f9c;
+  --c-pink: #f4aad2;
+  --c-grey: #b6c4c7;
+
+  /* 语义 token → 渲染色。想让某一类单独出色，只改这一行的右值。
+     左侧 23 个 token 由 tools/convert-artifact-mods.py 的 COLOR_MAP 产出，两边要对齐。 */
+  --el-arc: var(--c-cyan);
+  --deb-arc: var(--c-cyan);          /* 震颤、致盲 */
+  --el-stasis: var(--c-blue);
+  --deb-stasis: var(--c-blue);       /* 冻结、碎裂 */
+  --enemy: var(--c-blue);            /* 战斗人员/勇士/精英/盟友/数值 */
+  --el-void: var(--c-purple);
+  --ammo-heavy: var(--c-purple);     /* 威能弹药 */
+  --el-strand: var(--c-green);       /* 缚丝；原表格同色也用于特殊弹药 */
+  --deb-strand: var(--c-green);      /* 割裂、瓦解 */
+  --el-solar: var(--c-orange);
+  --deb-solar: var(--c-orange);      /* 暗影 */
+  --el-kinetic: var(--c-grey);
+  --el-prismatic: var(--c-pink);
+  --deb-void: var(--c-pink);         /* 削弱 */
+  --pickup: var(--c-pink);           /* 元素拾取物/技能能量/护盾 */
+  --joke: var(--c-pink);
+  --orb: var(--c-gold);              /* 能量球/超能能量 */
+  --stack: var(--c-gold);            /* 精准命中/增益层数 */
+  --armor-charge: var(--c-gold);
+  --health: var(--c-red);            /* 生命值/治疗 */
+  --note: var(--c-red);              /* 作者注释与限制说明 */
+  --unsure: var(--c-red);            /* [?] 待测数值 */
+  --plain: var(--ink);               /* 原色近正文色，跟随正文 */
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  min-height: 100vh;
+  /* 撑满视口宽：不写这行时 align-items:center 会让 body 收成 fit-content，
+     被 1020px 的三档网格顶宽，整页横向滚动、页首被切掉（原页面就是这毛病） */
+  width: 100%;
+  margin: 0;
+  padding: clamp(14px, 2.8vw, 42px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--ink);
+  font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+  background:
+    radial-gradient(ellipse at 74% 15%, rgba(22, 71, 92, .48), transparent 38%),
+    radial-gradient(ellipse at 10% 88%, rgba(9, 83, 96, .25), transparent 43%),
+    linear-gradient(122deg, transparent 0 49%, rgba(47, 118, 139, .12) 49.1% 49.25%, transparent 49.4%) 0 0 / 310px 310px,
+    linear-gradient(24deg, transparent 0 49%, rgba(47, 118, 139, .08) 49.1% 49.25%, transparent 49.4%) 0 0 / 250px 250px,
+    #020b13;
+  background-attachment: fixed;
+}
+
+/* ── 配色工具类：着色文字全部经由这些 class，不再有内联 color ── */
+.el-arc, .deb-arc, .el-stasis, .deb-stasis, .enemy, .el-void, .ammo-heavy,
+.el-strand, .deb-strand, .el-solar, .deb-solar, .el-kinetic, .el-prismatic,
+.deb-void, .pickup, .joke, .orb, .stack, .armor-charge, .health, .note,
+.unsure, .plain {
+  font-weight: 800;
+  text-shadow: 0 1px 2px #000;
+}
+
+.el-arc { color: var(--el-arc); }
+.deb-arc { color: var(--deb-arc); }
+.el-stasis { color: var(--el-stasis); }
+.deb-stasis { color: var(--deb-stasis); }
+.enemy { color: var(--enemy); }
+.el-void { color: var(--el-void); }
+.ammo-heavy { color: var(--ammo-heavy); }
+.el-strand { color: var(--el-strand); }
+.deb-strand { color: var(--deb-strand); }
+.el-solar { color: var(--el-solar); }
+.deb-solar { color: var(--deb-solar); }
+.el-kinetic { color: var(--el-kinetic); }
+.el-prismatic { color: var(--el-prismatic); }
+.deb-void { color: var(--deb-void); }
+.pickup { color: var(--pickup); }
+.joke { color: var(--joke); }
+.orb { color: var(--orb); }
+.stack { color: var(--stack); }
+.armor-charge { color: var(--armor-charge); }
+.health { color: var(--health); }
+.note { color: var(--note); }
+.unsure { color: var(--unsure); }
+.plain { color: var(--plain); }
+
+/* ── 顶部导航 ── */
+.site-nav {
+  width: 100%;
+  max-width: 1440px;
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  margin-bottom: 14px;
+  padding: 10px 16px;
+  font-size: 13px;
+  letter-spacing: 2px;
+  background: linear-gradient(112deg, rgba(8, 29, 42, .9), rgba(13, 43, 57, .8));
+  border: 1px solid rgba(61, 184, 196, .3);
+}
+
+.site-nav a { color: var(--c-cyan); text-decoration: none; }
+.site-nav a:hover { color: #b8f6fa; text-decoration: underline; }
+.site-nav [aria-current="page"] { color: var(--muted); }
+
+/* ── 页首 ── */
+.monument-header {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 0 clamp(18px, 2.2vw, 30px);
+  padding: clamp(30px, 4.5vw, 54px) clamp(18px, 3.5vw, 44px) clamp(26px, 3vw, 36px);
+  text-align: center;
+  background: linear-gradient(112deg, rgba(8, 29, 42, .98), rgba(13, 43, 57, .92));
+  border: 1px solid rgba(61, 184, 196, .5);
+  border-bottom: 3px solid #20bdca;
+  box-shadow: 0 13px 40px rgba(0, 0, 0, .5), inset 0 1px rgba(207, 250, 252, .1);
+}
+
+.monument-header::before,
+.monument-header::after {
+  content: "◈";
+  position: absolute;
+  z-index: -1;
+  top: 13px;
+  color: #2ac2cf;
+  opacity: .1;
+  font-family: serif;
+  font-size: clamp(80px, 13vw, 180px);
+  line-height: 1;
+}
+
+.monument-header::before { left: 3%; transform: rotate(-28deg); }
+.monument-header::after { right: 3%; transform: scaleX(-1) rotate(-28deg); }
+
+.monument-header h1 {
+  margin: 0;
+  color: #f1fbfc;
+  font-size: clamp(25px, 4.2vw, 52px);
+  font-weight: 800;
+  letter-spacing: clamp(4px, 1.2vw, 16px);
+  line-height: 1.25;
+  text-shadow: 0 0 20px rgba(69, 218, 229, .27);
+}
+
+.monument-header h1::before {
+  content: "◆";
+  margin-right: 18px;
+  color: #40d3de;
+  font-size: .75em;
+}
+
+.monument-header .en-sub {
+  margin: 14px 0 0;
+  color: #70d1d9;
+  font-family: Georgia, "Times New Roman", "Noto Serif SC", serif;
+  font-size: clamp(10px, 1.5vw, 14px);
+  font-weight: 600;
+  letter-spacing: clamp(2px, .55vw, 8px);
+  line-height: 1.65;
+}
+
+/* ── 首页组件卡片 ── */
+.cards {
+  width: 100%;
+  max-width: 1440px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 18px;
+}
+
+.card {
+  display: block;
+  padding: clamp(20px, 2.5vw, 32px);
+  color: inherit;
+  text-decoration: none;
+  background: linear-gradient(112deg, rgba(8, 29, 42, .98), rgba(13, 43, 57, .92));
+  border: 1px solid rgba(61, 184, 196, .5);
+  border-bottom: 3px solid #20bdca;
+  box-shadow: 0 13px 40px rgba(0, 0, 0, .5);
+  transition: background .2s ease;
+}
+
+.card:hover { background: #15515f; }
+
+.card h2 {
+  margin: 0 0 10px;
+  color: #eaffff;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  text-shadow: 0 0 12px rgba(45, 205, 214, .24);
+}
+
+.card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.78;
+}
+
+@media (max-width: 700px) {
+  html, body { padding: 10px; }
+  .monument-header {
+    margin-bottom: 16px;
+    padding: 28px 16px 24px;
+  }
+  .monument-header .en-sub { margin-top: 12px; }
+}

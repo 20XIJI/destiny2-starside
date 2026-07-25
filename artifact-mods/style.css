@@ -1,0 +1,251 @@
+/* 赛季神器模组组件：外框、分节、三档网格、模组卡片。
+   通用主题与配色 token 在 /assets/site.css。 */
+
+main {
+  width: 100%;
+  max-width: 1500px;
+  overflow-x: auto;                 /* 窄屏横向滚动，三档始终并排，不收单列 */
+  background: var(--frame);
+  border: 1px solid rgba(43, 173, 188, .62);
+  box-shadow: 0 20px 52px rgba(0, 0, 0, .58), inset 0 0 0 5px rgba(17, 63, 76, .38);
+  scrollbar-color: #2993a1 var(--panel);
+  scrollbar-width: thin;
+}
+
+main::-webkit-scrollbar { height: 10px; }
+main::-webkit-scrollbar-track { background: var(--panel); }
+main::-webkit-scrollbar-thumb {
+  background: #247e8b;
+  border: 2px solid var(--panel);
+  border-radius: 999px;
+}
+
+.intro, .artifact { min-width: 1020px; }
+
+/* ── 页内介绍块 ── */
+.intro h2 {
+  margin: 0;
+  padding: 23px 22px;
+  color: #efffff;
+  font-size: clamp(25px, 3vw, 38px);
+  font-weight: 800;
+  letter-spacing: clamp(7px, 1.5vw, 18px);
+  text-align: center;
+  background: linear-gradient(90deg, #123b48, #255563 50%, #123b48);
+  border-bottom: 2px solid #23c1ce;
+  text-shadow: 0 0 14px rgba(82, 232, 239, .38);
+}
+
+.intro .lede {
+  margin: 0;
+  padding: 12px 20px;
+  color: #a9c6cc;
+  font-size: 14px;
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: .4px;
+  text-align: center;
+  background: #102a35;
+  border-bottom: 1px solid rgba(71, 174, 188, .38);
+}
+
+/* 使用限制：两侧徽章 + 中间说明 */
+.notice {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: clamp(14px, 2vw, 28px);
+  padding: clamp(14px, 1.35vw, 20px) clamp(14px, 1.55vw, 22px);
+  border-top: 1px solid #39bdc9;
+  border-bottom: 1px solid #218e9c;
+  background: #0e3743;
+}
+
+.notice .emblem {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 5px rgba(46, 207, 217, .3));
+}
+
+.notice-body { text-align: center; }
+
+.notice-body h3 {
+  margin: 0 0 6px;
+  color: #b8e4e8;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.notice-body p {
+  margin: 0;
+  color: #dcecef;
+  font-size: 15px;
+  line-height: 1.78;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .8);
+}
+
+/* ── 神器分节 ── */
+.art-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: clamp(14px, 2vw, 28px);
+  padding: clamp(18px, 2vw, 26px) clamp(18px, 2.2vw, 28px);
+  background: linear-gradient(110deg, #17414d, #225866 55%, #143944);
+  border-top: 1px solid #39bdc9;
+  border-bottom: 1px solid #39bdc9;
+}
+
+.art-emblem {
+  width: 59px;
+  height: 59px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 5px rgba(46, 207, 217, .3));
+}
+
+.art-head h2 {
+  margin: 0;
+  color: #eaffff;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  line-height: 1.55;
+  text-align: center;
+  text-shadow: 0 0 12px rgba(45, 205, 214, .24);
+}
+
+.art-head h2 small {
+  font-size: .8em;
+  letter-spacing: 2px;
+  opacity: .85;
+}
+
+.art-tags {
+  margin: 0;
+  padding: 13px 18px;
+  color: #b8e4e8;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  line-height: 1.55;
+  text-align: center;
+  background: #0e3743;
+  border-bottom: 1px solid #218e9c;
+}
+
+/* ── 三档并排 ──
+   一级/二级/三级模组按「行」成组（游戏内逻辑），所以模组是 .tiers 的直接子项、
+   按行主序排列，由网格保证同一行三档横向对齐；每个模组占两行（名称带 + 描述带），
+   用 subgrid 让这两带各自也跨列对齐——等同原表格里名称行、描述行是两个 <tr>。 */
+.tiers {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(280px, 1fr));
+}
+
+.tier-label, .mod { min-width: 0; position: relative; }
+
+/* 档间分隔：原表格 6px 占位列的竖向渐变光条，逐行一段（与原页面同样呈串珠状） */
+.tier-label:not([data-tier="1"])::before,
+.mod:not([data-tier="1"])::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 -3px;
+  width: 6px;
+  background: linear-gradient(#06303d, #1daaba, #06303d);
+  box-shadow: 0 0 8px rgba(39, 199, 211, .3);
+  z-index: 2;
+}
+
+[data-tier="1"] { background: rgba(9, 43, 55, .94); }
+[data-tier="2"] { background: rgba(8, 37, 50, .94); }
+[data-tier="3"] { background: rgba(10, 43, 48, .94); }
+
+.tier-label {
+  margin: 0;
+  padding: 8px;
+  color: #dcecef;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-align: center;
+  border-bottom: 1px solid rgba(82, 171, 181, .24);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .8);
+}
+
+/* ── 模组卡片：图标 + 名称一行，描述整行 ── */
+.mod {
+  display: grid;
+  grid-row: span 2;                 /* 占父网格两行：名称带、描述带 */
+  grid-template-rows: subgrid;      /* 两带的行高由整行三档共同决定 */
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    "icon name"
+    "desc desc";
+  border-bottom: 1px solid rgba(82, 171, 181, .24);
+}
+
+/* 名称行底色：跨列铺满整行，图标与名称浮在其上（<img> 自身有固有宽高比，
+   拉伸不了，所以底色不能挂在图标上） */
+.mod::after {
+  content: "";
+  grid-row: 1;
+  grid-column: 1 / -1;
+  background: #11404d;
+  z-index: 0;
+}
+
+.mod-icon {
+  grid-area: icon;
+  align-self: center;
+  position: relative;
+  z-index: 1;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  padding: clamp(14px, 1.35vw, 20px) 0 clamp(14px, 1.35vw, 20px) clamp(14px, 1.55vw, 22px);
+  box-sizing: content-box;
+  filter: drop-shadow(0 0 5px rgba(46, 207, 217, .3));
+}
+
+.mod h4 {
+  grid-area: name;
+  align-self: center;
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  padding: clamp(14px, 1.35vw, 20px) clamp(14px, 1.55vw, 22px);
+  color: #eefeff;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.78;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .8);
+  overflow-wrap: anywhere;
+}
+
+.mod p {
+  grid-area: desc;
+  align-self: stretch;              /* 顶对齐并铺满行高 */
+  margin: 0;
+  padding: clamp(14px, 1.35vw, 20px) clamp(14px, 1.55vw, 22px);
+  color: #dcecef;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.78;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .8);
+  overflow-wrap: anywhere;
+}
+
+.mod:hover { background: #15515f; }
+.mod:hover::after { background: #15515f; }
+
+@media (max-width: 700px) {
+  main {
+    box-shadow: 0 12px 32px rgba(0, 0, 0, .46), inset 0 0 0 3px rgba(17, 63, 76, .38);
+  }
+  .notice .emblem { width: 52px; height: 52px; }
+  .mod h4, .mod p { padding: 13px 14px; line-height: 1.72; }
+  .mod-icon { padding: 13px 0 13px 14px; }
+}
