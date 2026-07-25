@@ -90,8 +90,7 @@ PAGE_DESC = '7 件神器、147 个模组的效果与数值，一级／二级／�
 
 # 站点页脚。落在保真比对窗口（页首…</main>）之外，可自由编辑。
 FOOT = ('<footer class="site-foot">'
-        '<p><a href="../index.html">← Starside</a> · '
-        '数值以游戏内实测为准，标注 <span class="unsure">[?]</span> 的条目尚待核实。</p>'
+        '<p>数值以游戏内实测为准，标注 <span class="unsure">[?]</span> 的条目尚待核实。</p>'
         '<p>数据源：<a href="https://docs.google.com/spreadsheets/u/0/d/'
         '1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4" target="_blank" rel="noopener">'
         '社区共享表格</a>。本页在其基础上统一了术语、标点与排版，数值未作改动。</p>'

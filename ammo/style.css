@@ -2,11 +2,11 @@
    通用主题、字体与配色 token 在 /assets/site.css。
    与神器模组页不同，这一页是手写的，没有生成器，改这里就是改内容。 */
 
-/* 这一页是连续阅读，不是三档并排对照：整栏收到周报那种阅读宽度并居中，
-   页首与页脚同宽对齐。顶部导航条仍走 site.css 的 1500，它是通栏的站点外壳。 */
+/* 这一页是连续阅读，不是三档并排对照：正文栏收到阅读宽度并居中。
+   收窄只作用于正文与页首——导航条与页脚是站点外壳，两页必须一样宽，
+   跟着正文变窄会让同一个页脚在不同页面上长短不一。 */
 main,
-.page-head,
-.site-foot {
+.page-head {
   max-width: 760px;
   margin: 0 auto;
 }
@@ -16,8 +16,6 @@ main { padding: 0 24px clamp(48px, 6vw, 84px); }
 .page-head { padding: clamp(40px, 5vw, 68px) 24px clamp(20px, 2.4vw, 30px); }
 
 .page-head h1 { font-size: clamp(28px, 3.2vw, 38px); }
-
-.site-foot { padding-left: 24px; padding-right: 24px; }
 
 /* 分节之间留出停顿，读者才知道一段议题结束了 */
 .block { margin-bottom: clamp(40px, 4.6vw, 64px); }

@@ -4,6 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构建步骤，托管在腾讯云 CloudBase。仓库无测试框架、无打包器。
 
+两个资料页：`artifact-mods/` 由生成器产出，**不手改**；`ammo/` 是手写页，改 HTML 就是改内容。
+
+**视觉与排版规范在 `design.md`。**本文件写机制与验证，不重复设计规则。
+
 ## 命令
 
 ```bash
@@ -90,35 +94,17 @@ out = revise(out)                      # 2 文本修订：逐条带命中数断�
 
 两道护栏会中止转换：某分节源表格已带标签又写了补充；剥离块数与 `len(EXTRA_TAGS)` 对不上。
 
-## 配色的两处契约
+## 视觉与排版
 
-改配色改两处并保持一致：
+**规范在 `design.md`，改样式、定颜色、加页面之前先读。**那里写死了色相归属、ΔE 判据、中文空格规矩、版心与外壳的分工。
 
-- `tools/convert-artifact-mods.py` 的 `COLOR_MAP`：51 个源色值 → 23 个语义 token。
-- `assets/site.css` 的 `:root`：23 个 token → 7 个元素色相 + 3 个机制色 + `--c-term`。
+与生成器耦合的部分只有一处：配色要改两个文件并保持一致——`tools/convert-artifact-mods.py` 的 `COLOR_MAP`（51 个源色值 → 23 个语义 token）与 `assets/site.css` 的 `:root`（23 个 token → 渲染色）。
 
-**非元素术语不借用元素色相。**`--enemy`（战斗人员/勇士/精英）与 `--pickup`（元素拾取物/技能能量/护盾）共 205 处，走 `--c-term` 低饱和暖沙 `#d6c39a`，与七个元素色相最小 ΔE 20。机制色 `--c-orb`／`--c-health`／`--ammo-heavy` 是例外：它们在游戏内本来就是那个颜色。
+## 神器模组页的布局约束
 
-**改配色要算 ΔE，不能只看对比度。**对比度只衡量明暗：`--c-term` 曾跟随 `--bone-hi`，与正文骨白的对比度 1.15:1、ΔE 5.5——两个指标都说「没分开」，但换成同亮度的另一色相时对比度会掉到 1.05 而 ΔE 升到 20，此时只有 ΔE 是对的。**方向也要算进去**：比正文亮 + 600 字重读作强调，比正文暗 + 600 字重读作噪声。`--c-kinetic` 从 `#c3cbd2`（暗于正文）改成 `#eef3f9`（亮于正文）时 ΔE 反而略降，实际可读性却明显上升。拿不准就在 scratchpad 里并排渲染出来看——**覆盖变量要覆盖 `--enemy`／`--el-kinetic` 这类终值**，`--enemy: var(--c-term)` 在 `:root` 就已求值完毕，改后代的 `--c-term` 不生效。
-
-元素色相是游戏的既有编码、属于内容，只调亮度不改色相。`--note`（作者注释）与 `--unsure`（`[?]` 待测值）共用 `--c-aside`，字重回到正文，`.unsure` 带虚下划线。
-
-## 视觉体系
-
-外壳全部去饱和为骨白／石墨发丝线，**整页唯一的饱和色来自游戏自身的元素编码**。新增界面元素沿用这条线：不给外壳加彩色、不加发光边框与投影。着色文字统一 `font-weight: 600`、无 `text-shadow`。
-
-字体三个角色（`site.css` 的 `--font-*`）：显示层 Chakra Petch（自托管 latin 子集，24 KB）、中文标题 PingFang、正文与数字等宽字族。`--font-disp` 与 `--font-body` 都靠浏览器按字符逐族回退：拉丁与数字取前一族字面，中文自动落到 PingFang，不需要拆标签。
-
-字距只施加于拉丁与数字。`.sect-label` 这类可能是纯中文的位置用 `.2em` 封顶。
-
-不要用字形表达图形语义（档位、装饰）。`⯁`（U+2BC1）在中文字体栈下无字形，`◈`（U+25C8）在 serif 下无字形。图形一律 CSS 绘制，见 `.rhombi`。
-
-## 布局约束
-
-- **不要在 sticky 元素的祖先链上开 `overflow`。** 一旦祖先成为滚动容器，其内部 `position: sticky` 不再相对视口生效，且滚动条会落在约 20000px 高元素的底部、实际不可达。横向溢出交给页面本身，用 `body { min-width: … }` 表达最小内容宽度。
 - **`.mod` 必须按 `data-tier` 钉 `grid-column`，模组必须按行包在 `.mod-row` 里。** 纯靠行主序自动布局时，搜索隐藏任一模组会让其后所有模组列位偏移（三级会落到一级列）。
 - 分节 sticky 单元贴 `top: var(--stick)`，底色取不透明的 `--ink-lift`，分节带 `scroll-margin-top: var(--stick)`。`--stick` 由 `app.js` 按 `.site-head` 实测高度写回。
-- **不做窄屏适配**，这是明确取向。不新增断点、不做三档纵向堆叠。`:focus-visible` 与 `prefers-reduced-motion` 属于质量底线，保留。
+- 这一页约 20000px 高、163 张图，所以 `main` 上不能开 `overflow-x`（理由见 `design.md`），横向溢出交给 `body { min-width: 1064px }`。
 
 ## assets/app.js
 
