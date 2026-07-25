@@ -435,6 +435,225 @@ DESCS = {
         '<p><span class="el-kinetic">主武器</span> = 对战斗人员伤害提高 35%。<br>'
         '<span class="ammo-heavy">威能武器</span> = 对战斗人员伤害提高 25%。<br>'
         '<span class="note">层数与所有效果叠加</span>。</p>',
+
+    # ── art-3 废墟石板（异端）────────────────────────────────────────
+    ('art-3', '死守防线'):
+        '<p>15 米范围内有 3 名敌人，且装备偃月或机枪时：</p>\n'
+        '<p>偃月与<span class="ammo-heavy">机枪</span>各获得 +? 稳定性与 +30 装填速度。<br>'
+        '偃月的<span class="el-strand">射弹</span>、<span class="el-arc">近战</span>或'
+        '<span class="ammo-heavy">机枪</span>击杀可'
+        '<span class="health">恢复 55 点生命值</span>。</p>\n'
+        '<p>条件不再满足后，<span class="el-arc">属性加成</span>再持续 5 秒。<br>'
+        '<span class="note">击杀回血效果不会延续</span>。</p>',
+
+    ('art-3', '邪恶编织'):
+        '<p><span class="el-strand">缠结</span>造成伤害时施加'
+        '<span class="deb-strand">割裂</span>，持续 10 <span class="el-strand">+5</span> 秒。</p>\n'
+        '<p>拾取<span class="el-strand">缠结</span>时：<br>'
+        '<span class="el-strand">缠结冷却时间</span>减少 4 秒。</p>\n'
+        '<p><span class="note">可由<span class="orb">摩伊拉</span>的线织尖刺击中缠结触发，'
+        '也可由<span class="orb">卢扎卡的丰饶之巢</span>产出的缠结触发</span>。</p>',
+
+    # 「粒子重建削弱」被切成三个不同颜色的 span；末段各武器的触发条件排成列表
+    ('art-3', '粒子重建'):
+        '<p>（线性）融合步枪命中时施加一个<span class="deb-void">独特的可叠加削弱</span>，'
+        '提高自身对该目标的伤害。<br>各层对应：'
+        '<span class="deb-void">5% | 10.25% | 15.8% | 21.6% | 27.6%</span>。<br>'
+        '<span class="deb-void">30% 削弱</span>会覆盖'
+        '<span class="deb-void">粒子重建削弱</span>；'
+        '<span class="orb">神圣裁决</span>的泡泡会把它压到 <span class="deb-void">15%</span>。</p>\n'
+        '<p>多次直接命中会补充 10% 的弹匣，向上取整。<br>'
+        '<span class="note">融合步枪的弹匣中每一发弹药通常都算一次命中；'
+        '攻击融合步枪（含<span class="orb">库尔之影</span>）例外，每两次点射才触发一次</span>。</p>\n'
+        '<p><span class="ammo-heavy">精密线性融合步枪</span>：弹匣 + 2<br>'
+        '<span class="ammo-heavy">适配点射线性融合步枪</span>：3 x（弹匣 + 4）</p>\n'
+        '<p>以下武器的触发条件另计：<br>'
+        '<span class="orb">堡垒</span> = 每 7 次点射<br>'
+        '<span class="orb">悦耳之声</span> = <span class="el-strand">线虫</span>算作命中，'
+        '否则需要 30 次命中（8 次点射）<br>'
+        '<span class="orb">精致坟墓</span> = 每 3 次完整点射<br>'
+        '<span class="orb">冰霜巨人</span> = 8 次射击后<br>'
+        '<span class="orb">Vex 揭秘者</span> = 每 25 次命中</p>',
+
+    ('art-3', '电介质'):
+        '<p>击杀<span class="deb-arc">电弧减益敌人</span>：</p>\n'
+        '<p>获得 <span class="el-arc">x1 电光充能</span>。</p>\n'
+        '<p>在 6 秒内连续击杀 3 名<span class="deb-arc">电弧减益敌人</span>：<br>'
+        '生成一个<span class="orb">能量球</span>，提供 <span class="orb">7.15% 超能能量</span>，'
+        '并<span class="health">恢复 40 点生命值</span>。</p>',
+
+    ('art-3', '邪恶收割'):
+        '<p>在 5 秒内<span class="pickup">施加不稳定</span> 4 次时：</p>\n'
+        '<p>接下来 10 秒内的下一次<span class="el-void">虚空</span>伤害会释放一个'
+        '<span class="deb-void">削弱爆发</span>，影响 7 米内的敌人。</p>\n'
+        '<p>对<span class="pickup">尚未被削弱的敌人</span>施加'
+        '<span class="deb-void">削弱</span>时：<br>'
+        '<span class="pickup">虚空覆盖护盾生命值 +25</span>，'
+        '持续 10 <span class="el-void">+5</span> 秒。<br>'
+        '<span class="note">每个削弱来源只触发一次，例如'
+        '<span class="ammo-heavy">烟雾弹</span>不会重复触发</span>。</p>\n'
+        '<p><span class="note">用法夫纳或牵引器火炮时不会获得虚空覆盖护盾</span>。</p>',
+
+    ('art-3', '元素超充器'):
+        '<p>用<span class="orb">与超能元素匹配的武器</span>击杀'
+        '<span class="health">疲惫</span>或<span class="deb-strand">割裂</span>状态的敌人时：</p>\n'
+        '<p>额外获得 <span class="orb">2?% 超能技能能量</span>。</p>',
+
+    ('art-3', '不稳定神枪手'):
+        '<p>在 3 秒内用<span class="el-void">虚空武器</span>造成多次'
+        '<span class="stack">精准命中</span>，或在 3 秒内取得 3 次击杀：</p>\n'
+        '<p>获得<span class="pickup">不稳定弹药</span>，持续 10 '
+        '<span class="unsure">[6]</span> 秒。</p>\n'
+        '<p><span class="stack">多次精准命中</span>的次数要求：<br>'
+        '<span class="stack">（弹匣容量的 25%）+ 1</span>，向下取整；'
+        '弓为 <span class="stack">2</span> 次。</p>\n'
+        '<p>触发<span class="pickup">不稳定爆炸</span>可获得 '
+        '<span class="el-void">10% 职业技能能量</span>。</p>',
+
+    # 两行伤害构成的标签原本吊在行尾，提到行首
+    ('art-3', '闪电过载'):
+        '<p>达到 <span class="el-arc">x10 电光充能</span>时：<br>'
+        '获得<span class="el-arc">增幅</span>，持续 15 秒。</p>\n'
+        '<p><span class="el-arc">闪电过载对战斗人员的伤害提高 50%</span>：<br>'
+        '<span class="el-arc">基础：405 伤害 + 270 溅射 = 675</span><br>'
+        '<span class="el-arc">闪电过载：608 伤害 + 406 溅射 = 1014</span></p>\n'
+        '<p><span class="note">不会提高对守护者的伤害</span>。</p>',
+
+    ('art-3', '重型军械回复'):
+        '<p>在 7 秒内造成 <span class="ammo-heavy">8 次机枪伤害</span>或 '
+        '<span class="ammo-heavy">2 次火箭发射器伤害</span>时：</p>\n'
+        '<p>获得 <span class="enemy">25% <span class="unsure">[5%]</span> 伤害抗性</span>'
+        '（抗性 x2），持续 15.5 秒。<br>'
+        '<span class="el-solar">手雷</span>与<span class="el-arc">近战</span>技能的'
+        '基础充能速率额外提高 85%，持续 10 秒。</p>\n'
+        '<p>当<span class="ammo-heavy">威能军械</span>激活时：<br>'
+        '击杀<span class="enemy">精英 + 战斗人员</span>会'
+        '<span class="el-kinetic">使 10 米内的普通战斗人员迷失方向</span>。</p>',
+
+    ('art-3', '瓦解能量球'):
+        '<p>拾取<span class="orb">能量球</span>或<span class="el-strand">缠结</span>时：</p>\n'
+        '<p>获得<span class="deb-strand">瓦解弹药</span>，'
+        '持续 14 <span class="unsure">[?]</span> 秒。</p>',
+
+    ('art-3', '群敌飞梭'):
+        '<p>对<span class="deb-strand">被瓦解的敌人</span>造成相当于其'
+        '<span class="health">生命值</span>与<span class="el-stasis">护盾</span>之和 10% '
+        '<span class="unsure">[100? 生命值]</span> 的武器伤害时：</p>\n'
+        '<p>生成一个<span class="el-strand">线虫</span>。<br>'
+        '<span class="note">生成线虫有 0.5 秒冷却时间</span>。</p>\n'
+        '<p><span class="el-strand">线虫</span>造成伤害时施加'
+        '<span class="deb-strand">割裂</span>。</p>',
+
+    ('art-3', '除颤爆破'):
+        '<p><span class="enemy">眩晕</span>一名<span class="enemy">勇士</span>时：<br>'
+        '获得 <span class="el-arc">x10 电光充能</span>。</p>\n'
+        '<p><span class="el-arc">闪电过载的溅射伤害部分</span>会施加'
+        '<span class="deb-arc">震颤</span>。</p>\n'
+        '<p>触发<span class="el-arc">闪电过载</span>时：<br>'
+        '<span class="health">恢复约 55 点生命值</span>，并'
+        '<span class="health">开始生命回复</span>。<br>'
+        '<span class="note">但不会重新开始<span class="el-stasis">护盾</span>充能</span>。</p>',
+
+    # 「致盲」是电弧减益，源表格却染成动能灰
+    ('art-3', '光子耀斑'):
+        '<p>用<span class="el-arc">电弧</span>击杀<span class="health">疲惫</span>或'
+        '<span class="deb-strand">割裂</span>状态的敌人时：</p>\n'
+        '<p>触发一次<span class="deb-arc">致盲爆发</span>，'
+        '<span class="deb-arc">致盲</span> 5 米内的敌人。<br>'
+        '<span class="note">触发有 6 秒冷却时间</span>。</p>',
+
+    ('art-3', '静铃无响'):
+        '<p>在 3 秒内取得 <span class="el-arc">2 次偃月近战击杀</span>时：<br>'
+        '为<span class="el-strand">特殊弹药偃月</span>补充 '
+        '<span class="el-strand">+2 备用弹药</span>。</p>\n'
+        '<p>用<span class="pickup">偃月护盾</span>格挡伤害时：<br>'
+        '<span class="el-arc">偃月近战伤害</span>提高 85% '
+        '<span class="unsure">[?%]</span>，持续 6 秒。<br>'
+        '<span class="note"><span class="enemy">友方</span>射击该'
+        '<span class="pickup">护盾</span>也会触发</span>。</p>',
+
+    ('art-3', '虚空助焊'):
+        '<p>用<span class="el-void">虚空武器</span>'
+        '<span class="deb-void">击杀被削弱的敌人</span>时：</p>\n'
+        '<p>对 ? 米内的敌人施加<span class="pickup">不稳定</span>。<br>'
+        '对<span class="enemy">精英 +</span> <span class="unsure">[?]</span> 战斗人员与'
+        '<span class="enemy">守护者</span> <span class="unsure">[?]</span>，'
+        '范围扩大至 ? 米。</p>',
+
+    ('art-3', '元素虹吸'):
+        '<p>用<span class="el-kinetic">动能武器</span>或'
+        '<span class="orb">与超能元素匹配的武器</span>在 3 秒内取得 3 次击杀时：</p>\n'
+        '<p>生成一个与所装备<span class="orb">超能元素</span>匹配的'
+        '<span class="pickup">元素拾取物</span>。</p>\n'
+        '<p>拾取<span class="pickup">元素拾取物</span>时：<br>'
+        '获得 5% <span class="unsure">[1%]</span> '
+        '<span class="pickup">对应元素的超能技能</span>充能。<br>'
+        '<span class="note">两次额外充能之间有 2 秒冷却时间</span>。</p>',
+
+    # ↓ 箭头原本被染成 note 与动能灰，减益各归各的元素
+    ('art-3', '严酷折射'):
+        '<p>对受到<span class="deb-void">元素匹配减益</span>的敌人造成 3 次追踪步枪命中时：<br>'
+        '追踪步枪伤害提高，持续 4 秒。</p>\n'
+        '<p>传说追踪步枪 = 50%<br>'
+        '<span class="orb">异域</span><span class="el-strand">特殊追踪步枪</span>与'
+        '<span class="orb">北极星</span> = 35%</p>\n'
+        '<p><span class="orb">缩影</span>对受到<span class="deb-void">任意元素减益</span>的敌人'
+        '造成 4 次命中后，伤害提高 20%。</p>\n'
+        '<p><span class="el-arc">电弧</span> = ↓<span class="deb-arc">致盲</span> '
+        '↓<span class="deb-arc">震颤</span><br>'
+        '<span class="el-solar">烈日</span> = ↓<span class="deb-solar">灼烧</span> '
+        '↓<span class="deb-solar">点燃</span><br>'
+        '<span class="el-void">虚空</span> = ↓<span class="deb-void">压制</span> '
+        '↓<span class="deb-void">不稳定</span> ↓<span class="deb-void">削弱</span><br>'
+        '<span class="el-stasis">冰影</span> = ↓<span class="deb-stasis">减速</span> '
+        '↓<span class="deb-stasis">冻结</span> ↓<span class="deb-stasis">碎裂</span><br>'
+        '<span class="el-strand">缚丝</span> = ↓<span class="deb-strand">割裂</span> '
+        '↓<span class="deb-strand">悬停</span> ↓<span class="deb-strand">瓦解</span></p>',
+
+    ('art-3', '极限突破'):
+        '<p><span class="orb">释放超能</span>时处于<span class="health">低生命值</span>，'
+        '或拥有<span class="pickup">元素匹配增益</span>：</p>\n'
+        '<p><span class="orb">超能技能伤害提高 15%</span>。<br>'
+        '<span class="orb">一次性超能</span>只获得 8 秒加成，'
+        '<span class="orb">持续型超能</span>的加成持续到结束。</p>\n'
+        '<p><span class="el-arc">电弧</span> = ↑<span class="el-arc">增幅</span> '
+        '↑<span class="el-arc">电光充能</span><br>'
+        '<span class="el-solar">烈日</span> = ↑<span class="health">治愈</span> '
+        '↑<span class="el-solar">焕光</span> ↑<span class="health">恢复</span><br>'
+        '<span class="el-void">虚空</span> = ↑<span class="el-void">吞食</span> '
+        '↑<span class="el-void">隐身</span> ↑<span class="pickup">虚空覆盖护盾</span><br>'
+        '<span class="el-stasis">冰影</span> = ↑<span class="el-stasis">冰霜护甲</span><br>'
+        '<span class="el-strand">缚丝</span> = ↑<span class="el-strand">织造铠甲</span></p>',
+
+    ('art-3', '永恒毁灭'):
+        '<p>2–3 秒内的每次<span class="note">非异域</span>'
+        '<span class="ammo-heavy">火箭发射器击杀</span>都会'
+        '<span class="ammo-heavy">推进计数器</span>：<br>'
+        '<span class="enemy">普通敌人</span> = <span class="ammo-heavy">25%</span> | '
+        '<span class="enemy">精英</span> = <span class="ammo-heavy">34%</span> | '
+        '<span class="enemy">小头目</span> = <span class="ammo-heavy">100%</span></p>\n'
+        '<p>计数器达到 <span class="ammo-heavy">100%</span> 时：<br>'
+        '<span class="ammo-heavy">火箭发射器</span>获得 '
+        '<span class="ammo-heavy">+1 弹药</span>，'
+        '<span class="ammo-heavy">精密框架火箭发射器</span>'
+        '（或任何带双脚架的框架）获得 <span class="ammo-heavy">+2 弹药</span>。<br>'
+        '同时获得 +? 装填速度与 0.?x 装填持续时间倍率，持续 10 秒。<br>'
+        '<span class="note">不受回收器模组影响</span>。</p>',
+
+    ('art-3', '弹中藏金'):
+        '<p>拾取 <span class="el-strand">5–6 个特殊弹药盒</span>时：<br>'
+        '<span class="ammo-heavy">生成 8% 威能弹药</span>，向上取整。</p>\n'
+        '<p><span class="note"><span class="el-strand">拾取计数器</span>在死亡时重置；'
+        '不受回收器模组影响；在熔炉竞技场中无效</span>。</p>',
+
+    ('art-3', '崩解'):
+        '<p>对<span class="deb-strand">割裂状态的敌人</span>造成 6 次武器伤害时：<br>'
+        '施加<span class="deb-strand">瓦解</span>。</p>\n'
+        '<p>击杀<span class="deb-strand">割裂状态的敌人</span>时：<br>'
+        '在敌人死亡位置释放 <span class="health">3 个治疗脉冲</span>，每 2 秒一次，'
+        '各<span class="health">恢复 15 点生命值</span>，并为使用者与 10 米内的'
+        '<span class="enemy">盟友</span>提供<span class="el-strand">织造铠甲</span>，'
+        '持续 <span class="el-strand">10 秒</span>。</p>',
 }
 
 # 改完仍出现即中止。新写的文本再引入这些写法会被当场拦下。
