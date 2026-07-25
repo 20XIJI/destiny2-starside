@@ -12,6 +12,10 @@ main {
   padding: 0 22px clamp(40px, 5vw, 72px);
 }
 
+/* 页首标题两侧带一对 ✦，是对称的横幅式排法——居中才立得住，
+   左对齐会让右边那颗装饰停在版心中段。正文与分节仍左对齐。 */
+.page-head { text-align: center; }
+
 /* ── 介绍块 ── */
 .intro { margin-bottom: clamp(28px, 3.4vw, 48px); }
 
