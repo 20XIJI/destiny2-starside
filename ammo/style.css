@@ -2,26 +2,37 @@
    通用主题、字体与配色 token 在 /assets/site.css。
    与神器模组页不同，这一页是手写的，没有生成器，改这里就是改内容。 */
 
-/* 这一页是连续阅读，不是三档并排对照：整栏收窄居中，页首与页脚同宽对齐。
-   顶部导航条仍走 site.css 的 1500，它是通栏的站点外壳。 */
+/* 这一页是连续阅读，不是三档并排对照：整栏收到周报那种阅读宽度并居中，
+   页首与页脚同宽对齐。顶部导航条仍走 site.css 的 1500，它是通栏的站点外壳。 */
 main,
 .page-head,
 .site-foot {
-  max-width: 880px;
+  max-width: 760px;
   margin: 0 auto;
 }
 
-main { padding: 0 22px clamp(40px, 5vw, 72px); }
+main { padding: 0 24px clamp(48px, 6vw, 84px); }
 
-.page-head { padding: clamp(36px, 4.6vw, 64px) 22px clamp(22px, 2.6vw, 34px); }
+.page-head { padding: clamp(40px, 5vw, 68px) 24px clamp(20px, 2.4vw, 30px); }
 
-.page-head h1 { font-size: clamp(30px, 3.4vw, 42px); }
+.page-head h1 { font-size: clamp(28px, 3.2vw, 38px); }
 
-.block { margin-bottom: clamp(30px, 3.6vw, 48px); }
+.site-foot { padding-left: 24px; padding-right: 24px; }
+
+/* 分节之间留出停顿，读者才知道一段议题结束了 */
+.block { margin-bottom: clamp(40px, 4.6vw, 64px); }
+
+/* 分节标题比站点默认再重一档：这一页靠标题分章，不靠并排结构 */
+.block > .sect-label {
+  margin-bottom: 20px;
+  color: var(--bone);
+  font-size: 12px;
+  letter-spacing: .24em;
+}
 
 .block p {
-  margin: 0 0 .95em;
-  line-height: 1.95;
+  margin: 0 0 1.05em;
+  line-height: 2.05;
 }
 
 .block p:last-child { margin-bottom: 0; }
@@ -48,11 +59,11 @@ main { padding: 0 22px clamp(40px, 5vw, 72px); }
 .a-white, .a-green, .a-heavy { font-weight: 600; }
 
 /* ── 生成率表 ──
-   行高与字号按原表的密度收紧：11 行占约 250px，不摊成一整屏。 */
+   宽度随内容走再居中：撑到 100% 会把每个格子拉得老宽，读起来散。
+   行高与字号照原表的密度收紧，整表占约 300px 高。 */
 .gen {
-  width: 100%;
-  max-width: 700px;
-  margin: 1.4em 0;
+  width: auto;
+  margin: 1.6em auto 1.8em;
   border: 1px solid var(--hair);
   border-collapse: collapse;
   font-size: 12.5px;
@@ -61,7 +72,7 @@ main { padding: 0 22px clamp(40px, 5vw, 72px); }
 
 .gen th,
 .gen td {
-  padding: 4px 14px;
+  padding: 5px 18px;
   border-top: 1px solid var(--hair);
   border-left: 1px solid var(--hair);
 }
