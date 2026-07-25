@@ -22,6 +22,8 @@ import sys
 from collections import Counter
 from typing import NoReturn
 
+from text_fixes import FORBIDDEN, SUBS
+
 # 配色：源表格的色值 → 语义 token。基准色取每族出现最多的那个，浅深变体并入基准色。
 # 改这里等于改站点色板，assets/site.css 的 :root 要同步。
 COLOR_MAP = {
@@ -216,11 +218,12 @@ def chars_of(frag):
     return text_of(frag).replace(' ', '')
 
 
-def tidy(frag):
-    before = chars_of(frag)
-    frag = frag.replace('&nbsp;', ' ')
-    # 着色只覆盖词本身：空白、句读、换行一律移出 span，剥空剩下的壳。这些规则互相
-    # 制造新的可匹配位置（移出句号会重新露出尾随空格），所以跑到不动点为止。
+def unwrap_edges(frag):
+    """空白、句读、换行一律移出着色 span，剥掉只剩壳的空 span。
+
+    着色覆盖词本身，不覆盖它两侧的空格和句号。这些规则互相制造新的可匹配位置
+    （移出句号会重新露出尾随空格），所以跑到不动点为止。
+    """
     while True:
         prev = frag
         frag = re.sub(r'\s*(<br>)\s*', r'\1', frag)   # 换行两侧的空白不成其为间隔
@@ -229,17 +232,27 @@ def tidy(frag):
         frag = re.sub(r'([%s])(</span>)' % CLOSE, r'\2\1', frag)
         frag = re.sub(r'<span class="[a-z-]+">(?:\s|<br>)*</span>', '', frag)
         if frag == prev:
-            break
+            return frag
+
+
+def space_cjk(frag):
+    """中文排版的空格规矩。只认空格不认换行——换行是产出的行结构，不是字间隔。"""
     # 中文标点自带边距，两侧不再留空格
-    frag = re.sub(r'\s+(%s)(?=[%s])' % (TAGS, CLOSE), r'\1', frag)
-    frag = re.sub(r'(?<=[%s])(%s)\s+' % (CLOSE, TAGS), r'\1', frag)
-    frag = re.sub(r'\s+(%s)(?=[%s])' % (TAGS, OPEN), r'\1', frag)
-    frag = re.sub(r'(?<=[%s])(%s)\s+' % (OPEN, TAGS), r'\1', frag)
+    frag = re.sub(r'[ ]+(%s)(?=[%s])' % (TAGS, CLOSE), r'\1', frag)
+    frag = re.sub(r'(?<=[%s])(%s)[ ]+' % (CLOSE, TAGS), r'\1', frag)
+    frag = re.sub(r'[ ]+(%s)(?=[%s])' % (TAGS, OPEN), r'\1', frag)
+    frag = re.sub(r'(?<=[%s])(%s)[ ]+' % (OPEN, TAGS), r'\1', frag)
     # 中文之间不分词
-    frag = re.sub(r'(?<=[%s])(%s)\s+(%s)(?=[%s])' % (CJK, TAGS, TAGS, CJK), r'\1\2', frag)
-    # 半角括号内侧紧贴内容（半角/全角混用是字面问题，留给修订层）
-    frag = re.sub(r'(?<=\()\s+', '', frag)
-    frag = re.sub(r'\s+(?=\))', '', frag)
+    frag = re.sub(r'(?<=[%s])(%s)[ ]+(%s)(?=[%s])' % (CJK, TAGS, TAGS, CJK), r'\1\2', frag)
+    # 括号内侧紧贴内容（半角/全角混用是字面问题，留给修订层）
+    frag = re.sub(r'(?<=[(\[])[ ]+', '', frag)
+    frag = re.sub(r'[ ]+(?=[)\]])', '', frag)
+    return re.sub(r'[ ]{2,}', ' ', frag)
+
+
+def tidy(frag):
+    before = chars_of(frag)
+    frag = space_cjk(unwrap_edges(frag.replace('&nbsp;', ' ')))
     if chars_of(frag) != before:
         die('tidy() 改动了文本字符，这一层只许搬空白与标签：%r' % frag[:160])
     return frag
@@ -596,6 +609,35 @@ def check(src, out, page, units, icons):
         die('全文字符比对不一致')
 
 
+# ── 文本修订层 ──────────────────────────────────────────────────────────
+def revise(out):
+    """保真自检之后，按 text_fixes 的表改写产出。
+
+    check() 已经证明源表格的内容一字不少地落到了 out 里；这里每一条改动都声明
+    期望命中数，产出与源表格的偏离量因此被那张表穷举锁死。命中数对不上就是源表格
+    动了或规则过期，当场中止，不静默漏改。
+    """
+    for old, new, want in SUBS:
+        got = out.count(old)
+        if got != want:
+            die('修订 %r 命中 %d 处，期望 %d 处；核对 tools/text_fixes.py 里的这一条'
+                % (old[:60], got, want))
+        out = out.replace(old, new)
+    # 改完文本要重走一遍空格规矩：tidy() 跑在修订之前，看不到这里换出来的新相邻
+    # 关系（「恢复 15 HP 并…」改成「恢复 15 点生命值」后，才成了汉字挨汉字）。
+    # 占位问号顶替的是一个数字，就跟数字一样与汉字分开——「持续 ? 秒」对齐「持续 7 秒」。
+    before = chars_of(out)
+    out = re.sub(r'(?<=[%s])(%s)\?' % (CJK, TAGS), r' \1?', out)
+    out = re.sub(r'\?(%s)(?=[%s])' % (TAGS, CJK), r'?\1 ', out)
+    out = space_cjk(unwrap_edges(out))
+    if chars_of(out) != before:
+        die('修订层的空白规整动了文本字符')
+    for bad in FORBIDDEN:
+        if bad in out:
+            die('修订后仍出现 %r ×%d 处，术语闸门不放行' % (bad, out.count(bad)))
+    return out
+
+
 STATS = Counter()
 
 if __name__ == '__main__':
@@ -611,9 +653,12 @@ if __name__ == '__main__':
     page = parse(src, icons)
     out, units = render(page, url_prefix(outdir))
     check(src, out, page, units, icons)
+    out = revise(out)
 
     with open(os.path.join(outdir, 'index.html'), 'w', encoding='utf-8') as f:
         f.write(out)
-    print('index.html %.1f KB（原 %.1f KB），图标 %d 个，着色 span %d 处 → %d 个 token'
+    print('index.html %.1f KB（原 %.1f KB），图标 %d 个，着色 span %d 处 → %d 个 token，'
+          '文本修订 %d 条'
           % (len(out.encode()) / 1024, len(src.encode()) / 1024,
-             len(icons.written), sum(STATS.values()), len(set(COLOR_MAP.values()))))
+             len(icons.written), sum(STATS.values()), len(set(COLOR_MAP.values())),
+             len(SUBS)))

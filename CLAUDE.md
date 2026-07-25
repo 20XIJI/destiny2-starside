@@ -13,8 +13,8 @@ npm start                                     # npx serve . -l 3000
 git show 003317d:artfactmods/index.html > /tmp/sheet-export.html
 python3 tools/convert-artifact-mods.py /tmp/sheet-export.html artifact-mods/
 
-ruff check tools/convert-artifact-mods.py     # 改完 Python 跑这两条
-pyright tools/convert-artifact-mods.py
+ruff check tools/*.py                         # 改完 Python 跑这两条
+pyright tools/*.py
 ```
 
 `ruff format` 会重排 `convert-artifact-mods.py`，但该文件从未按 ruff 格式写过（`git show HEAD:` 同样报 would reformat）。只跑 `ruff check`，不跑 `ruff format`。
@@ -43,14 +43,38 @@ pyright tools/convert-artifact-mods.py
 
 改动后必须重跑脚本并确认退出码 0，且 `git status --porcelain artifact-mods/icons/` 为空。
 
-## 排版规整层：tidy() 与 paras()
+## 三层与各自的闸门
 
-源表格把空格塞进着色 span、塞在中文标点两侧，还用连续 `<br>` 撑段距。`tidy()` 把这些搬正，`paras()` 把双 `<br>` 还原成真正的段落。这一层只搬空白与标签边界：
+产出经过三层，每层有独立的中止条件，任何一层对不上都不出文件：
 
-- `tidy()` 跑到不动点为止——移出句号会重新露出尾随空格，四条规则互相制造新的匹配位置。
-- `tidy()` 与 `paras()` 都断言 `chars_of()`（去空格的文本视图）前后逐字相等。**新增规则必须过这道断言**，改不动就是这条规则动了文本，属于修订层的事。
-- 着色 span 只覆盖词本身：空白、句读、换行一律移出 span，剥空剩下的壳。
-- `paras()` 只在着色 span 之外断段——span 内部也有双换行，从那里切会切出未闭合标签。
+```
+page = parse(src, icons)
+out, units = render(page, prefix)      # 1 排版：只搬空白与标签边界
+check(src, out, page, units, icons)    # 保真闸门：源表格逐字比对，规则不放宽
+out = revise(out)                      # 2 文本修订：逐条带命中数断言
+```
+
+第三层是配色，只在 `assets/site.css` 的 `:root` 改右值，生成器不必重跑。
+
+第 1 层对两道保真比对都不可见（`text_of()` 剥标签、比对忽略空格），所以排版改动**不削弱**保真强度。第 2 层是唯一真正偏离源表格的地方，偏离量由 `tools/text_fixes.py` 穷举锁死。
+
+### 第 1 层：tidy() 与 paras()
+
+源表格把空格塞进着色 span、塞在中文标点两侧，还用连续 `<br>` 撑段距。
+
+- `unwrap_edges()` 把空白、句读、换行移出着色 span，剥掉只剩壳的空 span，**跑到不动点**——移出句号会重新露出尾随空格，规则互相制造新的匹配位置。
+- `space_cjk()` 管中文的空格规矩：标点两侧不留空格、汉字之间不分词、括号内侧紧贴。它**只认空格不认换行**，换行是产出的行结构。
+- `paras()` 把双 `<br>` 还原成 `<p>`，只在着色 span 之外断段——span 内部也有双换行，从那里切会切出未闭合标签。
+- `tidy()` 与 `paras()` 都断言 `chars_of()`（去空格的文本视图）前后逐字相等。**新增规则必须过这道断言**，过不了就是这条规则动了文本，属于第 2 层的事。
+
+### 第 2 层：revise() 与 tools/text_fixes.py
+
+源表格是社区机翻稿：句子不通、术语打架、留着 `%%%` 一类占位符。`check()` 证明源表格的内容一字不少地落到了产出里，`text_fixes.py` 穷举产出在此之上偏离了多少。两者相加才是页面，中间没有第三条改动源文本的路径。
+
+- `SUBS` 按顺序施加，每条声明期望命中数，数目不符即中止。每条的 `old` 写的是「轮到它时」的文本，**改顺序就要改 `old`**。
+- `FORBIDDEN` 是常驻术语闸门：改完仍出现即中止。以后新写的文本再引入旧写法会被当场拦下。
+- 术语以**页内自洽**为准：取页面内出现次数最多的写法，不对站外事实做断言。例外要在 `text_fixes.py` 的文档字符串里记下依据。
+- 改完文本要重走一遍 `unwrap_edges()` + `space_cjk()`：`tidy()` 跑在修订之前，看不到修订换出来的新相邻关系。这一段同样有 `chars_of()` 断言兜底。
 
 ## 站点补充内容
 
