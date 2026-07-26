@@ -1,0 +1,249 @@
+/* 护甲套装效果组件：分类分节、套装左栏索引、效果条目。
+   通用主题、字体与配色 token 在 /assets/site.css。
+   这一页由 tools/convert-armor-sets.py 生成，改结构改 render()，别手改 index.html。 */
+
+/* 这一页是「左栏索引 + 阅读栏」：左栏钉住套装身份供扫读，右栏正文收到阅读宽度。
+   250 栏 + 44 沟 + 760 正文 = 1054，取整 1060。
+   收窄只作用于正文与页首——导航条与页脚是站点外壳，三页必须一样宽。 */
+main,
+.page-head {
+  max-width: 1060px;
+  margin: 0 auto;
+}
+
+main { padding: 0 22px clamp(48px, 6vw, 84px); }
+
+/* 版心固定，不做窄屏适配（design.md 五节）。横向溢出交给页面本身，
+   不在任何 sticky 祖先上开 overflow。 */
+body { min-width: 1104px; }
+
+.page-head { padding: clamp(40px, 5vw, 68px) 22px clamp(22px, 2.6vw, 32px); }
+
+.page-head h1 { font-size: clamp(30px, 3.4vw, 42px); }
+
+.page-note {
+  max-width: 60em;
+  margin: 20px 0 0;
+  color: var(--bone-dim);
+  font-size: 14px;
+  line-height: 1.95;
+}
+
+/* ── 分类分节 ──
+   标题贴 .site-head 下沿。底色必须不透明，否则正文会从下面透上来；
+   --stick 由 assets/app.js 按实测高度写回。 */
+.cat { scroll-margin-top: var(--stick); }
+
+.cat-head {
+  position: sticky;
+  top: var(--stick);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0;
+  padding: 13px 0 11px;
+  color: var(--bone);
+  font-family: var(--font-disp);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .24em;
+  background: var(--ink-lift);
+  border-bottom: 1px solid var(--hair-lit);
+}
+
+.cat-head::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--hair);
+}
+
+.cat[hidden] { display: none; }
+
+/* ── 套装 ──
+   左栏钉住身份，右栏是正文。栏宽固定，右栏才不会随左栏内容长短抖动。 */
+.set {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 44px;
+  padding: 30px 0 34px;
+  border-bottom: 1px solid var(--hair);
+}
+
+.set[hidden] { display: none; }
+
+.cat > .set:last-child { border-bottom: 0; }
+
+/* 左栏跟着滚动停在分类标题下方：套装动辄十几行，名字滑出视野就不知道在读谁了。
+   44px 是 .cat-head 的实测高度，另留 18px 呼吸。 */
+.set-id {
+  position: sticky;
+  top: calc(var(--stick) + 62px);
+  align-self: start;
+}
+
+.set-id h3 {
+  margin: 0;
+  color: var(--bone-hi);
+  font-family: var(--font-cn);
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: .04em;
+}
+
+/* 来源／赛季／类型：字段名退到最暗一档，值跟正文走 */
+.set-meta {
+  margin: 12px 0 0;
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+
+.set-meta div {
+  display: flex;
+  gap: 8px;
+}
+
+.set-meta dt {
+  flex: none;
+  width: 3em;
+  color: var(--bone-faint);
+  font-family: var(--font-cn);
+  letter-spacing: .06em;
+}
+
+.set-meta dd {
+  margin: 0;
+  color: var(--bone-dim);
+}
+
+/* 标签：外壳去饱和，不占色相——这一页的色相全部留给正文里的游戏术语 */
+.set-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.set-tags li {
+  padding: 3px 8px;
+  color: var(--bone-faint);
+  font-family: var(--font-cn);
+  font-size: 11.5px;
+  line-height: 1.6;
+  border: 1px solid var(--hair);
+}
+
+/* ── 效果 ── */
+.set-bonuses {
+  max-width: 760px;
+  min-width: 0;
+}
+
+.bonus + .bonus { margin-top: 26px; }
+
+/* 图标、件数、名称一行排开 */
+.bonus-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 10px;
+}
+
+.bonus-icon {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  /* 剪影原图是纯白，压到骨白一档，免得比正文还亮 */
+  opacity: .82;
+}
+
+/* 两处原表本身就是空白占位，留出同样的栏位不让标题窜位 */
+span.bonus-icon { display: block; }
+
+.piece {
+  flex: none;
+  color: var(--bone-faint);
+  font-family: var(--font-disp);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .16em;
+}
+
+.bonus-name {
+  color: var(--bone-hi);
+  font-family: var(--font-cn);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: .03em;
+}
+
+/* 正文与图标左缘对齐：40 图标 + 14 沟 */
+.bonus-body {
+  padding-left: 54px;
+  font-size: 14px;
+  line-height: 2;
+}
+
+.bonus-body p { margin: 0 0 .85em; }
+
+.bonus-body p:last-child { margin-bottom: 0; }
+
+.bonus-body ul {
+  margin: 0 0 .85em;
+  padding: 0;
+  list-style: none;
+}
+
+.bonus-body ul:last-child { margin-bottom: 0; }
+
+/* 档位行用发丝线起头，比圆点更贴这一页的表格出身 */
+.bonus-body li {
+  position: relative;
+  padding-left: 15px;
+}
+
+.bonus-body li::before {
+  content: "";
+  position: absolute;
+  top: .95em;
+  left: 0;
+  width: 7px;
+  height: 1px;
+  background: var(--hair-lit);
+}
+
+.bonus-body code {
+  padding: 1px 6px;
+  color: var(--bone-hi);
+  font-family: var(--font-body);
+  font-size: .92em;
+  background: #ffffff08;
+}
+
+/* 熔炉竞技场禁用一类的整句提示 */
+.bonus-body strong {
+  display: inline-block;
+  margin-bottom: .3em;
+  color: var(--c-aside);
+  font-family: var(--font-cn);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: .04em;
+}
+
+/* ── 这一页新增的两档标记 ──
+   buff 名走暖沙 --c-term：它们不属于任何元素，借元素色相会让「颜色即元素编码」失效。
+   方括号内的 PvP 数值降一档，读作限定语。 */
+.buff {
+  color: var(--c-term);
+  font-weight: 600;
+}
+
+.pvp {
+  color: var(--note);
+  font-weight: 400;
+}

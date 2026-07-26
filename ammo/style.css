@@ -129,12 +129,34 @@ main { padding: 0 24px clamp(48px, 6vw, 84px); }
   letter-spacing: .04em;
 }
 
+/* 效果名后跟出处套装：退两档，不与效果名争 */
+.rules dt .from {
+  margin-left: 10px;
+  color: var(--bone-faint);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
 .rules dd {
   margin: 3px 0 0;
   padding: 0 0 11px;
   line-height: 1.9;
   border-bottom: 1px solid var(--hair);
 }
+
+/* 正文里的跨页链接：靠下划线认，不占色相 */
+.block p a {
+  color: var(--bone-hi);
+  text-decoration-color: var(--bone-faint);
+  text-underline-offset: 3px;
+}
+
+.block p a:hover { text-decoration-color: var(--bone-hi); }
+
+/* 整段的补充说明比 .note 行内用法再多一点上边距 */
+.block p.note { margin-top: 1.4em; font-size: 13px; }
 
 /* ── 结论行：算式 ── */
 .formula {

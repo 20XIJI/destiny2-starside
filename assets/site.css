@@ -410,6 +410,9 @@ main { flex: 1 0 auto; }
   line-height: 1.9;
 }
 
+/* 举例里的方括号照正文的 .pvp 样子给，读者才认得出说的是哪一处 */
+.hero-sub .pvp-eg { color: var(--note); }
+
 .index {
   max-width: 1500px;
   margin: 0 auto;
@@ -529,6 +532,17 @@ main { flex: 1 0 auto; }
   line-height: 1.85;
 }
 
+/* 更新时间摆在条目里：挑读哪一篇之前就该知道数据有多新 */
+.entry-stamp {
+  display: block;
+  margin-top: 10px;
+  color: var(--bone-faint);
+  font-family: var(--font-disp);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .2em;
+}
+
 
 .entry-meta {
   display: flex;
@@ -580,6 +594,19 @@ main { flex: 1 0 auto; }
 }
 
 .site-foot p { margin: 0 0 5px; }
+
+/* 更新时间：页脚里唯一需要一眼认出的字段，框起来与散文分开 */
+.site-foot .stamp {
+  display: inline-block;
+  margin-right: 10px;
+  padding: 0 7px;
+  color: var(--bone-dim);
+  font-family: var(--font-disp);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  border: 1px solid var(--hair);
+}
 
 .site-foot p:last-child { margin-bottom: 0; }
 

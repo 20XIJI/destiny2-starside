@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构建步骤，托管在腾讯云 CloudBase。仓库无测试框架、无打包器。
 
-两个资料页：`artifact-mods/` 由生成器产出，**不手改**；`ammo/` 是手写页，改 HTML 就是改内容。
+三个资料页：`armor-sets/` 与 `artifact-mods/` 由生成器产出，**不手改**；`ammo/` 是手写页，改 HTML 就是改内容。
 
 **视觉与排版规范在 `design.md`。**本文件写机制与验证，不重复设计规则。
 
@@ -16,6 +16,9 @@ npm start                                     # npx serve . -l 3000
 # 重新生成神器模组页（源导出存在 git 里）
 git show 003317d:artfactmods/index.html > /tmp/sheet-export.html
 python3 tools/convert-artifact-mods.py /tmp/sheet-export.html artifact-mods/
+
+# 重新生成护甲套装页（源稿在 references/armor-sets.md）
+python3 tools/convert-armor-sets.py
 
 ruff check tools/*.py                         # 改完 Python 跑这两条
 pyright tools/*.py
@@ -88,6 +91,51 @@ out = revise(out)                      # 2 文本修订：逐条带命中数断�
 - 重名模组以「最完整的那一份」为基准，其余向它对齐；真有机制差异的保留差异，并在该条的注释里写明。
 - 改完文本要重走一遍 `unwrap_edges()` + `space_cjk()`：`tidy()` 跑在修订之前，看不到修订换出来的新相邻关系。这一段同样有 `chars_of()` 断言兜底。
 
+## 护甲套装页
+
+`armor-sets/index.html` 由 `tools/convert-armor-sets.py` 从 `references/armor-sets.md` 生成，**不手改**。改文案改 markdown，改结构改 `render()`，两种情况都重跑脚本。
+
+源稿是 Flamia 的中文人工翻译稿，按 7 个分类重排过。英文原表（Destiny Data Compendium 的 Google 表格导出）比它新，只承担两件事：提供 112 枚效果图标，以及核对数值。它 21 MB、大半是内嵌字体，已在 `.gitignore` 里，**不入库**。
+
+跟神器模组页的分工不同：那边的源是嵌套 span 的乱麻，必须有逐字保真闸门加一层文本修订；这边的源是干净 markdown，转换本身即保真，所以没有 `revise()` 那一层——**改文案就是直接改 markdown**，git diff 即变更记录，不设补丁表。
+
+`check()` 的闸门：
+
+1. **正文逐条保真** — 产出剥掉标签后与源稿逐字相等。两侧同样归一化：去空格，去 `*`、反引号、`“”`（这些标记在页面上由字重与颜色承担，不落成字符）。
+2. **计数断言** — 分类 7、套装 56、效果 112、图标引用 110（另 2 处英文原表本身就是空白占位）、每个套装恰好一条 2 件加一条 4 件。
+3. **词表体检** — `GLOSSARY` 里一次都没命中的词即死配置，当场报出。不写死每个词的命中数：源稿是要持续编辑的，写死会让每次改句子都误报。
+4. **着色 span 不得嵌套** — 嵌套说明 `INLINE` 的分支顺序被改坏了。
+
+### 行内着色
+
+中文稿是纯文本。英文原表的着色只附在英文 span 上，且中文稿已重写重排，span 级别搬不过来（1147 个着色 span 里只有 919 个落在已知色上，`#cccccc` 连标点和 `On`/`While` 都染，语义不可靠）。所以按 `design.md`「术语以页内自洽为准」改用**词表着色**，token 全部复用 `site.css` 既有的，不新增渲染色。
+
+`INLINE` 是一趟正则走完的分支表，**顺序即优先级**：`**粗体**` → 反引号代码 → `“buff 名”` → `[?]` 待测 → `[数值]` PvP → 数值位上的 `?` → `GLOSSARY` 词表。引号在前保证 buff 名整体一个颜色，不会被词表再切一刀。`GLOSSARY` 内部必须长词在前（`能量球` 先于 `能量`、`重型弹药` 先于 `弹药`）。
+
+### 重抽图标
+
+图标已压好在 `armor-sets/icons/001.png … 112.png`，按 markdown 文档顺序编号，生成器按序号引用，不建映射表。只有换了英文原表才需要重抽：
+
+```bash
+python3 tools/convert-armor-sets.py --icons <英文原表导出.html>
+```
+
+原图 70×70、纯白剪影 + alpha，三个色通道恒为白，丢掉彩色通道是无损的；再降到 56px、alpha 量化到 16 档，112 枚合计 238 KB → 114 KB，3× 放大与原图并排看不出差别。中英两侧的套装靠效果名对应（52 个直接对上），余下 4 个英文侧效果名没被机翻覆盖，写在 `MANUAL_PAIRS` 里按来源认领。
+
+## 页脚归属
+
+来自 Destiny Data Compendium 的页面，数据源一行**一字不差地照抄这句**：
+
+```html
+<p>数据源：<a href="https://docs.google.com/spreadsheets/u/0/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4" target="_blank" rel="noopener">Destiny Data Compendium</a>。本页在其基础上统一了术语、标点与排版，数值未作改动。</p>
+```
+
+同一个数据源在不同页面上换着说法写，读者会以为是不同来源。别的数据源另起一句，不套这个模板。
+
+更新时间写在页脚首句句首的 `<span class="stamp">`，格式 `更新 YYYY.M.D`；首页则写在每张卡片的 `.entry-stamp` 上。
+
+特别鸣谢只写在该译者实际参与的页面上，不做全站铺开。
+
 ## 站点补充内容
 
 源表格缺的分节标签写在脚本的 `EXTRA_TAGS`（键为分节序号）。产出侧带 `data-source="site"`，`check()` 在字符比对前按标记整块剥离并核对块数——源表格内容仍逐字比对，补充范围由块数锁死。
@@ -108,9 +156,20 @@ out = revise(out)                      # 2 文本修订：逐条带命中数断�
 
 ## assets/app.js
 
-工具条（搜索框、7 件神器跳转 chip）从 DOM 读取分节标题构建，**不在 HTML 里写任何源文本**——写了就等于页面出现源表格文本的第二份副本，保真自检立即报重复。
+工具条（搜索框、跳转 chip）从 DOM 读取分节标题构建，**不在 HTML 里写任何源文本**——写了就等于页面出现源表格文本的第二份副本，保真自检立即报重复。
 
-搜索按 `.mod` 的 `textContent` 过滤，整行不命中隐藏 `.mod-row`，整节不命中隐藏 `.artifact` 与其 chip。检索期间三档并排对照关系失效，清空即恢复。
+选择器由页面在 `.toolbar` 上用 `data-*` 声明，缺省是神器模组页那一套，所以那一页的 HTML 一个字不用改：
+
+| 属性 | 缺省 | 护甲套装页 |
+|---|---|---|
+| `data-section` | `.artifact` | `.cat` |
+| `data-item` | `.mod` | `.set` |
+| `data-row` | `.mod-row` | 不给（没有并排的行） |
+| `data-label` | `.art-head h2` | `.cat-head span` |
+| `data-noun` | 模组 | 套装 |
+| `data-chip-label` | 神器 | 分类 |
+
+给了 `data-section` 而不给 `data-row`，行这一层就整个跳过。搜索按条目的 `textContent` 过滤，整行不命中隐藏行，整节不命中隐藏分节与其 chip。神器模组页检索期间三档并排对照关系失效，清空即恢复。
 
 ## 验证
 

@@ -17,7 +17,15 @@
 
   var head = document.querySelector('.site-head');
   var slot = document.querySelector('.toolbar');
-  var sections = Array.prototype.slice.call(document.querySelectorAll('.artifact'));
+  /* 选择器由页面在 .toolbar 上用 data-* 声明，缺省是神器模组页的一套。
+     data-row 可以不给：护甲套装页没有并排的行，条目本身就是一行。 */
+  var cfg = (slot && slot.dataset) || {};
+  var SEC = cfg.section || '.artifact';
+  var ITEM = cfg.item || '.mod';
+  var ROW = cfg.row || (cfg.section ? '' : '.mod-row');
+  var LABEL = cfg.label || '.art-head h2';
+  var NOUN = cfg.noun || '模组';
+  var sections = Array.prototype.slice.call(document.querySelectorAll(SEC));
   var stick = 0;
 
   /* 分节 sticky 单元贴 .site-head 下沿，偏移量按实测高度写回 CSS 变量 */
@@ -32,16 +40,16 @@
     return;
   }
 
-  var rows = Array.prototype.slice.call(document.querySelectorAll('.mod-row'));
-  var mods = Array.prototype.slice.call(document.querySelectorAll('.mod'));
-  /* 147 个模组，每次按键都取 textContent 会重复遍历整棵子树，先缓存 */
+  var rows = ROW ? Array.prototype.slice.call(document.querySelectorAll(ROW)) : [];
+  var mods = Array.prototype.slice.call(document.querySelectorAll(ITEM));
+  /* 上百个条目，每次按键都取 textContent 会重复遍历整棵子树，先缓存 */
   var text = mods.map(function (mod) { return mod.textContent; });
 
   var search = document.createElement('input');
   search.type = 'search';
   search.className = 'tool-search';
-  search.placeholder = '搜索 ' + mods.length + ' 个模组';
-  search.setAttribute('aria-label', '搜索模组');
+  search.placeholder = '搜索 ' + mods.length + ' 个' + NOUN;
+  search.setAttribute('aria-label', '搜索' + NOUN);
 
   var count = document.createElement('p');
   count.className = 'tool-count';
@@ -49,12 +57,12 @@
 
   var chipNav = document.createElement('nav');
   chipNav.className = 'tool-chips';
-  chipNav.setAttribute('aria-label', '神器');
+  chipNav.setAttribute('aria-label', cfg.chipLabel || '神器');
   var chips = sections.map(function (sec) {
     var chip = document.createElement('a');
     chip.className = 'chip';
     chip.href = '#' + sec.id;
-    chip.textContent = sec.querySelector('.art-head h2').firstChild.textContent.trim();
+    chip.textContent = sec.querySelector(LABEL).firstChild.textContent.trim();
     chipNav.appendChild(chip);
     return chip;
   });
@@ -73,10 +81,10 @@
       if (hit) hits++;
     });
     rows.forEach(function (row) {
-      row.hidden = !row.querySelector('.mod:not([hidden])');
+      row.hidden = !row.querySelector(ITEM + ':not([hidden])');
     });
     sections.forEach(function (sec, i) {
-      var empty = !sec.querySelector('.mod-row:not([hidden])');
+      var empty = !sec.querySelector((ROW || ITEM) + ':not([hidden])');
       sec.hidden = empty;
       chips[i].hidden = empty;
     });

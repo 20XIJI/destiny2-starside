@@ -13,11 +13,20 @@ assets/
   favicon.svg                     菱形站点标记
   fonts/chakra-petch-{600,700}.woff2   显示字体（Google Fonts latin 子集，各约 10 KB）
   fonts/OFL.txt                   Chakra Petch 许可（SIL OFL 1.1）
+armor-sets/
+  index.html                      护甲套装效果（由转换脚本生成，勿手改）
+  style.css                       该组件专属样式
+  icons/*.png                     110 枚效果图标（56px，共 114 KB）
 artifact-mods/
   index.html                      神器模组组件（由转换脚本生成，勿手改）
   style.css                       该组件专属样式
   icons/*.png                     133 个模组图标
+ammo/
+  index.html                      弹药生成机制（手写页，改 HTML 就是改内容）
+  style.css                       该组件专属样式
+references/armor-sets.md          护甲套装页的中文源稿
 tools/convert-artifact-mods.py    Google Sheets 导出 → 组件页
+tools/convert-armor-sets.py       markdown 源稿 → 组件页
 ```
 
 页面之间用显式路径互链（`/artifact-mods/index.html`），不依赖静态托管的目录索引解析。
@@ -50,7 +59,7 @@ npm start          # npx serve . -l 3000
 2. 页面骨架照 `artifact-mods/index.html`：
    - `<div class="site-head">` 包住 `<nav class="site-nav">` 与 `<div class="toolbar"></div>`，整块 sticky。
    - `<header class="page-head">` 放 h1，`<main>` 放正文，`<footer class="site-foot">` 收尾。
-   - 需要工具条就引 `<script src="/assets/app.js" defer></script>`。`app.js` 从 DOM 读取 `.artifact` 分节与其 `.art-head h2`，构建搜索框与跳转 chip，并把 `.site-head` 实测高度写回 `--stick`。工具条不在 HTML 里写任何源文本。
+   - 需要工具条就引 `<script src="/assets/app.js" defer></script>`。`app.js` 从 DOM 读取分节与其标题，构建搜索框与跳转 chip，并把 `.site-head` 实测高度写回 `--stick`。工具条不在 HTML 里写任何源文本。选择器缺省是神器模组页那一套（`.artifact` / `.mod` / `.mod-row` / `.art-head h2`），换一套结构就在 `.toolbar` 上写 `data-section` / `data-item` / `data-row` / `data-label` / `data-noun` / `data-chip-label`，参见 `armor-sets/index.html`。
 3. 着色文字用 `site.css` 里的语义 class（`.el-arc` `.enemy` `.note` 等），不写内联 `style="color:…"`。
 4. 分节内需要 sticky 表头时，把表头包进 `position: sticky; top: var(--stick)` 的容器，底色取不透明的 `--ink-lift`，并给分节 `scroll-margin-top: var(--stick)`。
 5. 首页 `index.html` 的 `.entries` 里加一条 `<li><a class="entry">`。
@@ -107,6 +116,37 @@ EXTRA_TAGS = {
 
 - 某分节源表格已带标签、`EXTRA_TAGS` 里又写了同一分节 → 报「源表格已带标签，与 EXTRA_TAGS 里的补充重复」。赛季更替后源表格补上了，就删掉 `EXTRA_TAGS` 里的对应条目。
 - 剥离块数与 `len(EXTRA_TAGS)` 对不上（例如键指向不存在的分节）→ 报「剥离的站点补充标签块数」不符。
+
+## 更新护甲套装
+
+内容源是 `references/armor-sets.md`——Flamia 的中文人工翻译稿，按 7 个分类重排过，数值已逐条对照英文原表核对。改文案就改这份 markdown，然后重跑：
+
+```bash
+python3 tools/convert-armor-sets.py
+```
+
+英文原表（Destiny Data Compendium 的 Google 表格导出）不入库：21 MB、大半是内嵌字体，且正文一个字都不取自它。它只在两种场合用到——核对数值、重抽图标：
+
+```bash
+python3 tools/convert-armor-sets.py --icons <英文原表导出.html>
+```
+
+图标按 markdown 文档顺序编号 `001.png … 112.png`，生成器按序号引用，不建映射表。原图 70×70 纯白剪影 + alpha，三个色通道恒为白，丢掉彩色通道无损；再降到 56px、alpha 量化到 16 档，112 枚合计 238 KB → 114 KB。中英两侧的套装靠效果名对应，52 个直接对上，余下 4 个写在 `MANUAL_PAIRS` 里按来源认领。
+
+自检覆盖的项与当前期望值：
+
+| 项 | 期望 | 说明 |
+|---|---|---|
+| 分类数 | 7 | 目的地／先锋／熔炉竞技场／智谋／突袭／地牢／活动 |
+| 套装数 | 56 | |
+| 效果数 | 112 | 每套装一条 2 件加一条 4 件 |
+| 图标引用数 | 110 | 另 2 处英文原表本身就是空白占位 |
+| 词表死配置 | 0 | `GLOSSARY` 里一次都没命中的词即报错 |
+| 嵌套着色 span | 0 | 嵌套说明 `INLINE` 的分支顺序被改坏了 |
+
+正文保真是主闸门：产出剥掉标签后与源稿逐字相等，两侧同样去空格、去 `*` 与反引号与 `“”`（这些标记在页面上由字重与颜色承担，不落成字符）。行内正则吃掉一个数字这类事故会当场暴露。
+
+着色走词表（`GLOSSARY`），token 全部复用 `site.css` 既有的，不新增渲染色。`INLINE` 的分支顺序即优先级，`GLOSSARY` 内部长词必须在前。
 
 ## 改配色
 
