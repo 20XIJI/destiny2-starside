@@ -22,20 +22,47 @@ artifact-mods/
   style.css                       该组件专属样式
   icons/*.png                     133 个模组图标
 ammo/
-  index.html                      弹药生成机制（手写页，改 HTML 就是改内容）
+  index.html                      弹药生成机制（由转换脚本生成，勿手改）
   style.css                       该组件专属样式
-references/armor-sets.md          护甲套装页的中文源稿
-tools/convert-artifact-mods.py    Google Sheets 导出 → 组件页
-tools/convert-armor-sets.py       markdown 源稿 → 组件页
+references/
+  artifact-mods.md                神器模组页源稿
+  armor-sets.md                   护甲套装页源稿
+  docs/*.md                       通用资料文档源稿（一篇一页）
+tools/convert-artifact-mods.py    源稿 → 神器模组页
+tools/convert-armor-sets.py       源稿 → 护甲套装页
+tools/convert-doc.py              源稿 → 通用资料页
+tools/check_shell.py              四页外壳一致性闸门
 ```
 
-页面之间用显式路径互链（`/artifact-mods/index.html`），不依赖静态托管的目录索引解析。
+三个资料页全部由生成器产出，只有首页 `index.html` 手写。改文案改源稿，改结构改生成器的 `render()`。
+
+页面之间用显式相对路径互链（`../artifact-mods/index.html`），不依赖静态托管的目录索引解析。资源引用同样用相对路径——站内绝对路径在 `file://` 下会指向磁盘根目录，双击打开即丢样式。
 
 ## 本地预览
 
 ```bash
 npm start          # npx serve . -l 3000
 ```
+
+## 部署与缓存
+
+托管在腾讯云 CloudBase 静态网站托管。缓存在控制台按**文件后缀 / 文件夹路径 / 具体文件**三种方式匹配，输出的就是 `Cache-Control: max-age=<秒>`，分浏览器缓存与节点缓存两层。
+
+**长缓存只给文件名带内容标识的资源。**控制台上传会自动刷新节点缓存，但已经发到读者浏览器里的缓存收不回来——同名文件换了内容，读者就得等缓存过期才看得到新的。
+
+应设置的规则：
+
+| 匹配 | 浏览器缓存 | 理由 |
+|---|---|---|
+| 文件夹 `/artifact-mods/icons` | 1 年 | 文件名是内容哈希，改图必改名，永远不会发脏 |
+| 文件夹 `/assets/fonts` | 1 年 | 字体文件不会在同名下改内容 |
+| 文件夹 `/armor-sets/icons` | 7 天 | 序号命名（`001.png`），换图不换名 |
+| 后缀 `.css`、`.js` | 5 分钟 | 没有内容哈希，发版后要尽快换新 |
+| 后缀 `.html` | 0 | 内容随时改，每次都重新验证 |
+
+前两条覆盖约 610 KB，回访时完全不再请求。
+
+**不要为了 CSS/JS 引入文件名哈希。**两者合计 8 KB gzip，与 HTML 的重新验证走同一个连接、同一轮往返，改成长缓存省不出可测量的时间，却要给生成器加一层重写引用的机制。同理，`armor-sets/icons` 的序号命名是可读的（`001.png` 即文档里第一条效果），换成哈希会丢掉这个性质，为 114 KB 不值得——7 天缓存已经覆盖绝大多数回访。
 
 ## 视觉体系
 
@@ -55,27 +82,32 @@ npm start          # npx serve . -l 3000
 
 ## 新增一个组件
 
-1. 建目录 `<组件名>/`，放 `index.html`，`<head>` 里先 `<link rel="stylesheet" href="/assets/site.css">`，再 link 组件自己的 CSS。
+普通资料文档不必新建组件——写一篇 markdown 丢进 `references/docs/`，建好 `<slug>/style.css`，跑 `python3 tools/convert-doc.py`，再去首页加卡片即可。下面这套只在需要一种全新数据形状（像三档并排对照）时才走。
+
+1. 建目录 `<组件名>/`，放 `style.css`，写一个生成器产出 `index.html`。页面 `<head>` 里先 `<link rel="stylesheet" href="../assets/site.css">`，再 link 组件自己的 CSS。
 2. 页面骨架照 `artifact-mods/index.html`：
    - `<div class="site-head">` 包住 `<nav class="site-nav">` 与 `<div class="toolbar"></div>`，整块 sticky。
    - `<header class="page-head">` 放 h1，`<main>` 放正文，`<footer class="site-foot">` 收尾。
-   - 需要工具条就引 `<script src="/assets/app.js" defer></script>`。`app.js` 从 DOM 读取分节与其标题，构建搜索框与跳转 chip，并把 `.site-head` 实测高度写回 `--stick`。工具条不在 HTML 里写任何源文本。选择器缺省是神器模组页那一套（`.artifact` / `.mod` / `.mod-row` / `.art-head h2`），换一套结构就在 `.toolbar` 上写 `data-section` / `data-item` / `data-row` / `data-label` / `data-noun` / `data-chip-label`，参见 `armor-sets/index.html`。
+   - 需要工具条就引 `<script src="../assets/app.js" defer></script>`。`app.js` 从 DOM 读取分节与其标题，构建搜索框与跳转 chip，并把 `.site-head` 实测高度写回 `--stick`。工具条不在 HTML 里写任何源文本。选择器缺省是神器模组页那一套（`.artifact` / `.mod` / `.mod-row` / `.art-head h2`），换一套结构就在 `.toolbar` 上写 `data-section` / `data-item` / `data-row` / `data-label` / `data-noun` / `data-chip-label`，参见 `armor-sets/index.html`。
 3. 着色文字用 `site.css` 里的语义 class（`.el-arc` `.enemy` `.note` 等），不写内联 `style="color:…"`。
 4. 分节内需要 sticky 表头时，把表头包进 `position: sticky; top: var(--stick)` 的容器，底色取不透明的 `--ink-lift`，并给分节 `scroll-margin-top: var(--stick)`。
 5. 首页 `index.html` 的 `.entries` 里加一条 `<li><a class="entry">`。
+7. 把新页面加进 `tools/check_shell.py` 的 `PAGES`，外壳才受闸门保护。
 6. 不要在承载 sticky 表头的祖先上开 `overflow`。一旦祖先成为滚动容器，其内部的 `position: sticky` 不再相对视口生效。横向溢出交给页面本身，用 `body { min-width: … }` 表达最小内容宽度。
 
 ## 更新神器模组
 
-模组表的内容源是 Google 表格。表格改动后重新导出，再跑转换脚本覆盖生成：
+内容源是 `references/artifact-mods.md`。改文案就改这份 markdown，然后重跑：
 
 ```bash
-python3 tools/convert-artifact-mods.py <导出的.html> artifact-mods/
+python3 tools/convert-artifact-mods.py
 ```
 
-导出方式：Google 表格 htmlview 页面用 SingleFile 保存为单文件 HTML。当前产物对应的源导出留存在 `003317d:artfactmods/index.html`，可用 `git show` 取出重跑。
+源稿格式：`## ` 起分节、`### 档位 · 名称` 起模组，空行分段，段内换行落成 `<br>`。着色写成 `{token|文字}`，token 即 `site.css` `:root` 里的语义名，可嵌套。结构信息走「键：值」行——`副标题`、`小标题`、`标题`、`徽章`、`括注`、`图标`、`标签`、`标签（站点补充）`。
 
-脚本负责剥离浏览器扩展注入的死 CSS、把 base64 图标外置到 `icons/`、把内联着色转成语义 class，并做结构与文本保真自检。任何解析不上的结构、映射表外的颜色、对不上的计数都直接报错中止，不产出半成品。
+`标签（站点补充）` 与 `标签` 的区别只在产出侧留痕：前者带 `data-source="site"`，标明该分节的标签不来自原表格。同一分节两者只能写一个。
+
+图标已压在 `artifact-mods/icons/` 里，按内容哈希命名，生成器按文件名引用，宽高从 PNG 的 IHDR 现读。
 
 自检覆盖的项与当前期望值：
 
@@ -85,37 +117,12 @@ python3 tools/convert-artifact-mods.py <导出的.html> artifact-mods/
 | 模组数 | 147 | 7 分节 × 7 行 × 3 档 |
 | 图标引用数 | 156 | 147 模组 + 7 神器徽章 + 2 使用限制徽章 |
 | 图标文件数 | 133 | 按内容哈希去重后 |
-| 着色 span 总数 | 1176 | |
-| 用到的色值数 | 51 | `COLOR_MAP` 的键 |
+| span 开闭 | 相等 | |
 | 残留内联样式 | 0 | 表现层声明全部归 CSS |
-| 源导出档位表头 `⯁` 数 | 42 | 7 × (1+2+3) |
-| 剥离的站点补充标签块数 | `len(EXTRA_TAGS)` | 见「站点补充内容」 |
+| 未转换的着色标记 | 0 | |
+| 「键：值」行条数 | 逐块核对 | 正文里真出现这样一行会被静默吃掉，数目不符即中止 |
 
-保真比对两道：导出文件每个非空单元格的文本都要在产出里对应到一个块；全文字符多重集比对，顺序无关，任何丢字都会暴露。比对窗口是「页首 + 正文」，导航条与页脚是站点外壳、不含源文本，落在窗口外。
-
-页首大标题取源表格的**副标题**（「✦ 神器模组 · 凯旋纪念碑 ✦」）——它与全站术语一致。源 `<h1>` 不显示，`check()` 按 `parse()` 实际读到的那一串从源侧扣除：扣除量取自解析结果而非写死的字面量，源表格换了标题也跟着走；扣多了会出现负计数并当场报错，不会抵消掉别处真实的丢字。
-
-赛季更替后若计数变化，改 `check()` 里对应的期望值；若结构变化（例如某行不足三档），`rows_of()` 会当场报错，先决定新结构怎么表达再改。
-
-## 站点补充内容
-
-源表格缺的分节标签（元素／武器搭配）写在脚本的 `EXTRA_TAGS`，键是分节序号，值是 `.art-tags` 的内容：
-
-```python
-EXTRA_TAGS = {
-    1: ('动能 | <span class="el-void">虚空</span> | <span class="el-arc">电弧</span>'
-        '<br>刀剑 | 狙击步枪 | 机枪'),
-}
-```
-
-照源表格的约定写：第一行元素、各自套语义 class，第二行武器类型不着色，分隔符 `" | "`，两行之间一个 `<br>`。「动能」在源表格里也不着色，保持一致。
-
-这些文本不在源导出里，产出侧带 `data-source="site"` 标记，`check()` 在字符比对前按标记整块剥离并核对块数。保真自检的强度不因此下降，只是明确了作用域：源表格的内容仍然逐字比对，站点补充的范围由块数锁死。
-
-两道护栏都会当场中止转换：
-
-- 某分节源表格已带标签、`EXTRA_TAGS` 里又写了同一分节 → 报「源表格已带标签，与 EXTRA_TAGS 里的补充重复」。赛季更替后源表格补上了，就删掉 `EXTRA_TAGS` 里的对应条目。
-- 剥离块数与 `len(EXTRA_TAGS)` 对不上（例如键指向不存在的分节）→ 报「剥离的站点补充标签块数」不符。
+结构变化（例如某行不足三档）由 `rows_of()` 当场报错；计数变化改文件头的 `N_*` 常量，不要放宽比对。
 
 ## 更新护甲套装
 
@@ -150,7 +157,7 @@ python3 tools/convert-armor-sets.py --icons <英文原表导出.html>
 
 ## 改配色
 
-改两处并保持一致：脚本里的 `COLOR_MAP`（51 个源色值 → 23 个语义 token）和 `assets/site.css` 的 `:root`（token → 渲染色）。渲染色共 10 个槽位，元素色相是游戏的既有编码、属于内容，只调亮度不改色相。
+只有一处定义：`assets/site.css` 的 `:root`（23 个语义 token → 渲染色）。两份 markdown 源稿里的着色 token 直接引用这些名字，改渲染色只改右值，生成器不必重跑。渲染色共 10 个槽位，元素色相是游戏的既有编码、属于内容，只调亮度不改色相。
 
 `--note`（作者注释）与 `--unsure`（`[?]` 待测数值）共用 `--c-aside`，字重回到正文、`.unsure` 带虚下划线——它们读作限定语，不是警报。
 

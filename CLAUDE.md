@@ -166,6 +166,8 @@ python3 tools/convert-armor-sets.py --icons <英文原表导出.html>
 
 **外壳里的两条资源提示**由 `check_shell.py` 钉住：字体 `preload`（只预载首屏用到的 600 字重）与 `speculationrules` 导航预取。
 
+**缓存策略见 `README.md` 的「部署与缓存」。**长缓存只给文件名带内容标识的资源；不要为了 CSS/JS 引入文件名哈希，它们与 HTML 的重新验证走同一轮往返，省不出可测量的时间。
+
 ## 神器模组页的布局约束
 
 - **`.mod` 必须按 `data-tier` 钉 `grid-column`，模组必须按行包在 `.mod-row` 里。** 纯靠行主序自动布局时，搜索隐藏任一模组会让其后所有模组列位偏移（三级会落到一级列）。
