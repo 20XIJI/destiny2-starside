@@ -28,6 +28,8 @@ references/
   artifact-mods.md                神器模组页源稿
   armor-sets.md                   护甲套装页源稿
   docs/*.md                       通用资料文档源稿（一篇一页）
+tools/markup.py                   源稿方言：着色标记、键值行、分段
+tools/shell.py                    站点外壳：head、导航条、页脚
 tools/convert-artifact-mods.py    源稿 → 神器模组页
 tools/convert-armor-sets.py       源稿 → 护甲套装页
 tools/convert-doc.py              源稿 → 通用资料页
@@ -96,7 +98,7 @@ npm start          # npx serve . -l 3000
 
 普通资料文档不必新建组件——写一篇 markdown 丢进 `references/docs/`，建好 `<slug>/style.css`，跑 `python3 tools/convert-doc.py`，再去首页加卡片即可。下面这套只在需要一种全新数据形状（像三档并排对照）时才走。
 
-1. 建目录 `<组件名>/`，放 `style.css`，写一个生成器产出 `index.html`。页面 `<head>` 里先 `<link rel="stylesheet" href="../assets/site.css">`，再 link 组件自己的 CSS。
+1. 建目录 `<组件名>/`，放 `style.css`，写一个生成器产出 `index.html`。外壳（head、导航条、页脚）从 `tools/shell.py` 取，行内标记从 `tools/markup.py` 取，生成器只写自己那种数据形状的结构层。
 2. 页面骨架照 `artifact-mods/index.html`：
    - `<div class="site-head">` 包住 `<nav class="site-nav">` 与 `<div class="toolbar"></div>`，整块 sticky。
    - `<header class="page-head">` 放 h1，`<main>` 放正文，`<footer class="site-foot">` 收尾。

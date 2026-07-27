@@ -21,6 +21,8 @@ import html
 import io
 import os
 import re
+
+import shell
 import sys
 from typing import NoReturn
 
@@ -250,59 +252,6 @@ def inline(text: str) -> str:
 
 # ── 渲染 ──────────────────────────────────────────────────────────────
 
-HEAD = '''<!doctype html>
-<html lang="zh-CN">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{title}</title>
-<meta name="description" content="{desc}">
-<meta name="theme-color" content="#0b0d14">
-<meta property="og:type" content="article">
-<meta property="og:site_name" content="Starside">
-<meta property="og:locale" content="zh_CN">
-<meta property="og:title" content="{title}">
-<meta property="og:description" content="{desc}">
-<link rel="preload" href="../assets/fonts/chakra-petch-600.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../assets/site.css">
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-<div class="site-head">
-<nav class="site-nav">
-<span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>
-<a class="home" href="../index.html">Starside</a>
-<span class="sep">/</span>
-<span aria-current="page">护甲套装效果</span>
-</nav>
-<div class="toolbar" data-section=".cat" data-item=".set" data-label=".cat-head span"
-     data-noun="套装" data-chip-label="分类"></div>
-</div>
-
-<header class="page-head">
-<h1>护甲套装效果</h1>
-<p class="page-note">同一套护甲穿满 2 件与 4 件各给一条效果，两条同时生效。</p>
-</header>
-
-<main>
-'''
-
-FOOT = '''</main>
-
-<footer class="site-foot">
-<p><span class="stamp">更新 2026.7.26</span>数值以游戏内实测为准，标注 <span class="unsure">?</span> 的条目尚待核实。</p>
-<p>数据源：<a href="https://docs.google.com/spreadsheets/u/0/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4" target="_blank" rel="noopener">Destiny Data Compendium</a>。本页在其基础上统一了术语、标点与排版，数值未作改动。</p>
-<p>特别鸣谢：部分翻译和排版参考自 Flamia#5238。</p>
-<p>© 2026 Eliver · <a href="https://space.bilibili.com/26117485" target="_blank" rel="noopener">哔哩哔哩</a></p>
-<p class="legal">Starside 为非官方资料站，与 Bungie, Inc. 无从属关系。Destiny 2 及相关名称、标识为 Bungie, Inc. 的商标。</p>
-</footer>
-<script src="../assets/app.js" defer></script>
-<script type="speculationrules">{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}</script>
-</body>
-</html>
-'''
-
 
 def render_blocks(blocks: list) -> str:
     out: list[str] = []
@@ -319,7 +268,16 @@ def render_blocks(blocks: list) -> str:
 
 
 def render(cats: list[Category]) -> str:
-    parts = [HEAD.format(title=html.escape(PAGE_TITLE), desc=html.escape(PAGE_DESC))]
+    # 这一页其余部分用 ''.join 拼，外壳几块之间自己补换行
+    parts = ['\n'.join([
+        shell.head(html.escape(PAGE_TITLE), html.escape(PAGE_DESC), app_js=True),
+        shell.nav('护甲套装效果', toolbar={
+            'data-section': '.cat', 'data-item': '.set',
+            'data-label': '.cat-head span', 'data-noun': '套装',
+            'data-chip-label': '分类'}),
+        shell.page_head('护甲套装效果',
+                        '同一套护甲穿满 2 件与 4 件各给一条效果，两条同时生效。'),
+        '<main>\n'])]
     n_img = 0
     for ci, cat in enumerate(cats, 1):
         parts.append('<section class="cat" id="cat-%d">\n' % ci)
@@ -361,7 +319,10 @@ def render(cats: list[Category]) -> str:
             parts.append('</div>\n')
             parts.append('</article>\n')
         parts.append('</section>\n')
-    parts.append(FOOT)
+    parts.append('</main>\n\n' + shell.foot(
+        '2026.7.26',
+        '数值以游戏内实测为准，标注 <span class="unsure">?</span> 的条目尚待核实。',
+        compendium=True, thanks='部分翻译和排版参考自 Flamia#5238。'))
     return ''.join(parts)
 
 

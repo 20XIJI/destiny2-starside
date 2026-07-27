@@ -15,7 +15,9 @@ import os
 import re
 import struct
 import sys
-from typing import NoReturn
+
+import shell
+from markup import blocks_of, die, inline, meta_line, must
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, 'references', 'artifact-mods.md')
@@ -33,58 +35,11 @@ N_ICON_FILES = 133
 # 加 loading="lazy" 会让它们等布局算完才开始下载，是反模式；这几张改成高优先级预取。
 N_EAGER = 6
 
-# 站点页脚。
-FOOT = ('<footer class="site-foot">'
-        '<p><span class="stamp">更新 2026.7.26</span>'
-        '数值以游戏内实测为准，标注 <span class="unsure">[?]</span> 的条目尚待核实。</p>'
-        '<p>数据源：<a href="https://docs.google.com/spreadsheets/u/0/d/'
-        '1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4" target="_blank" rel="noopener">'
-        'Destiny Data Compendium</a>。本页在其基础上统一了术语、标点与排版，数值未作改动。</p>'
-        '<p>© 2026 Eliver · '
-        '<a href="https://space.bilibili.com/26117485" target="_blank" rel="noopener">'
-        '哔哩哔哩</a></p>'
-        '<p class="legal">Starside 为非官方资料站，与 Bungie, Inc. 无从属关系。'
-        'Destiny 2 及相关名称、标识为 Bungie, Inc. 的商标。</p>'
-        '</footer>')
-
-# 顶部 sticky 单元：导航行 + 空工具条槽位（内容由 assets/app.js 从 DOM 构建）。
-NAV = ('<div class="site-head">'
-       '<nav class="site-nav">'
-       '<span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>'
-       '<a class="home" href="../index.html">Starside</a>'
-       '<span class="sep">/</span>'
-       '<span aria-current="page">神器模组</span>'
-       '</nav>'
-       '<div class="toolbar"></div>'
-       '</div>')
-
-# 字体在 CSS 解析完才会被发现，preload 让它与样式表并行下载。只预载首屏用到的
-# 600 字重，700 等到用时再取。
-PRELOAD = ('<link rel="preload" href="../assets/fonts/chakra-petch-600.woff2" '
-           'as="font" type="font/woff2" crossorigin>')
-
-# 站内导航预取：悬停即取，页面本身十几 KB，切换基本无感。不支持的浏览器忽略。
-SPEC = ('<script type="speculationrules">'
-        '{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}'
-        '</script>')
-
-
 TIERS = {'一级': 1, '二级': 2, '三级': 3}
 
 # 源稿里的「键：值」行。键名固定，正文行不会被误认。
 META_KEYS = ('副标题', '小标题', '标题', '徽章', '括注', '图标', '标签（站点补充）', '标签')
-META_LINE = re.compile(r'^(?:%s)：.*$' % '|'.join(META_KEYS), re.M)
-
-
-def die(msg) -> NoReturn:
-    raise SystemExit('转换中止：' + msg)
-
-
-def must(m: 're.Match[str] | None', msg) -> 're.Match[str]':
-    """结构对不上就当场报错，不给 None 往下传的机会。"""
-    if m is None:
-        die(msg)
-    return m
+META_LINE = meta_line(META_KEYS)
 
 
 # 组件页内的资源引用前缀。用相对路径（空前缀）而非站内绝对路径：绝对路径在 file://
@@ -102,36 +57,6 @@ def text_of(frag):
 def chars_of(frag):
     """去空格的文本视图。分段的不变量。"""
     return text_of(frag).replace(' ', '')
-
-
-# ── 行内着色 ────────────────────────────────────────────────────────────
-# 源稿用 {token|文字} 写着色，token 即 assets/site.css :root 里的语义名。
-# 文本里从不出现 { 与 }，所以这对括号可以当标记字符；| 在文本里常见，但只有紧跟
-# 在 token 名后面的那个才是分隔符。支持嵌套（「说明里套一个术语」有 10 处）。
-COLOR_OPEN = re.compile(r'\{([\w-]+)\|')
-
-
-def inline(md):
-    out, pos, depth, i = [], 0, 0, 0
-    while i < len(md):
-        m = COLOR_OPEN.match(md, i)
-        if m:
-            out.append(md[pos:i])
-            out.append('<span class="%s">' % m.group(1))
-            depth += 1
-            i = pos = m.end()
-            continue
-        if md[i] == '}' and depth:
-            out.append(md[pos:i])
-            out.append('</span>')
-            depth -= 1
-            i = pos = i + 1
-            continue
-        i += 1
-    out.append(md[pos:])
-    if depth:
-        die('着色标记未闭合：%r' % md[:120])
-    return ''.join(out)
 
 
 # ── 图标 ────────────────────────────────────────────────────────────────
@@ -180,12 +105,6 @@ class Icons:
 
 
 # ── 解析源稿 ────────────────────────────────────────────────────────────
-def blocks_of(chunk):
-    """空行分段，段内换行还原成 <br>。"""
-    return ['<br>'.join(b.strip().split('\n'))
-            for b in re.split(r'\n\s*\n', chunk.strip()) if b.strip()]
-
-
 def parse(md, icons):
     """源稿 → page 字典。字典的形状就是 render() 的契约。"""
     page = {'sub': '', 'lede': [], 'notice': {}, 'sections': []}
@@ -317,26 +236,10 @@ def paras(desc):
 
 
 def render(page, prefix):
-    o = ['<!doctype html>', '<html lang="zh-CN">', '<head>',
-         '<meta charset="utf-8">',
-         '<meta name="viewport" content="width=device-width, initial-scale=1">',
-         '<title>%s</title>' % PAGE_TITLE,
-         '<meta name="description" content="%s">' % PAGE_DESC,
-         '<meta name="theme-color" content="#0b0d14">',
-         '<meta property="og:type" content="article">',
-         '<meta property="og:site_name" content="Starside">',
-         '<meta property="og:locale" content="zh_CN">',
-         '<meta property="og:title" content="%s">' % PAGE_TITLE,
-         '<meta property="og:description" content="%s">' % PAGE_DESC,
-         PRELOAD,
-         '<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">',
-         '<link rel="stylesheet" href="../assets/site.css">',
-         '<link rel="stylesheet" href="%sstyle.css">' % prefix,
-         '<script src="../assets/app.js" defer></script>',
-         '</head>', '<body>', NAV,
-         '<header class="page-head">',
-         '<h1>%s</h1>' % page['sub'],
-         '</header>', '<main>', '<section class="intro">']
+    o = [shell.head(PAGE_TITLE, PAGE_DESC, app_js=True),
+         shell.nav('神器模组', toolbar={}),
+         shell.page_head(page['sub']),
+         '<main>', '<section class="intro">']
 
     o.append('<h2 class="sect-label">%s</h2>' % page['lede'][0])
     for p in page['lede'][1:]:
@@ -381,7 +284,10 @@ def render(page, prefix):
             o.append('</div>')
         o += ['</div>', '</section>']
 
-    o += ['</main>', FOOT, SPEC, '</body>', '</html>', '']
+    o += ['</main>', '', shell.foot(
+        '2026.7.26',
+        '数值以游戏内实测为准，标注 <span class="unsure">[?]</span> 的条目尚待核实。',
+        compendium=True)]
     return '\n'.join(o)
 
 

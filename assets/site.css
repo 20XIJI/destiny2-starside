@@ -52,7 +52,7 @@
   --c-term: #d6c39a;
 
   /* 语义 token → 渲染色。想让某一类单独出色，只改这一行的右值。
-     左侧 23 个 token 由 tools/convert-artifact-mods.py 的 COLOR_MAP 产出，两边要对齐。 */
+     左侧 23 个 token 是源稿里 {token|文字} 与词表着色共用的那套名字，两边要对齐。 */
   --el-arc: var(--c-arc);
   --deb-arc: var(--c-arc);           /* 震颤、致盲 */
   --el-stasis: var(--c-stasis);

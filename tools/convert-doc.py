@@ -17,100 +17,16 @@ import html as htmllib
 import os
 import re
 import sys
-from typing import NoReturn
+
+import shell
+from markup import LINK, die, inline, meta_line, whole_marker
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC_DIR = os.path.join(ROOT, 'references', 'docs')
 
 # 头部的「键：值」行。键名固定，正文行不会被误认。
 META_KEYS = ('描述', '更新', '页脚')
-META_LINE = re.compile(r'^(?:%s)：.*$' % '|'.join(META_KEYS), re.M)
-
-SITE_FOOT = ('<p>© 2026 Eliver · '
-             '<a href="https://space.bilibili.com/26117485" target="_blank" rel="noopener">'
-             '哔哩哔哩</a></p>\n'
-             '<p class="legal">Starside 为非官方资料站，与 Bungie, Inc. 无从属关系。'
-             'Destiny 2 及相关名称、标识为 Bungie, Inc. 的商标。</p>')
-
-
-# 字体在 CSS 解析完才会被发现，preload 让它与样式表并行下载。只预载首屏用到的
-# 600 字重，700 等到用时再取。
-PRELOAD = ('<link rel="preload" href="../assets/fonts/chakra-petch-600.woff2" '
-           'as="font" type="font/woff2" crossorigin>')
-
-# 站内导航预取：悬停即取，页面本身十几 KB，切换基本无感。不支持的浏览器忽略。
-SPEC = ('<script type="speculationrules">'
-        '{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}'
-        '</script>')
-
-
-def die(msg) -> NoReturn:
-    raise SystemExit('转换中止：' + msg)
-
-
-# ── 行内标记 ────────────────────────────────────────────────────────────
-# {token|文字} 着色、**粗体**、*强调*、[文字](链接)。token 即页面样式表里的类名。
-# 文本里从不出现 { 与 }，所以这对括号可以当标记字符；| 在文本里常见，但只有紧跟在
-# token 名后面的那个才是分隔符。
-COLOR_OPEN = re.compile(r'\{([\w-]+)\|')
-LINK = re.compile(r'\[([^\]]+)\]\(([^)]+)\)')
-
-
-def inline(md):
-    """行内标记 → HTML。着色支持嵌套，栈式扫描，正则做不干净。"""
-    def link(m):
-        ext = ' target="_blank" rel="noopener"' if m.group(2).startswith('http') else ''
-        return '<a href="%s"%s>%s</a>' % (m.group(2), ext, m.group(1))
-
-    md = LINK.sub(link, md)
-    md = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', md)
-    md = re.sub(r'(?<!\*)\*([^*]+)\*(?!\*)', r'<em>\1</em>', md)
-
-    out, pos, depth, i = [], 0, 0, 0
-    while i < len(md):
-        m = COLOR_OPEN.match(md, i)
-        if m:
-            out.append(md[pos:i])
-            out.append('<span class="%s">' % m.group(1))
-            depth += 1
-            i = pos = m.end()
-            continue
-        if md[i] == '}' and depth:
-            out.append(md[pos:i])
-            out.append('</span>')
-            depth -= 1
-            i = pos = i + 1
-            continue
-        i += 1
-    out.append(md[pos:])
-    if depth:
-        die('着色标记未闭合：%r' % md[:120])
-    return ''.join(out)
-
-
-def whole_marker(md):
-    """整块恰好被一个 {token|…} 包住时返回 (token, 内容)，否则 None。
-
-    判据是首个标记的闭括号落在末尾。中途闭合说明块里还有别的内容
-    （`{a|白弹} → {b|绿弹}` 是两个标记，不是一个），那就不算整块。
-    """
-    m = COLOR_OPEN.match(md)
-    if not m:
-        return None
-    depth, i = 1, m.end()
-    while i < len(md):
-        opener = COLOR_OPEN.match(md, i)
-        if opener:
-            depth += 1
-            i = opener.end()
-            continue
-        if md[i] == '}':
-            depth -= 1
-            if depth == 0:
-                return (m.group(1), md[m.end():i]) if i == len(md) - 1 else None
-        i += 1
-    return None
-
+META_LINE = meta_line(META_KEYS)
 
 def wrap(tag, md, attrs=''):
     """一个块的内容整体只有一个标记时，class 落在块上，不套一层 span。
@@ -121,8 +37,8 @@ def wrap(tag, md, attrs=''):
     md = md.strip()
     hit = whole_marker(md)
     if hit:
-        return '<%s%s class="%s">%s</%s>' % (tag, attrs, hit[0], inline(hit[1]), tag)
-    return '<%s%s>%s</%s>' % (tag, attrs, inline(md), tag)
+        return '<%s%s class="%s">%s</%s>' % (tag, attrs, hit[0], inline(hit[1], rich=True), tag)
+    return '<%s%s>%s</%s>' % (tag, attrs, inline(md, rich=True), tag)
 
 
 # ── 解析 ────────────────────────────────────────────────────────────────
@@ -246,30 +162,9 @@ def render(md):
         die('「更新：」要写成 YYYY.M.D，源稿写的是 %r' % stamp)
 
     full = '%s · Starside' % title
-    o = ['<!doctype html>', '<html lang="zh-CN">', '<head>',
-         '<meta charset="utf-8">',
-         '<meta name="viewport" content="width=device-width, initial-scale=1">',
-         '<title>%s</title>' % full,
-         '<meta name="description" content="%s">' % desc,
-         '<meta name="theme-color" content="#0b0d14">',
-         '<meta property="og:type" content="article">',
-         '<meta property="og:site_name" content="Starside">',
-         '<meta property="og:locale" content="zh_CN">',
-         '<meta property="og:title" content="%s">' % full,
-         '<meta property="og:description" content="%s">' % desc,
-         PRELOAD,
-         '<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">',
-         '<link rel="stylesheet" href="../assets/site.css">',
-         '<link rel="stylesheet" href="style.css">',
-         '</head>', '<body>',
-         '<div class="site-head">',
-         '<nav class="site-nav">',
-         '<span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>',
-         '<a class="home" href="../index.html">Starside</a>',
-         '<span class="sep">/</span>',
-         '<span aria-current="page">%s</span>' % title,
-         '</nav>', '</div>', '',
-         '<header class="page-head">', '<h1>%s</h1>' % title, '</header>', '',
+    o = [shell.head(full, desc),
+         shell.nav(title),
+         shell.page_head(title),
          '<main>']
 
     body = META_LINE.sub('', md[md.index('\n'):])
@@ -283,14 +178,11 @@ def render(md):
     for part in parts[1:]:
         head, _, chunk = part.partition('\n')
         o.append('<section class="block">')
-        o.append('<h2 class="sect-label">%s</h2>' % inline(head.strip()))
+        o.append('<h2 class="sect-label">%s</h2>' % inline(head.strip(), rich=True))
         o += render_blocks(chunk)
         o.append('</section>')
 
-    o += ['</main>', '', '<footer class="site-foot">']
-    first = '<span class="stamp">更新 %s</span>' % stamp
-    o.append('<p>%s%s</p>' % (first, inline(foot) if foot else ''))
-    o += [SITE_FOOT, '</footer>', SPEC, '</body>', '</html>', '']
+    o += ['</main>', '', shell.foot(stamp, inline(foot, rich=True) if foot else '')]
     return '\n'.join(o), title
 
 

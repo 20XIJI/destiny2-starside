@@ -18,6 +18,19 @@ Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构�
 
 `references/` 入库的是源稿：`artifact-mods.md`、`armor-sets.md`，以及 `docs/` 下的资料文档。`armor_transcription.*` 是转写中间产物，已 gitignore，不当源稿用。
 
+## tools/ 的分层
+
+```
+markup.py          源稿方言：{token|文字} 着色、「键：值」行、空行分段
+shell.py           站点外壳：head 元信息、导航条、页脚
+convert-*.py       三个生成器，各自只写自己那种数据形状的结构层
+check_shell.py     外壳闸门，从 shell.py 现取参照，不另存副本
+```
+
+外壳与源稿方言各只有一处定义。**加一条外壳内容（meta、资源提示、页脚段落）只改 `shell.py`**，三个页面重跑即生效；手写的首页 `index.html` 要跟着改，`check_shell.py` 会提醒。
+
+`markup.py` 的 `inline()` 默认只处理着色，富文本标记（`**粗体**`、`*强调*`、`[文字](链接)`）由调用方传 `rich=True` 开启。神器模组页不开——它的源稿里有孤立的 `*`（「呈 * 形释放」），开着会在有人再加一个星号时静默变成 `<em>`。
+
 ## 命令
 
 ```bash
@@ -68,7 +81,7 @@ pyright tools/*.py
 
 源稿是 Flamia 的中文人工翻译稿，按 7 个分类重排过。英文原表（Destiny Data Compendium 的 Google 表格导出）比它新，只承担两件事：提供 112 枚效果图标，以及核对数值。它 21 MB、大半是内嵌字体，已在 `.gitignore` 里，**不入库**。
 
-跟神器模组页的分工不同：那边的源是嵌套 span 的乱麻，必须有逐字保真闸门加一层文本修订；这边的源是干净 markdown，转换本身即保真，所以没有 `revise()` 那一层——**改文案就是直接改 markdown**，git diff 即变更记录，不设补丁表。
+与神器模组页同构：源稿是可编辑的 markdown，转换本身即保真，**改文案就是直接改 markdown**，git diff 即变更记录，不设补丁表。两页的差别只在着色路径——这一页走词表，那一页走显式 `{token|文字}` 标记，理由见 `design.md`「两条着色路径」。
 
 `check()` 的闸门：
 

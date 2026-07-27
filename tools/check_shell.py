@@ -1,63 +1,42 @@
 #!/usr/bin/env python3
 """站点外壳一致性闸门。
 
-外壳（head 元信息、site-nav、site-foot）散在 4 处：两个手写页各一份，
-两个生成器的字符串常量各一份。CLAUDE.md 用「一字不差地照抄这句」这条纪律
-维持它们一致，本脚本把纪律变成断言：任何一份漂了，退出码非零。
+三个资料页的外壳由 tools/shell.py 生成，天然一致；会漂的只有手写的首页
+index.html。本脚本从 shell.py 现取不变片段去比对四个页面——**这里不另存副本**，
+否则闸门自己就成了要维护的第五份定义。
 
-用法：python3 tools/check_shell.py    改完任一页或任一生成器后跑一次。
+用法：python3 tools/check_shell.py    改完 shell.py 或手写首页后跑一次。
 
-只钉全站必须一致的片段，不钉每页各说各话的部分（页名、更新说明、鸣谢）。
-新增资料页时把它加进 PAGES；改署名或免责声明时改这里的常量，四页一起改。
+新增资料页时把它加进 PAGES。
 """
 
 import os
 import re
 import sys
 
+import shell
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 HOME = 'index.html'
 PAGES = [HOME, 'ammo/index.html', 'armor-sets/index.html', 'artifact-mods/index.html']
 
-# 每页都要一字不差出现
-COMMON = {
-    '主题色': '<meta name="theme-color" content="#0b0d14">',
-    'og 站点名': '<meta property="og:site_name" content="Starside">',
-    'og 语言': '<meta property="og:locale" content="zh_CN">',
-    '站标': '<span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>',
-    '署名': ('<p>© 2026 Eliver · <a href="https://space.bilibili.com/26117485" '
-             'target="_blank" rel="noopener">哔哩哔哩</a></p>'),
-    '免责声明': ('<p class="legal">Starside 为非官方资料站，与 Bungie, Inc. 无从属关系。'
-                 'Destiny 2 及相关名称、标识为 Bungie, Inc. 的商标。</p>'),
-    '导航预取': ('<script type="speculationrules">'
-                 '{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}'
-                 '</script>'),
-}
-
-# 资料页要有，首页没有（首页自己就是 home）
-SUBPAGE = {
-    '回首页链接': '<a class="home" href="../index.html">Starside</a>',
-    '字体 preload': ('<link rel="preload" href="../assets/fonts/chakra-petch-600.woff2" '
-                     'as="font" type="font/woff2" crossorigin>'),
-}
-
-# 首页在站点根，资源路径少一层
-HOME_ONLY = {
-    '字体 preload': ('<link rel="preload" href="assets/fonts/chakra-petch-600.woff2" '
-                     'as="font" type="font/woff2" crossorigin>'),
-}
-
-# 提到该数据源就必须用这一句，不换说法。见 CLAUDE.md「页脚归属」。
-COMPENDIUM = ('<p>数据源：<a href="https://docs.google.com/spreadsheets/u/0/d/'
-              '1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4" target="_blank" '
-              'rel="noopener">Destiny Data Compendium</a>。本页在其基础上统一了术语、'
-              '标点与排版，数值未作改动。</p>')
+# head 里与页面无关的那几行。标题与描述是变量，用哨兵值生成后按前缀挑出不变量。
+HEAD_KEEP = ('<meta name="theme-color"', '<meta property="og:site_name"',
+             '<meta property="og:locale"', '<link rel="preload"')
 
 STAMP = re.compile(r'<span class="(?:entry-)?stamp">更新 \d{4}\.\d{1,2}\.\d{1,2}</span>')
 
 
+def invariants():
+    """四个页面必须一字不差共有的片段，全部取自 shell.py。"""
+    head = shell.head('__T__', '__D__')
+    frags = [ln for ln in head.split('\n') if ln.startswith(HEAD_KEEP)]
+    return frags + [shell.MARK, shell.CREDIT, shell.LEGAL, shell.SPEC]
+
+
 def main() -> int:
+    want = invariants()
     bad: list[str] = []
     for rel in PAGES:
         path = os.path.join(ROOT, rel)
@@ -67,13 +46,14 @@ def main() -> int:
         with open(path, encoding='utf-8') as f:
             src = f.read()
 
-        want = {**COMMON, **(HOME_ONLY if rel == HOME else SUBPAGE)}
-        for label, frag in want.items():
-            if frag not in src:
-                bad.append('%s：%s 与其它页不一致' % (rel, label))
+        for frag in want:
+            # 首页在站点根，资源路径少一层
+            probe = frag.replace('../assets/', 'assets/') if rel == HOME else frag
+            if probe not in src:
+                bad.append('%s：与 shell.py 对不上 —— %s' % (rel, probe[:64]))
 
-        # 提了 Compendium 就得用那一句原文；没提则不管（弹药页是别的来源）
-        if 'Destiny Data Compendium' in src and COMPENDIUM not in src:
+        # 提了 Compendium 就得用 shell.py 里那一句原文；没提则不管（弹药页是别的来源）
+        if 'Destiny Data Compendium' in src and shell.COMPENDIUM not in src:
             bad.append('%s：Destiny Data Compendium 归属句被改写了' % rel)
 
         if not STAMP.search(src):
@@ -84,7 +64,7 @@ def main() -> int:
         for line in bad:
             print('  ' + line, file=sys.stderr)
         return 1
-    print('外壳一致：%d 个页面' % len(PAGES))
+    print('外壳一致：%d 个页面，%d 条不变片段' % (len(PAGES), len(want)))
     return 0
 
 
