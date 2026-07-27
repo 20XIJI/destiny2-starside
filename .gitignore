@@ -143,6 +143,10 @@ vite.config.ts.timestamp-*
 .vite/
 
 # references/ 放英文原表的导出（21 MB，大半是内嵌字体），只用来核对数值与重抽图标，不入库。
-# 例外是 armor-sets.md：护甲套装页的正文源稿，tools/convert-armor-sets.py 要靠它生成页面。
+# 例外是两份正文源稿：两个生成器要靠它们生成页面。
 references/*
 !references/armor-sets.md
+!references/artifact-mods.md
+!references/docs/
+!references/docs/*.md
+.archived/
