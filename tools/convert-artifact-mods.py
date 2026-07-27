@@ -9,6 +9,7 @@
 解析不上的结构、对不上的计数一律抛错中止，不出半成品。
 """
 
+import hashlib
 import html as htmllib
 import os
 import re
@@ -141,7 +142,13 @@ def png_size(data):
 
 
 class Icons:
-    """按文件名引用已压好的图标，尺寸从 PNG 头现读，不在源稿里重复记。"""
+    """按文件名引用已压好的图标，尺寸从 PNG 头现读，不在源稿里重复记。
+
+    文件名是内容的 md5 前 10 位，每次转换都复核一遍——这个名字不只是命名习惯，
+    它是缓存策略的依据：README「部署与缓存」给这个目录设了一年的浏览器缓存，
+    前提是「改了内容必然换名字」。原地覆盖一张图会让读者看一年的旧图，而控制台
+    刷新只清得掉节点缓存，清不掉已经发出去的浏览器缓存。所以在这里拦住。
+    """
 
     def __init__(self, outdir):
         self.dir = os.path.join(outdir, 'icons')
@@ -155,7 +162,14 @@ class Icons:
             if not os.path.exists(path):
                 die('源稿引用的图标不存在：icons/%s' % name)
             with open(path, 'rb') as f:
-                self.size[name] = png_size(f.read(64))
+                data = f.read()
+            want = hashlib.md5(data).hexdigest()[:10] + '.png'
+            if name != want:
+                die('icons/%s 的内容与文件名对不上，应叫 %s。\n'
+                    '  图标按内容哈希命名，改内容就要换名字——这是 README「部署与缓存」\n'
+                    '  给该目录设一年浏览器缓存的前提。换图的做法：把新图按新哈希存进\n'
+                    '  icons/，改源稿里的「图标：」一行，再删掉旧文件。' % (name, want))
+            self.size[name] = png_size(data[:64])
         w, h = self.size[name]
         # 引用顺序即文档顺序：parse() 按提示徽章 → 分节徽章 → 模组图标依次取图
         eager = self.refs < N_EAGER
