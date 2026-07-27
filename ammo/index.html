@@ -33,7 +33,6 @@
 <section class="block">
 <h2 class="sect-label">武器弹药生成</h2>
 <p>击杀敌人按一个基础百分比生成弹药。这个百分比由四项决定：击杀所用的弹药类型、生成的弹药类型、敌人等级，以及武器的弹药生成属性。</p>
-
 <table class="gen">
 <thead>
 <tr>
@@ -51,24 +50,21 @@
 <tr><th scope="row"><span class="a-heavy">重弹</span> → <span class="a-green">绿弹</span></th><td>3%–16%</td><td>6%–24%</td><td>12%–50%</td></tr>
 <tr><th scope="row"><span class="a-heavy">重弹</span> → <span class="a-heavy">重弹</span></th><td>3%–4%</td><td>6%–8%</td><td>12%–16%</td></tr>
 </tbody>
-<tbody class="fixed">
+<tbody>
 <tr><th scope="row">技能 → <span class="a-green">绿弹</span></th><td>4%</td><td>8%</td><td>16%</td></tr>
 <tr><th scope="row">技能 → <span class="a-heavy">重弹</span></th><td>4%</td><td>8%</td><td>16%</td></tr>
 <tr><th scope="row">手雷 → <span class="a-green">绿弹</span></th><td>6%</td><td>12%</td><td>24%</td></tr>
 <tr><th scope="row">手雷 → <span class="a-heavy">重弹</span></th><td>4%</td><td>8%</td><td>16%</td></tr>
 </tbody>
 </table>
-
 <p>表中的区间随武器的弹药生成属性线性变化。弹药生成属性 100 的特殊武器击杀一名<span class="t-orange">橙血</span>敌人，生成 18% 的<span class="a-green">特殊弹药</span>与 16% 的<span class="a-heavy">重型弹药</span>，两者都落在各自区间的上限。</p>
 <p>三档敌人之间大致成倍数关系：<span class="t-orange">橙血</span>约为<span class="t-red">红血</span>的两倍，<span class="t-yellow">黄血</span>约为四倍。记住<span class="t-red">红血</span>一列，其余两列可以推算。</p>
 </section>
-
 <section class="block">
 <h2 class="sect-label">技能弹药生成</h2>
 <p>技能生成的弹药远少于弹药生成属性合格的武器，靠技能补弹的收益有限。几乎所有技能对<span class="t-red">红血</span>、<span class="t-orange">橙血</span>、<span class="t-yellow">黄血</span>敌人分别生成 4%、8%、16% 的<span class="a-green">特殊弹药</span>与<span class="a-heavy">重型弹药</span>。</p>
 <p>唯一的例外是手雷：它生成<span class="a-green">特殊弹药</span>的速度高出 50%，对三档敌人分别给 6%、12%、24%。<span class="a-heavy">重型弹药</span>那一档与其他技能相同。</p>
 </section>
-
 <section class="block">
 <h2 class="sect-label">武器 Perk</h2>
 <dl class="rules">
@@ -78,7 +74,6 @@
 <dd><span class="a-green">特殊弹药</span>生成系数 ×1.15，<span class="a-heavy">重型弹药</span>生成系数 ×1.1。</dd>
 </dl>
 </section>
-
 <section class="block">
 <h2 class="sect-label">护甲模组</h2>
 <dl class="rules">
@@ -91,11 +86,9 @@
 <p>两把枪各带一个<em>光中藏弹</em>，因上述 Bug 会同时计入两个 ×1.25；再带一把<em>即兴弹药</em>的武器，追加 ×1.15；头盔上三个<em>特殊弹药搜寻者</em>按 ×1.50 计。用带<em>即兴弹药</em>的武器击杀<span class="t-red">红血</span>敌人，<span class="a-green">特殊弹药</span>生成率为：</p>
 <p class="formula">12% × (1 + 0.5 + 0.25 + 0.25 + 0.15) = <strong>26%</strong></p>
 </section>
-
 <section class="block">
 <h2 class="sect-label">护甲套装加成</h2>
 <p>56 套护甲里有 10 条效果直接作用于弹药：8 条给弹药进度，2 条抬高弹药生成属性。以下只摘与弹药有关的部分，完整触发条件与其余效果见<a href="../armor-sets/index.html">护甲套装效果</a>。</p>
-
 <p>直接给弹药进度：</p>
 <dl class="rules">
 <dt>再补给<span class="from">溢冰 2 件</span></dt>
@@ -115,7 +108,6 @@
 <dt>白手起家<span class="from">铁能 4 件</span></dt>
 <dd><span class="a-green">特殊弹药</span>储量低于 20% 时，主武器击杀给 +3% <span class="a-green">特殊弹药</span>进度；<span class="a-heavy">重型弹药</span>储量低于 20% 时，特殊武器击杀给 +2% <span class="a-heavy">重型弹药</span>进度。<span class="note">这部分额外进度不受搜寻者影响。</span></dd>
 </dl>
-
 <p>抬高弹药生成属性：</p>
 <dl class="rules">
 <dt>房间清空<span class="from">兴旺幸存者 4 件</span></dt>
@@ -123,11 +115,9 @@
 <dt>钢铁信念<span class="from">铁甲 4 件</span></dt>
 <dd>濒死时 +35 弹药生成属性，持续 7 秒。</dd>
 </dl>
-
 <p class="note">另有 7 条套装效果挂在弹药盒拾取上（自动收集、拾取时装填、拾取叠层），改变的是捡取与收益，不改变弹药生成本身，未列入上表。</p>
 <p class="note">早期社区实测另给出<em>年事已高</em>终结<span class="t-orange">橙血</span>敌人 +15%、终结小 Boss +20%，以及<em>白手起家</em> ×1.2 弹药生成加成，与套装原表的写法对不上，此处以原表为准。</p>
 </section>
-
 <section class="block">
 <h2 class="sect-label">备注</h2>
 <p>未充能近战把敌人打到终结状态后，终结不提供任何弹药能量。双特殊武器靠技能补弹这条路因此走不通。</p>

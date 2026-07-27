@@ -4,92 +4,63 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构建步骤，托管在腾讯云 CloudBase。仓库无测试框架、无打包器。
 
-三个资料页：`armor-sets/` 与 `artifact-mods/` 由生成器产出，**不手改**；`ammo/` 是手写页，改 HTML 就是改内容。
+三个资料页全部由生成器从 `references/` 下的 markdown 源稿产出，**产出一律不手改**：改文案改 markdown，改结构改生成器的 `render()`，两种情况都重跑脚本。只有首页 `index.html` 是手写的。
 
 **视觉与排版规范在 `design.md`。**本文件写机制与验证，不重复设计规则。
+
+## 站点骨架
+
+首页 `index.html` 手写，每个资料页在首页有一张 `.entry` 卡片（更新时间写卡片上的 `.entry-stamp`）。新增资料页要同时加卡片，否则页面没有入口。
+
+样式分两层，每页都按这个顺序引：`assets/site.css`（全站 token、外壳、字体）在前，本页 `<页目录>/style.css`（版心与本页组件）在后。`assets/app.js` 只有带 `.toolbar` 的页面需要引。
+
+`serve.json` 关掉了 `cleanUrls`，站内链接一律写全 `xxx/index.html`。
+
+`references/` 入库的是源稿：`artifact-mods.md`、`armor-sets.md`，以及 `docs/` 下的资料文档。`armor_transcription.*` 是转写中间产物，已 gitignore，不当源稿用。
 
 ## 命令
 
 ```bash
 npm start                                     # npx serve . -l 3000
 
-# 重新生成神器模组页（源导出存在 git 里）
-git show 003317d:artfactmods/index.html > /tmp/sheet-export.html
-python3 tools/convert-artifact-mods.py /tmp/sheet-export.html artifact-mods/
-
-# 重新生成护甲套装页（源稿在 references/armor-sets.md）
-python3 tools/convert-armor-sets.py
+python3 tools/convert-artifact-mods.py        # 源稿 references/artifact-mods.md
+python3 tools/convert-armor-sets.py           # 源稿 references/armor-sets.md
+python3 tools/convert-doc.py [slug]           # 源稿 references/docs/*.md，省略 slug 即全部
+python3 tools/check_shell.py                  # 四页外壳一致性
 
 ruff check tools/*.py                         # 改完 Python 跑这两条
 pyright tools/*.py
 ```
 
-`ruff format` 会重排 `convert-artifact-mods.py`，但该文件从未按 ruff 格式写过（`git show HEAD:` 同样报 would reformat）。只跑 `ruff check`，不跑 `ruff format`。
+## 神器模组页
 
-## 生成物与保真自检
+`artifact-mods/index.html` 由 `tools/convert-artifact-mods.py` 从 `references/artifact-mods.md` 生成，**不手改**。改文案改 markdown，改结构改 `render()`，两种情况都重跑脚本。
 
-`artifact-mods/index.html` 由 `tools/convert-artifact-mods.py` 生成，**不手改**。要改这一页的结构就改 `render()`，然后重跑脚本。
+与护甲套装页同构：源稿是可编辑的 markdown，转换本身即保真，git diff 即变更记录，不设补丁表。
 
-脚本的 `check()` 是本仓库最重要的约束，它保证 147 个模组的文本与源表格逐字一致：
+### 源稿格式
 
-1. **单元格文本比对** — 源导出每个非空 `<td>` 的文本，都要在 `units` 里对应到一个块。
-2. **全文字符多重集比对** — 比对窗口是 `out.find('<header')` 到 `out.rindex('</main>')`。
-3. **一组计数断言** — 分节 7、模组 147、图标引用 156、图标文件 133、着色 span 1176、产出着色 span 1147、描述段落 366、色值 51、残留内联样式 0 等。
+`## ` 起分节，`### ` 起模组，其余是正文。空行分段，段内换行落成 `<br>`。
 
-两道比对都**不把空格当内容**：中文里的空格是表格导出的产物，由 `tidy()` 清掉。改任何一侧的口径都要两侧一起改。
+「键：值」行携带结构信息，键名固定在 `META_KEYS`：`副标题`、`小标题`、`标题`、`徽章`、`括注`、`图标`、`标签`、`标签（站点补充）`。这些行按整行剥离，剩下的即正文——所以**正文里出现同名的键会被吃掉**。`keys_in()` 逐块核对键行条数，数目不符即中止，不让内容悄悄消失。键行里的值必须占一行，其中的换行写成字面 `<br>`。
 
-由此推出改 `render()` 时的规则：
+模组标题写成 `### 一级 · 名称`，档位取自 `TIERS`。同一分节内按源稿顺序三个一组切行，`rows_of()` 断言每组恰好是一/二/三级。
 
-- **可以**自由重排、重新嵌套标签。两道比对都是多重集，顺序无关。
-- **不能**增删任何源文本。
-- 新增的外壳文字（导航、页脚、按钮）必须落在比对窗口外——`<header class="page-head">` 之前或 `</main>` 之后。
-- 分节内的外壳文字（如档位标签）用 CSS `content` 生成，不进 HTML 文本。
-- 改了徽章数、图标数一类的结构，同步改 `check()` 里的常量，不要放宽比对。
-- 源导出与产出都含 42 个 `⯁`，`check()` 先断言计数再从两侧移除。新增类似的"两侧恰好抵消"的字符时照此显式处理。
-- 页首取源表格的副标题作 h1，源 `<h1>` 不显示，`check()` 从源侧按解析结果扣除，扣多了出现负计数即报错。站点补充的 `EXTRA_TAGS` 反向处理：从产出侧按 `data-source="site"` 整块剥离并核对块数。**不要**为了让比对通过而放宽这两处，扣除量必须来自 `parse()` 实际读到的字符串。
+`标签（站点补充）` 与 `标签` 的区别只在产出侧留痕：前者带 `data-source="site"`，标明该分节的标签不来自原表格。同一分节两者只能写一个。
 
-改动后必须重跑脚本并确认退出码 0，且 `git status --porcelain artifact-mods/icons/` 为空。
+### 行内着色
 
-## 三层与各自的闸门
+源稿用 `{token|文字}` 写着色，token 即 `assets/site.css` `:root` 里的语义名。文本里从不出现 `{` 与 `}`，所以这对括号可以当标记字符；`|` 在文本里常见，但只有紧跟在 token 名后面的那个才是分隔符。支持嵌套（说明里套术语有 10 处）。
 
-产出经过三层，每层有独立的中止条件，任何一层对不上都不出文件：
+`inline()` 是一趟栈式扫描，不是正则替换——嵌套用正则做不干净。
 
-```
-page = parse(src, icons)
-out, units = render(page, prefix)      # 1 排版：只搬空白与标签边界
-check(src, out, page, units, icons)    # 保真闸门：源表格逐字比对，规则不放宽
-out = revise(out)                      # 2 文本修订：逐条带命中数断言
-```
+### `check()` 的闸门
 
-第三层是配色，只在 `assets/site.css` 的 `:root` 改右值，生成器不必重跑。
+结构计数：分节 7、模组 147、图标引用 156、图标文件 133、span 开闭相等、残留内联样式 0、未转换的着色标记 0。分节没有模组也报错。
 
-第 1 层对两道保真比对都不可见（`text_of()` 剥标签、比对忽略空格），所以排版改动**不削弱**保真强度。第 2 层是唯一真正偏离源表格的地方，偏离量由 `tools/text_fixes.py` 穷举锁死。
+改了分节数、模组数一类的结构，同步改文件头的 `N_*` 常量，不要放宽比对。
 
-### 第 1 层：tidy() 与 paras()
-
-源表格把空格塞进着色 span、塞在中文标点两侧，还用连续 `<br>` 撑段距。
-
-- `unwrap_edges()` 把空白、句读、换行移出着色 span，剥掉只剩壳的空 span，**跑到不动点**——移出句号会重新露出尾随空格，规则互相制造新的匹配位置。
-- `space_cjk()` 管中文的空格规矩：标点两侧不留空格、汉字之间不分词、括号内侧紧贴。它**只认空格不认换行**，换行是产出的行结构。
-- `paras()` 把双 `<br>` 还原成 `<p>`，只在着色 span 之外断段——span 内部也有双换行，从那里切会切出未闭合标签。
-- `tidy()` 与 `paras()` 都断言 `chars_of()`（去空格的文本视图）前后逐字相等。**新增规则必须过这道断言**，过不了就是这条规则动了文本，属于第 2 层的事。
-
-### 第 2 层：revise() 与 tools/text_fixes.py
-
-源表格是社区机翻稿：句子不通、术语打架、留着 `%%%` 一类占位符。`check()` 证明源表格的内容一字不少地落到了产出里，`text_fixes.py` 穷举产出在此之上偏离了多少。两者相加才是页面，中间没有第三条改动源文本的路径。
-
-三张表，按 `SUBS` → `DESCS` → `FORBIDDEN` 的顺序施加：
-
-- `SUBS`（全文替换）每条声明期望命中数，数目不符即中止。每条的 `old` 写的是「轮到它时」的文本，**改顺序就要改 `old`**。
-- `DESCS`（整条描述改写）键是 `(分节 id, 模组名)`，按 `<h4>` 的**文本**定位而非其标记——有 18 个模组名自带着色。命中数必须为 1。跑在 `SUBS` 之后，写进去的是已经统一过术语的文本，改写掉的内容也就不再扰动 `SUBS` 的命中数。
-- `FORBIDDEN` 是常驻术语闸门：改完仍出现即中止。以后新写的文本再引入旧写法会被当场拦下。改术语就要同步往这里加一条，否则统一不住。
-
-其余约束：
-
-- 术语以**页内自洽**为准：取页面内出现次数最多的写法，不对站外事实做断言。例外要在 `text_fixes.py` 的文档字符串里记下依据。
-- 改写红线：只改表达与着色范围，**不改数值、不改机制断言、不删原作者的存疑标记（`[?]`）与注释**（`note` 类整句）。
-- 重名模组以「最完整的那一份」为基准，其余向它对齐；真有机制差异的保留差异，并在该条的注释里写明。
-- 改完文本要重走一遍 `unwrap_edges()` + `space_cjk()`：`tidy()` 跑在修订之前，看不到修订换出来的新相邻关系。这一段同样有 `chars_of()` 断言兜底。
+图标已压在 `artifact-mods/icons/` 里，按文件名引用，宽高从 PNG 的 IHDR 现读，不在源稿里重复记。改动后确认 `git status --porcelain artifact-mods/icons/` 为空。
 
 ## 护甲套装页
 
@@ -112,6 +83,8 @@ out = revise(out)                      # 2 文本修订：逐条带命中数断�
 
 `INLINE` 是一趟正则走完的分支表，**顺序即优先级**：`**粗体**` → 反引号代码 → `“buff 名”` → `[?]` 待测 → `[数值]` PvP → 数值位上的 `?` → `GLOSSARY` 词表。引号在前保证 buff 名整体一个颜色，不会被词表再切一刀。`GLOSSARY` 内部必须长词在前（`能量球` 先于 `能量`、`重型弹药` 先于 `弹药`）。
 
+否定前缀 `非` 与后面的术语构成一个复合术语（非首领战斗人员＝一类敌人，非超能＝一种状态），一并着色——留在着色外面会让扫读的人读到反义。`除非`、`而非` 里的 `非` 不构词，由后顾断言 `(?<![除而])` 排除。谓语性的否定（`尚无灼烧层数`）不算构词，术语照常单独着色。
+
 ### 重抽图标
 
 图标已压好在 `armor-sets/icons/001.png … 112.png`，按 markdown 文档顺序编号，生成器按序号引用，不建映射表。只有换了英文原表才需要重抽：
@@ -121,6 +94,37 @@ python3 tools/convert-armor-sets.py --icons <英文原表导出.html>
 ```
 
 原图 70×70、纯白剪影 + alpha，三个色通道恒为白，丢掉彩色通道是无损的；再降到 56px、alpha 量化到 16 档，112 枚合计 238 KB → 114 KB，3× 放大与原图并排看不出差别。中英两侧的套装靠效果名对应（52 个直接对上），余下 4 个英文侧效果名没被机翻覆盖，写在 `MANUAL_PAIRS` 里按来源认领。
+
+## 资料文档页
+
+`tools/convert-doc.py` 是通用的一篇 markdown 一个页面：`references/docs/<slug>.md` → `<slug>/index.html`。加一篇资料就是往 `references/docs/` 丢一个 .md、建好 `<slug>/style.css`、跑一次脚本，再去首页 `index.html` 加卡片。前两个生成器各自绑定一种数据形状（神器/模组/档位、分类/套装/2 件 4 件），这一个不绑，走的是通用文档结构。
+
+排版按 `design.md` 第四节：连续阅读版心 760px 居中，表格 `width: auto` + `margin-inline: auto` 按内容定宽再居中。
+
+### 源稿格式
+
+首行 `# 页面标题`，其后三个「键：值」行：`描述：`（进 meta description 与 og）、`更新：`（`YYYY.M.D`，落在页脚 `.stamp`）、`页脚：`（可选，接在更新时间后面的那句）。
+
+`## ` 起分节（对应 `<section class="block">` + `<h2 class="sect-label">`）。分节之外不许有正文。段内换行落成 `<br>`，空行分段。
+
+| 写法 | 产出 |
+|---|---|
+| `- 条目` | `<ul><li>` |
+| `术语` 换行 `: 定义` | `<dl class="rules"><dt><dd>` |
+| `\| 表头 \|` + `\|---\|` + 数据行 | `<table class="gen">`，每行首格是 `<th scope="row">` |
+| 表格里再来一行 `\|---\|` | 另起一个 `<tbody>` |
+| `**粗**` `*强调*` `[文字](链接)` | `<strong>` `<em>` `<a>`，`http` 开头的自动带 `target="_blank" rel="noopener"` |
+| `{token\|文字}` | `<span class="token">`，token 即页面样式表里的类名，可嵌套 |
+
+**一个块的内容整体只有一个 `{标记|…}` 时，class 落在块上，不套 span。** `<th class="t-red">红血</th>` 比套一层 span 干净，`p.note`、`p.formula` 同理。判据是首个标记的闭括号落在块末尾——`{a|白弹} → {b|绿弹}` 是两个标记，照常套 span。
+
+表格的行组分界由 CSS 的 `tbody + tbody` 画，不落成类名。
+
+### `check()` 的闸门
+
+**正文逐字保真** —— 产出剥掉标签后与源稿逐字相等。两侧同样归一化：去空格，去 `*`、反引号、着色标记（这些在页面上由字重与颜色承担，不落成字符），表格只去分隔符与分隔行，块标记只去行首那一个。不写死每种块的条数：源稿是要持续编辑的，写死会让每次改句子都误报。
+
+另外两条：着色 span 不得嵌套（嵌套说明 `wrap()` 的整块判定被改坏了）；产出里不得有没转换的 `{` `}`。
 
 ## 页脚归属
 
@@ -136,17 +140,13 @@ python3 tools/convert-armor-sets.py --icons <英文原表导出.html>
 
 特别鸣谢只写在该译者实际参与的页面上，不做全站铺开。
 
-## 站点补充内容
-
-源表格缺的分节标签写在脚本的 `EXTRA_TAGS`（键为分节序号）。产出侧带 `data-source="site"`，`check()` 在字符比对前按标记整块剥离并核对块数——源表格内容仍逐字比对，补充范围由块数锁死。
-
-两道护栏会中止转换：某分节源表格已带标签又写了补充；剥离块数与 `len(EXTRA_TAGS)` 对不上。
+`tools/check_shell.py` 把这些约定钉成闸门：四个页面的 head 元信息、站标、署名、免责声明必须逐字一致，提到 Destiny Data Compendium 就必须用上面那一句，每页都要有格式合规的更新时间。新增资料页时把它加进 `PAGES`。
 
 ## 视觉与排版
 
 **规范在 `design.md`，改样式、定颜色、加页面之前先读。**那里写死了色相归属、ΔE 判据、中文空格规矩、版心与外壳的分工。
 
-与生成器耦合的部分只有一处：配色要改两个文件并保持一致——`tools/convert-artifact-mods.py` 的 `COLOR_MAP`（51 个源色值 → 23 个语义 token）与 `assets/site.css` 的 `:root`（23 个 token → 渲染色）。
+配色只有一处定义：`assets/site.css` 的 `:root`。两份 markdown 源稿里的着色 token 直接引用这些语义名，改渲染色只改 `:root` 的右值，生成器不必重跑。
 
 ## 神器模组页的布局约束
 
@@ -175,7 +175,7 @@ python3 tools/convert-armor-sets.py --icons <英文原表导出.html>
 
 仓库无测试框架，不要引入。验证靠三样：
 
-1. **生成器自检** — 内容保真的主闸门，见上。
+1. **生成器自检 + `check_shell.py`** — 结构与外壳的主闸门，见上。
 2. **headless Chrome 截图** — Chrome Beta 未安装，chrome-devtools MCP 不可用。用：
    ```bash
    ("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --disable-gpu \
@@ -189,4 +189,4 @@ headless Chrome 无法滚动视口，`--dump-dom` 与 `--screenshot` 都不行�
 
 ## 工作流
 
-solo 项目。直接提交到 `main`，非指定不开分支。提交前跑一遍生成器自检与 `ruff check` + `pyright`。push 只在明确要求时做。
+solo 项目。直接提交到 `main`，非指定不开分支。提交前跑一遍两个生成器、`check_shell.py` 与 `ruff check` + `pyright`。push 只在明确要求时做。

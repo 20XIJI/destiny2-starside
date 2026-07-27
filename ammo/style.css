@@ -107,11 +107,12 @@ main { padding: 0 24px clamp(48px, 6vw, 84px); }
 
 .gen tbody tr:hover { background: #ffffff06; }
 
-/* 技能与手雷是定值，不随属性变化——加一道稍重的分界线与上半张表分开 */
-.gen tbody.fixed tr:first-child th,
-.gen tbody.fixed tr:first-child td { border-top: 1px solid var(--hair-lit); }
+/* 技能与手雷是定值，不随属性变化——加一道稍重的分界线与上半张表分开。
+   行组由源稿里的 --- 分隔行开出，第二组起用 tbody + tbody 认，不落成类名 */
+.gen tbody + tbody tr:first-child th,
+.gen tbody + tbody tr:first-child td { border-top: 1px solid var(--hair-lit); }
 
-.gen tbody.fixed td { color: var(--bone); }
+.gen tbody + tbody td { color: var(--bone); }
 
 /* ── 规则清单 ── */
 .rules {
