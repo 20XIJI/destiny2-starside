@@ -33,6 +33,17 @@ SITE_FOOT = ('<p>© 2026 Eliver · '
              'Destiny 2 及相关名称、标识为 Bungie, Inc. 的商标。</p>')
 
 
+# 字体在 CSS 解析完才会被发现，preload 让它与样式表并行下载。只预载首屏用到的
+# 600 字重，700 等到用时再取。
+PRELOAD = ('<link rel="preload" href="../assets/fonts/chakra-petch-600.woff2" '
+           'as="font" type="font/woff2" crossorigin>')
+
+# 站内导航预取：悬停即取，页面本身十几 KB，切换基本无感。不支持的浏览器忽略。
+SPEC = ('<script type="speculationrules">'
+        '{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}'
+        '</script>')
+
+
 def die(msg) -> NoReturn:
     raise SystemExit('转换中止：' + msg)
 
@@ -246,6 +257,7 @@ def render(md):
          '<meta property="og:locale" content="zh_CN">',
          '<meta property="og:title" content="%s">' % full,
          '<meta property="og:description" content="%s">' % desc,
+         PRELOAD,
          '<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">',
          '<link rel="stylesheet" href="../assets/site.css">',
          '<link rel="stylesheet" href="style.css">',
@@ -278,7 +290,7 @@ def render(md):
     o += ['</main>', '', '<footer class="site-foot">']
     first = '<span class="stamp">更新 %s</span>' % stamp
     o.append('<p>%s%s</p>' % (first, inline(foot) if foot else ''))
-    o += [SITE_FOOT, '</footer>', '</body>', '</html>', '']
+    o += [SITE_FOOT, '</footer>', SPEC, '</body>', '</html>', '']
     return '\n'.join(o), title
 
 

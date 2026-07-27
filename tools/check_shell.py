@@ -30,11 +30,22 @@ COMMON = {
              'target="_blank" rel="noopener">哔哩哔哩</a></p>'),
     '免责声明': ('<p class="legal">Starside 为非官方资料站，与 Bungie, Inc. 无从属关系。'
                  'Destiny 2 及相关名称、标识为 Bungie, Inc. 的商标。</p>'),
+    '导航预取': ('<script type="speculationrules">'
+                 '{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}'
+                 '</script>'),
 }
 
 # 资料页要有，首页没有（首页自己就是 home）
 SUBPAGE = {
     '回首页链接': '<a class="home" href="../index.html">Starside</a>',
+    '字体 preload': ('<link rel="preload" href="../assets/fonts/chakra-petch-600.woff2" '
+                     'as="font" type="font/woff2" crossorigin>'),
+}
+
+# 首页在站点根，资源路径少一层
+HOME_ONLY = {
+    '字体 preload': ('<link rel="preload" href="assets/fonts/chakra-petch-600.woff2" '
+                     'as="font" type="font/woff2" crossorigin>'),
 }
 
 # 提到该数据源就必须用这一句，不换说法。见 CLAUDE.md「页脚归属」。
@@ -56,7 +67,7 @@ def main() -> int:
         with open(path, encoding='utf-8') as f:
             src = f.read()
 
-        want = dict(COMMON) if rel == HOME else {**COMMON, **SUBPAGE}
+        want = {**COMMON, **(HOME_ONLY if rel == HOME else SUBPAGE)}
         for label, frag in want.items():
             if frag not in src:
                 bad.append('%s：%s 与其它页不一致' % (rel, label))

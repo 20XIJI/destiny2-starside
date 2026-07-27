@@ -11,6 +11,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:title" content="护甲套装效果 · Starside">
 <meta property="og:description" content="56 套护甲的 2 件 / 4 件套装效果、触发条件与数值，按目的地、行动、突袭、地牢分类。">
+<link rel="preload" href="../assets/fonts/chakra-petch-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../assets/site.css">
 <link rel="stylesheet" href="style.css">
@@ -43,11 +44,11 @@
 </div>
 <div class="set-bonuses">
 <section class="bonus">
-<h4 class="bonus-head"><img class="bonus-icon" src="icons/001.png" alt="" width="40" height="40" loading="lazy"><span class="piece">2 件</span><span class="bonus-name">拉斯普廷的怒火</span></h4>
+<h4 class="bonus-head"><img class="bonus-icon" src="icons/001.png" alt="" width="40" height="40" fetchpriority="high"><span class="piece">2 件</span><span class="bonus-name">拉斯普廷的怒火</span></h4>
 <div class="bonus-body"><p>使用非直接命中、<span class="el-solar">烈日</span>技能、第七炽天使/似像者武器、睡者之吼、全面爆发造成最后一击时：</p><p>获得一层<span class="buff">战争思维充能</span>，持续 10 秒，最多叠至 10 层。<br>在过期时失去所有层数。</p><p>每层<span class="buff">战争思维充能</span>提供 +3 手雷属性和 +3 武器属性，10 层时达到 +30 手雷属性、+30 武器属性。</p></div>
 </section>
 <section class="bonus">
-<h4 class="bonus-head"><img class="bonus-icon" src="icons/002.png" alt="" width="40" height="40" loading="lazy"><span class="piece">4 件</span><span class="bonus-name">拉斯普廷的报复</span></h4>
+<h4 class="bonus-head"><img class="bonus-icon" src="icons/002.png" alt="" width="40" height="40" fetchpriority="high"><span class="piece">4 件</span><span class="bonus-name">拉斯普廷的报复</span></h4>
 <div class="bonus-body"><p>拥有<span class="buff">战争思维充能</span>，消灭<span class="enemy">精英</span>或更高级<span class="enemy">战斗人员</span>，或破坏构造体/<span class="el-strand">缠结</span>时：</p><p>以<span class="enemy">战斗人员</span>/构造体为中心，触发战争思维爆炸。<br>消灭<span class="enemy">精英战斗人员</span>引起的爆炸造成 405 <span class="unsure">[?]</span> <span class="el-solar">烈日</span>伤害，并为穿戴者及 10 米内的友军恢复 50 <span class="health">生命值</span>，无距离衰减。<br>破坏构造体引起的爆炸造成伤害和<span class="health">生命值</span>恢复减半。<br>爆炸消灭敌人可给予<span class="buff">战争思维充能</span>，但不会连环引起新的战争思维爆炸。<br>两次爆炸间存在约 <span class="unsure">0.3?</span> 秒冷却。</p><p class="note">注：破坏构造体这一档需要更充分的测试；爆炸冷却有时难以测出。</p></div>
 </section>
 </div>
@@ -1016,5 +1017,6 @@
 <p class="legal">Starside 为非官方资料站，与 Bungie, Inc. 无从属关系。Destiny 2 及相关名称、标识为 Bungie, Inc. 的商标。</p>
 </footer>
 <script src="../assets/app.js" defer></script>
+<script type="speculationrules">{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}</script>
 </body>
 </html>

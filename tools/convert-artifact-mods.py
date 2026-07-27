@@ -28,6 +28,10 @@ N_MODS = 147
 N_ICON_REFS = 156          # 147 个模组 + 7 枚神器徽章 + 2 枚提示徽章
 N_ICON_FILES = 133
 
+# 1440×900 首屏内的图标数（提示徽章 2 + 首个神器徽章 1 + 首行模组 3）。给首屏图片
+# 加 loading="lazy" 会让它们等布局算完才开始下载，是反模式；这几张改成高优先级预取。
+N_EAGER = 6
+
 # 站点页脚。
 FOOT = ('<footer class="site-foot">'
         '<p><span class="stamp">更新 2026.7.26</span>'
@@ -52,6 +56,17 @@ NAV = ('<div class="site-head">'
        '</nav>'
        '<div class="toolbar"></div>'
        '</div>')
+
+# 字体在 CSS 解析完才会被发现，preload 让它与样式表并行下载。只预载首屏用到的
+# 600 字重，700 等到用时再取。
+PRELOAD = ('<link rel="preload" href="../assets/fonts/chakra-petch-600.woff2" '
+           'as="font" type="font/woff2" crossorigin>')
+
+# 站内导航预取：悬停即取，页面本身十几 KB，切换基本无感。不支持的浏览器忽略。
+SPEC = ('<script type="speculationrules">'
+        '{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}'
+        '</script>')
+
 
 TIERS = {'一级': 1, '二级': 2, '三级': 3}
 
@@ -142,9 +157,12 @@ class Icons:
             with open(path, 'rb') as f:
                 self.size[name] = png_size(f.read(64))
         w, h = self.size[name]
+        # 引用顺序即文档顺序：parse() 按提示徽章 → 分节徽章 → 模组图标依次取图
+        eager = self.refs < N_EAGER
         self.refs += 1
-        return ('<img class="%s" src="%s%s" alt="" '
-                'width="%d" height="%d" loading="lazy">' % (cls, self.url, name, w, h))
+        return ('<img class="%s" src="%s%s" alt="" width="%d" height="%d" %s>'
+                % (cls, self.url, name, w, h,
+                   'fetchpriority="high"' if eager else 'loading="lazy"'))
 
 
 # ── 解析源稿 ────────────────────────────────────────────────────────────
@@ -296,6 +314,7 @@ def render(page, prefix):
          '<meta property="og:locale" content="zh_CN">',
          '<meta property="og:title" content="%s">' % PAGE_TITLE,
          '<meta property="og:description" content="%s">' % PAGE_DESC,
+         PRELOAD,
          '<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">',
          '<link rel="stylesheet" href="../assets/site.css">',
          '<link rel="stylesheet" href="%sstyle.css">' % prefix,
@@ -348,7 +367,7 @@ def render(page, prefix):
             o.append('</div>')
         o += ['</div>', '</section>']
 
-    o += ['</main>', FOOT, '</body>', '</html>', '']
+    o += ['</main>', FOOT, SPEC, '</body>', '</html>', '']
     return '\n'.join(o)
 
 

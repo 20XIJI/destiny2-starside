@@ -38,6 +38,10 @@ N_SETS = 56
 N_BONUSES = 112
 N_ICONS = 110  # 另 2 处英文原表本身就是空白占位，不输出 <img>
 
+# 1440×900 首屏内的图标数。首屏图片加 loading="lazy" 会让它们等布局算完才开始
+# 下载，是反模式；这几张改成高优先级预取。
+N_EAGER = 2
+
 ICON_PX = 56  # 图标存储边长；显示 40px，留 1.4x 密度
 ICON_DISPLAY = 40
 ALPHA_BITS = 4  # alpha 量化档数。剪影图 3x 放大与原图并排看不出差别
@@ -259,6 +263,7 @@ HEAD = '''<!doctype html>
 <meta property="og:locale" content="zh_CN">
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{desc}">
+<link rel="preload" href="../assets/fonts/chakra-petch-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../assets/site.css">
 <link rel="stylesheet" href="style.css">
@@ -293,6 +298,7 @@ FOOT = '''</main>
 <p class="legal">Starside 为非官方资料站，与 Bungie, Inc. 无从属关系。Destiny 2 及相关名称、标识为 Bungie, Inc. 的商标。</p>
 </footer>
 <script src="../assets/app.js" defer></script>
+<script type="speculationrules">{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}</script>
 </body>
 </html>
 '''
@@ -314,6 +320,7 @@ def render_blocks(blocks: list) -> str:
 
 def render(cats: list[Category]) -> str:
     parts = [HEAD.format(title=html.escape(PAGE_TITLE), desc=html.escape(PAGE_DESC))]
+    n_img = 0
     for ci, cat in enumerate(cats, 1):
         parts.append('<section class="cat" id="cat-%d">\n' % ci)
         parts.append('<h2 class="cat-head"><span>%s</span></h2>\n'
@@ -336,10 +343,13 @@ def render(cats: list[Category]) -> str:
                 parts.append('<section class="bonus">\n')
                 parts.append('<h4 class="bonus-head">')
                 if b.icon:
+                    n_img += 1
                     parts.append(
                         '<img class="bonus-icon" src="icons/%s" alt=""'
-                        ' width="%d" height="%d" loading="lazy">'
-                        % (b.icon, ICON_DISPLAY, ICON_DISPLAY))
+                        ' width="%d" height="%d" %s>'
+                        % (b.icon, ICON_DISPLAY, ICON_DISPLAY,
+                           'fetchpriority="high"' if n_img <= N_EAGER
+                           else 'loading="lazy"'))
                 else:
                     parts.append('<span class="bonus-icon" aria-hidden="true"></span>')
                 parts.append('<span class="piece">%s 件</span>' % b.piece)
