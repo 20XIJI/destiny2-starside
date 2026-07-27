@@ -169,9 +169,16 @@ main {
 /* 模组行：一级/二级/三级按「行」成组（游戏内逻辑）。行是结构，每个模组用
    grid-column 钉在自己的档位列上——靠自动布局的行主序的话，搜索隐藏任一模组
    都会让其后所有模组列位偏移。行内两带用 subgrid 让同行三档各自跨列对齐。 */
+/* 整页约 16700px、147 张图，屏外的行不必参与布局与绘制。
+   套在行上而不是 .artifact 上：分节里有 sticky 的 .art-bar，
+   content-visibility 的 paint containment 会把它裁在分节盒子里。
+   实测 1440px 宽下 49 行高 160–576px，中位 278px——估值偏大会把滚动条撑长，
+   偏小会让滚动位置在渲染后跳，取中位数；auto 让浏览器渲染过一次后改用真实高度。 */
 .mod-row {
   grid-template-rows: auto auto;
   border-top: 1px solid var(--hair);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 278px;
 }
 
 .mod-row:first-child { border-top: 0; }

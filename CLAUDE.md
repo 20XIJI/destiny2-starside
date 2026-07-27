@@ -148,11 +148,29 @@ python3 tools/convert-armor-sets.py --icons <英文原表导出.html>
 
 配色只有一处定义：`assets/site.css` 的 `:root`。两份 markdown 源稿里的着色 token 直接引用这些语义名，改渲染色只改 `:root` 的右值，生成器不必重跑。
 
+## 前端性能约定
+
+站点是纯静态、零依赖，首屏总量约 36 KB（HTML 18K gzip + CSS 6K + JS 2K + 首个字重字体 10K）。别引框架或打包器——任何 runtime 都比整站资源还大。以下几条是已经落地的约定，改页面时保持住。
+
+**首屏图片不加 `loading="lazy"`。** 给首屏图片加 lazy 会让它们等布局算完才开始下载，是反模式。两个生成器各有一个 `N_EAGER` 常量（神器模组页 6、护甲套装页 2，按 1440×900 实测），排在这个序号之前的图标改用 `fetchpriority="high"`。改版式让首屏塞得下更多图标时，同步改这个数。
+
+**长页用 `content-visibility: auto` 跳过屏外渲染。** 神器模组页约 16700px、护甲套装页约 28700px，屏外内容不必参与布局与绘制。
+
+套的位置有讲究：**只能套在不含 sticky 后代的元素上**。`content-visibility` 带 paint containment，会把内部的 sticky 裁在自己的盒子里。所以神器模组页套 `.mod-row`（不是 `.artifact`，它含 sticky 的 `.art-bar`），护甲套装页套 `.set-bonuses`（不是 `.set`，它含 sticky 的 `.set-id`）。
+
+`contain-intrinsic-size: auto <值>` 里的 `auto` 让浏览器渲染过一次后改用真实高度，**那个值只是从没渲染过时的初始估值，不需要跟着内容维护**。它唯一影响首屏滚动条长度与锚点跳转的过冲量，估错不会渲染错。现值取 1440px 宽下的实测中位数（`.mod-row` 278px、`.set-bonuses` 386px），实测总高偏差 5%–7%。
+
+量真实高度时**必须让页面自己的 `style.css` 也加载**——断言页用 `<base href>` 指回真实目录，只重写 `../assets/` 的路径会漏掉页内相对引用，量出来能差 3 倍。量之前先把 `content-visibility` 临时置成 `visible`，否则量到的是估值本身。
+
+**当前分节高亮走 `IntersectionObserver`，不在滚动事件里读 `getBoundingClientRect()`。** rootMargin 把视口顶端裁掉 `--stick + 8` 像素，落在剩下那块里最靠上的分节即当前分节。`--stick` 变了要重建观察者（`watch()`），resize 时已经这么做。搜索隐藏分节走 `display: none`，观察者自动报离开，不必手动同步。
+
+**外壳里的两条资源提示**由 `check_shell.py` 钉住：字体 `preload`（只预载首屏用到的 600 字重）与 `speculationrules` 导航预取。
+
 ## 神器模组页的布局约束
 
 - **`.mod` 必须按 `data-tier` 钉 `grid-column`，模组必须按行包在 `.mod-row` 里。** 纯靠行主序自动布局时，搜索隐藏任一模组会让其后所有模组列位偏移（三级会落到一级列）。
 - 分节 sticky 单元贴 `top: var(--stick)`，底色取不透明的 `--ink-lift`，分节带 `scroll-margin-top: var(--stick)`。`--stick` 由 `app.js` 按 `.site-head` 实测高度写回。
-- 这一页约 20000px 高、163 张图，所以 `main` 上不能开 `overflow-x`（理由见 `design.md`），横向溢出交给 `body { min-width: 1064px }`。
+- 这一页约 16700px 高、156 张图，所以 `main` 上不能开 `overflow-x`（理由见 `design.md`），横向溢出交给 `body { min-width: 1064px }`。
 
 ## assets/app.js
 

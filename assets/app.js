@@ -93,26 +93,40 @@
   }
   window.starsideFilter = filter;
 
-  /* 当前分节高亮：取最后一个越过 sticky 下沿的分节 */
-  function spy() {
-    var line = stick + 8;
-    var current = -1;
-    sections.forEach(function (sec, i) {
-      if (!sec.hidden && sec.getBoundingClientRect().top <= line) current = i;
-    });
+  /* 当前分节高亮：把视口顶端裁到 sticky 下沿，落在剩下那块里最靠上的分节即当前。
+
+     用 IntersectionObserver 而不是在滚动事件里读 getBoundingClientRect()——后者
+     每次滚动都要遍历所有分节做布局读取，前者由浏览器自己算好再推过来，滚动路径上
+     零布局读取。搜索隐藏分节时 display:none，观察者自动报离开，不必手动同步。 */
+  var onScreen = [];
+  var io = null;
+
+  function mark() {
+    var current = sections.findIndex(function (sec) { return onScreen.indexOf(sec) >= 0; });
     chips.forEach(function (chip, i) {
       if (i === current) chip.setAttribute('aria-current', 'true');
       else chip.removeAttribute('aria-current');
     });
   }
 
-  search.addEventListener('input', function () {
-    filter(search.value);
-    spy();
-  });
+  /* rootMargin 依赖实测的 stick，改了要重建观察者 */
+  function watch() {
+    if (io) io.disconnect();
+    onScreen = [];
+    io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        var at = onScreen.indexOf(e.target);
+        if (e.isIntersecting && at < 0) onScreen.push(e.target);
+        else if (!e.isIntersecting && at >= 0) onScreen.splice(at, 1);
+      });
+      mark();
+    }, { rootMargin: -(stick + 8) + 'px 0px 0px 0px' });
+    sections.forEach(function (sec) { io.observe(sec); });
+  }
+
+  search.addEventListener('input', function () { filter(search.value); });
 
   measure();
-  spy();
-  addEventListener('resize', function () { measure(); spy(); });
-  addEventListener('scroll', spy, { passive: true });
+  watch();
+  addEventListener('resize', function () { measure(); watch(); });
 })();

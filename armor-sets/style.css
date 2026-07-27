@@ -138,9 +138,15 @@ body { min-width: 1104px; }
 }
 
 /* ── 效果 ── */
+/* 整页约 28700px，屏外的效果栏不必参与布局与绘制。套在右栏而不是 .set 上：
+   .set 里有 sticky 的 .set-id，content-visibility 的 paint containment 会裁掉它。
+   实测 1440px 宽下 56 栏高 262–1027px，中位 386px——估值偏大会把滚动条撑长，
+   偏小会让滚动位置在渲染后跳，取中位数；auto 让浏览器渲染过一次后改用真实高度。 */
 .set-bonuses {
   max-width: 760px;
   min-width: 0;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 386px;
 }
 
 .bonus + .bonus { margin-top: 26px; }
