@@ -199,7 +199,9 @@ INLINE = re.compile(
     r'|(?P<unsure>\[\?[^\]]*\])'  # [?] [?%]：原作者标的待测值
     r'|(?P<pvp>\[[^\]]*\d[^\]]*\])'  # [10%]：方括号内是 PvP 数值
     r'|(?P<qm>[\d.]*\?%?)'  # +? 5? 0.5? x?：数值位上的待测标记
-    r'|(?P<term>' + _TERMS + r')'
+    # 「非」与后面的术语构成一个复合术语（非首领战斗人员＝一类敌人，非超能＝一种状态），
+    # 留在着色外面会让扫读的人读到反义。「除非」「而非」里的非不构词，用后顾排除。
+    r'|(?P<term>(?<![除而])非?(?:' + _TERMS + r'))'
 )
 
 ADJACENT = re.compile(r'<span class="([\w-]+)">([^<]*)</span><span class="\1">')
@@ -228,7 +230,7 @@ def inline(text: str) -> str:
             out.append('<span class="pvp">%s</span>' % whole)
             hits['[pvp]'] = hits.get('[pvp]', 0) + 1
         else:
-            word = m.group(0)
+            word = m.group(0).removeprefix('非')  # 命中数记在词表里的词上
             out.append('<span class="%s">%s</span>' % (_TOKEN[word], whole))
             hits[word] = hits.get(word, 0) + 1
     out.append(html.escape(text[pos:]))
