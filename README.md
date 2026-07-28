@@ -24,6 +24,9 @@ artifact-mods/
 ammo/
   index.html                      弹药生成机制（由转换脚本生成，勿手改）
   style.css                       该组件专属样式
+boss-hp/
+  index.html                      首领生命值（由转换脚本生成，勿手改）
+  style.css                       该组件专属样式
 references/
   artifact-mods.md                神器模组页源稿
   armor-sets.md                   护甲套装页源稿
@@ -33,10 +36,10 @@ tools/shell.py                    站点外壳：head、导航条、页脚
 tools/convert-artifact-mods.py    源稿 → 神器模组页
 tools/convert-armor-sets.py       源稿 → 护甲套装页
 tools/convert-doc.py              源稿 → 通用资料页
-tools/check_shell.py              四页外壳一致性闸门
+tools/check_shell.py              各页外壳一致性闸门
 ```
 
-三个资料页全部由生成器产出，只有首页 `index.html` 手写。改文案改源稿，改结构改生成器的 `render()`。
+资料页全部由生成器产出，只有首页 `index.html` 手写。改文案改源稿，改结构改生成器的 `render()`。
 
 页面之间用显式相对路径互链（`../artifact-mods/index.html`），不依赖静态托管的目录索引解析。资源引用同样用相对路径——站内绝对路径在 `file://` 下会指向磁盘根目录，双击打开即丢样式。
 

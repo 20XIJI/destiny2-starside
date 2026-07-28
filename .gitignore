@@ -150,3 +150,7 @@ references/*
 !references/docs/
 !references/docs/*.md
 .archived/
+
+# Python 字节码缓存（tools/ 下的生成器一跑就有）
+__pycache__/
+*.pyc

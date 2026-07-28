@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构建步骤，托管在腾讯云 CloudBase。仓库无测试框架、无打包器。
 
-三个资料页全部由生成器从 `references/` 下的 markdown 源稿产出，**产出一律不手改**：改文案改 markdown，改结构改生成器的 `render()`，两种情况都重跑脚本。只有首页 `index.html` 是手写的。
+资料页全部由生成器从 `references/` 下的 markdown 源稿产出，**产出一律不手改**：改文案改 markdown，改结构改生成器的 `render()`，两种情况都重跑脚本。只有首页 `index.html` 是手写的。
 
 **视觉与排版规范在 `design.md`。**本文件写机制与验证，不重复设计规则。
 
@@ -27,7 +27,7 @@ convert-*.py       三个生成器，各自只写自己那种数据形状的结�
 check_shell.py     外壳闸门，从 shell.py 现取参照，不另存副本
 ```
 
-外壳与源稿方言各只有一处定义。**加一条外壳内容（meta、资源提示、页脚段落）只改 `shell.py`**，三个页面重跑即生效；手写的首页 `index.html` 要跟着改，`check_shell.py` 会提醒。
+外壳与源稿方言各只有一处定义。**加一条外壳内容（meta、资源提示、页脚段落）只改 `shell.py`**，各资料页重跑即生效；手写的首页 `index.html` 要跟着改，`check_shell.py` 会提醒。
 
 `markup.py` 的 `inline()` 默认只处理着色，富文本标记（`**粗体**`、`*强调*`、`[文字](链接)`）由调用方传 `rich=True` 开启。神器模组页不开——它的源稿里有孤立的 `*`（「呈 * 形释放」），开着会在有人再加一个星号时静默变成 `<em>`。
 
@@ -39,7 +39,7 @@ npm start                                     # npx serve . -l 3000
 python3 tools/convert-artifact-mods.py        # 源稿 references/artifact-mods.md
 python3 tools/convert-armor-sets.py           # 源稿 references/armor-sets.md
 python3 tools/convert-doc.py [slug]           # 源稿 references/docs/*.md，省略 slug 即全部
-python3 tools/check_shell.py                  # 四页外壳一致性
+python3 tools/check_shell.py                  # 各页外壳一致性
 
 ruff check tools/*.py                         # 改完 Python 跑这两条
 pyright tools/*.py
@@ -112,13 +112,19 @@ python3 tools/convert-armor-sets.py --icons <英文原表导出.html>
 
 `tools/convert-doc.py` 是通用的一篇 markdown 一个页面：`references/docs/<slug>.md` → `<slug>/index.html`。加一篇资料就是往 `references/docs/` 丢一个 .md、建好 `<slug>/style.css`、跑一次脚本，再去首页 `index.html` 加卡片。前两个生成器各自绑定一种数据形状（神器/模组/档位、分类/套装/2 件 4 件），这一个不绑，走的是通用文档结构。
 
-排版按 `design.md` 第四节：连续阅读版心 760px 居中，表格 `width: auto` + `margin-inline: auto` 按内容定宽再居中。
+排版按 `design.md` 第四节：连续阅读版心 760px 居中，宽表 1060px，两种都是表格 `width: auto` + `margin-inline: auto` 按内容定宽再居中。
+
+**给整格上色的 CSS 别写在 `td` 上。**整格只有一个 `{标记|…}` 时 class 落在 `<td>` 本身（见下条），此时 `.gen tbody td:last-child` 这类三选择器会以权重压过单类的 `.amp`，整列着色静默退成默认色。基色给 `tbody` 由继承落下来，格子选择器只管排版，两者就不争同一个元素。`boss-hp/style.css` 里记着这条。
 
 ### 源稿格式
 
-首行 `# 页面标题`，其后三个「键：值」行：`描述：`（进 meta description 与 og）、`更新：`（`YYYY.M.D`，落在页脚 `.stamp`）、`页脚：`（可选，接在更新时间后面的那句）。
+首行 `# 页面标题`，其后几个「键：值」行：`描述：`（进 meta description 与 og）、`更新：`（`YYYY.M.D`，落在页脚 `.stamp`）、`页脚：`（可选，接在更新时间后面的那句）、`鸣谢：`（可选，落成页脚的「特别鸣谢：」一句，只写在该贡献者实际参与的页面上）。
 
 `## ` 起分节（对应 `<section class="block">` + `<h2 class="sect-label">`）。分节之外不许有正文。段内换行落成 `<br>`，空行分段。
+
+**色阶的阈值写在源稿里，一张表一套。**分档是内容判断（多少算高随体系而变——突袭与地牢的血量差 2.7 倍，共用一套阈值会让整个地牢表挤在最低两档），生成器只负责比对阈值、打 `data-tier`，不内建任何领域常识。阈值须严格升序，指的列不能是首列（那是行标题），列里出现非数值格即中止。
+
+定阈值的两条经验：**按人数均分，不按数值区间等距**（数值聚在中段时等距会让某一档塞进十几行，那一档内部又分不出高低）；**离群值单独占顶档**（`boss-hp/` 的卡鲁斯是次高值的 15 倍，留在分位里会占掉一整档还带偏切点）。档数上限由颜色定，不由数据定——色阶相邻档的 CIELAB ΔE 要 ≥ 12，低于这个数就是画了档位但看不出区别。
 
 | 写法 | 产出 |
 |---|---|
@@ -126,12 +132,18 @@ python3 tools/convert-armor-sets.py --icons <英文原表导出.html>
 | `术语` 换行 `: 定义` | `<dl class="rules"><dt><dd>` |
 | `\| 表头 \|` + `\|---\|` + 数据行 | `<table class="gen">`，每行首格是 `<th scope="row">` |
 | 表格里再来一行 `\|---\|` | 另起一个 `<tbody>` |
+| 数据行首格留空 | 向上合并进上一个行标题（`rowspan`），整表带 `data-band` 交替位 |
+| 分节里一行 `色阶：列名 阈值 阈值 …` | 该列的数值格按落在第几档带上 `data-tier`，颜色由页面样式表定 |
 | `**粗**` `*强调*` `[文字](链接)` | `<strong>` `<em>` `<a>`，`http` 开头的自动带 `target="_blank" rel="noopener"` |
 | `{token\|文字}` | `<span class="token">`，token 即页面样式表里的类名，可嵌套 |
 
 **一个块的内容整体只有一个 `{标记|…}` 时，class 落在块上，不套 span。** `<th class="t-red">红血</th>` 比套一层 span 干净，`p.note`、`p.formula` 同理。判据是首个标记的闭括号落在块末尾——`{a|白弹} → {b|绿弹}` 是两个标记，照常套 span。
 
 表格的行组分界由 CSS 的 `tbody + tbody` 画，不落成类名。
+
+**合并块的交替底色靠 `data-band`，只出现在真用到合并的表上。**每个合并块行数不等，`:nth-child` 数不出「第几块」，CSS 计数器又不能参与着色，所以这一位由生成器打。没有合并的表照旧输出干净的 `<tr>`，弹药页因此零 diff。
+
+**列线只在表格最左缘去掉，判据是「贴着表格左边」而不是「这一行的第一格」。**合并行没有 `<th>`，首领名格就成了该行的首格，按 `td:first-child` 去边框会把它左侧的竖线吃掉——每个合并块只有第一行闭合，往下豁开一道口子。要写成 `thead th:first-child` 与 `tbody th[scope="row"]`。
 
 ### `check()` 的闸门
 
@@ -153,7 +165,7 @@ python3 tools/convert-armor-sets.py --icons <英文原表导出.html>
 
 特别鸣谢只写在该译者实际参与的页面上，不做全站铺开。
 
-`tools/check_shell.py` 把这些约定钉成闸门：四个页面的 head 元信息、站标、署名、免责声明必须逐字一致，提到 Destiny Data Compendium 就必须用上面那一句，每页都要有格式合规的更新时间。新增资料页时把它加进 `PAGES`。
+`tools/check_shell.py` 把这些约定钉成闸门：各个页面的 head 元信息、站标、署名、免责声明必须逐字一致，提到 Destiny Data Compendium 就必须用上面那一句，每页都要有格式合规的更新时间。新增资料页时把它加进 `PAGES`。
 
 ## 视觉与排版
 

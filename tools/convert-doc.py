@@ -25,8 +25,11 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC_DIR = os.path.join(ROOT, 'references', 'docs')
 
 # 头部的「键：值」行。键名固定，正文行不会被误认。
-META_KEYS = ('描述', '更新', '页脚')
+META_KEYS = ('描述', '更新', '页脚', '鸣谢')
 META_LINE = meta_line(META_KEYS)
+
+# 分节级声明：「色阶：列名 阈值 …」。同样按整行剥离，不进正文。
+SCALE_LINE = re.compile(r'^色阶：(.*)$', re.M)
 
 def wrap(tag, md, attrs=''):
     """一个块的内容整体只有一个标记时，class 落在块上，不套一层 span。
@@ -67,35 +70,147 @@ def is_rule(cells):
     return all(re.fullmatch(r':?-{3,}:?', c or '') for c in cells) and any(cells)
 
 
-def render_table(lines):
+def scale_of(spec):
+    """「色阶：列名 阈值 阈值 …」→ (列名, [阈值])。阈值须升序。
+
+    阈值写在源稿里、一张表一套：分档是内容判断（多少算高血量随体系而变），
+    生成器只负责比对，不内建任何领域常识。
+    """
+    parts = spec.split()
+    if len(parts) < 3:
+        die('「色阶：」要写成「列名 阈值 阈值 …」，至少两个阈值：%r' % spec)
+    col, nums = parts[0], parts[1:]
+    for n in nums:
+        if not n.isdigit():
+            die('「色阶：」的阈值只能是整数，写的是 %r' % n)
+    vals = [int(n) for n in nums]
+    if vals != sorted(vals) or len(set(vals)) != len(vals):
+        die('「色阶：」的阈值要严格升序：%s' % vals)
+    return col, vals
+
+
+def grouped(n):
+    """大数按三位一组切开，组间距由 CSS 给，**不插入逗号字符**。
+
+    逗号进文本会破坏保真比对（源稿 12117、产出 12,117），就得在 check() 里给
+    数值列开特例——闸门一旦有特例就不再是闸门。分组只是排版，交给 CSS：
+    列宽也只多一个间距，插逗号要多一个整字宽。
+
+    四位数不分组：1234 一眼就读得出来，切成 1·234 反而碎。
+    """
+    t = str(n)
+    if len(t) <= 4:
+        return t
+    parts = []
+    while len(t) > 3:
+        parts.insert(0, t[-3:])
+        t = t[:-3]
+    parts.insert(0, t)
+    return ''.join('<span class="g">%s</span>' % p for p in parts)
+
+
+def tier_of(text, bounds):
+    """数值落在第几档，1 起。不是纯数字就返回 None，不硬套。"""
+    plain = re.sub(r'<[^>]+>', '', text).strip().replace(',', '')
+    if not plain.isdigit():
+        return None
+    v = int(plain)
+    tier = 1
+    for b in bounds:
+        if v >= b:
+            tier += 1
+    return tier
+
+
+def render_table(lines, scale=None):
     """markdown 表格 → <table class="gen">。
 
     第一行是表头，第二行是 |---| 分隔。正文里再出现一行 --- 就另起一个 <tbody>，
     行组之间的分界由 CSS 的 tbody + tbody 画，不落成类名。
     每行第一格是行标题（<th scope="row">），其余是数据格。
+
+    **首格留空即向上合并**（`rowspan`）：连续多行属于同一个行标题时，只在第一行
+    写名字，后续行首格留空。源稿里那个名字只出现一次，保真比对因此照旧成立——
+    重复写一遍再靠生成器去重，源稿与页面就会有两份真相。
+
+    scale 是 (列名, [阈值])：该列的数值格按落在第几档带上 data-tier，
+    由页面样式表决定每档的颜色。阈值随体系而变（突袭与地牢的血量不是一个量级），
+    所以按表给，不做全页一套。
     """
     head = split_cells(lines[0])
     if len(lines) < 2 or not is_rule(split_cells(lines[1])):
         die('表格第二行必须是 |---|---| 分隔行：%s' % lines[0][:60])
 
-    o = ['<table class="gen">', '<thead>', '<tr>']
-    o += [wrap('th', c, ' scope="col"') for c in head]
-    o += ['</tr>', '</thead>', '<tbody>']
+    scale_at, bounds = None, []
+    if scale:
+        col, bounds = scale
+        if col not in head:
+            die('「色阶：」指的列 %r 不在表头里：%s' % (col, '｜'.join(head)))
+        scale_at = head.index(col)
+        if scale_at == 0:
+            die('「色阶：」不能指首列，那一列是行标题不是数值')
+
+    # 先摊平成行与行组分界，再算合并跨度：跨度要看后面几行，边扫边输出算不出来
+    rows = []
     for line in lines[2:]:
         cells = split_cells(line)
         if is_rule(cells):
-            o += ['</tbody>', '<tbody>']
+            rows.append(None)
             continue
         if len(cells) != len(head):
             die('表格某行有 %d 格，表头是 %d 格：%s' % (len(cells), len(head), line[:60]))
-        row = [wrap('th', cells[0], ' scope="row"')]
-        row += [wrap('td', c) for c in cells[1:]]
-        o.append('<tr>' + ''.join(row) + '</tr>')
+        rows.append(cells)
+
+    span = [1] * len(rows)          # 0 表示这一行的首格并入了上一个行标题
+    owner = None
+    for i, cells in enumerate(rows):
+        if cells is None:           # 行组分界，合并不跨组
+            owner = None
+            continue
+        if cells[0]:
+            owner = i
+            continue
+        if owner is None:
+            die('表格某个行组的第一行首格是空的，没有可合并的行标题：%s'
+                % '｜'.join(cells)[:60])
+        span[owner] += 1
+        span[i] = 0
+
+    o = ['<table class="gen">', '<thead>', '<tr>']
+    o += [wrap('th', c, ' scope="col"') for c in head]
+    o += ['</tr>', '</thead>', '<tbody>']
+    # data-band 让相邻的合并块能上交替底色。CSS 数不了「第几个合并块」——每块行数
+    # 不等，:nth-child 对不上，计数器又不能参与着色，所以这一位由生成器打。
+    # 只有真用到合并的表才需要它；没有合并的表照旧输出干净的 <tr>。
+    banded = any(n > 1 for n in span)
+    band = 1
+    for cells, n in zip(rows, span):
+        if cells is None:
+            o += ['</tbody>', '<tbody>']
+            band = 1
+            continue
+        row = []
+        if n:
+            band ^= 1               # 每遇到一个新行标题翻一次
+            attrs = ' scope="row"' + (' rowspan="%d"' % n if n > 1 else '')
+            row.append(wrap('th', cells[0], attrs))
+        for at, c in enumerate(cells[1:], start=1):
+            if at == scale_at:
+                tier = tier_of(c, bounds)
+                if tier is None:
+                    die('「色阶：」指的列里有非数值格：%r' % c[:40])
+                # 色阶列是纯数值，直接输出：分组标签由 grouped() 给，
+                # 不走 wrap()——那条路会把 <span> 当文本转义掉
+                row.append('<td data-tier="%d">%s</td>' % (tier, grouped(int(c))))
+                continue
+            row.append(wrap('td', c))
+        o.append('<tr%s>%s</tr>'
+                 % (' data-band="%d"' % band if banded else '', ''.join(row)))
     o += ['</tbody>', '</table>']
     return o
 
 
-def render_blocks(chunk):
+def render_blocks(chunk, scale=None):
     """分节正文 → 段落、列表、定义列表、表格。"""
     o, i = [], 0
     lines = chunk.split('\n')
@@ -109,7 +224,7 @@ def render_blocks(chunk):
             start = i
             while i < len(lines) and lines[i].lstrip().startswith('|'):
                 i += 1
-            o += render_table([ln.strip() for ln in lines[start:i]])
+            o += render_table([ln.strip() for ln in lines[start:i]], scale)
             continue
 
         # 定义列表：术语一行，紧跟以「: 」开头的定义行
@@ -158,6 +273,7 @@ def render(md):
         return hit.group(1).strip()
 
     desc, stamp, foot = meta('描述'), meta('更新'), meta('页脚', required=False)
+    thanks = meta('鸣谢', required=False)
     if not re.fullmatch(r'\d{4}\.\d{1,2}\.\d{1,2}', stamp):
         die('「更新：」要写成 YYYY.M.D，源稿写的是 %r' % stamp)
 
@@ -177,12 +293,22 @@ def render(md):
 
     for part in parts[1:]:
         head, _, chunk = part.partition('\n')
+        # 「色阶：」是分节级声明，按整行剥离——留在正文里会进保真比对
+        scale = None
+        hit = SCALE_LINE.search(chunk)
+        if hit:
+            scale = scale_of(hit.group(1).strip())
+            chunk = SCALE_LINE.sub('', chunk)
         o.append('<section class="block">')
         o.append('<h2 class="sect-label">%s</h2>' % inline(head.strip(), rich=True))
-        o += render_blocks(chunk)
+        o += render_blocks(chunk, scale)
         o.append('</section>')
 
-    o += ['</main>', '', shell.foot(stamp, inline(foot, rich=True) if foot else '')]
+    # 鸣谢只写在该贡献者实际参与的页面上，不做全站铺开
+    o += ['</main>', '',
+          shell.foot(stamp,
+                     inline(foot, rich=True) if foot else '',
+                     thanks=inline(thanks, rich=True) if thanks else None)]
     return '\n'.join(o), title
 
 
@@ -200,7 +326,8 @@ def check(md, out, slug):
     真正的闸门是「一个字都没多、没少」。
     """
     lines = []
-    for raw in META_LINE.sub('', md[md.index('\n'):]).split('\n'):
+    src = SCALE_LINE.sub('', META_LINE.sub('', md[md.index('\n'):]))
+    for raw in src.split('\n'):
         line = raw.strip()
         if line.startswith('|'):                      # 表格：只去分隔符与分隔行
             cells = split_cells(line)

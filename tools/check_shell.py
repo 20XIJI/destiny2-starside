@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """站点外壳一致性闸门。
 
-三个资料页的外壳由 tools/shell.py 生成，天然一致；会漂的只有手写的首页
-index.html。本脚本从 shell.py 现取不变片段去比对四个页面——**这里不另存副本**，
-否则闸门自己就成了要维护的第五份定义。
+各资料页的外壳由 tools/shell.py 生成，天然一致；会漂的只有手写的首页
+index.html。本脚本从 shell.py 现取不变片段去比对 PAGES 里的每个页面——
+**这里不另存副本**，否则闸门自己就成了要维护的另一份定义。
 
 用法：python3 tools/check_shell.py    改完 shell.py 或手写首页后跑一次。
 
@@ -19,7 +19,8 @@ import shell
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 HOME = 'index.html'
-PAGES = [HOME, 'ammo/index.html', 'armor-sets/index.html', 'artifact-mods/index.html']
+PAGES = [HOME, 'ammo/index.html', 'armor-sets/index.html', 'artifact-mods/index.html',
+         'boss-hp/index.html']
 
 # head 里与页面无关的那几行。标题与描述是变量，用哨兵值生成后按前缀挑出不变量。
 HEAD_KEEP = ('<meta name="theme-color"', '<meta property="og:site_name"',
