@@ -3,7 +3,7 @@
    这一页由 tools/convert-doc.py 从 references/docs/boss-hp.md 生成，
    改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
 
-/* 这一页是宽表，不是连续阅读：四列并排要的宽度超过阅读版心。取护甲套装页
+/* 这一页是宽表，不是连续阅读：八列并排要的宽度超过阅读版心。取护甲套装页
    那一档 1060px，不为这一页再引入第四个宽度数——表格自己按内容定宽再居中，
    版心只是上限。
    收窄只作用于正文与页首——导航条与页脚是站点外壳，各页必须一样宽。 */
@@ -66,7 +66,7 @@ body { min-width: 1104px; }
 
 /* ── 首领表 ──
    宽度随内容走再居中：撑到 100% 会把副本名与生命值两列拉得老宽，
-   与「特殊机制」那一列的密度对不上，整表读起来散。 */
+   与「注解」那一列的密度对不上，整表读起来散。 */
 .gen {
   width: auto;
   margin: 0 auto;
@@ -107,14 +107,14 @@ body { min-width: 1104px; }
 
 /* 表头跟着本列的数据走，不各行其是：列名悬在数据上方偏一侧会让人先找一遍对应关系 */
 .gen thead th:nth-child(3),
-.gen thead th:nth-child(4) { text-align: left; }
+.gen thead th:nth-child(8) { text-align: left; }
 
-/* ── 副本名与首领名居中，生命值与机制左对齐 ──
+/* ── 副本名与首领名居中，生命值与注解左对齐 ──
    副本名、首领名是短标识，居中读作一枚枚标签，纵向也齐。
    生命值左对齐：位数不齐（5–8 位）时居中会让每个数字的起点错开，
    扫一列比大小得逐个重新定位；左对齐把所有数字的高位钉在同一条竖线上，
    位数差本身就成了量级差的提示。
-   「特殊机制」是长短不齐的说明句，居中会让左缘参差、每行都要重新找起点。 */
+   「注解」是长短不齐的说明句，居中会让左缘参差、每行都要重新找起点。 */
 
 /* 副本名：这一组的身份。rowspan 合并后纵向居中，一眼圈出该副本占几行 */
 .gen tbody th {
@@ -152,6 +152,46 @@ body { min-width: 1104px; }
   white-space: nowrap;
 }
 
+/* ── 距离 ──
+   短标识，与首领名同一读法：居中、不折行。降一档字号读作附注，不与生命值抢注意。 */
+.gen tbody td:nth-of-type(3) {
+  color: var(--bone);
+  font-size: 12px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* ── 时间与两列 DPS ──
+   数字样式跟生命值那一列一致：等宽字族 + tabular-nums + 600，同一种数在页面上
+   只有一种字面。区别交给颜色——生命值有色阶，这三列走正文骨白。
+   **这几列不能落在 tbody 继承的 --bone-dim 上**：那一档是给注解那种说明句用的，
+   数值挤在一起时读起来发灰，与旁边的色阶列差得太远。抬到 --bone 与首领名同档，
+   仍低于色阶列一档，主次不乱。
+   居中而不右对齐：列名短、值最多六位，居中后与表头对齐，也与距离那一列的读法
+   一致。生命值那一列仍左对齐，位数差在那里是量级差。 */
+.gen tbody td:nth-of-type(4),
+.gen tbody td:nth-of-type(5),
+.gen tbody td:nth-of-type(6) {
+  color: var(--bone);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .02em;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* 「未测」「不定」这类占位词：源稿写成 {na|未测}，整格只有一个标记，生成器把
+   class 落在 <td> 上。压暗一档、落回中文字族，扫读一列数字时先跳过它们。
+   这条排在上面三列之后：与那条选择器权重相同（都是两类两元素），靠顺序取胜。 */
+.gen tbody td.na {
+  color: var(--bone-dim);
+  font-family: var(--font-cn);
+  font-size: 12px;
+  text-align: center;
+}
+
 /* ── 千分位：分组间距，不插逗号 ──
    六位数连成一串读不出量级，要分组。这里用间距而不是逗号字符，两个理由：
 
@@ -169,7 +209,7 @@ body { min-width: 1104px; }
    血越厚越绿。这是玩家对血条色阶的默认认知，方向不倒。
 
    **这是 design.md「色相归元素所有」的一条例外，作用域仅限本页。**
-   成立的前提是这一页没有元素语义：四列里没有任何一格讲元素、属性或伤害类型，
+   成立的前提是这一页没有元素语义：八列里没有任何一格讲元素、属性或伤害类型，
    读者不可能把这里的绿读成缚丝、把橙读成烈日。别的页面只要出现元素概念，
    这条例外就不适用——那里的色相仍归元素所有。规范里写着同样的限定。
 
@@ -203,7 +243,7 @@ body { min-width: 1104px; }
 .gen tbody td[data-tier="7"] { color: #b2e16e; }
 .gen tbody td[data-tier="8"] { color: #85e589; }
 
-/* 特殊机制：说明句。给一个上限宽度，长句折行也不会把整表拉过版心。
+/* 注解：说明句。给一个上限宽度，长句折行也不会把整表拉过版心。
    **默认色靠 tbody 继承下来，不写在这一格上。**生成器对「整格只有一个 {标记|…}」
    的格子会把 class 落在 <td> 本身（<td class="amp">，见 convert-doc.py 的 wrap()），
    此时 .gen tbody td:last-child 与 .amp 命中同一个元素，三选择器的权重会压过单类，
@@ -218,11 +258,15 @@ body { min-width: 1104px; }
   text-align: left;
 }
 
-/* 没有特殊机制的格子不留空白：空白读作「这里漏了」，一道发丝短横读作
-   「确认没有」。用 ::after 生成，不进 HTML 文本，因此不参与保真比对。 */
-.gen tbody td:last-child:empty::after {
+/* 空格子不留空白：空白读作「这里漏了」，一道发丝短横读作「确认没有」。
+   八列里空格子不止最后一列（距离、DPS 都有不适用的行），所以对所有数据格生效。
+   inline-block 让这道短横跟着本列的 text-align 走：居中的列居中、注解列贴左，
+   不必为每一列各写一条 margin。
+   用 ::after 生成，不进 HTML 文本，因此不参与保真比对。 */
+.gen tbody td:empty::after {
   content: "";
-  display: block;
+  display: inline-block;
+  vertical-align: middle;
   width: 14px;
   height: 1px;
   background: var(--hair-lit);
@@ -258,7 +302,7 @@ body { min-width: 1104px; }
 
 .gen tbody tr[data-band="1"] > th[scope="row"] { background: #ffffff09; }
 
-/* 整行 hover：四列跨度大，只高亮单格会跟丢行。
+/* 整行 hover：八列跨度大，只高亮单格会跟丢行。
    压过交替底色，否则浅带那几行 hover 没反应。 */
 .gen tbody tr:hover > th,
 .gen tbody tr:hover > td { background: #ffffff0d; }
