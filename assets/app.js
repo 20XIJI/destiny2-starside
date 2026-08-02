@@ -35,6 +35,79 @@
     document.documentElement.style.setProperty('--stick', stick + 'px');
   }
 
+  /* 列组模式：表头的 data-g 声明每列属于哪一组，工具条按组给开关。
+     列多到一屏放不下的表用它，读者自己拼视图。首列所在的那组是身份列
+     （行标题与它的近邻），不给开关、任何时候都在。
+
+     隐藏走一张内建样式表按列序下规则，不给每个格子挂属性——94 行 43 列
+     挂一遍要给 HTML 多出十万字节。合并行没有 <th>，序号整体前移一位，
+     所以同一列要下两条规则。 */
+  function columns() {
+    var heads = [].slice.call(document.querySelectorAll('.gen thead th'));
+    var fixed = heads[0].dataset.g;
+    var names = [];
+    heads.forEach(function (th) {
+      if (th.dataset.g !== fixed && names.indexOf(th.dataset.g) < 0) names.push(th.dataset.g);
+    });
+
+    var on = {};
+    (slot.dataset.cols || '').split('、').forEach(function (n) { if (n) on[n] = true; });
+    /* 互斥的几组一次只开一组：几十列同屏会把行撑得过长，扫读时对不上行 */
+    var solo = (slot.dataset.solo || '').split('、').filter(Boolean);
+
+    var sheet = document.createElement('style');
+    document.head.appendChild(sheet);
+
+    function apply() {
+      var sel = [];
+      heads.forEach(function (th, i) {
+        if (th.dataset.g === fixed || on[th.dataset.g]) return;
+        sel.push('.gen thead th:nth-child(' + (i + 1) + ')');
+        sel.push('.gen tbody tr:has(> th) > :nth-child(' + (i + 1) + ')');
+        sel.push('.gen tbody tr:not(:has(> th)) > :nth-child(' + i + ')');
+      });
+      sheet.textContent = sel.length ? sel.join(',') + '{display:none}' : '';
+    }
+
+    var nav = document.createElement('nav');
+    nav.className = 'tool-chips';
+    nav.setAttribute('aria-label', '列组');
+    var chips = {};
+    names.forEach(function (name) {
+      var chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'chip';
+      chip.textContent = name;
+      chips[name] = chip;
+      chip.addEventListener('click', function () {
+        on[name] = !on[name];
+        if (on[name] && solo.indexOf(name) >= 0) {
+          solo.forEach(function (other) { if (other !== name) on[other] = false; });
+        }
+        press();
+        apply();
+      });
+      nav.appendChild(chip);
+    });
+
+    function press() {
+      names.forEach(function (name) {
+        chips[name].setAttribute('aria-pressed', on[name] ? 'true' : 'false');
+      });
+    }
+
+    slot.appendChild(nav);
+    press();
+    apply();
+  }
+
+  if (slot && slot.dataset.cols !== undefined) {
+    columns();
+    measure();
+    addEventListener('resize', measure);
+    return;
+  }
+
   if (!slot || !sections.length) {
     measure();
     return;

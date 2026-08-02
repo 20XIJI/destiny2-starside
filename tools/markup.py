@@ -14,6 +14,9 @@ from typing import NoReturn
 
 COLOR_OPEN = re.compile(r'\{([\w-]+)\|')
 LINK = re.compile(r'\[([^\]]+)\]\(([^)]+)\)')
+# 图标：![](icons/xxx.png)。alt 恒空——图标都是行内的语义重复（旁边就是文字），
+# 给它们编 alt 只会让读屏软件把同一件事念两遍。
+IMG = re.compile(r'!\[\]\(([^)]+)\)')
 
 
 def die(msg) -> NoReturn:
@@ -34,6 +37,24 @@ def meta_line(keys):
     所以不能按「短前缀 + 冒号」猜，只认给定的键名。
     """
     return re.compile(r'^(?:%s)：.*$' % '|'.join(keys), re.M)
+
+
+def img_size(data):
+    """PNG / JPEG 的宽高，从文件头现读，不在源稿里重复记一遍尺寸。"""
+    if data[:8] == b'\x89PNG\r\n\x1a\n':
+        return int.from_bytes(data[16:20], 'big'), int.from_bytes(data[20:24], 'big')
+    if data[:2] == b'\xff\xd8':
+        i = 2
+        while i + 9 < len(data):
+            if data[i] != 0xFF:
+                i += 1
+                continue
+            if data[i + 1] in (0xC0, 0xC1, 0xC2):       # SOF0/1/2 里才有尺寸
+                return (int.from_bytes(data[i + 7:i + 9], 'big'),
+                        int.from_bytes(data[i + 5:i + 7], 'big'))
+            i += 2 + int.from_bytes(data[i + 2:i + 4], 'big')
+        die('JPEG 里没找到 SOF 段，取不到尺寸')
+    die('只认得 PNG 与 JPEG，这个文件都不是')
 
 
 def blocks_of(chunk):

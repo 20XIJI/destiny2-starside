@@ -241,12 +241,20 @@ main { flex: 1 0 auto; }
   border-color: var(--hair-lit);
 }
 
-.chip[aria-current="true"] {
+.chip[aria-current="true"],
+.chip[aria-pressed="true"] {
   color: var(--c-arc);
   border-color: color-mix(in srgb, var(--c-arc) 45%, transparent);
 }
 
 .chip[hidden] { display: none; }
+
+/* 列组开关也是 chip，只是按钮不是链接：按下即打开那一组列 */
+button.chip {
+  background: none;
+  line-height: 1.5;
+  cursor: pointer;
+}
 
 /* ── 组件页页首：各组件页共用 ── */
 .page-head {

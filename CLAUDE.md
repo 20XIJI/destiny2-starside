@@ -110,7 +110,7 @@ python3 tools/convert-armor-sets.py --icons <英文原表导出.html>
 
 ## 资料文档页
 
-`tools/convert-doc.py` 是通用的一篇 markdown 一个页面：`references/docs/<slug>.md` → `<slug>/index.html`。加一篇资料就是往 `references/docs/` 丢一个 .md、建好 `<slug>/style.css`、跑一次脚本，再去首页 `index.html` 加卡片。前两个生成器各自绑定一种数据形状（神器/模组/档位、分类/套装/2 件 4 件），这一个不绑，走的是通用文档结构。
+`tools/convert-doc.py` 是通用的一篇 markdown 一个页面：`references/docs/<slug>.md` → `<slug>/index.html`。加一篇资料就是往 `references/docs/` 丢一个 .md、建好 `<slug>/style.css`、跑一次脚本，再去首页 `index.html` 加卡片、把 `<slug>/index.html` 加进 `check_shell.py` 的 `PAGES`。前两个生成器各自绑定一种数据形状（神器/模组/档位、分类/套装/2 件 4 件），这一个不绑，走的是通用文档结构。
 
 排版按 `design.md` 第四节：连续阅读版心 760px 居中，宽表 1060px，两种都是表格 `width: auto` + `margin-inline: auto` 按内容定宽再居中。
 
@@ -118,7 +118,7 @@ python3 tools/convert-armor-sets.py --icons <英文原表导出.html>
 
 ### 源稿格式
 
-首行 `# 页面标题`，其后几个「键：值」行：`描述：`（进 meta description 与 og）、`更新：`（`YYYY.M.D`，落在页脚 `.stamp`）、`页脚：`（可选，接在更新时间后面的那句）、`鸣谢：`（可选，落成页脚的「特别鸣谢：」一句，只写在该贡献者实际参与的页面上）。
+首行 `# 页面标题`，其后几个「键：值」行：`描述：`（进 meta description 与 og）、`更新：`（`YYYY.M.D`，落在页脚 `.stamp`）、`页脚：`（可选，接在更新时间后面的那句）、`鸣谢：`（可选，落成页脚的「特别鸣谢：」一句，只写在该贡献者实际参与的页面上）、`列组：`／`默认列组：`（可选，见下）、`首屏图标：`（可选，前 N 张图标改用 `fetchpriority="high"`，其余 `loading="lazy"`；按实测定，缺省 0）。
 
 `## ` 起分节（对应 `<section class="block">` + `<h2 class="sect-label">`）。分节之外不许有正文。段内换行落成 `<br>`，空行分段。
 
@@ -133,8 +133,11 @@ python3 tools/convert-armor-sets.py --icons <英文原表导出.html>
 | `\| 表头 \|` + `\|---\|` + 数据行 | `<table class="gen">`，每行首格是 `<th scope="row">` |
 | 表格里再来一行 `\|---\|` | 另起一个 `<tbody>` |
 | 数据行首格留空 | 向上合并进上一个行标题（`rowspan`），整表带 `data-band` 交替位 |
-| 分节里一行 `色阶：列名 阈值 阈值 …` | 该列的数值格按落在第几档带上 `data-tier`，颜色由页面样式表定 |
+| 分节里一行 `色阶：列名 阈值 阈值 …` | 该列的数值格按落在第几档带上 `data-tier`，颜色由页面样式表定。一节可写多条，一列一条 |
+| 头部一行 `列组：组名 = 列名、列名 …` | 该组各列的 `<thead> th` 带上 `data-g`，`app.js` 据此在工具条上建列组开关 |
+| 头部的 `默认列组：`／`互斥列组：` | 落成 `.toolbar` 上的 `data-cols`／`data-solo`，前者是加载时打开的组，后者是一次只能开一组的那几组 |
 | `**粗**` `*强调*` `[文字](链接)` | `<strong>` `<em>` `<a>`，`http` 开头的自动带 `target="_blank" rel="noopener"` |
+| `![](icons/xxx.png)` | `<img src alt="" width height>`，宽高从文件头现读，文件名须是内容的 md5 前 10 位 |
 | `{token\|文字}` | `<span class="token">`，token 即页面样式表里的类名，可嵌套 |
 
 **一个块的内容整体只有一个 `{标记|…}` 时，class 落在块上，不套 span。** `<th class="t-red">红血</th>` 比套一层 span 干净，`p.note`、`p.formula` 同理。判据是首个标记的闭括号落在块末尾——`{a|白弹} → {b|绿弹}` 是两个标记，照常套 span。
@@ -144,6 +147,14 @@ python3 tools/convert-armor-sets.py --icons <英文原表导出.html>
 **合并块的交替底色靠 `data-band`，只出现在真用到合并的表上。**每个合并块行数不等，`:nth-child` 数不出「第几块」，CSS 计数器又不能参与着色，所以这一位由生成器打。没有合并的表照旧输出干净的 `<tr>`，弹药页因此零 diff。
 
 **列线只在表格最左缘去掉，判据是「贴着表格左边」而不是「这一行的第一格」。**合并行没有 `<th>`，首领名格就成了该行的首格，按 `td:first-child` 去边框会把它左侧的竖线吃掉——每个合并块只有第一行闭合，往下豁开一道口子。要写成 `thead th:first-child` 与 `tbody th[scope="row"]`。
+
+### 列组开关
+
+列多到一屏放不下的表（`weapon-frames/` 42 列）靠列组分批显示：源稿头部按组列出列名，`默认列组：` 写加载时打开哪几组，`互斥列组：` 写哪几组一次只能开一组，工具条给出 chip，读者自己拼视图。
+
+约束四条：**表头里的每一列都要落在某个组里**（漏了即中止，否则工具条会漏掉它）；**首列所在的那一组不给 chip**，它是行的身份，任何时候都在；**默认隐藏由 `app.js` 在加载时施加，不写进 HTML**——无 JS 时全部列可见，与工具条为空容器时正文完整可读是同一条约定；**数值组之间互斥**——几十列同屏会把行撑得过长，扫读时对不上行。
+
+隐藏走 `app.js` 内建的一张样式表按列序下规则，不给每个格子挂属性（94 行 43 列挂一遍要多出十万字节）。**合并行没有 `<th>`，序号整体前移一位，所以同一列要下两条规则**（`tr:has(> th)` 与 `tr:not(:has(> th))`），只下一条会让合并行错位隐藏。
 
 ### `check()` 的闸门
 
@@ -218,6 +229,8 @@ python3 tools/convert-armor-sets.py --icons <英文原表导出.html>
 
 给了 `data-section` 而不给 `data-row`，行这一层就整个跳过。搜索按条目的 `textContent` 过滤，整行不命中隐藏行，整节不命中隐藏分节与其 chip。神器模组页检索期间三档并排对照关系失效，清空即恢复。
 
+**`.toolbar` 带 `data-cols` 时走列组模式**（武器框架页），搜索与分节 chip 整块不建：chip 文字取自表头的 `data-g`（属性值，不是正文，不进保真比对），开关落成一张内建样式表按列序下的 `display: none`。**同一列要下两条规则**——合并行没有 `<th>`，序号整体前移一位，只下一条会让合并行错位隐藏。`data-solo` 里的组一次只开一组。
+
 ## 验证
 
 仓库无测试框架，不要引入。验证靠三样：
@@ -236,4 +249,4 @@ headless Chrome 无法滚动视口，`--dump-dom` 与 `--screenshot` 都不行�
 
 ## 工作流
 
-solo 项目。直接提交到 `main`，非指定不开分支。提交前跑一遍两个生成器、`check_shell.py` 与 `ruff check` + `pyright`。push 只在明确要求时做。
+solo 项目。直接提交到 `main`，非指定不开分支。提交前跑一遍三个生成器、`check_shell.py` 与 `ruff check` + `pyright`。push 只在明确要求时做。

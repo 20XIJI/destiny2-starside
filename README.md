@@ -27,6 +27,10 @@ ammo/
 boss-hp/
   index.html                      首领生命值（由转换脚本生成，勿手改）
   style.css                       该组件专属样式
+weapon-frames/
+  index.html                      武器框架（由转换脚本生成，勿手改）
+  style.css                       该组件专属样式
+  icons/*.png|jpg                 121 枚框架、示例武器与勇士图标（49px，共 189 KB）
 references/
   artifact-mods.md                神器模组页源稿
   armor-sets.md                   护甲套装页源稿
@@ -61,18 +65,19 @@ npm start          # npx serve . -l 3000
 |---|---|---|
 | 文件夹 `/artifact-mods/icons` | 1 年 | 文件名是内容哈希，改内容必然换名，读者立刻拿到新图 |
 | 文件夹 `/assets/fonts` | 1 年 | 同名替换会让读者看一年的旧字体，**换字体必须连带改文件名** |
+| 文件夹 `/weapon-frames/icons` | 1 年 | 文件名是内容哈希，改内容必然换名，读者立刻拿到新图 |
 | 文件夹 `/armor-sets/icons` | 7 天 | 序号命名，同名替换后最多 7 天才全员生效 |
 | 后缀 `.css`、`.js` | 5 分钟 | 5 分钟内生效 |
 | 后缀 `.html` | 0 | 立刻生效 |
 
-前两条覆盖约 610 KB，回访时完全不再请求。
+前三条覆盖约 800 KB，回访时完全不再请求。
 
 ### 换图
 
-**`artifact-mods/icons/`——不要原地覆盖。**文件名是内容的 md5 前 10 位，`tools/convert-artifact-mods.py` 每次转换都复核一遍，对不上就中止并报出正确的名字。换图三步：
+**`artifact-mods/icons/` 与 `weapon-frames/icons/`——不要原地覆盖。**文件名是内容的 md5 前 10 位，两个生成器每次转换都复核一遍，对不上就中止并报出正确的名字。换图三步：
 
 1. 把新图按新哈希存进 `icons/`（跑一次生成器，报错信息里就有该用的文件名）
-2. 改 `references/artifact-mods.md` 里那条模组的「图标：」一行
+2. 改源稿里引用它的那一处（神器模组页的「图标：」一行，武器框架页表格里的 `![](icons/…)`）
 3. 删掉旧文件，重跑生成器确认退出码 0
 
 这条纪律不是洁癖：它是那一年缓存成立的前提。原地覆盖会让读者看一年的旧图，而控制台刷新只清得掉节点缓存。
