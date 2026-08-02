@@ -126,9 +126,11 @@ body { min-width: 1104px; }
   position: sticky;
   top: var(--stick);
   z-index: 3;
-  /* 数值格只有两三位，列宽会缩到比表头还窄，四字表头就被压成一字一行的竖排。
-     58px 让它折成两行两字。 */
-  min-width: 58px;
+  /* 表头只在语义边界折行。中文默认可以在任意两字之间断，于是「基础间隔」会断成
+     「基础间 / 隔」，一排表头的断点各不相同，扫读时先要认一遍列名怎么拼。
+     keep-all 之后中文不再任意断行，只剩空格是断点——断点因此写在源稿的表头文本里
+     （「基础 间隔」「红血 单弹匣」），一律断成「限定语 / 被限定的量」两行。 */
+  word-break: keep-all;
   padding-top: 9px;
   padding-bottom: 9px;
   color: var(--bone-dim);
@@ -212,11 +214,7 @@ body { min-width: 1104px; }
 /* ── 三列图标 ──
    框架图标、示例武器、勇士本来就是挨着的三格。49px 原图按 26px 显示：
    这一页一屏要放二十几行，图标只承担辨识，不承担观赏。
-   min-width 给两字表头留出一行的宽度——不给的话列宽只按 26px 的图算，
-   表头会被压成一字一行的竖排。 */
-.gen thead th:nth-child(3),
-.gen thead th:nth-child(4),
-.gen thead th:nth-child(5),
+   列宽由不折行的表头兜底，这里只管格子的排版。 */
 .gen tbody td:nth-of-type(2),
 .gen tbody td:nth-of-type(3),
 .gen tbody td:nth-of-type(4) {
@@ -304,10 +302,10 @@ body { min-width: 1104px; }
    整列着色全部退成灰色。给 tbody 定基色、这一格只管排版，两者就不再争同一个元素。 */
 .gen tbody { color: var(--bone-dim); }
 
-/* 下限 21em：不给下限时这一列只拿剩下的宽度，94 条注解普遍折成三行，整表跟着
-   高出一截。上限 26em 挡住那几条长句把表撑过版心。 */
+/* 下限 17em：不给下限时这一列只拿剩下的宽度，94 条注解普遍折成三行，整表跟着
+   高出一截；给太宽则默认视图会溢出 1440 视口。上限 26em 挡住长句把表撑过版心。 */
 .gen tbody td:last-child {
-  min-width: 21em;
+  min-width: 17em;
   max-width: 26em;
   font-family: var(--font-cn);
   line-height: 1.7;

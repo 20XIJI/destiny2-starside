@@ -110,19 +110,31 @@ def is_rule(cells):
     return all(re.fullmatch(r':?-{3,}:?', c or '') for c in cells) and any(cells)
 
 
+def colkey(name):
+    """列名按去掉空格比对。
+
+    表头里的空格是折行点（页面样式表给表头上了 word-break: keep-all，中文只在
+    空格处断行），属于排版；「色阶：」「列组：」指的是同一列，不该被排版牵着走。
+    """
+    return ''.join(name.split())
+
+
 def scale_of(spec):
     """「色阶：列名 阈值 阈值 …」→ (列名, [阈值])。阈值须升序。
 
     阈值写在源稿里、一张表一套：分档是内容判断（多少算高血量随体系而变），
     生成器只负责比对，不内建任何领域常识。
+
+    列名可以带空格（表头的折行点），所以从后往前认阈值：末尾连着的整数是阈值，
+    剩下的是列名。
     """
     parts = spec.split()
-    if len(parts) < 3:
+    at = len(parts)
+    while at and parts[at - 1].isdigit():
+        at -= 1
+    col, nums = ' '.join(parts[:at]), parts[at:]
+    if not col or len(nums) < 2:
         die('「色阶：」要写成「列名 阈值 阈值 …」，至少两个阈值：%r' % spec)
-    col, nums = parts[0], parts[1:]
-    for n in nums:
-        if not n.isdigit():
-            die('「色阶：」的阈值只能是整数，写的是 %r' % n)
     vals = [int(n) for n in nums]
     if vals != sorted(vals) or len(set(vals)) != len(vals):
         die('「色阶：」的阈值要严格升序：%s' % vals)
@@ -146,7 +158,7 @@ def columns_of(md):
             die('「列组：」重复声明了 %r' % name)
         order.append(name)
         for col in cols.split('、'):
-            col = col.strip()
+            col = colkey(col)
             if col in groups:
                 die('列 %r 同时属于 %r 与 %r' % (col, groups[col], name))
             groups[col] = name
@@ -208,18 +220,19 @@ def render_table(lines, scales=None, groups=None):
     if len(lines) < 2 or not is_rule(split_cells(lines[1])):
         die('表格第二行必须是 |---|---| 分隔行：%s' % lines[0][:60])
 
+    at = {colkey(c): i for i, c in enumerate(head)}
     if groups:
-        missing = [c for c in head if c not in groups]
+        missing = [c for c in head if colkey(c) not in groups]
         if missing:
             die('这些列没写进任何「列组：」，工具条会漏掉它们：%s' % '｜'.join(missing))
 
     tiers = {}
     for col, bounds in (scales or {}).items():
-        if col not in head:
+        if colkey(col) not in at:
             die('「色阶：」指的列 %r 不在表头里：%s' % (col, '｜'.join(head)))
-        if head.index(col) == 0:
+        if at[colkey(col)] == 0:
             die('「色阶：」不能指首列，那一列是行标题不是数值')
-        tiers[head.index(col)] = bounds
+        tiers[at[colkey(col)]] = bounds
 
     # 先摊平成行与行组分界，再算合并跨度：跨度要看后面几行，边扫边输出算不出来
     rows = []
@@ -248,7 +261,7 @@ def render_table(lines, scales=None, groups=None):
         span[i] = 0
 
     o = ['<table class="gen">', '<thead>', '<tr>']
-    o += [wrap('th', c, ' scope="col"' + (' data-g="%s"' % groups[c] if groups else ''))
+    o += [wrap('th', c, ' scope="col"' + (' data-g="%s"' % groups[colkey(c)] if groups else ''))
           for c in head]
     o += ['</tr>', '</thead>', '<tbody>']
     # data-band 让相邻的合并块能上交替底色。CSS 数不了「第几个合并块」——每块行数
