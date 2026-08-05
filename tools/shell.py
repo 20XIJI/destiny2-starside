@@ -20,7 +20,7 @@ COMPENDIUM = ('<p>数据源：<a href="%s" target="_blank" rel="noopener">'
               'Destiny Data Compendium</a>。本页在其基础上统一了术语、标点与排版，'
               '数值未作改动。</p>' % COMPENDIUM_URL)
 
-CREDIT = ('<p>© 2026 Eliver · <a href="%s" target="_blank" rel="noopener">'
+CREDIT = ('<p>© 2026 日栎w · <a href="%s" target="_blank" rel="noopener">'
           '哔哩哔哩</a></p>' % BILIBILI)
 
 LEGAL = ('<p class="legal">Starside 为非官方资料站，与 Bungie, Inc. 无从属关系。'

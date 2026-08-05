@@ -395,6 +395,15 @@ button.chip {
   letter-spacing: .12em;      /* 中文不吃拉丁那档字距 */
 }
 
+/* 署名与上面两行的站点描述性质不同，隔开并提一档亮度。
+   BY 字面就写大写：这一列的 uppercase 会连带把 ID 末尾的小写 w 一起大写 */
+.wordmark-meta .by {
+  margin-top: 8px;
+  color: var(--bone-dim);
+  letter-spacing: .12em;      /* 行里有中文，同 .cn */
+  text-transform: none;
+}
+
 .hero-rule {
   height: 1px;
   margin-top: 22px;
