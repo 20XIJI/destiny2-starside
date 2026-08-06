@@ -10,13 +10,15 @@ Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构�
 
 ## 站点骨架
 
-首页 `index.html` 手写，每个资料页在首页有一张 `.entry` 卡片（更新时间写卡片上的 `.entry-stamp`）。新增资料页要同时加卡片，否则页面没有入口。
+首页 `index.html` 手写，每个资料页在首页有一张 `.entry` 卡片（更新时间写卡片上的 `.entry-stamp`）。新增资料页要同时加卡片，否则页面没有入口。现有六页：`ammo/` 弹药生成机制、`armor-sets/` 护甲套装、`artifact-mods/` 神器模组、`boss-hp/` 首领生命值、`twisted-planet/` 扭曲星球速查表、`weapon-frames/` 武器框架；`armor-sets/` 与 `artifact-mods/` 各有专属生成器，其余四页走 `convert-doc.py`。
 
 样式分两层，每页都按这个顺序引：`assets/site.css`（全站 token、外壳、字体）在前，本页 `<页目录>/style.css`（版心与本页组件）在后。`assets/app.js` 只有带 `.toolbar` 的页面需要引。
 
 `serve.json` 关掉了 `cleanUrls`，站内链接一律写全 `xxx/index.html`。
 
 `references/` 入库的是源稿：`artifact-mods.md`、`armor-sets.md`，以及 `docs/` 下的资料文档。转写中间产物 `armor_transcription.*` 在 `.archived/`，整个目录已 gitignore，不当源稿用。
+
+`.gitignore` 对 `references/` 是「全忽略 + 白名单」：只放行上面那两个文件与 `docs/*.md`。**新增文档源稿一律放 `references/docs/`**，丢在 `references/` 根下会被静默忽略，`git status` 干净但源稿没入库。放进去之后 `git check-ignore -v <路径>` 应无输出。
 
 ## tools/ 的分层
 
@@ -118,7 +120,9 @@ python3 tools/convert-armor-sets.py --icons <英文原表导出.html>
 
 ### 源稿格式
 
-首行 `# 页面标题`，其后几个「键：值」行：`描述：`（进 meta description 与 og）、`更新：`（`YYYY.M.D`，落在页脚 `.stamp`）、`页脚：`（可选，接在更新时间后面的那句）、`鸣谢：`（可选，落成页脚的「特别鸣谢：」一句，只写在该贡献者实际参与的页面上）、`列组：`／`默认列组：`（可选，见下）、`首屏图标：`（可选，前 N 张图标改用 `fetchpriority="high"`，其余 `loading="lazy"`；按实测定，缺省 0）。
+首行 `# 页面标题`，其后几个「键：值」行：`描述：`（进 meta description 与 og）、`更新：`（`YYYY.M.D`，落在页脚 `.stamp`）、`页脚：`（可选，接在更新时间后面的那句）、`鸣谢：`（可选，落成页脚的「特别鸣谢：」一句，只写在该贡献者实际参与的页面上）、`列组：`／`默认列组：`（可选，见下）、`首屏图标：`（可选，前 N 张图标改用 `fetchpriority="high"`，其余 `loading="lazy"`；按实测定，缺省 0）、`此刻：`（可选，写 `是` 即开，见下）。
+
+**`此刻：是` 打开当前时刻高亮。**产出侧只多一个 `<div class="toolbar" data-clock="">`，`assets/app.js` 据此按本机时钟给表头、行标题列与两者的交点打 `data-now`，颜色归页面样式表。时刻只有运行时才知道，写不进产出，所以这一条走 JS 而不是生成器。**开关叫 `data-clock`、标记叫 `data-now`，两者不同名**——同名时 `[data-now]` 会把工具条自己也选进去。app.js 按表头文本找列、按首格开头的两位时刻找行（首列写的是时段区间 `00:00-01:00`，起始时刻就在开头那两位），**不按序号**：序号会在源稿调整行列顺序时静默指错格子，对不上则 `console.warn` 报出，不静默留空。整点重排一次。
 
 `## ` 起分节（对应 `<section class="block">` + `<h2 class="sect-label">`）。分节之外不许有正文。段内换行落成 `<br>`，空行分段。
 
@@ -206,7 +210,7 @@ python3 tools/convert-armor-sets.py --icons <英文原表导出.html>
 
 **缓存策略见 `README.md` 的「部署与缓存」。**长缓存只给文件名带内容标识的资源；不要为了 CSS/JS 引入文件名哈希，它们与 HTML 的重新验证走同一轮往返，省不出可测量的时间。
 
-`artifact-mods/icons/` 的文件名是内容的 md5 前 10 位，`Icons.img()` 每次转换都复核。**不要原地覆盖图标**——那一年的浏览器缓存就建立在「改内容必然换名」上，覆盖了读者会看一年旧图。换图按 README「换图」那三步走。
+`artifact-mods/icons/` 与 `weapon-frames/icons/` 的文件名是内容的 md5 前 10 位，两侧的 `Icons.img()` 每次转换都复核（`armor-sets/icons/` 走序号命名，不在此列）。**不要原地覆盖图标**——那一年的浏览器缓存就建立在「改内容必然换名」上，覆盖了读者会看一年旧图。换图按 README「换图」那三步走。
 
 ## 神器模组页的布局约束
 

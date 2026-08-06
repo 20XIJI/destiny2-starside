@@ -101,6 +101,56 @@
     apply();
   }
 
+  /* 当前时刻高亮（.toolbar 带 data-clock 的页面）：表里哪一行哪一列是「现在」只有
+     运行时才知道，不能写进产出，所以由这里按本机时钟打属性，颜色归页面样式表。
+
+     打两个属性，不是一个：整行 data-now-row 落在 <tr> 上，整列 data-now-col 落在
+     每个格子上。两条高亮各答一个问题——「今天一天怎么转」看列，「这个钟点各天在
+     哪」看行——交点同时属于两者。**行的那层必须落在 <tr>、列的那层落在格子**：
+     同落在格子上时两条规则争同一个背景，只有一条生效；分两层则格子压在行上，
+     交点是真的叠加。
+
+     行按首格开头的两位时刻找、列按表头的星期文本找，**不按序号**——序号会在源稿
+     调整行列顺序时静默指错格子。取前两位而不是整格相等：首列写的是时段区间
+     （00:00-01:00），起始时刻就在开头那两位。对不上就报出来，不静默留空。
+     整点重排一次：页面开着跨过整点，高亮跟着走；跨过午夜时列也跟着换。 */
+  var WEEKDAYS = ['周天', '周一', '周二', '周三', '周四', '周五', '周六'];
+
+  function nowCell() {
+    var heads = [].slice.call(document.querySelectorAll('.gen thead th'));
+    var rows = [].slice.call(document.querySelectorAll('.gen tbody tr'));
+    var lit = [];
+
+    function paint() {
+      lit.forEach(function (el) {
+        el.removeAttribute('data-now-row');
+        el.removeAttribute('data-now-col');
+      });
+      lit = [];
+      var d = new Date();
+      var want = WEEKDAYS[d.getDay()];
+      var hh = ('0' + d.getHours()).slice(-2);
+      var col = heads.findIndex(function (th) { return th.textContent.trim() === want; });
+      var row = rows.find(function (tr) {
+        return tr.firstElementChild.textContent.trim().slice(0, 2) === hh;
+      });
+      if (col < 0 || !row) {
+        console.warn('当前时刻高亮：表里找不到 ' + want + ' ' + hh + ' 时那一行一列');
+        return;
+      }
+      row.setAttribute('data-now-row', '');
+      lit.push(row);
+      /* 表头与该列每一格：合并行会让序号前移，这一页没有合并，直接按序号取 */
+      [heads[col]].concat(rows.map(function (tr) { return tr.children[col]; }))
+        .forEach(function (el) { el.setAttribute('data-now-col', ''); lit.push(el); });
+      /* 多给 1 秒，免得在整点前几毫秒醒来、算出同一格又排一次零延时 */
+      setTimeout(paint, 3600000 - (d.getMinutes() * 60 + d.getSeconds()) * 1000 + 1000);
+    }
+    paint();
+  }
+
+  if (slot && slot.dataset.clock !== undefined) nowCell();
+
   if (slot && slot.dataset.cols !== undefined) {
     columns();
     measure();

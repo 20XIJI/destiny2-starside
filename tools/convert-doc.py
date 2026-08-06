@@ -26,7 +26,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC_DIR = os.path.join(ROOT, 'references', 'docs')
 
 # 头部的「键：值」行。键名固定，正文行不会被误认。
-META_KEYS = ('描述', '更新', '页脚', '鸣谢', '列组', '互斥列组', '默认列组', '首屏图标')
+META_KEYS = ('描述', '更新', '页脚', '鸣谢', '列组', '互斥列组', '默认列组', '首屏图标', '此刻')
 META_LINE = meta_line(META_KEYS)
 
 # 分节级声明：「色阶：列名 阈值 …」。同样按整行剥离，不进正文。
@@ -380,6 +380,13 @@ def render(md):
         toolbar = {'data-cols': '、'.join(default)}
         if solo:
             toolbar['data-solo'] = '、'.join(solo)
+
+    # 「此刻：是」→ 工具条槽位带 data-clock，assets/app.js 据此按本机时钟给表里
+    # 当前那一格打 data-now。时刻只有运行时才知道，不能写进产出，所以走 JS。
+    # 开关叫 data-clock、标记叫 data-now，两者不同名——同名时 [data-now] 会把
+    # 工具条自己也选进去，样式与断言都要额外绕开它。
+    if meta('此刻', required=False):
+        toolbar = dict(toolbar or {}, **{'data-clock': ''})
 
     full = '%s · Starside' % title
     o = [shell.head(full, desc, app_js=toolbar is not None),

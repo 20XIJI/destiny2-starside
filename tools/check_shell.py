@@ -20,7 +20,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 HOME = 'index.html'
 PAGES = [HOME, 'ammo/index.html', 'armor-sets/index.html', 'artifact-mods/index.html',
-         'boss-hp/index.html', 'weapon-frames/index.html']
+         'boss-hp/index.html', 'twisted-planet/index.html', 'weapon-frames/index.html']
 
 # head 里与页面无关的那几行。标题与描述是变量，用哨兵值生成后按前缀挑出不变量。
 HEAD_KEEP = ('<meta name="theme-color"', '<meta property="og:site_name"',

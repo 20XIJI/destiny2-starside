@@ -1,0 +1,220 @@
+/* 扭曲星球速查表：横排星期、竖排时段的轮换表。
+   通用主题、字体与配色 token 在 /assets/site.css。
+   这一页由 tools/convert-doc.py 从 references/docs/twisted-planet.md 生成，
+   改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
+
+/* 首列写成时段区间（00:00-01:00），十一个字符把这一列撑到约 120px，整表约 900px，
+   越过阅读版心。取宽表那一档 1060px，不为这一页再引入一个宽度数——表格自己按
+   内容定宽再居中，版心只是上限（design.md 四节）。
+   收窄只作用于正文与页首：导航条与页脚是站点外壳，各页必须一样宽。 */
+main,
+.page-head {
+  max-width: 1060px;
+  margin: 0 auto;
+}
+
+main { padding: 0 22px clamp(48px, 6vw, 84px); }
+
+/* 版心固定，不做窄屏适配（design.md 五节） */
+body { min-width: 1104px; }
+
+.page-head { padding: clamp(40px, 5vw, 68px) 22px clamp(22px, 2.6vw, 32px); }
+
+.page-head h1 { font-size: clamp(30px, 3.4vw, 42px); }
+
+.block { scroll-margin-top: var(--stick); }
+
+.block > .sect-label {
+  margin-bottom: 22px;
+  color: var(--bone);
+  font-size: 12px;
+  letter-spacing: .24em;
+}
+
+/* 版心是给表用的 1060px，正文不跟着放宽——阅读宽度由眼睛决定，不由容器决定。
+   46em 在 14px 下约 40 个汉字一行。 */
+.block p {
+  max-width: 46em;
+  margin: 0 0 30px;
+  color: var(--bone-dim);
+  font-size: 14px;
+  line-height: 2.05;
+}
+
+/* 轮换顺序那一行是这张表的图例，单独成段排：整块只有一个 {chain|…}，class 落在
+   <p> 上（见 convert-doc.py 的 wrap()）。
+   **word-break: keep-all 是这一段的关键。**中文默认可以在任意两字之间断行，
+   「涅索斯」会被折成「涅／索斯」，一条顺序链读不成一串。keep-all 之后中文不再
+   任意断，箭头两侧的空格就是仅有的断点——断在箭头上正是这条链该断的地方。 */
+.block p.chain {
+  max-width: none;
+  margin: 0 0 34px;
+  color: var(--bone);
+  font-size: 13px;
+  letter-spacing: .06em;
+  word-break: keep-all;
+}
+
+.block em,
+.block strong {
+  color: var(--bone-hi);
+  font-style: normal;
+  font-weight: 600;
+}
+
+/* ── 轮换表 ──
+   七列宽度天然相等：每一列都装着全部七个目的地，最长的「欧洲无人区」定列宽。
+   width: auto 让表按内容定宽再居中，撑到 100% 会把格子拉散（design.md 四节）。
+
+   **满格网线不画。**168 个格子各自框一圈会把这张表读成电子表格：线的数量压过了
+   内容，每个格子都在争边界。竖线只留时段列右侧那一道——它分的是「行的身份」与
+   「数据区」，是真的分界；七个数据列靠等宽与居中对齐，不需要线来确认位置。
+   横向仍留发丝线：跨八列找同一行，没有线会串行。
+
+   border-collapse 用 separate 而不是 collapse：collapse 下边框归表格所有、不跟着
+   单元格走，下面那个 sticky 表头一滚动就把自己的线丢在原地。 */
+.gen {
+  width: auto;
+  margin: 0 auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.gen th,
+.gen td {
+  padding: 12px 22px;
+  border-top: 1px solid var(--hair);
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* 唯一一道竖线：时段列与数据区之间 */
+.gen thead th:nth-child(2),
+.gen tbody td:first-of-type { border-left: 1px solid var(--hair); }
+
+/* 表格不加外框，末行补一道收口线 */
+.gen tbody tr:last-child > * { border-bottom: 1px solid var(--hair); }
+
+/* ── 星期表头：sticky ──
+   24 行约 1150px，滚到下半张表时表头已经出画，星期与列的对应关系就断了。
+   贴在 .site-head 下沿（--stick 由 app.js 按实测高度写回），底色取不透明的
+   --ink-lift——半透明会让正文从表头底下透出来。
+
+   表头是外壳不是内容：压到 11px、拉开字距、落到 --bone-dim，让目的地名一档独大。
+   中文字距 .2em 封顶（design.md 二节）。
+
+   sticky 期间格子自带的边框跟着走，表格本身那道不会，所以下沿的分界线用
+   box-shadow 画在格子上。--hair-lit 比行线亮一档，表头与数据区因此分得开。 */
+.gen thead th {
+  position: sticky;
+  top: var(--stick);
+  z-index: 2;
+  padding-top: 13px;
+  padding-bottom: 13px;
+  color: var(--bone-dim);
+  font-family: var(--font-cn);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .18em;
+  text-indent: .18em;          /* 抵掉末字后面那一份字距，视觉上仍居中 */
+  background: var(--ink-lift);
+  border-top: 0;
+  box-shadow: 0 1px 0 var(--hair-lit);
+}
+
+/* ── 时段列：这一行的身份 ──
+   等宽字族 + tabular-nums，24 行的冒号与数字严格纵向对齐；比例字宽会让每行的
+   冒号错开一点，扫读时得逐行重新定位。
+   降一档字号、退到 --bone-dim：它是坐标不是内容。 */
+.gen tbody th[scope="row"] {
+  color: var(--bone-dim);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .01em;
+}
+
+/* ── 目的地格：这一页的内容 ──
+   **不给七个目的地各分一个色相。**色相在站内归元素所有（design.md 一节），
+   紫会被读成虚空、青会被读成电弧。这一页不需要色相：格子里是七个互不相似的
+   中文名，字形本身就是区分度。抬到 --bone、比坐标层大一档，层级靠亮度与字号。 */
+.gen tbody td {
+  color: var(--bone);
+  font-family: var(--font-cn);
+  font-size: 13.5px;
+  letter-spacing: .05em;
+}
+
+/* 六小时一段的交替底色：24 行连成一片时找「14:00」要从头数，切成
+   00–06 / 06–12 / 12–18 / 18–24 四段，落点先到段、再到行。
+   用面不用线——这张表已经收掉了大半的线，再加三道亮横线是把线又请回来。
+   #ffffff04 相对底色 ΔE 约 2，读作分组，不读作强调。
+
+   **底色落在 <tr> 上，不落在格子上。**下面「此刻」那一列的高亮要落在格子上，
+   两者分层才叠得起来；都挤在格子上就只能有一条生效。
+
+   **:not([data-now-row]) 不能省。**这条选择器带两个 :nth-child，权重压过下面
+   那条 [data-now-row]；当前行落进 06–12 或 18–24 时，行高亮会被这条底色顶掉、
+   悄悄退回分段那一档——一天里有一半时间如此。显式让位比去调权重清楚。 */
+.gen tbody tr:nth-child(n + 7):nth-child(-n + 12):not([data-now-row]),
+.gen tbody tr:nth-child(n + 19):nth-child(-n + 24):not([data-now-row]) { background: #ffffff04; }
+
+/* ── 此刻：一行 + 一列 + 交点 ──
+   两条高亮各答一个问题：竖着那条是「今天一天怎么转」，横着那条是「这个钟点各天
+   分别在哪」。交点同时属于两者，于是自然成为全表最重的一处。
+
+   **两层要落在不同的元素上。**行的那层给 <tr>，列的那层给格子——格子的背景画在
+   行的背景之上，交点因此是两层真的叠加（#ffffff0b 叠 #ffffff0b ≈ 8.4% 白），
+   而不是两条规则争同一个背景、只有一条生效。
+   属性由 assets/app.js 按本机时钟打，整点重排。 */
+/* **两条用同一套做法：同样的底色 + 两道自己的长边。**只给底色不行——竖线在这
+   张表上已经收掉了，列的底色凭空造出两道边界、一眼成带；行的底色上下正好落在
+   既有的横发丝线上，不造任何新边界，同样的值只读作「这一格淡了点」。两条于是
+   长得不像。所以各画各的两道长边：行画上下，列画左右，观感才是同一件事。 */
+.gen tbody tr[data-now-row],
+.gen tbody td[data-now-col] { background: #ffffff10; }
+
+/* 行的两道长边：改既有横线的颜色，不新增线，布局不动 */
+.gen tbody tr[data-now-row] > *,
+.gen tbody tr[data-now-row] + tr > * { border-top-color: var(--bone-faint); }
+
+/* 当前行落在末行时，下沿那道是表格的收口线，同样要提亮 */
+.gen tbody tr[data-now-row]:last-child > * { border-bottom-color: var(--bone-faint); }
+
+/* 列的两道长边：**用 inset box-shadow，不用 border**。这一列本来没有竖线，
+   加真边框会把它撑宽 2px、整表跟着位移；box-shadow 画在格子内侧，不占布局。 */
+.gen tbody td[data-now-col] {
+  box-shadow: inset 1px 0 0 var(--bone-faint), inset -1px 0 0 var(--bone-faint);
+}
+
+/* 两条坐标的标头跟着亮起来，读者能反查「我看的是周几、哪个时段」。
+   时段格左侧那道竖条与列表头下方那道横条是一对：各自标出本轴的起点。 */
+.gen tbody tr[data-now-row] > th[scope="row"] {
+  color: var(--bone-hi);
+  font-weight: 600;
+  box-shadow: inset 2px 0 0 var(--bone-hi);
+}
+
+/* 表头是 sticky，底色必须不透明——这里不能用半透明白叠，直接给抬亮后的实色。
+   值取 --ink-lift 叠 8% 白的结果，与上面两层的观感对齐。 */
+.gen thead th[data-now-col] {
+  color: var(--bone-hi);
+  background: #1c1f28;
+  box-shadow: 0 1px 0 var(--hair-lit),
+    inset 0 -2px 0 var(--bone-hi),
+    inset 1px 0 0 var(--bone-faint),
+    inset -1px 0 0 var(--bone-faint);
+}
+
+/* 交点：**不另起一套画法，就是两条高亮叠出来的样子。**
+   底色顺着分层自然相加（格子的 6.3% 压在行的 6.3% 上，合成约 12%），四条长边
+   在这里合围——它是全表唯一四边都亮的格子，这一点本身就够指认「现在在这里」。
+   反白成实心牌子试过，那是第三种处理，跟两条高亮不是一回事，落在表里很跳。
+   这里只再抬一次字：亮度与字重，不借色相（design.md 一节）。 */
+.gen tbody tr[data-now-row] > td[data-now-col] {
+  color: var(--bone-hi);
+  font-weight: 600;
+}

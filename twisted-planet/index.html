@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>扭曲星球速查表 · Starside</title>
+<meta name="description" content="扭曲星球每小时轮换，七个目的地循环。横排星期、竖排时段，168 格一屏查完。">
+<meta name="theme-color" content="#0b0d14">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Starside">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:title" content="扭曲星球速查表 · Starside">
+<meta property="og:description" content="扭曲星球每小时轮换，七个目的地循环。横排星期、竖排时段，168 格一屏查完。">
+<link rel="preload" href="../assets/fonts/chakra-petch-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="style.css">
+<script src="../assets/app.js" defer></script>
+</head>
+<body>
+<div class="site-head">
+<nav class="site-nav">
+<span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>
+<a class="home" href="../index.html">Starside</a>
+<span class="sep">/</span>
+<span aria-current="page">扭曲星球速查表</span>
+</nav>
+<div class="toolbar" data-clock=""></div>
+</div>
+
+<header class="page-head">
+<h1>扭曲星球速查表</h1>
+</header>
+
+<main>
+<section class="block">
+<h2 class="sect-label">每周轮换</h2>
+<p>扭曲每小时换一个目的地，一周 168 个时段的顺序固定如下。表内当前时段一整行、今天一整列跟随本机时钟高亮，两条的交点即此刻所在，整点自动跳到下一格。</p>
+<p class="chain">欧洲无人区 → 幽梦之城 → 王座世界 → 月球 → 木卫二 → 涅索斯 → 发射基地 → 回到开头</p>
+<table class="gen">
+<thead>
+<tr>
+<th scope="col">时段</th>
+<th scope="col">周一</th>
+<th scope="col">周二</th>
+<th scope="col">周三</th>
+<th scope="col">周四</th>
+<th scope="col">周五</th>
+<th scope="col">周六</th>
+<th scope="col">周天</th>
+</tr>
+</thead>
+<tbody>
+<tr><th scope="row">00:00-01:00</th><td>欧洲无人区</td><td>月球</td><td>发射基地</td><td>王座世界</td><td>涅索斯</td><td>幽梦之城</td><td>木卫二</td></tr>
+<tr><th scope="row">01:00-02:00</th><td>幽梦之城</td><td>木卫二</td><td>欧洲无人区</td><td>月球</td><td>发射基地</td><td>王座世界</td><td>涅索斯</td></tr>
+<tr><th scope="row">02:00-03:00</th><td>王座世界</td><td>涅索斯</td><td>幽梦之城</td><td>木卫二</td><td>欧洲无人区</td><td>月球</td><td>发射基地</td></tr>
+<tr><th scope="row">03:00-04:00</th><td>月球</td><td>发射基地</td><td>王座世界</td><td>涅索斯</td><td>幽梦之城</td><td>木卫二</td><td>欧洲无人区</td></tr>
+<tr><th scope="row">04:00-05:00</th><td>木卫二</td><td>欧洲无人区</td><td>月球</td><td>发射基地</td><td>王座世界</td><td>涅索斯</td><td>幽梦之城</td></tr>
+<tr><th scope="row">05:00-06:00</th><td>涅索斯</td><td>幽梦之城</td><td>木卫二</td><td>欧洲无人区</td><td>月球</td><td>发射基地</td><td>王座世界</td></tr>
+<tr><th scope="row">06:00-07:00</th><td>发射基地</td><td>王座世界</td><td>涅索斯</td><td>幽梦之城</td><td>木卫二</td><td>欧洲无人区</td><td>月球</td></tr>
+<tr><th scope="row">07:00-08:00</th><td>欧洲无人区</td><td>月球</td><td>发射基地</td><td>王座世界</td><td>涅索斯</td><td>幽梦之城</td><td>木卫二</td></tr>
+<tr><th scope="row">08:00-09:00</th><td>幽梦之城</td><td>木卫二</td><td>欧洲无人区</td><td>月球</td><td>发射基地</td><td>王座世界</td><td>涅索斯</td></tr>
+<tr><th scope="row">09:00-10:00</th><td>王座世界</td><td>涅索斯</td><td>幽梦之城</td><td>木卫二</td><td>欧洲无人区</td><td>月球</td><td>发射基地</td></tr>
+<tr><th scope="row">10:00-11:00</th><td>月球</td><td>发射基地</td><td>王座世界</td><td>涅索斯</td><td>幽梦之城</td><td>木卫二</td><td>欧洲无人区</td></tr>
+<tr><th scope="row">11:00-12:00</th><td>木卫二</td><td>欧洲无人区</td><td>月球</td><td>发射基地</td><td>王座世界</td><td>涅索斯</td><td>幽梦之城</td></tr>
+<tr><th scope="row">12:00-13:00</th><td>涅索斯</td><td>幽梦之城</td><td>木卫二</td><td>欧洲无人区</td><td>月球</td><td>发射基地</td><td>王座世界</td></tr>
+<tr><th scope="row">13:00-14:00</th><td>发射基地</td><td>王座世界</td><td>涅索斯</td><td>幽梦之城</td><td>木卫二</td><td>欧洲无人区</td><td>月球</td></tr>
+<tr><th scope="row">14:00-15:00</th><td>欧洲无人区</td><td>月球</td><td>发射基地</td><td>王座世界</td><td>涅索斯</td><td>幽梦之城</td><td>木卫二</td></tr>
+<tr><th scope="row">15:00-16:00</th><td>幽梦之城</td><td>木卫二</td><td>欧洲无人区</td><td>月球</td><td>发射基地</td><td>王座世界</td><td>涅索斯</td></tr>
+<tr><th scope="row">16:00-17:00</th><td>王座世界</td><td>涅索斯</td><td>幽梦之城</td><td>木卫二</td><td>欧洲无人区</td><td>月球</td><td>发射基地</td></tr>
+<tr><th scope="row">17:00-18:00</th><td>月球</td><td>发射基地</td><td>王座世界</td><td>涅索斯</td><td>幽梦之城</td><td>木卫二</td><td>欧洲无人区</td></tr>
+<tr><th scope="row">18:00-19:00</th><td>木卫二</td><td>欧洲无人区</td><td>月球</td><td>发射基地</td><td>王座世界</td><td>涅索斯</td><td>幽梦之城</td></tr>
+<tr><th scope="row">19:00-20:00</th><td>涅索斯</td><td>幽梦之城</td><td>木卫二</td><td>欧洲无人区</td><td>月球</td><td>发射基地</td><td>王座世界</td></tr>
+<tr><th scope="row">20:00-21:00</th><td>发射基地</td><td>王座世界</td><td>涅索斯</td><td>幽梦之城</td><td>木卫二</td><td>欧洲无人区</td><td>月球</td></tr>
+<tr><th scope="row">21:00-22:00</th><td>欧洲无人区</td><td>月球</td><td>发射基地</td><td>王座世界</td><td>涅索斯</td><td>幽梦之城</td><td>木卫二</td></tr>
+<tr><th scope="row">22:00-23:00</th><td>幽梦之城</td><td>木卫二</td><td>欧洲无人区</td><td>月球</td><td>发射基地</td><td>王座世界</td><td>涅索斯</td></tr>
+<tr><th scope="row">23:00-24:00</th><td>王座世界</td><td>涅索斯</td><td>幽梦之城</td><td>木卫二</td><td>欧洲无人区</td><td>月球</td><td>发射基地</td></tr>
+</tbody>
+</table>
+</section>
+</main>
+
+<footer class="site-foot">
+<p><span class="stamp">更新 2026.8.6</span>轮换周期 7 小时，一周 168 小时正好走完 24 轮，因此每周的表相同。</p>
+<p>© 2026 日栎w · <a href="https://space.bilibili.com/26117485" target="_blank" rel="noopener">哔哩哔哩</a></p>
+<p class="legal">Starside 为非官方资料站，与 Bungie, Inc. 无从属关系。Destiny 2 及相关名称、标识为 Bungie, Inc. 的商标。</p>
+</footer>
+<script type="speculationrules">{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}</script>
+</body>
+</html>
