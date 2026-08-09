@@ -642,8 +642,11 @@ main {
   padding: 0 22px clamp(50px, 7vw, 90px);
 }
 
+/* 双列：单列时每张卡占掉 182px 纵向空间，条目一多就翻页；
+   auto-fill 在视口窄于约 1140px 时自行退回单列，不必写媒体查询。 */
 .entries {
   display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(560px, 1fr));
   gap: 12px;
   margin: 0;
   padding: 0;
