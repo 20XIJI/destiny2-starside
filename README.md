@@ -7,8 +7,9 @@ Destiny 2 资料台，纯静态站点，零依赖、零构建步骤，托管在�
 ```
 index.html                        导航首页（CloudBase 默认入口）
 assets/
-  site.css                        共用：字体、主题 token、23 个配色 token 与工具类、
-                                  导航条、工具条、首页、页脚
+  site.css                        共用：字体、主题 token、22 个配色 token 与工具类、
+                                  导航条、工具条、资料页骨架（版心 / .block / .gen /
+                                  八档色阶）、首页、页脚
   app.js                          工具条构建、搜索过滤、当前分节高亮
   favicon.svg                     菱形站点标记
   fonts/chakra-petch-{600,700}.woff2   显示字体（Google Fonts latin 子集，各约 10 KB）
@@ -31,6 +32,16 @@ weapon-frames/
   index.html                      武器框架（由转换脚本生成，勿手改）
   style.css                       该组件专属样式
   icons/*.png|jpg                 121 枚框架、示例武器与勇士图标（49px，共 189 KB）
+twisted-planet/
+  index.html                      扭曲星球速查表（由转换脚本生成，勿手改）
+  style.css                       该组件专属样式
+elements/
+  index.html                      属性详解总览（由转换脚本生成，勿手改）
+  style.css                       六个元素页共用的版式（子页面由 shell.py 自动引）
+  {arc,solar,void,stasis,strand,prismatic}/
+    index.html                    六个元素页（由转换脚本生成，勿手改）
+    style.css                     只有一行 --accent：本页的元素色相
+    icons/*.png|jpg               该页图标，按内容哈希命名（六页共 380 枚）
 references/
   artifact-mods.md                神器模组页源稿
   armor-sets.md                   护甲套装页源稿
@@ -41,6 +52,7 @@ tools/convert-artifact-mods.py    源稿 → 神器模组页
 tools/convert-armor-sets.py       源稿 → 护甲套装页
 tools/convert-doc.py              源稿 → 通用资料页
 tools/check_shell.py              各页外壳一致性闸门
+tools/check_terms.py              术语正名、着色 token、更新时间闸门
 ```
 
 资料页全部由生成器产出，只有首页 `index.html` 手写。改文案改源稿，改结构改生成器的 `render()`。
@@ -66,6 +78,7 @@ npm start          # npx serve . -l 3000
 | 文件夹 `/artifact-mods/icons` | 1 年 | 文件名是内容哈希，改内容必然换名，读者立刻拿到新图 |
 | 文件夹 `/assets/fonts` | 1 年 | 同名替换会让读者看一年的旧字体，**换字体必须连带改文件名** |
 | 文件夹 `/weapon-frames/icons` | 1 年 | 文件名是内容哈希，改内容必然换名，读者立刻拿到新图 |
+| 文件夹 `/elements/*/icons` | 1 年 | 同上，六个元素页共 380 枚 |
 | 文件夹 `/armor-sets/icons` | 7 天 | 序号命名，同名替换后最多 7 天才全员生效 |
 | 后缀 `.css`、`.js` | 5 分钟 | 5 分钟内生效 |
 | 后缀 `.html` | 0 | 立刻生效 |
@@ -74,10 +87,10 @@ npm start          # npx serve . -l 3000
 
 ### 换图
 
-**`artifact-mods/icons/` 与 `weapon-frames/icons/`——不要原地覆盖。**文件名是内容的 md5 前 10 位，两个生成器每次转换都复核一遍，对不上就中止并报出正确的名字。换图三步：
+**除 `armor-sets/icons/` 外，各页图标目录都不要原地覆盖。**文件名是内容的 md5 前 10 位，`markup.Icons.html()` 每次转换都复核一遍，对不上就中止并报出正确的名字。换图三步：
 
 1. 把新图按新哈希存进 `icons/`（跑一次生成器，报错信息里就有该用的文件名）
-2. 改源稿里引用它的那一处（神器模组页的「图标：」一行，武器框架页表格里的 `![](icons/…)`）
+2. 改源稿里引用它的那一处（神器模组页的「图标：」一行，其余页表格里的 `![](icons/…)`）
 3. 删掉旧文件，重跑生成器确认退出码 0
 
 这条纪律不是洁癖：它是那一年缓存成立的前提。原地覆盖会让读者看一年的旧图，而控制台刷新只清得掉节点缓存。
@@ -110,11 +123,10 @@ npm start          # npx serve . -l 3000
 2. 页面骨架照 `artifact-mods/index.html`：
    - `<div class="site-head">` 包住 `<nav class="site-nav">` 与 `<div class="toolbar"></div>`，整块 sticky。
    - `<header class="page-head">` 放 h1，`<main>` 放正文，`<footer class="site-foot">` 收尾。
-   - 需要工具条就引 `<script src="../assets/app.js" defer></script>`。`app.js` 从 DOM 读取分节与其标题，构建搜索框与跳转 chip，并把 `.site-head` 实测高度写回 `--stick`。工具条不在 HTML 里写任何源文本。选择器缺省是神器模组页那一套（`.artifact` / `.mod` / `.mod-row` / `.art-head h2`），换一套结构就在 `.toolbar` 上写 `data-section` / `data-item` / `data-row` / `data-label` / `data-noun` / `data-chip-label`，参见 `armor-sets/index.html`。
+   - 需要工具条就引 `<script src="../assets/app.js" defer></script>`。`app.js` 从 DOM 读取分节与其标题，构建搜索框与跳转 chip，并把 `.site-head` 实测高度写回 `--stick`。工具条不在 HTML 里写任何源文本。选择器缺省是神器模组页那一套（`.artifact` / `.mod` / `.mod-row` / `.art-head h2`），换一套结构就在 `.toolbar` 上写 `data-section` / `data-item` / `data-label` / `data-noun` / `data-chip-label`，参见 `armor-sets/index.html`。
 3. 着色文字用 `site.css` 里的语义 class（`.el-arc` `.enemy` `.note` 等），不写内联 `style="color:…"`。
 4. 分节内需要 sticky 表头时，把表头包进 `position: sticky; top: var(--stick)` 的容器，底色取不透明的 `--ink-lift`，并给分节 `scroll-margin-top: var(--stick)`。
-5. 首页 `index.html` 的 `.entries` 里加一条 `<li><a class="entry">`。
-7. 把新页面加进 `tools/check_shell.py` 的 `PAGES`，外壳才受闸门保护。
+5. 首页 `index.html` 的 `.entries` 里加一条 `<li><a class="entry">`，卡片上的更新时间与页脚必须一致（`check_terms.py` 比对）。
 6. 不要在承载 sticky 表头的祖先上开 `overflow`。一旦祖先成为滚动容器，其内部的 `position: sticky` 不再相对视口生效。横向溢出交给页面本身，用 `body { min-width: … }` 表达最小内容宽度。
 
 ## 更新神器模组
@@ -179,7 +191,9 @@ python3 tools/convert-armor-sets.py --icons <英文原表导出.html>
 
 ## 改配色
 
-只有一处定义：`assets/site.css` 的 `:root`（23 个语义 token → 渲染色）。两份 markdown 源稿里的着色 token 直接引用这些名字，改渲染色只改右值，生成器不必重跑。渲染色共 10 个槽位，元素色相是游戏的既有编码、属于内容，只调亮度不改色相。
+只有一处定义：`assets/site.css` 的 `:root`（22 个语义 token → 渲染色）。源稿里的着色 token 直接引用这些名字，改渲染色只改右值，生成器不必重跑。渲染色共 11 个槽位（7 个元素色相 + 能量球金 + 生命红 + 批注色 + 术语暖沙），元素色相是游戏的既有编码、属于内容，只调亮度不改色相。同一处还有外壳叠色 `--tint-*`、UI 强调色 `--accent` 与版心 `--wrap` / `--min`。
+
+**同一个术语只落到同一个 token 上，同一个颜色不给第二个名字。**两条由 `tools/check_terms.py` 钉住——`--el-solar` 与 `--deb-solar` 渲染色相同，着成哪个用眼睛看不出来。
 
 `--note`（作者注释）与 `--unsure`（`[?]` 待测数值）共用 `--c-aside`，字重回到正文、`.unsure` 带虚下划线——它们读作限定语，不是警报。
 
