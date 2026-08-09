@@ -151,8 +151,9 @@ main { padding: 0 24px clamp(48px, 6vw, 84px); }
 .gen thead th:first-child,
 .gen tbody th[scope="row"] { border-left: 0; }
 
+/* 表头的默认色不写在这条上——整格只有一个 {标记|…} 时 class 落在 th 本身，
+   两选择器的 .gen thead th 会压过单类的 .el-arc，共享技能那排属性名会退成灰的。 */
 .gen thead th {
-  color: var(--bone-dim);
   font-family: var(--font-cn);
   font-size: 12px;
   font-weight: 600;
@@ -162,6 +163,8 @@ main { padding: 0 24px clamp(48px, 6vw, 84px); }
   background: #ffffff06;
   border-top: 0;
 }
+
+.gen thead th:not([class]) { color: var(--bone-dim); }
 
 /* 行标题：类别或条目名，这一组的身份。合并后纵向居中，一眼圈出它占几行 */
 .gen tbody th[scope="row"] {
@@ -181,12 +184,34 @@ main { padding: 0 24px clamp(48px, 6vw, 84px); }
 .gen tbody { color: var(--bone); }
 
 /* 图标格：宽度按图钉死，图纵横都居中。用 :has(img) 认，不按列序——三列表、
-   四列表、五列表的图标列序号各不相同，写死序号加一张表就要改一次样式。 */
-.gen td:has(img) {
+   四列表、五列表的图标列序号各不相同，写死序号加一张表就要改一次样式。
+   碎片槽位与共享技能格里的图不是这个尺寸，各带自己的整格标记，从这里排除。 */
+.gen td:has(img):not(.slot, .skill) {
   width: 72px;
   padding: 10px 8px;
   text-align: center;
 }
+
+/* 碎片槽位：源表用一张槽位图表示 2 槽或 3 槽，照搬，不换算成数字 */
+.gen td.slot {
+  width: 116px;
+  padding: 10px 8px;
+  text-align: center;
+}
+
+.gen td.slot img { width: 88px; height: auto; opacity: .85; }
+
+/* 共享技能网格：一列一个属性，一行一个槽位，格里是图标压着名字，照源表的排法 */
+.gen td.skill {
+  width: 150px;
+  padding: 14px 10px 12px;
+  color: var(--bone-hi);
+  font-family: var(--font-cn);
+  font-weight: 600;
+  text-align: center;
+}
+
+.gen td.skill img { margin-bottom: 8px; }
 
 .gen td img {
   display: block;
