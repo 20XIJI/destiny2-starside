@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>武器框架 · Starside</title>
-<meta name="description" content="18 类武器 94 个框架的伤害、射速、装填、DPS 与评分实测数值，含勇士克制类型与逐条注解。">
+<meta name="description" content="18 类武器 94 个框架的伤害、射速、填装、DPS 与评分实测数值，含勇士克制类型与逐条注解。">
 <meta name="theme-color" content="#0b0d14">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="Starside">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:title" content="武器框架 · Starside">
-<meta property="og:description" content="18 类武器 94 个框架的伤害、射速、装填、DPS 与评分实测数值，含勇士克制类型与逐条注解。">
+<meta property="og:description" content="18 类武器 94 个框架的伤害、射速、填装、DPS 与评分实测数值，含勇士克制类型与逐条注解。">
 <link rel="preload" href="../assets/fonts/chakra-petch-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../assets/site.css">
@@ -25,7 +25,7 @@
 <span class="sep">/</span>
 <span aria-current="page">武器框架</span>
 </nav>
-<div class="toolbar" data-cols="基础数值、评分、注解" data-solo="基础数值、射速与装填、红血 DPS、首领 DPS、总伤与补给"></div>
+<div class="toolbar" data-cols="基础数值、评分、注解" data-solo="基础数值、射速与填装、红血 DPS、首领 DPS、总伤与补给"></div>
 </div>
 
 <header class="page-head">
@@ -52,16 +52,16 @@
 <th scope="col" data-g="基础数值">最大 弹药</th>
 <th scope="col" data-g="基础数值">弹匣 Perk</th>
 <th scope="col" data-g="基础数值">瞄准衰减 射程</th>
-<th scope="col" data-g="射速与装填">基础 间隔</th>
-<th scope="col" data-g="射速与装填">优化 间隔</th>
-<th scope="col" data-g="射速与装填">真实 射速</th>
-<th scope="col" data-g="射速与装填">测试 弹匣</th>
-<th scope="col" data-g="射速与装填">优化 弹匣</th>
-<th scope="col" data-g="射速与装填">基础 装填</th>
-<th scope="col" data-g="射速与装填">优化 装填</th>
-<th scope="col" data-g="射速与装填">装填 数值</th>
-<th scope="col" data-g="射速与装填">基础 射空</th>
-<th scope="col" data-g="射速与装填">优化 射空</th>
+<th scope="col" data-g="射速与填装">基础 间隔</th>
+<th scope="col" data-g="射速与填装">优化 间隔</th>
+<th scope="col" data-g="射速与填装">真实 射速</th>
+<th scope="col" data-g="射速与填装">测试 弹匣</th>
+<th scope="col" data-g="射速与填装">优化 弹匣</th>
+<th scope="col" data-g="射速与填装">基础 填装</th>
+<th scope="col" data-g="射速与填装">优化 填装</th>
+<th scope="col" data-g="射速与填装">填装 数值</th>
+<th scope="col" data-g="射速与填装">基础 射空</th>
+<th scope="col" data-g="射速与填装">优化 射空</th>
 <th scope="col" data-g="红血 DPS">单弹匣 红血 DPS</th>
 <th scope="col" data-g="红血 DPS">最大 红血 DPS</th>
 <th scope="col" data-g="红血 DPS">月靴 红血 DPS</th>
@@ -211,12 +211,12 @@
 <dd>用来测射速的那把样本武器的弹匣容量。</dd>
 <dt>优化弹匣</dt>
 <dd>挂强化备用弹匣、不挂弹匣 Perk 时的实际弹匣容量。</dd>
-<dt>基础装填</dt>
-<dd>一个弹匣的末发到下一个弹匣首发之间的时间，按 100 武器属性加一个装填器模组计，单位秒。</dd>
-<dt>优化装填</dt>
+<dt>基础填装</dt>
+<dd>一个弹匣的末发到下一个弹匣首发之间的时间，按 100 武器属性加一个填装器模组计，单位秒。</dd>
+<dt>优化填装</dt>
 <dd>同一段时间改按月神步力场计。</dd>
-<dt>装填数值</dt>
-<dd>样本武器的装填数值；蓄力与热量类框架的这一格还带着斜杠后的附加数值（蓄力或拉弓的毫秒数、热量参数）。<span class="note">数据源没有给这一列单独命名，列名与解读是本站按数值走向推的，未经确认。</span></dd>
+<dt>填装数值</dt>
+<dd>样本武器的填装数值；蓄力与热量类框架的这一格还带着斜杠后的附加数值（蓄力或拉弓的毫秒数、热量参数）。<span class="note">数据源没有给这一列单独命名，列名与解读是本站按数值走向推的，未经确认。</span></dd>
 <dt>基础射空</dt>
 <dd>一个弹匣从首发打到末发的时间，单位秒。</dd>
 <dt>优化射空</dt>
@@ -229,11 +229,11 @@
 <h2 class="sect-label">计算列</h2>
 <dl class="rules">
 <dt>单弹匣红血 DPS</dt>
-<dd>一个弹匣之内打红血的 DPS，不含装填。</dd>
+<dd>一个弹匣之内打红血的 DPS，不含填装。</dd>
 <dt>最大红血 DPS</dt>
 <dd>计入射速、弹匣溢出与模组之后的红血 DPS 上限。</dd>
 <dt>月靴红血 DPS</dt>
-<dd>装填按月神步力场取上限、并计入手动操作的红血 DPS。</dd>
+<dd>填装按月神步力场取上限、并计入手动操作的红血 DPS。</dd>
 <dt>典型红血 DPS</dt>
 <dd>常规巡场中手动操作的红血 DPS。</dd>
 <dt>身体红血 DPS</dt>
@@ -245,7 +245,7 @@
 <dt>最大首领 DPS</dt>
 <dd>计入射速、弹匣溢出与模组之后的首领 DPS 上限。</dd>
 <dt>月靴首领 DPS</dt>
-<dd>装填按月神步力场取上限的首领 DPS。</dd>
+<dd>填装按月神步力场取上限的首领 DPS。</dd>
 <dt>典型首领 DPS</dt>
 <dd>常规操作下的首领 DPS。</dd>
 <dt>清怪分数</dt>

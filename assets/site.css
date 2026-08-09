@@ -75,7 +75,6 @@
   --health: var(--c-health);         /* 生命值/治疗 */
   --note: var(--c-aside);            /* 作者注释与限制说明 */
   --unsure: var(--c-aside);          /* [?] 待测数值 */
-  --plain: var(--bone);              /* 原色近正文色，跟随正文 */
 
   /* 分节 sticky 单元贴 .site-head 下沿。app.js 按实测高度覆写；
      无 JS 时取这个默认值（只有导航行的高度）。 */
@@ -347,7 +346,7 @@ main {
 .el-arc, .deb-arc, .el-stasis, .deb-stasis, .enemy, .el-void, .ammo-heavy,
 .el-strand, .deb-strand, .el-solar, .deb-solar, .el-kinetic, .el-prismatic,
 .deb-void, .pickup, .joke, .orb, .stack, .armor-charge, .health,
-.t-red, .t-orange, .t-yellow {
+.bar-red, .bar-orange, .bar-yellow {
   font-weight: 600;
 }
 
@@ -371,12 +370,12 @@ main {
 .stack { color: var(--stack); }
 .armor-charge { color: var(--armor-charge); }
 .health { color: var(--health); }
-.plain { color: var(--plain); }
 
-/* 敌人分档照血条颜色叫：红血、橙血、黄血。三档的名字本身就是颜色，直接照名字给 */
-.t-red { color: var(--c-health); }
-.t-orange { color: var(--c-solar); }
-.t-yellow { color: var(--c-orb); }
+/* 敌人分档照血条颜色叫：红血、橙血、黄血——游戏内的血条本来就是这三色，
+   所以类名按档位命名而不是按颜色，读者能反推出颜色为什么是这个颜色。 */
+.bar-red { color: var(--c-health); }
+.bar-orange { color: var(--c-solar); }
+.bar-yellow { color: var(--c-orb); }
 
 /* 方括号里的 PvP 数值降一档，读作限定语，不与正文的 PvE 数值争 */
 .pvp { color: var(--note); }

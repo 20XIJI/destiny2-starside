@@ -54,7 +54,6 @@ ALPHA_BITS = 4  # alpha 量化档数。剪影图 3x 放大与原图并排看不�
 GLOSSARY: list[tuple[str, str]] = [
     # 元素与元素效果
     ('冰霜护甲', 'el-stasis'),
-    ('冰霜铠甲', 'el-stasis'),
     ('烈日', 'el-solar'),
     ('电弧', 'el-arc'),
     ('虚空', 'el-void'),
@@ -68,7 +67,7 @@ GLOSSARY: list[tuple[str, str]] = [
     ('吞食', 'el-void'),
     # 机制色
     ('特殊弹药', 'el-strand'),  # 站内既有约定：特殊弹药沿用缚丝绿
-    ('重型弹药', 'ammo-heavy'),
+    ('威能弹药', 'ammo-heavy'),
     ('火箭发射器', 'ammo-heavy'),
     ('刀剑', 'ammo-heavy'),
     ('能量球', 'orb'),

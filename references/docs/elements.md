@@ -12,7 +12,7 @@
 - [{el-solar|烈日} 治愈、焕光、恢复保命，灼烧攒满即点燃](solar/index.html)
 - [{el-void|虚空} 吞食与隐身续航，压制、不稳定、虚弱控场](void/index.html)
 - [{el-stasis|冰影} 冰霜护甲减伤，减速攒满冻结，冻结后碎裂](stasis/index.html)
-- [{el-strand|缚丝} 织造铠甲减伤，割裂、悬停、瓦解锁住敌人](strand/index.html)
+- [{el-strand|缚丝} 织造铠甲减伤，割裂、悬停、瓦解锁住战斗人员](strand/index.html)
 - [{el-prismatic|棱镜} 光能与暗影混装，超凡把两侧收益连起来](prismatic/index.html)
 
 ## 效果一览

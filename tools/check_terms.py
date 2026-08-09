@@ -1,0 +1,198 @@
+#!/usr/bin/env python3
+"""术语与着色的一致性闸门。
+
+站内做过两次人工术语统一，两次都被后来新增的页面冲掉：`fb739f1` 把「装填」全站
+改成「填装」，六天后新增的武器框架页又带回 17 处。人工扫一遍管不住下一页，
+所以把结论落成闸门。
+
+四条检查，全部以 TERMS 那一张表为准：
+
+  G1 中文正名   源稿里不许出现禁用写法。
+  G2 token 唯一 同一个术语只能落到同一个着色 token 上。渲染色相同的两个 token
+                （--el-solar 与 --deb-solar 同值）用眼睛看不出来，只有这里管得住。
+  G3 token 有定义 源稿里每个 {token|文字} 都要在 site.css 或该页样式表里有类；
+                反过来，site.css 的着色类一次都没被用到即死配置，当场报出。
+  G4 更新时间一致 资料页页脚的「更新 YYYY.M.D」与首页卡片上那个必须相等。
+
+用法：python3 tools/check_terms.py    改源稿或改术语表之后跑一次。
+"""
+
+import os
+import re
+import sys
+
+import shell
+
+SRC_FILES = ['references/artifact-mods.md', 'references/armor-sets.md']
+DOC_DIR = 'references/docs'
+
+# 一行钉两件事：中文怎么写，以及着色落到哪个 token 上。
+#   (正名, 唯一 token 或 None, [禁用写法])
+# token 写 None 表示这个词不强制着色，只管中文写法。
+TERMS = [
+    # ── 中文正名 ──
+    ('填装', None, ['装填']),
+    ('回复倍率', None, ['技能块']),
+    # 「处决」不进禁用表：「优雅处决」是星相里的机制名，与终结技不是一回事
+    ('终结技', 'enemy', []),
+    ('冰霜护甲', 'el-stasis', ['冰霜铠甲']),
+    # 红血是敌人档位的最低一档，照血条颜色叫。「普通战斗人员」在正名之后与它同义
+    ('红血', 'bar-red', ['杂兵', '普通士兵', '普通敌人', '普通战斗人员']),
+    ('橙血', 'bar-orange', []),
+    ('黄血', 'bar-yellow', []),
+    # 敌人统称用游戏内的官方译名。放在「红血」之后：先认掉「普通敌人」那一组
+    # 「敌方」不进禁用表：那是形容词（敌方守护者），不是战斗人员的同义词
+    ('战斗人员', 'enemy', ['敌人']),
+    # 威能弹药：站内 token 就叫 --ammo-heavy，注释与 design.md 都写「威能弹药」
+    ('威能弹药', 'ammo-heavy', ['重型弹药']),
+    ('虚弱', 'deb-void', ['削弱']),
+
+    # ── 只管 token，不改中文 ──
+    # 下面这些词的着色曾经分叉，两个 token 渲染色又相同或相近，肉眼查不出来
+    ('护甲充能', 'armor-charge', []),
+    ('焕光', 'el-solar', []),
+    ('恢复', 'el-solar', []),
+    ('覆盖护盾', 'el-void', []),
+    ('不稳定', 'deb-void', []),
+    ('压制', 'deb-void', []),
+    ('减速', 'deb-stasis', []),
+    ('灼烧', 'deb-solar', []),
+    ('点燃', 'deb-solar', []),
+    ('能量球', 'orb', []),
+    ('特殊弹药', 'el-strand', []),
+    ('生命值', 'health', []),
+    ('首领', 'enemy', []),
+    ('精英', 'enemy', []),
+]
+
+def read(path):
+    with open(os.path.join(shell.ROOT, path), encoding='utf-8') as f:
+        return f.read()
+
+
+def classes_in(css):
+    return set(re.findall(r'\.([a-zA-Z][\w-]*)', css))
+
+
+def sources():
+    """[(源稿相对路径, 该页能用的 class 集合)]。"""
+    site = read('assets/site.css')
+    base = classes_in(site)
+    out = [('references/artifact-mods.md', base | classes_in(read('artifact-mods/style.css')))]
+    for name in sorted(os.listdir(os.path.join(shell.ROOT, DOC_DIR))):
+        if not name.endswith('.md'):
+            continue
+        rel = '%s/%s' % (DOC_DIR, name)
+        md = read(rel)
+        where = re.search(r'^路径：(.*)$', md, re.M)
+        where = where.group(1).strip() if where else name[:-3]
+        ok = set(base)
+        parts = where.split('/')
+        for i in range(len(parts)):
+            sheet = os.path.join(*parts[:i + 1], 'style.css')
+            if os.path.exists(os.path.join(shell.ROOT, sheet)):
+                ok |= classes_in(read(sheet))
+        out.append((rel, ok))
+    return out
+
+
+def inner_marker(text, at):
+    """text[at] 落在哪个 {token|内容} 里，返回 (token, 内容)；不在标记里就是 None。"""
+    depth, i = 0, at - 1
+    while i >= 0:
+        if text[i] == '}':
+            depth += 1
+        elif text[i] == '{':
+            if depth == 0:
+                m = re.match(r'\{([\w-]+)\|', text[i:])
+                if not m:
+                    return None
+                start = i + m.end()          # m 是对 text[i:] 匹配的，偏移要加回 i
+                j, d = start, 1
+                while j < len(text) and d:
+                    d += text[j] == '{'
+                    d -= text[j] == '}'
+                    j += 1
+                return m.group(1), text[start:j - 1]
+            depth -= 1
+        i -= 1
+    return None
+
+
+def at_line(text, at):
+    return text.count('\n', 0, at) + 1
+
+
+def check_terms(files, bad):
+    banned = [(w, t[0]) for t in TERMS for w in t[2]]
+    for rel in files:
+        md = read(rel)
+        for wrong, right in banned:
+            for m in re.finditer(re.escape(wrong), md):
+                bad.append('G1 %s:%d 用了「%s」，正名是「%s」'
+                           % (rel, at_line(md, m.start()), wrong, right))
+        for word, token, _ in TERMS:
+            if not token:
+                continue
+            for m in re.finditer(re.escape(word), md):
+                hit = inner_marker(md, m.start())
+                # 只管「整个标记就是这个词」的那种。词嵌在更长的短语里时，
+                # 着色属于短语（{el-arc|电弧元素能量球}、{health|治疗能量球}），
+                # 按词强判会把整句的颜色拆碎。
+                if hit and hit[1] == word and hit[0] != token:
+                    bad.append('G2 %s:%d 「%s」着色成 {%s|…}，应是 {%s|…}'
+                               % (rel, at_line(md, m.start()), word, hit[0], token))
+
+
+def check_tokens(pairs, site, bad):
+    used = set()
+    for rel, ok in pairs:
+        md = read(rel)
+        for m in re.finditer(r'\{([\w-]+)\|', md):
+            used.add(m.group(1))
+            if m.group(1) not in ok:
+                bad.append('G3 %s:%d 用了 {%s|…}，样式表里没有这个类'
+                           % (rel, at_line(md, m.start()), m.group(1)))
+    # 护甲套装页走词表，token 写在生成器里
+    used |= set(re.findall(r"\('[^']+', '([\w-]+)'\)", read('tools/convert-armor-sets.py')))
+    # site.css 里只设 color 的单类即着色类；一次都没被用到就是死配置。
+    # 选择器之间只认逗号，不认空格——.site-nav .sep 那种后代选择器不是着色类。
+    for m in re.finditer(r'(?:^|\n)((?:\.[\w-]+,\s*)*\.[\w-]+)\s*\{\s*color: var\(--[\w-]+\);?\s*\}', site):
+        for cls in re.findall(r'\.([\w-]+)', m.group(1)):
+            if cls not in used:
+                bad.append('G3 assets/site.css 的 .%s 一次都没被用到，删掉或改写' % cls)
+
+
+def check_stamps(bad):
+    home = read('index.html')
+    for m in re.finditer(r'<a class="entry" href="([^"]+)".*?entry-stamp">更新 ([\d.]+)<', home, re.S):
+        page, want = m.group(1), m.group(2)
+        got = re.search(r'<span class="stamp">更新 ([\d.]+)</span>', read(page))
+        if not got:
+            bad.append('G4 %s 页脚没有更新时间' % page)
+        elif got.group(1) != want:
+            bad.append('G4 %s 页脚写 %s，首页卡片写 %s' % (page, got.group(1), want))
+
+
+def main() -> int:
+    site = read('assets/site.css')
+    pairs = sources()
+    bad: list[str] = []
+
+    check_terms(SRC_FILES + [rel for rel, _ in pairs if rel.startswith(DOC_DIR)], bad)
+    check_tokens(pairs, site, bad)
+    check_stamps(bad)
+
+    if bad:
+        print('术语与着色不一致：', file=sys.stderr)
+        for line in bad[:60]:
+            print('  ' + line, file=sys.stderr)
+        if len(bad) > 60:
+            print('  …另有 %d 条' % (len(bad) - 60), file=sys.stderr)
+        return 1
+    print('术语一致：%d 条规则，%d 篇源稿' % (len(TERMS), len(pairs) + 1))
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())
