@@ -226,6 +226,9 @@ main { flex: 1 0 auto; }
   margin-left: auto;
 }
 
+/* 只有跳转 chip 的工具条（资料页那一档）：前面没有搜索框顶着，从左边起排 */
+.tool-chips:first-child { margin-left: 0; }
+
 .chip {
   padding: 5px 11px;
   color: var(--bone-dim);
@@ -314,7 +317,8 @@ button.chip {
    统一 600 字重、无阴影——全页着色处逾千，字重与阴影一齐上阵会让语义色失去分级。 */
 .el-arc, .deb-arc, .el-stasis, .deb-stasis, .enemy, .el-void, .ammo-heavy,
 .el-strand, .deb-strand, .el-solar, .deb-solar, .el-kinetic, .el-prismatic,
-.deb-void, .pickup, .joke, .orb, .stack, .armor-charge, .health {
+.deb-void, .pickup, .joke, .orb, .stack, .armor-charge, .health,
+.t-red, .t-orange, .t-yellow {
   font-weight: 600;
 }
 
@@ -339,6 +343,14 @@ button.chip {
 .armor-charge { color: var(--armor-charge); }
 .health { color: var(--health); }
 .plain { color: var(--plain); }
+
+/* 敌人分档照血条颜色叫：红血、橙血、黄血。三档的名字本身就是颜色，直接照名字给 */
+.t-red { color: var(--c-health); }
+.t-orange { color: var(--c-solar); }
+.t-yellow { color: var(--c-orb); }
+
+/* 方括号里的 PvP 数值降一档，读作限定语，不与正文的 PvE 数值争 */
+.pvp { color: var(--note); }
 
 /* 批注类降一级：字重回到正文，待测值带虚下划线 */
 .note { color: var(--note); font-weight: 400; }

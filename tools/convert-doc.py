@@ -26,13 +26,17 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC_DIR = os.path.join(ROOT, 'references', 'docs')
 
 # 头部的「键：值」行。键名固定，正文行不会被误认。
-META_KEYS = ('描述', '更新', '页脚', '鸣谢', '列组', '互斥列组', '默认列组', '首屏图标', '此刻')
+META_KEYS = ('描述', '更新', '页脚', '鸣谢', '数据源', '导航', '路径', '上级',
+             '列组', '互斥列组', '默认列组', '首屏图标', '此刻')
 META_LINE = meta_line(META_KEYS)
 
 # 分节级声明：「色阶：列名 阈值 …」。同样按整行剥离，不进正文。
 SCALE_LINE = re.compile(r'^色阶：(.*)$', re.M)
 
 ICONS: 'Icons | None' = None    # 当前页面的图标登记处，由 build() 装上
+
+
+CELL_BREAK = '\\\\'     # 表格单元格里的换行标记，见 render_table()
 
 
 def wrap(tag, md, attrs=''):
@@ -85,6 +89,15 @@ class Icons:
 
 
 # ── 解析 ────────────────────────────────────────────────────────────────
+def broke(cell):
+    r"""单元格里的 \\ 换成 <br>。
+
+    一行源稿就是一行表格，所以格内换行只能靠标记。选 \\ 是因为中文正文、数值与
+    链接里都不会出现它——用 // 会把链接里的 https:// 一并切开。
+    """
+    return cell.replace(CELL_BREAK, '<br>')
+
+
 def split_cells(row):
     """表格行按 | 切分，但 {token|文字} 里的 | 不是分隔符。"""
     row = row.strip()
@@ -261,7 +274,8 @@ def render_table(lines, scales=None, groups=None):
         span[i] = 0
 
     o = ['<table class="gen">', '<thead>', '<tr>']
-    o += [wrap('th', c, ' scope="col"' + (' data-g="%s"' % groups[colkey(c)] if groups else ''))
+    o += [wrap('th', broke(c),
+               ' scope="col"' + (' data-g="%s"' % groups[colkey(c)] if groups else ''))
           for c in head]
     o += ['</tr>', '</thead>', '<tbody>']
     # data-band 让相邻的合并块能上交替底色。CSS 数不了「第几个合并块」——每块行数
@@ -278,7 +292,7 @@ def render_table(lines, scales=None, groups=None):
         if n:
             band ^= 1               # 每遇到一个新行标题翻一次
             attrs = ' scope="row"' + (' rowspan="%d"' % n if n > 1 else '')
-            row.append(wrap('th', cells[0], attrs))
+            row.append(wrap('th', broke(cells[0]), attrs))
         for at, c in enumerate(cells[1:], start=1):
             if at in tiers:
                 tier = tier_of(c, tiers[at])
@@ -288,7 +302,7 @@ def render_table(lines, scales=None, groups=None):
                 # 不走 wrap()——那条路会把 <span> 当文本转义掉
                 row.append('<td data-tier="%d">%s</td>' % (tier, grouped(int(c))))
                 continue
-            row.append(wrap('td', c))
+            row.append(wrap('td', broke(c)))
         o.append('<tr%s>%s</tr>'
                  % (' data-band="%d"' % band if banded else '', ''.join(row)))
     o += ['</tbody>', '</table>']
@@ -312,13 +326,26 @@ def render_blocks(chunk, scales=None, groups=None):
             o += render_table([ln.strip() for ln in lines[start:i]], scales, groups)
             continue
 
-        # 定义列表：术语一行，紧跟以「: 」开头的定义行
+        # 定义列表：术语一行，紧跟以「: 」开头的定义行。
+        # 定义可以写多行——一条技能动辄十几行说明，挤成一行没法读也没法改。
+        # 连着的「: 」行并成一条 <dd>，行间落 <br>；中间的空行留作段落间隔。
         if i + 1 < len(lines) and lines[i + 1].startswith(': '):
             o.append('<dl class="rules">')
             while i + 1 < len(lines) and lines[i + 1].startswith(': '):
                 o.append(wrap('dt', lines[i]))
-                o.append(wrap('dd', lines[i + 1][2:]))
-                i += 2
+                i += 1
+                defn = []
+                while i < len(lines):
+                    if lines[i].startswith(': '):
+                        defn.append(lines[i][2:].strip())
+                        i += 1
+                    elif not lines[i].strip() and i + 1 < len(lines) \
+                            and lines[i + 1].startswith(': '):
+                        defn.append('')     # 段落间隔，落成一个空行
+                        i += 1
+                    else:
+                        break
+                o.append(wrap('dd', '<br>'.join(defn)))
                 while i < len(lines) and not lines[i].strip():
                     i += 1
             o.append('</dl>')
@@ -343,7 +370,7 @@ def render_blocks(chunk, scales=None, groups=None):
     return o
 
 
-def render(md):
+def render(md, slug):
     m = re.match(r'^#\s+(.+)$', md.split('\n')[0])
     if not m:
         die('源稿第一行必须是「# 页面标题」')
@@ -388,9 +415,22 @@ def render(md):
     if meta('此刻', required=False):
         toolbar = dict(toolbar or {}, **{'data-clock': ''})
 
+    # 「导航：是」→ 顶部工具条：搜索框 + 每个分节一枚跳转 chip，与神器模组页同一套。
+    # 条目是表格行，所以带这一档的表**不能用首格留空合并**——按行隐藏会把合并块
+    # 豁开，行标题要逐行写全。
+    if meta('导航', required=False):
+        toolbar = dict(toolbar or {},
+                       **{'data-section': '.block', 'data-item': '.gen tbody tr',
+                          'data-label': '.sect-label', 'data-noun': '条目',
+                          'data-chip-label': '分节'})
+
+    # 「路径：」把页面挂到子目录里（elements/arc）。层数决定资源前缀与面包屑，
+    # 缺省就是 slug 本身、挂在站点根下。
+    where = meta('路径', required=False) or slug
+    up = where.count('/') + 1
     full = '%s · Starside' % title
-    o = [shell.head(full, desc, app_js=toolbar is not None),
-         shell.nav(title, toolbar),
+    o = [shell.head(full, desc, app_js=toolbar is not None, up=up),
+         shell.nav(title, toolbar, up=up, parent=meta('上级', required=False) or None),
          shell.page_head(title),
          '<main>']
 
@@ -402,7 +442,7 @@ def render(md):
     if len(parts) == 1:
         die('源稿一个 ## 分节都没有')
 
-    for part in parts[1:]:
+    for at, part in enumerate(parts[1:], 1):
         head, _, chunk = part.partition('\n')
         # 「色阶：」是分节级声明，按整行剥离——留在正文里会进保真比对
         scales = {}
@@ -412,17 +452,19 @@ def render(md):
                 die('「色阶：」给同一列 %r 写了两套阈值' % col)
             scales[col] = bounds
         chunk = SCALE_LINE.sub('', chunk)
-        o.append('<section class="block">')
+        o.append('<section class="block" id="sec-%d">' % at)
         o.append('<h2 class="sect-label">%s</h2>' % inline(head.strip(), rich=True))
         o += render_blocks(chunk, scales, groups)
         o.append('</section>')
 
-    # 鸣谢只写在该贡献者实际参与的页面上，不做全站铺开
+    # 「数据源：是」输出 shell.py 里那句 Destiny Data Compendium 归属，一字不改。
+    # 鸣谢只写在该贡献者实际参与的页面上，不做全站铺开。
     o += ['</main>', '',
           shell.foot(stamp,
                      inline(foot, rich=True) if foot else '',
+                     compendium=bool(meta('数据源', required=False)),
                      thanks=inline(thanks, rich=True) if thanks else None)]
-    return '\n'.join(o), title
+    return '\n'.join(o), title, where
 
 
 # ── 自检 ────────────────────────────────────────────────────────────────
@@ -456,7 +498,7 @@ def check(md, out, slug):
     body = IMG.sub('', body)                          # 图标不落成字符，两侧都不留
     body = LINK.sub(r'\1', body)                      # 链接只留文字
     body = re.sub(r'\{[\w-]+\|', '', body)            # 着色标记的开括号连分隔符
-    want = re.sub(r'[*`}\s]', '', body)               # 字重与着色不落成字符
+    want = re.sub(r'[*`}\\\s]', '', body)            # 字重、着色与格内换行不落成字符
 
     main = out[out.index('<main>'):out.index('</main>')]
     got = text_of(main)
@@ -481,18 +523,20 @@ def build(slug):
     with open(src, encoding='utf-8') as f:
         md = f.read()
 
-    outdir = os.path.join(ROOT, slug)
+    where = re.search(r'^路径：(.*)$', md, re.M)
+    where = where.group(1).strip() if where else slug
+    outdir = os.path.join(ROOT, *where.split('/'))
     if not os.path.isdir(outdir):
-        die('输出目录不存在：%s/（新页面要先建目录并写 style.css）' % slug)
+        die('输出目录不存在：%s/（新页面要先建目录并写 style.css）' % where)
     eager = re.search(r'^首屏图标：(\d+)$', md, re.M)
     ICONS = Icons(outdir, int(eager.group(1)) if eager else 0)
 
-    out, title = render(md)
+    out, title, where = render(md, slug)
     check(md, out, slug)
 
     with open(os.path.join(outdir, 'index.html'), 'w', encoding='utf-8') as f:
         f.write(out)
-    print('%s/index.html —— %s，%.1f KB' % (slug, title, len(out.encode()) / 1024))
+    print('%s/index.html —— %s，%.1f KB' % (where, title, len(out.encode()) / 1024))
 
 
 def main():

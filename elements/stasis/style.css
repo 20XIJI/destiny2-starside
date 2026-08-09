@@ -1,0 +1,2 @@
+/* 冰影 页只差一个强调色，版式在 ../style.css（由 shell.py 自动引）。 */
+:root { --accent: var(--c-stasis); }

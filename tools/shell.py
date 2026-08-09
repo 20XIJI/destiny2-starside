@@ -35,12 +35,18 @@ SPEC = ('<script type="speculationrules">'
 MARK = '<span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>'
 
 
-def head(title, desc, app_js=False):
+def head(title, desc, app_js=False, up=1):
     """<!doctype> 到 <body> 为止。title 已含 · Starside 后缀。
 
     字体在 CSS 解析完才会被发现，preload 让它与样式表并行下载；只预载首屏用到的
     600 字重。app.js 用 defer，放 head 里比放 body 末尾更早被发现，执行时机不变。
+
+    up 是页面离站点根有几层。**深一层的页面自动引父目录的 style.css**：同一组
+    子页面（六个元素页）共用一份版式，各自的 style.css 只留自己那一两行差异，
+    不必抄六遍。用 <link> 而不是 CSS 里的 @import——@import 要等父表下载完才
+    发现子表，白搭一个往返。
     """
+    at = '../' * up
     o = ['<!doctype html>', '<html lang="zh-CN">', '<head>',
          '<meta charset="utf-8">',
          '<meta name="viewport" content="width=device-width, initial-scale=1">',
@@ -52,18 +58,20 @@ def head(title, desc, app_js=False):
          '<meta property="og:locale" content="zh_CN">',
          '<meta property="og:title" content="%s">' % title,
          '<meta property="og:description" content="%s">' % desc,
-         '<link rel="preload" href="../assets/fonts/chakra-petch-600.woff2" '
-         'as="font" type="font/woff2" crossorigin>',
-         '<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">',
-         '<link rel="stylesheet" href="../assets/site.css">',
-         '<link rel="stylesheet" href="style.css">']
+         '<link rel="preload" href="%sassets/fonts/chakra-petch-600.woff2" '
+         'as="font" type="font/woff2" crossorigin>' % at,
+         '<link rel="icon" href="%sassets/favicon.svg" type="image/svg+xml">' % at,
+         '<link rel="stylesheet" href="%sassets/site.css">' % at]
+    if up > 1:
+        o.append('<link rel="stylesheet" href="../style.css">')
+    o.append('<link rel="stylesheet" href="style.css">')
     if app_js:
-        o.append('<script src="../assets/app.js" defer></script>')
+        o.append('<script src="%sassets/app.js" defer></script>' % at)
     o += ['</head>', '<body>']
     return '\n'.join(o)
 
 
-def nav(current, toolbar=None):
+def nav(current, toolbar=None, up=1, parent=None):
     """顶部 sticky 单元：导航行 + 可选的工具条槽位。
 
     工具条内容由 assets/app.js 从 DOM 构建，这里不写任何源文本——写了就等于
@@ -71,10 +79,14 @@ def nav(current, toolbar=None):
     全用缺省选择器（神器模组页那一套）。
     """
     o = ['<div class="site-head">', '<nav class="site-nav">', MARK,
-         '<a class="home" href="../index.html">%s</a>' % SITE_NAME,
-         '<span class="sep">/</span>',
-         '<span aria-current="page">%s</span>' % current,
-         '</nav>']
+         '<a class="home" href="%sindex.html">%s</a>' % ('../' * up, SITE_NAME)]
+    # 面包屑多一层：子页面要能一眼看出自己挂在哪个资料页下面，并直接跳回去
+    if parent:
+        o += ['<span class="sep">/</span>',
+              '<a class="home" href="../index.html">%s</a>' % parent]
+    o += ['<span class="sep">/</span>',
+          '<span aria-current="page">%s</span>' % current,
+          '</nav>']
     if toolbar is not None:
         attrs = ''.join(' %s="%s"' % (k, v) for k, v in toolbar.items())
         o.append('<div class="toolbar"%s></div>' % attrs)

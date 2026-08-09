@@ -44,16 +44,12 @@ main { padding: 0 24px clamp(48px, 6vw, 84px); }
 }
 
 /* ── 这一页的语义配色 ──
-   三档敌人的名字本身就是颜色，直接照名字给；三种弹药沿用站点既有 token：
-   白弹＝动能白、绿弹＝特殊弹药绿、重弹＝威能弹药紫。不新增渲染色。 */
-.t-red { color: var(--c-health); }
-.t-orange { color: var(--c-solar); }
-.t-yellow { color: var(--c-orb); }
+   三种弹药沿用站点既有 token：白弹＝动能白、绿弹＝特殊弹药绿、重弹＝威能弹药紫。
+   三档血色（.t-red/.t-orange/.t-yellow）是全站共用的，定义在 assets/site.css。 */
 .a-white { color: var(--c-kinetic); }
 .a-green { color: var(--el-strand); }
 .a-heavy { color: var(--ammo-heavy); }
 
-.t-red, .t-orange, .t-yellow,
 .a-white, .a-green, .a-heavy { font-weight: 600; }
 
 /* ── 生成率表 ──

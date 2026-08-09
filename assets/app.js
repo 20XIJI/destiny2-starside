@@ -21,7 +21,10 @@
      data-row 可以不给：护甲套装页没有并排的行，条目本身就是一行。 */
   var cfg = (slot && slot.dataset) || {};
   var SEC = cfg.section || '.artifact';
-  var ITEM = cfg.item || '.mod';
+  /* 只给 data-section、不给 data-item 的页面走「只有跳转 chip」这一档：
+     资料页的条目是表格行，行之间有 rowspan 合并，按行隐藏会把合并块豁开。
+     那里要的是快速跳转，不是检索。 */
+  var ITEM = cfg.item || (cfg.section ? '' : '.mod');
   var ROW = cfg.row || (cfg.section ? '' : '.mod-row');
   var LABEL = cfg.label || '.art-head h2';
   var NOUN = cfg.noun || '模组';
@@ -164,7 +167,7 @@
   }
 
   var rows = ROW ? Array.prototype.slice.call(document.querySelectorAll(ROW)) : [];
-  var mods = Array.prototype.slice.call(document.querySelectorAll(ITEM));
+  var mods = ITEM ? Array.prototype.slice.call(document.querySelectorAll(ITEM)) : [];
   /* 上百个条目，每次按键都取 textContent 会重复遍历整棵子树，先缓存 */
   var text = mods.map(function (mod) { return mod.textContent; });
 
@@ -190,8 +193,10 @@
     return chip;
   });
 
-  slot.appendChild(search);
-  slot.appendChild(count);
+  if (ITEM) {
+    slot.appendChild(search);
+    slot.appendChild(count);
+  }
   slot.appendChild(chipNav);
 
   /* 命中即显示；整行三档皆不命中则整行隐藏，整节不命中则整节与其 chip 一同隐藏。

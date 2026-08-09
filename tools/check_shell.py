@@ -20,7 +20,11 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 HOME = 'index.html'
 PAGES = [HOME, 'ammo/index.html', 'armor-sets/index.html', 'artifact-mods/index.html',
-         'boss-hp/index.html', 'twisted-planet/index.html', 'weapon-frames/index.html']
+         'boss-hp/index.html', 'elements/index.html', 'elements/arc/index.html',
+         'elements/prismatic/index.html', 'elements/solar/index.html',
+         'elements/stasis/index.html', 'elements/strand/index.html',
+         'elements/void/index.html', 'twisted-planet/index.html',
+         'weapon-frames/index.html']
 
 # head 里与页面无关的那几行。标题与描述是变量，用哨兵值生成后按前缀挑出不变量。
 HEAD_KEEP = ('<meta name="theme-color"', '<meta property="og:site_name"',
@@ -48,8 +52,9 @@ def main() -> int:
             src = f.read()
 
         for frag in want:
-            # 首页在站点根，资源路径少一层
-            probe = frag.replace('../assets/', 'assets/') if rel == HOME else frag
+            # 资源前缀按页面所在层数改写：首页在站点根，子目录页深一层
+            at = '../' * rel.count('/')
+            probe = frag.replace('../assets/', at + 'assets/')
             if probe not in src:
                 bad.append('%s：与 shell.py 对不上 —— %s' % (rel, probe[:64]))
 

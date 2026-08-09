@@ -1,0 +1,238 @@
+/* 属性详解：总览页与六个元素页共用这一份版式。每节一张带图标的数据表。
+   通用主题、字体与配色 token 在 /assets/site.css，本文件不重复定义任何着色 token。
+
+   子页面由 tools/shell.py 自动引这份表（深一层的页面引父目录的 style.css），
+   各元素页自己的 style.css 只留一行 --accent —— 本页的元素色相，用在页首规线
+   与分节方块上，让读者一眼认出在哪一页。 */
+
+:root { --accent: var(--c-term); }
+
+/* 宽表复用 1060px 那一档（design.md 第四节），不为它另定一个数。
+   收窄只作用于正文与页首——导航条与页脚是站点外壳，各页必须同宽。 */
+main,
+.page-head {
+  max-width: 1060px;
+  margin: 0 auto;
+}
+
+main { padding: 0 24px clamp(48px, 6vw, 84px); }
+
+.page-head { padding: clamp(40px, 5vw, 68px) 24px clamp(20px, 2.4vw, 30px); }
+
+.page-head h1 {
+  font-size: clamp(28px, 3.2vw, 38px);
+  /* 元素色相只借给标题下的一道规线，不给标题本身上色：
+     整页的青色都在讲电弧术语，标题不是术语。 */
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--accent);
+}
+
+.block {
+  margin-bottom: clamp(40px, 4.6vw, 64px);
+  /* 工具条是 sticky 的，跳转过去要把分节标题让出来 */
+  scroll-margin-top: var(--stick);
+}
+
+.block > .sect-label {
+  margin-bottom: 18px;
+  color: var(--bone);
+  font-size: 12px;
+  letter-spacing: .24em;
+}
+
+/* 分节标签前的元素色小方块：一页六张表，靠它认表的起点 */
+.block > .sect-label::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 10px;
+  vertical-align: 1px;
+  background: var(--accent);
+}
+
+.block p {
+  margin: 0 0 1.05em;
+  line-height: 2.05;
+  max-width: 760px;          /* 读表说明是连续阅读，不跟着宽表走 */
+}
+
+.block p:last-child { margin-bottom: 0; }
+
+.block em,
+.block strong {
+  color: var(--bone-hi);
+  font-style: normal;
+  font-weight: 600;
+}
+
+/* 当前分节的 chip 跟着本页的元素色，跟页首那道规线是同一个信号 */
+.chip[aria-current="true"] {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+/* ── 总览页的入口卡片 ──
+   整块可点，不是一行下划线：六个属性是这一页唯一的去处，得一眼看见。
+   只有总览页用得上 <ul>，六个元素页整页都是表格，所以这几条不必再加限定。 */
+.block ul {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.block li a {
+  display: block;
+  height: 100%;
+  padding: 18px 20px 20px;
+  color: var(--bone-dim);
+  font-size: 13px;
+  line-height: 1.75;
+  text-decoration: none;
+  background: #ffffff05;
+  border: 1px solid var(--hair);
+  transition: border-color .15s ease, background .15s ease;
+}
+
+.block li a:hover {
+  color: var(--bone);
+  background: #ffffff0a;
+  border-color: var(--hair-lit);
+}
+
+/* 属性名是卡片的标题，单独占一行；后面跟的一句是这一页讲什么 */
+.block li a > span:first-child {
+  display: block;
+  margin-bottom: 8px;
+  font-family: var(--font-cn);
+  font-size: 20px;
+  letter-spacing: .06em;
+}
+
+/* 右下角的箭头：告诉读者这是个去处，不是一段说明 */
+.block li a > span:first-child::after {
+  content: "→";
+  float: right;
+  color: var(--bone-faint);
+  font-size: 15px;
+  transition: color .15s ease, transform .15s ease;
+}
+
+.block li a:hover > span:first-child::after { color: var(--accent); }
+
+/* ── 数据表 ──
+   说明列很长，表格按内容定宽后本来就会顶到版心，所以仍是 width: auto，
+   不写 100%——真到了内容短的表（术语表只有三列），它还能自己收窄。 */
+.gen {
+  width: auto;
+  max-width: 100%;
+  margin: 0 auto;
+  border: 1px solid var(--hair);
+  border-collapse: collapse;
+  font-size: 13px;
+  line-height: 1.85;
+}
+
+.gen th,
+.gen td {
+  padding: 10px 14px;
+  /* 一律纵向居中：一行里效果格十几行、名称与冷却各两三行，顶端对齐会让短的
+     那几格全吊在上沿，读起来对不上号。 */
+  vertical-align: middle;
+  border-top: 1px solid var(--hair);
+  border-left: 1px solid var(--hair);
+}
+
+/* 列线只在表格最左缘去掉。判据是「贴着表格左边」而不是「这一行的第一格」——
+   合并行没有 <th>，按 td:first-child 去边框会把首格左侧的竖线一起吃掉。 */
+.gen thead th:first-child,
+.gen tbody th[scope="row"] { border-left: 0; }
+
+.gen thead th {
+  color: var(--bone-dim);
+  font-family: var(--font-cn);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-align: left;
+  white-space: nowrap;
+  background: #ffffff06;
+  border-top: 0;
+}
+
+/* 行标题：类别或条目名，这一组的身份。合并后纵向居中，一眼圈出它占几行 */
+.gen tbody th[scope="row"] {
+  color: var(--bone-hi);
+  font-family: var(--font-cn);
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+  vertical-align: middle;
+  word-break: keep-all;
+  background: #ffffff04;
+}
+
+/* 正文基色给 tbody，由继承落到格子上。**别写成 .gen tbody td**——整格只有一个
+   {标记|…} 时 class 落在 <td> 本身，三选择器会以权重压过单类的 .el-stasis、
+   .note，整列着色静默退回默认色。格子选择器只管排版，两者不争同一个元素。 */
+.gen tbody { color: var(--bone); }
+
+/* 图标格：宽度按图钉死，图纵横都居中。用 :has(img) 认，不按列序——三列表、
+   四列表、五列表的图标列序号各不相同，写死序号加一张表就要改一次样式。 */
+.gen td:has(img) {
+  width: 72px;
+  padding: 10px 8px;
+  text-align: center;
+}
+
+.gen td img {
+  display: block;
+  margin: 0 auto;
+  border-radius: 2px;
+}
+
+/* 名称格：紧挨在图标格前面的那一格。同样按关系认，不按序号 */
+.gen td:has(+ td img) {
+  color: var(--bone-hi);
+  font-family: var(--font-cn);
+  font-weight: 600;
+  white-space: nowrap;
+  word-break: keep-all;
+}
+
+/* 冷却与档位：源稿用 {cd|…} 整格标记，class 落在 td 上。
+   数值前面把名目写全（基础冷却／回复倍率），不靠列头去猜哪个数是哪个。 */
+.gen td.cd { white-space: nowrap; }
+
+.gen tbody tr:hover > th,
+.gen tbody tr:hover > td { background: #ffffff08; }
+
+/* 类别之间的分界：源稿里一行 --- 开出一个新的 tbody，界线由 CSS 画，不落成类名。
+   行标题逐行写全而不合并——工具条的搜索按行隐藏，合并块会被豁开。 */
+.gen tbody + tbody tr:first-child > th,
+.gen tbody + tbody tr:first-child > td { border-top: 1px solid var(--hair-lit); }
+
+/* 类别列退一档：它是分组标签、逐行重复，不该跟条目名争。
+   按关系认那一列——类别格后面跟的是名称格（没有图），条目名格后面直接跟图标格。 */
+.gen tbody th[scope="row"]:has(+ td:not(:has(img))) { color: var(--bone-faint); }
+
+/* 合并块的交替底色。CSS 数不出「第几个合并块」——每块行数不等，:nth-child
+   对不上，计数器又不能参与着色，所以这一位由生成器打成 data-band。 */
+.gen tbody tr[data-band="1"] > td { background: #ffffff05; }
+.gen tbody tr[data-band="1"] > th[scope="row"] { background: #ffffff09; }
+
+/* 着色 token 与批注样式全部来自 assets/site.css 的那张共用表——
+   .el-arc / .deb-arc / .pickup / .orb / .stack / .enemy / .health / .t-red …
+   本页不重复定义，也不新增渲染色。真要单独设计一种颜色时才写在这里。 */
+
+/* 正文里的跨页链接：靠下划线认，不占色相 */
+.block a {
+  color: var(--bone-hi);
+  text-decoration-color: var(--bone-faint);
+  text-underline-offset: 3px;
+}
+
+.block a:hover { text-decoration-color: var(--bone-hi); }
