@@ -40,6 +40,14 @@ main { padding: 0 24px clamp(48px, 6vw, 84px); }
   letter-spacing: .24em;
 }
 
+/* 职业徽章：源表每个职业段前挂一枚，标题就是它的位置 */
+.block > .sect-label img {
+  width: 34px;
+  height: auto;
+  margin-right: 10px;
+  vertical-align: -12px;
+}
+
 /* 分节标签前的元素色小方块：一页六张表，靠它认表的起点 */
 .block > .sect-label::before {
   content: "";
@@ -183,13 +191,19 @@ main { padding: 0 24px clamp(48px, 6vw, 84px); }
    .note，整列着色静默退回默认色。格子选择器只管排版，两者不争同一个元素。 */
 .gen tbody { color: var(--bone); }
 
-/* 图标格：宽度按图钉死，图纵横都居中。用 :has(img) 认，不按列序——三列表、
-   四列表、五列表的图标列序号各不相同，写死序号加一张表就要改一次样式。
-   碎片槽位与共享技能格里的图不是这个尺寸，各带自己的整格标记，从这里排除。 */
-.gen td:has(img):not(.slot, .skill) {
+/* 图标格 / 槽位格 / 共享技能格都由源稿的整格标记认，class 落在 <td> 上。
+   **不要按「格里有没有 img」猜**：说明格后面挨着的正是槽位格，按 :has(+ td img)
+   认名称格会把整列说明判成名称、吃到 nowrap，整张表横着溢出去。 */
+.gen td.ico {
   width: 72px;
   padding: 10px 8px;
   text-align: center;
+}
+
+.gen td img {
+  display: block;
+  margin: 0 auto;
+  border-radius: 2px;
 }
 
 /* 碎片槽位：源表用一张槽位图表示 2 槽或 3 槽，照搬，不换算成数字 */
@@ -199,28 +213,34 @@ main { padding: 0 24px clamp(48px, 6vw, 84px); }
   text-align: center;
 }
 
-.gen td.slot img { width: 88px; height: auto; opacity: .85; }
+.gen td.slot img { width: 88px; height: auto; border-radius: 0; opacity: .9; }
 
-/* 共享技能网格：一列一个属性，一行一个槽位，格里是图标压着名字，照源表的排法 */
-.gen td.skill {
-  width: 150px;
+/* 共享技能网格：一列一个属性，格里图标压着名字，底色取该属性的色相，
+   跟源表一样一眼看出这一列是哪个属性。 */
+.gen td[class^="sk-"] {
+  width: 152px;
   padding: 14px 10px 12px;
-  color: var(--bone-hi);
   font-family: var(--font-cn);
   font-weight: 600;
   text-align: center;
 }
 
-.gen td.skill img { margin-bottom: 8px; }
+.gen td[class^="sk-"] img { margin-bottom: 8px; }
 
-.gen td img {
-  display: block;
-  margin: 0 auto;
-  border-radius: 2px;
+.gen td[class^="sk-"] a {
+  color: inherit;
+  text-decoration-color: color-mix(in srgb, currentcolor 45%, transparent);
+  text-underline-offset: 3px;
 }
 
-/* 名称格：紧挨在图标格前面的那一格。同样按关系认，不按序号 */
-.gen td:has(+ td img) {
+.gen td.sk-arc { color: var(--el-arc); background: color-mix(in srgb, var(--c-arc) 9%, transparent); }
+.gen td.sk-solar { color: var(--el-solar); background: color-mix(in srgb, var(--c-solar) 9%, transparent); }
+.gen td.sk-void { color: var(--el-void); background: color-mix(in srgb, var(--c-void) 9%, transparent); }
+.gen td.sk-stasis { color: var(--el-stasis); background: color-mix(in srgb, var(--c-stasis) 9%, transparent); }
+.gen td.sk-strand { color: var(--el-strand); background: color-mix(in srgb, var(--c-strand) 9%, transparent); }
+
+/* 名称格：紧挨在图标格前面的那一格。按 .ico 认，不按「有没有图」猜 */
+.gen td:has(+ td.ico) {
   color: var(--bone-hi);
   font-family: var(--font-cn);
   font-weight: 600;
@@ -242,7 +262,7 @@ main { padding: 0 24px clamp(48px, 6vw, 84px); }
 
 /* 类别列退一档：它是分组标签、逐行重复，不该跟条目名争。
    按关系认那一列——类别格后面跟的是名称格（没有图），条目名格后面直接跟图标格。 */
-.gen tbody th[scope="row"]:has(+ td:not(:has(img))) { color: var(--bone-faint); }
+.gen tbody th[scope="row"]:has(+ td:not(.ico)) { color: var(--bone-faint); }
 
 /* 合并块的交替底色。CSS 数不出「第几个合并块」——每块行数不等，:nth-child
    对不上，计数器又不能参与着色，所以这一位由生成器打成 data-band。 */

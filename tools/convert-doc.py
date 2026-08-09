@@ -39,16 +39,19 @@ ICONS: 'Icons | None' = None    # 当前页面的图标登记处，由 build() �
 CELL_BREAK = '\\\\'     # 表格单元格里的换行标记，见 render_table()
 
 
+def icon_sub(md):
+    """把 ![](icons/x.png) 换成 <img>。图标登记处由 build() 装上。"""
+    icons = ICONS
+    return IMG.sub(lambda m: icons.html(m.group(1)), md) if icons else md
+
+
 def wrap(tag, md, attrs=''):
     """一个块的内容整体只有一个标记时，class 落在块上，不套一层 span。
 
     <th class="t-red">红血</th> 比 <th><span class="t-red">红血</span></th> 干净，
     p.note、p.formula 同理。
     """
-    md = md.strip()
-    icons = ICONS
-    if icons:
-        md = IMG.sub(lambda m: icons.html(m.group(1)), md)
+    md = icon_sub(md.strip())
     hit = whole_marker(md)
     if hit:
         return '<%s%s class="%s">%s</%s>' % (tag, attrs, hit[0], inline(hit[1], rich=True), tag)
@@ -453,7 +456,9 @@ def render(md, slug):
             scales[col] = bounds
         chunk = SCALE_LINE.sub('', chunk)
         o.append('<section class="block" id="sec-%d">' % at)
-        o.append('<h2 class="sect-label">%s</h2>' % inline(head.strip(), rich=True))
+        # 分节标题里也允许放图标：源表每个职业段前有一枚职业徽章，标题是它的位置
+        o.append('<h2 class="sect-label">%s</h2>'
+                 % inline(icon_sub(head.strip()), rich=True))
         o += render_blocks(chunk, scales, groups)
         o.append('</section>')
 

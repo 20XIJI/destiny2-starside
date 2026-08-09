@@ -188,7 +188,12 @@
     var chip = document.createElement('a');
     chip.className = 'chip';
     chip.href = '#' + sec.id;
-    chip.textContent = sec.querySelector(LABEL).firstChild.textContent.trim();
+    /* 取标题的文字：首节点是文本就用它（神器模组页的 h2 后面还挂着别的东西），
+       首节点是图标时退回整段文字——资料页的分节标题前面挂着职业徽章。 */
+    var label = sec.querySelector(LABEL);
+    var first = label.firstChild;
+    chip.textContent = (first && first.nodeType === 3
+      ? first.textContent : label.textContent).trim();
     chipNav.appendChild(chip);
     return chip;
   });
