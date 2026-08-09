@@ -16,8 +16,6 @@ import sys
 
 import shell
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 HOME = 'index.html'
 PAGES = [HOME, 'ammo/index.html', 'armor-sets/index.html', 'artifact-mods/index.html',
          'boss-hp/index.html', 'elements/index.html', 'elements/arc/index.html',
@@ -44,7 +42,7 @@ def main() -> int:
     want = invariants()
     bad: list[str] = []
     for rel in PAGES:
-        path = os.path.join(ROOT, rel)
+        path = os.path.join(shell.ROOT, rel)
         if not os.path.exists(path):
             bad.append('%s：文件不存在' % rel)
             continue

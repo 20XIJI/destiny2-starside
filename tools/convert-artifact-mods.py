@@ -132,7 +132,8 @@ def parse(md, icons):
                 'tier': TIERS[tier_cn],
                 'icon': img(icons, meta(mod_body, '图标', mod_name), 'mod-icon'),
                 'name': inline(mod_name),
-                'desc': '<br><br>'.join(inline(b) for b in blocks_of(body(mod_body))),
+                # 段落保持成 list：拍平成一串 <br><br> 再切回来会多一趟自造往返
+                'desc': [inline(b) for b in blocks_of(body(mod_body))],
             })
     return page
 
@@ -150,28 +151,6 @@ def rows_of(mods):
         if tiers != [1, 2, 3]:
             die('第 %d 行不是完整的一/二/三级三档：%s' % (i // 3 + 1, tiers))
         yield row
-
-
-def paras(desc):
-    """描述按双 <br> 分段，段距交给 CSS，不靠连续换行撑开。
-
-    只在着色 span 之外断开——span 内部也有双换行，从那里切会切出未闭合标签。
-    """
-    parts, depth, last = [], 0, 0
-    for m in re.finditer(r'<span\b[^>]*>|</span>|(?:<br>\s*){2,}', desc):
-        if m.group(0).startswith('<span'):
-            depth += 1
-        elif m.group(0).startswith('</span'):
-            depth -= 1
-        elif depth == 0:
-            parts.append(desc[last:m.start()])
-            last = m.end()
-    parts.append(desc[last:])
-    parts = [re.sub(r'^(?:<br>\s*)+|(?:<br>\s*)+$', '', p.strip()) for p in parts]
-    parts = [p for p in parts if p]
-    if text_of(''.join(parts)) != text_of(desc):
-        die('分段丢了字符：%r' % desc[:160])
-    return parts
 
 
 def render(page):
@@ -218,7 +197,7 @@ def render(page):
             for mod in row:
                 o += ['<article class="mod" data-tier="%d">' % mod['tier'], mod['icon'],
                       '<h4>%s</h4>' % mod['name'], '<div class="mod-desc">']
-                o += ['<p>%s</p>' % p for p in paras(mod['desc'])]
+                o += ['<p>%s</p>' % p for p in mod['desc']]
                 o += ['</div>', '</article>']
             o.append('</div>')
         o += ['</div>', '</section>']

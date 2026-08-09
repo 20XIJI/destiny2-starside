@@ -110,10 +110,10 @@ def scale_of(spec):
     剩下的是列名。
     """
     parts = spec.split()
-    at = len(parts)
-    while at and parts[at - 1].isdigit():
-        at -= 1
-    col, nums = ' '.join(parts[:at]), parts[at:]
+    cut = len(parts)
+    while cut and parts[cut - 1].isdigit():
+        cut -= 1
+    col, nums = ' '.join(parts[:cut]), parts[cut:]
     if not col or len(nums) < 2:
         die('「色阶：」要写成「列名 阈值 阈值 …」，至少两个阈值：%r' % spec)
     vals = [int(n) for n in nums]
@@ -201,7 +201,7 @@ def render_table(lines, scales=None, groups=None):
     if len(lines) < 2 or not is_rule(split_cells(lines[1])):
         die('表格第二行必须是 |---|---| 分隔行：%s' % lines[0][:60])
 
-    at = {colkey(c): i for i, c in enumerate(head)}
+    col_at = {colkey(c): i for i, c in enumerate(head)}
     if groups:
         missing = [c for c in head if colkey(c) not in groups]
         if missing:
@@ -209,11 +209,11 @@ def render_table(lines, scales=None, groups=None):
 
     tiers = {}
     for col, bounds in (scales or {}).items():
-        if colkey(col) not in at:
+        if colkey(col) not in col_at:
             die('「色阶：」指的列 %r 不在表头里：%s' % (col, '｜'.join(head)))
-        if at[colkey(col)] == 0:
+        if col_at[colkey(col)] == 0:
             die('「色阶：」不能指首列，那一列是行标题不是数值')
-        tiers[at[colkey(col)]] = bounds
+        tiers[col_at[colkey(col)]] = bounds
 
     # 先摊平成行与行组分界，再算合并跨度：跨度要看后面几行，边扫边输出算不出来
     rows = []
@@ -261,9 +261,9 @@ def render_table(lines, scales=None, groups=None):
             band ^= 1               # 每遇到一个新行标题翻一次
             attrs = ' scope="row"' + (' rowspan="%d"' % n if n > 1 else '')
             row.append(wrap('th', broke(cells[0]), attrs))
-        for at, c in enumerate(cells[1:], start=1):
-            if at in tiers:
-                tier = tier_of(c, tiers[at])
+        for ci, c in enumerate(cells[1:], start=1):
+            if ci in tiers:
+                tier = tier_of(c, tiers[ci])
                 if tier is None:
                     die('「色阶：」指的列里有非数值格：%r' % c[:40])
                 # 色阶列是纯数值，直接输出：分组标签由 grouped() 给，
@@ -338,6 +338,29 @@ def render_blocks(chunk, scales=None, groups=None):
     return o
 
 
+def meta_of(md, key, required=True):
+    """头部「键：值」行的值。整个脚本只在这里认键，不另写裸正则。"""
+    hit = re.search(r'^%s：(.*)$' % key, md, re.M)
+    if hit is None:
+        if required:
+            die('源稿缺「%s：」一行' % key)
+        return ''
+    return hit.group(1).strip()
+
+
+def flag_of(md, key):
+    """布尔键只认「是」。写「否」当场报错，不静默当真——不需要就整行删掉。"""
+    v = meta_of(md, key, required=False)
+    if v and v != '是':
+        die('「%s：」只能写「是」，源稿写的是 %r；不需要就把整行删掉' % (key, v))
+    return bool(v)
+
+
+def where_of(md, slug):
+    """「路径：」把页面挂到子目录里（elements/arc）；缺省是 slug 本身、挂在站点根下。"""
+    return meta_of(md, '路径', required=False) or slug
+
+
 def render(md, slug):
     m = re.match(r'^#\s+(.+)$', md.split('\n')[0])
     if not m:
@@ -345,12 +368,7 @@ def render(md, slug):
     title = m.group(1).strip()
 
     def meta(key, required=True):
-        hit = re.search(r'^%s：(.*)$' % key, md, re.M)
-        if hit is None:
-            if required:
-                die('源稿缺「%s：」一行' % key)
-            return ''
-        return hit.group(1).strip()
+        return meta_of(md, key, required)
 
     desc, stamp, foot = meta('描述'), meta('更新'), meta('页脚', required=False)
     thanks = meta('鸣谢', required=False)
@@ -380,22 +398,20 @@ def render(md, slug):
     # 当前那一格打 data-now。时刻只有运行时才知道，不能写进产出，所以走 JS。
     # 开关叫 data-clock、标记叫 data-now，两者不同名——同名时 [data-now] 会把
     # 工具条自己也选进去，样式与断言都要额外绕开它。
-    if meta('此刻', required=False):
+    if flag_of(md, '此刻'):
         toolbar = dict(toolbar or {}, **{'data-clock': ''})
 
     # 「导航：是」→ 顶部工具条：搜索框 + 每个分节一枚跳转 chip，与神器模组页同一套。
     # 条目是表格行，所以带这一档的表**不能用首格留空合并**——按行隐藏会把合并块
     # 豁开，行标题要逐行写全。
-    if meta('导航', required=False):
+    if flag_of(md, '导航'):
         toolbar = dict(toolbar or {},
                        **{'data-section': '.block', 'data-item': '.gen tbody tr',
                           'data-label': '.sect-label', 'data-noun': '条目',
                           'data-chip-label': '分节'})
 
-    # 「路径：」把页面挂到子目录里（elements/arc）。层数决定资源前缀与面包屑，
-    # 缺省就是 slug 本身、挂在站点根下。
-    where = meta('路径', required=False) or slug
-    up = where.count('/') + 1
+    # 层数决定资源前缀与面包屑
+    up = where_of(md, slug).count('/') + 1
     full = '%s · Starside' % title
     o = [shell.head(full, desc, app_js=toolbar is not None, up=up),
          shell.nav(title, toolbar, up=up, parent=meta('上级', required=False) or None),
@@ -410,7 +426,7 @@ def render(md, slug):
     if len(parts) == 1:
         die('源稿一个 ## 分节都没有')
 
-    for at, part in enumerate(parts[1:], 1):
+    for si, part in enumerate(parts[1:], 1):
         head, _, chunk = part.partition('\n')
         # 「色阶：」是分节级声明，按整行剥离——留在正文里会进保真比对
         scales = {}
@@ -420,7 +436,7 @@ def render(md, slug):
                 die('「色阶：」给同一列 %r 写了两套阈值' % col)
             scales[col] = bounds
         chunk = SCALE_LINE.sub('', chunk)
-        o.append('<section class="block" id="sec-%d">' % at)
+        o.append('<section class="block" id="sec-%d">' % si)
         # 分节标题里也允许放图标：源表每个职业段前有一枚职业徽章，标题是它的位置
         o.append('<h2 class="sect-label">%s</h2>'
                  % inline(icon_sub(head.strip()), rich=True))
@@ -432,9 +448,9 @@ def render(md, slug):
     o += ['</main>', '',
           shell.foot(stamp,
                      inline(foot, rich=True) if foot else '',
-                     compendium=bool(meta('数据源', required=False)),
+                     compendium=flag_of(md, '数据源'),
                      thanks=inline(thanks, rich=True) if thanks else None)]
-    return '\n'.join(o), title, where
+    return '\n'.join(o), title
 
 
 # ── 自检 ────────────────────────────────────────────────────────────────
@@ -487,15 +503,16 @@ def build(slug):
     with open(src, encoding='utf-8') as f:
         md = f.read()
 
-    where = re.search(r'^路径：(.*)$', md, re.M)
-    where = where.group(1).strip() if where else slug
+    where = where_of(md, slug)
     outdir = os.path.join(shell.ROOT, *where.split('/'))
     if not os.path.isdir(outdir):
         die('输出目录不存在：%s/（新页面要先建目录并写 style.css）' % where)
-    eager = re.search(r'^首屏图标：(\d+)$', md, re.M)
-    ICONS = Icons(outdir, int(eager.group(1)) if eager else 0)
+    eager = meta_of(md, '首屏图标', required=False)
+    if eager and not eager.isdigit():
+        die('「首屏图标：」要写一个整数，源稿写的是 %r' % eager)
+    ICONS = Icons(outdir, int(eager) if eager else 0)
 
-    out, title, where = render(md, slug)
+    out, title = render(md, slug)
     check(md, out, slug)
 
     shell.emit(outdir, out, title)
