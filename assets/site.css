@@ -487,6 +487,25 @@ main {
 .gen tbody + tbody tr:first-child > th,
 .gen tbody + tbody tr:first-child > td { border-top: 1px solid var(--hair-lit); }
 
+/* 横幅行：源稿写 `| == 近战技能 == |`，组名跨满整表宽（convert-doc.py 的 lane_of）。
+   一张表里分好几组、各组末列装的东西又不一样时用它——组名走横幅，就不必摊成一个
+   逐行重复的「类别」列。
+
+   底色取 --head-fill 与表头同族，但左对齐、不加字距：它是表内的一道分层标签，
+   不是又一排列名，居中会跟表头认错。 */
+.gen tr.lane > th {
+  color: var(--bone-hi);
+  font-family: var(--font-cn);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-align: left;
+  background: var(--head-fill);
+}
+
+/* 横幅行不参与 hover：它没有可读的行内容，跟着亮反而像可点 */
+.gen tbody tr.lane:hover > th { background: var(--head-fill); }
+
 /* 合并块分界：带 <th> 的那一行即一块的开头。线要明显亮于行线——原先用
    --hair-lit，与 --hair 的 ΔE 只有 9.03，按 design.md 的判据视作同色、等于没画。 */
 .gen tbody tr:has(> th) > th,

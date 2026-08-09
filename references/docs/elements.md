@@ -26,8 +26,6 @@
 | {el-strand|缚丝} | {el-strand|织造铠甲} | {deb-strand|割裂}、{deb-strand|悬停}、{deb-strand|瓦解} | {el-strand|缠结} |
 | {el-prismatic|棱镜} | {el-prismatic|超凡}，光能与暗影混搭 | 光能与暗影全部减益 | 上述全部 |
 
-前三个属于光能，冰影与缚丝属于暗影；{el-prismatic|棱镜}把两侧的技能与星相混装在一套配装里，靠{el-prismatic|超凡}把两种伤害类型的收益连起来。
-
 ## 每页有什么
 
 | 分节 | 内容 |

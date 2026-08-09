@@ -91,6 +91,24 @@ def is_rule(cells):
     return all(re.fullmatch(r':?-{3,}:?', c or '') for c in cells) and any(cells)
 
 
+LANE = re.compile(r'^==\s*(.+?)\s*==$')
+
+
+def lane_of(cells):
+    """表内横幅行 `| == 近战技能 == |`：一格写组名，跨满整表宽。
+
+    源表每个职业下面是三块横幅分节（近战技能／超能技能／星相），末列同一列复用
+    ——技能填冷却，星相填碎片槽位。照搬这个形状，组名就不必摊成一个逐行重复的
+    「类别」列，冷却与槽位也不必拆成两列各空一半。
+
+    不是横幅行返回 None，其余资料页的产出一个字不变。
+    """
+    if len(cells) != 1:
+        return None
+    m = LANE.match(cells[0])
+    return m.group(1) if m else None
+
+
 def colkey(name):
     """列名按去掉空格比对。
 
@@ -215,12 +233,17 @@ def render_table(lines, scales=None, groups=None):
             die('「色阶：」不能指首列，那一列是行标题不是数值')
         tiers[col_at[colkey(col)]] = bounds
 
-    # 先摊平成行与行组分界，再算合并跨度：跨度要看后面几行，边扫边输出算不出来
+    # 先摊平成行与行组分界，再算合并跨度：跨度要看后面几行，边扫边输出算不出来。
+    # 三种元素：None 是行组分界，str 是横幅行的组名，list 是一行数据格。
     rows = []
     for line in lines[2:]:
         cells = split_cells(line)
         if is_rule(cells):
             rows.append(None)
+            continue
+        lane = lane_of(cells)
+        if lane is not None:
+            rows.append(lane)
             continue
         if len(cells) != len(head):
             die('表格某行有 %d 格，表头是 %d 格：%s' % (len(cells), len(head), line[:60]))
@@ -229,7 +252,7 @@ def render_table(lines, scales=None, groups=None):
     span = [1] * len(rows)          # 0 表示这一行的首格并入了上一个行标题
     owner = None
     for i, cells in enumerate(rows):
-        if cells is None:           # 行组分界，合并不跨组
+        if not isinstance(cells, list):     # 行组分界或横幅行，合并不跨组
             owner = None
             continue
         if cells[0]:
@@ -254,6 +277,15 @@ def render_table(lines, scales=None, groups=None):
     for cells, n in zip(rows, span):
         if cells is None:
             o += ['</tbody>', '<tbody>']
+            band = 1
+            continue
+        # 横幅行自己领一个 <tbody>：组间那道横线照旧由 CSS 的 tbody + tbody 画，
+        # 搜索时 app.js 也按这个 tbody 数「这一组还剩几行可见」。
+        if isinstance(cells, str):
+            o += ['</tbody>', '<tbody>',
+                  '<tr class="lane">%s</tr>'
+                  % wrap('th', broke(cells),
+                         ' colspan="%d" scope="colgroup"' % len(head))]
             band = 1
             continue
         row = []
@@ -406,7 +438,8 @@ def render(md, slug):
     # 豁开，行标题要逐行写全。
     if flag_of(md, '导航'):
         toolbar = dict(toolbar or {},
-                       **{'data-section': '.block', 'data-item': '.gen tbody tr',
+                       **{'data-section': '.block',
+                          'data-item': '.gen tbody tr:not(.lane)',
                           'data-label': '.sect-label', 'data-noun': '条目',
                           'data-chip-label': '分节'})
 
@@ -467,7 +500,10 @@ def check(md, out, slug):
         line = raw.strip()
         if line.startswith('|'):                      # 表格：只去分隔符与分隔行
             cells = split_cells(line)
-            if not is_rule(cells):
+            lane = lane_of(cells)
+            if lane is not None:                      # 横幅行只留组名，== 是标记
+                lines.append(lane)
+            elif not is_rule(cells):
                 lines.append(''.join(cells))
             continue
         for mark in ('## ', '# ', '- ', ': '):         # 块标记只去行首那一个

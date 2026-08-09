@@ -168,6 +168,8 @@
 
   var rows = ROW ? Array.prototype.slice.call(document.querySelectorAll(ROW)) : [];
   var mods = ITEM ? Array.prototype.slice.call(document.querySelectorAll(ITEM)) : [];
+  /* 表内横幅行是组名不是条目，不参与命中，改为跟着自己那一组的可见行走 */
+  var lanes = ITEM ? Array.prototype.slice.call(document.querySelectorAll('tr.lane')) : [];
   /* 上百个条目，每次按键都取 textContent 会重复遍历整棵子树，先缓存 */
   var text = mods.map(function (mod) { return mod.textContent; });
 
@@ -215,6 +217,11 @@
     });
     rows.forEach(function (row) {
       row.hidden = !row.querySelector(ITEM + ':not([hidden])');
+    });
+    /* 横幅行独占一个 tbody，同组的数据行跟在它后面：整组都被搜没了就一并收起，
+       不留一条光杆组名。 */
+    lanes.forEach(function (lane) {
+      lane.hidden = !lane.parentNode.querySelector('tr:not(.lane):not([hidden])');
     });
     sections.forEach(function (sec, i) {
       var empty = !sec.querySelector((ROW || ITEM) + ':not([hidden])');
