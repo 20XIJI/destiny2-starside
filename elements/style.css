@@ -176,14 +176,25 @@
 .gen td.ico4 img { display: inline-block; margin: 3px; }
 
 /* 共享技能表的左上角：源表把「职业技能和移动技能都与原分支职业完全共享」
-   写在这一格里，跟着搬过来，不摊成表外的一句话 */
+   写在这一格里，跟着搬过来，不摊成表外的一句话。
+
+   **这一格要把 keep-all 解开。**site.css 给 .gen thead th 上 keep-all 是为了让
+   列名只在源稿写好的空格处断行；但这一格装的是整句说明、句中没有空格，keep-all
+   会把它钉成不可断的一整行，首列被撑到近三倍宽。列名与说明句不是一回事。 */
 .gen th.lead {
   width: 190px;
   white-space: normal;
+  word-break: normal;
   line-height: 1.7;
 }
 
 .gen th.lead .note { font-weight: 400; }
+
+/* 首列居中：这一格是标题加一句说明，下面两格是「手雷」「近战」两个短标签，
+   左对齐会让它们孤零零贴在栏的左缘，与右边五列居中的图标对不上。
+   只作用于带 .lead 的这张网格表，别的表首列仍是左对齐的名称列。 */
+.gen:has(th.lead) th.lead,
+.gen:has(th.lead) tbody th[scope="row"] { text-align: center; }
 
 .gen td[class^="sk-"] {
   width: 152px;
