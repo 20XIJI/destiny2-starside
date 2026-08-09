@@ -14,7 +14,7 @@
 | 名称 | 图标 | 说明 |
 |---|---|---|
 | 超凡 | {ico|![](icons/c41e42cfc9.png)} | 独特技能，靠均衡使用光能与暗影两种伤害类型充能。\\ {el-kinetic|动能}伤害同时填充光能与暗影两条槽，效率降低 50%；其中一条槽已满时，{el-kinetic|动能}伤害填充剩余那条的效率降低 40%。溢出伤害不计入{el-prismatic|超凡}获取。\\ 造成伤害并施加元素效果提供{el-prismatic|超凡能量}；施加增益与减益都算，各自计入对应阵营。\\ \\ {el-prismatic|超凡}激活时：立即充满 2 次{pickup|手雷与近战技能充能}；手雷技能被替换为职业专属的{el-prismatic|棱镜}手雷，同时带光能与暗影两种伤害类型；提供 5% 武器伤害提高、额外 10% {pickup|手雷与近战}充能速度，以及 20% {pvp|[5%]} 伤害抗性，持续 20 秒。伤害提升可与一切效果叠加。\\ {el-prismatic|超凡}期间造成手雷技能伤害，会把近战充能速度提高到每秒固定 35% {pickup|近战技能能量}，持续 2 秒；造成近战技能伤害则把{el-prismatic|棱镜}手雷充能速度提高到每秒固定 35%，持续 2 秒。\\ {el-prismatic|超凡}期间的击杀延长其持续时间，随击杀次数递减：{enemy|T1 与 T2 级战斗人员} 5% ｜ {enemy|T3 与 T4} 10% ｜ {enemy|T3 精英}、{enemy|小头目}与{enemy|首领} 15%。从第 2 次击杀起，每次的延长量累计乘以约 0.9 的惩罚。 |
-| 元素效果 | {ico|![](icons/9398c406a9.png)} | 元素效果指各分支职业能施加的全部动词，对目标可以是正面（增益）也可以是负面（减益）。\\ 装备任意{el-arc|电弧}技能或星相即可通过多次{el-arc|电弧}击杀获得{el-arc|增幅}（{note|推进器不计为电弧技能}）。装备任意{el-strand|缚丝}技能或星相即可生成{el-strand|缠结}，术士还能拥有停栖的{el-strand|线虫}。\\ \\ 光能动词：\\ {el-arc|电弧} ｜ 增益 {el-arc|增幅}、{el-arc|电光充能}；减益 {deb-arc|致盲}、{deb-arc|震颤}；拾取物 {el-arc|离子轨迹}。\\ {el-solar|烈日} ｜ 增益 {el-solar|治愈}、{el-solar|焕光}、{el-solar|恢复}；减益 {deb-solar|灼烧}、{deb-solar|点燃}；拾取物 {el-solar|焰灵}。\\ {el-void|虚空} ｜ 增益 {el-void|吞食}、{el-void|隐身}、{el-void|覆盖护盾}；减益 {deb-void|压制}、{deb-void|不稳定}、{deb-void|虚弱}；拾取物 {el-void|虚空裂口}。\\ \\ 暗影动词：\\ {el-stasis|冰影} ｜ 增益 {el-stasis|冰霜护甲}；减益 {deb-stasis|减速}、{deb-stasis|冻结}、{deb-stasis|碎裂}；拾取物 {el-stasis|冰影碎片}。\\ {el-strand|缚丝} ｜ 增益 {el-strand|织造铠甲}；减益 {deb-strand|割裂}、{deb-strand|悬停}、{deb-strand|瓦解}；拾取物 {el-strand|缠结}。 |
+| 元素效果 | {ico4|![](icons/9398c406a9.png) ![](icons/d683022481.png) ![](icons/5d5617aa25.png) ![](icons/f3346cc143.png)} | 元素效果指各分支职业能施加的全部动词，对目标可以是正面（增益）也可以是负面（减益）。\\ 装备任意{el-arc|电弧}技能或星相即可通过多次{el-arc|电弧}击杀获得{el-arc|增幅}（{note|推进器不计为电弧技能}）。装备任意{el-strand|缚丝}技能或星相即可生成{el-strand|缠结}，术士还能拥有停栖的{el-strand|线虫}。\\ \\ 光能动词：\\ {el-arc|电弧} ｜ 增益 {el-arc|增幅}、{el-arc|电光充能}；减益 {deb-arc|致盲}、{deb-arc|震颤}；拾取物 {el-arc|离子轨迹}。\\ {el-solar|烈日} ｜ 增益 {el-solar|治愈}、{el-solar|焕光}、{el-solar|恢复}；减益 {deb-solar|灼烧}、{deb-solar|点燃}；拾取物 {el-solar|焰灵}。\\ {el-void|虚空} ｜ 增益 {el-void|吞食}、{el-void|隐身}、{el-void|覆盖护盾}；减益 {deb-void|压制}、{deb-void|不稳定}、{deb-void|虚弱}；拾取物 {el-void|虚空裂口}。\\ \\ 暗影动词：\\ {el-stasis|冰影} ｜ 增益 {el-stasis|冰霜护甲}；减益 {deb-stasis|减速}、{deb-stasis|冻结}、{deb-stasis|碎裂}；拾取物 {el-stasis|冰影碎片}。\\ {el-strand|缚丝} ｜ 增益 {el-strand|织造铠甲}；减益 {deb-strand|割裂}、{deb-strand|悬停}、{deb-strand|瓦解}；拾取物 {el-strand|缠结}。 |
 | 移动与职业技能 | {ico|![](icons/451da25203.png)} | 通常受分支职业限制的移动技能与职业技能，在{el-prismatic|棱镜}上可以自由选择。\\ 猎人可以使用瞬移与特技闪身。\\ 泰坦拥有推进器。\\ 术士可以装备瞬移与凤凰俯冲。 |
 | 熔炉竞技场调整 | {ico|![](icons/5131844001.png)} | 手雷、近战与职业技能承受 0.85 倍充能速度与 0.8 倍技能块获取。该惩罚与熔炉竞技场基准的 0.8 倍充能速度叠加，实际为基准之上的 0.68 倍。\\ 超能技能承受 0.95 倍充能速度，与基准的 0.75 倍叠加，实际 0.71 倍。 |
 
@@ -56,14 +56,12 @@
 | 星相 | 严冬帷幕 | {ico|![](icons/dc3fe2ac83.png)} | 对一名敌人施加{deb-stasis|减速}时，{pickup|职业技能}基础充能速度额外 +300% {pvp|[150%]}，持续 3 秒。\\ 使用职业技能：对 9 {pvp|[8]} 米内的敌人施加 60 {pvp|[40]} 层{deb-stasis|减速}，持续 8 {pvp|[1.5]} 秒，并对{enemy|战斗人员}提供 50% 伤害抗性约 4 秒。 | {slot|![](icons/77a53931f9.png)} |
 | 星相 | 线织幽灵 | {ico|![](icons/621bdd5738.jpg)} | 使用职业技能生成一个{el-strand|缚丝}诱饵。\\ 诱饵有 175 {health|生命值}，最多持续 12 秒；{enemy|战斗人员}会被吸引去攻击它，它对{enemy|战斗人员}拥有 70% 伤害抗性。{enemy|盟友}与铸造者对它造成的技能与武器伤害提高 150%。\\ 失去全部{health|生命值}或附近有敌人时爆炸，最多造成 479 {pvp|[60 守护者 ｜ 121 物体]} 伤害；由敌人靠近触发的爆炸会生成 2 只{el-strand|线虫}。\\ {note|装备时被动施加 0.6 倍职业技能充能速度，装备特技闪身时除外。} | {slot|![](icons/c1727e2c9c.png)} |
 
-职业技能与移动技能完全沿用原分支职业；手雷与近战按属性各挑一个。
-
-| 共享技能 | {el-arc|电弧} | {el-solar|烈日} | {el-void|虚空} | {el-stasis|冰影} | {el-strand|缚丝} |
+| {lead|共享技能\\ {note|职业技能和移动技能都与原分支职业完全共享。}} | {sk-arc|![](icons/45a24ce70c.png) 电弧} | {sk-solar|![](icons/5f9da931e5.png) 烈日} | {sk-void|![](icons/476a65fb13.png) 虚空} | {sk-stasis|![](icons/7f7731b13a.png) 冰影} | {sk-strand|![](icons/1b0c97aef2.png) 缚丝} |
 |---|---|---|---|---|---|
 | 手雷 | {sk-arc|![](icons/f6aedd7d1a.png) [电光手雷](../arc/index.html)} | {sk-solar|![](icons/beff648cc3.jpg) [蜂群手雷](../solar/index.html)} | {sk-void|![](icons/078d01bee0.jpg) [磁性手雷](../void/index.html)} | {sk-stasis|![](icons/6ebac03c17.png) [暮域手雷](../stasis/index.html)} | {sk-strand|![](icons/9f3ca8169c.jpg) [抓钩](../strand/index.html)} |
 | 近战 | {sk-arc|![](icons/4ff042b827.jpg) [组合打击](../arc/index.html)} | {sk-solar|![](icons/c41da9aa73.jpg) [飞刀戏法](../solar/index.html)} | {sk-void|![](icons/220b9ffead.png) [陷阱炸弹](../void/index.html)} | {sk-stasis|![](icons/9d366be634.png) [枯萎之刃](../stasis/index.html)} | {sk-strand|![](icons/c34ca16b4f.png) [线织尖刺](../strand/index.html)} |
 
-## ![](icons/0ab0449ae4.png) 泰坦
+## ![](icons/0ab0449ae4.png) ![](icons/b0db25930f.png) 泰坦
 
 | 类别 | 名称 | 图标 | 说明 | 碎片槽位 |
 |---|---|---|---|---|
@@ -75,9 +73,7 @@
 | 星相 | 钻石长矛 | {ico|![](icons/e7f28636e9.png)} | 取得 1 {pvp|[3]} 次{el-stasis|冰影}武器击杀、一次技能击杀，或一次{deb-stasis|碎裂}击杀，生成一支{el-stasis|冰影}长矛。{note|重击灌注的非充能近战击杀守护者不会生成。}\\ 长矛是一次性武器，3 米内可拾取，最多持有 10 秒，在地面上最多停留 25 秒。\\ ［开火］投出长矛：{deb-stasis|冻结}接触点 5 米内的敌人，直接接触时{deb-stasis|碎裂}{el-stasis|水晶}，并造成 150 {pvp|[45]} 伤害。\\ ［近战］猛击：{deb-stasis|冻结} 8 {pvp|[6.75]} 米内的敌人，最多造成 200 {pvp|[90]} 伤害，并为自己与附近{enemy|盟友}提供 2 层{el-stasis|冰霜护甲}。\\ {note|钻石长矛伤害视为普通冰影技能伤害，既非手雷也非近战。生成后有 7 [17] 秒冷却。} | {slot|![](icons/c1727e2c9c.png)} |
 | 星相 | 勇士之鞭 | {ico|![](icons/fe80192141.png)} | 放置屏障时释放一条{el-strand|缚丝}鞭，向前飞行最远 30 米，追踪路径上的敌人，命中造成 60 {pvp|[30]} 伤害并施加{deb-strand|悬停}。\\ 使用推进器职业技能时生成一枚{el-strand|缚丝}结，数秒后爆炸，最多造成 60 {pvp|[30]} 伤害并施加{deb-strand|悬停}。 | {slot|![](icons/c1727e2c9c.png)} |
 
-职业技能与移动技能完全沿用原分支职业；手雷与近战按属性各挑一个。
-
-| 共享技能 | {el-arc|电弧} | {el-solar|烈日} | {el-void|虚空} | {el-stasis|冰影} | {el-strand|缚丝} |
+| {lead|共享技能\\ {note|职业技能和移动技能都与原分支职业完全共享。}} | {sk-arc|![](icons/10683aef13.png) 电弧} | {sk-solar|![](icons/03aa092e24.png) 烈日} | {sk-void|![](icons/16f41d2716.png) 虚空} | {sk-stasis|![](icons/cb5a27feb9.png) 冰影} | {sk-strand|![](icons/a35f5c7fbb.png) 缚丝} |
 |---|---|---|---|---|---|
 | 手雷 | {sk-arc|![](icons/6987e47990.png) [脉冲手雷](../arc/index.html)} | {sk-solar|![](icons/cae5271e5c.jpg) [铝热手雷](../solar/index.html)} | {sk-void|![](icons/53a984c5e0.jpg) [抑制手雷](../void/index.html)} | {sk-stasis|![](icons/e7ba49ef2f.png) [冰川手雷](../stasis/index.html)} | {sk-strand|![](icons/e46a439b09.jpg) [束缚手雷](../strand/index.html)} |
 | 近战 | {sk-arc|![](icons/abf28c112c.jpg) [雷霆一击](../arc/index.html)} | {sk-solar|![](icons/727b90d1b2.jpg) [战锤打击](../solar/index.html)} | {sk-void|![](icons/bbd39e14b7.png) [圣盾投掷](../void/index.html)} | {sk-stasis|![](icons/0708caa7d1.png) [战栗打击](../stasis/index.html)} | {sk-strand|![](icons/5f604e4608.png) [狂暴利刃](../strand/index.html)} |
@@ -94,9 +90,7 @@
 | 星相 | 凄凉观察者 | {ico|![](icons/6817a8f4a6.png)} | 按住［手雷］把手雷技能转成{el-stasis|冰影}炮塔。手雷冷却覆盖为 159.6 秒，回复倍率继承当前装备的手雷。\\ 炮塔每 2 秒向 35 米内的敌人自动发射一轮 5 发追踪弹体（持续 0.7 秒），每次命中施加 20 {pvp|[10]} 层{deb-stasis|减速}，持续 4.5 {pvp|[2]} 秒。\\ 炮塔持续 25 秒，拥有 150 构造体{health|生命值}，开火前获得 67% 伤害抗性。\\ {note|凄凉观察者伤害计为冰影手雷技能伤害。} | {slot|![](icons/77a53931f9.png)} |
 | 星相 | 编织者之唤 | {ico|![](icons/ee55f74eb6.jpg)} | {el-strand|线虫}命中提供 10% {pickup|职业技能能量}。\\ 累计造成 700 伤害提供一只停栖的{el-strand|线虫}；生成之间有 2 秒冷却，一次最多生成 1 只。{note|伤害需求按显示的伤害数字计算，并受力量等级差惩罚。}\\ 使用职业技能生成 3 只{el-strand|线虫}，并部署全部停栖的{el-strand|线虫}。\\ 击杀推进一个计数，满 100% 提供一只停栖的{el-strand|线虫}：{enemy|小头目}及以下 34% ｜ {enemy|首领} 100% ｜ {enemy|守护者} 67%。 | {slot|![](icons/c1727e2c9c.png)} |
 
-职业技能与移动技能完全沿用原分支职业；手雷与近战按属性各挑一个。
-
-| 共享技能 | {el-arc|电弧} | {el-solar|烈日} | {el-void|虚空} | {el-stasis|冰影} | {el-strand|缚丝} |
+| {lead|共享技能\\ {note|职业技能和移动技能都与原分支职业完全共享。}} | {sk-arc|![](icons/51a92bca03.png) 电弧} | {sk-solar|![](icons/b8d2104db3.png) 烈日} | {sk-void|![](icons/96c4dd4ff3.png) 虚空} | {sk-stasis|![](icons/0dae424769.png) 冰影} | {sk-strand|![](icons/50c65a1f64.png) 缚丝} |
 |---|---|---|---|---|---|
 | 手雷 | {sk-arc|![](icons/6cf44217c7.png) [风暴手雷](../arc/index.html)} | {sk-solar|![](icons/c24b513e5c.jpg) [治愈手雷](../solar/index.html)} | {sk-void|![](icons/66569a6339.jpg) [涡流手雷](../void/index.html)} | {sk-stasis|![](icons/350eea998b.png) [急冻手雷](../stasis/index.html)} | {sk-strand|![](icons/6a1514efc1.jpg) [线虫手雷](../strand/index.html)} |
 | 近战 | {sk-arc|![](icons/663071a5cc.jpg) [连锁闪电](../arc/index.html)} | {sk-solar|![](icons/f391a4ba4a.jpg) [焚烧响指](../solar/index.html)} | {sk-void|![](icons/cbdb4f4218.png) [口袋奇点](../void/index.html)} | {sk-stasis|![](icons/faf5a58309.png) [半影冲击](../stasis/index.html)} | {sk-strand|![](icons/759b1305c7.png) [神秘织针](../strand/index.html)} |

@@ -217,6 +217,40 @@ main { padding: 0 24px clamp(48px, 6vw, 84px); }
 
 /* 共享技能网格：一列一个属性，格里图标压着名字，底色取该属性的色相，
    跟源表一样一眼看出这一列是哪个属性。 */
+.gen th[class^="sk-"] { padding: 12px 10px 10px; text-align: center; }
+
+.gen th[class^="sk-"] img { display: block; margin: 0 auto 6px; }
+
+/* 一格放两枚图标：源表在这一格里并排给了技能图与它依赖的星相菱形 */
+.gen td.ico2 {
+  width: 132px;
+  padding: 10px 8px;
+  text-align: center;
+  line-height: 0;
+}
+
+.gen td.ico2 img { display: inline-block; margin: 0 3px; }
+
+/* 源表里元素效果那格并排放着四枚增益／减益标记，照排成两行两列 */
+.gen td.ico4 {
+  width: 132px;
+  padding: 10px 8px;
+  text-align: center;
+  line-height: 0;
+}
+
+.gen td.ico4 img { display: inline-block; margin: 3px; }
+
+/* 共享技能表的左上角：源表把「职业技能和移动技能都与原分支职业完全共享」
+   写在这一格里，跟着搬过来，不摊成表外的一句话 */
+.gen th.lead {
+  width: 190px;
+  white-space: normal;
+  line-height: 1.7;
+}
+
+.gen th.lead .note { font-weight: 400; }
+
 .gen td[class^="sk-"] {
   width: 152px;
   padding: 14px 10px 12px;
@@ -233,11 +267,11 @@ main { padding: 0 24px clamp(48px, 6vw, 84px); }
   text-underline-offset: 3px;
 }
 
-.gen td.sk-arc { color: var(--el-arc); background: color-mix(in srgb, var(--c-arc) 9%, transparent); }
-.gen td.sk-solar { color: var(--el-solar); background: color-mix(in srgb, var(--c-solar) 9%, transparent); }
-.gen td.sk-void { color: var(--el-void); background: color-mix(in srgb, var(--c-void) 9%, transparent); }
-.gen td.sk-stasis { color: var(--el-stasis); background: color-mix(in srgb, var(--c-stasis) 9%, transparent); }
-.gen td.sk-strand { color: var(--el-strand); background: color-mix(in srgb, var(--c-strand) 9%, transparent); }
+.gen th.sk-arc, .gen td.sk-arc { color: var(--el-arc); background: color-mix(in srgb, var(--c-arc) 9%, transparent); }
+.gen th.sk-solar, .gen td.sk-solar { color: var(--el-solar); background: color-mix(in srgb, var(--c-solar) 9%, transparent); }
+.gen th.sk-void, .gen td.sk-void { color: var(--el-void); background: color-mix(in srgb, var(--c-void) 9%, transparent); }
+.gen th.sk-stasis, .gen td.sk-stasis { color: var(--el-stasis); background: color-mix(in srgb, var(--c-stasis) 9%, transparent); }
+.gen th.sk-strand, .gen td.sk-strand { color: var(--el-strand); background: color-mix(in srgb, var(--c-strand) 9%, transparent); }
 
 /* 名称格：紧挨在图标格前面的那一格。按 .ico 认，不按「有没有图」猜 */
 .gen td:has(+ td.ico) {
