@@ -23,12 +23,10 @@ import os
 import re
 
 import shell
-import sys
-from typing import NoReturn
+from markup import die, eq, loading_attr, no_nested_span, plain, text_of
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC = os.path.join(ROOT, 'references', 'armor-sets.md')
-OUT_DIR = os.path.join(ROOT, 'armor-sets')
+SRC = os.path.join(shell.ROOT, 'references', 'armor-sets.md')
+OUT_DIR = os.path.join(shell.ROOT, 'armor-sets')
 
 PAGE_TITLE = '护甲套装效果 · Starside'
 PAGE_DESC = '56 套护甲的 2 件 / 4 件套装效果、触发条件与数值，按目的地、行动、突袭、地牢分类。'
@@ -40,8 +38,7 @@ N_SETS = 56
 N_BONUSES = 112
 N_ICONS = 110  # 另 2 处英文原表本身就是空白占位，不输出 <img>
 
-# 1440×900 首屏内的图标数。首屏图片加 loading="lazy" 会让它们等布局算完才开始
-# 下载，是反模式；这几张改成高优先级预取。
+# 1440×900 首屏内的图标数
 N_EAGER = 2
 
 ICON_PX = 56  # 图标存储边长；显示 40px，留 1.4x 密度
@@ -95,10 +92,6 @@ MANUAL_PAIRS = {
     '深渊探索者': 'Deep Explorer',
     '黑暗纪元': 'Dark Age',
 }
-
-
-def die(msg: str) -> NoReturn:
-    sys.exit('convert-armor-sets: ' + msg)
 
 
 # ── 解析 ──────────────────────────────────────────────────────────────
@@ -301,13 +294,14 @@ def render(cats: list[Category]) -> str:
                 parts.append('<section class="bonus">\n')
                 parts.append('<h4 class="bonus-head">')
                 if b.icon:
-                    n_img += 1
+                    # 这一页的图标走序号命名、显示尺寸固定（见 README「部署与缓存」），
+                    # 与 markup.Icons 的哈希命名 + 现读尺寸不同路，只共用优先级判定。
                     parts.append(
                         '<img class="bonus-icon" src="icons/%s" alt=""'
                         ' width="%d" height="%d" %s>'
                         % (b.icon, ICON_DISPLAY, ICON_DISPLAY,
-                           'fetchpriority="high"' if n_img <= N_EAGER
-                           else 'loading="lazy"'))
+                           loading_attr(n_img, N_EAGER)))
+                    n_img += 1
                 else:
                     parts.append('<span class="bonus-icon" aria-hidden="true"></span>')
                 parts.append('<span class="piece">%s 件</span>' % b.piece)
@@ -320,8 +314,7 @@ def render(cats: list[Category]) -> str:
             parts.append('</article>\n')
         parts.append('</section>\n')
     parts.append('</main>\n\n' + shell.foot(
-        '2026.7.26',
-        '数值以游戏内实测为准，标注 <span class="unsure">?</span> 的条目尚待核实。',
+        '2026.7.26', shell.unsure_note('?'),
         compendium=True, thanks='部分翻译和排版参考自 Flamia#5238。'))
     return ''.join(parts)
 
@@ -333,13 +326,9 @@ def check(cats: list[Category], out: str) -> None:
     sets = [s for c in cats for s in c.sets]
     bonuses = [b for s in sets for b in s.bonuses]
 
-    def eq(got: int, want: int, what: str) -> None:
-        if got != want:
-            die('%s 应为 %d，实际 %d' % (what, want, got))
-
-    eq(len(cats), N_CATEGORIES, '分类数')
-    eq(len(sets), N_SETS, '套装数')
-    eq(len(bonuses), N_BONUSES, '效果数')
+    eq('分类数', len(cats), N_CATEGORIES)
+    eq('套装数', len(sets), N_SETS)
+    eq('效果数', len(bonuses), N_BONUSES)
 
     for s in sets:
         if [b.piece for b in s.bonuses] != ['2', '4']:
@@ -349,19 +338,17 @@ def check(cats: list[Category], out: str) -> None:
             if not b.blocks:
                 die('套装 %s 的 %s 件效果正文为空' % (s.name, b.piece))
 
-    eq(sum(1 for b in bonuses if b.icon), N_ICONS, '图标引用数')
-    eq(out.count('<img class="bonus-icon"'), N_ICONS, '产出里的图标标签数')
-    eq(out.count('class="set"'), N_SETS, '产出里的套装块数')
-    eq(out.count('class="bonus"'), N_BONUSES, '产出里的效果块数')
+    eq('图标引用数', sum(1 for b in bonuses if b.icon), N_ICONS)
+    eq('产出里的图标标签数', out.count('<img class="bonus-icon"'), N_ICONS)
+    eq('产出里的套装块数', out.count('class="set"'), N_SETS)
+    eq('产出里的效果块数', out.count('class="bonus"'), N_BONUSES)
 
     # 词表里挂着却一次都没命中的规则是死配置，当场报出来而不是静默留着
     dead = [w for w, _ in GLOSSARY if not hits.get(w)]
     if dead:
         die('词表里这些词一次都没命中，删掉或改写：%s' % '、'.join(dead))
 
-    # 着色 span 不得嵌套：嵌套说明 INLINE 的顺序被改坏了
-    for m in re.finditer(r'<span class="[^"]+">([^<]*)<span', out):
-        die('出现嵌套着色 span，检查 INLINE 的分支顺序：%r' % m.group(0)[:80])
+    no_nested_span(out, '护甲套装页（检查 INLINE 的分支顺序）')
 
     if '**' in out or '](' in out:
         die('产出里残留 markdown 标记')
@@ -370,15 +357,15 @@ def check(cats: list[Category], out: str) -> None:
     # 这道断言就把「行内正则吃掉了一个数字」这类事故挡在出文件之前。
     # 两侧都先归一化：空格不算内容（design.md 三节）；markdown 的标记字符
     # （**、反引号、buff 名的引号）在页面上由字重与颜色承担，不落成字符。
-    marks = str.maketrans('', '', '*`“”')
+    marks = '*`“”'
     bodies = re.findall(r'<div class="bonus-body">(.*?)</div>\n', out, re.S)
-    eq(len(bodies), N_BONUSES, '产出里的正文块数')
+    eq('产出里的正文块数', len(bodies), N_BONUSES)
     for b, got in zip(bonuses, bodies):
-        want = '\n'.join('\n'.join(content) for _, content in b.blocks).translate(marks)
-        plain = html.unescape(re.sub(r'<[^>]+>', '\n', got)).translate(marks)
-        if re.sub(r'\s+', '', plain) != re.sub(r'\s+', '', want):
+        want = plain('\n'.join('\n'.join(content) for _, content in b.blocks), marks)
+        mine = plain(text_of(got), marks)
+        if mine != want:
             die('正文与源稿不一致（%s 件｜%s）：\n  源稿 %r\n  产出 %r'
-                % (b.piece, b.name, want[:120], plain[:120]))
+                % (b.piece, b.name, want[:120], mine[:120]))
 
 
 # ── 图标 ──────────────────────────────────────────────────────────────
@@ -495,15 +482,12 @@ def main() -> None:
     check(cats, out)
 
     os.makedirs(OUT_DIR, exist_ok=True)
-    with open(os.path.join(OUT_DIR, 'index.html'), 'w', encoding='utf-8') as f:
-        f.write(out)
-
     sets = sum(len(c.sets) for c in cats)
     bonuses = sum(len(s.bonuses) for c in cats for s in c.sets)
-    print('分类 %d、套装 %d、效果 %d，图标 %d，着色 %d 处'
-          % (len(cats), sets, bonuses,
-             sum(1 for c in cats for s in c.sets for b in s.bonuses if b.icon),
-             sum(hits.values())))
+    shell.emit(OUT_DIR, out, '分类 %d、套装 %d、效果 %d，图标 %d，着色 %d 处'
+               % (len(cats), sets, bonuses,
+                  sum(1 for c in cats for s in c.sets for b in s.bonuses if b.icon),
+                  sum(hits.values())))
 
 
 if __name__ == '__main__':

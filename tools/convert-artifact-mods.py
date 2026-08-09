@@ -9,19 +9,16 @@
 解析不上的结构、对不上的计数一律抛错中止，不出半成品。
 """
 
-import hashlib
-import html as htmllib
 import os
 import re
-import struct
 import sys
 
 import shell
-from markup import blocks_of, die, inline, meta_line, must
+from markup import Icons, blocks_of, die, eq, inline, meta_line, must, text_of
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC = os.path.join(ROOT, 'references', 'artifact-mods.md')
-OUT_DIR = os.path.join(ROOT, 'artifact-mods')
+SRC = os.path.join(shell.ROOT, 'references', 'artifact-mods.md')
+OUT_DIR = os.path.join(shell.ROOT, 'artifact-mods')
+ICON_DIR = os.path.join(OUT_DIR, 'icons')
 
 PAGE_TITLE = '神器模组 · Starside'
 PAGE_DESC = '7 件神器、147 个模组的效果与数值，一级／二级／三级并排对照。'
@@ -31,8 +28,7 @@ N_MODS = 147
 N_ICON_REFS = 156          # 147 个模组 + 7 枚神器徽章 + 2 枚提示徽章
 N_ICON_FILES = 133
 
-# 1440×900 首屏内的图标数（提示徽章 2 + 首个神器徽章 1 + 首行模组 3）。给首屏图片
-# 加 loading="lazy" 会让它们等布局算完才开始下载，是反模式；这几张改成高优先级预取。
+# 1440×900 首屏内的图标数（提示徽章 2 + 首个神器徽章 1 + 首行模组 3）
 N_EAGER = 6
 
 TIERS = {'一级': 1, '二级': 2, '三级': 3}
@@ -42,66 +38,9 @@ META_KEYS = ('副标题', '小标题', '标题', '徽章', '括注', '图标', '
 META_LINE = meta_line(META_KEYS)
 
 
-# 组件页内的资源引用前缀。用相对路径（空前缀）而非站内绝对路径：绝对路径在 file://
-# 下会指向磁盘根目录，双击打开即丢样式。代价是访问 /artifact-mods（无尾斜杠）时 base
-# 会落到站点根，所以站内链接一律写全 <目录>/index.html。
-URL_PREFIX = ''
-
-
-def text_of(frag):
-    t = re.sub(r'<(?:"[^"]*"|\'[^\']*\'|[^>])*>', '', frag)
-    t = htmllib.unescape(t).replace('\xa0', ' ')
-    return re.sub(r'\s+', ' ', t).strip()
-
-
-def chars_of(frag):
-    """去空格的文本视图。分段的不变量。"""
-    return text_of(frag).replace(' ', '')
-
-
-# ── 图标 ────────────────────────────────────────────────────────────────
-def png_size(data):
-    if data[:8] != b'\x89PNG\r\n\x1a\n' or data[12:16] != b'IHDR':
-        die('图标不是 PNG（IHDR 缺失）')
-    return struct.unpack('>II', data[16:24])
-
-
-class Icons:
-    """按文件名引用已压好的图标，尺寸从 PNG 头现读，不在源稿里重复记。
-
-    文件名是内容的 md5 前 10 位，每次转换都复核一遍——这个名字不只是命名习惯，
-    它是缓存策略的依据：README「部署与缓存」给这个目录设了一年的浏览器缓存，
-    前提是「改了内容必然换名字」。原地覆盖一张图会让读者看一年的旧图，而控制台
-    刷新只清得掉节点缓存，清不掉已经发出去的浏览器缓存。所以在这里拦住。
-    """
-
-    def __init__(self, outdir):
-        self.dir = os.path.join(outdir, 'icons')
-        self.url = URL_PREFIX + 'icons/'
-        self.size = {}
-        self.refs = 0
-
-    def img(self, name, cls):
-        if name not in self.size:
-            path = os.path.join(self.dir, name)
-            if not os.path.exists(path):
-                die('源稿引用的图标不存在：icons/%s' % name)
-            with open(path, 'rb') as f:
-                data = f.read()
-            want = hashlib.md5(data).hexdigest()[:10] + '.png'
-            if name != want:
-                die('icons/%s 的内容与文件名对不上，应叫 %s。\n'
-                    '  图标按内容哈希命名，改内容就要换名字——这是 README「部署与缓存」\n'
-                    '  给该目录设一年浏览器缓存的前提。换图的做法：把新图按新哈希存进\n'
-                    '  icons/，改源稿里的「图标：」一行，再删掉旧文件。' % (name, want))
-            self.size[name] = png_size(data[:64])
-        w, h = self.size[name]
-        # 引用顺序即文档顺序：parse() 按提示徽章 → 分节徽章 → 模组图标依次取图
-        eager = self.refs < N_EAGER
-        self.refs += 1
-        return ('<img class="%s" src="%s%s" alt="" width="%d" height="%d" %s>'
-                % (cls, self.url, name, w, h,
-                   'fetchpriority="high"' if eager else 'loading="lazy"'))
+# 图标引用顺序即文档顺序：parse() 按提示徽章 → 分节徽章 → 模组图标依次取图
+def img(icons, name, cls):
+    return icons.html('icons/' + name, cls)
 
 
 # ── 解析源稿 ────────────────────────────────────────────────────────────
@@ -156,7 +95,7 @@ def parse(md, icons):
             if len(embs) != 2:
                 die('提示需要两枚徽章，源稿给了 %d 枚' % len(embs))
             page['notice'] = {
-                'emblems': [icons.img(n, 'emblem') for n in embs],
+                'emblems': [img(icons, n, 'emblem') for n in embs],
                 'title': inline(meta(chunk, '标题', '提示')),
                 'body': inline('\n'.join(blocks_of(body(chunk)))),
             }
@@ -174,7 +113,7 @@ def parse(md, icons):
         sec = {
             'name': inline(name),
             'paren': inline(meta_opt(head_chunk, '括注')),
-            'emblems': [icons.img(meta(head_chunk, '徽章', name), 'art-emblem')],
+            'emblems': [img(icons, meta(head_chunk, '徽章', name), 'art-emblem')],
             'tags': inline(tags) if tags else '',
             'site_tags': inline(site_tags) if site_tags else '',
             'mods': [],
@@ -191,7 +130,7 @@ def parse(md, icons):
                 die('模组标题要写成「### 一级 · 名称」，源稿写的是：%s' % mod_title.strip())
             sec['mods'].append({
                 'tier': TIERS[tier_cn],
-                'icon': icons.img(meta(mod_body, '图标', mod_name), 'mod-icon'),
+                'icon': img(icons, meta(mod_body, '图标', mod_name), 'mod-icon'),
                 'name': inline(mod_name),
                 'desc': '<br><br>'.join(inline(b) for b in blocks_of(body(mod_body))),
             })
@@ -230,12 +169,12 @@ def paras(desc):
     parts.append(desc[last:])
     parts = [re.sub(r'^(?:<br>\s*)+|(?:<br>\s*)+$', '', p.strip()) for p in parts]
     parts = [p for p in parts if p]
-    if chars_of(''.join(parts)) != chars_of(desc):
+    if text_of(''.join(parts)) != text_of(desc):
         die('分段丢了字符：%r' % desc[:160])
     return parts
 
 
-def render(page, prefix):
+def render(page):
     o = [shell.head(PAGE_TITLE, PAGE_DESC, app_js=True),
          shell.nav('神器模组', toolbar={}),
          shell.page_head(page['sub']),
@@ -285,9 +224,7 @@ def render(page, prefix):
         o += ['</div>', '</section>']
 
     o += ['</main>', '', shell.foot(
-        '2026.7.26',
-        '数值以游戏内实测为准，标注 <span class="unsure">[?]</span> 的条目尚待核实。',
-        compendium=True)]
+        '2026.7.26', shell.unsure_note('[?]'), compendium=True)]
     return '\n'.join(o)
 
 
@@ -299,21 +236,17 @@ def check(page, out, icons):
     改文案就是改源稿，git diff 即变更记录。这里只钉住结构性的数目：
     源稿被误删一段、模组档位串位、图标引丢，都会在这里当场露出来。
     """
-    def eq(label, got, want):
-        if got != want:
-            die('%s：%d，期望 %d' % (label, got, want))
-
     eq('分节数', len(page['sections']), N_SECTIONS)
     eq('模组数', sum(len(s['mods']) for s in page['sections']), N_MODS)
     eq('图标引用', icons.refs, N_ICON_REFS)
-    eq('图标文件', len(os.listdir(icons.dir)), N_ICON_FILES)
+    eq('图标文件', len(os.listdir(ICON_DIR)), N_ICON_FILES)
     eq('span 闭合', out.count('<span'), out.count('</span>'))
     eq('残留内联样式', len(re.findall(r'style=', out)), 0)
     eq('未转换的着色标记', len(re.findall(r'\{[\w-]+\|', out)), 0)
 
     for s in page['sections']:
         if not s['mods']:
-            die('分节「%s」一个模组都没有' % text_of(s['name']))
+            die('分节「%s」一个模组都没有' % text_of(s['name'], collapse=True))
 
 
 def main():
@@ -322,17 +255,15 @@ def main():
     with open(SRC, encoding='utf-8') as f:
         md = f.read()
 
-    icons = Icons(OUT_DIR)
+    icons = Icons(OUT_DIR, N_EAGER)
     page = parse(md, icons)
-    out = render(page, URL_PREFIX)
+    out = render(page)
     check(page, out, icons)
 
-    with open(os.path.join(OUT_DIR, 'index.html'), 'w', encoding='utf-8') as f:
-        f.write(out)
-    print('index.html %.1f KB，分节 %d、模组 %d、图标引用 %d，着色 %d 处'
-          % (len(out.encode()) / 1024, len(page['sections']),
-             sum(len(s['mods']) for s in page['sections']), icons.refs,
-             out.count('<span class="')))
+    shell.emit(OUT_DIR, out, '分节 %d、模组 %d、图标引用 %d，着色 %d 处'
+               % (len(page['sections']),
+                  sum(len(s['mods']) for s in page['sections']), icons.refs,
+                  out.count('<span class="')))
 
 
 if __name__ == '__main__':

@@ -8,6 +8,10 @@
 一种源稿格式不划算。改了这里的署名或免责声明，首页要跟着改，闸门会提醒。
 """
 
+import os
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 SITE_NAME = 'Starside'
 THEME = '#0b0d14'
 BILIBILI = 'https://space.bilibili.com/26117485'
@@ -100,6 +104,24 @@ def page_head(h1, note=None):
         o.append('<p class="page-note">%s</p>' % note)
     o += ['</header>', '']
     return '\n'.join(o)
+
+
+def unsure_note(mark='[?]'):
+    """页脚首句：待测值的说明。全站同一句话，只有标记形状按该页实际用的那个填。
+
+    同一句免责语在不同页面换着说法写，读者会以为是不同约定。
+    """
+    return ('数值以游戏内实测为准，标注 <span class="unsure">%s</span> 的条目尚待核实。'
+            % mark)
+
+
+def emit(outdir, out, detail=''):
+    """写出 index.html 并报一行。detail 是该页特有的结构计数。"""
+    path = os.path.join(outdir, 'index.html')
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write(out)
+    print('%s —— %.1f KB%s' % (os.path.relpath(path, ROOT), len(out.encode()) / 1024,
+                               '，' + detail if detail else ''))
 
 
 def foot(stamp, first, compendium=False, thanks=None):

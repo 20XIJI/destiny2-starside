@@ -13,17 +13,15 @@
 解析不上的结构、对不上的正文一律抛错中止，不出半成品。
 """
 
-import hashlib
-import html as htmllib
 import os
 import re
 import sys
 
 import shell
-from markup import IMG, LINK, die, img_size, inline, meta_line, whole_marker
+from markup import (IMG, LINK, Icons, die, inline, meta_line, no_nested_span,
+                    plain, text_of, whole_marker)
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC_DIR = os.path.join(ROOT, 'references', 'docs')
+SRC_DIR = os.path.join(shell.ROOT, 'references', 'docs')
 
 # 头部的「键：值」行。键名固定，正文行不会被误认。
 META_KEYS = ('描述', '更新', '页脚', '鸣谢', '数据源', '导航', '路径', '上级',
@@ -56,39 +54,6 @@ def wrap(tag, md, attrs=''):
     if hit:
         return '<%s%s class="%s">%s</%s>' % (tag, attrs, hit[0], inline(hit[1], rich=True), tag)
     return '<%s%s>%s</%s>' % (tag, attrs, inline(md, rich=True), tag)
-
-
-class Icons:
-    """页面目录下的图标：尺寸从文件头现读，文件名即内容的 md5 前 10 位。
-
-    与 artifact-mods/icons 同一条纪律——README「部署与缓存」给图标目录设了长缓存，
-    前提是「改了内容必然换名字」。原地覆盖一张图会让读者看一年的旧图。
-    """
-
-    def __init__(self, outdir, eager):
-        self.dir = outdir
-        self.eager = eager          # 首屏之前的图标改用高优先级，其余交给 lazy
-        self.size = {}
-        self.refs = 0
-
-    def html(self, rel):
-        if rel not in self.size:
-            path = os.path.join(self.dir, rel)
-            if not os.path.exists(path):
-                die('源稿引用的图标不存在：%s' % rel)
-            with open(path, 'rb') as f:
-                data = f.read()
-            want = hashlib.md5(data).hexdigest()[:10] + os.path.splitext(rel)[1]
-            if os.path.basename(rel) != want:
-                die('%s 的内容与文件名对不上，应叫 %s。\n'
-                    '  图标按内容哈希命名，改内容就要换名字——这是给图标目录设长缓存\n'
-                    '  的前提，原地覆盖会让读者看到过期的图。' % (rel, want))
-            self.size[rel] = img_size(data)
-        w, h = self.size[rel]
-        self.refs += 1
-        return ('<img src="%s" alt="" width="%d" height="%d" %s>'
-                % (rel, w, h,
-                   'fetchpriority="high"' if self.refs <= self.eager else 'loading="lazy"'))
 
 
 # ── 解析 ────────────────────────────────────────────────────────────────
@@ -473,11 +438,6 @@ def render(md, slug):
 
 
 # ── 自检 ────────────────────────────────────────────────────────────────
-def text_of(frag):
-    t = re.sub(r'<[^>]*>', '', frag)
-    return re.sub(r'\s+', '', htmllib.unescape(t))
-
-
 def check(md, out, slug):
     """正文逐字保真：产出剥掉标签后与源稿逐字相等。
 
@@ -503,7 +463,7 @@ def check(md, out, slug):
     body = IMG.sub('', body)                          # 图标不落成字符，两侧都不留
     body = LINK.sub(r'\1', body)                      # 链接只留文字
     body = re.sub(r'\{[\w-]+\|', '', body)            # 着色标记的开括号连分隔符
-    want = re.sub(r'[*`}\\\s]', '', body)            # 字重、着色与格内换行不落成字符
+    want = plain(body)                                # 字重、着色与格内换行不落成字符
 
     main = out[out.index('<main>'):out.index('</main>')]
     got = text_of(main)
@@ -514,8 +474,7 @@ def check(md, out, slug):
                     % (slug, i, got[i:i + 40], want[i:i + 40]))
         die('%s 正文长度对不上：产出 %d 字，源稿 %d 字' % (slug, len(got), len(want)))
 
-    if re.search(r'<span[^>]*>[^<]*<span', main):
-        die('%s 出现嵌套 span，检查 wrap() 的整块判定' % slug)
+    no_nested_span(main, '%s（检查 wrap() 的整块判定）' % slug)
     if '{' in main or '}' in main:
         die('%s 有没转换的着色标记' % slug)
 
@@ -530,7 +489,7 @@ def build(slug):
 
     where = re.search(r'^路径：(.*)$', md, re.M)
     where = where.group(1).strip() if where else slug
-    outdir = os.path.join(ROOT, *where.split('/'))
+    outdir = os.path.join(shell.ROOT, *where.split('/'))
     if not os.path.isdir(outdir):
         die('输出目录不存在：%s/（新页面要先建目录并写 style.css）' % where)
     eager = re.search(r'^首屏图标：(\d+)$', md, re.M)
@@ -539,9 +498,7 @@ def build(slug):
     out, title, where = render(md, slug)
     check(md, out, slug)
 
-    with open(os.path.join(outdir, 'index.html'), 'w', encoding='utf-8') as f:
-        f.write(out)
-    print('%s/index.html —— %s，%.1f KB' % (where, title, len(out.encode()) / 1024))
+    shell.emit(outdir, out, title)
 
 
 def main():
