@@ -4,32 +4,9 @@
    改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
 
 /* 首列写成时段区间（00:00-01:00），十一个字符把这一列撑到约 120px，整表约 900px，
-   越过阅读版心。取宽表那一档 1060px，不为这一页再引入一个宽度数——表格自己按
-   内容定宽再居中，版心只是上限（design.md 四节）。
-   收窄只作用于正文与页首：导航条与页脚是站点外壳，各页必须一样宽。 */
-main,
-.page-head {
-  max-width: 1060px;
-  margin: 0 auto;
-}
-
-main { padding: 0 22px clamp(48px, 6vw, 84px); }
-
-/* 版心固定，不做窄屏适配（design.md 五节） */
-body { min-width: 1104px; }
-
-.page-head { padding: clamp(40px, 5vw, 68px) 22px clamp(22px, 2.6vw, 32px); }
-
-.page-head h1 { font-size: clamp(30px, 3.4vw, 42px); }
-
-.block { scroll-margin-top: var(--stick); }
-
-.block > .sect-label {
-  margin-bottom: 22px;
-  color: var(--bone);
-  font-size: 12px;
-  letter-spacing: .24em;
-}
+   越过阅读版心。取宽表那一档 1060px，不为这一页再引入一个宽度数（design.md 四节）。
+   版心固定，不做窄屏适配（design.md 五节）。骨架在 assets/site.css。 */
+:root { --wrap: 1060px; --min: 1104px; }
 
 /* 版心是给表用的 1060px，正文不跟着放宽——阅读宽度由眼睛决定，不由容器决定。
    46em 在 14px 下约 40 个汉字一行。 */
@@ -55,13 +32,6 @@ body { min-width: 1104px; }
   word-break: keep-all;
 }
 
-.block em,
-.block strong {
-  color: var(--bone-hi);
-  font-style: normal;
-  font-weight: 600;
-}
-
 /* ── 轮换表 ──
    七列宽度天然相等：每一列都装着全部七个目的地，最长的「欧洲无人区」定列宽。
    width: auto 让表按内容定宽再居中，撑到 100% 会把格子拉散（design.md 四节）。
@@ -74,18 +44,15 @@ body { min-width: 1104px; }
    border-collapse 用 separate 而不是 collapse：collapse 下边框归表格所有、不跟着
    单元格走，下面那个 sticky 表头一滚动就把自己的线丢在原地。 */
 .gen {
-  width: auto;
-  margin: 0 auto;
+  border: 0;
   border-collapse: separate;
   border-spacing: 0;
-  font-size: 13px;
-  line-height: 1.6;
 }
 
 .gen th,
 .gen td {
   padding: 12px 22px;
-  border-top: 1px solid var(--hair);
+  border-left: 0;
   text-align: center;
   white-space: nowrap;
 }
@@ -160,7 +127,7 @@ body { min-width: 1104px; }
    那条 [data-now-row]；当前行落进 06–12 或 18–24 时，行高亮会被这条底色顶掉、
    悄悄退回分段那一档——一天里有一半时间如此。显式让位比去调权重清楚。 */
 .gen tbody tr:nth-child(n + 7):nth-child(-n + 12):not([data-now-row]),
-.gen tbody tr:nth-child(n + 19):nth-child(-n + 24):not([data-now-row]) { background: #ffffff04; }
+.gen tbody tr:nth-child(n + 19):nth-child(-n + 24):not([data-now-row]) { background: var(--tint-1); }
 
 /* ── 此刻：一行 + 一列 + 交点 ──
    两条高亮各答一个问题：竖着那条是「今天一天怎么转」，横着那条是「这个钟点各天

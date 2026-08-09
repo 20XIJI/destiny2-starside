@@ -2,24 +2,10 @@
    通用主题、字体与配色 token 在 /assets/site.css。
    这一页由 tools/convert-armor-sets.py 生成，改结构改 render()，别手改 index.html。 */
 
-/* 这一页是「左栏索引 + 阅读栏」：左栏钉住套装身份供扫读，右栏正文收到阅读宽度。
-   250 栏 + 44 沟 + 760 正文 = 1054，取整 1060。
-   收窄只作用于正文与页首——导航条与页脚是站点外壳，各页必须一样宽。 */
-main,
-.page-head {
-  max-width: 1060px;
-  margin: 0 auto;
-}
-
-main { padding: 0 22px clamp(48px, 6vw, 84px); }
-
-/* 版心固定，不做窄屏适配（design.md 五节）。横向溢出交给页面本身，
-   不在任何 sticky 祖先上开 overflow。 */
-body { min-width: 1104px; }
-
-.page-head { padding: clamp(40px, 5vw, 68px) 22px clamp(22px, 2.6vw, 32px); }
-
-.page-head h1 { font-size: clamp(30px, 3.4vw, 42px); }
+/* 「左栏索引 + 阅读栏」：左栏钉住套装身份供扫读，右栏正文收到阅读宽度。
+   250 栏 + 44 沟 + 760 正文 = 1054，取整 1060。版心固定，不做窄屏适配
+   （design.md 五节）。骨架在 assets/site.css。 */
+:root { --wrap: 1060px; --min: 1104px; }
 
 .page-note {
   max-width: 60em;
@@ -31,9 +17,7 @@ body { min-width: 1104px; }
 
 /* ── 分类分节 ──
    标题贴 .site-head 下沿。底色必须不透明，否则正文会从下面透上来；
-   --stick 由 assets/app.js 按实测高度写回。 */
-.cat { scroll-margin-top: var(--stick); }
-
+   --stick 由 assets/app.js 按实测高度写回，分节的 scroll-margin 在 site.css。 */
 .cat-head {
   position: sticky;
   top: var(--stick);
@@ -59,8 +43,6 @@ body { min-width: 1104px; }
   background: var(--hair);
 }
 
-.cat[hidden] { display: none; }
-
 /* ── 套装 ──
    左栏钉住身份，右栏是正文。栏宽固定，右栏才不会随左栏内容长短抖动。 */
 .set {
@@ -70,8 +52,6 @@ body { min-width: 1104px; }
   padding: 30px 0 34px;
   border-bottom: 1px solid var(--hair);
 }
-
-.set[hidden] { display: none; }
 
 .cat > .set:last-child { border-bottom: 0; }
 
@@ -139,9 +119,8 @@ body { min-width: 1104px; }
 
 /* ── 效果 ── */
 /* 整页约 28700px，屏外的效果栏不必参与布局与绘制。套在右栏而不是 .set 上：
-   .set 里有 sticky 的 .set-id，content-visibility 的 paint containment 会裁掉它。
-   实测 1440px 宽下 56 栏高 262–1027px，中位 386px——估值偏大会把滚动条撑长，
-   偏小会让滚动位置在渲染后跳，取中位数；auto 让浏览器渲染过一次后改用真实高度。 */
+   .set 里有 sticky 的 .set-id，paint containment 会裁掉它（同 artifact-mods）。
+   实测 1440px 宽下 56 栏高 262–1027px，中位 386px，那只是初始估值。 */
 .set-bonuses {
   max-width: 760px;
   min-width: 0;
@@ -234,7 +213,7 @@ span.bonus-icon { display: block; }
 .bonus-body strong {
   display: inline-block;
   margin-bottom: .3em;
-  color: var(--c-aside);
+  color: var(--note);
   font-family: var(--font-cn);
   font-size: 12.5px;
   font-weight: 600;

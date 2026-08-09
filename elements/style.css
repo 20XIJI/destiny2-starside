@@ -7,37 +7,11 @@
 
 :root { --accent: var(--c-term); }
 
-/* 宽表复用 1060px 那一档（design.md 第四节），不为它另定一个数。
-   收窄只作用于正文与页首——导航条与页脚是站点外壳，各页必须同宽。 */
-main,
-.page-head {
-  max-width: 1060px;
-  margin: 0 auto;
-}
-
-main { padding: 0 24px clamp(48px, 6vw, 84px); }
-
-.page-head { padding: clamp(40px, 5vw, 68px) 24px clamp(20px, 2.4vw, 30px); }
-
+/* 元素色相只借给标题下的一道规线，不给标题本身上色：
+   整页的青色都在讲电弧术语，标题不是术语。骨架在 assets/site.css。 */
 .page-head h1 {
-  font-size: clamp(28px, 3.2vw, 38px);
-  /* 元素色相只借给标题下的一道规线，不给标题本身上色：
-     整页的青色都在讲电弧术语，标题不是术语。 */
   padding-bottom: 12px;
   border-bottom: 2px solid var(--accent);
-}
-
-.block {
-  margin-bottom: clamp(40px, 4.6vw, 64px);
-  /* 工具条是 sticky 的，跳转过去要把分节标题让出来 */
-  scroll-margin-top: var(--stick);
-}
-
-.block > .sect-label {
-  margin-bottom: 18px;
-  color: var(--bone);
-  font-size: 12px;
-  letter-spacing: .24em;
 }
 
 /* 职业徽章：源表每个职业段前挂一枚，标题就是它的位置 */
@@ -60,24 +34,8 @@ main { padding: 0 24px clamp(48px, 6vw, 84px); }
 }
 
 .block p {
-  margin: 0 0 1.05em;
   line-height: 2.05;
   max-width: 760px;          /* 读表说明是连续阅读，不跟着宽表走 */
-}
-
-.block p:last-child { margin-bottom: 0; }
-
-.block em,
-.block strong {
-  color: var(--bone-hi);
-  font-style: normal;
-  font-weight: 600;
-}
-
-/* 当前分节的 chip 跟着本页的元素色，跟页首那道规线是同一个信号 */
-.chip[aria-current="true"] {
-  color: var(--accent);
-  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
 }
 
 /* ── 总览页的入口卡片 ──
@@ -100,14 +58,14 @@ main { padding: 0 24px clamp(48px, 6vw, 84px); }
   font-size: 13px;
   line-height: 1.75;
   text-decoration: none;
-  background: #ffffff05;
+  background: var(--tint-2);
   border: 1px solid var(--hair);
   transition: border-color .15s ease, background .15s ease;
 }
 
 .block li a:hover {
   color: var(--bone);
-  background: #ffffff0a;
+  background: var(--head-fill);
   border-color: var(--hair-lit);
 }
 
@@ -134,46 +92,22 @@ main { padding: 0 24px clamp(48px, 6vw, 84px); }
 /* ── 数据表 ──
    说明列很长，表格按内容定宽后本来就会顶到版心，所以仍是 width: auto，
    不写 100%——真到了内容短的表（术语表只有三列），它还能自己收窄。 */
-/* 一节里连着几张表时留出间距，否则上一张的下边框与下一张的上边框贴在一起，
-   看着像两张表压到了一起。 */
-.gen + .gen { margin-top: 26px; }
-
 .gen {
-  width: auto;
   max-width: 100%;
-  margin: 0 auto;
-  border: 1px solid var(--hair);
-  border-collapse: collapse;
-  font-size: 13px;
   line-height: 1.85;
 }
 
+/* 一行里效果格十几行、名称与冷却各两三行，格子一律纵向居中 */
 .gen th,
-.gen td {
-  padding: 10px 14px;
-  /* 一律纵向居中：一行里效果格十几行、名称与冷却各两三行，顶端对齐会让短的
-     那几格全吊在上沿，读起来对不上号。 */
-  vertical-align: middle;
-  border-top: 1px solid var(--hair);
-  border-left: 1px solid var(--hair);
-}
+.gen td { padding: 10px 14px; }
 
-/* 列线只在表格最左缘去掉。判据是「贴着表格左边」而不是「这一行的第一格」——
-   合并行没有 <th>，按 td:first-child 去边框会把首格左侧的竖线一起吃掉。 */
-.gen thead th:first-child,
-.gen tbody th[scope="row"] { border-left: 0; }
-
-/* 表头的默认色不写在这条上——整格只有一个 {标记|…} 时 class 落在 th 本身，
-   两选择器的 .gen thead th 会压过单类的 .el-arc，共享技能那排属性名会退成灰的。 */
+/* 表头的默认色不写成 .gen thead th——整格只有一个 {标记|…} 时 class 落在 th
+   本身，两选择器会压过单类的 .el-arc，共享技能那排属性名会退成灰的。 */
 .gen thead th {
-  font-family: var(--font-cn);
-  font-size: 12px;
-  font-weight: 600;
+  color: unset;
   letter-spacing: .08em;
   text-align: left;
   white-space: nowrap;
-  background: #ffffff06;
-  border-top: 0;
 }
 
 .gen thead th:not([class]) { color: var(--bone-dim); }
@@ -185,14 +119,10 @@ main { padding: 0 24px clamp(48px, 6vw, 84px); }
   font-weight: 600;
   text-align: left;
   white-space: nowrap;
-  vertical-align: middle;
   word-break: keep-all;
-  background: #ffffff04;
 }
 
-/* 正文基色给 tbody，由继承落到格子上。**别写成 .gen tbody td**——整格只有一个
-   {标记|…} 时 class 落在 <td> 本身，三选择器会以权重压过单类的 .el-stasis、
-   .note，整列着色静默退回默认色。格子选择器只管排版，两者不争同一个元素。 */
+/* 这一页的正文基色比默认亮一档：整页都是要逐条读的说明，不是数值表的注解 */
 .gen tbody { color: var(--bone); }
 
 /* 图标格 / 槽位格 / 共享技能格都由源稿的整格标记认，class 落在 <td> 上。
@@ -271,11 +201,11 @@ main { padding: 0 24px clamp(48px, 6vw, 84px); }
   text-underline-offset: 3px;
 }
 
-.gen th.sk-arc, .gen td.sk-arc { color: var(--el-arc); background: color-mix(in srgb, var(--c-arc) 9%, transparent); }
-.gen th.sk-solar, .gen td.sk-solar { color: var(--el-solar); background: color-mix(in srgb, var(--c-solar) 9%, transparent); }
-.gen th.sk-void, .gen td.sk-void { color: var(--el-void); background: color-mix(in srgb, var(--c-void) 9%, transparent); }
-.gen th.sk-stasis, .gen td.sk-stasis { color: var(--el-stasis); background: color-mix(in srgb, var(--c-stasis) 9%, transparent); }
-.gen th.sk-strand, .gen td.sk-strand { color: var(--el-strand); background: color-mix(in srgb, var(--c-strand) 9%, transparent); }
+.gen th.sk-arc, .gen td.sk-arc { color: var(--el-arc); background: color-mix(in srgb, var(--el-arc) 9%, transparent); }
+.gen th.sk-solar, .gen td.sk-solar { color: var(--el-solar); background: color-mix(in srgb, var(--el-solar) 9%, transparent); }
+.gen th.sk-void, .gen td.sk-void { color: var(--el-void); background: color-mix(in srgb, var(--el-void) 9%, transparent); }
+.gen th.sk-stasis, .gen td.sk-stasis { color: var(--el-stasis); background: color-mix(in srgb, var(--el-stasis) 9%, transparent); }
+.gen th.sk-strand, .gen td.sk-strand { color: var(--el-strand); background: color-mix(in srgb, var(--el-strand) 9%, transparent); }
 
 /* 名称格：紧挨在图标格前面的那一格。按 .ico 认，不按「有没有图」猜 */
 .gen td:has(+ td.ico) {
@@ -290,32 +220,9 @@ main { padding: 0 24px clamp(48px, 6vw, 84px); }
    数值前面把名目写全（基础冷却／回复倍率），不靠列头去猜哪个数是哪个。 */
 .gen td.cd { white-space: nowrap; }
 
-.gen tbody tr:hover > th,
-.gen tbody tr:hover > td { background: #ffffff08; }
-
-/* 类别之间的分界：源稿里一行 --- 开出一个新的 tbody，界线由 CSS 画，不落成类名。
-   行标题逐行写全而不合并——工具条的搜索按行隐藏，合并块会被豁开。 */
-.gen tbody + tbody tr:first-child > th,
-.gen tbody + tbody tr:first-child > td { border-top: 1px solid var(--hair-lit); }
-
 /* 类别列退一档：它是分组标签、逐行重复，不该跟条目名争。
    按关系认那一列——类别格后面跟的是名称格（没有图），条目名格后面直接跟图标格。 */
 .gen tbody th[scope="row"]:has(+ td:not(.ico)) { color: var(--bone-faint); }
 
-/* 合并块的交替底色。CSS 数不出「第几个合并块」——每块行数不等，:nth-child
-   对不上，计数器又不能参与着色，所以这一位由生成器打成 data-band。 */
-.gen tbody tr[data-band="1"] > td { background: #ffffff05; }
-.gen tbody tr[data-band="1"] > th[scope="row"] { background: #ffffff09; }
-
-/* 着色 token 与批注样式全部来自 assets/site.css 的那张共用表——
-   .el-arc / .deb-arc / .pickup / .orb / .stack / .enemy / .health / .t-red …
+/* 着色 token、批注样式、表格骨架与交替底色全部来自 assets/site.css。
    本页不重复定义，也不新增渲染色。真要单独设计一种颜色时才写在这里。 */
-
-/* 正文里的跨页链接：靠下划线认，不占色相 */
-.block a {
-  color: var(--bone-hi);
-  text-decoration-color: var(--bone-faint);
-  text-underline-offset: 3px;
-}
-
-.block a:hover { text-decoration-color: var(--bone-hi); }

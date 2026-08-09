@@ -1,20 +1,22 @@
 /* 神器模组组件：介绍块、分节 sticky 单元、档位轨、模组行与模组卡片。
    通用主题、字体与 23 个配色 token 在 /assets/site.css。 */
 
-/* 三档并排的最小内容宽度 1020px + main 左右各 22px 内边距。
-   横向溢出交给页面本身：main 上一旦开 overflow-x，它就成了滚动容器，
-   内部的 position: sticky 不再相对视口生效，滚动条也会落到页底不可达处。 */
-body { min-width: 1064px; }
+/* 三档并排：版心走满 1500px（design.md 四节），最小内容宽度 1020px + main
+   左右各 22px 内边距。横向溢出交给页面本身：main 上一旦开 overflow-x，它就成了
+   滚动容器，内部的 position: sticky 不再相对视口生效。骨架在 assets/site.css。 */
+:root { --wrap: 1500px; --min: 1064px; }
 
-main {
-  max-width: 1500px;
-  margin: 0 auto;
-  padding: 0 22px clamp(40px, 5vw, 72px);
+main { padding: 0 22px clamp(40px, 5vw, 72px); }
+
+/* 这一页是整站的门面，页首比资料页放大一档 */
+.page-head {
+  padding: clamp(40px, 5.5vw, 76px) 22px clamp(30px, 3.6vw, 46px);
+  /* 标题两侧带一对 ✦，是对称的横幅式排法——居中才立得住，左对齐会让右边那颗
+     装饰停在版心中段。正文与分节仍左对齐。 */
+  text-align: center;
 }
 
-/* 页首标题两侧带一对 ✦，是对称的横幅式排法——居中才立得住，
-   左对齐会让右边那颗装饰停在版心中段。正文与分节仍左对齐。 */
-.page-head { text-align: center; }
+.page-head h1 { font-size: clamp(34px, 4.4vw, 56px); }
 
 /* ── 介绍块 ── */
 .intro { margin-bottom: clamp(28px, 3.4vw, 48px); }
@@ -37,7 +39,7 @@ main {
   padding: 16px 20px;
   background: linear-gradient(90deg, #ffffff07, transparent 70%);
   border: 1px solid var(--hair);
-  border-left: 2px solid var(--c-aside);
+  border-left: 2px solid var(--note);
 }
 
 .notice-body {
@@ -75,7 +77,6 @@ main {
   margin-bottom: clamp(30px, 3.6vw, 52px);
   border: 1px solid var(--hair);
   background: linear-gradient(180deg, var(--panel-a), var(--panel-b));
-  scroll-margin-top: var(--stick);
 }
 
 /* 神器名与档位轨合为一个 sticky 单元：滚动中同时回答
@@ -149,8 +150,8 @@ main {
 .tier-head .rhombi { color: var(--bone-faint); }
 
 .tier-head .rhombi i.on {
-  color: var(--c-arc);
-  border-color: var(--c-arc);
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 /* 档位文字由 CSS 生成，不进 HTML——生成器的全文保真比对只认源表格文本 */
@@ -170,10 +171,10 @@ main {
    grid-column 钉在自己的档位列上——靠自动布局的行主序的话，搜索隐藏任一模组
    都会让其后所有模组列位偏移。行内两带用 subgrid 让同行三档各自跨列对齐。 */
 /* 整页约 16700px、147 张图，屏外的行不必参与布局与绘制。
-   套在行上而不是 .artifact 上：分节里有 sticky 的 .art-bar，
-   content-visibility 的 paint containment 会把它裁在分节盒子里。
-   实测 1440px 宽下 49 行高 160–576px，中位 278px——估值偏大会把滚动条撑长，
-   偏小会让滚动位置在渲染后跳，取中位数；auto 让浏览器渲染过一次后改用真实高度。 */
+   **只能套在不含 sticky 后代的元素上**：content-visibility 带 paint containment，
+   会把内部的 sticky 裁在自己的盒子里——所以套 .mod-row 而不是含 .art-bar 的
+   .artifact。contain-intrinsic-size 里的 auto 让浏览器渲染过一次后改用真实高度，
+   那个值只是没渲染过时的初始估值，不必跟着内容维护（实测中位 278px）。 */
 .mod-row {
   grid-template-rows: auto auto;
   border-top: 1px solid var(--hair);
@@ -253,9 +254,5 @@ main {
 
 .mod-desc p + p { margin-top: .95em; }
 
-.mod:hover::after { background: #ffffff0d; }
+.mod:hover::after { background: var(--row-hover); }
 
-/* 搜索态：[hidden] 由 app.js 施加 */
-.mod[hidden],
-.mod-row[hidden],
-.artifact[hidden] { display: none; }

@@ -80,6 +80,23 @@
   /* 分节 sticky 单元贴 .site-head 下沿。app.js 按实测高度覆写；
      无 JS 时取这个默认值（只有导航行的高度）。 */
   --stick: 45px;
+
+  /* 外壳叠色：石墨底上一层白，浓度即层级。原先 34 处散着 9 种透明度，
+     同一个 #ffffff06 兼任表头底、刻线、行 hover 五种语义，改一处得全站翻。
+     这四个是槽位，不是新色相——白叠白不引入色相，不与元素编码争。 */
+  --tint-1: #ffffff04;             /* 最浅：行标题列的底 */
+  --tint-2: #ffffff05;             /* 交替行 */
+  --tint-3: #ffffff09;             /* 交替行上的行标题格 */
+  --head-fill: #ffffff06;          /* 表头底 */
+  --row-hover: #ffffff0d;          /* 整行 hover */
+
+  /* UI 强调色：焦点环、当前 chip、卡片左缘。原先直接写 --c-arc，于是
+     元素页想换个颜色就得整条重抄。子页面覆盖这一个变量即可。 */
+  --accent: var(--c-arc);
+
+  /* 版心一档（design.md 第四节）与最小内容宽度。页面表只写这两个右值。 */
+  --wrap: 1060px;
+  --min: auto;
 }
 
 * { box-sizing: border-box; }
@@ -88,6 +105,9 @@ html { scroll-behavior: smooth; }
 
 body {
   min-height: 100vh;
+  /* 宽表页的横向溢出交给页面本身，不给 main 开 overflow——祖先一旦成为滚动
+     容器，内部的 position: sticky 就不再相对视口生效（design.md 第五节）。 */
+  min-width: var(--min);
   margin: 0;
   /* 页脚贴底：内容不足一屏时不让页脚悬在页面中间 */
   display: flex;
@@ -110,9 +130,13 @@ body > * { width: 100%; }
 a { color: var(--bone); }
 
 :focus-visible {
-  outline: 2px solid var(--c-arc);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+
+/* app.js 靠 hidden 属性做检索过滤。条目本身是 grid / flex，组件规则又排在
+   本文件之后，所以这里必须 !important——否则每个组件页都要重述一遍。 */
+[hidden] { display: none !important; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
@@ -168,8 +192,6 @@ a { color: var(--bone); }
 
 .site-nav .sep { color: var(--hair-lit); }
 
-main { flex: 1 0 auto; }
-
 .site-nav [aria-current="page"] {
   color: var(--bone-dim);
   font-weight: 600;
@@ -204,8 +226,8 @@ main { flex: 1 0 auto; }
 
 /* 只提亮底色与边框，不动 outline——:focus-visible 的描边是键盘可达性底线 */
 .tool-search:focus {
-  background: #ffffff0d;
-  border-color: var(--c-arc);
+  background: var(--row-hover);
+  border-color: var(--accent);
 }
 
 .tool-count {
@@ -246,11 +268,9 @@ main { flex: 1 0 auto; }
 
 .chip[aria-current="true"],
 .chip[aria-pressed="true"] {
-  color: var(--c-arc);
-  border-color: color-mix(in srgb, var(--c-arc) 45%, transparent);
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
 }
-
-.chip[hidden] { display: none; }
 
 /* 列组开关也是 chip，只是按钮不是链接：按下即打开那一组列 */
 button.chip {
@@ -259,18 +279,27 @@ button.chip {
   cursor: pointer;
 }
 
-/* ── 组件页页首：各组件页共用 ── */
+/* ── 组件页版心：各组件页共用，页面表只写 --wrap ──
+   收窄只作用于正文与页首。导航条与页脚是站点的框，各页必须一样宽——跟着正文
+   变窄会让同一个页脚在不同页面上长短不一。 */
+main,
 .page-head {
-  max-width: 1500px;
+  max-width: var(--wrap);
   margin: 0 auto;
-  padding: clamp(40px, 5.5vw, 76px) 22px clamp(30px, 3.6vw, 46px);
 }
+
+main {
+  flex: 1 0 auto;                  /* 内容不足一屏时不让页脚悬在页面中间 */
+  padding: 0 22px clamp(48px, 6vw, 84px);
+}
+
+.page-head { padding: clamp(40px, 5vw, 68px) 22px clamp(22px, 2.6vw, 32px); }
 
 .page-head h1 {
   margin: 0;
   color: var(--bone-hi);
   font-family: var(--font-cn);
-  font-size: clamp(34px, 4.4vw, 56px);
+  font-size: clamp(30px, 3.4vw, 42px);
   font-weight: 600;
   line-height: 1.15;
   letter-spacing: .04em;
@@ -360,6 +389,172 @@ button.chip {
   font-weight: 400;
   border-bottom: 1px dotted color-mix(in srgb, var(--unsure) 55%, transparent);
 }
+
+/* ── 资料页骨架：分节与生成表格 ──
+   五个走 tools/convert-doc.py 的页面产出同一套结构（.block / .sect-label /
+   .gen），版式因此只写这一份。页面表只留真差异：版心一档、表格是否 separate、
+   本页专属的列宽与列对齐。 */
+
+/* 分节 sticky 单元贴导航条下沿，锚点跳转也要让开那一条 */
+.block,
+.cat,
+.artifact { scroll-margin-top: var(--stick); }
+
+.block { margin-bottom: clamp(40px, 4.6vw, 64px); }
+
+.block:last-child { margin-bottom: 0; }
+
+/* 分节标题比站点默认再重一档：资料页靠标题分章，不靠并排结构 */
+.block > .sect-label {
+  margin-bottom: 20px;
+  color: var(--bone);
+  font-size: 12px;
+  letter-spacing: .24em;
+}
+
+.block p {
+  margin: 0 0 1.05em;
+  line-height: 2;
+}
+
+.block p:last-child { margin-bottom: 0; }
+
+/* 行内强调：专有名词。不占色相，只提亮度与字重（design.md 一节） */
+.block em,
+.block strong {
+  color: var(--bone-hi);
+  font-style: normal;
+  font-weight: 600;
+}
+
+/* 正文里的跨页链接：靠下划线认，不占色相 */
+.block a {
+  color: var(--bone-hi);
+  text-decoration-color: var(--bone-faint);
+  text-underline-offset: 3px;
+}
+
+.block a:hover { text-decoration-color: var(--bone-hi); }
+
+/* ── 生成表格 ──
+   宽度随内容走再居中：撑到 100% 会把每个格子拉到栏宽，读起来散（design.md 四节）。 */
+.gen {
+  width: auto;
+  margin: 0 auto;
+  border: 1px solid var(--hair);
+  border-collapse: collapse;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* 相邻两张表之间留出停顿，否则读作一张表的两半 */
+.gen + .gen { margin-top: 26px; }
+
+.gen th,
+.gen td {
+  padding: 9px 16px;
+  border-top: 1px solid var(--hair);
+  border-left: 1px solid var(--hair);
+  vertical-align: middle;
+}
+
+.gen thead th {
+  color: var(--bone-dim);
+  font-family: var(--font-cn);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-align: center;
+  background: var(--head-fill);
+  border-top: 0;
+  /* 表头里的空格是折行点，不是列名的一部分。中文默认可以在任意两字之间断行，
+     一排表头因此各断各的；keep-all 之后中文不再任意断，只剩空格是断点，
+     断点写在源稿的表头文本里（见 tools/convert-doc.py 的 colkey()）。 */
+  word-break: keep-all;
+}
+
+/* 列线只在表格最左缘去掉，判据是「这一格贴着表格左边」，不是「这一行的第一格」。
+   合并行没有 <th>，首格就成了数据格——按 :first-child 去边框会把它左侧的竖线
+   吃掉，每个合并块只有第一行闭合，往下豁开一道口子。 */
+.gen thead th:first-child,
+.gen tbody th[scope="row"] { border-left: 0; }
+
+/* **基色给 tbody，别写在 td 上。**整格只有一个 {标记|…} 时生成器把 class 落在
+   <td> 本身，此时 .gen tbody td 这类三选择器会以权重压过单类的 .amp，整列着色
+   静默退成默认色。基色由继承落下来、格子选择器只管排版，两者就不争同一个元素。 */
+.gen tbody { color: var(--bone-dim); }
+
+/* 行组分界：源稿里再来一行 --- 就另起一个 tbody，界线由 CSS 画，不落成类名 */
+.gen tbody + tbody tr:first-child > th,
+.gen tbody + tbody tr:first-child > td { border-top: 1px solid var(--hair-lit); }
+
+/* 合并块分界：带 <th> 的那一行即一块的开头。线要明显亮于行线——原先用
+   --hair-lit，与 --hair 的 ΔE 只有 9.03，按 design.md 的判据视作同色、等于没画。 */
+.gen tbody tr:has(> th) > th,
+.gen tbody tr:has(> th) > td { border-top: 1px solid var(--bone-faint); }
+
+/* 表格自己有外框，首行不必再画一道 */
+.gen tbody tr:first-child > th,
+.gen tbody tr:first-child > td { border-top: 0; }
+
+/* 交替底色：横线只标出边界，一整块的归属还得靠面。
+   :nth-child 数不了合并块（每块行数不等），CSS 计数器又不能参与着色，
+   所以这一位由生成器打，见 convert-doc.py 给行标题写的 data-band。 */
+.gen tbody tr[data-band="1"] > th,
+.gen tbody tr[data-band="1"] > td { background: var(--tint-2); }
+
+/* 行标题那一列再压深一点：它是这一块的身份，与数据区分开 */
+.gen tbody th[scope="row"] { background: var(--tint-1); }
+
+.gen tbody tr[data-band="1"] > th[scope="row"] { background: var(--tint-3); }
+
+/* 整行 hover：列跨度大，只高亮单格会跟丢行。压过交替底色，否则浅带那几行没反应 */
+.gen tbody tr:hover > th,
+.gen tbody tr:hover > td { background: var(--row-hover); }
+
+/* 空格子不留空白：空白读作「这里漏了」，一道发丝短横读作「确认没有」。
+   inline-block 让短横跟着本列的 text-align 走。用 ::after 生成，不进 HTML 文本，
+   因此不参与保真比对。 */
+.gen tbody td:empty::after {
+  content: "";
+  display: inline-block;
+  vertical-align: middle;
+  width: 14px;
+  height: 1px;
+  background: var(--hair-lit);
+}
+
+/* 千分位：分组间距，不插逗号。文本仍是纯数字，保真闸门不必为数值列开特例；
+   列宽也只多一个间距（实测 +3.3px），插逗号要多一个整字宽（+18px）。 */
+.gen tbody td[data-tier] .g + .g { margin-left: .24em; }
+
+/* 括注：机制后面的分层数值表，降一档读作限定语 */
+.gen .note { font-size: 12px; }
+
+/* ── 连续量色阶：红（低）→ 绿（高），八档 ──
+   **这是 design.md「色相归元素所有」的一条例外，只对声明了「色阶：」的表生效。**
+   成立的前提是那张表没有元素语义：读者不可能把这里的绿读成缚丝、橙读成烈日。
+   页面出现元素概念时不要用它，色阶退回单色相亮度阶。
+
+   **为什么是八档。**这段色相弧（OkLCH 25°→145°）在八档时相邻 CIELAB ΔE 最小
+   15.1，九档掉到 12.4 贴着「<12 视作同色」的下限，十档破线。相邻 ΔE 依次
+   18.9 / 18.4 / 15.1 / 15.4 / 17.4 / 19.6 / 19.9，首尾跨 93.1。
+   色值沿 OkLCH 弧等距取点，不在 sRGB 里线性插值——后者会让黄绿段挤成一团。
+   两端刻意贴住既有 token 的观感：档 1 近 --c-health，档 8 近 --c-strand。
+
+   **不进 :root。**它是一条页面级例外，不是站点色彩语言的一部分；收在这里只为
+   不让第三个页面再抄一遍同样的八个值。档位由生成器按源稿「色阶：」算出。
+
+   .g-* 是武器框架页的七档字母分级，借的是同一条弧：同一条弧在站内只有一种
+   含义——越绿越好。别名写在这里而不是那一页，八个色值才只有一份。 */
+.gen tbody td[data-tier="1"], .gen tbody td.g-f { color: #f9837c; }
+.gen tbody td[data-tier="2"], .gen tbody td.g-e { color: #ff9669; }
+.gen tbody td[data-tier="3"], .gen tbody td.g-d { color: #ffa956; }
+.gen tbody td[data-tier="4"] { color: #ffbb48; }
+.gen tbody td[data-tier="5"], .gen tbody td.g-c { color: #efcb47; }
+.gen tbody td[data-tier="6"], .gen tbody td.g-b { color: #d5d855; }
+.gen tbody td[data-tier="7"], .gen tbody td.g-a { color: #b2e16e; }
+.gen tbody td[data-tier="8"], .gen tbody td.g-s { color: #85e589; }
 
 /* ── 首页 ── */
 .hero {
