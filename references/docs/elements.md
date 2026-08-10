@@ -1,7 +1,7 @@
 # 属性详解
 
 描述：Destiny 2 六个分支职业属性的速查入口——电弧、烈日、虚空、冰影、缚丝、棱镜，各页含效果、碎片、手雷与三职业的近战、超能与星相。
-更新：2026.8.9
+更新：2026.8.10
 数据源：是
 路径：elements
 页脚：方括号内是 PvP 数值，问号是尚未测定的数值。
@@ -21,7 +21,7 @@
 |---|---|---|---|
 | {el-arc|电弧} | {el-arc|增幅}、{el-arc|电光充能} | {deb-arc|致盲}、{deb-arc|震颤} | {el-arc|离子轨迹} |
 | {el-solar|烈日} | {el-solar|治愈}、{el-solar|焕光}、{el-solar|恢复} | {deb-solar|灼烧}、{deb-solar|点燃} | {el-solar|焰灵} |
-| {el-void|虚空} | {el-void|吞食}、{el-void|隐身}、{el-void|覆盖护盾} | {deb-void|压制}、{deb-void|不稳定}、{deb-void|虚弱} | {el-void|虚空裂口} |
+| {el-void|虚空} | {el-void|吞食}、{el-void|隐身}、{el-void|虚空覆盖护盾} | {deb-void|压制}、{deb-void|不稳定}、{deb-void|虚弱} | {el-void|虚空裂口} |
 | {el-stasis|冰影} | {el-stasis|冰霜护甲} | {deb-stasis|减速}、{deb-stasis|冻结}、{deb-stasis|碎裂} | {el-stasis|冰影碎片} |
 | {el-strand|缚丝} | {el-strand|织造铠甲} | {deb-strand|割裂}、{deb-strand|悬停}、{deb-strand|瓦解} | {el-strand|缠结} |
 | {el-prismatic|棱镜} | {el-prismatic|超凡}，光能与暗影混搭 | 光能与暗影全部减益 | 上述全部 |

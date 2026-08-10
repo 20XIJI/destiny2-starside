@@ -177,7 +177,7 @@
 
 图标：62c1658ec0.png
 
-当拥有{el-void|虚空元素增益}（{el-void|吞食}、{el-void|隐身}或{el-void|覆盖护盾}）时：
+当拥有{el-void|虚空元素增益}（{el-void|吞食}、{el-void|隐身}或{el-void|虚空覆盖护盾}）时：
 {el-arc|近战}与刀剑命中造成{deb-void|虚弱}，持续 6 秒。
 {note|在命中时检测，而非在使用时快照}。
 
@@ -322,7 +322,7 @@
 
 图标：5032d1da67.png
 
-当{el-stasis|冰霜护甲}、{pickup|虚空覆盖护盾}或{el-strand|织造铠甲}激活时：
+当{el-stasis|冰霜护甲}、{el-void|虚空覆盖护盾}或{el-strand|织造铠甲}激活时：
 {el-arc|近战充能速率}额外提高 ?% {unsure|[?%]}。
 {el-arc|充能近战伤害}提高 50% {unsure|[5%]}。
 {note|超能近战伤害同样提高}。
@@ -724,7 +724,7 @@
 
 {el-arc|电弧} = ↑{el-arc|增幅} ↑{el-arc|电光充能}
 {el-solar|烈日} = ↑{health|治愈} ↑{el-solar|焕光} ↑{el-solar|恢复}
-{el-void|虚空} = ↑{el-void|吞食} ↑{el-void|隐身} ↑{pickup|虚空覆盖护盾}
+{el-void|虚空} = ↑{el-void|吞食} ↑{el-void|隐身} ↑{el-void|虚空覆盖护盾}
 {el-stasis|冰影} = ↑{el-stasis|冰霜护甲}
 {el-strand|缚丝} = ↑{el-strand|织造铠甲}
 
@@ -1105,7 +1105,7 @@
 
 图标：5032d1da67.png
 
-当{el-stasis|冰霜护甲}、{pickup|虚空覆盖护盾}或{el-strand|织造铠甲}激活时：
+当{el-stasis|冰霜护甲}、{el-void|虚空覆盖护盾}或{el-strand|织造铠甲}激活时：
 {el-arc|近战充能速率}额外提高 ?% {unsure|[?%]}。
 {el-arc|充能近战伤害}提高 50% {unsure|[5%]}。
 {note|超能近战伤害同样提高}。
