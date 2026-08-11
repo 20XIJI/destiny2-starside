@@ -1,0 +1,161 @@
+/* 护甲模组组件：五个部位加十一个副本／活动的模组卡片。
+   通用主题、字体与配色 token 在 /assets/site.css，本文件不重复定义任何着色 token。
+   这一页由 tools/convert-doc.py 从 references/docs/armor-mods.md 生成，
+   改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
+
+/* 三列并排，走满 1500px 那一档（design.md 四节的「并排对照」，与神器模组页同一个数）。
+   强调色取护甲充能的金：这一页十六张表里出现最多的就是它。 */
+:root { --wrap: 1500px; --min: 1064px; --accent: var(--c-orb); }
+
+/* 副本徽标：源表每个副本段前挂一张横幅图，分节标题就是它的位置。
+   显示宽度取原图的一半，两倍像素密度下仍然锐利。 */
+.block > .sect-label img {
+  width: 122px;
+  height: auto;
+  margin-right: 12px;
+  vertical-align: -22px;
+  border-radius: 2px;
+}
+
+/* 分节标签前的小方块：一页十六组卡片，靠它认一组的起点 */
+.block > .sect-label::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 10px;
+  vertical-align: 1px;
+  background: var(--accent);
+}
+
+/* ── 模组卡片 ──
+   源稿是表格（一行一个模组，搜索按行隐藏），这里把它排成神器模组页那样的卡片：
+   <tr> 即一张卡，图标与名称占卡片首行，效果占第二行。
+
+   卡片跨父网格两行 + grid-template-rows: subgrid，同一排三张卡的首行与效果行
+   各自对齐——否则名称长短不一时，三张卡的效果起点会各在各的高度上。 */
+.gen {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(280px, 1fr));
+  width: 100%;
+  /* 外框只留右下两边：其余两边由卡片自己的 border-top / border-left 画出来，
+     不再叠一层外框（两条 1px 线会在最左与最上叠成 2px，或者被 site.css 的
+     「首行不画上边」压掉——上一版第一排卡片缺一道线就是这么来的）。 */
+  border: 0;
+  border-right: 1px solid var(--hair);
+  border-bottom: 1px solid var(--hair);
+}
+
+/* 表头收起：卡片模式下没有列名可言，费用的名目由格子自己带（见 .cost::after） */
+.gen thead { display: none; }
+
+/* 行组不生成盒子，<tr> 直接成为父网格的项 */
+.gen tbody { display: contents; }
+
+.gen tr {
+  grid-row: span 2;
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "icon name cost"
+    "desc desc desc";
+  min-width: 0;
+  border-top: 1px solid var(--hair);
+  border-left: 1px solid var(--hair);
+}
+
+/* 格线归卡片，格子自己不画边框——site.css 的表格线假设在卡片模式下一条都不成立。
+
+   **要逐条按同样的选择器写掉，权重打平才压得住。**只写 .gen th / .gen td（一类
+   一型）压不过 site.css 的「合并块分界」那条 .gen tbody tr:has(> th) > td（两类
+   三型）：这一页每行都带 <th>，那道亮线于是落在每张卡的效果格顶上，把卡片从中间
+   切开，看着就是表格线与卡片对不齐。
+   只写掉 border，padding 留给下面各格自己给——这几条权重更高，写进来会把它们
+   一并压成 0。 */
+.gen th,
+.gen td {
+  padding: 0;
+  border: 0;
+}
+
+.gen tbody tr:has(> th) > th,
+.gen tbody tr:has(> th) > td,
+.gen tbody tr:first-child > th,
+.gen tbody tr:first-child > td,
+.gen tbody + tbody tr:first-child > th,
+.gen tbody + tbody tr:first-child > td { border: 0; }
+
+.gen td.ico {
+  grid-area: icon;
+  align-self: center;
+  padding: 13px 0 13px 20px;
+}
+
+.gen td.ico img {
+  display: block;
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 2px;
+}
+
+/* 模组名：卡片的标题，与图标同一行纵向居中 */
+.gen tbody th[scope="row"] {
+  grid-area: name;
+  align-self: center;
+  padding: 13px 16px;
+  color: var(--bone-hi);
+  font-family: var(--font-cn);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.6;
+  letter-spacing: .03em;
+  text-align: left;
+  white-space: normal;
+  word-break: normal;
+  background: none;
+  overflow-wrap: anywhere;
+}
+
+/* 费用：装备该模组要占的护甲能量，挂在卡片首行右端。
+   等宽字面取护甲充能的金——费用与充能是同一套资源语言。
+   名目由 ::after 补在数字后面：表头收起后，光一个数字认不出是什么。 */
+.gen td.cost {
+  grid-area: cost;
+  align-self: center;
+  padding: 13px 20px 13px 0;
+  color: var(--armor-charge);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.gen td.cost::after {
+  content: "费用";
+  margin-left: 5px;
+  color: var(--bone-faint);
+  font-family: var(--font-cn);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: .1em;
+}
+
+/* 效果：卡片正文，顶对齐——每张卡的说明长短不一，居中会让三张卡的首行错开 */
+.gen tbody td:last-child {
+  grid-area: desc;
+  align-self: start;
+  padding: 15px 20px 20px;
+  color: var(--bone);
+  font-size: 14px;
+  line-height: 1.85;
+  overflow-wrap: anywhere;
+}
+
+/* 不做 hover 高亮：卡片模式下 site.css 那条底色落在格子上，而效果格是顶对齐的，
+   说明短的卡片底下留白不吃底色——高亮只盖住半张卡，看着像没渲染完。
+   卡片本来就有边框圈出边界，指上去不必再强调一次。 */
+.gen tbody tr:hover > th,
+.gen tbody tr:hover > td { background: none; }

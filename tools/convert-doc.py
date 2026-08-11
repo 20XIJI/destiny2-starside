@@ -25,7 +25,7 @@ SRC_DIR = os.path.join(shell.ROOT, 'references', 'docs')
 
 # 头部的「键：值」行。键名固定，正文行不会被误认。
 META_KEYS = ('描述', '更新', '页脚', '鸣谢', '数据源', '导航', '路径', '上级',
-             '列组', '互斥列组', '默认列组', '首屏图标', '此刻')
+             '列组', '互斥列组', '默认列组', '首屏图标', '此刻', '跳转分行')
 META_LINE = meta_line(META_KEYS)
 
 # 分节级声明：「色阶：列名 阈值 …」。同样按整行剥离，不进正文。
@@ -442,6 +442,17 @@ def render(md, slug):
                           'data-item': '.gen tbody tr:not(.lane)',
                           'data-label': '.sect-label', 'data-noun': '条目',
                           'data-chip-label': '分节'})
+
+    # 「跳转分行：<分节标题>」→ chip 从这一节起另起一行。分节多到一行放不下时，
+    # 按内容分组换行，不交给自动折行随便断在哪。指的分节要真存在，写错即中止。
+    brk = meta('跳转分行', required=False)
+    if brk:
+        if toolbar is None or 'data-section' not in toolbar:
+            die('「跳转分行：」要配合「导航：是」用，没有 chip 就没有行可分')
+        titles = [IMG.sub('', h).strip() for h in re.findall(r'^## (.+)$', md, re.M)]
+        if brk not in titles:
+            die('「跳转分行：」指的 %r 不是任何一个分节标题' % brk)
+        toolbar['data-chip-break'] = brk
 
     # 层数决定资源前缀与面包屑
     up = where_of(md, slug).count('/') + 1

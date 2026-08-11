@@ -186,6 +186,9 @@
   var chipNav = document.createElement('nav');
   chipNav.className = 'tool-chips';
   chipNav.setAttribute('aria-label', cfg.chipLabel || '神器');
+  /* data-chip-break：chip 从这一节起另起一行。分节多到一行放不下时按内容分组，
+     不交给自动折行随便断在哪（护甲模组页：五个部位一行，十一个副本一行）。 */
+  var BREAK = cfg.chipBreak || '';
   var chips = sections.map(function (sec) {
     var chip = document.createElement('a');
     chip.className = 'chip';
@@ -196,6 +199,12 @@
     var first = label.firstChild;
     chip.textContent = (first && first.nodeType === 3
       ? first.textContent : label.textContent).trim();
+    if (BREAK && chip.textContent === BREAK) {
+      var br = document.createElement('span');
+      br.className = 'chip-break';
+      br.setAttribute('aria-hidden', 'true');
+      chipNav.appendChild(br);
+    }
     chipNav.appendChild(chip);
     return chip;
   });

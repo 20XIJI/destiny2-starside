@@ -12,7 +12,7 @@ Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构�
 
 首页 `index.html` 手写，每个资料页在首页有一张 `.entry` 卡片（更新时间写卡片上的 `.entry-stamp`）。新增资料页要同时加卡片，否则页面没有入口。
 
-现有十三页：`ammo/` 弹药生成机制、`armor-sets/` 护甲套装、`artifact-mods/` 神器模组、`boss-hp/` 首领生命值、`twisted-planet/` 扭曲星球速查表、`weapon-frames/` 武器框架、`elements/` 属性详解总览与其下六个元素页（`elements/arc/`、`solar/`、`void/`、`stasis/`、`strand/`、`prismatic/`）。`armor-sets/` 与 `artifact-mods/` 各有专属生成器，其余十一页走 `convert-doc.py`。
+现有十四页：`ammo/` 弹药生成机制、`armor-mods/` 护甲模组、`armor-sets/` 护甲套装、`artifact-mods/` 神器模组、`boss-hp/` 首领生命值、`twisted-planet/` 扭曲星球速查表、`weapon-frames/` 武器框架、`elements/` 属性详解总览与其下六个元素页（`elements/arc/`、`solar/`、`void/`、`stasis/`、`strand/`、`prismatic/`）。`armor-sets/` 与 `artifact-mods/` 各有专属生成器，其余十二页走 `convert-doc.py`。
 
 样式按层引，顺序即优先级：`assets/site.css`（全站 token、外壳、字体、资料页骨架）在前，本页 `<页目录>/style.css` 在后。**深一层的页面自动多引一层父目录的 `style.css`**（`shell.py` 的 `head()` 按 `up` 判断）：六个元素页共用 `elements/style.css` 的版式，各自的 `style.css` 只留一行 `--accent`。`assets/app.js` 只有带 `.toolbar` 的页面需要引。
 
@@ -154,6 +154,7 @@ python3 tools/convert-armor-sets.py --icons <英文原表导出.html>
 | `路径：` | 可选，把页面挂到子目录里（`elements/arc`）。缺省是 slug 本身、挂在站点根下；层数决定资源前缀、面包屑与父目录样式表 |
 | `上级：` | 可选，导航条上多一级面包屑，指向 `../index.html` |
 | `导航：是` | 可选，顶部工具条：搜索框 + 每个分节一枚跳转 chip |
+| `跳转分行：` | 可选，chip 从这一节起另起一行，值写分节标题（图标不算），要配合 `导航：是` |
 | `列组：`／`默认列组：`／`互斥列组：` | 可选，见下 |
 | `首屏图标：` | 可选，前 N 张图标改用 `fetchpriority="high"`，其余 `loading="lazy"`；按实测定，缺省 0 |
 | `此刻：是` | 可选，见下 |
@@ -161,6 +162,8 @@ python3 tools/convert-armor-sets.py --icons <英文原表导出.html>
 **`数据源`／`导航`／`此刻` 是布尔键，只认「是」。**写别的值（包括「否」）当场报错——不需要就把整行删掉，不留一行写着「否」的开关。
 
 **带「导航：是」的表不能用首格留空合并**：搜索按行隐藏，合并块会被豁开，行标题要逐行写全。
+
+**分节多到 chip 一行放不下时用「跳转分行：」按内容分组换行**，不交给自动折行随便断在哪。产出侧只多一个 `data-chip-break`，`app.js` 在那枚 chip 前插一个占满整行的空项（`site.css` 的 `.chip-break`）。指的分节不存在即中止——写错了会静默不分行，看不出来。
 
 **`此刻：是` 打开当前时刻高亮。**产出侧只多一个 `<div class="toolbar" data-clock="">`，`assets/app.js` 据此按本机时钟打两个属性：整行的 `data-now-row` 落在 `<tr>` 上，整列的 `data-now-col` 落在每个格子上，颜色归页面样式表。时刻只有运行时才知道，写不进产出，所以这一条走 JS 而不是生成器。
 
@@ -289,6 +292,8 @@ app.js 按表头文本找列、按首格开头的两位时刻找行（首列写�
 | `data-label` | `.art-head h2` | `.cat-head span` | `.sect-label` |
 | `data-noun` | 模组 | 套装 | 条目 |
 | `data-chip-label` | 神器 | 分类 | 分节 |
+
+另有一个可选的 `data-chip-break`：值等于哪枚 chip 的文字，就在那枚之前插一个占满整行的空项，chip 从那里另起一行。源稿写「跳转分行：」，护甲模组页用它把五个部位与十一个副本分成两行。
 
 搜索按条目的 `textContent` 过滤，整行不命中隐藏行，整节不命中隐藏分节与其 chip。隐藏靠 `hidden` 属性，`site.css` 里一条 `[hidden] { display: none !important }` 兜住——条目本身是 grid / flex，组件规则又排在 `site.css` 之后，不加 `!important` 就得每个组件页重述一遍。神器模组页检索期间三档并排对照关系失效，清空即恢复。
 

@@ -250,6 +250,14 @@ a { color: var(--bone); }
 /* 只有跳转 chip 的工具条（资料页那一档）：前面没有搜索框顶着，从左边起排 */
 .tool-chips:first-child { margin-left: 0; }
 
+/* 换行位：app.js 按 .toolbar 的 data-chip-break 插一个占满整行的空项，
+   后面的 chip 落到下一行。分节多到一行放不下时按内容分组换行，
+   不交给自动折行随便断在哪。 */
+.tool-chips .chip-break {
+  flex-basis: 100%;
+  height: 0;
+}
+
 .chip {
   padding: 5px 11px;
   color: var(--bone-dim);
