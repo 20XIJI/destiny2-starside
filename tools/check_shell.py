@@ -43,20 +43,28 @@ HEAD_KEEP = ('<meta name="theme-color"', '<meta property="og:site_name"',
 STAMP = re.compile(r'<span class="(?:entry-)?stamp">更新 \d{4}\.\d{1,2}\.\d{1,2}</span>')
 
 
-def invariants():
-    """各页必须一字不差共有的片段，全部取自 shell.py。"""
+def invariants(home=False):
+    """各页必须一字不差共有的片段，全部取自 shell.py。
+
+    **首页不挂导航条。**那一行只写得出「Starside / 当前页」，而字标本身就是站标，
+    同一件事说两遍；回首页的入口在首页上也没有意义。站头的三条因此只钉资料页，
+    head 元信息与页脚仍然全站一致。
+    """
     head = shell.head('__T__', '__D__')
     frags = [ln for ln in head.split('\n') if ln.startswith(HEAD_KEEP)]
-    # 站头的包裹结构：手写首页与生成页要用同一套骨架，只查 MARK 查不出包裹漂移
+    foot = [shell.CREDIT, shell.LEGAL, shell.SPEC]
+    if home:
+        return frags + foot
+    # 站头的包裹结构：各资料页要用同一套骨架，只查 MARK 查不出包裹漂移
     return frags + ['<div class="site-head">', '<nav class="site-nav">',
-                    shell.MARK, shell.CREDIT, shell.LEGAL, shell.SPEC]
+                    shell.MARK] + foot
 
 
 def main() -> int:
-    want = invariants()
     listed = pages()
     bad: list[str] = []
     for rel in listed:
+        want = invariants(rel == HOME)
         path = os.path.join(shell.ROOT, rel)
         if not os.path.exists(path):
             bad.append('%s：文件不存在' % rel)
@@ -83,7 +91,8 @@ def main() -> int:
         for line in bad:
             print('  ' + line, file=sys.stderr)
         return 1
-    print('外壳一致：%d 个页面，%d 条不变片段' % (len(listed), len(want)))
+    print('外壳一致：%d 个页面，%d 条不变片段（首页免去站头那三条）'
+          % (len(listed), len(invariants())))
     return 0
 
 

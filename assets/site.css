@@ -93,6 +93,11 @@
      元素页想换个颜色就得整条重抄。子页面覆盖这一个变量即可。 */
   --accent: var(--c-arc);
 
+  /* 刻线网格的线色，与顶部大气层。两者都是槽位：首页把 --grid 提一档并另叠一层
+     主刻线，大气层则在首页那条规则里原样复用，一份定义两处引用。 */
+  --grid: #ffffff06;
+  --atmo: linear-gradient(180deg, #12172a, #0b0d1400);
+
   /* 版心一档（design.md 第四节）与最小内容宽度。页面表只写这两个右值。 */
   --wrap: 1060px;
   --min: auto;
@@ -114,12 +119,23 @@ body {
   color: var(--bone);
   font: 400 15px/1.85 var(--font-body);
   font-variant-numeric: tabular-nums;
-  /* 88px 刻线网格。不加 background-attachment: fixed——组件页约 20000px 高、
-     163 张图，固定背景会让滚动逐帧重绘。 */
+  /* 88px 刻线网格 + 顶部大气层。不加 background-attachment: fixed——组件页约
+     20000px 高、163 张图，固定背景会让滚动逐帧重绘。
+
+     **大气层压在网格之下、平涂之上，顶色只能取到 #12172a。**它是纵深，不是第二个
+     背景色：ΔE 与 --ink 差 11.30，压在 design.md「< 12 视作同一个颜色」的线下；
+     正文 --bone 对比度 13.72（平涂上 14.99）、--bone-dim 6.77（7.39），都还在
+     AAA / AA 之上。再亮一档就破线——#141b31 的 ΔE 到 13.92，且 --hair 发丝线
+     与它的 ΔE 掉到 11.12，页面顶部的横线开始消失。
+
+     末端写 #0b0d1400 而不是 transparent：后者在过渡段串进透明黑，中途发灰。 */
   background:
-    repeating-linear-gradient(0deg, #ffffff06 0 1px, transparent 1px 88px),
-    repeating-linear-gradient(90deg, #ffffff06 0 1px, transparent 1px 88px),
+    repeating-linear-gradient(0deg, var(--grid) 0 1px, transparent 1px 88px),
+    repeating-linear-gradient(90deg, var(--grid) 0 1px, transparent 1px 88px),
+    var(--atmo),
     var(--ink);
+  background-repeat: repeat, repeat, no-repeat, repeat;
+  background-size: auto, auto, 100% 640px, auto;
 }
 
 /* body 是 flex 列，其子项上的 margin: 0 auto 会吸收剩余空间、把子项压成
@@ -151,6 +167,16 @@ a { color: var(--bone); }
   border-bottom: 1px solid var(--hair);
 }
 
+/* 双规线：实线之下再垫一道向右淡出的亮线，配方同首页的 .hero-rule。
+   sticky 本身就是 positioned，不必再写 position: relative。 */
+.site-head::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 -2px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--hair-lit), transparent 72%);
+}
+
 .site-nav {
   display: flex;
   align-items: center;
@@ -169,12 +195,18 @@ a { color: var(--bone); }
   margin-right: 2px;
 }
 
+/* 三枚菱形两实一空，与 .rhombi 的「点亮枚数即档位」同一套语言——站标因此不是
+   三个装饰点，是这套母题最小的一次露面。box-sizing 全局是 border-box，
+   加边框不改尺寸。 */
 .site-nav .mark i {
   width: 6px;
   height: 6px;
   background: var(--bone-dim);
+  border: 1px solid var(--bone-dim);
   transform: rotate(45deg);
 }
+
+.site-nav .mark i:last-child { background: none; }
 
 .site-nav a {
   color: var(--bone);
@@ -258,26 +290,50 @@ a { color: var(--bone); }
   height: 0;
 }
 
+/* 切角管面板（.entry），角标管控件（.chip）——同一套形状语言的两个尺度。
+   padding 比原先各多 1px，补回去掉的那圈透明边框，工具条高度与 chip 宽度不变。 */
 .chip {
-  padding: 5px 11px;
+  position: relative;
+  padding: 6px 12px;
   color: var(--bone-dim);
   font-family: var(--font-cn);
   font-size: 12.5px;
   text-decoration: none;
-  border: 1px solid transparent;
-  transition: color .15s ease, border-color .15s ease;
+  /* 列组开关是 <button>，UA 默认带一圈 outset 边框。原先靠 1px transparent 边框
+     压住，改成角标之后这里要显式清零，否则武器框架页那排开关会自己长出边框。 */
+  border: 0;
+  transition: color .15s ease;
 }
 
-.chip:hover {
-  color: var(--bone-hi);
-  border-color: var(--hair-lit);
+/* 左上与右下两枚 L 形角标。**用 currentcolor 取色**：hover 与当前态只改 .chip
+   自己的 color，角标自动跟上，三种状态不必各写一遍边框色。
+   静置时不显形，与原先那圈透明边框一样——一排十六枚 chip 常驻角标太吵。 */
+.chip::before,
+.chip::after {
+  content: "";
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border: 1px solid currentcolor;
+  opacity: 0;
+  transition: opacity .15s ease;
 }
+
+.chip::before { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+
+.chip::after { right: 0; bottom: 0; border-left: 0; border-top: 0; }
+
+.chip:hover { color: var(--bone-hi); }
 
 .chip[aria-current="true"],
-.chip[aria-pressed="true"] {
-  color: var(--accent);
-  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
-}
+.chip[aria-pressed="true"] { color: var(--accent); }
+
+.chip:hover::before,
+.chip:hover::after,
+.chip[aria-current="true"]::before,
+.chip[aria-current="true"]::after,
+.chip[aria-pressed="true"]::before,
+.chip[aria-pressed="true"]::after { opacity: 1; }
 
 /* 列组开关也是 chip，只是按钮不是链接：按下即打开那一组列 */
 button.chip {
@@ -302,14 +358,19 @@ main {
 
 .page-head { padding: clamp(40px, 5vw, 68px) 22px clamp(22px, 2.6vw, 32px); }
 
+/* 标题下的一道规线：六个元素页早就这么写（elements/style.css 用 2px 元素色，
+   一眼认出在哪一页），这里把它提成站点缺省，其余页面拿到发丝线那一档。
+   页面表在 site.css 之后加载，同名声明因此仍由页面胜出。 */
 .page-head h1 {
   margin: 0;
+  padding-bottom: 12px;
   color: var(--bone-hi);
   font-family: var(--font-cn);
   font-size: clamp(30px, 3.4vw, 42px);
   font-weight: 600;
   line-height: 1.15;
   letter-spacing: .04em;
+  border-bottom: 1px solid var(--hair-lit);
 }
 
 /* 区段标签：一个短标签 + 一条发丝线 */
@@ -324,6 +385,19 @@ main {
   font-weight: 600;
   letter-spacing: .2em;
   text-transform: uppercase;
+}
+
+/* 标签前的强调色方块：护甲模组页与六个元素页早就这么写，这里提成站点缺省，
+   分节的起点在全站长一个样。声明照抄那两处（armor-mods/style.css），
+   flex 布局下的表现因此与既有页面完全一致——那两处权重更高，继续生效。 */
+.sect-label::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 10px;
+  vertical-align: 1px;
+  background: var(--accent);
 }
 
 .sect-label::after {
@@ -550,6 +624,11 @@ main {
 .gen tbody tr:hover > th,
 .gen tbody tr:hover > td { background: var(--row-hover); }
 
+/* 左缘亮条：与首页 .entry 的左缘同一条语言——「这一条是当前选中的」。
+   落在整行的首格上，合并行没有 <th> 也照样吃得到（:first-child 不挑格子类型）。
+   横幅行排除在外：它没有可读的行内容，跟着亮反而像可点，同上面的 hover 底色。 */
+.gen tbody tr:not(.lane):hover > :first-child { box-shadow: inset 2px 0 0 var(--accent); }
+
 /* 空格子不留空白：空白读作「这里漏了」，一道发丝短横读作「确认没有」。
    inline-block 让短横跟着本列的 text-align 走。用 ::after 生成，不进 HTML 文本，
    因此不参与保真比对。 */
@@ -594,7 +673,118 @@ main {
 .gen tbody td[data-tier="7"], .gen tbody td.g-a { color: #b2e16e; }
 .gen tbody td[data-tier="8"], .gen tbody td.g-s { color: #85e589; }
 
-/* ── 首页 ── */
+/* ── 首页 ──
+   首页把网格调到看得见的一档，并让一道光扫过它。资料页不跟——那些页面背后是
+   密排的表格，背景越安静越好；`.hero` 只出现在手写的首页上，`:has()` 因此够用，
+   不必给 body 加类名。不支持 :has() 的浏览器退回站点缺省的网格，不缺东西。
+
+   **网格分两级，不是一味调亮。**现值 #ffffff06 与底色的 ΔE 只有 2.51，按
+   design.md 的判据「视作同一个颜色」——所以它读作没有。细刻线提到 #ffffff0d
+   （ΔE 5.30，仍是耳语），另叠一层 352px（4×88）的主刻线 #ffffff1c（ΔE 12.44，
+   过「一眼可分」的线）。**1px 细线要比色块更高的 ΔE 才读得出**，视觉系统对高
+   空间频率的对比敏感度本来就低，所以主刻线取到 12 这一档而不是停在 9。 */
+body:has(.hero) {
+  --grid: #ffffff0d;
+  background:
+    repeating-linear-gradient(0deg, #ffffff1c 0 1px, transparent 1px 352px),
+    repeating-linear-gradient(90deg, #ffffff1c 0 1px, transparent 1px 352px),
+    repeating-linear-gradient(0deg, var(--grid) 0 1px, transparent 1px 88px),
+    repeating-linear-gradient(90deg, var(--grid) 0 1px, transparent 1px 88px),
+    var(--atmo),
+    var(--ink);
+  background-repeat: repeat, repeat, repeat, repeat, no-repeat, repeat;
+  background-size: auto, auto, auto, auto, 100% 640px, auto;
+}
+
+/* 光点沿刻线穿梭：七道竖向、五道横向，四个方向都有。
+
+   **落点恒在 88 的整数倍上**：网格从 body 背景盒的 x=0 起算，刻线因此永远在
+   88px 的整数倍，光点的 left / top 写死这些数就一定压在线上。跑刻线而不是只跑
+   352px 的主刻线——主刻线一屏只有四道，光点全挤在那四道上就看得出是排好的。
+
+   **CSS 没有随机数，所谓随机是手挑出来的不规则。**十二个周期取半秒的错位值
+   （6.5 / 7 / 8.5 / 9.5 / 10.5 / 11 / 12 / 12.5 / 13.5 / 15 / 16 / 18 秒），
+   化成整数是 13 / 14 / 17 / 19 / 21 / 22 / 24 / 25 / 27 / 30 / 32 / 36 的半秒，
+   最小公倍数长到没人等得到整组复位；负的 delay 让它们从各自周期的中途起步，
+   加载瞬间不会排成一列同时出发。间距也不取等差——等差的落点扫一眼就露馅。
+
+   **只动 transform 与 opacity**，十二个光点各自在合成器上跑完，不触发布局与重绘。
+   这一层只在手写首页上，二十来层合成对一张静态页面无所谓；资料页不引。
+   **色取 --accent 而不是白**：光点是 1px 宽的一道，面小到改不了整页的色彩身份，
+   而首页的 --accent 本来就在每张卡片的左缘上，两者认得出是同一种光。
+
+   容器上的 overflow 只裁自己这些空 <i>，链上没有 sticky（design.md 五节）。 */
+.grid-flow {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: -1;                     /* 压在正文之下、网格之上 */
+  height: 1408px;                  /* 4 × 352，盖住首页可视的那一段 */
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* **base 状态 opacity 为 0，亮度全由关键帧给。**prefers-reduced-motion 下
+   animation 被上面那条 !important 关掉，光点退回 base——写成 1 就会在页面上
+   钉住五道不动的亮线。 */
+.grid-flow i {
+  position: absolute;
+  width: 1px;
+  height: 88px;
+  background: linear-gradient(180deg, transparent, var(--accent));
+  opacity: 0;
+  animation: flow-y 7s linear infinite;
+}
+
+/* 七道竖向 */
+.grid-flow i:nth-child(1) { left: 176px; animation-duration: 8.5s; animation-delay: -2.3s; }
+.grid-flow i:nth-child(2) { left: 352px; animation-duration: 11s; animation-delay: -6.1s; }
+.grid-flow i:nth-child(3) { left: 616px; animation-duration: 7s; animation-delay: -1.4s; }
+.grid-flow i:nth-child(4) { left: 704px; animation-duration: 13.5s; animation-delay: -9.2s; }
+.grid-flow i:nth-child(5) { left: 968px; animation-duration: 9.5s; animation-delay: -4.7s; }
+.grid-flow i:nth-child(6) { left: 1144px; animation-duration: 6.5s; animation-delay: -3.8s; }
+.grid-flow i:nth-child(7) { left: 1320px; animation-duration: 12s; animation-delay: -7.5s; }
+
+/* 五道横向：同一套光点转 90°。竖向单独跑读作「下落」，与横向交错才读作穿梭 */
+.grid-flow i:nth-child(n + 8) {
+  width: 88px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent));
+  animation-name: flow-x;
+}
+
+.grid-flow i:nth-child(8) { top: 264px; animation-duration: 15s; animation-delay: -3.1s; }
+.grid-flow i:nth-child(9) { top: 440px; animation-duration: 10.5s; animation-delay: -8.4s; }
+.grid-flow i:nth-child(10) { top: 616px; animation-duration: 18s; animation-delay: -11.3s; }
+.grid-flow i:nth-child(11) { top: 792px; animation-duration: 12.5s; animation-delay: -1.9s; }
+.grid-flow i:nth-child(12) { top: 1056px; animation-duration: 16s; animation-delay: -5.6s; }
+
+/* 逆行的五道：竖向朝上、横向朝左。方向靠 animation-direction 翻，不另写关键帧。
+   **拖尾要跟着一起翻**——不翻的话光点拖着头跑，一眼看出是倒放的。 */
+.grid-flow i:nth-child(3),
+.grid-flow i:nth-child(5),
+.grid-flow i:nth-child(7),
+.grid-flow i:nth-child(9),
+.grid-flow i:nth-child(11) { animation-direction: reverse; }
+
+.grid-flow i:nth-child(3),
+.grid-flow i:nth-child(5),
+.grid-flow i:nth-child(7) { background: linear-gradient(0deg, transparent, var(--accent)); }
+
+.grid-flow i:nth-child(9),
+.grid-flow i:nth-child(11) { background: linear-gradient(270deg, transparent, var(--accent)); }
+
+@keyframes flow-y {
+  0% { transform: translateY(-88px); opacity: 0; }
+  6%, 82% { opacity: 1; }
+  100% { transform: translateY(1408px); opacity: 0; }
+}
+
+@keyframes flow-x {
+  0% { transform: translateX(-88px); opacity: 0; }
+  6%, 82% { opacity: 1; }
+  100% { transform: translateX(100vw); opacity: 0; }
+}
+
 .hero {
   max-width: 1500px;
   margin: 0 auto;
@@ -706,7 +896,8 @@ main {
   text-decoration: none;
   background: linear-gradient(100deg, #171c29, #12151f 64%);
   border: 1px solid var(--hair);
-  clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 0 100%);
+  clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%,
+                     15px 100%, 0 calc(100% - 15px));
   transition: background .18s ease, box-shadow .18s ease;
 }
 
@@ -721,15 +912,18 @@ main {
   transition: opacity .18s ease;
 }
 
-/* 切角处补一道斜线，接上被 clip-path 截断的框线 */
+/* 两处切角各补一道斜线，接上被 clip-path 截断的框线。一个 ::before 装两道：
+   铺满整块，两层渐变各占一个 22px 角，其余透明。角上落的是 padding，不压正文。
+
+   **角度决定渐变从哪个角起算**：色带垂直于渐变轴，两道接缝都沿 (1,1) 方向，
+   所以右上角用 225deg（从右上角起）、左下角用 45deg（从左下角起）。 */
 .entry::before {
   content: "";
   position: absolute;
-  top: 0;
-  right: 0;
-  width: 22px;
-  height: 22px;
-  background: linear-gradient(225deg, var(--hair) 0 1px, transparent 1px);
+  inset: 0;
+  background:
+    linear-gradient(225deg, var(--hair) 0 1px, transparent 1px) right top / 22px 22px no-repeat,
+    linear-gradient(45deg, var(--hair) 0 1px, transparent 1px) left bottom / 22px 22px no-repeat;
 }
 
 .entry:hover {
