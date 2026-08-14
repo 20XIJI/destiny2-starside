@@ -111,12 +111,22 @@ def lane_of(cells):
 
 
 def colkey(name):
-    """列名按去掉空格比对。
+    """列名按去掉排版件比对：空格、格内换行 \\ 与图标都不算列名的一部分。
 
     表头里的空格是折行点（页面样式表给表头上了 word-break: keep-all，中文只在
     空格处断行），属于排版；「色阶：」「列组：」指的是同一列，不该被排版牵着走。
+    表头里的图标同理——战斗人员倍率页每个列名上面顶着一枚档位图标，那是这一列的
+    标识，不是它的名字。
     """
-    return ''.join(name.split())
+    return ''.join(IMG.sub('', name).replace(CELL_BREAK, '').split())
+
+
+NUM = re.compile(r'\d+(?:\.\d+)?')
+
+
+def num(t):
+    """整数写成 int，小数写成 float。生命值是整数、伤害倍率是小数，两种都要分档。"""
+    return float(t) if '.' in t else int(t)
 
 
 def scale_of(spec):
@@ -125,17 +135,17 @@ def scale_of(spec):
     阈值写在源稿里、一张表一套：分档是内容判断（多少算高血量随体系而变），
     生成器只负责比对，不内建任何领域常识。
 
-    列名可以带空格（表头的折行点），所以从后往前认阈值：末尾连着的整数是阈值，
+    列名可以带空格（表头的折行点），所以从后往前认阈值：末尾连着的数值是阈值，
     剩下的是列名。
     """
     parts = spec.split()
     cut = len(parts)
-    while cut and parts[cut - 1].isdigit():
+    while cut and NUM.fullmatch(parts[cut - 1]):
         cut -= 1
     col, nums = ' '.join(parts[:cut]), parts[cut:]
     if not col or len(nums) < 2:
         die('「色阶：」要写成「列名 阈值 阈值 …」，至少两个阈值：%r' % spec)
-    vals = [int(n) for n in nums]
+    vals = [num(n) for n in nums]
     if vals != sorted(vals) or len(set(vals)) != len(vals):
         die('「色阶：」的阈值要严格升序：%s' % vals)
     return col, vals
@@ -210,11 +220,11 @@ def grouped(n):
 
 
 def tier_of(text, bounds):
-    """数值落在第几档，1 起。不是纯数字就返回 None，不硬套。"""
+    """数值落在第几档，1 起。不是纯数值就返回 None，不硬套。"""
     plain = re.sub(r'<[^>]+>', '', text).strip().replace(',', '')
-    if not plain.isdigit():
+    if not NUM.fullmatch(plain):
         return None
-    v = int(plain)
+    v = num(plain)
     tier = 1
     for b in bounds:
         if v >= b:
@@ -351,8 +361,10 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None):
                 if tier is None:
                     die('「色阶：」指的列里有非数值格：%r' % c[:40])
                 # 色阶列是纯数值，直接输出：分组标签由 grouped() 给，
-                # 不走 wrap()——那条路会把 <span> 当文本转义掉
-                row.append('<td data-tier="%d">%s</td>' % (tier, grouped(int(c))))
+                # 不走 wrap()——那条路会把 <span> 当文本转义掉。
+                # 小数不分组：三位一组是为了读长整数，1.0110 切开只会更难读。
+                text = grouped(int(c)) if '.' not in c else c
+                row.append('<td data-tier="%d">%s</td>' % (tier, text))
                 continue
             row.append(wrap('td', broke(c)))
         o.append('<tr%s>%s</tr>'
