@@ -696,6 +696,9 @@ main {
    空间频率的对比敏感度本来就低，所以主刻线取到 12 这一档而不是停在 9。 */
 body:has(.hero) {
   --grid: #ffffff0d;
+  /* 最小内容宽度：两列 560 + 12 沟 + .index 两侧 22 = 1176。窄于此横向滚动，
+     不塌成单列——同 armor-sets / boss-hp 那几页写 1104 的道理（design.md 五节）。 */
+  --min: 1176px;
   background:
     repeating-linear-gradient(0deg, #ffffff1c 0 1px, transparent 1px 352px),
     repeating-linear-gradient(90deg, #ffffff1c 0 1px, transparent 1px 352px),
@@ -882,11 +885,15 @@ body:has(.hero) {
   padding: 0 22px clamp(50px, 7vw, 90px);
 }
 
-/* 双列：单列时每张卡占掉 182px 纵向空间，条目一多就翻页；
-   auto-fill 在视口窄于约 1140px 时自行退回单列，不必写媒体查询。 */
+/* 恒为双列：单列时每张卡占掉 182px 纵向空间，条目一多就翻页。
+
+   **不写 auto-fill。**它在窄视口下会自己退回单列，那是窄屏适配，而 design.md
+   五节写死了不做——站内其余六页一律用 body 的 --min 表达最小内容宽度、把窄屏
+   交给横向滚动，首页照同一条办（--min 见 body:has(.hero)）。那些页面靠表格的
+   固有宽度自然溢出，唯独卡片网格会塌，所以只有这里塌过。 */
 .entries {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(560px, 1fr));
+  grid-template-columns: repeat(2, minmax(560px, 1fr));
   gap: 12px;
   margin: 0;
   padding: 0;
