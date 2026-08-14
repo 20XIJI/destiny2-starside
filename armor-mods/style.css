@@ -38,13 +38,15 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(280px, 1fr));
   width: 100%;
-  /* 外框只留右下两边：其余两边由卡片自己的 border-top / border-left 画出来，
-     不再叠一层外框（两条 1px 线会在最左与最上叠成 2px，或者被 site.css 的
-     「首行不画上边」压掉——上一版第一排卡片缺一道线就是这么来的）。 */
+  /* 四条边全归卡片自己画（上左走 border，右下走 box-shadow，见 .gen tr）。
+     容器一条都不画：十六节里十一节的模组数不是 3 的倍数，末排缺一两张时容器的
+     border-bottom 照样拉满整行宽、border-right 照样到底，在空位那块围出半个空盒子。 */
   border: 0;
-  border-right: 1px solid var(--hair);
-  border-bottom: 1px solid var(--hair);
 }
+
+/* 说明的基色给 tbody，不写在格子上：整格只有一个 {标记|…} 时 class 落在 <td> 本身，
+   .gen tbody td:last-child（两类两元素）会压过单类的 .joke，那句吐槽就退成正文色。 */
+.gen tbody { color: var(--bone); }
 
 /* 表头收起：卡片模式下没有列名可言，费用的名目由格子自己带（见 .cost::after） */
 .gen thead { display: none; }
@@ -63,6 +65,10 @@
   min-width: 0;
   border-top: 1px solid var(--hair);
   border-left: 1px solid var(--hair);
+  /* 右下两边用阴影画，不画在容器上。阴影不占布局，落点与右邻的 border-left、下邻的
+     border-top 是同一像素，仍是一条 1px 线；末排缺卡时线只画到有卡的地方为止。
+     也不按 :nth-child(3n) 补边——搜索隐藏的行仍参与计数，一过滤边框就错位。 */
+  box-shadow: 1px 0 0 var(--hair), 0 1px 0 var(--hair);
 }
 
 /* 格线归卡片，格子自己不画边框——site.css 的表格线假设在卡片模式下一条都不成立。
@@ -143,12 +149,12 @@
   letter-spacing: .1em;
 }
 
-/* 效果：卡片正文，顶对齐——每张卡的说明长短不一，居中会让三张卡的首行错开 */
+/* 效果：卡片正文，顶对齐——每张卡的说明长短不一，居中会让三张卡的首行错开。
+   基色不写在这里，见上面的 .gen tbody。 */
 .gen tbody td:last-child {
   grid-area: desc;
   align-self: start;
   padding: 15px 20px 20px;
-  color: var(--bone);
   font-size: 14px;
   line-height: 1.85;
   overflow-wrap: anywhere;

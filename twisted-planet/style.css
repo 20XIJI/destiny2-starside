@@ -9,8 +9,10 @@
 :root { --wrap: 1060px; --min: 1104px; }
 
 /* 版心是给表用的 1060px，正文不跟着放宽——阅读宽度由眼睛决定，不由容器决定。
-   46em 在 14px 下约 40 个汉字一行。 */
-.block p {
+   46em 在 14px 下约 40 个汉字一行。
+   只给没有 class 的段：整段只有一个 {标记|…} 时 class 落在 <p> 本身，这条会压过
+   单类的 .note；下面的 p.chain 自带颜色，不受影响。 */
+.block p:not([class]) {
   max-width: 46em;
   margin: 0 0 30px;
   color: var(--bone-dim);
@@ -28,6 +30,7 @@
   margin: 0 0 34px;
   color: var(--bone);
   font-size: 13px;
+  line-height: 2.05;           /* 上面那条带 :not([class])，行高要自己写全 */
   letter-spacing: .06em;
   word-break: keep-all;
 }

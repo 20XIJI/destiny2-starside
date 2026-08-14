@@ -10,8 +10,10 @@
    生效（design.md 五节）。版心固定，不做窄屏适配。骨架在 assets/site.css。 */
 :root { --wrap: 1500px; --min: 1104px; }
 
-/* 这一页的正文是表格的读表说明，退一档读作限定语 */
-.block p {
+/* 这一页的正文是表格的读表说明，退一档读作限定语。
+   只给没有 class 的段：整段只有一个 {标记|…} 时 class 落在 <p> 本身，这条会压过
+   单类的 .note，整段批注就退回说明色。 */
+.block p:not([class]) {
   max-width: 62em;
   color: var(--bone-dim);
   font-size: 14px;
@@ -101,6 +103,14 @@
   width: var(--w-frame);
   min-width: var(--w-frame);
 }
+
+/* 钉住这一对的右侧竖线要归它们自己画：那道线本来是第三列的 border-left，横滚时
+   第三列滑到钉住的列底下，线跟着滑走。用非 inset 阴影落在与那道 border 同一个像素
+   上——inset 会画在格子内侧，与邻格的 border 并排成 2px。 */
+.gen tbody td:nth-of-type(1) { box-shadow: 1px 0 0 var(--hair); }
+
+/* 表头那格的下边缘要一并写全：box-shadow 不叠加，只写右侧会顶掉 .gen thead th 那条 */
+.gen thead th:nth-child(2) { box-shadow: inset 0 -1px 0 var(--hair), 1px 0 0 var(--hair); }
 
 /* 武器名：这一组的身份。rowspan 合并后纵向居中，一眼圈出该类武器占几行。
    底色不透明，否则钉住时能看见下面滚过的数字。 */

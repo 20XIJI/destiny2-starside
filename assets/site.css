@@ -240,15 +240,15 @@ a { color: var(--bone); }
   letter-spacing: .14em;
 }
 
+/* 整块靠右，块内每一行也各自靠右：折行后短的那一行（护甲模组页的五个部位）
+   若仍按左对齐排，会与下面那一长行的左缘对齐、右缘参差，读作两块没对齐的东西。 */
 .tool-chips {
   display: flex;
   flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 5px;
   margin-left: auto;
 }
-
-/* 只有跳转 chip 的工具条（资料页那一档）：前面没有搜索框顶着，从左边起排 */
-.tool-chips:first-child { margin-left: 0; }
 
 /* 换行位：app.js 按 .toolbar 的 data-chip-break 插一个占满整行的空项，
    后面的 chip 落到下一行。分节多到一行放不下时按内容分组换行，
@@ -465,8 +465,12 @@ main {
   vertical-align: middle;
 }
 
+/* **基色给 thead，别写在 th 上。**整格只有一个 {标记|…} 时生成器把 class 落在 <th>
+   本身，此时 .gen thead th 这类两选择器会以权重压过单类的 .bar-red，弹药页那三个
+   血档列名就静默退成灰的。基色由继承落下来，格子选择器只管排版（同 .gen tbody）。 */
+.gen thead { color: var(--bone-dim); }
+
 .gen thead th {
-  color: var(--bone-dim);
   font-family: var(--font-cn);
   font-size: 12px;
   font-weight: 600;
@@ -515,9 +519,17 @@ main {
 .gen tbody tr.lane:hover > th { background: var(--head-fill); }
 
 /* 合并块分界：带 <th> 的那一行即一块的开头。线要明显亮于行线——原先用
-   --hair-lit，与 --hair 的 ΔE 只有 9.03，按 design.md 的判据视作同色、等于没画。 */
-.gen tbody tr:has(> th) > th,
-.gen tbody tr:has(> th) > td { border-top: 1px solid var(--bone-faint); }
+   --hair-lit，与 --hair 的 ΔE 只有 9.03，按 design.md 的判据视作同色、等于没画。
+
+   **限定在带 data-band 的表上。**生成器只给真用到合并的表打这一位；没有合并的表里
+   每一行都带 <th scope="row">，不限定就是整张表的行线一律提亮，块首与行线的分层
+   当场消失（扭曲星球的当前行亮边取的也是 --bone-faint，于是与普通行线同色）。
+
+   **限定词写成 :where()，不写成 tr[data-band]。**后者会把权重抬高一位，压过下面
+   「首行不画上边」那条，两张合并表的第一行就会在表格外框上再叠一道亮线。
+   :where() 的权重恒为零，加了它这条选择器与限定前一模一样。 */
+.gen tbody tr:where([data-band]):has(> th) > th,
+.gen tbody tr:where([data-band]):has(> th) > td { border-top: 1px solid var(--bone-faint); }
 
 /* 表格自己有外框，首行不必再画一道 */
 .gen tbody tr:first-child > th,

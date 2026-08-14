@@ -79,7 +79,10 @@ def read(path):
 
 
 def classes_in(css):
-    return set(re.findall(r'\.([a-zA-Z][\w-]*)', css))
+    """样式表里真正下了规则的 class。**先剥注释**：注释里提到的类名不是定义，
+    带着它比对会让「{token|…} 有没有对应的类」这条闸门放行没有规则的标记——
+    site.css 有一段注释拿 .amp 举例，武器框架页的 {amp|∞} 就是这么漏过去的。"""
+    return set(re.findall(r'\.([a-zA-Z][\w-]*)', re.sub(r'/\*.*?\*/', '', css, flags=re.S)))
 
 
 def sources():

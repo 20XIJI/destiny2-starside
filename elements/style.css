@@ -101,26 +101,27 @@
 .gen th,
 .gen td { padding: 10px 14px; }
 
-/* 表头的默认色不写成 .gen thead th——整格只有一个 {标记|…} 时 class 落在 th
-   本身，两选择器会压过单类的 .el-arc，共享技能那排属性名会退成灰的。 */
+/* 表头的默认色不写在这里：基色由 site.css 的 .gen thead 继承下来，格子上的
+   {标记|…} 才压得住（共享技能那排属性名靠 .gen th.sk-arc 上色）。 */
 .gen thead th {
-  color: unset;
   letter-spacing: .08em;
   text-align: left;
   white-space: nowrap;
 }
 
-.gen thead th:not([class]) { color: var(--bone-dim); }
-
-/* 行标题：类别或条目名，这一组的身份。合并后纵向居中，一眼圈出它占几行 */
+/* 行标题：类别或条目名，这一组的身份。合并后纵向居中，一眼圈出它占几行。
+   **颜色只给没有 class 的那些格。**整格只有一个 {标记|…} 时 class 落在 <th> 本身，
+   这条（两类两元素）会压过单类的 .el-arc，总览页六个元素名就退成骨白。排版声明
+   留在外面——带 class 的格子仍要同一套排版。 */
 .gen tbody th[scope="row"] {
-  color: var(--bone-hi);
   font-family: var(--font-cn);
   font-weight: 600;
   text-align: left;
   white-space: nowrap;
   word-break: keep-all;
 }
+
+.gen tbody th[scope="row"]:not([class]) { color: var(--bone-hi); }
 
 /* 这一页的正文基色比默认亮一档：整页都是要逐条读的说明，不是数值表的注解 */
 .gen tbody { color: var(--bone); }
@@ -183,6 +184,7 @@
    会把它钉成不可断的一整行，首列被撑到近三倍宽。列名与说明句不是一回事。 */
 .gen th.lead {
   width: 190px;
+  color: var(--bone);          /* 它是整句说明，比列名亮一档 */
   white-space: normal;
   word-break: normal;
   line-height: 1.7;
@@ -232,8 +234,10 @@
 .gen td.cd { white-space: nowrap; }
 
 /* 类别列退一档：它是分组标签、逐行重复，不该跟条目名争。
-   按关系认那一列——类别格后面跟的是名称格（没有图），条目名格后面直接跟图标格。 */
-.gen tbody th[scope="row"]:has(+ td:not(.ico)) { color: var(--bone-faint); }
+   按关系认那一列——类别格后面跟的是名称格（没有图），条目名格后面直接跟图标格。
+   同样只给没有 class 的格：总览页的元素行标题也是「后面跟着非图标格」，不放行的话
+   六个元素名会被压成最暗一档。 */
+.gen tbody th[scope="row"]:not([class]):has(+ td:not(.ico)) { color: var(--bone-faint); }
 
 /* 着色 token、批注样式、表格骨架与交替底色全部来自 assets/site.css。
    本页不重复定义，也不新增渲染色。真要单独设计一种颜色时才写在这里。 */
