@@ -3,7 +3,6 @@
 描述：Destiny 2 伤害增益与易伤速查表——全局易伤、强化增益、武器激涌、放大类增益四类逐条共 118 条，含触发条件、PvE 与 PvP 数值、持续时间与叠加规则，另附世界与活动的规则与一条叠加算例。
 更新：2026.8.14
 导航：是
-首屏图标：8
 页脚：数值来自 CourtProjects 的 [Destiny 2 Damage Buffs/Debuffs](https://docs.google.com/spreadsheets/u/0/d/1i1KUwgVkd8qhwYj481gkV9sZNJQCE-C3Q-dpQutPCi4/htmlview)，最后一次核对为 2026.7.7 的 9.7.0.3 版本。
 
 ## 分类与叠加
