@@ -254,5 +254,3 @@ main { padding: 0 22px clamp(40px, 5vw, 72px); }
 
 .mod-desc p + p { margin-top: .95em; }
 
-.mod:hover::after { background: var(--row-hover); }
-

@@ -160,8 +160,3 @@
   overflow-wrap: anywhere;
 }
 
-/* 不做 hover 高亮：卡片模式下 site.css 那条底色落在格子上，而效果格是顶对齐的，
-   说明短的卡片底下留白不吃底色——高亮只盖住半张卡，看着像没渲染完。
-   卡片本来就有边框圈出边界，指上去不必再强调一次。 */
-.gen tbody tr:hover > th,
-.gen tbody tr:hover > td { background: none; }

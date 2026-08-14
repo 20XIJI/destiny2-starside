@@ -87,7 +87,7 @@
   --tint-2: #ffffff05;             /* 交替行 */
   --tint-3: #ffffff09;             /* 交替行上的行标题格 */
   --head-fill: #ffffff06;          /* 表头底 */
-  --row-hover: #ffffff0d;          /* 整行 hover */
+  --field-fill: #ffffff0d;         /* 搜索框聚焦底 */
 
   /* UI 强调色：焦点环、当前 chip、卡片左缘。原先直接写 --c-arc，于是
      元素页想换个颜色就得整条重抄。子页面覆盖这一个变量即可。 */
@@ -288,7 +288,7 @@ a { color: var(--bone); }
 
 /* 只提亮底色与边框，不动 outline——:focus-visible 的描边是键盘可达性底线 */
 .tool-search:focus {
-  background: var(--row-hover);
+  background: var(--field-fill);
   border-color: var(--accent);
 }
 
@@ -628,9 +628,6 @@ main {
   background: var(--head-fill);
 }
 
-/* 横幅行不参与 hover：它没有可读的行内容，跟着亮反而像可点 */
-.gen tbody tr.lane:hover > th { background: var(--head-fill); }
-
 /* 合并块分界：带 <th> 的那一行即一块的开头。线要明显亮于行线——原先用
    --hair-lit，与 --hair 的 ΔE 只有 9.03，按 design.md 的判据视作同色、等于没画。
 
@@ -658,15 +655,6 @@ main {
 .gen tbody th[scope="row"] { background: var(--tint-1); }
 
 .gen tbody tr[data-band="1"] > th[scope="row"] { background: var(--tint-3); }
-
-/* 整行 hover：列跨度大，只高亮单格会跟丢行。压过交替底色，否则浅带那几行没反应 */
-.gen tbody tr:hover > th,
-.gen tbody tr:hover > td { background: var(--row-hover); }
-
-/* 左缘亮条：与首页 .entry 的左缘同一条语言——「这一条是当前选中的」。
-   落在整行的首格上，合并行没有 <th> 也照样吃得到（:first-child 不挑格子类型）。
-   横幅行排除在外：它没有可读的行内容，跟着亮反而像可点，同上面的 hover 底色。 */
-.gen tbody tr:not(.lane):hover > :first-child { box-shadow: inset 2px 0 0 var(--accent); }
 
 /* 空格子不留空白：空白读作「这里漏了」，一道发丝短横读作「确认没有」。
    inline-block 让短横跟着本列的 text-align 走。用 ::after 生成，不进 HTML 文本，
@@ -1059,7 +1047,6 @@ body:has(.hero) {
   font-weight: 600;
   letter-spacing: .2em;
 }
-
 
 .entry-meta {
   display: flex;

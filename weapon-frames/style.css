@@ -245,7 +245,3 @@
   background: color-mix(in srgb, #fff 2%, var(--ink-lift));
 }
 
-.gen tbody tr:hover > th[scope="row"],
-.gen tbody tr:hover > td:nth-of-type(1) {
-  background: color-mix(in srgb, #fff 5.1%, var(--ink-lift));
-}
