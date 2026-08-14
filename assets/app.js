@@ -470,8 +470,12 @@
     lanes.forEach(function (lane) {
       lane.hidden = !lane.parentNode.querySelector('tr:not(.lane):not([hidden])');
     });
+    /* 本来就没有条目的分节不参与过滤：增伤页的「世界与活动」整节是几段规则、
+       一个条目都没有，按「没有可见条目就收起」判会在第一次敲搜索框时整节消失，
+       且清空查询也回不来（空查询让条目全部可见，这一节仍然是零条目）。 */
     sections.forEach(function (sec, i) {
-      var empty = !sec.querySelector((ROW || ITEM) + ':not([hidden])');
+      var scope = ROW || ITEM;
+      var empty = !!sec.querySelector(scope) && !sec.querySelector(scope + ':not([hidden])');
       sec.hidden = empty;
       chips[i].hidden = empty;
     });

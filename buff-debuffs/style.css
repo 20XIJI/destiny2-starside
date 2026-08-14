@@ -45,11 +45,23 @@
   white-space: nowrap;
 }
 
-/* ── 来源列 ──
+/* ── 按列序下的规则只认七列速查表 ──
+   这一页有三种表：分类总览 4 列、五张速查表 7 列、叠加算例 8 列。
+   `td:nth-child(N)` 认的是位置不是含义，不加闸门就会溢到另外两张表上——算例那行的
+   「修正 2」会被当成来源压暗、「修正 4」被当成增伤提亮，整行结论数反倒被备注列缩到
+   13px。所以每条按列序下的规则都套一句「恰好七列」的前缀。
+
+   ── 来源列 ──
    装备部位与元素归属，退一档：它是名称的限定语，不与名称争亮度。 */
-.gen tbody td:nth-child(3) {
+.gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) tbody td:nth-child(3):not([class]) {
   color: var(--bone-dim);
   min-width: 8em;
+}
+
+/* ── 触发列 ──
+   短的四个字、长的三十五个字。不封顶时它独吞剩余宽度，把备注挤到下限宽。 */
+.gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) tbody td:nth-child(4) {
+  max-width: 22em;
 }
 
 /* ── 增伤与时长两列 ──
@@ -59,16 +71,19 @@
    四层激涌的 PvE 与 PvP 共八个数横着排，读者得自己数到第几个才知道是第几层。
    一层一行之后层号与数值同排，PvP 那份紧跟在本层后面，纵向也就对齐了。
    断行点由源稿给全，所以这两列禁止自动折行。 */
-.gen tbody td:nth-child(5),
-.gen tbody td:nth-child(6) {
+.gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) tbody td:nth-child(5),
+.gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) tbody td:nth-child(6) {
   min-width: 7em;
   font-variant-numeric: tabular-nums;
   line-height: 1.9;
   white-space: nowrap;
 }
 
-/* 增伤是这一页真正要查的数，提亮一档；PvP 那份由 site.css 的 .pvp 自己压暗。 */
-.gen tbody td:nth-child(5) { color: var(--bone-hi); }
+/* 增伤是这一页真正要查的数，提亮一档；PvP 那份由 site.css 的 .pvp 自己压暗。
+   `:not([class])` 挡住所有整格标记：整格只有一个 {标记|…} 时 class 落在 <td> 上，
+   而列序这条带了 :has() 前缀、权重高过任何单类，不排除就会把占位词与批注一并染成本列基色。
+   **这一列以后不能加「色阶：」**——site.css 的 data-tier 是单类，压不过这条，加了不生效且看不出来。 */
+.gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) tbody td:nth-child(5):not([class]) { color: var(--bone-hi); }
 
 /* 「随超能持续」「常驻」「待测」这类占位词：源稿写成 {na|…}，整格只有一个标记，
    生成器把 class 落在 <td> 上。压暗一档、落回中文字族，扫读一列秒数时先跳过它们。
@@ -82,8 +97,35 @@
 /* ── 备注列 ──
    一句到四句不等，给一个上限宽度，长句折行不会把整表拉过版心。
    默认色靠 tbody 继承下来，不写在这一格上——理由见 assets/site.css 的 .gen tbody。 */
-.gen tbody td:last-child {
+.gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) tbody td:last-child {
   max-width: 34em;
   font-size: 13px;
   line-height: 1.8;
+}
+
+/* ── 读表说明的术语表 ──
+   「世界与活动」整节是六条规则，走 `术语` + `: 定义` 块。
+   `.rules` 不在 site.css 里，是逐页定义的（ammo 与 weapon-frames 各有一份，且两份不同：
+   前者带上下分隔线，后者是纯留白）。这一页照 weapon-frames 那份写——同为 1500px 版心，
+   62em 的上限与上面 `.block p` 那条同宽，定义句因此不会跟着版心通栏排。 */
+.rules {
+  max-width: 62em;
+  margin: 0;
+}
+
+.rules dt {
+  margin-top: 1.05em;
+  color: var(--bone-hi);
+  font-family: var(--font-cn);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.rules dt:first-child { margin-top: 0; }
+
+.rules dd {
+  margin: .3em 0 0;
+  color: var(--bone-dim);
+  font-size: 14px;
+  line-height: 2;
 }
