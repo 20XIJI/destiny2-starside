@@ -160,7 +160,7 @@
      拐点看得清，多一套区间开关只是多一处状态。
      坐标系固定，SVG 用 width:100% + height:auto 等比缩放，所以屏幕横坐标与数据
      横坐标之间只差一个常数比例，指针换算不必读 viewBox。 */
-  var W = 1000, H = 580, PAD = { l: 54, r: 20, t: 24, b: 34 };
+  var W = 1000, H = 580, PAD = { l: 58, r: 24, t: 30, b: 52 };
   var STEP_X = [5, 10, 20, 25, 50], STEP_Y = [0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5];
   var OFF = { x: 26, y: 24, w: 66 };      // 标签相对锚点的偏移与估计宽度
 
@@ -208,8 +208,15 @@
     function px(x) { return PAD.l + (x - lo) / (hi - lo) * (W - PAD.l - PAD.r); }
     function py(v) { return H - PAD.b - v / ymax * (H - PAD.t - PAD.b); }
 
-    /* 标注：数字不压在线上，偏到一侧再用一支短箭头指回落点。方向按序列固定——
-       标准（首列曲线）从右下指，其余从左上指——两条曲线在同一个 x 上的标签因此
+    /* 基准十字：竖线钉在横轴 0，横线钉在首列在横轴 0 处的取值。这一页的源稿按光等差 0
+       归一，那一格就是 1.000——**不写死 1，从数据里取**，换一张同样跨 0 的表照样成立；
+       不跨 0 就没有基准，两条线都不画。
+       这两条是读这张图的原点：横线之下即亏、之上即赚，竖线左右分开欠光与压光。 */
+    var z = xs.indexOf(0);
+    var ref = cols.length && lo < 0 && hi > 0 && z >= 0 ? cols[0][z] : null;
+
+    /* 标注：数字不压在线上，偏到一侧再用一根细引线牵回落点。方向按序列固定——
+       标准（首列曲线）从右下牵，其余从左上牵——两条曲线在同一个 x 上的标签因此
        各据一侧，不必做碰撞检测。
 
        **贴边时整体翻到另一侧。**方向翻转同时作用于横纵两个偏移，所以左右出界与
@@ -230,14 +237,11 @@
       var ax = X + OFF.x * s, ay = Y + OFF.y * s;
       var dx = X - ax, dy = Y - ay, len = Math.sqrt(dx * dx + dy * dy);
       var ux = dx / len, uy = dy / len;
-      /* 线从标签边上起、到落点前 4px 止，剩下这一段留给箭头 */
-      var x1 = ax + ux * 10, y1 = ay + uy * 10, x2 = X - ux * 4, y2 = Y - uy * 4;
-      var bx = x2 - ux * 8, by = y2 - uy * 8;        // 箭头底边中点
-      return '<line class="lead s' + si + '" x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) +
-        '" x2="' + bx.toFixed(1) + '" y2="' + by.toFixed(1) + '"/>' +
-        '<path class="head s' + si + '" d="M' + x2.toFixed(1) + ' ' + y2.toFixed(1) +
-        'L' + (bx - uy * 3.4).toFixed(1) + ' ' + (by + ux * 3.4).toFixed(1) +
-        'L' + (bx + uy * 3.4).toFixed(1) + ' ' + (by - ux * 3.4).toFixed(1) + 'Z"/>' +
+      /* 引线从标签边上起、停在圆点外沿前 6px：**不画箭头。**落点已经有一个带底色环
+         的圆点，箭头是第二次指同一个地方，七处标注就是七个三角形在抢注意力。 */
+      var x1 = ax + ux * 10, y1 = ay + uy * 10, x2 = X - ux * 6, y2 = Y - uy * 6;
+      return '<line class="lead" x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) +
+        '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) + '"/>' +
         '<circle class="dot s' + si + '" cx="' + X.toFixed(1) + '" cy="' + Y.toFixed(1) + '" r="3.5"/>' +
         '<text class="tag s' + si + '" x="' + ax.toFixed(1) + '" y="' + ay.toFixed(1) +
         '" text-anchor="' + (s > 0 ? 'start' : 'end') + '"><tspan class="k">' +
@@ -262,13 +266,18 @@
        两条曲线在 -49 以下几乎贴在一起，关掉一条才看得清另一条的走向。 */
     var legend = document.createElement('figcaption');
     legend.className = 'chart-legend';
+    /* data-lines="列名、列名" 由生成器从源稿的「默认曲线：」写出：加载时只画这几条，
+       其余关着等图例打开。不写这一行就全画。**默认隐藏由这里施加，不写进 HTML**——
+       无 JS 时表里所有列照常可读，与列组页同一条约定。 */
+    var on = (table.dataset.lines || '').split('、').filter(Boolean);
     var off = [];
     heads.slice(1).forEach(function (name, si) {
+      off[si] = on.length > 0 && on.indexOf(name) < 0;
       var item = document.createElement('button');
       item.type = 'button';
       item.className = 's' + si;
       item.textContent = name;
-      item.setAttribute('aria-pressed', 'true');
+      item.setAttribute('aria-pressed', !off[si]);
       item.addEventListener('click', function () {
         off[si] = !off[si];
         item.setAttribute('aria-pressed', !off[si]);
@@ -282,20 +291,36 @@
 
     var showMarks = true, pins = [], hov = null;
 
+    function tick(v) { return sy < 0.1 ? v.toFixed(3) : v.toFixed(1); }
+
     function frame() {
       var o = [];
+      /* 横向网格照旧铺满，两处例外：v=0 那条是图的地板，提到 .axis；与基准重合的
+         那条整条跳过（含刻度文字），改由基准线自己带一份，否则同一处画两遍。
+         浮点累加要留余量——0.2 加五次得到 1.0000000000000002。 */
       for (var v = 0; v <= ymax + 1e-9; v += sy) {
-        o.push('<line class="grid" x1="' + PAD.l + '" x2="' + (W - PAD.r) +
-          '" y1="' + py(v).toFixed(1) + '" y2="' + py(v).toFixed(1) + '"/>');
+        if (ref !== null && Math.abs(v - ref) < sy / 1000) continue;
+        o.push('<line class="' + (v === 0 ? 'axis' : 'grid') + '" x1="' + PAD.l +
+          '" x2="' + (W - PAD.r) + '" y1="' + py(v).toFixed(1) + '" y2="' + py(v).toFixed(1) + '"/>');
         o.push('<text class="tick ty" x="' + (PAD.l - 10) + '" y="' + (py(v) + 4).toFixed(1) +
-          '">' + (sy < 0.1 ? v.toFixed(3) : v.toFixed(1)) + '</text>');
+          '">' + tick(v) + '</text>');
       }
-      /* 竖刻度从 0 两侧对称铺开：0 是这张图的基准，让它必然落在一条刻度上 */
+      /* 竖刻度从 0 两侧对称铺开：0 是这张图的基准，让它必然落在一条刻度上。
+         **不画整条竖网格线**——201 个点定位靠指针的竖线，满屏竖线只跟曲线抢，
+         横轴下方一个 6px 的爪就够指位置；x=0 那条由基准线接管。 */
       for (var k = Math.ceil(lo / sx) * sx; k <= hi; k += sx) {
-        o.push('<line class="grid" y1="' + PAD.t + '" y2="' + (H - PAD.b) +
+        o.push('<line class="axis" y1="' + (H - PAD.b) + '" y2="' + (H - PAD.b + 6) +
           '" x1="' + px(k).toFixed(1) + '" x2="' + px(k).toFixed(1) + '"/>');
-        o.push('<text class="tick" x="' + px(k).toFixed(1) + '" y="' + (H - PAD.b + 20) +
-          '">' + signed(k) + '</text>');
+        o.push('<text class="tick' + (k === 0 ? ' base' : '') + '" x="' + px(k).toFixed(1) +
+          '" y="' + (H - PAD.b + 20) + '">' + signed(k) + '</text>');
+      }
+      if (ref !== null) {
+        o.push('<line class="base" x1="' + PAD.l + '" x2="' + (W - PAD.r) +
+          '" y1="' + py(ref).toFixed(1) + '" y2="' + py(ref).toFixed(1) + '"/>');
+        o.push('<line class="base" y1="' + PAD.t + '" y2="' + (H - PAD.b) +
+          '" x1="' + px(0).toFixed(1) + '" x2="' + px(0).toFixed(1) + '"/>');
+        o.push('<text class="tick ty base" x="' + (PAD.l - 10) + '" y="' + (py(ref) + 4).toFixed(1) +
+          '">' + tick(ref) + '</text>');
       }
       cols.forEach(function (col, si) {
         if (off[si]) return;
@@ -307,6 +332,12 @@
         });
         if (d) o.push('<path class="line s' + si + '" d="' + d.trim() + '"/>');
       });
+      /* 横轴叫什么只有表头知道，表一收起图上就没有了。与图例取 heads 是同一条路子：
+         文本从表里现读，HTML 里仍然只有一份数据。
+         **居中另起一行，不贴右端。**贴右端时它正落在末尾那个刻度下方，会被读成那一个
+         刻度的注脚；居中并与刻度行拉开 26px，才读得出是整条轴的名字。 */
+      o.push('<text class="cap" x="' + ((PAD.l + W - PAD.r) / 2).toFixed(1) +
+        '" y="' + (H - 6) + '">' + heads[0] + '</text>');
       if (showMarks) o.push(marks.map(function (m) { return callout(m.x, m.s); }).join(''));
       o.push(pins.map(group).join(''));
       o.push('<g class="hover"></g>');

@@ -26,7 +26,7 @@ SRC_DIR = os.path.join(shell.ROOT, 'references', 'docs')
 # 头部的「键：值」行。键名固定，正文行不会被误认。
 META_KEYS = ('描述', '更新', '页脚', '鸣谢', '数据源', '导航', '路径', '上级',
              '列组', '互斥列组', '默认列组', '首屏图标', '此刻', '跳转分行',
-             '图表', '标注')
+             '图表', '标注', '默认曲线')
 META_LINE = meta_line(META_KEYS)
 
 # 分节级声明：「色阶：列名 阈值 …」。同样按整行剥离，不进正文。
@@ -222,7 +222,7 @@ def tier_of(text, bounds):
     return tier
 
 
-def render_table(lines, scales=None, groups=None, marks=None):
+def render_table(lines, scales=None, groups=None, marks=None, curves=None):
     """markdown 表格 → <table class="gen">。
 
     第一行是表头，第二行是 |---| 分隔。正文里再出现一行 --- 就另起一个 <tbody>，
@@ -242,6 +242,10 @@ def render_table(lines, scales=None, groups=None, marks=None):
 
     marks 是 [(列名, [值])]：落成表上的 data-marks，图表据此标点。列名与值都要
     在表里真实存在，写错即中止——静默少标一个点，眼睛查不出来。
+
+    curves 是 [列名]：落成表上的 data-lines，图表加载时只画这几条，其余由图例
+    开关打开。与「默认列组：」同一条约定——**默认隐藏由 app.js 在加载时施加，
+    不写进 HTML**，无 JS 时表里所有列照常可读。
     """
     head = split_cells(lines[0])
     if len(lines) < 2 or not is_rule(split_cells(lines[1])):
@@ -303,7 +307,14 @@ def render_table(lines, scales=None, groups=None, marks=None):
             if miss:
                 die('「标注：」指的值不在首列里：%s' % '、'.join(str(v) for v in miss))
             spec.append('%s %s' % (col, ' '.join(str(v) for v in vals)))
-        attr = ' data-marks="%s"' % ';'.join(spec)
+        attr += ' data-marks="%s"' % ';'.join(spec)
+    if curves:
+        for col in curves:
+            if colkey(col) not in col_at:
+                die('「默认曲线：」指的列 %r 不在表头里：%s' % (col, '｜'.join(head)))
+            if col_at[colkey(col)] == 0:
+                die('「默认曲线：」不能指首列，那一列是横坐标不是曲线')
+        attr += ' data-lines="%s"' % '、'.join(curves)
 
     o = ['<table class="gen"%s>' % attr, '<thead>', '<tr>']
     o += [wrap('th', broke(c),
@@ -350,7 +361,7 @@ def render_table(lines, scales=None, groups=None, marks=None):
     return o
 
 
-def render_blocks(chunk, scales=None, groups=None, marks=None):
+def render_blocks(chunk, scales=None, groups=None, marks=None, curves=None):
     """分节正文 → 段落、列表、定义列表、表格。"""
     o, i = [], 0
     lines = chunk.split('\n')
@@ -364,7 +375,7 @@ def render_blocks(chunk, scales=None, groups=None, marks=None):
             start = i
             while i < len(lines) and lines[i].lstrip().startswith('|'):
                 i += 1
-            o += render_table([ln.strip() for ln in lines[start:i]], scales, groups, marks)
+            o += render_table([ln.strip() for ln in lines[start:i]], scales, groups, marks, curves)
             continue
 
         # 定义列表：术语一行，紧跟以「: 」开头的定义行。
@@ -483,6 +494,13 @@ def render(md, slug):
     if marks and not flag_of(md, '图表'):
         die('「标注：」要配合「图表：是」用，没有图就没有点可标')
 
+    # 「默认曲线：列名、列名」→ 表上的 data-lines，图表加载时只画这几条。哪条是主线
+    # 是内容判断（这一页的传说战役与标准几乎重叠，同时画只会互相盖住），与「标注：」
+    # 同理写在源稿里，不写进 app.js。
+    curves = [c.strip() for c in meta('默认曲线', required=False).split('、') if c.strip()]
+    if curves and not flag_of(md, '图表'):
+        die('「默认曲线：」要配合「图表：是」用，没有图就没有曲线可选')
+
     # 「导航：是」→ 顶部工具条：搜索框 + 每个分节一枚跳转 chip，与神器模组页同一套。
     # 条目是表格行，所以带这一档的表**不能用首格留空合并**——按行隐藏会把合并块
     # 豁开，行标题要逐行写全。
@@ -534,7 +552,7 @@ def render(md, slug):
         # 分节标题里也允许放图标：源表每个职业段前有一枚职业徽章，标题是它的位置
         o.append('<h2 class="sect-label">%s</h2>'
                  % inline(icon_sub(head.strip()), rich=True))
-        o += render_blocks(chunk, scales, groups, marks)
+        o += render_blocks(chunk, scales, groups, marks, curves)
         o.append('</section>')
 
     # 「数据源：是」输出 shell.py 里那句 Destiny Data Compendium 归属，一字不改。
