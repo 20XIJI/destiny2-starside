@@ -1,0 +1,83 @@
+/* 增伤 & 易伤组件：五类伤害修正的七列速查表。
+   通用主题、字体与配色 token 在 /assets/site.css，本文件不重复定义任何着色 token。
+   这一页由 tools/convert-doc.py 从 references/docs/buff-debuffs.md 生成，
+   改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
+
+/* 七列里有三列装整句（触发、增伤、备注），走 1500px 那一档（design.md 四节）。
+   强调色取虚弱的紫：全局易伤是这一页最长的一节，也是读者最常来查的一节。 */
+:root { --wrap: 1500px; --min: 1064px; --accent: var(--c-void); }
+
+/* 表前的读表说明退一档，读作限定语。
+   只给没有 class 的段：整段只有一个 {标记|…} 时 class 落在 <p> 本身，
+   这条会压过单类的 .note，整段批注就退回说明色。 */
+.block p:not([class]) {
+  max-width: 62em;
+  color: var(--bone-dim);
+  font-size: 14px;
+}
+
+/* ── 图标列 ──
+   源表每条给一枚装备／模组／技能图标，接在名称右边。
+   **图标不放首列**：首格是行标题（`<th scope="row">`），装备图当行标题读不出这一行是谁。
+   64px 原图显示成 36px，两倍像素密度下仍然锐利。 */
+.gen td.ico {
+  width: 56px;
+  padding: 8px;
+  text-align: center;
+}
+
+.gen td.ico img {
+  display: block;
+  width: 36px;
+  height: 36px;
+  margin: 0 auto;
+  object-fit: contain;
+  border-radius: 2px;
+}
+
+/* ── 名称列 ──
+   首格是行标题，不折行：一行一条效果，名称断开之后两行之间认不出边界。 */
+.gen tbody th[scope="row"] {
+  color: var(--bone-hi);
+  font-family: var(--font-cn);
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+
+/* ── 来源列 ──
+   装备部位与元素归属，退一档：它是名称的限定语，不与名称争亮度。 */
+.gen tbody td:nth-child(3) {
+  color: var(--bone-dim);
+  min-width: 8em;
+}
+
+/* ── 增伤与时长两列 ──
+   等宽数字让百分比与秒数在纵向上对得住，扫一列时不必逐行重新定位。
+   这两列常写成「10% ｜ 17% ｜ 22%」的逐层序列，所以不禁止折行，只给一个下限宽。 */
+.gen tbody td:nth-child(5),
+.gen tbody td:nth-child(6) {
+  min-width: 7em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 增伤是这一页真正要查的数，提亮一档；PvP 那份由 site.css 的 .pvp 自己压暗。 */
+.gen tbody td:nth-child(5) { color: var(--bone-hi); }
+
+/* 「随超能持续」「常驻」「待测」这类占位词：源稿写成 {na|…}，整格只有一个标记，
+   生成器把 class 落在 <td> 上。压暗一档、落回中文字族，扫读一列秒数时先跳过它们。
+   这条排在上面两条之后：与它们权重相同（都是两类两元素），靠顺序取胜。 */
+.gen tbody td.na {
+  color: var(--bone-dim);
+  font-family: var(--font-cn);
+  font-size: 12px;
+}
+
+/* ── 备注列 ──
+   一句到四句不等，给一个上限宽度，长句折行不会把整表拉过版心。
+   默认色靠 tbody 继承下来，不写在这一格上——理由见 assets/site.css 的 .gen tbody。 */
+.gen tbody td:last-child {
+  max-width: 34em;
+  font-size: 13px;
+  line-height: 1.8;
+}
