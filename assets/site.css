@@ -242,6 +242,9 @@ a { color: var(--bone); }
   padding: 0 22px 11px;
 }
 
+/* **这个框不加形状。**切角、接缝、左缘亮条都在它身上试过，四件事挤在 236px 上
+   互相抢，读起来比原来那个素矩形还乱。控件的体系感由 chip 的角标担着就够了，
+   输入框只要老实。 */
 .tool-search {
   flex: none;
   width: 236px;
@@ -260,6 +263,14 @@ a { color: var(--bone); }
   background: var(--row-hover);
   border-color: var(--accent);
 }
+
+/* 一个都没搜到：边框与计数一起转红。灰着看 0 / 147 与 3 / 147 长得一样，
+   这是搜索栏上唯一带信息的一处状态，所以只留它。
+   借的是 --c-health 的渲染色——工具条上不会出现生命值，两者不同屏。
+   权重 (0,3,0) 压过 .tool-search:focus，聚焦且零命中时红色胜出：那是更急的信号。 */
+.toolbar[data-miss] .tool-search { border-color: var(--c-health); }
+
+.toolbar[data-miss] .tool-count { color: var(--c-health); }
 
 .tool-count {
   flex: none;

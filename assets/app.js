@@ -238,6 +238,9 @@
       chips[i].hidden = empty;
     });
     count.textContent = query.trim() ? hits + ' / ' + mods.length : '';
+    /* 搜了但一个都没命中时给工具条打一位，搜索框与计数据此转红：灰着看
+       0 / 147 与 3 / 147 长得一样。清空查询即撤销，没搜过也不算空结果。 */
+    slot.toggleAttribute('data-miss', !!query.trim() && !hits);
     return hits;
   }
   window.starsideFilter = filter;
