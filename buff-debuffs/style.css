@@ -6,9 +6,10 @@
 /* 七列里有三列装整句（触发、增伤、备注），走 1500px 那一档（design.md 四节）。
    强调色取虚弱的紫：全局易伤是这一页最长的一节，也是读者最常来查的一节。
 
-   --min 取实测：1440px 宽下七列速查表 scrollWidth 1396，加版心两侧 22×2 正好 1440。
-   窄于此横向滚动，不让表挤成折行（design.md 五节）。 */
-:root { --wrap: 1500px; --min: 1440px; --accent: var(--c-void); }
+   --min 取实测：收窄各列之后最宽的一张（放大类增益）scrollWidth 1192，
+   加版心两侧 22×2 得 1236，取整 1240。窄于此横向滚动（design.md 五节）；
+   1280 宽的笔记本因此不必横向滚。 */
+:root { --wrap: 1500px; --min: 1240px; --accent: var(--c-void); }
 
 /* 表前的读表说明退一档，读作限定语。
    只给没有 class 的段：整段只有一个 {标记|…} 时 class 落在 <p> 本身，
@@ -24,8 +25,8 @@
    **图标不放首列**：首格是行标题（`<th scope="row">`），装备图当行标题读不出这一行是谁。
    64px 原图显示成 36px，两倍像素密度下仍然锐利。 */
 .gen td.ico {
-  width: 56px;
-  padding: 8px;
+  width: 48px;
+  padding: 7px 6px;
   text-align: center;
 }
 
@@ -55,16 +56,18 @@
    13px。所以每条按列序下的规则都套一句「恰好七列」的前缀。
 
    ── 来源列 ──
-   装备部位与元素归属，退一档：它是名称的限定语，不与名称争亮度。 */
+   装备部位与元素归属，退一档：它是名称的限定语，不与名称争亮度。
+   给的是上限宽不是下限宽：最长的「NPA 斥力调节器或杀手公爵药剂师背包」折成两行，
+   比让整列跟着它撑到 240px 划算——整表窄一档，1280 宽的屏幕就不必横向滚。 */
 .gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) tbody td:nth-child(3):not([class]) {
+  max-width: 10em;
   color: var(--bone-dim);
-  min-width: 8em;
 }
 
 /* ── 触发列 ──
    短的四个字、长的三十五个字。不封顶时它独吞剩余宽度，把备注挤到下限宽。 */
 .gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) tbody td:nth-child(4) {
-  max-width: 22em;
+  max-width: 15em;
 }
 
 /* ── 增伤与时长两列 ──
@@ -76,7 +79,7 @@
    断行点由源稿给全，所以这两列禁止自动折行。 */
 .gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) tbody td:nth-child(5),
 .gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) tbody td:nth-child(6) {
-  min-width: 7em;
+  min-width: 6em;
   font-variant-numeric: tabular-nums;
   line-height: 1.9;
   white-space: nowrap;
@@ -101,7 +104,7 @@
    一句到四句不等，给一个上限宽度，长句折行不会把整表拉过版心。
    默认色靠 tbody 继承下来，不写在这一格上——理由见 assets/site.css 的 .gen tbody。 */
 .gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) tbody td:last-child {
-  max-width: 34em;
+  max-width: 24em;
   font-size: 13px;
   line-height: 1.8;
 }
@@ -131,4 +134,12 @@
   color: var(--bone-dim);
   font-size: 14px;
   line-height: 2;
+}
+
+/* ── 叠加算例那张八列表 ──
+   六个修正项加武器与合计，不封顶时最长的两格（武器、合计）把整表撑到 1335px，
+   比五张速查表还宽，--min 就得跟着它走。给每格一个上限，长的折成两行。 */
+.gen:has(thead th:nth-child(8)) th,
+.gen:has(thead th:nth-child(8)) td {
+  max-width: 9em;
 }
