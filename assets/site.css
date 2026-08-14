@@ -112,8 +112,15 @@ html { scroll-behavior: smooth; }
 body {
   min-height: 100vh;
   /* 宽表页的横向溢出交给页面本身，不给 main 开 overflow——祖先一旦成为滚动
-     容器，内部的 position: sticky 就不再相对视口生效（design.md 第五节）。 */
-  min-width: var(--min);
+     容器，内部的 position: sticky 就不再相对视口生效（design.md 第五节）。
+
+     **版面宽度取「内容、--min、视口」三者的最大值，不靠手写的数去猜内容多宽。**
+     --min 只表达内容自己说不出来的意图（连续阅读页的阅读宽、首页的双列宽）；
+     fit-content 负责内容真比下限宽时让版面跟着长。缺了它，站头与页脚会比正文短
+     一截，横滚出去就断在半路——weapon-frames 默认视图的表要 1349px，而它的
+     --min 只有 1104px，差 245px。 */
+  width: fit-content;
+  min-width: max(var(--min), 100%);
   /* **vw 要按版面算，不按视口算。**版面被 --min 撑开之后视口还可能更窄，此时
      Nvw 按视口取值会缩到 clamp 的下限，字号浮在宽版面里，读作排版坏了：420px
      视口下 boss-hp 的 h1 只有 30px，而版面 1104px。给 vw 垫一个下限 = 版面最小
