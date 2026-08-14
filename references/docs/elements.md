@@ -7,12 +7,12 @@
 
 ## 打开
 
-- [{el-arc|电弧} 增幅与电光充能撑起回能，致盲与震颤压场](arc/index.html)
-- [{el-solar|烈日} 治愈、焕光、恢复保命，灼烧攒满即点燃](solar/index.html)
-- [{el-void|虚空} 吞食与隐身续航，压制、不稳定、虚弱控场](void/index.html)
-- [{el-stasis|冰影} 冰霜护甲减伤，减速攒满冻结，冻结后碎裂](stasis/index.html)
-- [{el-strand|缚丝} 织造铠甲减伤，割裂、悬停、瓦解锁住战斗人员](strand/index.html)
-- [{el-prismatic|棱镜} 光能与暗影混装，超凡把两侧收益连起来](prismatic/index.html)
+- [{el-arc|电弧} 增幅提速，电光充能回能，致盲与震颤压场](arc/index.html)
+- [{el-solar|烈日} 治愈与恢复回血，焕光增伤，灼烧攒满点燃](solar/index.html)
+- [{el-void|虚空} 吞食与隐身续航，虚弱增伤，压制定身](void/index.html)
+- [{el-stasis|冰影} 冰霜护甲减伤，减速攒满冻结，冻结再碎裂](stasis/index.html)
+- [{el-strand|缚丝} 织造铠甲与割裂减伤，悬停定身，瓦解连锁](strand/index.html)
+- [{el-prismatic|棱镜} 光能与暗影同持一身，两侧交替运用点亮超凡](prismatic/index.html)
 
 ## 效果一览
 
