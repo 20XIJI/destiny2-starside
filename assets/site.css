@@ -98,9 +98,11 @@
   --grid: #ffffff06;
   --atmo: linear-gradient(180deg, #12172a, #0b0d1400);
 
-  /* 版心一档（design.md 第四节）与最小内容宽度。页面表只写这两个右值。 */
+  /* 版心一档（design.md 第四节）与最小内容宽度。页面表只写这两个右值。
+     **--min 缺省写 0px 不写 auto**：块级 body 上两者等价（min-width: auto 对
+     非 flex 项即 0），但 auto 进不了 calc，下面那条 --vw 就没法一条式子通吃。 */
   --wrap: 1060px;
-  --min: auto;
+  --min: 0px;
 }
 
 * { box-sizing: border-box; }
@@ -112,6 +114,12 @@ body {
   /* 宽表页的横向溢出交给页面本身，不给 main 开 overflow——祖先一旦成为滚动
      容器，内部的 position: sticky 就不再相对视口生效（design.md 第五节）。 */
   min-width: var(--min);
+  /* **vw 要按版面算，不按视口算。**版面被 --min 撑开之后视口还可能更窄，此时
+     Nvw 按视口取值会缩到 clamp 的下限，字号浮在宽版面里，读作排版坏了：420px
+     视口下 boss-hp 的 h1 只有 30px，而版面 1104px。给 vw 垫一个下限 = 版面最小
+     宽度的百分之一。没写 --min 的页面（--min: 0px）照旧就是 1vw。
+     下面各处的 Nvw 一律写成 N × var(--vw)。 */
+  --vw: max(1vw, calc(var(--min) / 100));
   margin: 0;
   /* **给 body 定位，好让绝对定位的子元素按版面而不是按视口算宽。**body 静态时，
      abspos 子元素的包含块是初始包含块（视口那么宽）；窄视口下版面被 --min 撑到
@@ -134,13 +142,20 @@ body {
      AAA / AA 之上。再亮一档就破线——#141b31 的 ΔE 到 13.92，且 --hair 发丝线
      与它的 ΔE 掉到 11.12，页面顶部的横线开始消失。
 
-     末端写 #0b0d1400 而不是 transparent：后者在过渡段串进透明黑，中途发灰。 */
+     末端写 #0b0d1400 而不是 transparent：后者在过渡段串进透明黑，中途发灰。
+     **大气层那层用 repeat-x，不用 no-repeat。**body 的背景会传播成画布背景：
+     绘制区铺满整个画布，定位区却按根元素的盒子算，而根元素只有视口那么宽。
+     no-repeat + 100% 宽因此只盖住视口那一段，版面被 --min 撑宽后横滚出去的部分
+     就没有大气层（weapon-frames 的表还能比 --min 再宽 223px，同样漏在外面）。
+     改 repeat-x 之后按视口宽度横向平铺——渐变是竖向的，各列一模一样，接缝看不出，
+     等于铺满整幅。不给 html 上底色中止传播：那样 body 的背景只画在自己的盒子里，
+     比版面更宽的内容底下反而空掉。 */
   background:
     repeating-linear-gradient(0deg, var(--grid) 0 1px, transparent 1px 88px),
     repeating-linear-gradient(90deg, var(--grid) 0 1px, transparent 1px 88px),
     var(--atmo),
     var(--ink);
-  background-repeat: repeat, repeat, no-repeat, repeat;
+  background-repeat: repeat, repeat, repeat-x, repeat;
   background-size: auto, auto, 100% 640px, auto;
 }
 
@@ -370,10 +385,10 @@ main,
 
 main {
   flex: 1 0 auto;                  /* 内容不足一屏时不让页脚悬在页面中间 */
-  padding: 0 22px clamp(48px, 6vw, 84px);
+  padding: 0 22px clamp(48px, calc(6 * var(--vw)), 84px);
 }
 
-.page-head { padding: clamp(40px, 5vw, 68px) 22px clamp(22px, 2.6vw, 32px); }
+.page-head { padding: clamp(40px, calc(5 * var(--vw)), 68px) 22px clamp(22px, calc(2.6 * var(--vw)), 32px); }
 
 /* 标题下的一道规线：六个元素页早就这么写（elements/style.css 用 2px 元素色，
    一眼认出在哪一页），这里把它提成站点缺省，其余页面拿到发丝线那一档。
@@ -383,7 +398,7 @@ main {
   padding-bottom: 12px;
   color: var(--bone-hi);
   font-family: var(--font-cn);
-  font-size: clamp(30px, 3.4vw, 42px);
+  font-size: clamp(30px, calc(3.4 * var(--vw)), 42px);
   font-weight: 600;
   line-height: 1.15;
   letter-spacing: .04em;
@@ -498,7 +513,7 @@ main {
 .cat,
 .artifact { scroll-margin-top: var(--stick); }
 
-.block { margin-bottom: clamp(40px, 4.6vw, 64px); }
+.block { margin-bottom: clamp(40px, calc(4.6 * var(--vw)), 64px); }
 
 .block:last-child { margin-bottom: 0; }
 
@@ -706,11 +721,6 @@ body:has(.hero) {
      不塌成单列——同 armor-sets / boss-hp 那几页写 1104 的道理（design.md 五节）。 */
   --min: 1176px;
 
-  /* **vw 要按版面算，不按视口算。**版面被 --min 撑到 1176px 之后视口还可能更窄，
-     此时 6vw 在手机上只有 23px，字标掉到 clamp 的 34px 下限、浮在 1176px 宽的版面
-     里，读作排版坏了。给 vw 垫一个下限 = 版面最小宽度的百分之一，窄视口下这些尺寸
-     便按版面取值，宽视口下照旧跟着视口放大。下面首页各处的 Nvw 都写成 N × var(--vw)。 */
-  --vw: max(1vw, calc(var(--min) / 100));
   background:
     repeating-linear-gradient(0deg, #ffffff1c 0 1px, transparent 1px 352px),
     repeating-linear-gradient(90deg, #ffffff1c 0 1px, transparent 1px 352px),
@@ -718,7 +728,7 @@ body:has(.hero) {
     repeating-linear-gradient(90deg, var(--grid) 0 1px, transparent 1px 88px),
     var(--atmo),
     var(--ink);
-  background-repeat: repeat, repeat, repeat, repeat, no-repeat, repeat;
+  background-repeat: repeat, repeat, repeat, repeat, repeat-x, repeat;
   background-size: auto, auto, auto, auto, 100% 640px, auto;
 }
 
@@ -930,8 +940,10 @@ body:has(.hero) {
   text-decoration: none;
   background: linear-gradient(100deg, #171c29, #12151f 64%);
   border: 1px solid var(--hair);
-  clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%,
-                     15px 100%, 0 calc(100% - 15px));
+  /* **只切右上一个角。**左下也切过，双列排布下相邻两张卡的切角正好分踞列间那道沟
+     的两端、且同向，整条沟读成错开的 Z 形，看着像两列没对齐。单列时不显，双列时
+     一眼就是毛病。 */
+  clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 0 100%);
   transition: background .18s ease, box-shadow .18s ease;
 }
 
@@ -954,10 +966,11 @@ body:has(.hero) {
 .entry::before {
   content: "";
   position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(225deg, var(--hair) 0 1px, transparent 1px) right top / 22px 22px no-repeat,
-    linear-gradient(45deg, var(--hair) 0 1px, transparent 1px) left bottom / 22px 22px no-repeat;
+  top: 0;
+  right: 0;
+  width: 22px;
+  height: 22px;
+  background: linear-gradient(225deg, var(--hair) 0 1px, transparent 1px);
 }
 
 .entry:hover {

@@ -5,7 +5,9 @@
    各元素页自己的 style.css 只留一行 --accent —— 本页的元素色相，用在页首规线
    与分节方块上，让读者一眼认出在哪一页。 */
 
-:root { --accent: var(--c-term); }
+/* --min 同 boss-hp / armor-sets 那几页：版心 1060 + 两侧 22。缺了它窄屏下
+   表格会被挤扁而不是横滚，那是窄屏适配（design.md 五节写死了不做）。 */
+:root { --accent: var(--c-term); --min: 1104px; }
 
 /* 元素色相只借给标题下的一道规线，不给标题本身上色：
    整页的青色都在讲电弧术语，标题不是术语。骨架在 assets/site.css。 */
