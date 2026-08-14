@@ -152,7 +152,214 @@
     paint();
   }
 
+  /* 折线图（.toolbar 带 data-chart 的页面）：**数据只有表里那一份**，图从表里现读，
+     画完把表收起。无 JS 时表就是页面本体，与列组页的默认隐藏由 app.js 施加是同一条
+     约定——产出里不写第二份数据。
+
+     横轴恒为源稿给的全区间，不做缩放：201 个点在 1000 宽的坐标系里每点 4.6px，
+     拐点看得清，多一套区间开关只是多一处状态。
+     坐标系固定，SVG 用 width:100% + height:auto 等比缩放，所以屏幕横坐标与数据
+     横坐标之间只差一个常数比例，指针换算不必读 viewBox。 */
+  var W = 1000, H = 580, PAD = { l: 54, r: 20, t: 24, b: 34 };
+  var STEP_X = [5, 10, 20, 25, 50], STEP_Y = [0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5];
+  var OFF = { x: 26, y: 24, w: 66 };      // 标签相对锚点的偏移与估计宽度
+
+  /* 刻度步长取「让刻度数落在 8 以内」的最小一档。档位写死成表，不做通用算法：
+     两条轴的量纲这一页就定死了，通用算法要多写一倍代码去应付用不到的量级。 */
+  function step(span, list) {
+    for (var i = 0; i < list.length; i++) if (span / list[i] <= 8) return list[i];
+    return list[list.length - 1];
+  }
+
+  function signed(x) { return x > 0 ? '+' + x : String(x); }
+
+  function chart() {
+    var table = document.querySelector('.gen');
+    if (!table) return;
+    var heads = [].slice.call(table.querySelectorAll('thead th'))
+      .map(function (th) { return th.textContent.trim(); });
+    var xs = [];
+    var cols = heads.slice(1).map(function () { return []; });
+    [].slice.call(table.querySelectorAll('tbody tr')).forEach(function (tr) {
+      var cells = [].slice.call(tr.children).map(function (c) { return c.textContent.trim(); });
+      xs.push(+cells[0]);
+      cols.forEach(function (col, i) { col.push(cells[i + 1] === '' ? null : +cells[i + 1]); });
+    });
+    if (xs.length < 2) return;
+    var lo = xs[0], hi = xs[xs.length - 1];
+
+    /* data-marks="列名 值 值;列名 值 值"，由生成器从源稿的「标注：」写出，值与列名
+       在生成时已核对过存在，这里只做换算。 */
+    var marks = [];
+    (table.dataset.marks || '').split(';').filter(Boolean).forEach(function (spec) {
+      var parts = spec.trim().split(/\s+/);
+      var si = heads.indexOf(parts[0]) - 1;
+      parts.slice(1).forEach(function (v) { marks.push({ s: si, x: +v }); });
+    });
+
+    var top = 0;
+    cols.forEach(function (col) {
+      col.forEach(function (v) { if (v !== null) top = Math.max(top, v); });
+    });
+    var sy = step(top, STEP_Y);
+    var ymax = Math.ceil(top / sy) * sy || sy;
+    var sx = step(hi - lo, STEP_X);
+
+    function px(x) { return PAD.l + (x - lo) / (hi - lo) * (W - PAD.l - PAD.r); }
+    function py(v) { return H - PAD.b - v / ymax * (H - PAD.t - PAD.b); }
+
+    /* 标注：数字不压在线上，偏到一侧再用一支短箭头指回落点。方向按序列固定——
+       标准（首列曲线）从右下指，其余从左上指——两条曲线在同一个 x 上的标签因此
+       各据一侧，不必做碰撞检测。
+
+       **贴边时整体翻到另一侧。**方向翻转同时作用于横纵两个偏移，所以左右出界与
+       上下出界用同一次翻转就够：x=-100 处倍率为 0，落点贴着横轴，右下放不下，翻到
+       左上正好落进画布。 */
+    function fits(X, Y, s) {
+      var ax = X + OFF.x * s, ay = Y + OFF.y * s;
+      return ay > PAD.t + 6 && ay < H - PAD.b - 6 &&
+        (s > 0 ? ax + OFF.w < W : ax - OFF.w > 0);
+    }
+
+    function callout(x, si) {
+      var v = off[si] ? null : cols[si][xs.indexOf(x)];
+      if (v === null || v === undefined) return '';
+      var X = px(x), Y = py(v);
+      var s = si % 2 === 0 ? 1 : -1;
+      if (!fits(X, Y, s)) s = -s;
+      var ax = X + OFF.x * s, ay = Y + OFF.y * s;
+      var dx = X - ax, dy = Y - ay, len = Math.sqrt(dx * dx + dy * dy);
+      var ux = dx / len, uy = dy / len;
+      /* 线从标签边上起、到落点前 4px 止，剩下这一段留给箭头 */
+      var x1 = ax + ux * 10, y1 = ay + uy * 10, x2 = X - ux * 4, y2 = Y - uy * 4;
+      var bx = x2 - ux * 8, by = y2 - uy * 8;        // 箭头底边中点
+      return '<line class="lead s' + si + '" x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) +
+        '" x2="' + bx.toFixed(1) + '" y2="' + by.toFixed(1) + '"/>' +
+        '<path class="head s' + si + '" d="M' + x2.toFixed(1) + ' ' + y2.toFixed(1) +
+        'L' + (bx - uy * 3.4).toFixed(1) + ' ' + (by + ux * 3.4).toFixed(1) +
+        'L' + (bx + uy * 3.4).toFixed(1) + ' ' + (by - ux * 3.4).toFixed(1) + 'Z"/>' +
+        '<circle class="dot s' + si + '" cx="' + X.toFixed(1) + '" cy="' + Y.toFixed(1) + '" r="3.5"/>' +
+        '<text class="tag s' + si + '" x="' + ax.toFixed(1) + '" y="' + ay.toFixed(1) +
+        '" text-anchor="' + (s > 0 ? 'start' : 'end') + '"><tspan class="k">' +
+        signed(x) + '</tspan> ' + v.toFixed(3) + '</text>';
+    }
+
+    function group(x) {
+      return '<line class="cursor" x1="' + px(x).toFixed(1) + '" x2="' + px(x).toFixed(1) +
+        '" y1="' + PAD.t + '" y2="' + (H - PAD.b) + '"/>' +
+        cols.map(function (col, si) { return callout(x, si); }).join('');
+    }
+
+    var fig = document.createElement('figure');
+    fig.className = 'chart';
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', heads[0] + '与' + heads.slice(1).join('、') + '的关系曲线');
+    fig.appendChild(svg);
+
+    /* 图例兼开关：线名取自表头，同样不在 HTML 里另写一份文本。
+       两条曲线在 -49 以下几乎贴在一起，关掉一条才看得清另一条的走向。 */
+    var legend = document.createElement('figcaption');
+    legend.className = 'chart-legend';
+    var off = [];
+    heads.slice(1).forEach(function (name, si) {
+      var item = document.createElement('button');
+      item.type = 'button';
+      item.className = 's' + si;
+      item.textContent = name;
+      item.setAttribute('aria-pressed', 'true');
+      item.addEventListener('click', function () {
+        off[si] = !off[si];
+        item.setAttribute('aria-pressed', !off[si]);
+        frame();
+      });
+      legend.appendChild(item);
+    });
+    fig.appendChild(legend);
+    table.parentNode.insertBefore(fig, table);
+    table.hidden = true;
+
+    var showMarks = true, pins = [], hov = null;
+
+    function frame() {
+      var o = [];
+      for (var v = 0; v <= ymax + 1e-9; v += sy) {
+        o.push('<line class="grid" x1="' + PAD.l + '" x2="' + (W - PAD.r) +
+          '" y1="' + py(v).toFixed(1) + '" y2="' + py(v).toFixed(1) + '"/>');
+        o.push('<text class="tick ty" x="' + (PAD.l - 10) + '" y="' + (py(v) + 4).toFixed(1) +
+          '">' + (sy < 0.1 ? v.toFixed(3) : v.toFixed(1)) + '</text>');
+      }
+      /* 竖刻度从 0 两侧对称铺开：0 是这张图的基准，让它必然落在一条刻度上 */
+      for (var k = Math.ceil(lo / sx) * sx; k <= hi; k += sx) {
+        o.push('<line class="grid" y1="' + PAD.t + '" y2="' + (H - PAD.b) +
+          '" x1="' + px(k).toFixed(1) + '" x2="' + px(k).toFixed(1) + '"/>');
+        o.push('<text class="tick" x="' + px(k).toFixed(1) + '" y="' + (H - PAD.b + 20) +
+          '">' + signed(k) + '</text>');
+      }
+      cols.forEach(function (col, si) {
+        if (off[si]) return;
+        var d = '', pen = false;
+        xs.forEach(function (x, i) {
+          if (col[i] === null) { pen = false; return; }
+          d += (pen ? 'L' : 'M') + px(x).toFixed(1) + ' ' + py(col[i]).toFixed(1) + ' ';
+          pen = true;
+        });
+        if (d) o.push('<path class="line s' + si + '" d="' + d.trim() + '"/>');
+      });
+      if (showMarks) o.push(marks.map(function (m) { return callout(m.x, m.s); }).join(''));
+      o.push(pins.map(group).join(''));
+      o.push('<g class="hover"></g>');
+      svg.innerHTML = o.join('');
+      hov = svg.querySelector('.hover');
+    }
+
+    function pick(e) {
+      var r = svg.getBoundingClientRect();
+      var x = lo + ((e.clientX - r.left) / r.width * W - PAD.l) / (W - PAD.l - PAD.r) * (hi - lo);
+      return Math.min(hi, Math.max(lo, Math.round(x)));
+    }
+
+    svg.addEventListener('pointermove', function (e) {
+      var x = pick(e);
+      hov.innerHTML = pins.indexOf(x) < 0 ? group(x) : '';
+    });
+    svg.addEventListener('pointerleave', function () { hov.innerHTML = ''; });
+    /* 点一下把这一处读数留在图上，可以留任意多处；点已经留下的那一处即撤掉它 */
+    svg.addEventListener('click', function (e) {
+      var x = pick(e), at = pins.indexOf(x);
+      if (at < 0) pins.push(x); else pins.splice(at, 1);
+      frame();
+    });
+
+    var nav = document.createElement('nav');
+    nav.className = 'tool-chips';
+    nav.setAttribute('aria-label', '图表');
+    var tag = document.createElement('button');
+    tag.type = 'button';
+    tag.className = 'chip';
+    tag.textContent = '标注';
+    tag.addEventListener('click', function () {
+      showMarks = !showMarks;
+      tag.setAttribute('aria-pressed', showMarks);
+      frame();
+    });
+    if (marks.length) {
+      tag.setAttribute('aria-pressed', 'true');
+      nav.appendChild(tag);
+      slot.appendChild(nav);
+    }
+    frame();
+  }
+
   if (slot && slot.dataset.clock !== undefined) nowCell();
+
+  if (slot && slot.dataset.chart !== undefined) {
+    chart();
+    measure();
+    addEventListener('resize', measure);
+    return;
+  }
 
   if (slot && slot.dataset.cols !== undefined) {
     columns();

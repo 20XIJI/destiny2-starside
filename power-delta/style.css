@@ -1,0 +1,132 @@
+/* 压光伤害：光等差与伤害倍率的折线图。
+   通用主题、字体与配色 token 在 /assets/site.css。
+   这一页由 tools/convert-doc.py 从 references/docs/power-delta.md 生成，
+   改文案改 markdown，改结构改生成器的 render()，别手改 index.html。
+
+   数据在页内那张 .gen 表里，assets/app.js 现读现画、画完把表收起。
+   无 JS 时表照常显示，201 行数值完整可读。 */
+
+/* 宽表那一档：图要横向铺得开，光等差 201 个点挤在 760px 里读不出拐点。
+   不做窄屏适配（design.md 五节），骨架在 assets/site.css。 */
+:root { --wrap: 1060px; --min: 1104px; }
+
+/* ── 图 ── */
+.chart { margin: 0; }
+
+.chart svg {
+  display: block;
+  width: 100%;
+  height: auto;             /* 保住 viewBox 的比例，指针换算才只差一个常数 */
+  overflow: visible;        /* 末端刻度文字压在边界上，裁掉会缺半个字 */
+  cursor: crosshair;
+}
+
+/* 网格：只标位置，不参与内容层级。发丝线在深底上已经够读，再亮就与曲线争 */
+.chart .grid {
+  stroke: var(--hair);
+  stroke-width: 1;
+}
+
+.chart .tick {
+  fill: var(--bone-faint);
+  font-family: var(--font-body);
+  font-size: 12px;
+  text-anchor: middle;
+}
+
+.chart .tick.ty { text-anchor: end; }
+
+/* 两条曲线：**不借元素色相**（design.md 一节）——这一页没有元素语义，青会被读成
+   电弧。骨白是常规那条，UI 强调色是特例那条，两者本就是外壳自己的两个亮度层级。
+   传说战役只到 0，线在那里自然断掉，不必再画个终点记号。 */
+.chart .line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.chart .line.s0 { stroke: var(--bone-hi); }
+.chart .line.s1 { stroke: var(--accent); }
+
+/* ── 标注 ──
+   预设点、指针读数、钉住的读数共用这一套：短箭头 + 一行「光等差 · 倍率」。
+   三者本来就是同一件事，长得不一样只会让读者以为它们含义不同。 */
+.chart .lead {
+  stroke-width: 1;
+  fill: none;
+}
+
+.chart .head { stroke: none; }
+
+.chart .dot {
+  fill: var(--ink-lift);
+  stroke-width: 2;
+}
+
+.chart .tag {
+  font-family: var(--font-body);
+  font-size: 12px;
+  dominant-baseline: middle;
+}
+
+/* 光等差退一档：它是坐标，倍率才是答案 */
+.chart .tag .k { fill: var(--bone-faint); }
+
+/* 按元素分开写，不用一条 .s0 兜住：stroke 落到 <text> 上是给字加描边，
+   12px 的数字会糊成一团。 */
+.chart .dot.s0 { stroke: var(--bone-hi); }
+.chart .dot.s1 { stroke: var(--accent); }
+.chart .head.s0,
+.chart .tag.s0 { fill: var(--bone-hi); }
+.chart .head.s1,
+.chart .tag.s1 { fill: var(--accent); }
+.chart .lead.s0 { stroke: var(--bone-dim); }
+.chart .lead.s1 { stroke: var(--accent); }
+
+/* 指针竖线：虚线让它读作「量尺」，不与实线的曲线混为一谈 */
+.chart .cursor {
+  stroke: var(--bone-faint);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+/* ── 图例兼开关 ──
+   线名前一段与曲线同色的短线：色块会读成填充区，这张图里没有填充。
+   点一下收起那条曲线，关着时整项退到 --bone-faint、短线掉到发丝线一档。 */
+.chart-legend {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 6px;
+  font-family: var(--font-cn);
+  font-size: 12.5px;
+  letter-spacing: .06em;
+}
+
+.chart-legend button {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 4px 2px;
+  color: var(--bone-dim);
+  font: inherit;
+  letter-spacing: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.chart-legend button::before {
+  content: "";
+  width: 22px;
+  height: 2px;
+  background: currentColor;
+}
+
+.chart-legend .s0::before { background: var(--bone-hi); }
+.chart-legend .s1::before { background: var(--accent); }
+
+.chart-legend [aria-pressed="false"] { color: var(--bone-faint); }
+
+.chart-legend [aria-pressed="false"]::before { background: var(--hair-lit); }

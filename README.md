@@ -35,6 +35,9 @@ weapon-frames/
 twisted-planet/
   index.html                      扭曲星球速查表（由转换脚本生成，勿手改）
   style.css                       该组件专属样式
+power-delta/
+  index.html                      压光伤害（由转换脚本生成，勿手改）
+  style.css                       该组件专属样式与折线图版式
 elements/
   index.html                      属性详解总览（由转换脚本生成，勿手改）
   style.css                       六个元素页共用的版式（子页面由 shell.py 自动引）

@@ -25,7 +25,8 @@ SRC_DIR = os.path.join(shell.ROOT, 'references', 'docs')
 
 # 头部的「键：值」行。键名固定，正文行不会被误认。
 META_KEYS = ('描述', '更新', '页脚', '鸣谢', '数据源', '导航', '路径', '上级',
-             '列组', '互斥列组', '默认列组', '首屏图标', '此刻', '跳转分行')
+             '列组', '互斥列组', '默认列组', '首屏图标', '此刻', '跳转分行',
+             '图表', '标注')
 META_LINE = meta_line(META_KEYS)
 
 # 分节级声明：「色阶：列名 阈值 …」。同样按整行剥离，不进正文。
@@ -140,6 +141,30 @@ def scale_of(spec):
     return col, vals
 
 
+def marks_of(md):
+    """「标注：列名 值 值 …」→ [(列名, [值])]，可写多行，一列一行。
+
+    图表默认标出的几个点，落成表上的 data-marks，由 assets/app.js 画。写在源稿里
+    而不是 app.js 里：标哪几个点是内容判断（哪些光等差值得记住），与阈值同理。
+    """
+    out = []
+    for spec in re.findall(r'^标注：(.*)$', md, re.M):
+        parts = spec.split()
+        cut = len(parts)
+        while cut and re.fullmatch(r'-?\d+', parts[cut - 1]):
+            cut -= 1
+        col, nums = ' '.join(parts[:cut]), parts[cut:]
+        if not col or not nums:
+            die('「标注：」要写成「列名 值 值 …」：%r' % spec)
+        # 同一个值写两遍不报错，去重即可——列表是手写的，重复只是手滑
+        seen = []
+        for n in (int(v) for v in nums):
+            if n not in seen:
+                seen.append(n)
+        out.append((col, sorted(seen)))
+    return out
+
+
 def columns_of(md):
     """「列组：组名 = 列名、列名 …」→ ({列名: 组名}, [组名])。
 
@@ -197,7 +222,7 @@ def tier_of(text, bounds):
     return tier
 
 
-def render_table(lines, scales=None, groups=None):
+def render_table(lines, scales=None, groups=None, marks=None):
     """markdown 表格 → <table class="gen">。
 
     第一行是表头，第二行是 |---| 分隔。正文里再出现一行 --- 就另起一个 <tbody>，
@@ -214,6 +239,9 @@ def render_table(lines, scales=None, groups=None):
 
     groups 是 {列名: 列组名}：表头带上 data-g，工具条据此建列组开关。属性不进
     正文，保真比对看不见它。
+
+    marks 是 [(列名, [值])]：落成表上的 data-marks，图表据此标点。列名与值都要
+    在表里真实存在，写错即中止——静默少标一个点，眼睛查不出来。
     """
     head = split_cells(lines[0])
     if len(lines) < 2 or not is_rule(split_cells(lines[1])):
@@ -264,7 +292,20 @@ def render_table(lines, scales=None, groups=None):
         span[owner] += 1
         span[i] = 0
 
-    o = ['<table class="gen">', '<thead>', '<tr>']
+    attr = ''
+    if marks:
+        keys = {c[0] for c in rows if isinstance(c, list)}
+        spec = []
+        for col, vals in marks:
+            if colkey(col) not in col_at:
+                die('「标注：」指的列 %r 不在表头里：%s' % (col, '｜'.join(head)))
+            miss = [v for v in vals if str(v) not in keys]
+            if miss:
+                die('「标注：」指的值不在首列里：%s' % '、'.join(str(v) for v in miss))
+            spec.append('%s %s' % (col, ' '.join(str(v) for v in vals)))
+        attr = ' data-marks="%s"' % ';'.join(spec)
+
+    o = ['<table class="gen"%s>' % attr, '<thead>', '<tr>']
     o += [wrap('th', broke(c),
                ' scope="col"' + (' data-g="%s"' % groups[colkey(c)] if groups else ''))
           for c in head]
@@ -309,7 +350,7 @@ def render_table(lines, scales=None, groups=None):
     return o
 
 
-def render_blocks(chunk, scales=None, groups=None):
+def render_blocks(chunk, scales=None, groups=None, marks=None):
     """分节正文 → 段落、列表、定义列表、表格。"""
     o, i = [], 0
     lines = chunk.split('\n')
@@ -323,7 +364,7 @@ def render_blocks(chunk, scales=None, groups=None):
             start = i
             while i < len(lines) and lines[i].lstrip().startswith('|'):
                 i += 1
-            o += render_table([ln.strip() for ln in lines[start:i]], scales, groups)
+            o += render_table([ln.strip() for ln in lines[start:i]], scales, groups, marks)
             continue
 
         # 定义列表：术语一行，紧跟以「: 」开头的定义行。
@@ -433,6 +474,15 @@ def render(md, slug):
     if flag_of(md, '此刻'):
         toolbar = dict(toolbar or {}, **{'data-clock': ''})
 
+    # 「图表：是」→ 工具条槽位带 data-chart，assets/app.js 据此把表画成折线图并
+    # 把表本身收起。**表仍是页面本体**：无 JS 时它完整可读，与列组页默认隐藏由
+    # app.js 施加是同一条约定。数据因此只有一份，不在 HTML 里另存一遍。
+    if flag_of(md, '图表'):
+        toolbar = dict(toolbar or {}, **{'data-chart': ''})
+    marks = marks_of(md)
+    if marks and not flag_of(md, '图表'):
+        die('「标注：」要配合「图表：是」用，没有图就没有点可标')
+
     # 「导航：是」→ 顶部工具条：搜索框 + 每个分节一枚跳转 chip，与神器模组页同一套。
     # 条目是表格行，所以带这一档的表**不能用首格留空合并**——按行隐藏会把合并块
     # 豁开，行标题要逐行写全。
@@ -484,7 +534,7 @@ def render(md, slug):
         # 分节标题里也允许放图标：源表每个职业段前有一枚职业徽章，标题是它的位置
         o.append('<h2 class="sect-label">%s</h2>'
                  % inline(icon_sub(head.strip()), rich=True))
-        o += render_blocks(chunk, scales, groups)
+        o += render_blocks(chunk, scales, groups, marks)
         o.append('</section>')
 
     # 「数据源：是」输出 shell.py 里那句 Destiny Data Compendium 归属，一字不改。
