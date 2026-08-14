@@ -927,11 +927,15 @@ body:has(.hero) {
 .entries {
   display: grid;
   grid-template-columns: repeat(2, minmax(560px, 1fr));
+  grid-auto-rows: 1fr;          /* 全部卡片等高，取最长那张为准 */
   gap: 12px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
+
+/* li 得是容器，里面的 <a> 才会撑满那一格——否则等高的是 li，卡片照旧参差 */
+.entries > li { display: grid; }
 
 /* 条目按游戏内物品框来读：左侧节点图标 + 名称与类型行 + 右侧数值。
    右上切角与左缘亮边是框的形状语言，切角靠 ::before 单独画——

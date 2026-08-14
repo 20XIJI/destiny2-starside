@@ -73,6 +73,11 @@ TERMS = [
     ('精英', 'enemy', []),
 ]
 
+# 游戏内的专有名词，字面撞上禁用写法时按原名放行。整条短语落在里面才算数，
+# 「削弱」单用照旧报错。
+KEEP = ['削弱清敌']
+
+
 def read(path):
     with open(os.path.join(shell.ROOT, path), encoding='utf-8') as f:
         return f.read()
@@ -138,8 +143,11 @@ def check_terms(files, bad):
     banned = [(w, t[0]) for t in TERMS for w in t[2]]
     for rel in files:
         md = read(rel)
+        keep = [(m.start(), m.end()) for k in KEEP for m in re.finditer(re.escape(k), md)]
         for wrong, right in banned:
             for m in re.finditer(re.escape(wrong), md):
+                if any(a <= m.start() and m.end() <= b for a, b in keep):
+                    continue
                 bad.append('G1 %s:%d 用了「%s」，正名是「%s」'
                            % (rel, at_line(md, m.start()), wrong, right))
         for word, token, _ in TERMS:

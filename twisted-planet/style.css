@@ -20,6 +20,8 @@
   line-height: 2.05;
 }
 
+.gen + p { margin: 30px auto 0; }
+
 /* 轮换顺序那一行是这张表的图例，单独成段排：整块只有一个 {chain|…}，class 落在
    <p> 上（见 convert-doc.py 的 wrap()）。
    **word-break: keep-all 是这一段的关键。**中文默认可以在任意两字之间断行，
