@@ -113,6 +113,12 @@ body {
      容器，内部的 position: sticky 就不再相对视口生效（design.md 第五节）。 */
   min-width: var(--min);
   margin: 0;
+  /* **给 body 定位，好让绝对定位的子元素按版面而不是按视口算宽。**body 静态时，
+     abspos 子元素的包含块是初始包含块（视口那么宽）；窄视口下版面被 --min 撑到
+     1176px，而 .grid-flow 只有视口那么宽，光点整片被 overflow 裁掉、横向的那几道
+     也只跑视口宽就停。position: relative 不建层叠上下文（无 z-index），
+     .grid-flow 的 z-index: -1 照旧落在根层叠上下文的负层里。 */
+  position: relative;
   /* 页脚贴底：内容不足一屏时不让页脚悬在页面中间 */
   display: flex;
   flex-direction: column;
@@ -699,6 +705,12 @@ body:has(.hero) {
   /* 最小内容宽度：两列 560 + 12 沟 + .index 两侧 22 = 1176。窄于此横向滚动，
      不塌成单列——同 armor-sets / boss-hp 那几页写 1104 的道理（design.md 五节）。 */
   --min: 1176px;
+
+  /* **vw 要按版面算，不按视口算。**版面被 --min 撑到 1176px 之后视口还可能更窄，
+     此时 6vw 在手机上只有 23px，字标掉到 clamp 的 34px 下限、浮在 1176px 宽的版面
+     里，读作排版坏了。给 vw 垫一个下限 = 版面最小宽度的百分之一，窄视口下这些尺寸
+     便按版面取值，宽视口下照旧跟着视口放大。下面首页各处的 Nvw 都写成 N × var(--vw)。 */
+  --vw: max(1vw, calc(var(--min) / 100));
   background:
     repeating-linear-gradient(0deg, #ffffff1c 0 1px, transparent 1px 352px),
     repeating-linear-gradient(90deg, #ffffff1c 0 1px, transparent 1px 352px),
@@ -756,13 +768,17 @@ body:has(.hero) {
 .grid-flow i:nth-child(4) { left: 704px; animation-duration: 13.5s; animation-delay: -9.2s; }
 .grid-flow i:nth-child(5) { left: 968px; animation-duration: 9.5s; animation-delay: -4.7s; }
 .grid-flow i:nth-child(6) { left: 1144px; animation-duration: 6.5s; animation-delay: -3.8s; }
-.grid-flow i:nth-child(7) { left: 1320px; animation-duration: 12s; animation-delay: -7.5s; }
+.grid-flow i:nth-child(7) { left: 880px; animation-duration: 12s; animation-delay: -7.5s; }
 
 /* 五道横向：同一套光点转 90°。竖向单独跑读作「下落」，与横向交错才读作穿梭 */
+/* **横向的这几道占满整幅，亮的只有末尾 88px。**竖向的容器高度写死 1408px，位移
+   跟着写死即可；横向的容器宽度随版面走（窄视口 1176px，宽视口跟着视口），位移
+   没有一个能写死的数——transform 里的百分比又只认元素自己的尺寸。占满整幅之后
+   ±100% 恰好是一幅宽，亮段因此总能从左缘外走到右缘外，不必知道版面多宽。 */
 .grid-flow i:nth-child(n + 8) {
-  width: 88px;
+  width: 100%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--accent));
+  background: linear-gradient(90deg, transparent calc(100% - 88px), var(--accent));
   animation-name: flow-x;
 }
 
@@ -785,7 +801,7 @@ body:has(.hero) {
 .grid-flow i:nth-child(7) { background: linear-gradient(0deg, transparent, var(--accent)); }
 
 .grid-flow i:nth-child(9),
-.grid-flow i:nth-child(11) { background: linear-gradient(270deg, transparent, var(--accent)); }
+.grid-flow i:nth-child(11) { background: linear-gradient(270deg, transparent calc(100% - 88px), var(--accent)); }
 
 @keyframes flow-y {
   0% { transform: translateY(-88px); opacity: 0; }
@@ -794,15 +810,15 @@ body:has(.hero) {
 }
 
 @keyframes flow-x {
-  0% { transform: translateX(-88px); opacity: 0; }
+  0% { transform: translateX(-100%); opacity: 0; }
   6%, 82% { opacity: 1; }
-  100% { transform: translateX(100vw); opacity: 0; }
+  100% { transform: translateX(100%); opacity: 0; }
 }
 
 .hero {
   max-width: 1500px;
   margin: 0 auto;
-  padding: clamp(54px, 8vw, 108px) 22px clamp(38px, 5vw, 62px);
+  padding: clamp(54px, calc(8 * var(--vw)), 108px) 22px clamp(38px, calc(5 * var(--vw)), 62px);
 }
 
 /* 字标：大写 + 宽字距，取游戏内 HUD 标题的排法；右侧配一行技术信息压住构图。 */
@@ -816,7 +832,7 @@ body:has(.hero) {
   margin: 0;
   color: var(--bone-hi);
   font-family: var(--font-disp);
-  font-size: clamp(34px, 6vw, 74px);
+  font-size: clamp(34px, calc(6 * var(--vw)), 74px);
   font-weight: 700;
   line-height: 1;
   letter-spacing: .26em;
@@ -882,7 +898,7 @@ body:has(.hero) {
 .index {
   max-width: 1500px;
   margin: 0 auto;
-  padding: 0 22px clamp(50px, 7vw, 90px);
+  padding: 0 22px clamp(50px, calc(7 * var(--vw)), 90px);
 }
 
 /* 恒为双列：单列时每张卡占掉 182px 纵向空间，条目一多就翻页。
@@ -908,8 +924,8 @@ body:has(.hero) {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: clamp(18px, 2.4vw, 32px);
-  padding: 22px clamp(20px, 2vw, 28px) 22px clamp(16px, 1.6vw, 22px);
+  gap: clamp(18px, calc(2.4 * var(--vw)), 32px);
+  padding: 22px clamp(20px, calc(2 * var(--vw)), 28px) 22px clamp(16px, calc(1.6 * var(--vw)), 22px);
   color: inherit;
   text-decoration: none;
   background: linear-gradient(100deg, #171c29, #12151f 64%);
@@ -1023,7 +1039,7 @@ body:has(.hero) {
 
 .entry-meta {
   display: flex;
-  gap: clamp(16px, 2vw, 30px);
+  gap: clamp(16px, calc(2 * var(--vw)), 30px);
   margin: 0;
   text-align: right;
 }
@@ -1031,7 +1047,7 @@ body:has(.hero) {
 /* 发丝线分隔两组数值，靠拢成一块读，不各自飘着 */
 .entry-meta div {
   flex: none;
-  padding-left: clamp(16px, 2vw, 30px);
+  padding-left: clamp(16px, calc(2 * var(--vw)), 30px);
   border-left: 1px solid var(--hair);
 }
 
