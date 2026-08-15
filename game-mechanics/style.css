@@ -24,7 +24,12 @@
   max-width: 48em;
   line-height: 1.9;
   margin-bottom: 2.2em;
+  text-wrap: pretty;
 }
+
+/* 表格里的整段说明同样交给排版器分配折行点：格子只有 46em，
+   一句话折成三行时末行常常只剩两三个字，读作漏排。 */
+.gen td { text-wrap: pretty; }
 
 /* 编者按与鸣谢退一档，读作限定语。源稿写成 {note|…}，整段只有一个标记，
    生成器把 class 落在 <p> 本身，所以不写 p.note。 */
