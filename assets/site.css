@@ -73,6 +73,9 @@
   --stack: var(--c-orb);             /* 精准命中/增益层数 */
   --armor-charge: var(--c-orb);
   --health: var(--c-health);         /* 生命值/治疗 */
+  --exotic: var(--c-orb);            /* 异域：游戏内的异域装备即金黄 */
+  --buff: var(--c-term);             /* 增益 */
+  --debuff: var(--c-aside);          /* 减益 */
   --note: var(--c-aside);            /* 作者注释与限制说明 */
   --unsure: var(--c-aside);          /* [?] 待测数值 */
 
@@ -467,6 +470,7 @@ main {
 .el-arc, .deb-arc, .el-stasis, .deb-stasis, .enemy, .el-void, .ammo-heavy,
 .el-strand, .deb-strand, .el-solar, .deb-solar, .el-kinetic, .el-prismatic,
 .deb-void, .pickup, .joke, .orb, .stack, .armor-charge, .health,
+.exotic, .buff, .debuff,
 .bar-red, .bar-orange, .bar-yellow {
   font-weight: 600;
 }
@@ -491,6 +495,9 @@ main {
 .stack { color: var(--stack); }
 .armor-charge { color: var(--armor-charge); }
 .health { color: var(--health); }
+.exotic { color: var(--exotic); }
+.buff { color: var(--buff); }
+.debuff { color: var(--debuff); }
 
 /* 敌人分档照血条颜色叫：红血、橙血、黄血——游戏内的血条本来就是这三色，
    所以类名按档位命名而不是按颜色，读者能反推出颜色为什么是这个颜色。 */

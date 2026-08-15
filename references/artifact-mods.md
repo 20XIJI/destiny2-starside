@@ -703,7 +703,7 @@
 追踪步枪伤害提高，持续 4 秒。
 
 传说追踪步枪 = 50%
-{orb|异域}{el-strand|特殊追踪步枪}与{orb|北极星} = 35%
+{exotic|异域}{el-strand|特殊追踪步枪}与{orb|北极星} = 35%
 
 {orb|缩影}对受到{deb-void|任意元素减益}的战斗人员造成 4 次命中后，伤害提高 20%。
 
@@ -969,7 +969,7 @@
 {el-void|吞食}激活时：
 
 {el-void|虚空武器击杀}会推进计数器，达到 100% 时生成一个{el-void|虚空裂口}：
-{bar-red|红血} = {el-void|16.7%} | {enemy|精英} = {el-void|34%} | {enemy|小头目 +} = {el-void|50%} | {unsure|守护者} = {el-void|?%}
+{bar-red|红血} = {el-void|16.7%} | {enemy|精英} = {el-void|34%} | {enemy|小头目 +} = {el-void|50%} | {enemy|守护者} = {el-void|?%}
 
 拾取{el-void|虚空裂口}时：
 获得 +? 操控性与 +? 填装速度，持续 ? 秒，并装满霰弹枪与榴弹发射器的弹药。
@@ -1259,7 +1259,7 @@
 
 处于{el-solar|焕光}状态时：
 
-对受{el-strand|缚丝}或{el-stasis|冰影}减益影响的{enemy|非头目战斗人员}，武器伤害提高 5%。
+对受{el-strand|缚丝}或{el-stasis|冰影}{debuff|减益}影响的{enemy|非头目战斗人员}，武器伤害提高 5%。
 
 {el-strand|缚丝减益}：{deb-strand|瓦解、割裂、悬停}
 {el-stasis|冰影减益}：{deb-stasis|减速或冻结}。
