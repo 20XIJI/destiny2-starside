@@ -3,21 +3,34 @@
    这一页由 tools/convert-doc.py 从 references/docs/game-mechanics.md 生成，
    改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
 
-/* 三列的修改器表与祸因表里，末列是整段说明，走 1500px 那一档（design.md 四节）。
+/* 走宽表那一档 1060px（design.md 四节）。**不用 1500px**：这一页有整整六节是纯说明
+   没有表，正文封在阅读宽上，1500px 的版心会把它们全按在左边、右侧空掉一大片，
+   与居中的表格也对不上一条中轴。最宽的表（战斗人员清单 8 列）实测落在 1060px 内。
+   --min 照 boss-hp 那条：版心 + 两侧 22×2。
+
    强调色取不属于任何元素的游戏术语色：这一页横跨七个元素，借哪一个元素色相都会
-   把整页读成那一个属性的页面。
+   把整页读成那一个属性的页面。 */
+:root { --wrap: 1060px; --min: 1104px; --accent: var(--c-term); }
 
-   --min 取最宽那张表的实测下限：勇士分档表 7 列（项目 + 5 个难度 + 说明），
-   说明列封到 22em，加版心两侧 22×2 后取整 1240。窄于此横向滚动（design.md 五节）。 */
-:root { --wrap: 1500px; --min: 1240px; --accent: var(--c-term); }
+/* ── 正文 ──
+   **不整段压暗压小**。别的页面正文只是表前的一两句读表说明，退一档读作限定语；
+   这一页的说明本身就是内容（六节没有表），压成 14px 的暗字之后整页没有主体。
+   基色与字号走 site.css 的默认，这里只管行长与两级节奏。
 
-/* 表前的读表说明退一档，读作限定语。
-   只给没有 class 的段：整段只有一个 {标记|…} 时 class 落在 <p> 本身，
-   这条会压过单类的 .note，整段批注就退回说明色。 */
-.block p:not([class]) {
-  max-width: 62em;
-  color: var(--bone-dim);
-  font-size: 14px;
+   行高 1.9、段距 2.2em：源稿一句一行、用换行堆成段，site.css 默认的 2 / 1.05em
+   让「换行」与「分段」几乎一样宽，整节就散成一堆浮在空白里的句子。拉开之后
+   段内是一叠、段间是一档，两级一眼分得开。 */
+.block p {
+  max-width: 48em;
+  line-height: 1.9;
+  margin-bottom: 2.2em;
+}
+
+/* 编者按与鸣谢退一档，读作限定语。源稿写成 {note|…}，整段只有一个标记，
+   生成器把 class 落在 <p> 本身，所以不写 p.note。 */
+.block .note {
+  max-width: 52em;
+  font-size: 13px;
 }
 
 /* ── 结论行：算式 ──
@@ -30,10 +43,11 @@
 .formula {
   display: inline-grid;
   grid-template-columns: auto auto;
-  column-gap: .55em;
+  column-gap: .6em;
   align-items: center;
-  padding: 14px 24px;
-  font-size: 17px;
+  margin-left: 2px;
+  padding: 16px 30px;
+  font-size: 19px;
   background: var(--head-fill);
   border-left: 2px solid var(--accent);
 }
@@ -61,12 +75,40 @@
   font-style: italic;
 }
 
-/* ── 分节开头单独成段的图标 ──
-   三类勇士与热量武器各自顶着源表的插画。它们是这一节的标识，不与正文争亮度。 */
-.block p > img:only-child,
-.block p > img:first-child {
-  vertical-align: middle;
+/* ── 分节插画 ──
+   三类勇士、活动修改器与热量武器各顶着源表的一张 100px 插画。它们独占一行时
+   与下面的说明读不出关系，所以浮起来让说明与它并排，插画与说明就是一块。
+   缩到 88px：两倍像素密度下仍然锐利，也不与正文争亮度。
+
+   判据是「整段只有一张图」——源稿里每张插画各自成段，正文里的行内图标
+   （表格外那句「![](…) 挑战修改器…」已拆成两段）因此不会被误浮。
+
+   **浮右不浮左**：正文封在 48em 的阅读宽上，右边本来就空着一条；浮左只有第一段
+   会环绕，后面几段回到左缘，左侧就出现一道折角。浮右则正文左缘始终是一条直线，
+   插画正好填掉那条空带。 */
+.block p:has(> img:only-child) {
+  float: right;
+  max-width: none;
+  margin: 0 0 14px 36px;
+}
+
+.block p > img:only-child {
+  display: block;
+  width: 88px;
+  height: 88px;
+  object-fit: contain;
   opacity: .85;
+}
+
+/* 浮动不许漏出这一节：表格、算式与分节末尾各清一次。
+   漏出去会让下一节的标题横在插画右边，读不出分节边界。 */
+.gen,
+.formula { clear: both; }
+
+.block::after {
+  content: "";
+  display: block;
+  clear: both;
 }
 
 /* ── 图标列 ──
@@ -97,6 +139,8 @@
 
 /* ── 名称列 ──
    首格是行标题，不折行：一行一条效果，名称断开之后两行之间认不出边界。
+   **行标题一律不着色**（源稿里首格的 {token|…} 已剥掉）：它是这一行的身份，
+   一列白色粗体扫下来才认得出边界；半红半白的「勇士生命值」读作两截。
    居中：名称长短差得远（「爆炸」到「无序边界 修改版生命值规则」），左对齐时
    带 ▲▲ 的第二行会吊在名称左下角；上下左右都居中之后名称与档位箭头是一叠的。
    竖向的 middle 由 site.css 的 .gen th 给，这里不重述。 */
@@ -118,7 +162,7 @@
 .gen:has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))) tbody td:last-child {
   max-width: 46em;
   font-size: 13px;
-  line-height: 1.85;
+  line-height: 1.7;
 }
 
 /* ── 勇士分档表 ──
@@ -130,7 +174,7 @@
 }
 
 .gen:has(thead th:nth-child(7)) tbody td:last-child {
-  max-width: 22em;
+  max-width: 27em;
   font-size: 13px;
   line-height: 1.8;
 }

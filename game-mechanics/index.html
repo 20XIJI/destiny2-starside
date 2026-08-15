@@ -40,12 +40,13 @@
 <p>整块系数会压低按百分比计的能量获取，手雷与职业技能最低到 0.5×，近战技能最低到 0.6×。</p>
 <p>除非另有说明，或某件<span class="exotic">异域</span>装备与某个技能有专门交互，所有技能的能量获取都受整块能量缩放影响。</p>
 <p>技能加速的计算方法：</p>
-<p class="formula"><span class="lhs">T =</span><span class="num">T₀</span><span class="den">1 + S + E</span></p>
-<p>T 为实际冷却时间，T₀ 为基础冷却时间，S 为属性加速系数，E 为额外加速系数。</p>
+<p class="formula"><span class="lhs">T =</span><span class="num">C</span><span class="den">1 + S + E</span></p>
+<p>T 为实际冷却时间，C 为基础冷却时间，S 为属性加速系数，E 为额外加速系数。</p>
 </section>
 <section class="block" id="sec-2">
 <h2 class="sect-label">活动修改器</h2>
-<p><img src="icons/3ed7a5c3ba.png" alt="" width="89" height="89" fetchpriority="high"> 挑战修改器是一个类别，里面装着一个可选的<span class="enemy">祸因</span>，以及多个不同的活动修改器。<br>每一条负面修改器都（可以说）提高活动难度，同时抬高挑战倍率，带来更高的计分收益。</p>
+<p><img src="icons/3ed7a5c3ba.png" alt="" width="89" height="89" fetchpriority="high"></p>
+<p>挑战修改器是一个类别，里面装着一个可选的祸因，以及多个不同的活动修改器。<br>每一条负面修改器都（可以说）提高活动难度，同时抬高挑战倍率，带来更高的计分收益。</p>
 <table class="gen">
 <thead>
 <tr>
@@ -64,55 +65,55 @@
 </tbody>
 <tbody>
 <tr class="lane"><th colspan="3" scope="colgroup">次要负面修改器 ｜ 改变战斗人员行为　▲▲</th></tr>
-<tr><th scope="row">冰冷之触</th><td class="ico"><img src="icons/c9cdd5a24a.png" alt="" width="59" height="59" fetchpriority="high"></td><td><span class="enemy">战斗人员</span>的近战攻击施加<span class="el-stasis">冰影</span><span class="deb-stasis">减速</span>，持续 3 秒。<br> 不施加<span class="deb-stasis">减速</span>层数，且在自然结束前无法续期。</td></tr>
-<tr><th scope="row">赝品</th><td class="ico"><img src="icons/83fb4fd25d.png" alt="" width="74" height="74" fetchpriority="high"></td><td><span class="enemy">战斗人员</span>死亡时有 10% 概率掉落伪装成战利品的爆炸物。<br> <br> 爆炸物在 <span class="unsure">?</span> 米内被触发，3 秒后引爆，造成 162.5 <span class="el-arc">电弧</span>伤害。<br> 它在 <span class="unsure">?</span> 米内会发光，射击可立即引爆。</td></tr>
-<tr><th scope="row">炽热步伐</th><td class="ico"><img src="icons/20f7594de0.png" alt="" width="74" height="74" loading="lazy"></td><td><span class="bar-orange">橙血</span>及以上<span class="enemy">战斗人员</span>死亡时在脚下留下一滩火，持续 <span class="unsure">2.5?</span> 秒，每 0.5 秒对 1 米内的<span class="bar-orange">守护者</span>造成<span class="el-solar">烈日</span><span class="unsure">?</span>伤害，最多 5 次。</td></tr>
-<tr><th scope="row">匿伏之敌</th><td class="ico"><img src="icons/1a1ed255f0.png" alt="" width="89" height="89" loading="lazy"></td><td>10 米以外的<span class="enemy">战斗人员</span>处于<span class="el-void">隐身</span>。</td></tr>
+<tr><th scope="row">冰冷之触</th><td class="ico"><img src="icons/c9cdd5a24a.png" alt="" width="59" height="59" fetchpriority="high"></td><td>战斗人员的近战攻击施加<span class="el-stasis">冰影</span><span class="deb-stasis">减速</span>，持续 3 秒。<br> 不施加减速层数，且在自然结束前无法续期。</td></tr>
+<tr><th scope="row">赝品</th><td class="ico"><img src="icons/83fb4fd25d.png" alt="" width="74" height="74" fetchpriority="high"></td><td>战斗人员死亡时有 10% 概率掉落伪装成战利品的爆炸物。<br> <br> 爆炸物在 <span class="unsure">?</span> 米内被触发，3 秒后引爆，造成 162.5 <span class="el-arc">电弧</span>伤害。<br> 它在 <span class="unsure">?</span> 米内会发光，射击可立即引爆。</td></tr>
+<tr><th scope="row">炽热步伐</th><td class="ico"><img src="icons/20f7594de0.png" alt="" width="74" height="74" loading="lazy"></td><td><span class="bar-orange">橙血</span>及以上战斗人员死亡时在脚下留下一滩火，持续 <span class="unsure">2.5?</span> 秒，每 0.5 秒对 1 米内的守护者造成<span class="el-solar">烈日</span><span class="unsure">[?]</span>伤害，最多 5 次。</td></tr>
+<tr><th scope="row">匿伏之敌</th><td class="ico"><img src="icons/1a1ed255f0.png" alt="" width="89" height="89" loading="lazy"></td><td>10 米以外的战斗人员处于<span class="el-void">隐身</span>。</td></tr>
 </tbody>
 <tbody>
 <tr class="lane"><th colspan="3" scope="colgroup">阵营掉落修改器 ｜ 战斗人员死亡时触发　▲▲</th></tr>
-<tr><th scope="row">卡巴尔：瘟疫</th><td class="ico"><img src="icons/63637bfc85.png" alt="" width="74" height="74" loading="lazy"></td><td>卡巴尔辅助士兵死亡时在脚下掉落一枚<span class="el-void">虚空</span>手雷。<br> <br> 手雷在 <span class="unsure">?</span> 秒后爆炸，造成<span class="el-void">虚空</span>伤害。</td></tr>
+<tr><th scope="row">卡巴尔：瘟疫</th><td class="ico"><img src="icons/63637bfc85.png" alt="" width="74" height="74" loading="lazy"></td><td>卡巴尔辅助士兵死亡时在脚下掉落一枚<span class="el-void">虚空</span>手雷。<br> <br> 手雷在 <span class="unsure">?</span> 秒后爆炸，造成虚空伤害。</td></tr>
 <tr><th scope="row">堕落者：蜘-蛛-网！</th><td class="ico"><img src="icons/0a849181c3.png" alt="" width="89" height="89" loading="lazy"></td><td>堕落者暴徒死亡时生成一枚蛛网地雷。<br> <br> 蛛网地雷在 <span class="unsure">?</span> 米内被触发，<span class="unsure">?</span> 秒后引爆。<br> 引爆造成<span class="el-arc">电弧</span>伤害，并生成一片干扰场，使移动速度降低 <span class="unsure">?</span>%，同时扰乱视听。<br> 地雷落地或刚被触发时可以射击安全拆除。</td></tr>
 <tr><th scope="row">邪魔族：火坑</th><td class="ico"><img src="icons/e2e31d86d6.png" alt="" width="74" height="74" loading="lazy"></td><td>邪魔族仆从死亡时生成一滩火池。<br> <br> 火池造成<span class="el-solar">烈日</span>伤害，持续 <span class="unsure">?</span> 秒。</td></tr>
-<tr><th scope="row">嗤魅：溃烂的裂口</th><td class="ico"><img src="icons/556cd1f09e.png" alt="" width="74" height="74" loading="lazy"></td><td>嗤魅潜行者死亡时生成一只小型变异体。<br> <br> 小型变异体缓行追向<span class="bar-orange">守护者</span>，接触或被击中时爆炸，在 <span class="unsure">?</span> 米范围内造成<span class="el-arc">电弧</span>伤害。</td></tr>
-<tr><th scope="row">傀儡：碑文</th><td class="ico"><img src="icons/6a901a9f06.png" alt="" width="74" height="74" loading="lazy"></td><td>傀儡<span class="enemy">战斗人员</span>死亡时生成一处<span class="el-arc">电弧</span><span class="unsure">?</span>枯萎喷泉。<br> <br> 枯萎喷泉在 <span class="unsure">?</span> 秒后造成<span class="el-arc">电弧</span><span class="unsure">?</span>伤害并打出强力击退。</td></tr>
-<tr><th scope="row">VEX：震动</th><td class="ico"><img src="icons/8f1fa38781.png" alt="" width="74" height="74" loading="lazy"></td><td>VEX 哥布林死亡时生成一滩<span class="el-arc">电弧</span>池。<br> <br> 电弧池每 <span class="unsure">?</span> 造成一次<span class="el-arc">电弧</span>伤害，持续 <span class="unsure">?</span> 秒。</td></tr>
+<tr><th scope="row">嗤魅：溃烂的裂口</th><td class="ico"><img src="icons/556cd1f09e.png" alt="" width="74" height="74" loading="lazy"></td><td>嗤魅潜行者死亡时生成一只小型变异体。<br> <br> 小型变异体缓行追向守护者，接触或被击中时爆炸，在 <span class="unsure">?</span> 米范围内造成<span class="el-arc">电弧</span>伤害。</td></tr>
+<tr><th scope="row">傀儡：碑文</th><td class="ico"><img src="icons/6a901a9f06.png" alt="" width="74" height="74" loading="lazy"></td><td>傀儡战斗人员死亡时生成一处<span class="el-arc">电弧</span><span class="unsure">[?]</span>枯萎喷泉。<br> <br> 枯萎喷泉在 <span class="unsure">?</span> 秒后造成电弧<span class="unsure">[?]</span>伤害并打出强力击退。</td></tr>
+<tr><th scope="row">VEX：震动</th><td class="ico"><img src="icons/8f1fa38781.png" alt="" width="74" height="74" loading="lazy"></td><td>VEX 哥布林死亡时生成一滩<span class="el-arc">电弧</span>池。<br> <br> 电弧池每 <span class="unsure">?</span> 造成一次电弧伤害，持续 <span class="unsure">?</span> 秒。</td></tr>
 </tbody>
 <tbody>
 <tr class="lane"><th colspan="3" scope="colgroup">阵营单位修改器 ｜ 特定战斗人员强化　▲▲</th></tr>
-<tr><th scope="row">卡巴尔：焦灼大地</th><td class="ico"><img src="icons/5442ce0316.png" alt="" width="74" height="74" loading="lazy"></td><td><span class="enemy">战斗人员</span>投掷手雷的频率提高。</td></tr>
+<tr><th scope="row">卡巴尔：焦灼大地</th><td class="ico"><img src="icons/5442ce0316.png" alt="" width="74" height="74" loading="lazy"></td><td>战斗人员投掷手雷的频率提高。</td></tr>
 <tr><th scope="row">堕落者：炽热刀刃</th><td class="ico"><img src="icons/3cc0813935.png" alt="" width="89" height="89" loading="lazy"></td><td>堕落者侦察机额外获得一层<span class="el-solar">烈日</span>护盾。<br> 某些被强制附加元素护盾的侦察机，例如行动时刻里带魔眼护盾的那些，会同时带着两层护盾「叠加」在一起。</td></tr>
 <tr><th scope="row">邪魔族：殉道者</th><td class="ico"><img src="icons/4b6459c724.png" alt="" width="74" height="74" loading="lazy"></td><td>邪魔族诅咒怨魂的<span class="health">生命值</span>提高 <span class="unsure">?</span>%。</td></tr>
 <tr><th scope="row">嗤魅：突袭者护盾</th><td class="ico"><img src="icons/6f78ba2add.png" alt="" width="74" height="74" loading="lazy"></td><td>嗤魅突袭者额外获得一层<span class="el-void">虚空</span>护盾。</td></tr>
 <tr><th scope="row">傀儡：拒绝</th><td class="ico"><img src="icons/00b54f52a9.png" alt="" width="74" height="74" loading="lazy"></td><td>傀儡暴徒召唤护盾的冷却从 <span class="unsure">?</span> 秒缩短到 <span class="unsure">?</span> 秒。</td></tr>
-<tr><th scope="row">空中优势</th><td class="ico"><img src="icons/f640a8c06b.png" alt="" width="74" height="74" loading="lazy"></td><td>处于空中的<span class="enemy">战斗人员</span>造成的伤害提高 30%。</td></tr>
+<tr><th scope="row">空中优势</th><td class="ico"><img src="icons/f640a8c06b.png" alt="" width="74" height="74" loading="lazy"></td><td>处于空中的战斗人员造成的伤害提高 30%。</td></tr>
 </tbody>
 <tbody>
 <tr class="lane"><th colspan="3" scope="colgroup">主要负面修改器 ｜ 明显更强的战斗人员增益或守护者减益</th></tr>
 <tr><th scope="row">扎根<br> ▲▲▲▲</th><td class="ico"><img src="icons/fb559743e4.png" alt="" width="74" height="74" loading="lazy"></td><td>处于空中时：<br> 受到的伤害提高 100%。</td></tr>
-<tr><th scope="row">爆炸<br> ▲▲▲▲</th><td class="ico"><img src="icons/1baade7567.png" alt="" width="74" height="74" loading="lazy"></td><td><span class="enemy">战斗人员</span>造成的溅射💥伤害提高 25%。</td></tr>
+<tr><th scope="row">爆炸<br> ▲▲▲▲</th><td class="ico"><img src="icons/1baade7567.png" alt="" width="74" height="74" loading="lazy"></td><td>战斗人员造成的溅射💥伤害提高 25%。</td></tr>
 <tr><th scope="row">能量吸收<br> ▲▲</th><td class="ico"><img src="icons/5d24fddc4b.png" alt="" width="74" height="74" loading="lazy"></td><td>技能回复速度 0.8×。</td></tr>
-<tr><th scope="row">战场晋升<br> ▲▲▲▲</th><td class="ico"><img src="icons/e8d68a4651.png" alt="" width="100" height="100" loading="lazy"></td><td>带「晋升」词缀的<span class="enemy">祸因</span><span class="enemy">战斗人员</span>开始随机出现。<br> <br> 击杀<span class="bar-orange">守护者</span>或其他<span class="enemy">战斗人员</span>的<span class="enemy">战斗人员</span>获得「晋升」词缀。<br> <br> 晋升<span class="enemy">战斗人员</span>获得 60% 伤害抗性，造成的伤害提高 6.25%，体型放大约 50%。<br> <br> 对晋升<span class="enemy">战斗人员</span>施加<span class="deb-void">压制</span>会暂时解除其伤害抗性，并把体型缩回正常大小。</td></tr>
+<tr><th scope="row">战场晋升<br> ▲▲▲▲</th><td class="ico"><img src="icons/e8d68a4651.png" alt="" width="100" height="100" loading="lazy"></td><td>带「晋升」词缀的祸因战斗人员开始随机出现。<br> <br> 击杀守护者或其他战斗人员的战斗人员获得「晋升」词缀。<br> <br> 晋升战斗人员获得 60% 伤害抗性，造成的伤害提高 6.25%，体型放大约 50%。<br> <br> 对晋升战斗人员施加<span class="deb-void">压制</span>会暂时解除其伤害抗性，并把体型缩回正常大小。</td></tr>
 <tr><th scope="row">缓慢微小</th><td class="ico"><img src="icons/93f689a1cb.png" alt="" width="74" height="74" loading="lazy"></td><td>武器与技能伤害降低 25%。</td></tr>
-<tr><th scope="row">玻璃大炮</th><td class="ico"><img src="icons/dcb0c328c2.png" alt="" width="74" height="74" loading="lazy"></td><td>小队中击杀数最多的那名<span class="bar-orange">守护者</span>：<br> 50% 伤害抗性。<br> <span class="joke">等等，「玻璃大炮」不是这个意思吧？</span></td></tr>
+<tr><th scope="row">玻璃大炮</th><td class="ico"><img src="icons/dcb0c328c2.png" alt="" width="74" height="74" loading="lazy"></td><td>小队中击杀数最多的那名守护者：<br> 50% 伤害抗性。<br> <span class="joke">等等，「玻璃大炮」不是这个意思吧？</span></td></tr>
 </tbody>
 <tbody>
 <tr class="lane"><th colspan="3" scope="colgroup">险益修改器 ｜ 同时带正面与负面效果　▲▲</th></tr>
 <tr><th scope="row">急速险益</th><td class="ico"><img src="icons/265923e3af.png" alt="" width="100" height="100" loading="lazy"></td><td>移动速度 ≤4 米/秒 并持续至少 5 秒时：<br> 触发「危险，别停下！」持续 4 秒，随后每秒造成 12.5 伤害，直到移动速度回到 ≥4 米/秒。<br> <br> 移动速度高于 8 米/秒 满 0.75 秒后：<br> 持续每秒<span class="el-solar">恢复</span> 10 <span class="health">生命值</span>，直到移动速度低于 <span class="unsure">?</span> 米/秒并持续 <span class="unsure">?</span> 秒。</td></tr>
-<tr><th scope="row">不稳定护盾险益</th><td class="ico"><img src="icons/0d12f74af7.png" alt="" width="100" height="100" loading="lazy"></td><td>护盾值提高 70。<br> <br> 进入关键<span class="health">生命值</span>时：<br> 触发定时炸弹，引爆倒计时随剩余<span class="health">生命值</span>缩放，最长 20 秒。<br> 提供<span class="el-void">吞食</span>，持续 20（！！！）秒。<br> <br> 定时炸弹：<br> 无法施放非超能技能，移动技能也不行，武器同样无法使用。<br> 无护盾期间移动速度降低 <span class="unsure">?</span>%，每秒 -3.5 <span class="health">生命值</span>。<br> 2 秒后可以以第三人称视角使用武器。<br> 倒计时结束时引爆，杀死无护盾的<span class="bar-orange">守护者</span>，并对 <span class="unsure">?</span> 米内的<span class="enemy">战斗人员</span>造成 <span class="unsure">?</span> 伤害。<br> <br> 定时炸弹可以由 <span class="unsure">?</span> 米内的<span class="enemy">盟友</span>［互动］拆除，也可以靠治疗脱离关键<span class="health">生命值</span>或施放超能技能解除。</td></tr>
-<tr><th scope="row">振荡险益</th><td class="ico"><img src="icons/6b5b260c02.png" alt="" width="89" height="89" loading="lazy"></td><td>用<span class="el-kinetic">动能</span>栏与威能栏武器造成伤害会压低这两栏的伤害、抬高能量武器伤害，反之亦然。<br> <br> 武器伤害倍率：<br> 衰减 <span class="stack">1 层</span> = 0.85×（-15%）｜ 衰减 <span class="stack">2 层</span> = 0.767×（-23.3%）｜ 衰减 <span class="stack">3 层</span> = 0.65×（-35%）<br> 加速 <span class="stack">1 层</span> = 2×（+100%）｜ 加速 <span class="stack">2 层</span> = 3×（+200%）｜ 加速 <span class="stack">3 层</span> = 4×（+300%）</td></tr>
-<tr><th scope="row">闪电水晶险益</th><td class="ico"><img src="icons/7b8e51e7dd.png" alt="" width="74" height="74" loading="lazy"></td><td>装备<span class="el-arc">电弧</span>或<span class="el-stasis">冰影</span>超能技能时：<br> 手雷与近战技能回复速度 4.25×。<br> 受到的<span class="el-arc">电弧</span>与<span class="el-stasis">冰影</span>伤害提高 30%。</td></tr>
+<tr><th scope="row">不稳定护盾险益</th><td class="ico"><img src="icons/0d12f74af7.png" alt="" width="100" height="100" loading="lazy"></td><td>护盾值提高 70。<br> <br> 进入关键<span class="health">生命值</span>时：<br> 触发定时炸弹，引爆倒计时随剩余生命值缩放，最长 20 秒。<br> 提供<span class="el-void">吞食</span>，持续 20（！！！）秒。<br> <br> 定时炸弹：<br> 无法施放非超能技能，移动技能也不行，武器同样无法使用。<br> 无护盾期间移动速度降低 <span class="unsure">?</span>%，每秒 -3.5 生命值。<br> 2 秒后可以以第三人称视角使用武器。<br> 倒计时结束时引爆，杀死无护盾的守护者，并对 <span class="unsure">?</span> 米内的战斗人员造成 <span class="unsure">?</span> 伤害。<br> <br> 定时炸弹可以由 <span class="unsure">?</span> 米内的<span class="enemy">盟友</span>［互动］拆除，也可以靠治疗脱离关键生命值或施放超能技能解除。</td></tr>
+<tr><th scope="row">振荡险益</th><td class="ico"><img src="icons/6b5b260c02.png" alt="" width="89" height="89" loading="lazy"></td><td>用<span class="el-kinetic">动能</span>栏与威能栏武器造成伤害会压低这两栏的伤害、抬高能量武器伤害，反之亦然。<br> <br> 武器伤害倍率：<br> 衰减 <span class="stack">1 层</span> = 0.85×（-15%）｜ 衰减 <span class="stack">2 层</span> = 0.767×（-23.3%）｜ 衰减 <span class="stack">3 层</span> = 0.65×（-35%）<br> 加速 1 层 = 2×（+100%）｜ 加速 2 层 = 3×（+200%）｜ 加速 3 层 = 4×（+300%）</td></tr>
+<tr><th scope="row">闪电水晶险益</th><td class="ico"><img src="icons/7b8e51e7dd.png" alt="" width="74" height="74" loading="lazy"></td><td>装备<span class="el-arc">电弧</span>或<span class="el-stasis">冰影</span>超能技能时：<br> 手雷与近战技能回复速度 4.25×。<br> 受到的电弧与冰影伤害提高 30%。</td></tr>
 <tr><th scope="row">宇宙超导体险益</th><td class="ico"><img src="icons/f817b59d2d.png" alt="" width="74" height="74" loading="lazy"></td><td><span class="el-arc">电弧</span>与<span class="el-stasis">冰影</span>超能技能的基础回复速度额外提高 <span class="unsure">?</span>%。<br> 受到的元素伤害提高 20%。</td></tr>
-<tr><th scope="row">灰飞烟灭险益</th><td class="ico"><img src="icons/a4d843b70a.png" alt="" width="89" height="89" loading="lazy"></td><td>用<span class="el-solar">烈日</span>武器伤害命中未被<span class="deb-solar">灼烧</span>的目标时施加 x40+0 <span class="deb-solar">灼烧</span>。<br> 之后 5 秒内无法再施加<span class="deb-solar">灼烧</span>。<br> <br> <span class="enemy">战斗人员</span>造成<span class="el-solar">烈日</span>或爆炸伤害时施加 x30 <span class="deb-solar">灼烧</span>。<br> 之后 3 秒内不会再受到<span class="deb-solar">灼烧</span>。</td></tr>
+<tr><th scope="row">灰飞烟灭险益</th><td class="ico"><img src="icons/a4d843b70a.png" alt="" width="89" height="89" loading="lazy"></td><td>用<span class="el-solar">烈日</span>武器伤害命中未被<span class="deb-solar">灼烧</span>的目标时施加 x40+0 灼烧。<br> 之后 5 秒内无法再施加灼烧。<br> <br> 战斗人员造成烈日或爆炸伤害时施加 x30 灼烧。<br> 之后 3 秒内不会再受到灼烧。</td></tr>
 <tr><th scope="row">战斗加速险益</th><td class="ico"><img src="icons/eb6b717ac7.png" alt="" width="74" height="74" loading="lazy"></td><td>用武器连续快速命中同一目标多次后，为近战、手雷与职业技能回复能量。<br> 这些技能的基础冷却时间被拉长。</td></tr>
 <tr><th scope="row">低重力险益</th><td class="ico"><img src="icons/3472935694.png" alt="" width="74" height="74" loading="lazy"></td><td>重力显著降低。<br> <span class="joke">这玩意儿到底该怎么量 lol</span></td></tr>
 </tbody>
 <tbody>
 <tr class="lane"><th colspan="3" scope="colgroup">挑战 & 其他 ｜ 影响配装效力</th></tr>
-<tr><th scope="row">彪悍<br> ▲▲</th><td class="ico"><img src="icons/fa9faa44ec.png" alt="" width="100" height="100" loading="lazy"></td><td>被动额外提供 +50 <span class="health">生命值</span>与 +250 护盾。<br> <span class="health">生命值</span>总量提高到 120，护盾提高到 380。<br> <span class="pickup">覆盖护盾</span>上限不变，且所有<span class="pickup">覆盖护盾</span>获取量降低 70%。<br> <br> 被动<span class="health">生命值</span>回复完全停用。<br> <span class="health">生命值</span>获取量普遍降低 70%（随来源而异，武器来源的获取普遍更强）。<br> <br> <span class="enemy">战斗人员</span>有概率生成治疗球，拾取<span class="el-solar">恢复</span> 70 <span class="health">生命值</span>。这个数是折减之后的量。<br> <span class="bar-red">红血</span> 25% ｜ <span class="bar-orange">橙血</span> 50% ｜ <span class="bar-yellow">初级首领</span>及以上 100%</td></tr>
+<tr><th scope="row">彪悍<br> ▲▲</th><td class="ico"><img src="icons/fa9faa44ec.png" alt="" width="100" height="100" loading="lazy"></td><td>被动额外提供 +50 <span class="health">生命值</span>与 +250 护盾。<br> 生命值总量提高到 120，护盾提高到 380。<br> <span class="pickup">覆盖护盾</span>上限不变，且所有覆盖护盾获取量降低 70%。<br> <br> 被动生命值回复完全停用。<br> 生命值获取量普遍降低 70%（随来源而异，武器来源的获取普遍更强）。<br> <br> 战斗人员有概率生成治疗球，拾取<span class="el-solar">恢复</span> 70 生命值。这个数是折减之后的量。<br> <span class="bar-red">红血</span> 25% ｜ <span class="bar-orange">橙血</span> 50% ｜ <span class="bar-yellow">初级首领</span>及以上 100%</td></tr>
 <tr><th scope="row">集中火力<br> ▲▲</th><td class="ico"><img src="icons/559b9942d7.png" alt="" width="61" height="60" loading="lazy"></td><td>直接（接触）伤害提高 20–40%。<br> 间接（爆炸/溅射/范围）伤害降低 30–50%。<br> <br> 动能震颤：降低 30%<br> <span class="deb-arc">震颤</span>：降低 50%。</td></tr>
-<tr><th scope="row">无序边界<br> 修改版生命值规则</th><td class="ico"><img src="icons/2dd0aba7e0.png" alt="" width="60" height="60" loading="lazy"></td><td>被动额外提供 +70 <span class="health">生命值</span>与 +300 护盾。<br> <span class="health">生命值</span>总量提高到 140，护盾提高到 430。<br> <span class="pickup">覆盖护盾</span>上限不变，且所有<span class="pickup">覆盖护盾</span>获取量降低 70%。<br> <br> 关键<span class="health">生命值</span>回复启用，但被改过：<br> 回复延迟 1.75 → 2.25 秒 ｜ 每秒<span class="el-solar">恢复</span> 30% → 15%。<br> 护盾回复速度大幅降低。<br> <span class="health">生命值</span><span class="el-solar">恢复</span>类效果普遍降低 70%（随来源而异，武器来源的获取普遍更强）。<br> <br> <span class="enemy">战斗人员</span>有概率生成治疗球，拾取<span class="el-solar">恢复</span> 70 <span class="health">生命值</span>。这个数是折减之后的量。<br> <span class="bar-red">红血</span> 25% ｜ <span class="bar-orange">橙血</span> 50% ｜ <span class="bar-yellow">初级首领</span>及以上 100%</td></tr>
-<tr><th scope="row">元素匹配<br> ▲▲▲▲</th><td class="ico"><img src="icons/d8da815084.png" alt="" width="74" height="74" loading="lazy"></td><td><span class="enemy">战斗人员</span>护盾受到非匹配伤害时，伤害降低 80%。</td></tr>
+<tr><th scope="row">无序边界<br> 修改版生命值规则</th><td class="ico"><img src="icons/2dd0aba7e0.png" alt="" width="60" height="60" loading="lazy"></td><td>被动额外提供 +70 <span class="health">生命值</span>与 +300 护盾。<br> 生命值总量提高到 140，护盾提高到 430。<br> <span class="pickup">覆盖护盾</span>上限不变，且所有覆盖护盾获取量降低 70%。<br> <br> 关键生命值回复启用，但被改过：<br> 回复延迟 1.75 → 2.25 秒 ｜ 每秒<span class="el-solar">恢复</span> 30% → 15%。<br> 护盾回复速度大幅降低。<br> 生命值恢复类效果普遍降低 70%（随来源而异，武器来源的获取普遍更强）。<br> <br> 战斗人员有概率生成治疗球，拾取恢复 70 生命值。这个数是折减之后的量。<br> <span class="bar-red">红血</span> 25% ｜ <span class="bar-orange">橙血</span> 50% ｜ <span class="bar-yellow">初级首领</span>及以上 100%</td></tr>
+<tr><th scope="row">元素匹配<br> ▲▲▲▲</th><td class="ico"><img src="icons/d8da815084.png" alt="" width="74" height="74" loading="lazy"></td><td>战斗人员护盾受到非匹配伤害时，伤害降低 80%。</td></tr>
 </tbody>
 <tbody>
 <tr class="lane"><th colspan="3" scope="colgroup">饥饿修改器 ｜ 打出足够的匹配元素伤害后提高技能回复　▲▲</th></tr>
@@ -128,42 +129,42 @@
 <tr class="lane"><th colspan="3" scope="colgroup">恩惠修改器 ｜ 有利于守护者，代价是降低挑战倍率</th></tr>
 <tr><th scope="row">空中优势<br> ▼</th><td class="ico"><img src="icons/71377f3a70.png" alt="" width="74" height="74" loading="lazy"></td><td>处于空中时：<br> 技能与武器伤害提高 30%。</td></tr>
 <tr><th scope="row">搏击手<br> ▼</th><td class="ico"><img src="icons/d23902e882.png" alt="" width="74" height="74" loading="lazy"></td><td>近战技能伤害提高 100%，近战技能回复速度 5×。<br> 这份近战伤害提高是相乘的。</td></tr>
-<tr><th scope="row">痛苦旋转木马<br> ▼</th><td class="ico"><img src="icons/820e4d09f3.png" alt="" width="74" height="74" loading="lazy"></td><td>每 30 秒在 <span class="el-arc">电弧</span>→<span class="el-solar">烈日</span>→<span class="el-void">虚空</span>→<span class="el-arc">电弧</span>→… 之间轮换。<br> <br> 当前选中的那个元素，伤害提高 30%。</td></tr>
-<tr><th scope="row">职业治疗<br> ▼</th><td class="ico"><img src="icons/86d9a36136.png" alt="" width="100" height="100" loading="lazy"></td><td>使用职业技能时：<br> 为自己与 <span class="unsure">?</span> 米内的<span class="enemy">盟友</span><span class="el-solar">恢复</span><span class="health">生命值</span>。<br> <span class="el-solar">恢复</span>量取决于所装备的职业技能。<br> <br> 70 <span class="health">生命值</span> = 杂技闪身、巍峨屏障、裂痕<br> 58 <span class="health">生命值</span> = 赌徒闪身、凤凰俯冲<br> 46 <span class="health">生命值</span> = 射手闪身、集结屏障、推进器</td></tr>
+<tr><th scope="row">痛苦旋转木马<br> ▼</th><td class="ico"><img src="icons/820e4d09f3.png" alt="" width="74" height="74" loading="lazy"></td><td>每 30 秒在 <span class="el-arc">电弧</span>→<span class="el-solar">烈日</span>→<span class="el-void">虚空</span>→电弧→… 之间轮换。<br> <br> 当前选中的那个元素，伤害提高 30%。</td></tr>
+<tr><th scope="row">职业治疗<br> ▼</th><td class="ico"><img src="icons/86d9a36136.png" alt="" width="100" height="100" loading="lazy"></td><td>使用职业技能时：<br> 为自己与 <span class="unsure">?</span> 米内的<span class="enemy">盟友</span><span class="el-solar">恢复</span><span class="health">生命值</span>。<br> 恢复量取决于所装备的职业技能。<br> <br> 70 生命值 = 杂技闪身、巍峨屏障、裂痕<br> 58 生命值 = 赌徒闪身、凤凰俯冲<br> 46 生命值 = 射手闪身、集结屏障、推进器</td></tr>
 <tr><th scope="row">元素激涌<br> ▼</th><td class="ico"><img src="icons/87b22da1d3.png" alt="" width="74" height="74" loading="lazy"></td><td>与元素匹配的伤害提高 25%。</td></tr>
-<tr><th scope="row">碎片窃贼<br> ▼</th><td class="ico"><img src="icons/e5d1c4572f.png" alt="" width="74" height="74" loading="lazy"></td><td>使用<span class="enemy">终结技</span>后：<br> 下一次投掷的手雷变成破片手雷，最多造成 1000 <span class="el-kinetic">动能</span>伤害并击退<span class="enemy">战斗人员</span>。<br> 机制与先驱者的巨岩相同。</td></tr>
-<tr><th scope="row">全力以赴<br> ▼</th><td class="ico"><img src="icons/258824760e.png" alt="" width="89" height="89" loading="lazy"></td><td>击杀提供 <span class="stack">1 层</span>全力以赴，最多 <span class="stack">100 层</span>。<br> 死亡按阈值扣层：0–9 层 = 0 层 ｜ 10–39 层 = 10 层 ｜ 40–100 层 = 40 层<br> <br> 每层提供 1% 伤害提高，<span class="stack">100 层</span>时最多 +100%。<br> 对近战的伤害提高与其它近战<span class="buff">增益</span>相加。</td></tr>
+<tr><th scope="row">碎片窃贼<br> ▼</th><td class="ico"><img src="icons/e5d1c4572f.png" alt="" width="74" height="74" loading="lazy"></td><td>使用<span class="enemy">终结技</span>后：<br> 下一次投掷的手雷变成破片手雷，最多造成 1000 <span class="el-kinetic">动能</span>伤害并击退战斗人员。<br> 机制与先驱者的巨岩相同。</td></tr>
+<tr><th scope="row">全力以赴<br> ▼</th><td class="ico"><img src="icons/258824760e.png" alt="" width="89" height="89" loading="lazy"></td><td>击杀提供 <span class="stack">1 层</span>全力以赴，最多 <span class="stack">100 层</span>。<br> 死亡按阈值扣层：0–9 层 = 0 层 ｜ 10–39 层 = 10 层 ｜ 40–100 层 = 40 层<br> <br> 每层提供 1% 伤害提高，100 层时最多 +100%。<br> 对近战的伤害提高与其它近战<span class="buff">增益</span>相加。</td></tr>
 <tr><th scope="row">狂怒！<br> ▼</th><td class="ico"><img src="icons/20755feece.png" alt="" width="100" height="100" loading="lazy"></td><td>击杀使计数推进 4%，计数每 2 秒被动衰减 1%。<br> <br> 计数达到 100% 时：<br> 消耗计数触发狂怒！持续 15 秒，并提供 100% <span class="ammo-heavy">威能弹药</span>备弹。<br> <br> 狂怒！期间：<br> 子弹命中时触发与元素匹配的爆炸，在 1 米范围内造成 40 伤害。<br> 技能基础回复速度额外提高 <span class="unsure">?</span>%。<br> 操控性 +<span class="unsure">很多?</span>，填装速度 +<span class="unsure">?</span>。<br> <br> 狂怒！在自然结束前无法续期。</td></tr>
 <tr><th scope="row">抓钩<br> ▼▼▼▼</th><td class="ico"><img src="icons/63399155c5.png" alt="" width="100" height="100" loading="lazy"></td><td>手雷技能被替换成改版的抓钩手雷。<br> 抓钩手雷有 3 次充能，且不提供抓钩近战。<br> 扎根时被动每秒提供 5% 抓钩手雷能量。<br> <br> 击杀<span class="bar-red">红血</span>提供 50% 抓钩能量，击杀<span class="bar-orange">橙血</span>及以上提供 100%。</td></tr>
 <tr><th scope="row">掷雷手<br> ▼</th><td class="ico"><img src="icons/7e340ce6b0.png" alt="" width="74" height="74" loading="lazy"></td><td>手雷技能伤害提高 100%，手雷技能回复速度 5×。</td></tr>
-<tr><th scope="row">坚毅<br> ▼</th><td class="ico"><img src="icons/89264fc6f9.png" alt="" width="74" height="74" loading="lazy"></td><td>死亡提供 <span class="stack">1 层</span>永久的坚毅，最多 <span class="stack">30 层</span>。<br> 每层提供 3% 伤害抗性，<span class="stack">30 层</span>时最多 90%。</td></tr>
+<tr><th scope="row">坚毅<br> ▼</th><td class="ico"><img src="icons/89264fc6f9.png" alt="" width="74" height="74" loading="lazy"></td><td>死亡提供 <span class="stack">1 层</span>永久的坚毅，最多 <span class="stack">30 层</span>。<br> 每层提供 3% 伤害抗性，30 层时最多 90%。</td></tr>
 <tr><th scope="row">治愈终结技<br> ▼</th><td class="ico"><img src="icons/a11c9ee4b7.png" alt="" width="74" height="74" loading="lazy"></td><td>使用<span class="enemy">终结技</span>后：<br> 为自己与 <span class="unsure">?</span> 米内的<span class="enemy">盟友</span><span class="el-solar">恢复</span> 70 <span class="health">生命值</span>。</td></tr>
 <tr><th scope="row">重型选手<br> ▼</th><td class="ico"><img src="icons/ffc0c13d81.png" alt="" width="74" height="74" loading="lazy"></td><td>威能武器伤害提高 100%，<span class="ammo-heavy">威能弹药</span>进度倍率 1.5×。</td></tr>
-<tr><th scope="row">超临界<br> ▼</th><td class="ico"><img src="icons/fa0ad01c73.png" alt="" width="74" height="74" loading="lazy"></td><td>弱点伤害提高 140%。<br> 这里的弱点指打中<span class="stack">精准</span>弱点，不要求真的打出精准伤害。<br> 所以它能穿过元素护盾生效，但对神圣裁决的<span class="stack">精准</span>笼无效。<br> 还有，尽管描述里写了会降低伤害，实际并不会。</td></tr>
-<tr><th scope="row">带电导线<br> ▼</th><td class="ico"><img src="icons/a51ec4e205.png" alt="" width="89" height="89" loading="lazy"></td><td>冲刺满 1 秒后，只要保持冲刺且移动速度不低于 5 米/秒：<br> 每秒提供<span class="el-arc">增幅</span>。<br> <br> <span class="el-arc">增幅</span>期间：<br> 受到近战命中会触发一次<span class="el-arc">闪电风暴</span>，在 <span class="unsure">?</span> 米范围内最多造成 156 <span class="el-arc">电弧</span>伤害。</td></tr>
+<tr><th scope="row">超临界<br> ▼</th><td class="ico"><img src="icons/fa0ad01c73.png" alt="" width="74" height="74" loading="lazy"></td><td>弱点伤害提高 140%。<br> 这里的弱点指打中<span class="stack">精准</span>弱点，不要求真的打出精准伤害。<br> 所以它能穿过元素护盾生效，但对神圣裁决的精准笼无效。<br> 还有，尽管描述里写了会降低伤害，实际并不会。</td></tr>
+<tr><th scope="row">带电导线<br> ▼</th><td class="ico"><img src="icons/a51ec4e205.png" alt="" width="89" height="89" loading="lazy"></td><td>冲刺满 1 秒后，只要保持冲刺且移动速度不低于 5 米/秒：<br> 每秒提供<span class="el-arc">增幅</span>。<br> <br> 增幅期间：<br> 受到近战命中会触发一次<span class="el-arc">闪电风暴</span>，在 <span class="unsure">?</span> 米范围内最多造成 156 <span class="el-arc">电弧</span>伤害。</td></tr>
 <tr><th scope="row">游侠<br> ▼</th><td class="ico"><img src="icons/62572a0a91.png" alt="" width="89" height="89" loading="lazy"></td><td>用弓箭、斥候步枪与狙击步枪打出<span class="stack">精准击杀</span>推进计数：<br> 弓箭、斥候步枪 = 16.7% ｜ 狙击步枪 = 34%<br> <br> 计数推进到 100% 时：<br> 生成一块<span class="el-strand">特殊弹药</span>。</td></tr>
-<tr><th scope="row">射击号令<br> ▼</th><td class="ico"><img src="icons/62537b33cc.png" alt="" width="100" height="100" loading="lazy"></td><td>2 秒内打出 3 次主武器弹药的<span class="stack">精准命中</span>后：<br> 提供射击号令，持续 15 秒。<br> 继续打出<span class="stack">精准命中</span>每次延长 +5 秒，最多延到 15 秒。<br> <br> 射击号令期间：<br> <span class="el-strand">特殊弹药</span>与威能武器伤害提高 20%。<br> 20% 伤害抗性。</td></tr>
-<tr><th scope="row">杀手<br> ▼</th><td class="ico"><img src="icons/16724b2876.png" alt="" width="74" height="74" loading="lazy"></td><td>小队中击杀数最多的那名<span class="bar-orange">守护者</span>：<br> 技能与武器伤害提高 15%。</td></tr>
-<tr><th scope="row">烈日滑行<br> ▼</th><td class="ico"><img src="icons/33ff8e2f87.png" alt="" width="74" height="74" loading="lazy"></td><td>冲刺 <span class="unsure">?</span> 秒后：<br> 下一次滑铲生成一道<span class="el-solar">烈日</span>波形，命中时爆炸，在 5 米范围内最多造成 540 <span class="el-solar">烈日</span>伤害并施加 x60+30 <span class="deb-solar">灼烧</span>。<br> 波形命中时另外朝四个正方向释放出 4 片弹片，每片在 <span class="unsure">?</span> 米范围内造成 82.5 <span class="el-solar">烈日</span>伤害，且没有伤害衰减。</td></tr>
+<tr><th scope="row">射击号令<br> ▼</th><td class="ico"><img src="icons/62537b33cc.png" alt="" width="100" height="100" loading="lazy"></td><td>2 秒内打出 3 次主武器弹药的<span class="stack">精准命中</span>后：<br> 提供射击号令，持续 15 秒。<br> 继续打出精准命中每次延长 +5 秒，最多延到 15 秒。<br> <br> 射击号令期间：<br> <span class="el-strand">特殊弹药</span>与威能武器伤害提高 20%。<br> 20% 伤害抗性。</td></tr>
+<tr><th scope="row">杀手<br> ▼</th><td class="ico"><img src="icons/16724b2876.png" alt="" width="74" height="74" loading="lazy"></td><td>小队中击杀数最多的那名守护者：<br> 技能与武器伤害提高 15%。</td></tr>
+<tr><th scope="row">烈日滑行<br> ▼</th><td class="ico"><img src="icons/33ff8e2f87.png" alt="" width="74" height="74" loading="lazy"></td><td>冲刺 <span class="unsure">?</span> 秒后：<br> 下一次滑铲生成一道<span class="el-solar">烈日</span>波形，命中时爆炸，在 5 米范围内最多造成 540 烈日伤害并施加 x60+30 <span class="deb-solar">灼烧</span>。<br> 波形命中时另外朝四个正方向释放出 4 片弹片，每片在 <span class="unsure">?</span> 米范围内造成 82.5 烈日伤害，且没有伤害衰减。</td></tr>
 <tr><th scope="row">特殊弹药增加<br> ▼▼▼▼</th><td class="ico"><img src="icons/67c89b2120.png" alt="" width="74" height="74" loading="lazy"></td><td><span class="el-strand">特殊弹药</span>生成倍率 1.25×。</td></tr>
-<tr><th scope="row">冰影滑行<br> ▼</th><td class="ico"><img src="icons/09b2c5cd0e.png" alt="" width="74" height="74" loading="lazy"></td><td>冲刺满 1 秒后，只要保持冲刺且移动速度不低于 5 米/秒：<br> 下一次滑铲释放一道追踪的<span class="el-stasis">冰影</span>波形，最远飞行 30 米，命中时造成 20 <span class="el-stasis">冰影</span>伤害。<br> 波形在命中时或飞满 30 米后另外生成 1 块大<span class="el-stasis">水晶</span>与 3 块小<span class="el-stasis">水晶</span>。</td></tr>
-<tr><th scope="row">缚丝窃贼<br> ▼</th><td class="ico"><img src="icons/c24fc60e3a.png" alt="" width="74" height="74" loading="lazy"></td><td>使用<span class="enemy">终结技</span>后：<br> 下一次投掷的手雷变成<span class="el-strand">缚丝</span>手雷，在 5 米范围内造成 475 <span class="el-strand">缚丝</span>伤害，并释放 11 根<span class="deb-strand">瓦解</span>线。</td></tr>
-<tr><th scope="row">眩晕动作表情<br> ▼</th><td class="ico"><img src="icons/75936fdc36.png" alt="" width="100" height="100" loading="lazy"></td><td>打出若干次击杀后：<br> 提供眩晕动作。<br> 眩晕动作就绪时做表情，会对<span class="enemy">战斗人员</span>施加一种元素<span class="debuff">减益</span>。<br> <br> 12 次击杀 = 在 30 米半径内施加<span class="deb-arc">致盲</span>。<br> 32 次击杀 = 在 50 米半径内施加<span class="deb-strand">悬停</span>。<br> 57 次击杀 = 在 70 米半径内施加<span class="deb-stasis">冻结</span>，并提供可以无限叠加的 50% 伤害抗性。<span class="joke">BUNGIE？？</span><br> <br> <span class="deb-arc">致盲</span> ｜ <span class="deb-solar">点燃</span> ｜ <span class="deb-void">压制</span> ｜ <span class="deb-stasis">冻结</span> ｜ <span class="deb-strand">悬停</span></td></tr>
-<tr><th scope="row">训练纯熟<br> ▼</th><td class="ico"><img src="icons/462d7a0eae.png" alt="" width="89" height="89" loading="lazy"></td><td>武器<span class="stack">精准击杀</span>提供 <span class="stack">1 层</span>训练纯熟，最多 <span class="stack">2 层</span>。<br> 非<span class="stack">精准</span>的武器击杀扣掉一层。<br> <br> 处于 <span class="stack">2 层</span>训练纯熟时：<br> <span class="stack">精准击杀</span>提供 <span class="unsure">?</span>% 的手雷、近战与职业技能能量。</td></tr>
-<tr><th scope="row">不稳定窃贼<br> ▼</th><td class="ico"><img src="icons/bab91dcc65.png" alt="" width="74" height="74" loading="lazy"></td><td>使用<span class="enemy">终结技</span>后：<br> 下一次投掷的手雷变成<span class="el-void">虚空</span>手雷，在 5 米范围内最多造成 660 <span class="el-void">虚空</span>伤害，并释放 5 枚子炸弹，每枚最多造成 330 <span class="el-void">虚空</span>伤害，同时施加<span class="deb-void">不稳定</span>。</td></tr>
+<tr><th scope="row">冰影滑行<br> ▼</th><td class="ico"><img src="icons/09b2c5cd0e.png" alt="" width="74" height="74" loading="lazy"></td><td>冲刺满 1 秒后，只要保持冲刺且移动速度不低于 5 米/秒：<br> 下一次滑铲释放一道追踪的<span class="el-stasis">冰影</span>波形，最远飞行 30 米，命中时造成 20 冰影伤害。<br> 波形在命中时或飞满 30 米后另外生成 1 块大<span class="el-stasis">水晶</span>与 3 块小水晶。</td></tr>
+<tr><th scope="row">缚丝窃贼<br> ▼</th><td class="ico"><img src="icons/c24fc60e3a.png" alt="" width="74" height="74" loading="lazy"></td><td>使用<span class="enemy">终结技</span>后：<br> 下一次投掷的手雷变成<span class="el-strand">缚丝</span>手雷，在 5 米范围内造成 475 缚丝伤害，并释放 11 根<span class="deb-strand">瓦解</span>线。</td></tr>
+<tr><th scope="row">眩晕动作表情<br> ▼</th><td class="ico"><img src="icons/75936fdc36.png" alt="" width="100" height="100" loading="lazy"></td><td>打出若干次击杀后：<br> 提供眩晕动作。<br> 眩晕动作就绪时做表情，会对战斗人员施加一种元素<span class="debuff">减益</span>。<br> <br> 12 次击杀 = 在 30 米半径内施加<span class="deb-arc">致盲</span>。<br> 32 次击杀 = 在 50 米半径内施加<span class="deb-strand">悬停</span>。<br> 57 次击杀 = 在 70 米半径内施加<span class="deb-stasis">冻结</span>，并提供可以无限叠加的 50% 伤害抗性。<span class="joke">BUNGIE 你认真的？</span><br> <br> 致盲 ｜ <span class="deb-solar">点燃</span> ｜ <span class="deb-void">压制</span> ｜ 冻结 ｜ 悬停</td></tr>
+<tr><th scope="row">训练纯熟<br> ▼</th><td class="ico"><img src="icons/462d7a0eae.png" alt="" width="89" height="89" loading="lazy"></td><td>武器<span class="stack">精准击杀</span>提供 <span class="stack">1 层</span>训练纯熟，最多 <span class="stack">2 层</span>。<br> 非<span class="stack">精准</span>的武器击杀扣掉一层。<br> <br> 处于 2 层训练纯熟时：<br> 精准击杀提供 <span class="unsure">?</span>% 的手雷、近战与职业技能能量。</td></tr>
+<tr><th scope="row">不稳定窃贼<br> ▼</th><td class="ico"><img src="icons/bab91dcc65.png" alt="" width="74" height="74" loading="lazy"></td><td>使用<span class="enemy">终结技</span>后：<br> 下一次投掷的手雷变成<span class="el-void">虚空</span>手雷，在 5 米范围内最多造成 660 虚空伤害，并释放 5 枚子炸弹，每枚最多造成 330 虚空伤害，同时施加<span class="deb-void">不稳定</span>。</td></tr>
 </tbody>
 </table>
 </section>
 <section class="block" id="sec-3">
 <h2 class="sect-label">护甲充能</h2>
-<p><span class="armor-charge">护甲充能</span>是一种资源，供<span class="armor-charge">护甲充能</span>模组使用：有些模组在持有<span class="armor-charge">护甲充能</span>期间开启一项被动效果，有些则消耗<span class="armor-charge">护甲充能</span>换取一次即时效果。</p>
-<p>默认最多持有 <span class="stack">3 层</span><span class="armor-charge">护甲充能</span>。身上装着任意<span class="armor-charge">护甲充能</span>模组时，拾取任意<span class="orb">能量球</span>提供 <span class="stack">1 层</span><span class="armor-charge">护甲充能</span>。<br>装备「完全充能」胸部护甲模组可以把上限提高到 <span class="stack">4 层</span>｜<span class="stack">5 层</span>｜<span class="stack">6 层</span>。</p>
-<p>被动模组不需要特别的交互，只要<span class="armor-charge">护甲充能</span>还在，就按所用模组给一项临时效果。<br>装备任意生效中的被动模组时，每 10 秒衰减 <span class="stack">1 层</span><span class="armor-charge">护甲充能</span>。<br>每次消耗或衰减一层<span class="armor-charge">护甲充能</span>，衰减计时都会重置。</p>
+<p><span class="armor-charge">护甲充能</span>是一种资源，供护甲充能模组使用：有些模组在持有护甲充能期间开启一项被动效果，有些则消耗护甲充能换取一次即时效果。</p>
+<p>默认最多持有 <span class="stack">3 层</span><span class="armor-charge">护甲充能</span>。身上装着任意护甲充能模组时，拾取任意<span class="orb">能量球</span>提供 <span class="stack">1 层</span>护甲充能。<br>装备「完全充能」胸部护甲模组可以把上限提高到 <span class="stack">4 层</span>｜<span class="stack">5 层</span>｜<span class="stack">6 层</span>。</p>
+<p>被动模组不需要特别的交互，只要<span class="armor-charge">护甲充能</span>还在，就按所用模组给一项临时效果。<br>装备任意生效中的被动模组时，每 10 秒衰减 <span class="stack">1 层</span>护甲充能。<br>每次消耗或衰减一层护甲充能，衰减计时都会重置。</p>
 <p>在职业物品上装备时间膨胀护甲模组，可以把衰减计时延长到 15 ｜ 18 ｜ 20 秒。</p>
 </section>
 <section class="block" id="sec-4">
 <h2 class="sect-label">角色属性</h2>
-<p><span class="bar-orange">守护者</span>默认是 3 档敏捷与 10 档韧性。</p>
+<p>守护者默认是 3 档敏捷与 10 档韧性。</p>
 <p>基础移动速度是 5.6 米/秒（基础 5 米/秒，外加固有的 +30 敏捷），也就是不带任何额外效果向前移动的速度。<br>冲刺时向前的速度是 8 米/秒。</p>
 <p>基础移动速度（向前，含斜向左右）不能超过 9 米/秒，冲刺速度也算在这个上限里。<br>横移（左、右或向后）有 0.85× 的移动速度倍率，且不能超过 6 米/秒。</p>
 <p>瞄准镜有 0.75× 的移动速度倍率，并遵守向前或横移各自的上限。手枪是 0.85×。<br>下蹲速度有 0.55× 的移动速度倍率，且不能超过 4 米/秒。</p>
@@ -195,8 +196,8 @@
 <p>冲刺速度固定为 8 米/秒的基础移动速度，不随敏捷变化，只受轻质武器与冲刺加成影响，这两者相加最多提供 12.5% 的冲刺速度提升，各 6.25%。</p>
 <p>泰坦与术士的敏捷基线是 30，猎人是 100［70］。强化运动腿部模组提供 +30 ｜ +50 ｜ +60 敏捷。</p>
 <p>心影的幽魂漫步、牵引器火炮的科学方法这类移动速度提升，只提高扎根时的移动速度，不改变跳跃高度。移动速度仍然受上面那几个上限约束。</p>
-<p><span class="bar-orange">守护者</span>默认有 70［100］点<span class="health">生命值</span>，对<span class="enemy">战斗人员</span>带 34.5% 伤害抗性，另有 130 点护盾；对<span class="enemy">战斗人员</span>合计约 237 点有效<span class="health">生命值</span>，在<span class="el-void">熔炉竞技场</span>里是 230。<br><span class="health">生命值</span>属性超过 100 的部分提供对<span class="enemy">战斗人员</span>的额外护盾值，200 属性时最多 +20。</p>
-<p><span class="health">生命值</span>回复开始于 1.75 秒，速度约每秒 27.5%（20［30］点/秒）。<br>护盾充能开始于 5.3 秒，速度约每秒 30%（39.5 点/秒）。<br>打在<span class="pickup">覆盖护盾</span>上的伤害不会中断<span class="health">生命值</span>回复。</p>
+<p>守护者默认有 70［100］点<span class="health">生命值</span>，对战斗人员带 34.5% 伤害抗性，另有 130 点护盾；对战斗人员合计约 237 点有效生命值，在<span class="el-void">熔炉竞技场</span>里是 230。<br>生命值属性超过 100 的部分提供对战斗人员的额外护盾值，200 属性时最多 +20。</p>
+<p><span class="health">生命值</span>回复开始于 1.75 秒，速度约每秒 27.5%（20［30］点/秒）。<br>护盾充能开始于 5.3 秒，速度约每秒 30%（39.5 点/秒）。<br>打在<span class="pickup">覆盖护盾</span>上的伤害不会中断生命值回复。</p>
 <p>强化后的<span class="health">生命值</span>属性在 200 时最多让护盾充能提前 25% 开始，充能速度提高 50%。</p>
 <table class="gen">
 <thead>
@@ -206,17 +207,17 @@
 </tr>
 </thead>
 <tbody>
-<tr><th scope="row"><span class="health">生命值</span>数值</th><td>70［100］</td></tr>
-<tr><th scope="row"><span class="health">生命值</span>回复延迟</th><td>1.75 秒</td></tr>
-<tr><th scope="row"><span class="health">生命值</span>回复时长</th><td>3.2 秒（21.89［31.25］点/秒）</td></tr>
-<tr><th scope="row"><span class="health">生命值</span>+护盾回复时长</th><td>5.15 秒</td></tr>
+<tr><th scope="row">生命值数值</th><td>70［100］</td></tr>
+<tr><th scope="row">生命值回复延迟</th><td>1.75 秒</td></tr>
+<tr><th scope="row">生命值回复时长</th><td>3.2 秒（21.89［31.25］点/秒）</td></tr>
+<tr><th scope="row">生命值+护盾回复时长</th><td>5.15 秒</td></tr>
 <tr><th scope="row">总回复时长</th><td>7.8 秒</td></tr>
 </tbody>
 </table>
 <table class="gen">
 <thead>
 <tr>
-<th scope="col"><span class="health">生命值</span>属性</th>
+<th scope="col">生命值属性</th>
 <th scope="col">≤100</th>
 <th scope="col">110</th>
 <th scope="col">120</th>
@@ -231,7 +232,7 @@
 </tr>
 </thead>
 <tbody>
-<tr><th scope="row">对<span class="enemy">战斗人员</span>的护盾值</th><td>130</td><td>133</td><td>136</td><td>139</td><td>142</td><td>145</td><td>146</td><td>147</td><td>148</td><td>149</td><td>150</td></tr>
+<tr><th scope="row">对战斗人员的护盾值</th><td>130</td><td>133</td><td>136</td><td>139</td><td>142</td><td>145</td><td>146</td><td>147</td><td>148</td><td>149</td><td>150</td></tr>
 <tr><th scope="row">护盾回复延迟</th><td>4.9</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>3.675 秒</td></tr>
 <tr><th scope="row">起始提前百分比</th><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>25%</td></tr>
 <tr><th scope="row">护盾回复时长 ｜ 回复量</th><td>2.9</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>1.93 秒 ｜ 51.75/秒</td></tr>
@@ -250,18 +251,18 @@
 </tr>
 </thead>
 <tbody>
-<tr><th scope="row" class="health">生命值</th><td class="ico"><img src="icons/20cc0c4ee1.png" alt="" width="100" height="100" loading="lazy"></td><td>拾取<span class="orb">能量球</span><span class="el-solar">恢复</span><span class="health">生命值</span>，每点属性 +0.7，100 点时每颗<span class="orb">能量球</span>最多 +70。<br> 另外每点属性在瞄准镜时提供 0.1% 受击抖动抗性，100 点时 10%。<br> <br> ↑ 强化收益<br> 100 点以上每点提供更快的护盾回复，以及对<span class="enemy">战斗人员</span>更高的护盾值。<br> 200 点时最多让护盾充能提前 25% 开始、充能速度提高 45%，并对<span class="enemy">战斗人员</span> +20 护盾值。</td></tr>
+<tr><th scope="row">生命值</th><td class="ico"><img src="icons/20cc0c4ee1.png" alt="" width="100" height="100" loading="lazy"></td><td>拾取<span class="orb">能量球</span><span class="el-solar">恢复</span><span class="health">生命值</span>，每点属性 +0.7，100 点时每颗能量球最多 +70。<br> 另外每点属性在瞄准镜时提供 0.1% 受击抖动抗性，100 点时 10%。<br> <br> ↑ 强化收益<br> 100 点以上每点提供更快的护盾回复，以及对战斗人员更高的护盾值。<br> 200 点时最多让护盾充能提前 25% 开始、充能速度提高 45%，并对战斗人员 +20 护盾值。</td></tr>
 <tr><th scope="row">近战</th><td class="ico"><img src="icons/a804812a8d.png" alt="" width="100" height="100" loading="lazy"></td><td>每点提供 <span class="unsure">?</span>% 的近战技能基础回复速度，以及 <span class="unsure">?</span>% 的近战技能能量获取提高。<br> 100 点时最多提供 <span class="unsure">?</span>% 基础回复速度与 <span class="unsure">?</span>% 能量获取提高。<br> <br> ↑ 强化收益<br> 100 点以上每点提供 0.3%［0.2%］的近战伤害提高。<br> 200 点时最多 1.3×［20%］近战伤害。<br> 对未充能近战、充能近战与<span class="el-stasis">偃月</span>近战伤害都生效，这份提高是相乘的。</td></tr>
 <tr><th scope="row">手雷</th><td class="ico"><img src="icons/ac9c4f4bac.png" alt="" width="100" height="100" loading="lazy"></td><td>每点提供手雷技能基础回复速度与手雷技能能量获取的提高。<br> 100 点时最多提供 <span class="unsure">?</span>% 基础回复速度与 211.5% 能量获取提高。<br> <br> ↑ 强化收益<br> 100 点以上每点提供 0.65%［0.2%］的手雷技能伤害提高。<br> 200 点时最多 65%［20%］。</td></tr>
 <tr><th scope="row">超能</th><td class="ico"><img src="icons/d4ca088c25.png" alt="" width="100" height="100" loading="lazy"></td><td>每点提供超能技能能量获取的提高。<br> 100 点时最多提供 <span class="unsure">?</span>% 的超能技能整块获取提高。<br> <br> ↑ 强化收益<br> 100 点以上每点提供 0.45% 的超能技能伤害提高。<br> 200 点时最多 45%。<br> 光焰之井与黎明护罩改为在 200 点时最多提高 33% 的超能技能持续时间。</td></tr>
-<tr><th scope="row">职业</th><td class="ico"><img src="icons/6c93be6cd7.png" alt="" width="100" height="100" loading="lazy"></td><td>每点提供职业技能基础回复速度与职业技能能量获取的提高。<br> 100 点时最多提供 <span class="unsure">?</span>% 基础回复速度与 90% 能量获取提高。<br> <br> ↑ 强化收益<br> 使用职业技能提供一层<span class="pickup">覆盖护盾</span>，推进器与闪身持续 5 秒，裂缝模式与屏障持续 10 秒。<br> <span class="pickup">覆盖护盾</span>的<span class="health">生命值</span>按每点 0.4［0.1］缩放，200 点时最多 40［10］点。<br> <span class="bar-orange">守护者</span>打在这层<span class="pickup">覆盖护盾</span>上的伤害降低 50%，因此它在 PvP 里的有效<span class="health">生命值</span>上限是 20。<br> <br> 能造成伤害的职业技能按每点 0.65%［<span class="unsure">0.1?%</span>］缩放，200 点时最多提高 65%［10%］。</td></tr>
-<tr><th scope="row">武器</th><td class="ico"><img src="icons/d0284ba395.png" alt="" width="100" height="100" loading="lazy"></td><td>每点提供操控性与填装速度的提高，100 点时最多 0.9× 操控性时长倍率与 0.9× 填装时长倍率。<br> 另外每点使对<span class="bar-red">红血</span>与<span class="bar-orange">橙血</span><span class="enemy">战斗人员</span>的武器伤害提高 0.15%，100 点时最多 15%。<br> 操控性加成不会超过 100 操控性对应的收枪动画时长。<br> <br> ↑ 强化收益<br> 100 点以上每点使弹药块有 1% 概率掉落更多弹药，200 点时 100%。<br> 主武器与<span class="el-strand">特殊弹药</span>武器对<span class="bar-yellow">首领</span>的伤害每点提高 0.15%、对<span class="bar-orange">守护者</span>每点提高 0.05%，200 点时分别最多 15%［5%］。<br> <br> 威能武器对<span class="bar-yellow">首领</span>的伤害每点提高 0.1%、对<span class="bar-orange">守护者</span>每点提高 0.05%，200 点时最多 10%［5%］。</td></tr>
+<tr><th scope="row">职业</th><td class="ico"><img src="icons/6c93be6cd7.png" alt="" width="100" height="100" loading="lazy"></td><td>每点提供职业技能基础回复速度与职业技能能量获取的提高。<br> 100 点时最多提供 <span class="unsure">?</span>% 基础回复速度与 90% 能量获取提高。<br> <br> ↑ 强化收益<br> 使用职业技能提供一层<span class="pickup">覆盖护盾</span>，推进器与闪身持续 5 秒，裂缝模式与屏障持续 10 秒。<br> 覆盖护盾的<span class="health">生命值</span>按每点 0.4［0.1］缩放，200 点时最多 40［10］点。<br> 守护者打在这层覆盖护盾上的伤害降低 50%，因此它在 PvP 里的有效生命值上限是 20。<br> <br> 能造成伤害的职业技能按每点 0.65%［<span class="unsure">0.1?%</span>］缩放，200 点时最多提高 65%［10%］。</td></tr>
+<tr><th scope="row">武器</th><td class="ico"><img src="icons/d0284ba395.png" alt="" width="100" height="100" loading="lazy"></td><td>每点提供操控性与填装速度的提高，100 点时最多 0.9× 操控性时长倍率与 0.9× 填装时长倍率。<br> 另外每点使对<span class="bar-red">红血</span>与<span class="bar-orange">橙血</span>战斗人员的武器伤害提高 0.15%，100 点时最多 15%。<br> 操控性加成不会超过 100 操控性对应的收枪动画时长。<br> <br> ↑ 强化收益<br> 100 点以上每点使弹药块有 1% 概率掉落更多弹药，200 点时 100%。<br> 主武器与<span class="el-strand">特殊弹药</span>武器对<span class="bar-yellow">首领</span>的伤害每点提高 0.15%、对守护者每点提高 0.05%，200 点时分别最多 15%［5%］。<br> <br> 威能武器对首领的伤害每点提高 0.1%、对守护者每点提高 0.05%，200 点时最多 10%［5%］。</td></tr>
 </tbody>
 </table>
 <table class="gen">
 <thead>
 <tr>
-<th scope="col"><span class="health">生命值</span>属性</th>
+<th scope="col">生命值属性</th>
 <th scope="col">0</th>
 <th scope="col">10</th>
 <th scope="col">20</th>
@@ -276,7 +277,7 @@
 </tr>
 </thead>
 <tbody>
-<tr><th scope="row">每颗<span class="orb">能量球</span>回复的<span class="health">生命值</span></th><td>0</td><td>7</td><td>14</td><td>21</td><td>28</td><td>35</td><td>42</td><td>49</td><td>56</td><td>63</td><td>70</td></tr>
+<tr><th scope="row">每颗能量球回复的生命值</th><td>0</td><td>7</td><td>14</td><td>21</td><td>28</td><td>35</td><td>42</td><td>49</td><td>56</td><td>63</td><td>70</td></tr>
 <tr><th scope="row">受击抖动抗性</th><td>0</td><td>1%</td><td>2%</td><td>3%</td><td>4%</td><td>5%</td><td>6%</td><td>7%</td><td>8%</td><td>9%</td><td>10%</td></tr>
 </tbody>
 <tbody>
@@ -367,10 +368,10 @@
 <section class="block" id="sec-6">
 <h2 class="sect-label">屏障勇士</h2>
 <p><img src="icons/bcc9f9ecca.png" alt="" width="100" height="100" loading="lazy"></p>
-<p>屏障勇士的<span class="health">生命值</span>降到由难度决定的阈值以下时，会召唤一层无法穿透的护盾。<br>护盾在场期间，屏障勇士持续回复一部分<span class="health">生命值</span>。</p>
+<p>屏障勇士的<span class="health">生命值</span>降到由难度决定的阈值以下时，会召唤一层无法穿透的护盾。<br>护盾在场期间，屏障勇士持续回复一部分生命值。</p>
 <p>护盾可以用破盾效果打掉，破盾会让勇士短暂<span class="deb-arc">眩晕</span>。护盾的耐久度由难度决定。</p>
 <p><span class="deb-arc">眩晕</span>期间勇士无法攻击、移动或使用任何技能。<br>对护盾造成伤害会短暂中止<span class="health">生命值</span>回复。</p>
-<p>破盾效果另外还能穿透：护盾<span class="enemy">祸因</span>的护盾、九头蛇护盾、高等哥布林免疫、（傀儡）方阵士兵护盾，以及嗤魅圆盾。<br>武器对泰坦屏障的伤害提高 30%。</p>
+<p>破盾效果另外还能穿透：护盾祸因的护盾、九头蛇护盾、高等哥布林免疫、（傀儡）方阵士兵护盾，以及嗤魅圆盾。<br>武器对泰坦屏障的伤害提高 30%。</p>
 <table class="gen">
 <thead>
 <tr>
@@ -384,14 +385,14 @@
 </tr>
 </thead>
 <tbody>
-<tr><th scope="row">勇士<span class="health">生命值</span></th><td>2200</td><td>3300</td><td>4400</td><td>5000</td><td>5475</td><td>勇士<span class="health">生命值</span>在所有种族与勇士类型之间共用。<br> 大师难度的勇士<span class="health">生命值</span>被降到专家档。</td></tr>
-<tr><th scope="row">护盾<span class="health">生命值</span></th><td>210</td><td>~333</td><td>~333</td><td>~410</td><td>~445</td><td>护盾<span class="health">生命值</span>约等于勇士<span class="health">生命值</span>的 10%。</td></tr>
+<tr><th scope="row">勇士生命值</th><td>2200</td><td>3300</td><td>4400</td><td>5000</td><td>5475</td><td>勇士<span class="health">生命值</span>在所有种族与勇士类型之间共用。<br> 大师难度的勇士生命值被降到专家档。</td></tr>
+<tr><th scope="row">护盾生命值</th><td>210</td><td>~333</td><td>~333</td><td>~410</td><td>~445</td><td>护盾<span class="health">生命值</span>约等于勇士生命值的 10%。</td></tr>
 <tr><th scope="row">召盾阈值</th><td>60%</td><td>60%</td><td>60%</td><td>75%</td><td>85%</td><td>勇士的<span class="health">生命值</span>降到阈值时自动尝试召盾。<br> 硬直可以推迟召盾。</td></tr>
-<tr><th scope="row">有盾时的<span class="health">生命值</span>回复</th><td>15%/秒</td><td>15%/秒</td><td>15%/秒</td><td>30%/秒</td><td>45%/秒</td><td>每 0.066 ｜ 0.066 ｜ 0.066 ｜ 0.033 ｜ 0.022 秒持续回复 1%。</td></tr>
+<tr><th scope="row">有盾时的生命值回复</th><td>15%/秒</td><td>15%/秒</td><td>15%/秒</td><td>30%/秒</td><td>45%/秒</td><td>每 0.066 ｜ 0.066 ｜ 0.066 ｜ 0.033 ｜ 0.022 秒持续回复 1%。</td></tr>
 <tr><th scope="row">召盾到开始回复的时间</th><td>0.8 秒</td><td>0.8 秒</td><td>0.8 秒</td><td>0.8 秒</td><td>0.8 秒</td><td>召盾后有 0.8 秒延迟才开始回复<span class="health">生命值</span>，难度不改变这个计时。</td></tr>
 <tr><th scope="row">护盾最长持续</th><td>5 秒</td><td>5 秒</td><td>5 秒</td><td>5 秒</td><td>5 秒</td><td>护盾持续 5 秒。</td></tr>
 <tr><th scope="row">受到破盾伤害后的回复延迟</th><td>1.6 秒</td><td>1.6 秒</td><td>1.6 秒</td><td>1.6 秒</td><td>1.6 秒</td><td>打出任意破盾伤害都会立即中止<span class="health">生命值</span>回复，并把它推迟 1.6 秒。</td></tr>
-<tr><th scope="row">破盾后的<span class="deb-arc">眩晕</span>时长</th><td class="unsure">[?]</td><td>7 秒</td><td>7 秒</td><td>6 秒</td><td>5.5 秒</td><td>勇士被<span class="deb-arc">眩晕</span> X ｜ 7 ｜ 7 ｜ 6 ｜ 5.5 秒。</td></tr>
+<tr><th scope="row">破盾后的眩晕时长</th><td class="unsure">[?]</td><td>7 秒</td><td>7 秒</td><td>6 秒</td><td>5.5 秒</td><td>勇士被<span class="deb-arc">眩晕</span> X ｜ 7 ｜ 7 ｜ 6 ｜ 5.5 秒。</td></tr>
 <tr><th scope="row">破盾后的召盾锁定</th><td class="unsure">[?]</td><td>7 秒</td><td>7 秒</td><td>6 秒</td><td>5.5 秒</td><td>被<span class="deb-arc">眩晕</span>之后的一小段时间内，勇士无法召盾。</td></tr>
 </tbody>
 </table>
@@ -400,8 +401,8 @@
 <h2 class="sect-label">过载勇士</h2>
 <p><img src="icons/a78d169087.png" alt="" width="100" height="100" loading="lazy"></p>
 <p>过载勇士随时间被动回复<span class="health">生命值</span>，使用技能与武器的频率更高，移动路线飘忽不定，除非被干扰打断。<br><span class="deb-arc">眩晕</span>期间勇士无法攻击、移动或使用任何技能。</p>
-<p>被干扰的<span class="enemy">战斗人员</span>有 Bug：它们不再在 5 秒内少造成 25% 伤害。<br>干扰<span class="bar-orange">守护者</span>会把其技能回复速度压到 0.4×。</p>
-<p>过载勇士的<span class="deb-arc">眩晕</span>触发方式：<br><span class="el-arc">电弧</span>的<span class="deb-arc">震颤</span>在对勇士造成伤害时触发。<br><span class="el-stasis">冰影</span>的<span class="deb-stasis">减速</span>在对勇士叠加<span class="deb-stasis">减速</span>层数时触发。<br><span class="el-stasis">冰影</span>的<span class="deb-stasis">冻结</span>在打碎勇士时触发。<br><span class="el-void">虚空</span>的<span class="deb-void">压制</span>在压制勇士时触发。</p>
+<p>被干扰的战斗人员有 Bug：它们不再在 5 秒内少造成 25% 伤害。<br>干扰守护者会把其技能回复速度压到 0.4×。</p>
+<p>过载勇士的<span class="deb-arc">眩晕</span>触发方式：<br><span class="el-arc">电弧</span>的<span class="deb-arc">震颤</span>在对勇士造成伤害时触发。<br><span class="el-stasis">冰影</span>的<span class="deb-stasis">减速</span>在对勇士叠加减速层数时触发。<br>冰影的<span class="deb-stasis">冻结</span>在打碎勇士时触发。<br><span class="el-void">虚空</span>的<span class="deb-void">压制</span>在压制勇士时触发。</p>
 <table class="gen">
 <thead>
 <tr>
@@ -415,10 +416,10 @@
 </tr>
 </thead>
 <tbody>
-<tr><th scope="row">勇士<span class="health">生命值</span></th><td>2200</td><td>3300</td><td>4400</td><td>5000</td><td>5475</td><td>勇士<span class="health">生命值</span>在所有种族与勇士类型之间共用。<br> 大师难度的勇士<span class="health">生命值</span>被降到专家档。</td></tr>
-<tr><th scope="row">被动<span class="health">生命值</span>回复</th><td>4.5%/秒</td><td>4.5%/秒</td><td>4.5%/秒</td><td>13.65%/秒</td><td>27.4%/秒</td><td>每 0.22 ｜ 0.22 ｜ 0.22 ｜ 0.073 ｜ 0.037 秒持续回复 1%。<br> 被<span class="deb-stasis">冻结</span>的过载勇士一律以 4.5%/秒 回复，与难度无关。</td></tr>
-<tr><th scope="row">干扰后的<span class="deb-arc">眩晕</span>时长</th><td class="unsure">[?]</td><td>7 秒</td><td>7 秒</td><td>6 秒</td><td>5.5 秒</td><td>勇士被<span class="deb-arc">眩晕</span> X ｜ 7 ｜ 7 ｜ 6 ｜ 5.5 秒。</td></tr>
-<tr><th scope="row">两次<span class="deb-arc">眩晕</span>之间的冷却</th><td>无</td><td>无</td><td>无</td><td>2.5 秒</td><td>4.5 秒</td><td>从上一次<span class="deb-arc">眩晕</span>结束算起，要过这么久才能再次<span class="deb-arc">眩晕</span>。</td></tr>
+<tr><th scope="row">勇士生命值</th><td>2200</td><td>3300</td><td>4400</td><td>5000</td><td>5475</td><td>勇士<span class="health">生命值</span>在所有种族与勇士类型之间共用。<br> 大师难度的勇士生命值被降到专家档。</td></tr>
+<tr><th scope="row">被动生命值回复</th><td>4.5%/秒</td><td>4.5%/秒</td><td>4.5%/秒</td><td>13.65%/秒</td><td>27.4%/秒</td><td>每 0.22 ｜ 0.22 ｜ 0.22 ｜ 0.073 ｜ 0.037 秒持续回复 1%。<br> 被<span class="deb-stasis">冻结</span>的过载勇士一律以 4.5%/秒 回复，与难度无关。</td></tr>
+<tr><th scope="row">干扰后的眩晕时长</th><td class="unsure">[?]</td><td>7 秒</td><td>7 秒</td><td>6 秒</td><td>5.5 秒</td><td>勇士被<span class="deb-arc">眩晕</span> X ｜ 7 ｜ 7 ｜ 6 ｜ 5.5 秒。</td></tr>
+<tr><th scope="row">两次眩晕之间的冷却</th><td>无</td><td>无</td><td>无</td><td>2.5 秒</td><td>4.5 秒</td><td>从上一次<span class="deb-arc">眩晕</span>结束算起，要过这么久才能再次眩晕。</td></tr>
 <tr><th scope="row">干扰后重新回复的时间</th><td>6.5 秒</td><td>6.5 秒</td><td>6.5 秒</td><td>6.5 秒</td><td>6.5 秒</td><td>勇士要保持 6.5 秒不被干扰才会重新开始回复<span class="health">生命值</span>。<br> 再次施加干扰会把这 6.5 秒刷新。</td></tr>
 </tbody>
 </table>
@@ -426,7 +427,7 @@
 <section class="block" id="sec-8">
 <h2 class="sect-label">势不可挡勇士</h2>
 <p><img src="icons/058cebf562.png" alt="" width="100" height="100" loading="lazy"></p>
-<p><span class="enemy">势不可挡勇士</span>会不知疲倦地追击，未被<span class="deb-arc">眩晕</span>时带 70% 伤害抗性。<br>打在它身上的伤害数字显示为斜体的暗粉色。<br><span class="deb-arc">眩晕</span>会移除这份伤害抗性，并在持续期间让勇士无法攻击、移动或使用任何技能。</p>
+<p><span class="enemy">势不可挡勇士</span>会不知疲倦地追击，未被<span class="deb-arc">眩晕</span>时带 70% 伤害抗性。<br>打在它身上的伤害数字显示为斜体的暗粉色。<br>眩晕会移除这份伤害抗性，并在持续期间让勇士无法攻击、移动或使用任何技能。</p>
 <p>势不可挡射击普遍造成更强的硬直，某些武器与效果能强制打出硬直。</p>
 <p>除势不可挡射击外的<span class="deb-arc">眩晕</span>手段：<br><span class="el-arc">电弧</span>的<span class="deb-arc">致盲</span><br><span class="el-solar">烈日</span>的<span class="deb-solar">点燃</span><br><span class="el-strand">缚丝</span>的<span class="deb-strand">悬停</span></p>
 <table class="gen">
@@ -442,23 +443,23 @@
 </tr>
 </thead>
 <tbody>
-<tr><th scope="row">勇士<span class="health">生命值</span></th><td>2200</td><td>3300</td><td>4400</td><td>5000</td><td>5475</td><td>勇士<span class="health">生命值</span>在所有种族与勇士类型之间共用。<br> 大师难度的勇士<span class="health">生命值</span>被降到专家档。</td></tr>
+<tr><th scope="row">勇士生命值</th><td>2200</td><td>3300</td><td>4400</td><td>5000</td><td>5475</td><td>勇士<span class="health">生命值</span>在所有种族与勇士类型之间共用。<br> 大师难度的勇士生命值被降到专家档。</td></tr>
 <tr><th scope="row">伤害抗性</th><td>70%</td><td>70%</td><td>70%</td><td>70%</td><td>70%</td><td>未被<span class="deb-arc">眩晕</span>时，勇士把所有受到的伤害降低 70%。</td></tr>
-<tr><th scope="row">干扰后的<span class="deb-arc">眩晕</span>时长</th><td class="unsure">[?]</td><td>7 秒</td><td>7 秒</td><td>6 秒</td><td>5.5 秒</td><td>勇士至少被<span class="deb-arc">眩晕</span> X ｜ 7 ｜ 7 ｜ 6 ｜ 5.5 秒。</td></tr>
-<tr><th scope="row">两次<span class="deb-arc">眩晕</span>之间的冷却</th><td>无</td><td>无</td><td>无</td><td>2.5 秒</td><td>4.5 秒</td><td>从上一次<span class="deb-arc">眩晕</span>结束算起，要过这么久才能再次<span class="deb-arc">眩晕</span>。</td></tr>
+<tr><th scope="row">干扰后的眩晕时长</th><td class="unsure">[?]</td><td>7 秒</td><td>7 秒</td><td>6 秒</td><td>5.5 秒</td><td>勇士至少被<span class="deb-arc">眩晕</span> X ｜ 7 ｜ 7 ｜ 6 ｜ 5.5 秒。</td></tr>
+<tr><th scope="row">两次眩晕之间的冷却</th><td>无</td><td>无</td><td>无</td><td>2.5 秒</td><td>4.5 秒</td><td>从上一次<span class="deb-arc">眩晕</span>结束算起，要过这么久才能再次眩晕。</td></tr>
 </tbody>
 </table>
 </section>
 <section class="block" id="sec-9">
 <h2 class="sect-label">战斗人员分类</h2>
-<p><span class="enemy">战斗人员</span>分成 4 个档位，每档把<span class="health">生命值</span>落在一定区间内的<span class="enemy">战斗人员</span>归到一起。</p>
-<p><span class="bar-orange">橙血</span><span class="enemy">战斗人员</span>的档位比同名的<span class="bar-red">红血</span>高一档。<br>例：辅助士兵（1 档）→ <span class="bar-orange">橙血</span>辅助士兵（2 档）；暴徒（2 档）→ <span class="bar-orange">橙血</span>暴徒（3 档）。</p>
+<p>战斗人员分成 4 个档位，每档把<span class="health">生命值</span>落在一定区间内的战斗人员归到一起。</p>
+<p><span class="bar-orange">橙血</span>战斗人员的档位比同名的<span class="bar-red">红血</span>高一档。<br>例：辅助士兵（1 档）→ <span class="bar-orange">橙血</span>辅助士兵（2 档）；暴徒（2 档）→ <span class="bar-orange">橙血</span>暴徒（3 档）。</p>
 <p>勇士、<span class="bar-yellow">初级首领</span>与<span class="bar-yellow">首领</span>不进这套档位，它们要么算作可能的最高档，要么自成一类。</p>
-<p><span class="enemy">战斗人员</span>档位影响技能能量获取与效果触发，例如武器特性墓碑与势不可挡、碎片炽热余烬与折角之吟、<span class="exotic">异域</span>装备 Vex 揭秘者与冥火之刺，以及某些护甲模组。</p>
+<p>战斗人员档位影响技能能量获取与效果触发，例如武器特性墓碑与势不可挡、碎片炽热余烬与折角之吟、<span class="exotic">异域</span>装备 Vex 揭秘者与冥火之刺，以及某些护甲模组。</p>
 <table class="gen">
 <thead>
 <tr>
-<th scope="col"><span class="enemy">战斗人员</span>档位</th>
+<th scope="col">战斗人员档位</th>
 <th scope="col"><img src="icons/cabc3d077e.png" alt="" width="51" height="51" loading="lazy"><br> 卡巴尔</th>
 <th scope="col"><img src="icons/ef9d98a98b.png" alt="" width="51" height="51" loading="lazy"><br> 堕落者</th>
 <th scope="col"><img src="icons/7a255df302.png" alt="" width="51" height="51" loading="lazy"><br> 邪魔族</th>
@@ -475,66 +476,67 @@
 <tr><th scope="row">4 档</th><td>装甲兵</td><td>机甲<br> 重型侦察机<br> 魔眼</td><td>死灵<br> 虫瘤</td><td>独眼巨人<br> 九头蛇<br> 飞龙</td><td>傀儡虫瘤</td><td>憎恶</td><td>征服者<br> 折磨者<br> 先知</td></tr>
 </tbody>
 </table>
-<p><span class="enemy">战斗人员</span>档位不等于<span class="enemy">战斗人员</span>等级。</p>
+<p>战斗人员档位不等于战斗人员等级。</p>
 <p>档位是一种分类，供那些「按敌方强度缩放」的效果使用，例如<span class="el-void">吞食</span>的手雷能量获取。</p>
 <p>等级会影响档位系统：<span class="bar-orange">橙血</span>比同名<span class="bar-red">红血</span>高一档；<span class="bar-yellow">初级首领</span>、折磨者与勇士落在 5 档；<span class="bar-yellow">首领</span>落在 6 档。</p>
 <p>例：<span class="bar-red">红血</span>暴徒（2 档）→ <span class="bar-orange">橙血</span>暴徒（3 档）；<span class="bar-red">红血</span>队长（3 档）→ <span class="bar-orange">橙血</span>队长（4 档）→ 过载勇士（5 档）。</p>
 <p>对于没有为 4–6 档定义数值的效果，改用它已有的最高档数值。载具这一块的表现极不一致。</p>
-<p>例：点接触炮架有 1–6 档，所以每个<span class="enemy">战斗人员</span>档位对它都成立。<span class="el-void">吞食</span>只有 1–4 档，所以<span class="bar-yellow">初级首领</span>与<span class="bar-yellow">首领</span>对它都按 4 档处理。</p>
-<p>带护盾的<span class="enemy">战斗人员</span>身上是会自动充能的元素护盾，护盾期间免疫<span class="stack">精准</span>伤害，也不吃硬直与受击抖动。<br>护盾在 5 秒未受伤害后开始充能，被打碎则是 5.5 秒；充能速率是每 0.2 秒 13.3%（每秒 66.6%），1.5 秒充满。</p>
-<p>对护盾而言，元素伤害比<span class="el-kinetic">动能</span>伤害高 100%。<br>匹配元素的伤害比<span class="el-kinetic">动能</span>伤害高 200%，比不匹配的元素伤害高 50%。</p>
+<p>例：点接触炮架有 1–6 档，所以每个战斗人员档位对它都成立。<span class="el-void">吞食</span>只有 1–4 档，所以<span class="bar-yellow">初级首领</span>与<span class="bar-yellow">首领</span>对它都按 4 档处理。</p>
+<p>带护盾的战斗人员身上是会自动充能的元素护盾，护盾期间免疫<span class="stack">精准</span>伤害，也不吃硬直与受击抖动。<br>护盾在 5 秒未受伤害后开始充能，被打碎则是 5.5 秒；充能速率是每 0.2 秒 13.3%（每秒 66.6%），1.5 秒充满。</p>
+<p>对护盾而言，元素伤害比<span class="el-kinetic">动能</span>伤害高 100%。<br>匹配元素的伤害比动能伤害高 200%，比不匹配的元素伤害高 50%。</p>
 <p>打在护盾上与打在<span class="health">生命值</span>上的伤害比例随活动难度变化，难度越高比例越大。</p>
 </section>
 <section class="block" id="sec-10">
 <h2 class="sect-label">战斗人员祸因</h2>
-<p>非<span class="bar-yellow">首领</span>的<span class="enemy">战斗人员</span>可以带着<span class="enemy">祸因</span>词缀出现，获得独特的干扰性技能。</p>
-<p>带<span class="enemy">祸因</span>的<span class="enemy">战斗人员</span>对所有伤害带 60% 伤害抗性，另有说明的除外。</p>
-<p>全部<span class="enemy">祸因</span>图标由 Court Projects 重绘并慷慨提供。</p>
+<p>非<span class="bar-yellow">首领</span>的战斗人员可以带着祸因词缀出现，获得独特的干扰性技能。</p>
+<p>带祸因的战斗人员对所有伤害带 60% 伤害抗性，另有说明的除外。</p>
+<p class="note">全部祸因图标由 Court Projects 重绘并慷慨提供。</p>
 <table class="gen">
 <thead>
 <tr>
-<th scope="col" class="enemy">祸因</th>
+<th scope="col">祸因</th>
 <th scope="col">图标</th>
 <th scope="col">说明</th>
 </tr>
 </thead>
 <tbody>
-<tr><th scope="row">蒺藜</th><td class="ico"><img src="icons/a990999e94.png" alt="" width="89" height="89" loading="lazy"></td><td>每 2 秒以及死亡时掉落一滩元素池。<br> 元素池每秒造成 4 次伤害，范围 6 米，持续 5 秒。<br> <br> 蒺藜<span class="enemy">战斗人员</span>会不知疲倦地追击<span class="bar-orange">守护者</span>，并倾向于停在近战距离内。<br> 无法对蒺藜<span class="enemy">战斗人员</span>使用<span class="enemy">终结技</span>。</td></tr>
-<tr><th scope="row">串联</th><td class="ico"><img src="icons/ff04110b62.png" alt="" width="100" height="100" loading="lazy"></td><td>每 6.5 秒朝正前方射出一枚<span class="el-stasis">冰影</span>追踪弹，最远飞行 60 米，速度 15 米/秒。<br> 追踪弹撞上墙或<span class="bar-orange">守护者</span>时引爆，在 <span class="unsure">6?</span> 米范围内施加 x50 <span class="deb-stasis">减速</span>，持续 4 秒。</td></tr>
-<tr><th scope="row">汲取</th><td class="ico"><img src="icons/f289400648.png" alt="" width="100" height="100" loading="lazy"></td><td>瞬间与视线内 50 米中的所有<span class="bar-orange">守护者</span>连线，对其施加暗影汲取。<br> 失去视线或距离超过 50 米时连线断开。<br> 处于<span class="el-void">隐身</span>的<span class="bar-orange">守护者</span>无法被它锁定。<br> <br> 暗影汲取每 <span class="unsure">?</span> 秒造成一次中等的非致命<span class="el-void">虚空</span>伤害。<br> <br> 对汲取<span class="enemy">战斗人员</span>施加<span class="deb-void">压制</span>会在<span class="debuff">减益</span>期间停用它的汲取技能。<br> 处于<span class="el-void">隐身</span>的<span class="bar-orange">守护者</span>无法被连线。</td></tr>
-<tr><th scope="row">抓握</th><td class="ico"><img src="icons/a902982537.png" alt="" width="100" height="100" loading="lazy"></td><td>周期性释放多枚投射物，每一枚都会变成一座<span class="el-strand">缚丝</span>炮台。<br> <br> 炮台持续 10 秒，射出的丝线造成<span class="el-strand">缚丝</span>伤害，命中施加<span class="deb-strand">瓦解</span>，持续 5 秒。<br> 炮台可以被摧毁，但不计为构造体。</td></tr>
-<tr><th scope="row">重力</th><td class="ico"><img src="icons/6985fea1d4.png" alt="" width="100" height="100" loading="lazy"></td><td>每 8 秒朝 45 米内的<span class="bar-orange">守护者</span>精准抛出一发<span class="el-void">涡流</span>迫击弹，自身带 60% 伤害抗性。<br> 迫击弹命中时内爆，把 <span class="unsure">6?</span> 米内的<span class="bar-orange">守护者</span>拉进去。<br> <span class="el-void">涡流</span>缓慢扩大到 9 米，期间持续造成<span class="el-void">虚空</span>伤害，共 4.5 秒。<br> 4.5 秒后<span class="el-void">涡流</span>引爆，在 9 米范围内造成中等<span class="el-void">虚空</span>伤害。<br> <br> 对重力<span class="enemy">战斗人员</span>施加<span class="deb-void">压制</span>会暂时停用它生成<span class="el-void">涡流</span>投射物的能力。</td></tr>
-<tr><th scope="row">治疗</th><td class="ico"><img src="icons/3f38d397aa.png" alt="" width="100" height="100" loading="lazy"></td><td>为 20 米内的<span class="enemy">战斗人员</span>赋予<span class="health">生命值</span>回复，对勇士、<span class="bar-yellow">首领</span>与自身无效。<br> 带这份回复<span class="buff">增益</span>的<span class="enemy">战斗人员</span>只要待在范围内就持续回血。<br> <br> <span class="bar-red">红血</span>每 0.1 秒回复 2.25%（每秒 22.5%）。<br> <span class="bar-orange">橙血</span>每 0.1 秒回复 1%（每秒 10%）。<br> <br> 对治疗<span class="enemy">战斗人员</span>施加<span class="deb-void">压制</span>会在<span class="debuff">减益</span>期间停用它的治疗技能。</td></tr>
-<tr><th scope="row">极超新星</th><td class="ico"><img src="icons/315f78c7f8.png" alt="" width="100" height="100" loading="lazy"></td><td><span class="health">生命值</span>降到 67% 后启动自毁程序，自身的伤害抗性只有偏低的 40%。<br> <br> 自毁程序：<br> 历时 7 秒，末尾是一次爆炸，造成极高的<span class="el-solar">烈日</span>伤害，施加 x40 <span class="deb-solar">灼烧</span>，并把 40 米内的所有实体击退。<br> 起爆准备期间它的伤害抗性升到 60%，并以每秒 8.25% 回复<span class="health">生命值</span>。<br> 这次爆炸同时会把它自己炸死。<br> <br> 在自毁完成前把它打死就能安全阻止。<br> 躲进掩体可以避掉大部分伤害（仍会被施加<span class="deb-solar">灼烧</span>），退到 40 米以外可以完全避开。</td></tr>
+<tr><th scope="row">蒺藜</th><td class="ico"><img src="icons/a990999e94.png" alt="" width="89" height="89" loading="lazy"></td><td>每 2 秒以及死亡时掉落一滩元素池。<br> 元素池每秒造成 4 次伤害，范围 6 米，持续 5 秒。<br> <br> 蒺藜战斗人员会不知疲倦地追击守护者，并倾向于停在近战距离内。<br> 无法对蒺藜战斗人员使用<span class="enemy">终结技</span>。</td></tr>
+<tr><th scope="row">串联</th><td class="ico"><img src="icons/ff04110b62.png" alt="" width="100" height="100" loading="lazy"></td><td>每 6.5 秒朝正前方射出一枚<span class="el-stasis">冰影</span>追踪弹，最远飞行 60 米，速度 15 米/秒。<br> 追踪弹撞上墙或守护者时引爆，在 <span class="unsure">6?</span> 米范围内施加 x50 <span class="deb-stasis">减速</span>，持续 4 秒。</td></tr>
+<tr><th scope="row">汲取</th><td class="ico"><img src="icons/f289400648.png" alt="" width="100" height="100" loading="lazy"></td><td>瞬间与视线内 50 米中的所有守护者连线，对其施加暗影汲取。<br> 失去视线或距离超过 50 米时连线断开。<br> 处于<span class="el-void">隐身</span>的守护者无法被它锁定。<br> <br> 暗影汲取每 <span class="unsure">?</span> 秒造成一次中等的非致命<span class="el-void">虚空</span>伤害。<br> <br> 对汲取战斗人员施加<span class="deb-void">压制</span>会在<span class="debuff">减益</span>期间停用它的汲取技能。<br> 处于隐身的守护者无法被连线。</td></tr>
+<tr><th scope="row">抓握</th><td class="ico"><img src="icons/a902982537.png" alt="" width="100" height="100" loading="lazy"></td><td>周期性释放多枚投射物，每一枚都会变成一座<span class="el-strand">缚丝</span>炮台。<br> <br> 炮台持续 10 秒，射出的丝线造成缚丝伤害，命中施加<span class="deb-strand">瓦解</span>，持续 5 秒。<br> 炮台可以被摧毁，但不计为构造体。</td></tr>
+<tr><th scope="row">重力</th><td class="ico"><img src="icons/6985fea1d4.png" alt="" width="100" height="100" loading="lazy"></td><td>每 8 秒朝 45 米内的守护者精准抛出一发<span class="el-void">涡流</span>迫击弹，自身带 60% 伤害抗性。<br> 迫击弹命中时内爆，把 <span class="unsure">6?</span> 米内的守护者拉进去。<br> 涡流缓慢扩大到 9 米，期间持续造成<span class="el-void">虚空</span>伤害，共 4.5 秒。<br> 4.5 秒后涡流引爆，在 9 米范围内造成中等虚空伤害。<br> <br> 对重力战斗人员施加<span class="deb-void">压制</span>会暂时停用它生成涡流投射物的能力。</td></tr>
+<tr><th scope="row">治疗</th><td class="ico"><img src="icons/3f38d397aa.png" alt="" width="100" height="100" loading="lazy"></td><td>为 20 米内的战斗人员赋予<span class="health">生命值</span>回复，对勇士、<span class="bar-yellow">首领</span>与自身无效。<br> 带这份回复<span class="buff">增益</span>的战斗人员只要待在范围内就持续回血。<br> <br> <span class="bar-red">红血</span>每 0.1 秒回复 2.25%（每秒 22.5%）。<br> <span class="bar-orange">橙血</span>每 0.1 秒回复 1%（每秒 10%）。<br> <br> 对治疗战斗人员施加<span class="deb-void">压制</span>会在<span class="debuff">减益</span>期间停用它的治疗技能。</td></tr>
+<tr><th scope="row">极超新星</th><td class="ico"><img src="icons/315f78c7f8.png" alt="" width="100" height="100" loading="lazy"></td><td><span class="health">生命值</span>降到 67% 后启动自毁程序，自身的伤害抗性只有偏低的 40%。<br> <br> 自毁程序：<br> 历时 7 秒，末尾是一次爆炸，造成极高的<span class="el-solar">烈日</span>伤害，施加 x40 <span class="deb-solar">灼烧</span>，并把 40 米内的所有实体击退。<br> 起爆准备期间它的伤害抗性升到 60%，并以每秒 8.25% 回复生命值。<br> 这次爆炸同时会把它自己炸死。<br> <br> 在自毁完成前把它打死就能安全阻止。<br> 躲进掩体可以避掉大部分伤害（仍会被施加灼烧），退到 40 米以外可以完全避开。</td></tr>
 <tr><th scope="row">美杜莎</th><td class="ico"><img src="icons/5497237c6b.png" alt="" width="89" height="89" loading="lazy"></td><td>被注视期间每 0.25 秒施加 x5 <span class="deb-stasis">减速</span>，直到目标<span class="deb-stasis">冻结</span>或不再注视为止。</td></tr>
-<tr><th scope="row">流星</th><td class="ico"><img src="icons/dff721c5b6.png" alt="" width="100" height="100" loading="lazy"></td><td>每 20 秒释放 3 颗<span class="el-solar">烈日</span>流星。<br> <br> 流星追踪 60 米内的<span class="bar-orange">守护者</span>，命中时爆炸，造成中等<span class="el-solar">烈日</span>伤害。<br> <br> 流星可以射击摧毁、诱使其撞上障碍物，或者靠掩体躲开。<br> <br> 处于<span class="el-void">隐身</span>的<span class="bar-orange">守护者</span>无法被追踪。</td></tr>
-<tr><th scope="row">地雷</th><td class="ico"><img src="icons/0192d8f882.png" alt="" width="100" height="100" loading="lazy"></td><td>死亡时以♦️菱形阵释放 4 枚近炸地雷。<br> <br> 地雷最多造成 200 伤害，最低 50，可以打掉。<br> <br> 对地雷<span class="enemy">战斗人员</span>施加<span class="deb-void">压制</span>会让它死亡时不再释放地雷。</td></tr>
-<tr><th scope="row">晋升</th><td class="ico"><img src="icons/62e71bba51.png" alt="" width="100" height="100" loading="lazy"></td><td>由战场晋升修改器产生的晋升<span class="enemy">战斗人员</span>获得 60% 伤害抗性，造成的伤害提高 6.25%，体型放大约 50%。<br> 勇士、<span class="bar-yellow">首领</span>与已带词缀的<span class="enemy">战斗人员</span>不会获得晋升词缀。<br> <br> 对晋升<span class="enemy">战斗人员</span>施加<span class="deb-void">压制</span>会暂时解除其伤害抗性，并把体型缩回正常大小。</td></tr>
-<tr><th scope="row">受保护</th><td class="ico"><img src="icons/e428830953.png" alt="" width="100" height="100" loading="lazy"></td><td>身边有 3 架护卫无人机，每架 100 <span class="health">生命值</span>。<br> <br> 只要还有一架护卫无人机在场，受保护<span class="enemy">战斗人员</span>就带 90% 伤害抗性。<br> <br> 打掉全部无人机即解除受保护状态与相应的伤害抗性。</td></tr>
-<tr><th scope="row">殴击</th><td class="ico"><img src="icons/29dea1cf96.png" alt="" width="100" height="100" loading="lazy"></td><td>带一层免疫护盾，直到受到物理近战伤害为止，那一下会永久打碎它。<br> 失去护盾后它不再免疫，也没有任何伤害抗性。<br> 尽管带着免疫护盾，它仍然吃<span class="deb-stasis">减速</span>、<span class="deb-stasis">冻结</span>、<span class="deb-strand">悬停</span>这类控场效果。<br> <span class="el-stasis">偃月</span>近战与刀剑攻击可以打碎免疫护盾。<br> <br> 免疫护盾被打碎时，殴击<span class="enemy">战斗人员</span>以及 <span class="unsure">?</span> 米内的其它<span class="enemy">战斗人员</span>会迷失方向 4 秒。</td></tr>
-<tr><th scope="row">狂怒</th><td class="ico"><img src="icons/4cce2ad3df.png" alt="" width="100" height="100" loading="lazy"></td><td>随着<span class="health">生命值</span>下降，造成的伤害递增、伤害抗性递增、体型也变大。<br> <br> 伤害抗性从满血时的 60% 起步，降到 30% <span class="health">生命值</span>时升到 90%。<br> 伤害提高从满血时的 0% 线性上升，10% <span class="health">生命值</span>时达到 70%。<br> 体型最多增大约 50%。</td></tr>
+<tr><th scope="row">流星</th><td class="ico"><img src="icons/dff721c5b6.png" alt="" width="100" height="100" loading="lazy"></td><td>每 20 秒释放 3 颗<span class="el-solar">烈日</span>流星。<br> <br> 流星追踪 60 米内的守护者，命中时爆炸，造成中等烈日伤害。<br> <br> 流星可以射击摧毁、诱使其撞上障碍物，或者靠掩体躲开。<br> <br> 处于<span class="el-void">隐身</span>的守护者无法被追踪。</td></tr>
+<tr><th scope="row">地雷</th><td class="ico"><img src="icons/0192d8f882.png" alt="" width="100" height="100" loading="lazy"></td><td>死亡时以♦️菱形阵释放 4 枚近炸地雷。<br> <br> 地雷最多造成 200 伤害，最低 50，可以打掉。<br> <br> 对地雷战斗人员施加<span class="deb-void">压制</span>会让它死亡时不再释放地雷。</td></tr>
+<tr><th scope="row">晋升</th><td class="ico"><img src="icons/62e71bba51.png" alt="" width="100" height="100" loading="lazy"></td><td>由战场晋升修改器产生的晋升战斗人员获得 60% 伤害抗性，造成的伤害提高 6.25%，体型放大约 50%。<br> 勇士、<span class="bar-yellow">首领</span>与已带词缀的战斗人员不会获得晋升词缀。<br> <br> 对晋升战斗人员施加<span class="deb-void">压制</span>会暂时解除其伤害抗性，并把体型缩回正常大小。</td></tr>
+<tr><th scope="row">受保护</th><td class="ico"><img src="icons/e428830953.png" alt="" width="100" height="100" loading="lazy"></td><td>身边有 3 架护卫无人机，每架 100 <span class="health">生命值</span>。<br> <br> 只要还有一架护卫无人机在场，受保护战斗人员就带 90% 伤害抗性。<br> <br> 打掉全部无人机即解除受保护状态与相应的伤害抗性。</td></tr>
+<tr><th scope="row">殴击</th><td class="ico"><img src="icons/29dea1cf96.png" alt="" width="100" height="100" loading="lazy"></td><td>带一层免疫护盾，直到受到物理近战伤害为止，那一下会永久打碎它。<br> 失去护盾后它不再免疫，也没有任何伤害抗性。<br> 尽管带着免疫护盾，它仍然吃<span class="deb-stasis">减速</span>、<span class="deb-stasis">冻结</span>、<span class="deb-strand">悬停</span>这类控场效果。<br> <span class="el-stasis">偃月</span>近战与刀剑攻击可以打碎免疫护盾。<br> <br> 免疫护盾被打碎时，殴击战斗人员以及 <span class="unsure">?</span> 米内的其它战斗人员会迷失方向 4 秒。</td></tr>
+<tr><th scope="row">狂怒</th><td class="ico"><img src="icons/4cce2ad3df.png" alt="" width="100" height="100" loading="lazy"></td><td>随着<span class="health">生命值</span>下降，造成的伤害递增、伤害抗性递增、体型也变大。<br> <br> 伤害抗性从满血时的 60% 起步，降到 30% 生命值时升到 90%。<br> 伤害提高从满血时的 0% 线性上升，10% 生命值时达到 70%。<br> 体型最多增大约 50%。</td></tr>
 <tr><th scope="row">变异体</th><td class="ico"><img src="icons/93eff8465b.png" alt="" width="89" height="89" loading="lazy"></td><td>每 3 秒释放一只小型变异体。<br> <br> 死亡时一次释放 6 只小型变异体。</td></tr>
 <tr><th scope="row">护盾</th><td class="ico"><img src="icons/e513e9a84f.png" alt="" width="89" height="89" loading="lazy"></td><td>正面带一块无敌护盾，另有 30% 伤害抗性。<br> <br> 护盾可以被破盾武器穿透。</td></tr>
-<tr><th scope="row" class="pickup">覆盖护盾</th><td class="ico"><img src="icons/b4413948fb.png" alt="" width="100" height="100" loading="lazy"></td><td>为 20 米内的<span class="enemy">战斗人员</span>赋予永久<span class="pickup">覆盖护盾</span>，对勇士、<span class="bar-yellow">首领</span>与自身无效。<br> 这层<span class="pickup">覆盖护盾</span>有 600 <span class="health">生命值</span>，不吃<span class="stack">精准</span>倍率与能量武器倍率，但受到的伤害高约 390%，折算下来有效<span class="health">生命值</span>约 155。<br> 它看着是紫色，但并不是<span class="el-void">虚空</span>护盾，不会从<span class="el-void">虚空</span>来源吃到额外伤害。<br> <br> 带<span class="pickup">覆盖护盾</span>的<span class="enemy">战斗人员</span>以每秒 150（约 38 有效<span class="health">生命值</span>）的速度持续回复它，即每秒 40%。<br> 打碎<span class="pickup">覆盖护盾</span>会把它永久移除。<br> <br> 对施盾的<span class="enemy">战斗人员</span>施加<span class="deb-void">压制</span>会在<span class="debuff">减益</span>期间停用它的施盾技能。<br> <br> 打死施盾的<span class="enemy">战斗人员</span>会立刻移除全部已存在的<span class="pickup">覆盖护盾</span>。</td></tr>
-<tr><th scope="row">电击</th><td class="ico"><img src="icons/dc7291b8f6.png" alt="" width="100" height="100" loading="lazy"></td><td>用 <span class="unsure">?</span> 秒蓄起一份电击充能，并与视线内 30 米中的<span class="bar-orange">守护者</span>连线。<br> 充能会被释放到连线的<span class="bar-orange">守护者</span>身上，造成严重的<span class="el-arc">电弧</span>伤害。<br> <br> 对电击<span class="enemy">战斗人员</span>施加<span class="deb-void">压制</span>会在<span class="debuff">减益</span>期间停用充能蓄积。<br> 处于<span class="el-void">隐身</span>的<span class="bar-orange">守护者</span>无法被连线。<br> <br> 电击<span class="enemy">战斗人员</span>死亡时爆炸，对 15 米内的<span class="enemy">战斗人员</span>造成<span class="el-arc">电弧</span>伤害。</td></tr>
-<tr><th scope="row">帷幕</th><td class="ico"><img src="icons/0a5c95c4da.png" alt="" width="100" height="100" loading="lazy"></td><td>投出一圈<span class="el-void">光环</span>，让 14 米内的其它<span class="enemy">战斗人员</span>进入<span class="el-void">伪装</span>，对其它<span class="enemy">祸因</span>、勇士与<span class="bar-yellow">首领</span>无效。<br> <br> 进入<span class="el-void">伪装</span>的<span class="enemy">战斗人员</span>几乎完全不可见，只剩<span class="debuff">减益</span>这类叠加特效与影子，也不显示名牌。<br> 瞄准辅助与追踪投射物照常生效；依赖直接指定目标的效果（例如最终警告）对它们无效。<br> <br> 对帷幕<span class="enemy">祸因</span><span class="enemy">战斗人员</span>施加<span class="deb-void">压制</span>会暂时解除其它<span class="enemy">战斗人员</span>的<span class="el-void">伪装</span>。</td></tr>
-<tr><th scope="row" class="deb-stasis">减速</th><td class="ico"><img src="icons/067c56809b.png" alt="" width="89" height="89" loading="lazy"></td><td>投出一片 <span class="unsure">?</span> 米的减速场，自身带 35% 伤害抗性。<br> 站进减速场的<span class="bar-orange">守护者</span>立刻被施加 x10 <span class="deb-stasis">减速</span>，之后只要还在场内，每 0.3 秒再叠 x5。<br> <br> 对减速<span class="enemy">战斗人员</span>施加<span class="deb-void">压制</span>会在<span class="debuff">减益</span>期间停用减速场。</td></tr>
+<tr><th scope="row">覆盖护盾</th><td class="ico"><img src="icons/b4413948fb.png" alt="" width="100" height="100" loading="lazy"></td><td>为 20 米内的战斗人员赋予永久<span class="pickup">覆盖护盾</span>，对勇士、<span class="bar-yellow">首领</span>与自身无效。<br> 这层覆盖护盾有 600 <span class="health">生命值</span>，不吃<span class="stack">精准</span>倍率与能量武器倍率，但受到的伤害高约 390%，折算下来有效生命值约 155。<br> 它看着是紫色，但并不是<span class="el-void">虚空</span>护盾，不会从虚空来源吃到额外伤害。<br> <br> 带覆盖护盾的战斗人员以每秒 150（约 38 有效生命值）的速度持续回复它，即每秒 40%。<br> 打碎覆盖护盾会把它永久移除。<br> <br> 对施盾的战斗人员施加<span class="deb-void">压制</span>会在<span class="debuff">减益</span>期间停用它的施盾技能。<br> <br> 打死施盾的战斗人员会立刻移除全部已存在的覆盖护盾。</td></tr>
+<tr><th scope="row">电击</th><td class="ico"><img src="icons/dc7291b8f6.png" alt="" width="100" height="100" loading="lazy"></td><td>用 <span class="unsure">?</span> 秒蓄起一份电击充能，并与视线内 30 米中的守护者连线。<br> 充能会被释放到连线的守护者身上，造成严重的<span class="el-arc">电弧</span>伤害。<br> <br> 对电击战斗人员施加<span class="deb-void">压制</span>会在<span class="debuff">减益</span>期间停用充能蓄积。<br> 处于<span class="el-void">隐身</span>的守护者无法被连线。<br> <br> 电击战斗人员死亡时爆炸，对 15 米内的战斗人员造成电弧伤害。</td></tr>
+<tr><th scope="row">帷幕</th><td class="ico"><img src="icons/0a5c95c4da.png" alt="" width="100" height="100" loading="lazy"></td><td>投出一圈<span class="el-void">光环</span>，让 14 米内的其它战斗人员进入<span class="el-void">伪装</span>，对其它祸因、勇士与<span class="bar-yellow">首领</span>无效。<br> <br> 进入伪装的战斗人员几乎完全不可见，只剩<span class="debuff">减益</span>这类叠加特效与影子，也不显示名牌。<br> 瞄准辅助与追踪投射物照常生效；依赖直接指定目标的效果（例如最终警告）对它们无效。<br> <br> 对帷幕祸因战斗人员施加<span class="deb-void">压制</span>会暂时解除其它战斗人员的伪装。</td></tr>
+<tr><th scope="row">减速</th><td class="ico"><img src="icons/067c56809b.png" alt="" width="89" height="89" loading="lazy"></td><td>投出一片 <span class="unsure">?</span> 米的减速场，自身带 35% 伤害抗性。<br> 站进减速场的守护者立刻被施加 x10 <span class="deb-stasis">减速</span>，之后只要还在场内，每 0.3 秒再叠 x5。<br> <br> 对减速战斗人员施加<span class="deb-void">压制</span>会在<span class="debuff">减益</span>期间停用减速场。</td></tr>
 <tr><th scope="row">线织</th><td class="ico"><img src="icons/01f65e3e50.png" alt="" width="89" height="89" loading="lazy"></td><td>受到非<span class="stack">精准</span>伤害时释放一只敌对<span class="el-strand">线虫</span>，两次生成之间有 0.3 秒冷却。</td></tr>
-<tr><th scope="row">狂热</th><td class="ico"><img src="icons/d1a5cc5db8.png" alt="" width="100" height="100" loading="lazy"></td><td>死亡时激怒 20 米内的<span class="enemy">战斗人员</span>，为它们提供强化。<br> <br> 被激怒的<span class="enemy">战斗人员</span>：<br> 转为攻击型，获得 35% 伤害抗性，射击更频繁、点射更长。<br> 此外它们不吃<span class="deb-arc">致盲</span>与<span class="deb-void">压制</span>，也无法被<span class="enemy">终结技</span>处决。<br> 它们在死亡时或被激怒满 20 秒后爆炸，并在爆炸中死去。<br> 爆炸会伤到<span class="bar-orange">守护者</span>，最多造成 50 伤害，最低 15，并打出强力击退。<br> <br> 狂热<span class="enemy">战斗人员</span>与被激怒的<span class="enemy">战斗人员</span>都不吃<span class="deb-arc">致盲</span>、迷失方向与<span class="deb-void">压制</span>，但其它控场效果照常生效。</td></tr>
+<tr><th scope="row">狂热</th><td class="ico"><img src="icons/d1a5cc5db8.png" alt="" width="100" height="100" loading="lazy"></td><td>死亡时激怒 20 米内的战斗人员，为它们提供强化。<br> <br> 被激怒的战斗人员：<br> 转为攻击型，获得 35% 伤害抗性，射击更频繁、点射更长。<br> 此外它们不吃<span class="deb-arc">致盲</span>与<span class="deb-void">压制</span>，也无法被<span class="enemy">终结技</span>处决。<br> 它们在死亡时或被激怒满 20 秒后爆炸，并在爆炸中死去。<br> 爆炸会伤到守护者，最多造成 50 伤害，最低 15，并打出强力击退。<br> <br> 狂热战斗人员与被激怒的战斗人员都不吃致盲、迷失方向与压制，但其它控场效果照常生效。</td></tr>
 </tbody>
 </table>
 </section>
 <section class="block" id="sec-11">
 <h2 class="sect-label">热量武器</h2>
-<p><img src="icons/3d059501a8.png" alt="" width="100" height="100" loading="lazy"> <img src="icons/357abba269.png" alt="" width="100" height="100" loading="lazy"></p>
+<p><img src="icons/3d059501a8.png" alt="" width="100" height="100" loading="lazy"></p>
+<p><img src="icons/357abba269.png" alt="" width="100" height="100" loading="lazy"></p>
 <p>带热量武器固有特性的武器在开火时会积累热量，弹药直接从备弹里扣，不走常规弹匣。<br>热量武器可以按排气速度手动排热，代替填装，并触发所有「填装时」的效果。手动排热随时可以取消。</p>
 <p>热量槽从 0 到 1000，游戏内用两套数值表示。<br>发热量与冷却效率在 0–1000 这套里计，每点算 0.1% 热量；游戏内的弹匣显示则是热量百分比。<br>每一发产生的热量等于发热量属性，冷却效率是每秒被动散掉的热量。</p>
 <p>热量超过 1000 会强制触发过热排气。<br>过热排气期间武器无法使用，直到热量降到 ≤150。过热的武器收枪是瞬间完成的。</p>
-<p>热量武器对<span class="bar-orange">橙血</span>及以上<span class="enemy">战斗人员</span>的接触伤害提高 15%。<br>动态热量武器固有再提高 15%［2.5%］接触伤害，与上面那一条相乘。</p>
+<p>热量武器对<span class="bar-orange">橙血</span>及以上战斗人员的接触伤害提高 15%。<br>动态热量武器固有再提高 15%［2.5%］接触伤害，与上面那一条相乘。</p>
 <p><img src="icons/a897e1f429.png" alt="" width="100" height="100" loading="lazy"></p>
 <p>平衡热量：低发热量、低冷却效率。热量 ≥875 时开始手动排热，排气速率 2×。</p>
 <p>动态热量：高发热量、高冷却效率，接触伤害提高 15%［2.5%］。热量 ≤125 时触发动态热量限热器，发热量降低 50%，持续 5 秒或直到收枪。造成过伤害后再触发限热器，计时会<span class="deb-stasis">冻结</span>到重新开火为止。</p>
-<p>原表这一节另有一列弹药类型图标，导出件里没有内嵌，本页未收。</p>
+<p class="note">原表这一节另有一列弹药类型图标，导出件里没有内嵌，本页未收。</p>
 <table class="gen">
 <thead>
 <tr>
@@ -577,18 +579,18 @@
 </tr>
 </thead>
 <tbody>
-<tr><th scope="row">1 档<span class="enemy">战斗人员</span></th><td>0.60%</td></tr>
-<tr><th scope="row">2 档<span class="enemy">战斗人员</span></th><td>0.96%</td></tr>
-<tr><th scope="row">3 档<span class="enemy">战斗人员</span></th><td>0.99%</td></tr>
-<tr><th scope="row">4 档<span class="enemy">战斗人员</span></th><td>1.80%</td></tr>
-<tr><th scope="row" class="bar-orange">守护者</th><td>1.80%</td></tr>
+<tr><th scope="row">1 档战斗人员</th><td>0.60%</td></tr>
+<tr><th scope="row">2 档战斗人员</th><td>0.96%</td></tr>
+<tr><th scope="row">3 档战斗人员</th><td>0.99%</td></tr>
+<tr><th scope="row">4 档战斗人员</th><td>1.80%</td></tr>
+<tr><th scope="row">守护者</th><td>1.80%</td></tr>
 </tbody>
 </table>
 <p>助攻按击杀值的 50% 计。</p>
 <table class="gen">
 <thead>
 <tr>
-<th scope="col"><span class="orb">能量球</span>与其它来源</th>
+<th scope="col">能量球与其它来源</th>
 <th scope="col">超能能量</th>
 </tr>
 </thead>
