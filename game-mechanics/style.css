@@ -1,0 +1,164 @@
+/* 游戏机制组件：活动修改器、角色与护甲属性、勇士分档、战斗人员与祸因、热量武器、超能能量。
+   通用主题、字体与配色 token 在 /assets/site.css，本文件不重复定义任何着色 token。
+   这一页由 tools/convert-doc.py 从 references/docs/game-mechanics.md 生成，
+   改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
+
+/* 三列的修改器表与祸因表里，末列是整段说明，走 1500px 那一档（design.md 四节）。
+   强调色取不属于任何元素的游戏术语色：这一页横跨七个元素，借哪一个元素色相都会
+   把整页读成那一个属性的页面。
+
+   --min 取最宽那张表的实测下限：勇士分档表 7 列（项目 + 5 个难度 + 说明），
+   说明列封到 22em，加版心两侧 22×2 后取整 1240。窄于此横向滚动（design.md 五节）。 */
+:root { --wrap: 1500px; --min: 1240px; --accent: var(--c-term); }
+
+/* 表前的读表说明退一档，读作限定语。
+   只给没有 class 的段：整段只有一个 {标记|…} 时 class 落在 <p> 本身，
+   这条会压过单类的 .note，整段批注就退回说明色。 */
+.block p:not([class]) {
+  max-width: 62em;
+  color: var(--bone-dim);
+  font-size: 14px;
+}
+
+/* ── 结论行：算式 ──
+   整段只有一个 {formula|…} 时 class 落在 <p> 本身，所以不写 p.formula。
+
+   分式用 inline-grid 摆：左列是等号左边，右列上下两格是分子与分母，那道分数线
+   是分子的下边框。**不靠嵌套**——资料页的保真闸门禁止着色 span 嵌套，所以源稿写成
+   {lhs|…}{num|…}{den|…} 三个平级标记，谁在哪一格由 grid 指派，不由 DOM 层级决定。
+   inline-grid 让整块按内容收窄，不跟着 1500px 版心通栏拉长。 */
+.formula {
+  display: inline-grid;
+  grid-template-columns: auto auto;
+  column-gap: .55em;
+  align-items: center;
+  padding: 14px 24px;
+  font-size: 17px;
+  background: var(--head-fill);
+  border-left: 2px solid var(--accent);
+}
+
+/* 等号左边跨满两行，与分数线对齐 */
+.formula .lhs {
+  grid-row: 1 / 3;
+  color: var(--accent);
+}
+
+.formula .num,
+.formula .den {
+  grid-column: 2;
+  padding: .18em .5em;
+  text-align: center;
+}
+
+.formula .num { border-bottom: 1px solid var(--bone-dim); }
+
+/* 数学惯例：变量是衬线斜体。等宽正文字族里 T 与 1 一样宽，摆成分式认不出哪个是变量。 */
+.formula .lhs,
+.formula .num,
+.formula .den {
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+}
+
+/* ── 分节开头单独成段的图标 ──
+   三类勇士与热量武器各自顶着源表的插画。它们是这一节的标识，不与正文争亮度。 */
+.block p > img:only-child,
+.block p > img:first-child {
+  vertical-align: middle;
+  opacity: .85;
+}
+
+/* ── 图标列 ──
+   修改器、祸因与护甲属性三张表各给一枚图标，接在名称右边。
+   **图标不放首列**：首格是行标题（`<th scope="row">`），图标当行标题读不出这一行是谁。
+   49px 原图显示成 36px，两倍像素密度下仍然锐利。 */
+.gen td.ico {
+  width: 48px;
+  padding: 7px 6px;
+  text-align: center;
+}
+
+.gen td.ico img {
+  display: block;
+  width: 36px;
+  height: 36px;
+  margin: 0 auto;
+  object-fit: contain;
+}
+
+/* ── 表头里的阵营图标 ──
+   战斗人员清单每一列顶着一枚阵营徽章，那是这一列的标识，不是列名的一部分。 */
+.gen thead th img {
+  display: block;
+  margin: 0 auto 5px;
+  opacity: .72;
+}
+
+/* ── 名称列 ──
+   首格是行标题，不折行：一行一条效果，名称断开之后两行之间认不出边界。
+   居中：名称长短差得远（「爆炸」到「无序边界 修改版生命值规则」），左对齐时
+   带 ▲▲ 的第二行会吊在名称左下角；上下左右都居中之后名称与档位箭头是一叠的。
+   竖向的 middle 由 site.css 的 .gen th 给，这里不重述。 */
+.gen tbody th[scope="row"] {
+  color: var(--bone-hi);
+  font-family: var(--font-cn);
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* 列名跟着这一列一起居中，否则表头挂在左上角、下面整列在中间。 */
+.gen thead th:first-child { text-align: center; }
+
+/* ── 三列表（修改器、祸因、护甲属性）的说明列 ──
+   一句到二十句不等，给一个上限宽度，长句折行不会把整表拉过版心。
+   判据是「恰好三列」：按列序下的规则认位置不认含义，不加闸门会溢到别的表上。
+   默认色靠 tbody 继承下来，不写在这一格上——理由见 assets/site.css 的 .gen tbody。 */
+.gen:has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))) tbody td:last-child {
+  max-width: 46em;
+  font-size: 13px;
+  line-height: 1.85;
+}
+
+/* ── 勇士分档表 ──
+   七列：项目 + 五档难度 + 说明。数值列等宽数字，纵向扫一列时不必逐行重新定位。 */
+.gen:has(thead th:nth-child(7)) tbody td:not(:last-child) {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.gen:has(thead th:nth-child(7)) tbody td:last-child {
+  max-width: 22em;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+/* ── 属性档位表（敏捷 11 档、护甲属性 0–100 与 100–200）──
+   十二列纯数值，等宽数字右对齐；表头与首列不折行。
+   **首列排除在外**：这条带 :has()，权重高过上面那条名称列，不排除会把行标题
+   一并右对齐，居中就静默失效。 */
+.gen:has(thead th:nth-child(12)) thead th,
+.gen:has(thead th:nth-child(12)) tbody td {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.gen:has(thead th:nth-child(12)) thead th:first-child { text-align: center; }
+
+/* ── 战斗人员清单 ──
+   八列，格内是竖排的单位名，一格三到五行。等宽数字用不上，靠行高把纵列排开。 */
+.gen:has(thead th:nth-child(8)):not(:has(thead th:nth-child(9))) tbody td {
+  font-family: var(--font-cn);
+  line-height: 1.9;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+/* ── 两列表（不随属性变化的项、热量武器、超能能量）──
+   末列短，整表按内容定宽居中即可，只给首列一点呼吸。 */
+.gen:has(thead th:nth-child(2)):not(:has(thead th:nth-child(3))) tbody td {
+  min-width: 7em;
+}
