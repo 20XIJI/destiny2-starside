@@ -93,7 +93,7 @@
 <h4>动能合成</h4>
 <div class="mod-desc">
 <p>造成<span class="el-kinetic">动能武器伤害</span>或完成<span class="el-kinetic">动能武器击杀</span>会推进计数器，达到 100% 时生成一个独特的<span class="el-kinetic">动能弹药盒</span>。<br>计数器持续 15 秒，每次造成<span class="el-kinetic">动能武器伤害</span>都会刷新。</p>
-<p>每点伤害提供 0.0265% 进度，即需要造成 3770 点伤害才能生成一个弹药盒。<br><span class="ammo-heavy">A499</span> 提供的进度减少 75%，需要 15000 点伤害才能生成一个弹药盒。<br><span class="enemy">红血 = 8% | 精英 = 15% | 小头目 = 25%</span><br>伤害需求<span class="note">忽略光等差距</span>，但计入实际伤害系数——也就是说，无论<span class="note">光等差距</span>把伤害压低多少，需要的“基础伤害”都一样。</p>
+<p>每点伤害提供 0.0265% 进度，即需要造成 3770 点伤害才能生成一个弹药盒。<br><span class="ammo-heavy">A499</span> 提供的进度减少 75%，需要 15000 点伤害才能生成一个弹药盒。<br><span class="enemy">红血 = 8% | 橙血 = 15% | 初级首领 = 25%</span><br>伤害需求<span class="note">忽略光等差距</span>，但计入实际伤害系数——也就是说，无论<span class="note">光等差距</span>把伤害压低多少，需要的“基础伤害”都一样。</p>
 <p>收集一个<span class="el-kinetic">动能弹药盒</span>时：<br>获得 <span class="el-strand">+5% 特殊弹药</span>与 <span class="ammo-heavy">+5% 威能弹药</span>进度。<br>填装当前装备的<span class="el-kinetic">动能武器</span>，并为它们生成<span class="el-strand">特殊</span>／<span class="ammo-heavy">威能</span>弹药。<br>每次生成（弹匣容量的 1/3）+ 1 发弹药，个别武器例外。<br>计入弹药拾取效果。<span class="el-kinetic">动能弹药生成</span>不受回收器影响。</p>
 <p><span class="orb">堡垒</span> = <span class="el-strand">+1 弹药</span> | <span class="orb">库尔之影</span> = <span class="el-strand">+2 弹药</span> | <span class="orb">英勇利刃</span> = <span class="el-strand">+2 弹药</span> | <span class="orb">缩影</span> = <span class="ammo-heavy">+12 弹药</span>。</p>
 </div>
@@ -110,7 +110,7 @@
 <img class="mod-icon" src="icons/a1228c8198.png" alt="" width="47" height="47" loading="lazy">
 <h4>动能裂口</h4>
 <div class="mod-desc">
-<p>对<span class="enemy">精英 +</span> <span class="enemy">战斗人员</span>造成足够次数的<span class="el-kinetic">动能武器伤害</span>时：<br>生成一个<span class="el-kinetic">动能裂口</span>，持续 ? 秒。</p>
+<p>对<span class="bar-orange">橙血 +</span> <span class="enemy">战斗人员</span>造成足够次数的<span class="el-kinetic">动能武器伤害</span>时：<br>生成一个<span class="el-kinetic">动能裂口</span>，持续 ? 秒。</p>
 <p><span class="el-kinetic">动能裂口</span>可以被攻击，受到伤害 ? 秒后<span class="el-kinetic">激活</span>。</p>
 <p><span class="el-kinetic">动能裂口</span>的爆炸伤害等于它受到的伤害的 <span class="unsure">[?]%</span>，可眩晕势不可挡勇士，并会击退战斗人员。</p>
 </div>
@@ -237,7 +237,7 @@
 <img class="mod-icon" src="icons/5c528ae496.png" alt="" width="47" height="47" loading="lazy">
 <h4>精准平等</h4>
 <div class="mod-desc">
-<p><span class="stack">精准击杀</span>提供<span class="orb">精准平等</span><span class="stack">层数</span>，最高 <span class="stack">10 层</span>。<br><span class="bar-red">红血</span> = <span class="stack">1</span> | <span class="enemy">精英</span> = <span class="stack">2</span> | <span class="enemy">小头目</span> = <span class="stack">5</span> | <span class="enemy">勇士 +</span> = <span class="stack">10</span><br><span class="note">层数不会溢出，也不会超过 x10</span>。</p>
+<p><span class="stack">精准击杀</span>提供<span class="orb">精准平等</span><span class="stack">层数</span>，最高 <span class="stack">10 层</span>。<br><span class="bar-red">红血</span> = <span class="stack">1</span> | <span class="bar-orange">橙血</span> = <span class="stack">2</span> | <span class="bar-yellow">初级首领</span> = <span class="stack">5</span> | <span class="enemy">勇士 +</span> = <span class="stack">10</span><br><span class="note">层数不会溢出，也不会超过 x10</span>。</p>
 <p>达到 <span class="stack">x10 层数</span>时：<br><span class="stack">消耗全部层数</span>，生成一个<span class="orb">大型能量球</span>，该<span class="orb">能量球</span>提供 <span class="orb">12.5% 超能能量</span>。</p>
 <p>拾取<span class="orb">大型能量球</span>时：<br>获得<span class="pickup">武器激涌 x2</span>，持续 11 秒。<br><span class="note">不会覆盖更强的武器激涌，对所有伤害类型均生效</span>。</p>
 </div>
@@ -568,7 +568,7 @@
 <div class="mod-desc">
 <p>在 7 秒内造成 <span class="ammo-heavy">8 次机枪伤害</span>或 <span class="ammo-heavy">2 次火箭发射器伤害</span>时：</p>
 <p>获得 <span class="enemy">25% <span class="unsure">[5%]</span> 伤害抗性</span>（抵抗 x2），持续 15.5 秒。<br><span class="el-solar">手雷</span>与<span class="el-arc">近战</span>技能的基础充能速率额外提高 85%，持续 10 秒。</p>
-<p>当<span class="ammo-heavy">威能军械</span>激活时：<br>击杀<span class="enemy">精英 + 战斗人员</span>会<span class="el-kinetic">使 10 米内的红血迷失方向</span>。</p>
+<p>当<span class="ammo-heavy">威能军械</span>激活时：<br>击杀<span class="enemy">橙血 + 战斗人员</span>会<span class="el-kinetic">使 10 米内的红血迷失方向</span>。</p>
 </div>
 </article>
 </div>
@@ -622,7 +622,7 @@
 <h4><span class="deb-void">虚空助焊</span></h4>
 <div class="mod-desc">
 <p>用<span class="el-void">虚空武器</span><span class="deb-void">击杀被虚弱的战斗人员</span>时：</p>
-<p>对 ? 米内的战斗人员施加<span class="deb-void">不稳定</span>。<br>对<span class="enemy">精英 +</span> <span class="unsure">[?]</span> 战斗人员与<span class="enemy">守护者</span> <span class="unsure">[?]</span>，范围扩大至 ? 米。</p>
+<p>对 ? 米内的战斗人员施加<span class="deb-void">不稳定</span>。<br>对<span class="bar-orange">橙血 +</span> <span class="unsure">[?]</span> 战斗人员与<span class="bar-orange">守护者</span> <span class="unsure">[?]</span>，范围扩大至 ? 米。</p>
 </div>
 </article>
 </div>
@@ -661,7 +661,7 @@
 <img class="mod-icon" src="icons/141b80d94e.png" alt="" width="47" height="47" loading="lazy">
 <h4>永恒毁灭</h4>
 <div class="mod-desc">
-<p>2–3 秒内的每次<span class="note">非异域</span><span class="ammo-heavy">火箭发射器击杀</span>都会<span class="ammo-heavy">推进计数器</span>：<br><span class="bar-red">红血</span> = <span class="ammo-heavy">25%</span> | <span class="enemy">精英</span> = <span class="ammo-heavy">34%</span> | <span class="enemy">小头目</span> = <span class="ammo-heavy">100%</span></p>
+<p>2–3 秒内的每次<span class="note">非异域</span><span class="ammo-heavy">火箭发射器击杀</span>都会<span class="ammo-heavy">推进计数器</span>：<br><span class="bar-red">红血</span> = <span class="ammo-heavy">25%</span> | <span class="bar-orange">橙血</span> = <span class="ammo-heavy">34%</span> | <span class="bar-yellow">初级首领</span> = <span class="ammo-heavy">100%</span></p>
 <p>计数器达到 <span class="ammo-heavy">100%</span> 时：<br><span class="ammo-heavy">火箭发射器</span>获得 <span class="ammo-heavy">+1 弹药</span>，<span class="ammo-heavy">精密框架火箭发射器</span>（或任何带双脚架的框架）获得 <span class="ammo-heavy">+2 弹药</span>。<br>同时获得 +? 填装速度与 0.?x 填装持续时间倍率，持续 10 秒。<br><span class="note">不受回收器模组影响</span>。</p>
 </div>
 </article>
@@ -758,7 +758,7 @@
 <img class="mod-icon" src="icons/9ac826f29b.png" alt="" width="47" height="47" loading="lazy">
 <h4>大肆屠杀</h4>
 <div class="mod-desc">
-<p><span class="enemy">终结</span>一个<span class="enemy">精英 + 战斗人员</span>时：</p>
+<p><span class="enemy">终结</span>一个<span class="enemy">橙血 + 战斗人员</span>时：</p>
 <p><span class="health">恢复 100 点生命值</span>，并<span class="health">开始生命回复</span>。<br>获得 <span class="health">25% 伤害抗性</span><span class="enemy">（抵抗 x2</span>），持续 11 秒。</p>
 </div>
 </article>
@@ -795,7 +795,7 @@
 <img class="mod-icon" src="icons/432fa72019.png" alt="" width="47" height="47" loading="lazy">
 <h4>削弱清敌</h4>
 <div class="mod-desc">
-<p>用榴弹发射器对<span class="enemy">首领</span>或<span class="enemy">勇士</span>造成伤害，或击破<span class="enemy">战斗人员的护盾</span>时：</p>
+<p>用榴弹发射器对<span class="bar-yellow">首领</span>或<span class="enemy">勇士</span>造成伤害，或击破<span class="enemy">战斗人员的护盾</span>时：</p>
 <p>施加<span class="deb-void">虚弱</span>，持续 20 秒，同时填装已收起的武器。</p>
 <p><span class="note">该减益无法由榴弹发射器自己刷新，但可以由任何其他来源重新施加；施加虚弱与填装各有 10 秒冷却时间</span>。</p>
 </div>
@@ -877,7 +877,7 @@
 <h4>虚空复兴</h4>
 <div class="mod-desc">
 <p><span class="el-void">吞食</span>激活时：</p>
-<p><span class="el-void">虚空武器击杀</span>会推进计数器，达到 100% 时生成一个<span class="el-void">虚空裂口</span>：<br><span class="bar-red">红血</span> = <span class="el-void">16.7%</span> | <span class="enemy">精英</span> = <span class="el-void">34%</span> | <span class="enemy">小头目 +</span> = <span class="el-void">50%</span> | <span class="enemy">守护者</span> = <span class="el-void">?%</span></p>
+<p><span class="el-void">虚空武器击杀</span>会推进计数器，达到 100% 时生成一个<span class="el-void">虚空裂口</span>：<br><span class="bar-red">红血</span> = <span class="el-void">16.7%</span> | <span class="bar-orange">橙血</span> = <span class="el-void">34%</span> | <span class="bar-yellow">初级首领 +</span> = <span class="el-void">50%</span> | <span class="bar-orange">守护者</span> = <span class="el-void">?%</span></p>
 <p>拾取<span class="el-void">虚空裂口</span>时：<br>获得 +? 操控性与 +? 填装速度，持续 ? 秒，并装满霰弹枪与榴弹发射器的弹药。</p>
 </div>
 </article>
@@ -887,7 +887,7 @@
 <div class="mod-desc">
 <p>拾取<span class="el-void">虚空裂口</span>时：</p>
 <p>10 秒内的下一次<span class="el-void">虚空武器伤害</span>会开启一个<span class="el-void">虚空门户</span>。</p>
-<p><span class="el-void">虚空门户</span>：<br>向约 10 米内的战斗人员释放 <span class="el-void">8 枚追踪虚空球</span>，每枚在约 3 米范围内造成最多 334 <span class="unsure">[?]</span> 点溅射伤害。<br><span class="bar-red">红血</span>每枚<span class="el-void">球</span>受到 <span class="el-void">540 点伤害</span>，<span class="enemy">小头目 +</span> 每枚受到 <span class="el-void">180 点伤害</span>。</p>
+<p><span class="el-void">虚空门户</span>：<br>向约 10 米内的战斗人员释放 <span class="el-void">8 枚追踪虚空球</span>，每枚在约 3 米范围内造成最多 334 <span class="unsure">[?]</span> 点溅射伤害。<br><span class="bar-red">红血</span>每枚<span class="el-void">球</span>受到 <span class="el-void">540 点伤害</span>，<span class="bar-yellow">初级首领 +</span> 每枚受到 <span class="el-void">180 点伤害</span>。</p>
 </div>
 </article>
 </div>
@@ -1148,7 +1148,7 @@
 <h4>火炬</h4>
 <div class="mod-desc">
 <p>处于<span class="el-solar">焕光</span>状态时：</p>
-<p>对受<span class="el-strand">缚丝</span>或<span class="el-stasis">冰影</span><span class="debuff">减益</span>影响的<span class="enemy">非头目战斗人员</span>，武器伤害提高 5%。</p>
+<p>对受<span class="el-strand">缚丝</span>或<span class="el-stasis">冰影</span><span class="debuff">减益</span>影响的<span class="enemy">非首领战斗人员</span>，武器伤害提高 5%。</p>
 <p><span class="el-strand">缚丝减益</span>：<span class="deb-strand">瓦解、割裂、悬停</span><br><span class="el-stasis">冰影减益</span>：<span class="deb-stasis">减速或冻结</span>。</p>
 </div>
 </article>
@@ -1157,7 +1157,7 @@
 <h4>冰柱</h4>
 <div class="mod-desc">
 <p>击杀一个<span class="deb-stasis">被冻结的战斗人员</span>时：</p>
-<p>生成 <span class="el-stasis">1 个冰影水晶</span>，<span class="enemy">头目</span>则生成 <span class="el-stasis">2 个</span>。<br><span class="note">水晶生成在战斗人员死亡位置附近</span>。</p>
+<p>生成 <span class="el-stasis">1 个冰影水晶</span>，<span class="bar-yellow">首领</span>则生成 <span class="el-stasis">2 个</span>。<br><span class="note">水晶生成在战斗人员死亡位置附近</span>。</p>
 </div>
 </article>
 <article class="mod" data-tier="3">
@@ -1291,7 +1291,7 @@
 <img class="mod-icon" src="icons/141b80d94e.png" alt="" width="47" height="47" loading="lazy">
 <h4>永恒毁灭</h4>
 <div class="mod-desc">
-<p>2–3? 秒内的每次<span class="note">非异域火箭发射器击杀</span>都会<span class="ammo-heavy">推进计数器</span>：<br><span class="bar-red">红血</span> = <span class="ammo-heavy">25%</span> | <span class="enemy">精英</span> = <span class="ammo-heavy">34%</span> | <span class="enemy">小头目</span> = <span class="ammo-heavy">100%</span></p>
+<p>2–3? 秒内的每次<span class="note">非异域火箭发射器击杀</span>都会<span class="ammo-heavy">推进计数器</span>：<br><span class="bar-red">红血</span> = <span class="ammo-heavy">25%</span> | <span class="bar-orange">橙血</span> = <span class="ammo-heavy">34%</span> | <span class="bar-yellow">初级首领</span> = <span class="ammo-heavy">100%</span></p>
 <p><span class="ammo-heavy">计数器达到 100%</span> 时：<br><span class="ammo-heavy">火箭发射器</span>获得 <span class="ammo-heavy">+1 弹药</span>，<span class="ammo-heavy">精密框架火箭发射器（或任何带双脚架的框架</span>）获得 <span class="ammo-heavy">+2 弹药</span>。<br>同时获得 +? 填装速度与 0.?x 填装持续时间倍率，持续 10 秒。<br><span class="note">不受回收器模组影响</span>。</p>
 </div>
 </article>
@@ -1438,7 +1438,7 @@
 <img class="mod-icon" src="icons/af2e77e4a9.png" alt="" width="47" height="47" loading="lazy">
 <h4>远方砖块</h4>
 <div class="mod-desc">
-<p>每取得 <span class="ammo-heavy">3? 次对精英 + 战斗人员的虚空武器击杀</span>：</p>
+<p>每取得 <span class="ammo-heavy">3? 次对橙血 + 战斗人员的虚空武器击杀</span>：</p>
 <p>为使用者与 ? 米范围内的<span class="enemy">盟友</span>提供 <span class="ammo-heavy">50?% 威能弹药进度</span>。</p>
 </div>
 </article>

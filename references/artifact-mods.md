@@ -65,7 +65,7 @@
 
 每点伤害提供 0.0265% 进度，即需要造成 3770 点伤害才能生成一个弹药盒。
 {ammo-heavy|A499} 提供的进度减少 75%，需要 15000 点伤害才能生成一个弹药盒。
-{enemy|红血 = 8% | 精英 = 15% | 小头目 = 25%}
+{enemy|红血 = 8% | 橙血 = 15% | 初级首领 = 25%}
 伤害需求{note|忽略光等差距}，但计入实际伤害系数——也就是说，无论{note|光等差距}把伤害压低多少，需要的“基础伤害”都一样。
 
 收集一个{el-kinetic|动能弹药盒}时：
@@ -90,7 +90,7 @@
 
 图标：a1228c8198.png
 
-对{enemy|精英 +} {enemy|战斗人员}造成足够次数的{el-kinetic|动能武器伤害}时：
+对{bar-orange|橙血 +} {enemy|战斗人员}造成足够次数的{el-kinetic|动能武器伤害}时：
 生成一个{el-kinetic|动能裂口}，持续 ? 秒。
 
 {el-kinetic|动能裂口}可以被攻击，受到伤害 ? 秒后{el-kinetic|激活}。
@@ -232,7 +232,7 @@
 图标：5c528ae496.png
 
 {stack|精准击杀}提供{orb|精准平等}{stack|层数}，最高 {stack|10 层}。
-{bar-red|红血} = {stack|1} | {enemy|精英} = {stack|2} | {enemy|小头目} = {stack|5} | {enemy|勇士 +} = {stack|10}
+{bar-red|红血} = {stack|1} | {bar-orange|橙血} = {stack|2} | {bar-yellow|初级首领} = {stack|5} | {enemy|勇士 +} = {stack|10}
 {note|层数不会溢出，也不会超过 x10}。
 
 达到 {stack|x10 层数}时：
@@ -620,7 +620,7 @@
 {el-solar|手雷}与{el-arc|近战}技能的基础充能速率额外提高 85%，持续 10 秒。
 
 当{ammo-heavy|威能军械}激活时：
-击杀{enemy|精英 + 战斗人员}会{el-kinetic|使 10 米内的红血迷失方向}。
+击杀{enemy|橙血 + 战斗人员}会{el-kinetic|使 10 米内的红血迷失方向}。
 
 ### 一级 · 瓦解能量球
 
@@ -681,7 +681,7 @@
 用{el-void|虚空武器}{deb-void|击杀被虚弱的战斗人员}时：
 
 对 ? 米内的战斗人员施加{deb-void|不稳定}。
-对{enemy|精英 +} {unsure|[?]} 战斗人员与{enemy|守护者} {unsure|[?]}，范围扩大至 ? 米。
+对{bar-orange|橙血 +} {unsure|[?]} 战斗人员与{bar-orange|守护者} {unsure|[?]}，范围扩大至 ? 米。
 
 ### 一级 · 元素虹吸
 
@@ -733,7 +733,7 @@
 图标：141b80d94e.png
 
 2–3 秒内的每次{note|非异域}{ammo-heavy|火箭发射器击杀}都会{ammo-heavy|推进计数器}：
-{bar-red|红血} = {ammo-heavy|25%} | {enemy|精英} = {ammo-heavy|34%} | {enemy|小头目} = {ammo-heavy|100%}
+{bar-red|红血} = {ammo-heavy|25%} | {bar-orange|橙血} = {ammo-heavy|34%} | {bar-yellow|初级首领} = {ammo-heavy|100%}
 
 计数器达到 {ammo-heavy|100%} 时：
 {ammo-heavy|火箭发射器}获得 {ammo-heavy|+1 弹药}，{ammo-heavy|精密框架火箭发射器}（或任何带双脚架的框架）获得 {ammo-heavy|+2 弹药}。
@@ -833,7 +833,7 @@
 
 图标：9ac826f29b.png
 
-{enemy|终结}一个{enemy|精英 + 战斗人员}时：
+{enemy|终结}一个{enemy|橙血 + 战斗人员}时：
 
 {health|恢复 100 点生命值}，并{health|开始生命回复}。
 获得 {health|25% 伤害抗性}{enemy|（抵抗 x2}），持续 11 秒。
@@ -875,7 +875,7 @@
 
 图标：432fa72019.png
 
-用榴弹发射器对{enemy|首领}或{enemy|勇士}造成伤害，或击破{enemy|战斗人员的护盾}时：
+用榴弹发射器对{bar-yellow|首领}或{enemy|勇士}造成伤害，或击破{enemy|战斗人员的护盾}时：
 
 施加{deb-void|虚弱}，持续 20 秒，同时填装已收起的武器。
 
@@ -969,7 +969,7 @@
 {el-void|吞食}激活时：
 
 {el-void|虚空武器击杀}会推进计数器，达到 100% 时生成一个{el-void|虚空裂口}：
-{bar-red|红血} = {el-void|16.7%} | {enemy|精英} = {el-void|34%} | {enemy|小头目 +} = {el-void|50%} | {enemy|守护者} = {el-void|?%}
+{bar-red|红血} = {el-void|16.7%} | {bar-orange|橙血} = {el-void|34%} | {bar-yellow|初级首领 +} = {el-void|50%} | {bar-orange|守护者} = {el-void|?%}
 
 拾取{el-void|虚空裂口}时：
 获得 +? 操控性与 +? 填装速度，持续 ? 秒，并装满霰弹枪与榴弹发射器的弹药。
@@ -984,7 +984,7 @@
 
 {el-void|虚空门户}：
 向约 10 米内的战斗人员释放 {el-void|8 枚追踪虚空球}，每枚在约 3 米范围内造成最多 334 {unsure|[?]} 点溅射伤害。
-{bar-red|红血}每枚{el-void|球}受到 {el-void|540 点伤害}，{enemy|小头目 +} 每枚受到 {el-void|180 点伤害}。
+{bar-red|红血}每枚{el-void|球}受到 {el-void|540 点伤害}，{bar-yellow|初级首领 +} 每枚受到 {el-void|180 点伤害}。
 
 ## 神器：猎人日志
 
@@ -1259,7 +1259,7 @@
 
 处于{el-solar|焕光}状态时：
 
-对受{el-strand|缚丝}或{el-stasis|冰影}{debuff|减益}影响的{enemy|非头目战斗人员}，武器伤害提高 5%。
+对受{el-strand|缚丝}或{el-stasis|冰影}{debuff|减益}影响的{enemy|非首领战斗人员}，武器伤害提高 5%。
 
 {el-strand|缚丝减益}：{deb-strand|瓦解、割裂、悬停}
 {el-stasis|冰影减益}：{deb-stasis|减速或冻结}。
@@ -1270,7 +1270,7 @@
 
 击杀一个{deb-stasis|被冻结的战斗人员}时：
 
-生成 {el-stasis|1 个冰影水晶}，{enemy|头目}则生成 {el-stasis|2 个}。
+生成 {el-stasis|1 个冰影水晶}，{bar-yellow|首领}则生成 {el-stasis|2 个}。
 {note|水晶生成在战斗人员死亡位置附近}。
 
 ### 三级 · 迎接风暴
@@ -1414,7 +1414,7 @@
 图标：141b80d94e.png
 
 2–3? 秒内的每次{note|非异域火箭发射器击杀}都会{ammo-heavy|推进计数器}：
-{bar-red|红血} = {ammo-heavy|25%} | {enemy|精英} = {ammo-heavy|34%} | {enemy|小头目} = {ammo-heavy|100%}
+{bar-red|红血} = {ammo-heavy|25%} | {bar-orange|橙血} = {ammo-heavy|34%} | {bar-yellow|初级首领} = {ammo-heavy|100%}
 
 {ammo-heavy|计数器达到 100%} 时：
 {ammo-heavy|火箭发射器}获得 {ammo-heavy|+1 弹药}，{ammo-heavy|精密框架火箭发射器（或任何带双脚架的框架}）获得 {ammo-heavy|+2 弹药}。
@@ -1549,7 +1549,7 @@
 
 图标：af2e77e4a9.png
 
-每取得 {ammo-heavy|3? 次对精英 + 战斗人员的虚空武器击杀}：
+每取得 {ammo-heavy|3? 次对橙血 + 战斗人员的虚空武器击杀}：
 
 为使用者与 ? 米范围内的{enemy|盟友}提供 {ammo-heavy|50?% 威能弹药进度}。
 

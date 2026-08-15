@@ -79,9 +79,11 @@ GLOSSARY: list[tuple[str, str]] = [
     ('濒死', 'health'),
     ('战斗人员', 'enemy'),
     ('终结技', 'enemy'),
-    ('精英', 'enemy'),
-    ('首领', 'enemy'),
-    ('守护者', 'enemy'),
+    ('红血', 'bar-red'),
+    ('橙血', 'bar-orange'),
+    ('初级首领', 'bar-yellow'),  # 长词在前：要排在「首领」之前
+    ('首领', 'bar-yellow'),
+    ('守护者', 'bar-orange'),
     ('异域', 'exotic'),
     ('增益', 'buff'),
     ('减益', 'debuff'),
@@ -236,7 +238,7 @@ def inline(text: str) -> str:
             out.append('<span class="%s">%s</span>' % (_TOKEN[word], whole))
             hits[word] = hits.get(word, 0) + 1
     out.append(html.escape(text[pos:]))
-    # 「精英」紧挨着「战斗人员」会连出两个同 class 的 span，渲染完全一样，并成一个。
+    # 「战斗人员」紧挨着「战斗人员」会连出两个同 class 的 span，渲染完全一样，并成一个。
     # 一次只能并掉一对，跑到不动点。
     merged = ''.join(out)
     while True:

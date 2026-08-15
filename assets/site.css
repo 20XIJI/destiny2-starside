@@ -57,7 +57,7 @@
   --deb-arc: var(--c-arc);           /* 震颤、致盲 */
   --el-stasis: var(--c-stasis);
   --deb-stasis: var(--c-stasis);     /* 冻结、碎裂 */
-  --enemy: var(--c-term);            /* 战斗人员/勇士/精英/盟友/数值 */
+  --enemy: var(--c-term);            /* 战斗人员/勇士/首领/盟友/数值 */
   --el-void: var(--c-void);
   --deb-void: var(--c-void);         /* 削弱：虚空机制，跟虚空走 */
   --ammo-heavy: var(--c-void);       /* 威能弹药，游戏内即紫 */
@@ -499,8 +499,8 @@ main {
 .buff { color: var(--buff); }
 .debuff { color: var(--debuff); }
 
-/* 敌人分档照血条颜色叫：红血、橙血、黄血——游戏内的血条本来就是这三色，
-   所以类名按档位命名而不是按颜色，读者能反推出颜色为什么是这个颜色。 */
+/* 敌人四档：红血、橙血、初级首领、首领。照血条颜色分色——游戏内的血条本来就是
+   红/橙/黄这三色，读者能反推出颜色为什么是这个颜色；初级首领与首领同为黄。 */
 .bar-red { color: var(--c-health); }
 .bar-orange { color: var(--c-solar); }
 .bar-yellow { color: var(--c-orb); }

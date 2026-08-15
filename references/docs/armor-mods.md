@@ -14,9 +14,9 @@
 |---|---|---|---|
 | 弹药搜寻者 | {ico|![](icons/50b46e0b8e.png)} | {cost|3} | {el-strand|特殊弹药}搜寻者：\\ 1.25× ｜ 1.4× ｜ 1.5× 弹药进度倍率。\\ \\ {ammo-heavy|威能弹药}搜寻者：\\ 1.33× ｜ 1.66× ｜ 2× 弹药进度倍率。 |
 | 弹药斥候 | {ico|![](icons/51ccce3e69.png)} | {cost|1} | 生成与模组匹配的弹药块时：\\ {enemy|盟友}获得一份相同的弹药块。\\ \\ 弹药斥候弹药块的拾取量：\\ 常规弹药块的 37% ｜ 67% ｜ 100%。\\ \\ 强化弹药块的出现概率由{enemy|盟友}的武器属性决定。 |
-| 点尸成金 | {ico|![](icons/ca899bc202.png)} | {cost|3} | 用手雷击杀时：\\ 额外提供{orb|超能能量}。\\ \\ T1 超能：{unsure|1%?} ｜ {unsure|?%} ｜ {unsure|?%}\\ T2 超能：{unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ T3 超能：{unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ T4 超能：{unsure|5?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ {enemy|守护者}：{unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ \\ {note|不与「拳到力来」同时生效。}\\ {note|抓钩近战击杀提供的超能能量减少 50%。} |
+| 点尸成金 | {ico|![](icons/ca899bc202.png)} | {cost|3} | 用手雷击杀时：\\ 额外提供{orb|超能能量}。\\ \\ T1 超能：{unsure|1%?} ｜ {unsure|?%} ｜ {unsure|?%}\\ T2 超能：{unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ T3 超能：{unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ T4 超能：{unsure|5?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ {bar-orange|守护者}：{unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ \\ {note|不与「拳到力来」同时生效。}\\ {note|抓钩近战击杀提供的超能能量减少 50%。} |
 | 充沛 | {ico|![](icons/708c4c75aa.png)} | {cost|3} | 15 米内有{enemy|战斗人员}时使用职业技能：\\ 提供{orb|超能能量}。\\ \\ {orb|超能能量}获取：\\ 2.5%{pvp|[1.25%]} ｜ 4%{pvp|[2.4%]}\\ \\ 按职业乘算：\\ 猎人 ×1 ｜ 泰坦 ×1.2 ｜ 术士 ×2 |
-| 拳到力来 | {ico|![](icons/e1e540f4b5.png)} | {cost|3} | 用充能近战击杀时：\\ 额外提供{orb|超能能量}。\\ \\ T1 超能：{unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ T2 超能：{unsure|1.33%?} ｜ {unsure|?%} ｜ {unsure|?%}\\ T3 超能：{unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ T4 超能：{unsure|5?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ {enemy|守护者}：{unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ \\ {note|不与「点尸成金」同时生效。} |
+| 拳到力来 | {ico|![](icons/e1e540f4b5.png)} | {cost|3} | 用充能近战击杀时：\\ 额外提供{orb|超能能量}。\\ \\ T1 超能：{unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ T2 超能：{unsure|1.33%?} ｜ {unsure|?%} ｜ {unsure|?%}\\ T3 超能：{unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ T4 超能：{unsure|5?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ {bar-orange|守护者}：{unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ \\ {note|不与「点尸成金」同时生效。} |
 | 空中补偿器 | {ico|![](icons/87882729aa.png)} | {cost|3} | +15 ｜ +25 ｜ +30 空中效率。 |
 | 能量节约 | {ico|![](icons/0373208ba4.png)} | {cost|3} | 用超能击杀时：\\ 为{enemy|盟友}生成一枚{orb|能量球}。\\ \\ {orb|能量球}：\\ 2.5% ｜ 3.75% ｜ 4.4% {orb|超能能量}。\\ \\ {note|两枚能量球之间有 2 秒冷却。} |
 | 强力伙伴 | {ico|![](icons/a67ec1ac45.png)} | {cost|1} | 拾取{orb|能量球}时：\\ 18 米内的{enemy|盟友}获得 {armor-charge|x1 护甲充能}。 |
@@ -105,7 +105,7 @@
 |---|---|---|
 | 触手可及 | {ico|![](icons/decb375d07.png)} | 在距肢体 {unsure|?} 米内击杀{enemy|战斗人员}：\\ 提供 {unsure|?%} {orb|超能能量}。 |
 | 电击导体 | {ico|![](icons/bdf6390b21.png)} | 为导体充能时：\\ {el-strand|特殊弹药}储备 +20%。 |
-| 高阶灭绝 | {ico|![](icons/a5ffd946ee.png)} | 击杀{enemy|精英}、小头目、{enemy|勇士}或{enemy|首领}时：\\ 提供 {unsure|?%} 的{pickup|手雷、近战与职业技能能量}。 |
+| 高阶灭绝 | {ico|![](icons/a5ffd946ee.png)} | 击杀{bar-orange|橙血}、{bar-yellow|初级首领}、{enemy|勇士}或{bar-yellow|首领}时：\\ 提供 {unsure|?%} 的{pickup|手雷、近战与职业技能能量}。 |
 | 持续共振 | {ico|![](icons/1c5ff41eec.png)} | 把共鸣存入共鸣宝箱时：\\ 生成 {unsure|?} 枚{orb|能量球}。\\ 每枚提供 {unsure|?%} {orb|超能能量}。 |
 | 叠加 | {ico|![](icons/d6ef27f7f7.png)} | 持有共鸣期间：\\ 击杀生成{ammo-heavy|威能弹药}的概率提高。\\ \\ {joke|这个我可不测，才不测。} |
 
@@ -118,21 +118,21 @@
 | 集中暗影 | {ico|![](icons/db84aa38c3.png)} | 获得暗影涌流时：\\ 20 秒内技能伤害提高 5% ｜ 10% ｜ 15% ｜ 20% ｜ 25%，并 +30 敏捷。\\ \\ {note|暗影涌流结束也不会失去该增益，可以刷新。}\\ {note|对光焰之井的铸造者不生效。} |
 | 集中光能 | {ico|![](icons/77696c7805.png)} | 获得光能场域时：\\ 20 秒内武器伤害提高 4% ｜ 8% ｜ 12% ｜ 16% ｜ 20%，并 +30 韧性。\\ \\ {note|光能场域结束也不会失去该增益，可以刷新。}\\ {note|除光焰之井的铸造者外与一切效果叠加。} |
 | 精准震颤 | {ico|![](icons/3b01dafa35.png)} | 使用{el-arc|电弧}分支职业时：\\ 3 秒内打出 3 次{stack|精准命中}即施加{deb-arc|震颤}。\\ \\ {note|该震颤的伤害不受任何增益与修正影响。}\\ {note|触发后有 10 秒冷却。} |
-| 焕光炽热 | {ico|![](icons/bd5f58280a.png)} | 使用{el-solar|烈日}分支职业时：\\ 用{el-solar|烈日}武器击杀{enemy|精英}、小头目或{enemy|勇士}：\\ 获得{el-solar|焕光}，持续 10+5 秒。\\ \\ {note|触发后有 10 秒冷却。} |
+| 焕光炽热 | {ico|![](icons/bd5f58280a.png)} | 使用{el-solar|烈日}分支职业时：\\ 用{el-solar|烈日}武器击杀{bar-orange|橙血}、{bar-yellow|初级首领}或{enemy|勇士}：\\ 获得{el-solar|焕光}，持续 10+5 秒。\\ \\ {note|触发后有 10 秒冷却。} |
 | 释放恢复 | {ico|![](icons/ebf7f7d8c7.png)} | 失去暗影涌流或光能场域时：\\ 获得{el-solar|治愈} x1 与{el-solar|恢复}，持续时间不定。\\ \\ x1 ｜ x1 ｜ x1 ｜ x2 ｜ x2 {el-solar|恢复}\\ 2.5 秒 ｜ 3 秒 ｜ 3.5 秒 ｜ 3.5 秒 ｜ {unsure|?} 秒\\ \\ {note|抚慰余烬把持续时间延长 50%。} |
 | 纷繁纠缠 | {ico|![](icons/d6f093b485.png)} | 使用{el-strand|缚丝}分支职业时：\\ {el-strand|缚丝}武器击杀在{enemy|战斗人员}死亡位置生成{el-strand|缠结}。\\ \\ {note|触发缠结的全局冷却。} |
-| 不稳定齐射 | {ico|![](icons/4e803af4c2.png)} | 使用{el-void|虚空}分支职业时：\\ 用{el-void|虚空}武器击杀{enemy|精英}、小头目或{enemy|勇士}：\\ 获得{deb-void|不稳定}弹药，持续 10.5 秒。\\ \\ {note|触发后有 10 秒冷却。} |
+| 不稳定齐射 | {ico|![](icons/4e803af4c2.png)} | 使用{el-void|虚空}分支职业时：\\ 用{el-void|虚空}武器击杀{bar-orange|橙血}、{bar-yellow|初级首领}或{enemy|勇士}：\\ 获得{deb-void|不稳定}弹药，持续 10.5 秒。\\ \\ {note|触发后有 10 秒冷却。} |
 
 ## ![](icons/b98fa8666b.jpg) 门徒誓约
 
 | 模组 | 图标 | 效果 |
 |---|---|---|
-| 扭曲雕文{enemy|守护者} | {ico|![](icons/765c8d0cff.png)} | 对雕文{enemy|守护者}造成手雷伤害后：\\ 15 秒内伤害提高 20% ｜ 25% ｜ 35% ｜ 40% ｜ 40%。\\ \\ 适用武器：\\ 自动步枪、线性融合步枪、斥候步枪、狙击步枪。 |
+| 扭曲雕文{bar-orange|守护者} | {ico|![](icons/765c8d0cff.png)} | 对雕文{bar-orange|守护者}造成手雷伤害后：\\ 15 秒内伤害提高 20% ｜ 25% ｜ 35% ｜ 40% ｜ 40%。\\ \\ 适用武器：\\ 自动步枪、线性融合步枪、斥候步枪、狙击步枪。 |
 | 进入光能 | {ico|![](icons/b039ab1e26.png)} | 未受弥漫暗影影响时：\\ \\ 手雷技能伤害提高 25% ｜ 50% ｜ 75% ｜ 125% ｜ 150%\\ 手雷基础回复速度额外 +50% ｜ +100% ｜ +150% ｜ +200% ｜ +250%\\ \\ {note|效果按装备份数递增，最多 5 份。} |
-| 冲击雕文{enemy|守护者} | {ico|![](icons/5c53562a94.png)} | 对雕文{enemy|守护者}造成手雷伤害后：\\ 15 秒内伤害提高 20% ｜ 25% ｜ 35% ｜ 40% ｜ 40%。\\ \\ 适用武器：\\ 脉冲步枪、手枪、机枪、微型冲锋枪。 |
-| 虹吸雕文{enemy|守护者} | {ico|![](icons/d6ce0e1d7b.png)} | 击杀雕文{enemy|守护者}时：\\ 提供{pickup|手雷技能能量}、{pickup|职业技能能量}与{orb|超能能量}。\\ \\ 获取量：\\ {unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%} |
-| 震慑雕文{enemy|守护者} | {ico|![](icons/ad4ce8908d.png)} | 对雕文{enemy|守护者}造成手雷伤害后：\\ 15 秒内伤害提高 20% ｜ 25% ｜ 35% ｜ 40% ｜ 40%。\\ \\ 适用武器：\\ 手炮、霰弹枪、榴弹发射器、火箭发射器。 |
-| 尖刺雕文{enemy|守护者} | {ico|![](icons/b811ca0700.png)} | 对雕文{enemy|守护者}造成手雷伤害后：\\ 15 秒内伤害提高 20% ｜ 25% ｜ 35% ｜ 40% ｜ 40%。\\ \\ 适用武器：\\ 弓箭、融合步枪、刀剑与追踪步枪。 |
+| 冲击雕文{bar-orange|守护者} | {ico|![](icons/5c53562a94.png)} | 对雕文{bar-orange|守护者}造成手雷伤害后：\\ 15 秒内伤害提高 20% ｜ 25% ｜ 35% ｜ 40% ｜ 40%。\\ \\ 适用武器：\\ 脉冲步枪、手枪、机枪、微型冲锋枪。 |
+| 虹吸雕文{bar-orange|守护者} | {ico|![](icons/d6ce0e1d7b.png)} | 击杀雕文{bar-orange|守护者}时：\\ 提供{pickup|手雷技能能量}、{pickup|职业技能能量}与{orb|超能能量}。\\ \\ 获取量：\\ {unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%} |
+| 震慑雕文{bar-orange|守护者} | {ico|![](icons/ad4ce8908d.png)} | 对雕文{bar-orange|守护者}造成手雷伤害后：\\ 15 秒内伤害提高 20% ｜ 25% ｜ 35% ｜ 40% ｜ 40%。\\ \\ 适用武器：\\ 手炮、霰弹枪、榴弹发射器、火箭发射器。 |
+| 尖刺雕文{bar-orange|守护者} | {ico|![](icons/b811ca0700.png)} | 对雕文{bar-orange|守护者}造成手雷伤害后：\\ 15 秒内伤害提高 20% ｜ 25% ｜ 35% ｜ 40% ｜ 40%。\\ \\ 适用武器：\\ 弓箭、融合步枪、刀剑与追踪步枪。 |
 | 本影加速 | {ico|![](icons/a0fd75079b.png)} | 弥漫暗影达到 4 层及以上时：\\ +{unsure|?} ｜ +{unsure|?} ｜ +{unsure|?} ｜ +{unsure|?} ｜ +{unsure|?} 敏捷。 |
 | 本影充能 | {ico|![](icons/b87003b77c.png)} | 弥漫暗影达到 4 层及以上时：\\ 职业技能基础回复速度额外 {unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%}。 |
 | 本影磨锐 | {ico|![](icons/cc15f33793.png)} | 弥漫暗影达到 4 层及以上时：\\ 武器伤害提高 20% ｜ 25% ｜ 35% ｜ 40% ｜ 40%。\\ \\ {note|计为强化类增益。} |
@@ -141,9 +141,9 @@
 
 | 模组 | 图标 | 效果 |
 |---|---|---|
-| 种群削减 | {ico|![](icons/529a5dc0dd.png)} | 未携带{buff|增益}道具时：\\ 对{bar-red|红血}与{enemy|精英}战斗人员提高武器伤害。\\ \\ 武器伤害提高：\\ 5% ｜ 10% ｜ 15% ｜ 20% ｜ 25% |
+| 种群削减 | {ico|![](icons/529a5dc0dd.png)} | 未携带{buff|增益}道具时：\\ 对{bar-red|红血}与{bar-orange|橙血}战斗人员提高武器伤害。\\ \\ 武器伤害提高：\\ 5% ｜ 10% ｜ 15% ｜ 20% ｜ 25% |
 | 强化操作员{buff|增益} | {ico|![](icons/0ee284a56d.png)} | 携带操作员{buff|增益}道具时：\\ 处于关键{health|生命值}期间每 2 秒开始一次{health|生命值}回复。\\ {note|只回复生命值，护盾不回复。}\\ \\ 未携带{buff|增益}道具时：\\ 每拾取 10 枚{orb|能量球}提供{ammo-heavy|威能弹药}。\\ {unsure|弹药获取量大致等同于弹药搜寻者?} |
-| 强化扫描{buff|增益} | {ico|![](icons/7ede981160.png)} | 携带扫描员{buff|增益}道具时：\\ 对小头目或{enemy|首领}打出 {unsure|4?} 次{stack|精准命中}会使其{deb-void|虚弱}，受到的伤害提高 {unsure|?%}，持续 {unsure|?} 秒。\\ \\ 未携带{buff|增益}道具时：\\ +{unsure|?} 韧性与 +{unsure|?} 恢复。\\ 职业技能基础回复速度额外 {unsure|?%}。 |
+| 强化扫描{buff|增益} | {ico|![](icons/7ede981160.png)} | 携带扫描员{buff|增益}道具时：\\ 对{bar-yellow|初级首领}或{bar-yellow|首领}打出 {unsure|4?} 次{stack|精准命中}会使其{deb-void|虚弱}，受到的伤害提高 {unsure|?%}，持续 {unsure|?} 秒。\\ \\ 未携带{buff|增益}道具时：\\ +{unsure|?} 韧性与 +{unsure|?} 恢复。\\ 职业技能基础回复速度额外 {unsure|?%}。 |
 | 强化抑制{buff|增益} | {ico|![](icons/772b061035.png)} | 携带抑制器{buff|增益}道具时：\\ 对{bar-red|红血}以外的{enemy|战斗人员}获得 {unsure|?%} 伤害抗性。\\ \\ 未携带{buff|增益}道具时：\\ 手雷使{enemy|战斗人员}迷乱 {unsure|?} 秒。 |
 
 ## ![](icons/5302445c20.jpg) 克洛塔的末日
@@ -155,7 +155,7 @@
 | 咬紧牙关 | {ico|![](icons/cada058852.png)} | 失去光能枯竭时：\\ \\ +{unsure|?} ｜ +{unsure|?} ｜ +{unsure|?} ｜ +{unsure|?} ｜ +{unsure|?} 敏捷。\\ +{unsure|?} ｜ +{unsure|?} ｜ +{unsure|?} ｜ +{unsure|?} ｜ +{unsure|?} 操控性。\\ +{unsure|?} ｜ +{unsure|?} ｜ +{unsure|?} ｜ +{unsure|?} ｜ +{unsure|?} 填装速度。 |
 | 清醒渴求 | {ico|![](icons/7db1e296ff.png)} | 获得光能枯竭时：\\ 获得 {armor-charge|x1 ｜ x2 ｜ x3 ｜ x4 ｜ x5 护甲充能}。 |
 | 临危不乱 | {ico|![](icons/23772cd156.png)} | 站在踏板上、靠近踏板或图腾，或携带圣物利剑时：\\ {unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%} 伤害抗性。 |
-| 暴力倾泻 | {ico|![](icons/31dc4e6839.png)} | 用武器击杀{enemy|精英}、小头目与{enemy|勇士}时生成一枚{orb|能量球}。\\ \\ {orb|能量球}提供的{orb|超能能量}：\\ {unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%} |
+| 暴力倾泻 | {ico|![](icons/31dc4e6839.png)} | 用武器击杀{bar-orange|橙血}、{bar-yellow|初级首领}与{enemy|勇士}时生成一枚{orb|能量球}。\\ \\ {orb|能量球}提供的{orb|超能能量}：\\ {unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%} |
 
 ## ![](icons/7a90e57b0f.jpg) 国王的陨落
 
@@ -164,7 +164,7 @@
 | 致命之药 | {ico|![](icons/079a68d141.png)} | 携带印记，或身处回收光能之池中时：\\ \\ +20 ｜ +40 ｜ +60 ｜ +80 ｜ +100 恢复\\ +12 ｜ +24 ｜ +36 ｜ +48 ｜ +60 填装速度 |
 | 旧神恩惠 | {ico|![](icons/be03a2c256.png)} | 携带圣物时：\\ 10% ｜ 20% ｜ 30% ｜ 40% 伤害抗性 |
 | 逃命 | {ico|![](icons/ae06aeeaaf.png)} | 处于「维度撕裂」状态时：\\ +20 ｜ +40 ｜ +60 ｜ +80 ｜ +100 敏捷与韧性 |
-| 光能意志 | {ico|![](icons/04c45ad521.png)} | 对非{enemy|首领}的傀儡{enemy|战斗人员}提高武器伤害。\\ \\ 与模组元素相同的武器伤害提高 10% ｜ 20% ｜ 30% ｜ 40% ｜ 50%。 |
+| 光能意志 | {ico|![](icons/04c45ad521.png)} | 对非{bar-yellow|首领}的傀儡{enemy|战斗人员}提高武器伤害。\\ \\ 与模组元素相同的武器伤害提高 10% ｜ 20% ｜ 30% ｜ 40% ｜ 50%。 |
 
 ## ![](icons/0244cfe900.jpg) 玻璃拱顶
 
@@ -197,7 +197,7 @@
 |---|---|---|
 | 傀儡武装 | {ico|![](icons/f16b6a2566.png)} | 对傀儡{enemy|战斗人员}打出手雷击杀时：\\ 向储备提供{ammo-heavy|威能弹药}。\\ \\ {note|数量等同于一块威能弹药。} |
 | 傀儡护盾 | {ico|![](icons/072b867522.png)} | 受到傀儡{enemy|战斗人员}的伤害时：\\ 获得 20% 伤害抗性，持续 10 秒。 |
-| 傀儡鼓舞 | {ico|![](icons/0a1fbc1b59.png)} | 击杀傀儡的{enemy|精英}、小头目或{enemy|首领}时：\\ 提供 100% {pickup|职业技能能量}。 |
+| 傀儡鼓舞 | {ico|![](icons/0a1fbc1b59.png)} | 击杀傀儡的{bar-orange|橙血}、{bar-yellow|初级首领}或{bar-yellow|首领}时：\\ 提供 100% {pickup|职业技能能量}。 |
 | 傀儡赋能 | {ico|![](icons/827299bf67.png)} | 击破傀儡{enemy|战斗人员}的护盾时：\\ 提供 100% {pickup|手雷技能能量}。 |
 
 ## ![](icons/582f5922dc.jpg) 梦魇狩猎
