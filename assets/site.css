@@ -449,6 +449,18 @@ main {
   background: var(--hair);
 }
 
+/* 区段标签行右端的入口（首页的更新日志）。**靠 order 排到线的右边**：::after
+   那道发丝线是伪元素，天然排在所有真实子元素之后，不给 order 的话 chip 会挤在
+   标签与线之间。
+   字距与大写继承自 .sect-label——那是拉丁小标题的排法，中文 chip 不吃 .2em
+   那一档（design.md 二节），显式收回到与工具条上的 chip 一致。 */
+.sect-label .chip {
+  order: 1;
+  flex: none;
+  margin-right: -12px;      /* 抵掉 chip 自带的右内边距，文字右缘与卡片列对齐 */
+  letter-spacing: .06em;
+}
+
 /* 三枚菱形：站点母题。点亮枚数 = 档位。 */
 .rhombi {
   display: flex;
@@ -906,15 +918,6 @@ body:has(.hero) {
 
 /* 举例里的方括号照正文的 .pvp 样子给，读者才认得出说的是哪一处 */
 .hero-sub .pvp-eg { color: var(--note); }
-
-/* 更新日志入口：站点自身的元信息，跟在两条数据约定之后，不占资料列表的位置——
-   那份列表按内容分卡片，改动记录不是一类内容。
-   flex 让 .chip 成块级盒，两枚角标才框得住整个 chip；负左边距抵掉 chip 自带的
-   12px 内边距，文字左缘与上面两段对齐。 */
-.hero-links {
-  display: flex;
-  margin: 18px 0 0 -12px;
-}
 
 .index {
   max-width: 1500px;
