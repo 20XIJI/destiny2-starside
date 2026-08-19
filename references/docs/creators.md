@@ -5,3 +5,5 @@
 导航：是
 
 ## 小棒猪-LGpig
+
+卡片：exotic-weapons

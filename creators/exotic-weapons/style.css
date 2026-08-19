@@ -1,0 +1,78 @@
+/* 刷取清单-异域武器：83 把武器的评级、实测总伤与 DPS，以及每一档评级的理由。
+   通用主题、字体与配色 token 在 /assets/site.css。
+   这一页由 tools/convert-doc.py 从 references/docs/exotic-weapons.md 生成，
+   改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
+
+/* 全量宽表那一档（design.md 四节）：三列理由并排照搬原表的形，1060px 装不下——
+   三列各挤成十来个字会把每条评语折成六七行。前五列都窄，剩下的宽度三列均分。 */
+:root { --wrap: 1500px; --min: 1544px; }
+
+/* 上下居中沿用 assets/site.css 的缺省，这里只放宽内边距。
+   左右居中只给前三列——武器、图标、评级都是短内容，居中读作一组身份信息；
+   总伤与 DPS 右对齐（位数要对齐），三列理由左对齐（是成段的正文）。
+   表头本来就居中，所以这条同时选 thead 与 tbody，整列上下贯通。 */
+.gen th,
+.gen td { padding: 13px 14px; }
+
+.gen th:nth-child(-n + 3),
+.gen td:nth-child(-n + 3) { text-align: center; }
+
+/* 武器名：一行的身份，提亮一档。keep-all 让它只在源稿写的 <br> 处断行
+   （「故我在」三行一格），不被中文的任意断行拆开。 */
+.gen tbody th[scope="row"] {
+  width: 7em;
+  color: var(--bone-hi);
+  font-family: var(--font-cn);
+  font-size: 13.5px;
+  font-weight: 600;
+  word-break: keep-all;
+}
+
+.gen td.ico {
+  width: 72px;
+  padding: 11px 8px;
+  text-align: center;
+}
+
+.gen td img {
+  display: block;
+  margin: 0 auto;
+  border-radius: 2px;
+}
+
+/* 评级：三个方向各占一行，不折行——「输出：T0」断成两行就读不出配对 */
+.gen tbody td:nth-child(3) {
+  width: 7em;
+  color: var(--bone);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* 总伤与 DPS 右对齐要压过上面那条整列居中：那条是 (0,2,2)，这条同权重、写在后面。 */
+
+/* 总伤与 DPS：等宽数字右对齐，位数对齐才一眼比得出大小。
+   两列都可能空着（原表未测），空格子不补占位符——一列里既有数又有「—」，
+   扫读时「—」会被当成一个值参与比较。 */
+.gen tbody td:nth-child(4),
+.gen tbody td:nth-child(5) {
+  width: 5em;
+  color: var(--bone-hi);
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* 三列理由：这一页的正文。**三列等宽**——原表就是三条并排的评语，宽度一有差别
+   就会被读成主次之分，而它们只是评级里第一、第二、第三项各自的理由。
+   原作者按 27 个汉字断的行，这里每列约 21 个字，评语因此会二次折行；三列并排
+   是原表的结构，比保住折行位置重要。 */
+.gen tbody td:nth-child(n + 6) {
+  width: 20em;
+  color: var(--bone-dim);
+  font-size: 13.5px;
+  line-height: 1.95;
+}
+
+/* 第二、三列常常空着：多数武器只在一个方向上有位置。空格子由 site.css 的
+   `td:empty::after` 画一道发丝短横——空白读作「这里漏了」，短横读作「确认没有」。 */
