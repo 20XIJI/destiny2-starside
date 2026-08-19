@@ -7,6 +7,21 @@
    三列各挤成十来个字会把每条评语折成六七行。前五列都窄，剩下的宽度三列均分。 */
 :root { --wrap: 1500px; --min: 1544px; }
 
+/* 配套视频：表之前唯一的一段正文，退一档、不与表争。 */
+.block p {
+  margin: 0 0 22px;
+  color: var(--bone-dim);
+  font-size: 13.5px;
+}
+
+.block p a {
+  color: var(--bone);
+  text-decoration: none;
+  border-bottom: 1px solid var(--hair-lit);
+}
+
+.block p a:hover { color: var(--bone-hi); }
+
 /* 上下居中沿用 assets/site.css 的缺省，这里只放宽内边距。
    左右居中只给前三列——武器、图标、评级都是短内容，居中读作一组身份信息；
    总伤与 DPS 右对齐（位数要对齐），三列理由左对齐（是成段的正文）。
@@ -15,7 +30,8 @@
 .gen td { padding: 13px 14px; }
 
 .gen th:nth-child(-n + 3),
-.gen td:nth-child(-n + 3) { text-align: center; }
+.gen td:nth-child(-n + 3),
+.gen th:nth-child(6) { text-align: center; }
 
 /* 武器名：一行的身份，提亮一档。keep-all 让它只在源稿写的 <br> 处断行
    （「故我在」三行一格），不被中文的任意断行拆开。 */
@@ -67,8 +83,16 @@
    就会被读成主次之分，而它们只是评级里第一、第二、第三项各自的理由。
    原作者按 27 个汉字断的行，这里每列约 21 个字，评语因此会二次折行；三列并排
    是原表的结构，比保住折行位置重要。 */
-.gen tbody td:nth-child(n + 6) {
-  width: 20em;
+/* 勇士：整格一枚图标，与武器框架页共用同一批文件（文件名即内容 md5，
+   两页因此是同一枚图）。按源稿写的整格标记认，不按「格里有没有 img」猜。 */
+.gen td.champ {
+  width: 56px;
+  padding: 11px 7px;
+  text-align: center;
+}
+
+.gen tbody td:nth-child(n + 7) {
+  width: 19em;
   color: var(--bone-dim);
   font-size: 13.5px;
   line-height: 1.95;
