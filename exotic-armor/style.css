@@ -1,0 +1,62 @@
+/* 异域护甲页组件：三个职业各 45 件，加三个永世教派。
+   通用主题、字体与配色 token 在 /assets/site.css。
+   这一页由 tools/convert-doc.py 从 references/docs/exotic-armor.md 生成，
+   改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
+
+/* 条目多到要扫读、说明又长到要连续读（design.md 四节）：
+   前三列钉住护甲身份，末列是收在阅读宽度上的正文。宽表复用 1060px 那一档。
+   版心固定，不做窄屏适配（design.md 五节）。骨架在 assets/site.css。 */
+:root { --wrap: 1060px; --min: 1104px; }
+
+/* 说明的基色给 tbody，不写在格子上：整格只有一个 {标记|…} 时 class 落在 <td> 本身，
+   .gen tbody td:last-child 这类多选择器会压过单类的着色，整格颜色静默退回默认。 */
+.gen tbody { color: var(--bone); }
+
+.gen thead th { padding-top: 11px; padding-bottom: 11px; white-space: nowrap; }
+
+/* 护甲名：这一行的身份。名字最长九个汉字，不折行 */
+.gen tbody th[scope="row"] {
+  color: var(--bone-hi);
+  font-family: var(--font-cn);
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-align: left;
+  white-space: nowrap;
+}
+
+/* 护甲图标 */
+.gen td.ico { padding: 10px 14px; text-align: center; }
+
+.gen td.ico img {
+  display: block;
+  width: 34px;
+  height: 34px;
+  border-radius: 2px;
+}
+
+/* 异域特性：图标压在名称上方，一格两行。名称不折行——它是特性的身份 */
+.gen td.perk {
+  padding: 10px 14px;
+  color: var(--exotic);
+  font-family: var(--font-cn);
+  font-weight: 600;
+  line-height: 1.5;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.gen td.perk img {
+  display: block;
+  width: 28px;
+  height: 28px;
+  margin: 0 auto 4px;
+}
+
+/* 说明：这一页真正要读的一列，顶对齐——各行长短差十倍，居中会让长行把短行推到中间 */
+.gen tbody td:last-child {
+  padding: 12px 18px 14px;
+  font-size: 13.5px;
+  line-height: 1.9;
+  text-align: left;
+  vertical-align: top;
+}

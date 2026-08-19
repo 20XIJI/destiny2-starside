@@ -96,7 +96,7 @@ TERMS = [
 
 # 游戏内的专有名词，字面撞上禁用写法时按原名放行。整条短语落在里面才算数，
 # 「削弱」单用照旧报错。
-KEEP = ['削弱清敌', 'Destiny 2: Boss Damage']
+KEEP = ['削弱清敌', 'Destiny 2: Boss Damage', '吞食裂缝']
 
 
 def read(path):
