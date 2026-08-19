@@ -252,6 +252,10 @@ a { color: var(--bone); }
   text-transform: uppercase;
 }
 
+/* 面包屑里没有页面的那一层（创作者名）：纯文本，比链接暗一档，读者因此
+   不会去点它。层次关系仍在，只是那一层没有独立页面可去。 */
+.site-nav .step { color: var(--bone-faint); }
+
 .site-nav .sep { color: var(--hair-lit); }
 
 .site-nav [aria-current="page"] {

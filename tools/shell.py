@@ -84,10 +84,15 @@ def nav(current, toolbar=None, up=1, parent=None):
     """
     o = ['<div class="site-head">', '<nav class="site-nav">', MARK,
          '<a class="home" href="%sindex.html">%s</a>' % ('../' * up, SITE_NAME)]
-    # 面包屑多一层：子页面要能一眼看出自己挂在哪个资料页下面，并直接跳回去
-    if parent:
+    # 面包屑多一层：子页面要能一眼看出自己挂在哪个资料页下面，并直接跳回去。
+    # parent 可以给多层。**只有第一层是链接**——它对应上一级目录里那个真实页面
+    # （../index.html）；再往下的层次是分组名，站内没有单独的页面，写成纯文本。
+    # 给它们指同一个 URL 会让相邻两枚面包屑落到同一处，指分节锚点则会在那一页
+    # 增删分节时静默指错——两条都比不给链接差。
+    for i, step in enumerate(parent or []):
         o += ['<span class="sep">/</span>',
-              '<a class="home" href="../index.html">%s</a>' % parent]
+              '<a class="home" href="../index.html">%s</a>' % step if i == 0
+              else '<span class="step">%s</span>' % step]
     o += ['<span class="sep">/</span>',
           '<span aria-current="page">%s</span>' % current,
           '</nav>']
