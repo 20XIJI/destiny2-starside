@@ -907,6 +907,15 @@ body:has(.hero) {
 /* 举例里的方括号照正文的 .pvp 样子给，读者才认得出说的是哪一处 */
 .hero-sub .pvp-eg { color: var(--note); }
 
+/* 更新日志入口：站点自身的元信息，跟在两条数据约定之后，不占资料列表的位置——
+   那份列表按内容分卡片，改动记录不是一类内容。
+   flex 让 .chip 成块级盒，两枚角标才框得住整个 chip；负左边距抵掉 chip 自带的
+   12px 内边距，文字左缘与上面两段对齐。 */
+.hero-links {
+  display: flex;
+  margin: 18px 0 0 -12px;
+}
+
 .index {
   max-width: 1500px;
   margin: 0 auto;

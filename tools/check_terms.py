@@ -156,6 +156,9 @@ def check_terms(files, bad):
     for rel in files:
         md = read(rel)
         keep = [(m.start(), m.end()) for k in KEEP for m in re.finditer(re.escape(k), md)]
+        # 链接目标不是正文，站内路径用的是 ASCII slug（../boss-hp/index.html），
+        # 字面撞上禁用写法与译名无关。只放行括号里那一段，链接文字照常受检。
+        keep += [(m.start(1), m.end(1)) for m in re.finditer(r'\]\(([^)]*)\)', md)]
         for wrong, right in banned:
             for m in re.finditer(re.escape(wrong), md):
                 if any(a <= m.start() and m.end() <= b for a, b in keep):

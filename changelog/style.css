@@ -1,0 +1,36 @@
+/* 更新日志：按日期分节的改动清单。
+   通用主题、字体与配色 token 在 /assets/site.css。
+   这一页由 tools/convert-doc.py 从 references/docs/changelog.md 生成，
+   改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
+
+/* 连续阅读版心（design.md 四节）。骨架在 assets/site.css。 */
+:root { --wrap: 760px; --min: 804px; }
+
+/* 分节标题就是日期，等宽字族让各节的年月日纵向对齐，扫读时不必逐行重新定位。 */
+.sect-label { font-variant-numeric: tabular-nums; }
+
+.block ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 一条改动一行，靠左侧那道发丝线成列；不给项目符号，日期分节已经标出了层级。 */
+.block li {
+  padding: 11px 0 11px 16px;
+  color: var(--bone-dim);
+  font-size: 14px;
+  line-height: 1.95;
+  border-left: 1px solid var(--hair);
+}
+
+.block li + li { border-top: 1px solid var(--hair); }
+
+/* 改动指向哪一页是这一行的入口，提亮一档；正文本身退到 --bone-dim。 */
+.block li a {
+  color: var(--bone);
+  text-decoration: none;
+  border-bottom: 1px solid var(--hair-lit);
+}
+
+.block li a:hover { color: var(--bone-hi); }
