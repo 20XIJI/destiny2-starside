@@ -603,9 +603,17 @@ def render(md, slug):
             scales[col] = bounds
         chunk = SCALE_LINE.sub('', chunk)
         o.append('<section class="block" id="sec-%d">' % si)
+        # 标题末尾的 [文字](链接) 落成标签行右端的 chip（首页「更新日志 →」那一个），
+        # 不进标题正文——app.js 取分节名时只认首个文本节点，chip 因此不会混进跳转 chip。
+        label, chip = head.strip(), ''
+        hit = re.search(r'\s*\[([^\]]+)\]\((https?://[^)]+)\)$', label)
+        if hit:
+            label = label[:hit.start()]
+            chip = ('<a class="chip" href="%s" target="_blank" rel="noopener">%s</a>'
+                    % (hit.group(2), hit.group(1)))
         # 分节标题里也允许放图标：源表每个职业段前有一枚职业徽章，标题是它的位置
-        o.append('<h2 class="sect-label">%s</h2>'
-                 % inline(icon_sub(head.strip()), rich=True))
+        o.append('<h2 class="sect-label">%s%s</h2>'
+                 % (inline(icon_sub(label), rich=True), chip))
         o += render_blocks(chunk, scales, groups, marks, curves, up)
         o.append('</section>')
 

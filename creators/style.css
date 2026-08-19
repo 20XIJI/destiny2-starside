@@ -14,3 +14,24 @@
 
 /* 分节之间留出一档，两片卡片网格不至于连成一片 */
 .block + .block { margin-top: clamp(38px, calc(5 * var(--vw)), 62px); }
+
+/* 外部资源：还没做成资料页的作品，一条一行。这一页的卡片是网格，列表另起一档，
+   靠链接本身作入口，不给项目符号。 */
+.block ul {
+  margin: 0 0 26px;
+  padding: 0;
+  list-style: none;
+  color: var(--bone-dim);
+  font-size: 14px;
+  line-height: 1.95;
+}
+
+.block li + li { margin-top: 6px; }
+
+.block li a {
+  color: var(--bone);
+  text-decoration: none;
+  border-bottom: 1px solid var(--hair-lit);
+}
+
+.block li a:hover { color: var(--bone-hi); }
