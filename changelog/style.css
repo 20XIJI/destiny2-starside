@@ -15,13 +15,34 @@
   list-style: none;
 }
 
-/* 一条改动一行，靠左侧那道发丝线成列；不给项目符号，日期分节已经标出了层级。 */
+/* 一条改动一行，靠左侧那道发丝线成列；不给项目符号，日期分节已经标出了层级。
+
+   每条都以「改动类型」开头，用悬挂缩进把类型排成固定一列：首行由负 text-indent
+   拉回到 16px，类型标签占满 48px，正文与折行因此都从 64px 起，扫读时类型与正文
+   各成一列。**48 与 -48 是同一个数**，与下面 .act 的 width 三处必须一致；
+   标签宽度用 px 不用 em——em 相对各自的字号，标签是 12px 而这里是 14px，
+   写成同一个 em 值会差出 12%。 */
 .block li {
-  padding: 11px 0 11px 16px;
+  padding: 11px 0 11px calc(16px + 48px);
+  text-indent: -48px;
   color: var(--bone-dim);
   font-size: 14px;
   line-height: 1.95;
   border-left: 1px solid var(--hair);
+}
+
+/* 改动类型：新增／改版／订正／正名／补注五种之一，两个汉字。
+   退到 --bone-faint 读作行首的元信息，不与本行的页面链接争——扫读靠的是它固定
+   的列位置，不靠颜色。text-indent 要归零：inline-block 自成块容器，会把上面那
+   条负缩进继承下来，标签自己的两个字反倒被拉出去。 */
+.act {
+  display: inline-block;
+  width: 48px;
+  color: var(--bone-faint);
+  font-family: var(--font-cn);
+  font-size: 12px;
+  letter-spacing: .1em;
+  text-indent: 0;
 }
 
 .block li + li { border-top: 1px solid var(--hair); }
