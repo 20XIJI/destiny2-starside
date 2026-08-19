@@ -6,6 +6,7 @@
 
 ## 2026.8.19
 
+- {act|新增}[异域武器](../exotic-weapon/index.html)：动能、能量、威能三个槽位共 146 把异域武器，带异域特性名、催化剂、图标与全部数值。
 - {act|新增}[异域护甲](../exotic-armor/index.html)：猎人、泰坦、术士各 45 件异域护甲，外加三个永劫教派，带异域特性名、图标与全部数值。
 - {act|新增}[属性详解](../elements/index.html) · [职业技能](../elements/class-abilities/index.html)：三个职业的固有特性，以及闪身、屏障与裂痕的效果、数值与冷却。
 - {act|新增}[刷取清单-异域武器](../creators/exotic-weapons/index.html)：83 把异域武器的输出、清怪与高难评级，含实测总伤与 DPS。由[小棒猪-LGpig](../creators/index.html)提供。
