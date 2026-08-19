@@ -31,6 +31,8 @@ shell.py           站点外壳与落盘：head 元信息、导航条、页脚�
 convert-*.py       三个生成器，各自只写自己那种数据形状的结构层
 check_shell.py     外壳闸门，从 shell.py 现取参照，不另存副本
 check_terms.py     术语与着色闸门，全部以 TERMS 那一张表为准
+sheet-grab.user.js 油猴脚本：在 Google 表格页面上导出「替换后的文本 + 图片 URL」
+json2xlsx.py       把上面那份 JSON 还原成 xlsx，供核对与二次编辑
 ```
 
 **一个目的只留一份实现。**剥标签取文本用 `markup.text_of`，保真比对前的归一化用 `markup.plain`，计数比对用 `markup.eq(名目, 实际, 期望)`，中止用 `markup.die`，图片宽高用 `markup.img_size`，图标登记与首屏优先级用 `markup.Icons` / `markup.loading_attr`。要新加一件，先看 `markup.py` 里有没有。
@@ -50,6 +52,8 @@ python3 tools/convert-armor-sets.py           # 源稿 references/armor-sets.md
 python3 tools/convert-doc.py [slug]           # 源稿 references/docs/*.md，省略 slug 即全部
 python3 tools/check_shell.py                  # 各页外壳一致性
 python3 tools/check_terms.py                  # 术语正名、着色 token、更新时间
+
+python3 tools/json2xlsx.py <抓取的.json>      # 还原成 xlsx，供核对与手改
 
 ruff check tools/*.py                         # 改完 Python 跑这两条
 pyright tools/*.py
@@ -237,6 +241,50 @@ app.js 按表头文本找列、按首格开头的两位时刻找行（首列写�
 **正文逐字保真** —— 产出剥掉标签后与源稿逐字相等。两侧同样归一化：去空格，去 `*`、反引号、着色标记（这些在页面上由字重与颜色承担，不落成字符），表格只去分隔符与分隔行，块标记只去行首那一个。不写死每种块的条数：源稿是要持续编辑的，写死会让每次改句子都误报。
 
 另外两条：着色 span 不得嵌套（嵌套说明 `wrap()` 的整块判定被改坏了）；产出里不得有没转换的 `{` `}`。
+
+## 从 Google 表格做一页资料
+
+外部表格（Destiny Data Compendium、创作者自建表）转成资料页走这一条流水线，
+按顺序执行，别每次重新找路。
+
+1. **取数用 `tools/sheet-grab.user.js`，不用 SingleFile。**在浏览器里打开表格的
+   `htmlview` 页，等表格渲染完，点右下角按钮，落盘 `<表名>-<gid>.json`。
+   导出的是**替换后**的 DOM——术语替换扩展跑在浏览器里，这是它唯一能被抓到的时机。
+2. **核对与手改走 `python3 tools/json2xlsx.py <抓取的.json>`。**文本按原行列写回，
+   图片按 URL 现下载再嵌回原坐标；改完的 xlsx 用 `openpyxl` 读回来生成源稿。
+3. **图片按内容 md5 命名，放 `<页目录>/icons/`。**同一枚图已在别的页面出现过时，
+   直接复制那个文件过来——文件名即内容 md5，两页因此引的是同一枚图。
+4. **源稿落在 `references/docs/<slug>.md`**，其余按《资料文档页》那一节办。
+
+### 为什么不用 SingleFile
+
+| | SingleFile | sheet-grab |
+|---|---|---|
+| 体积 | 20.3 MB | 几十 KB |
+| 跨域取不到的图 | 静默换成占位 `<svg>`，看着有图其实是空的 | 原样留 URL，下载失败当场报错 |
+| base64 | 会被术语替换脚本改坏（护甲模组表那张 PNG） | 不内联，碰不到 |
+
+`export?format=xlsx` 只在表格没禁用下载时可用（DDC 全部导出端点 401），且给的是
+**替换前**的原文。它唯一的用处是补浏览器抓不到的那些图——刷取清单的「勇士」列
+就是这么找回来的。`htmlview` 直接 curl 只得到 JS 壳；headless Chrome 也不行，
+`--virtual-time-budget` 等不出懒加载，且不会执行你的替换扩展。
+
+### 踩过的坑
+
+- **单元格里的换行是内容。**取文本前把 `<br>` 换成 `\n`，直接读 `textContent`
+  会把上下两行粘成一个词。
+- **贴进单元格的数字截图任何导出方式都拿不到文字**（刷取清单的「总伤 / DPS」是
+  35 张 PNG），只能放大后读回，或找原作者要原始数值。
+- **术语替换有假朋友。**拿 `gviz/tq?tqx=out:csv` 的英文原文核对：`doubles` 曾被
+  替成「双打模式」、`Rift` 替成「裂缝模式」。**改之前先问一句**——「铸造者」看着
+  像误译，实际是对的。
+- **图标是哪一种不靠认图，靠文字证据反查。**勇士图标按图形猜过一次，9 处全错；
+  拿评语里写了「反屏障 / 反过载」的行一比对才纠正过来。
+- **改表格列的脚本用 `convert-doc.py` 的 `split_cells()`，不用裸 `split('|')`。**
+  `{ico|…}` 标记内部也有竖线，裸切会让带图标的行整体错位一格。
+- **术语按 `check_terms.py` 的 `TERMS` 归一**，token 由闸门纠正——`{enemy|首领}`
+  与 `{bar-yellow|首领}` 渲染色接近，眼睛查不出来。
+- **汉字与数字、拉丁之间补一个空格**（design.md 三节），半角标点改全角。
 
 ## 页脚归属
 
