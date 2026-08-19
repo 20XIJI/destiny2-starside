@@ -43,6 +43,7 @@ check_terms.py     术语与着色闸门，全部以 TERMS 那一张表为准
 
 ```bash
 npm start                                     # npx serve . -l 3000
+npm run build                                 # 三个生成器 + 两道闸门，改完源稿跑这一条
 
 python3 tools/convert-artifact-mods.py        # 源稿 references/artifact-mods.md
 python3 tools/convert-armor-sets.py           # 源稿 references/armor-sets.md
