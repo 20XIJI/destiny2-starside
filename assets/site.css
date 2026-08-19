@@ -919,11 +919,54 @@ body:has(.hero) {
 /* 举例里的方括号照正文的 .pvp 样子给，读者才认得出说的是哪一处 */
 .hero-sub .pvp-eg { color: var(--note); }
 
+/* 规线以下分两栏：左边两行说明，右边区段跳转。跳转不单独占一行——首页只有
+   两个区段，一整条控件栏撑不起来，挂在既有的两行说明旁边就够。 */
+.hero-foot {
+  display: flex;
+  align-items: flex-start;
+  gap: 30px;
+}
+
+/* 上边距按 chip 自身的内边距回算，文字与 .hero-note 第一行齐平（22 − 9 + 6）；
+   负右边距抵掉末枚 chip 的右内边距，文字右缘对齐上面的「BY 日栎w」。 */
+.hero-jump {
+  display: flex;
+  flex: none;
+  gap: 14px;
+  margin: 19px -18px 0 auto;
+}
+
+/* 首屏唯一的导航控件，工具条里那种静置不显形的写法在这里太轻。
+   提亮到 --bone-hi 加 600 字重、放大一档，不借色相（design.md 一节）；
+   角标改成常驻，chip 因此一眼是控件而不是一行小字——只有两枚，不会像一排
+   十六枚那样吵。静置态占满了亮度，hover 于是交给 --accent，与焦点环同一套。 */
+.hero-jump .chip {
+  padding: 9px 18px;
+  color: var(--bone-hi);
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: .1em;
+}
+
+.hero-jump .chip::before,
+.hero-jump .chip::after {
+  width: 9px;
+  height: 9px;
+  opacity: 1;
+}
+
+.hero-jump .chip:hover { color: var(--accent); }
+
 .index {
   max-width: 1500px;
   margin: 0 auto;
   padding: 0 22px clamp(50px, calc(7 * var(--vw)), 90px);
 }
+
+/* 跳转落点离视口顶端留一口气，不贴边 */
+.index > section { scroll-margin-top: 24px; }
+
+.index > section + section { margin-top: clamp(38px, calc(5 * var(--vw)), 62px); }
 
 /* 恒为双列：单列时每张卡占掉 182px 纵向空间，条目一多就翻页。
 
