@@ -52,6 +52,11 @@
   list-style: none;
 }
 
+/* 末项独占一行时拉通整宽：六个元素排满两行，第七项「职业技能」落单在第三行，
+   缩在左侧三分之一会读成「还有一个没排完」。判据是「它是最后一项，且正好起一个
+   新行」（3n+1），不写死第七个——再加一页时规则自己失效，不必回来改。 */
+.block li:nth-child(3n + 1):last-child { grid-column: 1 / -1; }
+
 .block li a {
   display: block;
   height: 100%;
@@ -92,8 +97,7 @@
 .block li a:hover > span:first-child::after { color: var(--accent); }
 
 /* ── 数据表 ──
-   说明列很长，表格按内容定宽后本来就会顶到版心，所以仍是 width: auto，
-   不写 100%——真到了内容短的表（术语表只有三列），它还能自己收窄。 */
+   说明列很长，本来就会顶到版心；表宽走满版心是全站缺省（assets/site.css）。 */
 .gen {
   max-width: 100%;
   line-height: 1.85;

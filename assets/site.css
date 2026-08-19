@@ -588,9 +588,12 @@ main {
 .block a:hover { text-decoration-color: var(--bone-hi); }
 
 /* ── 生成表格 ──
-   宽度随内容走再居中：撑到 100% 会把每个格子拉到栏宽，读起来散（design.md 四节）。 */
+   **宽度一律走满版心。**表格是 min-content 约束的，内容超过版心时照旧自己撑开，
+   所以这条读作「统一到预设宽度，除非装不下」。按内容定宽试过，问题出在跨页与
+   跨表的比较上：同一页里几张同构的表各自按内容定宽会差出几十像素，读者会以为
+   它们不是一回事；页与页之间同样对不齐。宽度统一之后，差异只剩内容本身。 */
 .gen {
-  width: auto;
+  width: 100%;
   margin: 0 auto;
   border: 1px solid var(--hair);
   border-collapse: collapse;

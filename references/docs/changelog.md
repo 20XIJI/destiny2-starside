@@ -5,6 +5,7 @@
 
 ## 2026.8.19
 
+- [属性详解](../elements/index.html)新增子页[职业技能](../elements/class-abilities/index.html)：三个职业的固有特性，以及闪身、屏障与裂痕的效果、数值与冷却。
 - 新增[刷取清单-异域武器](../creators/exotic-weapons/index.html)：83 把异域武器的输出、清怪与高难评级，含实测总伤与 DPS。由[小棒猪-LGpig](../creators/index.html)提供。
 - 新增[创作者专栏](../creators/index.html)：一位创作者一节，列出由他提供内容做成的资料页。首位是小棒猪-LGpig。
 - 首页拆成「资料」与「专栏」两个区段，区段跳转排在首屏说明的右侧。
