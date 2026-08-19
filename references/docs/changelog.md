@@ -6,16 +6,15 @@
 
 ## 2026.8.19
 
+- {act|新增}[创作者专栏](../creators/index.html)：一位创作者一节，列出由他提供内容做成的资料页。首位是小棒猪-LGpig。
 - {act|新增}[创作者专栏](../creators/index.html) · 遗忘Melt：全 Raid 教学笔记的文档链接。
 - {act|新增}[创作者专栏](../creators/index.html) · -萌动-：英勇利刃讲解的视频与文档链接。
+- {act|新增}[刷取清单-异域武器](../creators/exotic-weapons/index.html)：83 把异域武器的输出、清怪与高难评级，含实测总伤与 DPS。由[小棒猪-LGpig](../creators/index.html)提供。
+- {act|新增}[属性详解](../elements/index.html) · [职业技能](../elements/class-abilities/index.html)：三个职业的固有特性，以及闪身、屏障与裂痕的效果、数值与冷却。
+- {act|新增}[异域护甲](../exotic-armor/index.html)：猎人、泰坦、术士各 45 件异域护甲，外加三个永劫教派，带异域特性名、图标与全部数值。
+- {act|新增}[异域武器](../exotic-weapon/index.html)：动能、能量、威能三个槽位共 146 把异域武器，带异域特性名、催化剂、图标与全部数值。
 - {act|改版}[创作者专栏](../creators/index.html)：创作者标签行右端加主页入口。
 - {act|改版}[刷取清单-异域武器](../creators/exotic-weapons/index.html)：三列理由改为自动换行，去掉原表的手动断行。
-
-- {act|新增}[异域武器](../exotic-weapon/index.html)：动能、能量、威能三个槽位共 146 把异域武器，带异域特性名、催化剂、图标与全部数值。
-- {act|新增}[异域护甲](../exotic-armor/index.html)：猎人、泰坦、术士各 45 件异域护甲，外加三个永劫教派，带异域特性名、图标与全部数值。
-- {act|新增}[属性详解](../elements/index.html) · [职业技能](../elements/class-abilities/index.html)：三个职业的固有特性，以及闪身、屏障与裂痕的效果、数值与冷却。
-- {act|新增}[刷取清单-异域武器](../creators/exotic-weapons/index.html)：83 把异域武器的输出、清怪与高难评级，含实测总伤与 DPS。由[小棒猪-LGpig](../creators/index.html)提供。
-- {act|新增}[创作者专栏](../creators/index.html)：一位创作者一节，列出由他提供内容做成的资料页。首位是小棒猪-LGpig。
 - {act|改版}首页：拆成「资料」与「专栏」两个区段，区段跳转排在首屏说明的右侧。
 - {act|订正}[护甲模组](../armor-mods/index.html) · 弹药搜寻者：威能弹药搜寻者的进度倍率改为 1.25× ｜ 1.4× ｜ 1.5×，与特殊弹药搜寻者一致。
 - {act|订正}[电弧](../elements/arc/index.html) · 雷霆一击：蓄力加成标明为乘算。
