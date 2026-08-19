@@ -324,6 +324,14 @@ a { color: var(--bone); }
   margin-left: auto;
 }
 
+/* 没有搜索框的页面（data-item 缺席，见 convert-doc.py），chip 就是工具条的全部
+   内容：左对齐排开，与面包屑同一条左缘。右对齐是为了让开搜索框，这里没有可让的，
+   二十来枚 chip 折成几行再右对齐会排成一片犬牙。 */
+.toolbar:not([data-item]) .tool-chips {
+  justify-content: flex-start;
+  margin-left: 0;
+}
+
 /* 换行位：app.js 按 .toolbar 的 data-chip-break 插一个占满整行的空项，
    后面的 chip 落到下一行。分节多到一行放不下时按内容分组换行，
    不交给自动折行随便断在哪。 */

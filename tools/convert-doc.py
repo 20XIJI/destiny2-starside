@@ -31,6 +31,7 @@ META_LINE = meta_line(META_KEYS)
 
 # 分节级声明：「色阶：列名 阈值 …」。同样按整行剥离，不进正文。
 SCALE_LINE = re.compile(r'^色阶：(.*)$', re.M)
+CARD_LINE = re.compile(r'^卡片：(.*)$', re.M)
 
 ICONS: 'Icons | None' = None    # 当前页面的图标登记处，由 build() 装上
 
@@ -373,13 +374,46 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None):
     return o
 
 
-def render_blocks(chunk, scales=None, groups=None, marks=None, curves=None):
-    """分节正文 → 段落、列表、定义列表、表格。"""
+def cards_of(spec, up):
+    """「卡片：slug、slug」→ 首页那种 .entry 卡片，一条一张。
+
+    标题、描述与更新时间从被指向的那篇源稿现读，**不在这里重抄一遍**——那三样
+    在 references/docs/<slug>.md 里已经写过，抄第二份就会各改各的。
+    卡片因此没有节点图标与右侧数值：那两样是首页手写的，一张一套，推导不出来。
+    """
+    o = ['<ul class="entries">']
+    for slug in [x.strip() for x in spec.split('、') if x.strip()]:
+        path = os.path.join(SRC_DIR, slug + '.md')
+        if not os.path.exists(path):
+            die('「卡片：」指的 %r 在 references/docs/ 下没有源稿' % slug)
+        with open(path, encoding='utf-8') as f:
+            doc = f.read()
+        hit = re.match(r'^#\s+(.+)$', doc.split('\n')[0])
+        if not hit:
+            die('「卡片：」指的 %r 源稿第一行不是「# 页面标题」' % slug)
+        o += ['<li>',
+              '<a class="entry" href="%s%s/index.html">' % ('../' * up, where_of(doc, slug)),
+              '<span class="entry-body">',
+              '<h3>%s</h3>' % hit.group(1).strip(),
+              '<p>%s</p>' % meta_of(doc, '描述'),
+              '<span class="entry-stamp">更新 %s</span>' % meta_of(doc, '更新'),
+              '</span>', '</a>', '</li>']
+    o.append('</ul>')
+    return o
+
+
+def render_blocks(chunk, scales=None, groups=None, marks=None, curves=None, up=0):
+    """分节正文 → 段落、列表、定义列表、表格、卡片。"""
     o, i = [], 0
     lines = chunk.split('\n')
     while i < len(lines):
         line = lines[i].rstrip()
         if not line.strip():
+            i += 1
+            continue
+
+        if line.startswith('卡片：'):
+            o += cards_of(line[len('卡片：'):], up)
             i += 1
             continue
 
@@ -517,11 +551,18 @@ def render(md, slug):
     # 条目是表格行，所以带这一档的表**不能用首格留空合并**——按行隐藏会把合并块
     # 豁开，行标题要逐行写全。
     if flag_of(md, '导航'):
-        toolbar = dict(toolbar or {},
-                       **{'data-section': '.block',
-                          'data-item': '.gen tbody tr:not(.lane)',
-                          'data-label': '.sect-label', 'data-noun': '条目',
-                          'data-chip-label': '分节'})
+        # 搜索按表格行工作，data-item 认的就是 .gen 的行。没有表格的页面给了搜索框
+        # 也永远零命中，所以只给跳转 chip——app.js 见 data-item 缺席即走那一档。
+        # 两处 if 分开写是为了保住属性顺序：既有页面的产出因此零 diff。
+        rows = bool(re.search(r'^\|[-\s|]+\|$', md, re.M))
+        nav = {'data-section': '.block'}
+        if rows:
+            nav['data-item'] = '.gen tbody tr:not(.lane)'
+        nav['data-label'] = '.sect-label'
+        if rows:
+            nav['data-noun'] = '条目'
+        nav['data-chip-label'] = '分节'
+        toolbar = dict(toolbar or {}, **nav)
 
     # 「跳转分行：<分节标题>」→ chip 从这一节起另起一行。分节多到一行放不下时，
     # 按内容分组换行，不交给自动折行随便断在哪。指的分节要真存在，写错即中止。
@@ -564,7 +605,7 @@ def render(md, slug):
         # 分节标题里也允许放图标：源表每个职业段前有一枚职业徽章，标题是它的位置
         o.append('<h2 class="sect-label">%s</h2>'
                  % inline(icon_sub(head.strip()), rich=True))
-        o += render_blocks(chunk, scales, groups, marks, curves)
+        o += render_blocks(chunk, scales, groups, marks, curves, up)
         o.append('</section>')
 
     # 「数据源：是」输出 shell.py 里那句 Destiny Data Compendium 归属，一字不改。
@@ -586,7 +627,7 @@ def check(md, out, slug):
     真正的闸门是「一个字都没多、没少」。
     """
     lines = []
-    src = SCALE_LINE.sub('', META_LINE.sub('', md[md.index('\n'):]))
+    src = CARD_LINE.sub('', SCALE_LINE.sub('', META_LINE.sub('', md[md.index('\n'):])))
     for raw in src.split('\n'):
         line = raw.strip()
         if line.startswith('|'):                      # 表格：只去分隔符与分隔行
@@ -609,6 +650,8 @@ def check(md, out, slug):
     want = plain(body)                                # 字重、着色与格内换行不落成字符
 
     main = out[out.index('<main>'):out.index('</main>')]
+    # 卡片的文字来自被指向的那篇源稿，不是本篇的正文，不进逐字保真
+    main = re.sub(r'<ul class="entries">.*?</ul>', '', main, flags=re.S)
     got = text_of(main)
     if got != want:
         for i, (a, b) in enumerate(zip(got, want)):

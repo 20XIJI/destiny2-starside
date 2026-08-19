@@ -1,51 +1,16 @@
-/* 创作者专栏：一位创作者一个分节，列出主页、视频与在站内的资料页。
+/* 创作者专栏：一位创作者一个分节，分节里是由他提供内容做成的资料页卡片。
    通用主题、字体与配色 token 在 /assets/site.css。
    这一页由 tools/convert-doc.py 从 references/docs/creators.md 生成，
    改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
 
-/* 连续阅读版心（design.md 四节）。骨架在 assets/site.css。 */
-:root { --wrap: 760px; --min: 804px; }
+/* 并排对照那一档：卡片网格恒为双列、每列下限 560px，1060px 那一档装不下
+   （design.md 四节）。版式与首页同一套，骨架在 assets/site.css。 */
+:root { --wrap: 1500px; --min: 1544px; }
 
-/* 分节标题就是创作者名，比别处的区段标签重一档：这一页的主体是人，不是表。 */
-.sect-label { font-size: 13px; }
+/* 首页的卡片是三栏：节点图标 + 正文 + 右侧数值。这里的卡片由生成器从被指向的
+   源稿现读，只有标题、描述与更新时间——图标一张一套、数值各页各样，都推导不出来，
+   于是收成一栏。 */
+.entry { grid-template-columns: minmax(0, 1fr); }
 
-/* ── 条目清单：主页 / 视频 / 资料 ──
-   左侧一列窄标签 + 右侧内容，标签只答「这是哪一类」，宽度写死免得两行错开。 */
-.rules {
-  display: grid;
-  grid-template-columns: 4.5em 1fr;
-  margin: 0;
-  padding: 0;
-  border-top: 1px solid var(--hair);
-}
-
-.rules dt {
-  padding: 13px 0;
-  color: var(--bone-faint);
-  font-family: var(--font-cn);
-  font-size: 12px;
-  letter-spacing: .1em;
-}
-
-.rules dd {
-  margin: 0;
-  padding: 13px 0;
-  color: var(--bone-dim);
-  font-size: 14px;
-  line-height: 2.05;
-}
-
-/* 一条 <dd> 里多行靠 <br> 隔开，行间不再另加边框——边框只画在两类之间 */
-.rules dt:not(:first-of-type),
-.rules dt:not(:first-of-type) + dd { border-top: 1px solid var(--hair); }
-
-.rules dd:last-of-type,
-.rules dt:last-of-type { border-bottom: 1px solid var(--hair); }
-
-.rules a {
-  color: var(--bone);
-  text-decoration: none;
-  border-bottom: 1px solid var(--hair-lit);
-}
-
-.rules a:hover { color: var(--bone-hi); }
+/* 分节之间留出一档，两片卡片网格不至于连成一片 */
+.block + .block { margin-top: clamp(38px, calc(5 * var(--vw)), 62px); }
