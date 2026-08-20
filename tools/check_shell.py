@@ -44,6 +44,10 @@ def invariants(home=False):
 def main() -> int:
     listed = shell.pages()
     bad: list[str] = []
+    # 全站搜索的索引也按这份清单建。新增一页却没重跑 build-search.py 时，那一页
+    # 在首页搜不出来——这里当场报出，不等读者搜不到才发现。
+    with open(os.path.join(shell.ROOT, 'assets', 'search.js'), encoding='utf-8') as f:
+        index = f.read()
     for rel in listed:
         want = invariants(rel == shell.HOME)
         path = os.path.join(shell.ROOT, rel)
@@ -67,12 +71,15 @@ def main() -> int:
         if not STAMP.search(src):
             bad.append('%s：缺 <span class="stamp">更新 YYYY.M.D</span>' % rel)
 
+        if rel != shell.HOME and '"%s"' % rel not in index:
+            bad.append('%s：不在全站搜索索引里，跑一次 tools/build-search.py' % rel)
+
     if bad:
         print('外壳不一致：', file=sys.stderr)
         for line in bad:
             print('  ' + line, file=sys.stderr)
         return 1
-    print('外壳一致：%d 个页面，%d 条不变片段（首页免去站头那三条）'
+    print('外壳一致：%d 个页面，%d 条不变片段（首页免去站头那三条），全部在搜索索引里'
           % (len(listed), len(invariants())))
     return 0
 
