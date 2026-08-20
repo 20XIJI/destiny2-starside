@@ -10,7 +10,8 @@ assets/
   site.css                        共用：字体、主题 token、22 个配色 token 与工具类、
                                   导航条、工具条、资料页骨架（版心 / .block / .gen /
                                   八档色阶）、首页、页脚
-  app.js                          工具条构建、搜索过滤、当前分节高亮
+  app.js                          工具条构建、搜索过滤、当前分节高亮、首页全站搜索
+  search.js                       全站搜索索引（由 tools/build-search.py 生成，勿手改）
   favicon.svg                     菱形站点标记
   fonts/chakra-petch-{600,700}.woff2   显示字体（Google Fonts latin 子集，各约 10 KB）
   fonts/OFL.txt                   Chakra Petch 许可（SIL OFL 1.1）
@@ -54,6 +55,7 @@ tools/shell.py                    站点外壳：head、导航条、页脚
 tools/convert-artifact-mods.py    源稿 → 神器模组页
 tools/convert-armor-sets.py       源稿 → 护甲套装页
 tools/convert-doc.py              源稿 → 通用资料页
+tools/build-search.py             各页产出 → assets/search.js
 tools/check_shell.py              各页外壳一致性闸门
 tools/check_terms.py              术语正名、着色 token、更新时间、更新日志类型闸门
 ```

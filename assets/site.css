@@ -303,9 +303,11 @@ a { color: var(--bone); }
    这是搜索栏上唯一带信息的一处状态，所以只留它。
    借的是 --c-health 的渲染色——工具条上不会出现生命值，两者不同屏。
    权重 (0,3,0) 压过 .tool-search:focus，聚焦且零命中时红色胜出：那是更急的信号。 */
-.toolbar[data-miss] .tool-search { border-color: var(--c-health); }
+.toolbar[data-miss] .tool-search,
+.hero-search[data-miss] .tool-search { border-color: var(--c-health); }
 
-.toolbar[data-miss] .tool-count { color: var(--c-health); }
+.toolbar[data-miss] .tool-count,
+.hero-search[data-miss] .tool-count { color: var(--c-health); }
 
 .tool-count {
   flex: none;
@@ -1052,6 +1054,76 @@ body:has(.hero) {
 }
 
 .hero-jump .chip:hover { color: var(--accent); }
+
+/* 首页的全站搜索：框沿用工具条那只（.tool-search），只放大一档、拉宽。
+   资料页那只是工具条上的一件控件，这一只是首屏的主控件，但形状仍不加——
+   理由同上，首屏已经有字标、规线与两枚 chip 在立形状。
+   框与结果列表都由 app.js 建，容器空着即无 JS，首页照常可读。 */
+/* 版心与内边距归 .hero，这里只管上间距——两层都写会把框推出正文左缘 22px */
+.hero-search { margin-top: 26px; }
+
+.hero-search .tool-search {
+  width: 100%;
+  max-width: 520px;
+  padding: 10px 14px;
+  font-size: 14px;
+}
+
+.hero-search .tool-count { margin-top: 10px; }
+
+/* 命中列表：一条一行，名称、来处、摘要三段横排。三段按内容定宽再让摘要吃掉剩下的
+   宽度——摘要是最长也最不重要的那一段，让它单行截断，名称与来处则始终完整。
+
+   **列宽定在整张列表上，逐行接 subgrid。**每行各自成 grid 时，来处一行长一行短，
+   摘要的起点就排成锯齿。底色与分隔线仍归最里层那个 <a>——display: contents 那种
+   摊平写法画不出行的底色。 */
+.hits {
+  display: grid;
+  grid-template-columns: minmax(7em, max-content) minmax(8em, max-content) minmax(0, 1fr);
+  max-width: 1060px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hits li,
+.hits .hit {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+}
+
+.hits .hit {
+  gap: 18px;
+  align-items: baseline;
+  padding: 9px 12px;
+  border-top: 1px solid var(--hair);
+  text-decoration: none;
+}
+
+.hits li:last-child .hit { border-bottom: 1px solid var(--hair); }
+
+.hits .hit:hover { background: var(--tint-2); }
+
+.hits .hit b {
+  color: var(--bone-hi);
+  font-weight: 600;
+}
+
+.hits .hit-at {
+  color: var(--bone-faint);
+  font-family: var(--font-disp);
+  font-size: 11px;
+  letter-spacing: .12em;
+}
+
+.hits .hit-x {
+  overflow: hidden;
+  color: var(--bone-dim);
+  font-size: 12.5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
 
 .index {
   max-width: 1500px;

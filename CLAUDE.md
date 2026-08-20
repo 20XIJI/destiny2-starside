@@ -27,8 +27,9 @@ Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构�
 ```
 markup.py          源稿方言与公共件：{token|文字} 着色、「键：值」行、空行分段、
                    剥标签取文本、保真前的归一化、计数比对、图片尺寸、图标登记
-shell.py           站点外壳与落盘：head 元信息、导航条、页脚、ROOT、emit()
+shell.py           站点外壳与落盘：head 元信息、导航条、页脚、ROOT、页面清单、emit()
 convert-*.py       三个生成器，各自只写自己那种数据形状的结构层
+build-search.py    各页产出 → assets/search.js，首页那只搜索框搜的就是它
 check_shell.py     外壳闸门，从 shell.py 现取参照，不另存副本
 check_terms.py     术语与着色闸门，全部以 TERMS 那一张表为准
 sheet-grab.user.js 油猴脚本：在 Google 表格页面上导出「替换后的文本 + 内联图片」
@@ -50,6 +51,7 @@ npm run build                                 # 三个生成器 + 两道闸门�
 python3 tools/convert-artifact-mods.py        # 源稿 references/artifact-mods.md
 python3 tools/convert-armor-sets.py           # 源稿 references/armor-sets.md
 python3 tools/convert-doc.py [slug]           # 源稿 references/docs/*.md，省略 slug 即全部
+python3 tools/build-search.py                 # 全站搜索索引 assets/search.js
 python3 tools/check_shell.py                  # 各页外壳一致性
 python3 tools/check_terms.py                  # 术语正名、着色 token、更新时间
 
@@ -243,6 +245,49 @@ app.js 按表头文本找列、按首格开头的两位时刻找行（首列写�
 
 另外两条：着色 span 不得嵌套（嵌套说明 `wrap()` 的整块判定被改坏了）；产出里不得有没转换的 `{` `}`。
 
+## 全站搜索
+
+首页 `index.html` 的 `.hero-search` 是搜全站的入口；资料页工具条上那只只搜本页，两者互不影响。
+
+**索引 `assets/search.js` 由 `tools/build-search.py` 从已生成的页面现扫，不手改**：改文案改源稿，
+重跑 `npm run build`。扫产出而不是扫源稿——三个生成器的产出结构统一（`section[id]`、
+`.gen tbody tr`、`.mod`、`.set`），一份实现覆盖全部页面；源稿那边要按生成器分三种方言处理，
+且没有分节 id，链过去落不到位置。页面清单取 `shell.pages()`，与 `check_shell.py` 同一份，
+新增一篇资料不必回来登记。
+
+产出是一个 JS 文件而不是 JSON：**双击打开的站点也要能搜**，而 `file://` 下 `fetch` 取同目录的
+文件会被 CORS 挡掉，`<script>` 不会。文件里就一句 `window.starsideIndex = [ … ]`，
+**一条记录一行**——这份文件每改一次源稿就要重生成并入库，按行写让 git 存得下增量：
+
+| 记录 | 字段 |
+|---|---|
+| 页面，每页一条 | `u` 路径、`t` 标题、`d` 描述 |
+| 条目，每条一条 | `u` 路径、`a` 锚点、`l` 分节、`n` 名称、`x` 全文 |
+
+**索引是页面文本的第二份副本，但它在另一个文件里、不进任何页面的 HTML**，
+各生成器的逐字保真闸门因此照旧成立。
+
+**表格行逐格取再用空格接。**产出里格与格之间没有空白，整行剥标签会把相邻两格粘成一个词
+（「1最后遗愿」）。格内的行内标签照旧粘着——那与页面上 `textContent` 的行为一致，
+两处搜索的匹配范围因此相同。**合并块的续行没有 `<th>`，名称沿用上一行的**，
+它们本来就属于同一个行标题。
+
+**折线图页的表不进索引**（`.toolbar` 带 `data-chart`）：行里全是坐标点（`-100 0.000 0.000`），
+搜出来读者也用不上，整页只留页面本身那一条。
+
+`check()` 那一档的闸门写在脚本里：每页至少一个带 id 的分节，分节必须取得到标题，
+模组与套装必须取得到名称——任一条不合即中止。
+
+### 点开一条命中之后
+
+命中项的链接写成 `<页面>?q=<词>#<锚点>`。落到那一页由那一页自己的搜索框接手过滤
+（`app.js` 的 `filter()`），**所以索引不必知道条目落在页面里的哪一行**，锚点给到分节即可；
+没有搜索框的六个页面只滚到分节。**先过滤再滚**——defer 脚本在解析完成后、锚点定位前执行，
+顺序天然是对的。
+
+**索引首次聚焦搜索框才下载**，由 `app.js` 注入一个 `<script>` 取回。它 790 KB（gzip 216 KB），
+进首屏就把首页拖成全站最重的一页。取不到时在计数位上报出来，不留一个搜不出东西的空框。
+
 ## 更新日志的写法
 
 `references/docs/changelog.md` 一条改动一行，语法固定成一种：
@@ -390,7 +435,8 @@ G3 钉住 `{act|…}` 的类定义。
 
 ## assets/app.js
 
-工具条（搜索框、跳转 chip）从 DOM 读取分节标题构建，**不在 HTML 里写任何源文本**——写了就等于页面出现源表格文本的第二份副本，保真自检立即报重复。
+首页走 `.hero-search` 那一支：建全站搜索框与命中列表，其余分支一概不跑。资料页的工具条
+（搜索框、跳转 chip）从 DOM 读取分节标题构建，**不在 HTML 里写任何源文本**——写了就等于页面出现源表格文本的第二份副本，保真自检立即报重复。
 
 选择器由页面在 `.toolbar` 上用 `data-*` 声明，缺省是神器模组页那一套，所以那一页的 HTML 一个字不用改：
 

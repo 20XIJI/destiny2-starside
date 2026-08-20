@@ -7,7 +7,7 @@ index.html。本脚本从 shell.py 现取不变片段去比对每一个页面—
 
 用法：python3 tools/check_shell.py    改完 shell.py 或手写首页后跑一次。
 
-资料页从 references/docs/ 现扫，新增一篇不必回来改这个文件。
+页面清单取自 shell.pages()，从 references/docs/ 现扫，新增一篇不必回来改这个文件。
 """
 
 import os
@@ -15,25 +15,6 @@ import re
 import sys
 
 import shell
-
-HOME = 'index.html'
-# 两个专属生成器各出一页，其余的从 references/docs/ 现扫——新增一篇资料就不必
-# 记得回来改这张表了。
-FIXED = [HOME, 'armor-sets/index.html', 'artifact-mods/index.html']
-DOC_DIR = os.path.join(shell.ROOT, 'references', 'docs')
-
-
-def pages():
-    out = list(FIXED)
-    for name in sorted(os.listdir(DOC_DIR)):
-        if not name.endswith('.md'):
-            continue
-        with open(os.path.join(DOC_DIR, name), encoding='utf-8') as f:
-            md = f.read()
-        where = re.search(r'^路径：(.*)$', md, re.M)
-        out.append('%s/index.html' % (where.group(1).strip() if where else name[:-3]))
-    return out
-
 
 # head 里与页面无关的那几行。标题与描述是变量，用哨兵值生成后按前缀挑出不变量。
 HEAD_KEEP = ('<meta name="theme-color"', '<meta property="og:site_name"',
@@ -61,10 +42,10 @@ def invariants(home=False):
 
 
 def main() -> int:
-    listed = pages()
+    listed = shell.pages()
     bad: list[str] = []
     for rel in listed:
-        want = invariants(rel == HOME)
+        want = invariants(rel == shell.HOME)
         path = os.path.join(shell.ROOT, rel)
         if not os.path.exists(path):
             bad.append('%s：文件不存在' % rel)

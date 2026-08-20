@@ -535,6 +535,112 @@
     draw();
   }
 
+  /* 首页的全站搜索（.hero-search 容器存在即接管）：资料页的搜索框只搜本页，
+     这里搜全站。索引 assets/search.js 由 tools/build-search.py 从各页产出现扫，
+     一条记录一行——带 d 的是页面，带 n 的是条目。
+
+     **首次聚焦才下载**：它 790 KB，进首屏就把首页拖成全站最重的一页。
+     **用 <script> 取而不是 fetch**：双击打开的站点也要能搜，而 file:// 下 fetch
+     取同目录的文件会被 CORS 挡掉。索引因此是一句 window.starsideIndex = […]。
+     命中项的链接带 ?q=，落到那一页之后由那一页自己的搜索框接手过滤，
+     所以这里不必知道条目在页面里的哪一行。 */
+  var CAP = 40;
+
+  /* 摘要从命中处截取：整条正文最长有几百字，从头截会把命中的那半句切在外面 */
+  function snip(text, q) {
+    var at = text.toLowerCase().indexOf(q.split(/\s+/)[0].toLowerCase());
+    var from = Math.max(0, at - 12);
+    var cut = text.slice(from, from + 68);
+    return (from > 0 ? '…' : '') + cut + (from + 68 < text.length ? '…' : '');
+  }
+
+  function home(box) {
+    var input = document.createElement('input');
+    input.type = 'search';
+    input.className = 'tool-search';
+    input.placeholder = '搜索全站资料';
+    input.setAttribute('aria-label', '搜索全站资料');
+
+    var count = document.createElement('p');
+    count.className = 'tool-count';
+    count.setAttribute('role', 'status');
+
+    var list = document.createElement('ul');
+    list.className = 'hits';
+
+    box.appendChild(input);
+    box.appendChild(count);
+    box.appendChild(list);
+
+    var index = null, pending = false, pages = {};
+
+    function load() {
+      if (index || pending) return;
+      pending = true;
+      var tag = document.createElement('script');
+      tag.src = 'assets/search.js';
+      tag.onload = function () {
+        index = window.starsideIndex;
+        index.forEach(function (r) { if (r.d) pages[r.u] = r; });
+        draw();
+      };
+      /* 索引取不到就说出来。留一个搜不出东西的空框，读者会以为站里根本没有这条。 */
+      tag.onerror = function () {
+        pending = false;
+        count.textContent = '索引载入失败，刷新重试';
+        console.error('取不到 assets/search.js');
+      };
+      document.head.appendChild(tag);
+    }
+
+    function row(r, q) {
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.className = 'hit';
+      /* 条目带上 ?q= 与分节锚点；页面本身直接进去，不必预填 */
+      a.href = r.n ? r.u + '?q=' + encodeURIComponent(q) + '#' + r.a : r.u;
+      var name = document.createElement('b');
+      name.textContent = r.n || r.t;
+      var at = document.createElement('span');
+      at.className = 'hit-at';
+      at.textContent = r.n ? (pages[r.u] ? pages[r.u].t : r.u) + ' · ' + r.l : '整页';
+      var body = document.createElement('span');
+      body.className = 'hit-x';
+      body.textContent = r.n ? snip(r.x, q) : r.d;
+      a.appendChild(name);
+      a.appendChild(at);
+      a.appendChild(body);
+      li.appendChild(a);
+      return li;
+    }
+
+    /* 三档排序：页面、条目名命中、正文命中。名字命中的排在正文命中前面——
+       搜「棱镜」时那一页本身与叫这个名字的条目，比正文里顺带提到的有用。 */
+    function draw() {
+      var q = input.value.trim();
+      list.textContent = '';
+      box.toggleAttribute('data-miss', false);
+      if (!q) { count.textContent = ''; return; }
+      if (!index) { count.textContent = '正在载入索引…'; return; }
+
+      var top = [], named = [], rest = [];
+      index.forEach(function (r) {
+        if (!r.n) { if (matches(r.t + ' ' + r.d, q)) top.push(r); }
+        else if (matches(r.n, q)) named.push(r);
+        else if (matches(r.x, q)) rest.push(r);
+      });
+      var all = top.concat(named, rest);
+      all.slice(0, CAP).forEach(function (r) { list.appendChild(row(r, q)); });
+      count.textContent = all.length
+        ? all.length + ' 条命中' + (all.length > CAP ? '，显示前 ' + CAP : '')
+        : '没有命中';
+      box.toggleAttribute('data-miss', !all.length);
+    }
+
+    input.addEventListener('focus', load);
+    input.addEventListener('input', function () { load(); draw(); });
+  }
+
   if (slot && slot.dataset.clock !== undefined) nowCell();
 
   if (slot && slot.dataset.rota !== undefined) {
@@ -553,6 +659,13 @@
     columns();
     measure();
     addEventListener('resize', measure);
+    return;
+  }
+
+  var hero = document.querySelector('.hero-search');
+  if (hero) {
+    home(hero);
+    measure();
     return;
   }
 
@@ -676,6 +789,15 @@
   }
 
   search.addEventListener('input', function () { filter(search.value); });
+
+  /* 从首页的全站搜索点进来时带着 ?q=：预填并过滤一次，落点交给浏览器按 # 锚点滚。
+     **先过滤再滚**——defer 脚本在解析完成后、锚点定位前执行，顺序天然是对的；
+     反过来滚完再隐藏行，读者会停在错位的地方。 */
+  var came = new URLSearchParams(location.search).get('q');
+  if (came && ITEM) {
+    search.value = came;
+    filter(came);
+  }
 
   measure();
   watch();

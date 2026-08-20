@@ -9,8 +9,31 @@
 """
 
 import os
+import re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+HOME = 'index.html'
+# 两个专属生成器各出一页，其余的从 references/docs/ 现扫——新增一篇资料就不必
+# 记得回来改这张表了。
+FIXED = [HOME, 'armor-sets/index.html', 'artifact-mods/index.html']
+DOC_DIR = os.path.join(ROOT, 'references', 'docs')
+
+
+def pages():
+    """站内页面清单，相对站点根。源稿即清单，不另存一份名单。
+
+    外壳闸门与全站搜索索引都从这里取，两处因此不会各扫各的。
+    """
+    out = list(FIXED)
+    for name in sorted(os.listdir(DOC_DIR)):
+        if not name.endswith('.md'):
+            continue
+        with open(os.path.join(DOC_DIR, name), encoding='utf-8') as f:
+            md = f.read()
+        where = re.search(r'^路径：(.*)$', md, re.M)
+        out.append('%s/index.html' % (where.group(1).strip() if where else name[:-3]))
+    return out
 
 SITE_NAME = 'Starside'
 THEME = '#0b0d14'
