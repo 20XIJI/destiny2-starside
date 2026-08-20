@@ -4,14 +4,18 @@
 用法：
     python3 tools/json2xlsx.py <抓取的.json> [输出.xlsx]
 
-还原的是**替换后**的表：文本按抓取时页面上渲染的样子写入（术语替换已生效），
-图片按 URL 现下载再嵌回原来的行列。Google 官方的 export?format=xlsx 给的是
-替换前的原文，且不少表禁用了导出，所以这条路不能替代它。
+还原的是**替换后**的表：文本按抓取时页面上渲染的样子写入（术语替换已生效）。
+Google 官方的 export?format=xlsx 给的是替换前的原文，且不少表禁用了导出，所以
+这条路不能替代它。
 
-图片下载失败不吞：逐条打印到 stderr，并以非零退出码结束——静默少几张图，
+图优先用 JSON 顶层 images 里内联的 base64，全程不联网。只有 URL 的老 JSON 才
+现下载，而 URL 是有寿命的：隔天再跑可能整批取不到，届时重新抓一份。
+
+图片取不到不吞：逐条打印到 stderr，并以非零退出码结束——静默少几张图，
 在几百行的表里眼睛查不出来。
 """
 
+import base64
 import hashlib
 import json
 import os
@@ -35,15 +39,19 @@ def die(msg):
     raise SystemExit(1)
 
 
-def fetch(url, cache):
-    """按 URL 的 md5 落盘缓存，同一张图在表里出现多次只下一次。"""
+def fetch(url, cache, inline):
+    """先用 JSON 里内联的 base64，没有才下载。按 URL 的 md5 落盘缓存，同一张图
+    在表里出现多次只解一次。"""
     key = hashlib.md5(url.encode()).hexdigest()
     for ext in ('.png', '.jpg'):
         p = os.path.join(cache, key + ext)
         if os.path.exists(p):
             return p
-    with urllib.request.urlopen(url, timeout=30) as r:
-        blob = r.read()
+    if url in inline:
+        blob = base64.b64decode(inline[url].split(',', 1)[1])
+    else:                                       # 老 JSON 只有 URL
+        with urllib.request.urlopen(url, timeout=30) as r:
+            blob = r.read()
     ext = '.png' if blob[:8] == b'\x89PNG\r\n\x1a\n' else '.jpg'
     p = os.path.join(cache, key + ext)
     with open(p, 'wb') as f:
@@ -52,6 +60,7 @@ def fetch(url, cache):
 
 
 def build(data, cache, ws):
+    inline = data.get('images') or {}
     widths, heights, failed, placed = {}, {}, [], 0
     for r, row in enumerate(data['rows'], start=1):
         for c, cell in enumerate(row, start=1):
@@ -65,7 +74,7 @@ def build(data, cache, ws):
                 heights[r] = max(heights.get(r, 0), MIN_ROW_PT * (text.count('\n') + 1))
             for url in cell.get('img', []):
                 try:
-                    path = fetch(url, cache)
+                    path = fetch(url, cache, inline)
                 except Exception as e:                      # noqa: BLE001
                     failed.append('r%d c%d %s —— %s' % (r, c, url, e))
                     continue
