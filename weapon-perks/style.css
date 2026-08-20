@@ -1,0 +1,61 @@
+/* 武器特性页组件：406 条特性、模组、框架固有与起源特性，按七个分节排。
+   通用主题、字体与配色 token 在 /assets/site.css。
+   这一页由 tools/convert-doc.py 从 references/docs/weapon-perks.md 生成，
+   改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
+
+/* 与异域武器页同形：前几列钉住特性身份，末列是收在阅读宽度上的说明。
+   宽表复用 1060px 那一档。版心固定，不做窄屏适配（design.md 五节）。 */
+:root { --wrap: 1060px; --min: 1104px; }
+
+/* 说明的基色给 tbody，不写在格子上：整格只有一个 {标记|…} 时 class 落在 <td> 本身，
+   .gen tbody td:last-child 这类多选择器会压过单类的着色，整格颜色静默退回默认。 */
+.gen tbody { color: var(--bone); }
+
+.gen thead th { padding-top: 11px; padding-bottom: 11px; white-space: nowrap; }
+
+/* 特性名：这一行的身份，不折行 */
+.gen tbody th[scope="row"] {
+  color: var(--bone-hi);
+  font-family: var(--font-cn);
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-align: left;
+  white-space: nowrap;
+}
+
+/* 特性图标。源图 70×70 与 59×59 两种，统一显示成 34px */
+.gen td.ico { padding: 10px 14px; text-align: center; }
+
+.gen td.ico img {
+  display: block;
+  width: 34px;
+  height: 34px;
+  border-radius: 2px;
+}
+
+/* 强化版数值（源表用 ↑ 标记）。按 design.md 二节，强调靠亮度与字重，不占色相——
+   本页 686 处 ↑，给它一个元素色相会把仅有的 80 处橙血／烈日／灼烧淹没掉。 */
+.enh {
+  color: var(--bone-hi);
+  font-weight: 600;
+}
+
+/* 起源特性的来源：出处与类别两行，比正文低一档——它是检索线索，不是要读的内容 */
+.gen td.src {
+  padding: 10px 14px;
+  color: var(--bone-dim);
+  font-size: 12.5px;
+  line-height: 1.7;
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+/* 说明：这一页真正要读的一列，顶对齐——各行长短差十倍，居中会让长行把短行推到中间 */
+.gen tbody td:last-child {
+  padding: 12px 18px 14px;
+  font-size: 13.5px;
+  line-height: 1.9;
+  text-align: left;
+  vertical-align: top;
+}
