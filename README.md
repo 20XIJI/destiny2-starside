@@ -55,7 +55,7 @@ tools/convert-artifact-mods.py    源稿 → 神器模组页
 tools/convert-armor-sets.py       源稿 → 护甲套装页
 tools/convert-doc.py              源稿 → 通用资料页
 tools/check_shell.py              各页外壳一致性闸门
-tools/check_terms.py              术语正名、着色 token、更新时间闸门
+tools/check_terms.py              术语正名、着色 token、更新时间、更新日志类型闸门
 ```
 
 资料页全部由生成器产出，只有首页 `index.html` 手写。改文案改源稿，改结构改生成器的 `render()`。

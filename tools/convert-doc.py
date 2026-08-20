@@ -459,9 +459,20 @@ def render_blocks(chunk, scales=None, groups=None, marks=None, curves=None, up=0
             continue
 
         if line.startswith('- '):
+            # 连着几条的开头标记相同时（更新日志里同一天的同一种改动类型），只让第一条
+            # 显形，后面几条的标记加上 is-same 由样式表收掉——**字要留在 DOM 里**，
+            # check() 是剥标签后与源稿逐字比对，删掉那两个字当场报错。
             o.append('<ul>')
+            prev = None
             while i < len(lines) and lines[i].startswith('- '):
-                o.append(wrap('li', lines[i][2:]))
+                item = lines[i][2:]
+                hit = re.match(r'\{(\w[\w-]*)\|([^{}|]+)\}', item)
+                html = wrap('li', item)
+                if hit and (hit.group(1), hit.group(2)) == prev:
+                    html = html.replace('class="%s"' % hit.group(1),
+                                        'class="%s is-same"' % hit.group(1), 1)
+                prev = (hit.group(1), hit.group(2)) if hit else None
+                o.append(html)
                 i += 1
             o.append('</ul>')
             continue

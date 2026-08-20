@@ -5,7 +5,7 @@
 改成「填装」，六天后新增的武器框架页又带回 17 处。人工扫一遍管不住下一页，
 所以把结论落成闸门。
 
-四条检查，全部以 TERMS 那一张表为准：
+五条检查，前四条以 TERMS 那一张表为准：
 
   G1 中文正名   源稿里不许出现禁用写法。
   G2 token 唯一 同一个术语只能落到同一个着色 token 上。渲染色相同的两个 token
@@ -13,6 +13,8 @@
   G3 token 有定义 源稿里每个 {token|文字} 都要在 site.css 或该页样式表里有类；
                 反过来，site.css 的着色类一次都没被用到即死配置，当场报出。
   G4 更新时间一致 资料页页脚的「更新 YYYY.M.D」与首页卡片上那个必须相等。
+  G5 更新日志的类型 只有新增、改动、订正三种，且同一天里每种只能连成一段——
+                标签只在段首显形，交错着写会渲出一串空标签。
 
 用法：python3 tools/check_terms.py    改源稿或改术语表之后跑一次。
 """
@@ -217,6 +219,37 @@ def check_stamps(bad):
             bad.append('G4 %s 页脚写 %s，首页卡片写 %s' % (page, got.group(1), want))
 
 
+ACTS = ('新增', '改动', '订正')       # 顺序即同一天之内的排法
+
+
+def check_acts(bad):
+    """更新日志：改动类型只有三种，且同一天里每种连成一段。
+
+    段首之外的标签由 convert-doc.py 打上 is-same、样式表收掉，靠的就是「同类型相邻」
+    这一条。交错着写会在中间渲出空标签，页面上是一行没有类型的改动——眼睛查不出来。
+    """
+    path = os.path.join(DOC_DIR, 'changelog.md')
+    seen, prev = set(), None
+    for n, line in enumerate(read(path).split('\n'), start=1):
+        if line.startswith('## '):          # 换一天，重新开始数
+            seen, prev = set(), None
+            continue
+        hit = re.match(r'- \{act\|([^}]*)\}', line)
+        if not line.startswith('- ') or not hit:
+            if line.startswith('- '):
+                bad.append('G5 %s:%d 这一条没以 {act|类型} 开头' % (path, n))
+            continue
+        act = hit.group(1)
+        if act not in ACTS:
+            bad.append('G5 %s:%d 写了「%s」，类型只有%s'
+                       % (path, n, act, '、'.join(ACTS)))
+        elif act != prev and act in seen:
+            bad.append('G5 %s:%d 「%s」在这一天里断开了，同类型的几条要连成一段'
+                       % (path, n, act))
+        seen.add(act)
+        prev = act
+
+
 def main() -> int:
     site = read('assets/site.css')
     pairs = sources()
@@ -225,6 +258,7 @@ def main() -> int:
     check_terms(SRC_FILES + [rel for rel, _ in pairs if rel.startswith(DOC_DIR)], bad)
     check_tokens(pairs, site, bad)
     check_stamps(bad)
+    check_acts(bad)
 
     if bad:
         print('术语与着色不一致：', file=sys.stderr)

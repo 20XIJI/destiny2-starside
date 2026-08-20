@@ -31,7 +31,7 @@
   border-left: 1px solid var(--hair);
 }
 
-/* 改动类型：新增／改版／订正／正名／补注五种之一，两个汉字。
+/* 改动类型：新增／改动／订正三种之一，两个汉字。
    退到 --bone-faint 读作行首的元信息，不与本行的页面链接争——扫读靠的是它固定
    的列位置，不靠颜色。text-indent 要归零：inline-block 自成块容器，会把上面那
    条负缩进继承下来，标签自己的两个字反倒被拉出去。 */
@@ -45,7 +45,22 @@
   text-indent: 0;
 }
 
-.block li + li { border-top: 1px solid var(--hair); }
+/* ── 同类型连成一段 ──
+   同一天里同一种改动类型的几条排在一起，标签只在段首显形；后面几条由生成器打上
+   is-same，字仍在 DOM 里（逐字保真要它），这里用 visibility 收掉——用 display
+   会让那两个字不占位，正文跟着塌回标签那一列。
+
+   分隔线因此只画在换类型的地方：一段之内是一件事的几条，中间划线会把段拆散。
+   段内再收一档行距，段与段的呼吸差就出来了。 */
+.act.is-same { visibility: hidden; }
+
+.block li + li:not(:has(.is-same)) { border-top: 1px solid var(--hair); }
+
+/* 段内行距两侧都要收：只收后续条目，段首那条的下沿仍是 11px，
+   它与第二条之间就比段内其余间距宽出一档，段首看着像被孤立在段外。 */
+.block li:has(.is-same) { padding: 4px 0 4px calc(16px + 48px); }
+
+.block li:has(+ li .is-same) { padding-bottom: 4px; }
 
 /* 改动指向哪一页是这一行的入口，提亮一档；正文本身退到 --bone-dim。 */
 .block li a {

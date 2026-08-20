@@ -2,29 +2,27 @@
 
 描述：Starside 各资料页的内容改动记录，按日期倒序，每条写明改动类型、所在页面与改动内容。
 更新：2026.8.20
-页脚：改动类型只有五种：新增、改版、订正、正名、补注。
+页脚：改动类型只有三种：新增、改动、订正。
 
 ## 2026.8.20
 
-- {act|新增}[轮换速查表](../rotation/index.html) · RAID&地牢轮换：突袭与地牢的每周轮换轴，本周居中、上下两周点一下切到中间。
-- {act|改版}首页：右上角署名那一列加 QQ 群号与支持入口，群号点一下复制；「Destiny 2 中文资料台」并成一行。
-- {act|订正}[轮换速查表](../rotation/index.html) · RAID&地牢轮换：轮换基准改为 2026.6.10 那一周（周三重置），此前指到 2024 年的同月同日，整轴错开 104 周。
-- {act|订正}[缚丝](../elements/strand/index.html) · 寡妇之丝：图标换成星相本身那张，此前误用了碎片槽位的图。
-- {act|正名}[轮换速查表](../rotation/index.html)：「扭曲星球速查表」改为「轮换速查表」，原本那张表归入「扭曲星球轮换」一节。
+- {act|新增}[轮换速查表](../rotation/index.html) · RAID&地牢轮换：突袭与地牢的每周轮换，本周居中，前后各看两周
+- {act|改动}首页：右上角加 QQ 群号与支持入口
+- {act|改动}[轮换速查表](../rotation/index.html)：原「扭曲星球速查表」，扭曲那张表归入「扭曲星球轮换」一节
+- {act|订正}[轮换速查表](../rotation/index.html) · RAID&地牢轮换：轮换基准改为 2026.6.10 那一周
+- {act|订正}[缚丝](../elements/strand/index.html) · 寡妇之丝：图标换成星相本身那张
 
 ## 2026.8.19
 
-- {act|新增}[创作者专栏](../creators/index.html)：一位创作者一节，列出由他提供内容做成的资料页。首位是小棒猪-LGpig。
-- {act|新增}[创作者专栏](../creators/index.html) · 遗忘Melt：全 Raid 教学笔记的文档链接。
-- {act|新增}[创作者专栏](../creators/index.html) · -萌动-：英勇利刃讲解的视频与文档链接。
-- {act|新增}[刷取清单-异域武器](../creators/exotic-weapons/index.html)：83 把异域武器的输出、清怪与高难评级，含实测总伤与 DPS。由[小棒猪-LGpig](../creators/index.html)提供。
-- {act|新增}[属性详解](../elements/index.html) · [职业技能](../elements/class-abilities/index.html)：三个职业的固有特性，以及闪身、屏障与裂痕的效果、数值与冷却。
-- {act|新增}[异域护甲](../exotic-armor/index.html)：猎人、泰坦、术士各 45 件异域护甲，外加三个永劫教派，带异域特性名、图标与全部数值。
-- {act|新增}[异域武器](../exotic-weapon/index.html)：动能、能量、威能三个槽位共 146 把异域武器，带异域特性名、催化剂、图标与全部数值。
-- {act|改版}[创作者专栏](../creators/index.html)：创作者标签行右端加主页入口。
-- {act|改版}[刷取清单-异域武器](../creators/exotic-weapons/index.html)：三列理由改为自动换行，去掉原表的手动断行。
-- {act|改版}首页：拆成「资料」与「专栏」两个区段，区段跳转排在首屏说明的右侧。
-- {act|订正}[护甲模组](../armor-mods/index.html) · 弹药搜寻者：威能弹药搜寻者的进度倍率改为 1.25× ｜ 1.4× ｜ 1.5×，与特殊弹药搜寻者一致。
-- {act|订正}[电弧](../elements/arc/index.html) · 雷霆一击：蓄力加成标明为乘算。
-- {act|正名}[首领生命值](../boss-hp/index.html) · 救赎花园：「圣化心智·太阳系固有」改为「圣洁首脑·太阳系固有」。
-- {act|补注}[护甲模组](../armor-mods/index.html) · 弹药斥候：强化弹药块只是外观发光，实际不增加弹药获取量。
+- {act|新增}[异域武器](../exotic-weapon/index.html)：三个槽位共 146 把，带特性、催化剂与全部数值
+- {act|新增}[异域护甲](../exotic-armor/index.html)：三个职业各 45 件，另有三个永劫教派，带特性与数值
+- {act|新增}[属性详解](../elements/index.html) · [职业技能](../elements/class-abilities/index.html)：闪身、屏障与裂痕的效果、数值与冷却
+- {act|新增}[创作者专栏](../creators/index.html)：一位创作者一节，首批三位小棒猪-LGpig、遗忘Melt、-萌动-
+- {act|新增}[刷取清单-异域武器](../creators/exotic-weapons/index.html)：83 把的输出、清怪与高难评级，含实测 DPS
+- {act|改动}首页：拆成「资料」与「专栏」两个区段
+- {act|改动}[创作者专栏](../creators/index.html)：标签行右端加主页入口
+- {act|改动}[刷取清单-异域武器](../creators/exotic-weapons/index.html)：三列理由改为自动换行
+- {act|订正}[护甲模组](../armor-mods/index.html) · 弹药搜寻者：威能弹药的进度倍率改为 1.25× ｜ 1.4× ｜ 1.5×
+- {act|订正}[护甲模组](../armor-mods/index.html) · 弹药斥候：强化弹药块只是外观发光，不增加弹药获取量
+- {act|订正}[电弧](../elements/arc/index.html) · 雷霆一击：蓄力加成为乘算
+- {act|订正}[首领生命值](../boss-hp/index.html) · 救赎花园：「圣化心智·太阳系固有」→「圣洁首脑·太阳系固有」
