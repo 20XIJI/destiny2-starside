@@ -21,7 +21,7 @@
 <header class="hero">
 <div class="wordmark-row">
 <h1 class="wordmark">Starside</h1>
-<p class="wordmark-meta"><span>Destiny 2</span><span class="cn">中文资料台</span><span class="by">BY 日栎w</span></p>
+<p class="wordmark-meta"><span>Destiny 2 <em class="cn">中文资料台</em></span><span class="by">BY 日栎w<a href="https://ifdian.net/a/eliver" target="_blank" rel="noopener">支持 ↗</a></span><span class="join"><button type="button" class="qq" data-qq="1095954157" aria-label="复制 QQ 群号 1095954157">QQ群 <b>1095954157</b><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="9" rx="1.5"/><path d="M10.5 3.5v-1a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h1"/></svg></button></span></p>
 </div>
 <div class="hero-rule"></div>
 <div class="hero-foot">
@@ -313,7 +313,7 @@
 </a>
 </li>
 <li>
-<a class="entry" href="twisted-planet/index.html">
+<a class="entry" href="rotation/index.html">
 <span class="entry-node" aria-hidden="true">
 <svg viewBox="0 0 44 48">
 <path d="M22 1.5 41.5 12.75v22.5L22 46.5 2.5 35.25v-22.5z" fill="none" stroke="currentColor" stroke-width="1.4"/>
@@ -322,14 +322,14 @@
 </svg>
 </span>
 <span class="entry-body">
-<span class="entry-kind">Twisted Planet Rotation</span>
-<h3>扭曲星球速查表</h3>
-<p>扭曲星球每小时轮换一个目的地，横排星期、竖排时段的整周排班。</p>
-<span class="entry-stamp">更新 2026.8.6</span>
+<span class="entry-kind">Rotation Cheat Sheet</span>
+<h3>轮换速查表</h3>
+<p>突袭与地牢每周轮换，扭曲星球每小时轮换。一页查完两条轮换轴。</p>
+<span class="entry-stamp">更新 2026.8.20</span>
 </span>
 <dl class="entry-meta">
-<div><dt>目的地</dt><dd>7</dd></div>
-<div><dt>时段</dt><dd>168</dd></div>
+<div><dt>突袭</dt><dd>9</dd></div>
+<div><dt>地牢</dt><dd>10</dd></div>
 </dl>
 </a>
 </li>
@@ -368,6 +368,21 @@
 <p>© 2026 日栎w · <a href="https://space.bilibili.com/26117485" target="_blank" rel="noopener">哔哩哔哩</a></p>
 <p class="legal">Starside 为非官方资料站，与 Bungie, Inc. 无从属关系。Destiny 2 及相关名称、标识为 Bungie, Inc. 的商标。</p>
 </footer>
+<script>
+/* 群号复制。全站只有首页这一处需要 JS，为它加载 assets/app.js 不划算——那份是
+   工具条与表格的，跟这里没有一行共用。失败不吞掉：写不进剪贴板就把原因显示出来。 */
+document.querySelector('.qq').addEventListener('click', function () {
+  var btn = this;
+  function tip(t) {
+    btn.dataset.tip = t;
+    setTimeout(function () { delete btn.dataset.tip; }, 1600);
+  }
+  navigator.clipboard.writeText(btn.dataset.qq).then(
+    function () { tip('已复制'); },
+    function (err) { tip('复制失败 ' + err.name); }
+  );
+});
+</script>
 <script type="speculationrules">{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}</script>
 </body>
 </html>

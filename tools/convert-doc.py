@@ -32,6 +32,9 @@ META_LINE = meta_line(META_KEYS)
 # 分节级声明：「色阶：列名 阈值 …」。同样按整行剥离，不进正文。
 SCALE_LINE = re.compile(r'^色阶：(.*)$', re.M)
 CARD_LINE = re.compile(r'^卡片：(.*)$', re.M)
+# 「轮换：YYYY.M.D」是分节级声明：这一节的表是一条按周走的轮换轴，起始日写在这里。
+# 与「色阶：」同一种做法——按整行剥离，落成表上的 data-rota，由 assets/app.js 读。
+ROTA_LINE = re.compile(r'^轮换：(.*)$', re.M)
 
 ICONS: 'Icons | None' = None    # 当前页面的图标登记处，由 build() 装上
 
@@ -233,7 +236,7 @@ def tier_of(text, bounds):
     return tier
 
 
-def render_table(lines, scales=None, groups=None, marks=None, curves=None):
+def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=None):
     """markdown 表格 → <table class="gen">。
 
     第一行是表头，第二行是 |---| 分隔。正文里再出现一行 --- 就另起一个 <tbody>，
@@ -326,6 +329,10 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None):
             if col_at[colkey(col)] == 0:
                 die('「默认曲线：」不能指首列，那一列是横坐标不是曲线')
         attr += ' data-lines="%s"' % '、'.join(curves)
+    if rota:
+        # 轮换轴的起始日：app.js 据此算「本周是第几轮」。表本身仍是页面本体，
+        # 无 JS 时轮换顺序完整可读，与图表页同一条约定。
+        attr += ' data-rota="%s"' % rota
 
     o = ['<table class="gen"%s>' % attr, '<thead>', '<tr>']
     o += [wrap('th', broke(c),
@@ -402,7 +409,8 @@ def cards_of(spec, up):
     return o
 
 
-def render_blocks(chunk, scales=None, groups=None, marks=None, curves=None, up=0):
+def render_blocks(chunk, scales=None, groups=None, marks=None, curves=None, up=0,
+                  rota=None):
     """分节正文 → 段落、列表、定义列表、表格、卡片。"""
     o, i = [], 0
     lines = chunk.split('\n')
@@ -421,7 +429,8 @@ def render_blocks(chunk, scales=None, groups=None, marks=None, curves=None, up=0
             start = i
             while i < len(lines) and lines[i].lstrip().startswith('|'):
                 i += 1
-            o += render_table([ln.strip() for ln in lines[start:i]], scales, groups, marks, curves)
+            o += render_table([ln.strip() for ln in lines[start:i]], scales, groups,
+                              marks, curves, rota)
             continue
 
         # 定义列表：术语一行，紧跟以「: 」开头的定义行。
@@ -547,6 +556,11 @@ def render(md, slug):
     if curves and not flag_of(md, '图表'):
         die('「默认曲线：」要配合「图表：是」用，没有图就没有曲线可选')
 
+    # 「轮换：」出现在任一分节里 → 工具条槽位带 data-rota，页面因此引上 app.js。
+    # 起始日写在表上（一节一条轴），这里只是个开关。
+    if ROTA_LINE.search(md):
+        toolbar = dict(toolbar or {}, **{'data-rota': ''})
+
     # 「导航：是」→ 顶部工具条：搜索框 + 每个分节一枚跳转 chip，与神器模组页同一套。
     # 条目是表格行，所以带这一档的表**不能用首格留空合并**——按行隐藏会把合并块
     # 豁开，行标题要逐行写全。
@@ -602,6 +616,13 @@ def render(md, slug):
                 die('「色阶：」给同一列 %r 写了两套阈值' % col)
             scales[col] = bounds
         chunk = SCALE_LINE.sub('', chunk)
+        hit = ROTA_LINE.search(chunk)
+        rota = hit.group(1).strip() if hit else None
+        # 起始日后面可以跟一个时刻：轮换轴的周界就是游戏的每周重置（周三 01:00），
+        # 只写到日会让重置前那一小时提前跳到下一周。
+        if rota and not re.fullmatch(r'\d{4}\.\d{1,2}\.\d{1,2}( \d{1,2}:\d{2})?', rota):
+            die('「轮换：」要写成 YYYY.M.D 或 YYYY.M.D H:MM，源稿写的是 %r' % rota)
+        chunk = ROTA_LINE.sub('', chunk)
         o.append('<section class="block" id="sec-%d">' % si)
         # 标题末尾的 [文字](链接) 落成标签行右端的 chip（首页「更新日志 →」那一个），
         # 不进标题正文——app.js 取分节名时只认首个文本节点，chip 因此不会混进跳转 chip。
@@ -614,7 +635,7 @@ def render(md, slug):
         # 分节标题里也允许放图标：源表每个职业段前有一枚职业徽章，标题是它的位置
         o.append('<h2 class="sect-label">%s%s</h2>'
                  % (inline(icon_sub(label), rich=True), chip))
-        o += render_blocks(chunk, scales, groups, marks, curves, up)
+        o += render_blocks(chunk, scales, groups, marks, curves, up, rota)
         o.append('</section>')
 
     # 「数据源：是」输出 shell.py 里那句 Destiny Data Compendium 归属，一字不改。
@@ -636,7 +657,8 @@ def check(md, out, slug):
     真正的闸门是「一个字都没多、没少」。
     """
     lines = []
-    src = CARD_LINE.sub('', SCALE_LINE.sub('', META_LINE.sub('', md[md.index('\n'):])))
+    src = CARD_LINE.sub('', ROTA_LINE.sub('', SCALE_LINE.sub(
+        '', META_LINE.sub('', md[md.index('\n'):]))))
     for raw in src.split('\n'):
         line = raw.strip()
         if line.startswith('|'):                      # 表格：只去分隔符与分隔行
