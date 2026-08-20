@@ -197,9 +197,13 @@
    **位置、缩放、虚化、明暗全部由 app.js 每帧写在行内样式上**，这里不给这四样
    任何 transition——两套缓动叠在一起会把匀速的滚动拖成两段。
 
-   **卡片宽 660px，不走满版心。**这一节要读的是四个副本名，一行就排得下；
+   **卡片宽 720px，不走满版心。**这一节要读的是四个副本名，一行就排得下；
    撑到版心那一档会让四个名字散在一条长横线上，两组之间空出大片，读起来像
    报表而不是一张卡。窄一档之后卡片自己成形，滚轴的圆柱感也才立得住。
+   720 是「最长的名字（战争领主的废墟，七个字）在 15px 下不省略」倒推出来的下限。
+
+   **卡片上的主体是副本名，不是日期。**扫一眼要先看见打什么，再看见是哪一周：
+   名字 15px 走亮档，日期压到 14px 的 --bone-dim 当坐标读。
 
    **不给突袭与地牢各分一个色相。**色相在站内归元素所有（design.md 一节），
    金会被读成异域、青会被读成电弧。两类靠分组分：一道竖发丝线把卡片切成左右
@@ -221,10 +225,10 @@
   position: absolute;
   left: 50%;
   top: 189px;
-  width: 660px;
-  height: 132px;
-  margin-left: -330px;
-  padding: 18px 22px;
+  width: 720px;
+  height: 140px;
+  margin-left: -360px;
+  padding: 18px 24px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -254,10 +258,11 @@
   justify-content: space-between;
 }
 
+/* 日期是坐标：让位给副本名，压一档字号、退到暗档 */
 .rota-date {
-  color: var(--bone-hi);
+  color: var(--bone-dim);
   font-family: var(--font-cn);
-  font-size: 16px;
+  font-size: 14px;
   letter-spacing: .04em;
 }
 
@@ -305,16 +310,17 @@
   letter-spacing: .16em;
 }
 
+/* 副本名是这张卡的主体：整块里最大、最亮的一档 */
 .rota-pill {
   flex: 1;
   min-width: 0;
-  padding: 8px 11px;
+  padding: 9px 12px;
   border-radius: 8px;
   background: #00000038;
   border-left: 2px solid currentColor;
-  color: var(--bone-dim);
+  color: var(--bone);
   font-family: var(--font-cn);
-  font-size: 13px;
+  font-size: 15px;
   letter-spacing: .03em;
   white-space: nowrap;
   overflow: hidden;
@@ -323,8 +329,8 @@
 
 .rota-group[data-kind="raid"] .rota-pill { color: var(--c-term); }
 
-/* 中间那张是正在看的那一周，地牢那组也抬一档亮度（突袭那组本就是亮色） */
-.rota-card.is-mid .rota-group[data-kind="dungeon"] .rota-pill { color: var(--bone); }
+/* 中间那张是正在看的那一周，地牢那组再抬一档到最亮（突袭那组本就是暖亮色） */
+.rota-card.is-mid .rota-group[data-kind="dungeon"] .rota-pill { color: var(--bone-hi); }
 
 /* 三枚切换 chip：这一页只认点击，滚轮与拖拽都不接（理由见 app.js 的 rota()） */
 .rota-btns {
