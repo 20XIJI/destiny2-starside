@@ -899,21 +899,20 @@ body:has(.hero) {
    深色外壳冲突。这一版没有图片：三角是 CSS 边框三角（左右透明、底边着色），圆是
    border-radius，线是渐变，全部能被 transform 逐个搬位置。
 
-   骨架（圆与线）沿用 Milleus 的 CodePen「Destiny 2: Loading Animation」
-   （https://codepen.io/Milleus/pen/XWWEKqm）；**三个图标的形状按游戏内的官方图标
-   重新量过**——原版是白底上的近似，套进深色外壳后差得出来。量取基准是站内那三枚
-   44px 官方剪影（elements/class-abilities/icons/），**1 个量取单位 = 0.2em**：
+   几何与节拍**一比一照搬** Milleus 的 CodePen「Destiny 2: Loading Animation」
+   （https://codepen.io/Milleus/pen/XWWEKqm），只把 rem 换成 em——整枚的大小因此由
+   .hero-mark 的 font-size 一处定，不受根字号影响。
 
-   | 图标 | 量到的形状 |
-   |---|---|
-   | 术士 | 三枚三角并排，半宽 11.5、高 19，峰距 7.25 |
-   | 泰坦 | 六边形 34×38，两条对角线把它切成上下两枚风筝、左右两枚楔形 |
-   | 猎人 | 三层人字，每层外三角半宽 15.5、高 12，内挖半宽 7.5、高 11 |
+   原版跑在白底上，两处“遮挡”用的是页面底色，深色外壳下要换掉，否则整段效果失效：
 
-   分件之间那道暗线不是缝隙，是**每枚三角自带的一圈外壳底色描边**（四向 drop-shadow）：
-   后画的分件用自己的描边压掉前一件的边，轮廓因此不塌、缝宽恒定 1px。术士那三枚
-   还各画两遍（s4–s6 与 s1–s3 同位），第二遍把描边补到最上层——官方图标里三枚三角
-   的六条边都看得见，只画一遍会被后画的盖掉一半。 */
+   1. **猎人的内挖件**（s4–s6）涂 --ink。原版涂白，是把外三角掏成人字的那一刀；
+      改成 transparent 只是不画，掏不出缺口，三层人字会塌成一棵松树。
+   2. **术士的分件缝**改用每枚三角自带的四向 drop-shadow 描边。原版给细线加了一圈
+      白色描边，让线从三角上压出两道缝——那圈描边在深色外壳下会变成一根根黑棒横在
+      背景上。描边挪到三角自己身上，缝只落在图标内部，背景干净。两者位置一致：细线
+      组 g2/g3 转的 ∓150° 正是三角侧边的斜率。
+   3. **收拢态**的三角涂 transparent 而不是 --ink：那一态本就该看不见，涂实色会在
+      背景刻线上盖出一块暗斑。 */
 .hero-mark {
   position: relative;
   flex: none;
@@ -944,8 +943,8 @@ body:has(.hero) {
   position: absolute;
   display: grid;
   place-items: center;
-  width: 9em;
-  height: 9em;
+  width: 8em;
+  height: 8em;
   overflow: hidden;
 }
 
@@ -953,12 +952,6 @@ body:has(.hero) {
   border-left: 2.85em solid transparent;
   border-right: 2.85em solid transparent;
   border-bottom: 4.9em solid var(--bone);
-  /* 四向描边：drop-shadow 吃的是元素的 alpha，边框三角因此描的是三角本身，不是
-     那只矩形盒子。写成 em 让缝宽随整枚的大小走，11px 基准下约 1.2px——官方图标
-     里那道缝是 1/44，换算到这个尺寸正是这个数。 */
-  filter:
-    drop-shadow(.11em 0 0 var(--ink)) drop-shadow(-.11em 0 0 var(--ink))
-    drop-shadow(0 .11em 0 var(--ink)) drop-shadow(0 -.11em 0 var(--ink));
   transition: transform 2s ease-in-out, border-bottom-color .75s ease-in 1.25s;
 }
 
@@ -982,9 +975,6 @@ body:has(.hero) {
 .hero-mark .rays,
 .hero-mark .line { transition: all 2s ease-in-out; }
 
-/* 六枚三角在每个状态里都写成同一串函数（translate → rotate → scale），
-   函数列一致，过渡才是逐项插值，不会退化成矩阵插值转出怪路径。 */
-
 /* ── 收拢：三角退成透明，只剩圆与线 ── */
 .hero-mark.default .c1 { width: 10em; height: 10em; }
 
@@ -995,7 +985,7 @@ body:has(.hero) {
 
 .hero-mark.default .shape {
   border-bottom-color: transparent;
-  transform: translate(0, 0) rotate(180deg) scale(1, 1);
+  transform: rotate(180deg);
 }
 
 .hero-mark.default .g1 { width: 6em; height: 15em; }
@@ -1004,7 +994,7 @@ body:has(.hero) {
 
 .hero-mark.default .g3 { width: 7.75em; height: 15em; transform: rotate(60deg); }
 
-/* ── 术士：三枚三角并排，峰距 1.45em ── */
+/* ── 术士：三枚三角并排叠出一枚大三角，两道缝把它切成三片 ── */
 .hero-mark.warlock .c1 { width: 6.25em; height: 6.25em; }
 
 .hero-mark.warlock .c2 { width: 4em; height: 4em; }
@@ -1021,18 +1011,25 @@ body:has(.hero) {
   transition: all 1s ease-in-out 1s;
 }
 
-.hero-mark.warlock .s1 { transform: translate(-1.45em, 0) rotate(0deg) scale(.807, .776); }
+/* 缝就是这一圈描边：后画的三角用自己的描边压掉前一件的边。三枚各画两遍
+   （s4–s6 与 s1–s3 同位），第二遍把描边补到最上层，六条边才都在。 */
+.hero-mark.warlock .shape {
+  filter:
+    drop-shadow(.09em 0 0 var(--ink)) drop-shadow(-.09em 0 0 var(--ink))
+    drop-shadow(0 .09em 0 var(--ink)) drop-shadow(0 -.09em 0 var(--ink));
+}
 
-.hero-mark.warlock .s2 { transform: translate(0, 0) rotate(0deg) scale(.807, .776); }
+.hero-mark.warlock .s1 { transform: rotate(0) translate(-1.15em, .5em); }
 
-.hero-mark.warlock .s3 { transform: translate(1.45em, 0) rotate(0deg) scale(.807, .776); }
+.hero-mark.warlock .s2 { transform: rotate(360deg) translate(0, .5em); }
 
-/* 第二遍：与前三枚同位，只为把描边补到最上层；整圈 360° 让过渡时转一周 */
-.hero-mark.warlock .s4 { transform: translate(-1.45em, 0) rotate(360deg) scale(.807, .776); }
+.hero-mark.warlock .s3 { transform: rotate(360deg) translate(1.15em, .5em); }
 
-.hero-mark.warlock .s5 { transform: translate(0, 0) rotate(360deg) scale(.807, .776); }
+.hero-mark.warlock .s4 { transform: rotate(0) translate(-1.15em, .5em); }
 
-.hero-mark.warlock .s6 { transform: translate(1.45em, 0) rotate(360deg) scale(.807, .776); }
+.hero-mark.warlock .s5 { transform: rotate(360deg) translate(0, .5em); }
+
+.hero-mark.warlock .s6 { transform: rotate(360deg) translate(1.15em, .5em); }
 
 .hero-mark.warlock .g1 { width: 6em; height: 15em; transform: rotate(-90deg); }
 
@@ -1059,7 +1056,7 @@ body:has(.hero) {
 
 .hero-mark.warlock .g3 .l4 { left: 50%; }
 
-/* ── 泰坦：六边形被两条对角线切成四件，上下各一枚风筝（两枚三角拼），左右各一枚楔形 ── */
+/* ── 泰坦：六边形被两条对角线切成四件 ── */
 .hero-mark.titan .c1 { width: 10.5em; height: 10.5em; }
 
 .hero-mark.titan .c2 { width: 10em; height: 10em; }
@@ -1068,30 +1065,17 @@ body:has(.hero) {
 
 .hero-mark.titan .c4 { width: 11em; height: 11em; transition: all 1s ease-in-out 1s; }
 
-/* 两枚风筝各由两枚三角拼成，拼缝不能显形——描边只留给左右楔形，由它们压出
-   官方图标里那四条从边角走向中心的暗线。风筝自己不带描边，两半因此拼成一片。 */
-.hero-mark.titan .s1,
-.hero-mark.titan .s2,
-.hero-mark.titan .s3,
-.hero-mark.titan .s4 { filter: none; }
+.hero-mark.titan .s1 { transform: rotate(-90deg) scale(.535) translate(-3.1em, -2.5em); }
 
-/* 上风筝：顶尖那半 */
-.hero-mark.titan .s1 { transform: translate(0, -2.7em) rotate(360deg) scale(1.158, .408); }
+.hero-mark.titan .s2 { transform: rotate(270deg) scale(.535) translate(3.1em, -2.5em); }
 
-/* 上风筝：接中心那半 */
-.hero-mark.titan .s2 { transform: translate(0, -.85em) rotate(180deg) scale(1.158, .347); }
+.hero-mark.titan .s3 { transform: rotate(270deg) scale(.485) translate(0, 3em); }
 
-/* 下风筝：接中心那半 */
-.hero-mark.titan .s3 { transform: translate(0, .85em) rotate(0deg) scale(1.158, .347); }
+.hero-mark.titan .s4 { transform: rotate(90deg) scale(.485) translate(0, 3em); }
 
-/* 下风筝：底尖那半 */
-.hero-mark.titan .s4 { transform: translate(0, 2.7em) rotate(180deg) scale(1.158, .408); }
+.hero-mark.titan .s5 { transform: rotate(450deg) scale(.535) translate(-3.1em, -2.4em); }
 
-/* 左楔形，尖朝中心 */
-.hero-mark.titan .s5 { transform: translate(-1.65em, 0) rotate(90deg) scale(.596, .673); }
-
-/* 右楔形，尖朝中心 */
-.hero-mark.titan .s6 { transform: translate(1.65em, 0) rotate(270deg) scale(.596, .673); }
+.hero-mark.titan .s6 { transform: rotate(450deg) scale(.535) translate(3.1em, -2.4em); }
 
 .hero-mark.titan .g1 { width: 5.25em; height: 15em; transform: rotate(-180deg); }
 
@@ -1114,7 +1098,7 @@ body:has(.hero) {
 .hero-mark.titan .g2 .l4,
 .hero-mark.titan .g3 .l4 { left: 100%; }
 
-/* ── 猎人：三层人字。前三枚是外三角，后三枚是同位的内挖件 ── */
+/* ── 猎人：两层人字。外三角超出这只 6em 的窗口，底边由窗口裁平 ── */
 .hero-mark.hunter .c1 { width: 5.5em; height: 5.5em; }
 
 .hero-mark.hunter .c2 { width: 4em; height: 4em; }
@@ -1123,23 +1107,29 @@ body:has(.hero) {
 
 .hero-mark.hunter .c4 { width: 8em; height: 8em; }
 
-.hero-mark.hunter .s1 { transform: translate(0, -2.45em) rotate(0deg) scale(1.088, .49); }
+.hero-mark.hunter .shapes { height: 6em; transition: height 2s ease-in-out; }
 
-.hero-mark.hunter .s2 { transform: translate(0, 0) rotate(360deg) scale(1.088, .49); }
+.hero-mark.hunter .shape {
+  transition: all 2s ease-in-out, border-bottom-color .75s ease-in 1.25s;
+}
 
-.hero-mark.hunter .s3 { transform: translate(0, 2.45em) rotate(0deg) scale(1.088, .49); }
+.hero-mark.hunter .s1 { transform: rotate(0deg) scale(.83) translate(0, 1.2em); }
 
-/* 内挖件涂外壳底色，把每层外三角掏成人字。**必须是不透明的底色**：透明只是
-   不画，掏不出缺口。它整枚落在外三角内部，涂不到图标以外的地方。 */
+.hero-mark.hunter .s2 { transform: rotate(360deg) scale(.83) translate(0, -3.6em); }
+
+.hero-mark.hunter .s3 { transform: rotate(360deg) scale(.83) translate(0, -1.2em); }
+
+/* 内挖件涂外壳底色，把外三角掏成人字。**必须是不透明的底色**：透明只是不画，
+   掏不出缺口。 */
 .hero-mark.hunter .s4,
 .hero-mark.hunter .s5,
 .hero-mark.hunter .s6 { border-bottom-color: var(--ink); }
 
-.hero-mark.hunter .s4 { transform: translate(0, -2.45em) rotate(0deg) scale(.526, .449); }
+.hero-mark.hunter .s4 { transform: rotate(0deg) scale(.4) translate(0, 0); }
 
-.hero-mark.hunter .s5 { transform: translate(0, 0) rotate(360deg) scale(.526, .449); }
+.hero-mark.hunter .s5 { transform: rotate(360deg) scale(.4) translate(0, -5em); }
 
-.hero-mark.hunter .s6 { transform: translate(0, 2.45em) rotate(0deg) scale(.526, .449); }
+.hero-mark.hunter .s6 { transform: rotate(360deg) scale(.4) translate(0, 5em); }
 
 .hero-mark.hunter .g1 { width: 6em; height: 15em; transform: rotate(-270deg); }
 
