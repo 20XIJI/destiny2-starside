@@ -8,6 +8,7 @@
 
 - {act|新增}[DPS 排行](../dps/index.html)：258 组配装的持续输出实测，按 DPS 降序
 - {act|改动}[武器 PERK 详解](../weapon-perks/index.html)：原「武器特性详解」，各页「特性」一并改为 Perk
+- {act|改动}[武器框架](../weapon-frames/index.html)：18 个武器类改按主武器、特殊武器、威能武器分三组
 
 ## 2026.8.20
 
