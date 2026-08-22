@@ -1,0 +1,12 @@
+/* 数据源与鸣谢：全站数值出处与贡献者的汇总表。
+   通用主题、字体与配色 token 在 /assets/site.css。
+   这一页由 tools/convert-doc.py 从 references/docs/sources.md 生成，
+   改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
+
+/* 第三列列着好几个页面链接，比连续阅读那一档宽一些（design.md 四节）。 */
+:root { --wrap: 1060px; --min: 1104px; }
+
+/* 来源名是行的身份，不折行断在链接中间；说明列给一个上限，免得整行只剩一列在长。 */
+.gen tbody th[scope="row"] { min-width: 15em; }
+
+.gen tbody td:first-of-type { max-width: 22em; }

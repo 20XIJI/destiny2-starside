@@ -6,6 +6,9 @@
 
 ## 2026.8.23
 
+- {act|新增}[数据源与鸣谢](../sources/index.html)：全站数值出处与贡献者汇总，7 处来源、5 位贡献者
+- {act|改动}首页：创作者专栏撤下专页，收成首页的一个标题行
+- {act|改动}[刷取清单-异域武器](../exotic-weapons/index.html)：从创作者专栏下移到站点根
 - {act|改动}首页：资料按基础数值、深入数值、攻略工具、站务分四组
 - {act|改动}首页：首屏重排成字标铭牌、搜索、目录三条带
 - {act|改动}首页：背景刻线与光点改为按版心中轴对称
@@ -33,11 +36,11 @@
 - {act|新增}[异域武器](../exotic-weapon/index.html)：三个槽位共 146 把，带特性、催化剂与全部数值
 - {act|新增}[异域护甲](../exotic-armor/index.html)：三个职业各 45 件，另有三个永劫教派，带特性与数值
 - {act|新增}[属性详解](../elements/index.html) · [职业技能](../elements/class-abilities/index.html)：闪身、屏障与裂痕的效果、数值与冷却
-- {act|新增}[创作者专栏](../creators/index.html)：一位创作者一节，首批三位小棒猪-LGpig、遗忘Melt、-萌动-
-- {act|新增}[刷取清单-异域武器](../creators/exotic-weapons/index.html)：83 把的输出、清怪与高难评级，含实测 DPS
+- {act|新增}创作者专栏：一位创作者一节，首批三位小棒猪-LGpig、遗忘Melt、-萌动-
+- {act|新增}[刷取清单-异域武器](../exotic-weapons/index.html)：83 把的输出、清怪与高难评级，含实测 DPS
 - {act|改动}首页：拆成「资料」与「专栏」两个区段
-- {act|改动}[创作者专栏](../creators/index.html)：标签行右端加主页入口
-- {act|改动}[刷取清单-异域武器](../creators/exotic-weapons/index.html)：三列理由改为自动换行
+- {act|改动}创作者专栏：标签行右端加主页入口
+- {act|改动}[刷取清单-异域武器](../exotic-weapons/index.html)：三列理由改为自动换行
 - {act|订正}[护甲模组](../armor-mods/index.html) · 弹药搜寻者：威能弹药的进度倍率改为 1.25× ｜ 1.4× ｜ 1.5×
 - {act|订正}[护甲模组](../armor-mods/index.html) · 弹药斥候：强化弹药块只是外观发光，不增加弹药获取量
 - {act|订正}[电弧](../elements/arc/index.html) · 雷霆一击：蓄力加成为乘算

@@ -1402,6 +1402,21 @@ body:has(.hero) {
   letter-spacing: .2em;
 }
 
+/* 内容提供者：接在更新时间后面，一张卡一位。创作者会持续增加，归属因此落在
+   卡片上而不是组名的副题里——副题只说这一组是什么，加一位创作者只多一张卡。
+   主页链接不写在这里：卡片整体已经是一个 <a>，链接不能再套一层，各位创作者的
+   主页统一收在「数据源与鸣谢」页的鸣谢表里。 */
+.entry-by {
+  margin-left: 10px;
+  padding-left: 10px;
+  color: var(--bone-dim);
+  font-family: var(--font-cn);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0;
+  border-left: 1px solid var(--hair-lit);
+}
+
 .entry-meta {
   display: flex;
   gap: 24px;

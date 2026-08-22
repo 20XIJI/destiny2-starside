@@ -64,8 +64,10 @@ def main() -> int:
             if probe not in src:
                 bad.append('%s：与 shell.py 对不上 —— %s' % (rel, probe[:64]))
 
-        # 提了 Compendium 就得用 shell.py 里那一句原文；没提则不管（弹药页是别的来源）
-        if 'Destiny Data Compendium' in src and shell.COMPENDIUM not in src:
+        # 提了 Compendium 就得用 shell.py 里那一句原文；没提则不管（弹药页是别的来源）。
+        # sources/ 是全站出处的汇总表，整页就是各来源的清单，逐页归属那一句在这里不成立。
+        if ('Destiny Data Compendium' in src and shell.COMPENDIUM not in src
+                and rel != 'sources/index.html'):
             bad.append('%s：Destiny Data Compendium 归属句被改写了' % rel)
 
         if not STAMP.search(src):
