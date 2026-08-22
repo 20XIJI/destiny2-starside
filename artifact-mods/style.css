@@ -216,8 +216,8 @@ main { padding: 0 22px clamp(40px, 5vw, 72px); }
   align-self: center;
   position: relative;
   z-index: 1;
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   object-fit: contain;
   padding: 13px 0 13px 20px;
   box-sizing: content-box;

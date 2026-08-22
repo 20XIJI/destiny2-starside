@@ -158,7 +158,7 @@
 }
 
 /* ── 三列图标 ──
-   框架图标、示例武器、勇士本来就是挨着的三格。49px 原图按 26px 显示：
+   框架图标、示例武器、勇士本来就是挨着的三格。49px 原图按 32px 显示：
    这一页一屏要放二十几行，图标只承担辨识，不承担观赏。
    列宽由不折行的表头兜底，这里只管格子的排版。 */
 .gen tbody td:nth-of-type(2),
@@ -171,8 +171,8 @@
 
 .gen tbody img {
   display: block;
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   margin: 0 auto;
 }
 

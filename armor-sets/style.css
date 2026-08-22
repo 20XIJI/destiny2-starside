@@ -140,8 +140,8 @@
 
 .bonus-icon {
   flex: none;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   /* 剪影原图是纯白，压到骨白一档，免得比正文还亮 */
   opacity: .82;
 }
@@ -166,9 +166,9 @@ span.bonus-icon { display: block; }
   letter-spacing: .03em;
 }
 
-/* 正文与图标左缘对齐：40 图标 + 14 沟 */
+/* 正文与图标左缘对齐：44 图标 + 14 沟 */
 .bonus-body {
-  padding-left: 54px;
+  padding-left: 58px;
   font-size: 14px;
   line-height: 2;
 }

@@ -55,8 +55,8 @@
 
 .gen tbody td.ico img {
   display: block;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   /* block 元素不跟着格子的 text-align 走，居中靠自身的 auto 外边距 */
   margin: 0 auto;
   border-radius: 3px;

@@ -22,13 +22,13 @@
   white-space: nowrap;
 }
 
-/* 特性图标。源图 70×70 与 59×59 两种，统一显示成 34px */
+/* 特性图标。源图 70×70 与 59×59 两种，统一显示成 44px */
 .gen td.ico { padding: 10px 14px; text-align: center; }
 
 .gen td.ico img {
   display: block;
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
   border-radius: 2px;
 }
 
