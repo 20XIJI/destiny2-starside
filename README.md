@@ -40,7 +40,7 @@ power-delta/
   index.html                      压光伤害（由转换脚本生成，勿手改）
   style.css                       该组件专属样式与折线图版式
 elements/
-  index.html                      属性详解总览（由转换脚本生成，勿手改）
+  index.html                      职业分支详解总览（由转换脚本生成，勿手改）
   style.css                       六个元素页共用的版式（子页面由 shell.py 自动引）
   {arc,solar,void,stasis,strand,prismatic}/
     index.html                    六个元素页（由转换脚本生成，勿手改）

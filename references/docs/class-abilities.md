@@ -4,7 +4,7 @@
 更新：2026.8.19
 数据源：是
 路径：elements/class-abilities
-上级：属性详解
+上级：职业分支详解
 首屏图标：4
 
 ## ![](icons/dc84b89d2a.png) 猎人
