@@ -27,11 +27,10 @@
 }
 
 /* ── 首列：这一行是哪把武器 ──
-   左对齐、不折行。基色比数值区暗一档：它是坐标，热区才是内容。 */
+   居中、不折行。基色比数值区暗一档：它是坐标，热区才是内容。 */
 .gen tbody th[scope="row"] {
   color: var(--bone);
   font-weight: 400;
-  text-align: left;
   white-space: nowrap;
 }
 

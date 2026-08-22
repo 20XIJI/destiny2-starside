@@ -13,7 +13,7 @@
 - [{el-stasis|冰影} 冰霜护甲减伤，减速攒满冻结，冻结再碎裂](stasis/index.html)
 - [{el-strand|缚丝} 织造铠甲与割裂减伤，悬停定身，瓦解连锁](strand/index.html)
 - [{el-prismatic|棱镜} 光能与暗影同持一身，两侧交替运用点亮超凡](prismatic/index.html)
-- [{pickup|职业技能} 三个职业的固有特性，以及闪身、屏障与裂痕的数值与冷却](class-abilities/index.html)
+- [{pickup|职业技能} 三个职业的固有 Perk，以及闪身、屏障与裂痕的数值与冷却](class-abilities/index.html)
 
 ## 效果一览
 

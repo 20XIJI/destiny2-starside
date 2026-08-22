@@ -122,7 +122,6 @@
 .gen tbody th[scope="row"] {
   font-family: var(--font-cn);
   font-weight: 600;
-  text-align: left;
   white-space: nowrap;
   word-break: keep-all;
 }
@@ -197,12 +196,6 @@
 }
 
 .gen th.lead .note { font-weight: 400; }
-
-/* 首列居中：这一格是标题加一句说明，下面两格是「手雷」「近战」两个短标签，
-   左对齐会让它们孤零零贴在栏的左缘，与右边五列居中的图标对不上。
-   只作用于带 .lead 的这张网格表，别的表首列仍是左对齐的名称列。 */
-.gen:has(th.lead) th.lead,
-.gen:has(th.lead) tbody th[scope="row"] { text-align: center; }
 
 .gen td[class^="sk-"] {
   width: 152px;

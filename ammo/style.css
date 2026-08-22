@@ -19,13 +19,12 @@
 .gen th,
 .gen td { padding: 5px 18px; }
 
-/* 首列是行名，左对齐；数值列居中，靠 tabular-nums 对齐位数 */
-.gen thead th:first-child { text-align: left; letter-spacing: .12em; }
+/* 首列是行名，与数值列一同居中，数值靠 tabular-nums 对齐位数 */
+.gen thead th:first-child { letter-spacing: .12em; }
 
 .gen tbody th {
   color: var(--bone);
   font-weight: 400;
-  text-align: left;
   white-space: nowrap;
 }
 
