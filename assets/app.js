@@ -753,6 +753,10 @@
 
   var hero = document.querySelector('.hero-search');
   if (hero) {
+    /* 刷新首页回到页首。浏览器默认还原上次的滚动位置，首页有四组卡片、五屏高，
+       还原之后落在半页卡片阵里，读者以为跳错了地方。**只关首页这一处**：资料页
+       动辄几千行，还原是对的。带 #锚点的地址照旧由浏览器定位，不受这行影响。 */
+    if (history.scrollRestoration) history.scrollRestoration = 'manual';
     home(hero);
     measure();
     return;

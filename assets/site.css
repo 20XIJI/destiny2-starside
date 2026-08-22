@@ -933,10 +933,12 @@ body:has(.hero) {
 .hero-mark i,
 .hero-mark .rays { position: absolute; }
 
+/* 三层：圆在图标之下、细线在图标之上。**顺序全靠 DOM 里的先后**（圆 → 图标 →
+   细线），谁都不给 z-index——原版给圆加了 z-index: 1，圆弧会横穿图标，图标读作
+   半透明。细线仍压在图标上：那是成型的射线，穿过去才是那段动画的样子。 */
 .hero-mark .circle {
   border: 1px solid var(--hair-lit);
   border-radius: 50%;
-  z-index: 1;
 }
 
 .hero-mark .shapes {
@@ -946,6 +948,23 @@ body:has(.hero) {
   width: 8em;
   height: 8em;
   overflow: hidden;
+}
+
+/* 背景那张 88px 刻线网格与这枚标记自己的横竖线各成一套，两套近似平行、又对不齐，
+   凑在一起像没对准的网格。这一层把标记周围的刻线洗掉，让它自占一块空地。
+   洗的是 --ink：它与大气层顶色的 ΔE 11.30，按 design.md 那条线算同一个颜色，
+   所以只有刻线消失，底色不变暗。末端写 #0b0d1400 而不是 transparent——后者在
+   过渡段串进透明黑，中途发灰。 */
+.hero-mark::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  left: 50%;
+  width: 24em;
+  height: 24em;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(closest-side, var(--ink) 42%, #0b0d1400);
 }
 
 .hero-mark .shape {
