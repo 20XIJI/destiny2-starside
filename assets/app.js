@@ -734,6 +734,23 @@
     return;
   }
 
+  var mark = document.querySelector('.hero-mark');
+  if (mark) cycle(mark);
+
+  /* 首屏那枚标记：四个状态轮着换类，位置与角度的插值全在 CSS 里
+     （site.css「首屏那枚标记」一节）。这里只负责按节拍换类。
+     减弱动效时停在首个状态，不再换。 */
+  function cycle(el) {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var states = ['warlock', 'titan', 'hunter', 'default'];
+    var i = 0;
+    setInterval(function () {
+      el.classList.remove(states[i]);
+      i = (i + 1) % states.length;
+      el.classList.add(states[i]);
+    }, 3000);
+  }
+
   var hero = document.querySelector('.hero-search');
   if (hero) {
     home(hero);

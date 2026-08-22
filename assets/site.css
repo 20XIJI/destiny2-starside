@@ -891,6 +891,272 @@ body:has(.hero) {
    **两行竖排而不是一行并排**：一行时两者靠一道竖发丝线分隔，读作一串面包屑；
    竖排之后它们是并列的两个入口，右缘对齐版面右缘，与字标构成一条两端的横轴。
    字号比铭牌大一档、亮度提一档——它是可点的入口，铭牌只是署名。 */
+/* ── 首屏那枚标记：三职业图标互换 ──
+   命运 2 那段开场动画：四个圆改半径、六个三角改位置与角度、三组细线改角度与间距，
+   四个状态（术士 → 泰坦 → 猎人 → 收拢）之间靠 CSS 过渡插值，图标就"长"出来了。
+
+   **不用原 GIF**——它 2.3 MB、亮底 320×320，比整站首屏（约 46 KB）还重，
+   底色也与深色外壳冲突。这一版没有图片，全部由边框与渐变画出。
+
+   实现移植自 Milleus 的 CodePen「Destiny 2: Loading Animation」
+   （https://codepen.io/Milleus/pen/XWWEKqm），改了三处：尺寸从 rem 换成 em，
+   整枚的大小因此由 .hero-mark 的 font-size 一处定；颜色换成站点 token；
+   遮挡用的白色改成透明与外壳底色。
+
+   三角形是 CSS 边框三角（左右透明、底边着色），不是图片也不是 SVG——要能被
+   transform 逐个搬位置，边框三角比 path 便宜。 */
+.hero-mark {
+  position: relative;
+  flex: none;
+  align-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 整枚的大小只由这一行定：容器 14em，最长的细线 15em */
+  font-size: 9px;
+  width: 14em;
+  /* **不占纵向空间**：盒高留 0，四组零件靠 flex 的静态位置对称溢出。
+     占了高度就会把铭牌那条竖线（align-items: stretch）撑到比字标还长。 */
+  height: 0;
+  /* 铭牌与右侧那两条入口之间的空当：两侧 auto 让它落在中间 */
+  margin: 0 auto;
+}
+
+.hero-mark i,
+.hero-mark .rays { position: absolute; }
+
+.hero-mark .circle {
+  border: 1px solid var(--hair-lit);
+  border-radius: 50%;
+  z-index: 1;
+}
+
+.hero-mark .shapes {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 8em;
+  height: 8em;
+  overflow: hidden;
+}
+
+.hero-mark .shape {
+  border-left: 2.85em solid transparent;
+  border-right: 2.85em solid transparent;
+  border-bottom: 4.9em solid var(--bone);
+}
+
+.hero-mark .line {
+  position: absolute;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(to bottom, transparent, var(--hair-lit) 20%,
+    var(--hair-lit) 80%, transparent);
+}
+
+.hero-mark .line.l1 { left: 0; }
+
+.hero-mark .line.l2 { left: 33%; }
+
+.hero-mark .line.l3 { left: 67%; }
+
+.hero-mark .line.l4 { left: 100%; }
+
+/* 四个状态各自摆一套位置，过渡时长一致，元素因此同时到位 */
+.hero-mark .circle,
+.hero-mark .shape,
+.hero-mark .rays,
+.hero-mark .line { transition: all 2s ease-in-out; }
+
+/* ── 收拢：三角退到底色，只剩圆与线 ── */
+.hero-mark.default .c1 { width: 10em; height: 10em; }
+
+.hero-mark.default .c2,
+.hero-mark.default .c3 { width: 9em; height: 9em; }
+
+.hero-mark.default .c4 { width: 8em; height: 8em; }
+
+.hero-mark.default .shape {
+  transition: transform 2s ease-in-out, border-bottom-color .75s ease-in 1.25s;
+  border-bottom-color: transparent;
+  transform: rotate(180deg);
+}
+
+.hero-mark.default .g1 { width: 6em; height: 15em; }
+
+.hero-mark.default .g2 { width: 7.75em; height: 15em; transform: rotate(-60deg); }
+
+.hero-mark.default .g3 { width: 7.75em; height: 15em; transform: rotate(60deg); }
+
+/* ── 术士 ── */
+.hero-mark.warlock .c1 { width: 6.25em; height: 6.25em; }
+
+.hero-mark.warlock .c2 { width: 4em; height: 4em; }
+
+.hero-mark.warlock .c3 {
+  width: 12.5em;
+  height: 12.5em;
+  transition: all 1s ease-in-out 1s;
+}
+
+.hero-mark.warlock .c4 {
+  width: 11.5em;
+  height: 11.5em;
+  transition: all 1s ease-in-out 1s;
+}
+
+.hero-mark.warlock .shape {
+  transition: transform 2s ease-in-out, border-bottom-color .75s ease-in 1.25s;
+}
+
+.hero-mark.warlock .s1,
+.hero-mark.warlock .s4 { transform: rotate(0) translate(-1.15em, .5em); }
+
+.hero-mark.warlock .s2,
+.hero-mark.warlock .s5 { transform: rotate(360deg) translate(0, .5em); }
+
+.hero-mark.warlock .s3,
+.hero-mark.warlock .s6 { transform: rotate(360deg) translate(1.15em, .5em); }
+
+.hero-mark.warlock .g1 { width: 6em; height: 15em; transform: rotate(-90deg); }
+
+.hero-mark.warlock .g1 .l2,
+.hero-mark.warlock .g1 .l3 { opacity: 0; }
+
+.hero-mark.warlock .g2 { width: 4em; height: 15em; transform: rotate(-150deg); }
+
+.hero-mark.warlock .g2 .l1 { left: 50%; }
+
+.hero-mark.warlock .g2 .l2 { left: 74%; }
+
+.hero-mark.warlock .g2 .l3 { left: 77%; }
+
+.hero-mark.warlock .g2 .l4 { left: 100%; }
+
+.hero-mark.warlock .g3 { width: 4em; height: 15em; transform: rotate(150deg); }
+
+.hero-mark.warlock .g3 .l1 { left: 0; }
+
+.hero-mark.warlock .g3 .l2 { left: 24%; }
+
+.hero-mark.warlock .g3 .l3 { left: 27%; }
+
+.hero-mark.warlock .g3 .l4 { left: 50%; }
+
+/* ── 泰坦 ── */
+.hero-mark.titan .c1 { width: 10.5em; height: 10.5em; }
+
+.hero-mark.titan .c2 { width: 10em; height: 10em; }
+
+.hero-mark.titan .c3 { width: 12em; height: 12em; transition: all 1s ease-in-out 1s; }
+
+.hero-mark.titan .c4 { width: 11em; height: 11em; transition: all 1s ease-in-out 1s; }
+
+.hero-mark.titan .s1 { transform: rotate(-90deg) scale(.535) translate(-3.1em, -2.5em); }
+
+.hero-mark.titan .s2 { transform: rotate(270deg) scale(.535) translate(3.1em, -2.5em); }
+
+.hero-mark.titan .s3 { transform: rotate(270deg) scale(.485) translate(0, 3em); }
+
+.hero-mark.titan .s4 { transform: rotate(90deg) scale(.485) translate(0, 3em); }
+
+.hero-mark.titan .s5 { transform: rotate(450deg) scale(.535) translate(-3.1em, -2.4em); }
+
+.hero-mark.titan .s6 { transform: rotate(450deg) scale(.535) translate(3.1em, -2.4em); }
+
+.hero-mark.titan .g1 { width: 5.25em; height: 15em; transform: rotate(-180deg); }
+
+.hero-mark.titan .g1 .l2,
+.hero-mark.titan .g1 .l3 { opacity: 0; }
+
+.hero-mark.titan .g2 { width: 5.5em; height: 15em; transform: rotate(-240deg); }
+
+.hero-mark.titan .g3 { width: 5.5em; height: 15em; transform: rotate(240deg); }
+
+.hero-mark.titan .g2 .l1,
+.hero-mark.titan .g3 .l1 { left: 0; }
+
+.hero-mark.titan .g2 .l2,
+.hero-mark.titan .g3 .l2 { left: 48%; }
+
+.hero-mark.titan .g2 .l3,
+.hero-mark.titan .g3 .l3 { left: 52%; }
+
+.hero-mark.titan .g2 .l4,
+.hero-mark.titan .g3 .l4 { left: 100%; }
+
+/* ── 猎人 ── */
+.hero-mark.hunter .c1 { width: 5.5em; height: 5.5em; }
+
+.hero-mark.hunter .c2 { width: 4em; height: 4em; }
+
+.hero-mark.hunter .c3 { width: 9em; height: 9em; }
+
+.hero-mark.hunter .c4 { width: 8em; height: 8em; }
+
+.hero-mark.hunter .shapes { height: 6em; transition: height 2s ease-in-out; }
+
+.hero-mark.hunter .shape {
+  transition: all 2s ease-in-out, border-bottom-color .75s ease-in 1.25s;
+}
+
+.hero-mark.hunter .s1 { transform: rotate(0deg) scale(.83) translate(0, 1.2em); }
+
+.hero-mark.hunter .s2 { transform: rotate(360deg) scale(.83) translate(0, -3.6em); }
+
+.hero-mark.hunter .s3 { transform: rotate(360deg) scale(.83) translate(0, -1.2em); }
+
+/* 后三个三角退到透明，把前三个切出猎人那三道缺口 */
+.hero-mark.hunter .s4 {
+  border-bottom-color: transparent;
+  transform: rotate(0deg) scale(.4) translate(0, 0);
+}
+
+.hero-mark.hunter .s5 {
+  border-bottom-color: transparent;
+  transform: rotate(360deg) scale(.4) translate(0, -5em);
+}
+
+.hero-mark.hunter .s6 {
+  border-bottom-color: transparent;
+  transform: rotate(360deg) scale(.4) translate(0, 5em);
+}
+
+.hero-mark.hunter .g1 { width: 6em; height: 15em; transform: rotate(-270deg); }
+
+.hero-mark.hunter .g2 { width: 5em; height: 15em; transform: rotate(-330deg); }
+
+.hero-mark.hunter .g2 .l1 { left: 0; }
+
+.hero-mark.hunter .g2 .l2 { left: 20%; }
+
+.hero-mark.hunter .g2 .l3 { left: 40%; z-index: -1; }
+
+.hero-mark.hunter .g2 .l4 { left: 60%; z-index: -1; }
+
+.hero-mark.hunter .g3 { width: 5em; height: 15em; transform: rotate(330deg); }
+
+.hero-mark.hunter .g3 .l1 { left: 40%; }
+
+.hero-mark.hunter .g3 .l2 { left: 60%; }
+
+.hero-mark.hunter .g3 .l3 { left: 80%; }
+
+.hero-mark.hunter .g3 .l4 { left: 100%; }
+
+/* 动效是装饰：关掉即停在术士那一态，标记本身仍在（app.js 不再换类） */
+@media (prefers-reduced-motion: reduce) {
+  .hero-mark .circle,
+  .hero-mark .shape,
+  .hero-mark .rays,
+  .hero-mark .line { transition: none; }
+}
+
+/* 窄屏先让位给铭牌与右侧的两条入口，标记不参与信息 */
+@media (max-width: 1100px) {
+  .hero-mark { display: none; }
+}
+
 .hero-util {
   display: flex;
   flex-direction: column;
