@@ -439,6 +439,8 @@
 {el-strand|集群战术 x1} | {el-strand|线虫伤害提高 15%}。
 {el-strand|集群战术 x2} | {el-strand|线虫伤害提高 30%}。
 
+处于{el-strand|集群战术 x2} 期间，每次{el-strand|线虫}命中再把{el-strand|线虫伤害}提高 1.03 倍，直到{buff|增益}到期。
+
 {el-strand|线虫伤害}会眩晕{enemy|势不可挡勇士}。
 
 ### 二级 · 鲜弹芬芳

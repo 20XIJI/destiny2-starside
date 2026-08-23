@@ -19,6 +19,11 @@
 - {act|改动}首页：首屏重排成字标铭牌、搜索、目录三条带，资料分四组，刻线与光点对版心中轴
 - {act|改动}[职业分支详解](../elements/index.html)：原「属性详解」
 - {act|订正}首页：各页工具条上的分节 chip 跟着滚动标出当前所在的分节
+- {act|订正}[神器模组](../artifact-mods/index.html) · 集群战术：补上满层后每次线虫命中再提高 1.03 倍
+- {act|订正}[武器 PERK 详解](../weapon-perks/index.html) · 持久印象：补上有效伤害约 26%–27%、不吃狼群弹药
+- {act|订正}[缚丝](../elements/strand/index.html) · 勇士之鞭：击杀带元素减益的战斗人员提供 10% 职业技能能量
+- {act|订正}[棱镜](../elements/prismatic/index.html) · 勇士之鞭：补上击杀带元素减益的战斗人员回能那一句
+- {act|订正}[游戏机制](../game-mechanics/index.html) · 急速险益：补上这份伤害不会致死
 
 ## 2026.8.22
 
