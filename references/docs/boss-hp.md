@@ -3,7 +3,8 @@
 描述：突袭与地牢全部首领的生命值、交战距离、输出时间与人均 DPS 门槛，按副本归组，含易伤、减伤与护盾数值。
 更新：2026.7.30
 页脚：数值为固定难度下的实测值，不随光等浮动。
-鸣谢：[Destiny 2: Boss Damage](https://docs.google.com/spreadsheets/u/0/d/1_5wtBjRYHHxuF4oJKDb_iOGZs-wTkzB6RYbnyNLbuz4/htmlview#gid=1346678363) 提供数值，小黑盒用户{buff|“压力一直天满光”}校对首领名称。
+数据源：[Destiny 2: Boss Damage](https://docs.google.com/spreadsheets/u/0/d/1_5wtBjRYHHxuF4oJKDb_iOGZs-wTkzB6RYbnyNLbuz4/htmlview#gid=1346678363)
+鸣谢：小黑盒用户{buff|“压力一直天满光”}校对首领名称。
 
 ## 突袭
 

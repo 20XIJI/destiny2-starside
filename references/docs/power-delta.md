@@ -2,7 +2,7 @@
 
 描述：光等差对伤害的影响，−100 到 +100 逐点数值，标准与传说战役两条曲线，光等差 0 记作 1 倍。
 更新：2026.8.14
-鸣谢：[MossyMax](https://docs.google.com/spreadsheets/d/1b57Hb8m1L3daFfUckQQqvvN6VOpD03KEssvQLMFpC5I/edit?gid=1252789129#gid=1252789129) 实测并整理全部数值。
+数据源：MossyMax 的 [Destiny 2 Damage Scaling Spreadsheet](https://docs.google.com/spreadsheets/d/1b57Hb8m1L3daFfUckQQqvvN6VOpD03KEssvQLMFpC5I/edit?gid=1252789129#gid=1252789129) 压光分页
 图表：是
 默认曲线：伤害倍率
 标注：伤害倍率 -50 -30 -10 0

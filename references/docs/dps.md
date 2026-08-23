@@ -2,7 +2,7 @@
 
 描述：258 组配装的持续输出实测排行，按 DPS 降序，含弹药与武器类型、弹数、打空耗时、伤害倍率拆解与逐条注解。
 更新：2026.8.22
-页脚：数据源：[Destiny 2: Boss Damage](https://docs.google.com/spreadsheets/u/0/d/1_5wtBjRYHHxuF4oJKDb_iOGZs-wTkzB6RYbnyNLbuz4/htmlview) 的持续输出分页。本页在其基础上统一了术语、标点与排版，数值未作改动。
+数据源：[Destiny 2: Boss Damage](https://docs.google.com/spreadsheets/u/0/d/1_5wtBjRYHHxuF4oJKDb_iOGZs-wTkzB6RYbnyNLbuz4/htmlview) 的持续输出分页
 鸣谢：[両儀式織](https://space.bilibili.com/2135345999) 整理全部注解并校对数值。
 列组：结果 = 名字、图标、弹药、最终伤害、总伤、DPS、排行、注解
 列组：细节 = 备弹、伤害间隔、打空耗时

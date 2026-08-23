@@ -41,11 +41,19 @@ BILIBILI = 'https://space.bilibili.com/26117485'
 COMPENDIUM_URL = ('https://docs.google.com/spreadsheets/u/0/d/'
                   '1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4')
 
-# 来自 Destiny Data Compendium 的页面，数据源一行一字不差地用这句。同一个数据源
-# 在不同页面换着说法写，读者会以为是不同来源。
-COMPENDIUM = ('<p>数据源：<a href="%s" target="_blank" rel="noopener">'
-              'Destiny Data Compendium</a>。本页在其基础上统一了术语、标点与排版，'
-              '数值未作改动。</p>' % COMPENDIUM_URL)
+# 数据源那一段：出处 + 二次加工声明。**声明只有这一处定义**——同一个数据源在
+# 不同页面换着说法写，读者会以为是不同来源。各页只给出处，句子由这里拼。
+SOURCE_TAIL = '。本页在其基础上统一了术语、标点与排版，数值未作改动。'
+
+
+def source_note(html):
+    """数据源一段。html 是出处本身，链接与限定语由调用方给。"""
+    return '<p>数据源：%s%s</p>' % (html, SOURCE_TAIL)
+
+
+COMPENDIUM_SRC = ('<a href="%s" target="_blank" rel="noopener">'
+                  'Destiny Data Compendium</a>' % COMPENDIUM_URL)
+COMPENDIUM = source_note(COMPENDIUM_SRC)
 
 CREDIT = ('<p>© 2026 日栎w · <a href="%s" target="_blank" rel="noopener">'
           '哔哩哔哩</a></p>' % BILIBILI)
@@ -152,15 +160,17 @@ def emit(outdir, out, detail=''):
                                '，' + detail if detail else ''))
 
 
-def foot(stamp, first, compendium=False, thanks=None):
-    """页脚。stamp 写成 YYYY.M.D，first 是接在更新时间后面的那句。
+def foot(stamp, first, source=None, thanks=None):
+    """页脚，三段式：本页口径、数据源、特别鸣谢，每段一件事。
 
-    thanks 只写在该译者实际参与的页面上，不做全站铺开。
+    stamp 写成 YYYY.M.D，first 是接在更新时间后面的那句本页口径（可省）。
+    source 只给出处，那句二次加工声明由 source_note() 接上。
+    thanks 只写人，且只写在该贡献者实际参与的页面上，不做全站铺开。
     """
     o = ['<footer class="site-foot">',
          '<p><span class="stamp">更新 %s</span>%s</p>' % (stamp, first)]
-    if compendium:
-        o.append(COMPENDIUM)
+    if source:
+        o.append(source_note(source))
     if thanks:
         o.append('<p>特别鸣谢：%s</p>' % thanks)
     o += [CREDIT, LEGAL, '</footer>', SPEC, '</body>', '</html>', '']

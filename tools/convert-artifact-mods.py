@@ -203,7 +203,7 @@ def render(page):
         o += ['</div>', '</section>']
 
     o += ['</main>', '', shell.foot(
-        '2026.8.10', shell.unsure_note('[?]'), compendium=True)]
+        '2026.8.10', shell.unsure_note('[?]'), source=shell.COMPENDIUM_SRC)]
     return '\n'.join(o)
 
 

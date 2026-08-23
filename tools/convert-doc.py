@@ -683,12 +683,15 @@ def render(md, slug):
         o += render_blocks(chunk, scales, groups, marks, curves, up, rota)
         o.append('</section>')
 
-    # 「数据源：是」输出 shell.py 里那句 Destiny Data Compendium 归属，一字不改。
-    # 鸣谢只写在该贡献者实际参与的页面上，不做全站铺开。
+    # 「数据源：是」用 shell.py 里那个 Destiny Data Compendium 出处，一字不改；
+    # 写别的值就是这一页自己的出处，二次加工那句由 shell.source_note() 接上。
+    # 鸣谢只写人，且只写在该贡献者实际参与的页面上，不做全站铺开。
+    src = meta('数据源', required=False)
     o += ['</main>', '',
           shell.foot(stamp,
                      inline(foot, rich=True) if foot else '',
-                     compendium=flag_of(md, '数据源'),
+                     source=(shell.COMPENDIUM_SRC if src == '是'
+                             else inline(src, rich=True) if src else None),
                      thanks=inline(thanks, rich=True) if thanks else None)]
     return '\n'.join(o), title
 

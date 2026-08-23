@@ -3,7 +3,7 @@
 描述：各类武器对载具、首领、勇士、初级首领、橙血与红血战斗人员的伤害倍率，按主武器、特殊武器、威能武器分节，含单列的具名武器。
 更新：2026.8.14
 首屏图标：6
-页脚：数据来自 MossyMax 的 [Destiny 2 Damage Scaling Spreadsheet](https://docs.google.com/spreadsheets/d/1b57Hb8m1L3daFfUckQQqvvN6VOpD03KEssvQLMFpC5I/edit#gid=1386975095)。
+数据源：MossyMax 的 [Destiny 2 Damage Scaling Spreadsheet](https://docs.google.com/spreadsheets/d/1b57Hb8m1L3daFfUckQQqvvN6VOpD03KEssvQLMFpC5I/edit#gid=1386975095)
 
 ## 主武器
 

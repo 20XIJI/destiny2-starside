@@ -3,7 +3,7 @@
 描述：83 把异域武器的输出、清怪与高难评级，含实测总伤与 DPS，以及每一档评级的理由。
 更新：2026.8.19
 鸣谢：[小棒猪-LGpig](https://space.bilibili.com/169548478) 整理全部评级、数值与评语。
-页脚：数据源：[刷取清单](https://docs.google.com/spreadsheets/d/1qsKGrRzCePGaIM5gNtAQNh949d3OsMJ6qV6Fqtpj22k/htmlview)。本页在其基础上统一了术语、标点与排版，数值未作改动。
+数据源：[刷取清单](https://docs.google.com/spreadsheets/d/1qsKGrRzCePGaIM5gNtAQNh949d3OsMJ6qV6Fqtpj22k/htmlview)
 首屏图标：6
 
 ## 评级
