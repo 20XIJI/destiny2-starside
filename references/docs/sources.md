@@ -17,7 +17,7 @@
 | [刷取清单](https://docs.google.com/spreadsheets/d/1qsKGrRzCePGaIM5gNtAQNh949d3OsMJ6qV6Fqtpj22k/htmlview) | 异域武器的输出、清怪与高难评级 | [刷取清单-异域武器](../exotic-weapons/index.html) |
 | [DIM 社区](https://discord.com/channels/591927598255439873/1453807417430245518) | 弹药生成的测试支持 | [弹药生成机制](../ammo/index.html) |
 
-来自 Destiny Data Compendium 的页面在其基础上统一了术语、标点与排版，数值未作改动。{note|DIM 社区那个链接指向 Discord 频道内页，需登录并已加入该服务器才能打开。}
+来自 Destiny Data Compendium 的页面在其基础上统一了术语、标点与排版。{note|DIM 社区那个链接指向 Discord 频道内页，需登录并已加入该服务器才能打开。}
 
 ## 鸣谢
 

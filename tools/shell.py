@@ -43,7 +43,7 @@ COMPENDIUM_URL = ('https://docs.google.com/spreadsheets/u/0/d/'
 
 # 数据源那一段：出处 + 二次加工声明。**声明只有这一处定义**——同一个数据源在
 # 不同页面换着说法写，读者会以为是不同来源。各页只给出处，句子由这里拼。
-SOURCE_TAIL = '。本页在其基础上统一了术语、标点与排版，数值未作改动。'
+SOURCE_TAIL = '。本页在其基础上统一了术语、标点与排版。'
 
 
 def source_note(html):
