@@ -934,11 +934,26 @@ body:has(.hero) {
 .hero-mark .rays { position: absolute; }
 
 /* 三层：圆在图标之下、细线在图标之上。**顺序全靠 DOM 里的先后**（圆 → 图标 →
-   细线），谁都不给 z-index——原版给圆加了 z-index: 1，圆弧会横穿图标，图标读作
-   半透明。细线仍压在图标上：那是成型的射线，穿过去才是那段动画的样子。 */
+   细线），圆不给 z-index——原版给圆加了 z-index: 1，圆弧会横穿图标，图标读作半透明。
+
+   细线压在图标上只对泰坦成立：那一态六边形上的 X 接缝就是两条射线穿过去画出来的。
+   **术士与猎人反过来，图标压住射线**——那两态的接缝由三角自己的描边给出（术士）或
+   由内挖件给出（猎人），射线再穿过去只会在干净的色块上多划几道。原 GIF 里射线与
+   图标同色，穿过去看不见，等价于不穿；站上图标是亮色、射线是暗色，穿过去就现形：
+   实测术士态 y=+25 那条扫描线上，右侧色块被 g3 的三条射线划出 +13.9 / +25.6 / +27.1
+   三道暗线，而 GIF 的同一块是干净的。 */
+.hero-mark.warlock .shapes,
+.hero-mark.hunter .shapes { z-index: 1; }
+
+/* 圆与射线都带一层 .2px 模糊：GIF 里的发丝线是约 2px 的软边，硬边 1px 实色读作
+   网页 UI 而不是制图。半径按并排实测取：.35px 会把线糊成 4px 带光晕的粗棒，.2px
+   下截面是半高宽 2 CSS px、峰值 ΔL* 25.6，与 GIF 的约 2px、ΔL* 20 同一档。
+   **模糊只能加在这两层上**：加在 .hero-mark 上会让它成为层叠上下文，::after 那层
+   z-index: -1 的刻线橡皮就压不到页面背景后面去了。 */
 .hero-mark .circle {
   border: 1px solid var(--hair-lit);
   border-radius: 50%;
+  filter: blur(.2px);
 }
 
 .hero-mark .shapes {
@@ -967,19 +982,51 @@ body:has(.hero) {
   background: radial-gradient(closest-side, var(--ink) 42%, #0b0d1400);
 }
 
+/* 圆内那圈刻纹。GIF 里它一直在，对比度只有背景亮度的 2.5%（L 差 4–8 级）——凑近
+   才看得见，却是整枚标记「刻在金属板上」而不是「画在网页上」的来源。
+   **不给 z-index**：::after 是 -1，::before 走正常序就压在它上面、又在四个圆之下，
+   与 GIF 的层次一致。四态共用一圈，静止不参与过渡——GIF 里它也不动。 */
+.hero-mark::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 7.8em;
+  height: 7.8em;
+  transform: translate(-50%, -50%);
+  background: repeating-conic-gradient(var(--hair-lit) 0 1.2deg, transparent 1.2deg 7.5deg);
+  mask: radial-gradient(closest-side, transparent 86%, #000 90%, #000 94%, transparent 98%);
+  opacity: .16;
+}
+
+/* 图标不涂满 --bone：GIF 里它是深灰不是纯黑，形状 L 43–52 压背景 L 204–208，ΔL* 约 62；
+   --bone 压 --ink 是 86，高出三成半，读作一块顶亮的板子而不是制图里的实心件。
+   **压到 78% 落在 ΔL* 69，不追平 GIF 的 62。**深色主题下这一档不对称：并排渲染过
+   100% / 86% / 78% / 70% / --bone-dim 五档，ΔL* 62 那两档（70% 与 --bone-dim）已经
+   发灰发冷、丢掉骨白的身份，78% 才是既卸掉刺眼、又还认得出是骨白的那一档。
+   走 color-mix 而不是新写一个 hex：两端都是 :root 既有的 token，不给站点添渲染色。
+   猎人的内挖件与术士的接缝仍涂 --ink——那两处画的是缺口，不是图标本体。 */
 .hero-mark .shape {
   border-left: 2.85em solid transparent;
   border-right: 2.85em solid transparent;
-  border-bottom: 4.9em solid var(--bone);
+  border-bottom: 4.9em solid color-mix(in srgb, var(--bone) 78%, var(--ink));
   transition: transform 2s ease-in-out, border-bottom-color .75s ease-in 1.25s;
 }
 
+/* 纵向渐变两端各 20% 的斜坡不要动：GIF 帧 63 那条竖线量下来正是这个衰减。
+
+   **左移半像素让 left 指的是线心而不是线的左缘。**不补这半格，同一组里 left: 0 与
+   left: 100% 两条线的中心就落在 -w/2+.5 与 +w/2+.5 上，整组偏 .5px：泰坦态右侧那条
+   竖线因此压进六边形 0.475px，把右直边啃掉一道，左边却不啃——一枚对称的图形看着
+   左右不一样重。 */
 .hero-mark .line {
   position: absolute;
+  margin-left: -.5px;
   width: 1px;
   height: 100%;
   background: linear-gradient(to bottom, transparent, var(--hair-lit) 20%,
     var(--hair-lit) 80%, transparent);
+  filter: blur(.2px);
 }
 
 .hero-mark .line.l1 { left: 0; }
@@ -994,13 +1041,18 @@ body:has(.hero) {
 .hero-mark .rays,
 .hero-mark .line { transition: all 2s ease-in-out; }
 
-/* ── 收拢：三角退成透明，只剩圆与线 ── */
+/* ── 收拢：三角退成透明，只剩圆与线 ──
+   四个圆是紧挨的一叠，不是均分的四圈。CodePen 那版写的是 10 / 9 / 9 / 8em——c2 与
+   c3 完全重合，四个圆只看得见三圈，内外半径比 0.80。GIF 帧 63 量下来是 0.89，
+   四圈都分得开。**这一处按 GIF 改，不再照搬 CodePen**：GIF 才是源头，CodePen
+   本身也是复刻。术士、泰坦、猎人三态的半径不动，那三态本来就已经与 GIF 一致。 */
 .hero-mark.default .c1 { width: 10em; height: 10em; }
 
-.hero-mark.default .c2,
-.hero-mark.default .c3 { width: 9em; height: 9em; }
+.hero-mark.default .c2 { width: 9.55em; height: 9.55em; }
 
-.hero-mark.default .c4 { width: 8em; height: 8em; }
+.hero-mark.default .c3 { width: 9.2em; height: 9.2em; }
+
+.hero-mark.default .c4 { width: 8.9em; height: 8.9em; }
 
 .hero-mark.default .shape {
   border-bottom-color: transparent;
@@ -1030,25 +1082,54 @@ body:has(.hero) {
   transition: all 1s ease-in-out 1s;
 }
 
-/* 缝就是这一圈描边：后画的三角用自己的描边压掉前一件的边。三枚各画两遍
-   （s4–s6 与 s1–s3 同位），第二遍把描边补到最上层，六条边才都在。 */
+/* 术士这一枚是**一枚三角被两对平行线切成六片**，不是三个三角并排。三片填色叠出
+   外轮廓，四道缝把它切开——GIF 的保持帧描摹稿里正是六个独立多边形，底边五段
+   105-117 / 124-136 / 141-178 / 183-195 / 202-214，四道缝各 5–7px。
+
+   **左边两道缝由 s2、s3 自己的描边压出**：后画的三角用描边吃掉前一枚的右侧一条。
+   右边两道压不出来——s3 的填色最后画，把 s1、s2 的右侧边一并盖住，整枚只剩两道缝、
+   读作「一大两小三个三角」。s4/s5 因此不再原位重画一遍三角（重画照样被盖掉，等于
+   白画），而是各自右移一条缝宽、裁成贴着 s1/s2 右侧边的墨条，画在三枚填色之上。
+   四道缝因此都落在各自那条边的**外侧**，左右对称。
+
+   三角自己的比例也按描摹稿改：整枚 109×62（比 1.758），三角半底与高之比 36:63，
+   间距 18.5:36。`.shape` 的边框比例（2.85:4.9）比它瘦，所以在 transform 里补一道
+   scale(.885, .877)——这一道同时把整枚定到 4.3em 高，与猎人态 6.3em 的高度比正是
+   描摹稿里的 63:92。位移的第二个值 .428em 让图标中心落在圆心下方 .375em，
+   描摹稿里图标中心（166.5）也正在圆心（161）下面。 */
 .hero-mark.warlock .shape {
-  filter:
-    drop-shadow(.09em 0 0 var(--ink)) drop-shadow(-.09em 0 0 var(--ink))
-    drop-shadow(0 .09em 0 var(--ink)) drop-shadow(0 -.09em 0 var(--ink));
+  transform-origin: 50% 50%;
 }
 
-.hero-mark.warlock .s1 { transform: rotate(0) translate(-1.15em, .5em); }
+.hero-mark.warlock .s2,
+.hero-mark.warlock .s3 {
+  filter:
+    drop-shadow(.271em 0 0 var(--ink)) drop-shadow(-.271em 0 0 var(--ink))
+    drop-shadow(0 .271em 0 var(--ink)) drop-shadow(0 -.271em 0 var(--ink));
+}
 
-.hero-mark.warlock .s2 { transform: rotate(360deg) translate(0, .5em); }
+.hero-mark.warlock .s1,
+.hero-mark.warlock .s4,
+.hero-mark.warlock .s5 { filter: none; }
 
-.hero-mark.warlock .s3 { transform: rotate(360deg) translate(1.15em, .5em); }
+.hero-mark.warlock .s1 { transform: rotate(0) scale(.885, .877) translate(-1.42em, .428em); }
 
-.hero-mark.warlock .s4 { transform: rotate(0) translate(-1.15em, .5em); }
+.hero-mark.warlock .s2 { transform: rotate(360deg) scale(.885, .877) translate(0, .428em); }
 
-.hero-mark.warlock .s5 { transform: rotate(360deg) translate(0, .5em); }
+.hero-mark.warlock .s3 { transform: rotate(360deg) scale(.885, .877) translate(1.42em, .428em); }
 
-.hero-mark.warlock .s6 { transform: rotate(360deg) translate(1.15em, .5em); }
+/* 墨条比 s1/s2 各右移一条缝宽，裁出来的那条就整个落在它们右侧边的外面 */
+.hero-mark.warlock .s4 { transform: rotate(0) scale(.885, .877) translate(-1.149em, .428em); }
+
+.hero-mark.warlock .s5 { transform: rotate(360deg) scale(.885, .877) translate(.271em, .428em); }
+
+.hero-mark.warlock .s4,
+.hero-mark.warlock .s5 {
+  border-bottom-color: var(--ink);
+  clip-path: polygon(50% 0, 100% 100%, calc(100% - .271em) 100%, calc(50% - .271em) 0);
+}
+
+.hero-mark.warlock .s6 { border-bottom-color: transparent; }
 
 .hero-mark.warlock .g1 { width: 6em; height: 15em; transform: rotate(-90deg); }
 
@@ -1084,9 +1165,12 @@ body:has(.hero) {
 
 .hero-mark.titan .c4 { width: 11em; height: 11em; transition: all 1s ease-in-out 1s; }
 
-.hero-mark.titan .s1 { transform: rotate(-90deg) scale(.535) translate(-3.1em, -2.5em); }
+/* 位移的第二个值取 -2.4em 与 s5/s6 一致，不用 CodePen 的 -2.5em：两者差 0.1em，
+   左右两半因此不对称，中线落在 x=-0.3px 这种半像素上，两条抗锯齿边相接而不相叠，
+   六边形正中被豁出一道 1px 的竖缝。取齐之后两半对称、还叠 0.6px，缝就没了。 */
+.hero-mark.titan .s1 { transform: rotate(-90deg) scale(.535) translate(-3.1em, -2.4em); }
 
-.hero-mark.titan .s2 { transform: rotate(270deg) scale(.535) translate(3.1em, -2.5em); }
+.hero-mark.titan .s2 { transform: rotate(270deg) scale(.535) translate(3.1em, -2.4em); }
 
 .hero-mark.titan .s3 { transform: rotate(270deg) scale(.485) translate(0, 3em); }
 
@@ -1126,23 +1210,42 @@ body:has(.hero) {
 
 .hero-mark.hunter .c4 { width: 8em; height: 8em; }
 
-.hero-mark.hunter .shapes { height: 6em; transition: height 2s ease-in-out; }
+.hero-mark.hunter .shapes { height: 6.4em; transition: height 2s ease-in-out; }
 
 .hero-mark.hunter .shape {
   transition: all 2s ease-in-out, border-bottom-color .75s ease-in 1.25s;
 }
 
-.hero-mark.hunter .s1 { transform: rotate(0deg) scale(.83) translate(0, 1.2em); }
+.hero-mark.hunter .s1 { transform: rotate(0deg) scale(.83) translate(0, 1.362em); }
 
-.hero-mark.hunter .s2 { transform: rotate(360deg) scale(.83) translate(0, -3.6em); }
+.hero-mark.hunter .s2 { transform: rotate(360deg) scale(.83) translate(0, -3.738em); }
 
-.hero-mark.hunter .s3 { transform: rotate(360deg) scale(.83) translate(0, -1.2em); }
+.hero-mark.hunter .s3 { transform: rotate(360deg) scale(.83) translate(0, -1.188em); }
 
-/* 内挖件涂外壳底色，把外三角掏成人字。**必须是不透明的底色**：透明只是不画，
-   掏不出缺口。 */
+/* 人字的缺口是**真镂空**，不是拿底色盖出来的。原版用三枚涂底色的三角压在外三角上
+   挖口，深色外壳下那块底色会把穿过去的圆与射线一并抹掉——GIF 里缺口是透的，圆弧与
+   细线照常从人字中间穿过去。改用 clip-path 把每枚外三角自己裁成一枚人字。
+
+   三个比例按 GIF 的**保持段**（帧 44–48，逐行量出来的三条带一模一样）定，不按位移
+   段量——位移段的图形是斜的，帧 41 自镜像 IoU 只有 0.58，照它调会把左右调歪：
+
+   - **缺口尖 49.2%**（外三角高 58.6px，尖在第 28.9 行）
+   - **顶边裁在 48.5%**，比缺口尖高 0.7%：三枚的顶都被上一枚的底边压掉一截，只留
+     一小段实心的桥。三枚因此共用同一条 clip-path，最上那枚不例外。
+   - **底边不收**（100%）。缝不是从底边收出来的，是三枚的间距（52.05%）略大于
+     「缺口尖 + 顶边」（97.7%）留出来的那 0.02em。
+
+   间距同时定死在 s1/s2/s3 的位移上：2.55em × .83 ÷ 4.067em = 52.05%。 */
+.hero-mark.hunter .s1,
+.hero-mark.hunter .s2,
+.hero-mark.hunter .s3 {
+  clip-path: polygon(25.75% 48.5%, 74.25% 48.5%, 100% 100%, 75.4% 100%,
+    50% 49.2%, 24.6% 100%, 0 100%);
+}
+
 .hero-mark.hunter .s4,
 .hero-mark.hunter .s5,
-.hero-mark.hunter .s6 { border-bottom-color: var(--ink); }
+.hero-mark.hunter .s6 { border-bottom-color: transparent; }
 
 .hero-mark.hunter .s4 { transform: rotate(0deg) scale(.4) translate(0, 0); }
 
