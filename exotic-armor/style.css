@@ -51,8 +51,10 @@
   margin: 0 auto 4px;
 }
 
-/* 说明：这一页真正要读的一列，顶对齐——各行长短差十倍，居中会让长行把短行推到中间 */
-.gen tbody td:last-child {
+/* 说明：这一页真正要读的一列，顶对齐——各行长短差十倍，居中会让长行把短行推到中间。
+   **按「不是图标、不是特性、不是之灵名」认，不按列序认**：职业金那一节一行两枚之灵、
+   六列，说明落在第 3 与第 6 格，别的分节四列、说明在末格，列序对不上。 */
+.gen tbody td:not(.ico):not(.perk):not(.spirit) {
   padding: 12px 18px 14px;
   font-size: 13.5px;
   line-height: 1.9;
@@ -60,14 +62,20 @@
   vertical-align: top;
 }
 
-/* 栏位：左栏／右栏，只在「职业」那一节出现。
-   整格只有一个 {slot|…}，class 落在 <td> 本身（见 convert-doc.py 的 wrap()）。
-   短标识，居中不折行，退一档读作坐标——它是这一件在职业物品上的位置，不是内容。 */
-.gen td.slot {
-  color: var(--bone-dim);
+/* ── 职业金：一行两枚之灵，左右栏并排（照原表） ──
+   右栏那一枚的名字是格子不是行首，写成 {spirit|…} 把 class 落在 <td> 上，
+   版式与行首的护甲名对齐：同为这一枚的身份，同一档亮度与字重。 */
+.gen td.spirit {
+  color: var(--bone-hi);
   font-family: var(--font-cn);
-  font-size: 12px;
-  letter-spacing: .06em;
+  font-weight: 600;
+  letter-spacing: .04em;
   text-align: center;
   white-space: nowrap;
 }
+
+/* 两列说明并排时各占约 360px，顶对齐后左右两枚各读各的。
+   :has(td.spirit) 认的就是这一张表——别的分节四列，不受影响。 */
+.gen:has(td.spirit) tbody td:not(.ico):not(.spirit) { width: 26em; }
+
+/* 横幅行分组：通用与三个职业。样式在 assets/site.css 的 .gen tr.lane > th */
