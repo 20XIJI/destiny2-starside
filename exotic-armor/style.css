@@ -1,4 +1,4 @@
-/* 异域护甲页组件：三个职业各 45 件，加三个永世教派。
+/* 异域护甲页组件：三个职业各 45 件，加三个永世教派与 36 枚职业物品之灵。
    通用主题、字体与配色 token 在 /assets/site.css。
    这一页由 tools/convert-doc.py 从 references/docs/exotic-armor.md 生成，
    改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
@@ -58,4 +58,16 @@
   line-height: 1.9;
   text-align: left;
   vertical-align: top;
+}
+
+/* 栏位：左栏／右栏，只在「职业」那一节出现。
+   整格只有一个 {slot|…}，class 落在 <td> 本身（见 convert-doc.py 的 wrap()）。
+   短标识，居中不折行，退一档读作坐标——它是这一件在职业物品上的位置，不是内容。 */
+.gen td.slot {
+  color: var(--bone-dim);
+  font-family: var(--font-cn);
+  font-size: 12px;
+  letter-spacing: .06em;
+  text-align: center;
+  white-space: nowrap;
 }
