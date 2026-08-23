@@ -1,0 +1,111 @@
+/* 切枪 DPS 排行：一张 198 行、十九列的爆发输出实测表。
+   通用主题、字体与配色 token 在 /assets/site.css。
+   这一页由 tools/convert-doc.py 从 references/docs/swap-dps.md 生成，
+   改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
+
+/* 全量宽表那一档（design.md 四节）：十九列全开时靠它兜住上限。
+   首列装的是长句，宽度钉死——不给宽度时自动布局按 max-content 算它的首选宽，
+   收起「倍率」「耗时」两组腾出来的位置立刻被它吃掉，列组就白收了（同 dps/）。
+   --min 与 DPS 排行同一档：页面默认是收起的，下限跟着收起后的宽度走。 */
+:root { --wrap: 1500px; --min: 1104px; }
+
+/* 表前的说明按阅读宽度收窄，不跟着表的版心放宽（design.md 四节） */
+.block p, .block ul { max-width: 46em; }
+
+/* ── 首列：名字 ──
+   两行一格：第一行是武器或技能名（源稿写 **粗体**），第二行是这一组配装。
+   名字提亮、配装压暗一档并折行——配装是限定语，读者先认名字再看条件。 */
+.gen tbody th[scope="row"] {
+  width: 22em;
+  max-width: 22em;
+  color: var(--bone-dim);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.gen tbody th[scope="row"] strong {
+  display: inline-block;
+  margin-bottom: 2px;
+  color: var(--bone-hi);
+  font-family: var(--font-cn);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: .04em;
+}
+
+/* ── 图标格 ──
+   源稿写 {ico|![](icons/…)}，整格只有一个标记，class 落在 <td> 本身。 */
+.gen tbody td.ico {
+  padding-right: 8px;
+  padding-left: 8px;
+  text-align: center;
+}
+
+.gen tbody td.ico img {
+  display: block;
+  width: 44px;
+  height: 44px;
+  /* block 元素不跟着格子的 text-align 走，居中靠自身的 auto 外边距 */
+  margin: 0 auto;
+  border-radius: 3px;
+}
+
+/* ── 类型：这一行的一枚标签 ──
+   短标识，居中不折行。不给六种类型各分一个色相——色相在站内归元素所有
+   （design.md 一节），六个中文词本身就是区分度。 */
+.gen tbody td:nth-of-type(2) {
+  font-family: var(--font-cn);
+  font-size: 12px;
+  letter-spacing: .04em;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* ── 数值区：七列倍率拆解、最终伤害、五列耗时、两列 DPS ──
+   等宽字族 + tabular-nums：同一列的个位与小数点纵向对齐，扫读时不必逐行
+   重新定位。字族必须是 --font-body，Chakra Petch 不带 tnum 特性（同 boss-hp）。 */
+.gen tbody td:nth-of-type(n + 3):nth-of-type(-n + 17) {
+  color: var(--bone);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .02em;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* 基础伤害到 200 属性这七列是拆解项，退一档读作限定语，不与最终伤害、DPS 抢注意；
+   三段耗时同理，切枪耗时与总耗时才是与 DPS 直接相关的那两个 */
+.gen tbody td:nth-of-type(n + 3):nth-of-type(-n + 9),
+.gen tbody td:nth-of-type(n + 11):nth-of-type(-n + 13) {
+  color: var(--bone-dim);
+  font-size: 12px;
+}
+
+/* 两列 DPS 是这一页的主数值，放大一档、加一位字重 */
+.gen tbody td:nth-of-type(16),
+.gen tbody td:nth-of-type(17) {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* 切枪 DPS 走八档色阶，颜色由 site.css 的 .gen tbody td[data-tier="N"] 给，
+   这里只管排版，不写 color——写了会压过色阶那条。
+   顶档再加一档字重：八档时相邻两档的 ΔE 已收到判读下限附近，
+   最高那一档是读者真正在找的东西（同 dps/）。 */
+.gen tbody td[data-tier="8"] { font-weight: 700; }
+
+/* ── 排行 ──
+   全表按切枪 DPS 降序，名次即行序。单独给一列是为了收起列组之后名次仍在。
+   压暗一档、降一档字号：它是坐标，不与 DPS 本身抢注意。 */
+.gen tbody td:last-child {
+  color: var(--bone-faint);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+/* 表头：十九列都短，不折行 */
+.gen thead th { white-space: nowrap; }

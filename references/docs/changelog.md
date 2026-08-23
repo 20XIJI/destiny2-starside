@@ -6,6 +6,7 @@
 
 ## 2026.8.23
 
+- {act|新增}[切枪 DPS 排行](../swap-dps/index.html)：198 组切枪配装的爆发输出，按切枪 DPS 降序
 - {act|新增}[Raid 攻略](../raid-guides/index.html)：众神殿与十座突袭的图文攻略，12 张卡
 - {act|新增}[锻造武器来源](../crafting/index.html)：老九、目的地、异域任务、地牢与突袭共 40 处来源
 - {act|新增}[数据源与鸣谢](../sources/index.html)：全站数值出处与贡献者汇总，7 处来源、5 位贡献者
