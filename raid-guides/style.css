@@ -1,0 +1,65 @@
+/* Raid 攻略：一张截图一份站外文档，卡片三列排。
+   通用主题、字体与配色 token 在 /assets/site.css。
+   这一页由 tools/convert-doc.py 从 references/docs/raid-guides.md 生成，
+   改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
+
+/* 三张 16:9 的截图并排，各约 330px 宽，加间距正好一档宽表（design.md 四节）。 */
+:root { --wrap: 1060px; --min: 1104px; }
+
+.guides {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 整张卡是一个链接：截图在上，副本名压在下沿。
+   卡自己不上色相——色相在站内归元素所有（design.md 一节），截图本身就是区分度。 */
+.guide {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--hair);
+  border-radius: 10px;
+  background: var(--panel-a);
+  text-decoration: none;
+  transition: border-color .2s ease, transform .2s ease;
+}
+
+.guide:hover {
+  border-color: var(--hair-lit);
+  transform: translateY(-2px);
+}
+
+/* 截图按格宽等比缩放；width/height 由生成器从文件头写死，加载时不跳版 */
+.guide-shot {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* 副本名压在截图下沿：底下垫一层由透明到黑的渐变，亮暗不同的截图上都读得出来 */
+.guide-name {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 26px 14px 11px;
+  background: linear-gradient(180deg, #00000000, #000000cc 55%);
+  color: var(--bone-hi);
+  font-family: var(--font-cn);
+  font-size: 15px;
+  letter-spacing: .04em;
+}
+
+/* 备注是副本名的注脚，不是第二个名字：压一档字号，退到暗档 */
+.guide-tag {
+  color: var(--bone-dim);
+  font-size: 11.5px;
+  letter-spacing: .1em;
+}

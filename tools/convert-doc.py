@@ -32,6 +32,8 @@ META_LINE = meta_line(META_KEYS)
 # 分节级声明：「色阶：列名 阈值 …」。同样按整行剥离，不进正文。
 SCALE_LINE = re.compile(r'^色阶：(.*)$', re.M)
 CARD_LINE = re.compile(r'^卡片：(.*)$', re.M)
+# 「攻略：标题 | 图 | 链接 | 备注」是站外攻略的一张卡，一行一张。见 guides_of()。
+GUIDE_LINE = re.compile(r'^攻略：(.*)$', re.M)
 # 「轮换：YYYY.M.D」是分节级声明：这一节的表是一条按周走的轮换轴，起始日写在这里。
 # 与「色阶：」同一种做法——按整行剥离，落成表上的 data-rota，由 assets/app.js 读。
 ROTA_LINE = re.compile(r'^轮换：(.*)$', re.M)
@@ -409,6 +411,30 @@ def cards_of(spec, up):
     return o
 
 
+def guides_of(spec):
+    """「攻略：标题 | icons/x.jpg | 链接 | 备注」→ 一张指向站外攻略的图卡。
+
+    与「卡片：」的分工：那一条指向站内的资料页、文字从对方源稿现读；这一条指向
+    站外文档，标题与配图站内没有第二份，只能写在这一行上。备注可省。
+    整张卡是一个 <a>，所以标题与图不能各写各的——写成一行，由这里拼。
+    """
+    if ICONS is None:
+        die('图标登记处还没装上，「攻略：」取不到图的尺寸')
+    parts = [x.strip() for x in spec.split('|')]
+    if len(parts) not in (3, 4):
+        die('「攻略：」要写「标题 | 图 | 链接」，备注可选，源稿写的是 %r' % spec)
+    name, img, url = parts[:3]
+    tag = parts[3] if len(parts) == 4 else ''
+    if not url.startswith('http'):
+        die('「攻略：」的链接要以 http 开头，源稿写的是 %r' % url)
+    return ['<li>',
+            '<a class="guide" href="%s" target="_blank" rel="noopener">' % url,
+            ICONS.html(img, cls='guide-shot'),
+            '<span class="guide-name">%s%s</span>'
+            % (name, '<span class="guide-tag">%s</span>' % tag if tag else ''),
+            '</a>', '</li>']
+
+
 def render_blocks(chunk, scales=None, groups=None, marks=None, curves=None, up=0,
                   rota=None):
     """分节正文 → 段落、列表、定义列表、表格、卡片。"""
@@ -423,6 +449,14 @@ def render_blocks(chunk, scales=None, groups=None, marks=None, curves=None, up=0
         if line.startswith('卡片：'):
             o += cards_of(line[len('卡片：'):], up)
             i += 1
+            continue
+
+        if line.startswith('攻略：'):                 # 连着的几行合成一个 <ul>
+            o.append('<ul class="guides">')
+            while i < len(lines) and lines[i].startswith('攻略：'):
+                o += guides_of(lines[i].rstrip()[len('攻略：'):])
+                i += 1
+            o.append('</ul>')
             continue
 
         if line.lstrip().startswith('|'):
@@ -668,8 +702,8 @@ def check(md, out, slug):
     真正的闸门是「一个字都没多、没少」。
     """
     lines = []
-    src = CARD_LINE.sub('', ROTA_LINE.sub('', SCALE_LINE.sub(
-        '', META_LINE.sub('', md[md.index('\n'):]))))
+    src = GUIDE_LINE.sub('', CARD_LINE.sub('', ROTA_LINE.sub('', SCALE_LINE.sub(
+        '', META_LINE.sub('', md[md.index('\n'):])))))
     for raw in src.split('\n'):
         line = raw.strip()
         if line.startswith('|'):                      # 表格：只去分隔符与分隔行
@@ -694,6 +728,8 @@ def check(md, out, slug):
     main = out[out.index('<main>'):out.index('</main>')]
     # 卡片的文字来自被指向的那篇源稿，不是本篇的正文，不进逐字保真
     main = re.sub(r'<ul class="entries">.*?</ul>', '', main, flags=re.S)
+    # 攻略卡同理：标题与配图站内没有第二份，那一行整行剥离，两侧都不留
+    main = re.sub(r'<ul class="guides">.*?</ul>', '', main, flags=re.S)
     got = text_of(main)
     if got != want:
         for i, (a, b) in enumerate(zip(got, want)):
