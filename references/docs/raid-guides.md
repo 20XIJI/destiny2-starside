@@ -8,8 +8,8 @@
 ## 突袭
 
 攻略：众神殿 | icons/aa27ba86b0.jpg | https://docs.qq.com/doc/DQ2ZKcENkWVRUYkRx
+攻略：永恒沙漠（史诗） | icons/5b73a76982.jpg | https://docs.qq.com/doc/DQ0xZZWNGRVdNeW10
 攻略：永恒沙漠 | icons/5a4cb3abe9.jpg | https://docs.qq.com/doc/DQ21BU3pZd1B5Qmp6
-攻略：永恒沙漠 | icons/5b73a76982.jpg | https://docs.qq.com/doc/DQ0xZZWNGRVdNeW10 | 史诗
 攻略：救赎边缘 | icons/c6165a040d.jpg | https://docs.qq.com/doc/DQ21GY3BIV3ZJa1hz
 攻略：克洛塔的末日 | icons/5108a8b2bb.jpg | https://docs.qq.com/doc/DQ0x6b3FXcnp1TGtP | 修订中
 攻略：梦魇根源 | icons/a3357680bd.jpg | https://docs.qq.com/doc/DQ0RORUpxRWJ3SmFG | 修订中
