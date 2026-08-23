@@ -749,8 +749,11 @@
      2200/2200/1800/1800，收拢态停 2s——它没有图案，长一点是这一轮的换气。 */
   var MARK_STEP = [[2200, 1300], [2200, 1300], [1800, 2000], [1800, 1300]];
 
-  var mark = document.querySelector('.hero-mark');
-  if (mark) cycle(mark);
+  /* **名字不能叫 mark**：这个 IIFE 里已经有一个 function mark()（当前分节高亮）。
+     var 提升到同一个函数作用域，资料页上这一行把它赋成 null，当前分节高亮的
+     观察者一触发就报 mark is not a function，整站的 chip 因此不再跟着滚动亮起。 */
+  var heroMark = document.querySelector('.hero-mark');
+  if (heroMark) cycle(heroMark);
 
   function cycle(el) {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
