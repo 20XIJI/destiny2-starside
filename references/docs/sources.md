@@ -26,5 +26,6 @@
 | [小棒猪-LGpig](https://space.bilibili.com/169548478) | 整理全部评级、数值与评语 | [刷取清单-异域武器](../exotic-weapons/index.html) |
 | [両儀式織](https://space.bilibili.com/2135345999) | 整理全部注解并校对数值 | [DPS 排行](../dps/index.html) |
 | [MossyMax](https://docs.google.com/spreadsheets/d/1b57Hb8m1L3daFfUckQQqvvN6VOpD03KEssvQLMFpC5I/edit) | 实测并整理全部压光数值 | [压光伤害](../power-delta/index.html) |
+| 蜃零#7456 | 整理全部来源与掉落 | [锻造武器来源](../crafting/index.html) |
 | Flamia#5238 | 部分翻译和排版 | [护甲套装](../armor-sets/index.html) |
 | 小黑盒用户{buff|“压力一直天满光”} | 校对首领名称 | [首领生命值](../boss-hp/index.html) |

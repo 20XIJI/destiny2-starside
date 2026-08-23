@@ -1,0 +1,12 @@
+/* 锻造武器来源：来源在左，武器名连成一格在右。
+   通用主题、字体与配色 token 在 /assets/site.css。
+   这一页由 tools/convert-doc.py 从 references/docs/crafting.md 生成，
+   改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
+
+/* 武器名一格能排到十把，760px 会把每行折成四五行；取宽表那一档（design.md 四节）。 */
+:root { --wrap: 1060px; --min: 1104px; }
+
+/* 来源列是行的身份，不折行；武器列是内容，让它自己折。 */
+.gen tbody th[scope="row"] { white-space: nowrap; }
+
+.gen tbody td { line-height: 1.9; }
