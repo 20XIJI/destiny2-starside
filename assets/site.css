@@ -1362,17 +1362,15 @@ body:has(.hero) {
 
 .hero-mark.hunter .g3 .l4 { left: 100%; }
 
-/* 动效是装饰：关掉即停在术士那一态，标记本身仍在（app.js 不再换类） */
+/* 动效是装饰：关掉即停在术士那一态，标记本身仍在（app.js 不再换类）。
+   **`.shapes` 的高度也列进来**：它的过渡写在自己那条规则上，
+   漏掉就还剩一段 2.2 秒的高度动画能被别的路径触发。 */
 @media (prefers-reduced-motion: reduce) {
   .hero-mark .circle,
   .hero-mark .shape,
+  .hero-mark .shapes,
   .hero-mark .rays,
   .hero-mark .line { transition: none; }
-}
-
-/* 窄屏先让位给铭牌与右侧的两条入口，标记不参与信息 */
-@media (max-width: 1100px) {
-  .hero-mark { display: none; }
 }
 
 .hero-util {
