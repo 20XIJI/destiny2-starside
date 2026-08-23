@@ -1101,12 +1101,12 @@ body:has(.hero) {
   transform-origin: 50% 50%;
 }
 
+/* **只留一道向左的阴影。**四道串联时后一道描的是前一道的结果，等效膨胀成 3×3 的
+   偏移网格，左下那个角落到 x − o − k·o = .43em，比右边那两道墨条宽出一半；而那个角
+   在离底边 o 之内不存在，缝到了底边又收窄一截——两道缝一边九像素一边六像素、左下角
+   还带个台阶，读作线宽不一致。左边这两道只需要边左侧的一条墨，一道阴影就够。 */
 .hero-mark.warlock .s2,
-.hero-mark.warlock .s3 {
-  filter:
-    drop-shadow(.271em 0 0 var(--ink)) drop-shadow(-.271em 0 0 var(--ink))
-    drop-shadow(0 .271em 0 var(--ink)) drop-shadow(0 -.271em 0 var(--ink));
-}
+.hero-mark.warlock .s3 { filter: drop-shadow(-.384em 0 0 var(--ink)); }
 
 .hero-mark.warlock .s1,
 .hero-mark.warlock .s4,
@@ -1119,14 +1119,14 @@ body:has(.hero) {
 .hero-mark.warlock .s3 { transform: rotate(360deg) scale(.885, .877) translate(1.42em, .428em); }
 
 /* 墨条比 s1/s2 各右移一条缝宽，裁出来的那条就整个落在它们右侧边的外面 */
-.hero-mark.warlock .s4 { transform: rotate(0) scale(.885, .877) translate(-1.149em, .428em); }
+.hero-mark.warlock .s4 { transform: rotate(0) scale(.885, .877) translate(-1.036em, .428em); }
 
-.hero-mark.warlock .s5 { transform: rotate(360deg) scale(.885, .877) translate(.271em, .428em); }
+.hero-mark.warlock .s5 { transform: rotate(360deg) scale(.885, .877) translate(.384em, .428em); }
 
 .hero-mark.warlock .s4,
 .hero-mark.warlock .s5 {
   border-bottom-color: var(--ink);
-  clip-path: polygon(50% 0, 100% 100%, calc(100% - .271em) 100%, calc(50% - .271em) 0);
+  clip-path: polygon(50% 0, 100% 100%, calc(100% - .384em) 100%, calc(50% - .384em) 0);
 }
 
 .hero-mark.warlock .s6 { border-bottom-color: transparent; }
@@ -1179,6 +1179,14 @@ body:has(.hero) {
 .hero-mark.titan .s5 { transform: rotate(450deg) scale(.535) translate(-3.1em, -2.4em); }
 
 .hero-mark.titan .s6 { transform: rotate(450deg) scale(.535) translate(3.1em, -2.4em); }
+
+/* 从术士搬过来的那三枚**到位即换色，不走那条延迟一秒多的色渐变**。s4/s5 在术士态
+   是墨色的缝、s6 是透明的，到泰坦态三枚都要并回六边形的填色；`.hero-mark .shape`
+   那条「延迟 1.25s 再用 .75s 换色」是给收拢态淡出用的，用在这里会让两枚墨色的整
+   三角在画面里搬一秒多，再翻成骨白——过渡里那几块黑三角就是它们。 */
+.hero-mark.titan .s4,
+.hero-mark.titan .s5,
+.hero-mark.titan .s6 { transition: transform 2s ease-in-out; }
 
 .hero-mark.titan .g1 { width: 5.25em; height: 15em; transform: rotate(-180deg); }
 
