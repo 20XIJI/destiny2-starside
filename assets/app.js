@@ -734,21 +734,39 @@
     return;
   }
 
+  /* 首屏那枚标记：四个状态轮着换类，位置与角度的插值全在 CSS 里
+     （site.css「首屏那枚标记」一节）。这里只负责按节拍换类。
+     减弱动效时停在首个状态，不再换。
+
+     四段各一对「位移 ms、保持 ms」，顺序是术士→泰坦、泰坦→猎人、猎人→收拢、
+     收拢→术士。位移那一半同时写在 site.css 的 --morph 上（过渡时长取的是要去
+     那一态的值），两处是同一张表；改节拍两处一起改。
+
+     **值不照抄原动画的 2340/820、2340/690、1100/2750、550/550。**原片是一秒钟
+     一闪而过的开场，三个图案各停 0.6–0.8s、收拢与重新长出来各只用 1.1s 与 0.55s；
+     站上这枚长期挂在首屏、要被反复看，那个节拍下图案还没认清就换掉了，后两段的
+     急停急起也读作卡顿。三个图案的保持一律给到 1.3s，四段位移拉平到
+     2200/2200/1800/1800，收拢态停 2s——它没有图案，长一点是这一轮的换气。 */
+  var MARK_STEP = [[2200, 1300], [2200, 1300], [1800, 2000], [1800, 1300]];
+
   var mark = document.querySelector('.hero-mark');
   if (mark) cycle(mark);
 
-  /* 首屏那枚标记：四个状态轮着换类，位置与角度的插值全在 CSS 里
-     （site.css「首屏那枚标记」一节）。这里只负责按节拍换类。
-     减弱动效时停在首个状态，不再换。 */
   function cycle(el) {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     var states = ['warlock', 'titan', 'hunter', 'default'];
     var i = 0;
-    setInterval(function () {
+    /* 每段长短不一，所以是自排的 setTimeout 链而不是一个 setInterval。
+       页面落地时标记停在术士态，先把术士那一份保持段走完再动第一步——
+       它写在最后一段（收拢→术士）的保持位上。 */
+    function next() {
+      var step = MARK_STEP[i];
       el.classList.remove(states[i]);
       i = (i + 1) % states.length;
       el.classList.add(states[i]);
-    }, 3000);
+      setTimeout(next, step[0] + step[1]);
+    }
+    setTimeout(next, MARK_STEP[MARK_STEP.length - 1][1]);
   }
 
   var hero = document.querySelector('.hero-search');

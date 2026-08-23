@@ -930,6 +930,47 @@ body:has(.hero) {
   margin: 0 auto;
 }
 
+/* ── 每一段过渡有多长：由要去的那一态定 ──
+   过渡取的是**变化后**那份样式上的 transition，所以「术士→泰坦」这一段的时长写在
+   .titan 上，四段各写一处。保持段有多长归 app.js 的 MARK_STEP 管，两处合起来是
+   同一张表。
+
+   **四段拉平到 2200 / 2200 / 1800 / 1800，不照抄原动画的 2340 / 2340 / 1100 / 550。**
+   原片那两个短段是给一秒钟一闪而过的开场用的：收拢只用 1100ms、重新长出来只用
+   550ms，快到看不清零件怎么走的。站上这枚是长期挂在首屏、要被反复看的，两下急停急
+   起读作卡顿而不是利落，所以把后两段抬到与前两段同一量级，只留一点点「收得比搬得
+   快」的余味。
+
+   色渐变与那两圈延后的外圆按比例跟着走，不写死秒数：段长一变，「先搬到位、
+   末段才换色」的先后关系要照旧成立。 */
+.hero-mark {
+  --morph: 2200ms;
+  --half: calc(var(--morph) * .5);
+  --fade: calc(var(--morph) * .375);
+  --fade-lag: calc(var(--morph) * .625);
+}
+
+.hero-mark.titan { --morph: 2200ms; }
+
+.hero-mark.hunter { --morph: 2200ms; }
+
+/* 收拢：零件是**缩没的，不是淡掉的**——原片帧 50–57 里它们一路保持黑色，面积从
+   3118 像素掉到 583，末帧才归零。色渐变因此推到段末那 18% 才起，前 82% 只有几何在动。 */
+.hero-mark.default {
+  --morph: 1800ms;
+  --fade: calc(var(--morph) * .18);
+  --fade-lag: calc(var(--morph) * .82);
+}
+
+/* 重新长出来：原片帧 79 起零件就已经是黑的（200 像素），帧 80 长到 2688、帧 81 长满，
+   是「一边长一边显」而不是「搬到位再亮起来」。色渐变因此从第一帧就起、一路占到 85%。
+   这一条与段长无关，段拉到 1800ms 之后照旧成立。 */
+.hero-mark.warlock {
+  --morph: 1800ms;
+  --fade: calc(var(--morph) * .85);
+  --fade-lag: 0s;
+}
+
 .hero-mark i,
 .hero-mark .rays { position: absolute; }
 
@@ -963,6 +1004,7 @@ body:has(.hero) {
   width: 8em;
   height: 8em;
   overflow: hidden;
+  transition: height var(--morph) ease-in-out;
 }
 
 /* 背景那张 88px 刻线网格与这枚标记自己的横竖线各成一套，两套近似平行、又对不齐，
@@ -1010,7 +1052,8 @@ body:has(.hero) {
   border-left: 2.85em solid transparent;
   border-right: 2.85em solid transparent;
   border-bottom: 4.9em solid color-mix(in srgb, var(--bone) 78%, var(--ink));
-  transition: transform 2s ease-in-out, border-bottom-color .75s ease-in 1.25s;
+  transition: transform var(--morph) ease-in-out, clip-path var(--morph) ease-in-out,
+    border-bottom-color var(--fade) ease-in var(--fade-lag);
 }
 
 /* 纵向渐变两端各 20% 的斜坡不要动：GIF 帧 63 那条竖线量下来正是这个衰减。
@@ -1039,7 +1082,7 @@ body:has(.hero) {
 
 .hero-mark .circle,
 .hero-mark .rays,
-.hero-mark .line { transition: all 2s ease-in-out; }
+.hero-mark .line { transition: all var(--morph) ease-in-out; }
 
 /* ── 收拢：三角退成透明，只剩圆与线 ──
    四个圆是紧挨的一叠，不是均分的四圈。CodePen 那版写的是 10 / 9 / 9 / 8em——c2 与
@@ -1054,10 +1097,28 @@ body:has(.hero) {
 
 .hero-mark.default .c4 { width: 8.9em; height: 8.9em; }
 
+/* 收拢态六枚零件涂 transparent，所以这一组变换只决定「怎么走掉、又从哪长回来」，
+   不决定任何定态的样子。两件事要对上原片：
+
+   1. **函数顺序与另外三态一致**（rotate → scale → translate）。只写一个 rotate 时
+      两端的函数列表对不上，插值退回矩阵分解，半圈以上的转会被拆成不到半圈。
+   2. **一路缩小**而不是原地转半圈。原片帧 50–57 里零件是翻着缩没的，帧 79–81 又从
+      一地碎块长回术士；留着原尺寸转半圈，收拢段一路是一枚倒立的整三角。缩到多小
+      按逐帧 IoU 扫过 .05–.7，全段平坦（morph 0.577–0.579），取中间那一档。 */
 .hero-mark.default .shape {
   border-bottom-color: transparent;
-  transform: rotate(180deg);
+  transform: rotate(180deg) scale(.35) translate(0, 0);
 }
+
+/* 三枚外三角**各转各的**：s1 顺时针 45°、s2 转半圈、s3 逆时针 45°。原片帧 51–55 里
+   三枚是散着翻的，倾角各不相同（帧 53 已经看不出还是三枚同向的人字）；共用一个
+   rotate(180deg) 时三枚同步转，整段读作一枚倒立的三角在原地打转。
+   s1 与 s3 的偏转量按逐帧 IoU 扫过 105°–150°，那一段平坦，取整齐的 135°。 */
+.hero-mark.default .s1 { transform: rotate(45deg) scale(.35) translate(0, 0); }
+
+.hero-mark.default .s2 { transform: rotate(180deg) scale(.35) translate(0, 0); }
+
+.hero-mark.default .s3 { transform: rotate(315deg) scale(.35) translate(0, 0); }
 
 .hero-mark.default .g1 { width: 6em; height: 15em; }
 
@@ -1073,13 +1134,13 @@ body:has(.hero) {
 .hero-mark.warlock .c3 {
   width: 12.5em;
   height: 12.5em;
-  transition: all 1s ease-in-out 1s;
+  transition: all var(--half) ease-in-out var(--half);
 }
 
 .hero-mark.warlock .c4 {
   width: 11.5em;
   height: 11.5em;
-  transition: all 1s ease-in-out 1s;
+  transition: all var(--half) ease-in-out var(--half);
 }
 
 /* 术士这一枚是**一枚三角被两对平行线切成六片**，不是三个三角并排。三片填色叠出
@@ -1161,9 +1222,9 @@ body:has(.hero) {
 
 .hero-mark.titan .c2 { width: 10em; height: 10em; }
 
-.hero-mark.titan .c3 { width: 12em; height: 12em; transition: all 1s ease-in-out 1s; }
+.hero-mark.titan .c3 { width: 12em; height: 12em; transition: all var(--half) ease-in-out var(--half); }
 
-.hero-mark.titan .c4 { width: 11em; height: 11em; transition: all 1s ease-in-out 1s; }
+.hero-mark.titan .c4 { width: 11em; height: 11em; transition: all var(--half) ease-in-out var(--half); }
 
 /* 位移的第二个值取 -2.4em 与 s5/s6 一致，不用 CodePen 的 -2.5em：两者差 0.1em，
    左右两半因此不对称，中线落在 x=-0.3px 这种半像素上，两条抗锯齿边相接而不相叠，
@@ -1186,7 +1247,7 @@ body:has(.hero) {
    三角在画面里搬一秒多，再翻成骨白——过渡里那几块黑三角就是它们。 */
 .hero-mark.titan .s4,
 .hero-mark.titan .s5,
-.hero-mark.titan .s6 { transition: transform 2s ease-in-out; }
+.hero-mark.titan .s6 { transition: transform var(--morph) ease-in-out; }
 
 .hero-mark.titan .g1 { width: 5.25em; height: 15em; transform: rotate(-180deg); }
 
@@ -1218,10 +1279,11 @@ body:has(.hero) {
 
 .hero-mark.hunter .c4 { width: 8em; height: 8em; }
 
-.hero-mark.hunter .shapes { height: 6.4em; transition: height 2s ease-in-out; }
+.hero-mark.hunter .shapes { height: 6.4em; }
 
 .hero-mark.hunter .shape {
-  transition: all 2s ease-in-out, border-bottom-color .75s ease-in 1.25s;
+  transition: all var(--morph) ease-in-out,
+    border-bottom-color var(--fade) ease-in var(--fade-lag);
 }
 
 .hero-mark.hunter .s1 { transform: rotate(0deg) scale(.83) translate(0, 1.362em); }
@@ -1244,6 +1306,23 @@ body:has(.hero) {
      「缺口尖 + 顶边」（97.7%）留出来的那 0.02em。
 
    间距同时定死在 s1/s2/s3 的位移上：2.55em × .83 ÷ 4.067em = 52.05%。 */
+/* 猎人那三枚外三角的缺口，在**它前后两态**里写成「合上的」而不是「没有」：七个点与
+   猎人那一份一一对应，缺口尖 (50% 49.2%) 落到底边、两肩 (±24.25% 48.5%) 收到顶点，
+   裁出来正是整枚三角。两端都是同点数的 polygon 才能插值——写 none 会让缺口在离开
+   猎人态时整个消失，收拢段的第一帧就已经是三枚实心三角。
+
+   **只给泰坦与收拢两态**：轮换是术士→泰坦→猎人→收拢→术士，猎人的邻居就这两个。
+   术士那三枚带着一道向左的描边压缝，多一层裁剪会把描边连同右侧一条填色一起削掉，
+   实测术士定态 IoU 从 .92 掉到 .82。 */
+.hero-mark.titan .s1,
+.hero-mark.titan .s2,
+.hero-mark.titan .s3,
+.hero-mark.default .s1,
+.hero-mark.default .s2,
+.hero-mark.default .s3 {
+  clip-path: polygon(50% 0, 50% 0, 100% 100%, 100% 100%, 50% 100%, 0 100%, 0 100%);
+}
+
 .hero-mark.hunter .s1,
 .hero-mark.hunter .s2,
 .hero-mark.hunter .s3 {
