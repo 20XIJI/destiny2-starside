@@ -184,7 +184,7 @@ Gambit 一律沿用 PvP 的数值与时长，对{enemy|战斗人员}与{bar-oran
 | 狙击手冥想 | {ico|![](icons/420cc54c47.png)} | 加密数据盘 | 狙击步枪直击命中叠层 | {stack|1 层} 2.8%\\ {stack|2 层} 5.7%\\ {stack|3 层} 9%\\ {stack|4 层} 12%\\ {stack|5 层} 15%{pvp|[无]} | 7 秒 | 可续期。\\ 同时提高稳定性与填装速度。 |
 | 单人特工 | {ico|![](icons/79f8e7cf2c.png)} | 女王兰香炉 | 单人游戏时精准击杀叠层，层数无上限 | 每层 1.2%{pvp|[无]}\\ {stack|25 层}即 30% | 5 秒 | |
 | 瞄准自动填装器 | {ico|![](icons/8827e4191a.png)} | 猎人日志 | 装备自动步枪时击杀{enemy|战斗人员} | {stack|1 层} 10%\\ {stack|2 层} 13%\\ {stack|3 层} 16%\\ {stack|4 层} 18%\\ {stack|5 层} 20%{pvp|[无]} | 15 秒 | |
-| 火炬 | {ico|![](icons/5922fbbba7.png)} | 女王兰香炉 | {el-solar|焕光}期间，对承受{el-stasis|冰影}或{el-strand|缚丝}{debuff|减益}的非{bar-yellow|首领}目标 | 每层 1.2%{pvp|[无]}\\ {stack|25 层}即 30% | 5 秒 | 生效的{debuff|减益}：\\ {el-stasis|冰影}：{deb-stasis|减速}、{deb-stasis|冻结}\\ {el-strand|缚丝}：{deb-strand|割裂}、{deb-strand|悬停}、{deb-strand|瓦解} |
+| 火炬 | {ico|![](icons/5922fbbba7.png)} | 女王兰香炉 | {el-solar|焕光}期间，对承受{el-stasis|冰影}或{el-strand|缚丝}{debuff|减益}的{bar-yellow|非首领}目标 | 每层 1.2%{pvp|[无]}\\ {stack|25 层}即 30% | 5 秒 | 生效的{debuff|减益}：\\ {el-stasis|冰影}：{deb-stasis|减速}、{deb-stasis|冻结}\\ {el-strand|缚丝}：{deb-strand|割裂}、{deb-strand|悬停}、{deb-strand|瓦解} |
 
 ## 世界与活动
 
