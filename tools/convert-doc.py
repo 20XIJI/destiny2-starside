@@ -32,7 +32,7 @@ META_LINE = meta_line(META_KEYS)
 # 分节级声明：「色阶：列名 阈值 …」。同样按整行剥离，不进正文。
 SCALE_LINE = re.compile(r'^色阶：(.*)$', re.M)
 CARD_LINE = re.compile(r'^卡片：(.*)$', re.M)
-# 「攻略：标题 | 图 | 链接 | 备注」是站外攻略的一张卡，一行一张。见 guides_of()。
+# 「攻略：标题 | 图 | 链接 | 注解」是站外攻略的一张卡，一行一张。见 guides_of()。
 GUIDE_LINE = re.compile(r'^攻略：(.*)$', re.M)
 # 「轮换：YYYY.M.D」是分节级声明：这一节的表是一条按周走的轮换轴，起始日写在这里。
 # 与「色阶：」同一种做法——按整行剥离，落成表上的 data-rota，由 assets/app.js 读。
@@ -412,17 +412,17 @@ def cards_of(spec, up):
 
 
 def guides_of(spec):
-    """「攻略：标题 | icons/x.jpg | 链接 | 备注」→ 一张指向站外攻略的图卡。
+    """「攻略：标题 | icons/x.jpg | 链接 | 注解」→ 一张指向站外攻略的图卡。
 
     与「卡片：」的分工：那一条指向站内的资料页、文字从对方源稿现读；这一条指向
-    站外文档，标题与配图站内没有第二份，只能写在这一行上。备注可省。
+    站外文档，标题与配图站内没有第二份，只能写在这一行上。注解可省。
     整张卡是一个 <a>，所以标题与图不能各写各的——写成一行，由这里拼。
     """
     if ICONS is None:
         die('图标登记处还没装上，「攻略：」取不到图的尺寸')
     parts = [x.strip() for x in spec.split('|')]
     if len(parts) not in (3, 4):
-        die('「攻略：」要写「标题 | 图 | 链接」，备注可选，源稿写的是 %r' % spec)
+        die('「攻略：」要写「标题 | 图 | 链接」，注解可选，源稿写的是 %r' % spec)
     name, img, url = parts[:3]
     tag = parts[3] if len(parts) == 4 else ''
     if not url.startswith('http'):

@@ -46,7 +46,15 @@
   --c-prism: #f58fc8;
   --c-orb: #f2ce5b;
   --c-health: #ff8e86;
-  --c-aside: #a2848c;              /* 批注与待测值：读作限定语，不是警报 */
+  --c-aside: #a2848c;              /* 待测值与减益：读作限定语，不是警报 */
+  /* 注解：作者说的话，与游戏内的任何编码无关，所以给它一支自己的暗玫瑰红。
+     与最近的 --c-health ΔE 20（生命值那支更亮更暖），与 --c-aside ΔE 26；
+     石墨底上对比度 5.29，正文字号读得下来。 */
+  --c-note: #c56b73;
+  /* 传说紫：游戏内的传说装备即紫色，行标题后面那一截武器类别照它走。低饱和一档，
+     与虚空紫 --c-void ΔE 30——那一支是元素编码，两者同屏（dps 页的弹药列）
+     必须分得开；与棱镜粉、批注灰粉同为 ΔE 30。 */
+  --c-legend: #9c7ab8;
   /* 不属于任何元素的游戏术语。低饱和暖沙，与七个元素色相最小 ΔE 20，不借用其中
      任何一个；与正文骨白 ΔE 20（此前跟随 --bone-hi 时只有 5.5，等于没分开）。 */
   --c-term: #d6c39a;
@@ -70,7 +78,6 @@
   --el-kinetic: var(--c-kinetic);
   --el-prismatic: var(--c-prism);    /* 棱镜粉只服务棱镜与超凡 */
   --pickup: var(--c-term);           /* 元素拾取物/技能能量/护盾 */
-  --memo: var(--c-prism);        /* 备注与玩笑：脱离正文的旁白 */
   --orb: var(--c-orb);               /* 能量球/超能能量 */
   --stack: var(--c-orb);             /* 精准命中/增益层数 */
   --armor-charge: var(--c-orb);
@@ -78,7 +85,9 @@
   --exotic: var(--c-orb);            /* 异域：游戏内的异域装备即金黄 */
   --buff: var(--c-term);             /* 增益 */
   --debuff: var(--c-aside);          /* 减益 */
-  --note: var(--c-aside);            /* 作者注释与限制说明 */
+  --note: var(--c-note);             /* 注解：作者的话与限制说明 */
+  --pvp: var(--c-aside);             /* 方括号里的 PvP 数值，读作限定语 */
+  --kind: var(--c-legend);           /* 行标题后面那一截武器类别 */
   --unsure: var(--c-aside);          /* [?] 待测数值 */
 
   /* 分节 sticky 单元贴 .site-head 下沿。app.js 按实测高度覆写；
@@ -501,7 +510,7 @@ main {
    统一 600 字重、无阴影——全页着色处逾千，字重与阴影一齐上阵会让语义色失去分级。 */
 .el-arc, .deb-arc, .el-stasis, .deb-stasis, .enemy, .el-void, .ammo-heavy,
 .el-strand, .deb-strand, .el-solar, .deb-solar, .el-kinetic, .el-prismatic,
-.deb-void, .pickup, .memo, .orb, .stack, .armor-charge, .health,
+.deb-void, .pickup, .orb, .stack, .armor-charge, .health,
 .exotic, .buff, .debuff,
 .bar-red, .bar-orange, .bar-yellow {
   font-weight: 600;
@@ -522,7 +531,6 @@ main {
 .el-prismatic { color: var(--el-prismatic); }
 .deb-void { color: var(--deb-void); }
 .pickup { color: var(--pickup); }
-.memo { color: var(--memo); }
 .orb { color: var(--orb); }
 .stack { color: var(--stack); }
 .armor-charge { color: var(--armor-charge); }
@@ -542,10 +550,26 @@ main {
 .bar-yellow { color: var(--c-orb); }
 
 /* 方括号里的 PvP 数值降一档，读作限定语，不与正文的 PvE 数值争 */
-.pvp { color: var(--note); }
+.pvp { color: var(--pvp); }
 
-/* 批注类降一级：字重回到正文，待测值带虚下划线 */
+/* 注解：作者的话与限制说明，全站只有这一种叫法，也只有这一个类。字重回到正文，
+   颜色走自己那支暗玫瑰红——它不参与任何游戏内编码，所以不与元素色相争。
+   **.note 只给注解。**它曾经兼任四种活：dps 行标题后的武器类别、元素页的空格
+   占位、修改器的强弱箭头，都挂在这一个类上，颜色于是从「这是作者的话」退化成
+   「这不重要」。类别走 .kind，占位走 .na，箭头是内容、不着色。 */
 .note { color: var(--note); font-weight: 400; }
+
+/* 行标题后面那一截武器类别（dps 页的「攻击型框架 · 刀剑」）：身份的第二级，不是
+   旁白——借注解色会让读者当成作者插话。走传说紫，游戏内的装备稀有度即这个颜色。 */
+.kind { color: var(--kind); font-weight: 400; }
+
+/* 「—」「未测」「常驻」这类占位词：源稿写成 {na|…}，整格只有一个标记，生成器把
+   class 落在 <td> 上。压到最暗、落回中文字族，扫读一列数值时直接跳过它们。 */
+.gen tbody td.na {
+  color: var(--bone-faint);
+  font-family: var(--font-cn);
+  font-size: 12px;
+}
 
 .unsure {
   color: var(--unsure);

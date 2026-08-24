@@ -22,26 +22,26 @@
 | 碎片 | 图标 | 说明 | 属性变化 |
 |---|---|---|---|
 | 觉醒 | {ico|![](icons/67406d92b9.png)} | 6 秒内用元素伤害击杀 3 名战斗人员，或一次超能击杀：\\ 生成对应元素的{pickup|元素拾取物}，类型由最后一击的伤害类型决定。\\ {note|生成同一种非缠结拾取物之间有 5 秒冷却；冷却期间用该元素击杀，不计入生成另一种拾取物。} | +10 生命值 |
-| 平衡 | {ico|![](icons/215b79bf34.png)} | {unsure|3?} 秒内用光能伤害击杀 3 名战斗人员提供 10% {pickup|近战能量}。\\ {unsure|3?} 秒内用暗影伤害击杀 3 名战斗人员提供 10% {pickup|手雷能量}。 | {note|—} |
-| 祝福 | {ico|![](icons/259d16360f.png)} | 近战击杀开始{health|生命值}恢复。\\ {el-prismatic|超凡}期间，效果同时作用于 {unsure|?} 米内的{enemy|盟友}。 | {note|—} |
-| 勇敢 | {ico|![](icons/3e1d433487.png)} | 手雷击杀为{el-void|虚空}武器提供不稳定子弹，持续 11.25 {pvp|[7.5]} 秒。\\ 充能近战击杀为{el-strand|缚丝}武器提供瓦解子弹，持续 11.25 {pvp|[7.5]} 秒。 | {note|—} |
-| 指挥 | {ico|![](icons/b799846c9d.png)} | {deb-stasis|冻结}或{deb-void|压制}一名战斗人员：\\ 补满已准备的武器，并提供 {unsure|+20?} 稳定性、{unsure|+?} 瞄准辅助与 +40 空中效率，持续 11 秒（4 秒内置冷却）。\\ \\ 击杀被{deb-stasis|冻结}或被{deb-void|压制}的战斗人员，分别生成{el-stasis|冰影碎片}或{el-void|虚空裂口}。 | {note|—} |
+| 平衡 | {ico|![](icons/215b79bf34.png)} | {unsure|3?} 秒内用光能伤害击杀 3 名战斗人员提供 10% {pickup|近战能量}。\\ {unsure|3?} 秒内用暗影伤害击杀 3 名战斗人员提供 10% {pickup|手雷能量}。 | {na|—} |
+| 祝福 | {ico|![](icons/259d16360f.png)} | 近战击杀开始{health|生命值}恢复。\\ {el-prismatic|超凡}期间，效果同时作用于 {unsure|?} 米内的{enemy|盟友}。 | {na|—} |
+| 勇敢 | {ico|![](icons/3e1d433487.png)} | 手雷击杀为{el-void|虚空}武器提供不稳定子弹，持续 11.25 {pvp|[7.5]} 秒。\\ 充能近战击杀为{el-strand|缚丝}武器提供瓦解子弹，持续 11.25 {pvp|[7.5]} 秒。 | {na|—} |
+| 指挥 | {ico|![](icons/b799846c9d.png)} | {deb-stasis|冻结}或{deb-void|压制}一名战斗人员：\\ 补满已准备的武器，并提供 {unsure|+20?} 稳定性、{unsure|+?} 瞄准辅助与 +40 空中效率，持续 11 秒（4 秒内置冷却）。\\ \\ 击杀被{deb-stasis|冻结}或被{deb-void|压制}的战斗人员，分别生成{el-stasis|冰影碎片}或{el-void|虚空裂口}。 | {na|—} |
 | 勇气 | {ico|![](icons/e430d305e9.png)} | 对被{el-stasis|冰影}或{el-strand|缚丝}元素{debuff|减益}影响的战斗人员：光能技能伤害提高 10%，光能充能近战技能伤害提高 50% {pvp|[10%]}。 | +10 手雷 |
 | 黎明 | {ico|![](icons/99be0799f1.png)} | 充能近战命中提供{el-solar|焕光}，持续 5 秒。\\ 充能近战击杀为{enemy|自己}与 {unsure|?} 米内的{enemy|盟友}提供{el-solar|焕光}，持续 5 秒。 | -10 近战 |
 | 违抗 | {ico|![](icons/0f4d568517.png)} | {enemy|终结技}触发一次元素引爆，对 7 米内的战斗人员造成 135 点与超能匹配的元素伤害，并施加对应{debuff|减益}：\\ {el-arc|电弧} → {deb-arc|震颤} ｜ {el-solar|烈日} → 40 层{deb-solar|灼烧} ｜ {el-void|虚空} → {deb-void|不稳定} ｜ {el-stasis|冰影} → {unsure|?} 层{deb-stasis|减速}，持续 {unsure|?} 秒 ｜ {el-strand|缚丝} → {deb-strand|割裂}。 | +10 职业 |
 | 奉献 | {ico|![](icons/609a161259.png)} | 击杀受{el-stasis|冰影}或{el-strand|缚丝}元素{debuff|减益}影响的战斗人员，额外提供光能{el-prismatic|超凡能量}：\\ {bar-red|红血} 1% ｜ {bar-orange|橙血} 3% ｜ {bar-yellow|初级首领} 5% ｜ {bar-orange|守护者} {unsure|?}%。 | +10 近战 |
 | 统御 | {ico|![](icons/78a62aaf06.png)} | {el-void|虚空}手雷技能伤害施加{deb-void|虚弱}，持续 6 {unsure|[?]} 秒。\\ {el-arc|电弧}手雷技能伤害施加{deb-arc|震颤}。\\ {note|电弧之魂再次施加震颤前有 4 秒冷却。} | -10 手雷 |
-| 慷慨 | {ico|![](icons/5780f5bd89.png)} | {el-prismatic|超凡}期间的击杀推进一个计数，达到阈值时生成{orb|能量球}，每枚为{enemy|盟友}提供 7.15% {orb|超能能量}；每次{el-prismatic|超凡}最多生成 4 枚。\\ \\ 计数推进：\\ {enemy|T1 级战斗人员} 10% ｜ {enemy|T2} 15% ｜ {enemy|T3} 20% ｜ {enemy|T4} 34% ｜ {bar-yellow|初级首领} 40% ｜ {bar-yellow|首领} 50% ｜ {bar-orange|守护者} {unsure|?}%。\\ \\ 生成阈值：\\ 30%（第 1 枚）｜ 50%（第 2 枚）｜ 70%（第 3 枚）｜ 100%（第 4 枚）。 | {note|—} |
+| 慷慨 | {ico|![](icons/5780f5bd89.png)} | {el-prismatic|超凡}期间的击杀推进一个计数，达到阈值时生成{orb|能量球}，每枚为{enemy|盟友}提供 7.15% {orb|超能能量}；每次{el-prismatic|超凡}最多生成 4 枚。\\ \\ 计数推进：\\ {enemy|T1 级战斗人员} 10% ｜ {enemy|T2} 15% ｜ {enemy|T3} 20% ｜ {enemy|T4} 34% ｜ {bar-yellow|初级首领} 40% ｜ {bar-yellow|首领} 50% ｜ {bar-orange|守护者} {unsure|?}%。\\ \\ 生成阈值：\\ 30%（第 1 枚）｜ 50%（第 2 枚）｜ 70%（第 3 枚）｜ 100%（第 4 枚）。 | {na|—} |
 | 恩惠 | {ico|![](icons/99965c4420.png)} | {el-kinetic|动能}武器击杀额外提供 2% {unsure|[?%]} {el-prismatic|超凡能量}。\\ 超能击杀为{enemy|自己}与 {unsure|?} 米内的{enemy|盟友}额外提供 2% {unsure|[?%]} {el-prismatic|超凡能量}。 | -10 生命值 |
 | 荣耀 | {ico|![](icons/4b64c96bcb.png)} | 拾取{pickup|元素拾取物}或摧毁{el-strand|缠结}额外提供对应阵营的{el-prismatic|超凡能量}：\\ {el-arc|离子轨迹}、{el-solar|焰灵}、{el-void|虚空裂口} = 7.5% 光能能量 ｜ {el-stasis|冰影碎片} = 5% 暗影能量 ｜ {el-strand|缠结} = 10% 暗影能量。 | +10 近战 |
-| 希望 | {ico|![](icons/9185a215fe.png)} | 按激活中的元素{buff|增益}数量，额外提供{pickup|职业技能}基础充能速度：\\ 1 个 +40% ｜ 2 个 +60%。 | {note|—} |
+| 希望 | {ico|![](icons/9185a215fe.png)} | 按激活中的元素{buff|增益}数量，额外提供{pickup|职业技能}基础充能速度：\\ 1 个 +40% ｜ 2 个 +60%。 | {na|—} |
 | 正义 | {ico|![](icons/270e795ff5.png)} | {el-prismatic|超凡}期间的技能击杀触发一次与技能匹配的爆炸，对 {unsure|?} 米内的战斗人员最多造成 130 {unsure|[?]} 伤害。 | +10 超能 |
-| 修复 | {ico|![](icons/2108d63bbd.png)} | 手雷技能击杀提供 1 层{el-solar|治愈}。\\ {el-prismatic|棱镜}手雷击杀提供 2 层{el-solar|治愈}。 | {note|—} |
+| 修复 | {ico|![](icons/2108d63bbd.png)} | 手雷技能击杀提供 1 层{el-solar|治愈}。\\ {el-prismatic|棱镜}手雷击杀提供 2 层{el-solar|治愈}。 | {na|—} |
 | 保护 | {ico|![](icons/ee3c67fe35.png)} | 15 米内有 3 名战斗人员时提供 15% {unsure|[?%]} 伤害抗性。\\ {note|游戏内描述有误：超凡期间本效果不会提高，而是 15% 与超凡的 20% 叠加，合计 32% 伤害抗性。} | +10 近战 |
 | 使命 | {ico|![](icons/ae6d960948.png)} | 拾取{orb|能量球}时按已装备的超能提供对应的元素{buff|增益}：\\ \\ {el-arc|电弧} ｜ 1 层{el-arc|电光充能}。\\ {el-solar|烈日} ｜ 1 层{el-solar|恢复}，持续 5 秒。\\ {el-void|虚空} ｜ 22.5 {health|生命值}的{el-void|虚空覆盖护盾}，持续 5 秒。\\ {el-stasis|冰影} ｜ 2 层{el-stasis|冰霜护甲}，持续 5 秒。\\ {el-strand|缚丝} ｜ {el-strand|织造铠甲}，持续 5 秒。 | -10 职业 |
 | 毁灭 | {ico|![](icons/bb31907363.png)} | {deb-stasis|碎裂}战斗人员或摧毁{el-stasis|水晶}时：\\ 额外触发一次伤害实例，在 10 {pvp|[8]} 米半径内最多造成 25 {pvp|[9]} 伤害，衰减后最低 17 {pvp|[4]}。\\ \\ {deb-solar|点燃}半径提高 25%。 | +10 武器 |
 | 牺牲 | {ico|![](icons/36fae16900.png)} | 受{el-arc|电弧}、{el-solar|烈日}或{el-void|虚空}元素{buff|增益}影响期间，技能击杀额外提供 1% {unsure|[?%]} 暗影{el-prismatic|超凡能量}。 | +10 手雷 |
-| 孤独 | {ico|![](icons/dbf79eb8c9.png)} | 3 秒内精准命中次数达标后：\\ 此后 3 秒内，任意来源的下一次伤害实例触发一次割裂爆裂，对 3 米内的战斗人员施加{deb-strand|割裂}；{el-prismatic|超凡}期间半径提高到 6 米。\\ 所需精准命中次数 = 弹匣容量的 20% + 1，向下取整；弓箭固定 2 次。\\ {note|割裂后有 4 秒冷却，冷却期间的精准命中不计入。准备割裂爆裂的那次精准命中不会触发三体坐观者、高爆载荷这类 Perk。} | {note|—} |
+| 孤独 | {ico|![](icons/dbf79eb8c9.png)} | 3 秒内精准命中次数达标后：\\ 此后 3 秒内，任意来源的下一次伤害实例触发一次割裂爆裂，对 3 米内的战斗人员施加{deb-strand|割裂}；{el-prismatic|超凡}期间半径提高到 6 米。\\ 所需精准命中次数 = 弹匣容量的 20% + 1，向下取整；弓箭固定 2 次。\\ {note|割裂后有 4 秒冷却，冷却期间的精准命中不计入。准备割裂爆裂的那次精准命中不会触发三体坐观者、高爆载荷这类 Perk。} | {na|—} |
 
 ## ![](icons/c5a870a234.png) 猎人
 

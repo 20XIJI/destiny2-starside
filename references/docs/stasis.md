@@ -25,19 +25,19 @@
 |---|---|---|---|
 | 束缚 | {ico|![](icons/d08f1e7144.png)} | 击杀被{deb-stasis|冻结}的战斗人员生成一枚{orb|能量球}，提供 2.5% {orb|超能能量}。\\ {note|生成能量球后有 10 秒冷却。} | -10 超能 |
 | 锁链 | {ico|![](icons/6c91639836.png)} | {el-stasis|冰霜护甲}激活期间的击杀推进计数，满 100% 生成一枚小型{el-stasis|冰影碎片}。\\ {bar-red|红血} 34% ｜ {bar-orange|橙血} 67% ｜ {bar-yellow|初级首领} 100% ｜ {bar-orange|守护者} {unsure|?}%。 | +10 职业 |
-| 冰冷 | {ico|![](icons/5c6707bfed.png)} | {el-stasis|冰影}武器击杀推进计数，满 100% 生成一枚小型{el-stasis|冰影碎片}。\\ {bar-red|红血} 34% ｜ {bar-orange|橙血} 67% ｜ {bar-yellow|初级首领} 100% ｜ {bar-orange|守护者} 67%。\\ {note|生成碎片后有 5? 秒冷却，冷却期间的击杀不推进计数。} | {note|—} |
+| 冰冷 | {ico|![](icons/5c6707bfed.png)} | {el-stasis|冰影}武器击杀推进计数，满 100% 生成一枚小型{el-stasis|冰影碎片}。\\ {bar-red|红血} 34% ｜ {bar-orange|橙血} 67% ｜ {bar-yellow|初级首领} 100% ｜ {bar-orange|守护者} 67%。\\ {note|生成碎片后有 5? 秒冷却，冷却期间的击杀不推进计数。} | {na|—} |
 | 传导 | {ico|![](icons/c08cf91a1e.png)} | 15 米内的{el-stasis|冰影碎片}在 1 秒延迟后被拉向使用者。 | +10 生命值\\ +10 超能 |
 | 耐久 | {ico|![](icons/5b6ff5d365.png)} | {deb-stasis|减速}{debuff|减益}与部分技能持续更久。\\ 受影响的来源会在常规时长或层数旁用小字标出增量，例如 25 秒 → 25+5。 | +10 近战 |
-| 裂隙 | {ico|![](icons/257bbcd5ea.png)} | {deb-stasis|碎裂}战斗人员或摧毁{el-stasis|水晶}时：\\ 额外造成一次伤害实例，在 10 {pvp|[8]} 米半径内最多造成 25 {pvp|[9]} 伤害。\\ 衰减后最低仍有 15 {pvp|[4]} 伤害。 | {note|—} |
-| 脆弱 | {ico|![](icons/1092521e3d.png)} | 用近战伤害{deb-stasis|碎裂}一名战斗人员时提供 1 层{el-stasis|冰霜护甲}。 | {note|—} |
-| 晶石 | {ico|![](icons/86e77558b8.png)} | {deb-stasis|冻结}一名战斗人员提供 +{unsure|?} 操控性与 +30 {health|生命值}，持续 11 秒。 | {note|—} |
+| 裂隙 | {ico|![](icons/257bbcd5ea.png)} | {deb-stasis|碎裂}战斗人员或摧毁{el-stasis|水晶}时：\\ 额外造成一次伤害实例，在 10 {pvp|[8]} 米半径内最多造成 25 {pvp|[9]} 伤害。\\ 衰减后最低仍有 15 {pvp|[4]} 伤害。 | {na|—} |
+| 脆弱 | {ico|![](icons/1092521e3d.png)} | 用近战伤害{deb-stasis|碎裂}一名战斗人员时提供 1 层{el-stasis|冰霜护甲}。 | {na|—} |
+| 晶石 | {ico|![](icons/86e77558b8.png)} | {deb-stasis|冻结}一名战斗人员提供 +{unsure|?} 操控性与 +30 {health|生命值}，持续 11 秒。 | {na|—} |
 | 饥饿 | {ico|![](icons/11cee0a65d.png)} | {el-stasis|冰影碎片}提供的{pickup|近战能量}提高 60%。\\ {note|与其它来源（例如渴望回响的满溢金库 +260%）相加。} | -20 近战 |
 | 刺激 | {ico|![](icons/f0865f30e1.png)} | 造成充能近战伤害时补满所有武器并提供 +40 操控性，持续 5 秒。\\ {note|增益持续时间即为冷却时间。} | +10 生命值 |
-| 折角 | {ico|![](icons/a80977eda9.png)} | 击杀受{el-stasis|冰影}效果影响的战斗人员，按等级提供{pickup|职业技能能量}：\\ {enemy|T1 级战斗人员} 9% ｜ {enemy|T2} 13% ｜ {bar-orange|守护者} 15% ｜ {enemy|T3} 20% ｜ {enemy|T4} 30% ｜ {bar-yellow|初级首领} 40% ｜ {bar-yellow|首领} 50%。 | {note|—} |
-| 裂解 | {ico|![](icons/afd246de7b.png)} | 主武器弹药的武器对{el-stasis|冰影水晶}伤害提高 100%，对被{deb-stasis|冻结}的战斗人员伤害提高 50%。\\ {note|包括战狮、零号修订、无魂者揭秘者，以及它们各自的开火模式。} | {note|—} |
-| 逆转 | {ico|![](icons/b85b57a6b2.png)} | {el-stasis|冰霜护甲}激活期间，造成或受到物理近战伤害都会施加 {unsure|10?} 层{deb-stasis|减速}，持续 {unsure|?+?} {unsure|[?+?]} 秒。\\ {note|偃月近战同样适用。} | {note|—} |
-| 韵律 | {ico|![](icons/2d3456314f.png)} | 强化{el-stasis|冰霜护甲}：上限提高到 7 层（伤害抗性 50% {unsure|[16%?]}），每层持续时间变为 6 秒。 | {note|—} |
-| 破碎 | {ico|![](icons/4e2857c220.png)} | 摧毁一块{el-stasis|冰影水晶}时，{pickup|手雷}基础充能速度额外 +500% {pvp|[150%]}，持续 6 秒，最长 11 秒。 | {note|—} |
+| 折角 | {ico|![](icons/a80977eda9.png)} | 击杀受{el-stasis|冰影}效果影响的战斗人员，按等级提供{pickup|职业技能能量}：\\ {enemy|T1 级战斗人员} 9% ｜ {enemy|T2} 13% ｜ {bar-orange|守护者} 15% ｜ {enemy|T3} 20% ｜ {enemy|T4} 30% ｜ {bar-yellow|初级首领} 40% ｜ {bar-yellow|首领} 50%。 | {na|—} |
+| 裂解 | {ico|![](icons/afd246de7b.png)} | 主武器弹药的武器对{el-stasis|冰影水晶}伤害提高 100%，对被{deb-stasis|冻结}的战斗人员伤害提高 50%。\\ {note|包括战狮、零号修订、无魂者揭秘者，以及它们各自的开火模式。} | {na|—} |
+| 逆转 | {ico|![](icons/b85b57a6b2.png)} | {el-stasis|冰霜护甲}激活期间，造成或受到物理近战伤害都会施加 {unsure|10?} 层{deb-stasis|减速}，持续 {unsure|?+?} {unsure|[?+?]} 秒。\\ {note|偃月近战同样适用。} | {na|—} |
+| 韵律 | {ico|![](icons/2d3456314f.png)} | 强化{el-stasis|冰霜护甲}：上限提高到 7 层（伤害抗性 50% {unsure|[16%?]}），每层持续时间变为 6 秒。 | {na|—} |
+| 破碎 | {ico|![](icons/4e2857c220.png)} | 摧毁一块{el-stasis|冰影水晶}时，{pickup|手雷}基础充能速度额外 +500% {pvp|[150%]}，持续 6 秒，最长 11 秒。 | {na|—} |
 | 折磨 | {ico|![](icons/cc2aa3ddea.png)} | 受到伤害时提供 7% {pickup|手雷技能能量}；{el-stasis|冰霜护甲}激活期间提高到 12%。\\ {note|两次回能之间有 1 秒冷却。} | -10 手雷 |
 
 ## 手雷技能

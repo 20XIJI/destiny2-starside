@@ -113,15 +113,9 @@
   white-space: nowrap;
 }
 
-/* 「未测」「不定」这类占位词：源稿写成 {na|未测}，整格只有一个标记，生成器把
-   class 落在 <td> 上。压暗一档、落回中文字族，扫读一列数字时先跳过它们。
-   这条排在上面三列之后：与那条选择器权重相同（都是两类两元素），靠顺序取胜。 */
-.gen tbody td.na {
-  color: var(--bone-dim);
-  font-family: var(--font-cn);
-  font-size: 12px;
-  text-align: center;
-}
+/* 占位词那一格居中：这一页的数值列是右对齐的长数字，占位词跟着右对齐会贴到
+   下一列的分隔线上。共用的压暗与字族在 assets/site.css。 */
+.gen tbody td.na { text-align: center; }
 
 /* 注解：说明句。给一个上限宽度，长句折行也不会把整表拉过版心。
    **默认色靠 tbody 继承下来，不写在这一格上**——理由见 assets/site.css 的 .gen tbody。

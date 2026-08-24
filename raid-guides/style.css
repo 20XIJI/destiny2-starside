@@ -57,7 +57,7 @@
   letter-spacing: .04em;
 }
 
-/* 备注是副本名的注脚，不是第二个名字：压一档字号，退到暗档 */
+/* 注解是副本名的注脚，不是第二个名字：压一档字号，退到暗档 */
 .guide-tag {
   color: var(--bone-dim);
   font-size: 11.5px;

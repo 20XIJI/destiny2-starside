@@ -3,7 +3,7 @@
    这一页由 tools/convert-doc.py 从 references/docs/buff-debuffs.md 生成，
    改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
 
-/* 七列里有三列装整句（触发、增伤、备注），走 1500px 那一档（design.md 四节）。
+/* 七列里有三列装整句（触发、增伤、注解），走 1500px 那一档（design.md 四节）。
    强调色取虚弱的紫：全局易伤是这一页最长的一节，也是读者最常来查的一节。
 
    --min 取实测：收窄各列之后最宽的一张（放大类增益）scrollWidth 1192，
@@ -51,7 +51,7 @@
 /* ── 按列序下的规则只认七列速查表 ──
    这一页有三种表：分类总览 4 列、五张速查表 7 列、叠加算例 8 列。
    `td:nth-child(N)` 认的是位置不是含义，不加闸门就会溢到另外两张表上——算例那行的
-   「修正 2」会被当成来源压暗、「修正 4」被当成增伤提亮，整行结论数反倒被备注列缩到
+   「修正 2」会被当成来源压暗、「修正 4」被当成增伤提亮，整行结论数反倒被注解列缩到
    13px。所以每条按列序下的规则都套一句「恰好七列」的前缀。
 
    ── 来源列 ──
@@ -64,7 +64,7 @@
 }
 
 /* ── 触发列 ──
-   短的四个字、长的三十五个字。不封顶时它独吞剩余宽度，把备注挤到下限宽。 */
+   短的四个字、长的三十五个字。不封顶时它独吞剩余宽度，把注解挤到下限宽。 */
 .gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) tbody td:nth-child(4) {
   max-width: 15em;
 }
@@ -90,16 +90,7 @@
    **这一列以后不能加「色阶：」**——site.css 的 data-tier 是单类，压不过这条，加了不生效且看不出来。 */
 .gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) tbody td:nth-child(5):not([class]) { color: var(--bone-hi); }
 
-/* 「随超能持续」「常驻」「待测」这类占位词：源稿写成 {na|…}，整格只有一个标记，
-   生成器把 class 落在 <td> 上。压暗一档、落回中文字族，扫读一列秒数时先跳过它们。
-   这条排在上面两条之后：与它们权重相同（都是两类两元素），靠顺序取胜。 */
-.gen tbody td.na {
-  color: var(--bone-dim);
-  font-family: var(--font-cn);
-  font-size: 12px;
-}
-
-/* ── 备注列 ──
+/* ── 注解列 ──
    一句到四句不等，给一个上限宽度，长句折行不会把整表拉过版心。
    默认色靠 tbody 继承下来，不写在这一格上——理由见 assets/site.css 的 .gen tbody。 */
 .gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) tbody td:last-child {
