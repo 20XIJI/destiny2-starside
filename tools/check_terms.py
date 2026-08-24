@@ -15,6 +15,8 @@
   G4 更新时间一致 资料页页脚的「更新 YYYY.M.D」与首页卡片上那个必须相等。
   G5 更新日志的类型 只有新增、改动、订正三种，且同一天里每种只能连成一段——
                 标签只在段首显形，交错着写会渲出一串空标签。
+  G7 色板齐全   配色总览页列的渲染色与着色类，必须与 site.css 现有的逐条相等——
+                两个方向都管：改了 :root 的色号忘了改源稿、加了新 token 忘了上页。
   G6 物品专名   tools/items.json 里的词，正文里出现就得着色，且 token 必须与库里
                 的归属一致。「骨灰余烬」属烈日、「连锁闪电」属电弧是 Bungie 的
                 manifest 定的，不由人记；着成隔壁元素只差一点色相，眼睛查不出来。
@@ -269,6 +271,45 @@ def check_acts(bad):
         prev = act
 
 
+PALETTE = os.path.join(DOC_DIR, 'palette.md')
+
+
+def palette_of(site):
+    """site.css 现有的 (渲染色 → 色号, 着色类 → 渲染色)。判据现取，不硬编码名单：
+    着色类即单类规则里 color 引到语义 token 或渲染色的那些——外壳与 UI 的类引的是
+    骨白灰阶，自动落在外面；--accent 没有对应的类，同样落在外面。"""
+    root = site.split(':root {', 1)[1].split('\n}', 1)[0]
+    plain = re.sub(r'/\*.*?\*/', '', site, flags=re.S)
+    hexes = dict(re.findall(r'--(c-[\w-]+):\s*(#[0-9a-f]{3,8})\s*;', root))
+    links = dict(re.findall(r'--([\w-]+):\s*var\(--([\w-]+)\)\s*;', root))
+    classes = {}
+    for m in re.finditer(r'(?:^|\n)((?:\.[\w-]+,\s*)*\.[\w-]+)\s*\{([^}]*)\}', plain):
+        hit = re.search(r'color:\s*var\(--([\w-]+)\)', m.group(2))
+        if not hit:
+            continue
+        base = links.get(hit.group(1), hit.group(1))
+        if base in hexes:
+            for cls in re.findall(r'\.([\w-]+)', m.group(1)):
+                classes[cls] = base
+    return hexes, classes
+
+
+def check_palette(site, bad):
+    md = read(PALETTE)
+    want_hex, want_cls = palette_of(site)
+    got_hex = dict(re.findall(r'^\| --(c-[\w-]+) \| (#[0-9a-f]{3,8}) \|', md, re.M))
+    got_cls = dict(re.findall(r'^\| \{([\w-]+)\|[^}]*\} \| --(c-[\w-]+) \|', md, re.M))
+    for name, want, got in (('渲染色', want_hex, got_hex), ('着色类', want_cls, got_cls)):
+        for key in sorted(set(want) | set(got)):
+            if key not in got:
+                bad.append('G7 %s 少了%s %s（site.css 里是 %s）' % (PALETTE, name, key, want[key]))
+            elif key not in want:
+                bad.append('G7 %s 多出%s %s，site.css 里没有' % (PALETTE, name, key))
+            elif want[key] != got[key]:
+                bad.append('G7 %s %s %s 写的是 %s，site.css 里是 %s'
+                           % (PALETTE, name, key, got[key], want[key]))
+
+
 def main() -> int:
     site = read('assets/site.css')
     pairs = sources()
@@ -278,6 +319,7 @@ def main() -> int:
     check_tokens(pairs, site, bad)
     check_stamps(bad)
     check_acts(bad)
+    check_palette(site, bad)
     check_items(SRC_FILES + [rel for rel, _ in pairs if rel.startswith(DOC_DIR)], bad)
 
     if bad:

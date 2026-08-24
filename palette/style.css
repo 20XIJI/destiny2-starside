@@ -1,0 +1,44 @@
+/* 配色总览：全站渲染色与着色类的色板。
+   通用主题、字体与配色 token 在 /assets/site.css。
+   这一页由 tools/convert-doc.py 从 references/docs/palette.md 生成，
+   改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
+
+/* 四列都短，走连续阅读那一档（design.md 四节）。 */
+:root { --wrap: 760px; --min: 0px; }
+
+/* 色样类：只服务这一页的色样格，直接引渲染色，不经语义 token——这一节展示的
+   就是渲染色本身。字重跟 site.css 的着色类一致，色样与正文的观感才可比。 */
+.c-arc,
+.c-stasis,
+.c-void,
+.c-strand,
+.c-solar,
+.c-kinetic,
+.c-prism,
+.c-orb,
+.c-health,
+.c-aside,
+.c-note,
+.c-legend,
+.c-term,
+.c-artifact {
+  font-weight: 600;
+}
+
+.c-arc { color: var(--c-arc); }
+.c-stasis { color: var(--c-stasis); }
+.c-void { color: var(--c-void); }
+.c-strand { color: var(--c-strand); }
+.c-solar { color: var(--c-solar); }
+.c-kinetic { color: var(--c-kinetic); }
+.c-prism { color: var(--c-prism); }
+.c-orb { color: var(--c-orb); }
+.c-health { color: var(--c-health); }
+.c-aside { color: var(--c-aside); }
+.c-note { color: var(--c-note); }
+.c-legend { color: var(--c-legend); }
+.c-term { color: var(--c-term); }
+.c-artifact { color: var(--c-artifact); }
+
+/* 色号与标记名是等宽的标识符，不折行。 */
+.gen tbody th[scope="row"], .gen tbody td:first-of-type { white-space: nowrap; }
