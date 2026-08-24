@@ -50,6 +50,8 @@
   /* 不属于任何元素的游戏术语。低饱和暖沙，与七个元素色相最小 ΔE 20，不借用其中
      任何一个；与正文骨白 ΔE 20（此前跟随 --bone-hi 时只有 5.5，等于没分开）。 */
   --c-term: #d6c39a;
+  /* 神器：游戏内神器页面的青绿。与 --c-arc ΔE 20，与其余色相更远。 */
+  --c-artifact: #20c4b0;
 
   /* 语义 token → 渲染色。想让某一类单独出色，只改这一行的右值。
      左侧 23 个 token 是源稿里 {token|文字} 与词表着色共用的那套名字，两边要对齐。 */
@@ -68,7 +70,7 @@
   --el-kinetic: var(--c-kinetic);
   --el-prismatic: var(--c-prism);    /* 棱镜粉只服务棱镜与超凡 */
   --pickup: var(--c-term);           /* 元素拾取物/技能能量/护盾 */
-  --joke: var(--c-prism);
+  --memo: var(--c-prism);        /* 备注与玩笑：脱离正文的旁白 */
   --orb: var(--c-orb);               /* 能量球/超能能量 */
   --stack: var(--c-orb);             /* 精准命中/增益层数 */
   --armor-charge: var(--c-orb);
@@ -495,7 +497,7 @@ main {
    统一 600 字重、无阴影——全页着色处逾千，字重与阴影一齐上阵会让语义色失去分级。 */
 .el-arc, .deb-arc, .el-stasis, .deb-stasis, .enemy, .el-void, .ammo-heavy,
 .el-strand, .deb-strand, .el-solar, .deb-solar, .el-kinetic, .el-prismatic,
-.deb-void, .pickup, .joke, .orb, .stack, .armor-charge, .health,
+.deb-void, .pickup, .memo, .orb, .stack, .armor-charge, .health,
 .exotic, .buff, .debuff,
 .bar-red, .bar-orange, .bar-yellow {
   font-weight: 600;
@@ -516,7 +518,7 @@ main {
 .el-prismatic { color: var(--el-prismatic); }
 .deb-void { color: var(--deb-void); }
 .pickup { color: var(--pickup); }
-.joke { color: var(--joke); }
+.memo { color: var(--memo); }
 .orb { color: var(--orb); }
 .stack { color: var(--stack); }
 .armor-charge { color: var(--armor-charge); }
@@ -524,10 +526,10 @@ main {
 .exotic { color: var(--exotic); }
 .buff { color: var(--buff); }
 .debuff { color: var(--debuff); }
-/* 神器模组名：不属于任何元素的游戏术语走 --c-term（design.md 一节）。与 .buff
-   同值——渲染色只用既有的，语义分开由 check_terms.py 的 G2 管住。名字不叫
-   .artifact：那个是神器模组页的分节容器，同名会让分节整块染色。 */
-.art-perk { color: var(--c-term); }
+/* 神器模组名走 --c-artifact：游戏内神器页面通体是这一支青绿，模组名照它走。
+   与最近的 --c-arc ΔE 20，不会被读成电弧。名字不叫 .artifact：那个是神器模组页
+   的分节容器，同名会让分节整块染色。 */
+.art-perk { color: var(--c-artifact); }
 
 /* 敌人四档：红血、橙血、初级首领、首领。照血条颜色分色——游戏内的血条本来就是
    红/橙/黄这三色，读者能反推出颜色为什么是这个颜色；初级首领与首领同为黄。 */
