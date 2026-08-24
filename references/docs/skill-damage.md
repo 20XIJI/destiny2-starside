@@ -4,6 +4,7 @@
 更新：2026.8.24
 数据源：[Destiny 2: Boss Damage](https://docs.google.com/spreadsheets/u/0/d/1_5wtBjRYHHxuF4oJKDb_iOGZs-wTkzB6RYbnyNLbuz4/htmlview) 的技能分页
 页脚：表内是单次施放打出的伤害，不含充能与施放耗时。「100 属性」「200 属性」是对应技能属性为该值时的实测伤害。数值取自补丁 9.7.0.3。
+鸣谢：[両儀式織](https://space.bilibili.com/2135345999) 整理全部注解并校对数值。
 导航：是
 首屏图标：8
 

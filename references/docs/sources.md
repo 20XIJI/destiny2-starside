@@ -1,7 +1,7 @@
 # 数据源与鸣谢
 
 描述：Starside 各资料页的数值出处与贡献者，一处来源一行，列出它支撑的页面。
-更新：2026.8.23
+更新：2026.8.24
 导航：是
 页脚：各页页脚写着自己那一份出处，这里是全站汇总。
 
@@ -16,6 +16,8 @@
 | [Destiny 2: Endgame Analysis](https://docs.google.com/spreadsheets/d/1JM-0SlxVDAi-C6rGVlLxa-J1WGewEeL8Qvq4htWZHhY) | 武器框架的伤害、射速、DPS 与评分 | [武器框架](../weapon-frames/index.html) |
 | [刷取清单](https://docs.google.com/spreadsheets/d/1qsKGrRzCePGaIM5gNtAQNh949d3OsMJ6qV6Fqtpj22k/htmlview) | 异域武器的输出、清怪与高难评级 | [刷取清单-异域武器](../exotic-weapons/index.html) |
 | [DIM 社区](https://discord.com/channels/591927598255439873/1453807417430245518) | 弹药生成的测试支持 | [弹药生成机制](../ammo/index.html) |
+| Aegis 的 [Destiny 2: Boss Damage](https://docs.google.com/spreadsheets/u/0/d/1_5wtBjRYHHxuF4oJKDb_iOGZs-wTkzB6RYbnyNLbuz4/htmlview) 技能分页 | 手雷、近战、超能与杂项技能的单次伤害实测 | [技能伤害排行](../skill-damage/index.html) |
+| Clarity 的 [Chunk Energy Scalars](https://www.d2clarity.com/blog/destiny-science-6/chunk-energy-scalars-breakdown-12) | 整块系数的分档规则、职业物品模组的第二层系数与例外 | [游戏机制](../game-mechanics/index.html) |
 
 来自 Destiny Data Compendium 的页面在其基础上统一了术语、标点与排版。{note|DIM 社区那个链接指向 Discord 频道内页，需登录并已加入该服务器才能打开。}
 
@@ -24,7 +26,7 @@
 | 贡献者 | 贡献 | 页面 |
 |---|---|---|
 | [小棒猪-LGpig](https://space.bilibili.com/169548478) | 整理全部评级、数值与评语 | [刷取清单-异域武器](../exotic-weapons/index.html) |
-| [両儀式織](https://space.bilibili.com/2135345999) | 整理全部注解并校对数值 | [DPS 排行](../dps/index.html)、[切枪 DPS 排行](../swap-dps/index.html) |
+| [両儀式織](https://space.bilibili.com/2135345999) | 整理全部注解并校对数值 | [DPS 排行](../dps/index.html)、[切枪 DPS 排行](../swap-dps/index.html)、[技能伤害排行](../skill-damage/index.html) |
 | [MossyMax](https://docs.google.com/spreadsheets/d/1b57Hb8m1L3daFfUckQQqvvN6VOpD03KEssvQLMFpC5I/edit) | 实测并整理全部压光数值 | [压光伤害](../power-delta/index.html) |
 | [遗忘Melt](https://space.bilibili.com/3706960595650983) | 编写并维护全部图文攻略 | [Raid 攻略](../raid-guides/index.html) |
 | 蜃零#7456 | 整理全部来源与掉落 | [锻造武器来源](../crafting/index.html) |

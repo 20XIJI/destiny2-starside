@@ -316,6 +316,45 @@
 <p>技能能量的整块获取通常由各类技能的基础冷却决定，<span class="pickup">职业技能</span>、手雷技能、近战技能与超能技能都算在内。</p>
 <p>终愿赛季改变了「按百分比给一整块技能能量」这类效果与整块系数的交互方式，爆破专家、<span class="exotic">投弹手</span>、充沛、动量转移都属于这一类。<br>超能不受整块修正影响，不过多数持续型超能在造成伤害时会获得更多能量。</p>
 <p>整块系数会压低按百分比计的能量获取，手雷与职业技能最低到 0.5×，近战技能最低到 0.6×。</p>
+<p>整块系数按冷却分档，不是连续函数——冷却相近的技能共用一个系数。三类技能各走一套档位：手雷五档、近战五档、<span class="pickup">职业技能</span>三档，彼此不通用。</p>
+<table class="gen">
+<thead>
+<tr>
+<th scope="col">整块系数</th>
+<th scope="col">技能</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+<tbody>
+<tr class="lane"><th colspan="2" scope="colgroup">手雷技能</th></tr>
+<tr><th scope="row">1×</th><td><span class="el-solar">烈焰手雷</span>、<span class="el-solar">融合手雷</span></td></tr>
+<tr><th scope="row">0.875×</th><td><span class="el-arc">闪光手雷</span>、<span class="el-arc">粘性电浆手雷</span>、<span class="el-solar">治愈手雷</span>、<span class="el-stasis">暮域手雷</span>、<span class="el-strand">抓钩</span></td></tr>
+<tr><th scope="row">0.75×</th><td><span class="el-arc">电光手雷</span>、<span class="el-arc">弹跳手雷</span>、<span class="el-solar">燃烧手雷</span>、<span class="el-solar">蜂群手雷</span>、<span class="el-void">磁性手雷</span>、<span class="el-void">散射手雷</span></td></tr>
+<tr><th scope="row">0.625×</th><td><span class="el-arc">脉冲手雷</span>、<span class="el-arc">风暴手雷</span>、<span class="el-solar">铝热手雷</span>、<span class="el-solar">感应手雷</span>、<span class="el-void">抑制手雷</span>、<span class="el-void">虚空尖刺</span>、<span class="el-void">虚空墙壁</span>、<span class="el-stasis">急冻手雷</span>、<span class="el-stasis">冰川手雷</span>、<span class="el-strand">线虫手雷</span></td></tr>
+<tr><th scope="row">0.5×</th><td><span class="el-arc">闪电手雷</span>、<span class="el-solar">烈日手雷</span>、<span class="el-void">量子光束</span>、<span class="el-void">涡流手雷</span>、<span class="el-strand">束缚手雷</span>、<span class="el-strand">切线手雷</span></td></tr>
+</tbody>
+<tbody>
+<tr class="lane"><th colspan="2" scope="colgroup">近战技能</th></tr>
+<tr><th scope="row">1×</th><td class="el-arc">组合打击</td></tr>
+<tr><th scope="row">0.9×</th><td><span class="el-arc">迷失一击</span>、<span class="el-arc">雷霆一击</span>、<span class="el-arc">连锁闪电</span>、<span class="el-solar">飞刀戏法</span>、<span class="el-solar">投掷飞锤</span>、<span class="el-solar">焚烧响指</span>、<span class="el-void">鬼灵激涌</span>、<span class="el-void">陷阱炸弹</span>、<span class="el-void">圣盾投掷</span>、<span class="el-void">口袋奇点</span></td></tr>
+<tr><th scope="row">0.8×</th><td><span class="el-arc">地震打击</span>、<span class="el-solar">轻质飞刀</span>、<span class="el-solar">战锤打击</span>、<span class="el-stasis">枯萎之刃</span>、<span class="el-stasis">半影冲击</span>、<span class="el-strand">线织尖刺</span>、<span class="el-strand">神秘织针</span></td></tr>
+<tr><th scope="row">0.7×</th><td><span class="el-arc">弹道猛击</span>、<span class="el-arc">球形闪电</span>、<span class="el-solar">感应爆炸飞刀</span>、<span class="el-solar">星界之火</span>、<span class="el-void">圣盾强袭</span>、<span class="el-stasis">战栗打击</span>、<span class="el-strand">狂暴利刃</span></td></tr>
+<tr><th scope="row">0.6×</th><td class="el-solar">权衡飞刀</td></tr>
+</tbody>
+<tbody>
+<tr class="lane"><th colspan="2" scope="colgroup">职业技能</th></tr>
+<tr><th scope="row">1×</th><td>射手闪身、集结屏障、推进器</td></tr>
+<tr><th scope="row">0.8×</th><td>赌徒闪身、凤凰俯冲</td></tr>
+<tr><th scope="row">0.5×</th><td>特技闪身、巍峨屏障、强能裂痕、治愈裂痕</td></tr>
+</tbody>
+</table>
+<p>这张表由<a href="../elements/index.html">职业分支详解</a>与<a href="../elements/class-abilities/index.html">职业技能</a>各页表格末列的「回复倍率」汇总而成，逐个技能的冷却与说明在那些页面上。</p>
+<p>同一个 Perk 因此在不同技能上省下的秒数相近。霰弹枪上的爆破专家每次击杀给 20% 手雷能量，落到 0.5× 那一档的手雷实得 10%，落到 0.875× 那一档的实得 17.5%；后一档的基础冷却本来就短，两边省下的绝对秒数拉不开。</p>
+<p>职业物品模组还要再乘一层。<span class="exotic">投弹手</span>、扩展、充沛按触发它们的<span class="pickup">职业技能</span>的冷却分档，取 0.225×、0.45×、0.6× 或 1×，再与目标技能自身的整块系数相乘。三个<span class="exotic">投弹手</span>配<span class="pickup">巍峨屏障</span>（1×）与 0.75× 的手雷时总系数 0.75×，20% 变 15%；配<span class="pickup">射手闪身</span>（0.225×）与 0.5× 的手雷时总系数 0.1125×，20% 变 2.25%。充沛给出的<span class="orb">超能能量</span>也走这一层，但不受整块系数。</p>
+<p>三类效果不受整块系数：与特定技能绑定的<span class="exotic">异域</span>（<span class="exotic">幼年阿罕卡拉之脊</span>对<span class="el-solar">感应手雷</span>、<span class="exotic">全知之眼</span>对烟雾弹）、直接返还整个技能充能的（<span class="exotic">星火协议</span>、<span class="exotic">神化面纱</span>），以及提升充能速度而非给出整块能量的。</p>
+<p><span class="exotic">白霜-Z</span>把<span class="pickup">职业技能</span>基础冷却设成 70 秒，却不受整块系数，职业技能的整块能量效果照旧全额生效。棱镜上的<span class="el-stasis">凄凉观察者</span>只改冷却，不覆盖手雷自身的整块系数。</p>
+<p class="note">职业物品模组那一层系数与上述例外，取自 Clarity 的 <a href="https://www.d2clarity.com/blog/destiny-science-6/chunk-energy-scalars-breakdown-12" target="_blank" rel="noopener">Chunk Energy Scalars</a>（Stardust 撰写，实测由 Engineeeer 与 RyTako 完成）。该文自述部分内容已过时，逐个技能的最新系数以本站各元素页的「回复倍率」为准。</p>
 <p>除非另有说明，或某件<span class="exotic">异域</span>装备与某个技能有专门交互，所有技能的能量获取都受整块能量缩放影响。</p>
 <p>技能冷却按下式计算：</p>
 <p class="formula"><span class="lhs">T =</span><span class="num">C</span><span class="den">1 + S + E</span></p>
@@ -678,7 +717,7 @@
 </main>
 
 <footer class="site-foot">
-<p><span class="stamp">更新 2026.8.15</span>本页照数据源的分节顺序整理。</p>
+<p><span class="stamp">更新 2026.8.24</span>本页照数据源的分节顺序整理。</p>
 <p>数据源：<a href="https://docs.google.com/spreadsheets/u/0/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4" target="_blank" rel="noopener">Destiny Data Compendium</a>。本页在其基础上统一了术语、标点与排版。</p>
 <p>© 2026 日栎w · <a href="https://space.bilibili.com/26117485" target="_blank" rel="noopener">哔哩哔哩</a></p>
 <p class="legal">Starside 为非官方资料站，与 Bungie, Inc. 无从属关系。Destiny 2 及相关名称、标识为 Bungie, Inc. 的商标。</p>

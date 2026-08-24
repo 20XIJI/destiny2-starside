@@ -7,6 +7,9 @@
 ## 2026.8.24
 
 - {act|新增}[技能伤害排行](../skill-damage/index.html)：238 组技能配置的单次伤害实测，分四类
+- {act|新增}[游戏机制](../game-mechanics/index.html) · 技能能量生成：补上整块系数的分档表，三类技能共 13 档
+- {act|新增}[游戏机制](../game-mechanics/index.html) · 技能能量生成：补上职业物品模组那一层系数与三类例外
+- {act|改动}[数据源与鸣谢](../sources/index.html)：加入两处来源，Aegis 的技能分页与 Clarity
 - {act|订正}[神器模组](../artifact-mods/index.html) · 动能冲击：补上可被激涌与武器属性之外的增益加成
 - {act|订正}[神器模组](../artifact-mods/index.html) · 刀剑风暴连击：补上只受银白利刃加成
 - {act|订正}[神器模组](../artifact-mods/index.html) · 烈日爆发：补上不受任何加成
