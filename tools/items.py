@@ -88,6 +88,12 @@ NAME_FIX = {
 
 # 更长的专名：这几段文字整体屏蔽，里面的短词不再单独命中。与 STOP 的区别是
 # 它不牺牲那个词本身——「千语」照常着色，只有「千语魅痕」（首领名）里的不算。
+# TERMS 里定了 token、但不强制正查的词：同形的普通用法比术语用法还多，
+# 铺开会把动词染成机制名。token 仍然留着，G2 照旧管「着错了色」。
+LOOSE = {
+    '恢复',        # 「恢复生命值」「恢复延迟」多数是动词，不是烈日的恢复
+}
+
 GUARD = [
     '千语魅痕',    # 最后遗愿的首领，不是异域融合步枪「千语」
     '冻结计时',    # 限热器把计时冻住，不是冰影的冻结
@@ -211,6 +217,14 @@ def load():
     for word, token in MECH.items():
         if word not in STOP:
             terms.setdefault(word, (token, '元素机制'))
+    # 站内术语表里定了 token 的那些，走同一条正查——「勇士」「守护者」「能量球」
+    # 这类档位与拾取物不在 Bungie 的 manifest 里，此前没有任何一条闸门要求它们着色，
+    # 全站因此漏了八百多处。放在这里而不是另起一条闸门：正查只有一个实现。
+    # 延迟导入：check_terms 在模块级导入 items，反过来在模块级导入会成环。
+    import check_terms
+    for word, token, _ in check_terms.TERMS:
+        if token and word not in STOP and word not in LOOSE:
+            terms.setdefault(word, (token, '站内术语'))
     return terms, data['skipped']
 
 
@@ -254,15 +268,24 @@ def pages(slug=None):
 # 描述那一行会原样进 meta description，色阶与列组里写的是列名，着色进去即写坏结构。
 KEY_LINE = re.compile(r'^[\u4e00-\u9fff]{1,6}(（[^）]*）)?：')
 
+# 分隔行；它上面那一行是表头。表头写的是列名，不是正文，不着色。
+RULE_LINE = re.compile(r'^\|[-| ]+\|$')
+
+
+def head_rows(lines):
+    """表头行的下标集合。列名与标题同属「标签」，与行标题一样已有结构身份。"""
+    return {i - 1 for i, line in enumerate(lines) if RULE_LINE.match(line.strip()) and i}
+
 
 def hits_in(line, terms, names):
     """这一行里该着色的裸出现，[(起, 止, 词)]，按位置倒序——就地替换从后往前改。
 
-    四处跳过：行标题那一格（已有结构身份）、链接目标与图片路径（不是正文）、
+    六处跳过：标题行与行标题那一格（已有结构身份）、链接目标与图片路径（不是正文）、
     GUARD 里那些更长的专名、已经在某个 {token|…} 里面的（别人已经判过了）。
+    表头行由调用方按 head_rows() 排除——那要看下一行是不是分隔行，一行看不出来。
     表里的词长词在前，先认长的。
     """
-    if KEY_LINE.match(line):
+    if KEY_LINE.match(line) or line.startswith('#'):
         return []
     head = row_title_end(line)
     taken = [False] * len(line)
@@ -294,7 +317,10 @@ def scan(slug=None):
     for rel in pages(slug):
         with open(os.path.join(shell.ROOT, rel), encoding='utf-8') as f:
             lines = f.read().split('\n')
+        skip = head_rows(lines)
         for n, line in enumerate(lines, start=1):
+            if n - 1 in skip:
+                continue
             for a, b, word in reversed(hits_in(line, terms, names)):
                 out.append((rel, n, a, b, word))
     return out
@@ -326,7 +352,10 @@ def apply(slug=None):
         with open(path, encoding='utf-8') as f:
             lines = f.read().split('\n')
         n = 0
+        skip = head_rows(lines)
         for i, line in enumerate(lines):
+            if i in skip:
+                continue
             for a, b, word in hits_in(line, terms, names):   # 倒序，前面的位置不动
                 # 包的是源稿原文而不是表的键：键归一化过，直接写回会吃掉
                 # 「Vex 揭秘者」中英之间那个排版空格。

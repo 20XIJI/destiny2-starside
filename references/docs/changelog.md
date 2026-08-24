@@ -10,6 +10,7 @@
 - {act|新增}[游戏机制](../game-mechanics/index.html) · 技能能量生成：补上整块系数的分档表，三类技能共 13 档
 - {act|新增}[游戏机制](../game-mechanics/index.html) · 技能能量生成：补上职业物品模组那一层系数与三类例外
 - {act|改动}[数据源与鸣谢](../sources/index.html)：加入两处来源，Aegis 的技能分页与 Clarity
+- {act|订正}全站：术语该着色却裸着的 774 处补上，闸门加一条正查
 - {act|订正}[游戏机制](../game-mechanics/index.html) · 屏障勇士：「屏障勇士」不再拆成两色，正文里漏着色的「勇士」一并补上
 - {act|订正}全站：否定前缀「非」并进后面那个术语，14 处
 - {act|订正}[神器模组](../artifact-mods/index.html) · 动能冲击：补上可被激涌与武器属性之外的增益加成

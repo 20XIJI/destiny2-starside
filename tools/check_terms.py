@@ -17,10 +17,13 @@
                 标签只在段首显形，交错着写会渲出一串空标签。
   G7 色板齐全   配色总览页列的渲染色与着色类，必须与 site.css 现有的逐条相等——
                 两个方向都管：改了 :root 的色号忘了改源稿、加了新 token 忘了上页。
-  G6 物品专名   tools/items.json 里的词与 items.py 的 MECH（元素机制名），正文里
-                出现就得着色，且 token 必须与库里的归属一致。「骨灰余烬」属烈日、「连锁闪电」属电弧是 Bungie 的
-                manifest 定的，不由人记；着成隔壁元素只差一点色相，眼睛查不出来。
-                漏着色跑 python3 tools/items.py --apply 补上。
+  G6 该着色的都着了 tools/items.json 里的词、items.py 的 MECH（元素机制名），以及
+                下面 TERMS 里定了 token 的术语，正文里出现就得着色；已着色的那些
+                token 还必须与库里的归属一致。「骨灰余烬」属烈日、「连锁闪电」属电弧
+                是 Bungie 的 manifest 定的，不由人记；着成隔壁元素只差一点色相，
+                眼睛查不出来。G2 只管「着错了色」，没着色时它一句话也不说——
+                「勇士」「守护者」「能量球」这类档位与拾取物不在 manifest 里，
+                曾因此全站漏了八百多处。漏着色跑 python3 tools/items.py --apply 补上。
 
 用法：python3 tools/check_terms.py    改源稿或改术语表之后跑一次。
 """
