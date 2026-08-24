@@ -15,13 +15,24 @@
 .c-solar,
 .c-kinetic,
 .c-prism,
-.c-orb,
-.c-health,
-.c-aside,
-.c-note,
+.c-artifact,
 .c-legend,
+.c-exotic,
+.c-orb,
+.c-stack,
+.c-charge,
+.c-ammo,
+.c-health,
+.c-enemy,
 .c-term,
-.c-artifact {
+.c-buff,
+.c-bar-red,
+.c-bar-orange,
+.c-bar-yellow,
+.c-debuff,
+.c-unsure,
+.c-pvp,
+.c-note {
   font-weight: 600;
 }
 
@@ -32,13 +43,49 @@
 .c-solar { color: var(--c-solar); }
 .c-kinetic { color: var(--c-kinetic); }
 .c-prism { color: var(--c-prism); }
-.c-orb { color: var(--c-orb); }
-.c-health { color: var(--c-health); }
-.c-aside { color: var(--c-aside); }
-.c-note { color: var(--c-note); }
-.c-legend { color: var(--c-legend); }
-.c-term { color: var(--c-term); }
 .c-artifact { color: var(--c-artifact); }
+.c-legend { color: var(--c-legend); }
+.c-exotic { color: var(--c-exotic); }
+.c-orb { color: var(--c-orb); }
+.c-stack { color: var(--c-stack); }
+.c-charge { color: var(--c-charge); }
+.c-ammo { color: var(--c-ammo); }
+.c-health { color: var(--c-health); }
+.c-enemy { color: var(--c-enemy); }
+.c-term { color: var(--c-term); }
+.c-buff { color: var(--c-buff); }
+.c-bar-red { color: var(--c-bar-red); }
+.c-bar-orange { color: var(--c-bar-orange); }
+.c-bar-yellow { color: var(--c-bar-yellow); }
+.c-debuff { color: var(--c-debuff); }
+.c-unsure { color: var(--c-unsure); }
+.c-pvp { color: var(--c-pvp); }
+.c-note { color: var(--c-note); }
+
+/* 页面专属那一节的色样。各页自己的样式表里这些类还兼着排版，这里只取颜色。 */
+.cost,
+.perk,
+.amp,
+.res,
+.sim,
+.sk-arc,
+.sk-stasis,
+.sk-void,
+.sk-strand,
+.sk-solar {
+  font-weight: 600;
+}
+
+.cost { color: var(--c-charge); }
+.perk { color: var(--c-exotic); }
+.amp { color: var(--c-void); }
+.res { color: var(--c-buff); }
+.sim { color: var(--c-note); }
+.sk-arc { color: var(--c-arc); }
+.sk-stasis { color: var(--c-stasis); }
+.sk-void { color: var(--c-void); }
+.sk-strand { color: var(--c-strand); }
+.sk-solar { color: var(--c-solar); }
 
 /* 色号与标记名是等宽的标识符，不折行。 */
 .gen tbody th[scope="row"], .gen tbody td:first-of-type { white-space: nowrap; }

@@ -130,7 +130,7 @@
   grid-area: cost;
   align-self: center;
   padding: 13px 20px 13px 0;
-  color: var(--armor-charge);
+  color: var(--c-charge);
   font-family: var(--font-body);
   font-size: 14px;
   font-weight: 600;

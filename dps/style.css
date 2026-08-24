@@ -43,7 +43,7 @@
 /* 理论输出：这一行的数字是拉表算出来的，实战复刻不了，只作参考。
    借 --c-health 的渲染色：这一页没有生命值，两者不同屏，与 site.css 里搜索框
    落空时借同一枚红是同一种借法。 */
-.sim { color: var(--c-health); font-weight: 600; }
+.sim { color: var(--c-note); font-weight: 600; }
 
 /* ── 图标格 ──
    源稿写 {ico|![](icons/…)}，整格只有一个标记，class 落在 <td> 本身。 */

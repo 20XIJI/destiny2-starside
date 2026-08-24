@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>配色总览 · Starside</title>
-<meta name="description" content="Starside 全站着色的色板——14 支渲染色与 30 个着色类，各带色号、色样与用途。">
+<meta name="description" content="Starside 全站着色的色板——32 支渲染色与它们的语义 token，各带色号、色样与用途。">
 <meta name="theme-color" content="#0b0d14">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="Starside">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:title" content="配色总览 · Starside">
-<meta property="og:description" content="Starside 全站着色的色板——14 支渲染色与 30 个着色类，各带色号、色样与用途。">
+<meta property="og:description" content="Starside 全站着色的色板——32 支渲染色与它们的语义 token，各带色号、色样与用途。">
 <link rel="preload" href="../assets/fonts/chakra-petch-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../assets/site.css">
@@ -36,27 +36,47 @@
 <table class="gen">
 <thead>
 <tr>
-<th scope="col">渲染色</th>
+<th scope="col">变量</th>
 <th scope="col">色号</th>
 <th scope="col">色样</th>
 <th scope="col">用途</th>
 </tr>
 </thead>
 <tbody>
-<tr><th scope="row">--c-arc</th><td>#5fd8e0</td><td class="c-arc">Aa 汉字 123</td><td>电弧色相</td></tr>
-<tr><th scope="row">--c-stasis</th><td>#7fb4ff</td><td class="c-stasis">Aa 汉字 123</td><td>冰影色相</td></tr>
-<tr><th scope="row">--c-void</th><td>#c08cff</td><td class="c-void">Aa 汉字 123</td><td>虚空色相</td></tr>
-<tr><th scope="row">--c-strand</th><td>#7fdc86</td><td class="c-strand">Aa 汉字 123</td><td>缚丝色相</td></tr>
-<tr><th scope="row">--c-solar</th><td>#ffb35c</td><td class="c-solar">Aa 汉字 123</td><td>烈日色相</td></tr>
-<tr><th scope="row">--c-kinetic</th><td>#eef3f9</td><td class="c-kinetic">Aa 汉字 123</td><td>动能色相，游戏内即白</td></tr>
-<tr><th scope="row">--c-prism</th><td>#f58fc8</td><td class="c-prism">Aa 汉字 123</td><td>棱镜色相</td></tr>
-<tr><th scope="row">--c-orb</th><td>#f2ce5b</td><td class="c-orb">Aa 汉字 123</td><td>能量球金黄</td></tr>
-<tr><th scope="row">--c-health</th><td>#ff8e86</td><td class="c-health">Aa 汉字 123</td><td>生命值红</td></tr>
-<tr><th scope="row">--c-aside</th><td>#a2848c</td><td class="c-aside">Aa 汉字 123</td><td>限定语灰粉</td></tr>
-<tr><th scope="row">--c-note</th><td>#eea6b7</td><td class="c-note">Aa 汉字 123</td><td>注解玫瑰粉</td></tr>
-<tr><th scope="row">--c-legend</th><td>#9c7ab8</td><td class="c-legend">Aa 汉字 123</td><td>传说紫</td></tr>
-<tr><th scope="row">--c-term</th><td>#d6c39a</td><td class="c-term">Aa 汉字 123</td><td>不属于任何元素的游戏术语，暖沙</td></tr>
-<tr><th scope="row">--c-artifact</th><td>#20c4b0</td><td class="c-artifact">Aa 汉字 123</td><td>神器青绿</td></tr>
+</tbody>
+<tbody>
+<tr class="lane"><th colspan="4" scope="colgroup">七个元素</th></tr>
+<tr><th scope="row">--c-arc</th><td>#5fd8e0</td><td class="c-arc">Aa 汉字 123</td><td>电弧元素与其减益</td></tr>
+<tr><th scope="row">--c-stasis</th><td>#7fb4ff</td><td class="c-stasis">Aa 汉字 123</td><td>冰影元素与其减益</td></tr>
+<tr><th scope="row">--c-void</th><td>#c08cff</td><td class="c-void">Aa 汉字 123</td><td>虚空元素与其减益</td></tr>
+<tr><th scope="row">--c-strand</th><td>#7fdc86</td><td class="c-strand">Aa 汉字 123</td><td>缚丝元素与其减益</td></tr>
+<tr><th scope="row">--c-solar</th><td>#ffb35c</td><td class="c-solar">Aa 汉字 123</td><td>烈日元素与其减益</td></tr>
+<tr><th scope="row">--c-kinetic</th><td>#eef7f2</td><td class="c-kinetic">Aa 汉字 123</td><td>动能元素</td></tr>
+<tr><th scope="row">--c-prism</th><td>#f58fc8</td><td class="c-prism">Aa 汉字 123</td><td>棱镜与超凡</td></tr>
+</tbody>
+<tbody>
+<tr class="lane"><th colspan="4" scope="colgroup">游戏内的其他编码</th></tr>
+<tr><th scope="row">--c-artifact</th><td>#20c4b0</td><td class="c-artifact">Aa 汉字 123</td><td>神器模组名</td></tr>
+<tr><th scope="row">--c-legend</th><td>#cf4a9c</td><td class="c-legend">Aa 汉字 123</td><td>稀有度：传说，行标题后那一截武器类别</td></tr>
+<tr><th scope="row">--c-exotic</th><td>#fcb70a</td><td class="c-exotic">Aa 汉字 123</td><td>稀有度：异域，含专属 Perk 名</td></tr>
+<tr><th scope="row">--c-orb</th><td>#dbc46a</td><td class="c-orb">Aa 汉字 123</td><td>能量球与超能能量</td></tr>
+<tr><th scope="row">--c-stack</th><td>#dbc46a</td><td class="c-stack">Aa 汉字 123</td><td>精准命中与增益层数</td></tr>
+<tr><th scope="row">--c-charge</th><td>#2f9fd6</td><td class="c-charge">Aa 汉字 123</td><td>护甲充能与模组耗费，技能能量、充能与护盾</td></tr>
+<tr><th scope="row">--c-ammo</th><td>#c08cff</td><td class="c-ammo">Aa 汉字 123</td><td>威能弹药</td></tr>
+<tr><th scope="row">--c-health</th><td>#41b349</td><td class="c-health">Aa 汉字 123</td><td>生命值与治疗</td></tr>
+<tr><th scope="row">--c-enemy</th><td>#d94452</td><td class="c-enemy">Aa 汉字 123</td><td>战斗人员、勇士与数值</td></tr>
+<tr><th scope="row">--c-term</th><td>#d6c39a</td><td class="c-term">Aa 汉字 123</td><td>词表着色里不属于元素的游戏术语，兼图表曲线、强调色与轮换页的突袭标签</td></tr>
+<tr><th scope="row">--c-buff</th><td>#2f9fd6</td><td class="c-buff">Aa 汉字 123</td><td>增益与引号里的 buff 名，首领生命值页的减伤列</td></tr>
+<tr><th scope="row">--c-bar-red</th><td>#ff8e86</td><td class="c-bar-red">Aa 汉字 123</td><td>战斗人员档位：红血</td></tr>
+<tr><th scope="row">--c-bar-orange</th><td>#ffb35c</td><td class="c-bar-orange">Aa 汉字 123</td><td>战斗人员档位：橙血与守护者</td></tr>
+<tr><th scope="row">--c-bar-yellow</th><td>#f2ce5b</td><td class="c-bar-yellow">Aa 汉字 123</td><td>战斗人员档位：初级首领与首领</td></tr>
+</tbody>
+<tbody>
+<tr class="lane"><th colspan="4" scope="colgroup">站点自己的话</th></tr>
+<tr><th scope="row">--c-debuff</th><td>#a2848c</td><td class="c-debuff">Aa 汉字 123</td><td>减益</td></tr>
+<tr><th scope="row">--c-unsure</th><td>#a2848c</td><td class="c-unsure">Aa 汉字 123</td><td>待测数值</td></tr>
+<tr><th scope="row">--c-pvp</th><td>#ee2746</td><td class="c-pvp">Aa 汉字 123</td><td>方括号里的 PvP 数值</td></tr>
+<tr><th scope="row">--c-note</th><td>#eea6b7</td><td class="c-note">Aa 汉字 123</td><td>注解：作者的话与限制说明，兼 DPS 页的模拟值</td></tr>
 </tbody>
 </table>
 </section>
@@ -71,36 +91,81 @@
 </tr>
 </thead>
 <tbody>
-<tr><th scope="row" class="deb-arc">deb-arc</th><td>--c-arc</td><td>电弧减益：震颤、致盲</td></tr>
 <tr><th scope="row" class="el-arc">el-arc</th><td>--c-arc</td><td>电弧元素</td></tr>
-<tr><th scope="row" class="deb-stasis">deb-stasis</th><td>--c-stasis</td><td>冰影减益：冻结、碎裂</td></tr>
+<tr><th scope="row" class="deb-arc">deb-arc</th><td>--c-arc</td><td>电弧减益：震颤、致盲</td></tr>
 <tr><th scope="row" class="el-stasis">el-stasis</th><td>--c-stasis</td><td>冰影元素</td></tr>
-<tr><th scope="row" class="ammo-heavy">ammo-heavy</th><td>--c-void</td><td>威能弹药</td></tr>
-<tr><th scope="row" class="deb-void">deb-void</th><td>--c-void</td><td>虚空减益：虚弱、压制</td></tr>
+<tr><th scope="row" class="deb-stasis">deb-stasis</th><td>--c-stasis</td><td>冰影减益：冻结、碎裂</td></tr>
 <tr><th scope="row" class="el-void">el-void</th><td>--c-void</td><td>虚空元素</td></tr>
-<tr><th scope="row" class="deb-strand">deb-strand</th><td>--c-strand</td><td>缚丝减益：割裂、瓦解</td></tr>
+<tr><th scope="row" class="deb-void">deb-void</th><td>--c-void</td><td>虚空减益：虚弱、压制</td></tr>
 <tr><th scope="row" class="el-strand">el-strand</th><td>--c-strand</td><td>缚丝元素，特殊弹药同色</td></tr>
-<tr><th scope="row" class="bar-orange">bar-orange</th><td>--c-solar</td><td>橙血与守护者</td></tr>
-<tr><th scope="row" class="deb-solar">deb-solar</th><td>--c-solar</td><td>烈日减益：灼烧、点燃</td></tr>
+<tr><th scope="row" class="deb-strand">deb-strand</th><td>--c-strand</td><td>缚丝减益：割裂、瓦解</td></tr>
 <tr><th scope="row" class="el-solar">el-solar</th><td>--c-solar</td><td>烈日元素</td></tr>
+<tr><th scope="row" class="deb-solar">deb-solar</th><td>--c-solar</td><td>烈日减益：灼烧、点燃</td></tr>
 <tr><th scope="row" class="el-kinetic">el-kinetic</th><td>--c-kinetic</td><td>动能</td></tr>
 <tr><th scope="row" class="el-prismatic">el-prismatic</th><td>--c-prism</td><td>棱镜与超凡</td></tr>
-<tr><th scope="row" class="armor-charge">armor-charge</th><td>--c-orb</td><td>护甲充能</td></tr>
-<tr><th scope="row" class="bar-yellow">bar-yellow</th><td>--c-orb</td><td>初级首领与首领</td></tr>
-<tr><th scope="row" class="exotic">exotic</th><td>--c-orb</td><td>异域装备</td></tr>
-<tr><th scope="row" class="orb">orb</th><td>--c-orb</td><td>能量球与超能能量</td></tr>
-<tr><th scope="row" class="stack">stack</th><td>--c-orb</td><td>精准命中与增益层数</td></tr>
-<tr><th scope="row" class="bar-red">bar-red</th><td>--c-health</td><td>红血</td></tr>
-<tr><th scope="row" class="health">health</th><td>--c-health</td><td>生命值与治疗</td></tr>
-<tr><th scope="row" class="debuff">debuff</th><td>--c-aside</td><td>减益</td></tr>
-<tr><th scope="row" class="pvp">pvp</th><td>--c-aside</td><td>方括号里的 PvP 数值</td></tr>
-<tr><th scope="row" class="unsure">unsure</th><td>--c-aside</td><td>待测数值 [?]</td></tr>
-<tr><th scope="row" class="note">note</th><td>--c-note</td><td>注解：作者的话与限制说明</td></tr>
-<tr><th scope="row" class="kind">kind</th><td>--c-legend</td><td>行标题后面那一截武器类别</td></tr>
-<tr><th scope="row" class="buff">buff</th><td>--c-term</td><td>增益</td></tr>
-<tr><th scope="row" class="enemy">enemy</th><td>--c-term</td><td>战斗人员、勇士与数值</td></tr>
-<tr><th scope="row" class="pickup">pickup</th><td>--c-term</td><td>元素拾取物、技能能量与护盾</td></tr>
 <tr><th scope="row" class="art-perk">art-perk</th><td>--c-artifact</td><td>神器模组名</td></tr>
+<tr><th scope="row" class="kind">kind</th><td>--c-legend</td><td>行标题后面那一截武器类别</td></tr>
+<tr><th scope="row" class="exotic">exotic</th><td>--c-exotic</td><td>异域装备</td></tr>
+<tr><th scope="row" class="orb">orb</th><td>--c-orb</td><td>能量球与超能能量</td></tr>
+<tr><th scope="row" class="stack">stack</th><td>--c-stack</td><td>精准命中与增益层数</td></tr>
+<tr><th scope="row" class="armor-charge">armor-charge</th><td>--c-charge</td><td>护甲充能</td></tr>
+<tr><th scope="row" class="ammo-heavy">ammo-heavy</th><td>--c-ammo</td><td>威能弹药</td></tr>
+<tr><th scope="row" class="health">health</th><td>--c-health</td><td>生命值与治疗</td></tr>
+<tr><th scope="row" class="enemy">enemy</th><td>--c-enemy</td><td>战斗人员、勇士与数值</td></tr>
+<tr><th scope="row" class="buff">buff</th><td>--c-buff</td><td>增益</td></tr>
+<tr><th scope="row" class="pickup">pickup</th><td>--c-charge</td><td>技能能量、充能与护盾</td></tr>
+<tr><th scope="row" class="bar-red">bar-red</th><td>--c-bar-red</td><td>红血</td></tr>
+<tr><th scope="row" class="bar-orange">bar-orange</th><td>--c-bar-orange</td><td>橙血与守护者</td></tr>
+<tr><th scope="row" class="bar-yellow">bar-yellow</th><td>--c-bar-yellow</td><td>初级首领与首领</td></tr>
+<tr><th scope="row" class="debuff">debuff</th><td>--c-debuff</td><td>减益</td></tr>
+<tr><th scope="row" class="unsure">unsure</th><td>--c-unsure</td><td>待测数值 [?]</td></tr>
+<tr><th scope="row" class="pvp">pvp</th><td>--c-pvp</td><td>方括号里的 PvP 数值</td></tr>
+<tr><th scope="row" class="note">note</th><td>--c-note</td><td>注解：作者的话与限制说明</td></tr>
+</tbody>
+</table>
+</section>
+<section class="block" id="sec-3">
+<h2 class="sect-label">页面专属</h2>
+<table class="gen">
+<thead>
+<tr>
+<th scope="col">标记</th>
+<th scope="col">渲染色</th>
+<th scope="col">页面</th>
+<th scope="col">用途</th>
+</tr>
+</thead>
+<tbody>
+<tr><th scope="row" class="cost">cost</th><td>--c-charge</td><td>armor-mods</td><td>模组的充能耗费</td></tr>
+<tr><th scope="row" class="perk">perk</th><td>--c-exotic</td><td>exotic-weapon、exotic-armor</td><td>异域装备的专属 Perk 名</td></tr>
+<tr><th scope="row" class="amp">amp</th><td>--c-void</td><td>首领生命值页</td><td>易伤列</td></tr>
+<tr><th scope="row" class="res">res</th><td>--c-buff</td><td>首领生命值页</td><td>减伤列</td></tr>
+<tr><th scope="row" class="sim">sim</th><td>--c-note</td><td>dps</td><td>模拟值</td></tr>
+<tr><th scope="row" class="sk-arc">sk-arc</th><td>--c-arc</td><td>elements</td><td>棱镜页共享技能的电弧列</td></tr>
+<tr><th scope="row" class="sk-stasis">sk-stasis</th><td>--c-stasis</td><td>elements</td><td>棱镜页共享技能的冰影列</td></tr>
+<tr><th scope="row" class="sk-void">sk-void</th><td>--c-void</td><td>elements</td><td>棱镜页共享技能的虚空列</td></tr>
+<tr><th scope="row" class="sk-strand">sk-strand</th><td>--c-strand</td><td>elements</td><td>棱镜页共享技能的缚丝列</td></tr>
+<tr><th scope="row" class="sk-solar">sk-solar</th><td>--c-solar</td><td>elements</td><td>棱镜页共享技能的烈日列</td></tr>
+</tbody>
+</table>
+</section>
+<section class="block" id="sec-4">
+<h2 class="sect-label">同色待裁定</h2>
+<p>一支色号被几个族共用的地方。有意共用的写明理由，剩下的按同屏那一列排先后。<br>色号定完这一节即删。</p>
+<table class="gen">
+<thead>
+<tr>
+<th scope="col">色号</th>
+<th scope="col">共用的族</th>
+<th scope="col">状态</th>
+</tr>
+</thead>
+<tbody>
+<tr><th scope="row">#dbc46a</th><td>能量球、层数</td><td>有意：同为资源与层数</td></tr>
+<tr><th scope="row">#2f9fd6</th><td>护甲充能与耗费、增益、技能能量与护盾、减伤列</td><td>有意：同为增益一侧</td></tr>
+<tr><th scope="row">#c08cff</th><td>虚空元素、威能弹药</td><td>有意：威能弹药游戏内即紫</td></tr>
+<tr><th scope="row">#a2848c</th><td>待测、减益</td><td>有意：同为限定语</td></tr>
+<tr><th scope="row">#ffb35c</th><td>烈日元素、橙血档</td><td>待裁定：exotic-armor 页烈日×163 与橙血×54 同屏</td></tr>
 </tbody>
 </table>
 </section>

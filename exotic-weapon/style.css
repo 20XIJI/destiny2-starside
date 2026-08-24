@@ -36,7 +36,7 @@
 /* 异域特性：图标压在名称上方，一格两行。名称不折行——它是特性的身份 */
 .gen td.perk {
   padding: 10px 14px;
-  color: var(--exotic);
+  color: var(--c-exotic);
   font-family: var(--font-cn);
   font-weight: 600;
   line-height: 1.5;

@@ -221,10 +221,10 @@ span.bonus-icon { display: block; }
 }
 
 /* ── 这一页新增的两档标记 ──
-   buff 名走暖沙 --c-term：它们不属于任何元素，借元素色相会让「颜色即元素编码」失效。
+   buff 名走暖沙 --c-buff：它们不属于任何元素，借元素色相会让「颜色即元素编码」失效。
    方括号内的 PvP 数值降一档，读作限定语。 */
 .buff {
-  color: var(--c-term);
+  color: var(--c-buff);
   font-weight: 600;
 }
 

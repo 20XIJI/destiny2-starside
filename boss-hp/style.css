@@ -19,13 +19,12 @@
 
 /* ── 这一页的语义配色 ──
    两类机制方向相反，颜色也必须相反，扫读时不能靠读完句子才判断利害：
-     易伤 amp  → --c-health  生命条红，读作「掉血更快」
-     减伤 res  → --c-stasis  冰影蓝，站内既有的抗性色
-   两者都不是新渲染色，只是给既有色一个这一页的语义名（design.md 一节）。
-   buff 名不属于任何元素，走暖沙 --c-term，与护甲套装页一致。 */
-.amp { color: var(--health); }
-.res { color: var(--el-stasis); }
-.buff { color: var(--c-term); }
+     易伤 amp  → --c-void   虚空紫，读作「掉血更快」；这一页没有元素语义
+     减伤 res  → --c-buff   增益那一族，与站内的增益同色
+   buff 名不属于任何元素，同走 --c-buff，与护甲套装页一致。 */
+.amp { color: var(--c-void); }
+.res { color: var(--c-buff); }
+.buff { color: var(--c-buff); }
 
 .amp, .res, .buff { font-weight: 600; }
 

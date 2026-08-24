@@ -35,60 +35,81 @@
     "Noto Sans SC", sans-serif;
   --font-cn: "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
 
-  /* 渲染色板：7 个元素色相 + 3 个机制色 + 1 个术语色。元素色相是游戏的既有
-     编码，属于内容，只做亮度拉平，不改色相。 */
+  /* ── 渲染色：一族一支 ──
+     一个语义族一支变量，即使两族此刻共用同一个色号也各写各的——改一族的颜色
+     不牵动另一族。元素色相是游戏的既有编码，属于内容，只做亮度拉平，不改色相。
+     色号与用途的全貌见 palette/index.html，那一页由 references/docs/palette.md 生成，
+     与这里由 check_terms.py 的 G7 逐条比对。 */
+
+  /* 七个元素 */
   --c-arc: #5fd8e0;
   --c-stasis: #7fb4ff;
   --c-void: #c08cff;
   --c-strand: #7fdc86;
   --c-solar: #ffb35c;
-  --c-kinetic: #eef3f9;            /* 动能在游戏内即是白，取冷白 */
+  --c-kinetic: #eef7f2;            /* 动能在游戏内即是白 */
   --c-prism: #f58fc8;
-  --c-orb: #f2ce5b;
-  --c-health: #ff8e86;
-  --c-aside: #a2848c;              /* 待测值与减益：读作限定语，不是警报 */
-  /* 注解：作者说的话，与游戏内的任何编码无关，所以给它一支自己的浅玫瑰粉。
-     与最近的 --c-prism ΔE 23、--c-aside ΔE 24、--c-health ΔE 25；
-     石墨底上对比度 9.96，正文字号读得下来。 */
-  --c-note: #eea6b7;
-  /* 传说紫：游戏内的传说装备即紫色，行标题后面那一截武器类别照它走。低饱和一档，
-     与虚空紫 --c-void ΔE 30——那一支是元素编码，两者同屏（dps 页的弹药列）
-     必须分得开；与棱镜粉、批注灰粉同为 ΔE 30。 */
-  --c-legend: #9c7ab8;
-  /* 不属于任何元素的游戏术语。低饱和暖沙，与七个元素色相最小 ΔE 20，不借用其中
-     任何一个；与正文骨白 ΔE 20（此前跟随 --bone-hi 时只有 5.5，等于没分开）。 */
-  --c-term: #d6c39a;
+
+  /* 游戏内的其他编码 */
   /* 神器：游戏内神器页面的青绿。与 --c-arc ΔE 20，与其余色相更远。 */
   --c-artifact: #20c4b0;
+  /* 稀有度·传说：行标题后面那一截武器类别照它走。与棱镜粉 ΔE 25、与虚空紫 ΔE 41——
+     那两支是元素编码，同屏（dps 页的弹药列）必须分得开。对比度 4.7，是全站最低的
+     一档：这一截是行标题后面的次要信息，暗读得下来，再暗就进不了 WCAG AA。 */
+  --c-legend: #cf4a9c;
+  --c-exotic: #fcb70a;             /* 异域：游戏内的异域装备即金黄。专属 Perk 名同族 */
+  --c-orb: #dbc46a;                /* 能量球与超能能量 */
+  --c-stack: #dbc46a;              /* 精准命中与增益层数 */
+  --c-charge: #2f9fd6;             /* 护甲充能与模组耗费，以及技能能量、充能与护盾。
+                                      蓝：青色区归电弧，与冰影蓝 ΔE 19 */
+  --c-ammo: #c08cff;               /* 威能弹药，游戏内即紫 */
+  --c-health: #41b349;             /* 生命值与治疗。与缚丝绿 ΔE 20 */
+  /* 战斗人员：与 PvP 红 ΔE 17、与红血档 ΔE 26。对比度 4.5，全站 1032 处，
+     再暗就退回背景。 */
+  --c-enemy: #d94452;              /* 战斗人员、勇士与数值 */
+  --c-term: #d6c39a;               /* 词表着色里不属于元素的游戏术语，兼轮换页的突袭标签 */
+  --c-buff: #2f9fd6;               /* 增益，含首领生命值页的减伤列 */
+  --c-bar-red: #ff8e86;            /* 战斗人员档位：红血 */
+  --c-bar-orange: #ffb35c;         /* 战斗人员档位：橙血与守护者 */
+  --c-bar-yellow: #f2ce5b;         /* 战斗人员档位：初级首领与首领 */
 
-  /* 语义 token → 渲染色。想让某一类单独出色，只改这一行的右值。
-     左侧 23 个 token 是源稿里 {token|文字} 与词表着色共用的那套名字，两边要对齐。 */
+  /* 站点自己的话 */
+  --c-debuff: #a2848c;             /* 减益 */
+  --c-unsure: #a2848c;             /* [?] 待测数值：读作限定语，不是警报 */
+  --c-pvp: #ee2746;                /* 方括号里的 PvP 数值。对比度 4.6，与生命红 ΔE 38 */
+  /* 注解：作者说的话，与游戏内的任何编码无关，所以给它一支自己的浅玫瑰粉。
+     与最近的 --c-prism ΔE 23、--c-unsure ΔE 24、--c-health ΔE 25；
+     石墨底上对比度 9.96，正文字号读得下来。 */
+  --c-note: #eea6b7;               /* 兼 DPS 页的模拟值 */
+
+  /* 语义 token → 渲染色，一对一。想让某一类单独出色，改它那一族的色号即可，
+     源稿里的 {token|文字} 一处不动。 */
   --el-arc: var(--c-arc);
   --deb-arc: var(--c-arc);           /* 震颤、致盲 */
   --el-stasis: var(--c-stasis);
   --deb-stasis: var(--c-stasis);     /* 冻结、碎裂 */
-  --enemy: var(--c-term);            /* 战斗人员/勇士/首领/盟友/数值 */
   --el-void: var(--c-void);
-  --deb-void: var(--c-void);         /* 削弱：虚空机制，跟虚空走 */
-  --ammo-heavy: var(--c-void);       /* 威能弹药，游戏内即紫 */
+  --deb-void: var(--c-void);         /* 虚弱：虚空机制，跟虚空走 */
   --el-strand: var(--c-strand);      /* 缚丝；原表格同色也用于特殊弹药 */
   --deb-strand: var(--c-strand);     /* 割裂、瓦解 */
   --el-solar: var(--c-solar);
   --deb-solar: var(--c-solar);       /* 暗影 */
   --el-kinetic: var(--c-kinetic);
   --el-prismatic: var(--c-prism);    /* 棱镜粉只服务棱镜与超凡 */
-  --pickup: var(--c-term);           /* 元素拾取物/技能能量/护盾 */
-  --orb: var(--c-orb);               /* 能量球/超能能量 */
-  --stack: var(--c-orb);             /* 精准命中/增益层数 */
-  --armor-charge: var(--c-orb);
-  --health: var(--c-health);         /* 生命值/治疗 */
-  --exotic: var(--c-orb);            /* 异域：游戏内的异域装备即金黄 */
-  --buff: var(--c-term);             /* 增益 */
-  --debuff: var(--c-aside);          /* 减益 */
+  --ammo-heavy: var(--c-ammo);
+  --enemy: var(--c-enemy);
+  --pickup: var(--c-charge);
+  --buff: var(--c-buff);
+  --orb: var(--c-orb);
+  --stack: var(--c-stack);
+  --armor-charge: var(--c-charge);
+  --exotic: var(--c-exotic);
+  --health: var(--c-health);
+  --debuff: var(--c-debuff);
   --note: var(--c-note);             /* 注解：作者的话与限制说明 */
-  --pvp: var(--c-aside);             /* 方括号里的 PvP 数值，读作限定语 */
+  --pvp: var(--c-pvp);
   --kind: var(--c-legend);           /* 行标题后面那一截武器类别 */
-  --unsure: var(--c-aside);          /* [?] 待测数值 */
+  --unsure: var(--c-unsure);
 
   /* 分节 sticky 单元贴 .site-head 下沿。app.js 按实测高度覆写；
      无 JS 时取这个默认值（只有导航行的高度）。 */
@@ -543,11 +564,11 @@ main {
    的分节容器，同名会让分节整块染色。 */
 .art-perk { color: var(--c-artifact); }
 
-/* 敌人四档：红血、橙血、初级首领、首领。照血条颜色分色——游戏内的血条本来就是
+/* 战斗人员四档：红血、橙血、初级首领、首领。照血条颜色分色——游戏内的血条本来就是
    红/橙/黄这三色，读者能反推出颜色为什么是这个颜色；初级首领与首领同为黄。 */
-.bar-red { color: var(--c-health); }
-.bar-orange { color: var(--c-solar); }
-.bar-yellow { color: var(--c-orb); }
+.bar-red { color: var(--c-bar-red); }
+.bar-orange { color: var(--c-bar-orange); }
+.bar-yellow { color: var(--c-bar-yellow); }
 
 /* 方括号里的 PvP 数值降一档，读作限定语，不与正文的 PvE 数值争 */
 .pvp { color: var(--pvp); }

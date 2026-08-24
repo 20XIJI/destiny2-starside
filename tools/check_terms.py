@@ -295,7 +295,8 @@ def palette_of(site):
 
 
 def check_palette(site, bad):
-    md = read(PALETTE)
+    # 页面专属那一节的类定义在各页样式表里，不归 site.css 管，比对到那里为止。
+    md = read(PALETTE).split('## 页面专属')[0]
     want_hex, want_cls = palette_of(site)
     got_hex = dict(re.findall(r'^\| --(c-[\w-]+) \| (#[0-9a-f]{3,8}) \|', md, re.M))
     got_cls = dict(re.findall(r'^\| \{([\w-]+)\|[^}]*\} \| --(c-[\w-]+) \|', md, re.M))
