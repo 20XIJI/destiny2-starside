@@ -6,6 +6,7 @@
 
 ## 2026.8.24
 
+- {act|新增}[技能伤害排行](../skill-damage/index.html)：238 组技能配置的单次伤害实测，分四类
 - {act|订正}[神器模组](../artifact-mods/index.html) · 动能冲击：补上可被激涌与武器属性之外的增益加成
 - {act|订正}[神器模组](../artifact-mods/index.html) · 刀剑风暴连击：补上只受银白利刃加成
 - {act|订正}[神器模组](../artifact-mods/index.html) · 烈日爆发：补上不受任何加成
