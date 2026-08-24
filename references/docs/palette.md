@@ -23,7 +23,8 @@
 | --c-orb | #dbc46a | {c-orb|Aa 汉字 123} | 能量球与超能能量 |
 | --c-stack | #dbc46a | {c-stack|Aa 汉字 123} | 精准命中与增益层数 |
 | --c-charge | #2f9fd6 | {c-charge|Aa 汉字 123} | 护甲充能与模组耗费，技能能量、充能与护盾 |
-| --c-ammo | #c08cff | {c-ammo|Aa 汉字 123} | 威能弹药 |
+| --c-ammo | #cc44ff | {c-ammo|Aa 汉字 123} | 威能弹药 |
+| --c-ammo-special | #3ff24f | {c-ammo-special|Aa 汉字 123} | 特殊弹药 |
 | --c-health | #41b349 | {c-health|Aa 汉字 123} | 生命值与治疗 |
 | --c-enemy | #d94452 | {c-enemy|Aa 汉字 123} | 战斗人员、勇士与数值 |
 | --c-term | #d6c39a | {c-term|Aa 汉字 123} | 词表着色里不属于元素的游戏术语，兼图表曲线、强调色与轮换页的突袭标签 |
@@ -60,6 +61,7 @@
 | {stack|stack} | --c-stack | 精准命中与增益层数 |
 | {armor-charge|armor-charge} | --c-charge | 护甲充能 |
 | {ammo-heavy|ammo-heavy} | --c-ammo | 威能弹药 |
+| {ammo-special|ammo-special} | --c-ammo-special | 特殊弹药 |
 | {health|health} | --c-health | 生命值与治疗 |
 | {enemy|enemy} | --c-enemy | 战斗人员、勇士与数值 |
 | {buff|buff} | --c-buff | 增益 |
@@ -96,6 +98,5 @@
 |---|---|---|
 | #dbc46a | 能量球、层数 | 有意：同为资源与层数 |
 | #2f9fd6 | 护甲充能与耗费、增益、技能能量与护盾、减伤列 | 有意：同为增益一侧 |
-| #c08cff | 虚空元素、威能弹药 | 有意：威能弹药游戏内即紫 |
 | #a2848c | 待测、减益 | 有意：同为限定语 |
 | #ffb35c | 烈日元素、橙血档 | 待裁定：exotic-armor 页烈日×163 与橙血×54 同屏 |

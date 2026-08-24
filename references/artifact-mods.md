@@ -392,7 +392,7 @@
 击杀{deb-strand|受到缚丝减益的战斗人员}时：
 
 触发一次{deb-strand|悬停爆破}。
-{note|仅在生成{deb-strand|缠结}时触发}。
+{note|仅在生成{el-strand|缠结}时触发}。
 
 ### 一级 · 醒神丝线
 
@@ -727,7 +727,7 @@
 {orb|一次性超能}只获得 8 秒加成，{orb|持续型超能}的加成持续到结束。
 
 {el-arc|电弧} = ↑{el-arc|增幅} ↑{el-arc|电光充能}
-{el-solar|烈日} = ↑{health|治愈} ↑{el-solar|焕光} ↑{el-solar|恢复}
+{el-solar|烈日} = ↑{el-solar|治愈} ↑{el-solar|焕光} ↑{el-solar|恢复}
 {el-void|虚空} = ↑{el-void|吞食} ↑{el-void|隐身} ↑{el-void|虚空覆盖护盾}
 {el-stasis|冰影} = ↑{el-stasis|冰霜护甲}
 {el-strand|缚丝} = ↑{el-strand|织造铠甲}

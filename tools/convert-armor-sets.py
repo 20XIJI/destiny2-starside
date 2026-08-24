@@ -66,7 +66,7 @@ GLOSSARY: list[tuple[str, str]] = [
     ('隐身', 'el-void'),
     ('吞食', 'el-void'),
     # 机制色
-    ('特殊弹药', 'el-strand'),  # 站内既有约定：特殊弹药沿用缚丝绿
+    ('特殊弹药', 'ammo-special'),  # 游戏内的特殊弹药即绿，自成一族
     ('威能弹药', 'ammo-heavy'),
     ('火箭发射器', 'ammo-heavy'),
     ('刀剑', 'ammo-heavy'),

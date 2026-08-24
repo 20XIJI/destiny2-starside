@@ -58,33 +58,33 @@
 <tr><th scope="row">手雷 → <span class="ammo-heavy">重弹</span></th><td>4%</td><td>8%</td><td>16%</td></tr>
 </tbody>
 </table>
-<p>表中的区间随武器的弹药生成属性线性变化。弹药生成属性 100 的特殊武器击杀一名<span class="bar-orange">橙血</span>战斗人员，生成 18% 的<span class="el-strand">特殊弹药</span>与 16% 的<span class="ammo-heavy">威能弹药</span>，两者都落在各自区间的上限。</p>
+<p>表中的区间随武器的弹药生成属性线性变化。弹药生成属性 100 的特殊武器击杀一名<span class="bar-orange">橙血</span>战斗人员，生成 18% 的<span class="ammo-special">特殊弹药</span>与 16% 的<span class="ammo-heavy">威能弹药</span>，两者都落在各自区间的上限。</p>
 <p>三档战斗人员之间大致成倍数关系：<span class="bar-orange">橙血</span>约为<span class="bar-red">红血</span>的两倍，<span class="bar-yellow">初级首领</span>约为四倍。记住<span class="bar-red">红血</span>一列，其余两列可以推算。</p>
 </section>
 <section class="block" id="sec-2">
 <h2 class="sect-label">技能弹药生成</h2>
-<p>技能生成的弹药远少于弹药生成属性合格的武器，靠技能补弹的收益有限。几乎所有技能对<span class="bar-red">红血</span>、<span class="bar-orange">橙血</span>、<span class="bar-yellow">初级首领</span>战斗人员分别生成 4%、8%、16% 的<span class="el-strand">特殊弹药</span>与<span class="ammo-heavy">威能弹药</span>。</p>
-<p>唯一的例外是手雷：它生成<span class="el-strand">特殊弹药</span>的速度高出 50%，对三档战斗人员分别给 6%、12%、24%。<span class="ammo-heavy">威能弹药</span>那一档与其他技能相同。</p>
+<p>技能生成的弹药远少于弹药生成属性合格的武器，靠技能补弹的收益有限。几乎所有技能对<span class="bar-red">红血</span>、<span class="bar-orange">橙血</span>、<span class="bar-yellow">初级首领</span>战斗人员分别生成 4%、8%、16% 的<span class="ammo-special">特殊弹药</span>与<span class="ammo-heavy">威能弹药</span>。</p>
+<p>唯一的例外是手雷：它生成<span class="ammo-special">特殊弹药</span>的速度高出 50%，对三档战斗人员分别给 6%、12%、24%。<span class="ammo-heavy">威能弹药</span>那一档与其他技能相同。</p>
 </section>
 <section class="block" id="sec-3">
 <h2 class="sect-label">武器 Perk</h2>
 <dl class="rules">
 <dt>光中藏弹</dt>
-<dd><span class="el-strand">特殊弹药</span>生成系数 ×1.25<span class="note">（当前版本存在 Bug：加成对所有武器生效，且其他武器开火不消耗层数）</span>。</dd>
+<dd><span class="ammo-special">特殊弹药</span>生成系数 ×1.25<span class="note">（当前版本存在 Bug：加成对所有武器生效，且其他武器开火不消耗层数）</span>。</dd>
 <dt>即兴弹药</dt>
-<dd><span class="el-strand">特殊弹药</span>生成系数 ×1.15，<span class="ammo-heavy">威能弹药</span>生成系数 ×1.1。</dd>
+<dd><span class="ammo-special">特殊弹药</span>生成系数 ×1.15，<span class="ammo-heavy">威能弹药</span>生成系数 ×1.1。</dd>
 </dl>
 </section>
 <section class="block" id="sec-4">
 <h2 class="sect-label">护甲模组</h2>
 <dl class="rules">
 <dt>特殊弹药搜寻者</dt>
-<dd><span class="el-strand">特殊弹药</span>生成系数 ×1.25 | ×1.40 | ×1.50</dd>
+<dd><span class="ammo-special">特殊弹药</span>生成系数 ×1.25 | ×1.40 | ×1.50</dd>
 <dt>威能弹药搜寻者</dt>
 <dd><span class="ammo-heavy">威能弹药</span>生成系数 ×1.25 | ×1.40 | ×1.50</dd>
 </dl>
 <p>这些加成同时装在多把武器上可以叠加，且不是逐项相乘，而是把各自的增量相加后一次作用于基础百分比。</p>
-<p>两把枪各带一个<em>光中藏弹</em>，因上述 Bug 会同时计入两个 ×1.25；再带一把<em>即兴弹药</em>的武器，追加 ×1.15；头盔上三个<em>特殊弹药搜寻者</em>按 ×1.50 计。用带<em>即兴弹药</em>的武器击杀<span class="bar-red">红血</span>战斗人员，<span class="el-strand">特殊弹药</span>生成率为：</p>
+<p>两把枪各带一个<em>光中藏弹</em>，因上述 Bug 会同时计入两个 ×1.25；再带一把<em>即兴弹药</em>的武器，追加 ×1.15；头盔上三个<em>特殊弹药搜寻者</em>按 ×1.50 计。用带<em>即兴弹药</em>的武器击杀<span class="bar-red">红血</span>战斗人员，<span class="ammo-special">特殊弹药</span>生成率为：</p>
 <p class="formula">12% × (1 + 0.5 + 0.25 + 0.25 + 0.15) = <strong>26%</strong></p>
 </section>
 <section class="block" id="sec-5">
@@ -93,21 +93,21 @@
 <p>直接给弹药进度：</p>
 <dl class="rules">
 <dt>再补给<span class="from">溢冰 2 件</span></dt>
-<dd>造成最后一击时 <span class="el-strand">特殊弹药</span> +20%、<span class="ammo-heavy">威能弹药</span> +20%，并生成一颗含 1% 超能能量的能量球。<span class="note">12 秒内置冷却。</span></dd>
+<dd>造成最后一击时 <span class="ammo-special">特殊弹药</span> +20%、<span class="ammo-heavy">威能弹药</span> +20%，并生成一颗含 1% 超能能量的能量球。<span class="note">12 秒内置冷却。</span></dd>
 <dt>钢铁的历练<span class="from">欧里克斯记忆 2 件</span></dt>
-<dd>消灭<span class="bar-orange">守护者</span>、<span class="bar-orange">橙血</span>或更高级战斗人员时 <span class="el-strand">特殊弹药</span> +12%、<span class="ammo-heavy">威能弹药</span> +7.5%。</dd>
+<dd>消灭<span class="bar-orange">守护者</span>、<span class="bar-orange">橙血</span>或更高级战斗人员时 <span class="ammo-special">特殊弹药</span> +12%、<span class="ammo-heavy">威能弹药</span> +7.5%。</dd>
 <dt>丰富弹药<span class="from">虚无赛博毒蛇 4 件</span></dt>
-<dd><em>肾上腺素充沛</em>激活时，<span class="el-strand">特殊弹药</span>进度按目标分档：红血 +3%，<span class="bar-orange">橙血</span>或更高级 +16%，傀儡<span class="bar-orange">橙血</span>或更高级 +24%，<span class="bar-orange">守护者</span> +<span class="unsure">?</span>%。破坏可摧毁物件与构造体同样触发，给 +16%。</dd>
+<dd><em>肾上腺素充沛</em>激活时，<span class="ammo-special">特殊弹药</span>进度按目标分档：红血 +3%，<span class="bar-orange">橙血</span>或更高级 +16%，傀儡<span class="bar-orange">橙血</span>或更高级 +24%，<span class="bar-orange">守护者</span> +<span class="unsure">?</span>%。破坏可摧毁物件与构造体同样触发，给 +16%。</dd>
 <dt>年事已高<span class="from">空降灭火 4 件</span></dt>
-<dd>对<span class="bar-orange">橙血</span>或更高级战斗人员使用终结技时 <span class="el-strand">特殊弹药</span> +16%，并恢复 32 生命值。</dd>
+<dd>对<span class="bar-orange">橙血</span>或更高级战斗人员使用终结技时 <span class="ammo-special">特殊弹药</span> +16%，并恢复 32 生命值。</dd>
 <dt>傀儡武装<span class="from">伟大狩猎 4 件</span></dt>
 <dd>手雷最后一击时 <span class="ammo-heavy">威能弹药</span> +10%。</dd>
 <dt>致命编织<span class="from">积雨云 4 件</span></dt>
-<dd>对瓦解的战斗人员造成最后一击、且手雷技能能量已满时 <span class="el-strand">特殊弹药</span> +10%。</dd>
+<dd>对<span class="deb-strand">瓦解</span>的战斗人员造成最后一击、且手雷技能能量已满时 <span class="ammo-special">特殊弹药</span> +10%。</dd>
 <dt>能量填装<span class="from">最后纪律 4 件</span></dt>
-<dd>拾取能量球时 <span class="el-strand">特殊弹药</span> +6%<span class="note">（无法被加成）</span>。</dd>
+<dd>拾取能量球时 <span class="ammo-special">特殊弹药</span> +6%<span class="note">（无法被加成）</span>。</dd>
 <dt>白手起家<span class="from">铁能 4 件</span></dt>
-<dd><span class="el-strand">特殊弹药</span>储量低于 20% 时，主武器击杀给 +3% <span class="el-strand">特殊弹药</span>进度；<span class="ammo-heavy">威能弹药</span>储量低于 20% 时，特殊武器击杀给 +2% <span class="ammo-heavy">威能弹药</span>进度。<span class="note">这部分额外进度不受搜寻者影响。</span></dd>
+<dd><span class="ammo-special">特殊弹药</span>储量低于 20% 时，主武器击杀给 +3% <span class="ammo-special">特殊弹药</span>进度；<span class="ammo-heavy">威能弹药</span>储量低于 20% 时，特殊武器击杀给 +2% <span class="ammo-heavy">威能弹药</span>进度。<span class="note">这部分额外进度不受搜寻者影响。</span></dd>
 </dl>
 <p>抬高弹药生成属性：</p>
 <dl class="rules">

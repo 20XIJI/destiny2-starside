@@ -22,6 +22,7 @@
 .c-stack,
 .c-charge,
 .c-ammo,
+.c-ammo-special,
 .c-health,
 .c-enemy,
 .c-term,
@@ -50,6 +51,7 @@
 .c-stack { color: var(--c-stack); }
 .c-charge { color: var(--c-charge); }
 .c-ammo { color: var(--c-ammo); }
+.c-ammo-special { color: var(--c-ammo-special); }
 .c-health { color: var(--c-health); }
 .c-enemy { color: var(--c-enemy); }
 .c-term { color: var(--c-term); }

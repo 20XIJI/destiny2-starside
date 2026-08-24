@@ -7,12 +7,12 @@
 
 ## 打开
 
-- [{el-arc|电弧} 增幅提速，电光充能回能，致盲与震颤压场](arc/index.html)
-- [{el-solar|烈日} 治愈与恢复回血，焕光增伤，灼烧攒满点燃](solar/index.html)
-- [{el-void|虚空} 吞食与隐身续航，虚弱增伤，压制定身](void/index.html)
-- [{el-stasis|冰影} 冰霜护甲减伤，减速攒满冻结，冻结再碎裂](stasis/index.html)
-- [{el-strand|缚丝} 织造铠甲与割裂减伤，悬停定身，瓦解连锁](strand/index.html)
-- [{el-prismatic|棱镜} 光能与暗影同持一身，两侧交替运用点亮超凡](prismatic/index.html)
+- [{el-arc|电弧} {el-arc|增幅}提速，{el-arc|电光充能}回能，{deb-arc|致盲}与{deb-arc|震颤}压场](arc/index.html)
+- [{el-solar|烈日} {el-solar|治愈}与恢复回血，{el-solar|焕光}增伤，{deb-solar|灼烧}攒满{deb-solar|点燃}](solar/index.html)
+- [{el-void|虚空} {el-void|吞食}与{el-void|隐身}续航，{deb-void|虚弱}增伤，{deb-void|压制}定身](void/index.html)
+- [{el-stasis|冰影} {el-stasis|冰霜护甲}减伤，{deb-stasis|减速}攒满{deb-stasis|冻结}，{deb-stasis|冻结}再{deb-stasis|碎裂}](stasis/index.html)
+- [{el-strand|缚丝} {el-strand|织造铠甲}与{deb-strand|割裂}减伤，{deb-strand|悬停}定身，{deb-strand|瓦解}连锁](strand/index.html)
+- [{el-prismatic|棱镜} 光能与暗影同持一身，两侧交替运用点亮{el-prismatic|超凡}](prismatic/index.html)
 - [{pickup|职业技能} 三个职业的固有 Perk，以及闪身、屏障与裂痕的数值与冷却](class-abilities/index.html)
 
 ## 效果一览

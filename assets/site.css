@@ -62,7 +62,11 @@
   --c-stack: #dbc46a;              /* 精准命中与增益层数 */
   --c-charge: #2f9fd6;             /* 护甲充能与模组耗费，以及技能能量、充能与护盾。
                                       蓝：青色区归电弧，与冰影蓝 ΔE 19 */
-  --c-ammo: #c08cff;               /* 威能弹药，游戏内即紫 */
+  --c-ammo: #cc44ff;               /* 威能弹药，游戏内即紫。鲜紫，与虚空紫 ΔE 42——
+                                      弹药是拾取物不是元素，两者同屏（dps 页的弹药列）
+                                      必须分得开。对比度 5.4 */
+  --c-ammo-special: #3ff24f;       /* 特殊弹药，游戏内即绿。鲜绿，与缚丝绿 ΔE 42、
+                                      与生命绿 ΔE 35，对比度 13.0 */
   --c-health: #41b349;             /* 生命值与治疗。与缚丝绿 ΔE 20 */
   /* 战斗人员：与 PvP 红 ΔE 17、与红血档 ΔE 26。对比度 4.5，全站 1032 处，
      再暗就退回背景。 */
@@ -90,13 +94,14 @@
   --deb-stasis: var(--c-stasis);     /* 冻结、碎裂 */
   --el-void: var(--c-void);
   --deb-void: var(--c-void);         /* 虚弱：虚空机制，跟虚空走 */
-  --el-strand: var(--c-strand);      /* 缚丝；原表格同色也用于特殊弹药 */
+  --el-strand: var(--c-strand);
   --deb-strand: var(--c-strand);     /* 割裂、瓦解 */
   --el-solar: var(--c-solar);
   --deb-solar: var(--c-solar);       /* 暗影 */
   --el-kinetic: var(--c-kinetic);
   --el-prismatic: var(--c-prism);    /* 棱镜粉只服务棱镜与超凡 */
   --ammo-heavy: var(--c-ammo);
+  --ammo-special: var(--c-ammo-special);
   --enemy: var(--c-enemy);
   --pickup: var(--c-charge);
   --buff: var(--c-buff);
@@ -530,7 +535,7 @@ main {
 /* 配色工具类：着色文字全部经由这些 class，不写内联 color。
    统一 600 字重、无阴影——全页着色处逾千，字重与阴影一齐上阵会让语义色失去分级。 */
 .el-arc, .deb-arc, .el-stasis, .deb-stasis, .enemy, .el-void, .ammo-heavy,
-.el-strand, .deb-strand, .el-solar, .deb-solar, .el-kinetic, .el-prismatic,
+.el-strand, .deb-strand, .ammo-special, .el-solar, .deb-solar, .el-kinetic, .el-prismatic,
 .deb-void, .pickup, .orb, .stack, .armor-charge, .health,
 .exotic, .buff, .debuff,
 .bar-red, .bar-orange, .bar-yellow {
@@ -544,6 +549,7 @@ main {
 .enemy { color: var(--enemy); }
 .el-void { color: var(--el-void); }
 .ammo-heavy { color: var(--ammo-heavy); }
+.ammo-special { color: var(--ammo-special); }
 .el-strand { color: var(--el-strand); }
 .deb-strand { color: var(--deb-strand); }
 .el-solar { color: var(--el-solar); }
@@ -1590,7 +1596,7 @@ body:has(.hero) {
 }
 
 /* 举例里的方括号照正文的 .pvp 样子给，读者才认得出说的是哪一处 */
-.hero-sub .pvp-eg { color: var(--note); }
+.hero-sub .pvp-eg { color: var(--pvp); }
 
 /* 搜索带：上下各一道通栏发丝线，框在中间。线走满版面（同 .site-head 与
    .site-foot 的横线）。

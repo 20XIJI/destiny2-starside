@@ -56,7 +56,29 @@ STOP = {
     '同调',
     # 神器模组，但「动量转移」「棱镜转移」是更长的名字，还有一处当动词用。
     '转移',
+    # 烈日增益「恢复」已手工着好 65 处；另外 99 处是动词与武器属性：
+    # 「开火恢复延迟」「射速恢复延迟」「恢复 140 生命值」「+100 恢复」。
+    '恢复',
 }
+
+# 元素机制名：增益、减益与拾取物。它们不在 Bungie 的物品表里（那张表只有装备与
+# 模组的名字），但在正文里与碎片、星相同样是专名，同样按元素编码着色。手写在这里，
+# 与 items.json 合表，共用 --suggest／--apply 的跳过规则与 G6 的反查。
+# 归属取自各元素分支页的效果表，一行一个效果，token 与 check_terms.py 的 TERMS 对齐。
+MECH = {
+    '增幅': 'el-arc', '电光充能': 'el-arc', '离子轨迹': 'el-arc',
+    '致盲': 'deb-arc', '震颤': 'deb-arc',
+    '治愈': 'el-solar', '焕光': 'el-solar', '恢复': 'el-solar', '焰灵': 'el-solar',
+    '灼烧': 'deb-solar', '点燃': 'deb-solar',
+    '吞食': 'el-void', '隐身': 'el-void', '虚空覆盖护盾': 'el-void', '虚空裂口': 'el-void',
+    '压制': 'deb-void', '不稳定': 'deb-void', '虚弱': 'deb-void',
+    '冰霜护甲': 'el-stasis', '冰影碎片': 'el-stasis',
+    '减速': 'deb-stasis', '冻结': 'deb-stasis', '碎裂': 'deb-stasis',
+    '织造铠甲': 'el-strand', '缠结': 'el-strand',
+    '割裂': 'deb-strand', '悬停': 'deb-strand', '瓦解': 'deb-strand',
+    '超凡': 'el-prismatic',
+}
+
 
 # 库里的名字与游戏内写法不一致时在这里改正，改的是表的键。
 NAME_FIX = {
@@ -68,6 +90,8 @@ NAME_FIX = {
 # 它不牺牲那个词本身——「千语」照常着色，只有「千语魅痕」（首领名）里的不算。
 GUARD = [
     '千语魅痕',    # 最后遗愿的首领，不是异域融合步枪「千语」
+    '冻结计时',    # 限热器把计时冻住，不是冰影的冻结
+    '层数冻结',    # 日焰熔炉的层数不增不减，不是冰影的冻结
 ]
 
 
@@ -181,7 +205,12 @@ def load():
         markup.die('%s 不存在，先跑 python3 tools/items.py --distill <导出.json>' % OUT)
     with open(path, encoding='utf-8') as f:
         data = json.load(f)
-    return {k: tuple(v) for k, v in data['terms'].items()}, data['skipped']
+    terms = {k: tuple(v) for k, v in data['terms'].items()}
+    # 库里没有的元素机制名。库侧的名字优先——同形时那是装备名，更具体。
+    for word, token in MECH.items():
+        if word not in STOP:
+            terms.setdefault(word, (token, '元素机制'))
+    return terms, data['skipped']
 
 
 # ── 建议清单 ──────────────────────────────────────────────────────────
@@ -212,11 +241,17 @@ def pages(slug=None):
     for name in sorted(os.listdir(os.path.join(shell.ROOT, DOC_DIR))):
         # 更新日志是日志不是资料：它的条目名指向别的页面，句式与字数另有约定
         # （CLAUDE.md「文案七条」），不跟着全站铺色。
-        if not name.endswith('.md') or name == 'changelog.md':
+        # 配色总览是站务页，正文里的术语是在讲颜色不是在讲机制。
+        if not name.endswith('.md') or name in ('changelog.md', 'palette.md'):
             continue
         if slug and name != slug + '.md':
             continue
         yield '%s/%s' % (DOC_DIR, name)
+
+
+# 头部的「键：值」与分节里的结构行（色阶、列组、卡片、攻略、轮换）不是正文：
+# 描述那一行会原样进 meta description，色阶与列组里写的是列名，着色进去即写坏结构。
+KEY_LINE = re.compile(r'^[\u4e00-\u9fff]{1,6}(（[^）]*）)?：')
 
 
 def hits_in(line, terms, names):
@@ -226,6 +261,8 @@ def hits_in(line, terms, names):
     GUARD 里那些更长的专名、已经在某个 {token|…} 里面的（别人已经判过了）。
     表里的词长词在前，先认长的。
     """
+    if KEY_LINE.match(line):
+        return []
     head = row_title_end(line)
     taken = [False] * len(line)
     for m in re.finditer(r'\]\([^)]*\)', line):

@@ -17,8 +17,8 @@
                 标签只在段首显形，交错着写会渲出一串空标签。
   G7 色板齐全   配色总览页列的渲染色与着色类，必须与 site.css 现有的逐条相等——
                 两个方向都管：改了 :root 的色号忘了改源稿、加了新 token 忘了上页。
-  G6 物品专名   tools/items.json 里的词，正文里出现就得着色，且 token 必须与库里
-                的归属一致。「骨灰余烬」属烈日、「连锁闪电」属电弧是 Bungie 的
+  G6 物品专名   tools/items.json 里的词与 items.py 的 MECH（元素机制名），正文里
+                出现就得着色，且 token 必须与库里的归属一致。「骨灰余烬」属烈日、「连锁闪电」属电弧是 Bungie 的
                 manifest 定的，不由人记；着成隔壁元素只差一点色相，眼睛查不出来。
                 漏着色跑 python3 tools/items.py --apply 补上。
 
@@ -97,7 +97,7 @@ TERMS = [
     ('灼烧', 'deb-solar', []),
     ('点燃', 'deb-solar', []),
     ('能量球', 'orb', []),
-    ('特殊弹药', 'el-strand', []),
+    ('特殊弹药', 'ammo-special', []),
     ('生命值', 'health', []),
     ('首领', 'bar-yellow', ['头目', 'Boss', 'boss']),
     # 守护者按战斗力对齐橙血那一档；「自己」是玩家一侧的表述层，留在 enemy 色
@@ -213,7 +213,9 @@ def check_stamps(bad):
 # {named|冥府三头犬 +1} 里的 named 是排版标记不是着色，强判会满页误报；
 # 神器模组的元素归属库里没有（typeName_zh 一律是「传说 神器特性」），
 # 神器模组页按各自的元素给了 12 处更细的着色，钉死反而是降级。
-MANAGED = set(items.EL.values()) | {'exotic'}
+# 元素机制名的归属同样是事实（取自各元素分支页的效果表），一并纳入反查——
+# 「冻结」着成 el-stasis 与 deb-stasis 渲染色相同，只有这里管得住。
+MANAGED = set(items.EL.values()) | {'exotic'} | set(items.MECH.values())
 
 
 def check_items(files, bad):
