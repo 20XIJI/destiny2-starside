@@ -15,9 +15,10 @@
   G4 更新时间一致 资料页页脚的「更新 YYYY.M.D」与首页卡片上那个必须相等。
   G5 更新日志的类型 只有新增、改动、订正三种，且同一天里每种只能连成一段——
                 标签只在段首显形，交错着写会渲出一串空标签。
-  G6 元素归属   已着色的物品专名，token 必须与 tools/items.json 里的归属一致。
-                「骨灰余烬」属烈日、「连锁闪电」属电弧是 Bungie 的 manifest 定的，
-                不由人记；着成隔壁元素在页面上只差一点色相，眼睛查不出来。
+  G6 物品专名   tools/items.json 里的词，正文里出现就得着色，且 token 必须与库里
+                的归属一致。「骨灰余烬」属烈日、「连锁闪电」属电弧是 Bungie 的
+                manifest 定的，不由人记；着成隔壁元素只差一点色相，眼睛查不出来。
+                漏着色跑 python3 tools/items.py --apply 补上。
 
 用法：python3 tools/check_terms.py    改源稿或改术语表之后跑一次。
 """
@@ -214,6 +215,7 @@ MANAGED = set(items.EL.values()) | {'exotic'}
 
 
 def check_items(files, bad):
+    # 反查：已着色的对不对
     terms, _ = items.load()
     for rel in files:
         md = read(rel)
@@ -227,6 +229,13 @@ def check_items(files, bad):
             if want and want[0] in MANAGED and want[0] != token:
                 bad.append('G6 %s:%d 「%s」着色成 {%s|…}，官方物品表说它是%s，应是 {%s|…}'
                            % (rel, at_line(md, m.start()), text, token, want[1], want[0]))
+
+    # 正查：表里的词出现了就得着色。新写的一页里提到「骨灰余烬」却留着素色，
+    # 这一条当场报出——不必记得回去跑一趟 --suggest。
+    for rel, line, _, _, word in items.scan():
+        bad.append('G6 %s:%d 「%s」没着色，应是 {%s|%s}；跑 '
+                   'python3 tools/items.py --apply 落进去'
+                   % (rel, line, word, terms[word][0], word))
 
 
 ACTS = ('新增', '改动', '订正')       # 顺序即同一天之内的排法

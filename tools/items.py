@@ -47,20 +47,28 @@ N_EL, N_EXOTIC, N_ARTPERK = 230, 282, 198
 # 与中文常用词同形的物品名。留在表里会把正文里的普通动词染成专名，
 # 每条都按实测的出现次数与用法裁定过，不是按词长一刀切。
 STOP = {
-    # 元素桶
-    '重击',    # 电弧星相，但正文里 68 处讲的是近战重击
-    '抓钩',    # 缚丝手雷，也是抓钩近战、抓钩点这类普通名词
-    '飞升',    # 电弧星相，也是动词
-    '盾爆', '羁客',
-    # 异域桶
-    '真相', '据点', '同调', '缩影',
-    # 神器桶
-    '转移', '崩解',
-    '爆炸范围',  # 同名神器模组，但站内 26 处讲的全是榴弹发射器那条属性
-    # 库里这个名字少了词尾那一点（游戏内是 D.A.R.C.I.），套上去会把句号甩在
-    # span 外面：{exotic|D.A.R.C.I}. ——补全要改的是库，不是在这里对付。
-    'D.A.R.C.I',
+    # 电弧星相「重击」只占 6 处（已手工着好），另外 68 处是刀剑与偃月的重击：
+    # 「轻-轻-重击连招」「空中重击 ｜ 消耗 8% 超能能量」。
+    '重击',
+    # 同名神器模组，但站内 27 处讲的全是榴弹发射器那条属性（+40 爆炸范围）。
+    '爆炸范围',
+    # 异域斥候步枪，但 crafting 页的来源列有「任务同调」——那是任务名不是枪。
+    '同调',
+    # 神器模组，但「动量转移」「棱镜转移」是更长的名字，还有一处当动词用。
+    '转移',
 }
+
+# 库里的名字与游戏内写法不一致时在这里改正，改的是表的键。
+NAME_FIX = {
+    'D.A.R.C.I': 'D.A.R.C.I.',    # 库里漏了词尾那一点
+}
+
+
+# 更长的专名：这几段文字整体屏蔽，里面的短词不再单独命中。与 STOP 的区别是
+# 它不牺牲那个词本身——「千语」照常着色，只有「千语魅痕」（首领名）里的不算。
+GUARD = [
+    '千语魅痕',    # 最后遗愿的首领，不是异域融合步枪「千语」
+]
 
 
 def norm(s):
@@ -111,6 +119,7 @@ def distill(src):
             continue
         hit = bucket(item)
         if hit:
+            name = NAME_FIX.get(name, name)
             seen.setdefault(name, {}).setdefault(hit[0], set()).add(hit[1])
 
     counts = {'el': 0, 'exotic': 0, 'art-perk': 0}
@@ -202,14 +211,19 @@ def pages(slug=None):
 def hits_in(line, terms, names):
     """这一行里该着色的裸出现，[(起, 止, 词)]，按位置倒序——就地替换从后往前改。
 
-    三处跳过：行标题那一格（已有结构身份）、链接目标与图片路径（不是正文）、
-    已经在某个 {token|…} 里面的（别人已经判过了）。长词在前，先认长的。
+    四处跳过：行标题那一格（已有结构身份）、链接目标与图片路径（不是正文）、
+    GUARD 里那些更长的专名、已经在某个 {token|…} 里面的（别人已经判过了）。
+    表里的词长词在前，先认长的。
     """
     head = row_title_end(line)
     taken = [False] * len(line)
     for m in re.finditer(r'\]\([^)]*\)', line):
         for i in range(m.start(), m.end()):
             taken[i] = True
+    for g in GUARD:                       # 更长的专名整段屏蔽
+        for m in re.finditer(re.escape(g), line):
+            for i in range(m.start(), m.end()):
+                taken[i] = True
     out = []
     for word in names:
         for m in re.finditer(re.escape(word), line):
@@ -238,7 +252,7 @@ def scan(slug=None):
 
 
 def suggest(slug=None):
-    terms, skipped = load()
+    terms, _ = load()
     found = scan(slug)
     for rel in pages(slug):
         rows = [h for h in found if h[0] == rel]
@@ -249,9 +263,6 @@ def suggest(slug=None):
             token, kind = terms[word]
             print('  L%-5d %-14s → {%s|%s}  (%s)' % (n, word, token, word, kind))
     print('\n合计 %d 处待着色。--apply 落进源稿，再跑 npm run build。' % len(found))
-    if not slug and skipped:
-        print('另有 %d 条同名冲突／停用词需逐处判断：%s'
-              % (len(skipped), '、'.join(sorted(skipped))))
 
 
 def apply(slug=None):

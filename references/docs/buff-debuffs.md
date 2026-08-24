@@ -92,7 +92,7 @@
 | 火焰润雨 | {ico|![](icons/5ae2d2f155.png)} | 术士腿部 | 线性融合步枪或融合步枪击杀 | 20%{pvp|[10%]} | 7.5 秒{pvp|[7.5 秒]} | 只为使用者提供{el-solar|焕光}；加成作用于全部武器，不限于那两类。 |
 | 黎明琢面 | {ico|![](icons/85f7987739.png)} | {el-prismatic|棱镜}碎片 | 充能近战命中 | 20%{pvp|[10%]} | 4 秒{pvp|[4 秒]} | 只为使用者提供{el-solar|焕光}。 |
 | 光焰之井 | {ico|![](icons/58f13b1e41.png)} | {el-solar|烈日}术士超能 | 离开井时获得{el-solar|焕光} | 20%{pvp|[10%]} | 8 秒{pvp|[8 秒]} | 为使用者与{enemy|盟友}提供{el-solar|焕光}。\\ {note|站在井内时拿到的是另一种增益，见上一节。} |
-| 特技闪身 | {ico|![](icons/94492a95a7.png)} | {el-solar|烈日}／{el-prismatic|棱镜}猎人职业技能 | 使用职业技能 | 20%{pvp|[10%]} | 10 秒{pvp|[10 秒]} | 为 8 米内的全部{enemy|盟友}提供{el-solar|焕光}；与飞升搭配时同样生效。 |
+| 特技闪身 | {ico|![](icons/94492a95a7.png)} | {el-solar|烈日}／{el-prismatic|棱镜}猎人职业技能 | 使用职业技能 | 20%{pvp|[10%]} | 10 秒{pvp|[10 秒]} | 为 8 米内的全部{enemy|盟友}提供{el-solar|焕光}；与{el-arc|飞升}搭配时同样生效。 |
 | 火炬余烬 | {ico|![](icons/c3946d1826.png)} | {el-solar|烈日}碎片 | 充能近战命中 | 20%{pvp|[10%]} | 8 秒{pvp|[8 秒]} | 为 8 米内的全部{enemy|盟友}提供{el-solar|焕光}。 |
 | 黎明琢面 | {ico|![](icons/85f7987739.png)} | {el-prismatic|棱镜}碎片 | 充能近战击杀 | 20%{pvp|[10%]} | 4 秒{pvp|[4 秒]} | 为 8 米内的全部{enemy|盟友}提供{el-solar|焕光}。 |
 | 冥火之刺 | {ico|![](icons/f673044a27.png)} | 术士腿部 | 在{el-solar|治愈}裂痕内用武器击杀 | 20%{pvp|[10%]} | 7 秒{pvp|[7 秒]} | 为 8 米内的全部{enemy|盟友}提供{el-solar|焕光}。 |
@@ -180,7 +180,7 @@ Gambit 一律沿用 PvP 的数值与时长，对{enemy|战斗人员}与{bar-oran
 | 组合银白利刃 | {ico|![](icons/0d174e3de8.png)} | 加密数据盘 | 攻击、停顿、再攻击 | 15%{pvp|[15%]} | 5 秒{pvp|[5 秒]} | 不可续期。 |
 | 元素超驰 | {ico|![](icons/a4ba278882.png)} | 好奇之器 | 拾取元素拾取物 | 22%{pvp|[5.5%]} | 7 秒{pvp|[7 秒]} | 界面写的是激涌加成，实际不是——它与全部{buff|增益}叠加。 |
 | 扩展深渊 | {ico|![](icons/f111a844f5.png)} | 猎人日志 | 提高{deb-void|虚弱}效果本身的数值 | 15% → 25%\\ 30% → 35%\\ 35% → 40%{pvp|[7.5% → 10%]} | {na|随虚弱持续} | 只作用于{el-void|虚空}伤害，对{exotic|神圣裁决}无效。 |
-| 严酷折射 | {ico|![](icons/ce5087a112.png)} | 废墟石板 | 追踪步枪对承受同元素{debuff|减益}的目标伤害提高，缩影对任意元素{debuff|减益}都吃满 | 传说 50%{pvp|[50%]}\\ {exotic|异域} 35%{pvp|[35%]}\\ 缩影 20%{pvp|[20%]} | 4 秒{pvp|[4 秒]} | 元素{debuff|减益}：\\ {el-arc|电弧}：{deb-arc|致盲}、{deb-arc|震颤}\\ {el-solar|烈日}：{deb-solar|灼烧}\\ {el-void|虚空}：{deb-void|压制}、{deb-void|不稳定}、{deb-void|虚弱}\\ {el-stasis|冰影}：{deb-stasis|减速}、{deb-stasis|冻结}\\ {el-strand|缚丝}：{deb-strand|割裂}、{deb-strand|悬停}、{deb-strand|瓦解} |
+| 严酷折射 | {ico|![](icons/ce5087a112.png)} | 废墟石板 | 追踪步枪对承受同元素{debuff|减益}的目标伤害提高，{exotic|缩影}对任意元素{debuff|减益}都吃满 | 传说 50%{pvp|[50%]}\\ {exotic|异域} 35%{pvp|[35%]}\\ {exotic|缩影} 20%{pvp|[20%]} | 4 秒{pvp|[4 秒]} | 元素{debuff|减益}：\\ {el-arc|电弧}：{deb-arc|致盲}、{deb-arc|震颤}\\ {el-solar|烈日}：{deb-solar|灼烧}\\ {el-void|虚空}：{deb-void|压制}、{deb-void|不稳定}、{deb-void|虚弱}\\ {el-stasis|冰影}：{deb-stasis|减速}、{deb-stasis|冻结}\\ {el-strand|缚丝}：{deb-strand|割裂}、{deb-strand|悬停}、{deb-strand|瓦解} |
 | 狙击手冥想 | {ico|![](icons/420cc54c47.png)} | 加密数据盘 | 狙击步枪直击命中叠层 | {stack|1 层} 2.8%\\ {stack|2 层} 5.7%\\ {stack|3 层} 9%\\ {stack|4 层} 12%\\ {stack|5 层} 15%{pvp|[无]} | 7 秒 | 可续期。\\ 同时提高稳定性与填装速度。 |
 | 单人特工 | {ico|![](icons/79f8e7cf2c.png)} | 女王兰香炉 | 单人游戏时精准击杀叠层，层数无上限 | 每层 1.2%{pvp|[无]}\\ {stack|25 层}即 30% | 5 秒 | |
 | 瞄准自动填装器 | {ico|![](icons/8827e4191a.png)} | 猎人日志 | 装备自动步枪时击杀{enemy|战斗人员} | {stack|1 层} 10%\\ {stack|2 层} 13%\\ {stack|3 层} 16%\\ {stack|4 层} 18%\\ {stack|5 层} 20%{pvp|[无]} | 15 秒 | |
