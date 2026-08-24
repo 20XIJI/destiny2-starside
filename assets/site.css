@@ -332,10 +332,14 @@ a { color: var(--bone); }
   margin-left: auto;
 }
 
-/* 没有搜索框的页面（data-item 缺席，见 convert-doc.py），chip 就是工具条的全部
-   内容：左对齐排开，与面包屑同一条左缘。右对齐是为了让开搜索框，这里没有可让的，
-   二十来枚 chip 折成几行再右对齐会排成一片犬牙。 */
-.toolbar:not([data-item]) .tool-chips {
+/* 没有搜索框的页面（列组页、折线图页），chip 就是工具条的全部内容：左对齐排开，
+   与面包屑同一条左缘。右对齐是为了让开搜索框，这里没有可让的，二十来枚 chip
+   折成几行再右对齐会排成一片犬牙。
+
+   **判据是工具条里有没有搜索框，不是 HTML 上有没有 data-item。**那个属性缺席
+   只说明该页用的是 app.js 的缺省选择器——神器模组页正是缺省那一页，它有搜索框，
+   却被这条规则判成没有，七枚 chip 因此从右缘退到中段。 */
+.toolbar:not(:has(.tool-search)) .tool-chips {
   justify-content: flex-start;
   margin-left: 0;
 }
