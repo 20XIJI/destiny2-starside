@@ -524,6 +524,10 @@ main {
 .exotic { color: var(--exotic); }
 .buff { color: var(--buff); }
 .debuff { color: var(--debuff); }
+/* 神器模组名：不属于任何元素的游戏术语走 --c-term（design.md 一节）。与 .buff
+   同值——渲染色只用既有的，语义分开由 check_terms.py 的 G2 管住。名字不叫
+   .artifact：那个是神器模组页的分节容器，同名会让分节整块染色。 */
+.art-perk { color: var(--c-term); }
 
 /* 敌人四档：红血、橙血、初级首领、首领。照血条颜色分色——游戏内的血条本来就是
    红/橙/黄这三色，读者能反推出颜色为什么是这个颜色；初级首领与首领同为黄。 */

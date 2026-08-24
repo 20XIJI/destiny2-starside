@@ -192,6 +192,29 @@ class Icons:
                 % ('class="%s" ' % cls if cls else '', rel, w, h, attr))
 
 
+def inner_marker(text, at):
+    """text[at] 落在哪个 {token|内容} 里，返回 (token, 内容)；不在标记里就是 None。"""
+    depth, i = 0, at - 1
+    while i >= 0:
+        if text[i] == '}':
+            depth += 1
+        elif text[i] == '{':
+            if depth == 0:
+                m = re.match(r'\{([\w-]+)\|', text[i:])
+                if not m:
+                    return None
+                start = i + m.end()          # m 是对 text[i:] 匹配的，偏移要加回 i
+                j, d = start, 1
+                while j < len(text) and d:
+                    d += text[j] == '{'
+                    d -= text[j] == '}'
+                    j += 1
+                return m.group(1), text[start:j - 1]
+            depth -= 1
+        i -= 1
+    return None
+
+
 def whole_marker(md):
     """整块恰好被一个 {token|…} 包住时返回 (token, 内容)，否则 None。
 

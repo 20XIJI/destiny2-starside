@@ -15,6 +15,9 @@
   G4 更新时间一致 资料页页脚的「更新 YYYY.M.D」与首页卡片上那个必须相等。
   G5 更新日志的类型 只有新增、改动、订正三种，且同一天里每种只能连成一段——
                 标签只在段首显形，交错着写会渲出一串空标签。
+  G6 元素归属   已着色的物品专名，token 必须与 tools/items.json 里的归属一致。
+                「骨灰余烬」属烈日、「连锁闪电」属电弧是 Bungie 的 manifest 定的，
+                不由人记；着成隔壁元素在页面上只差一点色相，眼睛查不出来。
 
 用法：python3 tools/check_terms.py    改源稿或改术语表之后跑一次。
 """
@@ -23,6 +26,8 @@ import os
 import re
 import sys
 
+import items
+import markup
 import shell
 
 SRC_FILES = ['references/artifact-mods.md', 'references/armor-sets.md']
@@ -139,28 +144,6 @@ def sources():
     return out
 
 
-def inner_marker(text, at):
-    """text[at] 落在哪个 {token|内容} 里，返回 (token, 内容)；不在标记里就是 None。"""
-    depth, i = 0, at - 1
-    while i >= 0:
-        if text[i] == '}':
-            depth += 1
-        elif text[i] == '{':
-            if depth == 0:
-                m = re.match(r'\{([\w-]+)\|', text[i:])
-                if not m:
-                    return None
-                start = i + m.end()          # m 是对 text[i:] 匹配的，偏移要加回 i
-                j, d = start, 1
-                while j < len(text) and d:
-                    d += text[j] == '{'
-                    d -= text[j] == '}'
-                    j += 1
-                return m.group(1), text[start:j - 1]
-            depth -= 1
-        i -= 1
-    return None
-
 
 def at_line(text, at):
     return text.count('\n', 0, at) + 1
@@ -184,7 +167,7 @@ def check_terms(files, bad):
             if not token:
                 continue
             for m in re.finditer(re.escape(word), md):
-                hit = inner_marker(md, m.start())
+                hit = markup.inner_marker(md, m.start())
                 # 只管「整个标记就是这个词」的那种。词嵌在更长的短语里时，
                 # 着色属于短语（{el-arc|电弧元素能量球}、{health|治疗能量球}），
                 # 按词强判会把整句的颜色拆碎。
@@ -221,6 +204,29 @@ def check_stamps(bad):
             bad.append('G4 %s 页脚没有更新时间' % page)
         elif got.group(1) != want:
             bad.append('G4 %s 页脚写 %s，首页卡片写 %s' % (page, got.group(1), want))
+
+
+# G6 管得住的 token：元素归属与异域稀有度这两样库里是事实。别的不归它管——
+# {named|冥府三头犬 +1} 里的 named 是排版标记不是着色，强判会满页误报；
+# 神器模组的元素归属库里没有（typeName_zh 一律是「传说 神器特性」），
+# 神器模组页按各自的元素给了 12 处更细的着色，钉死反而是降级。
+MANAGED = set(items.EL.values()) | {'exotic'}
+
+
+def check_items(files, bad):
+    terms, _ = items.load()
+    for rel in files:
+        md = read(rel)
+        # 只认「整个标记就是这个词」的那种，与 G2 同一条道理：词嵌在更长的短语里
+        # 时着色属于短语，按词强判会把整句的颜色拆碎。
+        for m in re.finditer(r'\{([\w-]+)\|([^{}|]+)\}', md):
+            token, text = m.group(1), m.group(2)
+            if token not in MANAGED:
+                continue
+            want = terms.get(items.norm(text))
+            if want and want[0] in MANAGED and want[0] != token:
+                bad.append('G6 %s:%d 「%s」着色成 {%s|…}，官方物品表说它是%s，应是 {%s|…}'
+                           % (rel, at_line(md, m.start()), text, token, want[1], want[0]))
 
 
 ACTS = ('新增', '改动', '订正')       # 顺序即同一天之内的排法
@@ -263,6 +269,7 @@ def main() -> int:
     check_tokens(pairs, site, bad)
     check_stamps(bad)
     check_acts(bad)
+    check_items(SRC_FILES + [rel for rel, _ in pairs if rel.startswith(DOC_DIR)], bad)
 
     if bad:
         print('术语与着色不一致：', file=sys.stderr)

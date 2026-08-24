@@ -32,11 +32,13 @@ convert-*.py       三个生成器，各自只写自己那种数据形状的结�
 build-search.py    各页产出 → assets/search.js，首页那只搜索框搜的就是它
 check_shell.py     外壳闸门，从 shell.py 现取参照，不另存副本
 check_terms.py     术语与着色闸门，全部以 TERMS 那一张表为准
+items.py           官方物品表 → tools/items.json：物品专名该着哪个 token 由查表定；
+                   出建议清单、就地落标记，另供 check_terms.py 的 G6 反查
 sheet-grab.user.js 油猴脚本：在 Google 表格页面上导出「替换后的文本 + 内联图片」
 json2xlsx.py       把上面那份 JSON 还原成 xlsx，供核对与二次编辑
 ```
 
-**一个目的只留一份实现。**剥标签取文本用 `markup.text_of`，保真比对前的归一化用 `markup.plain`，计数比对用 `markup.eq(名目, 实际, 期望)`，中止用 `markup.die`，图片宽高用 `markup.img_size`，图标登记与首屏优先级用 `markup.Icons` / `markup.loading_attr`。要新加一件，先看 `markup.py` 里有没有。
+**一个目的只留一份实现。**剥标签取文本用 `markup.text_of`，保真比对前的归一化用 `markup.plain`，计数比对用 `markup.eq(名目, 实际, 期望)`，中止用 `markup.die`，图片宽高用 `markup.img_size`，图标登记与首屏优先级用 `markup.Icons` / `markup.loading_attr`，判断某处文本落在哪个标记里用 `markup.inner_marker`。要新加一件，先看 `markup.py` 里有没有。
 
 外壳与源稿方言各只有一处定义。**加一条外壳内容（meta、资源提示、页脚段落）只改 `shell.py`**，各资料页重跑即生效；手写的首页 `index.html` 要跟着改，`check_shell.py` 会提醒。页脚那句待测值说明走 `shell.unsure_note(标记)`，一句话只有一处定义，标记形状按该页实际用的填。
 
@@ -55,6 +57,10 @@ python3 tools/build-search.py                 # 全站搜索索引 assets/search
 python3 tools/check_shell.py                  # 各页外壳一致性
 python3 tools/check_terms.py                  # 术语正名、着色 token、更新时间
 
+python3 tools/items.py --distill <导出.json>  # 官方物品表 → tools/items.json，换赛季跑
+python3 tools/items.py --suggest [slug]      # 列出还没着色的物品专名与建议标记
+python3 tools/items.py --apply   [slug]      # 就地落进源稿，可重复跑
+
 python3 tools/json2xlsx.py <抓取的.json>      # 还原成 xlsx，供核对与手改
 
 ruff check tools/*.py                         # 改完 Python 跑这两条
@@ -65,12 +71,31 @@ pyright tools/*.py
 
 **`tools/check_terms.py` 的 `TERMS` 是全站术语的唯一真相。**一行钉两件事：中文怎么写，以及着色落到哪个 token 上。加一条术语就往表里加一行，不在源稿里逐处约定。
 
-四条闸门：
+五条闸门：
 
 1. **中文正名** — 源稿不许出现禁用写法。「装填」曾被统一成「填装」，六天后新增的页面又带回 17 处；这一条就是为此存在的。
 2. **token 唯一** — 同一个术语只能落到同一个着色 token 上。只查「整个标记就是这个词」的那种（`{enemy|护甲充能}`）；词嵌在更长的短语里时着色属于短语（`{el-arc|电弧元素能量球}`），按词强判会把整句的颜色拆碎。这一条眼睛查不出来：`--el-solar` 与 `--deb-solar` 渲染色相同，灼烧着成哪个都看不出。
 3. **token 有定义** — 源稿里每个 `{token|文字}` 都要在 `site.css` 或该页样式表里有对应类；反过来，`site.css` 的着色类一次都没被用到即死配置，当场报出。
 4. **更新时间一致** — 资料页页脚的「更新 YYYY.M.D」与首页卡片上那个必须相等。
+5. **元素归属** — 已着色的物品专名，token 必须与 `tools/items.json` 一致。「骨灰余烬」属烈日、「连锁闪电」属电弧是 Bungie 的 manifest 定的事实，不由人记。只管元素与异域这两桶：神器模组的元素归属库里没有（`typeName_zh` 一律是「传说 神器特性」），钉死会把神器模组页那 12 处更细的着色降级；`{named|…}` `{stack|…}` 这类排版标记也不归它管。
+
+### 物品专名的着色查表，不靠人记
+
+**`tools/items.json` 是物品专名与 token 的对应表**，由 `tools/items.py --distill` 从 Bungie 的 manifest 导出蒸馏。三桶共 710 条，判据全部现取，不硬编码名单：
+
+| 桶 | 判据 | 条数 | token |
+|---|---|---|---|
+| 元素 | `typeName_zh` 以六个元素名之一开头，且含碎片／星相／手雷／近战／超能 | 230 | `el-arc` … `el-prismatic` |
+| 异域 | `tierName_zh` 为「异域」且 `categories_zh` 含武器或护甲 | 282 | `exotic` |
+| 神器模组 | `typeName_zh` 为「传说 神器特性」 | 198 | `art-perk` |
+
+比对前两侧归一化：去汉字与拉丁之间的排版空格（源稿写「Vex 揭秘者」，库里没有那个空格），去站内自加的消歧后缀（「故我在（电弧元素）」）。原始导出 49 MB，不入库；换赛季重跑 `--distill`。
+
+**新词先出建议，人裁决过再落。**库里 6738 个模组名与中文常用词大量同形（充能 618 次、爆炸 413 次、霰弹枪 65 次都是物品名），按词表铺开会把正文里的普通动词染成专名。`--suggest` 按页列出裸出现与建议标记，只打印；确认无误再 `--apply` 就地落进源稿。跳过三处：行标题那一格（已有结构身份，但只算到格内换行 `\\` 为止——首格留空即向上合并，身份在第二格）、链接目标与图片路径、已经在某个 `{token|…}` 里面的。
+
+**裁定为同形词的写进 `items.py` 的 `STOP`，带上判定依据。**「爆炸范围」有同名神器模组，但站内 26 处讲的全是榴弹发射器那条属性；「重击」是电弧星相，正文里 68 处指的是近战重击。同名撞两个桶的（「堡垒」既是虚空星相又是异域融合步枪）由蒸馏时自动剔出，逐处判断。
+
+`--apply` 只改源稿不碰产出，git diff 即变更记录；着色标记在保真比对时被剥掉，逐字保真闸门照旧成立。全站 1105 处着色让 span 从 12462 涨到 13547，最大的页面 gzip +558 字节（1.5%）。
 
 **不进禁用表的两类词**：一是同形不同义（「优雅处决」是星相里的机制名，不是终结技；「敌方」是形容词，不是战斗人员的同义词）；二是游戏内的效果名各自独立（「治愈」与「治疗」、「恢复」与「治疗」不是同义词，别合并）。
 
