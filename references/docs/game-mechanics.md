@@ -269,7 +269,7 @@
 
 {enemy|勇士}、{bar-yellow|初级首领}与{bar-yellow|首领}不进这套档位，它们要么算作可能的最高档，要么自成一类。
 
-战斗人员档位影响技能能量获取与效果触发，例如武器 Perk 墓碑与势不可挡、碎片{el-solar|炽热余烬}与{el-stasis|折角之吟}、{exotic|异域}装备 Vex 揭秘者与{exotic|冥火之刺}，以及某些护甲模组。
+战斗人员档位影响技能能量获取与效果触发，例如武器 Perk 墓碑与势不可挡、碎片{el-solar|炽热余烬}与{el-stasis|折角之吟}、{exotic|异域}装备 {exotic|Vex 揭秘者}与{exotic|冥火之刺}，以及某些护甲模组。
 
 | 战斗人员档位 | ![](icons/cabc3d077e.png)\\ 卡巴尔 | ![](icons/ef9d98a98b.png)\\ 堕落者 | ![](icons/7a255df302.png)\\ 邪魔族 | ![](icons/9c81f18115.png)\\ VEX | ![](icons/46301377be.png)\\ 傀儡 | ![](icons/6dd4608fda.png)\\ 嗤魅 | ![](icons/4aed6342a6.png)\\ 恐惧 |
 | --- | --- | --- | --- | --- | --- | --- | --- |

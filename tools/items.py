@@ -71,6 +71,17 @@ GUARD = [
 ]
 
 
+def pattern(word):
+    """表里的名字 → 匹配式：中英之间允许有那个排版空格。
+
+    表的键是归一化过的（库里就没有空格），源稿按 design.md 三节在汉字与拉丁
+    之间补一个空格（半角或不折行空格）。拿键去字面匹配，「Vex 揭秘者」这类
+    中英混排的名字一个都对不上——12 个名字曾经这么整批漏掉。
+    """
+    return re.sub(r'(?<=[一-鿿])(?=[A-Za-z0-9])|(?<=[A-Za-z0-9])(?=[一-鿿])',
+                  '[ \u00a0]?', re.escape(word))
+
+
 def norm(s):
     """比对前归一化：去中英之间的排版空格，去站内自加的消歧后缀。
 
@@ -226,7 +237,7 @@ def hits_in(line, terms, names):
                 taken[i] = True
     out = []
     for word in names:
-        for m in re.finditer(re.escape(word), line):
+        for m in re.finditer(pattern(word), line):
             if m.start() < head or any(taken[m.start():m.end()]):
                 continue
             if markup.inner_marker(line, m.start()):
@@ -259,9 +270,11 @@ def suggest(slug=None):
         if not rows:
             continue
         print('\n%s —— %d 处' % (rel, len(rows)))
-        for _, n, _, _, word in rows:
+        lines = open(os.path.join(shell.ROOT, rel), encoding='utf-8').read().split('\n')
+        for _, n, a, b, word in rows:
             token, kind = terms[word]
-            print('  L%-5d %-14s → {%s|%s}  (%s)' % (n, word, token, word, kind))
+            text = lines[n - 1][a:b]
+            print('  L%-5d %-14s → {%s|%s}  (%s)' % (n, text, token, text, kind))
     print('\n合计 %d 处待着色。--apply 落进源稿，再跑 npm run build。' % len(found))
 
 
@@ -277,7 +290,9 @@ def apply(slug=None):
         n = 0
         for i, line in enumerate(lines):
             for a, b, word in hits_in(line, terms, names):   # 倒序，前面的位置不动
-                line = line[:a] + '{%s|%s}' % (terms[word][0], word) + line[b:]
+                # 包的是源稿原文而不是表的键：键归一化过，直接写回会吃掉
+                # 「Vex 揭秘者」中英之间那个排版空格。
+                line = line[:a] + '{%s|%s}' % (terms[word][0], line[a:b]) + line[b:]
                 n += 1
             lines[i] = line
         if n:
