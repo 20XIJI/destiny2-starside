@@ -12,6 +12,7 @@
 - {act|订正}[弹药生成机制](../ammo/index.html) · 威能弹药搜寻者：生成系数改为 ×1.25 | ×1.40 | ×1.50
 - {act|订正}[DPS 排行](../dps/index.html)：「联合打击」→「组合打击」
 - {act|订正}[缚丝](../elements/strand/index.html) · 切线：「切线」→「切线手雷」
+- {act|订正}[冰影](../elements/stasis/index.html) · 裂解：「无魂者揭秘者」→「Vex 揭秘者」
 
 ## 2026.8.23
 

@@ -34,7 +34,7 @@
 | 饥饿 | {ico|![](icons/11cee0a65d.png)} | {el-stasis|冰影碎片}提供的{pickup|近战能量}提高 60%。\\ {note|与其它来源（例如渴望回响的满溢金库 +260%）相加。} | -20 近战 |
 | 刺激 | {ico|![](icons/f0865f30e1.png)} | 造成充能近战伤害时补满所有武器并提供 +40 操控性，持续 5 秒。\\ {note|增益持续时间即为冷却时间。} | +10 生命值 |
 | 折角 | {ico|![](icons/a80977eda9.png)} | 击杀受{el-stasis|冰影}效果影响的战斗人员，按等级提供{pickup|职业技能能量}：\\ {enemy|T1 级战斗人员} 9% ｜ {enemy|T2} 13% ｜ {bar-orange|守护者} 15% ｜ {enemy|T3} 20% ｜ {enemy|T4} 30% ｜ {bar-yellow|初级首领} 40% ｜ {bar-yellow|首领} 50%。 | {na|—} |
-| 裂解 | {ico|![](icons/afd246de7b.png)} | 主武器弹药的武器对{el-stasis|冰影水晶}伤害提高 100%，对被{deb-stasis|冻结}的战斗人员伤害提高 50%。\\ {note|包括战狮、零号修订、无魂者揭秘者，以及它们各自的开火模式。} | {na|—} |
+| 裂解 | {ico|![](icons/afd246de7b.png)} | 主武器弹药的武器对{el-stasis|冰影水晶}伤害提高 100%，对被{deb-stasis|冻结}的战斗人员伤害提高 50%。\\ {note|包括战狮、零号修订、Vex 揭秘者，以及它们各自的开火模式。} | {na|—} |
 | 逆转 | {ico|![](icons/b85b57a6b2.png)} | {el-stasis|冰霜护甲}激活期间，造成或受到物理近战伤害都会施加 {unsure|10?} 层{deb-stasis|减速}，持续 {unsure|?+?} {unsure|[?+?]} 秒。\\ {note|偃月近战同样适用。} | {na|—} |
 | 韵律 | {ico|![](icons/2d3456314f.png)} | 强化{el-stasis|冰霜护甲}：上限提高到 7 层（伤害抗性 50% {unsure|[16%?]}），每层持续时间变为 6 秒。 | {na|—} |
 | 破碎 | {ico|![](icons/4e2857c220.png)} | 摧毁一块{el-stasis|冰影水晶}时，{pickup|手雷}基础充能速度额外 +500% {pvp|[150%]}，持续 6 秒，最长 11 秒。 | {na|—} |
