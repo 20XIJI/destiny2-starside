@@ -32,9 +32,22 @@
   padding-left: 8px;
 }
 
-/* 回复倍率与十一档属性都是数值，右对齐 */
-.gen thead th:nth-child(n + 3),
-.gen tbody td:nth-child(n + 3) { text-align: right; }
+/* ── 冷却表 ──
+   回复倍率与十一档属性都是数值，右对齐。按「有图标格」认这两张表——
+   这一页另有两张表没有图标，不该跟着走这条。 */
+.gen:has(td.ico) thead th:nth-child(n + 3),
+.gen:has(td.ico) tbody td:nth-child(n + 3) { text-align: right; }
+
+/* ── 倍率表 ──
+   四列全是数值（属性档与三种倍率），整表居中：列宽已经统一、每格又只有几位数，
+   右对齐会把数字全推到竖线上，左边空出来的那半列读作「这里还有一列」。
+   按「没有横幅行」认它——这一页四张表里，两张冷却表按技能类别分组、
+   整块系数表按系数分组，都带 tr.lane；只有倍率表是一整块，没有分组。
+   整块系数那张也不能跟着居中：它第二格是成串的技能名，是名单不是数值。 */
+.gen:not(:has(tr.lane)) :is(thead th, tbody th, tbody td) {
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
 /* ── 行间公式 ──
    照数学论文的排法：正文里引出一句，公式独占一行、在正文栏内居中，上下留白比
    段距再宽一档，然后用「其中 …」交代变量。**不做成 callout**——底色加左缘竖条
