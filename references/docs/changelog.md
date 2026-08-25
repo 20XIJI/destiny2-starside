@@ -12,6 +12,7 @@
 - {act|改动}全站：表格里的分组横幅行改为居中
 - {act|改动}[游戏机制](../game-mechanics/index.html) · 护甲属性：十张档位表统一列宽
 - {act|改动}[游戏机制](../game-mechanics/index.html)：档位表与两列数值表改为整表居中
+- {act|改动}全站：异域装备的专属 Perk 名着异域色，229 处
 - {act|订正}[异域护甲详解](../exotic-armor/index.html) · 卡德马斯山脊长矛帽：补上铸造者框架刀剑重击的吃增伤条件
 - {act|订正}[异域护甲详解](../exotic-armor/index.html) · 血红炼金术：补上 10% 增伤对所有伤害生效
 - {act|订正}[DPS 排行](../dps/index.html)：补上 5 条注解

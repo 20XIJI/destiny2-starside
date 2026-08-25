@@ -59,6 +59,12 @@ STOP = {
     # 烈日增益「恢复」已手工着好 65 处；另外 99 处是动词与武器属性：
     # 「开火恢复延迟」「射速恢复延迟」「恢复 140 生命值」「+100 恢复」。
     '恢复',
+    # 异域 Perk，但正文里 23 处无一是它：光芒复仇、凯德的复仇、普莱蒂斯的复仇
+    # 都是更长的武器名。长名单会随新武器变长，整词不入表比逐个 GUARD 稳。
+    '复仇',
+    # 异域 Perk「命运眷顾」的短名，但正文里的「命运」全是别的：命运终结者、
+    # 命运的逆转（传说 Perk），以及游戏本身（「命运 2 购物清单」）。
+    '命运',
 }
 
 # 元素机制名：增益、减益与拾取物。它们不在 Bungie 的物品表里（那张表只有装备与
@@ -99,6 +105,7 @@ GUARD = [
     '冻结计时',    # 限热器把计时冻住，不是冰影的冻结
     '层数冻结',    # 日焰熔炉的层数不增不减，不是冰影的冻结
     '治愈裂痕',    # 术士的职业技能，不是烈日的治愈
+    '迷惑爆发',    # weapon-perks 的传说 Perk，不是异域头盔那个「迷惑」
 ]
 
 
@@ -205,6 +212,26 @@ def distill(src):
 # ── 读表 ──────────────────────────────────────────────────────────────
 
 
+# 异域装备的专属 Perk 名。这一类的真相不在 Bungie 的物品表里——manifest 那边
+# perk 属于 sandbox 条目，typeName 分不出「异域装备自带」与别的特性。真相在
+# exotic-armor / exotic-weapon 两页的 PERK 列上，所以现扫那两页，不另存副本。
+# 着 exotic 而不是 perk：site.css 的 --c-exotic 注释写着「专属 Perk 名同族」，
+# 两者渲染色相同，而 {perk|…} 按 CLAUDE.md 是整格排版标记，不是行内着色 token。
+PERK_DOCS = ('exotic-armor.md', 'exotic-weapon.md')
+PERK_RE = re.compile(r'\{perk\|!\[\]\([^)]*\)\\\\([^}|]*)\}')
+
+
+def perks():
+    """两页 PERK 列上的专属 Perk 名。"""
+    out = set()
+    for name in PERK_DOCS:
+        path = os.path.join(shell.ROOT, DOC_DIR, name)
+        with open(path, encoding='utf-8') as f:
+            for mo in PERK_RE.finditer(f.read()):
+                out.add(norm(mo.group(1)))
+    return out
+
+
 def load():
     """{名字: (token, 分类名)}。check_terms.py 的 G6 与 --suggest 共用这一份。"""
     path = os.path.join(shell.ROOT, OUT)
@@ -217,6 +244,10 @@ def load():
     for word, token in MECH.items():
         if word not in STOP:
             terms.setdefault(word, (token, '元素机制'))
+    # 异域装备的专属 Perk 名，来源见 perks()。库侧优先——同形时那是装备名，更具体。
+    for word in perks():
+        if word not in STOP:
+            terms.setdefault(word, ('exotic', '异域 Perk'))
     # 站内术语表里定了 token 的那些，走同一条正查——「勇士」「守护者」「能量球」
     # 这类档位与拾取物不在 Bungie 的 manifest 里，此前没有任何一条闸门要求它们着色，
     # 全站因此漏了八百多处。放在这里而不是另起一条闸门：正查只有一个实现。
