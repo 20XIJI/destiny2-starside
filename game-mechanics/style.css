@@ -196,17 +196,15 @@
 }
 
 /* ── 属性档位表（敏捷 11 档、护甲属性 0–100 与 100–200）──
-   十二列纯数值，等宽数字右对齐；表头与首列不折行。
-   **首列排除在外**：这条带 :has()，权重高过上面那条名称列，不排除会把行标题
-   一并右对齐，居中就静默失效。 */
+   十二列纯数值，等宽数字，表头与首列不折行。
+   整表居中：每格只有两三位数、列宽又已经统一，右对齐会把数字全推到竖线上，
+   一格宽出来的那半列空白读作「这里还有一列」。 */
 .gen:has(thead th:nth-child(12)) thead th,
 .gen:has(thead th:nth-child(12)) tbody td {
   font-variant-numeric: tabular-nums;
-  text-align: right;
+  text-align: center;
   white-space: nowrap;
 }
-
-.gen:has(thead th:nth-child(12)) thead th:first-child { text-align: center; }
 
 /* **十张档位表共用一套列宽。**内容是一回事（一个名目 + 十一档数值），列宽却按各表
    自己的内容算，首列在 113–248px 之间跳，十一列数值格的竖线因此张张对不上，
@@ -259,3 +257,12 @@
 .gen:has(thead th:nth-child(8)):not(:has(thead th:nth-child(9))) thead th:nth-child(n + 2) {
   text-align: left;
 }
+
+/* ── 两列数值表（不随属性变化的项、击杀目标、能量球与其它来源）──
+   一个名目对一个数值，整表居中，与上面十张档位表同一套读法。
+
+   **例外是带横幅行的那两张。**整块系数与热量武器把技能名、武器名成串写在第二格，
+   那是名单不是数值，居中会让每行的起点各在一处；按 :has(tr.lane) 认——名单长到
+   要分组，分组横幅就是它是名单的凭据。 */
+.gen:not(:has(thead th:nth-child(3))):not(:has(tr.lane)) th,
+.gen:not(:has(thead th:nth-child(3))):not(:has(tr.lane)) td { text-align: center; }
