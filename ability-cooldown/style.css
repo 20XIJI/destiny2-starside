@@ -1,0 +1,37 @@
+:root { --wrap: 1060px; --min: 1000px; }
+
+/* 技能名格：变体写在第二行（「巍峨屏障 / 乔木典狱官」），不许被挤到折行 */
+.gen tbody th[scope="row"] { min-width: 8.5em; }
+
+/* ── 图标格 ──
+   源稿写 {ico|![](icons/…)}，整格只有一个标记，class 落在 <td> 本身。
+   图标从站内各页复制而来，同一枚站内存了几种裁法，取的是正方且最接近 56 的那一份，
+   剩下 53 枚 56×56、12 枚 64×64，以及推进器 44×56——站内那两份（44×56 与 64×74）
+   都不是正方形。所以钉一个 40×40 的方框加 object-fit: contain：列宽因此恒定，
+   推进器居中留白、不被拉扁。
+   宽度走 width: 1%——site.css 的 .gen 是 width: 100%，富余宽度按内容分摊，
+   不下这一条图标列会跟着摊到 90px 上去。 */
+.gen tbody td.ico {
+  width: 1%;
+  padding: 5px 8px;
+  text-align: center;
+}
+
+.gen tbody td.ico img {
+  display: block;
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  margin: 0 auto;
+  border-radius: 3px;
+}
+
+/* 表头那一格跟着收到同样的左右内边距，列宽才由图标本身定 */
+.gen thead th:nth-child(2) {
+  padding-right: 8px;
+  padding-left: 8px;
+}
+
+/* 回复倍率与十一档属性都是数值，右对齐 */
+.gen thead th:nth-child(n + 3),
+.gen tbody td:nth-child(n + 3) { text-align: right; }
