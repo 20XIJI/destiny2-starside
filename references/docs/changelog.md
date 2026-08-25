@@ -12,6 +12,10 @@
 - {act|改动}全站：表格里的分组横幅行改为居中
 - {act|改动}[游戏机制](../game-mechanics/index.html) · 护甲属性：十张档位表统一列宽
 - {act|改动}[游戏机制](../game-mechanics/index.html)：档位表与两列数值表改为整表居中
+- {act|订正}[异域护甲详解](../exotic-armor/index.html) · 卡德马斯山脊长矛帽：补上铸造者框架刀剑重击的吃增伤条件
+- {act|订正}[异域护甲详解](../exotic-armor/index.html) · 血红炼金术：补上 10% 增伤对所有伤害生效
+- {act|订正}[DPS 排行](../dps/index.html)：补上 5 条注解
+- {act|订正}[弹药生成机制](../ammo/index.html) · 注解：删去 200 属性额外弹药量那段观察
 - {act|订正}[职业分支详解](../elements/index.html) · 碎片：碎片名补上元素后缀，六页 99 枚
 - {act|订正}[技能伤害排行](../skill-damage/index.html) · 手雷：手雷名补上「手雷」，40 处
 
