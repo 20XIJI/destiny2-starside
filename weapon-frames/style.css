@@ -126,7 +126,6 @@
   font-family: var(--font-cn);
   font-weight: 600;
   letter-spacing: .04em;
-  text-align: center;
   background: var(--ink-lift);
 }
 
@@ -249,6 +248,10 @@
   text-align: left;
   white-space: normal;
 }
+
+/* 列名跟着本列的正文走（design.md 四节）：注解列正文左对齐，列名也左对齐。
+   其余 41 列的正文都居中，列名照旧吃 site.css 的缺省。 */
+.gen thead th:last-child { text-align: left; }
 
 /* 钉左那两列必须给不透明底：半透明会让下面滚过的数字透出来。用 color-mix 把
    同一层白叠到 --ink-lift 上，不手算终值——手算的终值改了底色就对不上了。 */

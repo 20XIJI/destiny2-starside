@@ -156,19 +156,15 @@
    首格是行标题，不折行：一行一条效果，名称断开之后两行之间认不出边界。
    **行标题一律不着色**（源稿里首格的 {token|…} 已剥掉）：它是这一行的身份，
    一列白色粗体扫下来才认得出边界；半红半白的「勇士生命值」读作两截。
-   居中：名称长短差得远（「爆炸」到「无序边界 修改版生命值规则」），左对齐时
-   带 ▲▲ 的第二行会吊在名称左下角；上下左右都居中之后名称与档位箭头是一叠的。
-   竖向的 middle 由 site.css 的 .gen th 给，这里不重述。 */
+   左右居中由 site.css 的 .gen tbody th[scope="row"] 给，竖向的 middle 由 .gen th 给，
+   这里都不重述——名称长短差得远（「爆炸」到「无序边界 修改版生命值规则」），左对齐时
+   带 ▲▲ 的第二行会吊在名称左下角；上下左右都居中之后名称与档位箭头是一叠的。 */
 .gen tbody th[scope="row"] {
   color: var(--bone-hi);
   font-family: var(--font-cn);
   font-weight: 600;
-  text-align: center;
   white-space: nowrap;
 }
-
-/* 列名跟着这一列一起居中，否则表头挂在左上角、下面整列在中间。 */
-.gen thead th:first-child { text-align: center; }
 
 /* ── 三列表（修改器、祸因、护甲属性）的说明列 ──
    一句到二十句不等，给一个上限宽度，长句折行不会把整表拉过版心。
@@ -181,14 +177,19 @@
 }
 
 /* ── 勇士分档表 ──
-   七列：项目 + 五档难度 + 说明。数值列等宽数字，纵向扫一列时不必逐行重新定位。 */
-.gen:has(thead th:nth-child(7)) tbody td:not(:last-child) {
+   七列：项目 + 五档难度 + 说明。数值列等宽数字，纵向扫一列时不必逐行重新定位。
+
+   **闸门要写成「恰好七列」。**只写 :has(nth-child(7)) 时，八列的战斗人员清单与
+   十二列的属性档位表也带第 7 格，一并被选中；:not(:last-child) 又给这条添了一位
+   权重，压过下面十二列表那条右对齐，整片数值退成居中、只有末列还右对齐，
+   表头却照旧右对齐——列名与数据当场错开。 */
+.gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) tbody td:not(:last-child) {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   text-align: center;
 }
 
-.gen:has(thead th:nth-child(7)) tbody td:last-child {
+.gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) tbody td:last-child {
   max-width: 27em;
   font-size: 13px;
   line-height: 1.8;
@@ -226,4 +227,14 @@
    末列短，整表按内容定宽居中即可，只给首列一点呼吸。 */
 .gen:has(thead th:nth-child(2)):not(:has(thead th:nth-child(3))) tbody td {
   min-width: 7em;
+}
+
+/* ── 列名跟着本列的正文走（design.md 四节）──
+   末列在各张表里都是左对齐的正文（说明、数值、技能、恐惧那一列），列名跟着左对齐；
+   十二列的属性档位表末列是右对齐的数值，上面那条带 :has() 的规则权重更高，照旧右对齐。 */
+.gen thead th:last-child { text-align: left; }
+
+/* 战斗人员清单：第 2 格起七列单位名都是左对齐的正文，列名一并左对齐 */
+.gen:has(thead th:nth-child(8)):not(:has(thead th:nth-child(9))) thead th:nth-child(n + 2) {
+  text-align: left;
 }

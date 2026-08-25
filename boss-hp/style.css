@@ -46,13 +46,13 @@
    位数差本身就成了量级差的提示。
    「注解」是长短不齐的说明句，居中会让左缘参差、每行都要重新找起点。 */
 
-/* 副本名：这一组的身份。rowspan 合并后纵向居中，一眼圈出该副本占几行 */
+/* 副本名：这一组的身份。rowspan 合并后纵向居中，一眼圈出该副本占几行。
+   左右居中由 assets/site.css 的 .gen tbody th[scope="row"] 给，这里不重述。 */
 .gen tbody th {
   color: var(--bone-hi);
   font-family: var(--font-cn);
   font-weight: 600;
   letter-spacing: .04em;
-  text-align: center;
   white-space: nowrap;
 }
 
@@ -112,8 +112,8 @@
   white-space: nowrap;
 }
 
-/* 占位词那一格居中：这一页的数值列是右对齐的长数字，占位词跟着右对齐会贴到
-   下一列的分隔线上。共用的压暗与字族在 assets/site.css。 */
+/* 占位词那一格居中：生命值列左对齐的是长数字，占位词跟着左对齐会贴到上一列的
+   分隔线上，还会被当成一个数值参与比较。共用的压暗与字族在 assets/site.css。 */
 .gen tbody td.na { text-align: center; }
 
 /* 注解：说明句。给一个上限宽度，长句折行也不会把整表拉过版心。

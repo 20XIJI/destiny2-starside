@@ -133,3 +133,13 @@
 .gen:has(thead th:nth-child(8)) td {
   max-width: 9em;
 }
+
+/* ── 列名跟着本列的正文走（design.md 四节）──
+   这一页除图标外全是左对齐的正文（来源、触发、增伤、时长、注解、叠加算例的各项修正），
+   列名一并左对齐；首列是行标题、居中，图标列居中。
+   图标列按 :has(td.ico) 认，不按列序认——分类表与叠加算例那两张没有图标列。 */
+.gen thead th { text-align: left; }
+
+.gen thead th:first-child { text-align: center; }
+
+.gen:has(td.ico) thead th:nth-child(2) { text-align: center; }

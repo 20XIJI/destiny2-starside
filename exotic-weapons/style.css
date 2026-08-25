@@ -25,13 +25,18 @@
 /* 上下居中沿用 assets/site.css 的缺省，这里只放宽内边距。
    左右居中只给前三列——武器、图标、评级都是短内容，居中读作一组身份信息；
    总伤与 DPS 右对齐（位数要对齐），三列理由左对齐（是成段的正文）。
-   表头本来就居中，所以这条同时选 thead 与 tbody，整列上下贯通。 */
+   **列名跟着本列的正文走**（design.md 四节），所以这三条各自同时选 thead 与 tbody，
+   整列上下贯通。居中那条不必带勇士列——它在 site.css 的缺省里就是居中的。 */
 .gen th,
 .gen td { padding: 13px 14px; }
 
 .gen th:nth-child(-n + 3),
-.gen td:nth-child(-n + 3),
-.gen th:nth-child(6) { text-align: center; }
+.gen td:nth-child(-n + 3) { text-align: center; }
+
+.gen th:nth-child(4),
+.gen th:nth-child(5) { text-align: right; }
+
+.gen th:nth-child(n + 7) { text-align: left; }
 
 /* 武器名：一行的身份，提亮一档。keep-all 让它只在源稿写的 <br> 处断行
    （「故我在」三行一格），不被中文的任意断行拆开。 */

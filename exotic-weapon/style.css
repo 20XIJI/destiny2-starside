@@ -59,3 +59,6 @@
   text-align: left;
   vertical-align: top;
 }
+
+/* 列名跟着本列的正文走（design.md 四节）：末列说明左对齐，列名也左对齐 */
+.gen thead th:last-child { text-align: left; }

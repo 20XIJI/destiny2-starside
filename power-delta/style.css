@@ -163,3 +163,7 @@
 .chart-legend [aria-pressed="false"] { color: var(--bone-faint); }
 
 .chart-legend [aria-pressed="false"]::before { background: var(--hair-lit); }
+
+/* 列名跟着本列的正文走（design.md 四节）：两列数值左对齐，列名也左对齐。
+   带「图表：是」时这张表由 app.js 收起，无 JS 时才读到。 */
+.gen thead th:not(:first-child) { text-align: left; }

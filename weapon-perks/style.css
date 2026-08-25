@@ -58,3 +58,7 @@
   text-align: left;
   vertical-align: top;
 }
+
+/* 列名跟着本列的正文走（design.md 四节）：第三列起是来源与说明，正文左对齐，
+   列名也左对齐。前两列（PERK 名、图标）照旧居中。 */
+.gen thead th:nth-child(n + 3) { text-align: left; }

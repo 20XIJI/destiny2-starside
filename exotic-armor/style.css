@@ -79,3 +79,10 @@
 .gen:has(td.spirit) tbody td:not(.ico):not(.spirit) { width: 26em; }
 
 /* 横幅行分组：通用与三个职业。样式在 assets/site.css 的 .gen tr.lane > th */
+
+/* 列名跟着本列的正文走（design.md 四节）：说明列正文左对齐，列名也左对齐。
+   位置与上面那条 :not(.ico):not(.perk):not(.spirit) 对应——四列表在末格，
+   职业金那张六列表在第 3 与第 6 格，所以按 :has(td.spirit) 多补一条。 */
+.gen thead th:last-child { text-align: left; }
+
+.gen:has(td.spirit) thead th:nth-child(3) { text-align: left; }

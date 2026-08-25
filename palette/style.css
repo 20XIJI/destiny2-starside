@@ -91,3 +91,6 @@
 
 /* 色号与标记名是等宽的标识符，不折行。 */
 .gen tbody th[scope="row"], .gen tbody td:first-of-type { white-space: nowrap; }
+
+/* 列名跟着本列的正文走（design.md 四节）：除首列行标题外全是左对齐的正文 */
+.gen thead th:not(:first-child) { text-align: left; }

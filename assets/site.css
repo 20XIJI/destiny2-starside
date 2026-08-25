@@ -748,8 +748,15 @@ main {
 .gen tbody tr[data-band="1"] > th,
 .gen tbody tr[data-band="1"] > td { background: var(--tint-2); }
 
-/* 行标题那一列再压深一点：它是这一块的身份，与数据区分开 */
-.gen tbody th[scope="row"] { background: var(--tint-1); }
+/* 行标题那一列再压深一点：它是这一块的身份，与数据区分开。
+
+   **居中写出来，不靠浏览器对 <th> 的默认值。**渲染结果与默认相同，但默认是隐式的：
+   不成文的时候，二十多个页面里只有三个想起来写，别的页面照抄谁全凭运气。
+   这一列的列名跟着它一起居中，见 design.md「表头跟着本列的数据走」。 */
+.gen tbody th[scope="row"] {
+  background: var(--tint-1);
+  text-align: center;
+}
 
 .gen tbody tr[data-band="1"] > th[scope="row"] { background: var(--tint-3); }
 
