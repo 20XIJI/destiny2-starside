@@ -38,54 +38,6 @@
   font-size: 13px;
 }
 
-/* ── 行间公式 ──
-   照数学论文的排法：正文里引出一句，公式独占一行、在正文栏内居中，上下留白比
-   段距再宽一档，然后用「其中 …」交代变量。**不做成 callout**——底色加左缘竖条
-   是「这里有个提示框」的语汇，行间公式不是提示，它是正文的一部分。
-
-   居中的是正文栏（48em）内的居中，不是 1060 版心内的居中：正文左缘在 x≈212、
-   右缘在 x≈930，按版心居中会把公式推到正文右边去，读起来像另起了一栏。
-   写法是把 grid 撑满 48em 再 justify-content: center，让两条轨道在栏内居中。
-
-   分式本身用 grid 摆：左列是等号左边，右列上下两格是分子与分母，那道分数线
-   是分子的下边框。**不靠嵌套**——资料页的保真闸门禁止着色 span 嵌套，所以源稿写成
-   {lhs|…}{num|…}{den|…} 三个平级标记，谁在哪一格由 grid 指派，不由 DOM 层级决定。 */
-.formula {
-  display: grid;
-  grid-template-columns: auto auto;
-  justify-content: center;
-  align-items: center;
-  column-gap: .6em;
-  max-width: 48em;
-  margin: 2.8em 0;
-  font-size: 20px;
-}
-
-/* 等号左边跨满两行，与分数线对齐 */
-.formula .lhs { grid-row: 1 / 3; }
-
-.formula .num,
-.formula .den {
-  grid-column: 2;
-  padding: .2em .6em;
-  text-align: center;
-}
-
-/* 分数线：发丝一档，比正文亮一点，别粗到抢过变量 */
-.formula .num { border-bottom: 1px solid var(--bone-dim); }
-
-/* 数学惯例：变量是衬线斜体，行间与正文里的同一个字母要长得一样，
-   否则「其中 T 为实际冷却时间」里的 T 与公式里的 T 读作两个符号。
-   等宽正文字族里 T 与 1 一样宽，摆成分式认不出哪个是变量。 */
-.formula .lhs,
-.formula .num,
-.formula .den,
-.var {
-  font-family: Georgia, "Times New Roman", serif;
-  font-style: italic;
-}
-
-.var { color: var(--bone-hi); }
 
 /* ── 分节插画 ──
    三类勇士、活动修改器与热量武器各顶着源表的一张 100px 插画。它们独占一行时
@@ -115,10 +67,9 @@
   opacity: .85;
 }
 
-/* 浮动不许漏出这一节：表格、算式与分节末尾各清一次。
+/* 浮动不许漏出这一节：表格与分节末尾各清一次。
    漏出去会让下一节的标题横在插画右边，读不出分节边界。 */
-.gen,
-.formula { clear: both; }
+.gen { clear: both; }
 
 .block::after {
   content: "";
