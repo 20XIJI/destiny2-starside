@@ -208,6 +208,27 @@
 
 .gen:has(thead th:nth-child(12)) thead th:first-child { text-align: center; }
 
+/* **十张档位表共用一套列宽。**内容是一回事（一个名目 + 十一档数值），列宽却按各表
+   自己的内容算，首列在 113–248px 之间跳，十一列数值格的竖线因此张张对不上，
+   连着往下读像十张不相干的表。table-layout: fixed 之后列宽只认这里写的数：
+   首列与末列钉死，中间十列均分剩下的宽度。
+
+   首列 176px：最长的行标题「每颗能量球回复的生命值」实测 143px，加左右内边距 24。
+   末列 126px：护盾回复那张表的末格是「1.93 秒 ｜ / 51.75/秒」两行，实测 73px；
+   末列本来就是各表最宽的一列（列名是 100 或 200），钉宽不改观感。
+   内边距收到 12px：中间十列均分后每列 71px，最宽的格子（敏捷表的 40px）加 24 才够。 */
+.gen:has(thead th:nth-child(12)) { table-layout: fixed; }
+
+.gen:has(thead th:nth-child(12)) th,
+.gen:has(thead th:nth-child(12)) td {
+  padding-right: 12px;
+  padding-left: 12px;
+}
+
+.gen:has(thead th:nth-child(12)) thead th:first-child { width: 176px; }
+
+.gen:has(thead th:nth-child(12)) thead th:last-child { width: 126px; }
+
 /* ── 战斗人员清单 ──
    八列，格内是竖排的单位名，一格三到五行。等宽数字用不上，靠行高把纵列排开。 */
 .gen:has(thead th:nth-child(8)):not(:has(thead th:nth-child(9))) tbody td {
