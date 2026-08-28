@@ -716,7 +716,6 @@ main {
    底色取 --head-fill 与表头同族，居中：它横跨整表，两侧留白不等会让人以为它属于
    左边那一列。与表头的分别由字距与字重给（不加 letter-spacing 那一档），不由对齐给。 */
 .gen tr.lane > th {
-  color: var(--bone-hi);
   font-family: var(--font-cn);
   font-size: 12px;
   font-weight: 600;
@@ -724,6 +723,11 @@ main {
   text-align: center;
   background: var(--head-fill);
 }
+
+/* 骨白基色只给没有着色标记的横幅：整条横幅写成 {el-strand|特殊武器} 时 class 落在
+   这个 <th> 上，上面那条 (0,2,2) 的选择器会压过单类的 .el-strand，元素色静默失效
+   （同「基色给 tbody」那一条）。 */
+.gen tr.lane > th:not([class]) { color: var(--bone-hi); }
 
 /* 合并块分界：带 <th> 的那一行即一块的开头。线要明显亮于行线——原先用
    --hair-lit，与 --hair 的 ΔE 只有 9.03，按 design.md 的判据视作同色、等于没画。

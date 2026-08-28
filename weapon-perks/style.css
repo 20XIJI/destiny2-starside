@@ -25,8 +25,11 @@
 /* 特性图标。源图 70×70 与 59×59 两种，统一显示成 44px */
 .gen td.ico { padding: 10px 14px; text-align: center; }
 
+/* margin 必须给 auto：图是块级，父格的 text-align 对它不生效，
+   列宽比图宽时它会贴在内容盒左缘、整列往左偏几个像素。 */
 .gen td.ico img {
   display: block;
+  margin: 0 auto;
   width: 44px;
   height: 44px;
   border-radius: 2px;

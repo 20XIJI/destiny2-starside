@@ -112,9 +112,14 @@
 /* ── 目的地格：这一页的内容 ──
    **不给七个目的地各分一个色相。**色相在站内归元素所有（design.md 一节），
    紫会被读成虚空、青会被读成电弧。这一页不需要色相：格子里是七个互不相似的
-   中文名，字形本身就是区分度。抬到 --bone、比坐标层大一档，层级靠亮度与字号。 */
+   中文名，字形本身就是区分度。抬到 --bone、比坐标层大一档，层级靠亮度与字号。
+
+   **基色写在 tbody 上，不写在 td 上。**整格只有一个 {标记|…} 时 class 落在 <td>
+   本身，`.gen tbody td` 这类三选择器会以权重压过单类的 .exotic，异域名静默退成
+   本列基色（site.css 的「基色给 tbody」那一条）。格子选择器只留排版。 */
+.gen tbody { color: var(--bone); }
+
 .gen tbody td {
-  color: var(--bone);
   font-family: var(--font-cn);
   font-size: 13.5px;
   letter-spacing: .05em;
