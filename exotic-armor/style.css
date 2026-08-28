@@ -14,6 +14,17 @@
 
 .gen thead th { padding-top: 11px; padding-bottom: 11px; white-space: nowrap; }
 
+/* ── 四列表的列宽写死 ──
+   猎人／泰坦／术士／永劫教派四张表同一种列形，按内容定宽时每张各量各的（实测首列在各表之间差到
+   73px），扫到下一节要重新找列。写死之后左边缘逐节对齐，说明列吃掉余量。
+   首列取最长的那条不折行的宽度——行标题上的 nowrap 是这一页既有的决定。
+   六列的那张表列形不同，用「恰好四列」的前缀挡在外面。 */
+.gen:has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) { table-layout: fixed; }
+
+.gen:has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(1) { width: 160px; }
+.gen:has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(2) { width: 80px; }
+.gen:has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(3) { width: 112px; }
+
 /* 护甲名：这一行的身份。名字最长九个汉字，不折行 */
 .gen tbody th[scope="row"] {
   color: var(--bone-hi);

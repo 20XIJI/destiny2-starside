@@ -134,6 +134,30 @@
 
 .gen:has(td.slot):not(:has(td.cd)) thead th:last-child { text-align: center; }
 
+/* ── 四列表的列宽写死 ──
+   一页里 碎片／手雷／猎人／泰坦／术士 五张表同一种列形，按内容定宽时每张各量各的
+   （实测同一列在三张职业表之间差到 91px），扫到下一节要重新找列。写死之后左边缘
+   逐节对齐，说明列吃掉余量。
+
+   名称列取最长的那条不折行的宽度（「暗影箭矢：莫比乌斯箭袋」），行标题上的
+   nowrap 是这一页既有的决定，宽度得让它过得去。
+   图标列按整格标记认：一格两图与一格四图那两张表要 132px，其余 96px；
+   同一种表内部仍然对齐，跨表形的差别是内容本身的差别。
+
+   三列表（效果、棱镜手雷）用同一套前两列宽度，说明列的左边缘因此与四列表对齐。 */
+.gen:has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))) { table-layout: fixed; }
+
+.gen:has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))) thead th:nth-child(1) { width: 175px; }
+.gen:has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))) thead th:nth-child(2) { width: 96px; }
+.gen:has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))):has(:is(td.ico2, td.ico4)) thead th:nth-child(2) { width: 132px; }
+
+.gen:has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) { table-layout: fixed; }
+
+.gen:has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(1) { width: 175px; }
+.gen:has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(2) { width: 96px; }
+.gen:has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))):has(:is(td.ico2, td.ico4)) thead th:nth-child(2) { width: 132px; }
+.gen:has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(4) { width: 165px; }
+
 /* 行标题：类别或条目名，这一组的身份。合并后纵向居中，一眼圈出它占几行。
    **颜色只给没有 class 的那些格。**整格只有一个 {标记|…} 时 class 落在 <th> 本身，
    这条（两类两元素）会压过单类的 .el-arc，总览页六个元素名就退成骨白。排版声明
