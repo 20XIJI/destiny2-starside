@@ -55,17 +55,9 @@
 
    ── 来源列 ──
    装备部位与元素归属，退一档：它是名称的限定语，不与名称争亮度。
-   给的是上限宽不是下限宽：最长的「NPA 斥力调节器或杀手公爵药剂师背包」折成两行，
-   比让整列跟着它撑到 240px 划算——整表窄一档，1280 宽的屏幕就不必横向滚。 */
+   宽度在文件末尾那一节与另外六列一起给，这里只管颜色。 */
 .gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) tbody td:nth-child(3):not([class]) {
-  max-width: 10em;
   color: var(--bone-dim);
-}
-
-/* ── 触发列 ──
-   短的四个字、长的三十五个字。不封顶时它独吞剩余宽度，把注解挤到下限宽。 */
-.gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) tbody td:nth-child(4) {
-  max-width: 15em;
 }
 
 /* ── 增伤与时长两列 ──
@@ -77,7 +69,6 @@
    断行点由源稿给全，所以这两列禁止自动折行。 */
 .gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) tbody td:nth-child(5),
 .gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) tbody td:nth-child(6) {
-  min-width: 6em;
   font-variant-numeric: tabular-nums;
   line-height: 1.9;
   white-space: nowrap;
@@ -90,10 +81,9 @@
 .gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) tbody td:nth-child(5):not([class]) { color: var(--bone-hi); }
 
 /* ── 注解列 ──
-   一句到四句不等，给一个上限宽度，长句折行不会把整表拉过版心。
+   一句到四句不等，吃掉版心剩下的那一截，宽度在文件末尾那一节给。
    默认色靠 tbody 继承下来，不写在这一格上——理由见 assets/site.css 的 .gen tbody。 */
 .gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) tbody td:last-child {
-  max-width: 24em;
   font-size: 13px;
   line-height: 1.8;
 }
@@ -142,3 +132,25 @@
 .gen thead th:first-child { text-align: center; }
 
 .gen:has(td.ico) thead th:nth-child(2) { text-align: center; }
+
+/* ── 四张七列表的列宽对齐 ─────────────────────────────────────────
+   四个分类各一张表，列形相同。走自动布局时各表按自己的内容各算各的宽：实测名称列
+   169–229、增伤列 179–272、注解列 385–426。滚到下一节要重新找列，读者会以为它们
+   不是一回事（design.md 三节）。改成 table-layout: fixed，宽度取实测的最大值，
+   再把可折行的触发与注解两列让出余量凑满版心。
+
+   注解之外全部居中。**触发列是句子，居中之后折行的两行左缘各不相同**——这一列
+   要是读着别扭，把它单独挑回 left 即可，其余五列不受影响。 */
+.gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) { table-layout: fixed; }
+
+.gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) thead th:nth-child(1) { width: 200px; }
+.gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) thead th:nth-child(2) { width: 59px; }
+.gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) thead th:nth-child(3) { width: 177px; }
+.gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) thead th:nth-child(4) { width: 240px; }
+.gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) thead th:nth-child(5) { width: 272px; }
+.gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) thead th:nth-child(6) { width: 183px; }
+.gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) thead th:last-child { width: auto; }
+
+.gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) :is(thead th, tbody td):not(:last-child) {
+  text-align: center;
+}

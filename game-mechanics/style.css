@@ -227,3 +227,26 @@
   content-visibility: auto;
   contain-intrinsic-size: auto 1210px;
 }
+
+/* ── 超能能量生成那一节的两张两列表 ─────────────────────────────
+   同列形、上下相邻，自动布局下各算各的宽：实测首列 556 与 767、次列 459 与 248。
+   两张表的次列装的是同一种东西（一个百分数），列宽却差一倍，滚过去要重新找列
+   （design.md 三节）。次列钉死 248px——那是两张里较窄的那个，百分数占不满它；
+   首列吃掉剩下的，两张因此在同一处分界。
+
+   **判据是「同一节里紧挨着的两张两列表」，不是分节序号。**序号会在源稿调整分节
+   顺序时静默指错。写成两条：后一张认「前面紧邻一张两列表」，前一张认「本节第一张
+   且后面还有表」。**`:has()` 不能套在 `:has()` 里**，所以不能写成
+   `.block:has(> .gen:not(:has(…)) ~ …)`——那条整个失效，且不报错。
+
+   另外三张两列表各自独处一节、同屏看不到第二张，按 design.md 那条不参与对齐；
+   「不随属性变化的项」虽与十二列表同节，但不是本节第一张表，两条都认不到它。 */
+.gen:not(:has(thead th:nth-child(3))) ~ .gen:not(:has(thead th:nth-child(3))),
+.block > .gen:first-of-type:not(:has(thead th:nth-child(3))):has(~ .gen) {
+  table-layout: fixed;
+}
+
+.gen:not(:has(thead th:nth-child(3))) ~ .gen:not(:has(thead th:nth-child(3))) thead th:last-child,
+.block > .gen:first-of-type:not(:has(thead th:nth-child(3))):has(~ .gen) thead th:last-child {
+  width: 248px;
+}

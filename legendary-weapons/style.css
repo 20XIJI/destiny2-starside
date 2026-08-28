@@ -45,11 +45,12 @@
   overflow-wrap: anywhere;
 }
 
-/* 前六列都是短内容，居中读作一组身份信息；后面的 Perk、地点与理由左对齐。 */
-.gen th:nth-child(-n + 6),
-.gen td:nth-child(-n + 6) { text-align: center; }
+/* 前九列都是短内容，居中读作一组身份信息；数值与理由留给后面几条各自处理。
+   Perk 一格里常有多条、靠 <br> 分行，居中之后每条各自居中，整列读作一摞标签。 */
+.gen th:nth-child(-n + 9),
+.gen td:nth-child(-n + 9) { text-align: center; }
 
-.gen th:nth-child(n + 7) { text-align: left; }
+.gen th:nth-child(n + 10) { text-align: left; }
 
 .gen:has(td.ico) thead th:nth-child(1) { width: 108px; }
 .gen:has(td.ico) thead th:nth-child(2) { width: 72px; }
@@ -129,7 +130,7 @@
 .gen td.src {
   font-size: 12.5px;
   line-height: 1.8;
-  text-align: left;
+  text-align: center;
 }
 
 /* 三列数值：等宽数字右对齐，位数对齐才一眼比得出大小。

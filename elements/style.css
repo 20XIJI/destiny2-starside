@@ -144,19 +144,23 @@
    图标列按整格标记认：一格两图与一格四图那两张表要 132px，其余 96px；
    同一种表内部仍然对齐，跨表形的差别是内容本身的差别。
 
-   三列表（效果、棱镜手雷）用同一套前两列宽度，说明列的左边缘因此与四列表对齐。 */
-.gen:has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))) { table-layout: fixed; }
+   三列表（效果、棱镜手雷）用同一套前两列宽度，说明列的左边缘因此与四列表对齐。
 
-.gen:has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))) thead th:nth-child(1) { width: 175px; }
-.gen:has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))) thead th:nth-child(2) { width: 96px; }
-.gen:has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))):has(:is(td.ico2, td.ico4)) thead th:nth-child(2) { width: 132px; }
+   **判据里必须带上图标格。**只按列数认的话，总览页那张同为四列、却一张图都没有的
+   「效果一览」也会被套进来：属性列拿到 175px、增益列被压到 96px 折成三行，减益列
+   把剩下的空间全吃掉。这一族表的身份是「名称 + 图标 + 说明」，图标格就是它的标记。 */
+.gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))) { table-layout: fixed; }
 
-.gen:has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) { table-layout: fixed; }
+.gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))) thead th:nth-child(1) { width: 175px; }
+.gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))) thead th:nth-child(2) { width: 96px; }
+.gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))):has(:is(td.ico2, td.ico4)) thead th:nth-child(2) { width: 132px; }
 
-.gen:has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(1) { width: 175px; }
-.gen:has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(2) { width: 96px; }
-.gen:has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))):has(:is(td.ico2, td.ico4)) thead th:nth-child(2) { width: 132px; }
-.gen:has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(4) { width: 165px; }
+.gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) { table-layout: fixed; }
+
+.gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(1) { width: 175px; }
+.gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(2) { width: 96px; }
+.gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))):has(:is(td.ico2, td.ico4)) thead th:nth-child(2) { width: 132px; }
+.gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(4) { width: 165px; }
 
 /* 行标题：类别或条目名，这一组的身份。合并后纵向居中，一眼圈出它占几行。
    **颜色只给没有 class 的那些格。**整格只有一个 {标记|…} 时 class 落在 <th> 本身，
@@ -282,3 +286,20 @@
 
 /* 着色 token、批注样式、表格骨架与交替底色全部来自 assets/site.css。
    本页不重复定义，也不新增渲染色。真要单独设计一种颜色时才写在这里。 */
+
+/* ── 总览页的「效果一览」 ─────────────────────────────────────────
+   这一页只有它一张数据表，四列全是短词组，居中读作一张对照表。上面那一族按图标格
+   认，认不到它，所以宽度在这里单独给：增益与减益是两列并列的枚举，等宽才对得起
+   「同一类东西」这个读法；属性列只放元素名，元素拾取物列最长四个字。 */
+.gen:not(:has(td.ico, td.ico2, td.ico4)):has(thead th:nth-child(4)) {
+  table-layout: fixed;
+}
+
+.gen:not(:has(td.ico, td.ico2, td.ico4)):has(thead th:nth-child(4)) :is(th, td) {
+  text-align: center;
+}
+
+.gen:not(:has(td.ico, td.ico2, td.ico4)):has(thead th:nth-child(4)) thead th:nth-child(1) { width: 108px; }
+.gen:not(:has(td.ico, td.ico2, td.ico4)):has(thead th:nth-child(4)) thead th:nth-child(2),
+.gen:not(:has(td.ico, td.ico2, td.ico4)):has(thead th:nth-child(4)) thead th:nth-child(3) { width: auto; }
+.gen:not(:has(td.ico, td.ico2, td.ico4)):has(thead th:nth-child(4)) thead th:nth-child(4) { width: 152px; }
