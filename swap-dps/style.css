@@ -48,7 +48,6 @@
   height: 44px;
   /* block 元素不跟着格子的 text-align 走，居中靠自身的 auto 外边距 */
   margin: 0 auto;
-  border-radius: 3px;
 }
 
 /* ── 类型：这一行的一枚标签 ──

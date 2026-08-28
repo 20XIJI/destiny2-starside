@@ -765,6 +765,11 @@ def build(slug):
 
     out, title = render(md, slug)
     check(md, out, slug)
+    # 有图却没写「首屏图标：」时静默退回 0，首屏那几张就全带上 loading="lazy"，
+    # 要等布局算完才开始下载。buff-debuffs 曾这样漏了 118 张，页面看不出异样。
+    if ICONS.refs and not eager:
+        die('%s 有 %d 处图标引用，源稿要写「首屏图标：N」'
+            '（首屏放不下就写 0）' % (slug, ICONS.refs))
 
     shell.emit(outdir, out, title)
 

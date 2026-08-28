@@ -48,7 +48,6 @@
   height: 40px;
   /* block 元素不跟着格子的 text-align 走，居中靠自身的 auto 外边距 */
   margin: 0 auto;
-  border-radius: 3px;
 }
 
 /* ── 起手与后续：伤害构成 ──

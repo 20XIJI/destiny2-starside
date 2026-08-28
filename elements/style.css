@@ -186,7 +186,6 @@
 .gen td img {
   display: block;
   margin: 0 auto;
-  border-radius: 2px;
 }
 
 /* 碎片槽位：源表用一张槽位图表示 2 槽或 3 槽，照搬，不换算成数字 */

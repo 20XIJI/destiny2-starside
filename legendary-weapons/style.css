@@ -83,7 +83,6 @@
 .gen td img {
   display: block;
   margin: 0 auto;
-  border-radius: 2px;
 }
 
 /* 武器图标原图 96px，这里缩到 56px：列宽写死之后 96px 会溢出到评级那一列，
