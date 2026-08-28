@@ -35,6 +35,21 @@
   white-space: nowrap;
 }
 
+/* ── 两张表的列宽写死 ──
+   突袭与地牢同一种列形，按内容定宽时各量各的（实测首领名一列差 59px、注解差
+   50px），从突袭滚到地牢要重新找列。写死之后两表逐列对齐，注解列吃掉余量。
+   前七列都带 nowrap，宽度取各自最长那条的实测值：副本名「战争领主的废墟」、
+   首领名「阿特拉克斯-1·堕落者 EXO」、生命值八位数、两列 DPS 由列名定宽。 */
+.gen { table-layout: fixed; }
+
+.gen thead th:nth-child(1) { width: 134px; }
+.gen thead th:nth-child(2) { width: 196px; }
+.gen thead th:nth-child(3) { width: 118px; }
+.gen thead th:nth-child(4) { width: 72px; }
+.gen thead th:nth-child(5) { width: 92px; }
+.gen thead th:nth-child(6),
+.gen thead th:nth-child(7) { width: 96px; }
+
 /* 表头跟着本列的数据走，不各行其是：列名悬在数据上方偏一侧会让人先找一遍对应关系 */
 .gen thead th:nth-child(3),
 .gen thead th:nth-child(8) { text-align: left; }
@@ -116,13 +131,10 @@
    分隔线上，还会被当成一个数值参与比较。共用的压暗与字族在 assets/site.css。 */
 .gen tbody td.na { text-align: center; }
 
-/* 注解：说明句。给一个上限宽度，长句折行也不会把整表拉过版心。
+/* 注解：说明句。宽度由上面那组写死的列宽剩下的余量给，这一格不再自己定宽——
+   table-layout: fixed 之下格子上的 max-width 是空转的。
    **默认色靠 tbody 继承下来，不写在这一格上**——理由见 assets/site.css 的 .gen tbody。
-   收到 24em：21 条非空说明的中位长度只有 15 字，是那条 86 字的分层加成把整列
-   撑开的。为一个离群值给全列留宽，等于让 40 个空格子和十几条短说明陪着占地方。
-   超出的 8 条折行，读起来比一条横贯整表的长行更好扫。 */
-.gen tbody td:last-child {
-  max-width: 24em;
-  text-align: left;
-}
+   余量约 210px：21 条非空说明的中位长度只有 15 字，一行装得下；那条 86 字的分层
+   加成会折成几行，读起来比一条横贯整表的长行更好扫。 */
+.gen tbody td:last-child { text-align: left; }
 
