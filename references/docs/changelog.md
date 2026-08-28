@@ -8,6 +8,8 @@
 
 - {act|新增}[刷取清单-传说武器](../legendary-weapons/index.html)：200 把传说武器的评级、框架、推荐 Perk 与获取地点
 - {act|改动}[数据源与鸣谢](../sources/index.html)：刷取清单一条补上传说武器页
+- {act|订正}[锻造武器来源](../crafting/index.html) · 暗屋之声：「亡者信使」→「{exotic|死亡信使}」
+- {act|订正}[护甲套装](../armor-sets/index.html) · 传承之誓：4 件效果的导弹伤害改为按职业区分
 
 ## 2026.8.25
 
