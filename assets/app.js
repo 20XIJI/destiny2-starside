@@ -6,13 +6,21 @@
 (function () {
   'use strict';
 
-  /* 匹配判定：空格分词后全部命中（AND）。纯函数，可单独验证。 */
-  function matches(text, query) {
-    var terms = query.toLowerCase().split(/\s+/).filter(Boolean);
-    if (!terms.length) return true;
-    var hay = text.toLowerCase();
-    return terms.every(function (t) { return hay.indexOf(t) !== -1; });
+  /* 匹配判定：空格分词后全部命中（AND）。纯函数，可单独验证。
+
+     拆成三个是为了热路径：查询词一次按键只解析一次，正文的小写副本在建索引时
+     备好，`hit()` 于是只剩 indexOf。合成一个的写法会让这两件事按记录条数重做
+     ——首页 3311 条、weapon-perks 413 行，每敲一个字就是那么多遍。 */
+  function words(query) {
+    return query.toLowerCase().split(/\s+/).filter(Boolean);
   }
+  function hit(hay, terms) {
+    for (var i = 0; i < terms.length; i++) {
+      if (hay.indexOf(terms[i]) === -1) return false;
+    }
+    return true;
+  }
+  function matches(text, query) { return hit(text.toLowerCase(), words(query)); }
   window.starsideMatches = matches;
 
   var head = document.querySelector('.site-head');
@@ -30,6 +38,18 @@
   var NOUN = cfg.noun || '模组';
   var sections = Array.prototype.slice.call(document.querySelectorAll(SEC));
   var stick = 0;
+
+  /* resize 一帧只跑一次。measure() 读顶栏高度、再往 :root 写自定义属性——写根变量
+     让整棵树的样式失效，下一个 resize 事件里那次读因此必然触发全文档强制同步布局；
+     watch() 还要销毁并重建观察者。拖窗口每秒几十次，合并到一帧即可。 */
+  function onResize(fn) {
+    var queued = false;
+    addEventListener('resize', function () {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(function () { queued = false; fn(); });
+    });
+  }
 
   /* 分节 sticky 单元贴 .site-head 下沿，偏移量按实测高度写回 CSS 变量 */
   function measure() {
@@ -349,17 +369,34 @@
       hov = svg.querySelector('.hover');
     }
 
+    /* **rect 缓存住。**上一个 pointermove 刚写过 hov.innerHTML，紧接着读 rect 就是
+       强制同步布局，120Hz 指针下每秒上百次。指针给的是视口坐标，所以横向滚动与改版面
+       都会让缓存过期——两处都置空重取，置空本身不读布局。 */
+    var box = null;
+    function drop() { box = null; }
+    onResize(drop);
+    addEventListener('scroll', drop, { passive: true });
+
     function pick(e) {
-      var r = svg.getBoundingClientRect();
+      var r = box || (box = svg.getBoundingClientRect());
       var x = lo + ((e.clientX - r.left) / r.width * W - PAD.l) / (W - PAD.l - PAD.r) * (hi - lo);
       return Math.min(hi, Math.max(lo, Math.round(x)));
     }
 
+    /* 指针事件比帧密，一帧画一次就够；只留最后一个位置，中间的丢掉。
+       `spot` 为 null 表示指针已经离开，这一帧不必补画。 */
+    var spot = null, queued = false;
     svg.addEventListener('pointermove', function (e) {
-      var x = pick(e);
-      hov.innerHTML = pins.indexOf(x) < 0 ? group(x) : '';
+      spot = pick(e);
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(function () {
+        queued = false;
+        if (spot === null) return;
+        hov.innerHTML = pins.indexOf(spot) < 0 ? group(spot) : '';
+      });
     });
-    svg.addEventListener('pointerleave', function () { hov.innerHTML = ''; });
+    svg.addEventListener('pointerleave', function () { spot = null; hov.innerHTML = ''; });
     /* 点一下把这一处读数留在图上，可以留任意多处；点已经留下的那一处即撤掉它 */
     svg.addEventListener('click', function (e) {
       var x = pick(e), at = pins.indexOf(x);
@@ -625,7 +662,10 @@
       tag.src = 'assets/search.js';
       tag.onload = function () {
         index = window.starsideIndex;
-        index.forEach(function (r) { if (r.d) pages[r.u] = r; });
+        index.forEach(function (r) {
+          if (r.d) { pages[r.u] = r; r._t = (r.t + ' ' + r.d).toLowerCase(); }
+          else { r._n = (r.n || '').toLowerCase(); r._x = (r.x || '').toLowerCase(); }
+        });
         draw();
       };
       /* 索引取不到就说出来。留一个搜不出东西的空框，读者会以为站里根本没有这条。 */
@@ -691,12 +731,12 @@
       if (!q) { count.textContent = ''; return; }
       if (!index) { count.textContent = '正在载入索引…'; return; }
 
-      var terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+      var terms = words(q);
       var top = [], named = [], rest = [];
       index.forEach(function (r) {
-        if (!r.n) { if (matches(r.t + ' ' + r.d, q)) top.push(r); }
-        else if (matches(r.n, q)) named.push(r);
-        else if (matches(r.x, q)) rest.push(r);
+        if (!r.n) { if (hit(r._t, terms)) top.push(r); }
+        else if (hit(r._n, terms)) named.push(r);
+        else if (hit(r._x, terms)) rest.push(r);
       });
       var all = top.concat(named, rest);
       show(all.slice(0, CAP), q, terms);
@@ -711,6 +751,13 @@
 
     input.addEventListener('focus', load);
     input.addEventListener('input', function () { load(); draw(); });
+
+    /* 索引 287 KB gzip。只在聚焦时拉的话，读者点进搜索框敲第一个字要干等它下完；
+       页面加载完之后趁空闲预取，想搜的时候已经在内存里。排在 load 之后、空闲时段
+       里，首屏不受影响。上面那条 focus 留着兜底——空闲回调可能一直不来。 */
+    var idle = window.requestIdleCallback || function (fn) { return setTimeout(fn, 1200); };
+    if (document.readyState === 'complete') idle(load);
+    else addEventListener('load', function () { idle(load); });
   }
 
   if (slot && slot.dataset.clock !== undefined) nowCell();
@@ -723,14 +770,14 @@
   if (slot && slot.dataset.chart !== undefined) {
     chart();
     measure();
-    addEventListener('resize', measure);
+    onResize(measure);
     return;
   }
 
   if (slot && slot.dataset.cols !== undefined) {
     columns();
     measure();
-    addEventListener('resize', measure);
+    onResize(measure);
     return;
   }
 
@@ -794,8 +841,9 @@
   var mods = ITEM ? Array.prototype.slice.call(document.querySelectorAll(ITEM)) : [];
   /* 表内横幅行是组名不是条目，不参与命中，改为跟着自己那一组的可见行走 */
   var lanes = ITEM ? Array.prototype.slice.call(document.querySelectorAll('tr.lane')) : [];
-  /* 上百个条目，每次按键都取 textContent 会重复遍历整棵子树，先缓存 */
-  var text = mods.map(function (mod) { return mod.textContent; });
+  /* 上百个条目，每次按键都取 textContent 会重复遍历整棵子树，先缓存。
+     直接存小写：`hit()` 要的就是它，每次按键再转一遍是几十万字符的临时垃圾。 */
+  var text = mods.map(function (mod) { return mod.textContent.toLowerCase(); });
 
   var search = document.createElement('input');
   search.type = 'search';
@@ -842,11 +890,14 @@
   /* 命中即显示；整行三档皆不命中则整行隐藏，整节不命中则整节与其 chip 一同隐藏。
      检索期间三档并排对照关系失效，清空即恢复。 */
   function filter(query) {
+    var terms = words(query);
     var hits = 0;
+    /* **值没变就不写。**`hidden` 对应 display:none，写一次就要重排整张表；
+       weapon-perks 有 413 行，删掉一个字往往只有几行的可见状态真的变了。 */
     mods.forEach(function (mod, i) {
-      var hit = matches(text[i], query);
-      mod.hidden = !hit;
-      if (hit) hits++;
+      var on = hit(text[i], terms);
+      if (mod.hidden === on) mod.hidden = !on;
+      if (on) hits++;
     });
     rows.forEach(function (row) {
       row.hidden = !row.querySelector(ITEM + ':not([hidden])');
@@ -917,5 +968,5 @@
 
   measure();
   watch();
-  addEventListener('resize', function () { measure(); watch(); });
+  onResize(function () { measure(); watch(); });
 })();
