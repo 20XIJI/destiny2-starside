@@ -32,10 +32,16 @@
 }
 
 /* ── 冷却表 ──
-   回复倍率与十一档属性都是数值，右对齐。按「有图标格」认这两张表——
-   这一页另有两张表没有图标，不该跟着走这条。 */
+   十四列排在 1060 版心里，整表居中：技能名、回复倍率与十一档属性各占一列，
+   列宽由内容定，居中让每列的数字落在同一条中线上。按「有图标格」认这两张表——
+   这一页另有两张表没有图标，不该跟着走这条。
+
+   属性列的左右内边距收到 10px：按 16px 排，十二列光内边距就吃掉 384px，
+   整表比版心宽出几十像素，末列被裁在视口外。 */
+.gen:has(td.ico) :is(thead th, tbody th, tbody td) { text-align: center; }
+
 .gen:has(td.ico) thead th:nth-child(n + 3),
-.gen:has(td.ico) tbody td:nth-child(n + 3) { text-align: right; }
+.gen:has(td.ico) tbody td:nth-child(n + 3) { padding-right: 10px; padding-left: 10px; }
 
 /* ── 倍率表 ──
    四列全是数值（属性档与三种倍率），整表居中：列宽已经统一、每格又只有几位数，
