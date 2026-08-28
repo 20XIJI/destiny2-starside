@@ -1,0 +1,159 @@
+/* 刷取清单-传说武器：200 把传说武器的评级、框架、推荐 Perk 与评级理由。
+   通用主题、字体与配色 token 在 /assets/site.css。
+   这一页由 tools/convert-doc.py 从 references/docs/legendary-weapons.md 生成，
+   改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
+
+/* 全量宽表那一档（design.md 四节）：绿弹与重弹是 14 列，末列的评级理由是成段
+   的正文，1060px 下会被挤成十来个字一行。 */
+:root { --wrap: 1500px; --min: 1544px; }
+
+/* 分节导语：表之前的正文，退一档、不与表争。 */
+.block p {
+  margin: 0 0 18px;
+  color: var(--bone-dim);
+  font-size: 13.5px;
+  line-height: 1.95;
+}
+
+.block p a {
+  color: var(--bone);
+  text-decoration: none;
+  border-bottom: 1px solid var(--hair-lit);
+}
+
+.block p a:hover { color: var(--bone-hi); }
+
+/* 一页 24 张表，一张表一个枪械类型。**列宽写死、整表占满版心**——
+   按内容定宽会让每张表各自量各自的，扫到下一节时武器名、图标、评级三列
+   全都错位，读者得重新找列。白弹的表少了四列数值，那份宽度归给末列的评级理由。
+   只认武器表——评级说明那张两列的小表照旧按内容定宽并居中（site.css 的缺省），
+   判据是「格里有图标标记」，不是列数。 */
+.gen:has(td.ico) {
+  width: 100%;
+  table-layout: fixed;
+}
+
+/* 评级说明那张两列的小表按内容定宽再居中（design.md 四节）。 */
+.gen:not(:has(td.ico)) {
+  width: auto;
+  margin-inline: auto;
+}
+
+.gen th,
+.gen td {
+  padding: 12px 12px;
+  overflow-wrap: anywhere;
+}
+
+/* 前六列都是短内容，居中读作一组身份信息；后面的 Perk、地点与理由左对齐。 */
+.gen th:nth-child(-n + 6),
+.gen td:nth-child(-n + 6) { text-align: center; }
+
+.gen th:nth-child(n + 7) { text-align: left; }
+
+.gen:has(td.ico) thead th:nth-child(1) { width: 108px; }
+.gen:has(td.ico) thead th:nth-child(2) { width: 72px; }
+.gen:has(td.ico) thead th:nth-child(3) { width: 66px; }
+.gen:has(td.ico) thead th:nth-child(4) { width: 84px; }
+.gen:has(td.ico) thead th:nth-child(5) { width: 56px; }
+.gen:has(td.ico) thead th:nth-child(6) { width: 56px; }
+.gen:has(td.ico) thead th:nth-child(7),
+.gen:has(td.ico) thead th:nth-child(8) { width: 118px; }
+.gen:has(td.ico) thead th:nth-child(9) { width: 92px; }
+.gen:has(td.ico) thead th:nth-child(10),
+.gen:has(td.ico) thead th:nth-child(12) { width: 66px; }
+.gen:has(td.ico) thead th:nth-child(11) { width: 74px; }
+.gen:has(td.ico) thead th:nth-child(13) { width: 92px; }
+
+/* 末列的评级理由不给宽度，吃掉剩下的那一截。白弹的表在第 10 列到头，
+   上面那四条按列序写的宽度因此落空，这正是要的：那份宽度归给理由。 */
+.gen:has(td.ico) thead th:last-child { width: auto; }
+
+/* 武器名：一行的身份，提亮一档。keep-all 让它只在源稿写的 <br> 处断行。 */
+.gen tbody th[scope="row"] {
+  color: var(--bone-hi);
+  font-family: var(--font-cn);
+  font-size: 13.5px;
+  font-weight: 600;
+  word-break: keep-all;
+}
+
+.gen td.ico { padding: 10px 6px; }
+
+.gen td img {
+  display: block;
+  margin: 0 auto;
+  border-radius: 2px;
+}
+
+/* 武器图标原图 96px，这里缩到 56px：列宽写死之后 96px 会溢出到评级那一列，
+   而 200 行都摆 96px 的图会把整页拉到两倍高。缩放只改显示尺寸，宽高属性
+   照旧由 markup.img_size 从文件头现读。
+   **图连同左右内边距必须装得进列宽**（56+6×2 ≤ 72）：装不下时 `margin: 0 auto`
+   是超约束的，浏览器把右边距解成负值（实测 −7px），整枚图往右挪半个内边距，
+   看着就是「向右上错位」。勇士那一列同理，42+6×2 ≤ 56。 */
+.gen td.ico img {
+  width: 56px;
+  height: 56px;
+}
+
+/* 勇士：整格一枚图标，与异域武器页共用同一批文件（文件名即内容 md5）。
+   按源稿写的整格标记认，不按「格里有没有 img」猜。 */
+.gen td.champ { padding: 10px 6px; }
+
+/* 评级不折行：「T0.5」断成两行就读不出是一个值。 */
+.gen tbody td:nth-child(3) { white-space: nowrap; }
+
+/* 评级、框架、属性：三格都是短标签，退到 13px 与两列 Perk 拉开层次。
+   **属性那一格不给 color**：整格只有一个 {el-*|…} 时 class 落在 <td> 本身，
+   三选择器的 color 会压过单类的 .el-solar，六个元素色静默退成默认色
+   （design.md 与 site.css 的「基色给 tbody」那一条）。基色由 tbody 继承落下来。 */
+.gen tbody td:nth-child(3),
+.gen tbody td:nth-child(4) {
+  color: var(--bone);
+  font-size: 13px;
+}
+
+.gen tbody td:nth-child(5) { font-size: 13px; }
+
+/* Perk 两列：一格里常有多条，靠源稿的 <br> 分行。同样不给 color——
+   「能量球」「电弧复合」这类整格一个标记的格子在这两列里是常态。 */
+.gen tbody td:nth-child(7),
+.gen tbody td:nth-child(8) {
+  font-size: 13px;
+  line-height: 1.9;
+}
+
+/* 获取地点：整格一个 {src|…} 标记，比正文低一档——它是检索线索，不是要读的内容。
+   活动名与异域武器名大量同形（「二象性」既是地牢也是异域霰弹枪），整格包进标记
+   之后不参与 check_terms.py 的 G6 正查，不会被染成武器名。 */
+.gen td.src {
+  font-size: 12.5px;
+  line-height: 1.8;
+  text-align: left;
+}
+
+/* 三列数值：等宽数字右对齐，位数对齐才一眼比得出大小。
+   **按整格标记认，不按列序认**——白弹的表只有 10 列，末列是评级理由，
+   nth-child(10) 会把整段正文右对齐。 */
+.gen td.num {
+  color: var(--bone-hi);
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* 备注：只有 14 列的宽表才有这一格，白弹的表数不到第 13 列。不给 color，理由同上。 */
+.gen tbody td:nth-child(13) {
+  font-size: 12.5px;
+  line-height: 1.8;
+  text-align: left;
+}
+
+/* 评级理由：这一页的正文，末列，吃掉剩下的宽度。不给 color，理由同上。 */
+.gen tbody td:last-child {
+  font-size: 13.5px;
+  line-height: 1.95;
+  text-align: left;
+}
