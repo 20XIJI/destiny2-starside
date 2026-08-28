@@ -764,14 +764,17 @@ main {
 
 .gen tbody tr[data-band="1"] > th[scope="row"] { background: var(--tint-3); }
 
+/* 表格里的图标一律 6px 圆角。**一处定义**：这条曾散在 11 份页面样式表里，
+   还分成 2px 与 3px 两个值——同一样东西在不同页面圆得不一样，读者认得出来。
+   **`th` 与 `td` 一起写。**表头与行标题里也有图标（三页共 40 枚），只写 `td`
+   会让同一张表里表头方角、正文圆角。方形的槽位图在 elements/style.css 里
+   覆盖回 0，那是有意的例外。 */
+.gen td img,
+.gen th img { border-radius: 6px; }
+
 /* 空格子不留空白：空白读作「这里漏了」，一道发丝短横读作「确认没有」。
    inline-block 让短横跟着本列的 text-align 走。用 ::after 生成，不进 HTML 文本，
    因此不参与保真比对。 */
-/* 表格里的图标一律 6px 圆角。**一处定义**：这条曾散在 11 份页面样式表里，
-   还分成 2px 与 3px 两个值——同一样东西在不同页面圆得不一样，读者认得出来。
-   方形的槽位图在 elements/style.css 里覆盖回 0，那是有意的例外。 */
-.gen td img { border-radius: 6px; }
-
 .gen tbody td:empty::after {
   content: "";
   display: inline-block;

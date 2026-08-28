@@ -662,9 +662,13 @@
       tag.src = 'assets/search.js';
       tag.onload = function () {
         index = window.starsideIndex;
+        /* **判据与 draw() 里那一处必须是同一个。**那边按 `!r.n` 分页面与条目，
+           这边若改按 `r.d` 分，两个字段都为空的记录就走不到 `_t` 这一支，
+           draw() 拿到 undefined 当正文，整只搜索框当场抛错。 */
         index.forEach(function (r) {
-          if (r.d) { pages[r.u] = r; r._t = (r.t + ' ' + r.d).toLowerCase(); }
-          else { r._n = (r.n || '').toLowerCase(); r._x = (r.x || '').toLowerCase(); }
+          if (!r.n) { r._t = ((r.t || '') + ' ' + (r.d || '')).toLowerCase(); }
+          else { r._n = r.n.toLowerCase(); r._x = (r.x || '').toLowerCase(); }
+          if (r.d) pages[r.u] = r;
         });
         draw();
       };
@@ -755,7 +759,12 @@
     /* 索引 287 KB gzip。只在聚焦时拉的话，读者点进搜索框敲第一个字要干等它下完；
        页面加载完之后趁空闲预取，想搜的时候已经在内存里。排在 load 之后、空闲时段
        里，首屏不受影响。上面那条 focus 留着兜底——空闲回调可能一直不来。 */
-    var idle = window.requestIdleCallback || function (fn) { return setTimeout(fn, 1200); };
+    /* **timeout 必须给。**空闲回调没有「一定会来」的保证——页面持续有活干时它会被
+       一直推后，预取就白写了。给 3 秒上限，到点无论闲不闲都拉。 */
+    function idle(fn) {
+      if (window.requestIdleCallback) requestIdleCallback(fn, { timeout: 3000 });
+      else setTimeout(fn, 1200);
+    }
     if (document.readyState === 'complete') idle(load);
     else addEventListener('load', function () { idle(load); });
   }

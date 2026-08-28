@@ -766,7 +766,8 @@ def build(slug):
     out, title = render(md, slug)
     check(md, out, slug)
     # 有图却没写「首屏图标：」时静默退回 0，首屏那几张就全带上 loading="lazy"，
-    # 要等布局算完才开始下载。buff-debuffs 曾这样漏了 118 张，页面看不出异样。
+    # 要等布局算完才开始下载。漏写与「写 0」产出完全一样，页面上看不出区别，
+    # 所以这一位必须由源稿明说：新页面的作者要么量过首屏、要么确认首屏没有图。
     if ICONS.refs and not eager:
         die('%s 有 %d 处图标引用，源稿要写「首屏图标：N」'
             '（首屏放不下就写 0）' % (slug, ICONS.refs))
