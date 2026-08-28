@@ -116,3 +116,13 @@
 
 /* 表头：六列都短，不折行 */
 .gen thead th { white-space: nowrap; }
+
+/* 屏外的分节不参与布局与绘制：这一页约 16100px 高，一屏只看得到其中一节。
+   套在 .block 上而不是 .gen tr 上——content-visibility 对表格内部元素不生效。
+   这一页没有 sticky 后代，paint containment 不会裁到谁。
+   contain-intrinsic-size 的 auto 让浏览器渲染过一次后改用真实高度，那个数只是
+   从没渲染过时的初始估值，不必跟着内容维护；现值取 1600px 宽下各节高度的中位数。 */
+.block {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 2600px;
+}
