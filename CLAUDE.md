@@ -178,7 +178,7 @@ python3 tools/convert-armor-sets.py --icons <英文原表导出.html>
 
 `tools/convert-doc.py` 是通用的一篇 markdown 一个页面：`references/docs/<slug>.md` → `<slug>/index.html`。加一篇资料就是往 `references/docs/` 丢一个 .md、建好输出目录与 `style.css`、跑一次脚本，再去首页 `index.html` 加一张卡片。`check_shell.py` 从 `references/docs/` 现扫页面清单，不必回去登记。前两个生成器各自绑定一种数据形状（神器/模组/档位、分类/套装/2 件 4 件），这一个不绑，走的是通用文档结构。
 
-排版按 `design.md` 第四节：版心一档写在页面表的 `:root { --wrap: … }` 上（连续阅读 760px、宽表 1060px、全量宽表 1500px），表格一律 `width: auto` + `margin-inline: auto` 按内容定宽再居中。
+排版按 `design.md` 第四节：版心一档写在页面表的 `:root { --wrap: … }` 上（连续阅读 760px、宽表 1060px、全量宽表 1500px），表格走满版心，同一页里列形相同的几张表用 `table-layout: fixed` 把列宽对齐。
 
 **给整格上色的 CSS 别写在 `td` 上。**整格只有一个 `{标记|…}` 时 class 落在 `<td>` 本身（见下条），此时 `.gen tbody td:last-child` 这类三选择器会以权重压过单类的 `.amp`，整列着色静默退成默认色。基色给 `tbody` 由继承落下来，格子选择器只管排版，两者就不争同一个元素。`boss-hp/style.css` 里记着这条。
 
