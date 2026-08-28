@@ -91,7 +91,21 @@ def meta_line(keys):
 
 
 def img_size(data):
-    """PNG / JPEG 的宽高，从文件头现读，不在源稿里重复记一遍尺寸。"""
+    """PNG / JPEG / WebP 的宽高，从文件头现读，不在源稿里重复记一遍尺寸。"""
+    if data[:4] == b'RIFF' and data[8:12] == b'WEBP':
+        # WebP 三种码流各自把尺寸放在不同位置。VP8L 与 VP8X 存的是「减一」的值，
+        # VP8 存的是原值——按同一条规则读会让有损那一支整批少一像素。
+        tag = data[12:16]
+        if tag == b'VP8 ':                             # 有损：帧头 keyframe 起第 6 字节
+            return (int.from_bytes(data[26:28], 'little') & 0x3FFF,
+                    int.from_bytes(data[28:30], 'little') & 0x3FFF)
+        if tag == b'VP8L':                             # 无损：14 位宽 + 14 位高，紧挨着打包
+            n = int.from_bytes(data[21:25], 'little')
+            return (n & 0x3FFF) + 1, ((n >> 14) & 0x3FFF) + 1
+        if tag == b'VP8X':                             # 扩展（带 alpha 或动画）：各 24 位
+            return (int.from_bytes(data[24:27], 'little') + 1,
+                    int.from_bytes(data[27:30], 'little') + 1)
+        die('WebP 的第一个块是 %r，认不出尺寸' % tag)
     if data[:8] == b'\x89PNG\r\n\x1a\n':
         if data[12:16] != b'IHDR':
             die('PNG 的第一个块不是 IHDR，取不到尺寸')
@@ -107,7 +121,7 @@ def img_size(data):
                         int.from_bytes(data[i + 5:i + 7], 'big'))
             i += 2 + int.from_bytes(data[i + 2:i + 4], 'big')
         die('JPEG 里没找到 SOF 段，取不到尺寸')
-    die('只认得 PNG 与 JPEG，这个文件都不是')
+    die('只认得 PNG、JPEG 与 WebP，这个文件都不是')
 
 
 def blocks_of(chunk):

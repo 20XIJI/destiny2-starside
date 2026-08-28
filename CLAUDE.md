@@ -139,7 +139,7 @@ pyright tools/*.py
 
 改了分节数、模组数一类的结构，同步改文件头的 `N_*` 常量，不要放宽比对。
 
-图标已压在 `artifact-mods/icons/` 里，按文件名引用，宽高从 PNG 的 IHDR 现读，不在源稿里重复记。改动后确认 `git status --porcelain artifact-mods/icons/` 为空。
+图标已压在 `artifact-mods/icons/` 里，按文件名引用，宽高从文件头现读，不在源稿里重复记。改动后确认 `git status --porcelain artifact-mods/icons/` 为空。
 
 ## 护甲套装页
 
@@ -245,7 +245,7 @@ app.js 按表头文本找列、按首格开头的两位时刻找行（首列写�
 | 头部一行 `列组：组名 = 列名、列名 …` | 该组各列的 `<thead> th` 带上 `data-g`，`app.js` 据此在工具条上建列组开关 |
 | 头部的 `默认列组：`／`互斥列组：` | 落成 `.toolbar` 上的 `data-cols`／`data-solo`，前者是加载时打开的组，后者是一次只能开一组的那几组 |
 | `**粗**` `*强调*` `[文字](链接)` | `<strong>` `<em>` `<a>`，`http` 开头的自动带 `target="_blank" rel="noopener"` |
-| `![](icons/xxx.png)` | `<img src alt="" width height>`，宽高从文件头现读，文件名须是内容的 md5 前 10 位 |
+| `![](icons/xxx.webp)` | `<img src alt="" width height>`，宽高从文件头现读，文件名须是内容的 md5 前 10 位 |
 | `{token\|文字}` | `<span class="token">`，token 即 `assets/site.css` 或页面样式表里的类名，可嵌套 |
 | 单元格里的 `\\` | `<br>`。一行源稿就是一行表格，格内换行只能靠标记；选 `\\` 是因为中文正文、数值与链接里都不会出现它——用 `//` 会把链接里的 `https://` 一并切开 |
 
@@ -382,8 +382,10 @@ G3 钉住 `{act|…}` 的类定义。
    事后不必再联网，量级从几十 KB 涨到 1 MB 上下。取不到的记进 `imagesFailed`。
 2. **核对与手改走 `python3 tools/json2xlsx.py <抓取的.json>`。**文本按原行列写回，
    图直接吃内联的 base64 嵌回原坐标；改完的 xlsx 用 `openpyxl` 读回来生成源稿。
-3. **图片按内容 md5 命名，放 `<页目录>/icons/`。**同一枚图已在别的页面出现过时，
-   直接复制那个文件过来——文件名即内容 md5，两页因此引的是同一枚图。
+3. **图片转成 WebP，按内容 md5 命名，放 `<页目录>/icons/`。**编码参数固定
+   `cwebp -q 82 -alpha_q 100`，哈希按编码之后的字节算——先编码再命名，顺序反了
+   文件名对不上内容。同一枚图已在别的页面出现过时，直接复制那个文件过来：
+   文件名即内容 md5，两页因此引的是同一枚图。
 4. **源稿落在 `references/docs/<slug>.md`**，其余按《资料文档页》那一节办。
 
 ### 为什么不用 SingleFile

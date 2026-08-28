@@ -22,7 +22,7 @@ armor-sets/
 artifact-mods/
   index.html                      神器模组组件（由转换脚本生成，勿手改）
   style.css                       该组件专属样式
-  icons/*.png                     133 个模组图标
+  icons/*.webp                    133 个模组图标
 ammo/
   index.html                      弹药生成机制（由转换脚本生成，勿手改）
   style.css                       该组件专属样式
@@ -32,7 +32,7 @@ boss-hp/
 weapon-frames/
   index.html                      武器框架（由转换脚本生成，勿手改）
   style.css                       该组件专属样式
-  icons/*.png|jpg                 121 枚框架、示例武器与勇士图标（49px，共 189 KB）
+  icons/*.webp                    121 枚框架、示例武器与勇士图标（49px，共 104 KB）
 twisted-planet/
   index.html                      扭曲星球速查表（由转换脚本生成，勿手改）
   style.css                       该组件专属样式
@@ -45,7 +45,7 @@ elements/
   {arc,solar,void,stasis,strand,prismatic}/
     index.html                    六个元素页（由转换脚本生成，勿手改）
     style.css                     只有一行 --accent：本页的元素色相
-    icons/*.png|jpg               该页图标，按内容哈希命名（六页共 380 枚）
+    icons/*.webp                  该页图标，按内容哈希命名（六页共 398 枚）
 references/
   artifact-mods.md                神器模组页源稿
   armor-sets.md                   护甲套装页源稿
@@ -80,15 +80,16 @@ npm start          # npx serve . -l 3000
 
 | 匹配 | 浏览器缓存 | 换内容时会怎样 |
 |---|---|---|
-| 文件夹 `/artifact-mods/icons` | 1 年 | 文件名是内容哈希，改内容必然换名，读者立刻拿到新图 |
+| 后缀 `.webp`、`.png`、`.jpg` | 1 年 | 文件名是内容哈希，改内容必然换名，读者立刻拿到新图 |
+| 文件夹 `/armor-sets/icons` | 7 天 | 序号命名，同名替换后最多 7 天才全员生效。这一条比上一条更具体，覆盖它 |
 | 文件夹 `/assets/fonts` | 1 年 | 同名替换会让读者看一年的旧字体，**换字体必须连带改文件名** |
-| 文件夹 `/weapon-frames/icons` | 1 年 | 文件名是内容哈希，改内容必然换名，读者立刻拿到新图 |
-| 文件夹 `/elements/*/icons` | 1 年 | 同上，六个元素页共 380 枚 |
-| 文件夹 `/armor-sets/icons` | 7 天 | 序号命名，同名替换后最多 7 天才全员生效 |
 | 后缀 `.css`、`.js` | 5 分钟 | 5 分钟内生效 |
 | 后缀 `.html` | 0 | 立刻生效 |
 
-前三条覆盖约 800 KB，回访时完全不再请求。
+**图片按后缀匹配，不逐个目录列。**17 个 `icons/` 目录合计 10.4 MB，除 `armor-sets/`
+外全部内容哈希命名，判据一致；逐个列会让每加一页就得回来登记一次，漏登记的那些回访时
+重下（这张表曾只覆盖 4 个目录、约 800 KB，另外 8 MB 在规则外）。按后缀一条盖住全部，
+新增页面自动生效。加上字体，回访时完全不再请求。
 
 ### 换图
 
@@ -146,7 +147,7 @@ python3 tools/convert-artifact-mods.py
 
 `标签（站点补充）` 与 `标签` 的区别只在产出侧留痕：前者带 `data-source="site"`，标明该分节的标签不来自原表格。同一分节两者只能写一个。
 
-图标已压在 `artifact-mods/icons/` 里，按内容哈希命名，生成器按文件名引用，宽高从 PNG 的 IHDR 现读。
+图标已压在 `artifact-mods/icons/` 里，按内容哈希命名，生成器按文件名引用，宽高从文件头现读。
 
 自检覆盖的项与当前期望值：
 
