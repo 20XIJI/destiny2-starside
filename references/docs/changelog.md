@@ -1,8 +1,21 @@
 # 更新日志
 
 描述：Starside 各资料页的内容改动记录，按日期倒序，每条写明改动类型、所在页面与改动内容。
-更新：2026.8.28
+更新：2026.8.30
 页脚：改动类型只有三种：新增、改动、订正。
+
+## 2026.8.30
+
+- {act|订正}全站：术语对照游戏内文本改正，52 个词共 235 处
+- {act|订正}[异域武器详解](../exotic-weapon/index.html)：13 个机制名改为游戏内写法
+- {act|订正}[异域护甲详解](../exotic-armor/index.html)：永劫的三个分支改为「学派」
+- {act|订正}[刷取清单-传说武器](../legendary-weapons/index.html)：获取地点改为游戏内的副本与活动名
+- {act|订正}[武器 PERK](../weapon-perks/index.html)：8 个机制名改为游戏内写法
+- {act|订正}[烈日](../elements/solar/index.html) · 烈焰之歌：手雷改为「烈焰火苗」
+- {act|订正}[虚空](../elements/void/index.html) · 暗影箭矢：锚上的状态改为「束缚」
+- {act|订正}[冰影](../elements/stasis/index.html) · 沉默狂啸：第二把镰刃改为「狂啸」
+- {act|订正}全站：Xûr 改为游戏内的「仄」，8 处
+- {act|订正}全站：{health|生命值}见底的状态改为「重伤」，28 处
 
 ## 2026.8.28
 
@@ -48,7 +61,7 @@
 
 - {act|新增}[切枪 DPS 排行](../swap-dps/index.html)：198 组切枪配装的爆发输出，按切枪 DPS 降序
 - {act|新增}[Raid 攻略](../raid-guides/index.html)：众神殿与十座突袭的图文攻略，12 张卡
-- {act|新增}[锻造武器来源](../crafting/index.html)：老九、目的地、异域任务、地牢与突袭共 40 处来源
+- {act|新增}[锻造武器来源](../crafting/index.html)：仄、目的地、异域任务、地牢与突袭共 40 处来源
 - {act|新增}[数据源与鸣谢](../sources/index.html)：全站数值出处与贡献者汇总，7 处来源、5 位贡献者
 - {act|新增}[异域护甲详解](../exotic-armor/index.html) · 职业金：36 枚异域职业物品之灵，按通用与三职业分组
 - {act|改动}首页：各页页脚统一成三段——本页口径、数据源、特别鸣谢

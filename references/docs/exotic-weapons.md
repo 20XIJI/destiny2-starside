@@ -1,7 +1,7 @@
 # 刷取清单-异域武器
 
 描述：83 把异域武器的输出、清怪与高难评级，含实测总伤与 DPS，以及每一档评级的理由。
-更新：2026.8.19
+更新：2026.8.30
 鸣谢：[小棒猪-LGpig](https://space.bilibili.com/169548478) 整理全部评级、数值与评语。
 数据源：[刷取清单](https://docs.google.com/spreadsheets/d/1qsKGrRzCePGaIM5gNtAQNh949d3OsMJ6qV6Fqtpj22k/htmlview)
 首屏图标：6
@@ -93,5 +93,5 @@
 | 流明 | {ico|![](icons/81869903b2.webp)} | 特殊用途 |  |  | {champ|![](icons/8b37bb6db2.webp)} | 在没有汇编腿的情况给予队友高尚弹药 35% 增伤也有{exotic|流明}勾爪的玩法 |  |  |
 | 救赎之握 | {ico|![](icons/1b3b75e16c.webp)} | 特殊用途 |  |  | {champ|![](icons/8b37bb6db2.webp)} | oob 造地形、卡出生点 |  |  |
 | 蝎狮 | {ico|![](icons/f68ae9985f.webp)} | 特殊用途 |  |  | {champ|![](icons/8b37bb6db2.webp)} | 本身伤害一般，但能让任何伤害在滞空时触发{exotic|蝎狮}的{el-void|虚空覆盖护盾}，比较合适的有{exotic|黎明副歌}火术 |  |  |
-| 冥府三头犬+1 | {ico|![](icons/b4197527a0.webp)} | 特殊用途 |  |  | {champ|![](icons/8b37bb6db2.webp)} | 在万神殿卡鲁斯关内场使用可以用于清理卡鲁斯吐出的骷髅头，本身也有一定清怪能力 |  |  |
+| 冥府三头犬+1 | {ico|![](icons/b4197527a0.webp)} | 特殊用途 |  |  | {champ|![](icons/8b37bb6db2.webp)} | 在众神殿卡鲁斯关内场使用可以用于清理卡鲁斯吐出的骷髅头，本身也有一定清怪能力 |  |  |
 | 邪恶符咒 | {ico|![](icons/5201f8c4a5.webp)} | 特殊用途 |  |  | {champ|![](icons/b7c4048b87.webp)} | 刷大招 |  |  |

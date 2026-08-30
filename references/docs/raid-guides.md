@@ -1,7 +1,7 @@
 # Raid 攻略
 
 描述：突袭与众神殿的图文攻略，一张卡一份文档，点开跳转到腾讯文档。
-更新：2026.8.23
+更新：2026.8.30
 鸣谢：[遗忘Melt](https://space.bilibili.com/3706960595650983) 编写并维护全部图文攻略。
 首屏图标：6
 
@@ -10,7 +10,7 @@
 攻略：众神殿 | icons/e13af8584d.webp | https://docs.qq.com/doc/DQ2ZKcENkWVRUYkRx
 攻略：永恒沙漠（史诗） | icons/5e288f828f.webp | https://docs.qq.com/doc/DQ0xZZWNGRVdNeW10
 攻略：永恒沙漠 | icons/e536a72f5c.webp | https://docs.qq.com/doc/DQ21BU3pZd1B5Qmp6
-攻略：救赎边缘 | icons/61c6576365.webp | https://docs.qq.com/doc/DQ21GY3BIV3ZJa1hz
+攻略：救赎的边缘 | icons/61c6576365.webp | https://docs.qq.com/doc/DQ21GY3BIV3ZJa1hz
 攻略：克洛塔的末日 | icons/a890626de0.webp | https://docs.qq.com/doc/DQ0x6b3FXcnp1TGtP | 修订中
 攻略：梦魇根源 | icons/69e0c96eb4.webp | https://docs.qq.com/doc/DQ0RORUpxRWJ3SmFG | 修订中
 攻略：国王的陨落 | icons/bb815bae2f.webp | https://docs.qq.com/doc/DQ2hTZkpKbVpuTEV5

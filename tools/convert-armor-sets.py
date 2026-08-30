@@ -319,7 +319,7 @@ def render(cats: list[Category]) -> str:
             parts.append('</article>\n')
         parts.append('</section>\n')
     parts.append('</main>\n\n' + shell.foot(
-        '2026.8.28', shell.unsure_note('?'),
+        '2026.8.30', shell.unsure_note('?'),
         source=shell.COMPENDIUM_SRC, thanks='Flamia#5238 提供部分翻译与排版。'))
     return ''.join(parts)
 
