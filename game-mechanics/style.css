@@ -218,6 +218,17 @@
 .gen:not(:has(thead th:nth-child(3))):not(:has(tr.lane)) th,
 .gen:not(:has(thead th:nth-child(3))):not(:has(tr.lane)) td { text-align: center; }
 
+/* ── 三列数值表（重点提示的伤害倍率）──
+   一个光等差对两个倍率，与上面那几张两列数值表同一套读法，整表居中。
+
+   **另外三张三列表按 td.ico 排除，不按列数排除。**护甲属性、活动修改器、战斗人员
+   祸因的第二格是源稿写的 {ico|…}，末列是左对齐的说明正文；只按「三列」认会把它们
+   一并居中，说明那一列每行的起点就各在一处了。 */
+.gen:has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))):not(:has(td.ico)) th,
+.gen:has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))):not(:has(td.ico)) td {
+  text-align: center;
+}
+
 /* 屏外的分节不参与布局与绘制：这一页约 22600px 高，一屏只看得到其中一节。
    套在 .block 上而不是 .gen tr 上——content-visibility 对表格内部元素不生效。
    这一页没有 sticky 后代，paint containment 不会裁到谁。
