@@ -1839,6 +1839,9 @@ body:has(.hero) {
 /* li 得是容器，里面的 <a> 才会撑满那一格——否则等高的是 li，卡片照旧参差 */
 .entries > li { display: grid; }
 
+/* 一组之首那张统领全组的卡横跨两列，读作组的入口而不是并列的第 n 项 */
+.entries > li.wide { grid-column: 1 / -1; }
+
 /* 条目按游戏内物品框来读：左侧节点图标 + 名称与类型行 + 右侧数值。
    右上切角与左缘亮边是框的形状语言，切角靠 ::before 单独画——
    clip-path 会把 border 一起裁掉。 */

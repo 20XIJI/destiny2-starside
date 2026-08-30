@@ -14,7 +14,7 @@
 | MossyMax 的 [Destiny 2 Damage Scaling Spreadsheet](https://docs.google.com/spreadsheets/d/1b57Hb8m1L3daFfUckQQqvvN6VOpD03KEssvQLMFpC5I/edit) | {enemy|战斗人员}伤害倍率与光等差伤害曲线 | [{enemy|战斗人员}倍率](../combatant-scalars/index.html)、[压光伤害](../power-delta/index.html) |
 | CourtProjects 的 [Destiny 2 Damage Buffs/Debuffs](https://docs.google.com/spreadsheets/u/0/d/1i1KUwgVkd8qhwYj481gkV9sZNJQCE-C3Q-dpQutPCi4/htmlview) | {buff|增益}与易伤的数值、持续时间与叠加规则 | [增伤 & 易伤](../buff-debuffs/index.html) |
 | [Destiny 2: Endgame Analysis](https://docs.google.com/spreadsheets/d/1JM-0SlxVDAi-C6rGVlLxa-J1WGewEeL8Qvq4htWZHhY) | 武器框架的伤害、射速、DPS 与评分 | [武器框架](../weapon-frames/index.html) |
-| [刷取清单](https://docs.google.com/spreadsheets/d/1qsKGrRzCePGaIM5gNtAQNh949d3OsMJ6qV6Fqtpj22k/htmlview) | {exotic|异域}武器与传说武器的输出、清怪与高难评级 | [刷取清单-{exotic|异域}武器](../exotic-weapons/index.html)、[刷取清单-传说武器](../legendary-weapons/index.html) |
+| [刷取清单](https://docs.google.com/spreadsheets/d/1qsKGrRzCePGaIM5gNtAQNh949d3OsMJ6qV6Fqtpj22k/htmlview) | {exotic|异域}武器与传说武器的输出、清怪与高难评级 | [刷取清单-{exotic|异域}武器](../exotic-weapons/index.html)、[刷取清单-白弹紫枪](../legendary-primary/index.html)、[刷取清单-绿弹紫枪](../legendary-special/index.html)、[刷取清单-威能紫枪](../legendary-heavy/index.html) |
 | [DIM 社区](https://discord.com/channels/591927598255439873/1453807417430245518) | 弹药生成的测试支持 | [弹药生成机制](../ammo/index.html) |
 | Aegis 的 [Destiny 2: Boss Damage](https://docs.google.com/spreadsheets/u/0/d/1_5wtBjRYHHxuF4oJKDb_iOGZs-wTkzB6RYbnyNLbuz4/htmlview) 技能分页 | 手雷、近战、超能与杂项技能的单次伤害实测 | [技能伤害排行](../skill-damage/index.html) |
 | Clarity 的 [Chunk Energy Scalars](https://www.d2clarity.com/blog/destiny-science-6/chunk-energy-scalars-breakdown-12) | 整块系数的分档规则、职业物品模组的第二层系数与例外 | [游戏机制](../game-mechanics/index.html) |
@@ -25,7 +25,7 @@
 
 | 贡献者 | 贡献 | 页面 |
 |---|---|---|
-| [小棒猪-LGpig](https://space.bilibili.com/169548478) | 整理全部评级、数值与评语 | [刷取清单-{exotic|异域}武器](../exotic-weapons/index.html)、[刷取清单-传说武器](../legendary-weapons/index.html) |
+| [小棒猪-LGpig](https://space.bilibili.com/169548478) | 整理全部评级、数值与评语 | [刷取清单-{exotic|异域}武器](../exotic-weapons/index.html)、[刷取清单-白弹紫枪](../legendary-primary/index.html)、[刷取清单-绿弹紫枪](../legendary-special/index.html)、[刷取清单-威能紫枪](../legendary-heavy/index.html) |
 | [両儀式織](https://space.bilibili.com/2135345999) | 整理全部注解并校对数值 | [DPS 排行](../dps/index.html)、[切枪 DPS 排行](../swap-dps/index.html)、[技能伤害排行](../skill-damage/index.html) |
 | [MossyMax](https://docs.google.com/spreadsheets/d/1b57Hb8m1L3daFfUckQQqvvN6VOpD03KEssvQLMFpC5I/edit) | 实测并整理全部压光数值 | [压光伤害](../power-delta/index.html) |
 | [遗忘Melt](https://space.bilibili.com/3706960595650983) | 编写并维护全部图文攻略 | [Raid 攻略](../raid-guides/index.html) |

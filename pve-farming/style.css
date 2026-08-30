@@ -1,0 +1,6 @@
+/* PVE 终局刷取指南：整页只有指向另外三页的卡片，版式全部来自 /assets/site.css 的 .entries。
+   这一页由 tools/convert-doc.py 从 references/docs/pve-farming.md 生成，
+   改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
+
+/* 卡片网格恒为两列 560 + 沟 24，版心与最小内容宽度照首页那一套给 */
+:root { --wrap: 1144px; --min: 1188px; }

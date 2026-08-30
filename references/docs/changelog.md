@@ -6,10 +6,16 @@
 
 ## 2026.8.30
 
+- {act|新增}[PVE 终局刷取指南](../pve-farming/index.html)：锻造武器来源与两份刷取清单归入一页
+
+- {act|改动}刷取清单-传说武器拆成白弹、绿弹、威能三页
+
+- {act|改动}首页：「副本与刷取」改名为「攻略与工具」，终局分析归入档案之后
+
 - {act|订正}全站：术语对照游戏内文本改正，52 个词共 235 处
 - {act|订正}[异域武器详解](../exotic-weapon/index.html)：13 个机制名改为游戏内写法
 - {act|订正}[异域护甲详解](../exotic-armor/index.html)：永劫的三个分支改为「学派」
-- {act|订正}[刷取清单-传说武器](../legendary-weapons/index.html)：获取地点改为游戏内的副本与活动名
+- {act|订正}刷取清单-传说武器：获取地点改为游戏内的副本与活动名
 - {act|订正}[武器 PERK](../weapon-perks/index.html)：8 个机制名改为游戏内写法
 - {act|订正}[烈日](../elements/solar/index.html) · 烈焰之歌：手雷改为「烈焰火苗」
 - {act|订正}[虚空](../elements/void/index.html) · 暗影箭矢：锚上的状态改为「束缚」
@@ -19,7 +25,7 @@
 
 ## 2026.8.28
 
-- {act|新增}[刷取清单-传说武器](../legendary-weapons/index.html)：200 把传说武器的评级、框架、推荐 Perk 与获取地点
+- {act|新增}刷取清单-传说武器：200 把传说武器的评级、框架、推荐 Perk 与获取地点
 - {act|改动}[数据源与鸣谢](../sources/index.html)：刷取清单一条补上传说武器页
 - {act|订正}[锻造武器来源](../crafting/index.html) · 暗屋之声：「亡者信使」→「{exotic|死亡信使}」
 - {act|订正}[护甲套装](../armor-sets/index.html) · 传承之誓：4 件效果的导弹伤害改为按职业区分
