@@ -17,6 +17,8 @@
                 标签只在段首显形，交错着写会渲出一串空标签。
   G7 色板齐全   配色总览页列的渲染色与着色类，必须与 site.css 现有的逐条相等——
                 两个方向都管：改了 :root 的色号忘了改源稿、加了新 token 忘了上页。
+                认哪些类算着色类见 tint_classes()：源稿里写得出 {name|…} 的才算，
+                外壳与组件的类照样引强调色，但它们写不进源稿，不进色板页。
   G6 该着色的都着了 tools/items.json 里的词、items.py 的 MECH（元素机制名），以及
                 下面 TERMS 里定了 token 的术语，正文里出现就得着色；已着色的那些
                 token 还必须与库里的归属一致。「骨灰余烬」属烈日、「连锁闪电」属电弧
@@ -188,6 +190,31 @@ def classes_in(css):
     return set(re.findall(r'\.([a-zA-Z][\w-]*)', re.sub(r'/\*.*?\*/', '', css, flags=re.S)))
 
 
+def tint_classes(css):
+    """单类规则里设了 color: var(…) 的那些 → (它引的 token, 规则体是否只有这一条)。
+    判据只此一处，G3 与 G7 共用，两条各取所需的那一半。
+
+    **「规则体只有 color」不等于「是着色类」，两件事都要。**只负责染色、别的什么
+    都不做的规则一定是个 token（G3 据此认出没人用的死配置）；但真 token 也可以
+    多写一行版式——.note 带 font-weight、.unsure 带虚下划线——所以 G7 不能只认
+    这一种，它另按「源稿里被写成过 {name|…}」来认。反过来，外壳与组件的类照样
+    引强调色（首屏那枚发电能量核 .pledge 静置就是 var(--accent)），它们写不进
+    源稿，因此不进色板页。
+
+    选择器之间只认逗号，不认空格——.site-nav .sep 那种后代选择器不是着色类。
+    **先剥注释**，注释里的示例规则不是定义。"""
+    out = {}
+    plain = re.sub(r'/\*.*?\*/', '', css, flags=re.S)
+    for m in re.finditer(r'(?:^|\n)((?:\.[\w-]+,\s*)*\.[\w-]+)\s*\{([^}]*)\}', plain):
+        hit = re.search(r'color:\s*var\(--([\w-]+)\)', m.group(2))
+        if not hit:
+            continue
+        sole = not re.sub(r'color:\s*var\(--[\w-]+\);?', '', m.group(2)).strip()
+        for cls in re.findall(r'\.([\w-]+)', m.group(1)):
+            out[cls] = (hit.group(1), sole)
+    return out
+
+
 def sources():
     """[(源稿相对路径, 该页能用的 class 集合)]。"""
     site = read('assets/site.css')
@@ -253,12 +280,11 @@ def check_tokens(pairs, site, bad):
                            % (rel, at_line(md, m.start()), m.group(1)))
     # 护甲套装页走词表，token 写在生成器里
     used |= set(re.findall(r"\('[^']+', '([\w-]+)'\)", read('tools/convert-armor-sets.py')))
-    # site.css 里只设 color 的单类即着色类；一次都没被用到就是死配置。
-    # 选择器之间只认逗号，不认空格——.site-nav .sep 那种后代选择器不是着色类。
-    for m in re.finditer(r'(?:^|\n)((?:\.[\w-]+,\s*)*\.[\w-]+)\s*\{\s*color: var\(--[\w-]+\);?\s*\}', site):
-        for cls in re.findall(r'\.([\w-]+)', m.group(1)):
-            if cls not in used:
-                bad.append('G3 assets/site.css 的 .%s 一次都没被用到，删掉或改写' % cls)
+    # 只负责染色、别的什么都不做的单类规则一定是个 token；没人用就是死配置。
+    for cls, (_, sole) in tint_classes(site).items():
+        if sole and cls not in used:
+            bad.append('G3 assets/site.css 的 .%s 一次都没被用到，删掉或改写' % cls)
+    return used
 
 
 def check_stamps(bad):
@@ -339,30 +365,26 @@ def check_acts(bad):
 PALETTE = os.path.join(DOC_DIR, 'palette.md')
 
 
-def palette_of(site):
+def palette_of(site, used):
     """site.css 现有的 (渲染色 → 色号, 着色类 → 渲染色)。判据现取，不硬编码名单：
-    着色类即单类规则里 color 引到语义 token 或渲染色的那些——外壳与 UI 的类引的是
-    骨白灰阶，自动落在外面；--accent 没有对应的类，同样落在外面。"""
+    着色类由 tint_classes() 认，再按 used 收一道——源稿里写得出 {name|…} 的才算，
+    外壳与组件的类因此落在外面。语义 token 在这里顺着 :root 的 var 链解到渲染色，
+    解不到 --c-* 的（外壳那些骨白灰阶）同样落在外面。"""
     root = site.split(':root {', 1)[1].split('\n}', 1)[0]
-    plain = re.sub(r'/\*.*?\*/', '', site, flags=re.S)
     hexes = dict(re.findall(r'--(c-[\w-]+):\s*(#[0-9a-f]{3,8})\s*;', root))
     links = dict(re.findall(r'--([\w-]+):\s*var\(--([\w-]+)\)\s*;', root))
     classes = {}
-    for m in re.finditer(r'(?:^|\n)((?:\.[\w-]+,\s*)*\.[\w-]+)\s*\{([^}]*)\}', plain):
-        hit = re.search(r'color:\s*var\(--([\w-]+)\)', m.group(2))
-        if not hit:
-            continue
-        base = links.get(hit.group(1), hit.group(1))
-        if base in hexes:
-            for cls in re.findall(r'\.([\w-]+)', m.group(1)):
-                classes[cls] = base
+    for cls, (token, _) in tint_classes(site).items():
+        base = links.get(token, token)
+        if cls in used and base in hexes:
+            classes[cls] = base
     return hexes, classes
 
 
-def check_palette(site, bad):
+def check_palette(site, used, bad):
     # 页面专属那一节的类定义在各页样式表里，不归 site.css 管，比对到那里为止。
     md = read(PALETTE).split('## 页面专属')[0]
-    want_hex, want_cls = palette_of(site)
+    want_hex, want_cls = palette_of(site, used)
     got_hex = dict(re.findall(r'^\| --(c-[\w-]+) \| (#[0-9a-f]{3,8}) \|', md, re.M))
     got_cls = dict(re.findall(r'^\| \{([\w-]+)\|[^}]*\} \| --(c-[\w-]+) \|', md, re.M))
     for name, want, got in (('渲染色', want_hex, got_hex), ('着色类', want_cls, got_cls)):
@@ -382,10 +404,10 @@ def main() -> int:
     bad: list[str] = []
 
     check_terms(SRC_FILES + [rel for rel, _ in pairs if rel.startswith(DOC_DIR)], bad)
-    check_tokens(pairs, site, bad)
+    used = check_tokens(pairs, site, bad)
     check_stamps(bad)
     check_acts(bad)
-    check_palette(site, bad)
+    check_palette(site, used, bad)
     check_items(SRC_FILES + [rel for rel, _ in pairs if rel.startswith(DOC_DIR)], bad)
 
     if bad:
