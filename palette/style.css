@@ -26,6 +26,7 @@
 .c-health,
 .c-enemy,
 .c-term,
+.c-perk,
 .c-buff,
 .c-bar-red,
 .c-bar-orange,
@@ -55,6 +56,7 @@
 .c-health { color: var(--c-health); }
 .c-enemy { color: var(--c-enemy); }
 .c-term { color: var(--c-term); }
+.c-perk { color: var(--c-perk); }
 .c-buff { color: var(--c-buff); }
 .c-bar-red { color: var(--c-bar-red); }
 .c-bar-orange { color: var(--c-bar-orange); }

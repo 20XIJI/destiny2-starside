@@ -34,6 +34,7 @@ import markup
 import shell
 
 OUT = 'tools/items.json'
+PERKS = 'tools/perks.json'
 DOC_DIR = 'references/docs'
 
 EL = {'电弧': 'el-arc', '烈日': 'el-solar', '虚空': 'el-void',
@@ -65,6 +66,12 @@ STOP = {
     # 异域 Perk「命运眷顾」的短名，但正文里的「命运」全是别的：命运终结者、
     # 命运的逆转（传说 Perk），以及游戏本身（「命运 2 购物清单」）。
     '命运',
+    # 既是克洛塔的末日那件起源特性，也是邪魔族的战斗人员名。同名撞两桶，
+    # 不按名字铺色：购物清单的起源特性列照旧写 {perk|…}，正文里各按上下文判。
+    '诅咒怨魂',
+    # 异域头盔的 Perk 名，也是神器模组施加的那个状态（刀剑那条）。两处各按
+    # 上下文着色：exotic-armor 页写 {exotic|…}，神器模组页跟着刀剑走动能。
+    '迷惑',
 }
 
 # 元素机制名：增益、减益与拾取物。它们不在 Bungie 的物品表里（那张表只有装备与
@@ -72,6 +79,10 @@ STOP = {
 # 与 items.json 合表，共用 --suggest／--apply 的跳过规则与 G6 的反查。
 # 归属取自各元素分支页的效果表，一行一个效果，token 与 check_terms.py 的 TERMS 对齐。
 MECH = {
+    # 七个元素名本身。库里没有（manifest 那张表只有装备与模组的名字），
+    # 但正文里「缚丝和虚空」与碎片、星相一样是专名，同样按元素编码着色。
+    '电弧': 'el-arc', '烈日': 'el-solar', '虚空': 'el-void', '缚丝': 'el-strand',
+    '冰影': 'el-stasis', '棱镜': 'el-prismatic', '动能': 'el-kinetic',
     '增幅': 'el-arc', '电光充能': 'el-arc', '离子轨迹': 'el-arc',
     '致盲': 'deb-arc', '震颤': 'deb-arc',
     '治愈': 'el-solar', '焕光': 'el-solar', '恢复': 'el-solar', '焰灵': 'el-solar',
@@ -107,6 +118,10 @@ GUARD = [
     '治愈裂痕',    # 术士的职业技能，不是烈日的治愈
     '迷惑爆发',    # weapon-perks 的传说 Perk，不是异域头盔那个「迷惑」
     '守护者游戏',  # 每年的活动名，不是战斗人员档位里的守护者
+    '动能震颤',    # 武器 Perk，不是电弧的震颤
+    '震颤反馈',    # 武器 Perk，同上
+    '不稳定弹药',  # 武器 Perk，不是虚空的不稳定
+    '势不可挡射击',  # 勇士机制的硬直射击，不是偃月那个同名 Perk
 ]
 
 
@@ -233,6 +248,68 @@ def perks():
     return out
 
 
+# 武器 Perk 名的词表：两个来源现扫，落成 tools/perks.json。
+#   武器 PERK 详解页的行标题     —— 站内那 400 多条 Perk 的正名
+#   购物清单四页的 Perk 名列     —— 枪管、弹匣、起源特性这些不在上一份里的名字
+# 换赛季或加了新 Perk 时跑一次 --perks 重生成。
+PERK_SRC = 'weapon-perks.md'
+# 只收这四节。固有 PERK 那一节列的是框架（重型点射、支援框架），偃月与刀剑那两节
+# 列的是机制与属性（充能效率、防御抗性）——它们在正文里是框架名与数值，不是 Perk 名。
+PERK_SECTS = ('武器 PERK', '武器模组', '重型弩机制', '起源特性')
+PERK_PAGES = ('shopping-primary.md', 'shopping-special.md',
+              'shopping-heavy.md', 'shopping-other.md')
+PERK_CELL = re.compile(r'\{perk\|([^{}]*)\}')
+
+# 两字的 Perk 名一律不入表：转向、战术、切割、瓦解、医治这些在正文里绝大多数是
+# 普通词或元素机制名，按词铺开会把动词染成 Perk 名。三字以上才收。
+PERK_MIN = 3
+
+
+def distill_perks():
+    """两个来源 → tools/perks.json。"""
+    names = set()
+    path = os.path.join(shell.ROOT, DOC_DIR, PERK_SRC)
+    with open(path, encoding='utf-8') as f:
+        lines = f.read().split('\n')
+    sect = None
+    for i, line in enumerate(lines):
+        if line.startswith('## '):
+            sect = line[3:].strip()
+        if sect not in PERK_SECTS:
+            continue
+        if not line.startswith('|') or RULE_LINE.match(line.strip()):
+            continue
+        if i + 1 < len(lines) and RULE_LINE.match(lines[i + 1].strip()):
+            continue                      # 表头行写的是列名
+        cell = line[1:row_title_end(line)].rstrip('|')
+        name = norm(re.sub(r'\{[\w-]+\|', '', cell).replace('}', '').strip())
+        if len(name) >= PERK_MIN:
+            names.add(name)
+    for page in PERK_PAGES:
+        path = os.path.join(shell.ROOT, DOC_DIR, page)
+        if not os.path.exists(path):
+            continue
+        with open(path, encoding='utf-8') as f:
+            for mo in PERK_CELL.finditer(f.read()):
+                name = norm(mo.group(1).replace('~~', '').strip())
+                if len(name) >= PERK_MIN:
+                    names.add(name)
+    names = sorted(n for n in names if n not in STOP and '|' not in n)
+    with open(os.path.join(shell.ROOT, PERKS), 'w', encoding='utf-8') as f:
+        f.write('[\n%s\n]\n' % ',\n'.join('  ' + json.dumps(n, ensure_ascii=False)
+                                            for n in names))
+    print('%s —— %d 条 Perk 名（来源：%s 与购物清单四页的 Perk 列）'
+          % (PERKS, len(names), PERK_SRC))
+
+
+def perk_names():
+    path = os.path.join(shell.ROOT, PERKS)
+    if not os.path.exists(path):
+        markup.die('%s 不存在，先跑 python3 tools/items.py --perks' % PERKS)
+    with open(path, encoding='utf-8') as f:
+        return json.load(f)
+
+
 def load():
     """{名字: (token, 分类名)}。check_terms.py 的 G6 与 --suggest 共用这一份。"""
     path = os.path.join(shell.ROOT, OUT)
@@ -249,6 +326,11 @@ def load():
     for word in perks():
         if word not in STOP:
             terms.setdefault(word, ('exotic', '异域 Perk'))
+    # 武器 Perk 名。放在库侧与异域 Perk 之后：同形时那两样更具体（「堡垒」是异域
+    # 融合步枪，不是同名的 Perk），Perk 只补上没人认领的那些。
+    for word in perk_names():
+        if word not in STOP:
+            terms.setdefault(word, ('perk', '武器 Perk'))
     # 站内术语表里定了 token 的那些，走同一条正查——「勇士」「守护者」「能量球」
     # 这类档位与拾取物不在 Bungie 的 manifest 里，此前没有任何一条闸门要求它们着色，
     # 全站因此漏了八百多处。放在这里而不是另起一条闸门：正查只有一个实现。
@@ -406,12 +488,15 @@ def main() -> int:
     args = sys.argv[1:]
     if args[:1] == ['--distill'] and len(args) == 2:
         distill(os.path.expanduser(args[1]))
+    elif args == ['--perks']:
+        distill_perks()
     elif args[:1] in (['--suggest'], ['--apply']) and len(args) <= 2:
         (suggest if args[0] == '--suggest' else apply)(
             args[1] if len(args) == 2 else None)
     else:
         print('用法：\n'
               '    python3 tools/items.py --distill <items-full.json>\n'
+              '    python3 tools/items.py --perks\n'
               '    python3 tools/items.py --suggest [slug]\n'
               '    python3 tools/items.py --apply   [slug]', file=sys.stderr)
         return 2

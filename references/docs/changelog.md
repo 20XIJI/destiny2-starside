@@ -6,6 +6,14 @@
 
 ## 2026.8.30
 
+- {act|新增}[购物清单-白弹](../shopping-primary/index.html)：356 把白弹武器的梯队评级与 Perk 池
+
+- {act|新增}[购物清单-绿弹](../shopping-special/index.html)：228 把绿弹武器的梯队评级与 Perk 池
+
+- {act|新增}[购物清单-威能](../shopping-heavy/index.html)：156 把威能武器的梯队评级与 Perk 池
+
+- {act|新增}[购物清单-其他](../shopping-other/index.html)：8 把杂项武器的梯队评级与 Perk 池
+
 - {act|新增}[PVE 终局刷取指南](../pve-farming/index.html)：锻造武器来源与两份刷取清单归入一页
 
 - {act|改动}刷取清单-传说武器拆成白弹、绿弹、威能三页

@@ -89,7 +89,7 @@
 | **镖弹风暴**\\包括发射伤害 | {ico|![](icons/1e8bf3f378.webp)} | 244 | 308/6 抽击 | 652 | 849 | 20 |
 | **星界之火**\\平均伤害、{el-solar|骨灰余烬}、包括{deb-solar|点燃} | {ico|![](icons/1e29eb42e5.webp)} | 389 | 1553 {deb-solar|点燃} | 763 | 838 | 21 |
 | **寒冬之啮**\\平均伤害、2 轻 1 重 | {ico|![](icons/392afcddcc.webp)} | 329 | 587 重击、829 {deb-stasis|碎裂} | 661 | 790 | 22 |
-| **鬼灵激涌** | {ico|![](icons/b6ca98cf53.webp)} | 1367 | 2050 虚空-受{debuff|减益} | 594 | 773 | 23 |
+| **鬼灵激涌** | {ico|![](icons/b6ca98cf53.webp)} | 1367 | 2050 {el-void|虚空}-受{debuff|减益} | 594 | 773 | 23 |
 | **裂空打击**\\包括{deb-arc|震颤} | {ico|![](icons/f1eaccb64c.webp)} | 1144 | 228 {deb-arc|震颤} | 597 | 746 | 24 |
 | **权衡飞刀**\\精密 | {ico|![](icons/a7416a8ff2.webp)} | 1313 | 876 躯干 | 571 | 742 | 25 |
 | **投掷飞锤** | {ico|![](icons/640a2276ed.webp)} | 1297 | 1577 上限 射程 | 564 | 733 | 26 |
@@ -116,8 +116,8 @@
 
 | 名字 | 图标 | 起手 | 后续 | 100 属性 | 200 属性 | 排行 |
 |---|---|---|---|---|---|---|
-| **烈焰之歌**\\督军狂怒、雪上加霜、{el-solar|星界之火}、{el-solar|骨灰余烬}、{art-perk|护盾粉碎} | {ico|![](icons/faf64e9d04.webp)} | {na|—} | {na|—} | 110884 | 141851 | 1 |
-| **烈焰之歌**\\督军狂怒、雪上加霜、{el-solar|星界之火}、{el-solar|骨灰余烬} | {ico|![](icons/faf64e9d04.webp)} | {na|—} | {na|—} | 108025 | 131574 | 2 |
+| **烈焰之歌**\\督军狂怒、{perk|雪上加霜}、{el-solar|星界之火}、{el-solar|骨灰余烬}、{art-perk|护盾粉碎} | {ico|![](icons/faf64e9d04.webp)} | {na|—} | {na|—} | 110884 | 141851 | 1 |
+| **烈焰之歌**\\督军狂怒、{perk|雪上加霜}、{el-solar|星界之火}、{el-solar|骨灰余烬} | {ico|![](icons/faf64e9d04.webp)} | {na|—} | {na|—} | 108025 | 131574 | 2 |
 | **冰川震击**\\重击、{exotic|光能盛宴} x6、{art-perk|迎接风暴} | {ico|![](icons/b6060a684d.webp)} | {na|—} | {na|—} | 81892 | 121981 | 3 |
 | **烈焰之歌**\\{exotic|督军印记} x10、圣人之拳、{el-solar|星界之火}、{el-solar|骨灰余烬} | {ico|![](icons/faf64e9d04.webp)} | {na|—} | {na|—} | 98929 | 116545 | 4 |
 | **烈焰之歌**\\督军狂怒、圣人之拳、{el-solar|星界之火}、{el-solar|骨灰余烬} | {ico|![](icons/faf64e9d04.webp)} | {na|—} | {na|—} | 93391 | 115858 | 5 |
@@ -221,12 +221,12 @@
 | **暗影箭矢：莫比乌斯箭袋**\\包括 30% 易伤 | {ico|![](icons/1814fd3c5d.webp)} | {na|—} | {na|—} | 6414 | 9413 | 103 |
 | **黄金枪：死亡射击**\\{el-solar|焕光}、{el-solar|骨灰余烬} | {ico|![](icons/65e1ca3d39.webp)} | {na|—} | {na|—} | 6287 | 9096 | 104 |
 | **暗影箭矢：狩猎陷阱**\\包括 35% 易伤 | {ico|![](icons/d3ea80b169.webp)} | {na|—} | {na|—} | 2801 | 4057 | 105 |
-| **冰川震击**\\轻击、棱镜、{el-prismatic|毁灭琢面}、{exotic|燃烧之拳} x5 | {ico|![](icons/b6060a684d.webp)} | {na|—} | {na|—} | 2635 | 2907 | 106 |
-| **冰川震击**\\轻击、冰影、{el-stasis|裂隙之吟}、{exotic|生物强化} | {ico|![](icons/b6060a684d.webp)} | {na|—} | {na|—} | 1903 | 2586 | 107 |
-| **冰川震击**\\轻击、棱镜、{el-prismatic|毁灭琢面}、{exotic|生物强化} | {ico|![](icons/b6060a684d.webp)} | {na|—} | {na|—} | 1541 | 1919 | 108 |
-| **冰川震击**\\轻击、冰影、{el-stasis|裂隙之吟} | {ico|![](icons/b6060a684d.webp)} | {na|—} | {na|—} | 1396 | 1852 | 109 |
-| **冰川震击**\\轻击、棱镜、{el-prismatic|毁灭琢面}、{exotic|光能盛宴} x6 | {ico|![](icons/b6060a684d.webp)} | {na|—} | {na|—} | 1678 | 1794 | 110 |
-| **冰川震击**\\轻击、棱镜、{el-prismatic|毁灭琢面} | {ico|![](icons/b6060a684d.webp)} | {na|—} | {na|—} | 1145 | 1225 | 111 |
+| **冰川震击**\\轻击、{el-prismatic|棱镜}、{el-prismatic|毁灭琢面}、{exotic|燃烧之拳} x5 | {ico|![](icons/b6060a684d.webp)} | {na|—} | {na|—} | 2635 | 2907 | 106 |
+| **冰川震击**\\轻击、{el-stasis|冰影}、{el-stasis|裂隙之吟}、{exotic|生物强化} | {ico|![](icons/b6060a684d.webp)} | {na|—} | {na|—} | 1903 | 2586 | 107 |
+| **冰川震击**\\轻击、{el-prismatic|棱镜}、{el-prismatic|毁灭琢面}、{exotic|生物强化} | {ico|![](icons/b6060a684d.webp)} | {na|—} | {na|—} | 1541 | 1919 | 108 |
+| **冰川震击**\\轻击、{el-stasis|冰影}、{el-stasis|裂隙之吟} | {ico|![](icons/b6060a684d.webp)} | {na|—} | {na|—} | 1396 | 1852 | 109 |
+| **冰川震击**\\轻击、{el-prismatic|棱镜}、{el-prismatic|毁灭琢面}、{exotic|光能盛宴} x6 | {ico|![](icons/b6060a684d.webp)} | {na|—} | {na|—} | 1678 | 1794 | 110 |
+| **冰川震击**\\轻击、{el-prismatic|棱镜}、{el-prismatic|毁灭琢面} | {ico|![](icons/b6060a684d.webp)} | {na|—} | {na|—} | 1145 | 1225 | 111 |
 
 ## 杂项
 

@@ -28,6 +28,7 @@
 | --c-health | #41b349 | {c-health|Aa 汉字 123} | 生命值与治疗 |
 | --c-enemy | #d94452 | {c-enemy|Aa 汉字 123} | 战斗人员、勇士与数值 |
 | --c-term | #d6c39a | {c-term|Aa 汉字 123} | 词表着色里不属于元素的游戏术语，兼图表曲线、强调色与轮换页的突袭标签 |
+| --c-perk | #f9e9cd | {c-perk|Aa 汉字 123} | 武器 Perk 名 |
 | --c-buff | #2f9fd6 | {c-buff|Aa 汉字 123} | 增益与引号里的 buff 名，首领生命值页的减伤列 |
 | --c-bar-red | #ff8e86 | {c-bar-red|Aa 汉字 123} | 战斗人员档位：红血 |
 | --c-bar-orange | #ffb35c | {c-bar-orange|Aa 汉字 123} | 战斗人员档位：橙血与守护者 |
@@ -55,6 +56,7 @@
 | {el-kinetic|el-kinetic} | --c-kinetic | 动能 |
 | {el-prismatic|el-prismatic} | --c-prism | 棱镜与超凡 |
 | {art-perk|art-perk} | --c-artifact | 神器模组名 |
+| {perk|perk} | --c-perk | 武器 Perk 名 |
 | {kind|kind} | --c-legend | 行标题后面那一截武器类别 |
 | {exotic|exotic} | --c-exotic | 异域装备 |
 | {orb|orb} | --c-orb | 能量球与超能能量 |

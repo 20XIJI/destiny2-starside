@@ -1228,7 +1228,7 @@
 
 徽章：c131f21a7c.webp
 括注：(终愿)
-标签：{el-solar|烈日} | {el-stasis|冰影} | {el-arc|缚丝}<br>火箭发射器 | 榴弹发射器
+标签：{el-solar|烈日} | {el-stasis|冰影} | {el-strand|缚丝}<br>火箭发射器 | 榴弹发射器
 
 ### 一级 · {el-solar|发热寒颤}
 

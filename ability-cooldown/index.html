@@ -372,7 +372,7 @@
 <section class="block" id="sec-4">
 <h2 class="sect-label">技能能量生成</h2>
 <p>技能能量的整块获取通常由各类技能的基础冷却决定，<span class="pickup">职业技能</span>、手雷技能、近战技能与超能技能都算在内。</p>
-<p>终愿赛季改变了「按百分比给一整块技能能量」这类效果与整块系数的交互方式，爆破专家、<span class="exotic">投弹手</span>、充沛、动量转移都属于这一类。<br>超能不受整块修正影响，不过多数持续型超能在造成伤害时会获得更多能量。</p>
+<p>终愿赛季改变了「按百分比给一整块技能能量」这类效果与整块系数的交互方式，<span class="perk">爆破专家</span>、<span class="exotic">投弹手</span>、充沛、动量转移都属于这一类。<br>超能不受整块修正影响，不过多数持续型超能在造成伤害时会获得更多能量。</p>
 <p>整块系数会压低按百分比计的能量获取，手雷与职业技能最低到 0.5×，近战技能最低到 0.6×。</p>
 <p>整块系数按冷却分档，不是连续函数——冷却相近的技能共用一个系数。三类技能各走一套档位：手雷五档、近战五档、<span class="pickup">职业技能</span>三档，彼此不通用。</p>
 <table class="gen">
@@ -408,10 +408,10 @@
 </tbody>
 </table>
 <p>这张表由<a href="../elements/index.html">职业分支详解</a>与<a href="../elements/class-abilities/index.html">职业技能</a>各页表格末列的「回复倍率」汇总而成，逐个技能的冷却与说明在那些页面上。</p>
-<p>同一个 Perk 因此在不同技能上省下的秒数相近。霰弹枪上的爆破专家每次击杀给 20% 手雷能量，落到 0.5× 那一档的手雷实得 10%，落到 0.875× 那一档的实得 17.5%；后一档的基础冷却本来就短，两边省下的绝对秒数拉不开。</p>
+<p>同一个 Perk 因此在不同技能上省下的秒数相近。霰弹枪上的<span class="perk">爆破专家</span>每次击杀给 20% 手雷能量，落到 0.5× 那一档的手雷实得 10%，落到 0.875× 那一档的实得 17.5%；后一档的基础冷却本来就短，两边省下的绝对秒数拉不开。</p>
 <p>职业物品模组还要再乘一层。<span class="exotic">投弹手</span>、扩展、充沛按触发它们的<span class="pickup">职业技能</span>的冷却分档，取 0.225×、0.45×、0.6× 或 1×，再与目标技能自身的整块系数相乘。三个<span class="exotic">投弹手</span>配<span class="pickup">巍峨屏障</span>（1×）与 0.75× 的手雷时总系数 0.75×，20% 变 15%；配<span class="pickup">射手闪身</span>（0.225×）与 0.5× 的手雷时总系数 0.1125×，20% 变 2.25%。充沛给出的<span class="orb">超能能量</span>也走这一层，但不受整块系数。</p>
 <p>三类效果不受整块系数：与特定技能绑定的<span class="exotic">异域</span>（<span class="exotic">幼年阿罕卡拉之脊</span>对<span class="el-solar">感应手雷</span>、<span class="exotic">全知之眼</span>对烟雾弹）、直接返还整个技能充能的（<span class="exotic">星火协议</span>、<span class="exotic">神化面纱</span>），以及提升充能速度而非给出整块能量的。</p>
-<p><span class="exotic">白霜-Z</span>把<span class="pickup">职业技能</span>基础冷却设成 70 秒，却不受整块系数，职业技能的整块能量效果照旧全额生效。棱镜上的<span class="el-stasis">凄凉观察者</span>只改冷却，不覆盖手雷自身的整块系数。</p>
+<p><span class="exotic">白霜-Z</span>把<span class="pickup">职业技能</span>基础冷却设成 70 秒，却不受整块系数，职业技能的整块能量效果照旧全额生效。<span class="el-prismatic">棱镜</span>上的<span class="el-stasis">凄凉观察者</span>只改冷却，不覆盖手雷自身的整块系数。</p>
 <p class="note">职业物品模组那一层系数与上述例外，取自 Clarity 的 <a href="https://www.d2clarity.com/blog/destiny-science-6/chunk-energy-scalars-breakdown-12" target="_blank" rel="noopener">Chunk Energy Scalars</a>（Stardust 撰写，实测由 Engineeeer 与 RyTako 完成）。该文自述部分内容已过时，逐个技能的最新系数以本站各元素页的「回复倍率」为准。</p>
 <p>除非另有说明，或某件<span class="exotic">异域</span>装备与某个技能有专门交互，所有技能的能量获取都受整块能量缩放影响。</p>
 <p>技能冷却按下式计算：</p>
@@ -426,9 +426,9 @@
 <dt>额外基础回复单位</dt>
 <dd>由效果提供的基础回复单位，如<span class="exotic">异界之眸</span>、<span class="exotic">反转之握</span>。</dd>
 <dt>被动倍率</dt>
-<dd>直接乘在回复速度上的倍率。回复速度由全部基础回复单位与各自的基础回复速度相乘后合并得出。术士对手雷回复有 1.1× 倍率；掷弹兵提供 5× 手雷回复倍率，叠在<span class="exotic">反转之握</span>的高基础回复单位上会得到极高的回复速度。棱镜分支在 PvP 另有 0.85× 倍率，叠在 PvP 本身的 0.8× 之上。</dd>
+<dd>直接乘在回复速度上的倍率。回复速度由全部基础回复单位与各自的基础回复速度相乘后合并得出。术士对手雷回复有 1.1× 倍率；掷弹兵提供 5× 手雷回复倍率，叠在<span class="exotic">反转之握</span>的高基础回复单位上会得到极高的回复速度。<span class="el-prismatic">棱镜</span>分支在 PvP 另有 0.85× 倍率，叠在 PvP 本身的 0.8× 之上。</dd>
 <dt>回复倍率</dt>
-<dd>表内写在每个技能那一格。它压低百分比与每秒百分比获取的效果，冷却越长的技能惩罚通常越重。只对特定技能生效的效果可能没有惩罚。棱镜分支在 PvP 另有 0.8× 惩罚。</dd>
+<dd>表内写在每个技能那一格。它压低百分比与每秒百分比获取的效果，冷却越长的技能惩罚通常越重。只对特定技能生效的效果可能没有惩罚。<span class="el-prismatic">棱镜</span>分支在 PvP 另有 0.8× 惩罚。</dd>
 <dt>属性倍率</dt>
 <dd>按对应属性缩放获得的能量，作用于百分比获取、每秒百分比获取，以及额外基础回复效果。</dd>
 <dt>充能授予</dt>

@@ -32,7 +32,8 @@ convert-*.py       三个生成器，各自只写自己那种数据形状的结�
 build-search.py    各页产出 → assets/search.js，首页那只搜索框搜的就是它
 check_shell.py     外壳闸门，从 shell.py 现取参照，不另存副本
 check_terms.py     术语与着色闸门，全部以 TERMS 那一张表为准
-items.py           官方物品表 → tools/items.json：物品专名该着哪个 token 由查表定；
+items.py           官方物品表 → tools/items.json，Perk 名 → tools/perks.json：
+                   物品专名与 Perk 名该着哪个 token 由查表定；
                    出建议清单、就地落标记，另供 check_terms.py 的 G6 反查
 sheet-grab.user.js 油猴脚本：在 Google 表格页面上导出「替换后的文本 + 内联图片」
 json2xlsx.py       把上面那份 JSON 还原成 xlsx，供核对与二次编辑
@@ -58,6 +59,7 @@ python3 tools/check_shell.py                  # 各页外壳一致性
 python3 tools/check_terms.py                  # 术语正名、着色 token、更新时间
 
 python3 tools/items.py --distill <导出.json>  # 官方物品表 → tools/items.json，换赛季跑
+python3 tools/items.py --perks               # 武器 PERK 页 + 购物清单列 → tools/perks.json
 python3 tools/items.py --suggest [slug]      # 列出还没着色的物品专名与建议标记
 python3 tools/items.py --apply   [slug]      # 就地落进源稿，可重复跑
 
@@ -78,6 +80,18 @@ pyright tools/*.py
 3. **token 有定义** — 源稿里每个 `{token|文字}` 都要在 `site.css` 或该页样式表里有对应类；反过来，`site.css` 的着色类一次都没被用到即死配置，当场报出。
 4. **更新时间一致** — 资料页页脚的「更新 YYYY.M.D」与首页卡片上那个必须相等。
 5. **该着色的都着了** — 两个方向都管。正查的范围是三份表的并集：`tools/items.json`、`items.py` 的 `MECH`，以及 `TERMS` 里定了 token 的术语。**G2 只管「着错了色」**——`inner_marker` 返回 `None` 时它整条跳过，所以没有这一条正查时「勇士」「守护者」「能量球」可以全站裸着不被发现（曾漏 774 处）。正查里的词在正文里出现就得着色，漏了当场报出，跑 `python3 tools/items.py --apply` 补上。不参与正查的写进 `items.py` 的 `LOOSE`（同形的普通用法比术语用法还多，如「恢复」），token 留着让 G2 照旧管着色对错。反查：已着色的 token 必须与库里的归属一致——「骨灰余烬」属烈日、「连锁闪电」属电弧是 Bungie 的 manifest 定的事实，不由人记。反查只管元素与异域这两桶：神器模组的元素归属库里没有（`typeName_zh` 一律是「传说 神器特性」），钉死会把神器模组页那 12 处更细的着色降级；`{named|…}` `{stack|…}` 这类排版标记也不归它管。
+
+**Perk 名整条包在 `{perk|…}` 里，走 `--c-perk`。**`.perk` 定义在 `assets/site.css`，全站一处。
+Perk 名不属于任何元素，颜色只标「这是一个名字」；**必须整名包起来**——不包时
+「动能震颤」「不稳定弹药」会被 G6 正查从中间切开，各染各的色，一个名字看着像两个词。
+同名撞车的那几个（动能震颤、震颤反馈、不稳定弹药、势不可挡射击）写进 `items.py` 的
+`GUARD`，两头都撞的（诅咒怨魂既是起源特性也是邪魔族战斗人员名）写进 `STOP`。
+
+**着色按术语铺，不按列。**词表 `tools/perks.json` 由 `items.py --perks` 从两处现扫：
+武器 PERK 详解页四个分节的行标题（武器 PERK、武器模组、重型弩机制、起源特性），
+以及购物清单四页 Perk 列里的 `{perk|…}`。**两字的名字一律不入表**——转向、战术、
+切割、瓦解在正文里绝大多数是普通词或元素机制名，按词铺开会把动词染成 Perk 名。
+固有 PERK 那一节不收：它列的是框架（重型点射、支援框架），不是 Perk。
 
 ### 物品专名的着色查表，不靠人记
 
@@ -245,6 +259,7 @@ app.js 按表头文本找列、按首格开头的两位时刻找行（首列写�
 | 头部一行 `列组：组名 = 列名、列名 …` | 该组各列的 `<thead> th` 带上 `data-g`，`app.js` 据此在工具条上建列组开关 |
 | 头部的 `默认列组：`／`互斥列组：` | 落成 `.toolbar` 上的 `data-cols`／`data-solo`，前者是加载时打开的组，后者是一次只能开一组的那几组 |
 | `**粗**` `*强调*` `[文字](链接)` | `<strong>` `<em>` `<a>`，`http` 开头的自动带 `target="_blank" rel="noopener"` |
+| `~~划掉~~` | `<s>`，用在「现已不可获取」这类作废的字上。**只认成对的 `~~`**——正文里单个 `~` 是「约等于」（游戏机制页的 `~333`），逐字保真只去成对的那一种 |
 | `![](icons/xxx.webp)` | `<img src alt="" width height>`，宽高从文件头现读，文件名须是内容的 md5 前 10 位 |
 | `{token\|文字}` | `<span class="token">`，token 即 `assets/site.css` 或页面样式表里的类名，可嵌套 |
 | 单元格里的 `\\` | `<br>`。一行源稿就是一行表格，格内换行只能靠标记；选 `\\` 是因为中文正文、数值与链接里都不会出现它——用 `//` 会把链接里的 `https://` 一并切开 |

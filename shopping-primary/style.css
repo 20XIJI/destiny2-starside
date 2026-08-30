@@ -1,0 +1,131 @@
+/* 购物清单-白弹：356 把白弹位传说武器的评级、Perk 池、来源与注解。
+   通用主题、字体与配色 token 在 /assets/site.css。
+   这一页由 tools/convert-doc.py 从 references/docs/shopping-primary.md 生成，
+   改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
+
+/* 全量宽表那一档（design.md 四节）：17 列，末列的注解是成句的正文。 */
+:root { --wrap: 1500px; --min: 1104px; }
+
+/* 一页十来张表，一张表一个枪械类型。**列宽写死、整表占满版心**——
+   按内容定宽会让每张表各自量各自的，扫到下一节时武器名、图标、评级三列全都错位。
+   宽度按百分比给：版心收窄时整表跟着缩，不把页面顶出横向滚动。
+   只认武器表，判据是「格里有图标标记」。 */
+.gen:has(td.ico) {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.gen th,
+.gen td {
+  padding: 10px 8px;
+  font-size: 12.5px;
+  overflow-wrap: anywhere;
+}
+
+/* 末列的注解是成段的正文，左对齐；其余各列一律居中——Perk 池那几列一格多条、
+   靠源稿的 <br> 分行，居中之后每条各自居中，整列读作一摞标签。 */
+.gen th,
+.gen td { text-align: center; }
+
+.gen thead th:last-child { text-align: left; }
+
+.gen:has(td.ico) thead th:nth-child(1) { width: 7%; }
+.gen:has(td.ico) thead th:nth-child(2) { width: 4%; }
+.gen:has(td.ico) thead th:nth-child(3) { width: 2.6%; }
+.gen:has(td.ico) thead th:nth-child(4) { width: 2.8%; }
+.gen:has(td.ico) thead th:nth-child(5) { width: 3.4%; }
+/* 框架列不折行，宽度按最长那条给：「传承 PR-55」「速射 Slug」中英混排最宽。 */
+.gen:has(td.ico) thead th:nth-child(6) { width: 6.2%; }
+.gen:has(td.ico) thead th:nth-child(7) { width: 2.6%; }
+.gen:has(td.ico) thead th:nth-child(8) { width: 6%; }
+.gen:has(td.ico) thead th:nth-child(9) { width: 3.4%; }
+.gen:has(td.ico) thead th:nth-child(10) { width: 3.4%; }
+/* 十一列往后按「恰好 N 列」圈定，不按列序裸下规则（design.md 四节）：
+   专有的数值那一列只有一张表有，它把后面的列整体推后一位。 */
+.gen:has(td.ico):not(:has(thead th:nth-child(18))) thead th:nth-child(11) { width: 5.6%; }
+.gen:has(td.ico):not(:has(thead th:nth-child(18))) thead th:nth-child(12) { width: 6%; }
+.gen:has(td.ico):not(:has(thead th:nth-child(18))) thead th:nth-child(13) { width: 4.6%; }
+.gen:has(td.ico):not(:has(thead th:nth-child(18))) thead th:nth-child(14),
+.gen:has(td.ico):not(:has(thead th:nth-child(18))) thead th:nth-child(15) { width: 7.5%; }
+.gen:has(td.ico):not(:has(thead th:nth-child(18))) thead th:nth-child(16) { width: 5.5%; }
+
+.gen:has(thead th:nth-child(18)) thead th:nth-child(11) { width: 3.4%; }
+.gen:has(thead th:nth-child(18)) thead th:nth-child(12) { width: 5.6%; }
+.gen:has(thead th:nth-child(18)) thead th:nth-child(13) { width: 6%; }
+.gen:has(thead th:nth-child(18)) thead th:nth-child(14) { width: 4.6%; }
+.gen:has(thead th:nth-child(18)) thead th:nth-child(15),
+.gen:has(thead th:nth-child(18)) thead th:nth-child(16) { width: 7.5%; }
+.gen:has(thead th:nth-child(18)) thead th:nth-child(17) { width: 5.5%; }
+
+/* 末列的注解不给宽度，吃掉剩下的那一截。 */
+.gen:has(td.ico) thead th:last-child { width: auto; }
+
+/* 武器名：一行的身份，提亮一档。keep-all 让它只在源稿写的 <br> 处断行。 */
+.gen tbody th[scope="row"] {
+  color: var(--bone-hi);
+  font-family: var(--font-cn);
+  font-size: 13px;
+  font-weight: 600;
+  word-break: keep-all;
+}
+
+.gen td.ico,
+.gen td.champ { padding: 8px 4px; }
+
+.gen td img {
+  display: block;
+  margin: 0 auto;
+}
+
+/* 图标原图 96px（勇士 250px），最宽显示 56 与 42：**跟着格子缩，不写死像素**——
+   列宽按百分比给，窄视口下格子比 56px 还窄，写死时 `margin: 0 auto` 是超约束的，
+   浏览器把右边距解成负值，整枚图往右挪半个内边距，看着就是「向右上错位」。 */
+.gen td.ico img {
+  width: 100%;
+  max-width: 56px;
+  height: auto;
+}
+
+.gen td.champ img {
+  width: 100%;
+  max-width: 42px;
+  height: auto;
+}
+
+/* 评级、排名与框架不折行：「T0.5」「S」断成两行就读不出是一个值；
+   框架名（重型点射、微型导弹）断开之后要回头拼，扫读时最费眼。 */
+.gen tbody td:nth-child(3),
+.gen tbody td:nth-child(4),
+.gen th:nth-child(6),
+.gen tbody td:nth-child(6) { white-space: nowrap; }
+
+/* 数值格：等宽数字，位数对齐才一眼比得出大小。 */
+.gen td.num {
+  color: var(--bone-hi);
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 来源：检索线索，不是要读的内容，压一档。 */
+.gen td.src {
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+/* 划掉的字：该来源现已不可获取。线由 <s> 画，颜色再退一档，别与在产的混读。 */
+.gen s { color: var(--bone-dim); }
+
+/* 注解：这一页的正文，末列，吃掉剩下的宽度。 */
+.gen tbody td:last-child {
+  font-size: 13px;
+  line-height: 1.9;
+  text-align: left;
+}
+
+/* 屏外的分节不参与布局与绘制：这一页十来节、每节一张长表，一屏只看得到其中一段。
+   这一页没有 sticky 后代，paint containment 不会裁到谁。contain-intrinsic-size 的
+   auto 让浏览器渲染过一次后改用真实高度，那个数只是从没渲染过时的初始估值。 */
+.block {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 2400px;
+}

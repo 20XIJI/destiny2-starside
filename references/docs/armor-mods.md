@@ -121,7 +121,7 @@
 | 焕光炽热 | {ico|![](icons/3a7d45ba24.webp)} | 使用{el-solar|烈日}分支职业时：\\ 用{el-solar|烈日}武器击杀{bar-orange|橙血}、{bar-yellow|初级首领}或{enemy|勇士}：\\ 获得{el-solar|焕光}，持续 10+5 秒。\\ \\ {note|触发后有 10 秒冷却。} |
 | 释放恢复 | {ico|![](icons/a00da0ebe2.webp)} | 失去暗影涌流或光能场域时：\\ 获得{el-solar|治愈} x1 与{el-solar|恢复}，持续时间不定。\\ \\ x1 ｜ x1 ｜ x1 ｜ x2 ｜ x2 {el-solar|恢复}\\ 2.5 秒 ｜ 3 秒 ｜ 3.5 秒 ｜ 3.5 秒 ｜ {unsure|?} 秒\\ \\ {note|抚慰余烬把持续时间延长 50%。} |
 | 纷繁纠缠 | {ico|![](icons/9d480e3ed0.webp)} | 使用{el-strand|缚丝}分支职业时：\\ {el-strand|缚丝}武器击杀在{enemy|战斗人员}死亡位置生成{el-strand|缠结}。\\ \\ {note|触发缠结的全局冷却。} |
-| 不稳定齐射 | {ico|![](icons/0edefcca5c.webp)} | 使用{el-void|虚空}分支职业时：\\ 用{el-void|虚空}武器击杀{bar-orange|橙血}、{bar-yellow|初级首领}或{enemy|勇士}：\\ 获得{deb-void|不稳定}弹药，持续 10.5 秒。\\ \\ {note|触发后有 10 秒冷却。} |
+| 不稳定齐射 | {ico|![](icons/0edefcca5c.webp)} | 使用{el-void|虚空}分支职业时：\\ 用{el-void|虚空}武器击杀{bar-orange|橙血}、{bar-yellow|初级首领}或{enemy|勇士}：\\ 获得{perk|不稳定弹药}，持续 10.5 秒。\\ \\ {note|触发后有 10 秒冷却。} |
 
 ## ![](icons/e83e857b4e.webp) 门徒誓约
 

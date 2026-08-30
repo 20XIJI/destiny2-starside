@@ -725,6 +725,8 @@ def check(md, out, slug):
     body = '\n'.join(lines)
     body = IMG.sub('', body)                          # 图标不落成字符，两侧都不留
     body = LINK.sub(r'\1', body)                      # 链接只留文字
+    body = body.replace('~~', '')                 # 划掉的线由 <s> 画，不落成字符
+                                                  # 只去成对的那一种：正文里的单个 ~ 是「约等于」
     body = re.sub(r'\{[\w-]+\|', '', body)            # 着色标记的开括号连分隔符
     want = plain(body)                                # 字重、着色与格内换行不落成字符
 
