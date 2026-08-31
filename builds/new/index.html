@@ -31,16 +31,16 @@
 <main id="sheet">
 <p class="new-link"><a href="../index.html">← 推荐配装</a><span>看看已经上站的配装</span></p>
 <header class="build-head">
-<span class="core"><button type="button" class="item empty" id="f-core-art" data-slot="核心" aria-expanded="false"><span class="nm">核心</span></button></span>
+<div class="core">
+<button type="button" class="item empty" id="f-core-art" data-slot="核心" aria-expanded="false"><span class="nm">核心</span></button>
+<p class="by-label">推荐者：</p>
+<input class="who-in" data-key="推荐人" placeholder="名字 | 链接 | 头像" aria-label="推荐者">
+</div>
 <div class="build-id">
 <h1><input data-key="配装名" placeholder="配装名" aria-label="配装名"></h1>
-<p class="cls"><label class="mini">更新<input data-key="更新" placeholder="2026.8.31" aria-label="更新"></label></p>
+<p class="cls"><span class="cls-id" data-mirror="铭牌"><span class="hint">职业与元素在下面「职业」那一格选</span></span><span class="season">S29 · 凯旋纪念碑</span></p>
 <p class="desc"><input data-key="描述" placeholder="一句话说清这套配装靠什么打" aria-label="描述"></p>
-<div class="by">
-<div class="facet"><span class="lb">推荐者</span><input data-key="推荐人" placeholder="名字 | 链接 | 头像" aria-label="推荐者"></div>
-<div class="facet"><span class="lb">适用环境</span><span class="tagset"><button type="button" class="chip" aria-pressed="false">突袭</button><button type="button" class="chip" aria-pressed="false">地牢</button><button type="button" class="chip" aria-pressed="false">宗师终极</button><button type="button" class="chip" aria-pressed="false">日常</button><button type="button" class="chip" aria-pressed="false">通用</button><button type="button" class="chip" aria-pressed="false">PVP</button></span><input type="hidden" data-key="场景"></div>
-<div class="facet"><span class="lb">标签</span><span class="tagset"><button type="button" class="chip" aria-pressed="false">输出</button><button type="button" class="chip" aria-pressed="false">清怪</button><button type="button" class="chip" aria-pressed="false">续航</button><button type="button" class="chip" aria-pressed="false">功能</button><button type="button" class="chip" aria-pressed="false">通用</button><button type="button" class="chip" aria-pressed="false">PVP</button></span><input type="hidden" data-key="定位"></div>
-</div>
+<div class="facets"><div><p class="by-label">适用环境</p><span class="tags tagset"><button type="button" aria-pressed="false">突袭</button><button type="button" aria-pressed="false">地牢</button><button type="button" aria-pressed="false">宗师终极</button><button type="button" aria-pressed="false">日常</button><button type="button" aria-pressed="false">通用</button><button type="button" aria-pressed="false">PVP</button></span><input type="hidden" data-key="场景"></div><div><p class="by-label">标签</p><span class="tags tagset"><button type="button" aria-pressed="false">输出</button><button type="button" aria-pressed="false">清怪</button><button type="button" aria-pressed="false">续航</button><button type="button" aria-pressed="false">功能</button><button type="button" aria-pressed="false">通用</button><button type="button" aria-pressed="false">PVP</button></span><input type="hidden" data-key="定位"></div></div>
 </div>
 </header>
 <section class="block" id="sec-1">
@@ -120,7 +120,7 @@
 <div class="slot-row lead">
 <div class="slot" style="--n:3">
 <ul class="cells">
-<li><button type="button" class="item gear empty" data-slot="异域护甲"><span class="nm">异域护甲</span></button></li>
+<li class="stack"><button type="button" class="item gear empty" data-slot="异域护甲"><span class="nm">异域护甲</span></button><button type="button" class="item gear empty" data-slot="异域护甲" data-only="之灵" hidden><span class="nm">第二条词条</span></button></li>
 <li><button type="button" class="item set empty" data-slot="套装"><span class="nm">套装</span></button></li>
 <li><button type="button" class="item set empty" data-slot="套装"><span class="nm">套装（可选）</span></button></li>
 </ul>

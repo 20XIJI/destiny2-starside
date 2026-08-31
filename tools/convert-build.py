@@ -272,15 +272,34 @@ FACETS = (('场景', '适用环境', ('突袭', '地牢', '宗师终极', '日�
 
 
 def facet_picks(key, label, tags):
-    """填表页的一组多选 chip。值收在同一段里的隐藏 input 上，源稿的键不变——
-    val() 照旧按 data-key 读一个 .value，不必为这两格另开一条取值路径。"""
-    return ('<div class="facet"><span class="lb">%s</span>'
-            '<span class="tagset">%s</span>'
+    """填表页的一栏多选标签。与详情页 facet() 同形（小标签 + 一排标签框），
+    只是标签可点。值收在同一段里的隐藏 input 上，源稿的键不变——val() 照旧按
+    data-key 读一个 .value，不必为这两格另开一条取值路径。"""
+    return ('<div><p class="by-label">%s</p><span class="tags tagset">%s</span>'
             '<input type="hidden" data-key="%s"></div>'
             % (label,
-               ''.join('<button type="button" class="chip" aria-pressed="false">%s'
-                       '</button>' % t for t in tags),
+               ''.join('<button type="button" aria-pressed="false">%s</button>' % t
+                       for t in tags),
                key))
+
+
+SPIRIT = '之灵'
+
+
+def exotic_armor(md):
+    """异域护甲，一件或两件。
+
+    两件只有异域职业物品那一种——它一件装备带两条异域词条，站内把那些词条各自
+    列成一条（「刺客之灵」「毒蛇之灵」），所以配装里它占两格。别的异域护甲一次
+    只能穿一件。
+    """
+    got = names(md, '异域护甲', required=False)
+    if len(got) > 2:
+        die('「异域护甲：」最多两件，源稿写的是 %r' % '、'.join(got))
+    if len(got) == 2 and not all(n.endswith(SPIRIT) for n in got):
+        die('「异域护甲：」写两件只有异域职业物品那一种，两件都得是「…%s」，'
+            '源稿写的是 %r' % (SPIRIT, '、'.join(got)))
+    return got
 
 
 def page_items(md):
@@ -292,10 +311,10 @@ def page_items(md):
     查不到图。
     """
     out = []
-    for key in ('异域武器', '异域护甲'):
-        got = meta(md, key, required=False)
-        if got:
-            out.append((got, key, None))
+    got = meta(md, '异域武器', required=False)
+    if got:
+        out.append((got, '异域武器', None))
+    out += [(n, '异域护甲', None) for n in exotic_armor(md)]
     for line in re.findall(r'^传说武器：(.*)$', md, re.M):
         parts = [x.strip() for x in line.split('|')]
         out.append((parts[0], '传说武器', None))
@@ -361,7 +380,8 @@ def render(idx, mv, arts, avatars, md, slug, season, name_cn):
     if meta(md, '职业') not in CLASSES:
         die('「职业：」要写猎人、泰坦、术士之一，源稿写的是 %r' % meta(md, '职业'))
 
-    exotics = [meta(md, '异域武器', required=False), meta(md, '异域护甲', required=False)]
+    ex_gun = meta(md, '异域武器', required=False)
+    ex_armor = exotic_armor(md)
     core_e = core_pick(idx, md, prefer)
 
     o = [shell.head('%s · %s · Starside' % (title, SITE_SECTION), desc_text, up=3,
@@ -423,8 +443,8 @@ def render(idx, mv, arts, avatars, md, slug, season, name_cn):
     # 武器：一把枪一组。面板不给标题——上面那行 sect-label 已经写着「武器」，再写一遍
     # 「武器与 Perk」是噪声，格子形状（56px 图的是枪，24px 图的是 Perk）自己说明身份。
     rigs = []
-    if exotics[0]:
-        rigs.append(rig_of([item(idx, '异域武器', exotics[0], prefer,
+    if ex_gun:
+        rigs.append(rig_of([item(idx, '异域武器', ex_gun, prefer,
                                  cls='item gun', bare=True)]))
     for line in re.findall(r'^传说武器：(.*)$', md, re.M):
         gun, _, perks = line.partition('|')
@@ -450,7 +470,11 @@ def render(idx, mv, arts, avatars, md, slug, season, name_cn):
     # 护甲：主角行（异域护甲 + 套装）不拉满——它最多三格，拉满会让一格宽到 500px；
     # 格子封顶、左对齐，行末那半截空档给六维那张卡。部位行五个部位并排，每列三枚
     # 模组竖排，合起来是一张 5×3 的矩阵，那是这一页的视觉重心。
-    lead = [item(idx, '异域护甲', exotics[1], prefer, cls='item gear')] if exotics[1] else []
+    # 异域职业物品一件装备带两条异域词条，站内把词条各自列成一条，所以它在这里
+    # 占一格、两条上下并排——摊成两格会读成穿了两件异域。
+    lead = (['<li class="stack">%s</li>'
+             % ''.join(item(idx, '异域护甲', n, prefer, cls='item gear', bare=True)
+                       for n in ex_armor)] if ex_armor else [])
     lead += sets_of(idx, meta(md, '套装'))
     o += ['<section class="block" id="sec-4">', '<h2 class="sect-label">护甲</h2>']
     # 六维挂在主角行右端：异域与套装最多占三格，剩下的半行本来是空的。套装可能
@@ -627,7 +651,7 @@ def render_vocab(idx):
 
 
 def slot_cell(slot, kind='', cls='item', label='', bare=False, hidden=False,
-              addable=''):
+              addable='', only=''):
     """填表页的空槽：点开就地展开图标网格，选中即落成与详情页一模一样的成品格。
 
     版面与候选范围写在这里一处，form.js 从 data-* 现读、不重抄一份——与 app.js
@@ -642,14 +666,16 @@ def slot_cell(slot, kind='', cls='item', label='', bare=False, hidden=False,
     # data-addable 是「这一格由某枚按钮叫出来」的记号，按钮上的 data-add 与它对上。
     # 记号落在最外层：不套 <li> 的（rig 里的格子）就落在按钮自己身上。
     mark = (' data-addable="%s"' % addable if addable else '') + (' hidden' if hidden else '')
-    cell = ('<button type="button" class="%s empty" data-slot="%s"%s%s>'
+    # data-only 再按名字收一道：异域护甲那第二格只列「…之灵」。
+    cell = ('<button type="button" class="%s empty" data-slot="%s"%s%s%s>'
             '<span class="nm">%s</span></button>'
             % (cls, slot, ' data-kind="%s"' % kind if kind else '',
+               ' data-only="%s"' % only if only else '',
                mark if bare else '', label or '+'))
     return cell if bare else '<li%s>%s</li>' % (mark, cell)
 
 
-def render_new(stamp):
+def render_new(stamp, name_cn):
     """builds/new/index.html：填表页。
 
     产出的是**与详情页同构的空槽版面**——同一套 group()/row()/glyph()，同一批
@@ -667,25 +693,27 @@ def render_new(stamp):
          # 太轻，正文里给一条明确的。
          '<p class="new-link"><a href="../index.html">← 推荐配装</a>'
          '<span>看看已经上站的配装</span></p>',
-         # 页头与详情页同形，可填的那几处换成输入位。**核心那一格自己就是选择器**：
-         # 候选是本页已经配好的每一件东西，那枚 96px 的图就在这里挑。
+         # 页头与详情页逐块同形：左列是核心那枚 96px 的图加推荐者，右列是配装名、
+         # 铭牌、描述与两栏标签。可填的那几处换成输入位，其余照详情页的类名写，
+         # 版式因此由同一份规则管，不为填表页另写一套。
          '<header class="build-head">',
-         '<span class="core"><button type="button" class="item empty" id="f-core-art" '
-         'data-slot="核心" aria-expanded="false"><span class="nm">核心</span>'
-         '</button></span>',
+         '<div class="core">',
+         '<button type="button" class="item empty" id="f-core-art" data-slot="核心" '
+         'aria-expanded="false"><span class="nm">核心</span></button>',
+         '<p class="by-label">推荐者：</p>',
+         '<input class="who-in" data-key="推荐人" placeholder="名字 | 链接 | 头像" '
+         'aria-label="推荐者">',
+         '</div>',
          '<div class="build-id">',
          '<h1><input data-key="配装名" placeholder="配装名" aria-label="配装名"></h1>',
-         '<p class="cls">'
-         '<label class="mini">更新<input data-key="更新" placeholder="%s" aria-label="更新"></label></p>'
-         % stamp,
+         # 铭牌照着下面「职业」那两格显示，本身不可点——身份在那两格上选。
+         '<p class="cls"><span class="cls-id" data-mirror="铭牌">'
+         '<span class="hint">职业与元素在下面「职业」那一格选</span></span>'
+         '<span class="season">%s · %s</span></p>' % (SEASON.upper(), name_cn),
          '<p class="desc"><input data-key="描述" placeholder="一句话说清这套配装靠什么打" '
          'aria-label="描述"></p>',
-         # 三行各带一个小标签，用详情页那三个称呼（推荐者、适用环境、标签）。
-         # data-key 仍是源稿的键名——填表人看见的是页面上的说法，源稿的键不跟着改。
-         '<div class="by">',
-         '<div class="facet"><span class="lb">推荐者</span>'
-         '<input data-key="推荐人" placeholder="名字 | 链接 | 头像" '
-         'aria-label="推荐者"></div>'] + [facet_picks(*f) for f in FACETS] + ['</div>',
+         '<div class="facets">%s%s</div>'
+         % (facet_picks(*FACETS[0]), facet_picks(*FACETS[1])),
          '</div>', '</header>', '']
 
     # 身份那两格就是职业与分支的选择器。**它们不走 fill()**：两格的内容由 state
@@ -764,7 +792,15 @@ def render_new(stamp):
               '<span class="val">~</span></button></li>' % (k, glyph(k), k)
               for k in STATS]
     stats += ['</ul>', '</div>']
-    o += row(group('', [slot_cell('异域护甲', cls='item gear', label='异域护甲'),
+    # 异域护甲那一格里备着两个槽：选中「…之灵」时第二个自己冒出来（异域职业物品
+    # 带两条词条），选别的异域时它收回去。收放由 form.js 按名字判，不给按钮——
+    # 那是游戏规则不是版面偏好。
+    armor = ('<li class="stack">'
+             + slot_cell('异域护甲', cls='item gear', label='异域护甲', bare=True)
+             + slot_cell('异域护甲', cls='item gear', label='第二条词条', bare=True,
+                         hidden=True, only=SPIRIT)
+             + '</li>')
+    o += row(group('', [armor,
                         slot_cell('套装', cls='item set', label='套装'),
                         slot_cell('套装', cls='item set', label='套装（可选）')]) + stats,
              cls='lead')
@@ -838,7 +874,8 @@ def main():
     if not only:
         render_index(made)
         render_vocab(idx)
-        render_new(max(m['stamp'] for m in made))
+        render_new(max(m['stamp'] for m in made),
+                   [n for _, sn, n in season_dirs() if sn == SEASON][0])
     print('配装 %d 套，当前赛季 %s %d 套'
           % (len(made), SEASON, len([m for m in made if m['season'] == SEASON])))
 

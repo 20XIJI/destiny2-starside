@@ -47,6 +47,11 @@ SET = re.compile(r'<article class="set" id="([^"]+)">(.*?)</article>', re.S)
 BONUS = re.compile(r'<img class="bonus-icon" src="([^"]+)"[^>]*>'
                    r'<span class="piece">(.*?)</span><span class="bonus-name">(.*?)</span>', re.S)
 IMG = re.compile(r'<img[^>]*src="(icons/[^"]+)"')
+# 异域职业物品那张表一行摆两条词条：行标题一条，中间一格再一条（源稿写
+# `{spirit|噬星者之灵}`，整格只有这一个标记，class 因此落在 <td> 上）。
+# 只认行标题会漏掉一半——36 条里只进来 18 条。
+SPIRIT = re.compile(r'<td class="spirit">(.*?)</td>\s*<td class="ico">'
+                    r'<img[^>]*src="(icons/[^"]+)"', re.S)
 
 
 # 带页内搜索框的页面：链接落到行上而不是分节上。app.js 见 ?q= 即先过滤再滚，
@@ -131,6 +136,9 @@ def scan_page(page):
             out.append(entry(page, anchor, lane or label,
                              text_of(row.group(1), collapse=True),
                              icon.group(1) if icon else ''))
+            for name, ico in SPIRIT.findall(m.group(0)):
+                out.append(entry(page, anchor, lane or label,
+                                 text_of(name, collapse=True), ico))
     return out
 
 

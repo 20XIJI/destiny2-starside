@@ -120,15 +120,6 @@
 
 .build-id .desc { margin: 0; max-width: 76ch; color: var(--bone-dim); }
 
-/* 填表页的推荐者留在铭牌那一列：那里是一个输入框加两排 chip，塞进 96px 的左列
-   会挤成一列窄条。详情页没有 .by，推荐者跟着核心那枚图走。 */
-.build-id .by {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  min-height: 28px;
-}
-
 /* 填表页的核心那一格与详情页那枚图同尺寸——它就是那枚图的空槽 */
 #sheet .core > .item { width: 96px; min-height: 96px; }
 
@@ -168,7 +159,8 @@ a.who:hover { color: var(--accent); }
 }
 
 .tags > li,
-.tags > i {
+.tags > i,
+.tagset > button {
   padding: 2px 8px;
   color: var(--bone-dim);
   font-family: var(--font-disp);
@@ -413,6 +405,18 @@ button.item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
 .item.gear .nm,
 .item.set .nm { font-size: 13px; }
 
+/* 异域职业物品：一件装备两条异域词条，站内把词条各自列成一条，所以它占的还是
+   异域护甲那一格，两条上下并排。两条都在时缩到 32px 图 + 11.5px 名，一格的高度
+   因此与旁边那些 56px 图的主角格齐平；只有一条时照旧是主角格。
+   判据写成 :has 而不是一个类名：填表页那第二个槽是按名字自动收放的，类名要 JS
+   再同步一次，多一处会不同步的状态。 */
+.stack { display: grid; gap: 4px; }
+
+.stack:has(> :nth-child(2):not([hidden])) > .item.gear { padding: 5px 8px; }
+.stack:has(> :nth-child(2):not([hidden])) > .item.gear img { width: 32px; height: 32px; }
+.stack:has(> :nth-child(2):not([hidden])) > .item.gear .nm { font-size: 11.5px; }
+.stack:has(> :nth-child(2):not([hidden])) > .item.gear.empty { min-height: 37px; }
+
 /* Perk 挂在它那把枪后面，收窄一档读作从属 */
 .item.perk-cell { padding: 8px; }
 .item.perk-cell img { width: 24px; height: 24px; }
@@ -634,36 +638,33 @@ button.item { width: 100%; }
 
 #sheet .cls { flex-wrap: wrap; }
 
-#sheet .mini {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--bone-faint);
+/* 两栏标签可点：形状与详情页那些标签框同一条规则，只多一个选中态。
+   选中用亮字 + 强调色边框，不换形状——同一排里选中与没选中的框大小必须一样，
+   否则每点一下整排都要重新对位。 */
+.tagset > button {
   font-family: var(--font-disp);
-  font-size: 11px;
-  letter-spacing: .1em;
+  line-height: 1.6;
+  cursor: pointer;
 }
 
-#sheet .mini input { width: 92px; }
-/* 头部那一段三行：推荐者一行，适用环境与标签各一行 chip。挤成一排时六枚 chip
-   加输入框会折成参差的两行半，看不出哪几枚属于哪一组。 */
-#sheet .by {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 8px;
+.tagset > button:hover { color: var(--bone-hi); }
+.tagset > button[aria-pressed="true"] {
+  color: var(--bone-hi);
+  border-color: var(--accent);
 }
 
-#sheet .facet { display: flex; align-items: center; gap: 8px; }
-#sheet .facet .lb {
-  flex: none;
-  min-width: 4.5em;
-  color: var(--bone-faint);
-  font-size: 11.5px;
-  letter-spacing: .08em;
+/* 推荐者那一格：详情页是一行 13px 的粗名字，这里是同一位置的输入框 */
+#sheet .who-in {
+  width: 100%;
+  color: var(--bone-hi);
+  font-family: var(--font-cn);
+  font-size: 13px;
+  font-weight: 600;
 }
 
-#sheet .facet input { flex: 1; min-width: 0; }
-#sheet .tagset { display: flex; flex-wrap: wrap; gap: 6px; }
+/* 铭牌照着下面那两格显示，不可点；两样没选全时写一句提示 */
+#sheet .cls-id { display: inline-flex; align-items: center; gap: 10px; }
+#sheet .cls-id .hint { color: var(--bone-faint); font-size: 12.5px; }
 #sheet .desc input { width: 100%; }
 /* 六维与详情页同一张卡，一格就是「图 + 名 + 值」，只是值那一格可点。
    **列宽写死**：值从「~」变成「150～200」时列宽会跟着长，整条主角行跟着抖。 */

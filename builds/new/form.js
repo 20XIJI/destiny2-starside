@@ -139,12 +139,21 @@
 
   function mirror() {
     var cls = state.职业, br = state.分支;
-    put('职业', cls && rowOf('职业', function (r) {
+    var self = cls && rowOf('职业', function (r) {
       return r[0] === cls && r[1] === '分节';
-    }), '');
+    });
+    put('职业', self, '');
     put('元素', cls && br && rowOf('元素', function (r) {
       return r[0] === cls && r[1] === '分节' && r[2] === 'elements/' + BRANCH[br];
     }), br);
+    // 页头的铭牌与详情页同形：职业图 + 职业 · 分支。它照着下面那两格显示，
+    // 两样都选定才成句，只选了一样时仍写提示——半句「术士 ·」读不出缺什么。
+    var id = sheet.querySelector('[data-mirror="铭牌"]');
+    id.innerHTML = cls && br
+      ? (self && self[3] ? '<img src="' + UP + self[3] + '" alt="" width="32" '
+        + 'height="32">' : '') + esc(cls) + ' · <span class="el-' + BRANCH[br]
+        + '">' + esc(br) + '</span>'
+      : '<span class="hint">职业与元素在下面「职业」那一格选</span>';
   }
 
   function put(name, row, label) {
@@ -215,6 +224,11 @@
       : slot === '核心' ? coreList()
       : slot === '元素' ? branches()
       : options(slot, kind);
+    if (btn.dataset.only) {
+      list = list.filter(function (r) {
+        return r[0].slice(-btn.dataset.only.length) === btn.dataset.only;
+      });
+    }
     // 神器模组按所选那一件限定。没选之前不列——七件神器各 21 枚，混在一起是
     // 147 条，且它们在神器盘上的位置一件一套，摆出来会七枚叠在同一格。
     var wait = slot === '神器' && kind !== '__art__' && !state.神器;
@@ -348,6 +362,16 @@
       });
     }
     fill(btn, row);
+    // 异域职业物品带两条异域词条，站内把词条各自列成一条（「刺客之灵」），所以
+    // 选中「…之灵」时把同一格里的第二个槽放出来，选别的异域时收回并清空。
+    if (slot === '异域护甲' && !btn.dataset.only) {
+      var second = btn.parentNode.querySelector('[data-only]');
+      var on = !!row && row[0].slice(-SPIRIT.length) === SPIRIT;
+      if (second) {
+        if (!on && second.row) fill(second, null);
+        second.hidden = !on;
+      }
+    }
     // 4 件套在游戏里同时给 2 件效果，所以选了 4 件就把同一套的 2 件补进另一格。
     // 只补空格：另一格已经有东西，那是填表人自己选的，不替他改。
     if (btn.dataset.slot === '套装' && row && row[1] === '4 件') {
@@ -367,9 +391,9 @@
   function toggleTag(c) {
     c.setAttribute('aria-pressed',
       String(c.getAttribute('aria-pressed') !== 'true'));
-    var facet = c.closest('.facet');
+    var facet = c.parentNode.parentNode;
     facet.querySelector('input[type="hidden"]').value =
-      [].filter.call(facet.querySelectorAll('.tagset .chip'), function (b) {
+      [].filter.call(facet.querySelectorAll('.tagset > button'), function (b) {
         return b.getAttribute('aria-pressed') === 'true';
       }).map(function (b) { return b.textContent; }).join('、');
     write();
@@ -378,6 +402,9 @@
   /* 六维一格的写法。四个预设，值即源稿里的记法：不限 ~、至少 80+、指定 80、
      区间 150～200。四个词都是两个字，chip 排出来一样宽。
      **这张表只在这里定义一次**——生成器只出空格子，写法是纯 UI。 */
+  // 异域职业物品那些词条的词尾。生成器的 SPIRIT 是同一个字串，两处都按它认。
+  var SPIRIT = '之灵';
+
   var STAT_MODES = [['~', '不限'], ['+', '至少'], ['=', '指定'], ['-', '区间']];
 
   function statText(btn) {
@@ -536,6 +563,12 @@
   /* ── 源稿 ──────────────────────────────────────────────────────────
      输出格式与 convert-build.py 认的源稿逐字一致，空的那一行整行不写
      （源稿的约定就是「留空即整行删掉」，不写占位符）。 */
+  /* 更新时间不给输入框：填表人写的日期只会是「今天」，那台机器自己知道。 */
+  function today() {
+    var d = new Date();
+    return d.getFullYear() + '.' + (d.getMonth() + 1) + '.' + d.getDate();
+  }
+
   function val(key) {
     var el = sheet.querySelector('[data-key="' + key + '"]');
     return el ? el.value.trim() : '';
@@ -557,7 +590,7 @@
     var md = '# ' + (val('配装名') || '配装名') + '\n\n';
     md += line('推荐人', val('推荐人'));
     md += line('描述', val('描述'));
-    md += line('更新', val('更新'));
+    md += line('更新', today());
     md += line('场景', val('场景'));
     md += line('定位', val('定位'));
     md += line('分支', state.分支);
@@ -614,7 +647,7 @@
     if (add) { toggleAdd(add); return; }
     var step = e.target.closest('[data-step]');
     if (step) { bump(step); return; }
-    var tag = e.target.closest('.tagset .chip');
+    var tag = e.target.closest('.tagset > button');
     if (tag) { toggleTag(tag); return; }
     var stat = e.target.closest('button.stat');
     if (stat) { openStat(stat); return; }
