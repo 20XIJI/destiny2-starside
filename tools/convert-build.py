@@ -1,4 +1,4 @@
-"""推荐配装：references/builds/<赛季>/<slug>.md → builds/<赛季号>/<slug>/index.html。
+"""配装推荐：references/builds/<赛季>/<slug>.md → builds/<赛季号>/<slug>/index.html。
 
 用法：python3 tools/convert-build.py [slug]，省略 slug 即全部。
 
@@ -506,11 +506,11 @@ def render(idx, mv, arts, avatars, md, slug, season, name_cn):
     return '\n'.join(x for x in o if x != '') + '\n', title
 
 
-SITE_SECTION = '推荐配装'
+SITE_SECTION = '配装推荐'
 # 填表页在首页「攻略与工具」里就叫这个名字，面包屑与标题跟着它，一处定义。
-# 它不挂在推荐配装下面：首页直接进得来，读者也不必先看过配装才来填一份。
+# 它不挂在配装推荐下面：首页直接进得来，读者也不必先看过配装才来填一份。
 FORM_NAME = '配装工具'
-INDEX_DESC = '按职业分类的 Destiny 2 推荐配装：职业、武器、护甲、神器模组与六维属性，每一格都链回站内资料页。'
+INDEX_DESC = '按职业分类的 Destiny 2 配装推荐：职业、武器、护甲、神器模组与六维属性，每一格都链回站内资料页。'
 UP = '../../../'
 
 
@@ -688,7 +688,7 @@ def render_new(stamp, name_cn):
     候选不写进 HTML：两千条选项写进来就是把词表抄了第二份，由 form.js 按
     builds/vocab.js 建。这一页因此只有骨架，没有一个装备名。
     """
-    desc = '填一份推荐配装：选完技能、武器、护甲与神器模组，页面直接生成标准配装文本，复制发给站长即可挂上站。'
+    desc = '填一份配装推荐：选完技能、武器、护甲与神器模组，页面直接生成标准配装文本，复制发给站长即可挂上站。'
     o = [shell.head('%s · Starside' % FORM_NAME, desc, up=2,
                     sheets=['../style.css']),
          shell.nav(FORM_NAME, up=2),
