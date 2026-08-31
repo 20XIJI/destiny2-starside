@@ -412,6 +412,10 @@ def render_new(stamp):
          shell.nav('配装填表', up=2, parent=[SITE_SECTION]),
          shell.page_head('配装填表', desc),
          '<main>',
+         # 回索引的入口：这一页从首页「攻略与工具」直接进得来，顶部面包屑那一行
+         # 太轻，正文里给一条明确的。
+         '<p class="new-link"><a href="../index.html">← 推荐配装</a>'
+         '<span>看看已经上站的配装</span></p>',
          '<section class="block" id="sec-1">',
          '<h2 class="sect-label">填表</h2>',
          '<div id="form"></div>',
