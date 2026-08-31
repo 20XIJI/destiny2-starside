@@ -125,33 +125,12 @@
 "row": "武器激涌",
 "url": "https://www.bungie.net/common/destiny2_content/icons/c2fe612aa5de8e32052e4d679f13fb8b.png"
 },
-"动能混乱虹吸": {
-"anchor": "sec-1",
-"icon": "e57a2f1243.webp",
-"part": "头盔",
-"row": "虹吸",
-"url": "https://www.bungie.net/common/destiny2_content/icons/1b07a864b4c02af30c28bb524401bfb7.png"
-},
 "动能灵巧": {
 "anchor": "sec-2",
 "icon": "01bb3d99f3.webp",
 "part": "护臂",
 "row": "灵巧",
 "url": "https://www.bungie.net/common/destiny2_content/icons/f26dd22ff54d884dcb7dd47988249645.png"
-},
-"动能热量虹吸": {
-"anchor": "sec-1",
-"icon": "5842d61783.webp",
-"part": "头盔",
-"row": "虹吸",
-"url": "https://www.bungie.net/common/destiny2_content/icons/9166360285f06ec498943d7a5b6e1c19.png"
-},
-"动能电荷虹吸": {
-"anchor": "sec-1",
-"icon": "7ad3573186.webp",
-"part": "头盔",
-"row": "虹吸",
-"url": "https://www.bungie.net/common/destiny2_content/icons/fe43ec82456a170c93a9556bb6cd75e0.png"
 },
 "动能瞄准性能": {
 "anchor": "sec-1",
@@ -201,13 +180,6 @@
 "part": "胸甲",
 "row": "抗性",
 "url": "https://www.bungie.net/common/destiny2_content/icons/fe0331978affdc68f1825a8a94e444c9.png"
-},
-"烈日/缚丝双虹吸": {
-"anchor": "sec-1",
-"icon": "0f1d4b252c.webp",
-"part": "头盔",
-"row": "虹吸",
-"url": "https://www.bungie.net/common/destiny2_content/icons/e3a5df5fcd64153b1622e3f1ceb62e36.png"
 },
 "烈日回收器": {
 "anchor": "sec-4",
@@ -292,20 +264,6 @@
 "part": "胸甲",
 "row": "抗性",
 "url": "https://www.bungie.net/common/destiny2_content/icons/940545b1b27bab39eb6fbf059d26b0bc.png"
-},
-"电弧/冰影双虹吸": {
-"anchor": "sec-1",
-"icon": "da13149154.webp",
-"part": "头盔",
-"row": "虹吸",
-"url": "https://www.bungie.net/common/destiny2_content/icons/8b20acd1a243c966117e2e40a683b066.png"
-},
-"电弧/缚丝虹吸组合": {
-"anchor": "sec-1",
-"icon": "6265a6aee9.webp",
-"part": "头盔",
-"row": "虹吸",
-"url": "https://www.bungie.net/common/destiny2_content/icons/97317a9742097d356e815e3bb5d58d5a.png"
 },
 "电弧回收器": {
 "anchor": "sec-4",
@@ -481,20 +439,6 @@
 "part": "护臂",
 "row": "装弹装置",
 "url": "https://www.bungie.net/common/destiny2_content/icons/6bbcaf01caed921cbd98b83dee72e106.png"
-},
-"虚空/冰影双虹吸": {
-"anchor": "sec-1",
-"icon": "da13149154.webp",
-"part": "头盔",
-"row": "虹吸",
-"url": "https://www.bungie.net/common/destiny2_content/icons/8b20acd1a243c966117e2e40a683b066.png"
-},
-"虚空/缚丝双虹吸": {
-"anchor": "sec-1",
-"icon": "7d7420aab4.webp",
-"part": "头盔",
-"row": "虹吸",
-"url": "https://www.bungie.net/common/destiny2_content/icons/6ce0457b1c2b00dac1fe57545adf041e.png"
 },
 "虚空回收器": {
 "anchor": "sec-4",

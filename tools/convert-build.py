@@ -56,6 +56,12 @@ def names(md, key, required=True):
     return [x.strip() for x in v.split('、') if x.strip()]
 
 
+# 格档 → 图标边长。主角格（异域、传说枪、套装）56，配料格 32，rig 里的 Perk 24。
+# 两档的判据见 builds/style.css：主角格图左名右 13px，配料格 32px + 11.5px 不折行。
+CELL_ICON = {'item': 32, 'item gun': 56, 'item gear': 56, 'item set': 56,
+             'item perk-cell': 24}
+
+
 def icon_of(e, size):
     """词表条目的图标。图标一律是正方形，宽高只用来占位与定宽高比，所以按显示
     尺寸写；文件本身在它自己那一页里已经复核过「文件名即内容 md5」。"""
@@ -72,7 +78,7 @@ def item(idx, slot, name, prefer, kind=None, cls='item', bare=False, tail=''):
     才不会在换行时被拆到两行去。tail 接在名字后面（套装的「2 件」）。
     """
     e = vocab.pick(idx, name, slot, kind=kind, prefer=prefer)
-    icon = icon_of(e, 48)
+    icon = icon_of(e, CELL_ICON[cls])
     label = ('<span class="%s">%s</span>' % (e['token'], e['name'])
              if e['token'] else e['name'])
     sub = ('<span class="sub">%s</span>' % e['sub']) if e.get('sub') else ''
@@ -88,11 +94,10 @@ def item(idx, slot, name, prefer, kind=None, cls='item', bare=False, tail=''):
 # 绘制，不借字形（design.md 二节：⯁ 与 ◈ 在中文字体栈下无字形）。
 # 16×16 视框、1.4 描边、currentColor——颜色跟着标题走，不引入新色相。
 GLYPH = {
-    '超能与技能': 'M8 1.5 9.6 6.4 14.5 8 9.6 9.6 8 14.5 6.4 9.6 1.5 8 6.4 6.4Z',
+    # 技能：三道叠起来的尖角，读作「一组技能」。与近战那把刀、手雷那颗弹都不撞。
+    '技能': 'M4 6.5 8 3l4 3.5M4 10 8 6.5l4 3.5M4 13.5 8 10l4 3.5',
     '星相': 'M8 1.5 14.5 8 8 14.5 1.5 8Z',
     '碎片': 'M8 2 14 12.5H2Z',
-    '武器与 Perk': 'M2 11.5 11 2.5l2.5 2.5-9 9Zm2.5-2.5 2.5 2.5',
-    '装备与套装': 'M8 1.8 13.5 4v4.2c0 3-2.4 5-5.5 6-3.1-1-5.5-3-5.5-6V4Z',
     '头盔': 'M3 9a5 5 0 0 1 10 0v4H10v-2H6v2H3Z',
     '护臂': 'M4.5 2h7l-1 5 1.5 7h-8L5.5 7Z',
     '胸甲': 'M3 3.5h10l-1.5 9h-7Zm5 0v9',
@@ -117,15 +122,70 @@ def glyph(key):
             'stroke-linejoin="round"/></svg>' % GLYPH[key])
 
 
-def plain_cell(text):
-    """站内没有资料页的格子：纯文本，不伪装成链接。"""
-    return '<li><span class="item plain"><span class="nm">%s</span></span></li>' % text
+# 站内没有图的两类：位移技能连资料页都没有，神器在站内只是分节标题一行字。
+# 两张表都由 tools/mods.py 从官方物品表蒸馏，图标放 builds/icons/。
+EXTRAS = {'移动': ('moves.json', '--moves'), '神器本体': ('artifacts.json', '--arts')}
 
 
-def group(title, cells, key=None):
-    return ['<div class="slot">',
-            '<h3>%s<span>%s</span></h3>' % (glyph(key or title), title),
-            '<ul class="cells">'] + cells + ['</ul>', '</div>']
+def extra(kind):
+    """{名字: 图标路径}。查不到图标就中止——没图的格子在页面上看不出是漏了。"""
+    fname, flag = EXTRAS[kind]
+    path = os.path.join(shell.ROOT, 'tools', fname)
+    if not os.path.exists(path):
+        die('缺 tools/%s，跑一次 tools/mods.py %s <官方物品表>' % (fname, flag))
+    with open(path, encoding='utf-8') as f:
+        table = json.load(f)
+    for name, meta in table.items():
+        if not meta.get('icon'):
+            die('%s 还没有图标，跑一次 tools/mods.py --icons' % name)
+    return {n: 'builds/icons/%s' % m['icon'] for n, m in table.items()}
+
+
+def move_cell(name, table):
+    """位移技能的格子：有图有名，但不是链接——站内没有可跳的页面。"""
+    if name not in table:
+        die('「移动：%s」不在位移技能表里。官方叫法见 tools/moves.json：%s'
+            % (name, '、'.join(sorted(table))))
+    return ('<li><span class="item move">'
+            '<img src="%s%s" alt="" width="32" height="32" loading="lazy">'
+            '<span class="nm">%s</span></span></li>' % (UP, table[name], name))
+
+
+def group(title, cells, key=None, cols=None, tool='', icon=''):
+    """一个面板：标题 + 若干格。
+
+    --n 同时是两件事：格子网格的列数，以及这个面板在行里占的份额。两者相等，
+    所以同一行里各面板的格子宽度自然一致（护甲那五个部位是唯一的例外，它们
+    列数恒为 1、三枚模组竖排，见 render() 里 cols=1 那一处）。
+    """
+    n = len(cells) if cols is None else cols
+    mark = ('<img class="gl-img" src="%s%s" alt="" width="20" height="20">' % (UP, icon)
+            if icon else glyph(key or title))
+    head = ['<h3>%s<span>%s</span>%s</h3>' % (mark, title, tool)] if title else []
+    return (['<div class="slot" style="--n:%d">' % n] + head
+            + ['<ul class="cells">'] + cells + ['</ul>', '</div>'])
+
+
+def row(panels, cls=''):
+    """一行面板。行宽恒为版心：左右两缘落在同一条垂直线上，那是这一页的脊柱。
+
+    cls='lead' 的行不拉满——主角行最多三格，拉满会让一格宽到 500px。
+    """
+    return ['<div class="slot-row%s">' % (' ' + cls if cls else '')] + panels + ['</div>']
+
+
+def rig_of(cells, tool=''):
+    """一把枪与它的 Perk 包成一组，换行时不会被拆开——「岁时之巅」跟「聚合充能」
+    分处两行时，读者对不上哪个 Perk 属于哪把枪。
+
+    --n 是这一组在行里的份额，按格子实际需要的宽度加权，不按格数：枪是主角格
+    （56px 的图 + 13px 的名字），Perk 是配料格（24px + 11px）。等分会让独占一组的
+    异域枪只拿到七分之一行宽，「英勇利刃」四个字折成两行。
+    """
+    live = [c for c in cells if ' hidden' not in c]
+    guns = sum(1 for c in live if 'item gun' in c)
+    return ('<div class="rig" style="--n:%d">%s%s</div>'
+            % (guns * 16 + (len(live) - guns) * 10, ''.join(cells), tool))
 
 
 def people(md, avatars):
@@ -176,7 +236,7 @@ def stats_of(spec):
     return out
 
 
-def render(idx, avatars, md, slug, season, name_cn):
+def render(idx, mv, arts, avatars, md, slug, season, name_cn):
     title = must(re.match(r'^#\s+(.+)$', md.split('\n')[0]),
                  '源稿第一行必须是「# 配装名」').group(1).strip()
     stamp, desc = meta(md, '更新'), meta(md, '描述')
@@ -204,69 +264,90 @@ def render(idx, avatars, md, slug, season, name_cn):
     o = [shell.head('%s · %s · Starside' % (title, SITE_SECTION), desc_text, up=3,
                     sheets=['../../style.css']),
          shell.nav(title, up=3, parent=[SITE_SECTION, name_cn]),
-         '<main>',
+         # 分支色驱动整页的 UI 强调色：区段那枚方块、页头竖线、格子悬停的左缘都跟着
+         # 走。--accent 是 design.md 写明「子页面覆盖这一个即可换色」的槽位，六个元素
+         # 页就是这么做的；这里不新增任何渲染色。
+         '<main class="b-%s">' % BRANCH[branch],
+         # 页头去盒：核心异域在左，一道由 align-items: stretch 撑满高度的竖线，右侧
+         # 是配装名与铭牌。与全站 .page-head 同形（h1 + 一道发丝线），与首页
+         # .wordmark-row 同语言。
          '<header class="build-head">',
          '<span class="core">%s</span>' % icon_of(core_e, 96),
          '<div class="build-id">',
-         '<h1>%s<span class="cls">%s<span>%s · %s</span></span></h1>'
-         % (title, icon_of(vocab.pick(idx, meta(md, '职业'), '职业', kind='分节'), 28),
+         '<h1>%s</h1>' % title,
+         '<p class="cls">%s%s · %s<span class="season">%s · %s</span></p>'
+         % (icon_of(vocab.pick(idx, meta(md, '职业'), '职业', kind='分节'), 22),
             meta(md, '职业'),
-            '<span class="%s">%s</span>' % (ELEMENT_TOKEN[branch], branch)),
+            '<span class="%s">%s</span>' % (ELEMENT_TOKEN[branch], branch),
+            season.upper(), name_cn),
          '<p class="desc">%s</p>' % inline(desc, rich=True),
-         '<p class="by">%s</p>' % ''.join(people(md, avatars)),
-         '<ul class="tags">%s</ul>'
-         % ''.join('<li>%s</li>' % t for t in names(md, '场景') + names(md, '定位')),
-         '<p class="season">%s · %s</p>' % (season.upper(), name_cn),
+         '<div class="by">%s<ul class="tags">%s</ul></div>'
+         % (''.join(people(md, avatars)),
+            ''.join('<li>%s</li>' % t for t in names(md, '场景') + names(md, '定位'))),
          '</div>', '</header>', '']
 
-    # 三块按参考图那种读法分：先是职业与技能，再是星相，最后碎片。
-    # 「职业」与「移动」不查表——职业是三选一，移动手段站内还没有资料页。
-    skills = [item(idx, '超能', meta(md, '超能'), prefer)]
+    # 职业：一行三个面板（超能 · 技能 · 星相），碎片单独一行。
+    # 「技能」收的是手雷、近战、移动与职业技能——游戏里是四个键位，在配装表里是
+    # 同一档信息，分成四个面板会把一行豁成四段。碎片恒为五枚，与上一行的格数对不
+    # 齐，所以自己占一行。「职业」与「移动」不查表：职业是三选一，移动手段站内还
+    # 没有资料页。
+    skills = []
     for key in ('手雷', '近战'):
         for n in names(md, key, required=False):
             skills.append(item(idx, key, n, prefer))
     if meta(md, '移动', required=False):
-        skills.append(plain_cell(meta(md, '移动')))
+        skills.append(move_cell(meta(md, '移动'), mv))
     for n in names(md, '职业技能', required=False):
         skills.append(item(idx, '职业技能', n, prefer))
     o += ['<section class="block" id="sec-1">', '<h2 class="sect-label">职业</h2>']
-    o += group('超能与技能', skills)
-    o += group('星相', [item(idx, '星相', n, prefer) for n in names(md, '星相')])
-    o += group('碎片', [item(idx, '碎片', n, prefer) for n in names(md, '碎片')])
+    o += row(group('超能', [item(idx, '超能', meta(md, '超能'), prefer)])
+             + group('技能', skills)
+             + group('星相', [item(idx, '星相', n, prefer) for n in names(md, '星相')]))
+    o += row(group('碎片', [item(idx, '碎片', n, prefer) for n in names(md, '碎片')]))
     o += ['</section>', '']
 
-    # 一把枪与它的 Perk 包成一组，换行时不会被拆开——「岁时之巅」跟「聚合充能」
-    # 分处两行时，读者对不上哪个 Perk 属于哪把枪。
-    guns = []
+    # 武器：一把枪一组。面板不给标题——上面那行 sect-label 已经写着「武器」，再写一遍
+    # 「武器与 Perk」是噪声，格子形状（56px 图的是枪，24px 图的是 Perk）自己说明身份。
+    rigs = []
     if exotics[0]:
-        guns.append('<li class="rig">%s</li>'
-                    % item(idx, '异域武器', exotics[0], prefer, cls='item gun', bare=True))
+        rigs.append(rig_of([item(idx, '异域武器', exotics[0], prefer,
+                                 cls='item gun', bare=True)]))
     for line in re.findall(r'^传说武器：(.*)$', md, re.M):
         gun, _, perks = line.partition('|')
-        rig = [item(idx, '传说武器', gun.strip(), prefer, cls='item gun', bare=True)]
-        rig += [item(idx, 'Perk', p.strip(), prefer, cls='item perk-cell', bare=True)
-                for p in perks.split('、') if p.strip()]
-        guns.append('<li class="rig">%s</li>' % ''.join(rig))
+        cells = [item(idx, '传说武器', gun.strip(), prefer, cls='item gun', bare=True)]
+        cells += [item(idx, 'Perk', p.strip(), prefer, cls='item perk-cell', bare=True)
+                  for p in perks.split('、') if p.strip()]
+        rigs.append(rig_of(cells))
     o += ['<section class="block" id="sec-2">',
-          '<h2 class="sect-label">武器</h2>'] + group('武器与 Perk', guns) + ['</section>', '']
+          '<h2 class="sect-label">武器</h2>'] + row(rigs) + ['</section>', '']
 
     # 神器模组页的 7 个分节就是 7 件神器，模组归属写在分节标题上。源稿先写用的是
     # 哪一件，模组按它限定——「电介质」在加密数据盘与废墟石板下各有一条，不限定
     # 就只能猜；限定之后，混进别件神器的模组当场中止。
     art = meta(md, '神器')
     mods = [item(idx, '神器', n, prefer, kind=art) for n in names(md, '模组')]
-    o += ['<section class="block" id="sec-3">',
-          '<h2 class="sect-label">神器模组</h2>'] + group(art, mods, key='神器')
+    o += ['<section class="block" id="sec-3">', '<h2 class="sect-label">神器模组</h2>']
+    if art not in arts:
+        die('「神器：%s」不在神器表里。站内那一页的七个分节即是全部：%s'
+            % (art, '、'.join(sorted(arts))))
+    o += row(group(art, mods, icon=arts[art]))
     o += ['</section>', '']
 
-    armor = [item(idx, '异域护甲', exotics[1], prefer, cls='item gear')] if exotics[1] else []
-    armor += sets_of(idx, meta(md, '套装'))
-    o += ['<section class="block" id="sec-4">',
-          '<h2 class="sect-label">护甲</h2>'] + group('装备与套装', armor)
+    # 护甲：主角行（异域护甲 + 套装）不拉满——它最多三格，拉满会让一格宽到 500px；
+    # 格子封顶、左对齐，右侧留白读作呼吸。部位行五个部位并排，每列三枚模组竖排，
+    # 合起来是一张 5×3 的矩阵，那是这一页的视觉重心。
+    lead = [item(idx, '异域护甲', exotics[1], prefer, cls='item gear')] if exotics[1] else []
+    lead += sets_of(idx, meta(md, '套装'))
+    o += ['<section class="block" id="sec-4">', '<h2 class="sect-label">护甲</h2>']
+    o += row(group('', lead), cls='lead')
+    parts = []
     for part in PARTS:
-        mods = names(md, part, required=False)
-        if mods:
-            o += group(part, [item(idx, '护甲模组', n, prefer, kind=part) for n in mods])
+        got = names(md, part, required=False)
+        if got:
+            parts.append(group(part, [item(idx, '护甲模组', n, prefer, kind=part)
+                                      for n in got], cols=1))
+    if parts:
+        o += row([x for panel in parts for x in panel])
     o += ['</section>', '']
 
     o += ['<section class="block" id="sec-5">',
@@ -315,7 +396,8 @@ def build(idx, dirname, season, name_cn, slug):
     # md5」，那是给图标目录设一年浏览器缓存的前提。词表查出来的图标不走这里，
     # 它们在各自那一页已经复核过。
     avatars = Icons(os.path.join(shell.ROOT, OUT_DIR), 1)
-    out, title = render(idx, avatars, md, slug, season, name_cn)
+    out, title = render(idx, extra('移动'), extra('神器本体'), avatars,
+                        md, slug, season, name_cn)
     check(out, slug)
     shell.emit(outdir, out, title)
     core = vocab.pick(idx, meta(md, '核心'),
@@ -324,7 +406,7 @@ def build(idx, dirname, season, name_cn, slug):
     return {'u': '%s/%s/%s/index.html' % (OUT_DIR, season, slug), 't': title,
             'season': season, 'slug': slug, 'stamp': meta(md, '更新'),
             'desc': text_of(inline(meta(md, '描述'), rich=True), collapse=True), 'class': meta(md, '职业'),
-            'tags': names(md, '场景') + names(md, '定位'),
+            'tags': names(md, '场景') + names(md, '定位'), 'branch': BRANCH[meta(md, '分支')],
             'by': ''.join(people(md, avatars)),
             'core': '<span class="node">%s</span>' % icon_of(core, 64).replace(UP, '../')}
 
@@ -333,6 +415,8 @@ def render_index(made):
     """builds/index.html：当前赛季的配装卡片，按三个职业分节。
 
     卡片复用首页那套 .entry 形状（左图标 + 正文 + 右列），不为配装另造一种卡。
+    每张卡落一个分支类，.entry 左缘那条 2px 亮边因此跟着该配装的元素色走——
+    一屏卡片扫下来，棱镜与冰影一眼分得开。
     筛选交给工具条那只搜索框——把卡片声明成 data-item，输入「地牢」就滤出带
     地牢标签的卡片，零新代码。多标签 chip 筛选等配装过二十套再说。
     """
@@ -360,7 +444,8 @@ def render_index(made):
         o += ['<section class="block" id="sec-%d">' % n,
               '<h2 class="sect-label">%s</h2>' % cls, '<ul class="entries">']
         for m in mine:
-            o += ['<li>', '<a class="entry" href="%s/%s/index.html">'
+            o += ['<li class="b-%s">' % m['branch'],
+                  '<a class="entry" href="%s/%s/index.html">'
                   % (m['season'], m['slug']),
                   m['core'],
                   '<span class="entry-body">',
@@ -378,56 +463,206 @@ def render_index(made):
 
 
 def render_vocab(idx):
-    """builds/vocab.js：填表页那几个下拉的选项表。
+    """builds/vocab.js：填表页的词表。
 
     与生成器查的是同一份词表，所以填表页列得出来的名字，生成器一定查得到；
     表只建一次，两处用。一条一行，git 存得下增量。
+
+    一行七列 [名字, 分节, 页面, 图标, 着色, 副名, 位置]，尾部的空列剥掉。
+    位置只有神器模组给（'行,档'），填表页照它把选择器摆成 7 列 × 3 行。页面那一列是
+    填表页收窄候选的依据：源稿一选「分支：棱镜」，五个技能槽就只留 elements/
+    prismatic 那一页的条目——与生成器 vocab.pick(prefer=…) 同一条规则。
+
+    五个技能槽指向同一组元素页，候选完全相同，所以只存一份、其余指过来：
+    存五遍是把同一份 316 行抄了五次。
     """
     by_slot = {}
     for hits in idx.values():
         for e in hits:
             for slot, pages in vocab.SLOTS.items():
                 if e['page'] in pages:
-                    by_slot.setdefault(slot, set()).add((e['name'], e['kind']))
-    rows = []
+                    by_slot.setdefault(slot, set()).add(
+                        (e['name'], e['kind'], e['page'], e['icon'],
+                         e['token'], e.get('sub', ''), e.get('pos', '')))
+    # 页面集合相同的槽位共用一份列表，键取头一个用到它的槽位名。
+    owner, slots = {}, {}
     for slot in vocab.SLOTS:
-        opts = sorted(by_slot.get(slot, ()))
-        rows.append('%s:[%s]' % (json.dumps(slot, ensure_ascii=False),
-                                 ','.join(json.dumps([n, k], ensure_ascii=False)
-                                          for n, k in opts)))
-    body = 'window.starsideVocab = {\n%s\n};\n' % ',\n'.join(rows)
+        key = vocab.SLOTS[slot]
+        owner.setdefault(key, slot)
+        slots[slot] = owner[key]
+    # 位移技能不在 vocab.SLOTS 里——它没有来源页，名字与图标来自官方物品表。
+    # 填表页照样要选得到，所以在这里并成一份普通的列表。
+    for kind, tag in (('移动', '位移技能'), ('神器本体', '神器')):
+        by_slot[kind] = {(n, tag, '', icon, '', '', '') for n, icon in extra(kind).items()}
+        owner[('__%s__' % kind,)] = kind
+        slots[kind] = kind
+    rows = []
+    for key, slot in owner.items():
+        cells = []
+        for cols in sorted(by_slot.get(slot, ())):
+            cols = list(cols)
+            while cols and cols[-1] == '':
+                cols.pop()
+            cells.append(json.dumps(cols, ensure_ascii=False))
+        rows.append('%s:[%s]' % (json.dumps(slot, ensure_ascii=False), ','.join(cells)))
+    body = ('window.starsideVocab = {\nlists: {\n%s\n},\nslots: %s\n};\n'
+            % (',\n'.join(rows), json.dumps(slots, ensure_ascii=False)))
     path = os.path.join(shell.ROOT, OUT_DIR, 'vocab.js')
     with open(path, 'w', encoding='utf-8') as f:
         f.write(body)
-    print('builds/vocab.js —— %.1f KB，%d 个槽位'
-          % (len(body.encode()) / 1024, len(by_slot)))
+    print('builds/vocab.js —— %.1f KB，%d 个槽位共 %d 份列表'
+          % (len(body.encode()) / 1024, len(slots), len(owner)))
+
+
+def slot_cell(slot, kind='', cls='item', label='', bare=False, hidden=False,
+              addable=''):
+    """填表页的空槽：点开就地展开图标网格，选中即落成与详情页一模一样的成品格。
+
+    版面与候选范围写在这里一处，form.js 从 data-* 现读、不重抄一份——与 app.js
+    从 .toolbar 的 data-* 读配置同一条约定。
+
+    label 写在格子上当提示。面板标题已经说了这一格装什么的（碎片面板里的五个碎片
+    格）只写一个加号；一个面板里几个格装的东西不一样时（技能面板里的手雷、近战、
+    移动、职业技能）逐格写出来，不然填的人认不出该往哪一格填。
+
+    bare 只出按钮本身，不套 <li>——rig 是 <div> 不是 <ul>，套了会多出一排项目符号。
+    """
+    # data-addable 是「这一格由某枚按钮叫出来」的记号，按钮上的 data-add 与它对上。
+    # 记号落在最外层：不套 <li> 的（rig 里的格子）就落在按钮自己身上。
+    mark = (' data-addable="%s"' % addable if addable else '') + (' hidden' if hidden else '')
+    cell = ('<button type="button" class="%s empty" data-slot="%s"%s%s>'
+            '<span class="nm">%s</span></button>'
+            % (cls, slot, ' data-kind="%s"' % kind if kind else '',
+               mark if bare else '', label or '+'))
+    return cell if bare else '<li%s>%s</li>' % (mark, cell)
 
 
 def render_new(stamp):
-    """builds/new/index.html：填表页。表单由 form.js 按 vocab.js 建出来——
-    选项两千条，写进 HTML 就是把词表抄了第二份。"""
+    """builds/new/index.html：填表页。
+
+    产出的是**与详情页同构的空槽版面**——同一套 group()/row()/glyph()，同一批
+    CSS 类。填的人看着成品的形状往里填，填完页面就是成品。
+
+    候选不写进 HTML：两千条选项写进来就是把词表抄了第二份，由 form.js 按
+    builds/vocab.js 建。这一页因此只有骨架，没有一个装备名。
+    """
     desc = '填一份推荐配装：选完技能、武器、护甲与神器模组，页面直接生成标准源稿，复制发给站长即可挂上站。'
     o = [shell.head('配装填表 · %s · Starside' % SITE_SECTION, desc, up=2,
                     sheets=['../style.css']),
          shell.nav('配装填表', up=2, parent=[SITE_SECTION]),
-         shell.page_head('配装填表', desc),
-         '<main>',
+         '<main id="sheet">',
          # 回索引的入口：这一页从首页「攻略与工具」直接进得来，顶部面包屑那一行
          # 太轻，正文里给一条明确的。
          '<p class="new-link"><a href="../index.html">← 推荐配装</a>'
          '<span>看看已经上站的配装</span></p>',
-         '<section class="block" id="sec-1">',
-         '<h2 class="sect-label">填表</h2>',
-         '<div id="form"></div>',
-         '<h2 class="sect-label">生成的源稿</h2>',
-         '<textarea id="out" readonly rows="28" spellcheck="false"></textarea>',
-         '<p><button id="copy" type="button">复制</button></p>',
-         '</section>',
-         '</main>', '',
-         shell.foot(stamp, '，选项与站内资料页同一份词表，列得出来的名字生成器就查得到。'),
-         '<script src="../vocab.js"></script>',
-         '<script src="form.js" defer></script>']
+         # 页头与详情页同形，可填的那几处换成输入位。核心不给选择器：它必须等于
+         # 本页的异域武器或异域护甲之一，所以由那两格现有的选择填出来。
+         '<header class="build-head">',
+         '<span class="core"><span class="item empty" id="f-core-art">'
+         '<span class="nm">核心</span></span></span>',
+         '<div class="build-id">',
+         '<h1><input data-key="配装名" placeholder="配装名" aria-label="配装名"></h1>',
+         '<p class="cls"><span class="pick-line" data-pick="职业"></span>'
+         '<span class="pick-line" data-pick="分支"></span>'
+         '<label class="mini">核心<select data-key="核心" aria-label="核心"></select></label>'
+         '<label class="mini">更新<input data-key="更新" placeholder="%s" aria-label="更新"></label></p>'
+         % stamp,
+         '<p class="desc"><input data-key="描述" placeholder="一句话说清这套配装靠什么打" '
+         'aria-label="描述"></p>',
+         '<div class="by"><input data-key="推荐人" placeholder="推荐人（名字 | 链接 | 头像）" '
+         'aria-label="推荐人">'
+         '<input data-key="场景" placeholder="场景：地牢、夜幕" aria-label="场景">'
+         '<input data-key="定位" placeholder="定位：清怪、续航" aria-label="定位"></div>',
+         '</div>', '</header>', '']
+
+    o += ['<section class="block" id="sec-1">', '<h2 class="sect-label">职业</h2>']
+    o += row(group('超能', [slot_cell('超能')])
+             + group('技能', [slot_cell('手雷', label='手雷'),
+                             slot_cell('近战', label='近战'),
+                             slot_cell('职业技能', label='职业技能'),
+                             # 移动默认收起：绝大多数配装不指定跳跃方式，
+                             # 常驻一个空格子只是噪声。按钮叫出来才有。
+                             slot_cell('移动', label='移动', hidden=True,
+                                       addable='移动')],
+                     cols=3,
+                     tool='<button type="button" class="slot-tool" data-add="移动">'
+                          '＋ 移动</button>')
+             + group('星相', [slot_cell('星相')] * 2))
+    # 碎片格数按配装变（棱镜五枚，别的分支可能少一枚或多到六枚），所以出满上限
+    # 六格、默认显示五格，多的收起来，由标题右边那个计数器加减。
+    o += row(group('碎片', [slot_cell('碎片', hidden=i >= 5) for i in range(6)],
+                   cols=5,
+                   tool='<span class="slot-count" data-count="碎片">'
+                        '<button type="button" data-step="-1" aria-label="少一格">−</button>'
+                        '<b>5</b>'
+                        '<button type="button" data-step="1" aria-label="多一格">+</button>'
+                        '</span>'))
+    o += ['</section>', '']
+
+    o += ['<section class="block" id="sec-2">', '<h2 class="sect-label">武器</h2>']
+    def gun_rig(name):
+        # Perk 那两格只列「武器 PERK」：一把枪的两列可选 Perk 就是这一类。起源特性
+        # 是另一条线（一把枪固定带一个，随出处走），混在同一份候选里挑不出来，
+        # 所以单给一格、默认收起，按 ＋ 才出来。
+        return rig_of([slot_cell(name, cls='item gun', label=name, bare=True),
+                       slot_cell('Perk', kind='武器 PERK', cls='item perk-cell',
+                                 label='Perk', bare=True),
+                       slot_cell('Perk', kind='武器 PERK', cls='item perk-cell',
+                                 label='Perk', bare=True),
+                       slot_cell('Perk', kind='起源特性', cls='item perk-cell',
+                                 label='起源特性', bare=True, hidden=True,
+                                 addable='起源特性')],
+                      tool='<button type="button" class="slot-tool" data-add="起源特性"'
+                           ' title="加一个起源特性" aria-label="加一个起源特性">'
+                           '＋</button>')
+
+    o += row([rig_of([slot_cell('异域武器', cls='item gun', label='异域武器',
+                                bare=True)]),
+              gun_rig('传说武器'), gun_rig('传说武器')])
+    o += ['</section>', '']
+
+    # 神器先选件，七个模组按它限定——「电介质」在加密数据盘与废墟石板下各有一条。
+    o += ['<section class="block" id="sec-3">', '<h2 class="sect-label">神器模组</h2>']
+    o += row(group('', [slot_cell('神器', kind='__art__', cls='item gear',
+                                  label='选一件神器')]), cls='lead')
+    o += row(group('', [slot_cell('神器')] * 7))
+    o += ['</section>', '']
+
+    o += ['<section class="block" id="sec-4">', '<h2 class="sect-label">护甲</h2>']
+    o += row(group('', [slot_cell('异域护甲', cls='item gear', label='异域护甲'),
+                        slot_cell('套装', cls='item set', label='套装'),
+                        slot_cell('套装', cls='item set', label='套装（可选）')]),
+             cls='lead')
+    o += row([x for part in PARTS
+              for x in group(part, [slot_cell('护甲模组', kind=part)] * 3, cols=1)])
+    o += ['</section>', '']
+
+    o += ['<section class="block" id="sec-5">', '<h2 class="sect-label">六维</h2>',
+          '<ul class="stats">']
+    o += ['<li>%s<span class="nm">%s</span>'
+          '<input class="val" data-key="六维%s" placeholder="~" aria-label="%s"></li>'
+          % (glyph(k), k, k, k) for k in STATS]
+    o += ['</ul>', '</section>', '']
+
+    o += ['<section class="block" id="sec-6">', '<h2 class="sect-label">注解</h2>',
+          '<textarea data-key="注解" rows="4" '
+          'placeholder="备选装备、打法要点，与资料页正文同一套标记" aria-label="注解"></textarea>',
+          '</section>', '',
+          '<section class="block" id="sec-7">',
+          '<h2 class="sect-label">生成的源稿</h2>',
+          '<details id="src"><summary>展开源稿，复制发给站长</summary>',
+          '<textarea id="out" readonly rows="28" spellcheck="false"></textarea>',
+          '<p><button id="copy" type="button">复制</button>'
+          '<span id="copy-tip" role="status"></span></p>',
+          '</details>', '</section>', '',
+          '</main>', '',
+          shell.foot(stamp, '，选项与站内资料页同一份词表，列得出来的名字生成器就查得到。')]
     out = '\n'.join(x for x in o if x != '') + '\n'
+    # 两个 script 要落在 </body> 之前。shell.foot() 已经吐了 </body></html>，
+    # 直接往后接会让它们跑到文档外面去。
+    out = out.replace('\n</body>\n',
+                      '\n<script src="../vocab.js" defer></script>\n'
+                      '<script src="form.js" defer></script>\n</body>\n')
     shell.emit(os.path.join(shell.ROOT, OUT_DIR, 'new'), out, '配装填表')
 
 
@@ -449,8 +684,11 @@ def check(out, slug):
     for want in ('<h1>', 'class="build-head"', 'class="stats"'):
         if want not in out:
             die('%s 的产出里缺 %s' % (slug, want))
-    if '{' in out[out.index('<main>'):out.index('</main>')]:
+    if '{' in out[out.index('<main'):out.index('</main>')]:
         die('%s 有没转换的着色标记' % slug)
+    # 面板的 --n 同时是格子列数与行内份额，缺了它整行会塌成等宽，眼睛查不出来。
+    if out.count('<div class="slot"') != out.count('<div class="slot" style="--n:'):
+        die('%s 有面板没写 --n' % slug)
 
 
 def main():

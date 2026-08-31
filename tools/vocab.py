@@ -41,7 +41,8 @@ SECTION = re.compile(r'<section class="(?:block|artifact|cat)" id="([^"]+)"')
 LABEL = re.compile(r'<h2[^>]*>(.*?)</h2>', re.S)
 ROW = re.compile(r'<tr>\s*<th scope="row">(.*?)</th>(.*?)</tr>', re.S)
 LANE = re.compile(r'<tr class="lane">\s*<th[^>]*>(.*?)</th>', re.S)
-MOD = re.compile(r'<article class="mod"[^>]*>\s*<img[^>]*src="([^"]+)"[^>]*>\s*<h4>(.*?)</h4>', re.S)
+MOD = re.compile(r'<article class="mod" data-tier="(\d)"[^>]*>\s*'
+                 r'<img[^>]*src="([^"]+)"[^>]*>\s*<h4>(.*?)</h4>', re.S)
 SET = re.compile(r'<article class="set" id="([^"]+)">(.*?)</article>', re.S)
 BONUS = re.compile(r'<img class="bonus-icon" src="([^"]+)"[^>]*>'
                    r'<span class="piece">(.*?)</span><span class="bonus-name">(.*?)</span>', re.S)
@@ -70,8 +71,10 @@ def searchable(page, html=None):
     return SEARCHABLE[page]
 
 
-def entry(page, anchor, kind, name, icon, sub='', q=''):
-    return {'page': page, 'anchor': anchor, 'kind': kind, 'name': name,
+def entry(page, anchor, kind, name, icon, sub='', q='', pos=''):
+    # pos 只有神器模组给：'行,档' —— 那一页每件神器恰好七行、每行一/二/三级三枚，
+    # 填表页的选择器照这个位置摆成 7 列 × 3 行，与神器盘同形，挑起来不用数。
+    return {'page': page, 'anchor': anchor, 'kind': kind, 'name': name, 'pos': pos,
             'icon': '%s/%s' % (page, icon) if icon else '',
             # q 是落地时的过滤词，'—' 表示这一条不过滤（分节标题那一类）
             'token': TOKENS[page], 'sub': sub, 'q': '' if q == '—' else (q or name)}
@@ -90,8 +93,9 @@ def scan_page(page):
         head = LABEL.search(body)
         label = text_of(head.group(1), collapse=True) if head else ''
         if page == 'artifact-mods':
-            out += [entry(page, anchor, label, text_of(n, collapse=True), i)
-                    for i, n in MOD.findall(body)]
+            for k, (tier, icon, n) in enumerate(MOD.findall(body)):
+                out.append(entry(page, anchor, label, text_of(n, collapse=True), icon,
+                                 pos='%d,%s' % (k // 3, tier)))
             continue
         if page == 'armor-sets':
             for sid, set_body in SET.findall(body):
@@ -165,7 +169,7 @@ def variants():
                 % (meta['icon'], want))
         out.append({'page': 'armor-mods', 'anchor': meta['anchor'], 'kind': meta['part'],
                     'name': name, 'icon': 'armor-mods/icons/%s' % meta['icon'],
-                    'token': '', 'sub': meta['row'],
+                    'token': '', 'sub': meta['row'], 'pos': '',
                     # 落地过滤用复合行的名字：变体名在那一页一次都不出现，
                     # 拿它去过滤会滤成空页，看着像跳错了。
                     'q': meta['row']})

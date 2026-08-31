@@ -28,19 +28,163 @@
 </nav>
 </div>
 
-<header class="page-head">
-<h1>配装填表</h1>
-<p class="page-note">填一份推荐配装：选完技能、武器、护甲与神器模组，页面直接生成标准源稿，复制发给站长即可挂上站。</p>
-</header>
-
-<main>
+<main id="sheet">
 <p class="new-link"><a href="../index.html">← 推荐配装</a><span>看看已经上站的配装</span></p>
+<header class="build-head">
+<span class="core"><span class="item empty" id="f-core-art"><span class="nm">核心</span></span></span>
+<div class="build-id">
+<h1><input data-key="配装名" placeholder="配装名" aria-label="配装名"></h1>
+<p class="cls"><span class="pick-line" data-pick="职业"></span><span class="pick-line" data-pick="分支"></span><label class="mini">核心<select data-key="核心" aria-label="核心"></select></label><label class="mini">更新<input data-key="更新" placeholder="2026.8.31" aria-label="更新"></label></p>
+<p class="desc"><input data-key="描述" placeholder="一句话说清这套配装靠什么打" aria-label="描述"></p>
+<div class="by"><input data-key="推荐人" placeholder="推荐人（名字 | 链接 | 头像）" aria-label="推荐人"><input data-key="场景" placeholder="场景：地牢、夜幕" aria-label="场景"><input data-key="定位" placeholder="定位：清怪、续航" aria-label="定位"></div>
+</div>
+</header>
 <section class="block" id="sec-1">
-<h2 class="sect-label">填表</h2>
-<div id="form"></div>
+<h2 class="sect-label">职业</h2>
+<div class="slot-row">
+<div class="slot" style="--n:1">
+<h3><svg class="gl" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 9.6 6.4 14.5 8 9.6 9.6 8 14.5 6.4 9.6 1.5 8 6.4 6.4Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span>超能</span></h3>
+<ul class="cells">
+<li><button type="button" class="item empty" data-slot="超能"><span class="nm">+</span></button></li>
+</ul>
+</div>
+<div class="slot" style="--n:3">
+<h3><svg class="gl" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6.5 8 3l4 3.5M4 10 8 6.5l4 3.5M4 13.5 8 10l4 3.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span>技能</span><button type="button" class="slot-tool" data-add="移动">＋ 移动</button></h3>
+<ul class="cells">
+<li><button type="button" class="item empty" data-slot="手雷"><span class="nm">手雷</span></button></li>
+<li><button type="button" class="item empty" data-slot="近战"><span class="nm">近战</span></button></li>
+<li><button type="button" class="item empty" data-slot="职业技能"><span class="nm">职业技能</span></button></li>
+<li data-addable="移动" hidden><button type="button" class="item empty" data-slot="移动"><span class="nm">移动</span></button></li>
+</ul>
+</div>
+<div class="slot" style="--n:2">
+<h3><svg class="gl" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 14.5 8 8 14.5 1.5 8Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span>星相</span></h3>
+<ul class="cells">
+<li><button type="button" class="item empty" data-slot="星相"><span class="nm">+</span></button></li>
+<li><button type="button" class="item empty" data-slot="星相"><span class="nm">+</span></button></li>
+</ul>
+</div>
+</div>
+<div class="slot-row">
+<div class="slot" style="--n:5">
+<h3><svg class="gl" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14 12.5H2Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span>碎片</span><span class="slot-count" data-count="碎片"><button type="button" data-step="-1" aria-label="少一格">−</button><b>5</b><button type="button" data-step="1" aria-label="多一格">+</button></span></h3>
+<ul class="cells">
+<li><button type="button" class="item empty" data-slot="碎片"><span class="nm">+</span></button></li>
+<li><button type="button" class="item empty" data-slot="碎片"><span class="nm">+</span></button></li>
+<li><button type="button" class="item empty" data-slot="碎片"><span class="nm">+</span></button></li>
+<li><button type="button" class="item empty" data-slot="碎片"><span class="nm">+</span></button></li>
+<li><button type="button" class="item empty" data-slot="碎片"><span class="nm">+</span></button></li>
+<li hidden><button type="button" class="item empty" data-slot="碎片"><span class="nm">+</span></button></li>
+</ul>
+</div>
+</div>
+</section>
+<section class="block" id="sec-2">
+<h2 class="sect-label">武器</h2>
+<div class="slot-row">
+<div class="rig" style="--n:16"><button type="button" class="item gun empty" data-slot="异域武器"><span class="nm">异域武器</span></button></div>
+<div class="rig" style="--n:36"><button type="button" class="item gun empty" data-slot="传说武器"><span class="nm">传说武器</span></button><button type="button" class="item perk-cell empty" data-slot="Perk" data-kind="武器 PERK"><span class="nm">Perk</span></button><button type="button" class="item perk-cell empty" data-slot="Perk" data-kind="武器 PERK"><span class="nm">Perk</span></button><button type="button" class="item perk-cell empty" data-slot="Perk" data-kind="起源特性" data-addable="起源特性" hidden><span class="nm">起源特性</span></button><button type="button" class="slot-tool" data-add="起源特性" title="加一个起源特性" aria-label="加一个起源特性">＋</button></div>
+<div class="rig" style="--n:36"><button type="button" class="item gun empty" data-slot="传说武器"><span class="nm">传说武器</span></button><button type="button" class="item perk-cell empty" data-slot="Perk" data-kind="武器 PERK"><span class="nm">Perk</span></button><button type="button" class="item perk-cell empty" data-slot="Perk" data-kind="武器 PERK"><span class="nm">Perk</span></button><button type="button" class="item perk-cell empty" data-slot="Perk" data-kind="起源特性" data-addable="起源特性" hidden><span class="nm">起源特性</span></button><button type="button" class="slot-tool" data-add="起源特性" title="加一个起源特性" aria-label="加一个起源特性">＋</button></div>
+</div>
+</section>
+<section class="block" id="sec-3">
+<h2 class="sect-label">神器模组</h2>
+<div class="slot-row lead">
+<div class="slot" style="--n:1">
+<ul class="cells">
+<li><button type="button" class="item gear empty" data-slot="神器" data-kind="__art__"><span class="nm">选一件神器</span></button></li>
+</ul>
+</div>
+</div>
+<div class="slot-row">
+<div class="slot" style="--n:7">
+<ul class="cells">
+<li><button type="button" class="item empty" data-slot="神器"><span class="nm">+</span></button></li>
+<li><button type="button" class="item empty" data-slot="神器"><span class="nm">+</span></button></li>
+<li><button type="button" class="item empty" data-slot="神器"><span class="nm">+</span></button></li>
+<li><button type="button" class="item empty" data-slot="神器"><span class="nm">+</span></button></li>
+<li><button type="button" class="item empty" data-slot="神器"><span class="nm">+</span></button></li>
+<li><button type="button" class="item empty" data-slot="神器"><span class="nm">+</span></button></li>
+<li><button type="button" class="item empty" data-slot="神器"><span class="nm">+</span></button></li>
+</ul>
+</div>
+</div>
+</section>
+<section class="block" id="sec-4">
+<h2 class="sect-label">护甲</h2>
+<div class="slot-row lead">
+<div class="slot" style="--n:3">
+<ul class="cells">
+<li><button type="button" class="item gear empty" data-slot="异域护甲"><span class="nm">异域护甲</span></button></li>
+<li><button type="button" class="item set empty" data-slot="套装"><span class="nm">套装</span></button></li>
+<li><button type="button" class="item set empty" data-slot="套装"><span class="nm">套装（可选）</span></button></li>
+</ul>
+</div>
+</div>
+<div class="slot-row">
+<div class="slot" style="--n:1">
+<h3><svg class="gl" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 9a5 5 0 0 1 10 0v4H10v-2H6v2H3Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span>头盔</span></h3>
+<ul class="cells">
+<li><button type="button" class="item empty" data-slot="护甲模组" data-kind="头盔"><span class="nm">+</span></button></li>
+<li><button type="button" class="item empty" data-slot="护甲模组" data-kind="头盔"><span class="nm">+</span></button></li>
+<li><button type="button" class="item empty" data-slot="护甲模组" data-kind="头盔"><span class="nm">+</span></button></li>
+</ul>
+</div>
+<div class="slot" style="--n:1">
+<h3><svg class="gl" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 2h7l-1 5 1.5 7h-8L5.5 7Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span>护臂</span></h3>
+<ul class="cells">
+<li><button type="button" class="item empty" data-slot="护甲模组" data-kind="护臂"><span class="nm">+</span></button></li>
+<li><button type="button" class="item empty" data-slot="护甲模组" data-kind="护臂"><span class="nm">+</span></button></li>
+<li><button type="button" class="item empty" data-slot="护甲模组" data-kind="护臂"><span class="nm">+</span></button></li>
+</ul>
+</div>
+<div class="slot" style="--n:1">
+<h3><svg class="gl" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3.5h10l-1.5 9h-7Zm5 0v9" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span>胸甲</span></h3>
+<ul class="cells">
+<li><button type="button" class="item empty" data-slot="护甲模组" data-kind="胸甲"><span class="nm">+</span></button></li>
+<li><button type="button" class="item empty" data-slot="护甲模组" data-kind="胸甲"><span class="nm">+</span></button></li>
+<li><button type="button" class="item empty" data-slot="护甲模组" data-kind="胸甲"><span class="nm">+</span></button></li>
+</ul>
+</div>
+<div class="slot" style="--n:1">
+<h3><svg class="gl" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 2h4v7l3 5H6Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span>腿部</span></h3>
+<ul class="cells">
+<li><button type="button" class="item empty" data-slot="护甲模组" data-kind="腿部"><span class="nm">+</span></button></li>
+<li><button type="button" class="item empty" data-slot="护甲模组" data-kind="腿部"><span class="nm">+</span></button></li>
+<li><button type="button" class="item empty" data-slot="护甲模组" data-kind="腿部"><span class="nm">+</span></button></li>
+</ul>
+</div>
+<div class="slot" style="--n:1">
+<h3><svg class="gl" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2h8l-1.5 12h-5Zm4 0v12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span>职业物品</span></h3>
+<ul class="cells">
+<li><button type="button" class="item empty" data-slot="护甲模组" data-kind="职业物品"><span class="nm">+</span></button></li>
+<li><button type="button" class="item empty" data-slot="护甲模组" data-kind="职业物品"><span class="nm">+</span></button></li>
+<li><button type="button" class="item empty" data-slot="护甲模组" data-kind="职业物品"><span class="nm">+</span></button></li>
+</ul>
+</div>
+</div>
+</section>
+<section class="block" id="sec-5">
+<h2 class="sect-label">六维</h2>
+<ul class="stats">
+<li><svg class="gl" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.5 2h3v4.5H14v3H9.5V14h-3V9.5H2v-3h4.5Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span class="nm">生命</span><input class="val" data-key="六维生命" placeholder="~" aria-label="生命"></li>
+<li><svg class="gl" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 9.5 8.5 4l4.5 4.5-3 3H5.5Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span class="nm">近战</span><input class="val" data-key="六维近战" placeholder="~" aria-label="近战"></li>
+<li><svg class="gl" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 5.5a4.2 4.2 0 1 1 0 8.4 4.2 4.2 0 0 1 0-8.4ZM6.5 4h3v1.6h-3ZM10 2.5l2.5 2" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span class="nm">手雷</span><input class="val" data-key="六维手雷" placeholder="~" aria-label="手雷"></li>
+<li><svg class="gl" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 9.6 6.4 14.5 8 9.6 9.6 8 14.5 6.4 9.6 1.5 8 6.4 6.4Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span class="nm">超能</span><input class="val" data-key="六维超能" placeholder="~" aria-label="超能"></li>
+<li><svg class="gl" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2a6 6 0 1 1 0 12A6 6 0 0 1 8 2Zm0 3.2a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span class="nm">职业</span><input class="val" data-key="六维职业" placeholder="~" aria-label="职业"></li>
+<li><svg class="gl" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 12 12 2m-4 0h4v4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span class="nm">武器</span><input class="val" data-key="六维武器" placeholder="~" aria-label="武器"></li>
+</ul>
+</section>
+<section class="block" id="sec-6">
+<h2 class="sect-label">注解</h2>
+<textarea data-key="注解" rows="4" placeholder="备选装备、打法要点，与资料页正文同一套标记" aria-label="注解"></textarea>
+</section>
+<section class="block" id="sec-7">
 <h2 class="sect-label">生成的源稿</h2>
+<details id="src"><summary>展开源稿，复制发给站长</summary>
 <textarea id="out" readonly rows="28" spellcheck="false"></textarea>
-<p><button id="copy" type="button">复制</button></p>
+<p><button id="copy" type="button">复制</button><span id="copy-tip" role="status"></span></p>
+</details>
 </section>
 </main>
 <footer class="site-foot">
@@ -49,8 +193,8 @@
 <p class="legal">Starside 为非官方资料站，与 Bungie, Inc. 无从属关系。Destiny 2 及相关名称、标识为 Bungie, Inc. 的商标。</p>
 </footer>
 <script type="speculationrules">{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}</script>
+<script src="../vocab.js" defer></script>
+<script src="form.js" defer></script>
 </body>
 </html>
 
-<script src="../vocab.js"></script>
-<script src="form.js" defer></script>

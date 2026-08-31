@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
-"""护甲模组变体：官方物品表 → tools/mod-variants.json，图标 → builds/icons/。
+"""从官方物品表蒸馏两张配装页要用的表，并取回它们的图标。
 
 用法：
-    python3 tools/mods.py --distill <items-full.json>   # 建表，顺带报缺口
-    python3 tools/mods.py --icons                       # 按表下载图标并转 WebP
+    python3 tools/mods.py --distill <items-full.json>   # 护甲模组变体，顺带报缺口
+    python3 tools/mods.py --moves   <items-full.json>   # 位移技能
+    python3 tools/mods.py --arts    <items-full.json>   # 七件赛季神器
+    python3 tools/mods.py --icons                       # 按两张表下载图标并转 WebP
+
+**位移技能与神器本体站内都没有图**：位移技能（跳跃、滑翔、瞬移）连资料页都没有；
+神器在站内只是神器模组页的分节标题，一行文字。两者的名字与图标都只能从官方物品表来，
+按 `typeName_zh` 认（「位移技能」十条、「传说 神器」七件），去重后各写一张表。
 
 站内的护甲模组页把一个族收成一行（「虹吸」一行盖住 16 枚元素虹吸），行上写的是
 族的机制与三档数值。配装要指到具体那一枚（电弧虹吸而不是虹吸），所以这里从官方
@@ -28,6 +34,11 @@ import vocab
 from markup import die, img_size
 
 OUT = os.path.join(shell.ROOT, 'tools', 'mod-variants.json')
+MOVES = os.path.join(shell.ROOT, 'tools', 'moves.json')
+ARTS = os.path.join(shell.ROOT, 'tools', 'artifacts.json')
+# 位移技能与神器的图标：站内没有哪一页拥有它们，所以跟头像一样放配装页自己的目录下。
+# 文件名即内容 md5，将来别的页面要引同一枚图，复制过去自然是同一个文件。
+EXTRA_ICON_DIR = os.path.join(shell.ROOT, 'builds', 'icons')
 # 变体图标与站内护甲模组图标同族、同规格（64×64 WebP），所以放同一个目录：
 # 文件名即内容 md5，两处引到同一枚图时自动是同一个文件。
 ICON_DIR = os.path.join(shell.ROOT, 'armor-mods', 'icons')
@@ -61,6 +72,21 @@ ALIAS = {
 }
 
 SKIP = ('已锁定护甲模组', '空模组插槽', '空调整模组插槽', '追踪模组插槽')
+
+# 官方物品表留着已从游戏里移除的条目（manifest 不删历史），但拿不到的东西列进填表页
+# 只会让人选出一份挂不上站的配装。双元素虹吸（电弧/冰影双虹吸、电弧/缚丝虹吸组合…）
+# 已被移除；这一族里带斜杠的名字只有它们，判据因此写成「虹吸族且名字里有斜杠」，
+# 不另抄一份五条的名单。
+GONE_NAMES = (
+    # 元素之外的三枚动能虹吸（混乱／电荷／热量）已从游戏移除，「动能虹吸」本身还在。
+    '动能混乱虹吸', '动能电荷虹吸', '动能热量虹吸',
+)
+
+
+def gone(row, name):
+    # 双元素虹吸（电弧/冰影双虹吸、电弧/缚丝虹吸组合…）也已移除；这一族里带斜杠的
+    # 名字只有它们，判据因此写成形状，不另抄一份五条的名单。
+    return name in GONE_NAMES or (row == '虹吸' and '/' in name)
 
 
 def rows_of():
@@ -98,6 +124,8 @@ def distill(path):
             gaps.setdefault(part, set()).add(name)
             continue
         row = max(hit, key=len)           # 最长的那个：特殊弹药斥候归弹药斥候，不归弹药
+        if gone(row, name):
+            continue
         url = v.get('icon', '')
         was = old.get(name, {})
         table[name] = {'row': row, 'part': part, 'anchor': base[row], 'url': url,
@@ -118,44 +146,94 @@ def distill(path):
             print('  %-6s %s' % (part, '、'.join(sorted(names))))
 
 
+def arts_of():
+    """站内神器模组页的七个分节就是七件神器。源稿即清单，不另存一份名单——
+    官方物品表里躺着二十件历代神器，按名单硬筛会在换季时悄悄漏掉新的那一件。"""
+    return {vocab.bare_kind(e['kind']) for e in vocab.scan_page('artifact-mods')}
+
+
+def pull(path, type_zh, out_path, want, keep=None):
+    """官方物品表里某一类 → {名字: {url, icon}}。位移技能与神器共用这一份。
+
+    表里同名条目有好几份（位移技能每个职业各挂一份，神器有赛季版与常驻版），
+    按名字去重取一条即可——图与名字都一样。已下好的图标沿用，地址没变就不重下，
+    也不该换文件名：文件名换一次，读者的浏览器缓存就白掉一份。
+    """
+    old = {}
+    if os.path.exists(out_path):
+        with open(out_path, encoding='utf-8') as f:
+            old = json.load(f)
+    with open(path, encoding='utf-8') as f:
+        items = json.load(f)['items']
+    table = {}
+    for v in items.values():
+        if v.get('typeName_zh') != type_zh or not v.get('name_zh'):
+            continue
+        if keep is not None and v['name_zh'] not in keep:
+            continue
+        name, url = v['name_zh'], v.get('icon', '')
+        if not url:
+            die('%s 没有图标地址' % name)
+        was = old.get(name, {})
+        table.setdefault(name, {'url': url,
+                                'icon': was.get('icon', '') if was.get('url') == url else ''})
+    if len(table) != want:
+        missing = sorted(set(keep or ()) - set(table))
+        die('「%s」应有 %d 条，实际 %d 条%s'
+            % (type_zh, want, len(table),
+               '，官方物品表里找不到：' + '、'.join(missing) if missing
+               else '：' + '、'.join(sorted(table))))
+    with open(out_path, 'w', encoding='utf-8') as f:
+        json.dump(table, f, ensure_ascii=False, indent=0, sort_keys=True)
+    print('%s —— %d 条「%s」：%s'
+          % (os.path.relpath(out_path, shell.ROOT), len(table), type_zh,
+             '、'.join(sorted(table))))
+
+
 def fetch(url):
     req = urllib.request.Request(url, headers={'User-Agent': 'starside-build'})
     with urllib.request.urlopen(req, timeout=30) as r:
         return r.read()
 
 
-def icons():
-    with open(OUT, encoding='utf-8') as f:
+def icons(table_path=None, icon_dir=None):
+    """按表下载图标并转 WebP。两张表共用这一份：编码参数、按内容 md5 命名、
+    已下好的沿用，三件事只有一处定义。"""
+    table_path = table_path or OUT
+    icon_dir = icon_dir or ICON_DIR
+    if not os.path.exists(table_path):
+        die('还没有 %s，先跑一次蒸馏' % os.path.relpath(table_path, shell.ROOT))
+    with open(table_path, encoding='utf-8') as f:
         table = json.load(f)
-    os.makedirs(ICON_DIR, exist_ok=True)
+    os.makedirs(icon_dir, exist_ok=True)
     got = 0
     for name, meta in sorted(table.items()):
-        if meta.get('icon') and os.path.exists(os.path.join(ICON_DIR, meta['icon'])):
+        if meta.get('icon') and os.path.exists(os.path.join(icon_dir, meta['icon'])):
             continue
         if not meta['url']:
             die('%s 没有图标地址' % name)
         raw = fetch(meta['url'])
         # 编码参数与站内其余图标一致；哈希按编码之后的字节算——先编码再命名，
         # 顺序反了文件名对不上内容。
-        src = os.path.join(ICON_DIR, '_tmp' + os.path.splitext(meta['url'])[1])
+        src = os.path.join(icon_dir, '_tmp' + os.path.splitext(meta['url'])[1])
         with open(src, 'wb') as f:
             f.write(raw)
-        webp = os.path.join(ICON_DIR, '_tmp.webp')
+        webp = os.path.join(icon_dir, '_tmp.webp')
         subprocess.run(['cwebp', '-quiet', '-q', '82', '-alpha_q', '100',
                         '-resize', '64', '0', src, '-o', webp], check=True)
         with open(webp, 'rb') as f:
             data = f.read()
         final = hashlib.md5(data).hexdigest()[:10] + '.webp'
-        os.replace(webp, os.path.join(ICON_DIR, final))
+        os.replace(webp, os.path.join(icon_dir, final))
         os.remove(src)
         meta['icon'] = final
         got += 1
-    with open(OUT, 'w', encoding='utf-8') as f:
+    with open(table_path, 'w', encoding='utf-8') as f:
         json.dump(table, f, ensure_ascii=False, indent=0, sort_keys=True)
-    sizes = {img_size(open(os.path.join(ICON_DIR, m['icon']), 'rb').read())
+    sizes = {img_size(open(os.path.join(icon_dir, m['icon']), 'rb').read())
              for m in table.values() if m.get('icon')}
-    print('%s —— 新取 %d 枚，变体图标合计 %d 枚，尺寸 %s'
-          % (os.path.relpath(ICON_DIR, shell.ROOT), got,
+    print('%s —— 新取 %d 枚，图标合计 %d 枚，尺寸 %s'
+          % (os.path.relpath(icon_dir, shell.ROOT), got,
              len({m['icon'] for m in table.values() if m.get('icon')}),
              '、'.join('%dx%d' % s for s in sorted(sizes))))
 
@@ -163,8 +241,16 @@ def icons():
 def main():
     if len(sys.argv) == 3 and sys.argv[1] == '--distill':
         distill(sys.argv[2])
+    elif len(sys.argv) == 3 and sys.argv[1] == '--moves':
+        pull(sys.argv[2], '位移技能', MOVES, 10)
+    elif len(sys.argv) == 3 and sys.argv[1] == '--arts':
+        # 官方物品表里躺着二十件历代神器，只取站内那一页有的七件
+        keep = arts_of()
+        pull(sys.argv[2], '传说 神器', ARTS, len(keep), keep)
     elif len(sys.argv) == 2 and sys.argv[1] == '--icons':
         icons()
+        icons(MOVES, EXTRA_ICON_DIR)
+        icons(ARTS, EXTRA_ICON_DIR)
     else:
         die(__doc__)
 
