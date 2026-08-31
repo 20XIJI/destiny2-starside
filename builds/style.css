@@ -495,18 +495,13 @@ body:has(.entries) { --wrap: 1500px; }
 
 .entry-side .tags { justify-content: flex-end; }
 
-/* 索引页与填表页互指的那一行 */
+/* 索引页指向配装工具的那一行。它挂在标题右边，规线由 .head-row 画 */
 .new-link {
   display: flex;
   align-items: baseline;
   gap: 12px;
-  margin: 0 0 clamp(24px, calc(2.6 * var(--vw)), 32px);
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--hair);
+  margin: 0;
 }
-
-/* 索引页把它挂在标题右边（.head-row 那一行画规线），自己那道线与下边距都去掉 */
-.head-row .new-link { margin: 0; padding: 0; border: 0; }
 
 .new-link a {
   color: var(--bone-hi);

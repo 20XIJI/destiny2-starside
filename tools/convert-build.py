@@ -386,7 +386,8 @@ def render(idx, mv, arts, avatars, md, slug, season, name_cn):
 
     o = [shell.head('%s · %s · Starside' % (title, SITE_SECTION), desc_text, up=3,
                     sheets=['../../style.css']),
-         shell.nav(title, up=3, parent=[SITE_SECTION, name_cn]),
+         shell.nav(title, up=3, parent=[SITE_SECTION, name_cn],
+                   parent_href='../../index.html'),
          # 分支色驱动整页的 UI 强调色：区段那枚方块、页头竖线、格子悬停的左缘都跟着
          # 走。--accent 是 design.md 写明「子页面覆盖这一个即可换色」的槽位，六个元素
          # 页就是这么做的；这里不新增任何渲染色。
@@ -506,6 +507,9 @@ def render(idx, mv, arts, avatars, md, slug, season, name_cn):
 
 
 SITE_SECTION = '推荐配装'
+# 填表页在首页「攻略与工具」里就叫这个名字，面包屑与标题跟着它，一处定义。
+# 它不挂在推荐配装下面：首页直接进得来，读者也不必先看过配装才来填一份。
+FORM_NAME = '配装工具'
 INDEX_DESC = '按职业分类的 Destiny 2 推荐配装：职业、武器、护甲、神器模组与六维属性，每一格都链回站内资料页。'
 UP = '../../../'
 
@@ -685,14 +689,10 @@ def render_new(stamp, name_cn):
     builds/vocab.js 建。这一页因此只有骨架，没有一个装备名。
     """
     desc = '填一份推荐配装：选完技能、武器、护甲与神器模组，页面直接生成标准源稿，复制发给站长即可挂上站。'
-    o = [shell.head('配装填表 · %s · Starside' % SITE_SECTION, desc, up=2,
+    o = [shell.head('%s · Starside' % FORM_NAME, desc, up=2,
                     sheets=['../style.css']),
-         shell.nav('配装填表', up=2, parent=[SITE_SECTION]),
+         shell.nav(FORM_NAME, up=2),
          '<main id="sheet">',
-         # 回索引的入口：这一页从首页「攻略与工具」直接进得来，顶部面包屑那一行
-         # 太轻，正文里给一条明确的。
-         '<p class="new-link"><a href="../index.html">← 推荐配装</a>'
-         '<span>看看已经上站的配装</span></p>',
          # 页头与详情页逐块同形：左列是核心那枚 96px 的图加推荐者，右列是配装名、
          # 铭牌、描述与两栏标签。可填的那几处换成输入位，其余照详情页的类名写，
          # 版式因此由同一份规则管，不为填表页另写一套。
@@ -701,7 +701,7 @@ def render_new(stamp, name_cn):
          '<button type="button" class="item empty" id="f-core-art" data-slot="核心" '
          'aria-expanded="false"><span class="nm">核心</span></button>',
          '<p class="by-label">推荐者：</p>',
-         '<input class="who-in" data-key="推荐人" placeholder="名字 | 链接 | 头像" '
+         '<input class="who-in" data-key="推荐人" placeholder="ID" '
          'aria-label="推荐者">',
          '</div>',
          '<div class="build-id">',
@@ -827,7 +827,7 @@ def render_new(stamp, name_cn):
     out = out.replace('\n</body>\n',
                       '\n<script src="../vocab.js" defer></script>\n'
                       '<script src="form.js" defer></script>\n</body>\n')
-    shell.emit(os.path.join(shell.ROOT, OUT_DIR, 'new'), out, '配装填表')
+    shell.emit(os.path.join(shell.ROOT, OUT_DIR, 'new'), out, FORM_NAME)
 
 
 def check(out, slug):

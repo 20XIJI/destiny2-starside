@@ -122,7 +122,7 @@ def head(title, desc, app_js=False, up=1, sheets=None):
     return '\n'.join(o)
 
 
-def nav(current, toolbar=None, up=1, parent=None):
+def nav(current, toolbar=None, up=1, parent=None, parent_href='../index.html'):
     """顶部 sticky 单元：导航行 + 可选的工具条槽位。
 
     工具条内容由 assets/app.js 从 DOM 构建，这里不写任何源文本——写了就等于
@@ -132,13 +132,15 @@ def nav(current, toolbar=None, up=1, parent=None):
     o = ['<div class="site-head">', '<nav class="site-nav">', MARK,
          '<a class="home" href="%sindex.html">%s</a>' % ('../' * up, SITE_NAME)]
     # 面包屑多一层：子页面要能一眼看出自己挂在哪个资料页下面，并直接跳回去。
-    # parent 可以给多层。**只有第一层是链接**——它对应上一级目录里那个真实页面
-    # （../index.html）；再往下的层次是分组名，站内没有单独的页面，写成纯文本。
-    # 给它们指同一个 URL 会让相邻两枚面包屑落到同一处，指分节锚点则会在那一页
-    # 增删分节时静默指错——两条都比不给链接差。
+    # parent 可以给多层。**只有第一层是链接**——它对应上一级目录里那个真实页面；
+    # 再往下的层次是分组名，站内没有单独的页面，写成纯文本。给它们指同一个 URL
+    # 会让相邻两枚面包屑落到同一处，指分节锚点则会在那一页增删分节时静默指错
+    # ——两条都比不给链接差。
+    # parent_href 缺省是上一级目录，那个页面深一层就得写出来：配装详情页在
+    # builds/<赛季>/<slug>/ 下，它的索引在 builds/，隔着两级。
     for i, step in enumerate(parent or []):
         o += ['<span class="sep">/</span>',
-              '<a class="home" href="../index.html">%s</a>' % step if i == 0
+              '<a class="home" href="%s">%s</a>' % (parent_href, step) if i == 0
               else '<span class="step">%s</span>' % step]
     o += ['<span class="sep">/</span>',
           '<span aria-current="page">%s</span>' % current,
