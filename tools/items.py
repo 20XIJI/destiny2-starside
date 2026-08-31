@@ -25,6 +25,7 @@ Bungie 的 manifest 导出里 `typeName_zh` 已经按元素给技能分好类（
     python3 tools/items.py --apply   [slug]
 """
 
+import functools
 import json
 import os
 import re
@@ -137,6 +138,16 @@ def pattern(word):
     """
     return re.sub(r'(?<=[一-鿿])(?=[A-Za-z0-9])|(?<=[A-Za-z0-9])(?=[一-鿿])',
                   '[ \u00a0]?', re.escape(word))
+
+
+# 词表 1400 条、源稿两万行：现拼模式串会把 re 那 512 条的缓存冲垮，每行每词重编译
+# 一次。编译一次留着，扫描本身不变。
+@functools.lru_cache(maxsize=None)
+def rx(word):
+    return re.compile(pattern(word))
+
+
+GUARD_RX = [re.compile(re.escape(g)) for g in GUARD]
 
 
 def norm(s):
@@ -409,13 +420,19 @@ def hits_in(line, terms, names):
     for m in re.finditer(r'\]\([^)]*\)', line):
         for i in range(m.start(), m.end()):
             taken[i] = True
-    for g in GUARD:                       # 更长的专名整段屏蔽
-        for m in re.finditer(re.escape(g), line):
+    for g, rex in zip(GUARD, GUARD_RX):    # 更长的专名整段屏蔽
+        if g not in line:
+            continue
+        for m in rex.finditer(line):
             for i in range(m.start(), m.end()):
                 taken[i] = True
     out = []
     for word in names:
-        for m in re.finditer(pattern(word), line):
+        # 首字必然字面出现——空格只允许插在中英交界处，插不到词首。一次 C 层扫串
+        # 换掉一次正则扫描，1400 条里绝大多数在这里就走了。
+        if word[0] not in line:
+            continue
+        for m in rx(word).finditer(line):
             if m.start() < head or any(taken[m.start():m.end()]):
                 continue
             if markup.inner_marker(line, m.start()):

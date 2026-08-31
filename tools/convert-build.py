@@ -71,16 +71,20 @@ def icon_of(e, size):
             % (UP, e['icon'], size, size))
 
 
-def item(idx, slot, name, prefer, kind=None, cls='item', bare=False, tail=''):
+def item(idx, slot, name, prefer, kind=None, cls='item', bare=False, tail='', label=''):
     """一格：图标 + 名字，整格是指向资料页的链接。着色由词表给，不由源稿写。
 
     bare 只出格子本身，不套 <li>——一把枪与它的两个 Perk 要包在同一个 <li> 里，
     才不会在换行时被拆到两行去。tail 接在名字后面（套装的「2 件」）。
+
+    label 换掉显示的名字，查表仍按 name 走：元素那一格查的是分支页上「那个职业」
+    的分节图（一枚图编码职业与元素两件事），显示的却该是分支名。
     """
     e = vocab.pick(idx, name, slot, kind=kind, prefer=prefer)
     icon = icon_of(e, CELL_ICON[cls])
-    label = ('<span class="%s">%s</span>' % (e['token'], e['name'])
-             if e['token'] else e['name'])
+    shown = label or e['name']
+    label = ('<span class="%s">%s</span>' % (e['token'], shown)
+             if e['token'] else shown)
     sub = ('<span class="sub">%s</span>' % e['sub']) if e.get('sub') else ''
     # 带页内搜索框的页面加 ?q=：落地先过滤到那一行再滚，不然读者落在一整节里
     # 还得自己找。app.js 的 filter() 接这个参数，与全站搜索的命中链接同一套。
@@ -105,11 +109,15 @@ GLYPH = {
     '职业物品': 'M4 2h8l-1.5 12h-5Zm4 0v12',
     '神器': 'M8 1.5 14 5v6l-6 3.5L2 11V5Zm0 4.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z',
     '生命': 'M6.5 2h3v4.5H14v3H9.5V14h-3V9.5H2v-3h4.5Z',
-    '近战': 'M3 9.5 8.5 4l4.5 4.5-3 3H5.5Z',
+    # 近战是一把短刃：菱形（星相）与三角（碎片）已经占了几何形，刀有握柄与刃尖，
+    # 16px 下仍分得出朝向。旧那枚是个钝五边形，放到 96px 也读不出是什么。
+    '近战': 'M2.6 13.4 6.9 9.1M5.7 7.7 9.4 4l3.7 3.7-3.7 3.7Z',
     '手雷': 'M8 5.5a4.2 4.2 0 1 1 0 8.4 4.2 4.2 0 0 1 0-8.4ZM6.5 4h3v1.6h-3ZM10 2.5l2.5 2',
     '超能': 'M8 1.5 9.6 6.4 14.5 8 9.6 9.6 8 14.5 6.4 9.6 1.5 8 6.4 6.4Z',
     '职业': 'M8 2a6 6 0 1 1 0 12A6 6 0 0 1 8 2Zm0 3.2a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6Z',
-    '武器': 'M2 12 12 2m-4 0h4v4',
+    # 武器是一把枪的侧影。旧那枚是右上箭头，读作「外链」或「增长」。
+    # 不用弹壳：站内「弹药」是另一个概念，有自己的 --ammo-* 与四张购物清单页。
+    '武器': 'M1.6 6.2h12.8v2.4h-3.1l-1.3 2.6H7.5L7 8.6H5v3.5H3.2V8.6H1.6Z',
 }
 
 
@@ -119,7 +127,7 @@ def glyph(key):
         return ''
     return ('<svg class="gl" viewBox="0 0 16 16" aria-hidden="true">'
             '<path d="%s" fill="none" stroke="currentColor" stroke-width="1.4" '
-            'stroke-linejoin="round"/></svg>' % GLYPH[key])
+            'stroke-linejoin="round" stroke-linecap="round"/></svg>' % GLYPH[key])
 
 
 # 站内没有图的两类：位移技能连资料页都没有，神器在站内只是分节标题一行字。
@@ -151,18 +159,31 @@ def move_cell(name, table):
             '<span class="nm">%s</span></span></li>' % (UP, table[name], name))
 
 
-def group(title, cells, key=None, cols=None, tool='', icon=''):
+def group(title, cells, key=None, cols=None, tool='', icon='', head=''):
     """一个面板：标题 + 若干格。
 
-    --n 同时是两件事：格子网格的列数，以及这个面板在行里占的份额。两者相等，
-    所以同一行里各面板的格子宽度自然一致（护甲那五个部位是唯一的例外，它们
-    列数恒为 1、三枚模组竖排，见 render() 里 cols=1 那一处）。
+    --n 同时是两件事：格子网格的列数，以及这个面板在行里占的份额（护甲那五个
+    部位是唯一的例外，它们列数恒为 1、三枚模组竖排，见 render() 里 cols=1 那一处）。
+
+    同一行里各面板的格子等宽不是自然发生的：面板还有 18px 固定开销与格间的
+    8px 沟，样式表把它们写进 flex-basis 才成立，见 builds/style.css 的 .slot。
+
+    head 整个替掉标题那一行的内容，给填表页放神器选择器用：详情页把神器名写在
+    标题位上，填表页就得在同一个位置选它，两页的行数因此一致。
     """
     n = len(cells) if cols is None else cols
-    mark = ('<img class="gl-img" src="%s%s" alt="" width="20" height="20">' % (UP, icon)
-            if icon else glyph(key or title))
-    head = ['<h3>%s<span>%s</span>%s</h3>' % (mark, title, tool)] if title else []
-    return (['<div class="slot" style="--n:%d">' % n] + head
+    if head:
+        bar = ['<h3>%s</h3>' % head]
+    elif title:
+        # 神器那枚图与它统辖的模组图同为 32px：20px 时这一节的身份比节里任何
+        # 一枚模组都弱，读者先看见模组才看见它属于哪件神器。
+        mark = ('<img class="gl-img" src="%s%s" alt="" width="32" height="32">' % (UP, icon)
+                if icon else glyph(key or title))
+        bar = ['<h3%s>%s<span>%s</span>%s</h3>'
+               % (' class="art"' if icon else '', mark, title, tool)]
+    else:
+        bar = []
+    return (['<div class="slot" style="--n:%d">' % n] + bar
             + ['<ul class="cells">'] + cells + ['</ul>', '</div>'])
 
 
@@ -181,11 +202,19 @@ def rig_of(cells, tool=''):
     --n 是这一组在行里的份额，按格子实际需要的宽度加权，不按格数：枪是主角格
     （56px 的图 + 13px 的名字），Perk 是配料格（24px + 11px）。等分会让独占一组的
     异域枪只拿到七分之一行宽，「英勇利刃」四个字折成两行。
+
+    **权重是 15 与 10，不是 16 与 10。**枪在组内占 1.5 个单位
+    （builds/style.css 的 `.rig > .item.gun { flex: 1.5 }`），15∶10 才与它成比例；
+    16 会让独占一组的异域枪比传说组里的枪宽 3.0px。
+
+    --c 是本组露出来的格数，样式表拿它算 flex-basis 里那份固定开销
+    （面板 18px + 格间 8px × (c-1)）。--n 在这里是加权份额、不是格数，
+    所以这两个数必须分开给。
     """
     live = [c for c in cells if ' hidden' not in c]
     guns = sum(1 for c in live if 'item gun' in c)
-    return ('<div class="rig" style="--n:%d">%s%s</div>'
-            % (guns * 16 + (len(live) - guns) * 10, ''.join(cells), tool))
+    return ('<div class="rig" style="--n:%d;--c:%d">%s%s</div>'
+            % (guns * 15 + (len(live) - guns) * 10, len(live), ''.join(cells), tool))
 
 
 def people(md, avatars):
@@ -236,6 +265,84 @@ def stats_of(spec):
     return out
 
 
+# 填表页那两组标签的预设。受控词表：一套配装的适用环境与定位就这几种，让人自由
+# 填会写出「宗师」「大师终极」「终极难度」三种说法，索引页的筛选就分不出来了。
+FACETS = (('场景', '适用环境', ('突袭', '地牢', '宗师终极', '日常', '通用', 'PVP')),
+          ('定位', '标签', ('输出', '清怪', '续航', '功能', '通用', 'PVP')))
+
+
+def facet_picks(key, label, tags):
+    """填表页的一组多选 chip。值收在同一段里的隐藏 input 上，源稿的键不变——
+    val() 照旧按 data-key 读一个 .value，不必为这两格另开一条取值路径。"""
+    return ('<div class="facet"><span class="lb">%s</span>'
+            '<span class="tagset">%s</span>'
+            '<input type="hidden" data-key="%s"></div>'
+            % (label,
+               ''.join('<button type="button" class="chip" aria-pressed="false">%s'
+                       '</button>' % t for t in tags),
+               key))
+
+
+def page_items(md):
+    """源稿配过的每一件东西：(名字, 槽位, kind)。
+
+    核心从这里挑，闸门与填表页的候选是同一份。**顺序即同名时的优先级**：主角在前
+    （异域、传说枪、套装），配料在后——「全知之眼」既是异域护甲也是一把传说狙，
+    两格都配了时那枚 96px 的图该是主角那一件。位移技能不在内：站内没有它的资料页，
+    查不到图。
+    """
+    out = []
+    for key in ('异域武器', '异域护甲'):
+        got = meta(md, key, required=False)
+        if got:
+            out.append((got, key, None))
+    for line in re.findall(r'^传说武器：(.*)$', md, re.M):
+        parts = [x.strip() for x in line.split('|')]
+        out.append((parts[0], '传说武器', None))
+        out += [(p.strip(), 'Perk', None)
+                for p in (parts[1].split('、') if len(parts) > 1 else []) if p.strip()]
+    for seg in meta(md, '套装').split('×'):
+        m = re.match(r'^(.+?)\s*([24])\s*件$', seg.strip())
+        if m:
+            out.append((m.group(1).strip(), '套装', '%s 件' % m.group(2)))
+    for key in ('超能', '手雷', '近战', '职业技能', '星相', '碎片'):
+        out += [(n, key, None) for n in names(md, key, required=False)]
+    for part in PARTS:
+        out += [(n, '护甲模组', part) for n in names(md, part, required=False)]
+    art = meta(md, '神器', required=False)
+    if art:
+        out += [(n, '神器', art) for n in names(md, '模组', required=False)]
+    return out
+
+
+def core_pick(idx, md, prefer):
+    """核心那枚 96px 的图。可以是本页配过的任一件东西，不限异域。"""
+    core = meta(md, '核心')
+    hit = [x for x in page_items(md) if x[0] == core]
+    if not hit:
+        die('「核心：」要等于本页配过的某一件东西，源稿写的是 %r' % core)
+    return vocab.pick(idx, core, hit[0][1], kind=hit[0][2], prefer=prefer)
+
+
+def facet(label, tags):
+    """铭牌下面的一栏：一行小标签 + 若干 chip。"""
+    return ('<div><p class="by-label">%s</p><ul class="tags">%s</ul></div>'
+            % (label, ''.join('<li>%s</li>' % t for t in tags)))
+
+
+def stats_card(spec):
+    """六维那张小卡：三列两行，跟着护甲主角行走。
+
+    它不走 group()——那里出的是 <ul class="cells">，格子形状与 .item 绑死；
+    六维的六格是数值不是条目，各自一套版式。
+
+    不给标题：同一行的异域与套装两个面板都没有标题，多出一行「六维」会让这张卡
+    的六格整体下沉，与旁边的格子对不齐；每一格里已经写着属性名。
+    """
+    return (['<div class="slot stats-card" style="--n:3">',
+             '<ul class="stats">'] + stats_of(spec) + ['</ul>', '</div>'])
+
+
 def render(idx, mv, arts, avatars, md, slug, season, name_cn):
     title = must(re.match(r'^#\s+(.+)$', md.split('\n')[0]),
                  '源稿第一行必须是「# 配装名」').group(1).strip()
@@ -254,12 +361,8 @@ def render(idx, mv, arts, avatars, md, slug, season, name_cn):
     if meta(md, '职业') not in CLASSES:
         die('「职业：」要写猎人、泰坦、术士之一，源稿写的是 %r' % meta(md, '职业'))
 
-    core = meta(md, '核心')
     exotics = [meta(md, '异域武器', required=False), meta(md, '异域护甲', required=False)]
-    if core not in [x for x in exotics if x]:
-        die('「核心：」要等于本页的异域武器或异域护甲之一，源稿写的是 %r' % core)
-    core_slot = '异域武器' if core == exotics[0] else '异域护甲'
-    core_e = vocab.pick(idx, core, core_slot, prefer=prefer)
+    core_e = core_pick(idx, md, prefer)
 
     o = [shell.head('%s · %s · Starside' % (title, SITE_SECTION), desc_text, up=3,
                     sheets=['../../style.css']),
@@ -272,25 +375,32 @@ def render(idx, mv, arts, avatars, md, slug, season, name_cn):
          # 是配装名与铭牌。与全站 .page-head 同形（h1 + 一道发丝线），与首页
          # .wordmark-row 同语言。
          '<header class="build-head">',
-         '<span class="core">%s</span>' % icon_of(core_e, 96),
+         # 推荐人跟着核心那枚图走：他是这套配装的出处，与标题、铭牌、描述不是一
+         # 类信息。竖线左边一列因此写成「图 + 谁推荐的」。
+         '<div class="core">%s<p class="by-label">推荐者：</p>%s</div>'
+         % (icon_of(core_e, 96), ''.join(people(md, avatars))),
          '<div class="build-id">',
          '<h1>%s</h1>' % title,
          '<p class="cls">%s%s · %s<span class="season">%s · %s</span></p>'
-         % (icon_of(vocab.pick(idx, meta(md, '职业'), '职业', kind='分节'), 22),
+         % (icon_of(vocab.pick(idx, meta(md, '职业'), '职业', kind='分节'), 32),
             meta(md, '职业'),
             '<span class="%s">%s</span>' % (ELEMENT_TOKEN[branch], branch),
             season.upper(), name_cn),
          '<p class="desc">%s</p>' % inline(desc, rich=True),
-         '<div class="by">%s<ul class="tags">%s</ul></div>'
-         % (''.join(people(md, avatars)),
-            ''.join('<li>%s</li>' % t for t in names(md, '场景') + names(md, '定位'))),
+         # 场景与定位分两栏各带一行标签：混在一排里读者分不出「地牢」说的是适用
+         # 环境、「清怪」说的是这套配装干什么用的。
+         '<div class="facets">%s%s</div>'
+         % (facet('适用环境', names(md, '场景')), facet('标签', names(md, '定位'))),
          '</div>', '</header>', '']
 
-    # 职业：一行三个面板（超能 · 技能 · 星相），碎片单独一行。
-    # 「技能」收的是手雷、近战、移动与职业技能——游戏里是四个键位，在配装表里是
-    # 同一档信息，分成四个面板会把一行豁成四段。碎片恒为五枚，与上一行的格数对不
-    # 齐，所以自己占一行。「职业」与「移动」不查表：职业是三选一，移动手段站内还
-    # 没有资料页。
+    # 职业：一行是身份与主动技能（职业 · 超能 · 技能），一行是子职业树（星相 ·
+    # 碎片）。「技能」收的是手雷、近战、移动与职业技能——游戏里是四个键位，在配装
+    # 表里是同一档信息，分成四个面板会把一行豁成四段。「移动」不查这套表：站内还
+    # 没有位移技能的资料页。
+    #
+    # **身份那两格排在最前，星相跟碎片同行。**它们同属子职业树，读者是一起看的；
+    # 碎片独占一行时那五格宽到 193px，与上一行的 130px 差 50%。两行都是 7 份，
+    # 格宽因此落在 130 与 133，整节读作一块。
     skills = []
     for key in ('手雷', '近战'):
         for n in names(md, key, required=False):
@@ -299,11 +409,15 @@ def render(idx, mv, arts, avatars, md, slug, season, name_cn):
         skills.append(move_cell(meta(md, '移动'), mv))
     for n in names(md, '职业技能', required=False):
         skills.append(item(idx, '职业技能', n, prefer))
+    who = meta(md, '职业')
+    ident = [item(idx, '职业', who, prefer, kind='分节'),
+             item(idx, '元素', who, prefer, kind='分节', label=branch)]
     o += ['<section class="block" id="sec-1">', '<h2 class="sect-label">职业</h2>']
-    o += row(group('超能', [item(idx, '超能', meta(md, '超能'), prefer)])
-             + group('技能', skills)
-             + group('星相', [item(idx, '星相', n, prefer) for n in names(md, '星相')]))
-    o += row(group('碎片', [item(idx, '碎片', n, prefer) for n in names(md, '碎片')]))
+    o += row(group('职业', ident, key='职业')
+             + group('超能', [item(idx, '超能', meta(md, '超能'), prefer)])
+             + group('技能', skills))
+    o += row(group('星相', [item(idx, '星相', n, prefer) for n in names(md, '星相')])
+             + group('碎片', [item(idx, '碎片', n, prefer) for n in names(md, '碎片')]))
     o += ['</section>', '']
 
     # 武器：一把枪一组。面板不给标题——上面那行 sect-label 已经写着「武器」，再写一遍
@@ -334,12 +448,15 @@ def render(idx, mv, arts, avatars, md, slug, season, name_cn):
     o += ['</section>', '']
 
     # 护甲：主角行（异域护甲 + 套装）不拉满——它最多三格，拉满会让一格宽到 500px；
-    # 格子封顶、左对齐，右侧留白读作呼吸。部位行五个部位并排，每列三枚模组竖排，
-    # 合起来是一张 5×3 的矩阵，那是这一页的视觉重心。
+    # 格子封顶、左对齐，行末那半截空档给六维那张卡。部位行五个部位并排，每列三枚
+    # 模组竖排，合起来是一张 5×3 的矩阵，那是这一页的视觉重心。
     lead = [item(idx, '异域护甲', exotics[1], prefer, cls='item gear')] if exotics[1] else []
     lead += sets_of(idx, meta(md, '套装'))
     o += ['<section class="block" id="sec-4">', '<h2 class="sect-label">护甲</h2>']
-    o += row(group('', lead), cls='lead')
+    # 六维挂在主角行右端：异域与套装最多占三格，剩下的半行本来是空的。套装可能
+    # 是两格（4 件同时给 2 件效果），那时这张卡换行落下去，见 .slot-row.lead 的
+    # flex-wrap。
+    o += row(group('', lead) + stats_card(meta(md, '六维')), cls='lead')
     parts = []
     for part in PARTS:
         got = names(md, part, required=False)
@@ -350,13 +467,9 @@ def render(idx, mv, arts, avatars, md, slug, season, name_cn):
         o += row([x for panel in parts for x in panel])
     o += ['</section>', '']
 
-    o += ['<section class="block" id="sec-5">',
-          '<h2 class="sect-label">六维</h2>',
-          '<ul class="stats">'] + stats_of(meta(md, '六维')) + ['</ul>', '</section>', '']
-
     note = md.split('## 注解', 1)
     if len(note) == 2 and note[1].strip():
-        o += ['<section class="block" id="sec-6">',
+        o += ['<section class="block" id="sec-5">',
               '<h2 class="sect-label">注解</h2>']
         o += ['<p>%s</p>' % inline('<br>'.join(b.strip().split('\n')), rich=True)
               for b in re.split(r'\n\s*\n', note[1].strip()) if b.strip()]
@@ -400,9 +513,7 @@ def build(idx, dirname, season, name_cn, slug):
                         md, slug, season, name_cn)
     check(out, slug)
     shell.emit(outdir, out, title)
-    core = vocab.pick(idx, meta(md, '核心'),
-                      '异域武器' if meta(md, '核心') == meta(md, '异域武器', required=False)
-                      else '异域护甲')
+    core = core_pick(idx, md, 'elements/%s' % BRANCH[meta(md, '分支')])
     return {'u': '%s/%s/%s/index.html' % (OUT_DIR, season, slug), 't': title,
             'season': season, 'slug': slug, 'stamp': meta(md, '更新'),
             'desc': text_of(inline(meta(md, '描述'), rich=True), collapse=True), 'class': meta(md, '职业'),
@@ -429,12 +540,13 @@ def render_index(made):
              'data-section': '.block', 'data-item': '.entries > li',
              'data-label': '.sect-label', 'data-noun': '配装',
              'data-chip-label': '职业'}),
-         shell.page_head(SITE_SECTION, INDEX_DESC),
-         '<main>',
-         # 填表页的入口只有这一处：站内别的地方没有理由指向它，
-         # 而没有入口的页面等于不存在。
-         '<p class="new-link"><a href="new/index.html">投稿一套配装 →</a>'
-         '<span>选完技能、武器、护甲与神器模组，页面直接生成标准源稿</span></p>']
+         # 投稿入口挂在标题右边。这是填表页在站内唯一的入口（别处没有理由指向
+         # 它，而没有入口的页面等于不存在），单独占一段会在卡片上面多出一整块
+         # 空白。页首那句说明只留给 <meta>，正文里它把首屏推下去半屏。
+         shell.page_head(SITE_SECTION, aside=(
+             '<p class="new-link"><a href="new/index.html">投稿一套配装 →</a>'
+             '<span>选完技能、武器、护甲与神器模组，页面直接生成标准源稿</span></p>')),
+         '<main>']
     n = 0
     for cls in CLASSES:
         mine = [m for m in live if m['class'] == cls]
@@ -555,28 +667,39 @@ def render_new(stamp):
          # 太轻，正文里给一条明确的。
          '<p class="new-link"><a href="../index.html">← 推荐配装</a>'
          '<span>看看已经上站的配装</span></p>',
-         # 页头与详情页同形，可填的那几处换成输入位。核心不给选择器：它必须等于
-         # 本页的异域武器或异域护甲之一，所以由那两格现有的选择填出来。
+         # 页头与详情页同形，可填的那几处换成输入位。**核心那一格自己就是选择器**：
+         # 候选是本页已经配好的每一件东西，那枚 96px 的图就在这里挑。
          '<header class="build-head">',
-         '<span class="core"><span class="item empty" id="f-core-art">'
-         '<span class="nm">核心</span></span></span>',
+         '<span class="core"><button type="button" class="item empty" id="f-core-art" '
+         'data-slot="核心" aria-expanded="false"><span class="nm">核心</span>'
+         '</button></span>',
          '<div class="build-id">',
          '<h1><input data-key="配装名" placeholder="配装名" aria-label="配装名"></h1>',
-         '<p class="cls"><span class="pick-line" data-pick="职业"></span>'
-         '<span class="pick-line" data-pick="分支"></span>'
-         '<label class="mini">核心<select data-key="核心" aria-label="核心"></select></label>'
+         '<p class="cls">'
          '<label class="mini">更新<input data-key="更新" placeholder="%s" aria-label="更新"></label></p>'
          % stamp,
          '<p class="desc"><input data-key="描述" placeholder="一句话说清这套配装靠什么打" '
          'aria-label="描述"></p>',
-         '<div class="by"><input data-key="推荐人" placeholder="推荐人（名字 | 链接 | 头像）" '
-         'aria-label="推荐人">'
-         '<input data-key="场景" placeholder="场景：地牢、夜幕" aria-label="场景">'
-         '<input data-key="定位" placeholder="定位：清怪、续航" aria-label="定位"></div>',
+         # 三行各带一个小标签，用详情页那三个称呼（推荐者、适用环境、标签）。
+         # data-key 仍是源稿的键名——填表人看见的是页面上的说法，源稿的键不跟着改。
+         '<div class="by">',
+         '<div class="facet"><span class="lb">推荐者</span>'
+         '<input data-key="推荐人" placeholder="名字 | 链接 | 头像" '
+         'aria-label="推荐者"></div>'] + [facet_picks(*f) for f in FACETS] + ['</div>',
          '</div>', '</header>', '']
 
+    # 身份那两格就是职业与分支的选择器。**它们不走 fill()**：两格的内容由 state
+    # 算出来（元素那一格用的是分支页上「那个职业」的分节图，换职业要跟着换），
+    # 所以选中只改 state，画由 mirror() 一处负责。
+    ident = ['<li><button type="button" class="item empty" data-mirror="职业" '
+             'data-slot="职业" data-kind="分节" aria-expanded="false">'
+             '<span class="nm">职业</span></button></li>',
+             '<li><button type="button" class="item empty" data-mirror="元素" '
+             'data-slot="元素" data-kind="分节" aria-expanded="false">'
+             '<span class="nm">元素</span></button></li>']
     o += ['<section class="block" id="sec-1">', '<h2 class="sect-label">职业</h2>']
-    o += row(group('超能', [slot_cell('超能')])
+    o += row(group('职业', ident, key='职业')
+             + group('超能', [slot_cell('超能')])
              + group('技能', [slot_cell('手雷', label='手雷'),
                              slot_cell('近战', label='近战'),
                              slot_cell('职业技能', label='职业技能'),
@@ -586,17 +709,17 @@ def render_new(stamp):
                                        addable='移动')],
                      cols=3,
                      tool='<button type="button" class="slot-tool" data-add="移动">'
-                          '＋ 移动</button>')
-             + group('星相', [slot_cell('星相')] * 2))
+                          '＋ 移动</button>'))
     # 碎片格数按配装变（棱镜五枚，别的分支可能少一枚或多到六枚），所以出满上限
     # 六格、默认显示五格，多的收起来，由标题右边那个计数器加减。
-    o += row(group('碎片', [slot_cell('碎片', hidden=i >= 5) for i in range(6)],
-                   cols=5,
-                   tool='<span class="slot-count" data-count="碎片">'
-                        '<button type="button" data-step="-1" aria-label="少一格">−</button>'
-                        '<b>5</b>'
-                        '<button type="button" data-step="1" aria-label="多一格">+</button>'
-                        '</span>'))
+    o += row(group('星相', [slot_cell('星相')] * 2)
+             + group('碎片', [slot_cell('碎片', hidden=i >= 5) for i in range(6)],
+                     cols=5,
+                     tool='<span class="slot-count" data-count="碎片">'
+                          '<button type="button" data-step="-1" aria-label="少一格">−</button>'
+                          '<b>5</b>'
+                          '<button type="button" data-step="1" aria-label="多一格">+</button>'
+                          '</span>'))
     o += ['</section>', '']
 
     o += ['<section class="block" id="sec-2">', '<h2 class="sect-label">武器</h2>']
@@ -622,33 +745,38 @@ def render_new(stamp):
     o += ['</section>', '']
 
     # 神器先选件，七个模组按它限定——「电介质」在加密数据盘与废墟石板下各有一条。
+    # **选择器落在标题位，与详情页同构。**详情页把神器名写在面板标题上，这里就在
+    # 同一个位置选它；单独占一行 lead 会让填表页比详情页多一行，且那一行只有一格
+    # 宽，右缘上多出一个断口。
+    pick = slot_cell('神器', kind='__art__', cls='item', label='选一件神器', bare=True)
     o += ['<section class="block" id="sec-3">', '<h2 class="sect-label">神器模组</h2>']
-    o += row(group('', [slot_cell('神器', kind='__art__', cls='item gear',
-                                  label='选一件神器')]), cls='lead')
-    o += row(group('', [slot_cell('神器')] * 7))
+    o += row(group('', [slot_cell('神器')] * 7, head=pick))
     o += ['</section>', '']
 
     o += ['<section class="block" id="sec-4">', '<h2 class="sect-label">护甲</h2>']
+    # 六维与详情页同一张卡、同一个形状，一格就是「图 + 名 + 值」。**值那一格是
+    # 按钮**：写法与数值要四个 chip 加两个数值框，摆进格子里要三倍宽，摆进选择器
+    # 里格子就还是详情页那个尺寸——与这一页别处「点空槽 → 就地展开选择器」同一
+    # 套动作。
+    stats = ['<div class="slot stats-card" style="--n:3">', '<ul class="stats">']
+    stats += ['<li><button type="button" class="stat" data-stat="%s" data-mode="~" '
+              'aria-expanded="false">%s<span class="nm">%s</span>'
+              '<span class="val">~</span></button></li>' % (k, glyph(k), k)
+              for k in STATS]
+    stats += ['</ul>', '</div>']
     o += row(group('', [slot_cell('异域护甲', cls='item gear', label='异域护甲'),
                         slot_cell('套装', cls='item set', label='套装'),
-                        slot_cell('套装', cls='item set', label='套装（可选）')]),
+                        slot_cell('套装', cls='item set', label='套装（可选）')]) + stats,
              cls='lead')
     o += row([x for part in PARTS
               for x in group(part, [slot_cell('护甲模组', kind=part)] * 3, cols=1)])
     o += ['</section>', '']
 
-    o += ['<section class="block" id="sec-5">', '<h2 class="sect-label">六维</h2>',
-          '<ul class="stats">']
-    o += ['<li>%s<span class="nm">%s</span>'
-          '<input class="val" data-key="六维%s" placeholder="~" aria-label="%s"></li>'
-          % (glyph(k), k, k, k) for k in STATS]
-    o += ['</ul>', '</section>', '']
-
-    o += ['<section class="block" id="sec-6">', '<h2 class="sect-label">注解</h2>',
+    o += ['<section class="block" id="sec-5">', '<h2 class="sect-label">注解</h2>',
           '<textarea data-key="注解" rows="4" '
           'placeholder="备选装备、打法要点，与资料页正文同一套标记" aria-label="注解"></textarea>',
           '</section>', '',
-          '<section class="block" id="sec-7">',
+          '<section class="block" id="sec-6">',
           '<h2 class="sect-label">生成的源稿</h2>',
           '<details id="src"><summary>展开源稿，复制发给站长</summary>',
           '<textarea id="out" readonly rows="28" spellcheck="false"></textarea>',
@@ -674,7 +802,9 @@ def check(out, slug):
     着色，不归源稿管；散文归源稿管，全站术语在里面素着就是漏了。词表与 G6 同一份
     （items.py 的 MECH 减去 LOOSE），不在这里另立一份。"""
     prose = ''.join(re.findall(r'<p class="desc">(.*?)</p>', out, re.S)
-                    + re.findall(r'<section class="block" id="sec-6">(.*?)</section>',
+                    # 按分节标题认，不按 sec-N：编号跟着分节增减挪位，
+                    # 挪错了这一条静默不查任何东西。
+                    + re.findall(r'<h2 class="sect-label">注解</h2>(.*?)</section>',
                                  out, re.S))
     naked = text_of(re.sub(r'<span class="[^"]*">.*?</span>', '', prose, flags=re.S))
     left = sorted({w for w in items.MECH if w not in items.LOOSE and w in naked})

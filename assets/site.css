@@ -462,6 +462,19 @@ main {
 
 .page-head { padding: clamp(40px, calc(5 * var(--vw)), 68px) 22px clamp(22px, calc(2.6 * var(--vw)), 32px); }
 
+/* 标题右边挂东西的那一行（推荐配装索引页的投稿入口）。规线改由这一行画：
+   留在 h1 上时线只有标题那么长，右边挂的东西悬在线外。 */
+.head-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--hair-lit);
+}
+
+.head-row h1 { padding-bottom: 0; border-bottom: 0; }
+
 /* 标题下的一道规线：六个元素页早就这么写（elements/style.css 用 2px 元素色，
    一眼认出在哪一页），这里把它提成站点缺省，其余页面拿到发丝线那一档。
    页面表在 site.css 之后加载，同名声明因此仍由页面胜出。 */

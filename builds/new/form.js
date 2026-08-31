@@ -39,7 +39,7 @@
   var SKIP_NAME = { '固有 Perk': 1 };
   var TIER_CN = ['', '一级', '二级', '三级'];
   var ELEM = { 超能: 1, 手雷: 1, 近战: 1, 星相: 1, 碎片: 1 };
-  var state = { 职业: '', 分支: '', 神器: '' };
+  var state = { 职业: '', 分支: '', 神器: '', 核心: '' };
   var picker = null;
 
   var ELEM_CN = { arc: '电弧', solar: '烈日', void: '虚空',
@@ -116,17 +116,70 @@
   }
 
   /* 成品格的内容：与详情页 item() 出的那一份逐字同形。 */
-  function body(row, slot, size) {
+  function body(row, slot, size, label) {
     var img = row[3] ? '<img src="' + UP + row[3] + '" alt="" width="' + size
       + '" height="' + size + '" loading="lazy">' : '';
-    var nm = row[4] ? '<span class="' + row[4] + '">' + esc(row[0]) + '</span>'
-      : esc(row[0]);
+    // label 换掉显示的名字，行仍是查出来那一条：元素那一格查的是分支页上「那个
+    // 职业」的分节图，显示的却该是分支名。与生成器 item(label=) 同一个约定。
+    var shown = label || row[0];
+    var nm = row[4] ? '<span class="' + row[4] + '">' + esc(shown) + '</span>'
+      : esc(shown);
     var sub = row[5] ? '<span class="sub">' + esc(row[5]) + '</span>' : '';
     var pc = slot === '套装' ? '<span class="pc">' + esc(row[1]) + '</span>' : '';
     return img + '<span class="nm">' + nm + sub + pc + '</span>';
   }
 
+  /* 身份那两格是镜像，不是选择器：职业与分支由页头那两排 chip 定，这里照着显示。
+     详情页在铭牌与正文各出一次，填表页因此也出两次，两页仍然同构。
+     元素那一格没有自己的图——站内没有单画一套分支图，用的是分支页上「那个职业」
+     的分节图，一枚图同时编码职业与元素（虚空页的猎人那枚就是猎人形 + 虚空色）。 */
+  function rowOf(slot, ok) {
+    return (V.lists[V.slots[slot]] || []).filter(ok)[0];
+  }
+
+  function mirror() {
+    var cls = state.职业, br = state.分支;
+    put('职业', cls && rowOf('职业', function (r) {
+      return r[0] === cls && r[1] === '分节';
+    }), '');
+    put('元素', cls && br && rowOf('元素', function (r) {
+      return r[0] === cls && r[1] === '分节' && r[2] === 'elements/' + BRANCH[br];
+    }), br);
+  }
+
+  function put(name, row, label) {
+    var el = sheet.querySelector('[data-mirror="' + name + '"]');
+    if (!el) return;
+    el.classList.toggle('empty', !row);
+    el.innerHTML = row ? body(row, name, 32, label)
+      : '<span class="nm">' + name + '</span>';
+  }
+
+  /* 元素那一格列六个分支：站内没有单画一套分支图，用的是分支页上「那个职业」的
+     分节图，所以候选是当前职业在六页上的那六条，显示的名字换成分支名。 */
+  function branches() {
+    return Object.keys(BRANCH).map(function (n) {
+      return rowOf('元素', function (r) {
+        return r[0] === state.职业 && r[1] === '分节'
+          && r[2] === 'elements/' + BRANCH[n];
+      });
+    }).filter(Boolean);
+  }
+
+  /* 核心的候选：本页已经配好的每一件东西，按页面次序去重。没有图的（位移技能）
+     不列——核心就是页首那枚 96px 的图。 */
+  function coreList() {
+    var seen = {};
+    return [].filter.call(sheet.querySelectorAll('button.item'), function (c) {
+      if (!c.row || !c.row[3] || seen[c.row[0]]) return false;
+      seen[c.row[0]] = 1;
+      return true;
+    }).map(function (c) { return c.row; });
+  }
+
   function iconSize(btn) {
+    // 神器选择器落在面板标题位上，图与详情页标题里那枚 .gl-img 同为 32px。
+    if (btn.closest('h3')) return 32;
     if (btn.classList.contains('perk-cell')) return 24;
     return /\b(gun|gear|set)\b/.test(btn.className) ? 56 : 32;
   }
@@ -158,7 +211,10 @@
     close();
     if (same) return;
 
-    var list = kind === '__art__' ? artifacts() : options(slot, kind);
+    var list = kind === '__art__' ? artifacts()
+      : slot === '核心' ? coreList()
+      : slot === '元素' ? branches()
+      : options(slot, kind);
     // 神器模组按所选那一件限定。没选之前不列——七件神器各 21 枚，混在一起是
     // 147 条，且它们在神器盘上的位置一件一套，摆出来会七枚叠在同一格。
     var wait = slot === '神器' && kind !== '__art__' && !state.神器;
@@ -181,7 +237,7 @@
     clear.type = 'button';
     clear.className = 'chip';
     clear.textContent = '清空这一格';
-    clear.addEventListener('click', function () { fill(btn, null); close(); });
+    clear.addEventListener('click', function () { pickOne(btn, null); });
     bar.appendChild(find);
     bar.appendChild(count);
     bar.appendChild(clear);
@@ -219,8 +275,11 @@
         var b = document.createElement('button');
         b.type = 'button';
         b.className = btn.className.replace(/\bempty\b/, '').trim();
-        b.innerHTML = body(r, slot, iconSize(btn))
-          + '<span class="kd">' + esc(tag(r)) + '</span>';
+        // 元素那一格的行是「某职业在某元素页上的分节」，名字要显示成分支名；
+        // 那时右下角再标一遍元素就成了同一个词说两遍。
+        var el = slot === '元素' ? tag(r) : '';
+        b.innerHTML = body(r, slot, iconSize(btn), el)
+          + (el ? '' : '<span class="kd">' + esc(tag(r)) + '</span>');
         b.addEventListener('click', function () { pickOne(btn, r); });
         li.appendChild(b);
         grid.appendChild(li);
@@ -241,16 +300,46 @@
     draw('');
     box.appendChild(bar);
     box.appendChild(grid);
-    (btn.closest('.slot-row') || btn.closest('.block'))
+    // 核心那一格在页头里，不在任何 .slot-row / .block 下面
+    (btn.closest('.slot-row') || btn.closest('.block') || btn.closest('.build-head'))
       .insertAdjacentElement('afterend', box);
     picker = box;
     btn.setAttribute('aria-expanded', 'true');
     find.focus();
   }
 
+  /* 选中一条（row 为 null 即清空这一格）。职业、元素、核心三格不走 fill()：
+     它们的显示由 state 算出来，画由 mirror() 与 syncCore() 各自一处负责。 */
   function pickOne(btn, row) {
+    var slot = btn.dataset.slot;
+    if (slot === '职业' || slot === '元素') {
+      state[slot === '职业' ? '职业' : '分支'] =
+        row ? (slot === '职业' ? row[0] : tag(row)) : '';
+      if (slot === '元素') {
+        sheet.className = state.分支 ? 'b-' + BRANCH[state.分支] : '';
+      } else {
+        // 职业一换，跟职业绑定的两个槽的候选变了，留着旧的会前后矛盾；元素那一格
+        // 用的也是这个职业的分节图，由 mirror() 按新职业重画。
+        [].forEach.call(sheet.querySelectorAll(
+          '[data-slot="职业技能"],[data-slot="异域护甲"]'), function (c) {
+          if (c.row) fill(c, null);
+        });
+      }
+      mirror();
+      close();
+      write();
+      btn.focus();
+      return;
+    }
+    if (slot === '核心') {
+      state.核心 = row ? row[0] : '';
+      close();
+      write();
+      btn.focus();
+      return;
+    }
     if (btn.dataset.kind === '__art__') {
-      state.神器 = row[0];
+      state.神器 = row ? row[0] : '';
       // 神器一换，七个模组的候选跟着重建——「电介质」在加密数据盘与废墟石板下
       // 各有一条，留着旧的会拼出一份生成器认不得的源稿。
       mods().forEach(function (m) {
@@ -259,22 +348,135 @@
       });
     }
     fill(btn, row);
+    // 4 件套在游戏里同时给 2 件效果，所以选了 4 件就把同一套的 2 件补进另一格。
+    // 只补空格：另一格已经有东西，那是填表人自己选的，不替他改。
+    if (btn.dataset.slot === '套装' && row && row[1] === '4 件') {
+      var two = options('套装').filter(function (r) {
+        return r[0] === row[0] && r[1] === '2 件';
+      })[0];
+      var other = [].filter.call(sheet.querySelectorAll('[data-slot="套装"]'),
+        function (c) { return c !== btn && !c.row; })[0];
+      if (two && other) fill(other, two);
+    }
     close();
     btn.focus();
   }
 
-  /* --n 是面板的格子列数兼行内份额，格数一变就要跟着改，不然行内的份额与实际
-     格数对不上。面板按露出来的格数算；rig 按格子的档次加权（枪 16、Perk 10），
-     与生成器 rig_of() 同一套权重。 */
-  function weigh(host) {
-    if (!host.classList.contains('rig')) {
-      return Math.max(1, host.querySelectorAll('.cells > li:not([hidden])').length);
+  /* 适用环境与标签是多选 chip，值汇到同一段里的隐藏 input 上——源稿那两行仍是
+     顿号连起来的一串，val() 照旧按 data-key 读一个 .value。 */
+  function toggleTag(c) {
+    c.setAttribute('aria-pressed',
+      String(c.getAttribute('aria-pressed') !== 'true'));
+    var facet = c.closest('.facet');
+    facet.querySelector('input[type="hidden"]').value =
+      [].filter.call(facet.querySelectorAll('.tagset .chip'), function (b) {
+        return b.getAttribute('aria-pressed') === 'true';
+      }).map(function (b) { return b.textContent; }).join('、');
+    write();
+  }
+
+  /* 六维一格的写法。四个预设，值即源稿里的记法：不限 ~、至少 80+、指定 80、
+     区间 150～200。四个词都是两个字，chip 排出来一样宽。
+     **这张表只在这里定义一次**——生成器只出空格子，写法是纯 UI。 */
+  var STAT_MODES = [['~', '不限'], ['+', '至少'], ['=', '指定'], ['-', '区间']];
+
+  function statText(btn) {
+    var mode = btn.dataset.mode || '~';
+    var a = (btn.dataset.a || '').trim(), b = (btn.dataset.b || '').trim();
+    if (mode === '~' || !a) return '~';
+    if (mode === '+') return a + '+';
+    if (mode === '=') return a;
+    return b ? a + '～' + b : '~';       // 只填了下限就还不成一个区间
+  }
+
+  function paintStat(btn) {
+    btn.querySelector('.val').textContent = statText(btn);
+  }
+
+  /* 六维的选择器：四个写法 chip + 一到两个数值框，与别处「点空槽 → 就地展开」
+     同一套动作。摆进格子里要三倍宽，摆进选择器里格子就还是详情页那个尺寸。 */
+  function openStat(btn) {
+    var same = picker && picker.owner === btn;
+    close();
+    if (same) return;
+
+    var box = document.createElement('div');
+    box.className = 'picker stat-picker';
+    box.owner = btn;
+    var bar = document.createElement('div');
+    bar.className = 'picker-bar';
+
+    var name = document.createElement('p');
+    name.className = 'tool-count';
+    name.textContent = btn.dataset.stat;
+    bar.appendChild(name);
+
+    var nums = [];
+    function sync() {
+      [].forEach.call(bar.querySelectorAll('.chip'), function (c) {
+        c.setAttribute('aria-pressed', String(c.dataset.mode === btn.dataset.mode));
+      });
+      nums[0].hidden = btn.dataset.mode === '~';
+      nums[1].hidden = btn.dataset.mode !== '-';
+      paintStat(btn);
+      write();
     }
-    var live = [].slice.call(host.querySelectorAll('.item')).filter(function (c) {
-      return !c.hidden;
+
+    STAT_MODES.forEach(function (m) {
+      var c = document.createElement('button');
+      c.type = 'button';
+      c.className = 'chip';
+      c.dataset.mode = m[0];
+      c.textContent = m[1];
+      c.addEventListener('click', function () {
+        btn.dataset.mode = m[0];
+        sync();
+        if (!nums[0].hidden) nums[0].focus();
+      });
+      bar.appendChild(c);
     });
-    var guns = live.filter(function (c) { return c.classList.contains('gun'); }).length;
-    return guns * 16 + (live.length - guns) * 10;
+
+    ['a', 'b'].forEach(function (key, i) {
+      var n = document.createElement('input');
+      n.type = 'number';
+      n.min = '0';
+      n.max = '200';
+      n.className = 'stat-num';
+      n.value = btn.dataset[key] || '';
+      n.setAttribute('aria-label', btn.dataset.stat + (i ? ' 上限' : ' 数值'));
+      n.addEventListener('input', function () {
+        btn.dataset[key] = n.value;
+        paintStat(btn);
+      });
+      nums.push(n);
+      bar.appendChild(n);
+    });
+
+    sync();
+    box.appendChild(bar);
+    (btn.closest('.slot-row') || btn.closest('.block'))
+      .insertAdjacentElement('afterend', box);
+    picker = box;
+    btn.setAttribute('aria-expanded', 'true');
+    (nums[0].hidden ? bar.querySelector('.chip') : nums[0]).focus();
+  }
+
+  /* --n 是面板的格子列数兼行内份额，--c 是 rig 露出来的格数（样式表拿它算
+     flex-basis 里那份固定开销）。格数一变两个都要跟着改，不然行内的份额与实际
+     格数对不上。面板按露出来的格数算，--n 与 --c 同值；rig 按格子的档次加权
+     （枪 15、Perk 10），与生成器 rig_of() 同一套权重——枪在组内占 1.5 个单位，
+     15∶10 才与它成比例。 */
+  function resize(host) {
+    var rig = host.classList.contains('rig');
+    var live = [].slice.call(host.querySelectorAll(rig ? '.item' : '.cells > li'))
+      .filter(function (c) { return !c.hidden; });
+    var n = live.length;
+    if (rig) {
+      var guns = live.filter(function (c) { return c.classList.contains('gun'); }).length;
+      n = guns * 15 + (live.length - guns) * 10;
+    }
+    host.style.setProperty('--n', Math.max(1, n));
+    host.style.setProperty('--c', Math.max(1, live.length));
   }
 
   /* 收起的格子由一枚按钮叫出来。按钮的 data-add 与格子的 data-addable 对上——
@@ -287,7 +489,7 @@
     // 收起就清空：留着一个看不见的值，生成的源稿里会凭空多一项。
     if (!show) fill(cell.matches('button') ? cell : cell.querySelector('button.item'), null);
     btn.textContent = (show ? '－' : '＋') + btn.textContent.slice(1);
-    host.style.setProperty('--n', weigh(host));
+    resize(host);
     write();
   }
 
@@ -302,7 +504,7 @@
       c.hidden = i >= n;
     });
     box.querySelector('b').textContent = n;
-    panel.style.setProperty('--n', Math.max(1, n));
+    resize(panel);
     limits(box, n, cells.length);
     write();
   }
@@ -318,81 +520,17 @@
       '#sec-3 [data-slot="神器"]:not([data-kind="__art__"])'));
   }
 
-  /* ── 头部那两排选择：职业三枚、分支六枚，都只有几个选项，用 chip 不用选择器 ── */
-  function chips(host, list, key, make) {
-    list.forEach(function (opt) {
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'chip';
-      b.innerHTML = make(opt);
-      b.addEventListener('click', function () {
-        state[key] = opt.name;
-        [].forEach.call(host.children, function (c) {
-          c.setAttribute('aria-pressed', c === b ? 'true' : 'false');
-        });
-        if (key === '分支') sheet.className = 'b-' + BRANCH[opt.name];
-        if (key === '职业') {
-          // 职业一换，跟职业绑定的两个槽的候选变了，留着旧的会前后矛盾。
-          [].forEach.call(sheet.querySelectorAll(
-            '[data-slot="职业技能"],[data-slot="异域护甲"]'), function (c) {
-            if (c.row) fill(c, null);
-          });
-        }
-        write();
-      });
-      b.setAttribute('aria-pressed', 'false');
-      host.appendChild(b);
-    });
-  }
-
-  // 三个职业按游戏内的顺序排，不按词表的字典序——猎人、泰坦、术士是固定次序，
-  // 站内每一处都这么排。
-  var ORDER = ['猎人', '泰坦', '术士'];
-  var classes = options('职业', '分节').slice().sort(function (a, b) {
-    return ORDER.indexOf(a[0]) - ORDER.indexOf(b[0]);
-  });
-  chips(sheet.querySelector('[data-pick="职业"]'),
-        classes.map(function (r) { return { name: r[0], row: r }; }),
-        '职业', function (o) {
-          return (o.row[3] ? '<img src="' + UP + o.row[3] + '" alt="" width="18" '
-            + 'height="18">' : '') + esc(o.name);
-        });
-
-  chips(sheet.querySelector('[data-pick="分支"]'),
-        Object.keys(BRANCH).map(function (n) { return { name: n }; }),
-        '分支', function (o) {
-          return '<span class="el-' + BRANCH[o.name] + '">' + esc(o.name) + '</span>';
-        });
-
-  /* 核心必须等于本页的异域武器或异域护甲之一，所以不给它选择器，
-     从那两格现有的选择里挑。 */
-  var coreSel = sheet.querySelector('[data-key="核心"]');
+  /* 核心是本页配过的任一件东西，页首那一格自己就是选择器。选中的东西被清掉时
+     核心跟着落空——每次重算源稿都对一遍，不留一枚指向空气的图。 */
   var coreArt = document.getElementById('f-core-art');
 
   function syncCore() {
-    var picks = [], keep = coreSel.value;
-    ['异域武器', '异域护甲'].forEach(function (s) {
-      var c = sheet.querySelector('[data-slot="' + s + '"]');
-      if (c && c.row) picks.push(c.row);
-    });
-    coreSel.textContent = '';
-    if (!picks.length) {
-      var ph = document.createElement('option');
-      ph.textContent = '先选异域';
-      coreSel.appendChild(ph);
-    }
-    picks.forEach(function (r) {
-      var o = document.createElement('option');
-      o.value = r[0];
-      o.textContent = r[0];
-      coreSel.appendChild(o);
-    });
-    if (picks.some(function (r) { return r[0] === keep; })) coreSel.value = keep;
-    var hit = picks.filter(function (r) { return r[0] === coreSel.value; })[0];
-    coreArt.innerHTML = hit && hit[3]
+    var hit = coreList().filter(function (r) { return r[0] === state.核心; })[0];
+    if (!hit) state.核心 = '';
+    coreArt.innerHTML = hit
       ? '<img src="' + UP + hit[3] + '" alt="" width="96" height="96">'
       : '<span class="nm">核心</span>';
-    coreArt.classList.toggle('empty', !(hit && hit[3]));
+    coreArt.classList.toggle('empty', !hit);
   }
 
   /* ── 源稿 ──────────────────────────────────────────────────────────
@@ -423,7 +561,7 @@
     md += line('场景', val('场景'));
     md += line('定位', val('定位'));
     md += line('分支', state.分支);
-    md += line('核心', coreSel.value);
+    md += line('核心', state.核心);
 
     md += '\n## 职业\n\n';
     md += line('职业', state.职业);
@@ -446,8 +584,11 @@
 
     md += '\n## 护甲\n\n';
     md += line('异域护甲', joined('[data-slot="异域护甲"]'));
-    // 套装的件数就在所选那一条的分节名上（词表里「玻璃拱顶」2 件与 4 件是两条）
-    md += line('套装', picked('[data-slot="套装"]').map(function (c) {
+    // 套装的件数就在所选那一条的分节名上（词表里「玻璃拱顶」2 件与 4 件是两条）。
+    // 2 件排在 4 件前面：同一套的两条效果，游戏里就是这个读法。
+    md += line('套装', picked('[data-slot="套装"]').sort(function (a, b) {
+      return a.row[1].localeCompare(b.row[1]);
+    }).map(function (c) {
       return c.row[0] + ' ' + c.row[1];
     }).join(' × '));
     PARTS.forEach(function (part) {
@@ -461,7 +602,7 @@
 
     md += '\n## 六维\n\n';
     md += '六维：' + STATS.map(function (s) {
-      return s + ' ' + (val('六维' + s) || '~');
+      return s + ' ' + statText(sheet.querySelector('.stat[data-stat="' + s + '"]'));
     }).join(' ｜ ') + '\n';
 
     if (val('注解')) md += '\n## 注解\n\n' + val('注解') + '\n';
@@ -473,6 +614,10 @@
     if (add) { toggleAdd(add); return; }
     var step = e.target.closest('[data-step]');
     if (step) { bump(step); return; }
+    var tag = e.target.closest('.tagset .chip');
+    if (tag) { toggleTag(tag); return; }
+    var stat = e.target.closest('button.stat');
+    if (stat) { openStat(stat); return; }
     var btn = e.target.closest('button.item');
     if (btn && !btn.closest('.picker')) { open(btn); return; }
     if (!e.target.closest('.picker') && !btn) close();

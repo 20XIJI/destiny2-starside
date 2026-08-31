@@ -20,6 +20,16 @@
 .b-strand { --accent: var(--c-strand); }
 .b-prismatic { --accent: var(--c-prism); }
 
+/* 装备图的圆角一处定义，取全站格内图那一个值（assets/site.css 的 .gen td/th img）。
+   四种尺寸走同一个数：96 的核心异域、64 的索引卡、56/32/24 的格子、20 的神器本体。
+   分开写会重演 site.css 修过的那件事——同一屏里方角图与圆角图混排，页头那枚 96
+   方着、正下方一片装备图圆着。头像的 50% 不在此列：圆形头像是另一类东西。 */
+.build-head .core img,
+.build-id .cls img,
+.entry .node img,
+.item img,
+.gl-img { border-radius: 6px; }
+
 /* ── 页头 ─────────────────────────────────────────────────────────────
    与全站 .page-head 同形：不加盒，只有一道下沿发丝线。核心异域在左，一道由
    align-items: stretch 撑满整块高度的竖线把它与铭牌隔开——与首页 .wordmark-row
@@ -30,9 +40,19 @@
   grid-template-columns: auto minmax(0, 1fr);
   align-items: stretch;
   gap: 24px;
-  margin: 8px 0 clamp(28px, calc(3 * var(--vw)), 40px);
-  padding-bottom: 22px;
+  margin: 8px 0 clamp(24px, calc(3 * var(--vw)), 40px);
+  padding-bottom: 24px;
   border-bottom: 1px solid var(--hair-lit);
+}
+
+/* 竖线左边一列：核心那枚图在上，推荐人在下。名字比 96px 宽时列跟着长，封到
+   160px——再宽就把标题那一列挤窄了。 */
+.build-head .core {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 160px;
 }
 
 .build-head .core img {
@@ -42,11 +62,18 @@
   border: 1px solid var(--hair);
 }
 
+.build-head .by-label {
+  margin: 4px 0 0;
+  color: var(--bone-faint);
+  font-size: 11.5px;
+  letter-spacing: .08em;
+}
+
 .build-id {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 9px;
+  gap: 10px;
   min-width: 0;
   padding-left: 24px;
   border-left: 1px solid var(--hair-lit);
@@ -65,20 +92,25 @@
 /* 铭牌行：职业图 + 职业 · 分支 · 赛季。图是站内那三枚职业图标
    （elements/class-abilities 的分节图），分支只写字——站内没有分支图标，画一枚
    假的等于自造游戏编码，颜色已经把分支说清楚了。 */
+/* **职业与元素是这套配装的分类，字号与图跟着它的分量走。**12.5px 配 22px 图时这一行
+   与赛季标签同重，读者要找「这是哪个职业哪个分支」得在 36px 的标题下面翻一遍。 */
 .build-id .cls {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   margin: 0;
-  color: var(--bone-dim);
-  font-size: 12.5px;
+  color: var(--bone);
+  font-size: 15px;
 }
 
-.build-id .cls img { flex: none; width: 22px; height: 22px; }
+/* **只放大铭牌自己那枚，写成直接子元素。**填表页的 .cls 里装的是职业 chip，
+   它们的图各自写了 18px；不限定直接子元素会把那排控件一起撑到 32px，chip 行
+   比旁边的元素 chip 高出一截。 */
+.build-id .cls > img { flex: none; width: 32px; height: 32px; }
 
 .build-id .season {
   margin-left: 4px;
-  padding-left: 14px;
+  padding-left: 12px;
   color: var(--bone-faint);
   font-family: var(--font-disp);
   font-size: 11px;
@@ -88,12 +120,17 @@
 
 .build-id .desc { margin: 0; max-width: 76ch; color: var(--bone-dim); }
 
+/* 填表页的推荐者留在铭牌那一列：那里是一个输入框加两排 chip，塞进 96px 的左列
+   会挤成一列窄条。详情页没有 .by，推荐者跟着核心那枚图走。 */
 .build-id .by {
   display: flex;
   align-items: center;
   gap: 16px;
   min-height: 28px;
 }
+
+/* 填表页的核心那一格与详情页那枚图同尺寸——它就是那枚图的空槽 */
+#sheet .core > .item { width: 96px; min-height: 96px; }
 
 /* 推荐人：名字必填，链接与头像可省，所以 .who 既可能是 <a> 也可能是 <span> */
 .who {
@@ -108,8 +145,19 @@
 .who img { width: 28px; height: 28px; border-radius: 50%; }
 a.who:hover { color: var(--accent); }
 
+/* 铭牌下面两栏：左边适用环境（场景），右边标签（定位）。挤在一排里读者分不出
+   「地牢」说的是环境、「清怪」说的是这套配装干什么用的。 */
+.facets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.facets .tags { margin: 4px 0 0; }
+
 /* 标签：场景与定位共用一种形状。受控词表没有做，形状因此不按类别分色。
-   靠右落，与推荐人分居铭牌行两端。 */
+   margin-left: auto 在列向的 .build-id 里落成靠右——那是交叉轴（填表页那一排
+   还在用）。 */
 .tags {
   display: flex;
   flex-wrap: wrap;
@@ -121,7 +169,7 @@ a.who:hover { color: var(--accent); }
 
 .tags > li,
 .tags > i {
-  padding: 2px 9px;
+  padding: 2px 8px;
   color: var(--bone-dim);
   font-family: var(--font-disp);
   font-size: 11.5px;
@@ -130,6 +178,11 @@ a.who:hover { color: var(--accent); }
   background: var(--tint-2);
   border: 1px solid var(--hair);
 }
+
+/* 分节间距比资料页收一档：资料页靠大留白分章，这一页九行面板本身就有边框与
+   内边距，40–64px 会把职业与武器两段扯断成两屏。行距已由面板自己撑开，这一档
+   不跟着视口伸缩。 */
+.block { margin-bottom: 20px; }
 
 /* ── 行与面板 ─────────────────────────────────────────────────────────
    一行拉满版心，行内的面板按 --n（自己的格数）分份额。左右两缘因此在整页上落成
@@ -146,14 +199,28 @@ a.who:hover { color: var(--accent); }
 
 .slot,
 .rig {
-  flex: var(--n) 1 0;
   min-width: 0;
-  padding: 9px 11px 11px;
+  padding: 8px;
   background: var(--tint-1);
   border: 1px solid var(--hair);
 }
 
-.slot { display: flex; flex-direction: column; gap: 8px; }
+/* **份额要把面板自己的固定开销算进去。**`flex-basis: 0` 时 --n 只分到「按比例的
+   一份」，可面板还有 18px 开销（内边距 8+8、边框 1+1）与格间那道 8px 沟没人认领，
+   格子越少的面板摊到的开销越重——超能那一格因此比同一行的技能格窄 13.5px。
+   basis 先吃掉开销，grow 再按 --n 分剩余，格宽于是恒等于「剩余空间 ÷ 行内总份额」。
+
+   **两条不能合写。**.slot 的 --n 是格子列数；.rig 的 --n 是加权份额（枪 15、
+   Perk 10），它的格数另由 --c 给。合写会让一组 --n:35 的 rig 算出 290px 的 basis，
+   武器那一行整个塌掉。 */
+.slot {
+  display: flex;
+  flex: var(--n) 1 calc(18px + (var(--n) - 1) * 8px);
+  flex-direction: column;
+  /* 标题贴着它统辖的格子。8px 时标题浮在两组格子中间，读者要回头看它属于上面
+     还是下面那一组；4px 让它归到自己那一组里。 */
+  gap: 4px;
+}
 
 .slot h3 {
   display: flex;
@@ -178,7 +245,7 @@ a.who:hover { color: var(--accent); }
 
 .slot-tool,
 .slot-count button {
-  padding: 0 7px;
+  padding: 0 8px;
   color: var(--bone-dim);
   font: inherit;
   line-height: 1.6;
@@ -193,7 +260,11 @@ a.who:hover { color: var(--accent); }
 
 /* 神器面板的标题图标用神器本体那枚真图，不用线描图标——七件神器在游戏里各有其形，
    画七枚线描图等于自造一套编码。图来自官方物品表（tools/artifacts.json）。 */
-.gl-img { flex: none; border-radius: 4px; }
+.gl-img { flex: none; }
+
+/* 神器那一行的标题带 32px 的真图，字跟着上一档——11px 配 32px 的图，字会像掉在
+   图脚下。其余面板的标题图是 14px 的线描字形，照旧 11px。 */
+.slot h3.art { gap: 10px; font-size: 12.5px; }
 
 /* 面板与六维的小图标：颜色跟着标题走，不占色相 */
 .gl { flex: none; width: 14px; height: 14px; color: var(--bone-dim); }
@@ -203,29 +274,72 @@ a.who:hover { color: var(--accent); }
 .cells {
   display: grid;
   grid-template-columns: repeat(var(--n), minmax(0, 1fr));
-  gap: 6px;
+  gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.slot > .cells { flex: 1; align-content: start; }
+/* **行高钉死，五个部位的三行才落在同一批 y 上。**五个部位是五个各自独立的 grid，
+   行高各算各的；副名（虹吸／抗性／武器激涌）把一部分格子撑成两行，第三行的顶边
+   因此在头盔、护臂、胸甲上分别落在三个位置，相邻列错开 8px，矩阵就不是矩阵了。
+   写成 minmax 不写死 50px：将来出现折三行的模组名它照旧撑开，代价只是那一行重新
+   错位，而写死会把名字裁掉。 */
+.slot > .cells { flex: 1; align-content: start; grid-auto-rows: minmax(50px, auto); }
 
 /* 一把枪与它的 Perk 是一组，组内不断行——「岁时之巅」跟「聚合充能」分处两行时，
    读者对不上哪个 Perk 属于哪把枪。枪比 Perk 宽半档，读作主从。 */
-.rig { display: flex; gap: 6px; }
+.rig {
+  display: flex;
+  flex: var(--n) 1 calc(18px + (var(--c) - 1) * 8px);
+  gap: 8px;
+}
+
+/* **两组枪之间仍差 2.86px，就停在这里。**flex-basis: 0 在 border-box 下会被垫到
+   padding + border，枪的地板 22px、Perk 18px，组内比例因此从 1.5 漂到 1.454；独占
+   一组的异域枪没有 Perk 跟它分摊，宽度于是与传说组里的枪差 2.86px（1.8%）。
+   .slot 那几行不受这一条影响——一行里的格子内边距全相同，地板相消，量出来精确相等。
+   权重 15 是已知最好的整数：16 时差 8.76px，归零要 14.54，而那个数随内边距与沟宽
+   漂移，写死了下次改间距就错。 */
+
 .rig > .item { flex: 1 1 0; min-width: 0; }
 .rig > .item.gun { flex: 1.5 1 0; }
 
 /* rig 里那枚叫出起源特性的按钮：贴在最右、与格子同高，收窄成一竖条——
    一把枪的三格加起来已经占满这一组，横着再塞一个带字的按钮会把格子挤扁。 */
-.rig .slot-tool { flex: none; align-self: stretch; padding: 0 7px; }
+.rig .slot-tool { flex: none; align-self: stretch; padding: 0 8px; }
+
+/* **职业那一节的左栏钉死宽度。**这一节两行的面板个数不同（职业·超能·技能 三个，
+   星相·碎片 两个），固定开销因此差 20px，按份额分时左栏会差 5.7px——相邻两行的
+   竖线错开 5.7px 是一眼看得出来的。钉死之后右边的面板吃掉余量，碎片那个面板的
+   宽度也就不随 4/5/6 枚碎片变，变的只是它格子的宽度。
+
+   宽度全从 --cell 一个数算出来：面板开销 18 + 格间沟 8 × (格数 - 1) + 格数 × 130。
+   130 是第一行的格宽（版心 1016 减去那一行 106 的固定开销，再除以七份）。
+   代价是碎片的格子比同行的星相格宽 4px：两行的面板个数不等时，「面板对齐」与
+   「整行格子等宽」不可兼得，竖线优先。 */
+#sec-1 { --cell: 130px; }
+/* 职业与星相：两格 */
+#sec-1 .slot-row > .slot:first-child { flex: 0 0 calc(26px + 2 * var(--cell)); }
+/* 技能：按四格钉死。移动那一格填不填是逐套配装的事，不钉死时它一变，超能与技能
+   的边界就跟着挪，同一节的两套配装对不上。钉死之后变的只是格子的宽度。 */
+#sec-1 .slot-row > .slot:nth-child(3) { flex: 0 0 calc(42px + 4 * var(--cell)); }
 
 /* 主角行（异域护甲 + 套装、神器本体）不拉满：最多三格，拉满会让一格宽到 500px。
    格子封顶、左对齐，右侧留白读作呼吸——它是主角行，本来就该松。 */
+/* 主角行不换行：套装占两格时（4 件同时给 2 件效果）行内共四格，让左边那个面板
+   缩，六维那张卡保持原宽。格子的 264px 是上限不是下限（minmax 的下界是 0），
+   缩下去只是变窄，换行会把这一行豁成两段。 */
 .slot-row.lead { justify-content: flex-start; }
 .slot-row.lead > .slot { flex: 0 1 auto; }
 .slot-row.lead .cells { grid-template-columns: repeat(var(--n), minmax(0, 264px)); }
+
+/* 六维那张卡：三列两行（列数在 .stats 上），宽度按格子定死，不跟着行里的剩余
+   空间伸缩——它是一张数值卡，拉宽只会让六个数字散在半屏上。
+   宽度随内容（basis auto 即 max-content，三列 1fr 于是等宽取最宽那一列的宽度），
+   行里不够时缩的是左边那个格子面板。
+   **选择器要压过上面那条 .slot-row.lead > .slot**，不然 flex 那一位是死配置。 */
+.slot-row.lead > .stats-card { flex: 0 0 auto; }
 
 /* ── 格子 ─────────────────────────────────────────────────────────────
    图左名右，中文横排不折行。名字的颜色由词表给（碎片走本分支的元素色、异域走
@@ -236,8 +350,8 @@ a.who:hover { color: var(--accent); }
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: 7px;
-  padding: 7px 8px;
+  gap: 8px;
+  padding: 8px;
   color: inherit;
   text-decoration: none;
   background: var(--tint-2);
@@ -264,14 +378,14 @@ button.item:focus-visible::after { opacity: 1; }
 a.item:focus-visible,
 button.item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-.item img { display: block; width: 32px; height: 32px; border-radius: 4px; }
+.item img { display: block; width: 32px; height: 32px; }
 .item .nm { font-size: 11.5px; line-height: 1.35; }
 
 /* 套装的副名：写来源就把套装名标在下面，写套装名就把来源标在下面。
    玩家按来源叫套装（「玻璃拱顶四件套」），资料页按套装名列，两个名字都要认得出。 */
 .item .sub {
   display: block;
-  margin-top: 1px;
+  margin-top: 2px;
   color: var(--bone-faint);
   font-size: 10px;
 }
@@ -289,7 +403,7 @@ button.item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
 /* 主角格：异域、传说枪、套装。图大一档、名字大一档，一眼看出这套配装的主角。 */
 .item.gun,
 .item.gear,
-.item.set { padding: 10px 11px; }
+.item.set { padding: 10px; }
 
 .item.gun img,
 .item.gear img,
@@ -300,7 +414,7 @@ button.item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
 .item.set .nm { font-size: 13px; }
 
 /* Perk 挂在它那把枪后面，收窄一档读作从属 */
-.item.perk-cell { padding: 7px 7px 7px 6px; }
+.item.perk-cell { padding: 8px; }
 .item.perk-cell img { width: 24px; height: 24px; }
 .item.perk-cell .nm { font-size: 11px; }
 
@@ -308,26 +422,34 @@ button.item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
    （tools/moves.json）。所以它是 <span> 不是 <a>，不带悬停亮边。 */
 .item.move { color: var(--bone-dim); }
 
+/* 图标不都是正方的：六个元素页的职业分节图里有五枚是 56×24 的横图（棱镜那枚
+   才是 56×56）。按显示尺寸写死宽高会把它们竖着拉长，改成裁中间那一块。 */
+.item img { object-fit: cover; }
+
 /* ── 六维 ─────────────────────────────────────────────────────────────
-   六格一行，值是纯文本（「不低于 80」「150～200」都原样落）。 */
+   三列两行的一张小卡，挂在护甲主角行的右端。**一格一行，图名值横排**：图上名下
+   的竖排要 73px 一格，两行下来比同一行里的异域与套装那两个面板还高一截。
+   值是纯文本（源稿写「80+」「150～200」，原样落）。 */
 .stats {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .stats > li {
-  display: grid;
-  justify-items: center;
-  gap: 3px;
-  padding: 11px 10px;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
   background: var(--tint-1);
   border: 1px solid var(--hair);
 }
+
+/* 值靠右落，两列数字对得齐 */
+.stats .val { margin-left: auto; }
 
 .stats .nm {
   color: var(--bone-dim);
@@ -337,7 +459,12 @@ button.item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
 }
 
 .stats .gl { width: 16px; height: 16px; }
-.stats .val { color: var(--bone-hi); font-family: var(--font-disp); font-size: 16px; }
+.stats .val { color: var(--bone-hi); font-family: var(--font-disp); font-size: 13px; }
+
+/* 两行摊满卡的高度，上下缘因此与同一行那些 56px 图的格子对齐（自动行在
+   align-content: stretch 下会分掉剩余高度，那是网格的缺省行为）。 */
+.stats-card .stats { flex: 1; }
+
 
 /* ── 索引页 ───────────────────────────────────────────────────────────
    卡片复用首页那套 .entry 形状，右列放推荐人与标签。左缘那条 2px 亮边跟着该配装
@@ -368,11 +495,14 @@ body:has(.entries) { --wrap: 1500px; }
 .new-link {
   display: flex;
   align-items: baseline;
-  gap: 14px;
-  margin: 0 0 clamp(24px, calc(2.6 * var(--vw)), 34px);
-  padding-bottom: 13px;
+  gap: 12px;
+  margin: 0 0 clamp(24px, calc(2.6 * var(--vw)), 32px);
+  padding-bottom: 12px;
   border-bottom: 1px solid var(--hair);
 }
+
+/* 索引页把它挂在标题右边（.head-row 那一行画规线），自己那道线与下边距都去掉 */
+.head-row .new-link { margin: 0; padding: 0; border: 0; }
 
 .new-link a {
   color: var(--bone-hi);
@@ -409,18 +539,48 @@ button.item { width: 100%; }
 .item.gear.empty,
 .item.set.empty { min-height: 78px; }
 
+/* 神器选择器落在面板标题位上——详情页那里写的是神器名，填表页就在同一个位置选它。
+   所以它要收成标题的形状：宽度收缩到内容、字随 h3、图 20px 与详情页的 .gl-img
+   同档。少了这一条它会照 button.item 撑成占满整行、50px 高的空槽，标题那一行就
+   成了一条横杠。 */
+.slot h3 > .item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: auto;
+  min-height: 0;
+  padding: 2px 8px;
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+/* 没选神器之前这一枚是整节唯一能点的东西，也是它下面 21 个格子的前提，所以空态
+   放大到正文档、边框取强调色。选定之后收回标题的字号——那时它只是标题。 */
+.slot h3 > .item.empty {
+  padding: 6px 14px;
+  color: var(--bone-hi);
+  font-family: var(--font-cn);
+  font-size: 14px;
+  letter-spacing: .04em;
+  border-color: var(--accent);
+}
+
+.slot h3 > .item::after { content: none; }
+.slot h3 > .item img { width: 32px; height: 32px; }
+.slot h3 > .item .nm { font-size: inherit; }
+
 .item.empty:hover { color: var(--bone-hi); border-color: var(--accent); }
 .item.empty[aria-expanded="true"] { color: var(--bone-hi); border-style: solid; border-color: var(--accent); }
 
 /* 选择器整行展开在它那一行下面：一格只有一百来像素宽，图标网格塞不进去。 */
 .picker {
-  margin: -4px 0 12px;
+  margin: 0 0 10px;
   padding: 12px;
   background: var(--ink-lift);
   border: 1px solid var(--accent);
 }
 
-.picker-bar { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
+.picker-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
 .picker-bar .tool-search { flex: 1; width: auto; }
 
 .picker-bar .tool-count { min-width: 0; margin: 0; }
@@ -432,7 +592,7 @@ button.item { width: 100%; }
      行高由 min-height 拉平，不让某一行忽然矮下去。 */
   grid-template-columns: repeat(7, minmax(0, 1fr));
   align-content: start;
-  gap: 6px;
+  gap: 8px;
   max-height: 336px;
   overflow-y: auto;
   margin: 0;
@@ -440,7 +600,7 @@ button.item { width: 100%; }
   list-style: none;
 }
 
-.picker-grid .item { width: 100%; min-height: 58px; padding: 6px 7px; }
+.picker-grid .item { width: 100%; min-height: 58px; padding: 8px; }
 .picker-grid .item img { width: 28px; height: 28px; }
 
 /* 神器模组照神器盘摆：列对应那件神器的七行，纵向一/二/三级，位置由词表的 pos 给。
@@ -459,13 +619,13 @@ button.item { width: 100%; }
 }
 
 #sheet input,
-#sheet select { padding: 6px 9px; }
-#sheet textarea { display: block; width: 100%; padding: 9px 11px; line-height: 1.8; }
+#sheet select { padding: 6px 10px; }
+#sheet textarea { display: block; width: 100%; padding: 10px 12px; line-height: 1.8; }
 #sheet :focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 
 #sheet h1 input {
   width: 100%;
-  padding: 4px 9px;
+  padding: 4px 10px;
   font-family: var(--font-cn);
   font-size: inherit;
   font-weight: 600;
@@ -473,7 +633,6 @@ button.item { width: 100%; }
 }
 
 #sheet .cls { flex-wrap: wrap; }
-#sheet .pick-line { display: inline-flex; gap: 2px; }
 
 #sheet .mini {
   display: inline-flex;
@@ -486,11 +645,61 @@ button.item { width: 100%; }
 }
 
 #sheet .mini input { width: 92px; }
-#sheet .mini select { min-width: 116px; }
-#sheet .by { flex-wrap: wrap; gap: 8px; }
-#sheet .by input { flex: 1 1 200px; }
+/* 头部那一段三行：推荐者一行，适用环境与标签各一行 chip。挤成一排时六枚 chip
+   加输入框会折成参差的两行半，看不出哪几枚属于哪一组。 */
+#sheet .by {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+#sheet .facet { display: flex; align-items: center; gap: 8px; }
+#sheet .facet .lb {
+  flex: none;
+  min-width: 4.5em;
+  color: var(--bone-faint);
+  font-size: 11.5px;
+  letter-spacing: .08em;
+}
+
+#sheet .facet input { flex: 1; min-width: 0; }
+#sheet .tagset { display: flex; flex-wrap: wrap; gap: 6px; }
 #sheet .desc input { width: 100%; }
-#sheet .stats .val { width: 100%; text-align: center; }
+/* 六维与详情页同一张卡，一格就是「图 + 名 + 值」，只是值那一格可点。
+   **列宽写死**：值从「~」变成「150～200」时列宽会跟着长，整条主角行跟着抖。 */
+#sheet .stats { grid-template-columns: repeat(3, 130px); }
+#sheet .stats > li { padding: 0; }
+
+#sheet .stats .stat {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  color: inherit;
+  font: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+#sheet .stats .stat:hover .val { color: var(--accent); }
+
+/* 六维的选择器：一行摆下写法 chip 与数值框，不用候选网格 */
+.stat-picker .picker-bar { flex-wrap: wrap; }
+.stat-picker .tool-count { flex: none; color: var(--bone); }
+/* 数字框去掉浏览器自带的上下箭头：两位数直接打，那对箭头比数字本身还占地方 */
+.stat-picker .stat-num {
+  width: 78px;
+  text-align: center;
+  appearance: textfield;
+}
+
+.stat-picker .stat-num::-webkit-outer-spin-button,
+.stat-picker .stat-num::-webkit-inner-spin-button {
+  margin: 0;
+  appearance: none;
+}
 
 /* 源稿收进折叠里：它是交付物，不是这一页的正文 */
 #src > summary {

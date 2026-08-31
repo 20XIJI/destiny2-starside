@@ -150,8 +150,15 @@ def nav(current, toolbar=None, up=1, parent=None):
     return '\n'.join(o)
 
 
-def page_head(h1, note=None):
-    o = ['<header class="page-head">', '<h1>%s</h1>' % h1]
+def page_head(h1, note=None, aside=''):
+    """页首：标题，可选的一句说明，可选的一段挂在标题右边的东西。
+
+    aside 落在与 h1 同一行上（推荐配装的索引页拿它放投稿入口），标题下那道规线
+    因此改由 .head-row 画——留在 h1 上时线只有标题那么长。
+    """
+    o = ['<header class="page-head">']
+    o += (['<div class="head-row">', '<h1>%s</h1>' % h1, aside, '</div>'] if aside
+          else ['<h1>%s</h1>' % h1])
     if note:
         o.append('<p class="page-note">%s</p>' % note)
     o += ['</header>', '']
