@@ -217,8 +217,12 @@ def rig_of(cells, tool=''):
             % (guns * 15 + (len(live) - guns) * 10, len(live), ''.join(cells), tool))
 
 
-def people(md, avatars):
-    """推荐人：一行一个，名字必填，链接与头像可省。"""
+def people(md, avatars, link=True):
+    """推荐人：一行一个，名字必填，链接与头像可省。
+
+    link=False 出纯文本那一版，给索引页用：那张卡整张是一个 <a>，里面再套一个
+    会被 HTML 解析器在内层处把外层关掉，卡片右半边就不再是通往配装的链接。
+    """
     out = []
     for line in re.findall(r'^推荐人：(.*)$', md, re.M):
         parts = [x.strip() for x in line.split('|')]
@@ -231,7 +235,8 @@ def people(md, avatars):
         img = avatars.html(face) if face else ''
         body = '%s<span class="nm">%s</span>' % (img, name)
         out.append('<a class="who" href="%s" target="_blank" rel="noopener">%s</a>'
-                   % (url, body) if url else '<span class="who">%s</span>' % body)
+                   % (url, body) if url and link
+                   else '<span class="who">%s</span>' % body)
     if not out:
         die('源稿缺「推荐人：」一行')
     return out
@@ -546,7 +551,7 @@ def build(idx, dirname, season, name_cn, slug):
             'season': season, 'slug': slug, 'stamp': meta(md, '更新'),
             'desc': text_of(inline(meta(md, '描述'), rich=True), collapse=True), 'class': meta(md, '职业'),
             'tags': names(md, '场景') + names(md, '定位'), 'branch': BRANCH[meta(md, '分支')],
-            'by': ''.join(people(md, avatars)),
+            'by': ''.join(people(md, avatars, link=False)),
             'core': '<span class="node">%s</span>' % icon_of(core, 64).replace(UP, '../')}
 
 
@@ -812,7 +817,9 @@ def render_new(stamp, name_cn):
           '<textarea data-key="注解" rows="4" '
           'placeholder="备选装备、打法要点，与资料页正文同一套标记" aria-label="注解"></textarea>',
           '</section>', '',
-          '<section class="block" id="sec-6">',
+          # 类名给预览用：按 sec-N 认会在增删分节时静默指错一节，
+          # 与 check() 里改掉的那处同一个理由。
+          '<section class="block src-block" id="sec-6">',
           '<h2 class="sect-label">配装文本</h2>',
           '<details id="src"><summary>展开配装文本</summary>',
           '<textarea id="out" readonly rows="28" spellcheck="false"></textarea>',
@@ -889,8 +896,11 @@ def main():
     if not only:
         render_index(made)
         render_vocab(idx)
-        render_new(max(m['stamp'] for m in made),
-                   [n for _, sn, n in season_dirs() if sn == SEASON][0])
+        here = [n for _, sn, n in season_dirs() if sn == SEASON]
+        if not here:
+            die('references/builds/ 下没有 %s- 开头的赛季目录，填表页写不出赛季名。'
+                '换季时先建目录再改 shell.SEASON' % SEASON)
+        render_new(max(m['stamp'] for m in made), here[0])
     print('配装 %d 套，当前赛季 %s %d 套'
           % (len(made), SEASON, len([m for m in made if m['season'] == SEASON])))
 

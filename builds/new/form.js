@@ -73,8 +73,11 @@
       } else if (r[1] === '分节' || SKIP_NAME[r[0]]) {
         return false;
       }
-      if (BY_CLASS[slot] && state.职业 && r[1] !== state.职业
-          && r[1] !== '通用') return false;
+      // 只挡「另外两个职业的」，不挡「不按职业分的」：异域护甲里还有三件永劫教派
+      // 的学派护甲与六条通用词条，谁都能穿；按「不等于本职业就丢」筛会把它们
+      // 整批藏掉，而 vocab.pick 明明查得到。
+      if (BY_CLASS[slot] && state.职业
+          && CLASS_ORDER.indexOf(r[1]) > -1 && r[1] !== state.职业) return false;
       return true;
     });
     // 排序四层：本分支的一页、元素、族、名字。
@@ -239,7 +242,10 @@
     }
     // 神器模组按所选那一件限定。没选之前不列——七件神器各 21 枚，混在一起是
     // 147 条，且它们在神器盘上的位置一件一套，摆出来会七枚叠在同一格。
-    var wait = slot === '神器' && kind !== '__art__' && !state.神器;
+    // 这两格的候选都要先有前提：神器模组按所选那一件收，元素按所选职业收
+    //（用的是分支页上「那个职业」的分节图）。没有前提时给一句话，不给一个空格网。
+    var wait = (slot === '神器' && kind !== '__art__' && !state.神器)
+      || (slot === '元素' && !state.职业);
 
     var box = document.createElement('div');
     box.className = 'picker';
@@ -283,7 +289,7 @@
       grid.classList.toggle('art', pan);
       grid.textContent = '';
       if (wait) {
-        count.textContent = '先选一件神器';
+        count.textContent = slot === '元素' ? '先选职业' : '先选一件神器';
         box.setAttribute('data-miss', '');
         return;
       }
@@ -615,6 +621,19 @@
       b.dataset.b = '';
       paintStat(b);
     });
+    // 收放与格数也要复位：不复位会留下一个空着的「移动」格（按钮还写着「－ 移动」）
+    // 与停在上一份配装那个数的碎片计数。
+    [].forEach.call(sheet.querySelectorAll('[data-add]'), function (b) {
+      var cell = b.closest('.slot, .rig')
+        .querySelector('[data-addable="' + b.dataset.add + '"]');
+      if (cell && !cell.hidden) toggleAdd(b);
+    });
+    [].forEach.call(sheet.querySelectorAll('.slot-count'), function (box) {
+      setCount(box.closest('.slot'), Number(box.dataset.n));
+    });
+    [].forEach.call(sheet.querySelectorAll('[data-only]'), function (c) {
+      c.hidden = true;                 // 异域职业物品那第二条词条的格子
+    });
     state.职业 = state.分支 = state.神器 = state.核心 = '';
     mods().forEach(function (m) { m.dataset.kind = ''; });
     setBranch('');
@@ -660,6 +679,11 @@
     set('配装名', got.name);
     set('描述', one('描述'));
     set('推荐人', one('推荐人'));
+    // 源稿的「推荐人：」可以写多行，这一页只有一个输入位。多出来的报出来——
+    // 闷声丢掉等于把署名弄没了，而粘回去的人看不出少了谁。
+    (got.head['推荐人'] || []).slice(1).forEach(function (x) {
+      skip.push('推荐人：' + x);
+    });
     set('注解', got.notes);
 
     // 身份先定：跟职业绑定的两个槽按它收候选，分支决定候选的排序与整页强调色。
@@ -880,7 +904,8 @@
 
   [].forEach.call(sheet.querySelectorAll('.slot-count'), function (box) {
     var cells = box.closest('.slot').querySelectorAll('.cells > li');
-    limits(box, Number(box.querySelector('b').textContent), cells.length);
+    box.dataset.n = box.querySelector('b').textContent;   // 导入前复位到这个数
+    limits(box, Number(box.dataset.n), cells.length);
   });
 
   document.getElementById('copy').addEventListener('click', function () {

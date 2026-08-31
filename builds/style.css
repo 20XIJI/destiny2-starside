@@ -561,7 +561,7 @@ body:has(.entries) { --wrap: 1500px; }
 #sheet.preview .slot-count,
 #sheet.preview .cls-id .hint,
 #sheet.preview .tagset > button:not([aria-pressed="true"]),
-#sheet.preview #sec-6 { display: none; }
+#sheet.preview .src-block { display: none; }
 
 /* 预览态点不动：这一页的每一格平时都是可点的，看成品时那层交互只会误触 */
 #sheet.preview .item,
@@ -690,7 +690,6 @@ button.item { width: 100%; }
 
 /* 头部那几处输入位：形状与格子同族，不另造一种控件 */
 #sheet input,
-#sheet select,
 #sheet textarea {
   color: var(--bone-hi);
   font: inherit;
@@ -698,8 +697,7 @@ button.item { width: 100%; }
   border: 1px solid var(--hair);
 }
 
-#sheet input,
-#sheet select { padding: 6px 10px; }
+#sheet input { padding: 6px 10px; }
 #sheet textarea { display: block; width: 100%; padding: 10px 12px; line-height: 1.8; }
 #sheet :focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 
