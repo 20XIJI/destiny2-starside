@@ -573,7 +573,7 @@ def render_index(made):
          # 空白。页首那句说明只留给 <meta>，正文里它把首屏推下去半屏。
          shell.page_head(SITE_SECTION, aside=(
              '<p class="new-link"><a href="new/index.html">投稿一套配装 →</a>'
-             '<span>选完技能、武器、护甲与神器模组，页面直接生成标准源稿</span></p>')),
+             '<span>选完技能、武器、护甲与神器模组，页面直接生成标准配装文本</span></p>')),
          '<main>']
     n = 0
     for cls in CLASSES:
@@ -688,7 +688,7 @@ def render_new(stamp, name_cn):
     候选不写进 HTML：两千条选项写进来就是把词表抄了第二份，由 form.js 按
     builds/vocab.js 建。这一页因此只有骨架，没有一个装备名。
     """
-    desc = '填一份推荐配装：选完技能、武器、护甲与神器模组，页面直接生成标准源稿，复制发给站长即可挂上站。'
+    desc = '填一份推荐配装：选完技能、武器、护甲与神器模组，页面直接生成标准配装文本，复制发给站长即可挂上站。'
     o = [shell.head('%s · Starside' % FORM_NAME, desc, up=2,
                     sheets=['../style.css']),
          shell.nav(FORM_NAME, up=2),
@@ -813,12 +813,27 @@ def render_new(stamp, name_cn):
           'placeholder="备选装备、打法要点，与资料页正文同一套标记" aria-label="注解"></textarea>',
           '</section>', '',
           '<section class="block" id="sec-6">',
-          '<h2 class="sect-label">生成的源稿</h2>',
-          '<details id="src"><summary>展开源稿，复制发给站长</summary>',
+          '<h2 class="sect-label">配装文本</h2>',
+          '<details id="src"><summary>展开配装文本</summary>',
           '<textarea id="out" readonly rows="28" spellcheck="false"></textarea>',
-          '<p><button id="copy" type="button">复制</button>'
-          '<span id="copy-tip" role="status"></span></p>',
+          '</details>',
+          '<details id="imp"><summary>从配装文本导入</summary>',
+          '<p class="note">粘贴一份已有的配装文本。认得出的格子照着填上，'
+          '认不出的整条跳过并在下面列出来。导入会覆盖当前已填的内容。</p>',
+          '<textarea id="in" rows="10" spellcheck="false" '
+          'placeholder="把配装文本粘贴到这里" aria-label="待导入的配装文本"></textarea>',
+          '<p id="imp-tip" role="status"></p>',
           '</details>', '</section>', '',
+          # 这一页的三个出口常驻右下角。**预览不另建一套 DOM**：它给 #sheet 加一个
+          # 类，把空槽、控件与源稿那一节收起来，剩下的就是成品；那时这一条也得
+          # 够得着，所以它不在被收起的那一节里。
+          '<div class="src-tools">',
+          '<button id="preview" class="chip" type="button" aria-pressed="false">预览配装</button>',
+          '<button id="copy" class="chip" type="button">复制配装</button>',
+          # 导入是一个动作不是两个：这一枚永远「导入」，文本框还空着时它带你去粘贴。
+          '<button id="to-import" class="chip" type="button">导入配装</button>',
+          '<span id="copy-tip" role="status"></span>',
+          '</div>', '',
           '</main>', '',
           shell.foot(stamp, '，选项与站内资料页同一份词表，列得出来的名字生成器就查得到。')]
     out = '\n'.join(x for x in o if x != '') + '\n'

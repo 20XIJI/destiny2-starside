@@ -166,6 +166,14 @@
 
   /* 元素那一格列六个分支：站内没有单画一套分支图，用的是分支页上「那个职业」的
      分节图，所以候选是当前职业在六页上的那六条，显示的名字换成分支名。 */
+  /* 分支色是 #sheet 上的一个类，预览态也是。整句覆盖 className 会把另一个抹掉。 */
+  function setBranch(br) {
+    Object.keys(BRANCH).forEach(function (n) {
+      sheet.classList.remove('b-' + BRANCH[n]);
+    });
+    if (br) sheet.classList.add('b-' + BRANCH[br]);
+  }
+
   function branches() {
     return Object.keys(BRANCH).map(function (n) {
       return rowOf('元素', function (r) {
@@ -330,7 +338,7 @@
       state[slot === '职业' ? '职业' : '分支'] =
         row ? (slot === '职业' ? row[0] : tag(row)) : '';
       if (slot === '元素') {
-        sheet.className = state.分支 ? 'b-' + BRANCH[state.分支] : '';
+        setBranch(state.分支);
       } else {
         // 职业一换，跟职业绑定的两个槽的候选变了，留着旧的会前后矛盾；元素那一格
         // 用的也是这个职业的分节图，由 mirror() 按新职业重画。
@@ -520,19 +528,28 @@
     write();
   }
 
-  function bump(btn) {
-    var box = btn.closest('.slot-count');
-    var panel = btn.closest('.slot');
+  function setCount(panel, n) {
+    var box = panel.querySelector('.slot-count');
     var cells = [].slice.call(panel.querySelectorAll('.cells > li'));
-    var now = cells.filter(function (c) { return !c.hidden; }).length;
-    var n = Math.min(cells.length, Math.max(0, now + Number(btn.dataset.step)));
+    n = Math.min(cells.length, Math.max(0, n));
     cells.forEach(function (c, i) {
+      // 收起就清空：留着一个看不见的值，生成的源稿里会凭空多一项。
       if (i >= n && !c.hidden) fill(c.querySelector('button.item'), null);
       c.hidden = i >= n;
     });
-    box.querySelector('b').textContent = n;
+    if (box) {
+      box.querySelector('b').textContent = n;
+      limits(box, n, cells.length);
+    }
     resize(panel);
-    limits(box, n, cells.length);
+  }
+
+  function bump(btn) {
+    var panel = btn.closest('.slot');
+    var now = [].filter.call(panel.querySelectorAll('.cells > li'), function (c) {
+      return !c.hidden;
+    }).length;
+    setCount(panel, now + Number(btn.dataset.step));
     write();
   }
 
@@ -560,6 +577,199 @@
     coreArt.classList.toggle('empty', !hit);
   }
 
+
+  /* ── 从源稿导入 ──────────────────────────────────────────────────────
+     write() 的逆。**认得出的填上，认不出的整条跳过并报出来**：一份源稿可能是
+     上个赛季写的，某件装备站内改了名或下了架，那时把能填的填上比整份拒掉有用。
+     报出来的那几条要写清是哪一格的哪个名字，不然填的人不知道该去补哪里。 */
+  var LIST_SLOTS = ['超能', '手雷', '近战', '职业技能', '移动', '星相', '碎片'];
+
+  function parseMd(text) {
+    var body = text.replace(/\r\n/g, '\n'), notes = '';
+    var cut = body.indexOf('\n## 注解');
+    if (cut > -1) {
+      notes = body.slice(cut).replace(/^\n## 注解\s*/, '').trim();
+      body = body.slice(0, cut);
+    }
+    var title = /^#[ \t]+(.+)$/m.exec(body);
+    var head = {};
+    body.split('\n').forEach(function (line) {
+      // 键里不许有分隔符与井号：正文里的「｜」与标题行都不是键值行
+      var m = /^([^：#|｜]{1,8})：(.*)$/.exec(line.trim());
+      if (m) (head[m[1].trim()] = head[m[1].trim()] || []).push(m[2].trim());
+    });
+    return { name: title ? title[1].trim() : '', head: head, notes: notes };
+  }
+
+  function resetAll() {
+    [].forEach.call(sheet.querySelectorAll('button.item'), function (c) {
+      if (c.row) fill(c, null);
+    });
+    [].forEach.call(sheet.querySelectorAll('[data-key]'), function (i) { i.value = ''; });
+    [].forEach.call(sheet.querySelectorAll('.tagset > button'), function (b) {
+      b.setAttribute('aria-pressed', 'false');
+    });
+    [].forEach.call(sheet.querySelectorAll('button.stat'), function (b) {
+      b.dataset.mode = '~';
+      b.dataset.a = '';
+      b.dataset.b = '';
+      paintStat(b);
+    });
+    state.职业 = state.分支 = state.神器 = state.核心 = '';
+    mods().forEach(function (m) { m.dataset.kind = ''; });
+    setBranch('');
+    mirror();
+  }
+
+  function importMd(text) {
+    var got = parseMd(text), skip = [];
+    var one = function (k) { return (got.head[k] || [''])[0].trim(); };
+    var many = function (k) {
+      return one(k).split('、').map(function (x) { return x.trim(); }).filter(Boolean);
+    };
+    function set(key, v) {
+      var el = sheet.querySelector('[data-key="' + key + '"]');
+      if (el) el.value = v || '';
+    }
+    function rowOfName(slot, kind, name) {
+      var l = slot === '元素' ? branches() : options(slot, kind);
+      return l.filter(function (r) { return r[0] === name; })[0];
+    }
+    /* 收起的格子先放出来再填：留着 hidden 的格子有值，源稿里会凭空多一项。 */
+    function reveal(cell) {
+      var li = cell.closest('li');
+      if (!cell.hidden && !(li && li.hidden)) return;
+      var mark = cell.dataset.addable || (li && li.dataset.addable);
+      var add = mark && cell.closest('.slot, .rig')
+        .querySelector('[data-add="' + mark + '"]');
+      if (add) toggleAdd(add);
+      else { cell.hidden = false; if (li) li.hidden = false; }
+    }
+    function put(slot, kind, name, cell) {
+      if (!cell) { skip.push(slot + '：' + name); return; }
+      var row = rowOfName(slot, kind, name);
+      if (!row) { skip.push(slot + '：' + name); return; }
+      reveal(cell);
+      fill(cell, row);
+    }
+    function cells(sel, scope) {
+      return [].slice.call((scope || sheet).querySelectorAll(sel));
+    }
+
+    resetAll();
+    set('配装名', got.name);
+    set('描述', one('描述'));
+    set('推荐人', one('推荐人'));
+    set('注解', got.notes);
+
+    // 身份先定：跟职业绑定的两个槽按它收候选，分支决定候选的排序与整页强调色。
+    var cls = one('职业');
+    if (cls && CLASS_ORDER.indexOf(cls) > -1) state.职业 = cls;
+    else if (cls) skip.push('职业：' + cls);
+    var br = one('分支');
+    if (br && BRANCH[br]) { state.分支 = br; setBranch(br); }
+    else if (br) skip.push('分支：' + br);
+    mirror();
+
+    LIST_SLOTS.forEach(function (slot) {
+      var want = many(slot);
+      if (!want.length) return;
+      var cs = cells('[data-slot="' + slot + '"]');
+      if (slot === '碎片' && cs[0]) setCount(cs[0].closest('.slot'), want.length);
+      want.forEach(function (n, i) { put(slot, KIND[slot] || '', n, cs[i]); });
+    });
+
+    var gun = one('异域武器');
+    if (gun) put('异域武器', '', gun, cells('[data-slot="异域武器"]')[0]);
+
+    // 传说武器一行一把，Perk 跟在竖线后面；第三项是起源特性，它那一格默认收起。
+    var rigs = cells('#sec-2 .rig').slice(1);
+    (got.head['传说武器'] || []).forEach(function (line, i) {
+      var seg = line.split('|');
+      var name = seg[0].trim();
+      if (!rigs[i]) { skip.push('传说武器：' + name); return; }
+      put('传说武器', '', name, cells('[data-slot="传说武器"]', rigs[i])[0]);
+      var pcs = cells('[data-slot="Perk"]', rigs[i]);
+      (seg[1] || '').split('、').map(function (x) { return x.trim(); })
+        .filter(Boolean).forEach(function (pk, k) {
+          put('Perk', pcs[k] ? pcs[k].dataset.kind : '', pk, pcs[k]);
+        });
+    });
+
+    var armor = cells('[data-slot="异域护甲"]');
+    many('异域护甲').forEach(function (n, i) { put('异域护甲', '', n, armor[i]); });
+
+    var sets = cells('[data-slot="套装"]');
+    one('套装').split('×').map(function (x) { return x.trim(); }).filter(Boolean)
+      .forEach(function (seg, i) {
+        var m = /^(.+?)\s*([24])\s*件$/.exec(seg);
+        if (!m) { skip.push('套装：' + seg); return; }
+        put('套装', m[2] + ' 件', m[1].trim(), sets[i]);
+      });
+
+    PARTS.forEach(function (part) {
+      var cs = cells('[data-kind="' + part + '"]');
+      many(part).forEach(function (n, i) { put('护甲模组', part, n, cs[i]); });
+    });
+
+    // 神器先定：七个模组的候选按它收，「电介质」在两件神器下各有一条。
+    var art = one('神器');
+    if (art) {
+      var head = sheet.querySelector('[data-kind="__art__"]');
+      var row = artifacts().filter(function (r) { return r[0] === art; })[0];
+      if (row) {
+        state.神器 = art;
+        fill(head, row);
+        mods().forEach(function (m) { m.dataset.kind = art; });
+        var ms = mods();
+        many('模组').forEach(function (n, i) { put('神器', art, n, ms[i]); });
+      } else {
+        skip.push('神器：' + art);
+      }
+    }
+
+    one('六维').split('｜').map(function (x) { return x.trim(); }).filter(Boolean)
+      .forEach(function (seg) {
+        var m = /^(\S+)\s*(.*)$/.exec(seg);
+        var cell = m && sheet.querySelector('.stat[data-stat="' + m[1] + '"]');
+        if (!cell) { skip.push('六维：' + seg); return; }
+        var v = (m[2] || '~').trim(), hit;
+        if (v === '~' || v === '') cell.dataset.mode = '~';
+        else if ((hit = /^(\d+)\+$/.exec(v))) { cell.dataset.mode = '+'; cell.dataset.a = hit[1]; }
+        else if ((hit = /^(\d+)\s*[～~-]\s*(\d+)$/.exec(v))) {
+          cell.dataset.mode = '-';
+          cell.dataset.a = hit[1];
+          cell.dataset.b = hit[2];
+        } else if ((hit = /^(\d+)$/.exec(v))) { cell.dataset.mode = '='; cell.dataset.a = hit[1]; }
+        else { skip.push('六维：' + seg); return; }
+        paintStat(cell);
+      });
+
+    ['场景', '定位'].forEach(function (key) {
+      var box = sheet.querySelector('input[data-key="' + key + '"]');
+      if (!box) return;
+      var all = cells('.tagset > button', box.parentNode);
+      many(key).forEach(function (t) {
+        var b = all.filter(function (x) { return x.textContent === t; })[0];
+        if (b) b.setAttribute('aria-pressed', 'true');
+        else skip.push(key + '：' + t);
+      });
+      box.value = all.filter(function (x) {
+        return x.getAttribute('aria-pressed') === 'true';
+      }).map(function (x) { return x.textContent; }).join('、');
+    });
+
+    // 核心最后定：它必须是上面已经填进去的某一件，前面没填上就落不了。
+    var core = one('核心');
+    if (core) {
+      if (coreList().some(function (r) { return r[0] === core; })) state.核心 = core;
+      else skip.push('核心：' + core);
+    }
+
+    write();
+    grow();
+    return skip;
+  }
   /* ── 源稿 ──────────────────────────────────────────────────────────
      输出格式与 convert-build.py 认的源稿逐字一致，空的那一行整行不写
      （源稿的约定就是「留空即整行删掉」，不写占位符）。 */
@@ -687,5 +897,63 @@
     });
   });
 
+  /* 预览：给 #sheet 加一个类，把空槽、控件与源稿那一节收起来，剩下的就是成品。
+     **不另建一套 DOM**——两套 DOM 会让版面改一处得改两遍。 */
+  /* 注解越写越长，textarea 不会自己长高，写到第五行就看不见了。高度按内容算：
+     **先把 height 归零再读 scrollHeight**，不归零时 scrollHeight 永远不小于当前
+     高度，框只会长不会缩。box-sizing 全局是 border-box，scrollHeight 含内边距，
+     直接拿来当高度即可。 */
+  var notes = sheet.querySelector('textarea[data-key="注解"]');
+
+  function grow() {
+    notes.style.height = 'auto';
+    notes.style.height = notes.scrollHeight + 'px';
+  }
+
+  notes.addEventListener('input', grow);
+
+  var preview = document.getElementById('preview');
+  preview.addEventListener('click', function () {
+    close();
+    var on = sheet.classList.toggle('preview');
+    preview.textContent = on ? '退出预览' : '预览配装';
+    preview.setAttribute('aria-pressed', String(on));
+    if (on) window.scrollTo(0, 0);
+  });
+
+  /* 导入是一个动作，不是两个按钮：这一枚永远「导入」，文本框还空着时它带你去
+     粘贴。**两条路都要把那一节放出来并滚过去**——结果与跳过的条目写在那里，
+     按完看不见等于没报。预览态下那一节是收起来的，先退出预览。 */
+  document.getElementById('to-import').addEventListener('click', function () {
+    if (sheet.classList.contains('preview')) preview.click();
+    var panel = document.getElementById('imp');
+    var area = document.getElementById('in');
+    var tip = document.getElementById('imp-tip');
+    panel.open = true;
+    panel.scrollIntoView({ block: 'center' });
+    var text = area.value.trim();
+    if (!text) {
+      area.focus();
+      tip.textContent = '把配装文本粘贴到这里，再按一次「导入配装」';
+      return;
+    }
+    var skip = importMd(text);
+    document.getElementById('src').open = true;
+    tip.textContent = skip.length
+      ? '导入完成，跳过 ' + skip.length + ' 条：' + skip.join('，')
+      : '导入完成，全部认得出';
+  });
+
+  /* 填过东西之后再离开或刷新要先问一句：这一页的内容只在这一个标签页里活着，
+     刷掉就没了。判据是「生成的源稿与刚打开时那一份不同」，不另记一份脏标记。 */
+  var blank = '';
+  window.addEventListener('beforeunload', function (e) {
+    if (out.value === blank) return;
+    e.preventDefault();
+    e.returnValue = '';
+  });
+
   write();
+  grow();
+  blank = out.value;
 }());
