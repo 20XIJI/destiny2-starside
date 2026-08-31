@@ -88,6 +88,9 @@ MECH = {
     '治愈': 'el-solar', '焕光': 'el-solar', '恢复': 'el-solar', '焰灵': 'el-solar',
     '灼烧': 'deb-solar', '点燃': 'deb-solar',
     '吞食': 'el-void', '隐身': 'el-void', '虚空覆盖护盾': 'el-void', '虚空裂口': 'el-void',
+    # 覆盖护盾本身不属于任何元素（泰坦屏障、神圣之光都给），走拾取物那一支；
+    # 「虚空覆盖护盾」是更长的专名，长词在前，两者不会互相盖住。
+    '覆盖护盾': 'pickup',
     '压制': 'deb-void', '不稳定': 'deb-void', '虚弱': 'deb-void',
     '冰霜护甲': 'el-stasis', '冰影碎片': 'el-stasis',
     '减速': 'deb-stasis', '冻结': 'deb-stasis', '碎裂': 'deb-stasis',

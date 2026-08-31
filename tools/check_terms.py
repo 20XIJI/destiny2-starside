@@ -234,6 +234,17 @@ def sources():
             if os.path.exists(os.path.join(shell.ROOT, sheet)):
                 ok |= classes_in(read(sheet))
         out.append((rel, ok))
+    # 配装源稿：注解那一段是散文，中文正名与着色 token 照样要守。**不进 G6 正查**
+    # ——配装正文几乎全是物品名（「碎片：保护琢面、黎明琢面」），正查会要求给每一个
+    # 都套 {token|}，而它们本该由查表变成带图标的链接，源稿不写颜色。
+    build_ok = base | classes_in(read('builds/style.css'))
+    for season in sorted(os.listdir(shell.BUILD_DIR)):
+        d = os.path.join(shell.BUILD_DIR, season)
+        if not os.path.isdir(d):
+            continue
+        for name in sorted(os.listdir(d)):
+            if name.endswith('.md'):
+                out.append(('references/builds/%s/%s' % (season, name), build_ok))
     return out
 
 
@@ -403,7 +414,8 @@ def main() -> int:
     pairs = sources()
     bad: list[str] = []
 
-    check_terms(SRC_FILES + [rel for rel, _ in pairs if rel.startswith(DOC_DIR)], bad)
+    check_terms(SRC_FILES + [rel for rel, _ in pairs
+                             if rel.startswith((DOC_DIR, 'references/builds/'))], bad)
     used = check_tokens(pairs, site, bad)
     check_stamps(bad)
     check_acts(bad)

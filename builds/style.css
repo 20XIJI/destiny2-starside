@@ -1,0 +1,296 @@
+/* 推荐配装：索引页与各套配装页共用这一份。深三层的配装页由 shell.head 的
+   sheets 显式引它，不按层数推——每套配装各建一个 style.css 只会是空文件。
+
+   版心走 1500px 那一档（与神器模组页共用）：职业、武器、护甲、神器四块要在一屏里
+   同时看见，收到 1060px 会把面板压成上下长条，一图流的价值就没了。 */
+:root {
+  --wrap: 1500px;
+  --min: 1064px;
+}
+
+/* 页首：核心装备一枚放大的图 + 配装身份。核心是异域武器或异域护甲之一，
+   由源稿的「核心：」指定，站内没有立绘，这枚图就是这套配装的视觉锚点。 */
+.build-head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 20px;
+  margin: 24px 0 20px;
+  padding: 16px 20px;
+  background: var(--tint-1);
+  border: 1px solid var(--hair);
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
+}
+
+.build-head .core img {
+  display: block;
+  width: 72px;
+  height: 72px;
+  border: 1px solid var(--hair);
+}
+
+.build-id h1 {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 4px;
+}
+
+/* 职业徽章：图是站内那三枚职业图标（elements/class-abilities 的分节图），
+   分支只写字——站内没有分支图标，画一枚假的等于自造游戏编码。 */
+.build-id .cls {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 4px;
+  font-size: 12px;
+  font-weight: 400;
+  background: var(--tint-2);
+  border: 1px solid var(--hair);
+}
+
+.build-id .cls img { width: 22px; height: 22px; }
+.build-id .cls > span { color: var(--bone-mid); font-family: var(--font-disp); letter-spacing: .08em; }
+
+.build-id .desc { margin: 0 0 8px; max-width: 76ch; }
+
+.build-id .by {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0 0 10px;
+}
+
+/* 推荐人：名字必填，链接与头像可省，所以 .who 既可能是 <a> 也可能是 <span> */
+.who {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--bone-hi);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.who img { width: 28px; height: 28px; border-radius: 50%; }
+a.who:hover { color: var(--accent); }
+
+/* 标签：场景与定位共用一种形状。受控词表没有做，形状因此不按类别分色。 */
+.tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+
+.tags > li,
+.tags > i {
+  padding: 2px 10px;
+  color: var(--bone-mid);
+  font-family: var(--font-disp);
+  font-size: 12px;
+  font-style: normal;
+  letter-spacing: .08em;
+  background: var(--tint-2);
+  border: 1px solid var(--hair);
+}
+
+.build-id .season {
+  margin: 10px 0 0;
+  color: var(--bone-faint);
+  font-family: var(--font-disp);
+  font-size: 12px;
+  letter-spacing: .12em;
+}
+
+/* 一图流的读法：面板码成两列，一屏看完。**用多列不用网格**——网格的两列按行同步
+   高度，「职业」那块矮下去之后「武器」要等「护甲」排完才开始，中间空出一整屏；
+   多列按内容自己码紧。只作用于配装页（main 里有 .build-head 的那种）。 */
+main:has(.build-head) {
+  column-count: 2;
+  column-gap: 20px;
+}
+
+main:has(.build-head) .block {
+  break-inside: avoid;
+  margin: 0 0 16px;
+}
+
+.build-head,
+#sec-5,
+#sec-6 { column-span: all; }
+
+/* 槽位面板：标题走左栏，格子铺右边。标题各占一行时，一套配装的十来个面板就多出
+   十来行只写着两个字的空白，整页高度翻倍。底色只用三档白叠白，不加发光边框与
+   投影——整页唯一的饱和色来自游戏自身的编码（design.md 总原则）。 */
+.slot {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+  margin: 0 0 8px;
+  padding: 10px 12px;
+  background: var(--tint-1);
+  border: 1px solid var(--hair);
+}
+
+.slot h3 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0 0;
+  color: var(--bone-mid);
+  font-family: var(--font-disp);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  line-height: 1.4;
+}
+
+/* 面板与六维的小图标：颜色跟着标题走，不占色相 */
+.gl { flex: none; width: 14px; height: 14px; color: var(--bone-mid); }
+
+/* 一把枪与它的 Perk 是一组，组内不断行；组间那道细线画出「这几件是一套」 */
+.rig {
+  display: flex;
+  gap: 6px;
+  padding-right: 14px;
+  border-right: 1px solid var(--hair);
+}
+
+.rig:last-child { border-right: 0; padding-right: 0; }
+
+.cells { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+
+/* 一格：图在上、名在下，整格是链接。名字的颜色由词表给（碎片走本分支的元素色、
+   异域走异域金、神器模组走神器青、Perk 走 Perk 色），与全站一致。 */
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 82px;
+  padding: 6px 4px;
+  color: inherit;
+  text-align: center;
+  text-decoration: none;
+  background: var(--tint-2);
+  border: 1px solid var(--hair);
+  transition: background .18s ease;
+}
+
+a.item:hover { background: var(--row-hover); }
+a.item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.item img { display: block; width: 36px; height: 36px; }
+.item .nm { font-size: 11px; line-height: 1.35; }
+
+/* 套装的副名：写来源就把套装名标在下面，写套装名就把来源标在下面。
+   玩家按来源叫套装（「玻璃拱顶四件套」），资料页按套装名列，两个名字都要认得出。 */
+.item .sub {
+  display: block;
+  margin-top: 1px;
+  color: var(--bone-faint);
+  font-size: 10px;
+}
+
+/* 套装的件数：2 件与 4 件是两条不同的效果，名字一样，不标出来读者分不出 */
+.item .pc {
+  display: block;
+  margin-top: 2px;
+  color: var(--bone-mid);
+  font-family: var(--font-disp);
+  font-size: 10px;
+  letter-spacing: .08em;
+}
+
+/* 武器与异域装备的格子宽一档：名字长，且它们是这一段里的主角 */
+.item.gun, .item.gear { width: 104px; }
+.item.gun img, .item.gear img { width: 44px; height: 44px; }
+
+/* Perk 挂在它那把枪后面，收窄一档读作从属 */
+.item.perk-cell { width: 76px; }
+.item.perk-cell img { width: 28px; height: 28px; }
+
+/* 站内没有资料页的槽位（移动手段）：纯文本，不伪装成链接 */
+.item.plain { justify-content: center; min-height: 56px; color: var(--bone-mid); }
+
+/* 六维：六格一行，值是纯文本（「不低于 80」「150～200」都原样落） */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stats > li {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 10px 12px;
+  text-align: center;
+  background: var(--tint-1);
+  border: 1px solid var(--hair);
+}
+
+.stats .nm { color: var(--bone-mid); font-size: 12px; }
+.stats .gl { width: 16px; height: 16px; }
+.stats .val { color: var(--bone-hi); font-family: var(--font-disp); font-size: 16px; }
+
+/* 索引页：卡片复用首页那套 .entry 形状，右列放推荐人与标签 */
+.entries { grid-template-columns: repeat(2, minmax(480px, 1fr)); }
+.entry .node img { display: block; width: 64px; height: 64px; border: 1px solid var(--hair); }
+
+.entry-side {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+  max-width: 240px;
+}
+
+/* 填表页：两千条选项走原生 <input list> + <datalist>，不自己写下拉。
+   表单由 builds/new/form.js 按 builds/vocab.js 建出来，HTML 里没有选项文本。 */
+.fset { margin: 0 0 28px; }
+
+.fset h3 {
+  margin: 0 0 12px;
+  color: var(--bone-mid);
+  font-family: var(--font-disp);
+  font-size: 12px;
+  letter-spacing: .16em;
+}
+
+.fgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.fld { display: grid; gap: 4px; }
+.fld > span { color: var(--bone-mid); font-size: 12px; }
+
+.fld input,
+.fld select,
+.fld textarea,
+#out {
+  padding: 8px 10px;
+  color: var(--bone-hi);
+  font: inherit;
+  background: var(--tint-2);
+  border: 1px solid var(--hair);
+}
+
+.fld input:focus-visible,
+.fld select:focus-visible,
+.fld textarea:focus-visible,
+#out:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+#out { display: block; width: 100%; font-family: var(--font-body); line-height: 1.6; }
+
+#copy {
+  padding: 8px 20px;
+  color: var(--bone-hi);
+  font-family: var(--font-disp);
+  letter-spacing: .12em;
+  background: var(--tint-2);
+  border: 1px solid var(--hair);
+  cursor: pointer;
+}
+
+#copy:hover { background: var(--row-hover); }

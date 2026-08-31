@@ -1,0 +1,667 @@
+{
+"光能意志（冰影）": {
+"anchor": "sec-11",
+"icon": "89db7c2bff.webp",
+"part": "国王的陨落",
+"row": "光能意志",
+"url": "https://www.bungie.net/common/destiny2_content/icons/58f3d2401d761efe5554a5ed9b5c9d15.png"
+},
+"光能意志（动能）": {
+"anchor": "sec-11",
+"icon": "e441d587dd.webp",
+"part": "国王的陨落",
+"row": "光能意志",
+"url": "https://www.bungie.net/common/destiny2_content/icons/0d5c02d776fdc58cf1ae359b8457b9d2.png"
+},
+"光能意志（烈日）": {
+"anchor": "sec-11",
+"icon": "134976f36b.webp",
+"part": "国王的陨落",
+"row": "光能意志",
+"url": "https://www.bungie.net/common/destiny2_content/icons/e3c9fcf5de61ff64616cadd4ba3294b0.png"
+},
+"光能意志（电弧）": {
+"anchor": "sec-11",
+"icon": "2c7da98062.webp",
+"part": "国王的陨落",
+"row": "光能意志",
+"url": "https://www.bungie.net/common/destiny2_content/icons/1d09a8e9a77b03d191754835088164fd.png"
+},
+"光能意志（虚空）": {
+"anchor": "sec-11",
+"icon": "802a916244.webp",
+"part": "国王的陨落",
+"row": "光能意志",
+"url": "https://www.bungie.net/common/destiny2_content/icons/dcfb104e97f356fa76724fdd6e7834ff.png"
+},
+"冰影回收器": {
+"anchor": "sec-4",
+"icon": "948b9be712.webp",
+"part": "腿部",
+"row": "回收利用",
+"url": "https://www.bungie.net/common/destiny2_content/icons/00887852b7c187bbca7298f1edcbbf59.png"
+},
+"冰影弹药生成": {
+"anchor": "sec-3",
+"icon": "89db762989.webp",
+"part": "胸甲",
+"row": "弹药生成",
+"url": "https://www.bungie.net/common/destiny2_content/icons/74d4ac9f90353d6b04bc673c37aa041c.png"
+},
+"冰影抗性": {
+"anchor": "sec-3",
+"icon": "123cd15130.webp",
+"part": "胸甲",
+"row": "抗性",
+"url": "https://www.bungie.net/common/destiny2_content/icons/56282a5ac5bee149d290efd6307ce145.png"
+},
+"冰影枪套": {
+"anchor": "sec-4",
+"icon": "aa502aae02.webp",
+"part": "腿部",
+"row": "枪套",
+"url": "https://www.bungie.net/common/destiny2_content/icons/cfac1b2503007b51eb19e59ae6b0cc37.png"
+},
+"冰影武器激涌": {
+"anchor": "sec-4",
+"icon": "1a377452bf.webp",
+"part": "腿部",
+"row": "武器激涌",
+"url": "https://www.bungie.net/common/destiny2_content/icons/1a59e8a90a6231452a7af9362d694fd0.png"
+},
+"冰影灵巧": {
+"anchor": "sec-2",
+"icon": "b3c6dac1e5.webp",
+"part": "护臂",
+"row": "灵巧",
+"url": "https://www.bungie.net/common/destiny2_content/icons/7f9b32cd9d186059d88bb4d75532116c.png"
+},
+"冰影瞄准性能": {
+"anchor": "sec-1",
+"icon": "c15cd06c0b.webp",
+"part": "头盔",
+"row": "瞄准性能",
+"url": "https://www.bungie.net/common/destiny2_content/icons/f7216a7c9ea6f95d27b9aaf0deb2d790.png"
+},
+"冰影虹吸": {
+"anchor": "sec-1",
+"icon": "a0fe5bff4e.webp",
+"part": "头盔",
+"row": "虹吸",
+"url": "https://www.bungie.net/common/destiny2_content/icons/9b05666556bcb7ce07d269904d03f5af.png"
+},
+"冰影装弹装置": {
+"anchor": "sec-2",
+"icon": "eae8b4ba04.webp",
+"part": "护臂",
+"row": "装弹装置",
+"url": "https://www.bungie.net/common/destiny2_content/icons/19b832bc1566475c2f97b72b6cd3fa31.png"
+},
+"动能回收器": {
+"anchor": "sec-4",
+"icon": "c2705e910b.webp",
+"part": "腿部",
+"row": "回收利用",
+"url": "https://www.bungie.net/common/destiny2_content/icons/84677bd229b40667e88bc777e6970d49.png"
+},
+"动能弹药生成": {
+"anchor": "sec-3",
+"icon": "ae18f06fee.webp",
+"part": "胸甲",
+"row": "弹药生成",
+"url": "https://www.bungie.net/common/destiny2_content/icons/44dc43652c9403c9e584b8a9123f379d.png"
+},
+"动能枪套": {
+"anchor": "sec-4",
+"icon": "38392c7fd9.webp",
+"part": "腿部",
+"row": "枪套",
+"url": "https://www.bungie.net/common/destiny2_content/icons/308335670e99778ebf8702e73aa42189.png"
+},
+"动能武器激涌": {
+"anchor": "sec-4",
+"icon": "b0ccd9cbcf.webp",
+"part": "腿部",
+"row": "武器激涌",
+"url": "https://www.bungie.net/common/destiny2_content/icons/c2fe612aa5de8e32052e4d679f13fb8b.png"
+},
+"动能混乱虹吸": {
+"anchor": "sec-1",
+"icon": "e57a2f1243.webp",
+"part": "头盔",
+"row": "虹吸",
+"url": "https://www.bungie.net/common/destiny2_content/icons/1b07a864b4c02af30c28bb524401bfb7.png"
+},
+"动能灵巧": {
+"anchor": "sec-2",
+"icon": "01bb3d99f3.webp",
+"part": "护臂",
+"row": "灵巧",
+"url": "https://www.bungie.net/common/destiny2_content/icons/f26dd22ff54d884dcb7dd47988249645.png"
+},
+"动能热量虹吸": {
+"anchor": "sec-1",
+"icon": "5842d61783.webp",
+"part": "头盔",
+"row": "虹吸",
+"url": "https://www.bungie.net/common/destiny2_content/icons/9166360285f06ec498943d7a5b6e1c19.png"
+},
+"动能电荷虹吸": {
+"anchor": "sec-1",
+"icon": "7ad3573186.webp",
+"part": "头盔",
+"row": "虹吸",
+"url": "https://www.bungie.net/common/destiny2_content/icons/fe43ec82456a170c93a9556bb6cd75e0.png"
+},
+"动能瞄准性能": {
+"anchor": "sec-1",
+"icon": "8720709f12.webp",
+"part": "头盔",
+"row": "瞄准性能",
+"url": "https://www.bungie.net/common/destiny2_content/icons/8f724cf33ba4a91994d7b8b7d5853d12.png"
+},
+"动能虹吸": {
+"anchor": "sec-1",
+"icon": "cbfd0cd511.webp",
+"part": "头盔",
+"row": "虹吸",
+"url": "https://www.bungie.net/common/destiny2_content/icons/03f0ec4cf0a678b451ebd55c2a005d06.png"
+},
+"动能装弹装置": {
+"anchor": "sec-2",
+"icon": "2b497abac7.webp",
+"part": "护臂",
+"row": "装弹装置",
+"url": "https://www.bungie.net/common/destiny2_content/icons/b520d850030142ab9e784e5f1d687be9.png"
+},
+"强化梦魇放逐器": {
+"anchor": "sec-15",
+"icon": "562b02871c.webp",
+"part": "梦魇狩猎",
+"row": "梦魇放逐器",
+"url": "https://www.bungie.net/common/destiny2_content/icons/2e0a2577cc8dc242ebf1d9b1ef9d5262.png"
+},
+"强化梦魇破碎器": {
+"anchor": "sec-15",
+"icon": "fa5f0ac436.webp",
+"part": "梦魇狩猎",
+"row": "梦魇破碎器",
+"url": "https://www.bungie.net/common/destiny2_content/icons/80f4f617dcad6eaf96f287ee22f04375.png"
+},
+"强化梦魇粉碎器": {
+"anchor": "sec-15",
+"icon": "b282e66522.webp",
+"part": "梦魇狩猎",
+"row": "梦魇粉碎器",
+"url": "https://www.bungie.net/common/destiny2_content/icons/3f56287c51a0ecc2577c638ff3ca5f6f.png"
+},
+"灼烧抗性": {
+"anchor": "sec-3",
+"icon": "1db6e3cbc8.webp",
+"part": "胸甲",
+"row": "抗性",
+"url": "https://www.bungie.net/common/destiny2_content/icons/fe0331978affdc68f1825a8a94e444c9.png"
+},
+"烈日/缚丝双虹吸": {
+"anchor": "sec-1",
+"icon": "0f1d4b252c.webp",
+"part": "头盔",
+"row": "虹吸",
+"url": "https://www.bungie.net/common/destiny2_content/icons/e3a5df5fcd64153b1622e3f1ceb62e36.png"
+},
+"烈日回收器": {
+"anchor": "sec-4",
+"icon": "784de4535c.webp",
+"part": "腿部",
+"row": "回收利用",
+"url": "https://www.bungie.net/common/destiny2_content/icons/5b58311f249bfa0fb41242009d865785.png"
+},
+"烈日弹药生成": {
+"anchor": "sec-3",
+"icon": "4d5b055149.webp",
+"part": "胸甲",
+"row": "弹药生成",
+"url": "https://www.bungie.net/common/destiny2_content/icons/0b2e0b59833161a53da63d2ab604c910.png"
+},
+"烈日枪套": {
+"anchor": "sec-4",
+"icon": "c182d2f19b.webp",
+"part": "腿部",
+"row": "枪套",
+"url": "https://www.bungie.net/common/destiny2_content/icons/a112d16d629929e9c29e3525e158671d.png"
+},
+"烈日武器激涌": {
+"anchor": "sec-4",
+"icon": "22ce769fe6.webp",
+"part": "腿部",
+"row": "武器激涌",
+"url": "https://www.bungie.net/common/destiny2_content/icons/5a986074a3872e3b3d73ea61d4e7b09b.png"
+},
+"烈日灵巧": {
+"anchor": "sec-2",
+"icon": "288b195b88.webp",
+"part": "护臂",
+"row": "灵巧",
+"url": "https://www.bungie.net/common/destiny2_content/icons/b77c4592c9bd332a94b75cc0179bb319.png"
+},
+"烈日瞄准性能": {
+"anchor": "sec-1",
+"icon": "243d25721c.webp",
+"part": "头盔",
+"row": "瞄准性能",
+"url": "https://www.bungie.net/common/destiny2_content/icons/6662d14e32e684c67b090d449e1d109e.png"
+},
+"烈日虹吸": {
+"anchor": "sec-1",
+"icon": "6eb4a7eab1.webp",
+"part": "头盔",
+"row": "虹吸",
+"url": "https://www.bungie.net/common/destiny2_content/icons/616808818e1e2da9bdee335f93d2d92e.png"
+},
+"烈日装弹装置": {
+"anchor": "sec-2",
+"icon": "24cca6ea4c.webp",
+"part": "护臂",
+"row": "装弹装置",
+"url": "https://www.bungie.net/common/destiny2_content/icons/98578ac324d9f781984b509f3f8ffbd8.png"
+},
+"热力虹吸": {
+"anchor": "sec-1",
+"icon": "637447e626.webp",
+"part": "头盔",
+"row": "虹吸",
+"url": "https://www.bungie.net/common/destiny2_content/icons/032ecf4ebb018d8983676c61820587f0.png"
+},
+"特殊弹药斥候": {
+"anchor": "sec-1",
+"icon": "85da4740a7.webp",
+"part": "头盔",
+"row": "弹药斥候",
+"url": "https://www.bungie.net/common/destiny2_content/icons/92faad49e4ae4d6483a7e82d69d817fe.png"
+},
+"特殊武器弹药搜寻者": {
+"anchor": "sec-1",
+"icon": "549322d88e.webp",
+"part": "头盔",
+"row": "弹药搜寻者",
+"url": "https://www.bungie.net/common/destiny2_content/icons/35e9d5635599be5c0fc306732f881459.png"
+},
+"狙击伤害抗性": {
+"anchor": "sec-3",
+"icon": "e4238f1ad0.webp",
+"part": "胸甲",
+"row": "抗性",
+"url": "https://www.bungie.net/common/destiny2_content/icons/940545b1b27bab39eb6fbf059d26b0bc.png"
+},
+"电弧/冰影双虹吸": {
+"anchor": "sec-1",
+"icon": "da13149154.webp",
+"part": "头盔",
+"row": "虹吸",
+"url": "https://www.bungie.net/common/destiny2_content/icons/8b20acd1a243c966117e2e40a683b066.png"
+},
+"电弧/缚丝虹吸组合": {
+"anchor": "sec-1",
+"icon": "6265a6aee9.webp",
+"part": "头盔",
+"row": "虹吸",
+"url": "https://www.bungie.net/common/destiny2_content/icons/97317a9742097d356e815e3bb5d58d5a.png"
+},
+"电弧回收器": {
+"anchor": "sec-4",
+"icon": "de11071dd7.webp",
+"part": "腿部",
+"row": "回收利用",
+"url": "https://www.bungie.net/common/destiny2_content/icons/4cee7c467c22fda7b58d8ab4e69f0279.png"
+},
+"电弧弹药生成": {
+"anchor": "sec-3",
+"icon": "ab17306a96.webp",
+"part": "胸甲",
+"row": "弹药生成",
+"url": "https://www.bungie.net/common/destiny2_content/icons/72957f7e808d990528dac22b52416cd9.png"
+},
+"电弧抗性": {
+"anchor": "sec-3",
+"icon": "fd06023f70.webp",
+"part": "胸甲",
+"row": "抗性",
+"url": "https://www.bungie.net/common/destiny2_content/icons/0c4e6d5a8075541730cd1cfc9f51d743.png"
+},
+"电弧枪套": {
+"anchor": "sec-4",
+"icon": "82783ff691.webp",
+"part": "腿部",
+"row": "枪套",
+"url": "https://www.bungie.net/common/destiny2_content/icons/522c8c1e558031e87aec2ec3f53ce628.png"
+},
+"电弧武器激涌": {
+"anchor": "sec-4",
+"icon": "5a6be432c9.webp",
+"part": "腿部",
+"row": "武器激涌",
+"url": "https://www.bungie.net/common/destiny2_content/icons/89a7bc1015802e86a624c1cc434bb15c.png"
+},
+"电弧灵巧": {
+"anchor": "sec-2",
+"icon": "6f16e82387.webp",
+"part": "护臂",
+"row": "灵巧",
+"url": "https://www.bungie.net/common/destiny2_content/icons/d5aff100d81a8b309afb6f06dffebf64.png"
+},
+"电弧瞄准性能": {
+"anchor": "sec-1",
+"icon": "2eed5aba18.webp",
+"part": "头盔",
+"row": "瞄准性能",
+"url": "https://www.bungie.net/common/destiny2_content/icons/69167775ffd584f391e4d590ae3b9c78.png"
+},
+"电弧虹吸": {
+"anchor": "sec-1",
+"icon": "0fb9d616dc.webp",
+"part": "头盔",
+"row": "虹吸",
+"url": "https://www.bungie.net/common/destiny2_content/icons/627b1fc72103e7c6081133d6b6eb1cc2.png"
+},
+"电弧装弹装置": {
+"anchor": "sec-2",
+"icon": "03e2fa37df.webp",
+"part": "护臂",
+"row": "装弹装置",
+"url": "https://www.bungie.net/common/destiny2_content/icons/110e01c4c108a0b8873aac3161825f81.png"
+},
+"稳定冰影瞄准": {
+"anchor": "sec-3",
+"icon": "354265835c.webp",
+"part": "胸甲",
+"row": "稳定瞄准",
+"url": "https://www.bungie.net/common/destiny2_content/icons/22aa28fca00715c0a268ace8bf02bb8c.png"
+},
+"稳定动能瞄准": {
+"anchor": "sec-3",
+"icon": "dd354fddf9.webp",
+"part": "胸甲",
+"row": "稳定瞄准",
+"url": "https://www.bungie.net/common/destiny2_content/icons/f62c0984b937a74e5d15afc05bc0c253.png"
+},
+"稳定烈日瞄准": {
+"anchor": "sec-3",
+"icon": "73603beb97.webp",
+"part": "胸甲",
+"row": "稳定瞄准",
+"url": "https://www.bungie.net/common/destiny2_content/icons/a4c4c21ff07b3f308371ee80acb9b204.png"
+},
+"稳定电弧瞄准": {
+"anchor": "sec-3",
+"icon": "ebc05d1d75.webp",
+"part": "胸甲",
+"row": "稳定瞄准",
+"url": "https://www.bungie.net/common/destiny2_content/icons/03981cecd0cb26e4ec4c79960b87034a.png"
+},
+"稳定缚丝瞄准": {
+"anchor": "sec-3",
+"icon": "632cc505dc.webp",
+"part": "胸甲",
+"row": "稳定瞄准",
+"url": "https://www.bungie.net/common/destiny2_content/icons/61d43323b3b08725e51537e0d52dcfe7.png"
+},
+"稳定虚空瞄准": {
+"anchor": "sec-3",
+"icon": "060e865b2c.webp",
+"part": "胸甲",
+"row": "稳定瞄准",
+"url": "https://www.bungie.net/common/destiny2_content/icons/cbd47b9d27d7540725fabd5d2b291af7.png"
+},
+"稳定谐振瞄准": {
+"anchor": "sec-3",
+"icon": "c05f5f6cdb.webp",
+"part": "胸甲",
+"row": "稳定瞄准",
+"url": "https://www.bungie.net/common/destiny2_content/icons/05ce3bf5aad22cea26ff3a808351076a.png"
+},
+"缚丝回收器": {
+"anchor": "sec-4",
+"icon": "9d8b8843e0.webp",
+"part": "腿部",
+"row": "回收利用",
+"url": "https://www.bungie.net/common/destiny2_content/icons/1f83eec51bd4be101cc8ff07bbf6deb4.png"
+},
+"缚丝弹药生成": {
+"anchor": "sec-3",
+"icon": "cdb376332b.webp",
+"part": "胸甲",
+"row": "弹药生成",
+"url": "https://www.bungie.net/common/destiny2_content/icons/f295e85f892699f1d15139e39c8dc326.png"
+},
+"缚丝抗性": {
+"anchor": "sec-3",
+"icon": "26b03e9918.webp",
+"part": "胸甲",
+"row": "抗性",
+"url": "https://www.bungie.net/common/destiny2_content/icons/edafced0aeee7c1c9c2a6bd7b16b31ed.png"
+},
+"缚丝枪套": {
+"anchor": "sec-4",
+"icon": "6575ba5e51.webp",
+"part": "腿部",
+"row": "枪套",
+"url": "https://www.bungie.net/common/destiny2_content/icons/0fcd4ee15f9e2362479f33882571d210.png"
+},
+"缚丝武器激涌": {
+"anchor": "sec-4",
+"icon": "a529a65530.webp",
+"part": "腿部",
+"row": "武器激涌",
+"url": "https://www.bungie.net/common/destiny2_content/icons/7f270af35d5c11f721562de3eb9b226b.png"
+},
+"缚丝灵巧": {
+"anchor": "sec-2",
+"icon": "f735723f4d.webp",
+"part": "护臂",
+"row": "灵巧",
+"url": "https://www.bungie.net/common/destiny2_content/icons/13cad6d9366eb8e863d17eacf2caf3d0.png"
+},
+"缚丝瞄准性能": {
+"anchor": "sec-1",
+"icon": "61599ce2d2.webp",
+"part": "头盔",
+"row": "瞄准性能",
+"url": "https://www.bungie.net/common/destiny2_content/icons/a6a16219b72e6291c306891afbbf8c04.png"
+},
+"缚丝虹吸": {
+"anchor": "sec-1",
+"icon": "962b1f1c65.webp",
+"part": "头盔",
+"row": "虹吸",
+"url": "https://www.bungie.net/common/destiny2_content/icons/ce1edf40f2713ae8cacb4d08bf9cb1f1.png"
+},
+"缚丝装弹装置": {
+"anchor": "sec-2",
+"icon": "5a7c104f52.webp",
+"part": "护臂",
+"row": "装弹装置",
+"url": "https://www.bungie.net/common/destiny2_content/icons/6bbcaf01caed921cbd98b83dee72e106.png"
+},
+"虚空/冰影双虹吸": {
+"anchor": "sec-1",
+"icon": "da13149154.webp",
+"part": "头盔",
+"row": "虹吸",
+"url": "https://www.bungie.net/common/destiny2_content/icons/8b20acd1a243c966117e2e40a683b066.png"
+},
+"虚空/缚丝双虹吸": {
+"anchor": "sec-1",
+"icon": "7d7420aab4.webp",
+"part": "头盔",
+"row": "虹吸",
+"url": "https://www.bungie.net/common/destiny2_content/icons/6ce0457b1c2b00dac1fe57545adf041e.png"
+},
+"虚空回收器": {
+"anchor": "sec-4",
+"icon": "1281c5dda9.webp",
+"part": "腿部",
+"row": "回收利用",
+"url": "https://www.bungie.net/common/destiny2_content/icons/b49ab98834bf9ffc7f597b1cbafed3fb.png"
+},
+"虚空弹药生成": {
+"anchor": "sec-3",
+"icon": "658dfe1731.webp",
+"part": "胸甲",
+"row": "弹药生成",
+"url": "https://www.bungie.net/common/destiny2_content/icons/45d2b3e6e2171de7d10c429c79203101.png"
+},
+"虚空抗性": {
+"anchor": "sec-3",
+"icon": "c014f3b5ea.webp",
+"part": "胸甲",
+"row": "抗性",
+"url": "https://www.bungie.net/common/destiny2_content/icons/8853c3d7173e560ba83042c7f7530f62.png"
+},
+"虚空枪套": {
+"anchor": "sec-4",
+"icon": "f127777006.webp",
+"part": "腿部",
+"row": "枪套",
+"url": "https://www.bungie.net/common/destiny2_content/icons/b4ca19e353ee7a0e137ba7f5e6dacc03.png"
+},
+"虚空武器激涌": {
+"anchor": "sec-4",
+"icon": "f1b3e428b9.webp",
+"part": "腿部",
+"row": "武器激涌",
+"url": "https://www.bungie.net/common/destiny2_content/icons/1ddb23b77d10dbd2e5597017160f71e9.png"
+},
+"虚空灵巧": {
+"anchor": "sec-2",
+"icon": "3a25956d8d.webp",
+"part": "护臂",
+"row": "灵巧",
+"url": "https://www.bungie.net/common/destiny2_content/icons/0d90d7bd64cfd6da5f19ce2c3478d50a.png"
+},
+"虚空瞄准性能": {
+"anchor": "sec-1",
+"icon": "51003f9126.webp",
+"part": "头盔",
+"row": "瞄准性能",
+"url": "https://www.bungie.net/common/destiny2_content/icons/70ceb6ff273dc3364cece9a06e9dad1f.png"
+},
+"虚空虹吸": {
+"anchor": "sec-1",
+"icon": "d30b12647d.webp",
+"part": "头盔",
+"row": "虹吸",
+"url": "https://www.bungie.net/common/destiny2_content/icons/378478ca52ffb14acfb6ae82b8a73cac.png"
+},
+"虚空装弹装置": {
+"anchor": "sec-2",
+"icon": "28daf2e5f9.webp",
+"part": "护臂",
+"row": "装弹装置",
+"url": "https://www.bungie.net/common/destiny2_content/icons/3c59806fb95583a56b24ff5a6d50fa3f.png"
+},
+"谐振回收器": {
+"anchor": "sec-4",
+"icon": "328d80acfa.webp",
+"part": "腿部",
+"row": "回收利用",
+"url": "https://www.bungie.net/common/destiny2_content/icons/ea1afce33cb50c171100b38da03e3457.png"
+},
+"谐振弹药生成": {
+"anchor": "sec-3",
+"icon": "cb61c2722b.webp",
+"part": "胸甲",
+"row": "弹药生成",
+"url": "https://www.bungie.net/common/destiny2_content/icons/eca8758340fd4e42b660ec8aa738a4bc.png"
+},
+"谐振抗性": {
+"anchor": "sec-3",
+"icon": "e51a16abc6.webp",
+"part": "胸甲",
+"row": "抗性",
+"url": "https://www.bungie.net/common/destiny2_content/icons/d49402a3d5f41621f00d5a09e1fba1fc.png"
+},
+"谐振枪套": {
+"anchor": "sec-4",
+"icon": "717225c6fb.webp",
+"part": "腿部",
+"row": "枪套",
+"url": "https://www.bungie.net/common/destiny2_content/icons/344f79ca9ef48b984cbf281d25c0c41c.png"
+},
+"谐振灵巧": {
+"anchor": "sec-2",
+"icon": "527300f82d.webp",
+"part": "护臂",
+"row": "灵巧",
+"url": "https://www.bungie.net/common/destiny2_content/icons/dbd9f5aa248d9168ce4896679e05d620.png"
+},
+"谐振瞄准性能": {
+"anchor": "sec-1",
+"icon": "9252b45235.webp",
+"part": "头盔",
+"row": "瞄准性能",
+"url": "https://www.bungie.net/common/destiny2_content/icons/1d1e1f508426a0eaf6546ed7945598e4.png"
+},
+"谐振虹吸": {
+"anchor": "sec-1",
+"icon": "626d0634f7.webp",
+"part": "头盔",
+"row": "虹吸",
+"url": "https://www.bungie.net/common/destiny2_content/icons/c917bbeedced45dcb28ad86dae47ca0f.png"
+},
+"谐振装弹装置": {
+"anchor": "sec-2",
+"icon": "56829ae458.webp",
+"part": "护臂",
+"row": "装弹装置",
+"url": "https://www.bungie.net/common/destiny2_content/icons/825e3aef7827d66f56f244b0873ded59.png"
+},
+"超级梦魇放逐器": {
+"anchor": "sec-15",
+"icon": "f6babea422.webp",
+"part": "梦魇狩猎",
+"row": "梦魇放逐器",
+"url": "https://www.bungie.net/common/destiny2_content/icons/148604f706c923fe31cb106898c4d070.png"
+},
+"超级梦魇破碎器": {
+"anchor": "sec-15",
+"icon": "86c633fe7a.webp",
+"part": "梦魇狩猎",
+"row": "梦魇破碎器",
+"url": "https://www.bungie.net/common/destiny2_content/icons/a22920ef7b2f1709c8bdadf222a6b262.png"
+},
+"超级梦魇粉碎器": {
+"anchor": "sec-15",
+"icon": "d9995bbbb9.webp",
+"part": "梦魇狩猎",
+"row": "梦魇粉碎器",
+"url": "https://www.bungie.net/common/destiny2_content/icons/49937a0d5d4b47e644a3b45d8f15788d.png"
+},
+"近战伤害抗性": {
+"anchor": "sec-3",
+"icon": "11cf2eaffb.webp",
+"part": "胸甲",
+"row": "抗性",
+"url": "https://www.bungie.net/common/destiny2_content/icons/46520f0b4fefc0270823d0b968270142.png"
+},
+"重型弹药搜寻者": {
+"anchor": "sec-1",
+"icon": "f049892fbd.webp",
+"part": "头盔",
+"row": "弹药搜寻者",
+"url": "https://www.bungie.net/common/destiny2_content/icons/fdcbb78db8f38cec62ec7ca2dbab12cc.png"
+},
+"重型弹药斥候": {
+"anchor": "sec-1",
+"icon": "00ea2319c5.webp",
+"part": "头盔",
+"row": "弹药斥候",
+"url": "https://www.bungie.net/common/destiny2_content/icons/660d372a9a47d94d229216582b6e0e49.png"
+},
+"震荡阻尼器": {
+"anchor": "sec-3",
+"icon": "e10db37ad3.webp",
+"part": "胸甲",
+"row": "抗性",
+"url": "https://www.bungie.net/common/destiny2_content/icons/6df50890b5e91f346630ab461cd78388.png"
+}
+}

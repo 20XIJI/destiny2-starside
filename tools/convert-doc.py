@@ -16,6 +16,7 @@
 import os
 import re
 import sys
+from urllib.parse import quote
 
 import shell
 from markup import (IMG, LINK, Icons, die, inline, meta_line, no_nested_span,
@@ -42,6 +43,55 @@ ICONS: 'Icons | None' = None    # 当前页面的图标登记处，由 build() �
 
 
 CELL_BREAK = '\\\\'     # 表格单元格里的换行标记，见 render_table()
+
+
+ROW_LINK = re.compile(r'\[([^\]]+)\]\((?!http)([^)#?]+/index\.html)\)')
+
+
+def anchors_of(path):
+    """一篇源稿的「行标题 → 分节锚点」。从源稿现算，不读产出——同一次构建里
+    产出可能还是上一版，锚点会指错分节。锚点即分节序号，与 render() 一致。"""
+    if path not in _ANCHORS:
+        table = {}
+        if os.path.exists(path):
+            with open(path, encoding='utf-8') as f:
+                doc = f.read()
+            n = 0
+            for line in doc.split('\n'):
+                if line.startswith('## '):
+                    n += 1
+                elif line.startswith('|') and n:
+                    cells = split_cells(line)
+                    if cells and not is_rule(cells) and lane_of(cells) is None:
+                        name = text_of(re.sub(r'\{[\w-]+\|', '', cells[0]).replace('}', ''),
+                                       collapse=True)
+                        if name and name not in table:
+                            table[name] = 'sec-%d' % n
+        _ANCHORS[path] = table
+    return _ANCHORS[path]
+
+
+_ANCHORS: dict[str, dict[str, str]] = {}
+
+
+def land(md, slug):
+    """站内链接落到行上：`[电光手雷](../arc/index.html)` →
+    `…/index.html?q=电光手雷#sec-3`。文字在目标页找不到同名行就原样留着。
+
+    落地过滤由目标页自己的搜索框接手（app.js 的 filter()），与全站搜索的命中
+    链接同一套。锚点给到分节即可，行由 q 挑出来。
+    """
+    here = os.path.dirname(where_of(md, slug))
+
+    def fix(m):
+        text, url = m.group(1), m.group(2)
+        target = os.path.normpath(os.path.join(here, os.path.dirname(url)))
+        table = anchors_of(os.path.join(SRC_DIR, os.path.basename(target) + '.md'))
+        hold = table.get(text.strip())
+        return ('[%s](%s?q=%s#%s)' % (text, url, quote(text.strip()), hold)
+                if hold else m.group(0))
+
+    return ROW_LINK.sub(fix, md)
 
 
 def icon_sub(md):
@@ -546,6 +596,7 @@ def where_of(md, slug):
 
 
 def render(md, slug):
+    md = land(md, slug)
     m = re.match(r'^#\s+(.+)$', md.split('\n')[0])
     if not m:
         die('源稿第一行必须是「# 页面标题」')

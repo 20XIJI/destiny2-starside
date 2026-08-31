@@ -18,6 +18,11 @@ HOME = 'index.html'
 # 记得回来改这张表了。
 FIXED = [HOME, 'armor-sets/index.html', 'artifact-mods/index.html']
 DOC_DIR = os.path.join(ROOT, 'references', 'docs')
+BUILD_DIR = os.path.join(ROOT, 'references', 'builds')
+# 当前赛季。配装按赛季目录存档，**只有这一季进页面清单**——旧赛季照常生成（外壳
+# 因此不与全站分叉），但索引页、全站搜索与外壳闸门都不收，站内点不到；手里已有
+# 链接的人仍打得开。换季改这一个字符串。
+SEASON = 's29'
 
 
 def pages():
@@ -33,6 +38,13 @@ def pages():
             md = f.read()
         where = re.search(r'^路径：(.*)$', md, re.M)
         out.append('%s/index.html' % (where.group(1).strip() if where else name[:-3]))
+    out += ['builds/index.html', 'builds/new/index.html']
+    for season in sorted(os.listdir(BUILD_DIR)):
+        if not season.startswith(SEASON + '-'):
+            continue
+        for name in sorted(os.listdir(os.path.join(BUILD_DIR, season))):
+            if name.endswith('.md'):
+                out.append('builds/%s/%s/index.html' % (SEASON, name[:-3]))
     return out
 
 SITE_NAME = 'Starside'
@@ -70,7 +82,7 @@ SPEC = ('<script type="speculationrules">'
 MARK = '<span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>'
 
 
-def head(title, desc, app_js=False, up=1):
+def head(title, desc, app_js=False, up=1, sheets=None):
     """<!doctype> 到 <body> 为止。title 已含 · Starside 后缀。
 
     字体在 CSS 解析完才会被发现，preload 让它与样式表并行下载；只预载首屏用到的
@@ -80,6 +92,10 @@ def head(title, desc, app_js=False, up=1):
     子页面（六个元素页）共用一份版式，各自的 style.css 只留自己那一两行差异，
     不必抄六遍。用 <link> 而不是 CSS 里的 @import——@import 要等父表下载完才
     发现子表，白搭一个往返。
+
+    sheets 显式给出要引的样式表，给了就不按 up 推。配装页深三层却共用一份
+    builds/style.css——按 up 推会要求每套配装各有一个 style.css，而它们的版式
+    一模一样，那种文件建出来只是为了不 404。
     """
     at = '../' * up
     o = ['<!doctype html>', '<html lang="zh-CN">', '<head>',
@@ -97,9 +113,9 @@ def head(title, desc, app_js=False, up=1):
          'as="font" type="font/woff2" crossorigin>' % at,
          '<link rel="icon" href="%sassets/favicon.svg" type="image/svg+xml">' % at,
          '<link rel="stylesheet" href="%sassets/site.css">' % at]
-    if up > 1:
-        o.append('<link rel="stylesheet" href="../style.css">')
-    o.append('<link rel="stylesheet" href="style.css">')
+    if sheets is None:
+        sheets = (['../style.css'] if up > 1 else []) + ['style.css']
+    o += ['<link rel="stylesheet" href="%s">' % s for s in sheets]
     if app_js:
         o.append('<script src="%sassets/app.js" defer></script>' % at)
     o += ['</head>', '<body>']

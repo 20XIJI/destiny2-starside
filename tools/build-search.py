@@ -88,6 +88,12 @@ def items_of(chunk, anchor, tables=True):
     return out
 
 
+# 配装页每套只进一条记录，四十个槽位名不进索引：搜「元素虹吸」该命中神器模组页
+# 那一条正主，而不是同时命中带了它的每一套配装。描述与标签同样不收——想被搜到就
+# 把词写进配装名里。
+BUILD = re.compile(r'^builds/s\d+/')
+
+
 def scan(url):
     path = os.path.join(shell.ROOT, url)
     with open(path, encoding='utf-8') as f:
@@ -119,6 +125,11 @@ def main() -> int:
     for url in shell.pages():
         if url == shell.HOME:
             continue          # 首页本身就是搜索框所在的那一页，不必搜出自己
+        if BUILD.match(url):
+            page, rows = scan(url)
+            out.append(line({'u': url, 't': page['t'], 'd': ''}))
+            print('  %-38s    1 条（配装名）' % url)
+            continue
         page, rows = scan(url)
         out.append(line(page))
         out += [line(r) for r in rows]

@@ -22,6 +22,8 @@ import io
 import os
 import re
 
+import check_terms
+import items
 import shell
 from markup import die, eq, loading_attr, no_nested_span, plain, text_of
 
@@ -51,42 +53,21 @@ ALPHA_BITS = 4  # alpha 量化档数。剪影图 3x 放大与原图并排看不�
 # 不新增渲染色。归属取自英文原表自己的编码（从其着色 span 里核出来的对应关系）。
 #
 # 长词必须排在短词前面：能量球 先于 能量、重型弹药 先于 弹药。
-GLOSSARY: list[tuple[str, str]] = [
-    # 元素与元素效果
-    ('冰霜护甲', 'el-stasis'),
-    ('烈日', 'el-solar'),
-    ('电弧', 'el-arc'),
-    ('虚空', 'el-void'),
-    ('冰影', 'el-stasis'),
-    ('缚丝', 'el-strand'),
-    ('棱镜', 'el-prismatic'),
-    ('动能', 'el-kinetic'),
-    ('缠结', 'el-strand'),
+# 这一页专有的词：全站术语不收的排版类与机制色。**元素与元素效果不写在这里**——
+# 那一份是全站的，在 items.py 的 MECH 上，下面 merge() 并进来。同一个术语在两处
+# 各写一份，就是漏着色的根子：MECH 里补了「增幅」，这一页照旧素着，而 G6 不管
+# 这一页（它走词表着色，源稿里没有 {token|…} 可查）。
+PAGE_TERMS: list[tuple[str, str]] = [
+    # 只剩全站两份表都没收的：它们在别处按更长的短语着色，单词一级没有登记。
     ('线虫', 'el-strand'),
-    ('隐身', 'el-void'),
-    ('吞食', 'el-void'),
-    # 机制色
-    ('特殊弹药', 'ammo-special'),  # 游戏内的特殊弹药即绿，自成一族
-    ('威能弹药', 'ammo-heavy'),
+    # 「超能」在别的页面只以更长的短语出现（{orb|超能能量}、{orb|超能技能}），
+    # 单词一级两份全站表都没登记；这一页的效果正文里它单独成词，20 处。
+    ('超能', 'orb'),
     ('火箭发射器', 'ammo-heavy'),
     ('刀剑', 'ammo-heavy'),
-    ('能量球', 'orb'),
-    ('超能', 'orb'),
-    ('护甲充能', 'armor-charge'),
     ('快速启动', 'armor-charge'),
-    ('生命值', 'health'),
     ('治疗', 'health'),
     ('濒死', 'health'),
-    ('战斗人员', 'enemy'),
-    ('终结技', 'enemy'),
-    ('红血', 'bar-red'),
-    ('橙血', 'bar-orange'),
-    ('初级首领', 'bar-yellow'),  # 长词在前：要排在「首领」之前
-    ('首领', 'bar-yellow'),
-    ('守护者', 'bar-orange'),
-    ('异域', 'exotic'),
-    ('增益', 'buff'),
-    ('减益', 'debuff'),
 ]
 
 # 英文原表按英文名字母序，中文稿按分类与推出时间排序。52 个套装靠效果名直接对上，
@@ -193,6 +174,29 @@ def parse(md: str) -> list[Category]:
 # 一趟正则走完，互不嵌套：引号里的 buff 名整体一个颜色，不会被词表再切一刀。
 # 顺序即优先级，改顺序就是改语义。
 
+def merge():
+    """全站术语（items.MECH 的元素机制 + check_terms.TERMS 的通用术语）+ 本页专有词。
+
+    长词在前是匹配的硬要求（「威能弹药」要排在「弹药」之前），所以不靠手写顺序，
+    按长度排一次——手写顺序在合并两份表之后必然出错。
+    LOOSE 里的词不进：那几个同形的普通用法比术语用法还多（「恢复延迟」「恢复
+    140 生命值」），铺开会把动词染成术语。
+    """
+    merged = dict(items.MECH)
+    merged.update({t[0]: t[1] for t in check_terms.TERMS if len(t) > 1 and t[1]})
+    merged.update(dict(PAGE_TERMS))
+    # LOOSE 最后减：两份表里都有「恢复」，先减再合会被后一份重新加回来，
+    # 38 处动词用法（「恢复 140 生命值」「开火恢复延迟」）会整批染成烈日色。
+    merged = {w: t for w, t in merged.items() if w not in items.LOOSE}
+    return sorted(merged.items(), key=lambda kv: -len(kv[0]))
+
+
+GLOSSARY: list[tuple[str, str]] = merge()
+# 只有本页专有的词参与死配置体检：全站术语是站点的词汇表，这一页碰巧没提到
+# 「碎裂」不说明那一条该删。
+PAGE_WORDS = {w for w, _ in PAGE_TERMS}
+GLOSSARY_WORDS = [w for w, _ in GLOSSARY]
+
 _TERMS = '|'.join(re.escape(w) for w, _ in GLOSSARY)
 _TOKEN = {w: t for w, t in GLOSSARY}
 
@@ -205,7 +209,7 @@ INLINE = re.compile(
     r'|(?P<qm>[\d.]*\?%?)'  # +? 5? 0.5? x?：数值位上的待测标记
     # 「非」与后面的术语构成一个复合术语（非首领战斗人员＝一类敌人，非超能＝一种状态），
     # 留在着色外面会让扫读的人读到反义。「除非」「而非」里的非不构词，用后顾排除。
-    r'|(?P<term>(?<![除而])非?(?:' + _TERMS + r'))'
+    r'|(?P<term>(?:(?<![除而])非)?(?:' + _TERMS + r'))'
 )
 
 ADJACENT = re.compile(r'<span class="([\w-]+)">([^<]*)</span><span class="\1">')
@@ -349,9 +353,21 @@ def check(cats: list[Category], out: str) -> None:
     eq('产出里的效果块数', out.count('class="bonus"'), N_BONUSES)
 
     # 词表里挂着却一次都没命中的规则是死配置，当场报出来而不是静默留着
-    dead = [w for w, _ in GLOSSARY if not hits.get(w)]
+    dead = [w for w, _ in GLOSSARY if w in PAGE_WORDS and not hits.get(w)]
     if dead:
         die('词表里这些词一次都没命中，删掉或改写：%s' % '、'.join(dead))
+
+    # 全站术语出现在正文里就必须着色。这一页走词表着色，G6 那条正查够不着它，
+    # 所以闸门放在这里：剥掉着色 span 之后，正文里不许再出现术语。
+    # 只查效果正文：套装名、来源、标签与效果名不走 inline()，那几处本来就素色。
+    bodies = ''.join(re.findall(r'<div class="bonus-body">(.*?)</div>', out, re.S))
+    naked = text_of(re.sub(r'<span class="[^"]*">.*?</span>', '', bodies, flags=re.S))
+    left = sorted({w for w in GLOSSARY_WORDS if w in naked})
+    if left:
+        die('这些术语在正文里没着色：%s\n'
+            '  词表在 items.py 的 MECH（全站一份），这一页由 merge() 并进来；\n'
+            '  确实不该着色的（同形的普通用法）写进 items.py 的 LOOSE，带上依据。'
+            % '、'.join(left))
 
     no_nested_span(out, '护甲套装页（检查 INLINE 的分支顺序）')
 
