@@ -38,10 +38,13 @@ CLASSES = ('猎人', '泰坦', '术士')
 # 各有一条，棱镜配装该链到棱镜页）。
 BRANCH = {'电弧': 'arc', '烈日': 'solar', '虚空': 'void', '冰影': 'stasis',
           '缚丝': 'strand', '棱镜': 'prismatic'}
-# 配装的第一层分类：这一套是冲强度推荐的，还是玩法取向。与「定位」是两回事——
-# 定位说它在队伍里干什么（输出/清怪/续航），类别说它为什么被推荐。索引页按它分
-# 两个大节，顺序即这里的顺序。
-CATEGORIES = ('强度', '创意')
+# 配装的第一层分类：冲强度推荐的、玩法取向的，还是打 PVP 的。与「定位」是两回事
+# ——定位说它在队伍里干什么（输出/清怪/续航），类别说它为什么被推荐。索引页按它
+# 分大节，顺序即这里的顺序。
+# **PVP 是一个类别，不是一种适用环境。**它与另外两类互斥：一套 PVP 配装的取舍
+# 与 PVE 的强度、创意不可比，摊在「场景」里会让它跟突袭、地牢并排，读者按场景
+# 筛出来一堆用不上的。
+CATEGORIES = ('强度', '创意', 'PVP')
 # 元素名走全站那一份编码，徽章上照样着色——素着等于这一页自己开了个例外。
 ELEMENT_TOKEN = {b: 'el-%s' % slug for b, slug in BRANCH.items()}
 # 一格一个名字的槽位：键即槽位名，源稿一行写完，值之间用「、」隔开。
@@ -282,8 +285,8 @@ def stats_of(spec):
 
 # 填表页那两组标签的预设。受控词表：一套配装的适用环境与定位就这几种，让人自由
 # 填会写出「宗师」「大师终极」「终极难度」三种说法，索引页的筛选就分不出来了。
-FACETS = (('场景', '适用环境', ('突袭', '地牢', '宗师终极', '日常', '通用', 'PVP')),
-          ('定位', '标签', ('输出', '清怪', '续航', '功能', '通用', 'PVP')))
+FACETS = (('场景', '适用环境', ('突袭', '地牢', '宗师终极', '日常', '通用')),
+          ('定位', '标签', ('输出', '清怪', '续航', '功能', '通用')))
 
 
 def facet_picks(key, label, tags, single=False):
@@ -363,9 +366,21 @@ def core_pick(idx, md, prefer):
 
 
 def facet(label, tags):
-    """铭牌下面的一栏：一行小标签 + 若干 chip。"""
+    """铭牌下面的一栏：一行小标签 + 若干 chip。
+
+    一条都没有就整栏不出——PVP 那一类配装的场景与定位本来就可以空着（那两张表
+    列的是 PVE 的），留一个光杆小标签比不写更难读。
+    """
+    if not tags:
+        return ''
     return ('<div><p class="by-label">%s</p><ul class="tags">%s</ul></div>'
             % (label, ''.join('<li>%s</li>' % t for t in tags)))
+
+
+def facets(md):
+    """铭牌下面那两栏。两栏都空即整块不出，见调用处。"""
+    rows = facet('适用环境', names(md, '场景')) + facet('标签', names(md, '定位'))
+    return '<div class="facets">%s</div>' % rows if rows else ''
 
 
 def stats_card(spec):
@@ -440,9 +455,9 @@ def render(idx, mv, arts, md, slug, season, name_cn):
             cat, season.upper(), name_cn),
          '<p class="desc">%s</p>' % inline(desc, rich=True),
          # 场景与定位分两栏各带一行标签：混在一排里读者分不出「地牢」说的是适用
-         # 环境、「清怪」说的是这套配装干什么用的。
-         '<div class="facets">%s%s</div>'
-         % (facet('适用环境', names(md, '场景')), facet('标签', names(md, '定位'))),
+         # 环境、「清怪」说的是这套配装干什么用的。两栏都空就连这一层也不出——
+         # 空的 .facets 在 .build-id 那道 grid 里照样占一个 gap。
+         facets(md),
          '</div>',
          # 「复制配装」复制的就是这一份：剥掉着色标记的源稿，粘回配装工具能直接
          # 导入。站内没有第二处存它，所以它落在页面上而不是另拉一个文件。

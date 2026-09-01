@@ -59,6 +59,10 @@ SLUG = re.compile(r'^[a-z0-9][a-z0-9-]*$')
 # 职业 → slug 尾巴那一截。默认 slug 只要能落盘、能一眼看出是哪个职业就够，
 # 起名是人的事，所以写成「数字-职业」：补不补名字都读得出来。
 LATIN = {'猎人': 'hunter', '泰坦': 'titan', '术士': 'warlock'}
+# 随机串的字符集。SLUG 只放行小写字母、数字与连字符，连字符是分隔位不进随机段。
+# 八位 36 进制约 2.8 万亿种，重名重试那一层因此几乎用不上，但留着——它挡的是
+# 「盖掉上一份源稿」，不是「不好看」。
+RAND = 'abcdefghijklmnopqrstuvwxyz0123456789'
 
 
 
@@ -133,15 +137,15 @@ def src_of(season, slug):
 
 
 def default_slug(md, season):
-    """给一条待审投稿配一个能直接落盘的 slug：`八位随机数-职业`。
+    """给一条待审投稿配一个能直接落盘的 slug：`八位随机串-职业`。
 
     审的人多数时候不想在这一格上停下来想名字，而这一格是 required，空着过不了。
-    撞上已有的那一份就换一个数——slug 即文件名，重了会把上一份盖掉。
+    撞上已有的那一份就换一个——slug 即文件名，重了会把上一份盖掉。
     """
     hit = re.search(r'^职业：(.+?)\s*$', md, re.M)
     tail = LATIN.get(hit.group(1).strip() if hit else '', 'build')
     for _ in range(20):
-        slug = '%d-%s' % (random.randrange(10_000_000, 100_000_000), tail)
+        slug = '%s-%s' % (''.join(random.choices(RAND, k=8)), tail)
         path = src_of(season, slug)
         if not path or not os.path.exists(path):
             return slug
