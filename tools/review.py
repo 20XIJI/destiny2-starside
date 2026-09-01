@@ -322,9 +322,14 @@ def esc(s):
     return html.escape(str(s))
 
 
-def build_button():
-    return ('<div class="buildbar"><form method="post" action="/build">'
-            '<button class="chip" type="submit">构建并提交</button></form></div>')
+def top_actions():
+    """两枚常驻按钮：建这一批，再把建出来的发上线。两件事分开——审一批建一次，
+    发不发、什么时候发是另一个决定。"""
+    return ('<div class="buildbar">'
+            '<form method="post" action="/build">'
+            '<button class="chip" type="submit">构建并提交</button></form>'
+            '<form method="post" action="/deploy">'
+            '<button class="chip" type="submit">部署</button></form></div>')
 
 
 def card(href, flag, md, note):
@@ -351,7 +356,7 @@ def listing():
     subs = all_subs()
     todo, hold, live = rows(0, subs), waiting(subs), onsite()
     o = ['<header class="page-head"><div class="head-row">',
-         '<h1>配装审核台</h1>', build_button(), '</div>',
+         '<h1>配装审核台</h1>', top_actions(), '</div>',
          '<p class="page-note">点一张卡进去看源稿。通过只把它写进 references/builds/，'
          '不构建——审完一批再按上面那一枚，一起建出来。</p>',
          '</header>', '']
@@ -422,7 +427,7 @@ def editor(name, note, md, hidden, primary, second=None, third=None,
               % (tag, esc(act[1]))]
     if edit_href:
         o.append('<a class="chip" href="%s">用配装工具改</a>' % esc(edit_href))
-    o += [build_button(), '</div>']
+    o += [top_actions(), '</div>']
 
     if bad:
         o += ['<div class="gate"><p>这份源稿渲染不过，构建也会卡在同一句上。</p>',
@@ -478,12 +483,16 @@ def read_src(d):
 
 
 def fail(msg, detail=''):
-    o = ['<header class="page-head"><h1>没成</h1></header>',
+    return report('没成', msg, detail)
+
+
+def report(title, msg, detail=''):
+    o = ['<header class="page-head"><h1>%s</h1></header>' % esc(title),
          '<div class="gate"><p>%s</p>' % esc(msg)]
     if detail:
         o.append('<pre>%s</pre>' % esc(detail))
     o += ['<p><a href="/">回列表</a></p></div>']
-    return page('没成', '\n'.join(o), parent=True)
+    return page(title, '\n'.join(o), parent=True)
 
 
 # ── 配装工具编辑模式 ──────────────────────────────────────────────────
@@ -752,6 +761,17 @@ def commit():
     return None
 
 
+def run_deploy():
+    """把已经建出来的发上线。走 tools/deploy.py：只发自 refs/deploy 以来改过的
+    文件，清单与结果原样带回页面——发了几个、发的是哪几页，回列表看不出来。"""
+    r = subprocess.run([sys.executable, 'tools/deploy.py'],
+                       capture_output=True, text=True, cwd=ROOT)
+    if r.returncode:
+        return fail('部署没过。站上还是上一版，refs/deploy 没动，改完再按一次。',
+                    r.stdout + '\n' + r.stderr)
+    return report('发完了', '站上已是这一版。', r.stdout)
+
+
 def run_build():
     global _IDX
     _IDX = None                      # 产出变了，词表跟着作废，下次预览重扫
@@ -818,7 +838,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
         # 只能是小写；可大小写不是填的人要判断的事，转掉就是了。全部 POST 从这一
         # 行取 slug，转在这里即处处生效。
         slug = f.get('slug', '').strip().lower()
-        if self.path == '/build':
+        if self.path == '/deploy':
+            self.reply(run_deploy())
+            return
+        elif self.path == '/build':
             bad = run_build()
         elif self.path == '/delete':
             # 不可逆，所以走两步：第一下出确认页，带着 sure 的那一下才真删。
