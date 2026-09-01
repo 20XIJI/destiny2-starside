@@ -29,7 +29,7 @@ SRC_DIR = shell.BUILD_DIR
 OUT_DIR = 'builds'
 SEASON = shell.SEASON        # 当前赛季只有一处定义，见 shell.py
 
-META_KEYS = ('推荐人', '描述', '更新', '场景', '定位', '分支', '核心')
+META_KEYS = ('推荐人', '描述', '更新', '场景', '定位', '分支', '类别', '核心')
 # 六维恒为六格，顺序钉死：游戏内就是这个顺序，配装之间横着比才对得上位置。
 STATS = ('生命', '近战', '手雷', '超能', '职业', '武器')
 PARTS = ('头盔', '护臂', '胸甲', '腿部', '职业物品')
@@ -38,6 +38,10 @@ CLASSES = ('猎人', '泰坦', '术士')
 # 各有一条，棱镜配装该链到棱镜页）。
 BRANCH = {'电弧': 'arc', '烈日': 'solar', '虚空': 'void', '冰影': 'stasis',
           '缚丝': 'strand', '棱镜': 'prismatic'}
+# 配装的第一层分类：这一套是冲强度推荐的，还是玩法取向。与「定位」是两回事——
+# 定位说它在队伍里干什么（输出/清怪/续航），类别说它为什么被推荐。索引页按它分
+# 两个大节，顺序即这里的顺序。
+CATEGORIES = ('强度', '创意')
 # 元素名走全站那一份编码，徽章上照样着色——素着等于这一页自己开了个例外。
 ELEMENT_TOKEN = {b: 'el-%s' % slug for b, slug in BRANCH.items()}
 # 一格一个名字的槽位：键即槽位名，源稿一行写完，值之间用「、」隔开。
@@ -278,13 +282,17 @@ FACETS = (('场景', '适用环境', ('突袭', '地牢', '宗师终极', '日�
           ('定位', '标签', ('输出', '清怪', '续航', '功能', '通用', 'PVP')))
 
 
-def facet_picks(key, label, tags):
-    """填表页的一栏多选标签。与详情页 facet() 同形（小标签 + 一排标签框），
-    只是标签可点。值收在同一段里的隐藏 input 上，源稿的键不变——val() 照旧按
-    data-key 读一个 .value，不必为这两格另开一条取值路径。"""
-    return ('<div><p class="by-label">%s</p><span class="tags tagset">%s</span>'
+def facet_picks(key, label, tags, single=False):
+    """填表页的一栏标签。与详情页 facet() 同形（小标签 + 一排标签框），只是标签
+    可点。值收在同一段里的隐藏 input 上，源稿的键不变——val() 照旧按 data-key 读
+    一个 .value，不必为这几格另开一条取值路径。
+
+    single 那一栏一次只选一个（类别），标在容器上让 form.js 现读；多选那两栏
+    （场景、定位）不带这个标记。两种排出来一模一样，差别只在点第二枚时。
+    """
+    return ('<div><p class="by-label">%s</p><span class="tags tagset"%s>%s</span>'
             '<input type="hidden" data-key="%s"></div>'
-            % (label,
+            % (label, ' data-single=""' if single else '',
                ''.join('<button type="button" aria-pressed="false">%s</button>' % t
                        for t in tags),
                key))
@@ -382,6 +390,9 @@ def render(idx, mv, arts, avatars, md, slug, season, name_cn):
     if branch not in BRANCH:
         die('「分支：」要写六个分支之一（%s），源稿写的是 %r'
             % ('、'.join(BRANCH), branch))
+    cat = meta(md, '类别')
+    if cat not in CATEGORIES:
+        die('「类别：」要写 %s 之一，源稿写的是 %r' % ('、'.join(CATEGORIES), cat))
     prefer = 'elements/%s' % BRANCH[branch]
 
     if meta(md, '职业') not in CLASSES:
@@ -413,11 +424,13 @@ def render(idx, mv, arts, avatars, md, slug, season, name_cn):
          '<div class="id-row"><h1>%s</h1><div class="head-acts">%s%s</div></div>'
          % (title, like_box(season, slug, button=True),
             '<button class="copy" type="button">复制配装</button>'),
-         '<p class="cls">%s%s · %s<span class="season">%s · %s</span></p>'
+         # 铭牌一行读完这套配装的身份：职业 · 元素 · 类别。类别接在这里而不是另起
+         # 一栏标签——它只有一个值，占一整栏显得空。
+         '<p class="cls">%s%s · %s · %s<span class="season">%s · %s</span></p>'
          % (icon_of(vocab.pick(idx, meta(md, '职业'), '职业', kind='分节'), 32),
             meta(md, '职业'),
             '<span class="%s">%s</span>' % (ELEMENT_TOKEN[branch], branch),
-            season.upper(), name_cn),
+            cat, season.upper(), name_cn),
          '<p class="desc">%s</p>' % inline(desc, rich=True),
          # 场景与定位分两栏各带一行标签：混在一排里读者分不出「地牢」说的是适用
          # 环境、「清怪」说的是这套配装干什么用的。
@@ -612,18 +625,22 @@ def build(idx, dirname, season, name_cn, slug):
             'season': season, 'slug': slug, 'stamp': meta(md, '更新'),
             'desc': text_of(inline(meta(md, '描述'), rich=True), collapse=True), 'class': meta(md, '职业'),
             'tags': names(md, '场景') + names(md, '定位'), 'branch': BRANCH[meta(md, '分支')],
+            'cat': meta(md, '类别'),
             'by': ''.join(people(md, avatars, link=False)),
             'core': '<span class="node">%s</span>' % icon_of(core, 64).replace(UP, '../')}
 
 
 def render_index(made):
-    """builds/index.html：当前赛季的配装卡片，按三个职业分节。
+    """builds/index.html：当前赛季的配装卡片，按类别分两个大节、节内按职业分小节。
 
-    卡片复用首页那套 .entry 形状（左图标 + 正文 + 右列），不为配装另造一种卡。
-    每张卡落一个分支类，.entry 左缘那条 2px 亮边因此跟着该配装的元素色走——
-    一屏卡片扫下来，棱镜与冰影一眼分得开。
-    筛选交给工具条那只搜索框——把卡片声明成 data-item，输入「地牢」就滤出带
-    地牢标签的卡片，零新代码。多标签 chip 筛选等配装过二十套再说。
+    **卡片是竖式的，一排六张**（形状见 builds/style.css）：配装多起来之后，横式
+    卡一屏只放得下六张。图在最上，往下是配装名、推荐人、简介、标签、时间与赞数。
+    每张卡落一个分支类，.entry 左缘那条 2px 亮边因此跟着该配装的元素色走。
+
+    跳转 chip 对应两个大节（工具条的 data-label 仍取 .sect-label，现在它落在类别
+    上）。职业小节只是节内的小标题，不占 chip——只有两个大节时跳转本来就不难，
+    找职业直接在旁边搜索框输「术士」。搜索把某个职业滤空时，那个小标题由
+    builds/style.css 的一条 :has() 自己隐藏，不加 JS。
     """
     live = [m for m in made if m['season'] == SEASON]
     if not live:
@@ -633,7 +650,7 @@ def render_index(made):
          shell.nav(SITE_SECTION, up=1, toolbar={
              'data-section': '.block', 'data-item': '.entries > li',
              'data-label': '.sect-label', 'data-noun': '配装',
-             'data-chip-label': '职业'}),
+             'data-chip-label': '类别'}),
          # 投稿入口挂在标题右边。这是填表页在站内唯一的入口（别处没有理由指向
          # 它，而没有入口的页面等于不存在），单独占一段会在卡片上面多出一整块
          # 空白。页首那句说明只留给 <meta>，正文里它把首屏推下去半屏。
@@ -642,28 +659,34 @@ def render_index(made):
              '<span>选完技能、武器、护甲与神器模组，页面直接生成标准配装文本</span></p>')),
          '<main>']
     n = 0
-    for cls in CLASSES:
-        mine = [m for m in live if m['class'] == cls]
-        if not mine:
+    for cat in CATEGORIES:
+        pool = [m for m in live if m['cat'] == cat]
+        if not pool:
             continue
         n += 1
         o += ['<section class="block" id="sec-%d">' % n,
-              '<h2 class="sect-label">%s</h2>' % cls, '<ul class="entries">']
-        for m in mine:
-            o += ['<li class="b-%s">' % m['branch'],
-                  '<a class="entry" href="%s/%s/index.html">'
-                  % (m['season'], m['slug']),
-                  m['core'],
-                  '<span class="entry-body">',
-                  '<h3>%s</h3>' % m['t'],
-                  '<p>%s</p>' % m['desc'],
-                  '<span class="entry-stamp">更新 %s</span>' % m['stamp'],
-                  '</span>',
-                  '<span class="entry-side">%s<span class="tags">%s</span>%s</span>'
-                  % (m['by'], ''.join('<i>%s</i>' % t for t in m['tags']),
-                     like_box(m['season'], m['slug'], button=False)),
-                  '</a>', '</li>']
-        o += ['</ul>', '</section>', '']
+              '<h2 class="sect-label">%s</h2>' % cat]
+        for cls in CLASSES:
+            mine = [m for m in pool if m['class'] == cls]
+            if not mine:
+                continue
+            o += ['<h3 class="sub-label">%s</h3>' % cls, '<ul class="entries">']
+            for m in mine:
+                o += ['<li class="b-%s">' % m['branch'],
+                      '<a class="entry" href="%s/%s/index.html">'
+                      % (m['season'], m['slug']),
+                      m['core'],
+                      '<h3>%s</h3>' % m['t'],
+                      m['by'],
+                      '<p>%s</p>' % m['desc'],
+                      '<span class="tags">%s</span>'
+                      % ''.join('<i>%s</i>' % t for t in m['tags']),
+                      '<span class="entry-foot">'
+                      '<span class="entry-stamp">更新 %s</span>%s</span>'
+                      % (m['stamp'], like_box(m['season'], m['slug'], button=False)),
+                      '</a>', '</li>']
+            o += ['</ul>']
+        o += ['</section>', '']
     o += ['</main>', '', LIKE_JS,
           shell.foot(stamp, '，配装由各位推荐人提供，随赛季更新。')]
     out = '\n'.join(x for x in o if x != '') + '\n'
@@ -720,6 +743,39 @@ def render_vocab(idx):
         f.write(body)
     print('builds/vocab.js —— %.1f KB，%d 个槽位共 %d 份列表'
           % (len(body.encode()) / 1024, len(slots), len(owner)))
+
+
+def render_desc(idx):
+    """builds/desc.js：填表页悬停时那块面板的正文。
+
+    **说明不进 vocab.js。**站内的说明文本合计二十万字上下，塞进词表会让填表页一
+    打开就下将近一兆——只想导入一份源稿看一眼的人也得等。所以照 assets/search.js
+    那条已有约定另出一份：不进首屏，页面加载完在空闲时预取，第一次悬停再兜一次。
+    取不到就不弹面板，填表本身照常。
+
+    键是「页面\t名字\t分节」。分节那一段解决同名不同效果——「玻璃拱顶」的 2 件与
+    4 件是两条效果，名字一样。值是那一条在站内那一页上的说明原文，带着着色 span：
+    那些类定义在 assets/site.css，这一页已经引了它，带色不额外要钱。
+
+    它与 search.js 同理是页面文本的第二份副本，但在另一个文件里、不进任何页面的
+    HTML，各生成器的逐字保真闸门因此照旧成立。
+    """
+    seen = {}
+    for hits in idx.values():
+        for e in hits:
+            if not e.get('desc'):
+                continue
+            if not any(e['page'] in pages for pages in vocab.SLOTS.values()):
+                continue
+            seen['%s\t%s\t%s' % (e['page'], e['name'], e['kind'])] = e['desc']
+    rows = ['%s:%s' % (json.dumps(k, ensure_ascii=False),
+                       json.dumps(v, ensure_ascii=False))
+            for k, v in sorted(seen.items())]
+    body = 'window.starsideDesc = {\n%s\n};\n' % ',\n'.join(rows)
+    path = os.path.join(shell.ROOT, OUT_DIR, 'desc.js')
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write(body)
+    print('builds/desc.js —— %.1f KB，%d 条说明' % (len(body.encode()) / 1024, len(seen)))
 
 
 def slot_cell(slot, kind='', cls='item', label='', bare=False, hidden=False,
@@ -780,8 +836,11 @@ def render_new(stamp, name_cn):
          '<span class="season">%s · %s</span></p>' % (SEASON.upper(), name_cn),
          '<p class="desc"><input data-key="描述" placeholder="一句话说清这套配装靠什么打" '
          'aria-label="描述"></p>',
-         '<div class="facets">%s%s</div>'
-         % (facet_picks(*FACETS[0]), facet_picks(*FACETS[1])),
+         # 类别排在最前：它是这套配装的第一层身份（详情页写在铭牌上），选了它
+         # 上面的铭牌才补得全。
+         '<div class="facets">%s%s%s</div>'
+         % (facet_picks('类别', '类别', CATEGORIES, single=True),
+            facet_picks(*FACETS[0]), facet_picks(*FACETS[1])),
          '</div>', '</header>', '']
 
     # 身份那两格就是职业与分支的选择器。**它们不走 fill()**：两格的内容由 state
@@ -964,6 +1023,7 @@ def main():
     if not only:
         render_index(made)
         render_vocab(idx)
+        render_desc(idx)
         here = [n for _, sn, n in season_dirs() if sn == SEASON]
         if not here:
             die('references/builds/ 下没有 %s- 开头的赛季目录，填表页写不出赛季名。'

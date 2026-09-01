@@ -156,6 +156,14 @@
 
 html { scroll-behavior: smooth; }
 
+/* 滚动条走站点这套配色，别让系统那条亮灰的槽横在深底上。两个属性都是标准的，
+   继承下去，页面自己那条与页内的滚动区（选择器的候选网格）因此是同一副样子，
+   不必逐处重述。 */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--hair-lit) var(--ink-lift);
+}
+
 body {
   min-height: 100vh;
   /* 宽表页的横向溢出交给页面本身，不给 main 开 overflow——祖先一旦成为滚动

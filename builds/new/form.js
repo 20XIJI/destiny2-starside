@@ -156,6 +156,8 @@
       ? (self && self[3] ? '<img src="' + UP + self[3] + '" alt="" width="32" '
         + 'height="32">' : '') + esc(cls) + ' · <span class="el-' + BRANCH[br]
         + '">' + esc(br) + '</span>'
+        // 类别选了才接上去：详情页的铭牌是「职业 · 元素 · 类别」，这里逐段跟上。
+        + (val('类别') ? ' · ' + esc(val('类别')) : '')
       : '<span class="hint">职业与元素在下面「职业」那一格选</span>';
   }
 
@@ -220,10 +222,94 @@
   function close() {
     if (!picker) return;
     var owner = picker.owner;
+    hideDesc();
     picker.remove();
     picker = null;
     if (owner) owner.setAttribute('aria-expanded', 'false');
   }
+
+  /* ── 悬停详情 ──────────────────────────────────────────────────────
+     选装备时要确认这件东西干什么，站内每一页上都写着，可是隔着一次跳转。这块
+     面板把那段说明就地摆出来：候选列表里指哪一条摆哪一条，成品格上指哪一格摆
+     哪一格。
+
+     **说明另存一份 builds/desc.js，不进词表。**二十万字塞进 vocab.js 会让这一页
+     一打开就下将近一兆，只想导入一份源稿的人也得等。取回的时机有两个：页面
+     load 之后的空闲预取，以及第一次悬停——前者让想查的人不必等，后者兜住空闲
+     回调一直不来的情况。取不到就不弹，填表照常。 */
+  var descBox = null, descAsked = false, descOff = 0, descNow = null;
+
+  function loadDesc() {
+    if (window.starsideDesc || descAsked) return;
+    descAsked = true;
+    var s = document.createElement('script');
+    s.src = UP + 'builds/desc.js';
+    // 取回来时把当前指着的那一条补画上：预取没赶上，第一次悬停就不会是空的。
+    s.onload = function () { if (descNow) showDesc(descNow); };
+    document.head.appendChild(s);
+  }
+
+  function descOf(row) {
+    var t = window.starsideDesc;
+    // 键是「页面\t名字\t分节」。分节那一段解决同名不同效果——「玻璃拱顶」的
+    // 2 件与 4 件是两条效果，名字一样。
+    return t && row && row[2] ? t[row[2] + '\t' + row[0] + '\t' + row[1]] : '';
+  }
+
+  function hideDesc() {
+    descNow = null;
+    if (descBox) descBox.remove();
+  }
+
+  function showDesc(btn) {
+    descNow = btn;
+    loadDesc();
+    var row = btn.row, html = descOf(row);
+    if (!html) { if (descBox) descBox.remove(); return; }
+    if (!descBox) {
+      descBox = document.createElement('aside');
+      descBox.className = 'dpanel';
+    }
+    descBox.innerHTML = '<p class="dp-name">' + esc(row[0])
+      + (row[5] ? '<span class="sub">' + esc(row[5]) + '</span>' : '')
+      + '</p><div class="dp-body">' + html + '</div>';
+    // 选择器开着时面板是它的右栏；否则插在这一格所在行的下面——与选择器同一个
+    // 插入点，两处不抢位（那一行开着选择器时，指的就是选择器里的候选）。
+    if (picker && picker.contains(btn)) {
+      if (descBox.parentNode !== picker) picker.appendChild(descBox);
+    } else {
+      (btn.closest('.slot-row') || btn.closest('.block') || btn.closest('.build-head'))
+        .insertAdjacentElement('afterend', descBox);
+    }
+  }
+
+  /* 一个 pointerover 管两处。两道闸：
+
+     **指针没动就不换。**面板跟着说明长高，滚动时内容从静止的指针底下滑过，浏览器
+     照样派发 pointerover——那一下会把正在读的说明换成滑过来的那一条，页面高度跟着
+     变，人就越滚越找不着地方。判据是指针自己动没动，不是等一个时长。
+
+     **移出去不立刻收。**从格子挪到面板要跨过行的内边距，那一下的目标既不是格子也
+     不是面板，立刻收就永远够不到面板。 */
+  var px = -1, py = -1;
+
+  sheet.addEventListener('pointerover', function (e) {
+    if (e.clientX === px && e.clientY === py) return;
+    px = e.clientX;
+    py = e.clientY;
+    var hit = e.target.closest('button');
+    if ((descBox && descBox.contains(e.target)) || (hit && hit.row)) {
+      clearTimeout(descOff);
+      if (hit && hit.row && hit !== descNow) showDesc(hit);
+      return;
+    }
+    clearTimeout(descOff);
+    descOff = setTimeout(hideDesc, 120);
+  });
+
+  window.addEventListener('load', function () {
+    (window.requestIdleCallback || setTimeout)(loadDesc, 1);
+  });
 
   function open(btn) {
     var slot = btn.dataset.slot, kind = btn.dataset.kind || '';
@@ -308,6 +394,7 @@
         var el = slot === '元素' ? tag(r) : '';
         b.innerHTML = body(r, slot, iconSize(btn), el)
           + (el ? '' : '<span class="kd">' + esc(tag(r)) + '</span>');
+        b.row = r;                       // 悬停面板认的是这一位，与成品格同形
         b.addEventListener('click', function () { pickOne(btn, r); });
         li.appendChild(b);
         grid.appendChild(li);
@@ -401,16 +488,27 @@
   }
 
   /* 适用环境与标签是多选 chip，值汇到同一段里的隐藏 input 上——源稿那两行仍是
-     顿号连起来的一串，val() 照旧按 data-key 读一个 .value。 */
+     顿号连起来的一串，val() 照旧按 data-key 读一个 .value。
+     带 data-single 的那一栏（类别）一次只选一个：按下时先把同栏的其余弹起来，
+     再走同一条汇总。取值路径只有这一条。 */
   function toggleTag(c) {
-    c.setAttribute('aria-pressed',
-      String(c.getAttribute('aria-pressed') !== 'true'));
-    var facet = c.parentNode.parentNode;
+    var set = c.parentNode, on = c.getAttribute('aria-pressed') !== 'true';
+    if (on && set.hasAttribute('data-single')) {
+      [].forEach.call(set.querySelectorAll('button'), function (b) {
+        b.setAttribute('aria-pressed', 'false');
+      });
+    }
+    c.setAttribute('aria-pressed', String(on));
+    sumTags(set.parentNode);
+    write();
+  }
+
+  /* 一栏 chip 的选中项汇进同段的隐藏 input。选与导入两处共用。 */
+  function sumTags(facet) {
     facet.querySelector('input[type="hidden"]').value =
       [].filter.call(facet.querySelectorAll('.tagset > button'), function (b) {
         return b.getAttribute('aria-pressed') === 'true';
       }).map(function (b) { return b.textContent; }).join('、');
-    write();
   }
 
   /* 六维一格的写法。四个预设，值即源稿里的记法：不限 ~、至少 80+、指定 80、
@@ -769,7 +867,7 @@
         paintStat(cell);
       });
 
-    ['场景', '定位'].forEach(function (key) {
+    ['类别', '场景', '定位'].forEach(function (key) {
       var box = sheet.querySelector('input[data-key="' + key + '"]');
       if (!box) return;
       var all = cells('.tagset > button', box.parentNode);
@@ -778,10 +876,10 @@
         if (b) b.setAttribute('aria-pressed', 'true');
         else skip.push(key + '：' + t);
       });
-      box.value = all.filter(function (x) {
-        return x.getAttribute('aria-pressed') === 'true';
-      }).map(function (x) { return x.textContent; }).join('、');
+      sumTags(box.parentNode);
     });
+    // 类别进了铭牌，回填之后要重画一次。
+    mirror();
 
     // 核心最后定：它必须是上面已经填进去的某一件，前面没填上就落不了。
     var core = one('核心');
@@ -828,6 +926,7 @@
     md += line('场景', val('场景'));
     md += line('定位', val('定位'));
     md += line('分支', state.分支);
+    md += line('类别', val('类别'));
     md += line('核心', state.核心);
 
     md += '\n## 职业\n\n';

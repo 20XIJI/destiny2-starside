@@ -494,29 +494,124 @@ button.item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
 .stats-card .stats { flex: 1; }
 
 /* ── 索引页 ───────────────────────────────────────────────────────────
-   卡片复用首页那套 .entry 形状，右列放推荐人与标签。左缘那条 2px 亮边跟着该配装
-   的分支色走（.b-* 落在 <li> 上），一屏卡片扫下来，棱镜与冰影一眼分得开。
+   **竖式卡，一排六张。**首页那套横式 .entry（图 | 正文 | 右列）一屏只放得下六张，
+   配装过二十套就要滚很久；这一页把它转成竖排：图在最上，往下是配装名、推荐人、
+   简介、标签、时间与赞数。审核台 tools/review.py 直接引这份表，它的列表跟着一起
+   变——两处的卡本来就该同形。
 
-   **版心走 1500 那一档，不跟着配装页收到 1060**：这一页是卡片目录，与首页的目录
-   同形，一张卡里横着排图标、标题、描述、推荐人与标签五样东西；1060 下两列各只有
-   四百多像素，描述会挤成四行窄条。同一份样式表服务三种页面，所以用 :has 把这一档
-   限定在有卡片的那一页上。 */
+   **版心走 1500 那一档，不跟着配装页收到 1060**：六列在 1500 下每张约 226px，
+   1060 下只有 150px，配装名放不下五个字。同一份样式表服务三种页面，所以用 :has
+   把这一档限定在有卡片的那一页上。
+
+   **卡高恒定**：简介固定三行、标签固定两行，都超出即裁。一排六张里有一张长出来，
+   下一排的顶缘就是锯齿。 */
 body:has(.entries) { --wrap: 1500px; }
 
-.entries { grid-template-columns: repeat(2, minmax(480px, 1fr)); }
-.entries .entry::after { background: var(--accent); }
-.entries .entry:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
-.entry .node img { display: block; width: 64px; height: 64px; border: 1px solid var(--hair); }
-
-.entry-side {
-  display: grid;
-  justify-items: end;
-  align-content: center;
-  gap: 8px;
-  max-width: 240px;
+/* 沟收到 16：226px 的卡之间留 24 的沟，沟比卡的内边距还显眼。 */
+.entries {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 16px;
 }
 
-.entry-side .tags { justify-content: flex-end; }
+/* 职业小节的标题。大节标题（类别）是 .sect-label，跳转 chip 认的是它；这一层
+   只是节内的分组，不占 chip。 */
+.sub-label {
+  margin: 32px 0 12px;
+  color: var(--bone-dim);
+  font-family: var(--font-disp);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .2em;
+}
+
+.sect-label + .sub-label { margin-top: 16px; }
+.entries + .sub-label { margin-top: 40px; }
+
+/* 搜索把某个职业滤空时，那个小标题自己隐藏——app.js 只管隐藏卡片与整节，留下
+   的光杆标题由这一条收掉，不为它加 JS。 */
+.sub-label:has(+ .entries:not(:has(> li:not([hidden])))) { display: none; }
+
+/* 竖排改用 flex：单列的网格里 margin-top: auto 推不动东西（自由空间落在容器
+   末尾，不在任何一格的区域里），底部那一行的时间与赞数就贴不到卡底。 */
+.entries .entry {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding: 16px;
+}
+
+.entries .entry::after { background: var(--accent); }
+.entries .entry:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
+
+/* 核心那枚图居中。源文件就是 64px，不放大——放大只会糊。 */
+.entry .node { display: flex; justify-content: center; }
+.entry .node img { display: block; width: 64px; height: 64px; border: 1px solid var(--hair); }
+
+.entries .entry h3 {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.4;
+  text-wrap: balance;
+}
+
+/* 推荐人在这一页恒为纯文本：卡片整张是 <a>，里面再套一个会被解析器在内层处把
+   外层关掉，卡右半边就不再通往配装（生成器那边 people(link=False) 是同一条）。 */
+.entries .entry .who {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--bone-faint);
+  font-family: var(--font-disp);
+  font-size: 11.5px;
+  letter-spacing: .06em;
+}
+
+/* 简介固定三行，超出截断。完整那份在详情页与 <meta> 里都在。 */
+.entries .entry p {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  min-height: calc(3 * 1.7em);
+  overflow: hidden;
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+
+/* 标签固定两行。chip 比别处小一号，一行因此放得下三四枚。 */
+.entries .entry .tags {
+  gap: 4px;
+  margin: 0;
+  max-height: calc(2 * 21px + 4px);
+  overflow: hidden;
+}
+
+.entries .entry .tags > i {
+  padding: 1px 5px;
+  font-size: 10px;
+  letter-spacing: .04em;
+}
+
+/* 时间与赞数同一行，压在卡底。 */
+.entry-foot {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.entries .entry-stamp { margin: 0; }
+
+.entry-foot .likes {
+  color: var(--bone-faint);
+  font-family: var(--font-disp);
+  font-size: 11px;
+  letter-spacing: .08em;
+}
+
+.entry-foot .likes:not(:empty)::before { content: "\2665 "; }
+
 
 /* ── 页头右上那两枚 ─────────────────────────────────────────────────
    点赞与复制是对整套配装的操作，与标题同级，所以挂在标题那一行的右端。挂在
@@ -561,17 +656,6 @@ body:has(.entries) { --wrap: 1500px; }
 
 /* 复制的回执写在按钮自己身上：另起一个提示位会在两种状态间改变行宽。 */
 .head-acts .copy[data-tip]::after { content: "　" attr(data-tip); color: var(--accent); }
-
-/* 索引页卡片上只给数字：卡片整张是 <a>，里面套 <button> 不成立。 */
-.entry-side .likes {
-  color: var(--bone-faint);
-  font-family: var(--font-disp);
-  font-size: 11.5px;
-  letter-spacing: .08em;
-}
-
-.entry-side .likes:not(:empty)::before { content: "\2665 "; }
-
 
 /* ── 源稿与预览 ───────────────────────────────────────────────────────
    预览把这一页当成品看：空槽、控件与源稿那两块收起来，输入框脱掉边框与底色
@@ -747,6 +831,53 @@ button.item { width: 100%; }
    挑的时候不必数——你在游戏里看见的就是这个形状。 */
 .picker-grid.art .item { min-height: 62px; }
 .picker-grid .item .kd { display: block; color: var(--bone-faint); font-size: 10px; }
+
+/* ── 悬停详情面板 ─────────────────────────────────────────────────────
+   指着候选或成品格时，把这一条在站内那一页上的说明就地摆出来。
+
+   **摆在候选网格下面，不摆在右边。**上面那条七列是写死的（一行恒为七格，与神器
+   盘同宽），右边挪出 300px 给面板会把格子挤到 93px，名字整批折断。摆下面则两者
+   互不相干，宽度都是整行。
+
+   **说明整条摆出来，不设滚动条。**面板里那段话正是要读的东西，收进一个 176px
+   的框里等于让人在框里再滚一次；异域武器最长那条七百多字，跟着内容长就长。 */
+.dpanel {
+  margin: 10px 0 0;
+  padding: 12px 14px;
+  background: var(--tint-2);
+  border: 1px solid var(--hair);
+  border-left: 2px solid var(--accent);
+}
+
+/* 不在选择器里的那一份插在整行下面，自己带上下的间距。 */
+.slot-row + .dpanel, .block + .dpanel, .build-head + .dpanel { margin: 0 0 10px; }
+
+.dp-name {
+  margin: 0 0 8px;
+  color: var(--bone-hi);
+  font-family: var(--font-cn);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: .04em;
+}
+
+.dp-name .sub { margin-left: 8px; color: var(--bone-faint); font-size: 11.5px; font-weight: 400; }
+
+.dp-body { color: var(--bone-dim); font-size: 12.5px; line-height: 1.85; }
+.dp-body p { margin: 0 0 8px; }
+.dp-body p:last-child { margin-bottom: 0; }
+
+/* 冷却与能耗那一格排在说明上方，与说明分开读。 */
+.dp-body p.v {
+  padding-bottom: 6px;
+  color: var(--bone);
+  font-family: var(--font-disp);
+  font-size: 12px;
+  border-bottom: 1px solid var(--hair);
+}
+
+/* 套装那两条效果各有名字，说明前先写出来。 */
+.dp-body p.bn { color: var(--bone-hi); font-weight: 600; }
 
 /* 头部那几处输入位：形状与格子同族，不另造一种控件 */
 #sheet input,

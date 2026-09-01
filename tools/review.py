@@ -237,12 +237,15 @@ def preview(md, season, slug):
 # 本页只补三样：卡片左格那枚状态旗（站上那套 .entry 的第一格本来放节点图标，
 # 这里没有图可放）、源稿编辑器、两枚动作按钮的字色。其余全部来自站点样式表。
 STYLE = """
-.entry .flag { display: grid; place-items: center; width: 64px; height: 64px;
+.entry .flag { display: grid; place-items: center; align-self: center;
+               width: 64px; height: 64px;
                color: var(--bone-dim); font-family: var(--font-disp); font-size: 12px;
                letter-spacing: .1em; border: 1px solid var(--hair); background: var(--tint-2) }
 .entry .flag[data-s="待审"] { color: var(--accent); border-color: var(--accent) }
 .entry .flag[data-s="待建"] { color: var(--c-solar); border-color: var(--c-solar) }
-.entry-body p.why { color: var(--bone-faint); font-size: 12px }
+/* 驳回理由压在卡底，与站上那张卡的时间与赞数同一个位子。 */
+.entries .entry p.why { display: block; min-height: 0; margin-top: auto;
+                        color: var(--bone-faint); font-size: 11px; line-height: 1.5 }
 textarea.src { display: block; width: 100%; box-sizing: border-box; margin: 0 0 16px;
                padding: 16px; color: var(--bone); font: 12.5px/1.8 var(--font-mono, ui-monospace),
                Menlo, monospace; background: var(--ink-lift); border: 1px solid var(--hair);
@@ -302,20 +305,22 @@ def build_button():
 
 
 def card(href, flag, md, note):
-    """一张卡。形状与配装索引页那套 .entry 一样：左格身份、中间正文、右列推荐人。"""
-    tags = [t for t in re.split(r'[、,]', field(md, '场景') + '、' + field(md, '定位')) if t]
+    """一张卡。形状与配装索引页那套竖式 .entry 一样，两处不同：左格是状态旗
+    （投稿还没渲染出核心图，没有图可放），卡底那一行是这条的出处或驳回理由。
+
+    类别排在标签最前：它是这套配装的第一层身份，与场景、定位不是一档。"""
+    tags = [f for f in (field(md, '类别'),) if f]
+    tags += [t for t in re.split(r'[、,]', field(md, '场景') + '、' + field(md, '定位')) if t]
     by = re.split(r'\s*\|\s*', field(md, '推荐人'))[0]
     return '\n'.join([
         '<li>', '<a class="entry" href="%s">' % esc(href),
         '<span class="flag" data-s="%s">%s</span>' % (esc(flag), esc(flag)),
-        '<span class="entry-body">',
         '<h3>%s</h3>' % esc(title_of(md)),
+        '<span class="who">%s</span>' % esc(by) if by else '',
         '<p>%s</p>' % esc(uncolor(field(md, '描述')) or '（没写描述）'),
+        '<span class="tags">%s</span>'
+        % ''.join('<i>%s</i>' % esc(t) for t in tags),
         '<p class="why">%s</p>' % esc(note),
-        '</span>',
-        '<span class="entry-side">%s<span class="tags">%s</span></span>'
-        % ('<span class="by">%s</span>' % esc(by) if by else '',
-           ''.join('<i>%s</i>' % esc(t) for t in tags)),
         '</a>', '</li>'])
 
 

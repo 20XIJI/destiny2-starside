@@ -42,10 +42,14 @@ LABEL = re.compile(r'<h2[^>]*>(.*?)</h2>', re.S)
 ROW = re.compile(r'<tr>\s*<th scope="row">(.*?)</th>(.*?)</tr>', re.S)
 LANE = re.compile(r'<tr class="lane">\s*<th[^>]*>(.*?)</th>', re.S)
 MOD = re.compile(r'<article class="mod" data-tier="(\d)"[^>]*>\s*'
-                 r'<img[^>]*src="([^"]+)"[^>]*>\s*<h4>(.*?)</h4>', re.S)
+                 r'<img[^>]*src="([^"]+)"[^>]*>\s*<h4>(.*?)</h4>\s*'
+                 r'<div class="mod-desc">(.*?)</div>', re.S)
 SET = re.compile(r'<article class="set" id="([^"]+)">(.*?)</article>', re.S)
 BONUS = re.compile(r'<img class="bonus-icon" src="([^"]+)"[^>]*>'
-                   r'<span class="piece">(.*?)</span><span class="bonus-name">(.*?)</span>', re.S)
+                   r'<span class="piece">(.*?)</span><span class="bonus-name">(.*?)</span>'
+                   r'\s*</h4>\s*<div class="bonus-body">(.*?)</div>', re.S)
+TD = re.compile(r'<td([^>]*)>(.*?)</td>', re.S)
+CLS = re.compile(r'class="([^"]+)"')
 IMG = re.compile(r'<img[^>]*src="(icons/[^"]+)"')
 # 异域职业物品那张表一行摆两条词条：行标题一条，中间一格再一条（源稿写
 # `{spirit|噬星者之灵}`，整格只有这一个标记，class 因此落在 <td> 上）。
@@ -76,13 +80,62 @@ def searchable(page, html=None):
     return SEARCHABLE[page]
 
 
-def entry(page, anchor, kind, name, icon, sub='', q='', pos=''):
+def entry(page, anchor, kind, name, icon, sub='', q='', pos='', desc=''):
     # pos 只有神器模组给：'行,档' —— 那一页每件神器恰好七行、每行一/二/三级三枚，
     # 填表页的选择器照这个位置摆成 7 列 × 3 行，与神器盘同形，挑起来不用数。
     return {'page': page, 'anchor': anchor, 'kind': kind, 'name': name, 'pos': pos,
             'icon': '%s/%s' % (page, icon) if icon else '',
             # q 是落地时的过滤词，'—' 表示这一条不过滤（分节标题那一类）
-            'token': TOKENS[page], 'sub': sub, 'q': '' if q == '—' else (q or name)}
+            'token': TOKENS[page], 'sub': sub, 'q': '' if q == '—' else (q or name),
+            # desc 是这一条在站内那一页上的说明，原样带着着色 span：填表页悬停时
+            # 摆出来，选装备不必另开一页去查。它不进 vocab.js，另出一份 desc.js。
+            'desc': desc}
+
+
+def tds(body):
+    """一行里 <th> 之后那些格：(class, 内部 HTML)。"""
+    return [(hit.group(1) if (hit := CLS.search(a)) else '', inner)
+            for a, inner in TD.findall(body)]
+
+
+# 说明旁边那一格：冷却与能耗。配装时要算的正是这两样，各自不过十几个字，一并
+# 收进来排在说明上方。属性变化那一列没有 class（有值时是裸格），由 panel() 切在
+# 说明后面一并收进来；写「—」的占位不收。
+# 星相那一列是碎片槽位图，不收：面板里只放读得出来的字。
+VALUE_CLS = ('cd', 'cost')
+
+# 购物清单那四页没有说明列——一行是十七格属性（排名、评级、框架、来源、几列
+# Perk），首个裸格取到的是评级那个孤零零的「A」。这四页不出说明。
+NO_DESC = ('shopping-primary', 'shopping-special', 'shopping-heavy', 'shopping-other')
+
+
+def panel(cells):
+    """(说明 HTML, 数值 HTML)。
+
+    **说明是第一个裸 <td>。**列数在同一页里都不定——起源特性那一节比同页别的分节
+    多一个来源列，护甲模组有 3 列与 4 列两种——按列号取必然取错；而碎片那一列
+    「属性变化」有值时也是裸格，按「最后一个裸格」取会取到它。第一个裸格恒是说明。
+    """
+    desc, val = '', []
+    for i, (cls, inner) in enumerate(cells):
+        if not cls and not desc:
+            desc = inner
+            continue
+        if not desc or (cls and cls not in VALUE_CLS):
+            continue
+        if text_of(inner, collapse=True) in ('', '—'):
+            continue
+        val.append(inner)
+    return desc, ' '.join(val)
+
+
+def split_spirit(cells):
+    """异域职业物品那张表一行摆两条词条，左半属行标题，右半属 <td class="spirit">
+    里那一条。不在这里切开，左边那条会把右边整条说明当成自己的数值格。"""
+    for i, (cls, _) in enumerate(cells):
+        if cls == 'spirit':
+            return cells[:i], cells[i + 1:]
+    return cells, []
 
 
 def scan_page(page):
@@ -98,9 +151,9 @@ def scan_page(page):
         head = LABEL.search(body)
         label = text_of(head.group(1), collapse=True) if head else ''
         if page == 'artifact-mods':
-            for k, (tier, icon, n) in enumerate(MOD.findall(body)):
+            for k, (tier, icon, n, d) in enumerate(MOD.findall(body)):
                 out.append(entry(page, anchor, label, text_of(n, collapse=True), icon,
-                                 pos='%d,%s' % (k // 3, tier)))
+                                 pos='%d,%s' % (k // 3, tier), desc=d))
             continue
         if page == 'armor-sets':
             for sid, set_body in SET.findall(body):
@@ -110,11 +163,13 @@ def scan_page(page):
                 # 两条指向同一处，写哪个都查得到，格子上把另一个写成副名。
                 src = re.search(r'<dt>来源</dt><dd>(.*?)</dd>', set_body, re.S)
                 src = text_of(src.group(1), collapse=True) if src else ''
-                for icon, piece, bonus in BONUS.findall(set_body):
+                for icon, piece, bonus, d in BONUS.findall(set_body):
                     kind = text_of(piece, collapse=True)
-                    out.append(entry(page, sid, kind, name, icon, sub=src))
+                    # 效果名在站内是这条效果的标题，说明摆出来时接在它下面。
+                    d = '<p class="bn">%s</p>%s' % (bonus, d)
+                    out.append(entry(page, sid, kind, name, icon, sub=src, desc=d))
                     if src and src != name:
-                        out.append(entry(page, sid, kind, src, icon, sub=name))
+                        out.append(entry(page, sid, kind, src, icon, sub=name, desc=d))
             continue
         # 分节标题自带的图标（「## ![](…) 猎人」）也进词表：配装页首要用真的职业图标。
         head_img = IMG.search(head.group(1)) if head else None
@@ -133,13 +188,24 @@ def scan_page(page):
             if not row:
                 continue
             icon = IMG.search(row.group(2))
+            mine, theirs = ((), ()) if page in NO_DESC else split_spirit(tds(row.group(2)))
+            d, v = panel(mine)
             out.append(entry(page, anchor, lane or label,
                              text_of(row.group(1), collapse=True),
-                             icon.group(1) if icon else ''))
+                             icon.group(1) if icon else '', desc=wrap(d, v)))
             for name, ico in SPIRIT.findall(m.group(0)):
+                d, v = panel(theirs)
                 out.append(entry(page, anchor, lane or label,
-                                 text_of(name, collapse=True), ico))
+                                 text_of(name, collapse=True), ico, desc=wrap(d, v)))
     return out
+
+
+def wrap(desc, val):
+    """表格行的说明是一段带 <br> 的行内 HTML，套一层 <p> 才与神器模组、护甲套装
+    那两处的多段 <p> 同形——面板一套样式管两种。数值排在说明上方一行。"""
+    if not desc and not val:
+        return ''
+    return ('<p class="v">%s</p>' % val if val else '') + '<p>%s</p>' % desc
 
 
 def chunks(html):
@@ -177,7 +243,7 @@ def variants():
                 % (meta['icon'], want))
         out.append({'page': 'armor-mods', 'anchor': meta['anchor'], 'kind': meta['part'],
                     'name': name, 'icon': 'armor-mods/icons/%s' % meta['icon'],
-                    'token': '', 'sub': meta['row'], 'pos': '',
+                    'token': '', 'sub': meta['row'], 'pos': '', 'desc': '',
                     # 落地过滤用复合行的名字：变体名在那一页一次都不出现，
                     # 拿它去过滤会滤成空页，看着像跳错了。
                     'q': meta['row']})
@@ -192,6 +258,10 @@ def build():
             if e['name']:
                 idx.setdefault(e['name'], []).append(e)
     for e in variants():
+        # 变体在站内没有独立的一行，说明只有复合那一行有（「电弧虹吸」的机制就写
+        # 在「虹吸」那一行上）。sub 存的正是那一行的名字，照它借过来。
+        e['desc'] = next((r['desc'] for r in idx.get(e['sub'], ())
+                          if r['page'] == 'armor-mods'), '')
         idx.setdefault(e['name'], []).append(e)
     return idx
 
