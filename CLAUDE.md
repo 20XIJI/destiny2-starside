@@ -78,6 +78,8 @@ python3 tools/items.py --builds              # 配装源稿的描述与注解自
 python3 tools/json2xlsx.py <抓取的.json>      # 还原成 xlsx，供核对与手改
 
 python3 tools/review.py                       # 本地审核台，审投稿、改源稿、按一次构建
+python3 tools/deploy.py                       # 增量部署站点，只发改过的文件
+python3 tools/deploy.py --all                 # 整站重发
 tcb fn deploy api --force                     # 改完 functions/api/ 部署后端
 
 ruff check tools/*.py                         # 改完 Python 跑这两条
@@ -85,6 +87,9 @@ pyright tools/*.py
 ```
 
 ## 后端
+
+`tools/deploy.py` 发站点：改动清单由 `refs/deploy` 与 HEAD 现 diff，只把改过的
+文件复制进临时目录发一次 `tcb hosting deploy`，图标不重传。细节见 `README.md`。
 
 站点只有一个后端：`functions/api/`，一支 Node 云函数挂在 CloudBase 的 HTTP 访问
 服务上（`https://<envId>.service.tcloudbase.com/api`），管三件事——访问计数、配装

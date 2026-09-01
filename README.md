@@ -72,7 +72,24 @@ npm start          # npx serve . -l 3000
 
 ## 部署与缓存
 
-托管在腾讯云 CloudBase 静态网站托管。缓存在控制台按**文件后缀 / 文件夹路径 / 具体文件**三种方式匹配，输出的就是 `Cache-Control: max-age=<秒>`，分浏览器缓存与节点缓存两层。
+托管在腾讯云 CloudBase 静态网站托管，发布走 `python3 tools/deploy.py`。
+
+**只发改过的文件。**站上 3859 个文件里 3735 个是图标，文件名即内容哈希、改内容
+必然换名，整目录重发就是把不会变的那批又传一遍（一次 47 秒）。上次发到哪个 commit
+记在 `.git` 的 `refs/deploy` 上，与 HEAD 一 diff 即得清单，改过的那几个复制进临时
+目录，一次 `tcb hosting deploy` 发上去；源稿、生成器、云函数与 markdown 不上传。
+
+```bash
+python3 tools/deploy.py            # 发改动
+python3 tools/deploy.py --dry-run  # 只列要发什么
+python3 tools/deploy.py --all      # 整站重发，首次部署或对不上账时用
+```
+
+工作区不干净时拒发：产出与源稿对不上就先按审核台那枚「构建并提交」。远端删文件
+由脚本按 diff 里的删除项发 `tcb hosting delete`。`tcb` 失败时 `refs/deploy` 不动，
+改完重跑即可。
+
+缓存在控制台按**文件后缀 / 文件夹路径 / 具体文件**三种方式匹配，输出的就是 `Cache-Control: max-age=<秒>`，分浏览器缓存与节点缓存两层。
 
 **错误文档指向 `404.html`。**控制台「静态网站托管 → 基础配置」里，索引文档填 `index.html`，错误文档填 `404.html`；不填时挪走的页面返回 COS 的 `NoSuchKey` XML。`404.html` 只有一行 `meta refresh`，把旧链接送回首页。
 
