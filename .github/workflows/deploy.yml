@@ -1,0 +1,59 @@
+# push 到 main 就把站点发上去。
+#
+# 站点是一个 CloudBase 应用（tcb app info destiny2-starside），部署类型
+# static-hosting，挂在 /destiny2-starside 上，对外即
+# destiny2-starside-<envId>.webapps.tcloudbase.com。所以走 `tcb app deploy`，
+# 不是 `tcb hosting deploy`——后者传到托管根目录，位置就错了。
+#
+# 产出本来就入库，CI 不必再生成一遍；这里跑构建只当闸门：产出与源稿对不上就
+# 拒发。挡的是「手改了源稿、忘了按审核台那枚「构建并提交」就推上来」。
+name: 部署站点
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# 连着推两次时取消前一次：两个部署叠着跑，谁后落盘是随机的。
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # 零依赖、无 package-lock.json，所以不装任何东西：npm ci 在这里必然失败，
+      # npm install 也没东西可装。生成器只用标准库。
+      - name: 闸门 — 产出必须与源稿对得上
+        run: |
+          npm run build
+          if [ -n "$(git status --porcelain)" ]; then
+            git status --porcelain
+            echo "::error::产出与源稿对不上。本地按一次审核台的「构建并提交」再推。"
+            exit 1
+          fi
+
+      - name: 装 CloudBase CLI
+        run: npm install -g @cloudbase/cli
+
+      # 环境级 API Key，范围限在这一个环境。--cloudbase-api-key 必须配全局的
+      # -e/--env-id；--apiKeyId 是账号级 SecretID，要与 --apiKey 成对，别混用。
+      - name: 登录并部署
+        env:
+          CLOUDBASE_ENV_ID: ${{ secrets.CLOUDBASE_ENV_ID }}
+          CLOUDBASE_API_KEY: ${{ secrets.CLOUDBASE_API_KEY }}
+        run: |
+          tcb login --cloudbase-api-key "$CLOUDBASE_API_KEY" -e "$CLOUDBASE_ENV_ID"
+          tcb app deploy destiny2-starside -e "$CLOUDBASE_ENV_ID" \
+            --build-command "" \
+            --output-dir ./ \
+            --enable-git-ignore \
+            --ignore ".git/**,.github/**,tools/**,functions/**,references/**,*.md,LICENSE,package.json,cloudbaserc.json,serve.json,.env*" \
+            -f
