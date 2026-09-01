@@ -766,10 +766,11 @@ def run_deploy():
     文件，清单与结果原样带回页面——发了几个、发的是哪几页，回列表看不出来。"""
     r = subprocess.run([sys.executable, 'tools/deploy.py'],
                        capture_output=True, text=True, cwd=ROOT)
+    # tcb 的输出带 ANSI 配色，落进 <pre> 就是一屏 [90m。
+    out = re.sub(r'\x1b\[[0-9;]*m', '', r.stdout + '\n' + r.stderr)
     if r.returncode:
-        return fail('部署没过。站上还是上一版，refs/deploy 没动，改完再按一次。',
-                    r.stdout + '\n' + r.stderr)
-    return report('发完了', '站上已是这一版。', r.stdout)
+        return fail('部署没过。站上还是上一版，refs/deploy 没动，改完再按一次。', out)
+    return report('发完了', '站上已是这一版。', out)
 
 
 def run_build():
