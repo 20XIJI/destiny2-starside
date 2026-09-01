@@ -30,6 +30,7 @@
 用法：python3 tools/check_terms.py    改源稿或改术语表之后跑一次。
 """
 
+import glob
 import os
 import re
 import sys
@@ -312,6 +313,18 @@ def check_stamps(bad):
             bad.append('G4 %s 页脚写 %s，首页卡片写 %s' % (page, got.group(1), want))
 
 
+def check_build_count(bad):
+    """首页配装卡上那个套数每收一套就变一次，是首页唯一会随投稿漂的手写数字。
+    别的卡片写的是页面结构（PERK 406、模组 128），由各自生成器的 N_* 钉着。"""
+    n = len(glob.glob(os.path.join(shell.ROOT, 'builds', shell.SEASON, '*', 'index.html')))
+    m = re.search(r'href="builds/index.html".*?<dt>配装</dt><dd>(\d+)</dd>',
+                  read('index.html'), re.S)
+    if not m:
+        bad.append('G4 首页那张配装卡没写套数')
+    elif int(m.group(1)) != n:
+        bad.append('G4 首页配装卡写 %s 套，站上是 %d 套' % (m.group(1), n))
+
+
 # G6 管得住的 token：元素归属与异域稀有度这两样库里是事实。别的不归它管——
 # {named|冥府三头犬 +1} 里的 named 是排版标记不是着色，强判会满页误报；
 # 神器模组的元素归属库里没有（typeName_zh 一律是「传说 神器特性」），
@@ -421,6 +434,7 @@ def main() -> int:
                              if rel.startswith((DOC_DIR, 'references/builds/'))], bad)
     used = check_tokens(pairs, site, bad)
     check_stamps(bad)
+    check_build_count(bad)
     check_acts(bad)
     check_palette(site, used, bad)
     check_items(SRC_FILES + [rel for rel, _ in pairs if rel.startswith(DOC_DIR)], bad)
