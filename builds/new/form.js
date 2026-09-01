@@ -688,7 +688,16 @@
     }
     function rowOfName(slot, kind, name) {
       var l = slot === '元素' ? branches() : options(slot, kind);
-      return l.filter(function (r) { return r[0] === name; })[0];
+      var hit = l.filter(function (r) { return r[0] === name; })[0];
+      if (hit) return hit;
+      // 带消歧括注的（「隐士（冲锋枪）」）。**整名查不到才拆**：站内自加的消歧
+      // 后缀本身就是名字的一部分（「故我在（电弧元素）」），见名就拆会丢正主。
+      var m = /（([^（）]+)）$/.exec(name);
+      if (!m) return undefined;
+      var bareName = name.slice(0, m.index);
+      return l.filter(function (r) {
+        return r[0] === bareName && bare(r[1]) === m[1];
+      })[0];
     }
     /* 收起的格子先放出来再填：留着 hidden 的格子有值，源稿里会凭空多一项。 */
     function reveal(cell) {
@@ -849,8 +858,25 @@
       .filter(function (c) { return c.row; });
   }
 
+  /* 源稿里该写的名字。同名不同来源页时补一个分节括注——站内「隐士」既是冲锋枪
+     也是融合步枪，只写名字生成器分不出该链哪一条，当场中止。判据与 vocab.pick
+     一致：同名且来源页不同才算撞车，同页同名是同一件东西的几档，取哪条都落在
+     同一页同一节。
+
+     **元素页上的同名条目不补括注**：那一族由 vocab.pick 的 prefer（配装的分支）
+     挑，而 prefer 只会是某个 elements/ 页。给棱镜配装的「地狱火」写上「（星相）」
+     反倒把它钉到烈日页去——括注在 prefer 之前收窄。 */
+  function srcName(cell) {
+    var row = cell.row;
+    if (row[2].indexOf('elements/') === 0) return row[0];
+    var dup = options(cell.dataset.slot, cell.dataset.kind || '').some(function (r) {
+      return r[0] === row[0] && r[2] !== row[2];
+    });
+    return dup ? row[0] + '（' + bare(row[1]) + '）' : row[0];
+  }
+
   function joined(sel, scope) {
-    return picked(sel, scope).map(function (c) { return c.row[0]; }).join('、');
+    return picked(sel, scope).map(srcName).join('、');
   }
 
   function line(key, value) { return value ? key + '：' + value + '\n' : ''; }
@@ -883,7 +909,7 @@
       var gun = picked('[data-slot="传说武器"]', rig)[0];
       if (!gun) return;
       var perks = joined('[data-slot="Perk"]', rig);
-      md += '传说武器：' + gun.row[0] + (perks ? ' | ' + perks : '') + '\n';
+      md += '传说武器：' + srcName(gun) + (perks ? ' | ' + perks : '') + '\n';
     });
 
     md += '\n## 护甲\n\n';

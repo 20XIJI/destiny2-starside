@@ -295,20 +295,41 @@ def bare_kind(kind):
     return kind.split(' (')[0].strip()
 
 
+# 消歧括注：源稿在名字后面写分节挑一条同名的（「隐士（冲锋枪）」）。
+# Bungie 在不同弹药档上复用枪名，站内因此有真正的同名不同物。
+TAIL = re.compile(r'（([^（）]+)）$')
+
+
 def pick(idx, name, slot, kind=None, prefer=''):
     """按名字取条目。范围由槽位限定，kind 再按分节收一道（部位、件数）。
 
     prefer 是配装分支所在的元素页：星相「地狱火」在烈日页与棱镜页各有一条，
     棱镜配装该链到棱镜页。同页同名的几条是同一件东西的不同档（神器模组的
     一/二/三级），取第一条即可，链过去落在同一页同一节。
+
+    prefer 也定不下来时看名字末尾的消歧括注：「隐士（冲锋枪）」只取冲锋枪那一条。
+    **括注只在整名查不到时才拆**——站内自加的消歧后缀本身就是名字的一部分
+    （「故我在（电弧元素）」），见名就拆会把那条正主弄丢。
     """
     if slot not in SLOTS:
         die('槽位「%s」没有登记来源页' % slot)
+    tail = ''
+    if name not in idx:
+        hit = TAIL.search(name)
+        if hit:
+            tail, name = hit.group(1), name[:hit.start()]
     hits = [h for h in idx.get(name, []) if h['page'] in SLOTS[slot]]
     if kind is not None:
         # 分节标题带括注时按括注前那一截比（神器模组页写「废墟石板 (异端)」），
         # 括注是来源赛季，不是这件神器的名字。
         hits = [h for h in hits if bare_kind(h['kind']) == kind]
+    if tail and hits:
+        narrowed = [h for h in hits if bare_kind(h['kind']) == tail]
+        if not narrowed:
+            die('「%s：%s（%s）」的括注对不上任何一条。站内的同名条目是：\n  %s'
+                % (slot, name, tail,
+                   '\n  '.join('%s · %s' % (h['page'], h['kind']) for h in hits)))
+        hits = narrowed
     if not hits:
         where = '、'.join(SLOTS[slot])
         die('「%s：%s」在 %s 里查不到。站内查得到才写得进配装——'
@@ -318,8 +339,10 @@ def pick(idx, name, slot, kind=None, prefer=''):
         if same:
             hits = same
     if len({h['page'] for h in hits}) > 1:
-        die('「%s：%s」在站内有多条同名条目，分不出该链哪一条：\n  %s'
-            % (slot, name, '\n  '.join('%s · %s' % (h['page'], h['kind']) for h in hits)))
+        die('「%s：%s」在站内有多条同名条目，分不出该链哪一条：\n  %s\n'
+            '在名字后面写分节挑一条，如「%s：%s（%s）」'
+            % (slot, name, '\n  '.join('%s · %s' % (h['page'], h['kind']) for h in hits),
+               slot, name, bare_kind(hits[0]['kind'])))
     return hits[0]
 
 
