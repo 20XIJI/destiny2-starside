@@ -501,7 +501,7 @@ def render(idx, mv, arts, avatars, md, slug, season, name_cn):
     # 模组竖排，合起来是一张 5×3 的矩阵，那是这一页的视觉重心。
     # 异域职业物品一件装备带两条异域词条，站内把词条各自列成一条，所以它在这里
     # 占一格、两条上下并排——摊成两格会读成穿了两件异域。
-    lead = (['<li class="stack">%s</li>'
+    lead = (['<li class="pair">%s</li>'
              % ''.join(item(idx, '异域护甲', n, prefer, cls='item gear', bare=True)
                        for n in ex_armor)] if ex_armor else [])
     lead += sets_of(idx, meta(md, '套装'))
@@ -922,7 +922,7 @@ def render_new(stamp, name_cn):
     # 异域护甲那一格里备着两个槽：选中「…之灵」时第二个自己冒出来（异域职业物品
     # 带两条词条），选别的异域时它收回去。收放由 form.js 按名字判，不给按钮——
     # 那是游戏规则不是版面偏好。
-    armor = ('<li class="stack">'
+    armor = ('<li class="pair">'
              + slot_cell('异域护甲', cls='item gear', label='异域护甲', bare=True)
              + slot_cell('异域护甲', cls='item gear', label='第二条词条', bare=True,
                          hidden=True, only=SPIRIT)
