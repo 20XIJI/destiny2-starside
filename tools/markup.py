@@ -56,6 +56,22 @@ def text_of(frag, collapse=False):
     return re.sub(r'\s+', ' ', t).strip() if collapse else re.sub(r'\s+', '', t)
 
 
+COLOR_ONE = re.compile(r'\{[\w-]+\|([^{}]*)\}')
+
+
+def uncolor(md):
+    """剥掉源稿里的 {token|文字}，只留文字。嵌套的从里往外一层层剥。
+
+    配装详情页的「复制配装」用它：读者复制走的是能直接粘回配装工具的源稿，
+    着色标记在那里没有用处，只会让人以为要照着写。
+    """
+    while True:
+        out = COLOR_ONE.sub(r'\1', md)
+        if out == md:
+            return out
+        md = out
+
+
 def plain(s, marks='*`}\\'):
     """保真比对前的归一化：去空白，去只承担排版的标记字符。
 

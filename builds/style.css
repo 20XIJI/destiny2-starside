@@ -513,6 +513,61 @@ body:has(.entries) { --wrap: 1500px; }
 
 .entry-side .tags { justify-content: flex-end; }
 
+/* ── 页头右上那两枚 ─────────────────────────────────────────────────
+   点赞与复制是对整套配装的操作，与标题同级，所以挂在标题那一行的右端。挂在
+   推荐者下面时读者会以为赞的是那个人。标题折行时 `align-items: flex-start`
+   让两枚贴着第一行，不跟着沉到中间。 */
+.id-row {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.head-acts {
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+  align-items: center;
+  padding-top: 6px;
+}
+
+/* 数由页尾那段脚本填，加载完才出现；`min-width` 把位子先占住，不让整行在数字
+   落进来时横向抖一下。两枚沿用标签那套素框，选中态只换字色与边框色——同一排里
+   点过与没点过的框大小必须一样。 */
+.head-acts button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  color: var(--bone-dim);
+  font-family: var(--font-disp);
+  font-size: 12px;
+  letter-spacing: .08em;
+  background: var(--tint-2);
+  border: 1px solid var(--hair);
+  cursor: pointer;
+}
+
+.head-acts .like b { min-width: 1.4em; font-weight: 600; text-align: left; }
+.head-acts button:hover { color: var(--bone-hi); border-color: var(--accent); }
+.head-acts .like[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
+.head-acts button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* 复制的回执写在按钮自己身上：另起一个提示位会在两种状态间改变行宽。 */
+.head-acts .copy[data-tip]::after { content: "　" attr(data-tip); color: var(--accent); }
+
+/* 索引页卡片上只给数字：卡片整张是 <a>，里面套 <button> 不成立。 */
+.entry-side .likes {
+  color: var(--bone-faint);
+  font-family: var(--font-disp);
+  font-size: 11.5px;
+  letter-spacing: .08em;
+}
+
+.entry-side .likes:not(:empty)::before { content: "\2665 "; }
+
+
 /* ── 源稿与预览 ───────────────────────────────────────────────────────
    预览把这一页当成品看：空槽、控件与源稿那两块收起来，输入框脱掉边框与底色
    读作正文。**不另建一套 DOM**——两套 DOM 会让版面改一处得改两遍。 */

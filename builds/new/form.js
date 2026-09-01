@@ -922,6 +922,32 @@
     });
   });
 
+  /* 投稿：把配装文本发进后端的待审队列，审核在本地做（tools/review.py）。
+
+     **同一套配装重投会改写待审的那一条，不堆第二份**——判据是职业、武器、护甲、
+     神器四段一致，由后端算，前端不必知道。所以这枚按钮可以随便按第二次。
+     发不出去就把原因写在提示位上，不留一个「投稿中…」挂着。 */
+  var send = document.getElementById('send');
+  send.addEventListener('click', function () {
+    var tip = document.getElementById('copy-tip');
+    var md = out.value;
+    if (!/^# \S/.test(md)) { tip.textContent = '先写配装名'; return; }
+    send.disabled = true;
+    tip.textContent = '投稿中…';
+    fetch(send.dataset.api, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ a: 'sub', md: md })
+    }).then(function (r) { return r.json(); }).then(function (s) {
+      send.disabled = false;
+      if (s.error) { tip.textContent = '投稿失败：' + s.error; return; }
+      tip.textContent = s.dup ? '已更新你先前投的同一套配装' : '投稿成功，等待审核';
+    }, function (err) {
+      send.disabled = false;
+      tip.textContent = '投稿失败：' + err;
+    });
+  });
+
   /* 预览：给 #sheet 加一个类，把空槽、控件与源稿那一节收起来，剩下的就是成品。
      **不另建一套 DOM**——两套 DOM 会让版面改一处得改两遍。 */
   /* 注解越写越长，textarea 不会自己长高，写到第五行就看不见了。高度按内容算：
@@ -977,6 +1003,18 @@
     e.preventDefault();
     e.returnValue = '';
   });
+
+  /* 本地审核台（tools/review.py）把这一页当编辑器用：灌一份源稿进来，改完再把
+     生成的那份取回去。**load() 之后重设基线**——不重设的话，离开时那一问会在
+     刚打开、什么都没改的时候就弹。 */
+  window.starsideForm = {
+    load: function (md) {
+      var skip = importMd(md);
+      blank = out.value;
+      return skip;
+    },
+    read: function () { return out.value; }
+  };
 
   write();
   grow();

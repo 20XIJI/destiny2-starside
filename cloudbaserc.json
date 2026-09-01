@@ -1,0 +1,15 @@
+{
+  "envId": "dea-mods-d1g0j2rile2323f73",
+  "functionRoot": "functions",
+  "functions": [
+    {
+      "name": "api",
+      "timeout": 10,
+      "runtime": "Nodejs20.19",
+      "memorySize": 256,
+      "installDependency": true,
+      "handler": "index.main",
+      "envVariables": { "ADMIN_TOKEN": "{{env.ADMIN_TOKEN}}" }
+    }
+  ]
+}

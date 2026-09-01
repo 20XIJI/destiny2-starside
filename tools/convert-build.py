@@ -21,7 +21,9 @@ from urllib.parse import quote
 import items
 import shell
 import vocab
-from markup import Icons, die, inline, must, text_of
+from html import escape
+
+from markup import Icons, die, inline, must, text_of, uncolor
 
 SRC_DIR = shell.BUILD_DIR
 OUT_DIR = 'builds'
@@ -406,7 +408,11 @@ def render(idx, mv, arts, avatars, md, slug, season, name_cn):
          '<div class="core">%s<p class="by-label">推荐者：</p>%s</div>'
          % (icon_of(core_e, 96), ''.join(people(md, avatars))),
          '<div class="build-id">',
-         '<h1>%s</h1>' % title,
+         # 标题那一行右端挂两枚动作：点赞与复制。它们是对整套配装的操作，
+         # 与标题同级；挂在推荐者下面时读者会以为赞的是那个人。
+         '<div class="id-row"><h1>%s</h1><div class="head-acts">%s%s</div></div>'
+         % (title, like_box(season, slug, button=True),
+            '<button class="copy" type="button">复制配装</button>'),
          '<p class="cls">%s%s · %s<span class="season">%s · %s</span></p>'
          % (icon_of(vocab.pick(idx, meta(md, '职业'), '职业', kind='分节'), 32),
             meta(md, '职业'),
@@ -417,7 +423,11 @@ def render(idx, mv, arts, avatars, md, slug, season, name_cn):
          # 环境、「清怪」说的是这套配装干什么用的。
          '<div class="facets">%s%s</div>'
          % (facet('适用环境', names(md, '场景')), facet('标签', names(md, '定位'))),
-         '</div>', '</header>', '']
+         '</div>',
+         # 「复制配装」复制的就是这一份：剥掉着色标记的源稿，粘回配装工具能直接
+         # 导入。站内没有第二处存它，所以它落在页面上而不是另拉一个文件。
+         '<pre id="src" hidden>%s</pre>' % escape(uncolor(md)),
+         '</header>', '']
 
     # 职业：一行是身份与主动技能（职业 · 超能 · 技能），一行是子职业树（星相 ·
     # 碎片）。「技能」收的是手雷、近战、移动与职业技能——游戏里是四个键位，在配装
@@ -505,10 +515,61 @@ def render(idx, mv, arts, avatars, md, slug, season, name_cn):
               for b in re.split(r'\n\s*\n', note[1].strip()) if b.strip()]
         o += ['</section>', '']
 
-    o += ['</main>', '',
+    o += ['</main>', '', LIKE_JS, COPY_JS,
           shell.foot(stamp, '，%s' % meta(md, '页脚', required=False)
                      if meta(md, '页脚', required=False) else '')]
     return '\n'.join(x for x in o if x != '') + '\n', title
+
+
+
+# 点赞：数只有运行时才知道，写不进产出，所以跟资料页的当前时刻高亮同一条约定
+# ——生成器只出一个带 data-like 的空位，数由这段脚本填。详情页给按钮，索引页
+# 只给数字（卡片整张是 <a>，里面套 <button> 不成立）。
+# 一次取回全站的赞数：配装几十套，分页请求反而更慢。
+# ponytail: 防重复只认 localStorage，换浏览器能再点一次。
+LIKE_JS = ('<script>(function(){'
+           'var C=[].slice.call(document.querySelectorAll("[data-like]"));if(!C.length)return;'
+           'function show(el,v){(el.querySelector("b")||el).textContent=v}'
+           'function key(id){return "lk"+id}'
+           'fetch("%s?a=likes").then(function(r){return r.json()}).then(function(m){'
+           'C.forEach(function(el){var id=el.dataset.like;show(el,m[id]||0);'
+           'if(el.tagName=="BUTTON"){var on=false;try{on=!!localStorage.getItem(key(id))}catch(_){}'
+           'el.setAttribute("aria-pressed",on?"true":"false")}})},'
+           'function(x){C.forEach(function(el){show(el,"取不到："+x)})});'
+           'document.addEventListener("click",function(e){'
+           'var b=e.target.closest&&e.target.closest("button.like");if(!b)return;'
+           'var id=b.dataset.like,on=b.getAttribute("aria-pressed")=="true";'
+           'b.setAttribute("aria-pressed",on?"false":"true");'
+           'try{on?localStorage.removeItem(key(id)):localStorage.setItem(key(id),"1")}catch(_){}'
+           'fetch("%s",{method:"POST",headers:{"content-type":"application/json"},'
+           'body:JSON.stringify({a:"like",id:id,d:on?-1:1})}).then(function(r){return r.json()})'
+           '.then(function(s){show(b,s.n)},function(x){show(b,"失败："+x)})})})()</script>'
+           % (shell.API, shell.API))
+
+
+# 复制配装：把页面上那份剥了着色标记的源稿放进剪贴板，粘回配装工具能直接导入。
+# 非安全上下文（file:// 双击打开）下 navigator.clipboard 是 undefined，那时把源稿
+# 显出来并选中，让人自己按一下——不吞掉，别让人以为复制成功了。
+COPY_JS = ('<script>(function(){'
+           'var b=document.querySelector("button.copy"),s=document.getElementById("src");'
+           'if(!b||!s)return;'
+           'function tip(t){b.dataset.tip=t;setTimeout(function(){delete b.dataset.tip},1600)}'
+           'b.addEventListener("click",function(){'
+           'if(!navigator.clipboard){s.hidden=false;var r=document.createRange();'
+           'r.selectNode(s);getSelection().removeAllRanges();getSelection().addRange(r);'
+           'tip("\u5df2\u9009\u4e2d\uff0c\u6309 \u2318C");return}'
+           'navigator.clipboard.writeText(s.textContent).then('
+           'function(){tip("\u5df2\u590d\u5236")},'
+           'function(e){tip("\u590d\u5236\u5931\u8d25 "+e.name)})})})()</script>')
+
+
+def like_box(season, slug, button):
+    """点赞位。id 是「赛季_slug」，与后端那条 ^[a-z0-9]+_[a-z0-9-]+$ 对上。"""
+    at = '%s_%s' % (season, slug)
+    if not button:
+        return '<span class="likes" data-like="%s"></span>' % at
+    return ('<button class="like" type="button" data-like="%s" aria-pressed="false">'
+            '<span aria-hidden="true">\u2665</span> <b></b></button>' % at)
 
 
 SITE_SECTION = '配装推荐'
@@ -598,11 +659,13 @@ def render_index(made):
                   '<p>%s</p>' % m['desc'],
                   '<span class="entry-stamp">更新 %s</span>' % m['stamp'],
                   '</span>',
-                  '<span class="entry-side">%s<span class="tags">%s</span></span>'
-                  % (m['by'], ''.join('<i>%s</i>' % t for t in m['tags'])),
+                  '<span class="entry-side">%s<span class="tags">%s</span>%s</span>'
+                  % (m['by'], ''.join('<i>%s</i>' % t for t in m['tags']),
+                     like_box(m['season'], m['slug'], button=False)),
                   '</a>', '</li>']
         o += ['</ul>', '</section>', '']
-    o += ['</main>', '', shell.foot(stamp, '，配装由各位推荐人提供，随赛季更新。')]
+    o += ['</main>', '', LIKE_JS,
+          shell.foot(stamp, '，配装由各位推荐人提供，随赛季更新。')]
     out = '\n'.join(x for x in o if x != '') + '\n'
     shell.emit(os.path.join(shell.ROOT, OUT_DIR), out, '%d 套配装' % len(live))
 
@@ -839,6 +902,11 @@ def render_new(stamp, name_cn):
           '<button id="copy" class="chip" type="button">复制配装</button>',
           # 导入是一个动作不是两个：这一枚永远「导入」，文本框还空着时它带你去粘贴。
           '<button id="to-import" class="chip" type="button">导入配装</button>',
+          # 投稿直接把配装文本发到后端的待审队列。**接口地址由生成器写在
+          # data-api 上**，form.js 现读——与 app.js 从 .toolbar 的 data-* 读配置
+          # 同一条约定，地址仍只有 shell.API 一处定义。
+          '<button id="send" class="chip" type="button" data-api="%s">投稿</button>'
+          % shell.API,
           '<span id="copy-tip" role="status"></span>',
           '</div>', '',
           '</main>', '',

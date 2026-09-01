@@ -47,18 +47,20 @@
 <p>棱镜术士刀剑流，靠废墟石板与地狱火在高难副本里持续清怪。</p>
 <span class="entry-stamp">更新 2026.8.31</span>
 </span>
-<span class="entry-side"><span class="who"><span class="nm">橘生淮南则为橘</span></span><span class="tags"><i>地牢</i><i>夜幕</i><i>清怪</i><i>续航</i></span></span>
+<span class="entry-side"><span class="who"><span class="nm">橘生淮南则为橘</span></span><span class="tags"><i>地牢</i><i>夜幕</i><i>清怪</i><i>续航</i></span><span class="likes" data-like="s29_prismatic-lightsaber"></span></span>
 </a>
 </li>
 </ul>
 </section>
 </main>
+<script>(function(){var C=[].slice.call(document.querySelectorAll("[data-like]"));if(!C.length)return;function show(el,v){(el.querySelector("b")||el).textContent=v}function key(id){return "lk"+id}fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api?a=likes").then(function(r){return r.json()}).then(function(m){C.forEach(function(el){var id=el.dataset.like;show(el,m[id]||0);if(el.tagName=="BUTTON"){var on=false;try{on=!!localStorage.getItem(key(id))}catch(_){}el.setAttribute("aria-pressed",on?"true":"false")}})},function(x){C.forEach(function(el){show(el,"取不到："+x)})});document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("button.like");if(!b)return;var id=b.dataset.like,on=b.getAttribute("aria-pressed")=="true";b.setAttribute("aria-pressed",on?"false":"true");try{on?localStorage.removeItem(key(id)):localStorage.setItem(key(id),"1")}catch(_){}fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({a:"like",id:id,d:on?-1:1})}).then(function(r){return r.json()}).then(function(s){show(b,s.n)},function(x){show(b,"失败："+x)})})})()</script>
 <footer class="site-foot">
 <p><span class="stamp">更新 2026.8.31</span>，配装由各位推荐人提供，随赛季更新。</p>
 <p>© 2026 日栎w · <a href="https://space.bilibili.com/26117485" target="_blank" rel="noopener">哔哩哔哩</a></p>
 <p class="legal">Starside 为非官方资料站，与 Bungie, Inc. 无从属关系。Destiny 2 及相关名称、标识为 Bungie, Inc. 的商标。</p>
 </footer>
 <script type="speculationrules">{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}</script>
+<script>(function(){var t=new Date(Date.now()+288e5).toISOString(),h=t.slice(0,13),d=t.slice(0,10);var o=document.getElementById("sv"),f=1,u=0;try{f=localStorage.getItem("sv")===h?0:1;if(f)localStorage.setItem("sv",h);u=localStorage.getItem("svd")===d?0:1;if(u)localStorage.setItem("svd",d)}catch(_){}if(!f&&!o)return;var p=location.protocol.indexOf("http")===0?location.pathname:"";var r=f?fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({a:"hit",uv:u,p:p})}):fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api?a=stats");r.then(function(x){return x.json()}).then(function(s){if(o)o.textContent="今日 "+s.today+" 次访问 · 累计 "+s.total},function(x){if(o)o.textContent="访问统计取不到："+x})})()</script>
 </body>
 </html>
 
