@@ -409,15 +409,19 @@ def head_rows(lines):
     return {i - 1 for i, line in enumerate(lines) if RULE_LINE.match(line.strip()) and i}
 
 
-def hits_in(line, terms, names):
+def hits_in(line, terms, names, keys=True):
     """这一行里该着色的裸出现，[(起, 止, 词)]，按位置倒序——就地替换从后往前改。
 
     六处跳过：标题行与行标题那一格（已有结构身份）、链接目标与图片路径（不是正文）、
     GUARD 里那些更长的专名、已经在某个 {token|…} 里面的（别人已经判过了）。
     表头行由调用方按 head_rows() 排除——那要看下一行是不是分隔行，一行看不出来。
     表里的词长词在前，先认长的。
+
+    keys=False 时不认「键：值」行。配装源稿的注解是自由散文，推荐人写的
+    「缺点：如果有其他术士用千语…」是正文不是键；按键行整行跳过，会让 check()
+    要着色、这里拒绝着色，构建怎么跑都过不去。
     """
-    if KEY_LINE.match(line) or line.startswith('#'):
+    if (keys and KEY_LINE.match(line)) or line.startswith('#'):
         return []
     head = row_title_end(line)
     taken = [False] * len(line)
@@ -593,7 +597,8 @@ def apply_builds():
                     for w in check_terms.KEEP for m in re.finditer(re.escape(w), body)]
             body, hit = rename(body, banned, keep)
             k += hit
-            for a, b, word in hits_in(body, terms, names):   # 倒序，前面的位置不动
+            # keys=False：注解里的「缺点：」是正文，不是「键：值」行
+            for a, b, word in hits_in(body, terms, names, keys=False):   # 倒序
                 body = body[:a] + '{%s|%s}' % (terms[word][0], body[a:b]) + body[b:]
                 n += 1
             lines[i] = head + body
