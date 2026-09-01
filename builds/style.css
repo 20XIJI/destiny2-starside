@@ -131,6 +131,11 @@
   min-height: 0;
   padding: 0;
   place-content: center;
+  /* **单列、零间隙。**这一格里只有一枚图，没有名字，但 .item 那两列网格的
+     8px 列间距照算——空的第二列不占宽，那道 gap 却把内容撑得比格子宽，
+     place-content: center 于是把图往左推 3px，与下面的推荐者对不齐。 */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
 }
 
 /* 推荐人：名字必填，链接与头像可省，所以 .who 既可能是 <a> 也可能是 <span> */
