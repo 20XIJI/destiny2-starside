@@ -133,7 +133,7 @@ def src_of(season, slug):
 
 
 def default_slug(md, season):
-    """给一条待审投稿配一个能直接落盘的 slug：`四位随机数-职业`。
+    """给一条待审投稿配一个能直接落盘的 slug：`八位随机数-职业`。
 
     审的人多数时候不想在这一格上停下来想名字，而这一格是 required，空着过不了。
     撞上已有的那一份就换一个数——slug 即文件名，重了会把上一份盖掉。
@@ -141,7 +141,7 @@ def default_slug(md, season):
     hit = re.search(r'^职业：(.+?)\s*$', md, re.M)
     tail = LATIN.get(hit.group(1).strip() if hit else '', 'build')
     for _ in range(20):
-        slug = '%d-%s' % (random.randrange(1000, 10000), tail)
+        slug = '%d-%s' % (random.randrange(10_000_000, 100_000_000), tail)
         path = src_of(season, slug)
         if not path or not os.path.exists(path):
             return slug
