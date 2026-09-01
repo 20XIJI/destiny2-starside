@@ -549,14 +549,21 @@ def render(idx, mv, arts, md, slug, season, name_cn):
 # 只给数字（卡片整张是 <a>，里面套 <button> 不成立）。
 # 一次取回全站的赞数：配装几十套，分页请求反而更慢。
 # ponytail: 防重复只认 localStorage，换浏览器能再点一次。
+# 赞数按小时缓存，与访问计数同一个窗口：不缓存时翻十套配装就是十次冷启动，而
+# 这个数不是行情。自己点的那一下就地改缓存，即时可见；别人的赞最多晚一小时。
 LIKE_JS = ('<script>(function(){'
            'var C=[].slice.call(document.querySelectorAll("[data-like]"));if(!C.length)return;'
            'function show(el,v){(el.querySelector("b")||el).textContent=v}'
            'function key(id){return "lk"+id}'
-           'fetch("%s?a=likes").then(function(r){return r.json()}).then(function(m){'
-           'C.forEach(function(el){var id=el.dataset.like;show(el,m[id]||0);'
+           'var H=new Date(Date.now()+288e5).toISOString().slice(0,13),M=null;'
+           'function save(){try{localStorage.setItem("lkm",JSON.stringify({h:H,m:M}))}catch(_){}}'
+           'function paint(m){M=m;C.forEach(function(el){var id=el.dataset.like;show(el,m[id]||0);'
            'if(el.tagName=="BUTTON"){var on=false;try{on=!!localStorage.getItem(key(id))}catch(_){}'
-           'el.setAttribute("aria-pressed",on?"true":"false")}})},'
+           'el.setAttribute("aria-pressed",on?"true":"false")}})}'
+           'var c=null;try{c=JSON.parse(localStorage.getItem("lkm")||"null")}catch(_){}'
+           'if(c&&c.h===H)paint(c.m);'
+           'else fetch("%s?a=likes").then(function(r){return r.json()}).then(function(m){'
+           'paint(m);save()},'
            'function(x){C.forEach(function(el){show(el,"取不到："+x)})});'
            'document.addEventListener("click",function(e){'
            'var b=e.target.closest&&e.target.closest("button.like");if(!b)return;'
@@ -565,7 +572,8 @@ LIKE_JS = ('<script>(function(){'
            'try{on?localStorage.removeItem(key(id)):localStorage.setItem(key(id),"1")}catch(_){}'
            'fetch("%s",{method:"POST",headers:{"content-type":"application/json"},'
            'body:JSON.stringify({a:"like",id:id,d:on?-1:1})}).then(function(r){return r.json()})'
-           '.then(function(s){show(b,s.n)},function(x){show(b,"失败："+x)})})})()</script>'
+           '.then(function(s){show(b,s.n);if(M){M[id]=s.n;save()}},'
+           'function(x){show(b,"失败："+x)})})})()</script>'
            % (shell.API, shell.API))
 
 
