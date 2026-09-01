@@ -50,7 +50,15 @@ jobs:
           CLOUDBASE_ENV_ID: ${{ secrets.CLOUDBASE_ENV_ID }}
           CLOUDBASE_API_KEY: ${{ secrets.CLOUDBASE_API_KEY }}
         run: |
-          tcb login --cloudbase-api-key "$CLOUDBASE_API_KEY" -e "$CLOUDBASE_ENV_ID"
+          # 校验失败那句话不分「凭据不对」与「连不上」，两者的处置完全相反。
+          # 先探一次端点：GitHub 的 runner 在美国，上海的 tcb-api 未必通。
+          echo "--- 端点连通性"
+          curl -sS -o /dev/null --max-time 20 \
+            -w 'http=%{http_code} 握手=%{time_connect}s 总计=%{time_total}s\n' \
+            "https://$CLOUDBASE_ENV_ID.ap-shanghai.tcb-api.tencentcloudapi.com/" \
+            || echo "端点不通"
+          echo "--- 登录"
+          tcb login --cloudbase-api-key "$CLOUDBASE_API_KEY" -e "$CLOUDBASE_ENV_ID" --verbose
           tcb app deploy destiny2-starside -e "$CLOUDBASE_ENV_ID" \
             --build-command "" \
             --output-dir ./ \
