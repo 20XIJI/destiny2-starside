@@ -4078,14 +4078,19 @@ window.starsideIndex = [
 {"u":"builds/s29/jianqi-shuangpaoyi-warlock/index.html","t":"霜袍衣冰术 · 配装推荐","d":""},
 {"u":"builds/s29/madoka-yuansudashi-hunter/index.html","t":"元素大师猎人 · 配装推荐","d":""},
 {"u":"builds/s29/mengdong-hechengstasis-titan/index.html","t":"合成手风暴怒吼冰泰坦 · 配装推荐","d":""},
+{"u":"builds/s29/niangaoming-hexieqingping-warlock/index.html","t":"左键清屏和谐棱镜术 · 配装推荐","d":""},
 {"u":"builds/s29/nianqingren-hexiaodi-hunter/index.html","t":"赫沃斯托夫小帝喷 · 配装推荐","d":""},
 {"u":"builds/s29/nightcore-baolei-hunter/index.html","t":"棱镜堡垒丢丢猎 · 配装推荐","d":""},
+{"u":"builds/s29/nightcore-swxsjz-hunter/index.html","t":"死亡信使机制弹药套 · 配装推荐","d":""},
 {"u":"builds/s29/xiaoning-xukongpvp-hunter/index.html","t":"虚空猎pvp · 配装推荐","d":""},
 {"u":"builds/s29/xukonvoid-xinghuo-warlock/index.html","t":"星火纤维棱镜术 · 配装推荐","d":""},
 {"u":"builds/s29/yester-bguipen-titan/index.html","t":"棱镜b计划龟喷坦 · 配装推荐","d":""},
 {"u":"builds/s29/yester-guidao-hunter/index.html","t":"龟刀猎 · 配装推荐","d":""},
+{"u":"builds/s29/yester-jtys-warlock/index.html","t":"间桐樱术 · 配装推荐","d":""},
 {"u":"builds/s29/yester-rendongdiudiu-hunter/index.html","t":"忍野丢丢 · 配装推荐","d":""},
+{"u":"builds/s29/yester-xukongjiansheng-titan/index.html","t":"虚空剑圣 · 配装推荐","d":""},
 {"u":"builds/s29/yiwangmelt-ggggdamage-hunter/index.html","t":"双金枪输出配装 · 配装推荐","d":""},
 {"u":"builds/s29/yiwangmelt-shoudian-hunter/index.html","t":"金枪猎守点清怪配装 · 配装推荐","d":""},
-{"u":"builds/s29/yiwangmelt-twjqg-hunter/index.html","t":"金枪猎位移+清怪配装 · 配装推荐","d":""}
+{"u":"builds/s29/yiwangmelt-twjqg-hunter/index.html","t":"金枪猎位移+清怪配装 · 配装推荐","d":""},
+{"u":"builds/s29/yiwangmelt-weiyiqingguai2-hunter/index.html","t":"金枪猎位移+清怪配装 · 配装推荐","d":""}
 ];

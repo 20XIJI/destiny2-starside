@@ -18,7 +18,7 @@
     驳回   库里标 ok=-1，源稿不落盘
     撤回   删掉源稿，退回待审
     保存   改写一份已经在站上的配装源稿
-    构建   跑一次 npm run build，把这一批一起建出来
+    构建   跑一次 npm run build，把这一批一起建出来，跟着提交一次
 
 **通过与构建分开**：一次审一批，每通过一份就重跑一遍全站构建是白等。所以源稿
 建不出页面这件事要到按构建时才暴露；报错里带着 slug，回列表把那一条撤回，或者
@@ -39,6 +39,7 @@ import importlib.util
 import json
 import mimetypes
 import os
+import random
 import re
 import shutil
 import subprocess
@@ -55,6 +56,9 @@ SRC_DIR = os.path.join(ROOT, 'references', 'builds')
 OUT_DIR = os.path.join(ROOT, 'builds')
 PORT = 3100
 SLUG = re.compile(r'^[a-z0-9][a-z0-9-]*$')
+# 职业 → slug 尾巴那一截。默认 slug 只要能落盘、能一眼看出是哪个职业就够，
+# 起名是人的事，所以写成「数字-职业」：补不补名字都读得出来。
+LATIN = {'猎人': 'hunter', '泰坦': 'titan', '术士': 'warlock'}
 
 
 
@@ -126,6 +130,22 @@ def src_of(season, slug):
     if season not in seasons() or not SLUG.match(slug or ''):
         return None
     return os.path.join(SRC_DIR, season, slug + '.md')
+
+
+def default_slug(md, season):
+    """给一条待审投稿配一个能直接落盘的 slug：`四位随机数-职业`。
+
+    审的人多数时候不想在这一格上停下来想名字，而这一格是 required，空着过不了。
+    撞上已有的那一份就换一个数——slug 即文件名，重了会把上一份盖掉。
+    """
+    hit = re.search(r'^职业：(.+?)\s*$', md, re.M)
+    tail = LATIN.get(hit.group(1).strip() if hit else '', 'build')
+    for _ in range(20):
+        slug = '%d-%s' % (random.randrange(1000, 10000), tail)
+        path = src_of(season, slug)
+        if not path or not os.path.exists(path):
+            return slug
+    return ''
 
 
 def page_of(season, slug):
@@ -289,7 +309,7 @@ def page(current, body, parent=False):
         '<div class="site-head"><nav class="site-nav">%s</nav></div>' % ''.join(nav),
         '<main>', body, '</main>',
         '<footer class="site-foot"><p>本地审核台，只在 127.0.0.1:%d 上跑。'
-        '通过与保存改的都是 references/builds/ 下的源稿，改完按「构建全站」才上站。</p>'
+        '通过与保存改的都是 references/builds/ 下的源稿，改完按「构建并提交」才上站。</p>'
         '</footer>' % PORT,
         '</body>', '</html>', ''])
 
@@ -300,7 +320,7 @@ def esc(s):
 
 def build_button():
     return ('<div class="buildbar"><form method="post" action="/build">'
-            '<button class="chip" type="submit">构建全站</button></form></div>')
+            '<button class="chip" type="submit">构建并提交</button></form></div>')
 
 
 def card(href, flag, md, note):
@@ -386,8 +406,9 @@ def editor(name, note, md, hidden, primary, second=None, third=None,
                            for x in seasons()))
     if 'slug' in fields:
         o.append('<input name="slug" form="edit" size="30" required '
-                 'pattern="[a-zA-Z0-9][a-zA-Z0-9-]*" '
-                 'placeholder="拉丁 slug，如 prismatic-lightsaber">')
+                 'pattern="[a-zA-Z0-9][a-zA-Z0-9-]*" value="%s" '
+                 'placeholder="拉丁 slug，如 prismatic-lightsaber">'
+                 % esc(slug or default_slug(md, season or default_season())))
     o.append('<button class="chip ok" type="submit" form="edit">%s</button>' % esc(primary[1]))
     for i, act in enumerate([a for a in (second, third) if a]):
         tag = 'alt%d' % i
@@ -660,7 +681,7 @@ def confirm_delete(season, slug):
          '<div class="gate">',
          '<p>删的是源稿 <code>%s/%s.md</code> 与产出目录 '
          '<code>builds/%s/%s/</code>，两样都不进回收站；'
-         '库里那条投稿记录留着。索引页与全站搜索要按一次「构建全站」才会跟着少一条。</p>'
+         '库里那条投稿记录留着。索引页与全站搜索要按一次「构建并提交」才会跟着少一条。</p>'
          % (esc(season), esc(slug), esc(season.split('-')[0]), esc(slug)),
          '<div class="acts">',
          '<form method="post" action="/delete">',
@@ -701,6 +722,32 @@ def withdraw(sub_id):
     return None
 
 
+def git(*args):
+    return subprocess.run(('git',) + args, capture_output=True, text=True, cwd=ROOT)
+
+
+def commit():
+    """构建完就地提交一次。**构建与提交是同一件事**：产出改了却留在工作区，
+    下一批建完就分不出哪些改动属于哪一次。
+
+    什么都没变时不提交——空暂存区上 `git commit` 返回 1，那不是错。
+    路径带中文，取文件名要用 `-z`：不加它 git 会把路径整条加引号转义，
+    前缀判断当场落空。
+    """
+    git('add', '-A')
+    if not git('diff', '--cached', '--quiet').returncode:
+        return None
+    out = git('diff', '--cached', '--name-only', '--diff-filter=A', '-z').stdout
+    new = [os.path.basename(p)[:-3] for p in out.split('\0')
+           if p.startswith('references/builds/') and p.endswith('.md')]
+    msg = ('收配装 %d 套：%s' % (len(new), '、'.join(new))) if new else '重跑构建'
+    r = git('commit', '-m', msg)
+    if r.returncode:
+        return fail('构建过了，提交没过。改动都在暂存区里，命令行上接着处理。',
+                    r.stdout + '\n' + r.stderr)
+    return None
+
+
 def run_build():
     global _IDX
     _IDX = None                      # 产出变了，词表跟着作废，下次预览重扫
@@ -708,7 +755,7 @@ def run_build():
     if r.returncode:
         return fail('构建没过。源稿都还在——按报错里那个 slug 回列表把它撤回，'
                     '或者就地改完再构建一次。', r.stdout + '\n' + r.stderr)
-    return None
+    return commit()
 
 
 # ── 服务 ──────────────────────────────────────────────────────────────
