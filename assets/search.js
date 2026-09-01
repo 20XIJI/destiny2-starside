@@ -4071,6 +4071,8 @@ window.starsideIndex = [
 {"u":"weapon-perks/index.html","a":"sec-7","l":"起源特性","n":"御寒装备","x":"御寒装备 木卫二 星球 获得御寒装备就绪。 造成或受到伤害时转变为御寒装备 3 层。 御寒装备结束 12 秒后重新获得御寒装备就绪。 御寒装备 3 层 = +? ↑+? 稳定性、+? ↑+? 操控性、+? ↑+? 填装速度，持续 5 秒。 御寒装备 2 层 = +? ↑+? 稳定性、+? ↑+? 操控性、+? ↑+? 填装速度，持续 5 秒。 御寒装备 1 层 = +? ↑+? 稳定性、+? ↑+? 操控性、+? ↑+? 填装速度，持续 5 秒。"},
 {"u":"builds/index.html","t":"配装推荐","d":"按职业分类的 Destiny 2 配装推荐：职业、武器、护甲、神器模组与六维属性，每一格都链回站内资料页。"},
 {"u":"builds/new/index.html","t":"配装工具","d":"填一份配装推荐：选完技能、武器、护甲与神器模组，页面直接生成标准配装文本，复制发给站长即可挂上站。"},
+{"u":"builds/s29/acdzuqsl-warlock/index.html","t":"meta电术 · 配装推荐","d":""},
+{"u":"builds/s29/bxjyhdhm-titan/index.html","t":"飞机倍泰坦 · 配装推荐","d":""},
 {"u":"builds/s29/clama-he-titan/index.html","t":"刮刮乐泰坦 · 配装推荐","d":""},
 {"u":"builds/s29/haku-solarjizhi-warlock/index.html","t":"火中术走机制 · 配装推荐","d":""},
 {"u":"builds/s29/jianqi-fengbao-warlock/index.html","t":"风暴衣无限电上术 · 配装推荐","d":""},
@@ -4092,5 +4094,6 @@ window.starsideIndex = [
 {"u":"builds/s29/yiwangmelt-ggggdamage-hunter/index.html","t":"双金枪输出配装 · 配装推荐","d":""},
 {"u":"builds/s29/yiwangmelt-shoudian-hunter/index.html","t":"金枪猎守点清怪配装 · 配装推荐","d":""},
 {"u":"builds/s29/yiwangmelt-twjqg-hunter/index.html","t":"金枪猎位移+清怪配装 · 配装推荐","d":""},
-{"u":"builds/s29/yiwangmelt-weiyiqingguai2-hunter/index.html","t":"金枪猎位移+清怪配装 · 配装推荐","d":""}
+{"u":"builds/s29/yiwangmelt-weiyiqingguai2-hunter/index.html","t":"金枪猎位移+清怪配装 · 配装推荐","d":""},
+{"u":"builds/s29/zqqoqjsb-warlock/index.html","t":"悬停术 · 配装推荐","d":""}
 ];
