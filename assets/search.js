@@ -4073,6 +4073,12 @@ window.starsideIndex = [
 {"u":"builds/new/index.html","t":"配装工具","d":"填一份配装推荐：选完技能、武器、护甲与神器模组，页面直接生成标准配装文本，复制发给站长即可挂上站。"},
 {"u":"builds/s29/clama-he-titan/index.html","t":"刮刮乐泰坦 · 配装推荐","d":""},
 {"u":"builds/s29/jianqi-fengbao-warlock/index.html","t":"风暴衣无限电上术 · 配装推荐","d":""},
+{"u":"builds/s29/jianqi-kongjufusi-warlock/index.html","t":"恐惧编织缚丝术 · 配装推荐","d":""},
 {"u":"builds/s29/nightcore-baolei-hunter/index.html","t":"棱镜堡垒丢丢猎 · 配装推荐","d":""},
-{"u":"builds/s29/xukonvoid-xinghuo-warlock/index.html","t":"星火纤维棱镜术 · 配装推荐","d":""}
+{"u":"builds/s29/xiaoning-xukongpvp-hunter/index.html","t":"虚空猎pvp · 配装推荐","d":""},
+{"u":"builds/s29/xukonvoid-xinghuo-warlock/index.html","t":"星火纤维棱镜术 · 配装推荐","d":""},
+{"u":"builds/s29/yester-bguipen-titan/index.html","t":"棱镜b计划龟喷坦 · 配装推荐","d":""},
+{"u":"builds/s29/yester-guidao-hunter/index.html","t":"龟刀猎 · 配装推荐","d":""},
+{"u":"builds/s29/yester-rendongdiudiu-hunter/index.html","t":"忍野丢丢 · 配装推荐","d":""},
+{"u":"builds/s29/yiwangmelt-shoudian-hunter/index.html","t":"金枪猎守点清怪配装 · 配装推荐","d":""}
 ];
