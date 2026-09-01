@@ -53,9 +53,14 @@ jobs:
           TENCENT_SECRET_KEY: ${{ secrets.TENCENT_SECRET_KEY }}
         run: |
           tcb login --apiKeyId "$TENCENT_SECRET_ID" --apiKey "$TENCENT_SECRET_KEY"
+          # 每一个会弹问的参数都给死。-f 只跳过「应用名已存在」那一问，装依赖那问
+          # 不归它管；CI 里没人按回车，一弹就是退出码 130。
           tcb app deploy destiny2-starside -e "$CLOUDBASE_ENV_ID" \
+            --framework static \
+            --install-command "" \
             --build-command "" \
             --output-dir ./ \
+            --deploy-path /destiny2-starside \
             --enable-git-ignore \
             --ignore ".git/**,.github/**,tools/**,functions/**,references/**,*.md,LICENSE,package.json,cloudbaserc.json,serve.json,.env*" \
             -f
