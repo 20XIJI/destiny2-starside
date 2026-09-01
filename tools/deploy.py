@@ -8,6 +8,7 @@
     python3 tools/deploy.py            # 发改动
     python3 tools/deploy.py --dry-run  # 只列要发什么
     python3 tools/deploy.py --all      # 整站重发，首次部署或对不上账时用
+    python3 tools/deploy.py --all --prune  # 整站重发，并删掉远端多出来的文件
 """
 
 import json
@@ -39,8 +40,11 @@ def listing(out: str) -> list[str]:
     return [p for p in out.split("\0") if p and keep(p)]
 
 
-def tcb(*args: str, env: str) -> None:
-    if subprocess.run(["tcb", *args, "-e", env], cwd=ROOT).returncode:
+def tcb(*args: str, env: str, confirm: bool = False) -> None:
+    # --prune 会弹一句 y/N。脚本这一侧替你按 y——闸门是命令行上那个显式的 --prune，
+    # 不是这一问；stdin 交给 tcb 时它在非交互场景下读到 EOF 当 N，静默不清理。
+    r = subprocess.run(["tcb", *args, "-e", env], cwd=ROOT, input="y\n" if confirm else None, text=True)
+    if r.returncode:
         sys.exit("tcb 失败，refs/deploy 不动，改完重跑即可")
 
 
@@ -60,6 +64,9 @@ def main() -> None:
     env = json.loads((ROOT / "cloudbaserc.json").read_text())["envId"]
     full = "--all" in sys.argv
     dry = "--dry-run" in sys.argv
+    prune = "--prune" in sys.argv  # 删远端多出来的文件，范围限于 CLOUD 这一层（实测过）
+    if prune and not full:
+        sys.exit("--prune 只跟 --all 一起用：增量那份清单不是完整的一版，会把没改的文件全删了")
 
     if not dry and git("status", "--porcelain").strip():
         sys.exit("工作区不干净：先按审核台那枚「构建并提交」，再部署")
@@ -88,7 +95,8 @@ def main() -> None:
                 dst = stage / p
                 dst.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(ROOT / p, dst)
-            tcb("hosting", "deploy", str(stage), CLOUD, env=env)
+            extra = ["--prune", "--safe"] if prune else []
+            tcb("hosting", "deploy", str(stage), CLOUD, *extra, env=env, confirm=prune)
         finally:
             shutil.rmtree(stage, ignore_errors=True)
     for p in gone:
