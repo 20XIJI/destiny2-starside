@@ -226,6 +226,15 @@
     else delete el.dataset.d;
   }
 
+  // 候选要先有前提时给的那一句，与 open() 里 wait 的三个分支一一对应。
+  // 核心是大多数人第一个点的格子，而它只列本页已经配好的东西，空着时不说
+  // 这一句就是一个没有理由的空格网。
+  var MISS = {
+    元素: '先选职业',
+    神器: '先选一件神器',
+    核心: '先填配装，核心从配装词条中选取',
+  };
+
   /* 选择器整行展开在它那一行下面：一格只有一百来像素宽，图标网格塞不进去。 */
   function close() {
     if (!picker) return;
@@ -254,10 +263,12 @@
     }
     // 神器模组按所选那一件限定。没选之前不列——七件神器各 21 枚，混在一起是
     // 147 条，且它们在神器盘上的位置一件一套，摆出来会七枚叠在同一格。
-    // 这两格的候选都要先有前提：神器模组按所选那一件收，元素按所选职业收
-    //（用的是分支页上「那个职业」的分节图）。没有前提时给一句话，不给一个空格网。
+    // 这三格的候选都要先有前提：神器模组按所选那一件收，元素按所选职业收
+    //（用的是分支页上「那个职业」的分节图），核心只列本页已经配好的东西。
+    // 没有前提时给一句话，不给一个空格网；那句话在 MISS 一处定义。
     var wait = (slot === '神器' && kind !== '__art__' && !state.神器)
-      || (slot === '元素' && !state.职业);
+      || (slot === '元素' && !state.职业)
+      || (slot === '核心' && !list.length);
 
     var box = document.createElement('div');
     box.className = 'picker';
@@ -301,7 +312,7 @@
       grid.classList.toggle('art', pan);
       grid.textContent = '';
       if (wait) {
-        count.textContent = slot === '元素' ? '先选职业' : '先选一件神器';
+        count.textContent = MISS[slot];
         box.setAttribute('data-miss', '');
         return;
       }

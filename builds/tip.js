@@ -15,6 +15,12 @@
   var SRC = document.currentScript.src.replace(/[^/]*$/, 'desc.js');
   var box = null, asked = false, off = 0, now = null, px = -1, py = -1;
 
+  /* 关掉之后连 desc.js 都不预取——那是一兆的东西，不想看说明的人不该下它。
+     开关记在 localStorage，与点赞去重同一条约定：换浏览器要重新关一次。 */
+  function shut() {
+    try { return localStorage.getItem('tipoff') === '1'; } catch (_) { return false; }
+  }
+
   function load() {
     if (window.starsideDesc || asked) return;
     asked = true;
@@ -31,6 +37,7 @@
   }
 
   function draw(el) {
+    if (shut()) return;
     now = el;
     load();
     var key = el.dataset.d, t = window.starsideDesc;
@@ -47,14 +54,19 @@
     box.innerHTML = '<p class="dp-name">' + esc(at[1])
       + (at[2] ? '<span class="sub">' + esc(at[2]) + '</span>' : '')
       + '</p><div class="dp-body">' + html + '</div>';
-    // 选择器开着时面板是它的末栏；否则插在这一格所在行的下面。两处不抢位——
-    // 那一行开着选择器时，指的就是选择器里的候选。
+    // 指着选择器里的候选时，面板是选择器的末栏；指着格子本身时，插在这一格
+    // 所在行的下面。
     var pick = el.closest('.picker');
     if (pick) {
       if (box.parentNode !== pick) pick.appendChild(box);
     } else {
-      (el.closest('.slot-row') || el.closest('.block') || el.closest('.build-head'))
-        .insertAdjacentElement('afterend', box);
+      // 展开的选择器挂在同一个锚点的 afterend 上，所以那一行开着选择器时要跟在
+      // 它后面插——照着锚点插会把面板挤进格子与选择器之间，点开一格、鼠标滑开再
+      // 滑回来就看到说明压在选择器上面。次序恒为格子、选择器、说明。
+      var host = el.closest('.slot-row') || el.closest('.block') || el.closest('.build-head');
+      var next = host.nextElementSibling;
+      if (next && next.classList.contains('picker')) host = next;
+      host.insertAdjacentElement('afterend', box);
     }
   }
 
@@ -87,8 +99,28 @@
   });
 
   window.addEventListener('load', function () {
-    (window.requestIdleCallback || setTimeout)(load, 1);
+    if (!shut()) (window.requestIdleCallback || setTimeout)(load, 1);
   });
+
+  /* 开关的契约与格子那条同形：**页面出一枚带 data-tip-sw 的按钮**，这一份脚本
+     只管按下之后怎么样。详情页把它挂在标题那一行，填表页挂在右下角那一条。
+     aria-pressed 为真即说明开着，两处的样式表都照这一位上色。 */
+  function paint() {
+    var on = !shut();
+    [].forEach.call(document.querySelectorAll('[data-tip-sw]'), function (b) {
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest || !e.target.closest('[data-tip-sw]')) return;
+    try { localStorage.setItem('tipoff', shut() ? '0' : '1'); } catch (_) {}
+    if (shut()) hide();
+    else load();
+    paint();
+  });
+
+  paint();
 
   // 填表页关掉选择器时要连面板一起收：那一整块连同它的末栏都从文档里摘掉了，
   // 面板留在变量里指着一个已经不在的父节点。

@@ -654,7 +654,7 @@ body:has(.entries) { --wrap: 1500px; }
 
 .head-acts .like b { min-width: 1.4em; font-weight: 600; text-align: left; }
 .head-acts button:hover { color: var(--bone-hi); border-color: var(--accent); }
-.head-acts .like[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
+.head-acts button[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
 .head-acts button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* 复制的回执写在按钮自己身上：另起一个提示位会在两种状态间改变行宽。 */
@@ -675,9 +675,19 @@ body:has(.entries) { --wrap: 1500px; }
   align-items: stretch;
   gap: 6px;
   padding: 8px;
-  background: var(--ink-lift);
-  border: 1px solid var(--hair-lit);
+  /* --ink-lift 与页底 --ink 的 ΔE 只有 11.3，压在「视作同一个颜色」的线下，
+     整条面板因此只靠那一圈 1px 发丝线立着，滚到长页中段就找不见。叠一层
+     --tint-3 抬底，边框提到 --bone-faint——不加投影、不加发光，形状语言不变。 */
+  background: var(--tint-3), var(--ink-lift);
+  border: 1px solid var(--bone-faint);
 }
+
+/* 工具条里那排 chip 有上下文说明自己是什么，这一条没有，所以角标常显、字色
+   不压暗：静置时也要认得出这是五个可按的动作。 */
+.src-tools .chip { color: var(--bone); }
+
+.src-tools .chip::before,
+.src-tools .chip::after { opacity: 1; }
 
 /* 复制的回执落在这一条左边，不进按钮那一列：接在最后一枚下面时它会把面板
    撑高一行，三枚按钮跟着往上跳。空着就不占位。 */

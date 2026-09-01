@@ -423,11 +423,14 @@ def render(idx, mv, arts, md, slug, season, name_cn):
          '<div class="core">%s<p class="by-label">推荐者：</p>%s</div>'
          % (icon_of(core_e, 96), ''.join(people(md))),
          '<div class="build-id">',
-         # 标题那一行右端挂两枚动作：点赞与复制。它们是对整套配装的操作，
-         # 与标题同级；挂在推荐者下面时读者会以为赞的是那个人。
-         '<div class="id-row"><h1>%s</h1><div class="head-acts">%s%s</div></div>'
+         # 标题那一行右端挂三枚动作：点赞、复制与悬停说明的开关。它们是对整套
+         # 配装的操作，与标题同级；挂在推荐者下面时读者会以为赞的是那个人。
+         # 开关的按下状态由 tip.js 从 localStorage 现读，写不进产出，所以这里
+         # 只出一个空位——与点赞那个数同一条约定。
+         '<div class="id-row"><h1>%s</h1><div class="head-acts">%s%s%s</div></div>'
          % (title, like_box(season, slug, button=True),
-            '<button class="copy" type="button">复制配装</button>'),
+            '<button class="copy" type="button">复制配装</button>',
+            TIP_SW),
          # 铭牌一行读完这套配装的身份：职业 · 元素 · 类别。类别接在这里而不是另起
          # 一栏标签——它只有一个值，占一整栏显得空。
          '<p class="cls">%s%s · %s · %s<span class="season">%s · %s</span></p>'
@@ -542,6 +545,13 @@ def render(idx, mv, arts, md, slug, season, name_cn):
                       '\n<script src="../../tip.js" defer></script>\n</body>\n')
     return out, title
 
+
+
+# 悬停说明的开关。**按下状态由 tip.js 现读 localStorage**，生成器只出空位。
+# 两种壳：详情页与点赞、复制同排，用 .head-acts 那套素框；填表页在右下角那一条
+# 里，与另外四枚同为 chip。契约只有 data-tip-sw 一条。
+TIP_SW = '<button class="tipsw" type="button" data-tip-sw>悬停说明</button>'
+TIP_SW_CHIP = '<button id="tipsw" class="chip" type="button" data-tip-sw>悬停说明</button>'
 
 
 # 点赞：数只有运行时才知道，写不进产出，所以跟资料页的当前时刻高亮同一条约定
@@ -979,6 +989,7 @@ def render_new(stamp, name_cn):
           # 同一条约定，地址仍只有 shell.API 一处定义。
           '<button id="send" class="chip" type="button" data-api="%s">投稿</button>'
           % shell.API,
+          TIP_SW_CHIP,
           '<span id="copy-tip" role="status"></span>',
           '</div>', '',
           '</main>', '',
