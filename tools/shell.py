@@ -96,7 +96,7 @@ HIT = ('<script>(function(){'
        'if(!f&&!o)return;'
        'var p=location.protocol.indexOf("http")===0?location.pathname:"";'
        'var r=f?fetch("%s",{method:"POST",headers:{"content-type":"application/json"},'
-       'body:JSON.stringify({a:"hit",uv:u,p:p})}):fetch("%s?a=stats");'
+       'body:JSON.stringify({a:"hit",uv:u,p:p,s:o?1:0})}):fetch("%s?a=stats");'
        'r.then(function(x){return x.json()})'
        '.then(function(s){if(o)o.textContent="今日 "+s.today+" 次访问 · 累计 "+s.total},'
        'function(x){if(o)o.textContent="访问统计取不到："+x})})()</script>' % (API, API))
