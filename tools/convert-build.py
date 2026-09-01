@@ -95,8 +95,14 @@ def item(idx, slot, name, prefer, kind=None, cls='item', bare=False, tail='', la
     # 带页内搜索框的页面加 ?q=：落地先过滤到那一行再滚，不然读者落在一整节里
     # 还得自己找。app.js 的 filter() 接这个参数，与全站搜索的命中链接同一套。
     q = ('?q=%s' % quote(e['q'])) if e['q'] and vocab.searchable(e['page']) else ''
-    cell = ('<a class="%s" href="%s%s/index.html%s#%s">%s<span class="nm">%s%s%s</span></a>'
-            % (cls, UP, e['page'], q, e['anchor'], icon, label, sub, tail))
+    # 悬停详情认的是 data-d：「页面\t名字\t分节」，builds/tip.js 拿它去 desc.js 里查。
+    # 制表符在属性里写成 &#9;，源码里看得见；查得到说明的格子才写这一位，别的
+    # 格子上多一个空属性只会让人以为它该弹而没弹。
+    d = (' data-d="%s"' % escape('%s\t%s\t%s'
+                                 % (e['page'], e['name'], e['kind'])).replace('\t', '&#9;')
+         if e.get('desc') else '')
+    cell = ('<a class="%s"%s href="%s%s/index.html%s#%s">%s<span class="nm">%s%s%s</span></a>'
+            % (cls, d, UP, e['page'], q, e['anchor'], icon, label, sub, tail))
     return cell if bare else '<li>%s</li>' % cell
 
 
@@ -531,7 +537,12 @@ def render(idx, mv, arts, avatars, md, slug, season, name_cn):
     o += ['</main>', '', LIKE_JS, COPY_JS,
           shell.foot(stamp, '，%s' % meta(md, '页脚', required=False)
                      if meta(md, '页脚', required=False) else '')]
-    return '\n'.join(x for x in o if x != '') + '\n', title
+    out = '\n'.join(x for x in o if x != '') + '\n'
+    # 悬停详情与配装工具共用 builds/tip.js。script 要落在 </body> 之前，
+    # 而 shell.foot() 已经吐了 </body></html>，直接往后接会让它跑到文档外面去。
+    out = out.replace('\n</body>\n',
+                      '\n<script src="../../tip.js" defer></script>\n</body>\n')
+    return out, title
 
 
 
@@ -975,6 +986,7 @@ def render_new(stamp, name_cn):
     # 直接往后接会让它们跑到文档外面去。
     out = out.replace('\n</body>\n',
                       '\n<script src="../vocab.js" defer></script>\n'
+                      '<script src="../tip.js" defer></script>\n'
                       '<script src="form.js" defer></script>\n</body>\n')
     shell.emit(os.path.join(shell.ROOT, OUT_DIR, 'new'), out, FORM_NAME)
 

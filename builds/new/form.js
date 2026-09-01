@@ -215,101 +215,27 @@
       btn.classList.remove('empty');
       btn.innerHTML = body(row, btn.dataset.slot, iconSize(btn));
     }
+    mark(btn, row);
     write();
+  }
+
+  /* 悬停详情认的是 data-d，值是「页面\t名字\t分节」——与生成器写在详情页格子上
+     的那一个同形，面板那一份实现（builds/tip.js）因此不必认识行与槽位。 */
+  function mark(el, row) {
+    if (row && row[2]) el.dataset.d = row[2] + '\t' + row[0] + '\t' + row[1];
+    else delete el.dataset.d;
   }
 
   /* 选择器整行展开在它那一行下面：一格只有一百来像素宽，图标网格塞不进去。 */
   function close() {
     if (!picker) return;
     var owner = picker.owner;
-    hideDesc();
+    // 面板可能正挂在选择器的末栏上，跟着一起摘掉就成了指着不在的父节点的孤儿。
+    if (window.starsideTip) window.starsideTip.hide();
     picker.remove();
     picker = null;
     if (owner) owner.setAttribute('aria-expanded', 'false');
   }
-
-  /* ── 悬停详情 ──────────────────────────────────────────────────────
-     选装备时要确认这件东西干什么，站内每一页上都写着，可是隔着一次跳转。这块
-     面板把那段说明就地摆出来：候选列表里指哪一条摆哪一条，成品格上指哪一格摆
-     哪一格。
-
-     **说明另存一份 builds/desc.js，不进词表。**二十万字塞进 vocab.js 会让这一页
-     一打开就下将近一兆，只想导入一份源稿的人也得等。取回的时机有两个：页面
-     load 之后的空闲预取，以及第一次悬停——前者让想查的人不必等，后者兜住空闲
-     回调一直不来的情况。取不到就不弹，填表照常。 */
-  var descBox = null, descAsked = false, descOff = 0, descNow = null;
-
-  function loadDesc() {
-    if (window.starsideDesc || descAsked) return;
-    descAsked = true;
-    var s = document.createElement('script');
-    s.src = UP + 'builds/desc.js';
-    // 取回来时把当前指着的那一条补画上：预取没赶上，第一次悬停就不会是空的。
-    s.onload = function () { if (descNow) showDesc(descNow); };
-    document.head.appendChild(s);
-  }
-
-  function descOf(row) {
-    var t = window.starsideDesc;
-    // 键是「页面\t名字\t分节」。分节那一段解决同名不同效果——「玻璃拱顶」的
-    // 2 件与 4 件是两条效果，名字一样。
-    return t && row && row[2] ? t[row[2] + '\t' + row[0] + '\t' + row[1]] : '';
-  }
-
-  function hideDesc() {
-    descNow = null;
-    if (descBox) descBox.remove();
-  }
-
-  function showDesc(btn) {
-    descNow = btn;
-    loadDesc();
-    var row = btn.row, html = descOf(row);
-    if (!html) { if (descBox) descBox.remove(); return; }
-    if (!descBox) {
-      descBox = document.createElement('aside');
-      descBox.className = 'dpanel';
-    }
-    descBox.innerHTML = '<p class="dp-name">' + esc(row[0])
-      + (row[5] ? '<span class="sub">' + esc(row[5]) + '</span>' : '')
-      + '</p><div class="dp-body">' + html + '</div>';
-    // 选择器开着时面板是它的右栏；否则插在这一格所在行的下面——与选择器同一个
-    // 插入点，两处不抢位（那一行开着选择器时，指的就是选择器里的候选）。
-    if (picker && picker.contains(btn)) {
-      if (descBox.parentNode !== picker) picker.appendChild(descBox);
-    } else {
-      (btn.closest('.slot-row') || btn.closest('.block') || btn.closest('.build-head'))
-        .insertAdjacentElement('afterend', descBox);
-    }
-  }
-
-  /* 一个 pointerover 管两处。两道闸：
-
-     **指针没动就不换。**面板跟着说明长高，滚动时内容从静止的指针底下滑过，浏览器
-     照样派发 pointerover——那一下会把正在读的说明换成滑过来的那一条，页面高度跟着
-     变，人就越滚越找不着地方。判据是指针自己动没动，不是等一个时长。
-
-     **移出去不立刻收。**从格子挪到面板要跨过行的内边距，那一下的目标既不是格子也
-     不是面板，立刻收就永远够不到面板。 */
-  var px = -1, py = -1;
-
-  sheet.addEventListener('pointerover', function (e) {
-    if (e.clientX === px && e.clientY === py) return;
-    px = e.clientX;
-    py = e.clientY;
-    var hit = e.target.closest('button');
-    if ((descBox && descBox.contains(e.target)) || (hit && hit.row)) {
-      clearTimeout(descOff);
-      if (hit && hit.row && hit !== descNow) showDesc(hit);
-      return;
-    }
-    clearTimeout(descOff);
-    descOff = setTimeout(hideDesc, 120);
-  });
-
-  window.addEventListener('load', function () {
-    (window.requestIdleCallback || setTimeout)(loadDesc, 1);
-  });
 
   function open(btn) {
     var slot = btn.dataset.slot, kind = btn.dataset.kind || '';
@@ -394,7 +320,8 @@
         var el = slot === '元素' ? tag(r) : '';
         b.innerHTML = body(r, slot, iconSize(btn), el)
           + (el ? '' : '<span class="kd">' + esc(tag(r)) + '</span>');
-        b.row = r;                       // 悬停面板认的是这一位，与成品格同形
+        b.row = r;
+        mark(b, r);          // 悬停详情认的是 data-d，与成品格同形
         b.addEventListener('click', function () { pickOne(btn, r); });
         li.appendChild(b);
         grid.appendChild(li);
