@@ -15,7 +15,7 @@
   var SRC = document.currentScript.src.replace(/[^/]*$/, 'desc.js');
   var box = null, asked = false, off = 0, now = null, px = -1, py = -1;
 
-  /* 关掉之后连 desc.js 都不预取——那是一兆的东西，不想看说明的人不该下它。
+  /* 关掉之后连 desc.js 都不预取——那是一兆的东西，不想看详情的人不该下它。
      开关记在 localStorage，与点赞去重同一条约定：换浏览器要重新关一次。 */
   function shut() {
     try { return localStorage.getItem('tipoff') === '1'; } catch (_) { return false; }
@@ -104,7 +104,8 @@
 
   /* 开关的契约与格子那条同形：**页面出一枚带 data-tip-sw 的按钮**，这一份脚本
      只管按下之后怎么样。详情页把它挂在标题那一行，填表页挂在右下角那一条。
-     aria-pressed 为真即说明开着，两处的样式表都照这一位上色。 */
+     aria-pressed 为真即详情开着，两处的样式表都照这一位上色；缺省开着，
+     localStorage 里没有 tipoff 就是开。 */
   function paint() {
     var on = !shut();
     [].forEach.call(document.querySelectorAll('[data-tip-sw]'), function (b) {

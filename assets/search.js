@@ -4075,6 +4075,8 @@ window.starsideIndex = [
 {"u":"builds/s29/haku-solarjizhi-warlock/index.html","t":"火中术走机制 · 配装推荐","d":""},
 {"u":"builds/s29/jianqi-fengbao-warlock/index.html","t":"风暴衣无限电上术 · 配装推荐","d":""},
 {"u":"builds/s29/jianqi-kongjufusi-warlock/index.html","t":"恐惧编织缚丝术 · 配装推荐","d":""},
+{"u":"builds/s29/jianqi-shuangpaoyi-warlock/index.html","t":"霜袍衣冰术 · 配装推荐","d":""},
+{"u":"builds/s29/madoka-yuansudashi-hunter/index.html","t":"元素大师猎人 · 配装推荐","d":""},
 {"u":"builds/s29/mengdong-hechengstasis-titan/index.html","t":"合成手风暴怒吼冰泰坦 · 配装推荐","d":""},
 {"u":"builds/s29/nianqingren-hexiaodi-hunter/index.html","t":"赫沃斯托夫小帝喷 · 配装推荐","d":""},
 {"u":"builds/s29/nightcore-baolei-hunter/index.html","t":"棱镜堡垒丢丢猎 · 配装推荐","d":""},

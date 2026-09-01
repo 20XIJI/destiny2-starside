@@ -423,7 +423,7 @@ def render(idx, mv, arts, md, slug, season, name_cn):
          '<div class="core">%s<p class="by-label">推荐者：</p>%s</div>'
          % (icon_of(core_e, 96), ''.join(people(md))),
          '<div class="build-id">',
-         # 标题那一行右端挂三枚动作：点赞、复制与悬停说明的开关。它们是对整套
+         # 标题那一行右端挂三枚动作：点赞、复制与详情开关。它们是对整套
          # 配装的操作，与标题同级；挂在推荐者下面时读者会以为赞的是那个人。
          # 开关的按下状态由 tip.js 从 localStorage 现读，写不进产出，所以这里
          # 只出一个空位——与点赞那个数同一条约定。
@@ -547,11 +547,11 @@ def render(idx, mv, arts, md, slug, season, name_cn):
 
 
 
-# 悬停说明的开关。**按下状态由 tip.js 现读 localStorage**，生成器只出空位。
+# 详情开关，缺省开着。**按下状态由 tip.js 现读 localStorage**，生成器只出空位。
 # 两种壳：详情页与点赞、复制同排，用 .head-acts 那套素框；填表页在右下角那一条
 # 里，与另外四枚同为 chip。契约只有 data-tip-sw 一条。
-TIP_SW = '<button class="tipsw" type="button" data-tip-sw>悬停说明</button>'
-TIP_SW_CHIP = '<button id="tipsw" class="chip" type="button" data-tip-sw>悬停说明</button>'
+TIP_SW = '<button class="tipsw" type="button" data-tip-sw>详情开关</button>'
+TIP_SW_CHIP = '<button id="tipsw" class="chip" type="button" data-tip-sw>详情开关</button>'
 
 
 # 点赞：数只有运行时才知道，写不进产出，所以跟资料页的当前时刻高亮同一条约定

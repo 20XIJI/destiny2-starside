@@ -682,12 +682,30 @@ body:has(.entries) { --wrap: 1500px; }
   border: 1px solid var(--bone-faint);
 }
 
-/* 工具条里那排 chip 有上下文说明自己是什么，这一条没有，所以角标常显、字色
-   不压暗：静置时也要认得出这是五个可按的动作。 */
-.src-tools .chip { color: var(--bone); }
-
+/* 角标静置时照旧不显形——常显是五枚一齐立着，读作五个方框而不是五个动作。
+   改由动效认领：两枚角标从外侧滑进来收拢到位，按下时整枚往下沉 1px。
+   位移只有 3px，不改变任何一枚的占位。 */
 .src-tools .chip::before,
-.src-tools .chip::after { opacity: 1; }
+.src-tools .chip::after { transition: opacity .18s ease, transform .18s ease; }
+
+.src-tools .chip::before { transform: translate(-3px, -3px); }
+
+.src-tools .chip::after { transform: translate(3px, 3px); }
+
+.src-tools .chip:hover::before,
+.src-tools .chip:hover::after,
+.src-tools .chip:focus-visible::before,
+.src-tools .chip:focus-visible::after,
+.src-tools .chip[aria-pressed="true"]::before,
+.src-tools .chip[aria-pressed="true"]::after { transform: none; }
+
+.src-tools .chip:active { transform: translateY(1px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .src-tools .chip::before,
+  .src-tools .chip::after,
+  .src-tools .chip:active { transform: none; }
+}
 
 /* 复制的回执落在这一条左边，不进按钮那一列：接在最后一枚下面时它会把面板
    撑高一行，三枚按钮跟着往上跳。空着就不占位。 */

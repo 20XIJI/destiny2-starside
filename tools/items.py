@@ -545,31 +545,66 @@ def prose_spans(lines):
     return out
 
 
-def apply_builds():
-    """配装源稿的散文就地着色。**构建时自动跑**：投稿的人不写着色标记，逐条
-    手补是把 npm run build 变成一串「某某没着色」的报错；词表与那道闸门是同一份，
-    补得上的就该由脚本补。可重复跑——已经着色的下一趟自然跳过。
+def rename(body, banned, keep):
+    """一段散文里的禁用写法换成正名。返回改过的那一段与处数。
 
-    只碰散文那两段，其余一行不动。改的是源稿不是产出，git diff 即变更记录。"""
+    长词先占位：「重型弹药」与「弹药」同时进禁用表时，按起点升序、长度降序挑一遍
+    非重叠的命中，短的那条就落在长的里面被跳过，不会把已经换过的字再切一刀。
+    """
+    hits = []
+    for wrong, right in banned:
+        for m in re.finditer(re.escape(wrong), body):
+            if any(a <= m.start() and m.end() <= b for a, b in keep):
+                continue
+            hits.append((m.start(), m.end(), right))
+    taken, end = [], -1
+    for a, b, right in sorted(hits, key=lambda x: (x[0], -x[1])):
+        if a >= end:
+            taken.append((a, b, right))
+            end = b
+    for a, b, right in reversed(taken):
+        body = body[:a] + right + body[b:]
+    return body, len(taken)
+
+
+def apply_builds():
+    """配装源稿的散文就地正名与着色。**构建时自动跑**：投稿的人既不写着色标记
+    也不照站内的正名写，逐条手补是把 npm run build 变成一串报错；词表与那两道闸门
+    是同一份，补得上的就该由脚本补。可重复跑——已经改过的下一趟自然跳过。
+
+    **只碰散文那两段**（描述与注解），槽位行一个字不动：那些是要拿去查词表的物品
+    专名，「重型弹药斥候」照着正名改成「威能弹药」就查不到了。那一类照旧由
+    check_terms 的 G1 报出来，是专名就进 KEEP，是散文才该改——这一步人来判。
+
+    正名排在着色前面：反过来会先把「重型弹药」着上色，再换成正名，标记里外对不上。
+    改的是源稿不是产出，git diff 即变更记录。"""
+    import check_terms   # 延迟导入：check_terms 在模块级导入 items，成环
+    banned = [(w, t[0]) for t in check_terms.TERMS for w in t[2]]
     terms, _ = load()
     names = sorted(terms, key=len, reverse=True)
-    total = 0
+    total = fixed = 0
     for path in build_pages():
         with open(path, encoding='utf-8') as f:
             lines = f.read().split('\n')
-        n = 0
+        n = k = 0
         for i, off in prose_spans(lines).items():
             head, body = lines[i][:off], lines[i][off:]
+            keep = [(m.start(), m.end())
+                    for w in check_terms.KEEP for m in re.finditer(re.escape(w), body)]
+            body, hit = rename(body, banned, keep)
+            k += hit
             for a, b, word in hits_in(body, terms, names):   # 倒序，前面的位置不动
                 body = body[:a] + '{%s|%s}' % (terms[word][0], body[a:b]) + body[b:]
                 n += 1
             lines[i] = head + body
-        if n:
+        if n or k:
             with open(path, 'w', encoding='utf-8') as f:
                 f.write('\n'.join(lines))
-            print('  %s —— 着色 %d 处' % (os.path.relpath(path, shell.ROOT), n))
+            print('  %s —— %s着色 %d 处'
+                  % (os.path.relpath(path, shell.ROOT), '正名 %d 处、' % k if k else '', n))
             total += n
-    print('配装源稿自动着色：%d 处' % total)
+            fixed += k
+    print('配装源稿自动改写：正名 %d 处、着色 %d 处' % (fixed, total))
 
 
 def main() -> int:
