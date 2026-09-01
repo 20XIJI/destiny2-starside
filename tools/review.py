@@ -215,7 +215,6 @@ def preview(md, season, slug):
     m = cb()
     try:
         out, _ = m.render(index(), m.extra('移动'), m.extra('神器本体'),
-                          m.Icons(os.path.join(ROOT, 'builds'), 1),
                           md, slug, season.split('-')[0], name_of(season))
     except SystemExit as e:
         return None, str(e)
@@ -387,7 +386,7 @@ def editor(name, note, md, hidden, primary, second=None, third=None,
                            for x in seasons()))
     if 'slug' in fields:
         o.append('<input name="slug" form="edit" size="30" required '
-                 'pattern="[a-z0-9][a-z0-9-]*" '
+                 'pattern="[a-zA-Z0-9][a-zA-Z0-9-]*" '
                  'placeholder="拉丁 slug，如 prismatic-lightsaber">')
     o.append('<button class="chip ok" type="submit" form="edit">%s</button>' % esc(primary[1]))
     for i, act in enumerate([a for a in (second, third) if a]):
@@ -529,9 +528,13 @@ document.addEventListener('DOMContentLoaded', function () {
   go.className = 'chip go';
   go.textContent = '%(label)s';
   go.addEventListener('click', function () {
+    // 大小写都收，转小写在服务端一处做；这里拦住大写只会让人白改一遍。
+    // 报的也是规则而不是「先写 slug」——写了不合规的字的人看着那句话会以为自己没写。
     var need = bar.querySelector('[name="slug"]');
-    if (need && !/^[a-z0-9][a-z0-9-]*$/.test(need.value.trim())) {
-      tip.textContent = '先写 slug';
+    if (need && !/^[a-zA-Z0-9][a-zA-Z0-9-]*$/.test(need.value.trim())) {
+      tip.textContent = need.value.trim()
+        ? 'slug 只能用字母、数字与连字符，且以字母或数字开头'
+        : '先写 slug';
       return;
     }
     box.value = F.read();
@@ -616,8 +619,8 @@ def edit(q, subs=None):
 def approve(sub_id, season, slug, md):
     path = src_of(season, slug)
     if path is None:
-        return fail('赛季要选列表里的那几个，slug 只能是小写字母、数字与连字符；'
-                    '收到的是 %r / %r' % (season, slug))
+        return fail('赛季要选列表里的那几个，slug 只能是字母、数字与连字符'
+                    '（大写自动转小写）；收到的是 %r / %r' % (season, slug))
     if os.path.exists(path):
         return fail('%s/%s.md 已经存在。换一个 slug，或者去改站上那一份。' % (season, slug))
     if not md.startswith('# '):
@@ -758,7 +761,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
         form = urllib.parse.parse_qs(self.rfile.read(n).decode(), keep_blank_values=True)
         f = {k: v[0] for k, v in form.items()}
         sub_id, md = f.get('id', '').strip(), f.get('md', '')
-        season, slug = f.get('season', '').strip(), f.get('slug', '').strip()
+        season = f.get('season', '').strip()
+        # slug 就地转小写。它既是 builds/<赛季>/<slug>/ 的目录名，也是点赞 _id 的
+        # 后半截（云函数按 /^[a-z0-9]+_[a-z0-9-]+$/ 收，大写进去点赞会被拒），所以
+        # 只能是小写；可大小写不是填的人要判断的事，转掉就是了。全部 POST 从这一
+        # 行取 slug，转在这里即处处生效。
+        slug = f.get('slug', '').strip().lower()
         if self.path == '/build':
             bad = run_build()
         elif self.path == '/delete':

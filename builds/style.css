@@ -148,7 +148,6 @@
   text-decoration: none;
 }
 
-.who img { width: 28px; height: 28px; border-radius: 50%; }
 a.who:hover { color: var(--accent); }
 
 /* 铭牌下面两栏：左边适用环境（场景），右边标签（定位）。挤在一排里读者分不出

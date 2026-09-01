@@ -23,7 +23,7 @@ import shell
 import vocab
 from html import escape
 
-from markup import Icons, die, inline, must, text_of, uncolor
+from markup import die, inline, must, text_of, uncolor
 
 SRC_DIR = shell.BUILD_DIR
 OUT_DIR = 'builds'
@@ -229,8 +229,8 @@ def rig_of(cells, tool=''):
             % (guns * 15 + (len(live) - guns) * 10, len(live), ''.join(cells), tool))
 
 
-def people(md, avatars, link=True):
-    """推荐人：一行一个，名字必填，链接与头像可省。
+def people(md, link=True):
+    """推荐人：一行一个，`名字 | 链接`，链接可省。
 
     link=False 出纯文本那一版，给索引页用：那张卡整张是一个 <a>，里面再套一个
     会被 HTML 解析器在内层处把外层关掉，卡片右半边就不再是通往配装的链接。
@@ -239,13 +239,11 @@ def people(md, avatars, link=True):
     for line in re.findall(r'^推荐人：(.*)$', md, re.M):
         parts = [x.strip() for x in line.split('|')]
         name, url = parts[0], parts[1] if len(parts) > 1 else ''
-        face = parts[2] if len(parts) > 2 else ''
         if not name:
             die('「推荐人：」的名字不能空')
-        if len(parts) > 3:
-            die('「推荐人：」最多三段（名字 | 链接 | 头像），源稿写的是 %r' % line)
-        img = avatars.html(face) if face else ''
-        body = '%s<span class="nm">%s</span>' % (img, name)
+        if len(parts) > 2:
+            die('「推荐人：」最多两段（名字 | 链接），源稿写的是 %r' % line)
+        body = '<span class="nm">%s</span>' % name
         out.append('<a class="who" href="%s" target="_blank" rel="noopener">%s</a>'
                    % (url, body) if url and link
                    else '<span class="who">%s</span>' % body)
@@ -383,7 +381,7 @@ def stats_card(spec):
              '<ul class="stats">'] + stats_of(spec) + ['</ul>', '</div>'])
 
 
-def render(idx, mv, arts, avatars, md, slug, season, name_cn):
+def render(idx, mv, arts, md, slug, season, name_cn):
     title = must(re.match(r'^#\s+(.+)$', md.split('\n')[0]),
                  '源稿第一行必须是「# 配装名」').group(1).strip()
     stamp, desc = meta(md, '更新'), meta(md, '描述')
@@ -423,7 +421,7 @@ def render(idx, mv, arts, avatars, md, slug, season, name_cn):
          # 推荐人跟着核心那枚图走：他是这套配装的出处，与标题、铭牌、描述不是一
          # 类信息。竖线左边一列因此写成「图 + 谁推荐的」。
          '<div class="core">%s<p class="by-label">推荐者：</p>%s</div>'
-         % (icon_of(core_e, 96), ''.join(people(md, avatars))),
+         % (icon_of(core_e, 96), ''.join(people(md))),
          '<div class="build-id">',
          # 标题那一行右端挂两枚动作：点赞与复制。它们是对整套配装的操作，
          # 与标题同级；挂在推荐者下面时读者会以为赞的是那个人。
@@ -623,11 +621,7 @@ def build(idx, dirname, season, name_cn, slug):
     os.makedirs(outdir, exist_ok=True)
     with open(os.path.join(SRC_DIR, dirname, slug + '.md'), encoding='utf-8') as f:
         md = f.read()
-    # 头像是配装页自己的图，放 builds/avatars/：Icons 顺带复核「文件名即内容
-    # md5」，那是给图标目录设一年浏览器缓存的前提。词表查出来的图标不走这里，
-    # 它们在各自那一页已经复核过。
-    avatars = Icons(os.path.join(shell.ROOT, OUT_DIR), 1)
-    out, title = render(idx, extra('移动'), extra('神器本体'), avatars,
+    out, title = render(idx, extra('移动'), extra('神器本体'),
                         md, slug, season, name_cn)
     check(out, slug)
     shell.emit(outdir, out, title)
@@ -637,7 +631,7 @@ def build(idx, dirname, season, name_cn, slug):
             'desc': text_of(inline(meta(md, '描述'), rich=True), collapse=True), 'class': meta(md, '职业'),
             'tags': names(md, '场景') + names(md, '定位'), 'branch': BRANCH[meta(md, '分支')],
             'cat': meta(md, '类别'),
-            'by': ''.join(people(md, avatars, link=False)),
+            'by': ''.join(people(md, link=False)),
             'core': '<span class="node">%s</span>' % icon_of(core, 64).replace(UP, '../')}
 
 

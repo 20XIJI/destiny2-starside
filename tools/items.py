@@ -14,6 +14,9 @@ Bungie 的 manifest 导出里 `typeName_zh` 已经按元素给技能分好类（
               全自动铺色不可行——库里 6738 个模组名与中文常用词大量同形
               （充能 618 次、爆炸 413 次、霰弹枪 65 次都是物品名），
               按词表铺开会把正文里的普通动词染成专名。所以出建议交人裁决。
+  --builds    配装源稿的散文（描述与注解）就地着色，构建时自动跑。投稿的人不写
+              着色标记，逐条手补是把构建变成一串「某某没着色」的报错。资料页的
+              源稿不走这条：那些是自己写的长文，铺色前该先 --suggest 看一眼。
   check_terms.py 的 G6  已着色的术语，token 必须与库里的归属一致。
               --el-solar 与 --deb-solar 渲染色相同，着成哪个眼睛查不出来。
 
@@ -23,6 +26,7 @@ Bungie 的 manifest 导出里 `typeName_zh` 已经按元素给技能分好类（
     python3 tools/items.py --distill ~/Downloads/MISC/items-full.json
     python3 tools/items.py --suggest [slug]
     python3 tools/items.py --apply   [slug]
+    python3 tools/items.py --builds
 """
 
 import functools
@@ -504,12 +508,78 @@ def apply(slug=None):
     print('合计 %d 处。跑 npm run build，再看 git diff。' % total)
 
 
+# 配装源稿里只有两段是散文：「描述：」那一行的值，与「## 注解」以下的正文。
+# 槽位行写的是物品名（「碎片：保护琢面、黎明琢面」），由词表查表变成带图标的
+# 链接，源稿不写颜色——着进去就把名字改了，查表当场中止。
+DESC_LINE = re.compile(r'^(描述：)(.*)$')
+NOTE_HEAD = '## 注解'
+
+
+def build_pages():
+    """配装源稿一串。清单现扫，与 check_terms.py 的那一份同形。"""
+    root = shell.BUILD_DIR
+    if not os.path.isdir(root):
+        return
+    for season in sorted(os.listdir(root)):
+        d = os.path.join(root, season)
+        if not os.path.isdir(d):
+            continue
+        for name in sorted(os.listdir(d)):
+            if name.endswith('.md'):
+                yield os.path.join(d, name)
+
+
+def prose_spans(lines):
+    """{行下标: 从第几个字符起是散文}。描述那一行要跳过「描述：」三个字——
+    hits_in() 见到「键：值」整行不着色，而这一行的值恰恰是要着色的那一段。"""
+    out = {}
+    note = None
+    for i, line in enumerate(lines):
+        hit = DESC_LINE.match(line)
+        if hit:
+            out[i] = len(hit.group(1))
+        if line.strip() == NOTE_HEAD:
+            note = i
+    if note is not None:
+        out.update({i: 0 for i in range(note + 1, len(lines))})
+    return out
+
+
+def apply_builds():
+    """配装源稿的散文就地着色。**构建时自动跑**：投稿的人不写着色标记，逐条
+    手补是把 npm run build 变成一串「某某没着色」的报错；词表与那道闸门是同一份，
+    补得上的就该由脚本补。可重复跑——已经着色的下一趟自然跳过。
+
+    只碰散文那两段，其余一行不动。改的是源稿不是产出，git diff 即变更记录。"""
+    terms, _ = load()
+    names = sorted(terms, key=len, reverse=True)
+    total = 0
+    for path in build_pages():
+        with open(path, encoding='utf-8') as f:
+            lines = f.read().split('\n')
+        n = 0
+        for i, off in prose_spans(lines).items():
+            head, body = lines[i][:off], lines[i][off:]
+            for a, b, word in hits_in(body, terms, names):   # 倒序，前面的位置不动
+                body = body[:a] + '{%s|%s}' % (terms[word][0], body[a:b]) + body[b:]
+                n += 1
+            lines[i] = head + body
+        if n:
+            with open(path, 'w', encoding='utf-8') as f:
+                f.write('\n'.join(lines))
+            print('  %s —— 着色 %d 处' % (os.path.relpath(path, shell.ROOT), n))
+            total += n
+    print('配装源稿自动着色：%d 处' % total)
+
+
 def main() -> int:
     args = sys.argv[1:]
     if args[:1] == ['--distill'] and len(args) == 2:
         distill(os.path.expanduser(args[1]))
     elif args == ['--perks']:
         distill_perks()
+    elif args == ['--builds']:
+        apply_builds()
     elif args[:1] in (['--suggest'], ['--apply']) and len(args) <= 2:
         (suggest if args[0] == '--suggest' else apply)(
             args[1] if len(args) == 2 else None)
@@ -518,7 +588,8 @@ def main() -> int:
               '    python3 tools/items.py --distill <items-full.json>\n'
               '    python3 tools/items.py --perks\n'
               '    python3 tools/items.py --suggest [slug]\n'
-              '    python3 tools/items.py --apply   [slug]', file=sys.stderr)
+              '    python3 tools/items.py --apply   [slug]\n'
+              '    python3 tools/items.py --builds', file=sys.stderr)
         return 2
     return 0
 
