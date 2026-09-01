@@ -79,17 +79,45 @@ python3 tools/json2xlsx.py <抓取的.json>      # 还原成 xlsx，供核对与
 
 python3 tools/review.py                       # 本地审核台，审投稿、改源稿、按一次构建
 python3 tools/deploy.py                       # 增量部署站点，只发改过的文件
+python3 tools/deploy.py --dry-run             # 只列这次要发什么
 python3 tools/deploy.py --all                 # 整站重发
+python3 tools/deploy.py --all --prune         # 整站重发，并删掉远端多出来的文件
 tcb fn deploy api --force                     # 改完 functions/api/ 部署后端
 
 ruff check tools/*.py                         # 改完 Python 跑这两条
 pyright tools/*.py
 ```
 
-## 后端
+## 部署
 
-`tools/deploy.py` 发站点：改动清单由 `refs/deploy` 与 HEAD 现 diff，只把改过的
-文件复制进临时目录发一次 `tcb hosting deploy`，图标不重传。细节见 `README.md`。
+**站点由 `tools/deploy.py` 发，只发改过的文件。**站上 3859 个文件里 3735 个是图标，
+文件名即内容哈希、改内容必然换名，整目录重发就是把不会变的那批又传一遍。上次发到
+哪个 commit 记在 `.git` 的 `refs/deploy` 上，与 HEAD 一 diff 即得清单：改过的复制进
+临时目录，一次 `tcb hosting deploy <临时目录> destiny2-starside` 发上去；删掉的按
+diff 发 `tcb hosting delete`。全部成功才动 `refs/deploy`，中途失败重跑即可，不会漏。
+挂载路径与缓存规则见 `README.md`。
+
+**审核台那排按钮上的「部署」跑的就是它**，与「构建并提交」并排。建一批是一次决定，
+什么时候发是另一次，所以两枚分开；发了几个文件原样带回页面。
+
+**发之前工作区必须干净**：产出与源稿对不上时先按审核台那枚「构建并提交」。
+`refs/deploy` 记的是 commit，与一份没提交的产出对不上账。
+
+`--all` 整站重发，首次部署与换机器时用——`refs/deploy` 只活在本机的 `.git` 里，
+新 clone 上没有，脚本会拒发并叫你先跑一次。**`--all` 只补不删**，远端多出来的文件
+要 `--all --prune` 才清；prune 的范围限于挂载路径这一层，桶里别的东西不受影响。
+`--prune` 不许跟增量一起用，脚本挡着：增量那份清单不是完整的一版，带上 prune 会把
+没改的文件全删了。
+
+**别用控制台那颗「更新服务」**，除非要回滚。它按 GitHub 上的代码整站重发，本地
+发了还没 push 的改动会被它抹掉；反过来，站上发坏了要退回，按它就是最快的一条路。
+它走 docker runner，日志与版本记录都是那条线产出的——**脚本这条路直接写存储桶，
+控制台看不到日志，也没有版本可回滚**。
+
+**上传时不上传源稿与工具**：`tools/`、`references/`、`functions/`、`.md` 与几个
+配置文件由 `keep()` 一处挡掉。改这份名单就改 `keep()`，`--all` 与增量共用它。
+
+## 后端
 
 站点只有一个后端：`functions/api/`，一支 Node 云函数挂在 CloudBase 的 HTTP 访问
 服务上（`https://<envId>.service.tcloudbase.com/api`），管三件事——访问计数、配装
