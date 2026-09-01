@@ -33,6 +33,7 @@ builds/<赛季号>/<slug>/index.html 还不在。
 没有 JS：全部是表单 POST + 302。库里那几条走后端那支云函数的审核动作，凭据在 .env.local 的 ADMIN_TOKEN。
 """
 
+import datetime
 import html
 import http.server
 import importlib.util
@@ -134,6 +135,16 @@ def src_of(season, slug):
     if season not in seasons() or not SLUG.match(slug or ''):
         return None
     return os.path.join(SRC_DIR, season, slug + '.md')
+
+
+def when(at):
+    """库里存的是 ISO 串（2026-09-01T08:51:42.018Z）。审的人要的是本地时刻，
+    秒与毫秒读不出信息，时区不换算会差八小时。认不出的原样返回。"""
+    try:
+        t = datetime.datetime.fromisoformat(at.replace('Z', '+00:00')).astimezone()
+    except ValueError:
+        return at
+    return '%d.%d.%d %02d:%02d' % (t.year, t.month, t.day, t.hour, t.minute)
 
 
 def default_slug(md, season):
@@ -273,18 +284,28 @@ textarea.src { display: block; width: 100%; box-sizing: border-box; margin: 0 0 
                padding: 16px; color: var(--bone); font: 12.5px/1.8 var(--font-mono, ui-monospace),
                Menlo, monospace; background: var(--ink-lift); border: 1px solid var(--hair);
                resize: vertical }
+/* 一排三段：左边这一条的状态，中间这一条的动作，右边整站的两枚。
+   全站那两枚与前面隔一条竖线——不隔时八个控件读作一堆，按错的是「构建」。 */
 .acts { display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
         margin: 0 0 28px; padding: 0 0 20px; border-bottom: 1px solid var(--hair) }
 .acts .state { margin-right: auto; color: var(--bone-dim); font-size: 12.5px }
 .acts form { display: contents }
 .acts a.chip { text-decoration: none }
+.acts .buildbar { margin-left: 4px; padding-left: 16px; border-left: 1px solid var(--hair) }
+/* 输入框不留浏览器默认那只白盒：一排暗底描边里它最抢眼，而它不是主角。 */
+.acts input, .acts select { padding: 5px 10px; color: var(--bone); font: inherit;
+                            font-size: 12.5px; background: var(--ink-lift);
+                            border: 1px solid var(--hair-lit) }
+.acts input:focus, .acts select:focus { border-color: var(--accent); outline: none }
+.acts input[name="slug"] { font-family: ui-monospace, Menlo, monospace }
 details.srcbox { margin: 40px 0 0; padding-top: 24px; border-top: 1px solid var(--hair) }
 details.srcbox summary { color: var(--bone-dim); font-family: var(--font-disp);
                          font-size: 12px; letter-spacing: .1em; cursor: pointer }
 details.srcbox textarea { margin-top: 16px }
 .acts .chip, .buildbar .chip { padding: 5px 12px; border: 1px solid var(--hair-lit) }
 .acts .chip:hover, .buildbar .chip:hover { border-color: var(--accent) }
-.chip.ok { color: var(--c-strand); border-color: var(--c-strand) }
+/* 主动作实心一点：一排等宽描边里，先按哪一枚要看得出来。 */
+.chip.ok { color: var(--c-strand); border-color: var(--c-strand); background: var(--tint-2) }
 .chip.no { color: var(--c-solar); border-color: var(--c-solar) }
 .buildbar { display: flex; gap: 10px; align-items: center }
 .gate { margin: 0 0 24px; padding: 16px 20px; border: 1px solid var(--c-solar) }
@@ -365,7 +386,7 @@ def listing():
           '<h2 class="sect-label">待审 %d</h2>' % len(todo)]
     o.append('<ul class="entries">' if todo else '<p class="page-note">队列是空的。</p>')
     for d in todo:
-        o.append(card('/item?id=' + d['_id'], '待审', d['md'], '投于 ' + d.get('at', '')))
+        o.append(card('/item?id=' + d['_id'], '待审', d['md'], '投于 ' + when(d.get('at', ''))))
     o += (['</ul>'] if todo else []) + ['</section>', '']
 
     o += ['<section class="block">',
@@ -414,7 +435,7 @@ def editor(name, note, md, hidden, primary, second=None, third=None,
                  % ''.join('<option value="%s">%s</option>' % (esc(x), esc(x))
                            for x in seasons()))
     if 'slug' in fields:
-        o.append('<input name="slug" form="edit" size="30" required '
+        o.append('<input name="slug" form="edit" size="22" required '
                  'pattern="[a-zA-Z0-9][a-zA-Z0-9-]*" value="%s" '
                  'placeholder="拉丁 slug，如 prismatic-lightsaber">'
                  % esc(slug or default_slug(md, season or default_season())))
@@ -450,7 +471,7 @@ def item(q):
         if not d:
             return fail('库里没有这条投稿')
         if d['ok'] == 0:
-            return editor(title_of(d['md']), '待审，投于 ' + d.get('at', ''), d['md'],
+            return editor(title_of(d['md']), '待审　投于 ' + when(d.get('at', '')), d['md'],
                           {'id': d['_id']}, ('/approve', '通过'), ('/reject', '驳回'),
                           fields=('season', 'slug'), edit_href='/edit?id=' + d['_id'])
         return editor(title_of(d['md']),
@@ -512,8 +533,11 @@ EDIT_JS = """
 .rv-bar .chip { padding: 5px 12px; border: 1px solid var(--hair-lit) }
 .rv-bar .chip:hover { border-color: var(--accent) }
 .rv-bar .go { color: var(--c-strand); border-color: var(--c-strand) }
-.rv-bar input, .rv-bar select { padding: 5px 10px; color: var(--bone);
-                                background: var(--ink-lift); border: 1px solid var(--hair-lit) }
+.rv-bar input, .rv-bar select { padding: 5px 10px; color: var(--bone); font: inherit;
+                                font-size: 12.5px; background: var(--ink-lift);
+                                border: 1px solid var(--hair-lit) }
+.rv-bar input:focus, .rv-bar select:focus { border-color: var(--accent); outline: none }
+.rv-bar input[name="slug"] { font-family: ui-monospace, Menlo, monospace }
 .rv-bar .warn { color: var(--c-solar); font-size: 12.5px }
 </style>
 <script>
@@ -605,7 +629,7 @@ def edit(q, subs=None):
         if d['ok'] == 0:
             cfg = {'action': '/approve', 'label': '通过', 'hidden': {'id': d['_id']},
                    'fields': ('season', 'slug'),
-                   'state': '待审，投于 ' + d.get('at', '')}
+                   'state': '待审　投于 ' + when(d.get('at', ''))}
         else:
             cfg = {'action': '/save-sub', 'label': '保存', 'hidden': {'id': d['_id']},
                    'fields': (),
@@ -632,8 +656,10 @@ def edit(q, subs=None):
         fields += ('<select name=\\"season\\" data-into>%s</select>'
                    % ''.join('<option>%s</option>' % x for x in seasons()))
     if 'slug' in cfg['fields']:
-        fields += ('<input name=\\"slug\\" data-into size=\\"26\\" '
-                   'placeholder=\\"\u62c9\u4e01 slug\\">')
+        # 与详情页同一条：这一格是必填，审的人多数时候不想在这里停下来想名字。
+        fields += ('<input name=\\"slug\\" data-into size=\\"22\\" value=\\"%s\\" '
+                   'placeholder=\\"\u62c9\u4e01 slug\\">'
+                   % default_slug(md, default_season()))
 
     inject = EDIT_JS % {
         'md': json.dumps(md, ensure_ascii=False).replace('<', '\\u003c'),
