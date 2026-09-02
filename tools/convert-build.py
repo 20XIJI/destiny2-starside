@@ -1032,7 +1032,13 @@ def check(out, slug):
                     + re.findall(r'<h2 class="sect-label">注解</h2>(.*?)</section>',
                                  out, re.S))
     naked = text_of(re.sub(r'<span class="[^"]*">.*?</span>', '', prose, flags=re.S))
-    left = sorted({w for w in items.MECH if w not in items.LOOSE and w in naked})
+    # 判据走 items.hits_in，与 --builds 那一趟自动着色同一条：裸子串判断认不得
+    # GUARD，「治愈裂痕」里的「治愈」自动着色照 GUARD 跳过、这里照子串报错，
+    # 撞上的源稿怎么改都过不去。
+    names = sorted((w for w in items.MECH if w not in items.LOOSE),
+                   key=len, reverse=True)
+    left = sorted({w for _, _, w in items.hits_in(naked, items.MECH, names,
+                                                  keys=False)})
     if left:
         die('%s 的描述或注解里这些术语没着色：%s\n'
             '  写成 {token|词}，token 见 items.py 的 MECH' % (slug, '、'.join(left)))
