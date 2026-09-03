@@ -1,0 +1,126 @@
+/* 就地编辑的遮罩。只在编辑态下由 admin/edit.js 挂上，读者看不到这一层。
+
+   **不挂 --accent**：它是逐页覆盖的（护甲模组页是金、增益减益页是紫、配装页按
+   分支六种），遮罩是站点工具，得在三十个页面上长一个样。
+
+   三档涂色一律 17% alpha 的背景涂，判据按 design.md 的 ΔE：与纯底 16.5–20.9、
+   与交替行 16.3–20.9，压在上面的正文对比 12+、八档色阶那些文字最差 5.71，都在
+   AA 之上。12% 在交替行上看不清，22% 会把档位文字压到 4.95、余量太薄。
+   避开红与绿：红撞 --c-health 且与洋红 ΔE 6.9，绿与青 ΔE 11.3，两对都视作同色。
+   八档色阶染的是文字不是格子底，所以背景这条通道让得出来。 */
+:root {
+  --se-wait: #ffbb482b;   /* 待审 · 琥珀 */
+  --se-pass: #4fd6e02b;   /* 已通过，等着上站 · 青 */
+  --se-bad: #d9448c2b;    /* 冲突 · 洋红 */
+}
+
+/* 可改的格：**悬停才现虚线**，常驻会让整页糊成一张网格纸。 */
+.se-on .se-cell { cursor: text; }
+.se-on .se-cell:hover { outline: 1px dashed var(--hair-lit); outline-offset: -1px; }
+
+/* **必须 !important。**格子的底色由 .gen tbody tr[data-band="1"] > td 这类
+   (0,3,1) 的选择器给，单类的 .se-hit 只有 (0,1,0)，压不过——boss-hp 的 61 处合并行
+   全带 data-band，涂色会静默不显形。与 site.css 里 [hidden] 那条同一类问题：
+   遮罩要盖住的是各页各样的规则，不加就得逐页重述一遍。 */
+.se-hit { background: var(--se-wait) !important; }
+.se-hit.se-pass { background: var(--se-pass) !important; }
+
+/* 旧值：**保留它自己的着色，整体压暗**，不刷成中性灰。改一个 token 的着色
+   （{res|…} 写成 {amp|…}）时，两半都带色才比得出来；刷成灰就只剩文字可比了。
+   状态色仍只涂新值那一半，「这是旧的」由划掉与压暗承担——划掉沿用站内
+   ~~作废~~ → <s> 那条既有语言。**不写「原为」二字**：划掉已经说完了这件事。
+   谁改的走格子的 title，与状态一起；一页改了十处时，十个名字排在正文里是噪声。 */
+.se-was {
+  margin-left: .6em;
+  opacity: .55;
+  font-size: .86em;
+  font-weight: 400;
+}
+.se-was s { text-decoration-color: var(--bone-faint); }
+.se-was img { height: 1em; width: auto; }
+
+/* 改动者：一枚小标签，不写成正文。字族与字距跟站内别的小标签一路，扫读时跳得过去。 */
+.se-by {
+  float: right;
+  margin-left: .8em;
+  color: var(--bone-faint);
+  font-family: var(--font-disp);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+/* 表格里落成下一行：列宽被 table-layout: fixed 钉死，左右并排会把两半各压成
+   半列宽、内容折行。撑的是行高，列宽不动。 */
+td > .se-was,
+th > .se-was { display: block; margin: 2px 0 0; }
+
+.se-chip { margin-left: auto; }
+.se-desk { margin-left: 8px; text-decoration: none; }
+
+/* 就地那个小框 */
+.se-box {
+  position: absolute;
+  z-index: 50;
+  width: min(520px, calc(100vw - 16px));
+  padding: 10px 12px;
+  border: 1px solid var(--hair-lit);
+  background: var(--ink-lift);
+  box-shadow: 0 8px 28px #0008;
+}
+
+.se-where {
+  margin-bottom: 6px;
+  color: var(--bone-faint);
+  font-family: var(--font-disp);
+  font-size: 10.5px;
+  letter-spacing: .12em;
+}
+
+.se-box textarea {
+  display: block;
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--hair);
+  background: var(--ink);
+  color: var(--bone-hi);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.7;
+  resize: vertical;
+}
+.se-box textarea:focus { outline: 2px solid var(--hair-lit); outline-offset: -1px; }
+
+/* 芯片用真的 site.css 类渲染——--c-orb 与 --c-stack 渲染色相同，靠名字分辨，
+   所以芯片上写的就是 token 名。 */
+.se-pal { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.se-pal button {
+  padding: 1px 6px;
+  border: 1px solid var(--hair);
+  background: var(--ink);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+.se-pal button:hover { border-color: var(--hair-lit); }
+
+.se-notes { margin: 6px 0 0; padding: 0; list-style: none; font-size: 11.5px; line-height: 1.6; }
+.se-notes li { color: var(--c-enemy); }
+.se-notes li.warn { color: var(--bone-faint); }
+
+.se-acts { display: flex; gap: 8px; margin-top: 10px; }
+
+/* 小框里的实时预览：与页面同一套着色类，所以写错一个 token 当场看得出来。 */
+.se-prev {
+  margin-top: 8px;
+  padding: 7px 9px;
+  border-left: 2px solid var(--hair-lit);
+  background: #ffffff05;
+  font-size: 13px;
+  line-height: 1.75;
+  word-break: break-word;
+}
+.se-prev img { height: 1.3em; width: auto; vertical-align: -.2em; }
+
+.se-acts .chip:disabled { opacity: .4; cursor: default; }

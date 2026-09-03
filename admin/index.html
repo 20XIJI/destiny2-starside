@@ -10,6 +10,10 @@
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../assets/site.css">
 <link rel="stylesheet" href="style.css">
+<!-- 有令牌就先把登录框藏起来。**必须在 <head> 里同步跑**：admin.js 是 defer，
+     等它执行完再藏，登录框已经画出来闪过一下了。认不出令牌或过期，由 admin.js
+     把这个类摘掉，登录框照常出现。 -->
+<script>try{if(localStorage.sa_at)document.documentElement.classList.add('signed')}catch(_){}</script>
 </head>
 <body>
 
@@ -22,9 +26,9 @@
 </nav>
 <div class="toolbar" id="tabs" hidden>
 <div class="tool-chips">
-<button type="button" class="chip" data-view="docs" aria-current="true">源稿</button>
-<button type="button" class="chip" data-view="queue">待审 <span id="n-queue"></span></button>
-<button type="button" class="chip" data-view="hist">改动记录</button>
+<button type="button" class="chip" data-view="review" aria-current="true">审核 <span id="n-doc"></span></button>
+<button type="button" class="chip" data-view="builds">配装 <span id="n-sub"></span></button>
+<button type="button" class="chip" data-view="hist">记录</button>
 <button type="button" class="chip" data-view="eds" hidden>编辑者</button>
 </div>
 </div>
@@ -60,6 +64,7 @@
 </main>
 
 <script src="terms.js" defer></script>
+<script src="pages.js" defer></script>
 <script src="admin.js" defer></script>
 </body>
 </html>

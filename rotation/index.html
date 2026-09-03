@@ -32,19 +32,19 @@
 <h1>轮换速查表</h1>
 </header>
 
-<main>
+<main data-src="docs/rotation" data-hash="93a18d67cdbea4ff8970a0bb964d683ee891c9d9">
 <section class="block" id="sec-1">
-<h2 class="sect-label">RAID&地牢轮换</h2>
+<h2 class="sect-label" data-b="7">RAID&地牢轮换</h2>
 <table class="gen" data-rota="2026.6.10 1:00">
 <thead>
-<tr>
+<tr data-b="4">
 <th scope="col">序号</th>
 <th scope="col">突袭</th>
 <th scope="col">地牢</th>
 </tr>
 </thead>
 <tbody>
-<tr><th scope="row">1</th><td>最后遗愿</td><td>破碎王座</td></tr>
+<tr data-b="2"><th scope="row">1</th><td>最后遗愿</td><td>破碎王座</td></tr>
 <tr><th scope="row">2</th><td>救赎花园</td><td>异端深渊</td></tr>
 <tr><th scope="row">3</th><td>深岩墓室</td><td>预言</td></tr>
 <tr><th scope="row">4</th><td>玻璃拱顶</td><td>贪婪之握</td></tr>
@@ -58,11 +58,11 @@
 </table>
 </section>
 <section class="block" id="sec-2">
-<h2 class="sect-label">扭曲星球轮换</h2>
-<p class="chain">欧洲无人区 → 幽梦之城 → 王座世界 → 月球 → 木卫二 → 涅索斯 → 发射基地 → 回到开头</p>
+<h2 class="sect-label" data-b="11">扭曲星球轮换</h2>
+<p data-b="2" class="chain">欧洲无人区 → 幽梦之城 → 王座世界 → 月球 → 木卫二 → 涅索斯 → 发射基地 → 回到开头</p>
 <table class="gen">
 <thead>
-<tr>
+<tr data-b="2">
 <th scope="col">时段</th>
 <th scope="col">周一</th>
 <th scope="col">周二</th>
@@ -74,7 +74,7 @@
 </tr>
 </thead>
 <tbody>
-<tr><th scope="row">00:00-01:00</th><td>欧洲无人区</td><td>月球</td><td>发射基地</td><td>王座世界</td><td>涅索斯</td><td>幽梦之城</td><td>木卫二</td></tr>
+<tr data-b="2"><th scope="row">00:00-01:00</th><td>欧洲无人区</td><td>月球</td><td>发射基地</td><td>王座世界</td><td>涅索斯</td><td>幽梦之城</td><td>木卫二</td></tr>
 <tr><th scope="row">01:00-02:00</th><td>幽梦之城</td><td>木卫二</td><td>欧洲无人区</td><td>月球</td><td>发射基地</td><td>王座世界</td><td>涅索斯</td></tr>
 <tr><th scope="row">02:00-03:00</th><td>王座世界</td><td>涅索斯</td><td>幽梦之城</td><td>木卫二</td><td>欧洲无人区</td><td>月球</td><td>发射基地</td></tr>
 <tr><th scope="row">03:00-04:00</th><td>月球</td><td>发射基地</td><td>王座世界</td><td>涅索斯</td><td>幽梦之城</td><td>木卫二</td><td>欧洲无人区</td></tr>
@@ -100,7 +100,7 @@
 <tr><th scope="row">23:00-24:00</th><td>王座世界</td><td>涅索斯</td><td>幽梦之城</td><td>木卫二</td><td>欧洲无人区</td><td>月球</td><td>发射基地</td></tr>
 </tbody>
 </table>
-<p>扭曲每小时换一个目的地，一周 168 个时段的顺序固定不变。表内当前时段一整行、今天一整列跟随本机时钟高亮，两条的交点即此刻所在，整点自动跳到下一格。</p>
+<p data-b="25">扭曲每小时换一个目的地，一周 168 个时段的顺序固定不变。表内当前时段一整行、今天一整列跟随本机时钟高亮，两条的交点即此刻所在，整点自动跳到下一格。</p>
 </section>
 </main>
 
@@ -111,5 +111,6 @@
 </footer>
 <script type="speculationrules">{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}</script>
 <script>(function(){var d=new Date(Date.now()+288e5).toISOString().slice(0,10);var o=document.getElementById("sv"),f=1;try{f=localStorage.getItem("svd")===d?0:1;if(f)localStorage.setItem("svd",d)}catch(_){}if(!f){if(!o)return;try{var c=localStorage.getItem("svt");if(c){o.textContent=c;return}}catch(_){}}var r=f?fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({a:"hit",s:o?1:0})}):fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api?a=stats");r.then(function(x){return x.json()}).then(function(s){if(o){var t="今日 "+s.today+" 位访客 · 累计 "+s.total;o.textContent=t;try{localStorage.setItem("svt",t)}catch(_){}}},function(x){if(o)o.textContent="访问统计取不到："+x})})()</script>
+<script>try{if(localStorage.sa_at){var l=document.querySelector('link[href$="assets/site.css"]');if(l)import(l.href.replace("assets/site.css","admin/edit.js"))}}catch(_){}</script>
 </body>
 </html>

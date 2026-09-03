@@ -97,6 +97,52 @@ def loading_attr(index, eager):
     return 'fetchpriority="high"' if index < eager else 'loading="lazy"'
 
 
+def bmark(a, b=None):
+    r"""块在源稿里的行号（0 起），落成 data-b。在线编辑台据此反查源稿。
+
+    段内换行的段落跨几行，写成 `12-14` 的区间。**属性不进逐字保真比对**——
+    check() 比的是剥掉标签之后的文本，与列组 chip 取 `data-g` 是同一条。
+    """
+    return ' data-b="%d"' % a if b is None or b == a else ' data-b="%d-%d"' % (a, b)
+
+
+def src_hash(md):
+    """源稿正文的 sha1。落成 <main data-hash>，与库里 docs 那一条的 hash 同一个算法。
+
+    就地编辑据此一步判断「这一页是不是比库里旧」：两者相等就没有待上站的改动，
+    一处都不必逐格比。**要在改写链接之前算**——库里存的是源稿原文。
+    """
+    return hashlib.sha1(md.encode()).hexdigest()
+
+
+BMARK = re.compile(r' data-b="(\d+)(?:-(\d+))?"')
+
+
+def delta_bmarks(html):
+    """把 data-b 的绝对行号改写成与上一处的差，落盘前走一遍。
+
+    文档顺序里行号单调递增，绝对值是一串互不相同的四位数，gzip 压不动；差值多在
+    个位数、大量重复。神器模组页因此从 +13% 降到 +2%（省 2.0 KB gzip），护甲套装
+    页从 +10.7% 降到 +2.1%。区间写成「差+跨度」。
+
+    解码在 admin/edit.js，按文档顺序逐个累加。**倒退即中止**：那说明产出的顺序
+    与源稿行号的顺序对不上了，解码会静默指错块，而页面上看不出来。
+    """
+    prev = [0]
+
+    def one(m):
+        a = int(m.group(1))
+        e = int(m.group(2) or a)
+        if a < prev[0]:
+            die('data-b 在产出里倒退了（%d 之后出现 %d）：'
+                '文档顺序必须与源稿行号同序，否则 edit.js 解不回来' % (prev[0], a))
+        out = ' data-b="%d%s"' % (a - prev[0], '' if e == a else '+%d' % (e - a))
+        prev[0] = e
+        return out
+
+    return BMARK.sub(one, html)
+
+
 def meta_line(keys):
     """「键：值」行的匹配式。键名固定，正文行不会被误认。
 
@@ -140,10 +186,28 @@ def img_size(data):
     die('只认得 PNG、JPEG 与 WebP，这个文件都不是')
 
 
+def blocks_at(chunk, base=0):
+    """空行分段，段内换行还原成 <br>，另带每段首行在源稿里的行号。
+
+    base 是 chunk 第一行的行号。行号供就地编辑反查源稿，与 bmark() 配套。
+    """
+    out, lines, i = [], chunk.split('\n'), 0
+    while i < len(lines):
+        if not lines[i].strip():
+            i += 1
+            continue
+        j = i
+        while j < len(lines) and lines[j].strip():
+            j += 1
+        out.append((base + i, base + j - 1,
+                    '<br>'.join('\n'.join(lines[i:j]).strip().split('\n'))))
+        i = j
+    return out
+
+
 def blocks_of(chunk):
-    """空行分段，段内换行还原成 <br>。"""
-    return ['<br>'.join(b.strip().split('\n'))
-            for b in re.split(r'\n\s*\n', chunk.strip()) if b.strip()]
+    """空行分段，段内换行还原成 <br>。行号不要时用这一个。"""
+    return [html for _, _, html in blocks_at(chunk)]
 
 
 def inline(md, rich=False):

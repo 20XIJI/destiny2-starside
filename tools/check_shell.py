@@ -33,7 +33,7 @@ def invariants(home=False):
     """
     head = shell.head('__T__', '__D__')
     frags = [ln for ln in head.split('\n') if ln.startswith(HEAD_KEEP)]
-    foot = [shell.CREDIT, shell.LEGAL, shell.SPEC, shell.HIT]
+    foot = [shell.CREDIT, shell.LEGAL, shell.SPEC, shell.HIT, shell.EDIT]
     if home:
         return frags + foot
     # 站头的包裹结构：各资料页要用同一套骨架，只查 MARK 查不出包裹漂移

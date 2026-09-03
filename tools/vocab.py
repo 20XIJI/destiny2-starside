@@ -39,10 +39,12 @@ TOKENS = dict({'elements/%s' % e: t for e, t in ELEMENTS.items()},
 
 SECTION = re.compile(r'<section class="(?:block|artifact|cat)" id="([^"]+)"')
 LABEL = re.compile(r'<h2[^>]*>(.*?)</h2>', re.S)
-ROW = re.compile(r'<tr>\s*<th scope="row">(.*?)</th>(.*?)</tr>', re.S)
-LANE = re.compile(r'<tr class="lane">\s*<th[^>]*>(.*?)</th>', re.S)
+# 行标签一律写成 <tr[^>]*>：产出上的 <tr> 带着 data-b（就地编辑的定位）与
+# data-band（合并块的交替位），裸标签匹配不上。与下面 ITEM 那一条同一种写法。
+ROW = re.compile(r'<tr[^>]*>\s*<th scope="row">(.*?)</th>(.*?)</tr>', re.S)
+LANE = re.compile(r'<tr[^>]*class="lane"[^>]*>\s*<th[^>]*>(.*?)</th>', re.S)
 MOD = re.compile(r'<article class="mod" data-tier="(\d)"[^>]*>\s*'
-                 r'<img[^>]*src="([^"]+)"[^>]*>\s*<h4>(.*?)</h4>\s*'
+                 r'<img[^>]*src="([^"]+)"[^>]*>\s*<h4[^>]*>(.*?)</h4>\s*'
                  r'<div class="mod-desc">(.*?)</div>', re.S)
 SET = re.compile(r'<article class="set" id="([^"]+)">(.*?)</article>', re.S)
 BONUS = re.compile(r'<img class="bonus-icon" src="([^"]+)"[^>]*>'
@@ -80,6 +82,9 @@ def searchable(page, html=None):
     return SEARCHABLE[page]
 
 
+BMARK = re.compile(r' data-b="[^"]*"')
+
+
 def entry(page, anchor, kind, name, icon, sub='', q='', pos='', desc=''):
     # pos 只有神器模组给：'行,档' —— 那一页每件神器恰好七行、每行一/二/三级三枚，
     # 填表页的选择器照这个位置摆成 7 列 × 3 行，与神器盘同形，挑起来不用数。
@@ -89,7 +94,9 @@ def entry(page, anchor, kind, name, icon, sub='', q='', pos='', desc=''):
             'token': TOKENS[page], 'sub': sub, 'q': '' if q == '—' else (q or name),
             # desc 是这一条在站内那一页上的说明，原样带着着色 span：填表页悬停时
             # 摆出来，选装备不必另开一页去查。它不进 vocab.js，另出一份 desc.js。
-            'desc': desc}
+            # **剥掉 data-b**：那是就地编辑反查源稿用的行号，在悬停面板里没有用处，
+            # 留着只会让 desc.js 白涨一截。一处剥干净，四个捕获点共用。
+            'desc': BMARK.sub('', desc)}
 
 
 def tds(body):
@@ -178,7 +185,8 @@ def scan_page(page):
             # 落地是一张空页。这一类只滚到分节。
             out.append(entry(page, anchor, '分节', label, head_img.group(1), q='—'))
         lane = ''
-        for m in re.finditer(r'<tr class="lane">.*?</tr>|<tr>\s*<th scope="row">.*?</tr>',
+        for m in re.finditer(r'<tr[^>]*class="lane"[^>]*>.*?</tr>'
+                             r'|<tr[^>]*>\s*<th scope="row">.*?</tr>',
                              body, re.S):
             hit = LANE.match(m.group(0))
             if hit:

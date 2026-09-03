@@ -25,7 +25,8 @@ import re
 import check_terms
 import items
 import shell
-from markup import die, eq, loading_attr, no_nested_span, plain, text_of
+from markup import (bmark, die, eq, loading_attr, no_nested_span, plain,
+                    src_hash, text_of)
 
 SRC = os.path.join(shell.ROOT, 'references', 'armor-sets.md')
 OUT_DIR = os.path.join(shell.ROOT, 'armor-sets')
@@ -87,7 +88,7 @@ class Bonus:
     def __init__(self, piece: str, name: str, blocks: list) -> None:
         self.piece = piece  # '2' | '4'
         self.name = name
-        self.blocks = blocks  # [('p'|'ul', 内容)]
+        self.blocks = blocks  # [('p'|'ul', [(源稿行号, 文字), …])]
         self.icon: str | None = None
 
 
@@ -105,15 +106,17 @@ class Category:
         self.sets: list[Set] = []
 
 
-def parse_blocks(raw: str) -> list:
-    """效果正文 → 段落与列表。
+def parse_blocks(raw: str, base: int = 0) -> list:
+    """效果正文 → 段落与列表，每一行带上它在源稿里的行号。
 
     源稿里同一段内的每一行都以两个空格结尾（硬换行），跨段靠空行。
     这一点由 check() 复核，不在这里静默兼容别的写法。
+
+    行号供就地编辑反查源稿：段落按整段给（几行合成一个 <p>），列表项一行一条。
     """
     blocks: list = []
-    para: list[str] = []
-    items: list[str] = []
+    para: list = []
+    items: list = []
 
     def flush() -> None:
         nonlocal para, items
@@ -124,18 +127,18 @@ def parse_blocks(raw: str) -> list:
             blocks.append(('ul', items))
             items = []
 
-    for line in raw.split('\n'):
+    for n, line in enumerate(raw.split('\n')):
         line = line.rstrip()
         if not line.strip():
             flush()
         elif line.startswith('- '):
             if para:
                 flush()
-            items.append(line[2:].strip())
+            items.append((base + n, line[2:].strip()))
         else:
             if items:
                 flush()
-            para.append(line.strip())
+            para.append((base + n, line.strip()))
     flush()
     return blocks
 
@@ -143,9 +146,13 @@ def parse_blocks(raw: str) -> list:
 def parse(md: str) -> list[Category]:
     cats: list[Category] = []
     body = md[md.index('## '):]
+    # 行号一路带下去。这里是前瞻切分，一个字符都不删，行数天然守恒；
+    # body 从第一个 ## 那一行起，它的行号即前面的换行数。
+    at = md.count('\n', 0, md.index('## '))
 
     for chunk in re.split(r'^(?=## |### |#### )', body, flags=re.M):
         head, _, rest = chunk.partition('\n')
+        here, at = at, at + chunk.count('\n')
         if head.startswith('## '):
             cats.append(Category(head[3:].strip()))
         elif head.startswith('### '):
@@ -166,7 +173,7 @@ def parse(md: str) -> list[Category]:
                 die('效果 %s 出现在任何套装之前' % head)
             raw = re.split(r'^---$', rest, flags=re.M)[0]
             cats[-1].sets[-1].bonuses.append(
-                Bonus(m.group(1), m.group(2).strip(), parse_blocks(raw)))
+                Bonus(m.group(1), m.group(2).strip(), parse_blocks(raw, here + 1)))
     return cats
 
 
@@ -259,17 +266,19 @@ def render_blocks(blocks: list) -> str:
     out: list[str] = []
     for kind, content in blocks:
         if kind == 'p':
-            text = '<br>'.join(inline(line) for line in content)
+            text = '<br>'.join(inline(line) for _, line in content)
             # 译注与作者注整段降一级，读作限定语
-            cls = ' class="note"' if content[0].startswith(('译注：', '注：')) else ''
-            out.append('<p%s>%s</p>' % (cls, text))
+            cls = ' class="note"' if content[0][1].startswith(('译注：', '注：')) else ''
+            out.append('<p%s%s>%s</p>'
+                       % (cls, bmark(content[0][0], content[-1][0]), text))
         else:
-            items = ''.join('<li>%s</li>' % inline(i) for i in content)
+            # 列表项一行一条，逐条戳——整段一个标记会让改一条要连着改整段
+            items = ''.join('<li%s>%s</li>' % (bmark(n), inline(i)) for n, i in content)
             out.append('<ul>%s</ul>' % items)
     return ''.join(out)
 
 
-def render(cats: list[Category]) -> str:
+def render(cats: list[Category], digest: str = '') -> str:
     # 这一页其余部分用 ''.join 拼，外壳几块之间自己补换行
     parts = ['\n'.join([
         shell.head(html.escape(PAGE_TITLE), html.escape(PAGE_DESC), app_js=True),
@@ -279,7 +288,8 @@ def render(cats: list[Category]) -> str:
             'data-chip-label': '分类'}),
         shell.page_head('护甲套装效果',
                         '同一套护甲穿满 2 件与 4 件各给一条效果，两条同时生效。'),
-        '<main>\n'])]
+        # data-src 是这一篇在库里的 _id，就地编辑靠它找回源稿
+        '<main data-src="armor-sets" data-hash="%s">\n' % digest])]
     n_img = 0
     for ci, cat in enumerate(cats, 1):
         parts.append('<section class="cat" id="cat-%d">\n' % ci)
@@ -382,7 +392,8 @@ def check(cats: list[Category], out: str) -> None:
     bodies = re.findall(r'<div class="bonus-body">(.*?)</div>\n', out, re.S)
     eq('产出里的正文块数', len(bodies), N_BONUSES)
     for b, got in zip(bonuses, bodies):
-        want = plain('\n'.join('\n'.join(content) for _, content in b.blocks), marks)
+        want = plain('\n'.join('\n'.join(t for _, t in content)
+                               for _, content in b.blocks), marks)
         mine = plain(text_of(got), marks)
         if mine != want:
             die('正文与源稿不一致（%s 件｜%s）：\n  源稿 %r\n  产出 %r'
@@ -499,7 +510,7 @@ def main() -> None:
     else:
         attach_icons(cats)
 
-    out = render(cats)
+    out = render(cats, src_hash(md))
     check(cats, out)
 
     os.makedirs(OUT_DIR, exist_ok=True)

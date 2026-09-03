@@ -30,12 +30,12 @@
 <h1>配色总览</h1>
 </header>
 
-<main>
+<main data-src="docs/palette" data-hash="bf1ca2064ba5d7c54e2a8553b8fe1431e81c5756">
 <section class="block" id="sec-1">
-<h2 class="sect-label">渲染色</h2>
+<h2 class="sect-label" data-b="6">渲染色</h2>
 <table class="gen">
 <thead>
-<tr>
+<tr data-b="2">
 <th scope="col">变量</th>
 <th scope="col">色号</th>
 <th scope="col">色样</th>
@@ -45,7 +45,7 @@
 <tbody>
 </tbody>
 <tbody>
-<tr class="lane"><th colspan="4" scope="colgroup">七个元素</th></tr>
+<tr class="lane" data-b="2"><th colspan="4" scope="colgroup">七个元素</th></tr>
 <tr><th scope="row">--c-arc</th><td>#5fd8e0</td><td class="c-arc">Aa 汉字 123</td><td>电弧元素与其减益</td></tr>
 <tr><th scope="row">--c-stasis</th><td>#7fb4ff</td><td class="c-stasis">Aa 汉字 123</td><td>冰影元素与其减益</td></tr>
 <tr><th scope="row">--c-void</th><td>#c08cff</td><td class="c-void">Aa 汉字 123</td><td>虚空元素与其减益</td></tr>
@@ -83,17 +83,17 @@
 </table>
 </section>
 <section class="block" id="sec-2">
-<h2 class="sect-label">语义</h2>
+<h2 class="sect-label" data-b="31">语义</h2>
 <table class="gen">
 <thead>
-<tr>
+<tr data-b="2">
 <th scope="col">标记</th>
 <th scope="col">渲染色</th>
 <th scope="col">用途</th>
 </tr>
 </thead>
 <tbody>
-<tr><th scope="row" class="el-arc">el-arc</th><td>--c-arc</td><td>电弧元素</td></tr>
+<tr data-b="2"><th scope="row" class="el-arc">el-arc</th><td>--c-arc</td><td>电弧元素</td></tr>
 <tr><th scope="row" class="deb-arc">deb-arc</th><td>--c-arc</td><td>电弧减益：震颤、致盲</td></tr>
 <tr><th scope="row" class="el-stasis">el-stasis</th><td>--c-stasis</td><td>冰影元素</td></tr>
 <tr><th scope="row" class="deb-stasis">deb-stasis</th><td>--c-stasis</td><td>冰影减益：冻结、碎裂</td></tr>
@@ -129,10 +129,10 @@
 </table>
 </section>
 <section class="block" id="sec-3">
-<h2 class="sect-label">页面专属</h2>
+<h2 class="sect-label" data-b="33">页面专属</h2>
 <table class="gen">
 <thead>
-<tr>
+<tr data-b="2">
 <th scope="col">标记</th>
 <th scope="col">渲染色</th>
 <th scope="col">页面</th>
@@ -140,7 +140,7 @@
 </tr>
 </thead>
 <tbody>
-<tr><th scope="row" class="cost">cost</th><td>--c-charge</td><td>armor-mods</td><td>模组的充能耗费</td></tr>
+<tr data-b="2"><th scope="row" class="cost">cost</th><td>--c-charge</td><td>armor-mods</td><td>模组的充能耗费</td></tr>
 <tr><th scope="row" class="perk">perk</th><td>--c-exotic</td><td>exotic-weapon、exotic-armor</td><td>异域装备的专属 Perk 名</td></tr>
 <tr><th scope="row" class="amp">amp</th><td>--c-void</td><td>首领生命值页</td><td>易伤列</td></tr>
 <tr><th scope="row" class="res">res</th><td>--c-buff</td><td>首领生命值页</td><td>减伤列</td></tr>
@@ -154,18 +154,18 @@
 </table>
 </section>
 <section class="block" id="sec-4">
-<h2 class="sect-label">同色待裁定</h2>
-<p>一支色号被几个族共用的地方。有意共用的写明理由，剩下的按同屏那一列排先后。<br>色号定完这一节即删。</p>
+<h2 class="sect-label" data-b="11">同色待裁定</h2>
+<p data-b="2+1">一支色号被几个族共用的地方。有意共用的写明理由，剩下的按同屏那一列排先后。<br>色号定完这一节即删。</p>
 <table class="gen">
 <thead>
-<tr>
+<tr data-b="2">
 <th scope="col">色号</th>
 <th scope="col">共用的族</th>
 <th scope="col">状态</th>
 </tr>
 </thead>
 <tbody>
-<tr><th scope="row">#dbc46a</th><td>能量球、层数</td><td>有意：同为资源与层数</td></tr>
+<tr data-b="2"><th scope="row">#dbc46a</th><td>能量球、层数</td><td>有意：同为资源与层数</td></tr>
 <tr><th scope="row">#2f9fd6</th><td>护甲充能与耗费、增益、技能能量与护盾、减伤列</td><td>有意：同为增益一侧</td></tr>
 <tr><th scope="row">#a2848c</th><td>待测、减益</td><td>有意：同为限定语</td></tr>
 <tr><th scope="row">#ffb35c</th><td>烈日元素、橙血档</td><td>待裁定：exotic-armor 页烈日×163 与橙血×54 同屏</td></tr>
@@ -181,5 +181,6 @@
 </footer>
 <script type="speculationrules">{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}</script>
 <script>(function(){var d=new Date(Date.now()+288e5).toISOString().slice(0,10);var o=document.getElementById("sv"),f=1;try{f=localStorage.getItem("svd")===d?0:1;if(f)localStorage.setItem("svd",d)}catch(_){}if(!f){if(!o)return;try{var c=localStorage.getItem("svt");if(c){o.textContent=c;return}}catch(_){}}var r=f?fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({a:"hit",s:o?1:0})}):fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api?a=stats");r.then(function(x){return x.json()}).then(function(s){if(o){var t="今日 "+s.today+" 位访客 · 累计 "+s.total;o.textContent=t;try{localStorage.setItem("svt",t)}catch(_){}}},function(x){if(o)o.textContent="访问统计取不到："+x})})()</script>
+<script>try{if(localStorage.sa_at){var l=document.querySelector('link[href$="assets/site.css"]');if(l)import(l.href.replace("assets/site.css","admin/edit.js"))}}catch(_){}</script>
 </body>
 </html>

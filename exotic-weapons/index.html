@@ -30,13 +30,13 @@
 <h1>刷取清单-异域武器</h1>
 </header>
 
-<main>
+<main data-src="docs/exotic-weapons" data-hash="cba31fbf3692f0a79a77097bcebfe1672d93d492">
 <section class="block" id="sec-1">
-<h2 class="sect-label">评级</h2>
-<p>配套视频：<a href="https://www.bilibili.com/video/BV1na8u6MEZ9" target="_blank" rel="noopener">【命运2】购物清单 金枪部分杂谈</a></p>
+<h2 class="sect-label" data-b="8">评级</h2>
+<p data-b="2">配套视频：<a href="https://www.bilibili.com/video/BV1na8u6MEZ9" target="_blank" rel="noopener">【命运2】购物清单 金枪部分杂谈</a></p>
 <table class="gen">
 <thead>
-<tr>
+<tr data-b="2">
 <th scope="col">武器</th>
 <th scope="col">图标</th>
 <th scope="col">评级</th>
@@ -49,7 +49,7 @@
 </tr>
 </thead>
 <tbody>
-<tr><th scope="row">牵引器火炮</th><td class="ico"><img src="icons/aa357661db.webp" alt="" width="69" height="69" fetchpriority="high"></td><td>输出工具枪</td><td></td><td></td><td class="champ"><img src="icons/8b37bb6db2.webp" alt="" width="42" height="42" fetchpriority="high"></td><td>无法替代的最泛用 30% 易伤武器，除远程以外的任何输出场景基本都需要一个推推位，“科学方法”有加移速效果，是最适合执行输出过程中机制的角色，可用<span class="perk">枯萎凝视</span>续易伤</td><td>过机制时面对一些难以处理的<span class="bar-yellow">初级首领</span>可以推上易伤<span class="deb-void">压制</span>协助团队处理</td><td></td></tr>
+<tr data-b="2"><th scope="row">牵引器火炮</th><td class="ico"><img src="icons/aa357661db.webp" alt="" width="69" height="69" fetchpriority="high"></td><td>输出工具枪</td><td></td><td></td><td class="champ"><img src="icons/8b37bb6db2.webp" alt="" width="42" height="42" fetchpriority="high"></td><td>无法替代的最泛用 30% 易伤武器，除远程以外的任何输出场景基本都需要一个推推位，“科学方法”有加移速效果，是最适合执行输出过程中机制的角色，可用<span class="perk">枯萎凝视</span>续易伤</td><td>过机制时面对一些难以处理的<span class="bar-yellow">初级首领</span>可以推上易伤<span class="deb-void">压制</span>协助团队处理</td><td></td></tr>
 <tr><th scope="row">真相</th><td class="ico"><img src="icons/dfbdfcbffb.webp" alt="" width="69" height="69" fetchpriority="high"></td><td>输出：T0<br>高难：T0.5</td><td>119636</td><td>8973</td><td class="champ"><img src="icons/b7c4048b87.webp" alt="" width="42" height="42" fetchpriority="high"></td><td><span class="exotic">真相</span>一键删除了命运 80% 的输出场景，除了超长轴、精准武器输出场景和类似锁具的特殊<span class="bar-yellow">首领</span>之外，都可以使用他，注意在输出前需要提前叠层</td><td>捡一盒强化重弹 4 发，而其他筒子都是 3 发，自身 Perk 也能在连续命中 3 发后回复一发，最好的弹药经济筒子，注意把控距离不要炸死<span class="enemy">自己</span></td><td></td></tr>
 <tr><th scope="row">赫沃斯托夫 7G-0X</th><td class="ico"><img src="icons/d005b35c7f.webp" alt="" width="69" height="69" fetchpriority="high"></td><td>清怪：T0<br>高难：T0</td><td></td><td></td><td class="champ"><img src="icons/a9911a3dfe.webp" alt="" width="42" height="42" fetchpriority="high"></td><td>跳弹清<span class="bar-red">红血</span>很快，与猎人日志相性很高攒大招效率高，羸弱边打最佳工具 perk</td><td>同上，并且能反 50 光屏障</td><td></td></tr>
 <tr><th scope="row">单人合唱</th><td class="ico"><img src="icons/b1afd3af3e.webp" alt="" width="69" height="69" loading="lazy"></td><td>清怪：T0<br>输出：T1.5<br>高难：T3</td><td>76676</td><td>4320</td><td class="champ"><img src="icons/8b37bb6db2.webp" alt="" width="42" height="42" loading="lazy"></td><td>NPA 量身定制武器，建议选择猛攻，右键清小怪左键清<span class="bar-orange">橙血</span>最好的机制枪，弹药生成 15 可能需要带<span class="el-void">虚空</span>弹药生成补足</td><td>腰射绿弹补输出 DPS 很不错，无需精准没有距离限制</td><td>用左键没有弹药经济，用右键没有伤害，杀<span class="bar-red">红血</span>还可以</td></tr>
@@ -146,5 +146,6 @@
 </footer>
 <script type="speculationrules">{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}</script>
 <script>(function(){var d=new Date(Date.now()+288e5).toISOString().slice(0,10);var o=document.getElementById("sv"),f=1;try{f=localStorage.getItem("svd")===d?0:1;if(f)localStorage.setItem("svd",d)}catch(_){}if(!f){if(!o)return;try{var c=localStorage.getItem("svt");if(c){o.textContent=c;return}}catch(_){}}var r=f?fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({a:"hit",s:o?1:0})}):fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api?a=stats");r.then(function(x){return x.json()}).then(function(s){if(o){var t="今日 "+s.today+" 位访客 · 累计 "+s.total;o.textContent=t;try{localStorage.setItem("svt",t)}catch(_){}}},function(x){if(o)o.textContent="访问统计取不到："+x})})()</script>
+<script>try{if(localStorage.sa_at){var l=document.querySelector('link[href$="assets/site.css"]');if(l)import(l.href.replace("assets/site.css","admin/edit.js"))}}catch(_){}</script>
 </body>
 </html>

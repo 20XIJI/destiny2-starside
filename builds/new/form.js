@@ -987,14 +987,31 @@
 
   /* 投稿：把配装文本发进后端的待审队列，审核在线上做（/admin/）。
 
-     **同一套配装重投会改写待审的那一条，不堆第二份**——判据是职业、武器、护甲、
-     神器四段一致，由后端算，前端不必知道。所以这枚按钮可以随便按第二次。
+     **同一套配装重投会改写待审的那一条，不堆第二份**——判据是名字、推荐人、职业、
+     属性与核心五项一致，由后端算，前端不必知道。所以这枚按钮可以随便按第二次；
+     那一套要是已经上站，这一次就当成更新，审的人同意后覆盖过去。
      发不出去就把原因写在提示位上，不留一个「投稿中…」挂着。 */
+
+  /* 必需的只有这五项。**缺了不许投**——半张稿子进了队列，审的人既补不出推荐人
+     也猜不到核心，只能打回去，来回一趟。装备与描述可以后补，这五项不行。
+     键名与后端算指纹的那五项是同一组（functions/api/index.js 的 SAME）。 */
+  var NEED = [['名字', /^#[ \t]*(\S.*)$/m], ['推荐人', /^推荐人：[ \t]*(\S.*)$/m],
+              ['职业', /^职业：[ \t]*(\S.*)$/m], ['属性', /^分支：[ \t]*(\S.*)$/m],
+              ['核心', /^核心：[ \t]*(\S.*)$/m]];
+
+  function lacking (md) {
+    return NEED.filter(function (n) {
+      var m = n[1].exec(md);
+      return !m || !m[1].trim() || m[1].trim() === '配装名';
+    }).map(function (n) { return n[0]; });
+  }
+
   var send = document.getElementById('send');
   send.addEventListener('click', function () {
     var tip = document.getElementById('copy-tip');
     var md = out.value;
-    if (!/^# \S/.test(md)) { tip.textContent = '先写配装名'; return; }
+    var lack = lacking(md);
+    if (lack.length) { tip.textContent = '还缺 ' + lack.join('、') + '，补齐再投'; return; }
     send.disabled = true;
     tip.textContent = '投稿中…';
     fetch(send.dataset.api, {

@@ -14,7 +14,8 @@ import re
 import sys
 
 import shell
-from markup import Icons, blocks_of, die, eq, inline, meta_line, must, text_of
+from markup import (Icons, blocks_at, bmark, die, eq, inline, meta_line, must,
+                    src_hash, text_of)
 
 SRC = os.path.join(shell.ROOT, 'references', 'artifact-mods.md')
 OUT_DIR = os.path.join(shell.ROOT, 'artifact-mods')
@@ -79,14 +80,21 @@ def parse(md, icons):
     page['sub'] = inline(must(re.search(r'^副标题：(.*)$', head, re.M),
                               '源稿开头缺「副标题：」').group(1).strip())
 
+    # 行号一路带下去，供就地编辑反查源稿。re.split 删掉的 '## ' 不含换行、
+    # '\n### ' 含一个，所以行数守恒，累加换行数即得下一处的行号；
+    # body() 走 META_LINE.sub，剥的是行内容、换行留着，行号同样不变。
+    at = parts[0].count('\n')          # 第一个 ## 所在的行
+
     for part in parts[1:]:
         title, _, chunk = part.partition('\n')
         title = title.strip()
+        base = at + 1                  # chunk 第一行
+        at += part.count('\n')         # 下一个 ## 所在的行
 
         if title == '导语':
             keys_in(chunk, 1, '导语')
-            page['lede'].append(inline(meta(chunk, '小标题', '导语')))
-            page['lede'] += [inline(b) for b in blocks_of(body(chunk))]
+            page['lede'].append((None, None, inline(meta(chunk, '小标题', '导语'))))
+            page['lede'] += [(n, m, inline(b)) for n, m, b in blocks_at(body(chunk), base)]
             continue
 
         if title == '提示':
@@ -94,10 +102,12 @@ def parse(md, icons):
             embs = meta(chunk, '徽章', '提示').split()
             if len(embs) != 2:
                 die('提示需要两枚徽章，源稿给了 %d 枚' % len(embs))
+            hits = blocks_at(body(chunk), base)
             page['notice'] = {
                 'emblems': [img(icons, n, 'emblem') for n in embs],
                 'title': inline(meta(chunk, '标题', '提示')),
-                'body': inline('\n'.join(blocks_of(body(chunk)))),
+                'at': (hits[0][0], hits[-1][1]) if hits else None,
+                'body': inline('\n'.join(b for _, _, b in hits)),
             }
             continue
 
@@ -111,6 +121,7 @@ def parse(md, icons):
         if tags and site_tags:
             die('分节「%s」同时写了标签与标签（站点补充），二选一' % name)
         sec = {
+            'at': at - part.count('\n'),      # 「## 神器：名称」那一行
             'name': inline(name),
             'paren': inline(meta_opt(head_chunk, '括注')),
             'emblems': [img(icons, meta(head_chunk, '徽章', name), 'art-emblem')],
@@ -122,6 +133,7 @@ def parse(md, icons):
             die('分节「%s」的头部有认不出的正文：%r' % (name, body(head_chunk).strip()[:80]))
         page['sections'].append(sec)
 
+        mbase = base + head_chunk.count('\n') + 1   # 第一个 ### 所在的行
         for mod_chunk in ('\n### ' + mods_chunk).split('\n### ')[1:]:
             mod_title, _, mod_body = mod_chunk.partition('\n')
             keys_in(mod_body, 1, '模组「%s」' % mod_title.strip())
@@ -130,11 +142,13 @@ def parse(md, icons):
                 die('模组标题要写成「### 一级 · 名称」，源稿写的是：%s' % mod_title.strip())
             sec['mods'].append({
                 'tier': TIERS[tier_cn],
+                'at': mbase,                       # 「### 一级 · 名称」那一行
                 'icon': img(icons, meta(mod_body, '图标', mod_name), 'mod-icon'),
                 'name': inline(mod_name),
                 # 段落保持成 list：拍平成一串 <br><br> 再切回来会多一趟自造往返
-                'desc': [inline(b) for b in blocks_of(body(mod_body))],
+                'desc': [(n, m, inline(b)) for n, m, b in blocks_at(body(mod_body), mbase + 1)],
             })
+            mbase += mod_chunk.count('\n') + 1     # 分隔符 '\n### ' 那一个换行
     return page
 
 
@@ -153,20 +167,23 @@ def rows_of(mods):
         yield row
 
 
-def render(page):
+def render(page, digest=''):
     o = [shell.head(PAGE_TITLE, PAGE_DESC, app_js=True),
          shell.nav('神器模组', toolbar={}),
          shell.page_head(page['sub']),
-         '<main>', '<section class="intro">']
+         # data-src 是这一篇在库里的 _id，就地编辑靠它找回源稿
+         '<main data-src="artifact-mods" data-hash="%s">' % digest,
+         '<section class="intro">']
 
-    o.append('<h2 class="sect-label">%s</h2>' % page['lede'][0])
-    for p in page['lede'][1:]:
-        o.append('<p class="lede">%s</p>' % p)
+    o.append('<h2 class="sect-label">%s</h2>' % page['lede'][0][2])
+    for n, m, p in page['lede'][1:]:
+        o.append('<p class="lede"%s>%s</p>' % (bmark(n, m), p))
 
     n = page['notice']
     o += ['<aside class="notice">', n['emblems'][0],
           '<div class="notice-body">',
-          '<h3>%s</h3>' % n['title'], '<p>%s</p>' % n['body'],
+          '<h3>%s</h3>' % n['title'],
+          '<p%s>%s</p>' % (bmark(*n['at']) if n['at'] else '', n['body']),
           '</div>', n['emblems'][1], '</aside>', '</section>']
 
     for i, s in enumerate(page['sections'], 1):
@@ -175,8 +192,8 @@ def render(page):
         o += ['<section class="artifact" id="art-%d">' % i,
               '<div class="art-bar">',
               '<header class="art-head">', s['emblems'][0],
-              '<h2>%s%s</h2>' % (s['name'],
-                                 ' <small>%s</small>' % s['paren'] if s['paren'] else '')]
+              '<h2%s>%s%s</h2>' % (bmark(s['at']), s['name'],
+                                   ' <small>%s</small>' % s['paren'] if s['paren'] else '')]
         if s['tags']:
             o.append('<p class="art-tags">%s</p>' % s['tags'])
         elif s['site_tags']:
@@ -196,8 +213,9 @@ def render(page):
             o.append('<div class="mod-row">')
             for mod in row:
                 o += ['<article class="mod" data-tier="%d">' % mod['tier'], mod['icon'],
-                      '<h4>%s</h4>' % mod['name'], '<div class="mod-desc">']
-                o += ['<p>%s</p>' % p for p in mod['desc']]
+                      '<h4%s>%s</h4>' % (bmark(mod['at']), mod['name']),
+                      '<div class="mod-desc">']
+                o += ['<p%s>%s</p>' % (bmark(n, m), p) for n, m, p in mod['desc']]
                 o += ['</div>', '</article>']
             o.append('</div>')
         o += ['</div>', '</section>']
@@ -236,7 +254,7 @@ def main():
 
     icons = Icons(OUT_DIR, N_EAGER)
     page = parse(md, icons)
-    out = render(page)
+    out = render(page, src_hash(md))
     check(page, out, icons)
 
     shell.emit(OUT_DIR, out, '分节 %d、模组 %d、图标引用 %d，着色 %d 处'

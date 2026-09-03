@@ -177,7 +177,35 @@ def land():
     return wrote
 
 
+def sweep():
+    """编辑台上通过的删除申请 → 删掉那一篇源稿，再把库里那条一并清掉。
+
+    与 land() 对称：**只删申请里点名的那一篇**。库里没了就删盘上的那条路不走——
+    库里少一篇既可能是有人申请删除，也可能是手工清过或漏拉，分不出来就不该动盘上
+    的东西（那一支照旧报进 stuck）。删除因此必须是一条走过审核、留了记录的申请。
+    """
+    gone = []
+    for sub in api('list')['subs']:
+        if int(sub.get('ok') or 0) != 1 or not sub.get('drop'):
+            continue
+        season, slug = sub.get('season'), sub.get('slug')
+        if not season or not slug:
+            print('  ? 删除申请 %s 没有 season/slug，跳过' % sub['_id'])
+            continue
+        doc_id = 'builds/%s/%s' % (season, slug)
+        p = path_of(doc_id)
+        if os.path.exists(p):
+            os.remove(p)
+        api('drop', id=doc_id)
+        gone.append(doc_id)
+    if gone:
+        print('删掉 %d 套配装：%s' % (len(gone), '、'.join(gone)))
+    return gone
+
+
 def sync():
+    # 先删后写：同一轮里既有删除申请又有新投稿时，两者互不干扰
+    sweep()
     land()
     disk, db, base = on_disk(), in_db(), baseline()
     pushed, pulled, dropped, stuck = [], [], [], []

@@ -19,8 +19,8 @@ import sys
 from urllib.parse import quote
 
 import shell
-from markup import (IMG, LINK, Icons, die, inline, meta_line, no_nested_span,
-                    plain, text_of, whole_marker)
+from markup import (IMG, LINK, Icons, bmark, die, inline, meta_line,
+                    no_nested_span, plain, src_hash, text_of, whole_marker)
 
 SRC_DIR = os.path.join(shell.ROOT, 'references', 'docs')
 
@@ -288,7 +288,8 @@ def tier_of(text, bounds):
     return tier
 
 
-def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=None):
+def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=None,
+                 base=0):
     """markdown 表格 → <table class="gen">。
 
     第一行是表头，第二行是 |---| 分隔。正文里再出现一行 --- 就另起一个 <tbody>，
@@ -312,6 +313,11 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=
     curves 是 [列名]：落成表上的 data-lines，图表加载时只画这几条，其余由图例
     开关打开。与「默认列组：」同一条约定——**默认隐藏由 app.js 在加载时施加，
     不写进 HTML**，无 JS 时表里所有列照常可读。
+
+    base 是 lines[0] 在源稿里的行号：每行落一个 data-b 给在线编辑台反查。
+    **格号不落进 HTML**，DOM 的 cellIndex 白送——4339 行表格约三万五千格，
+    逐格戳要多出几十 KB。合并行没有 <th scope="row">，cellIndex 整体前移一位，
+    源稿格号 = cellIndex + 1，判据与列组隐藏那两条规则同源。
     """
     head = split_cells(lines[0])
     if len(lines) < 2 or not is_rule(split_cells(lines[1])):
@@ -386,7 +392,9 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=
         # 无 JS 时轮换顺序完整可读，与图表页同一条约定。
         attr += ' data-rota="%s"' % rota
 
-    o = ['<table class="gen"%s>' % attr, '<thead>', '<tr>']
+    # 表头行也戳：它同样是源稿的一行（改列名走这里），而且它一戳，每张表的第一个
+    # <tr> 必然带号，「没有 data-b 就是上一行 +1」那条不会跨表接到上一张去。
+    o = ['<table class="gen"%s>' % attr, '<thead>', '<tr%s>' % bmark(base)]
     o += [wrap('th', broke(c),
                ' scope="col"' + (' data-g="%s"' % groups[colkey(c)] if groups else ''))
           for c in head]
@@ -396,7 +404,14 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=
     # 只有真用到合并的表才需要它；没有合并的表照旧输出干净的 <tr>。
     banded = any(n > 1 for n in span)
     band = 1
-    for cells, n in zip(rows, span):
+    prev = None
+    for ri, (cells, n) in enumerate(zip(rows, span)):
+        # lines[0] 是表头、lines[1] 是分隔行。**连号就不戳**：一张表的行在源稿里
+        # 本来连着，逐行戳一遍 413 行的表要多出一千多字节 gzip。省掉的那些由
+        # 「没有 data-b 的行 = 上一行 +1」补回来，而生成器只在这条成立时才省。
+        # 行组分界行（|---|）占一行却不出 <tr>，所以它后面那行不连号、照旧戳。
+        at = base + 2 + ri
+        mark = '' if prev is not None and at == prev + 1 else bmark(at)
         if cells is None:
             o += ['</tbody>', '<tbody>']
             band = 1
@@ -405,9 +420,10 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=
         # 搜索时 app.js 也按这个 tbody 数「这一组还剩几行可见」。
         if isinstance(cells, str):
             o += ['</tbody>', '<tbody>',
-                  '<tr class="lane">%s</tr>'
-                  % wrap('th', broke(cells),
-                         ' colspan="%d" scope="colgroup"' % len(head))]
+                  '<tr class="lane"%s>%s</tr>'
+                  % (mark, wrap('th', broke(cells),
+                                ' colspan="%d" scope="colgroup"' % len(head)))]
+            prev = at
             band = 1
             continue
         row = []
@@ -427,8 +443,9 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=
                 row.append('<td data-tier="%d">%s</td>' % (tier, text))
                 continue
             row.append(wrap('td', broke(c)))
-        o.append('<tr%s>%s</tr>'
-                 % (' data-band="%d"' % band if banded else '', ''.join(row)))
+        prev = at
+        o.append('<tr%s%s>%s</tr>'
+                 % (mark, ' data-band="%d"' % band if banded else '', ''.join(row)))
     o += ['</tbody>', '</table>']
     return o
 
@@ -486,8 +503,12 @@ def guides_of(spec):
 
 
 def render_blocks(chunk, scales=None, groups=None, marks=None, curves=None, up=0,
-                  rota=None):
-    """分节正文 → 段落、列表、定义列表、表格、卡片。"""
+                  rota=None, base=0):
+    """分节正文 → 段落、列表、定义列表、表格、卡片。
+
+    base 是 chunk 第一行在源稿里的行号，每个块据此落一个 data-b。
+    「卡片：」「攻略：」两种指令行不戳——它们本来就不进保真比对，也不由就地编辑改。
+    """
     o, i = [], 0
     lines = chunk.split('\n')
     while i < len(lines):
@@ -514,7 +535,7 @@ def render_blocks(chunk, scales=None, groups=None, marks=None, curves=None, up=0
             while i < len(lines) and lines[i].lstrip().startswith('|'):
                 i += 1
             o += render_table([ln.strip() for ln in lines[start:i]], scales, groups,
-                              marks, curves, rota)
+                              marks, curves, rota, base + start)
             continue
 
         # 定义列表：术语一行，紧跟以「: 」开头的定义行。
@@ -523,8 +544,9 @@ def render_blocks(chunk, scales=None, groups=None, marks=None, curves=None, up=0
         if i + 1 < len(lines) and lines[i + 1].startswith(': '):
             o.append('<dl class="rules">')
             while i + 1 < len(lines) and lines[i + 1].startswith(': '):
-                o.append(wrap('dt', lines[i]))
+                o.append(wrap('dt', lines[i], bmark(base + i)))
                 i += 1
+                dstart = i
                 defn = []
                 while i < len(lines):
                     if lines[i].startswith(': '):
@@ -536,7 +558,7 @@ def render_blocks(chunk, scales=None, groups=None, marks=None, curves=None, up=0
                         i += 1
                     else:
                         break
-                o.append(wrap('dd', '<br>'.join(defn)))
+                o.append(wrap('dd', '<br>'.join(defn), bmark(base + dstart, base + i - 1)))
                 while i < len(lines) and not lines[i].strip():
                     i += 1
             o.append('</dl>')
@@ -551,7 +573,7 @@ def render_blocks(chunk, scales=None, groups=None, marks=None, curves=None, up=0
             while i < len(lines) and lines[i].startswith('- '):
                 item = lines[i][2:]
                 hit = re.match(r'\{(\w[\w-]*)\|([^{}|]+)\}', item)
-                html = wrap('li', item)
+                html = wrap('li', item, bmark(base + i))
                 if hit and (hit.group(1), hit.group(2)) == prev:
                     html = html.replace('class="%s"' % hit.group(1),
                                         'class="%s is-same"' % hit.group(1), 1)
@@ -568,7 +590,8 @@ def render_blocks(chunk, scales=None, groups=None, marks=None, curves=None, up=0
                and not lines[i].startswith('- ')
                and not (i + 1 < len(lines) and lines[i + 1].startswith(': '))):
             i += 1
-        o.append(wrap('p', '<br>'.join(ln.strip() for ln in lines[start:i])))
+        o.append(wrap('p', '<br>'.join(ln.strip() for ln in lines[start:i]),
+                      bmark(base + start, base + i - 1)))
     return o
 
 
@@ -596,6 +619,8 @@ def where_of(md, slug):
 
 
 def render(md, slug):
+    # **在 land() 改写链接之前算**：库里存的是源稿原文，两边要对得上
+    digest = src_hash(md)
     md = land(md, slug)
     m = re.match(r'^#\s+(.+)$', md.split('\n')[0])
     if not m:
@@ -692,7 +717,9 @@ def render(md, slug):
          shell.nav(title, toolbar, up=up,
                    parent=[x.strip() for x in meta('上级', required=False).split('、') if x.strip()]),
          shell.page_head(title),
-         '<main>']
+         # data-src 是这一篇在库里的 _id：产出目录（elements/arc）与源稿路径
+         # （docs/arc）不是同一个，就地编辑要靠它才找得回源稿。
+         '<main data-src="docs/%s" data-hash="%s">' % (slug, digest)]
 
     body = META_LINE.sub('', md[md.index('\n'):])
     parts = re.split(r'^## ', body, flags=re.M)
@@ -702,8 +729,18 @@ def render(md, slug):
     if len(parts) == 1:
         die('源稿一个 ## 分节都没有')
 
+    # 各分节在源稿里的起始行号。body 以第 0 行末尾那个换行开头，所以
+    # body.split('\n')[k] 正是源稿第 k 行；re.split 删掉的 '## ' 不含换行，
+    # 各 part 的行数因此守恒，累加即得偏移。META/SCALE/ROTA 三处 sub 用的都是
+    # `^…$` 加 re.M，剥的是行内容、换行留着，行号一路不变。
+    off, offs = 0, []
+    for part in parts:
+        offs.append(off)
+        off += part.count('\n')
+
     for si, part in enumerate(parts[1:], 1):
         head, _, chunk = part.partition('\n')
+        at = offs[si]               # 「## 分节」那一行
         # 「色阶：」是分节级声明，按整行剥离——留在正文里会进保真比对
         scales = {}
         for hit in SCALE_LINE.finditer(chunk):
@@ -729,9 +766,9 @@ def render(md, slug):
             chip = ('<a class="chip" href="%s" target="_blank" rel="noopener">%s</a>'
                     % (hit.group(2), hit.group(1)))
         # 分节标题里也允许放图标：源表每个职业段前有一枚职业徽章，标题是它的位置
-        o.append('<h2 class="sect-label">%s%s</h2>'
-                 % (inline(icon_sub(label), rich=True), chip))
-        o += render_blocks(chunk, scales, groups, marks, curves, up, rota)
+        o.append('<h2 class="sect-label"%s>%s%s</h2>'
+                 % (bmark(at), inline(icon_sub(label), rich=True), chip))
+        o += render_blocks(chunk, scales, groups, marks, curves, up, rota, at + 1)
         o.append('</section>')
 
     # 「数据源：是」用 shell.py 里那个 Destiny Data Compendium 出处，一字不改；
@@ -781,7 +818,7 @@ def check(md, out, slug):
     body = re.sub(r'\{[\w-]+\|', '', body)            # 着色标记的开括号连分隔符
     want = plain(body)                                # 字重、着色与格内换行不落成字符
 
-    main = out[out.index('<main>'):out.index('</main>')]
+    main = out[out.index('<main '):out.index('</main>')]
     # 卡片的文字来自被指向的那篇源稿，不是本篇的正文，不进逐字保真
     main = re.sub(r'<ul class="entries">.*?</ul>', '', main, flags=re.S)
     # 攻略卡同理：标题与配图站内没有第二份，那一行整行剥离，两侧都不留

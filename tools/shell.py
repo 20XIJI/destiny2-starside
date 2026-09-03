@@ -11,6 +11,8 @@
 import os
 import re
 
+import markup
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 HOME = 'index.html'
@@ -102,6 +104,17 @@ HIT = ('<script>(function(){'
        '.then(function(s){if(o){var t="今日 "+s.today+" 位访客 · 累计 "+s.total;'
        'o.textContent=t;try{localStorage.setItem("svt",t)}catch(_){}}},'
        'function(x){if(o)o.textContent="访问统计取不到："+x})})()</script>' % (API, API))
+
+
+# 就地编辑的引子：**有令牌才把编辑台那份脚本拉进来**，没登录的读者只多下这一行。
+# 与 HIT 分成两段——那个 IIFE 里有 early return，接在它后面会被跳过。
+# 相对前缀从 site.css 那个 <link> 上现取：每页都有它（check_shell 钉着），而页面
+# 深浅不一，写死 ../ 会在 elements/arc/ 这种两层的页面上指错；站内绝对路径又会在
+# file:// 下指到磁盘根目录。
+EDIT = ('<script>try{if(localStorage.sa_at){'
+        'var l=document.querySelector(\'link[href$="assets/site.css"]\');'
+        'if(l)import(l.href.replace("assets/site.css","admin/edit.js"))'
+        '}}catch(_){}</script>')
 
 
 # 三条杠站标
@@ -203,7 +216,12 @@ def unsure_note(mark='[?]'):
 
 
 def emit(outdir, out, detail=''):
-    """写出 index.html 并报一行。detail 是该页特有的结构计数。"""
+    """写出 index.html 并报一行。detail 是该页特有的结构计数。
+
+    落盘前把 data-b 的绝对行号改成增量——四个生成器共用这一个出口，
+    编码因此只有一处，各生成器与它们的 check() 面对的都还是绝对值。
+    """
+    out = markup.delta_bmarks(out)
     path = os.path.join(outdir, 'index.html')
     with open(path, 'w', encoding='utf-8') as f:
         f.write(out)
@@ -224,5 +242,5 @@ def foot(stamp, first, source=None, thanks=None):
         o.append(source_note(source))
     if thanks:
         o.append('<p>特别鸣谢：%s</p>' % thanks)
-    o += [CREDIT, LEGAL, '</footer>', SPEC, HIT, '</body>', '</html>', '']
+    o += [CREDIT, LEGAL, '</footer>', SPEC, HIT, EDIT, '</body>', '</html>', '']
     return '\n'.join(o)
