@@ -1,0 +1,66 @@
+/* 编辑台自己的那几件。配色、外壳、chip、卡片全部走 assets/site.css，
+   这里只写站内没有的：登录框、块列表、源稿编辑器、闸门提示、对照视图。 */
+:root { --wrap: 1100px; --min: 720px; }
+
+.site-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.me { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--bone-dim); }
+
+.login { display: grid; gap: 10px; max-width: 320px; margin-top: 12px; }
+.login label { display: grid; gap: 4px; font-size: 12px; color: var(--bone-dim); }
+.login .row { display: flex; gap: 6px; }
+.login input {
+  font: inherit; padding: 7px 9px; color: var(--bone-hi);
+  background: var(--ink-lift); border: 1px solid var(--hair); border-radius: 3px;
+}
+.login .go { justify-self: start; }
+.tabs { display: flex; gap: 6px; margin-top: 10px; }
+.tip { font-size: 12px; color: var(--c-note); min-height: 1.2em; }
+
+/* 源稿清单：一行一篇，不用卡片——75 行卡片要滚三屏。 */
+.rows { display: grid; gap: 1px; background: var(--hair); border: 1px solid var(--hair); border-radius: 3px; }
+.rows > * {
+  display: flex; align-items: center; gap: 12px; padding: 7px 11px;
+  background: var(--ink-lift); color: inherit; text-decoration: none; text-align: left;
+  font: inherit; border: 0; width: 100%; cursor: pointer;
+}
+.rows > *:hover { background: var(--row-hover); }
+.rows .id { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rows .meta { font-size: 11px; color: var(--bone-dim); white-space: nowrap; }
+
+/* 编辑器：一块一行，点开就地展开 textarea。 */
+.blocks { display: grid; gap: 2px; margin-top: 10px; }
+.blk {
+  border: 1px solid transparent; border-radius: 3px; padding: 4px 8px;
+  cursor: text; white-space: pre-wrap; word-break: break-word; line-height: 1.7;
+}
+.blk:hover { background: var(--row-hover); }
+.blk.bad { border-color: var(--c-enemy); }
+.blk.on { border-color: var(--accent); background: var(--ink-lift); cursor: auto; }
+.blk.empty { min-height: 1.2em; opacity: .35; }
+.blk textarea {
+  display: block; width: 100%; font: inherit; line-height: 1.7; resize: vertical;
+  color: var(--bone-hi); background: transparent; border: 0; padding: 0;
+}
+.blk textarea:focus { outline: none; }
+.pal { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.pal button {
+  font: inherit; font-size: 11px; padding: 2px 7px; cursor: pointer;
+  background: var(--ink); border: 1px solid var(--hair); border-radius: 3px;
+}
+.notes { margin: 4px 0 0; padding: 0; list-style: none; font-size: 11px; }
+.notes li { color: var(--c-enemy); }
+.notes li.warn { color: var(--c-note); }
+.acts { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 14px; }
+
+/* 对照：左旧右新，只列变了的块。 */
+.diff { display: grid; gap: 2px; margin-top: 10px; font-size: 12px; line-height: 1.7; }
+.diff > div { padding: 4px 8px; border-radius: 3px; white-space: pre-wrap; word-break: break-word; }
+.diff .del { background: color-mix(in srgb, var(--c-enemy) 12%, transparent); }
+.diff .add { background: color-mix(in srgb, var(--c-strand) 12%, transparent); }
+.diff .del::before { content: '−  '; color: var(--c-enemy); }
+.diff .add::before { content: '+  '; color: var(--c-strand); }
+
+.pane { border: 1px solid var(--hair); border-radius: 3px; padding: 10px 12px; margin-top: 10px; }
+.pane > h3 { margin: 0 0 6px; font-size: 13px; }
+.grp { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+iframe.prev { width: 100%; height: 70vh; border: 1px solid var(--hair); border-radius: 3px; background: var(--ink); }

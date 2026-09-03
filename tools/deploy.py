@@ -51,6 +51,7 @@ def tcb(*args: str, env: str, confirm: bool = False) -> None:
 def check() -> None:
     assert keep("armor-mods/icons/0a1b2c3d4e.webp")
     assert keep("index.html") and keep("assets/search.js")
+    assert keep("admin/index.html") and keep("admin/terms.js")
     assert not keep("tools/deploy.py")
     assert not keep("references/docs/changelog.md")
     assert not keep("CLAUDE.md") and not keep("cloudbaserc.json")
@@ -104,6 +105,10 @@ def main() -> None:
 
     git("update-ref", REF, "HEAD")
     print(f"已记下 refs/deploy = {git('rev-parse', '--short', 'HEAD').strip()}")
+
+    # 落定的源稿推回库里：在线编辑台读的是那一份，本地修的闸门错误要这样才回得去。
+    # 放在 update-ref 之后——推库失败不该让这一次部署白跑，重跑 --push 即可。
+    subprocess.run([sys.executable, "tools/sync.py", "--push"], cwd=ROOT)
 
 
 if __name__ == "__main__":

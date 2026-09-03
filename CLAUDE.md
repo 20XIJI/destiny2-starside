@@ -35,6 +35,8 @@ markup.py          源稿方言与公共件：{token|文字} 着色、「键：�
 shell.py           站点外壳与落盘：head 元信息、导航条、页脚、ROOT、页面清单、emit()
 convert-*.py       四个生成器，各自只写自己那种数据形状的结构层
 build-search.py    各页产出 → assets/search.js，首页那只搜索框搜的就是它
+build-terms.py     两道闸门的词表 → admin/terms.js，在线编辑台的前端提示用的就是它
+sync.py            源稿在库与仓库之间对账：--pull 库到盘，--push 盘到库
 check_shell.py     外壳闸门，从 shell.py 现取参照，不另存副本
 check_terms.py     术语与着色闸门，全部以 TERMS 那一张表为准
 items.py           官方物品表 → tools/items.json，Perk 名 → tools/perks.json：
@@ -77,7 +79,10 @@ python3 tools/items.py --builds              # 配装源稿的描述与注解自
 
 python3 tools/json2xlsx.py <抓取的.json>      # 还原成 xlsx，供核对与手改
 
-python3 tools/review.py                       # 本地审核台，审投稿、改源稿、按一次构建
+python3 tools/sync.py --pull                  # 库 → 盘，把编辑台上通过的源稿拉下来
+python3 tools/sync.py --push                  # 盘 → 库，部署后自动跑，也可手动补
+python3 tools/sync.py --push --all            # 整库重灌，首次或对不上账时用
+python3 tools/build-terms.py                  # 闸门词表 → admin/terms.js，构建时自动跑
 python3 tools/deploy.py                       # 增量部署站点，只发改过的文件
 python3 tools/deploy.py --dry-run             # 只列这次要发什么
 python3 tools/deploy.py --all                 # 整站重发
@@ -97,10 +102,11 @@ pyright tools/*.py
 diff 发 `tcb hosting delete`。全部成功才动 `refs/deploy`，中途失败重跑即可，不会漏。
 挂载路径与缓存规则见 `README.md`。
 
-**审核台那排按钮上的「部署」跑的就是它**，与「构建并提交」并排。建一批是一次决定，
-什么时候发是另一次，所以两枚分开；发了几个文件原样带回页面。
+**部署成功之后自动跑一次 `sync.py --push`**：编辑台读的是库里那一份，本地修的
+闸门错误要这样才回得去。它排在 `update-ref` 之后——推库失败不该让这一次部署白跑，
+重跑 `--push` 即可。
 
-**发之前工作区必须干净**：产出与源稿对不上时先按审核台那枚「构建并提交」。
+**发之前工作区必须干净**：产出与源稿对不上时先 `npm run build` 再 commit。
 `refs/deploy` 记的是 commit，与一份没提交的产出对不上账。
 
 `--all` 整站重发，首次部署与换机器时用——`refs/deploy` 只活在本机的 `.git` 里，
@@ -134,15 +140,16 @@ runtime 比整站首屏还大。
 | 读计数 | `GET ?a=stats` | 首页页脚那句「今日 X 位访客 · 累计 Y」 |
 | 点赞 | `POST {a:"like",id,d}` / `GET ?a=likes` | `likes`，`_id` 是「赛季_slug」 |
 | 投稿 | `POST {a:"sub",md}` | `subs`，`ok` 三档：0 待审、1 通过、-1 驳回 |
-| 审核台读写 | `POST {a:"list"/"mark"/"stat",k}` | 要凭据，见下 |
+| 编辑台读写 | `POST {a:"docs"/"doc"/"put"/"edits"/"emark"/"eds"…}` | 带 Bearer，见《在线编辑台》 |
+| 本机对账 | `POST {a:"pull"/"push"/"list"/"mark"/"stat",k}` | 要 `ADMIN_TOKEN` |
 
-**审核台那三个动作要 `k`**，与云函数的 `ADMIN_TOKEN` 环境变量比对。
+**本机那几个动作要 `k`**，与云函数的 `ADMIN_TOKEN` 环境变量比对。
 **没配 ADMIN_TOKEN 就一概拒**，不给「没设就放行」那条路——那等于把待审队列与
-状态位开给所有人。
+状态位开给所有人。编辑台那一串走 `Authorization: Bearer`，判权见下一节。
 
 **令牌只有 `.env.local` 一处**（已 gitignore，样板见 `.env.example`）：
 `cloudbaserc.json` 写 `{{env.ADMIN_TOKEN}}`，`tcb fn deploy` 读那个文件注进函数，
-`tools/review.py` 也从那里现读，不必 export。新机器上照 `.env.example` 填一份再
+`tools/sync.py` 也从那里现读，不必 export。新机器上照 `.env.example` 填一份再
 `tcb fn deploy api --force`。
 
 **envId 不进环境变量**：它写在 `shell.API` 里、要落进每个页面的产出，本来就是
@@ -181,64 +188,138 @@ runtime 比整站首屏还大。
 
 限流走 HTTP 网关的 `qpsPolicy`，不在函数里自己写：单 IP 5 QPS、总量 50。
 
-### 本地审核台
+### 在线编辑台
 
-`python3 tools/review.py` 起在 `127.0.0.1:3100`。**审核在本地做**：页面由生成器
-产出，通过之后仍然要跑构建再部署，在线面板改不了这一点。
+`/admin/` 是站内一个不链不收录的页面（`noindex`，不进 `shell.pages()`、不进搜索、
+首页不给卡片）。**编辑与审核都在线上做，落盘、构建与部署仍在本机**：闸门是 Python，
+搬不上云函数。
 
-**库里那几条走后端那支云函数，不走 tcb CLI**：CLI 每次要起一个 Node 进程，实测
-一次 5.9 秒，刷一下列表就是干等；同一件事直接打 HTTP 是 0.26 秒。凭据读
-`.env.local` 的 `ADMIN_TOKEN`。**一次请求只查一次**，取回全部再在这边分档。
+三个文件，手写，不进生成器：`admin/index.html`、`admin/admin.js`，以及生成物
+`admin/terms.js`。样式走 `assets/site.css` 加一份 `admin/style.css`，后者只写站内
+没有的那几件——登录框、块列表、源稿编辑器、闸门提示、对照视图。
 
-**版面与站内同形**：列表是配装索引页那套 `.entry` 卡片，按待审、等待构建、站上的
-配装分三节。**样式表直接引仓库里的 `assets/site.css` 与 `builds/style.css`**——
-审核台再写一套配色就是把 design.md 抄第二遍，所以这个服务兼一个只读的静态文件
-路由，放行 ROOT 下的任意文件（渲染出来的配装页要引各资料页的 `icons/`，白名单
-列不完），穿越由 `realpath` 挡。本页自己只补几条：卡片左格那枚状态旗、动作排、
-源稿编辑器。
+#### 库是工作副本，git 是发布本
 
-**详情页看的是渲染结果，不是一屏 markdown**。审核要判的是配装本身，纯文本读不出
-哪一格是什么。渲染走生成器那一个 `render()`——`convert-build.py` 文件名带连字符，
-按路径 `importlib` 加载；词表扫一遍全站产出，进程内存一份，构建之后作废重建。
-**渲染不过就把中止那句话摆在页面上**：那是构建会报的同一句，在这里就看得见，
-不必等按了构建才知道。产出的资源前缀是配装页那三层，改成站点根；页头右上那两枚
-按钮摘掉——它们的脚本在 `</main>` 外面，搬进来就是两枚按不动的钮。
-**详情页不另给 `<h1>`**：渲染出来的那一版自带标题，两个标题上下贴着读作重复。
+源稿在库里有一份 `docs` 集合，编辑台读写的是它；仓库里那 75 个 `.md` 才是发布本。
+两边**没有合并逻辑，只有覆盖**，判据是内容 hash，换算与落盘都在 `tools/sync.py`：
 
-源稿仍然改得动，收在 `<details>` 里。六个动作各管一件事：
+```
+python3 tools/sync.py --pull        # 库 → 盘，跟着跑 npm run build
+python3 tools/sync.py --push        # 盘 → 库，部署成功后自动跑
+python3 tools/sync.py --push --all  # 整库重灌
+```
 
-| 动作 | 做什么 |
+`_id` 即源稿在 `references/` 下的相对路径去掉 `.md`（`docs/exotic-weapon`、
+`artifact-mods`、`builds/s29-凯旋纪念碑/xxx-warlock`），换算只有 `id_of` / `path_of`
+两处，后者用 `realpath` 挡穿越——`_id` 从库里来，而库是联网的那一侧。
+
+**`--pull` 不凭空造文件**：库里有、盘上没有的那一条只报出来，不写盘。那多半是本地
+删了那一篇，写回去就是把它复活。
+
+日常一轮：
+
+```
+python3 tools/sync.py --pull
+npm run build
+git add -A && git commit
+python3 tools/deploy.py            # 末尾自动 --push
+```
+
+#### 认证：裸 HTTP，不引 SDK
+
+身份认证 v2 本身就是 HTTP 接口，`fetch` 直打
+`https://<envId>.api.tcloudbasegateway.com`：`POST /auth/v1/signin` 拿令牌，
+`POST /auth/v1/token` 用 `refresh_token` 换新的。账密与邮箱验证码两条并开，
+登录框两个标签页，两个端点形状同构。**不引 `@cloudbase/js-sdk`**——auth-only
+入口 65 KB gzip、全量 136 KB，而整站首屏才 46 KB。
+
+`access_token` 2 小时、`refresh_token` 30 天，都存 `localStorage`。被拒一次就拿
+refresh 换一遍再打，**重试只放一次**：换完还被拒就是真的过期了，落回登录框。
+
+**网关那个身份认证开关不能开**：它按路径生效，一开，`/api` 上的访问计数、点赞、
+投稿全都要带凭证。校验放进函数自己做——拿到 `Authorization: Bearer` 就打一次
+`GET /auth/v1/user/me` 换 uid，**结果按令牌在函数实例内存里缓存五分钟**，与
+`likeMap()` 缓存赞数同一套写法，这次往返因此与请求数脱钩。**不自己解 JWT 验签**：
+要拿 JWKS、要处理轮换，换不出东西。
+
+**登录成功 ≠ 是编辑者。**网关默认策略对任何自注册的注册用户都放行云函数，所以
+身份由认证服务给，权限由 `editors` 这张白名单给，缺一条都不行。账号怎么来的不影响
+系统：控制台手工建注册用户（免费、不限量）也行，本人自注册也行；没进白名单的人
+登录后页面上写着自己的 uid，管理员照着加一行。**不走组织成员**——那条按人头收费，
+换来的隔离粒度这个场景用不上。
+
+#### 角色是一个整数
+
+`editors` 里的 `lv`：1 编辑、2 审核员、3 管理员、4 超管。判权是一次 `>=`，
+不建权限矩阵。
+
+| 动作 | 门槛 |
 |---|---|
-| 通过 | 把（改过的）源稿写进 `references/builds/<赛季>/<slug>.md`，库里标 ok=1 |
-| 驳回 | 库里标 ok=-1，源稿不落盘 |
-| 撤回 | 删源稿，退回待审 |
-| 保存 | 改写一份已经在站上的源稿 |
-| 删除 | 删源稿与产出目录，库里那条通过记录跟着标成驳回 |
-| 构建 | 跑一次 `npm run build`，过了就 `git add -A` 加一次 commit；按钮常驻每一页 |
+| 读源稿、存草稿、提交待审 | `lv >= 1` |
+| 通过 / 驳回（文档改动与配装投稿） | `lv >= 2` |
+| 加人、改角色、移除 | `lv >= 3`，且只能动 `lv` 严格低于自己的人 |
+| 落盘、构建、部署 | 不在线上，只在本机 |
 
-**通过与构建分开**：一次审一批，每通过一份就重跑全站构建是白等。
+最后一行那半句一句话钉住两件事：管理员动不了超管，也造不出第二个超管。
+**不做范围权限**（某人只能改配装、不能改资料页），`lv` 一维。
 
-**构建与提交是同一件事**，所以那一枚按钮一并做了：产出改了却留在工作区，下一批
-建完就分不出哪些改动属于哪一次。什么都没变时不提交——空暂存区上 `git commit`
-返回 1，那不是错。commit message 从暂存区里新增的 `references/builds/**.md` 现取，
-取文件名要用 `git diff --cached -z`：不加它 git 会把带中文的路径整条加引号转义，
-前缀判断当场落空。push 与上传站点仍然手动。
+`.env.local` 里那个 `ADMIN_TOKEN` 永远解析成 `lv 4`，兼作破窗钥匙：`sync.py` 用它，
+第一个超管也靠它进管理页把自己加进库。**移除一个人就是删行**，不设停用位——记录里
+存的 `by`/`okBy` 是名字字符串不是引用，删了不会让历史悬空。
 
-**通过那一格的 slug 预填成「八位随机串-职业」**（`default_slug()`，职业从源稿的
-`职业：` 行现读）。这一格是 required，空着过不了，而审的人多数时候不想在这里停下来
-想名字；撞上已有的那一份就换一个数——slug 即文件名，重了会把上一份盖掉。
+#### 三张表
 
-**删除要连库里那条一起收**：留着 ok=1 会让它挂在「等待构建」里指向一份已经不存在
-的源稿，点进去改不了也构建不出。删除不可逆，所以走两步——第一下出确认页，带着
-`sure` 的那一下才真删。
+```
+docs     { _id, md, at, by, hash }                        75 条，源稿的工作副本
+edits    { _id, doc, md, base, by, uid, at, ok, okBy, note }
+editors  { _id: uid, name, lv, at }
+```
 
-「等待构建」的判据现取，不另存状态：库里标了 ok=1，而
-`builds/<赛季号>/<slug>/index.html` 还不在。
+`edits` 的 `ok`：**-2 草稿、0 待审、1 通过、-1 驳回**。草稿与待审合称「未结」，
+同一个人同一篇只留一条，改写不堆叠。
 
-页面没有 JS，全部是表单 POST + 302。**动作按钮靠 `form=` 属性接上各自的表单**
-——把 `<div>` 开在一个表单里、关在另一个外面，浏览器会自己拆，拆完按钮落在表单外，
-按下去什么也不提交。`season` 与 `slug` 拼路径之前都要过 `src_of()` 现验，那两截
-从表单来。
+**`base` 存的是提交那一刻的正文**，审核页的 diff 与它比，不与当前正文比——同篇有
+两份待审时，与当前比会把另一份的改动也算进这一份的 diff 里。
+
+**通过即覆写 `docs` 里的正文**，同篇其余待审整批驳回。审核页把它们并排列出，
+就是为了让这一下是「挑」而不是「猜」：另一份里的修正不该悄悄没掉。
+
+#### 编辑器按块拆
+
+**拆分规则不是「一行一块」**：`references/artifact-mods.md` 有一处 `{el-kinetic|…}`
+跨 4 行（全站 75 份里仅此一处）。规则是**逐行累加，花括号深度回到 0 才收一块**，
+拼回去就是 `join('\n')`。点一块就地展开 `<textarea>`，失焦即收起。
+
+着色走选中文字加一排芯片，芯片用真的 `site.css` 类渲染——`--c-orb` 与 `--c-stack`
+这类同色对靠名字分辨。块的预览与 `markup.inline()` 同一条规则：一趟栈式扫描，
+支持嵌套，正则做不干净。**芯片要自己 `preventDefault`**，否则按下去先让 textarea
+失焦，块当场收起，选区没了。
+
+#### 前端闸门是提示，不是拦截
+
+`admin/terms.js` 由 `tools/build-terms.py` 从**现有的唯一真相**导出，不另立词表：
+`check_terms.TERMS`（G1 正名、G2 token 唯一）、`check_terms.tint_classes`
+（G3 token 有定义，同时是芯片的调色板）、`items.load()`（G6 正查）。改一处两边同时
+生效。一条记录一行，与 `assets/search.js` 同理——按行写让 git 存得下增量。
+
+浏览器里另加两条本地闸门查不到的：花括号闭合，以及表格行的格数与表头一致（切格要
+记花括号深度，`{ico|…}` 内部也有竖线）。
+
+**跑不动的留在本地**：逐字保真、神器模组三个一组、每套 2 件 + 4 件、分节计数。
+一篇改坏会让 `npm run build` 中止、卡住整次部署，办法是 `git checkout` 那一篇再回
+库里驳回，**不为此在线上造第二套校验**。
+
+#### 配装投稿的预览不需要 Python
+
+`builds/new/index.html` 本身就是浏览器里的配装渲染器：`iframe` 载进来调
+`window.starsideForm.load(md)`，再点它自己的 `#preview` 即可。**通过仍在本机做**
+——那一步要定 slug、要落盘。
+
+#### 离线断言
+
+`blocks` / `paint` / `lint` / `cells` / `lcs` 五条纯函数不碰 DOM，`admin.js` 末尾
+按 `module.exports` 与 `window.starsideAdmin` 各导一份，**断言页读仓库里那一份跑，
+不复制副本**。最要紧的一条：`blocks(md).join('\n') === md` 对全部 75 份源稿成立。
 
 ## 术语与着色的一处定义
 
@@ -667,7 +748,7 @@ chip——只有两个大节时跳转本来就不难，找职业直接在旁边�
 **卡片是竖式的，一排六张**：图在最上，往下是配装名、推荐人、简介、标签、时间与赞数。
 简介固定三行、标签固定两行，都超出即裁——一排六张里有一张长出来，下一排的顶缘就是锯齿。
 左缘那条 2px 亮边跟着该配装的分支色走。筛选交给工具条那只搜索框（卡片即 `data-item`），
-多标签 chip 筛选等配装过二十套再做。**审核台 `tools/review.py` 引的是同一份样式表，它的
+多标签 chip 筛选等配装过二十套再做。**编辑台 `admin/` 引的是同一份样式表，它的
 列表跟着一起变**，两处的卡本来就该同形。
 
 **索引页的版心是 1500，不跟着配装页收到 1060**：它是卡片目录，与首页的目录同形。同一份

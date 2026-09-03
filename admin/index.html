@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>编辑台 · Starside</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0b0d14">
+<link rel="preload" href="../assets/fonts/chakra-petch-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-head">
+<nav class="site-nav"><a href="../index.html">Starside</a><span class="sep">/</span><span class="step">编辑台</span></nav>
+<div class="me" id="me" hidden><span id="me-name"></span><span class="sep">/</span><span id="me-lv"></span><button type="button" class="chip" id="out">退出</button></div>
+</header>
+
+<main id="app">
+
+<section class="block" id="gate">
+<h2 class="sect-label">登录</h2>
+<div class="tabs" role="tablist">
+<button type="button" class="chip" id="t-pw" role="tab" aria-current="true">账号密码</button>
+<button type="button" class="chip" id="t-em" role="tab">邮箱验证码</button>
+</div>
+<form id="f-pw" class="login">
+<label>用户名<input name="username" autocomplete="username" required></label>
+<label>密码<input name="password" type="password" autocomplete="current-password" required></label>
+<button type="submit" class="chip go">登录</button>
+</form>
+<form id="f-em" class="login" hidden>
+<label>邮箱<input name="email" type="email" autocomplete="email" required></label>
+<label>验证码<span class="row"><input name="code" inputmode="numeric" autocomplete="one-time-code" required><button type="button" class="chip" id="send-code">发送</button></span></label>
+<button type="submit" class="chip go">登录</button>
+</form>
+<p class="tip" id="gate-tip" role="status"></p>
+</section>
+
+<section class="block" id="stranger" hidden>
+<h2 class="sect-label">还不是编辑者</h2>
+<p>你的 ID 是 <code id="my-uid"></code>，把它发给管理员，加进白名单后刷新即可。</p>
+</section>
+
+<div id="views" hidden>
+<nav class="toolbar tabs" id="tabs">
+<button type="button" class="chip" data-view="docs" aria-current="true">源稿</button>
+<button type="button" class="chip" data-view="queue">待审 <span class="n" id="n-queue"></span></button>
+<button type="button" class="chip" data-view="eds" hidden>编辑者</button>
+</nav>
+<div id="view"></div>
+</div>
+
+</main>
+
+<script src="terms.js" defer></script>
+<script src="admin.js" defer></script>
+</body>
+</html>

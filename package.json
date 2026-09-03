@@ -5,6 +5,6 @@
   "scripts": {
     "start": "npx serve . -l 3000",
     "dev": "npx serve . -l 3000",
-    "build": "python3 tools/convert-artifact-mods.py && python3 tools/convert-armor-sets.py && python3 tools/convert-doc.py && python3 tools/items.py --builds && python3 tools/convert-build.py && python3 tools/build-search.py && python3 tools/check_shell.py && python3 tools/check_terms.py"
+    "build": "python3 tools/convert-artifact-mods.py && python3 tools/convert-armor-sets.py && python3 tools/convert-doc.py && python3 tools/items.py --builds && python3 tools/convert-build.py && python3 tools/build-search.py && python3 tools/build-terms.py && python3 tools/check_shell.py && python3 tools/check_terms.py"
   }
 }
