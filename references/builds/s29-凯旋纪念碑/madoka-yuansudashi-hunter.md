@@ -53,10 +53,10 @@
 {el-stasis|冰影}-{el-stasis|冰霜护甲}：通过碎片使命啄面并携带超能{el-stasis|沉默狂啸}后拾取{orb|能量球}获取
 {el-strand|缚丝}-{el-strand|织造铠甲}：装备女王兰香炉神器中的{art-perk|崩解}模组并在使用职业技能后通过装备切割perk的完美逆行施加{deb-strand|割裂}debuff后击杀并在{el-strand|织造铠甲}节点附近获取，此外也可通过神器中的{art-perk|瓦解能量球}和群敌{art-perk|群敌飞梭}模组给{enemy|战斗人员}施加{deb-strand|割裂}debuff进而获取{el-strand|织造铠甲}。
 接下来介绍如何施加五元素debuff：
-{el-solar|烈日}-{deb-solar|灼烧}（{deb-solar|点燃}）：通过拥有岁时之巅的{perk|燃烧野心}perk射击施加，也可以通过神器{art-perk|发热寒颤}和{art-perk|火种扳机}联动施加
+{el-solar|烈日}-{deb-solar|灼烧}（{deb-solar|点燃}）：通过拥有岁时之巅的{perk|燃烧野心}perk射击施加，也可以通过神器{art-perk|发热寒颤}和{art-perk|火种扳机}联动施加，还可以通过{el-prismatic|超凡}手雷施加
 {el-arc|电弧}-{deb-arc|震颤}：使用星相{el-arc|飞升}施加
 {el-void|虚空}-{deb-void|虚弱}：通过星相{el-void|潇洒行刑者}在{el-void|隐身}状态下对{enemy|战斗人员}使用近战施加，以及使用近战技能{el-void|陷阱炸弹}（烟雾弹）施加
-{el-stasis|冰影}-{deb-stasis|减速}（{deb-stasis|冻结}）：通过破碎王座两件套套装效果使用{enemy|终结技}后对范围内{enemy|战斗人员}施加，以及使用超能{el-stasis|沉默狂啸}施加
+{el-stasis|冰影}-{deb-stasis|减速}（{deb-stasis|冻结}）：通过破碎王座两件套套装效果使用{enemy|终结技}后对范围内{enemy|战斗人员}施加，以及使用超能{el-stasis|沉默狂啸}施加，还可以通过{el-prismatic|超凡}手雷施加
 {el-strand|缚丝}-{deb-strand|瓦解}：通过神器模组{art-perk|瓦解能量球}在拾取{orb|能量球}和投掷{el-strand|缠结}后使用完美逆行施加，此外还可以通过神奇模组{art-perk|崩解}对切割后的{enemy|战斗人员}造成多次伤害施加。
 {el-strand|缚丝}-切割：使用职业技能后通过装备切割perk的完美逆行射击施加，神器模组{art-perk|群敌飞梭}产生的线虫施加
 上述配装仅提供核心要求，空缺部位可以根据需求进行填补。王座四件套的目的为提高回转以及获取减伤，可根据自身需求自行调整。本配装无眩晕屏障的手段，在宗师、终极等副本需要自行佩戴相应武器。
