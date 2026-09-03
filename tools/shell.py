@@ -81,27 +81,25 @@ SPEC = ('<script type="speculationrules">'
 # 站点唯一的后端：functions/api/，HTTP 访问服务。访问计数、点赞、配装投稿都走它。
 API = 'https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api'
 
-# 访问计数：每页一发，**同一个浏览器每小时只算一次访问**——按页面加载数记会
-# 把一个人翻十页记成十次，翻的是同一个站。窗口写在 localStorage 的两个定长键上
-# （sv 存小时、svd 存天），不按小时各存一个键，那样一年攒 8760 个。
-# UV 按天首次；localStorage 不可用时去不了重，那台机器每次加载都算一次。
+# 访问计数：**同一个浏览器每天只算一次**，记的因此是访客数不是页面加载数。
+# 计费按数据库调用次数算，而这一路是写、挡不进缓存，唯一能压的就是发的次数：
+# 一天一次，调用数与访客数持平，翻多少页都不再涨。窗口写在 localStorage 的一个
+# 定长键上（svd 存天），不一天一个键，那样一年攒 365 个。localStorage 不可用时
+# 去不了重，那台机器每次加载都算一次。
 # 落在计数窗口外、页面又没有 <span id="sv"> 时一个请求都不发。
-# 上报带上 location.pathname，后端按页面各记一条，看得出哪一页最热；file:// 下
-# 那是本机绝对路径，不发。
+# 页面级热度看托管控制台的 URL 排行，不自己存。
 HIT = ('<script>(function(){'
-       'var t=new Date(Date.now()+288e5).toISOString(),h=t.slice(0,13),d=t.slice(0,10);'
-       'var o=document.getElementById("sv"),f=1,u=0;'
-       'try{f=localStorage.getItem("sv")===h?0:1;if(f)localStorage.setItem("sv",h);'
-       'u=localStorage.getItem("svd")===d?0:1;if(u)localStorage.setItem("svd",d)}catch(_){}'
+       'var d=new Date(Date.now()+288e5).toISOString().slice(0,10);'
+       'var o=document.getElementById("sv"),f=1;'
+       'try{f=localStorage.getItem("svd")===d?0:1;if(f)localStorage.setItem("svd",d)}catch(_){}'
        # 首页那句数字在窗口内直接用上一次的：不加这一层，刷十次首页就是十次冷启动。
-       # svt 只在 sv===h 时读得到，天然按小时作废，不必另存时间戳。
+       # svt 只在 svd===d 时读得到，天然按天作废，不必另存时间戳。
        'if(!f){if(!o)return;'
        'try{var c=localStorage.getItem("svt");if(c){o.textContent=c;return}}catch(_){}}'
-       'var p=location.protocol.indexOf("http")===0?location.pathname:"";'
        'var r=f?fetch("%s",{method:"POST",headers:{"content-type":"application/json"},'
-       'body:JSON.stringify({a:"hit",uv:u,p:p,s:o?1:0})}):fetch("%s?a=stats");'
+       'body:JSON.stringify({a:"hit",s:o?1:0})}):fetch("%s?a=stats");'
        'r.then(function(x){return x.json()})'
-       '.then(function(s){if(o){var t="今日 "+s.today+" 次访问 · 累计 "+s.total;'
+       '.then(function(s){if(o){var t="今日 "+s.today+" 位访客 · 累计 "+s.total;'
        'o.textContent=t;try{localStorage.setItem("svt",t)}catch(_){}}},'
        'function(x){if(o)o.textContent="访问统计取不到："+x})})()</script>' % (API, API))
 

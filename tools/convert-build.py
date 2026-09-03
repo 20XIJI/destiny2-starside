@@ -575,7 +575,8 @@ TIP_SW_CHIP = '<button id="tipsw" class="chip" type="button" data-tip-sw>详情�
 # 一次取回全站的赞数：配装几十套，分页请求反而更慢。
 # ponytail: 防重复只认 localStorage，换浏览器能再点一次。
 # 赞数按小时缓存，与访问计数同一个窗口：不缓存时翻十套配装就是十次冷启动，而
-# 这个数不是行情。自己点的那一下就地改缓存，即时可见；别人的赞最多晚一小时。
+# 这个数不是行情。自己点的那一下就地改缓存，即时可见；别人的赞最多晚一小时，
+# 函数那边还压着一层五分钟的实例内存缓存。
 LIKE_JS = ('<script>(function(){'
            'var C=[].slice.call(document.querySelectorAll("[data-like]"));if(!C.length)return;'
            'function show(el,v){(el.querySelector("b")||el).textContent=v}'
@@ -595,10 +596,12 @@ LIKE_JS = ('<script>(function(){'
            'var id=b.dataset.like,on=b.getAttribute("aria-pressed")=="true";'
            'b.setAttribute("aria-pressed",on?"false":"true");'
            'try{on?localStorage.removeItem(key(id)):localStorage.setItem(key(id),"1")}catch(_){}'
+           # 新数自己算：那个数就在手边的缓存里，回读一次只为拿它不值一次数据库调用，
+           # 也不必等一个往返才看见自己那一下。
+           'var v=Math.max(0,((M&&M[id])||0)+(on?-1:1));show(b,v);if(M){M[id]=v;save()}'
            'fetch("%s",{method:"POST",headers:{"content-type":"application/json"},'
-           'body:JSON.stringify({a:"like",id:id,d:on?-1:1})}).then(function(r){return r.json()})'
-           '.then(function(s){show(b,s.n);if(M){M[id]=s.n;save()}},'
-           'function(x){show(b,"失败："+x)})})})()</script>'
+           'body:JSON.stringify({a:"like",id:id,d:on?-1:1})})'
+           '.catch(function(x){show(b,"失败："+x)})})})()</script>'
            % (shell.API, shell.API))
 
 
