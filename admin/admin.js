@@ -647,6 +647,10 @@
     wrap.appendChild(bar)
     title((/^#\s+(.+)$/m.exec(s.md) || [0, '配装投稿'])[1])
 
+    // 载进来的是**可以改的填表页**，不是一张只读的图。装备写错、描述要润色，
+    // 审的人改完再通过比打回去让人重投快得多。**不替他按预览**——预览态下
+    // #sheet.preview 把输入框与格子全设成 pointer-events: none，整页点不动；
+    // 那一页右下角自己带着「预览配装」，想看成品点它即可。
     var fr = el('iframe', 'prev')
     fr.src = '../builds/new/index.html'
     fr.onload = function () {
@@ -656,16 +660,24 @@
         // **把那一页自己的「投稿」摘掉**：它在审核页里按一下就是再投一份。
         var send = w.document.getElementById('send')
         if (send) send.remove()
-        var p = w.document.getElementById('preview')
-        if (p) p.click()
       } catch (err) {
-        tip(wrap, '预览载不出来：' + err.message, 1)
+        tip(wrap, '填表页载不出来：' + err.message, 1)
       }
     }
     wrap.appendChild(fr)
 
+    // 改后的那一份从填表页现读；读不出来（脚本没载好）就退回投稿原文，不交空的。
+    function current () {
+      try {
+        var md = fr.contentWindow.starsideForm.read()
+        return /^#\s+\S/.test(md) ? md : s.md
+      } catch (e) {
+        return s.md
+      }
+    }
+
     var src = el('details')
-    src.appendChild(el('summary', null, '源稿'))
+    src.appendChild(el('summary', null, '投稿原文'))
     var pre = el('pre')
     pre.textContent = s.md
     src.appendChild(pre)
@@ -695,6 +707,8 @@
           }
           body.season = season.value
           body.slug = slug.value.trim().toLowerCase()
+          var md = current()
+          if (md !== s.md) body.md = md      // 改过才带，没改就不占那趟请求的体积
         }
         call('smark', body).then(load).then(queueView, function (e) {
           yes.disabled = no.disabled = false
@@ -709,7 +723,8 @@
       acts.appendChild(no)
       wrap.appendChild(acts)
       wrap.appendChild(el('p', 'lede',
-        '通过只在库里标状态，源稿由本机 tools/sync.py 落盘，跟着下一次构建上站。'))
+        '上面那张表可以直接改，通过时落盘的是改后的那一份。'
+        + '通过只在库里标状态，源稿由本机 tools/sync.py 落盘，跟着下一次构建上站。'))
     }
     show(wrap)
   }
