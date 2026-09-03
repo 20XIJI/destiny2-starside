@@ -22,21 +22,10 @@
 
 <section class="block" id="gate">
 <h2 class="sect-label">登录</h2>
-<div class="tabs" role="tablist">
-<button type="button" class="chip" id="t-pw" role="tab" aria-current="true">账号密码</button>
-<button type="button" class="chip" id="t-em" role="tab">邮箱验证码</button>
-</div>
+<p class="tip">账号由管理员在云开发控制台建，没有自助注册。</p>
 <form id="f-pw" class="login">
 <label>用户名<input name="username" autocomplete="username" required></label>
 <label>密码<input name="password" type="password" autocomplete="current-password" required></label>
-<button type="submit" class="chip go">登录</button>
-</form>
-<form id="f-em" class="login" hidden>
-<label>邮箱<input name="email" type="email" autocomplete="email" required></label>
-<label>验证码<span class="row"><input name="code" inputmode="numeric" autocomplete="one-time-code" required><button type="button" class="chip" id="send-code">发送</button></span></label>
-<p class="tip">下面两格只在首次注册时用，填了以后就能走「账号密码」那一页。</p>
-<label>用户名（可空）<input name="username" autocomplete="username"></label>
-<label>密码（可空）<input name="password" type="password" autocomplete="new-password"></label>
 <button type="submit" class="chip go">登录</button>
 </form>
 <p class="tip" id="gate-tip" role="status"></p>

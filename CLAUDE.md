@@ -239,10 +239,13 @@ python3 tools/deploy.py            # 末尾自动再对一次账
 #### 认证：裸 HTTP，不引 SDK
 
 身份认证 v2 本身就是 HTTP 接口，`fetch` 直打
-`https://<envId>.api.tcloudbasegateway.com`：`POST /auth/v1/signin` 拿令牌，
-`POST /auth/v1/token` 用 `refresh_token` 换新的。账密与邮箱验证码两条并开，
-登录框两个标签页，两个端点形状同构。**不引 `@cloudbase/js-sdk`**——auth-only
-入口 65 KB gzip、全量 136 KB，而整站首屏才 46 KB。
+`https://<envId>.api.tcloudbasegateway.com`：`POST /auth/v1/signin` 带用户名密码
+拿令牌，`POST /auth/v1/token` 用 `refresh_token` 换新的。**不引 `@cloudbase/js-sdk`**
+——auth-only 入口 65 KB gzip、全量 136 KB，而整站首屏才 46 KB。
+
+**只有账号密码一条，没有自助注册。**账号由管理员在云开发控制台的「用户管理」页
+手工建（注册用户免费、不限量）。网关默认策略对任何自注册的注册用户都放行云函数，
+少一条注册入口就少一整类要挡的东西；十几个内部编辑者也用不着自助。
 
 `access_token` 2 小时、`refresh_token` 30 天，都存 `localStorage`。被拒一次就拿
 refresh 换一遍再打，**重试只放一次**：换完还被拒就是真的过期了，落回登录框。

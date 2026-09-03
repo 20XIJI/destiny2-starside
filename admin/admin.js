@@ -657,64 +657,23 @@
     })
   }
 
-  // ── 登录框 ─────────────────────────────────────────────────────────
+  // ── 登录框 ───────────────────────────────────────────────────────
+  // 只有账号密码一条。**账号由管理员在云开发控制台手工建**（注册用户免费、不限量），
+  // 没有自助注册：网关默认策略对任何自注册的注册用户都放行云函数，少一条注册入口
+  // 就少一整类要挡的东西。
   function gate () {
     var pw = $('f-pw')
-    var em = $('f-em')
-    function swap (on, off, bon, boff) {
-      on.hidden = false
-      off.hidden = true
-      bon.setAttribute('aria-current', 'true')
-      boff.removeAttribute('aria-current')
-    }
-    $('t-pw').onclick = function () { swap(pw, em, $('t-pw'), $('t-em')) }
-    $('t-em').onclick = function () { swap(em, pw, $('t-em'), $('t-pw')) }
-
-    $('send-code').onclick = function () {
-      var addr = em.email.value.trim()
-      if (!addr) return
-      $('send-code').disabled = true
-      auth('/auth/v1/verification', { email: addr }).then(function (r) {
-        em.dataset.vid = r.verification_id || ''
-        $('gate-tip').textContent = '验证码发出去了'
-        $('send-code').disabled = false
-      }, function (err) {
-        $('gate-tip').textContent = '发不出去：' + err.message
-        $('send-code').disabled = false
-      })
-    }
-
-    function go (p) {
+    pw.onsubmit = function (ev) {
+      ev.preventDefault()
       $('gate-tip').textContent = '登录中…'
-      p.then(function (j) {
+      auth('/auth/v1/signin', {
+        username: pw.username.value.trim(),
+        password: pw.password.value
+      }).then(function (j) {
         tok(j)
         $('gate-tip').textContent = ''
         return boot()
       }).catch(function (e) { $('gate-tip').textContent = '登录不了：' + e.message })
-    }
-
-    pw.onsubmit = function (ev) {
-      ev.preventDefault()
-      go(auth('/auth/v1/signin', { username: pw.username.value.trim(), password: pw.password.value }))
-    }
-    // 邮箱这条走三步：发码 → 验码换 verification_token → 拿它登录。**少中间那一步**
-    // signin 会回「username or verification_token can not both be empty」。
-    // 发码那一步不说这个邮箱注册过没有，所以先试登录，被拒了再当注册办——
-    // 注册那一下顺带把账密设上，否则「账号密码」那一页永远没账号可用。
-    em.onsubmit = function (ev) {
-      ev.preventDefault()
-      go(auth('/auth/v1/verification/verify', {
-        verification_id: em.dataset.vid || '',
-        verification_code: em.code.value.trim()
-      }).then(function (v) {
-        var t = v.verification_token
-        return auth('/auth/v1/signin', { verification_token: t }).catch(function () {
-          var body = { email: em.email.value.trim(), verification_token: t }
-          if (em.username.value.trim()) body.username = em.username.value.trim()
-          if (em.password.value) body.password = em.password.value
-          return auth('/auth/v1/signup', body)
-        })
-      }))
     }
   }
 
