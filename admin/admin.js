@@ -54,6 +54,25 @@
       .then(function (j) { tok(j); return j })
   }
 
+  // 网关的请求体上限是 100 KB，而最长的源稿 159 KB。提交发的是整篇快照，所以正文
+  // 一律压过再发，与 tools/sync.py 那一侧对称；**不设「多大才压」的阈值**，一个分支
+  // 就是一个会判错的地方。
+  function gzip (text) {
+    var cs = new CompressionStream('gzip')
+    var w = cs.writable.getWriter()
+    w.write(new TextEncoder().encode(text))
+    w.close()
+    return new Response(cs.readable).arrayBuffer().then(function (buf) {
+      var u = new Uint8Array(buf)
+      var s = ''
+      // 分段拼：String.fromCharCode.apply 对几万个参数会栈溢出。
+      for (var i = 0; i < u.length; i += 8192) {
+        s += String.fromCharCode.apply(null, u.subarray(i, i + 8192))
+      }
+      return btoa(s)
+    })
+  }
+
   // 每个管理动作带 Bearer。重试只放一次：刷新之后仍被拒就是真的过期了。
   function call (a, body, retry) {
     return fetch(API, {
@@ -363,7 +382,9 @@
       var md = bs.join('\n')
       if (md === doc.md) { tip(wrap, '与库里那份一字不差，没什么可提的'); return }
       save.disabled = send.disabled = true
-      call('put', { doc: doc._id, md: md, ok: ok }).then(load).then(function () {
+      gzip(md).then(function (gz) {
+        return call('put', { doc: doc._id, gz: gz, ok: ok })
+      }).then(load).then(function () {
         save.disabled = send.disabled = false
         tip(wrap, ok === 0 ? '提交了，等审核' : '草稿存好了')
       }, function (e) {

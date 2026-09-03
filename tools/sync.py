@@ -11,10 +11,13 @@
 artifact-mods、builds/s29-凯旋纪念碑/xxx-warlock。换算只有 path_of / id_of 两处。
 """
 import argparse
+import base64
+import gzip
 import hashlib
 import json
 import os
 import sys
+import time
 import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -36,15 +39,27 @@ def token():
 
 
 def api(action, **kw):
-    """打后端那支云函数。不走 tcb CLI：那条路每次起一个 Node 进程，实测 5.9 秒。"""
-    req = urllib.request.Request(
-        shell.API,
-        data=json.dumps(dict(kw, a=action, k=token()), ensure_ascii=False).encode(),
-        headers={'content-type': 'application/json'})
-    out = json.loads(urllib.request.urlopen(req, timeout=60).read().decode())
-    if isinstance(out, dict) and out.get('error'):
-        raise RuntimeError('后端拒了 %s：%s' % (action, out['error']))
-    return out
+    """打后端那支云函数。不走 tcb CLI：那条路每次起一个 Node 进程，实测 5.9 秒。
+
+    **撞 429 就退避重试**：网关的 qpsPolicy 是单 IP 5 QPS，而灌库是一趟 75 次的
+    连发。固定睡一个常数也压得住，但那个常数会在限流改了之后静默失效；按回应退避
+    不必猜，也顺带兜住别处同时在打这支函数的情况。
+    """
+    body = json.dumps(dict(kw, a=action, k=token()), ensure_ascii=False).encode()
+    for wait in (0.3, 1, 3, 8, 0):
+        req = urllib.request.Request(
+            shell.API, data=body, headers={'content-type': 'application/json'})
+        try:
+            out = json.loads(urllib.request.urlopen(req, timeout=60).read().decode())
+        except urllib.error.HTTPError as e:
+            if e.code != 429 or not wait:
+                raise
+            time.sleep(wait)
+            continue
+        if isinstance(out, dict) and out.get('error'):
+            raise RuntimeError('后端拒了 %s：%s' % (action, out['error']))
+        return out
+    raise RuntimeError('%s 一直被限流挡着' % action)
 
 
 def sha1(text):
@@ -119,7 +134,8 @@ def push(force=False):
     for doc_id, md in sorted(disk.items()):
         if not force and got.get(doc_id) == sha1(md):
             continue
-        api('push', id=doc_id, md=md)
+        # 网关的请求体上限 100 KB，最长那篇源稿 159 KB，所以一律压过再发。
+        api('push', id=doc_id, gz=base64.b64encode(gzip.compress(md.encode(), 9)).decode())
         sent.append(doc_id)
     print('推上去 %d 篇' % len(sent) + ('：' + '、'.join(sent) if sent else ''))
     return sent
