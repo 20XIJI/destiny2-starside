@@ -1052,6 +1052,25 @@ def check(out, slug):
         die('%s 有面板没写 --n' % slug)
 
 
+def sync_home(n):
+    """首页那两张配装卡的更新时间与套数随投稿漂，构建时按产出改写。
+    时间从两个产出页的页脚现读——那正是 check_terms.py 的 G4 拿来比对的值。"""
+    path = os.path.join(shell.ROOT, 'index.html')
+    home = open(path, encoding='utf-8').read()
+    for href in ('builds/index.html', 'builds/new/index.html'):
+        page = open(os.path.join(shell.ROOT, href), encoding='utf-8').read()
+        stamp = must(re.search(r'<span class="stamp">更新 ([\d.]+)</span>', page),
+                     '%s 的页脚没有更新时间' % href).group(1)
+        card = must(re.search(r'<a class="entry" href="%s".*?</a>' % re.escape(href),
+                              home, re.S), '首页找不到 %s 那张卡' % href)
+        fixed = re.sub(r'(entry-stamp">更新 )[\d.]+', lambda m: m.group(1) + stamp,
+                       card.group(0))
+        if href == 'builds/index.html':
+            fixed = re.sub(r'(<dt>配装</dt><dd>)\d+', lambda m: m.group(1) + str(n), fixed)
+        home = home[:card.start()] + fixed + home[card.end():]
+    open(path, 'w', encoding='utf-8').write(home)
+
+
 def main():
     if len(sys.argv) > 2:
         die(__doc__)
@@ -1075,6 +1094,7 @@ def main():
             die('references/builds/ 下没有 %s- 开头的赛季目录，填表页写不出赛季名。'
                 '换季时先建目录再改 shell.SEASON' % SEASON)
         render_new(max(m['stamp'] for m in made), here[0])
+        sync_home(len([m for m in made if m['season'] == SEASON]))
     print('配装 %d 套，当前赛季 %s %d 套'
           % (len(made), SEASON, len([m for m in made if m['season'] == SEASON])))
 
