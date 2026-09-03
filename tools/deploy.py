@@ -70,7 +70,7 @@ def main() -> None:
         sys.exit("--prune 只跟 --all 一起用：增量那份清单不是完整的一版，会把没改的文件全删了")
 
     if not dry and git("status", "--porcelain").strip():
-        sys.exit("工作区不干净：先按审核台那枚「构建并提交」，再部署")
+        sys.exit("工作区不干净：先 npm run build 再 commit，然后部署")
 
     base = subprocess.run(["git", "rev-parse", "--verify", REF], cwd=ROOT, text=True, capture_output=True).stdout.strip()
     if full:
