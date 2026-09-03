@@ -697,12 +697,23 @@
       ev.preventDefault()
       go(auth('/auth/v1/signin', { username: pw.username.value.trim(), password: pw.password.value }))
     }
+    // 邮箱这条走三步：发码 → 验码换 verification_token → 拿它登录。**少中间那一步**
+    // signin 会回「username or verification_token can not both be empty」。
+    // 发码那一步不说这个邮箱注册过没有，所以先试登录，被拒了再当注册办——
+    // 注册那一下顺带把账密设上，否则「账号密码」那一页永远没账号可用。
     em.onsubmit = function (ev) {
       ev.preventDefault()
-      go(auth('/auth/v1/signin', {
-        email: em.email.value.trim(),
-        verification_code: em.code.value.trim(),
-        verification_id: em.dataset.vid || ''
+      go(auth('/auth/v1/verification/verify', {
+        verification_id: em.dataset.vid || '',
+        verification_code: em.code.value.trim()
+      }).then(function (v) {
+        var t = v.verification_token
+        return auth('/auth/v1/signin', { verification_token: t }).catch(function () {
+          var body = { email: em.email.value.trim(), verification_token: t }
+          if (em.username.value.trim()) body.username = em.username.value.trim()
+          if (em.password.value) body.password = em.password.value
+          return auth('/auth/v1/signup', body)
+        })
       }))
     }
   }
