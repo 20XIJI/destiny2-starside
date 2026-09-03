@@ -86,6 +86,11 @@ def main() -> None:
         print(("  - " if p in gone else "  + ") + p)
     if dry:
         return
+
+    # 库与仓库对账。放在发文件之前、且不受「这次没文件要发」影响——源稿在库里那一份
+    # 与站上发了什么无关，改了 tools/ 一样要对一次账。
+    subprocess.run([sys.executable, "tools/sync.py"], cwd=ROOT)
+
     if not files and not gone:
         return
 
@@ -105,10 +110,6 @@ def main() -> None:
 
     git("update-ref", REF, "HEAD")
     print(f"已记下 refs/deploy = {git('rev-parse', '--short', 'HEAD').strip()}")
-
-    # 落定的源稿推回库里：在线编辑台读的是那一份，本地修的闸门错误要这样才回得去。
-    # 放在 update-ref 之后——推库失败不该让这一次部署白跑，重跑 --push 即可。
-    subprocess.run([sys.executable, "tools/sync.py"], cwd=ROOT)
 
 
 if __name__ == "__main__":
