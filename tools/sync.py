@@ -1,11 +1,24 @@
 #!/usr/bin/env python3
 """源稿在库与仓库之间对账。
 
-库（CloudBase 的 docs 集合）是在线编辑台的工作副本，git 是发布本。两边没有合并
-逻辑，只有覆盖，判据是内容 hash：
+库（CloudBase 的 docs 集合）是在线编辑台的工作副本，git 是发布本。**三方比**：
+除了盘上与库里两份，还在 .git 里记一份「上次对完账时每篇的 hash」当基线，
+所以「两边不一样」能分出是我改的还是别人改的。
 
-    --pull   库 → 盘。编辑台上通过的改动落到 references/ 下，跟着跑 npm run build。
-    --push   盘 → 库。部署成功后自动跑一次，把本地修的闸门错误送回库里。
+    盘变了、库没变        → 推上去
+    库变了、盘没变        → 拉下来
+    两边都变了            → 当场报出是哪几篇，一个字不动
+    盘上删了、库里没人动   → 库里跟着删
+    盘上删了、库里有人改过 → 也算撞车
+    盘上新加一篇          → 推上去（库里没东西可丢，不算撞车）
+
+只比 hash 不记基线的话，「不同」永远推不出方向：那样一次 --push 就会把线上刚
+通过的改动静默覆盖掉，而它从来没落过盘，git 历史上一点痕迹都没有。
+
+    python3 tools/sync.py                 # 对账，双向都走
+    python3 tools/sync.py --seed          # 盘整个覆盖库，首次灌库或对不上账时用
+    python3 tools/sync.py --mine   <_id>… # 撞车了，这几篇以盘上的为准
+    python3 tools/sync.py --theirs <_id>… # 撞车了，这几篇以库里的为准
 
 一条源稿的 _id 即它在 references/ 下的相对路径去掉 .md：docs/exotic-weapon、
 artifact-mods、builds/s29-凯旋纪念碑/xxx-warlock。换算只有 path_of / id_of 两处。
@@ -18,6 +31,7 @@ import json
 import os
 import sys
 import time
+import urllib.error
 import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -25,6 +39,8 @@ import shell
 
 ROOT = shell.ROOT
 REFS = os.path.join(ROOT, 'references')
+# 基线与 refs/deploy 同一个道理：它记的是这台机器对到哪儿了，不入库、不跨机器。
+BASE = os.path.join(ROOT, '.git', 'starside-sync.json')
 
 
 def token():
@@ -101,58 +117,151 @@ def on_disk():
     return out
 
 
+def in_db():
+    return {d['_id']: (d.get('md') or '') for d in api('pull')['docs']}
+
+
+def baseline(save=None):
+    if save is not None:
+        with open(BASE, 'w', encoding='utf-8') as f:
+            json.dump(save, f, ensure_ascii=False, indent=0, sort_keys=True)
+        return save
+    if os.path.exists(BASE):
+        with open(BASE, encoding='utf-8') as f:
+            return json.load(f)
+    return {}
+
+
 def put(path, md):
-    """CRLF→LF，补上末尾换行。与旧审核台的 put() 同一条规矩。"""
+    """CRLF→LF，补上末尾换行。"""
     with open(path, 'w', encoding='utf-8', newline='') as f:
         f.write(md.replace('\r\n', '\n').rstrip('\n') + '\n')
 
 
-def pull():
-    disk = on_disk()
-    got = {d['_id']: d for d in api('pull')['docs']}
-    wrote = []
-    for doc_id, row in sorted(got.items()):
-        md = row.get('md') or ''
-        if doc_id not in disk:
-            # 库里有、盘上没有：多半是本地删了那一篇。不凭空造回来，报出来由人定。
-            print('  ? %s 只在库里，盘上没有，跳过' % doc_id)
-            continue
-        if sha1(md) == sha1(disk[doc_id]):
-            continue
-        put(path_of(doc_id), md)
-        wrote.append(doc_id)
-    for doc_id in sorted(set(disk) - set(got)):
-        print('  ? %s 只在盘上，库里没有，跑 --push 灌进去' % doc_id)
-    print('拉下来 %d 篇' % len(wrote) + ('：' + '、'.join(wrote) if wrote else ''))
-    return wrote
+def send(doc_id, md):
+    # 网关的请求体上限 100 KB，最长那篇源稿 159 KB，所以一律压过再发。
+    api('push', id=doc_id, gz=base64.b64encode(gzip.compress(md.encode(), 9)).decode())
 
 
-def push(force=False):
+def sync():
+    disk, db, base = on_disk(), in_db(), baseline()
+    pushed, pulled, dropped, stuck = [], [], [], []
+
+    for doc_id in sorted(set(disk) | set(db)):
+        d = disk.get(doc_id)
+        r = db.get(doc_id)
+        b = base.get(doc_id)
+        dh = sha1(d) if d is not None else None
+        rh = sha1(r) if r is not None else None
+
+        if dh == rh:
+            continue
+        if b is None:
+            # 基线缺失有三种来路，只有一种真的分不出方向。
+            if r is None:
+                pushed.append(doc_id)   # 本地新加的一篇，库里没东西可丢
+                send(doc_id, d)
+            else:
+                stuck.append(doc_id)    # 库里有、且与盘上不同，猜不得
+            continue
+        mine = dh != b
+        theirs = rh != b
+        if mine and theirs:
+            stuck.append(doc_id)
+        elif mine:
+            if d is None:
+                api('drop', id=doc_id)
+                dropped.append(doc_id)
+            else:
+                send(doc_id, d)
+                pushed.append(doc_id)
+        else:
+            if r is None:
+                # 库里没了、盘上没动过：库那边不提供删除入口，所以这只可能是
+                # 手工清过。不替人删盘上的源稿，报出来。
+                stuck.append(doc_id)
+            else:
+                put(path_of(doc_id), r)
+                pulled.append(doc_id)
+
+    for name, ids in (('推上去', pushed), ('拉下来', pulled), ('库里删掉', dropped)):
+        if ids:
+            print('%s %d 篇：%s' % (name, len(ids), '、'.join(ids)))
+    if not (pushed or pulled or dropped or stuck):
+        print('两边一致，%d 篇' % len(disk))
+
+    if stuck:
+        # 撞车的那几篇把库里那份写在旁边，好逐字比对再定夺；references/ 整个
+        # 走「全忽略 + 白名单」，.remote 不是 .md，不会入库。
+        for doc_id in stuck:
+            if doc_id in db:
+                put(path_of(doc_id) + '.remote', db[doc_id])
+        print('\n撞车 %d 篇，一个字没动：' % len(stuck))
+        for doc_id in stuck:
+            print('  %s' % doc_id + ('  库里那份写在 %s.md.remote' % doc_id if doc_id in db else ''))
+        print('比过之后择一：')
+        print('  python3 tools/sync.py --mine   ' + ' '.join(stuck))
+        print('  python3 tools/sync.py --theirs ' + ' '.join(stuck))
+
+    # 只把这一轮真对上的记进基线，撞车那几篇的基线不动——不然下一轮就分不出方向了。
+    keep = dict(base)
+    for doc_id in sorted(set(disk) | set(db)):
+        if doc_id in stuck:
+            continue
+        if doc_id in disk:
+            keep[doc_id] = sha1(disk[doc_id])
+        else:
+            keep.pop(doc_id, None)
+    for doc_id in pulled:
+        keep[doc_id] = sha1(db[doc_id])
+    baseline(keep)
+    return 1 if stuck else 0
+
+
+def take(ids, mine):
+    disk, db, base = on_disk(), in_db(), baseline()
+    for doc_id in ids:
+        if mine:
+            if doc_id not in disk:
+                api('drop', id=doc_id)
+                base.pop(doc_id, None)
+            else:
+                send(doc_id, disk[doc_id])
+                base[doc_id] = sha1(disk[doc_id])
+        else:
+            if doc_id not in db:
+                sys.exit('%s 库里没有，谈不上以库里的为准' % doc_id)
+            put(path_of(doc_id), db[doc_id])
+            base[doc_id] = sha1(db[doc_id])
+        leftover = path_of(doc_id) + '.remote'
+        if os.path.exists(leftover):
+            os.remove(leftover)
+        print('%s ← %s' % (doc_id, '盘上那份' if mine else '库里那份'))
+    baseline(base)
+
+
+def seed():
     disk = on_disk()
-    got = {} if force else {d['_id']: d.get('hash') for d in api('pull')['docs']}
-    sent = []
     for doc_id, md in sorted(disk.items()):
-        if not force and got.get(doc_id) == sha1(md):
-            continue
-        # 网关的请求体上限 100 KB，最长那篇源稿 159 KB，所以一律压过再发。
-        api('push', id=doc_id, gz=base64.b64encode(gzip.compress(md.encode(), 9)).decode())
-        sent.append(doc_id)
-    print('推上去 %d 篇' % len(sent) + ('：' + '、'.join(sent) if sent else ''))
-    return sent
+        send(doc_id, md)
+    baseline({k: sha1(v) for k, v in disk.items()})
+    print('灌了 %d 篇，基线重记' % len(disk))
 
 
 def main():
-    ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument('--pull', action='store_true', help='库 → 盘')
-    ap.add_argument('--push', action='store_true', help='盘 → 库')
-    ap.add_argument('--all', action='store_true', help='配合 --push：不比 hash，整库重灌')
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument('--seed', action='store_true', help='盘整个覆盖库，并重记基线')
+    ap.add_argument('--mine', nargs='+', metavar='_id', help='撞车了，这几篇以盘上的为准')
+    ap.add_argument('--theirs', nargs='+', metavar='_id', help='撞车了，这几篇以库里的为准')
     a = ap.parse_args()
-    if a.pull == a.push:
-        ap.error('--pull 与 --push 二选一')
-    if a.pull:
-        pull()
+    if a.seed:
+        seed()
+    elif a.mine or a.theirs:
+        take(a.mine or [], True)
+        take(a.theirs or [], False)
     else:
-        push(a.all)
+        sys.exit(sync())
 
 
 if __name__ == '__main__':

@@ -108,7 +108,7 @@ def main() -> None:
 
     # 落定的源稿推回库里：在线编辑台读的是那一份，本地修的闸门错误要这样才回得去。
     # 放在 update-ref 之后——推库失败不该让这一次部署白跑，重跑 --push 即可。
-    subprocess.run([sys.executable, "tools/sync.py", "--push"], cwd=ROOT)
+    subprocess.run([sys.executable, "tools/sync.py"], cwd=ROOT)
 
 
 if __name__ == "__main__":

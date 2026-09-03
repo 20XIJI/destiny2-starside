@@ -36,7 +36,7 @@ shell.py           站点外壳与落盘：head 元信息、导航条、页脚�
 convert-*.py       四个生成器，各自只写自己那种数据形状的结构层
 build-search.py    各页产出 → assets/search.js，首页那只搜索框搜的就是它
 build-terms.py     两道闸门的词表 → admin/terms.js，在线编辑台的前端提示用的就是它
-sync.py            源稿在库与仓库之间对账：--pull 库到盘，--push 盘到库
+sync.py            源稿在库与仓库之间对账：记一份基线三方比，撞车就报、不猜方向
 check_shell.py     外壳闸门，从 shell.py 现取参照，不另存副本
 check_terms.py     术语与着色闸门，全部以 TERMS 那一张表为准
 items.py           官方物品表 → tools/items.json，Perk 名 → tools/perks.json：
@@ -79,9 +79,10 @@ python3 tools/items.py --builds              # 配装源稿的描述与注解自
 
 python3 tools/json2xlsx.py <抓取的.json>      # 还原成 xlsx，供核对与手改
 
-python3 tools/sync.py --pull                  # 库 → 盘，把编辑台上通过的源稿拉下来
-python3 tools/sync.py --push                  # 盘 → 库，部署后自动跑，也可手动补
-python3 tools/sync.py --push --all            # 整库重灌，首次或对不上账时用
+python3 tools/sync.py                         # 库与仓库对账，双向都走，部署后自动跑
+python3 tools/sync.py --seed                  # 盘整个覆盖库，首次灌库或对不上账时用
+python3 tools/sync.py --mine   <_id>…         # 撞车了，这几篇以盘上的为准
+python3 tools/sync.py --theirs <_id>…         # 撞车了，这几篇以库里的为准
 python3 tools/build-terms.py                  # 闸门词表 → admin/terms.js，构建时自动跑
 python3 tools/deploy.py                       # 增量部署站点，只发改过的文件
 python3 tools/deploy.py --dry-run             # 只列这次要发什么
@@ -102,9 +103,9 @@ pyright tools/*.py
 diff 发 `tcb hosting delete`。全部成功才动 `refs/deploy`，中途失败重跑即可，不会漏。
 挂载路径与缓存规则见 `README.md`。
 
-**部署成功之后自动跑一次 `sync.py --push`**：编辑台读的是库里那一份，本地修的
-闸门错误要这样才回得去。它排在 `update-ref` 之后——推库失败不该让这一次部署白跑，
-重跑 `--push` 即可。
+**部署成功之后自动跑一次 `sync.py`**：编辑台读的是库里那一份，本地修的闸门错误
+要这样才回得去。它排在 `update-ref` 之后——对账失败不该让这一次部署白跑，重跑
+`sync.py` 即可。
 
 **发之前工作区必须干净**：产出与源稿对不上时先 `npm run build` 再 commit。
 `refs/deploy` 记的是 commit，与一份没提交的产出对不上账。
@@ -201,28 +202,38 @@ runtime 比整站首屏还大。
 #### 库是工作副本，git 是发布本
 
 源稿在库里有一份 `docs` 集合，编辑台读写的是它；仓库里那 75 个 `.md` 才是发布本。
-两边**没有合并逻辑，只有覆盖**，判据是内容 hash，换算与落盘都在 `tools/sync.py`：
+两边**没有合并逻辑，只有覆盖**，方向由 `tools/sync.py` 的**三方比**定：除了盘上与
+库里两份，还在 `.git/starside-sync.json` 里记一份「上次对完账时每篇的 hash」当基线，
+与 `refs/deploy` 同一个道理——它记的是这台机器对到哪儿了，不入库、不跨机器。
 
-```
-python3 tools/sync.py --pull        # 库 → 盘，跟着跑 npm run build
-python3 tools/sync.py --push        # 盘 → 库，部署成功后自动跑
-python3 tools/sync.py --push --all  # 整库重灌
-```
+| 盘 | 库 | 做什么 |
+|---|---|---|
+| 变了 | 没变 | 推上去 |
+| 没变 | 变了 | 拉下来 |
+| 变了 | 变了 | **当场报出是哪几篇，一个字不动** |
+| 删了 | 没人动 | 库里跟着删 |
+| 删了 | 有人改过 | 算撞车 |
+| 新加一篇 | 没有 | 推上去，库里没东西可丢 |
+
+**只比 hash 不记基线的话，「不同」永远推不出方向。**那样一次推就会把线上刚通过的
+改动静默覆盖掉，而它从来没落过盘，git 历史上一点痕迹都没有——批量改动与新增条目
+在本地做更顺手，这条基线就是让那件事不必靠「改之前记得先拉」这种纪律。
+
+撞车时把库里那份写在 `<路径>.md.remote` 旁边好逐字比（`references/` 走「全忽略 +
+白名单」，`.remote` 不是 `.md`，不会入库），比过之后 `--mine` 或 `--theirs` 择一，
+两者都顺手清掉那个 `.remote`。**撞车那几篇的基线不动**——记了下一轮就分不出方向。
 
 `_id` 即源稿在 `references/` 下的相对路径去掉 `.md`（`docs/exotic-weapon`、
 `artifact-mods`、`builds/s29-凯旋纪念碑/xxx-warlock`），换算只有 `id_of` / `path_of`
 两处，后者用 `realpath` 挡穿越——`_id` 从库里来，而库是联网的那一侧。
 
-**`--pull` 不凭空造文件**：库里有、盘上没有的那一条只报出来，不写盘。那多半是本地
-删了那一篇，写回去就是把它复活。
-
 日常一轮：
 
 ```
-python3 tools/sync.py --pull
+python3 tools/sync.py
 npm run build
 git add -A && git commit
-python3 tools/deploy.py            # 末尾自动 --push
+python3 tools/deploy.py            # 末尾自动再对一次账
 ```
 
 #### 认证：裸 HTTP，不引 SDK
