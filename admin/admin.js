@@ -81,6 +81,8 @@
       headers: { 'content-type': 'application/json', authorization: 'Bearer ' + tok() },
       body: JSON.stringify(Object.assign({ a: a }, body || {}))
     }).then(function (r) { return r.json() }).then(function (j) {
+      // 只有令牌那一类才值得换一张再打。权限不足回的是另一个词——两件事共用
+      // 一个词时，lv 不够的人点一下要白跑三趟，报出来的话还看不出是权限问题。
       if (j && j.error === 'forbidden' && !retry) {
         return refresh().then(function () { return call(a, body, 1) })
       }
@@ -322,9 +324,7 @@
     wrap.appendChild(rows)
 
     var open = {}
-    S.edits.forEach(function (e) {
-      if (e.ok === 0 || e.ok === -2) (open[e.doc] = open[e.doc] || []).push(e)
-    })
+    S.edits.forEach(function (e) { if (e.ok === 0) (open[e.doc] = open[e.doc] || []).push(e) })
 
     S.docs.slice().sort(function (a, b) { return a._id < b._id ? -1 : 1 }).forEach(function (d) {
       var b = el('button')
@@ -336,8 +336,7 @@
       id.appendChild(document.createTextNode(d._id.slice(cut)))
       b.appendChild(id)
       ;(open[d._id] || []).forEach(function (e) {
-        b.appendChild(el('span', e.ok === 0 ? 'flag pend' : 'flag draft',
-          (e.by || '?') + (e.ok === 0 ? ' 待审' : ' 草稿')))
+        b.appendChild(el('span', 'flag pend', (e.by || '?') + ' 待审'))
       })
       b.appendChild(el('span', 'meta', (d.at || '').slice(0, 10)))
       b.onclick = function () { openDoc(d._id) }
@@ -365,9 +364,8 @@
     title(doc._id)
 
     // 我在这一篇上未结的那一条草稿或待审，接着改；没有就从库里的正文起手。
-    var mine = S.edits.filter(function (e) {
-      return e.doc === doc._id && (e.ok === 0 || e.ok === -2) && e.uid === S.me.uid
-    })[0]
+    // **不做草稿**：要改就当场改完再提。挂着的稿子越久，它起手那一版越可能
+    // 已经被别人通过的改动顶掉。
 
     var list = el('div', 'blocks')
     wrap.appendChild(list)
@@ -459,32 +457,30 @@
       ta.focus()
     }
 
-    render(mine ? mine.md : doc.md)
+    render(doc.md)
 
     var acts = el('div', 'acts')
-    var save = el('button', 'chip', '存草稿')
     var send = el('button', 'chip', '提交待审')
-    save.type = send.type = 'button'
-    save.onclick = function () { put(-2) }
-    send.onclick = function () { put(0) }
-    acts.appendChild(save)
-    acts.appendChild(send)
-    wrap.appendChild(acts)
-
-    function put (ok) {
+    send.type = 'button'
+    send.onclick = function () {
       var md = bs.join('\n')
       if (md === doc.md) { tip(wrap, '与库里那份一字不差，没什么可提的'); return }
-      save.disabled = send.disabled = true
+      send.disabled = true
       gzip(md).then(function (gz) {
-        return call('put', { doc: doc._id, gz: gz, ok: ok })
+        // base 带上起手那一版的 hash：中间被别人的改动顶掉了，后端当场拒。
+        return call('put', { doc: doc._id, gz: gz, base: doc.hash })
       }).then(load).then(function () {
-        save.disabled = send.disabled = false
-        tip(wrap, ok === 0 ? '提交了，等审核' : '草稿存好了')
+        send.disabled = false
+        tip(wrap, '提交了，等审核')
       }, function (e) {
-        save.disabled = send.disabled = false
-        tip(wrap, '没存上：' + e.message, 1)
+        send.disabled = false
+        tip(wrap, e.message === 'stale'
+          ? '这一篇在你打开之后被改过了，回去重新打开再改——照旧文改出来的稿子一旦通过，会把那条改动整个回退掉'
+          : '没提上：' + e.message, 1)
       })
     }
+    acts.appendChild(send)
+    wrap.appendChild(acts)
 
     show(wrap)
   }
@@ -516,6 +512,13 @@
     while (i < n) out.push(['-', a[i++]])
     while (j < m) out.push(['+', b[j++]])
     return out
+  }
+
+  // 结案时留在库里的那一段。**只留增删两侧**，上下文那几块不必存。
+  function diffText (base, md) {
+    return lcs(blocks(base), blocks(md))
+      .filter(function (o) { return o[0] !== ' ' })
+      .map(function (o) { return o[0] + ' ' + o[1] }).join('\n')
   }
 
   function diffView (base, md) {
@@ -618,10 +621,12 @@
         yes.type = no.type = 'button'
         var mark = function (ok) {
           yes.disabled = no.disabled = true
-          call('emark', { id: e._id, ok: ok }).then(load).then(queueView, function (err) {
-            yes.disabled = no.disabled = false
-            tip(wrap, '没改成：' + err.message, 1)
-          })
+          // diff 审核页已经算好了，原样带过去存进库里——后端不必再实现一遍 LCS。
+          call('emark', { id: e._id, ok: ok, diff: diffText(e.base || '', e.md || '') })
+            .then(load).then(queueView, function (err) {
+              yes.disabled = no.disabled = false
+              tip(wrap, '没改成：' + err.message, 1)
+            })
         }
         yes.onclick = function () { mark(1) }
         no.onclick = function () { mark(-1) }
@@ -648,6 +653,9 @@
       try {
         var w = fr.contentWindow
         w.starsideForm.load(s.md)
+        // **把那一页自己的「投稿」摘掉**：它在审核页里按一下就是再投一份。
+        var send = w.document.getElementById('send')
+        if (send) send.remove()
         var p = w.document.getElementById('preview')
         if (p) p.click()
       } catch (err) {
@@ -665,20 +673,116 @@
 
     if (S.me.lv >= 2) {
       var acts = el('div', 'acts')
+      // slug 即文件名，也是点赞的 _id。预填成「八位随机串-职业」：这一格必填，
+      // 而审的人多数时候不想在这里停下来想名字；重了后端当场拒，不会盖掉上一份。
+      var season = el('select')
+      seasons().forEach(function (x) { season.appendChild(new Option(x, x)) })
+      var slug = el('input', 'tool-search')
+      slug.value = defaultSlug(s.md)
+      slug.pattern = '[a-zA-Z0-9][a-zA-Z0-9-]*'
+      slug.required = true
+      var yes = el('button', 'chip', '通过')
       var no = el('button', 'chip', '驳回')
-      no.type = 'button'
-      no.onclick = function () {
-        no.disabled = true
-        call('smark', { id: s._id, ok: -1 }).then(load).then(queueView, function (e) {
-          no.disabled = false
-          tip(wrap, e.message, 1)
+      yes.type = no.type = 'button'
+      var mark = function (ok) {
+        yes.disabled = no.disabled = true
+        var body = { id: s._id, ok: ok }
+        if (ok === 1) {
+          if (!/^[a-zA-Z0-9][a-zA-Z0-9-]*$/.test(slug.value.trim())) {
+            yes.disabled = no.disabled = false
+            tip(wrap, 'slug 只能是字母、数字与连字符，且不以连字符开头', 1)
+            return
+          }
+          body.season = season.value
+          body.slug = slug.value.trim().toLowerCase()
+        }
+        call('smark', body).then(load).then(queueView, function (e) {
+          yes.disabled = no.disabled = false
+          tip(wrap, '没改成：' + e.message, 1)
         })
       }
+      yes.onclick = function () { mark(1) }
+      no.onclick = function () { mark(-1) }
+      acts.appendChild(season)
+      acts.appendChild(slug)
+      acts.appendChild(yes)
       acts.appendChild(no)
-      acts.appendChild(el('span', 'lede', '通过要落盘定 slug，在本机那一步做'))
       wrap.appendChild(acts)
+      wrap.appendChild(el('p', 'lede',
+        '通过只在库里标状态，源稿由本机 tools/sync.py 落盘，跟着下一次构建上站。'))
     }
     show(wrap)
+  }
+
+  // ── 改动记录 ───────────────────────────────────────────────────────
+  // 结案的那些。库里不再留两份全文，只留那几行增删，所以这一页答的正是
+  // 「谁在什么时候把哪一篇的哪几行改成了什么」。全文的历史在 git 里。
+  function histView () {
+    title('改动记录')
+    var wrap = el('section', 'block')
+    var done = S.edits.filter(function (e) { return e.ok === 1 || e.ok === -1 })
+      .sort(function (a, b) { return (b.at || '') < (a.at || '') ? -1 : 1 })
+    if (!done.length) wrap.appendChild(el('p', 'lede', '还没有结案的改动'))
+    var rows = el('div', 'rows')
+    done.forEach(function (e) {
+      var b = el('button')
+      b.type = 'button'
+      b.appendChild(el('span', 'flag ' + (e.ok === 1 ? 'pass' : 'no'), e.ok === 1 ? '通过' : '驳回'))
+      var id = el('span', 'id')
+      var cut = e.doc.lastIndexOf('/') + 1
+      if (cut) id.appendChild(el('i', 'dim', e.doc.slice(0, cut)))
+      id.appendChild(document.createTextNode(e.doc.slice(cut)))
+      b.appendChild(id)
+      b.appendChild(el('span', 'meta', (e.by || '?') + ' → ' + (e.okBy || '?')))
+      b.appendChild(el('span', 'meta', (e.at || '').slice(0, 16).replace('T', ' ')))
+      b.onclick = function () { histOne(e) }
+      rows.appendChild(b)
+    })
+    wrap.appendChild(rows)
+    show(wrap)
+  }
+
+  function histOne (e) {
+    call('hist', { id: e._id }).then(function (r) {
+      var wrap = el('section', 'block')
+      var bar = el('div', 'acts')
+      bar.appendChild(back('改动记录', histView))
+      wrap.appendChild(bar)
+      title(e.doc)
+      wrap.appendChild(el('p', 'lede', (e.by || '?') + ' 提 · ' + (e.okBy || '?') +
+        (e.ok === 1 ? ' 通过' : ' 驳回') + ' · ' + (e.at || '').slice(0, 16).replace('T', ' ')))
+      var box = el('div', 'diff')
+      ;(r.diff || '（没有留下增删）').split('\n').forEach(function (line) {
+        var n = el('div', line.charAt(0) === '-' ? 'del' : line.charAt(0) === '+' ? 'add' : 'ctx')
+        n.innerHTML = paint(line.slice(2))
+        box.appendChild(n)
+      })
+      wrap.appendChild(box)
+      show(wrap)
+    }, function (err) { alert(err.message) })
+  }
+
+  // 赛季清单从源稿清单现取：builds/<赛季目录>/<slug> 里那一截，不另存一份。
+  function seasons () {
+    var out = []
+    S.docs.forEach(function (d) {
+      var m = /^builds\/([^/]+)\//.exec(d._id)
+      if (m && out.indexOf(m[1]) < 0) out.push(m[1])
+    })
+    return out.sort().reverse()
+  }
+
+  var LATIN = { 猎人: 'hunter', 泰坦: 'titan', 术士: 'warlock' }
+  var RAND = 'abcdefghijklmnopqrstuvwxyz0123456789'
+
+  // 「八位随机串-职业」。八位 36 进制约 2.8 万亿种，重名几乎不会发生；
+  // 真重了后端当场拒——slug 即文件名，重了会把上一份源稿盖掉。
+  function defaultSlug (md) {
+    var m = /^职业：\s*(\S+)\s*$/m.exec(md)
+    var tail = (m && LATIN[m[1]]) || 'build'
+    var head = ''
+    for (var i = 0; i < 8; i++) head += RAND.charAt(Math.floor(Math.random() * RAND.length))
+    return head + '-' + tail
   }
 
   // ── 编辑者 ─────────────────────────────────────────────────────────
@@ -783,7 +887,7 @@
         n.removeAttribute('aria-current')
       })
       b.setAttribute('aria-current', 'true')
-      ;({ docs: docsView, queue: queueView, eds: edsView })[b.dataset.view]()
+      ;({ docs: docsView, queue: queueView, hist: histView, eds: edsView })[b.dataset.view]()
     }
     gate()
     // 有令牌就直接进，没有或过期了才落回登录框。

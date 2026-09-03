@@ -65,7 +65,8 @@
   white-space: nowrap;
 }
 .rows .flag.pend { color: var(--c-solar); }
-.rows .flag.draft { color: var(--bone-faint); }
+.rows .flag.pass { color: var(--c-strand); }
+.rows .flag.no { color: var(--bone-faint); }
 
 .rows .meta {
   flex: none;

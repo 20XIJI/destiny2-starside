@@ -12,6 +12,10 @@
     盘上删了、库里有人改过 → 也算撞车
     盘上新加一篇          → 推上去（库里没东西可丢，不算撞车）
 
+编辑台上通过的配装投稿也在这一步落盘：库里标了 ok=1 且带着 season 与 slug 的那些，
+盘上还没有就写成 references/builds/<season>/<slug>.md。**在线只能标状态，写盘只在
+本机**——那两截是路径，验在云函数（形状与查重），落在这里。
+
 只比 hash 不记基线的话，「不同」永远推不出方向：那样一次 --push 就会把线上刚
 通过的改动静默覆盖掉，而它从来没落过盘，git 历史上一点痕迹都没有。
 
@@ -143,7 +147,38 @@ def send(doc_id, md):
     api('push', id=doc_id, gz=base64.b64encode(gzip.compress(md.encode(), 9)).decode())
 
 
+def land():
+    """编辑台上通过的投稿 → references/builds/<season>/<slug>.md。
+
+    只写盘上还没有的那些：重跑一次不该把已经改过的源稿按投稿原文盖回去。
+    """
+    wrote = []
+    for sub in api('list')['subs']:
+        if int(sub.get('ok') or 0) != 1:
+            continue
+        season, slug = sub.get('season'), sub.get('slug')
+        if not season or not slug:
+            print('  ? 投稿 %s 标了通过却没有 season/slug，跳过' % sub['_id'])
+            continue
+        p = path_of('builds/%s/%s' % (season, slug))
+        if os.path.exists(p):
+            continue
+        if not os.path.isdir(os.path.dirname(p)):
+            print('  ? 赛季目录不在：%s，跳过' % season)
+            continue
+        md = sub.get('md') or ''
+        if not md.startswith('# '):
+            print('  ? 投稿 %s 首行不是配装名，跳过' % sub['_id'])
+            continue
+        put(p, md)
+        wrote.append('builds/%s/%s' % (season, slug))
+    if wrote:
+        print('落盘 %d 套配装：%s' % (len(wrote), '、'.join(wrote)))
+    return wrote
+
+
 def sync():
+    land()
     disk, db, base = on_disk(), in_db(), baseline()
     pushed, pulled, dropped, stuck = [], [], [], []
 
