@@ -13,37 +13,48 @@
 </head>
 <body>
 
-<header class="site-head">
-<nav class="site-nav"><a href="../index.html">Starside</a><span class="sep">/</span><span class="step">编辑台</span></nav>
-<div class="me" id="me" hidden><span id="me-name"></span><span class="sep">/</span><span id="me-lv"></span><button type="button" class="chip" id="out">退出</button></div>
+<div class="site-head">
+<nav class="site-nav">
+<span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>
+<a class="home" href="../index.html">Starside</a>
+<span class="sep">/</span>
+<span aria-current="page">编辑台</span>
+</nav>
+<div class="toolbar" id="tabs" hidden>
+<div class="tool-chips">
+<button type="button" class="chip" data-view="docs" aria-current="true">源稿</button>
+<button type="button" class="chip" data-view="queue">待审 <span id="n-queue"></span></button>
+<button type="button" class="chip" data-view="eds" hidden>编辑者</button>
+</div>
+</div>
+</div>
+
+<header class="page-head">
+<div class="head-row">
+<h1 id="h1">编辑台</h1>
+<p class="who" id="me" hidden><span id="me-name"></span><span class="sep">·</span><span id="me-lv"></span><button type="button" class="chip" id="out">退出</button></p>
+</div>
 </header>
 
-<main id="app">
+<main>
 
 <section class="block" id="gate">
 <h2 class="sect-label">登录</h2>
-<p class="tip">账号由管理员在云开发控制台建，没有自助注册。</p>
+<p class="lede">账号由管理员建，没有自助注册。</p>
 <form id="f-pw" class="login">
-<label>用户名<input name="username" autocomplete="username" required></label>
-<label>密码<input name="password" type="password" autocomplete="current-password" required></label>
-<button type="submit" class="chip go">登录</button>
+<label>用户名<input class="tool-search" name="username" autocomplete="username" required></label>
+<label>密码<input class="tool-search" name="password" type="password" autocomplete="current-password" required></label>
+<button type="submit" class="chip">登录</button>
 </form>
 <p class="tip" id="gate-tip" role="status"></p>
 </section>
 
 <section class="block" id="stranger" hidden>
 <h2 class="sect-label">还不是编辑者</h2>
-<p>你的 ID 是 <code id="my-uid"></code>，把它发给管理员，加进白名单后刷新即可。</p>
+<p class="lede">你的 ID 是 <code id="my-uid"></code>，把它发给管理员，加进白名单后刷新即可。</p>
 </section>
 
-<div id="views" hidden>
-<nav class="toolbar tabs" id="tabs">
-<button type="button" class="chip" data-view="docs" aria-current="true">源稿</button>
-<button type="button" class="chip" data-view="queue">待审 <span class="n" id="n-queue"></span></button>
-<button type="button" class="chip" data-view="eds" hidden>编辑者</button>
-</nav>
-<div id="view"></div>
-</div>
+<div id="views" hidden></div>
 
 </main>
 

@@ -46,8 +46,21 @@ def build():
     lines.append('tokens: {')
     lines += ['  %s: %s,' % (j(c), j(v)) for c, (v, _sole) in sorted(tint.items())]
     lines.append('},')
+    # G3 按页判：站内每页再叠一层自己的样式表（{ico|…} 只在 ability-cooldown 有）。
+    # 只存相对 site.css 的增量——75 份各存一份全集就是把类名抄七十五遍。
     lines.append('classes: %s,' % j(sorted(known)))
+    extra = {}
+    for rel, ok in check_terms.sources():
+        more = sorted(ok - known)
+        if more:
+            extra[rel[len('references/'):-3]] = more
+    lines.append('pageClasses: {')
+    lines += ['  %s: %s,' % (j(k), j(v)) for k, v in sorted(extra.items())]
+    lines.append('},')
     lines.append('guard: %s,' % j(items.GUARD))
+    # G1 的白名单与 G6 的正查范围，两处都照 Python 那一侧原样带过去，不在前端另立。
+    lines.append('keep: %s,' % j(check_terms.KEEP))
+    lines.append('g6: %s,' % j(sorted(p[len('references/docs/'):-3] for p in items.pages())))
     lines.append('items: [')
     lines += ['  %s,' % j([w, tok, kind]) for w, (tok, kind) in words]
     lines.append(']}\n')

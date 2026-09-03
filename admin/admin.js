@@ -7,7 +7,8 @@
 
   var API = 'https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api'
   var AUTH = 'https://dea-mods-d1g0j2rile2323f73.api.tcloudbasegateway.com'
-  var T = window.starsideTerms || { terms: [], tokens: {}, classes: [], guard: [], items: [] }
+  var T = window.starsideTerms ||
+    { terms: [], tokens: {}, classes: [], pageClasses: {}, guard: [], items: [], keep: [], g6: [] }
 
   var $ = function (id) { return document.getElementById(id) }
   var el = function (tag, cls, text) {
@@ -140,6 +141,25 @@
     return span.some(function (s) { return a >= s[0] && b <= s[1] })
   }
 
+  // 每一块归哪张表：遇到分隔行就把上一块（表头）的格数记下，离开表格即清零。
+  // **一页有好几张表**，拿第一张的列数比全篇会把后面每张表整批报成格数不对。
+  function heads (bs) {
+    var out = bs.map(function () { return { cols: 0, head: false } })
+    var cur = 0
+    bs.forEach(function (b, i) {
+      if (RULE_LINE.test(b.trim())) {
+        cur = cells(bs[i - 1] || '')
+        // 分隔行上面那一块就是表头。**块是一行一个**，分隔行落在下一块里，
+        // 在块内看下一行永远判不出表头——32 处列名曾因此被要求着色。
+        if (out[i - 1]) out[i - 1].head = true
+      } else if (b.charAt(0) !== '|') {
+        cur = 0
+      }
+      out[i].cols = cur
+    })
+    return out
+  }
+
   // 按竖线切格，但记花括号深度——{ico|…} 内部也有竖线，裸切会让带图标的行错位一格。
   function cells (line) {
     var n = 0
@@ -156,66 +176,124 @@
 
   // ── 前端闸门 ───────────────────────────────────────────────────────
   // 这些是提示不是拦截：逐字保真与结构断言要 Python，留在本地 npm run build。
-  function lint (text, head) {
+  // **六处跳过照 items.hits_in() 原样搬**：键行与标题行、表格里行标题那一格、
+  // 链接目标、GUARD 里更长的专名、已经在某个标记里的、表头行。少一条就满屏误报。
+
+  var KEY_LINE = /^[\u4e00-\u9fff]{1,6}(（[^）]*）)?：/
+  var RULE_LINE = /^\|[-| ]+\|$/
+
+  // 表格行首格里「行的身份」那一段的结束位置；不是表格行就是 0。
+  function titleEnd (line) {
+    if (line.charAt(0) !== '|') return 0
+    var n = line.indexOf('|', 1)
+    if (n < 0) return 0
+    if (!line.slice(1, n).trim()) {          // 首格留空即向上合并，身份在第二格
+      n = line.indexOf('|', n + 1)
+      if (n < 0) return 0
+    }
+    var brk = line.indexOf('\\\\', 1)
+    return brk > 0 && brk < n ? brk : n + 1
+  }
+
+  function ranges (text, res) {
     var out = []
-    var span = marked(text)
+    res.forEach(function (re) {
+      var m
+      re.lastIndex = 0
+      while ((m = re.exec(text))) {
+        out.push(m[1] === undefined ? [m.index, m.index + m[0].length]
+                                    : [m.index + m[0].indexOf(m[1]), m.index + m[0].indexOf(m[1]) + m[1].length])
+        if (!m[0].length) re.lastIndex++
+      }
+    })
+    return out
+  }
+  function within (rs, a, b) {
+    return rs.some(function (r) { return a >= r[0] && b <= r[1] })
+  }
+
+  // errors 一直显示，warns 只在编辑那一块时显示——不然一屏全是「该着色」。
+  function lint (text, at, g6, ok) {
+    at = at || { cols: 0, head: false }
+    ok = ok || T.classes
+    var errs = []
+    var warns = []
     var m
 
     var d = 0
     var re = /\{[\w-]+\||\}/g
     while ((m = re.exec(text))) d = m[0] === '}' ? Math.max(0, d - 1) : d + 1
-    if (d) out.push({ msg: '花括号没闭合，少 ' + d + ' 个右括号' })
+    if (d) errs.push('花括号没闭合，少 ' + d + ' 个右括号')
 
     // G3：token 必须在 site.css 里有对应的类
     var t2 = /\{([\w-]+)\|/g
     while ((m = t2.exec(text))) {
-      if (T.classes.indexOf(m[1]) < 0) out.push({ msg: 'token「' + m[1] + '」在 site.css 里没有定义' })
+      if (ok.indexOf(m[1]) < 0) errs.push('token「' + m[1] + '」在这一页的样式表里没有定义')
     }
 
+    // G1：整篇比一次。链接目标不是正文，KEEP 里那几条是官方专名，两者都放行。
+    var keep = ranges(text, [/\]\(([^)]*)\)/g])
+    T.keep.forEach(function (k) {
+      var at = 0
+      while ((at = text.indexOf(k, at)) >= 0) { keep.push([at, at + k.length]); at += k.length }
+    })
     T.terms.forEach(function (row) {
-      var word = row[0]
-      var token = row[1]
-      // G1 中文正名
       row[2].forEach(function (bad) {
-        if (text.indexOf(bad) >= 0) out.push({ msg: '用了「' + bad + '」，正名是「' + word + '」' })
+        var at = 0
+        while ((at = text.indexOf(bad, at)) >= 0) {
+          if (!within(keep, at, at + bad.length)) {
+            errs.push('用了「' + bad + '」，正名是「' + row[0] + '」')
+            break
+          }
+          at += bad.length
+        }
       })
-      // G2 token 唯一。只查「整个标记就是这个词」的那种——词嵌在更长的短语里时
-      // 着色属于短语，按词强判会把整句的颜色拆碎。
-      if (!token) return
-      var one = new RegExp('\\{([\\w-]+)\\|' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\}', 'g')
+    })
+
+    // G2：只查「整个标记就是这个词」的那种。词嵌在更长的短语里时着色属于短语，
+    // 按词强判会把整句的颜色拆碎。
+    T.terms.forEach(function (row) {
+      if (!row[1]) return
+      var one = new RegExp('\\{([\\w-]+)\\|' + row[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\}', 'g')
       var k
       while ((k = one.exec(text))) {
-        if (k[1] !== token) out.push({ msg: '「' + word + '」该着 ' + token + '，写成了 ' + k[1] })
+        if (k[1] !== row[1]) errs.push('「' + row[0] + '」该着 ' + row[1] + '，写成了 ' + k[1])
       }
     })
 
-    // G6 正查：库里的物品专名在正文里出现就得着色。GUARD 里那些更长的名字整段屏蔽。
-    var mask = text
-    T.guard.forEach(function (g) {
-      var at = 0
-      while ((at = mask.indexOf(g, at)) >= 0) {
-        mask = mask.slice(0, at) + new Array(g.length + 1).join(' ') + mask.slice(at + g.length)
-        at += g.length
+    var lines = text.split('\n')
+    lines.forEach(function (line, n) {
+      // 表头行不是正文，列名与标题同属「标签」，已有结构身份。
+      var isHead = at.head || RULE_LINE.test((lines[n + 1] || '').trim())
+      if (at.cols && line.charAt(0) === '|' && !RULE_LINE.test(line.trim()) && !/^\|\s*==/.test(line)) {
+        var c = cells(line)
+        if (c !== at.cols) errs.push('这一行 ' + c + ' 格，表头是 ' + at.cols + ' 格')
       }
-    })
-    T.items.forEach(function (row) {
-      var at = mask.indexOf(row[0])
-      if (at < 0) return
-      if (inside(span, at, at + row[0].length - 1)) return
-      out.push({ warn: 1, msg: '「' + row[0] + '」该着 ' + row[1] + '（' + row[2] + '）' })
+      if (!g6 || isHead || !line || line.charAt(0) === '#' || KEY_LINE.test(line)) return
+      var end = titleEnd(line)
+      var taken = ranges(line, [/\]\([^)]*\)/g])
+      T.guard.forEach(function (g) {
+        var at = 0
+        while ((at = line.indexOf(g, at)) >= 0) { taken.push([at, at + g.length]); at += g.length }
+      })
+      var span = marked(line)
+      T.items.forEach(function (row) {
+        var at = line.indexOf(row[0])
+        if (at < 0 || at < end) return
+        var to = at + row[0].length
+        if (within(taken, at, to) || inside(span, at, to - 1)) return
+        warns.push('「' + row[0] + '」该着 ' + row[1] + '（' + row[2] + '）')
+      })
     })
 
-    // 表格行的格数要与表头一致。少一格会让整行往左错位，产出上看不出来。
-    if (head && text.charAt(0) === '|' && !/^\|\s*-/.test(text) && !/^\|\s*==/.test(text)) {
-      var n = cells(text)
-      if (n !== head) out.push({ msg: '这一行 ' + n + ' 格，表头是 ' + head + ' 格' })
-    }
-    return out
+    return { errs: errs, warns: warns }
   }
 
   // ── 视图外壳 ───────────────────────────────────────────────────────
+  function title (t) { $('h1').textContent = t }
+
   function show (node) {
-    var view = $('view')
+    var view = $('views')
     view.textContent = ''
     view.appendChild(node)
   }
@@ -234,10 +312,11 @@
 
   // ── 源稿清单 ───────────────────────────────────────────────────────
   function docsView () {
+    title('源稿 · ' + S.docs.length + ' 篇')
     var wrap = el('section', 'block')
-    wrap.appendChild(el('h2', 'sect-label', '源稿 · ' + S.docs.length + ' 篇'))
-    var q = el('input')
+    var q = el('input', 'tool-search')
     q.placeholder = '筛选'
+    q.type = 'search'
     wrap.appendChild(q)
     var rows = el('div', 'rows')
     wrap.appendChild(rows)
@@ -251,12 +330,15 @@
       var b = el('button')
       b.type = 'button'
       b.dataset.k = d._id
-      b.appendChild(el('span', 'id', d._id))
-      if (open[d._id]) {
-        b.appendChild(el('span', 'meta', open[d._id].map(function (e) {
-          return (e.by || '?') + (e.ok === 0 ? ' 待审' : ' 草稿')
-        }).join(' · ')))
-      }
+      var id = el('span', 'id')
+      var cut = d._id.lastIndexOf('/') + 1
+      if (cut) id.appendChild(el('i', 'dim', d._id.slice(0, cut)))
+      id.appendChild(document.createTextNode(d._id.slice(cut)))
+      b.appendChild(id)
+      ;(open[d._id] || []).forEach(function (e) {
+        b.appendChild(el('span', e.ok === 0 ? 'flag pend' : 'flag draft',
+          (e.by || '?') + (e.ok === 0 ? ' 待审' : ' 草稿')))
+      })
       b.appendChild(el('span', 'meta', (d.at || '').slice(0, 10)))
       b.onclick = function () { openDoc(d._id) }
       rows.appendChild(b)
@@ -280,7 +362,7 @@
     var bar = el('div', 'acts')
     bar.appendChild(back('源稿', docsView))
     wrap.appendChild(bar)
-    wrap.appendChild(el('h2', 'sect-label', doc._id))
+    title(doc._id)
 
     // 我在这一篇上未结的那一条草稿或待审，接着改；没有就从库里的正文起手。
     var mine = S.edits.filter(function (e) {
@@ -291,29 +373,37 @@
     wrap.appendChild(list)
 
     var bs = []
-    var head = 0
+    var head = []
 
     function render (md) {
       bs = blocks(md)
-      head = 0
-      bs.some(function (t) {
-        if (t.charAt(0) === '|') { head = cells(t); return true }
-        return false
-      })
+      head = heads(bs)
       list.textContent = ''
       bs.forEach(function (t, i) { list.appendChild(cell(t, i)) })
     }
 
+    // G6 正查只覆盖 references/docs 去掉 changelog 与 palette，与 items.pages() 同一份。
+    var g6 = doc._id.indexOf('docs/') === 0 && T.g6.indexOf(doc._id.slice(5)) >= 0
+    // 每页能用的 class = site.css 那份，加上这一页自己样式表里多出来的（{ico|…}
+    // 只在 ability-cooldown 有）。只按 site.css 判会把九千多处整批报成没定义。
+    var ok = T.classes.concat(T.pageClasses[doc._id] || [])
+
+    // 「该着色」那类提示只在编辑这一块时列出来（all=true）——一屏都挂着的话，
+    // 真正的错就淹没在里面了。
+    function notes (text, all, i) {
+      var r = lint(text, head[i], g6, ok)
+      var ul = el('ul', 'notes')
+      r.errs.forEach(function (x) { ul.appendChild(el('li', null, x)) })
+      if (all) r.warns.forEach(function (x) { ul.appendChild(el('li', 'warn', x)) })
+      return { bad: r.errs.length, ul: ul.children.length ? ul : null }
+    }
+
     function cell (text, i) {
       var n = el('div', 'blk' + (text.trim() ? '' : ' empty'))
-      n.innerHTML = paint(text) || ' '
-      var notes = lint(text, head)
-      if (notes.some(function (x) { return !x.warn })) n.classList.add('bad')
-      if (notes.length) {
-        var ul = el('ul', 'notes')
-        notes.forEach(function (x) { ul.appendChild(el('li', x.warn ? 'warn' : '', x.msg)) })
-        n.appendChild(ul)
-      }
+      n.innerHTML = paint(text) || ' '
+      var r = notes(text, false, i)
+      if (r.bad) n.classList.add('bad')
+      if (r.ul) n.appendChild(r.ul)
       n.onclick = function (ev) {
         if (n.classList.contains('on') || ev.target.tagName === 'BUTTON') return
         edit(n, i)
@@ -329,6 +419,9 @@
       ta.rows = Math.min(20, bs[i].split('\n').length + 1)
       n.appendChild(ta)
       n.appendChild(palette(ta))
+      // 「该着色」那类提示只在编辑这一块时列出来——一屏都挂着的话，真错就淹没了。
+      var hint = notes(bs[i], true, i).ul
+      if (hint) n.appendChild(hint)
       ta.focus()
       ta.onblur = function () {
         // 失焦即收起。着色芯片按下去会先失焦，所以芯片自己 preventDefault。
@@ -448,13 +541,14 @@
 
   // ── 待审 ───────────────────────────────────────────────────────────
   function queueView () {
+    title('待审')
     var wrap = el('section', 'block')
-    wrap.appendChild(el('h2', 'sect-label', '待审'))
+    wrap.appendChild(el('h2', 'sect-label', '文档改动'))
 
     var pend = S.edits.filter(function (e) { return e.ok === 0 })
     var by = {}
     pend.forEach(function (e) { (by[e.doc] = by[e.doc] || []).push(e) })
-    if (!pend.length) wrap.appendChild(el('p', 'tip', '文档改动：没有待审的'))
+    if (!pend.length) wrap.appendChild(el('p', 'lede', '没有待审的文档改动'))
 
     Object.keys(by).sort().forEach(function (doc) {
       var pane = el('div', 'pane')
@@ -473,8 +567,8 @@
     })
 
     var subs = S.subs.filter(function (s) { return Number(s.ok) === 0 })
-    var sp = el('div', 'pane')
-    sp.appendChild(el('h3', null, '配装投稿 · ' + subs.length))
+    var sp = el('section', 'block')
+    sp.appendChild(el('h2', 'sect-label', '配装投稿 · ' + subs.length))
     var sr = el('div', 'rows')
     subs.forEach(function (s) {
       var b = el('button')
@@ -495,8 +589,8 @@
       var bar = el('div', 'acts')
       bar.appendChild(back('待审', queueView))
       wrap.appendChild(bar)
-      wrap.appendChild(el('h2', 'sect-label', e.doc))
-      wrap.appendChild(el('p', 'tip',
+      title(e.doc)
+      wrap.appendChild(el('p', 'lede',
         (e.by || '?') + ' · ' + (e.at || '').slice(0, 16).replace('T', ' ') + (e.note ? ' · ' + e.note : '')))
       wrap.appendChild(diffView(e.base || '', e.md || ''))
 
@@ -546,6 +640,7 @@
     var bar = el('div', 'acts')
     bar.appendChild(back('待审', queueView))
     wrap.appendChild(bar)
+    title((/^#\s+(.+)$/m.exec(s.md) || [0, '配装投稿'])[1])
 
     var fr = el('iframe', 'prev')
     fr.src = '../builds/new/index.html'
@@ -580,7 +675,7 @@
         })
       }
       acts.appendChild(no)
-      acts.appendChild(el('span', 'tip', '通过要落盘定 slug，在本机那一步做'))
+      acts.appendChild(el('span', 'lede', '通过要落盘定 slug，在本机那一步做'))
       wrap.appendChild(acts)
     }
     show(wrap)
@@ -589,8 +684,8 @@
   // ── 编辑者 ─────────────────────────────────────────────────────────
   function edsView () {
     call('eds', { op: 'list' }).then(function (r) {
+      title('编辑者')
       var wrap = el('section', 'block')
-      wrap.appendChild(el('h2', 'sect-label', '编辑者'))
       var rows = el('div', 'rows')
       r.eds.forEach(function (u) {
         var row = el('div')
@@ -652,6 +747,7 @@
         return null
       }
       $('views').hidden = false
+      $('tabs').hidden = false
       document.querySelector('[data-view="eds"]').hidden = me.lv < 3
       return load().then(docsView)
     })
@@ -682,7 +778,10 @@
     $('tabs').onclick = function (ev) {
       var b = ev.target.closest('[data-view]')
       if (!b) return
-      Array.prototype.forEach.call(this.children, function (n) { n.removeAttribute('aria-current') })
+      // 按属性找，不按 children——标签页外面还包着一层 .tool-chips
+      Array.prototype.forEach.call(this.querySelectorAll('[data-view]'), function (n) {
+        n.removeAttribute('aria-current')
+      })
       b.setAttribute('aria-current', 'true')
       ;({ docs: docsView, queue: queueView, eds: edsView })[b.dataset.view]()
     }
@@ -693,10 +792,12 @@
 
   // 纯函数单独导出：块拆分、着色与闸门不碰 DOM，离线断言直接拿这一份跑，
   // 不复制副本。页面不在时（Node 里）只导出、不接线。
-  var api = { blocks: blocks, paint: paint, lint: lint, cells: cells, lcs: lcs, start: start }
+  var api = { blocks: blocks, paint: paint, lint: lint, cells: cells, heads: heads, lcs: lcs, start: start }
   if (typeof module !== 'undefined' && module.exports) module.exports = api
   if (typeof document !== 'undefined') {
     window.starsideAdmin = api
-    if ($('app')) start()
+    // 守卫查登录表单：它是这一页必然存在的东西。查一个只在外壳上的 id 会在改
+    // 外壳时静默失效——所有监听一个都绑不上，按钮按下去毫无反应。
+    if ($('f-pw')) start()
   }
 })()
