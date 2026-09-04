@@ -1258,11 +1258,17 @@
         return null
       }
       $('views').hidden = false
-      $('tabs').hidden = false
+      show(el('p', 'lede', '载入中…'))
       document.querySelector('[data-view="eds"]').hidden = me.lv < 3
       // 起手那一格也要有 state，不然从详情返回时拿到的是 null
       history.replaceState({ v: 'review' }, '')
-      return load().then(reviewView)
+      // **三张表到齐了才放开标签栏**：docs / edits / subs 还在路上时 S 里是三个
+      // 空数组，这时点「配装」画出来的是一张「没有配装」的空列表，等 load() 落地
+      // 又被 reviewView() 顶回审核那一屏——看着就是「第一次进去加载不出来」。
+      return load().then(function () {
+        $('tabs').hidden = false
+        reviewView()
+      })
     })
   }
 
