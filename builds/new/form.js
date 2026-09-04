@@ -65,19 +65,6 @@
      不跟着 hd 的范围走。 */
   var setWhy = document.getElementById('set-why');
 
-  /* 合集的核心。**导入时原样留住源稿写的那一个**——它不一定是任何一套的核心，
-     常是贯穿几套的那件异域（「隐秘追猎」三套都穿，却哪一套的核心都不是）；
-     导入再保存就把作者写的值改掉是不能接受的。新建的合集没有可留的，取第一套的。 */
-  var srcCore = '';
-  /* 各套里找不找得到它：找得到存那枚图，找不到存 null。审的人可能把那件装备
-     从每一套里都换掉了，那时还留着原来那个名字，源稿就写出一个站内查不到的核心
-     ——落盘时 core_pick() 才中止。 */
-  var coreSeen = [];
-
-  function setCore() {
-    var live = srcCore && coreSeen.some(function (c) { return c; });
-    return live ? srcCore : keyOf(sets[0], '核心');
-  }
   var picker = null;
 
   var ELEM_CN = { arc: '电弧', solar: '烈日', void: '虚空',
@@ -658,15 +645,7 @@
   function syncCore() {
     var hit = coreList().filter(function (r) { return r[0] === state.核心; })[0];
     if (!hit) state.核心 = '';
-    if (SETS) {
-      coreOf[cur] = hit ? [hit[0], hit[3]] : null;
-      // **找不到也要记**：只在找到时赋值，会把上一轮的结果留着，
-      // 「那件装备已经被换掉了」这件事就永远判不出来。
-      if (srcCore) {
-        var w = coreList().filter(function (r) { return r[0] === srcCore; })[0];
-        coreSeen[cur] = w ? w[3] : null;
-      }
-    }
+    if (SETS) coreOf[cur] = hit ? [hit[0], hit[3]] : null;
     // 合集那一页没有这一格：整份合集的核心自动取第一套的，页顶那枚 96px 图
     // 因此不给选择器。**state.核心 照旧要对**——它写进每一套的源稿里。
     if (!coreArt) return;
@@ -924,7 +903,7 @@
     put('描述', one('描述'));
     var why = /\n## 合集介绍\s*([\s\S]*)$/.exec(parts[0]);
     if (setWhy) setWhy.value = why ? why[1].trim() : '';
-    srcCore = one('核心');
+
     ['类别', '场景'].forEach(function (key) {
       pressTags(hd, key, one(key).split('、').map(function (x) { return x.trim(); })
         .filter(Boolean), skip);
@@ -933,7 +912,6 @@
     sets = parts.slice(1);
     if (!sets.length) sets = [''];
     coreOf = [];
-    coreSeen = [];
     var per = [];
     for (var i = sets.length - 1; i >= 0; i--) {
       cur = i;
@@ -1035,7 +1013,6 @@
     md += line('更新', today());
     md += line('场景', val('场景', hd));
     md += line('类别', val('类别', hd));
-    md += line('核心', setCore());
     var why = setWhy ? setWhy.value.trim() : '';
     if (why) md += '\n## 合集介绍\n\n' + why + '\n';
     return md;
@@ -1103,18 +1080,23 @@
      而这里没有「上限即版面」那个约束（碎片那六格有）。 */
   /* 合集页顶：96px 的核心图与「职业 · N 套 · 类别」那条铭牌，都是镜子。
      与详情页逐段同形——那一页页顶就是这两样加推荐者。 */
+  function img(path, px) {
+    return '<img src="' + UP + path + '" alt="" width="' + px + '" height="' + px + '">';
+  }
+
   function setMirror() {
-    var core = setCore(), icon = '';
-    coreSeen.forEach(function (c) { if (c && !icon) icon = c; });
-    if (!icon) {
-      coreOf.forEach(function (c) { if (c && c[0] === core && !icon) icon = c[1]; });
-    }
+    // 页顶那枚图是各套核心拼出来的，最多四枚，与生成器的 core_mosaic() 同形。
+    var tiles = [];
+    coreOf.forEach(function (c) {
+      if (c && c[1] && tiles.length < 4 && tiles.indexOf(c[1]) < 0) tiles.push(c[1]);
+    });
     var box = document.getElementById('f-set-core');
     if (box) {
-      box.innerHTML = icon
-        ? '<img src="' + UP + icon + '" alt="" width="96" height="96">'
-        : '<span class="nm">核心</span>';
-      box.classList.toggle('empty', !icon);
+      box.innerHTML = !tiles.length ? '<span class="nm">核心</span>'
+        : tiles.length === 1 ? img(tiles[0], 96)
+          : '<span class="core-mosaic" style="--sz:96px;--tile:47px">'
+            + tiles.map(function (t) { return img(t, 47); }).join('') + '</span>';
+      box.classList.toggle('empty', !tiles.length);
     }
     var id = document.querySelector('[data-mirror="合集铭牌"]');
     if (!id) return;
@@ -1156,7 +1138,9 @@
       var nm = document.createElement('b');
       nm.textContent = nameOf(md) || '未命名';     // 序号由 CSS 的计数器给
       var sub = document.createElement('span');
-      sub.textContent = keyOf(md, '定位') || keyOf(md, '分支') || '未填写';
+      // 副名写「职业 · 分支 · 定位」，与详情页目录、右边那条铭牌同序。
+      sub.textContent = [keyOf(md, '职业'), keyOf(md, '分支'), keyOf(md, '定位')]
+        .filter(Boolean).join(' · ') || '未填写';
       if (i === cur) b.setAttribute('aria-current', 'true');
       b.appendChild(nm);
       b.appendChild(sub);
@@ -1202,7 +1186,6 @@
     var md = copy ? sets[cur].replace(/^#[ \t]+(.+)$/m, '# $1 副本') : '';
     sets.splice(cur + 1, 0, md);
     coreOf.splice(cur + 1, 0, copy ? coreOf[cur] : null);
-    coreSeen.splice(cur + 1, 0, copy ? coreSeen[cur] : null);
     cur += 1;
     loadOne(md);
   }
@@ -1214,7 +1197,6 @@
     sets[cur] = oneMd();
     sets.splice(j, 1);
     coreOf.splice(j, 1);
-    coreSeen.splice(j, 1);
     if (j === cur) {
       cur = Math.min(cur, sets.length - 1);
       loadOne(sets[cur]);

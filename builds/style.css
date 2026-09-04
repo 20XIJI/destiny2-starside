@@ -1007,6 +1007,10 @@ button.item { width: 100%; }
 #sheet .cls-id { display: inline-flex; align-items: center; gap: 10px; }
 #sheet .cls-id .hint { color: var(--bone-faint); font-size: 12.5px; }
 #sheet .desc input { width: 100%; }
+
+/* **填表页的描述那一格不封行宽。**76ch 是散文的阅读行宽，详情页那两处该有；
+   这一页那里装的是输入框，封着只是把框在半途截断。 */
+#sheet .desc { max-width: none; }
 /* 六维与详情页同一张卡，一格就是「图 + 名 + 值」，只是值那一格可点。
    **列宽写死**：值从「~」变成「150～200」时列宽会跟着长，整条主角行跟着抖。 */
 #sheet .stats { grid-template-columns: repeat(3, 130px); }
@@ -1153,6 +1157,32 @@ button.item { width: 100%; }
   text-decoration: none;
   background: var(--tint-1);
   border: 1px solid var(--hair);
+}
+
+/* ── 合集那枚图 ───────────────────────────────────────────────────────
+   各套的核心拼成的马赛克，最多四枚（五枚起每一块就小到认不出）。
+   **两枚横排居中成一条带，三枚上二下一，四枚二乘二**——flex 换行加两向居中
+   就出这三种，不必按数目各写一套规则。一枚时生成器直接出那一枚图，不套壳。
+
+   尺寸由生成器写在 --sz / --tile 上：同一段结构要在页头 96、索引卡 64 两处用，
+   写死一个数就得为另一处再写一份规则。 */
+.core-mosaic {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  gap: 2px;
+  width: var(--sz);
+  height: var(--sz);
+}
+
+/* **要压过外层给单枚图定的那个尺寸**：.build-head .core img 与 .entry .node img
+   都是 (0,2,1)，单类的 .core-mosaic img 只有 (0,1,1)，不逐处指名就整块被拉回
+   96 / 64，四枚图叠着溢出去。 */
+.build-head .core .core-mosaic img,
+.entry .node .core-mosaic img {
+  width: var(--tile);
+  height: var(--tile);
 }
 
 .set-list a::before,

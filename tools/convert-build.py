@@ -355,13 +355,10 @@ def page_items(md):
     return out
 
 
-def core_pick(idx, md, prefer, pool=None):
-    """核心那枚 96px 的图。可以是本页配过的任一件东西，不限异域。
-
-    pool 给合集用：它的头部一件装备都没写，核心要在全体成员的并集里挑。
-    """
+def core_pick(idx, md, prefer):
+    """核心那枚 96px 的图。可以是本页配过的任一件东西，不限异域。"""
     core = meta(md, '核心')
-    hit = [x for x in (page_items(md) if pool is None else pool) if x[0] == core]
+    hit = [x for x in page_items(md) if x[0] == core]
     if not hit:
         die('「核心：」要等于本页配过的某一件东西，源稿写的是 %r' % core)
     return vocab.pick(idx, core, hit[0][1], kind=hit[0][2], prefer=prefer)
@@ -466,23 +463,53 @@ def scenes_of(md):
     return got
 
 
+# 合集那枚图最多拼四枚：五枚起每一块就小到认不出是什么，而一份合集常用的
+# 也就四五套。
+SET_TILES = 4
+
+
+def core_of(idx, md):
+    """这一套的核心那一条词表记录。"""
+    return core_pick(idx, md, 'elements/%s' % BRANCH[branch_of(md)])
+
+
+def core_mosaic(cores, size):
+    """合集那枚图：各套的核心拼成的马赛克。
+
+    **一枚时就是那一枚，不套壳**——单套配装的页头是一枚 96px 的图，只有一套
+    核心的合集没有理由长得不一样。两枚横排居中成一条带，三枚上二下一，四枚
+    二乘二：flex 换行加两向居中就出这三种，不必按数目各写一套规则。
+    """
+    if len(cores) == 1:
+        return icon_of(cores[0], size)
+    tile = (size - 2) // 2
+    return ('<span class="core-mosaic" style="--sz:%dpx;--tile:%dpx">%s</span>'
+            % (size, tile, ''.join(icon_of(c, tile) for c in cores)))
+
+
 def set_facts(idx, head, members):
-    """一份合集摊平之后的四件事：强调色取哪个分支、核心那枚图、职业、标签。
+    """一份合集摊平之后的四件事：强调色取哪个分支、拼图那几枚核心、职业、标签。
 
     详情页与索引页的卡片都要它们，算法只此一处。
     """
     # 页面级的强调色取第一套的分支：一份合集常在同一个分支里换装，换了也总得挑
     # 一个，第一套是作者摆在最前面的那一套。每套自己那一层另戴 b-<分支>。
     branch = branch_of(members[0])
-    core = core_pick(idx, head, 'elements/%s' % BRANCH[branch],
-                     pool=[x for m in members for x in page_items(m)])
+    # **合集头部不写「核心：」**：那枚图由各套的核心拼出来，再让人挑一个就是
+    # 同一件事的第二个来源——它还会随着某一套换装变陈旧，而源稿上看不出来。
+    cores, seen = [], set()
+    for m in members:
+        e = core_of(idx, m)
+        if e['name'] not in seen and len(cores) < SET_TILES:
+            seen.add(e['name'])
+            cores.append(e)
     who = [c for c in CLASSES if c in {class_of(m) for m in members}]
     roles = []
     for m in members:
         for r in names(m, '定位', required=False):
             if r not in roles:
                 roles.append(r)
-    return branch, core, who, roles
+    return branch, cores, who, roles
 
 
 def solo_src(head, md):
@@ -617,7 +644,7 @@ def render_solo(idx, mv, arts, md, slug, season, name_cn):
     # 正文走 inline()，meta 与卡片用剥干净的那一份，不然标记会漏进 <meta>。
     desc_text = text_of(inline(desc, rich=True), collapse=True)
     branch, cat = branch_of(md), cat_of(md)
-    class_of(md)
+    class_of(md)          # 职业写错时先报那一句，别让下面的 core_pick 先撞上
     prefer = 'elements/%s' % BRANCH[branch]
     core_e = core_pick(idx, md, prefer)
 
@@ -714,7 +741,7 @@ def render_set(idx, mv, arts, head, members, slug, season, name_cn):
     desc_text = text_of(inline(desc, rich=True), collapse=True)
     cat = cat_of(head)
     scenes = scenes_of(head)
-    branch, core_e, who, roles = set_facts(idx, head, members)
+    branch, cores, who, roles = set_facts(idx, head, members)
     badge = ('%s%s' % (icon_of(vocab.pick(idx, who[0], '职业', kind='分节'), 32), who[0])
              if len(who) == 1 else MIXED)
 
@@ -725,7 +752,7 @@ def render_set(idx, mv, arts, head, members, slug, season, name_cn):
          '<main class="set b-%s">' % BRANCH[branch],
          '<header class="build-head">',
          '<div class="core">%s<p class="by-label">推荐者：</p>%s</div>'
-         % (icon_of(core_e, 96), ''.join(people(head))),
+         % (core_mosaic(cores, 96), ''.join(people(head))),
          '<div class="build-id">',
          # 复制不在这一排：游戏里导入是一套一套的，整份合集复制出去粘不回任何
          # 地方。那枚按钮跟着每一套走，见 one_of()。
@@ -757,10 +784,12 @@ def render_set(idx, mv, arts, head, members, slug, season, name_cn):
         mt = must(re.match(r'^#\s+(.+)$', m.split('\n')[0]),
                   '合集里每一套的第一行必须是「# 配装名称」').group(1).strip()
         mb = branch_of(m)
+        # 副名写「职业 · 分支 · 定位」：三样一行读完这一套的身份，与右边那条
+        # 铭牌同序。定位可以空着，空了就少一段。
+        sub = ' · '.join(x for x in (class_of(m), mb,
+                                     '、'.join(names(m, '定位', required=False))) if x)
         o += ['<li class="b-%s"><a href="#set-%d">%s<b>%s</b><span>%s</span></a></li>'
-              % (BRANCH[mb], n,
-                 icon_of(core_pick(idx, m, 'elements/%s' % BRANCH[mb]), 32),
-                 mt, '、'.join(names(m, '定位', required=False)) or mb)]
+              % (BRANCH[mb], n, icon_of(core_of(idx, m), 32), mt, sub)]
     o += ['</ol>', '</nav>', '<div class="set-body">']
     for n, m in enumerate(members, 1):
         o += one_of(idx, mv, arts, head, m, n)
@@ -884,10 +913,11 @@ def build(idx, dirname, season, name_cn, slug):
     shell.emit(outdir, out, title)
     head, members = split_set(md)
     if members:
-        branch, core, who, roles = set_facts(idx, head, members)
+        branch, cores, who, roles = set_facts(idx, head, members)
         # 跨职业的合集要有一个自己的格：索引页那一维由 app.js 读小节标题现扫，
         # 三个职业里挑不出它该站哪一格。
         cls = who[0] if len(who) == 1 else MIXED
+        core = core_mosaic(cores, 64)
         # 场景不进标签：它就是这一页的大节标题，跳转 chip 那一排写的正是这几个
         # 字，同一排字出现两遍读者分不出哪一排管什么（与索引页「类别不做成一行
         # chip」同一条）。次要场景在详情页的「适用环境」那一栏里读得到。
@@ -896,7 +926,7 @@ def build(idx, dirname, season, name_cn, slug):
         tags = roles
     else:
         branch = meta(md, '分支')
-        core = core_pick(idx, md, 'elements/%s' % BRANCH[branch])
+        core = icon_of(core_pick(idx, md, 'elements/%s' % BRANCH[branch]), 64)
         cls = meta(md, '职业')
         scene = ''
         tags = names(md, '场景') + names(md, '定位')
@@ -912,7 +942,7 @@ def build(idx, dirname, season, name_cn, slug):
             'by': ''.join(people(head, link=False)),
             # 图标路径按详情页那三层深写的，两个索引页深浅不同，前缀由 core_node()
             # 现换——存成算好的那一份，另一页就得再存第二份。
-            'core': icon_of(core, 64),
+            'core': core,
             # 合集的适用环境单选，索引页按它分大节。单套的场景多值、不分大节。
             'scene': scene,
             'set': len(members)}
