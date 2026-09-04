@@ -612,9 +612,29 @@ async function route(a, body, event) {
     return { ok: 1, n, total: r.data.length }
   }
 
+  // sync.py 的 sweep() 落盘删除时调它：库里那条源稿，以及当初那条把它送上站的
+  // 投稿记录，一并清掉。
+  //
+  // **那一套的已通过记录一并清掉，删除申请自己也在内。**
+  //
+  // 当初把它送上站的那条投稿带着 season/slug 与 ok=1，留着就有两个后果：审核台把
+  // 它算成「通过，等着落盘」，那一套永远挂在队列里；land() 也会照它把源稿原样写
+  // 回来，与 sweep() 你删我写，那一篇永远删不掉。
+  //
+  // 删除申请那一条办完也该走：它的状态只有 0/1/-1 三档，没有「已办」那一档，
+  // 留着就一直显示「待移除」，而那一套早就不在站上了；sweep() 下一轮还会照它
+  // 再删一遍。这件事由 git 里那一次源稿删除留痕，队列不必再存第二份。
+  //
+  // 待审（ok=0）与废稿（ok=-1）不动：前者可能是删除期间有人重投的新稿。
   if (a === 'drop') {
     admin(body)
-    await docs.doc(String(body.id)).remove()
+    const id = String(body.id)
+    await docs.doc(id).remove()
+    const m = /^builds\/([^/]+)\/([^/]+)$/.exec(id)
+    if (m) {
+      const done = await subs.where({ season: m[1], slug: m[2], ok: 1 }).limit(50).get()
+      for (const one of done.data) await subs.doc(one._id).remove()
+    }
     return { ok: 1 }
   }
 

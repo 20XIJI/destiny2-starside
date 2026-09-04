@@ -1051,8 +1051,12 @@ def render_index(made, sets=False):
     o += ['</main>', '', LIKE_JS,
           shell.foot(stamp, '，配装由各位推荐人提供，随赛季更新。')]
     out = '\n'.join(x for x in o if x != '') + '\n'
-    shell.emit(os.path.join(shell.ROOT, OUT_DIR, 'sets') if sets
-               else os.path.join(shell.ROOT, OUT_DIR), out,
+    # **自己建目录**：合集索引页只在有合集时才出，站上从零变一时那个目录还不在，
+    # 而 shell.emit() 只管写文件——撞上的是一句 FileNotFoundError。
+    outdir = os.path.join(shell.ROOT, OUT_DIR, 'sets') if sets \
+        else os.path.join(shell.ROOT, OUT_DIR)
+    os.makedirs(outdir, exist_ok=True)
+    shell.emit(outdir, out,
                '%d %s' % (len(live), '个合集' if sets else '套配装'))
 
 
@@ -1458,8 +1462,10 @@ def render_new(stamp, name_cn, sets=False):
     back = '../' * (up - 1)
     out = finish(o, [back + 'vocab.js', back + 'tip.js',
                      '../' * (up - 2) + 'form.js'])
-    shell.emit(os.path.join(shell.ROOT, OUT_DIR, 'new', 'set') if sets
-               else os.path.join(shell.ROOT, OUT_DIR, 'new'), out, name)
+    outdir = os.path.join(shell.ROOT, OUT_DIR, 'new', 'set') if sets \
+        else os.path.join(shell.ROOT, OUT_DIR, 'new')
+    os.makedirs(outdir, exist_ok=True)
+    shell.emit(outdir, out, name)
 
 
 def check(out, slug):

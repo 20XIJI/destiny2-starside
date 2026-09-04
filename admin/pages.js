@@ -23,7 +23,7 @@ window.starsidePages = [
   ["docs/stasis","冰影","elements/stasis/index.html","档案","docs/elements","2026.8.30"],
   ["docs/strand","缚丝","elements/strand/index.html","档案","docs/elements","2026.8.10"],
   ["docs/void","虚空","elements/void/index.html","档案","docs/elements","2026.8.30"],
-  ["docs/changelog","更新日志","changelog/index.html","站务","","2026.9.4"],
+  ["docs/changelog","更新日志","changelog/index.html","站务","","2026.9.5"],
   ["docs/palette","配色总览","palette/index.html","站务","","2026.8.24"],
   ["docs/sources","数据源与鸣谢","sources/index.html","站务","","2026.8.28"],
   ["docs/dps","DPS 排行","dps/index.html","终局分析","","2026.8.25"],
