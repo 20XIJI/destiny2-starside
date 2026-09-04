@@ -9,17 +9,6 @@
   --min: 1104px;
 }
 
-/* 分支色驱动整页的 UI 强调色。--accent 是 design.md 写明「子页面覆盖这一个即可
-   换色」的槽位，六个元素页就是这么做的；这里不新增任何渲染色，只把已有的元素色
-   接到既有的槽位上。配装页落在 <main> 上，索引页落在每张卡的 <li> 上，所以类名
-   不加限定——一处定义，两处生效。 */
-.b-arc { --accent: var(--c-arc); }
-.b-solar { --accent: var(--c-solar); }
-.b-void { --accent: var(--c-void); }
-.b-stasis { --accent: var(--c-stasis); }
-.b-strand { --accent: var(--c-strand); }
-.b-prismatic { --accent: var(--c-prism); }
-
 /* 装备图的圆角一处定义，取全站格内图那一个值（assets/site.css 的 .gen td/th img）。
    四种尺寸走同一个数：96 的核心异域、64 的索引卡、56/32/24 的格子、20 的神器本体。
    分开写会重演 site.css 修过的那件事——同一屏里方角图与圆角图混排，页头那枚 96
@@ -499,8 +488,8 @@ button.item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
 /* ── 索引页 ───────────────────────────────────────────────────────────
    **竖式卡，一排六张。**首页那套横式 .entry（图 | 正文 | 右列）一屏只放得下六张，
    配装过二十套就要滚很久；这一页把它转成竖排：图在最上，往下是配装名、推荐人、
-   简介、标签、时间与赞数。编辑台 admin/ 直接引这份表，它的列表跟着一起
-   变——两处的卡本来就该同形。
+   简介、标签、时间与赞数。**编辑台不引这份表**：它的配装列表是行式的，一屏要
+   扫六七十条，卡片得滚三屏；两处共用的只有六行 .b-*，那六行在 assets/site.css。
 
    **版心走 1500 那一档，不跟着配装页收到 1060**：六列在 1500 下每张约 226px，
    1060 下只有 150px，配装名放不下五个字。同一份样式表服务三种页面，所以用 :has
@@ -509,6 +498,32 @@ button.item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
    **卡高恒定**：简介固定三行、标签固定两行，都超出即裁。一排六张里有一张长出来，
    下一排的顶缘就是锯齿。 */
 body:has(.entries) { --wrap: 1500px; }
+
+/* 维度筛选那几行（工具条的 data-facets，只有索引页开）。一行一个维度，所以
+   工具条要换行、每一行独占一整行宽。同一排里选中与没选中的框大小必须一样——
+   chip 的选中态只换字色与边框色，与详情页那些标签同一条规则。 */
+body:has(.entries) .toolbar {
+  flex-wrap: wrap;
+  row-gap: 9px;
+}
+
+.tool-facet {
+  flex: 1 0 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 维度名与工具条上那个计数同一档：小字、字距拉开、压暗，读作标签不是可点的东西。 */
+.facet-label {
+  min-width: 3.2em;
+  color: var(--bone-faint);
+  font-family: var(--font-disp);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .14em;
+}
 
 /* 沟收到 16：226px 的卡之间留 24 的沟，沟比卡的内边距还显眼。 */
 .entries {
@@ -529,10 +544,6 @@ body:has(.entries) { --wrap: 1500px; }
 
 .sect-label + .sub-label { margin-top: 16px; }
 .entries + .sub-label { margin-top: 40px; }
-
-/* 搜索把某个职业滤空时，那个小标题自己隐藏——app.js 只管隐藏卡片与整节，留下
-   的光杆标题由这一条收掉，不为它加 JS。 */
-.sub-label:has(+ .entries:not(:has(> li:not([hidden])))) { display: none; }
 
 /* 竖排改用 flex：单列的网格里 margin-top: auto 推不动东西（自由空间落在容器
    末尾，不在任何一格的区域里），底部那一行的时间与赞数就贴不到卡底。 */

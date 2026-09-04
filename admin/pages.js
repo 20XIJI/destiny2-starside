@@ -1,4 +1,4 @@
-// 由 tools/build-terms.py 生成，不手改。审核台左栏的资料页树。
+// 由 tools/build-terms.py 生成，不手改。审核台左栏的资料页树，以及配装的职业、类别与分支三张表。
 window.starsidePages = [
   ["docs/rotation","轮换速查表","rotation/index.html","攻略与工具","","2026.8.30"],
   ["docs/ammo","弹药生成机制","ammo/index.html","机制","","2026.8.25"],
@@ -41,3 +41,4 @@ window.starsidePages = [
   ["docs/shopping-primary","购物清单-白弹","shopping-primary/index.html","终局分析","docs/pve-farming","2026.8.30"],
   ["docs/shopping-special","购物清单-绿弹","shopping-special/index.html","终局分析","docs/pve-farming","2026.8.30"],
 ]
+window.starsideBuilds = {"classes":["猎人","泰坦","术士"],"cats":["meta","强度","创意","PVP"],"branch":{"电弧":"arc","烈日":"solar","虚空":"void","冰影":"stasis","缚丝":"strand","棱镜":"prismatic"}}

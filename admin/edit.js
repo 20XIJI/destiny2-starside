@@ -16,7 +16,7 @@
   var HERE = document.querySelector('link[href$="assets/site.css"]')
     .getAttribute('href').replace('assets/site.css', '')
 
-  var S = { me: null, md: null, lines: [], pend: [], done: [], on: false, T: null }
+  var S = { me: null, md: null, lines: [], pend: [], done: [], on: false }
 
   var el = function (tag, cls, text) {
     var n = document.createElement(tag)
@@ -59,7 +59,7 @@
   }
 
   // 闸门词表与那几条纯函数在编辑台那两份文件里，**开编辑态时才拉**：
-  // terms.js 一份 102 KB，挂在每个资料页的首屏上不成立。
+  // terms.js 一份 104 KB，挂在每个资料页的首屏上不成立。
   function script (src) {
     return new Promise(function (ok, no) {
       var s = document.createElement('script')
@@ -68,6 +68,19 @@
       s.onerror = function () { no(new Error('载不动 ' + src)) }
       document.head.appendChild(s)
     })
+  }
+
+  // **词表不进「开编辑态」这条关键路径。**它 104 KB，只有闸门提示与调色板用得上；
+  // 进编辑态之后空闲预取，点开某一块时若还没到就等它一次，到了再把调色板与提示
+  // 补上。预览不等它——paint() 只认花括号，不查词表——所以改完当场就看得见渲染
+  // 的样子；提示晚到不影响判断，它本来就是提示不拦截，真闸门在本机那套 Python。
+  var EMPTY = { terms: [], tokens: {}, classes: [], pageClasses: {}, guard: [], items: [], keep: [], g6: [] }
+  function terms () { return window.starsideTerms || EMPTY }
+  var termsAt = null
+  function wantTerms () {
+    if (window.starsideTerms) return Promise.resolve()
+    if (!termsAt) termsAt = script('admin/terms.js')
+    return termsAt
   }
 
   // ── 源稿定位 ───────────────────────────────────────────────────────
@@ -300,15 +313,18 @@
     box.appendChild(prev)
 
     var pal = el('div', 'se-pal')
-    Object.keys(S.T.tokens).sort().forEach(function (cls) {
-      var b = el('button', cls, cls)
-      b.type = 'button'
-      // 芯片要自己 preventDefault，否则按下去先让 textarea 失焦、选区没了。
-      b.onmousedown = function (ev) { ev.preventDefault() }
-      b.onclick = function () { wrapSel(ta, cls) }
-      pal.appendChild(b)
-    })
     box.appendChild(pal)
+    var palette = function () {
+      pal.textContent = ''
+      Object.keys(terms().tokens).sort().forEach(function (cls) {
+        var b = el('button', cls, cls)
+        b.type = 'button'
+        // 芯片要自己 preventDefault，否则按下去先让 textarea 失焦、选区没了。
+        b.onmousedown = function (ev) { ev.preventDefault() }
+        b.onclick = function () { wrapSel(ta, cls) }
+        pal.appendChild(b)
+      })
+    }
 
     var notes = el('ul', 'se-notes')
     box.appendChild(notes)
@@ -323,13 +339,14 @@
     // **表头行与行标题那一格跳过**：列名与行的身份已有结构身份，照 items.hits_in()
     // 的六处跳过原样搬——少一条就满屏误报。
     var head = !!node.closest('thead')
-    var g6 = DOC.indexOf('docs/') === 0 && S.T.g6.indexOf(DOC.slice(5)) >= 0
-      && !head && at.cell !== 0
 
     var redraw = function () {
+      var T = terms()
+      var g6 = DOC.indexOf('docs/') === 0 && T.g6.indexOf(DOC.slice(5)) >= 0
+        && !head && at.cell !== 0
       prev.innerHTML = show(ta.value) || '（空）'
       notes.textContent = ''
-      var ok = S.T.classes.concat(S.T.pageClasses[DOC] || [])
+      var ok = T.classes.concat(T.pageClasses[DOC] || [])
       var r = window.starsideAdmin.lint(ta.value, { cols: 0, head: head }, g6, ok)
       r.errs.forEach(function (x) { notes.appendChild(el('li', null, x)) })
       // 「该着色」是提示不是错，压暗一档排在错误后面
@@ -341,8 +358,13 @@
           : '提交待审'
       send.disabled = ta.value === before
     }
-    ta.oninput = redraw
+    // **去抖 150 ms**：一轮 redraw 要重画预览再跑一遍闸门，而中文输入法逐字上屏时
+    // 每个候选字都触发一次 input。
+    var tick = 0
+    ta.oninput = function () { clearTimeout(tick); tick = setTimeout(redraw, 150) }
+    palette()
     redraw()
+    wantTerms().then(function () { palette(); redraw() }, function () {})
     send.onclick = function () {
       if (ta.value === before) { shut(); return }
       send.disabled = true
@@ -385,14 +407,13 @@
 
   // ── 装载 ───────────────────────────────────────────────────────────
   function reload () {
-    return call('doc', { id: DOC }).then(function (d) {
-      S.md = d.md
+    // **一发拿回正文、hash 与待审。**从前是 doc 再 pend 两发串行，而后者串在
+    // 前者后面只为拿 hash 与页面上那份比一次——那一比服务端自己做得了。
+    // **页面上那份 hash 与库里相等就没有待上站的改动**，一处都不必比；
+    // 不等才把已通过的那些取回来认出「这一格站上还是旧的」，由后端一并判。
+    return call('pend', { doc: DOC, md: 1, hash: PAGE_HASH }).then(function (r) {
+      S.md = r.md || ''
       S.lines = S.md.split('\n')
-      // **页面上那份 hash 与库里相等就没有待上站的改动**，一处都不必比。
-      // 不等才把已通过的那些取回来认出「这一格站上还是旧的」。
-      var stale = PAGE_HASH && d.hash && PAGE_HASH !== d.hash
-      return call('pend', stale ? { doc: DOC, stale: 1 } : { doc: DOC })
-    }).then(function (r) {
       S.pend = r.pend.map(function (p) { p.ok = Number(p.ok); return p })
       S.done = (r.done || []).map(function (p) { p.ok = Number(p.ok); return p })
     })
@@ -409,14 +430,11 @@
       return Promise.resolve()
     }
     chip.textContent = '载入中…'
-    // **必须串行**：admin.js 在模块顶层就取 window.starsideTerms，
-    // 并发时它可能先于 terms.js 执行，捕获到那个空的兜底词表，闸门整片失灵。
-    // 关掉再开时不重载：两份脚本已经在页面上了，再插一遍只是白执行一次。
-    return (window.starsideAdmin
-      ? Promise.resolve()
-      : script('admin/terms.js').then(function () { return script('admin/admin.js') }))
+    // 关掉再开时不重载：脚本已经在页面上了，再插一遍只是白执行一次。
+    // **词表不在这条链上**：admin.js 的 lint() 现读 window.starsideTerms，不在
+    // 模块顶层捕获，所以两份脚本的先后不再有约束，词表挪到进去之后空闲补。
+    return (window.starsideAdmin ? Promise.resolve() : script('admin/admin.js'))
       .then(reload).then(function () {
-        S.T = window.starsideTerms
         decode()
         S.on = true
         mark(true)
@@ -424,6 +442,7 @@
         if (S.pend.length) S.desk.textContent = '审核台 ' + S.pend.length
         chip.textContent = '退出编辑'
         chip.setAttribute('aria-current', 'true')
+        ;(window.requestIdleCallback || setTimeout)(wantTerms, 1)
       }, function (e) {
         chip.textContent = '编辑'
         alert('进不了编辑态：' + e.message)

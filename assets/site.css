@@ -152,6 +152,18 @@
   --min: 0px;
 }
 
+/* 分支色驱动那一块的 UI 强调色。--accent 是「子页面覆盖这一个即可换色」的槽位，
+   六个元素页就是这么做的；这里不新增任何渲染色，只把已有的元素色接到既有的槽位
+   上。类名不加限定——配装页落在 <main> 上，索引页落在每张卡的 <li> 上，编辑台的
+   配装列表落在每一行上。**一处定义，三处生效**，所以它归 site.css：编辑台不引
+   builds/style.css（那份还带着 1060px 版心与整套卡片规则），要的只有这六行。 */
+.b-arc { --accent: var(--c-arc); }
+.b-solar { --accent: var(--c-solar); }
+.b-void { --accent: var(--c-void); }
+.b-stasis { --accent: var(--c-stasis); }
+.b-strand { --accent: var(--c-strand); }
+.b-prismatic { --accent: var(--c-prism); }
+
 * { box-sizing: border-box; }
 
 html { scroll-behavior: smooth; }

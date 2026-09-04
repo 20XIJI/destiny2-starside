@@ -138,9 +138,16 @@ def tree():
         at = re.search(r'<span class="stamp">更新 ([\d.]+)</span>', html)
         rows.append([pid, title, url, group.get(pid, '档案'), '', at.group(1) if at else ''])
     rows.sort(key=lambda r: (r[3], r[4], r[0]))
-    return ('// 由 tools/build-terms.py 生成，不手改。审核台左栏的资料页树。\n'
+    # 配装那三张表跟着一起导：审核台左栏按类别与职业建树、列表按分支上色，
+    # 而 DOM 那边只认得 b-prismatic 这种 slug。**照 markup.py 那一份导**，
+    # 不在 admin.js 里另抄一遍——多一个分支时只改那一处。
+    return ('// 由 tools/build-terms.py 生成，不手改。审核台左栏的资料页树，'
+            '以及配装的职业、类别与分支三张表。\n'
             'window.starsidePages = [\n'
-            + '\n'.join('  %s,' % j(r) for r in rows) + '\n]\n')
+            + '\n'.join('  %s,' % j(r) for r in rows) + '\n]\n'
+            + 'window.starsideBuilds = %s\n'
+            % j({'classes': list(markup.CLASSES), 'cats': list(markup.CATEGORIES),
+                 'branch': markup.BRANCH}))
 
 
 def docs_where(docs, pid):

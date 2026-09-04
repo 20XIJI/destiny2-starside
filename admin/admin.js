@@ -7,8 +7,11 @@
 
   var API = 'https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api'
   var AUTH = 'https://dea-mods-d1g0j2rile2323f73.api.tcloudbasegateway.com'
-  var T = window.starsideTerms ||
-    { terms: [], tokens: {}, classes: [], pageClasses: {}, guard: [], items: [], keep: [], g6: [] }
+  // **词表现读，不在模块顶层捕获。**捕获会逼着 terms.js 必须先于本文件执行，
+  // 而它 104 KB、全仓只有 lint() 用得上；现读之后 edit.js 那条串行注入就拆得开，
+  // 编辑态先起来、词表空闲时再补。
+  var FALLBACK = { terms: [], tokens: {}, classes: [], pageClasses: {}, guard: [], items: [], keep: [], g6: [] }
+  function terms () { return window.starsideTerms || FALLBACK }
 
   var $ = function (id) { return document.getElementById(id) }
   var el = function (tag, cls, text) {
@@ -72,13 +75,21 @@
     })
   }
 
+  // 位置 i 上是不是一个 {token| 开头；是就返回那次匹配，不是返回 null。
+  // **先看一眼首字符再切片**：在 while 里无条件 s.slice(i) 等于每前进一个字符
+  // 复制一遍剩余全串，5 KB 的块单次扫描就是一千多万次字符拷贝。
+  var OPEN = /^\{([\w-]+)\|/
+  function openAt (s, i) {
+    return s.charAt(i) === '{' ? OPEN.exec(s.slice(i)) : null
+  }
+
   // 与 markup.inline() 同一条规则：一趟栈式扫描，支持嵌套。正则做不干净。
   function paint (t) {
     var out = ''
     var d = 0
     var i = 0
     while (i < t.length) {
-      var m = /^\{([\w-]+)\|/.exec(t.slice(i))
+      var m = openAt(t, i)
       if (m) { out += '<span class="' + m[1] + '">'; d++; i += m[0].length; continue }
       var c = t.charAt(i++)
       if (c === '}' && d) { out += '</span>'; d--; continue }
@@ -94,7 +105,7 @@
     var stack = []
     var i = 0
     while (i < t.length) {
-      var m = /^\{([\w-]+)\|/.exec(t.slice(i))
+      var m = openAt(t, i)
       if (m) { stack.push(i); i += m[0].length; continue }
       if (t.charAt(i) === '}' && stack.length) span.push([stack.pop(), i])
       i++
@@ -111,7 +122,7 @@
     var n = 0
     var d = 0
     for (var i = 0; i < line.length; i++) {
-      var m = /^\{[\w-]+\|/.exec(line.slice(i))
+      var m = openAt(line, i)
       if (m) { d++; i += m[0].length - 1; continue }
       var c = line.charAt(i)
       if (c === '}' && d) d--
@@ -167,7 +178,7 @@
     var depth = 1
     var i = m[0].length
     while (i < t.length) {
-      var o = /^\{[\w-]+\|/.exec(t.slice(i))
+      var o = openAt(t, i)
       if (o) { depth++; i += o[0].length; continue }
       if (t.charAt(i) === '}') {
         depth--
@@ -178,10 +189,48 @@
     return null
   }
 
+  // 下面三份都随词表走，按词表对象缓存：terms.js 是编辑态起来之后空闲补上的，
+  // 换了对象就重建。不缓存的话每次击键都要重来一遍。
+
+  // G2 那几十个正则。
+  var g2Src = null
+  var g2Of = null
+  function g2res (rows) {
+    if (g2Src === rows) return g2Of
+    var out = []
+    rows.forEach(function (row) {
+      if (!row[1]) return
+      out.push([row, new RegExp('\\{([\\w-]+)\\|'
+        + row[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\}', 'g')])
+    })
+    g2Src = rows
+    g2Of = out
+    return out
+  }
+
+  // G6 正查的词表按首字分桶，一行只扫它真出现过的那几桶。全扫是每次击键
+  // 1402 次子串搜索起步，中文输入法逐字上屏时每个候选字都要跑一轮。
+  var bkSrc = null
+  var bkOf = null
+  function buckets (items) {
+    if (bkSrc === items) return bkOf
+    var b = {}
+    items.forEach(function (row, i) {
+      var c = row[0].charAt(0)
+      if (!b[c]) b[c] = []
+      b[c].push([i, row])
+    })
+    bkSrc = items
+    bkOf = b
+    return b
+  }
+
   // errors 一直显示，warns 只在编辑那一块时显示——不然一屏全是「该着色」。
   function lint (text, at, g6, ok) {
+    var T = terms()
     at = at || { cols: 0, head: false }
     ok = ok || T.classes
+    var okSet = new Set(ok)
     var errs = []
     var warns = []
     var m
@@ -204,7 +253,7 @@
     // G3：token 必须在 site.css 里有对应的类
     var t2 = /\{([\w-]+)\|/g
     while ((m = t2.exec(text))) {
-      if (ok.indexOf(m[1]) < 0) errs.push('token「' + m[1] + '」在这一页的样式表里没有定义')
+      if (!okSet.has(m[1])) errs.push('token「' + m[1] + '」在这一页的样式表里没有定义')
     }
 
     // G1：整篇比一次。链接目标不是正文，KEEP 里那几条是官方专名，两者都放行。
@@ -228,10 +277,11 @@
 
     // G2：只查「整个标记就是这个词」的那种。词嵌在更长的短语里时着色属于短语，
     // 按词强判会把整句的颜色拆碎。
-    T.terms.forEach(function (row) {
-      if (!row[1]) return
-      var one = new RegExp('\\{([\\w-]+)\\|' + row[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\}', 'g')
+    g2res(T.terms).forEach(function (e) {
+      var row = e[0]
+      var one = e[1]
       var k
+      one.lastIndex = 0                      // 正则是缓存下来复用的，g 标志会记住上次位置
       while ((k = one.exec(text))) {
         if (k[1] !== row[1]) errs.push('「' + row[0] + '」该着 ' + row[1] + '，写成了 ' + k[1])
       }
@@ -253,9 +303,26 @@
         while ((at = line.indexOf(g, at)) >= 0) { taken.push([at, at + g.length]); at += g.length }
       })
       var span = marked(line)
-      T.items.forEach(function (row) {
-        var at = line.indexOf(row[0])
-        if (at < 0 || at < end) return
+      // **只认每个词在这一行的第一次出现**，与原先那句 indexOf 逐字等价：首次
+      // 出现落在行标题里或已经着过色，这个词就整条跳过，不去看后面还有没有。
+      var bk = buckets(T.items)
+      var seen = {}
+      var hit = []
+      for (var i = 0; i < line.length; i++) {
+        var bag = bk[line.charAt(i)]
+        if (!bag) continue
+        for (var j = 0; j < bag.length; j++) {
+          var k = bag[j][0]
+          if (seen[k] !== undefined || line.slice(i, i + bag[j][1][0].length) !== bag[j][1][0]) continue
+          seen[k] = i
+          hit.push(bag[j])
+        }
+      }
+      hit.sort(function (a, b) { return a[0] - b[0] })   // 报错顺序仍按词表顺序
+      hit.forEach(function (e) {
+        var row = e[1]
+        var at = seen[e[0]]
+        if (at < end) return
         var to = at + row[0].length
         if (within(taken, at, to) || inside(span, at, to - 1)) return
         warns.push('「' + row[0] + '」该着 ' + row[1] + '（' + row[2] + '）')
@@ -272,6 +339,15 @@
     var view = $('views')
     view.textContent = ''
     view.appendChild(node)
+    // 换一屏就把配装详情那一格收起来。**只收 DOM、不动 openBuild**：buildsView
+    // 自己也走这条路，清掉状态它就再也画不开那一格了。
+    hideStage()
+  }
+
+  function hideStage () {
+    $('stage').hidden = true
+    $('stage-head').textContent = ''
+    $('stage-acts').textContent = ''
   }
   // ── 浏览器的返回 ───────────────────────────────────────────────────
   // 编辑台整站一页，不压历史的话按一下返回就离开了整个编辑台——而人在配装详情里
@@ -295,13 +371,9 @@
       if (n.dataset.view === v) n.setAttribute('aria-current', 'true')
       else n.removeAttribute('aria-current')
     })
-    if (state && state.b) {
-      var hit = builds().filter(function (x) {
-        return (x.sub ? x.sub._id : x.id) === state.b
-      })[0]
-      // 从 popstate 回来时不能再压一格——那一格本来就是它自己
-      if (hit) return buildDetail(hit, 1)
-    }
+    // 详情摊开的是哪一套由历史那一格说了算：buildsView 画完列表会照它把详情
+    // 摊在下面。从 popstate 回来时因此不必再压一格。
+    openBuild = (state && state.b) || null
     ;(VIEWS[v] || reviewView)()
   }
 
@@ -515,7 +587,7 @@
       return call('chg', { doc: e.doc, blk: e.blk, cell: e.cell, after: e.after,
         before: cellAt(d.md, e) })
     }).then(function (r) {
-      return mark([[r.id, 1]].concat(rest).concat([[e._id, -1]]), body)
+      return mark([[r.id, 1]].concat(rest).concat([[e._id, -1]]), body, 1)
     }, function (err) { tip(body, '接不上库里现在那一版：' + err.message, 1) })
   }
 
@@ -556,7 +628,12 @@
   }
 
   // 逐条结案。**顺序执行**：同一篇的几处都要落进同一份正文，并发会互相覆盖。
-  function mark (jobs, body) {
+  //
+  // **结案之后不重拉三张全量表**：改的是哪几条这里就知道，就地改掉即可。撞车
+  // 不靠重拉发现——emark 通过时拿 before 再对一次库里当时的正文，对不上就回
+  // conflict，下面接着了。一次通过因此只发两个请求：emark 与那一发 pend。
+  // fresh 那一路是例外：pick() 改基线会在库里新建一条记录，本地造不出来。
+  function mark (jobs, body, fresh) {
     var conflict = []
     var chain = jobs.reduce(function (p, job) {
       return p.then(function () {
@@ -566,7 +643,18 @@
         })
       })
     }, Promise.resolve())
-    return chain.then(load).then(function () {
+    return chain.then(function () {
+      if (fresh) return load()
+      var done = {}
+      jobs.forEach(function (j) { done[j[0]] = j[1] })
+      conflict.forEach(function (id) { delete done[id] })
+      S.edits.forEach(function (e) {
+        if (done[e._id] === undefined) return
+        e.ok = Number(done[e._id])
+        e.okBy = S.me && S.me.name
+      })
+      badges()
+    }).then(function () {
       reviewView()
       if (conflict.length) {
         tip($('views'), '有 ' + conflict.length + ' 处在这中间被人先改了，留在队列里', 1)
@@ -578,11 +666,30 @@
   // **这一页管所有配装，不只是待审投稿。**已上站那些的在线入口只有这里：配装页
   // 没有 data-b，资料页那套逐处编辑在它们身上无从落脚，改法本来就是填表页整篇替换。
 
-  function line (md, key) {
-    var m = new RegExp('^' + key + '：(.*)$', 'm').exec(md || '')
-    return m ? m[1].trim() : ''
+  // 头部那几个「键：值」一趟扫完，按源稿字符串记住。画一行要读名字加四个键、
+  // 缺失项再读六个，每个都现编一个正则再把整份 md 扫一遍——点一下筛选 chip
+  // 整张列表重来一遍。首个匹配为准，与原先 ^键：(.*)$ 带 m 标志的行为一致。
+  var HEAD = /^([\u4e00-\u9fff]{1,6})：(.*)$/
+  var headOf = new Map()
+  function head (md) {
+    if (!md) return {}
+    var got = headOf.get(md)
+    if (got) return got
+    var out = {}
+    md.split('\n').forEach(function (l) {
+      if (l.charAt(0) === '#') {
+        if (out['#'] === undefined && /^#\s/.test(l)) out['#'] = l.replace(/^#\s+/, '').trim()
+        return
+      }
+      var m = HEAD.exec(l)
+      if (m && out[m[1]] === undefined) out[m[1]] = m[2].trim()
+    })
+    if (headOf.size > 300) headOf.clear()     // 只是缓存，涨到头就整片丢掉重来
+    headOf.set(md, out)
+    return out
   }
-  function nameOf (md) { return (/^#\s+(.+)$/m.exec(md || '') || [0, ''])[1].trim() }
+  function line (md, key) { return head(md)[key] || '' }
+  function nameOf (md) { return head(md)['#'] || '' }
 
   // **必需的只有这五项**，与 builds/new/form.js 的 NEED、后端算指纹的 SAME 是
   // 同一组：缺了不许投、缺了也算不出区分度。装备与描述可以后补，这五项不行。
@@ -619,9 +726,13 @@
       out.push({ sub: s, id: ok === 1 ? id : '', md: s.md, at: s.at,
         state: ok === 0 ? 'wait' : ok === -1 ? 'no' : id && live[id] ? 'live' : 'pass' })
     })
-    // 本机直接写的源稿没有对应投稿，照样要管
+    // 本机直接写的源稿没有对应投稿，照样要管。35 套里有 20 套是这一支——
+    // docs 那个动作给 builds/ 前缀的记录带上了 md，所以它们在列表上也有名字、
+    // 职业与类别，不再只剩一个 slug。
     Object.keys(live).forEach(function (id) {
-      if (!seen[id]) out.push({ sub: null, id: id, md: '', at: live[id].at, state: 'live' })
+      if (!seen[id]) {
+        out.push({ sub: null, id: id, md: live[id].md || '', at: live[id].at, state: 'live' })
+      }
     })
     return out
   }
@@ -630,10 +741,71 @@
                 dropping: '已同意，等着删', no: '已驳回' }
   var buildFilter = { wait: 1, pass: 1, live: 1, dropping: 1 }
 
+  // 职业、类别与分支三张表由 admin/pages.js 给（build-terms.py 照 markup.py
+  // 那一份导），不在这里另抄一遍。
+  var VOCAB = window.starsideBuilds || { classes: [], cats: [], branch: {} }
+
+  function kindOf (b) { return line(b.md, '类别') || '没写类别' }
+  function clsOf (b) { return line(b.md, '职业') || '没写职业' }
+  function idOf (b) { return b.sub ? b.sub._id : b.id }
+
+  var buildPick = ''          // 左栏选中的那一格：'' 全部、'强度'、'强度/猎人'
+  var openBuild = null        // 详情摊开的是哪一套
+
+  // 左栏：类别 → 职业两级，与站上索引页的分节逐层同形（那一页也是类别大节、
+  // 职业小节）。**只列有东西的那些分支**，与资料页树同一条规矩：为 0 的职业连同
+  // 空掉的类别一起不出现，一屏全是零会把真有东西的那几格淹掉。
+  // 计数跟着上面那排状态 chip 走——只看待审时，树上数的就是待审。
+  function buildTree (list, on, pick) {
+    var box = el('nav', 'tree')
+    if (!list.length) {
+      box.appendChild(el('p', 'lede', '这几档下没有配装'))
+      return box
+    }
+    var n = {}
+    list.forEach(function (b) {
+      var c = kindOf(b)
+      n[c] = (n[c] || 0) + 1
+      n[c + '/' + clsOf(b)] = (n[c + '/' + clsOf(b)] || 0) + 1
+    })
+    // 词表里那几个排在前面，源稿写了别的值照样出得来——不然那几条在树上点不到。
+    var cats = VOCAB.cats.filter(function (c) { return n[c] })
+    Object.keys(n).forEach(function (k) {
+      if (k.indexOf('/') < 0 && cats.indexOf(k) < 0) cats.push(k)
+    })
+    box.appendChild(row('全部', '', list.length, 0))
+    cats.forEach(function (c) {
+      box.appendChild(row(c, c, n[c], 0))
+      var ks = VOCAB.classes.filter(function (k) { return n[c + '/' + k] })
+      Object.keys(n).forEach(function (k) {
+        var at = k.indexOf('/')
+        if (at > 0 && k.slice(0, at) === c && ks.indexOf(k.slice(at + 1)) < 0) {
+          ks.push(k.slice(at + 1))
+        }
+      })
+      ks.forEach(function (k) { box.appendChild(row(k, c + '/' + k, n[c + '/' + k], 1)) })
+    })
+    return box
+
+    function row (label, key, count, depth) {
+      var b = el('button', 'tree-row' + (depth ? ' sub' : '') + (on === key ? ' on' : ''))
+      b.type = 'button'
+      b.appendChild(el('span', 'id', label))
+      b.appendChild(el('span', 'n', String(count)))
+      b.onclick = function () { pick(key) }
+      return b
+    }
+  }
+
+  function inPick (b) {
+    if (!buildPick) return true
+    return buildPick === kindOf(b) || buildPick === kindOf(b) + '/' + clsOf(b)
+  }
+
   function buildsView () {
     title('配装')
     var all = builds()
-    var wrap = el('section', 'block')
+    var body = el('div')
 
     var bar = el('div', 'acts')
     Object.keys(STATE).forEach(function (k) {
@@ -655,27 +827,38 @@
         wipe.disabled = true
         call('sdrop', {}).then(load).then(toList, function (e) {
           wipe.disabled = false
-          tip(wrap, '没删成：' + e.message, 1)
+          tip(body, '没删成：' + e.message, 1)
         })
       }
       bar.appendChild(wipe)
     }
-    wrap.appendChild(bar)
 
-    var list = all.filter(function (b) { return buildFilter[b.state] })
+    var inState = all.filter(function (b) { return buildFilter[b.state] })
+    if (buildPick && !inState.some(inPick)) buildPick = ''
+    show(split(buildTree(inState, buildPick, function (k) {
+      buildPick = buildPick === k ? '' : k       // 再点一次就取消筛选
+      buildsView()
+    }), body))
+    body.appendChild(bar)
+
+    var list = inState.filter(inPick)
       .sort(function (a, b) { return (a.at || '') < (b.at || '') ? 1 : -1 })
-    if (!list.length) wrap.appendChild(el('p', 'lede', '这几档下没有配装'))
+    if (!list.length) body.appendChild(el('p', 'lede', '这一格下没有配装'))
 
     var rows = el('div', 'rows')
     list.forEach(function (b) {
       var md = b.md
-      var r = el('button')
+      // 左缘那条 2px 亮边跟着这一套的分支色走，与站上索引页每张卡的左缘同一条
+      // 规则（.b-* 六行在 assets/site.css，一处定义三处生效）。
+      var slug = VOCAB.branch[line(md, '分支')]
+      var r = el('button', slug ? 'b-' + slug : '')
       r.type = 'button'
       var drop = b.sub && b.sub.drop
       r.appendChild(el('span', 'flag ' + (drop ? 'no' : b.state === 'wait' ? 'pend'
         : b.state === 'no' ? 'no' : 'pass'),
         drop ? (b.state === 'wait' ? '待删' : STATE[b.state]) : STATE[b.state]))
-      r.appendChild(el('span', 'id', (drop ? '申请删除　' : '')
+      r.appendChild(el('span', 'id ' + (openBuild === idOf(b) ? 'on' : ''),
+        (drop ? '申请删除　' : '')
         + (md ? (nameOf(md) || '（没名字）') : b.id.split('/').pop())))
       if (md) {
         r.appendChild(el('span', 'meta', line(md, '职业') || '—'))
@@ -692,28 +875,70 @@
       r.onclick = function () { buildDetail(b) }
       rows.appendChild(r)
     })
-    wrap.appendChild(rows)
-    show(wrap)
+    body.appendChild(rows)
+
+    // **详情摊在列表下面，不跳走**：跳到单独一屏会把左栏那棵树与滚到哪儿一起
+    // 丢掉，与「改动记录点一条就地展开」同一条约定。
+    var hit = openBuild && all.filter(function (x) { return idOf(x) === openBuild })[0]
+    if (hit) subDetail(hit)
+    else shut()
   }
 
-  // 已上站那些的正文不在列表里（docs 列表剥了 md），点开时现取。
-  function buildDetail (b, keep) {
-    if (!keep) dive({ v: 'builds', b: b.sub ? b.sub._id : b.id })
-    if (b.md) return subDetail(b)
-    call('doc', { id: b.id }).then(function (d) {
-      b.md = d.md
-      subDetail(b)
-    }, function (e) { tip($('views'), e.message, 1) })
+  // ── 详情那一格 ─────────────────────────────────────────────────────
+  // 骨架固定在 index.html 里：头 / iframe / 动作三块，**只有头与动作清空重建**。
+  // iframe 一旦被 append 进重建过的容器就是重新挂载，浏览器照规范把整页再载一遍，
+  // 而填表页要 site.css、builds/style.css、vocab.js 与 form.js —— 换一条配装
+  // 就重付一次解析与布局。
+  function stageFrame () {
+    var fr = $('stage').querySelector('iframe.prev')
+    if (fr) return fr
+    fr = el('iframe', 'prev')
+    fr.src = '../builds/new/index.html'
+    $('stage').insertBefore(fr, $('stage-acts'))
+    return fr
+  }
+
+  // 把一份源稿灌进那一页。第一次要等它自己载完，之后直接调。
+  function feed (md, onerr) {
+    var fr = stageFrame()
+    var go = function () {
+      try {
+        var w = fr.contentWindow
+        w.starsideForm.load(md)
+        // **把那一页自己的「投稿」摘掉**：它在审核页里按一下就是再投一份。
+        var send = w.document.getElementById('send')
+        if (send) send.remove()
+      } catch (err) { onerr(err) }
+    }
+    if (fr.dataset.ready) go()
+    else fr.onload = function () { fr.dataset.ready = '1'; go() }
+  }
+
+  function shut () {
+    openBuild = null
+    hideStage()
+  }
+
+  // 点一条：记下开的是哪一套，再画一次列表——详情就摊在它下面那一格里。
+  // 正文不必现取，docs 那个动作已经把 builds/ 那些的 md 一并带回来了。
+  function buildDetail (b) {
+    dive({ v: 'builds', b: idOf(b) })
+    openBuild = idOf(b)
+    buildsView()
   }
 
   function subDetail (b) {
     var s = b.sub || { _id: b.id, md: b.md }
-    var wrap = el('section', 'block')
+    var wrap = $('stage-head')
+    var box = $('stage-acts')
+    wrap.textContent = ''
+    box.textContent = ''
+    $('stage').hidden = false
     var bar = el('div', 'acts')
-    bar.appendChild(back('配装', buildsView))
+    bar.appendChild(back('收起'))
     wrap.appendChild(bar)
-    title(nameOf(b.md) || '配装')
-    wrap.appendChild(el('p', 'crumb', STATE[b.state]
+    wrap.appendChild(el('p', 'crumb', (nameOf(b.md) || b.id.split('/').pop())
+      + '　·　' + STATE[b.state]
       + (b.sub && b.sub.updates ? '　·　这一份是对已上站那一套的更新，通过即覆盖过去' : '')
       + (missing(b.md).length ? '　·　缺 ' + missing(b.md).join('、') : '')))
 
@@ -721,25 +946,12 @@
     // 审的人改完再通过比打回去让人重投快得多。**不替他按预览**——预览态下
     // #sheet.preview 把输入框与格子全设成 pointer-events: none，整页点不动；
     // 那一页右下角自己带着「预览配装」，想看成品点它即可。
-    var fr = el('iframe', 'prev')
-    fr.src = '../builds/new/index.html'
-    fr.onload = function () {
-      try {
-        var w = fr.contentWindow
-        w.starsideForm.load(b.md)
-        // **把那一页自己的「投稿」摘掉**：它在审核页里按一下就是再投一份。
-        var send = w.document.getElementById('send')
-        if (send) send.remove()
-      } catch (err) {
-        tip(wrap, '填表页载不出来：' + err.message, 1)
-      }
-    }
-    wrap.appendChild(fr)
+    feed(b.md, function (err) { tip(box, '填表页载不出来：' + err.message, 1) })
 
     // 改后的那一份从填表页现读；读不出来（脚本没载好）就退回投稿原文，不交空的。
     function current () {
       try {
-        var md = fr.contentWindow.starsideForm.read()
+        var md = stageFrame().contentWindow.starsideForm.read()
         return /^#\s+\S/.test(md) ? md : b.md
       } catch (e) {
         return b.md
@@ -751,7 +963,7 @@
     var pre = el('pre')
     pre.textContent = b.md
     src.appendChild(pre)
-    wrap.appendChild(src)
+    box.appendChild(src)
 
     if (S.me.lv >= 2) {
       var acts = el('div', 'acts')
@@ -769,7 +981,7 @@
             dyes.disabled = dno.disabled = true
             call('smark', { id: s._id, ok: ok }).then(load).then(toList, function (e) {
               dyes.disabled = dno.disabled = false
-              tip(wrap, '没改成：' + e.message, 1)
+              tip(box, '没改成：' + e.message, 1)
             })
           }
           dyes.onclick = function () { dmark(1) }
@@ -777,8 +989,7 @@
           bar2.appendChild(dyes)
           bar2.appendChild(dno)
         }
-        wrap.appendChild(bar2)
-        show(wrap)
+        box.appendChild(bar2)
         return
       }
 
@@ -796,10 +1007,10 @@
         call(act, { id: b.state === 'live' ? b.id : s._id, md: md }).then(function () {
           s.md = b.md = md
           keep.disabled = false
-          tip(wrap, '存好了' + (b.state === 'live' ? '，下一次 sync 落盘' : ''))
+          tip(box, '存好了' + (b.state === 'live' ? '，下一次 sync 落盘' : ''))
         }, function (e) {
           keep.disabled = false
-          tip(wrap, '没存上：' + e.message, 1)
+          tip(box, '没存上：' + e.message, 1)
         })
       }
       acts.appendChild(keep)
@@ -815,7 +1026,7 @@
           ask.disabled = true
           call('bdrop', { id: b.id }).then(load).then(toList, function (e) {
             ask.disabled = false
-            tip(wrap, '提不上去：' + e.message, 1)
+            tip(box, '提不上去：' + e.message, 1)
           })
         }
         acts.appendChild(ask)
@@ -829,7 +1040,7 @@
           del.disabled = true
           call('sdrop', { id: s._id }).then(load).then(toList, function (e) {
             del.disabled = false
-            tip(wrap, '没删成：' + e.message, 1)
+            tip(box, '没删成：' + e.message, 1)
           })
         }
         acts.appendChild(del)
@@ -849,7 +1060,7 @@
             keep.disabled = yes.disabled = no.disabled = false
             // 八位 36 进制撞上的概率约两万八千亿分之一，真撞了换一个再来
             if (e.message === 'slug 重了' && !retry) return mark(ok, 1)
-            tip(wrap, '没改成：' + e.message, 1)
+            tip(box, '没改成：' + e.message, 1)
           })
         }
         yes.onclick = function () { mark(1) }
@@ -857,9 +1068,8 @@
         acts.appendChild(yes)
         acts.appendChild(no)
       }
-      wrap.appendChild(acts)
+      box.appendChild(acts)
     }
-    show(wrap)
   }
 
   // ── 改动记录 ───────────────────────────────────────────────────────
@@ -1010,11 +1220,16 @@
       S.docs = r[0].docs
       S.edits = r[1].edits.map(function (e) { e.ok = Number(e.ok); return e })
       S.subs = r[2].subs
-      var nd = S.edits.filter(function (e) { return e.ok === 0 }).length
-      var ns = S.subs.filter(function (s) { return Number(s.ok) === 0 }).length
-      $('n-doc').textContent = nd ? String(nd) : ''
-      $('n-sub').textContent = ns ? String(ns) : ''
+      badges()
     })
+  }
+
+  // 两枚标签上的待审数。整装一次算一次，就地结案之后也算一次。
+  function badges () {
+    var nd = S.edits.filter(function (e) { return e.ok === 0 }).length
+    var ns = S.subs.filter(function (s) { return Number(s.ok) === 0 }).length
+    $('n-doc').textContent = nd ? String(nd) : ''
+    $('n-sub').textContent = ns ? String(ns) : ''
   }
 
   function boot () {

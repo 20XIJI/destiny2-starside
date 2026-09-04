@@ -61,9 +61,20 @@
 
 <div id="views" hidden></div>
 
+<!-- 配装详情摊在列表下面那一格。**骨架固定，iframe 建一次就不再动**：把它 append
+     进一个重建过的容器等于重新挂载，浏览器会照规范把整页再载一遍，而填表页要
+     site.css、builds/style.css、vocab.js 与 form.js —— 换一条配装就重付一次解析
+     与布局。所以只有头与动作两块清空重建，中间那一枚原地留着。 -->
+<div id="stage" hidden>
+<div id="stage-head"></div>
+<div id="stage-acts"></div>
+</div>
+
 </main>
 
-<script src="terms.js" defer></script>
+<!-- 词表不在这里引：lint() 全仓只有 admin/edit.js 一个调用点，编辑台自己
+     这一屏从不跑闸门，而 terms.js 是 104 KB。资料页上开编辑态时由 edit.js
+     按需拉，那一份现读 window.starsideTerms，与本文件的先后没有约束。 -->
 <script src="pages.js" defer></script>
 <script src="admin.js" defer></script>
 </body>

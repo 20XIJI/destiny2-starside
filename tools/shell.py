@@ -106,12 +106,16 @@ HIT = ('<script>(function(){'
        'function(x){if(o)o.textContent="访问统计取不到："+x})})()</script>' % (API, API))
 
 
-# 就地编辑的引子：**有令牌才把编辑台那份脚本拉进来**，没登录的读者只多下这一行。
+# 就地编辑的引子：**有令牌、且这一页反查得回源稿，才把编辑台那份脚本拉进来**。
 # 与 HIT 分成两段——那个 IIFE 里有 early return，接在它后面会被跳过。
 # 相对前缀从 site.css 那个 <link> 上现取：每页都有它（check_shell 钉着），而页面
 # 深浅不一，写死 ../ 会在 elements/arc/ 这种两层的页面上指错；站内绝对路径又会在
 # file:// 下指到磁盘根目录。
-EDIT = ('<script>try{if(localStorage.sa_at){'
+#
+# **判据要连 main[data-src] 一起看。**只看令牌的话，配装页、填表页、索引页与首页
+# 也会各下一份 edit.js，而它们没有 data-src，edit.js 进去第一件事就是 return。
+# 编辑台把填表页当 iframe 载进来，那 20 KB 因此每换一条配装白下一次。
+EDIT = ('<script>try{if(localStorage.sa_at&&document.querySelector("main[data-src]")){'
         'var l=document.querySelector(\'link[href$="assets/site.css"]\');'
         'if(l)import(l.href.replace("assets/site.css","admin/edit.js"))'
         '}}catch(_){}</script>')

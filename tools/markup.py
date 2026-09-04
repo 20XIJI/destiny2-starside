@@ -18,6 +18,21 @@ import os
 import re
 from typing import NoReturn
 
+# 六个分支的中文名 → 站内 slug。配装源稿写「分支：棱镜」，产出侧要 b-prismatic
+# 与 elements/prismatic。**放在这里而不是 convert-build.py**：那个文件名带短横，
+# 别的脚本 import 不进来，而 build-terms.py 要把这张表导给编辑台（审核台的配装
+# 列表按分支上色，DOM 那边只认得 slug）。一处定义，两处生成。
+BRANCH = {'电弧': 'arc', '烈日': 'solar', '虚空': 'void', '冰影': 'stasis',
+          '缚丝': 'strand', '棱镜': 'prismatic'}
+CLASSES = ('猎人', '泰坦', '术士')
+# 配装的第一层分类：冲强度推荐的、玩法取向的，还是打 PVP 的。与「定位」是两回事
+# ——定位说它在队伍里干什么（输出/清怪/续航），类别说它为什么被推荐。索引页按它
+# 分大节，编辑台的左栏按它分组，顺序即这里的顺序。
+# **PVP 是一个类别，不是一种适用环境。**它与另外两类互斥：一套 PVP 配装的取舍
+# 与 PVE 的强度、创意不可比，摊在「场景」里会让它跟突袭、地牢并排，读者按场景
+# 筛出来一堆用不上的。
+CATEGORIES = ('meta', '强度', '创意', 'PVP')
+
 COLOR_OPEN = re.compile(r'\{([\w-]+)\|')
 LINK = re.compile(r'\[([^\]]+)\]\(([^)]+)\)')
 # 图标：![](icons/xxx.png)。alt 恒空——图标都是行内的语义重复（旁边就是文字），

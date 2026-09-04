@@ -850,9 +850,57 @@
   var mods = ITEM ? Array.prototype.slice.call(document.querySelectorAll(ITEM)) : [];
   /* 表内横幅行是组名不是条目，不参与命中，改为跟着自己那一组的可见行走 */
   var lanes = ITEM ? Array.prototype.slice.call(document.querySelectorAll('tr.lane')) : [];
+  /* 分节里再分的小标题（配装索引页的职业），跟着紧随其后那一组的可见条目走。
+     **这一条只能在 JS 里做**：CSS 要写成 .sub-label:has(+ ul:not(:has(> li:not([hidden]))))，
+     而 :has() 不许再套 :has()，整条是无效选择器——写在样式表里不报错也不生效。 */
+  var subs = ITEM ? Array.prototype.slice.call(document.querySelectorAll('.sub-label'))
+    .filter(function (h) { return h.nextElementSibling && h.nextElementSibling.querySelector(ITEM.split('>').pop().trim()); })
+    : [];
   /* 上百个条目，每次按键都取 textContent 会重复遍历整棵子树，先缓存。
      直接存小写：`hit()` 要的就是它，每次按键再转一遍是几十万字符的临时垃圾。 */
   var text = mods.map(function (mod) { return mod.textContent.toLowerCase(); });
+
+  /* 维度筛选（.toolbar 带 data-facets 的页面：配装索引页）。**维度从卡片上现扫**，
+     不写进 HTML——类别与职业就是卡片上方那两级标题，标签是卡片里的那几个 <i>。
+     只有分支由生成器给：DOM 里只有 b-prismatic 这种 slug，中文名读不出来，而在
+     这里再写一份 slug→中文 就是 convert-build.py 里 BRANCH 的第二份定义。
+
+     同一维度内多选取并集，维度之间取交集，再与搜索框取交集。空掉的职业小节由
+     builds/style.css 那条 :has() 自己收起，空掉的类别大节由下面 filter() 里
+     那段现成的分节判断收起——两者都不必为筛选另写一条。 */
+  var DIMS = null;
+  var vals = null;
+  var picked = {};
+  function facetPass(i) {
+    if (!DIMS) return true;
+    return DIMS.every(function (d, k) {
+      var want = picked[d[0]];
+      if (!want || !want.length) return true;
+      return vals[i][k].some(function (v) { return want.indexOf(v) >= 0; });
+    });
+  }
+  function facetOn() {
+    return Object.keys(picked).some(function (k) { return picked[k].length; });
+  }
+  if (ITEM && 'facets' in cfg) {
+    /* **类别不做成一行 chip**：它就是页面的大节，跳转 chip 那一排写的正是这几个
+       字。同一排字出现两遍、一排能点一排也能点，读者分不出哪一排管什么。 */
+    DIMS = [
+      ['职业', function (it) {
+        var ul = it.closest('ul');
+        var h = ul && ul.previousElementSibling;
+        return h ? [h.textContent.trim()] : [];
+      }],
+      ['分支', function (it) { return it.dataset.branch ? [it.dataset.branch] : []; }],
+      ['标签', function (it) {
+        return Array.prototype.map.call(it.querySelectorAll('.tags i'),
+          function (t) { return t.textContent.trim(); });
+      }]
+    ];
+    vals = mods.map(function (it) {
+      return DIMS.map(function (d) { return d[1](it); });
+    });
+  }
 
   var search = document.createElement('input');
   search.type = 'search';
@@ -896,6 +944,41 @@
   }
   slot.appendChild(chipNav);
 
+  /* 一个维度一行 chip。**只有一个值的维度不出行**：筛不掉任何东西，占一行还
+     让人以为点了没反应。 */
+  if (DIMS) {
+    DIMS.forEach(function (d, k) {
+      var seen = [];
+      vals.forEach(function (v) {
+        v[k].forEach(function (x) { if (x && seen.indexOf(x) < 0) seen.push(x); });
+      });
+      if (seen.length < 2) return;
+      picked[d[0]] = [];
+      var row = document.createElement('div');
+      row.className = 'tool-facet';
+      var name = document.createElement('span');
+      name.className = 'facet-label';
+      name.textContent = d[0];
+      row.appendChild(name);
+      seen.forEach(function (x) {
+        var c = document.createElement('button');
+        c.type = 'button';
+        c.className = 'chip';
+        c.textContent = x;
+        c.setAttribute('aria-pressed', 'false');
+        c.onclick = function () {
+          var w = picked[d[0]];
+          var at = w.indexOf(x);
+          if (at < 0) w.push(x); else w.splice(at, 1);
+          c.setAttribute('aria-pressed', at < 0 ? 'true' : 'false');
+          filter(search.value);
+        };
+        row.appendChild(c);
+      });
+      slot.appendChild(row);
+    });
+  }
+
   /* 命中即显示；整行三档皆不命中则整行隐藏，整节不命中则整节与其 chip 一同隐藏。
      检索期间三档并排对照关系失效，清空即恢复。 */
   function filter(query) {
@@ -904,7 +987,7 @@
     /* **值没变就不写。**`hidden` 对应 display:none，写一次就要重排整张表；
        weapon-perks 有 413 行，删掉一个字往往只有几行的可见状态真的变了。 */
     mods.forEach(function (mod, i) {
-      var on = hit(text[i], terms);
+      var on = hit(text[i], terms) && facetPass(i);
       if (mod.hidden === on) mod.hidden = !on;
       if (on) hits++;
     });
@@ -916,6 +999,9 @@
     lanes.forEach(function (lane) {
       lane.hidden = !lane.parentNode.querySelector('tr:not(.lane):not([hidden])');
     });
+    subs.forEach(function (h) {
+      h.hidden = !h.nextElementSibling.querySelector('li:not([hidden])');
+    });
     /* 本来就没有条目的分节不参与过滤：增伤页的「世界与活动」整节是几段规则、
        一个条目都没有，按「没有可见条目就收起」判会在第一次敲搜索框时整节消失，
        且清空查询也回不来（空查询让条目全部可见，这一节仍然是零条目）。 */
@@ -925,10 +1011,10 @@
       sec.hidden = empty;
       chips[i].hidden = empty;
     });
-    count.textContent = query.trim() ? hits + ' / ' + mods.length : '';
+    count.textContent = (query.trim() || facetOn()) ? hits + ' / ' + mods.length : '';
     /* 搜了但一个都没命中时给工具条打一位，搜索框与计数据此转红：灰着看
        0 / 147 与 3 / 147 长得一样。清空查询即撤销，没搜过也不算空结果。 */
-    slot.toggleAttribute('data-miss', !!query.trim() && !hits);
+    slot.toggleAttribute('data-miss', (!!query.trim() || facetOn()) && !hits);
     return hits;
   }
   window.starsideFilter = filter;

@@ -23,7 +23,7 @@ import shell
 import vocab
 from html import escape
 
-from markup import die, inline, must, text_of, uncolor
+from markup import BRANCH, CATEGORIES, CLASSES, die, inline, must, text_of, uncolor
 
 SRC_DIR = shell.BUILD_DIR
 OUT_DIR = 'builds'
@@ -33,18 +33,10 @@ META_KEYS = ('推荐人', '描述', '更新', '场景', '定位', '分支', '类
 # 六维恒为六格，顺序钉死：游戏内就是这个顺序，配装之间横着比才对得上位置。
 STATS = ('生命', '近战', '手雷', '超能', '职业', '武器')
 PARTS = ('头盔', '护臂', '胸甲', '腿部', '职业物品')
-CLASSES = ('猎人', '泰坦', '术士')
-# 分支名 → 元素页。同名条目优先取本分支那一页（星相「地狱火」在烈日页与棱镜页
-# 各有一条，棱镜配装该链到棱镜页）。
-BRANCH = {'电弧': 'arc', '烈日': 'solar', '虚空': 'void', '冰影': 'stasis',
-          '缚丝': 'strand', '棱镜': 'prismatic'}
-# 配装的第一层分类：冲强度推荐的、玩法取向的，还是打 PVP 的。与「定位」是两回事
-# ——定位说它在队伍里干什么（输出/清怪/续航），类别说它为什么被推荐。索引页按它
-# 分大节，顺序即这里的顺序。
-# **PVP 是一个类别，不是一种适用环境。**它与另外两类互斥：一套 PVP 配装的取舍
-# 与 PVE 的强度、创意不可比，摊在「场景」里会让它跟突袭、地牢并排，读者按场景
-# 筛出来一堆用不上的。
-CATEGORIES = ('强度', '创意', 'PVP')
+# 职业、分支与类别三张表在 markup.py：那三样是源稿的词汇，而 build-terms.py
+# 要把它们导给编辑台（审核台左栏按类别与职业建树、列表按分支上色），本文件的
+# 名字带短横，import 不进去。分支同时决定同名条目查哪一页（星相「地狱火」在
+# 烈日页与棱镜页各有一条，棱镜配装该链到棱镜页）。
 # 元素名走全站那一份编码，徽章上照样着色——素着等于这一页自己开了个例外。
 ELEMENT_TOKEN = {b: 'el-%s' % slug for b, slug in BRANCH.items()}
 # 一格一个名字的槽位：键即槽位名，源稿一行写完，值之间用「、」隔开。
@@ -666,6 +658,10 @@ def build(idx, dirname, season, name_cn, slug):
             'season': season, 'slug': slug, 'stamp': meta(md, '更新'),
             'desc': text_of(inline(meta(md, '描述'), rich=True), collapse=True), 'class': meta(md, '职业'),
             'tags': names(md, '场景') + names(md, '定位'), 'branch': BRANCH[meta(md, '分支')],
+            # 分支的中文名给索引页的筛选用。DOM 里只有 b-prismatic 这个 slug，
+            # 中文名读不出来，而在 app.js 里再写一份 slug→中文 就是 BRANCH 的
+            # 第二份定义。职业与类别不给——那两样就是卡片上方那两级标题。
+            'branch_cn': meta(md, '分支'),
             'cat': meta(md, '类别'),
             'by': ''.join(people(md, link=False)),
             'core': '<span class="node">%s</span>' % icon_of(core, 64).replace(UP, '../')}
@@ -688,10 +684,13 @@ def render_index(made):
         die('当前赛季 %s 一套配装都没有，索引页会是空的' % SEASON)
     stamp = max(m['stamp'] for m in live)
     o = [shell.head('%s · Starside' % SITE_SECTION, INDEX_DESC, app_js=True, up=1),
+         # data-facets：按职业、分支、类别、场景、定位筛。维度由 app.js 从卡片
+         # 现扫（<li> 的 b-* 类、两级标题、.tags 里的 <i>），不写进 HTML——那些
+         # 字页面上已经有了，写第二遍就是同一份文本的第二个来源。
          shell.nav(SITE_SECTION, up=1, toolbar={
              'data-section': '.block', 'data-item': '.entries > li',
              'data-label': '.sect-label', 'data-noun': '配装',
-             'data-chip-label': '类别'}),
+             'data-chip-label': '类别', 'data-facets': ''}),
          # 投稿入口挂在标题右边。这是填表页在站内唯一的入口（别处没有理由指向
          # 它，而没有入口的页面等于不存在），单独占一段会在卡片上面多出一整块
          # 空白。页首那句说明只留给 <meta>，正文里它把首屏推下去半屏。
@@ -713,7 +712,7 @@ def render_index(made):
                 continue
             o += ['<h3 class="sub-label">%s</h3>' % cls, '<ul class="entries">']
             for m in mine:
-                o += ['<li class="b-%s">' % m['branch'],
+                o += ['<li class="b-%s" data-branch="%s">' % (m['branch'], m['branch_cn']),
                       '<a class="entry" href="%s/%s/index.html">'
                       % (m['season'], m['slug']),
                       m['core'],

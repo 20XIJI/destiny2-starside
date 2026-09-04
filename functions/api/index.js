@@ -207,7 +207,14 @@ async function editorRoute(a, body, event) {
   if (a === 'docs') {
     await who(event, 1)
     const r = await docs.field({ md: false }).limit(500).get()
-    return { docs: r.data }
+    // **配装那些要带上 md，资料页那些不带。**投影是为资料页存在的：38 篇合计
+    // 1.5 MB。配装 35 套合计 65 KB，而编辑台的列表要靠 md 读出名字、职业、分支、
+    // 类别与推荐人——本机直接落盘的那 20 套在 subs 里没有投稿记录，不带 md 的话
+    // 列表上连名字都只能显示 slug。
+    const b = await docs.where({ _id: db.RegExp({ regexp: '^builds/', options: '' }) }).limit(200).get()
+    const md = {}
+    for (const d of b.data) md[d._id] = d.md
+    return { docs: r.data.map((d) => (md[d._id] === undefined ? d : { ...d, md: md[d._id] })) }
   }
 
   if (a === 'doc') {
@@ -275,9 +282,9 @@ async function editorRoute(a, body, event) {
       await subs.doc(String(body.id)).remove()
       return { ok: 1, n: 1 }
     }
-    const r = await subs.where({ ok: -1 }).limit(500).get()
-    for (const d of r.data) await subs.doc(d._id).remove()
-    return { ok: 1, n: r.data.length }
+    // 一次删完，不逐条：33 条废稿逐条 remove 就是 33 次串行往返、33 次计费调用。
+    const r = await subs.where({ ok: -1 }).remove()
+    return { ok: 1, n: r.deleted || 0 }
   }
 
   // 申请删掉一套已上站的配装。**走审核，不当场删**：删一套配装是不可逆的，
@@ -412,6 +419,8 @@ async function editorRoute(a, body, event) {
   // 一页的待审就那么几条。
   // **只收 ok=0**：通过之后那一处就该像没标记过一样。部署空窗（库里新了、站上还旧）
   // 由 edit.js 拿库里正文与页面上现比得出，不存状态，也就不会随迭代积出陈旧标记。
+  // md：把这一篇的正文与 hash 一并带回。资料页开编辑态本来要先 doc 再 pend
+  // 两发串行——后者只为拿 hash 与页面上那份比一次，而这一次比服务端自己做得了。
   if (a === 'pend') {
     await who(event, 1)
     const doc = String(body.doc || '')
@@ -422,14 +431,17 @@ async function editorRoute(a, body, event) {
     // judge：审核台要知道每一条此刻还定不定位得到。**这个判断只有 locate 做得准**
     // ——同一处多份是前端分个组就看得出来的（甲类），底稿被人先改掉了却只有拿当前
     // 正文跑一遍才知道（乙类）。不在前端再抄第四份切格与匹配。
-    if (body.judge) {
-      const cur = (await docs.doc(doc).get()).data[0]
-      const md = cur ? cur.md : ''
-      return { pend: r.data.map((e) => ({ ...e, stale: !locate(md, e) })) }
+    // 要正文的三条路合用同一次读：judge 拿它跑 locate，md 把它带回去，
+    // 页面上那份 hash 与库里比也要它。
+    const cur = (body.judge || body.md) ? (await docs.doc(doc).get()).data[0] : null
+    const md = cur ? cur.md : ''
+    const out = { pend: body.judge ? r.data.map((e) => ({ ...e, stale: !locate(md, e) })) : r.data }
+    if (body.md) { out.md = md; out.hash = cur ? cur.hash : '' }
+    // hash 相等就没有待上站的改动，一条都不必取。
+    if (body.stale || (body.hash && out.hash && body.hash !== out.hash)) {
+      out.done = (await edits.where({ doc, ok: 1 }).limit(200).get()).data
     }
-    if (!body.stale) return { pend: r.data }
-    const d = await edits.where({ doc, ok: 1 }).limit(200).get()
-    return { pend: r.data, done: d.data }
+    return out
   }
 
   if (a === 'emark') {
