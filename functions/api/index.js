@@ -406,9 +406,16 @@ async function editorRoute(a, body, event) {
     if (!Number.isInteger(blk) || blk < 0) throw new Error('bad blk')
     if (!Number.isInteger(cell) || cell < -1) throw new Error('bad cell')
     // 提交时就验一次定位。改的那一处已经不在了就当场说清楚，不进队列等审的人撞。
-    if (!locate(cur.md, { blk, cell, before })) throw new Error('stale')
+    const at0 = locate(cur.md, { blk, cell, before })
+    if (!at0) throw new Error('stale')
     const at = new Date().toISOString()
-    const set = { doc, blk, cell, before, after, ok: 0, at, by: me.name, uid: me.uid }
+    // **表格那一行的改动就地并回一行。**一行源稿就是一行表格，格内换行只能写
+    // 两个反斜杠；混进一个真换行，那一行写回正文时裂成两行、格数少一半，
+    // npm run build 当场中止，卡住的是整次部署。**不拒收，直接改对**——这条
+    // 规则只写在源稿语法里，编辑的人没有理由知道，报一句错只会让人卡在那里。
+    const line0 = cur.md.split('\n')[at0.line] || ''
+    const text = line0.startsWith('|') ? after.replace(/\n+/g, '\\\\') : after
+    const set = { doc, blk, cell, before, after: text, ok: 0, at, by: me.name, uid: me.uid }
     // 同一个人在同一处只留一条待审，重改即改写，不堆第二份。
     const old = await edits.where({ doc, uid: me.uid, ok: 0, blk, cell }).limit(1).get()
     if (old.data.length) {
@@ -461,7 +468,11 @@ async function editorRoute(a, body, event) {
       // 定位不到就是有人先动了同一处。**报冲突，记录原样留着**——before/after
       // 都还在，审的人看得见两边分别要改成什么，提的人也找得回自己写了什么。
       if (!hit) throw new Error('conflict')
-      const md = patch(cur.md, hit, e.after)
+      // 与 chg 同一条：队列里可能还压着这次改动之前提的、带着真换行的稿子。
+      const row = cur.md.split('\n')[hit.line] || ''
+      const text = row.startsWith('|')
+        ? String(e.after).replace(/\n+/g, '\\\\') : e.after
+      const md = patch(cur.md, hit, text)
       await docs.doc(e.doc).update({ md, hash: sha1(md), at, by: e.by })
     }
     // **同篇其余待审不再整批驳回**：它们改的是别处，与这一处无关。

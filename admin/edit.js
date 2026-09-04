@@ -307,6 +307,32 @@
     ta.rows = Math.min(12, ta.value.split('\n').length + Math.ceil(ta.value.length / 60))
     box.appendChild(ta)
 
+    /* **表格那一档里不许出现真换行。**一行源稿就是一行表格，格内换行只能写 `\\`
+       （见 convert-doc.py 的块语法）。敲一个回车下去，那一行会在写回正文时裂成
+       两行，整行的格数跟着少一半——npm run build 当场中止，卡住的是整次部署，
+       而编辑的人这边一点异样都看不到。
+
+       所以回车直接插 `\\`，粘进来的多行也就地并成 `\\`：文本框里始终是将要
+       写进源稿的那一份，不在提交时偷偷改一道。 */
+    var inTable = !!node.closest('table')
+    if (inTable) {
+      ta.addEventListener('keydown', function (ev) {
+        if (ev.key !== 'Enter' || ev.ctrlKey || ev.metaKey || ev.altKey) return
+        ev.preventDefault()
+        var a = ta.selectionStart
+        ta.value = ta.value.slice(0, a) + '\\\\' + ta.value.slice(ta.selectionEnd)
+        ta.setSelectionRange(a + 2, a + 2)
+        ta.dispatchEvent(new Event('input'))
+      })
+      ta.addEventListener('input', function () {
+        if (ta.value.indexOf('\n') < 0) return
+        var a = ta.selectionStart
+        var before2 = ta.value.slice(0, a).split('\n').length - 1
+        ta.value = ta.value.replace(/\n+/g, '\\\\')
+        ta.setSelectionRange(a + before2, a + before2)
+      })
+    }
+
     // **改完先看渲染出来的样子再提交。**{res|90% 减伤} 少一个花括号、token 写错一个
     // 字母，在源稿里眼睛查不出来，渲染一遍当场就露。
     var prev = el('div', 'se-prev')
