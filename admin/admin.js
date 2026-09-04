@@ -702,6 +702,9 @@
   // 同一组：缺了不许投、缺了也算不出区分度。装备与描述可以后补，这五项不行。
   // 更深的结构（套装件数、六维六格）由构建时的 Python 闸门管，不在这里抄第二遍。
   var NEED = [['推荐人', '推荐人'], ['职业', '职业'], ['属性', '分支'], ['核心', '核心']]
+  // 合集里每一套要凑齐的那几样。推荐人不在内：它写在合集头部，整份一个。
+  var PER = [['职业', '职业'], ['属性', '分支'], ['核心', '核心'],
+             ['使用场景', '描述'], ['标签', '定位']]
 
   // **不能用对象字面量**：名字是投稿人填的，叫 constructor 或 toString 时
   // HOLD[名字] 会取到原型链上的函数、读成真值，那一条就永远列着「缺名字」。
@@ -724,15 +727,17 @@
     // convert-build.py 的 split_set()/scenes_of() 会中止——卡住的是整次
     // npm run build，不只是这一篇。
     var many = setsOf(md)
-    if (many.length < 2) out.push('第二套配装')
     if (many.length > 12) out.push('套数超过 12')
     if (!/^场景：[ \t]*\S/m.test(md.split(/\n# /)[0])) out.push('适用环境')
-    // 推荐人在头部，别的四项每套各一份。报到是第几套——不然审的人不知道
-    // 该回哪一套去看。
+    // 逐套报，报到是第几套——不然审的人不知道该回哪一套去看。
+    var full = 0
     many.forEach(function (one, i) {
-      var miss = short(one, NEED.filter(function (k) { return k[0] !== '推荐人' }))
+      var miss = short(one, PER)
       if (miss.length) out.push('第 ' + (i + 1) + ' 套的' + miss.join('、'))
+      else full += 1
     })
+    // **至少两套凑齐才算一份合集**：只有一套填得完整时它就是一份单套配装。
+    if (full < 2) out.unshift('两套填齐的配装（现在 ' + full + ' 套）')
     return out
   }
 

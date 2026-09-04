@@ -378,7 +378,11 @@ def facet(label, tags):
 
 def facets(md):
     """铭牌下面那两栏。两栏都空即整块不出，见调用处。"""
-    rows = facet('适用环境', names(md, '场景')) + facet('标签', names(md, '定位'))
+    # **两个键都可以整行不写**：PVP 那一类配装的场景与定位本来就可以空着
+    # （那两张表列的是 PVE 的），而填表页对空值是整行不写。按必填读会让
+    # 第一份 PVP 投稿在落盘时中止。
+    rows = (facet('适用环境', names(md, '场景', required=False))
+            + facet('标签', names(md, '定位', required=False)))
     return '<div class="facets">%s</div>' % rows if rows else ''
 
 
@@ -931,7 +935,7 @@ def build(idx, dirname, season, name_cn, slug):
         core = icon_of(core_pick(idx, md, 'elements/%s' % BRANCH[branch]), 64)
         cls = meta(md, '职业')
         scene = ''
-        tags = names(md, '场景') + names(md, '定位')
+        tags = names(md, '场景', required=False) + names(md, '定位', required=False)
     return {'u': '%s/%s/%s/index.html' % (OUT_DIR, season, slug), 't': title,
             'season': season, 'slug': slug, 'stamp': meta(head, '更新'),
             'desc': text_of(inline(meta(head, '描述'), rich=True), collapse=True),
@@ -1500,16 +1504,21 @@ def sync_home(counts):
                  'builds/new/index.html', 'builds/new/set/index.html'):
         # 变量名不能叫 path：外层那个指着 index.html，收尾要写回它。
         src = os.path.join(shell.ROOT, href)
-        if not os.path.exists(src):
-            # 当前赛季一个合集都没有时那一页不出。首页那张卡指向它，所以卡也要
-            # 一并撤掉——留着就是首页上一个点开是 404 的入口。
-            die('%s 还没生成：当前赛季没有合集，那一页不出，'
-                '首页对应的那张卡要一并从 index.html 里删掉' % href)
+        here = os.path.exists(src)
+        card = re.search(r'<a class="entry" href="%s".*?</a>' % re.escape(href),
+                         home, re.S)
+        # 当前赛季一个合集都没有时那一页不出，首页那张卡也该跟着撤掉。**两样都
+        # 没有就是一致的**，跳过；只少一样才是错——页在卡没了，读者进不去；
+        # 卡在页没了，首页上多一个点开 404 的入口。
+        if not here and not card:
+            continue
+        if not here:
+            die('首页还挂着 %s 那张卡，可那一页没生成：当前赛季没有合集时它不出，'
+                '卡要一并从 index.html 里撤掉' % href)
+        card = must(card, '首页找不到 %s 那张卡' % href)
         page = open(src, encoding='utf-8').read()
         stamp = must(re.search(r'<span class="stamp">更新 ([\d.]+)</span>', page),
                      '%s 的页脚没有更新时间' % href).group(1)
-        card = must(re.search(r'<a class="entry" href="%s".*?</a>' % re.escape(href),
-                              home, re.S), '首页找不到 %s 那张卡' % href)
         fixed = re.sub(r'(entry-stamp">更新 )[\d.]+', lambda m: m.group(1) + stamp,
                        card.group(0))
         if href in counts:

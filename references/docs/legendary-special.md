@@ -203,7 +203,7 @@
 |食莲者|{ico|![](icons/2f0b44aaa4.webp)}|T0（旧）\\T2（新）|微型导弹\\100|{el-void|虚空}|{champ|![](icons/b7c4048b87.webp)}|{perk|边打边劫}（旧）\\{perk|冲击支撑}\\{perk|空中扳机}|{perk|枯萎凝视}（旧）\\{perk|不稳定弹药}\\狂乱/{perk|集体行动}|{src|巅峰}|||||{perk|边打边劫}食莲者是全游戏拾取范围最大的工具枪，可惜如今已经绝版|
 |极高反射|{ico|![](icons/2607a23967.webp)}|T2|微型导弹\\100|{el-kinetic|动能}|{champ|![](icons/b7c4048b87.webp)}|{perk|金中藏弹}\\迷惑爆发|{perk|全明星}\\狂乱\\重组\\{perk|辅助炸药}|{src|木卫二}|||||{el-kinetic|动能} 15% 增伤对于清怪枪是先天性优势，迷惑爆发+狂乱很有意思|
 |蒙恩|{ico|![](icons/5b477904cb.webp)}|T2|微型导弹\\100|{el-arc|电弧}|{champ|![](icons/b7c4048b87.webp)}|{perk|空中扳机}|福特子弹|{src|战争领主的废墟}|||||{perk|空中扳机}+福特子弹清{bar-red|红血}很快|
-|重现记忆|{ico|![](icons/8052daa1e8.webp)}|T2|微型导弹\\100|{el-solar|烈日}|{champ|![](icons/b7c4048b87.webp)}|{perk|金中藏弹}/{perk|治疗弹匣}|转向\\{perk|辉耀炽热}|{src|熔炉}|||||转向在火箭手枪上非常合适。弥补清理{bar-orange|橙血}乏力的问题，原始特性不错|
+|重现记忆|{ico|![](icons/8052daa1e8.webp)}|T2|微型导弹\\100|{el-solar|烈日}|{champ|![](icons/b7c4048b87.webp)}|{perk|金中藏弹}/{perk|治疗弹匣}\\{perk|即兴弹药}|转向\\{perk|辉耀炽热}|{src|熔炉}|||||转向在火箭手枪上非常合适。弥补清理{bar-orange|橙血}乏力的问题，原始特性不错|
 |提娜莎精通|{ico|![](icons/6c2299e0a8.webp)}|T2.5|微型导弹\\100|{el-stasis|冰影}|{champ|![](icons/b7c4048b87.webp)}|{perk|空中扳机}|{perk|冰冷弹匣}|{src|铁旗}|||||{perk|冰冷弹匣}现在的作用有限|
 |宣召呼唤|{ico|![](icons/017e1beb56.webp)}|T2.5|微型导弹\\100|{el-strand|缚丝}|{champ|![](icons/b7c4048b87.webp)}|{perk|金中藏弹}\\切割|{perk|混沌重塑}|{src|苍白之心}|||||{perk|混沌重塑}是个优秀的 perk|
 

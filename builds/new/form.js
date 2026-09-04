@@ -1295,6 +1295,13 @@
     }).map(function (n) { return n[0]; });
   }
 
+  /* 每一套要凑齐的那几样。**至少两套凑齐才收**——一份合集的价值在于「什么时候
+     切哪一套」，只有一套填得完整时它就是一份单套配装，投进合集队列只会让审的人
+     打回去。推荐人不在内：它写在合集头部，整份一个。 */
+  var PER = [['名称', /^#[ \t]*(\S.*)$/m], ['职业', /^职业：[ \t]*(\S.*)$/m],
+             ['属性', /^分支：[ \t]*(\S.*)$/m], ['核心', /^核心：[ \t]*(\S.*)$/m],
+             ['使用场景', /^描述：[ \t]*(\S.*)$/m], ['标签', /^定位：[ \t]*(\S.*)$/m]];
+
   function lacking (md) {
     var lack = short(md, NEED);
     if (!SETS) return lack;
@@ -1302,15 +1309,16 @@
     // 而落盘时 convert-build.py 的 split_set()/scenes_of() 会中止，
     // 卡住的是整次 npm run build，不只是这一篇。
     var many = md.split(/\n(?=# )/).slice(1);
-    if (many.length < 2) lack.push('第二套配装（合集至少两套）');
     if (many.length > SET_MAX) lack.push('套数（最多 ' + SET_MAX + ' 套）');
     if (!/^场景：[ \t]*\S/m.test(md.split(/\n# /)[0])) lack.push('适用环境');
-    // 每一套还得各有名字、职业、分支与核心。逐套报，报到是第几套——
-    // 不然投的人不知道该回哪一套去补。
+    // 逐套报，报到是第几套——不然投的人不知道该回哪一套去补。
+    var full = 0;
     many.forEach(function (one, i) {
-      var miss = short(one, NEED.filter(function (n) { return n[0] !== '推荐人'; }));
+      var miss = short(one, PER);
       if (miss.length) lack.push('第 ' + (i + 1) + ' 套的' + miss.join('、'));
+      else full += 1;
     });
+    if (full < 2) lack.unshift('两套填齐的配装（现在 ' + full + ' 套）');
     return lack;
   }
 

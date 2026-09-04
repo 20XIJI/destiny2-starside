@@ -332,7 +332,10 @@ def check_build_count(bad):
     for href, want in n.items():
         card = re.search(r'<a class="entry" href="%s".*?</a>' % re.escape(href),
                          home, re.S)
+        # 一个合集都没有时那一页不出，首页那张卡也撤掉了——两样都没有是一致的。
         if not card:
+            if want == 0:
+                continue
             bad.append('G4 首页找不到 %s 那张卡' % href)
             continue
         m = re.search(r'<dd>(\d+)</dd>', card.group(0))

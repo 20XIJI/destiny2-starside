@@ -6,11 +6,7 @@
 
 ## 2026.9.4
 
-- {act|新增}[配装合集](../builds/sets/index.html)：同一角色的多套配装合为一页，按适用环境分类
-
-- {act|新增}[配装合集](../builds/sets/index.html) · [合集工具](../builds/new/set/index.html)：逐套选择装备，生成标准格式的合集文本
-
-- {act|改动}[配装推荐](../builds/index.html)：合集另开索引页，标题右侧新增入口
+- {act|新增}[合集工具](../builds/new/set/index.html)：同一角色的多套配装合为一份，逐套选择装备生成合集文本
 
 ## 2026.8.30
 

@@ -147,18 +147,24 @@ def send(doc_id, md):
     api('push', id=doc_id, gz=base64.b64encode(gzip.compress(md.encode(), 9)).decode())
 
 
-def land():
+def land(dropped=()):
     """编辑台上通过的投稿 → references/builds/<season>/<slug>.md。
 
     只写盘上还没有的那些：重跑一次不该把已经改过的源稿按投稿原文盖回去。
+
+    **通过了删除申请的那几套要跳过。**一套配装是先投稿上站、后来才申请删除的，
+    两条记录都标着 ok=1 且指着同一个 season/slug：sweep() 刚删掉，land() 转头
+    又按那条投稿写回来，每跑一次 sync 都重演一遍，那一篇永远删不掉。
     """
     wrote = []
     for sub in api('list')['subs']:
-        if int(sub.get('ok') or 0) != 1:
+        if int(sub.get('ok') or 0) != 1 or sub.get('drop'):
             continue
         season, slug = sub.get('season'), sub.get('slug')
         if not season or not slug:
             print('  ? 投稿 %s 标了通过却没有 season/slug，跳过' % sub['_id'])
+            continue
+        if 'builds/%s/%s' % (season, slug) in dropped:
             continue
         p = path_of('builds/%s/%s' % (season, slug))
         if os.path.exists(p):
@@ -204,9 +210,10 @@ def sweep():
 
 
 def sync():
-    # 先删后写：同一轮里既有删除申请又有新投稿时，两者互不干扰
-    sweep()
-    land()
+    # 先删后写：同一轮里既有删除申请又有新投稿时，两者互不干扰。删掉的那几篇
+    # 要告诉 land()——它们在 subs 里还留着当初那条已通过的投稿，不挡住就会被
+    # 原样写回来。
+    land(dropped=set(sweep()))
     disk, db, base = on_disk(), in_db(), baseline()
     pushed, pulled, dropped, stuck = [], [], [], []
 
