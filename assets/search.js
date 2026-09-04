@@ -4090,6 +4090,7 @@ window.starsideIndex = [
 {"u":"builds/s29/nianqingren-hexiaodi-hunter/index.html","t":"赫沃斯托夫小帝喷 · 配装推荐","d":""},
 {"u":"builds/s29/nightcore-baolei-hunter/index.html","t":"棱镜堡垒丢丢猎 · 配装推荐","d":""},
 {"u":"builds/s29/nightcore-swxsjz-hunter/index.html","t":"死亡信使机制弹药套 · 配装推荐","d":""},
+{"u":"builds/s29/pkz20gm1-warlock/index.html","t":"坏死+合成棱镜术（贾诩术） · 配装推荐","d":""},
 {"u":"builds/s29/qz9gs029-warlock/index.html","t":"虚无镣铐/反转手虚空术 · 配装推荐","d":""},
 {"u":"builds/s29/tniihk60-warlock/index.html","t":"虚式·茈 五条悟虚空术士 · 配装推荐","d":""},
 {"u":"builds/s29/w0q7ss18-hunter/index.html","t":"混乱裁决火刀猎 · 配装推荐","d":""},
