@@ -287,7 +287,7 @@
     if (!at) return
     var before = textAt(at)
     if (before == null) {
-      alert('这一处在库里对不上了——页面是上次部署的产物，库里已经变过。刷新页面再改。')
+      alert('这一处已变，刷新后再改')
       return
     }
 
@@ -300,8 +300,8 @@
     box = el('div', 'se-box')
     box.appendChild(el('div', 'se-where', DOC + ' · 第 ' + (at.blk + 1) + ' 行'
       + (at.cell < 0 ? '' : ' · 第 ' + (at.cell + 1) + ' 格')
-      + (mine ? ' · 接着你那份待审改'
-        : here ? ' · ' + here.by + (here.ok === 1 ? ' 已通过，等着上站' : ' 待审中') : '')))
+      + (mine ? ' · 你的待审'
+        : here ? ' · ' + here.by + (here.ok === 1 ? ' 通过' : ' 待审') : '')))
     var ta = el('textarea')
     ta.value = mine ? mine.after : before
     ta.rows = Math.min(12, ta.value.split('\n').length + Math.ceil(ta.value.length / 60))
@@ -330,7 +330,7 @@
     box.appendChild(notes)
 
     var acts = el('div', 'se-acts')
-    var send = el('button', 'chip', '提交待审')
+    var send = el('button', 'chip', '提交')
     var no = el('button', 'chip', '取消')
     send.type = no.type = 'button'
     no.onclick = shut
@@ -353,9 +353,9 @@
       r.warns.forEach(function (x) { notes.appendChild(el('li', 'warn', x)) })
       // 闸门是提示不是拦截（真闸门是本机那套 Python），但有错时把按钮上的字换掉，
       // 别让人一路点过去。
-      send.textContent = ta.value === before ? '没改动'
-        : r.errs.length ? '有 ' + r.errs.length + ' 处问题，仍要提交'
-          : '提交待审'
+      send.textContent = ta.value === before ? '无改动'
+        : r.errs.length ? '仍要提交（' + r.errs.length + ' 处问题）'
+          : '提交'
       send.disabled = ta.value === before
     }
     // **去抖 150 ms**：一轮 redraw 要重画预览再跑一遍闸门，而中文输入法逐字上屏时
@@ -374,8 +374,8 @@
           send.disabled = false
           notes.textContent = ''
           notes.appendChild(el('li', null, e.message === 'stale'
-            ? '这一处在你打开页面之后被改过了，刷新再改'
-            : '没提上：' + e.message))
+            ? '这一处已变，刷新后再改'
+            : '提交失败：' + e.message))
         })
     }
     acts.appendChild(send)
@@ -445,7 +445,7 @@
         ;(window.requestIdleCallback || setTimeout)(wantTerms, 1)
       }, function (e) {
         chip.textContent = '编辑'
-        alert('进不了编辑态：' + e.message)
+        alert('进入编辑失败：' + e.message)
       })
   }
 

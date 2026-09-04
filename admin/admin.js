@@ -430,7 +430,7 @@
       if (live[r[0]] && groups.indexOf(r[3]) < 0) groups.push(r[3])
     })
     if (!groups.length) {
-      box.appendChild(el('p', 'lede', '没有待处理的'))
+      box.appendChild(el('p', 'lede', '没有待处理'))
       return box
     }
     groups.forEach(function (g) {
@@ -499,11 +499,11 @@
     var body = el('div')
     show(split(tree(count, openDoc, function (id) { openDoc = id; reviewView() }), body))
     if (!openDoc) {
-      body.appendChild(el('p', 'lede', '没有待审的文档改动'))
+      body.appendChild(el('p', 'lede', '没有待审'))
       return
     }
     body.appendChild(el('p', 'crumb', trail(openDoc)))
-    var go = el('a', 'chip', '去看这一页')
+    var go = el('a', 'chip', '查看')
     go.href = '../' + pageOf(openDoc).url
     body.appendChild(go)
     body.appendChild(el('p', 'lede', '载入中…'))
@@ -530,30 +530,28 @@
     })
 
     var acts = el('div', 'acts')
-    var all = el('button', 'chip go', '这一页全通过（' + pend.length + ' 处）')
+    var all = el('button', 'chip go', '全部通过（' + pend.length + '）')
     all.type = 'button'
     all.disabled = !!bad.length
     all.onclick = function () { passAll(body, pend, all) }
     acts.appendChild(all)
     if (bad.length) {
-      acts.appendChild(el('span', 'warn',
-        '有 ' + bad.length + ' 处撞了，先在下面各挑一份，其余会一并驳回'))
+      acts.appendChild(el('span', 'warn', bad.length + ' 处冲突，各挑一份'))
     }
     body.appendChild(acts)
 
     groups.forEach(function (g) {
       var pane = el('div', 'pane' + (g.list.length > 1 || g.list[0].stale ? ' bad' : ''))
       pane.appendChild(el('h3', null, spot(g.list[0])
-        + (g.list.length > 1 ? '　·　' + g.list.length + ' 份撞在同一处，挑一份' : '')
-        + (g.list.some(function (e) { return e.stale })
-          ? '　·　底稿已被人改过，候选里含「保持库里现状」' : '')))
+        + (g.list.length > 1 ? '　·　' + g.list.length + ' 份冲突' : '')
+        + (g.list.some(function (e) { return e.stale }) ? '　·　底稿已变' : '')))
       g.list.forEach(function (e) {
         var one = el('div', 'cand')
         one.appendChild(el('p', 'by', (e.by || '?') + ' · ' + when(e.at)
-          + (e.stale ? ' · 照旧文改的' : '')))
+          + (e.stale ? ' · 基于旧文' : '')))
         one.appendChild(oneView(e))
         var row = el('div', 'acts')
-        var yes = el('button', 'chip', g.list.length > 1 ? '就通过这一份' : '通过')
+        var yes = el('button', 'chip', g.list.length > 1 ? '用这份' : '通过')
         var no = el('button', 'chip', '驳回')
         yes.type = no.type = 'button'
         yes.onclick = function () { pick(body, g, e) }
@@ -565,7 +563,7 @@
       })
       // 底稿动过了：多给一个「什么都不改」的候选，选它就是把这几份一并驳回。
       if (g.list.some(function (e) { return e.stale })) {
-        var keep = el('button', 'chip', '保持库里现状（全部驳回）')
+        var keep = el('button', 'chip', '保持现状')
         keep.type = 'button'
         keep.onclick = function () {
           mark(g.list.map(function (e) { return [e._id, -1] }), body)
@@ -588,7 +586,7 @@
         before: cellAt(d.md, e) })
     }).then(function (r) {
       return mark([[r.id, 1]].concat(rest).concat([[e._id, -1]]), body, 1)
-    }, function (err) { tip(body, '接不上库里现在那一版：' + err.message, 1) })
+    }, function (err) { tip(body, '接不上当前版本：' + err.message, 1) })
   }
 
   // 库里此刻那一处的原文。与 convert-doc 的 split_cells、云函数的 cellSpans
@@ -657,9 +655,9 @@
     }).then(function () {
       reviewView()
       if (conflict.length) {
-        tip($('views'), '有 ' + conflict.length + ' 处在这中间被人先改了，留在队列里', 1)
+        tip($('views'), conflict.length + ' 处已被他人修改，留在队列', 1)
       }
-    }, function (e) { tip(body, '没改成：' + e.message, 1) })
+    }, function (e) { tip(body, '操作失败：' + e.message, 1) })
   }
 
   // ── 配装 ───────────────────────────────────────────────────────────
@@ -737,9 +735,10 @@
     return out
   }
 
-  var STATE = { wait: '待审', pass: '已通过，等着上站', live: '已上站',
-                dropping: '已同意，等着删', no: '已驳回' }
-  var buildFilter = { wait: 1, pass: 1, live: 1, dropping: 1 }
+  // 状态词一档一个词，不写解释。「通过」是审过了还没落盘，「完成」是站上已经有了。
+  var STATE = { wait: '待审', pass: '通过', live: '完成', dropping: '待移除', no: '驳回' }
+  // 默认只看待审：一进来就该是待办清单，另外三档按需打开。
+  var buildFilter = { wait: 1 }
 
   // 职业、类别与分支三张表由 admin/pages.js 给（build-terms.py 照 markup.py
   // 那一份导），不在这里另抄一遍。
@@ -759,7 +758,7 @@
   function buildTree (list, on, pick) {
     var box = el('nav', 'tree')
     if (!list.length) {
-      box.appendChild(el('p', 'lede', '这几档下没有配装'))
+      box.appendChild(el('p', 'lede', '没有配装'))
       return box
     }
     var n = {}
@@ -820,14 +819,14 @@
     // **只给超管**：一次抹掉几十条，手滑的代价与逐条不是一个量级。
     var junk = all.filter(function (b) { return b.state === 'no' }).length
     if (junk && S.me.lv >= 4) {
-      var wipe = el('button', 'chip', '清掉 ' + junk + ' 条废稿')
+      var wipe = el('button', 'chip', '清空废稿（' + junk + '）')
       wipe.type = 'button'
       wipe.onclick = function () {
-        if (!window.confirm('删掉全部 ' + junk + ' 条已驳回的投稿？删了找不回来。')) return
+        if (!window.confirm('删除 ' + junk + ' 条废稿？不可撤销。')) return
         wipe.disabled = true
         call('sdrop', {}).then(load).then(toList, function (e) {
           wipe.disabled = false
-          tip(body, '没删成：' + e.message, 1)
+          tip(body, '删除失败：' + e.message, 1)
         })
       }
       bar.appendChild(wipe)
@@ -843,7 +842,7 @@
 
     var list = inState.filter(inPick)
       .sort(function (a, b) { return (a.at || '') < (b.at || '') ? 1 : -1 })
-    if (!list.length) body.appendChild(el('p', 'lede', '这一格下没有配装'))
+    if (!list.length) body.appendChild(el('p', 'lede', '没有配装'))
 
     var rows = el('div', 'rows')
     list.forEach(function (b) {
@@ -869,7 +868,7 @@
         var miss = missing(md)
         if (miss.length) r.appendChild(el('span', 'lack', '缺 ' + miss.join('、')))
       } else {
-        r.appendChild(el('span', 'meta', '已上站'))
+        r.appendChild(el('span', 'meta', STATE.live))
       }
       r.appendChild(el('span', 'meta', when(b.at)))
       r.onclick = function () { buildDetail(b) }
@@ -939,14 +938,14 @@
     wrap.appendChild(bar)
     wrap.appendChild(el('p', 'crumb', (nameOf(b.md) || b.id.split('/').pop())
       + '　·　' + STATE[b.state]
-      + (b.sub && b.sub.updates ? '　·　这一份是对已上站那一套的更新，通过即覆盖过去' : '')
+      + (b.sub && b.sub.updates ? '　·　更新已有配装' : '')
       + (missing(b.md).length ? '　·　缺 ' + missing(b.md).join('、') : '')))
 
     // 载进来的是**可以改的填表页**，不是一张只读的图。装备写错、描述要润色，
     // 审的人改完再通过比打回去让人重投快得多。**不替他按预览**——预览态下
     // #sheet.preview 把输入框与格子全设成 pointer-events: none，整页点不动；
     // 那一页右下角自己带着「预览配装」，想看成品点它即可。
-    feed(b.md, function (err) { tip(box, '填表页载不出来：' + err.message, 1) })
+    feed(b.md, function (err) { tip(box, '载入失败：' + err.message, 1) })
 
     // 改后的那一份从填表页现读；读不出来（脚本没载好）就退回投稿原文，不交空的。
     function current () {
@@ -959,7 +958,7 @@
     }
 
     var src = el('details')
-    src.appendChild(el('summary', null, '投稿原文'))
+    src.appendChild(el('summary', null, '原文'))
     var pre = el('pre')
     pre.textContent = b.md
     src.appendChild(pre)
@@ -974,14 +973,14 @@
         // 删除申请不该改正文——它要的是「删不删」，改了也落不到任何地方
         var bar2 = el('div', 'acts')
         if (b.state === 'wait') {
-          var dyes = el('button', 'chip go', '同意删除')
+          var dyes = el('button', 'chip go', '移除')
           var dno = el('button', 'chip', '驳回')
           dyes.type = dno.type = 'button'
           var dmark = function (ok) {
             dyes.disabled = dno.disabled = true
             call('smark', { id: s._id, ok: ok }).then(load).then(toList, function (e) {
               dyes.disabled = dno.disabled = false
-              tip(box, '没改成：' + e.message, 1)
+              tip(box, '操作失败：' + e.message, 1)
             })
           }
           dyes.onclick = function () { dmark(1) }
@@ -1007,10 +1006,10 @@
         call(act, { id: b.state === 'live' ? b.id : s._id, md: md }).then(function () {
           s.md = b.md = md
           keep.disabled = false
-          tip(box, '存好了' + (b.state === 'live' ? '，下一次 sync 落盘' : ''))
+          tip(box, '已保存')
         }, function (e) {
           keep.disabled = false
-          tip(box, '没存上：' + e.message, 1)
+          tip(box, '保存失败：' + e.message, 1)
         })
       }
       acts.appendChild(keep)
@@ -1018,29 +1017,28 @@
       // 删一套已上站的配装不可逆——站上少一页、点赞数也跟着没了。**走审核，
       // 不当场删**：落成一条待审记录，与投稿走同一条队列。
       if (b.state === 'live') {
-        var ask = el('button', 'chip', '申请删除')
+        var ask = el('button', 'chip', '申请移除')
         ask.type = 'button'
         ask.onclick = function () {
-          if (!window.confirm('把《' + (nameOf(b.md) || b.id) + '》提交删除申请？'
-            + '审核通过后它会从站上消失。')) return
+          if (!window.confirm('申请移除《' + (nameOf(b.md) || b.id) + '》？')) return
           ask.disabled = true
           call('bdrop', { id: b.id }).then(load).then(toList, function (e) {
             ask.disabled = false
-            tip(box, '提不上去：' + e.message, 1)
+            tip(box, '提交失败：' + e.message, 1)
           })
         }
         acts.appendChild(ask)
       }
 
       if (b.state === 'no') {
-        var del = el('button', 'chip', '删掉这一条')
+        var del = el('button', 'chip', '删除')
         del.type = 'button'
         del.onclick = function () {
-          if (!window.confirm('删掉这一条废稿？删了找不回来。')) return
+          if (!window.confirm('删除这条废稿？不可撤销。')) return
           del.disabled = true
           call('sdrop', { id: s._id }).then(load).then(toList, function (e) {
             del.disabled = false
-            tip(box, '没删成：' + e.message, 1)
+            tip(box, '删除失败：' + e.message, 1)
           })
         }
         acts.appendChild(del)
@@ -1060,7 +1058,7 @@
             keep.disabled = yes.disabled = no.disabled = false
             // 八位 36 进制撞上的概率约两万八千亿分之一，真撞了换一个再来
             if (e.message === 'slug 重了' && !retry) return mark(ok, 1)
-            tip(box, '没改成：' + e.message, 1)
+            tip(box, '操作失败：' + e.message, 1)
           })
         }
         yes.onclick = function () { mark(1) }
@@ -1095,7 +1093,7 @@
     list = list.slice().sort(function (a, b) { return (a.at || '') < (b.at || '') ? 1 : -1 })
     body.appendChild(el('p', 'crumb', histDoc ? trail(histDoc) : '全站 · ' + list.length + ' 条'))
     if (!list.length) {
-      body.appendChild(el('p', 'lede', '还没有结案的改动'))
+      body.appendChild(el('p', 'lede', '没有记录'))
       return
     }
     var rows = el('div', 'rows')
@@ -1142,7 +1140,7 @@
     if (e.after !== undefined) return Promise.resolve(oneView(e))
     return call('hist', { id: e._id }).then(function (r) {
       var box = el('div', 'diff')
-      ;(r.diff || '（没有留下增删）').split('\n').forEach(function (l) {
+      ;(r.diff || '（无增删）').split('\n').forEach(function (l) {
         var n = el('div', l.charAt(0) === '-' ? 'del' : l.charAt(0) === '+' ? 'add' : 'ctx')
         n.innerHTML = paint(l.slice(2))
         box.appendChild(n)
@@ -1202,7 +1200,7 @@
         '<label>级别<select name="lv"></select></label>'
       var sel = f.querySelector('select')
       for (var i = 1; i < S.me.lv; i++) sel.appendChild(new Option(LV[i] + '（' + i + '）', String(i)))
-      var add = el('button', 'chip go', '加进白名单')
+      var add = el('button', 'chip go', '添加')
       f.appendChild(add)
       f.onsubmit = function (ev) {
         ev.preventDefault()
@@ -1269,7 +1267,7 @@
         tok(j)
         $('gate-tip').textContent = ''
         return boot()
-      }).catch(function (e) { $('gate-tip').textContent = '登录不了：' + e.message })
+      }).catch(function (e) { $('gate-tip').textContent = '登录失败：' + e.message })
     }
   }
 
