@@ -64,10 +64,11 @@
 <!-- 配装详情摊在列表下面那一格。**骨架固定，iframe 建一次就不再动**：把它 append
      进一个重建过的容器等于重新挂载，浏览器会照规范把整页再载一遍，而填表页要
      site.css、builds/style.css、vocab.js 与 form.js —— 换一条配装就重付一次解析
-     与布局。所以只有头与动作两块清空重建，中间那一枚原地留着。 -->
+     与布局。所以只有头与脚两块清空重建，中间那一枚原地留着。
+     头分左右两列：左边收起与铭牌，右边保存／通过／驳回。脚只装《原文》。 -->
 <div id="stage" hidden>
 <div id="stage-head"></div>
-<div id="stage-acts"></div>
+<div id="stage-foot"></div>
 </div>
 
 </main>

@@ -134,6 +134,14 @@ details > pre {
   white-space: nowrap;
 }
 .acts .chip[aria-current] { border-color: var(--accent); color: var(--bone-hi); }
+/* 通过与列表上【通过】那枚状态标同色（.rows .flag.pass）——行上写着绿字，
+   按钮也是绿的，同一套词汇。**不用 --accent**：在 .acts 里它已经占了
+   「当前选中」那一条，拿来标通过会读成这枚被选中了。
+   角标一并点亮：.chip 的 border 是 0，形状全靠那两枚 L，静置时 opacity 0，
+   只改颜色的话一排按钮仍旧长得一样。角标取 currentcolor，跟着上面那行走。 */
+.acts .chip.go { color: var(--c-strand); }
+.acts .chip.go::before,
+.acts .chip.go::after { opacity: 1; }
 
 /* 类别：强度／创意／PVP。走 --c-legend，与站内「装备稀有度」那一档同色——
    它答的是「这套为什么被推荐」，与旁边说「在队伍里干什么」的定位不是一回事。 */
@@ -175,6 +183,17 @@ body:has(#stage:not([hidden])) { --wrap: 1240px; --min: 1120px; }
   padding: 0 22px;
 }
 
+/* 头分左右两列：左边收起与铭牌，右边保存／通过／驳回。两侧的 .acts 都带
+   margin-top: 18px，所以「← 收起」与按钮条自然落在同一条基线上，不必另给一档。
+   窄下去时按钮整条换行，不与铭牌抢同一行。 */
+#stage-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+#stage-head .stage-ops { flex: none; }
 #stage-head .crumb { margin: 10px 0 0; }
 
 iframe.prev {

@@ -347,7 +347,7 @@
   function hideStage () {
     $('stage').hidden = true
     $('stage-head').textContent = ''
-    $('stage-acts').textContent = ''
+    $('stage-foot').textContent = ''
   }
   // ── 浏览器的返回 ───────────────────────────────────────────────────
   // 编辑台整站一页，不压历史的话按一下返回就离开了整个编辑台——而人在配装详情里
@@ -893,7 +893,7 @@
     if (fr) return fr
     fr = el('iframe', 'prev')
     fr.src = '../builds/new/index.html'
-    $('stage').insertBefore(fr, $('stage-acts'))
+    $('stage').insertBefore(fr, $('stage-foot'))
     return fr
   }
 
@@ -924,28 +924,43 @@
     dive({ v: 'builds', b: idOf(b) })
     openBuild = idOf(b)
     buildsView()
+    // 详情摊在整段列表下面，配装攒到几十条就得自己往下滑两千像素。**只滚点击
+    // 这一条路**：subDetail() 每次重画都会跑，筛选与 popstate 回来时不该跟着跳。
+    // **让位量按站头实测，不吃 --stick**：那个变量由 app.js 写回，而编辑台不引
+    // app.js，site.css 里 45px 的缺省值比这一页的站头矮 44px（这里多一条标签栏），
+    // 照它滚过去「← 收起」正好压在站头底下。
+    var st = $('stage')
+    st.style.scrollMarginTop = document.querySelector('.site-head').offsetHeight + 'px'
+    st.scrollIntoView()
   }
 
   function subDetail (b) {
     var s = b.sub || { _id: b.id, md: b.md }
     var wrap = $('stage-head')
-    var box = $('stage-acts')
+    var foot = $('stage-foot')
     wrap.textContent = ''
-    box.textContent = ''
+    foot.textContent = ''
     $('stage').hidden = false
+    // 头分左右两列：左边收起与铭牌，右边那几枚动作。**动作不留在 iframe 底下**
+    // ——那一格 86vh，按钮落在下面就离刚点的那一行一整屏。tip 跟着按钮走，
+    // 它是这几枚的回执，摆在看不见的地方等于没报。
+    var idcol = el('div')
+    var ops = el('div', 'stage-ops')
     var bar = el('div', 'acts')
     bar.appendChild(back('收起'))
-    wrap.appendChild(bar)
-    wrap.appendChild(el('p', 'crumb', (nameOf(b.md) || b.id.split('/').pop())
+    idcol.appendChild(bar)
+    idcol.appendChild(el('p', 'crumb', (nameOf(b.md) || b.id.split('/').pop())
       + '　·　' + STATE[b.state]
       + (b.sub && b.sub.updates ? '　·　更新已有配装' : '')
       + (missing(b.md).length ? '　·　缺 ' + missing(b.md).join('、') : '')))
+    wrap.appendChild(idcol)
+    wrap.appendChild(ops)
 
     // 载进来的是**可以改的填表页**，不是一张只读的图。装备写错、描述要润色，
     // 审的人改完再通过比打回去让人重投快得多。**不替他按预览**——预览态下
     // #sheet.preview 把输入框与格子全设成 pointer-events: none，整页点不动；
     // 那一页右下角自己带着「预览配装」，想看成品点它即可。
-    feed(b.md, function (err) { tip(box, '载入失败：' + err.message, 1) })
+    feed(b.md, function (err) { tip(ops, '载入失败：' + err.message, 1) })
 
     // 改后的那一份从填表页现读；读不出来（脚本没载好）就退回投稿原文，不交空的。
     function current () {
@@ -962,7 +977,7 @@
     var pre = el('pre')
     pre.textContent = b.md
     src.appendChild(pre)
-    box.appendChild(src)
+    foot.appendChild(src)
 
     if (S.me.lv >= 2) {
       var acts = el('div', 'acts')
@@ -980,7 +995,7 @@
             dyes.disabled = dno.disabled = true
             call('smark', { id: s._id, ok: ok }).then(load).then(toList, function (e) {
               dyes.disabled = dno.disabled = false
-              tip(box, '操作失败：' + e.message, 1)
+              tip(ops, '操作失败：' + e.message, 1)
             })
           }
           dyes.onclick = function () { dmark(1) }
@@ -988,7 +1003,7 @@
           bar2.appendChild(dyes)
           bar2.appendChild(dno)
         }
-        box.appendChild(bar2)
+        ops.appendChild(bar2)
         return
       }
 
@@ -1006,10 +1021,10 @@
         call(act, { id: b.state === 'live' ? b.id : s._id, md: md }).then(function () {
           s.md = b.md = md
           keep.disabled = false
-          tip(box, '已保存')
+          tip(ops, '已保存')
         }, function (e) {
           keep.disabled = false
-          tip(box, '保存失败：' + e.message, 1)
+          tip(ops, '保存失败：' + e.message, 1)
         })
       }
       acts.appendChild(keep)
@@ -1024,7 +1039,7 @@
           ask.disabled = true
           call('bdrop', { id: b.id }).then(load).then(toList, function (e) {
             ask.disabled = false
-            tip(box, '提交失败：' + e.message, 1)
+            tip(ops, '提交失败：' + e.message, 1)
           })
         }
         acts.appendChild(ask)
@@ -1038,7 +1053,7 @@
           del.disabled = true
           call('sdrop', { id: s._id }).then(load).then(toList, function (e) {
             del.disabled = false
-            tip(box, '删除失败：' + e.message, 1)
+            tip(ops, '删除失败：' + e.message, 1)
           })
         }
         acts.appendChild(del)
@@ -1058,7 +1073,7 @@
             keep.disabled = yes.disabled = no.disabled = false
             // 八位 36 进制撞上的概率约两万八千亿分之一，真撞了换一个再来
             if (e.message === 'slug 重了' && !retry) return mark(ok, 1)
-            tip(box, '操作失败：' + e.message, 1)
+            tip(ops, '操作失败：' + e.message, 1)
           })
         }
         yes.onclick = function () { mark(1) }
@@ -1066,7 +1081,7 @@
         acts.appendChild(yes)
         acts.appendChild(no)
       }
-      box.appendChild(acts)
+      ops.appendChild(acts)
     }
   }
 
