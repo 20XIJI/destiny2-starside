@@ -90,16 +90,25 @@ def items_of(chunk, anchor, tables=True):
 
 # 配装页每套只进一条记录，四十个槽位名不进索引：搜「元素虹吸」该命中神器模组页
 # 那一条正主，而不是同时命中带了它的每一套配装。描述与标签同样不收——想被搜到就
-# 把词写进配装名里。
+# 把词写进配装名里。合集同理，只进合集名那一条。
 BUILD = re.compile(r'^builds/s\d+/')
 
 
+def read(url):
+    with open(os.path.join(shell.ROOT, url), encoding='utf-8') as f:
+        return f.read()
+
+
+def title_of(url, src):
+    """<title> 去掉末尾那一段站名。**报错要带上是哪一页**：清单里四十多个
+    配装页，只说「没有 <title>」等于让人挨个翻。"""
+    return text(markup.must(TITLE.search(src),
+                            '%s 没有 <title>' % url).group(1)).rsplit(' · ', 1)[0]
+
+
 def scan(url):
-    path = os.path.join(shell.ROOT, url)
-    with open(path, encoding='utf-8') as f:
-        src = f.read()
-    title = text(markup.must(TITLE.search(src), '%s 没有 <title>' % url).group(1))
-    title = title.rsplit(' · ', 1)[0]
+    src = read(url)
+    title = title_of(url, src)
     desc = markup.must(DESC.search(src), '%s 没有 description' % url).group(1)
 
     cuts = [(m.start(), m.group(1)) for m in SECTION.finditer(src)]
@@ -126,8 +135,9 @@ def main() -> int:
         if url == shell.HOME:
             continue          # 首页本身就是搜索框所在的那一页，不必搜出自己
         if BUILD.match(url):
-            page, rows = scan(url)
-            out.append(line({'u': url, 't': page['t'], 'd': ''}))
+            # 只读标题，不跑整趟 scan()：合集页里一套一个 <section id>，那些分节
+            # 没有标题也不该出条目，扫它们除了报错什么也换不来。
+            out.append(line({'u': url, 't': title_of(url, read(url)), 'd': ''}))
             print('  %-38s    1 条（配装名）' % url)
             continue
         page, rows = scan(url)

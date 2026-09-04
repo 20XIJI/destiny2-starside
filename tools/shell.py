@@ -40,14 +40,25 @@ def pages():
             md = f.read()
         where = re.search(r'^路径：(.*)$', md, re.M)
         out.append('%s/index.html' % (where.group(1).strip() if where else name[:-3]))
-    out += ['builds/index.html', 'builds/new/index.html']
+    # 合集索引页只在真有合集时才出，也只在那时进清单——一个都没有时出一张空
+    # 索引不如不出，而清单里挂一个不存在的页面会让外壳闸门当场报错。判据与
+    # convert-build.py 的 main() 同一条。
+    detail, has_set = [], False
     for season in sorted(os.listdir(BUILD_DIR)):
         if not season.startswith(SEASON + '-'):
             continue
         for name in sorted(os.listdir(os.path.join(BUILD_DIR, season))):
-            if name.endswith('.md'):
-                out.append('builds/%s/%s/index.html' % (SEASON, name[:-3]))
-    return out
+            if not name.endswith('.md'):
+                continue
+            detail.append('builds/%s/%s/index.html' % (SEASON, name[:-3]))
+            with open(os.path.join(BUILD_DIR, season, name), encoding='utf-8') as f:
+                if re.search(r'^合集：是$', f.read(), re.M):
+                    has_set = True
+    out.append('builds/index.html')
+    if has_set:
+        out.append('builds/sets/index.html')
+    out += ['builds/new/index.html', 'builds/new/set/index.html']
+    return out + detail
 
 SITE_NAME = 'Starside'
 THEME = '#0b0d14'

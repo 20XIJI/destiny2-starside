@@ -198,6 +198,8 @@ Starside 的视觉与排版规范。新增页面、改样式、定颜色之前�
 - **不在 sticky 元素的祖先链上开 `overflow`。**一旦祖先成为滚动容器，其内部 `position: sticky` 不再相对视口生效，滚动条也会落到约 20000px 高元素的底部、实际不可达。横向溢出交给页面本身，用 `body { min-width: … }` 表达最小内容宽度。
 - **不做窄屏适配。**这是明确取向。不新增断点、不做三档纵向堆叠。
 - `:focus-visible` 与 `prefers-reduced-motion` 属于质量底线，保留。`clip-path` 会把 `outline` 连带裁掉，那种位置改用内嵌 `box-shadow` 画焦点环。
+- **`content-visibility: auto` 不能套在含 sticky 后代的元素上。**它带 paint containment，会把内部的 sticky 裁在自己的盒子里，跟着滚就没了。配装合集页因此套在 `.set-one` 上而不是 `.set-wrap`——后者含着 sticky 的左栏目录。
+- **一页里几套并列的内容，默认只显一套时那个「只显一套」由 JS 加载时施加，不写进 HTML。**与列组页、折线图页同一条：无 JS 时全部可读。配装合集页的主从视图就是这么做的，竖排是它的降级形态而不是另一套 DOM。
 
 ---
 

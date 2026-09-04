@@ -9,6 +9,15 @@
   --min: 1104px;
 }
 
+/* **合集页左边多一列目录，配装那一列必须与单套页的行等宽。**职业那一节的两条把
+   与技能面板钉死在按 1016 行宽算出来的像素上（286 与 562），窄下去两块加沟就
+   868px，超能只剩它 18px 的 basis，整行塌掉。
+   1296 = 1016 行宽 + 208 目录 + 28 沟 + 44（版心与行宽之差）。 */
+body:has(.set-wrap) {
+  --wrap: 1296px;
+  --min: 1340px;
+}
+
 /* 装备图的圆角一处定义，取全站格内图那一个值（assets/site.css 的 .gen td/th img）。
    四种尺寸走同一个数：96 的核心异域、64 的索引卡、56/32/24 的格子、20 的神器本体。
    分开写会重演 site.css 修过的那件事——同一屏里方角图与圆角图混排，页头那枚 96
@@ -314,12 +323,15 @@ a.who:hover { color: var(--accent); }
    130 是第一行的格宽（版心 1016 减去那一行 106 的固定开销，再除以七份）。
    代价是碎片的格子比同行的星相格宽 4px：两行的面板个数不等时，「面板对齐」与
    「整行格子等宽」不可兼得，竖线优先。 */
-#sec-1 { --cell: 130px; }
+/* **按 id 的尾巴认，不按等号。**合集详情页里一套一份分节，id 带前缀
+   （set1-sec-1、set2-sec-1…），写死 #sec-1 时这三条在那一页整个失效，两行的
+   竖线跟着错开。这份样式表只有配装那几页引，尾巴是 sec-1 的就只有职业那一节。 */
+[id$="sec-1"] { --cell: 130px; }
 /* 职业与星相：两格 */
-#sec-1 .slot-row > .slot:first-child { flex: 0 0 calc(26px + 2 * var(--cell)); }
+[id$="sec-1"] .slot-row > .slot:first-child { flex: 0 0 calc(26px + 2 * var(--cell)); }
 /* 技能：按四格钉死。移动那一格填不填是逐套配装的事，不钉死时它一变，超能与技能
    的边界就跟着挪，同一节的两套配装对不上。钉死之后变的只是格子的宽度。 */
-#sec-1 .slot-row > .slot:nth-child(3) { flex: 0 0 calc(42px + 4 * var(--cell)); }
+[id$="sec-1"] .slot-row > .slot:nth-child(3) { flex: 0 0 calc(42px + 4 * var(--cell)); }
 
 /* 主角行（异域护甲 + 套装、神器本体）不拉满：最多三格，拉满会让一格宽到 500px。
    格子封顶、左对齐，右侧留白读作呼吸——它是主角行，本来就该松。 */
@@ -674,24 +686,51 @@ body:has(.entries) .toolbar {
 /* ── 源稿与预览 ───────────────────────────────────────────────────────
    预览把这一页当成品看：空槽、控件与源稿那两块收起来，输入框脱掉边框与底色
    读作正文。**不另建一套 DOM**——两套 DOM 会让版面改一处得改两遍。 */
-/* 三个出口常驻右下角：整页有一屏多，把它们留在页尾就等于每次都要滚到底。
-   预览态下这一条是唯一的回路，所以它不在被收起的那一节里。 */
+/* 出口横排一条，落在正文末尾，跟着页面滚。预览态下这一条是唯一的回路，
+   所以它不在被收起的那一节里。
+
+   **不要改回脱离文档流的浮块。**浮块宽度不随版心走：合集页版心 1296 时右边
+   留白装不下它，它就压在正文上；审核台把这一页当 iframe 载进来时更没有留白
+   可站，五枚按钮直接盖在碎片计数器与「＋ 移动」上。
+
+   --ink-lift 与页底 --ink 的 ΔE 只有 11.3，压在「视作同一个颜色」的线下，只靠
+   一圈发丝线立着会在长页里找不见。叠一层 --tint-3 抬底，顶缘给 2px 强调色
+   ——那是站内「这是一件东西」的边（卡片左缘、格子悬停的左缘）同一条语言，
+   不加投影、不加发光。 */
 .src-tools {
-  position: fixed;
-  right: 22px;
-  bottom: 22px;
-  z-index: 5;
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 6px;
-  padding: 8px;
-  /* --ink-lift 与页底 --ink 的 ΔE 只有 11.3，压在「视作同一个颜色」的线下，
-     整条面板因此只靠那一圈 1px 发丝线立着，滚到长页中段就找不见。叠一层
-     --tint-3 抬底，边框提到 --bone-faint——不加投影、不加发光，形状语言不变。 */
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 11px 16px;
   background: var(--tint-3), var(--ink-lift);
   border: 1px solid var(--bone-faint);
+  border-top: 2px solid var(--accent);
 }
+
+/* 两组之间一道发丝线：左边两枚看这一页，右边两枚管源稿。 */
+.tool-sep {
+  align-self: stretch;
+  width: 1px;
+  margin: 0 2px;
+  background: var(--hair-lit);
+}
+
+/* 投稿是终态那一个，**填色**：这一条上别的都是描边或纯字，唯一一枚填色的
+   因此一眼认得出，也不会与「预览」按下时那个强调色边框读混。 */
+#send {
+  margin-left: auto;
+  padding: 7px 18px;
+  color: var(--ink);
+  font-weight: 600;
+  background: var(--accent);
+}
+
+#send:hover { color: var(--ink); background: var(--bone-hi); }
+#send::before,
+#send::after { display: none; }
+#send[disabled] { opacity: .45; cursor: default; }
 
 /* 角标静置时照旧不显形——常显是五枚一齐立着，读作五个方框而不是五个动作。
    改由动效认领：两枚角标从外侧滑进来收拢到位，按下时整枚往下沉 1px。
@@ -718,18 +757,12 @@ body:has(.entries) .toolbar {
   .src-tools .chip:active { transform: none; }
 }
 
-/* 复制的回执落在这一条左边，不进按钮那一列：接在最后一枚下面时它会把面板
-   撑高一行，三枚按钮跟着往上跳。空着就不占位。 */
+/* 回执紧跟着它报告的那两枚（复制与导入），不甩到条子另一端。空着就不占位。 */
 #copy-tip {
-  position: absolute;
-  right: calc(100% + 8px);
-  bottom: 8px;
-  padding: 6px 10px;
+  padding: 0 4px;
   color: var(--accent);
   font-size: 12.5px;
   white-space: nowrap;
-  background: var(--ink-lift);
-  border: 1px solid var(--hair-lit);
 }
 
 #copy-tip:empty { display: none; }
@@ -934,7 +967,8 @@ button.item { width: 100%; }
 #sheet textarea { display: block; width: 100%; padding: 10px 12px; line-height: 1.8; }
 #sheet :focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 
-#sheet h1 input {
+#sheet h1 input,
+#sheet .one-head h2 input {
   width: 100%;
   padding: 4px 10px;
   font-family: var(--font-cn);
@@ -1039,3 +1073,303 @@ button.item { width: 100%; }
 /* 预览、复制、导入三枚走全站那套控件形状（.chip：角标 + 字距），不另造一种按钮。
    预览是双向的，按下那一态由 .chip[aria-pressed="true"] 自己接住。 */
 #imp .note { margin: 0 0 10px; color: var(--bone-dim); font-size: 12.5px; }
+
+/* ── 合集：左目录右配装 ────────────────────────────────────────────────
+   一个角色带着一组配装来回切，所以默认摆成游戏内配装面板那个样子：左边一列
+   目录，右边是选中那一套的完整版面。**收起没选中的那几套由 builds/set.js 在
+   加载时施加**，不写进 HTML——无 JS 时这一页天然就是竖排，全部可读。 */
+.set-wrap {
+  display: grid;
+  grid-template-columns: 208px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+/* 左栏跟着滚：一份合集三到六套，右边那套的版面比一屏高，滚到护甲那一行时
+   目录要还在，否则换一套得先滚回顶上。
+
+   **格区跨满所有行**（grid-row: 1 / -1）：sticky 的活动范围就是它那一格，只占
+   第一行时滚过配装那一列就停住了。容器的 align-items: start 让它保持自己的
+   高度，不被拉满。 */
+.set-list {
+  position: sticky;
+  grid-row: 1 / -1;
+  top: calc(var(--stick) + 16px);
+  min-width: 0;
+}
+
+/* 「配装文本」那一节与底部那条出口跟配装那一列等宽：它们在 .set-wrap 里，
+   自动排版会把它们丢到左边那一列（目录的位置），所以钉在第二列。 */
+.set-wrap > .src-block,
+.set-wrap > .src-tools { grid-column: 2; }
+
+.set-list > .by-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+/* 视图开关借 .slot-tool 那套素框，不另造一种按钮：它与面板标题右边那些控件
+   同一档分量。 */
+.viewsw {
+  padding: 3px 10px;
+  color: var(--bone-dim);
+  font: inherit;
+  font-size: 11.5px;
+  letter-spacing: .08em;
+  background: none;
+  border: 1px solid var(--hair);
+  cursor: pointer;
+}
+
+.viewsw:hover { color: var(--bone-hi); border-color: var(--accent); }
+.viewsw:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.set-list ol {
+  counter-reset: seat;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.set-list li { counter-increment: seat; }
+
+/* 每一行的左缘一条 2px 亮边，颜色走该套的分支色——与站上索引页每张卡的左缘、
+   编辑台每一行同一条规则，`.b-*` 落在 <li> 上把 --accent 覆盖掉。 */
+.set-list a,
+.set-list button[data-go] {
+  position: relative;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px 8px 13px;
+  color: inherit;
+  text-decoration: none;
+  background: var(--tint-1);
+  border: 1px solid var(--hair);
+}
+
+.set-list a::before,
+.set-list button[data-go]::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 2px;
+  background: var(--accent);
+}
+
+.set-list img {
+  display: block;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--hair);
+}
+
+.set-list b {
+  display: block;
+  color: var(--bone);
+  font-family: var(--font-cn);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.set-list b::before { content: counter(seat) "　"; color: var(--bone-faint); }
+
+.set-list span {
+  display: block;
+  overflow: hidden;
+  color: var(--bone-faint);
+  font-size: 11.5px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.set-list a:hover,
+.set-list button[data-go]:hover { background: var(--row-hover); }
+
+.set-list a:focus-visible,
+.set-list button[data-go]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.set-list [aria-current="true"] {
+  background: var(--tint-2);
+  border-color: var(--accent);
+}
+
+.set-list [aria-current="true"] b { color: var(--bone-hi); }
+
+/* 图跨两行，文字都落在第二列——不写死的话 <span> 会掉到图的下面去。
+   填表页那一列没有图，整行收成单列。 */
+.set-list img { grid-row: span 2; }
+.set-list b,
+.set-list span { grid-column: 2; }
+
+.set-list button[data-go] {
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.set-list button[data-go] b,
+.set-list button[data-go] span { grid-column: 1; }
+
+/* 填了核心的那一套，目录行就带图，与详情页那一列同形；还没填的收成单列，
+   不留一个空的图位。 */
+.set-list button[data-go]:has(img) { grid-template-columns: auto minmax(0, 1fr); }
+.set-list button[data-go]:has(img) b,
+.set-list button[data-go]:has(img) span { grid-column: 2; }
+
+.set-list .viewsw[disabled] { opacity: .35; cursor: default; }
+.set-list .viewsw[disabled]:hover { color: var(--bone-dim); border-color: var(--hair); }
+
+/* 填表页：加一套是一枚占满目录宽度的加号，接在列表下面——它是列表的延长，
+   借空槽那套语言（虚线框 + 悬停亮边），不另造一种按钮。 */
+.set-add {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 12px 0;
+  color: var(--bone-faint);
+  font: inherit;
+  font-size: 20px;
+  line-height: 1;
+  text-align: center;
+  background: none;
+  border: 1px dashed var(--hair-lit);
+  cursor: pointer;
+}
+
+.set-add:hover { color: var(--bone-hi); border-color: var(--accent); }
+.set-add:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.set-add[disabled] { opacity: .35; cursor: default; }
+.set-add[disabled]:hover { color: var(--bone-faint); border-color: var(--hair-lit); }
+
+/* 移除一套的叉挂在那一行的右上角，静置时不显形——一列六行各挂一个红叉，
+   目录就成了一排删除键。 */
+.set-list li { position: relative; }
+
+.set-drop {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  color: var(--bone-faint);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1;
+  background: none;
+  border: 0;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity .18s ease;
+}
+
+.set-list li:hover .set-drop,
+.set-drop:focus-visible { opacity: 1; }
+.set-drop:hover { color: var(--bone-hi); }
+.set-drop:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* 这一套的核心排在名字左边，与左栏目录那一行（图 + 名字 + 定位）同形。
+   **48px 见方**：32 太小按不着，96 是整份合集那一枚的尺寸，摆在这里会把这一行
+   撑得比详情页高一截。图本身仍是 32（格子的 data-size）。 */
+/* **要限定在 .one-head 里，也要带上 .item。**
+
+   带 .item 是因为 `button.item { width: 100% }` 是 (0,1,1)，单类的 .one-core
+   压不过它，格子会撑满整行、再被 aspect-ratio 拉成一个正方形巨块。
+
+   限定在 .one-head 里是因为**选择器的候选格复制目标格的 class**：不限定时
+   每一条候选都戴上 one-core，被压成 48×48 的单列方格，28px 的图溢到格子上方、
+   名字挤在下面。选择器插在 .one-head 之后、是它的兄弟节点，够不着这一条。
+   与 `#sheet .core > .item` 把 98px 那个方格限定在页头里同一条。
+
+   justify-items 要显式给：居中本来由 .item.empty 那条带着，格子一填上内容
+   empty 就被摘掉，32px 的图于是贴在 48px 盒子的左缘。 */
+.one-head .item.one-core {
+  flex: none;
+  width: 48px;
+  aspect-ratio: 1;
+  min-height: 0;
+  padding: 0;
+  place-content: center;
+  justify-items: center;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+}
+
+.one-head .item.one-core .nm { font-size: 10.5px; }
+
+/* 这一套的名字：h1 那条只管合集标题，成员用的是 h2。不给的话输入框退回浏览器
+   缺省的二十来字符宽，一行里名字框比复制按钮还窄。 */
+#sheet .one-head h2 { flex: 1; min-width: 0; }
+
+/* 一套一节。**content-visibility 套在这里而不是 .set-wrap 上**：那一层含着
+   sticky 的左栏，paint containment 会把它裁在自己的盒子里，跟着滚就没了。
+   估值取三套那一页的实测中位数，渲染过一次浏览器就改用真实高度。 */
+.set-one {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 2400px;
+  scroll-margin-top: calc(var(--stick) + 16px);
+}
+
+.set-one + .set-one {
+  margin-top: 32px;
+  padding-top: 28px;
+  border-top: 1px solid var(--hair-lit);
+}
+
+/* 这一套的页头：名字、铭牌、描述，右端一枚复制。不给 96px 核心图与推荐人
+   ——那两样属于整份合集、写在页顶，每套重复一遍会与左栏那列图打架。 */
+.one-head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.one-head h2 {
+  margin: 0;
+  color: var(--bone-hi);
+  font-family: var(--font-cn);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: .04em;
+}
+
+.one-head .cls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--bone);
+  font-size: 13px;
+}
+
+.one-head .cls > img { flex: none; width: 24px; height: 24px; }
+.one-head .desc { margin: 0; max-width: 76ch; color: var(--bone-dim); }
+
+/* 索引页那张卡右上角的「3 套」：一排卡里合集与单套长得一样，不标出来读者
+   点进去才知道这一张是三套。 */
+.n-sets {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 2px 7px;
+  color: var(--accent);
+  font-family: var(--font-disp);
+  font-size: 11px;
+  letter-spacing: .1em;
+  background: var(--tint-2);
+  border: 1px solid var(--hair);
+}

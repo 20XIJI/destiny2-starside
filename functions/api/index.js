@@ -77,7 +77,11 @@ const SAME = [/^#[ \t]*(.*)$/m, /^推荐人：(.*)$/m, /^职业：(.*)$/m,
               /^分支：(.*)$/m, /^核心：(.*)$/m]
 
 function fingerprint(md) {
-  const parts = SAME.map((re) => ((re.exec(md) || ['', ''])[1] || '').replace(/\s+/g, ' ').trim())
+  // **只按头部算**。合集一份源稿装 N 套，`# ` 分隔；它的头部没有职业与分支两行，
+  // 全文扫会静默抓到第一套成员的，调换前两套的顺序再投指纹就变了、顶不掉旧的，
+  // 站上于是多出一份重复的合集，点赞数跟着甩掉。单套只有一个 `# `，切了等于没切。
+  const head = md.split(/\n# /)[0]
+  const parts = SAME.map((re) => ((re.exec(head) || ['', ''])[1] || '').replace(/\s+/g, ' ').trim())
   // \u0001 当分隔符：正文里不会出现，拼接因此不会把两项混成一项
   return crypto.createHash('sha1').update(parts.join('\u0001')).digest('hex')
 }

@@ -32,6 +32,13 @@ SEASON = shell.SEASON        # 当前赛季只有一处定义，见 shell.py
 META_KEYS = ('推荐人', '描述', '更新', '场景', '定位', '分支', '类别', '核心')
 # 六维恒为六格，顺序钉死：游戏内就是这个顺序，配装之间横着比才对得上位置。
 STATS = ('生命', '近战', '手雷', '超能', '职业', '武器')
+# 合集：一份源稿装 N 套可切换的配装，`# ` 分隔。头部写整份共有的那几个键
+# （推荐人、描述、更新、场景、类别、核心），每套各写描述、定位、分支、核心与职业
+# ——描述与定位正是它们互相区分的地方，写在头部就成了一排全选，什么也没说。
+# 游戏内能存 20 套，站上收到 12：再多左栏那列比右栏还长，而一个角色常用的就五六套。
+SET_MAX = 12
+# 一队人各穿一套那种合集的职业格。索引页拿它当小节标题，与三个职业并列。
+MIXED = '多职业'
 PARTS = ('头盔', '护臂', '胸甲', '腿部', '职业物品')
 # 职业、分支与类别三张表在 markup.py：那三样是源稿的词汇，而 build-terms.py
 # 要把它们导给编辑台（审核台左栏按类别与职业建树、列表按分支上色），本文件的
@@ -348,10 +355,13 @@ def page_items(md):
     return out
 
 
-def core_pick(idx, md, prefer):
-    """核心那枚 96px 的图。可以是本页配过的任一件东西，不限异域。"""
+def core_pick(idx, md, prefer, pool=None):
+    """核心那枚 96px 的图。可以是本页配过的任一件东西，不限异域。
+
+    pool 给合集用：它的头部一件装备都没写，核心要在全体成员的并集里挑。
+    """
     core = meta(md, '核心')
-    hit = [x for x in page_items(md) if x[0] == core]
+    hit = [x for x in (page_items(md) if pool is None else pool) if x[0] == core]
     if not hit:
         die('「核心：」要等于本页配过的某一件东西，源稿写的是 %r' % core)
     return vocab.pick(idx, core, hit[0][1], kind=hit[0][2], prefer=prefer)
@@ -388,29 +398,227 @@ def stats_card(spec):
              '<ul class="stats">'] + stats_of(spec) + ['</ul>', '</div>'])
 
 
-def render(idx, mv, arts, md, slug, season, name_cn):
-    title = must(re.match(r'^#\s+(.+)$', md.split('\n')[0]),
-                 '源稿第一行必须是「# 配装名」').group(1).strip()
-    stamp, desc = meta(md, '更新'), meta(md, '描述')
-    # 描述在这一页是正文（首页卡片与 meta 也用它），所以允许写着色标记：
-    # 正文走 inline()，meta 与卡片用剥干净的那一份，不然标记会漏进 <meta>。
-    desc_text = text_of(inline(desc, rich=True), collapse=True)
-    if not re.fullmatch(r'\d{4}\.\d{1,2}\.\d{1,2}', stamp):
-        die('「更新：」要写成 YYYY.M.D，源稿写的是 %r' % stamp)
+def branch_of(md):
     branch = meta(md, '分支')
     if branch not in BRANCH:
-        die('「分支：」要写六个分支之一（%s），源稿写的是 %r'
-            % ('、'.join(BRANCH), branch))
+        die('「分支：」要写六个分支之一（%s），源稿写的是 %r' % ('、'.join(BRANCH), branch))
+    return branch
+
+
+def class_of(md):
+    who = meta(md, '职业')
+    if who not in CLASSES:
+        die('「职业：」要写猎人、泰坦、术士之一，源稿写的是 %r' % who)
+    return who
+
+
+def cat_of(md):
     cat = meta(md, '类别')
     if cat not in CATEGORIES:
         die('「类别：」要写 %s 之一，源稿写的是 %r' % ('、'.join(CATEGORIES), cat))
+    return cat
+
+
+def stamp_of(md):
+    stamp = meta(md, '更新')
+    if not re.fullmatch(r'\d{4}\.\d{1,2}\.\d{1,2}', stamp):
+        die('「更新：」要写成 YYYY.M.D，源稿写的是 %r' % stamp)
+    return stamp
+
+
+def split_set(md):
+    """源稿 → (头部, [每套的源稿, …])。`# ` 起一块，首块是头部。
+
+    单套配装只有一个 `# `，切出来成员为空、头部即整份——两条路因此共用一个入口。
+    **全脚本只有这一处认这个分隔符**：成员块内部就是单套配装的源稿，一字不改，
+    blocks_of() 与填表页的 write()/importMd() 都按块原样复用。
+
+    「合集：是」与第二个 `# ` 互为断言，缺一即中止。只按标记判，写了标记忘了写
+    第二套会出一个空合集；只按 `# ` 判，注解里手滑打出的一个 `# ` 会把半篇正文
+    静默切成第二套。
+    """
+    parts = re.split(r'\n(?=# )', md.strip())
+    head, members = parts[0], parts[1:]
+    flag = meta(head, '合集', required=False)
+    if flag and flag != '是':
+        die('「合集：」只认「是」；不是合集就把整行删掉，源稿写的是 %r' % flag)
+    if bool(members) != bool(flag):
+        die('「合集：是」与第二个「# 」要么都在要么都不在：现在标记%s、成员 %d 套'
+            % ('在' if flag else '不在', len(members)))
+    if members and not 2 <= len(members) <= SET_MAX:
+        die('一个合集要 2 到 %d 套，源稿写了 %d 套' % (SET_MAX, len(members)))
+    return head, members
+
+
+def scenes_of(md):
+    """合集的适用环境。**第一个是主场景**，索引页按它分大节。
+
+    多值照旧（一份合集常在突袭与地牢都成立），但大节只进一个：同一张卡出现在
+    两个节里，读者会以为是两份合集。顺序因此有意义，与 page_items() 的
+    「顺序即同名时的优先级」同一条。
+    """
+    got = names(md, '场景')
+    if not got:
+        die('合集的「场景：」不能空，它决定这份合集进索引页的哪一个大节')
+    for x in got:
+        if x not in FACETS[0][2]:
+            die('「场景：」要写 %s 之中的，源稿写的是 %r' % ('、'.join(FACETS[0][2]), x))
+    return got
+
+
+def set_facts(idx, head, members):
+    """一份合集摊平之后的四件事：强调色取哪个分支、核心那枚图、职业、标签。
+
+    详情页与索引页的卡片都要它们，算法只此一处。
+    """
+    # 页面级的强调色取第一套的分支：一份合集常在同一个分支里换装，换了也总得挑
+    # 一个，第一套是作者摆在最前面的那一套。每套自己那一层另戴 b-<分支>。
+    branch = branch_of(members[0])
+    core = core_pick(idx, head, 'elements/%s' % BRANCH[branch],
+                     pool=[x for m in members for x in page_items(m)])
+    who = [c for c in CLASSES if c in {class_of(m) for m in members}]
+    roles = []
+    for m in members:
+        for r in names(m, '定位', required=False):
+            if r not in roles:
+                roles.append(r)
+    return branch, core, who, roles
+
+
+def solo_src(head, md):
+    """「复制这一套」给的那一份：成员块补上从合集头部继承的那几个键，粘回配装
+    工具就是一份完整的单套源稿。少了它们，导入之后推荐人与类别是空的。"""
+    add = ['%s：%s' % (k, meta(head, k, required=False))
+           for k in ('推荐人', '更新', '场景', '类别')]
+    lines = md.strip().split('\n')
+    return '\n'.join(lines[:1] + [x for x in add if not x.endswith('：')] + lines[1:])
+
+
+def finish(o, scripts):
+    """收尾：把 <script defer> 接在 </body> 之前。shell.foot() 已经吐了
+    </body></html>，直接往后接会让它跑到文档外面去。"""
+    out = '\n'.join(x for x in o if x != '') + '\n'
+    tags = ''.join('<script src="%s" defer></script>\n' % s for s in scripts)
+    return out.replace('\n</body>\n', '\n' + tags + '</body>\n')
+
+
+def blocks_of(idx, mv, arts, md, ns=''):
+    """五个分节：职业、武器、神器模组、护甲、注解。单套与合集里的每一套共用。
+
+    ns 是分节 id 的前缀——一份合集里 N 套各有五节，不加前缀 id 就撞了。单套传
+    空串，产出与从前逐字相同。
+    """
+    branch = branch_of(md)
     prefer = 'elements/%s' % BRANCH[branch]
-
-    if meta(md, '职业') not in CLASSES:
-        die('「职业：」要写猎人、泰坦、术士之一，源稿写的是 %r' % meta(md, '职业'))
-
     ex_gun = meta(md, '异域武器', required=False)
     ex_armor = exotic_armor(md)
+    o = []
+    # 职业：一行是身份与主动技能（职业 · 超能 · 技能），一行是子职业树（星相 ·
+    # 碎片）。「技能」收的是手雷、近战、移动与职业技能——游戏里是四个键位，在配装
+    # 表里是同一档信息，分成四个面板会把一行豁成四段。「移动」不查这套表：站内还
+    # 没有位移技能的资料页。
+    #
+    # **身份那两格排在最前，星相跟碎片同行。**它们同属子职业树，读者是一起看的；
+    # 碎片独占一行时那五格宽到 193px，与上一行的 130px 差 50%。两行都是 7 份，
+    # 格宽因此落在 130 与 133，整节读作一块。
+    skills = []
+    for key in ('手雷', '近战'):
+        for n in names(md, key, required=False):
+            skills.append(item(idx, key, n, prefer))
+    if meta(md, '移动', required=False):
+        skills.append(move_cell(meta(md, '移动'), mv))
+    for n in names(md, '职业技能', required=False):
+        skills.append(item(idx, '职业技能', n, prefer))
+    who = class_of(md)
+    ident = [item(idx, '职业', who, prefer, kind='分节'),
+             item(idx, '元素', who, prefer, kind='分节', label=branch)]
+    o += ['<section class="block" id="%ssec-1">' % ns, '<h2 class="sect-label">职业</h2>']
+    o += row(group('职业', ident, key='职业')
+             + group('超能', [item(idx, '超能', meta(md, '超能'), prefer)])
+             + group('技能', skills))
+    o += row(group('星相', [item(idx, '星相', n, prefer) for n in names(md, '星相')])
+             + group('碎片', [item(idx, '碎片', n, prefer) for n in names(md, '碎片')]))
+    o += ['</section>', '']
+
+    # 武器：一把枪一组。面板不给标题——上面那行 sect-label 已经写着「武器」，再写一遍
+    # 「武器与 Perk」是噪声，格子形状（56px 图的是枪，24px 图的是 Perk）自己说明身份。
+    rigs = []
+    if ex_gun:
+        rigs.append(rig_of([item(idx, '异域武器', ex_gun, prefer,
+                                 cls='item gun', bare=True)]))
+    for line in re.findall(r'^传说武器：(.*)$', md, re.M):
+        gun, _, perks = line.partition('|')
+        cells = [item(idx, '传说武器', gun.strip(), prefer, cls='item gun', bare=True)]
+        cells += [item(idx, 'Perk', p.strip(), prefer, cls='item perk-cell', bare=True)
+                  for p in perks.split('、') if p.strip()]
+        rigs.append(rig_of(cells))
+    o += ['<section class="block" id="%ssec-2">' % ns,
+          '<h2 class="sect-label">武器</h2>'] + row(rigs) + ['</section>', '']
+
+    # 神器模组页的 7 个分节就是 7 件神器，模组归属写在分节标题上。源稿先写用的是
+    # 哪一件，模组按它限定——「电介质」在加密数据盘与废墟石板下各有一条，不限定
+    # 就只能猜；限定之后，混进别件神器的模组当场中止。
+    art = meta(md, '神器')
+    mods = [item(idx, '神器', n, prefer, kind=art) for n in names(md, '模组')]
+    o += ['<section class="block" id="%ssec-3">' % ns, '<h2 class="sect-label">神器模组</h2>']
+    if art not in arts:
+        die('「神器：%s」不在神器表里。站内那一页的七个分节即是全部：%s'
+            % (art, '、'.join(sorted(arts))))
+    o += row(group(art, mods, icon=arts[art]))
+    o += ['</section>', '']
+
+    # 护甲：主角行（异域护甲 + 套装）不拉满——它最多三格，拉满会让一格宽到 500px；
+    # 格子封顶、左对齐，行末那半截空档给六维那张卡。部位行五个部位并排，每列三枚
+    # 模组竖排，合起来是一张 5×3 的矩阵，那是这一页的视觉重心。
+    # 异域职业物品一件装备带两条异域词条，站内把词条各自列成一条，所以它在这里
+    # 占一格、两条上下并排——摊成两格会读成穿了两件异域。
+    lead = (['<li class="pair">%s</li>'
+             % ''.join(item(idx, '异域护甲', n, prefer, cls='item gear', bare=True)
+                       for n in ex_armor)] if ex_armor else [])
+    lead += sets_of(idx, meta(md, '套装'))
+    o += ['<section class="block" id="%ssec-4">' % ns, '<h2 class="sect-label">护甲</h2>']
+    # 六维挂在主角行右端：异域与套装最多占三格，剩下的半行本来是空的。套装可能
+    # 是两格（4 件同时给 2 件效果），那时这张卡换行落下去，见 .slot-row.lead 的
+    # flex-wrap。
+    o += row(group('', lead) + stats_card(meta(md, '六维')), cls='lead')
+    parts = []
+    for part in PARTS:
+        got = names(md, part, required=False)
+        if got:
+            parts.append(group(part, [item(idx, '护甲模组', n, prefer, kind=part)
+                                      for n in got], cols=1))
+    if parts:
+        o += row([x for panel in parts for x in panel])
+    o += ['</section>', '']
+
+    note = md.split('## 注解', 1)
+    if len(note) == 2 and note[1].strip():
+        o += ['<section class="block" id="%ssec-5">' % ns,
+              '<h2 class="sect-label">注解</h2>']
+        o += ['<p>%s</p>' % inline('<br>'.join(b.strip().split('\n')), rich=True)
+              for b in re.split(r'\n\s*\n', note[1].strip()) if b.strip()]
+        o += ['</section>', '']
+    return o
+
+
+def render(idx, mv, arts, md, slug, season, name_cn):
+    """一份源稿一个页面。有第二个 `# ` 就是合集，走另一条路。"""
+    head, members = split_set(md)
+    if members:
+        return render_set(idx, mv, arts, head, members, slug, season, name_cn)
+    return render_solo(idx, mv, arts, md, slug, season, name_cn)
+
+
+def render_solo(idx, mv, arts, md, slug, season, name_cn):
+    title = must(re.match(r'^#\s+(.+)$', md.split('\n')[0]),
+                 '源稿第一行必须是「# 配装名」').group(1).strip()
+    stamp, desc = stamp_of(md), meta(md, '描述')
+    # 描述在这一页是正文（首页卡片与 meta 也用它），所以允许写着色标记：
+    # 正文走 inline()，meta 与卡片用剥干净的那一份，不然标记会漏进 <meta>。
+    desc_text = text_of(inline(desc, rich=True), collapse=True)
+    branch, cat = branch_of(md), cat_of(md)
+    class_of(md)
+    prefer = 'elements/%s' % BRANCH[branch]
     core_e = core_pick(idx, md, prefer)
 
     o = [shell.head('%s · %s · Starside' % (title, SITE_SECTION), desc_text, up=3,
@@ -455,102 +663,114 @@ def render(idx, mv, arts, md, slug, season, name_cn):
          # 导入。站内没有第二处存它，所以它落在页面上而不是另拉一个文件。
          '<pre id="src" hidden>%s</pre>' % escape(uncolor(md)),
          '</header>', '']
-
-    # 职业：一行是身份与主动技能（职业 · 超能 · 技能），一行是子职业树（星相 ·
-    # 碎片）。「技能」收的是手雷、近战、移动与职业技能——游戏里是四个键位，在配装
-    # 表里是同一档信息，分成四个面板会把一行豁成四段。「移动」不查这套表：站内还
-    # 没有位移技能的资料页。
-    #
-    # **身份那两格排在最前，星相跟碎片同行。**它们同属子职业树，读者是一起看的；
-    # 碎片独占一行时那五格宽到 193px，与上一行的 130px 差 50%。两行都是 7 份，
-    # 格宽因此落在 130 与 133，整节读作一块。
-    skills = []
-    for key in ('手雷', '近战'):
-        for n in names(md, key, required=False):
-            skills.append(item(idx, key, n, prefer))
-    if meta(md, '移动', required=False):
-        skills.append(move_cell(meta(md, '移动'), mv))
-    for n in names(md, '职业技能', required=False):
-        skills.append(item(idx, '职业技能', n, prefer))
-    who = meta(md, '职业')
-    ident = [item(idx, '职业', who, prefer, kind='分节'),
-             item(idx, '元素', who, prefer, kind='分节', label=branch)]
-    o += ['<section class="block" id="sec-1">', '<h2 class="sect-label">职业</h2>']
-    o += row(group('职业', ident, key='职业')
-             + group('超能', [item(idx, '超能', meta(md, '超能'), prefer)])
-             + group('技能', skills))
-    o += row(group('星相', [item(idx, '星相', n, prefer) for n in names(md, '星相')])
-             + group('碎片', [item(idx, '碎片', n, prefer) for n in names(md, '碎片')]))
-    o += ['</section>', '']
-
-    # 武器：一把枪一组。面板不给标题——上面那行 sect-label 已经写着「武器」，再写一遍
-    # 「武器与 Perk」是噪声，格子形状（56px 图的是枪，24px 图的是 Perk）自己说明身份。
-    rigs = []
-    if ex_gun:
-        rigs.append(rig_of([item(idx, '异域武器', ex_gun, prefer,
-                                 cls='item gun', bare=True)]))
-    for line in re.findall(r'^传说武器：(.*)$', md, re.M):
-        gun, _, perks = line.partition('|')
-        cells = [item(idx, '传说武器', gun.strip(), prefer, cls='item gun', bare=True)]
-        cells += [item(idx, 'Perk', p.strip(), prefer, cls='item perk-cell', bare=True)
-                  for p in perks.split('、') if p.strip()]
-        rigs.append(rig_of(cells))
-    o += ['<section class="block" id="sec-2">',
-          '<h2 class="sect-label">武器</h2>'] + row(rigs) + ['</section>', '']
-
-    # 神器模组页的 7 个分节就是 7 件神器，模组归属写在分节标题上。源稿先写用的是
-    # 哪一件，模组按它限定——「电介质」在加密数据盘与废墟石板下各有一条，不限定
-    # 就只能猜；限定之后，混进别件神器的模组当场中止。
-    art = meta(md, '神器')
-    mods = [item(idx, '神器', n, prefer, kind=art) for n in names(md, '模组')]
-    o += ['<section class="block" id="sec-3">', '<h2 class="sect-label">神器模组</h2>']
-    if art not in arts:
-        die('「神器：%s」不在神器表里。站内那一页的七个分节即是全部：%s'
-            % (art, '、'.join(sorted(arts))))
-    o += row(group(art, mods, icon=arts[art]))
-    o += ['</section>', '']
-
-    # 护甲：主角行（异域护甲 + 套装）不拉满——它最多三格，拉满会让一格宽到 500px；
-    # 格子封顶、左对齐，行末那半截空档给六维那张卡。部位行五个部位并排，每列三枚
-    # 模组竖排，合起来是一张 5×3 的矩阵，那是这一页的视觉重心。
-    # 异域职业物品一件装备带两条异域词条，站内把词条各自列成一条，所以它在这里
-    # 占一格、两条上下并排——摊成两格会读成穿了两件异域。
-    lead = (['<li class="pair">%s</li>'
-             % ''.join(item(idx, '异域护甲', n, prefer, cls='item gear', bare=True)
-                       for n in ex_armor)] if ex_armor else [])
-    lead += sets_of(idx, meta(md, '套装'))
-    o += ['<section class="block" id="sec-4">', '<h2 class="sect-label">护甲</h2>']
-    # 六维挂在主角行右端：异域与套装最多占三格，剩下的半行本来是空的。套装可能
-    # 是两格（4 件同时给 2 件效果），那时这张卡换行落下去，见 .slot-row.lead 的
-    # flex-wrap。
-    o += row(group('', lead) + stats_card(meta(md, '六维')), cls='lead')
-    parts = []
-    for part in PARTS:
-        got = names(md, part, required=False)
-        if got:
-            parts.append(group(part, [item(idx, '护甲模组', n, prefer, kind=part)
-                                      for n in got], cols=1))
-    if parts:
-        o += row([x for panel in parts for x in panel])
-    o += ['</section>', '']
-
-    note = md.split('## 注解', 1)
-    if len(note) == 2 and note[1].strip():
-        o += ['<section class="block" id="sec-5">',
-              '<h2 class="sect-label">注解</h2>']
-        o += ['<p>%s</p>' % inline('<br>'.join(b.strip().split('\n')), rich=True)
-              for b in re.split(r'\n\s*\n', note[1].strip()) if b.strip()]
-        o += ['</section>', '']
-
+    o += blocks_of(idx, mv, arts, md)
     o += ['</main>', '', LIKE_JS, COPY_JS,
           shell.foot(stamp, '，%s' % meta(md, '页脚', required=False)
                      if meta(md, '页脚', required=False) else '')]
-    out = '\n'.join(x for x in o if x != '') + '\n'
-    # 悬停详情与配装工具共用 builds/tip.js。script 要落在 </body> 之前，
-    # 而 shell.foot() 已经吐了 </body></html>，直接往后接会让它跑到文档外面去。
-    out = out.replace('\n</body>\n',
-                      '\n<script src="../../tip.js" defer></script>\n</body>\n')
-    return out, title
+    return finish(o, ['../../tip.js']), title
+
+
+def one_of(idx, mv, arts, head, md, n):
+    """合集里的一套：页头 + 五个分节，整块包在 <section class="set-one"> 里。
+
+    页头不给 96px 核心图与推荐人——那两样属于整份合集、写在页顶，每套重复一遍会
+    与左栏那列图打架。铭牌末位写定位；单套写在那个位置的是类别，而类别对整份
+    合集只有一个值，已经写在页顶的铭牌上。
+    """
+    title = must(re.match(r'^#\s+(.+)$', md.split('\n')[0]),
+                 '合集里每一套的第一行必须是「# 配装名称」').group(1).strip()
+    branch, who = branch_of(md), class_of(md)
+    desc = meta(md, '描述', required=False)
+    role = '、'.join(names(md, '定位', required=False))
+    o = ['<section class="set-one b-%s" id="set-%d">' % (BRANCH[branch], n),
+         '<header class="one-head">',
+         '<div class="id-row"><h2>%s</h2><div class="head-acts">'
+         '<button class="copy" type="button">复制配装</button></div></div>' % title,
+         '<p class="cls">%s%s · <span class="%s">%s</span>%s</p>'
+         % (icon_of(vocab.pick(idx, who, '职业', kind='分节'), 32), who,
+            ELEMENT_TOKEN[branch], branch, ' · ' + role if role else '')]
+    if desc:
+        o.append('<p class="desc">%s</p>' % inline(desc, rich=True))
+    # 复制按钮取的就是这一份。每套各存一份，按钮按 .set-one 就近找，
+    # 与单套页那个 <pre id="src"> 同一条约定。
+    o += ['</header>',
+          '<pre class="src" hidden>%s</pre>' % escape(uncolor(solo_src(head, md))),
+          '']
+    o += blocks_of(idx, mv, arts, md, ns='set%d-' % n)
+    o += ['</section>', '']
+    return o
+
+
+def render_set(idx, mv, arts, head, members, slug, season, name_cn):
+    """合集详情页：页顶是整份合集，往下左目录右配装。
+
+    **N 套全部写进 HTML，主从视图下收起 N−1 套由 builds/set.js 在加载时施加**
+    ——与列组页、折线图页「默认隐藏不写进 HTML」同一条约定。无 JS 时它天然就是
+    竖排，全部可读，#set-3 照旧跳得到。
+    """
+    title = must(re.match(r'^#\s+(.+)$', head.split('\n')[0]),
+                 '源稿第一行必须是「# 合集名」').group(1).strip()
+    stamp, desc = stamp_of(head), meta(head, '描述')
+    desc_text = text_of(inline(desc, rich=True), collapse=True)
+    cat = cat_of(head)
+    scenes = scenes_of(head)
+    branch, core_e, who, roles = set_facts(idx, head, members)
+    badge = ('%s%s' % (icon_of(vocab.pick(idx, who[0], '职业', kind='分节'), 32), who[0])
+             if len(who) == 1 else MIXED)
+
+    o = [shell.head('%s · %s · Starside' % (title, SETS_SECTION), desc_text, up=3,
+                    sheets=['../../style.css']),
+         shell.nav(title, up=3, parent=[SETS_SECTION, name_cn],
+                   parent_href='../../sets/index.html'),
+         '<main class="set b-%s">' % BRANCH[branch],
+         '<header class="build-head">',
+         '<div class="core">%s<p class="by-label">推荐者：</p>%s</div>'
+         % (icon_of(core_e, 96), ''.join(people(head))),
+         '<div class="build-id">',
+         # 复制不在这一排：游戏里导入是一套一套的，整份合集复制出去粘不回任何
+         # 地方。那枚按钮跟着每一套走，见 one_of()。
+         '<div class="id-row"><h1>%s</h1><div class="head-acts">%s%s</div></div>'
+         % (title, like_box(season, slug, button=True), TIP_SW),
+         '<p class="cls">%s · %d 套 · %s<span class="season">%s · %s</span></p>'
+         % (badge, len(members), cat, season.upper(), name_cn),
+         '<p class="desc">%s</p>' % inline(desc, rich=True),
+         '<div class="facets">%s%s</div>'
+         % (facet('适用环境', scenes), facet('标签', roles)),
+         '</div>', '</header>', '']
+
+    why = head.split('## 合集介绍', 1)
+    if len(why) == 2 and why[1].strip():
+        o += ['<section class="block" id="why">',
+              '<h2 class="sect-label">合集介绍</h2>']
+        o += ['<p>%s</p>' % inline('<br>'.join(b.strip().split('\n')), rich=True)
+              for b in re.split(r'\n\s*\n', why[1].strip()) if b.strip()]
+        o += ['</section>', '']
+
+    # 视图开关落在左栏的头上，不做成 .toolbar：那一套由 app.js 建，而配装页不引
+    # app.js（引了就为一枚按钮多下 5 KB）。契约只有 data-setview 一条。
+    o += ['<div class="set-wrap">',
+          '<nav class="set-list" aria-label="合集内的配装">',
+          '<p class="by-label">%d 套<button class="viewsw" type="button" '
+          'data-setview aria-pressed="false">展开全部</button></p>' % len(members),
+          '<ol>']
+    for n, m in enumerate(members, 1):
+        mt = must(re.match(r'^#\s+(.+)$', m.split('\n')[0]),
+                  '合集里每一套的第一行必须是「# 配装名称」').group(1).strip()
+        mb = branch_of(m)
+        o += ['<li class="b-%s"><a href="#set-%d">%s<b>%s</b><span>%s</span></a></li>'
+              % (BRANCH[mb], n,
+                 icon_of(core_pick(idx, m, 'elements/%s' % BRANCH[mb]), 32),
+                 mt, '、'.join(names(m, '定位', required=False)) or mb)]
+    o += ['</ol>', '</nav>', '<div class="set-body">']
+    for n, m in enumerate(members, 1):
+        o += one_of(idx, mv, arts, head, m, n)
+    o += ['</div>', '</div>', '']
+
+    o += ['</main>', '', LIKE_JS, COPY_JS,
+          shell.foot(stamp, '，%s' % meta(head, '页脚', required=False)
+                     if meta(head, '页脚', required=False) else '')]
+    return finish(o, ['../../tip.js', '../../set.js']), title
+
 
 
 
@@ -601,16 +821,18 @@ LIKE_JS = ('<script>(function(){'
 # 非安全上下文（file:// 双击打开）下 navigator.clipboard 是 undefined，那时把源稿
 # 显出来并选中，让人自己按一下——不吞掉，别让人以为复制成功了。
 COPY_JS = ('<script>(function(){'
-           'var b=document.querySelector("button.copy"),s=document.getElementById("src");'
-           'if(!b||!s)return;'
-           'function tip(t){b.dataset.tip=t;setTimeout(function(){delete b.dataset.tip},1600)}'
-           'b.addEventListener("click",function(){'
+           'function tip(b,t){b.dataset.tip=t;setTimeout(function(){delete b.dataset.tip},1600)}'
+           # 合集里一套一份源稿，就近找；单套页只有一份，落回 #src。
+           'document.addEventListener("click",function(e){'
+           'var b=e.target.closest&&e.target.closest("button.copy");if(!b)return;'
+           'var one=b.closest(".set-one"),'
+           's=one?one.querySelector("pre.src"):document.getElementById("src");if(!s)return;'
            'if(!navigator.clipboard){s.hidden=false;var r=document.createRange();'
            'r.selectNode(s);getSelection().removeAllRanges();getSelection().addRange(r);'
-           'tip("\u5df2\u9009\u4e2d\uff0c\u6309 \u2318C");return}'
+           'tip(b,"\u5df2\u9009\u4e2d\uff0c\u6309 \u2318C");return}'
            'navigator.clipboard.writeText(s.textContent).then('
-           'function(){tip("\u5df2\u590d\u5236")},'
-           'function(e){tip("\u590d\u5236\u5931\u8d25 "+e.name)})})})()</script>')
+           'function(){tip(b,"\u5df2\u590d\u5236")},'
+           'function(x){tip(b,"\u590d\u5236\u5931\u8d25 "+x.name)})})})()</script>')
 
 
 def like_box(season, slug, button):
@@ -623,9 +845,16 @@ def like_box(season, slug, button):
 
 
 SITE_SECTION = '配装推荐'
+# 合集索引页在首页「配装」组里就叫这个名字，面包屑与标题跟着它，一处定义。
+SETS_SECTION = '配装合集'
+SETS_DESC = ('Destiny 2 配装合集：同一角色的多套配装按场景切换使用，'
+             '按适用环境分类，逐套列出技能、武器、护甲与神器模组。')
 # 填表页在首页「攻略与工具」里就叫这个名字，面包屑与标题跟着它，一处定义。
 # 它不挂在配装推荐下面：首页直接进得来，读者也不必先看过配装才来填一份。
 FORM_NAME = '配装工具'
+# 合集那一页的名字。它挂在配装工具下面（面包屑 Starside / 配装工具 / 合集工具），
+# 入口在合集索引页标题右边。
+SET_FORM_NAME = '合集工具'
 INDEX_DESC = '按职业分类的 Destiny 2 配装推荐：职业、武器、护甲、神器模组与六维属性，每一格都链回站内资料页。'
 UP = '../../../'
 
@@ -653,69 +882,117 @@ def build(idx, dirname, season, name_cn, slug):
                         md, slug, season, name_cn)
     check(out, slug)
     shell.emit(outdir, out, title)
-    core = core_pick(idx, md, 'elements/%s' % BRANCH[meta(md, '分支')])
+    head, members = split_set(md)
+    if members:
+        branch, core, who, roles = set_facts(idx, head, members)
+        # 跨职业的合集要有一个自己的格：索引页那一维由 app.js 读小节标题现扫，
+        # 三个职业里挑不出它该站哪一格。
+        cls = who[0] if len(who) == 1 else MIXED
+        # 场景不进标签：它就是这一页的大节标题，跳转 chip 那一排写的正是这几个
+        # 字，同一排字出现两遍读者分不出哪一排管什么（与索引页「类别不做成一行
+        # chip」同一条）。次要场景在详情页的「适用环境」那一栏里读得到。
+        scenes = scenes_of(head)
+        scene = scenes[0]
+        tags = roles
+    else:
+        branch = meta(md, '分支')
+        core = core_pick(idx, md, 'elements/%s' % BRANCH[branch])
+        cls = meta(md, '职业')
+        scene = ''
+        tags = names(md, '场景') + names(md, '定位')
     return {'u': '%s/%s/%s/index.html' % (OUT_DIR, season, slug), 't': title,
-            'season': season, 'slug': slug, 'stamp': meta(md, '更新'),
-            'desc': text_of(inline(meta(md, '描述'), rich=True), collapse=True), 'class': meta(md, '职业'),
-            'tags': names(md, '场景') + names(md, '定位'), 'branch': BRANCH[meta(md, '分支')],
+            'season': season, 'slug': slug, 'stamp': meta(head, '更新'),
+            'desc': text_of(inline(meta(head, '描述'), rich=True), collapse=True),
+            'class': cls, 'tags': tags, 'branch': BRANCH[branch],
             # 分支的中文名给索引页的筛选用。DOM 里只有 b-prismatic 这个 slug，
             # 中文名读不出来，而在 app.js 里再写一份 slug→中文 就是 BRANCH 的
             # 第二份定义。职业与类别不给——那两样就是卡片上方那两级标题。
-            'branch_cn': meta(md, '分支'),
-            'cat': meta(md, '类别'),
-            'by': ''.join(people(md, link=False)),
-            'core': '<span class="node">%s</span>' % icon_of(core, 64).replace(UP, '../')}
+            'branch_cn': branch,
+            'cat': meta(head, '类别'),
+            'by': ''.join(people(head, link=False)),
+            # 图标路径按详情页那三层深写的，两个索引页深浅不同，前缀由 core_node()
+            # 现换——存成算好的那一份，另一页就得再存第二份。
+            'core': icon_of(core, 64),
+            # 合集的适用环境单选，索引页按它分大节。单套的场景多值、不分大节。
+            'scene': scene,
+            'set': len(members)}
 
 
-def render_index(made):
-    """builds/index.html：当前赛季的配装卡片，按类别分两个大节、节内按职业分小节。
+def core_node(html, up):
+    return '<span class="node">%s</span>' % html.replace(UP, up)
+
+
+def render_index(made, sets=False):
+    """配装的两张索引页，同一份实现：
+
+        builds/index.html       单套配装，按类别分大节
+        builds/sets/index.html  合集，按适用环境分大节
+
+    两页逐层同形，只有大节那一维不同，所以不分家：卡片、筛选、空节收起都只写
+    一遍。**节内照旧按职业分小节**——app.js 的职业维度读的就是 <ul> 上面那一级
+    标题，换成别的分法那一维就废了；跨职业的合集站在 MIXED 那一格。
 
     **卡片是竖式的，一排六张**（形状见 builds/style.css）：配装多起来之后，横式
     卡一屏只放得下六张。图在最上，往下是配装名、推荐人、简介、标签、时间与赞数。
     每张卡落一个分支类，.entry 左缘那条 2px 亮边因此跟着该配装的元素色走。
 
-    跳转 chip 对应两个大节（工具条的 data-label 仍取 .sect-label，现在它落在类别
-    上）。职业小节只是节内的小标题，不占 chip——只有两个大节时跳转本来就不难，
-    找职业直接在旁边搜索框输「术士」。搜索把某个职业滤空时，那个小标题由
-    builds/style.css 的一条 :has() 自己隐藏，不加 JS。
+    跳转 chip 对应大节（工具条的 data-label 取 .sect-label）。职业小节只是节内的
+    小标题，不占 chip——大节没几个时跳转本来就不难，找职业直接在旁边搜索框输
+    「术士」。搜索把某个职业滤空时，那个小标题由 builds/style.css 的一条 :has()
+    自己隐藏，不加 JS。
     """
-    live = [m for m in made if m['season'] == SEASON]
+    live = [m for m in made if m['season'] == SEASON and bool(m['set']) == sets]
     if not live:
-        die('当前赛季 %s 一套配装都没有，索引页会是空的' % SEASON)
+        die('当前赛季 %s 一%s都没有，索引页会是空的'
+            % (SEASON, '个合集' if sets else '套配装'))
     stamp = max(m['stamp'] for m in live)
-    o = [shell.head('%s · Starside' % SITE_SECTION, INDEX_DESC, app_js=True, up=1),
-         # data-facets：按职业、分支、类别、场景、定位筛。维度由 app.js 从卡片
-         # 现扫（<li> 的 b-* 类、两级标题、.tags 里的 <i>），不写进 HTML——那些
-         # 字页面上已经有了，写第二遍就是同一份文本的第二个来源。
-         shell.nav(SITE_SECTION, up=1, toolbar={
-             'data-section': '.block', 'data-item': '.entries > li',
-             'data-label': '.sect-label', 'data-noun': '配装',
-             'data-chip-label': '类别', 'data-facets': ''}),
-         # 投稿入口挂在标题右边。这是填表页在站内唯一的入口（别处没有理由指向
-         # 它，而没有入口的页面等于不存在），单独占一段会在卡片上面多出一整块
-         # 空白。页首那句说明只留给 <meta>，正文里它把首屏推下去半屏。
-         shell.page_head(SITE_SECTION, aside=(
+    name = SETS_SECTION if sets else SITE_SECTION
+    up = 2 if sets else 1
+    # 合集页在 builds/sets/ 下，卡片要多退一层才回得到 builds/<赛季>/。
+    href = '../%s/%s/index.html' if sets else '%s/%s/index.html'
+    aside = ('<p class="new-link"><a href="../new/set/index.html">投稿一组合集 →</a>'
+             '<span>逐套选择装备，页面直接生成标准格式的合集文本</span></p>'
+             '<p class="new-link"><a href="../index.html">单套配装推荐 →</a>'
+             '<span>一套一页的配装，按强度、创意与 PVP 分组</span></p>' if sets else
+             # 投稿入口挂在标题右边。这是填表页在站内唯一的入口（别处没有理由指向
+             # 它，而没有入口的页面等于不存在），单独占一段会在卡片上面多出一整块
+             # 空白。页首那句说明只留给 <meta>，正文里它把首屏推下去半屏。
              '<p class="new-link"><a href="new/index.html">投稿一套配装 →</a>'
-             '<span>选完技能、武器、护甲与神器模组，页面直接生成标准配装文本</span></p>')),
+             '<span>选完技能、武器、护甲与神器模组，页面直接生成标准配装文本</span></p>'
+             '<p class="new-link"><a href="sets/index.html">配装合集 →</a>'
+             '<span>同一角色的多套配装，按场景切换使用</span></p>')
+    o = [shell.head('%s · Starside' % name, SETS_DESC if sets else INDEX_DESC,
+                    app_js=True, up=up,
+                    sheets=['../style.css'] if sets else None),
+         # data-facets：按职业、分支与标签筛。维度由 app.js 从卡片现扫（<li> 的
+         # b-* 类、两级标题、.tags 里的 <i>），不写进 HTML——那些字页面上已经有
+         # 了，写第二遍就是同一份文本的第二个来源。
+         shell.nav(name, up=up, toolbar={
+             'data-section': '.block', 'data-item': '.entries > li',
+             'data-label': '.sect-label', 'data-noun': '合集' if sets else '配装',
+             'data-chip-label': '适用环境' if sets else '类别', 'data-facets': ''}),
+         shell.page_head(name, aside=aside),
          '<main>']
     n = 0
-    for cat in CATEGORIES:
-        pool = [m for m in live if m['cat'] == cat]
+    for top in (FACETS[0][2] if sets else CATEGORIES):
+        pool = [m for m in live if (m['scene'] if sets else m['cat']) == top]
         if not pool:
             continue
         n += 1
         o += ['<section class="block" id="sec-%d">' % n,
-              '<h2 class="sect-label">%s</h2>' % cat]
-        for cls in CLASSES:
+              '<h2 class="sect-label">%s</h2>' % top]
+        for cls in CLASSES + (MIXED,):
             mine = [m for m in pool if m['class'] == cls]
             if not mine:
                 continue
             o += ['<h3 class="sub-label">%s</h3>' % cls, '<ul class="entries">']
             for m in mine:
                 o += ['<li class="b-%s" data-branch="%s">' % (m['branch'], m['branch_cn']),
-                      '<a class="entry" href="%s/%s/index.html">'
-                      % (m['season'], m['slug']),
-                      m['core'],
+                      '<a class="entry" href="%s">' % (href % (m['season'], m['slug'])),
+                      core_node(m['core'], '../' * up),
+                      # 「6 套」贴在卡片右上角：一排卡里合集与单套长得一样，
+                      # 不标出来读者点进去才知道这一张是六套。
+                      '<span class="n-sets">%d 套</span>' % m['set'] if sets else '',
                       '<h3>%s</h3>' % m['t'],
                       m['by'],
                       '<p>%s</p>' % m['desc'],
@@ -730,7 +1007,9 @@ def render_index(made):
     o += ['</main>', '', LIKE_JS,
           shell.foot(stamp, '，配装由各位推荐人提供，随赛季更新。')]
     out = '\n'.join(x for x in o if x != '') + '\n'
-    shell.emit(os.path.join(shell.ROOT, OUT_DIR), out, '%d 套配装' % len(live))
+    shell.emit(os.path.join(shell.ROOT, OUT_DIR, 'sets') if sets
+               else os.path.join(shell.ROOT, OUT_DIR), out,
+               '%d %s' % (len(live), '个合集' if sets else '套配装'))
 
 
 def render_vocab(idx):
@@ -843,46 +1122,13 @@ def slot_cell(slot, kind='', cls='item', label='', bare=False, hidden=False,
     return cell if bare else '<li%s>%s</li>' % (mark, cell)
 
 
-def render_new(stamp, name_cn):
-    """builds/new/index.html：填表页。
-
-    产出的是**与详情页同构的空槽版面**——同一套 group()/row()/glyph()，同一批
-    CSS 类。填的人看着成品的形状往里填，填完页面就是成品。
+def new_blocks():
+    """填表页的五个分节：与详情页同构的空槽版面。单套那一页与合集那一页共用。
 
     候选不写进 HTML：两千条选项写进来就是把词表抄了第二份，由 form.js 按
-    builds/vocab.js 建。这一页因此只有骨架，没有一个装备名。
+    builds/vocab.js 建。这里因此只有骨架，没有一个装备名。
     """
-    desc = '填一份配装推荐：选完技能、武器、护甲与神器模组，页面直接生成标准配装文本，复制发给站长即可挂上站。'
-    o = [shell.head('%s · Starside' % FORM_NAME, desc, up=2,
-                    sheets=['../style.css']),
-         shell.nav(FORM_NAME, up=2),
-         '<main id="sheet">',
-         # 页头与详情页逐块同形：左列是核心那枚 96px 的图加推荐者，右列是配装名、
-         # 铭牌、描述与两栏标签。可填的那几处换成输入位，其余照详情页的类名写，
-         # 版式因此由同一份规则管，不为填表页另写一套。
-         '<header class="build-head">',
-         '<div class="core">',
-         '<button type="button" class="item empty" id="f-core-art" data-slot="核心" '
-         'aria-expanded="false"><span class="nm">核心</span></button>',
-         '<p class="by-label">推荐者：</p>',
-         '<input class="who-in" data-key="推荐人" placeholder="ID" '
-         'aria-label="推荐者">',
-         '</div>',
-         '<div class="build-id">',
-         '<h1><input data-key="配装名" placeholder="配装名" aria-label="配装名"></h1>',
-         # 铭牌照着下面「职业」那两格显示，本身不可点——身份在那两格上选。
-         '<p class="cls"><span class="cls-id" data-mirror="铭牌">'
-         '<span class="hint">职业与元素在下面「职业」那一格选</span></span>'
-         '<span class="season">%s · %s</span></p>' % (SEASON.upper(), name_cn),
-         '<p class="desc"><input data-key="描述" placeholder="一句话说清这套配装靠什么打" '
-         'aria-label="描述"></p>',
-         # 类别排在最前：它是这套配装的第一层身份（详情页写在铭牌上），选了它
-         # 上面的铭牌才补得全。
-         '<div class="facets">%s%s%s</div>'
-         % (facet_picks('类别', '类别', CATEGORIES, single=True),
-            facet_picks(*FACETS[0]), facet_picks(*FACETS[1])),
-         '</div>', '</header>', '']
-
+    o = []
     # 身份那两格就是职业与分支的选择器。**它们不走 fill()**：两格的内容由 state
     # 算出来（元素那一格用的是分支页上「那个职业」的分节图，换职业要跟着换），
     # 所以选中只改 state，画由 mirror() 一处负责。
@@ -911,9 +1157,9 @@ def render_new(stamp, name_cn):
              + group('碎片', [slot_cell('碎片', hidden=i >= 5) for i in range(6)],
                      cols=5,
                      tool='<span class="slot-count" data-count="碎片">'
-                          '<button type="button" data-step="-1" aria-label="少一格">−</button>'
+                          '<button type="button" data-step="-1" aria-label="减少一格">−</button>'
                           '<b>5</b>'
-                          '<button type="button" data-step="1" aria-label="多一格">+</button>'
+                          '<button type="button" data-step="1" aria-label="增加一格">+</button>'
                           '</span>'))
     o += ['</section>', '']
 
@@ -943,7 +1189,7 @@ def render_new(stamp, name_cn):
     # **选择器落在标题位，与详情页同构。**详情页把神器名写在面板标题上，这里就在
     # 同一个位置选它；单独占一行 lead 会让填表页比详情页多一行，且那一行只有一格
     # 宽，右缘上多出一个断口。
-    pick = slot_cell('神器', kind='__art__', cls='item', label='选一件神器', bare=True)
+    pick = slot_cell('神器', kind='__art__', cls='item', label='选择神器', bare=True)
     o += ['<section class="block" id="sec-3">', '<h2 class="sect-label">神器模组</h2>']
     o += row(group('', [slot_cell('神器')] * 7, head=pick))
     o += ['</section>', '']
@@ -964,7 +1210,7 @@ def render_new(stamp, name_cn):
     # 那是游戏规则不是版面偏好。
     armor = ('<li class="pair">'
              + slot_cell('异域护甲', cls='item gear', label='异域护甲', bare=True)
-             + slot_cell('异域护甲', cls='item gear', label='第二条词条', bare=True,
+             + slot_cell('异域护甲', cls='item gear', label='第二条异域词条', bare=True,
                          hidden=True, only=SPIRIT)
              + '</li>')
     o += row(group('', [armor,
@@ -974,11 +1220,157 @@ def render_new(stamp, name_cn):
     o += row([x for part in PARTS
               for x in group(part, [slot_cell('护甲模组', kind=part)] * 3, cols=1)])
     o += ['</section>', '']
-
     o += ['<section class="block" id="sec-5">', '<h2 class="sect-label">注解</h2>',
           '<textarea data-key="注解" rows="4" '
-          'placeholder="备选装备、打法要点，与资料页正文同一套标记" aria-label="注解"></textarea>',
-          '</section>', '',
+          'placeholder="备选装备、打法要点等补充说明" aria-label="注解"></textarea>',
+          '</section>', '']
+    return o
+
+
+def set_form_head(name_cn):
+    """合集那一页的页顶：合集头部、「合集介绍」、左栏目录，再开 .set-body。
+
+    **不给合集自己的核心选择器**：核心那枚 96px 图取第一套的核心，作者把主力那一
+    套摆在最前面，页顶那枚图就该是它。多一个选择器就要在六套的并集里挑，而那份
+    并集只在切到每一套时才在手边。
+    """
+    return ['<header class="build-head" id="set-head">',
+            '<div class="core">',
+            # 核心那一格是**只读的镜子**，不是选择器：整份合集的核心取第一套的
+            # （导入时保留源稿写的那一个）。有它这一列才与详情页同形——那一页
+            # 左列就是 96px 的图加推荐者，少了它两列的高度与宽度全对不上。
+            '<span class="item empty" id="f-set-core" aria-hidden="true">'
+            '<span class="nm">核心</span></span>',
+            '<p class="by-label">推荐者：</p>',
+            '<input class="who-in" data-key="推荐人" placeholder="ID" '
+            'aria-label="推荐者">',
+            '</div>',
+            '<div class="build-id">',
+            # h1 包进 .id-row：详情页的标题就在这一层里，不包的话上下间距差一截。
+            '<div class="id-row"><h1><input data-key="合集名" placeholder="合集名称" '
+            'aria-label="合集名称"></h1></div>',
+            # 铭牌照着下面各套显示「职业 · N 套 · 类别」，与详情页逐段同形。
+            '<p class="cls"><span class="cls-id" data-mirror="合集铭牌">'
+            '<span class="hint">职业与元素在各套内选择</span></span>'
+            '<span class="season">%s · %s</span></p>' % (SEASON.upper(), name_cn),
+            '<p class="desc"><input data-key="描述" '
+            'placeholder="一句话介绍这组配装" aria-label="描述"></p>',
+            # 类别与适用环境是整份合集的；定位每套一个，写在下面那一套的头上。
+            '<div class="facets">%s%s</div>'
+            % (facet_picks('类别', '类别', CATEGORIES, single=True),
+               facet_picks(*FACETS[0])),
+            '</div>', '</header>', '',
+            '<section class="block" id="sec-0">',
+            '<h2 class="sect-label">合集介绍</h2>',
+            '<textarea id="set-why" data-key="合集介绍" rows="3" '
+            'placeholder="介绍这组配装的用途，以及各套的切换时机" '
+            'aria-label="合集介绍"></textarea>',
+            '</section>', '',
+            '<div class="set-wrap">',
+            '<nav class="set-list">',
+            '<p class="by-label"><b id="set-n">1 套</b></p>',
+            # 目录由 form.js 按已填的那几套现建：套数是可变的，写进 HTML 就得
+            # 出满上限再收起来，而这里没有「上限即版面」那个约束。
+            # **移除一套的叉挂在每一行上**，不做成一枚「删掉当前这一套」的按钮：
+            # 要删的多半不是正在编辑的那一套，先切过去再删是多一步。
+            '<ol id="set-tabs"></ol>',
+            # 加一套是一枚占满目录宽度的加号，接在列表下面——它是列表的延长，
+            # 不是标题旁的控件。
+            '<button type="button" class="set-add" data-set-add '
+            'aria-label="新增一套">＋</button>',
+            '</nav>',
+            '<div class="set-body">',
+            '<header class="one-head">',
+            # 「复制这一套」挂在这一行的右端，与详情页 .one-head 的 .head-acts
+            # 同一个位置：它是对这一套的操作，与这一套的名字同级。
+            # 核心排在名字左边，与左栏目录那一行（图 + 名字 + 定位）同形，也与
+            # 页顶那枚 96px 的图同一个读法。每一套各有自己的核心：它决定目录上
+            # 那枚图，源稿里也是每套一行。
+            '<div class="id-row">'
+            '<button type="button" class="item empty one-core" id="f-core-art" '
+            'data-slot="核心" data-size="32" aria-expanded="false">'
+            '<span class="nm">核心</span></button>'
+            '<h2><input data-key="配装名" '
+            'placeholder="配装名称" aria-label="配装名称"></h2>'
+            '<div class="head-acts">'
+            '<button type="button" data-set-copy>创建副本</button></div></div>',
+            '<p class="cls"><span class="cls-id" data-mirror="铭牌">'
+            '<span class="hint">在下方「职业」区域选择职业与元素</span></span></p>',
+            '<p class="desc"><input data-key="描述" placeholder="这套配装的使用场景" '
+            'aria-label="这套配装的描述"></p>',
+            # 每一套各有自己的核心：它决定左栏目录上那枚 32px 的图，源稿里也是
+            # 每套一行。**格子是 32px 不是 96px**——96 的那一枚是整份合集的，
+            # 在页顶；这里再摆一个同样大的，两枚图会打架。
+            '<div class="facets">%s</div>' % facet_picks(*FACETS[1]),
+            '</header>', '']
+
+
+def solo_form_head(name_cn):
+    """单套填表页的页头。
+
+    与详情页逐块同形：左列是核心那枚 96px 的图加推荐者，右列是配装名、铭牌、
+    描述与两栏标签。可填的那几处换成输入位，其余照详情页的类名写，版式因此由
+    同一份规则管，不为填表页另写一套。
+    """
+    return ['<header class="build-head">',
+            '<div class="core">',
+            '<button type="button" class="item empty" id="f-core-art" data-slot="核心" '
+            'aria-expanded="false"><span class="nm">核心</span></button>',
+            '<p class="by-label">推荐者：</p>',
+            '<input class="who-in" data-key="推荐人" placeholder="ID" '
+            'aria-label="推荐者">',
+            '</div>',
+            '<div class="build-id">',
+            '<h1><input data-key="配装名" placeholder="配装名称" '
+            'aria-label="配装名称"></h1>',
+            # 铭牌照着下面「职业」那两格显示，本身不可点——身份在那两格上选。
+            '<p class="cls"><span class="cls-id" data-mirror="铭牌">'
+            '<span class="hint">在下方「职业」区域选择职业与元素</span></span>'
+            '<span class="season">%s · %s</span></p>' % (SEASON.upper(), name_cn),
+            '<p class="desc"><input data-key="描述" placeholder="一句话介绍这套配装" '
+            'aria-label="描述"></p>',
+            # 类别排在最前：它是这套配装的第一层身份（详情页写在铭牌上），选了它
+            # 上面的铭牌才补得全。
+            '<div class="facets">%s%s%s</div>'
+            % (facet_picks('类别', '类别', CATEGORIES, single=True),
+               facet_picks(*FACETS[0]), facet_picks(*FACETS[1])),
+            '</div>', '</header>', '']
+
+
+def render_new(stamp, name_cn, sets=False):
+    """填表页。sets 为真时出 builds/new/set/，否则出 builds/new/。
+
+    产出的是**与详情页同构的空槽版面**——同一套 group()/row()/glyph()，同一批
+    CSS 类。填的人看着成品的形状往里填，填完页面就是成品。
+
+    **两页共用同一份 form.js**，模式由 #sheet 上的 data-set 声明，与 app.js 从
+    .toolbar 的 data-* 读配置同一条约定：格子、选择器、导入导出完全一样，抄第二份
+    只会让两边各自漂。合集那一页多出来的只有页顶那一层合集头部与左边那列目录，
+    中间那块空槽版面逐字相同（new_blocks()）。
+
+    候选不写进 HTML：两千条选项写进来就是把词表抄了第二份，由 form.js 按
+    builds/vocab.js 建。这两页因此只有骨架，没有一个装备名。
+    """
+    up = 3 if sets else 2
+    name = SET_FORM_NAME if sets else FORM_NAME
+    desc = ('填写配装合集：逐套选择技能、武器、护甲与神器模组，'
+            '页面直接生成标准格式的合集文本。' if sets else
+            '填一份配装推荐：选完技能、武器、护甲与神器模组，页面直接生成标准配装文本，复制发给站长即可挂上站。')
+    # 外壳两页共用，页头各写各的。**不切片**：按下标取前几项时，将来在
+    # shell.nav() 与 <main> 之间插一行就会静默丢掉 <main>，而填表页不跑 check()，
+    # 没有闸门接得住。
+    o = [shell.head('%s · Starside' % name, desc, up=up,
+                    sheets=['../' * (up - 1) + 'style.css']),
+         shell.nav(name, up=up, **({'parent': [FORM_NAME],
+                                    'parent_href': '../index.html'} if sets else {})),
+         '<main id="sheet"%s>' % (' data-set' if sets else '')]
+    o += set_form_head(name_cn) if sets else solo_form_head(name_cn)
+    o += new_blocks()
+    if sets:
+        # 只收 .set-body。**「配装文本」那一节与底部那条出口留在 .set-wrap 里**、
+        # 占右边那一列：它们的宽度要跟着配装那一列走，左边 208px 是目录的地方。
+        o += ['</div>', '']
+    o += [
           # 类名给预览用：按 sec-N 认会在增删分节时静默指错一节，
           # 与 check() 里改掉的那处同一个理由。
           '<section class="block src-block" id="sec-6">',
@@ -987,38 +1379,43 @@ def render_new(stamp, name_cn):
           '<textarea id="out" readonly rows="28" spellcheck="false"></textarea>',
           '</details>',
           '<details id="imp"><summary>从配装文本导入</summary>',
-          '<p class="note">粘贴一份已有的配装文本。认得出的格子照着填上，'
-          '认不出的整条跳过并在下面列出来。导入会覆盖当前已填的内容。</p>',
+          '<p class="note">粘贴一份已有的配装文本。可识别的装备会自动填入，'
+          '无法识别的条目会跳过并在下方列出。导入将覆盖当前已填写的内容。</p>',
           '<textarea id="in" rows="10" spellcheck="false" '
-          'placeholder="把配装文本粘贴到这里" aria-label="待导入的配装文本"></textarea>',
+          'placeholder="将配装文本粘贴至此" aria-label="待导入的配装文本"></textarea>',
           '<p id="imp-tip" role="status"></p>',
           '</details>', '</section>', '',
-          # 这一页的三个出口常驻右下角。**预览不另建一套 DOM**：它给 #sheet 加一个
-          # 类，把空槽、控件与源稿那一节收起来，剩下的就是成品；那时这一条也得
-          # 够得着，所以它不在被收起的那一节里。
+          # 这一页的出口横排一条，落在正文末尾。**预览不另建一套 DOM**：它给 #sheet
+          # 加一个类，把空槽、控件与源稿那一节收起来，剩下的就是成品；那时这一条
+          # 也得够得着，所以它不在被收起的那一节里。
+          # 按用途分两组：左边看这一页（预览、详情开关），中间管源稿（复制、导入），
+          # 右端是终态那一个（投稿）。回执跟着它报告的那两枚走。
           '<div class="src-tools">',
           '<button id="preview" class="chip" type="button" aria-pressed="false">预览配装</button>',
+          TIP_SW_CHIP,
+          '<span class="tool-sep" aria-hidden="true"></span>',
           '<button id="copy" class="chip" type="button">复制配装</button>',
           # 导入是一个动作不是两个：这一枚永远「导入」，文本框还空着时它带你去粘贴。
           '<button id="to-import" class="chip" type="button">导入配装</button>',
+          '<span id="copy-tip" role="status"></span>',
           # 投稿直接把配装文本发到后端的待审队列。**接口地址由生成器写在
           # data-api 上**，form.js 现读——与 app.js 从 .toolbar 的 data-* 读配置
           # 同一条约定，地址仍只有 shell.API 一处定义。
           '<button id="send" class="chip" type="button" data-api="%s">投稿</button>'
           % shell.API,
-          TIP_SW_CHIP,
-          '<span id="copy-tip" role="status"></span>',
-          '</div>', '',
-          '</main>', '',
+          '</div>', '']
+    if sets:
+        o += ['</div>', '']             # 收 .set-wrap
+    o += ['</main>', '',
           shell.foot(stamp, '，选项与站内资料页同一份词表，列得出来的名字生成器就查得到。')]
-    out = '\n'.join(x for x in o if x != '') + '\n'
-    # 两个 script 要落在 </body> 之前。shell.foot() 已经吐了 </body></html>，
-    # 直接往后接会让它们跑到文档外面去。
-    out = out.replace('\n</body>\n',
-                      '\n<script src="../vocab.js" defer></script>\n'
-                      '<script src="../tip.js" defer></script>\n'
-                      '<script src="form.js" defer></script>\n</body>\n')
-    shell.emit(os.path.join(shell.ROOT, OUT_DIR, 'new'), out, FORM_NAME)
+    o = [x for x in o if x != '']
+    # vocab.js 与 tip.js 在 builds/ 下，form.js 在 builds/new/ 下——
+    # 两处深浅差一层，前缀因此各算各的。
+    back = '../' * (up - 1)
+    out = finish(o, [back + 'vocab.js', back + 'tip.js',
+                     '../' * (up - 2) + 'form.js'])
+    shell.emit(os.path.join(shell.ROOT, OUT_DIR, 'new', 'set') if sets
+               else os.path.join(shell.ROOT, OUT_DIR, 'new'), out, name)
 
 
 def check(out, slug):
@@ -1032,6 +1429,10 @@ def check(out, slug):
                     # 按分节标题认，不按 sec-N：编号跟着分节增减挪位，
                     # 挪错了这一条静默不查任何东西。
                     + re.findall(r'<h2 class="sect-label">注解</h2>(.*?)</section>',
+                                 out, re.S)
+                    # 合集介绍与注解同为作者写的散文，一样归源稿管。漏了它，
+                    # 合集正文里的术语裸着也过得去——配装源稿不进 G6 正查。
+                    + re.findall(r'<h2 class="sect-label">合集介绍</h2>(.*?)</section>',
                                  out, re.S))
     naked = text_of(re.sub(r'<span class="[^"]*">.*?</span>', '', prose, flags=re.S))
     # 判据走 items.hits_in，与 --builds 那一趟自动着色同一条：裸子串判断认不得
@@ -1054,21 +1455,38 @@ def check(out, slug):
         die('%s 有面板没写 --n' % slug)
 
 
-def sync_home(n):
-    """首页那两张配装卡的更新时间与套数随投稿漂，构建时按产出改写。
-    时间从两个产出页的页脚现读——那正是 check_terms.py 的 G4 拿来比对的值。"""
+def sync_home(counts):
+    """首页那三张配装卡的更新时间与套数随投稿漂，构建时按产出改写。
+    时间从各自的产出页脚现读——那正是 check_terms.py 的 G4 拿来比对的值。
+
+    counts 是 {href: (小标题, 数)}。**改写要带上小标题那个锚点**：一张卡里
+    将来多一对 <dt><dd>（比如再写一个赛季号），不带锚点就把它也改成套数了，
+    而 G4 只读第一个 <dd>，查不出来。"""
     path = os.path.join(shell.ROOT, 'index.html')
     home = open(path, encoding='utf-8').read()
-    for href in ('builds/index.html', 'builds/new/index.html'):
-        page = open(os.path.join(shell.ROOT, href), encoding='utf-8').read()
+    for href in ('builds/index.html', 'builds/sets/index.html',
+                 'builds/new/index.html', 'builds/new/set/index.html'):
+        # 变量名不能叫 path：外层那个指着 index.html，收尾要写回它。
+        src = os.path.join(shell.ROOT, href)
+        if not os.path.exists(src):
+            # 当前赛季一个合集都没有时那一页不出。首页那张卡指向它，所以卡也要
+            # 一并撤掉——留着就是首页上一个点开是 404 的入口。
+            die('%s 还没生成：当前赛季没有合集，那一页不出，'
+                '首页对应的那张卡要一并从 index.html 里删掉' % href)
+        page = open(src, encoding='utf-8').read()
         stamp = must(re.search(r'<span class="stamp">更新 ([\d.]+)</span>', page),
                      '%s 的页脚没有更新时间' % href).group(1)
         card = must(re.search(r'<a class="entry" href="%s".*?</a>' % re.escape(href),
                               home, re.S), '首页找不到 %s 那张卡' % href)
         fixed = re.sub(r'(entry-stamp">更新 )[\d.]+', lambda m: m.group(1) + stamp,
                        card.group(0))
-        if href == 'builds/index.html':
-            fixed = re.sub(r'(<dt>配装</dt><dd>)\d+', lambda m: m.group(1) + str(n), fixed)
+        if href in counts:
+            label, n = counts[href]
+            pat = r'(<dt>%s</dt><dd>)\d+' % re.escape(label)
+            fixed, hit = re.subn(pat, lambda m: m.group(1) + str(n), fixed)
+            if hit != 1:
+                die('首页 %s 那张卡上「%s」那个数有 %d 处，应当只有一处'
+                    % (href, label, hit))
         home = home[:card.start()] + fixed + home[card.end():]
     open(path, 'w', encoding='utf-8').write(home)
 
@@ -1089,6 +1507,10 @@ def main():
         die('没有配装源稿可生成' + ('：找不到 %s.md' % only if only else ''))
     if not only:
         render_index(made)
+        # 没有合集就不出那一页：出一张空索引不如不出。shell.pages() 用同一条
+        # 判据，两处因此不会一个出页一个不收。
+        if any(m['set'] for m in made if m['season'] == SEASON):
+            render_index(made, sets=True)
         render_vocab(idx)
         render_desc(idx)
         here = [n for _, sn, n in season_dirs() if sn == SEASON]
@@ -1096,9 +1518,13 @@ def main():
             die('references/builds/ 下没有 %s- 开头的赛季目录，填表页写不出赛季名。'
                 '换季时先建目录再改 shell.SEASON' % SEASON)
         render_new(max(m['stamp'] for m in made), here[0])
-        sync_home(len([m for m in made if m['season'] == SEASON]))
-    print('配装 %d 套，当前赛季 %s %d 套'
-          % (len(made), SEASON, len([m for m in made if m['season'] == SEASON])))
+        render_new(max(m['stamp'] for m in made), here[0], sets=True)
+        live = [m for m in made if m['season'] == SEASON]
+        sync_home({'builds/index.html': ('配装', len([m for m in live if not m['set']])),
+                   'builds/sets/index.html': ('合集', len([m for m in live if m['set']]))})
+    live = [m for m in made if m['season'] == SEASON]
+    print('配装 %d 套，当前赛季 %s %d 套（其中 %d 个合集）'
+          % (len(made), SEASON, len(live), len([m for m in live if m['set']])))
 
 
 if __name__ == '__main__':

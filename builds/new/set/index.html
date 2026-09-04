@@ -3,42 +3,61 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>配装工具 · Starside</title>
-<meta name="description" content="填一份配装推荐：选完技能、武器、护甲与神器模组，页面直接生成标准配装文本，复制发给站长即可挂上站。">
+<title>合集工具 · Starside</title>
+<meta name="description" content="填写配装合集：逐套选择技能、武器、护甲与神器模组，页面直接生成标准格式的合集文本。">
 <meta name="theme-color" content="#0b0d14">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="Starside">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:title" content="配装工具 · Starside">
-<meta property="og:description" content="填一份配装推荐：选完技能、武器、护甲与神器模组，页面直接生成标准配装文本，复制发给站长即可挂上站。">
-<link rel="preload" href="../../assets/fonts/chakra-petch-600.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../../assets/site.css">
-<link rel="stylesheet" href="../style.css">
+<meta property="og:title" content="合集工具 · Starside">
+<meta property="og:description" content="填写配装合集：逐套选择技能、武器、护甲与神器模组，页面直接生成标准格式的合集文本。">
+<link rel="preload" href="../../../assets/fonts/chakra-petch-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="icon" href="../../../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../../assets/site.css">
+<link rel="stylesheet" href="../../style.css">
 </head>
 <body>
 <div class="site-head">
 <nav class="site-nav">
 <span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>
-<a class="home" href="../../index.html">Starside</a>
+<a class="home" href="../../../index.html">Starside</a>
 <span class="sep">/</span>
-<span aria-current="page">配装工具</span>
+<a class="home" href="../index.html">配装工具</a>
+<span class="sep">/</span>
+<span aria-current="page">合集工具</span>
 </nav>
 </div>
 
-<main id="sheet">
-<header class="build-head">
+<main id="sheet" data-set>
+<header class="build-head" id="set-head">
 <div class="core">
-<button type="button" class="item empty" id="f-core-art" data-slot="核心" aria-expanded="false"><span class="nm">核心</span></button>
+<span class="item empty" id="f-set-core" aria-hidden="true"><span class="nm">核心</span></span>
 <p class="by-label">推荐者：</p>
 <input class="who-in" data-key="推荐人" placeholder="ID" aria-label="推荐者">
 </div>
 <div class="build-id">
-<h1><input data-key="配装名" placeholder="配装名称" aria-label="配装名称"></h1>
-<p class="cls"><span class="cls-id" data-mirror="铭牌"><span class="hint">在下方「职业」区域选择职业与元素</span></span><span class="season">S29 · 凯旋纪念碑</span></p>
-<p class="desc"><input data-key="描述" placeholder="一句话介绍这套配装" aria-label="描述"></p>
-<div class="facets"><div><p class="by-label">类别</p><span class="tags tagset" data-single=""><button type="button" aria-pressed="false">meta</button><button type="button" aria-pressed="false">强度</button><button type="button" aria-pressed="false">创意</button><button type="button" aria-pressed="false">PVP</button></span><input type="hidden" data-key="类别"></div><div><p class="by-label">适用环境</p><span class="tags tagset"><button type="button" aria-pressed="false">突袭</button><button type="button" aria-pressed="false">地牢</button><button type="button" aria-pressed="false">宗师终极</button><button type="button" aria-pressed="false">日常</button><button type="button" aria-pressed="false">通用</button></span><input type="hidden" data-key="场景"></div><div><p class="by-label">标签</p><span class="tags tagset"><button type="button" aria-pressed="false">输出</button><button type="button" aria-pressed="false">清怪</button><button type="button" aria-pressed="false">续航</button><button type="button" aria-pressed="false">功能</button><button type="button" aria-pressed="false">通用</button></span><input type="hidden" data-key="定位"></div></div>
+<div class="id-row"><h1><input data-key="合集名" placeholder="合集名称" aria-label="合集名称"></h1></div>
+<p class="cls"><span class="cls-id" data-mirror="合集铭牌"><span class="hint">职业与元素在各套内选择</span></span><span class="season">S29 · 凯旋纪念碑</span></p>
+<p class="desc"><input data-key="描述" placeholder="一句话介绍这组配装" aria-label="描述"></p>
+<div class="facets"><div><p class="by-label">类别</p><span class="tags tagset" data-single=""><button type="button" aria-pressed="false">meta</button><button type="button" aria-pressed="false">强度</button><button type="button" aria-pressed="false">创意</button><button type="button" aria-pressed="false">PVP</button></span><input type="hidden" data-key="类别"></div><div><p class="by-label">适用环境</p><span class="tags tagset"><button type="button" aria-pressed="false">突袭</button><button type="button" aria-pressed="false">地牢</button><button type="button" aria-pressed="false">宗师终极</button><button type="button" aria-pressed="false">日常</button><button type="button" aria-pressed="false">通用</button></span><input type="hidden" data-key="场景"></div></div>
 </div>
+</header>
+<section class="block" id="sec-0">
+<h2 class="sect-label">合集介绍</h2>
+<textarea id="set-why" data-key="合集介绍" rows="3" placeholder="介绍这组配装的用途，以及各套的切换时机" aria-label="合集介绍"></textarea>
+</section>
+<div class="set-wrap">
+<nav class="set-list">
+<p class="by-label"><b id="set-n">1 套</b></p>
+<ol id="set-tabs"></ol>
+<button type="button" class="set-add" data-set-add aria-label="新增一套">＋</button>
+</nav>
+<div class="set-body">
+<header class="one-head">
+<div class="id-row"><button type="button" class="item empty one-core" id="f-core-art" data-slot="核心" data-size="32" aria-expanded="false"><span class="nm">核心</span></button><h2><input data-key="配装名" placeholder="配装名称" aria-label="配装名称"></h2><div class="head-acts"><button type="button" data-set-copy>创建副本</button></div></div>
+<p class="cls"><span class="cls-id" data-mirror="铭牌"><span class="hint">在下方「职业」区域选择职业与元素</span></span></p>
+<p class="desc"><input data-key="描述" placeholder="这套配装的使用场景" aria-label="这套配装的描述"></p>
+<div class="facets"><div><p class="by-label">标签</p><span class="tags tagset"><button type="button" aria-pressed="false">输出</button><button type="button" aria-pressed="false">清怪</button><button type="button" aria-pressed="false">续航</button><button type="button" aria-pressed="false">功能</button><button type="button" aria-pressed="false">通用</button></span><input type="hidden" data-key="定位"></div></div>
 </header>
 <section class="block" id="sec-1">
 <h2 class="sect-label">职业</h2>
@@ -180,6 +199,7 @@
 <h2 class="sect-label">注解</h2>
 <textarea data-key="注解" rows="4" placeholder="备选装备、打法要点等补充说明" aria-label="注解"></textarea>
 </section>
+</div>
 <section class="block src-block" id="sec-6">
 <h2 class="sect-label">配装文本</h2>
 <details id="src"><summary>展开配装文本</summary>
@@ -200,6 +220,7 @@
 <span id="copy-tip" role="status"></span>
 <button id="send" class="chip" type="button" data-api="https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api">投稿</button>
 </div>
+</div>
 </main>
 <footer class="site-foot">
 <p><span class="stamp">更新 2026.9.4</span>，选项与站内资料页同一份词表，列得出来的名字生成器就查得到。</p>
@@ -209,9 +230,9 @@
 <script type="speculationrules">{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}</script>
 <script>(function(){var d=new Date(Date.now()+288e5).toISOString().slice(0,10);var o=document.getElementById("sv"),f=1;try{f=localStorage.getItem("svd")===d?0:1;if(f)localStorage.setItem("svd",d)}catch(_){}if(!f){if(!o)return;try{var c=localStorage.getItem("svt");if(c){o.textContent=c;return}}catch(_){}}var r=f?fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({a:"hit",s:o?1:0})}):fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api?a=stats");r.then(function(x){return x.json()}).then(function(s){if(o){var t="今日 "+s.today+" 位访客 · 累计 "+s.total;o.textContent=t;try{localStorage.setItem("svt",t)}catch(_){}}},function(x){if(o)o.textContent="访问统计取不到："+x})})()</script>
 <script>try{if(localStorage.sa_at&&document.querySelector("main[data-src]")){var l=document.querySelector('link[href$="assets/site.css"]');if(l)import(l.href.replace("assets/site.css","admin/edit.js"))}}catch(_){}</script>
-<script src="../vocab.js" defer></script>
-<script src="../tip.js" defer></script>
-<script src="form.js" defer></script>
+<script src="../../vocab.js" defer></script>
+<script src="../../tip.js" defer></script>
+<script src="../form.js" defer></script>
 </body>
 </html>
 

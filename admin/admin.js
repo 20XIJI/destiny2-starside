@@ -689,15 +689,50 @@
   function line (md, key) { return head(md)[key] || '' }
   function nameOf (md) { return head(md)['#'] || '' }
 
+  // 合集：一份源稿装 N 套，`# ` 分隔，头部戴着「合集：是」。判据与
+  // convert-build.py 的 split_set() 同一条，切法也是。
+  // **只看头部那一块**：注解里引用一句「合集：是」讲解写法的单套稿，
+  // 全文扫会把它判成合集，载进合集填表页后切不出成员，保存回去就是一份被搅坏
+  // 的源稿。Python 那侧的 split_set() 读的也是 parts[0]，两边判据要一致。
+  function isSet (md) { return /^合集：是$/m.test((md || '').split(/\n# /)[0]) }
+  function setsOf (md) { return (md || '').trim().split(/\n(?=# )/).slice(1) }
+  var MIXED = '多职业'
+
   // **必需的只有这五项**，与 builds/new/form.js 的 NEED、后端算指纹的 SAME 是
   // 同一组：缺了不许投、缺了也算不出区分度。装备与描述可以后补，这五项不行。
   // 更深的结构（套装件数、六维六格）由构建时的 Python 闸门管，不在这里抄第二遍。
   var NEED = [['推荐人', '推荐人'], ['职业', '职业'], ['属性', '分支'], ['核心', '核心']]
 
-  function missing (md) {
-    var out = NEED.filter(function (k) { return !line(md, k[1]) })
+  // **不能用对象字面量**：名字是投稿人填的，叫 constructor 或 toString 时
+  // HOLD[名字] 会取到原型链上的函数、读成真值，那一条就永远列着「缺名字」。
+  var HOLD = Object.create(null)
+  ;['配装名', '配装名称', '合集名', '合集名称', '这一套叫什么'].forEach(function (k) {
+    HOLD[k] = 1
+  })
+
+  function short (md, keys) {
+    var out = keys.filter(function (k) { return !line(md, k[1]) })
       .map(function (k) { return k[0] })
-    if (!nameOf(md) || nameOf(md) === '配装名') out.unshift('名字')
+    if (!nameOf(md) || HOLD[nameOf(md)]) out.unshift('名字')
+    return out
+  }
+
+  function missing (md) {
+    var out = short(md, NEED)
+    if (!isSet(md)) return out
+    // **套数与适用环境也要报**：它们不在 NEED 里，通过之后落盘，
+    // convert-build.py 的 split_set()/scenes_of() 会中止——卡住的是整次
+    // npm run build，不只是这一篇。
+    var many = setsOf(md)
+    if (many.length < 2) out.push('第二套配装')
+    if (many.length > 12) out.push('套数超过 12')
+    if (!/^场景：[ \t]*\S/m.test(md.split(/\n# /)[0])) out.push('适用环境')
+    // 推荐人在头部，别的四项每套各一份。报到是第几套——不然审的人不知道
+    // 该回哪一套去看。
+    many.forEach(function (one, i) {
+      var miss = short(one, NEED.filter(function (k) { return k[0] !== '推荐人' }))
+      if (miss.length) out.push('第 ' + (i + 1) + ' 套的' + miss.join('、'))
+    })
     return out
   }
 
@@ -745,7 +780,17 @@
   var VOCAB = window.starsideBuilds || { classes: [], cats: [], branch: {} }
 
   function kindOf (b) { return line(b.md, '类别') || '没写类别' }
-  function clsOf (b) { return line(b.md, '职业') || '没写职业' }
+  function clsOf (b) {
+    if (!isSet(b.md)) return line(b.md, '职业') || '没写职业'
+    // 合集的职业由成员现算：一个角色的一组配装职业都一样，一队人各穿一套的
+    // 那种自成一格，与站上索引页那条规矩同源。
+    var all = []
+    setsOf(b.md).forEach(function (m) {
+      var c = line(m, '职业')
+      if (c && all.indexOf(c) < 0) all.push(c)
+    })
+    return all.length === 1 ? all[0] : all.length ? MIXED : '没写职业'
+  }
   function idOf (b) { return b.sub ? b.sub._id : b.id }
 
   var buildPick = ''          // 左栏选中的那一格：'' 全部、'强度'、'强度/猎人'
@@ -860,11 +905,15 @@
         (drop ? '申请删除　' : '')
         + (md ? (nameOf(md) || '（没名字）') : b.id.split('/').pop())))
       if (md) {
-        r.appendChild(el('span', 'meta', line(md, '职业') || '—'))
+        r.appendChild(el('span', 'meta', clsOf(b) || '—'))
         r.appendChild(el('span', 'meta', line(md, '分支') || '—'))
         // 类别与定位是两回事：定位说这套在队伍里干什么，类别说它为什么被推荐
         r.appendChild(el('span', 'kind', line(md, '类别') || '—'))
         r.appendChild(el('span', 'by', line(md, '推荐人').split('|')[0].trim() || '—'))
+        // 合集与单套在列表上长得一样，不标出来点进去才知道这一行是三套。
+        // **排在几个定宽列之后**：插在中间会把它们整体推开，合集那一行与上下
+        // 的单套行对不齐，六七十行扫下来一眼就是锯齿。
+        if (isSet(md)) r.appendChild(el('span', 'n-sets', setsOf(md).length + ' 套'))
         var miss = missing(md)
         if (miss.length) r.appendChild(el('span', 'lack', '缺 ' + miss.join('、')))
       } else {
@@ -888,18 +937,26 @@
   // iframe 一旦被 append 进重建过的容器就是重新挂载，浏览器照规范把整页再载一遍，
   // 而填表页要 site.css、builds/style.css、vocab.js 与 form.js —— 换一条配装
   // 就重付一次解析与布局。
-  function stageFrame () {
-    var fr = $('stage').querySelector('iframe.prev')
+  // 单套与合集各有一页填表页，**各留一个 iframe、切换时收起另一个**：改 src
+  // 就是整页重载，而那正是这个函数存在的理由。
+  function stageFrame (kind) {
+    kind = kind || 'one'
+    ;[].forEach.call($('stage').querySelectorAll('iframe.prev'), function (f) {
+      f.hidden = f.dataset.kind !== kind
+    })
+    var fr = $('stage').querySelector('iframe.prev[data-kind="' + kind + '"]')
     if (fr) return fr
     fr = el('iframe', 'prev')
-    fr.src = '../builds/new/index.html'
+    fr.dataset.kind = kind
+    fr.src = kind === 'set' ? '../builds/new/set/index.html'
+      : '../builds/new/index.html'
     $('stage').insertBefore(fr, $('stage-foot'))
     return fr
   }
 
   // 把一份源稿灌进那一页。第一次要等它自己载完，之后直接调。
   function feed (md, onerr) {
-    var fr = stageFrame()
+    var fr = stageFrame(isSet(md) ? 'set' : 'one')
     var go = function () {
       try {
         var w = fr.contentWindow
@@ -965,7 +1022,8 @@
     // 改后的那一份从填表页现读；读不出来（脚本没载好）就退回投稿原文，不交空的。
     function current () {
       try {
-        var md = stageFrame().contentWindow.starsideForm.read()
+        var md = stageFrame(isSet(b.md) ? 'set' : 'one')
+          .contentWindow.starsideForm.read()
         return /^#\s+\S/.test(md) ? md : b.md
       } catch (e) {
         return b.md

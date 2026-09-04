@@ -21,7 +21,17 @@
   var out = document.getElementById('out');
   if (!V || !sheet || !out) return;
 
-  var UP = '../../';                       // 填表页在 builds/new/，图标路径按站根写
+  /* 两页共用这一份：#sheet 上带 data-set 的是合集那一页（builds/new/set/）。
+     **pen 是「一套配装」那一层的范围**——合集页的页顶另有一层合集自己的输入位，
+     resetAll() 与 val() 不能把它们一起清掉。单套页 pen === sheet，行为逐字不变。 */
+  var SETS = 'set' in sheet.dataset;
+  var pen = sheet.querySelector('.set-body') || sheet;
+  var hd = document.getElementById('set-head') || sheet;
+  /* 图标路径按站根写。**前缀从 site.css 那个 <link> 上现取**：两页深浅不同
+     （builds/new/ 与 builds/new/set/），写死一个会让深的那页整页图标 404。 */
+  var cssLink = document.querySelector('link[href$="assets/site.css"]');
+  var UP = cssLink ? cssLink.getAttribute('href').replace(/assets\/site\.css$/, '')
+    : '../../';
   var BRANCH = { 电弧: 'arc', 烈日: 'solar', 虚空: 'void',
                  冰影: 'stasis', 缚丝: 'strand', 棱镜: 'prismatic' };
   var PARTS = ['头盔', '护臂', '胸甲', '腿部', '职业物品'];
@@ -40,6 +50,34 @@
   var TIER_CN = ['', '一级', '二级', '三级'];
   var ELEM = { 超能: 1, 手雷: 1, 近战: 1, 星相: 1, 碎片: 1 };
   var state = { 职业: '', 分支: '', 神器: '', 核心: '' };
+  /* 合集：每一项是一套的源稿。**切换某一套就是「把当前这一套 write 出来存进
+     数组，resetAll，再 importMd 下一套」**——不引入第二套状态模型，页面上永远
+     只有一套配装的 DOM。上限 12：游戏内能存 20 套，再多左栏那列比右栏还长，
+     而一个角色常用的就五六套。 */
+  var SET_MAX = 12;
+  var MIXED = '多职业';
+  var sets = [''];
+  var cur = 0;
+  /* 每一套的核心：[名字, 图标]。左栏目录那 32px 的图与页顶那 96px 的图都取自
+     它——切到每一套时顺手记下，导入时逐套走一遍正好全都有。 */
+  var coreOf = [];
+  /* 「合集介绍」那一段在合集头部外面自成一节（它是正文不是键值行），按 id 取，
+     不跟着 hd 的范围走。 */
+  var setWhy = document.getElementById('set-why');
+
+  /* 合集的核心。**导入时原样留住源稿写的那一个**——它不一定是任何一套的核心，
+     常是贯穿几套的那件异域（「隐秘追猎」三套都穿，却哪一套的核心都不是）；
+     导入再保存就把作者写的值改掉是不能接受的。新建的合集没有可留的，取第一套的。 */
+  var srcCore = '';
+  /* 各套里找不找得到它：找得到存那枚图，找不到存 null。审的人可能把那件装备
+     从每一套里都换掉了，那时还留着原来那个名字，源稿就写出一个站内查不到的核心
+     ——落盘时 core_pick() 才中止。 */
+  var coreSeen = [];
+
+  function setCore() {
+    var live = srcCore && coreSeen.some(function (c) { return c; });
+    return live ? srcCore : keyOf(sets[0], '核心');
+  }
   var picker = null;
 
   var ELEM_CN = { arc: '电弧', solar: '烈日', void: '虚空',
@@ -140,6 +178,8 @@
     return (V.lists[V.slots[slot]] || []).filter(ok)[0];
   }
 
+  function tail() { return SETS ? val('定位') : val('类别'); }
+
   function mirror() {
     var cls = state.职业, br = state.分支;
     var self = cls && rowOf('职业', function (r) {
@@ -151,18 +191,19 @@
     }), br);
     // 页头的铭牌与详情页同形：职业图 + 职业 · 分支。它照着下面那两格显示，
     // 两样都选定才成句，只选了一样时仍写提示——半句「术士 ·」读不出缺什么。
-    var id = sheet.querySelector('[data-mirror="铭牌"]');
+    var id = pen.querySelector('[data-mirror="铭牌"]');
     id.innerHTML = cls && br
       ? (self && self[3] ? '<img src="' + UP + self[3] + '" alt="" width="32" '
         + 'height="32">' : '') + esc(cls) + ' · <span class="el-' + BRANCH[br]
         + '">' + esc(br) + '</span>'
-        // 类别选了才接上去：详情页的铭牌是「职业 · 元素 · 类别」，这里逐段跟上。
-        + (val('类别') ? ' · ' + esc(val('类别')) : '')
-      : '<span class="hint">职业与元素在下面「职业」那一格选</span>';
+        // 末位逐段跟上详情页：单套那一页写类别，合集里的每一套写定位
+        // （类别是整份合集的，写在页顶那条铭牌上）。
+        + (tail() ? ' · ' + esc(tail()) : '')
+      : '<span class="hint">在下方「职业」区域选择职业与元素</span>';
   }
 
   function put(name, row, label) {
-    var el = sheet.querySelector('[data-mirror="' + name + '"]');
+    var el = pen.querySelector('[data-mirror="' + name + '"]');
     if (!el) return;
     el.classList.toggle('empty', !row);
     el.innerHTML = row ? body(row, name, 32, label)
@@ -192,7 +233,7 @@
      不列——核心就是页首那枚 96px 的图。 */
   function coreList() {
     var seen = {};
-    return [].filter.call(sheet.querySelectorAll('button.item'), function (c) {
+    return [].filter.call(pen.querySelectorAll('button.item'), function (c) {
       if (!c.row || !c.row[3] || seen[c.row[0]]) return false;
       seen[c.row[0]] = 1;
       return true;
@@ -230,9 +271,9 @@
   // 核心是大多数人第一个点的格子，而它只列本页已经配好的东西，空着时不说
   // 这一句就是一个没有理由的空格网。
   var MISS = {
-    元素: '先选职业',
-    神器: '先选一件神器',
-    核心: '先填配装，核心从配装词条中选取',
+    元素: '请先选择职业',
+    神器: '请先选择神器',
+    核心: '请先填写装备，核心从已填写的装备中选择',
   };
 
   /* 选择器整行展开在它那一行下面：一格只有一百来像素宽，图标网格塞不进去。 */
@@ -287,7 +328,7 @@
     var clear = document.createElement('button');
     clear.type = 'button';
     clear.className = 'chip';
-    clear.textContent = '清空这一格';
+    clear.textContent = '清空';
     clear.addEventListener('click', function () { pickOne(btn, null); });
     bar.appendChild(find);
     bar.appendChild(count);
@@ -354,7 +395,11 @@
     box.appendChild(bar);
     box.appendChild(grid);
     // 核心那一格在页头里，不在任何 .slot-row / .block 下面
-    (btn.closest('.slot-row') || btn.closest('.block') || btn.closest('.build-head'))
+    // 选择器整行展开在它那一行下面。**.one-head 要在这张名单里**：合集里每一套
+    // 的核心格挂在那一层，三个都 closest 不到时这里拿到 null，点一下静默什么
+    // 也不发生。
+    (btn.closest('.slot-row') || btn.closest('.block') || btn.closest('.one-head')
+      || btn.closest('.build-head'))
       .insertAdjacentElement('afterend', box);
     picker = box;
     btn.setAttribute('aria-expanded', 'true');
@@ -373,7 +418,7 @@
       } else {
         // 职业一换，跟职业绑定的两个槽的候选变了，留着旧的会前后矛盾；元素那一格
         // 用的也是这个职业的分节图，由 mirror() 按新职业重画。
-        [].forEach.call(sheet.querySelectorAll(
+        [].forEach.call(pen.querySelectorAll(
           '[data-slot="职业技能"],[data-slot="异域护甲"]'), function (c) {
           if (c.row) fill(c, null);
         });
@@ -417,7 +462,7 @@
       var two = options('套装').filter(function (r) {
         return r[0] === row[0] && r[1] === '2 件';
       })[0];
-      var other = [].filter.call(sheet.querySelectorAll('[data-slot="套装"]'),
+      var other = [].filter.call(pen.querySelectorAll('[data-slot="套装"]'),
         function (c) { return c !== btn && !c.row; })[0];
       if (two && other) fill(other, two);
     }
@@ -602,7 +647,7 @@
   }
 
   function mods() {
-    return [].slice.call(sheet.querySelectorAll(
+    return [].slice.call(pen.querySelectorAll(
       '#sec-3 [data-slot="神器"]:not([data-kind="__art__"])'));
   }
 
@@ -613,8 +658,21 @@
   function syncCore() {
     var hit = coreList().filter(function (r) { return r[0] === state.核心; })[0];
     if (!hit) state.核心 = '';
+    if (SETS) {
+      coreOf[cur] = hit ? [hit[0], hit[3]] : null;
+      // **找不到也要记**：只在找到时赋值，会把上一轮的结果留着，
+      // 「那件装备已经被换掉了」这件事就永远判不出来。
+      if (srcCore) {
+        var w = coreList().filter(function (r) { return r[0] === srcCore; })[0];
+        coreSeen[cur] = w ? w[3] : null;
+      }
+    }
+    // 合集那一页没有这一格：整份合集的核心自动取第一套的，页顶那枚 96px 图
+    // 因此不给选择器。**state.核心 照旧要对**——它写进每一套的源稿里。
+    if (!coreArt) return;
+    var px = coreArt.dataset.size || '96';
     coreArt.innerHTML = hit
-      ? '<img src="' + UP + hit[3] + '" alt="" width="96" height="96">'
+      ? '<img src="' + UP + hit[3] + '" alt="" width="' + px + '" height="' + px + '">'
       : '<span class="nm">核心</span>';
     coreArt.classList.toggle('empty', !hit);
   }
@@ -643,15 +701,30 @@
     return { name: title ? title[1].trim() : '', head: head, notes: notes };
   }
 
+  /* 标签栏回填：先全部松开再按下要的那几个。**要先松开**——合集页顶那一层
+     不归 resetAll() 管，不松开就会把上一份合集按过的挡在那里。 */
+  function pressTags(scope, key, list, skip) {
+    var box = scope.querySelector('input[data-key="' + key + '"]');
+    if (!box) return;
+    var all = [].slice.call(box.parentNode.querySelectorAll('.tagset > button'));
+    all.forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+    list.forEach(function (t) {
+      var b = all.filter(function (x) { return x.textContent === t; })[0];
+      if (b) b.setAttribute('aria-pressed', 'true');
+      else skip.push(key + '：' + t);
+    });
+    sumTags(box.parentNode);
+  }
+
   function resetAll() {
-    [].forEach.call(sheet.querySelectorAll('button.item'), function (c) {
+    [].forEach.call(pen.querySelectorAll('button.item'), function (c) {
       if (c.row) fill(c, null);
     });
-    [].forEach.call(sheet.querySelectorAll('[data-key]'), function (i) { i.value = ''; });
-    [].forEach.call(sheet.querySelectorAll('.tagset > button'), function (b) {
+    [].forEach.call(pen.querySelectorAll('[data-key]'), function (i) { i.value = ''; });
+    [].forEach.call(pen.querySelectorAll('.tagset > button'), function (b) {
       b.setAttribute('aria-pressed', 'false');
     });
-    [].forEach.call(sheet.querySelectorAll('button.stat'), function (b) {
+    [].forEach.call(pen.querySelectorAll('button.stat'), function (b) {
       b.dataset.mode = '~';
       b.dataset.a = '';
       b.dataset.b = '';
@@ -659,15 +732,15 @@
     });
     // 收放与格数也要复位：不复位会留下一个空着的「移动」格（按钮还写着「－ 移动」）
     // 与停在上一份配装那个数的碎片计数。
-    [].forEach.call(sheet.querySelectorAll('[data-add]'), function (b) {
+    [].forEach.call(pen.querySelectorAll('[data-add]'), function (b) {
       var cell = b.closest('.slot, .rig')
         .querySelector('[data-addable="' + b.dataset.add + '"]');
       if (cell && !cell.hidden) toggleAdd(b);
     });
-    [].forEach.call(sheet.querySelectorAll('.slot-count'), function (box) {
+    [].forEach.call(pen.querySelectorAll('.slot-count'), function (box) {
       setCount(box.closest('.slot'), Number(box.dataset.n));
     });
-    [].forEach.call(sheet.querySelectorAll('[data-only]'), function (c) {
+    [].forEach.call(pen.querySelectorAll('[data-only]'), function (c) {
       c.hidden = true;                 // 异域职业物品那第二条词条的格子
     });
     state.职业 = state.分支 = state.神器 = state.核心 = '';
@@ -683,7 +756,7 @@
       return one(k).split('、').map(function (x) { return x.trim(); }).filter(Boolean);
     };
     function set(key, v) {
-      var el = sheet.querySelector('[data-key="' + key + '"]');
+      var el = pen.querySelector('[data-key="' + key + '"]');
       if (el) el.value = v || '';
     }
     function rowOfName(slot, kind, name) {
@@ -717,7 +790,7 @@
       fill(cell, row);
     }
     function cells(sel, scope) {
-      return [].slice.call((scope || sheet).querySelectorAll(sel));
+      return [].slice.call((scope || pen).querySelectorAll(sel));
     }
 
     resetAll();
@@ -768,12 +841,12 @@
     var armor = cells('[data-slot="异域护甲"]');
     many('异域护甲').forEach(function (n, i) { put('异域护甲', '', n, armor[i]); });
 
-    var sets = cells('[data-slot="套装"]');
+    var setCells = cells('[data-slot="套装"]');
     one('套装').split('×').map(function (x) { return x.trim(); }).filter(Boolean)
       .forEach(function (seg, i) {
         var m = /^(.+?)\s*([24])\s*件$/.exec(seg);
         if (!m) { skip.push('套装：' + seg); return; }
-        put('套装', m[2] + ' 件', m[1].trim(), sets[i]);
+        put('套装', m[2] + ' 件', m[1].trim(), setCells[i]);
       });
 
     PARTS.forEach(function (part) {
@@ -784,7 +857,7 @@
     // 神器先定：七个模组的候选按它收，「电介质」在两件神器下各有一条。
     var art = one('神器');
     if (art) {
-      var head = sheet.querySelector('[data-kind="__art__"]');
+      var head = pen.querySelector('[data-kind="__art__"]');
       var row = artifacts().filter(function (r) { return r[0] === art; })[0];
       if (row) {
         state.神器 = art;
@@ -800,7 +873,7 @@
     one('六维').split('｜').map(function (x) { return x.trim(); }).filter(Boolean)
       .forEach(function (seg) {
         var m = /^(\S+)\s*(.*)$/.exec(seg);
-        var cell = m && sheet.querySelector('.stat[data-stat="' + m[1] + '"]');
+        var cell = m && pen.querySelector('.stat[data-stat="' + m[1] + '"]');
         if (!cell) { skip.push('六维：' + seg); return; }
         var v = (m[2] || '~').trim(), hit;
         if (v === '~' || v === '') cell.dataset.mode = '~';
@@ -815,15 +888,7 @@
       });
 
     ['类别', '场景', '定位'].forEach(function (key) {
-      var box = sheet.querySelector('input[data-key="' + key + '"]');
-      if (!box) return;
-      var all = cells('.tagset > button', box.parentNode);
-      many(key).forEach(function (t) {
-        var b = all.filter(function (x) { return x.textContent === t; })[0];
-        if (b) b.setAttribute('aria-pressed', 'true');
-        else skip.push(key + '：' + t);
-      });
-      sumTags(box.parentNode);
+      pressTags(pen, key, many(key), skip);
     });
     // 类别进了铭牌，回填之后要重画一次。
     mirror();
@@ -839,6 +904,47 @@
     grow();
     return skip;
   }
+
+  /* 合集的导入：`# ` 切块，首块是合集头部，其余每块一套。**逐套都导一遍再回到
+     第一套**——认不出的那几条要一次报全，等切过去才冒出来的话，审的人以为这一份
+     干净。报出来的每条前面标着是第几套。 */
+  function importSet(text) {
+    var parts = text.replace(/\r\n/g, '\n').trim().split(/\n(?=# )/);
+    var skip = [];
+    // 头部的键只从第一个 `## ` 之前取：「合集介绍」那段散文里凑巧写出的
+    // 「X：Y」不是键。
+    var got = parseMd(parts[0].split('\n## ')[0]);
+    var one = function (k) { return (got.head[k] || [''])[0].trim(); };
+    function put(key, v) {
+      var el = hd.querySelector('[data-key="' + key + '"]');
+      if (el) el.value = v || '';
+    }
+    put('合集名', got.name);
+    put('推荐人', one('推荐人'));
+    put('描述', one('描述'));
+    var why = /\n## 合集介绍\s*([\s\S]*)$/.exec(parts[0]);
+    if (setWhy) setWhy.value = why ? why[1].trim() : '';
+    srcCore = one('核心');
+    ['类别', '场景'].forEach(function (key) {
+      pressTags(hd, key, one(key).split('、').map(function (x) { return x.trim(); })
+        .filter(Boolean), skip);
+    });
+
+    sets = parts.slice(1);
+    if (!sets.length) sets = [''];
+    coreOf = [];
+    coreSeen = [];
+    var per = [];
+    for (var i = sets.length - 1; i >= 0; i--) {
+      cur = i;
+      per[i] = loadOne(sets[i]);
+    }
+    per.forEach(function (list, n) {
+      (list || []).forEach(function (t) { skip.push('第 ' + (n + 1) + ' 套 · ' + t); });
+    });
+    write();
+    return skip;
+  }
   /* ── 源稿 ──────────────────────────────────────────────────────────
      输出格式与 convert-build.py 认的源稿逐字一致，空的那一行整行不写
      （源稿的约定就是「留空即整行删掉」，不写占位符）。 */
@@ -848,13 +954,25 @@
     return d.getFullYear() + '.' + (d.getMonth() + 1) + '.' + d.getDate();
   }
 
-  function val(key) {
-    var el = sheet.querySelector('[data-key="' + key + '"]');
+  /* scope 省略即「当前这一套」。合集页的页顶那几个输入位与成员的重名
+     （两处都有「描述」），所以那一侧要显式传 hd。 */
+  function val(key, scope) {
+    var el = (scope || pen).querySelector('[data-key="' + key + '"]');
     return el ? el.value.trim() : '';
   }
 
+  function keyOf(md, k) {
+    var m = new RegExp('^' + k + '：(.*)$', 'm').exec(md || '');
+    return m ? m[1].trim() : '';
+  }
+
+  function nameOf(md) {
+    var m = /^#[ \t]+(.+)$/m.exec(md || '');
+    return m ? m[1].trim() : '';
+  }
+
   function picked(sel, scope) {
-    return [].slice.call((scope || sheet).querySelectorAll(sel))
+    return [].slice.call((scope || pen).querySelectorAll(sel))
       .filter(function (c) { return c.row; });
   }
 
@@ -881,9 +999,11 @@
 
   function line(key, value) { return value ? key + '：' + value + '\n' : ''; }
 
-  function write() {
-    syncCore();
-    var md = '# ' + (val('配装名') || '配装名') + '\n\n';
+  /* 三种头部，键不是同一组：合集头部没有分支与定位（每套一个），成员块没有
+     推荐人、更新与类别（整份一个）。`## 职业` 以下那一大段两边逐字相同，
+     所以只有头部分家，正文共用 slotsMd()。 */
+  function soloHead() {
+    var md = '# ' + (val('配装名') || '配装名称') + '\n\n';
     md += line('推荐人', val('推荐人'));
     md += line('描述', val('描述'));
     md += line('更新', today());
@@ -892,8 +1012,37 @@
     md += line('分支', state.分支);
     md += line('类别', val('类别'));
     md += line('核心', state.核心);
+    return md;
+  }
 
-    md += '\n## 职业\n\n';
+  function oneHead() {
+    var md = '# ' + (val('配装名') || '配装名称') + '\n\n';
+    md += line('描述', val('描述'));
+    md += line('定位', val('定位'));
+    md += line('分支', state.分支);
+    md += line('核心', state.核心);
+    return md;
+  }
+
+  /* 合集头部。**核心取第一套的**：作者把主力那一套摆在最前面，页顶那枚 96px
+     的图就该是它，所以这一页不另给一个核心选择器——那要在全体成员的并集里挑，
+     而那份并集只在切到每一套时才在手边。 */
+  function setHead() {
+    var md = '# ' + (val('合集名', hd) || '合集名称') + '\n\n';
+    md += '合集：是\n';
+    md += line('推荐人', val('推荐人', hd));
+    md += line('描述', val('描述', hd));
+    md += line('更新', today());
+    md += line('场景', val('场景', hd));
+    md += line('类别', val('类别', hd));
+    md += line('核心', setCore());
+    var why = setWhy ? setWhy.value.trim() : '';
+    if (why) md += '\n## 合集介绍\n\n' + why + '\n';
+    return md;
+  }
+
+  function slotsMd() {
+    var md = '\n## 职业\n\n';
     md += line('职业', state.职业);
     md += line('超能', joined('[data-slot="超能"]'));
     md += line('星相', joined('[data-slot="星相"]'));
@@ -905,7 +1054,7 @@
 
     md += '\n## 武器\n\n';
     md += line('异域武器', joined('[data-slot="异域武器"]'));
-    [].forEach.call(sheet.querySelectorAll('#sec-2 .rig'), function (rig) {
+    [].forEach.call(pen.querySelectorAll('#sec-2 .rig'), function (rig) {
       var gun = picked('[data-slot="传说武器"]', rig)[0];
       if (!gun) return;
       var perks = joined('[data-slot="Perk"]', rig);
@@ -932,14 +1081,156 @@
 
     md += '\n## 六维\n\n';
     md += '六维：' + STATS.map(function (s) {
-      return s + ' ' + statText(sheet.querySelector('.stat[data-stat="' + s + '"]'));
+      return s + ' ' + statText(pen.querySelector('.stat[data-stat="' + s + '"]'));
     }).join(' ｜ ') + '\n';
 
     if (val('注解')) md += '\n## 注解\n\n' + val('注解') + '\n';
-    out.value = md;
+    return md;
+  }
+
+  function oneMd() { return (SETS ? oneHead() : soloHead()) + slotsMd(); }
+
+  function write() {
+    syncCore();
+    if (!SETS) { out.value = oneMd(); return; }
+    sets[cur] = oneMd();
+    out.value = setHead() + '\n' + sets.join('\n');
+    setMirror();
+    tabs();
+  }
+
+  /* 左栏那列目录按已填的那几套现建：套数可变，写进 HTML 就得出满上限再收起来，
+     而这里没有「上限即版面」那个约束（碎片那六格有）。 */
+  /* 合集页顶：96px 的核心图与「职业 · N 套 · 类别」那条铭牌，都是镜子。
+     与详情页逐段同形——那一页页顶就是这两样加推荐者。 */
+  function setMirror() {
+    var core = setCore(), icon = '';
+    coreSeen.forEach(function (c) { if (c && !icon) icon = c; });
+    if (!icon) {
+      coreOf.forEach(function (c) { if (c && c[0] === core && !icon) icon = c[1]; });
+    }
+    var box = document.getElementById('f-set-core');
+    if (box) {
+      box.innerHTML = icon
+        ? '<img src="' + UP + icon + '" alt="" width="96" height="96">'
+        : '<span class="nm">核心</span>';
+      box.classList.toggle('empty', !icon);
+    }
+    var id = document.querySelector('[data-mirror="合集铭牌"]');
+    if (!id) return;
+    var who = [];
+    sets.forEach(function (md) {
+      var c = keyOf(md, '职业');
+      if (c && who.indexOf(c) < 0) who.push(c);
+    });
+    who.sort(function (a, b) { return CLASS_ORDER.indexOf(a) - CLASS_ORDER.indexOf(b); });
+    var cls = who.length === 1 ? who[0] : who.length ? MIXED : '';
+    var self = cls && rowOf('职业', function (r) {
+      return r[0] === cls && r[1] === '分节';
+    });
+    id.innerHTML = cls
+      ? (self && self[3] ? '<img src="' + UP + self[3] + '" alt="" width="32" '
+        + 'height="32">' : '') + esc(cls) + ' · ' + sets.length + ' 套'
+        + (val('类别', hd) ? ' · ' + esc(val('类别', hd)) : '')
+      : '<span class="hint">职业与元素在各套内选择</span>';
+  }
+
+  function tabs() {
+    var box = document.getElementById('set-tabs');
+    if (!box) return;
+    document.getElementById('set-n').textContent = sets.length + ' 套';
+    box.textContent = '';
+    sets.forEach(function (md, i) {
+      var li = document.createElement('li');
+      li.className = 'b-' + (BRANCH[keyOf(md, '分支')] || '');
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.dataset.go = i;
+      if (coreOf[i] && coreOf[i][1]) {
+        var img = document.createElement('img');
+        img.src = UP + coreOf[i][1];
+        img.alt = '';
+        img.width = img.height = 32;
+        b.appendChild(img);
+      }
+      var nm = document.createElement('b');
+      nm.textContent = nameOf(md) || '未命名';     // 序号由 CSS 的计数器给
+      var sub = document.createElement('span');
+      sub.textContent = keyOf(md, '定位') || keyOf(md, '分支') || '未填写';
+      if (i === cur) b.setAttribute('aria-current', 'true');
+      b.appendChild(nm);
+      b.appendChild(sub);
+      li.appendChild(b);
+      // 只剩一套时不给叉：删掉它就不是合集了。
+      if (sets.length > 1) {
+        var x = document.createElement('button');
+        x.type = 'button';
+        x.className = 'set-drop';
+        x.dataset.drop = i;
+        x.textContent = '×';
+        x.setAttribute('aria-label', '移除第 ' + (i + 1) + ' 套');
+        li.appendChild(x);
+      }
+      box.appendChild(li);
+    });
+    ['set-copy', 'set-add'].forEach(function (k) {
+      var btn = sheet.querySelector('[data-' + k + ']');
+      if (btn) btn.disabled = sets.length >= SET_MAX;
+    });
+  }
+
+  /* 把一套源稿灌进页面。认不出的整条跳过并报出来，与单套那一页同一条约定。 */
+  function loadOne(md) {
+    resetAll();
+    var skip = md ? importMd(md) : [];
+    write();
+    grow();
+    return skip;
+  }
+
+  function goTo(j) {
+    if (j === cur || j < 0 || j >= sets.length) return;
+    sets[cur] = oneMd();
+    cur = j;
+    loadOne(sets[j]);
+  }
+
+  function addSet(copy) {
+    if (sets.length >= SET_MAX) return;
+    sets[cur] = oneMd();
+    // 复制出来的那一套改个名：目录上两行长得一样时，点错了看不出来。
+    var md = copy ? sets[cur].replace(/^#[ \t]+(.+)$/m, '# $1 副本') : '';
+    sets.splice(cur + 1, 0, md);
+    coreOf.splice(cur + 1, 0, copy ? coreOf[cur] : null);
+    coreSeen.splice(cur + 1, 0, copy ? coreSeen[cur] : null);
+    cur += 1;
+    loadOne(md);
+  }
+
+  /* 移除第 j 套，不限于正在编辑的那一套：要删的多半是别的那一条。
+     **先把当前这一套存回数组再动它**，不然正在编辑的改动会随这一刀丢掉。 */
+  function dropSet(j) {
+    if (sets.length <= 1) return;      // 只剩一套就不是合集了
+    sets[cur] = oneMd();
+    sets.splice(j, 1);
+    coreOf.splice(j, 1);
+    coreSeen.splice(j, 1);
+    if (j === cur) {
+      cur = Math.min(cur, sets.length - 1);
+      loadOne(sets[cur]);
+      return;
+    }
+    if (cur > j) cur -= 1;
+    write();
   }
 
   sheet.addEventListener('click', function (e) {
+    var go = e.target.closest('[data-go]');
+    if (go) { goTo(Number(go.dataset.go)); return; }
+    var drop = e.target.closest('[data-drop]');
+    if (drop) { dropSet(Number(drop.dataset.drop)); return; }
+    var act = e.target.closest('[data-set-copy],[data-set-add]');
+    if (act) { addSet('setCopy' in act.dataset); return; }
     var add = e.target.closest('[data-add]');
     if (add) { toggleAdd(add); return; }
     var step = e.target.closest('[data-step]');
@@ -960,12 +1251,12 @@
   });
 
   // 空槽的占位文字要留住：清空之后还得写回去
-  [].forEach.call(sheet.querySelectorAll('button.item.empty'), function (b) {
+  [].forEach.call(pen.querySelectorAll('button.item.empty'), function (b) {
     b.dataset.label = b.textContent.trim();
     b.setAttribute('aria-expanded', 'false');
   });
 
-  [].forEach.call(sheet.querySelectorAll('.slot-count'), function (box) {
+  [].forEach.call(pen.querySelectorAll('.slot-count'), function (box) {
     var cells = box.closest('.slot').querySelectorAll('.cells > li');
     box.dataset.n = box.querySelector('b').textContent;   // 导入前复位到这个数
     limits(box, Number(box.dataset.n), cells.length);
@@ -999,11 +1290,37 @@
               ['职业', /^职业：[ \t]*(\S.*)$/m], ['属性', /^分支：[ \t]*(\S.*)$/m],
               ['核心', /^核心：[ \t]*(\S.*)$/m]];
 
-  function lacking (md) {
-    return NEED.filter(function (n) {
+  // 页面上那几个占位文字：留着没改等于没填。旧写法一并收着——待审队列里
+  // 可能还压着按旧占位投的稿子，漏掉就成了一份「有名字」的空稿。
+  // **不能用对象字面量**：名字是用户填的，叫 constructor 或 toString 时
+  // HOLD[名字] 取到原型链上的函数、读成真值，那份稿子就永远「缺名字」投不出去。
+  var HOLD = Object.create(null);
+  ['配装名', '配装名称', '合集名', '合集名称'].forEach(function (k) { HOLD[k] = 1; });
+
+  function short (md, list) {
+    return list.filter(function (n) {
       var m = n[1].exec(md);
-      return !m || !m[1].trim() || m[1].trim() === '配装名';
+      return !m || !m[1].trim() || HOLD[m[1].trim()];
     }).map(function (n) { return n[0]; });
+  }
+
+  function lacking (md) {
+    var lack = short(md, NEED);
+    if (!SETS) return lack;
+    // **套数与适用环境要在这里挡住**：它们不在 NEED 里，缺了照样投得出去，
+    // 而落盘时 convert-build.py 的 split_set()/scenes_of() 会中止，
+    // 卡住的是整次 npm run build，不只是这一篇。
+    var many = md.split(/\n(?=# )/).slice(1);
+    if (many.length < 2) lack.push('第二套配装（合集至少两套）');
+    if (many.length > SET_MAX) lack.push('套数（最多 ' + SET_MAX + ' 套）');
+    if (!/^场景：[ \t]*\S/m.test(md.split(/\n# /)[0])) lack.push('适用环境');
+    // 每一套还得各有名字、职业、分支与核心。逐套报，报到是第几套——
+    // 不然投的人不知道该回哪一套去补。
+    many.forEach(function (one, i) {
+      var miss = short(one, NEED.filter(function (n) { return n[0] !== '推荐人'; }));
+      if (miss.length) lack.push('第 ' + (i + 1) + ' 套的' + miss.join('、'));
+    });
+    return lack;
   }
 
   var send = document.getElementById('send');
@@ -1011,7 +1328,10 @@
     var tip = document.getElementById('copy-tip');
     var md = out.value;
     var lack = lacking(md);
-    if (lack.length) { tip.textContent = '还缺 ' + lack.join('、') + '，补齐再投'; return; }
+    if (lack.length) {
+      tip.textContent = '尚未填写：' + lack.join('、') + '，补齐后再投稿';
+      return;
+    }
     send.disabled = true;
     tip.textContent = '投稿中…';
     fetch(send.dataset.api, {
@@ -1021,7 +1341,7 @@
     }).then(function (r) { return r.json(); }).then(function (s) {
       send.disabled = false;
       if (s.error) { tip.textContent = '投稿失败：' + s.error; return; }
-      tip.textContent = s.dup ? '已更新你先前投的同一套配装' : '投稿成功，等待审核';
+      tip.textContent = s.dup ? '已更新此前投稿的同一套配装' : '投稿成功，等待审核';
     }, function (err) {
       send.disabled = false;
       tip.textContent = '投稿失败：' + err;
@@ -1034,7 +1354,7 @@
      **先把 height 归零再读 scrollHeight**，不归零时 scrollHeight 永远不小于当前
      高度，框只会长不会缩。box-sizing 全局是 border-box，scrollHeight 含内边距，
      直接拿来当高度即可。 */
-  var notes = sheet.querySelector('textarea[data-key="注解"]');
+  var notes = pen.querySelector('textarea[data-key="注解"]');
 
   function grow() {
     notes.style.height = 'auto';
@@ -1065,10 +1385,12 @@
     var text = area.value.trim();
     if (!text) {
       area.focus();
-      tip.textContent = '把配装文本粘贴到这里，再按一次「导入配装」';
+      tip.textContent = '请先将配装文本粘贴到下方文本框，再次点击「导入配装」';
       return;
     }
-    var skip = importMd(text);
+    // **合集页走 importSet**：importMd 在第一个 `## 注解` 处切文本，第二套起的
+    // 整段正文会被当成注解吞进去，头部的键也塌成第一套的，而且一声不吭。
+    var skip = SETS ? importSet(text) : importMd(text);
     document.getElementById('src').open = true;
     tip.textContent = skip.length
       ? '导入完成，跳过 ' + skip.length + ' 条：' + skip.join('，')
@@ -1089,7 +1411,7 @@
      刚打开、什么都没改的时候就弹。 */
   window.starsideForm = {
     load: function (md) {
-      var skip = importMd(md);
+      var skip = SETS ? importSet(md) : importMd(md);
       blank = out.value;
       return skip;
     },

@@ -316,15 +316,31 @@ def check_stamps(bad):
 
 
 def check_build_count(bad):
-    """首页配装卡上那个套数每收一套就变一次，是首页唯一会随投稿漂的手写数字。
-    别的卡片写的是页面结构（PERK 406、模组 128），由各自生成器的 N_* 钉着。"""
-    n = len(glob.glob(os.path.join(shell.ROOT, 'builds', shell.SEASON, '*', 'index.html')))
-    m = re.search(r'href="builds/index.html".*?<dt>配装</dt><dd>(\d+)</dd>',
-                  read('index.html'), re.S)
-    if not m:
-        bad.append('G4 首页那张配装卡没写套数')
-    elif int(m.group(1)) != n:
-        bad.append('G4 首页配装卡写 %s 套，站上是 %d 套' % (m.group(1), n))
+    """首页那两张配装卡上的数每收一套就变一次，是首页仅有的会随投稿漂的手写数字。
+    别的卡片写的是页面结构（PERK 406、模组 128），由各自生成器的 N_* 钉着。
+
+    单套与合集出在同一个目录下（builds/<赛季>/<slug>/），分不分得开只看产出：
+    合集那一份的 <main> 上多一个 set 类。
+    """
+    n = {'builds/index.html': 0, 'builds/sets/index.html': 0}
+    for path in sorted(glob.glob(os.path.join(shell.ROOT, 'builds', shell.SEASON,
+                                              '*', 'index.html'))):
+        with open(path, encoding='utf-8') as f:
+            n['builds/sets/index.html' if '<main class="set ' in f.read()
+              else 'builds/index.html'] += 1
+    home = read('index.html')
+    for href, want in n.items():
+        card = re.search(r'<a class="entry" href="%s".*?</a>' % re.escape(href),
+                         home, re.S)
+        if not card:
+            bad.append('G4 首页找不到 %s 那张卡' % href)
+            continue
+        m = re.search(r'<dd>(\d+)</dd>', card.group(0))
+        if not m:
+            bad.append('G4 首页 %s 那张卡没写数' % href)
+        elif int(m.group(1)) != want:
+            bad.append('G4 首页 %s 那张卡写 %s，站上是 %d'
+                       % (href, m.group(1), want))
 
 
 # G6 管得住的 token：元素归属与异域稀有度这两样库里是事实。别的不归它管——
