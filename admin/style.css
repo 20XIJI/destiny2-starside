@@ -176,15 +176,21 @@ details > pre {
 body:has(#stage:not([hidden])) { --wrap: 1240px; --min: 1120px; }
 
 /* 合集那一页的版心比单套宽——左边多一列 208px 的目录，配装那一列还要保持 1016
-   （职业那一节的面板按 1016 钉死了像素），整页 min-width 因此是 1340。iframe 只有
-   1196 时右边那一列被整列裁掉，而 iframe 里没有横向滚动条可言。
-   1390 = 1340 + #stage 两侧 22 的内边距 + iframe 的边框与余量。
-   **判据是露着的是哪一种 iframe**：两种填表页各留一个，切换时收起另一个。
+   （职业那一节的面板按 1016 钉死了像素），整页 min-width 因此是 1340，而这一格
+   只有 1196，右边那一列会被整列裁掉，iframe 里也没有横向滚动条可言。
+
+   **只让 iframe 宽出去，头与列表不动。**跟着改 --wrap 的话，单套与合集来回切时
+   整块连着铭牌与那排按钮一起变宽再变窄，读的人会以为页面在跳；而头那一行本来
+   就没有理由跟着里面那一页的版心走。两侧对称溢出 75px，按钮因此仍在原位。
+
+   body 的 min-width 还是要跟上：溢出的那 150px 得有地方站。
    **`:has()` 里要带上 #stage**：上面那条的括号里有个 id，权重 (1,0,1)，只写
    iframe 的那一版是 (0,2,2)，压不过它，这一行会是死配置。 */
-body:has(#stage iframe.prev[data-kind="set"]:not([hidden])) {
-  --wrap: 1390px;
-  --min: 1390px;
+body:has(#stage iframe.prev[data-kind="set"]:not([hidden])) { --min: 1390px; }
+
+#stage iframe.prev[data-kind="set"] {
+  width: calc(100% + 150px);
+  margin-left: -75px;
 }
 
 /* 详情摊在列表下面。上下各留一条发丝线，与列表分开——两块之间没有界，
