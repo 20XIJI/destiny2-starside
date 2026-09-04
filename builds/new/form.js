@@ -1305,12 +1305,11 @@
   function lacking (md) {
     var lack = short(md, NEED);
     if (!SETS) return lack;
-    // **套数与适用环境要在这里挡住**：它们不在 NEED 里，缺了照样投得出去，
-    // 而落盘时 convert-build.py 的 split_set()/scenes_of() 会中止，
-    // 卡住的是整次 npm run build，不只是这一篇。
+    // **套数要在这里挡住**：它不在 NEED 里，缺了照样投得出去，而落盘时
+    // convert-build.py 的 split_set() 会中止，卡住的是整次 npm run build，
+    // 不只是这一篇。
     var many = md.split(/\n(?=# )/).slice(1);
     if (many.length > SET_MAX) lack.push('套数（最多 ' + SET_MAX + ' 套）');
-    if (!/^场景：[ \t]*\S/m.test(md.split(/\n# /)[0])) lack.push('适用环境');
     // 逐套报，报到是第几套——不然投的人不知道该回哪一套去补。
     var full = 0;
     many.forEach(function (one, i) {

@@ -723,12 +723,10 @@
   function missing (md) {
     var out = short(md, NEED)
     if (!isSet(md)) return out
-    // **套数与适用环境也要报**：它们不在 NEED 里，通过之后落盘，
-    // convert-build.py 的 split_set()/scenes_of() 会中止——卡住的是整次
-    // npm run build，不只是这一篇。
+    // **套数也要报**：它不在 NEED 里，通过之后落盘，convert-build.py 的
+    // split_set() 会中止——卡住的是整次 npm run build，不只是这一篇。
     var many = setsOf(md)
     if (many.length > 12) out.push('套数超过 12')
-    if (!/^场景：[ \t]*\S/m.test(md.split(/\n# /)[0])) out.push('适用环境')
     // 逐套报，报到是第几套——不然审的人不知道该回哪一套去看。
     var full = 0
     many.forEach(function (one, i) {

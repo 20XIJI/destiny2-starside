@@ -462,19 +462,6 @@ def tag_values(md, which):
     return got
 
 
-def scenes_of(md):
-    """合集的适用环境。**第一个是主场景**，索引页按它分大节。
-
-    多值照旧（一份合集常在突袭与地牢都成立），但大节只进一个：同一张卡出现在
-    两个节里，读者会以为是两份合集。顺序因此有意义，与 page_items() 的
-    「顺序即同名时的优先级」同一条。
-    """
-    got = tag_values(md, 0)
-    if not got:
-        die('合集的「场景：」不能空，它决定这份合集进索引页的哪一个大节')
-    return got
-
-
 # 合集那枚图最多拼四枚：五枚起每一块就小到认不出是什么，而一份合集常用的
 # 也就四五套。
 SET_TILES = 4
@@ -752,7 +739,7 @@ def render_set(idx, mv, arts, head, members, slug, season, name_cn):
     stamp, desc = stamp_of(head), meta(head, '描述')
     desc_text = text_of(inline(desc, rich=True), collapse=True)
     cat = cat_of(head)
-    scenes = scenes_of(head)
+    scenes = tag_values(head, 0)
     branch, cores, who, roles = set_facts(idx, head, members)
     badge = ('%s%s' % (icon_of(vocab.pick(idx, who[0], '职业', kind='分节'), 32), who[0])
              if len(who) == 1 else MIXED)
@@ -932,17 +919,13 @@ def build(idx, dirname, season, name_cn, slug):
         # 三个职业里挑不出它该站哪一格。
         cls = who[0] if len(who) == 1 else MIXED
         core = core_mosaic(cores, 64)
-        # 场景不进标签：它就是这一页的大节标题，跳转 chip 那一排写的正是这几个
-        # 字，同一排字出现两遍读者分不出哪一排管什么（与索引页「类别不做成一行
-        # chip」同一条）。次要场景在详情页的「适用环境」那一栏里读得到。
-        scenes = scenes_of(head)
-        scene = scenes[0]
-        tags = roles
+        # 场景与定位都进标签栏，与单套那一页同一条：场景写在合集头部（整份一个），
+        # 定位每套一个、并起来去重。
+        tags = tag_values(head, 0) + roles
     else:
         branch = meta(md, '分支')
         core = icon_of(core_pick(idx, md, 'elements/%s' % BRANCH[branch]), 64)
         cls = meta(md, '职业')
-        scene = ''
         tags = tag_values(md, 0) + tag_values(md, 1)
     return {'u': '%s/%s/%s/index.html' % (OUT_DIR, season, slug), 't': title,
             'season': season, 'slug': slug, 'stamp': meta(head, '更新'),
@@ -957,8 +940,6 @@ def build(idx, dirname, season, name_cn, slug):
             # 图标路径按详情页那三层深写的，两个索引页深浅不同，前缀由 core_node()
             # 现换——存成算好的那一份，另一页就得再存第二份。
             'core': core,
-            # 合集的适用环境单选，索引页按它分大节。单套的场景多值、不分大节。
-            'scene': scene,
             'set': len(members)}
 
 
@@ -1014,12 +995,12 @@ def render_index(made, sets=False):
          shell.nav(name, up=up, toolbar={
              'data-section': '.block', 'data-item': '.entries > li',
              'data-label': '.sect-label', 'data-noun': '合集' if sets else '配装',
-             'data-chip-label': '适用环境' if sets else '类别', 'data-facets': ''}),
+             'data-chip-label': '类别', 'data-facets': ''}),
          shell.page_head(name, aside=aside),
          '<main>']
     n = 0
-    for top in (FACETS[0][2] if sets else CATEGORIES):
-        pool = [m for m in live if (m['scene'] if sets else m['cat']) == top]
+    for top in CATEGORIES:
+        pool = [m for m in live if m['cat'] == top]
         if not pool:
             continue
         n += 1
