@@ -378,11 +378,7 @@ def facet(label, tags):
 
 def facets(md):
     """铭牌下面那两栏。两栏都空即整块不出，见调用处。"""
-    # **两个键都可以整行不写**：PVP 那一类配装的场景与定位本来就可以空着
-    # （那两张表列的是 PVE 的），而填表页对空值是整行不写。按必填读会让
-    # 第一份 PVP 投稿在落盘时中止。
-    rows = (facet('适用环境', names(md, '场景', required=False))
-            + facet('标签', names(md, '定位', required=False)))
+    rows = facet('适用环境', tag_values(md, 0)) + facet('标签', tag_values(md, 1))
     return '<div class="facets">%s</div>' % rows if rows else ''
 
 
@@ -451,6 +447,21 @@ def split_set(md):
     return head, members
 
 
+def tag_values(md, which):
+    """场景或定位。两栏都可以整行不写——PVP 那一类配装的场景与定位本来就可以
+    空着（那两张表列的是 PVE 的），而填表页对空值是整行不写。
+
+    **写了的值必须在受控词表里。**PVP 是类别不是场景，早年手写的源稿把它写进
+    这两栏，索引页于是多出一行读者点不出名堂的 chip，而两处都没有闸门管着。
+    """
+    key, _, vocab = FACETS[which]
+    got = names(md, key, required=False)
+    for x in got:
+        if x not in vocab:
+            die('「%s：」要写 %s 之中的，源稿写的是 %r' % (key, '、'.join(vocab), x))
+    return got
+
+
 def scenes_of(md):
     """合集的适用环境。**第一个是主场景**，索引页按它分大节。
 
@@ -458,12 +469,9 @@ def scenes_of(md):
     两个节里，读者会以为是两份合集。顺序因此有意义，与 page_items() 的
     「顺序即同名时的优先级」同一条。
     """
-    got = names(md, '场景')
+    got = tag_values(md, 0)
     if not got:
         die('合集的「场景：」不能空，它决定这份合集进索引页的哪一个大节')
-    for x in got:
-        if x not in FACETS[0][2]:
-            die('「场景：」要写 %s 之中的，源稿写的是 %r' % ('、'.join(FACETS[0][2]), x))
     return got
 
 
@@ -935,7 +943,7 @@ def build(idx, dirname, season, name_cn, slug):
         core = icon_of(core_pick(idx, md, 'elements/%s' % BRANCH[branch]), 64)
         cls = meta(md, '职业')
         scene = ''
-        tags = names(md, '场景', required=False) + names(md, '定位', required=False)
+        tags = tag_values(md, 0) + tag_values(md, 1)
     return {'u': '%s/%s/%s/index.html' % (OUT_DIR, season, slug), 't': title,
             'season': season, 'slug': slug, 'stamp': meta(head, '更新'),
             'desc': text_of(inline(meta(head, '描述'), rich=True), collapse=True),

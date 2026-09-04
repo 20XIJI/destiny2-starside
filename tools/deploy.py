@@ -76,8 +76,14 @@ def main() -> None:
     if full:
         files, gone = listing(git("ls-files", "-z")), []
     elif base:
-        files = listing(git("diff", "--name-only", "-z", "--diff-filter=d", base, "HEAD"))
-        gone = listing(git("diff", "--name-only", "-z", "--diff-filter=D", base, "HEAD"))
+        # **--no-renames**：站上一堆同构的页面，git 很容易把「删掉一套配装」与
+        # 「新收一套配装」按内容相似度配成一次改名（实测 51% 就配上了）。配成
+        # 改名之后旧路径既不在 files 也不在 gone 里，远端于是一直挂着那个已经
+        # 删掉的页面。
+        files = listing(git("diff", "--no-renames", "--name-only", "-z",
+                            "--diff-filter=d", base, "HEAD"))
+        gone = listing(git("diff", "--no-renames", "--name-only", "-z",
+                           "--diff-filter=D", base, "HEAD"))
     else:
         sys.exit("没有上次部署的记录，先跑一次：python3 tools/deploy.py --all")
 
