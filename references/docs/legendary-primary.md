@@ -138,8 +138,8 @@
 | 武器 | 图标 | 评级 | 框架\\射速 | 属性 | 勇士 | Perk 三号位 | Perk 四号位 | 获取地点 | 评级理由 |
 |---|---|---|---|---|---|---|---|---|---|
 | 刺骨寒风 | {ico|![](icons/b3cfde9b56.webp)} | T1 | 精密 | {el-kinetic|动能} | {champ|![](icons/a9911a3dfe.webp)} | 迷惑爆发\\{perk|即兴弹药} | {perk|小试牛刀}\\{perk|爆炸箭头}\\{perk|动能震颤} | {src|木卫二} | 迷惑爆发+{perk|小试牛刀}在弓箭上真的是非常有意思而且有强度的组合，最好的弓箭框架 |
-| 恶意尖牙 | {ico|![](icons/0e7284c672.webp)} | T1.5 | 轻质 | {el-stasis|冰影} | {champ|![](icons/8b37bb6db2.webp)} | 墓碑\\{perk|即兴弹药}\\小时牛刀 | {perk|萤火虫}\\{perk|爆炸箭头}\\狂乱 | {src|竞技场} | 墓碑+{perk|萤火虫}，弓箭的 AA 很高适合打头，顶级原始特性 |
-| 牡鹿之角 | {ico|![](icons/1b5c259b17.webp)} | T1.5 | 精密 | {el-arc|电弧} | {champ|![](icons/a9911a3dfe.webp)} | {perk|小试牛刀} | 福特子弹 | {src|铁旗} | {perk|小试牛刀}+福特子弹 cos {exotic|三体坐观者}\\同类替代：救赎的边缘 |
+| 恶意尖牙 | {ico|![](icons/0e7284c672.webp)} | T1.5 | 轻质 | {el-stasis|冰影} | {champ|![](icons/8b37bb6db2.webp)} | 墓碑\\{perk|即兴弹药}\\{perk|小试牛刀} | {perk|萤火虫}\\{perk|爆炸箭头}\\狂乱 | {src|竞技场} | 墓碑+{perk|萤火虫}，弓箭的 AA 很高适合打头，顶级原始特性 |
+| 牡鹿之角 | {ico|![](icons/1b5c259b17.webp)} | T1.5 | 精密 | {el-arc|电弧} | {champ|![](icons/a9911a3dfe.webp)} | {perk|小试牛刀} | 福特子弹 | {src|铁旗} | {perk|小试牛刀}+福特子弹 cos {exotic|三体坐观者}\\同类替代：救赎的边缘（终焉将至） |
 | 累积救赎 | {ico|![](icons/9cd7d2cde0.webp)} | T2 | 精密 | {el-kinetic|动能} | {champ|![](icons/a9911a3dfe.webp)} | {perk|羸弱能量球} | {perk|动能震颤}\\{perk|爆炸箭头} | {src|花园} | {perk|羸弱能量球}+{perk|动能震颤}两发一个球，原始特性方便破屏障 |
 | 幸运星 | {ico|![](icons/3c062b27b7.webp)} | T2 | 轻质 | {el-void|虚空} | {champ|![](icons/8b37bb6db2.webp)} | {perk|冲击支撑}\\{perk|即兴弹药}\\{perk|小试牛刀} | {perk|爆炸箭头}\\{perk|不稳定弹药} | {src|至日} | 没有优秀{el-void|虚空}精密弓的下位替代 |
 
