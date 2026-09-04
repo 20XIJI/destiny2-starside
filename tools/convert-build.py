@@ -784,12 +784,14 @@ def render_set(idx, mv, arts, head, members, slug, season, name_cn):
         mt = must(re.match(r'^#\s+(.+)$', m.split('\n')[0]),
                   '合集里每一套的第一行必须是「# 配装名称」').group(1).strip()
         mb = branch_of(m)
-        # 副名写「职业 · 分支 · 定位」：三样一行读完这一套的身份，与右边那条
-        # 铭牌同序。定位可以空着，空了就少一段。
-        sub = ' · '.join(x for x in (class_of(m), mb,
-                                     '、'.join(names(m, '定位', required=False))) if x)
-        o += ['<li class="b-%s"><a href="#set-%d">%s<b>%s</b><span>%s</span></a></li>'
-              % (BRANCH[mb], n, icon_of(core_of(idx, m), 32), mt, sub)]
+        # 一行三列：图 / 职业·元素 / 名字·定位。**职业与元素单占中间那一列**，
+        # 挤进副名那一行时 208px 的目录只剩得下一个标签，定位整段被省略号吃掉。
+        o += ['<li class="b-%s"><a href="#set-%d">%s'
+              '<i class="who">%s<em class="%s">%s</em></i>'
+              '<b>%s</b><span>%s</span></a></li>'
+              % (BRANCH[mb], n, icon_of(core_of(idx, m), 32),
+                 class_of(m), ELEMENT_TOKEN[mb], mb, mt,
+                 '、'.join(names(m, '定位', required=False)))]
     o += ['</ol>', '</nav>', '<div class="set-body">']
     for n, m in enumerate(members, 1):
         o += one_of(idx, mv, arts, head, m, n)

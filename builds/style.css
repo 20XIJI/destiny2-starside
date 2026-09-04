@@ -1145,12 +1145,15 @@ button.item { width: 100%; }
 
 /* 每一行的左缘一条 2px 亮边，颜色走该套的分支色——与站上索引页每张卡的左缘、
    编辑台每一行同一条规则，`.b-*` 落在 <li> 上把 --accent 覆盖掉。 */
+/* 一行三列：图 / 职业·元素 / 名字·定位。**职业与元素单占中间那一列**——挤进
+   副名那一行时 208px 的目录只剩得下一个标签，定位整段被省略号吃掉。
+   还没选核心的那一套没有图，整行收成两列，中间那列顶上去。 */
 .set-list a,
 .set-list button[data-go] {
   position: relative;
   display: grid;
-  grid-template-columns: 32px minmax(0, 1fr);
-  gap: 10px;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 10px;
   align-items: center;
   padding: 8px 10px 8px 13px;
   color: inherit;
@@ -1194,12 +1197,33 @@ button.item { width: 100%; }
   background: var(--accent);
 }
 
+.set-list a:has(img),
+.set-list button[data-go]:has(img) {
+  grid-template-columns: auto auto minmax(0, 1fr);
+}
+
 .set-list img {
   display: block;
   width: 32px;
   height: 32px;
   border: 1px solid var(--hair);
 }
+
+/* 中间那一列：职业在上、元素在下，跨满两行。字重与色比名字弱一档
+   ——它是身份不是标题。 */
+.set-list .who {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  grid-row: span 2;
+  align-self: center;
+  color: var(--bone-faint);
+  font-size: 11px;
+  font-style: normal;
+  white-space: nowrap;
+}
+
+.set-list .who em { font-style: normal; }
 
 .set-list b {
   display: block;
@@ -1236,28 +1260,18 @@ button.item { width: 100%; }
 
 .set-list [aria-current="true"] b { color: var(--bone-hi); }
 
-/* 图跨两行，文字都落在第二列——不写死的话 <span> 会掉到图的下面去。
-   填表页那一列没有图，整行收成单列。 */
+/* 图与职业那一列各跨两行；名字与定位落在**最后一列**——带图时是第三列，
+   没图时是第二列，-2 / -1 两种都对，不写死列号。 */
 .set-list img { grid-row: span 2; }
 .set-list b,
-.set-list span { grid-column: 2; }
+.set-list span { grid-column: -2 / -1; }
 
 .set-list button[data-go] {
   width: 100%;
   font: inherit;
   text-align: left;
   cursor: pointer;
-  grid-template-columns: minmax(0, 1fr);
 }
-
-.set-list button[data-go] b,
-.set-list button[data-go] span { grid-column: 1; }
-
-/* 填了核心的那一套，目录行就带图，与详情页那一列同形；还没填的收成单列，
-   不留一个空的图位。 */
-.set-list button[data-go]:has(img) { grid-template-columns: auto minmax(0, 1fr); }
-.set-list button[data-go]:has(img) b,
-.set-list button[data-go]:has(img) span { grid-column: 2; }
 
 .set-list .viewsw[disabled] { opacity: .35; cursor: default; }
 .set-list .viewsw[disabled]:hover { color: var(--bone-dim); border-color: var(--hair); }

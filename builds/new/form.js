@@ -1135,12 +1135,21 @@
         img.width = img.height = 32;
         b.appendChild(img);
       }
+      // 一行三列：图 / 职业·元素 / 名字·定位。**职业与元素单占中间那一列**，
+      // 挤进副名那一行时 208px 的目录只剩得下一个标签。
+      var br = keyOf(md, '分支');
+      var who = document.createElement('i');
+      who.className = 'who';
+      who.textContent = keyOf(md, '职业');
+      var elm = document.createElement('em');
+      if (BRANCH[br]) elm.className = 'el-' + BRANCH[br];
+      elm.textContent = br;
+      who.appendChild(elm);
+      b.appendChild(who);
       var nm = document.createElement('b');
       nm.textContent = nameOf(md) || '未命名';     // 序号由 CSS 的计数器给
       var sub = document.createElement('span');
-      // 副名写「职业 · 分支 · 定位」，与详情页目录、右边那条铭牌同序。
-      sub.textContent = [keyOf(md, '职业'), keyOf(md, '分支'), keyOf(md, '定位')]
-        .filter(Boolean).join(' · ') || '未填写';
+      sub.textContent = keyOf(md, '定位') || '未填写';
       if (i === cur) b.setAttribute('aria-current', 'true');
       b.appendChild(nm);
       b.appendChild(sub);
