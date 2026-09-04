@@ -1354,8 +1354,11 @@ button.item { width: 100%; }
 
 .one-head .item.one-core .nm { font-size: 10.5px; }
 
-/* 这一套的名字：h1 那条只管合集标题，成员用的是 h2。不给的话输入框退回浏览器
-   缺省的二十来字符宽，一行里名字框比复制按钮还窄。 */
+/* 标题那一格要吃满整行。**.id-row 是 flex，不给 flex 的子项收缩到内容宽**：
+   `#sheet h1 input { width: 100% }` 撑的是那个已经缩窄的 h1，输入框于是停在
+   半途，与下面通栏的描述框对不齐。合集标题（h1）与每一套的名字（h2）同一件事。
+   单套那一页的 h1 不在 .id-row 里，不受这一条影响。 */
+#sheet .id-row > h1,
 #sheet .one-head h2 { flex: 1; min-width: 0; }
 
 /* 一套一节。**content-visibility 套在这里而不是 .set-wrap 上**：那一层含着
