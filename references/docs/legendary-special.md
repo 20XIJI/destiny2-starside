@@ -1,7 +1,7 @@
 # 刷取清单-绿弹紫枪
 
-描述：86 把绿弹位传说武器按枪械类型分档，含框架、属性、勇士克制、推荐 Perk、获取地点与每一把的评级理由。
-更新：2026.8.30
+描述：88 把绿弹位传说武器按枪械类型分档，含框架、属性、勇士克制、推荐 Perk、获取地点与每一把的评级理由。
+更新：2026.9.6
 鸣谢：[小棒猪-LGpig](https://space.bilibili.com/169548478) 整理全部评级与评语。
 导航：是
 首屏图标：6
@@ -183,13 +183,14 @@
 |零镇静|{ico|![](icons/cd75b0287f.webp)}|T2.5|速射|{el-void|虚空}|{champ|![](icons/8b37bb6db2.webp)}|{perk|丰盈满溢}/重建\\嫉妒军火库|{perk|受控连射}\\{perk|元素磨砺}\\洪涝|{src|巅峰\\先锋}|||||建议获取{perk|加速突击}版本。perk 池豪华|
 |激流|{ico|![](icons/60e55792e0.webp)}|T2.5|速射|{el-stasis|冰影}|{champ|![](icons/8b37bb6db2.webp)}|{perk|丰盈满溢}\\{perk|自动填装枪套}|{perk|受控连射}\\{perk|冰冷弹匣}|{src|熔炉}|||||建议获取{perk|加速突击}版本|
 |笛卡尔坐标|{ico|![](icons/f373b6cde4.webp)}|T2.5|速射|{el-solar|烈日}|{champ|![](icons/8b37bb6db2.webp)}|重建\\嫉妒军火库|{perk|聚合充能}\\{perk|受控连射}\\洪涝|{src|欧洲无人区}| {num|2987} | {num|57855} |||虽然没有{perk|加速突击}版本，但是对于速射来说{perk|聚合充能}比{perk|受控连射}优秀|
+|迭代循环|{ico|![](icons/5dc4abd849.webp)}|T2.5|速射|{el-arc|电弧}|{champ|![](icons/8b37bb6db2.webp)}|{perk|超充弹匣}|{perk|受控连射}|{src|海王星}|||||原始特性小火箭额外伤害，但是{perk|超充弹匣}必须要有{el-arc|增幅}获得手段|
 | == 适配/攻击 T3：适配框架与攻击框架拥有最差的 DPS 和总伤，攻击框架的每盒弹药总伤比适配高，但是输在弹药散布和不能反屏障 == |
 |灵巫力量|{ico|![](icons/ab23101699.webp)}|T3|适配|{el-arc|电弧}|{champ|![](icons/a9911a3dfe.webp)}|{perk|集体爆破}|{perk|集体行动}|{src|最后一愿}| {num|2576} | {num|57638} |||冰猎适合使用|
 |碎梦者|{ico|![](icons/566e3bd5d2.webp)}|T3|适配|{el-solar|烈日}|{champ|![](icons/a9911a3dfe.webp)}|{perk|金中藏弹}\\重建|狂乱\\{perk|受控连射}|{src|月球}|||||火属性没有玫瑰罗盘可以用|
 |皇家行刑者|{ico|![](icons/ed795557d5.webp)}|T3|适配|{el-solar|烈日}|{champ|![](icons/a9911a3dfe.webp)}|{perk|金中藏弹}\\{perk|嫉妒刺客}|洪涝|{src|阿瓦隆}|||||火属性没有玫瑰罗盘可以用，洪涝适合松身裤|
 |后见之明|{ico|![](icons/d5f841af9c.webp)}|T3|适配|{el-void|虚空}|{champ|![](icons/a9911a3dfe.webp)}|{perk|金中藏弹}|洪涝\\斩首|{src|仄}|||||{el-void|虚空}属性没有特别好的反屏障绿弹，勉强可用|
 |VS 重力滞止|{ico|![](icons/683a10f11c.webp)}|T3|适配|{el-void|虚空}|{champ|![](icons/a9911a3dfe.webp)}|{perk|金中藏弹}|{perk|受控连射}\\{perk|枯萎凝视}|{src|晚星之主}|||||{el-void|虚空}属性没有特别好的反屏障绿弹，勉强可用|
-|塔霍马 01|{ico|![](icons/b273081626.webp)}|T3|攻击|{el-strand|缚丝}|{champ|![](icons/b7c4048b87.webp)}|{perk|丰盈满溢}\\{perk|嫉妒刺客}\\{perk|金中藏弹}\\{perk|集体爆破}|{perk|聚合充能}/{perk|受控连射}\\洪涝\\{perk|集体行动}\\{perk|集体拳击}|{src|扭曲}|||||perk 池优秀，有意思|
+|塔霍马 01|{ico|![](icons/b273081626.webp)}|T3|攻击|{el-strand|缚丝}|{champ|![](icons/b7c4048b87.webp)}|{perk|丰盈满溢}\\{perk|嫉妒刺客}\\{perk|金中藏弹}\\{perk|集体爆破}|{perk|聚合充能}/{perk|受控连射}\\洪涝\\{perk|集体行动}\\{perk|集体拳击}|{src|扭曲}|||||perk 池优秀，{perk|集体爆破}+{perk|集体拳击}的组合有意思|
 |回火发电机|{ico|![](icons/71787116d0.webp)}|T3|攻击|{el-arc|电弧}|{champ|![](icons/b7c4048b87.webp)}|{perk|丰盈满溢}\\{perk|超充弹匣}\\{perk|回转弹药}|{perk|震颤反馈}/换档\\{perk|腹背受敌}|{src|竞技场}| {num|2799} | {num|55244} |||因为锻炉眷属原始特性可以和威胁等级{exotic|缩影}一起使用，{perk|震颤反馈}一发触发|
 |有限未知|{ico|![](icons/4fde0cfa6a.webp)}|T3|攻击|{el-solar|烈日}|{champ|![](icons/b7c4048b87.webp)}|重建\\{perk|金中藏弹}|{perk|受控连射}\\洪涝\\{perk|诱导推销}|{src|沙漠}||||||
 
@@ -200,7 +201,8 @@
 
 | 武器 | 图标 | 评级 | 框架\\射速 | 属性 | 勇士 | Perk 三号位 | Perk 四号位 | 获取地点 | DPS | 总伤 | 切换 DPS | 备注 | 评级理由 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|食莲者|{ico|![](icons/2f0b44aaa4.webp)}|T0（旧）\\T2（新）|微型导弹\\100|{el-void|虚空}|{champ|![](icons/b7c4048b87.webp)}|{perk|边打边劫}（旧）\\{perk|冲击支撑}\\{perk|空中扳机}|{perk|枯萎凝视}（旧）\\{perk|不稳定弹药}\\狂乱/{perk|集体行动}|{src|巅峰}|||||{perk|边打边劫}食莲者是全游戏拾取范围最大的工具枪，可惜如今已经绝版|
+|食莲者|{ico|![](icons/2f0b44aaa4.webp)}|T0（旧）|微型导弹\\100|{el-void|虚空}|{champ|![](icons/b7c4048b87.webp)}|{perk|边打边劫}|{perk|枯萎凝视}|{src|仄}|||||{perk|边打边劫}食莲者是全游戏拾取范围最大的工具枪，可惜如今已经绝版|
+|食莲者|{ico|![](icons/2f0b44aaa4.webp)}|T2（新）|微型导弹\\100|{el-void|虚空}|{champ|![](icons/b7c4048b87.webp)}|{perk|冲击支撑}\\{perk|空中扳机}|{perk|不稳定弹药}\\狂乱/{perk|集体行动}\\{perk|枯萎凝视}|{src|巅峰}|||||不错的 perk 池，有{el-void|虚空}神器搭配|
 |极高反射|{ico|![](icons/2607a23967.webp)}|T2|微型导弹\\100|{el-kinetic|动能}|{champ|![](icons/b7c4048b87.webp)}|{perk|金中藏弹}\\迷惑爆发|{perk|全明星}\\狂乱\\重组\\{perk|辅助炸药}|{src|木卫二}|||||{el-kinetic|动能} 15% 增伤对于清怪枪是先天性优势，迷惑爆发+狂乱很有意思|
 |蒙恩|{ico|![](icons/5b477904cb.webp)}|T2|微型导弹\\100|{el-arc|电弧}|{champ|![](icons/b7c4048b87.webp)}|{perk|空中扳机}|福特子弹|{src|战争领主的废墟}|||||{perk|空中扳机}+福特子弹清{bar-red|红血}很快|
 |重现记忆|{ico|![](icons/8052daa1e8.webp)}|T2|微型导弹\\100|{el-solar|烈日}|{champ|![](icons/b7c4048b87.webp)}|{perk|金中藏弹}/{perk|治疗弹匣}\\{perk|即兴弹药}|转向\\{perk|辉耀炽热}|{src|熔炉}|||||转向在火箭手枪上非常合适。弥补清理{bar-orange|橙血}乏力的问题，原始特性不错|

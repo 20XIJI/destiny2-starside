@@ -1,0 +1,103 @@
+/* 刷取清单-护甲套装：29 套护甲套装的排序、件数、获取地点、应用场景与说明。
+   通用主题、字体与配色 token 在 /assets/site.css。
+   这一页由 tools/convert-doc.py 从 references/docs/farming-sets.md 生成，
+   改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
+
+/* 宽表那一档（design.md 四节）。**不跟同系列那四页收到 1500**——它们是 14 列，
+   这一页只有 6 列，前五列的内容都短（套装名最长 7 字、件数恒为「N 件」），
+   1500px 下这五列摊出一片空白，末列的说明一行能跑到 65 字。 */
+:root { --wrap: 1060px; --min: 1104px; }
+
+/* 排序说明那一节：表之前的正文，退一档、不与表争。 */
+.block ul {
+  margin: 0;
+  padding-left: 1.4em;
+  color: var(--bone-dim);
+  font-size: 13.5px;
+  line-height: 1.95;
+}
+
+.block li { margin-bottom: 10px; }
+
+/* 套装表占满版心、列宽写死——按内容定宽会让说明那列吃掉整张表的宽度，
+   前五列被压成竖排。只认套装表：排序说明那一节没有表。 */
+.gen {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.gen th,
+.gen td {
+  padding: 12px 12px;
+  overflow-wrap: anywhere;
+}
+
+/* 前五列都是短内容，居中读作一组身份信息；末列的说明是正文，左对齐。
+   列名跟着本列的正文走，所以两条各自同时选 thead 与 tbody。 */
+.gen th:nth-child(-n + 5),
+.gen td:nth-child(-n + 5) { text-align: center; }
+
+.gen th:last-child { text-align: left; }
+
+.gen thead th:nth-child(1) { width: 11%; }
+.gen thead th:nth-child(2) { width: 6.5%; }
+.gen thead th:nth-child(3) { width: 6%; }
+.gen thead th:nth-child(4) { width: 11%; }
+.gen thead th:nth-child(5) { width: 12%; }
+/* 说明不给宽度，吃掉剩下的那一截。 */
+.gen thead th:last-child { width: auto; }
+
+/* 套装名：一行的身份，提亮一档。keep-all 让它只在源稿写的 <br> 处断行。 */
+.gen tbody th[scope="row"] {
+  color: var(--bone-hi);
+  font-family: var(--font-cn);
+  font-size: 13.5px;
+  font-weight: 600;
+  word-break: keep-all;
+}
+
+.gen td.ico { padding: 10px 6px; }
+
+/* 图标原图 56px，跟着格子缩、不写死像素：窄视口下格子比 56px 还窄时，
+   `margin: 0 auto` 是超约束的，浏览器会把右边距解成负值，整枚图往右错位。
+   宽高属性照旧由 markup.img_size 从文件头现读，这里只改显示尺寸。 */
+.gen td.ico img {
+  display: block;
+  width: 100%;
+  max-width: 56px;
+  height: auto;
+  margin: 0 auto;
+}
+
+/* 件数与应用场景：短标签，退到 13px 与套装名拉开层次。
+   **不给 color**：整格只有一个标记时 class 落在 <td> 本身，
+   三选择器的 color 会压过单类（design.md 与 site.css 的「基色给 tbody」那一条）。 */
+.gen tbody td:nth-child(3) { white-space: nowrap; }
+
+.gen tbody td:nth-child(3),
+.gen tbody td:nth-child(5) { font-size: 13px; }
+
+/* 获取地点：整格一个 {src|…} 标记，比正文低一档——它是检索线索，不是要读的内容。
+   活动名与异域武器名大量同形（「二象性」既是地牢也是异域霰弹枪），整格包进标记
+   之后不参与 check_terms.py 的 G6 正查，不会被染成武器名。 */
+.gen td.src {
+  font-size: 12.5px;
+  line-height: 1.8;
+  text-align: center;
+}
+
+/* 说明：这一页的正文，末列，吃掉剩下的宽度。不给 color，理由同上。 */
+.gen tbody td:last-child {
+  font-size: 13.5px;
+  line-height: 1.95;
+  text-align: left;
+}
+
+/* 屏外的分节不参与布局与绘制。套在 .block 上而不是 .gen tr 上——
+   content-visibility 对表格内部元素不生效。这一页没有 sticky 后代。
+   contain-intrinsic-size 的 auto 让浏览器渲染过一次后改用真实高度，那个数只是
+   从没渲染过时的初始估值，不必跟着内容维护。 */
+.block {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}

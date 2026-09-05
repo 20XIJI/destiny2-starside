@@ -1,7 +1,7 @@
 # 刷取清单-白弹紫枪
 
-描述：53 把白弹位传说武器按枪械类型分档，含框架、属性、勇士克制、推荐 Perk、获取地点与每一把的评级理由。
-更新：2026.8.30
+描述：56 把白弹位传说武器按枪械类型分档，含框架、属性、勇士克制、推荐 Perk、获取地点与每一把的评级理由。
+更新：2026.9.6
 鸣谢：[小棒猪-LGpig](https://space.bilibili.com/169548478) 整理全部评级与评语。
 导航：是
 首屏图标：6
@@ -62,6 +62,7 @@
 | 红衣威尔 | {ico|![](icons/665cb010e5.webp)} | T0 | 适配\\600 | {el-kinetic|动能} | {champ|![](icons/a9911a3dfe.webp)} | {perk|羸弱能量球} | {perk|动能震颤} | {src|欧洲无人区} | 反屏障，适配框架也是所有自动步枪中最优秀的框架。{el-kinetic|动能}自带除{bar-yellow|首领}以外{enemy|战斗人员} 15% 增伤。{perk|羸弱能量球}+{perk|动能震颤}是最合适的组合 |
 | 痛苦的饥饿 | {ico|![](icons/19db261d0d.webp)} | T0 | 适配\\600 | {el-void|虚空} | {champ|![](icons/a9911a3dfe.webp)} | {perk|冲击支撑}\\{perk|爆破专家}\\{perk|枯萎凝视} | {perk|武器大师}\\狂暴\\{perk|不稳定弹药} | {src|智谋} | {el-void|虚空}属性武器是除{el-kinetic|动能}之外最优秀的清怪属性。{el-void|虚空}自动步枪吃满了 NPA 神器 |
 | VS 热电推进 | {ico|![](icons/1e0109ecf6.webp)} | T0.5 | 适配\\600 | {el-arc|电弧} | {champ|![](icons/a9911a3dfe.webp)} | {perk|羸弱能量球} | {perk|震颤反馈} | {src|晚星之主} |  |
+| 雷古斯克之誓 | {ico|![](icons/666e348804.webp)} | T0.5 | 速射\\720 | {el-void|虚空} | {champ|![](icons/8b37bb6db2.webp)} | {perk|即兴弹药}\\{perk|不稳定弹药} | {perk|冲击支撑}\\{perk|羸弱能量球}\\{perk|杀戮弹匣}\\{perk|斗剑士} | {src|铁旗} | 唯一一把{perk|即兴弹药}{el-void|虚空}白弹 |
 | 狙猎 Mk.47 | {ico|![](icons/7674e9b6e5.webp)} | T1 | 轻质\\720 | {el-arc|电弧} | {champ|![](icons/8b37bb6db2.webp)} | {perk|震颤反馈} | {perk|羸弱能量球}\\{perk|混沌重塑} | {src|赛雀联赛} | 轻质框架+轻量级起源特性跑起来很快 |
 | 鲁莽神谕 | {ico|![](icons/cd17c3a763.webp)} | T1 | 速射\\720 | {el-void|虚空} | {champ|![](icons/8b37bb6db2.webp)} | {perk|维度偏移}\\{perk|不稳定弹药} | {perk|混沌重塑}\\{perk|冲击支撑} | {src|众神殿} | 众神殿版本 perk 池比花园版本好，起源特性优秀 |
 
@@ -75,6 +76,7 @@
 | 袖珍卫士 | {ico|![](icons/aa76fe9f8a.webp)} | T0 | 动态热量\\360 | {el-void|虚空} | {champ|![](icons/8b37bb6db2.webp)} | 冷却饰品（vog 套）\\{perk|不稳定弹药} | {perk|冲击支撑}\\狂乱\\{perk|杀戮弹匣} | {src|无序边界} | 伤害最高的白弹中伤害最高的框架 |
 | 黄铜攻击 | {ico|![](icons/04d24424f9.webp)} | T0 | 重型点射\\325 | {el-void|虚空} | {champ|![](icons/b7c4048b87.webp)} | {perk|冲击支撑} | 狂乱\\{perk|不稳定弹药} | {src|世界\\暗屋之声} | 不错的框架，原始特性能叠到 15% 减伤非常厉害 |
 | 傍晚 SI4 | {ico|![](icons/919eea660c.webp)} | T0.5 | 适配点射\\491 | {el-solar|烈日} | {champ|![](icons/a9911a3dfe.webp)} | {perk|治疗弹匣}\\{perk|即兴弹药} | {perk|辉耀炽热}\\{perk|邪剑守则}\\{perk|燃烧野心} | {src|先锋} | 伤害最高的手枪。高到能轻松反 50 光屏障 |
+| 麦克尔的崇敬 | {ico|![](icons/111f368048.webp)} | T1 | 速射 | {el-strand|缚丝} | {champ|![](icons/8b37bb6db2.webp)} | 切割 | {perk|武器大师}\\{perk|二元轨道}/狂乱\\{perk|超因果亲和} | {src|梦魇根源} | 少数主手不错的 perk 池 |
 | 日心 QSc | {ico|![](icons/aed10024c7.webp)} | T1 | 轻质\\360 | {el-solar|烈日} | {champ|![](icons/8b37bb6db2.webp)} | {perk|治疗弹匣} | {perk|腹背受敌}\\{perk|辉耀炽热}\\狂乱 | {src|世界掉落} | 框架还行，轻质跑得快 |
 | 难以逾越 | {ico|![](icons/1c07d78d5b.webp)} | T1.5 | 精密\\260 | {el-void|虚空} | {champ|![](icons/a9911a3dfe.webp)} | {perk|羸弱能量球} | {perk|腹背受敌}\\{perk|不稳定弹药} | {src|枪匠兑换\\凯尔之陨} | 最差的框架但是是理论白弹最快产球 |
 | 无名之秋 | {ico|![](icons/7754ffde42.webp)} | T1.5 | 轻质\\360 | {el-arc|电弧} | {champ|![](icons/8b37bb6db2.webp)} | {perk|羸弱能量球} | 福特子弹\\{perk|腹背受敌}\\狂乱 | {src|熔炉} |  |
@@ -89,6 +91,7 @@
 | 多机系统 CCX | {ico|![](icons/61ae0ccd4c.webp)} | T0 | 轻质\\900 | {el-kinetic|动能} | {champ|![](icons/8b37bb6db2.webp)} | {perk|羸弱能量球} | {perk|动能震颤} | {src|铁旗} | 唯一的 900 羸弱{perk|动能震颤}微冲 |
 | 岁时之巅 | {ico|![](icons/43a3b366d2.webp)} | T0 | 轻质\\900 | {el-solar|烈日} | {champ|![](icons/8b37bb6db2.webp)} | {perk|羸弱能量球}\\{perk|治疗弹匣} | {perk|混沌重塑}\\{perk|燃烧野心}\\{perk|辉耀炽热} | {src|至日} | {perk|羸弱能量球}+{perk|混沌重塑}和优秀的特克斯厂起源特性让他成为副手最优秀的微冲，手感优秀，perk 池豪华，{perk|燃烧野心}是给松身裤火猎的特殊选择 |
 | 不可饶恕 | {ico|![](icons/93b304d765.webp)} | T0 | 攻击\\720 | {el-void|虚空} | {champ|![](icons/b7c4048b87.webp)} | {perk|羸弱能量球}\\{perk|不稳定弹药} | {perk|混沌重塑}\\{perk|冲击支撑} | {src|二象性} | {el-void|虚空}属性有许多{el-void|虚空}相关神器选择，攻击框架本身也是微冲伤害最高的框架，起源特性加填装，弹药生成略低 |
+| 超前 | {ico|![](icons/0cafe6abf9.webp)} | T0 | 适配\\900 | {el-arc|电弧} | {champ|![](icons/a9911a3dfe.webp)} | {perk|回转弹药} | {perk|目标锁定} | {src|沙漠} | 微冲腿泰坦的最佳紫武器，常与药剂包驱逐引擎{exotic|混乱无序}配合使用 |
 | 驯顺 | {ico|![](icons/c31aac2768.webp)} | T0 | 轻质\\900 | {el-kinetic|动能} | {champ|![](icons/8b37bb6db2.webp)} | {perk|动能震颤} | {perk|混沌重塑} | {src|门徒} | {perk|动能震颤}+{perk|混沌重塑}伤害很高，起源特性可以回血 |
 | 隐士 | {ico|![](icons/716ea4a7d1.webp)} | T0 | 轻质\\900 | {el-void|虚空} | {champ|![](icons/8b37bb6db2.webp)} | {perk|冲击支撑} | {perk|混沌重塑}\\{perk|武器大师}\\{perk|不稳定弹药} | {src|猛攻} | 起源特性可回转手雷能量 |
 | 紧急求生包 | {ico|![](icons/6068493e30.webp)} | T0 | 适配\\900 | {el-void|虚空} | {champ|![](icons/a9911a3dfe.webp)} | {perk|羸弱能量球}\\{perk|冲击支撑} | 狂乱\\{perk|集体行动}\\{perk|不稳定弹药} | {src|智谋} |  |
@@ -104,7 +107,7 @@
 
 | 武器 | 图标 | 评级 | 框架\\射速 | 属性 | 勇士 | Perk 三号位 | Perk 四号位 | 获取地点 | 评级理由 |
 |---|---|---|---|---|---|---|---|---|---|
-| 星狐座 | {ico|![](icons/c5091062ed.webp)} | T0 | 精密\\180 | {el-stasis|冰影} | {champ|![](icons/a9911a3dfe.webp)} | {perk|高爆载荷} | {perk|边打边劫} | {src|破碎王座} | 最常使用的{perk|边打边劫}工具枪。手感射速优秀，起源特性还加操作，主手白弹{perk|边打边劫}的最优选 |
+| 星狐座 | {ico|![](icons/c5091062ed.webp)} | T0 | 精密\\180 | {el-stasis|冰影} | {champ|![](icons/a9911a3dfe.webp)} | {perk|边打边劫} | {perk|高爆载荷} | {src|破碎王座} | 最常使用的{perk|边打边劫}工具枪。手感射速优秀，起源特性还加操作，主手白弹{perk|边打边劫}的最优选 |
 | 绽放兰花 | {ico|![](icons/f5a1527830.webp)} | T0 | 适配\\140 | {el-void|虚空} | {champ|![](icons/a9911a3dfe.webp)} | {perk|冲击支撑}\\{perk|杀戮弹匣}\\{perk|边打边劫}\\{perk|即兴弹药} | {perk|高爆载荷}\\{perk|武器大师}\\狂暴\\{perk|不稳定弹药} | {src|竞技场} | 豪华的 perk 池和起源特性，{el-void|虚空}属性让他成为最强的白弹清怪手炮 |
 | 克洛塔之语 | {ico|![](icons/47a805a5c2.webp)} | T0 | 精密\\180 | {el-void|虚空} | {champ|![](icons/a9911a3dfe.webp)} | {perk|冲击支撑}\\{perk|爆破专家} | 狂乱\\{perk|武器大师}\\{perk|不稳定弹药} | {src|克洛塔的末日} | 180 的最佳之选 |
 | 无爱 | {ico|![](icons/75d2a96e94.webp)} | T0 | 重型点射\\257 | {el-strand|缚丝} | {champ|![](icons/b7c4048b87.webp)} | 高强度备弹\\{perk|快速命中} | {perk|元素磨砺} | {src|分离教义} | 虽然{exotic|幸运裤}已不复往日荣光，顶级的 perk 池和顶级的原始特性让他成为最好的双发手炮，通常与艾莲娜一起使用，{el-strand|缚丝}属性适合废墟石板神器 |

@@ -1,8 +1,27 @@
 # 更新日志
 
 描述：Starside 各资料页的内容改动记录，按日期倒序，每条写明改动类型、所在页面与改动内容。
-更新：2026.9.5
+更新：2026.9.6
 页脚：改动类型只有三种：新增、改动、订正。
+
+## 2026.9.6
+
+- {act|新增}[刷取清单-异域武器](../exotic-weapons/index.html) · 第四骑士：输出 T1、清怪 T1，DPS 8496
+- {act|新增}[刷取清单-异域武器](../exotic-weapons/index.html) · 条件终局：特殊用途，玻璃拱顶守门人冰白盾
+- {act|新增}[刷取清单-白弹紫枪](../legendary-primary/index.html) · 雷古斯克之誓：T0.5，唯一一把即兴弹药虚空白弹
+- {act|新增}[刷取清单-白弹紫枪](../legendary-primary/index.html) · 麦克尔的崇敬：T1，梦魇根源掉落
+- {act|新增}[刷取清单-白弹紫枪](../legendary-primary/index.html) · 超前：T0，微冲腿泰坦的最佳紫武器
+- {act|新增}[刷取清单-绿弹紫枪](../legendary-special/index.html) · 迭代循环：T2.5，海王星掉落
+- {act|新增}[刷取清单-护甲套装](../farming-sets/index.html)：29 套按泛用性排序，含件数、获取地点与应用场景
+
+- {act|改动}[刷取清单-异域武器](../exotic-weapons/index.html) · 回旋喝彩：排到阿克瑞斯传说之前
+- {act|改动}[刷取清单-绿弹紫枪](../legendary-special/index.html) · 食莲者：旧版与新版拆成两行
+- {act|改动}[刷取清单-威能紫枪](../legendary-heavy/index.html) · 线融：类型评级改为 T1.5，精密 T1.5、适配点射 T2.5
+
+- {act|订正}[刷取清单-异域武器](../exotic-weapons/index.html) · 回旋喝彩：输出评级改为 T1，排在高难之前
+- {act|订正}[刷取清单-异域武器](../exotic-weapons/index.html) · 千语：黎明副歌伤害最高，需携带骨灰余烬
+- {act|订正}[刷取清单-白弹紫枪](../legendary-primary/index.html) · 星狐座：边打边劫在三号位，高爆载荷在四号位
+- {act|订正}[刷取清单-绿弹紫枪](../legendary-special/index.html) · 塔霍马 01：补上集体爆破加集体拳击的组合
 
 ## 2026.9.5
 
