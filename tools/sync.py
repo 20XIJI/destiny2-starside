@@ -65,6 +65,7 @@ def api(action, **kw):
     连发。固定睡一个常数也压得住，但那个常数会在限流改了之后静默失效；按回应退避
     不必猜，也顺带兜住别处同时在打这支函数的情况。
     """
+    target = '%s%s' % (action, ' ' + str(kw['id']) if kw.get('id') is not None else '')
     body = json.dumps(dict(kw, a=action, k=token()), ensure_ascii=False).encode()
     for wait in (0.3, 1, 3, 8, 0):
         req = urllib.request.Request(
@@ -73,11 +74,13 @@ def api(action, **kw):
             out = json.loads(urllib.request.urlopen(req, timeout=60).read().decode())
         except urllib.error.HTTPError as e:
             if e.code != 429 or not wait:
-                raise
+                raise RuntimeError('%s：HTTP %d；写请求结果可能未知' % (target, e.code)) from None
             time.sleep(wait)
             continue
+        except (OSError, json.JSONDecodeError, UnicodeDecodeError) as e:
+            raise RuntimeError('%s：%s；写请求结果可能未知' % (target, type(e).__name__)) from None
         if isinstance(out, dict) and out.get('error'):
-            raise RuntimeError('后端拒了 %s：%s' % (action, out['error']))
+            raise RuntimeError('后端拒了 %s：%s' % (target, out['error']))
         return out
     raise RuntimeError('%s 一直被限流挡着' % action)
 
@@ -140,8 +143,14 @@ def baseline(save=None):
 
 def put(path, md):
     """CRLF→LF，补上末尾换行。"""
-    with open(path, 'w', encoding='utf-8', newline='') as f:
-        f.write(md.replace('\r\n', '\n').rstrip('\n') + '\n')
+    try:
+        with open(path, 'w', encoding='utf-8', newline='') as f:
+            f.write(md.replace('\r\n', '\n').rstrip('\n') + '\n')
+    except OSError as e:
+        parent = os.path.dirname(os.path.abspath(path))
+        reason = ('父目录不存在：%s；先创建该目录，再重跑原命令' % parent
+                  if not os.path.isdir(parent) else str(e))
+        raise RuntimeError('落盘失败 %s：%s' % (os.path.abspath(path), reason)) from None
 
 
 def send(doc_id, md):
@@ -180,8 +189,9 @@ def land(subs, dropped=()):
             continue
         put(p, md)
         wrote.append('builds/%s/%s' % (season, slug))
+        print('已落盘配装 %s' % wrote[-1], flush=True)
     if wrote:
-        print('落盘 %d 套配装：%s' % (len(wrote), '、'.join(wrote)))
+        print('落盘 %d 套配装' % len(wrote))
     return wrote
 
 
@@ -220,8 +230,9 @@ def sweep(subs, disk, base, force=()):
         base.pop(doc_id, None)
         baseline(base)
         gone.append(doc_id)
+        print('已删除配装 %s' % doc_id, flush=True)
     if gone:
-        print('删掉 %d 套配装：%s' % (len(gone), '、'.join(gone)))
+        print('删掉 %d 套配装' % len(gone))
     return gone, conflicts
 
 
@@ -242,6 +253,7 @@ def sync():
         b = base.get(doc_id)
         dh = sha1(d) if d is not None else None
         rh = sha1(r) if r is not None else None
+        completed = ''
 
         if dh == rh:
             pass
@@ -249,6 +261,7 @@ def sync():
             if r is None:
                 send(doc_id, d)
                 pushed.append(doc_id)   # 本地新加的一篇，库里没东西可丢
+                completed = '已推送'
             else:
                 stuck.append(doc_id)    # 库里有、且与盘上不同，猜不得
                 continue
@@ -259,9 +272,11 @@ def sync():
             if d is None:
                 api('drop', id=doc_id)
                 dropped.append(doc_id)
+                completed = '已删除库稿'
             else:
                 send(doc_id, d)
                 pushed.append(doc_id)
+                completed = '已推送'
         elif r is None:
             # 缺少删除意图时不以库里缺稿为由删本地。
             stuck.append(doc_id)
@@ -270,6 +285,7 @@ def sync():
             put(path_of(doc_id), r)
             pulled.append(doc_id)
             dh = sha1(r)
+            completed = '已拉取'
         # 每篇成功立即记录；后面的 API/落盘失败不抹掉已完成的对账。
         if dh != b:
             if dh is None:
@@ -277,10 +293,12 @@ def sync():
             else:
                 base[doc_id] = dh
             baseline(base)
+        if completed:
+            print('%s %s' % (completed, doc_id), flush=True)
 
     for name, ids in (('推上去', pushed), ('拉下来', pulled), ('库里删掉', dropped)):
         if ids:
-            print('%s %d 篇：%s' % (name, len(ids), '、'.join(ids)))
+            print('%s %d 篇' % (name, len(ids)))
     if not (pushed or pulled or dropped or stuck):
         print('两边一致，%d 篇' % len(disk))
 
@@ -290,7 +308,7 @@ def sync():
         for doc_id in stuck:
             if doc_id in db:
                 put(path_of(doc_id) + '.remote', db[doc_id])
-        print('\n撞车 %d 篇，一个字没动：' % len(stuck))
+        print('\n冲突 %d 篇：这些源稿未改动；其他已完成项见上方回执' % len(stuck))
         for doc_id in stuck:
             print('  %s' % doc_id + ('  库里那份写在 %s.md.remote' % doc_id if doc_id in db else ''))
         print('比过之后择一：')
@@ -318,7 +336,7 @@ def take(ids, mine):
                 leftover = path_of(doc_id) + '.remote'
                 if os.path.exists(leftover):
                     os.remove(leftover)
-                print('%s ← 接受删除' % doc_id)
+                print('%s ← 接受删除' % doc_id, flush=True)
                 continue
         if mine:
             if doc_id not in disk:
@@ -336,7 +354,7 @@ def take(ids, mine):
         leftover = path_of(doc_id) + '.remote'
         if os.path.exists(leftover):
             os.remove(leftover)
-        print('%s ← %s' % (doc_id, '盘上那份' if mine else '库里那份'))
+        print('%s ← %s' % (doc_id, '盘上那份' if mine else '库里那份'), flush=True)
     baseline(base)
 
 
@@ -344,26 +362,37 @@ def seed():
     disk = on_disk()
     for doc_id, md in sorted(disk.items()):
         send(doc_id, md)
+        print('已灌库 %s（基线将在全部成功后重记）' % doc_id, flush=True)
     baseline({k: sha1(v) for k, v in disk.items()})
     print('灌了 %d 篇，基线重记' % len(disk))
 
 
 def main():
-    ap = argparse.ArgumentParser(description=__doc__,
+    ap = argparse.ArgumentParser(description=__doc__, allow_abbrev=False,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--seed', action='store_true', help='盘整个覆盖库，并重记基线')
     ap.add_argument('--mine', nargs='+', metavar='_id', help='撞车了，这几篇以盘上的为准')
     ap.add_argument('--theirs', nargs='+', metavar='_id', help='撞车了，这几篇以库里的为准')
     a = ap.parse_args()
-    if a.seed:
-        seed()
-    elif a.mine or a.theirs:
-        if a.mine:
-            take(a.mine, True)
-        if a.theirs:
-            take(a.theirs, False)
-    else:
-        sys.exit(sync())
+    if a.seed and (a.mine or a.theirs):
+        ap.error('--seed 与 --mine/--theirs 不能同时使用')
+    overlap = set(a.mine or ()) & set(a.theirs or ())
+    if overlap:
+        ap.error('同一 _id 不能同时以盘上和库里为准：' + '、'.join(sorted(overlap)))
+    try:
+        if a.seed:
+            seed()
+        elif a.mine or a.theirs:
+            if a.mine:
+                take(a.mine, True)
+            if a.theirs:
+                take(a.theirs, False)
+        else:
+            sys.exit(sync())
+    except (OSError, RuntimeError) as e:
+        print('%s\n已完成项保留；结果不明的写入请核对后重跑，未执行全轮回滚' % e,
+              file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == '__main__':

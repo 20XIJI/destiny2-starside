@@ -11,6 +11,7 @@
 一条记录一行，与 assets/search.js 同理——这份文件每改一次词表就要重生成并入库，
 按行写让 git 存得下增量。
 """
+import argparse
 import json
 import os
 import re
@@ -166,6 +167,8 @@ def check(out):
 
 
 def main():
+    argparse.ArgumentParser(description=__doc__, allow_abbrev=False,
+                            epilog="产出 admin/terms.js 与 admin/pages.js；资料产出应先生成；完整链运行 npm run build").parse_args()
     out = build()
     check(out)
     os.makedirs(os.path.dirname(OUT), exist_ok=True)

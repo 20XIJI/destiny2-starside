@@ -12,6 +12,7 @@
 图标登记与首屏优先级判定都收在这里，三个生成器一律从这里取。
 """
 
+from contextlib import contextmanager
 import hashlib
 import html as htmllib
 import os
@@ -59,6 +60,19 @@ def eq(label, got, want) -> None:
     """计数闸门。参数顺序固定为「名目、实际、期望」。"""
     if got != want:
         die('%s：%d，期望 %d' % (label, got, want))
+
+
+@contextmanager
+def source_context(path):
+    """只给预期的源稿/文件错误补上下文，编程异常保留 traceback。"""
+    try:
+        yield
+    except SystemExit as e:
+        if isinstance(e.code, str) and e.code:
+            raise SystemExit('%s: %s' % (path, e.code)) from None
+        raise
+    except OSError as e:
+        raise SystemExit('%s: %s' % (path, e)) from None
 
 
 def text_of(frag, collapse=False):

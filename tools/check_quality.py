@@ -7,6 +7,7 @@ python3 tools/check_quality.py
 """
 import base64
 import copy
+from email.message import Message
 import gzip
 import importlib.util
 import io
@@ -17,10 +18,11 @@ import socket
 import subprocess
 import sys
 import tempfile
-from contextlib import ExitStack, redirect_stdout
+from contextlib import ExitStack, redirect_stderr, redirect_stdout
 from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
+import urllib.error
 import urllib.request
 
 import items
@@ -74,6 +76,65 @@ class Isolated(unittest.TestCase):
             call()
         self.assertNotIn(caught.exception.code, (0, None))
         return str(caught.exception.code)
+
+
+class Entrypoints(Isolated):
+    def test_help_and_invalid_options_have_no_side_effects(self):
+        search = load('quality_search', 'build-search.py')
+        terms = load('quality_terms', 'build-terms.py')
+        self.replace(deploy, 'ROOT', self.root)
+        self.replace(deploy, 'git', forbidden)
+        self.replace(search.shell, 'pages', forbidden)
+        self.replace(terms, 'build', forbidden)
+        for module, cases in (
+            (deploy, [('--help', 0), ('--dryrun', 2), ('--all --pruen', 2),
+                      ('--check --all', 2), ('--prune', 2), ('--dry', 2), ('extra', 2)]),
+            (search, [('--help', 0), ('--dry-run', 2)]),
+            (terms, [('--help', 0), ('--dry-run', 2)]),
+        ):
+            sentinel = self.file('output.js', 'unchanged')
+            before = sentinel.stat().st_mtime_ns
+            if hasattr(module, 'OUT'):
+                self.replace(module, 'OUT', str(sentinel))
+            for args, code in cases:
+                with self.subTest(module=module.__name__, args=args):
+                    self.replace(sys, 'argv', [module.__name__, *args.split()])
+                    with redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as caught:
+                        module.main()
+                    self.assertEqual(caught.exception.code, code)
+                    self.assertEqual(sentinel.read_text(), 'unchanged')
+                    self.assertEqual(sentinel.stat().st_mtime_ns, before)
+
+
+class ExcelSafety(Isolated):
+    def test_preflight_never_requires_third_party_imports(self):
+        import builtins
+        original = builtins.__import__
+
+        def guarded(name, *args, **kw):
+            if name.startswith(('openpyxl', 'PIL')):
+                raise AssertionError('preflight imported ' + name)
+            return original(name, *args, **kw)
+
+        self.replace(builtins, '__import__', guarded)
+        excel = load('quality_excel', 'json2xlsx.py')
+        with self.assertRaises(SystemExit) as caught:
+            excel.main(['json2xlsx.py', '--help'])
+        self.assertEqual(caught.exception.code, 0)
+        src = self.file('sheet.json', '{"rows":[]}')
+        out = self.file('sheet.xlsx', 'human work')
+        hard = self.root / 'hard.xlsx'
+        os.link(src, hard)
+        link = self.root / 'link.xlsx'
+        link.symlink_to(src)
+        for dest, force in ((out, False), (src, False), (src, True),
+                            (hard, True), (link, True), (self.root, True),
+                            (self.root / 'missing/out.xlsx', False)):
+            with self.subTest(dest=dest, force=force), redirect_stderr(io.StringIO()):
+                self.exits(lambda: excel.main(['json2xlsx.py', str(src), str(dest),
+                                              *(['--force'] if force else [])]))
+                self.assertEqual(src.read_text(), '{"rows":[]}')
+                self.assertEqual(out.read_text(), 'human work')
 
 
 class Deployment(Isolated):
@@ -211,6 +272,16 @@ class Deployment(Isolated):
         self.assertEqual(self.refs(), [('update-ref', deploy.REF, self.TARGET)])
 
 
+    def test_full_prune_preview_identifies_unqueried_deletions(self):
+        self.replace(sys, 'argv', ['deploy.py', '--all', '--prune', '--dry-run'])
+        deploy.main()
+        text = self.output.getvalue()
+        for part in ('全量', 'offline-fixture', deploy.CLOUD, 'prune：开启', '未查询远端'):
+            self.assertIn(part, text)
+        self.assertEqual((self.remote(), self.refs()), ([], []))
+        self.assertNotIn(('command', (sys.executable, 'tools/sync.py')), self.calls)
+
+
 class Deletion(Isolated):
     ID = 'builds/s29-fixture/one-hunter'
     A = '# A\n'
@@ -269,6 +340,30 @@ class Deletion(Isolated):
 
     def changed(self):
         self.path.write_text(self.B, encoding='utf-8')
+
+    def test_conflicting_modes_reject_before_any_action(self):
+        before = Path(sync.BASE).read_bytes()
+        for args in (['--seed', '--mine', self.ID], ['--seed', '--theirs', self.ID],
+                     ['--mine', self.ID, '--theirs', self.ID], ['--mi', self.ID]):
+            with self.subTest(args=args):
+                self.replace(sys, 'argv', ['sync.py', *args])
+                with redirect_stderr(io.StringIO()):
+                    self.assertEqual(self.exits(sync.main), '2')
+                self.assertEqual(self.calls, [])
+                self.assertEqual(self.path.read_text(), self.A)
+                self.assertEqual(self.db, {self.ID: self.A})
+                self.assertEqual(Path(sync.BASE).read_bytes(), before)
+
+    def test_distinct_ids_can_choose_opposite_directions(self):
+        self.subs = []
+        self.changed()
+        other = self.file('references/docs/other.md', self.A)
+        self.db['docs/other'] = self.B
+        self.replace(sys, 'argv', ['sync.py', '--mine', self.ID, '--theirs', 'docs/other'])
+        sync.main()
+        self.assertEqual(self.db[self.ID], self.B)
+        self.assertEqual(other.read_text(), self.B)
+        self.assertEqual(sync.baseline()['docs/other'], sync.sha1(self.B))
 
     def test_local_edit_conflict_is_not_deleted_or_pushed(self):
         self.changed()
@@ -393,6 +488,75 @@ class Deletion(Isolated):
         self.assertEqual(self.path.read_text(), self.A)
 
 
+    def test_partial_push_receipt_and_rerun_preserve_completed_baseline(self):
+        self.subs = []
+        self.file('references/docs/a.md', self.A)
+        self.file('references/docs/b.md', self.B)
+        self.fail_push = 'docs/b'
+        self.replace(sys, 'argv', ['sync.py'])
+        with redirect_stderr(io.StringIO()):
+            self.exits(sync.main)
+        self.assertEqual(self.db['docs/a'], self.A)
+        self.assertEqual(sync.baseline()['docs/a'], sync.sha1(self.A))
+        self.assertNotIn('docs/b', sync.baseline())
+        self.assertIn('已推送 docs/a', self.output.getvalue())
+        self.assertNotIn('已推送 docs/b', self.output.getvalue())
+        self.calls.clear()
+        self.fail_push = ''
+        self.assertEqual(sync.sync(), 0)
+        self.assertEqual([kw['id'] for action, kw in self.calls if action == 'push'], ['docs/b'])
+
+    def test_missing_parent_take_preserves_baseline(self):
+        self.subs = []
+        target = 'builds/s30-new/new-hunter'
+        self.db[target] = self.B
+        before = Path(sync.BASE).read_bytes()
+        with self.assertRaises(RuntimeError) as caught:
+            sync.take([target], False)
+        self.assertIn(str(self.root / 'references/builds/s30-new'), str(caught.exception))
+        self.assertIn('先创建', str(caught.exception))
+        self.assertEqual(Path(sync.BASE).read_bytes(), before)
+        self.assertFalse((self.root / 'references/builds/s30-new').exists())
+
+
+class SyncErrors(Isolated):
+    def test_api_failure_context_does_not_leak_request_or_response(self):
+        self.replace(sync, 'token', lambda: 'secret-token')
+        for outcome in (TimeoutError('secret-body'),
+                        urllib.error.HTTPError('secret-url', 503, 'secret-body', Message(), None),
+                        SimpleNamespace(read=lambda: b'secret-body'),
+                        SimpleNamespace(read=lambda: b'{"error":"conflict"}')):
+            def response(*args, **kw):
+                if isinstance(outcome, Exception):
+                    raise outcome
+                return outcome
+            self.replace(urllib.request, 'urlopen', response)
+            with self.assertRaises(RuntimeError) as caught:
+                sync.api('push', id='docs/a', gz='secret-gz')
+            message = str(caught.exception)
+            self.assertIn('push', message)
+            self.assertIn('docs/a', message)
+            if not isinstance(outcome, SimpleNamespace) or outcome.read() == b'secret-body':
+                self.assertIn('结果可能未知', message)
+            for secret in ('secret-token', 'secret-gz', 'secret-body', 'secret-url'):
+                self.assertNotIn(secret, message)
+
+    def test_rate_limit_backoff_is_unchanged(self):
+        self.replace(sync, 'token', lambda: 'fixture')
+        replies: list[Exception | SimpleNamespace] = [urllib.error.HTTPError('', 429, '', Message(), None)] * 4
+        replies.append(SimpleNamespace(read=lambda: b'{"ok":1}'))
+        def response(*args, **kw):
+            result = replies.pop(0)
+            if isinstance(result, Exception):
+                raise result
+            return result
+        waits = []
+        self.replace(urllib.request, 'urlopen', response)
+        self.replace(sync.time, 'sleep', waits.append)
+        self.assertEqual(sync.api('push', id='docs/a'), {'ok': 1})
+        self.assertEqual(waits, [0.3, 1, 3, 8])
+
+
 class Generation(Isolated):
     SOLO = ('# 示例\n推荐人：示例作者\n描述：示例说明\n更新：2026.9.5\n'
             '分支：烈日\n类别：强度\n核心：测试超能\n\n## 职业\n'
@@ -442,6 +606,31 @@ class Generation(Isolated):
             for href, label in links) + '</ul>'
         self.file('index.html', text)
 
+
+    def test_source_errors_identify_file_and_collection_member(self):
+        self.replace(sys, 'argv', ['convert-build.py', 'beta-hunter'])
+        for md, missing, title in ((self.SOLO.replace('超能：测试超能\n', '').replace('核心：测试超能', '核心：测试套装'), '超能', '示例'),
+                                   (self.SET.replace('# 第二套\n推荐人：示例作者\n描述：示例说明\n更新：2026.9.5\n分支：烈日\n',
+                                                     '# 第二套\n推荐人：示例作者\n描述：示例说明\n更新：2026.9.5\n'), '分支', '第二套')):
+            self.beta.write_text(md)
+            error = self.exits(build.main)
+            self.assertIn('references/builds/s29-fixture/beta-hunter.md', error)
+            self.assertIn(missing, error)
+            self.assertIn(title, error)
+
+    def test_table_error_identifies_real_source_line_without_writing(self):
+        doc = load('quality_doc_location', 'convert-doc.py')
+        self.replace(doc, 'SRC_DIR', str(self.root / 'references/docs'))
+        self.file('references/docs/fixture.md',
+                  '# 示例\n描述：测试\n更新：2026.9.5\n\n## 正文\n'
+                  '| 名称 | 说明 |\n|---|---|\n| 条目 |\n')
+        self.file('fixture/style.css', '')
+        out = self.file('fixture/index.html', 'previous page')
+        error = self.exits(lambda: doc.build('fixture'))
+        self.assertIn('references/docs/fixture.md', error)
+        self.assertIn('第 8 行', error)
+        self.assertIn('1 格', error)
+        self.assertEqual(out.read_text(), 'previous page')
 
     def test_normalization_does_not_rescue_unknown_equipment(self):
         self.replace(items.shell, 'BUILD_DIR', str(self.root / 'references/builds'))
@@ -546,6 +735,34 @@ class Normalization(Isolated):
         self.kw = dict(terms=terms, names=sorted(terms, key=len, reverse=True),
                        banned=[(w, t[0]) for t in check_terms.TERMS for w in t[2]])
         self.doc = self.file('references/docs/fixture.md', '# 示例\n\n## 正文\n')
+
+    def test_unknown_targets_fail_without_writes_or_success_summary(self):
+        before = self.doc.read_bytes()
+        for option in ('--suggest', '--apply', '--normalize'):
+            for slug in ('missing', 'fixture.md', 'changelog', 'palette'):
+                self.output.seek(0)
+                self.output.truncate()
+                self.replace(sys, 'argv', ['items.py', option, slug])
+                self.assertIn(slug, self.exits(items.main))
+                self.assertNotIn('合计', self.output.getvalue())
+                self.assertEqual(self.doc.read_bytes(), before)
+            self.replace(sys, 'argv', ['items.py', option, 'fixture'])
+            self.assertEqual(items.main(), 0)
+        self.assertEqual(list(items.pages()), ['references/docs/fixture.md'])
+
+    def test_all_real_term_errors_are_reported(self):
+        self.doc.write_text('装填\n' * 65)
+        self.file('assets/site.css', '')
+        self.replace(check_terms, 'SRC_FILES', [])
+        self.replace(check_terms, 'sources', lambda: [('references/docs/fixture.md', set())])
+        for name in ('check_tokens', 'check_stamps', 'check_build_count',
+                     'check_acts', 'check_palette', 'check_items'):
+            self.replace(check_terms, name, lambda *args: set())
+        errors = io.StringIO()
+        with redirect_stderr(errors):
+            self.assertEqual(check_terms.main(), 1)
+        self.assertIn('fixture.md:65', errors.getvalue())
+        self.assertEqual(errors.getvalue().count('G1 '), 65)
 
     def test_shared_corrections_and_real_gates(self):
         self.doc.write_text('# 示例\n\n## 正文\n装填后拾取能量球\n'

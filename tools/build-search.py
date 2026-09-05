@@ -19,6 +19,7 @@
 用法：python3 tools/build-search.py   改完源稿跑 npm run build 即包含这一步。
 """
 
+import argparse
 import json
 import os
 import re
@@ -130,6 +131,8 @@ def line(record):
 
 
 def main() -> int:
+    argparse.ArgumentParser(description=__doc__, allow_abbrev=False,
+                            epilog="产出 assets/search.js；资料产出应先生成；完整链运行 npm run build").parse_args()
     out, total = [], 0
     for url in shell.pages():
         if url == shell.HOME:

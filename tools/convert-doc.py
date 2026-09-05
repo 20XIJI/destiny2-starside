@@ -20,7 +20,7 @@ from urllib.parse import quote
 
 import shell
 from markup import (IMG, LINK, Icons, bmark, die, inline, meta_line,
-                    no_nested_span, plain, src_hash, text_of, whole_marker)
+                    no_nested_span, plain, source_context, src_hash, text_of, whole_marker)
 
 SRC_DIR = os.path.join(shell.ROOT, 'references', 'docs')
 
@@ -321,26 +321,28 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=
     """
     head = split_cells(lines[0])
     if len(lines) < 2 or not is_rule(split_cells(lines[1])):
-        die('表格第二行必须是 |---|---| 分隔行：%s' % lines[0][:60])
+        die(('第 %d 行：' % (base + 2) if base > 0 else '')
+            + '表格第二行必须是 |---|---| 分隔行：%s' % lines[0][:60])
 
     col_at = {colkey(c): i for i, c in enumerate(head)}
+    head_context = '表头第 %d 行：' % (base + 1) if base > 0 else ''
     if groups:
         missing = [c for c in head if colkey(c) not in groups]
         if missing:
-            die('这些列没写进任何「列组：」，工具条会漏掉它们：%s' % '｜'.join(missing))
+            die(head_context + '这些列没写进任何「列组：」，工具条会漏掉它们：%s' % '｜'.join(missing))
 
     tiers = {}
     for col, bounds in (scales or {}).items():
         if colkey(col) not in col_at:
-            die('「色阶：」指的列 %r 不在表头里：%s' % (col, '｜'.join(head)))
+            die(head_context + '「色阶：」指的列 %r 不在表头里：%s' % (col, '｜'.join(head)))
         if col_at[colkey(col)] == 0:
-            die('「色阶：」不能指首列，那一列是行标题不是数值')
+            die(head_context + '「色阶：」不能指首列，那一列是行标题不是数值')
         tiers[col_at[colkey(col)]] = bounds
 
     # 先摊平成行与行组分界，再算合并跨度：跨度要看后面几行，边扫边输出算不出来。
     # 三种元素：None 是行组分界，str 是横幅行的组名，list 是一行数据格。
     rows = []
-    for line in lines[2:]:
+    for offset, line in enumerate(lines[2:], start=2):
         cells = split_cells(line)
         if is_rule(cells):
             rows.append(None)
@@ -350,7 +352,8 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=
             rows.append(lane)
             continue
         if len(cells) != len(head):
-            die('表格某行有 %d 格，表头是 %d 格：%s' % (len(cells), len(head), line[:60]))
+            die(('第 %d 行：表格有' % (base + offset + 1) if base > 0 else '表格某行有')
+                + ' %d 格，表头是 %d 格：%s' % (len(cells), len(head), line[:60]))
         rows.append(cells)
 
     span = [1] * len(rows)          # 0 表示这一行的首格并入了上一个行标题
@@ -729,10 +732,9 @@ def render(md, slug):
     if len(parts) == 1:
         die('源稿一个 ## 分节都没有')
 
-    # 各分节在源稿里的起始行号。body 以第 0 行末尾那个换行开头，所以
-    # body.split('\n')[k] 正是源稿第 k 行；re.split 删掉的 '## ' 不含换行，
-    # 各 part 的行数因此守恒，累加即得偏移。META/SCALE/ROTA 三处 sub 用的都是
-    # `^…$` 加 re.M，剥的是行内容、换行留着，行号一路不变。
+    # body 保留标题末尾的换行；这里与 bmark 一样使用 0 起行号。
+    # re.split 删掉的 '## ' 不含换行，各 part 的行数守恒，累加即得偏移。
+    # META/SCALE/ROTA 只剥行内容、保留换行；给人的诊断另转成 1 起行号。
     off, offs = 0, []
     for part in parts:
         offs.append(off)
@@ -839,30 +841,31 @@ def check(md, out, slug):
 def build(slug):
     global ICONS
     src = os.path.join(SRC_DIR, slug + '.md')
-    if not os.path.exists(src):
-        die('找不到源稿 %s' % src)
-    with open(src, encoding='utf-8') as f:
-        md = f.read()
+    with source_context(os.path.relpath(os.path.realpath(src), shell.ROOT)):
+        if not os.path.exists(src):
+            die('找不到源稿 %s' % src)
+        with open(src, encoding='utf-8') as f:
+            md = f.read()
 
-    where = where_of(md, slug)
-    outdir = os.path.join(shell.ROOT, *where.split('/'))
-    if not os.path.isdir(outdir):
-        die('输出目录不存在：%s/（新页面要先建目录并写 style.css）' % where)
-    eager = meta_of(md, '首屏图标', required=False)
-    if eager and not eager.isdigit():
-        die('「首屏图标：」要写一个整数，源稿写的是 %r' % eager)
-    ICONS = Icons(outdir, int(eager) if eager else 0)
+        where = where_of(md, slug)
+        outdir = os.path.join(shell.ROOT, *where.split('/'))
+        if not os.path.isdir(outdir):
+            die('输出目录不存在：%s/（新页面要先建目录并写 style.css）' % where)
+        eager = meta_of(md, '首屏图标', required=False)
+        if eager and not eager.isdigit():
+            die('「首屏图标：」要写一个整数，源稿写的是 %r' % eager)
+        ICONS = Icons(outdir, int(eager) if eager else 0)
 
-    out, title = render(md, slug)
-    check(md, out, slug)
-    # 有图却没写「首屏图标：」时静默退回 0，首屏那几张就全带上 loading="lazy"，
-    # 要等布局算完才开始下载。漏写与「写 0」产出完全一样，页面上看不出区别，
-    # 所以这一位必须由源稿明说：新页面的作者要么量过首屏、要么确认首屏没有图。
-    if ICONS.refs and not eager:
-        die('%s 有 %d 处图标引用，源稿要写「首屏图标：N」'
-            '（首屏放不下就写 0）' % (slug, ICONS.refs))
+        out, title = render(md, slug)
+        check(md, out, slug)
+        # 有图却没写「首屏图标：」时静默退回 0，首屏那几张就全带上 loading="lazy"，
+        # 要等布局算完才开始下载。漏写与「写 0」产出完全一样，页面上看不出区别，
+        # 所以这一位必须由源稿明说：新页面的作者要么量过首屏、要么确认首屏没有图。
+        if ICONS.refs and not eager:
+            die('%s 有 %d 处图标引用，源稿要写「首屏图标：N」'
+                '（首屏放不下就写 0）' % (slug, ICONS.refs))
 
-    shell.emit(outdir, out, title)
+        shell.emit(outdir, out, title)
 
 
 def main():
@@ -870,6 +873,7 @@ def main():
         die(__doc__)
     if len(sys.argv) == 2:
         build(sys.argv[1])
+        print('仅更新本资料页；未更新搜索、配装词表与悬停说明。发布前运行 npm run build')
         return
     slugs = sorted(f[:-3] for f in os.listdir(SRC_DIR) if f.endswith('.md'))
     if not slugs:

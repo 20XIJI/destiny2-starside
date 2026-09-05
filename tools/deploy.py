@@ -11,6 +11,7 @@
     python3 tools/deploy.py --all --prune  # 整站重发，并删掉远端多出来的文件
 """
 
+import argparse
 import json
 import pathlib
 import shutil
@@ -65,14 +66,24 @@ def unchanged(target: str) -> None:
 
 
 def main() -> None:
-    if "--check" in sys.argv:
+    parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
+    parser.add_argument("--all", action="store_true", help="整站重发")
+    parser.add_argument("--dry-run", action="store_true", help="只列清单，不同步或发送")
+    parser.add_argument("--prune", action="store_true", help="配合 --all 删除远端额外文件")
+    parser.add_argument("--check", action="store_true", help="仅检查部署文件筛选规则")
+    args = parser.parse_args()
+    full, dry, prune = args.all, args.dry_run, args.prune
+    if prune and not full:
+        parser.error("--prune 只跟 --all 一起用：增量那份清单不是完整的一版，会把没改的文件全删了")
+    if args.check and (full or dry or prune):
+        parser.error("--check 不能与发布选项同时使用")
+    if args.check:
         return check()
     env = json.loads((ROOT / "cloudbaserc.json").read_text())["envId"]
-    full = "--all" in sys.argv
-    dry = "--dry-run" in sys.argv
-    prune = "--prune" in sys.argv  # 删远端多出来的文件，范围限于 CLOUD 这一层（实测过）
-    if prune and not full:
-        sys.exit("--prune 只跟 --all 一起用：增量那份清单不是完整的一版，会把没改的文件全删了")
+    print(f"模式：{'全量' if full else '增量'}；环境：{env}；挂载：{CLOUD}；"
+          f"预演：{'是' if dry else '否'}；prune：{'开启' if prune else '关闭'}")
+    if full and prune and dry:
+        print("远端额外文件将在实际部署时由 tcb 删除；本次预演未查询远端，不提供待删清单")
 
     if not dry and git("status", "--porcelain").strip():
         sys.exit("工作区不干净：先 npm run build 再 commit，然后部署")
@@ -84,7 +95,7 @@ def main() -> None:
         # 即使没有静态文件差异也要对账；失败或落盘改稿都不能继续发布旧产出。
         result = subprocess.run([sys.executable, "tools/sync.py"], cwd=ROOT)
         if result.returncode:
-            sys.exit("同步失败，未部署，refs/deploy 不变")
+            sys.exit("同步失败，未部署，refs/deploy 不变；同步可能已有部分完成，见上方回执")
         if git("status", "--porcelain").strip():
             sys.exit("同步改动了源稿：先 npm run build 再 commit，然后部署")
     target = git("rev-parse", "HEAD").strip()

@@ -396,15 +396,19 @@ def row_title_end(line):
 
 
 def pages(slug=None):
+    matched = False
     for name in sorted(os.listdir(os.path.join(shell.ROOT, DOC_DIR))):
         # 更新日志是日志不是资料：它的条目名指向别的页面，句式与字数另有约定
         # （CLAUDE.md「文案七条」），不跟着全站铺色。
         # 配色总览是站务页，正文里的术语是在讲颜色不是在讲机制。
         if not name.endswith('.md') or name in ('changelog.md', 'palette.md'):
             continue
-        if slug and name != slug + '.md':
+        if slug is not None and name != slug + '.md':
             continue
+        matched = True
         yield '%s/%s' % (DOC_DIR, name)
+    if slug is not None and not matched:
+        markup.die('没有可处理的资料源稿：%s；参数应为裸 slug，不含 .md 或路径' % slug)
 
 
 # 头部的「键：值」与分节里的结构行（色阶、列组、卡片、攻略、轮换）不是正文：
@@ -668,8 +672,6 @@ def normalize_files(documents, builds):
 
 def normalize(slug=None, *, builds=True):
     documents = list(pages(slug))
-    if slug and not documents:
-        markup.die('没有可自动纠正的资料源稿：%s' % slug)
     normalize_files(documents, list(build_pages()) if builds else [])
 
 

@@ -15,6 +15,7 @@ Google 官方的 export?format=xlsx 给的是替换前的原文，且不少表�
 在几百行的表里眼睛查不出来。
 """
 
+import argparse
 import base64
 import hashlib
 import json
@@ -23,10 +24,6 @@ import sys
 import tempfile
 import urllib.request
 
-from openpyxl import Workbook
-from openpyxl.drawing.image import Image as XLImage
-from openpyxl.styles import Alignment
-from openpyxl.utils import get_column_letter
 
 PX_PER_CHAR = 7.0        # 列宽单位是「字符」，约 7 px 一个
 PT_PER_PX = 0.75         # 行高单位是「磅」
@@ -60,6 +57,10 @@ def fetch(url, cache, inline):
 
 
 def build(data, cache, ws):
+    from openpyxl.drawing.image import Image as XLImage
+    from openpyxl.styles import Alignment
+    from openpyxl.utils import get_column_letter
+
     inline = data.get('images') or {}
     widths, heights, failed, placed = {}, {}, [], 0
     for r, row in enumerate(data['rows'], start=1):
@@ -91,26 +92,58 @@ def build(data, cache, ws):
 
 
 def main(argv):
-    if not 2 <= len(argv) <= 3:
-        die('用法：python3 tools/json2xlsx.py <抓取的.json> [输出.xlsx]')
-    src = argv[1]
+    parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
+    parser.add_argument('src', help='sheet-grab 导出的 JSON')
+    parser.add_argument('out', nargs='?', help='输出路径，默认输入同名 .xlsx')
+    parser.add_argument('--force', action='store_true', help='显式覆盖已有完整输出')
+    args = parser.parse_args(argv[1:])
+    src = args.src
+    out = args.out or os.path.splitext(src)[0] + '.xlsx'
+    if (os.path.realpath(src) == os.path.realpath(out)
+            or (os.path.exists(src) and os.path.exists(out) and os.path.samefile(src, out))):
+        die('输入与输出不能是同一个文件')
+    if os.path.isdir(out):
+        die('输出是目录，不能覆盖：' + out)
+    if os.path.lexists(out) and not args.force:
+        die('输出已存在：%s；另给输出文件名，或显式使用 --force 覆盖' % out)
+    parent = os.path.dirname(os.path.abspath(out))
+    if not os.path.isdir(parent):
+        die('输出父目录不存在：' + parent)
+
+    from openpyxl import Workbook
+
     with open(src, encoding='utf-8') as f:
         data = json.load(f)
     if 'rows' not in data:
         die('%s 里没有 rows，这不是 sheet-grab 抓出来的 JSON' % src)
-    out = argv[2] if len(argv) == 3 else os.path.splitext(src)[0] + '.xlsx'
 
     wb = Workbook()
     # 新建的 Workbook 一定有活动表，但 openpyxl 的类型标注写的是 Optional
     ws = wb.active if wb.active is not None else wb.create_sheet()
     ws.title = (data.get('title') or 'sheet')[:31]
 
-    with tempfile.TemporaryDirectory() as cache:
+    published = False
+    with tempfile.TemporaryDirectory(dir=parent) as cache:
         placed, failed = build(data, cache, ws)
-        wb.save(out)                    # 图片在 save 时才读，缓存目录要活到这一步
+        candidate = os.path.join(cache, 'candidate.xlsx')
+        try:
+            wb.save(candidate)          # 图片在 save 时才读，缓存目录要活到这一步
+            if failed and os.path.lexists(out):
+                print('转换缺图，未覆盖已有输出：' + out, file=sys.stderr)
+            elif args.force:
+                os.replace(candidate, out)
+                published = True
+            else:
+                os.link(candidate, out)  # 预检后出现的目标也不能覆盖
+                published = True
+        except OSError as e:
+            die('未发布输出 %s：%s' % (out, e))
 
     cells = sum(1 for row in data['rows'] for cell in row if cell.get('t'))
-    print('%s —— %d 行，%d 格有字，%d 张图' % (out, len(data['rows']), cells, placed))
+    if not failed:
+        print('%s —— %d 行，%d 格有字，%d 张图' % (out, len(data['rows']), cells, placed))
+    elif published:
+        print('部分结果（缺图）：' + out)
     if failed:
         print('这 %d 张图没下下来：' % len(failed), file=sys.stderr)
         for line in failed:

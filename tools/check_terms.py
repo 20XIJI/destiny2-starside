@@ -495,10 +495,8 @@ def main() -> int:
 
     if bad:
         print('术语与着色不一致：', file=sys.stderr)
-        for line in bad[:60]:
+        for line in bad:
             print('  ' + line, file=sys.stderr)
-        if len(bad) > 60:
-            print('  …另有 %d 条' % (len(bad) - 60), file=sys.stderr)
         return 1
     print('术语一致：%d 条规则，%d 篇源稿' % (len(TERMS), len(pairs) + 1))
     return 0

@@ -23,7 +23,7 @@ import shell
 import vocab
 from html import escape
 
-from markup import BRANCH, CATEGORIES, CLASSES, die, inline, must, text_of, uncolor
+from markup import BRANCH, CATEGORIES, CLASSES, die, inline, must, source_context, text_of, uncolor
 
 SRC_DIR = shell.BUILD_DIR
 OUT_DIR = 'builds'
@@ -54,7 +54,9 @@ def meta(md, key, required=True):
     hit = re.search(r'^%s：(.*)$' % key, md, re.M)
     if hit is None:
         if required:
-            die('源稿缺「%s：」一行' % key)
+            title = md.split('\n', 1)[0]
+            context = '（配装/合集：%s）' % title[2:].strip() if title.startswith('# ') else ''
+            die('源稿缺「%s：」一行%s' % (key, context))
         return ''
     return hit.group(1).strip()
 
@@ -904,43 +906,45 @@ def season_dirs():
 
 
 def build(idx, dirname, season, name_cn, slug):
-    outdir = os.path.join(shell.ROOT, OUT_DIR, season, slug)
-    os.makedirs(outdir, exist_ok=True)
-    with open(os.path.join(SRC_DIR, dirname, slug + '.md'), encoding='utf-8') as f:
-        md = f.read()
-    out, title = render(idx, extra('移动'), extra('神器本体'),
-                        md, slug, season, name_cn)
-    check(out, slug)
-    shell.emit(outdir, out, title)
-    head, members = split_set(md)
-    if members:
-        branch, cores, who, roles = set_facts(idx, head, members)
-        # 跨职业的合集要有一个自己的格：索引页那一维由 app.js 读小节标题现扫，
-        # 三个职业里挑不出它该站哪一格。
-        cls = who[0] if len(who) == 1 else MIXED
-        core = core_mosaic(cores, 64)
-        # 场景与定位都进标签栏，与单套那一页同一条：场景写在合集头部（整份一个），
-        # 定位每套一个、并起来去重。
-        tags = tag_values(head, 0) + roles
-    else:
-        branch = meta(md, '分支')
-        core = icon_of(core_pick(idx, md, 'elements/%s' % BRANCH[branch]), 64)
-        cls = meta(md, '职业')
-        tags = tag_values(md, 0) + tag_values(md, 1)
-    return {'u': '%s/%s/%s/index.html' % (OUT_DIR, season, slug), 't': title,
-            'season': season, 'slug': slug, 'stamp': meta(head, '更新'),
-            'desc': text_of(inline(meta(head, '描述'), rich=True), collapse=True),
-            'class': cls, 'tags': tags, 'branch': BRANCH[branch],
-            # 分支的中文名给索引页的筛选用。DOM 里只有 b-prismatic 这个 slug，
-            # 中文名读不出来，而在 app.js 里再写一份 slug→中文 就是 BRANCH 的
-            # 第二份定义。职业与类别不给——那两样就是卡片上方那两级标题。
-            'branch_cn': branch,
-            'cat': meta(head, '类别'),
-            'by': ''.join(people(head, link=False)),
-            # 图标路径按详情页那三层深写的，两个索引页深浅不同，前缀由 core_node()
-            # 现换——存成算好的那一份，另一页就得再存第二份。
-            'core': core,
-            'set': len(members)}
+    src = os.path.join(SRC_DIR, dirname, slug + '.md')
+    with source_context(os.path.relpath(os.path.realpath(src), shell.ROOT)):
+        outdir = os.path.join(shell.ROOT, OUT_DIR, season, slug)
+        os.makedirs(outdir, exist_ok=True)
+        with open(src, encoding='utf-8') as f:
+            md = f.read()
+        out, title = render(idx, extra('移动'), extra('神器本体'),
+                            md, slug, season, name_cn)
+        check(out, slug)
+        shell.emit(outdir, out, title)
+        head, members = split_set(md)
+        if members:
+            branch, cores, who, roles = set_facts(idx, head, members)
+            # 跨职业的合集要有一个自己的格：索引页那一维由 app.js 读小节标题现扫，
+            # 三个职业里挑不出它该站哪一格。
+            cls = who[0] if len(who) == 1 else MIXED
+            core = core_mosaic(cores, 64)
+            # 场景与定位都进标签栏，与单套那一页同一条：场景写在合集头部（整份一个），
+            # 定位每套一个、并起来去重。
+            tags = tag_values(head, 0) + roles
+        else:
+            branch = meta(md, '分支')
+            core = icon_of(core_pick(idx, md, 'elements/%s' % BRANCH[branch]), 64)
+            cls = meta(md, '职业')
+            tags = tag_values(md, 0) + tag_values(md, 1)
+        return {'u': '%s/%s/%s/index.html' % (OUT_DIR, season, slug), 't': title,
+                'season': season, 'slug': slug, 'stamp': meta(head, '更新'),
+                'desc': text_of(inline(meta(head, '描述'), rich=True), collapse=True),
+                'class': cls, 'tags': tags, 'branch': BRANCH[branch],
+                # 分支的中文名给索引页的筛选用。DOM 里只有 b-prismatic 这个 slug，
+                # 中文名读不出来，而在 app.js 里再写一份 slug→中文 就是 BRANCH 的
+                # 第二份定义。职业与类别不给——那两样就是卡片上方的分组标题。
+                'branch_cn': branch,
+                'cat': meta(head, '类别'),
+                'by': ''.join(people(head, link=False)),
+                # 图标路径按详情页那三层深写的，两个索引页深浅不同，前缀由 core_node()
+                # 现换——存成算好的那一份，另一页就得再存第二份。
+                'core': core,
+                'set': len(members)}
 
 
 def core_node(html, up):
@@ -1558,6 +1562,8 @@ def main():
     if len(sys.argv) > 2:
         die(__doc__)
     only = sys.argv[1] if len(sys.argv) == 2 else None
+    if only:
+        print('配装词表读取已生成的资料页；资料源稿也有修改时先运行 npm run build')
     idx = vocab.build()
     vocab.check_landing(idx)         # 链接落地不许滤成空页
     made = []
@@ -1594,6 +1600,8 @@ def main():
     live = [m for m in made if m['season'] == SEASON]
     print('配装 %d 套，当前赛季 %s %d 套（其中 %d 个合集）'
           % (len(made), SEASON, len(live), len([m for m in live if m['set']])))
+    if only:
+        print('仅更新匹配的配装详情；未更新目录、首页、搜索与关联词表。发布前运行 npm run build')
 
 
 if __name__ == '__main__':
