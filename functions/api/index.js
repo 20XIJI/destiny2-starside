@@ -252,6 +252,9 @@ async function editorRoute(a, body, event) {
   // 按下去要么发布要么打回自然得多。
   if (a === 'ssave') {
     await who(event, 2)
+    const cur = (await subs.doc(String(body.id)).get()).data[0]
+    if (!cur) throw new Error('no sub')
+    if (cur.drop) throw new Error('bad sub type')
     const md = String(body.md || '')
     if (!md.startsWith('# ') || md.length > MAX_MD) throw new Error('bad md')
     await subs.doc(String(body.id)).update({ md, at: new Date().toISOString() })
@@ -323,6 +326,7 @@ async function editorRoute(a, body, event) {
     // 删除申请只标状态。**真正的删除在本机**：sync.py 的 sweep() 按这条记录删掉
     // 那一篇源稿，再把库里那条一并清掉——与落盘同一侧，构建与部署也在那里。
     if (cur.drop) {
+      if (Object.prototype.hasOwnProperty.call(body, 'md')) throw new Error('bad sub type')
       await subs.doc(cur._id).update(set)
       return { ok: 1 }
     }
@@ -457,27 +461,78 @@ async function editorRoute(a, body, event) {
 
   if (a === 'emark') {
     const me = await who(event, 2)
-    const e = (await edits.doc(String(body.id)).get()).data[0]
-    if (!e) throw new Error('no edit')
-    const ok = Number(body.ok) === 1 ? 1 : -1
+    const jobs = body.jobs
+    if (!Array.isArray(jobs) || !jobs.length
+        || jobs.some((j) => !j || typeof j.id !== 'string' || !j.id.trim()
+          || (j.ok !== 1 && j.ok !== -1))
+        || new Set(jobs.map((j) => j.id)).size !== jobs.length) throw new Error('bad jobs')
+    if (jobs.length > 49) throw new Error('batch too large')
     const at = new Date().toISOString()
-    if (ok === 1) {
-      const cur = (await docs.doc(e.doc).get()).data[0]
-      if (!cur) throw new Error('no doc')
-      const hit = locate(cur.md, e)
-      // 定位不到就是有人先动了同一处。**报冲突，记录原样留着**——before/after
-      // 都还在，审的人看得见两边分别要改成什么，提的人也找得回自己写了什么。
-      if (!hit) throw new Error('conflict')
-      // 与 chg 同一条：队列里可能还压着这次改动之前提的、带着真换行的稿子。
-      const row = cur.md.split('\n')[hit.line] || ''
-      const text = row.startsWith('|')
-        ? String(e.after).replace(/\n+/g, '\\\\') : e.after
-      const md = patch(cur.md, hit, text)
-      await docs.doc(e.doc).update({ md, hash: sha1(md), at, by: e.by })
+    // SDK 1.4.3 的事务 get 返回单对象，update 接平铺字段；失败也可能作为 code 返回。
+    const checked = (r) => {
+      if (r.code) throw Object.assign(new Error(r.message || r.code), { code: r.code })
+      return r
     }
-    // **同篇其余待审不再整批驳回**：它们改的是别处，与这一处无关。
-    await edits.doc(e._id).update({ ok, okBy: me.name, at })
-    return { ok: 1 }
+    const updated = (r) => {
+      if (checked(r).updated !== 1) throw new Error('conflict')
+    }
+    try {
+      return await db.runTransaction(async (tx) => {
+        const groups = new Map()
+        // 先确认整批仍待审，再读取正文；驳回不需要碰 docs。
+        for (const job of jobs) {
+          const e = checked(await tx.collection('edits').doc(job.id).get()).data
+          if (!e) throw new Error('no edit')
+          if (Number(e.ok) !== 0) throw new Error('conflict')
+          if (job.ok === 1) {
+            if (!groups.has(e.doc)) groups.set(e.doc, [])
+            groups.get(e.doc).push(e)
+          }
+        }
+        // 官方上限 100 次操作，预留开始/提交；过大整批拒绝，不拆批。
+        if (2 * jobs.length + 2 * groups.size + 2 > 100) throw new Error('batch too large')
+        const changes = []
+        for (const [id, proposals] of groups) {
+          const cur = checked(await tx.collection('docs').doc(id).get()).data
+          if (!cur) throw new Error('no doc')
+          const lines = cur.md.split('\n')
+          const offsets = []
+          let offset = 0
+          for (const line of lines) { offsets.push(offset); offset += line.length + 1 }
+          // 每条先在同一原始快照定位，按实际字符区间判重叠，不让插行改变消歧。
+          const hits = proposals.map((e) => {
+            const hit = locate(cur.md, e)
+            if (!hit) throw new Error('conflict')
+            const start = offsets[hit.line] + (hit.span ? hit.span[0] : 0)
+            const last = hit.line + (hit.len || 1) - 1
+            const end = hit.span ? offsets[hit.line] + hit.span[1] : offsets[last] + lines[last].length
+            const text = lines[hit.line].startsWith('|')
+              ? String(e.after).replace(/\n+/g, '\\\\') : e.after
+            return { hit, start, end, text }
+          }).sort((a, b) => a.start - b.start || a.end - b.end)
+          for (let i = 1; i < hits.length; i++) {
+            if (hits[i].start < hits[i - 1].end || hits[i].start === hits[i - 1].start) {
+              throw new Error('conflict')
+            }
+          }
+          let md = cur.md
+          for (let i = hits.length - 1; i >= 0; i--) md = patch(md, hits[i].hit, hits[i].text)
+          changes.push({ id, md, by: proposals[proposals.length - 1].by })
+        }
+        for (const change of changes) {
+          updated(await tx.collection('docs').doc(change.id).update({
+            md: change.md, hash: sha1(change.md), at, by: change.by
+          }))
+        }
+        for (let i = 0; i < jobs.length; i++) {
+          updated(await tx.collection('edits').doc(jobs[i].id).update({ ok: jobs[i].ok, okBy: me.name, at }))
+        }
+        return { ok: 1 }
+      }, 0)
+    } catch (error) {
+      if (error.code === 'DATABASE_TRANSACTION_CONFLICT') throw new Error('conflict')
+      throw error
+    }
   }
 
   // 白名单的增删改。只能动 lv 严格低于自己的人：管理员因此动不了超管，
@@ -559,18 +614,19 @@ async function route(a, body, event) {
     const at = new Date().toISOString()
     // 同一套配装重投即改写待审的那一条，不堆第二份。已经审过的不动：那是审核
     // 结果，不在待审队列里。
-    const old = await subs.where({ key, ok: 0 }).limit(1).get()
+    const old = await subs.where({ key, ok: 0, drop: _.neq(1) }).limit(1).get()
     if (old.data.length) {
-      await subs.doc(old.data[0]._id).update({ md, at })
+      const r = await subs.where({ _id: old.data[0]._id, key, ok: 0, drop: _.neq(1) }).update({ md, at })
+      if (r.updated !== 1) throw new Error('conflict')
       return { ok: 1, dup: 1 }
     }
     // 同一套已经上站了：这一次是更新。记下它的 season/slug，通过时覆盖过去而不是
     // 另起一份——同一套配装在站上只该有一条，换 slug 连点赞数一起甩掉。
-    const done = await subs.where({ key, ok: 1 }).limit(1).get()
+    const done = await subs.where({ key, ok: 1, drop: _.neq(1) }).limit(1).get()
     const was = done.data[0]
     const link = was && was.season && was.slug
       ? { season: was.season, slug: was.slug, updates: 1 } : {}
-    await subs.add({ md, key, at, ok: 0, ...link })
+    await subs.add({ md, key, at, ok: 0, drop: 0, ...link })
     return { ok: 1, dup: 0, updates: link.updates ? 1 : 0 }
   }
 

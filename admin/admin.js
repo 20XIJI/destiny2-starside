@@ -391,6 +391,8 @@
   function tip (node, msg, bad) {
     var p = node.querySelector('.tip')
     if (!p) { p = el('p', 'tip'); node.appendChild(p) }
+    p.setAttribute('role', 'status')
+    p.setAttribute('aria-live', 'polite')
     p.textContent = msg
     p.style.color = bad ? 'var(--c-enemy)' : ''
   }
@@ -487,6 +489,7 @@
 
   // ── 文档审核 ───────────────────────────────────────────────────────
   var openDoc = null                 // 右栏正在看哪一页
+  var reviewBusy = false
 
   function reviewView () {
     title('审核')
@@ -509,12 +512,13 @@
     body.appendChild(el('p', 'lede', '载入中…'))
     // judge 让后端顺带判一次每条还定不定位得到（乙类冲突），那个判断只有 locate
     // 做得准，前端不再抄一份切格与匹配。
-    call('pend', { doc: openDoc, judge: 1 }).then(function (r) {
+    return call('pend', { doc: openDoc, judge: 1 }).then(function (r) {
       if (openDoc) drawPend(body, r.pend.map(function (e) { e.ok = Number(e.ok); return e }))
     }, function (err) { tip(body, err.message, 1) })
   }
 
   function drawPend (body, pend) {
+    body.setAttribute('data-review', '')
     body.querySelectorAll('.lede, .pane, .acts, .tip').forEach(function (n) { n.remove() })
     // 同一处的几份收成一组：**它们互斥**，通过一份就得在其余里择一驳回。
     var groups = []
@@ -532,11 +536,12 @@
     var acts = el('div', 'acts')
     var all = el('button', 'chip go', '全部通过（' + pend.length + '）')
     all.type = 'button'
-    all.disabled = !!bad.length
-    all.onclick = function () { passAll(body, pend, all) }
+    all.disabled = !!bad.length || !pend.length || pend.length > 48
+    all.onclick = function () { passAll(acts, pend) }
     acts.appendChild(all)
+    if (pend.length > 48) acts.appendChild(el('span', 'warn', '待审过多，请逐处审核'))
     if (bad.length) {
-      acts.appendChild(el('span', 'warn', bad.length + ' 处冲突，各挑一份'))
+      acts.appendChild(el('span', 'warn', bad.length + ' 处冲突，请逐处审核；陈旧提案不能通过'))
     }
     body.appendChild(acts)
 
@@ -551,113 +556,95 @@
           + (e.stale ? ' · 基于旧文' : '')))
         one.appendChild(oneView(e))
         var row = el('div', 'acts')
-        var yes = el('button', 'chip', g.list.length > 1 ? '用这份' : '通过')
+        var yes = el('button', 'chip go', g.list.length > 1 ? '用这份' : '通过')
         var no = el('button', 'chip', '驳回')
         yes.type = no.type = 'button'
-        yes.onclick = function () { pick(body, g, e) }
-        no.onclick = function () { mark([[e._id, -1]], body) }
+        yes.disabled = !!e.stale
+        yes.onclick = function () { pick(row, g, e) }
+        no.onclick = function () { mark([[e._id, -1]], row) }
         row.appendChild(yes)
         row.appendChild(no)
+        if (e.stale) row.appendChild(el('span', 'warn', '底稿已变，请回资料页重新提交'))
         one.appendChild(row)
         pane.appendChild(one)
       })
       // 底稿动过了：多给一个「什么都不改」的候选，选它就是把这几份一并驳回。
       if (g.list.some(function (e) { return e.stale })) {
+        var keepActs = el('div', 'acts')
         var keep = el('button', 'chip', '保持现状')
         keep.type = 'button'
         keep.onclick = function () {
-          mark(g.list.map(function (e) { return [e._id, -1] }), body)
+          mark(g.list.map(function (e) { return [e._id, -1] }), keepActs)
         }
-        pane.appendChild(keep)
+        keepActs.appendChild(keep)
+        pane.appendChild(keepActs)
       }
       body.appendChild(pane)
     })
   }
 
-  // 挑一份通过，同一处其余的一并驳回。**照旧文改的那份要先把 before 换成库里
-  // 现在那一格**，再走同一条通过路径——后端不开强制写入的口子，定位规则始终
-  // 是原文匹配，一条代码路径。
+  // 挑一份通过与驳回其余候选同批提交；陈旧提案原样保留，不按旧坐标猜新底稿。
   function pick (body, g, e) {
+    if (e.stale) return tip(body, '底稿已变，请回资料页重新提交', 1)
     var rest = g.list.filter(function (x) { return x._id !== e._id })
       .map(function (x) { return [x._id, -1] })
-    if (!e.stale) return mark([[e._id, 1]].concat(rest), body)
-    call('doc', { id: e.doc }).then(function (d) {
-      return call('chg', { doc: e.doc, blk: e.blk, cell: e.cell, after: e.after,
-        before: cellAt(d.md, e) })
-    }).then(function (r) {
-      return mark([[r.id, 1]].concat(rest).concat([[e._id, -1]]), body, 1)
-    }, function (err) { tip(body, '接不上当前版本：' + err.message, 1) })
+    return mark([[e._id, 1]].concat(rest), body)
   }
 
-  // 库里此刻那一处的原文。与 convert-doc 的 split_cells、云函数的 cellSpans
-  // 同一条规则：记花括号深度，{ico|…} 内部的竖线不是分隔符。
-  function cellAt (md, e) {
-    var lines = md.split('\n')
-    var line = lines[e.blk]
-    if (line == null) return ''
-    if (Number(e.cell) < 0) {
-      return lines.slice(e.blk, e.blk + String(e.before).split('\n').length).join('\n')
-    }
-    var out = []
-    var depth = 0
-    var from = 1
-    for (var i = 1; i <= line.length; i++) {
-      var ch = line[i]
-      if (ch === '{') depth++
-      else if (ch === '}') depth--
-      if (i === line.length || (ch === '|' && depth === 0)) {
-        var a = from
-        var b = i
-        while (a < b && line[a] === ' ') a++
-        while (b > a && line[b - 1] === ' ') b--
-        out.push([a, b])
-        from = i + 1
-        if (ch !== '|') break
-      }
-    }
-    if (out.length > 1) out = out.slice(0, -1)
-    return out[e.cell] ? line.slice(out[e.cell][0], out[e.cell][1]) : ''
+  function passAll (body, pend) {
+    return mark(pend.map(function (e) { return [e._id, 1] }), body)
   }
 
-  // **一条冲突就整批不落地**：先让人在冲突组里挑完，再整体走一遍。
-  function passAll (body, pend, btn) {
-    btn.disabled = true
-    mark(pend.map(function (e) { return [e._id, 1] }), body)
-  }
-
-  // 逐条结案。**顺序执行**：同一篇的几处都要落进同一份正文，并发会互相覆盖。
-  //
-  // **结案之后不重拉三张全量表**：改的是哪几条这里就知道，就地改掉即可。撞车
-  // 不靠重拉发现——emark 通过时拿 before 再对一次库里当时的正文，对不上就回
-  // conflict，下面接着了。一次通过因此只发两个请求：emark 与那一发 pend。
-  // fresh 那一路是例外：pick() 改基线会在库里新建一条记录，本地造不出来。
-  function mark (jobs, body, fresh) {
-    var conflict = []
-    var chain = jobs.reduce(function (p, job) {
-      return p.then(function () {
-        return call('emark', { id: job[0], ok: job[1] }).catch(function (e) {
-          if (e.message !== 'conflict') throw e
-          conflict.push(job[0])
+  // 一发就是一个原子批次。整批确认成功才改本地状态；结果不明只刷新，绝不重发。
+  function mark (jobs, body) {
+    if (reviewBusy) return Promise.resolve()
+    reviewBusy = true
+    var region = body.closest('[data-review]') || body
+    var buttons = Array.prototype.map.call(region.querySelectorAll('button'), function (b) {
+      var was = b.disabled
+      b.disabled = true
+      return [b, was]
+    })
+    region.setAttribute('aria-busy', 'true')
+    tip(body, '正在审核，本批提交中…')
+    return call('emark', { jobs: jobs.map(function (j) { return { id: j[0], ok: j[1] } }) })
+      .then(function (r) {
+        if (!r || r.ok !== 1) throw new Error('unconfirmed')
+        var done = {}
+        jobs.forEach(function (j) { done[j[0]] = j[1] })
+        S.edits.forEach(function (e) {
+          if (done[e._id] === undefined) return
+          e.ok = done[e._id]
+          e.okBy = S.me && S.me.name
         })
+        badges()
+        return Promise.resolve(reviewView()).then(function () {
+          tip($('views').querySelector('[data-review] > .acts') || $('views'), '本批已应用')
+        })
+      }, function (e) {
+        var msg = e.message === 'conflict'
+          ? '本批未应用，底稿或状态已变，请重新审核'
+          : /^(bad jobs|batch too large|no edit|no doc|no permission|forbidden)$/.test(e.message)
+            ? '本批未应用：' + (e.message === 'batch too large' ? '待审过多，请逐处审核' : e.message)
+            : '结果未确认，正在刷新队列'
+        tip(body, msg, 1)
+        return load().then(function () {
+          return Promise.resolve(reviewView()).then(function () {
+            tip($('views').querySelector('[data-review] > .acts') || $('views'), msg, 1)
+          })
+        }, function (err) { tip(body, msg + '；刷新失败：' + err.message, 1) })
+      }).catch(function (e) {
+        tip(body, '结果未确认，正在刷新队列', 1)
+        return load().then(function () {
+          return Promise.resolve(reviewView()).then(function () {
+            tip($('views').querySelector('[data-review] > .acts') || $('views'), '队列已刷新，请核实本批状态', 1)
+          })
+        }, function (err) { tip(body, '结果未确认；刷新失败：' + err.message, 1) })
+      }).finally(function () {
+        reviewBusy = false
+        region.removeAttribute('aria-busy')
+        buttons.forEach(function (b) { b[0].disabled = b[1] })
       })
-    }, Promise.resolve())
-    return chain.then(function () {
-      if (fresh) return load()
-      var done = {}
-      jobs.forEach(function (j) { done[j[0]] = j[1] })
-      conflict.forEach(function (id) { delete done[id] })
-      S.edits.forEach(function (e) {
-        if (done[e._id] === undefined) return
-        e.ok = Number(done[e._id])
-        e.okBy = S.me && S.me.name
-      })
-      badges()
-    }).then(function () {
-      reviewView()
-      if (conflict.length) {
-        tip($('views'), conflict.length + ' 处已被他人修改，留在队列', 1)
-      }
-    }, function (e) { tip(body, '操作失败：' + e.message, 1) })
   }
 
   // ── 配装 ───────────────────────────────────────────────────────────

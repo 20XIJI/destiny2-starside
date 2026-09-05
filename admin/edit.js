@@ -16,7 +16,7 @@
   var HERE = document.querySelector('link[href$="assets/site.css"]')
     .getAttribute('href').replace('assets/site.css', '')
 
-  var S = { me: null, md: null, lines: [], pend: [], done: [], on: false }
+  var S = { me: null, md: null, hash: '', lines: [], pend: [], done: [], on: false }
 
   var el = function (tag, cls, text) {
     var n = document.createElement(tag)
@@ -117,6 +117,7 @@
   // 页因此省下 2 KB gzip。按文档顺序累加还原；区间写成「差+跨度」。
   function decode () {
     LINES.clear()
+    invalidate()
     var prev = 0
     document.querySelectorAll('[data-b]').forEach(function (n) {
       var v = n.getAttribute('data-b').split('+')
@@ -124,23 +125,24 @@
       prev = a + Number(v[1] || 0)
       LINES.set(n, [a, prev])
     })
+    document.querySelectorAll('main table').forEach(function (table) {
+      var last = null
+      table.querySelectorAll('tr').forEach(function (row) {
+        var at = LINES.get(row)
+        if (!at && last) {
+          at = [last[1] + 1, last[1] + 1]
+          LINES.set(row, at)
+        }
+        last = at || null
+      })
+    })
   }
 
   // 一个块占源稿的哪几行。**多行段落是区间**，只取首行会让人改了一段却只落下第一行。
   // **没有 data-b 的 <tr> 就是上一行 +1**——生成器只在这条成立时才省掉标记，
   // 行组分界行（|---|）占一行却不出 <tr>，它后面那行照旧带号。
   function lineOf (node) {
-    var at = LINES.get(node)
-    if (at) return at
-    if (node.tagName !== 'TR') return null
-    var rows = Array.prototype.slice.call(node.closest('table').querySelectorAll('tr'))
-    var i = rows.indexOf(node)
-    var back = 0
-    while (i > 0 && !LINES.has(rows[i - 1])) { i--; back++ }
-    var a = i > 0 ? LINES.get(rows[i - 1]) : null
-    if (!a) return null
-    var n = a[0] + back + 1
-    return [n, n]                       // 表格行恒为一行
+    return LINES.get(node) || null
   }
 
   // 点中的东西在源稿里是哪一处。cell 为 -1 即整块。
@@ -163,27 +165,161 @@
     return s2 ? { blk: s2[0], end: s2[1], cell: -1 } : null
   }
 
-  // 那一处此刻的源稿原文。取不到就是页面比库里旧了，让调用方去报。
+  // 原坐标只描述已部署页面；只有 hash 相等时才可直接读当前源稿。
   function textAt (at) {
     var line = S.lines[at.blk]
-    if (line == null) return null
-    // 整块：多行段落要把那几行一起给，只给首行会让人改了一段却只落下一行。
-    if (at.cell < 0) return S.lines.slice(at.blk, (at.end == null ? at.blk : at.end) + 1).join('\n')
+    if (line == null || at.end >= S.lines.length) return null
+    if (at.cell < 0) return S.lines.slice(at.blk, at.end + 1).join('\n')
     var sp = cellSpans(line)
     return sp && sp[at.cell] ? line.slice(sp[at.cell][0], sp[at.cell][1]) : null
   }
 
-  // 只看内容：着色标记、图标、链接、粗体、格内换行、空白与千位逗号都不算。
-  // 用来把「页面上那一格的文字」与「源稿里那一格的原文」放到同一把尺子上——
-  // 千位逗号是生成器给色阶列加的（250154 → 250,154），源稿里没有。
+  // 页面与源稿共用这把尺子；千位逗号由生成器添加，图标不提供文字身份。
   function bare (t) {
     return String(t)
       .replace(/!\[\]\([^)]*\)/g, '')
       .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+      .replace(/<[^>]*>/g, '')
       .replace(/\{[\w-]+\|/g, '').replace(/\}/g, '')
       .replace(/\\\\/g, '')
       .replace(/[*`~,“”]/g, '')
       .replace(/\s/g, '')
+  }
+
+  var RESOLVED = new Map()
+  var SOURCES = new Map()
+  var MATCHES = null
+
+  function invalidate () {
+    RESOLVED.clear()
+    SOURCES.clear()
+    MATCHES = null
+  }
+
+  // 永远读涂色前的 HTML，不把「新值 + 旧值 + 发起人」拿去定位。
+  function original (node) {
+    if (!ORIG.has(node)) return bare(node.textContent)
+    var copy = document.createElement('div')
+    copy.innerHTML = ORIG.get(node)
+    return bare(copy.textContent)
+  }
+
+  function shape (node, at) {
+    if (at.cell >= 0) return 'cell'
+    if (node.closest('tr.lane')) return 'lane'
+    if (DOC === 'artifact-mods' && node.tagName === 'H4') return 'mod'
+    if (DOC === 'artifact-mods' && node.tagName === 'H2') return 'artifact'
+    return /^(H[1-6]|P|LI|DT|DD)$/.test(node.tagName) ? node.tagName : ''
+  }
+
+  // 只剥这个节点类型的结构前缀。未知形状不拿旧行号兜底。
+  function content (kind, text) {
+    var rows = text.split('\n')
+    if (kind === 'cell') return rows.length === 1 ? bare(text) : null
+    if (kind === 'lane') {
+      var lane = /^\|\s*==\s*(.*?)\s*==\s*\|\s*$/.exec(text)
+      return lane ? bare(lane[1]) : null
+    }
+    if (kind === 'mod' || kind === 'artifact') {
+      var title = (kind === 'mod' ? /^### (?:一级|二级|三级) · (.+)$/ : /^## 神器：(.+)$/).exec(text)
+      return title ? bare(title[1]) : null
+    }
+    if (/^H[1-6]$/.test(kind)) {
+      var heading = /^(#{1,6})\s+(.+)$/.exec(text)
+      return heading && heading[1].length === Number(kind.slice(1)) ? bare(heading[2]) : null
+    }
+    if (kind === 'LI') return /^- .+$/.test(text) ? bare(text.slice(2)) : null
+    if (kind === 'DD') {
+      if (!/^: /.test(rows[0]) || !/^: /.test(rows[rows.length - 1])) return null
+      if (rows.some(function (s) { return s.trim() && !/^: /.test(s) })) return null
+      return bare(rows.map(function (s) { return s.replace(/^: /, '') }).join('\n'))
+    }
+    if (kind !== 'P' && kind !== 'DT') return null
+    if (rows.some(function (s) { return !s.trim() || /^(?:#{1,6}\s|\s*\||- |: )/.test(s) })) return null
+    return bare(text)
+  }
+
+  // 边界也须相同：两行段落不能认领三行段落中恰好相等的前两行。
+  function bounded (kind, start, end) {
+    var prev = S.lines[start - 1] || ''
+    var next = S.lines[end + 1] || ''
+    if (kind === 'DT') return start === end && /^: /.test(next)
+    if (kind === 'DD') {
+      return !/^: /.test(prev) && !(prev === '' && /^: /.test(S.lines[start - 2] || ''))
+        && !/^: /.test(next) && !(next === '' && /^: /.test(S.lines[end + 2] || ''))
+    }
+    if (kind !== 'P') return true
+    var prose = function (s) { return !!s.trim() && !/^(?:#{1,6}\s|\s*\||- |: )/.test(s) }
+    return !prose(prev) && !prose(next) && !/^: /.test(next)
+  }
+
+  function resolve (node) {
+    if (RESOLVED.has(node)) return RESOLVED.get(node)
+    var at = where(node)
+    var found = null
+    if (at) {
+      if (S.hash && S.hash === PAGE_HASH) {
+        var before = textAt(at)
+        if (before != null) found = Object.assign({}, at, { before: before })
+      } else {
+        var kind = shape(node, at)
+        var text = original(node)
+        if (kind && text) {
+          var size = at.end - at.blk + 1
+          var key = kind + ':' + at.cell + ':' + size
+          var index = SOURCES.get(key)
+          if (!index) {
+            index = new Map()
+            for (var i = 0; i + size <= S.lines.length; i++) {
+              var candidate = { blk: i, end: i + size - 1, cell: at.cell }
+              var src = textAt(candidate)
+              var value = src == null ? null : content(kind, src)
+              if (!value || !bounded(kind, i, candidate.end)) continue
+              candidate.before = src
+              index.set(value, index.has(value) ? null : candidate)
+            }
+            SOURCES.set(key, index)
+          }
+          found = index.get(text) || null
+        }
+      }
+    }
+    RESOLVED.set(node, found)
+    return found
+  }
+
+  // 提案必须凭 before 唯一认领页面原文；坐标相等本身不能认领另一格。
+  function proposals (node) {
+    if (!MATCHES) {
+      MATCHES = new Map()
+      var nodes = targets()
+      var groups = new Map()
+      nodes.forEach(function (n) {
+        var at = where(n)
+        if (!at) return
+        var kind = shape(n, at)
+        var key = kind + ':' + at.cell + ':' + (at.end - at.blk + 1)
+        if (!groups.has(key)) groups.set(key, new Map())
+        var pool = groups.get(key)
+        var text = original(n)
+        if (text) pool.set(text, pool.has(text) ? null : n)
+      })
+      S.pend.concat(S.done).forEach(function (p) {
+        var hits = []
+        groups.forEach(function (pool, key) {
+          var bits = key.split(':')
+          if (Number(bits[1]) !== p.cell || Number(bits[2]) !== p.before.split('\n').length) return
+          var text = content(bits[0], p.before)
+          if (!text) return
+          if (pool.has(text)) hits.push(pool.get(text))
+        })
+        if (hits.length !== 1 || !hits[0]) return
+        var n = hits[0]
+        if (!MATCHES.has(n)) MATCHES.set(n, [])
+        MATCHES.get(n).push(p)
+      })
+    }
+    return MATCHES.get(node) || []
   }
 
   // 把一段源稿渲染成页面上那个样子。**这是近似**：真正的渲染在
@@ -225,28 +361,16 @@
     document.querySelectorAll('.se-hit').forEach(function (n) {
       n.classList.remove('se-hit', 'se-wait', 'se-pass')
     })
+    invalidate()
   }
 
   function shade () {
     unshade()
     if (!S.on) return
-    var pend = {}
-    var done = {}
-    S.pend.forEach(function (p) { pend[p.blk + ':' + p.cell] = p })
-    S.done.forEach(function (p) { done[p.blk + ':' + p.cell] = p })
     targets().forEach(function (node) {
-      var at = where(node)
-      if (!at) return
-      var key = at.blk + ':' + at.cell
-      var p = pend[key]
-      if (!p) {
-        // 已通过、但站上还是旧的那一档。**判据是页面上这一格显示的正是它的
-        // before**——库里早就是 after 了，拿库里比永远相等。S.done 只在页面
-        // 那份 data-hash 与库里对不上时才取回来，常态下这一圈不做事。
-        var q = done[key]
-        if (q && bare(node.textContent) === bare(q.before)
-            && bare(q.before) !== bare(q.after)) p = q
-      }
+      var all = proposals(node)
+      var p = all.filter(function (q) { return q.ok === 0 })[0]
+        || all.filter(function (q) { return q.ok === 1 && bare(q.before) !== bare(q.after) })[0]
       if (!p) return
       ORIG.set(node, node.innerHTML)
       node.classList.add('se-hit', p.ok === 1 ? 'se-pass' : 'se-wait')
@@ -283,17 +407,16 @@
 
   function open (node) {
     shut()
-    var at = where(node)
-    if (!at) return
-    var before = textAt(at)
-    if (before == null) {
-      alert('这一处已变，刷新后再改')
+    var at = resolve(node)
+    if (!at) {
+      alert('这一处底稿已变或无法唯一定位，请等待新版页面后重新提交')
       return
     }
+    var before = at.before
 
     // 这一处已经有我自己的待审时，接着那一版改——不然会从旧文重新起手，
     // 把自己刚提的那一下顶掉。别人的那一版不接：那是他的稿子。
-    var at_ = S.pend.filter(function (p) { return p.blk === at.blk && p.cell === at.cell })
+    var at_ = proposals(node).filter(function (p) { return p.before === before })
     var mine = at_.filter(function (p) { return p.ok === 0 && p.uid === S.me.uid })[0]
     var here = at_[0]
 
@@ -317,6 +440,7 @@
     var inTable = !!node.closest('table')
     if (inTable) {
       ta.addEventListener('keydown', function (ev) {
+        if (ev.isComposing || ev.keyCode === 229) return
         if (ev.key !== 'Enter' || ev.ctrlKey || ev.metaKey || ev.altKey) return
         ev.preventDefault()
         var a = ta.selectionStart
@@ -400,7 +524,7 @@
           send.disabled = false
           notes.textContent = ''
           notes.appendChild(el('li', null, e.message === 'stale'
-            ? '这一处已变，刷新后再改'
+            ? '这一处底稿已变或无法唯一定位，请等待新版页面后重新提交'
             : '提交失败：' + e.message))
         })
     }
@@ -439,9 +563,11 @@
     // 不等才把已通过的那些取回来认出「这一格站上还是旧的」，由后端一并判。
     return call('pend', { doc: DOC, md: 1, hash: PAGE_HASH }).then(function (r) {
       S.md = r.md || ''
+      S.hash = r.hash || ''
       S.lines = S.md.split('\n')
       S.pend = r.pend.map(function (p) { p.ok = Number(p.ok); return p })
       S.done = (r.done || []).map(function (p) { p.ok = Number(p.ok); return p })
+      invalidate()
     })
   }
 
@@ -508,6 +634,7 @@
       open(cell)
     })
     document.addEventListener('keydown', function (ev) {
+      if (ev.isComposing || ev.keyCode === 229) return
       if (ev.key === 'Escape') shut()
     })
   }

@@ -59,6 +59,11 @@ def check() -> None:
     print("ok")
 
 
+def unchanged(target: str) -> None:
+    if git("rev-parse", "HEAD").strip() != target or git("status", "--porcelain").strip():
+        sys.exit("部署准备期间 HEAD 或工作区变了，未继续部署，refs/deploy 不变")
+
+
 def main() -> None:
     if "--check" in sys.argv:
         return check()
@@ -73,19 +78,27 @@ def main() -> None:
         sys.exit("工作区不干净：先 npm run build 再 commit，然后部署")
 
     base = subprocess.run(["git", "rev-parse", "--verify", REF], cwd=ROOT, text=True, capture_output=True).stdout.strip()
+    if not full and not base:
+        sys.exit("没有上次部署的记录，先跑一次：python3 tools/deploy.py --all")
+    if not dry:
+        # 即使没有静态文件差异也要对账；失败或落盘改稿都不能继续发布旧产出。
+        result = subprocess.run([sys.executable, "tools/sync.py"], cwd=ROOT)
+        if result.returncode:
+            sys.exit("同步失败，未部署，refs/deploy 不变")
+        if git("status", "--porcelain").strip():
+            sys.exit("同步改动了源稿：先 npm run build 再 commit，然后部署")
+    target = git("rev-parse", "HEAD").strip()
     if full:
         files, gone = listing(git("ls-files", "-z")), []
-    elif base:
+    else:
         # **--no-renames**：站上一堆同构的页面，git 很容易把「删掉一套配装」与
         # 「新收一套配装」按内容相似度配成一次改名（实测 51% 就配上了）。配成
         # 改名之后旧路径既不在 files 也不在 gone 里，远端于是一直挂着那个已经
         # 删掉的页面。
         files = listing(git("diff", "--no-renames", "--name-only", "-z",
-                            "--diff-filter=d", base, "HEAD"))
+                            "--diff-filter=d", base, target))
         gone = listing(git("diff", "--no-renames", "--name-only", "-z",
-                           "--diff-filter=D", base, "HEAD"))
-    else:
-        sys.exit("没有上次部署的记录，先跑一次：python3 tools/deploy.py --all")
+                           "--diff-filter=D", base, target))
 
     print(f"发 {len(files)} 个文件" + (f"，删 {len(gone)} 个" if gone else ""))
     for p in files + gone:
@@ -93,13 +106,10 @@ def main() -> None:
     if dry:
         return
 
-    # 库与仓库对账。放在发文件之前、且不受「这次没文件要发」影响——源稿在库里那一份
-    # 与站上发了什么无关，改了 tools/ 一样要对一次账。
-    subprocess.run([sys.executable, "tools/sync.py"], cwd=ROOT)
-
     if not files and not gone:
         return
 
+    unchanged(target)
     if files:
         stage = pathlib.Path(tempfile.mkdtemp(prefix="starside-deploy-"))
         try:
@@ -108,14 +118,16 @@ def main() -> None:
                 dst.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(ROOT / p, dst)
             extra = ["--prune", "--safe"] if prune else []
+            unchanged(target)
             tcb("hosting", "deploy", str(stage), CLOUD, *extra, env=env, confirm=prune)
         finally:
             shutil.rmtree(stage, ignore_errors=True)
     for p in gone:
+        unchanged(target)
         tcb("hosting", "delete", f"{CLOUD}/{p}", env=env)
 
-    git("update-ref", REF, "HEAD")
-    print(f"已记下 refs/deploy = {git('rev-parse', '--short', 'HEAD').strip()}")
+    git("update-ref", REF, target)
+    print(f"已记下 refs/deploy = {target[:7]}")
 
 
 if __name__ == "__main__":

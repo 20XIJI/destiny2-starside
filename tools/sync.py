@@ -113,11 +113,13 @@ def on_disk():
         for name in sorted(os.listdir(d)):
             if name.endswith('.md'):
                 p = os.path.join(d, name)
-                out[id_of(p)] = open(p, encoding='utf-8').read()
+                with open(p, encoding='utf-8') as f:
+                    out[id_of(p)] = f.read()
     for name in ('artifact-mods.md', 'armor-sets.md'):
         p = os.path.join(REFS, name)
         if os.path.exists(p):
-            out[id_of(p)] = open(p, encoding='utf-8').read()
+            with open(p, encoding='utf-8') as f:
+                out[id_of(p)] = f.read()
     return out
 
 
@@ -147,7 +149,7 @@ def send(doc_id, md):
     api('push', id=doc_id, gz=base64.b64encode(gzip.compress(md.encode(), 9)).decode())
 
 
-def land(dropped=()):
+def land(subs, dropped=()):
     """编辑台上通过的投稿 → references/builds/<season>/<slug>.md。
 
     只写盘上还没有的那些：重跑一次不该把已经改过的源稿按投稿原文盖回去。
@@ -157,7 +159,7 @@ def land(dropped=()):
     又按那条投稿写回来，每跑一次 sync 都重演一遍，那一篇永远删不掉。
     """
     wrote = []
-    for sub in api('list')['subs']:
+    for sub in subs:
         if int(sub.get('ok') or 0) != 1 or sub.get('drop'):
             continue
         season, slug = sub.get('season'), sub.get('slug')
@@ -183,15 +185,10 @@ def land(dropped=()):
     return wrote
 
 
-def sweep():
-    """编辑台上通过的删除申请 → 删掉那一篇源稿，再把库里那条一并清掉。
-
-    与 land() 对称：**只删申请里点名的那一篇**。库里没了就删盘上的那条路不走——
-    库里少一篇既可能是有人申请删除，也可能是手工清过或漏拉，分不出来就不该动盘上
-    的东西（那一支照旧报进 stuck）。删除因此必须是一条走过审核、留了记录的申请。
-    """
-    gone = []
-    for sub in api('list')['subs']:
+def deletions(subs):
+    """同一目标的全部已通过删除申请；所有路径先经 path_of 验证。"""
+    targets = {}
+    for sub in subs:
         if int(sub.get('ok') or 0) != 1 or not sub.get('drop'):
             continue
         season, slug = sub.get('season'), sub.get('slug')
@@ -199,25 +196,47 @@ def sweep():
             print('  ? 删除申请 %s 没有 season/slug，跳过' % sub['_id'])
             continue
         doc_id = 'builds/%s/%s' % (season, slug)
+        path_of(doc_id)
+        targets.setdefault(doc_id, []).append(sub)
+    return targets
+
+
+def sweep(subs, disk, base, force=()):
+    """审核删除先与本机基线对比，再删库、删盘；不猜未同步修改的去向。"""
+    gone, conflicts = [], []
+    for doc_id in deletions(subs):
         p = path_of(doc_id)
-        if os.path.exists(p):
-            os.remove(p)
+        if doc_id not in force and doc_id in disk and (
+                doc_id not in base or sha1(disk[doc_id]) != base[doc_id]):
+            conflicts.append(doc_id)
+            print('  %s：删除与本地修改冲突' % doc_id)
+            continue
         api('drop', id=doc_id)
+        try:
+            if os.path.exists(p):
+                os.remove(p)
+        except OSError as e:
+            raise RuntimeError('远端已删除，本地删除失败：%s：%s' % (p, e)) from e
+        base.pop(doc_id, None)
+        baseline(base)
         gone.append(doc_id)
     if gone:
         print('删掉 %d 套配装：%s' % (len(gone), '、'.join(gone)))
-    return gone
+    return gone, conflicts
 
 
 def sync():
-    # 先删后写：同一轮里既有删除申请又有新投稿时，两者互不干扰。删掉的那几篇
-    # 要告诉 land()——它们在 subs 里还留着当初那条已通过的投稿，不挡住就会被
-    # 原样写回来。
-    land(dropped=set(sweep()))
     disk, db, base = on_disk(), in_db(), baseline()
-    pushed, pulled, dropped, stuck = [], [], [], []
+    subs = api('list')['subs']
+    gone, conflicts = sweep(subs, disk, base)
+    # 冲突目标也不能由旧投稿恢复，更不能在后面的三方比中反手推回库。
+    land(subs, dropped=set(gone) | set(conflicts))
+    disk, db = on_disk(), in_db()
+    pushed, pulled, dropped, stuck = [], [], [], list(conflicts)
 
     for doc_id in sorted(set(disk) | set(db)):
+        if doc_id in conflicts:
+            continue
         d = disk.get(doc_id)
         r = db.get(doc_id)
         b = base.get(doc_id)
@@ -225,34 +244,39 @@ def sync():
         rh = sha1(r) if r is not None else None
 
         if dh == rh:
-            continue
-        if b is None:
-            # 基线缺失有三种来路，只有一种真的分不出方向。
+            pass
+        elif b is None:
             if r is None:
-                pushed.append(doc_id)   # 本地新加的一篇，库里没东西可丢
                 send(doc_id, d)
+                pushed.append(doc_id)   # 本地新加的一篇，库里没东西可丢
             else:
                 stuck.append(doc_id)    # 库里有、且与盘上不同，猜不得
-            continue
-        mine = dh != b
-        theirs = rh != b
-        if mine and theirs:
+                continue
+        elif dh != b and rh != b:
             stuck.append(doc_id)
-        elif mine:
+            continue
+        elif dh != b:
             if d is None:
                 api('drop', id=doc_id)
                 dropped.append(doc_id)
             else:
                 send(doc_id, d)
                 pushed.append(doc_id)
+        elif r is None:
+            # 缺少删除意图时不以库里缺稿为由删本地。
+            stuck.append(doc_id)
+            continue
         else:
-            if r is None:
-                # 库里没了、盘上没动过：库那边不提供删除入口，所以这只可能是
-                # 手工清过。不替人删盘上的源稿，报出来。
-                stuck.append(doc_id)
+            put(path_of(doc_id), r)
+            pulled.append(doc_id)
+            dh = sha1(r)
+        # 每篇成功立即记录；后面的 API/落盘失败不抹掉已完成的对账。
+        if dh != b:
+            if dh is None:
+                base.pop(doc_id, None)
             else:
-                put(path_of(doc_id), r)
-                pulled.append(doc_id)
+                base[doc_id] = dh
+            baseline(base)
 
     for name, ids in (('推上去', pushed), ('拉下来', pulled), ('库里删掉', dropped)):
         if ids:
@@ -273,24 +297,29 @@ def sync():
         print('  python3 tools/sync.py --mine   ' + ' '.join(stuck))
         print('  python3 tools/sync.py --theirs ' + ' '.join(stuck))
 
-    # 只把这一轮真对上的记进基线，撞车那几篇的基线不动——不然下一轮就分不出方向了。
-    keep = dict(base)
-    for doc_id in sorted(set(disk) | set(db)):
-        if doc_id in stuck:
-            continue
-        if doc_id in disk:
-            keep[doc_id] = sha1(disk[doc_id])
-        else:
-            keep.pop(doc_id, None)
-    for doc_id in pulled:
-        keep[doc_id] = sha1(db[doc_id])
-    baseline(keep)
+    # 删除在 sweep 中显式清除基线，冲突目标始终保留原值。
+    baseline(base)
     return 1 if stuck else 0
 
 
 def take(ids, mine):
     disk, db, base = on_disk(), in_db(), baseline()
+    subs = api('list')['subs']
+    targets = deletions(subs)
     for doc_id in ids:
+        path_of(doc_id)
+        if doc_id in targets:
+            if mine:
+                # 全部撤销成功才允许本地择边写回；失败保留基线与 .remote。
+                for sub in targets[doc_id]:
+                    api('mark', id=sub['_id'], ok=-1)
+            else:
+                sweep(targets[doc_id], disk, base, force={doc_id})
+                leftover = path_of(doc_id) + '.remote'
+                if os.path.exists(leftover):
+                    os.remove(leftover)
+                print('%s ← 接受删除' % doc_id)
+                continue
         if mine:
             if doc_id not in disk:
                 api('drop', id=doc_id)
@@ -303,6 +332,7 @@ def take(ids, mine):
                 sys.exit('%s 库里没有，谈不上以库里的为准' % doc_id)
             put(path_of(doc_id), db[doc_id])
             base[doc_id] = sha1(db[doc_id])
+        baseline(base)
         leftover = path_of(doc_id) + '.remote'
         if os.path.exists(leftover):
             os.remove(leftover)
@@ -328,8 +358,10 @@ def main():
     if a.seed:
         seed()
     elif a.mine or a.theirs:
-        take(a.mine or [], True)
-        take(a.theirs or [], False)
+        if a.mine:
+            take(a.mine, True)
+        if a.theirs:
+            take(a.theirs, False)
     else:
         sys.exit(sync())
 

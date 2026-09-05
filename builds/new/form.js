@@ -89,7 +89,7 @@
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
 
   /* 一个槽位的候选。row = [名字, 分节, 页面, 图标, 着色, 副名]。 */
-  function options(slot, kind) {
+  function options(slot, kind, unsorted) {
     var all = V.lists[V.slots[slot]] || [];
     var want = kind && kind !== '__art__' ? kind : KIND[slot];
     var hits = all.filter(function (r) {
@@ -105,6 +105,7 @@
           && CLASS_ORDER.indexOf(r[1]) > -1 && r[1] !== state.职业) return false;
       return true;
     });
+    if (unsorted) return hits;
     // 排序四层：本分支的一页、元素、族、名字。
     // **同元素排在一块**：一格手雷混着六个元素的三十几枚，按名字排会把同元素的
     // 拆散（电弧、冰影、虚空、电弧、电弧…），扫读时找不着自己那一族。
@@ -244,7 +245,6 @@
       btn.innerHTML = body(row, btn.dataset.slot, iconSize(btn));
     }
     mark(btn, row);
-    write();
   }
 
   /* 悬停详情认的是 data-d，值是「页面\t名字\t分节」——与生成器写在详情页格子上
@@ -372,8 +372,10 @@
 
     find.addEventListener('input', function () { draw(find.value.trim()); });
     find.addEventListener('keydown', function (e) {
+      if (e.isComposing || e.keyCode === 229) return;
       if (e.key === 'Escape') { close(); btn.focus(); }
       if (e.key === 'Enter') {
+        e.preventDefault();
         var first = grid.querySelector('button');
         if (first) first.click();
       }
@@ -454,6 +456,7 @@
       if (two && other) fill(other, two);
     }
     close();
+    write();
     btn.focus();
   }
 
@@ -555,7 +558,7 @@
       n.setAttribute('aria-label', btn.dataset.stat + (i ? ' 上限' : ' 数值'));
       n.addEventListener('input', function () {
         btn.dataset[key] = n.value;
-        paintStat(btn);
+        sync();
       });
       nums.push(n);
       bar.appendChild(n);
@@ -599,7 +602,6 @@
     if (!show) fill(cell.matches('button') ? cell : cell.querySelector('button.item'), null);
     btn.textContent = (show ? '－' : '＋') + btn.textContent.slice(1);
     resize(host);
-    write();
   }
 
   function setCount(panel, n) {
@@ -920,7 +922,6 @@
     per.forEach(function (list, n) {
       (list || []).forEach(function (t) { skip.push('第 ' + (n + 1) + ' 套 · ' + t); });
     });
-    write();
     return skip;
   }
   /* ── 源稿 ──────────────────────────────────────────────────────────
@@ -965,7 +966,7 @@
   function srcName(cell) {
     var row = cell.row;
     if (row[2].indexOf('elements/') === 0) return row[0];
-    var dup = options(cell.dataset.slot, cell.dataset.kind || '').some(function (r) {
+    var dup = options(cell.dataset.slot, cell.dataset.kind || '', true).some(function (r) {
       return r[0] === row[0] && r[2] !== row[2];
     });
     return dup ? row[0] + '（' + bare(row[1]) + '）' : row[0];
@@ -1174,11 +1175,11 @@
 
   /* 把一套源稿灌进页面。认不出的整条跳过并报出来，与单套那一页同一条约定。 */
   function loadOne(md) {
+    if (md) return importMd(md);
     resetAll();
-    var skip = md ? importMd(md) : [];
     write();
     grow();
-    return skip;
+    return [];
   }
 
   function goTo(j) {
@@ -1223,7 +1224,7 @@
     var act = e.target.closest('[data-set-copy],[data-set-add]');
     if (act) { addSet('setCopy' in act.dataset); return; }
     var add = e.target.closest('[data-add]');
-    if (add) { toggleAdd(add); return; }
+    if (add) { toggleAdd(add); write(); return; }
     var step = e.target.closest('[data-step]');
     if (step) { bump(step); return; }
     var tag = e.target.closest('.tagset > button');
@@ -1235,9 +1236,13 @@
     if (!e.target.closest('.picker') && !btn) close();
   });
 
-  sheet.addEventListener('input', write);
-  sheet.addEventListener('change', write);
+  function fieldChanged(e) {
+    if (e.target.matches('[data-key]')) write();
+  }
+  sheet.addEventListener('input', fieldChanged);
+  sheet.addEventListener('change', fieldChanged);
   document.addEventListener('keydown', function (e) {
+    if (e.isComposing || e.keyCode === 229) return;
     if (e.key === 'Escape') close();
   });
 

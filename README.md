@@ -85,9 +85,30 @@ python3 tools/deploy.py --dry-run  # 只列要发什么
 python3 tools/deploy.py --all      # 整站重发，首次部署或对不上账时用
 ```
 
-工作区不干净时拒发：产出与源稿对不上就先按审核台那枚「构建并提交」。远端删文件
-由脚本按 diff 里的删除项发 `tcb hosting delete`。`tcb` 失败时 `refs/deploy` 不动，
-改完重跑即可。
+工作区不干净时拒发。发布先同步，失败立即停止；同步改动了源稿也停止，
+先在本机 `npm run build`、提交，再重新部署。上传清单与部署引用绑定同一个 commit，
+复制前和每次发送前复核 HEAD 与工作区。远端删文件由 diff 删除项驱动；
+同步或 `tcb` 失败均不推进 `refs/deploy`。`--dry-run` 不同步、不调用云端。
+
+审核接口与审核台须一起更新：`emark` 只接受 `{jobs:[{id,ok},…]}`，旧单条请求安全拒绝。
+每批正文与审核状态在一个事务内提交，冲突不自动重试；陈旧提案保留对照，
+回资料页重新提交，不按旧行号重设底稿。没有隔离云环境时，本地适配器不代替云端集成验证。
+
+### 离线回归
+
+```bash
+python3 tools/check_quality.py    # 发布、同步删除、生成产物生命周期；仅临时目录
+node tools/check_quality.cjs      # 真实 API 入口与内存事务适配器；不联网
+npm run build                    # 完整生成与外壳、术语闸门
+ruff check tools/*.py
+pyright tools/*.py
+```
+
+同步删除撞上本地修改时，`--mine <id>` 驳回删除申请并保留本地稿，
+`--theirs <id>` 明确接受删除；远端删除失败不会 unlink 本地。
+完整生成只清无源稿的配装详情 HTML，保留旧赛季有效页、未知资产与符号链接。
+
+### 缓存策略
 
 缓存在控制台按**文件后缀 / 文件夹路径 / 具体文件**三种方式匹配，输出的就是 `Cache-Control: max-age=<秒>`，分浏览器缓存与节点缓存两层。
 

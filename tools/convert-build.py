@@ -983,9 +983,10 @@ def render_index(made, sets=False):
              # 它，而没有入口的页面等于不存在），单独占一段会在卡片上面多出一整块
              # 空白。页首那句说明只留给 <meta>，正文里它把首屏推下去半屏。
              '<p class="new-link"><a href="new/index.html">投稿一套配装 →</a>'
-             '<span>选完技能、武器、护甲与神器模组，页面直接生成标准配装文本</span></p>'
-             '<p class="new-link"><a href="sets/index.html">配装合集 →</a>'
-             '<span>同一角色的多套配装，按场景切换使用</span></p>')
+             '<span>选完技能、武器、护甲与神器模组，页面直接生成标准配装文本</span></p>')
+    if not sets and any(m['set'] for m in made if m['season'] == SEASON):
+        aside += ('<p class="new-link"><a href="sets/index.html">配装合集 →</a>'
+                  '<span>同一角色的多套配装，按场景切换使用</span></p>')
     o = [shell.head('%s · Starside' % name, SETS_DESC if sets else INDEX_DESC,
                     app_js=True, up=up,
                     sheets=['../style.css'] if sets else None),
@@ -1494,7 +1495,8 @@ def sync_home(counts):
     将来多一对 <dt><dd>（比如再写一个赛季号），不带锚点就把它也改成套数了，
     而 G4 只读第一个 <dd>，查不出来。"""
     path = os.path.join(shell.ROOT, 'index.html')
-    home = open(path, encoding='utf-8').read()
+    with open(path, encoding='utf-8') as f:
+        home = f.read()
     for href in ('builds/index.html', 'builds/sets/index.html',
                  'builds/new/index.html', 'builds/new/set/index.html'):
         # 变量名不能叫 path：外层那个指着 index.html，收尾要写回它。
@@ -1511,7 +1513,8 @@ def sync_home(counts):
             die('首页还挂着 %s 那张卡，可那一页没生成：当前赛季没有合集时它不出，'
                 '卡要一并从 index.html 里撤掉' % href)
         card = must(card, '首页找不到 %s 那张卡' % href)
-        page = open(src, encoding='utf-8').read()
+        with open(src, encoding='utf-8') as f:
+            page = f.read()
         stamp = must(re.search(r'<span class="stamp">更新 ([\d.]+)</span>', page),
                      '%s 的页脚没有更新时间' % href).group(1)
         fixed = re.sub(r'(entry-stamp">更新 )[\d.]+', lambda m: m.group(1) + stamp,
@@ -1524,7 +1527,31 @@ def sync_home(counts):
                 die('首页 %s 那张卡上「%s」那个数有 %d 处，应当只有一处'
                     % (href, label, hit))
         home = home[:card.start()] + fixed + home[card.end():]
-    open(path, 'w', encoding='utf-8').write(home)
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write(home)
+
+
+def prune_details(expected):
+    """只清理无源稿的标准详情 HTML，保留目录、未知资产与所有符号链接。"""
+    root = os.path.join(shell.ROOT, OUT_DIR)
+    if os.path.islink(root):
+        return
+    with os.scandir(root) as seasons:
+        for season in seasons:
+            if not re.fullmatch(r's[0-9]+', season.name) or not season.is_dir(follow_symlinks=False):
+                continue
+            with os.scandir(season.path) as details:
+                for detail in details:
+                    if not re.fullmatch(r'[a-z0-9][a-z0-9-]*', detail.name) or not detail.is_dir(follow_symlinks=False):
+                        continue
+                    rel = '%s/%s/%s/index.html' % (OUT_DIR, season.name, detail.name)
+                    if rel in expected:
+                        continue
+                    with os.scandir(detail.path) as files:
+                        for page in files:
+                            if page.name == 'index.html' and page.is_file(follow_symlinks=False):
+                                os.remove(page.path)
+                                print('清除无源稿配装页：%s' % rel)
 
 
 def main():
@@ -1556,8 +1583,14 @@ def main():
         render_new(max(m['stamp'] for m in made), here[0])
         render_new(max(m['stamp'] for m in made), here[0], sets=True)
         live = [m for m in made if m['season'] == SEASON]
+        if not any(m['set'] for m in live):
+            old_sets = os.path.join(shell.ROOT, OUT_DIR, 'sets', 'index.html')
+            if os.path.isfile(old_sets) and not os.path.islink(old_sets) and not os.path.islink(os.path.dirname(old_sets)):
+                os.remove(old_sets)
         sync_home({'builds/index.html': ('配装', len([m for m in live if not m['set']])),
                    'builds/sets/index.html': ('合集', len([m for m in live if m['set']]))})
+        # 全赛季源稿决定保留集合；当前赛季的 shell.pages() 不能拿来删旧赛季页。
+        prune_details({m['u'] for m in made})
     live = [m for m in made if m['season'] == SEASON]
     print('配装 %d 套，当前赛季 %s %d 套（其中 %d 个合集）'
           % (len(made), SEASON, len(live), len([m for m in live if m['set']])))
