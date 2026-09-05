@@ -34,6 +34,8 @@ import json
 import os
 import re
 import sys
+import stat
+import tempfile
 
 import markup
 import shell
@@ -372,12 +374,21 @@ def row_title_end(line):
     """
     if not line.startswith('|'):
         return 0
-    nxt = line.find('|', 1)
+    depth = 0
+    separators = []
+    for i, char in enumerate(line[1:], 1):
+        if char == '{':
+            depth += 1
+        elif char == '}':
+            depth = max(0, depth - 1)
+        elif char == '|' and not depth:
+            separators.append(i)
+    nxt = separators[0] if separators else -1
     if nxt < 0:
         return 0
     # 首格留空即向上合并（CLAUDE.md 的源稿方言），这一行的身份在第二格。
     if not line[1:nxt].strip():
-        nxt = line.find('|', nxt + 1)
+        nxt = separators[1] if len(separators) > 1 else -1
         if nxt < 0:
             return 0
     brk = line.find('\\\\', 1)
@@ -498,11 +509,8 @@ def apply(slug=None):
         for i, line in enumerate(lines):
             if i in skip:
                 continue
-            for a, b, word in hits_in(line, terms, names):   # 倒序，前面的位置不动
-                # 包的是源稿原文而不是表的键：键归一化过，直接写回会吃掉
-                # 「Vex 揭秘者」中英之间那个排版空格。
-                line = line[:a] + '{%s|%s}' % (terms[word][0], line[a:b]) + line[b:]
-                n += 1
+            line, count = color_text(line, terms, names)
+            n += count
             lines[i] = line
         if n:
             with open(path, 'w', encoding='utf-8') as f:
@@ -537,15 +545,17 @@ def prose_spans(lines):
     """{行下标: 从第几个字符起是散文}。描述那一行要跳过「描述：」三个字——
     hits_in() 见到「键：值」整行不着色，而这一行的值恰恰是要着色的那一段。"""
     out = {}
-    note = None
+    note = False
     for i, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped.startswith('# ') or stripped.startswith('## '):
+            note = stripped in (NOTE_HEAD, '## 合集介绍')
+            continue
         hit = DESC_LINE.match(line)
         if hit:
             out[i] = len(hit.group(1))
-        if line.strip() == NOTE_HEAD:
-            note = i
-    if note is not None:
-        out.update({i: 0 for i in range(note + 1, len(lines))})
+        elif note and not stripped.startswith('#'):
+            out[i] = 0
     return out
 
 
@@ -571,45 +581,101 @@ def rename(body, banned, keep):
     return body, len(taken)
 
 
-def apply_builds():
-    """配装源稿的散文就地正名与着色。**构建时自动跑**：投稿的人既不写着色标记
-    也不照站内的正名写，逐条手补是把 npm run build 变成一串报错；词表与那两道闸门
-    是同一份，补得上的就该由脚本补。可重复跑——已经改过的下一趟自然跳过。
+def color_text(text, terms, names, *, keys=True):
+    """补色只有这一处；包原文，保留中英排版空格。"""
+    hits = hits_in(text, terms, names, keys=keys)
+    for a, b, word in hits:
+        text = text[:a] + '{%s|%s}' % (terms[word][0], text[a:b]) + text[b:]
+    return text, len(hits)
 
-    **只碰散文那两段**（描述与注解），槽位行一个字不动：那些是要拿去查词表的物品
-    专名，「重型弹药斥候」照着正名改成「威能弹药」就查不到了。那一类照旧由
-    check_terms 的 G1 报出来，是专名就进 KEEP，是散文才该改——这一步人来判。
 
-    正名排在着色前面：反过来会先把「重型弹药」着上色，再换成正名，标记里外对不上。
-    改的是源稿不是产出，git diff 即变更记录。"""
-    import check_terms   # 延迟导入：check_terms 在模块级导入 items，成环
-    banned = [(w, t[0]) for t in check_terms.TERMS for w in t[2]]
+def normalize_text(text, *, terms, names, banned):
+    """正名 → 完整叶标记纠色 → 裸词补色，每步重算坐标。"""
+    import check_terms
+    text, fixed = rename(text, banned, check_terms.protected_spans(text))
+    protected = check_terms.protected_spans(text)
+    tinted = 0
+    for match in reversed(list(re.finditer(r'\{([\w-]+)\|([^{}|]+)\}', text))):
+        if any(a <= match.start() and match.end() <= b for a, b in protected):
+            continue
+        token, word = match.groups()
+        target = check_terms.expected_token(token, word, terms)
+        if target:
+            text = text[:match.start(1)] + target + text[match.end(1):]
+            tinted += 1
+    # 片段可能从表格身份格之后开始，不再把开头的 | 当作新行身份。
+    text, colored = color_text(' ' + text, terms, names, keys=False)
+    return text[1:], fixed, tinted, colored
+
+
+def atomic_write(path, text):
+    """同目录替换；失败保留旧文件，权限不变。"""
+    mode = stat.S_IMODE(os.stat(path).st_mode)
+    tmp = None
+    try:
+        with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', newline='',
+                                         dir=os.path.dirname(path), delete=False) as f:
+            tmp = f.name
+            f.write(text)
+            os.chmod(tmp, mode)
+        os.replace(tmp, path)
+    finally:
+        if tmp and os.path.exists(tmp):
+            os.unlink(tmp)
+
+
+def normalize_files(documents, builds):
+    import check_terms
     terms, _ = load()
+    check_terms.check_token_targets(terms)
     names = sorted(terms, key=len, reverse=True)
-    total = fixed = 0
-    for path in build_pages():
-        with open(path, encoding='utf-8') as f:
-            lines = f.read().split('\n')
-        n = k = 0
-        for i, off in prose_spans(lines).items():
-            head, body = lines[i][:off], lines[i][off:]
-            keep = [(m.start(), m.end())
-                    for w in check_terms.KEEP for m in re.finditer(re.escape(w), body)]
-            body, hit = rename(body, banned, keep)
-            k += hit
-            # keys=False：注解里的「缺点：」是正文，不是「键：值」行
-            for a, b, word in hits_in(body, terms, names, keys=False):   # 倒序
-                body = body[:a] + '{%s|%s}' % (terms[word][0], body[a:b]) + body[b:]
-                n += 1
-            lines[i] = head + body
-        if n or k:
-            with open(path, 'w', encoding='utf-8') as f:
-                f.write('\n'.join(lines))
-            print('  %s —— %s着色 %d 处'
-                  % (os.path.relpath(path, shell.ROOT), '正名 %d 处、' % k if k else '', n))
-            total += n
-            fixed += k
-    print('配装源稿自动改写：正名 %d 处、着色 %d 处' % (fixed, total))
+    banned = [(w, t[0]) for t in check_terms.TERMS for w in t[2]]
+    totals = [0, 0, 0]
+    changed = 0
+    for path, prose in ([(os.path.join(shell.ROOT, p), False) for p in documents]
+                        + [(p, True) for p in builds]):
+        with open(path, encoding='utf-8', newline='') as f:
+            original = f.read()
+        lines = original.splitlines(keepends=True)
+        if prose:
+            spans = prose_spans(lines)
+        else:
+            skip = head_rows(lines)
+            spans = {i: row_title_end(line) for i, line in enumerate(lines)
+                     if i not in skip and not line.lstrip().startswith('#')
+                     and not KEY_LINE.match(line) and not RULE_LINE.match(line.strip())}
+        reports = []
+        for i, off in spans.items():
+            old = lines[i]
+            body, fixed, tinted, colored = normalize_text(
+                old[off:], terms=terms, names=names, banned=banned)
+            new = old[:off] + body
+            if new == old:
+                continue
+            lines[i] = new
+            counts = (fixed, tinted, colored)
+            totals = [a + b for a, b in zip(totals, counts)]
+            reports.append('%s:%d [正名 %d，纠色 %d，补色 %d] %s → %s' %
+                           (os.path.relpath(path, shell.ROOT), i + 1, *counts,
+                            old.rstrip('\r\n'), new.rstrip('\r\n')))
+        result = ''.join(lines)
+        if result != original:
+            atomic_write(path, result)
+            changed += 1
+            print('\n'.join(reports))
+    print('自动纠正：正名 %d，纠色 %d，补色 %d；改动 %d 个文件' % (*totals, changed))
+
+
+def normalize(slug=None, *, builds=True):
+    documents = list(pages(slug))
+    if slug and not documents:
+        markup.die('没有可自动纠正的资料源稿：%s' % slug)
+    normalize_files(documents, list(build_pages()) if builds else [])
+
+
+def apply_builds():
+    """独立运行时也只纠正配装散文，不碰槽位。"""
+    normalize_files([], list(build_pages()))
 
 
 def main() -> int:
@@ -620,6 +686,8 @@ def main() -> int:
         distill_perks()
     elif args == ['--builds']:
         apply_builds()
+    elif args[:1] == ['--normalize'] and len(args) <= 2:
+        normalize(args[1], builds=False) if len(args) == 2 else normalize()
     elif args[:1] in (['--suggest'], ['--apply']) and len(args) <= 2:
         (suggest if args[0] == '--suggest' else apply)(
             args[1] if len(args) == 2 else None)
@@ -629,6 +697,7 @@ def main() -> int:
               '    python3 tools/items.py --perks\n'
               '    python3 tools/items.py --suggest [slug]\n'
               '    python3 tools/items.py --apply   [slug]\n'
+              '    python3 tools/items.py --normalize [slug]\n'
               '    python3 tools/items.py --builds', file=sys.stderr)
         return 2
     return 0

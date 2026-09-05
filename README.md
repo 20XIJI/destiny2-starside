@@ -97,9 +97,9 @@ python3 tools/deploy.py --all      # 整站重发，首次部署或对不上账�
 ### 离线回归
 
 ```bash
-python3 tools/check_quality.py    # 发布、同步删除、生成产物生命周期；仅临时目录
+python3 tools/check_quality.py    # 发布、同步删除、生成生命周期、源稿自动纠正；仅临时目录
 node tools/check_quality.cjs      # 真实 API 入口与内存事务适配器；不联网
-npm run build                    # 完整生成与外壳、术语闸门
+npm run build                    # 确定性纠正源稿 → 完整生成 → 外壳、术语闸门
 ruff check tools/*.py
 pyright tools/*.py
 ```
@@ -107,6 +107,25 @@ pyright tools/*.py
 同步删除撞上本地修改时，`--mine <id>` 驳回删除申请并保留本地稿，
 `--theirs <id>` 明确接受删除；远端删除失败不会 unlink 本地。
 完整生成只清无源稿的配装详情 HTML，保留旧赛季有效页、未知资产与符号链接。
+
+### 构建前自动纠正
+
+`npm run build` 首先运行 `python3 tools/items.py --normalize`，按现有词表依次
+正名、纠正完整术语的 token、补裸词着色，再生成页面。每个改动行打印路径、行号、
+三类计数及前后原文；无改动不重写文件。写入采用同目录临时文件原子替换，保留权限、
+行尾与末尾换行；失败中止构建，已完成的纠正保留，不承诺全仓回滚。
+
+自动范围仅限普通资料的正文与表格身份区之后的内容，以及所有赛季配装的描述、
+每套注解和合集介绍。标题、元数据、列名、行标题、配装槽位与身份字段不改；
+链接目标与图片路径不改，KEEP 专名不正名。changelog、palette 和两份专属源稿
+不加入这条自动纠正路径。日期不自动更新。
+
+`python3 tools/items.py --normalize <slug>` 只纠正指定资料，未知 slug 报错；
+`--builds` 只纠正配装散文。`--suggest [slug]` 仍只列补色建议，`--apply [slug]`
+仍只补裸词颜色。单独调用生成器保持严格转换，不隐式改源稿。
+
+词表冲突在写入前中止；未知装备、不能确定的 token、未闭合标记、结构或日期错误
+仍由原闸门拒绝。本流程不审核、不同步、不部署、不自动提交。
 
 ### 缓存策略
 

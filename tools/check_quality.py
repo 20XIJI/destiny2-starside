@@ -23,6 +23,9 @@ import unittest
 from unittest.mock import patch
 import urllib.request
 
+import items
+import check_terms
+
 sys.dont_write_bytecode = True
 TOOLS = Path(__file__).resolve().parent
 sys.path.insert(0, str(TOOLS))
@@ -439,6 +442,21 @@ class Generation(Isolated):
             for href, label in links) + '</ul>'
         self.file('index.html', text)
 
+
+    def test_normalization_does_not_rescue_unknown_equipment(self):
+        self.replace(items.shell, 'BUILD_DIR', str(self.root / 'references/builds'))
+        self.beta.write_text(self.SOLO.replace('测试超能', '不存在的装备'),
+                             encoding='utf-8')
+        before = self.beta.read_bytes()
+        with patch.object(items.shell, 'ROOT', str(TOOLS.parent)):
+            terms, _ = items.load()
+        with patch.object(items, 'load', return_value=(terms, [])):
+            items.apply_builds()
+        self.assertEqual(self.beta.read_bytes(), before)
+        self.assertIn('不存在的装备', self.exits(build.main))
+
+
+
     def test_full_generation_prunes_only_orphan_html_across_all_seasons(self):
         self.beta.write_text(self.SET, encoding='utf-8')
         self.home(True)
@@ -516,6 +534,102 @@ class Generation(Isolated):
         self.assertTrue(page.is_symlink())
         self.assertTrue((self.root / 'builds/s77').is_symlink())
         self.assertTrue((self.root / 'builds/s29/linked-hunter').is_symlink())
+
+
+class Normalization(Isolated):
+    def setUp(self):
+        super().setUp()
+        terms, skipped = items.load()
+        self.replace(items, 'load', lambda: (terms, skipped))
+        self.replace(items.shell, 'ROOT', str(self.root))
+        self.replace(items.shell, 'BUILD_DIR', str(self.root / 'references/builds'))
+        self.kw = dict(terms=terms, names=sorted(terms, key=len, reverse=True),
+                       banned=[(w, t[0]) for t in check_terms.TERMS for w in t[2]])
+        self.doc = self.file('references/docs/fixture.md', '# 示例\n\n## 正文\n')
+
+    def test_shared_corrections_and_real_gates(self):
+        self.doc.write_text('# 示例\n\n## 正文\n装填后拾取能量球\n'
+                            '{enemy|护甲充能} {el-arc|骨灰余烬}\n', encoding='utf-8')
+        items.normalize('fixture', builds=False)
+        self.assertEqual(self.doc.read_text(), '# 示例\n\n## 正文\n填装后拾取{orb|能量球}\n'
+                         '{armor-charge|护甲充能} {el-solar|骨灰余烬}\n')
+        bad = []
+        check_terms.check_terms(['references/docs/fixture.md'], bad)
+        check_terms.check_items(['references/docs/fixture.md'], bad)
+        self.assertEqual(bad, [])
+
+    def test_urls_keep_nested_and_semantic_wrappers(self):
+        text = ('[boss](../boss-hp/index.html) ![](icons/装填-boss.png) '
+                '重型弹药搜寻者 {el-void|残存回声} {el-arc|电弧元素能量球} '
+                '{named|骨灰余烬} {note|{el-arc|骨灰余烬}}')
+        result, fixed, tinted, colored = items.normalize_text(text, **self.kw)
+        self.assertEqual(result, text.replace('[boss]', '[{bar-yellow|首领}]')
+                         .replace('{note|{el-arc|骨灰余烬}}', '{note|{el-solar|骨灰余烬}}'))
+        self.assertEqual((fixed, tinted, colored), (1, 1, 1))
+
+    def test_all_collection_prose_and_section_boundaries(self):
+        md = ('# 合集装填\n合集：是\n推荐人：装填\n核心：装填\n'
+              '## 合集介绍\n能量球\n'
+              '# 第一套装填\n描述：能量球\n## 注解\n缺点：能量球\n'
+              '### 装填\n能量球\n## 武器\n传说武器：装填\n'
+              '# 第二套装填\n描述：能量球\n## 护甲\n头盔：重型弹药搜寻者\n'
+              '## 注解\n能量球\n')
+        path = self.file('references/builds/s29-fixture/set.md', md)
+        items.apply_builds()
+        self.assertEqual(path.read_text(), md.replace('能量球', '{orb|能量球}'))
+
+    def test_table_identity_whitespace_and_idempotence(self):
+        md = ('# 装填\r\n列组：装填 = 能量球\r\n## 正文\r\n'
+              '| 装填 | 能量球 |\r\n|---|---|\r\n'
+              '| 装填 |  装填能量球  |\r\n'
+              '| | 装填 | 能量球 |\r\n'
+              '| {named|装填} | 能量球 |\r\n'
+              '| 装填\\\\能量球 | [boss](../boss-hp/index.html) |')
+        self.doc.write_bytes(md.encode())
+        self.doc.chmod(0o640)
+        items.normalize('fixture', builds=False)
+        expected = md.replace('|  装填能量球  |', '|  填装{orb|能量球}  |')
+        expected = expected.replace('| | 装填 | 能量球 |', '| | 装填 | {orb|能量球} |')
+        expected = expected.replace('| {named|装填} | 能量球 |',
+                                    '| {named|装填} | {orb|能量球} |')
+        expected = expected.replace('装填\\\\能量球', '装填\\\\{orb|能量球}')
+        expected = expected.replace('[boss]', '[{bar-yellow|首领}]')
+        self.assertEqual(self.doc.read_bytes(), expected.encode())
+        self.assertEqual(self.doc.stat().st_mode & 0o777, 0o640)
+        before = self.doc.stat().st_mtime_ns
+        self.output.seek(0)
+        self.output.truncate()
+        items.normalize('fixture', builds=False)
+        self.assertEqual(self.doc.read_bytes(), expected.encode())
+        self.assertEqual(self.doc.stat().st_mtime_ns, before)
+        self.assertIn('正名 0，纠色 0，补色 0；改动 0 个文件', self.output.getvalue())
+
+    def test_conflict_preflight_and_failed_write_preserve_source(self):
+        self.doc.write_text('## 正文\n能量球\n', encoding='utf-8')
+        original = self.doc.read_bytes()
+        terms = dict(self.kw['terms'])
+        terms['护甲充能'] = ('el-solar', '冲突')
+        with patch.object(items, 'load', return_value=(terms, [])):
+            self.assertIn('词表冲突', self.exits(lambda: items.normalize('fixture')))
+        self.assertEqual(self.doc.read_bytes(), original)
+        with patch.object(items.os, 'replace', side_effect=OSError('write denied')):
+            with self.assertRaisesRegex(OSError, 'write denied'):
+                items.normalize('fixture', builds=False)
+        self.assertEqual(self.doc.read_bytes(), original)
+        self.assertEqual(list(self.doc.parent.iterdir()), [self.doc])
+
+    def test_unknown_token_and_unclosed_marker_remain_rejected(self):
+        text = '{unknown|无法确定} {orb|能量球'
+        result = items.normalize_text(text, **self.kw)[0]
+        self.assertEqual(result, text)
+        self.doc.write_text('## 正文\n' + result, encoding='utf-8')
+        bad = []
+        self.file('tools/convert-armor-sets.py',
+                  (TOOLS / 'convert-armor-sets.py').read_text(encoding='utf-8'))
+        check_terms.check_tokens([('references/docs/fixture.md', set())], '', bad)
+        self.assertTrue(any('unknown' in error for error in bad), bad)
+        doc = load('quality_doc', 'convert-doc.py')
+        self.exits(lambda: doc.wrap('p', '{orb|能量球'))
 
 
 if __name__ == '__main__':

@@ -259,14 +259,44 @@ def at_line(text, at):
     return text.count('\n', 0, at) + 1
 
 
+def protected_spans(text):
+    """G1 与自动正名共用：专名全文及链接目标不可改。"""
+    return ([(m.start(), m.end()) for k in KEEP
+             for m in re.finditer(re.escape(k), text)]
+            + [(m.start(1), m.end(1))
+               for m in re.finditer(r'\]\(([^)]*)\)', text)])
+
+
+def expected_token(token, text, terms):
+    """完整术语的唯一归属；两份真相冲突时拒绝猜测。"""
+    targets = {t for w, t, _ in TERMS if w == text and t}
+    item = terms.get(items.norm(text))
+    if item and item[0] in MANAGED:
+        if targets and targets != {item[0]}:
+            markup.die('词表冲突「%s」：%s / %s' %
+                       (text, '、'.join(sorted(targets)), item[0]))
+        if token in MANAGED:
+            targets.add(item[0])
+    if len(targets) > 1:
+        markup.die('词表冲突「%s」：%s' % (text, '、'.join(sorted(targets))))
+    want = next(iter(targets), None)
+    return want if want != token else None
+
+
+def check_token_targets(terms):
+    """任何源稿落盘之前核对词表交集。"""
+    for word, token, _ in TERMS:
+        if token:
+            expected_token(token, word, terms)
+
+
 def check_terms(files, bad):
     banned = [(w, t[0]) for t in TERMS for w in t[2]]
+    terms, _ = items.load()
+    check_token_targets(terms)
     for rel in files:
         md = read(rel)
-        keep = [(m.start(), m.end()) for k in KEEP for m in re.finditer(re.escape(k), md)]
-        # 链接目标不是正文，站内路径用的是 ASCII slug（../boss-hp/index.html），
-        # 字面撞上禁用写法与译名无关。只放行括号里那一段，链接文字照常受检。
-        keep += [(m.start(1), m.end(1)) for m in re.finditer(r'\]\(([^)]*)\)', md)]
+        keep = protected_spans(md)
         for wrong, right in banned:
             for m in re.finditer(re.escape(wrong), md):
                 if any(a <= m.start() and m.end() <= b for a, b in keep):
@@ -281,9 +311,10 @@ def check_terms(files, bad):
                 # 只管「整个标记就是这个词」的那种。词嵌在更长的短语里时，
                 # 着色属于短语（{el-arc|电弧元素能量球}、{health|治疗能量球}），
                 # 按词强判会把整句的颜色拆碎。
-                if hit and hit[1] == word and hit[0] != token:
+                want = expected_token(hit[0], word, terms) if hit and hit[1] == word else None
+                if hit and want:
                     bad.append('G2 %s:%d 「%s」着色成 {%s|…}，应是 {%s|…}'
-                               % (rel, at_line(md, m.start()), word, hit[0], token))
+                               % (rel, at_line(md, m.start()), word, hit[0], want))
 
 
 def check_tokens(pairs, site, bad):
@@ -358,6 +389,7 @@ MANAGED = set(items.EL.values()) | {'exotic'} | set(items.MECH.values())
 def check_items(files, bad):
     # 反查：已着色的对不对
     terms, _ = items.load()
+    check_token_targets(terms)
     for rel in files:
         md = read(rel)
         # 只认「整个标记就是这个词」的那种，与 G2 同一条道理：词嵌在更长的短语里
@@ -367,9 +399,10 @@ def check_items(files, bad):
             if token not in MANAGED:
                 continue
             want = terms.get(items.norm(text))
-            if want and want[0] in MANAGED and want[0] != token:
+            target = expected_token(token, text, terms)
+            if want and want[0] in MANAGED and target:
                 bad.append('G6 %s:%d 「%s」着色成 {%s|…}，官方物品表说它是%s，应是 {%s|…}'
-                           % (rel, at_line(md, m.start()), text, token, want[1], want[0]))
+                           % (rel, at_line(md, m.start()), text, token, want[1], target))
 
     # 正查：表里的词出现了就得着色。新写的一页里提到「骨灰余烬」却留着素色，
     # 这一条当场报出——不必记得回去跑一趟 --suggest。
