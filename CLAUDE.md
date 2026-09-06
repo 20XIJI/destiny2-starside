@@ -84,6 +84,7 @@ python3 tools/items.py --builds              # 配装源稿的描述与注解自
 
 python3 tools/json2xlsx.py <抓取的.json>      # 还原成 xlsx，供核对与手改
 
+tools/ship.sh "提交信息"                       # 一轮发版：对账 → 构建 → 提交 → 部署 → 推送
 python3 tools/sync.py                         # 库与仓库对账，双向都走，部署后自动跑
 python3 tools/sync.py --seed                  # 盘整个覆盖库，首次灌库或对不上账时用
 python3 tools/sync.py --mine   <_id>…         # 撞车了，这几篇以盘上的为准
@@ -259,14 +260,18 @@ runtime 比整站首屏还大。
 `artifact-mods`、`builds/s29-凯旋纪念碑/xxx-warlock`），换算只有 `id_of` / `path_of`
 两处，后者用 `realpath` 挡穿越——`_id` 从库里来，而库是联网的那一侧。
 
-日常一轮：
+日常一轮就是 `tools/ship.sh "提交信息"`，它按序跑这五步，任一步失败即停：
 
 ```
 python3 tools/sync.py
 npm run build
-git add -A && git commit
+git add -A && git commit           # 工作区干净时跳过，也就不必给信息
 python3 tools/deploy.py            # 末尾自动再对一次账
+git push
 ```
+
+**末尾那趟对账拉回东西就报错退出**：拉回来的源稿既不在这次的 commit 里，也没上站，
+再跑一次 `ship.sh` 收掉。
 
 #### 认证：裸 HTTP，不引 SDK
 
