@@ -36,11 +36,21 @@
     });
   }
 
-  /* **点目录不拦截**，让浏览器自己改 hash，hashchange 接手重画。
-     早前那一版走 history.pushState，在 file:// 下当场抛 SecurityError——
-     监听器死在那里，hash 没改、页面也不重画，而站点是要能双击打开的。
-     不拦还省掉一件事：主从态下目标是 display: none，浏览器找不到锚点、不滚；
-     竖排态下它就在页面上，滚过去正是要的。两种态都不必自己写。 */
+  /* **点目录就地改写 hash，不压历史**：一份合集最多十二套，原生的片段导航点一套
+     攒一格，返回键要按十几下才出得去这一页。
+     **先试 replaceState，成功了才拦截**：file:// 下它抛 SecurityError，那时放行，
+     退回浏览器自己的 hash 导航——这一页的 hash 是状态不是锚点，拦了又改不成
+     就再也切不动了。replaceState 不发 hashchange，重画自己调。
+     竖排态下原生导航本来会滚到那一套，补一句；主从态下目标是 display: none，
+     浏览器本来就找不到锚点、不滚，照旧不滚。 */
+  wrap.querySelector('.set-list').addEventListener('click', function (ev) {
+    var a = ev.target.closest && ev.target.closest('a');
+    if (!a) return;
+    try { history.replaceState(null, '', a.getAttribute('href')); } catch (e) { return; }
+    ev.preventDefault();
+    paint();
+    if (stack) ones[at()].scrollIntoView();
+  });
 
   if (sw) {
     sw.addEventListener('click', function () {
@@ -54,8 +64,8 @@
     });
   }
 
-  /* 只听 hashchange：pushState 之后按返回键，两个历史项只差一个片段，
-     这个事件照样发得出来，再挂一个 popstate 就是同一件事画两遍。 */
+  /* 目录之外还有两条改 hash 的路：地址栏手改，以及从别处点进来的 #set-N。
+     两条都发 hashchange，接住即可。 */
   window.addEventListener('hashchange', paint);
   window.addEventListener('resize', stick);
   stick();

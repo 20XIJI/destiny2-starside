@@ -945,6 +945,21 @@
     return chip;
   });
 
+  /* 点一枚 chip 是在同一屏里换个位置，不是钻进去一层，所以拦下原生的片段导航、
+     自己滚过去，地址栏那一段就地改写。**不然点五枚就攒五格历史**，返回键要按
+     五下才出得去这一页。href 原样留着：右键复制链接、中键新开与无 JS 时照旧是
+     锚点。file:// 下 replaceState 抛 SecurityError，那时只是地址栏不同步，
+     滚动照旧，所以不必回退。 */
+  chipNav.addEventListener('click', function (ev) {
+    var a = ev.target.closest && ev.target.closest('a.chip');
+    if (!a) return;
+    var sec = document.getElementById(a.getAttribute('href').slice(1));
+    if (!sec) return;
+    ev.preventDefault();
+    sec.scrollIntoView();
+    try { history.replaceState(null, '', a.getAttribute('href')); } catch (e) {}
+  });
+
   if (ITEM) {
     slot.appendChild(search);
     slot.appendChild(count);

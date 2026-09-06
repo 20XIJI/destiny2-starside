@@ -4114,6 +4114,7 @@ window.starsideIndex = [
 {"u":"builds/s29/16gnj6n4-warlock/index.html","t":"复古虚空术进化版 · 配装推荐","d":""},
 {"u":"builds/s29/26x3zxkz-hunter/index.html","t":"多人需求层级钻机腿输出 · 配装推荐","d":""},
 {"u":"builds/s29/45oqarm4-hunter/index.html","t":"威胁等级电表倒转 · 配装推荐","d":""},
+{"u":"builds/s29/7b5y8phc-hunter/index.html","t":"棱镜松身裤丢丢猎 · 配装推荐","d":""},
 {"u":"builds/s29/9yfchje1-warlock/index.html","t":"突袭火中通用 · 配装推荐","d":""},
 {"u":"builds/s29/acdzuqsl-warlock/index.html","t":"meta电术 · 配装推荐","d":""},
 {"u":"builds/s29/bxjyhdhm-titan/index.html","t":"飞机倍泰坦 · 配装推荐","d":""},

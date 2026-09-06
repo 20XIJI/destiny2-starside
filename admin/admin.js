@@ -350,13 +350,11 @@
     $('stage-foot').textContent = ''
   }
   // ── 浏览器的返回 ───────────────────────────────────────────────────
-  // 编辑台整站一页，不压历史的话按一下返回就离开了整个编辑台——而人在配装详情里
-  // 按返回，想去的是那张列表。每换一屏压一格，state 里写清那一格该画什么。
+  // 编辑台整站一页。**只有配装详情压一格**：人在详情里按返回，想去的是那张列表。
+  // 换标签是同一屏里换一份列表、不是钻进去一层，就地改写那一格即可——每换一屏压
+  // 一格的话，四枚标签点一圈就攒四格，返回键要按四下才出得去编辑台。
+  // state 里写清那一格该画什么。
   var VIEWS = { review: reviewView, builds: buildsView, hist: histView, eds: edsView }
-
-  function dive (state) {
-    history.pushState(state, '')
-  }
 
   // 详情里做完动作回列表。**走 history.back()，不直接画列表**——直接画会把详情
   // 那一格留在历史里，人再按一次返回又弹回那条已经处理完的记录。
@@ -975,7 +973,7 @@
   // 点一条：记下开的是哪一套，再画一次列表——详情就摊在它下面那一格里。
   // 正文不必现取，docs 那个动作已经把 builds/ 那些的 md 一并带回来了。
   function buildDetail (b) {
-    dive({ v: 'builds', b: idOf(b) })
+    history.pushState({ v: 'builds', b: idOf(b) }, '')
     openBuild = idOf(b)
     buildsView()
     // 详情摊在整段列表下面，配装攒到几十条就得自己往下滑两千像素。**只滚点击
@@ -1358,7 +1356,7 @@
         n.removeAttribute('aria-current')
       })
       b.setAttribute('aria-current', 'true')
-      dive({ v: b.dataset.view })
+      history.replaceState({ v: b.dataset.view }, '')
       ;(VIEWS[b.dataset.view] || buildsView)()
     }
     gate()
