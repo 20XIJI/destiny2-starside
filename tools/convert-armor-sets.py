@@ -332,8 +332,11 @@ def render(cats: list[Category], digest: str = '') -> str:
             parts.append('</div>\n')
             parts.append('</article>\n')
         parts.append('</section>\n')
+    # 方括号图例：效果正文里有 15 处 PvP 数值，而 parse() 从第一个 ## 起读，
+    # 源稿引言那句图例进不来。写在这里，与 exotic-weapon／exotic-armor／
+    # weapon-perks 三页源稿的「页脚：」逐字同句。
     parts.append('</main>\n\n' + shell.foot(
-        '2026.8.30', shell.unsure_note('?'),
+        '2026.8.30', '方括号内是 PvP 数值。' + shell.unsure_note('?'),
         source=shell.COMPENDIUM_SRC, thanks='Flamia#5238 提供部分翻译与排版。'))
     return ''.join(parts)
 
