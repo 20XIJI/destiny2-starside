@@ -4112,6 +4112,7 @@ window.starsideIndex = [
 {"u":"builds/new/index.html","t":"配装工具","d":"填一份配装推荐：选完技能、武器、护甲与神器模组，页面直接生成标准配装文本，复制发给站长即可挂上站。"},
 {"u":"builds/new/set/index.html","t":"合集工具","d":"填写配装合集：逐套选择技能、武器、护甲与神器模组，页面直接生成标准格式的合集文本。"},
 {"u":"builds/s29/16gnj6n4-warlock/index.html","t":"复古虚空术进化版 · 配装推荐","d":""},
+{"u":"builds/s29/26x3zxkz-hunter/index.html","t":"多人需求层级钻机腿输出 · 配装推荐","d":""},
 {"u":"builds/s29/45oqarm4-hunter/index.html","t":"威胁等级电表倒转 · 配装推荐","d":""},
 {"u":"builds/s29/9yfchje1-warlock/index.html","t":"突袭火中通用 · 配装推荐","d":""},
 {"u":"builds/s29/acdzuqsl-warlock/index.html","t":"meta电术 · 配装推荐","d":""},
