@@ -14,7 +14,7 @@ Bungie 的 manifest 导出里 `typeName_zh` 已经按元素给技能分好类（
               全自动铺色不可行——库里 6738 个模组名与中文常用词大量同形
               （充能 618 次、爆炸 413 次、霰弹枪 65 次都是物品名），
               按词表铺开会把正文里的普通动词染成专名。所以出建议交人裁决。
-  --builds    配装源稿的散文（描述与注解）就地着色，构建时自动跑。投稿的人不写
+  --builds    配装源稿的散文（描述、注解与审核意见）就地着色，构建时自动跑。投稿的人不写
               着色标记，逐条手补是把构建变成一串「某某没着色」的报错。资料页的
               源稿不走这条：那些是自己写的长文，铺色前该先 --suggest 看一眼。
   check_terms.py 的 G6  已着色的术语，token 必须与库里的归属一致。
@@ -547,11 +547,11 @@ def apply(slug=None):
     print('合计 %d 处。跑 npm run build，再看 git diff。' % total)
 
 
-# 配装源稿里只有两段是散文：「描述：」那一行的值，与「## 注解」以下的正文。
-# 槽位行写的是物品名（「碎片：保护琢面、黎明琢面」），由词表查表变成带图标的
-# 链接，源稿不写颜色——着进去就把名字改了，查表当场中止。
+# 配装源稿里的散文：「描述：」那一行的值，以及「## 注解」「## 合集介绍」
+# 「## 审核意见」三节以下的正文。槽位行写的是物品名（「碎片：保护琢面、黎明琢面」），
+# 由词表查表变成带图标的链接，源稿不写颜色——着进去就把名字改了，查表当场中止。
 DESC_LINE = re.compile(r'^(描述：)(.*)$')
-NOTE_HEAD = '## 注解'
+NOTE_HEADS = ('## 注解', '## 合集介绍', '## 审核意见')
 
 
 def build_pages():
@@ -576,7 +576,7 @@ def prose_spans(lines):
     for i, line in enumerate(lines):
         stripped = line.strip()
         if stripped.startswith('# ') or stripped.startswith('## '):
-            note = stripped in (NOTE_HEAD, '## 合集介绍')
+            note = stripped in NOTE_HEADS
             continue
         hit = DESC_LINE.match(line)
         if hit:

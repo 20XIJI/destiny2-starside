@@ -384,6 +384,39 @@ def facets(md):
     return '<div class="facets">%s</div>' % rows if rows else ''
 
 
+def section_of(md, name):
+    """取一个分节的正文，到下一个 `## ` 或文末为止。
+
+    「注解」与「合集介绍」各自 split 一次就够——它们在源稿里排在最后。审核意见排在
+    最前（它是对整套配装的判词，读者在页顶就该看见），后面还跟着别的分节，所以要
+    有边界。
+    """
+    m = re.search(r'^## %s[ \t]*$(.*?)(?=^## |\Z)' % re.escape(name), md, re.S | re.M)
+    return m.group(1).strip() if m else ''
+
+
+def prose(text):
+    """空行分段、段内换行落成 <br>。注解、合集介绍与审核意见共用这一份。"""
+    return ['<p>%s</p>' % inline('<br>'.join(b.strip().split('\n')), rich=True)
+            for b in re.split(r'\n\s*\n', text) if b.strip()]
+
+
+def verdict(md):
+    """审核意见：站方对整套配装的判词，横贯版心落在页头与第一个分节之间。
+
+    没有就整块不出，与 facet() 同一条约定。**它是分节不是头部键**：头部键的值只能
+    占一行，而这一段与注解一样想写多长写多长、能分段。
+
+    它不进页头：页头那两列写的是这套配装的身份（谁推荐的、什么职业、什么类别），
+    审核意见是另一个人对它的话，混进去读者分不出是谁在说。
+    """
+    v = section_of(md, '审核意见')
+    if not v:
+        return ''
+    return ('<aside class="verdict"><p class="by-label">审核意见</p>\n%s\n</aside>'
+            % '\n'.join(prose(v)))
+
+
 def stats_card(spec):
     """六维那张小卡：三列两行，跟着护甲主角行走。
 
@@ -623,8 +656,7 @@ def blocks_of(idx, mv, arts, md, ns=''):
     if len(note) == 2 and note[1].strip():
         o += ['<section class="block" id="%ssec-5">' % ns,
               '<h2 class="sect-label">注解</h2>']
-        o += ['<p>%s</p>' % inline('<br>'.join(b.strip().split('\n')), rich=True)
-              for b in re.split(r'\n\s*\n', note[1].strip()) if b.strip()]
+        o += prose(note[1].strip())
         o += ['</section>', '']
     return o
 
@@ -690,7 +722,8 @@ def render_solo(idx, mv, arts, md, slug, season, name_cn):
          # 「复制配装」复制的就是这一份：剥掉着色标记的源稿，粘回配装工具能直接
          # 导入。站内没有第二处存它，所以它落在页面上而不是另拉一个文件。
          '<pre id="src" hidden>%s</pre>' % escape(uncolor(md)),
-         '</header>', '']
+         '</header>', '',
+         verdict(md)]
     o += blocks_of(idx, mv, arts, md)
     o += ['</main>', '', LIKE_JS, COPY_JS,
           shell.foot(stamp, '，%s' % meta(md, '页脚', required=False)
@@ -764,14 +797,14 @@ def render_set(idx, mv, arts, head, members, slug, season, name_cn):
          '<p class="desc">%s</p>' % inline(desc, rich=True),
          '<div class="facets">%s%s</div>'
          % (facet('适用环境', scenes), facet('标签', roles)),
-         '</div>', '</header>', '']
+         '</div>', '</header>', '',
+         verdict(head)]
 
     why = head.split('## 合集介绍', 1)
     if len(why) == 2 and why[1].strip():
         o += ['<section class="block" id="why">',
               '<h2 class="sect-label">合集介绍</h2>']
-        o += ['<p>%s</p>' % inline('<br>'.join(b.strip().split('\n')), rich=True)
-              for b in re.split(r'\n\s*\n', why[1].strip()) if b.strip()]
+        o += prose(why[1].strip())
         o += ['</section>', '']
 
     # 视图开关落在左栏的头上，不做成 .toolbar：那一套由 app.js 建，而配装页不引
@@ -940,6 +973,10 @@ def build(idx, dirname, season, name_cn, slug):
                 # 第二份定义。职业与类别不给——那两样就是卡片上方的分组标题。
                 'branch_cn': branch,
                 'cat': meta(head, '类别'),
+                # 审核意见与描述同法剥掉标记：卡片那一段是纯文本，标记漏进去
+                # 就是一串花括号。分段在卡上并成一行——那一格只有两行高。
+                'verdict': text_of(inline(' '.join(section_of(head, '审核意见').split()),
+                                          rich=True), collapse=True),
                 'by': ''.join(people(head, link=False)),
                 # 图标路径按详情页那三层深写的，两个索引页深浅不同，前缀由 core_node()
                 # 现换——存成算好的那一份，另一页就得再存第二份。
@@ -1025,6 +1062,10 @@ def render_index(made, sets=False):
                       '<span class="n-sets">%d 套</span>' % m['set'] if sets else '',
                       '<h3>%s</h3>' % m['t'],
                       m['by'],
+                      # 审核意见排在描述之上：它压过推荐人自己的话。整张卡是一个
+                      # <a>，所以只能是纯 <span>，不嵌链接与按钮。
+                      '<span class="verdict"><b>审核意见</b>%s</span>' % m['verdict']
+                      if m['verdict'] else '',
                       '<p>%s</p>' % m['desc'],
                       '<span class="tags">%s</span>'
                       % ''.join('<i>%s</i>' % t for t in m['tags']),
@@ -1293,7 +1334,9 @@ def set_form_head(name_cn):
             '<div class="facets">%s%s</div>'
             % (facet_picks('类别', '类别', CATEGORIES, single=True),
                facet_picks(*FACETS[0])),
-            '</div>', '</header>', '',
+            # 整份合集一条审核意见，所以落在合集头部这一层，不进下面的 .set-body
+            # ——那是「一套配装」那一层，form.js 的 resetAll() 切一套就清一次。
+            '</div>', '</header>', '', VERDICT_BOX, '',
             '<section class="block" id="sec-0">',
             '<h2 class="sect-label">合集介绍</h2>',
             '<textarea id="set-why" data-key="合集介绍" rows="3" '
@@ -1368,7 +1411,16 @@ def solo_form_head(name_cn):
             '<div class="facets">%s%s%s</div>'
             % (facet_picks('类别', '类别', CATEGORIES, single=True),
                facet_picks(*FACETS[0]), facet_picks(*FACETS[1])),
-            '</div>', '</header>', '']
+            # 审核意见落在页头之外，与详情页同一位置。默认收起，审核台按
+            # starsideForm.review() 立起来——投稿的人因此看不到这一栏。
+            '</div>', '</header>', '', VERDICT_BOX, '']
+
+
+VERDICT_BOX = (
+    '<aside class="verdict" id="f-verdict" hidden>'
+    '<p class="by-label">审核意见</p>'
+    '<textarea data-key="审核意见" rows="4" placeholder="审核者意见" '
+    'aria-label="审核意见"></textarea></aside>')
 
 
 def render_new(stamp, name_cn, sets=False):
@@ -1458,7 +1510,7 @@ def check(out, slug):
     """结构闸门。正文没有可比的连续文本（全是查表补出来的图标与链接），
     所以这里查的是「该有的段都在、标记都转干净了」。
 
-    另加一条着色闸门，只管作者写的那两段散文（描述与注解）：槽位那些名字由查表
+    另加一条着色闸门，只管人写的那几段散文（描述、注解与审核意见）：槽位那些名字由查表
     着色，不归源稿管；散文归源稿管，全站术语在里面素着就是漏了。词表与 G6 同一份
     （items.py 的 MECH 减去 LOOSE），不在这里另立一份。"""
     prose = ''.join(re.findall(r'<p class="desc">(.*?)</p>', out, re.S)
@@ -1469,7 +1521,9 @@ def check(out, slug):
                     # 合集介绍与注解同为作者写的散文，一样归源稿管。漏了它，
                     # 合集正文里的术语裸着也过得去——配装源稿不进 G6 正查。
                     + re.findall(r'<h2 class="sect-label">合集介绍</h2>(.*?)</section>',
-                                 out, re.S))
+                                 out, re.S)
+                    # 审核意见也是人写的散文，与描述、注解同一条：术语裸着就是漏了。
+                    + re.findall(r'<aside class="verdict">(.*?)</aside>', out, re.S))
     naked = text_of(re.sub(r'<span class="[^"]*">.*?</span>', '', prose, flags=re.S))
     # 判据走 items.hits_in，与 --builds 那一趟自动着色同一条：裸子串判断认不得
     # GUARD，「治愈裂痕」里的「治愈」自动着色照 GUARD 跳过、这里照子串报错，

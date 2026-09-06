@@ -67,6 +67,32 @@ body:has(.set-wrap) {
   letter-spacing: .08em;
 }
 
+/* 审核意见：站方对整套配装的判词，横贯版心落在页头与第一个分节之间。
+
+   **色相走 --c-note**（design.md 三节：人写的话），与注解同族；显眼靠容器——
+   底、框与左缘那道 2px，不新增渲染色。**不用 --accent**：那一个逐页被覆盖成
+   六种分支色，遮不住；--c-solar 在编辑台是「待审 / 警告」，读岔一档。 */
+.verdict {
+  margin: 0 0 24px;
+  padding: 10px 14px;
+  background: var(--tint-3);
+  border: 1px solid var(--hair);
+  border-left: 2px solid var(--c-note);
+}
+
+/* 小标签那三行在页头里是 .build-head .by-label，这一块在页头之外够不着。
+   **不去放宽那条选择器**：页头两列的小标签与这里是两处用法，合成一条会让将来
+   改页头间距把这一块也带着走。 */
+.verdict .by-label {
+  margin: 0;
+  color: var(--bone-faint);
+  font-size: 11.5px;
+  letter-spacing: .08em;
+}
+
+/* 正文与注解同形：空行分段，段与段之间自己带间距。 */
+.verdict > p:not(.by-label) { margin: 6px 0 0; color: var(--bone); }
+
 .build-id {
   display: flex;
   flex-direction: column;
@@ -591,6 +617,32 @@ body:has(.entries) .toolbar {
   font-family: var(--font-disp);
   font-size: 11.5px;
   letter-spacing: .06em;
+}
+
+/* 审核意见排在简介之上：它压过推荐人自己的话。固定两行，超出截断——一排六张里
+   有一张长出来，下一排的顶缘就是锯齿。 */
+.entries .entry .verdict {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  margin: 0;
+  padding: 0 0 0 8px;
+  background: none;
+  border: 0;
+  border-left: 2px solid var(--c-note);
+  color: var(--c-note);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.entries .entry .verdict > b {
+  margin-right: 6px;
+  color: var(--bone-dim);
+  font-family: var(--font-disp);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: .08em;
 }
 
 /* 简介固定三行，超出截断。完整那份在详情页与 <meta> 里都在。 */

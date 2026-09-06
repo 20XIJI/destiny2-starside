@@ -64,6 +64,17 @@
   /* 「合集介绍」那一段在合集头部外面自成一节（它是正文不是键值行），按 id 取，
      不跟着 hd 的范围走。 */
   var setWhy = document.getElementById('set-why');
+  /* 审核意见：单套页那块落在 #sheet 里，合集页落在 .set-body 外面（整份合集一条），
+     pen 与 hd 两个范围都盖不住它，而全页只有这一个，所以按 id 取。 */
+  var vbox = document.getElementById('f-verdict');
+  var vin = vbox && vbox.querySelector('[data-key="审核意见"]');
+  /* 默认收起：投稿的人看不到这一栏。有值就立起来（从详情页「复制配装」粘回来的
+     源稿带着它），空着只在审核态才出——审核台载进这一页之后调 review(true)。 */
+  var reviewing = false;
+
+  function vval() { return vin ? vin.value.trim() : ''; }
+
+  function showVerdict() { if (vbox) vbox.hidden = !(reviewing || vval()); }
 
   var picker = null;
 
@@ -665,12 +676,27 @@
      报出来的那几条要写清是哪一格的哪个名字，不然填的人不知道该去补哪里。 */
   var LIST_SLOTS = ['超能', '手雷', '近战', '职业技能', '移动', '星相', '碎片'];
 
+  /* 取一个分节的正文，到下一个 `## ` 或文末为止。注解排在最后、一刀切到底就行；
+     审核意见排在最前，后面还跟着别的分节，所以要有边界。 */
+  function sectionOf(text, name) {
+    var m = new RegExp('\\n## ' + name + '[ \t]*\\n([\\s\\S]*?)(?=\\n## |$)')
+      .exec(text.replace(/\r\n/g, '\n'));
+    return m ? m[1].trim() : '';
+  }
+
   function parseMd(text) {
     var body = text.replace(/\r\n/g, '\n'), notes = '';
     var cut = body.indexOf('\n## 注解');
     if (cut > -1) {
       notes = body.slice(cut).replace(/^\n## 注解\s*/, '').trim();
       body = body.slice(0, cut);
+    }
+    // 审核意见那一节里写的「某某：如何」不是头部键，收键之前先摘掉。
+    var vd = sectionOf(body, '审核意见');
+    var vcut = body.indexOf('\n## 审核意见');
+    if (vcut > -1) {
+      var rest = body.slice(vcut + 1).indexOf('\n## ');
+      body = body.slice(0, vcut) + (rest < 0 ? '' : body.slice(vcut + 1 + rest));
     }
     var title = /^#[ \t]+(.+)$/m.exec(body);
     var head = {};
@@ -679,7 +705,8 @@
       var m = /^([^：#|｜]{1,8})：(.*)$/.exec(line.trim());
       if (m) (head[m[1].trim()] = head[m[1].trim()] || []).push(m[2].trim());
     });
-    return { name: title ? title[1].trim() : '', head: head, notes: notes };
+    return { name: title ? title[1].trim() : '', head: head, notes: notes,
+      verdict: vd };
   }
 
   /* 标签栏回填：先全部松开再按下要的那几个。**要先松开**——合集页顶那一层
@@ -778,6 +805,13 @@
     set('配装名', got.name);
     set('描述', one('描述'));
     set('推荐人', one('推荐人'));
+    /* **合集页不在这里碰它**：整份合集一条审核意见，写在合集头部；importMd() 在
+       那一页是逐套跑的，成员块里没有这一键，跟着写就是切一套清一次。 */
+    if (!SETS) {
+      if (vin) vin.value = got.verdict;
+      showVerdict();
+      grow();
+    }
     // 源稿的「推荐人：」可以写多行，这一页只有一个输入位。多出来的报出来——
     // 闷声丢掉等于把署名弄没了，而粘回去的人看不出少了谁。
     (got.head['推荐人'] || []).slice(1).forEach(function (x) {
@@ -903,6 +937,9 @@
     put('合集名', got.name);
     put('推荐人', one('推荐人'));
     put('描述', one('描述'));
+    if (vin) vin.value = sectionOf(parts[0], '审核意见');
+    showVerdict();
+    grow();
     var why = /\n## 合集介绍\s*([\s\S]*)$/.exec(parts[0]);
     if (setWhy) setWhy.value = why ? why[1].trim() : '';
 
@@ -978,6 +1015,14 @@
 
   function line(key, value) { return value ? key + '：' + value + '\n' : ''; }
 
+  /* 审核意见是一个分节，不是头部键：头部键的值只能占一行，而这一段与注解一样
+     想写多长写多长、能分段。排在最前——它是对整套配装的判词，读者在页顶就该
+     看见，源稿里也照这个顺序。 */
+  function verdictBlock() {
+    var v = vval();
+    return v ? '\n## 审核意见\n\n' + v + '\n' : '';
+  }
+
   /* 三种头部，键不是同一组：合集头部没有分支与定位（每套一个），成员块没有
      推荐人、更新与类别（整份一个）。`## 职业` 以下那一大段两边逐字相同，
      所以只有头部分家，正文共用 slotsMd()。 */
@@ -991,6 +1036,7 @@
     md += line('分支', state.分支);
     md += line('类别', val('类别'));
     md += line('核心', state.核心);
+    md += verdictBlock();
     return md;
   }
 
@@ -1014,6 +1060,7 @@
     md += line('更新', today());
     md += line('场景', val('场景', hd));
     md += line('类别', val('类别', hd));
+    md += verdictBlock();
     var why = setWhy ? setWhy.value.trim() : '';
     if (why) md += '\n## 合集介绍\n\n' + why + '\n';
     return md;
@@ -1359,12 +1406,17 @@
      直接拿来当高度即可。 */
   var notes = pen.querySelector('textarea[data-key="注解"]');
 
-  function grow() {
-    notes.style.height = 'auto';
-    notes.style.height = notes.scrollHeight + 'px';
+  function fit(t) {
+    if (!t || t.offsetParent === null) return;
+    t.style.height = 'auto';
+    t.style.height = t.scrollHeight + 'px';
   }
 
+  /* 审核意见与注解同一条：想写多长写多长，框跟着内容长。 */
+  function grow() { fit(notes); fit(vin); }
+
   notes.addEventListener('input', grow);
+  if (vin) vin.addEventListener('input', grow);
 
   var preview = document.getElementById('preview');
   preview.addEventListener('click', function () {
@@ -1418,7 +1470,10 @@
       blank = out.value;
       return skip;
     },
-    read: function () { return out.value; }
+    read: function () { return out.value; },
+    /* 审核台载进这一页之后调它立起审核意见那一栏。公开访客走不到这一条，
+       所以「投稿的人看不到」不靠鉴权，靠不给入口。 */
+    review: function (on) { reviewing = !!on; showVerdict(); }
   };
 
   write();

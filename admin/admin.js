@@ -366,7 +366,7 @@
   }
 
   function draw (state) {
-    var v = (state && state.v) || 'review'
+    var v = (state && state.v) || 'builds'
     Array.prototype.forEach.call(document.querySelectorAll('[data-view]'), function (n) {
       if (n.dataset.view === v) n.setAttribute('aria-current', 'true')
       else n.removeAttribute('aria-current')
@@ -374,7 +374,7 @@
     // 详情摊开的是哪一套由历史那一格说了算：buildsView 画完列表会照它把详情
     // 摊在下面。从 popstate 回来时因此不必再压一格。
     openBuild = (state && state.b) || null
-    ;(VIEWS[v] || reviewView)()
+    ;(VIEWS[v] || buildsView)()
   }
 
   window.addEventListener('popstate', function (ev) {
@@ -492,7 +492,7 @@
   var reviewBusy = false
 
   function reviewView () {
-    title('审核')
+    title('文档')
     var count = {}
     S.edits.filter(function (e) { return e.ok === 0 }).forEach(function (e) {
       count[e.doc] = (count[e.doc] || 0) + 1
@@ -951,6 +951,10 @@
       try {
         var w = fr.contentWindow
         w.starsideForm.load(md)
+        // 审核意见那一栏只在这里立起来：填表页默认收着它，投稿的人因此看不到。
+        // lv 1 的编辑者照旧看得见已经写过的（有值即显示），只是立不起空框。
+        // 带守卫——读者浏览器里缓存着的旧 form.js 没有这个方法。
+        if (w.starsideForm.review) w.starsideForm.review(S.me.lv >= 2)
         // **把那一页自己的「投稿」摘掉**：它在审核页里按一下就是再投一份。
         var send = w.document.getElementById('send')
         if (send) send.remove()
@@ -999,7 +1003,8 @@
     idcol.appendChild(el('p', 'crumb', (nameOf(b.md) || b.id.split('/').pop())
       + '　·　' + STATE[b.state]
       + (b.sub && b.sub.updates ? '　·　更新已有配装' : '')
-      + (missing(b.md).length ? '　·　缺 ' + missing(b.md).join('、') : '')))
+      + (missing(b.md).length ? '　·　缺 ' + missing(b.md).join('、') : '')
+      + (/\n## 审核意见[ \t]*\n\s*\S/.test(b.md || '') ? '　·　有审核意见' : '')))
     wrap.appendChild(idcol)
     wrap.appendChild(ops)
 
@@ -1309,13 +1314,13 @@
       show(el('p', 'lede', '载入中…'))
       document.querySelector('[data-view="eds"]').hidden = me.lv < 3
       // 起手那一格也要有 state，不然从详情返回时拿到的是 null
-      history.replaceState({ v: 'review' }, '')
+      history.replaceState({ v: 'builds' }, '')
       // **三张表到齐了才放开标签栏**：docs / edits / subs 还在路上时 S 里是三个
-      // 空数组，这时点「配装」画出来的是一张「没有配装」的空列表，等 load() 落地
-      // 又被 reviewView() 顶回审核那一屏——看着就是「第一次进去加载不出来」。
+      // 空数组，这时点哪一枚画出来的都是一张空列表，等 load() 落地又被
+      // buildsView() 顶回落地那一屏——看着就是「第一次进去加载不出来」。
       return load().then(function () {
         $('tabs').hidden = false
-        reviewView()
+        buildsView()
       })
     })
   }
@@ -1351,7 +1356,7 @@
       })
       b.setAttribute('aria-current', 'true')
       dive({ v: b.dataset.view })
-      ;(VIEWS[b.dataset.view] || reviewView)()
+      ;(VIEWS[b.dataset.view] || buildsView)()
     }
     gate()
     // 有令牌就直接进，没有或过期了才落回登录框。**认证失败要把那个类摘掉**，
