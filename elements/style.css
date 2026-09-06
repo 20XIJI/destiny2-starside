@@ -153,14 +153,14 @@
 
 .gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))) thead th:nth-child(1) { width: 175px; }
 .gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))) thead th:nth-child(2) { width: 96px; }
-.gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))):has(:is(td.ico2, td.ico4)) thead th:nth-child(2) { width: 132px; }
+.gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))):has(:is(td.ico2, td.ico4)) thead th:nth-child(2) { width: 152px; }
 
 .gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) { table-layout: fixed; }
 
 .gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(1) { width: 175px; }
 .gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(2) { width: 96px; }
-.gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))):has(:is(td.ico2, td.ico4)) thead th:nth-child(2) { width: 132px; }
-.gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(4) { width: 165px; }
+.gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))):has(:is(td.ico2, td.ico4)) thead th:nth-child(2) { width: 152px; }
+.gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(4) { width: 190px; }
 
 /* 行标题：类别或条目名，这一组的身份。合并后纵向居中，一眼圈出它占几行。
    **颜色只给没有 class 的那些格。**整格只有一个 {标记|…} 时 class 落在 <th> 本身，
@@ -209,7 +209,7 @@
 
 /* 一格放两枚图标：源表在这一格里并排给了技能图与它依赖的星相菱形 */
 .gen td.ico2 {
-  width: 132px;
+  width: 152px;
   padding: 10px 8px;
   text-align: center;
   line-height: 0;
@@ -219,7 +219,7 @@
 
 /* 源表里元素效果那格并排放着四枚增益／减益标记，照排成两行两列 */
 .gen td.ico4 {
-  width: 132px;
+  width: 152px;
   padding: 10px 8px;
   text-align: center;
   line-height: 0;
@@ -266,7 +266,7 @@
 .gen th.sk-strand, .gen td.sk-strand { color: var(--el-strand); background: color-mix(in srgb, var(--el-strand) 9%, transparent); }
 
 /* 名称格：紧挨在图标格前面的那一格。按 .ico 认，不按「有没有图」猜 */
-.gen td:has(+ td.ico) {
+.gen td:has(+ td:is(.ico, .ico2, .ico4)) {
   color: var(--bone-hi);
   font-family: var(--font-cn);
   font-weight: 600;
@@ -282,7 +282,7 @@
    按关系认那一列——类别格后面跟的是名称格（没有图），条目名格后面直接跟图标格。
    同样只给没有 class 的格：总览页的元素行标题也是「后面跟着非图标格」，不放行的话
    六个元素名会被压成最暗一档。 */
-.gen tbody th[scope="row"]:not([class]):has(+ td:not(.ico)) { color: var(--bone-faint); }
+.gen tbody th[scope="row"]:not([class]):has(+ td:not(:is(.ico, .ico2, .ico4))) { color: var(--bone-faint); }
 
 /* 着色 token、批注样式、表格骨架与交替底色全部来自 assets/site.css。
    本页不重复定义，也不新增渲染色。真要单独设计一种颜色时才写在这里。 */
@@ -291,15 +291,15 @@
    这一页只有它一张数据表，四列全是短词组，居中读作一张对照表。上面那一族按图标格
    认，认不到它，所以宽度在这里单独给：增益与减益是两列并列的枚举，等宽才对得起
    「同一类东西」这个读法；属性列只放元素名，元素拾取物列最长四个字。 */
-.gen:not(:has(td.ico, td.ico2, td.ico4)):has(thead th:nth-child(4)) {
+.gen:not(:has(td.ico, td.ico2, td.ico4)):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) {
   table-layout: fixed;
 }
 
-.gen:not(:has(td.ico, td.ico2, td.ico4)):has(thead th:nth-child(4)) :is(th, td) {
+.gen:not(:has(td.ico, td.ico2, td.ico4)):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) :is(th, td) {
   text-align: center;
 }
 
-.gen:not(:has(td.ico, td.ico2, td.ico4)):has(thead th:nth-child(4)) thead th:nth-child(1) { width: 108px; }
-.gen:not(:has(td.ico, td.ico2, td.ico4)):has(thead th:nth-child(4)) thead th:nth-child(2),
-.gen:not(:has(td.ico, td.ico2, td.ico4)):has(thead th:nth-child(4)) thead th:nth-child(3) { width: auto; }
-.gen:not(:has(td.ico, td.ico2, td.ico4)):has(thead th:nth-child(4)) thead th:nth-child(4) { width: 152px; }
+.gen:not(:has(td.ico, td.ico2, td.ico4)):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(1) { width: 108px; }
+.gen:not(:has(td.ico, td.ico2, td.ico4)):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(2),
+.gen:not(:has(td.ico, td.ico2, td.ico4)):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(3) { width: auto; }
+.gen:not(:has(td.ico, td.ico2, td.ico4)):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(4) { width: 152px; }

@@ -541,8 +541,15 @@
       if (running) requestAnimationFrame(frame);
     }
 
+    /* 减少动态效果：直接落终态。CSS 那边禁 transition/animation 挡不住这里，
+       place() 是逐帧写 inline 的 transform／filter／opacity。 */
     function go(i) {
       if (i === aim) return;
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        from = cur = aim = i;
+        draw();
+        return;
+      }
       from = cur;
       aim = i;
       t1 = performance.now();

@@ -44,9 +44,12 @@
   border-top: 1px solid var(--hair);
 }
 
+/* 整格只有一个 {标记|…} 时 class 落在 <dt> 本身，.rules dt (0,1,1) 会压过
+   单类的 .perk (0,1,0)。基色只给没有 class 的那些。 */
+.rules dt:not([class]) { color: var(--bone-hi); }
+
 .rules dt {
   padding: 11px 0 0;
-  color: var(--bone-hi);
   font-family: var(--font-cn);
   font-size: 14px;
   font-weight: 600;

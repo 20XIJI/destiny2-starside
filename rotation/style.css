@@ -252,7 +252,7 @@
 .rota-card.is-mid {
   cursor: default;
   border-color: var(--hair-lit);
-  box-shadow: 0 18px 40px #00000055, inset 0 1px 0 #ffffff0d;
+  box-shadow: inset 0 1px 0 #ffffff0d;
 }
 
 .rota-card.is-now.is-mid { border-color: var(--bone-faint); }

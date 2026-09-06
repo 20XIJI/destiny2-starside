@@ -306,7 +306,7 @@ python3 tools/convert-armor-sets.py --icons <英文原表导出.html>
 
 **同一个术语只落到同一个 token 上，同一个颜色不给第二个名字。**两条由 `tools/check_terms.py` 钉住——`--el-solar` 与 `--deb-solar` 渲染色相同，着成哪个用眼睛看不出来。
 
-`--note`（作者注释）与 `--unsure`（`[?]` 待测数值）共用 `--c-aside`，字重回到正文、`.unsure` 带虚下划线——它们读作限定语，不是警报。
+`--note`（作者注释）与 `--unsure`（`[?]` 待测数值）字重回到正文、`.unsure` 带虚下划线——它们读作限定语，不是警报。
 
 ## 档位表头
 

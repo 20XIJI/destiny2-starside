@@ -64,8 +64,14 @@
 /* ── 数值区：七列倍率拆解、最终伤害、五列耗时、两列 DPS ──
    等宽字族 + tabular-nums：同一列的个位与小数点纵向对齐，扫读时不必逐行
    重新定位。字族必须是 --font-body，Chakra Petch 不带 tnum 特性（同 boss-hp）。 */
-.gen tbody td:nth-of-type(n + 3):nth-of-type(-n + 17) {
+/* 色阶格排除在基色之外：这条按列序下的规则特指度 (0,3,2)，压得过
+   site.css 里 .gen tbody td[data-tier="N"] 的 (0,2,2)，写了 color
+   八档色阶就整列不显形。排版照旧全列给，基色按有没有 data-tier 分开。 */
+.gen tbody td:nth-of-type(n + 3):nth-of-type(-n + 17):not([data-tier]) {
   color: var(--bone);
+}
+
+.gen tbody td:nth-of-type(n + 3):nth-of-type(-n + 17) {
   font-family: var(--font-body);
   font-size: 13px;
   font-variant-numeric: tabular-nums;

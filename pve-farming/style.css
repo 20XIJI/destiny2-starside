@@ -3,4 +3,4 @@
    改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
 
 /* 卡片网格恒为两列 560 + 沟 24，版心与最小内容宽度照首页那一套给 */
-:root { --wrap: 1144px; --min: 1188px; }
+:root { --wrap: 1188px; --min: 1188px; }
