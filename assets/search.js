@@ -2057,7 +2057,7 @@ window.starsideIndex = [
 {"u":"palette/index.html","a":"sec-2","l":"语义","n":"deb-stasis","x":"deb-stasis --c-stasis 冰影减益：冻结、碎裂"},
 {"u":"palette/index.html","a":"sec-2","l":"语义","n":"el-void","x":"el-void --c-void 虚空元素"},
 {"u":"palette/index.html","a":"sec-2","l":"语义","n":"deb-void","x":"deb-void --c-void 虚空减益：虚弱、压制"},
-{"u":"palette/index.html","a":"sec-2","l":"语义","n":"el-strand","x":"el-strand --c-strand 缚丝元素，特殊弹药同色"},
+{"u":"palette/index.html","a":"sec-2","l":"语义","n":"el-strand","x":"el-strand --c-strand 缚丝元素"},
 {"u":"palette/index.html","a":"sec-2","l":"语义","n":"deb-strand","x":"deb-strand --c-strand 缚丝减益：割裂、瓦解"},
 {"u":"palette/index.html","a":"sec-2","l":"语义","n":"el-solar","x":"el-solar --c-solar 烈日元素"},
 {"u":"palette/index.html","a":"sec-2","l":"语义","n":"deb-solar","x":"deb-solar --c-solar 烈日减益：灼烧、点燃"},

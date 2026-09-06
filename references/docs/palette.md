@@ -49,7 +49,7 @@
 | {deb-stasis|deb-stasis} | --c-stasis | 冰影减益：冻结、碎裂 |
 | {el-void|el-void} | --c-void | 虚空元素 |
 | {deb-void|deb-void} | --c-void | 虚空减益：虚弱、压制 |
-| {el-strand|el-strand} | --c-strand | 缚丝元素，特殊弹药同色 |
+| {el-strand|el-strand} | --c-strand | 缚丝元素 |
 | {deb-strand|deb-strand} | --c-strand | 缚丝减益：割裂、瓦解 |
 | {el-solar|el-solar} | --c-solar | 烈日元素 |
 | {deb-solar|deb-solar} | --c-solar | 烈日减益：灼烧、点燃 |
