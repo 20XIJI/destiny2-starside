@@ -18,4 +18,4 @@
 攻略：玻璃拱顶 | icons/8bd947ebbb.webp | https://docs.qq.com/doc/DQ2VhRXFrZ3pxZkNj
 攻略：深岩墓室 | icons/cdfa999a61.webp | https://docs.qq.com/doc/DQ3NGU2FnUVhzYUVy
 攻略：救赎花园 | icons/b0d8e4a22d.webp | https://docs.qq.com/doc/DQ2pLUGx1bW5MQ0FS
-攻略：最后遗愿 | icons/576f5ee84c.webp | https://docs.qq.com/doc/DQ1hoQXpSTU5MVVFE
+攻略：最后一愿 | icons/576f5ee84c.webp | https://docs.qq.com/doc/DQ1hoQXpSTU5MVVFE

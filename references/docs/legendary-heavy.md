@@ -63,22 +63,22 @@
 | 武器 | 图标 | 评级 | 框架\\射速 | 属性 | 勇士 | Perk 三号位 | Perk 四号位 | 获取地点 | DPS | 总伤 | 切换 DPS | 备注 | 评级理由 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | == 攻击 T0：最高的单发伤害（1.1），最高的射速和换弹，9 发备弹但是最高的每盒弹药总伤，拥有最强的输出筒子光芒复仇 == |
-|光芒复仇|{ico|![](icons/1adeeb2f39.webp)}|独一档|攻击\\25|{el-solar|烈日}|{champ|![](icons/b7c4048b87.webp)}|{perk|集束炸弹}/{perk|自动填装枪套}\\{perk|丰盈满溢}/嫉妒军火库\\{perk|集体爆破}|{perk|聚合充能}/{perk|持久印象}\\{perk|元素磨砺}\\{perk|集体行动}|{src|玻璃拱顶}| {num|13514\\11384\\8226\\7888} | {num|118926\\100178\\83902\\100178} ||{exotic|叛贼}{perk|边打边劫}\\{perk|边打边劫}\\嫉妒军火库\\{perk|集束炸弹}\\（{art-perk|银白重炮}）|最强的 perk 池和原始特性，全游戏最顶级的 DPS 之一，{perk|集束炸弹}+{perk|聚合充能}是最强的抱射输出之一，配合{perk|边打边劫}更是顶级。自填+{perk|持久印象}/{perk|聚合充能}更多是金狙轴，还有{perk|丰盈满溢}的筒子五连发。嫉妒军火三切如今不常见，{perk|集体爆破}配合狼头星火泰坦可用|
-|异教徒|{ico|![](icons/275d3913eb.webp)}|T1|攻击\\25|{el-arc|电弧}|{champ|![](icons/b7c4048b87.webp)}|嫉妒军火库/{perk|超充弹匣}\\{perk|集束炸弹}|换档\\{perk|爆炸光能}|{src|忧伤祭坛}|||||{perk|超充弹匣}有意思，然而由于填装速度赶不上发射速度没有那么理想，使用时最好还是切枪打法|
+|光芒复仇|{ico|![](icons/1adeeb2f39.webp)}|独一档|攻击\\25|{el-solar|烈日}|{champ|![](icons/b7c4048b87.webp)}|{perk|集束炸弹}/{perk|自动填装枪套}\\{perk|丰盈满溢}/{perk|嫉妒军械库}\\{perk|集体爆破}|{perk|聚合充能}/{perk|持久印象}\\{perk|元素磨砺}\\{perk|集体行动}|{src|玻璃拱顶}| {num|13514\\11384\\8226\\7888} | {num|118926\\100178\\83902\\100178} ||{exotic|叛贼}{perk|边打边劫}\\{perk|边打边劫}\\{perk|嫉妒军械库}\\{perk|集束炸弹}\\（{art-perk|银白重炮}）|最强的 perk 池和原始特性，全游戏最顶级的 DPS 之一，{perk|集束炸弹}+{perk|聚合充能}是最强的抱射输出之一，配合{perk|边打边劫}更是顶级。自填+{perk|持久印象}/{perk|聚合充能}更多是金狙轴，还有{perk|丰盈满溢}的筒子五连发。嫉妒军火三切如今不常见，{perk|集体爆破}配合狼头星火泰坦可用|
+|异教徒|{ico|![](icons/275d3913eb.webp)}|T1|攻击\\25|{el-arc|电弧}|{champ|![](icons/b7c4048b87.webp)}|{perk|嫉妒军械库}/{perk|超充弹匣}\\{perk|集束炸弹}|换档\\{perk|爆炸光能}|{src|忧伤祭坛}|||||{perk|超充弹匣}有意思，然而由于填装速度赶不上发射速度没有那么理想，使用时最好还是切枪打法|
 |无效安慰|{ico|![](icons/78809be9cd.webp)}|T1|攻击\\25|{el-stasis|冰影}|{champ|![](icons/b7c4048b87.webp)}|重建\\{perk|嫉妒刺客}\\{perk|冰冷弹匣}/斩首|{perk|爆炸光能}/{perk|聚合充能}\\{perk|元素磨砺}\\{perk|收割者贡品}|{src|深渊机灵}|||||{perk|嫉妒刺客}+原始特性曾经作为倾斜筒子的选择，然而如今光芒复仇是他的完整上位|
 |恶兆|{ico|![](icons/7b328ffab9.webp)}|T1|攻击\\25|{el-void|虚空}|{champ|![](icons/b7c4048b87.webp)}|{perk|双脚架}\\自填|{perk|爆炸光能}\\{perk|元素磨砺}\\{perk|集束炸弹}|{src|智谋}|||||边跑边打击杀填装，{perk|双脚架}+{perk|爆炸光能}的组合很有意思，或许可以用作清怪洗地筒子|
 |核心星辰 IV|{ico|![](icons/363dcd703e.webp)}|T1|攻击\\25|{el-strand|缚丝}|{champ|![](icons/b7c4048b87.webp)}|重建\\{perk|小丑皇弹药筒}|{perk|爆炸光能}\\{perk|元素磨砺}\\{perk|聚合充能}|{src|赛雀联赛}||||||
 | == 适配 T0：最高的单发伤害，适中的操控和射速，9 发备弹但是最高的每盒弹药总伤，拥有众多优秀 perk 池的筒子，高难反屏障常客之一，为了增加反屏障容错通常选择重建，由于 vog4 在高难偏向使用爆炸光能，{el-prismatic|棱镜}可用{perk|元素磨砺} == |
 |轰鸣巨人|{ico|![](icons/88cdd9ba3d.webp)}|T0|适配\\20|{el-void|虚空}|{champ|![](icons/a9911a3dfe.webp)}|{perk|持久印象}|{perk|聚合充能}\\{perk|收割者贡品}\\{perk|自动填装枪套}\\{perk|集束炸弹}|{src|竞技场}|||||顶级{perk|持久印象}+{perk|聚合充能}双增伤，如果有哨兵圣盾会比光芒复仇强，可搭配{exotic|单人合唱}补伤害，换弹抱射也有不错的输出|
-|注视焦点|{ico|![](icons/d909dad016.webp)}|T0|适配\\20|{el-strand|缚丝}|{champ|![](icons/a9911a3dfe.webp)}|嫉妒军火库\\重建|{perk|聚合充能}/{perk|持久印象}\\{perk|爆炸光能}|{src|先锋}|||||{perk|加速突击}提供额外 6% 增伤，perk 池不错|
-|热血上头|{ico|![](icons/1fc4b59180.webp)}|T0|适配\\20|{el-arc|电弧}|{champ|![](icons/a9911a3dfe.webp)}|嫉妒军火库\\重建\\{perk|自动填装枪套}|{perk|聚合充能}\\{perk|爆炸光能}\\{perk|元素磨砺}|{src|先锋}|||||{perk|加速突击}提供额外 6% 增伤，perk 池不错|
+|注视焦点|{ico|![](icons/d909dad016.webp)}|T0|适配\\20|{el-strand|缚丝}|{champ|![](icons/a9911a3dfe.webp)}|{perk|嫉妒军械库}\\重建|{perk|聚合充能}/{perk|持久印象}\\{perk|爆炸光能}|{src|先锋}|||||{perk|加速突击}提供额外 6% 增伤，perk 池不错|
+|热血上头|{ico|![](icons/1fc4b59180.webp)}|T0|适配\\20|{el-arc|电弧}|{champ|![](icons/a9911a3dfe.webp)}|{perk|嫉妒军械库}\\重建\\{perk|自动填装枪套}|{perk|聚合充能}\\{perk|爆炸光能}\\{perk|元素磨砺}|{src|先锋}|||||{perk|加速突击}提供额外 6% 增伤，perk 池不错|
 |何时何地|{ico|![](icons/950fd76b89.webp)}|T0.5|适配\\20|{el-stasis|冰影}|{champ|![](icons/a9911a3dfe.webp)}|重建\\{perk|小丑皇弹药筒}\\{perk|丰盈满溢}\\{perk|冰冷弹匣}|{perk|爆炸光能}\\{perk|收割者贡品}\\{perk|元素磨砺}|{src|沙漠}|||||起源特性有额外增伤适合{perk|收割者贡品}，但不足够强，更适合高难|
 |红鲱鱼|{ico|![](icons/6628ec4e95.webp)}|T0.5|适配\\20|{el-void|虚空}|{champ|![](icons/a9911a3dfe.webp)}|重建\\{perk|集束炸弹}|{perk|爆炸光能}\\{perk|元素磨砺}\\{perk|持久印象}|{src|萨瓦图恩的王座世界}|||||翻新 perk 后不错，高难很适合搭配{exotic|杀手之牙}{exotic|裂波者}等强力{el-void|虚空}副手，{perk|集束炸弹}双增伤配合{exotic|杀手之牙}松身裤使用|
 |巅峰捕食者|{ico|![](icons/afd8bb5482.webp)}|T0.5|适配\\20|{el-solar|烈日}|{champ|![](icons/a9911a3dfe.webp)}|{perk|集束炸弹}\\重建|{perk|集体爆破}\\{perk|集体行动}\\{perk|爆炸光能}|{src|最后一愿}|||||{perk|集束炸弹}+{perk|集体行动}适合星火泰坦，或者冰猎冰术等|
 | == 高冲 T1：最高的总伤和爆炸范围和操作，11 发备弹，适中的单发伤害（1.0），打三切的切换 DPS 可以追平攻击适配的 DPS，但是如今三切没有太多使用空间，也没有特别合适的嫉妒军火 perk 池发挥 == |
 |熊啸|{ico|![](icons/fca56ccd83.webp)}|T0.5|高冲\\20|{el-solar|烈日}|{champ|![](icons/b7c4048b87.webp)}|{perk|爆炸光能}|{perk|收割者贡品}|{src|铁旗}|||||{perk|爆炸光能}{perk|收割者贡品}双增伤有特色|
 |海鹰|{ico|![](icons/61a70a9a95.webp)}|T0.5|高冲\\20|{el-strand|缚丝}|{champ|![](icons/b7c4048b87.webp)}|{perk|集束炸弹}\\{perk|自动填装枪套}|{perk|聚合充能}\\{perk|元素磨砺}\\{perk|双脚架}|{src|高塔纪念碑}|||||perk 池和原始特性回技能不错|
-|明日回答|{ico|![](icons/3cdc7b9e3a.webp)}|T1|高冲\\20|{el-void|虚空}|{champ|![](icons/b7c4048b87.webp)}|嫉妒军火库\\{perk|空中扳机}\\重建|{perk|收割者贡品}\\{perk|双脚架}\\{perk|爆炸光能}|{src|试炼}|||||唯一的嫉妒军火高冲|
+|明日回答|{ico|![](icons/3cdc7b9e3a.webp)}|T1|高冲\\20|{el-void|虚空}|{champ|![](icons/b7c4048b87.webp)}|{perk|嫉妒军械库}\\{perk|空中扳机}\\重建|{perk|收割者贡品}\\{perk|双脚架}\\{perk|爆炸光能}|{src|试炼}|||||唯一的嫉妒军火高冲|
 |无眠|{ico|![](icons/4286e2ef08.webp)}|T1|高冲\\20|{el-arc|电弧}|{champ|![](icons/b7c4048b87.webp)}|{perk|自动填装枪套}\\重建|{perk|元素磨砺}\\换档|{src|幽梦之城}||||||
 | == 精密 T2：11 发备弹，最低的单发伤害（0.95）和射速，除了有追踪效果之外是其他三个框架的全方面下位 == |
 |低温重炮|{ico|![](icons/d01b507e99.webp)}|T1.5|精密\\15|{el-arc|电弧}|{champ|![](icons/a9911a3dfe.webp)}|{perk|超充弹匣}\\{perk|自动填装枪套}|换档\\{perk|聚合充能}/{perk|持久印象}|{src|木卫二}|||||{perk|超充弹匣}刚好对上了精密的射速，可以持续进行输出|
@@ -142,7 +142,7 @@
 
 | 武器 | 图标 | 评级 | 框架\\射速 | 属性 | 勇士 | Perk 三号位 | Perk 四号位 | 获取地点 | DPS | 总伤 | 切换 DPS | 备注 | 评级理由 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-|好建议|{ico|![](icons/c4ada3d958.webp)}|T0|高冲击力|{el-void|虚空}|{champ|![](icons/b7c4048b87.webp)}|嫉妒军火库|高地|{src|高塔纪念碑\\萨瓦拉}| {num|17960\\11196} | {num|167925\\104681} ||3X {exotic|需求层级}切好建议/\\机巧纬线{exotic|传家宝}好建议\\({art-perk|银白箭袋})|嫉妒军火库+高地配合三箭{el-void|虚空}猎，有机巧纬线+{exotic|传家宝}+好建议，{art-perk|单人特工}{exotic|命运眷顾}的单人情况下顶级 dps（单人一波奈扎雷克）。还有三个{exotic|需求层级}射圈后切换到{exotic|枯萎囤积}/区域拒止等 dot 好建议双切的全游最高 DPS，曾经能刷到{perk|加速突击}版本，如今已绝版，嫉妒军火库的打法在高难本也可以被使用来疯狂灌伤。|
+|好建议|{ico|![](icons/c4ada3d958.webp)}|T0|高冲击力|{el-void|虚空}|{champ|![](icons/b7c4048b87.webp)}|{perk|嫉妒军械库}|高地|{src|高塔纪念碑\\萨瓦拉}| {num|17960\\11196} | {num|167925\\104681} ||3X {exotic|需求层级}切好建议/\\机巧纬线{exotic|传家宝}好建议\\({art-perk|银白箭袋})|{perk|嫉妒军械库}+高地配合三箭{el-void|虚空}猎，有机巧纬线+{exotic|传家宝}+好建议，{art-perk|单人特工}{exotic|命运眷顾}的单人情况下顶级 dps（单人一波奈扎雷克）。还有三个{exotic|需求层级}射圈后切换到{exotic|枯萎囤积}/区域拒止等 dot 好建议双切的全游最高 DPS，曾经能刷到{perk|加速突击}版本，如今已绝版，{perk|嫉妒军械库}的打法在高难本也可以被使用来疯狂灌伤。|
 |沉没|{ico|![](icons/9667d5d9c7.webp)}|T2|高冲击力|{el-stasis|冰影}|{champ|![](icons/b7c4048b87.webp)}|{perk|自动填装枪套}|{perk|冰冷弹匣}\\{perk|聚合充能}\\火线|{src|高塔纪念碑}|||||唯一一把自填冰弩，{exotic|需求层级}射击穿插一发冰弩会比摁射{exotic|需求层级}高大约 25% 的 DPS，但通常没有必要为{enemy|自己}增加操作难度，二号位充能弩箭最优秀|
 
 
@@ -158,13 +158,13 @@ vog4 配合{perk|爆炸光能}适配榴弹，队友越多越好，{perk|爆炸�
 | 武器 | 图标 | 评级 | 框架\\射速 | 属性 | 勇士 | Perk 三号位 | Perk 四号位 | 获取地点 | DPS | 总伤 | 切换 DPS | 备注 | 评级理由 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 |咒骂|{ico|![](icons/b11e141a7a.webp)}|T2|速射\\150|{el-arc|电弧}|{champ|![](icons/8b37bb6db2.webp)}|{perk|嫉妒刺客}|{perk|诱导推销}|{src|萨瓦图恩的王座世界}| {num|4989} | {num|71963} ||{art-perk|电弧复合}|不详之兆->驱逐引擎->{exotic|不祥之兆}->21 发咒骂->不详之兆->驱逐引擎->{exotic|不祥之兆}->（突破清场填装）8 发咒骂|
-|末日|{ico|![](icons/0ac4dfbda8.webp)}|T2|适配\\120|{el-arc|电弧}|{champ|![](icons/a9911a3dfe.webp)}|嫉妒军火库\\{perk|超充弹匣}\\{perk|自动填装枪套}|{perk|爆炸光能}/{perk|诱导推销}|{src|智谋}| {num|4833} | {num|74503} ||{art-perk|电弧复合}|2 发{exotic|不祥之兆}->驱逐引擎->4 发末日循环（提高总伤，拉长输出时间保证{perk|爆炸光能}）\\替代：苦乐参半（仄/凯尔之陨）|
-|喧嚣|{ico|![](icons/86b4f4b542.webp)}|T2.5|波形\\120|{el-arc|电弧}|{champ|![](icons/b7c4048b87.webp)}|{perk|嫉妒刺客}\\嫉妒军火库|{perk|我为人人}|{src|高塔纪念碑}|||||{el-void|虚空}箭波形在有{art-perk|单人特工}的加持下可以单人一波晚星之主老二|
-|边缘交通|{ico|![](icons/b76c7c8a7a.webp)}|T2.5|适配\\120|{el-void|虚空}|{champ|![](icons/a9911a3dfe.webp)}|{perk|级联点}\\嫉妒军火库\\{perk|自动填装枪套}|{perk|爆炸光能}\\{perk|元素磨砺}\\{perk|诱导推销}|{src|猛攻}|| {num|23733} | {num|10122} |单次爆发\\拓展深渊|{perk|级联点}{perk|爆炸光能}作为顶级 DPS 爆发|
-|VS 寒冷抑制|{ico|![](icons/5cdfbe3522.webp)}|T2.5|速射\\150|{el-stasis|冰影}|{champ|![](icons/8b37bb6db2.webp)}|{perk|级联点}\\嫉妒军火库\\{perk|冰冷弹匣}|{perk|爆炸光能}/{perk|聚合充能}\\{perk|元素磨砺}/{perk|诱导推销}\\{perk|腹背受敌}|{src|晚星之主}|| {num|19469} | {num|8866} |单次爆发|豪华的 perk 池和原始特性，{perk|级联点}{perk|爆炸光能}/{perk|腹背受敌}作为顶级 DPS 爆发|
-|爱与死亡|{ico|![](icons/051b1cc773.webp)}|T2.5|波形\\120|{el-solar|烈日}|{champ|![](icons/b7c4048b87.webp)}|{perk|级联点}\\嫉妒军火库\\重建\\{perk|辉耀炽热}/{perk|即兴弹药}|{perk|爆炸光能}\\{perk|聚合充能}\\{perk|元素磨砺}\\{perk|诱导推销}|{src|月球}|||||perk 池非常豪华|
-|科拉西斯的苦恼|{ico|![](icons/3683870cbb.webp)}|T2.5|速射\\150|{el-strand|缚丝}|{champ|![](icons/8b37bb6db2.webp)}|嫉妒军火库\\{perk|嫉妒刺客}\\重建|{perk|混沌重塑}\\{perk|腹背受敌}\\{perk|诱导推销}|{src|梦魇根源}|||||原始特性对光明邪魔族有额外 10% 增伤|
-|永存者|{ico|![](icons/e1bd60cca9.webp)}|T2.5|速射\\150|{el-strand|缚丝}|{champ|![](icons/8b37bb6db2.webp)}|嫉妒军火库\\{perk|自动填装枪套}|{perk|聚合充能}\\{perk|元素磨砺}/{perk|诱导推销}\\{perk|爆炸光能}|{src|永恒沙漠（史诗）}|||||perk 池和起源特性优秀|
+|末日|{ico|![](icons/0ac4dfbda8.webp)}|T2|适配\\120|{el-arc|电弧}|{champ|![](icons/a9911a3dfe.webp)}|{perk|嫉妒军械库}\\{perk|超充弹匣}\\{perk|自动填装枪套}|{perk|爆炸光能}/{perk|诱导推销}|{src|智谋}| {num|4833} | {num|74503} ||{art-perk|电弧复合}|2 发{exotic|不祥之兆}->驱逐引擎->4 发末日循环（提高总伤，拉长输出时间保证{perk|爆炸光能}）\\替代：苦乐参半（仄/凯尔之陨）|
+|喧嚣|{ico|![](icons/86b4f4b542.webp)}|T2.5|波形\\120|{el-arc|电弧}|{champ|![](icons/b7c4048b87.webp)}|{perk|嫉妒刺客}\\{perk|嫉妒军械库}|{perk|我为人人}|{src|高塔纪念碑}|||||{el-void|虚空}箭波形在有{art-perk|单人特工}的加持下可以单人一波晚星之主老二|
+|边缘交通|{ico|![](icons/b76c7c8a7a.webp)}|T2.5|适配\\120|{el-void|虚空}|{champ|![](icons/a9911a3dfe.webp)}|{perk|级联点}\\{perk|嫉妒军械库}\\{perk|自动填装枪套}|{perk|爆炸光能}\\{perk|元素磨砺}\\{perk|诱导推销}|{src|猛攻}|| {num|23733} | {num|10122} |单次爆发\\拓展深渊|{perk|级联点}{perk|爆炸光能}作为顶级 DPS 爆发|
+|VS 寒冷抑制|{ico|![](icons/5cdfbe3522.webp)}|T2.5|速射\\150|{el-stasis|冰影}|{champ|![](icons/8b37bb6db2.webp)}|{perk|级联点}\\{perk|嫉妒军械库}\\{perk|冰冷弹匣}|{perk|爆炸光能}/{perk|聚合充能}\\{perk|元素磨砺}/{perk|诱导推销}\\{perk|腹背受敌}|{src|晚星之主}|| {num|19469} | {num|8866} |单次爆发|豪华的 perk 池和原始特性，{perk|级联点}{perk|爆炸光能}/{perk|腹背受敌}作为顶级 DPS 爆发|
+|爱与死亡|{ico|![](icons/051b1cc773.webp)}|T2.5|波形\\120|{el-solar|烈日}|{champ|![](icons/b7c4048b87.webp)}|{perk|级联点}\\{perk|嫉妒军械库}\\重建\\{perk|辉耀炽热}/{perk|即兴弹药}|{perk|爆炸光能}\\{perk|聚合充能}\\{perk|元素磨砺}\\{perk|诱导推销}|{src|月球}|||||perk 池非常豪华|
+|科拉西斯的苦恼|{ico|![](icons/3683870cbb.webp)}|T2.5|速射\\150|{el-strand|缚丝}|{champ|![](icons/8b37bb6db2.webp)}|{perk|嫉妒军械库}\\{perk|嫉妒刺客}\\重建|{perk|混沌重塑}\\{perk|腹背受敌}\\{perk|诱导推销}|{src|梦魇根源}|||||原始特性对光明邪魔族有额外 10% 增伤|
+|永存者|{ico|![](icons/e1bd60cca9.webp)}|T2.5|速射\\150|{el-strand|缚丝}|{champ|![](icons/8b37bb6db2.webp)}|{perk|嫉妒军械库}\\{perk|自动填装枪套}|{perk|聚合充能}\\{perk|元素磨砺}/{perk|诱导推销}\\{perk|爆炸光能}|{src|永恒沙漠（史诗）}|||||perk 池和起源特性优秀|
 
 
 ## 机枪

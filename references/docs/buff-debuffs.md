@@ -66,7 +66,7 @@
 | 新星折跃 | {ico|![](icons/ad8f4b2723.webp)} | {el-void|虚空}术士超能 | 暗影瞬移放出{deb-void|虚弱追踪弹} | 15%{pvp|[7.5%]} | 6 秒{pvp|[3 秒]} | |
 | 旧神之子 | {ico|![](icons/e2850f5b2b.webp)} | {el-void|虚空}术士星相 | {el-void|虚空}之魂的汲取伤害施加{deb-void|虚弱} | 15%{pvp|[7.5%]} | 5 秒{pvp|[2.5 秒]} | {el-void|虚空}之魂每次命中都会续期，汲取满 9.25 秒后消失。 |
 | 弱化回声 | {ico|![](icons/89c9ae89c2.webp)} | {el-void|虚空}碎片 | {el-void|虚空}手雷的伤害施加{deb-void|虚弱} | 15%{pvp|[7.5%]} | 5 秒{pvp|[2.5 秒]} | 滞留型手雷会持续续期到最后一跳，{note|例如尖刺手雷、涡流手雷的实际覆盖时间更长}。 |
-| 统御琢面 | {ico|![](icons/d8caf65a45.webp)} | {el-prismatic|棱镜}碎片 | {el-void|虚空}手雷的伤害施加{deb-void|虚弱} | 15%{pvp|[7.5%]} | 5 秒{pvp|[2.5 秒]} | 滞留型手雷会持续续期到最后一跳。\\ 装备{el-prismatic|统御琢面}时，冰封奇点的{el-void|虚空}效果也会施加{deb-void|虚弱}。 |
+| 统御琢面 | {ico|![](icons/d8caf65a45.webp)} | {el-prismatic|棱镜}碎片 | {el-void|虚空}手雷的伤害施加{deb-void|虚弱} | 15%{pvp|[7.5%]} | 5 秒{pvp|[2.5 秒]} | 滞留型手雷会持续续期到最后一跳。\\ 装备{el-prismatic|统御琢面}时，冰冻奇点的{el-void|虚空}效果也会施加{deb-void|虚弱}。 |
 | 瓦解 | {ico|![](icons/6a8950cf7d.webp)} | {el-void|虚空}武器 Perk | 精准击杀引发一次{deb-void|虚弱爆裂} | 15%{pvp|[7.5%]} | 6 秒{pvp|[3 秒]} | |
 | 枯萎凝视 | {ico|![](icons/d646178ad6.webp)} | {el-void|虚空}武器 Perk | 开镜静止 1.5 秒{note|（强化后 1.4 秒）}填装一发{deb-void|虚弱弹} | 15%{pvp|[7.5%]} | 6 秒{pvp|[3 秒]} | |
 | == 神器模组 == |

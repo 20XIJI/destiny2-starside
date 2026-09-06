@@ -79,7 +79,7 @@
 | 麦克尔的崇敬 | {ico|![](icons/111f368048.webp)} | T1 | 速射 | {el-strand|缚丝} | {champ|![](icons/8b37bb6db2.webp)} | 切割 | {perk|武器大师}\\{perk|二元轨道}/狂乱\\{perk|超因果亲和} | {src|梦魇根源} | 少数主手不错的 perk 池 |
 | 日心 QSc | {ico|![](icons/aed10024c7.webp)} | T1 | 轻质\\360 | {el-solar|烈日} | {champ|![](icons/8b37bb6db2.webp)} | {perk|治疗弹匣} | {perk|腹背受敌}\\{perk|辉耀炽热}\\狂乱 | {src|世界掉落} | 框架还行，轻质跑得快 |
 | 难以逾越 | {ico|![](icons/1c07d78d5b.webp)} | T1.5 | 精密\\260 | {el-void|虚空} | {champ|![](icons/a9911a3dfe.webp)} | {perk|羸弱能量球} | {perk|腹背受敌}\\{perk|不稳定弹药} | {src|枪匠兑换\\凯尔之陨} | 最差的框架但是是理论白弹最快产球 |
-| 无名之秋 | {ico|![](icons/7754ffde42.webp)} | T1.5 | 轻质\\360 | {el-arc|电弧} | {champ|![](icons/8b37bb6db2.webp)} | {perk|羸弱能量球} | 福特子弹\\{perk|腹背受敌}\\狂乱 | {src|熔炉} |  |
+| 无名之秋 | {ico|![](icons/7754ffde42.webp)} | T1.5 | 轻质\\360 | {el-arc|电弧} | {champ|![](icons/8b37bb6db2.webp)} | {perk|羸弱能量球} | {perk|伏特子弹}\\{perk|腹背受敌}\\狂乱 | {src|熔炉} |  |
 
 
 ## 微型冲锋枪
@@ -95,7 +95,7 @@
 | 驯顺 | {ico|![](icons/c31aac2768.webp)} | T0 | 轻质\\900 | {el-kinetic|动能} | {champ|![](icons/8b37bb6db2.webp)} | {perk|动能震颤} | {perk|混沌重塑} | {src|门徒} | {perk|动能震颤}+{perk|混沌重塑}伤害很高，起源特性可以回血 |
 | 隐士 | {ico|![](icons/716ea4a7d1.webp)} | T0 | 轻质\\900 | {el-void|虚空} | {champ|![](icons/8b37bb6db2.webp)} | {perk|冲击支撑} | {perk|混沌重塑}\\{perk|武器大师}\\{perk|不稳定弹药} | {src|猛攻} | 起源特性可回转手雷能量 |
 | 紧急求生包 | {ico|![](icons/6068493e30.webp)} | T0 | 适配\\900 | {el-void|虚空} | {champ|![](icons/a9911a3dfe.webp)} | {perk|羸弱能量球}\\{perk|冲击支撑} | 狂乱\\{perk|集体行动}\\{perk|不稳定弹药} | {src|智谋} |  |
-| 越界 | {ico|![](icons/2a627a5143.webp)} | T1 | 轻质\\900 | {el-arc|电弧} | {champ|![](icons/8b37bb6db2.webp)} | 福特子弹 | 狂乱\\{perk|震颤反馈} | {src|熔炉} | 福特子弹+狂乱的快速换弹组合 |
+| 越界 | {ico|![](icons/2a627a5143.webp)} | T1 | 轻质\\900 | {el-arc|电弧} | {champ|![](icons/8b37bb6db2.webp)} | {perk|伏特子弹} | 狂乱\\{perk|震颤反馈} | {src|熔炉} | {perk|伏特子弹}+狂乱的快速换弹组合 |
 | 迫近 | {ico|![](icons/e9088c45d1.webp)} | T1 | 轻质\\900 | {el-strand|缚丝} | {champ|![](icons/8b37bb6db2.webp)} | 切割 | {perk|混沌重塑} | {src|救赎的边缘} | 切割很独特 |
 | 帕拉贝伦 | {ico|![](icons/effbeff89c.webp)} | T1 | 适配\\900 | {el-solar|烈日} | {champ|![](icons/a9911a3dfe.webp)} | {perk|治疗弹匣}\\{perk|回转弹药} | {perk|羸弱能量球}\\{perk|集体行动}\\{perk|辉耀炽热} | {src|欧洲无人区} | 起源特性疲惫爆炸很优秀。{perk|回转弹药}可以破 50 光屏障 |
 | 判决 | {ico|![](icons/33d1a3f683.webp)} | T1 | 精密\\600 | {el-kinetic|动能} | {champ|![](icons/a9911a3dfe.webp)} | {perk|羸弱能量球} | {perk|动能震颤} | {src|预言} | 虽然是最差的精密框架。但是{el-kinetic|动能}属性和起源特性增伤弥补了这一点 |
@@ -113,7 +113,7 @@
 | 无爱 | {ico|![](icons/75d2a96e94.webp)} | T0 | 重型点射\\257 | {el-strand|缚丝} | {champ|![](icons/b7c4048b87.webp)} | 高强度备弹\\{perk|快速命中} | {perk|元素磨砺} | {src|分离教义} | 虽然{exotic|幸运裤}已不复往日荣光，顶级的 perk 池和顶级的原始特性让他成为最好的双发手炮，通常与艾莲娜一起使用，{el-strand|缚丝}属性适合废墟石板神器 |
 | 艾恩伍德 03 | {ico|![](icons/1522c4a98c.webp)} | T0 | 散射\\100 | {el-void|虚空} | {champ|![](icons/8b37bb6db2.webp)} | {perk|冲击支撑}\\{perk|威胁移除器} | {perk|腹背受敌}\\{perk|集体行动}\\{perk|武器大师}/{perk|雪上加霜}\\{perk|不稳定弹药} | {src|扭曲} | 最高 DPS 框架的{el-void|虚空}属性，perk 池优秀 |
 | 金质消除者 | {ico|![](icons/3093e6820a.webp)} | T0 | 散射\\100 | {el-kinetic|动能} | {champ|![](icons/8b37bb6db2.webp)} | {perk|威胁探测}\\{perk|威胁移除器}\\{perk|盗墓者} | 战壕炮管\\{perk|级联点} | {src|试炼} | 作为{el-kinetic|动能}属性是最高的散射手炮伤害\\替代：三冠得主（守护者游戏） |
-| 后代 | {ico|![](icons/187a595f89.webp)} | T1 | 精密\\180 | {el-arc|电弧} | {champ|![](icons/a9911a3dfe.webp)} | 福特子弹 | {perk|高爆载荷}\\狂乱 | {src|深岩墓室} | 伏特+高爆的组合非常适合清怪 |
+| 后代 | {ico|![](icons/187a595f89.webp)} | T1 | 精密\\180 | {el-arc|电弧} | {champ|![](icons/a9911a3dfe.webp)} | {perk|伏特子弹} | {perk|高爆载荷}\\狂乱 | {src|深岩墓室} | 伏特+高爆的组合非常适合清怪 |
 | 野兽国度 | {ico|![](icons/450b9cdebc.webp)} | T1 | 适配\\140 | {el-arc|电弧} | {champ|![](icons/a9911a3dfe.webp)} | 换档 | {perk|集体行动} | {src|最后一愿} | 仅限药剂包{exotic|幸运裤}的玩法 |
 | 命运终结者 | {ico|![](icons/17789ee30d.webp)} | T1 | 适配\\140 | {el-kinetic|动能} | {champ|![](icons/a9911a3dfe.webp)} | {perk|高爆载荷}\\{perk|动能震颤} | 狂乱\\{perk|元素磨砺}\\{perk|萤火虫} | {src|玻璃拱顶} | 手感好，perk 池和起源特性优秀 |
 | 扎乌利的克星 | {ico|![](icons/f31ee3f087.webp)} | T1 | 适配\\140 | {el-solar|烈日} | {champ|![](icons/a9911a3dfe.webp)} | {perk|高爆载荷}\\转向（王陨版本） | {perk|混沌重塑}\\{perk|辉耀炽热} | {src|众神殿\\国王的陨落} | 分为众神殿和王陨两种版本，众神殿起源特性提供额外的弹药生成和面板，王陨起源在有盟友时有额外填装效果，众神殿版本同时拥有两种起源特性，王陨版本有转向 |
@@ -142,7 +142,7 @@
 |---|---|---|---|---|---|---|---|---|---|
 | 刺骨寒风 | {ico|![](icons/b3cfde9b56.webp)} | T1 | 精密 | {el-kinetic|动能} | {champ|![](icons/a9911a3dfe.webp)} | 迷惑爆发\\{perk|即兴弹药} | {perk|小试牛刀}\\{perk|爆炸箭头}\\{perk|动能震颤} | {src|木卫二} | 迷惑爆发+{perk|小试牛刀}在弓箭上真的是非常有意思而且有强度的组合，最好的弓箭框架 |
 | 恶意尖牙 | {ico|![](icons/0e7284c672.webp)} | T1.5 | 轻质 | {el-stasis|冰影} | {champ|![](icons/8b37bb6db2.webp)} | 墓碑\\{perk|即兴弹药}\\{perk|小试牛刀} | {perk|萤火虫}\\{perk|爆炸箭头}\\狂乱 | {src|竞技场} | 墓碑+{perk|萤火虫}，弓箭的 AA 很高适合打头，顶级原始特性 |
-| 牡鹿之角 | {ico|![](icons/1b5c259b17.webp)} | T1.5 | 精密 | {el-arc|电弧} | {champ|![](icons/a9911a3dfe.webp)} | {perk|小试牛刀} | 福特子弹 | {src|铁旗} | {perk|小试牛刀}+福特子弹 cos {exotic|三体坐观者}\\同类替代：救赎的边缘（终焉将至） |
+| 牡鹿之角 | {ico|![](icons/1b5c259b17.webp)} | T1.5 | 精密 | {el-arc|电弧} | {champ|![](icons/a9911a3dfe.webp)} | {perk|小试牛刀} | {perk|伏特子弹} | {src|铁旗} | {perk|小试牛刀}+{perk|伏特子弹} cos {exotic|三体坐观者}\\同类替代：救赎的边缘（终焉将至） |
 | 累积救赎 | {ico|![](icons/9cd7d2cde0.webp)} | T2 | 精密 | {el-kinetic|动能} | {champ|![](icons/a9911a3dfe.webp)} | {perk|羸弱能量球} | {perk|动能震颤}\\{perk|爆炸箭头} | {src|花园} | {perk|羸弱能量球}+{perk|动能震颤}两发一个球，原始特性方便破屏障 |
 | 幸运星 | {ico|![](icons/3c062b27b7.webp)} | T2 | 轻质 | {el-void|虚空} | {champ|![](icons/8b37bb6db2.webp)} | {perk|冲击支撑}\\{perk|即兴弹药}\\{perk|小试牛刀} | {perk|爆炸箭头}\\{perk|不稳定弹药} | {src|至日} | 没有优秀{el-void|虚空}精密弓的下位替代 |
 
@@ -154,7 +154,7 @@
 | 武器 | 图标 | 评级 | 框架\\射速 | 属性 | 勇士 | Perk 三号位 | Perk 四号位 | 获取地点 | 评级理由 |
 |---|---|---|---|---|---|---|---|---|---|
 | 允诺 | {ico|![](icons/bf6d594d17.webp)} | T2 | 轻质\\200 | {el-void|虚空} | {champ|![](icons/8b37bb6db2.webp)} | {perk|边打边劫}\\{perk|冲击支撑} | {perk|高爆弹药}\\{perk|枯萎凝视}\\{perk|不稳定弹药} | {src|幽梦之城} | 轻质的高操作让他成为最合适的劫子弹斥候 |
-| 无视 | {ico|![](icons/f9946cf300.webp)} | T2 | 速射\\260 | {el-arc|电弧} | {champ|![](icons/8b37bb6db2.webp)} | {perk|萤火虫} | 福特子弹\\狂乱 | {src|分离教义} | 最好的框架和顶级原始特性 |
+| 无视 | {ico|![](icons/f9946cf300.webp)} | T2 | 速射\\260 | {el-arc|电弧} | {champ|![](icons/8b37bb6db2.webp)} | {perk|萤火虫} | {perk|伏特子弹}\\狂乱 | {src|分离教义} | 最好的框架和顶级原始特性 |
 | 伏打阴影 | {ico|![](icons/83e7e5f1e2.webp)} | T2 | 平衡热量\\260 | {el-arc|电弧} | {champ|![](icons/8b37bb6db2.webp)} | {perk|震颤反馈} | 狂乱 | {src|平衡} | 不错的长弹匣输出能力 |
 | 受托 | {ico|![](icons/df8794ed9f.webp)} | T2 | 速射\\260 | {el-solar|烈日} | {champ|![](icons/8b37bb6db2.webp)} | {perk|治疗弹匣} | {perk|辉耀炽热}\\转向\\{perk|燃烧野心} | {src|深岩墓室} | 最好的框架和顶级的手感 |
 | 无感 | {ico|![](icons/0efb4ca8de.webp)} | T2.5 | 精密\\180 | {el-arc|电弧} | {champ|![](icons/a9911a3dfe.webp)} | {perk|集体爆破} | {perk|高爆载荷} | {src|竞技场} | 唯一还算可观手雷回转的白弹，{perk|高爆载荷}能触发两次{perk|集体爆破}，虽然是伤害最低的框架 |
