@@ -4118,8 +4118,9 @@ window.starsideIndex = [
 {"u":"builds/s29/acdzuqsl-warlock/index.html","t":"meta电术 · 配装推荐","d":""},
 {"u":"builds/s29/bxjyhdhm-titan/index.html","t":"飞机倍泰坦 · 配装推荐","d":""},
 {"u":"builds/s29/clama-he-titan/index.html","t":"刮刮乐泰坦 · 配装推荐","d":""},
+{"u":"builds/s29/em3ruaaj-titan/index.html","t":"一拳超人 · 配装推荐","d":""},
 {"u":"builds/s29/etcdnfru-hunter/index.html","t":"66连杀兰花 · 配装推荐","d":""},
-{"u":"builds/s29/haku-solarjizhi-warlock/index.html","t":"火中术走机制 · 配装推荐","d":""},
+{"u":"builds/s29/fnsnwbr3-hunter/index.html","t":"冰猎开荒回转套 · 配装推荐","d":""},
 {"u":"builds/s29/hqq17mla-hunter/index.html","t":"配装合集测试 · 配装合集","d":""},
 {"u":"builds/s29/ig7y9i5n-warlock/index.html","t":"双飞饼 · 配装推荐","d":""},
 {"u":"builds/s29/iuhsh3n7-warlock/index.html","t":"亡妻回忆录之星火协议 · 配装推荐","d":""},
@@ -4136,6 +4137,7 @@ window.starsideIndex = [
 {"u":"builds/s29/nianqingren-hexiaodi-hunter/index.html","t":"赫沃斯托夫小帝喷 · 配装推荐","d":""},
 {"u":"builds/s29/nightcore-baolei-hunter/index.html","t":"棱镜堡垒丢丢猎 · 配装推荐","d":""},
 {"u":"builds/s29/nightcore-swxsjz-hunter/index.html","t":"死亡信使机制弹药套 · 配装推荐","d":""},
+{"u":"builds/s29/ozytwawh-titan/index.html","t":"圣火护心甲泰坦 · 配装推荐","d":""},
 {"u":"builds/s29/pkz20gm1-warlock/index.html","t":"坏死+合成棱镜术（贾诩术） · 配装推荐","d":""},
 {"u":"builds/s29/q01swvbe-titan/index.html","t":"棱镜泰坦pvp meta 配装 · 配装推荐","d":""},
 {"u":"builds/s29/q9y0mpko-titan/index.html","t":"四码头 高阶暴君 · 配装推荐","d":""},
@@ -4144,6 +4146,7 @@ window.starsideIndex = [
 {"u":"builds/s29/tniihk60-warlock/index.html","t":"虚式·茈 五条悟虚空术士 · 配装推荐","d":""},
 {"u":"builds/s29/w0q7ss18-hunter/index.html","t":"混乱裁决火刀猎 · 配装推荐","d":""},
 {"u":"builds/s29/xiaoning-xukongpvp-hunter/index.html","t":"虚空猎pvp · 配装推荐","d":""},
+{"u":"builds/s29/xk3o6vpu-hunter/index.html","t":"狼毒火刀猎 · 配装合集","d":""},
 {"u":"builds/s29/xukonvoid-xinghuo-warlock/index.html","t":"星火纤维棱镜术 · 配装推荐","d":""},
 {"u":"builds/s29/yester-bguipen-titan/index.html","t":"棱镜b计划龟喷坦 · 配装推荐","d":""},
 {"u":"builds/s29/yester-guidao-hunter/index.html","t":"龟刀猎 · 配装推荐","d":""},
@@ -4155,5 +4158,6 @@ window.starsideIndex = [
 {"u":"builds/s29/yiwangmelt-twjqg-hunter/index.html","t":"金枪猎位移+清怪配装 · 配装推荐","d":""},
 {"u":"builds/s29/yiwangmelt-weiyiqingguai2-hunter/index.html","t":"金枪猎位移+清怪配装 · 配装推荐","d":""},
 {"u":"builds/s29/ynwgmvks-warlock/index.html","t":"赫沃斯托夫逃逸手术士 · 配装推荐","d":""},
+{"u":"builds/s29/zf43l1v8-titan/index.html","t":"微冲腿泰坦 · 配装推荐","d":""},
 {"u":"builds/s29/zqqoqjsb-warlock/index.html","t":"悬停术 · 配装推荐","d":""}
 ];
