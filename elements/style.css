@@ -160,7 +160,7 @@
 .gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(1) { width: 175px; }
 .gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(2) { width: 96px; }
 .gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))):has(:is(td.ico2, td.ico4)) thead th:nth-child(2) { width: 152px; }
-.gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(4) { width: 190px; }
+.gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(4) { width: 200px; }
 
 /* 行标题：类别或条目名，这一组的身份。合并后纵向居中，一眼圈出它占几行。
    **颜色只给没有 class 的那些格。**整格只有一个 {标记|…} 时 class 落在 <th> 本身，
