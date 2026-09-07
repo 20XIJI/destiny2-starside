@@ -42,6 +42,8 @@ sync.py            源稿在库与仓库之间对账：记一份基线三方比�
 deploy.py          增量部署：与 refs/deploy 一 diff 即得清单，只发改过的文件；
                    keep() 一处挡掉源稿、工具、云函数与配置
 check_shell.py     外壳闸门，从 shell.py 现取参照，不另存副本
+check_type.py      排版、CSS 有效性与产出结构：中文不吃拉丁字距、background
+                   简写非末层不许写颜色、产出的开闭标签配得上
 check_terms.py     术语与着色闸门，全部以 TERMS 那一张表为准
 items.py           官方物品表 → tools/items.json，Perk 名 → tools/perks.json：
                    物品专名与 Perk 名该着哪个 token 由查表定；
@@ -61,7 +63,7 @@ json2xlsx.py       把上面那份 JSON 还原成 xlsx，供核对与二次编�
 
 ```bash
 npm start                                     # npx serve . -l 3000
-npm run build                                 # 四个生成器 + 源稿自动纠正 + 搜索索引 + 编辑台词表 + 两道闸门
+npm run build                                 # 四个生成器 + 源稿自动纠正 + 搜索索引 + 编辑台词表 + 三道闸门
 npm test                                      # 两份离线回归，0.3 秒；改发布链或云函数前必跑
 
 python3 tools/convert-artifact-mods.py        # 源稿 references/artifact-mods.md
@@ -71,6 +73,7 @@ python3 tools/convert-build.py                # 源稿 references/builds/<赛季
 python3 tools/build-search.py                 # 全站搜索索引 assets/search.js
 python3 tools/check_shell.py                  # 各页外壳一致性
 python3 tools/check_terms.py                  # 术语正名、着色 token、更新时间
+python3 tools/check_type.py                   # 字距与中文、CSS 简写有效性、产出结构
 
 python3 tools/mods.py --distill <导出.json>   # 护甲模组变体 → tools/mod-variants.json
 python3 tools/mods.py --moves   <导出.json>   # 位移技能 → tools/moves.json
@@ -681,6 +684,25 @@ season 与 slug、而盘上还没有的那些写成 `references/builds/<season>/
 3. **`locate()` / `patch()`**：改一格只动那一行、邻格不动、两侧空格原样留着；
    原文对不上即冲突；同一文本多处时按 `blk` 挑，块号也对不上就不猜。
 4. **多行块**：几行合成一段时定位得到，换成一行或三行后总行数对得上。
+
+## 排版与结构的闸门
+
+**`tools/check_type.py` 三条，各对应一个真发生过、且别的闸门一声不吭的缺陷。**
+颜色有七道闸门，所以 43 份样式表里 39 份零裸色值；字距、CSS 是否有效、产出的结构
+一道都没有，于是各自漂了很久。
+
+| | 管什么 | 它抓过的那一次 |
+|---|---|---|
+| **T1** | 字距超过 `.2em` 封顶的规则，反查它选中的产出里有没有中文 | `.block > .sect-label` 把基类的 `.2em` 顶到 `.24em`，而 502 个分节标题里 477 个是纯中文。同病另有三处 |
+| **T2** | `background` 简写的非末层不许写颜色 | `.src-tools` 写着 `background: var(--tint-3), var(--ink-lift)`，整条声明作废回落 transparent，而注释正在论证那一层底为什么必要 |
+| **T3** | 产出的开闭标签配得上，属性名里不许有 `<` | 一次改动把 27 个 `<a class="entry">` 各复制了一份，浏览器容错渲染正常，`check_shell.py` 只管外壳片段与更新时间 |
+
+**判据全部现取**：样式表与页面清单走 `os.walk`，颜色变量从 `:root` 的右值形状认，
+封顶值取 design.md 二节那一个。加一页、加一份样式表都不必回来登记。
+
+**T1 的主语取选择器最后一个 class**：`.block > .sect-label` 施加在 `.sect-label` 上，
+前面那些是限定条件。取文按标签名配对弹栈——空元素不入栈，无条件弹会让文字记到上一层
+的 class 上去。
 
 ## 术语与着色的一处定义
 
@@ -1686,8 +1708,8 @@ G3 钉住 `{act|…}` 的类定义。
 
 不引第三方测试框架（pytest、vitest 一概不装）。验证靠四样：
 
-1. **生成器自检 + `check_shell.py` + `check_terms.py`** — 结构、外壳、术语与着色的主闸门，见上。
-   跑 `npm run build` 即全部执行。
+1. **生成器自检 + `check_shell.py` + `check_terms.py` + `check_type.py`** — 结构、外壳、术语、
+   着色与排版的主闸门，见上。跑 `npm run build` 即全部执行。
 2. **`npm test`** — 两份标准库写的离线回归，跑 0.3 秒，排在 `ship.sh` 的构建之后、提交之前。
    `tools/check_quality.py` 用 `unittest`，管部署闸门、同步删除的三方比、配装生成生命周期、
    源稿自动纠正的幂等、切格三方一致；`tools/check_quality.cjs` 用 `node:assert` 加一份内存版
