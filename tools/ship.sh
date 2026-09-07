@@ -1,5 +1,5 @@
 #!/bin/sh
-# 一轮发版：对账 → 构建 → 提交 → 部署 → 推送。任一步失败即停，不往下走。
+# 一轮发版：对账 → 构建 → 回归 → 提交 → 部署 → 推送。任一步失败即停，不往下走。
 # 用法：tools/ship.sh "提交信息"
 # 工作区没有改动时不必给信息，直接走部署与推送。
 set -e
@@ -7,6 +7,7 @@ cd "$(dirname "$0")/.."
 
 python3 tools/sync.py
 npm run build
+npm test
 
 if [ -n "$(git status --porcelain)" ]; then
   if [ -z "$1" ]; then

@@ -399,6 +399,148 @@ test('49 rejections fit the transaction boundary without reading documents', asy
   assert.equal(h.calls.some((c) => c.name === 'docs'), false)
 })
 
+// 源稿方言里 | 是分隔符、{} 是着色标记。混进表格格的话那一行会多一格、或者标记不
+// 闭合，convert-doc.py 的闸门当场 die，卡住整次 npm run build，而编辑那一侧看不出
+// 任何异样。换行走自动改对那条路，这两个字符没有等价写法，所以在提交时就拒收。
+const tableDoc = '# 标题\n\n## 一节\n\n| 名称 | 说明 |\n|---|---|\n| 甲 | 旧文 |\n\n正文一段\n'
+function cellSeed() {
+  return { docs: [{ _id: 'docs/example', md: tableDoc, hash: digest(tableDoc), by: 'original' }] }
+}
+async function change(after, before = '旧文', blk = 6, cell = 1) {
+  const h = harness(cellSeed())
+  const result = await h.request({ a: 'chg', doc: 'docs/example', before, after, blk, cell })
+  return { h, result, queued: [...h.store.edits.values()] }
+}
+
+test('a bare pipe in a table cell is refused before it reaches the queue', async () => {
+  const { result, queued } = await change('新|文')
+  assert.equal(result.status, 400)
+  assert.match(result.error, /竖线/)
+  assert.deepEqual(queued, [])
+})
+
+test('a tint marker keeps its own pipe and its own braces', async () => {
+  const { result, queued } = await change('{el-arc|电弧}伤害')
+  assert.equal(result.ok, 1)
+  assert.deepEqual(queued.map((e) => e.after), ['{el-arc|电弧}伤害'])
+})
+
+test('a pipe after a closed marker is still a separator and is refused', async () => {
+  const { result, queued } = await change('{el-arc|电弧}|尾巴')
+  assert.equal(result.status, 400)
+  assert.match(result.error, /竖线/)
+  assert.deepEqual(queued, [])
+})
+
+test('unbalanced tint braces are refused in both directions', async () => {
+  for (const after of ['{el-arc|电弧', '电弧}', '{a|{b|c}']) {
+    const { result, queued } = await change(after)
+    assert.equal(result.status, 400, after)
+    assert.match(result.error, /花括号/)
+    assert.deepEqual(queued, [], after)
+  }
+})
+
+test('replacing a whole row keeps the pipes that make it a row', async () => {
+  const { result, queued } = await change('| 乙 | 新文 |', '| 甲 | 旧文 |', 6, -1)
+  assert.equal(result.ok, 1)
+  assert.deepEqual(queued.map((e) => e.after), ['| 乙 | 新文 |'])
+})
+
+test('outside a table row a pipe is ordinary text', async () => {
+  const { result, queued } = await change('正文|两段', '正文一段', 8, -1)
+  assert.equal(result.ok, 1)
+  assert.deepEqual(queued.map((e) => e.after), ['正文|两段'])
+})
+
+test('approving a record queued before the guard existed still refuses it', async () => {
+  const seed = cellSeed()
+  seed.edits = [edit('e1', 6, '旧文', '新|文', { cell: 1 })]
+  const h = harness(seed)
+  const result = await h.request({ a: 'emark', jobs: [{ id: 'e1', ok: 1 }] })
+  assert.equal(result.status, 400)
+  assert.match(result.error, /竖线/)
+  assert.equal(h.store.docs.get('docs/example').md, tableDoc)
+  assert.equal(h.store.edits.get('e1').ok, 0)
+})
+
+// 切格在 JS 侧有三份：云函数与 edit.js 的 cellSpans()（应当逐字相同）、admin.js 的
+// cells()（前端闸门数格数用的那份，{ 的判据与 } 的钳位都不一样）。拿全部真表格行现跑
+// 对住，不用快照——scratchpad 里那份断言正是因为把对面的结果冻成了快照，改了实现
+// 照样全绿。
+//
+// Python 那一份不在这里：起 python 就破了这份套件「不启动子进程」的承诺。它与「语料
+// 保持规整」这个前提由 check_quality.py 的 CellSplitting 管。
+function funcSource(file, name) {
+  const text = fs.readFileSync(path.join(root, file), 'utf8')
+  const head = new RegExp('^([ \\t]*)function ' + name + ' ?\\(', 'm').exec(text)
+  assert.notEqual(head, null, `${file} 里找不到 ${name}()`)
+  // 按缩进找收尾，不数花括号——cells() 的函数体里有 '{' 与 '}' 两个字符串字面量，
+  // 数括号会在那里提前收口。同一层缩进上孤零零的一个 } 就是这个函数的末尾。
+  const close = new RegExp('^' + (head[1] || '') + '\\}$', 'm')
+  const rest = text.slice(head.index + head[0].length)
+  const at = close.exec(rest)
+  assert.notEqual(at, null, `${file} 的 ${name}() 没找到收尾`)
+  return text.slice(head.index, head.index + head[0].length + at.index + at[0].length)
+}
+
+function splitter(file, name) {
+  const ctx = {}
+  vm.createContext(ctx)
+  // admin.js 的 cells() 用到模块里的 OPEN 与 openAt，一并带上。
+  const deps = name === 'cells'
+    ? "var OPEN=/^\\{([\\w-]+)\\|/;function openAt(s,i){return s.charAt(i)==='{'?OPEN.exec(s.slice(i)):null}\n"
+    : ''
+  vm.runInContext(deps + funcSource(file, name) + `\nthis.f=${name}`, ctx)
+  return ctx.f
+}
+
+function tableRows() {
+  const out = []
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name)
+      if (entry.isDirectory()) walk(full)
+      else if (entry.name.endsWith('.md')) {
+        fs.readFileSync(full, 'utf8').split('\n').forEach((line, i) => {
+          if (line.trimStart().startsWith('|')) out.push([path.relative(root, full), i + 1, line])
+        })
+      }
+    }
+  }
+  walk(path.join(root, 'references'))
+  return out
+}
+
+test('the two cellSpans copies are still character-for-character the same', () => {
+  // 云函数写 const/let、edit.js 写 var，缩进差两格，声明里的空格与整行注释也各写
+  // 各的；除此之外必须逐字相同。
+  const norm = (file) => funcSource(file, 'cellSpans')
+    .replace(/\b(?:const|let|var)\b/g, 'X')
+    .replace(/function (\w+) \(/, 'function $1(')
+    .split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('//')).join('\n')
+  assert.equal(norm('functions/api/index.js'), norm('admin/edit.js'),
+    '云函数与 edit.js 的 cellSpans 分家了——两份都在给同一条改动定位，分家即静默改错格')
+})
+
+test('all three javascript splitters agree on every real table row', () => {
+  const api = splitter('functions/api/index.js', 'cellSpans')
+  const ui = splitter('admin/edit.js', 'cellSpans')
+  const count = splitter('admin/admin.js', 'cells')
+  const rows = tableRows()
+  assert.ok(rows.length > 4000, `只扫到 ${rows.length} 行表格行，语料挪走了？`)
+  // 三份各跑在自己的 vm realm 里，数组原型互不相同，assert/strict 的 deepEqual 会
+  // 连原型一起比。要比的是切出来的区间，所以按值比。
+  const spans = (v) => JSON.stringify(v)
+  for (const [where, n, line] of rows) {
+    const a = api(line)
+    assert.equal(spans(a), spans(ui(line)), `${where}:${n} 云函数与 edit.js 切得不一样`)
+    assert.notEqual(a, null, `${where}:${n} cellSpans 整行不认——那一格永远改不了`)
+    assert.equal(a.length, count(line),
+      `${where}:${n} cellSpans 切出 ${a.length} 格，前端闸门数出 ${count(line)} 格`)
+  }
+})
+
 async function main() {
   let failures = 0
   for (const [name, fn] of tests) {

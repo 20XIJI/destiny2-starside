@@ -173,6 +173,30 @@ function patch(md, at, after) {
   return lines.join('\n')
 }
 
+// 源稿方言里 `|` 是表格分隔符、`{}` 是着色标记，正文里都不出现，所以两者都能当结构
+// 字符硬判。混进去不是"报个错就完了"：那一行会多一格、或者标记不闭合，
+// convert-doc.py 的闸门当场 die，卡住的是整次 npm run build——而编辑这一侧一点异样
+// 都看不到，下一个跑 ship.sh 的人才撞上。
+//
+// 换行走的是自动改对那条路（格内换行写两个反斜杠，编辑没有理由知道这条语法）。
+// 这两个字符没有等价写法可以替他改——换成全角是静默改内容——所以在提交时就拒收，
+// 并说清是哪一个。
+function cellSafe(text, inCell) {
+  // 竖线只在"改一格"时才是越界：整块替换写进去的是完整的一行，那一行里的竖线是
+  // 结构。而且只有深度 0 上的才算分隔符，与六份切格实现同一条规则——{el-arc|电弧}
+  // 里那个是标记的一部分，拦下它就等于不许在格里着色。
+  // 花括号两种情形都要配对，它在哪儿都是着色标记。
+  let d = 0
+  for (const ch of text) {
+    if (ch === '{') d++
+    else if (ch === '}') { if (--d < 0) return '着色标记的花括号没配对' }
+    else if (ch === '|' && d === 0 && inCell) {
+      return '表格格里不能写竖线，它是分隔符；要写就用全角｜'
+    }
+  }
+  return d ? '着色标记的花括号没配对' : ''
+}
+
 // 令牌 → 身份，五分钟一份，与 likeMap() 缓存赞数同一套写法：校验要多打一次
 // /auth/v1/user/me，缓存让这次往返与请求数脱钩。实例回收即失效。
 const wc = new Map()
@@ -420,6 +444,8 @@ async function editorRoute(a, body, event) {
     // 规则只写在源稿语法里，编辑的人没有理由知道，报一句错只会让人卡在那里。
     const line0 = cur.md.split('\n')[at0.line] || ''
     const text = line0.startsWith('|') ? after.replace(/\n+/g, '\\\\') : after
+    const unsafe = cellSafe(text, Boolean(at0.span))
+    if (unsafe) throw new Error(unsafe)
     const set = { doc, blk, cell, before, after: text, ok: 0, at, by: me.name, uid: me.uid }
     // 同一个人在同一处只留一条待审，重改即改写，不堆第二份。
     const old = await edits.where({ doc, uid: me.uid, ok: 0, blk, cell }).limit(1).get()
@@ -509,6 +535,9 @@ async function editorRoute(a, body, event) {
             const end = hit.span ? offsets[hit.line] + hit.span[1] : offsets[last] + lines[last].length
             const text = lines[hit.line].startsWith('|')
               ? String(e.after).replace(/\n+/g, '\\\\') : e.after
+            // 队列里可能躺着这条闸门上线之前存下的记录，通过时再判一次。
+            const unsafe = cellSafe(text, Boolean(hit.span))
+            if (unsafe) throw new Error(unsafe)
             return { hit, start, end, text }
           }).sort((a, b) => a.start - b.start || a.end - b.end)
           for (let i = 1; i < hits.length; i++) {

@@ -14,6 +14,7 @@
 import argparse
 import json
 import pathlib
+import re
 import shutil
 import subprocess
 import sys
@@ -28,6 +29,33 @@ SKIP_FILES = {"package.json", "cloudbaserc.json", "serve.json", ".gitignore", ".
 
 def keep(path: str) -> bool:
     return not (path.startswith(SKIP_DIRS) or path.endswith(".md") or path in SKIP_FILES)
+
+
+# 字符串字面量里的 /* 与 */。剥注释前先拿它探一遍：命中就整个文件原样发。
+RISK = re.compile(r"""(['"])(?:\\.|(?!\1)[^\\\n])*\1""")
+BLOCK = re.compile(r"/\*.*?\*/", re.S)
+
+
+def uncomment(text: str) -> str:
+    """块注释换成等量换行：读者不必下设计依据，行号仍与源稿对得上。
+
+    只动 /* */，不碰 //——app.js 里有 'http://www.w3.org/2000/svg'，按 // 剥会剥坏它。
+    换行不删，是为了让 devtools 报的位置照旧落在源稿的同一行上；比删干净只多付
+    788 字节 gzip。
+    """
+    return BLOCK.sub(lambda m: "\n" * m.group(0).count("\n"), text)
+
+
+def strippable(text: str) -> bool:
+    """字符串字面量里冒出 /* 或 */ 就不许剥。
+
+    search.js 与 desc.js 是从源稿生成的，正文里写一句「伤害 100/*不含*加成」，
+    那对括号就进了数据字符串。正则会从那里一路吃到下一个 */，而吃完往往仍是合法
+    JS（{"x":"a/*b"},{"x":"c*/d"} → {"x":"ad"}），语法闸门查不出来，页面也看不出来，
+    只是搜不到东西。所以判据下在剥之前，且**跳过该文件、不中止部署**——剥注释是
+    优化，不该有能力挡住发版。
+    """
+    return not any("/*" in m.group(0) or "*/" in m.group(0) for m in RISK.finditer(text))
 
 
 def git(*args: str) -> str:
@@ -57,7 +85,30 @@ def check() -> None:
     assert not keep("references/docs/changelog.md")
     assert not keep("CLAUDE.md") and not keep("cloudbaserc.json")
     assert listing("a.md\0index.html\0") == ["index.html"]
+    assert uncomment("a/*x\ny*/b") == "a\nb"  # 换行数保住，行号不移
+    assert uncomment("a/*x*/b") == "ab"  # 单行注释不留空行
+    assert uncomment("a") == "a"  # 没有注释就原样
+    assert strippable("i{color:red} /* 说明 */")
+    assert not strippable('var a = "x/*y";') and not strippable("var a = 'x*/y';")
     print("ok")
+
+
+def stage_one(rel: str, dst: pathlib.Path) -> None:
+    """把一个文件放进暂存目录。CSS 与 JS 顺手剥掉块注释，别的原样复制。
+
+    site.css 有 38% 的字符在 /* */ 里，app.js 也差不多，而 .css/.js 的浏览器缓存
+    只有 5 分钟——那些设计依据每次访问都要重发一遍。源稿一个字不动，剥只发生在
+    这里，本地 npm start 服务的仍是带注释的那一份。
+    """
+    if not rel.endswith((".css", ".js")):
+        shutil.copy2(ROOT / rel, dst)
+        return
+    text = (ROOT / rel).read_text(encoding="utf-8")
+    if not strippable(text):
+        print(f"  ! {rel} 的字符串里有 /* 或 */，原样发")
+        shutil.copy2(ROOT / rel, dst)
+        return
+    dst.write_text(uncomment(text), encoding="utf-8")
 
 
 def unchanged(target: str) -> None:
@@ -127,7 +178,7 @@ def main() -> None:
             for p in files:
                 dst = stage / p
                 dst.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(ROOT / p, dst)
+                stage_one(p, dst)
             extra = ["--prune", "--safe"] if prune else []
             unchanged(target)
             tcb("hosting", "deploy", str(stage), CLOUD, *extra, env=env, confirm=prune)

@@ -335,11 +335,18 @@
     var grid = document.createElement('ul');
     grid.className = 'picker-grid';
 
+    // 按空格分词后取 AND，与 app.js 的 matches() 同一条规则：输「电弧 虹吸」要
+    // 命中「电弧虹吸」。这一页不引 app.js——它 66% 的分支（折线图、全站搜索、
+    // 轮换轮盘）只服务另外五个页面，为一个匹配函数多下 20 KB 不值。
     function draw(q) {
-      var terms = window.starsideMatches;
+      var terms = q.toLowerCase().split(/\s+/).filter(Boolean);
       var hits = list.filter(function (r) {
-        return !q || (terms ? terms(r[0] + ' ' + r[1], q)
-          : (r[0] + r[1]).toLowerCase().indexOf(q.toLowerCase()) > -1);
+        if (!terms.length) return true;
+        var hay = (r[0] + ' ' + r[1]).toLowerCase();
+        for (var i = 0; i < terms.length; i++) {
+          if (hay.indexOf(terms[i]) === -1) return false;
+        }
+        return true;
       });
       // 神器模组照神器盘摆：列是神器那七行，纵向是一/二/三级，位置由词表的 pos 给。
       // **搜出来的结果不摆**——一次只剩两三条时，21 格里空 18 格比排成一行更难看。
@@ -1340,7 +1347,7 @@
   // **不能用对象字面量**：名字是用户填的，叫 constructor 或 toString 时
   // HOLD[名字] 取到原型链上的函数、读成真值，那份稿子就永远「缺名字」投不出去。
   var HOLD = Object.create(null);
-  ['配装名', '配装名称', '合集名', '合集名称'].forEach(function (k) { HOLD[k] = 1; });
+  ['配装名', '配装名称', '合集名', '合集名称', '这一套叫什么'].forEach(function (k) { HOLD[k] = 1; });
 
   function short (md, list) {
     return list.filter(function (n) {

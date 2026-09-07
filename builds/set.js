@@ -19,6 +19,18 @@
     if (h) document.documentElement.style.setProperty('--stick', h.offsetHeight + 'px');
   }
 
+  /* resize 一帧只量一次。offsetHeight 要求浏览器把布局算到当前，而 resize 一次
+     拖动能发几十上百下——每一下都强制同步布局一次，拖窗口就卡。与 app.js 的
+     onResize() 同一条，那一页也是这么挡的。 */
+  function onResize(fn) {
+    var pending = false;
+    return function () {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(function () { pending = false; fn(); });
+    };
+  }
+
   /* 选中哪一套只认 hash：发出去的链接因此直达那一套，前进后退也能用。
      指不到任何一套（没有 hash、或者指的是别处）就落回第一套。 */
   function at() {
@@ -67,7 +79,7 @@
   /* 目录之外还有两条改 hash 的路：地址栏手改，以及从别处点进来的 #set-N。
      两条都发 hashchange，接住即可。 */
   window.addEventListener('hashchange', paint);
-  window.addEventListener('resize', stick);
+  window.addEventListener('resize', onResize(stick));
   stick();
   paint();
 }());

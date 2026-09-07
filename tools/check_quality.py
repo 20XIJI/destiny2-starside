@@ -44,6 +44,7 @@ def load(name, filename):
 deploy = load('quality_deploy', 'deploy.py')
 sync = load('quality_sync', 'sync.py')
 build = load('quality_build', 'convert-build.py')
+doc = load('quality_doc', 'convert-doc.py')
 
 
 def forbidden(*args, **kwargs):
@@ -135,6 +136,65 @@ class ExcelSafety(Isolated):
                                               *(['--force'] if force else [])]))
                 self.assertEqual(src.read_text(), '{"rows":[]}')
                 self.assertEqual(out.read_text(), 'human work')
+
+
+class CellSplitting(unittest.TestCase):
+    """切格的六份实现在当前语料上结果一致——钉的是那个"当前语料"。
+
+    实现分布在三种语言里：convert-doc.py 的 split_cells()、云函数与 edit.js 的
+    cellSpans()、admin.js 的 cells()、items.py 的 row_title_end()、admin.js 的
+    titleEnd()。跨语言没法共用一份，**它们也并不等价**：行首空白、缺末尾竖线、
+    全角空格贴格边、`}` 深度可否为负、`{` 的判据，五处各有分歧。
+
+    今天对得住，靠的是源稿恰好规整，不是实现真的相同。所以这里断言的是那个前提，
+    不是"实现等价"——两句话差别很大。踩线的那一行在本地照常渲染成页面、闸门全绿，
+    只有编辑台会静默定位不到：那一格永远改不了，报的还是「底稿已变，请回资料页
+    重新提交」，而资料页永远是最新的。
+
+    JS 那三份之间的相互一致由 check_quality.cjs 的同名一组管，那边不必起 Python。
+    """
+
+    ROOT = TOOLS.parent
+
+    @classmethod
+    def rows(cls):
+        for path in sorted((cls.ROOT / 'references').rglob('*.md')):
+            for n, line in enumerate(path.read_text(encoding='utf-8').split('\n'), 1):
+                if line.lstrip().startswith('|'):
+                    yield path.relative_to(cls.ROOT), n, line
+
+    def test_corpus_stays_within_the_shape_all_six_agree_on(self):
+        found = 0
+        for where, n, line in self.rows():
+            found += 1
+            at = '%s:%d' % (where, n)
+            self.assertFalse(line[:1].isspace(),
+                             '%s 行首有空白：Python 侧照常出表，cellSpans 整行返回 null' % at)
+            self.assertTrue(line.rstrip('\r').endswith('|'),
+                            '%s 没有末尾竖线：JS 侧无条件砍掉最后一格，末格永远改不了' % at)
+            self.assertNotIn('\\|', line, '%s 用了 \\| 转义：六份实现没有一份认它' % at)
+            for edge in ('|\t', '\t|', '|\u3000', '\u3000|'):
+                self.assertNotIn(edge, line,
+                                 '%s 格边贴着制表符或全角空格：Python 的 strip() 剥它，JS 只剥半角' % at)
+
+    def test_corpus_keeps_tint_braces_balanced(self):
+        for where, n, line in self.rows():
+            depth = 0
+            for ch in line:
+                depth += (ch == '{') - (ch == '}')
+                self.assertGreaterEqual(
+                    depth, 0,
+                    '%s:%d 出现了孤立的 }：深度可为负的那三份会把后面的竖线并掉，'
+                    '钳位的那两份不会' % (where, n))
+            self.assertEqual(depth, 0, '%s:%d 花括号没配平' % (where, n))
+
+    def test_every_row_splits_into_at_least_one_cell(self):
+        for where, n, line in self.rows():
+            self.assertTrue(doc.split_cells(line), '%s:%d 切不出格' % (where, n))
+
+    def test_the_scan_actually_found_the_corpus(self):
+        # 语料挪走或者上面的判据写错时，前三条会变成"零行全过"的空转。
+        self.assertGreater(sum(1 for _ in self.rows()), 4000)
 
 
 class Deployment(Isolated):

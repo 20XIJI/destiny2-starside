@@ -10,6 +10,7 @@ index.html。本脚本从 shell.py 现取不变片段去比对每一个页面—
 页面清单取自 shell.pages()，从 references/docs/ 现扫，新增一篇不必回来改这个文件。
 """
 
+import gzip
 import os
 import re
 import sys
@@ -22,6 +23,40 @@ HEAD_KEEP = ('<meta name="theme-color"', '<meta property="og:site_name"',
              '<link rel="icon"', '<link rel="stylesheet" href="../assets/site.css">')
 
 STAMP = re.compile(r'<span class="(?:entry-)?stamp">更新 \d{4}\.\d{1,2}\.\d{1,2}</span>')
+
+# 外壳三件的首屏预算，gzip 字节。这三样每一页都要下，所以它们涨一 KB 就是全站涨一 KB。
+# 量的是 deploy.py 剥掉块注释之后的样子——线上发的就是那一份。
+#
+# **这个数会漂，而且漂过。**文档里写了很久的「site.css 10K + app.js 5K」，实测是
+# 35.6K 与 20.4K，翻了三四倍，多出来的全是注释；没有人量，所以没有人知道。撑不下就
+# 回来改这个数字，像 convert-armor-sets.py 的 N_* 一样——那是「改了要人确认一次」，
+# 不是「放宽比对」。
+SHELL_BUDGET = 32 * 1024
+SHELL_PARTS = ('assets/site.css', 'assets/app.js', 'assets/fonts/chakra-petch-600.woff2')
+BLOCK_COMMENT = re.compile(r'/\*.*?\*/', re.S)
+
+
+def shipped_size(rel):
+    """这个文件发上去有多大。CSS 与 JS 按 deploy.py 剥完注释的样子算。"""
+    raw = os.path.join(shell.ROOT, rel)
+    with open(raw, 'rb') as f:
+        blob = f.read()
+    if rel.endswith(('.css', '.js')):
+        text = blob.decode('utf-8')
+        blob = BLOCK_COMMENT.sub(
+            lambda m: '\n' * m.group(0).count('\n'), text).encode('utf-8')
+    return len(gzip.compress(blob, 9))
+
+
+def check_weight():
+    """外壳三件合起来不许超预算。超了说明每一页都变重了。"""
+    sizes = {rel: shipped_size(rel) for rel in SHELL_PARTS}
+    total = sum(sizes.values())
+    if total <= SHELL_BUDGET:
+        return [], total, sizes
+    detail = '，'.join('%s %.1fK' % (os.path.basename(r), n / 1024) for r, n in sizes.items())
+    return ['外壳三件 %.1fK gzip，超出预算 %.1fK（%s）。撑不下就改 check_shell.SHELL_BUDGET'
+            % (total / 1024, SHELL_BUDGET / 1024, detail)], total, sizes
 
 
 def invariants(home=False):
@@ -76,6 +111,9 @@ def main() -> int:
         if rel != shell.HOME and '"%s"' % rel not in index:
             bad.append('%s：不在全站搜索索引里，跑一次 tools/build-search.py' % rel)
 
+    weight, total, sizes = check_weight()
+    bad += weight
+
     if bad:
         print('外壳不一致：', file=sys.stderr)
         for line in bad:
@@ -83,6 +121,9 @@ def main() -> int:
         return 1
     print('外壳一致：%d 个页面，%d 条不变片段（首页免去站头那三条），全部在搜索索引里'
           % (len(listed), len(invariants())))
+    print('外壳三件 %.1fK / %.0fK gzip（%s）'
+          % (total / 1024, SHELL_BUDGET / 1024,
+             '，'.join('%s %.1fK' % (os.path.basename(r), n / 1024) for r, n in sizes.items())))
     return 0
 
 

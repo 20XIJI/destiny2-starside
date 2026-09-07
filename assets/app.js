@@ -21,7 +21,6 @@
     return true;
   }
   function matches(text, query) { return hit(text.toLowerCase(), words(query)); }
-  window.starsideMatches = matches;
 
   var head = document.querySelector('.site-head');
   var slot = document.querySelector('.toolbar');

@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构建步骤，托管在腾讯云 CloudBase。仓库无测试框架、无打包器。
+Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构建步骤，托管在腾讯云 CloudBase。仓库无打包器；回归测试走标准库，入口 `npm test`。
 
 资料页全部由生成器从 `references/` 下的 markdown 源稿产出，**产出一律不手改**：改文案改 markdown，改结构改生成器的 `render()`，两种情况都重跑脚本。只有首页 `index.html` 是手写的。
 
@@ -61,7 +61,8 @@ json2xlsx.py       把上面那份 JSON 还原成 xlsx，供核对与二次编�
 
 ```bash
 npm start                                     # npx serve . -l 3000
-npm run build                                 # 四个生成器 + 配装源稿自动着色 + 搜索索引 + 编辑台词表 + 两道闸门
+npm run build                                 # 四个生成器 + 源稿自动纠正 + 搜索索引 + 编辑台词表 + 两道闸门
+npm test                                      # 两份离线回归，0.3 秒；改发布链或云函数前必跑
 
 python3 tools/convert-artifact-mods.py        # 源稿 references/artifact-mods.md
 python3 tools/convert-armor-sets.py           # 源稿 references/armor-sets.md
@@ -80,7 +81,8 @@ python3 tools/items.py --distill <导出.json>  # 官方物品表 → tools/item
 python3 tools/items.py --perks               # 武器 PERK 页 + 购物清单列 → tools/perks.json
 python3 tools/items.py --suggest [slug]      # 列出还没着色的物品专名与建议标记
 python3 tools/items.py --apply   [slug]      # 就地落进源稿，可重复跑
-python3 tools/items.py --builds              # 配装源稿的描述与注解自动着色，构建时自动跑
+python3 tools/items.py --builds              # 只给配装源稿的描述与注解着色
+python3 tools/items.py --normalize [slug]    # 按词表纠正全部源稿，构建时自动跑
 
 python3 tools/json2xlsx.py <抓取的.json>      # 还原成 xlsx，供核对与手改
 
@@ -278,7 +280,7 @@ git push
 身份认证 v2 本身就是 HTTP 接口，`fetch` 直打
 `https://<envId>.api.tcloudbasegateway.com`：`POST /auth/v1/signin` 带用户名密码
 拿令牌，`POST /auth/v1/token` 用 `refresh_token` 换新的。**不引 `@cloudbase/js-sdk`**
-——auth-only 入口 65 KB gzip、全量 136 KB，而整站首屏才 46 KB。
+——auth-only 入口 65 KB gzip、全量 136 KB，而整站首屏才 48 KB。
 
 **只有账号密码一条，没有自助注册。**账号由管理员在云开发控制台的「用户管理」页
 手工建（注册用户免费、不限量）。网关默认策略对任何自注册的注册用户都放行云函数，
@@ -443,9 +445,13 @@ gzip。省掉的那些由「**没有 `data-b` 的 `<tr>` 就是上一行 +1**」
 跨表接到上一张去；行组分界行（`|---|`）占一行却不出 `<tr>`，它后面那行也照旧带号。
 全站合计 +0.87% gzip。
 
-**切格规则有三份实现**：`convert-doc.py` 的 `split_cells()`、云函数的 `cellSpans()`、
-`edit.js` 的 `cellSpans()`（审核台挑陈旧稿时另有一份 `cellAt()`）。跨语言没法共用一份，
-所以拿全部真表格行三方对住，断言写在 scratchpad 里、从仓库那两份现取，不复制副本。
+**切格规则有六份实现**：`convert-doc.py` 的 `split_cells()`、云函数的 `cellSpans()`、
+`edit.js` 的 `cellSpans()`、`admin.js` 的 `cells()`、`items.py` 的 `row_title_end()`、
+`admin.js` 的 `titleEnd()`。跨语言没法共用一份，**它们也并不等价**——行首空白、缺末尾
+竖线、全角空格修剪、`}` 深度可否为负、`{` 的判据，五处各有分歧。当前语料全部规整所以
+撞不上（4562 行表格行里缺尾管 0、前导空白 0、全角空格贴边 0），**成立靠的是语料不是
+实现**。`check_quality.py` 的 `CellSplitting` 拿全部真表格行现跑三方对住，不用快照、
+不做 `trim()`；它断言的是"在当前语料上结果一致"，不是"实现等价"。
 
 **产出里的裸标签正则会被标记打断。**`vocab.py` 三处写着 `<tr>`、一处写着 `<h4>`，
 戴上 `data-b` 之后一条都匹配不上（带 `data-band` 的合并表其实早就匹配不上了）。
@@ -1608,7 +1614,9 @@ G3 钉住 `{act|…}` 的类定义。
 
 ## 前端性能约定
 
-站点是纯静态、零依赖。以神器模组页为例，首屏约 46 KB gzip（HTML 19K + site.css 10K + 本页样式表 3K + app.js 5K + 首个字重字体 10K）。别引框架或打包器——任何 runtime 都比整站资源还大。以下几条是已经落地的约定，改页面时保持住。
+站点是纯静态、零依赖。以神器模组页为例，首屏约 48 KB gzip（HTML 20K + site.css 8K + 本页样式表 1K + app.js 9K + 首个字重字体 10K）。别引框架或打包器——任何 runtime 都比整站资源还大。以下几条是已经落地的约定，改页面时保持住。
+
+**注释不上线，剥在部署那一步。**`site.css` 有 38% 的字符在 `/* */` 里，`app.js` 也差不多，而 `.css`/`.js` 的浏览器缓存只有 5 分钟——那些设计依据每次访问都要重发一遍。`deploy.py` 的 `stage_one()` 在复制进暂存目录时把块注释换成等量换行（行号因此不移，devtools 报的位置照旧对得上源稿），**源稿一个字不动**，本地 `npm start` 服务的仍是带注释的那一份。整站 `.css`/`.js` 因此从 824 KB gz 降到 692 KB，每页首屏省 37–41 KB。`//` 行注释一概不剥——`app.js` 里有 `'http://www.w3.org/2000/svg'`。**字符串字面量里冒出 `/*` 或 `*/` 的文件整个跳过、原样发**（`strippable()`）：`search.js` 与 `desc.js` 是从源稿生成的，正文里写一句「伤害 100/\*不含\*加成」那对括号就进了数据，正则会一路吃到下一个 `*/`，而吃完往往仍是合法 JS，语法闸门与页面都看不出来，只是搜不到东西。跳过而不是中止——剥注释是优化，不该有能力挡住发版。
 
 **公共版式放 `site.css`，不为共用另开文件。**`site.css` 每页都要下、且跨页共用一份缓存；页面样式表则是一页一份。共用的东西放前者，首访多几 KB，从第二页起每页省下更多（资料页的样式表因此从 6.6 KB 降到 2.9 KB）。再开一个 `table.css` 只会多一轮请求，省不出东西。
 
@@ -1674,21 +1682,28 @@ G3 钉住 `{act|…}` 的类定义。
 
 ## 验证
 
-仓库无测试框架，不要引入。验证靠三样：
+不引第三方测试框架（pytest、vitest 一概不装）。验证靠四样：
 
 1. **生成器自检 + `check_shell.py` + `check_terms.py`** — 结构、外壳、术语与着色的主闸门，见上。
-2. **headless Chrome 截图** — Chrome Beta 未安装，chrome-devtools MCP 不可用。用：
+   跑 `npm run build` 即全部执行。
+2. **`npm test`** — 两份标准库写的离线回归，跑 0.3 秒，排在 `ship.sh` 的构建之后、提交之前。
+   `tools/check_quality.py` 用 `unittest`，管部署闸门、同步删除的三方比、配装生成生命周期、
+   源稿自动纠正的幂等、切格三方一致；`tools/check_quality.cjs` 用 `node:assert` 加一份内存版
+   database 适配器，管云函数的事务原子边界。两份都不联网、不读令牌、只写独占临时目录。
+   **改 `deploy.py`、`sync.py` 或 `functions/api/` 之前先跑它**——那 13 条 `Deployment`
+   测试是动发布链时唯一的安全网。
+3. **headless Chrome 截图** — Chrome Beta 未安装，chrome-devtools MCP 不可用。用：
    ```bash
    ("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --disable-gpu \
      --hide-scrollbars --no-first-run --user-data-dir=<临时目录> --window-size=W,H \
      --screenshot=<out.png> "file://<绝对路径>" >/dev/null 2>&1 &)
    ```
    模组页有 163 张图，必须后台起进程再轮询产物，前台调用会超时。用 `sips -c H W --cropOffset Y X` 裁剪长图看局部。
-3. **JS 行为断言** — 在 scratchpad 写断言页（复制生成物 + 追加 `<script>`，结果写进 `<pre>`），用 `--dump-dom` 取回。断言页留在 scratchpad，不进仓库。
+4. **JS 行为断言** — 在 scratchpad 写断言页（复制生成物 + 追加 `<script>`，结果写进 `<pre>`），用 `--dump-dom` 取回。断言页留在 scratchpad，不进仓库。**要反复跑的断言不留在这里**，写进 `check_quality.py`——scratchpad 随 session 清掉，而它承诺的东西还写在这份文档里。
 
-**第 2、3 条起浏览器，两条红线**：
+**第 3、4 条起浏览器，两条红线**：
 
-- **用户明确授权才起**。默认只跑第 1 条闸门，把改动说清楚；需要看渲染效果就先问，得到「跑」再起进程。chrome-devtools MCP 同此规矩。
+- **用户明确授权才起**。默认只跑第 1、2 条闸门，把改动说清楚；需要看渲染效果就先问，得到「跑」再起进程。chrome-devtools MCP 同此规矩。
 - **拿到产物立刻收进程**。`--user-data-dir` 每次给一个独占的临时目录，收尾按这个目录精确回收，不误杀别的实例：
   ```bash
   pkill -9 -f "user-data-dir=<那个临时目录>"
