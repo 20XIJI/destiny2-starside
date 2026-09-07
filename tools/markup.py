@@ -172,6 +172,16 @@ def delta_bmarks(html):
     return BMARK.sub(one, html)
 
 
+def meta_of(md, key, required=True):
+    """头部「键：值」行的值。认键只有这一处，各生成器不另写裸正则。"""
+    hit = re.search(r'^%s：(.*)$' % key, md, re.M)
+    if hit is None:
+        if required:
+            die('源稿缺「%s：」一行' % key)
+        return ''
+    return hit.group(1).strip()
+
+
 def meta_line(keys):
     """「键：值」行的匹配式。键名固定，正文行不会被误认。
 

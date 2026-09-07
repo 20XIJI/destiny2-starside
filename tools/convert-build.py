@@ -622,10 +622,13 @@ def blocks_of(idx, mv, arts, md, ns=''):
     art = meta(md, '神器')
     mods = [item(idx, '神器', n, prefer, kind=art) for n in names(md, '模组')]
     o += ['<section class="block" id="%ssec-3">' % ns, '<h2 class="sect-label">神器模组</h2>']
-    if art not in arts:
+    # 源稿按 design.md 三节在汉字与拉丁之间补空格（NPA 斥力调节器），官方物品表
+    # 蒸馏出来的神器表没有那个空格，两侧都归一化才对得上。
+    table = {items.norm(n): p for n, p in arts.items()}
+    if items.norm(art) not in table:
         die('「神器：%s」不在神器表里。站内那一页的七个分节即是全部：%s'
             % (art, '、'.join(sorted(arts))))
-    o += row(group(art, mods, icon=arts[art]))
+    o += row(group(art, mods, icon=table[items.norm(art)]))
     o += ['</section>', '']
 
     # 护甲：主角行（异域护甲 + 套装）不拉满——它最多三格，拉满会让一格宽到 500px；

@@ -31,6 +31,7 @@
 """
 
 import glob
+import importlib.util
 import os
 import re
 import sys
@@ -327,6 +328,31 @@ def check_terms(files, bad):
                                % (rel, at_line(md, m.start()), word, hit[0], want))
 
 
+def armor_sets_tokens(bad, site):
+    """护甲套装页用到的 token。它走词表着色，源稿里没有 {token|…} 可扫，
+    token 全在生成器里：词表那一份由 merge() 并出来，另有三个写在 inline() 的
+    分支表上。从生成器现取，不在这里另存一份名单——从前这里用正则捞元组，
+    只捞得到 PAGE_TERMS 那 7 个，merge() 来的几十个与那三个分支一个都不算数。
+
+    在函数里 import：convert-armor-sets 自己 import check_terms，模块级会转圈。
+    """
+    gen = os.path.join(shell.ROOT, 'tools', 'convert-armor-sets.py')
+    if not os.path.exists(gen):
+        return set()          # 这棵树里没有那个生成器，也就没有那一页
+    spec = importlib.util.spec_from_file_location('convert_armor_sets', gen)
+    if spec is None or spec.loader is None:
+        markup.die('读不出 %s' % gen)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    used = {t for _, t in mod.GLOSSARY} | mod.INLINE_TOKENS
+    sheet = os.path.join(shell.ROOT, 'armor-sets', 'style.css')
+    if os.path.exists(sheet):
+        ok = classes_in(site) | classes_in(read('armor-sets/style.css'))
+        for t in sorted(used - ok):
+            bad.append('G3 tools/convert-armor-sets.py 会发 {%s|…}，样式表里没有这个类' % t)
+    return used
+
+
 def check_tokens(pairs, site, bad):
     used = set()
     for rel, ok in pairs:
@@ -336,8 +362,7 @@ def check_tokens(pairs, site, bad):
             if m.group(1) not in ok:
                 bad.append('G3 %s:%d 用了 {%s|…}，样式表里没有这个类'
                            % (rel, at_line(md, m.start()), m.group(1)))
-    # 护甲套装页走词表，token 写在生成器里
-    used |= set(re.findall(r"\('[^']+', '([\w-]+)'\)", read('tools/convert-armor-sets.py')))
+    used |= armor_sets_tokens(bad, site)
     # 只负责染色、别的什么都不做的单类规则一定是个 token；没人用就是死配置。
     for cls, (_, sole) in tint_classes(site).items():
         if sole and cls not in used:
@@ -393,7 +418,9 @@ def check_build_count(bad):
 # 神器模组页按各自的元素给了 12 处更细的着色，钉死反而是降级。
 # 元素机制名的归属同样是事实（取自各元素分支页的效果表），一并纳入反查——
 # 「冻结」着成 el-stasis 与 deb-stasis 渲染色相同，只有这里管得住。
-MANAGED = set(items.EL.values()) | {'exotic'} | set(items.MECH.values())
+# orb 也纳入：它是能量球与超能那一支金色，写不进异域装备名。神器模组页曾把
+# 「库尔之影」「故我在」「Vex 揭秘者」等 10 个异域名着成 orb，15 处无人报出。
+MANAGED = set(items.EL.values()) | {'exotic', 'orb'} | set(items.MECH.values())
 
 
 def check_items(files, bad):

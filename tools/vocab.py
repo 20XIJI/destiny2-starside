@@ -299,8 +299,8 @@ SLOTS = {
 
 
 def bare_kind(kind):
-    """分节标题去掉括注：「废墟石板 (异端)」→「废墟石板」。"""
-    return kind.split(' (')[0].strip()
+    """分节标题去掉括注：「废墟石板 （异端）」→「废墟石板」。"""
+    return kind.split(' （')[0].strip()
 
 
 # 消歧括注：源稿在名字后面写分节挑一条同名的（「隐士（冲锋枪）」）。
@@ -328,7 +328,7 @@ def pick(idx, name, slot, kind=None, prefer=''):
             tail, name = hit.group(1), name[:hit.start()]
     hits = [h for h in idx.get(name, []) if h['page'] in SLOTS[slot]]
     if kind is not None:
-        # 分节标题带括注时按括注前那一截比（神器模组页写「废墟石板 (异端)」），
+        # 分节标题带括注时按括注前那一截比（神器模组页写「废墟石板 （异端）」），
         # 括注是来源赛季，不是这件神器的名字。
         hits = [h for h in hits if bare_kind(h['kind']) == kind]
     if tail and hits:

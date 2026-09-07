@@ -153,6 +153,7 @@ GUARD = [
     '减速飞行',    # 射弹飞得慢，同上
     '落地减速',    # 手雷落地滚停，同上
     '准星悬停',    # 准星停在目标附近，不是缚丝的悬停
+    '权利的真相',  # 第七炽天使套装的 4 件效果名，不是异域火箭发射器「真相」
 ]
 
 
@@ -418,9 +419,18 @@ def row_title_end(line):
     return brk if 0 < brk < nxt else nxt + 1
 
 
+# 神器模组页也走显式 {token|文字}，一并铺色。护甲套装页不在内：它走词表着色，
+# 源稿是纯中文，落标记等于换掉那一页的着色路径（design.md「两条着色路径」）。
+EXTRA_PAGES = ['references/artifact-mods.md']
+
+
 def pages(slug=None):
     matched = False
-    for name in sorted(os.listdir(os.path.join(shell.ROOT, DOC_DIR))):
+    names = sorted(os.listdir(os.path.join(shell.ROOT, DOC_DIR)))
+    extra = [r for r in EXTRA_PAGES
+             if os.path.exists(os.path.join(shell.ROOT, r))]
+    for rel in ['%s/%s' % (DOC_DIR, n) for n in names] + extra:
+        name = os.path.basename(rel)
         # 更新日志是日志不是资料：它的条目名指向别的页面，句式与字数另有约定
         # （.claude/rules/pages.md「文案七条」），不跟着全站铺色。
         # 配色总览是站务页，正文里的术语是在讲颜色不是在讲机制。
@@ -429,7 +439,7 @@ def pages(slug=None):
         if slug is not None and name != slug + '.md':
             continue
         matched = True
-        yield '%s/%s' % (DOC_DIR, name)
+        yield rel
     if slug is not None and not matched:
         markup.die('没有可处理的资料源稿：%s；参数应为裸 slug，不含 .md 或路径' % slug)
 

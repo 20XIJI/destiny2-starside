@@ -85,6 +85,7 @@
 | {amp|amp} | --c-void | 首领生命值页 | 易伤列 |
 | {res|res} | --c-buff | 首领生命值页 | 减伤列 |
 | {sim|sim} | --c-note | dps | 模拟值 |
+| {term|term} | --c-term | armor-sets | 引号里的 buff 名 |
 | {sk-arc|sk-arc} | --c-arc | elements | 棱镜页共享技能的电弧列 |
 | {sk-stasis|sk-stasis} | --c-stasis | elements | 棱镜页共享技能的冰影列 |
 | {sk-void|sk-void} | --c-void | elements | 棱镜页共享技能的虚空列 |

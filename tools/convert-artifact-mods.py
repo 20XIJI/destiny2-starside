@@ -14,7 +14,7 @@ import re
 import sys
 
 import shell
-from markup import (Icons, blocks_at, bmark, die, eq, inline, meta_line, must,
+from markup import (Icons, blocks_at, bmark, die, eq, inline, meta_line, meta_of, must,
                     src_hash, text_of)
 
 SRC = os.path.join(shell.ROOT, 'references', 'artifact-mods.md')
@@ -22,7 +22,6 @@ OUT_DIR = os.path.join(shell.ROOT, 'artifact-mods')
 ICON_DIR = os.path.join(OUT_DIR, 'icons')
 
 PAGE_TITLE = '神器模组 · Starside'
-PAGE_DESC = '7 件神器、147 个模组的效果与数值，一级／二级／三级并排对照。'
 
 N_SECTIONS = 7
 N_MODS = 147
@@ -35,7 +34,8 @@ N_EAGER = 6
 TIERS = {'一级': 1, '二级': 2, '三级': 3}
 
 # 源稿里的「键：值」行。键名固定，正文行不会被误认。
-META_KEYS = ('副标题', '小标题', '标题', '徽章', '括注', '图标', '标签（站点补充）', '标签')
+META_KEYS = ('副标题', '描述', '更新', '页脚', '待测标记', '数据源', '鸣谢',
+             '小标题', '标题', '徽章', '括注', '图标', '标签（站点补充）', '标签')
 META_LINE = meta_line(META_KEYS)
 
 
@@ -79,6 +79,7 @@ def parse(md, icons):
     head = parts[0]
     page['sub'] = inline(must(re.search(r'^副标题：(.*)$', head, re.M),
                               '源稿开头缺「副标题：」').group(1).strip())
+    page['md'] = md          # 页面元信息在源稿头部，render() 现取
 
     # 行号一路带下去，供就地编辑反查源稿。re.split 删掉的 '## ' 不含换行、
     # '\n### ' 含一个，所以行数守恒，累加换行数即得下一处的行号；
@@ -168,7 +169,8 @@ def rows_of(mods):
 
 
 def render(page, digest=''):
-    o = [shell.head(PAGE_TITLE, PAGE_DESC, app_js=True),
+    md = page['md']
+    o = [shell.head(PAGE_TITLE, meta_of(md, '描述'), app_js=True),
          shell.nav('神器模组', toolbar={}),
          shell.page_head(page['sub']),
          # data-src 是这一篇在库里的 _id，就地编辑靠它找回源稿
@@ -220,8 +222,12 @@ def render(page, digest=''):
             o.append('</div>')
         o += ['</div>', '</section>']
 
+    src = meta_of(md, '数据源')
     o += ['</main>', '', shell.foot(
-        '2026.8.10', shell.unsure_note('[?]'), source=shell.COMPENDIUM_SRC)]
+        meta_of(md, '更新'),
+        meta_of(md, '页脚') + shell.unsure_note(meta_of(md, '待测标记')),
+        source=shell.COMPENDIUM_SRC if src == '是' else src,
+        thanks=meta_of(md, '鸣谢', required=False) or None)]
     return '\n'.join(o)
 
 

@@ -19,13 +19,13 @@ import sys
 from urllib.parse import quote
 
 import shell
-from markup import (IMG, LINK, Icons, bmark, die, inline, meta_line,
+from markup import (IMG, LINK, Icons, bmark, die, inline, meta_line, meta_of,
                     no_nested_span, plain, source_context, src_hash, text_of, whole_marker)
 
 SRC_DIR = os.path.join(shell.ROOT, 'references', 'docs')
 
 # 头部的「键：值」行。键名固定，正文行不会被误认。
-META_KEYS = ('描述', '更新', '页脚', '鸣谢', '数据源', '导航', '路径', '上级',
+META_KEYS = ('描述', '更新', '页脚', '待测标记', '鸣谢', '数据源', '导航', '路径', '上级',
              '列组', '互斥列组', '默认列组', '首屏图标', '此刻', '跳转分行',
              '图表', '标注', '默认曲线')
 META_LINE = meta_line(META_KEYS)
@@ -598,16 +598,6 @@ def render_blocks(chunk, scales=None, groups=None, marks=None, curves=None, up=0
     return o
 
 
-def meta_of(md, key, required=True):
-    """头部「键：值」行的值。整个脚本只在这里认键，不另写裸正则。"""
-    hit = re.search(r'^%s：(.*)$' % key, md, re.M)
-    if hit is None:
-        if required:
-            die('源稿缺「%s：」一行' % key)
-        return ''
-    return hit.group(1).strip()
-
-
 def flag_of(md, key):
     """布尔键只认「是」。写「否」当场报错，不静默当真——不需要就整行删掉。"""
     v = meta_of(md, key, required=False)
@@ -635,6 +625,7 @@ def render(md, slug):
 
     desc, stamp, foot = meta('描述'), meta('更新'), meta('页脚', required=False)
     thanks = meta('鸣谢', required=False)
+    mark = meta('待测标记', required=False)
     if not re.fullmatch(r'\d{4}\.\d{1,2}\.\d{1,2}', stamp):
         die('「更新：」要写成 YYYY.M.D，源稿写的是 %r' % stamp)
 
@@ -777,9 +768,13 @@ def render(md, slug):
     # 写别的值就是这一页自己的出处，二次加工那句由 shell.source_note() 接上。
     # 鸣谢只写人，且只写在该贡献者实际参与的页面上，不做全站铺开。
     src = meta('数据源', required=False)
+    # 待测值那句话全站只有 shell.unsure_note() 一处定义，标记形状按本页写的填。
+    first = inline(foot, rich=True) if foot else ''
+    if mark:
+        first += shell.unsure_note(mark)
     o += ['</main>', '',
           shell.foot(stamp,
-                     inline(foot, rich=True) if foot else '',
+                     first,
                      source=(shell.COMPENDIUM_SRC if src == '是'
                              else inline(src, rich=True) if src else None),
                      thanks=inline(thanks, rich=True) if thanks else None)]

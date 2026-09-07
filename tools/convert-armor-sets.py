@@ -25,14 +25,12 @@ import re
 import check_terms
 import items
 import shell
-from markup import (bmark, die, eq, loading_attr, no_nested_span, plain,
+from markup import (bmark, die, eq, loading_attr, meta_of, no_nested_span, plain,
                     src_hash, text_of)
 
 SRC = os.path.join(shell.ROOT, 'references', 'armor-sets.md')
 OUT_DIR = os.path.join(shell.ROOT, 'armor-sets')
 
-PAGE_TITLE = '护甲套装效果 · Starside'
-PAGE_DESC = '56 套护甲的 2 件 / 4 件套装效果、触发条件与数值，按目的地、行动、突袭、地牢分类。'
 
 # ── 结构断言 ──────────────────────────────────────────────────────────
 # 对不上即中止，不出文件。源稿增删条目时同步改这里，不要放宽断言。
@@ -182,14 +180,18 @@ def parse(md: str) -> list[Category]:
 # 顺序即优先级，改顺序就是改语义。
 
 def merge():
-    """全站术语（items.MECH 的元素机制 + check_terms.TERMS 的通用术语）+ 本页专有词。
+    """全站术语（items.load() 的物品专名与元素机制 + check_terms.TERMS 的通用
+    术语）+ 本页专有词。
 
     长词在前是匹配的硬要求（「威能弹药」要排在「弹药」之前），所以不靠手写顺序，
     按长度排一次——手写顺序在合并两份表之后必然出错。
     LOOSE 里的词不进：那几个同形的普通用法比术语用法还多（「恢复延迟」「恢复
-    140 生命值」），铺开会把动词染成术语。
+    140 生命值」），铺开会把动词染成术语。STOP 由 items.load() 自己滤过。
+    物品专名排在通用术语之前：同形时通用术语更该赢（「真相」在这一页是层数
+    增益名，不是那把异域火箭发射器）。
     """
-    merged = dict(items.MECH)
+    terms, _ = items.load()
+    merged = {w: tok for w, (tok, _cat) in terms.items()}
     merged.update({t[0]: t[1] for t in check_terms.TERMS if len(t) > 1 and t[1]})
     merged.update(dict(PAGE_TERMS))
     # LOOSE 最后减：两份表里都有「恢复」，先减再合会被后一份重新加回来，
@@ -204,8 +206,14 @@ GLOSSARY: list[tuple[str, str]] = merge()
 PAGE_WORDS = {w for w, _ in PAGE_TERMS}
 GLOSSARY_WORDS = [w for w, _ in GLOSSARY]
 
-_TERMS = '|'.join(re.escape(w) for w, _ in GLOSSARY)
+# 中英之间那个排版空格：表的键归一化过（库里没有空格），源稿按 design.md 三节
+# 补一个。拿键去字面匹配，「SUROS 政权」这类中英混排的名字一个都对不上。
+_TERMS = '|'.join(items.pattern(w) for w, _ in GLOSSARY)
 _TOKEN = {w: t for w, t in GLOSSARY}
+
+# inline() 的分支表自己发的三个 token，词表里没有。check_terms.py 的 G3 与 G7
+# 从这里取，不在那边另抄一份名单。
+INLINE_TOKENS = {'term', 'unsure', 'pvp'}
 
 INLINE = re.compile(
     r'(?P<strong>\*\*(?P<strong_t>.+?)\*\*)'
@@ -214,6 +222,9 @@ INLINE = re.compile(
     r'|(?P<unsure>\[\?[^\]]*\])'  # [?] [?%]：原作者标的待测值
     r'|(?P<pvp>\[[^\]]*\d[^\]]*\])'  # [10%]：方括号内是 PvP 数值
     r'|(?P<qm>[\d.]*\?%?)'  # +? 5? 0.5? x?：数值位上的待测标记
+    # 更长的专名整体屏蔽，里面的短词不再单独命中：正文复述效果名「权利的真相」时
+    # 「真相」不该单独染成那把异域火箭发射器的颜色。排在词表之前才拦得住。
+    r'|(?P<guard>' + '|'.join(re.escape(g) for g in items.GUARD) + r')'
     # 「非」与后面的术语构成一个复合术语（非首领战斗人员＝一类敌人，非超能＝一种状态），
     # 留在着色外面会让扫读的人读到反义。「除非」「而非」里的非不构词，用后顾排除。
     r'|(?P<term>(?:(?<![除而])非)?(?:' + _TERMS + r'))'
@@ -236,7 +247,7 @@ def inline(text: str) -> str:
         elif m.group('code') is not None:
             out.append('<code>%s</code>' % html.escape(m.group('code_t')))
         elif m.group('buff') is not None:
-            out.append('<span class="buff">%s</span>' % html.escape(m.group('buff_t')))
+            out.append('<span class="term">%s</span>' % html.escape(m.group('buff_t')))
             hits['“”'] = hits.get('“”', 0) + 1
         elif m.group('unsure') is not None or m.group('qm') is not None:
             out.append('<span class="unsure">%s</span>' % whole)
@@ -244,8 +255,10 @@ def inline(text: str) -> str:
         elif m.group('pvp') is not None:
             out.append('<span class="pvp">%s</span>' % whole)
             hits['[pvp]'] = hits.get('[pvp]', 0) + 1
+        elif m.group('guard') is not None:
+            out.append(whole)
         else:
-            word = m.group(0).removeprefix('非')  # 命中数记在词表里的词上
+            word = items.norm(m.group(0).removeprefix('非'))  # 命中数记在词表里的词上
             out.append('<span class="%s">%s</span>' % (_TOKEN[word], whole))
             hits[word] = hits.get(word, 0) + 1
     out.append(html.escape(text[pos:]))
@@ -278,16 +291,22 @@ def render_blocks(blocks: list) -> str:
     return ''.join(out)
 
 
-def render(cats: list[Category], digest: str = '') -> str:
+def render(cats: list[Category], md: str, digest: str = '') -> str:
+    # 页面元信息全在源稿头部，与 references/docs/ 那 39 篇同一套键。
+    # 改文案改 markdown，这里不留字面串。
+    m = re.match(r'^#\s+(.+)$', md.split('\n')[0])
+    if not m:
+        die('源稿第一行必须是「# 页面标题」')
+    title = m.group(1).strip()
     # 这一页其余部分用 ''.join 拼，外壳几块之间自己补换行
     parts = ['\n'.join([
-        shell.head(html.escape(PAGE_TITLE), html.escape(PAGE_DESC), app_js=True),
-        shell.nav('护甲套装效果', toolbar={
+        shell.head(html.escape('%s · %s' % (title, shell.SITE_NAME)),
+                   html.escape(meta_of(md, '描述')), app_js=True),
+        shell.nav(title, toolbar={
             'data-section': '.cat', 'data-item': '.set',
             'data-label': '.cat-head span', 'data-noun': '套装',
             'data-chip-label': '分类'}),
-        shell.page_head('护甲套装效果',
-                        '同一套护甲穿满 2 件与 4 件各给一条效果，两条同时生效。'),
+        shell.page_head(title, html.escape(meta_of(md, '导语'))),
         # data-src 是这一篇在库里的 _id，就地编辑靠它找回源稿
         '<main data-src="armor-sets" data-hash="%s">\n' % digest])]
     n_img = 0
@@ -332,12 +351,12 @@ def render(cats: list[Category], digest: str = '') -> str:
             parts.append('</div>\n')
             parts.append('</article>\n')
         parts.append('</section>\n')
-    # 方括号图例：效果正文里有 15 处 PvP 数值，而 parse() 从第一个 ## 起读，
-    # 源稿引言那句图例进不来。写在这里，与 exotic-weapon／exotic-armor／
-    # weapon-perks 三页源稿的「页脚：」逐字同句。
+    src = meta_of(md, '数据源')
     parts.append('</main>\n\n' + shell.foot(
-        '2026.8.30', '方括号内是 PvP 数值。' + shell.unsure_note('?'),
-        source=shell.COMPENDIUM_SRC, thanks='Flamia#5238 提供部分翻译与排版。'))
+        meta_of(md, '更新'),
+        html.escape(meta_of(md, '页脚')) + shell.unsure_note(meta_of(md, '待测标记')),
+        source=shell.COMPENDIUM_SRC if src == '是' else html.escape(src),
+        thanks=html.escape(meta_of(md, '鸣谢'))))
     return ''.join(parts)
 
 
@@ -375,11 +394,14 @@ def check(cats: list[Category], out: str) -> None:
     # 只查效果正文：套装名、来源、标签与效果名不走 inline()，那几处本来就素色。
     bodies = ''.join(re.findall(r'<div class="bonus-body">(.*?)</div>', out, re.S))
     naked = text_of(re.sub(r'<span class="[^"]*">.*?</span>', '', bodies, flags=re.S))
+    # GUARD 那几段是故意留素的更长专名，它们裹着的短词不算漏着色
+    for g in items.GUARD:
+        naked = naked.replace(g, '')
     left = sorted({w for w in GLOSSARY_WORDS if w in naked})
     if left:
         die('这些术语在正文里没着色：%s\n'
-            '  词表在 items.py 的 MECH（全站一份），这一页由 merge() 并进来；\n'
-            '  确实不该着色的（同形的普通用法）写进 items.py 的 LOOSE，带上依据。'
+            '  词表由 merge() 从 items.load() 与 check_terms.TERMS 并出来；\n'
+            '  同形的普通用法写进 items.py 的 LOOSE，更长的专名写进 GUARD，都带上依据。'
             % '、'.join(left))
 
     no_nested_span(out, '护甲套装页（检查 INLINE 的分支顺序）')
@@ -513,7 +535,7 @@ def main() -> None:
     else:
         attach_icons(cats)
 
-    out = render(cats, src_hash(md))
+    out = render(cats, md, src_hash(md))
     check(cats, out)
 
     os.makedirs(OUT_DIR, exist_ok=True)
