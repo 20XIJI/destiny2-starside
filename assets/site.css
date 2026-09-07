@@ -284,24 +284,28 @@ a { color: var(--bone); }
   font-weight: 600;
 }
 
-.site-nav .mark {
+/* 站标：三枚菱形两实一空，与 .rhombi 的「点亮枚数即档位」、favicon 同一套语言。
+   **几何一处定义，尺度由 --sig 给**：导航条上 6px，首页字标旁 15px。
+   box-sizing 全局是 border-box，加边框不改尺寸。 */
+.mark {
+  --sig: 6px;
   display: flex;
-  gap: 3px;
-  margin-right: 2px;
+  flex: none;
+  gap: calc(var(--sig) / 2);
 }
 
-/* 三枚菱形两实一空，与 .rhombi 的「点亮枚数即档位」同一套语言——站标因此不是
-   三个装饰点，是这套母题最小的一次露面。box-sizing 全局是 border-box，
-   加边框不改尺寸。 */
-.site-nav .mark i {
-  width: 6px;
-  height: 6px;
-  background: var(--bone-dim);
-  border: 1px solid var(--bone-dim);
+.mark i {
+  width: var(--sig);
+  height: var(--sig);
+  background: currentcolor;
+  border: 1px solid currentcolor;
   transform: rotate(45deg);
 }
 
-.site-nav .mark i:last-child { background: none; }
+/* 第三枚空心：三档里点亮两档，与档位轨读法一致 */
+.mark i:last-child { background: none; }
+
+.site-nav .mark { color: var(--bone-dim); margin-right: 2px; }
 
 .site-nav a {
   color: var(--bone);
@@ -1011,6 +1015,7 @@ body:has(.hero) {
    三条带自上而下：站务行 + 字标铭牌 + 一句说明 → 分隔线 → 搜索 → 分隔线 → 目录。
    搜索框居中因此是**那一条带自己的构图**，不再是两端对齐的版面里孤零零一个居中物件。 */
 .hero {
+  position: relative;              /* 徽记绝对定位在右半边 */
   max-width: 1500px;
   margin: 0 auto;
   padding: 88px 22px 24px;
@@ -1042,21 +1047,28 @@ body:has(.hero) {
       组 g2/g3 转的 ∓150° 正是三角侧边的斜率。
    3. **收拢态**的三角涂 transparent 而不是 --ink：那一态本就该看不见，涂实色会在
       背景刻线上盖出一块暗斑。 */
+/* 三职业徽记。**它是这一屏的主角，不是字标的配件。**
+   从前 font-size: 11px（整枚 154px）挤在字标与右上角那两条入口之间当填充物，
+   而这是全站最贵的一件手工活；QQ 群与更新日志移进下面那条搜索带之后，
+   右半边整个空出来给它。
+   **绝对定位、脱离字标那一行**：留在行里就得占纵向空间，而 align-items: stretch
+   会把铭牌那条竖线一起撑到比字标还长。
+   整枚的大小仍只由 font-size 一行定：容器 14em，最长的细线 15em。
+   四段过渡时长与 app.js 的 MARK_STEP 不在这里，改这个数不影响节拍。 */
 .hero-mark {
-  position: relative;
-  flex: none;
-  align-self: center;
+  position: absolute;
+  top: 50%;
+  right: 130px;
+  transform: translateY(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
-  /* 整枚的大小只由这一行定：容器 14em，最长的细线 15em */
-  font-size: 11px;
+  /* 16px → 整枚 224px 宽、最长的细线 240px。hero 高约 290px，再大一档
+     最外圈会顶出页面上缘被截掉。 */
+  font-size: 16px;
   width: 14em;
-  /* **不占纵向空间**：盒高留 0，四组零件靠 flex 的静态位置对称溢出。
-     占了高度就会把铭牌那条竖线（align-items: stretch）撑到比字标还长。 */
   height: 0;
-  /* 铭牌与右侧那两条入口之间的空当：两侧 auto 让它落在中间 */
-  margin: 0 auto;
+  margin: 0;
 }
 
 /* ── 每一段过渡有多长：由要去的那一态定 ──
@@ -1502,13 +1514,18 @@ body:has(.hero) {
   .hero-mark .line { transition: none; }
 }
 
+/* 搜索带的左端。带上原本只有居中的搜索框与右端的发电，左侧空着；
+   这两条是工具不是身份，从字标那一行挪下来，三件各据一端。
+   top 与 .pledge 同一个 21：两侧因此落在同一条基线上。 */
 .hero-util {
+  position: absolute;
+  left: 22px;
+  top: 21px;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  align-self: center;
+  align-items: flex-start;
   gap: 8px;
-  margin: 0 0 0 auto;
+  margin: 0;
   color: var(--bone-dim);
   font-family: var(--font-disp);
   font-size: 12.5px;
@@ -1581,6 +1598,15 @@ body:has(.hero) {
   gap: 24px;
 }
 
+/* 字标左边那枚站标：与 favicon、导航条、档位轨同一枚形状，这里是它最大的一次
+   露面。**站标接手识别度之后字距不必独扛**——原先 .26em 是唯一的处理手段，
+   那是公版做法；收到 .16em，锁定由「标 + 字」两件东西一起成立。 */
+.hero-sigil {
+  --sig: 15px;
+  align-self: center;
+  color: var(--bone);
+}
+
 .wordmark {
   margin: 0;
   color: var(--bone-hi);
@@ -1588,11 +1614,11 @@ body:has(.hero) {
   font-size: 74px;
   font-weight: 700;
   line-height: 1;
-  letter-spacing: .26em;
+  letter-spacing: .16em;
   text-transform: uppercase;
   /* 字距会在末字母后也补一个间隔，整体因此偏右，减回去。减掉之后盒子右缘正好
      落在末字母的右缘，上面那个 gap 才是真的 24px。 */
-  margin-right: -.26em;
+  margin-right: -.16em;
 }
 
 /* 铭牌：站名与署名两行。**竖线由 align-items: stretch 撑到字标那么高**，
@@ -2108,13 +2134,16 @@ body:has(.hero) {
   transition: background .18s ease, box-shadow .18s ease;
 }
 
-/* 左缘亮边：选中态指示 */
+/* 左缘亮边：**那一页所讲的东西在游戏里的颜色**。异域金、战斗人员红、神器青绿……
+   讲的东西没有游戏内编码时（配装、排行、攻略、站务）留骨白，「有色 / 无色」
+   因此是两档而不是「有 / 缺」。铺满 27 种色就成了彩虹装饰，正好否掉
+   design.md 第一条那个命题。取色在下面的 .k-* 一处。 */
 .entry::after {
   content: "";
   position: absolute;
   inset: 0 auto 0 0;
   width: 2px;
-  background: var(--c-arc);
+  background: var(--edge, var(--bone-dim));
   opacity: .38;
   transition: opacity .18s ease;
 }
@@ -2142,11 +2171,22 @@ body:has(.hero) {
 /* clip-path 把 outline 连带裁掉（实测完全不可见），焦点环改用内嵌环 */
 .entry:focus-visible {
   outline: none;
-  box-shadow: inset 0 0 0 2px var(--c-arc);
+  box-shadow: inset 0 0 0 2px var(--accent);
 }
 
 .entry:hover::after,
 .entry:focus-visible::after { opacity: 1; }
+
+/* 各页的编码归属。依据全部取自游戏自身：异域装备即金黄、战斗人员即红、
+   特殊弹药即绿、神器模组即青绿。查不到依据的页面不给色。 */
+.entries > li.k-perk { --edge: var(--c-perk); }
+.entries > li.k-charge { --edge: var(--c-charge); }
+.entries > li.k-exotic { --edge: var(--c-exotic); }
+.entries > li.k-prism { --edge: var(--c-prism); }
+.entries > li.k-artifact { --edge: var(--c-artifact); }
+.entries > li.k-enemy { --edge: var(--c-enemy); }
+.entries > li.k-buff { --edge: var(--c-buff); }
+.entries > li.k-ammo { --edge: var(--c-ammo-special); }
 
 /* 节点图标：六边形框 + 中心菱形，与档位轨、favicon 同一套母题 */
 .entry-node {
@@ -2167,19 +2207,8 @@ body:has(.hero) {
 
 .entry:hover .entry-node,
 .entry:focus-visible .entry-node {
-  color: var(--c-arc);
-  background: color-mix(in srgb, var(--c-arc) 9%, transparent);
-}
-
-.entry-kind {
-  display: block;
-  margin-bottom: 8px;
-  color: var(--bone-faint);
-  font-family: var(--font-disp);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: .26em;
-  text-transform: uppercase;
+  color: var(--edge, var(--bone-dim));
+  background: color-mix(in srgb, var(--edge, var(--bone-dim)) 9%, transparent);
 }
 
 /* **卡内最重的是标题。**原先 27px/700 的数值压过 22px/600 的标题，扫读一屏

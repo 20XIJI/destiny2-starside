@@ -1,6 +1,5 @@
 // 由 tools/build-terms.py 生成，不手改。审核台左栏的资料页树，以及配装的职业、类别与分支三张表。
 window.starsidePages = [
-  ["docs/rotation","轮换速查表","rotation/index.html","攻略与工具","","2026.8.30"],
   ["docs/ammo","弹药生成机制","ammo/index.html","机制","","2026.8.25"],
   ["docs/buff-debuffs","增伤 & 易伤","buff-debuffs/index.html","机制","","2026.8.30"],
   ["docs/combatant-scalars","战斗人员倍率","combatant-scalars/index.html","机制","","2026.8.14"],
@@ -29,6 +28,7 @@ window.starsidePages = [
   ["docs/dps","DPS 排行","dps/index.html","终局分析","","2026.8.25"],
   ["docs/pve-farming","PVE 终局刷取指南","pve-farming/index.html","终局分析","","2026.9.6"],
   ["docs/raid-guides","Raid 攻略","raid-guides/index.html","终局分析","","2026.8.30"],
+  ["docs/rotation","轮换速查表","rotation/index.html","终局分析","","2026.8.30"],
   ["docs/skill-damage","技能伤害排行","skill-damage/index.html","终局分析","","2026.8.30"],
   ["docs/swap-dps","切枪 DPS 排行","swap-dps/index.html","终局分析","","2026.8.30"],
   ["docs/crafting","锻造武器来源","crafting/index.html","终局分析","docs/pve-farming","2026.8.30"],
