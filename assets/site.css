@@ -244,6 +244,23 @@ a { color: var(--bone); }
   outline-offset: 2px;
 }
 
+/* **视觉上收起，但留在无障碍树里。**折线图与轮换轮盘建完之后要把源表收起来，
+   用 hidden 会连无障碍树一起摘掉——折线图 201 行坐标、轮换表 5×3 的副本顺序
+   因此对屏幕阅读器消失，开着 JS 反而比不开少东西。design.md 五节那条「无 JS 时
+   全部可读」要配一条对称的：有 JS 时也不比无 JS 少。
+
+   **由 app.js 的 tuck() 套在外包的一层 div 上，不套在 <table> 自己身上。**表的
+   width / height 被当成最小值，1px 收不动它，实测仍是 245×8037 的盒子撑出横向溢出。
+   clip-path 而不是 display: none / visibility: hidden——后两者同样出树。 */
+.off-screen {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* app.js 靠 hidden 属性做检索过滤。条目本身是 grid / flex，组件规则又排在
    本文件之后，所以这里必须 !important——否则每个组件页都要重述一遍。 */
 [hidden] { display: none !important; }

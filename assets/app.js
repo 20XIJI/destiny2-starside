@@ -41,6 +41,19 @@
   /* resize 一帧只跑一次。measure() 读顶栏高度、再往 :root 写自定义属性——写根变量
      让整棵树的样式失效，下一个 resize 事件里那次读因此必然触发全文档强制同步布局；
      watch() 还要销毁并重建观察者。拖窗口每秒几十次，合并到一帧即可。 */
+  /* 图建好之后把源表收起来。**不用 hidden**：那把表从无障碍树里一并摘掉了，
+     屏幕阅读器只剩一句 aria-label，折线图 201 行坐标与轮换表的副本顺序全没了——
+     开着 JS 反而比不开少东西。
+
+     **收在外包的一层 div 上，不收在 <table> 自己身上。**表的 width / height 被当成
+     最小值，1px 收不动它：实测仍是 245×8037 的盒子，撑出横向溢出。 */
+  function tuck(table) {
+    var box = document.createElement('div');
+    box.className = 'off-screen';
+    table.parentNode.insertBefore(box, table);
+    box.appendChild(table);
+  }
+
   function onResize(fn) {
     var queued = false;
     addEventListener('resize', function () {
@@ -310,7 +323,7 @@
     });
     fig.appendChild(legend);
     table.parentNode.insertBefore(fig, table);
-    table.hidden = true;
+    tuck(table);
 
     var showMarks = true, pins = [], hov = null;
 
@@ -470,7 +483,7 @@
       + '<button type="button" class="chip" data-go="0">本周</button>'
       + '<button type="button" class="chip" data-go="1">下一周</button></div>';
     table.parentNode.insertBefore(box, table);
-    table.hidden = true;
+    tuck(table);
 
     var stage = box.querySelector('.rota-stage');
     var pool = {};

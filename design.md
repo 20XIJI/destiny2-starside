@@ -209,6 +209,7 @@ Starside 的视觉与排版规范。新增页面、改样式、定颜色之前�
 - `:focus-visible` 与 `prefers-reduced-motion` 属于质量底线，保留。`clip-path` 会把 `outline` 连带裁掉，那种位置改用内嵌 `box-shadow` 画焦点环。
 - **`content-visibility: auto` 不能套在含 sticky 后代的元素上。**它带 paint containment，会把内部的 sticky 裁在自己的盒子里，跟着滚就没了。配装合集页因此套在 `.set-one` 上而不是 `.set-wrap`——后者含着 sticky 的左栏目录。
 - **一页里几套并列的内容，默认只显一套时那个「只显一套」由 JS 加载时施加，不写进 HTML。**与列组页、折线图页同一条：无 JS 时全部可读。配装合集页的主从视图就是这么做的，竖排是它的降级形态而不是另一套 DOM。
+- **对称的一条：有 JS 时也不比无 JS 少。**折线图与轮换轮盘建好之后要把源表收起来，用 `hidden` 会连无障碍树一起摘掉——201 行坐标与副本顺序对屏幕阅读器消失，开着 JS 反而比不开少东西。收起走 `app.js` 的 `tuck()`，把表包进一层 `.off-screen`，视觉上没有、无障碍树里照旧。**包在外层 div 上，不套在 `<table>` 自己身上**：表的 `width` / `height` 被当成最小值，1px 收不动它，实测仍是 245×8037 的盒子撑出横向溢出。
 
 ---
 
