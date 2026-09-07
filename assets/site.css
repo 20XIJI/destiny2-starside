@@ -2143,8 +2143,11 @@ body:has(.hero) {
   position: absolute;
   inset: 0 auto 0 0;
   width: 2px;
-  background: var(--edge, var(--bone-dim));
-  opacity: .38;
+  /* **两批差的是形，不是亮度。**有编码的那批是整条实色——游戏说了它是什么颜色，
+     就一直亮到底；没有编码的那批走一道由上而下渐隐的骨白，读作刻痕而不是
+     「有色的暗一档版本」，后者看着像缺了。取色由 .k-* 给，缺省即渐隐那一种。 */
+  background: var(--edge, linear-gradient(var(--bone), transparent));
+  opacity: var(--edge-a, .7);
   transition: opacity .18s ease;
 }
 
@@ -2179,14 +2182,14 @@ body:has(.hero) {
 
 /* 各页的编码归属。依据全部取自游戏自身：异域装备即金黄、战斗人员即红、
    特殊弹药即绿、神器模组即青绿。查不到依据的页面不给色。 */
-.entries > li.k-perk { --edge: var(--c-perk); }
-.entries > li.k-charge { --edge: var(--c-charge); }
-.entries > li.k-exotic { --edge: var(--c-exotic); }
-.entries > li.k-prism { --edge: var(--c-prism); }
-.entries > li.k-artifact { --edge: var(--c-artifact); }
-.entries > li.k-enemy { --edge: var(--c-enemy); }
-.entries > li.k-buff { --edge: var(--c-buff); }
-.entries > li.k-ammo { --edge: var(--c-ammo-special); }
+.entries > li.k-perk { --edge: var(--c-perk); --edge-a: .38; }
+.entries > li.k-charge { --edge: var(--c-charge); --edge-a: .38; }
+.entries > li.k-exotic { --edge: var(--c-exotic); --edge-a: .38; }
+.entries > li.k-prism { --edge: var(--c-prism); --edge-a: .38; }
+.entries > li.k-artifact { --edge: var(--c-artifact); --edge-a: .38; }
+.entries > li.k-enemy { --edge: var(--c-enemy); --edge-a: .38; }
+.entries > li.k-buff { --edge: var(--c-buff); --edge-a: .38; }
+.entries > li.k-ammo { --edge: var(--c-ammo-special); --edge-a: .38; }
 
 /* 节点图标：六边形框 + 中心菱形，与档位轨、favicon 同一套母题 */
 .entry-node {
