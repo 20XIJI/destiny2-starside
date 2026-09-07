@@ -273,7 +273,7 @@ def distill(src):
 # perk 属于 sandbox 条目，typeName 分不出「异域装备自带」与别的特性。真相在
 # exotic-armor / exotic-weapon 两页的 PERK 列上，所以现扫那两页，不另存副本。
 # 着 exotic 而不是 perk：site.css 的 --c-exotic 注释写着「专属 Perk 名同族」，
-# 两者渲染色相同，而 {perk|…} 按 CLAUDE.md 是整格排版标记，不是行内着色 token。
+# 两者渲染色相同，而 {perk|…} 按 .claude/rules/pages.md 是整格排版标记，不是行内着色 token。
 PERK_DOCS = ('exotic-armor.md', 'exotic-weapon.md')
 PERK_RE = re.compile(r'\{perk\|!\[\]\([^)]*\)\\\\([^}|]*)\}')
 
@@ -409,7 +409,7 @@ def row_title_end(line):
     nxt = separators[0] if separators else -1
     if nxt < 0:
         return 0
-    # 首格留空即向上合并（CLAUDE.md 的源稿方言），这一行的身份在第二格。
+    # 首格留空即向上合并（.claude/rules/pages.md 的源稿方言），这一行的身份在第二格。
     if not line[1:nxt].strip():
         nxt = separators[1] if len(separators) > 1 else -1
         if nxt < 0:
@@ -422,7 +422,7 @@ def pages(slug=None):
     matched = False
     for name in sorted(os.listdir(os.path.join(shell.ROOT, DOC_DIR))):
         # 更新日志是日志不是资料：它的条目名指向别的页面，句式与字数另有约定
-        # （CLAUDE.md「文案七条」），不跟着全站铺色。
+        # （.claude/rules/pages.md「文案七条」），不跟着全站铺色。
         # 配色总览是站务页，正文里的术语是在讲颜色不是在讲机制。
         if not name.endswith('.md') or name in ('changelog.md', 'palette.md'):
             continue

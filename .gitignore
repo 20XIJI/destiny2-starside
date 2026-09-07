@@ -157,3 +157,6 @@ references/*
 # Python 字节码缓存（tools/ 下的生成器一跑就有）
 __pycache__/
 *.pyc
+
+# Claude Code 的运行时锁文件。.claude/rules/ 是子系统手册，照常入库。
+.claude/scheduled_tasks.lock
