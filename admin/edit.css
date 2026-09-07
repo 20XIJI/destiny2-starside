@@ -3,7 +3,7 @@
    **不挂 --accent**：它是逐页覆盖的（护甲模组页是金、增益减益页是紫、配装页按
    分支六种），遮罩是站点工具，得在三十个页面上长一个样。
 
-   三档涂色一律 17% alpha 的背景涂，判据按 design.md 的 ΔE：与纯底 16.5–20.9、
+   两档涂色一律 17% alpha 的背景涂，判据按 design.md 的 ΔE：与纯底 16.5–20.9、
    与交替行 16.3–20.9，压在上面的正文对比 12+、八档色阶那些文字最差 5.71，都在
    AA 之上。12% 在交替行上看不清，22% 会把档位文字压到 4.95、余量太薄。
    避开红与绿：红撞 --c-health 且与洋红 ΔE 6.9，绿与青 ΔE 11.3，两对都视作同色。
@@ -11,7 +11,6 @@
 :root {
   --se-wait: #ffbb482b;   /* 待审 · 琥珀 */
   --se-pass: #4fd6e02b;   /* 已通过，等着上站 · 青 */
-  --se-bad: #d9448c2b;    /* 冲突 · 洋红 */
 }
 
 /* 可改的格：**悬停才现虚线**，常驻会让整页糊成一张网格纸。 */
@@ -65,9 +64,8 @@ th > .se-was { display: block; margin: 2px 0 0; }
   z-index: 50;
   width: min(520px, calc(100vw - 16px));
   padding: 10px 12px;
-  border: 1px solid var(--hair-lit);
+  border: 1px solid var(--bone-faint);
   background: var(--ink-lift);
-  box-shadow: 0 8px 28px #0008;
 }
 
 .se-where {
@@ -90,7 +88,7 @@ th > .se-was { display: block; margin: 2px 0 0; }
   line-height: 1.7;
   resize: vertical;
 }
-.se-box textarea:focus { outline: 2px solid var(--hair-lit); outline-offset: -1px; }
+.se-box textarea:focus-visible { outline-offset: -1px; }
 
 /* 芯片用真的 site.css 类渲染——--c-orb 与 --c-stack 渲染色相同，靠名字分辨，
    所以芯片上写的就是 token 名。 */

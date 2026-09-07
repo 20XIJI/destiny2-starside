@@ -3,8 +3,10 @@
    这一页由 tools/convert-doc.py 从 references/docs/skill-damage.md 生成，
    改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
 
-/* 宽表那一档（design.md 四节）：八列里两列装长句（配置条件、伤害构成），
-   其余六列是短数值。--min 与首领生命值、切枪 DPS 同档。 */
+/* 主档之外的一档（design.md 四节）：七列里两列钉死 19em + 15em 装长句，
+   其余是短数值。--min 与首领生命值、切枪 DPS 同档。
+   **待复核**：同为七八列的 boss-hp 走 1060，这一页多出 120px 没有推导；
+   并回 1060 会不会把两列长句撑高一行，要看真实渲染。 */
 :root { --wrap: 1180px; --min: 1104px; }
 
 /* 表前的说明按阅读宽度收窄，不跟着表的版心放宽（design.md 四节） */

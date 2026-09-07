@@ -61,7 +61,7 @@
   font-family: var(--font-cn);
   font-size: 11px;
   letter-spacing: .1em;
-  text-anchor: end;
+  text-anchor: middle;
 }
 
 /* 两条曲线。标准那条走 --c-term，**不是新渲染色**：那正是「不属于任何元素的游戏

@@ -31,7 +31,8 @@
   font-family: var(--font-disp);
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: .24em;
+  /* 七个取值全是纯中文（「目的地」「先锋行动」），走中文那档字距。 */
+  letter-spacing: .12em;
   background: var(--ink-lift);
   border-bottom: 1px solid var(--hair-lit);
 }

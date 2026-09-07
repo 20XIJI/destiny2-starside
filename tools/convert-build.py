@@ -906,7 +906,7 @@ def like_box(season, slug, button):
     if not button:
         return '<span class="likes" data-like="%s"></span>' % at
     return ('<button class="like" type="button" data-like="%s" aria-pressed="false">'
-            '<span aria-hidden="true">\u2665</span> <b></b></button>' % at)
+            '<span aria-hidden="true">\u2665\ufe0e</span> <b></b></button>' % at)
 
 
 SITE_SECTION = '配装推荐'

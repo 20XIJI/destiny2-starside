@@ -2,7 +2,7 @@
    sheets 显式引它，不按层数推——每套配装各建一个 style.css 只会是空文件。
 
    版心走 1060px 那一档（design.md 第四节的「宽表」，不为这一页新开第四个数）。
-   页面由九行拉满版心的面板组成，每一行的左右缘都落在同一条垂直线上；1500px 下
+   页面由六行拉满版心的面板组成，每一行的左右缘都落在同一条垂直线上；1500px 下
    一行只有四十来件装备，右侧会拖出一截空白，行与行之间反而对不上。 */
 :root {
   --wrap: 1060px;
@@ -209,7 +209,7 @@ a.who:hover { color: var(--accent); }
   border: 1px solid var(--hair);
 }
 
-/* 分节间距比资料页收一档：资料页靠大留白分章，这一页九行面板本身就有边框与
+/* 分节间距比资料页收一档：资料页靠大留白分章，这一页六行面板本身就有边框与
    内边距，40–64px 会把职业与武器两段扯断成两屏。行距已由面板自己撑开，这一档
    不跟着视口伸缩。 */
 .block { margin-bottom: 20px; }
@@ -660,7 +660,7 @@ body:has(.entries) .toolbar {
 .entries .entry .tags {
   gap: 4px;
   margin: 0;
-  max-height: calc(2 * 21px + 4px);
+  max-height: calc(2 * 22.5px + 4px);
   overflow: hidden;
 }
 
@@ -688,7 +688,8 @@ body:has(.entries) .toolbar {
   letter-spacing: .08em;
 }
 
-.entry-foot .likes:not(:empty)::before { content: "\2665 "; }
+/* U+FE0E 钉死文字呈现：不补的话部分平台落到 emoji 字体，渲染成彩色红心。 */
+.entry-foot .likes:not(:empty)::before { content: "\2665\FE0E "; }
 
 
 /* ── 页头右上那两枚 ─────────────────────────────────────────────────
@@ -756,7 +757,7 @@ body:has(.entries) .toolbar {
   gap: 10px;
   margin-top: 20px;
   padding: 11px 16px;
-  background: var(--tint-3), var(--ink-lift);
+  background: linear-gradient(var(--tint-3), var(--tint-3)), var(--ink-lift);
   border: 1px solid var(--bone-faint);
   border-top: 2px solid var(--accent);
 }

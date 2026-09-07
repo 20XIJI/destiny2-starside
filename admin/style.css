@@ -133,7 +133,6 @@ details > pre {
   letter-spacing: .06em;
   white-space: nowrap;
 }
-.acts .chip[aria-current] { border-color: var(--accent); color: var(--bone-hi); }
 /* 通过与列表上【通过】那枚状态标同色（.rows .flag.pass）——行上写着绿字，
    按钮也是绿的，同一套词汇。**不用 --accent**：在 .acts 里它已经占了
    「当前选中」那一条，拿来标通过会读成这枚被选中了。
@@ -166,7 +165,7 @@ details > pre {
 .rows > .fold .lede { margin: 0; }
 .rows > [aria-expanded] { border-left-color: var(--accent); background: var(--row-hover); }
 
-/* 填表页是 1060px 的九行版面，套在 1100px 的版心里两侧只剩 20px，横向就挤没了。
+/* 填表页是 1060px 的六行版面，套在 1100px 的版心里两侧只剩 20px，横向就挤没了。
    载着它的那一屏放宽一档，够它加两侧留白即可——1500 那一档留白太阔，那是卡片
    目录的宽度。按页面特征限定，不写在 :root 上（与 builds/style.css 给索引页放宽
    同一种写法）。 */

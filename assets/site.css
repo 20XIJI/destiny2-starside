@@ -664,12 +664,15 @@ main {
 
 .block:last-child { margin-bottom: 0; }
 
-/* 分节标题比站点默认再重一档：资料页靠标题分章，不靠并排结构 */
+/* 分节标题比站点默认再重一档：资料页靠标题分章，不靠并排结构。
+   **重的是字号与亮度，不是字距。**这里的 502 个标题有 477 个是纯中文
+   （「动能武器」「全局易伤」），拉丁那档字距会把它们撑散；剩下 12 个混排的
+   （「武器 Perk」「PvE 冷却」）仍要一点字距，所以收到基类 .2em 封顶之内。 */
 .block > .sect-label {
   margin-bottom: 20px;
   color: var(--bone);
   font-size: 12px;
-  letter-spacing: .24em;
+  letter-spacing: .14em;
 }
 
 .block p {
@@ -2240,13 +2243,14 @@ body:has(.hero) {
 
 .entry-meta div:first-child { border-left: 0; padding-left: 0; }
 
+/* 38 个字段名里 37 个是纯中文（「之灵」「修改器」），走中文那档字距；
+   唯一的拉丁「PERK」源稿里本来就是大写，uppercase 是空操作，不写。 */
 .entry-meta dt {
   color: var(--bone-faint);
   font-family: var(--font-disp);
   font-size: 10px;
   font-weight: 600;
-  letter-spacing: .22em;
-  text-transform: uppercase;
+  letter-spacing: .12em;
 }
 
 .entry-meta dd {

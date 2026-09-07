@@ -61,8 +61,8 @@ main { padding: 0 22px clamp(40px, 5vw, 72px); }
   font-family: var(--font-disp);
   font-size: 10px;
   font-weight: 600;
-  letter-spacing: .28em;
-  text-transform: uppercase;
+  /* 纯中文（「使用限制」），走中文那档字距；uppercase 对中文是空操作，不写。 */
+  letter-spacing: .12em;
 }
 
 .notice-body p {
