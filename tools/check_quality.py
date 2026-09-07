@@ -14,6 +14,7 @@ import io
 import json
 import os
 from pathlib import Path
+import re
 import socket
 import subprocess
 import sys
@@ -195,6 +196,41 @@ class CellSplitting(unittest.TestCase):
     def test_the_scan_actually_found_the_corpus(self):
         # 语料挪走或者上面的判据写错时，前三条会变成"零行全过"的空转。
         self.assertGreater(sum(1 for _ in self.rows()), 4000)
+
+
+
+class ArtifactPicker(unittest.TestCase):
+    """填表页挑神器模组，靠 form.js 的 bare() 把分节标题「废墟石板 （异端）」切成
+    神器名。切分符号与 vocab.bare_kind 是两份实现，一次改一处就会错开：
+    七个神器格全部列不出候选，而页面照常渲染、三道闸门全绿。
+
+    所以这里拿 form.js 真正在用的那个符号去切真正生成出来的词表，断言七件神器
+    各自收得到自己那 21 枚模组。
+    """
+
+    ROOT = TOOLS.parent
+    VOCAB = ROOT / 'builds' / 'vocab.js'
+
+    @staticmethod
+    def rows(text, key):
+        # 每份列表恰好占一行，末尾那个逗号只有非最后一份才有。
+        head = '"%s":[' % key
+        start = text.index(head) + len(head) - 1
+        return json.loads(text[start:text.index('\n', start)].rstrip(','))
+
+    def test_every_artifact_collects_its_own_mods(self):
+        form = (self.ROOT / 'builds' / 'new' / 'form.js').read_text(encoding='utf-8')
+        found = re.search(r"function bare\(kind\).*?split\('([^']*)'\)", form)
+        self.assertTrue(found, 'form.js 里找不到 bare() 的切分符号')
+        sep = found.group(1) if found else ''
+        vocab = self.VOCAB.read_text(encoding='utf-8')
+        mods = self.rows(vocab, '神器')
+        self.assertGreater(len(mods), 100, '神器模组词表是空的，先跑一次 npm run build')
+        for name, *_ in self.rows(vocab, '神器本体'):
+            hit = [m for m in mods if m[1].split(sep)[0].strip() == name]
+            self.assertTrue(hit, '填表页选中「%s」之后一枚模组都列不出来：'
+                                 'form.js 的 bare() 按 %r 切，词表里的分节是 %r'
+                            % (name, sep, mods[0][1]))
 
 
 class Deployment(Isolated):

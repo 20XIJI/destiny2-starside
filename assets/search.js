@@ -4146,6 +4146,7 @@ window.starsideIndex = [
 {"u":"builds/s29/q01swvbe-titan/index.html","t":"棱镜泰坦pvp meta 配装 · 配装推荐","d":""},
 {"u":"builds/s29/q9y0mpko-titan/index.html","t":"四码头 高阶暴君 · 配装推荐","d":""},
 {"u":"builds/s29/qz9gs029-warlock/index.html","t":"虚无镣铐/反转手虚空术 · 配装推荐","d":""},
+{"u":"builds/s29/rnoxx0b1-warlock/index.html","t":"宝宝术 · 配装推荐","d":""},
 {"u":"builds/s29/s5imk2yw-hunter/index.html","t":"虚空猎pvp · 配装推荐","d":""},
 {"u":"builds/s29/tniihk60-warlock/index.html","t":"虚式·茈 五条悟虚空术士 · 配装推荐","d":""},
 {"u":"builds/s29/w0q7ss18-hunter/index.html","t":"混乱裁决火刀猎 · 配装推荐","d":""},

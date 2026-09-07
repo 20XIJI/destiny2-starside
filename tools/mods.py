@@ -29,6 +29,7 @@ import subprocess
 import sys
 import urllib.request
 
+import items
 import shell
 import vocab
 from markup import die, img_size
@@ -147,9 +148,14 @@ def distill(path):
 
 
 def arts_of():
-    """站内神器模组页的七个分节就是七件神器。源稿即清单，不另存一份名单——
-    官方物品表里躺着二十件历代神器，按名单硬筛会在换季时悄悄漏掉新的那一件。"""
-    return {vocab.bare_kind(e['kind']) for e in vocab.scan_page('artifact-mods')}
+    """站内神器模组页的七个分节就是七件神器，{归一化的名字: 站内写法}。源稿即清单，
+    不另存一份名单——官方物品表里躺着二十件历代神器，按名单硬筛会在换季时悄悄
+    漏掉新的那一件。
+
+    站内按 design.md 三节在汉字与拉丁之间写排版空格（NPA 斥力调节器），官方物品表
+    里没有，所以键归一化、值留站内那个写法。"""
+    return {items.norm(vocab.bare_kind(e['kind'])): vocab.bare_kind(e['kind'])
+            for e in vocab.scan_page('artifact-mods')}
 
 
 def pull(path, type_zh, out_path, want, keep=None):
@@ -164,21 +170,23 @@ def pull(path, type_zh, out_path, want, keep=None):
         with open(out_path, encoding='utf-8') as f:
             old = json.load(f)
     with open(path, encoding='utf-8') as f:
-        items = json.load(f)['items']
+        table_in = json.load(f)['items']
     table = {}
-    for v in items.values():
+    for v in table_in.values():
         if v.get('typeName_zh') != type_zh or not v.get('name_zh'):
             continue
-        if keep is not None and v['name_zh'] not in keep:
+        if keep is not None and items.norm(v['name_zh']) not in keep:
             continue
-        name, url = v['name_zh'], v.get('icon', '')
+        # 表里存站内那个写法：配装源稿与填表页的词表都按站内的名字查这张表。
+        name = keep[items.norm(v['name_zh'])] if keep is not None else v['name_zh']
+        url = v.get('icon', '')
         if not url:
             die('%s 没有图标地址' % name)
         was = old.get(name, {})
         table.setdefault(name, {'url': url,
                                 'icon': was.get('icon', '') if was.get('url') == url else ''})
     if len(table) != want:
-        missing = sorted(set(keep or ()) - set(table))
+        missing = sorted(set((keep or {}).values()) - set(table))
         die('「%s」应有 %d 条，实际 %d 条%s'
             % (type_zh, want, len(table),
                '，官方物品表里找不到：' + '、'.join(missing) if missing

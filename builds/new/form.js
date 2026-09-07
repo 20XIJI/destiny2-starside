@@ -84,7 +84,9 @@
   // 都是这个顺序），不另定一个。
   var ELEM_ORDER = Object.keys(BRANCH).map(function (n) { return 'elements/' + BRANCH[n]; });
 
-  function bare(kind) { return String(kind || '').split(' (')[0].trim(); }
+  // 括注是全角，与 vocab.bare_kind 切的是同一个符号：切不一致时神器模组那一格
+  // 永远列不出候选，而页面与闸门都不报错。check_quality.py 的 ArtifactPicker 钉住。
+  function bare(kind) { return String(kind || '').split(' （')[0].trim(); }
 
   /* 候选行右下角那一行小字。元素页上的条目标它属于哪个子职业——一个棱镜配装的
      碎片可以来自六页中的任何一页，「碎片」两个字每行重复一遍没有信息量。
@@ -92,7 +94,7 @@
      其余槽位标分节名：武器类别、护甲部位、异域的职业，都是要分辨的信息。 */
   function tag(row) {
     // 神器模组标档位：选择器按神器盘摆成 7 列 × 3 行，那一行小字说的就是「几级」。
-    // 分节名（「废墟石板 (异端)」）在这里每行重复一遍没有信息量，神器已经选定了。
+    // 分节名（「废墟石板 （异端）」）在这里每行重复一遍没有信息量，神器已经选定了。
     if (row[6]) return TIER_CN[Number(row[6].split(',')[1])] || '';
     var m = /^elements\/([a-z]+)$/.exec(row[2] || '');
     return m && ELEM_CN[m[1]] ? ELEM_CN[m[1]] : bare(row[1]);
