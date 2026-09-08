@@ -32,7 +32,7 @@
 <h1>武器框架</h1>
 </header>
 
-<main data-src="docs/weapon-frames" data-hash="b658519f3af526d41e5ab92af351af2aad87b4f6">
+<main data-src="docs/weapon-frames" data-hash="e62d40f7a094866b97f7211829b3c377656d5710">
 <section class="block" id="sec-1">
 <h2 class="sect-label" data-b="18">全部框架</h2>
 <p data-b="2">一行是一个框架。默认显示身份、基础数值、评分与注解四组列，其余数值按组收在工具条上，点开即并入表内。</p>
@@ -213,19 +213,19 @@
 <dd data-b="1">用来测射速的那把样本武器的弹匣容量。</dd>
 <dt data-b="2">优化弹匣</dt>
 <dd data-b="1">挂强化<span class="perk">备用弹匣</span>、不挂弹匣 Perk 时的实际弹匣容量。</dd>
-<dt data-b="2">基础填装</dt>
-<dd data-b="1">一个弹匣的末发到下一个弹匣首发之间的时间，按 100 武器属性加一个填装器模组计，单位秒。</dd>
-<dt data-b="2">优化填装</dt>
-<dd data-b="1">同一段时间改按月神步力场计。</dd>
+</dl>
+<p data-b="2+1">基础填装<br>一个弹匣的末发到下一个弹匣首发之间的时间，以 100 武器属性加一个填装模组为基准，单位为秒。</p>
+<p data-b="2+1">优化填装<br>在"基础填装"的基础上装备「<span class="exotic">月之阵营靴</span>」，单位为秒。</p>
+<dl class="rules">
 <dt data-b="2">填装数值</dt>
 <dd data-b="1">样本武器的填装数值；蓄力与热量类框架的这一格还带着斜杠后的附加数值（蓄力或拉弓的毫秒数、热量参数）。<span class="note">数据源没有给这一列单独命名，列名与解读是本站按数值走向推的，未经确认。</span></dd>
-<dt data-b="2">基础射空</dt>
-<dd data-b="1">一个弹匣从首发打到末发的时间，单位秒。</dd>
+</dl>
+<p data-b="2+1">基础射空<br>一个弹匣从首发打到末发的时间，单位为秒。</p>
+<dl class="rules">
 <dt data-b="2">优化射空</dt>
 <dd data-b="1">同一段时间改按优化弹匣计。</dd>
-<dt data-b="2">最大弹药拾取</dt>
-<dd data-b="1">拾取一个弹药盒能补进的弹药数，按 200 武器属性加拾取模组计。</dd>
 </dl>
+<p data-b="2+1">最大弹药拾取<br>拾取一个弹药盒能获得的弹药数，以 200 武器属性加弹药拾取模组为基准。</p>
 </section>
 <section class="block" id="sec-3">
 <h2 class="sect-label" data-b="2">计算列</h2>
@@ -234,8 +234,9 @@
 <dd data-b="1">一个弹匣之内打<span class="bar-red">红血</span>的 DPS，不含填装。</dd>
 <dt data-b="2">最大<span class="bar-red">红血</span> DPS</dt>
 <dd data-b="1">计入射速、弹匣溢出与模组之后的<span class="bar-red">红血</span> DPS 上限。</dd>
-<dt data-b="2">月靴<span class="bar-red">红血</span> DPS</dt>
-<dd data-b="1">填装按月神步力场取上限、并计入手动操作的<span class="bar-red">红血</span> DPS。</dd>
+</dl>
+<p data-b="2+1">月靴<span class="bar-red">红血</span> DPS<br>装备「<span class="exotic">月之阵营靴</span>」并取填装速度上限、并计入手动操作的<span class="bar-red">红血</span> DPS。</p>
+<dl class="rules">
 <dt data-b="2">典型<span class="bar-red">红血</span> DPS</dt>
 <dd data-b="1">常规巡场中手动操作的<span class="bar-red">红血</span> DPS。</dd>
 <dt data-b="2">身体<span class="bar-red">红血</span> DPS</dt>
@@ -246,8 +247,9 @@
 <dd data-b="1">一个弹匣之内打<span class="bar-yellow">首领</span>的 DPS。</dd>
 <dt data-b="2">最大<span class="bar-yellow">首领</span> DPS</dt>
 <dd data-b="1">计入射速、弹匣溢出与模组之后的<span class="bar-yellow">首领</span> DPS 上限。</dd>
-<dt data-b="2">月靴<span class="bar-yellow">首领</span> DPS</dt>
-<dd data-b="1">填装按月神步力场取上限的<span class="bar-yellow">首领</span> DPS。</dd>
+</dl>
+<p data-b="2+1">月靴<span class="bar-yellow">首领</span> DPS<br>装备「<span class="exotic">月之阵营靴</span>」并取填装速度上限的<span class="bar-yellow">首领</span> DPS。</p>
+<dl class="rules">
 <dt data-b="2">典型<span class="bar-yellow">首领</span> DPS</dt>
 <dd data-b="1">常规操作下的<span class="bar-yellow">首领</span> DPS。</dd>
 <dt data-b="2">清怪分数</dt>

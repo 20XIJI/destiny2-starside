@@ -236,6 +236,11 @@
   function coreList() {
     var seen = {};
     return [].filter.call(pen.querySelectorAll('button.item'), function (c) {
+      // **神器本身不算。**它也是一枚 button.item（摆在面板标题位上），但站内没有
+      // 它的资料页，核心那枚 96px 图查不到——生成器的 page_items() 因此不收它，
+      // 位移技能被排除是同一个理由。这里漏掉这一道，填表页就能选出一个生成器
+      // 认不得的核心，投稿过审、落盘之后卡住整次构建。
+      if (c.dataset.kind === '__art__') return false;
       if (!c.row || !c.row[3] || seen[c.row[0]]) return false;
       seen[c.row[0]] = 1;
       return true;

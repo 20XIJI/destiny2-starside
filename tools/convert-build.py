@@ -268,7 +268,13 @@ def people(md, link=True):
 
 
 def sets_of(idx, spec):
-    """「埃希恩记忆 2 件 × 玻璃拱顶 2 件」或「埃希恩记忆 4 件」。"""
+    """「埃希恩记忆 2 件 × 玻璃拱顶 2 件」或「埃希恩记忆 4 件」。
+
+    **可省。**有些配装本来就不钉死套装（「套装不是 4vog 就行」），填表页与后端
+    也一直允许不写——从前只有这里当它必填，于是一条合法投稿过了审、落了盘，
+    卡住整次构建。省了那一格不出，与「神器：」同一条。 """
+    if not spec:
+        return []
     cells = []
     for seg in spec.split('×'):
         m = must(re.match(r'^(.+?)\s*([24])\s*件$', seg.strip()),
@@ -354,7 +360,7 @@ def page_items(md):
         out.append((parts[0], '传说武器', None))
         out += [(p.strip(), 'Perk', None)
                 for p in (parts[1].split('、') if len(parts) > 1 else []) if p.strip()]
-    for seg in meta(md, '套装').split('×'):
+    for seg in meta(md, '套装', required=False).split('×'):
         m = re.match(r'^(.+?)\s*([24])\s*件$', seg.strip())
         if m:
             out.append((m.group(1).strip(), '套装', '%s 件' % m.group(2)))
@@ -631,12 +637,14 @@ def blocks_of(idx, mv, arts, md, ns=''):
     # 哪一件，模组按它限定——「电介质」在加密数据盘与废墟石板下各有一条，不限定
     # 就只能猜；限定之后，混进别件神器的模组当场中止。
     #
-    # 「神器：」可省，省了这一节整个不出：合集里的某一套不带神器模组是常事，
-    # 而一个空面板读起来是「这套神器一枚模组都不装」，那不是源稿说的意思。
-    # 写了模组却没写神器则当场中止——模组归属正是靠神器定的。
+    # 「神器：」与「模组：」都可省，缺任一这一节整个不出：合集里的某一套不带神器
+    # 模组是常事，而一个空面板读起来是「这套神器一枚模组都不装」，那不是源稿说的
+    # 意思。**只写神器不写模组也走这一条**——填表页的 NEED 不管这两项，投稿本来就
+    # 能这么投；从前当场中止，于是审过、落盘之后卡住的是整次 npm run build。
+    # 反过来写了模组却没写神器仍然中止——模组归属正是靠神器定的，猜不得。
     art = meta(md, '神器', required=False)
-    picked = names(md, '模组', required=bool(art))
-    if art:
+    picked = names(md, '模组', required=False)
+    if art and picked:
         mods = [item(idx, '神器', n, prefer, kind=art) for n in picked]
         o += ['<section class="block" id="%ssec-3">' % ns,
               '<h2 class="sect-label">神器模组</h2>']
@@ -659,7 +667,7 @@ def blocks_of(idx, mv, arts, md, ns=''):
     lead = (['<li class="pair">%s</li>'
              % ''.join(item(idx, '异域护甲', n, prefer, cls='item gear', bare=True)
                        for n in ex_armor)] if ex_armor else [])
-    lead += sets_of(idx, meta(md, '套装'))
+    lead += sets_of(idx, meta(md, '套装', required=False))
     o += ['<section class="block" id="%ssec-4">' % ns, '<h2 class="sect-label">护甲</h2>']
     # 六维挂在主角行右端：异域与套装最多占三格，剩下的半行本来是空的。套装可能
     # 是两格（4 件同时给 2 件效果），那时这张卡换行落下去，见 .slot-row.lead 的
@@ -695,7 +703,7 @@ def render(idx, mv, arts, md, slug, season, name_cn):
 def render_solo(idx, mv, arts, md, slug, season, name_cn):
     title = must(re.match(r'^#\s+(.+)$', md.split('\n')[0]),
                  '源稿第一行必须是「# 配装名」').group(1).strip()
-    stamp, desc = stamp_of(md), meta(md, '描述')
+    stamp, desc = stamp_of(md), meta(md, '描述', required=False)
     # 描述在这一页是正文（首页卡片与 meta 也用它），所以允许写着色标记：
     # 正文走 inline()，meta 与卡片用剥干净的那一份，不然标记会漏进 <meta>。
     desc_text = text_of(inline(desc, rich=True), collapse=True)
@@ -736,7 +744,7 @@ def render_solo(idx, mv, arts, md, slug, season, name_cn):
             meta(md, '职业'),
             '<span class="%s">%s</span>' % (ELEMENT_TOKEN[branch], branch),
             cat, season.upper(), name_cn),
-         '<p class="desc">%s</p>' % inline(desc, rich=True),
+         '<p class="desc">%s</p>' % inline(desc, rich=True) if desc else '',
          # 场景与定位分两栏各带一行标签：混在一排里读者分不出「地牢」说的是适用
          # 环境、「清怪」说的是这套配装干什么用的。两栏都空就连这一层也不出——
          # 空的 .facets 在 .build-id 那道 grid 里照样占一个 gap。
@@ -795,7 +803,7 @@ def render_set(idx, mv, arts, head, members, slug, season, name_cn):
     """
     title = must(re.match(r'^#\s+(.+)$', head.split('\n')[0]),
                  '源稿第一行必须是「# 合集名」').group(1).strip()
-    stamp, desc = stamp_of(head), meta(head, '描述')
+    stamp, desc = stamp_of(head), meta(head, '描述', required=False)
     desc_text = text_of(inline(desc, rich=True), collapse=True)
     cat = cat_of(head)
     scenes = tag_values(head, 0)
@@ -818,7 +826,7 @@ def render_set(idx, mv, arts, head, members, slug, season, name_cn):
          % (title, like_box(season, slug, button=True), TIP_SW),
          '<p class="cls">%s · %d 套 · %s<span class="season">%s · %s</span></p>'
          % (badge, len(members), cat, season.upper(), name_cn),
-         '<p class="desc">%s</p>' % inline(desc, rich=True),
+         '<p class="desc">%s</p>' % inline(desc, rich=True) if desc else '',
          '<div class="facets">%s%s</div>'
          % (facet('适用环境', scenes), facet('标签', roles)),
          '</div>', '</header>', '',
@@ -996,7 +1004,8 @@ def build(idx, dirname, season, name_cn, slug):
             tags = tag_values(md, 0) + tag_values(md, 1)
         return {'u': '%s/%s/%s/index.html' % (OUT_DIR, season, slug), 't': title,
                 'season': season, 'slug': slug, 'stamp': meta(head, '更新'),
-                'desc': text_of(inline(meta(head, '描述'), rich=True), collapse=True),
+                'desc': text_of(inline(meta(head, '描述', required=False), rich=True),
+                                collapse=True),
                 'class': cls, 'tags': tags, 'branch': BRANCH[branch],
                 # 分支的中文名给索引页的筛选用。DOM 里只有 b-prismatic 这个 slug，
                 # 中文名读不出来，而在 app.js 里再写一份 slug→中文 就是 BRANCH 的
