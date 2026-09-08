@@ -51,13 +51,17 @@ ELEMENT_TOKEN = {b: 'el-%s' % slug for b, slug in BRANCH.items()}
 # 「移动：」不查表——跳跃与瞬移这类移动手段站内还没有资料页，落成纯文本。
 
 
+def where(md):
+    """报错里的定位：这是哪一套配装。合集一个文件里五套，不说哪一套没法改。"""
+    title = md.split('\n', 1)[0]
+    return '（配装/合集：%s）' % title[2:].strip() if title.startswith('# ') else ''
+
+
 def meta(md, key, required=True):
     hit = re.search(r'^%s：(.*)$' % key, md, re.M)
     if hit is None:
         if required:
-            title = md.split('\n', 1)[0]
-            context = '（配装/合集：%s）' % title[2:].strip() if title.startswith('# ') else ''
-            die('源稿缺「%s：」一行%s' % (key, context))
+            die('源稿缺「%s：」一行%s' % (key, where(md)))
         return ''
     return hit.group(1).strip()
 
@@ -626,17 +630,26 @@ def blocks_of(idx, mv, arts, md, ns=''):
     # 神器模组页的 7 个分节就是 7 件神器，模组归属写在分节标题上。源稿先写用的是
     # 哪一件，模组按它限定——「电介质」在加密数据盘与废墟石板下各有一条，不限定
     # 就只能猜；限定之后，混进别件神器的模组当场中止。
-    art = meta(md, '神器')
-    mods = [item(idx, '神器', n, prefer, kind=art) for n in names(md, '模组')]
-    o += ['<section class="block" id="%ssec-3">' % ns, '<h2 class="sect-label">神器模组</h2>']
-    # 源稿按 design.md 三节在汉字与拉丁之间补空格（NPA 斥力调节器），官方物品表
-    # 蒸馏出来的神器表没有那个空格，两侧都归一化才对得上。
-    table = {items.norm(n): p for n, p in arts.items()}
-    if items.norm(art) not in table:
-        die('「神器：%s」不在神器表里。站内那一页的七个分节即是全部：%s'
-            % (art, '、'.join(sorted(arts))))
-    o += row(group(art, mods, icon=table[items.norm(art)]))
-    o += ['</section>', '']
+    #
+    # 「神器：」可省，省了这一节整个不出：合集里的某一套不带神器模组是常事，
+    # 而一个空面板读起来是「这套神器一枚模组都不装」，那不是源稿说的意思。
+    # 写了模组却没写神器则当场中止——模组归属正是靠神器定的。
+    art = meta(md, '神器', required=False)
+    picked = names(md, '模组', required=bool(art))
+    if art:
+        mods = [item(idx, '神器', n, prefer, kind=art) for n in picked]
+        o += ['<section class="block" id="%ssec-3">' % ns,
+              '<h2 class="sect-label">神器模组</h2>']
+        # 源稿按 design.md 三节在汉字与拉丁之间补空格（NPA 斥力调节器），官方物品表
+        # 蒸馏出来的神器表没有那个空格，两侧都归一化才对得上。
+        table = {items.norm(n): p for n, p in arts.items()}
+        if items.norm(art) not in table:
+            die('「神器：%s」不在神器表里。站内那一页的七个分节即是全部：%s'
+                % (art, '、'.join(sorted(arts))))
+        o += row(group(art, mods, icon=table[items.norm(art)]))
+        o += ['</section>', '']
+    elif picked:
+        die('写了「模组：」却没写「神器：」，模组归属定不下来%s' % where(md))
 
     # 护甲：主角行（异域护甲 + 套装）不拉满——它最多三格，拉满会让一格宽到 500px；
     # 格子封顶、左对齐，行末那半截空档给六维那张卡。部位行五个部位并排，每列三枚

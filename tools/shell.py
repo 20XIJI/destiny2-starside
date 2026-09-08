@@ -136,6 +136,62 @@ EDIT = ('<script>try{if(localStorage.sa_at&&document.querySelector("main[data-sr
         '}}catch(_){}</script>')
 
 
+# 正式域名。测试域名与它服务的是同一个桶，收藏了测试域名的人不会自己发现换了家。
+SITE_URL = 'https://starside.work'
+
+# 劝返：只在腾讯云那两个默认域名上建节点（webapps.tcloudbase.com 与
+# tcloudbaseapp.com），正式域名、localhost 与 file://（hostname 为空）一个节点都不建，
+# 本地预览与截图照旧。判据是主机名后缀，不是等于某个字符串——将来再多一个默认域名
+# 也照样命中。
+#
+# **不记住「仍要留在这里」。**记住了就只拦一次，收藏不会改；每次加载重新拦，
+# 到读者改收藏为止。标题前缀让收藏夹里那一条自带「测试地址」四个字。
+#
+# 常驻条固定在底部：顶部那条 .site-head 是 sticky 的，压在它上面要连着改 --stick
+# 与 app.js 里 IntersectionObserver 的 rootMargin。
+#
+# 样式内联，不进 site.css——那份每页都下，且算进 check_shell 的外壳预算，
+# 为一段绝大多数访客看不到的东西占预算不划算；色号仍引 :root 的 token。
+# href 用属性赋值、文字用文本节点，不拼 innerHTML：路径来自 location，
+# 拼字符串等于把地址栏接进 HTML。
+NOTICE = ('<script>(function(){'
+          'if(!/\\.tcloudbase(app)?\\.com$/.test(location.hostname))return;'
+          'var u="%s"+location.pathname+location.search+location.hash;'
+          'document.title="【测试地址】"+document.title;'
+          'function link(t,big){var a=document.createElement("a");a.href=u;'
+          'a.textContent=t;a.style.cssText=big?'
+          '"padding:.7em 1.6em;border:1px solid var(--accent);border-radius:2px;'
+          'color:var(--accent);text-decoration:none;font-size:16px":'
+          '"color:var(--accent);white-space:nowrap";return a}'
+          'var bar=document.createElement("div");'
+          'bar.style.cssText="position:fixed;left:0;right:0;bottom:0;z-index:99;'
+          'display:flex;flex-wrap:wrap;gap:.2em 1em;align-items:center;'
+          'justify-content:center;padding:.55em 1em;'
+          'background-color:var(--ink-lift);border-top:1px solid var(--hair-lit);'
+          'color:var(--bone);font:13px/1.7 var(--font-cn)";'
+          'bar.append("这是测试地址，站点已经搬到 starside.work ",link("立即换过去"));'
+          'var box=document.createElement("div");'
+          'box.style.cssText="position:fixed;inset:0;z-index:999;display:flex;'
+          'flex-direction:column;gap:1.4em;align-items:center;justify-content:center;'
+          'padding:2em;text-align:center;background-color:var(--ink);'
+          'color:var(--bone);font:15px/1.9 var(--font-cn)";'
+          'var say=document.createElement("p");'
+          'say.textContent="你打开的是测试地址。站点的正式地址是 starside.work，'
+          '请改用它并更新收藏。";'
+          'say.style.cssText="margin:0;max-width:32em";'
+          'var stay=document.createElement("button");'
+          'stay.type="button";stay.disabled=true;'
+          'stay.style.cssText="background:none;border:0;color:var(--bone-faint);'
+          'font:13px/1.7 var(--font-cn);cursor:pointer";'
+          'var n=5;stay.textContent="仍要留在测试地址（"+n+"）";'
+          'var t=setInterval(function(){n--;'
+          'stay.textContent="仍要留在测试地址"+(n?"（"+n+"）":"");'
+          'if(!n){clearInterval(t);stay.disabled=false}},1000);'
+          'stay.onclick=function(){box.remove();document.body.appendChild(bar)};'
+          'box.append(say,link("去 starside.work",1),stay);'
+          'document.body.appendChild(box)})()</script>' % SITE_URL)
+
+
 # 三条杠站标
 MARK = '<span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>'
 
@@ -261,5 +317,6 @@ def foot(stamp, first, source=None, thanks=None):
         o.append(source_note(source))
     if thanks:
         o.append('<p>特别鸣谢：%s</p>' % thanks)
-    o += [CREDIT, LEGAL, ICP, '</footer>', SPEC, HIT, EDIT, '</body>', '</html>', '']
+    o += [CREDIT, LEGAL, ICP, '</footer>', SPEC, HIT, EDIT, NOTICE,
+          '</body>', '</html>', '']
     return '\n'.join(o)

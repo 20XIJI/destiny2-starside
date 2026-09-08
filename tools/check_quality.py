@@ -844,6 +844,25 @@ class Generation(Isolated):
             self.assertTrue((self.root / path).is_file(), path)
         self.assertIn('href="sets/index.html"', (self.root / 'builds/index.html').read_text())
 
+    def test_a_build_without_an_artifact_drops_that_section(self):
+        """「神器：」可省，省了那一节整个不出；写了模组却没写神器则中止。
+
+        投稿的填表页允许七个神器格全空，生成器从前必须有那一行——两边口径
+        不一致时，一份进得了库的源稿卡住整次构建，而卡住的那一篇与改动无关。
+        """
+        self.replace(sys, 'argv', ['convert-build.py', 'beta-hunter'])
+        self.beta.write_text(self.SOLO.replace('神器：测试神器\n模组：\n', ''),
+                             encoding='utf-8')
+        build.main()
+        page = (self.root / 'builds/s29/beta-hunter/index.html').read_text()
+        self.assertNotIn('神器模组', page)
+
+        self.beta.write_text(self.SOLO.replace('神器：测试神器\n', '')
+                             .replace('模组：', '模组：测试模组'), encoding='utf-8')
+        error = self.exits(build.main)
+        self.assertIn('神器', error)
+        self.assertIn('示例', error)
+
     def test_single_slug_never_prunes(self):
         self.replace(sys, 'argv', ['convert-build.py', 'alpha-hunter'])
         build.main()
