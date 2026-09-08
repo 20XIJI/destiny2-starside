@@ -86,6 +86,10 @@ CREDIT = ('<p>© 2026 日栎w · <a href="%s" target="_blank" rel="noopener">'
 LEGAL = ('<p class="legal">Starside 为非官方资料站，与 Bungie, Inc. 无从属关系。'
          'Destiny 2 及相关名称、标识为 Bungie, Inc. 的商标。</p>')
 
+# 备案号。每一页都要挂，且必须链到工信部的查询页——这是备案要求，不是版式选择。
+ICP = ('<p class="legal"><a href="https://beian.miit.gov.cn/" '
+       'target="_blank" rel="noopener">鲁ICP备2026052166号-1</a></p>')
+
 # 站内导航预取：悬停即取，页面本身十几 KB，切换基本无感。不支持的浏览器忽略。
 SPEC = ('<script type="speculationrules">'
         '{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}'
@@ -257,5 +261,5 @@ def foot(stamp, first, source=None, thanks=None):
         o.append(source_note(source))
     if thanks:
         o.append('<p>特别鸣谢：%s</p>' % thanks)
-    o += [CREDIT, LEGAL, '</footer>', SPEC, HIT, EDIT, '</body>', '</html>', '']
+    o += [CREDIT, LEGAL, ICP, '</footer>', SPEC, HIT, EDIT, '</body>', '</html>', '']
     return '\n'.join(o)
