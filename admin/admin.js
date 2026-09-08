@@ -361,7 +361,7 @@
 
   // 界面上那个「← 配装」与浏览器的返回走同一条，不然按钮退回去了、历史里还多一格。
   function back (label) {
-    var b = el('button', 'chip', '← ' + label)
+    var b = el('button', 'toggle', '← ' + label)
     b.type = 'button'
     b.onclick = function () { history.back() }
     return b
@@ -374,7 +374,7 @@
 
      审的是待审稿，站上还没有它的详情页，所以这是审核员之间传图讨论的唯一入口。 */
   function shotBtn (kindOf) {
-    var b = el('button', 'chip', '截图')
+    var b = el('button', 'op', '截图')
     b.type = 'button'
     b.onclick = function () {
       b.disabled = true
@@ -391,6 +391,14 @@
       })
     }
     return b
+  }
+
+  /* 不可逆那一档靠位置隔开，不靠颜色：一道发丝线把它推到整条的右端。
+     与填表页底部那条同一套语法（左边看一眼、右端会改东西），读者不学两遍。 */
+  function sep () {
+    var s = el('span', 'op-sep')
+    s.setAttribute('aria-hidden', 'true')
+    return s
   }
 
   function tip (node, msg, bad) {
@@ -539,7 +547,7 @@
     })
 
     var acts = el('div', 'acts')
-    var all = el('button', 'chip go', '全部通过（' + pend.length + '）')
+    var all = el('button', 'op go', '全部通过（' + pend.length + '）')
     all.type = 'button'
     all.disabled = !!bad.length || !pend.length || pend.length > 48
     all.onclick = function () { passAll(acts, pend) }
@@ -561,8 +569,8 @@
           + (e.stale ? ' · 基于旧文' : '')))
         one.appendChild(oneView(e))
         var row = el('div', 'acts')
-        var yes = el('button', 'chip go', g.list.length > 1 ? '用这份' : '通过')
-        var no = el('button', 'chip', '驳回')
+        var yes = el('button', 'op go', g.list.length > 1 ? '用这份' : '通过')
+        var no = el('button', 'op', '驳回')
         yes.type = no.type = 'button'
         yes.disabled = !!e.stale
         yes.onclick = function () { pick(row, g, e) }
@@ -576,7 +584,7 @@
       // 底稿动过了：多给一个「什么都不改」的候选，选它就是把这几份一并驳回。
       if (g.list.some(function (e) { return e.stale })) {
         var keepActs = el('div', 'acts')
-        var keep = el('button', 'chip', '保持现状')
+        var keep = el('button', 'op', '保持现状')
         keep.type = 'button'
         keep.onclick = function () {
           mark(g.list.map(function (e) { return [e._id, -1] }), keepActs)
@@ -849,10 +857,12 @@
     var all = builds()
     var body = el('div')
 
-    var bar = el('div', 'acts')
+    // **筛选行另挂 .filters**：它与详情动作区同为 .acts，而「一排多枚退回素字」
+    // 那条规则只该落在这一行上，判据得分得开。
+    var bar = el('div', 'acts filters')
     Object.keys(STATE).forEach(function (k) {
       var n = all.filter(function (b) { return b.state === k }).length
-      var c = el('button', 'chip', STATE[k] + ' ' + n)
+      var c = el('button', 'toggle', STATE[k] + ' ' + n)
       c.type = 'button'
       if (buildFilter[k]) c.setAttribute('aria-current', 'true')
       c.onclick = function () { buildFilter[k] = !buildFilter[k]; buildsView() }
@@ -862,7 +872,7 @@
     // **只给超管**：一次抹掉几十条，手滑的代价与逐条不是一个量级。
     var junk = all.filter(function (b) { return b.state === 'no' }).length
     if (junk && S.me.lv >= 4) {
-      var wipe = el('button', 'chip', '清空废稿（' + junk + '）')
+      var wipe = el('button', 'op', '清空废稿（' + junk + '）')
       wipe.type = 'button'
       wipe.onclick = function () {
         if (!window.confirm('删除 ' + junk + ' 条废稿？不可撤销。')) return
@@ -872,6 +882,7 @@
           tip(body, '删除失败：' + e.message, 1)
         })
       }
+      bar.appendChild(sep())
       bar.appendChild(wipe)
     }
 
@@ -1050,8 +1061,11 @@
         // 删除申请不该改正文——它要的是「删不删」，改了也落不到任何地方
         var bar2 = el('div', 'acts')
         if (b.state === 'wait') {
-          var dyes = el('button', 'chip go', '移除')
-          var dno = el('button', 'chip', '驳回')
+          // **不挂 go。**go 是「通过」那一档的绿，与列表上 .flag.pass 同一套词汇；
+          // 而这一枚是把页面从站上真删掉，全台最不可逆的一个动作，从前却长得最像
+          // 「安全的确认」。它归不可逆那一档，靠发丝线推到右端。
+          var dyes = el('button', 'op', '移除')
+          var dno = el('button', 'op', '驳回')
           dyes.type = dno.type = 'button'
           var dmark = function (ok) {
             dyes.disabled = dno.disabled = true
@@ -1062,16 +1076,17 @@
           }
           dyes.onclick = function () { dmark(1) }
           dno.onclick = function () { dmark(-1) }
-          bar2.appendChild(dyes)
           bar2.appendChild(dno)
+          bar2.appendChild(sep())
+          bar2.appendChild(dyes)
         }
         ops.appendChild(bar2)
         return
       }
 
-      var keep = el('button', 'chip', '保存')
-      var yes = el('button', 'chip go', b.state === 'wait' ? '通过' : '')
-      var no = el('button', 'chip', '驳回')
+      var keep = el('button', 'op', '保存')
+      var yes = el('button', 'op go', b.state === 'wait' ? '通过' : '')
+      var no = el('button', 'op', '驳回')
       keep.type = yes.type = no.type = 'button'
 
       keep.onclick = function () {
@@ -1094,7 +1109,7 @@
       // 删一套已上站的配装不可逆——站上少一页、点赞数也跟着没了。**走审核，
       // 不当场删**：落成一条待审记录，与投稿走同一条队列。
       if (b.state === 'live') {
-        var ask = el('button', 'chip', '申请移除')
+        var ask = el('button', 'op', '申请移除')
         ask.type = 'button'
         ask.onclick = function () {
           if (!window.confirm('申请移除《' + (nameOf(b.md) || b.id) + '》？')) return
@@ -1110,7 +1125,7 @@
       // 通过之后、源稿被 sync.py 拉下来之前，这条记录还只活在库里，退得回来。
       // 上了站（state 完成）就没有这一枚——那时要撤只有「申请移除」，后端也照这条挡。
       if (b.state === 'pass') {
-        var undo = el('button', 'chip', '撤回')
+        var undo = el('button', 'op', '撤回')
         undo.type = 'button'
         undo.onclick = function () {
           if (!window.confirm('撤回《' + (nameOf(b.md) || b.id) + '》的通过，退回待审？')) return
@@ -1124,7 +1139,7 @@
       }
 
       if (b.state === 'no') {
-        var del = el('button', 'chip', '删除')
+        var del = el('button', 'op', '删除')
         del.type = 'button'
         del.onclick = function () {
           if (!window.confirm('删除这条废稿？不可撤销。')) return
@@ -1134,6 +1149,7 @@
             tip(ops, '删除失败：' + e.message, 1)
           })
         }
+        acts.appendChild(sep())
         acts.appendChild(del)
       }
 
@@ -1271,11 +1287,14 @@
       var wrap = el('section', 'block')
       var rows = el('div', 'rows')
       r.eds.forEach(function (u) {
-        var row = el('div')
+        // **这一行不可点，得显式说出来。**.rows > * 那条把按钮样式套给每个直接子元素
+        // （手型光标、悬停高亮、左缘点亮），而这一行是 div、没有 onclick——看着可点，
+        // 点下去什么都不会发生。真正的动作是行内那枚「移除」。
+        var row = el('div', 'flat')
         row.appendChild(el('span', 'id', u.name + '  ' + u._id))
         row.appendChild(el('span', 'meta', LV[u.lv] || u.lv))
         if (u.lv < S.me.lv) {
-          var del = el('button', 'chip', '移除')
+          var del = el('button', 'op', '移除')
           del.type = 'button'
           del.onclick = function () {
             if (!window.confirm('移除 ' + u.name + '？')) return
@@ -1293,7 +1312,10 @@
         '<label>级别<select name="lv"></select></label>'
       var sel = f.querySelector('select')
       for (var i = 1; i < S.me.lv; i++) sel.appendChild(new Option(LV[i] + '（' + i + '）', String(i)))
-      var add = el('button', 'chip go', '添加')
+      var add = el('button', 'op go', '添加')
+      // go 从前落不到它身上：那条选择器要 .acts 祖先，而这一枚在 form.login 里。
+      // type 也显式写出来——全页另外三十处都写了，这一处不写就得读者自己去想。
+      add.type = 'submit'
       f.appendChild(add)
       f.onsubmit = function (ev) {
         ev.preventDefault()

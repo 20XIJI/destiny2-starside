@@ -32,7 +32,7 @@
   letter-spacing: .14em;
 }
 .login .tool-search { width: 100%; }
-.login .chip { justify-self: start; margin-top: 2px; }
+.login .op { justify-self: start; margin-top: 2px; }
 
 /* 列表：一行一条。条目多时用卡片要滚三屏，行式扫得快。
    左缘那条亮边跟 .entry 一个道理。配装列表的行带 .b-*，那条边因此是该套配装的
@@ -133,14 +133,14 @@ details > pre {
   letter-spacing: .06em;
   white-space: nowrap;
 }
-/* 通过与列表上【通过】那枚状态标同色（.rows .flag.pass）——行上写着绿字，
-   按钮也是绿的，同一套词汇。**不用 --accent**：在 .acts 里它已经占了
+/* 主动作那一枚：与列表上【通过】那枚状态标同色（.rows .flag.pass）——行上写着
+   绿字，按钮也是绿的，同一套词汇。**不用 --accent**：在筛选行里它已经占了
    「当前选中」那一条，拿来标通过会读成这枚被选中了。
-   角标一并点亮：.chip 的 border 是 0，形状全靠那两枚 L，静置时 opacity 0，
-   只改颜色的话一排按钮仍旧长得一样。角标取 currentcolor，跟着上面那行走。 */
-.acts .chip.go { color: var(--c-strand); }
-.acts .chip.go::before,
-.acts .chip.go::after { opacity: 1; }
+   边框跟着字色走：.op 静置就有一圈 --hair，只改字色的话它仍旧混在一排里。
+
+   **只给「往前走」的那一枚**：通过、用这份、全部通过、添加。批准删除申请的
+   「移除」不挂它——那一枚是真删，不是通过。 */
+.op.go { color: var(--c-strand); border-color: currentcolor; }
 
 /* 类别：强度／创意／PVP。走 --c-legend，与站内「装备稀有度」那一档同色——
    它答的是「这套为什么被推荐」，与旁边说「在队伍里干什么」的定位不是一回事。 */
@@ -152,6 +152,15 @@ details > pre {
   letter-spacing: .1em;
   white-space: nowrap;
 }
+
+/* 不可点的行：.rows > * 那条按钮样式会连它一起套上，这里掰回来。
+   编辑者列表那一行就是——它是 div、没有 onclick，动作在行内那枚按钮上。 */
+.rows > .flat {
+  border-left-color: transparent;
+  cursor: auto;
+}
+
+.rows > .flat:hover { background: var(--ink-lift); border-left-color: transparent; }
 
 /* 改动记录就地展开。.rows > * 那条按钮样式会连它一起套上，这里逐项掰回来。 */
 .rows > .fold {
@@ -282,7 +291,6 @@ iframe.prev {
 .cand + .cand { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--hair); }
 .cand .by { margin: 0 0 6px; color: var(--bone-dim); font-size: 12px; }
 .acts .warn { color: var(--c-solar); font-size: 12px; }
-.acts .chip:disabled { opacity: .4; cursor: default; }
 
 /* 合集那一行标出套数。**走 --accent 而不是状态色**：它答的是「这一行装着几套」，
    与旁边说审到哪一步的 .flag 不是一档信息，同色会读成又一个状态。 */

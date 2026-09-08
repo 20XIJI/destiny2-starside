@@ -274,20 +274,15 @@ a.who:hover { color: var(--accent); }
 .slot-count { display: inline-flex; align-items: center; gap: 6px; }
 .slot-count b { min-width: 1ch; color: var(--bone-hi); text-align: center; }
 
+/* 加减控件比正常动作按钮小一档：它挂在面板标题那一行里，与标题同高。
+   形状与状态归 .op，这里只压尺寸。 */
 .slot-tool,
 .slot-count button {
   padding: 0 8px;
-  color: var(--bone-dim);
   font: inherit;
   line-height: 1.6;
-  background: var(--tint-2);
-  border: 1px solid var(--hair);
-  cursor: pointer;
+  letter-spacing: normal;
 }
-
-.slot-tool:hover,
-.slot-count button:not([disabled]):hover { color: var(--bone-hi); border-color: var(--accent); }
-.slot-count button[disabled] { opacity: .3; cursor: default; }
 
 /* 神器面板的标题图标用神器本体那枚真图，不用线描图标——七件神器在游戏里各有其形，
    画七枚线描图等于自造一套编码。图来自官方物品表（tools/artifacts.json）。 */
@@ -402,6 +397,13 @@ a.who:hover { color: var(--accent); }
   opacity: 0;
   transition: opacity .18s ease;
 }
+
+/* **cursor 按可点的那两种标签给，不给 .item 本身。**从前只有 .item.empty 写了
+   pointer，而 form.js 填上内容后会摘掉 empty——填好的格子于是变回箭头光标，
+   选择器网格里几百枚候选同病。位移技能那一格是 <span>（站内没有对应资料页），
+   照旧不该有手型。 */
+a.item,
+button.item { cursor: pointer; }
 
 a.item:hover,
 button.item:hover { background: var(--row-hover); }
@@ -711,27 +713,12 @@ body:has(.entries) .toolbar {
   padding-top: 6px;
 }
 
-/* 数由页尾那段脚本填，加载完才出现；`min-width` 把位子先占住，不让整行在数字
-   落进来时横向抖一下。两枚沿用标签那套素框，选中态只换字色与边框色——同一排里
-   点过与没点过的框大小必须一样。 */
-.head-acts button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 11px;
-  color: var(--bone-dim);
-  font-family: var(--font-disp);
-  font-size: 12px;
-  letter-spacing: .08em;
-  background: var(--tint-2);
-  border: 1px solid var(--hair);
-  cursor: pointer;
-}
+/* 这一排的形状由 site.css 的 .op / .toggle 给，全站三处控件共用一份。
+   这里只留这一排独有的两件事：赞数的位子，与复制的回执。
 
+   数由页尾那段脚本填，加载完才出现；`min-width` 把位子先占住，不让整行在数字
+   落进来时横向抖一下。 */
 .head-acts .like b { min-width: 1.4em; font-weight: 600; text-align: left; }
-.head-acts button:hover { color: var(--bone-hi); border-color: var(--accent); }
-.head-acts button[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
-.head-acts button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* 复制的回执写在按钮自己身上：另起一个提示位会在两种状态间改变行宽。 */
 .head-acts .copy[data-tip]::after { content: "　" attr(data-tip); color: var(--accent); }
@@ -786,9 +773,6 @@ body:has(.entries) .toolbar {
 
 #to-import:hover { color: var(--ink); background: var(--accent); }
 
-#to-import::before,
-#to-import::after { display: none; }
-
 /* 投稿是终态那一个，**填色**：这一条上别的都是描边或纯字，唯一一枚填色的
    因此一眼认得出，也不会与「预览」按下时那个强调色边框读混。 */
 #send {
@@ -798,34 +782,18 @@ body:has(.entries) .toolbar {
   background: var(--accent);
 }
 
-#send:hover { color: var(--ink); background: var(--bone-hi); }
-#send::before,
-#send::after { display: none; }
-#send[disabled] { opacity: .45; cursor: default; }
+#send:hover { color: var(--ink); background: var(--accent); }
 
-/* 角标静置时照旧不显形——常显是五枚一齐立着，读作五个方框而不是五个动作。
-   改由动效认领：两枚角标从外侧滑进来收拢到位，按下时整枚往下沉 1px。
-   位移只有 3px，不改变任何一枚的占位。 */
-.src-tools .chip::before,
-.src-tools .chip::after { transition: opacity .18s ease, transform .18s ease; }
+/* **禁用要连底色一起掐。**只写 opacity 时 #send:hover 那条同权重、属性不重叠，
+   禁用的投稿按钮在鼠标下照样从青变骨白，读者会以为它能点。 */
+#send:not([disabled]):hover { background: var(--bone-hi); }
 
-.src-tools .chip::before { transform: translate(-3px, -3px); }
-
-.src-tools .chip::after { transform: translate(3px, 3px); }
-
-.src-tools .chip:hover::before,
-.src-tools .chip:hover::after,
-.src-tools .chip:focus-visible::before,
-.src-tools .chip:focus-visible::after,
-.src-tools .chip[aria-pressed="true"]::before,
-.src-tools .chip[aria-pressed="true"]::after { transform: none; }
-
-.src-tools .chip:active { transform: translateY(1px); }
+/* 按下往下沉 1px。这一条上六枚全是会做事的控件，按下去该有回音。
+   位移不改变占位。 */
+.src-tools :is(.toggle, .op):active { transform: translateY(1px); }
 
 @media (prefers-reduced-motion: reduce) {
-  .src-tools .chip::before,
-  .src-tools .chip::after,
-  .src-tools .chip:active { transform: none; }
+  .src-tools :is(.toggle, .op):active { transform: none; }
 }
 
 /* 回执紧跟着它报告的那两枚（复制与导入），不甩到条子另一端。空着就不占位。 */
@@ -1059,6 +1027,11 @@ button.item { width: 100%; }
   cursor: pointer;
 }
 
+/* **可点的标签要与纯展示的标签在静置态就分得开。**两者共用上面那条形状规则，
+   从前只有 hover 才有区别——鼠标扫过之前，读者没法知道这一排是能选的。
+   边框提到 --hair-lit 一档：同一个形状，线亮一点即可，不必另造一种框。 */
+.tagset > button { border-color: var(--hair-lit); }
+
 .tagset > button:hover { color: var(--bone-hi); }
 .tagset > button[aria-pressed="true"] {
   color: var(--bone-hi);
@@ -1188,19 +1161,15 @@ button.item { width: 100%; }
 
 /* 视图开关借 .slot-tool 那套素框，不另造一种按钮：它与面板标题右边那些控件
    同一档分量。 */
+/* 展开开关比正常动作按钮小一档：它挂在「N 套」那行小字右边。形状与三态归 .toggle，
+   这里只压尺寸。**按下态从前落空**：set.js 写了 aria-pressed，样式表没接，展开与
+   收起长得一模一样；接进 .toggle 之后自动就有了。 */
 .viewsw {
   padding: 3px 10px;
-  color: var(--bone-dim);
   font: inherit;
   font-size: 11.5px;
-  letter-spacing: .08em;
   background: none;
-  border: 1px solid var(--hair);
-  cursor: pointer;
 }
-
-.viewsw:hover { color: var(--bone-hi); border-color: var(--accent); }
-.viewsw:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .set-list ol {
   counter-reset: seat;
@@ -1344,8 +1313,6 @@ button.item { width: 100%; }
   cursor: pointer;
 }
 
-.set-list .viewsw[disabled] { opacity: .35; cursor: default; }
-.set-list .viewsw[disabled]:hover { color: var(--bone-dim); border-color: var(--hair); }
 
 /* 填表页：加一套是一枚占满目录宽度的加号，接在列表下面——它是列表的延长，
    借空槽那套语言（虚线框 + 悬停亮边），不另造一种按钮。 */

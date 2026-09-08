@@ -458,8 +458,8 @@
     box.appendChild(notes)
 
     var acts = el('div', 'se-acts')
-    var send = el('button', 'chip', '提交')
-    var no = el('button', 'chip', '取消')
+    var send = el('button', 'op', '提交')
+    var no = el('button', 'op', '取消')
     send.type = no.type = 'button'
     no.onclick = shut
 
@@ -589,7 +589,7 @@
     css.href = HERE + 'admin/edit.css'
     document.head.appendChild(css)
 
-    var chip = el('button', 'chip se-chip', '编辑')
+    var chip = el('button', 'toggle se-chip', '编辑')
     chip.type = 'button'
     chip.onclick = function () { toggle(chip) }
     // 通往审核台的那条边。编辑态里发现一处该改、想顺手看看别人提了什么时，

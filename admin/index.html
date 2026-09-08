@@ -26,10 +26,10 @@
 </nav>
 <div class="toolbar" id="tabs" hidden>
 <div class="tool-chips">
-<button type="button" class="chip" data-view="builds" aria-current="true">配装 <span id="n-sub"></span></button>
-<button type="button" class="chip" data-view="review">文档 <span id="n-doc"></span></button>
-<button type="button" class="chip" data-view="hist">记录</button>
-<button type="button" class="chip" data-view="eds" hidden>编辑者</button>
+<button type="button" class="toggle" data-view="builds" aria-current="true">配装 <span id="n-sub"></span></button>
+<button type="button" class="toggle" data-view="review">文档 <span id="n-doc"></span></button>
+<button type="button" class="toggle" data-view="hist">记录</button>
+<button type="button" class="toggle" data-view="eds" hidden>编辑者</button>
 </div>
 </div>
 </div>
@@ -37,7 +37,7 @@
 <header class="page-head">
 <div class="head-row">
 <h1 id="h1">编辑台</h1>
-<p class="who" id="me" hidden><span id="me-name"></span><span class="sep">·</span><span id="me-lv"></span><button type="button" class="chip" id="out">退出</button></p>
+<p class="who" id="me" hidden><span id="me-name"></span><span class="sep">·</span><span id="me-lv"></span><button type="button" class="op" id="out">退出</button></p>
 </div>
 </header>
 
@@ -49,7 +49,7 @@
 <form id="f-pw" class="login">
 <label>用户名<input class="tool-search" name="username" autocomplete="username" required></label>
 <label>密码<input class="tool-search" name="password" type="password" autocomplete="current-password" required></label>
-<button type="submit" class="chip">登录</button>
+<button type="submit" class="op">登录</button>
 </form>
 <p class="tip" id="gate-tip" role="status"></p>
 </section>

@@ -242,7 +242,7 @@ export default function init(deps) {
     nav.setAttribute('aria-label', '图表');
     var tag = document.createElement('button');
     tag.type = 'button';
-    tag.className = 'chip';
+    tag.className = 'toggle';
     tag.textContent = '标注';
     tag.addEventListener('click', function () {
       showMarks = !showMarks;

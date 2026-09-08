@@ -121,4 +121,3 @@ th > .se-was { display: block; margin: 2px 0 0; }
 }
 .se-prev img { height: 1.3em; width: auto; vertical-align: -.2em; }
 
-.se-acts .chip:disabled { opacity: .4; cursor: default; }

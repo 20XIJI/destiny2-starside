@@ -52,9 +52,9 @@ export default function init(table, deps) {
     box.className = 'rota';
     box.innerHTML = '<div class="rota-stage"></div>'
       + '<div class="rota-btns">'
-      + '<button type="button" class="chip" data-go="-1">上一周</button>'
-      + '<button type="button" class="chip" data-go="0">本周</button>'
-      + '<button type="button" class="chip" data-go="1">下一周</button></div>';
+      + '<button type="button" class="toggle" data-go="-1">上一周</button>'
+      + '<button type="button" class="toggle" data-go="0">本周</button>'
+      + '<button type="button" class="toggle" data-go="1">下一周</button></div>';
     table.parentNode.insertBefore(box, table);
     tuck(table);
 

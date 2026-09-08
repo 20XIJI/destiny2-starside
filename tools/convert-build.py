@@ -727,7 +727,7 @@ def render_solo(idx, mv, arts, md, slug, season, name_cn):
          # 只出一个空位——与点赞那个数同一条约定。
          '<div class="id-row"><h1>%s</h1><div class="head-acts">%s%s%s%s</div></div>'
          % (title, like_box(season, slug, button=True),
-            '<button class="copy" type="button">复制配装</button>',
+            '<button class="op copy" type="button">复制配装</button>',
             SHOT % 'main', TIP_SW),
          # 铭牌一行读完这套配装的身份：职业 · 元素 · 类别。类别接在这里而不是另起
          # 一栏标签——它只有一个值，占一整栏显得空。
@@ -769,7 +769,7 @@ def one_of(idx, mv, arts, head, md, n):
     o = ['<section class="set-one b-%s" id="set-%d">' % (BRANCH[branch], n),
          '<header class="one-head">',
          '<div class="id-row"><h2>%s</h2><div class="head-acts">'
-         '<button class="copy" type="button">复制配装</button>%s</div></div>'
+         '<button class="op copy" type="button">复制配装</button>%s</div></div>'
          % (title, SHOT % '.set-one'),
          '<p class="cls">%s%s · <span class="%s">%s</span>%s</p>'
          % (icon_of(vocab.pick(idx, who, '职业', kind='分节'), 32), who,
@@ -835,7 +835,7 @@ def render_set(idx, mv, arts, head, members, slug, season, name_cn):
     # app.js（引了就为一枚按钮多下 5 KB）。契约只有 data-setview 一条。
     o += ['<div class="set-wrap">',
           '<nav class="set-list" aria-label="合集内的配装">',
-          '<p class="by-label">%d 套<button class="viewsw" type="button" '
+          '<p class="by-label">%d 套<button class="toggle viewsw" type="button" '
           'data-setview aria-pressed="false">展开全部</button></p>' % len(members),
           '<ol>']
     for n, m in enumerate(members, 1):
@@ -866,14 +866,14 @@ def render_set(idx, mv, arts, head, members, slug, season, name_cn):
 # 详情开关，缺省开着。**按下状态由 tip.js 现读 localStorage**，生成器只出空位。
 # 两种壳：详情页与点赞、复制同排，用 .head-acts 那套素框；填表页在右下角那一条
 # 里，与另外四枚同为 chip。契约只有 data-tip-sw 一条。
-TIP_SW = '<button class="tipsw" type="button" data-tip-sw>详情开关</button>'
-TIP_SW_CHIP = '<button id="tipsw" class="chip" type="button" data-tip-sw>详情开关</button>'
+TIP_SW = '<button class="toggle tipsw" type="button" data-tip-sw>详情开关</button>'
+TIP_SW_CHIP = '<button id="tipsw" class="toggle" type="button" data-tip-sw>详情开关</button>'
 
 # 截图：把这一块渲染成一张图，弹在页面上。**data-shot 的值就是要截的那一块的选择器**
 # ——tip.js 按它从按钮往上找（合集一页 N 套，往上找才不会拿到第一套）。两种壳与
 # TIP_SW 同理。整份合集不给这一枚：与复制同一个道理，见 render_set() 那处的注释。
-SHOT = '<button class="shot" type="button" data-shot="%s">截图</button>'
-SHOT_CHIP = '<button id="shot" class="chip" type="button" data-shot="#sheet">截图</button>'
+SHOT = '<button class="op shot" type="button" data-shot="%s">截图</button>'
+SHOT_CHIP = '<button id="shot" class="op" type="button" data-shot="#sheet">截图</button>'
 
 
 # 点赞：数只有运行时才知道，写不进产出，所以跟资料页的当前时刻高亮同一条约定
@@ -935,7 +935,7 @@ def like_box(season, slug, button):
     at = '%s_%s' % (season, slug)
     if not button:
         return '<span class="likes" data-like="%s"></span>' % at
-    return ('<button class="like" type="button" data-like="%s" aria-pressed="false">'
+    return ('<button class="op like" type="button" data-like="%s" aria-pressed="false">'
             '<span aria-hidden="true">\u2665\ufe0e</span> <b></b></button>' % at)
 
 
@@ -1259,7 +1259,7 @@ def new_blocks():
                              slot_cell('移动', label='移动', hidden=True,
                                        addable='移动')],
                      cols=3,
-                     tool='<button type="button" class="slot-tool" data-add="移动">'
+                     tool='<button type="button" class="op slot-tool" data-add="移动">'
                           '＋ 移动</button>'))
     # 碎片格数按配装变（棱镜五枚，别的分支可能少一枚或多到六枚），所以出满上限
     # 六格、默认显示五格，多的收起来，由标题右边那个计数器加减。
@@ -1267,9 +1267,9 @@ def new_blocks():
              + group('碎片', [slot_cell('碎片', hidden=i >= 5) for i in range(6)],
                      cols=5,
                      tool='<span class="slot-count" data-count="碎片">'
-                          '<button type="button" data-step="-1" aria-label="减少一格">−</button>'
+                          '<button type="button" class="op" data-step="-1" aria-label="减少一格">−</button>'
                           '<b>5</b>'
-                          '<button type="button" data-step="1" aria-label="增加一格">+</button>'
+                          '<button type="button" class="op" data-step="1" aria-label="增加一格">+</button>'
                           '</span>'))
     o += ['</section>', '']
 
@@ -1286,7 +1286,7 @@ def new_blocks():
                        slot_cell('Perk', kind='起源特性', cls='item perk-cell',
                                  label='起源特性', bare=True, hidden=True,
                                  addable='起源特性')],
-                      tool='<button type="button" class="slot-tool" data-add="起源特性"'
+                      tool='<button type="button" class="op slot-tool" data-add="起源特性"'
                            ' title="加一个起源特性" aria-label="加一个起源特性">'
                            '＋</button>')
 
@@ -1513,18 +1513,18 @@ def render_new(stamp, name_cn, sets=False):
           # 截图），右端两枚是会改掉东西的（导入覆盖整页，投稿发出去）。回执跟着
           # 它报告的那两枚走——导入自己的回执在下面那个面板里（#imp-tip）。
           '<div class="src-tools">',
-          '<button id="preview" class="chip" type="button" aria-pressed="false">预览配装</button>',
+          '<button id="preview" class="toggle" type="button" aria-pressed="false">预览配装</button>',
           TIP_SW_CHIP,
           '<span class="tool-sep" aria-hidden="true"></span>',
-          '<button id="copy" class="chip" type="button">复制配装</button>',
+          '<button id="copy" class="op" type="button">复制配装</button>',
           SHOT_CHIP,
           '<span id="copy-tip" role="status"></span>',
           # 导入是一个动作不是两个：这一枚永远「导入」，文本框还空着时它带你去粘贴。
-          '<button id="to-import" class="chip" type="button">导入配装</button>',
+          '<button id="to-import" class="op" type="button">导入配装</button>',
           # 投稿直接把配装文本发到后端的待审队列。**接口地址由生成器写在
           # data-api 上**，form.js 现读——与 app.js 从 .toolbar 的 data-* 读配置
           # 同一条约定，地址仍只有 shell.API 一处定义。
-          '<button id="send" class="chip" type="button" data-api="%s">投稿</button>'
+          '<button id="send" class="op" type="button" data-api="%s">投稿</button>'
           % shell.API,
           '</div>', '']
     if sets:

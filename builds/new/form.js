@@ -328,7 +328,7 @@
     count.setAttribute('role', 'status');
     var clear = document.createElement('button');
     clear.type = 'button';
-    clear.className = 'chip';
+    clear.className = 'op';
     clear.textContent = '清空';
     clear.addEventListener('click', function () { pickOne(btn, null); });
     bar.appendChild(find);
@@ -546,7 +546,7 @@
 
     var nums = [];
     function sync() {
-      [].forEach.call(bar.querySelectorAll('.chip'), function (c) {
+      [].forEach.call(bar.querySelectorAll('.toggle'), function (c) {
         c.setAttribute('aria-pressed', String(c.dataset.mode === btn.dataset.mode));
       });
       nums[0].hidden = btn.dataset.mode === '~';
@@ -558,7 +558,7 @@
     STAT_MODES.forEach(function (m) {
       var c = document.createElement('button');
       c.type = 'button';
-      c.className = 'chip';
+      c.className = 'toggle';
       c.dataset.mode = m[0];
       c.textContent = m[1];
       c.addEventListener('click', function () {
@@ -591,7 +591,7 @@
       .insertAdjacentElement('afterend', box);
     picker = box;
     btn.setAttribute('aria-expanded', 'true');
-    (nums[0].hidden ? bar.querySelector('.chip') : nums[0]).focus();
+    (nums[0].hidden ? bar.querySelector('.toggle') : nums[0]).focus();
   }
 
   /* --n 是面板的格子列数兼行内份额，--c 是 rig 露出来的格数（样式表拿它算

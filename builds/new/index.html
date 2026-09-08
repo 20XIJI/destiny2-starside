@@ -58,7 +58,7 @@
 </ul>
 </div>
 <div class="slot" style="--n:3">
-<h3><svg class="gl" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6.5 8 3l4 3.5M4 10 8 6.5l4 3.5M4 13.5 8 10l4 3.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/></svg><span>技能</span><button type="button" class="slot-tool" data-add="移动">＋ 移动</button></h3>
+<h3><svg class="gl" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6.5 8 3l4 3.5M4 10 8 6.5l4 3.5M4 13.5 8 10l4 3.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/></svg><span>技能</span><button type="button" class="op slot-tool" data-add="移动">＋ 移动</button></h3>
 <ul class="cells">
 <li><button type="button" class="item empty" data-slot="手雷"><span class="nm">手雷</span></button></li>
 <li><button type="button" class="item empty" data-slot="近战"><span class="nm">近战</span></button></li>
@@ -76,7 +76,7 @@
 </ul>
 </div>
 <div class="slot" style="--n:5">
-<h3><svg class="gl" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14 12.5H2Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/></svg><span>碎片</span><span class="slot-count" data-count="碎片"><button type="button" data-step="-1" aria-label="减少一格">−</button><b>5</b><button type="button" data-step="1" aria-label="增加一格">+</button></span></h3>
+<h3><svg class="gl" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 14 12.5H2Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/></svg><span>碎片</span><span class="slot-count" data-count="碎片"><button type="button" class="op" data-step="-1" aria-label="减少一格">−</button><b>5</b><button type="button" class="op" data-step="1" aria-label="增加一格">+</button></span></h3>
 <ul class="cells">
 <li><button type="button" class="item empty" data-slot="碎片"><span class="nm">+</span></button></li>
 <li><button type="button" class="item empty" data-slot="碎片"><span class="nm">+</span></button></li>
@@ -92,8 +92,8 @@
 <h2 class="sect-label">武器</h2>
 <div class="slot-row">
 <div class="rig" style="--n:15;--c:1"><button type="button" class="item gun empty" data-slot="异域武器"><span class="nm">异域武器</span></button></div>
-<div class="rig" style="--n:35;--c:3"><button type="button" class="item gun empty" data-slot="传说武器"><span class="nm">传说武器</span></button><button type="button" class="item perk-cell empty" data-slot="Perk" data-kind="武器 PERK"><span class="nm">Perk</span></button><button type="button" class="item perk-cell empty" data-slot="Perk" data-kind="武器 PERK"><span class="nm">Perk</span></button><button type="button" class="item perk-cell empty" data-slot="Perk" data-kind="起源特性" data-addable="起源特性" hidden><span class="nm">起源特性</span></button><button type="button" class="slot-tool" data-add="起源特性" title="加一个起源特性" aria-label="加一个起源特性">＋</button></div>
-<div class="rig" style="--n:35;--c:3"><button type="button" class="item gun empty" data-slot="传说武器"><span class="nm">传说武器</span></button><button type="button" class="item perk-cell empty" data-slot="Perk" data-kind="武器 PERK"><span class="nm">Perk</span></button><button type="button" class="item perk-cell empty" data-slot="Perk" data-kind="武器 PERK"><span class="nm">Perk</span></button><button type="button" class="item perk-cell empty" data-slot="Perk" data-kind="起源特性" data-addable="起源特性" hidden><span class="nm">起源特性</span></button><button type="button" class="slot-tool" data-add="起源特性" title="加一个起源特性" aria-label="加一个起源特性">＋</button></div>
+<div class="rig" style="--n:35;--c:3"><button type="button" class="item gun empty" data-slot="传说武器"><span class="nm">传说武器</span></button><button type="button" class="item perk-cell empty" data-slot="Perk" data-kind="武器 PERK"><span class="nm">Perk</span></button><button type="button" class="item perk-cell empty" data-slot="Perk" data-kind="武器 PERK"><span class="nm">Perk</span></button><button type="button" class="item perk-cell empty" data-slot="Perk" data-kind="起源特性" data-addable="起源特性" hidden><span class="nm">起源特性</span></button><button type="button" class="op slot-tool" data-add="起源特性" title="加一个起源特性" aria-label="加一个起源特性">＋</button></div>
+<div class="rig" style="--n:35;--c:3"><button type="button" class="item gun empty" data-slot="传说武器"><span class="nm">传说武器</span></button><button type="button" class="item perk-cell empty" data-slot="Perk" data-kind="武器 PERK"><span class="nm">Perk</span></button><button type="button" class="item perk-cell empty" data-slot="Perk" data-kind="武器 PERK"><span class="nm">Perk</span></button><button type="button" class="item perk-cell empty" data-slot="Perk" data-kind="起源特性" data-addable="起源特性" hidden><span class="nm">起源特性</span></button><button type="button" class="op slot-tool" data-add="起源特性" title="加一个起源特性" aria-label="加一个起源特性">＋</button></div>
 </div>
 </section>
 <section class="block" id="sec-3">
@@ -193,14 +193,14 @@
 </details>
 </section>
 <div class="src-tools">
-<button id="preview" class="chip" type="button" aria-pressed="false">预览配装</button>
-<button id="tipsw" class="chip" type="button" data-tip-sw>详情开关</button>
+<button id="preview" class="toggle" type="button" aria-pressed="false">预览配装</button>
+<button id="tipsw" class="toggle" type="button" data-tip-sw>详情开关</button>
 <span class="tool-sep" aria-hidden="true"></span>
-<button id="copy" class="chip" type="button">复制配装</button>
-<button id="shot" class="chip" type="button" data-shot="#sheet">截图</button>
+<button id="copy" class="op" type="button">复制配装</button>
+<button id="shot" class="op" type="button" data-shot="#sheet">截图</button>
 <span id="copy-tip" role="status"></span>
-<button id="to-import" class="chip" type="button">导入配装</button>
-<button id="send" class="chip" type="button" data-api="https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api">投稿</button>
+<button id="to-import" class="op" type="button">导入配装</button>
+<button id="send" class="op" type="button" data-api="https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api">投稿</button>
 </div>
 </main>
 <footer class="site-foot">

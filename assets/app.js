@@ -123,7 +123,7 @@
     names.forEach(function (name) {
       var chip = document.createElement('button');
       chip.type = 'button';
-      chip.className = 'chip';
+      chip.className = 'toggle';
       chip.textContent = name;
       chips[name] = chip;
       chip.addEventListener('click', function () {
@@ -409,7 +409,7 @@
       seen.forEach(function (x) {
         var c = document.createElement('button');
         c.type = 'button';
-        c.className = 'chip';
+        c.className = 'toggle';
         c.textContent = x;
         c.setAttribute('aria-pressed', 'false');
         c.onclick = function () {

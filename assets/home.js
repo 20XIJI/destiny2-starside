@@ -73,7 +73,7 @@ export default function init(box, deps) {
 
     var more = document.createElement('button');
     more.type = 'button';
-    more.className = 'chip hits-more';
+    more.className = 'op hits-more';
     more.hidden = true;
 
     box.appendChild(input);
