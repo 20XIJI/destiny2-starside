@@ -331,10 +331,29 @@ async function editorRoute(a, body, event, me) {
   }
 
   if (a === 'smark') {
-    const ok = Number(body.ok) === 1 ? 1 : -1
+    const raw = Number(body.ok)
+    const ok = raw === 1 ? 1 : raw === 0 ? 0 : -1
     const set = { ok, okBy: me.name, at: new Date().toISOString() }
     const cur = (await subs.doc(String(body.id)).get()).data[0]
     if (!cur) throw new Error('no sub')
+
+    // 撤回：把「通过」退回「待审」。审的人点错了、或者通过之后又发现问题，在这一段
+    // 里还追得回来——通过只是改了库里这条记录，源稿要等 sync.py 拉下来才落盘。
+    //
+    // **一旦上了站就不许走这条路**：那时盘上有源稿、站上有页面、点赞也挂上了 _id，
+    // 只把库里的状态退回去，库与站就此对不上，而且没有任何一侧会报出来。上了站要
+    // 撤只有「申请移除」那一条——它落成一条待审记录，由 sync.py 的 sweep() 连源稿
+    // 一起删。删除申请自己也不许撤：sweep() 可能已经跑过，源稿已经不在了。
+    if (ok === 0) {
+      if (cur.drop) throw new Error('bad sub type')
+      if (cur.ok !== 1) throw new Error('not passed')
+      if (cur.season && cur.slug &&
+          (await docs.doc('builds/' + cur.season + '/' + cur.slug).get()).data.length) {
+        throw new Error('已上站，请走申请移除')
+      }
+      await subs.doc(cur._id).update(set)
+      return { ok: 1 }
+    }
     // 删除申请只标状态。**真正的删除在本机**：sync.py 的 sweep() 按这条记录删掉
     // 那一篇源稿，再把库里那条一并清掉——与落盘同一侧，构建与部署也在那里。
     if (cur.drop) {

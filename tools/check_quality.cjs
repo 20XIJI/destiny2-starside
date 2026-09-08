@@ -261,6 +261,34 @@ test('editor save and explicit smark md cannot alter deletion snapshots', async 
   assert.equal(h.store.subs.get('delete').md, md)
 })
 
+test('an approval can be withdrawn only while the build has not landed', async () => {
+  // 通过但还没落盘：退得回来，正文与 season/slug 原样留着，再通过一次照旧走查重
+  const h = harness()
+  h.store.subs.set('sub', submission(h, 'sub', { ok: 1 }))
+  assert.equal((await h.request({ a: 'smark', id: 'sub', ok: 0 })).ok, 1)
+  assert.equal(h.store.subs.get('sub').ok, 0)
+  assert.equal(h.store.subs.get('sub').md, md)
+  assert.equal(h.store.subs.get('sub').slug, 'a-hunter')
+
+  // 已上站：只把库里的状态退回去，盘上的源稿与站上的页面还在，两侧就此对不上,
+  // 而且没有任何一侧会报出来。这条路要走「申请移除」。
+  const live = harness({ docs: [{ _id: 'builds/s29-测试/a-hunter', md, hash: digest(md) }] })
+  live.store.subs.set('sub', submission(live, 'sub', { ok: 1 }))
+  const landed = live.snapshot()
+  assert.equal((await live.request({ a: 'smark', id: 'sub', ok: 0 })).error, '已上站，请走申请移除')
+  assert.deepEqual(live.snapshot(), landed)
+
+  // 删除申请不许撤（sweep() 可能已经把源稿删了），还没通过的也没有可撤的东西
+  for (const fields of [{ drop: 1, ok: 1 }, { ok: 0 }, { ok: -1 }]) {
+    const g = harness()
+    g.store.subs.set('sub', submission(g, 'sub', fields))
+    const was = g.snapshot()
+    assert.equal((await g.request({ a: 'smark', id: 'sub', ok: 0 })).error,
+      fields.drop ? 'bad sub type' : 'not passed')
+    assert.deepEqual(g.snapshot(), was)
+  }
+})
+
 test('one batch preserves two changes and writes final document once', async () => {
   const rows = [edit('a', 0, '甲', '甲新'), edit('b', 1, '乙', '乙新')]
   const h = harness(reviewSeed('甲\n乙', rows))

@@ -1107,6 +1107,22 @@
         acts.appendChild(ask)
       }
 
+      // 通过之后、源稿被 sync.py 拉下来之前，这条记录还只活在库里，退得回来。
+      // 上了站（state 完成）就没有这一枚——那时要撤只有「申请移除」，后端也照这条挡。
+      if (b.state === 'pass') {
+        var undo = el('button', 'chip', '撤回')
+        undo.type = 'button'
+        undo.onclick = function () {
+          if (!window.confirm('撤回《' + (nameOf(b.md) || b.id) + '》的通过，退回待审？')) return
+          undo.disabled = true
+          call('smark', { id: s._id, ok: 0 }).then(load).then(toList, function (e) {
+            undo.disabled = false
+            tip(ops, '撤回失败：' + e.message, 1)
+          })
+        }
+        acts.appendChild(undo)
+      }
+
       if (b.state === 'no') {
         var del = el('button', 'chip', '删除')
         del.type = 'button'
