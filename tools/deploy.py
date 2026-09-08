@@ -77,22 +77,6 @@ def tcb(*args: str, env: str, confirm: bool = False) -> None:
         sys.exit("tcb 失败，refs/deploy 不动，改完重跑即可")
 
 
-def check() -> None:
-    assert keep("armor-mods/icons/0a1b2c3d4e.webp")
-    assert keep("index.html") and keep("assets/search.js")
-    assert keep("admin/index.html") and keep("admin/terms.js")
-    assert not keep("tools/deploy.py")
-    assert not keep("references/docs/changelog.md")
-    assert not keep("CLAUDE.md") and not keep("cloudbaserc.json")
-    assert listing("a.md\0index.html\0") == ["index.html"]
-    assert uncomment("a/*x\ny*/b") == "a\nb"  # 换行数保住，行号不移
-    assert uncomment("a/*x*/b") == "ab"  # 单行注释不留空行
-    assert uncomment("a") == "a"  # 没有注释就原样
-    assert strippable("i{color:red} /* 说明 */")
-    assert not strippable('var a = "x/*y";') and not strippable("var a = 'x*/y';")
-    print("ok")
-
-
 def stage_one(rel: str, dst: pathlib.Path) -> None:
     """把一个文件放进暂存目录。CSS 与 JS 顺手剥掉块注释，别的原样复制。
 
@@ -111,6 +95,26 @@ def stage_one(rel: str, dst: pathlib.Path) -> None:
     dst.write_text(uncomment(text), encoding="utf-8")
 
 
+def plan(full: bool, base: str, target: str) -> "tuple[list[str], list[str]]":
+    """这次要发哪些文件、删哪些文件。只问 git，不碰远端，也不写任何东西。
+
+    从 main() 里分出来，是因为「这次要发什么」本来只有一条路问得到：跑 --dry-run
+    读它打印的那几行，或者在测试里把整个进程形状复原一遍（工作区状态、HEAD、
+    子进程，按调用顺序排好）。它是纯的，就该单独问得到。
+
+    **--no-renames**：站上一堆同构的页面，git 很容易把「删掉一套配装」与
+    「新收一套配装」按内容相似度配成一次改名（实测 51% 就配上了）。配成改名
+    之后旧路径既不在 files 也不在 gone 里，远端于是一直挂着那个已经删掉的页面。
+    """
+    if full:
+        return listing(git("ls-files", "-z")), []
+    files = listing(git("diff", "--no-renames", "--name-only", "-z",
+                        "--diff-filter=d", base, target))
+    gone = listing(git("diff", "--no-renames", "--name-only", "-z",
+                       "--diff-filter=D", base, target))
+    return files, gone
+
+
 def unchanged(target: str) -> None:
     if git("rev-parse", "HEAD").strip() != target or git("status", "--porcelain").strip():
         sys.exit("部署准备期间 HEAD 或工作区变了，未继续部署，refs/deploy 不变")
@@ -121,15 +125,10 @@ def main() -> None:
     parser.add_argument("--all", action="store_true", help="整站重发")
     parser.add_argument("--dry-run", action="store_true", help="只列清单，不同步或发送")
     parser.add_argument("--prune", action="store_true", help="配合 --all 删除远端额外文件")
-    parser.add_argument("--check", action="store_true", help="仅检查部署文件筛选规则")
     args = parser.parse_args()
     full, dry, prune = args.all, args.dry_run, args.prune
     if prune and not full:
         parser.error("--prune 只跟 --all 一起用：增量那份清单不是完整的一版，会把没改的文件全删了")
-    if args.check and (full or dry or prune):
-        parser.error("--check 不能与发布选项同时使用")
-    if args.check:
-        return check()
     env = json.loads((ROOT / "cloudbaserc.json").read_text())["envId"]
     print(f"模式：{'全量' if full else '增量'}；环境：{env}；挂载：{CLOUD}；"
           f"预演：{'是' if dry else '否'}；prune：{'开启' if prune else '关闭'}")
@@ -150,17 +149,7 @@ def main() -> None:
         if git("status", "--porcelain").strip():
             sys.exit("同步改动了源稿：先 npm run build 再 commit，然后部署")
     target = git("rev-parse", "HEAD").strip()
-    if full:
-        files, gone = listing(git("ls-files", "-z")), []
-    else:
-        # **--no-renames**：站上一堆同构的页面，git 很容易把「删掉一套配装」与
-        # 「新收一套配装」按内容相似度配成一次改名（实测 51% 就配上了）。配成
-        # 改名之后旧路径既不在 files 也不在 gone 里，远端于是一直挂着那个已经
-        # 删掉的页面。
-        files = listing(git("diff", "--no-renames", "--name-only", "-z",
-                            "--diff-filter=d", base, target))
-        gone = listing(git("diff", "--no-renames", "--name-only", "-z",
-                           "--diff-filter=D", base, target))
+    files, gone = plan(full, base, target)
 
     print(f"发 {len(files)} 个文件" + (f"，删 {len(gone)} 个" if gone else ""))
     for p in files + gone:

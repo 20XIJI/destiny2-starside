@@ -84,9 +84,10 @@
   // 都是这个顺序），不另定一个。
   var ELEM_ORDER = Object.keys(BRANCH).map(function (n) { return 'elements/' + BRANCH[n]; });
 
-  // 括注是全角，与 vocab.bare_kind 切的是同一个符号：切不一致时神器模组那一格
-  // 永远列不出候选，而页面与闸门都不报错。check_quality.py 的 ArtifactPicker 钉住。
-  function bare(kind) { return String(kind || '').split(' （')[0].trim(); }
+  // 切分符号由 vocab.js 带过来（生成器的 vocab.KIND_TAIL），不在这里另写一份：
+  // 两处各写一份时，改一处就是七个神器格全部列不出候选，而页面照常渲染、
+  // 三道闸门全绿。check_quality.py 的 ArtifactPicker 钉住。
+  function bare(kind) { return String(kind || '').split(V.sep)[0].trim(); }
 
   /* 候选行右下角那一行小字。元素页上的条目标它属于哪个子职业——一个棱镜配装的
      碎片可以来自六页中的任何一页，「碎片」两个字每行重复一遍没有信息量。

@@ -19,6 +19,7 @@ import sys
 from urllib.parse import quote
 
 import shell
+import markup
 from markup import (IMG, LINK, Icons, bmark, die, inline, meta_line, meta_of,
                     no_nested_span, plain, source_context, src_hash, text_of, whole_marker)
 
@@ -124,23 +125,9 @@ def broke(cell):
 
 
 def split_cells(row):
-    """表格行按 | 切分，但 {token|文字} 里的 | 不是分隔符。"""
+    """表格行按 | 切分成每一格的文本。切格规则只有 markup.cells() 一处定义。"""
     row = row.strip()
-    # 首尾各去一个 | ——用 strip('|') 会把空的末格一起吃掉
-    row = row.removeprefix('|').removesuffix('|')
-    cells, buf, depth = [], [], 0
-    for ch in row:
-        if ch == '{':
-            depth += 1
-        elif ch == '}':
-            depth -= 1
-        if ch == '|' and depth == 0:
-            cells.append(''.join(buf))
-            buf = []
-        else:
-            buf.append(ch)
-    cells.append(''.join(buf))
-    return [c.strip() for c in cells]
+    return [row[a:b].strip() for a, b in (markup.cells(row) or [])]
 
 
 def is_rule(cells):

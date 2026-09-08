@@ -88,6 +88,19 @@ function harness(seed = {}, hooks = {}) {
             Object.assign(row, copy(fields))
             if (tx) tx.writes.add(name + '\0' + id)
             return { updated: 1 }
+          },
+          // set 整条替换，update 是合并——eds 建新编辑者走的是 set。
+          async set(fields) {
+            calls.push({ op: 'set', name, id, tx: !!tx, fields: copy(fields) })
+            state[name].set(id, Object.assign({ _id: id }, copy(fields)))
+            if (tx) tx.writes.add(name + '\0' + id)
+            return { updated: 1 }
+          },
+          async remove() {
+            calls.push({ op: 'remove', name, id, tx: !!tx })
+            const had = state[name].delete(id)
+            if (tx) tx.writes.add(name + '\0' + id)
+            return { deleted: had ? 1 : 0 }
           }
         }
       }
@@ -132,14 +145,25 @@ function harness(seed = {}, hooks = {}) {
     require(name) {
       if (name === 'crypto') return crypto
       if (name === 'zlib') return zlib
+      // 切格那一份与线上是同一个文件，不在这里另造替身。
+      if (name === './dialect.js') return require(path.join(root, 'functions/api/dialect.js'))
       assert.equal(name, '@cloudbase/node-sdk', 'unexpected module')
       return { init: () => ({ database: () => db }) }
     }
   }
-  vm.runInNewContext(source + '\nexports.quality = { fingerprint };', sandbox, { filename: 'functions/api/index.js' })
+  vm.runInNewContext(source + '\nexports.quality = { fingerprint, wc, LEVEL };', sandbox, { filename: 'functions/api/index.js' })
   return {
     store, calls,
     fingerprint: sandbox.exports.quality.fingerprint,
+    // 令牌缓存：种一个身份进去，who() 就不必 fetch，真正那条门跑得到。
+    signIn: (token, lv, uid = 'u' + lv) =>
+      sandbox.exports.quality.wc.set(token, { t: Date.now(), uid, name: '测试' + lv, lv }),
+    level: sandbox.exports.quality.LEVEL,
+    async as(token, body) {
+      const response = await sandbox.exports.main({ httpMethod: 'POST', body: JSON.stringify(body),
+        headers: { authorization: 'Bearer ' + token } })
+      return { status: response.statusCode, ...JSON.parse(response.body) }
+    },
     snapshot: () => copy(Object.fromEntries(Object.entries(store).map(([name, rows]) => [name, [...rows.values()]]))),
     async request(body, authenticated = true) {
       const response = await sandbox.exports.main({ httpMethod: 'POST', body: JSON.stringify(body),
@@ -512,33 +536,135 @@ function tableRows() {
   return out
 }
 
-test('the two cellSpans copies are still character-for-character the same', () => {
-  // 云函数写 const/let、edit.js 写 var，缩进差两格，声明里的空格与整行注释也各写
-  // 各的；除此之外必须逐字相同。
-  const norm = (file) => funcSource(file, 'cellSpans')
-    .replace(/\b(?:const|let|var)\b/g, 'X')
-    .replace(/function (\w+) \(/, 'function $1(')
-    .split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('//')).join('\n')
-  assert.equal(norm('functions/api/index.js'), norm('admin/edit.js'),
-    '云函数与 edit.js 的 cellSpans 分家了——两份都在给同一条改动定位，分家即静默改错格')
+test('the dialect module is byte-identical in both places it has to live', () => {
+  // 切格在 JS 这一侧只有 admin/dialect.js 一份定义。云函数只 require 得到自己
+  // 目录下的东西，所以 build-terms.py 复制一份到 functions/api/。复制走样就是
+  // 站上与库里对同一行切出不同的格——那一格改下去会落到别处。
+  const one = fs.readFileSync(path.join(root, 'admin/dialect.js'), 'utf8')
+  const two = fs.readFileSync(path.join(root, 'functions/api/dialect.js'), 'utf8')
+  assert.equal(two, one, 'functions/api/dialect.js 与 admin/dialect.js 不一样了——跑 npm run build 重新复制')
 })
 
-test('all three javascript splitters agree on every real table row', () => {
-  const api = splitter('functions/api/index.js', 'cellSpans')
-  const ui = splitter('admin/edit.js', 'cellSpans')
-  const count = splitter('admin/admin.js', 'cells')
+test('no consumer keeps a private copy of the splitter', () => {
+  // 从前这条规则在 JS 里有三份（云函数、edit.js、admin.js），且并不等价：
+  // admin.js 的 titleEnd() 不记花括号深度，4563 行语料里 382 行把行标题截在
+  // {token|…} 内部那个竖线上，于是行标题里的词在编辑台上被报「该着色」，
+  // 而构建时的 G6 不报。认的是切格独有的那一句剥空格循环：谁再抄一份回去，
+  // 那一句就跟着回去，这条就响。
+  const MARK = "while (b > a && line[b - 1] === ' ') b--"
+  const owns = ['admin/dialect.js', 'functions/api/dialect.js']
+  for (const rel of [...owns, 'functions/api/index.js', 'admin/edit.js', 'admin/admin.js']) {
+    const has = fs.readFileSync(path.join(root, rel), 'utf8').includes(MARK)
+    assert.equal(has, owns.includes(rel),
+      has ? `${rel} 又自己实现了一遍切格，应该转给 dialect.js`
+          : `${rel} 里找不到切格实现——dialect.js 被改动了？`)
+  }
+})
+
+test('both entry points load the dialect before the console that uses it', () => {
+  // admin.js 的 cells()/titleEnd() 现读 window.starsideDialect。少这一句，
+  // /admin/ 一开就是 undefined.cells，而闸门、构建、npm test 全都看不见——
+  // 那一屏是手写的 HTML，没有任何生成器管它。
+  const html = fs.readFileSync(path.join(root, 'admin/index.html'), 'utf8')
+  const at = (src) => html.indexOf(`<script src="${src}"`)
+  assert.notEqual(at('dialect.js'), -1, 'admin/index.html 没有引 dialect.js')
+  assert.ok(at('dialect.js') < at('admin.js'),
+    'admin/index.html 里 dialect.js 要排在 admin.js 前面')
+
+  // 资料页上开编辑态走的是 edit.js 自己那条注入链，同样要先注入 dialect。
+  const edit = fs.readFileSync(path.join(root, 'admin/edit.js'), 'utf8')
+  const chain = /script\('admin\/dialect\.js'\)[\s\S]{0,120}script\('admin\/admin\.js'\)/
+  assert.match(edit, chain, 'edit.js 注入 admin.js 之前没有先注入 dialect.js')
+})
+
+test('the dialect splits every real table row into cells that agree with its own count', () => {
+  const D = require(path.join(root, 'admin/dialect.js'))
   const rows = tableRows()
   assert.ok(rows.length > 4000, `只扫到 ${rows.length} 行表格行，语料挪走了？`)
-  // 三份各跑在自己的 vm realm 里，数组原型互不相同，assert/strict 的 deepEqual 会
-  // 连原型一起比。要比的是切出来的区间，所以按值比。
-  const spans = (v) => JSON.stringify(v)
   for (const [where, n, line] of rows) {
-    const a = api(line)
-    assert.equal(spans(a), spans(ui(line)), `${where}:${n} 云函数与 edit.js 切得不一样`)
-    assert.notEqual(a, null, `${where}:${n} cellSpans 整行不认——那一格永远改不了`)
-    assert.equal(a.length, count(line),
-      `${where}:${n} cellSpans 切出 ${a.length} 格，前端闸门数出 ${count(line)} 格`)
+    const spans = D.cellSpans(line)
+    assert.notEqual(spans, null, `${where}:${n} 整行不认——那一格永远改不了`)
+    assert.equal(D.cells(line), spans.length, `${where}:${n} cells() 与 cellSpans() 数不一致`)
+    assert.ok(spans.every(([a, b]) => a <= b && b <= line.length), `${where}:${n} 区间越界`)
   }
+})
+
+test('every action that needs credentials refuses a request that carries none', async () => {
+  // 从前门槛是 25 条分支体里的字面量，这一类断言写不出来——没有表可遍历。
+  const h = harness()
+  for (const [action, need] of Object.entries(h.level)) {
+    const r = await h.request({ a: action }, false)
+    if (need === null) {
+      assert.notEqual(r.error, 'forbidden', `${action} 是公开动作，不该要令牌`)
+      continue
+    }
+    assert.equal(r.status, 400, `${action} 无凭据时该被拒`)
+    assert.match(String(r.error), /forbidden|bad token/, `${action} 无凭据时放行了：${r.error}`)
+  }
+})
+
+test('the permission table covers exactly the actions the router dispatches', () => {
+  // 新增一条 action 忘了写门槛，从前是静默开放；现在表里缺一行，这条就响。
+  const source = fs.readFileSync(path.join(root, 'functions/api/index.js'), 'utf8')
+  const dispatched = new Set([...source.matchAll(/if \(a === '([^']+)'\)/g)].map((m) => m[1]))
+  const declared = new Set(Object.keys(harness().level))
+  assert.deepEqual([...dispatched].filter((a) => !declared.has(a)), [], '这些 action 没在 LEVEL 里写门槛')
+  assert.deepEqual([...declared].filter((a) => !dispatched.has(a)), [], 'LEVEL 里这些 action 已经没有分支了')
+})
+
+test('a signed-in editor below the bar is told it is a permission problem, not a bad token', async () => {
+  // who() 里那道 `me.lv < need` 从前一次都没跑过：测试每次都带 ADMIN_TOKEN，
+  // 在 index.js 的破窗那一行就短路成 lv 5 了。**两个词必须分开**：前端收到
+  // forbidden 会去换令牌再打一次，权限不足报成 forbidden 的话，lv 不够的人
+  // 点一下要白跑三趟，报出来还看不出是权限问题。
+  const h = harness()
+  h.signIn('lv1', 1)
+  assert.equal((await h.as('lv1', { a: 'edits' })).error, undefined, 'lv 1 该进得了 edits')
+  assert.equal((await h.as('lv1', { a: 'emark', jobs: [] })).error, 'no permission', 'lv 1 不该进得了 emark')
+  assert.equal((await h.as('lv1', { a: 'eds', op: 'set', uid: 'x', lv: 1 })).error, 'no permission', 'lv 1 不该改得了编辑者')
+})
+
+test('an editor cannot mint someone at or above their own level', async () => {
+  // eds 那两行是唯一防止管理员造超管的东西，此前零断言。
+  const h = harness({ editors: [{ _id: 'u3', name: '老三', lv: 3 }] })
+  h.signIn('lv3', 3, 'u3')
+  assert.equal((await h.as('lv3', { a: 'eds', op: 'set', uid: 'new', lv: 3 })).error, 'bad lv', '不许造出与自己同级的')
+  assert.equal((await h.as('lv3', { a: 'eds', op: 'set', uid: 'new', lv: 4 })).error, 'bad lv', '不许造出高于自己的')
+  assert.equal((await h.as('lv3', { a: 'eds', op: 'set', uid: 'u3', lv: 1 })).error, 'forbidden', '不许动与自己同级的人')
+  assert.equal((await h.as('lv3', { a: 'eds', op: 'set', uid: 'new', lv: 2 })).error, undefined, 'lv 2 该造得出来')
+})
+
+// 编辑台的 lint() 与 terms.js 一起跑：admin.js 在 Node 里只导出纯函数，
+// 但顶层有一句 window.addEventListener，所以 window 要给个壳。
+function adminApi() {
+  const sandbox = { console, module: { exports: {} }, window: { addEventListener() {} } }
+  vm.createContext(sandbox)
+  for (const rel of ['admin/dialect.js', 'admin/terms.js', 'admin/admin.js']) {
+    vm.runInContext(fs.readFileSync(path.join(root, rel), 'utf8'), sandbox, { filename: rel })
+  }
+  return { api: sandbox.module.exports, terms: sandbox.window.starsideTerms }
+}
+
+// 汉字与拉丁之间那个排版空格的插入点，与 items.py 的 pattern() 同一条判据。
+const BOUND = /(?<=[\u4e00-\u9fff])(?=[A-Za-z0-9])|(?<=[A-Za-z0-9])(?=[\u4e00-\u9fff])/g
+
+test('the editing console flags item names written with the typographic space', () => {
+  // 源稿按 design.md 三节在汉字与拉丁之间补一个空格（语料里 117 处「Vex 揭秘者」
+  // 这类写法），而 tools/items.json 的键是归一化过的、没有那个空格。Python 那侧
+  // 靠 items.pattern() 把空格允许回来；terms.js 要把两种写法都带上，否则编辑台
+  // 对这批名字一声不吭，而构建时的 G6 照报——人在编辑台上看不出该着色。
+  const { api, terms } = adminApi()
+  const mixed = terms.items.filter((row) => BOUND.test(row[0]) && (BOUND.lastIndex = 0, true))
+  assert.ok(mixed.length > 20, `terms.js 里中英混排的名字只有 ${mixed.length} 个，词表挪走了？`)
+  const missed = []
+  for (const [word, token] of mixed) {
+    const spaced = word.replace(BOUND, ' ')
+    if (spaced === word) continue
+    const { warns } = api.lint('拿' + spaced + '打一发。', { cols: 0, head: false }, true)
+    if (!warns.some((w) => w.startsWith('「' + spaced + '」该着 ' + token))) missed.push(spaced)
+  }
+  assert.deepEqual(missed, [],
+    `这些名字按源稿的写法出现时，编辑台不提示该着色，而 npm run build 的 G6 会报：${missed.slice(0, 5).join('、')}`)
 })
 
 async function main() {

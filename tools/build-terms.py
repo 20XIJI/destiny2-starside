@@ -25,6 +25,10 @@ import shell
 
 OUT = os.path.join(shell.ROOT, 'admin', 'terms.js')
 TREE = os.path.join(shell.ROOT, 'admin', 'pages.js')
+# 切格那一份的定义在 admin/，云函数只 require 得到自己目录下的东西，所以复制一份
+# 过去。两份逐字相同由 npm test 钉住；改规则改 admin/dialect.js。
+DIALECT = os.path.join(shell.ROOT, 'admin', 'dialect.js')
+DIALECT_FN = os.path.join(shell.ROOT, 'functions', 'api', 'dialect.js')
 
 
 def j(v):
@@ -44,7 +48,13 @@ def build():
 
     terms = [[w, t, b] for w, t, b in check_terms.TERMS if b or t]
     table, _ = items.load()
-    words = sorted(table.items(), key=lambda kv: (-len(kv[0]), kv[0]))
+    # **一个名字在源稿里写得出几种形状，就送过去几行**。表的键是归一化过的，
+    # 源稿在汉字与拉丁之间补一个排版空格；Python 那侧靠 items.pattern() 把空格
+    # 允许回来，浏览器那侧按字面比对（1400 条现编译正则会拖垮逐行提示）。
+    # 展开由 items.variants() 出，与 pattern() 共用同一条边界判据——规则留在
+    # Python，浏览器只认数据。1394 条里 38 条中英混排，展开后多 166 行。
+    words = sorted(((v, tk) for w, tk in table.items() for v in items.variants(w)),
+                   key=lambda kv: (-len(kv[0]), kv[0]))
 
     lines = ['// 由 tools/build-terms.py 生成，不手改。改词表改 check_terms.TERMS 或 tools/items.json。',
              'window.starsideTerms = {']
@@ -175,6 +185,12 @@ def main():
     with open(OUT, 'w', encoding='utf-8') as f:
         f.write(out)
     print('admin/terms.js  %.1f KB' % (len(out.encode()) / 1024))
+    with open(DIALECT, encoding='utf-8') as f:
+        dialect = f.read()
+    with open(DIALECT_FN, 'w', encoding='utf-8') as f:
+        f.write(dialect)
+    print('functions/api/dialect.js  %.1f KB（admin/dialect.js 的副本）'
+          % (len(dialect.encode()) / 1024))
     pages = tree()
     with open(TREE, 'w', encoding='utf-8') as f:
         f.write(pages)

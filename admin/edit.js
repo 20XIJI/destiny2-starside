@@ -84,30 +84,8 @@
   }
 
   // ── 源稿定位 ───────────────────────────────────────────────────────
-  // 表格行按 | 切出每一格「去掉首尾空格之后」的区间。与 convert-doc.py 的
-  // split_cells()、云函数的 cellSpans() 同一条规则：记花括号深度，{ico|…} 内部的
-  // 竖线不是分隔符。三处各有一份，靠 scratchpad 那份断言拿真表格逐行对住。
-  function cellSpans (line) {
-    if (line[0] !== '|') return null
-    var out = []
-    var depth = 0
-    var from = 1
-    for (var i = 1; i <= line.length; i++) {
-      var ch = line[i]
-      if (ch === '{') depth++
-      else if (ch === '}') depth--
-      if (i === line.length || (ch === '|' && depth === 0)) {
-        var a = from
-        var b = i
-        while (a < b && line[a] === ' ') a++
-        while (b > a && line[b - 1] === ' ') b--
-        out.push([a, b])
-        from = i + 1
-        if (ch !== '|') break
-      }
-    }
-    return out.length > 1 ? out.slice(0, -1) : out
-  }
+  // 切格走 admin/dialect.js：源稿方言在 JS 这一侧只有那一份定义。
+  function cellSpans (line) { return window.starsideDialect.cellSpans(line) }
 
   // 元素 → 它占源稿的 [首行, 末行]。进编辑态时解一次。
   var LINES = new Map()
@@ -585,7 +563,8 @@
     // 关掉再开时不重载：脚本已经在页面上了，再插一遍只是白执行一次。
     // **词表不在这条链上**：admin.js 的 lint() 现读 window.starsideTerms，不在
     // 模块顶层捕获，所以两份脚本的先后不再有约束，词表挪到进去之后空闲补。
-    return (window.starsideAdmin ? Promise.resolve() : script('admin/admin.js'))
+    return (window.starsideAdmin ? Promise.resolve()
+      : script('admin/dialect.js').then(function () { return script('admin/admin.js') }))
       .then(reload).then(function () {
         decode()
         S.on = true

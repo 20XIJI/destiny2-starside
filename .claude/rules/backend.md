@@ -31,7 +31,7 @@ runtime 比整站首屏还大。
 | 读计数 | `GET ?a=stats` | 首页页脚那句「今日 X 位访客 · 累计 Y」 |
 | 点赞 | `POST {a:"like",id,d}` / `GET ?a=likes` | `likes`，`_id` 是「赛季_slug」 |
 | 投稿 | `POST {a:"sub",md}` | `subs`，`ok` 三档：0 待审、1 通过、-1 驳回 |
-| 编辑台读写 | `POST {a:"docs"/"doc"/"chg"/"pend"/"edits"/"emark"/"eds"…}` | 带 Bearer，见《在线编辑台》 |
+| 编辑台读写 | `POST {a:"docs"/"chg"/"pend"/"edits"/"emark"/"eds"…}` | 带 Bearer，见《在线编辑台》 |
 | 本机对账 | `POST {a:"pull"/"push"/"list"/"mark"/"stat",k}` | 要 `ADMIN_TOKEN` |
 
 本机那几个动作要 `k`，与云函数的 `ADMIN_TOKEN` 环境变量比对。
@@ -192,6 +192,11 @@ refresh 换一遍再打，重试只放一次：换完还被拒就是真的过期
 | 加人、改角色、移除 | `lv >= 3`，且只能动 `lv` 严格低于自己的人 |
 | 落盘、构建、部署 | 不在线上，只在本机 |
 
+每个动作的门槛只有 `functions/api/index.js` 的 `LEVEL` 一张表，`route()` 进分支前
+判一次；分支体只留业务，不再各自 `await who(event, N)`。表里 `null` 是公开（连令牌
+都不要），数字是 `who()` 的门槛，`'admin'` 走 `ADMIN_TOKEN`。新增一个动作忘了在表里
+写门槛，`npm test` 当场报——那一条按表遍历，断言每个非公开动作无凭据时都被拒。
+
 最后一行那半句一句话钉住两件事：管理员动不了超管，也造不出第二个超管。
 **不做范围权限**（某人只能改配装、不能改资料页），`lv` 一维。
 
@@ -324,13 +329,18 @@ gzip。省掉的那些由「没有 `data-b` 的 `<tr>` 就是上一行 +1」补�
 跨表接到上一张去；行组分界行（`|---|`）占一行却不出 `<tr>`，它后面那行也照旧带号。
 全站合计 +0.87% gzip。
 
-切格规则有六份实现：`convert-doc.py` 的 `split_cells()`、云函数的 `cellSpans()`、
-`edit.js` 的 `cellSpans()`、`admin.js` 的 `cells()`、`items.py` 的 `row_title_end()`、
-`admin.js` 的 `titleEnd()`。跨语言没法共用一份，它们也并不等价：行首空白、缺末尾
-竖线、全角空格修剪、`}` 深度可否为负、`{` 的判据，五处各有分歧。当前语料全部规整所以
-撞不上（4562 行表格行里缺尾管 0、前导空白 0、全角空格贴边 0），成立靠的是语料不是
-实现。`check_quality.py` 的 `CellSplitting` 拿全部真表格行现跑三方对住，不用快照、
-不做 `trim()`；它断言的是"在当前语料上结果一致"，不是"实现等价"。
+切格规则只有两份实现：Python 的 `markup.cells()`，JS 的 `admin/dialect.js`。
+跨语言没法共用源码，两份是下限。JS 那一侧由 `admin.js`、`edit.js` 与云函数共用同一个
+文件；云函数只 `require` 得到自己目录下的东西，所以 `functions/api/dialect.js` 是
+构建复制过去的，**不手改**，两份逐字相同由 `npm test` 钉住。
+
+五处曾有分歧的地方各选定了一种，判据写在 `dialect.js` 的注释里：只有 `{token|` 才
+开一层，深度钳在 0，行首不许有空白（直接返回 `null`，不先 trim），只剥半角空格，
+首尾各去一个 `|`。选定的这一种与合并前的实现在全部 4563 行语料上结果逐字相同。
+
+`check_quality.py` 的 `CellSplitting` 拿全部真表格行断言「源稿还落在两份都认的形状
+里」；`check_quality.cjs` 管 JS 那一份自己的行为，以及「没有哪个消费方又抄了一份
+回去」。
 
 产出里的裸标签正则会被标记打断。`vocab.py` 三处写着 `<tr>`、一处写着 `<h4>`，
 戴上 `data-b` 之后一条都匹配不上，带 `data-band` 的合并表其实早就匹配不上了。
@@ -555,8 +565,7 @@ season 与 slug、而盘上还没有的那些写成 `references/builds/<season>/
 
 1. `data-b` 指的行对得上：产出里每个带号的块，文本按保真那套归一化之后与源稿
    对应行逐字相等。这一条连「没有 `data-b` 的 `<tr>` 就是上一行 +1」一起验了。
-2. 切格三方一致：`split_cells()`、云函数与 `edit.js` 的 `cellSpans()`，
-   拿全部真表格行对。
+2. 切格：`markup.cells()` 与 `admin/dialect.js` 拿全部真表格行对。
 3. `locate()` / `patch()`：改一格只动那一行、邻格不动、两侧空格原样留着；
    原文对不上即冲突；同一文本多处时按 `blk` 挑，块号也对不上就不猜。
 4. **多行块**：几行合成一段时定位得到，换成一行或三行后总行数对得上。

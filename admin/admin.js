@@ -117,19 +117,12 @@
     return span.some(function (s) { return a >= s[0] && b <= s[1] })
   }
 
-  // 按竖线切格，但记花括号深度——{ico|…} 内部也有竖线，裸切会让带图标的行错位一格。
-  function cells (line) {
-    var n = 0
-    var d = 0
-    for (var i = 0; i < line.length; i++) {
-      var m = openAt(line, i)
-      if (m) { d++; i += m[0].length - 1; continue }
-      var c = line.charAt(i)
-      if (c === '}' && d) d--
-      else if (c === '|' && !d) n++
-    }
-    return n - 1
-  }
+  // 切格与行标题那一段走 admin/dialect.js：源稿方言在 JS 这一侧只有那一份定义。
+  // 从前这里的 titleEnd() 用的是不记花括号深度的 indexOf，首格带 {token|…}
+  // 的行会把身份段截在标记内部那个竖线上——4563 行语料里 382 行如此，
+  // 于是行标题里的词在编辑台上被当成正文报「该着色」，而构建时的 G6 不报。
+  function cells (line) { return window.starsideDialect.cells(line) }
+  function titleEnd (line) { return window.starsideDialect.titleEnd(line) }
 
   // ── 前端闸门 ───────────────────────────────────────────────────────
   // 这些是提示不是拦截：逐字保真与结构断言要 Python，留在本地 npm run build。
@@ -138,19 +131,6 @@
 
   var KEY_LINE = /^[\u4e00-\u9fff]{1,6}(（[^）]*）)?：/
   var RULE_LINE = /^\|[-| ]+\|$/
-
-  // 表格行首格里「行的身份」那一段的结束位置；不是表格行就是 0。
-  function titleEnd (line) {
-    if (line.charAt(0) !== '|') return 0
-    var n = line.indexOf('|', 1)
-    if (n < 0) return 0
-    if (!line.slice(1, n).trim()) {          // 首格留空即向上合并，身份在第二格
-      n = line.indexOf('|', n + 1)
-      if (n < 0) return 0
-    }
-    var brk = line.indexOf('\\\\', 1)
-    return brk > 0 && brk < n ? brk : n + 1
-  }
 
   function ranges (text, res) {
     var out = []

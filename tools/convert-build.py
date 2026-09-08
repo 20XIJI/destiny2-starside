@@ -23,7 +23,8 @@ import shell
 import vocab
 from html import escape
 
-from markup import BRANCH, CATEGORIES, CLASSES, die, inline, must, source_context, text_of, uncolor
+from markup import (BRANCH, CATEGORIES, CLASSES, die, inline, loading_attr, must,
+                    source_context, text_of, uncolor)
 
 SRC_DIR = shell.BUILD_DIR
 OUT_DIR = 'builds'
@@ -72,13 +73,19 @@ CELL_ICON = {'item': 32, 'item gun': 56, 'item gear': 56, 'item set': 56,
              'item perk-cell': 24}
 
 
-def icon_of(e, size):
+def icon_of(e, size, eager=False):
     """词表条目的图标。图标一律是正方形，宽高只用来占位与定宽高比，所以按显示
-    尺寸写；文件本身在它自己那一页里已经复核过「文件名即内容 md5」。"""
+    尺寸写；文件本身在它自己那一页里已经复核过「文件名即内容 md5」。
+
+    首屏优先级走 markup.loading_attr()，判据与三个资料生成器同一处。**这一页
+    只有页头那枚核心图算首屏**：格子里那四十来张排在一屏之下，而给首屏图片加
+    loading="lazy" 会让它们等布局算完才开始下载，是反模式。格子那一批要不要
+    也放开，得按 1440×900 实测数，没量之前不猜。
+    """
     if not e['icon']:
         return ''
-    return ('<img src="%s%s" alt="" width="%d" height="%d" loading="lazy">'
-            % (UP, e['icon'], size, size))
+    return ('<img src="%s%s" alt="" width="%d" height="%d" %s>'
+            % (UP, e['icon'], size, size, loading_attr(0 if eager else 1, 1)))
 
 
 def item(idx, slot, name, prefer, kind=None, cls='item', bare=False, tail='', label=''):
@@ -507,7 +514,7 @@ def core_of(idx, md):
     return core_pick(idx, md, 'elements/%s' % BRANCH[branch_of(md)])
 
 
-def core_mosaic(cores, size):
+def core_mosaic(cores, size, eager=False):
     """合集那枚图：各套的核心拼成的马赛克。
 
     **一枚时就是那一枚，不套壳**——单套配装的页头是一枚 96px 的图，只有一套
@@ -515,10 +522,10 @@ def core_mosaic(cores, size):
     二乘二：flex 换行加两向居中就出这三种，不必按数目各写一套规则。
     """
     if len(cores) == 1:
-        return icon_of(cores[0], size)
+        return icon_of(cores[0], size, eager)
     tile = (size - 2) // 2
     return ('<span class="core-mosaic" style="--sz:%dpx;--tile:%dpx">%s</span>'
-            % (size, tile, ''.join(icon_of(c, tile) for c in cores)))
+            % (size, tile, ''.join(icon_of(c, tile, eager) for c in cores)))
 
 
 def set_facts(idx, head, members):
@@ -699,7 +706,7 @@ def render_solo(idx, mv, arts, md, slug, season, name_cn):
          # 推荐人跟着核心那枚图走：他是这套配装的出处，与标题、铭牌、描述不是一
          # 类信息。竖线左边一列因此写成「图 + 谁推荐的」。
          '<div class="core">%s<p class="by-label">推荐者：</p>%s</div>'
-         % (icon_of(core_e, 96), ''.join(people(md))),
+         % (icon_of(core_e, 96, eager=True), ''.join(people(md))),
          '<div class="build-id">',
          # 标题那一行右端挂三枚动作：点赞、复制与详情开关。它们是对整套
          # 配装的操作，与标题同级；挂在推荐者下面时读者会以为赞的是那个人。
@@ -789,7 +796,7 @@ def render_set(idx, mv, arts, head, members, slug, season, name_cn):
          '<main class="set b-%s">' % BRANCH[branch],
          '<header class="build-head">',
          '<div class="core">%s<p class="by-label">推荐者：</p>%s</div>'
-         % (core_mosaic(cores, 96), ''.join(people(head))),
+         % (core_mosaic(cores, 96, eager=True), ''.join(people(head))),
          '<div class="build-id">',
          # 复制不在这一排：游戏里导入是一套一套的，整份合集复制出去粘不回任何
          # 地方。那枚按钮跟着每一套走，见 one_of()。
@@ -1133,8 +1140,13 @@ def render_vocab(idx):
                 cols.pop()
             cells.append(json.dumps(cols, ensure_ascii=False))
         rows.append('%s:[%s]' % (json.dumps(slot, ensure_ascii=False), ','.join(cells)))
-    body = ('window.starsideVocab = {\nlists: {\n%s\n},\nslots: %s\n};\n'
-            % (',\n'.join(rows), json.dumps(slots, ensure_ascii=False)))
+    # **分节括注的切分符号是契约，不是 form.js 的私事**：从前它在
+    # vocab.bare_kind 与 form.js 的 bare() 里各写一份，改一处就是七个神器格
+    # 全部列不出候选，而页面照常渲染、三道闸门全绿。测试当时只能拿正则去
+    # form.js 的源码里刮那个字面量。现在从这里发过去，两边同一个来源。
+    body = ('window.starsideVocab = {\nsep: %s,\nlists: {\n%s\n},\nslots: %s\n};\n'
+            % (json.dumps(vocab.KIND_TAIL, ensure_ascii=False),
+               ',\n'.join(rows), json.dumps(slots, ensure_ascii=False)))
     path = os.path.join(shell.ROOT, OUT_DIR, 'vocab.js')
     with open(path, 'w', encoding='utf-8') as f:
         f.write(body)

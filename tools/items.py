@@ -157,6 +157,12 @@ GUARD = [
 ]
 
 
+# 汉字与拉丁之间那个排版空格的插入点。pattern() 与 variants() 共用这一条判据：
+# 前者给 Python 侧的扫描用，后者给送去浏览器的词表用，两边不各写一份。
+BOUND = re.compile(r'(?<=[一-鿿])(?=[A-Za-z0-9])|(?<=[A-Za-z0-9])(?=[一-鿿])')
+GAPS = ('', ' ', '\u00a0')
+
+
 def pattern(word):
     """表里的名字 → 匹配式：中英之间允许有那个排版空格。
 
@@ -164,8 +170,23 @@ def pattern(word):
     之间补一个空格（半角或不折行空格）。拿键去字面匹配，「Vex 揭秘者」这类
     中英混排的名字一个都对不上——12 个名字曾经这么整批漏掉。
     """
-    return re.sub(r'(?<=[一-鿿])(?=[A-Za-z0-9])|(?<=[A-Za-z0-9])(?=[一-鿿])',
-                  '[ \u00a0]?', re.escape(word))
+    return BOUND.sub('[ \u00a0]?', re.escape(word))
+
+
+def variants(word):
+    """这个名字在源稿里写得出的全部形状，含原样那一种。
+
+    浏览器那侧按字面比对，不跑正则（1400 条现编译会拖垮编辑台的逐行提示）。
+    所以把 pattern() 允许的写法在这里展开成几行数据送过去——**规则留在
+    Python，浏览器只认数据**。中英混排的只有 38 条，展开后多 166 行。
+    """
+    parts = BOUND.split(word)
+    if len(parts) == 1:
+        return [word]
+    out = ['']
+    for i, part in enumerate(parts):
+        out = [head + (gap if i else '') + part for head in out for gap in (GAPS if i else ('',))]
+    return out
 
 
 # 词表 1400 条、源稿两万行：现拼模式串会把 re 那 512 条的缓存冲垮，每行每词重编译
@@ -390,33 +411,8 @@ def load():
 
 
 def row_title_end(line):
-    """表格行首格里「行的身份」那一段在这一行的结束位置；不是表格行就是 0。
-
-    行标题已经有结构身份（<th scope="row">），不必再着色。但只算到格内换行
-    `\\` 为止——切枪 DPS 页的首格写成「**隐秘追猎**\\凯德的复仇、星界夜鹰」，
-    `\\` 之后列的是配装件，那是内容不是身份，照常参与着色。
-    """
-    if not line.startswith('|'):
-        return 0
-    depth = 0
-    separators = []
-    for i, char in enumerate(line[1:], 1):
-        if char == '{':
-            depth += 1
-        elif char == '}':
-            depth = max(0, depth - 1)
-        elif char == '|' and not depth:
-            separators.append(i)
-    nxt = separators[0] if separators else -1
-    if nxt < 0:
-        return 0
-    # 首格留空即向上合并（.claude/rules/pages.md 的源稿方言），这一行的身份在第二格。
-    if not line[1:nxt].strip():
-        nxt = separators[1] if len(separators) > 1 else -1
-        if nxt < 0:
-            return 0
-    brk = line.find('\\\\', 1)
-    return brk if 0 < brk < nxt else nxt + 1
+    """表格行首格里「行的身份」那一段的结束位置。判据只有 markup 一处定义。"""
+    return markup.row_title_end(line)
 
 
 # 神器模组页也走显式 {token|文字}，一并铺色。护甲套装页不在内：它走词表着色，

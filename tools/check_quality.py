@@ -26,8 +26,9 @@ from unittest.mock import patch
 import urllib.error
 import urllib.request
 
-import items
 import check_terms
+import items
+import markup
 
 sys.dont_write_bytecode = True
 TOOLS = Path(__file__).resolve().parent
@@ -42,6 +43,7 @@ def load(name, filename):
     return module
 
 
+build_terms = load('quality_build_terms', 'build-terms.py')
 deploy = load('quality_deploy', 'deploy.py')
 sync = load('quality_sync', 'sync.py')
 build = load('quality_build', 'convert-build.py')
@@ -140,19 +142,18 @@ class ExcelSafety(Isolated):
 
 
 class CellSplitting(unittest.TestCase):
-    """切格的六份实现在当前语料上结果一致——钉的是那个"当前语料"。
+    """切格只剩两份实现，跨语言那条缝由这些对语料的断言钉住。
 
-    实现分布在三种语言里：convert-doc.py 的 split_cells()、云函数与 edit.js 的
-    cellSpans()、admin.js 的 cells()、items.py 的 row_title_end()、admin.js 的
-    titleEnd()。跨语言没法共用一份，**它们也并不等价**：行首空白、缺末尾竖线、
-    全角空格贴格边、`}` 深度可否为负、`{` 的判据，五处各有分歧。
+    Python 是 markup.cells()，JS 是 admin/dialect.js（云函数那份是构建复制的）。
+    两种语言没法共用源码，所以两份是下限。从前是六份，且**并不等价**：行首空白、
+    缺末尾竖线、全角空格贴格边、`}` 深度可否为负、`{` 的判据，五处各有分歧。
+    合并时五处各选了一种，选定的那一种与旧实现在全部语料上结果逐字相同。
 
-    今天对得住，靠的是源稿恰好规整，不是实现真的相同。所以这里断言的是那个前提，
-    不是"实现等价"——两句话差别很大。踩线的那一行在本地照常渲染成页面、闸门全绿，
-    只有编辑台会静默定位不到：那一格永远改不了，报的还是「底稿已变，请回资料页
-    重新提交」，而资料页永远是最新的。
+    这里断言的是「源稿还落在两份都认的形状里」。踩线的那一行本地照常渲染成页面、
+    闸门全绿，只有编辑台会静默定位不到：那一格永远改不了，报的还是「底稿已变，
+    请回资料页重新提交」，而资料页永远是最新的。
 
-    JS 那三份之间的相互一致由 check_quality.cjs 的同名一组管，那边不必起 Python。
+    JS 那一份自己的行为由 check_quality.cjs 的同名一组管，那边不必起 Python。
     """
 
     ROOT = TOOLS.parent
@@ -164,16 +165,16 @@ class CellSplitting(unittest.TestCase):
                 if line.lstrip().startswith('|'):
                     yield path.relative_to(cls.ROOT), n, line
 
-    def test_corpus_stays_within_the_shape_all_six_agree_on(self):
+    def test_corpus_stays_within_the_shape_both_implementations_agree_on(self):
         found = 0
         for where, n, line in self.rows():
             found += 1
             at = '%s:%d' % (where, n)
             self.assertFalse(line[:1].isspace(),
-                             '%s 行首有空白：Python 侧照常出表，cellSpans 整行返回 null' % at)
+                             '%s 行首有空白：两份实现都会整行返回 None' % at)
             self.assertTrue(line.rstrip('\r').endswith('|'),
                             '%s 没有末尾竖线：JS 侧无条件砍掉最后一格，末格永远改不了' % at)
-            self.assertNotIn('\\|', line, '%s 用了 \\| 转义：六份实现没有一份认它' % at)
+            self.assertNotIn('\\|', line, '%s 用了 \\| 转义：两份实现都不认它' % at)
             for edge in ('|\t', '\t|', '|\u3000', '\u3000|'):
                 self.assertNotIn(edge, line,
                                  '%s 格边贴着制表符或全角空格：Python 的 strip() 剥它，JS 只剥半角' % at)
@@ -185,8 +186,8 @@ class CellSplitting(unittest.TestCase):
                 depth += (ch == '{') - (ch == '}')
                 self.assertGreaterEqual(
                     depth, 0,
-                    '%s:%d 出现了孤立的 }：深度可为负的那三份会把后面的竖线并掉，'
-                    '钳位的那两份不会' % (where, n))
+                    '%s:%d 出现了孤立的 }：合并时选的是钳位那一种，'
+                    '这一行的花括号本身写错了' % (where, n))
             self.assertEqual(depth, 0, '%s:%d 花括号没配平' % (where, n))
 
     def test_every_row_splits_into_at_least_one_cell(self):
@@ -201,11 +202,12 @@ class CellSplitting(unittest.TestCase):
 
 class ArtifactPicker(unittest.TestCase):
     """填表页挑神器模组，靠 form.js 的 bare() 把分节标题「废墟石板 （异端）」切成
-    神器名。切分符号与 vocab.bare_kind 是两份实现，一次改一处就会错开：
-    七个神器格全部列不出候选，而页面照常渲染、三道闸门全绿。
+    神器名。切分符号从前在 vocab.bare_kind 与 form.js 各写一份，改一处就错开：
+    七个神器格全部列不出候选，而页面照常渲染、三道闸门全绿；那时这条测试只能
+    拿正则去 form.js 的源码里刮那个字面量。
 
-    所以这里拿 form.js 真正在用的那个符号去切真正生成出来的词表，断言七件神器
-    各自收得到自己那 21 枚模组。
+    现在符号随 vocab.js 发过去（vocab.KIND_TAIL 一处定义），这里读那个字段，
+    断言七件神器各自收得到自己那 21 枚模组。
     """
 
     ROOT = TOOLS.parent
@@ -219,11 +221,12 @@ class ArtifactPicker(unittest.TestCase):
         return json.loads(text[start:text.index('\n', start)].rstrip(','))
 
     def test_every_artifact_collects_its_own_mods(self):
-        form = (self.ROOT / 'builds' / 'new' / 'form.js').read_text(encoding='utf-8')
-        found = re.search(r"function bare\(kind\).*?split\('([^']*)'\)", form)
-        self.assertTrue(found, 'form.js 里找不到 bare() 的切分符号')
-        sep = found.group(1) if found else ''
         vocab = self.VOCAB.read_text(encoding='utf-8')
+        sep = json.loads(markup.must(re.search(r'^sep: (".*?"),?$', vocab, re.M),
+                                     'builds/vocab.js 里没有 sep：契约没发出去').group(1))
+        form = (self.ROOT / 'builds' / 'new' / 'form.js').read_text(encoding='utf-8')
+        self.assertIn('split(V.sep)', form,
+                      'form.js 又自己写了一份切分符号，应该读 vocab.js 带过来的那个')
         mods = self.rows(vocab, '神器')
         self.assertGreater(len(mods), 100, '神器模组词表是空的，先跑一次 npm run build')
         for name, *_ in self.rows(vocab, '神器本体'):
@@ -231,6 +234,73 @@ class ArtifactPicker(unittest.TestCase):
             self.assertTrue(hit, '填表页选中「%s」之后一枚模组都列不出来：'
                                  'form.js 的 bare() 按 %r 切，词表里的分节是 %r'
                             % (name, sep, mods[0][1]))
+
+
+class Generated(unittest.TestCase):
+    """入库的生成物与它们的来源对得上。
+
+    `admin/terms.js` 与 `admin/pages.js` 是「Python 定义 → 浏览器只认数据」那条
+    管道的产物，而 `npm run build` 里 build-terms.py 排在三道闸门之前——闸门那一侧
+    永远看到的是刚生成的那一份，查不出过期。这条放在 `npm test` 里才不是空转。
+
+    过期的后果不是少一个词：G6 的匹配规则（中英之间那个排版空格允许回来）
+    如今也是随词表送过去的数据，词表旧了，编辑台的提示就按旧规则走。
+    """
+
+    def read(self, rel):
+        return (TOOLS.parent / rel).read_text(encoding='utf-8')
+
+    def test_terms_table_matches_its_sources(self):
+        self.assertEqual(build_terms.build(), self.read('admin/terms.js'),
+                         'admin/terms.js 过期了，跑 python3 tools/build-terms.py')
+
+    def test_page_tree_matches_its_sources(self):
+        self.assertEqual(build_terms.tree(), self.read('admin/pages.js'),
+                         'admin/pages.js 过期了，跑 python3 tools/build-terms.py')
+
+    def test_the_cloud_function_carries_the_same_dialect(self):
+        # 云函数只 require 得到自己目录下的东西，所以那一份是复制过去的。
+        self.assertEqual(self.read('functions/api/dialect.js'), self.read('admin/dialect.js'),
+                         'functions/api/dialect.js 与 admin/dialect.js 分家了，跑一次构建')
+
+
+class DeploySelection(unittest.TestCase):
+    """发什么、剥不剥注释、清单怎么读——四个纯函数各自的判据。
+
+    这些断言从前挂在 `deploy.py --check` 上，而那个选项**没有任何调用方**：
+    package.json、ship.sh、.github 里都不拉它。keep()/uncomment()/strippable()/
+    listing() 因此是发布链上唯一没有网的四个函数，而剥错注释的症状是
+    「页面正常、闸门全绿，只是搜不到东西」。
+    """
+
+    def test_site_files_ship_and_sources_do_not(self):
+        self.assertTrue(deploy.keep('armor-mods/icons/0a1b2c3d4e.webp'))
+        self.assertTrue(deploy.keep('index.html') and deploy.keep('assets/search.js'))
+        self.assertTrue(deploy.keep('admin/index.html') and deploy.keep('admin/terms.js'))
+        self.assertFalse(deploy.keep('tools/deploy.py'))
+        self.assertFalse(deploy.keep('references/docs/changelog.md'))
+        self.assertFalse(deploy.keep('CLAUDE.md') or deploy.keep('cloudbaserc.json'))
+
+    def test_listing_drops_the_files_that_never_ship(self):
+        self.assertEqual(deploy.listing('a.md\0index.html\0'), ['index.html'])
+
+    def test_block_comments_go_but_line_numbers_stay(self):
+        self.assertEqual(deploy.uncomment('a/*x\ny*/b'), 'a\nb')   # 换行数保住，行号不移
+        self.assertEqual(deploy.uncomment('a/*x*/b'), 'ab')        # 单行注释不留空行
+        self.assertEqual(deploy.uncomment('a'), 'a')               # 没有注释就原样
+
+    def test_a_comment_marker_inside_a_string_makes_the_file_untouchable(self):
+        self.assertTrue(deploy.strippable('i{color:red} /* 说明 */'))
+        self.assertFalse(deploy.strippable('var a = "x/*y";'))
+        self.assertFalse(deploy.strippable("var a = 'x*/y';"))
+
+    def test_every_shipped_stylesheet_and_script_survives_the_stripper(self):
+        # 剥注释是优化，不该有能力挡住发版：跳过的文件原样发。这里断言的是
+        # 「今天站上这些文件走的是哪条路」，改文案时会跟着变，变了要看一眼。
+        skipped = [rel for rel in ('assets/site.css', 'assets/app.js', 'assets/search.js',
+                                   'admin/admin.js', 'admin/dialect.js', 'builds/new/form.js')
+                   if not deploy.strippable((TOOLS.parent / rel).read_text(encoding='utf-8'))]
+        self.assertEqual(skipped, [], '这些文件的字符串里出现了 /* 或 */，整个文件会原样发')
 
 
 class Deployment(Isolated):
@@ -295,6 +365,20 @@ class Deployment(Isolated):
 
     def refs(self):
         return [args for kind, args in self.calls if kind == 'git' and args[0] == 'update-ref']
+
+    def test_the_manifest_answers_on_its_own_without_replaying_the_process(self):
+        # plan() 是纯的：问它「这次要发什么」不必先摆好工作区状态、HEAD 与子进程。
+        # 增量只发改过的、删删掉的；--all 发全部、不删任何东西。
+        self.files, self.gone = 'index.html\0new/index.html\0', 'old/index.html\0'
+        self.assertEqual(deploy.plan(False, self.base, self.TARGET),
+                         (['index.html', 'new/index.html'], ['old/index.html']))
+        self.assertEqual(deploy.plan(True, self.base, self.TARGET),
+                         (['index.html', 'new/index.html'], []))
+
+    def test_the_manifest_never_ships_sources_or_tools(self):
+        self.files = 'index.html\0tools/deploy.py\0CLAUDE.md\0references/docs/a.md\0'
+        self.gone = ''
+        self.assertEqual(deploy.plan(False, self.base, self.TARGET), (['index.html'], []))
 
     def test_sync_failure_blocks_upload_delete_and_ref(self):
         self.sync_code = 1

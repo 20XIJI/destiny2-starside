@@ -298,9 +298,14 @@ SLOTS = {
 }
 
 
+# 分节标题里那个消歧括注的起头。**只有这一处定义**：它随 vocab.js 发到填表页，
+# form.js 的 bare() 读的是同一个值，不再各写一份。
+KIND_TAIL = ' （'
+
+
 def bare_kind(kind):
     """分节标题去掉括注：「废墟石板 （异端）」→「废墟石板」。"""
-    return kind.split(' （')[0].strip()
+    return kind.split(KIND_TAIL)[0].strip()
 
 
 # 消歧括注：源稿在名字后面写分节挑一条同名的（「隐士（冲锋枪）」）。

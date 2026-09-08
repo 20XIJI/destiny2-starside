@@ -5,6 +5,9 @@
 const crypto = require('crypto')
 const zlib = require('zlib')
 const tcb = require('@cloudbase/node-sdk')
+// 切格是源稿方言，JS 这一侧只有 admin/dialect.js 一份定义；这里这个文件是构建
+// 复制过去的，不手改（云函数只 require 得到自己目录下的东西）。
+const { cellSpans } = require('./dialect.js')
 const app = tcb.init({ env: tcb.SYMBOL_CURRENT_ENV })
 const db = app.database()
 const _ = db.command
@@ -106,32 +109,6 @@ const MAX_ONE = 8 * 1024
 
 // ── 一处改动怎么定位 ──
 
-// 表格行按 | 切出每一格「去掉首尾空格之后」的区间。与 tools/convert-doc.py 的
-// split_cells() 同一条规则：记花括号深度，{ico|…} 内部的竖线不是分隔符。
-// 返回区间而不是字符串，写回时才能只换那一格、把两侧的空格原样留着——整行重拼
-// 会让改一个字的提交在 git diff 上标红一整行。
-function cellSpans(line) {
-  if (line[0] !== '|') return null
-  const out = []
-  let depth = 0
-  let from = 1
-  for (let i = 1; i <= line.length; i++) {
-    const ch = line[i]
-    if (ch === '{') depth++
-    else if (ch === '}') depth--
-    if (i === line.length || (ch === '|' && depth === 0)) {
-      let a = from
-      let b = i
-      while (a < b && line[a] === ' ') a++
-      while (b > a && line[b - 1] === ' ') b--
-      out.push([a, b])
-      from = i + 1
-      if (ch !== '|') break
-    }
-  }
-  // 首尾各去一个 |，与 split_cells 的 removeprefix/removesuffix 对齐
-  return out.length > 1 ? out.slice(0, -1) : out
-}
 
 // 在源稿里找这一处改动。**先按 before 原文匹配，blk/cell 只当同文本多处时的消歧**
 // ——读者看到的页面是上次部署的产物，库里被通过的改动往前插了一个块之后，块号
@@ -226,15 +203,37 @@ async function who(event, need) {
   return me
 }
 
-async function editorRoute(a, body, event) {
+/* 每个 action 要什么凭据，**只有这一张表**。从前这件事写在 25 条分支体里
+   （`await who(event, 2)` 那样的字面量），「哪些动作是公开的」要读完 500 行才
+   答得出，新增一条忘了调守卫就是静默开放，而没有任何测试会响。
+
+   null 是公开（连令牌都不要），数字是 who() 的门槛，'admin' 走 ADMIN_TOKEN。
+   sdrop 记的是它的下限：不带 id 的那一路是整批删除，分支体里另有一道 lv 4。 */
+const LEVEL = {
+  me: 0,
+  docs: 1, subs: 1, hist: 1, bdrop: 1, edits: 1, chg: 1, pend: 1,
+  ssave: 2, bsave: 2, smark: 2, emark: 2, sdrop: 2,
+  eds: 3,
+  stats: null, hit: null, likes: null, like: null, sub: null,
+  list: 'admin', mark: 'admin', pull: 'admin', push: 'admin', rekey: 'admin', drop: 'admin',
+}
+
+// 进分支之前判一次。返回值是 me，分支要用名字或 uid 时直接拿，不再各自 await 一遍。
+async function guard(a, body, event) {
+  if (!Object.prototype.hasOwnProperty.call(LEVEL, a)) throw new Error('bad action')
+  const need = LEVEL[a]
+  if (need === null) return null
+  if (need === 'admin') { admin(body); return null }
+  return who(event, need)
+}
+
+async function editorRoute(a, body, event, me) {
   // lv 0 也放行：没进白名单的人要看得见自己的 uid，才知道让管理员加谁。
   if (a === 'me') {
-    const me = await who(event, 0)
     return { uid: me.uid, name: me.name, lv: me.lv }
   }
 
   if (a === 'docs') {
-    await who(event, 1)
     const r = await docs.field({ md: false }).limit(500).get()
     // **配装那些要带上 md，资料页那些不带。**投影是为资料页存在的：38 篇合计
     // 1.5 MB。配装 35 套合计 65 KB，而编辑台的列表要靠 md 读出名字、职业、分支、
@@ -246,24 +245,15 @@ async function editorRoute(a, body, event) {
     return { docs: r.data.map((d) => (md[d._id] === undefined ? d : { ...d, md: md[d._id] })) }
   }
 
-  if (a === 'doc') {
-    await who(event, 1)
-    const d = (await docs.doc(String(body.id)).get()).data[0]
-    if (!d) throw new Error('no doc')
-    return d
-  }
-
   // 配装投稿的队列。与 list/mark 同一张表，区别只在凭据：那两个走 ADMIN_TOKEN
   // 给本机的 sync.py，这两个走白名单给编辑台。
   if (a === 'subs') {
-    await who(event, 1)
     const r = await subs.limit(500).get()
     return { subs: r.data }
   }
 
   // 结案后留下的那一条改动记录：谁、什么时候、哪一篇、改了哪几行。
   if (a === 'hist') {
-    await who(event, 1)
     const d = (await edits.doc(String(body.id)).get()).data[0]
     if (!d) throw new Error('no edit')
     return { diff: d.diff || '' }
@@ -276,7 +266,6 @@ async function editorRoute(a, body, event) {
   // 推荐人空着；审的人在填表页上改完存一版，过一会儿再决定通过还是驳回，比一次
   // 按下去要么发布要么打回自然得多。
   if (a === 'ssave') {
-    await who(event, 2)
     const cur = (await subs.doc(String(body.id)).get()).data[0]
     if (!cur) throw new Error('no sub')
     if (cur.drop) throw new Error('bad sub type')
@@ -289,7 +278,6 @@ async function editorRoute(a, body, event) {
   // 已上站的配装就地改。**整篇替换，且只开给 builds/**：配装本来就是填表编辑，
   // 没有「一处改动」这个概念，资料页那套逐处审核在这里无从落脚。
   if (a === 'bsave') {
-    const me = await who(event, 2)
     const id = String(body.id || '')
     if (!/^builds\/[^/]+\/[^/]+$/.test(id)) throw new Error('bad id')
     const md = String(body.md || '')
@@ -304,9 +292,10 @@ async function editorRoute(a, body, event) {
   // 去重从不查 ok=-1 那一档（见 sub 那两次 where），所以删了不会让废稿被当成新投稿
   // 重新收进来。不带 id 就把已驳回的一次清干净——33 条废稿逐条点不现实。
   if (a === 'sdrop') {
+    // 表里记的是下限。不带 id 的那一路是整批清空待审队列，另要 lv 4。
+    if (!body.id && me.lv < 4) throw new Error('no permission')
     // 单条删已驳回的：审核员就行。**整批清空要超管**——一次抹掉几十条，
     // 手滑的代价与逐条不是一个量级。
-    await who(event, body.id ? 2 : 4)
     if (body.id) {
       const one = (await subs.doc(String(body.id)).get()).data[0]
       if (!one) throw new Error('no sub')
@@ -323,7 +312,6 @@ async function editorRoute(a, body, event) {
   // 站上少一页、点赞数也跟着没了，按错一下没有退路。落成一条待审记录，
   // 与投稿走同一条队列、同一套通过／驳回，审的人看得见要删的是哪一套。
   if (a === 'bdrop') {
-    const me = await who(event, 1)
     const id = String(body.id || '')
     const m = /^builds\/([^/]+)\/([^/]+)$/.exec(id)
     if (!m) throw new Error('bad id')
@@ -343,7 +331,6 @@ async function editorRoute(a, body, event) {
   }
 
   if (a === 'smark') {
-    const me = await who(event, 2)
     const ok = Number(body.ok) === 1 ? 1 : -1
     const set = { ok, okBy: me.name, at: new Date().toISOString() }
     const cur = (await subs.doc(String(body.id)).get()).data[0]
@@ -401,16 +388,8 @@ async function editorRoute(a, body, event) {
   }
 
   if (a === 'edits') {
-    await who(event, 1)
     const r = await edits.limit(500).get()
     return { edits: r.data }
-  }
-
-  if (a === 'edit') {
-    await who(event, 1)
-    const d = (await edits.doc(String(body.id)).get()).data[0]
-    if (!d) throw new Error('no edit')
-    return d
   }
 
   // 草稿与提交待审是同一个动作，差在 ok。同一个人同一篇只留一条未结的，改写不堆叠。
@@ -422,7 +401,6 @@ async function editorRoute(a, body, event) {
   // cell 为 -1 即整块改动（段落、列表项、表格整行）；用 -1 不用 null，
   // 那一列还要参与 where 查询。
   if (a === 'chg') {
-    const me = await who(event, 1)
     const doc = String(body.doc || '')
     const cur = (await docs.doc(doc).get()).data[0]
     if (!cur) throw new Error('no doc')  // doc 必须已在库里，线上不新建资料页
@@ -464,7 +442,6 @@ async function editorRoute(a, body, event) {
   // md：把这一篇的正文与 hash 一并带回。资料页开编辑态本来要先 doc 再 pend
   // 两发串行——后者只为拿 hash 与页面上那份比一次，而这一次比服务端自己做得了。
   if (a === 'pend') {
-    await who(event, 1)
     const doc = String(body.doc || '')
     const r = await edits.where({ doc, ok: 0 }).limit(200).get()
     // stale：页面上那份 data-hash 与库里对不上时才要。已通过的那些记录里，
@@ -487,7 +464,6 @@ async function editorRoute(a, body, event) {
   }
 
   if (a === 'emark') {
-    const me = await who(event, 2)
     const jobs = body.jobs
     if (!Array.isArray(jobs) || !jobs.length
         || jobs.some((j) => !j || typeof j.id !== 'string' || !j.id.trim()
@@ -568,7 +544,6 @@ async function editorRoute(a, body, event) {
   // 白名单的增删改。只能动 lv 严格低于自己的人：管理员因此动不了超管，
   // 也造不出第二个超管。
   if (a === 'eds') {
-    const me = await who(event, 3)
     const op = String(body.op || 'list')
     if (op === 'list') return { eds: (await eds.limit(200).get()).data }
     const uid = String(body.uid || '')
@@ -591,30 +566,24 @@ async function editorRoute(a, body, event) {
 }
 
 async function route(a, body, event) {
+  const me = await guard(a, body, event)
   if (a === 'stats') return stats()
 
-  const ed = await editorRoute(a, body, event)
+  const ed = await editorRoute(a, body, event, me)
   if (ed) return ed
 
   // ── 审核台 ──
   if (a === 'list') {
-    admin(body)
     const r = await subs.limit(500).get()
     return { subs: r.data }
   }
 
   if (a === 'mark') {
-    admin(body)
     const set = { ok: Number(body.ok) }
     if (body.season) set.season = String(body.season)
     if (body.slug) set.slug = String(body.slug)
     await subs.doc(String(body.id)).update(set)
     return { ok: 1 }
-  }
-
-  if (a === 'stat') {
-    admin(body)
-    return (await stat.get()).data[0] || {}
   }
 
   if (a === 'hit') {
@@ -662,7 +631,6 @@ async function route(a, body, event) {
 
   // sync.py 专用：整库对账。走 ADMIN_TOKEN，不走白名单。
   if (a === 'pull') {
-    admin(body)
     const r = await docs.limit(500).get()
     return { docs: r.data }
   }
@@ -671,7 +639,6 @@ async function route(a, body, event) {
   // 压过再发（gzip → base64），**不设「多大才压」的阈值**：一个分支就是一个会判错
   // 的地方，而压的代价可以忽略。最大的一篇压完 64.9 KB，余量三成。
   if (a === 'push') {
-    admin(body)
     const md = body.gz ? zlib.gunzipSync(Buffer.from(body.gz, 'base64')).toString() : String(body.md || '')
     const id = String(body.id || '')
     if (!id || md.length > MAX_MD) throw new Error('bad md')
@@ -685,7 +652,6 @@ async function route(a, body, event) {
   // 旧算法存的，对不上就认不出「这一套已经上站了」，重投会另开一个 slug。
   // 与 sync.py --seed 同一类：平时不用，改了判据才用。
   if (a === 'rekey') {
-    admin(body)
     const r = await subs.limit(500).get()
     let n = 0
     for (const d of r.data) {
@@ -713,7 +679,6 @@ async function route(a, body, event) {
   //
   // 待审（ok=0）与废稿（ok=-1）不动：前者可能是删除期间有人重投的新稿。
   if (a === 'drop') {
-    admin(body)
     const id = String(body.id)
     await docs.doc(id).remove()
     const m = /^builds\/([^/]+)\/([^/]+)$/.exec(id)

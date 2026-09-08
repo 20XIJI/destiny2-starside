@@ -225,6 +225,71 @@ def img_size(data):
     die('只认得 PNG、JPEG 与 WebP，这个文件都不是')
 
 
+# 源稿方言的切格，Python 这一侧的唯一定义。JS 那一侧是 admin/dialect.js，
+# 两份在 4500+ 行真表格上逐行相同由 check_quality.py 的 CellSplitting 钉住。
+# 两种语言没法共用源码，所以这条缝是这套方言的下限：两份，不是六份。
+CELL_OPEN = re.compile(r'\{[\w-]+\|')
+CELL_BREAK = '\\\\'
+
+
+def cells(line):
+    """表格行 → 每一格「去掉首尾半角空格之后」的 (起, 止)；不是表格行返回 None。
+
+    与 admin/dialect.js 的 cellSpans() 逐条同一判据，五处分歧各选一种：
+
+    - 只有 ``{token|`` 才开一层，不是见 ``{`` 就开：裸花括号是普通字符。
+    - 深度钳在 0：孤立的 ``}`` 不许把深度压成负数，否则后面的竖线全被并掉。
+    - 行首不许有空白，直接返回 None：区间要能写回原始行，trim 过的偏移对不上。
+    - 只剥半角空格：全角空格贴着格边是源稿的毛病，交给闸门报，不在这里吃掉。
+    - 首尾各去一个 ``|``。
+    """
+    if not line[:1] == '|':
+        return None
+    out, depth, frm, i = [], 0, 1, 1
+    while i <= len(line):
+        m = CELL_OPEN.match(line, i)
+        if m:
+            depth += 1
+            i = m.end()
+            continue
+        ch = line[i] if i < len(line) else None
+        if ch == '}' and depth:
+            depth -= 1
+        if i == len(line) or (ch == '|' and depth == 0):
+            a, b = frm, i
+            while a < b and line[a] == ' ':
+                a += 1
+            while b > a and line[b - 1] == ' ':
+                b -= 1
+            out.append((a, b))
+            frm = i + 1
+            if ch != '|':
+                break
+        i += 1
+    return out[:-1] if len(out) > 1 else out
+
+
+def row_title_end(line):
+    """表格行首格里「行的身份」那一段的结束位置；不是表格行就是 0。
+
+    行标题已经有结构身份（``<th scope="row">``），不必再着色。两条例外：首格
+    留空即向上合并，身份在第二格；只算到格内换行 ``\\`` 为止——切枪 DPS 页的
+    首格写成「**隐秘追猎**\\凯德的复仇、星界夜鹰」，``\\`` 之后列的是配装件，
+    那是内容不是身份，照常参与着色。
+    """
+    span = cells(line)
+    if not span:
+        return 0
+    at = 0
+    if not line[span[0][0]:span[0][1]].strip():
+        if len(span) < 2:
+            return 0
+        at = 1
+    end = line.find('|', span[at][1]) + 1
+    brk = line.find(CELL_BREAK, span[at][0])
+    return brk if 0 <= brk < end else end
+
+
 def blocks_at(chunk, base=0):
     """空行分段，段内换行还原成 <br>，另带每段首行在源稿里的行号。
 
@@ -242,11 +307,6 @@ def blocks_at(chunk, base=0):
                     '<br>'.join('\n'.join(lines[i:j]).strip().split('\n'))))
         i = j
     return out
-
-
-def blocks_of(chunk):
-    """空行分段，段内换行还原成 <br>。行号不要时用这一个。"""
-    return [html for _, _, html in blocks_at(chunk)]
 
 
 def inline(md, rich=False):

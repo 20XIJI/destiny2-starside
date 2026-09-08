@@ -51,13 +51,16 @@ mods.py            官方物品表 → tools/mod-variants.json（护甲模组变
 vocab.py           配装词表：从已生成的资料页现扫「名字 → 图标、页面、锚点、着色」，
                    槽位 → 来源页的对应在这里一处定义
 markup.py          源稿方言与公共件：职业／分支／类别三张词表、{token|文字} 着色、
+                   表格切格（Python 这一侧唯一定义，JS 那一侧是 admin/dialect.js）、
                    「键：值」行、空行分段、
                    剥标签取文本、保真前的归一化、计数比对、图片尺寸、图标登记
 shell.py           站点外壳与落盘：head 元信息、导航条、页脚、ROOT、页面清单、emit()
 convert-*.py       四个生成器，各自只写自己那种数据形状的结构层
 build-search.py    各页产出 → assets/search.js，首页那只搜索框搜的就是它
 build-terms.py     两道闸门的词表 → admin/terms.js（前端提示），
-                   资料页树与配装的三张词表 → admin/pages.js（审核台左栏与列表）
+                   资料页树与配装的三张词表 → admin/pages.js（审核台左栏与列表），
+                   并把 admin/dialect.js 复制一份到 functions/api/（云函数只
+                   require 得到自己目录下的东西）
 sync.py            源稿在库与仓库之间对账：记一份基线三方比，撞车就报、不猜方向
 deploy.py          增量部署：与 refs/deploy 一 diff 即得清单，只发改过的文件；
                    keep() 一处挡掉源稿、工具、云函数与配置
@@ -99,7 +102,7 @@ json2xlsx.py       把上面那份 JSON 还原成 xlsx，供核对与二次编�
 ```bash
 npm start                                     # npx serve . -l 3000
 npm run build                                 # 四个生成器 + 源稿自动纠正 + 搜索索引 + 编辑台词表 + 三道闸门
-npm test                                      # 两份离线回归，0.3 秒；改发布链或云函数前必跑
+npm test                                      # 两份离线回归，约 1 秒；改发布链或云函数前必跑
 
 python3 tools/convert-artifact-mods.py        # 源稿 references/artifact-mods.md
 python3 tools/convert-armor-sets.py           # 源稿 references/armor-sets.md
@@ -296,11 +299,11 @@ diff 发 `tcb hosting delete`。全部成功才动 `refs/deploy`，中途失败�
 
 1. 生成器自检 + `check_shell.py` + `check_terms.py` + `check_type.py`：结构、外壳、术语、
    着色与排版的主闸门，见上。跑 `npm run build` 即全部执行。
-2. **`npm test`**：两份标准库写的离线回归，跑 0.3 秒，排在 `ship.sh` 的构建之后、提交之前。
+2. **`npm test`**：两份标准库写的离线回归，约 1 秒，排在 `ship.sh` 的构建之后、提交之前。
    `tools/check_quality.py` 用 `unittest`，管部署闸门、同步删除的三方比、配装生成生命周期、
-   源稿自动纠正的幂等、切格三方一致；`tools/check_quality.cjs` 用 `node:assert` 加一份内存版
+   源稿自动纠正的幂等、切格与入库生成物是否过期；`tools/check_quality.cjs` 用 `node:assert` 加一份内存版
    database 适配器，管云函数的事务原子边界。两份都不联网、不读令牌、只写独占临时目录。
-   改 `deploy.py`、`sync.py` 或 `functions/api/` 之前先跑它，那 13 条 `Deployment`
+   改 `deploy.py`、`sync.py` 或 `functions/api/` 之前先跑它，那 15 条 `Deployment`
    测试是动发布链时唯一的安全网。
 3. headless Chrome 截图：Chrome Beta 未安装，chrome-devtools MCP 不可用。用：
    ```bash
