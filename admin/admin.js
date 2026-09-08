@@ -366,6 +366,33 @@
     b.onclick = function () { history.back() }
     return b
   }
+  /* 截图：把 iframe 里那一套配装渲染成图，弹在**父窗口**。
+
+     出图归 iframe（starsideForm.shot()，那边才有配装的 DOM 与样式），弹图归这边
+     ——iframe 那一格 86vh，浮层落在里面只有那么大，看不成。与上面「动作不留在
+     iframe 底下」同一个取向。
+
+     审的是待审稿，站上还没有它的详情页，所以这是审核员之间传图讨论的唯一入口。 */
+  function shotBtn (kindOf) {
+    var b = el('button', 'chip', '截图')
+    b.type = 'button'
+    b.onclick = function () {
+      b.disabled = true
+      var was = b.textContent
+      b.textContent = '生成中'
+      var done = function () { b.disabled = false; b.textContent = was }
+      Promise.resolve().then(function () {
+        return stageFrame(kindOf()).contentWindow.starsideForm.shot()
+      }).then(function (blob) {
+        return import('../builds/shot.js').then(function (m) { m.show(blob) })
+      }).then(done, function (e) {
+        done()
+        tip($('stage-head'), '截图失败：' + e.message, 1)
+      })
+    }
+    return b
+  }
+
   function tip (node, msg, bad) {
     var p = node.querySelector('.tip')
     if (!p) { p = el('p', 'tip'); node.appendChild(p) }
@@ -980,6 +1007,7 @@
     var ops = el('div', 'stage-ops')
     var bar = el('div', 'acts')
     bar.appendChild(back('收起'))
+    bar.appendChild(shotBtn(function () { return isSet(b.md) ? 'set' : 'one' }))
     idcol.appendChild(bar)
     idcol.appendChild(el('p', 'crumb', (nameOf(b.md) || b.id.split('/').pop())
       + '　·　' + STATE[b.state]

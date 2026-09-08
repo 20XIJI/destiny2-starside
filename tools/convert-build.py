@@ -725,10 +725,10 @@ def render_solo(idx, mv, arts, md, slug, season, name_cn):
          # 配装的操作，与标题同级；挂在推荐者下面时读者会以为赞的是那个人。
          # 开关的按下状态由 tip.js 从 localStorage 现读，写不进产出，所以这里
          # 只出一个空位——与点赞那个数同一条约定。
-         '<div class="id-row"><h1>%s</h1><div class="head-acts">%s%s%s</div></div>'
+         '<div class="id-row"><h1>%s</h1><div class="head-acts">%s%s%s%s</div></div>'
          % (title, like_box(season, slug, button=True),
             '<button class="copy" type="button">复制配装</button>',
-            TIP_SW),
+            SHOT % 'main', TIP_SW),
          # 铭牌一行读完这套配装的身份：职业 · 元素 · 类别。类别接在这里而不是另起
          # 一栏标签——它只有一个值，占一整栏显得空。
          '<p class="cls">%s%s · %s · %s<span class="season">%s · %s</span></p>'
@@ -769,7 +769,8 @@ def one_of(idx, mv, arts, head, md, n):
     o = ['<section class="set-one b-%s" id="set-%d">' % (BRANCH[branch], n),
          '<header class="one-head">',
          '<div class="id-row"><h2>%s</h2><div class="head-acts">'
-         '<button class="copy" type="button">复制配装</button></div></div>' % title,
+         '<button class="copy" type="button">复制配装</button>%s</div></div>'
+         % (title, SHOT % '.set-one'),
          '<p class="cls">%s%s · <span class="%s">%s</span>%s</p>'
          % (icon_of(vocab.pick(idx, who, '职业', kind='分节'), 32), who,
             ELEMENT_TOKEN[branch], branch, ' · ' + role if role else '')]
@@ -867,6 +868,12 @@ def render_set(idx, mv, arts, head, members, slug, season, name_cn):
 # 里，与另外四枚同为 chip。契约只有 data-tip-sw 一条。
 TIP_SW = '<button class="tipsw" type="button" data-tip-sw>详情开关</button>'
 TIP_SW_CHIP = '<button id="tipsw" class="chip" type="button" data-tip-sw>详情开关</button>'
+
+# 截图：把这一块渲染成一张图，弹在页面上。**data-shot 的值就是要截的那一块的选择器**
+# ——tip.js 按它从按钮往上找（合集一页 N 套，往上找才不会拿到第一套）。两种壳与
+# TIP_SW 同理。整份合集不给这一枚：与复制同一个道理，见 render_set() 那处的注释。
+SHOT = '<button class="shot" type="button" data-shot="%s">截图</button>'
+SHOT_CHIP = '<button id="shot" class="chip" type="button" data-shot="#sheet">截图</button>'
 
 
 # 点赞：数只有运行时才知道，写不进产出，所以跟资料页的当前时刻高亮同一条约定
@@ -1502,13 +1509,14 @@ def render_new(stamp, name_cn, sets=False):
           # 这一页的出口横排一条，落在正文末尾。**预览不另建一套 DOM**：它给 #sheet
           # 加一个类，把空槽、控件与源稿那一节收起来，剩下的就是成品；那时这一条
           # 也得够得着，所以它不在被收起的那一节里。
-          # 按用途分两组：左边看这一页（预览、详情开关），中间管源稿（复制、导入），
-          # 右端是终态那一个（投稿）。回执跟着它报告的那两枚走。
+          # 按用途分两组：左边看这一页（预览、详情开关），中间是带走与带回
+          # （复制、截图、导入），右端是终态那一个（投稿）。回执跟着它报告的那两枚走。
           '<div class="src-tools">',
           '<button id="preview" class="chip" type="button" aria-pressed="false">预览配装</button>',
           TIP_SW_CHIP,
           '<span class="tool-sep" aria-hidden="true"></span>',
           '<button id="copy" class="chip" type="button">复制配装</button>',
+          SHOT_CHIP,
           # 导入是一个动作不是两个：这一枚永远「导入」，文本框还空着时它带你去粘贴。
           '<button id="to-import" class="chip" type="button">导入配装</button>',
           '<span id="copy-tip" role="status"></span>',
@@ -1571,6 +1579,17 @@ def check(out, slug):
     # 面板的 --n 同时是格子列数与行内份额，缺了它整行会塌成等宽，眼睛查不出来。
     if out.count('<div class="slot"') != out.count('<div class="slot" style="--n:'):
         die('%s 有面板没写 --n' % slug)
+    # 截图按钮一套配装一枚，且 data-shot 指得着自己那一块。合集里 N 套就该有 N 枚：
+    # 少一枚是某一套截不了，而页面照常渲染，眼睛查不出来。
+    want = out.count('<section class="set-one') or 1
+    got = out.count('data-shot=')
+    if got != want:
+        die('%s 有 %d 套配装却有 %d 枚截图按钮' % (slug, want, got))
+    for pick in re.findall(r'data-shot="([^"]+)"', out):
+        if pick == 'main' and '<main' not in out:
+            die('%s 的截图按钮指向 main，页面里却没有' % slug)
+        if pick == '.set-one' and 'class="set-one' not in out:
+            die('%s 的截图按钮指向 .set-one，页面里却没有' % slug)
 
 
 def sync_home(counts):

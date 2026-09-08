@@ -123,6 +123,45 @@
 
   paint();
 
+  /* 截图。契约与上面两条同形：**页面出一枚带 data-shot 的按钮，值是要截的那一块的
+     选择器**——详情页 main、合集里的 section.set-one、填表页 #sheet。这一份脚本只管
+     按下之后怎么样，不认识行、槽位与词表。
+
+     shot.js 点了才拉：它自己两百来行，加上要 fetch 回来内联的两份样式表与四十来张图，
+     不看图的人一个字节都不该下。路径按自己的 src 现算，与上面 desc.js 那条同一个理由。
+
+     出图要几百毫秒，期间按钮置灰并在旁边写一句，照填表页 #copy-tip 那条约定。
+     **出错就把话显出来**：图少一张、字体没内联上都是静默的，不显就没人知道。 */
+  var SHOT = document.currentScript.src.replace(/[^/]*$/, 'shot.js');
+
+  function say(btn, text) {
+    var tip = btn.parentNode.querySelector('.shot-tip');
+    if (!tip) {
+      tip = document.createElement('span');
+      tip.className = 'shot-tip';
+      tip.setAttribute('role', 'status');
+      btn.parentNode.insertBefore(tip, btn.nextSibling);
+    }
+    tip.textContent = text;
+  }
+
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest && e.target.closest('[data-shot]');
+    if (!btn) return;
+    /* 合集里一页有 N 套，每套一枚按钮：从按钮往上找那一套，别拿到第一套去。 */
+    var pick = btn.getAttribute('data-shot');
+    var root = btn.closest(pick) || document.querySelector(pick);
+    btn.disabled = true;
+    say(btn, '生成中');
+    import(SHOT).then(function (m) {
+      return m.shot(root, { preview: !!document.getElementById('sheet') })
+        .then(function (r) { m.show(r.blob); say(btn, ''); });
+    }).catch(function (err) {
+      say(btn, '截图失败：' + err.message);
+      console.error(err);
+    }).then(function () { btn.disabled = false; });
+  });
+
   // 填表页关掉选择器时要连面板一起收：那一整块连同它的末栏都从文档里摘掉了，
   // 面板留在变量里指着一个已经不在的父节点。
   window.starsideTip = { hide: hide };

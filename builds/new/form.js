@@ -1485,7 +1485,18 @@
     read: function () { return out.value; },
     /* 审核台载进这一页之后调它立起审核意见那一栏。公开访客走不到这一条，
        所以「投稿的人看不到」不靠鉴权，靠不给入口。 */
-    review: function (on) { reviewing = !!on; showVerdict(); }
+    review: function (on) { reviewing = !!on; showVerdict(); },
+    /* 审核台把这一页嵌在列表下面那一格里，图弹在 iframe 内部只有那一格那么大，
+       看不成。所以这里只出图，弹图归父窗口——与 admin.js「动作不留在 iframe
+       底下」那条同一个取向。
+
+       shot.js 与本页深浅不同（builds/new/ 与 builds/new/set/），路径照 UP 那条
+       现算，写死一个会让合集工具那页 404。 */
+    shot: function () {
+      return import(UP + 'builds/shot.js').then(function (m) {
+        return m.shot(sheet, { preview: true }).then(function (r) { return r.blob; });
+      });
+    }
   };
 
   write();
