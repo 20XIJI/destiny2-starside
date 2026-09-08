@@ -1509,17 +1509,18 @@ def render_new(stamp, name_cn, sets=False):
           # 这一页的出口横排一条，落在正文末尾。**预览不另建一套 DOM**：它给 #sheet
           # 加一个类，把空槽、控件与源稿那一节收起来，剩下的就是成品；那时这一条
           # 也得够得着，所以它不在被收起的那一节里。
-          # 按用途分两组：左边看这一页（预览、详情开关），中间是带走与带回
-          # （复制、截图、导入），右端是终态那一个（投稿）。回执跟着它报告的那两枚走。
+          # 按用途分三组：左边看这一页（预览、详情开关），中间把这一套带走（复制、
+          # 截图），右端两枚是会改掉东西的（导入覆盖整页，投稿发出去）。回执跟着
+          # 它报告的那两枚走——导入自己的回执在下面那个面板里（#imp-tip）。
           '<div class="src-tools">',
           '<button id="preview" class="chip" type="button" aria-pressed="false">预览配装</button>',
           TIP_SW_CHIP,
           '<span class="tool-sep" aria-hidden="true"></span>',
           '<button id="copy" class="chip" type="button">复制配装</button>',
           SHOT_CHIP,
+          '<span id="copy-tip" role="status"></span>',
           # 导入是一个动作不是两个：这一枚永远「导入」，文本框还空着时它带你去粘贴。
           '<button id="to-import" class="chip" type="button">导入配装</button>',
-          '<span id="copy-tip" role="status"></span>',
           # 投稿直接把配装文本发到后端的待审队列。**接口地址由生成器写在
           # data-api 上**，form.js 现读——与 app.js 从 .toolbar 的 data-* 读配置
           # 同一条约定，地址仍只有 shell.API 一处定义。

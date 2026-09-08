@@ -762,7 +762,8 @@ body:has(.entries) .toolbar {
   border-top: 2px solid var(--accent);
 }
 
-/* 两组之间一道发丝线：左边两枚看这一页，右边两枚管源稿。 */
+/* 一道发丝线隔开两类：线左边看这一页，线右边把这一套带走。会改掉东西的那两枚
+   （导入、投稿）另靠右端，见下面的 #to-import。 */
 .tool-sep {
   align-self: stretch;
   width: 1px;
@@ -770,10 +771,27 @@ body:has(.entries) .toolbar {
   background: var(--hair-lit);
 }
 
+/* **导入与投稿是这一条上仅有的两枚会改掉东西的**：导入覆盖整页已填的内容，投稿把
+   它发出去。导入原先混在复制、截图中间，与那几枚「看一眼」的同为素 chip，按下去
+   才发现整页被盖掉了。挪到右端与投稿并列，尺寸同重——两枚一眼就看得出是另一类。
+
+   同重但不同色：投稿填色，导入描边。两枚都填色会读成一对同义按钮，正是要避免的。 */
+#to-import {
+  margin-left: auto;
+  padding: 7px 18px;
+  color: var(--accent);
+  font-weight: 600;
+  border: 1px solid var(--accent);
+}
+
+#to-import:hover { color: var(--ink); background: var(--accent); }
+
+#to-import::before,
+#to-import::after { display: none; }
+
 /* 投稿是终态那一个，**填色**：这一条上别的都是描边或纯字，唯一一枚填色的
    因此一眼认得出，也不会与「预览」按下时那个强调色边框读混。 */
 #send {
-  margin-left: auto;
   padding: 7px 18px;
   color: var(--ink);
   font-weight: 600;
