@@ -1,6 +1,9 @@
 ---
 paths:
   - "assets/app.js"
+  - "assets/chart.js"
+  - "assets/rota.js"
+  - "assets/home.js"
   - "assets/search.js"
   - "tools/build-search.py"
 ---
@@ -8,8 +11,19 @@ paths:
 # 全站搜索与 app.js
 
 管浏览器里跑的那两件：全站搜索索引，以及 `assets/app.js` 建的工具条、过滤、
-分节高亮、列组开关、折线图与轮盘。
+分节高亮与列组开关。
 改 `assets/app.js` 或 `tools/build-search.py` 之前读这一份。
+
+页面专属的三段拆成同目录下的 ES 模块，由 `app.js` 认出该页的 `data-*` 时动态
+`import()`：`chart.js`（折线图，只有压光伤害页）、`rota.js`（轮盘，只有轮换速查表）、
+`home.js`（首页那只全站搜索框）。三段合起来是从前 `app.js` 8.9 KB gzip 里的
+6.9 KB，而 34 个引 app.js 的页面里只有 3 个跑得到，其余 31 页白下；拆开之后
+`app.js` 3.9 KB，外壳三件从 27.1K 降到 22.0K。
+
+共用件（`tuck`、`onResize`、`words`、`hit`、`slot`）由 `app.js` 传进去，模块里
+不重抄一份。路径按 `document.currentScript.src` 现算：这是个 classic script，
+`import()` 里写相对路径按文档基址解，而资料页嵌在各自的目录里，深浅不一。
+载入失败要 `console.error` 炸出来，不静默吞掉——吞掉的话页面上只是少一张图。
 
 `assets/search.js` 由 `tools/build-search.py` 生成，**不手改**。
 站点全局的机制与闸门在 `CLAUDE.md`，视觉规范在 `design.md`。

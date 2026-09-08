@@ -298,7 +298,8 @@ class DeploySelection(unittest.TestCase):
         # 剥注释是优化，不该有能力挡住发版：跳过的文件原样发。这里断言的是
         # 「今天站上这些文件走的是哪条路」，改文案时会跟着变，变了要看一眼。
         skipped = [rel for rel in ('assets/site.css', 'assets/app.js', 'assets/search.js',
-                                   'admin/admin.js', 'admin/dialect.js', 'builds/new/form.js')
+                                   'admin/admin.js', 'admin/dialect.js', 'builds/new/form.js',
+                                   'assets/chart.js', 'assets/rota.js', 'assets/home.js')
                    if not deploy.strippable((TOOLS.parent / rel).read_text(encoding='utf-8'))]
         self.assertEqual(skipped, [], '这些文件的字符串里出现了 /* 或 */，整个文件会原样发')
 

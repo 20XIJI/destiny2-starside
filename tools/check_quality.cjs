@@ -561,6 +561,24 @@ test('no consumer keeps a private copy of the splitter', () => {
   }
 })
 
+test('app.js and the page-specific modules it lazy-loads stay in step', () => {
+  // 三段页面专属的东西拆出去之后，app.js 里只剩一句 lazy('x.js')。少了那个文件、
+  // 或者拆的时候漏改了分发（还在直接调已经搬走的函数），页面上是整个 app.js
+  // 抛异常、工具条与分节高亮一起没了，而构建、闸门、npm test 全都看不见。
+  const app = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8')
+  const code = app.replace(/\/\*[\s\S]*?\*\//g, '')
+  for (const [file, gone] of [['chart.js', 'chart'], ['rota.js', 'rota'], ['home.js', 'home']]) {
+    assert.ok(fs.existsSync(path.join(root, 'assets', file)), `assets/${file} 不在`)
+    assert.match(code, new RegExp(`lazy\\('${file}'\\)`), `app.js 没有 lazy('${file}')`)
+    assert.doesNotMatch(code, new RegExp(`(?<![.\\w])${gone}\\s*\\(`),
+      `app.js 还在直接调 ${gone}()，但它已经搬进 assets/${file} 了`)
+    const mod = fs.readFileSync(path.join(root, 'assets', file), 'utf8')
+    assert.match(mod, /export default function init\s*\(/, `assets/${file} 没有 export default init`)
+  }
+  assert.match(code, /document\.currentScript/,
+    'app.js 要按自己的 src 算模块路径：classic script 里 import() 的相对路径按文档基址解')
+})
+
 test('both entry points load the dialect before the console that uses it', () => {
   // admin.js 的 cells()/titleEnd() 现读 window.starsideDialect。少这一句，
   // /admin/ 一开就是 undefined.cells，而闸门、构建、npm test 全都看不见——
