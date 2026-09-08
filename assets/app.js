@@ -380,7 +380,11 @@
     var sec = document.getElementById(a.getAttribute('href').slice(1));
     if (!sec) return;
     ev.preventDefault();
-    sec.scrollIntoView();
+    /* **瞬间到位，不吃全局那条 scroll-behavior: smooth。**读者点这一枚时已经挑定了
+       去处，中间那一段没人看；而这些页面动辄一万几千像素（护甲模组页 14900、
+       神器模组页 16700、护甲套装页 28700），一次平滑滚动只是一片模糊，还会把途经
+       的每个分节挨个点亮一遍。正文里的锚点链接不受影响，照旧平滑。 */
+    sec.scrollIntoView({ behavior: 'instant' });
     try { history.replaceState(null, '', a.getAttribute('href')); } catch (e) {}
   });
 

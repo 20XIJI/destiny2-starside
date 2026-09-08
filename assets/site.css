@@ -763,10 +763,17 @@ main {
    .gen），版式因此只写这一份。页面表只留真差异：版心一档、表格是否 separate、
    本页专属的列宽与列对齐。 */
 
-/* 分节 sticky 单元贴导航条下沿，锚点跳转也要让开那一条 */
+/* 分节 sticky 单元贴导航条下沿，锚点跳转也要让开那一条，**再留一道缝**。
+
+   只让开站头高度时标题正好压在站头下沿上：资料页的站头连着换行的 chip 行能有
+   138px 高，一行标题紧贴着这么一块板子读作被夹住。16px 与合集页那条同值
+   （builds/style.css 的 .set-one），不另开一档。
+
+   顺带把落点让出当前分节高亮的判定线：观察者的 rootMargin 裁掉 --stick + 8，
+   落在 --stick 时分节上沿正好在线上方 8px。 */
 .block,
 .cat,
-.artifact { scroll-margin-top: var(--stick); }
+.artifact { scroll-margin-top: calc(var(--stick) + 16px); }
 
 .block { margin-bottom: clamp(40px, calc(4.6 * var(--vw)), 64px); }
 
