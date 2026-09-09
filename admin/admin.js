@@ -742,6 +742,12 @@
     return out
   }
 
+  /* 线上改过、还没落盘：库里这一版的 hash 与 sync.py 记下的「上次落盘那一版」不等。
+     那一套因此落进「通过」档而不是「完成」——那一档答的就是「这一轮 sync 要发什么」。
+
+     **landed 为空即视为已落盘**：判不出来的时候报成「全都改过」比不报更没用。 */
+  function dirtyOf (d) { return !!(d && d.landed && d.hash !== d.landed) }
+
   // 投稿与已上站的源稿并成一张表。已通过的投稿带着 season/slug，盘上那一篇的
   // _id 就是 builds/<season>/<slug>——两边靠它认成同一套，不重复出现。
   function builds () {
@@ -761,16 +767,22 @@
           state: ok === 0 ? 'wait' : ok === -1 ? 'no' : 'dropping' })
         return
       }
-      if (ok === 1 && id && live[id]) seen[id] = 1
-      out.push({ sub: s, id: ok === 1 ? id : '', md: s.md, at: s.at,
-        state: ok === 0 ? 'wait' : ok === -1 ? 'no' : id && live[id] ? 'live' : 'pass' })
+      var d = ok === 1 && id ? live[id] : null
+      if (d) seen[id] = 1
+      // 时间取两边较新的：bsave 动的是 docs.at，投稿那条的 at 停在审过的那一刻，
+      // 只看后者会让刚改过的一套标着一个月前的时间，也排不到列表最前。
+      out.push({ sub: s, id: ok === 1 ? id : '', doc: d, md: s.md,
+        at: d && d.at > (s.at || '') ? d.at : s.at,
+        dirty: dirtyOf(d),
+        state: ok === 0 ? 'wait' : ok === -1 ? 'no' : d ? 'live' : 'pass' })
     })
     // 本机直接写的源稿没有对应投稿，照样要管。35 套里有 20 套是这一支——
     // docs 那个动作给 builds/ 前缀的记录带上了 md，所以它们在列表上也有名字、
     // 职业与类别，不再只剩一个 slug。
     Object.keys(live).forEach(function (id) {
       if (!seen[id]) {
-        out.push({ sub: null, id: id, md: live[id].md || '', at: live[id].at, state: 'live' })
+        out.push({ sub: null, id: id, doc: live[id], md: live[id].md || '', at: live[id].at,
+          dirty: dirtyOf(live[id]), state: 'live' })
       }
     })
     return out
@@ -778,6 +790,12 @@
 
   // 状态词一档一个词，不写解释。「通过」是审过了还没落盘，「完成」是站上已经有了。
   var STATE = { wait: '待审', pass: '通过', live: '完成', dropping: '待移除', no: '驳回' }
+  /* 「通过」那一档答的是「这一轮 sync 要发什么」：审过还没落盘的，与已上站又被改过的，
+     两种来源同属一档。**只并在筛选与计数上，state 本身不动**——subDetail() 的保存、
+     申请移除、撤回三枚按钮都按 state 分路，把 live 换成 pass 会让保存写去 subs
+     （改动落不了盘）、申请移除整个消失、撤回换成一枚后端必拒的死按钮。 */
+  function bucket (b) { return b.dirty ? 'pass' : b.state }
+
   // 默认只看待审：一进来就该是待办清单，另外三档按需打开。
   var buildFilter = { wait: 1 }
 
@@ -861,7 +879,7 @@
     // 那条规则只该落在这一行上，判据得分得开。
     var bar = el('div', 'acts filters')
     Object.keys(STATE).forEach(function (k) {
-      var n = all.filter(function (b) { return b.state === k }).length
+      var n = all.filter(function (b) { return bucket(b) === k }).length
       var c = el('button', 'toggle', STATE[k] + ' ' + n)
       c.type = 'button'
       if (buildFilter[k]) c.setAttribute('aria-current', 'true')
@@ -886,7 +904,7 @@
       bar.appendChild(wipe)
     }
 
-    var inState = all.filter(function (b) { return buildFilter[b.state] })
+    var inState = all.filter(function (b) { return buildFilter[bucket(b)] })
     if (buildPick && !inState.some(inPick)) buildPick = ''
     show(split(buildTree(inState, buildPick, function (k) {
       buildPick = buildPick === k ? '' : k       // 再点一次就取消筛选
@@ -907,9 +925,12 @@
       var r = el('button', slug ? 'b-' + slug : '')
       r.type = 'button'
       var drop = b.sub && b.sub.drop
+      // **改过的标「已改」，档不动**：它与「通过」同属一档（筛选与树上的计数都跟着
+      // 走），只是那个词得分得开——「这一轮要发什么」里混着两种来源。
       r.appendChild(el('span', 'flag ' + (drop ? 'no' : b.state === 'wait' ? 'pend'
         : b.state === 'no' ? 'no' : 'pass'),
-        drop ? (b.state === 'wait' ? '待删' : STATE[b.state]) : STATE[b.state]))
+        drop ? (b.state === 'wait' ? '待删' : STATE[b.state])
+          : b.dirty ? '已改' : STATE[b.state]))
       r.appendChild(el('span', 'id ' + (openBuild === idOf(b) ? 'on' : ''),
         (drop ? '申请删除　' : '')
         + (md ? (nameOf(md) || '（没名字）') : b.id.split('/').pop())))
@@ -1020,11 +1041,32 @@
     bar.appendChild(back('收起'))
     bar.appendChild(shotBtn(function () { return isSet(b.md) ? 'set' : 'one' }))
     idcol.appendChild(bar)
-    idcol.appendChild(el('p', 'crumb', (nameOf(b.md) || b.id.split('/').pop())
-      + '　·　' + STATE[b.state]
-      + (b.sub && b.sub.updates ? '　·　更新已有配装' : '')
-      + (missing(b.md).length ? '　·　缺 ' + missing(b.md).join('、') : '')
-      + (/\n## 审核意见[ \t]*\n\s*\S/.test(b.md || '') ? '　·　有审核意见' : '')))
+    /* 铭牌两行：上一行这份稿子是什么，下一行谁经手的。**缺的那一格留空不占位**
+       ——合集头部没有分支与核心，本机直接落盘的那些没有审核人。 */
+    function join (parts) { return parts.filter(Boolean).join('　·　') }
+    idcol.appendChild(el('p', 'crumb', join([
+      nameOf(b.md) || b.id.split('/').pop(),
+      b.dirty ? '已改' : STATE[b.state],
+      clsOf(b),
+      line(b.md, '分支'),
+      line(b.md, '类别'),
+      line(b.md, '核心'),
+      line(b.md, '推荐人').split('|')[0].trim(),
+      b.sub && b.sub.updates ? '更新已有配装' : '',
+      missing(b.md).length ? '缺 ' + missing(b.md).join('、') : '',
+      /\n## 审核意见[ \t]*\n\s*\S/.test(b.md || '') ? '有审核意见' : ''
+    ])))
+    /* 「改」取哪一份看这一套在哪一段：改过还没落盘时 docs.by 就是线上动它的那个人；
+       没改过时 docs.by 是 sync.py 推上去写的「本机」，写出来没有信息，退回投稿那一侧
+       ——sub.edBy 是它待审时被谁改的。时间只有一个 at，三次动作互相覆写，所以写
+       「最后动于」而不是各挂各的时间。 */
+    var edBy = (b.dirty && b.doc ? b.doc.by : '') || (b.sub && b.sub.edBy) || ''
+    var okBy = (b.sub && b.sub.okBy) || ''
+    idcol.appendChild(el('p', 'crumb hands', join([
+      edBy ? '改 ' + edBy : '',
+      okBy ? '审 ' + okBy : '',
+      b.at ? '最后动于 ' + when(b.at) : ''
+    ]) || '没有经手记录'))
     wrap.appendChild(idcol)
     wrap.appendChild(ops)
 
@@ -1294,6 +1336,20 @@
         row.appendChild(el('span', 'id', u.name + '  ' + u._id))
         row.appendChild(el('span', 'meta', LV[u.lv] || u.lv))
         if (u.lv < S.me.lv) {
+          // 改名走 op:'set'，级别原样带回去——那个动作一次写整条，不带 lv 会被
+          // 当成「改成 undefined」挡下来。**改的只是这张白名单**：记录里的 by/okBy
+          // 是当时那个名字的副本，改完不回溯，旧记录照旧写着旧名字。
+          var ren = el('button', 'op', '改名')
+          ren.type = 'button'
+          ren.onclick = function () {
+            var name = window.prompt('把「' + u.name + '」改成什么名字？', u.name)
+            if (name === null) return
+            name = name.trim()
+            if (!name || name === u.name) return
+            call('eds', { op: 'set', uid: u._id, name: name, lv: Number(u.lv) })
+              .then(edsView, function (e) { alert(e.message) })
+          }
+          row.appendChild(ren)
           var del = el('button', 'op', '移除')
           del.type = 'button'
           del.onclick = function () {
@@ -1359,7 +1415,9 @@
       }
       $('views').hidden = false
       show(el('p', 'lede', '载入中…'))
-      document.querySelector('[data-view="eds"]').hidden = me.lv < 3
+      // 编辑者那一屏只给超管：加人、改名、改角色、移除都在这里，看得见谁是编辑者
+      // 本身也是这一层的事。云函数的 LEVEL.eds 是同一个门槛，不靠前端藏。
+      document.querySelector('[data-view="eds"]').hidden = me.lv < 4
       // 起手那一格也要有 state，不然从详情返回时拿到的是 null
       history.replaceState({ v: 'builds' }, '')
       // **三张表到齐了才放开标签栏**：docs / edits / subs 还在路上时 S 里是三个

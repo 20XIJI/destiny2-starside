@@ -668,16 +668,19 @@ test('a signed-in editor below the bar is told it is a permission problem, not a
   assert.equal((await h.as('lv1', { a: 'edits' })).error, undefined, 'lv 1 该进得了 edits')
   assert.equal((await h.as('lv1', { a: 'emark', jobs: [] })).error, 'no permission', 'lv 1 不该进得了 emark')
   assert.equal((await h.as('lv1', { a: 'eds', op: 'set', uid: 'x', lv: 1 })).error, 'no permission', 'lv 1 不该改得了编辑者')
+  // 编辑者那张表整张归超管：看名单与改名单是同一层的事。
+  h.signIn('lv3', 3)
+  assert.equal((await h.as('lv3', { a: 'eds', op: 'list' })).error, 'no permission', 'lv 3 不该看得到编辑者名单')
 })
 
 test('an editor cannot mint someone at or above their own level', async () => {
-  // eds 那两行是唯一防止管理员造超管的东西，此前零断言。
-  const h = harness({ editors: [{ _id: 'u3', name: '老三', lv: 3 }] })
-  h.signIn('lv3', 3, 'u3')
-  assert.equal((await h.as('lv3', { a: 'eds', op: 'set', uid: 'new', lv: 3 })).error, 'bad lv', '不许造出与自己同级的')
-  assert.equal((await h.as('lv3', { a: 'eds', op: 'set', uid: 'new', lv: 4 })).error, 'bad lv', '不许造出高于自己的')
-  assert.equal((await h.as('lv3', { a: 'eds', op: 'set', uid: 'u3', lv: 1 })).error, 'forbidden', '不许动与自己同级的人')
-  assert.equal((await h.as('lv3', { a: 'eds', op: 'set', uid: 'new', lv: 2 })).error, undefined, 'lv 2 该造得出来')
+  // eds 那两行是唯一防止一个超管造出第二个超管的东西，此前零断言。
+  const h = harness({ editors: [{ _id: 'u4', name: '老四', lv: 4 }] })
+  h.signIn('lv4', 4, 'u4')
+  assert.equal((await h.as('lv4', { a: 'eds', op: 'set', uid: 'new', lv: 4 })).error, 'bad lv', '不许造出与自己同级的')
+  assert.equal((await h.as('lv4', { a: 'eds', op: 'set', uid: 'new', lv: 5 })).error, 'bad lv', '不许造出高于自己的')
+  assert.equal((await h.as('lv4', { a: 'eds', op: 'set', uid: 'u4', lv: 1 })).error, 'forbidden', '不许动与自己同级的人')
+  assert.equal((await h.as('lv4', { a: 'eds', op: 'set', uid: 'new', lv: 3 })).error, undefined, 'lv 3 该造得出来')
 })
 
 // 编辑台的 lint() 与 terms.js 一起跑：admin.js 在 Node 里只导出纯函数，

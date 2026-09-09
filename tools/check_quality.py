@@ -496,6 +496,7 @@ class Deletion(Isolated):
         self.path = self.file('references/' + self.ID + '.md', self.A)
         self.file('.git/starside-sync.json', json.dumps({self.ID: sync.sha1(self.A)}))
         self.db = {self.ID: self.A}
+        self.landed = {self.ID: sync.sha1(self.A)}
         self.subs = [
             {'_id': 'approved', 'ok': 1, 'drop': 0, 'season': 's29-fixture',
              'slug': 'one-hunter', 'md': self.A},
@@ -511,7 +512,11 @@ class Deletion(Isolated):
     def api(self, action, **kw):
         self.calls.append((action, kw))
         if action == 'pull':
-            return {'docs': [{'_id': key, 'md': md} for key, md in self.db.items()]}
+            return {'docs': [{'_id': key, 'md': md, 'landed': self.landed.get(key, '')}
+                             for key, md in self.db.items()]}
+        if action == 'landed':
+            self.landed[kw['id']] = kw['hash']
+            return {'ok': 1}
         if action == 'list':
             return {'subs': copy.deepcopy(self.subs)}
         if action == 'drop':
@@ -532,7 +537,9 @@ class Deletion(Isolated):
         if action == 'push':
             if kw['id'] == self.fail_push:
                 raise RuntimeError('injected push failure')
-            self.db[kw['id']] = gzip.decompress(base64.b64decode(kw['gz'])).decode()
+            md = gzip.decompress(base64.b64decode(kw['gz'])).decode()
+            self.db[kw['id']] = md
+            self.landed[kw['id']] = sync.sha1(md)
             return {'ok': 1}
         return forbidden(action, kw)
 
@@ -718,6 +725,49 @@ class Deletion(Isolated):
         self.assertIn('先创建', str(caught.exception))
         self.assertEqual(Path(sync.BASE).read_bytes(), before)
         self.assertFalse((self.root / 'references/builds/s30-new').exists())
+
+    def test_landed_backfills_once_then_follows_the_disk(self):
+        """landed 是审核台判「线上改过、还没落盘」的那一半，由对账一处写。"""
+        self.subs = []
+        # 这个字段是后加的，早先推上去的那些篇没有它。第一轮补齐。
+        self.landed = {}
+        self.assertEqual(sync.sync(), 0)
+        self.assertEqual([kw for action, kw in self.calls if action == 'landed'],
+                         [{'id': self.ID, 'hash': sync.sha1(self.A)}])
+
+        # 补完就不再发。**稳态零调用**——每轮都重发一遍就是按篇数收费。
+        self.calls.clear()
+        self.assertEqual(sync.sync(), 0)
+        self.assertEqual([kw for action, kw in self.calls if action == 'landed'], [])
+
+        # 线上改过、本机拉下来：landed 跟着走到落盘的那一版，那一套因此退出「通过」档。
+        self.db[self.ID] = self.B
+        self.calls.clear()
+        self.assertEqual(sync.sync(), 0)
+        self.assertEqual(self.path.read_text(), self.B)
+        self.assertEqual(self.landed[self.ID], sync.sha1(self.B))
+
+        # 本机改过推上去：push 顺手写了，不再多补一次。
+        self.path.write_text(self.A, encoding='utf-8')
+        self.calls.clear()
+        self.assertEqual(sync.sync(), 0)
+        self.assertEqual([kw for action, kw in self.calls if action == 'landed'], [])
+        self.assertEqual(self.landed[self.ID], sync.sha1(self.A))
+
+    def test_taking_theirs_moves_landed_to_the_version_on_disk(self):
+        """--theirs 接受库里那份，landed 跟着走，不留一套常挂「已改」的配装。"""
+        self.subs = []
+        self.db[self.ID] = self.B
+        self.path.write_text(self.B.replace('\n', ' \n'), encoding='utf-8')
+        self.assertEqual(sync.sync(), 1)          # 两边都动过，撞车
+        self.calls.clear()
+        sync.take([self.ID], False)
+        self.assertEqual(self.path.read_text(), self.B)
+        self.assertEqual(self.landed[self.ID], sync.sha1(self.B))
+        # 只在不等时才发：云函数据此把写不进去当成那条 doc 没了。
+        self.calls.clear()
+        sync.take([self.ID], False)
+        self.assertEqual([kw for action, kw in self.calls if action == 'landed'], [])
 
 
 class SyncErrors(Isolated):

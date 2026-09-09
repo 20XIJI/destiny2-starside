@@ -213,9 +213,10 @@ const LEVEL = {
   me: 0,
   docs: 1, subs: 1, hist: 1, bdrop: 1, edits: 1, chg: 1, pend: 1,
   ssave: 2, bsave: 2, smark: 2, emark: 2, sdrop: 2,
-  eds: 3,
+  eds: 4,
   stats: null, hit: null, likes: null, like: null, sub: null,
   list: 'admin', mark: 'admin', pull: 'admin', push: 'admin', rekey: 'admin', drop: 'admin',
+  landed: 'admin',
 }
 
 // 进分支之前判一次。返回值是 me，分支要用名字或 uid 时直接拿，不再各自 await 一遍。
@@ -271,7 +272,7 @@ async function editorRoute(a, body, event, me) {
     if (cur.drop) throw new Error('bad sub type')
     const md = String(body.md || '')
     if (!md.startsWith('# ') || md.length > MAX_MD) throw new Error('bad md')
-    await subs.doc(String(body.id)).update({ md, at: new Date().toISOString() })
+    await subs.doc(String(body.id)).update({ md, at: new Date().toISOString(), edBy: me.name })
     return { ok: 1 }
   }
 
@@ -337,6 +338,11 @@ async function editorRoute(a, body, event, me) {
     const cur = (await subs.doc(String(body.id)).get()).data[0]
     if (!cur) throw new Error('no sub')
 
+    // 审的人多半改完直接点通过，不先点保存（admin.js 的 mark() 把填表页现读的那一份
+    // 带过来）。所以「谁改的」不能只认 ssave：正文与库里那份比一下就知道动没动，
+    // cur 本来就要读，不多一次调用。驳回那一路不带 md，比不着也不必比。
+    if (body.md !== undefined && String(body.md) !== cur.md) set.edBy = me.name
+
     // 撤回：把「通过」退回「待审」。审的人点错了、或者通过之后又发现问题，在这一段
     // 里还追得回来——通过只是改了库里这条记录，源稿要等 sync.py 拉下来才落盘。
     //
@@ -397,7 +403,10 @@ async function editorRoute(a, body, event, me) {
       // 库变了、盘没变，下一次 sync 自然拉下来。
       if (cur.updates) {
         const id = 'builds/' + season + '/' + slug
-        const doc = { md, hash: sha1(md), at: set.at, by: cur.md ? '投稿更新' : me.name }
+        // by 写通过的那个人。**不写「投稿更新」这类词**：铭牌拿 docs.by 当「谁改的」，
+        // 一个状态词摆在人名的位置上读起来像有个人叫这个名字；这一版是不是投稿更新
+        // 来的，由 sub.updates 答，铭牌第一行已经写着。
+        const doc = { md, hash: sha1(md), at: set.at, by: me.name }
         const r = await docs.doc(id).update(doc)
         if (!r.updated) await docs.doc(id).set(doc)
       }
@@ -560,8 +569,8 @@ async function editorRoute(a, body, event, me) {
     }
   }
 
-  // 白名单的增删改。只能动 lv 严格低于自己的人：管理员因此动不了超管，
-  // 也造不出第二个超管。
+  // 白名单的增删改。**整张表只给超管**：加人、改名、改角色、移除都在这里，
+  // 看得见谁是编辑者本身也是这一层的事。仍然只能动 lv 严格低于自己的人。
   if (a === 'eds') {
     const op = String(body.op || 'list')
     if (op === 'list') return { eds: (await eds.limit(200).get()).data }
@@ -661,9 +670,30 @@ async function route(a, body, event) {
     const md = body.gz ? zlib.gunzipSync(Buffer.from(body.gz, 'base64')).toString() : String(body.md || '')
     const id = String(body.id || '')
     if (!id || md.length > MAX_MD) throw new Error('bad md')
-    const set = { md, hash: sha1(md), at: new Date().toISOString(), by: '本机' }
+    // landed 与 hash 一起写：推上去的那一刻库里这一版就是盘上那一版。
+    const hash = sha1(md)
+    const set = { md, hash, at: new Date().toISOString(), by: '本机', landed: hash }
     const r = await docs.doc(id).update(set)
     if (!r.updated) await docs.doc(id).set(set)
+    return { ok: 1 }
+  }
+
+  /* 本机对完账之后，盘上那一篇就是库里这一版，landed 记住它的 hash。审核台判
+     hash !== landed 即「线上改过、还没落盘」，那一套因此落进「通过」档。
+
+     **判据挂在内容上，不挂在动作上**：存一位「改过了」的话，改一版又改回原样就永远
+     清不掉——三方比看到两边都没变，什么都不做。比 hash 则自己收敛。
+
+     **只有 sync.py 写得动它**：这个字段的意思是「本机落过盘了」，线上的编辑一律不碰，
+     所以 smark 更新已上站那一套时只写 hash、不写 landed。 */
+  if (a === 'landed') {
+    const id = String(body.id || '')
+    const hash = String(body.hash || '')
+    if (!id || !/^[0-9a-f]{40}$/.test(hash)) throw new Error('bad landed')
+    // sync.py 只在这一篇的 landed 与要写的值不等时才发，所以写不进去只有一个原因：
+    // 那条 doc 已经没了（pull 与这一发之间被 drop 掉）。**当场报出来**，不静默成功。
+    const r = await docs.doc(id).update({ landed: hash })
+    if (!r.updated) throw new Error('no doc')
     return { ok: 1 }
   }
 

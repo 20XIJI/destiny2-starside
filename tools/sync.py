@@ -126,8 +126,11 @@ def on_disk():
     return out
 
 
-def in_db():
-    return {d['_id']: (d.get('md') or '') for d in api('pull')['docs']}
+def in_db(docs=None):
+    """库里每篇的正文。docs 给了就不再请求，与同一次 pull 的别的字段共用一次调用。"""
+    if docs is None:
+        docs = api('pull')['docs']
+    return {d['_id']: (d.get('md') or '') for d in docs}
 
 
 def baseline(save=None):
@@ -242,7 +245,11 @@ def sync():
     gone, conflicts = sweep(subs, disk, base)
     # 冲突目标也不能由旧投稿恢复，更不能在后面的三方比中反手推回库。
     land(subs, dropped=set(gone) | set(conflicts))
-    disk, db = on_disk(), in_db()
+    # landed 与正文出自同一次 pull：审核台判 hash != landed 即「线上改过、还没落盘」，
+    # 这一轮对完账之后每篇都该相等。
+    raw = api('pull')['docs']
+    disk, db = on_disk(), in_db(raw)
+    landed = {d['_id']: (d.get('landed') or '') for d in raw}
     pushed, pulled, dropped, stuck = [], [], [], list(conflicts)
 
     for doc_id in sorted(set(disk) | set(db)):
@@ -260,6 +267,7 @@ def sync():
         elif b is None:
             if r is None:
                 send(doc_id, d)
+                landed[doc_id] = dh     # push 顺手写了 landed，别再补一次
                 pushed.append(doc_id)   # 本地新加的一篇，库里没东西可丢
                 completed = '已推送'
             else:
@@ -275,6 +283,7 @@ def sync():
                 completed = '已删除库稿'
             else:
                 send(doc_id, d)
+                landed[doc_id] = dh
                 pushed.append(doc_id)
                 completed = '已推送'
         elif r is None:
@@ -286,6 +295,12 @@ def sync():
             pulled.append(doc_id)
             dh = sha1(r)
             completed = '已拉取'
+        # 对完账之后盘上就是这一版，landed 记住它的 hash。推上去那一路云函数已经写过、
+        # 上面同步了本地这一份，比一下就跳过；拉下来的与库里还没有这个值的在这里补。
+        # **稳态下全部相等，一次调用都不发。**
+        if dh is not None and landed.get(doc_id) != dh:
+            api('landed', id=doc_id, hash=dh)
+
         # 每篇成功立即记录；后面的 API/落盘失败不抹掉已完成的对账。
         if dh != b:
             if dh is None:
@@ -321,7 +336,9 @@ def sync():
 
 
 def take(ids, mine):
-    disk, db, base = on_disk(), in_db(), baseline()
+    raw = api('pull')['docs']
+    disk, db, base = on_disk(), in_db(raw), baseline()
+    landed = {d['_id']: (d.get('landed') or '') for d in raw}
     subs = api('list')['subs']
     targets = deletions(subs)
     for doc_id in ids:
@@ -350,6 +367,11 @@ def take(ids, mine):
                 sys.exit('%s 库里没有，谈不上以库里的为准' % doc_id)
             put(path_of(doc_id), db[doc_id])
             base[doc_id] = sha1(db[doc_id])
+            # 盘上就是库里这一版了，landed 跟着走：不写的话审核台一直标着「已改」，
+            # 直到下一次整轮 sync 才收敛。**只在不等时才发**，与 sync() 同一个契约
+            # ——云函数据此把「写不进去」当成那条 doc 没了，当场报出来。
+            if landed.get(doc_id) != base[doc_id]:
+                api('landed', id=doc_id, hash=base[doc_id])
         baseline(base)
         leftover = path_of(doc_id) + '.remote'
         if os.path.exists(leftover):
