@@ -42,7 +42,7 @@
 | 故我在\\（狼群弹药）\\任意 | {ico|![](icons/b3f87b5fb9.webp)} | 特殊用途 |  |  | {champ|![](icons/a9911a3dfe.webp)} | 紫刀剑和{exotic|故我在}的辅助武器。 |  |  |
 | 阿格尔的权杖 | {ico|![](icons/006e337344.webp)} | 清怪：T0.5\\高难：T2.5\\输出：T3 | 120982 | 3841 | {champ|![](icons/8b37bb6db2.webp)} | 擅长清理{bar-red|红血}怪，击杀{deb-stasis|冻结}效果很不错，同时可以触发{art-perk|严酷折射}，如果你玩泰坦有转冰大招的需求，可以考虑用它与{art-perk|元素超充器}配合（废墟石板） | 只有在触发催化消耗大招时伤害才够看，常态很一般绑定需求大招回转，绑定{art-perk|严酷折射} | 虽然触发催化之后配合{el-prismatic|指挥琢面}的伤害和总伤够看，但很明显你不应该为此牺牲一个脱手大 |
 | 集体义务 | {ico|![](icons/a9eb6214ab.webp)} | 清怪：T1 |  |  | {champ|![](icons/a9911a3dfe.webp)} | 27 次命中可以获得{deb-void|不稳定}、{deb-void|虚弱}、{deb-void|压制}，配合废墟石板{art-perk|不稳定神枪手}和{art-perk|邪恶收割}获得职业技能回转和{el-void|虚空覆盖护盾} |  |  |
-| 冷酷无情 | {ico|![](icons/2a6dd4fe93.webp)} | 输出：T1 | 54552 | 4341 | {champ|![](icons/b7c4048b87.webp)} | 在有{enemy|战斗人员}触发{perk|杀戮弹匣}时 DPS 会更高，直接射 DPS 也不错适合搭配双增伤光芒复仇抱射结束后的 DPS |  |  |
+| 冷酷无情 | {ico|![](icons/2a6dd4fe93.webp)} | 输出：T1 | 70355 | 6013 | {champ|![](icons/b7c4048b87.webp)} | 需要有小怪触发{perk|杀戮弹匣}的场合，直接射DPS也不错，可与熔炉2件套搭配 |  |  |
 | 维王者之剑 | {ico|![](icons/682140db15.webp)} | 清怪：T1\\高难：T1 |  |  | {champ|![](icons/8b37bb6db2.webp)} | 虫手泰坦下限极高的过机制武器，举盾时给予盟友{el-void|虚空覆盖护盾}保证团队生存，NPA 神器为其量身定做 | 虫手泰坦和{el-arc|组合打击}电猎 |  |
 | 三体坐观者 | {ico|![](icons/9d9fce23de.webp)} | 清怪：T1 |  |  | {champ|![](icons/8b37bb6db2.webp)} | 只有当{el-arc|电弧}连锁伤害能连锁死小怪时，才应该使用三体非压光内容清怪效率奇高 |  |  |
 | 第四骑士 | {ico|![](icons/9a3ab05aff.webp)} | 输出：T1\\清怪：T1 |  | 8496 | {champ|![](icons/8b37bb6db2.webp)} | 速通和输出 rush 中会被使用 |  |  |
