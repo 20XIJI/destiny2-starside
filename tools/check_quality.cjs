@@ -810,7 +810,7 @@ function toolbar () {
   const body = new El('body')
   const slot = body.appendChild(new El('div', 'site-head')).appendChild(new El('div', 'toolbar'))
   slot.dataset = { section: '.block', item: '.entries > li', label: '', noun: '配装',
-    facets: '场景=scene:single:groups;职业=cls;分支=branch;强度=tier:single;标签=tag:scoped(场景)' }
+    facets: '场景=scene:single:groups;强度=tier:single;职业=cls:tuck;分支=branch:tuck;标签=tag:tuck' }
   // 场景与强度是两条主轴，各填进页面给的一个空容器，不进工具条。
   const bar = body.appendChild(new El('nav', 'facet-bar'))
   bar.dataset = { facet: '场景' }
@@ -870,14 +870,18 @@ function toolbar () {
   }
   sandbox.window = sandbox
   vm.runInNewContext(fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8'), sandbox)
-  // 场景在页面那个容器里，其余几维是工具条上的 <details>。
+  // 场景与强度在页面那两个容器里，其余三维是工具条上那块共用面板里的三行。
   const bars = { 场景: bar, 强度: tierBar }
-  const host = (dim) => bars[dim]
-    ? bars[dim]
-    : slot.children.filter((c) => c.className === 'drop').find((c) => {
-      const sum = c.querySelector('summary')
-      return sum && sum._text === dim
+  const panel = () => slot.children.find((c) => c.className === 'drop')
+  const host = (dim) => {
+    if (bars[dim]) return bars[dim]
+    const box = panel()
+    if (!box) return undefined
+    return box.querySelectorAll('.tuck-row').find((r) => {
+      const lab = r.querySelector('.facet-label')
+      return lab && lab._text === dim
     })
+  }
   const secOf = (scene) => main.children.find((c) => c.dataset.scene === scene)
   return {
     slot,
@@ -895,66 +899,77 @@ function toolbar () {
       const sec = secOf(scene)
       return !!sec && !sec.hidden
     },
-    drops: () => slot.children.filter((c) => c.className === 'drop' && !c.hidden)
-      .map((c) => c.querySelector('summary')._text),
+    // 面板里此刻立着的那几行，按顺序给。
+    tucked: () => {
+      const box = panel()
+      if (!box || box.hidden) return []
+      return box.querySelectorAll('.tuck-row').filter((r) => !r.hidden)
+        .map((r) => r.querySelector('.facet-label')._text)
+    },
+    // 触发器上那个数：三维已选之和。
+    tally: () => {
+      const box = panel()
+      return box ? box.querySelector('summary').querySelector('b')._text : null
+    },
     live: () => lis.filter((li) => !li.hidden).length,
+    // 五维同一个画法，所以点法也只有一种：正文那两排与面板里那三行都是素字开关。
     click (dim, value) {
       const box = host(dim)
       assert.ok(box && !box.hidden, `维度「${dim}」的控件不在`)
-      if (bars[dim]) {
-        const btn = box.querySelectorAll('button').find((b) => b.textContent === value)
-        assert.ok(btn, `主轴「${dim}」上没有「${value}」`)
-        btn.onclick()
-      } else {
-        const input = box.querySelectorAll('input').find((i) => i.value === value)
-        assert.ok(input, `维度「${dim}」上没有「${value}」`)
-        input.onchange()
-      }
+      const btn = box.querySelectorAll('button').find((b) => b.textContent === value)
+      assert.ok(btn, `维度「${dim}」上没有「${value}」`)
+      btn.onclick()
     },
     values (dim) {
       const box = host(dim)
       if (!box || box.hidden) return []
-      return bars[dim]
-        ? box.querySelectorAll('button').map((b) => b.textContent)
-        : box.querySelectorAll('input').map((i) => i.value)
+      return box.querySelectorAll('button').map((b) => b.textContent)
     }
   }
 }
 
-test('the main axis renders into the page container and the rest into toolbar dropdowns', () => {
+test('the two main axes render into page containers and the rest into one shared panel', () => {
   const t = toolbar()
   assert.ok(t.slot.querySelector('.tool-search'), '搜索框没建出来')
   // 场景填进页面给的容器，「全部」排在最前。
   assert.deepEqual(t.values('场景'), ['全部', 'raid', '地牢', '宗师/终极', 'PVP'])
   assert.equal(t.bar.querySelector('.facet-label')._text, '场景')
-  // 其余几维是工具条上的下拉框；标签此刻收着（场景还没选）。
   assert.deepEqual(t.values('强度'), ['全部', 'meta', '强力', '创意'],
     '强度没填进页面那条主轴')
-  assert.deepEqual(t.drops(), ['职业', '分支'],
-    '工具条上的下拉框不对（标签那一个此刻应当收着）')
+  // 低频那三维收进工具条上同一块面板，一维一行，三行都常驻。
+  assert.deepEqual(t.tucked(), ['职业', '分支', '标签'],
+    '面板里那三行不对：三维应当各占一行且都在')
+  assert.equal(t.slot.querySelectorAll('.drop').length, 1,
+    '面板不止一块：三维合用一枚触发器，一维一枚就退回了老样子')
   // 大节就是场景，跳转 chip 那一排因此不出：同一批字不给第二个来源。
   assert.equal(t.slot.querySelector('.tool-chips'), null, '不该有跳转 chip 那一排')
 })
 
-test('a scoped dimension stays hidden until its scope is picked, then follows it', () => {
+test('every tucked dimension is there from the start and keeps its values', () => {
   const t = toolbar()
-  assert.deepEqual(t.values('标签'), [],
-    '没选场景时标签那个下拉框就出来了：并集会把 3V3 与输出摞在一起')
-  t.click('场景', 'raid')
-  assert.deepEqual(t.values('标签').sort(), ['推图', '机制', '输出'].sort())
+  const all = ['3V3', '6V6', '推图', '机制', '输出'].sort()
+  // 标签一进来就在。以前它随场景现算取值，没选场景时整个控件不出、选了突袭才
+  // 冒出来——控件凭空出现又凭空消失，读者学不会。
+  assert.deepEqual(t.values('标签').sort(), all,
+    '没选场景时标签那一行就该在，取值是全站并集')
   t.click('场景', 'PVP')
-  assert.deepEqual(t.values('标签').sort(), ['3V3', '6V6'].sort(),
-    '换了场景，标签没跟着换成那个场景的词表')
+  assert.deepEqual(t.values('标签').sort(), all,
+    '选了场景之后标签的取值变了：控件不该在读者没碰它的时候自己少几枚')
+  t.click('场景', 'PVP')
+  assert.deepEqual(t.values('职业').sort(), ['猎人', '泰坦', '术士'].sort(),
+    '职业那一行的取值也不该随别的维收窄')
 })
 
-test('a scoped pick is dropped when the scope moves out from under it', () => {
+test('the shared trigger counts picks across all three tucked dimensions', () => {
   const t = toolbar()
-  t.click('场景', 'raid')
+  assert.equal(t.tally(), '', '一个都没选时触发器上不该有数字')
+  t.click('职业', '猎人')
+  assert.equal(t.tally(), '1')
   t.click('标签', '输出')
-  assert.equal(t.live(), 1)
-  t.click('场景', 'PVP')
-  // 「输出」在 PVP 下不存在：它必须被清掉，否则交集恒空、一张卡都筛不出来。
-  assert.equal(t.live(), 2, '换场景后旧标签还按着，PVP 那两张被它筛没了')
+  // 面板收起来之后就看不见还筛着什么了，那个数是唯一的提示，必须是三维之和。
+  assert.equal(t.tally(), '2', '触发器上的数不是三维之和')
+  t.click('职业', '猎人')
+  assert.equal(t.tally(), '1', '取消之后没减回去')
 })
 
 test('picks union inside a dimension and intersect across dimensions', () => {
@@ -983,8 +998,6 @@ test('the main axis carries an 全部 reset that clears the dimension', () => {
   assert.equal(t.live(), 2)
   t.click('场景', '全部')
   assert.equal(t.live(), CARDS.length, '「全部」没把场景清干净')
-  // 场景清空之后，随它出现的标签下拉框要跟着收回去。
-  assert.deepEqual(t.values('标签'), [])
 })
 
 test('an overlapping build sits in its first scene and moves to whichever is picked', () => {

@@ -307,23 +307,24 @@
   /* 维度筛选（.toolbar 带 data-facets 的页面：配装索引页）。声明式：
      `显示名=data 键[:修饰]`，分号隔开，例如
 
-         场景=scene:single;职业=cls;分支=branch;强度=tier:single;标签=tag:scoped(场景)
+         场景=scene:single:groups;强度=tier:single;职业=cls:tuck;分支=branch:tuck;标签=tag:tuck
 
      取值一律从卡片的 data-* 上读，多值用制表符隔开（生成器写 &#9;）。**这里不
      认识任何一页的词表**：加一维、改一维的取值都只改生成器，这段不动。以前三
      个维度各有一个提取器（读上一级标题、读 data-branch、读 .tags 里的 <i>），
      其中两个绑死在配装索引页的 DOM 形状上。
 
-     两个修饰：
-       :single       一次只选一个。数据侧本来就近似单选的那两维（场景、强度）用它
-                     ——多选会让 :scoped 那一维取不到确定的词表。
-       :groups       分节就是按这一维分的。选定单一值时，重叠的那几节并成一张网格
-                     （场景重叠：raid、地牢 那批自成一节，点 raid 时并进 raid）。
-       :scoped(某维)  取值随点名的那一维变，那一维没选定时整个控件不出。
-                     **作用域点名，不靠「前面最近的那个 :single」推**：强度后来
-                     也成了 :single，靠推会让标签悄悄改跟着强度走，两处都不报错。
-                标签的取值随场景变，而这段代码里没有那张场景→标签集的映射表：
-                取值从「当前场景筛出的卡片」现扫，映射关系留在数据里。
+     三个修饰：
+       :single  一次只选一个。数据侧本来就近似单选的那两维（场景、强度）用它。
+       :groups  分节就是按这一维分的。选定单一值时，重叠的那几节并成一张网格
+                （场景重叠：raid、地牢 那批自成一节，点 raid 时并进 raid）。
+       :tuck    收进工具条那块共用面板，不给它正文里的常驻一排。低频检索的那几维
+                （职业、分支、标签）用它：常驻一排一维一行，四行顶掉首屏，而这
+                几维十次里有九次没人碰。
+
+     **控件放哪由页面说了算**：页面给了 [data-facet="维度名"] 的空容器就填在那里，
+     没给且带 :tuck 的收进共用面板。取值一律扫全部卡片，不随别的维收窄——控件因此
+     是常驻的，不会在读者没碰它的时候自己少几枚或整个消失。
 
      同一维度内多选取并集，维度之间取交集，再与搜索框取交集。 */
   var DIMS = null;
@@ -345,20 +346,12 @@
     DIMS = cfg.facets.split(';').map(function (spec) {
       var half = spec.split('=');
       var mod = half[1].split(':');
-      var under = '';
-      mod.forEach(function (x) {
-        var hit = /^scoped\((.+)\)$/.exec(x);
-        if (hit) under = hit[1];
-      });
-      return { name: half[0], key: mod[0], scope: -1, under: under,
+      return { name: half[0], key: mod[0],
                single: mod.indexOf('single') > 0,
+               /* 收进工具条那块共用面板，不占正文的常驻竖向空间。 */
+               tuck: mod.indexOf('tuck') > 0,
                /* 分节就是按这一维分的：选定单一值时把重叠的那几节并成一张网格。 */
                groups: mod.indexOf('groups') > 0 };
-    });
-    /* scope 要等整张表建完再算：点名的那一维在表里的位置。名字写错就退回不受限，
-       那一维照常出——一处笔误不该让整条工具条消失。 */
-    DIMS.forEach(function (d) {
-      DIMS.forEach(function (o, j) { if (d.under && o.name === d.under) d.scope = j; });
     });
     vals = mods.map(function (it) {
       return DIMS.map(function (d) {
@@ -441,32 +434,70 @@
      全部原生正确，面板在正常流里不必定位，只缺「点外面关掉」——那是下面六行。
      等 anchor positioning 进了 Baseline 再换。
 
-     **只有一个值的维度整个不出**：筛不掉任何东西，占一格还让人以为点了没反应。
-     :scoped 那一维的取值随作用域变，所以整块要能重画。 */
+     **只有一个值的维度整个不出**：筛不掉任何东西，占一格还让人以为点了没反应。 */
+  /* 收起来的那几维共用一枚触发器与一块面板。**一维一枚下拉不行**：工具条上会排着
+     几个长得一样、点开才知道是什么的控件，而其中「标签」那一维原先还随场景现算
+     取值，没选场景时整个控件不出——控件凭空出现又凭空消失，读者学不会。合成一枚
+     之后，面板一展开三组全在眼前，收起来只占一枚控件的宽度。 */
+  var tuckBox = null;
+  var tuckTally = null;
+  function tuckHost() {
+    if (!tuckBox) {
+      /* 面板坐哪也由页面说了算，与 [data-facet="维度名"] 同一条：页面给了
+         [data-facet-tuck] 就坐那儿，没给就退回工具条。 */
+      var seat = document.querySelector('[data-facet-tuck]') || slot;
+      tuckBox = seat.appendChild(document.createElement('details'));
+      tuckBox.className = 'drop';
+      var sum = document.createElement('summary');
+      sum.className = 'toggle';
+      sum.textContent = '筛选';
+      /* 选了几项写在触发器上：面板收起来之后，不标出来就看不见还筛着。
+         三维合一枚触发器，所以这个数是三维之和。 */
+      tuckTally = sum.appendChild(document.createElement('b'));
+      tuckBox.appendChild(sum);
+      var menu = tuckBox.appendChild(document.createElement('div'));
+      menu.className = 'menu';
+    }
+    return tuckBox.querySelector('.menu');
+  }
+
+  /* 触发器上的计数，以及面板自己的存亡：三维的取值都少于两个时（合集页那七张卡
+     就可能这样），留一枚点开是空的触发器不如整个不出。 */
+  function syncTuck() {
+    if (!tuckBox) return;
+    var n = 0;
+    var live = false;
+    DIMS.forEach(function (d) {
+      if (d.bar) return;
+      n += picked[d.name].length;
+      if (!d.host.hidden) live = true;
+    });
+    tuckTally.textContent = n ? String(n) : '';
+    tuckBox.hidden = !live;
+  }
+
   if (DIMS) {
-    DIMS.forEach(function (d, k) {
+    /* **先把五维的宿主与选中表铺齐，再逐维画**。syncTuck() 每次都数遍所有维度，
+       边建边画的话第一维画完就去读还没建到的那几维，读到 undefined。 */
+    DIMS.forEach(function (d) {
       picked[d.name] = [];
       var page = document.querySelector('[data-facet="' + d.name + '"]');
       d.bar = !!page;
-      d.host = page || slot.appendChild(document.createElement('details'));
-      if (!page) d.host.className = 'drop';
-      paint(k);
+      d.host = page || tuckHost().appendChild(document.createElement('div'));
+      if (!page) d.host.className = 'tuck-row';
     });
+    DIMS.forEach(function (d, k) { paint(k); });
     /* 点面板以外的地方关掉下拉框。<details> 唯一不白送的一件。 */
     document.addEventListener('click', function (ev) {
-      DIMS.forEach(function (d) {
-        if (!d.bar && d.host.open && !d.host.contains(ev.target)) d.host.open = false;
-      });
+      if (tuckBox && tuckBox.open && !tuckBox.contains(ev.target)) tuckBox.open = false;
     });
   }
 
   function scan(k) {
-    /* 第 k 维在当前作用域下的取值。:scoped 维只扫作用域那一维已经筛出的卡片，
-       别的维扫全部。 */
-    var d = DIMS[k];
+    /* 第 k 维的取值，一律扫全部卡片。**不随别的维收窄**：跟着别的维变的话，读者
+       没碰这一维，它却自己少了几枚甚至整个消失。取值固定下来，控件就是常驻的。 */
     var seen = [];
-    vals.forEach(function (v, i) {
-      if (d.scope >= 0 && !dimPass(i, d.scope)) return;
+    vals.forEach(function (v) {
       v[k].forEach(function (x) { if (x && seen.indexOf(x) < 0) seen.push(x); });
     });
     return seen;
@@ -475,19 +506,13 @@
   /* 选中态就地改，不重画：重画会把展开着的下拉框合上，勾第二项就没法勾了。 */
   function sync(d) {
     var on = picked[d.name];
-    if (d.bar) {
-      Array.prototype.forEach.call(d.host.querySelectorAll('button'), function (b) {
-        /* 「全部」那一枚没有 data-v，它的按下态就是「这一维一个都没选」。 */
-        b.setAttribute('aria-pressed',
-          (b.dataset.v === undefined ? !on.length : on.indexOf(b.dataset.v) >= 0)
-            ? 'true' : 'false');
-      });
-    } else {
-      Array.prototype.forEach.call(d.host.querySelectorAll('input'), function (i) {
-        i.checked = on.indexOf(i.value) >= 0;
-      });
-      d.tally.textContent = on.length ? String(on.length) : '';
-    }
+    Array.prototype.forEach.call(d.host.querySelectorAll('button'), function (b) {
+      /* 「全部」那一枚没有 data-v，它的按下态就是「这一维一个都没选」。 */
+      b.setAttribute('aria-pressed',
+        (b.dataset.v === undefined ? !on.length : on.indexOf(b.dataset.v) >= 0)
+          ? 'true' : 'false');
+    });
+    if (!d.bar) syncTuck();
   }
 
   /* 分节按场景分，而场景是重叠的：84 篇里有 21 篇同时属于 raid 与地牢，它们
@@ -547,14 +572,11 @@
     var w = picked[d.name];
     var at = w.indexOf(x);
     /* :single 维点第二枚即换掉第一枚，再点自己即清空；x 为 null 是「全部」。
-       数据侧一套配装只有一个场景，读者侧多选一场景一并集就把 :scoped 那一维
-       搞乱了。 */
+       数据侧一套配装只有一个场景，读者侧也就没有多选它的道理。 */
     if (x === null) picked[d.name] = [];
     else if (d.single) picked[d.name] = at < 0 ? [x] : [];
     else if (at < 0) w.push(x); else w.splice(at, 1);
     sync(d);
-    /* 作用域变了，下游那几维要重画：取值换一套，已选中的旧值一并清掉。 */
-    DIMS.forEach(function (o, j) { if (o.scope === k) paint(j); });
     /* 分节的依据就是这一维时，选定单一值即把重叠的那几节并成一张网格。 */
     if (d.groups) regroup(picked[d.name].length === 1 ? picked[d.name][0] : '');
     filter(search.value);
@@ -562,16 +584,12 @@
 
   function paint(k) {
     var d = DIMS[k];
-    /* :scoped 维在作用域那一维没选定时整个不出：不选场景时并集是全部场景的
-       标签摞在一起（输出、机制、3V3、6V6…），点「3V3」会让所有 PVE 配装消失，
-       而读者不会预期一个叫「标签」的维度有这种行为。 */
-    var live = !(d.scope >= 0 && !picked[DIMS[d.scope].name].length);
-    var seen = live ? scan(k) : [];
+    var seen = scan(k);
     picked[d.name] = picked[d.name].filter(function (x) { return seen.indexOf(x) >= 0; });
     d.host.textContent = '';
     d.host.hidden = seen.length < 2;
-    if (d.host.hidden) return;
-    if (d.bar) paintBar(d, k, seen); else paintDrop(d, k, seen);
+    if (d.host.hidden) { if (!d.bar) syncTuck(); return; }
+    paintBar(d, k, seen);
     sync(d);
   }
 
@@ -586,38 +604,18 @@
     return c;
   }
 
+  /* 正文那两排与面板里那三组同一个画法：维度名 + 一排素字开关。两处只差「全部」
+     那一枚与容器给的密度，不为面板另开一套控件——读者也就不必学两种。 */
   function paintBar(d, k, seen) {
     var name = document.createElement('span');
     name.className = 'facet-label';
     name.textContent = d.name;
     d.host.appendChild(name);
     /* 「全部」排在最前，是这一维的默认态而不是第六个值：它不筛任何东西，
-       按下即清空。不给它一个位置的话，选了场景就再也回不到全部。 */
-    d.host.appendChild(chipFor(d, k, '全部', null));
+       按下即清空。不给它一个位置的话，选了场景就再也回不到全部。
+       多选的那几维不给：点第二下即取消，一枚一枚点掉就是清空。 */
+    if (d.single) d.host.appendChild(chipFor(d, k, '全部', null));
     seen.forEach(function (x) { d.host.appendChild(chipFor(d, k, x, x)); });
-  }
-
-  function paintDrop(d, k, seen) {
-    var sum = document.createElement('summary');
-    sum.className = 'toggle';
-    sum.textContent = d.name;
-    /* 选了几项写在触发器上：面板收起来之后，不标出来就看不见这一维还筛着。 */
-    d.tally = document.createElement('b');
-    sum.appendChild(d.tally);
-    d.host.appendChild(sum);
-    var menu = document.createElement('div');
-    menu.className = 'menu';
-    seen.forEach(function (x) {
-      var row = document.createElement('label');
-      var box = document.createElement('input');
-      box.type = 'checkbox';
-      box.value = x;
-      box.onchange = function () { pick(d, k, x); };
-      row.appendChild(box);
-      row.appendChild(document.createTextNode(x));
-      menu.appendChild(row);
-    });
-    d.host.appendChild(menu);
   }
 
   /* 命中即显示；整行三档皆不命中则整行隐藏，整节不命中则整节与其 chip 一同隐藏。

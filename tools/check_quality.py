@@ -866,8 +866,9 @@ class Generation(Isolated):
         生成器改了卡片上的属性名而忘了改声明（或反过来），那一维会静默变成空表：
         整行不出，页面照旧渲染，三道闸门也照旧过——**这条是那种情形唯一的哨兵**。
 
-        顺带钉住 :scoped 点名的那一维确实在声明里。名字写错时那一维退回不受限，
-        标签会把所有场景的取值摞在一起排出来——页面照旧渲染，没有别的东西会报。
+        顺带钉住带 :tuck 的那几维在页面上有个落座的地方。生成器漏掉
+        `[data-facet-tuck]` 时 app.js 退回工具条，面板照旧建得出来、页面照旧渲染，
+        只是悄悄挪了位置——没有别的东西会报。
         """
         self.replace(sys, 'argv', ['convert-build.py'])
         build.main()
@@ -877,18 +878,15 @@ class Generation(Isolated):
         assert found is not None      # pyright：上一行已经保证了
         spec = found.group(1)
         dims = [d.split('=') for d in spec.split(';')]
-        names = [n for n, _ in dims]
         for name, mods in dims:
             key, *flags = mods.split(':')
             attr = 'data-' + re.sub(r'([A-Z])', r'-\1', key).lower()
             self.assertIn('%s="' % attr, page,
                           '维度「%s」声明读 %s，卡片上一张都没有' % (name, attr))
-            for flag in flags:
-                under = re.fullmatch(r'scoped\((.+)\)', flag)
-                if under:
-                    self.assertIn(under.group(1), names,
-                                  '维度「%s」点名的作用域「%s」不在声明里'
-                                  % (name, under.group(1)))
+            if 'tuck' in flags:
+                self.assertIn('data-facet-tuck', page,
+                              '维度「%s」带 :tuck，页面却没有 [data-facet-tuck] '
+                              '那个空容器，面板会悄悄退回工具条' % name)
 
     def test_source_errors_identify_file_and_collection_member(self):
         self.replace(sys, 'argv', ['convert-build.py', 'beta-hunter'])

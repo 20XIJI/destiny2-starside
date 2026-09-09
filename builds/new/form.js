@@ -1526,9 +1526,21 @@
       return skip;
     },
     read: function () { return out.value; },
-    /* 审核台载进这一页之后调它立起审核意见那一栏。公开访客走不到这一条，
-       所以「投稿的人看不到」不靠鉴权，靠不给入口。 */
-    review: function (on) { reviewing = !!on; showVerdict(); },
+    /* 审核台载进这一页之后调它立起审核意见那一栏，以及只归审核员的那几个场景
+       （生成器给它们打了 data-review）。公开访客走不到这一条，所以「投稿的人
+       看不到」不靠鉴权，靠不给入口。
+
+       **审核台要在 load() 之前调它**：pressTags() 只按得下没藏起来的按钮，先灌
+       稿再掀开的话，那份稿子的「功能性」会落进 skip，sumTags() 随即把场景那一行
+       重算成空。 */
+    review: function (on) {
+      reviewing = !!on;
+      showVerdict();
+      [].forEach.call(document.querySelectorAll('[data-review]'), function (b) {
+        b.hidden = !reviewing;
+        if (!reviewing) b.setAttribute('aria-pressed', 'false');
+      });
+    },
     /* 审核台把这一页嵌在列表下面那一格里，图弹在 iframe 内部只有那一格那么大，
        看不成。所以这里只出图，弹图归父窗口——与 admin.js「动作不留在 iframe
        底下」那条同一个取向。

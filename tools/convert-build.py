@@ -23,7 +23,7 @@ import shell
 import vocab
 from html import escape
 
-from markup import (BRANCH, CLASSES, CO_SCENES, FORM_SCENES, SCENE_TAGS, SCENES,
+from markup import (BRANCH, CLASSES, CO_SCENES, REVIEW_SCENES, SCENE_TAGS, SCENES,
                     TIERS, die, inline, loading_attr, must,
                     source_context, text_of, uncolor)
 
@@ -310,7 +310,7 @@ def stats_of(spec):
 FACETS = (('场景', '适用环境', SCENES), ('强度', '强度', TIERS))
 
 
-def facet_picks(key, label, tags, single=False, co=()):
+def facet_picks(key, label, tags, single=False, co=(), review=()):
     """填表页的一栏标签。与详情页 facet() 同形（小标签 + 一排标签框），只是标签
     可点。值收在同一段里的隐藏 input 上，源稿的键不变——val() 照旧按 data-key 读
     一个 .value，不必为这几格另开一条取值路径。
@@ -319,12 +319,17 @@ def facet_picks(key, label, tags, single=False, co=()):
     co 是 single 的唯一豁免：写在容器上的那几个值彼此之间可以同时按下（raid 与
     地牢）。豁免写成数据而不是 form.js 里的一个 if——SCENES 那张表改了，这里
     自动跟着改。
+
+    review 里的那几个值照样出按钮，但带 hidden，由 form.js 的 review() 在审核态
+    掀开。**出而藏，不是不出**：不出的话 pressTags() 找不到按钮，审核台打开一份
+    已经是这个值的稿子再存回去，那一行会被 sumTags() 重算成空。
     """
     return ('<div><p class="by-label">%s</p><span class="tags tagset"%s%s>%s</span>'
             '<input type="hidden" data-key="%s"></div>'
             % (label, ' data-single=""' if single else '',
                ' data-co="%s"' % TAB.join(co) if co else '',
-               ''.join('<button type="button" aria-pressed="false">%s</button>' % t
+               ''.join('<button type="button" aria-pressed="false"%s>%s</button>'
+                       % (' data-review="" hidden' if t in review else '', t)
                        for t in tags),
                key))
 
@@ -561,11 +566,11 @@ def tags_of(md, scenes):
     """「标签：」。取值随场景，见 markup.SCENE_TAGS。
 
     没有标签集的那三个场景（宗师/终极、日常、功能性）**整行必须不写**：写了也
-    没有筛选入口，卡片上却会多出一枚点不动的标签。有标签集的场景至少写一个，
-    否则那张卡在标签行上永远筛不出来——与上面那 11 篇同一个病。
+    没有筛选入口，卡片上却会多出一枚点不动的标签。有标签集的场景可写可不写：
+    标签说的是这套在队伍里干什么，说不出分工的那些不该被逼着挑一个凑数。
     """
     vocab = SCENE_TAGS[scenes[0]]
-    got = names(md, '标签', required=bool(vocab))
+    got = names(md, '标签', required=False)
     if not vocab:
         if got:
             die('「%s」这个场景没有标签，「标签：」整行删掉；源稿写的是 %r'
@@ -1166,10 +1171,10 @@ def render_index(made, sets=False):
     卡里的 <i>、只有分支写 data-，三个异构的提取器散在 app.js 里。现在一律走
     data-：app.js 那边因此只剩一个通用提取器，也不再需要认识这一页长什么样。
 
-    **场景那一维渲染到页面里，不在工具条上。**它是主轴，值又只有五个，摊开成一排
-    居中的素字开关比塞进工具条更好认；页面给一个带 data-facet 的空容器，app.js
-    见了就往那里填，见不着才在工具条上出下拉框——放哪由页面说了算，app.js 不认识
-    任何一维的名字。
+    **场景与强度渲染到页面里，各占一排居中的素字开关。**这两维是主轴，读者一进来
+    就要拿的主意，摊开比收起来更好认。职业、分支、标签是低频检索，收进同一块面板
+    （声明里的 :tuck），一枚触发器钉在两条主轴的左缘。三个空容器都由这里给，
+    app.js 见了就往里填——放哪由页面说了算，app.js 不认识任何一维的名字。
 
     **卡片是竖式的，一排五张**（形状见 builds/style.css）。图在最上，往下是配装
     名、推荐人、简介、标签、时间与赞数。每张卡落一个分支类，.entry 左缘那条 2px
@@ -1200,11 +1205,12 @@ def render_index(made, sets=False):
                     app_js=True, up=up,
                     sheets=['../style.css'] if sets else None),
          # data-facets 是声明式的：`显示名=data 键[:修饰]`，分号隔开。
-         #   :single       一次只选一个（场景与强度）
-         #   :groups       分节按这一维分，选定单一值时重叠的那几节并成一张网格
-         #   :scoped(某维)  取值随点名的那一维变，那一维没选定时整个控件不出
-         # 标签的取值随场景变（markup.SCENE_TAGS），但 app.js 里**不写那张映射
-         # 表**：:scoped 让它从当前已筛出的卡片现扫，映射关系留在数据里。
+         #   :single   一次只选一个（场景与强度）
+         #   :groups   分节按这一维分，选定单一值时重叠的那几节并成一张网格
+         #   :tuck     收进工具条那块共用面板，不给它正文里的常驻一排
+         # 职业、分支、标签走 :tuck：十次里有九次没人碰，一维给一行会让四行版式
+         # 顶掉首屏。**顺序即面板里的顺序**，场景与强度排在前面是因为它们有正文
+         # 容器接着，落不进面板。
          #
          # **不出跳转 chip**（data-label 给空串）：那一排跳的是大节，而大节就是场景，
          # 页面上那条居中的场景开关已经在干这件事，同一排字出现两遍读者分不出
@@ -1212,16 +1218,22 @@ def render_index(made, sets=False):
          shell.nav(name, up=up, toolbar={
              'data-section': '.block', 'data-item': '.entries > li',
              'data-label': '', 'data-noun': '合集' if sets else '配装',
-             'data-facets': '场景=scene:single:groups;职业=cls;分支=branch;'
-                            '强度=tier:single;标签=tag:scoped(场景)'}),
+             'data-facets': '场景=scene:single:groups;强度=tier:single;'
+                            '职业=cls:tuck;分支=branch:tuck;标签=tag:tuck'}),
          shell.page_head(name, aside=aside),
-         # 场景那一维填在这里。**空容器由页面给、内容由 app.js 填**：值本来就从
-         # 卡片现扫，写进 HTML 就是同一批字的第二个来源。无 JS 时它是空的、
-         # 由 .facet-bar:empty 收起，正文照旧可读。
+         # 三个容器都是**空的由页面给、内容由 app.js 填**：值本来就从卡片现扫，
+         # 写进 HTML 就是同一批字的第二个来源。无 JS 时它们是空的、由
+         # .facet-bar:empty 收起，正文照旧可读。
+         '<div class="facet-block">',
+         # 低频那三维收进这里的共用面板。**与两条主轴同一块**，不放工具条上：
+         # 工具条那一格前面是空着的 .tool-count，触发器停在中段像掉在半路上；
+         # 挨着场景与强度，读者一眼看得出这三样是一类东西。
+         '<div class="facet-tuck" data-facet-tuck></div>',
          '<nav class="facet-bar" data-facet="场景" aria-label="适用场景"></nav>',
          # 强度与场景并列成第二条：它是「凭什么被推荐」，与「在哪打」一样是读者
-         # 一进来就要拿的主意，塞进下拉框等于把它降到与分支同一档。
+         # 一进来就要拿的主意，收进面板等于把它降到与分支同一档。
          '<nav class="facet-bar" data-facet="强度" aria-label="强度"></nav>',
+         '</div>',
          '<main>']
     # 节内先按强度（TIERS 的顺序即 meta、强力、创意），同档再按更新时间降序。
     # stamp 是 YYYY.M.D，段位宽不定，按字符串排会把 2026.9.9 排到 2026.10.1
@@ -1522,8 +1534,9 @@ def set_form_head(name_cn):
             'placeholder="一句话介绍这组配装" aria-label="描述"></p>',
             # 场景与强度是整份合集的；标签每套一个，写在下面那一套的头上。
             '<div class="facets">%s%s</div>'
-            % (facet_picks(FACETS[0][0], FACETS[0][1], FORM_SCENES,
-                           single=True, co=sorted(CO_SCENES, key=SCENES.index)),
+            % (facet_picks(FACETS[0][0], FACETS[0][1], SCENES,
+                           single=True, co=sorted(CO_SCENES, key=SCENES.index),
+                           review=REVIEW_SCENES),
                facet_picks(*FACETS[1], single=True)),
             # 整份合集一条审核意见，所以落在合集头部这一层，不进下面的 .set-body
             # ——那是「一套配装」那一层，form.js 的 resetAll() 切一套就清一次。
@@ -1602,8 +1615,9 @@ def solo_form_head(name_cn):
             # 也是这套配装的第一层身份。「功能性」不在这一排——那一档由审核员
             # 指定，它与标签「机制」的边界要看正文才判得出。
             '<div class="facets">%s%s%s</div>'
-            % (facet_picks(FACETS[0][0], FACETS[0][1], FORM_SCENES,
-                           single=True, co=sorted(CO_SCENES, key=SCENES.index)),
+            % (facet_picks(FACETS[0][0], FACETS[0][1], SCENES,
+                           single=True, co=sorted(CO_SCENES, key=SCENES.index),
+                           review=REVIEW_SCENES),
                facet_picks(*FACETS[1], single=True), tag_picks()),
             # 审核意见落在页头之外，与详情页同一位置。默认收起，审核台按
             # starsideForm.review() 立起来——投稿的人因此看不到这一栏。

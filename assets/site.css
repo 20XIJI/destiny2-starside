@@ -467,6 +467,12 @@ a { color: var(--bone); }
    形状取自详情页页头那一排（点赞、复制、截图、详情开关），全站 269 处已经跑着。 */
 .toggle,
 .op {
+  /* 两枚 L 形角标是 position: absolute，**锚点必须是开关自己**。不写这一行时它们
+     找最近的定位祖先，一路找到 body，于是按下态的角标飞到整页的左上与右下角去。
+     .chip 一直有这一行，.toggle 漏了；把两条主轴包进 .facet-block（定位祖先）之后
+     那两枚角标就落在了那一块的边角上，才看得出来。position: relative 不带 z-index，
+     不建层叠上下文，sticky 与面板的层序都不受影响。 */
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -479,17 +485,22 @@ a { color: var(--bone); }
   background: var(--tint-2);
   border: 1px solid var(--hair);
   cursor: pointer;
+  /* **点快一点会选中文字。**双击落在按钮上时浏览器按「选词」处理，一排开关被
+     连点两下就泛蓝一块；「筛选」那枚尤其明显——它是 <summary>，连点本来就是
+     开了又关，选中的字还留在那儿。这几个控件的字不是拿来读的，选它没有用处。
+     不碰 .chip：那一排是跳转，与本条无关。 */
+  user-select: none;
   transition: color .15s ease, border-color .15s ease;
 }
 
 /* **一排多枚的开关退回素字。**密度由容器判定，一处定义——建这些开关的
    app.js / rota.js / admin.js 不必知道自己被摆在哪里。
-   三处：资料页工具条与折线图工具条（.tool-chips）、配装索引页那条居中的场景开关
-   （.facet-bar）、审核台的状态五档（.filters）与顶部标签（.tool-chips）、
-   轮换的上周本周下周（.rota-btns）。
+   五处：资料页工具条与折线图工具条（.tool-chips）、配装索引页那两条居中的场景与
+   强度开关（.facet-bar）与工具条那块共用面板里的三组（.tuck-row）、审核台的状态
+   五档（.filters）与顶部标签（.tool-chips）、轮换的上周本周下周（.rota-btns）。
    工具条上那几个下拉框不在内：一排只有三四枚触发器，素字反而找不着，它们留在
    .toggle 的默认档（有框）。 */
-:is(.tool-chips, .facet-bar, .filters, .rota-btns) .toggle {
+:is(.tool-chips, .facet-bar, .filters, .rota-btns, .tuck-row) .toggle {
   padding: 6px 12px;
   font-family: var(--font-cn);
   font-size: 12.5px;
@@ -502,8 +513,8 @@ a { color: var(--bone); }
    自己的 color，角标自动跟上，三种状态不必各写一遍边框色。 */
 .chip::before,
 .chip::after,
-:is(.tool-chips, .facet-bar, .filters, .rota-btns) .toggle::before,
-:is(.tool-chips, .facet-bar, .filters, .rota-btns) .toggle::after {
+:is(.tool-chips, .facet-bar, .filters, .rota-btns, .tuck-row) .toggle::before,
+:is(.tool-chips, .facet-bar, .filters, .rota-btns, .tuck-row) .toggle::after {
   content: "";
   position: absolute;
   width: 7px;
@@ -514,10 +525,10 @@ a { color: var(--bone); }
 }
 
 .chip::before,
-:is(.tool-chips, .facet-bar, .filters, .rota-btns) .toggle::before { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+:is(.tool-chips, .facet-bar, .filters, .rota-btns, .tuck-row) .toggle::before { top: 0; left: 0; border-right: 0; border-bottom: 0; }
 
 .chip::after,
-:is(.tool-chips, .facet-bar, .filters, .rota-btns) .toggle::after { right: 0; bottom: 0; border-left: 0; border-top: 0; }
+:is(.tool-chips, .facet-bar, .filters, .rota-btns, .tuck-row) .toggle::after { right: 0; bottom: 0; border-left: 0; border-top: 0; }
 
 .chip:hover { color: var(--bone-hi); }
 
@@ -527,12 +538,12 @@ a { color: var(--bone); }
 .chip:hover::after,
 .chip[aria-current="true"]::before,
 .chip[aria-current="true"]::after,
-:is(.tool-chips, .facet-bar, .filters, .rota-btns) .toggle:hover::before,
-:is(.tool-chips, .facet-bar, .filters, .rota-btns) .toggle:hover::after,
-:is(.tool-chips, .facet-bar, .filters, .rota-btns) .toggle[aria-pressed="true"]::before,
-:is(.tool-chips, .facet-bar, .filters, .rota-btns) .toggle[aria-pressed="true"]::after,
-:is(.tool-chips, .facet-bar, .filters, .rota-btns) .toggle[aria-current="true"]::before,
-:is(.tool-chips, .facet-bar, .filters, .rota-btns) .toggle[aria-current="true"]::after { opacity: 1; }
+:is(.tool-chips, .facet-bar, .filters, .rota-btns, .tuck-row) .toggle:hover::before,
+:is(.tool-chips, .facet-bar, .filters, .rota-btns, .tuck-row) .toggle:hover::after,
+:is(.tool-chips, .facet-bar, .filters, .rota-btns, .tuck-row) .toggle[aria-pressed="true"]::before,
+:is(.tool-chips, .facet-bar, .filters, .rota-btns, .tuck-row) .toggle[aria-pressed="true"]::after,
+:is(.tool-chips, .facet-bar, .filters, .rota-btns, .tuck-row) .toggle[aria-current="true"]::before,
+:is(.tool-chips, .facet-bar, .filters, .rota-btns, .tuck-row) .toggle[aria-current="true"]::after { opacity: 1; }
 
 .toggle:hover,
 .op:hover { color: var(--bone-hi); border-color: var(--accent); }
@@ -542,10 +553,10 @@ a { color: var(--bone); }
 .op[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
 
 /* 素字态的开关没有边框可上色，只换字色——角标跟着 currentcolor 走。 */
-:is(.tool-chips, .facet-bar, .filters, .rota-btns) .toggle:hover { border-color: transparent; }
+:is(.tool-chips, .facet-bar, .filters, .rota-btns, .tuck-row) .toggle:hover { border-color: transparent; }
 
-:is(.tool-chips, .facet-bar, .filters, .rota-btns) .toggle[aria-pressed="true"],
-:is(.tool-chips, .facet-bar, .filters, .rota-btns) .toggle[aria-current="true"] { border-color: transparent; }
+:is(.tool-chips, .facet-bar, .filters, .rota-btns, .tuck-row) .toggle[aria-pressed="true"],
+:is(.tool-chips, .facet-bar, .filters, .rota-btns, .tuck-row) .toggle[aria-current="true"] { border-color: transparent; }
 
 /* **禁用要连 hover 一起掐掉。**只写 opacity 的话，hover 那条同权重、属性不重叠，
    照样会点亮——禁用的按钮在鼠标下亮起来，读者会以为它能点。 */

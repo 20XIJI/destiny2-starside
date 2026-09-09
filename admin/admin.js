@@ -1014,11 +1014,14 @@
     var go = function () {
       try {
         var w = fr.contentWindow
-        w.starsideForm.load(md)
-        // 审核意见那一栏只在这里立起来：填表页默认收着它，投稿的人因此看不到。
-        // lv 1 的编辑者照旧看得见已经写过的（有值即显示），只是立不起空框。
+        // 审核意见那一栏与只归审核员的那几个场景都在这里立起来：填表页默认收着
+        // 它们，投稿的人因此看不到。lv 1 的编辑者照旧看得见已经写过的审核意见
+        // （有值即显示），只是立不起空框。
         // 带守卫——读者浏览器里缓存着的旧 form.js 没有这个方法。
+        // **排在 load() 之前**：load 里的 pressTags() 只按得下没藏起来的按钮，
+        // 反过来的话一份「场景：功能性」的稿子会被重算成没有场景。
         if (w.starsideForm.review) w.starsideForm.review(S.me.lv >= 2)
+        w.starsideForm.load(md)
         // **把那一页自己的「投稿」摘掉**：它在审核页里按一下就是再投一份。
         var send = w.document.getElementById('send')
         if (send) send.remove()
