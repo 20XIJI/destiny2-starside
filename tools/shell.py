@@ -127,9 +127,12 @@ HIT = ('<script>(function(){'
 # 深浅不一，写死 ../ 会在 elements/arc/ 这种两层的页面上指错；站内绝对路径又会在
 # file:// 下指到磁盘根目录。
 #
-# **判据要连 main[data-src] 一起看。**只看令牌的话，配装页、填表页、索引页与首页
-# 也会各下一份 edit.js，而它们没有 data-src，edit.js 进去第一件事就是 return。
-# 编辑台把填表页当 iframe 载进来，那 20 KB 因此每换一条配装白下一次。
+# **判据要连 main[data-src] 一起看。**只看令牌的话，填表页、索引页与首页也会各下
+# 一份 edit.js，而它们没有 data-src，edit.js 进去第一件事就是 return。编辑台把填表页
+# 当 iframe 载进来，那 20 KB 因此每换一条配装白下一次。
+#
+# 戴 data-src 的是资料页与配装详情页两支，各走一条路，由 <main> 上的 data-kind 分：
+# 资料页逐格改（有 data-b 可反查源稿），配装页整篇替换（没有 data-b，走填表页）。
 EDIT = ('<script>try{if(localStorage.sa_at&&document.querySelector("main[data-src]")){'
         'var l=document.querySelector(\'link[href$="assets/site.css"]\');'
         'if(l)import(l.href.replace("assets/site.css","admin/edit.js"))'

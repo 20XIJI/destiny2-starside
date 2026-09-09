@@ -4145,7 +4145,6 @@ window.starsideIndex = [
 {"u":"builds/s29/fnsnwbr3-hunter/index.html","t":"冰猎开荒回转套 · 配装推荐","d":""},
 {"u":"builds/s29/hemhwhoe-hunter/index.html","t":"冰猎运动套 · 配装推荐","d":""},
 {"u":"builds/s29/hl9zhtio-warlock/index.html","t":"有限点燃苍蝇头火术 · 配装推荐","d":""},
-{"u":"builds/s29/hqq17mla-hunter/index.html","t":"配装合集测试 · 配装合集","d":""},
 {"u":"builds/s29/ig7y9i5n-warlock/index.html","t":"双飞饼 · 配装推荐","d":""},
 {"u":"builds/s29/irneezm3-warlock/index.html","t":"子弹印刷缚丝术 · 配装推荐","d":""},
 {"u":"builds/s29/iuhsh3n7-warlock/index.html","t":"亡妻回忆录之星火协议 · 配装推荐","d":""},
@@ -4185,7 +4184,6 @@ window.starsideIndex = [
 {"u":"builds/s29/swyr3tgz-warlock/index.html","t":"霜袍术 · 配装推荐","d":""},
 {"u":"builds/s29/tniihk60-warlock/index.html","t":"虚式·茈 五条悟虚空术士 · 配装推荐","d":""},
 {"u":"builds/s29/tz4vvv6j-warlock/index.html","t":"牢大术士 · 配装推荐","d":""},
-{"u":"builds/s29/v623u209-hunter/index.html","t":"跳舞机袖珍卫士 · 配装推荐","d":""},
 {"u":"builds/s29/vc0q45kd-hunter/index.html","t":"日常地牢通用火刀猎 · 配装推荐","d":""},
 {"u":"builds/s29/vl8gam9n-titan/index.html","t":"炸死所有猪 · 配装推荐","d":""},
 {"u":"builds/s29/w0q7ss18-hunter/index.html","t":"混乱裁决火刀猎 · 配装推荐","d":""},
@@ -4202,6 +4200,7 @@ window.starsideIndex = [
 {"u":"builds/s29/yiwangmelt-twjqg-hunter/index.html","t":"金枪猎位移+清怪配装 · 配装推荐","d":""},
 {"u":"builds/s29/yiwangmelt-weiyiqingguai2-hunter/index.html","t":"金枪猎位移+清怪配装 · 配装推荐","d":""},
 {"u":"builds/s29/ynwgmvks-warlock/index.html","t":"赫沃斯托夫逃逸手术士 · 配装推荐","d":""},
+{"u":"builds/s29/z3x0a7ar-warlock/index.html","t":"终局内容：光焰之井汇编器战靴 · 配装推荐","d":""},
 {"u":"builds/s29/zf43l1v8-titan/index.html","t":"微冲腿泰坦 · 配装推荐","d":""},
 {"u":"builds/s29/zqqoqjsb-warlock/index.html","t":"悬停术 · 配装推荐","d":""}
 ];

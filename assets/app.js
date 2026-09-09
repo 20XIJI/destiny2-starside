@@ -304,6 +304,19 @@
      直接存小写：`hit()` 要的就是它，每次按键再转一遍是几十万字符的临时垃圾。 */
   var text = mods.map(function (mod) { return mod.textContent.toLowerCase(); });
 
+  /* 光杆小标题收起来。**首屏就要跑一次，不能只等 filter()**：那一份只在带 ?q=
+     时跑，平常进页面从不跑，于是配装索引页上「本节没有、但别节属于本场景」的
+     职业会挂着一个空标题加一张空网格，读者搜一下或点一次筛选才消失。
+     生成器那一侧不能不出这一节：选定某个场景时 regroup() 要把别节的卡搬进来
+     （raid、地牢 那批搬进地牢），得有落点。 */
+  function trimSubs() {
+    subs.forEach(function (h) {
+      var ul = h.nextElementSibling;
+      h.hidden = !(ul && ul.querySelector('li:not([hidden])'));
+    });
+  }
+  trimSubs();
+
   /* 维度筛选（.toolbar 带 data-facets 的页面：配装索引页）。声明式：
      `显示名=data 键[:修饰]`，分号隔开，例如
 
@@ -525,7 +538,10 @@
   /* 加载时就有条目的那些分节。见 filter() 里那段：判据必须取这一刻。 */
   var hadItems = sections.map(function (sec) { return !!sec.querySelector(ROW || ITEM); });
 
-  var lists = Array.prototype.slice.call(document.querySelectorAll(SEC + ' .entries'));
+  // 与上面取 sections 那一处同一道守卫：SEC 是空串时拼出来的 ' .entries' 不抛，
+  // 直接命中全文档，regroup() 会去搬不属于任何分节的卡。
+  var lists = SEC
+    ? Array.prototype.slice.call(document.querySelectorAll(SEC + ' .entries')) : [];
   /* 每张卡记下它的原属列表与全局次序。**次序要记**：搬走再搬回来时不能拿
      「原来的下一个兄弟」当锚点——那个兄弟自己可能也搬走了，此刻不在目标列表里，
      insertBefore 会抛 NotFoundError（配装索引页 raid/猎人 那 13 张里相邻的组合卡
@@ -638,10 +654,7 @@
     lanes.forEach(function (lane) {
       lane.hidden = !lane.parentNode.querySelector('tr:not(.lane):not([hidden])');
     });
-    subs.forEach(function (h) {
-      var ul = h.nextElementSibling;
-      h.hidden = !(ul && ul.querySelector('li:not([hidden])'));
-    });
+    trimSubs();
     /* 本来就没有条目的分节不参与过滤：增伤页的「世界与活动」整节是几段规则、
        一个条目都没有，按「没有可见条目就收起」判会在第一次敲搜索框时整节消失，
        且清空查询也回不来（空查询让条目全部可见，这一节仍然是零条目）。

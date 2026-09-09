@@ -244,14 +244,20 @@ async function editorRoute(a, body, event, me) {
     const b = await docs.where({ _id: db.RegExp({ regexp: '^builds/', options: '' }) }).limit(200).get()
     const md = {}
     for (const d of b.data) md[d._id] = d.md
-    return { docs: r.data.map((d) => (md[d._id] === undefined ? d : { ...d, md: md[d._id] })) }
+    // **触到上限就说出来。**这几条查询一个 orderBy 都没有，到顶之后返回哪一批
+    // 由数据库的自然序说了算，多出来的在编辑台上直接消失——不报的话界面一声不响，
+    // 而配装那一发的上限只有 200。真的服务端分页是另一件事，这里只负责别静默。
+    return {
+      docs: r.data.map((d) => (md[d._id] === undefined ? d : { ...d, md: md[d._id] })),
+      more: r.data.length >= 500 || b.data.length >= 200 ? 1 : 0,
+    }
   }
 
   // 配装投稿的队列。与 list/mark 同一张表，区别只在凭据：那两个走 ADMIN_TOKEN
   // 给本机的 sync.py，这两个走白名单给编辑台。
   if (a === 'subs') {
     const r = await subs.limit(500).get()
-    return { subs: r.data }
+    return { subs: r.data, more: r.data.length >= 500 ? 1 : 0 }
   }
 
   // 结案后留下的那一条改动记录：谁、什么时候、哪一篇、改了哪几行。

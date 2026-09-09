@@ -19,7 +19,9 @@
 /* 有令牌那一刻就别画登录框——类由 index.html 头里那一句同步加上，零闪烁。
    用 display:none 不用 hidden：hidden 是 admin.js 认证之后才设的，两者分工不同。 */
 .signed #gate { display: none; }
-.tip { min-height: 1.3em; margin: 10px 0 0; color: var(--c-note); font-size: 12px; }
+/* 回执素色，出错才红（tip() 那一句 style.color）。**不给它 --c-note**：那是
+   #eea6b7 的粉，与 --c-enemy 的红在 12px 上分不出来，于是「已保存」读着像报错。 */
+.tip { min-height: 1.3em; margin: 10px 0 0; color: var(--bone-dim); font-size: 12px; }
 
 .login { display: grid; gap: 12px; max-width: 300px; margin-top: 16px; }
 .login label {
@@ -123,16 +125,39 @@ details > pre {
 }
 
 /* 配装列表多两列：推荐人与缺失项。缺失项是这一行唯一带警告意味的东西，
-   给它 --c-solar，与树上那个待审计数同色。 */
+   给它 --c-solar，与树上那个待审计数同色。
+
+   **缺失项自己截断，不许独占宽度。**一行里除名字外全是 flex: none，名字那一格
+   因此是唯一可收缩的；而一份没填全的合集能报出「两套填齐的配装（现在 0 套）、
+   第 1 套的职业、分支、核心、描述、标签、第 2 套的…」，不封顶就把名字压成一个
+   省略号——最需要补全的那几条反倒看不见叫什么。全文在 title 上（admin.js 的
+   el() 第四个参数），hover 取得回来。 */
 .rows .by { flex: none; color: var(--bone-dim); font-size: 12px; white-space: nowrap; }
 .rows .lack {
-  flex: none;
+  flex: 0 1 auto;
+  max-width: 22em;
+  overflow: hidden;
   color: var(--c-solar);
   font-family: var(--font-disp);
   font-size: 11px;
   letter-spacing: .06em;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* 页码条。**只在不止一页时才画**（admin.js 那边判），所以这里不必管单页的样子。
+   页码那一格用 .meta 的字，与行里的时间同一档——它是读数不是动作。 */
+.acts.pager { justify-content: flex-start; margin-top: 14px; }
+.acts.pager .meta {
+  color: var(--bone-dim);
+  font-family: var(--font-disp);
+  font-size: 11px;
+  letter-spacing: .1em;
+}
+
+/* 搜索框挤在筛选那一行的末尾。给个定宽：不给的话 input 的默认尺寸会把那一排
+   状态 chip 顶到下一行去。 */
+.acts.filters .tool-search { width: 15em; }
 /* 主动作那一枚：与列表上【通过】那枚状态标同色（.rows .flag.pass）——行上写着
    绿字，按钮也是绿的，同一套词汇。**不用 --accent**：在筛选行里它已经占了
    「当前选中」那一条，拿来标通过会读成这枚被选中了。
@@ -187,19 +212,16 @@ body:has(#stage:not([hidden])) { --wrap: 1240px; --min: 1120px; }
    （职业那一节的面板按 1016 钉死了像素），整页 min-width 因此是 1340，而这一格
    只有 1196，右边那一列会被整列裁掉，iframe 里也没有横向滚动条可言。
 
-   **只让 iframe 宽出去，头与列表不动。**跟着改 --wrap 的话，单套与合集来回切时
-   整块连着铭牌与那排按钮一起变宽再变窄，读的人会以为页面在跳；而头那一行本来
-   就没有理由跟着里面那一页的版心走。两侧对称溢出 75px，按钮因此仍在原位。
+   **让这一格自己横向滚，不动 --min。**从前那一版把 body 的 --min 顶到 1390，
+   而 body 是 width: fit-content（assets/site.css）——单套与合集之间来回点，整页
+   min-width 就跟着变一次，视口窄于 1390 时横向滚动条出现又消失，页面跳一下。
+   溢出留在这一格里之后，头那一行与列表一动不动。
 
-   body 的 min-width 还是要跟上：溢出的那 150px 得有地方站。
-   **`:has()` 里要带上 #stage**：上面那条的括号里有个 id，权重 (1,0,1)，只写
-   iframe 的那一版是 (0,2,2)，压不过它，这一行会是死配置。 */
-body:has(#stage iframe.prev[data-kind="set"]:not([hidden])) { --min: 1390px; }
+   宽度取 max()：至少给足合集那一页的 1340，屏够宽时照常跟着这一格长，
+   宽屏上一条滚动条都不会出现。 */
+#stage { overflow-x: auto; }
 
-#stage iframe.prev[data-kind="set"] {
-  width: calc(100% + 150px);
-  margin-left: -75px;
-}
+#stage iframe.prev[data-kind="set"] { width: max(100%, 1340px); }
 
 /* 详情摊在列表下面。上下各留一条发丝线，与列表分开——两块之间没有界，
    摊开之后看着像列表长出了一截。 */
@@ -219,7 +241,12 @@ body:has(#stage iframe.prev[data-kind="set"]:not([hidden])) { --min: 1390px; }
   justify-content: space-between;
   gap: 12px 24px;
 }
-#stage-head .stage-ops { flex: none; }
+/* 动作与回执一律贴右。**.stage-ops 是 flex: none**，宽度按 max-content 算，而回执
+   那句比两枚按钮宽得多——不贴右的话，一存完盒子被那句撑开，左对齐的按钮就跟着
+   往左跑一截。回执再给个上限，免得它把整条推到换行。 */
+#stage-head .stage-ops { flex: none; text-align: right; }
+#stage-head .stage-ops .acts { justify-content: flex-end; }
+#stage-head .stage-ops .tip { max-width: 24em; margin-left: auto; }
 #stage-head .crumb { margin: 10px 0 0; }
 
 /* 铭牌第二行「谁经手的」压暗一档：它是这份稿子的来历，不是稿子本身，

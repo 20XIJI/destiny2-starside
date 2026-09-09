@@ -141,6 +141,39 @@ class ExcelSafety(Isolated):
                 self.assertEqual(out.read_text(), 'human work')
 
 
+class EditAnchors(unittest.TestCase):
+    """产出上那个 data-src 必须指得回一篇真源稿。
+
+    `edit.js` 拿它当库里的 `_id` 去取正文（`pend` 带 md 那一路），而 `_id` 的算法
+    是 `sync.py` 的 `id_of()`：`references/` 下的相对路径去掉 `.md`。
+
+    配装那一支踩过一次：产出目录是 `builds/s29/`，源稿目录却是
+    `builds/s29-凯旋纪念碑/`，`data-src` 一度写成前者。症状是站上一切正常、三道闸门
+    全绿，只有点开「编辑」那一下取回一份空正文——而那个失败当时抛在 `.then` 的成功
+    回调里，chip 永远停在「载入中…」，一句话都不报。
+    """
+
+    ROOT = TOOLS.parent
+    ANCHOR = re.compile(r'<main[^>]*\sdata-src="([^"]*)"')
+
+    def test_every_data_src_resolves_to_a_source_file(self):
+        seen = 0
+        for page in sorted(self.ROOT.rglob('index.html')):
+            if '.archived' in page.parts or 'node_modules' in page.parts:
+                continue
+            hit = self.ANCHOR.search(page.read_text(encoding='utf-8'))
+            if not hit:
+                continue
+            seen += 1
+            doc = hit.group(1)
+            src = self.ROOT / 'references' / (doc + '.md')
+            with self.subTest(page=str(page.relative_to(self.ROOT))):
+                self.assertTrue(src.is_file(),
+                                'data-src=%r 指不到 references/%s.md' % (doc, doc))
+        # 光「全都对得上」不够：正则一旦失配，零命中也是全绿。
+        self.assertGreater(seen, 100, '带 data-src 的页面只有 %d 个，标记漏了？' % seen)
+
+
 class CellSplitting(unittest.TestCase):
     """切格只剩两份实现，跨语言那条缝由这些对语料的断言钉住。
 

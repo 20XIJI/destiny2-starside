@@ -2,10 +2,10 @@
 
 推荐人：madoka#9109
 描述：赐予你{el-solar|焕光}、{el-arc|增幅}、{el-void|隐身}、{el-stasis|冰霜护甲}、{el-strand|织造铠甲}，对{enemy|战斗人员}施加{deb-solar|灼烧}、{deb-arc|震颤}、{deb-void|虚弱}、{deb-stasis|减速}、{deb-strand|瓦解}、{deb-strand|割裂}。
-更新：2026.9.1
+更新：2026.9.10
 场景：宗师/终极
-强度：创意
 分支：棱镜
+强度：创意
 核心：沉默狂啸
 
 ## 职业

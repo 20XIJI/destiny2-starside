@@ -1,7 +1,12 @@
-// 就地编辑：登录之后在任意资料页上直接点、直接改。
+// 就地编辑：登录之后在站内页面上直接点、直接改。站头最右端那一枚「编辑」是入口。
 //
 // 由 shell.EDIT 那一行引子拉进来——**有令牌才拉**，没登录的读者只多下那一行。
-// 页面上的定位靠生成器戳的 data-b（源稿行号），格号用 DOM 的 cellIndex 现取。
+// 两条路，由 <main> 的 data-kind 分：
+//
+//   doc（资料页，缺省）  逐格改。定位靠生成器戳的 data-b（源稿行号），格号用
+//                        DOM 的 cellIndex 现取；提交一处落一条待审，走 chg。
+//   build（配装详情页）  整篇替换。配装页没有 data-b，逐格无从落脚也无从校验，
+//                        所以开一层遮罩载填表页，保存走 bsave。
 //
 // 这一份只负责「改哪一处、改成什么」；落盘、构建与部署仍在本机（tools/sync.py）。
 ;(function () {
@@ -9,14 +14,19 @@
 
   var API = 'https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api'
   var main = document.querySelector('main[data-src]')
-  if (!main) return                     // 还没戴标记的页面（配装、神器模组…）直接不管
+  if (!main) return                     // 没戴标记的页面（首页、索引页、填表页）不管
 
   var DOC = main.getAttribute('data-src')
+  // 'doc'（缺省）逐格改，'build' 整篇替换。判据写在产出的 <main> 上，不靠猜路径：
+  // 配装页没有 data-b，逐格那条路在它身上无从落脚。
+  var KIND = main.getAttribute('data-kind') || 'doc'
   var PAGE_HASH = main.getAttribute('data-hash') || ''
   var HERE = document.querySelector('link[href$="assets/site.css"]')
     .getAttribute('href').replace('assets/site.css', '')
 
-  var S = { me: null, md: null, hash: '', lines: [], pend: [], done: [], on: false }
+  // buildBase 只有配装那条路用：刚灌完时填表页读回来的样子，脏判据比的就是它。
+  var S = { me: null, md: null, hash: '', lines: [], pend: [], done: [], on: false,
+            buildBase: null }
 
   var el = function (tag, cls, text) {
     var n = document.createElement(tag)
@@ -580,6 +590,126 @@
       })
   }
 
+  /* ── 配装页那条：整篇替换 ────────────────────────────────────────────
+     配装页没有 data-b（逐字保真闸门也不覆盖它），逐格改无从落脚也无从校验，
+     所以这一条走填表页整篇替换——与审核台详情格里那一套是同一个动作、同一个落点
+     （bsave），不新开一条状态流，也只处理已经上站的那些。
+
+     **底稿从库里现拉，不拿页面上那份 `<pre id="src">`**：它是 markup.uncolor()
+     剥过着色标记的（「复制配装」要的是能粘回配装工具的纯文本），拿它当底稿存回去，
+     整套配装的着色会被洗掉。现拉走 pend 带 md 那一路，不新增接口：它本来就把正文
+     与 hash 一并带回，代价只是顺带跑一次对配装恒为空的待审查询。 */
+  var pane = null
+
+  function buildRead () {
+    try {
+      var fr = pane && pane.querySelector('iframe')
+      var md = fr && fr.contentWindow.starsideForm.read()
+      return /^#\s+\S/.test(md) ? md : null
+    } catch (e) { return null }
+  }
+
+  function buildShut (chip) {
+    var now = buildRead()
+    if (now !== null && now !== S.buildBase
+        && !window.confirm('改过还没保存，关掉会丢。仍要关闭？')) return
+    if (pane) pane.remove()
+    pane = null
+    S.buildBase = null
+    chip.textContent = '编辑'
+    chip.removeAttribute('aria-current')
+  }
+
+  function buildPane (chip, md) {
+    var kind = window.starsideAdmin.isSet(md) ? 'set' : 'one'
+    pane = el('div', 'se-build')
+    var bar = el('div', 'se-build-bar')
+    // 名字直接取页面上那个 h1，不另写一份解析：屏幕上写着什么，这里就写什么。
+    var h1 = document.querySelector('.build-head h1')
+    bar.appendChild(el('span', 'se-build-id',
+      '编辑《' + ((h1 && h1.textContent.trim()) || DOC) + '》'))
+    var msg = el('p', 'se-build-tip')
+    var keep = null
+    if (S.me.lv >= 2) {
+      // 素 .op，不挂 .go：go 是「通过」那一档的绿，而这一枚只是存一版，状态不动。
+      // （.op.go 那条规则也只在 admin/style.css 里，配装页根本不引它。）
+      keep = el('button', 'op', '保存')
+      keep.type = 'button'
+      bar.appendChild(keep)
+    } else {
+      // lv 1 照样载得进可改的填表页，不说这一句，人在表里改半天找不到保存。
+      msg.textContent = '只读：保存要审核员（lv 2）权限。'
+    }
+    var off = el('button', 'toggle', '关闭')
+    off.type = 'button'
+    off.onclick = function () { buildShut(chip) }
+    bar.appendChild(off)
+    bar.appendChild(msg)
+    pane.appendChild(bar)
+
+    var fr = el('iframe')
+    fr.src = HERE + (kind === 'set' ? 'builds/new/set/index.html'
+      : 'builds/new/index.html')
+    fr.onload = function () {
+      try {
+        var w = fr.contentWindow
+        // 审核意见那一栏与只归审核员的那几个场景在这里立起来，与审核台同一条；
+        // **排在 load() 之前**：load 里的 pressTags() 只按得下没藏起来的按钮。
+        if (w.starsideForm.review) w.starsideForm.review(S.me.lv >= 2)
+        w.starsideForm.load(md)
+        // 那一页自己的「投稿」按一下就是再投一份新稿，摘掉。
+        var send = w.document.getElementById('send')
+        if (send) send.remove()
+        // **基线取 load() 归一化之后那一份**，不取灌进去的：换轴之前那批写的是
+        // 「类别」，读回来是「强度」，拿灌进去那份比会在没人动过的稿子上误报脏。
+        S.buildBase = buildRead()
+      } catch (err) { msg.textContent = '载入失败：' + err.message }
+    }
+    pane.appendChild(fr)
+    document.body.appendChild(pane)
+
+    if (keep) {
+      keep.onclick = function () {
+        var now = buildRead()
+        if (now === null) { msg.textContent = '读不出填表页里那一份，等它载完再存'; return }
+        keep.disabled = true
+        call('bsave', { id: DOC, md: now }).then(function () {
+          keep.disabled = false
+          S.buildBase = buildRead()
+          // **这一页是构建产物，存完一个字都不会变**，不说清就等于什么都没发生。
+          msg.textContent = '已保存到库。这一页要等本机落盘、构建再部署才更新。'
+        }, function (e) {
+          keep.disabled = false
+          msg.textContent = '保存失败：' + e.message
+        })
+      }
+    }
+    chip.textContent = '退出编辑'
+    chip.setAttribute('aria-current', 'true')
+  }
+
+  function buildOpen (chip) {
+    if (pane) return buildShut(chip)
+    chip.textContent = '载入中…'
+    // isSet 从编辑台那一份拿，不在这里抄第二份：它与 convert-build.py 的
+    // split_set() 必须逐字一致。dialect 要排在 admin.js 前面，那一份现读它。
+    return (window.starsideAdmin ? Promise.resolve()
+      : script('admin/dialect.js').then(function () { return script('admin/admin.js') }))
+      .then(function () { return call('pend', { doc: DOC, md: 1 }) })
+      .then(function (r) {
+        if (!r.md) throw new Error('库里没有 ' + DOC + '，这一页的 data-src 对不上库')
+        buildPane(chip, r.md)
+      })
+      /* **收尾用 .catch，不用 .then 的第二个参数。**那一份只接前一环的失败，
+         接不住成功回调自己抛的——chip 会永远停在「载入中…」，控制台外一声不响。
+         这条路上真抛过：data-src 一度写成产出目录 builds/s29/…，而库里的 _id
+         那一截是源稿目录 builds/s29-凯旋纪念碑/…。 */
+      .catch(function (e) {
+        chip.textContent = '编辑'
+        alert('进入编辑失败：' + e.message)
+      })
+  }
+
   function boot (me) {
     if (!me.lv) return                  // 登录了但不在白名单，页面上什么都不加
     S.me = me
@@ -591,7 +721,11 @@
 
     var chip = el('button', 'toggle se-chip', '编辑')
     chip.type = 'button'
-    chip.onclick = function () { toggle(chip) }
+    // 资料页与配装页共用这一枚与它的位置（.se-chip 那条 margin-left: auto 把它推到
+    // 站头最右端），点下去分两条路：资料页逐格改，配装页整篇替换。
+    chip.onclick = KIND === 'build'
+      ? function () { buildOpen(chip) }
+      : function () { toggle(chip) }
     // 通往审核台的那条边。编辑态里发现一处该改、想顺手看看别人提了什么时，
     // 不必回首页再找入口。
     var desk = el('a', 'chip se-desk', '审核台')
@@ -614,7 +748,11 @@
     })
     document.addEventListener('keydown', function (ev) {
       if (ev.isComposing || ev.keyCode === 229) return
-      if (ev.key === 'Escape') shut()
+      if (ev.key !== 'Escape') return
+      // 配装页开着遮罩时 Escape 关它（脏了会先问一声），资料页关那个小框。
+      // 焦点落在 iframe 里时按键不冒泡到这一层，所以栏上另有一枚「关闭」。
+      if (pane) buildShut(chip)
+      else shut()
     })
   }
 

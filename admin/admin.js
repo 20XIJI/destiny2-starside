@@ -14,14 +14,17 @@
   function terms () { return window.starsideTerms || FALLBACK }
 
   var $ = function (id) { return document.getElementById(id) }
-  var el = function (tag, cls, text) {
+  // 第四个参数写进 title。列表里那几列是 nowrap + ellipsis，而这一屏不换行、
+  // 不横向滚，截掉的一段除了 hover 没有别的办法看到。
+  var el = function (tag, cls, text, tip) {
     var n = document.createElement(tag)
     if (cls) n.className = cls
     if (text != null) n.textContent = text
+    if (tip) n.title = tip
     return n
   }
   var LV = { 1: '编辑', 2: '审核员', 3: '管理员', 4: '超管', 5: '本机' }
-  var S = { me: null, docs: [], edits: [], subs: [] }
+  var S = { me: null, docs: [], edits: [], subs: [], more: false }
 
   // ── 凭据 ───────────────────────────────────────────────────────────
   // access_token 2 小时、refresh_token 30 天，都存 localStorage。401 拿 refresh
@@ -339,8 +342,21 @@
   // 详情里做完动作回列表。**走 history.back()，不直接画列表**——直接画会把详情
   // 那一格留在历史里，人再按一次返回又弹回那条已经处理完的记录。
   function toList () {
-    if (history.state && history.state.b) history.back()
-    else buildsView()
+    if (history.state && history.state.b) return history.back()
+    /* 历史那一格里没有详情，也照样要把它收起来——**这条路真会走到**：换标签再换
+       回来时 replaceState 写的是 { v: 'builds' }，而 openBuild 还留着（show() 只收
+       DOM 不动它），详情因此还摊着。不 shut() 的话，动作做完那一条还开在原地。 */
+    shut()
+    buildsView()
+  }
+
+  /* 地址栏那一格。**只带 b，不带筛选与树**：那两样是各人当时的看法，带进链接会把
+     收链接的人的筛选一起改掉；而 b 指的是同一条稿子，两个人看的是同一样东西。
+
+     待审稿在站上还没有详情页，从前审核员之间要讨论一套只能传图（截图那枚按钮
+     就是为此存在的）。带上这一格之后，链接本身就能指到那一条。 */
+  function urlOf (id) {
+    return location.pathname + (id ? '?b=' + encodeURIComponent(id) : '')
   }
 
   function draw (state) {
@@ -399,6 +415,34 @@
     var s = el('span', 'op-sep')
     s.setAttribute('aria-hidden', 'true')
     return s
+  }
+
+  /* 后端抛的是英文标识，直接拼进「操作失败：」就是给审核员看 no permission。
+     只翻真会走到配装这条路上的那些；翻不到的原样带出来——瞎猜一句中文比英文
+     更难查，报出原话至少 grep 得到。 */
+  var MSG = {
+    forbidden: '登录已过期，正在退回登录',
+    'no permission': '权限不足，这一步要审核员',
+    'no sub': '这条投稿已经不在了，刷新一下',
+    'no doc': '库里没有这一篇，刷新一下',
+    'bad id': '这一条的编号不合法',
+    'bad md': '正文不合法：要以「# 」开头，且不超过 256 KB',
+    'bad sub type': '这条是删除申请，按普通投稿处理不了',
+    'bad season': '赛季格式不对（形如 s29-…）',
+    'bad slug': 'slug 格式不对（小写字母、数字与连字符）',
+    'not passed': '这一条不在「通过」档，撤不回',
+    conflict: '别人刚动过这一条，请刷新后重看'
+  }
+
+  /* 令牌那一档不只是换句话：call() 已经拿 refresh 换过一张再打仍被拒，说明是
+     真过期了，留在原地点什么都白点。清掉令牌、缓一下让人看清这句再退回登录框。 */
+  function say (e) {
+    var m = (e && e.message) || ''
+    if (m === 'forbidden') {
+      tok(null)
+      setTimeout(function () { location.reload() }, 1500)
+    }
+    return MSG[m] || m || '未知错误'
   }
 
   function tip (node, msg, bad) {
@@ -708,12 +752,14 @@
   // min-content 跟着变宽，整页被顶出横向滚动条（body 是 width: fit-content）。
   var NEED = [['推荐人', '推荐人'], ['职业', '职业'], ['属性', '分支'],
               ['场景', '场景'], ['强度', ['强度', '类别']], ['核心', '核心']]
-  // 合集里每一套要凑齐的那几样。推荐人不在内：它写在合集头部，整份一个。
-  // 标签那一项与上面的强度同理，认「定位」这个旧键——不认的话一份五套的旧合集
-  // 会报出「两套填齐的配装（现在 0 套）、第 1 套的标签、第 2 套的标签…」一长串，
-  // 那一行把整页顶宽。
+  /* 合集里每一套要凑齐的那几样。**推荐人不在内**：它写在合集头部，整份一个。
+     **标签也不在内**，判据是 convert-build.py 的 tags_of()：宗师/终极、日常、
+     功能性这三个场景没有标签集，「标签：」整行必须不写；其余场景可写可不写
+     ——标签说的是这套在队伍里干什么，说不出分工的那些不该被逼着挑一个凑数。
+     要求它的话，一份「场景：日常」的三套合集会报出「两套填齐的配装（现在 0 套）
+     · 第 1 套的标签 · 第 2 套的标签 · 第 3 套的标签」，而那份稿子毫无问题。 */
   var PER = [['职业', '职业'], ['属性', '分支'], ['核心', '核心'],
-             ['使用场景', '描述'], ['标签', ['标签', '定位']]]
+             ['使用场景', '描述']]
 
   // **不能用对象字面量**：名字是投稿人填的，叫 constructor 或 toString 时
   // HOLD[名字] 会取到原型链上的函数、读成真值，那一条就永远列着「缺名字」。
@@ -759,18 +805,31 @@
 
   // 投稿与已上站的源稿并成一张表。已通过的投稿带着 season/slug，盘上那一篇的
   // _id 就是 builds/<season>/<slug>——两边靠它认成同一套，不重复出现。
-  function builds () {
+  // 两张表进来，一张行的清单出去，中间不碰 DOM。**收成参数是为了能离线断言**：
+  // 「上了站以库里那份为准」与「批准移除的只留一行」两条都在这里，两条都出过错，
+  // 而它们在页面上要靠肉眼隔着一层 iframe 看。缺省仍读 S，调用点一处不改。
+  function builds (docs, subs) {
+    docs = docs || S.docs
+    subs = subs || S.subs
     var live = {}
-    S.docs.forEach(function (d) {
+    docs.forEach(function (d) {
       if (d._id.indexOf('builds/') === 0) live[d._id] = d
+    })
+    /* 已经批准的移除申请。**那一套只留「待移除」那一行**：决定已经做完了，再在
+       「完成」里并排摆一行没有标记的，读起来就是「它好好地在站上」。
+       **待审的申请不算**——那时两行并排才看得出「这一套在站上，同时有人申请删它」。 */
+    var going = {}
+    subs.forEach(function (s) {
+      if (s.drop && Number(s.ok) === 1 && s.season && s.slug) {
+        going['builds/' + s.season + '/' + s.slug] = 1
+      }
     })
     var seen = {}
     var out = []
-    S.subs.forEach(function (s) {
+    subs.forEach(function (s) {
       var ok = Number(s.ok)
       var id = s.season && s.slug ? 'builds/' + s.season + '/' + s.slug : ''
-      // **删除申请自成一行**，不认领那一套：站上那一篇还在（要等本机 sync 才真的删），
-      // 两行并排摆着才看得出「这一套在站上，同时有人申请删它」。
+      // **删除申请自成一行**，不认领那一套：站上那一篇还在（要等本机 sync 才真的删）。
       if (s.drop) {
         out.push({ sub: s, id: id, md: s.md, at: s.at,
           state: ok === 0 ? 'wait' : ok === -1 ? 'no' : 'dropping' })
@@ -778,9 +837,14 @@
       }
       var d = ok === 1 && id ? live[id] : null
       if (d) seen[id] = 1
+      if (id && going[id]) return
       // 时间取两边较新的：bsave 动的是 docs.at，投稿那条的 at 停在审过的那一刻，
       // 只看后者会让刚改过的一套标着一个月前的时间，也排不到列表最前。
-      out.push({ sub: s, id: ok === 1 ? id : '', doc: d, md: s.md,
+      //
+      // **正文上了站就以库里那份为准。**subs.md 是投稿当时冻住的那一份，而 bsave
+      // 改的是 docs.md，从不回写投稿记录——只认 s.md 的话，线上改完再看还是改之前
+      // 那一套，而且下一次保存会把这份陈稿原样盖回去。
+      out.push({ sub: s, id: ok === 1 ? id : '', doc: d, md: (d && d.md) || s.md,
         at: d && d.at > (s.at || '') ? d.at : s.at,
         dirty: dirtyOf(d),
         state: ok === 0 ? 'wait' : ok === -1 ? 'no' : d ? 'live' : 'pass' })
@@ -789,7 +853,7 @@
     // docs 那个动作给 builds/ 前缀的记录带上了 md，所以它们在列表上也有名字、
     // 职业与强度，不再只剩一个 slug。
     Object.keys(live).forEach(function (id) {
-      if (!seen[id]) {
+      if (!seen[id] && !going[id]) {
         out.push({ sub: null, id: id, doc: live[id], md: live[id].md || '', at: live[id].at,
           dirty: dirtyOf(live[id]), state: 'live' })
       }
@@ -805,13 +869,68 @@
      （改动落不了盘）、申请移除整个消失、撤回换成一枚后端必拒的死按钮。 */
   function bucket (b) { return b.dirty ? 'pass' : b.state }
 
+  /* 五个词一档一个，界面上别处没有解释。「通过」与「完成」的差别尤其要说：前者
+     审过了还躺在库里，后者站上已经有了。挂在 chip 的 title 上，不占版面。 */
+  var STATE_TIP = {
+    wait: '投稿进来了，还没人审',
+    pass: '审过了，等本机跑 sync 落盘、构建再部署才上站',
+    live: '站上已经有了',
+    dropping: '删除申请已通过，等本机跑 sync 把源稿删掉',
+    no: '驳回的废稿。留着不影响去重，去重从不查这一档'
+  }
+
   // 默认只看待审：一进来就该是待办清单，另外三档按需打开。
   var buildFilter = { wait: 1 }
 
+  /* 一页 25 行，约一屏。**详情那一格 #stage 在 index.html 里是 main 的直接子元素，
+     永远排在 #views 后面**——列表有多长，点开一条就要往下滚多远，七十多行时是两千
+     多像素。分页把详情压回列表顶端一屏之内。
+
+     切的只是渲染多少行：数据本来就整批在内存里（S.subs / S.docs），树上与 chip 上
+     那几个计数照旧按整批算，不跟着翻页走。**后端那三处 limit 是另一件事**，
+     拉不回来的照旧不出现，这里分不出来。 */
+  var PAGE = 25
+  var buildPage = 0
+  var buildQ = ''           // 搜索框里那几个字
+  /* 动作做完那句回执。**不能当场 tip**：收起详情走的是 history.back()，popstate
+     下一拍才到，那时列表才重画，当场贴上去的会被这次重画抹掉。所以先记下来，
+     由 buildsView() 画完自己贴到筛选行上，贴完即清。 */
+  var pendTip = null
+
+  var findOn = false        // 这一次重画是不是由打字触发的，用完即清
+  var findAt = 0            // 重画前光标在第几个字，重画后放回原处
+  var findIME = false       // 输入法正在组字：这期间一律不重画
+
+  /* 「改」取哪一份看这一套在哪一段：改过还没落盘时 docs.by 就是线上动它的那个人；
+     没改过时 docs.by 是 sync.py 推上去写的「本机」，写出来没有信息，退回投稿那一侧
+     ——sub.edBy 是它待审时被谁改的。两处共用：铭牌第二行，与列表那一行的 title。
+     配装侧没有改动记录（edits 只收资料页那条路），这个名字是唯一的线索。 */
+  function handOf (b) {
+    return (b.dirty && b.doc ? b.doc.by : '') || (b.sub && b.sub.edBy) || ''
+  }
+
+  /* 名字、推荐人、核心三样够用：找一条多半是「某某推荐的那套」或「用某某异域的
+     那套」。**不搜正文**——整份 md 里什么都有，搜出来全是命中。核心按行取而不走
+     line()：合集的核心写在每一套里，头部那一块没有。 */
+  function inFind (b) {
+    // **在这里 trim，不在输入框那一侧**：那边 trim 的话，打「阿 强」打到空格时
+    // buildQ 已经把它吃掉，重画又把 value 写回去，空格永远打不出来。
+    var q = buildQ.trim().toLowerCase()
+    if (!q) return true
+    var md = b.md || ''
+    var hay = [nameOf(md), line(md, '推荐人'), b.id]
+      .concat(md.match(/^核心：.*$/gm) || []).join('\n').toLowerCase()
+    return hay.indexOf(q) >= 0
+  }
+
   // 职业、场景、强度、标签与分支五张表由 admin/pages.js 给（build-terms.py 照
   // markup.py 那一份导），不在这里另抄一遍。
-  var VOCAB = window.starsideBuilds ||
-    { classes: [], scenes: [], tiers: [], sceneTags: {}, branch: {} }
+  // **逐键兑，不是整份兑**：只在 starsideBuilds 整个不存在时兜底的话，改了键名之后
+  // 那五分钟里拿着旧 pages.js 缓存的人会栽在 VOCAB.scenes.filter 上——不是少一列，
+  // 是整个配装视图画不出来。
+  var VOCAB = Object.assign(
+    { classes: [], scenes: [], tiers: [], sceneTags: {}, branch: {} },
+    window.starsideBuilds || {})
 
   // 树上按第一个场景归格。raid + 地牢 那批（唯一放行的多场景组合）因此挂在 raid
   // 底下，不另开一格「raid、地牢」：左栏是审稿的工作队列，一条只该出现一次，
@@ -900,12 +1019,53 @@
     var bar = el('div', 'acts filters')
     Object.keys(STATE).forEach(function (k) {
       var n = all.filter(function (b) { return bucket(b) === k }).length
-      var c = el('button', 'toggle', STATE[k] + ' ' + n)
+      var c = el('button', 'toggle', STATE[k] + ' ' + n, STATE_TIP[k])
       c.type = 'button'
       if (buildFilter[k]) c.setAttribute('aria-current', 'true')
-      c.onclick = function () { buildFilter[k] = !buildFilter[k]; buildsView() }
+      c.onclick = function () {
+        buildFilter[k] = !buildFilter[k]
+        buildPage = 0
+        buildsView()
+      }
       bar.appendChild(c)
     })
+    /* 搜一下比翻页快。**只在已经拉进内存的那一批上过一遍**，不发请求：后端零搜索
+       接口，而这一批本来就在手里。
+
+       打字会整屏重画，输入框是新建的那一个，所以记下位置与光标、重画之后放回去。
+       **组字期间一律不重画**：oninput 在输入法逐个候选字上屏的过程中也会触发，
+       而重画一次就把正在组字的那个输入框换掉，候选框当场消失、这个词打不完。
+       compositionend 之后字已上屏，那时再过一遍。isComposing 与自己那一位都查：
+       前者在 iOS 上不总有，后者由 compositionstart/end 兜着。 */
+    var find = el('input', 'tool-search')
+    find.type = 'search'
+    find.placeholder = '搜名字 / 推荐人 / 核心'
+    find.value = buildQ
+    // 新建的这一个必然没在组字。**这一位要在这里清**：组字途中被别的事情重画一屏
+    // （点了筛选 chip），compositionend 就落在换掉的那个节点上，不清就永远为真，
+    // 搜索框从此一个字也不响应。
+    findIME = false
+    var apply = function () {
+      // compositionend 与紧随其后那次 input 会撞车，值没变就别白重画一屏。
+      if (buildQ === find.value) return
+      buildQ = find.value
+      buildPage = 0
+      findAt = find.selectionStart
+      findOn = true
+      buildsView()
+    }
+    find.oninput = function (ev) {
+      if (findIME || (ev && ev.isComposing)) return
+      apply()
+    }
+    find.addEventListener('compositionstart', function () { findIME = true })
+    find.addEventListener('compositionend', function () { findIME = false; apply() })
+    bar.appendChild(find)
+    // 拉不回来的那些这里分不出来，只能说一句。翻页翻不到它们。
+    if (S.more) {
+      bar.appendChild(el('span', 'warn', '已达单次拉取上限，部分配装未列出',
+        'docs 500 条 / builds 200 条 / subs 500 条，超出的不在这一批里。'))
+    }
     // 废稿逐条点不现实，给一枚一次清干净的。**只删已驳回的**——去重从不查那一档。
     // **只给超管**：一次抹掉几十条，手滑的代价与逐条不是一个量级。
     var junk = all.filter(function (b) { return b.state === 'no' }).length
@@ -917,7 +1077,7 @@
         wipe.disabled = true
         call('sdrop', {}).then(load).then(toList, function (e) {
           wipe.disabled = false
-          tip(body, '删除失败：' + e.message, 1)
+          tip(body, '删除失败：' + say(e), 1)
         })
       }
       bar.appendChild(sep())
@@ -928,16 +1088,45 @@
     if (buildPick && !inState.some(inPick)) buildPick = ''
     show(split(buildTree(inState, buildPick, function (k) {
       buildPick = buildPick === k ? '' : k       // 再点一次就取消筛选
+      buildPage = 0
       buildsView()
     }), body))
     body.appendChild(bar)
+    if (findOn) {
+      findOn = false
+      find.focus()
+      // 放回原处，不一律推到末尾：在中间插字时推到末尾，下一个字就打到别处去了。
+      var at = Math.min(findAt, find.value.length)
+      find.setSelectionRange(at, at)
+    }
 
-    var list = inState.filter(inPick)
-      .sort(function (a, b) { return (a.at || '') < (b.at || '') ? 1 : -1 })
-    if (!list.length) body.appendChild(el('p', 'lede', '没有配装'))
+    /* **只开着待审这一档时先来先审**：那是一条队列，倒序排会让等最久的那份永远沉在
+       最后一页。别的档答的是「最近发生了什么」，照旧新的在前；同时开了几档时两种序
+       混在一起没有意义，一律按新的在前。 */
+    var fifo = buildFilter.wait && Object.keys(STATE).every(function (k) {
+      return k === 'wait' || !buildFilter[k]
+    })
+    var list = inState.filter(inPick).filter(inFind)
+      .sort(function (a, b) {
+        var x = a.at || ''
+        var y = b.at || ''
+        return (x === y ? 0 : x < y ? 1 : -1) * (fifo ? -1 : 1)
+      })
+    if (!list.length) {
+      body.appendChild(el('p', 'lede', buildQ.trim() ? '没有搜到' : '没有配装'))
+    }
+
+    /* **摊开哪一条决定翻到第几页，不另存一个变量**：从详情按返回、刷新页面、
+       或者别人发来一条 ?b= 链接，三条路都自动落在那一条所在的页上。 */
+    var pages = Math.max(1, Math.ceil(list.length / PAGE))
+    if (openBuild) {
+      var at = list.map(idOf).indexOf(openBuild)
+      if (at >= 0) buildPage = Math.floor(at / PAGE)
+    }
+    buildPage = Math.min(Math.max(buildPage, 0), pages - 1)
 
     var rows = el('div', 'rows')
-    list.forEach(function (b) {
+    list.slice(buildPage * PAGE, (buildPage + 1) * PAGE).forEach(function (b) {
       var md = b.md
       // 左缘那条 2px 亮边跟着这一套的分支色走，与站上索引页每张卡的左缘同一条
       // 规则（.b-* 六行在 assets/site.css，一处定义三处生效）。
@@ -951,9 +1140,15 @@
         : b.state === 'no' ? 'no' : 'pass'),
         drop ? (b.state === 'wait' ? '待删' : STATE[b.state])
           : b.dirty ? '已改' : STATE[b.state]))
-      r.appendChild(el('span', 'id ' + (openBuild === idOf(b) ? 'on' : ''),
-        (drop ? '申请删除　' : '')
-        + (md ? (nameOf(md) || '（没名字）') : b.id.split('/').pop())))
+      /* 名字这一格是全行唯一可收缩的（其余七个都是 flex: none），右边那串「缺 …」
+         一长就把它压成一个省略号，而这一屏不换行也不横向滚。全文进 title——
+         hover 是取回它的唯一出路。顺带写上最后动过它的人：配装侧没有改动记录，
+         这个名字是「该去问谁」的唯一线索。 */
+      var who = handOf(b)
+      var name = (drop ? '申请删除　' : '')
+        + (md ? (nameOf(md) || '（没名字）') : b.id.split('/').pop())
+      r.appendChild(el('span', 'id ' + (openBuild === idOf(b) ? 'on' : ''), name,
+        name + (who ? '\n最后由 ' + who + ' 改过' : '')))
       if (md) {
         r.appendChild(el('span', 'meta', clsOf(b) || '—'))
         r.appendChild(el('span', 'meta', line(md, '分支') || '—'))
@@ -969,7 +1164,10 @@
         // 的单套行对不齐，六七十行扫下来一眼就是锯齿。
         if (isSet(md)) r.appendChild(el('span', 'n-sets', setsOf(md).length + ' 套'))
         var miss = missing(md)
-        if (miss.length) r.appendChild(el('span', 'lack', '缺 ' + miss.join('、')))
+        if (miss.length) {
+          var lack = '缺 ' + miss.join('、')
+          r.appendChild(el('span', 'lack', lack, lack))
+        }
       } else {
         r.appendChild(el('span', 'meta', STATE.live))
       }
@@ -979,11 +1177,42 @@
     })
     body.appendChild(rows)
 
+    /* 只有一页就不出页码条——一条队列见底了本来就该看得出来，摆一排灰按钮
+       只是噪声。翻页要把详情收起来：不收的话上面那条「按摊开的那条算页码」
+       会立刻把人弹回原页。收的时候连历史那一格一起改回列表，不然按返回
+       又弹回一条已经翻走的详情。 */
+    if (pages > 1) {
+      var pager = el('div', 'acts pager')
+      var turn = function (label, to, off) {
+        var t = el('button', 'op', label)
+        t.type = 'button'
+        t.disabled = off
+        t.onclick = function () {
+          buildPage = to
+          if (openBuild) history.replaceState({ v: 'builds' }, '', urlOf(''))
+          openBuild = null
+          buildsView()
+        }
+        return t
+      }
+      pager.appendChild(turn('← 上一页', buildPage - 1, buildPage === 0))
+      pager.appendChild(el('span', 'meta', '第 ' + (buildPage + 1) + ' / ' + pages
+        + ' 页　·　共 ' + list.length + ' 条'))
+      pager.appendChild(turn('下一页 →', buildPage + 1, buildPage >= pages - 1))
+      body.appendChild(pager)
+    }
+
     // **详情摊在列表下面，不跳走**：跳到单独一屏会把左栏那棵树与滚到哪儿一起
     // 丢掉，与「改动记录点一条就地展开」同一条约定。
     var hit = openBuild && all.filter(function (x) { return idOf(x) === openBuild })[0]
     if (hit) subDetail(hit)
     else shut()
+
+    // 上一个动作的回执。落在筛选行上——那是这一屏最靠上、且必然存在的一块。
+    if (pendTip) {
+      tip(bar, pendTip.msg, pendTip.bad)
+      pendTip = null
+    }
   }
 
   // ── 详情那一格 ─────────────────────────────────────────────────────
@@ -1008,9 +1237,49 @@
     return fr
   }
 
+  /* 填表页里现在是什么样。读不出来（脚本没载好、那一格还没建过）返回 null——
+     **不返回空串**：空串与「读到一份空稿」分不开，而后者要当脏处理。 */
+  function formOf (kind) {
+    try {
+      var fr = $('stage').querySelector('iframe.prev[data-kind="' + kind + '"]')
+      if (!fr || !fr.dataset.ready) return null
+      var md = fr.contentWindow.starsideForm.read()
+      return /^#\s+\S/.test(md) ? md : null
+    } catch (e) { return null }
+  }
+
+  /* 填表页那一格现在装着谁：fed 是灌进去的那一份，base 是刚灌完时读回来的样子，
+     kind 是单套还是合集。
+
+     **脏判据比的是 base 不是 fed**：load() 会把旧键归一化（换轴之前投的稿子写的
+     是「类别」，读回来是「强度」），拿灌进去那份比，会在没人动过的稿子上误报，
+     每换一条都弹一次确认。 */
+  var formFed = null
+  var formBase = null
+  var formKind = null
+
+  function formDirty () {
+    if (formBase === null) return false
+    var now = formOf(formKind)
+    return now !== null && now !== formBase
+  }
+
+  // 保存成功之后重新对一次基线。**不对的话**：接下来那次重画拿着新正文再走一遍
+  // feed()，它既与 fed 不等、又算脏，会弹一个莫名其妙的确认。
+  function formSynced (md) {
+    formFed = md
+    formBase = formOf(formKind)
+  }
+
   // 把一份源稿灌进那一页。第一次要等它自己载完，之后直接调。
+  //
+  // **同一份就原地不动**：load() 会把 iframe 里滚到哪儿、光标在哪一格全部重置，
+  // 而保存成功要重画列表那一行，换标签、换筛选、换树上那一格也都会再走一遍这里。
+  // 判据是「灌进去的那一份没变」，不是「填表页里没变」——人正改着的那些字要留住。
   function feed (md, onerr) {
-    var fr = stageFrame(isSet(md) ? 'set' : 'one')
+    var kind = isSet(md) ? 'set' : 'one'
+    if (md === formFed && kind === formKind) { stageFrame(kind); return }
+    var fr = stageFrame(kind)
     var go = function () {
       try {
         var w = fr.contentWindow
@@ -1025,6 +1294,10 @@
         // **把那一页自己的「投稿」摘掉**：它在审核页里按一下就是再投一份。
         var send = w.document.getElementById('send')
         if (send) send.remove()
+        // 基线在这里对：load() 归一化过的那一份才是「没人动过」的样子。
+        formKind = kind
+        formFed = md
+        formBase = formOf(kind)
       } catch (err) { onerr(err) }
     }
     if (fr.dataset.ready) go()
@@ -1039,8 +1312,21 @@
   // 点一条：记下开的是哪一套，再画一次列表——详情就摊在它下面那一格里。
   // 正文不必现取，docs 那个动作已经把 builds/ 那些的 md 一并带回来了。
   function buildDetail (b) {
-    history.pushState({ v: 'builds', b: idOf(b) }, '')
-    openBuild = idOf(b)
+    var id = idOf(b)
+    /* **改了没保存就切走**：这是全台唯一会把另一份正文灌进填表页的入口，判据
+       只此一处。收起、换筛选、换标签、换树上那一格都不重灌（feed() 那道守卫
+       挡着），改的字原样留在那一页上。 */
+    // **判据与 feed() 那道早退逐字对偶**：要灌的正文与填表页里现装的那一份不同，
+    // 才会真的覆盖。按「点的是不是另一行」判会误伤——收起之后再点回同一条，
+    // 什么都不会被覆盖，却照样弹一次确认。
+    if (formDirty() && b.md !== formFed
+        && !window.confirm('当前这一套改过还没保存，切走会丢。仍要继续？')) return
+    /* 从列表点进来压一格，从一条详情跳到另一条就地改写。**不改写的话**：连点三条
+       就攒三格，审完一条 toList() 退回去，落到的是上一条已经处理完的详情，
+       而它多半已经被筛选挡在列表外了（hit 在 all 里找，不在 inState 里找）。 */
+    var how = history.state && history.state.b ? 'replaceState' : 'pushState'
+    history[how]({ v: 'builds', b: id }, '', urlOf(id))
+    openBuild = id
     buildsView()
     // 详情摊在整段列表下面，配装攒到几十条就得自己往下滑两千像素。**只滚点击
     // 这一条路**：subDetail() 每次重画都会跑，筛选与 popstate 回来时不该跟着跳。
@@ -1074,6 +1360,8 @@
     idcol.appendChild(el('p', 'crumb', join([
       nameOf(b.md) || b.id.split('/').pop(),
       b.dirty ? '已改' : STATE[b.state],
+      // 落盘只在本机，通过之后站上什么时候变，界面上本来一句都没有。
+      b.dirty || b.state === 'pass' || b.state === 'dropping' ? '等待本机落盘' : '',
       clsOf(b),
       line(b.md, '分支'),
       line(b.md, '强度'),
@@ -1083,11 +1371,9 @@
       missing(b.md).length ? '缺 ' + missing(b.md).join('、') : '',
       /\n## 审核意见[ \t]*\n\s*\S/.test(b.md || '') ? '有审核意见' : ''
     ])))
-    /* 「改」取哪一份看这一套在哪一段：改过还没落盘时 docs.by 就是线上动它的那个人；
-       没改过时 docs.by 是 sync.py 推上去写的「本机」，写出来没有信息，退回投稿那一侧
-       ——sub.edBy 是它待审时被谁改的。时间只有一个 at，三次动作互相覆写，所以写
-       「最后动于」而不是各挂各的时间。 */
-    var edBy = (b.dirty && b.doc ? b.doc.by : '') || (b.sub && b.sub.edBy) || ''
+    /* 「改」取哪一份由 handOf() 一处定，列表那一行的 title 用的是同一份。
+       时间只有一个 at，三次动作互相覆写，所以写「最后动于」而不是各挂各的时间。 */
+    var edBy = handOf(b)
     var okBy = (b.sub && b.sub.okBy) || ''
     idcol.appendChild(el('p', 'crumb hands', join([
       edBy ? '改 ' + edBy : '',
@@ -1104,14 +1390,10 @@
     feed(b.md, function (err) { tip(ops, '载入失败：' + err.message, 1) })
 
     // 改后的那一份从填表页现读；读不出来（脚本没载好）就退回投稿原文，不交空的。
+    // 读那一下走 formOf()：脏判据与这里读的必须是同一份实现，抄两遍就会漂。
     function current () {
-      try {
-        var md = stageFrame(isSet(b.md) ? 'set' : 'one')
-          .contentWindow.starsideForm.read()
-        return /^#\s+\S/.test(md) ? md : b.md
-      } catch (e) {
-        return b.md
-      }
+      var md = formOf(isSet(b.md) ? 'set' : 'one')
+      return md === null ? b.md : md
     }
 
     var src = el('details')
@@ -1140,7 +1422,7 @@
             dyes.disabled = dno.disabled = true
             call('smark', { id: s._id, ok: ok }).then(load).then(toList, function (e) {
               dyes.disabled = dno.disabled = false
-              tip(ops, '操作失败：' + e.message, 1)
+              tip(ops, '操作失败：' + say(e), 1)
             })
           }
           dyes.onclick = function () { dmark(1) }
@@ -1164,14 +1446,42 @@
         // 已上站的写回库里那份源稿，待审的写回投稿记录——两条路的落点不同，
         // 但对填表页来说都只是「存一版」。
         var act = b.state === 'live' ? 'bsave' : 'ssave'
-        call(act, { id: b.state === 'live' ? b.id : s._id, md: md }).then(function () {
-          s.md = b.md = md
-          keep.disabled = false
-          tip(ops, '已保存')
-        }, function (e) {
-          keep.disabled = false
-          tip(ops, '保存失败：' + e.message, 1)
-        })
+        /* **整装重拉，不能就地改。**已上站那一支的 b.sub 是 null，上面那个 s 是
+           现编的一次性对象，`s.md = md` 写不到任何地方；b 自己也是 builds() 每次
+           从 S.docs 现拼出来的，下一次重画照旧读库里那份旧正文——存完不刷新
+           看不到变化，就是这么来的。而且 dirty 挂在 hash 上，新 hash 只有服务端
+           算得出。三发请求，与通过、驳回、撤回同一条路。 */
+        call(act, { id: b.state === 'live' ? b.id : s._id, md: md })
+          .then(function () { return load() }, function (e) {
+            keep.disabled = false
+            tip(ops, '保存失败：' + say(e), 1)
+            // 标一下再抛：下一环的失败分支要认得出「这一条已经报过了」，
+            // 不认的话保存失败会连着再报一句「已保存，但列表没刷新」。
+            if (e) e.reported = 1
+            throw e
+          })
+          .then(function () {
+            keep.disabled = false
+            /* 已上站那一套存完落进「通过」档（hash != landed），那一档没开着时
+               这一行就从列表上消失。**筛选是审核员自己摆的工作面，不替他动**——
+               存没存下由回执那句答，不由列表的形状答。 */
+            /* **基线要对，哪怕这就收起了。**收起只藏 DOM，填表页那一格原样留着；
+               不对基线的话，等会儿再点开同一套，formDirty() 拿存之前那份基线一比
+               就说「改过还没保存」，而它明明已经存进去了。 */
+            formSynced(md)
+            // 存完就收起，回到上面那张列表。history.back() 顺带把滚动位置还原到
+            // 按下那一行的那一刻，与「收起」走同一条路。
+            pendTip = { msg: b.state === 'live' ? '已保存到库，等本机落盘后上站' : '已保存' }
+            toList()
+          }, function (e) {
+            // 上一段已经把「保存失败」报过并重新抛出；走到这里而队列没刷新，
+            // 说明存是成功的、只是重拉没回来。**两件事分开报**：混成一句
+            // 「保存失败」会让人再存一遍，而库里其实已经是新的了。
+            if (!e || !e.reported) {
+              keep.disabled = false
+              tip(ops, '已保存，但列表没刷新：' + say(e), 1)
+            }
+          })
       }
       acts.appendChild(keep)
 
@@ -1185,7 +1495,7 @@
           ask.disabled = true
           call('bdrop', { id: b.id }).then(load).then(toList, function (e) {
             ask.disabled = false
-            tip(ops, '提交失败：' + e.message, 1)
+            tip(ops, '提交失败：' + say(e), 1)
           })
         }
         acts.appendChild(ask)
@@ -1201,7 +1511,7 @@
           undo.disabled = true
           call('smark', { id: s._id, ok: 0 }).then(load).then(toList, function (e) {
             undo.disabled = false
-            tip(ops, '撤回失败：' + e.message, 1)
+            tip(ops, '撤回失败：' + say(e), 1)
           })
         }
         acts.appendChild(undo)
@@ -1215,7 +1525,7 @@
           del.disabled = true
           call('sdrop', { id: s._id }).then(load).then(toList, function (e) {
             del.disabled = false
-            tip(ops, '删除失败：' + e.message, 1)
+            tip(ops, '删除失败：' + say(e), 1)
           })
         }
         acts.appendChild(sep())
@@ -1236,15 +1546,27 @@
             keep.disabled = yes.disabled = no.disabled = false
             // 八位 36 进制撞上的概率约两万八千亿分之一，真撞了换一个再来
             if (e.message === 'slug 重了' && !retry) return mark(ok, 1)
-            tip(ops, '操作失败：' + e.message, 1)
+            tip(ops, '操作失败：' + say(e), 1)
           })
         }
         yes.onclick = function () { mark(1) }
-        no.onclick = function () { mark(-1) }
+        /* **驳回要问一声**：它与旁边的通过只差一个字色，而这一枚没有退路——
+           smark 的撤回那一路要求 cur.ok === 1，驳回之后回不到待审，只剩真删。
+           确认弹窗从前全落在撤回、申请移除、删除废稿这些可逆或半可逆的动作上，
+           最不可逆的这一枚反倒一声不响。 */
+        no.onclick = function () {
+          if (!window.confirm('驳回《' + (nameOf(b.md) || b.id) + '》？'
+              + '\n驳回之后回不到待审，只能删掉。')) return
+          mark(-1)
+        }
         acts.appendChild(yes)
         acts.appendChild(no)
       }
       ops.appendChild(acts)
+    } else {
+      /* lv 1 照样载得进可编辑的填表页，而投稿按钮又被 feed() 摘掉了——不说这一句，
+         人在表里改半天，找不到任何按钮，也不知道为什么。 */
+      tip(ops, '只读：保存、通过与驳回要审核员（lv 2）权限。')
     }
   }
 
@@ -1416,6 +1738,8 @@
       S.docs = r[0].docs
       S.edits = r[1].edits.map(function (e) { e.ok = Number(e.ok); return e })
       S.subs = r[2].subs
+      // 后端那几条查询没有 orderBy，触到 limit 就静默截断。它报一位，这里显形。
+      S.more = !!(r[0].more || r[2].more)
       badges()
     })
   }
@@ -1445,13 +1769,20 @@
       // 编辑者那一屏只给超管：加人、改名、改角色、移除都在这里，看得见谁是编辑者
       // 本身也是这一层的事。云函数的 LEVEL.eds 是同一个门槛，不靠前端藏。
       document.querySelector('[data-view="eds"]').hidden = me.lv < 4
-      // 起手那一格也要有 state，不然从详情返回时拿到的是 null
-      history.replaceState({ v: 'builds' }, '')
+      // 起手那一格也要有 state，不然从详情返回时拿到的是 null。
+      // **这一格必须是列表**：地址栏带 ?b= 时下面另压一格详情，退回来才有列表接着。
+      // 把它自己写成详情的话，那一条上按「收起」会一路退出编辑台。
+      var want = new URLSearchParams(location.search).get('b')
+      history.replaceState({ v: 'builds' }, '', urlOf(''))
       // **三张表到齐了才放开标签栏**：docs / edits / subs 还在路上时 S 里是三个
       // 空数组，这时点哪一枚画出来的都是一张空列表，等 load() 落地又被
       // buildsView() 顶回落地那一屏——看着就是「第一次进去加载不出来」。
       return load().then(function () {
         $('tabs').hidden = false
+        // 链接指的那一条还在就直接开在它上面，找不到（审完删了、或链接过期）
+        // 就退回列表，不报错——收到链接的人多半只是晚来了一步。
+        var hit = want && builds().filter(function (x) { return idOf(x) === want })[0]
+        if (hit) return buildDetail(hit)
         buildsView()
       })
     })
@@ -1487,7 +1818,8 @@
         n.removeAttribute('aria-current')
       })
       b.setAttribute('aria-current', 'true')
-      history.replaceState({ v: b.dataset.view }, '')
+      // 换标签顺手把 ?b= 抹掉：那一格指的是配装详情，换到别的屏就不成立了。
+      history.replaceState({ v: b.dataset.view }, '', urlOf(''))
       ;(VIEWS[b.dataset.view] || buildsView)()
     }
     gate()
@@ -1505,7 +1837,13 @@
 
   // 纯函数单独导出：块拆分、着色与闸门不碰 DOM，离线断言直接拿这一份跑，
   // 不复制副本。页面不在时（Node 里）只导出、不接线。
-  var api = { paint: paint, lint: lint, cells: cells, start: start }
+  // isSet 也在这一份里：配装页那条编辑路要按它分单套与合集两个填表页，而这条判据
+  // 与 convert-build.py 的 split_set() 必须逐字一致，抄第二份就多一个会漂的地方。
+  // missing 也导出来：它答的是「审核台会不会对这一篇报缺失」，而判据要与
+  // convert-build.py 那几道（NEED、split_set、tags_of）对得上。离线断言拿库里
+  // 每一篇真源稿过一遍，构建得过的稿子这里必须一条都不报。
+  var api = { paint: paint, lint: lint, cells: cells, isSet: isSet,
+              missing: missing, builds: builds, start: start }
   if (typeof module !== 'undefined' && module.exports) module.exports = api
   if (typeof document !== 'undefined') {
     window.starsideAdmin = api

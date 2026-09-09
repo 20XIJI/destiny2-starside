@@ -717,6 +717,70 @@ test('the editing console flags item names written with the typographic space', 
 })
 
 
+// 审核台那句「缺 …」与生成器的必填项是两份实现，跨不过去的那条缝由这一条钉住：
+// 构建过得去的源稿，审核台一条都不该报。
+//
+// 踩过一次：合集的 PER 无条件要求每一套写「标签：」，而 tags_of() 的规矩是
+// 「宗师/终极、日常、功能性这三个场景整行必须不写，其余场景可写可不写」。7 份
+// 合集里 5 份因此挂着假的「缺 …」，其中两份还报「两套填齐的配装（现在 0 套）」
+// ——那一行长到把配装名挤成一个省略号，而填表页那一侧 lacking() 非空即 return，
+// 这几份合集一个字都改不回去。三道闸门与 npm test 当时全绿。
+test('a source the build accepts is never reported as incomplete by the console', () => {
+  const { api } = adminApi()
+  const dir = path.join(root, 'references/builds')
+  const bad = []
+  let seen = 0
+  for (const season of fs.readdirSync(dir)) {
+    const sd = path.join(dir, season)
+    if (!fs.statSync(sd).isDirectory()) continue
+    for (const file of fs.readdirSync(sd).filter((x) => x.endsWith('.md'))) {
+      seen++
+      const miss = api.missing(fs.readFileSync(path.join(sd, file), 'utf8'))
+      if (miss.length) bad.push(`${file} → 缺 ${miss.join('、')}`)
+    }
+  }
+  // 光「一条都没报」不够：读不到源稿时零命中也是全绿。
+  assert.ok(seen > 50, `references/builds 下只读到 ${seen} 篇源稿，路径变了？`)
+  assert.deepEqual(bad, [], `审核台对这些构建得过的源稿报了缺失：\n  ${bad.join('\n  ')}`)
+})
+
+
+// builds() 把 docs 与 subs 两张表并成审核台那张清单。两条规矩都出过错，且都是
+// 「看着有一行、内容却不对」那一类，页面上隔着一层 iframe 用肉眼查不出来。
+test('a build that is live reads its body from the library, not the frozen submission', () => {
+  const { api } = adminApi()
+  // subs.md 是投稿当时冻住的那一份；bsave 改的是 docs.md，从不回写投稿记录。
+  // 只认 subs.md 的话，线上改完再看还是改之前那一套，而下一次保存会拿这份陈稿
+  // 原样盖回去——一次编辑就这么没了。
+  const rows = api.builds(
+    [{ _id: 'builds/s29-x/a-hunter', md: '# 新名字\n', hash: 'h2', landed: 'h1', at: '2', by: '我' }],
+    [{ _id: 's1', ok: 1, season: 's29-x', slug: 'a-hunter', md: '# 投稿时的旧名字\n', at: '1' }])
+  assert.equal(rows.length, 1)
+  assert.equal(rows[0].md, '# 新名字\n')
+  assert.equal(rows[0].state, 'live')
+  assert.ok(rows[0].dirty, 'hash 与 landed 不等就该标成改过')
+})
+
+test('an approved removal leaves one row, a pending one leaves two', () => {
+  const { api } = adminApi()
+  const docs = [{ _id: 'builds/s29-x/a-hunter', md: '# 甲\n', hash: 'h', landed: 'h', at: '1' }]
+  const one = { _id: 's1', ok: 1, season: 's29-x', slug: 'a-hunter', md: '# 甲\n', at: '1' }
+
+  // 批准之后决定已经做完，「完成」里再并排摆一行没有标记的，读起来就是「它好好
+  // 地在站上」——而它正等着本机 sync 把源稿删掉。
+  const done = api.builds(docs,
+    [one, { _id: 's2', drop: 1, ok: 1, season: 's29-x', slug: 'a-hunter', md: '# 甲\n', at: '2' }])
+  // **Array.from，不是 .map。**行是 vm 沙箱里造的，它的原型是那个 realm 的
+  // Array.prototype，deepStrictEqual 连原型一起比，内容一样也过不去。
+  assert.deepEqual(Array.from(done, (b) => b.state), ['dropping'])
+
+  // 还在待审时两行并排才看得出「这一套在站上，同时有人申请删它」。
+  const asking = api.builds(docs,
+    [one, { _id: 's2', drop: 1, ok: 0, season: 's29-x', slug: 'a-hunter', md: '# 甲\n', at: '2' }])
+  assert.deepEqual(Array.from(asking, (b) => b.state).sort(), ['live', 'wait'])
+})
+
+
 // ── 索引页工具条 ─────────────────────────────────────────────────────────
 // assets/app.js 的工具条全在运行时建，三道闸门与上面那些测试一个都看不见它：
 // 配装索引页改成「一张网格、不分节」之后，app.js 那句 `if (!slot ||

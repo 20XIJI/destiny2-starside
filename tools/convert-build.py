@@ -764,15 +764,17 @@ def blocks_of(idx, mv, arts, md, ns=''):
     return o
 
 
-def render(idx, mv, arts, md, slug, season, name_cn):
+# doc_id 是这一篇在库里的 _id，由 build() 一处算好传下来。**不能拿 season 现拼**：
+# 产出目录是 s29，而源稿目录（也就是 _id 那一截）是 s29-凯旋纪念碑，两者不是一回事。
+def render(idx, mv, arts, md, slug, season, name_cn, doc_id):
     """一份源稿一个页面。有第二个 `# ` 就是合集，走另一条路。"""
     head, members = split_set(md)
     if members:
-        return render_set(idx, mv, arts, head, members, slug, season, name_cn)
-    return render_solo(idx, mv, arts, md, slug, season, name_cn)
+        return render_set(idx, mv, arts, head, members, slug, season, name_cn, doc_id)
+    return render_solo(idx, mv, arts, md, slug, season, name_cn, doc_id)
 
 
-def render_solo(idx, mv, arts, md, slug, season, name_cn):
+def render_solo(idx, mv, arts, md, slug, season, name_cn, doc_id):
     title = must(re.match(r'^#\s+(.+)$', md.split('\n')[0]),
                  '源稿第一行必须是「# 配装名」').group(1).strip()
     stamp, desc = stamp_of(md), meta(md, '描述', required=False)
@@ -792,7 +794,13 @@ def render_solo(idx, mv, arts, md, slug, season, name_cn):
          # 走。--accent 是 design.md 写明「子页面覆盖这一个即可换色」的槽位，六个元素
          # 页就是这么做的；这里不新增任何渲染色。
          # data-tier 给强度框用（builds/style.css），与索引卡上那份同一套样式。
-         '<main class="b-%s" data-tier="%s">' % (BRANCH[branch], cat),
+         # data-src 是这一篇在库里的 _id，data-kind 说它该走哪条编辑路：
+         # shell.EDIT 的判据是「有令牌 + main[data-src]」，两件都成立才拉 edit.js。
+         # 配装页没有 data-b，逐格编辑无从落脚，所以 kind 写 build，走整篇替换那条。
+         # **索引页与填表页一律不加**：填表页被编辑台当 iframe 载进来，带上它就是
+         # 每换一条配装白下一次 edit.js。
+         '<main class="b-%s" data-tier="%s" data-src="%s" data-kind="build">'
+         % (BRANCH[branch], cat, doc_id),
          # 页头去盒：核心异域在左，一道由 align-items: stretch 撑满高度的竖线，右侧
          # 是配装名与铭牌。与全站 .page-head 同形（h1 + 一道发丝线），与首页
          # .wordmark-row 同语言。
@@ -870,7 +878,7 @@ def one_of(idx, mv, arts, head, scenes, md, n):
     return o
 
 
-def render_set(idx, mv, arts, head, members, slug, season, name_cn):
+def render_set(idx, mv, arts, head, members, slug, season, name_cn, doc_id):
     """合集详情页：页顶是整份合集，往下左目录右配装。
 
     **N 套全部写进 HTML，主从视图下收起 N−1 套由 builds/set.js 在加载时施加**
@@ -891,7 +899,9 @@ def render_set(idx, mv, arts, head, members, slug, season, name_cn):
                     sheets=['../../style.css']),
          shell.nav(title, up=3, parent=[SETS_SECTION, name_cn],
                    parent_href='../../sets/index.html'),
-         '<main class="set b-%s" data-tier="%s">' % (BRANCH[branch], cat),
+         # data-src / data-kind 与单套页同一条，见 render_solo() 那一处的说明。
+         '<main class="set b-%s" data-tier="%s" data-src="%s" data-kind="build">'
+         % (BRANCH[branch], cat, doc_id),
          '<header class="build-head">',
          # 核心图包一层 .node：强度框画在它的 ::before/::after 上，与索引卡同形。
          # 不包的话框只能挂在 .core 上，而 .core 是竖排的一整列（图 + 推荐人）。
@@ -1061,8 +1071,10 @@ def build(idx, dirname, season, name_cn, slug):
         os.makedirs(outdir, exist_ok=True)
         with open(src, encoding='utf-8') as f:
             md = f.read()
+        # _id 与 sync.py 的 id_of() 同一条：references/ 下的相对路径去掉 .md，
+        # 所以那一截是源稿目录名 dirname，不是产出目录用的 season。
         out, title = render(idx, extra('移动'), extra('神器本体'),
-                            md, slug, season, name_cn)
+                            md, slug, season, name_cn, 'builds/%s/%s' % (dirname, slug))
         check(out, slug)
         shell.emit(outdir, out, title)
         head, members = split_set(md)

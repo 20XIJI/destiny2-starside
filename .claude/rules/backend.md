@@ -288,8 +288,8 @@ editors  { _id: uid, name, lv, at }
 戳定位标记，闸门一个字不用改。
 
 引子在 `shell.EDIT`，有令牌、且这一页带 `main[data-src]` 才拉 `admin/edit.js`，
-没登录的读者只多下这一行。判据要连 `data-src` 一起看：只看令牌的话，配装页、
-填表页、索引页与首页也会各下一份 `edit.js`，而它们反查不回源稿，`edit.js` 进去第一件事
+没登录的读者只多下这一行。判据要连 `data-src` 一起看：只看令牌的话，填表页、
+索引页与首页也会各下一份 `edit.js`，而它们改不动任何源稿，`edit.js` 进去第一件事
 就是 return；编辑台把填表页当 iframe 载进来，那 20 KB 因此每换一条配装白下一次。
 相对前缀从 `site.css` 那个 `<link>` 上现取：页面深浅不一，写死 `../` 会在
 `elements/arc/` 这种两层的页面上指错；站内绝对路径又会在 `file://` 下指到磁盘根目录。
@@ -297,7 +297,20 @@ editors  { _id: uid, name, lv, at }
 手写的首页 `index.html` 要跟着改，`check_shell.py` 的不变片段表里有 `shell.EDIT`。
 
 三个资料生成器都戴标记：`convert-doc`、`convert-artifact-mods`、`convert-armor-sets`。
-配装页不做就地编辑，它有自己的填表页。
+
+配装详情页也戴 `data-src`，但走另一条路，由 `<main>` 上的 `data-kind` 分：资料页
+`doc` 逐格改，配装页 `build` 整篇替换。配装页没有 `data-b`，逐字保真闸门也不覆盖它，
+逐格无从落脚也无从校验，所以那一枚「编辑」开的是一层铺满视口的遮罩，里面按
+`isSet()` 载单套或合集填表页，保存走 `bsave`——与审核台详情格里那一套是同一个动作、
+同一个落点，不新开状态流。`isSet` 从 `admin.js` 的导出拿，不在 `edit.js` 里抄第二份：
+它与 `convert-build.py` 的 `split_set()` 必须逐字一致。
+
+底稿走 `pend` 带 `md` 那一路现拉，**不拿页面上那份 `<pre id="src">`**：它是
+`markup.uncolor()` 剥过着色标记的，存回去会把整套配装的着色洗掉。保存的回执要写明
+「这一页要等本机落盘、构建再部署才更新」——页面是构建产物，存完一个字都不会变。
+
+**索引页与填表页一律不戴 `data-src`**：填表页被编辑台当 iframe 载进来，戴上就是每换
+一条配装白下一次 `edit.js`。
 
 开编辑态只等一发。从前是四个串行往返：`terms.js` → `admin.js` → `doc` → `pend`。
 两头各去掉一段：
