@@ -810,12 +810,13 @@ class SyncErrors(Isolated):
 
 class Generation(Isolated):
     SOLO = ('# 示例\n推荐人：示例作者\n描述：示例说明\n更新：2026.9.5\n'
-            '分支：烈日\n类别：强度\n核心：测试超能\n\n## 职业\n'
+            '场景：突袭\n标签：输出\n分支：烈日\n强度：强力\n核心：测试超能\n\n## 职业\n'
             '职业：猎人\n超能：测试超能\n星相：\n碎片：\n\n## 武器\n\n'
             '## 护甲\n套装：测试套装 2 件\n\n## 神器\n神器：测试神器\n模组：\n\n'
             '## 六维\n六维：生命 ~ ｜ 近战 ~ ｜ 手雷 ~ ｜ 超能 ~ ｜ 职业 ~ ｜ 武器 ~\n')
     SET = ('# 示例合集\n合集：是\n推荐人：示例作者\n描述：示例说明\n更新：2026.9.5\n'
-           '类别：强度\n\n' + SOLO + '\n' + SOLO.replace('# 示例\n', '# 第二套\n', 1))
+           '场景：突袭\n强度：强力\n\n' + SOLO + '\n'
+           + SOLO.replace('# 示例\n', '# 第二套\n', 1))
 
     def setUp(self):
         super().setUp()
@@ -858,11 +859,42 @@ class Generation(Isolated):
         self.file('index.html', text)
 
 
+    def test_index_facet_keys_match_the_cards(self):
+        """工具条声明的每一维，都要能在卡片上读到值。
+
+        app.js 那一维读的是 `it.dataset[键]`，键由 data-facets 里的 `名=键` 给。
+        生成器改了卡片上的属性名而忘了改声明（或反过来），那一维会静默变成空表：
+        整行不出，页面照旧渲染，三道闸门也照旧过——**这条是那种情形唯一的哨兵**。
+
+        顺带钉住 :scoped 点名的那一维确实在声明里。名字写错时那一维退回不受限，
+        标签会把所有场景的取值摞在一起排出来——页面照旧渲染，没有别的东西会报。
+        """
+        self.replace(sys, 'argv', ['convert-build.py'])
+        build.main()
+        page = (self.root / 'builds/index.html').read_text(encoding='utf-8')
+        found = re.search(r'data-facets="([^"]+)"', page)
+        self.assertIsNotNone(found, '索引页的工具条没有 data-facets')
+        assert found is not None      # pyright：上一行已经保证了
+        spec = found.group(1)
+        dims = [d.split('=') for d in spec.split(';')]
+        names = [n for n, _ in dims]
+        for name, mods in dims:
+            key, *flags = mods.split(':')
+            attr = 'data-' + re.sub(r'([A-Z])', r'-\1', key).lower()
+            self.assertIn('%s="' % attr, page,
+                          '维度「%s」声明读 %s，卡片上一张都没有' % (name, attr))
+            for flag in flags:
+                under = re.fullmatch(r'scoped\((.+)\)', flag)
+                if under:
+                    self.assertIn(under.group(1), names,
+                                  '维度「%s」点名的作用域「%s」不在声明里'
+                                  % (name, under.group(1)))
+
     def test_source_errors_identify_file_and_collection_member(self):
         self.replace(sys, 'argv', ['convert-build.py', 'beta-hunter'])
         for md, missing, title in ((self.SOLO.replace('超能：测试超能\n', '').replace('核心：测试超能', '核心：测试套装'), '超能', '示例'),
-                                   (self.SET.replace('# 第二套\n推荐人：示例作者\n描述：示例说明\n更新：2026.9.5\n分支：烈日\n',
-                                                     '# 第二套\n推荐人：示例作者\n描述：示例说明\n更新：2026.9.5\n'), '分支', '第二套')):
+                                   (self.SET.replace('# 第二套\n推荐人：示例作者\n描述：示例说明\n更新：2026.9.5\n场景：突袭\n标签：输出\n分支：烈日\n',
+                                                     '# 第二套\n推荐人：示例作者\n描述：示例说明\n更新：2026.9.5\n场景：突袭\n标签：输出\n'), '分支', '第二套')):
             self.beta.write_text(md)
             error = self.exits(build.main)
             self.assertIn('references/builds/s29-fixture/beta-hunter.md', error)

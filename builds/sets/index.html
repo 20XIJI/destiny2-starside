@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>配装合集 · Starside</title>
-<meta name="description" content="Destiny 2 配装合集：同一角色的多套配装按场景切换使用，按类别与职业分类，逐套列出技能、武器、护甲与神器模组。">
+<meta name="description" content="Destiny 2 配装合集：同一角色的多套配装按场景切换使用，按场景分节、职业分组，逐套列出技能、武器、护甲与神器模组。">
 <meta name="theme-color" content="#0b0d14">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="Starside">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:title" content="配装合集 · Starside">
-<meta property="og:description" content="Destiny 2 配装合集：同一角色的多套配装按场景切换使用，按类别与职业分类，逐套列出技能、武器、护甲与神器模组。">
+<meta property="og:description" content="Destiny 2 配装合集：同一角色的多套配装按场景切换使用，按场景分节、职业分组，逐套列出技能、武器、护甲与神器模组。">
 <link rel="preload" href="../../assets/fonts/chakra-petch-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../../assets/site.css">
@@ -25,106 +25,126 @@
 <span class="sep">/</span>
 <span aria-current="page">配装合集</span>
 </nav>
-<div class="toolbar" data-section=".block" data-item=".entries > li" data-label=".sect-label" data-noun="合集" data-chip-label="类别" data-facets=""></div>
+<div class="toolbar" data-section=".block" data-item=".entries > li" data-label="" data-noun="合集" data-facets="场景=scene:single:groups;职业=cls;分支=branch;强度=tier:single;标签=tag:scoped(场景)"></div>
 </div>
 
 <header class="page-head">
 <div class="head-row">
 <h1>配装合集</h1>
-<p class="new-link"><a href="../new/set/index.html">投稿一组合集 →</a><span>逐套选择装备，页面直接生成标准格式的合集文本</span></p><p class="new-link"><a href="../index.html">单套配装推荐 →</a><span>一套一页的配装，按强度、创意与 PVP 分组</span></p>
+<p class="new-link"><a href="../new/set/index.html">投稿一组合集 →</a><span>逐套选择装备，页面直接生成标准格式的合集文本</span></p><p class="new-link"><a href="../index.html">单套配装推荐 →</a><span>一套一页的配装，按场景、职业、强度与标签筛选</span></p>
 </div>
 </header>
 
+<nav class="facet-bar" data-facet="场景" aria-label="适用场景"></nav>
+<nav class="facet-bar" data-facet="强度" aria-label="强度"></nav>
 <main>
-<section class="block" id="sec-1">
-<h2 class="sect-label">meta</h2>
+<section class="block" id="sec-1" data-scene="突袭">
+<h2 class="sect-label">突袭 &amp; 地牢</h2>
 <h3 class="sub-label">猎人</h3>
-<ul class="entries">
-<li class="b-solar" data-branch="烈日">
-<a class="entry" href="../s29/0n05dhek-hunter/index.html">
-<span class="node"><span class="core-mosaic" style="--sz:64px;--tile:31px"><img src="../../exotic-weapon/icons/9989c5f373.webp" alt="" width="31" height="31" loading="lazy"><img src="../../exotic-armor/icons/29a427eb84.webp" alt="" width="31" height="31" loading="lazy"><img src="../../exotic-armor/icons/8266dbe1b9.webp" alt="" width="31" height="31" loading="lazy"></span></span>
-<span class="n-sets">3 套</span>
-<h3>火刀猎狼毒输出配装合集</h3>
-<span class="who"><span class="nm">MK_D2#7555</span></span>
-<p>用这套输出的人越多越强，一波输出保底转两个大招。</p>
-<span class="tags"><i>突袭</i><i>地牢</i><i>清怪</i><i>续航</i><i>功能</i><i>输出</i></span>
-<span class="entry-foot"><span class="entry-stamp">更新 2026.9.7</span><span class="likes" data-like="s29_0n05dhek-hunter"></span></span>
-</a>
-</li>
-<li class="b-solar" data-branch="烈日">
-<a class="entry" href="../s29/8p1f06qc-hunter/index.html">
-<span class="node"><span class="core-mosaic" style="--sz:64px;--tile:31px"><img src="../../exotic-weapon/icons/edef0d64de.webp" alt="" width="31" height="31" loading="lazy"><img src="../../armor-sets/icons/047.png" alt="" width="31" height="31" loading="lazy"><img src="../../exotic-armor/icons/29a427eb84.webp" alt="" width="31" height="31" loading="lazy"><img src="../../exotic-armor/icons/efb24f694b.webp" alt="" width="31" height="31" loading="lazy"></span></span>
-<span class="n-sets">4 套</span>
-<h3>猎人沙漠专用六边形战士</h3>
-<span class="who"><span class="nm">AKfro#9237</span></span>
-<p>不只是沙漠吧，只要是能靠近的首领都可以用这套</p>
-<span class="tags"><i>突袭</i><i>清怪</i><i>续航</i><i>通用</i><i>功能</i><i>输出</i></span>
-<span class="entry-foot"><span class="entry-stamp">更新 2026.9.7</span><span class="likes" data-like="s29_8p1f06qc-hunter"></span></span>
-</a>
-</li>
-<li class="b-solar" data-branch="烈日">
+<ul class="entries" data-cls="猎人">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="meta" data-tag="推图&#9;输出&#9;机制">
 <a class="entry" href="../s29/xk3o6vpu-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:31px"><img src="../../exotic-armor/icons/dce63279b7.webp" alt="" width="31" height="31" loading="lazy"><img src="../../exotic-armor/icons/29a427eb84.webp" alt="" width="31" height="31" loading="lazy"><img src="../../exotic-armor/icons/8266dbe1b9.webp" alt="" width="31" height="31" loading="lazy"></span></span>
 <span class="n-sets">3 套</span>
 <h3>狼毒火刀猎</h3>
+<span class="tier off-screen">meta</span>
 <span class="who"><span class="nm">Clama</span></span>
+<div class="say">
 <span class="verdict"><b>审核意见</b>狼毒输出时记得在最后一个重击打完后收刀恢复纳米充能 狼毒极限单条可以砍出5重击收刀（比较极限，可选项） 地窖4收益聊胜于无，可选可不选</span>
 <p>命运眷顾走机制，加拉诺扔火刀，鱼人腿刷超能</p>
-<span class="tags"><i>突袭</i><i>地牢</i><i>清怪</i><i>续航</i><i>输出</i><i>功能</i></span>
+</div>
+<span class="tags"><i class="sc">突袭</i><i class="sc">地牢</i><i>推图</i><i>输出</i><i>机制</i></span>
 <span class="entry-foot"><span class="entry-stamp">更新 2026.9.9</span><span class="likes" data-like="s29_xk3o6vpu-hunter"></span></span>
 </a>
 </li>
-</ul>
-</section>
-<section class="block" id="sec-2">
-<h2 class="sect-label">强度</h2>
-<h3 class="sub-label">猎人</h3>
-<ul class="entries">
-<li class="b-prismatic" data-branch="棱镜">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="meta" data-tag="推图&#9;机制&#9;输出">
+<a class="entry" href="../s29/0n05dhek-hunter/index.html">
+<span class="node"><span class="core-mosaic" style="--sz:64px;--tile:31px"><img src="../../exotic-weapon/icons/9989c5f373.webp" alt="" width="31" height="31" loading="lazy"><img src="../../exotic-armor/icons/29a427eb84.webp" alt="" width="31" height="31" loading="lazy"><img src="../../exotic-armor/icons/8266dbe1b9.webp" alt="" width="31" height="31" loading="lazy"></span></span>
+<span class="n-sets">3 套</span>
+<h3>火刀猎狼毒输出配装合集</h3>
+<span class="tier off-screen">meta</span>
+<span class="who"><span class="nm">MK_D2#7555</span></span>
+<div class="say">
+<p>用这套输出的人越多越强，一波输出保底转两个大招。</p>
+</div>
+<span class="tags"><i class="sc">突袭</i><i class="sc">地牢</i><i>推图</i><i>机制</i><i>输出</i></span>
+<span class="entry-foot"><span class="entry-stamp">更新 2026.9.7</span><span class="likes" data-like="s29_0n05dhek-hunter"></span></span>
+</a>
+</li>
+<li class="b-solar" data-branch="烈日" data-scene="突袭" data-cls="猎人" data-tier="meta" data-tag="推图&#9;机制&#9;输出">
+<a class="entry" href="../s29/8p1f06qc-hunter/index.html">
+<span class="node"><span class="core-mosaic" style="--sz:64px;--tile:31px"><img src="../../exotic-weapon/icons/edef0d64de.webp" alt="" width="31" height="31" loading="lazy"><img src="../../armor-sets/icons/047.png" alt="" width="31" height="31" loading="lazy"><img src="../../exotic-armor/icons/29a427eb84.webp" alt="" width="31" height="31" loading="lazy"><img src="../../exotic-armor/icons/efb24f694b.webp" alt="" width="31" height="31" loading="lazy"></span></span>
+<span class="n-sets">4 套</span>
+<h3>猎人沙漠专用六边形战士</h3>
+<span class="tier off-screen">meta</span>
+<span class="who"><span class="nm">AKfro#9237</span></span>
+<div class="say">
+<p>不只是沙漠吧，只要是能靠近的首领都可以用这套</p>
+</div>
+<span class="tags"><i class="sc">突袭</i><i>推图</i><i>机制</i><i>输出</i></span>
+<span class="entry-foot"><span class="entry-stamp">更新 2026.9.7</span><span class="likes" data-like="s29_8p1f06qc-hunter"></span></span>
+</a>
+</li>
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭" data-cls="猎人" data-tier="强力" data-tag="机制&#9;推图&#9;输出">
 <a class="entry" href="../s29/bcndfero-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:31px"><img src="../../shopping-primary/icons/aad2b1d3b7.webp" alt="" width="31" height="31" loading="lazy"><img src="../../shopping-primary/icons/9f6be2f634.webp" alt="" width="31" height="31" loading="lazy"><img src="../../exotic-weapon/icons/29152fe571.webp" alt="" width="31" height="31" loading="lazy"></span></span>
 <span class="n-sets">3 套</span>
 <h3>猎人日志solo见证者配装</h3>
+<span class="tier off-screen">强力</span>
 <span class="who"><span class="nm">超新星</span></span>
+<div class="say">
 <span class="verdict"><b>审核意见</b>作者使用猎人日志的目的是方便修扣子，如果使用其他方式修扣子（比如无礼言论），则推荐使用女王兰香炉（单人特工+银白重炮），输出伤害高很多。</span>
 <p>适合手残修不来扣子的小猪（比如我）</p>
-<span class="tags"><i>突袭</i><i>功能</i><i>清怪</i><i>输出</i><i>续航</i></span>
+</div>
+<span class="tags"><i class="sc">突袭</i><i>机制</i><i>推图</i><i>输出</i></span>
 <span class="entry-foot"><span class="entry-stamp">更新 2026.9.8</span><span class="likes" data-like="s29_bcndfero-hunter"></span></span>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-tag="推图&#9;输出">
 <a class="entry" href="../s29/e4jm22gv-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:31px"><img src="../../exotic-weapon/icons/edef0d64de.webp" alt="" width="31" height="31" loading="lazy"><img src="../../shopping-special/icons/fe5e6e2876.webp" alt="" width="31" height="31" loading="lazy"><img src="../../exotic-weapon/icons/50c035c7b3.webp" alt="" width="31" height="31" loading="lazy"><img src="../../exotic-weapon/icons/f8216efc3a.webp" alt="" width="31" height="31" loading="lazy"></span></span>
 <span class="n-sets">5 套</span>
 <h3>火刀猎，突袭三切输出配装</h3>
+<span class="tier off-screen">强力</span>
 <span class="who"><span class="nm">遗忘Melt</span></span>
+<div class="say">
 <p>金装“加拉诺”快速回转超能为核心的输出配装，适合不打精准伤害，输出时间≥30秒的场景</p>
-<span class="tags"><i>突袭</i><i>地牢</i><i>清怪</i><i>续航</i><i>输出</i></span>
+</div>
+<span class="tags"><i class="sc">突袭</i><i class="sc">地牢</i><i>推图</i><i>输出</i></span>
 <span class="entry-foot"><span class="entry-stamp">更新 2026.9.8</span><span class="likes" data-like="s29_e4jm22gv-hunter"></span></span>
 </a>
 </li>
-<li class="b-prismatic" data-branch="棱镜">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-tag="推图&#9;输出">
 <a class="entry" href="../s29/hqq17mla-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:31px"><img src="../../shopping-special/icons/fe5e6e2876.webp" alt="" width="31" height="31" loading="lazy"><img src="../../exotic-armor/icons/56dc556882.webp" alt="" width="31" height="31" loading="lazy"><img src="../../shopping-special/icons/8e8aa14381.webp" alt="" width="31" height="31" loading="lazy"><img src="../../exotic-armor/icons/4617c0972a.webp" alt="" width="31" height="31" loading="lazy"></span></span>
 <span class="n-sets">4 套</span>
 <h3>配装合集测试</h3>
+<span class="tier off-screen">强力</span>
 <span class="who"><span class="nm">遗忘Melt</span></span>
+<div class="say">
 <p>突袭与地牢的四套配装：三套清怪分别应对站桩守点与两种跑机制，首领战切换双金枪输出。</p>
-<span class="tags"><i>突袭</i><i>地牢</i><i>清怪</i><i>输出</i></span>
+</div>
+<span class="tags"><i class="sc">突袭</i><i class="sc">地牢</i><i>推图</i><i>输出</i></span>
 <span class="entry-foot"><span class="entry-stamp">更新 2026.9.5</span><span class="likes" data-like="s29_hqq17mla-hunter"></span></span>
 </a>
 </li>
 </ul>
+</section>
+<section class="block" id="sec-2" data-scene="日常">
+<h2 class="sect-label">日常</h2>
 <h3 class="sub-label">泰坦</h3>
-<ul class="entries">
-<li class="b-stasis" data-branch="冰影">
+<ul class="entries" data-cls="泰坦">
+<li class="b-stasis" data-branch="冰影" data-scene="日常" data-cls="泰坦" data-tier="强力">
 <a class="entry" href="../s29/mbgvkw8f-titan/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:31px"><img src="../../exotic-armor/icons/5b27ce8087.webp" alt="" width="31" height="31" loading="lazy"><img src="../../exotic-armor/icons/b4880e3ada.webp" alt="" width="31" height="31" loading="lazy"></span></span>
 <span class="n-sets">3 套</span>
 <h3>冰泰坦</h3>
+<span class="tier off-screen">强力</span>
 <span class="who"><span class="nm">emm</span></span>
+<div class="say">
 <p>新手开荒</p>
-<span class="tags"><i>日常</i><i>清怪</i><i>功能</i></span>
+</div>
+<span class="tags"><i class="sc">日常</i></span>
 <span class="entry-foot"><span class="entry-stamp">更新 2026.9.8</span><span class="likes" data-like="s29_mbgvkw8f-titan"></span></span>
 </a>
 </li>

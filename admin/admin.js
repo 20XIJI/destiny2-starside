@@ -698,16 +698,16 @@
   function setsOf (md) { return (md || '').trim().split(/\n(?=# )/).slice(1) }
   var MIXED = '多职业'
 
-  // **必需的这六项**，与 builds/new/form.js 的 NEED 同一组：缺了不许投。装备与
-  // 描述可以后补，这六项不行。**比后端算指纹的 SAME 多一个类别**：类别是站上的
-  // 目录分法，缺了 convert-build.py 当场中止，但改它不该让审过一轮的稿子认不出
-  // 自己那一份，所以它挡投稿、不进指纹。
+  // **必需的这七项**，与 builds/new/form.js 的 NEED 同一组：缺了不许投。装备与
+  // 描述可以后补，这七项不行。**比后端算指纹的 SAME 多一个场景与一个强度**：
+  // 那两样是站上的目录分法，缺了 convert-build.py 当场中止，但改它们不该让审过
+  // 一轮的稿子认不出自己那一份，所以它们挡投稿、不进指纹。
   // 更深的结构（套装件数、六维六格）由构建时的 Python 闸门管，不在这里抄第二遍。
   var NEED = [['推荐人', '推荐人'], ['职业', '职业'], ['属性', '分支'],
-              ['类别', '类别'], ['核心', '核心']]
+              ['场景', '场景'], ['强度', '强度'], ['核心', '核心']]
   // 合集里每一套要凑齐的那几样。推荐人不在内：它写在合集头部，整份一个。
   var PER = [['职业', '职业'], ['属性', '分支'], ['核心', '核心'],
-             ['使用场景', '描述'], ['标签', '定位']]
+             ['使用场景', '描述'], ['标签', '标签']]
 
   // **不能用对象字面量**：名字是投稿人填的，叫 constructor 或 toString 时
   // HOLD[名字] 会取到原型链上的函数、读成真值，那一条就永远列着「缺名字」。
@@ -778,7 +778,7 @@
     })
     // 本机直接写的源稿没有对应投稿，照样要管。35 套里有 20 套是这一支——
     // docs 那个动作给 builds/ 前缀的记录带上了 md，所以它们在列表上也有名字、
-    // 职业与类别，不再只剩一个 slug。
+    // 职业与强度，不再只剩一个 slug。
     Object.keys(live).forEach(function (id) {
       if (!seen[id]) {
         out.push({ sub: null, id: id, doc: live[id], md: live[id].md || '', at: live[id].at,
@@ -799,11 +799,15 @@
   // 默认只看待审：一进来就该是待办清单，另外三档按需打开。
   var buildFilter = { wait: 1 }
 
-  // 职业、类别与分支三张表由 admin/pages.js 给（build-terms.py 照 markup.py
-  // 那一份导），不在这里另抄一遍。
-  var VOCAB = window.starsideBuilds || { classes: [], cats: [], branch: {} }
+  // 职业、场景、强度、标签与分支五张表由 admin/pages.js 给（build-terms.py 照
+  // markup.py 那一份导），不在这里另抄一遍。
+  var VOCAB = window.starsideBuilds ||
+    { classes: [], scenes: [], tiers: [], sceneTags: {}, branch: {} }
 
-  function kindOf (b) { return line(b.md, '类别') || '没写类别' }
+  // 树上按第一个场景归格。raid + 地牢 那批（唯一放行的多场景组合）因此挂在 raid
+  // 底下，不另开一格「raid、地牢」：左栏是审稿的工作队列，一条只该出现一次，
+  // 树上的计数才对得上上面那排状态 chip。
+  function kindOf (b) { return (line(b.md, '场景') || '').split('、')[0] || '没写场景' }
   function clsOf (b) {
     if (!isSet(b.md)) return line(b.md, '职业') || '没写职业'
     // 合集的职业由成员现算：一个角色的一组配装职业都一样，一队人各穿一套的
@@ -817,12 +821,13 @@
   }
   function idOf (b) { return b.sub ? b.sub._id : b.id }
 
-  var buildPick = ''          // 左栏选中的那一格：'' 全部、'强度'、'强度/猎人'
+  var buildPick = ''          // 左栏选中的那一格：'' 全部、'raid'、'raid/猎人'
   var openBuild = null        // 详情摊开的是哪一套
 
-  // 左栏：类别 → 职业两级，与站上索引页的分节逐层同形（那一页也是类别大节、
-  // 职业小节）。**只列有东西的那些分支**，与资料页树同一条规矩：为 0 的职业连同
-  // 空掉的类别一起不出现，一屏全是零会把真有东西的那几格淹掉。
+  // 左栏：场景 → 职业两级。**只列有东西的那些分支**，与资料页树同一条规矩：
+  // 为 0 的职业连同空掉的场景一起不出现，一屏全是零会把真有东西的那几格淹掉。
+  // 站上的索引页不再分节（一张网格 + 工具条），这里仍分两级：审稿是按批过的，
+  // 一次只看一个场景比在八十条里滚要快。
   // 计数跟着上面那排状态 chip 走——只看待审时，树上数的就是待审。
   function buildTree (list, on, pick) {
     var box = el('nav', 'tree')
@@ -837,7 +842,7 @@
       n[c + '/' + clsOf(b)] = (n[c + '/' + clsOf(b)] || 0) + 1
     })
     // 词表里那几个排在前面，源稿写了别的值照样出得来——不然那几条在树上点不到。
-    var cats = VOCAB.cats.filter(function (c) { return n[c] })
+    var cats = VOCAB.scenes.filter(function (c) { return n[c] })
     Object.keys(n).forEach(function (k) {
       if (k.indexOf('/') < 0 && cats.indexOf(k) < 0) cats.push(k)
     })
@@ -937,8 +942,8 @@
       if (md) {
         r.appendChild(el('span', 'meta', clsOf(b) || '—'))
         r.appendChild(el('span', 'meta', line(md, '分支') || '—'))
-        // 类别与定位是两回事：定位说这套在队伍里干什么，类别说它为什么被推荐
-        r.appendChild(el('span', 'kind', line(md, '类别') || '—'))
+        // 强度与标签是两回事：标签说这套在队伍里干什么，强度说它凭什么被推荐
+        r.appendChild(el('span', 'kind', line(md, '强度') || '—'))
         r.appendChild(el('span', 'by', line(md, '推荐人').split('|')[0].trim() || '—'))
         // 合集与单套在列表上长得一样，不标出来点进去才知道这一行是三套。
         // **排在几个定宽列之后**：插在中间会把它们整体推开，合集那一行与上下
@@ -1049,7 +1054,7 @@
       b.dirty ? '已改' : STATE[b.state],
       clsOf(b),
       line(b.md, '分支'),
-      line(b.md, '类别'),
+      line(b.md, '强度'),
       line(b.md, '核心'),
       line(b.md, '推荐人').split('|')[0].trim(),
       b.sub && b.sub.updates ? '更新已有配装' : '',

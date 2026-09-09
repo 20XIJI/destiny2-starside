@@ -1,4 +1,4 @@
-// 由 tools/build-terms.py 生成，不手改。审核台左栏的资料页树，以及配装的职业、类别与分支三张表。
+// 由 tools/build-terms.py 生成，不手改。审核台左栏的资料页树，以及配装的职业、场景、强度、标签与分支五张表。
 window.starsidePages = [
   ["docs/ammo","弹药生成机制","ammo/index.html","机制","","2026.8.25"],
   ["docs/buff-debuffs","增伤 & 易伤","buff-debuffs/index.html","机制","","2026.8.30"],
@@ -42,4 +42,4 @@ window.starsidePages = [
   ["docs/shopping-primary","购物清单-白弹","shopping-primary/index.html","终局分析","docs/pve-farming","2026.8.30"],
   ["docs/shopping-special","购物清单-绿弹","shopping-special/index.html","终局分析","docs/pve-farming","2026.8.30"],
 ]
-window.starsideBuilds = {"classes":["猎人","泰坦","术士"],"cats":["meta","强度","创意","PVP"],"branch":{"电弧":"arc","烈日":"solar","虚空":"void","冰影":"stasis","缚丝":"strand","棱镜":"prismatic"}}
+window.starsideBuilds = {"classes":["猎人","泰坦","术士"],"scenes":["突袭","地牢","宗师/终极","日常","功能性","PVP"],"tiers":["meta","强力","创意"],"sceneTags":{"突袭":["输出","机制","推图","速通","五壮举"],"地牢":["输出","机制","推图","速通","五壮举"],"PVP":["3V3","6V6"],"宗师/终极":[],"日常":[],"功能性":[]},"branch":{"电弧":"arc","烈日":"solar","虚空":"void","冰影":"stasis","缚丝":"strand","棱镜":"prismatic"}}

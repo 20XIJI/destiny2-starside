@@ -484,9 +484,12 @@ a { color: var(--bone); }
 
 /* **一排多枚的开关退回素字。**密度由容器判定，一处定义——建这些开关的
    app.js / rota.js / admin.js 不必知道自己被摆在哪里。
-   三处：资料页工具条与折线图工具条（.tool-chips）、配装索引页的筛选三行（.tool-facet）、审核台的状态五档（.filters）
-   与顶部标签（.tool-chips）、轮换的上周本周下周（.rota-btns）。 */
-:is(.tool-chips, .tool-facet, .filters, .rota-btns) .toggle {
+   三处：资料页工具条与折线图工具条（.tool-chips）、配装索引页那条居中的场景开关
+   （.facet-bar）、审核台的状态五档（.filters）与顶部标签（.tool-chips）、
+   轮换的上周本周下周（.rota-btns）。
+   工具条上那几个下拉框不在内：一排只有三四枚触发器，素字反而找不着，它们留在
+   .toggle 的默认档（有框）。 */
+:is(.tool-chips, .facet-bar, .filters, .rota-btns) .toggle {
   padding: 6px 12px;
   font-family: var(--font-cn);
   font-size: 12.5px;
@@ -499,8 +502,8 @@ a { color: var(--bone); }
    自己的 color，角标自动跟上，三种状态不必各写一遍边框色。 */
 .chip::before,
 .chip::after,
-:is(.tool-chips, .tool-facet, .filters, .rota-btns) .toggle::before,
-:is(.tool-chips, .tool-facet, .filters, .rota-btns) .toggle::after {
+:is(.tool-chips, .facet-bar, .filters, .rota-btns) .toggle::before,
+:is(.tool-chips, .facet-bar, .filters, .rota-btns) .toggle::after {
   content: "";
   position: absolute;
   width: 7px;
@@ -511,10 +514,10 @@ a { color: var(--bone); }
 }
 
 .chip::before,
-:is(.tool-chips, .tool-facet, .filters, .rota-btns) .toggle::before { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+:is(.tool-chips, .facet-bar, .filters, .rota-btns) .toggle::before { top: 0; left: 0; border-right: 0; border-bottom: 0; }
 
 .chip::after,
-:is(.tool-chips, .tool-facet, .filters, .rota-btns) .toggle::after { right: 0; bottom: 0; border-left: 0; border-top: 0; }
+:is(.tool-chips, .facet-bar, .filters, .rota-btns) .toggle::after { right: 0; bottom: 0; border-left: 0; border-top: 0; }
 
 .chip:hover { color: var(--bone-hi); }
 
@@ -524,12 +527,12 @@ a { color: var(--bone); }
 .chip:hover::after,
 .chip[aria-current="true"]::before,
 .chip[aria-current="true"]::after,
-:is(.tool-chips, .tool-facet, .filters, .rota-btns) .toggle:hover::before,
-:is(.tool-chips, .tool-facet, .filters, .rota-btns) .toggle:hover::after,
-:is(.tool-chips, .tool-facet, .filters, .rota-btns) .toggle[aria-pressed="true"]::before,
-:is(.tool-chips, .tool-facet, .filters, .rota-btns) .toggle[aria-pressed="true"]::after,
-:is(.tool-chips, .tool-facet, .filters, .rota-btns) .toggle[aria-current="true"]::before,
-:is(.tool-chips, .tool-facet, .filters, .rota-btns) .toggle[aria-current="true"]::after { opacity: 1; }
+:is(.tool-chips, .facet-bar, .filters, .rota-btns) .toggle:hover::before,
+:is(.tool-chips, .facet-bar, .filters, .rota-btns) .toggle:hover::after,
+:is(.tool-chips, .facet-bar, .filters, .rota-btns) .toggle[aria-pressed="true"]::before,
+:is(.tool-chips, .facet-bar, .filters, .rota-btns) .toggle[aria-pressed="true"]::after,
+:is(.tool-chips, .facet-bar, .filters, .rota-btns) .toggle[aria-current="true"]::before,
+:is(.tool-chips, .facet-bar, .filters, .rota-btns) .toggle[aria-current="true"]::after { opacity: 1; }
 
 .toggle:hover,
 .op:hover { color: var(--bone-hi); border-color: var(--accent); }
@@ -539,10 +542,10 @@ a { color: var(--bone); }
 .op[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
 
 /* 素字态的开关没有边框可上色，只换字色——角标跟着 currentcolor 走。 */
-:is(.tool-chips, .tool-facet, .filters, .rota-btns) .toggle:hover { border-color: transparent; }
+:is(.tool-chips, .facet-bar, .filters, .rota-btns) .toggle:hover { border-color: transparent; }
 
-:is(.tool-chips, .tool-facet, .filters, .rota-btns) .toggle[aria-pressed="true"],
-:is(.tool-chips, .tool-facet, .filters, .rota-btns) .toggle[aria-current="true"] { border-color: transparent; }
+:is(.tool-chips, .facet-bar, .filters, .rota-btns) .toggle[aria-pressed="true"],
+:is(.tool-chips, .facet-bar, .filters, .rota-btns) .toggle[aria-current="true"] { border-color: transparent; }
 
 /* **禁用要连 hover 一起掐掉。**只写 opacity 的话，hover 那条同权重、属性不重叠，
    照样会点亮——禁用的按钮在鼠标下亮起来，读者会以为它能点。 */

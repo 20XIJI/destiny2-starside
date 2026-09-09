@@ -39,15 +39,24 @@
   /* 选择器由页面在 .toolbar 上用 data-* 声明，缺省是神器模组页的一套。
      data-row 可以不给：护甲套装页没有并排的行，条目本身就是一行。 */
   var cfg = (slot && slot.dataset) || {};
-  var SEC = cfg.section || '.artifact';
+  /* **属性写成空串与整个不写是两回事**：不写才回落到神器模组页那套缺省，写空串
+     表示这一页没有分节。以前两者都走 `||`，空串静默落到 '.artifact' 上。站上此刻
+     没有页面写空的 data-section（配装索引页按场景分了六节），空的是 data-label
+     ——那一维走同一条判据，见下面 LABEL。 */
+  var HAS_SEC = 'section' in cfg;
+  var SEC = HAS_SEC ? cfg.section : '.artifact';
   /* 只给 data-section、不给 data-item 的页面走「只有跳转 chip」这一档：
      资料页的条目是表格行，行之间有 rowspan 合并，按行隐藏会把合并块豁开。
      那里要的是快速跳转，不是检索。 */
-  var ITEM = cfg.item || (cfg.section ? '' : '.mod');
-  var ROW = cfg.row || (cfg.section ? '' : '.mod-row');
-  var LABEL = cfg.label || '.art-head h2';
+  var ITEM = cfg.item || (HAS_SEC ? '' : '.mod');
+  var ROW = cfg.row || (HAS_SEC ? '' : '.mod-row');
+  /* data-label="" 表示不出跳转 chip，与 data-section="" 同一条写法：属性不写
+     才回落到缺省。配装索引页的大节就是场景，而场景那一排开关已经在页面上，
+     再出一排跳转 chip 就是同一批字的第二个来源。 */
+  var LABEL = 'label' in cfg ? cfg.label : '.art-head h2';
   var NOUN = cfg.noun || '模组';
-  var sections = Array.prototype.slice.call(document.querySelectorAll(SEC));
+  /* 选择器为空串时 querySelectorAll 直接抛，不能只靠它返回空表。 */
+  var sections = SEC ? Array.prototype.slice.call(document.querySelectorAll(SEC)) : [];
   var stick = 0;
 
   /* resize 一帧只跑一次。measure() 读顶栏高度、再往 :root 写自定义属性——写根变量
@@ -272,64 +281,90 @@
     return;
   }
 
-  if (!slot || !sections.length) {
+  var rows = ROW ? Array.prototype.slice.call(document.querySelectorAll(ROW)) : [];
+  var mods = ITEM ? Array.prototype.slice.call(document.querySelectorAll(ITEM)) : [];
+
+  /* 没有工具条，或者既没有分节也没有条目——两样都没有才没得可做。
+     **不能只判分节。**配装索引页曾经是一张网格、一个分节都没有，按分节判会在
+     这里整个返回：搜索框、计数、四维筛选一件都不建，页面只剩一面卡墙。三道闸门
+     与 npm test 当时全是绿的——它们看不见运行时。那一页后来又分了节，但判据留着：
+     它管的是「有工具条却没分节」这一类页面，不专为某一页。 */
+  if (!slot || (!sections.length && !mods.length)) {
     measure();
     return;
   }
 
-  var rows = ROW ? Array.prototype.slice.call(document.querySelectorAll(ROW)) : [];
-  var mods = ITEM ? Array.prototype.slice.call(document.querySelectorAll(ITEM)) : [];
   /* 表内横幅行是组名不是条目，不参与命中，改为跟着自己那一组的可见行走 */
   var lanes = ITEM ? Array.prototype.slice.call(document.querySelectorAll('tr.lane')) : [];
   /* 分节里再分的小标题（配装索引页的职业），跟着紧随其后那一组的可见条目走。
      **这一条只能在 JS 里做**：CSS 要写成 .sub-label:has(+ ul:not(:has(> li:not([hidden]))))，
      而 :has() 不许再套 :has()，整条是无效选择器——写在样式表里不报错也不生效。 */
-  var subs = ITEM ? Array.prototype.slice.call(document.querySelectorAll('.sub-label'))
-    .filter(function (h) { return h.nextElementSibling && h.nextElementSibling.querySelector(ITEM.split('>').pop().trim()); })
-    : [];
+  var subs = ITEM ? Array.prototype.slice.call(document.querySelectorAll('.sub-label')) : [];
   /* 上百个条目，每次按键都取 textContent 会重复遍历整棵子树，先缓存。
      直接存小写：`hit()` 要的就是它，每次按键再转一遍是几十万字符的临时垃圾。 */
   var text = mods.map(function (mod) { return mod.textContent.toLowerCase(); });
 
-  /* 维度筛选（.toolbar 带 data-facets 的页面：配装索引页）。**维度从卡片上现扫**，
-     不写进 HTML——类别与职业就是卡片上方那两级标题，标签是卡片里的那几个 <i>。
-     只有分支由生成器给：DOM 里只有 b-prismatic 这种 slug，中文名读不出来，而在
-     这里再写一份 slug→中文 就是 convert-build.py 里 BRANCH 的第二份定义。
+  /* 维度筛选（.toolbar 带 data-facets 的页面：配装索引页）。声明式：
+     `显示名=data 键[:修饰]`，分号隔开，例如
 
-     同一维度内多选取并集，维度之间取交集，再与搜索框取交集。空掉的职业小节由
-     builds/style.css 那条 :has() 自己收起，空掉的类别大节由下面 filter() 里
-     那段现成的分节判断收起——两者都不必为筛选另写一条。 */
+         场景=scene:single;职业=cls;分支=branch;强度=tier:single;标签=tag:scoped(场景)
+
+     取值一律从卡片的 data-* 上读，多值用制表符隔开（生成器写 &#9;）。**这里不
+     认识任何一页的词表**：加一维、改一维的取值都只改生成器，这段不动。以前三
+     个维度各有一个提取器（读上一级标题、读 data-branch、读 .tags 里的 <i>），
+     其中两个绑死在配装索引页的 DOM 形状上。
+
+     两个修饰：
+       :single       一次只选一个。数据侧本来就近似单选的那两维（场景、强度）用它
+                     ——多选会让 :scoped 那一维取不到确定的词表。
+       :groups       分节就是按这一维分的。选定单一值时，重叠的那几节并成一张网格
+                     （场景重叠：raid、地牢 那批自成一节，点 raid 时并进 raid）。
+       :scoped(某维)  取值随点名的那一维变，那一维没选定时整个控件不出。
+                     **作用域点名，不靠「前面最近的那个 :single」推**：强度后来
+                     也成了 :single，靠推会让标签悄悄改跟着强度走，两处都不报错。
+                标签的取值随场景变，而这段代码里没有那张场景→标签集的映射表：
+                取值从「当前场景筛出的卡片」现扫，映射关系留在数据里。
+
+     同一维度内多选取并集，维度之间取交集，再与搜索框取交集。 */
   var DIMS = null;
   var vals = null;
   var picked = {};
+  function dimPass(i, k) {
+    var want = picked[DIMS[k].name];
+    if (!want || !want.length) return true;
+    return vals[i][k].some(function (v) { return want.indexOf(v) >= 0; });
+  }
   function facetPass(i) {
     if (!DIMS) return true;
-    return DIMS.every(function (d, k) {
-      var want = picked[d[0]];
-      if (!want || !want.length) return true;
-      return vals[i][k].some(function (v) { return want.indexOf(v) >= 0; });
-    });
+    return DIMS.every(function (d, k) { return dimPass(i, k); });
   }
   function facetOn() {
     return Object.keys(picked).some(function (k) { return picked[k].length; });
   }
-  if (ITEM && 'facets' in cfg) {
-    /* **类别不做成一行 chip**：它就是页面的大节，跳转 chip 那一排写的正是这几个
-       字。同一排字出现两遍、一排能点一排也能点，读者分不出哪一排管什么。 */
-    DIMS = [
-      ['职业', function (it) {
-        var ul = it.closest('ul');
-        var h = ul && ul.previousElementSibling;
-        return h ? [h.textContent.trim()] : [];
-      }],
-      ['分支', function (it) { return it.dataset.branch ? [it.dataset.branch] : []; }],
-      ['标签', function (it) {
-        return Array.prototype.map.call(it.querySelectorAll('.tags i'),
-          function (t) { return t.textContent.trim(); });
-      }]
-    ];
+  if (ITEM && cfg.facets) {
+    DIMS = cfg.facets.split(';').map(function (spec) {
+      var half = spec.split('=');
+      var mod = half[1].split(':');
+      var under = '';
+      mod.forEach(function (x) {
+        var hit = /^scoped\((.+)\)$/.exec(x);
+        if (hit) under = hit[1];
+      });
+      return { name: half[0], key: mod[0], scope: -1, under: under,
+               single: mod.indexOf('single') > 0,
+               /* 分节就是按这一维分的：选定单一值时把重叠的那几节并成一张网格。 */
+               groups: mod.indexOf('groups') > 0 };
+    });
+    /* scope 要等整张表建完再算：点名的那一维在表里的位置。名字写错就退回不受限，
+       那一维照常出——一处笔误不该让整条工具条消失。 */
+    DIMS.forEach(function (d) {
+      DIMS.forEach(function (o, j) { if (d.under && o.name === d.under) d.scope = j; });
+    });
     vals = mods.map(function (it) {
-      return DIMS.map(function (d) { return d[1](it); });
+      return DIMS.map(function (d) {
+        var v = it.dataset[d.key];
+        return v ? v.split('\t') : [];
+      });
     });
   }
 
@@ -349,7 +384,7 @@
   /* data-chip-break：chip 从这一节起另起一行。分节多到一行放不下时按内容分组，
      不交给自动折行随便断在哪（护甲模组页：五个部位一行，十一个副本一行）。 */
   var BREAK = cfg.chipBreak || '';
-  var chips = sections.map(function (sec) {
+  var chips = LABEL ? sections.map(function (sec) {
     var chip = document.createElement('a');
     chip.className = 'chip';
     chip.href = '#' + sec.id;
@@ -367,7 +402,7 @@
     }
     chipNav.appendChild(chip);
     return chip;
-  });
+  }) : [];
 
   /* 点一枚 chip 是在同一屏里换个位置，不是钻进去一层，所以拦下原生的片段导航、
      自己滚过去，地址栏那一段就地改写。**不然点五枚就攒五格历史**，返回键要按
@@ -392,41 +427,197 @@
     slot.appendChild(search);
     slot.appendChild(count);
   }
-  slot.appendChild(chipNav);
+  /* 一枚跳转 chip 都没有时不挂这一层：它是 .toolbar 的 flex 项，空着照样吃掉
+     一个 18px 的 gap，工具条右端因此空出一块。 */
+  if (chips.length) slot.appendChild(chipNav);
 
-  /* 一个维度一行 chip。**只有一个值的维度不出行**：筛不掉任何东西，占一行还
-     让人以为点了没反应。 */
+  /* 每一维一个控件。**放哪由页面说了算**：页面给了 [data-facet="维度名"] 的空
+     容器，就填在那里（配装索引页的场景——主轴，摊开成一排居中的素字开关）；
+     没给就在工具条上出一个下拉框。app.js 因此不认识任何一维的名字。
+
+     下拉框用 <details> 而不是 popover：popover 白拿点外面关闭、Esc 与 top layer，
+     但定位要靠 CSS anchor positioning，那个还不是 Baseline（Firefox 仍在 flag
+     后），面板会掉到视口正中，位置还得自己算。<details> 的开关、键盘与无障碍
+     全部原生正确，面板在正常流里不必定位，只缺「点外面关掉」——那是下面六行。
+     等 anchor positioning 进了 Baseline 再换。
+
+     **只有一个值的维度整个不出**：筛不掉任何东西，占一格还让人以为点了没反应。
+     :scoped 那一维的取值随作用域变，所以整块要能重画。 */
   if (DIMS) {
     DIMS.forEach(function (d, k) {
-      var seen = [];
-      vals.forEach(function (v) {
-        v[k].forEach(function (x) { if (x && seen.indexOf(x) < 0) seen.push(x); });
-      });
-      if (seen.length < 2) return;
-      picked[d[0]] = [];
-      var row = document.createElement('div');
-      row.className = 'tool-facet';
-      var name = document.createElement('span');
-      name.className = 'facet-label';
-      name.textContent = d[0];
-      row.appendChild(name);
-      seen.forEach(function (x) {
-        var c = document.createElement('button');
-        c.type = 'button';
-        c.className = 'toggle';
-        c.textContent = x;
-        c.setAttribute('aria-pressed', 'false');
-        c.onclick = function () {
-          var w = picked[d[0]];
-          var at = w.indexOf(x);
-          if (at < 0) w.push(x); else w.splice(at, 1);
-          c.setAttribute('aria-pressed', at < 0 ? 'true' : 'false');
-          filter(search.value);
-        };
-        row.appendChild(c);
-      });
-      slot.appendChild(row);
+      picked[d.name] = [];
+      var page = document.querySelector('[data-facet="' + d.name + '"]');
+      d.bar = !!page;
+      d.host = page || slot.appendChild(document.createElement('details'));
+      if (!page) d.host.className = 'drop';
+      paint(k);
     });
+    /* 点面板以外的地方关掉下拉框。<details> 唯一不白送的一件。 */
+    document.addEventListener('click', function (ev) {
+      DIMS.forEach(function (d) {
+        if (!d.bar && d.host.open && !d.host.contains(ev.target)) d.host.open = false;
+      });
+    });
+  }
+
+  function scan(k) {
+    /* 第 k 维在当前作用域下的取值。:scoped 维只扫作用域那一维已经筛出的卡片，
+       别的维扫全部。 */
+    var d = DIMS[k];
+    var seen = [];
+    vals.forEach(function (v, i) {
+      if (d.scope >= 0 && !dimPass(i, d.scope)) return;
+      v[k].forEach(function (x) { if (x && seen.indexOf(x) < 0) seen.push(x); });
+    });
+    return seen;
+  }
+
+  /* 选中态就地改，不重画：重画会把展开着的下拉框合上，勾第二项就没法勾了。 */
+  function sync(d) {
+    var on = picked[d.name];
+    if (d.bar) {
+      Array.prototype.forEach.call(d.host.querySelectorAll('button'), function (b) {
+        /* 「全部」那一枚没有 data-v，它的按下态就是「这一维一个都没选」。 */
+        b.setAttribute('aria-pressed',
+          (b.dataset.v === undefined ? !on.length : on.indexOf(b.dataset.v) >= 0)
+            ? 'true' : 'false');
+      });
+    } else {
+      Array.prototype.forEach.call(d.host.querySelectorAll('input'), function (i) {
+        i.checked = on.indexOf(i.value) >= 0;
+      });
+      d.tally.textContent = on.length ? String(on.length) : '';
+    }
+  }
+
+  /* 分节按场景分，而场景是重叠的：84 篇里有 21 篇同时属于 raid 与地牢，它们
+     自成一节。**选定单一场景时把重叠的那批并进去**——点 raid 就该看见一张 25 张
+     的网格，而不是「raid 4 张」加下面另一节 21 张。
+
+     搬的是卡不是复制：DOM 里每张卡始终只有一份，点赞、计数与截图都只算一次。
+     原位置记在卡自己身上，回到「全部」时放回去。判据取自分节的 data-scene，
+     这里不再写一份场景表。 */
+  /* 加载时就有条目的那些分节。见 filter() 里那段：判据必须取这一刻。 */
+  var hadItems = sections.map(function (sec) { return !!sec.querySelector(ROW || ITEM); });
+
+  var lists = Array.prototype.slice.call(document.querySelectorAll(SEC + ' .entries'));
+  /* 每张卡记下它的原属列表与全局次序。**次序要记**：搬走再搬回来时不能拿
+     「原来的下一个兄弟」当锚点——那个兄弟自己可能也搬走了，此刻不在目标列表里，
+     insertBefore 会抛 NotFoundError（配装索引页 raid/猎人 那 13 张里相邻的组合卡
+     一大片，必然撞上）。改成搬完之后按 ord 重排，锚点问题不存在。 */
+  var seq = 0;
+  lists.forEach(function (ul) {
+    Array.prototype.forEach.call(ul.children, function (li) {
+      li.from = ul;
+      li.ord = seq++;
+    });
+  });
+
+  function regroup(want) {
+    if (!lists.length) return;
+    /* 落点按「同一节、同一个职业小节」找：合并发生在小节这一层，点 raid 之后
+       仍只有一组「猎人/泰坦/术士」。生成器保证落点存在——每个场景节的小节按
+       这个场景下所有配装的职业集合出，不只按本节现有的那些。 */
+    function landing(li) {
+      var to = null;
+      lists.forEach(function (ul) {
+        var own = (ul.parentNode.dataset.scene || '').split('\t');
+        if (own.length === 1 && own[0] === want && ul.dataset.cls === li.dataset.cls) to = ul;
+      });
+      return to;
+    }
+    lists.forEach(function (ul) {
+      Array.prototype.slice.call(ul.children).forEach(function (li) {
+        var to = (want && (li.dataset.scene || '').split('\t').indexOf(want) >= 0
+          && landing(li)) || li.from;
+        if (li.parentNode !== to) to.appendChild(li);
+      });
+    });
+    /* appendChild 只保证落在末尾，不保证顺序，所以搬完再按 ord 重排一遍——
+       生成器排好的「强度在前、同档按时间降序」因此在搬进搬出之后仍然成立。
+       appendChild 对已在本列表里的节点就是移到末尾，不必先摘。 */
+    lists.forEach(function (ul) {
+      Array.prototype.slice.call(ul.children)
+        .sort(function (a, b) { return a.ord - b.ord; })
+        .forEach(function (li) { ul.appendChild(li); });
+    });
+  }
+
+  function pick(d, k, x) {
+    var w = picked[d.name];
+    var at = w.indexOf(x);
+    /* :single 维点第二枚即换掉第一枚，再点自己即清空；x 为 null 是「全部」。
+       数据侧一套配装只有一个场景，读者侧多选一场景一并集就把 :scoped 那一维
+       搞乱了。 */
+    if (x === null) picked[d.name] = [];
+    else if (d.single) picked[d.name] = at < 0 ? [x] : [];
+    else if (at < 0) w.push(x); else w.splice(at, 1);
+    sync(d);
+    /* 作用域变了，下游那几维要重画：取值换一套，已选中的旧值一并清掉。 */
+    DIMS.forEach(function (o, j) { if (o.scope === k) paint(j); });
+    /* 分节的依据就是这一维时，选定单一值即把重叠的那几节并成一张网格。 */
+    if (d.groups) regroup(picked[d.name].length === 1 ? picked[d.name][0] : '');
+    filter(search.value);
+  }
+
+  function paint(k) {
+    var d = DIMS[k];
+    /* :scoped 维在作用域那一维没选定时整个不出：不选场景时并集是全部场景的
+       标签摞在一起（输出、机制、3V3、6V6…），点「3V3」会让所有 PVE 配装消失，
+       而读者不会预期一个叫「标签」的维度有这种行为。 */
+    var live = !(d.scope >= 0 && !picked[DIMS[d.scope].name].length);
+    var seen = live ? scan(k) : [];
+    picked[d.name] = picked[d.name].filter(function (x) { return seen.indexOf(x) >= 0; });
+    d.host.textContent = '';
+    d.host.hidden = seen.length < 2;
+    if (d.host.hidden) return;
+    if (d.bar) paintBar(d, k, seen); else paintDrop(d, k, seen);
+    sync(d);
+  }
+
+  function chipFor(d, k, text, value) {
+    var c = document.createElement('button');
+    c.type = 'button';
+    c.className = 'toggle';
+    c.textContent = text;
+    if (value !== null) c.dataset.v = value;
+    c.setAttribute('aria-pressed', 'false');
+    c.onclick = function () { pick(d, k, value); };
+    return c;
+  }
+
+  function paintBar(d, k, seen) {
+    var name = document.createElement('span');
+    name.className = 'facet-label';
+    name.textContent = d.name;
+    d.host.appendChild(name);
+    /* 「全部」排在最前，是这一维的默认态而不是第六个值：它不筛任何东西，
+       按下即清空。不给它一个位置的话，选了场景就再也回不到全部。 */
+    d.host.appendChild(chipFor(d, k, '全部', null));
+    seen.forEach(function (x) { d.host.appendChild(chipFor(d, k, x, x)); });
+  }
+
+  function paintDrop(d, k, seen) {
+    var sum = document.createElement('summary');
+    sum.className = 'toggle';
+    sum.textContent = d.name;
+    /* 选了几项写在触发器上：面板收起来之后，不标出来就看不见这一维还筛着。 */
+    d.tally = document.createElement('b');
+    sum.appendChild(d.tally);
+    d.host.appendChild(sum);
+    var menu = document.createElement('div');
+    menu.className = 'menu';
+    seen.forEach(function (x) {
+      var row = document.createElement('label');
+      var box = document.createElement('input');
+      box.type = 'checkbox';
+      box.value = x;
+      box.onchange = function () { pick(d, k, x); };
+      row.appendChild(box);
+      row.appendChild(document.createTextNode(x));
+      menu.appendChild(row);
+    });
+    d.host.appendChild(menu);
   }
 
   /* 命中即显示；整行三档皆不命中则整行隐藏，整节不命中则整节与其 chip 一同隐藏。
@@ -450,16 +641,19 @@
       lane.hidden = !lane.parentNode.querySelector('tr:not(.lane):not([hidden])');
     });
     subs.forEach(function (h) {
-      h.hidden = !h.nextElementSibling.querySelector('li:not([hidden])');
+      var ul = h.nextElementSibling;
+      h.hidden = !(ul && ul.querySelector('li:not([hidden])'));
     });
     /* 本来就没有条目的分节不参与过滤：增伤页的「世界与活动」整节是几段规则、
        一个条目都没有，按「没有可见条目就收起」判会在第一次敲搜索框时整节消失，
-       且清空查询也回不来（空查询让条目全部可见，这一节仍然是零条目）。 */
+       且清空查询也回不来（空查询让条目全部可见，这一节仍然是零条目）。
+       **判据取加载那一刻，不是现在**：配装索引页会把卡搬进别的节（regroup），
+       搬空的那一节现在查也是零条目，按现在判它就永远收不起来。 */
     sections.forEach(function (sec, i) {
       var scope = ROW || ITEM;
-      var empty = !!sec.querySelector(scope) && !sec.querySelector(scope + ':not([hidden])');
+      var empty = hadItems[i] && !sec.querySelector(scope + ':not([hidden])');
       sec.hidden = empty;
-      chips[i].hidden = empty;
+      if (chips[i]) chips[i].hidden = empty;
     });
     count.textContent = (query.trim() || facetOn()) ? hits + ' / ' + mods.length : '';
     /* 搜了但一个都没命中时给工具条打一位，搜索框与计数据此转红：灰着看
@@ -485,9 +679,14 @@
     });
   }
 
-  /* rootMargin 依赖实测的 stick，改了要重建观察者 */
+  /* rootMargin 依赖实测的 stick，改了要重建观察者。
+
+     **没有跳转 chip 就不建**：观察者存在的唯一目的是让 mark() 点亮当前那一枚，
+     配装索引页 data-label 给的是空串、chips 是空表，建了也只是每次 resize
+     断开重连一遍，看不出任何效果。 */
   function watch() {
     if (io) io.disconnect();
+    if (!chips.length) return;
     onScreen = [];
     io = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) {

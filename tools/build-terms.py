@@ -153,11 +153,13 @@ def tree():
     # 而 DOM 那边只认得 b-prismatic 这种 slug。**照 markup.py 那一份导**，
     # 不在 admin.js 里另抄一遍——多一个分支时只改那一处。
     return ('// 由 tools/build-terms.py 生成，不手改。审核台左栏的资料页树，'
-            '以及配装的职业、类别与分支三张表。\n'
+            '以及配装的职业、场景、强度、标签与分支五张表。\n'
             'window.starsidePages = [\n'
             + '\n'.join('  %s,' % j(r) for r in rows) + '\n]\n'
             + 'window.starsideBuilds = %s\n'
-            % j({'classes': list(markup.CLASSES), 'cats': list(markup.CATEGORIES),
+            % j({'classes': list(markup.CLASSES), 'scenes': list(markup.SCENES),
+                 'tiers': list(markup.TIERS),
+                 'sceneTags': {k: list(v) for k, v in markup.SCENE_TAGS.items()},
                  'branch': markup.BRANCH}))
 
 

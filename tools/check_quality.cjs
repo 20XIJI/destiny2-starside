@@ -716,6 +716,307 @@ test('the editing console flags item names written with the typographic space', 
     `这些名字按源稿的写法出现时，编辑台不提示该着色，而 npm run build 的 G6 会报：${missed.slice(0, 5).join('、')}`)
 })
 
+
+// ── 索引页工具条 ─────────────────────────────────────────────────────────
+// assets/app.js 的工具条全在运行时建，三道闸门与上面那些测试一个都看不见它：
+// 配装索引页改成「一张网格、不分节」之后，app.js 那句 `if (!slot ||
+// !sections.length) return` 让整条工具条一件都不建——搜索框、计数、四维筛选
+// 全没了，而 npm run build 与 npm test 照旧全绿。这一段就是为那种情形存在的。
+//
+// **不引 jsdom。**下面这个壳只实现 app.js 真的碰到的那几个接口，四十来行。
+function domStub () {
+  function El (tag, cls) {
+    this.tagName = (tag || 'div').toUpperCase()
+    this.className = cls || ''; this.children = []; this.parentNode = null
+    this.dataset = {}; this.attrs = {}; this._text = ''; this.hidden = false
+    this.value = ''          // 搜索框：filter() 每次都读它
+    this.style = { setProperty () {} }
+  }
+  El.prototype.appendChild = function (c) { this.insertBefore(c, null); return c }
+  El.prototype.insertBefore = function (c, ref) {
+    // 真 DOM 在参照节点不是自己的孩子时抛 NotFoundError。**壳必须照抛**：
+    // 静默 append 会让「搬走再搬回来」那条路在测试里一路绿，而线上第一次点就崩。
+    if (ref && ref.parentNode !== this) {
+      throw new Error('NotFoundError: 参照节点不在这个列表里')
+    }
+    if (c.parentNode) c.parentNode.children.splice(c.parentNode.children.indexOf(c), 1)
+    c.parentNode = this
+    const at = ref ? this.children.indexOf(ref) : -1
+    if (at < 0) this.children.push(c); else this.children.splice(at, 0, c)
+    return c
+  }
+  Object.defineProperty(El.prototype, 'nextElementSibling', {
+    get () {
+      if (!this.parentNode) return null
+      return this.parentNode.children[this.parentNode.children.indexOf(this) + 1] || null
+    }
+  })
+  El.prototype.setAttribute = function (k, v) { this.attrs[k] = String(v) }
+  El.prototype.getAttribute = function (k) { return k in this.attrs ? this.attrs[k] : null }
+  El.prototype.hasAttribute = function (k) { return k in this.attrs }
+  El.prototype.toggleAttribute = function (k, on) { if (on) this.attrs[k] = ''; else delete this.attrs[k] }
+  El.prototype.addEventListener = function () {}
+  El.prototype.closest = function () { return null }
+  El.prototype.contains = function (n) { return n === this || this.all().includes(n) }
+  El.prototype.all = function (out) {
+    out = out || []
+    this.children.forEach((c) => { out.push(c); c.all(out) })
+    return out
+  }
+  El.prototype.matches = function (sel) {
+    // `li:not([hidden])`：filter() 判分节空不空用的就是它。壳认不得的话整条
+    // 落到 tagName 比较上、恒为 false，于是每一节都被判成空——分节可见性的断言
+    // 就全是空过，怎么改都绿。
+    const not = /^(.*?):not\(\[hidden\]\)$/.exec(sel)
+    if (not) return this.matches(not[1]) && !this.hidden
+    if (sel[0] === '.') return (' ' + this.className + ' ').includes(' ' + sel.slice(1) + ' ')
+    // [data-x="v"] → dataset.x：app.js 按维度名找页面给的那个容器。
+    const attr = /^\[data-([\w-]+)="(.*)"\]$/.exec(sel)
+    if (attr) {
+      const key = attr[1].replace(/-([a-z])/g, (_, c) => c.toUpperCase())
+      return this.dataset[key] === attr[2]
+    }
+    return this.tagName === sel.toUpperCase()
+  }
+  El.prototype.querySelectorAll = function (sel) {
+    const want = sel.split(',')[0].trim().split(/[ >]+/).pop()
+    return this.all().filter((e) => e.matches(want))
+  }
+  El.prototype.querySelector = function (s) { return this.querySelectorAll(s)[0] || null }
+  Object.defineProperty(El.prototype, 'textContent', {
+    get () { return this._text + this.children.map((c) => c.textContent).join('') },
+    set (v) { this._text = v; this.children = [] }
+  })
+  return El
+}
+
+// 卡片按真实产出的形状给：多值 data-* 用制表符隔开，标签可以整个不写。
+const CARDS = [
+  // **两张相邻的组合卡**：只有一张时它的 nextElementSibling 恒为 null，
+  // 「搬走再搬回来」那条路怎么写都不会撞上锚点问题。产出里 raid/猎人 那一列
+  // 13 张里相邻的组合卡一大片，测试要照着那个形状给。
+  { scene: 'raid\t地牢', cls: '猎人', tier: 'meta', branch: '烈日', tag: '输出\t推图' },
+  { scene: 'raid\t地牢', cls: '猎人', tier: '强力', branch: '棱镜', tag: '推图' },
+  { scene: 'raid', cls: '猎人', tier: '创意', branch: '虚空', tag: '机制' },
+  { scene: 'raid', cls: '泰坦', tier: '强力', branch: '棱镜', tag: '机制' },
+  { scene: '地牢', cls: '猎人', tier: '创意', branch: '烈日', tag: '推图' },
+  { scene: '宗师/终极', cls: '术士', tier: '强力', branch: '虚空' },
+  { scene: 'PVP', cls: '泰坦', tier: '强力', branch: '棱镜', tag: '6V6' },
+  { scene: 'PVP', cls: '术士', tier: '创意', branch: '虚空', tag: '3V3' }
+]
+
+function toolbar () {
+  const El = domStub()
+  const body = new El('body')
+  const slot = body.appendChild(new El('div', 'site-head')).appendChild(new El('div', 'toolbar'))
+  slot.dataset = { section: '.block', item: '.entries > li', label: '', noun: '配装',
+    facets: '场景=scene:single:groups;职业=cls;分支=branch;强度=tier:single;标签=tag:scoped(场景)' }
+  // 场景与强度是两条主轴，各填进页面给的一个空容器，不进工具条。
+  const bar = body.appendChild(new El('nav', 'facet-bar'))
+  bar.dataset = { facet: '场景' }
+  const tierBar = body.appendChild(new El('nav', 'facet-bar'))
+  tierBar.dataset = { facet: '强度' }
+  // 一节一个场景；多场景的配装落在它第一个场景那一节——与产出同形。
+  const main = body.appendChild(new El('main'))
+  const lis = []
+  for (const [scene, group] of Object.entries(
+    CARDS.reduce((by, c) => {
+      const first = c.scene.split('\t')[0]
+      ;(by[first] = by[first] || []).push(c)
+      return by
+    }, {}))) {
+    const sec = main.appendChild(new El('section', 'block'))
+    sec.id = 'sec-' + scene
+    sec.dataset = { scene }
+    sec.appendChild(new El('h2', 'sect-label')).textContent = scene
+    // 小节按「这个场景下所有配装」的职业集合出——搬过来的卡要有落点，空的那张
+    // 网格照样在 DOM 里。与生成器同形。
+    const mine = new Set(group.map((c) => c.cls))
+    const kin = CARDS.filter((c) => c.scene.split('\t').includes(scene))
+    for (const cls of ['猎人', '泰坦', '术士']) {
+      if (!kin.some((c) => c.cls === cls)) continue
+      sec.appendChild(new El('h3', 'sub-label')).textContent = cls
+      const ul = sec.appendChild(new El('ul', 'entries'))
+      ul.dataset = { cls }
+      if (!mine.has(cls)) continue
+      for (const card of group.filter((c) => c.cls === cls)) {
+        const li = ul.appendChild(new El('li', 'b-solar'))
+        li.dataset = Object.assign({}, card)
+        lis.push(li)
+      }
+    }
+  }
+  const sandbox = {
+    document: {
+      currentScript: null,
+      documentElement: new El('html'),
+      body,
+      querySelector: (s) => body.querySelector(s),
+      querySelectorAll: (s) => body.querySelectorAll(s),
+      createElement: (t) => new El(t),
+      createTextNode: (t) => Object.assign(new El('#text'), { _text: t }),
+      addEventListener () {}
+    },
+    location: { href: 'http://x/builds/index.html', search: '' },
+    history: { replaceState () {} },
+    matchMedia: () => ({ matches: false }),
+    addEventListener () {},
+    requestAnimationFrame: (f) => f(),
+    IntersectionObserver: function () { this.observe = this.disconnect = () => {} },
+    getComputedStyle: () => ({ getPropertyValue: () => '0' }),
+    URL,
+    URLSearchParams,
+    console
+  }
+  sandbox.window = sandbox
+  vm.runInNewContext(fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8'), sandbox)
+  // 场景在页面那个容器里，其余几维是工具条上的 <details>。
+  const bars = { 场景: bar, 强度: tierBar }
+  const host = (dim) => bars[dim]
+    ? bars[dim]
+    : slot.children.filter((c) => c.className === 'drop').find((c) => {
+      const sum = c.querySelector('summary')
+      return sum && sum._text === dim
+    })
+  const secOf = (scene) => main.children.find((c) => c.dataset.scene === scene)
+  return {
+    slot,
+    bar,
+    // 某个场景那一节此刻装着几张可见的卡。
+    inSection: (scene) => {
+      const sec = secOf(scene)
+      return sec ? sec.querySelectorAll('li').filter((li) => !li.hidden).length : 0
+    },
+    tiersIn: (scene) => {
+      const sec = secOf(scene)
+      return sec ? sec.querySelectorAll('li').map((li) => li.dataset.tier) : []
+    },
+    sectionShown: (scene) => {
+      const sec = secOf(scene)
+      return !!sec && !sec.hidden
+    },
+    drops: () => slot.children.filter((c) => c.className === 'drop' && !c.hidden)
+      .map((c) => c.querySelector('summary')._text),
+    live: () => lis.filter((li) => !li.hidden).length,
+    click (dim, value) {
+      const box = host(dim)
+      assert.ok(box && !box.hidden, `维度「${dim}」的控件不在`)
+      if (bars[dim]) {
+        const btn = box.querySelectorAll('button').find((b) => b.textContent === value)
+        assert.ok(btn, `主轴「${dim}」上没有「${value}」`)
+        btn.onclick()
+      } else {
+        const input = box.querySelectorAll('input').find((i) => i.value === value)
+        assert.ok(input, `维度「${dim}」上没有「${value}」`)
+        input.onchange()
+      }
+    },
+    values (dim) {
+      const box = host(dim)
+      if (!box || box.hidden) return []
+      return bars[dim]
+        ? box.querySelectorAll('button').map((b) => b.textContent)
+        : box.querySelectorAll('input').map((i) => i.value)
+    }
+  }
+}
+
+test('the main axis renders into the page container and the rest into toolbar dropdowns', () => {
+  const t = toolbar()
+  assert.ok(t.slot.querySelector('.tool-search'), '搜索框没建出来')
+  // 场景填进页面给的容器，「全部」排在最前。
+  assert.deepEqual(t.values('场景'), ['全部', 'raid', '地牢', '宗师/终极', 'PVP'])
+  assert.equal(t.bar.querySelector('.facet-label')._text, '场景')
+  // 其余几维是工具条上的下拉框；标签此刻收着（场景还没选）。
+  assert.deepEqual(t.values('强度'), ['全部', 'meta', '强力', '创意'],
+    '强度没填进页面那条主轴')
+  assert.deepEqual(t.drops(), ['职业', '分支'],
+    '工具条上的下拉框不对（标签那一个此刻应当收着）')
+  // 大节就是场景，跳转 chip 那一排因此不出：同一批字不给第二个来源。
+  assert.equal(t.slot.querySelector('.tool-chips'), null, '不该有跳转 chip 那一排')
+})
+
+test('a scoped dimension stays hidden until its scope is picked, then follows it', () => {
+  const t = toolbar()
+  assert.deepEqual(t.values('标签'), [],
+    '没选场景时标签那个下拉框就出来了：并集会把 3V3 与输出摞在一起')
+  t.click('场景', 'raid')
+  assert.deepEqual(t.values('标签').sort(), ['推图', '机制', '输出'].sort())
+  t.click('场景', 'PVP')
+  assert.deepEqual(t.values('标签').sort(), ['3V3', '6V6'].sort(),
+    '换了场景，标签没跟着换成那个场景的词表')
+})
+
+test('a scoped pick is dropped when the scope moves out from under it', () => {
+  const t = toolbar()
+  t.click('场景', 'raid')
+  t.click('标签', '输出')
+  assert.equal(t.live(), 1)
+  t.click('场景', 'PVP')
+  // 「输出」在 PVP 下不存在：它必须被清掉，否则交集恒空、一张卡都筛不出来。
+  assert.equal(t.live(), 2, '换场景后旧标签还按着，PVP 那两张被它筛没了')
+})
+
+test('picks union inside a dimension and intersect across dimensions', () => {
+  const t = toolbar()
+  t.click('职业', '猎人')
+  assert.equal(t.live(), 4, '同一维度内应当取并集')
+  t.click('职业', '泰坦')
+  assert.equal(t.live(), 6)
+  t.click('强度', '创意')
+  assert.equal(t.live(), 2, '维度之间应当取交集')
+})
+
+test('a single-select dimension replaces its pick instead of adding to it', () => {
+  const t = toolbar()
+  t.click('场景', 'raid')
+  assert.equal(t.live(), 4)
+  t.click('场景', '地牢')
+  assert.equal(t.live(), 3, '场景是 :single，点第二枚应当换掉第一枚而不是取并集')
+  t.click('场景', '地牢')
+  assert.equal(t.live(), CARDS.length, '再点一次同一枚应当清空这一维')
+})
+
+test('the main axis carries an 全部 reset that clears the dimension', () => {
+  const t = toolbar()
+  t.click('场景', 'PVP')
+  assert.equal(t.live(), 2)
+  t.click('场景', '全部')
+  assert.equal(t.live(), CARDS.length, '「全部」没把场景清干净')
+  // 场景清空之后，随它出现的标签下拉框要跟着收回去。
+  assert.deepEqual(t.values('标签'), [])
+})
+
+test('an overlapping build sits in its first scene and moves to whichever is picked', () => {
+  const t = toolbar()
+  // 默认：两张 raid·地牢 归 raid，没有第三节。
+  assert.equal(t.inSection('raid'), 4, '默认 raid 就该是 纯 raid + raid·地牢')
+  assert.equal(t.inSection('地牢'), 1)
+  assert.equal(t.sectionShown('raid'), true, '默认视图里 raid 那一节应当立着')
+
+  // 点 raid：本来就在这儿，不动。
+  t.click('场景', 'raid')
+  assert.equal(t.inSection('raid'), 4)
+
+  // 点地牢：那两张搬到地牢去，raid 只剩纯 raid 的两张、都不命中，整节收起。
+  t.click('场景', '地牢')
+  assert.equal(t.inSection('地牢'), 3, '地牢 = 纯地牢 + raid·地牢，没搬过来')
+  assert.equal(t.inSection('raid'), 0)
+  assert.equal(t.sectionShown('raid'), false, '搬空之后 raid 那一节还立着')
+
+  // 回到全部：搬回第一个场景那一节。**两张组合卡相邻**，所以这一步会踩到
+  // 「拿原来的下一个兄弟当锚点」那个坑——真 DOM 会抛 NotFoundError。
+  t.click('场景', '全部')
+  assert.equal(t.inSection('raid'), 4)
+  assert.equal(t.inSection('地牢'), 1)
+  assert.equal(t.live(), CARDS.length, '搬来搬去之后总数变了，说明卡被复制或丢了')
+
+  // 顺序也要还原：生成器排好的「强度在前、同档按时间降序」不能被搬乱。
+  const raidTiers = t.tiersIn('raid')
+  assert.deepEqual(raidTiers, ['meta', '强力', '创意', '强力'].slice(0, raidTiers.length),
+    '搬回来之后节内顺序乱了')
+})
+
 async function main() {
   let failures = 0
   for (const [name, fn] of tests) {

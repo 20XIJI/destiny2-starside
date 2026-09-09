@@ -23,26 +23,27 @@ import shell
 import vocab
 from html import escape
 
-from markup import (BRANCH, CATEGORIES, CLASSES, die, inline, loading_attr, must,
+from markup import (BRANCH, CLASSES, CO_SCENES, FORM_SCENES, SCENE_TAGS, SCENES,
+                    TIERS, die, inline, loading_attr, must,
                     source_context, text_of, uncolor)
 
 SRC_DIR = shell.BUILD_DIR
 OUT_DIR = 'builds'
 SEASON = shell.SEASON        # 当前赛季只有一处定义，见 shell.py
 
-META_KEYS = ('推荐人', '描述', '更新', '场景', '定位', '分支', '类别', '核心')
+META_KEYS = ('推荐人', '描述', '更新', '场景', '标签', '分支', '强度', '核心')
 # 六维恒为六格，顺序钉死：游戏内就是这个顺序，配装之间横着比才对得上位置。
 STATS = ('生命', '近战', '手雷', '超能', '职业', '武器')
 # 合集：一份源稿装 N 套可切换的配装，`# ` 分隔。头部写整份共有的那几个键
-# （推荐人、描述、更新、场景、类别、核心），每套各写描述、定位、分支、核心与职业
-# ——描述与定位正是它们互相区分的地方，写在头部就成了一排全选，什么也没说。
+# （推荐人、描述、更新、场景、强度、核心），每套各写描述、标签、分支、核心与职业
+# ——描述与标签正是它们互相区分的地方，写在头部就成了一排全选，什么也没说。
 # 游戏内能存 20 套，站上收到 12：再多左栏那列比右栏还长，而一个角色常用的就五六套。
 SET_MAX = 12
 # 一队人各穿一套那种合集的职业格。索引页拿它当小节标题，与三个职业并列。
 MIXED = '多职业'
 PARTS = ('头盔', '护臂', '胸甲', '腿部', '职业物品')
-# 职业、分支与类别三张表在 markup.py：那三样是源稿的词汇，而 build-terms.py
-# 要把它们导给编辑台（审核台左栏按类别与职业建树、列表按分支上色），本文件的
+# 职业、分支与配装三轴（场景·强度·标签）的表在 markup.py：那三样是源稿的词汇，而 build-terms.py
+# 要把它们导给编辑台（审核台左栏按场景与职业建树、列表按分支上色），本文件的
 # 名字带短横，import 不进去。分支同时决定同名条目查哪一页（星相「地狱火」在
 # 烈日页与棱镜页各有一条，棱镜配装该链到棱镜页）。
 # 元素名走全站那一份编码，徽章上照样着色——素着等于这一页自己开了个例外。
@@ -301,26 +302,55 @@ def stats_of(spec):
     return out
 
 
-# 填表页那两组标签的预设。受控词表：一套配装的适用环境与定位就这几种，让人自由
-# 填会写出「宗师」「大师终极」「终极难度」三种说法，索引页的筛选就分不出来了。
-FACETS = (('场景', '适用环境', ('突袭', '地牢', '宗师终极', '日常', '通用')),
-          ('定位', '标签', ('输出', '清怪', '续航', '功能', '通用')))
+# 三个分类轴的显示名。取值在 markup.py 一处定义（build-terms.py 要把同一批表
+# 导给审核台，而带连字符的文件名 import 不进来）。受控词表：让人自由填会写出
+# 「宗师」「大师终极」「终极难度」三种说法，索引页的筛选就分不出来了。
+#
+# 标签那一维的取值不在这里——它随场景变，见 markup.SCENE_TAGS。
+FACETS = (('场景', '适用环境', SCENES), ('强度', '强度', TIERS))
 
 
-def facet_picks(key, label, tags, single=False):
+def facet_picks(key, label, tags, single=False, co=()):
     """填表页的一栏标签。与详情页 facet() 同形（小标签 + 一排标签框），只是标签
     可点。值收在同一段里的隐藏 input 上，源稿的键不变——val() 照旧按 data-key 读
     一个 .value，不必为这几格另开一条取值路径。
 
-    single 那一栏一次只选一个（类别），标在容器上让 form.js 现读；多选那两栏
-    （场景、定位）不带这个标记。两种排出来一模一样，差别只在点第二枚时。
+    single 那一栏一次只选一个（场景、强度），标在容器上让 form.js 现读。
+    co 是 single 的唯一豁免：写在容器上的那几个值彼此之间可以同时按下（raid 与
+    地牢）。豁免写成数据而不是 form.js 里的一个 if——SCENES 那张表改了，这里
+    自动跟着改。
     """
-    return ('<div><p class="by-label">%s</p><span class="tags tagset"%s>%s</span>'
+    return ('<div><p class="by-label">%s</p><span class="tags tagset"%s%s>%s</span>'
             '<input type="hidden" data-key="%s"></div>'
             % (label, ' data-single=""' if single else '',
+               ' data-co="%s"' % TAB.join(co) if co else '',
                ''.join('<button type="button" aria-pressed="false">%s</button>' % t
                        for t in tags),
                key))
+
+
+def tag_picks():
+    """填表页的标签那一栏。取值随场景变，所以**把所有场景的标签一次全排出来**，
+    每枚各带一个 data-for（拥有它的那些场景），由 form.js 按当前场景显示与隐藏。
+
+    映射写在 DOM 上而不是 form.js 里：SCENE_TAGS 改一行，填表页跟着改，前端不必
+    知道有几个场景、哪个场景有哪些标签。同一枚标签被两个场景共用时（raid 与地牢
+    的那五枚）只出一次，data-for 里写两个场景。
+    """
+    owners = {}
+    for scene in SCENES:
+        for t in SCENE_TAGS[scene]:
+            owners.setdefault(t, []).append(scene)
+    return ('<div><p class="by-label">标签</p><span class="tags tagset" data-scoped="场景">'
+            '%s</span><input type="hidden" data-key="标签"></div>'
+            % ''.join('<button type="button" aria-pressed="false" data-for="%s"'
+                      ' hidden>%s</button>' % (TAB.join(v), t)
+                      for t, v in owners.items()))
+
+
+# 卡片上那几个多值 data-* 的分隔符。制表符在属性里写成 &#9;，源码里看得见，
+# 与 data-d 那一处同一条约定；分隔符不能是「、」，标签值本身不含制表符。
+TAB = '&#9;'
 
 
 SPIRIT = '之灵'
@@ -386,8 +416,8 @@ def core_pick(idx, md, prefer):
 def facet(label, tags):
     """铭牌下面的一栏：一行小标签 + 若干 chip。
 
-    一条都没有就整栏不出——PVP 那一类配装的场景与定位本来就可以空着（那两张表
-    列的是 PVE 的），留一个光杆小标签比不写更难读。
+    一条都没有就整栏不出：宗师/终极、日常、功能性那三个场景没有标签集，留一个
+    光杆小标签比不写更难读。场景那一栏不会空——scene_of() 必填。
     """
     if not tags:
         return ''
@@ -395,9 +425,14 @@ def facet(label, tags):
             % (label, ''.join('<li>%s</li>' % t for t in tags)))
 
 
-def facets(md):
-    """铭牌下面那两栏。两栏都空即整块不出，见调用处。"""
-    rows = facet('适用环境', tag_values(md, 0)) + facet('标签', tag_values(md, 1))
+def facets(scenes, tags):
+    """铭牌下面那两栏。标签那一栏可以空（三个场景没有标签集），场景那一栏不会。
+
+    **收两个现成的表，不自己去解析源稿**：单套与合集取这两个值的路子不一样
+    （合集的标签是各套并起来去重的），让这里再解析一遍就得为合集另开一条路，
+    于是同一块版面有了两种拼法。
+    """
+    rows = facet(FACETS[0][1], scenes) + facet('标签', tags)
     return '<div class="facets">%s</div>' % rows if rows else ''
 
 
@@ -424,7 +459,7 @@ def verdict(md):
     没有就整块不出，与 facet() 同一条约定。**它是分节不是头部键**：头部键的值只能
     占一行，而这一段与注解一样想写多长写多长、能分段。
 
-    它不进页头：页头那两列写的是这套配装的身份（谁推荐的、什么职业、什么类别），
+    它不进页头：页头那两列写的是这套配装的身份（谁推荐的、什么职业、什么强度），
     审核意见是另一个人对它的话，混进去读者分不出是谁在说。
     """
     v = section_of(md, '审核意见')
@@ -461,11 +496,11 @@ def class_of(md):
     return who
 
 
-def cat_of(md):
-    cat = meta(md, '类别')
-    if cat not in CATEGORIES:
-        die('「类别：」要写 %s 之一，源稿写的是 %r' % ('、'.join(CATEGORIES), cat))
-    return cat
+def tier_of(md):
+    tier = meta(md, '强度')
+    if tier not in TIERS:
+        die('「强度：」要写 %s 之一，源稿写的是 %r' % ('、'.join(TIERS), tier))
+    return tier
 
 
 def stamp_of(md):
@@ -499,18 +534,47 @@ def split_set(md):
     return head, members
 
 
-def tag_values(md, which):
-    """场景或定位。两栏都可以整行不写——PVP 那一类配装的场景与定位本来就可以
-    空着（那两张表列的是 PVE 的），而填表页对空值是整行不写。
+def scene_of(md):
+    """「场景：」。**必填、且只能写一个**，唯一放行的多值组合是 raid + 地牢。
 
-    **写了的值必须在受控词表里。**PVP 是类别不是场景，早年手写的源稿把它写进
-    这两栏，索引页于是多出一行读者点不出名堂的 chip，而两处都没有闸门管着。
+    必填这一条是新的：以前允许整行不写，于是 11 篇源稿一个场景都没有，读者按
+    任何场景筛选时那 11 篇不是「不匹配」而是「不存在」，页面上查不出来。
+
+    单选这一条撑着标签那一维：标签的取值随场景变（SCENE_TAGS），一套配装同时
+    落在 raid 与 PVP 两个场景里就没有一个确定的标签集。raid 与地牢共用同一套
+    标签，所以那一个组合放得过去。
     """
-    key, _, vocab = FACETS[which]
-    got = names(md, key, required=False)
+    got = names(md, '场景')
+    for x in got:
+        if x not in SCENES:
+            die('「场景：」要写 %s 之中的，源稿写的是 %r' % ('、'.join(SCENES), x))
+    if len(got) > 1 and set(got) != CO_SCENES:
+        die('「场景：」只能写一个，唯一的例外是「%s」；源稿写的是 %r'
+            % ('、'.join(sorted(CO_SCENES, key=SCENES.index)), '、'.join(got)))
+    # **按 SCENES 归序，不留源稿的书写顺序。**索引页拿 scene[0] 定这张卡落在哪
+    # 一节，写「地牢、raid」的稿子会掉进地牢那一节，与「raid、地牢」的同伴分家，
+    # 而两种写法都合法、闸门都放行、页面上也看不出。
+    return sorted(got, key=SCENES.index)
+
+
+def tags_of(md, scenes):
+    """「标签：」。取值随场景，见 markup.SCENE_TAGS。
+
+    没有标签集的那三个场景（宗师/终极、日常、功能性）**整行必须不写**：写了也
+    没有筛选入口，卡片上却会多出一枚点不动的标签。有标签集的场景至少写一个，
+    否则那张卡在标签行上永远筛不出来——与上面那 11 篇同一个病。
+    """
+    vocab = SCENE_TAGS[scenes[0]]
+    got = names(md, '标签', required=bool(vocab))
+    if not vocab:
+        if got:
+            die('「%s」这个场景没有标签，「标签：」整行删掉；源稿写的是 %r'
+                % (scenes[0], '、'.join(got)))
+        return []
     for x in got:
         if x not in vocab:
-            die('「%s：」要写 %s 之中的，源稿写的是 %r' % (key, '、'.join(vocab), x))
+            die('「%s」的标签只有 %s，源稿写的是 %r'
+                % (scenes[0], '、'.join(vocab), x))
     return got
 
 
@@ -555,9 +619,12 @@ def set_facts(idx, head, members):
             seen.add(e['name'])
             cores.append(e)
     who = [c for c in CLASSES if c in {class_of(m) for m in members}]
+    # 标签每套一个、并起来去重。场景写在合集头部（整份一个），所以每套的标签
+    # 都按同一套词表验。
+    scenes = scene_of(head)
     roles = []
     for m in members:
-        for r in names(m, '定位', required=False):
+        for r in tags_of(m, scenes):
             if r not in roles:
                 roles.append(r)
     return branch, cores, who, roles
@@ -565,9 +632,9 @@ def set_facts(idx, head, members):
 
 def solo_src(head, md):
     """「复制这一套」给的那一份：成员块补上从合集头部继承的那几个键，粘回配装
-    工具就是一份完整的单套源稿。少了它们，导入之后推荐人与类别是空的。"""
+    工具就是一份完整的单套源稿。少了它们，导入之后推荐人与强度是空的。"""
     add = ['%s：%s' % (k, meta(head, k, required=False))
-           for k in ('推荐人', '更新', '场景', '类别')]
+           for k in ('推荐人', '更新', '场景', '强度')]
     lines = md.strip().split('\n')
     return '\n'.join(lines[:1] + [x for x in add if not x.endswith('：')] + lines[1:])
 
@@ -707,7 +774,7 @@ def render_solo(idx, mv, arts, md, slug, season, name_cn):
     # 描述在这一页是正文（首页卡片与 meta 也用它），所以允许写着色标记：
     # 正文走 inline()，meta 与卡片用剥干净的那一份，不然标记会漏进 <meta>。
     desc_text = text_of(inline(desc, rich=True), collapse=True)
-    branch, cat = branch_of(md), cat_of(md)
+    branch, cat, scenes = branch_of(md), tier_of(md), scene_of(md)
     class_of(md)          # 职业写错时先报那一句，别让下面的 core_pick 先撞上
     prefer = 'elements/%s' % BRANCH[branch]
     core_e = core_pick(idx, md, prefer)
@@ -719,14 +786,18 @@ def render_solo(idx, mv, arts, md, slug, season, name_cn):
          # 分支色驱动整页的 UI 强调色：区段那枚方块、页头竖线、格子悬停的左缘都跟着
          # 走。--accent 是 design.md 写明「子页面覆盖这一个即可换色」的槽位，六个元素
          # 页就是这么做的；这里不新增任何渲染色。
-         '<main class="b-%s">' % BRANCH[branch],
+         # data-tier 给强度框用（builds/style.css），与索引卡上那份同一套样式。
+         '<main class="b-%s" data-tier="%s">' % (BRANCH[branch], cat),
          # 页头去盒：核心异域在左，一道由 align-items: stretch 撑满高度的竖线，右侧
          # 是配装名与铭牌。与全站 .page-head 同形（h1 + 一道发丝线），与首页
          # .wordmark-row 同语言。
          '<header class="build-head">',
          # 推荐人跟着核心那枚图走：他是这套配装的出处，与标题、铭牌、描述不是一
          # 类信息。竖线左边一列因此写成「图 + 谁推荐的」。
-         '<div class="core">%s<p class="by-label">推荐者：</p>%s</div>'
+         # 核心图包一层 .node：强度框画在它的 ::before/::after 上，与索引卡同形。
+         # 不包的话框只能挂在 .core 上，而 .core 是竖排的一整列（图 + 推荐人）。
+         '<div class="core"><span class="node">%s</span>'
+         '<p class="by-label">推荐者：</p>%s</div>'
          % (icon_of(core_e, 96, eager=True), ''.join(people(md))),
          '<div class="build-id">',
          # 标题那一行右端挂三枚动作：点赞、复制与详情开关。它们是对整套
@@ -737,7 +808,7 @@ def render_solo(idx, mv, arts, md, slug, season, name_cn):
          % (title, like_box(season, slug, button=True),
             '<button class="op copy" type="button">复制配装</button>',
             SHOT % 'main', TIP_SW),
-         # 铭牌一行读完这套配装的身份：职业 · 元素 · 类别。类别接在这里而不是另起
+         # 铭牌一行读完这套配装的身份：职业 · 元素 · 强度。强度接在这里而不是另起
          # 一栏标签——它只有一个值，占一整栏显得空。
          '<p class="cls">%s%s · %s · %s<span class="season">%s · %s</span></p>'
          % (icon_of(vocab.pick(idx, meta(md, '职业'), '职业', kind='分节'), 32),
@@ -745,10 +816,10 @@ def render_solo(idx, mv, arts, md, slug, season, name_cn):
             '<span class="%s">%s</span>' % (ELEMENT_TOKEN[branch], branch),
             cat, season.upper(), name_cn),
          '<p class="desc">%s</p>' % inline(desc, rich=True) if desc else '',
-         # 场景与定位分两栏各带一行标签：混在一排里读者分不出「地牢」说的是适用
-         # 环境、「清怪」说的是这套配装干什么用的。两栏都空就连这一层也不出——
-         # 空的 .facets 在 .build-id 那道 grid 里照样占一个 gap。
-         facets(md),
+         # 场景与标签分两栏各带一行：混在一排里读者分不出「地牢」说的是在哪打、
+         # 「推图」说的是这套配装干什么用的。宗师/终极 那三个场景没有标签，那一栏
+         # 整个不出——空的 .facets 在 .build-id 那道 grid 里照样占一个 gap。
+         facets(scenes, tags_of(md, scenes)),
          '</div>',
          # 「复制配装」复制的就是这一份：剥掉着色标记的源稿，粘回配装工具能直接
          # 导入。站内没有第二处存它，所以它落在页面上而不是另拉一个文件。
@@ -762,18 +833,18 @@ def render_solo(idx, mv, arts, md, slug, season, name_cn):
     return finish(o, ['../../tip.js']), title
 
 
-def one_of(idx, mv, arts, head, md, n):
+def one_of(idx, mv, arts, head, scenes, md, n):
     """合集里的一套：页头 + 五个分节，整块包在 <section class="set-one"> 里。
 
     页头不给 96px 核心图与推荐人——那两样属于整份合集、写在页顶，每套重复一遍会
-    与左栏那列图打架。铭牌末位写定位；单套写在那个位置的是类别，而类别对整份
+    与左栏那列图打架。铭牌末位写标签；单套写在那个位置的是强度，而强度对整份
     合集只有一个值，已经写在页顶的铭牌上。
     """
     title = must(re.match(r'^#\s+(.+)$', md.split('\n')[0]),
                  '合集里每一套的第一行必须是「# 配装名称」').group(1).strip()
     branch, who = branch_of(md), class_of(md)
     desc = meta(md, '描述', required=False)
-    role = '、'.join(names(md, '定位', required=False))
+    role = '、'.join(tags_of(md, scenes))
     o = ['<section class="set-one b-%s" id="set-%d">' % (BRANCH[branch], n),
          '<header class="one-head">',
          '<div class="id-row"><h2>%s</h2><div class="head-acts">'
@@ -805,8 +876,8 @@ def render_set(idx, mv, arts, head, members, slug, season, name_cn):
                  '源稿第一行必须是「# 合集名」').group(1).strip()
     stamp, desc = stamp_of(head), meta(head, '描述', required=False)
     desc_text = text_of(inline(desc, rich=True), collapse=True)
-    cat = cat_of(head)
-    scenes = tag_values(head, 0)
+    cat = tier_of(head)
+    scenes = scene_of(head)
     branch, cores, who, roles = set_facts(idx, head, members)
     badge = ('%s%s' % (icon_of(vocab.pick(idx, who[0], '职业', kind='分节'), 32), who[0])
              if len(who) == 1 else MIXED)
@@ -815,9 +886,12 @@ def render_set(idx, mv, arts, head, members, slug, season, name_cn):
                     sheets=['../../style.css']),
          shell.nav(title, up=3, parent=[SETS_SECTION, name_cn],
                    parent_href='../../sets/index.html'),
-         '<main class="set b-%s">' % BRANCH[branch],
+         '<main class="set b-%s" data-tier="%s">' % (BRANCH[branch], cat),
          '<header class="build-head">',
-         '<div class="core">%s<p class="by-label">推荐者：</p>%s</div>'
+         # 核心图包一层 .node：强度框画在它的 ::before/::after 上，与索引卡同形。
+         # 不包的话框只能挂在 .core 上，而 .core 是竖排的一整列（图 + 推荐人）。
+         '<div class="core"><span class="node">%s</span>'
+         '<p class="by-label">推荐者：</p>%s</div>'
          % (core_mosaic(cores, 96, eager=True), ''.join(people(head))),
          '<div class="build-id">',
          # 复制不在这一排：游戏里导入是一套一套的，整份合集复制出去粘不回任何
@@ -827,8 +901,7 @@ def render_set(idx, mv, arts, head, members, slug, season, name_cn):
          '<p class="cls">%s · %d 套 · %s<span class="season">%s · %s</span></p>'
          % (badge, len(members), cat, season.upper(), name_cn),
          '<p class="desc">%s</p>' % inline(desc, rich=True) if desc else '',
-         '<div class="facets">%s%s</div>'
-         % (facet('适用环境', scenes), facet('标签', roles)),
+         facets(scenes, roles),
          '</div>', '</header>', '',
          verdict(head)]
 
@@ -850,17 +923,17 @@ def render_set(idx, mv, arts, head, members, slug, season, name_cn):
         mt = must(re.match(r'^#\s+(.+)$', m.split('\n')[0]),
                   '合集里每一套的第一行必须是「# 配装名称」').group(1).strip()
         mb = branch_of(m)
-        # 一行三列：图 / 职业·元素 / 名字·定位。**职业与元素单占中间那一列**，
-        # 挤进副名那一行时 208px 的目录只剩得下一个标签，定位整段被省略号吃掉。
+        # 一行三列：图 / 职业·元素 / 名字·标签。**职业与元素单占中间那一列**，
+        # 挤进副名那一行时 208px 的目录只剩得下一个标签，标签整段被省略号吃掉。
         o += ['<li class="b-%s"><a href="#set-%d">%s'
               '<i class="who">%s<em class="%s">%s</em></i>'
               '<b>%s</b><span>%s</span></a></li>'
               % (BRANCH[mb], n, icon_of(core_of(idx, m), 32),
                  class_of(m), ELEMENT_TOKEN[mb], mb, mt,
-                 '、'.join(names(m, '定位', required=False)))]
+                 '、'.join(tags_of(m, scenes)))]
     o += ['</ol>', '</nav>', '<div class="set-body">']
     for n, m in enumerate(members, 1):
-        o += one_of(idx, mv, arts, head, m, n)
+        o += one_of(idx, mv, arts, head, scenes, m, n)
     o += ['</div>', '</div>', '']
 
     o += ['</main>', '', LIKE_JS, COPY_JS,
@@ -951,14 +1024,14 @@ SITE_SECTION = '配装推荐'
 # 合集索引页在首页「配装」组里就叫这个名字，面包屑与标题跟着它，一处定义。
 SETS_SECTION = '配装合集'
 SETS_DESC = ('Destiny 2 配装合集：同一角色的多套配装按场景切换使用，'
-             '按类别与职业分类，逐套列出技能、武器、护甲与神器模组。')
+             '按场景分节、职业分组，逐套列出技能、武器、护甲与神器模组。')
 # 填表页在首页「攻略与工具」里就叫这个名字，面包屑与标题跟着它，一处定义。
 # 它不挂在配装推荐下面：首页直接进得来，读者也不必先看过配装才来填一份。
 FORM_NAME = '配装工具'
 # 合集那一页的名字。它挂在配装工具下面（面包屑 Starside / 配装工具 / 合集工具），
 # 入口在合集索引页标题右边。
 SET_FORM_NAME = '合集工具'
-INDEX_DESC = '按职业分类的 Destiny 2 配装推荐：职业、武器、护甲、神器模组与六维属性，每一格都链回站内资料页。'
+INDEX_DESC = '按场景分节的 Destiny 2 配装推荐：职业、武器、护甲、神器模组与六维属性，每一格都链回站内资料页。'
 UP = '../../../'
 
 
@@ -990,28 +1063,28 @@ def build(idx, dirname, season, name_cn, slug):
         head, members = split_set(md)
         if members:
             branch, cores, who, roles = set_facts(idx, head, members)
-            # 跨职业的合集要有一个自己的格：索引页那一维由 app.js 读小节标题现扫，
+            # 跨职业的合集要有一个自己的格：索引页那一维由 app.js 读卡片的 data-cls，
             # 三个职业里挑不出它该站哪一格。
             cls = who[0] if len(who) == 1 else MIXED
             core = core_mosaic(cores, 64)
-            # 场景与定位都进标签栏，与单套那一页同一条：场景写在合集头部（整份一个），
-            # 定位每套一个、并起来去重。
-            tags = tag_values(head, 0) + roles
+            # 场景写在合集头部（整份一个），标签每套一个、并起来去重。
+            scenes, tags = scene_of(head), roles
         else:
             branch = meta(md, '分支')
             core = icon_of(core_pick(idx, md, 'elements/%s' % BRANCH[branch]), 64)
             cls = meta(md, '职业')
-            tags = tag_values(md, 0) + tag_values(md, 1)
+            scenes = scene_of(md)
+            tags = tags_of(md, scenes)
         return {'u': '%s/%s/%s/index.html' % (OUT_DIR, season, slug), 't': title,
                 'season': season, 'slug': slug, 'stamp': meta(head, '更新'),
                 'desc': text_of(inline(meta(head, '描述', required=False), rich=True),
                                 collapse=True),
-                'class': cls, 'tags': tags, 'branch': BRANCH[branch],
-                # 分支的中文名给索引页的筛选用。DOM 里只有 b-prismatic 这个 slug，
-                # 中文名读不出来，而在 app.js 里再写一份 slug→中文 就是 BRANCH 的
-                # 第二份定义。职业与类别不给——那两样就是卡片上方的分组标题。
+                'class': cls, 'tags': tags, 'scene': scenes, 'tier': tier_of(head),
+                'branch': BRANCH[branch],
+                # 分支的中文名给卡片上的 data-branch 用。DOM 里只有 b-prismatic
+                # 这个 slug，中文名读不出来，而在 app.js 里再写一份 slug→中文
+                # 就是 BRANCH 的第二份定义。
                 'branch_cn': branch,
-                'cat': meta(head, '类别'),
                 # 审核意见与描述同法剥掉标记：卡片那一段是纯文本，标记漏进去
                 # 就是一串花括号。分段在卡上并成一行——那一格只有两行高。
                 'verdict': text_of(inline(' '.join(section_of(head, '审核意见').split()),
@@ -1027,24 +1100,80 @@ def core_node(html, up):
     return '<span class="node">%s</span>' % html.replace(UP, up)
 
 
+def card(m, href, up, sets):
+    """索引页的一张卡。两页共用。"""
+    return ['<li class="b-%s" data-branch="%s" data-scene="%s" data-cls="%s"'
+            ' data-tier="%s"%s>'
+            % (m['branch'], m['branch_cn'], TAB.join(m['scene']), m['class'],
+               m['tier'],
+               ' data-tag="%s"' % TAB.join(m['tags']) if m['tags'] else ''),
+            '<a class="entry" href="%s">' % (href % (m['season'], m['slug'])),
+            core_node(m['core'], '../' * up),
+            # 「6 套」贴在卡片右上角：一排卡里合集与单套长得一样，
+            # 不标出来读者点进去才知道这一张是六套。
+            '<span class="n-sets">%d 套</span>' % m['set'] if sets else '',
+            '<h3>%s</h3>' % m['t'],
+            # 强度画在头像框上（样式表按 <li> 的 data-tier 选），文字这一份视觉
+            # 隐藏、留在无障碍树里：只靠颜色编码的信息，读屏软件取不到。
+            '<span class="tier off-screen">%s</span>' % m['tier'],
+            m['by'],
+            # 审核意见与简介**共用一块定高的区域**：有审核意见时它排在上面、简介
+            # 缩到三行，没有时简介自己撑满。两者各自定高的话，带审核意见的卡就比
+            # 别的高出两行，一排里高低不齐。整张卡是一个 <a>，所以审核意见只能是
+            # 纯 <span>，不嵌链接与按钮。
+            '<div class="say">',
+            '<span class="verdict"><b>审核意见</b>%s</span>' % m['verdict']
+            if m['verdict'] else '',
+            '<p>%s</p>' % m['desc'],
+            '</div>',
+            # 卡片上列场景与标签。**强度不出**：它就是这张卡所在那一节的标题，
+            # 卡上再写一遍等于每张卡都占掉一枚标签位，而标签栏只有两行。
+            '<span class="tags">%s%s</span>'
+            % (''.join('<i class="sc">%s</i>' % t for t in m['scene']),
+               ''.join('<i>%s</i>' % t for t in m['tags'])),
+            '<span class="entry-foot">'
+            '<span class="entry-stamp">更新 %s</span>%s</span>'
+            % (m['stamp'], like_box(m['season'], m['slug'], button=False)),
+            '</a>', '</li>']
+
+
 def render_index(made, sets=False):
     """配装的两张索引页，同一份实现：
 
         builds/index.html       单套配装
         builds/sets/index.html  合集
 
-    两页逐层同形，只差 data-noun 一个字，所以不分家：大节按 CATEGORIES 分、
-    卡片、筛选、空节收起都只写一遍。适用环境是筛选维度，不是大节那一维。**节内照旧按职业分小节**——app.js 的职业维度读的就是 <ul> 上面那一级
-    标题，换成别的分法那一维就废了；跨职业的合集站在 MIXED 那一格。
+    两页逐层同形，只差 data-noun 一个字，所以不分家。
 
-    **卡片是竖式的，一排六张**（形状见 builds/style.css）：配装多起来之后，横式
-    卡一屏只放得下六张。图在最上，往下是配装名、推荐人、简介、标签、时间与赞数。
-    每张卡落一个分支类，.entry 左缘那条 2px 亮边因此跟着该配装的元素色走。
+    **场景分大节**，节内 meta 在前、再按更新时间降序。分节跟着主轴走：场景是读者
+    第一个要拿的主意，页面的分块就该是同一刀。八十几张卡不分节就是一面卡墙——默认
+    视图一个地标都没有，读者只能靠工具条，而工具条一旦出问题整页就读不成了。
 
-    跳转 chip 对应大节（工具条的 data-label 取 .sect-label）。职业小节只是节内的
-    小标题，不占 chip——大节没几个时跳转本来就不难，找职业直接在旁边搜索框输
-    「术士」。搜索把某个职业滤空时，那个小标题由 builds/style.css 的一条 :has()
-    自己隐藏，不加 JS。
+    **一节一个场景**，多场景的配装（SCENES 只放行 raid、地牢 这一个组合）落在它
+    第一个场景那一节。所以默认视图里 raid 那一节就是 raid + raid·地牢，没有第三节。
+    选定「地牢」时由 app.js 把这批搬到地牢那一节去，选回「全部」再搬回来。
+    **搬的是卡不是复制**：DOM 里每张卡始终只有一份，点赞、计数与截图都只算一次。
+
+    **合并落在职业小节这一层**，所以点 raid 之后仍只有一组「猎人/泰坦/术士」。
+    每个场景节的小节按「这个场景下所有配装」的职业集合出，不只按本节现有的那些
+    ——搬过来的卡要有落点。空出来的那张网格不显形，它的小标题由 app.js 收起。
+
+    **强度不写在卡上，画在头像框上**（builds/style.css）：三档三种框。文字那一份
+    留着但视觉隐藏（.off-screen），不然强度就成了只靠颜色编码的信息，读屏软件
+    与色觉差异的读者取不到。
+
+    **五个维度全部写成卡片上的 data 属性。**以前职业读 <ul> 上面那级标题、标签读
+    卡里的 <i>、只有分支写 data-，三个异构的提取器散在 app.js 里。现在一律走
+    data-：app.js 那边因此只剩一个通用提取器，也不再需要认识这一页长什么样。
+
+    **场景那一维渲染到页面里，不在工具条上。**它是主轴，值又只有五个，摊开成一排
+    居中的素字开关比塞进工具条更好认；页面给一个带 data-facet 的空容器，app.js
+    见了就往那里填，见不着才在工具条上出下拉框——放哪由页面说了算，app.js 不认识
+    任何一维的名字。
+
+    **卡片是竖式的，一排五张**（形状见 builds/style.css）。图在最上，往下是配装
+    名、推荐人、简介、标签、时间与赞数。每张卡落一个分支类，.entry 左缘那条 2px
+    亮边因此跟着该配装的元素色走。
     """
     live = [m for m in made if m['season'] == SEASON and bool(m['set']) == sets]
     if not live:
@@ -1058,7 +1187,7 @@ def render_index(made, sets=False):
     aside = ('<p class="new-link"><a href="../new/set/index.html">投稿一组合集 →</a>'
              '<span>逐套选择装备，页面直接生成标准格式的合集文本</span></p>'
              '<p class="new-link"><a href="../index.html">单套配装推荐 →</a>'
-             '<span>一套一页的配装，按强度、创意与 PVP 分组</span></p>' if sets else
+             '<span>一套一页的配装，按场景、职业、强度与标签筛选</span></p>' if sets else
              # 投稿入口挂在标题右边。这是填表页在站内唯一的入口（别处没有理由指向
              # 它，而没有入口的页面等于不存在），单独占一段会在卡片上面多出一整块
              # 空白。页首那句说明只留给 <meta>，正文里它把首屏推下去半屏。
@@ -1070,50 +1199,67 @@ def render_index(made, sets=False):
     o = [shell.head('%s · Starside' % name, SETS_DESC if sets else INDEX_DESC,
                     app_js=True, up=up,
                     sheets=['../style.css'] if sets else None),
-         # data-facets：按职业、分支与标签筛。维度由 app.js 从卡片现扫（<li> 的
-         # b-* 类、两级标题、.tags 里的 <i>），不写进 HTML——那些字页面上已经有
-         # 了，写第二遍就是同一份文本的第二个来源。
+         # data-facets 是声明式的：`显示名=data 键[:修饰]`，分号隔开。
+         #   :single       一次只选一个（场景与强度）
+         #   :groups       分节按这一维分，选定单一值时重叠的那几节并成一张网格
+         #   :scoped(某维)  取值随点名的那一维变，那一维没选定时整个控件不出
+         # 标签的取值随场景变（markup.SCENE_TAGS），但 app.js 里**不写那张映射
+         # 表**：:scoped 让它从当前已筛出的卡片现扫，映射关系留在数据里。
+         #
+         # **不出跳转 chip**（data-label 给空串）：那一排跳的是大节，而大节就是场景，
+         # 页面上那条居中的场景开关已经在干这件事，同一排字出现两遍读者分不出
+         # 哪一排管什么。
          shell.nav(name, up=up, toolbar={
              'data-section': '.block', 'data-item': '.entries > li',
-             'data-label': '.sect-label', 'data-noun': '合集' if sets else '配装',
-             'data-chip-label': '类别', 'data-facets': ''}),
+             'data-label': '', 'data-noun': '合集' if sets else '配装',
+             'data-facets': '场景=scene:single:groups;职业=cls;分支=branch;'
+                            '强度=tier:single;标签=tag:scoped(场景)'}),
          shell.page_head(name, aside=aside),
+         # 场景那一维填在这里。**空容器由页面给、内容由 app.js 填**：值本来就从
+         # 卡片现扫，写进 HTML 就是同一批字的第二个来源。无 JS 时它是空的、
+         # 由 .facet-bar:empty 收起，正文照旧可读。
+         '<nav class="facet-bar" data-facet="场景" aria-label="适用场景"></nav>',
+         # 强度与场景并列成第二条：它是「凭什么被推荐」，与「在哪打」一样是读者
+         # 一进来就要拿的主意，塞进下拉框等于把它降到与分支同一档。
+         '<nav class="facet-bar" data-facet="强度" aria-label="强度"></nav>',
          '<main>']
+    # 节内先按强度（TIERS 的顺序即 meta、强力、创意），同档再按更新时间降序。
+    # stamp 是 YYYY.M.D，段位宽不定，按字符串排会把 2026.9.9 排到 2026.10.1
+    # 前面，拆成整数元组再比。
+    live.sort(key=lambda m: (TIERS.index(m['tier']),
+                             tuple(-int(x) for x in m['stamp'].split('.'))))
+    # 大节即场景的取值组合。顺序按 SCENES，同一个首场景下单值在前、组合在后，
+    # 于是 raid 与 raid·地牢 相邻。**不硬编码那个组合**：CO_SCENES 改了自动跟着改。
     n = 0
-    for top in CATEGORIES:
-        pool = [m for m in live if m['cat'] == top]
+    for top in SCENES:
+        # 多场景的配装归它第一个场景那一节，每张卡只出现一次。
+        pool = [m for m in live if m['scene'][0] == top]
         if not pool:
             continue
         n += 1
-        o += ['<section class="block" id="sec-%d">' % n,
-              '<h2 class="sect-label">%s</h2>' % top]
+        # data-scene 上写这一节的场景取值：app.js 按它判断该并进谁。判据现取，
+        # 不在前端再写一份场景表。
+        # 标题写这一节里**实际出现过的场景**的并集：突袭那一节装着「只打突袭」与
+        # 「突袭、地牢通用」两种，只写「突袭」会让读者以为通用的那批不在这儿。
+        # 并集现取，不硬编码——CO_SCENES 改了自动跟着改；地牢那一节只有单值的
+        # 配装，并集就还是「地牢」。
+        shown = [x for x in SCENES if any(x in m['scene'] for m in pool)]
+        o += ['<section class="block" id="sec-%d" data-scene="%s">' % (n, top),
+              '<h2 class="sect-label">%s</h2>' % ' &amp; '.join(shown)]
+        # 小节按「这个场景下所有配装」的职业集合出，不只按 pool：选定这个场景时
+        # app.js 会把别节里也属于它的那批搬进来（raid·地牢 → 地牢），要有落点。
+        kin = [m for m in live if top in m['scene']]
         for cls in CLASSES + (MIXED,):
-            mine = [m for m in pool if m['class'] == cls]
-            if not mine:
+            if not any(m['class'] == cls for m in kin):
                 continue
-            o += ['<h3 class="sub-label">%s</h3>' % cls, '<ul class="entries">']
-            for m in mine:
-                o += ['<li class="b-%s" data-branch="%s">' % (m['branch'], m['branch_cn']),
-                      '<a class="entry" href="%s">' % (href % (m['season'], m['slug'])),
-                      core_node(m['core'], '../' * up),
-                      # 「6 套」贴在卡片右上角：一排卡里合集与单套长得一样，
-                      # 不标出来读者点进去才知道这一张是六套。
-                      '<span class="n-sets">%d 套</span>' % m['set'] if sets else '',
-                      '<h3>%s</h3>' % m['t'],
-                      m['by'],
-                      # 审核意见排在描述之上：它压过推荐人自己的话。整张卡是一个
-                      # <a>，所以只能是纯 <span>，不嵌链接与按钮。
-                      '<span class="verdict"><b>审核意见</b>%s</span>' % m['verdict']
-                      if m['verdict'] else '',
-                      '<p>%s</p>' % m['desc'],
-                      '<span class="tags">%s</span>'
-                      % ''.join('<i>%s</i>' % t for t in m['tags']),
-                      '<span class="entry-foot">'
-                      '<span class="entry-stamp">更新 %s</span>%s</span>'
-                      % (m['stamp'], like_box(m['season'], m['slug'], button=False)),
-                      '</a>', '</li>']
+            o += ['<h3 class="sub-label">%s</h3>' % cls,
+                  '<ul class="entries" data-cls="%s">' % cls]
+            for m in pool:
+                if m['class'] == cls:
+                    o += card(m, href, up, sets)
             o += ['</ul>']
         o += ['</section>', '']
+    o += ['']
     o += ['</main>', '', LIKE_JS,
           shell.foot(stamp, '，配装由各位推荐人提供，随赛季更新。')]
     out = '\n'.join(x for x in o if x != '') + '\n'
@@ -1368,16 +1514,17 @@ def set_form_head(name_cn):
             # h1 包进 .id-row：详情页的标题就在这一层里，不包的话上下间距差一截。
             '<div class="id-row"><h1><input data-key="合集名" placeholder="合集名称" '
             'aria-label="合集名称"></h1></div>',
-            # 铭牌照着下面各套显示「职业 · N 套 · 类别」，与详情页逐段同形。
+            # 铭牌照着下面各套显示「职业 · N 套 · 强度」，与详情页逐段同形。
             '<p class="cls"><span class="cls-id" data-mirror="合集铭牌">'
             '<span class="hint">职业与元素在各套内选择</span></span>'
             '<span class="season">%s · %s</span></p>' % (SEASON.upper(), name_cn),
             '<p class="desc"><input data-key="描述" '
             'placeholder="一句话介绍这组配装" aria-label="描述"></p>',
-            # 类别与适用环境是整份合集的；定位每套一个，写在下面那一套的头上。
+            # 场景与强度是整份合集的；标签每套一个，写在下面那一套的头上。
             '<div class="facets">%s%s</div>'
-            % (facet_picks('类别', '类别', CATEGORIES, single=True),
-               facet_picks(*FACETS[0])),
+            % (facet_picks(FACETS[0][0], FACETS[0][1], FORM_SCENES,
+                           single=True, co=sorted(CO_SCENES, key=SCENES.index)),
+               facet_picks(*FACETS[1], single=True)),
             # 整份合集一条审核意见，所以落在合集头部这一层，不进下面的 .set-body
             # ——那是「一套配装」那一层，form.js 的 resetAll() 切一套就清一次。
             '</div>', '</header>', '', VERDICT_BOX, '',
@@ -1404,7 +1551,7 @@ def set_form_head(name_cn):
             '<header class="one-head">',
             # 「复制这一套」挂在这一行的右端，与详情页 .one-head 的 .head-acts
             # 同一个位置：它是对这一套的操作，与这一套的名字同级。
-            # 核心排在名字左边，与左栏目录那一行（图 + 名字 + 定位）同形，也与
+            # 核心排在名字左边，与左栏目录那一行（图 + 名字 + 标签）同形，也与
             # 页顶那枚 96px 的图同一个读法。每一套各有自己的核心：它决定目录上
             # 那枚图，源稿里也是每套一行。
             '<div class="id-row">'
@@ -1422,7 +1569,8 @@ def set_form_head(name_cn):
             # 每一套各有自己的核心：它决定左栏目录上那枚 32px 的图，源稿里也是
             # 每套一行。**格子是 32px 不是 96px**——96 的那一枚是整份合集的，
             # 在页顶；这里再摆一个同样大的，两枚图会打架。
-            '<div class="facets">%s</div>' % facet_picks(*FACETS[1]),
+            # 标签每套一个（整份合集共用页顶那个场景，所以取值也共用一套）。
+            '<div class="facets">%s</div>' % tag_picks(),
             '</header>', '']
 
 
@@ -1450,11 +1598,13 @@ def solo_form_head(name_cn):
             '<span class="season">%s · %s</span></p>' % (SEASON.upper(), name_cn),
             '<p class="desc"><input data-key="描述" placeholder="一句话介绍这套配装" '
             'aria-label="描述"></p>',
-            # 类别排在最前：它是这套配装的第一层身份（详情页写在铭牌上），选了它
-            # 上面的铭牌才补得全。
+            # 场景排在最前：它决定标签那一栏能选什么（tag_picks 的 data-for），
+            # 也是这套配装的第一层身份。「功能性」不在这一排——那一档由审核员
+            # 指定，它与标签「机制」的边界要看正文才判得出。
             '<div class="facets">%s%s%s</div>'
-            % (facet_picks('类别', '类别', CATEGORIES, single=True),
-               facet_picks(*FACETS[0]), facet_picks(*FACETS[1])),
+            % (facet_picks(FACETS[0][0], FACETS[0][1], FORM_SCENES,
+                           single=True, co=sorted(CO_SCENES, key=SCENES.index)),
+               facet_picks(*FACETS[1], single=True), tag_picks()),
             # 审核意见落在页头之外，与详情页同一位置。默认收起，审核台按
             # starsideForm.review() 立起来——投稿的人因此看不到这一栏。
             '</div>', '</header>', '', VERDICT_BOX, '']

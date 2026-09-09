@@ -57,7 +57,7 @@ body:has(.set-wrap) {
   display: block;
   width: 96px;
   height: 96px;
-  border: 1px solid var(--hair);
+  border: 2px solid var(--ink);
 }
 
 .build-head .by-label {
@@ -526,38 +526,40 @@ button.item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
 .stats-card .stats { flex: 1; }
 
 /* ── 索引页 ───────────────────────────────────────────────────────────
-   **竖式卡，一排六张。**首页那套横式 .entry（图 | 正文 | 右列）一屏只放得下六张，
+   **竖式卡，一排五张。**首页那套横式 .entry（图 | 正文 | 右列）一屏只放得下六张，
    配装过二十套就要滚很久；这一页把它转成竖排：图在最上，往下是配装名、推荐人、
    简介、标签、时间与赞数。**编辑台不引这份表**：它的配装列表是行式的，一屏要
    扫六七十条，卡片得滚三屏；两处共用的只有六行 .b-*，那六行在 assets/site.css。
 
-   **版心走 1500 那一档，不跟着配装页收到 1060**：六列在 1500 下每张约 226px，
-   1060 下只有 150px，配装名放不下五个字。同一份样式表服务三种页面，所以用 :has
-   把这一档限定在有卡片的那一页上。
+   **版心走 1500 那一档，不跟着配装页收到 1060**：五列在 1500 下每张约 285px，
+   1060 下只有 194px。同一份样式表服务三种页面，所以用 :has 把这一档限定在有卡片
+   的那一页上。六列时每张 226px，而卡上现在要放场景与标签两类 chip，一行挤不下
+   「宗师/终极」这样四个字带一道斜线的值。
 
-   **卡高恒定**：简介固定三行、标签固定两行，都超出即裁。一排六张里有一张长出来，
+   **卡高恒定**：简介固定三行、标签固定两行，都超出即裁。一排五张里有一张长出来，
    下一排的顶缘就是锯齿。 */
 body:has(.entries) { --wrap: 1500px; }
 
-/* 维度筛选那几行（工具条的 data-facets，只有索引页开）。一行一个维度，所以
-   工具条要换行、每一行独占一整行宽。同一排里选中与没选中的框大小必须一样——
-   chip 的选中态只换字色与边框色，与详情页那些标签同一条规则。 */
-body:has(.entries) .toolbar {
-  flex-wrap: wrap;
-  row-gap: 9px;
-}
+/* 主轴（场景）那一排：不在工具条上，落在页首与卡片之间，居中。它是读者第一个
+   要拿的主意，摊开成一排素字比塞进工具条更好认；也正是页面的分节依据，两者
+   是同一刀，所以摆在离卡片最近的地方。
 
-.tool-facet {
-  flex: 1 0 100%;
+   **无 JS 时整条收起**：值由 app.js 从卡片现扫，空容器留着比留一条光杆规线好。 */
+.facet-bar:empty { display: none; }
+
+.facet-bar {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
   gap: 6px;
+  align-items: baseline;
+  justify-content: center;
+  max-width: var(--wrap);
+  margin: 0 auto;
+  padding: 4px 22px 0;
 }
 
-/* 维度名与工具条上那个计数同一档：小字、字距拉开、压暗，读作标签不是可点的东西。 */
+/* 维度名压暗、字距拉开，读作标签不是可点的东西；与工具条上那个计数同一档。 */
 .facet-label {
-  min-width: 3.2em;
   color: var(--bone-faint);
   font-family: var(--font-disp);
   font-size: 11px;
@@ -565,14 +567,71 @@ body:has(.entries) .toolbar {
   letter-spacing: .14em;
 }
 
-/* 沟收到 16：226px 的卡之间留 24 的沟，沟比卡的内边距还显眼。 */
+/* 主轴那一排比工具条上的下拉框重一级，字号顶到正文档。 */
+.facet-bar .toggle { font-size: 12.5px; }
+
+/* 次轴几维：工具条上的下拉框。**用 <details> 不用 popover**：popover 白拿点外面
+   关闭与 top layer，但定位要靠 CSS anchor positioning，那个还不是 Baseline，
+   面板会掉到视口正中。<details> 的面板在正常流里，只要给个定位上下文即可。 */
+.drop {
+  position: relative;
+}
+
+/* 三角标记去掉：summary 已经长成一枚 .toggle，再挂一个原生箭头就是两套语言。 */
+.drop > summary { list-style: none; }
+.drop > summary::-webkit-details-marker { display: none; }
+
+/* 选了几项写在触发器上。收起来之后不标出来就看不见这一维还筛着。 */
+.drop > summary > b {
+  margin-left: 6px;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.drop > summary > b:empty { display: none; }
+
+/* 面板从工具条垂到卡片上方。整条 .site-head 是 z-index: 20 的层叠上下文
+   （assets/site.css），面板在它里面，所以对正文天然在上；这里的 6 只用来压过
+   同一上下文里那条 .site-head::after 双规线。**站头没有 overflow**，面板垂出
+   站头的下沿不会被裁——那一条不能改，改了这个面板当场看不见。 */
+.drop .menu {
+  position: absolute;
+  z-index: 6;
+  top: calc(100% + 6px);
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 100%;
+  padding: 6px;
+  background: var(--ink-lift);
+  border: 1px solid var(--hair-lit);
+}
+
+.drop .menu > label {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  padding: 3px 8px 3px 5px;
+  color: var(--bone-dim);
+  font-size: 12.5px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.drop .menu > label:hover { color: var(--bone); background: var(--row-hover); }
+.drop .menu input { accent-color: var(--accent); }
+
+/* 沟收到 16：285px 的卡之间留 24 的沟，沟比卡的内边距还显眼。 */
 .entries {
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 16px;
 }
 
-/* 职业小节的标题。大节标题（类别）是 .sect-label，跳转 chip 认的是它；这一层
-   只是节内的分组，不占 chip。 */
+/* 职业小节的标题。大节标题（场景）是 .sect-label；这一层只是节内的分组，不占
+   跳转 chip。**这几条不能少**：生成器每节都发三个 <h3 class="sub-label">，没有
+   规则时它们回落到 UA 默认的 h3（1.17em 粗体 + 1em 上下外边距），一节里三个
+   放大的粗标题，网格之间的节奏也没了。 */
 .sub-label {
   margin: 32px 0 12px;
   color: var(--bone-dim);
@@ -586,13 +645,22 @@ body:has(.entries) .toolbar {
 .entries + .sub-label { margin-top: 40px; }
 
 /* 竖排改用 flex：单列的网格里 margin-top: auto 推不动东西（自由空间落在容器
-   末尾，不在任何一格的区域里），底部那一行的时间与赞数就贴不到卡底。 */
+   末尾，不在任何一格的区域里），底部那一行的时间与赞数就贴不到卡底。
+
+   **min-width: 0 要逐层给。**标题是 white-space: nowrap，它的 min-content 宽度
+   就是整个名字；grid 项与 flex 项的 min-width 默认是 auto，也就是「不许小于
+   min-content」，于是这个宽度顺着 h3 → .entry → li 一路往上顶，卡片溢出自己那一格、
+   压到邻居身上。`.entries` 上那个 minmax(0, 1fr) 只钉住**轨道**的宽度，钉不住
+   轨道里的东西。三层都要掐，少一层就还能顶上来。 */
+.entries > li { min-width: 0; }
+
 .entries .entry {
   display: flex;
   flex-direction: column;
   align-items: stretch;
   gap: 10px;
   padding: 16px;
+  min-width: 0;
 }
 
 .entries .entry::after { background: var(--accent); }
@@ -600,13 +668,32 @@ body:has(.entries) .toolbar {
 
 /* 核心那枚图居中。源文件就是 64px，不放大——放大只会糊。 */
 .entry .node { display: flex; justify-content: center; }
-.entry .node img { display: block; width: 64px; height: 64px; border: 1px solid var(--hair); }
+/* **这道 2px 的深色描边就是彩环与图之间那圈黑**：画出来的，粗细均匀；靠两个
+   盒子之间留空隙得到的那种做不到匀（见上面强度框那一段）。 */
+.entry .node img {
+  display: block;
+  width: 64px;
+  height: 64px;
+  border: 2px solid var(--ink);
+}
 
+/* ── 卡内每一格都定高，卡与卡因此一样高 ──────────────────────────────
+   图、标题、推荐人、说明、标签五格逐格定高，标签的上沿于是落在每张卡的同一个
+   位置上，时间与赞数那一行也一样。**不给整张卡写一个总高**：那是把六个数加出来
+   的一个魔数，改任何一格都要回来重算，而且算错了只表现为某一格被裁掉一行。 */
+
+/* 标题一行、居中，过长省略。**一行而不是两行**：两行时短名字上面留一道空、
+   长名字撑满，一排卡的标题基线就不齐；一行则每张卡的基线都在同一个高度上。
+   完整那份在详情页与 <title> 里都在。 */
 .entries .entry h3 {
-  margin: 0;
+  overflow: hidden;
+  min-width: 0;
+  margin: 6px 0 0;
   font-size: 17px;
   line-height: 1.4;
-  text-wrap: balance;
+  white-space: nowrap;
+  text-align: center;
+  text-overflow: ellipsis;
 }
 
 /* 推荐人在这一页恒为纯文本：卡片整张是 <a>，里面再套一个会被解析器在内层处把
@@ -615,6 +702,7 @@ body:has(.entries) .toolbar {
   display: flex;
   gap: 6px;
   align-items: center;
+  justify-content: center;
   color: var(--bone-faint);
   font-family: var(--font-disp);
   font-size: 11.5px;
@@ -647,24 +735,51 @@ body:has(.entries) .toolbar {
   letter-spacing: .08em;
 }
 
-/* 简介固定三行，超出截断。完整那份在详情页与 <meta> 里都在。 */
-.entries .entry p {
+/* 审核意见与简介共用这一块，定高 112px：审核意见 2 行（20px 行高）+ 8px 间距
+   + 简介 3 行（21.25px 行高）= 111.75，取整。没有审核意见时简介自己放到五行
+   （106.25），底下留 6px 余量，内容顶对齐所以看不出来。 */
+.entries .entry .say {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 112px;
+  overflow: hidden;
+}
+
+/* 简介：有审核意见时三行，没有时五行——两种情形都把这一块填到差不多满。
+   完整那份在详情页与 <meta> 里都在。 */
+.entries .entry .say p {
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  min-height: calc(3 * 1.7em);
+  -webkit-line-clamp: 5;
   overflow: hidden;
+  margin: 0;
   font-size: 12.5px;
   line-height: 1.7;
 }
 
-/* 标签固定两行。chip 比别处小一号，一行因此放得下三四枚。 */
+.entries .entry .say:has(.verdict) p { -webkit-line-clamp: 3; }
+
+/* 标签定两行——**不是 max-height**：按上限写的话只有一行标签的卡会把下面的东西
+   顶上去，标签的上沿在每张卡上落在不同高度。chip 比别处小一号，一行放得下三四枚。 */
+/* 标签一行，压到卡底、紧挨着更新时间那一行。**auto 上边距在这里**（不在
+   .entry-foot 上）：余量全部收到标签之上，标签与页脚因此贴在一起走，而不是
+   标签停在说明区下方、页脚独自沉底。负的下边距吃掉一截 flex 的 10px 沟，
+   让两行读作一组。 */
 .entries .entry .tags {
   gap: 4px;
-  margin: 0;
-  max-height: calc(2 * 22.5px + 4px);
+  margin: auto 0 -6px;
+  height: 22.5px;
+  align-content: flex-start;
   overflow: hidden;
 }
+
+/* 场景靠左、标签靠右：两类东西答的是不同的问题（在哪打 / 干什么用），分列两端
+   比并排一串更好扫。**auto 外边距落在第一枚标签上**——它是场景与标签的分界，
+   那一枚把剩下的空间全吃掉，后面的标签跟着它排到右端。选择器写「紧跟在场景
+   后面的第一枚非场景」，不写 :first-of-type：那个认的是元素名，场景与标签同为
+   <i>，会选中整排的第一枚、也就是场景。 */
+.entries .entry .tags > i.sc + i:not(.sc) { margin-left: auto; }
 
 .entries .entry .tags > i {
   padding: 1px 5px;
@@ -672,13 +787,142 @@ body:has(.entries) .toolbar {
   letter-spacing: .04em;
 }
 
-/* 时间与赞数同一行，压在卡底。 */
+/* 场景比标签重一档：读者先挑在哪打，再挑干什么。靠底色浓度分，**不靠色相**
+   ——这两样都是站内的编排，在游戏里没有对应的颜色，按 design.md 一节「做不到
+   就别给它颜色」留在骨白这一族。浓度即层级，与外壳叠色同一条语法。 */
+.entries .entry .tags > i.sc {
+  color: var(--bone);
+  background: var(--tint-3);
+}
+
+/* ── 强度：核心图的框 ────────────────────────────────────────────────
+   强度答的是「凭什么被推荐」，读者扫一列卡时最先要分的就是这个。画在核心图的
+   框上而不是写成一枚标签：图是卡片上视线第一落点，框不占任何版面。文字那一份
+   留着、只是视觉隐藏（.off-screen），三档只靠颜色区分的话读屏软件取不到。
+
+   **三档不只差色相，差的是光的行为、层数与覆盖范围**：全部转成灰度也分得出。
+
+   | 档   | 环 3px      | 辉光                | 动 |
+   |------|-------------|---------------------|----|
+   | meta | 四色渐变    | 两层，溢到卡片上 14 + 26px | 渐变位移 + 辉光呼吸 |
+   | 强力 | 琥珀实色    | 一层 10px           | 不动 |
+   | 创意 | 冷青实色    | 一层 8px，最淡      | 不动 |
+
+   三档都发光之后，分层落在**辉光的层数、扩散半径与动静**上，不落在「有没有光」
+   这个二值上；转成灰度仍分得出。
+
+   三支色取自同一张棱镜主视觉：品红、琥珀、冷青白是那张图上真实并存的三种光，
+   摆在一起读作一套。**这三支不进 :root**——作用范围就是下面这几条选择器。
+
+   **彩环与图之间隔一道黑，而那道黑是图自己的描边**（见下面的 .node img，2px
+   var(--ink)），不是两者之间露出来的一线卡底。差别要紧：露出来的那种由「彩环
+   内沿」与「图外沿」两条边界的差值决定，再怎么算也对不齐到零，圆角处抗锯齿还会
+   多留半像素，粗一段细一段；画出来的这种粗细均匀，彩环内沿哪怕差半像素也融进
+   那道黑里。
+
+   于是几何是：图外沿 64（内含那 2px 黑描边），彩环 3px 贴在外面，框盒 64+3×2=70，
+   圆角 6+3=9 才与图同心。索引卡与详情页共用这一套，尺寸差别只由 --fr 一个数给。 */
+:is(.entries .entry, .build-head .core) .node {
+  position: relative;
+  --fr: 70px;
+}
+
+.build-head .core .node { --fr: 102px; }
+
+:is(.entries .entry, .build-head .core) .node::before,
+:is(.entries .entry, .build-head .core) .node::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--fr);
+  height: var(--fr);
+  border-radius: 9px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* ::before 是环，::after 是辉光。**分成两个伪元素**：mask 会连同 box-shadow 一起
+   裁掉，环与辉光挂在同一个元素上时辉光整个消失。 */
+
+/* meta：四色渐变环 + 溢到卡片上的辉光，两条动画不同周期（12s 与 3.5s，互质），
+   看不出循环节。渐变走 background-position 位移而不是 conic 旋转：conic 的
+   角度要平滑动需要 @property，支持面窄；而旋转的接缝在 2px 细环上很显眼，
+   读作廉价的 RGB 灯效。 */
+[data-tier="meta"] .node::before {
+  padding: 3px;
+  background: linear-gradient(115deg, #ff4fd8, #a25cf0, #f0a24a, #bfe4f2, #ff4fd8);
+  background-size: 300% 300%;
+  animation: tier-drift 12s ease-in-out infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+}
+
+/* 辉光的静置态就是动画的起始帧：prefers-reduced-motion 把 animation 整个关掉
+   （assets/site.css 那一处 `* { animation: none !important }`），关掉之后这里
+   仍是一圈完整的渐变加一层辉光，三档的分层不依赖动画，所以不必另写降级。 */
+[data-tier="meta"] .node::after {
+  opacity: .85;
+  box-shadow: 0 0 14px 2px #ff4fd8aa, 0 0 26px #a25cf055;
+  animation: tier-breathe 3.5s ease-in-out infinite;
+}
+
+/* 强力：琥珀实色环 + 一层贴着框的辉光，不动。琥珀取自那张图的背景光带，
+   与异域装备那支冷金黄拉得开。 */
+[data-tier="强力"] .node::before { border: 3px solid #f0a24a; }
+[data-tier="强力"] .node::after { box-shadow: 0 0 10px 1px #f0a24a99; }
+
+/* 创意：冷青实色环，不发光。它不是「弱」，是「别拿强度评我」——退出对比，
+   静得下来；层数最少，即使转灰度也与另两档分得开。 */
+[data-tier="创意"] .node::before { border: 3px solid #9ec7d8; }
+[data-tier="创意"] .node::after { box-shadow: 0 0 8px #9ec7d866; }
+
+/* ── 强度那一排开关：按框的颜色染 ──────────────────────────────────────
+   开关与卡上那圈框是同一件事的两种呈现，颜色一致读者才把两者对上；不染色的话
+   「强力」这两个字和那圈琥珀环之间没有任何线索。三支色与上面那三条框逐字相同。
+
+   **按下时不换字色**：换成 --accent 就断了与框的对应。按下的信号走角标显形
+   （assets/site.css 那条素字开关的通用规则）加字重，那是站里现成的语汇。
+   「全部」那一枚没有 data-v，照旧走 --accent。 */
+.facet-bar[data-facet="强度"] .toggle[data-v="强力"] { color: #f0a24a; }
+.facet-bar[data-facet="强度"] .toggle[data-v="创意"] { color: #9ec7d8; }
+
+/* meta 那一枚走渐变字，与它那圈四色环同一条渐变、同一条动画。 */
+.facet-bar[data-facet="强度"] .toggle[data-v="meta"] {
+  color: transparent;
+  background: linear-gradient(115deg, #ff4fd8, #a25cf0, #f0a24a, #bfe4f2, #ff4fd8);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: tier-drift 12s ease-in-out infinite;
+}
+
+/* 角标吃的是 currentcolor，而 meta 的字色是 transparent，会跟着一起消失，
+   单独给它品红。 */
+.facet-bar[data-facet="强度"] .toggle[data-v="meta"]::before,
+.facet-bar[data-facet="强度"] .toggle[data-v="meta"]::after { border-color: #ff4fd8; }
+
+.facet-bar[data-facet="强度"] .toggle[data-v][aria-pressed="true"] { font-weight: 600; }
+
+@keyframes tier-drift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes tier-breathe {
+  0%, 100% { opacity: .6; }
+  50% { opacity: 1; }
+}
+
+/* 时间与赞数同一行。**沉底由上面那行标签的 auto 上边距管**，这里不再各自沉底
+   ——两个 auto 会把余量平分，标签就被推到说明区与页脚之间的半空中。 */
 .entry-foot {
   display: flex;
   gap: 8px;
   align-items: baseline;
   justify-content: space-between;
-  margin-top: auto;
 }
 
 .entries .entry-stamp { margin: 0; }

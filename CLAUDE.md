@@ -50,7 +50,7 @@ mods.py            官方物品表 → tools/mod-variants.json（护甲模组变
                    图标一并取回
 vocab.py           配装词表：从已生成的资料页现扫「名字 → 图标、页面、锚点、着色」，
                    槽位 → 来源页的对应在这里一处定义
-markup.py          源稿方言与公共件：职业／分支／类别三张词表、{token|文字} 着色、
+markup.py          源稿方言与公共件：职业／分支／配装三轴（场景·强度·标签）词表、
                    表格切格（Python 这一侧唯一定义，JS 那一侧是 admin/dialect.js）、
                    「键：值」行、空行分段、
                    剥标签取文本、保真前的归一化、计数比对、图片尺寸、图标登记
@@ -58,7 +58,7 @@ shell.py           站点外壳与落盘：head 元信息、导航条、页脚�
 convert-*.py       四个生成器，各自只写自己那种数据形状的结构层
 build-search.py    各页产出 → assets/search.js，首页那只搜索框搜的就是它
 build-terms.py     两道闸门的词表 → admin/terms.js（前端提示），
-                   资料页树与配装的三张词表 → admin/pages.js（审核台左栏与列表），
+                   资料页树与配装的五张词表 → admin/pages.js（审核台左栏与列表），
                    并把 admin/dialect.js 复制一份到 functions/api/（云函数只
                    require 得到自己目录下的东西）
 sync.py            源稿在库与仓库之间对账：记一份基线三方比，撞车就报、不猜方向

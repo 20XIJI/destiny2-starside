@@ -180,7 +180,7 @@
     return (V.lists[V.slots[slot]] || []).filter(ok)[0];
   }
 
-  function tail() { return SETS ? val('定位') : val('类别'); }
+  function tail() { return SETS ? val('标签') : val('强度'); }
 
   function mirror() {
     var cls = state.职业, br = state.分支;
@@ -198,8 +198,8 @@
       ? (self && self[3] ? '<img src="' + UP + self[3] + '" alt="" width="32" '
         + 'height="32">' : '') + esc(cls) + ' · <span class="el-' + BRANCH[br]
         + '">' + esc(br) + '</span>'
-        // 末位逐段跟上详情页：单套那一页写类别，合集里的每一套写定位
-        // （类别是整份合集的，写在页顶那条铭牌上）。
+        // 末位逐段跟上详情页：单套那一页写强度，合集里的每一套写标签
+        // （强度是整份合集的，写在页顶那条铭牌上）。
         + (tail() ? ' · ' + esc(tail()) : '')
       : '<span class="hint">在下方「职业」区域选择职业与元素</span>';
   }
@@ -486,20 +486,50 @@
     btn.focus();
   }
 
-  /* 适用环境与标签是多选 chip，值汇到同一段里的隐藏 input 上——源稿那两行仍是
-     顿号连起来的一串，val() 照旧按 data-key 读一个 .value。
-     带 data-single 的那一栏（类别）一次只选一个：按下时先把同栏的其余弹起来，
-     再走同一条汇总。取值路径只有这一条。 */
+  /* 三栏 chip，值汇到同一段里的隐藏 input 上——源稿那几行仍是顿号连起来的一串，
+     val() 照旧按 data-key 读一个 .value。取值路径只有这一条。
+
+     data-single 那两栏（场景、强度）一次只选一个：按下时先把同栏的其余弹起来。
+     **data-co 是它的唯一豁免**：容器上列着的那几个值彼此之间可以同时按下（raid
+     与地牢——两处的敌人、机制与配装取舍高度重合，同一套两边都能打是常态）。
+     豁免写在容器上而不是这里的一个 if：markup.py 那张表改了，这里自动跟着改。 */
   function toggleTag(c) {
     var set = c.parentNode, on = c.getAttribute('aria-pressed') !== 'true';
     if (on && set.hasAttribute('data-single')) {
+      var co = (set.dataset.co || '').split('\t').filter(Boolean);
+      var keep = co.indexOf(c.textContent) >= 0;
       [].forEach.call(set.querySelectorAll('button'), function (b) {
-        b.setAttribute('aria-pressed', 'false');
+        if (!(keep && co.indexOf(b.textContent) >= 0)) {
+          b.setAttribute('aria-pressed', 'false');
+        }
       });
     }
     c.setAttribute('aria-pressed', String(on));
     sumTags(set.parentNode);
+    scopeTags();
     write();
+  }
+
+  /* 标签那一栏的取值随场景变（markup.SCENE_TAGS）。**映射表不在这里**：生成器
+     把每一枚标签能用在哪些场景写成它自己的 data-for，这里只按当前场景显示与
+     隐藏。加一个场景、给某个场景换一套标签，都只改 markup.py 那一张表。
+
+     藏起来的那几枚要一并弹起来：场景从 raid 换到 PVP 之后，「输出」还按着的话
+     它会照旧汇进隐藏 input，写出一份 tags_of() 当场报错的源稿。
+
+     合集的场景写在页顶、标签写在每一套上，所以场景从整篇文档里找，不限本段。 */
+  function scopeTags() {
+    var box = document.querySelector('input[data-key="场景"]');
+    var now = box ? box.value.split('、').filter(Boolean) : [];
+    [].forEach.call(document.querySelectorAll('.tagset[data-scoped]'), function (set) {
+      [].forEach.call(set.querySelectorAll('button'), function (b) {
+        var owners = (b.dataset.for || '').split('\t');
+        var live = now.some(function (x) { return owners.indexOf(x) >= 0; });
+        b.hidden = !live;
+        if (!live) b.setAttribute('aria-pressed', 'false');
+      });
+      sumTags(set.parentNode);
+    });
   }
 
   /* 一栏 chip 的选中项汇进同段的隐藏 input。选与导入两处共用。 */
@@ -732,7 +762,9 @@
     var all = [].slice.call(box.parentNode.querySelectorAll('.tagset > button'));
     all.forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
     list.forEach(function (t) {
-      var b = all.filter(function (x) { return x.textContent === t; })[0];
+      /* 藏起来的那几枚不算数：导进一份「场景 PVP + 标签 输出」的稿子时，那枚
+         「输出」按下去也提交不出去（tags_of() 会拦），报进 skip 让审的人看见。 */
+      var b = all.filter(function (x) { return x.textContent === t && !x.hidden; })[0];
       if (b) b.setAttribute('aria-pressed', 'true');
       else skip.push(key + '：' + t);
     });
@@ -747,6 +779,7 @@
     [].forEach.call(pen.querySelectorAll('.tagset > button'), function (b) {
       b.setAttribute('aria-pressed', 'false');
     });
+    scopeTags();
     [].forEach.call(pen.querySelectorAll('button.stat'), function (b) {
       b.dataset.mode = '~';
       b.dataset.a = '';
@@ -917,10 +950,13 @@
         paintStat(cell);
       });
 
-    ['类别', '场景', '定位'].forEach(function (key) {
+    /* 场景先按下，标签才知道自己该不该显形——两栏的顺序在这里是有意义的。 */
+    ['强度', '场景', '标签'].forEach(function (key) {
+      if (key === '标签') scopeTags();
       pressTags(pen, key, many(key), skip);
     });
-    // 类别进了铭牌，回填之后要重画一次。
+    scopeTags();
+    // 强度进了铭牌，回填之后要重画一次。
     mirror();
 
     // 核心最后定：它必须是上面已经填进去的某一件，前面没填上就落不了。
@@ -958,10 +994,11 @@
     var why = /\n## 合集介绍\s*([\s\S]*)$/.exec(parts[0]);
     if (setWhy) setWhy.value = why ? why[1].trim() : '';
 
-    ['类别', '场景'].forEach(function (key) {
+    ['强度', '场景'].forEach(function (key) {
       pressTags(hd, key, one(key).split('、').map(function (x) { return x.trim(); })
         .filter(Boolean), skip);
     });
+    scopeTags();
 
     sets = parts.slice(1);
     if (!sets.length) sets = [''];
@@ -1038,8 +1075,8 @@
     return v ? '\n## 审核意见\n\n' + v + '\n' : '';
   }
 
-  /* 三种头部，键不是同一组：合集头部没有分支与定位（每套一个），成员块没有
-     推荐人、更新与类别（整份一个）。`## 职业` 以下那一大段两边逐字相同，
+  /* 三种头部，键不是同一组：合集头部没有分支与标签（每套一个），成员块没有
+     推荐人、更新与强度（整份一个）。`## 职业` 以下那一大段两边逐字相同，
      所以只有头部分家，正文共用 slotsMd()。 */
   function soloHead() {
     var md = '# ' + (val('配装名') || '配装名称') + '\n\n';
@@ -1047,9 +1084,9 @@
     md += line('描述', val('描述'));
     md += line('更新', today());
     md += line('场景', val('场景'));
-    md += line('定位', val('定位'));
+    md += line('标签', val('标签'));
     md += line('分支', state.分支);
-    md += line('类别', val('类别'));
+    md += line('强度', val('强度'));
     md += line('核心', state.核心);
     md += verdictBlock();
     return md;
@@ -1058,7 +1095,7 @@
   function oneHead() {
     var md = '# ' + (val('配装名') || '配装名称') + '\n\n';
     md += line('描述', val('描述'));
-    md += line('定位', val('定位'));
+    md += line('标签', val('标签'));
     md += line('分支', state.分支);
     md += line('核心', state.核心);
     return md;
@@ -1074,7 +1111,7 @@
     md += line('描述', val('描述', hd));
     md += line('更新', today());
     md += line('场景', val('场景', hd));
-    md += line('类别', val('类别', hd));
+    md += line('强度', val('强度', hd));
     md += verdictBlock();
     var why = setWhy ? setWhy.value.trim() : '';
     if (why) md += '\n## 合集介绍\n\n' + why + '\n';
@@ -1141,7 +1178,7 @@
 
   /* 左栏那列目录按已填的那几套现建：套数可变，写进 HTML 就得出满上限再收起来，
      而这里没有「上限即版面」那个约束（碎片那六格有）。 */
-  /* 合集页顶：96px 的核心图与「职业 · N 套 · 类别」那条铭牌，都是镜子。
+  /* 合集页顶：96px 的核心图与「职业 · N 套 · 强度」那条铭牌，都是镜子。
      与详情页逐段同形——那一页页顶就是这两样加推荐者。 */
   function img(path, px) {
     return '<img src="' + UP + path + '" alt="" width="' + px + '" height="' + px + '">';
@@ -1176,7 +1213,7 @@
     id.innerHTML = cls
       ? (self && self[3] ? '<img src="' + UP + self[3] + '" alt="" width="32" '
         + 'height="32">' : '') + esc(cls) + ' · ' + sets.length + ' 套'
-        + (val('类别', hd) ? ' · ' + esc(val('类别', hd)) : '')
+        + (val('强度', hd) ? ' · ' + esc(val('强度', hd)) : '')
       : '<span class="hint">职业与元素在各套内选择</span>';
   }
 
@@ -1198,7 +1235,7 @@
         img.width = img.height = 32;
         b.appendChild(img);
       }
-      // 一行三列：图 / 职业·元素 / 名字·定位。**职业与元素单占中间那一列**，
+      // 一行三列：图 / 职业·元素 / 名字·标签。**职业与元素单占中间那一列**，
       // 挤进副名那一行时 208px 的目录只剩得下一个标签。
       var br = keyOf(md, '分支');
       var who = document.createElement('i');
@@ -1212,7 +1249,7 @@
       var nm = document.createElement('b');
       nm.textContent = nameOf(md) || '未命名';     // 序号由 CSS 的计数器给
       var sub = document.createElement('span');
-      sub.textContent = keyOf(md, '定位') || '未填写';
+      sub.textContent = keyOf(md, '标签') || '未填写';
       if (i === cur) b.setAttribute('aria-current', 'true');
       b.appendChild(nm);
       b.appendChild(sub);
@@ -1343,12 +1380,13 @@
 
   /* 必需的这六项。**缺了不许投**——半张稿子进了队列，审的人既补不出推荐人
      也猜不到核心，只能打回去，来回一趟。装备与描述可以后补，这六项不行。
-     与 admin/admin.js 的 NEED 是同一组。**比后端算指纹的 SAME 多一个类别**：
-     类别是站上的目录分法，缺了 convert-build.py 当场中止，但改它不该让审过
+     与 admin/admin.js 的 NEED 是同一组。**比后端算指纹的 SAME 多一个强度**：
+     强度是站上的目录分法，缺了 convert-build.py 当场中止，但改它不该让审过
      一轮的稿子认不出自己那一份，所以它挡投稿、不进指纹。 */
   var NEED = [['名字', /^#[ \t]*(\S.*)$/m], ['推荐人', /^推荐人：[ \t]*(\S.*)$/m],
               ['职业', /^职业：[ \t]*(\S.*)$/m], ['属性', /^分支：[ \t]*(\S.*)$/m],
-              ['类别', /^类别：[ \t]*(\S.*)$/m], ['核心', /^核心：[ \t]*(\S.*)$/m]];
+              ['场景', /^场景：[ \t]*(\S.*)$/m], ['强度', /^强度：[ \t]*(\S.*)$/m],
+              ['核心', /^核心：[ \t]*(\S.*)$/m]];
 
   // 页面上那几个占位文字：留着没改等于没填。旧写法一并收着——待审队列里
   // 可能还压着按旧占位投的稿子，漏掉就成了一份「有名字」的空稿。
@@ -1369,7 +1407,7 @@
      打回去。推荐人不在内：它写在合集头部，整份一个。 */
   var PER = [['名称', /^#[ \t]*(\S.*)$/m], ['职业', /^职业：[ \t]*(\S.*)$/m],
              ['属性', /^分支：[ \t]*(\S.*)$/m], ['核心', /^核心：[ \t]*(\S.*)$/m],
-             ['使用场景', /^描述：[ \t]*(\S.*)$/m], ['标签', /^定位：[ \t]*(\S.*)$/m]];
+             ['使用场景', /^描述：[ \t]*(\S.*)$/m], ['标签', /^标签：[ \t]*(\S.*)$/m]];
 
   function lacking (md) {
     var lack = short(md, NEED);
