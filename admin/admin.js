@@ -703,11 +703,17 @@
   // 那两样是站上的目录分法，缺了 convert-build.py 当场中止，但改它们不该让审过
   // 一轮的稿子认不出自己那一份，所以它们挡投稿、不进指纹。
   // 更深的结构（套装件数、六维六格）由构建时的 Python 闸门管，不在这里抄第二遍。
+  // **强度那一项认两个键。**换轴之前投的稿子写的是「类别」，是同一件事；只认新键
+  // 的话历史投稿会永远挂着「缺 强度」——一来是假的，二来每行多一枚标签，行的
+  // min-content 跟着变宽，整页被顶出横向滚动条（body 是 width: fit-content）。
   var NEED = [['推荐人', '推荐人'], ['职业', '职业'], ['属性', '分支'],
-              ['场景', '场景'], ['强度', '强度'], ['核心', '核心']]
+              ['场景', '场景'], ['强度', ['强度', '类别']], ['核心', '核心']]
   // 合集里每一套要凑齐的那几样。推荐人不在内：它写在合集头部，整份一个。
+  // 标签那一项与上面的强度同理，认「定位」这个旧键——不认的话一份五套的旧合集
+  // 会报出「两套填齐的配装（现在 0 套）、第 1 套的标签、第 2 套的标签…」一长串，
+  // 那一行把整页顶宽。
   var PER = [['职业', '职业'], ['属性', '分支'], ['核心', '核心'],
-             ['使用场景', '描述'], ['标签', '标签']]
+             ['使用场景', '描述'], ['标签', ['标签', '定位']]]
 
   // **不能用对象字面量**：名字是投稿人填的，叫 constructor 或 toString 时
   // HOLD[名字] 会取到原型链上的函数、读成真值，那一条就永远列着「缺名字」。
@@ -717,8 +723,11 @@
   })
 
   function short (md, keys) {
-    var out = keys.filter(function (k) { return !line(md, k[1]) })
-      .map(function (k) { return k[0] })
+    // 第二项可以是一个键，也可以是一组同义键——任一个写了就算齐（强度／类别）。
+    var out = keys.filter(function (k) {
+      var want = [].concat(k[1])
+      return !want.some(function (one) { return line(md, one) })
+    }).map(function (k) { return k[0] })
     if (!nameOf(md) || HOLD[nameOf(md)]) out.unshift('名字')
     return out
   }
@@ -821,7 +830,10 @@
   }
   function idOf (b) { return b.sub ? b.sub._id : b.id }
 
-  var buildPick = ''          // 左栏选中的那一格：'' 全部、'raid'、'raid/猎人'
+  // 左栏那两级键之间的分隔符。取制表符是因为场景、职业里都不可能出现它，
+  // 而 `/` 会与「宗师/终极」撞车。
+  var SEP = '\t'
+  var buildPick = ''          // 左栏选中的那一格：'' 全部、'突袭'、'突袭\t猎人'
   var openBuild = null        // 详情摊开的是哪一套
 
   // 左栏：场景 → 职业两级。**只列有东西的那些分支**，与资料页树同一条规矩：
@@ -835,28 +847,31 @@
       box.appendChild(el('p', 'lede', '没有配装'))
       return box
     }
+    // **复合键用制表符，不用 `/`**：场景里有「宗师/终极」，拿 `/` 当分隔符会让
+    // 它自己被当成一个「场景/职业」的键——树上那一格因此排不出来，按第一个斜杠
+    // 切出来的还是「宗师」这个不存在的场景。
     var n = {}
     list.forEach(function (b) {
       var c = kindOf(b)
       n[c] = (n[c] || 0) + 1
-      n[c + '/' + clsOf(b)] = (n[c + '/' + clsOf(b)] || 0) + 1
+      n[c + SEP + clsOf(b)] = (n[c + SEP + clsOf(b)] || 0) + 1
     })
     // 词表里那几个排在前面，源稿写了别的值照样出得来——不然那几条在树上点不到。
     var cats = VOCAB.scenes.filter(function (c) { return n[c] })
     Object.keys(n).forEach(function (k) {
-      if (k.indexOf('/') < 0 && cats.indexOf(k) < 0) cats.push(k)
+      if (k.indexOf(SEP) < 0 && cats.indexOf(k) < 0) cats.push(k)
     })
     box.appendChild(row('全部', '', list.length, 0))
     cats.forEach(function (c) {
       box.appendChild(row(c, c, n[c], 0))
-      var ks = VOCAB.classes.filter(function (k) { return n[c + '/' + k] })
+      var ks = VOCAB.classes.filter(function (k) { return n[c + SEP + k] })
       Object.keys(n).forEach(function (k) {
-        var at = k.indexOf('/')
+        var at = k.indexOf(SEP)
         if (at > 0 && k.slice(0, at) === c && ks.indexOf(k.slice(at + 1)) < 0) {
           ks.push(k.slice(at + 1))
         }
       })
-      ks.forEach(function (k) { box.appendChild(row(k, c + '/' + k, n[c + '/' + k], 1)) })
+      ks.forEach(function (k) { box.appendChild(row(k, c + SEP + k, n[c + SEP + k], 1)) })
     })
     return box
 
@@ -872,7 +887,7 @@
 
   function inPick (b) {
     if (!buildPick) return true
-    return buildPick === kindOf(b) || buildPick === kindOf(b) + '/' + clsOf(b)
+    return buildPick === kindOf(b) || buildPick === kindOf(b) + SEP + clsOf(b)
   }
 
   function buildsView () {
@@ -942,8 +957,12 @@
       if (md) {
         r.appendChild(el('span', 'meta', clsOf(b) || '—'))
         r.appendChild(el('span', 'meta', line(md, '分支') || '—'))
+        // 场景与标签跟站上索引页那两级分类对齐：那一页按场景分大节、标签做筛选，
+        // 审核的人扫这一列就知道这一篇会落到哪儿去。旧稿的键名一并认下。
+        r.appendChild(el('span', 'meta', line(md, '场景') || '—'))
+        r.appendChild(el('span', 'meta', line(md, '标签') || line(md, '定位') || '—'))
         // 强度与标签是两回事：标签说这套在队伍里干什么，强度说它凭什么被推荐
-        r.appendChild(el('span', 'kind', line(md, '强度') || '—'))
+        r.appendChild(el('span', 'kind', line(md, '强度') || line(md, '类别') || '—'))
         r.appendChild(el('span', 'by', line(md, '推荐人').split('|')[0].trim() || '—'))
         // 合集与单套在列表上长得一样，不标出来点进去才知道这一行是三套。
         // **排在几个定宽列之后**：插在中间会把它们整体推开，合集那一行与上下

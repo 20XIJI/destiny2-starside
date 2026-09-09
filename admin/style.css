@@ -242,7 +242,12 @@ iframe.prev {
    读者看到的是一个个资料页，不是 docs/boss-hp 这样的路径，所以树上写标题与分组。
    **只列有东西的那些分支**（见 admin.js 的 tree()）：一屏全是零会把真有待审的
    那几页淹掉。 */
-.desk { display: grid; grid-template-columns: 232px 1fr; gap: 26px; align-items: start; }
+/* **第二列写 minmax(0, 1fr)，不写 1fr。**grid 项的 min-width 默认是 auto，也就是
+   「不许小于 min-content」；列表里那些格子都是 nowrap，一行的 min-content 就是所有
+   格子宽度之和，长出来会把这一列顶开、连带把整页顶宽——body 是 width: fit-content，
+   于是页面横向滚动、左栏被推出屏幕。1fr 只说「分剩下的空间」，拦不住这件事。 */
+.desk { display: grid; grid-template-columns: 232px minmax(0, 1fr); gap: 26px; align-items: start; }
+.desk > * { min-width: 0; }
 
 /* --stick 由 assets/app.js 按站头实测高度写回，而编辑台不引 app.js，
    所以这里给个兜底值，不然整条 calc 失效、左栏不吸顶。 */
