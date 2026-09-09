@@ -495,6 +495,23 @@ def hits_in(line, terms, names, keys=True):
     return sorted(out, reverse=True)
 
 
+GAP = '\x01'    # 剥掉的标签留下的占位，两侧不许粘成一个词
+
+
+def naked_text(frags):
+    """一组产出片段剥掉着色 span 之后的裸文本，供闸门反查漏着色。
+
+    标签换成占位符，不是删掉：「覆盖{el-void|虚空}护盾」剥完直接拼起来就是
+    「覆盖护盾」，那是词表里的另一个术语，闸门会报一条源稿里根本没有的漏着色，
+    而源稿怎么改都过不去（着色标记本身就是那个隔断）。片段之间同理。
+    """
+    out = []
+    for frag in frags:
+        frag = re.sub(r'<span class="[^"]*">.*?</span>', GAP, frag, flags=re.S)
+        out.append(re.sub(r'<[^>]+>', GAP, frag))
+    return markup.text_of(GAP.join(out))
+
+
 def scan(slug=None):
     """[(源稿路径, 行号, 起, 止, 词)]，按源稿顺序。"""
     terms, _ = load()

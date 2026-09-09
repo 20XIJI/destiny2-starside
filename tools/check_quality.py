@@ -264,6 +264,26 @@ class Generated(unittest.TestCase):
                          'functions/api/dialect.js 与 admin/dialect.js 分家了，跑一次构建')
 
 
+class NakedText(unittest.TestCase):
+    """两道漏着色闸门共用的裸文本视图：剥掉的标签必须留下隔断。
+
+    「覆盖{el-void|虚空}护盾」剥完直接拼起来就是「覆盖护盾」，那是词表里的另一个
+    术语。闸门因此报一条源稿里根本没有的漏着色，而源稿怎么改都过不去——着色标记
+    本身就是那个隔断。s29 一篇配装源稿撞上过，整次构建卡死在这里。
+    """
+
+    def test_a_stripped_span_does_not_glue_its_neighbours(self):
+        naked = items.naked_text(['长时间覆盖<span class="el-void">虚空</span>护盾'])
+        self.assertNotIn('覆盖护盾', naked)
+        self.assertIn('护盾', naked)
+
+    def test_separate_fragments_do_not_glue(self):
+        self.assertNotIn('覆盖护盾', items.naked_text(['…覆盖', '护盾…']))
+
+    def test_a_genuinely_naked_term_still_shows(self):
+        self.assertIn('覆盖护盾', items.naked_text(['神圣之光给一层覆盖护盾']))
+
+
 class DeploySelection(unittest.TestCase):
     """发什么、剥不剥注释、清单怎么读——四个纯函数各自的判据。
 

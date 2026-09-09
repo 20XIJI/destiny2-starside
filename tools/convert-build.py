@@ -1559,18 +1559,18 @@ def check(out, slug):
     另加一条着色闸门，只管人写的那几段散文（描述、注解与审核意见）：槽位那些名字由查表
     着色，不归源稿管；散文归源稿管，全站术语在里面素着就是漏了。词表与 G6 同一份
     （items.py 的 MECH 减去 LOOSE），不在这里另立一份。"""
-    prose = ''.join(re.findall(r'<p class="desc">(.*?)</p>', out, re.S)
-                    # 按分节标题认，不按 sec-N：编号跟着分节增减挪位，
-                    # 挪错了这一条静默不查任何东西。
-                    + re.findall(r'<h2 class="sect-label">注解</h2>(.*?)</section>',
-                                 out, re.S)
-                    # 合集介绍与注解同为作者写的散文，一样归源稿管。漏了它，
-                    # 合集正文里的术语裸着也过得去——配装源稿不进 G6 正查。
-                    + re.findall(r'<h2 class="sect-label">合集介绍</h2>(.*?)</section>',
-                                 out, re.S)
-                    # 审核意见也是人写的散文，与描述、注解同一条：术语裸着就是漏了。
-                    + re.findall(r'<aside class="verdict">(.*?)</aside>', out, re.S))
-    naked = text_of(re.sub(r'<span class="[^"]*">.*?</span>', '', prose, flags=re.S))
+    prose = (re.findall(r'<p class="desc">(.*?)</p>', out, re.S)
+             # 按分节标题认，不按 sec-N：编号跟着分节增减挪位，
+             # 挪错了这一条静默不查任何东西。
+             + re.findall(r'<h2 class="sect-label">注解</h2>(.*?)</section>',
+                          out, re.S)
+             # 合集介绍与注解同为作者写的散文，一样归源稿管。漏了它，
+             # 合集正文里的术语裸着也过得去——配装源稿不进 G6 正查。
+             + re.findall(r'<h2 class="sect-label">合集介绍</h2>(.*?)</section>',
+                          out, re.S)
+             # 审核意见也是人写的散文，与描述、注解同一条：术语裸着就是漏了。
+             + re.findall(r'<aside class="verdict">(.*?)</aside>', out, re.S))
+    naked = items.naked_text(prose)
     # 判据走 items.hits_in，与 --builds 那一趟自动着色同一条：裸子串判断认不得
     # GUARD，「治愈裂痕」里的「治愈」自动着色照 GUARD 跳过、这里照子串报错，
     # 撞上的源稿怎么改都过不去。

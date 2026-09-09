@@ -392,11 +392,11 @@ def check(cats: list[Category], out: str) -> None:
     # 全站术语出现在正文里就必须着色。这一页走词表着色，G6 那条正查够不着它，
     # 所以闸门放在这里：剥掉着色 span 之后，正文里不许再出现术语。
     # 只查效果正文：套装名、来源、标签与效果名不走 inline()，那几处本来就素色。
-    bodies = ''.join(re.findall(r'<div class="bonus-body">(.*?)</div>', out, re.S))
-    naked = text_of(re.sub(r'<span class="[^"]*">.*?</span>', '', bodies, flags=re.S))
+    naked = items.naked_text(
+        re.findall(r'<div class="bonus-body">(.*?)</div>', out, re.S))
     # GUARD 那几段是故意留素的更长专名，它们裹着的短词不算漏着色
     for g in items.GUARD:
-        naked = naked.replace(g, '')
+        naked = naked.replace(g, items.GAP)
     left = sorted({w for w in GLOSSARY_WORDS if w in naked})
     if left:
         die('这些术语在正文里没着色：%s\n'
