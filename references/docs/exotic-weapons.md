@@ -1,7 +1,7 @@
 # 刷取清单-异域武器
 
-描述：85 把异域武器的输出、清怪与高难评级，含实测总伤与 DPS，以及每一档评级的理由。
-更新：2026.9.6
+描述：139 把异域武器的输出、清怪与高难评级，含实测总伤与 DPS，以及每一档评级的理由。
+更新：2026.9.10
 鸣谢：[小棒猪-LGpig](https://space.bilibili.com/169548478) 整理全部评级、数值与评语。
 数据源：[刷取清单](https://docs.google.com/spreadsheets/d/1qsKGrRzCePGaIM5gNtAQNh949d3OsMJ6qV6Fqtpj22k/htmlview)
 首屏图标：6
@@ -13,7 +13,7 @@
 | 武器 | 图标 | 评级 | 总伤 | DPS | 勇士 | 理由一 | 理由二 | 理由三 |
 |---|---|---|---|---|---|---|---|---|
 | 牵引器火炮 | {ico|![](icons/aa357661db.webp)} | 输出工具枪 |  |  | {champ|![](icons/8b37bb6db2.webp)} | 无法替代的最泛用 30% 易伤武器，除远程以外的任何输出场景基本都需要一个推推位，“科学方法”有加移速效果，是最适合执行输出过程中机制的角色，可用{perk|枯萎凝视}续易伤 | 过机制时面对一些难以处理的{bar-yellow|初级首领}可以推上易伤{deb-void|压制}协助团队处理 |  |
-| 真相 | {ico|![](icons/dfbdfcbffb.webp)} | 输出：T0\\高难：T0.5 | 119636 | 8973 | {champ|![](icons/b7c4048b87.webp)} | {exotic|真相}一键删除了命运 80% 的输出场景，除了超长轴、精准武器输出场景和类似锁具的特殊{bar-yellow|首领}之外，都可以使用他，注意在输出前需要提前叠层 | 捡一盒强化重弹 4 发，而其他筒子都是 3 发，自身 Perk 也能在连续命中 3 发后回复一发，最好的弹药经济筒子，注意把控距离不要炸死{enemy|自己} | |
+| 真相 | {ico|![](icons/dfbdfcbffb.webp)} | 输出：T0\\高难：T0.5 | 119636 | 8973 | {champ|![](icons/b7c4048b87.webp)} | {exotic|真相}一键删除了命运 80% 的输出场景，除了超长轴、精准武器输出场景和类似锁具的特殊{bar-yellow|首领}之外，都可以使用他，注意在输出前需要提前叠层 | 捡一盒强化重弹 4 发，而其他筒子都是 3 发，自身 Perk 也能在连续命中 3 发后回复一发，最好的弹药经济筒子，注意把控距离不要炸死{enemy|自己} |  |
 | 赫沃斯托夫 7G-0X | {ico|![](icons/d005b35c7f.webp)} | 清怪：T0\\高难：T0 |  |  | {champ|![](icons/a9911a3dfe.webp)} | 跳弹清{bar-red|红血}很快，与猎人日志相性很高攒大招效率高，羸弱边打最佳工具 perk | 同上，并且能反 50 光屏障 |  |
 | 单人合唱 | {ico|![](icons/b1afd3af3e.webp)} | 清怪：T0\\输出：T1.5\\高难：T3 | 76676 | 4320 | {champ|![](icons/8b37bb6db2.webp)} | NPA 量身定制武器，建议选择猛攻，右键清小怪左键清{bar-orange|橙血}最好的机制枪，弹药生成 15 可能需要带{el-void|虚空}弹药生成补足 | 腰射绿弹补输出 DPS 很不错，无需精准没有距离限制 | 用左键没有弹药经济，用右键没有伤害，杀{bar-red|红血}还可以 |
 | 英勇利刃 | {ico|![](icons/8461a83ccd.webp)} | 高难：T0\\清怪：T0.5\\输出：T3 | ∞ | 4062 | {champ|![](icons/a9911a3dfe.webp)} | 高难本最无脑最强大的武器，任何缺伤害的配装都能带一把光剑解决，能使用火属性就使用火属性 | 经常会与翻新 a499 搭配过机制时使用，有极高的下限，考虑到手短并且清怪效率并没有那么高略微降低评级 | 伤害还算可以，多人会抢{deb-solar|点燃}，在有如此多优秀伤害选择的情况下基本没有太多出场空间 |
@@ -23,18 +23,20 @@
 | 隐秘追猎 | {ico|![](icons/ce399705aa.webp)} | 输出：T0\\高难：T2.5 | 133562 | 7567 | {champ|![](icons/a9911a3dfe.webp)} | 金枪头猎人专武，vog 套的收益者，多人输出时只要每轮捡2 颗{orb|能量球}就可以无需换弹，可带急切走机制，只扣金狙就是最顶级的伤害 | vog 套减少精准伤害的需求，对瞄准要求高 |  |
 | 死亡信使 | {ico|![](icons/45a6563f7c.webp)} | 清怪：T0\\高难：T1\\输出：T2.5 | 88586 | 3008 | {champ|![](icons/b7c4048b87.webp)} | T0 级别的清怪效率，很适合蹲刷怪点使用，可以同时吃到三道波的伤害也让他不虚{bar-yellow|初级首领}，70 弹药生成，{perk|爆破专家}{perk|还治彼身}，基本法则让他成为最顶级的清怪枪之一，基本法则的最简单触发方法是突破清场 | 同上，吃三道波的伤害能力在高压环境也能上场 | 保证每一发都是三道波的 DPS 合格，但没有太多运用环境 |
 | 堡垒 | {ico|![](icons/ba774d583a.webp)} | 输出：T0.5\\清怪：T1\\高难：T1 | 119327 | 4008 | {champ|![](icons/b7c4048b87.webp)} | 邪冬头火歌{el-solar|星界之火}堡垒在不使用严冬手叠层也已经超越大部分输出手段，本身也是个优秀的补输出绿弹 | 堡垒清理{bar-yellow|初级首领}的能力优秀，就是有点手短 | 弹药经济舒适，能承担清理{bar-yellow|初级首领}、{enemy|勇士}、输出{bar-yellow|首领}的角色非常适合飞蛾术士使用 |
+| 裂波者 | {ico|![](icons/84b40079a2.webp)} | 清怪：T0.5\\高难：T1\\输出：T3 | 88666 | 2728 | {champ|![](icons/8b37bb6db2.webp)} | vog 套最大受益者，废墟石板如虎添翼，本身伤害不低，弹药生成 80，转职业技能（{art-perk|不稳定神枪手}），{el-void|虚空}大招（{art-perk|元素超充器}），{art-perk|严酷折射}提供更高伤害，追踪本身也是优秀的机制枪，相当之全面 | 绑定 vog 石板，搭配常见的配装都不错（光能曲阜蛛、逃逸手等）又或者觅敌矛隼，{exotic|星云之歌}这样的{deb-void|不稳定}特化配装 | 补输出伤害与融合步枪相近，不是特别厉害 |
 | 神圣裁决 | {ico|![](icons/2a8dfac12f.webp)} | 输出工具枪 | 75483 | 2256 | {champ|![](icons/8b37bb6db2.webp)} | 造 15% 易伤大弱点注定了他在打精准输出时的不可替代性{perk|震颤反馈}不仅让他{enemy|自己}吃到{art-perk|严酷折射}，火术只需要带上火炮台就能让队友吃满{perk|聚合充能}，符合他工具枪的定义 |  |  |
 | 叛贼 | {ico|![](icons/074be01ffe.webp)} | 输出：T0\\清怪：T1 | 118926 | 13514 | {champ|![](icons/a9911a3dfe.webp)} | {exotic|叛贼} bug，在触发了{exotic|叛贼} buff 后开脱手大，大招结束后马上切到爆炸武器会把{exotic|叛贼}的 30% 增伤转移到该武器上左侧的 DPS 是在触发了{exotic|叛贼} buff 后的双增伤光芒复仇是目前游戏中能够被实际应用的最高 DPS | {exotic|叛贼}“潜藏能量”进度快，能够频繁进入“释放力量”模式释放力量模式自带{deb-void|虚弱}{perk|高爆弹药}，{art-perk|邪恶收割}{el-void|虚空覆盖护盾}弥补了持续扣血的不足 |  |
 | Vex 揭秘者 | {ico|![](icons/dc19811d47.webp)} | 清怪：T0.5\\高难：T2 |  |  | {champ|![](icons/a9911a3dfe.webp)} | 本身伤害够高，手长，能吃粒子解构，反屏障，线融模式方便清理九头蛇炮台等大怪。猎人松身裤可以快速回转闪身{el-solar|焕光}闪身+{el-arc|飞升}+{el-strand|线织幽灵}是非常团队和提高生存能力的配置使用跳舞机也可以 | 绑定松身裤玩法，常态比较一般 |  |
 | 烈日弹丸 | {ico|![](icons/e15340cb88.webp)} | 清怪：T0.5 |  |  | {champ|![](icons/b7c4048b87.webp)} | {perk|高爆弹药}和{el-solar|烈日}爆炸都是非常不错的清怪组件 |  |  |
 | 利维坦之息 | {ico|![](icons/829adc3246.webp)} | 输出：T0 | 223610 | 12904 | {champ|![](icons/b7c4048b87.webp)} | {el-void|虚空}三箭猎人专属顶级输出武器，使用好奇之器，{exotic|命运眷顾}素体换弹为 0，建议携带手部填装，有泰坦小盾、术士月鞋会更舒适 |  |  |
 | 加拉尔号角 | {ico|![](icons/934f9ea9de.webp)} | 输出工具枪\\清怪：T0\\高难：T2 |  |  | {champ|![](icons/a9911a3dfe.webp)} | 鉴于光芒复仇的强大，相当于对紫筒子输出{buff|增益} 26% 左右的{exotic|加拉尔号角}的地位也随之提升，在一些追求极限输出的场景会有推推炮切{exotic|加拉尔号角}{perk|枯萎凝视}续易伤的全辅助位 | 狼群弹药自动追踪清怪，最迅速的清怪武器，速通竞赛常客 | 本体伤害不够看，主要配合松身裤猎人使用 |
-| 裂波者 | {ico|![](icons/84b40079a2.webp)} | 清怪：T0.5\\高难：T1.5\\输出：T3 | 88666 | 2728 | {champ|![](icons/8b37bb6db2.webp)} | vog 套最大受益者，废墟石板如虎添翼，本身伤害不低，弹药生成 80，转职业技能（{art-perk|不稳定神枪手}），{el-void|虚空}大招（{art-perk|元素超充器}），{art-perk|严酷折射}提供更高伤害，追踪本身也是优秀的机制枪，相当之全面 | 绑定 vog 石板，搭配常见的配装都不错（光能曲阜蛛、逃逸手等）又或者觅敌矛隼，{exotic|星云之歌}这样的{deb-void|不稳定}特化配装 | 补输出伤害与融合步枪相近，不是特别厉害 |
+| 伊邪那岐的重担 | {ico|![](icons/29afe67492.webp)} | 输出：T0\\清怪：T2.5\\高难：T4 | 56856 | 6623 | {champ|![](icons/a9911a3dfe.webp)} | 翻新 A499 剑狙双切的组合相当不错，比单扣翻新 dps 高使用数据盘的远程填装{art-perk|动能合成}、{art-perk|狙击手冥想}和{art-perk|动能裂口}，剑狙打裂口会造成双倍伤害，副手可带{perk|边打边劫}续航 | 在面对炮台和死灵等{bar-orange|橙血}可快速解决，不过容错太低只有速通内容会使用，翻新会更合适代替这个角色 | 弹药经济劣势，狙击在高难宗师内容打出精准伤害对瞄准有相当程度的要求 |
 | 寄生虫 | {ico|![](icons/fd02e278d8.webp)} | 输出：T1\\清怪：T1\\高难：T1 |  |  | {champ|![](icons/a9911a3dfe.webp)} | 冰区域拒止+星界虚无+{exotic|寄生虫}的单人 DPS 能达到 5500 的水平建议配合药剂包寒风凛凛+突破清场+{art-perk|动能冲击}极致 DPS：威胁等级+双发独头+{exotic|寄生虫}，PVP2 件套，{art-perk|动能合成}沙漠尾王可以使用 | 经常会用在纯机制关掏出来一发秒{bar-yellow|初级首领}，但不能使用枪套之后需要两把枪命中换弹手感略差 | 攒层使他的理论总伤非常高，处理{bar-yellow|初级首领}和输出{bar-yellow|首领}都很不错，要注意不要炸死{enemy|自己}，反屏障 |
 | 需求层级 | {ico|![](icons/8d4634a7a9.webp)} | 输出：T0\\高难：T2 | ∞ | 10964 | {champ|![](icons/b7c4048b87.webp)} | {el-void|虚空}三箭猎专属顶级输出武器，三人一起使用时伤害最高搭配好奇之器，大部分情况下使用箭袋腿 | 宗师少数能刮得动的白弹，没出圈时手感很差 |  |
-| 伊邪那岐的重担 | {ico|![](icons/29afe67492.webp)} | 输出：T1\\清怪：T2.5\\高难：T4 | 56856 | 6623 | {champ|![](icons/a9911a3dfe.webp)} | 翻新 A499 剑狙双切的组合相当不错，比单扣翻新 dps 高使用数据盘的远程填装{art-perk|动能合成}、{art-perk|狙击手冥想}和{art-perk|动能裂口}，剑狙打裂口会造成双倍伤害，副手可带{perk|边打边劫}续航 | 在面对炮台和死灵等{bar-orange|橙血}可快速解决，不过容错太低只有速通内容会使用，翻新会更合适代替这个角色 | 弹药经济劣势，狙击在高难宗师内容打出精准伤害对瞄准有相当程度的要求 |
 | 杀手之牙 | {ico|![](icons/bcf6437217.webp)} | 高难：T1\\清怪：T1\\输出：T2.5 | 83139 | 3524 | {champ|![](icons/8b37bb6db2.webp)} | 不错的伤害，优秀的弹药经济，击杀上{deb-void|虚弱}配合{art-perk|邪恶收割}可以一直上{el-void|虚空覆盖护盾}，b 计划电泰坦和松身裤猎人的好伙伴可快速叠加{el-arc|电光充能}和回转闪身 | 同上，配合{art-perk|元素超充器}可回转超能 | 电泰坦 b 计划 solo 情况可以玩，但是推推炮裁决定论应该更好 |
 | 法夫纳 | {ico|![](icons/2f5a9c2472.webp)} | 输出工具枪 |  |  | {champ|![](icons/b7c4048b87.webp)} | 唯一的远程 30 易伤工具枪，易伤 buff 时间收起武器时停止计时，施加易伤时间 5 秒不适合{perk|枯萎凝视}续，所以在超过 25 秒的长轴需要切枪输出，可以在类似见证者的场景使用输出手法：斩首火线阴谋淬砺 3 枪+{exotic|法夫纳}一枪，或任意其他{el-void|虚空}狙 |  |  |
+| 三体坐观者 | {ico|![](icons/9d9fce23de.webp)} | 清怪：T0 |  |  | {champ|![](icons/8b37bb6db2.webp)} | 只有当{el-arc|电弧}连锁伤害能连锁死小怪时，才应该使用三体非压光内容清怪效率奇高 |  |  |
+| 冷酷无情 | {ico|![](icons/2a6dd4fe93.webp)} | 输出：T0.5 | 70355 | 6013 | {champ|![](icons/b7c4048b87.webp)} | 需要有小怪触发{perk|杀戮弹匣}的场合，直接射DPS也不错，可与熔炉2件套搭配 |  |  |
 | 故我在\\（意外缓刑）\\涡流 | {ico|![](icons/b3f87b5fb9.webp)} | 高难：T0.5\\输出：T1 | 108087 | 5147 | {champ|![](icons/8b37bb6db2.webp)} | 伤害非常高，保证{el-prismatic|超凡}回转就等于无限弹药，涡流增强的受益者 | 仅限于{el-prismatic|超凡}持续时间内伤害高，适合 20 秒的短轴猎人日志 vog 套输出手法：一直右键，不打左键 |  |
 | 故我在\\（纯五度）\\铸造 | {ico|![](icons/b3f87b5fb9.webp)} | 高难：T0.5\\输出：T1.5 | 92644 | 5264 | {champ|![](icons/a9911a3dfe.webp)} | 伤害不错，配合{exotic|黎明副歌}伤害很高，更重要的是反屏障 | 仅限于{el-prismatic|超凡}持续时间内伤害高，适合 20 秒的短轴绑定{exotic|黎明副歌}，猎人日志 vog 套输出手法：一重+二轻，带火炮台一重一轻 |  |
 | 故我在\\（{el-arc|电弧}导体）\\波形 | {ico|![](icons/b3f87b5fb9.webp)} | 清怪：T1\\高难：T2 |  |  | {champ|![](icons/8b37bb6db2.webp)} | 有减伤且高效的清怪武器，过载也能配合{art-perk|元素超充器}转电大触发{art-perk|光子耀斑}频繁{el-arc|电弧}{deb-arc|致盲} | {el-prismatic|棱镜}分支的专属武器，适合清理{bar-red|红血}与{bar-yellow|初级首领} |  |
@@ -42,9 +44,7 @@
 | 故我在\\（狼群弹药）\\任意 | {ico|![](icons/b3f87b5fb9.webp)} | 特殊用途 |  |  | {champ|![](icons/a9911a3dfe.webp)} | 紫刀剑和{exotic|故我在}的辅助武器。 |  |  |
 | 阿格尔的权杖 | {ico|![](icons/006e337344.webp)} | 清怪：T0.5\\高难：T2.5\\输出：T3 | 120982 | 3841 | {champ|![](icons/8b37bb6db2.webp)} | 擅长清理{bar-red|红血}怪，击杀{deb-stasis|冻结}效果很不错，同时可以触发{art-perk|严酷折射}，如果你玩泰坦有转冰大招的需求，可以考虑用它与{art-perk|元素超充器}配合（废墟石板） | 只有在触发催化消耗大招时伤害才够看，常态很一般绑定需求大招回转，绑定{art-perk|严酷折射} | 虽然触发催化之后配合{el-prismatic|指挥琢面}的伤害和总伤够看，但很明显你不应该为此牺牲一个脱手大 |
 | 集体义务 | {ico|![](icons/a9eb6214ab.webp)} | 清怪：T1 |  |  | {champ|![](icons/a9911a3dfe.webp)} | 27 次命中可以获得{deb-void|不稳定}、{deb-void|虚弱}、{deb-void|压制}，配合废墟石板{art-perk|不稳定神枪手}和{art-perk|邪恶收割}获得职业技能回转和{el-void|虚空覆盖护盾} |  |  |
-| 冷酷无情 | {ico|![](icons/2a6dd4fe93.webp)} | 输出：T1 | 70355 | 6013 | {champ|![](icons/b7c4048b87.webp)} | 需要有小怪触发{perk|杀戮弹匣}的场合，直接射DPS也不错，可与熔炉2件套搭配 |  |  |
 | 维王者之剑 | {ico|![](icons/682140db15.webp)} | 清怪：T1\\高难：T1 |  |  | {champ|![](icons/8b37bb6db2.webp)} | 虫手泰坦下限极高的过机制武器，举盾时给予盟友{el-void|虚空覆盖护盾}保证团队生存，NPA 神器为其量身定做 | 虫手泰坦和{el-arc|组合打击}电猎 |  |
-| 三体坐观者 | {ico|![](icons/9d9fce23de.webp)} | 清怪：T1 |  |  | {champ|![](icons/8b37bb6db2.webp)} | 只有当{el-arc|电弧}连锁伤害能连锁死小怪时，才应该使用三体非压光内容清怪效率奇高 |  |  |
 | 第四骑士 | {ico|![](icons/9a3ab05aff.webp)} | 输出：T1\\清怪：T1 |  | 8496 | {champ|![](icons/8b37bb6db2.webp)} | 速通和输出 rush 中会被使用 |  |  |
 | 回旋喝彩 | {ico|![](icons/86d9823bc4.webp)} | 输出：T1\\高难：T1.5 |  | 4403 | {champ|![](icons/a9911a3dfe.webp)} | 长时间蓄力给了阴谋淬砺冷却的时间，可以单人两波见证者 | 可以把他看作{el-strand|缚丝}但是需要蓄力的{exotic|寄生虫}，弹药经济优秀，反屏障 |  |
 | 阿克瑞斯传说 | {ico|![](icons/2cd39e790d.webp)} | 输出：T1 | 112507 | 5533 | {champ|![](icons/8b37bb6db2.webp)} | 顶级的近身输出选择，但在有裁决定论+{exotic|混乱无序}的组合已经没有那么常用了 |  |  |
@@ -76,18 +76,29 @@
 | 大序曲 | {ico|![](icons/d42c74e0fe.webp)} | 输出：T2 | 187194 | 4373 | {champ|![](icons/b7c4048b87.webp)} | 需要提前叠 20 层的输出才够看，但是叠层的手感实在太差也不一定有那么多怪给所有人叠层，适合在晚星之主等大长轴使用搭配药剂包突破清场+{art-perk|电弧复合} |  |  |
 | 破冰者 | {ico|![](icons/e9bb0cb049.webp)} | 高难：T2 |  |  | {champ|![](icons/a9911a3dfe.webp)} | 绑定贪婪套刺激低语冰泰坦，本身并不是特别强 |  |  |
 | 战狮 | {ico|![](icons/eba4079f51.webp)} | 高难：T2 |  |  | {champ|![](icons/b7c4048b87.webp)} | 绑定贪婪套刺激低语冰泰坦，本身并不是特别强 |  |  |
+| 寒冬之啮 | {ico|![](icons/054e3d0dac.webp)} | 高难：T2 |  |  | {champ|![](icons/b7c4048b87.webp)} | 虫手泰坦和偃月手猎人可以用 |  |  |
 | 库尔之影 | {ico|![](icons/6b727a8106.webp)} | 清怪：T2 |  |  | {champ|![](icons/b7c4048b87.webp)} | 主手类似偃月的角色。可以给虫手泰坦戳戳戳，毒伤可以与毒手联动 |  |  |
+| 先驱者 | {ico|![](icons/07f116008c.webp)} | 输出：T2 |  |  | {champ|![](icons/b7c4048b87.webp)} | 催化手雷吃真理头和手雷六维增伤，可以用来输出看护人；但是骑士之火电术是更优秀的选择 |  |  |
 | 改造版猩红死命 | {ico|![](icons/852ef5713b.webp)} | 清怪：T2 |  |  | {champ|![](icons/b7c4048b87.webp)} | 击杀给{el-solar|治愈} 2 回大口血很不错，但是伤害和手感都一般 |  |  |
 | 蠕虫低语 | {ico|![](icons/6d3e7e3e11.webp)} | 输出：T2 | 134676 | 4544 | {champ|![](icons/a9911a3dfe.webp)} | 翻新是他的全方位上位，且容错率更高，现在已经没有太多的出场空间了 |  |  |
 | 青龙协同之刃 | {ico|![](icons/31f8e4229b.webp)} | 清怪：T2\\高难：T3 |  |  | {champ|![](icons/8b37bb6db2.webp)} | 增强后清怪可把他视作大蒙恩的角色，偃月能承担一部分抗伤角色 | 按 R 的强力射击伤害可观 |  |
+| 汤米的火柴盒 | {ico|![](icons/47d57a79b1.webp)} | 清怪：T2 |  |  | {champ|![](icons/8b37bb6db2.webp)} | 自带{el-solar|恢复}{deb-solar|灼烧}，非常适配猎人日志 |  |  |
 | 入侵者 | {ico|![](icons/a92514f5ec.webp)} | 清怪：T2 |  |  | {champ|![](icons/a9911a3dfe.webp)} | 无限循环超爆发伤害不错 |  |  |
 | 蒙特卡洛 | {ico|![](icons/1a96c62966.webp)} | 清怪：T2\\高难：T3 |  |  | {champ|![](icons/b7c4048b87.webp)} | 本身伤害不错，马尔可夫链以及刺刀近战都可以转近战，非高难几乎没有{bar-yellow|初级首领}能抗住近战一刀 |  |  |
 | 群居者 | {ico|![](icons/5ea55d02e2.webp)} | 清怪：T2 |  |  | {champ|![](icons/8b37bb6db2.webp)} | 类虫机器人自动索敌清怪很舒适，自身 100 弹药生成 |  |  |
-| 寒冬之啮 | {ico|![](icons/054e3d0dac.webp)} | 高难：T2 |  |  | {champ|![](icons/b7c4048b87.webp)} | 虫手泰坦和偃月手猎人可以用 |  |  |
+| 明日之眼 | {ico|![](icons/e8246064eb.webp)} | 清怪：T2 |  |  | {champ|![](icons/b7c4048b87.webp)} | {perk|爆破专家}+预言套可以配合一些手雷玩法；击杀 4 只怪回复一发子弹 |  |  |
+| 瞬变风暴 | {ico|![](icons/ab999ca245.webp)} | 清怪：T2 |  |  | {champ|![](icons/b7c4048b87.webp)} | 导弹伤害优秀，可以吃到自动步枪神器 |  |  |
+| 最终警告 | {ico|![](icons/e64fac448f.webp)} | 清怪：T2.5 |  |  | {champ|![](icons/8b37bb6db2.webp)} | 曾经机工手双倍增伤 bug 拥有顶级的 DPS，利用特殊手法的伤害还不错（左键锁定右键爆发 15 发子弹）还有挂拆解的作用 |  |  |
 | 狂飙 | {ico|![](icons/f7cbef39b5.webp)} | 清怪：T2.5 |  |  | {champ|![](icons/b7c4048b87.webp)} | 强行绑定绿弹手枪事故（金中{perk|二元轨道}）能触发 300% 的增伤弹药生成和手感不错，但占用两把枪和金枪位是很大的限制 |  |  |
 | 监护人 | {ico|![](icons/5aeaa5bfbb.webp)} | 输出：T2.5 | ∞ | 4997 | {champ|![](icons/a9911a3dfe.webp)} | 绑定{art-perk|动能合成}，刚需精准，理论 DPS 看起来很美好然而实战需要绑定神性或者熔炉 2 件套，这并不值得威胁等级的打法类似并且伤害比他更高 |  |  |
 | 荆棘 | {ico|![](icons/2d4f4bc5f0.webp)} | 清怪：T2.5 |  |  | {champ|![](icons/a9911a3dfe.webp)} | 绑定毒手的清怪选择 |  |  |
 | 同调 | {ico|![](icons/f14708b949.webp)} | 输出：T3 |  |  | {champ|![](icons/8b37bb6db2.webp)} | 同调本身的闪电打击伤害被视作武器伤害能吃到所有武器增伤能和电盾、火中的{enemy|施法者}叠加同时释放 2、3 道闪电打击，电泰坦可单人两波晚星之主尾王 |  |  |
+| 黑色利爪 | {ico|![](icons/0c412dd323.webp)} | 高难：T3 |  |  | {champ|![](icons/8b37bb6db2.webp)} | 如果他的催化能够正常生效还是不错的武器，毕竟拥有高贵的{deb-void|压制}和不低的伤害，但是弹药经济太差了 |  |  |
+| 全面爆发 | {ico|![](icons/5257ee59b4.webp)} | 高难：T3 |  |  | {champ|![](icons/8b37bb6db2.webp)} | 在超能回转效率砍后一蹶不振，可以多人刮痧，纳米蜂群层数可以为{exotic|狼毒}增伤但不可能这么使用 |  |  |
+| 极星长枪 | {ico|![](icons/25b6bf34d0.webp)} | 高难：T3 |  |  | {champ|![](icons/a9911a3dfe.webp)} | 搭配{exotic|黎明副歌}猎人日志算是还不错的刮痧白弹 |  |  |
+| 恶意触碰 | {ico|![](icons/c4460ef875.webp)} | 高难：T3 |  |  | {champ|![](icons/a9911a3dfe.webp)} | {exotic|恶意触碰}在金白弹中 DPS 优秀，范围{deb-arc|致盲}{enemy|战斗人员}，腐化也能与毒手联动 |  |  |
+| 土卫十三 | {ico|![](icons/31a70eb919.webp)} | 清怪：T3 |  |  | {champ|![](icons/8b37bb6db2.webp)} | 他的 DPS 表现还不如一些紫融合，但是{el-void|虚空}雨很帅，弹药生成和总伤不错 |  |  |
+| 零号修订 | {ico|![](icons/78dff845d7.webp)} | 高难：T3 |  |  | {champ|![](icons/a9911a3dfe.webp)} | {exotic|零号修订}拥有对{enemy|勇士}夸张的伤害倍率，不依靠击杀叠层 |  |  |
 | 阿莱索尼姆 | {ico|![](icons/5d997c7c8a.webp)} | 特殊用途 |  |  | {champ|![](icons/b7c4048b87.webp)} | 打本时没子弹会用他山巅跳赶路现在输出的时候不太会用它产子弹 |  |  |
 | 玄武行动之刃 | {ico|![](icons/cca596e4e9.webp)} | 特殊用途 |  |  | {champ|![](icons/a9911a3dfe.webp)} | 小泡泡 buff 有 5% 独立增伤为盟友提供生存避风港 |  |  |
 | 劲弩 | {ico|![](icons/377f96c7d4.webp)} | 特殊用途 |  |  | {champ|![](icons/a9911a3dfe.webp)} | 卡鲁斯最后阶段破盾，深渊机灵破盾，但对深渊机灵而言前两波盾不厚，可以直接用输出武器破盾 |  |  |
@@ -97,3 +108,46 @@
 | 蝎狮 | {ico|![](icons/f68ae9985f.webp)} | 特殊用途 |  |  | {champ|![](icons/8b37bb6db2.webp)} | 本身伤害一般，但能让任何伤害在滞空时触发{exotic|蝎狮}的{el-void|虚空覆盖护盾}，比较合适的有{exotic|黎明副歌}火术 |  |  |
 | 冥府三头犬+1 | {ico|![](icons/b4197527a0.webp)} | 特殊用途 |  |  | {champ|![](icons/8b37bb6db2.webp)} | 在众神殿卡鲁斯关内场使用可以用于清理卡鲁斯吐出的骷髅头，本身也有一定清怪能力 |  |  |
 | 邪恶符咒 | {ico|![](icons/5201f8c4a5.webp)} | 特殊用途 |  |  | {champ|![](icons/b7c4048b87.webp)} | 刷大招 |  |  |
+| 北极星 | {ico|![](icons/60364ca334.webp)} | 特殊用途 |  |  | {champ|![](icons/8b37bb6db2.webp)} | 搭配跳舞机（充沛面面俱到）{art-perk|元素超充器}刷电刀大招，双人真理使用 |  |  |
+| 焚天者誓约 | {ico|![](icons/5f2d8701ce.webp)} | 特殊用途 |  |  | {champ|![](icons/a9911a3dfe.webp)} | 无限{deb-solar|点燃}可以玩，比如生命锁具；搭配{exotic|黎明副歌}也是优秀的刮痧枪 |  |  |
+| 魔鬼之厄 | {ico|![](icons/d0fa5791ab.webp)} | 特殊用途 |  |  | {champ|![](icons/b7c4048b87.webp)} | 给生命锁具挂{deb-solar|点燃}，拾取{el-solar|焰灵}后伤害优秀 |  |  |
+| 法定继承人 | {ico|![](icons/3c54d0bd93.webp)} | 特殊用途 |  |  | {champ|![](icons/8b37bb6db2.webp)} | 花园解密 |  |  |
+| 三度迭代 | {ico|![](icons/1454e63b55.webp)} | 特殊用途 |  |  | {champ|![](icons/a9911a3dfe.webp)} | 本身伤害合格，爆头击杀{el-void|隐身}偶尔能派上用场 |  |  |
+| 睡者之吼 | {ico|![](icons/d0f3dcc3c0.webp)} |  |  |  | {champ|![](icons/a9911a3dfe.webp)} | 他的 DPS 和总伤都跟不上时代了 |  |  |
+| 雷神 | {ico|![](icons/69f05856c7.webp)} |  |  |  | {champ|![](icons/8b37bb6db2.webp)} | 伤害最高的机枪，但他是机枪，DPS 甚至没突破 3k |  |  |
+| 云霄破击 | {ico|![](icons/7ae29eaa67.webp)} |  |  |  | {champ|![](icons/a9911a3dfe.webp)} | 伤害比不上紫狙 |  |  |
+| 勘探者 | {ico|![](icons/3164a05ae3.webp)} |  |  |  | {champ|![](icons/b7c4048b87.webp)} | 伤害比不上{exotic|不祥之兆}+紫电榴弹，想打满伤害还要求{bar-yellow|首领}体型 |  |  |
+| 弑后者 | {ico|![](icons/2945dd4d2c.webp)} |  |  |  | {champ|![](icons/b7c4048b87.webp)} | 伤害不如紫线融 |  |  |
+| 帝王蝶 | {ico|![](icons/bdd8ad8f4b.webp)} |  |  |  | {champ|![](icons/8b37bb6db2.webp)} | {exotic|帝王蝶}曾经是电泰坦专武，但是如今{art-perk|闪电过载}伤害被砍后没有太多使用空间 |  |  |
+| 沃德克里夫线圈 | {ico|![](icons/26faf8e5f1.webp)} |  |  |  | {champ|![](icons/b7c4048b87.webp)} | 一把很特殊的武器，曾经总是会对某些{bar-yellow|首领}有特殊伤害，但是现在没有了，他见证了许多；可以与瞬移头搭配割草使用，本身弹药生成 0 需要注意，弹药经济问题严重 |  |  |
+| 零号世界线 | {ico|![](icons/1c496ddbd0.webp)} |  |  |  | {champ|![](icons/b7c4048b87.webp)} | 圣贤 4 超级跳，但是圣贤 4 多排急切 perk 超级跳比他更远 |  |  |
+| 鲁扎库之役 | {ico|![](icons/d51f546c5b.webp)} |  |  |  | {champ|![](icons/8b37bb6db2.webp)} | {exotic|鲁扎库之役}作为一把奶枪的机制完善且逻辑自洽，线虫虫巢非常有趣 |  |  |
+| 朱雀意图之刃 | {ico|![](icons/d1352f4abb.webp)} |  |  |  | {champ|![](icons/b7c4048b87.webp)} | 跟先知头一个问题，锁定盟友机制修改后用处太局限了 |  |  |
+| 毁灭雕像 | {ico|![](icons/dc621cc453.webp)} |  |  |  | {champ|![](icons/b7c4048b87.webp)} | 他能扣篮，扣篮能{deb-void|压制}，他很好玩 |  |  |
+| 冰霜巨人 | {ico|![](icons/6335410771.webp)} |  |  |  | {champ|![](icons/b7c4048b87.webp)} | 他是面包机，他很好玩 |  |  |
+| 双尾狐 | {ico|![](icons/9be371d6f5.webp)} |  |  |  | {champ|![](icons/8b37bb6db2.webp)} | 本身伤害就不够高，他有三种元素吃不满激涌也是最大问题 |  |  |
+| 寒冰核心 | {ico|![](icons/ffc0394896.webp)} |  |  |  | {champ|![](icons/a9911a3dfe.webp)} | 地磁靴转大招比不上{exotic|精致坟墓} |  |  |
+| 渎职 | {ico|![](icons/6bde7b92be.webp)} |  |  |  | {champ|![](icons/b7c4048b87.webp)} | 老牌宗师刮痧枪，对{exotic|枯萎囤积}挂上的被视作傀儡的{enemy|战斗人员}有额外 25% 增伤，曾是{exotic|幸运裤}的强力选择 |  |  |
+| 鼠王 | {ico|![](icons/2bde534dfb.webp)} |  |  |  | {champ|![](icons/a9911a3dfe.webp)} | 玩的人越多越厉害；击杀{el-void|隐身}不错；6 个人一起使用的伤害也不足以输出 |  |  |
+| 帝喾预言 | {ico|![](icons/113241756e.webp)} |  |  |  | {champ|![](icons/b7c4048b87.webp)} | 老牌宗师刮痧枪 |  |  |
+| 碎愿者 | {ico|![](icons/b6a40d1075.webp)} |  |  |  | {champ|![](icons/a9911a3dfe.webp)} | 老牌宗师刮痧枪 |  |  |
+| 糖果生意 | {ico|![](icons/6da6a9f7c9.webp)} |  |  |  | {champ|![](icons/8b37bb6db2.webp)} | 钻机胸突突突很爽 |  |  |
+| 遗言 | {ico|![](icons/3636cd7ef3.webp)} |  |  |  | {champ|![](icons/b7c4048b87.webp)} | {exotic|遗言}{exotic|幸运裤}的伤害一直在理论上非常理想，但是想打满伤害太理想了，而且白弹{exotic|幸运裤}对{bar-yellow|首领}伤害被砍后，即使加了{perk|嫉妒刺客}催化也不行 |  |  |
+| 亡者传说 | {ico|![](icons/a9deb47d8e.webp)} |  |  |  | {champ|![](icons/a9911a3dfe.webp)} | 老牌宗师刮痧枪 |  |  |
+| 死亡使者 | {ico|![](icons/ffc2315cb3.webp)} |  |  |  | {champ|![](icons/8b37bb6db2.webp)} | {exotic|死亡使者}的伤害一直在理论上非常理想，但是想打满伤害太理想了，如今他就算打满伤害的数值也落后于时代 |  |  |
+| 旅行者的选择 | {ico|![](icons/4810e8b9bd.webp)} |  |  |  | {champ|![](icons/8b37bb6db2.webp)} | 曾经有依靠光能聚集的猴戏玩法 |  |  |
+| 米达多功能 | {ico|![](icons/d6a85214b5.webp)} | PVP |  |  | {champ|![](icons/a9911a3dfe.webp)} | 叠满层之后自带{perk|高爆弹药}，但是完全不值得 |  |  |
+| SUROS 政权 | {ico|![](icons/148179403d.webp)} |  |  |  | {champ|![](icons/a9911a3dfe.webp)} | 两种模式一个产绿弹一个产重弹，但是枪械本身伤害和手感都太差了 |  |  |
+| 隼月 | {ico|![](icons/5e39893dab.webp)} | PVP |  |  | {champ|![](icons/a9911a3dfe.webp)} |  |  |  |
+| 黑桃 A | {ico|![](icons/56dd2acd4c.webp)} | PVP |  |  | {champ|![](icons/a9911a3dfe.webp)} |  |  |  |
+| 玉兔 | {ico|![](icons/fcc47f3d77.webp)} | PVP |  |  | {champ|![](icons/b7c4048b87.webp)} | 微型导弹可以山巅跳 |  |  |
+| 无时辩解 | {ico|![](icons/fda1f9d5bc.webp)} | PVP |  |  | {champ|![](icons/a9911a3dfe.webp)} |  |  |  |
+| 警惕羽翼 | {ico|![](icons/d57bae84b9.webp)} | PVP |  |  | {champ|![](icons/b7c4048b87.webp)} |  |  |  |
+| 冷冻状态 77K | {ico|![](icons/69b83a6216.webp)} | PVP |  |  | {champ|![](icons/b7c4048b87.webp)} |  |  |  |
+| 引力子尖刺 | {ico|![](icons/9f04b28dd2.webp)} | PVP |  |  | {champ|![](icons/8b37bb6db2.webp)} |  |  |  |
+| 命定混沌 | {ico|![](icons/39ce505d94.webp)} |  |  |  | {champ|![](icons/a9911a3dfe.webp)} | {perk|目标锁定}/回弹药机制与{deb-void|虚弱}子弹运作机制自相矛盾，失败的设计 |  |  |
+| 守愿者 | {ico|![](icons/0ab5738bce.webp)} |  |  |  | {champ|![](icons/b7c4048b87.webp)} | 他能吊人 |  |  |
+| 邪恶工具 | {ico|![](icons/4f77ce567a.webp)} |  |  |  | {champ|![](icons/8b37bb6db2.webp)} | 他好邪恶 |  |  |
+| 离心混合器 | {ico|![](icons/f8ad8fcad4.webp)} |  |  |  | {champ|![](icons/8b37bb6db2.webp)} | 他能跑步 |  |  |
+| 北极光 | {ico|![](icons/4dd7d466f1.webp)} |  |  |  | {champ|![](icons/a9911a3dfe.webp)} | 他能切属性 |  |  |
+| 严苛光芒 | {ico|![](icons/70a68439d8.webp)} |  |  |  | {champ|![](icons/8b37bb6db2.webp)} | 他也能切属性 |  |  |

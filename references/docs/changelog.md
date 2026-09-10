@@ -10,10 +10,17 @@
 - {act|新增}[弹药生成机制](../ammo/index.html) · 弹药生成属性：7 个直接加属性的来源
 - {act|新增}[弹药生成机制](../ammo/index.html) · 终结技与助攻：终结按所持武器算，助攻给 75%
 - {act|新增}[弹药生成机制](../ammo/index.html) · 超能击杀：绿弹 12%、24%、48%，重弹 8%、16%、32%
+- {act|新增}[PVE 终局刷取指南](../pve-farming/index.html) · [刷取清单-异域护甲](../exotic-armors/index.html)：144 件按三职业分节，含定位与理由
+- {act|新增}[刷取清单-异域武器](../exotic-weapons/index.html)：补上 54 把，共 139 把
 
 - {act|改动}[弹药生成机制](../ammo/index.html)：武器 Perk 与护甲模组并成「弹药生成系数」
+- {act|改动}[刷取清单-异域武器](../exotic-weapons/index.html) · 裂波者、伊邪那岐的重担、三体坐观者、冷酷无情、寒冬之啮：按源表重排
 
 - {act|订正}[护甲模组](../armor-mods/index.html) · 弹药斥候：只有斥候给的那一块强化外观不加量
+- {act|订正}[刷取清单-异域武器](../exotic-weapons/index.html) · 裂波者：高难评级改为 T1
+- {act|订正}[刷取清单-异域武器](../exotic-weapons/index.html) · 伊邪那岐的重担：输出评级改为 T0
+- {act|订正}[刷取清单-异域武器](../exotic-weapons/index.html) · 三体坐观者：清怪评级改为 T0
+- {act|订正}[刷取清单-异域武器](../exotic-weapons/index.html) · 冷酷无情：输出评级改为 T0.5
 
 ## 2026.9.7
 

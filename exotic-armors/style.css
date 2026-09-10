@@ -1,0 +1,80 @@
+/* 刷取清单-异域护甲：144 件异域护甲按三职业分节，写清每一件的定位与上榜理由。
+   通用主题、字体与配色 token 在 /assets/site.css。
+   这一页由 tools/convert-doc.py 从 references/docs/exotic-armors.md 生成，
+   改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
+
+/* 全量宽表那一档（design.md 四节），与同一张源表出来的 exotic-weapons 取同一个数：
+   三列理由并排照搬原表的形，1060px 下每列只剩二十来个字，狡诈严冬那条五百字的评语
+   会折成二十多行、把整行撑得比一屏还高。前三列都窄，剩下的宽度三列均分。
+   --min 同样取 1104px：窄视口下版面的下限，两页同形、同一个下限。 */
+:root { --wrap: 1500px; --min: 1104px; }
+
+/* 上下居中沿用 assets/site.css 的缺省，这里只放宽内边距。
+   左右居中只给前三列——金装名、图标、定位都是短内容，居中读作一组身份信息；
+   三列理由左对齐（是成段的正文）。**列名跟着本列的正文走**（design.md 四节），
+   所以两条各自同时选 thead 与 tbody，整列上下贯通。 */
+.gen th,
+.gen td { padding: 13px 14px; }
+
+.gen th:nth-child(-n + 3),
+.gen td:nth-child(-n + 3) { text-align: center; }
+
+.gen th:nth-child(n + 4) { text-align: left; }
+
+/* 金装名：一行的身份，提亮一档。keep-all 让它只在源稿写的 <br> 处断行
+   （职业金那几行两个之灵一格），不被中文的任意断行拆开。 */
+.gen tbody th[scope="row"] {
+  width: 7em;
+  color: var(--bone-hi);
+  font-family: var(--font-cn);
+  font-size: 13.5px;
+  font-weight: 600;
+  word-break: keep-all;
+}
+
+.gen td.ico {
+  width: 72px;
+  padding: 11px 8px;
+  text-align: center;
+}
+
+/* 图标原图 64–96px 不等（详解页那批是 64，源表自己那几枚是 96），跟着格子缩、
+   不写死像素：窄视口下格子比图还窄时 `margin: 0 auto` 是超约束的，浏览器会把
+   右边距解成负值，整枚图往右错位。宽高属性照旧由 markup.img_size 从文件头现读。 */
+.gen td.ico img {
+  display: block;
+  width: 100%;
+  max-width: 56px;
+  height: auto;
+  margin: 0 auto;
+}
+
+/* 定位：一个方向占一行，不折行——「输出」「高难」「清怪」各自是一个标签。
+   七十多件没有定位，空格子由 site.css 的 `td:empty::after` 画一道发丝短横。 */
+.gen tbody td:nth-child(3) {
+  width: 5em;
+  color: var(--bone);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* 三列理由：这一页的正文。**三列等宽**——原表就是三条并排的评语，宽度一有差别
+   就会被读成主次之分，而它们只是第一、第二、第三条理由。第二、三列常常空着：
+   多数金装只写得出一条理由。 */
+.gen tbody td:nth-child(n + 4) {
+  width: 24em;
+  color: var(--bone-dim);
+  font-size: 13.5px;
+  line-height: 1.95;
+}
+
+/* 屏外的分节不参与布局与绘制：整页 1440px 下约 16700px 高，三节里有两节
+   （10598px）在首屏之外。套在 .block 上而不是 .gen tr 上——content-visibility
+   对表格内部元素不生效；这一页没有 sticky 后代（chip 导航条在 .site-head 里）。
+   contain-intrinsic-size 的 auto 让浏览器渲染过一次后改用真实高度，那个数只是
+   从没渲染过时的初始估值，不必跟着内容维护。取 1440px 下三节实测的中位数
+   （5307 / 5854 / 4744）。 */
+.block {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 5307px;
+}
