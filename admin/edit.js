@@ -80,6 +80,20 @@
     })
   }
 
+  /* 两条编辑路都要先把编辑台那一份拉进来：资料页的闸门与着色走 lint()/paint()，
+     配装页的填表页怎么载、怎么读、错误码怎么翻走 slotOf()/formSrc()/readForm()/
+     mountForm()/say()。
+
+     **dialect 先落地。**admin.js 的 cells() 与 titleEnd() 在函数体里现读
+     window.starsideDialect，不在模块顶层捕获，所以先后不影响求值，影响的是调用：
+     资料页那条路进去就切格。串着载是最省事的保证，代价是 4.6 KB。
+     关掉再开时不重载：脚本已经在页面上了，再插一遍只是白执行一次。
+     **词表不在这条链上**：lint() 同样现读 window.starsideTerms，挪到进去之后空闲补。 */
+  function needAdmin () {
+    if (window.starsideAdmin) return Promise.resolve()
+    return script('admin/dialect.js').then(function () { return script('admin/admin.js') })
+  }
+
   // **词表不进「开编辑态」这条关键路径。**它 104 KB，只有闸门提示与调色板用得上；
   // 进编辑态之后空闲预取，点开某一块时若还没到就等它一次，到了再把调色板与提示
   // 补上。预览不等它——paint() 只认花括号，不查词表——所以改完当场就看得见渲染
@@ -570,24 +584,19 @@
       return Promise.resolve()
     }
     chip.textContent = '载入中…'
-    // 关掉再开时不重载：脚本已经在页面上了，再插一遍只是白执行一次。
-    // **词表不在这条链上**：admin.js 的 lint() 现读 window.starsideTerms，不在
-    // 模块顶层捕获，所以两份脚本的先后不再有约束，词表挪到进去之后空闲补。
-    return (window.starsideAdmin ? Promise.resolve()
-      : script('admin/dialect.js').then(function () { return script('admin/admin.js') }))
-      .then(reload).then(function () {
-        decode()
-        S.on = true
-        mark(true)
-        shade()
-        if (S.pend.length) S.desk.textContent = '审核台 ' + S.pend.length
-        chip.textContent = '退出编辑'
-        chip.setAttribute('aria-current', 'true')
-        ;(window.requestIdleCallback || setTimeout)(wantTerms, 1)
-      }, function (e) {
-        chip.textContent = '编辑'
-        alert('进入编辑失败：' + e.message)
-      })
+    return needAdmin().then(reload).then(function () {
+      decode()
+      S.on = true
+      mark(true)
+      shade()
+      if (S.pend.length) S.desk.textContent = '审核台 ' + S.pend.length
+      chip.textContent = '退出编辑'
+      chip.setAttribute('aria-current', 'true')
+      ;(window.requestIdleCallback || setTimeout)(wantTerms, 1)
+    }, function (e) {
+      chip.textContent = '编辑'
+      alert('进入编辑失败：' + e.message)
+    })
   }
 
   /* ── 配装页那条：整篇替换 ────────────────────────────────────────────
@@ -601,12 +610,11 @@
      与 hash 一并带回，代价只是顺带跑一次对配装恒为空的待审查询。 */
   var pane = null
 
+  // 读法与审核台那条共用 admin.js 的 readForm()：脏判据两边比的必须是同一种读回来
+  // 的样子，抄第二份就会漂。
   function buildRead () {
-    try {
-      var fr = pane && pane.querySelector('iframe')
-      var md = fr && fr.contentWindow.starsideForm.read()
-      return /^#\s+\S/.test(md) ? md : null
-    } catch (e) { return null }
+    var fr = pane && pane.querySelector('iframe')
+    return fr ? window.starsideAdmin.readForm(fr.contentWindow) : null
   }
 
   function buildShut (chip) {
@@ -621,7 +629,7 @@
   }
 
   function buildPane (chip, md) {
-    var kind = window.starsideAdmin.isSet(md) ? 'set' : 'one'
+    var kind = window.starsideAdmin.slotOf(md)
     pane = el('div', 'se-build')
     var bar = el('div', 'se-build-bar')
     // 名字直接取页面上那个 h1，不另写一份解析：屏幕上写着什么，这里就写什么。
@@ -629,12 +637,26 @@
     bar.appendChild(el('span', 'se-build-id',
       '编辑《' + ((h1 && h1.textContent.trim()) || DOC) + '》'))
     var msg = el('p', 'se-build-tip')
-    var keep = null
     if (S.me.lv >= 2) {
       // 素 .op，不挂 .go：go 是「通过」那一档的绿，而这一枚只是存一版，状态不动。
       // （.op.go 那条规则也只在 admin/style.css 里，配装页根本不引它。）
-      keep = el('button', 'op', '保存')
+      var keep = el('button', 'op', '保存')
       keep.type = 'button'
+      keep.onclick = function () {
+        var now = buildRead()
+        if (now === null) { msg.textContent = '读不出填表页里那一份，等它载完再存'; return }
+        keep.disabled = true
+        call('bsave', { id: DOC, md: now }).then(function () {
+          keep.disabled = false
+          S.buildBase = buildRead()
+          // **这一页是构建产物，存完一个字都不会变**，不说清就等于什么都没发生。
+          msg.textContent = '已保存到库。这一页要等本机落盘、构建再部署才更新。'
+        }, function (e) {
+          keep.disabled = false
+          // 与审核台同一张 MSG：同一个 bsave，两条路不该一边中文一边 no permission。
+          msg.textContent = '保存失败：' + window.starsideAdmin.say(e)
+        })
+      }
       bar.appendChild(keep)
     } else {
       // lv 1 照样载得进可改的填表页，不说这一句，人在表里改半天找不到保存。
@@ -648,42 +670,17 @@
     pane.appendChild(bar)
 
     var fr = el('iframe')
-    fr.src = HERE + (kind === 'set' ? 'builds/new/set/index.html'
-      : 'builds/new/index.html')
+    // 地址与灌入都走 admin.js 那一份：review() 排在 load() 之前、基线取归一化之后
+    // 读回来的那一份，两条规矩写在那里一处。
+    fr.src = HERE + window.starsideAdmin.formSrc(kind)
     fr.onload = function () {
       try {
-        var w = fr.contentWindow
-        // 审核意见那一栏与只归审核员的那几个场景在这里立起来，与审核台同一条；
-        // **排在 load() 之前**：load 里的 pressTags() 只按得下没藏起来的按钮。
-        if (w.starsideForm.review) w.starsideForm.review(S.me.lv >= 2)
-        w.starsideForm.load(md)
-        // 那一页自己的「投稿」按一下就是再投一份新稿，摘掉。
-        var send = w.document.getElementById('send')
-        if (send) send.remove()
-        // **基线取 load() 归一化之后那一份**，不取灌进去的：换轴之前那批写的是
-        // 「类别」，读回来是「强度」，拿灌进去那份比会在没人动过的稿子上误报脏。
-        S.buildBase = buildRead()
+        S.buildBase = window.starsideAdmin.mountForm(fr.contentWindow, md, S.me.lv >= 2)
       } catch (err) { msg.textContent = '载入失败：' + err.message }
     }
     pane.appendChild(fr)
     document.body.appendChild(pane)
 
-    if (keep) {
-      keep.onclick = function () {
-        var now = buildRead()
-        if (now === null) { msg.textContent = '读不出填表页里那一份，等它载完再存'; return }
-        keep.disabled = true
-        call('bsave', { id: DOC, md: now }).then(function () {
-          keep.disabled = false
-          S.buildBase = buildRead()
-          // **这一页是构建产物，存完一个字都不会变**，不说清就等于什么都没发生。
-          msg.textContent = '已保存到库。这一页要等本机落盘、构建再部署才更新。'
-        }, function (e) {
-          keep.disabled = false
-          msg.textContent = '保存失败：' + e.message
-        })
-      }
-    }
     chip.textContent = '退出编辑'
     chip.setAttribute('aria-current', 'true')
   }
@@ -691,14 +688,14 @@
   function buildOpen (chip) {
     if (pane) return buildShut(chip)
     chip.textContent = '载入中…'
-    // isSet 从编辑台那一份拿，不在这里抄第二份：它与 convert-build.py 的
-    // split_set() 必须逐字一致。dialect 要排在 admin.js 前面，那一份现读它。
-    return (window.starsideAdmin ? Promise.resolve()
-      : script('admin/dialect.js').then(function () { return script('admin/admin.js') }))
-      .then(function () { return call('pend', { doc: DOC, md: 1 }) })
+    // **两件一起等**：底稿那一发不依赖编辑台那两份脚本，串起来就是白等一段——
+    // 90 KB 的脚本与一次云函数往返里较短的那一段，冷启时是几百毫秒，而 iframe
+    // 要等两边都落地才开载。
+    return Promise.all([needAdmin(), call('pend', { doc: DOC, md: 1 })])
       .then(function (r) {
-        if (!r.md) throw new Error('库里没有 ' + DOC + '，这一页的 data-src 对不上库')
-        buildPane(chip, r.md)
+        var got = r[1]
+        if (!got.md) throw new Error('库里没有 ' + DOC + '，这一页的 data-src 对不上库')
+        buildPane(chip, got.md)
       })
       /* **收尾用 .catch，不用 .then 的第二个参数。**那一份只接前一环的失败，
          接不住成功回调自己抛的——chip 会永远停在「载入中…」，控制台外一声不响。
@@ -706,7 +703,9 @@
          那一截是源稿目录 builds/s29-凯旋纪念碑/…。 */
       .catch(function (e) {
         chip.textContent = '编辑'
-        alert('进入编辑失败：' + e.message)
+        // 走 say() 要 admin.js 已经在手里；载它那一步自己失败时退回原话。
+        alert('进入编辑失败：'
+          + (window.starsideAdmin ? window.starsideAdmin.say(e) : e.message))
       })
   }
 

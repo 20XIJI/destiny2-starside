@@ -16,6 +16,80 @@
 (function () {
   'use strict';
 
+  /* ── 投稿必填项：纯规则，不碰 DOM ────────────────────────────────────
+     **这一段排在取 DOM 之前，且在 Node 里单独导出。**它与 admin/admin.js 的
+     NEED / PER 是同一条规则的两种编码（这里按正则，那里按键名），而两张表已经
+     漂过一次：合集的 PER 无条件要求每一套写「标签：」，convert-build.py 的
+     tags_of() 却规定三个场景整行必须不写——「场景：日常」的合集因此永远投不出去，
+     而三道闸门与 npm test 全绿。审核台那一侧只是多显示一行假的「缺 …」，
+     硬拦的是这一份：send 上 `if (lack.length) return`。
+     导出之后，check_quality.cjs 拿库里每一篇真源稿两边各过一遍。 */
+
+  /* 一套配装最多几套。上限 12：游戏内能存 20 套，再多左栏那列比右栏还长，
+     而一个角色常用的就五六套。 */
+  var SET_MAX = 12;
+
+  /* 必需的这六项。**缺了不许投**——半张稿子进了队列，审的人既补不出推荐人
+     也猜不到核心，只能打回去，来回一趟。装备与描述可以后补，这六项不行。
+     与 admin/admin.js 的 NEED 是同一组。**比后端算指纹的 SAME 多一个强度**：
+     强度是站上的目录分法，缺了 convert-build.py 当场中止，但改它不该让审过
+     一轮的稿子认不出自己那一份，所以它挡投稿、不进指纹。 */
+  var NEED = [['名字', /^#[ \t]*(\S.*)$/m], ['推荐人', /^推荐人：[ \t]*(\S.*)$/m],
+              ['职业', /^职业：[ \t]*(\S.*)$/m], ['属性', /^分支：[ \t]*(\S.*)$/m],
+              ['场景', /^场景：[ \t]*(\S.*)$/m], ['强度', /^强度：[ \t]*(\S.*)$/m],
+              ['核心', /^核心：[ \t]*(\S.*)$/m]];
+
+  // 页面上那几个占位文字：留着没改等于没填。旧写法一并收着——待审队列里
+  // 可能还压着按旧占位投的稿子，漏掉就成了一份「有名字」的空稿。
+  // **不能用对象字面量**：名字是用户填的，叫 constructor 或 toString 时
+  // HOLD[名字] 取到原型链上的函数、读成真值，那份稿子就永远「缺名字」投不出去。
+  var HOLD = Object.create(null);
+  ['配装名', '配装名称', '合集名', '合集名称', '这一套叫什么'].forEach(function (k) { HOLD[k] = 1; });
+
+  function short (md, list) {
+    return list.filter(function (n) {
+      var m = n[1].exec(md);
+      return !m || !m[1].trim() || HOLD[m[1].trim()];
+    }).map(function (n) { return n[0]; });
+  }
+
+  /* 每一套要凑齐的那几样。**至少两套凑齐才收**——一份合集的价值在于「什么时候
+     切哪一套」，只有一套填得完整时它就是一份单套配装，投进合集队列只会让审的人
+     打回去。推荐人不在内：它写在合集头部，整份一个。 */
+  var PER = [['名称', /^#[ \t]*(\S.*)$/m], ['职业', /^职业：[ \t]*(\S.*)$/m],
+             ['属性', /^分支：[ \t]*(\S.*)$/m], ['核心', /^核心：[ \t]*(\S.*)$/m],
+             // 标签不在内，判据见 convert-build.py 的 tags_of()：三个场景没有标签集、
+             // 整行必须不写，其余场景可写可不写。要求它等于把那三个场景的合集锁死。
+             ['使用场景', /^描述：[ \t]*(\S.*)$/m]];
+
+  // sets 由调用方给：页面那一侧传 SETS，离线断言两种都要过一遍。
+  // **不从闭包读**：这一段要能在没有 DOM 的地方跑，而 SETS 是 #sheet 上的
+  // data-set 算出来的。
+  function lacking (md, sets) {
+    var lack = short(md, NEED);
+    if (!sets) return lack;
+    // **套数要在这里挡住**：它不在 NEED 里，缺了照样投得出去，而落盘时
+    // convert-build.py 的 split_set() 会中止，卡住的是整次 npm run build，
+    // 不只是这一篇。
+    var many = md.split(/\n(?=# )/).slice(1);
+    if (many.length > SET_MAX) lack.push('套数（最多 ' + SET_MAX + ' 套）');
+    // 逐套报，报到是第几套——不然投的人不知道该回哪一套去补。
+    var full = 0;
+    many.forEach(function (one, i) {
+      var miss = short(one, PER);
+      if (miss.length) lack.push('第 ' + (i + 1) + ' 套的' + miss.join('、'));
+      else full += 1;
+    });
+    if (full < 2) lack.unshift('两套填齐的配装（现在 ' + full + ' 套）');
+    return lack;
+  }
+
+  // 页面那一半到此为止。**Node 里只导出规则，不接线**——下面整页都要 DOM。
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { NEED: NEED, PER: PER, SET_MAX: SET_MAX, short: short, lacking: lacking };
+  }
+  if (typeof document === 'undefined') return;
+
   var V = window.starsideVocab;
   var sheet = document.getElementById('sheet');
   var out = document.getElementById('out');
@@ -54,7 +128,6 @@
      数组，resetAll，再 importMd 下一套」**——不引入第二套状态模型，页面上永远
      只有一套配装的 DOM。上限 12：游戏内能存 20 套，再多左栏那列比右栏还长，
      而一个角色常用的就五六套。 */
-  var SET_MAX = 12;
   var MIXED = '多职业';
   var sets = [''];
   var cur = 0;
@@ -1378,63 +1451,11 @@
      那一套要是已经上站，这一次就当成更新，审的人同意后覆盖过去。
      发不出去就把原因写在提示位上，不留一个「投稿中…」挂着。 */
 
-  /* 必需的这六项。**缺了不许投**——半张稿子进了队列，审的人既补不出推荐人
-     也猜不到核心，只能打回去，来回一趟。装备与描述可以后补，这六项不行。
-     与 admin/admin.js 的 NEED 是同一组。**比后端算指纹的 SAME 多一个强度**：
-     强度是站上的目录分法，缺了 convert-build.py 当场中止，但改它不该让审过
-     一轮的稿子认不出自己那一份，所以它挡投稿、不进指纹。 */
-  var NEED = [['名字', /^#[ \t]*(\S.*)$/m], ['推荐人', /^推荐人：[ \t]*(\S.*)$/m],
-              ['职业', /^职业：[ \t]*(\S.*)$/m], ['属性', /^分支：[ \t]*(\S.*)$/m],
-              ['场景', /^场景：[ \t]*(\S.*)$/m], ['强度', /^强度：[ \t]*(\S.*)$/m],
-              ['核心', /^核心：[ \t]*(\S.*)$/m]];
-
-  // 页面上那几个占位文字：留着没改等于没填。旧写法一并收着——待审队列里
-  // 可能还压着按旧占位投的稿子，漏掉就成了一份「有名字」的空稿。
-  // **不能用对象字面量**：名字是用户填的，叫 constructor 或 toString 时
-  // HOLD[名字] 取到原型链上的函数、读成真值，那份稿子就永远「缺名字」投不出去。
-  var HOLD = Object.create(null);
-  ['配装名', '配装名称', '合集名', '合集名称', '这一套叫什么'].forEach(function (k) { HOLD[k] = 1; });
-
-  function short (md, list) {
-    return list.filter(function (n) {
-      var m = n[1].exec(md);
-      return !m || !m[1].trim() || HOLD[m[1].trim()];
-    }).map(function (n) { return n[0]; });
-  }
-
-  /* 每一套要凑齐的那几样。**至少两套凑齐才收**——一份合集的价值在于「什么时候
-     切哪一套」，只有一套填得完整时它就是一份单套配装，投进合集队列只会让审的人
-     打回去。推荐人不在内：它写在合集头部，整份一个。 */
-  var PER = [['名称', /^#[ \t]*(\S.*)$/m], ['职业', /^职业：[ \t]*(\S.*)$/m],
-             ['属性', /^分支：[ \t]*(\S.*)$/m], ['核心', /^核心：[ \t]*(\S.*)$/m],
-             // 标签不在内，判据见 convert-build.py 的 tags_of()：三个场景没有标签集、
-             // 整行必须不写，其余场景可写可不写。要求它等于把那三个场景的合集锁死。
-             ['使用场景', /^描述：[ \t]*(\S.*)$/m]];
-
-  function lacking (md) {
-    var lack = short(md, NEED);
-    if (!SETS) return lack;
-    // **套数要在这里挡住**：它不在 NEED 里，缺了照样投得出去，而落盘时
-    // convert-build.py 的 split_set() 会中止，卡住的是整次 npm run build，
-    // 不只是这一篇。
-    var many = md.split(/\n(?=# )/).slice(1);
-    if (many.length > SET_MAX) lack.push('套数（最多 ' + SET_MAX + ' 套）');
-    // 逐套报，报到是第几套——不然投的人不知道该回哪一套去补。
-    var full = 0;
-    many.forEach(function (one, i) {
-      var miss = short(one, PER);
-      if (miss.length) lack.push('第 ' + (i + 1) + ' 套的' + miss.join('、'));
-      else full += 1;
-    });
-    if (full < 2) lack.unshift('两套填齐的配装（现在 ' + full + ' 套）');
-    return lack;
-  }
-
   var send = document.getElementById('send');
   send.addEventListener('click', function () {
     var tip = document.getElementById('copy-tip');
     var md = out.value;
-    var lack = lacking(md);
+    var lack = lacking(md, SETS);
     if (lack.length) {
       tip.textContent = '尚未填写：' + lack.join('、') + '，补齐后再投稿';
       return;

@@ -218,18 +218,18 @@ body:has(#stage:not([hidden])) { --wrap: 1240px; --min: 1120px; }
    溢出留在这一格里之后，头那一行与列表一动不动。
 
    宽度取 max()：至少给足合集那一页的 1340，屏够宽时照常跟着这一格长，
-   宽屏上一条滚动条都不会出现。 */
-#stage { overflow-x: auto; }
+   宽屏上一条滚动条都不会出现。
 
-#stage iframe.prev[data-kind="set"] { width: max(100%, 1340px); }
-
-/* 详情摊在列表下面。上下各留一条发丝线，与列表分开——两块之间没有界，
+   详情摊在列表下面。上下各留一条发丝线，与列表分开——两块之间没有界，
    摊开之后看着像列表长出了一截。 */
 #stage {
+  overflow-x: auto;
   max-width: var(--wrap);
   margin: 18px auto 0;
   padding: 0 22px;
 }
+
+#stage iframe.prev[data-kind="set"] { width: max(100%, 1340px); }
 
 /* 头分左右两列：左边收起与铭牌，右边保存／通过／驳回。两侧的 .acts 都带
    margin-top: 18px，所以「← 收起」与按钮条自然落在同一条基线上，不必另给一档。

@@ -26,24 +26,54 @@ function harness(seed = {}, hooks = {}) {
   function matches(row, query) {
     return Object.entries(query).every(([key, value]) => {
       if (value && typeof value === 'object') {
+        // db.RegExp(...) 在这一侧还原成真正的 RegExp：docs 那条路由按 ^builds/
+        // 前缀挑配装，不认它的话那条路由整个测不了。
+        if (value.$regex !== undefined) return new RegExp(value.$regex, value.$options || '').test(row[key])
         assert.deepEqual(Object.keys(value), ['$ne'], 'unknown query operator')
         return row[key] !== value.$ne
       }
       return row[key] === value
     })
   }
-  function collection(name, state = store, tx = null, query = {}, limit = Infinity) {
+  // shape 收住 limit 之外的几件：field 投影、skip 偏移、orderBy 排序。三件都在
+  // @cloudbase/node-sdk 的 Query 上（types/db.d.ts），而 docs 那条路由用着 field，
+  // 适配器没有它时那条路由一调即抛——它至今一条断言都没有，就是这么来的。
+  function collection(name, state = store, tx = null, query = {},
+                      shape = { limit: Infinity, skip: 0, field: null, order: null }) {
     assert.ok(store[name], 'unknown collection ' + name)
+    const with_ = (patch) => collection(name, state, tx, query, { ...shape, ...patch })
     return {
       where(q) {
         assert.equal(tx, null, 'transaction queries must use doc, not where')
-        return collection(name, state, tx, copy(q), limit)
+        return collection(name, state, tx, copy(q), shape)
       },
-      limit(n) { return collection(name, state, tx, query, n) },
+      limit(n) { return with_({ limit: n }) },
+      skip(n) { return with_({ skip: n }) },
+      orderBy(field, dir) { return with_({ order: [field, dir] }) },
+      field(projection) { return with_({ field: copy(projection) }) },
       async get() {
         assert.equal(tx, null)
-        calls.push({ op: 'query', name, query, limit })
-        const data = [...state[name].values()].filter((r) => matches(r, query)).slice(0, limit).map(copy)
+        calls.push({ op: 'query', name, query, limit: shape.limit, skip: shape.skip,
+                     field: shape.field, order: shape.order })
+        let rows = [...state[name].values()].filter((r) => matches(r, query))
+        if (shape.order) {
+          const [key, dir] = shape.order
+          // 稳定序：skip 分页要它，否则同一行可能被跳过或取两次。
+          rows = rows.slice().sort((a, b) => {
+            const x = a[key], y = b[key]
+            return (x === y ? 0 : x < y ? -1 : 1) * (dir === 'desc' ? -1 : 1)
+          })
+        }
+        const data = rows.slice(shape.skip, shape.skip + shape.limit).map(copy)
+        // field({ md: false }) 是排除式投影：那个键整个不出现，不是出现但为 undefined。
+        // 前端「这一条的正文到底拉没拉回来」判的就是键在不在。
+        if (shape.field) {
+          for (const row of data) {
+            for (const [key, keep] of Object.entries(shape.field)) {
+              if (!keep) delete row[key]
+            }
+          }
+        }
         if (hooks.query) await hooks.query({ name, query, data, store })
         return { data }
       },
@@ -108,6 +138,7 @@ function harness(seed = {}, hooks = {}) {
   }
   const db = {
     command: { neq: (v) => ({ $ne: v }) },
+    RegExp: ({ regexp, options }) => ({ $regex: regexp, $options: options || '' }),
     collection,
     async runTransaction(fn, retries) {
       assert.equal(retries, 0, 'must never automatically replay an approval batch')
@@ -717,6 +748,55 @@ test('the editing console flags item names written with the typographic space', 
 })
 
 
+/* docs 那条路由要把每一条 builds/ 记录的正文都带回去。**这一条只有在库里的配装
+   多到超过一页时才有意义**，所以它自己造出那个规模，不依赖仓库现有的 91 套。
+
+   踩过一次：那一发是 `limit(200)`，第 201 套起 md 取不回来，而记录本身照常出现在
+   第一发里——列表上名字、时间、「已改」全对，只有正文是空的。编辑台那一侧退回投稿
+   时冻住的陈稿，按一下保存就把它盖回库里。三道闸门与 npm test 当时全绿：这条路由
+   一条断言都没有，因为离线适配器没有 field()，一调即抛。 */
+test('every live build comes back with its body, past any single page', async () => {
+  const many = 450                    // 跨过 BODY_PAGE=200 三页，且第三页不满
+  const rows = []
+  for (let i = 0; i < many; i++) {
+    const n = String(i).padStart(4, '0')
+    rows.push({ _id: `builds/s29-测试/b${n}-hunter`, md: `# 第${n}套\n`, hash: 'h', landed: 'h', at: '1' })
+  }
+  // 混一篇资料页进去：投影是为它存在的，它不该被带上 md。
+  rows.push({ _id: 'docs/example', md: '# 资料\n正文', hash: 'h', landed: 'h', at: '1' })
+
+  const h = harness({ docs: rows })
+  h.signIn('reviewer', 2)
+  const out = await h.as('reviewer', { a: 'docs' })
+
+  const builds = out.docs.filter((d) => d._id.indexOf('builds/') === 0)
+  assert.equal(builds.length, many, '配装记录本身一条都不该少')
+  const empty = builds.filter((d) => !d.md)
+  assert.deepEqual(empty.map((d) => d._id), [], '这些配装的正文没带回来')
+  // 每一条都要是自己那份：翻页错位会让 A 拿到 B 的正文，条数照样对得上。
+  const wrong = builds.filter((d) => d.md !== `# 第${d._id.slice(-11, -7)}套\n`)
+  assert.deepEqual(wrong.map((d) => d._id), [], '翻页把正文串行了')
+
+  const doc = out.docs.find((d) => d._id === 'docs/example')
+  assert.equal(Object.hasOwn(doc, 'md'), false, '资料页不该带 md，投影就是为它存在的')
+})
+
+
+/* 库里那份正文没拉回来时，**不许拿投稿那份顶上**。上一条保证后端会取全，这一条
+   保证前端在后端真出岔时不会把陈稿灌进填表页——两层各守一边，中间那条缝是本次
+   事故的形状。 */
+test('a live build whose body did not come back never falls back to the submission', () => {
+  const { api } = adminApi()
+  // 库里这一条存在、hash 与 landed 都在，只是 md 这个键没跟回来（投影或截断）。
+  const rows = api.builds(
+    [{ _id: 'builds/s29-x/a-hunter', hash: 'h', landed: 'h', at: '2' }],
+    [{ _id: 's1', ok: 1, season: 's29-x', slug: 'a-hunter', md: '# 投稿时那份陈稿\n', at: '1' }])
+  assert.equal(rows.length, 1)
+  assert.equal(rows[0].state, 'live')
+  assert.equal(rows[0].md, '', '拿不到库里那份就交空的，不退回 s.md')
+})
+
+
 // 审核台那句「缺 …」与生成器的必填项是两份实现，跨不过去的那条缝由这一条钉住：
 // 构建过得去的源稿，审核台一条都不该报。
 //
@@ -725,23 +805,63 @@ test('the editing console flags item names written with the typographic space', 
 // 合集里 5 份因此挂着假的「缺 …」，其中两份还报「两套填齐的配装（现在 0 套）」
 // ——那一行长到把配装名挤成一个省略号，而填表页那一侧 lacking() 非空即 return，
 // 这几份合集一个字都改不回去。三道闸门与 npm test 当时全绿。
-test('a source the build accepts is never reported as incomplete by the console', () => {
-  const { api } = adminApi()
+function buildSources() {
   const dir = path.join(root, 'references/builds')
-  const bad = []
-  let seen = 0
+  const out = []
   for (const season of fs.readdirSync(dir)) {
     const sd = path.join(dir, season)
     if (!fs.statSync(sd).isDirectory()) continue
     for (const file of fs.readdirSync(sd).filter((x) => x.endsWith('.md'))) {
-      seen++
-      const miss = api.missing(fs.readFileSync(path.join(sd, file), 'utf8'))
-      if (miss.length) bad.push(`${file} → 缺 ${miss.join('、')}`)
+      out.push([file, fs.readFileSync(path.join(sd, file), 'utf8')])
     }
   }
   // 光「一条都没报」不够：读不到源稿时零命中也是全绿。
-  assert.ok(seen > 50, `references/builds 下只读到 ${seen} 篇源稿，路径变了？`)
+  assert.ok(out.length > 50, `references/builds 下只读到 ${out.length} 篇源稿，路径变了？`)
+  return out
+}
+
+test('a source the build accepts is never reported as incomplete by the console', () => {
+  const { api } = adminApi()
+  const bad = []
+  for (const [file, md] of buildSources()) {
+    const miss = api.missing(md)
+    if (miss.length) bad.push(`${file} → 缺 ${miss.join('、')}`)
+  }
   assert.deepEqual(bad, [], `审核台对这些构建得过的源稿报了缺失：\n  ${bad.join('\n  ')}`)
+})
+
+
+/* 上一条钉的是审核台那张表，**这一条钉硬拦的那一半**。填表页的 lacking() 非空即
+   `return`，投稿的人一个字都发不出去；审核台那一侧只是多显示一行假的「缺 …」。
+   上次事故落在这里，而测试当时只覆盖了不流血的那一半。
+
+   两张表是同一条规则的两种编码（这里按正则，那里按键名），已经漂过：admin.js 的
+   强度认「强度」与「类别」两个键，form.js 只认「强度」。 */
+test('a source the build accepts can always be submitted from the form page', () => {
+  const form = require(path.join(root, 'builds/new/form.js'))
+  const bad = []
+  for (const [file, md] of buildSources()) {
+    // 合集走 set 那一页（每一套还要过 PER），单套走另一页。判据与 convert-build.py
+    // 的 split_set() 同源：第二个 `# ` 起就是合集。
+    const sets = /\n# /.test(md)
+    const lack = form.lacking(md, sets)
+    if (lack.length) bad.push(`${file}（${sets ? '合集' : '单套'}）→ ${lack.join('、')}`)
+  }
+  assert.deepEqual(bad, [], `填表页会拦下这些构建得过的源稿：\n  ${bad.join('\n  ')}`)
+})
+
+
+// 两张表答的是同一个问题，答案必须一致：一边说缺、一边说齐，就是又一次事故的形状。
+test('the console and the form page agree on which sources are complete', () => {
+  const { api } = adminApi()
+  const form = require(path.join(root, 'builds/new/form.js'))
+  const split = []
+  for (const [file, md] of buildSources()) {
+    const console_ = api.missing(md).length > 0
+    const page = form.lacking(md, /\n# /.test(md)).length > 0
+    if (console_ !== page) split.push(`${file}：审核台${console_ ? '报缺' : '说齐'}，填表页${page ? '报缺' : '说齐'}`)
+  }
+  assert.deepEqual(split, [], `两张必填项表对不上：\n  ${split.join('\n  ')}`)
 })
 
 

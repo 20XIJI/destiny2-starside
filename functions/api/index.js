@@ -38,6 +38,29 @@ const today = () => new Date(Date.now() + 8 * 3600e3).toISOString().slice(0, 10)
 // stat 那条 doc 不存在时的累计初值，即从 pv:total 那批旧键搬过来的数。
 const SEED_PV = 4668
 
+/* 配装那一批的正文，一条不落。**翻到底，不设一个够大的上限。**
+   `_id` 上排序取稳定序：不排的话 skip 分页会漏掉或重复取同一行。
+   判据是「这一页没满」，与总数无关；91 套时一发到底，超过 PAGE 时多一发。
+
+   PAGE 取 200：配装源稿现在合计 190 KB / 91 套，一页 200 套约 420 KB，
+   在云函数单次返回的量级里仍然宽裕，而绝大多数时候只发一次。
+
+   CAP 是防跑飞的闸，不是业务上限：真撞上它说明库里的 builds/ 记录数量级
+   已经不对（比如前缀写错把整库都框进来了），与其闷头拉到超时，不如抛出来。 */
+const BODY_PAGE = 200
+const BODY_CAP = 20000
+
+async function allBuildBodies() {
+  const out = {}
+  const q = docs.where({ _id: db.RegExp({ regexp: '^builds/', options: '' }) })
+  for (let skip = 0; skip < BODY_CAP; skip += BODY_PAGE) {
+    const page = await q.orderBy('_id', 'asc').skip(skip).limit(BODY_PAGE).get()
+    for (const d of page.data) out[d._id] = d.md
+    if (page.data.length < BODY_PAGE) return out
+  }
+  throw new Error('too many builds')
+}
+
 // ponytail: 先 update 再 set，doc 不存在时才多一次往返。
 // 同一个键当天首次并发写会互相覆盖成 1，掉几个数不值得上事务。
 async function bump(col, id, by) {
@@ -236,20 +259,30 @@ async function editorRoute(a, body, event, me) {
   }
 
   if (a === 'docs') {
-    const r = await docs.field({ md: false }).limit(500).get()
-    // **配装那些要带上 md，资料页那些不带。**投影是为资料页存在的：38 篇合计
-    // 1.5 MB。配装 35 套合计 65 KB，而编辑台的列表要靠 md 读出名字、职业、分支、
-    // 强度与推荐人——本机直接落盘的那 20 套在 subs 里没有投稿记录，不带 md 的话
+    // **配装那些要带上 md，资料页那些不带。**投影是为资料页存在的：39 篇合计
+    // 1.5 MB。配装 91 套合计 190 KB，而编辑台的列表要靠 md 读出名字、职业、分支、
+    // 强度与推荐人——本机直接落盘的那些在 subs 里没有投稿记录，不带 md 的话
     // 列表上连名字都只能显示 slug。
-    const b = await docs.where({ _id: db.RegExp({ regexp: '^builds/', options: '' }) }).limit(200).get()
-    const md = {}
-    for (const d of b.data) md[d._id] = d.md
-    // **触到上限就说出来。**这几条查询一个 orderBy 都没有，到顶之后返回哪一批
-    // 由数据库的自然序说了算，多出来的在编辑台上直接消失——不报的话界面一声不响，
-    // 而配装那一发的上限只有 200。真的服务端分页是另一件事，这里只负责别静默。
+    //
+    // **配装那一发必须取全，取全靠翻到底、不靠一个够大的数。**从前它是
+    // `limit(200)`：第 201 套起 md 取不回来，而记录本身照常出现在第一发里
+    // （hash / landed 都在，列表上名字、时间、「已改」全对），只有正文是空的。
+    // 编辑台那一侧一旦退回投稿时冻住的那份陈稿，按一下保存就把它盖回库里——
+    // 正是这次修掉的那个 bug 在第 201 套上原样复活。翻页判据是「这一页没满」，
+    // 与总数无关，加多少套都不必回来改数字。
+    //
+    // **第一发与翻页一起走。**互不依赖，串起来就是白等一个往返；而这一路每存
+    // 一次配装都要重跑一遍（admin.js 存完走 load()），不是只在进场时跑一次。
+    const [r, mds] = await Promise.all([
+      docs.field({ md: false }).limit(500).get(),
+      allBuildBodies(),
+    ])
     return {
-      docs: r.data.map((d) => (md[d._id] === undefined ? d : { ...d, md: md[d._id] })),
-      more: r.data.length >= 500 || b.data.length >= 200 ? 1 : 0,
+      docs: r.data.map((d) => (mds[d._id] === undefined ? d : { ...d, md: mds[d._id] })),
+      // 第一发仍有上限：到顶之后返回哪一批由数据库的自然序说了算，多出来的在
+      // 编辑台上直接消失。那是「少一行」，看得见；配装正文取不全是「这一行在、
+      // 内容是旧的」，看不见——所以只有后者值得翻页，前者报一位即可。
+      more: r.data.length >= 500 ? 1 : 0,
     }
   }
 
@@ -423,8 +456,10 @@ async function editorRoute(a, body, event, me) {
   }
 
   if (a === 'edits') {
+    // 与 docs / subs 同一条：触顶就报一位。**这张表单调增长**——一处改动结案留
+    // 一条，删不掉也不过期，所以它是三张表里最先撞上限的那一张。
     const r = await edits.limit(500).get()
-    return { edits: r.data }
+    return { edits: r.data, more: r.data.length >= 500 ? 1 : 0 }
   }
 
   // 草稿与提交待审是同一个动作，差在 ok。同一个人同一篇只留一条未结的，改写不堆叠。
@@ -478,7 +513,6 @@ async function editorRoute(a, body, event, me) {
   // 两发串行——后者只为拿 hash 与页面上那份比一次，而这一次比服务端自己做得了。
   if (a === 'pend') {
     const doc = String(body.doc || '')
-    const r = await edits.where({ doc, ok: 0 }).limit(200).get()
     // stale：页面上那份 data-hash 与库里对不上时才要。已通过的那些记录里，
     // before 正是页面此刻显示的原文、after 是库里现在的——拿它们逐条认，比按
     // 归一化文本盲比准，不必猜标记该怎么剥。hash 相同的常态下一条都不取。
@@ -487,7 +521,14 @@ async function editorRoute(a, body, event, me) {
     // 正文跑一遍才知道（乙类）。不在前端再抄第四份切格与匹配。
     // 要正文的三条路合用同一次读：judge 拿它跑 locate，md 把它带回去，
     // 页面上那份 hash 与库里比也要它。
-    const cur = (body.judge || body.md) ? (await docs.doc(doc).get()).data[0] : null
+    //
+    // **两发一起走**：待审那一发与取正文那一发互不依赖，串起来就是白等一个往返。
+    // 配装页开编辑态卡在这一下——iframe 要等它回来才开始载。
+    const [r, one] = await Promise.all([
+      edits.where({ doc, ok: 0 }).limit(200).get(),
+      (body.judge || body.md) ? docs.doc(doc).get() : Promise.resolve(null),
+    ])
+    const cur = one ? one.data[0] : null
     const md = cur ? cur.md : ''
     const out = { pend: body.judge ? r.data.map((e) => ({ ...e, stale: !locate(md, e) })) : r.data }
     if (body.md) { out.md = md; out.hash = cur ? cur.hash : '' }
