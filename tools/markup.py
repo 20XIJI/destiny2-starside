@@ -404,27 +404,73 @@ class Icons:
                 % ('class="%s" ' % cls if cls else '', rel, w, h, attr))
 
 
+OPEN_MARK = re.compile(r'\{([\w-]+)\|')
+
+
+class Markers:
+    """一份文本里的花括号嵌套，建一次、查多次。
+
+    `at(pos)` 答的是「这个位置落在哪个 `{token|内容}` 里」，与逐次回扫那一版
+    逐字等价：取最内层那一个；最内层那个 `{` 不是 `{token|` 形式时给 None，
+    不继续往外找。
+
+    **为什么要建索引。**从前每查一次就从命中处向前扫到文件开头，而闸门是逐匹配
+    调用它的——同一份文本扫上千遍。代价是文档长度的平方：合成语料上每翻一倍长度
+    慢 3–5 倍，112 KB 的单篇要 39 秒。真实源稿快得多，因为 `{` 密集、回扫很快
+    就停；但同一篇资料页剥掉着色标记之后小了 40%、反而慢 16 倍——那正是「一篇又长
+    又还没跑过 items.py --apply 的新稿」的样子，也就是这条路最该快的时候。
+
+    `owner[i]` 是位置 i 最内层那个括号的序号，没有就是 -1。包含判据写在扫描里：
+    `{` 那一格记的是**外面**那一层（`{` 自己的位置不算在它里面），`}` 那一格记的是
+    **正在闭合**的这一层——与回扫版的 `{ 位置 < at <= } 位置` 逐字对上。
+    """
+
+    __slots__ = ('text', 'owner', 'frames')
+
+    def __init__(self, text):
+        self.text = text
+        # 一个括号都没有就不建表：items.py 是逐行建的，而绝大多数行不含标记，
+        # 给每一行都分配一份与行等长的整数表，光分配就比查本身贵。
+        if '{' not in text:
+            self.owner, self.frames = [], []
+            return
+        n = len(text)
+        owner = [-1] * (n + 1)
+        frames = []                  # (token, 内容起, 内容止)；token 为 None 即不是标记
+        stack = []
+        for i, ch in enumerate(text):
+            if ch == '{':
+                owner[i] = stack[-1] if stack else -1
+                m = OPEN_MARK.match(text, i)     # 按位置匹配，不切 text[i:] 复制后半段
+                frames.append([m.group(1), m.end(), n - 1] if m else [None, i, i])
+                stack.append(len(frames) - 1)
+            elif ch == '}':
+                owner[i] = stack[-1] if stack else -1
+                if stack:
+                    frames[stack.pop()][2] = i
+            else:
+                owner[i] = stack[-1] if stack else -1
+        # 末尾那一格归还没闭合的那一层：没闭合时内容取到 n-1，与回扫版
+        # 那句 `text[start:j - 1]`（j 跑到 len 才退出）一致。
+        owner[n] = stack[-1] if stack else -1
+        self.owner, self.frames = owner, frames
+
+    def at(self, pos):
+        if not self.owner:          # 空表即「这份文本一个括号都没有」
+            return None
+        i = self.owner[pos]
+        if i < 0:
+            return None
+        token, start, end = self.frames[i]
+        return None if token is None else (token, self.text[start:end])
+
+
 def inner_marker(text, at):
-    """text[at] 落在哪个 {token|内容} 里，返回 (token, 内容)；不在标记里就是 None。"""
-    depth, i = 0, at - 1
-    while i >= 0:
-        if text[i] == '}':
-            depth += 1
-        elif text[i] == '{':
-            if depth == 0:
-                m = re.match(r'\{([\w-]+)\|', text[i:])
-                if not m:
-                    return None
-                start = i + m.end()          # m 是对 text[i:] 匹配的，偏移要加回 i
-                j, d = start, 1
-                while j < len(text) and d:
-                    d += text[j] == '{'
-                    d -= text[j] == '}'
-                    j += 1
-                return m.group(1), text[start:j - 1]
-            depth -= 1
-        i -= 1
-    return None
+    """text[at] 落在哪个 {token|内容} 里，返回 (token, 内容)；不在标记里就是 None。
+
+    一份文本只查一两次时用这个；要在同一份文本上查很多次，建一个 Markers 复用。
+    """
+    return Markers(text).at(at)
 
 
 def whole_marker(md):

@@ -308,6 +308,9 @@ def check_terms(files, bad):
     for rel in files:
         md = read(rel)
         keep = protected_spans(md)
+        # 括号索引一份源稿建一次，92 条术语共用。**逐次现查是文档长度的平方**，
+        # 见 markup.Markers 的说明。
+        marks = markup.Markers(md)
         for wrong, right in banned:
             for m in re.finditer(re.escape(wrong), md):
                 if any(a <= m.start() and m.end() <= b for a, b in keep):
@@ -318,7 +321,7 @@ def check_terms(files, bad):
             if not token:
                 continue
             for m in re.finditer(re.escape(word), md):
-                hit = markup.inner_marker(md, m.start())
+                hit = marks.at(m.start())
                 # 只管「整个标记就是这个词」的那种。词嵌在更长的短语里时，
                 # 着色属于短语（{el-arc|电弧元素能量球}、{health|治疗能量球}），
                 # 按词强判会把整句的颜色拆碎。

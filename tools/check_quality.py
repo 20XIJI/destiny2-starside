@@ -166,12 +166,94 @@ class EditAnchors(unittest.TestCase):
                 continue
             seen += 1
             doc = hit.group(1)
-            src = self.ROOT / 'references' / (doc + '.md')
+            # 换算走 sync.path_of()，不在这里另写一份：这条断言要证的就是
+            # data-src 与 id_of() 那条算法对得上，自己再推一遍等于跟自己的副本对账。
             with self.subTest(page=str(page.relative_to(self.ROOT))):
-                self.assertTrue(src.is_file(),
+                self.assertTrue(os.path.isfile(sync.path_of(doc)),
                                 'data-src=%r 指不到 references/%s.md' % (doc, doc))
         # 光「全都对得上」不够：正则一旦失配，零命中也是全绿。
         self.assertGreater(seen, 100, '带 data-src 的页面只有 %d 个，标记漏了？' % seen)
+
+
+class MarkerIndex(unittest.TestCase):
+    """`markup.Markers` 与「从命中处向前回扫」那个定义逐字等价。
+
+    回扫是这条规则的**定义**，读起来一眼就对；索引是它的快法子，读起来不是。
+    换过来的理由是回扫是文档长度的平方：闸门逐匹配调用它，同一份文本扫上千遍。
+    带标记的合成语料上，旧版每翻一倍长度涨 4 倍、新版涨 2 倍，59 KB 那一档
+    5591 ms → 4.3 ms。真实源稿快得多（`{` 密集，回扫很快就停），但同一篇资料页
+    剥掉着色标记之后小了 40%、反而慢 16 倍——那正是「又长又还没跑过
+    items.py --apply 的新稿」的样子，也就是这条路最该快的时候。
+
+    定义原样留在这里当参照：快法子漂了，这里当场就红。
+    """
+
+    OPEN = re.compile(r'\{([\w-]+)\|')
+
+    @classmethod
+    def scan(cls, text, at):
+        """回扫版，即 Markers 之前那一份实现，逐字保留。"""
+        depth, i = 0, at - 1
+        while i >= 0:
+            if text[i] == '}':
+                depth += 1
+            elif text[i] == '{':
+                if depth == 0:
+                    m = cls.OPEN.match(text, i)
+                    if not m:
+                        return None
+                    start = m.end()
+                    j, d = start, 1
+                    while j < len(text) and d:
+                        d += text[j] == '{'
+                        d -= text[j] == '}'
+                        j += 1
+                    return m.group(1), text[start:j - 1]
+                depth -= 1
+            i -= 1
+        return None
+
+    # 花括号能摆出的形状：空标记、嵌套、未闭合、不是标记的裸括号、多竖线、
+    # 孤立的 `*`（神器模组页源稿里真有）。
+    SHAPES = ['', '{', '}', '{}', '{a|x}', '{a|}', '{ }', '{a|{b|y}}', '{a|前{b|y}后}',
+              '{a|x', '{未闭合', 'x}y', '{a|x}{b|y}', '{{a|x}}', '{a|{}}', '}{a|x',
+              '{a-b|x}', '{a_b|x}', '{a b|x}', '{a|x}}', '{{', '}}', '{a||x}',
+              '{a|{b|{c|z}}}', '呈 * 形释放 {orb|能量球} 与 {enemy|护甲充能}']
+
+    def test_every_position_of_every_shape_agrees(self):
+        for text in self.SHAPES:
+            idx = markup.Markers(text)
+            for at in range(len(text) + 1):
+                with self.subTest(text=text, at=at):
+                    self.assertEqual(idx.at(at), self.scan(text, at))
+
+    # 语料按窗口切片比：形状取自真实源稿，代价有界。**参照那一份是平方的**，
+    # 拿整篇跑就是让这条断言自己犯被修的那个毛病——它曾把 1 秒的套件拖到分钟级。
+    # 切片顺带造出未闭合的括号，那是整篇里少见、而 Markers 必须处理对的形状。
+    # 600 × 2 窗：17000 个比对点、约 0.2 秒。整篇跑是 1.8 秒，而这一套承诺「约 1 秒」。
+    WINDOW = 600
+    WINDOWS = 2
+
+    def test_real_source_shapes_agree_window_by_window(self):
+        seen = 0
+        for src in sorted(TOOLS.parent.joinpath('references').rglob('*.md')):
+            text = src.read_text(encoding='utf-8')
+            for start in range(0, min(len(text), self.WINDOWS * self.WINDOW), self.WINDOW):
+                chunk = text[start:start + self.WINDOW]
+                if '{' not in chunk:
+                    continue
+                idx = markup.Markers(chunk)
+                spots = set()
+                for m in re.finditer(r'[{}|]', chunk):
+                    spots.update(q for q in (m.start() - 1, m.start(), m.start() + 1)
+                                 if 0 <= q <= len(chunk))
+                for at in sorted(spots):
+                    seen += 1
+                    if idx.at(at) != self.scan(chunk, at):
+                        self.fail('%s 第 %d 字节起那一窗 at=%d 索引与回扫不一致'
+                                  % (src.name, start, at))
+        # 光「全都对得上」不够：读不到源稿时零命中也是全绿。
+        self.assertGreater(seen, 10000, '只比对了 %d 个括号边界点，语料没读到？' % seen)
 
 
 class CellSplitting(unittest.TestCase):

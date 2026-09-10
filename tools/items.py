@@ -468,6 +468,8 @@ def hits_in(line, terms, names, keys=True):
     if (keys and KEY_LINE.match(line)) or line.startswith('#'):
         return []
     head = row_title_end(line)
+    # 括号索引一行建一次，1400 条词共用：逐次现查是行长的平方。
+    marks = markup.Markers(line)
     taken = [False] * len(line)
     for m in re.finditer(r'\]\([^)]*\)', line):
         for i in range(m.start(), m.end()):
@@ -487,7 +489,7 @@ def hits_in(line, terms, names, keys=True):
         for m in rx(word).finditer(line):
             if m.start() < head or any(taken[m.start():m.end()]):
                 continue
-            if markup.inner_marker(line, m.start()):
+            if marks.at(m.start()):
                 continue
             for i in range(m.start(), m.end()):
                 taken[i] = True
