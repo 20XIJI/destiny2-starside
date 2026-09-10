@@ -120,7 +120,7 @@
 | 弑后者 | {ico|![](icons/2945dd4d2c.webp)} |  |  |  | {champ|![](icons/b7c4048b87.webp)} | 伤害不如紫线融 |  |  |
 | 帝王蝶 | {ico|![](icons/bdd8ad8f4b.webp)} |  |  |  | {champ|![](icons/8b37bb6db2.webp)} | {exotic|帝王蝶}曾经是电泰坦专武，但是如今{art-perk|闪电过载}伤害被砍后没有太多使用空间 |  |  |
 | 沃德克里夫线圈 | {ico|![](icons/26faf8e5f1.webp)} |  |  |  | {champ|![](icons/b7c4048b87.webp)} | 一把很特殊的武器，曾经总是会对某些{bar-yellow|首领}有特殊伤害，但是现在没有了，他见证了许多；可以与瞬移头搭配割草使用，本身弹药生成 0 需要注意，弹药经济问题严重 |  |  |
-| 零号世界线 | {ico|![](icons/1c496ddbd0.webp)} |  |  |  | {champ|![](icons/b7c4048b87.webp)} | 圣贤 4 超级跳，但是圣贤 4 多排急切 perk 超级跳比他更远 |  |  |
+| 零号世界线 | {ico|![](icons/1c496ddbd0.webp)} |  |  |  | {champ|![](icons/b7c4048b87.webp)} | 圣贤 4 超级跳，但是圣贤 4 多排急切 perk 超级跳比他更远；碎冰被视作击杀，可以再次使用闪烁重击，配合预言4可以无限产冰闪烁重击 |  |  |
 | 鲁扎库之役 | {ico|![](icons/d51f546c5b.webp)} |  |  |  | {champ|![](icons/8b37bb6db2.webp)} | {exotic|鲁扎库之役}作为一把奶枪的机制完善且逻辑自洽，线虫虫巢非常有趣 |  |  |
 | 朱雀意图之刃 | {ico|![](icons/d1352f4abb.webp)} |  |  |  | {champ|![](icons/b7c4048b87.webp)} | 跟先知头一个问题，锁定盟友机制修改后用处太局限了 |  |  |
 | 毁灭雕像 | {ico|![](icons/dc621cc453.webp)} |  |  |  | {champ|![](icons/b7c4048b87.webp)} | 他能扣篮，扣篮能{deb-void|压制}，他很好玩 |  |  |

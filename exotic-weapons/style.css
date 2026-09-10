@@ -55,9 +55,15 @@
   text-align: center;
 }
 
+/* 源表的武器图标有 69px 与 96px 两批，按文件头宽高显示会一行大一行小，这里钉成一档。 */
 .gen td img {
   display: block;
   margin: 0 auto;
+}
+
+.gen td.ico img {
+  width: 69px;
+  height: 69px;
 }
 
 /* 评级：三个方向各占一行，不折行——「输出：T0」断成两行就读不出配对 */

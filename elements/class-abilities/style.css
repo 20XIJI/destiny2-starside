@@ -14,3 +14,10 @@
 
 .gen td.cd,
 .gen thead th:last-child { width: 13em; }        /* 冷却：最长「基础冷却 101.3 秒」 */
+
+/* 技能图标有 64、59 与 64×74 三种原始尺寸，钉进同一个方框；contain 保住非正方那枚的比例 */
+.gen td.ico img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+}
