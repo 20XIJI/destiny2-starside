@@ -430,7 +430,7 @@
     'bad sub type': '这条是删除申请，按普通投稿处理不了',
     'bad season': '赛季格式不对（形如 s29-…）',
     'bad slug': 'slug 格式不对（小写字母、数字与连字符）',
-    'not passed': '这一条不在「通过」档，撤不回',
+    'already pending': '这一条已经在待审了',
     conflict: '别人刚动过这一条，请刷新后重看',
     // 批量那一路才抛得出的三条。写在同一张表里：认不认得出这个码，与这个码
     // 该翻成什么，两件事只该查一处。
@@ -1545,13 +1545,13 @@
         acts.appendChild(ask)
       }
 
-      // 通过之后、源稿被 sync.py 拉下来之前，这条记录还只活在库里，退得回来。
-      // 上了站（state 完成）就没有这一枚——那时要撤只有「申请移除」，后端也照这条挡。
-      if (b.state === 'pass') {
+      /* 通过与驳回都退得回待审：两档的状态都只活在库里，源稿要等 sync.py 拉下来才
+         落盘。上了站（state 完成）就没有这一枚——那时要撤只有「申请移除」，后端也照
+         这条挡。**不问一声**：它只把这条记录退回待审，通过与驳回再点一次就回去了。 */
+      if (b.state === 'pass' || b.state === 'no') {
         var undo = el('button', 'op', '撤回')
         undo.type = 'button'
         undo.onclick = function () {
-          if (!window.confirm('撤回《' + (nameOf(b.md) || b.id) + '》的通过，退回待审？')) return
           undo.disabled = true
           call('smark', { id: s._id, ok: 0 }).then(load).then(toList, function (e) {
             undo.disabled = false
@@ -1594,15 +1594,7 @@
           })
         }
         yes.onclick = function () { mark(1) }
-        /* **驳回要问一声**：它与旁边的通过只差一个字色，而这一枚没有退路——
-           smark 的撤回那一路要求 cur.ok === 1，驳回之后回不到待审，只剩真删。
-           确认弹窗从前全落在撤回、申请移除、删除废稿这些可逆或半可逆的动作上，
-           最不可逆的这一枚反倒一声不响。 */
-        no.onclick = function () {
-          if (!window.confirm('驳回《' + (nameOf(b.md) || b.id) + '》？'
-              + '\n驳回之后回不到待审，只能删掉。')) return
-          mark(-1)
-        }
+        no.onclick = function () { mark(-1) }
         acts.appendChild(yes)
         acts.appendChild(no)
       }

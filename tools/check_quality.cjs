@@ -292,7 +292,7 @@ test('editor save and explicit smark md cannot alter deletion snapshots', async 
   assert.equal(h.store.subs.get('delete').md, md)
 })
 
-test('an approval can be withdrawn only while the build has not landed', async () => {
+test('both verdicts withdraw back to pending, an approval only before it lands', async () => {
   // 通过但还没落盘：退得回来，正文与 season/slug 原样留着，再通过一次照旧走查重
   const h = harness()
   h.store.subs.set('sub', submission(h, 'sub', { ok: 1 }))
@@ -300,6 +300,16 @@ test('an approval can be withdrawn only while the build has not landed', async (
   assert.equal(h.store.subs.get('sub').ok, 0)
   assert.equal(h.store.subs.get('sub').md, md)
   assert.equal(h.store.subs.get('sub').slug, 'a-hunter')
+
+  // 驳回同样退得回来：审的人点错了、或者打回之后又改主意。正文、指纹与 season/slug
+  // 原样留着——驳回那一路一个字都没动过它们。
+  const back = harness()
+  back.store.subs.set('sub', submission(back, 'sub', { ok: -1 }))
+  assert.equal((await back.request({ a: 'smark', id: 'sub', ok: 0 })).ok, 1)
+  assert.equal(back.store.subs.get('sub').ok, 0)
+  assert.equal(back.store.subs.get('sub').md, md)
+  assert.equal(back.store.subs.get('sub').key, back.fingerprint(md))
+  assert.equal(back.store.subs.get('sub').slug, 'a-hunter')
 
   // 已上站：只把库里的状态退回去，盘上的源稿与站上的页面还在，两侧就此对不上,
   // 而且没有任何一侧会报出来。这条路要走「申请移除」。
@@ -309,13 +319,29 @@ test('an approval can be withdrawn only while the build has not landed', async (
   assert.equal((await live.request({ a: 'smark', id: 'sub', ok: 0 })).error, '已上站，请走申请移除')
   assert.deepEqual(live.snapshot(), landed)
 
-  // 删除申请不许撤（sweep() 可能已经把源稿删了），还没通过的也没有可撤的东西
-  for (const fields of [{ drop: 1, ok: 1 }, { ok: 0 }, { ok: -1 }]) {
+  // **那道门只管通过这一档**：被驳回的更新也带着已上站那一套的 season/slug，按在场
+  // 的 docs 判会把它永远锁在驳回里，而它从来没落过盘。
+  const update = harness({ docs: [{ _id: 'builds/s29-测试/a-hunter', md, hash: digest(md) }] })
+  update.store.subs.set('sub', submission(update, 'sub', { ok: -1, updates: 1 }))
+  assert.equal((await update.request({ a: 'smark', id: 'sub', ok: 0 })).ok, 1)
+  assert.equal(update.store.subs.get('sub').ok, 0)
+
+  // 同一套已经有一条新的待审：撤回旧的就撞出第二条，两条都能通过，而通过时的 slug
+  // 是现算的随机串、查重只看 ok=1 与 docs，站上因此多出一份重复配装。
+  const race = harness()
+  race.store.subs.set('sub', submission(race, 'sub', { ok: -1 }))
+  race.store.subs.set('again', submission(race, 'again'))
+  const queued = race.snapshot()
+  assert.equal((await race.request({ a: 'smark', id: 'sub', ok: 0 })).error, '已有新的待审投稿')
+  assert.deepEqual(race.snapshot(), queued)
+
+  // 删除申请不许撤（sweep() 可能已经把源稿删了），已经在待审的没有可撤的东西
+  for (const fields of [{ drop: 1, ok: 1 }, { drop: 1, ok: -1 }, { ok: 0 }]) {
     const g = harness()
     g.store.subs.set('sub', submission(g, 'sub', fields))
     const was = g.snapshot()
     assert.equal((await g.request({ a: 'smark', id: 'sub', ok: 0 })).error,
-      fields.drop ? 'bad sub type' : 'not passed')
+      fields.drop ? 'bad sub type' : 'already pending')
     assert.deepEqual(g.snapshot(), was)
   }
 })

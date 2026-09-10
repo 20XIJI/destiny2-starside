@@ -383,19 +383,35 @@ async function editorRoute(a, body, event, me) {
     // cur 本来就要读，不多一次调用。驳回那一路不带 md，比不着也不必比。
     if (body.md !== undefined && String(body.md) !== cur.md) set.edBy = me.name
 
-    // 撤回：把「通过」退回「待审」。审的人点错了、或者通过之后又发现问题，在这一段
-    // 里还追得回来——通过只是改了库里这条记录，源稿要等 sync.py 拉下来才落盘。
+    // 撤回：通过与驳回都退得回待审。两档的状态都只活在库里——通过只改了这条记录，
+    // 源稿要等 sync.py 拉下来才落盘；驳回连那一步都没走过。审的人点错了、或者审完
+    // 又改主意，在这一段里都还追得回来。
     //
     // **一旦上了站就不许走这条路**：那时盘上有源稿、站上有页面、点赞也挂上了 _id，
     // 只把库里的状态退回去，库与站就此对不上，而且没有任何一侧会报出来。上了站要
     // 撤只有「申请移除」那一条——它落成一条待审记录，由 sync.py 的 sweep() 连源稿
-    // 一起删。删除申请自己也不许撤：sweep() 可能已经跑过，源稿已经不在了。
+    // 一起删。删除申请自己也不许撤，通过与驳回两档都不许：已通过的那些 sweep() 可能
+    // 已经跑过、源稿已经不在了；被驳回的那些里有一类是 `sync.py --mine` 打回的（本地
+    // 稿有改动），退回待审等于把本机已经拒掉的申请重新排进队列。
     if (ok === 0) {
       if (cur.drop) throw new Error('bad sub type')
-      if (cur.ok !== 1) throw new Error('not passed')
-      if (cur.season && cur.slug &&
+      const was = Number(cur.ok)
+      if (was !== 1 && was !== -1) throw new Error('already pending')
+      // 「已上站」那道门**只管通过这一档**：sub 认出「这一套已经上站了」时会把它的
+      // season/slug 一并记下（updates 那一路），而驳回只写 ok/okBy/at，那两截原样
+      // 留着。不收窄到 was === 1 的话，对已上站那一套的更新被驳回之后就再也退不回
+      // 待审，而它从来没落过盘。
+      if (was === 1 && cur.season && cur.slug &&
           (await docs.doc('builds/' + cur.season + '/' + cur.slug).get()).data.length) {
         throw new Error('已上站，请走申请移除')
+      }
+      // 退回待审要守住「同一 key 的待审只留一条」——sub 那一侧靠一次 find-one-and-
+      // update 维持。驳回之后投稿人又投了一份，这时撤回旧的那条就撞出第二条：两条
+      // 都能通过，而通过时的 slug 是现算的随机串、查重只看 ok=1 与 docs，站上因此
+      // 多出一份重复配装，没有任何一侧会报出来。
+      if (was === -1 && cur.key) {
+        const q = await subs.where({ key: cur.key, ok: 0, drop: _.neq(1) }).limit(1).get()
+        if (q.data.length) throw new Error('已有新的待审投稿')
       }
       await subs.doc(cur._id).update(set)
       return { ok: 1 }
