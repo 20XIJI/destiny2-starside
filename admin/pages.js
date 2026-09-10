@@ -1,6 +1,6 @@
 // 由 tools/build-terms.py 生成，不手改。审核台左栏的资料页树，以及配装的职业、场景、强度、标签与分支五张表。
 window.starsidePages = [
-  ["docs/ammo","弹药生成机制","ammo/index.html","机制","","2026.8.25"],
+  ["docs/ammo","弹药生成机制","ammo/index.html","机制","","2026.9.10"],
   ["docs/buff-debuffs","增伤 & 易伤","buff-debuffs/index.html","机制","","2026.8.30"],
   ["docs/combatant-scalars","战斗人员倍率","combatant-scalars/index.html","机制","","2026.8.14"],
   ["docs/game-mechanics","游戏机制","game-mechanics/index.html","机制","","2026.8.30"],
@@ -8,7 +8,7 @@ window.starsidePages = [
   ["armor-sets","护甲套装效果","armor-sets/index.html","档案","","2026.9.7"],
   ["artifact-mods","神器模组","artifact-mods/index.html","档案","","2026.9.7"],
   ["docs/ability-cooldown","技能冷却","ability-cooldown/index.html","档案","","2026.8.25"],
-  ["docs/armor-mods","护甲模组","armor-mods/index.html","档案","","2026.8.30"],
+  ["docs/armor-mods","护甲模组","armor-mods/index.html","档案","","2026.9.10"],
   ["docs/boss-hp","首领生命值","boss-hp/index.html","档案","","2026.8.30"],
   ["docs/elements","职业分支详解","elements/index.html","档案","","2026.8.23"],
   ["docs/exotic-armor","异域护甲详解","exotic-armor/index.html","档案","","2026.8.30"],
@@ -22,9 +22,9 @@ window.starsidePages = [
   ["docs/stasis","冰影","elements/stasis/index.html","档案","docs/elements","2026.8.30"],
   ["docs/strand","缚丝","elements/strand/index.html","档案","docs/elements","2026.8.10"],
   ["docs/void","虚空","elements/void/index.html","档案","docs/elements","2026.8.30"],
-  ["docs/changelog","更新日志","changelog/index.html","站务","","2026.9.7"],
+  ["docs/changelog","更新日志","changelog/index.html","站务","","2026.9.10"],
   ["docs/palette","配色总览","palette/index.html","站务","","2026.8.24"],
-  ["docs/sources","数据源与鸣谢","sources/index.html","站务","","2026.8.28"],
+  ["docs/sources","数据源与鸣谢","sources/index.html","站务","","2026.9.10"],
   ["docs/dps","DPS 排行","dps/index.html","终局分析","","2026.8.25"],
   ["docs/pve-farming","PVE 终局刷取指南","pve-farming/index.html","终局分析","","2026.9.6"],
   ["docs/raid-guides","Raid 攻略","raid-guides/index.html","终局分析","","2026.8.30"],

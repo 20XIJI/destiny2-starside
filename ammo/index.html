@@ -4,17 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>弹药生成机制 · Starside</title>
-<meta name="description" content="击杀生成弹药的基础百分比、技能与手雷的固定值，以及 Perk、模组、套装加成的叠加方式。">
+<meta name="description" content="击杀、技能与终结技给多少弹药进度，弹药生成属性与生成系数的叠加方式，以及每块弹药拾起来给多少发。">
 <meta name="theme-color" content="#0b0d14">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="Starside">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:title" content="弹药生成机制 · Starside">
-<meta property="og:description" content="击杀生成弹药的基础百分比、技能与手雷的固定值，以及 Perk、模组、套装加成的叠加方式。">
+<meta property="og:description" content="击杀、技能与终结技给多少弹药进度，弹药生成属性与生成系数的叠加方式，以及每块弹药拾起来给多少发。">
 <link rel="preload" href="../assets/fonts/chakra-petch-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../assets/site.css">
 <link rel="stylesheet" href="style.css">
+<script src="../assets/app.js" defer></script>
 </head>
 <body>
 <div class="site-head">
@@ -24,15 +25,16 @@
 <span class="sep">/</span>
 <span aria-current="page">弹药生成机制</span>
 </nav>
+<div class="toolbar" data-section=".block" data-item=".gen tbody tr:not(.lane)" data-label=".sect-label" data-noun="条目" data-chip-label="分节"></div>
 </div>
 
 <header class="page-head">
 <h1>弹药生成机制</h1>
 </header>
 
-<main data-src="docs/ammo" data-hash="8b4a3eddade8f806759eb0094f075ff33debbcd2">
+<main data-src="docs/ammo" data-hash="a97661ed9c621f0a8b0f31280a7d041c5b8e46ae">
 <section class="block" id="sec-1">
-<h2 class="sect-label" data-b="6">武器弹药生成</h2>
+<h2 class="sect-label" data-b="8">武器弹药生成</h2>
 <p data-b="2">击杀<span class="enemy">战斗人员</span>按一个基础百分比生成弹药。这个百分比由四项决定：击杀所用的弹药类型、生成的弹药类型、<span class="enemy">战斗人员</span>等级，以及武器的弹药生成属性。</p>
 <table class="gen">
 <thead>
@@ -56,38 +58,75 @@
 <tr><th scope="row">技能 → <span class="ammo-heavy">重弹</span></th><td>4%</td><td>8%</td><td>16%</td></tr>
 <tr><th scope="row">手雷 → <span class="el-strand">绿弹</span></th><td>6%</td><td>12%</td><td>24%</td></tr>
 <tr><th scope="row">手雷 → <span class="ammo-heavy">重弹</span></th><td>4%</td><td>8%</td><td>16%</td></tr>
+<tr><th scope="row">超能 → <span class="el-strand">绿弹</span></th><td>12%</td><td>24%</td><td>48%</td></tr>
+<tr><th scope="row">超能 → <span class="ammo-heavy">重弹</span></th><td>8%</td><td>16%</td><td>32%</td></tr>
 </tbody>
 </table>
-<p data-b="5">表中的区间随武器的弹药生成属性线性变化。弹药生成属性 100 的特殊武器击杀一名<span class="bar-orange">橙血</span><span class="enemy">战斗人员</span>，生成 18% 的<span class="ammo-special">特殊弹药</span>与 16% 的<span class="ammo-heavy">威能弹药</span>，两者都落在各自区间的上限。</p>
+<p data-b="7">表中的区间随武器的弹药生成属性线性变化。弹药生成属性 100 的特殊武器击杀一名<span class="bar-orange">橙血</span><span class="enemy">战斗人员</span>，生成 18% 的<span class="ammo-special">特殊弹药</span>与 16% 的<span class="ammo-heavy">威能弹药</span>，两者都落在各自区间的上限。</p>
 <p data-b="2">三档<span class="enemy">战斗人员</span>之间大致成倍数关系：<span class="bar-orange">橙血</span>约为<span class="bar-red">红血</span>的两倍，<span class="bar-yellow">初级首领</span>约为四倍。记住<span class="bar-red">红血</span>一列，其余两列可以推算。</p>
+<p data-b="2"><span class="ammo-heavy">重弹</span>打<span class="ammo-heavy">重弹</span>只有 3%–4%，是全表最低的一档。一号位与二号位各放一把弹药生成属性高的武器，是弹药经济的基础。</p>
+<p data-b="2">刀剑没有弹药生成属性，也无法被弹药生成模组改变。刀剑击杀固定生成 3% <span class="ammo-special">特殊弹药</span>与 3% <span class="ammo-heavy">威能弹药</span>进度。</p>
 </section>
 <section class="block" id="sec-2">
-<h2 class="sect-label" data-b="2">技能弹药生成</h2>
-<p data-b="2">技能生成的弹药远少于弹药生成属性合格的武器，靠技能补弹的收益有限。几乎所有技能对<span class="bar-red">红血</span>、<span class="bar-orange">橙血</span>、<span class="bar-yellow">初级首领</span><span class="enemy">战斗人员</span>分别生成 4%、8%、16% 的<span class="ammo-special">特殊弹药</span>与<span class="ammo-heavy">威能弹药</span>。</p>
-<p data-b="2">唯一的例外是手雷：它生成<span class="ammo-special">特殊弹药</span>的速度高出 50%，对三档<span class="enemy">战斗人员</span>分别给 6%、12%、24%。<span class="ammo-heavy">威能弹药</span>那一档与其他技能相同。</p>
+<h2 class="sect-label" data-b="2">技能与超能弹药生成</h2>
+<p data-b="2">技能生成的弹药远少于弹药生成属性合格的武器，靠技能补弹的收益有限。几乎所有技能对<span class="bar-red">红血</span>、<span class="bar-orange">橙血</span>、<span class="bar-yellow">初级首领</span><span class="enemy">战斗人员</span>分别生成 4%、8%、16% 的<span class="ammo-special">特殊弹药</span>与<span class="ammo-heavy">威能弹药</span>。偃月近战与未充能近战都在这一档。</p>
+<p data-b="2">两个例外。手雷生成<span class="ammo-special">特殊弹药</span>的速度高出 50%，对三档<span class="enemy">战斗人员</span>分别给 6%、12%、24%，<span class="ammo-heavy">威能弹药</span>那一档与其他技能相同。超能整整高出一档，<span class="el-strand">绿弹</span>给 12%、24%、48%，<span class="ammo-heavy">重弹</span>给 8%、16%、32%。</p>
 </section>
 <section class="block" id="sec-3">
-<h2 class="sect-label" data-b="2">武器 Perk</h2>
+<h2 class="sect-label" data-b="2">终结技与助攻</h2>
 <dl class="rules">
-<dt data-b="2" class="perk">光中藏弹</dt>
-<dd data-b="1"><span class="ammo-special">特殊弹药</span>生成系数 ×1.25<span class="note">（当前版本存在 Bug：加成对所有武器生效，且其他武器开火不消耗层数）</span>。</dd>
-<dt data-b="1" class="perk">即兴弹药</dt>
-<dd data-b="1"><span class="ammo-special">特殊弹药</span>生成系数 ×1.15，<span class="ammo-heavy">威能弹药</span>生成系数 ×1.1。</dd>
+<dt data-b="2" class="enemy">终结技</dt>
+<dd data-b="1">生成量取决于终结当下所持的武器，不取决于造成终结的手段——前提是终结之前有武器对这名<span class="enemy">战斗人员</span>造成过伤害。</dd>
+<dt data-b="1">终结前只造成技能伤害</dt>
+<dd data-b="1">不产生任何弹药进度。双<span class="ammo-special">特殊弹药</span>武器靠技能补弹这条路因此走不通。</dd>
+<dt data-b="1">超能期间的<span class="enemy">终结技</span></dt>
+<dd data-b="1">按超能击杀计。</dd>
+<dt data-b="1"><span class="el-prismatic">超凡</span>期间的<span class="enemy">终结技</span></dt>
+<dd data-b="1">固定生成 6% <span class="ammo-special">特殊弹药</span>与 4% <span class="ammo-heavy">威能弹药</span>进度。</dd>
+<dt data-b="1">武器助攻</dt>
+<dd data-b="1"><span class="enemy">盟友</span>取得击杀时，按对应击杀值的 75% 给弹药进度。</dd>
 </dl>
 </section>
 <section class="block" id="sec-4">
-<h2 class="sect-label" data-b="2">护甲模组</h2>
+<h2 class="sect-label" data-b="2">弹药生成属性</h2>
+<p data-b="2">弹药生成属性决定一次击杀落在上表区间的哪一档，100 属性即区间上限。以下来源直接加这个属性。</p>
 <dl class="rules">
-<dt data-b="2"><span class="ammo-special">特殊弹药</span>搜寻者</dt>
+<dt data-b="2"><span class="perk">弹药带</span><span class="from">武器模组</span></dt>
+<dd data-b="1">+5 弹药生成，强化版 +7。另给 +15 弹匣属性，强化版 +17。</dd>
+<dt data-b="1"><span class="perk">丰足弹药</span><span class="from">武器模组</span></dt>
+<dd data-b="1">+10 弹药生成，强化版 +12。</dd>
+<dt data-b="1"><span class="perk">空中扳机</span><span class="from">武器 Perk</span></dt>
+<dd data-b="1">被动 +20 弹药生成，强化版 +30。</dd>
+<dt data-b="1"><span class="perk">沙场备战</span><span class="from">武器 Perk</span></dt>
+<dd data-b="1">被动 +20 弹药生成，强化版 +30。</dd>
+<dt data-b="1"><span class="perk">嫉妒军械库</span><span class="from">武器 Perk</span></dt>
+<dd data-b="1">只有强化版给 +10 弹药生成。</dd>
+<dt data-b="1"><span class="perk">爆炸弩弹</span><span class="from">武器 Perk</span></dt>
+<dd data-b="1">只有强化版给 +2 弹药生成。</dd>
+<dt data-b="1"><span class="exotic">亚克兴角战役钻机</span><span class="from">异域胸甲</span></dt>
+<dd data-b="1">用自动步枪或机枪击杀叠一层，每层 +5 弹药生成，10 层时 +50。只作用于自动步枪与机枪。</dd>
+</dl>
+<p data-b="2">另有两条护甲套装效果临时抬高弹药生成属性，写在《护甲套装加成》一节。</p>
+</section>
+<section class="block" id="sec-5">
+<h2 class="sect-label" data-b="2">弹药生成系数</h2>
+<dl class="rules">
+<dt data-b="2"><span class="perk">光中藏弹</span><span class="from">武器 Perk</span></dt>
+<dd data-b="1"><span class="ammo-special">特殊弹药</span>生成系数 ×1.25<span class="note">（当前版本存在 Bug：加成对所有武器生效，且其他武器开火不消耗层数）</span>。</dd>
+<dt data-b="1"><span class="perk">即兴弹药</span><span class="from">武器 Perk</span></dt>
+<dd data-b="1"><span class="ammo-special">特殊弹药</span>生成系数 ×1.15，<span class="ammo-heavy">威能弹药</span>生成系数 ×1.1。</dd>
+<dt data-b="1"><span class="ammo-special">特殊弹药</span>搜寻者<span class="from">护甲模组</span></dt>
 <dd data-b="1"><span class="ammo-special">特殊弹药</span>生成系数 ×1.25 | ×1.40 | ×1.50</dd>
-<dt data-b="1"><span class="ammo-heavy">威能弹药</span>搜寻者</dt>
+<dt data-b="1"><span class="ammo-heavy">威能弹药</span>搜寻者<span class="from">护甲模组</span></dt>
 <dd data-b="1"><span class="ammo-heavy">威能弹药</span>生成系数 ×1.25 | ×1.40 | ×1.50</dd>
+<dt data-b="1">强能裂痕<span class="from">职业技能</span></dt>
+<dd data-b="1">弹药生成系数 ×1.15。<span class="note">与上列各项怎么叠加没有实测。</span></dd>
 </dl>
 <p data-b="2">这些加成同时装在多把武器上可以叠加，且不是逐项相乘，而是把各自的增量相加后一次作用于基础百分比。</p>
 <p data-b="2">两把枪各带一个<em><span class="perk">光中藏弹</span></em>，因上述 Bug 会同时计入两个 ×1.25；再带一把<em><span class="perk">即兴弹药</span></em>的武器，追加 ×1.15；头盔上三个<em><span class="ammo-special">特殊弹药</span>搜寻者</em>按 ×1.50 计。用带<em><span class="perk">即兴弹药</span></em>的武器击杀<span class="bar-red">红血</span><span class="enemy">战斗人员</span>，<span class="ammo-special">特殊弹药</span>生成率为：</p>
 <p data-b="2" class="formula">12% × (1 + 0.5 + 0.25 + 0.25 + 0.15) = <strong>25.8%</strong></p>
 </section>
-<section class="block" id="sec-5">
+<section class="block" id="sec-6">
 <h2 class="sect-label" data-b="2">护甲套装加成</h2>
 <p data-b="2">56 套护甲里有 10 条效果直接作用于弹药：8 条给弹药进度，2 条抬高弹药生成属性。以下只摘与弹药有关的部分，完整触发条件与其余效果见<a href="../armor-sets/index.html">护甲套装效果</a>。</p>
 <p data-b="2">直接给弹药进度：</p>
@@ -116,19 +155,61 @@
 <dt data-b="1">钢铁信念<span class="from">铁甲 4 件</span></dt>
 <dd data-b="1">濒死时 +35 弹药生成属性，持续 7 秒。</dd>
 </dl>
-<p data-b="2" class="note">另有 7 条套装效果挂在弹药盒拾取上（自动收集、拾取时填装、拾取叠层），改变的是捡取与收益，不改变弹药生成本身，未列入上表。</p>
+<p data-b="2" class="note">另有 7 条套装效果挂在弹药块拾取上（自动收集、拾取时填装、拾取叠层），改变的是捡取与收益，不改变弹药生成本身，未列入上表。</p>
 <p data-b="2" class="note">早期社区实测另给出<em>年事已高</em>终结<span class="bar-orange">橙血</span>战斗人员 +15%、终结<span class="bar-yellow">初级首领</span> +20%，以及<em>白手起家</em> ×1.2 弹药生成加成，与《护甲套装效果》页的写法对不上，此处以该页为准。</p>
 </section>
-<section class="block" id="sec-6">
-<h2 class="sect-label" data-b="2">注解</h2>
-<p data-b="2">未充能近战把<span class="enemy">战斗人员</span>打到终结状态后，终结不提供任何弹药能量。双特殊武器靠技能补弹这条路因此走不通。</p>
-<p data-b="2">终结的弹药生成难以复现出一致结果。目前的判断是：生成量取决于终结当下所持的武器，而不是造成终结的手段。</p>
+<section class="block" id="sec-7">
+<h2 class="sect-label" data-b="2">弹药块拾取量</h2>
+<p data-b="2">以上各节算的是弹药进度，攒满即生成一块弹药块。弹药块拾起来给多少发是另一套规则，由武器类型、腿部模组<em>回收利用</em>，以及那块弹药块是不是强化的三项决定。</p>
+<p data-b="2">武器属性超过 100 的部分决定强化弹药块的掉率：每点 +1% 概率，200 属性时必出。判据见<a href="../game-mechanics/index.html">游戏机制</a>的武器属性一行。</p>
+<table class="gen">
+<thead>
+<tr data-b="2">
+<th scope="col">武器</th>
+<th scope="col">常规</th>
+<th scope="col">常规<br>+ 回收利用</th>
+<th scope="col">强化</th>
+<th scope="col">强化<br>+ 回收利用</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+<tbody>
+<tr class="lane" data-b="2"><th colspan="5" scope="colgroup" class="el-strand">绿弹</th></tr>
+<tr><th scope="row">霰弹枪</th><td>2–3</td><td>4</td><td>6</td><td>7–8</td></tr>
+<tr><th scope="row">榴弹发射器</th><td>3–4</td><td>4–5</td><td>6</td><td>7</td></tr>
+<tr><th scope="row">融合步枪</th><td>3</td><td>4</td><td>6–7</td><td>7–8</td></tr>
+<tr><th scope="row">狙击枪</th><td>3–5</td><td>4–6</td><td>6–10</td><td>7–11</td></tr>
+<tr><th scope="row">追踪步枪</th><td>75</td><td>127</td><td>150</td><td>201</td></tr>
+<tr><th scope="row">偃月</th><td>6</td><td>7</td><td>12</td><td>13</td></tr>
+<tr><th scope="row">火箭手枪</th><td>6</td><td>7</td><td>12</td><td>13</td></tr>
+<tr><th scope="row">火箭脉冲</th><td>3</td><td>4</td><td>5</td><td>6</td></tr>
+</tbody>
+<tbody>
+<tr class="lane"><th colspan="5" scope="colgroup" class="ammo-heavy">重弹</th></tr>
+<tr><th scope="row">刀剑</th><td>9–13</td><td>15–21</td><td>11–16</td><td>16–24</td></tr>
+<tr><th scope="row">榴弹发射器</th><td>3</td><td>4</td><td>4</td><td>5</td></tr>
+<tr><th scope="row">火箭发射器</th><td>1</td><td>2</td><td>2</td><td>3</td></tr>
+<tr><th scope="row">线性融合步枪</th><td>3</td><td>4</td><td>4</td><td>5</td></tr>
+<tr><th scope="row">机枪</th><td>38–58</td><td>45–65</td><td>57–87</td><td>64–94</td></tr>
+<tr><th scope="row">重型弩箭</th><td>1</td><td>2</td><td>2</td><td>3</td></tr>
+</tbody>
+</table>
+<ul>
+<li data-b="17"><em>回收利用</em>在追踪步枪、刀剑与火箭发射器上收益最高。</li>
+<li data-b="1"><span class="el-strand">绿弹</span>的强化弹药块几乎都翻倍。<span class="ammo-heavy">重弹</span>那一侧提升有限，其中火箭发射器、机枪与重型弩箭相对高。</li>
+<li data-b="1">副手的火箭脉冲吃不到<em>回收利用</em>。完美逆行能同时吃到自身与副手的那一份，拾取量从 4 发变 5 发、从 6 发变 7 发。</li>
+<li data-b="1">装两把<span class="ammo-special">特殊弹药</span>武器时，全部<span class="el-strand">绿弹</span>拾取量砍半并向下取整。火箭脉冲除外，仍按只装一把时的量拾取。</li>
+<li data-b="1"><span class="exotic">千语</span>的强化弹药块没有任何收益，<em>回收利用</em>给 +1 发。</li>
+<li data-b="1"><em>弹药斥候</em>复制给<span class="enemy">盟友</span>的那一块，拾取量是常规弹药块的 37% ｜ 67% ｜ 100%。它的强化外观只是发光，不增加获取量。</li>
+</ul>
 </section>
 </main>
 
 <footer class="site-foot">
-<p><span class="stamp">更新 2026.8.25</span></p>
+<p><span class="stamp">更新 2026.9.10</span></p>
 <p>数据源：<a href="https://discord.com/channels/591927598255439873/1453807417430245518" target="_blank" rel="noopener">DIM 社区</a>的弹药生成实测<span class="note">（链接指向 Discord 频道内页，需登录并已加入该服务器）</span>。本页在其基础上统一了术语、标点与排版。</p>
+<p>特别鸣谢：<a href="https://space.bilibili.com/169548478" target="_blank" rel="noopener">小棒猪-LGpig</a> 整理弹药拾取量与终结技的全部实测。</p>
 <p>© 2026 日栎w · <a href="https://space.bilibili.com/26117485" target="_blank" rel="noopener">哔哩哔哩</a></p>
 <p class="legal">Starside 为非官方资料站，与 Bungie, Inc. 无从属关系。Destiny 2 及相关名称、标识为 Bungie, Inc. 的商标。</p>
 <p class="legal"><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">鲁ICP备2026052166号-1</a></p>

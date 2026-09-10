@@ -1,7 +1,7 @@
 # 数据源与鸣谢
 
 描述：Starside 各资料页的数值出处与贡献者，一处来源一行，列出它支撑的页面。
-更新：2026.8.28
+更新：2026.9.10
 导航：是
 页脚：各页页脚写着自己那一份出处，这里是全站汇总。
 
@@ -26,7 +26,7 @@
 
 | 贡献者 | 贡献 | 页面 |
 |---|---|---|
-| [小棒猪-LGpig](https://space.bilibili.com/169548478) | 整理全部评级、数值、排序、场景与评语 | [刷取清单-{exotic|异域}武器](../exotic-weapons/index.html)、[刷取清单-白弹紫枪](../legendary-primary/index.html)、[刷取清单-绿弹紫枪](../legendary-special/index.html)、[刷取清单-威能紫枪](../legendary-heavy/index.html)、[刷取清单-护甲套装](../farming-sets/index.html) |
+| [小棒猪-LGpig](https://space.bilibili.com/169548478) | 整理全部评级、数值、排序、场景与评语，实测弹药拾取量与{enemy|终结技} | [刷取清单-{exotic|异域}武器](../exotic-weapons/index.html)、[刷取清单-白弹紫枪](../legendary-primary/index.html)、[刷取清单-绿弹紫枪](../legendary-special/index.html)、[刷取清单-威能紫枪](../legendary-heavy/index.html)、[刷取清单-护甲套装](../farming-sets/index.html)、[弹药生成机制](../ammo/index.html) |
 | [両儀式織](https://space.bilibili.com/2135345999) | 排行三页整理注解并校对数值，购物四页校对注解 | [DPS 排行](../dps/index.html)、[切枪 DPS 排行](../swap-dps/index.html)、[技能伤害排行](../skill-damage/index.html)、[购物清单-白弹](../shopping-primary/index.html)、[购物清单-绿弹](../shopping-special/index.html)、[购物清单-威能](../shopping-heavy/index.html)、[购物清单-其他](../shopping-other/index.html) |
 | [MossyMax](https://docs.google.com/spreadsheets/d/1b57Hb8m1L3daFfUckQQqvvN6VOpD03KEssvQLMFpC5I/edit) | 实测并整理全部压光数值 | [压光伤害](../power-delta/index.html) |
 | [遗忘Melt](https://space.bilibili.com/3706960595650983) | 编写并维护全部图文攻略 | [Raid 攻略](../raid-guides/index.html) |
