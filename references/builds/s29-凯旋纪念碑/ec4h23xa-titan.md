@@ -37,6 +37,7 @@
 ## 神器
 
 神器：废墟石板
+模组：电介质、元素虹吸、闪电过载、光子耀斑、弹中藏金、除颤爆破、极限突破
 
 ## 六维
 
@@ -49,5 +50,3 @@
 浏览链接：https://www.bilibili.com/video/BV19t421h7vT/?spm_id_from=333.1387.homepage.video_card.click&vd_source=3278f0e18bb01ef182094b9c4879b8f6
 经过版本变迁，已和原配装有较大出入
 本人第一套使用的攻略性质的完整配装，也仅以此套配装致敬本人回不去的青春
-
-神器模组：{art-perk|电介质}、{art-perk|元素虹吸}、{art-perk|闪电过载}、{art-perk|光子耀斑}、{art-perk|弹中藏金}、{art-perk|除颤爆破}、{art-perk|极限突破}
