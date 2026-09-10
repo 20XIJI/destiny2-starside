@@ -90,9 +90,16 @@ async function likeMap() {
   return m
 }
 
+// 读计数按一分钟缓存在函数实例的内存里，与赞数同一条理由：首页的数每浏览器十分钟
+// 取一次，这一份让数据库读与首页流量脱钩。连日期一起记，过了零点即作废，「今日」
+// 不会报成昨天的。
+let sc = { t: 0, d: '', v: null }
 async function stats() {
+  const d = today()
+  if (sc.d === d && Date.now() - sc.t < 6e4) return sc.v
   const c = (await stat.get()).data[0] || {}
-  return { today: (c.d || {})[today()] || 0, total: c.pv || 0 }
+  sc = { t: Date.now(), d, v: { today: (c.d || {})[d] || 0, total: c.pv || 0 } }
+  return sc.v
 }
 
 // 同一套配装的判据：**名字、推荐人、职业、属性、核心五项一致即同一套**。

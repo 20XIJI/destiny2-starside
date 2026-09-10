@@ -109,15 +109,17 @@ HIT = ('<script>(function(){'
        'var d=new Date(Date.now()+288e5).toISOString().slice(0,10);'
        'var o=document.getElementById("sv"),f=1;'
        'try{f=localStorage.getItem("svd")===d?0:1;if(f)localStorage.setItem("svd",d)}catch(_){}'
-       # 首页那句数字在窗口内直接用上一次的：不加这一层，刷十次首页就是十次冷启动。
-       # svt 只在 svd===d 时读得到，天然按天作废，不必另存时间戳。
+       # 首页那句数字十分钟内直接用上一次取到的：不加这一层，刷十次首页就是十次冷启动。
+       # svt 存「取到时刻|文本」，按自己的时刻作废。不能借 svd 判当天：svd 由当天先开
+       # 的那一页写，svt 只有首页写，先开别的页再进首页，读到的是几天前那一句。
        'if(!f){if(!o)return;'
-       'try{var c=localStorage.getItem("svt");if(c){o.textContent=c;return}}catch(_){}}'
+       'try{var c=localStorage.getItem("svt")||"",i=c.indexOf("|"),a=Date.now()-c.slice(0,i);'
+       'if(i>0&&a>=0&&a<6e5){o.textContent=c.slice(i+1);return}}catch(_){}}'
        'var r=f?fetch("%s",{method:"POST",headers:{"content-type":"application/json"},'
        'body:JSON.stringify({a:"hit",s:o?1:0})}):fetch("%s?a=stats");'
        'r.then(function(x){return x.json()})'
        '.then(function(s){if(o){var t="今日 "+s.today+" 位访客 · 累计 "+s.total;'
-       'o.textContent=t;try{localStorage.setItem("svt",t)}catch(_){}}},'
+       'o.textContent=t;try{localStorage.setItem("svt",Date.now()+"|"+t)}catch(_){}}},'
        'function(x){if(o)o.textContent="访问统计取不到："+x})})()</script>' % (API, API))
 
 

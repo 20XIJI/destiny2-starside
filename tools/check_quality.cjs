@@ -1240,6 +1240,97 @@ test('an overlapping build sits in its first scene and moves to whichever is pic
     '搬回来之后节内顺序乱了')
 })
 
+// 页脚访客数那段脚本从手写首页里现取：check_shell.py 钉着它与 shell.HIT 逐字一致，
+// 测的因此就是每一页上线的那一份。时钟、localStorage 与 fetch 换成桩。
+function footerCounter() {
+  const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8')
+  const code = html.match(/<script>(\(function\(\)\{var d=new Date[\s\S]*?)<\/script>/)
+  assert.ok(code, 'index.html 里找不到访客计数那段脚本')
+  const store = new Map()
+  const sent = []
+  let clock = 0
+  let reply = null
+  class Clock extends Date {
+    constructor(...a) { super(...(a.length ? a : [clock])) }
+    static now() { return clock }
+  }
+  return {
+    store, sent,
+    at(iso) { clock = Date.parse(iso) },
+    later(ms) { clock += ms },
+    answer(today, total) { reply = { today, total } },
+    async open(home) {
+      const sv = { textContent: '' }
+      const body = reply
+      vm.runInNewContext(code[1], {
+        Date: Clock,
+        document: { getElementById: (id) => (id === 'sv' && home ? sv : null) },
+        localStorage: {
+          getItem: (k) => (store.has(k) ? store.get(k) : null),
+          setItem: (k, v) => store.set(k, String(v)),
+        },
+        fetch(url, init) {
+          sent.push(init ? JSON.parse(init.body) : url.slice(url.indexOf('?')))
+          return Promise.resolve({ json: () => body })
+        },
+      })
+      await new Promise(setImmediate)
+      return sv.textContent
+    },
+  }
+}
+
+test('the footer count is fresh when the day began on a page without it', async () => {
+  // 当天先开别的页、再进首页：svd 已是今天，svt 却是首页上次写的那一句。
+  // 借 svd 判当天，首页就照搬几天前的数，连着几天不动。
+  const f = footerCounter()
+  f.at('2026-09-06T04:00:00Z')
+  f.answer(712, 11217)
+  assert.equal(await f.open(true), '今日 712 位访客 · 累计 11217')
+  f.at('2026-09-10T04:00:00Z')
+  f.answer(1288, 17092)
+  assert.equal(await f.open(false), '')
+  assert.deepEqual(f.sent.at(-1), { a: 'hit', s: 0 }, '当天第一页要计数，且没有 sv 的页不要数')
+  assert.equal(await f.open(true), '今日 1288 位访客 · 累计 17092', '首页照搬了几天前那一句')
+  assert.equal(f.sent.at(-1), '?a=stats', '当天已计过数，首页只该读')
+  assert.equal(f.sent.length, 3)
+})
+
+test('the footer count is reused for ten minutes, then read again', async () => {
+  const f = footerCounter()
+  f.at('2026-09-10T04:00:00Z')
+  f.answer(10, 100)
+  assert.equal(await f.open(true), '今日 10 位访客 · 累计 100')
+  assert.deepEqual(f.sent, [{ a: 'hit', s: 1 }])
+  f.answer(20, 110)
+  f.later(9 * 60e3)
+  assert.equal(await f.open(true), '今日 10 位访客 · 累计 100', '十分钟内不该再打后端')
+  assert.equal(f.sent.length, 1)
+  f.later(2 * 60e3)
+  assert.equal(await f.open(true), '今日 20 位访客 · 累计 110')
+  assert.deepEqual(f.sent.slice(1), ['?a=stats'], '过了十分钟只该读，不该再计一次数')
+})
+
+test('a footer count cached as bare text is read again, not shown', async () => {
+  // 线上浏览器里存的 svt 可能只有文本、没有时刻：不认它，读一次新的。
+  const f = footerCounter()
+  f.at('2026-09-10T04:00:00Z')
+  f.store.set('svd', '2026-09-10')
+  f.store.set('svt', '今日 712 位访客 · 累计 11217')
+  f.answer(1288, 17092)
+  assert.equal(await f.open(true), '今日 1288 位访客 · 累计 17092')
+  assert.deepEqual(f.sent, ['?a=stats'])
+})
+
+test('the visitor count is read from the database once a minute per instance', async () => {
+  const day = new Date(Date.now() + 8 * 3600e3).toISOString().slice(0, 10)
+  const h = harness({ counters: [{ _id: 'stat', pv: 17092, d: { [day]: 1288 } }] })
+  assert.deepEqual(await h.request({ a: 'stats' }, false), { status: 200, today: 1288, total: 17092 })
+  assert.deepEqual(await h.request({ a: 'stats' }, false), { status: 200, today: 1288, total: 17092 })
+  assert.equal(h.calls.filter((c) => c.op === 'get' && c.name === 'counters').length, 1,
+    '一分钟内第二次读计数又打了数据库')
+})
+
 async function main() {
   let failures = 0
   for (const [name, fn] of tests) {
