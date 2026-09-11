@@ -119,10 +119,92 @@
     return { text: out, at: pos };
   }
 
+  /* 散文里的着色标记拆成「文字 + 区间」。编辑时框里只放文字，颜色画在叠上去的镜像层
+     里（见下方「散文格的着色镜像」）；写回源稿时按区间拼回 {token|…}。区间是
+     {a, b, t}：文字里的起止与 token。标记可以嵌套，区间因此要么不相交、要么互相包含。
+     不成对（开头没闭合、多出一个 }、裸的 {…}）时整段原样当文字，ok 为 false：那样的
+     源稿构建本来就过不去，拆开反倒把坏掉的那一截藏起来。 */
+  function unmark (md) {
+    var s = String(md);
+    var raw = { text: s, spans: [], ok: false };
+    var text = '';
+    var spans = [];
+    var open = [];
+    var last = 0;
+    var re = /\{([\w-]+)\||[{}]/g;
+    var m;
+    while ((m = re.exec(s))) {
+      if (m[0] === '{' || (m[0] === '}' && !open.length)) return raw;
+      text += s.slice(last, m.index);
+      last = re.lastIndex;
+      if (m[0] === '}') {
+        var o = open.pop();
+        spans.push({ a: o.a, b: text.length, t: o.t });
+      } else {
+        open.push({ a: text.length, t: m[1] });
+      }
+    }
+    if (open.length) return raw;
+    return { text: text + s.slice(last), spans: spans, ok: true };
+  }
+
+  /* 文字 + 区间拼成一串。open / close 给出每一段的开闭，esc 处理段外的每个字。
+     同一位置先闭后开：闭的里头后开的先闭，开的里头包得宽的先开，嵌套因此原样还原；
+     空的那一段（{t|}）开完当场闭上。 */
+  function weave (text, spans, open, close, esc) {
+    var at = {};
+    function here (i) { return at[i] || (at[i] = { shut: [], open: [] }); }
+    spans.forEach(function (sp, k) {
+      var e = { sp: sp, k: k };
+      here(sp.a).open.push(e);
+      if (sp.b > sp.a) here(sp.b).shut.push(e);
+    });
+    var out = '';
+    for (var i = 0; i <= text.length; i++) {
+      var h = at[i];
+      if (h) {
+        h.shut.sort(function (x, y) { return (y.sp.a - x.sp.a) || (x.k - y.k); })
+          .forEach(function (e) { out += close(e.sp.t); });
+        h.open.sort(function (x, y) { return (y.sp.b - x.sp.b) || (y.k - x.k); })
+          .forEach(function (e) {
+            out += open(e.sp.t);
+            if (e.sp.b === e.sp.a) out += close(e.sp.t);
+          });
+      }
+      if (i < text.length) out += esc(text.charAt(i));
+    }
+    return out;
+  }
+
+  function remark (text, spans) {
+    return weave(text, spans, function (t) { return '{' + t + '|'; },
+      function () { return '}'; }, function (c) { return c; });
+  }
+
+  /* 一次输入之后区间怎么动：比出改动的那一段，之前的不动、之后的整体平移，碰到改动的
+     去掉颜色——改过的词由 npm run build 第一步的 items.py --normalize 重新判。紧贴
+     一个词的词尾或词头打字不算碰到它，那个词照旧是原来的颜色。 */
+  function shiftSpans (spans, before, after) {
+    var n = Math.min(before.length, after.length);
+    var p = 0;
+    while (p < n && before.charAt(p) === after.charAt(p)) p++;
+    var q = 0;
+    while (q < n - p
+      && before.charAt(before.length - 1 - q) === after.charAt(after.length - 1 - q)) q++;
+    var end = before.length - q;
+    var d = after.length - before.length;
+    var out = [];
+    spans.forEach(function (sp) {
+      if (sp.b <= p) out.push(sp);
+      else if (sp.a >= end) out.push({ a: sp.a + d, b: sp.b + d, t: sp.t });
+    });
+    return out;
+  }
+
   // 页面那一半到此为止。**Node 里只导出规则，不接线**——下面整页都要 DOM。
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = { NEED: NEED, PER: PER, SET_MAX: SET_MAX, short: short, lacking: lacking,
-                       tidy: tidy };
+                       tidy: tidy, unmark: unmark, remark: remark, shiftSpans: shiftSpans };
   }
   if (typeof document === 'undefined') return;
 
@@ -181,9 +263,111 @@
      源稿带着它），空着只在审核态才出——审核台载进这一页之后调 review(true)。 */
   var reviewing = false;
 
-  function vval() { return vin ? vin.value.trim() : ''; }
+  function vval() { return vin ? fieldText(vin).trim() : ''; }
 
   function showVerdict() { if (vbox) vbox.hidden = !(reviewing || vval()); }
+
+  /* ── 散文格的着色镜像 ───────────────────────────────────────────────
+     描述、注解、审核意见、合集介绍四格的源稿带着 {token|…}。框里只放文字，颜色画在
+     叠在框上的一层（.ink，不接收点击）里，框自己的字设成透明、只留光标：看上去就是在
+     直接改着色后的文字，输入法、撤销与粘贴照旧是原生的。写回源稿时按区间拼回标记
+     （fieldText）：没动过的地方逐字还原，所以刚载入的基线与审核台的「改过没有」都
+     不会误报；改动碰到的那几个词去掉颜色，交给 npm run build 第一步的
+     items.py --normalize 重新补。
+
+     镜像靠 CSS 贴在框上（.ink-box 相对定位，.ink 四边为 0），不按量出来的像素摆：
+     截图（shot.js）在另一个宽度下重排克隆体，像素坐标在那里就错位了。字体、内边距与
+     边框宽度逐项从框的计算样式抄过去，差一点颜色就落到邻字上。 */
+  var INK_KEYS = ['描述', '注解', '审核意见', '合集介绍'];
+  var INK_COPY = ['fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'letterSpacing',
+    'wordSpacing', 'lineHeight', 'textAlign', 'textIndent', 'tabSize',
+    'paddingTop', 'paddingBottom', 'paddingLeft',
+    'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth'];
+
+  function inkSync(el) {
+    var layer = el._ink.layer;
+    var cs = getComputedStyle(el);
+    INK_COPY.forEach(function (k) { layer.style[k] = cs[k]; });
+    // 框出了竖向滚动条时内容区窄一条，镜像的右内边距把这一截补上，折行才对得上。
+    var bar = el.offsetParent === null ? 0 : el.offsetWidth - el.clientWidth
+      - parseFloat(cs.borderLeftWidth) - parseFloat(cs.borderRightWidth);
+    layer.style.paddingRight = parseFloat(cs.paddingRight) + bar + 'px';
+    layer.scrollTop = el.scrollTop;
+    layer.scrollLeft = el.scrollLeft;
+  }
+
+  function inkDraw(el) {
+    // 末尾补一个零宽字符：框里以换行结尾时，最后那一空行要占住高度。
+    el._ink.layer.innerHTML = weave(el.value, el._ink.spans, function (t) {
+      return '<span class="' + t + '">';
+    }, function () { return '</span>'; }, esc) + '\u200b';
+    inkSync(el);
+  }
+
+  function inkInput(e) {
+    var el = e.target;
+    var ink = el._ink;
+    // 组字期间改 value 会打断输入法：只挪区间，等组完那一下 input 再收拾。
+    if (!e.isComposing) {
+      var clean = tidy(el.value, el.selectionStart);
+      if (clean.text !== el.value) {
+        el.value = clean.text;
+        el.setSelectionRange(clean.at, clean.at);
+      }
+    }
+    ink.spans = shiftSpans(ink.spans, ink.prev, el.value);
+    ink.prev = el.value;
+    // 粘进来的完整标记收成区间。tidy 之后还在的花括号只剩成对的 {token|…}，
+    // 去掉的字都在粘贴那一截里，也就都在光标之前。
+    if (!e.isComposing && el.value.indexOf('{') > -1) {
+      var got = unmark(remark(el.value, ink.spans));
+      if (got.ok) {
+        var at = el.selectionStart - (el.value.length - got.text.length);
+        el.value = got.text;
+        el.setSelectionRange(at, at);
+        ink.spans = got.spans;
+        ink.prev = got.text;
+      }
+    }
+    inkDraw(el);
+  }
+
+  // 往格子里灌一段源稿：着色的那几格拆成文字 + 区间，其余的原样。
+  function setField(el, v) {
+    if (!el._ink) { el.value = v; return; }
+    var got = unmark(v);
+    el.value = got.text;
+    el._ink.spans = got.spans;
+    el._ink.prev = got.text;
+    inkDraw(el);
+  }
+
+  // 格子里现在是什么源稿：着色的那几格按区间拼回 {token|…}。
+  function fieldText(el) { return el._ink ? remark(el.value, el._ink.spans) : el.value; }
+
+  var inked = [].slice.call(document.querySelectorAll(INK_KEYS.map(function (k) {
+    return '[data-key="' + k + '"]';
+  }).join(', ')));
+  inked.forEach(function (el) {
+    var box = document.createElement('span');
+    box.className = 'ink-box';
+    el.parentNode.insertBefore(box, el);
+    box.appendChild(el);
+    var layer = document.createElement('span');
+    layer.className = 'ink';
+    layer.setAttribute('aria-hidden', 'true');
+    box.appendChild(layer);
+    var color = getComputedStyle(el).color;
+    layer.style.color = color;
+    el.style.color = 'transparent';
+    el.style.caretColor = color;
+    el.classList.add('inked');
+    el._ink = { layer: layer, spans: [], prev: el.value };
+    el.addEventListener('input', inkInput);
+    el.addEventListener('scroll', function () { inkSync(el); });
+    inkDraw(el);
+  });
+  window.addEventListener('resize', function () { inked.forEach(inkSync); });
 
   var picker = null;
 
@@ -884,7 +1068,7 @@
     [].forEach.call(pen.querySelectorAll('button.item'), function (c) {
       if (c.row) fill(c, null);
     });
-    [].forEach.call(pen.querySelectorAll('[data-key]'), function (i) { i.value = ''; });
+    [].forEach.call(pen.querySelectorAll('[data-key]'), function (i) { setField(i, ''); });
     [].forEach.call(pen.querySelectorAll('.tagset > button'), function (b) {
       b.setAttribute('aria-pressed', 'false');
     });
@@ -922,7 +1106,7 @@
     };
     function set(key, v) {
       var el = pen.querySelector('[data-key="' + key + '"]');
-      if (el) el.value = v || '';
+      if (el) setField(el, v || '');
     }
     function rowOfName(slot, kind, name) {
       var l = slot === '元素' ? branches() : options(slot, kind);
@@ -965,7 +1149,7 @@
     /* **合集页不在这里碰它**：整份合集一条审核意见，写在合集头部；importMd() 在
        那一页是逐套跑的，成员块里没有这一键，跟着写就是切一套清一次。 */
     if (!SETS) {
-      if (vin) vin.value = got.verdict;
+      if (vin) setField(vin, got.verdict);
       showVerdict();
       grow();
     }
@@ -1092,16 +1276,16 @@
     var one = function (k) { return (got.head[k] || [''])[0].trim(); };
     function put(key, v) {
       var el = hd.querySelector('[data-key="' + key + '"]');
-      if (el) el.value = v || '';
+      if (el) setField(el, v || '');
     }
     put('合集名', got.name);
     put('推荐人', one('推荐人'));
     put('描述', one('描述'));
-    if (vin) vin.value = sectionOf(parts[0], '审核意见');
+    if (vin) setField(vin, sectionOf(parts[0], '审核意见'));
     showVerdict();
     grow();
     var why = /\n## 合集介绍\s*([\s\S]*)$/.exec(parts[0]);
-    if (setWhy) setWhy.value = why ? why[1].trim() : '';
+    if (setWhy) setField(setWhy, why ? why[1].trim() : '');
 
     ['强度', '场景'].forEach(function (key) {
       pressTags(hd, key, one(key).split('、').map(function (x) { return x.trim(); })
@@ -1135,7 +1319,7 @@
      （两处都有「描述」），所以那一侧要显式传 hd。 */
   function val(key, scope) {
     var el = (scope || pen).querySelector('[data-key="' + key + '"]');
-    return el ? el.value.trim() : '';
+    return el ? fieldText(el).trim() : '';
   }
 
   function keyOf(md, k) {
@@ -1222,7 +1406,7 @@
     md += line('场景', val('场景', hd));
     md += line('强度', val('强度', hd));
     md += verdictBlock();
-    var why = setWhy ? setWhy.value.trim() : '';
+    var why = setWhy ? fieldText(setWhy).trim() : '';
     if (why) md += '\n## 合集介绍\n\n' + why + '\n';
     return md;
   }
@@ -1547,6 +1731,7 @@
   preview.addEventListener('click', function () {
     close();
     var on = sheet.classList.toggle('preview');
+    inked.forEach(inkSync);          // 预览态把框的左内边距收成 0，镜像跟着换
     preview.textContent = on ? '退出预览' : '预览配装';
     preview.setAttribute('aria-pressed', String(on));
     if (on) window.scrollTo(0, 0);

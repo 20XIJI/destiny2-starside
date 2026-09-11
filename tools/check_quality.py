@@ -399,6 +399,33 @@ class NakedText(unittest.TestCase):
         self.assertIn('覆盖护盾', items.naked_text(['神圣之光给一层覆盖护盾']))
 
 
+class BuildProseColors(unittest.TestCase):
+    """配装散文的着色必须全部补得回来：剥掉标记再跑自动着色，逐字还原。
+
+    填表页编辑时框里只放文字（form.js 的 ink），改动碰到的词去掉颜色，由构建第一步的
+    items.py --normalize 重新补。有人在本机手写了一个补不回来的标记，那个词在线上改一次
+    颜色就没了，而页面上一切正常。
+    """
+
+    def test_stripping_then_normalizing_restores_every_build(self):
+        terms, _ = items.load()
+        kw = dict(terms=terms, names=sorted(terms, key=len, reverse=True),
+                  banned=[(w, t[0]) for t in check_terms.TERMS for w in t[2]])
+        seen, bad = 0, []
+        for path in items.build_pages():
+            lines = Path(path).read_text(encoding='utf-8').splitlines()
+            for i, off in items.prose_spans(lines).items():
+                text = lines[i][off:]
+                if '{' not in text:
+                    continue
+                seen += 1
+                if items.normalize_text(markup.uncolor(text), **kw)[0] != text:
+                    bad.append('%s:%d' % (os.path.relpath(path, items.shell.ROOT), i + 1))
+        # 一行都没读到时这条也是全绿：配装源稿挪了地方就当场报出来。
+        self.assertGreater(seen, 100, '只读到 %d 行带着色的配装散文，路径变了？' % seen)
+        self.assertEqual(bad, [], '剥掉标记再补色补不回原样：\n  ' + '\n  '.join(bad))
+
+
 class DeploySelection(unittest.TestCase):
     """发什么、剥不剥注释、清单怎么读——四个纯函数各自的判据。
 

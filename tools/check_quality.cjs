@@ -918,6 +918,42 @@ test('the form strips line-leading hashes and stray braces but keeps color marke
 })
 
 
+// 编辑时散文格里只放文字，颜色画在镜像层；写回时按区间拼回标记。
+test('prose markers split into text and spans, shift with edits and weave back verbatim', () => {
+  const { unmark, remark, shiftSpans } = require(path.join(root, 'builds/new/form.js'))
+  for (const src of ['先转{el-prismatic|超凡}（头', '{a|x{b|y}z}', '{a|{b|x}}', '{a|x{b|y}}', '无色']) {
+    const u = unmark(src)
+    assert.ok(u.ok, src)
+    assert.equal(remark(u.text, u.spans), src, src)
+  }
+  assert.equal(unmark('先转{el-prismatic|超凡}（头').text, '先转超凡（头')
+  for (const bad of ['能{持续产绿弹}的', '吃{el-arc|增幅 同款', 'a}b']) {
+    assert.deepEqual(Object.assign({}, unmark(bad)), { text: bad, spans: [], ok: false }, bad)
+  }
+
+  const s = unmark('甲{el-arc|增幅}乙')
+  const edit = (after) => remark(after, shiftSpans(s.spans, s.text, after))
+  assert.equal(edit('前甲增幅乙'), '前甲{el-arc|增幅}乙', '改动在前：整体平移')
+  assert.equal(edit('甲增幅乙后'), '甲{el-arc|增幅}乙后', '改动在后：不动')
+  assert.equal(edit('甲增幅者乙'), '甲{el-arc|增幅}者乙', '紧贴词尾打字：词还是原来的颜色')
+  assert.equal(edit('甲增X幅乙'), '甲增X幅乙', '改到词里：去掉颜色，交给构建重判')
+  assert.equal(edit('甲乙'), '甲乙')
+
+  // 构建得过的每一篇源稿：散文拆开再拼回，一个字都不变。
+  const bad = []
+  for (const [file, md] of buildSources()) {
+    const parts = (md.match(/^描述：.*$/gm) || []).map((l) => l.slice(3))
+    for (const head of ['## 注解', '## 合集介绍', '## 审核意见']) {
+      for (const p of md.split('\n' + head).slice(1)) parts.push(p.split(/\n#/)[0])
+    }
+    if (parts.some((p) => { const u = unmark(p); return !u.ok || remark(u.text, u.spans) !== p })) {
+      bad.push(file)
+    }
+  }
+  assert.deepEqual(bad, [], `这些源稿的散文拆开再拼回对不上：\n  ${bad.join('\n  ')}`)
+})
+
+
 // builds() 把 docs 与 subs 两张表并成审核台那张清单。两条规矩都出过错，且都是
 // 「看着有一行、内容却不对」那一类，页面上隔着一层 iframe 用肉眼查不出来。
 test('a build that is live reads its body from the library, not the frozen submission', () => {

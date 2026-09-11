@@ -1267,6 +1267,25 @@ button.item { width: 100%; }
 #sheet textarea { display: block; width: 100%; padding: 10px 12px; line-height: 1.8; }
 #sheet :focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 
+/* 散文格的着色镜像（form.js 的 ink）：框里的字透明、只留光标，颜色画在叠上去的
+   这一层。字体、内边距与边框宽度由脚本从框的计算样式逐项抄过来，这里只管叠放。
+   占位文字另给颜色：框的 color 是透明的，有的浏览器让占位文字跟着它走。 */
+.ink-box { position: relative; display: block; }
+
+.ink-box > .ink {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  pointer-events: none;
+  border-style: solid;
+  border-color: transparent;
+}
+
+.ink-box > input + .ink { white-space: pre; }
+.inked::placeholder { color: var(--bone-faint); }
+
 #sheet h1 input,
 #sheet .one-head h2 input {
   width: 100%;
