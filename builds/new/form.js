@@ -84,9 +84,45 @@
     return lack;
   }
 
+  /* 自由填写的那几格里，会被读成源稿结构的符号当场去掉，不拒收。
+     - 行首的 `#`：源稿里 `# ` 是配装名、`## ` 是分节，写进注解会把一套切成两套或截断
+       正文；items.py 着色也整行跳过 `#` 开头的行，构建报「术语没着色」。
+     - 不成对的花括号：只有 `{token|…}` 才是着色标记，其余的原样落进页面，
+       convert-build.py 的 check() 当场中止。没闭合的开头连 `token|` 一起去掉。
+     合法的标记留着：审核台与配装页的编辑遮罩载进来的源稿带着它们。着色不必手写，
+     npm run build 第一步的 items.py --normalize 会补。
+     at 是光标位置，按它之前去掉了几个字往前挪。 */
+  function tidy (text, at) {
+    var s = String(text);
+    var cut = {};                          // 位置 → 从这里起去掉几个字
+    var m;
+    var lead = /^[ \t]*#+[ \t]*/gm;
+    while ((m = lead.exec(s))) cut[m.index] = m[0].length;
+    var open = [];
+    var mark = /\{[\w-]+\||[{}]/g;
+    while ((m = mark.exec(s))) {
+      if (m[0].length > 1) open.push(m);
+      else if (m[0] === '}' && open.length) open.pop();
+      else cut[m.index] = 1;               // 裸的 {，与没有开头对应的 }
+    }
+    open.forEach(function (o) { cut[o.index] = o[0].length; });
+    var out = '';
+    var pos = at || 0;
+    for (var i = 0; i < s.length; i++) {
+      if (cut[i]) {
+        if (i < at) pos -= Math.min(cut[i], at - i);
+        i += cut[i] - 1;
+        continue;
+      }
+      out += s.charAt(i);
+    }
+    return { text: out, at: pos };
+  }
+
   // 页面那一半到此为止。**Node 里只导出规则，不接线**——下面整页都要 DOM。
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { NEED: NEED, PER: PER, SET_MAX: SET_MAX, short: short, lacking: lacking };
+    module.exports = { NEED: NEED, PER: PER, SET_MAX: SET_MAX, short: short, lacking: lacking,
+                       tidy: tidy };
   }
   if (typeof document === 'undefined') return;
 
@@ -1409,7 +1445,18 @@
   });
 
   function fieldChanged(e) {
-    if (e.target.matches('[data-key]')) write();
+    var t = e.target;
+    if (!t.matches('[data-key]')) return;
+    // 组字期间改 value 会打断输入法，等组完那一下 input 再收拾。
+    if (e.type === 'input' && !e.isComposing
+        && (t.tagName === 'TEXTAREA' || t.type === 'text')) {
+      var clean = tidy(t.value, t.selectionStart);
+      if (clean.text !== t.value) {
+        t.value = clean.text;
+        t.setSelectionRange(clean.at, clean.at);
+      }
+    }
+    write();
   }
   sheet.addEventListener('input', fieldChanged);
   sheet.addEventListener('change', fieldChanged);

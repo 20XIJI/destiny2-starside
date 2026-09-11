@@ -742,8 +742,8 @@ test('an editor cannot mint someone at or above their own level', async () => {
 
 // 编辑台的 lint() 与 terms.js 一起跑：admin.js 在 Node 里只导出纯函数，
 // 但顶层有一句 window.addEventListener，所以 window 要给个壳。
-function adminApi() {
-  const sandbox = { console, module: { exports: {} }, window: { addEventListener() {} } }
+function adminApi(extra) {
+  const sandbox = { console, module: { exports: {} }, window: { addEventListener() {} }, ...extra }
   vm.createContext(sandbox)
   for (const rel of ['admin/dialect.js', 'admin/terms.js', 'admin/admin.js']) {
     vm.runInContext(fs.readFileSync(path.join(root, rel), 'utf8'), sandbox, { filename: rel })
@@ -891,6 +891,33 @@ test('the console and the form page agree on which sources are complete', () => 
 })
 
 
+// 填表页当场去掉会被读成源稿结构的符号：行首的 # 与不成对的花括号。合法的着色标记
+// 要留着，审核台与编辑遮罩载进来的源稿带着它们。
+test('the form strips line-leading hashes and stray braces but keeps color markers', () => {
+  const { tidy } = require(path.join(root, 'builds/new/form.js'))
+  const t = (s) => tidy(s).text
+  assert.equal(t('#1 刚需圣贤2\n## 注解\n  #② 神器'), '1 刚需圣贤2\n注解\n② 神器')
+  assert.equal(t('见 #3 那条'), '见 #3 那条', '行中的 # 不动')
+  assert.equal(t('能{持续产绿弹}的'), '能持续产绿弹的')
+  assert.equal(t('a}b{'), 'ab')
+  assert.equal(t('吃{el-arc|增幅 同款'), '吃增幅 同款', '没闭合的开头连 token| 一起去掉')
+  for (const ok of ['{el-arc|增幅}同款{bar-yellow|首领}', '{a|x{b|y}z}', '名字 | https://x.y/#z']) {
+    assert.equal(t(ok), ok)
+  }
+  assert.deepEqual(tidy('#ab', 3), { text: 'ab', at: 2 }, '光标按它之前去掉的字往前挪')
+  assert.deepEqual(tidy('x{y}z', 2), { text: 'xyz', at: 1 })
+
+  // 构建得过的注解与描述，填表页一个字都不改。
+  const bad = []
+  for (const [file, md] of buildSources()) {
+    const parts = (md.match(/^描述：.*$/gm) || [])
+      .concat(md.split('\n## 注解').slice(1).map((p) => p.split(/\n#/)[0]))
+    if (parts.some((p) => t(p) !== p)) bad.push(file)
+  }
+  assert.deepEqual(bad, [], `填表页会改动这些源稿的注解或描述：\n  ${bad.join('\n  ')}`)
+})
+
+
 // builds() 把 docs 与 subs 两张表并成审核台那张清单。两条规矩都出过错，且都是
 // 「看着有一行、内容却不对」那一类，页面上隔着一层 iframe 用肉眼查不出来。
 test('a build that is live reads its body from the library, not the frozen submission', () => {
@@ -907,7 +934,7 @@ test('a build that is live reads its body from the library, not the frozen submi
   assert.ok(rows[0].dirty, 'hash 与 landed 不等就该标成改过')
 })
 
-test('an approved removal leaves one row, a pending one leaves two', () => {
+test('a pending or approved removal leaves one row, a rejected one gives the build back', () => {
   const { api } = adminApi()
   const docs = [{ _id: 'builds/s29-x/a-hunter', md: '# 甲\n', hash: 'h', landed: 'h', at: '1' }]
   const one = { _id: 's1', ok: 1, season: 's29-x', slug: 'a-hunter', md: '# 甲\n', at: '1' }
@@ -920,10 +947,76 @@ test('an approved removal leaves one row, a pending one leaves two', () => {
   // Array.prototype，deepStrictEqual 连原型一起比，内容一样也过不去。
   assert.deepEqual(Array.from(done, (b) => b.state), ['dropping'])
 
-  // 还在待审时两行并排才看得出「这一套在站上，同时有人申请删它」。
+  // 申请了移除，那一套就不该还躺在「完成」里；申请期间有人重投的新稿照旧进待审。
   const asking = api.builds(docs,
-    [one, { _id: 's2', drop: 1, ok: 0, season: 's29-x', slug: 'a-hunter', md: '# 甲\n', at: '2' }])
-  assert.deepEqual(Array.from(asking, (b) => b.state).sort(), ['live', 'wait'])
+    [one, { _id: 's2', drop: 1, ok: 0, season: 's29-x', slug: 'a-hunter', md: '# 甲\n', at: '2' },
+      { _id: 's3', ok: 0, season: 's29-x', slug: 'a-hunter', md: '# 甲\n', at: '3' }])
+  assert.deepEqual(Array.from(asking, (b) => b.sub._id).sort(), ['s2', 's3'])
+  assert.deepEqual(Array.from(asking, (b) => b.state), ['wait', 'wait'])
+
+  const kept = api.builds(docs,
+    [one, { _id: 's2', drop: 1, ok: -1, season: 's29-x', slug: 'a-hunter', md: '# 甲\n', at: '2' }])
+  assert.deepEqual(Array.from(kept, (b) => b.state).sort(), ['live', 'no'])
+})
+
+// 更新那一路通过时沿用旧的 season/slug，首投与更新是两条 ok=1 的投稿指着同一篇。
+test('a build updated after going live lists once, under its latest approval', () => {
+  const { api } = adminApi()
+  const docs = [{ _id: 'builds/s29-x/a-hunter', md: '# 甲\n', hash: 'h', landed: 'h', at: '5' }]
+  const rows = api.builds(docs, [
+    { _id: 's1', ok: 1, season: 's29-x', slug: 'a-hunter', md: '# 甲\n', at: '1', okBy: '首审' },
+    { _id: 's2', ok: 1, season: 's29-x', slug: 'a-hunter', md: '# 甲\n', at: '3', okBy: '再审' },
+    { _id: 's3', ok: -1, season: 's29-x', slug: 'a-hunter', md: '# 甲\n', at: '2' }])
+  const live = Array.from(rows).filter((b) => b.state === 'live')
+  assert.deepEqual(live.map((b) => b.sub._id), ['s2'])
+  assert.equal(live[0].at, '5', '时间仍取两边较新的那个')
+  assert.deepEqual(Array.from(rows, (b) => b.state).sort(), ['live', 'no'])
+})
+
+// 编辑台只在登录真的失效时清令牌。refresh() 报 forbidden 就是那个判据：报多了，一次断网
+// 或两个标签页同时刷新都会把人踢回登录框；报少了，失效的令牌留着，每一下都白点。
+test('only a refresh the auth service rejects counts as a lost login', async () => {
+  /** @type {Record<string, string>} */
+  const store = {}
+  const localStorage = {
+    getItem: (k) => (k in store ? store[k] : null),
+    setItem: (k, v) => { store[k] = String(v) },
+    removeItem: (k) => { delete store[k] }
+  }
+  let reply = null
+  let sent = 0
+  const fetch = () => { sent += 1; return reply() }
+  const answer = (status, body) => () =>
+    Promise.resolve({ ok: status < 400, status, json: () => Promise.resolve(body) })
+  const { api } = adminApi({ fetch, localStorage })
+
+  store.sa_rt = 'rt1'
+  reply = answer(200, { access_token: 'at2', refresh_token: 'rt2' })
+  await Promise.all([api.refresh(), api.refresh(), api.refresh()])
+  assert.equal(sent, 1, '同一页并发的三发只该换一次')
+  assert.equal(store.sa_at, 'at2')
+  assert.equal(store.sa_rt, 'rt2')
+
+  reply = answer(400, { error: 'invalid_grant' })
+  await assert.rejects(api.refresh(), (e) => e.message === 'forbidden')
+
+  reply = () => Promise.reject(new TypeError('Failed to fetch'))
+  await assert.rejects(api.refresh(), (e) => e.message === 'Failed to fetch', '断网不算登录失效')
+
+  // 另一个标签页先换掉了 sa_rt：这一发被拒，但令牌已经是新的。
+  reply = () => { store.sa_rt = 'rt3'; store.sa_at = 'at3'; return answer(400, { error: 'invalid_grant' })() }
+  await api.refresh()
+  assert.equal(store.sa_at, 'at3')
+
+  delete store.sa_rt
+  await assert.rejects(api.refresh(), (e) => e.message === 'forbidden', '没有 refresh_token 就是没登录')
+})
+
+test('console timestamps read in Beijing time', () => {
+  const { api } = adminApi()
+  assert.equal(api.when('2026-09-10T07:59:28.522Z'), '2026-09-10 15:59')
+  assert.equal(api.when('2026-09-10T16:30:00.000Z'), '2026-09-11 00:30', '过北京零点要进到次日')
+  assert.equal(api.when(''), '')
 })
 
 

@@ -54,18 +54,30 @@
     })
   }
 
+  // 与编辑台的 refresh() 同一套规则：认证服务拒了才报 forbidden（say() 据此清令牌），
+  // 断网原样抛出；同一页并发共用一次刷新；sa_rt 已被别的标签页换掉时用那一张。
+  var renewing = null
   function refresh () {
+    if (renewing) return renewing
     var rt = localStorage.getItem('sa_rt')
-    if (!rt) return Promise.reject(new Error('没有 refresh_token'))
-    return fetch('https://dea-mods-d1g0j2rile2323f73.api.tcloudbasegateway.com/auth/v1/token', {
+    if (!rt) return Promise.reject(new Error('forbidden'))
+    renewing = fetch('https://dea-mods-d1g0j2rile2323f73.api.tcloudbasegateway.com/auth/v1/token', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ grant_type: 'refresh_token', refresh_token: rt })
-    }).then(function (r) { return r.json() }).then(function (j) {
-      if (!j.access_token) throw new Error('换不到令牌')
-      localStorage.setItem('sa_at', j.access_token)
-      if (j.refresh_token) localStorage.setItem('sa_rt', j.refresh_token)
-    })
+    }).then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, j: j } })
+    }).then(function (x) {
+      renewing = null
+      if (x.ok && x.j.access_token) {
+        localStorage.setItem('sa_at', x.j.access_token)
+        if (x.j.refresh_token) localStorage.setItem('sa_rt', x.j.refresh_token)
+        return
+      }
+      if (localStorage.getItem('sa_rt') !== rt) return
+      throw new Error(x.ok ? '换不到令牌' : 'forbidden')
+    }, function (e) { renewing = null; throw e })
+    return renewing
   }
 
   // 闸门词表与那几条纯函数在编辑台那两份文件里，**开编辑态时才拉**：

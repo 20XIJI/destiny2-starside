@@ -48,17 +48,32 @@
       body: JSON.stringify(body)
     }).then(function (r) {
       return r.json().then(function (j) {
-        if (!r.ok) throw new Error(j.error_description || j.error || ('HTTP ' + r.status))
+        if (!r.ok) {
+          var e = new Error(j.error_description || j.error || ('HTTP ' + r.status))
+          e.denied = true                 // 认证服务回了拒绝，不是网络断了
+          throw e
+        }
         return j
       })
     })
   }
 
+  /* 只有认证服务拒了刷新，才算登录真的失效：报 forbidden，say() 与 start() 据此清令牌、
+     回登录框。断网这类错误原样抛出，令牌留着，刷新页面即可重试。
+     同一页里并发的几发共用一次刷新。拒之前 sa_rt 已被别的标签页换掉的，用那一页换回来的
+     令牌，不算失效。 */
+  var renewing = null
   function refresh () {
+    if (renewing) return renewing
     var rt = localStorage.getItem('sa_rt')
-    if (!rt) return Promise.reject(new Error('没有 refresh_token'))
-    return auth('/auth/v1/token', { grant_type: 'refresh_token', refresh_token: rt })
-      .then(function (j) { tok(j); return j })
+    if (!rt) return Promise.reject(new Error('forbidden'))
+    renewing = auth('/auth/v1/token', { grant_type: 'refresh_token', refresh_token: rt })
+      .then(function (j) { renewing = null; tok(j) }, function (e) {
+        renewing = null
+        if (localStorage.getItem('sa_rt') !== rt) return
+        throw e.denied ? new Error('forbidden') : e
+      })
+    return renewing
   }
 
   // 每个管理动作带 Bearer。重试只放一次：刷新之后仍被拒就是真的过期了。
@@ -550,7 +565,10 @@
       + (Number(e.cell) < 0 ? '' : '第 ' + (Number(e.cell) + 1) + ' 格')
   }
 
-  function when (t) { return (t || '').slice(0, 16).replace('T', ' ') }
+  // 库里的 at 一律是 toISOString() 写的 UTC，显示按北京时间，与云函数 today() 同一个时区。
+  function when (t) {
+    return t ? new Date(Date.parse(t) + 8 * 3600e3).toISOString().slice(0, 16).replace('T', ' ') : ''
+  }
 
   // ── 文档审核 ───────────────────────────────────────────────────────
   var openDoc = null                 // 右栏正在看哪一页
@@ -838,14 +856,25 @@
     docs.forEach(function (d) {
       if (d._id.indexOf('builds/') === 0) live[d._id] = d
     })
-    /* 已经批准的移除申请。**那一套只留「待移除」那一行**：决定已经做完了，再在
-       「完成」里并排摆一行没有标记的，读起来就是「它好好地在站上」。
-       **待审的申请不算**——那时两行并排才看得出「这一套在站上，同时有人申请删它」。 */
+    /* 待审与已批准的移除申请，值是申请的 ok（0 待审、1 已批准）。**「完成」里不再摆
+       那一套**：再并排一行没有标记的，读起来就是「它好好地在站上」。驳回之后申请不算数，
+       那一套回到「完成」。已批准时同一套的待审与驳回投稿一并收起；待审期间只收「完成」
+       那一行，别人重投的新稿照旧进待审队列。 */
     var going = {}
     subs.forEach(function (s) {
-      if (s.drop && Number(s.ok) === 1 && s.season && s.slug) {
-        going['builds/' + s.season + '/' + s.slug] = 1
+      if (s.drop && Number(s.ok) !== -1 && s.season && s.slug) {
+        var k = 'builds/' + s.season + '/' + s.slug
+        going[k] = Math.max(going[k] || 0, Number(s.ok))
       }
+    })
+    /* 同一套只出一行。更新那一路通过时沿用旧的 season/slug，首投与每次更新都是一条
+       ok=1 的投稿，指着同一篇源稿；逐条出行的话一套配装列成几行，时间都取 docs.at，
+       看着像几份一模一样的配装。留最后通过的那一条，经手人读的是它。 */
+    var last = {}
+    subs.forEach(function (s) {
+      if (s.drop || Number(s.ok) !== 1 || !s.season || !s.slug) return
+      var id = 'builds/' + s.season + '/' + s.slug
+      if (!last[id] || (s.at || '') > (last[id].at || '')) last[id] = s
     })
     var seen = {}
     var out = []
@@ -858,9 +887,10 @@
           state: ok === 0 ? 'wait' : ok === -1 ? 'no' : 'dropping' })
         return
       }
+      if (ok === 1 && id && last[id] !== s) return
       var d = ok === 1 && id ? live[id] : null
       if (d) seen[id] = 1
-      if (id && going[id]) return
+      if (id in going && (going[id] === 1 || ok === 1)) return
       // 时间取两边较新的：bsave 动的是 docs.at，投稿那条的 at 停在审过的那一刻，
       // 只看后者会让刚改过的一套标着一个月前的时间，也排不到列表最前。
       //
@@ -876,7 +906,7 @@
     // docs 那个动作给 builds/ 前缀的记录带上了 md，所以它们在列表上也有名字、
     // 职业与强度，不再只剩一个 slug。
     Object.keys(live).forEach(function (id) {
-      if (!seen[id] && !going[id]) {
+      if (!seen[id] && !(id in going)) {
         out.push({ sub: null, id: id, doc: live[id], md: bodyOf(live[id]), at: live[id].at,
           dirty: dirtyOf(live[id]), state: 'live' })
       }
@@ -1859,12 +1889,18 @@
       ;(VIEWS[b.dataset.view] || buildsView)()
     }
     gate()
-    // 有令牌就直接进，没有或过期了才落回登录框。**认证失败要把那个类摘掉**，
-    // 否则登录框被 CSS 藏着，人看到的是一片空白。
+    // 有令牌就直接进，登录真的失效（forbidden）才落回登录框。**认证失败要把那个类摘掉**，
+    // 否则登录框被 CSS 藏着，人看到的是一片空白。断网或后端报别的错时令牌留着，把原因
+    // 摆出来：清掉令牌只会让人为一次网络抖动重新输密码。
     if (tok()) {
-      boot().catch(function () {
-        tok(null)
-        document.documentElement.classList.remove('signed')
+      boot().catch(function (e) {
+        if (e.message === 'forbidden') {
+          tok(null)
+          document.documentElement.classList.remove('signed')
+          return
+        }
+        $('views').hidden = false
+        show(el('p', 'lede', '载入失败：' + say(e) + '。刷新页面重试'))
       })
     } else {
       document.documentElement.classList.remove('signed')
@@ -1876,12 +1912,14 @@
   // missing 与 builds 是给离线断言的：前者答「审核台会不会对这一篇报缺失」，判据要与
   // convert-build.py 那几道（NEED、split_set、tags_of）对得上——拿库里每一篇真源稿
   // 过一遍，构建得过的稿子这里必须一条都不报；后者是两张表并成清单那一步。
+  // when 也是给离线断言的：库里存 UTC，显示要换成北京时间。refresh 同理：什么时候算登录
+  // 失效、并发时换几次令牌，由它一处决定。
   //
   // 后五件是给 admin/edit.js 那条配装编辑路的：它在配装页上现载这一份，单套与合集
   // 怎么分、填表页怎么载、怎么读、错误码怎么翻，两条路各抄一份就会漂。slotOf 那条
   // 判据还要与 convert-build.py 的 split_set() 逐字一致。
   var api = { paint: paint, lint: lint, cells: cells,
-              missing: missing, builds: builds, start: start,
+              missing: missing, builds: builds, when: when, refresh: refresh, start: start,
               slotOf: slotOf, formSrc: formSrc, readForm: readForm,
               mountForm: mountForm, say: say }
   if (typeof module !== 'undefined' && module.exports) module.exports = api
