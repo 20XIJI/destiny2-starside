@@ -3,16 +3,22 @@
    登录框、块列表、源稿编辑器、闸门提示、对照视图。 */
 :root { --wrap: 1100px; --min: 720px; }
 
-/* 页首右端的身份。与 .head-row 的 baseline 对齐由站内规则管，这里只管间距。 */
+/* 身份与退出挂在导航行的右端。 */
 .who {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 0;
+  margin: 0 0 0 auto;
   color: var(--bone-dim);
   font-size: 12px;
   white-space: nowrap;
 }
+
+/* 编辑者进来之后不出页首：那一行大标题写的就是站头上亮着的那枚标签，
+   却要占掉约 230px，列表因此从首屏的三分之一处才开始。登录框与「还不是
+   编辑者」那两屏照旧有页首。类由 admin.js 的 boot() 在确认 lv 之后加上。 */
+.editor .page-head { display: none; }
+.editor main { padding-top: 24px; }
 
 .lede { color: var(--bone-dim); font-size: 13px; }
 
@@ -40,7 +46,10 @@
    左缘那条亮边跟 .entry 一个道理。配装列表的行带 .b-*，那条边因此是该套配装的
    分支色（六行在 assets/site.css，一处定义三处生效）；别处的行没有分支，
    --accent 是编辑台自己那个值，压到 .28 让它读作静置态，悬停才提到全亮。 */
-.rows { display: grid; gap: 1px; margin-top: 14px; background: var(--hair); border: 1px solid var(--hair); }
+/* **列写 minmax(0, 1fr)**，理由与下面 .desk 那条相同：隐式的 auto 列按行的 min-content
+   撑开，而行里全是 nowrap。改动记录那几行的面包屑一长，整列比右栏宽出 50px，
+   行伸出版心、.id 的省略号不生效。 */
+.rows { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1px; margin-top: 14px; background: var(--hair); border: 1px solid var(--hair); }
 .rows > * {
   display: flex;
   align-items: center;
@@ -63,6 +72,34 @@
    各自的规则已经把它们压暗了。摊开的那一条把名字点到强调色上。 */
 .rows .id { color: var(--bone-hi); font-weight: 600; }
 .rows .id.on { color: var(--accent); }
+
+/* 配装列表按列对齐：每一行是一段 subgrid，列宽由这一页所有行共同撑开，职业、分支、
+   场景、标签、强度、推荐人、时间各在各的竖线上。每一格按类钉在自己那一列，缺的格子
+   （标签、合集套数）空着那一列，后面的格子不前移。缺失项另起一行、从名字那一列排到
+   行尾：它能报出十几项，占一列会把整页的名字一起压成省略号。 */
+.rows.bl {
+  grid-template-columns: auto minmax(0, 1fr) auto auto auto auto auto fit-content(10em) auto auto;
+}
+.rows.bl > button {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  column-gap: 14px;
+  row-gap: 3px;
+  align-items: center;
+}
+.rows.bl > button > * { grid-row: 1; }
+.rows.bl .flag { grid-column: 1; }
+.rows.bl .id { grid-column: 2; }
+.rows.bl .c-cls { grid-column: 3; }
+.rows.bl .c-branch { grid-column: 4; }
+.rows.bl .c-scene { grid-column: 5; }
+.rows.bl .c-tag { grid-column: 6; }
+.rows.bl .kind { grid-column: 7; }
+.rows.bl .by { grid-column: 8; overflow: hidden; text-overflow: ellipsis; }
+.rows.bl .n-sets { grid-column: 9; }
+.rows.bl .c-at { grid-column: 10; }
+.rows.bl .lack { grid-row: 2; grid-column: 2 / -1; max-width: none; }
 
 /* 「谁在动这一篇」——这一列是清单上唯一带信息的状态，与日期同色就等于没有。 */
 .rows .flag {
@@ -100,6 +137,11 @@
 .diff .del::before { content: "−"; margin-right: 10px; color: var(--c-enemy); }
 .diff .add::before { content: "+"; margin-right: 10px; color: var(--c-strand); }
 .diff .ctx::before { content: " "; margin-right: 10px; }
+/* 改动的那一段（admin.js 的 oneView() 按新旧共有的头尾切出来）：底色压深一档，
+   字色照旧跟着着色走。 */
+.diff mark { color: inherit; }
+.diff .del mark { background: color-mix(in oklab, var(--c-enemy) 45%, transparent); }
+.diff .add mark { background: color-mix(in oklab, var(--c-strand) 40%, transparent); }
 
 /* 同篇并存的几份、投稿源稿这类附属块。 */
 .pane { margin-top: 18px; padding: 12px 14px; border: 1px solid var(--hair); }
@@ -199,14 +241,16 @@ details > pre {
 .rows > .fold .lede { margin: 0; }
 .rows > [aria-expanded] { border-left-color: var(--accent); background: var(--row-hover); }
 
-/* 填表页是 1060px 的六行版面，套在 1100px 的版心里两侧只剩 20px，横向就挤没了。
-   载着它的那一屏放宽一档，够它加两侧留白即可——1500 那一档留白太阔，那是卡片
-   目录的宽度。按页面特征限定，不写在 :root 上（与 builds/style.css 给索引页放宽
-   同一种写法）。 */
-/* **判据是那一格露着，不是 iframe 在不在。**iframe 建一次就常驻（重新挂载会让
+/* 编辑者那几屏与摊开的填表页同一档版心。配装列表按列对齐之后，名字那一列拿到的
+   是整页各列撑剩下的宽度，1100 下会被压到 150px 左右、长名字成排出省略号；同宽
+   之后摊开详情时整页也不再放宽一次。1500 那一档留白太阔，那是卡片目录的宽度。 */
+.editor { --wrap: 1240px; }
+
+/* 填表页是 1060px 的六行版面，两侧还要留白，载着它的那一屏把最小宽度抬到 1120px。
+   **判据是那一格露着，不是 iframe 在不在。**iframe 建一次就常驻（重新挂载会让
    整页再载一遍），收起来时它只是不显形，按 :has(iframe.prev) 判会让列表屏也一直
    宽着。 */
-body:has(#stage:not([hidden])) { --wrap: 1240px; --min: 1120px; }
+body:has(#stage:not([hidden])) { --min: 1120px; }
 
 /* 合集那一页的版心比单套宽——左边多一列 208px 的目录，配装那一列还要保持 1016
    （职业那一节的面板按 1016 钉死了像素），整页 min-width 因此是 1340，而这一格

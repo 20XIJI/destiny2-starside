@@ -98,8 +98,12 @@
     off = setTimeout(hide, 120);
   });
 
+  /* 两个分支分开调：写成 (requestIdleCallback || setTimeout)(load, 1) 时，第二个参数
+     1 在 Chrome 里不是 IdleRequestOptions，当场抛 TypeError，预取一次都不跑。 */
   window.addEventListener('load', function () {
-    if (!shut()) (window.requestIdleCallback || setTimeout)(load, 1);
+    if (shut()) return;
+    if (window.requestIdleCallback) requestIdleCallback(load);
+    else setTimeout(load, 1);
   });
 
   /* 开关的契约与格子那条同形：**页面出一枚带 data-tip-sw 的按钮**，这一份脚本

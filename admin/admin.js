@@ -331,8 +331,6 @@
   }
 
   // ── 视图外壳 ───────────────────────────────────────────────────────
-  function title (t) { $('h1').textContent = t }
-
   function show (node) {
     var view = $('views')
     view.textContent = ''
@@ -547,14 +545,55 @@
   }
 
   // ── 对照 ───────────────────────────────────────────────────────────
-  // 一处改动的对照：就两条，不必走 LCS。旧值划掉压暗、新值照常着色——
-  // 与页面上那个遮罩同一套读法。
+  // 新旧两份共有的开头与结尾各多长。中间剩下的那一段就是改动：一格里通常只改
+  // 一处，改了几处时这一段从第一处盖到最后一处。不走 LCS，两条文本用不着。
+  function changed (a, b) {
+    var n = Math.min(a.length, b.length)
+    var p = 0
+    while (p < n && a.charAt(p) === b.charAt(p)) p++
+    var s = 0
+    while (s < n - p && a.charAt(a.length - 1 - s) === b.charAt(b.length - 1 - s)) s++
+    return [p, s]
+  }
+
+  // 把 box 里第 from 到 to 个字（按 textContent 数）包进 <mark>。跨着色 span 时
+  // 逐个文本节点各包一段，原有的层级不动。
+  function highlight (box, from, to) {
+    if (from >= to) return
+    var walk = document.createTreeWalker(box, NodeFilter.SHOW_TEXT)
+    var at = 0
+    var hits = []
+    for (var t = walk.nextNode(); t; t = walk.nextNode()) {
+      var a = Math.max(from, at)
+      var z = Math.min(to, at + t.data.length)
+      if (a < z) hits.push([t, a - at, z - at])
+      at += t.data.length
+    }
+    hits.forEach(function (h) {
+      if (h[2] < h[0].data.length) h[0].splitText(h[2])
+      var mid = h[1] ? h[0].splitText(h[1]) : h[0]
+      var m = document.createElement('mark')
+      mid.parentNode.insertBefore(m, mid)
+      m.appendChild(mid)
+    })
+  }
+
+  // 一处改动的对照：旧值压暗、新值照常着色，与页面上那个遮罩同一套读法。
+  // 改动的那一段在两边各自加亮：一格九十个字里改了四个，不标出来就得逐字对。
+  // 按渲染后的文字比，着色标记不算字；两份毫无共同的头尾时整段都是改动，不加亮。
   function oneView (e) {
     var box = el('div', 'diff')
     var del = el('div', 'del')
     del.innerHTML = paint(e.before || '')
     var add = el('div', 'add')
     add.innerHTML = paint(e.after || '')
+    var was = del.textContent
+    var now = add.textContent
+    var ps = changed(was, now)
+    if (ps[0] || ps[1]) {
+      highlight(del, ps[0], was.length - ps[1])
+      highlight(add, ps[0], now.length - ps[1])
+    }
     box.appendChild(del)
     box.appendChild(add)
     return box
@@ -575,7 +614,6 @@
   var reviewBusy = false
 
   function reviewView () {
-    title('文档')
     var count = {}
     S.edits.filter(function (e) { return e.ok === 0 }).forEach(function (e) {
       count[e.doc] = (count[e.doc] || 0) + 1
@@ -992,6 +1030,14 @@
   // 底下，不另开一格「raid、地牢」：左栏是审稿的工作队列，一条只该出现一次，
   // 树上的计数才对得上上面那排状态 chip。
   function kindOf (b) { return (line(b.md, '场景') || '').split('、')[0] || '没写场景' }
+  // 这一套的场景有没有标签集。宗师/终极、日常、功能性没有（markup.SCENE_TAGS），
+  // 标签整行必须不写；词表里没有的场景值按有算，照旧出那一格。
+  function tagged (md) {
+    return (line(md, '场景') || '').split('、').some(function (sc) {
+      var tags = VOCAB.sceneTags[sc]
+      return tags === undefined || tags.length > 0
+    })
+  }
   function clsOf (b) {
     if (!isSet(b.md)) return line(b.md, '职业') || '没写职业'
     // 合集的职业由成员现算：一个角色的一组配装职业都一样，一队人各穿一套的
@@ -1065,8 +1111,42 @@
     return buildPick === kindOf(b) || buildPick === kindOf(b) + SEP + clsOf(b)
   }
 
+  // 状态 chip 放进来的那几档。
+  function shownOf (all) {
+    return all.filter(function (b) { return buildFilter[bucket(b)] })
+  }
+
+  /* 列表此刻按什么次序摆着哪几条：树上那一格、搜索框与排序都在这里。列表与
+     「审完摊开下一条」读同一份，所以「下一条」就是列表上紧挨着的那一条。 */
+  function listOf (shown) {
+    /* **只开着待审这一档时先来先审**：那是一条队列，倒序排会让等最久的那份永远沉在
+       最后一页。别的档答的是「最近发生了什么」，照旧新的在前；同时开了几档时两种序
+       混在一起没有意义，一律按新的在前。 */
+    var fifo = buildFilter.wait && Object.keys(STATE).every(function (k) {
+      return k === 'wait' || !buildFilter[k]
+    })
+    var q = findQ()
+    return shown.filter(function (b) { return inPick(b) && inFind(b, q) })
+      .sort(function (a, b) {
+        var x = a.at || ''
+        var y = b.at || ''
+        return (x === y ? 0 : x < y ? 1 : -1) * (fifo ? -1 : 1)
+      })
+  }
+
+  /* 审完一条之后摊开哪一条：按审之前那份列表的次序，从这一条往后找第一条仍待审
+     的，到底了从头找。waiting 是审完重拉之后、当前筛选下仍待审的那几条的 id。
+     一条都没有返回 null，调用方回列表。 */
+  function nextWait (order, id, waiting) {
+    var at = order.indexOf(id)
+    var seq = order.slice(at + 1).concat(order.slice(0, Math.max(at, 0)))
+    for (var i = 0; i < seq.length; i++) {
+      if (seq[i] !== id && waiting.indexOf(seq[i]) >= 0) return seq[i]
+    }
+    return null
+  }
+
   function buildsView () {
-    title('配装')
     var all = builds()
     var body = el('div')
 
@@ -1139,7 +1219,7 @@
       bar.appendChild(wipe)
     }
 
-    var inState = all.filter(function (b) { return buildFilter[bucket(b)] })
+    var inState = shownOf(all)
     if (buildPick && !inState.some(inPick)) buildPick = ''
     show(split(buildTree(inState, buildPick, function (k) {
       buildPick = buildPick === k ? '' : k       // 再点一次就取消筛选
@@ -1155,19 +1235,8 @@
       findAt = -1
     }
 
-    /* **只开着待审这一档时先来先审**：那是一条队列，倒序排会让等最久的那份永远沉在
-       最后一页。别的档答的是「最近发生了什么」，照旧新的在前；同时开了几档时两种序
-       混在一起没有意义，一律按新的在前。 */
-    var fifo = buildFilter.wait && Object.keys(STATE).every(function (k) {
-      return k === 'wait' || !buildFilter[k]
-    })
     var q = findQ()
-    var list = inState.filter(function (b) { return inPick(b) && inFind(b, q) })
-      .sort(function (a, b) {
-        var x = a.at || ''
-        var y = b.at || ''
-        return (x === y ? 0 : x < y ? 1 : -1) * (fifo ? -1 : 1)
-      })
+    var list = listOf(inState)
     if (!list.length) {
       body.appendChild(el('p', 'lede', q ? '没有搜到' : '没有配装'))
     }
@@ -1181,7 +1250,7 @@
     }
     buildPage = Math.min(Math.max(buildPage, 0), pages - 1)
 
-    var rows = el('div', 'rows')
+    var rows = el('div', 'rows bl')
     list.slice(buildPage * PAGE, (buildPage + 1) * PAGE).forEach(function (b) {
       var md = b.md
       // 左缘那条 2px 亮边跟着这一套的分支色走，与站上索引页每张卡的左缘同一条
@@ -1205,19 +1274,23 @@
         + (md ? (nameOf(md) || '（没名字）') : b.id.split('/').pop())
       r.appendChild(el('span', 'id ' + (openBuild === idOf(b) ? 'on' : ''), name,
         name + (who ? '\n最后由 ' + who + ' 改过' : '')))
+      // 每一格的类名就是它在哪一列（admin/style.css 的 .rows.bl），缺的格子空着那一列。
       if (md) {
-        r.appendChild(el('span', 'meta', clsOf(b) || '—'))
-        r.appendChild(el('span', 'meta', line(md, '分支') || '—'))
+        r.appendChild(el('span', 'meta c-cls', clsOf(b) || '—'))
+        r.appendChild(el('span', 'meta c-branch', line(md, '分支') || '—'))
         // 场景与标签跟站上索引页那两级分类对齐：那一页按场景分大节、标签做筛选，
         // 审核的人扫这一列就知道这一篇会落到哪儿去。旧稿的键名一并认下。
-        r.appendChild(el('span', 'meta', line(md, '场景') || '—'))
-        r.appendChild(el('span', 'meta', line(md, '标签') || line(md, '定位') || '—'))
+        r.appendChild(el('span', 'meta c-scene', line(md, '场景') || '—'))
+        // 宗师/终极、日常、功能性没有标签集，那几行的标签一格只会是「—」，不出这一格。
+        if (tagged(md)) {
+          r.appendChild(el('span', 'meta c-tag', line(md, '标签') || line(md, '定位') || '—'))
+        }
         // 强度与标签是两回事：标签说这套在队伍里干什么，强度说它凭什么被推荐
         r.appendChild(el('span', 'kind', line(md, '强度') || line(md, '类别') || '—'))
-        r.appendChild(el('span', 'by', line(md, '推荐人').split('|')[0].trim() || '—'))
+        // 推荐人那一列有上限，截掉的一段放进 title
+        var by = line(md, '推荐人').split('|')[0].trim()
+        r.appendChild(el('span', 'by', by || '—', by))
         // 合集与单套在列表上长得一样，不标出来点进去才知道这一行是三套。
-        // **排在几个定宽列之后**：插在中间会把它们整体推开，合集那一行与上下
-        // 的单套行对不齐，六七十行扫下来一眼就是锯齿。
         if (isSet(md)) r.appendChild(el('span', 'n-sets', setsOf(md).length + ' 套'))
         var miss = missing(md)
         if (miss.length) {
@@ -1225,9 +1298,9 @@
           r.appendChild(el('span', 'lack', lack, lack))
         }
       } else {
-        r.appendChild(el('span', 'meta', STATE.live))
+        r.appendChild(el('span', 'meta c-cls', STATE.live))
       }
-      r.appendChild(el('span', 'meta', when(b.at)))
+      r.appendChild(el('span', 'meta c-at', when(b.at)))
       r.onclick = function () { buildDetail(b) }
       rows.appendChild(r)
     })
@@ -1418,6 +1491,19 @@
     st.scrollIntoView()
   }
 
+  /* 审完一条直接摊开队列里的下一条待审，不退回列表：连着过稿时每一条都要「收起 →
+     在列表里找下一行 → 点开」三步。order 是审之前列表的次序（listOf 那一份），下一条
+     只认此刻仍待审、且仍在当前筛选里的；一条都没有才回列表。 */
+  function advance (b, order) {
+    var now = listOf(shownOf(builds()))
+    var waiting = now.filter(function (x) { return x.state === 'wait' }).map(idOf)
+    var next = nextWait(order, idOf(b), waiting)
+    if (!next) return toList()
+    // 这一条改过的字已经随通过带走、或随驳回作废，切走不必再问「改了没保存」。
+    formBase = null
+    buildDetail(now.filter(function (x) { return idOf(x) === next })[0])
+  }
+
   function subDetail (b) {
     var s = b.sub || { _id: b.id, md: b.md }
     var wrap = $('stage-head')
@@ -1500,7 +1586,8 @@
           dyes.type = dno.type = 'button'
           var dmark = function (ok) {
             dyes.disabled = dno.disabled = true
-            call('smark', { id: s._id, ok: ok }).then(load).then(toList, function (e) {
+            var order = listOf(shownOf(builds())).map(idOf)
+            call('smark', { id: s._id, ok: ok }).then(load).then(function () { advance(b, order) }, function (e) {
               dyes.disabled = dno.disabled = false
               tip(ops, '操作失败：' + say(e), 1)
             })
@@ -1616,7 +1703,8 @@
             body.season = seasons()[0] || ''
             body.slug = defaultSlug(body.md)
           }
-          call('smark', body).then(load).then(toList, function (e) {
+          var order = listOf(shownOf(builds())).map(idOf)
+          call('smark', body).then(load).then(function () { advance(b, order) }, function (e) {
             keep.disabled = yes.disabled = no.disabled = false
             // 八位 36 进制撞上的概率约两万八千亿分之一，真撞了换一个再来
             if (e.message === 'slug 重了' && !retry) return mark(ok, 1)
@@ -1642,7 +1730,6 @@
   var histDoc = null
 
   function histView () {
-    title('改动记录')
     var done = S.edits.filter(function (e) { return e.ok === 1 || e.ok === -1 })
     var count = {}
     done.forEach(function (e) { count[e.doc] = (count[e.doc] || 0) + 1 })
@@ -1740,7 +1827,6 @@
   // ── 编辑者 ─────────────────────────────────────────────────────────
   function edsView () {
     call('eds', { op: 'list' }).then(function (r) {
-      title('编辑者')
       var wrap = el('section', 'block')
       var rows = el('div', 'rows')
       r.eds.forEach(function (u) {
@@ -1830,6 +1916,8 @@
         $('my-uid').textContent = me.uid
         return null
       }
+      // 页首整块收起（admin/style.css 的 .editor）：站头上亮着的标签已经说明在哪一屏。
+      document.documentElement.classList.add('editor')
       $('views').hidden = false
       show(el('p', 'lede', '载入中…'))
       // 编辑者那一屏只给超管：加人、改名、改角色、移除都在这里，看得见谁是编辑者
@@ -1913,13 +2001,15 @@
   // convert-build.py 那几道（NEED、split_set、tags_of）对得上——拿库里每一篇真源稿
   // 过一遍，构建得过的稿子这里必须一条都不报；后者是两张表并成清单那一步。
   // when 也是给离线断言的：库里存 UTC，显示要换成北京时间。refresh 同理：什么时候算登录
-  // 失效、并发时换几次令牌，由它一处决定。
+  // 失效、并发时换几次令牌，由它一处决定。nextWait 与 changed 也是：审完摊开哪一条、
+  // 对照加亮哪一段。
   //
   // 后五件是给 admin/edit.js 那条配装编辑路的：它在配装页上现载这一份，单套与合集
   // 怎么分、填表页怎么载、怎么读、错误码怎么翻，两条路各抄一份就会漂。slotOf 那条
   // 判据还要与 convert-build.py 的 split_set() 逐字一致。
   var api = { paint: paint, lint: lint, cells: cells,
               missing: missing, builds: builds, when: when, refresh: refresh, start: start,
+              nextWait: nextWait, changed: changed,
               slotOf: slotOf, formSrc: formSrc, readForm: readForm,
               mountForm: mountForm, say: say }
   if (typeof module !== 'undefined' && module.exports) module.exports = api

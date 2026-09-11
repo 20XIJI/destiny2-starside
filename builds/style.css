@@ -618,7 +618,7 @@ body:has(.entries) { --wrap: 1500px; }
   flex-direction: column;
   gap: 8px;
   width: max-content;
-  max-width: 62vw;
+  max-width: calc(62 * var(--vw));
   padding: 10px 12px;
   background: var(--ink-lift);
   border: 1px solid var(--hair-lit);

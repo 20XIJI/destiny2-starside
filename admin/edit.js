@@ -604,7 +604,10 @@
       if (S.pend.length) S.desk.textContent = '审核台 ' + S.pend.length
       chip.textContent = '退出编辑'
       chip.setAttribute('aria-current', 'true')
-      ;(window.requestIdleCallback || setTimeout)(wantTerms, 1)
+      // 两个分支分开调：合写成 (requestIdleCallback || setTimeout)(fn, 1) 时，
+      // 1 在 Chrome 里不是 IdleRequestOptions，当场抛 TypeError。
+      if (window.requestIdleCallback) requestIdleCallback(wantTerms)
+      else setTimeout(wantTerms, 1)
     }, function (e) {
       chip.textContent = '编辑'
       alert('进入编辑失败：' + e.message)

@@ -773,6 +773,27 @@ test('the editing console flags item names written with the typographic space', 
     `这些名字按源稿的写法出现时，编辑台不提示该着色，而 npm run build 的 G6 会报：${missed.slice(0, 5).join('、')}`)
 })
 
+test('the review console opens the next pending build after a verdict', () => {
+  const { api } = adminApi()
+  const order = ['a', 'b', 'c', 'd']
+  assert.equal(api.nextWait(order, 'b', ['c', 'd']), 'c', '往后找第一条仍待审的')
+  assert.equal(api.nextWait(order, 'b', ['a', 'd']), 'd', '已经审过的那几条要跳过')
+  assert.equal(api.nextWait(order, 'd', ['a']), 'a', '到底了从头找')
+  assert.equal(api.nextWait(order, 'a', []), null, '队列审空了就回列表')
+  assert.equal(api.nextWait(order, 'b', ['b']), null, '刚审的那一条不算下一条')
+})
+
+test('the review diff marks only the stretch that changed', () => {
+  const { api } = adminApi()
+  const same = (a, b) => Array.from(api.changed(a, b))
+  // 记录里真出现过的一格：九十个字里只改了四个
+  assert.deepEqual(same('不需要携带多个层层不绝，通常只需要', '不需要携带多个完全充能，通常只需要'), [7, 6])
+  assert.deepEqual(same('ab', 'aXb'), [1, 1], '插进去的字：旧的一侧没有要标的')
+  // 重复的字不许让头尾两段重叠，否则标出来的区间是负的
+  assert.deepEqual(same('aa', 'aaa'), [2, 0])
+  assert.deepEqual(same('同一句', '同一句'), [3, 0], '只改了着色时文字相同，没有要标的')
+})
+
 
 /* docs 那条路由要把每一条 builds/ 记录的正文都带回去。**这一条只有在库里的配装
    多到超过一页时才有意义**，所以它自己造出那个规模，不依赖仓库现有的 91 套。
