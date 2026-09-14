@@ -47,7 +47,7 @@
 
 | 棱镜手雷 | 图标 | 说明 |
 |---|---|---|
-| 冰火尖刺 | {ico|![](icons/8728e47680.webp)} | 附着到表面或{enemy|战斗人员}身上，向最远 {unsure|?} 米处释放一股{el-stasis|冰影}与{el-solar|烈日}能量呈锥形扩散。\\ \\ 迸发成一场{deb-stasis|减速}风暴，爆发时最多造成 78 {unsure|[?]} 伤害。\\ 风暴每 0.25 秒造成 15.6 {unsure|[?]} {el-stasis|冰影伤害}并施加 {unsure|13?} 层{deb-stasis|减速}，持续 3.45 秒。\\ \\ 附着 3.45 秒后释放一道灼热旋风，每 0.25 秒造成 39 {unsure|[?]} {el-solar|烈日伤害}并施加 10 层{deb-solar|灼烧}，持续 4 秒。 |
+| 雹火尖刺 | {ico|![](icons/8728e47680.webp)} | 附着到表面或{enemy|战斗人员}身上，向最远 {unsure|?} 米处释放一股{el-stasis|冰影}与{el-solar|烈日}能量呈锥形扩散。\\ \\ 迸发成一场{deb-stasis|减速}风暴，爆发时最多造成 78 {unsure|[?]} 伤害。\\ 风暴每 0.25 秒造成 15.6 {unsure|[?]} {el-stasis|冰影伤害}并施加 {unsure|13?} 层{deb-stasis|减速}，持续 3.45 秒。\\ \\ 附着 3.45 秒后释放一道灼热旋风，每 0.25 秒造成 39 {unsure|[?]} {el-solar|烈日伤害}并施加 10 层{deb-solar|灼烧}，持续 4 秒。 |
 
 | {lead|共享技能\\ {note|职业技能和移动技能都与原分支职业完全共享。}} | {sk-arc|![](icons/205bfcb812.webp) 电弧} | {sk-solar|![](icons/8fff5c49b3.webp) 烈日} | {sk-void|![](icons/70caf4a733.webp) 虚空} | {sk-stasis|![](icons/357ddde8cc.webp) 冰影} | {sk-strand|![](icons/120c0fddfd.webp) 缚丝} |
 |---|---|---|---|---|---|
@@ -66,7 +66,7 @@
 
 | 棱镜手雷 | 图标 | 说明 |
 |---|---|---|
-| 电化陷阱 | {ico|![](icons/128010d646.webp)} | 充能了{el-arc|电弧}与{el-strand|缚丝}能量的爆炸物。\\ \\ 释放一次超级充能的{deb-strand|悬停}爆裂，最多造成 105 {unsure|[?]} 伤害，对 {unsure|?} 米内的{enemy|战斗人员}施加{deb-strand|悬停}。\\ 被{deb-strand|悬停}的{enemy|战斗人员}每 {unsure|?} 秒受到 {unsure|?} 点伤害，持续 {unsure|?} 秒，同时附加{deb-arc|震颤}。 |
+| 电击陷阱 | {ico|![](icons/128010d646.webp)} | 充能了{el-arc|电弧}与{el-strand|缚丝}能量的爆炸物。\\ \\ 释放一次超级充能的{deb-strand|悬停}爆裂，最多造成 105 {unsure|[?]} 伤害，对 {unsure|?} 米内的{enemy|战斗人员}施加{deb-strand|悬停}。\\ 被{deb-strand|悬停}的{enemy|战斗人员}每 {unsure|?} 秒受到 {unsure|?} 点伤害，持续 {unsure|?} 秒，同时附加{deb-arc|震颤}。 |
 
 | {lead|共享技能\\ {note|职业技能和移动技能都与原分支职业完全共享。}} | {sk-arc|![](icons/d70650ed73.webp) 电弧} | {sk-solar|![](icons/90ca587869.webp) 烈日} | {sk-void|![](icons/d3a5c298cf.webp) 虚空} | {sk-stasis|![](icons/6b8643428f.webp) 冰影} | {sk-strand|![](icons/f479be4b19.webp) 缚丝} |
 |---|---|---|---|---|---|

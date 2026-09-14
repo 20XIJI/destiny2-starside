@@ -243,7 +243,6 @@ def classify():
             where, _ = resolve.classify(facts, name, page, composite, effects,
                                         sources, hints)
             return where in ('物品', '套装', '来源别名', '效果', '派生', '待指定')
-        name = resolve.ALIASES.get(name.strip(), name)
         return resolve.norm(name) in known or resolve.set_key(name) in known
 
     docs = os.path.join(shell.ROOT, 'references', 'docs')

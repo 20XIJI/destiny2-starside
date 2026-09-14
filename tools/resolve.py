@@ -76,15 +76,6 @@ SCOPES = {
     'elements/class-abilities': ((None, None, ABILITY_PLUGS),),
 }
 
-# 名字对不上，且对不上的理由各不相同，所以逐条写明。值是 manifest 里的名字。
-ALIASES = {
-    'IKELOS_微型冲锋枪_V1.0.3': 'IKELOS_SMG_v1.0.3',   # 站内把 SMG 译成中文，库里没译
-    '冰火尖刺': '雹火尖刺',                            # 源稿写错一个字，库里是 Hailfire Spike
-    '电化陷阱': '电击陷阱',                            # 同上，库里是 Electrified Snare
-    '精密射线': '精准射线',                            # 同上，库里是 Rays of Precision
-    '种群削减': '种群削弱',                            # 同上，深岩墓室突袭模组
-}
-
 # 站内标的版本名与库里的来源词对不上时的对照。玩家按活动叫它，库里写的是那次
 # 活动所属的版本更新。逐条带一行依据，不写「同义词」了事。
 VERSION_SOURCE = {
@@ -222,7 +213,6 @@ def in_scope(row, scopes):
 
 def candidates(facts, name, page):
     """按名字查、按页面收窄。名字走三档梯子，第一档查到就不再往下。"""
-    name = ALIASES.get(name.strip(), name)
     scopes = SCOPES.get(page)
     for index, key in ((facts.by_zh, norm(name)), (facts.by_en, norm(name)),
                        (facts.by_fold, fold(name))):

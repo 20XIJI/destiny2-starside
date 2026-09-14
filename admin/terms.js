@@ -277,7 +277,7 @@ pageClasses: {
   "docs/weapon-perks": ["enh","ico","src"],
 },
 guard: ["千语魅痕","冻结计时","层数冻结","治愈裂痕","迷惑爆发","守护者游戏","动能震颤","震颤反馈","不稳定弹药","势不可挡射击","二象性地牢","快速启动模组","计时会冻结","逐渐减速","减速飞行","落地减速","准星悬停","权利的真相"],
-keep: ["削弱清敌","Destiny 2: Boss Damage","吞食裂缝","卡巴尔：焦灼大地","残存回声","结晶残花","重型弹药搜寻者","重型弹药斥候","双重装填"],
+keep: ["削弱清敌","Destiny 2: Boss Damage","吞食裂缝","卡巴尔：焦灼大地","残存回声","结晶残花","重型弹药搜寻者","重型弹药斥候","双重装填","种群削弱"],
 g6: ["ability-cooldown","act-mods","ammo","arc","armor-mods","boss-hp","buff-debuffs","class-abilities","combatant-scalars","crafting","dps","elements","exotic-armor","exotic-armors","exotic-weapon","exotic-weapons","farming-sets","game-mechanics","legendary-heavy","legendary-primary","legendary-special","power-delta","prismatic","pve-farming","raid-guides","rotation","shopping-heavy","shopping-other","shopping-primary","shopping-special","skill-damage","solar","sources","stasis","strand","swap-dps","void","weapon-frames","weapon-perks"],
 items: [
   ["淘金者\\\\F.A.T.S.（全自动）\\\\连锁反应\\\\↑财力雄厚\\\\↑危险区域","exotic","异域 Perk"],

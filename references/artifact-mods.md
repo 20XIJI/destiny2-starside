@@ -1317,7 +1317,7 @@
 {enemy|眩晕}一名{enemy|勇士}时：
 该{enemy|勇士}被{deb-solar|点燃}。
 
-### 三级 · {stack|精密射线}
+### 三级 · {stack|精准射线}
 
 图标：349e9aac03.webp
 

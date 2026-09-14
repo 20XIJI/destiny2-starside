@@ -49,7 +49,7 @@
 | 回旋喝彩 | {ico|![](icons/86d9823bc4.webp)} | 输出：T1\\高难：T1.5 |  | 4403 | {champ|![](icons/a9911a3dfe.webp)} | 长时间蓄力给了阴谋淬砺冷却的时间，可以单人两波见证者 | 可以把他看作{el-strand|缚丝}但是需要蓄力的{exotic|寄生虫}，弹药经济优秀，反屏障 |  |
 | 阿克瑞斯传说 | {ico|![](icons/2cd39e790d.webp)} | 输出：T1 | 112507 | 5533 | {champ|![](icons/8b37bb6db2.webp)} | 顶级的近身输出选择，但在有裁决定论+{exotic|混乱无序}的组合已经没有那么常用了 |  |  |
 | 新马尔帕伊斯 | {ico|![](icons/4c437e4481.webp)} | 清怪：T1\\输出：T3\\高难：T3 | 77113 | 3127 | {champ|![](icons/b7c4048b87.webp)} | 新马针对{bar-yellow|初级首领}与{bar-red|红血}清怪仍然相当不错，与好奇之器相性极高在 vog 单进，晚星杀 4 分身等地方有特殊用途 | 作为补输出的绿弹他是合格的 |  |
-| 泰拉巴 | {ico|![](icons/c668d5f1b7.webp)} | 清怪：T1（火伤场景更合适） |  |  | {champ|![](icons/a9911a3dfe.webp)} | 适合搭配女王香炉的{art-perk|发热寒颤}与{art-perk|火种扳机}、精密射线快速进入野兽模式，获得火伤抗性。本身 100 弹药生成，非常不错的清怪枪 |  |  |
+| 泰拉巴 | {ico|![](icons/c668d5f1b7.webp)} | 清怪：T1（火伤场景更合适） |  |  | {champ|![](icons/a9911a3dfe.webp)} | 适合搭配女王香炉的{art-perk|发热寒颤}与{art-perk|火种扳机}、{art-perk|精准射线}快速进入野兽模式，获得火伤抗性。本身 100 弹药生成，非常不错的清怪枪 |  |  |
 | 赴险者 | {ico|![](icons/b6c2aa61c2.webp)} | 清怪：T1（电伤场景） |  |  | {champ|![](icons/8b37bb6db2.webp)} | 唯一有{perk|连锁反应}的白弹，只建议在{enemy|战斗人员}是{el-arc|电弧}伤害时触发{el-arc|电弧}导体使用 |  |  |
 | 异星噬菌 | {ico|![](icons/a48072452d.webp)} | 清怪：T1 |  |  | {champ|![](icons/b7c4048b87.webp)} | 机炮的定位类似于重弹位的火箭脉冲，除了不能输出{bar-yellow|首领}以外可以适应远近距离的清怪环境 |  |  |
 | 越橘 | {ico|![](icons/c8f47ee9fd.webp)} | 清怪：T1 |  |  | {champ|![](icons/a9911a3dfe.webp)} | 狂暴和{perk|动能震颤}使其成为不错的清怪选择100 弹药生成锦上添花 |  |  |
