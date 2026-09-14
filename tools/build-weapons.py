@@ -149,6 +149,69 @@ ENH_PAIR = {
 }
 
 
+# 武器类型与弹药的小图标：justrealmilk/destiny-icons 那一套（CC0），把需要的
+# 二十枚抽成一张内联 sprite。抽取走 `--sprite <那个仓库的目录>`，产物 tools/type-icons.json
+# 入库；仓库本身不进来，也不留抓取代码——那套图标不随赛季变。
+TYPE_ICONS = os.path.join(shell.ROOT, 'tools', 'type-icons.json')
+
+# 站内的武器类型名 → 那套图标里的文件名。17 种，与 data/facts 里的 t.zh 一一对上。
+TYPE_ICON = {
+    '自动步枪': 'auto_rifle', '战斗弓箭': 'bow', '融合步枪': 'fusion_rifle',
+    '偃月': 'glaive', '榴弹发射器': 'grenade_launcher', '手炮': 'hand_cannon',
+    '机枪': 'machinegun', '脉冲步枪': 'pulse_rifle', '火箭发射器': 'rocket_launcher',
+    '斥候步枪': 'scout_rifle', '霰弹枪': 'shotgun', '手枪': 'sidearm',
+    '微型冲锋枪': 'smg', '狙击步枪': 'sniper_rifle', '刀剑': 'sword_heavy',
+    '追踪步枪': 'trace_rifle', '线性融合步枪': 'wire_rifle',
+}
+AMMO_ICON = {'主武器': 'ammo-primary', '特殊': 'ammo-special', '威能': 'ammo-heavy'}
+
+
+def sprite(src):
+    """从 destiny-icons 抽出要用的那二十枚，落成 tools/type-icons.json。
+
+    三件事：剥掉写死的 fill（交给 currentColor）、把坐标统一缩放到高 32 再按 0.1
+    取整（14px 显示时看不出差别，整张 sprite 从 10.8 KB gz 降到 7.5 KB），
+    以及只留 path 这一层，不留 IcoMoon 的注释与 title。
+    """
+    want = sorted(set(TYPE_ICON.values()) | set(AMMO_ICON.values()))
+    out = {}
+    for name in want:
+        path = next((os.path.join(src, d, name + '.svg')
+                     for d in ('weapons', 'general')
+                     if os.path.exists(os.path.join(src, d, name + '.svg'))), None)
+        if not path:
+            die('destiny-icons 里找不到 %s.svg：%s' % (name, src))
+        with open(path, encoding='utf-8') as f:
+            text = f.read()
+        box = re.search(r'viewBox="([^"]+)"', text).group(1)
+        body = text[text.index('>', text.index('<svg')) + 1:text.rindex('</svg>')]
+        body = re.sub(r'<title>.*?</title>', '', body, flags=re.S)
+        body = re.sub(r'<!--.*?-->', '', body, flags=re.S)
+        body = re.sub(r'\s(?:fill|stroke)="(?!none)[^"]*"', '', body)
+        body = re.sub(r'\s+', ' ', body).strip()
+        x0, y0, wide, high = (float(v) for v in box.split())
+        k = 32.0 / high
+        trim = lambda v: ('%.1f' % v).rstrip('0').rstrip('.')      # noqa: E731
+        body = re.sub(r'-?\d+(?:\.\d+)?',
+                      lambda m: trim(float(m.group(0)) * k), body)
+        out[name] = ['0 0 %s 32' % trim(wide * k), body]
+    with open(TYPE_ICONS, 'w', encoding='utf-8') as f:
+        f.write(',\n'.join(' %s: %s' % (json.dumps(k), json.dumps(v, ensure_ascii=False))
+                           for k, v in sorted(out.items())).join(('{\n', '\n}\n')))
+    print('tools/type-icons.json  %d 枚  %.1f KB'
+          % (len(out), os.path.getsize(TYPE_ICONS) / 1024))
+    return 0
+
+
+def load_sprite():
+    if not os.path.exists(TYPE_ICONS):
+        die('还没抽武器类型图标：\n'
+            '  git clone --depth 1 https://github.com/justrealmilk/destiny-icons\n'
+            '  python3 tools/build-weapons.py --sprite <那个目录>')
+    with open(TYPE_ICONS, encoding='utf-8') as f:
+        return json.load(f)
+
+
 def records():
     """人写层：{主键: 记录}，几卷合起来。"""
     out = {}
@@ -197,6 +260,35 @@ def cells(text):
 # 219 把武器的收藏条目写的是这一句。它不是来源，是「为什么没有来源」，
 # 照抄到页面上只会在「来源」两个字后面跟一句「没有来源」。
 NO_SOURCE = '随机特性：此物品无法从收藏品再次获取。'
+
+
+# 评级写在卡片上要短。两家的写法不一样：Aegis 是一个字母，刷取清单是 T 档，
+# 还常常按场景分成几段（「清怪：T2\\高难：T3」）。冒号与分隔点在一张 168px 宽的
+# 卡片上写不开，压成「清怪T2 高难T3」。
+GRADE_CUT = re.compile(r'[:：]\s*')
+
+# 档位 → 名次。两家各一套刻度，摆到同一根轴上：Aegis 的 S 对刷取清单的 T0，
+# 往下 A 对 T1、B 对 T2……刷取清单还有半档（T0.5），落在两者之间。
+# 一格里写了几段的取最好那一段：读者按「这枪最强的那一面」找它。
+LETTER_RANK = {'S': 0, 'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E': 5, 'F': 6}
+TIER_RANK = re.compile(r'T(\d+(?:\.\d+)?)')
+# 「特殊用途」「PVP」「输出工具枪」这类不是档位，是用途。排在 T3 之后、无评级之前。
+NO_TIER = 3.5
+
+
+def grade(text):
+    """一格评级 → 卡片上写的那一行。"""
+    return ' '.join(GRADE_CUT.sub('', x) for x in plain(text).split(' · ') if x)
+
+
+def rank_of(text):
+    """一格评级 → 名次，越小越靠前。认不出档位的按 NO_TIER 算。"""
+    flat = plain(text)
+    if not flat:
+        return None
+    got = [float(m.group(1)) for m in TIER_RANK.finditer(flat)]
+    got += [LETTER_RANK[c] for c in flat if c in LETTER_RANK and 'T' not in flat]
+    return min(got) if got else NO_TIER
 
 
 def source(row):
@@ -475,11 +567,10 @@ def payload(resolve, facts, recs, table):
             'tier': row.get('tier'),
             'ico': got['file'] if got else '',
             'br': BREAKER.get(row.get('breaker') or 0, ''),
-            'bri': (table.get(icons.CHAMP.get(row.get('breaker') or 0, '')) or {}).get('file', ''),
             'am': AMMO.get(row.get('ammo') or 0, ''),
             'sea': season_of(row),
             # 评级进索引：左栏要按它排、要显示它，为这一列再取一次详情不值当。
-            'r': {who: plain(b['评级'])
+            'r': {who: grade(b['评级'])
                   for who, b in (rec.get('来自') or {}).items() if b.get('评级')},
         }
         for flag in ('craft', 'tiering'):
@@ -488,6 +579,12 @@ def payload(resolve, facts, recs, table):
         # 大师工作的金色辉光：这一栏在，说明这把枪升得满，图标底下那层光就该亮。
         if mw:
             item['mw'] = 1
+        # 框架：网格那一页每张卡片都写它，所以进索引而不是详情。名字与图取固有
+        # 那一栏的第一枚——那一栏恒只有一件东西。
+        first = [c for c in cols if c[0] == '固有']
+        if first and first[0][1]:
+            item['fr'] = bag.rows[first[0][1][0]][0]
+            item['fi'] = bag.rows[first[0][1][0]][1]
         out.append(item)
 
         # 同名的别版本：复刻让同一把枪有好几个 hash，读者要能在版本之间跳。
@@ -511,10 +608,32 @@ def payload(resolve, facts, recs, table):
             'by': block,
             'alt': alt,
         }
-    chrome = {k: (table.get(v) or {}).get('file', '')
-              for k, v in icons.CHROME.items()}
-    missing = ([k for k, v in chrome.items() if not v]
-               + ['勇士 %d' % k for k, v in icons.CHAMP.items() if not table.get(v)])
+    def file_of(path):
+        return (table.get(path) or {}).get('file', '')
+
+    # 开屏按档位排：两家里最好的那一档在前，同一档内按武器类型聚拢，
+    # 异域不单列——它按自己的档位混在传说中间，读者找的是「这一档有哪些枪」。
+    # 没有评级的沉到最后，它们只有事实层那一份，没人替读者挑过。
+    ranked = {}
+    for key, rec in recs.items():
+        got = [rank_of(b.get('评级', ''))
+               for b in (rec.get('来自') or {}).values() if b.get('评级')]
+        got = [g for g in got if g is not None]
+        if got:
+            ranked[key] = min(got)
+    out.sort(key=lambda w: (ranked.get(w['h'], 99), w['t'], w['n']))
+
+    chrome = {k: file_of(v) for k, v in icons.CHROME.items()}
+    # 逐条不再各存一份图名：元素六种、勇士三种、类型十七种、弹药三种，
+    # 都按那一行已有的中文名查这几张共享表。
+    chrome['el'] = {ELEMENT[k][1]: file_of(v) for k, v in icons.ELEM.items()
+                    if k in ELEMENT}
+    chrome['ch'] = {BREAKER[k]: file_of(v) for k, v in icons.CHAMP.items()}
+    chrome['ty'] = dict(TYPE_ICON)
+    chrome['am'] = dict(AMMO_ICON)
+    missing = ([k for k, v in chrome.items() if isinstance(v, str) and not v]
+               + ['勇士 %d' % k for k, v in icons.CHAMP.items() if not file_of(v)]
+               + ['元素 %d' % k for k, v in icons.ELEM.items() if not file_of(v)])
     if missing:
         die('武器图标的装饰层还没拉：%s\n  跑 python3 tools/icons.py --pull'
             % '、'.join(missing))
@@ -710,6 +829,20 @@ def stamp():
     return max(days, key=lambda d: [int(x) for x in d.split('.')])
 
 
+def sprite_tag():
+    """武器类型与弹药那二十枚图标，做成一张内联 sprite。
+
+    内联而不是另开一个文件：`<use href="别的文件#id">` 在几个浏览器上拿不到
+    currentColor，而这些图标要跟着文字变色（元素色、勇士红、素白）。整张 7.5 KB gz，
+    只有这一页要，不进外壳。
+    """
+    art = load_sprite()
+    body = ''.join('<symbol id="i-%s" viewBox="%s">%s</symbol>' % (k, v[0], v[1])
+                   for k, v in sorted(art.items()))
+    return ('<svg class="wpn-sprite" aria-hidden="true" width="0" height="0">'
+            '<defs>%s</defs></svg>' % body)
+
+
 def render(n_weapon, n_rated):
     o = [shell.head(PAGE_TITLE, PAGE_DESC, app_js=False),
          shell.nav('武器库'),
@@ -732,9 +865,19 @@ def render(n_weapon, n_rated):
          '<input id="q" type="search" autocomplete="off" spellcheck="false"'
          ' placeholder="按名字找一把枪" aria-label="按名字找一把枪">',
          '</form>',
+         # 筛选条由 app.js 按索引里真有的取值现建，不写死：换一批武器进来，
+         # 多出来的元素或武器类型会自己长出一枚开关。
+         '<div class="wpn-facets" id="facets"></div>',
+         # 计数与视图开关排在版心这一层：网格那一档没有左栏，计数不能藏在里面。
+         '<div class="wpn-bar">',
+         '<p id="count" class="wpn-count" role="status"></p>',
+         '<nav class="wpn-view" aria-label="换一种排法">',
+         '<button id="v-grid" class="toggle" type="button" aria-pressed="true">网格</button>',
+         '<button id="v-list" class="toggle" type="button" aria-pressed="false">列表</button>',
+         '</nav>',
+         '</div>',
          '<div class="wpn-body">',
          '<div class="wpn-aside">',
-         '<p id="count" class="wpn-count"></p>',
          '<ol id="hits" class="wpn-hits"></ol>',
          '</div>',
          '<article id="one" class="wpn-one"></article>',
@@ -742,6 +885,7 @@ def render(n_weapon, n_rated):
          # 悬停说明用一个浮层反复画，不给每枚图标各挂一个：一把枪的词条矩阵
          # 有上百格。hidden 由 app.js 开合，无 JS 时它一直是隐藏的。
          '<div id="tip" class="wpn-tip" role="tooltip" hidden></div>',
+         sprite_tag(),
          '</section>',
          '</main>', '',
          shell.foot(stamp(),
@@ -753,6 +897,10 @@ def render(n_weapon, n_rated):
 
 
 def main():
+    if len(sys.argv) > 1 and sys.argv[1] == '--sprite':
+        if len(sys.argv) < 3:
+            die('用法：python3 tools/build-weapons.py --sprite <destiny-icons 目录>')
+        return sprite(os.path.expanduser(sys.argv[2]))
     sys.path.insert(0, os.path.join(shell.ROOT, 'tools'))
     import resolve
     facts = resolve.Facts()

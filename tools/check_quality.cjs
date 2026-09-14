@@ -1558,6 +1558,24 @@ test('the weapon page math reproduces every stat the manifest itself prints', ()
   assert.deepEqual(bad.slice(0, 5), [], `${bad.length} 个格子对不上`)
 })
 
+test('no two top-level names in the weapon page shadow each other', () => {
+  // 同一个 IIFE 里写了两个同名的顶层声明，函数声明会被提升、后写的整个盖掉前一个，
+  // 而 JS 一声不吭——只在调用时炸出一句 "x is not a function"。这条踩过两次：
+  // 筛选条的 tally() 盖掉数值的 tally()，网格计数 shown 盖掉属性函数 shown()。
+  const src = fs.readFileSync(path.join(root, 'weapons/app.js'), 'utf8')
+  const seen = new Map()
+  src.split('\n').forEach((line, i) => {
+    const m = /^ {2}(?:function (\w+)|var (\w+)\s*[=;])/.exec(line)
+    if (!m) return
+    const name = m[1] || m[2]
+    seen.set(name, (seen.get(name) || []).concat(i + 1))
+  })
+  const dup = [...seen].filter(([, at]) => at.length > 1)
+  assert.ok(seen.size > 40, `只认出 ${seen.size} 个顶层声明，正则像是对不上了`)
+  assert.deepEqual(dup, [], '这几个名字在同一层声明了两次：'
+    + dup.map(([n, at]) => `${n}（第 ${at.join('、')} 行）`).join('；'))
+})
+
 test('the interpolation curve is clamped at both ends, not extrapolated', () => {
   const { interp, shown } = weaponMath()
   // 霰弹枪的伤害曲线不从 0 起。投资值 0 在游戏里显示 65：按前两点的斜率往下

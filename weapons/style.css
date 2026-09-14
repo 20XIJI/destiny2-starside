@@ -37,6 +37,72 @@
   outline-offset: 1px;
 }
 
+/* sprite 只是一堆 symbol 的仓库，不占版面。 */
+.wpn-sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+/* ── 筛选条 ──
+   同一组里选几个是「或」，组与组之间是「且」。每枚开关末尾那个数是「按当前其余
+   条件，选它还剩多少」——按下去会不会是空的，按之前就看得见。剩 0 的压暗但不禁用：
+   读者仍看得到这一档存在，只是当前条件下没有。
+   `.toggle` `.op` `.drop` `.menu` 都是站内既有的控件，这里只管排布。 */
+.wpn-facets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 0 0 12px;
+}
+
+.wpn-facet {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.wpn-facet-name {
+  color: var(--bone-faint);
+  letter-spacing: .12em;
+}
+
+.wpn-facet-one {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.wpn-facet-one em {
+  font-style: normal;
+  color: var(--bone-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.wpn-facet-one.none {
+  opacity: .4;
+}
+
+.wpn-facet-clear {
+  margin-left: 4px;
+}
+
+/* 计数与视图开关排在版心这一层：网格那一档没有左栏，计数藏在里面就看不见了。 */
+.wpn-bar {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 0 0 12px;
+}
+
+.wpn-view {
+  display: flex;
+  gap: 6px;
+}
+
 /* 三栏：结果 248 + 详情，详情里再切主栏与 300 的数值栏。两层嵌套而不是一层
    三列，是因为枪名那一行要横跨后两栏——它是这一整块的标题，不属于中栏。 */
 .wpn-body {
@@ -44,6 +110,118 @@
   grid-template-columns: 248px minmax(0, 1fr);
   gap: 18px;
   align-items: start;
+}
+
+/* 还没挑枪时满幅铺卡片，左栏收起来——它要给卡片墙让出整幅宽度。 */
+.wpn-body.one-up {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.wpn-body.one-up .wpn-aside {
+  display: none;
+}
+
+/* ── 卡片墙 ──
+   一行八张（1500px 版心下），每张自上而下：图标、名字、一行小图标、框架、评级。
+   前四样照 destiny.report 的次序；评级那一行是站内比它多出来的，也是这一页存在
+   的理由，所以留在卡片上而不是藏进详情。 */
+.wpn-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 10px;
+}
+
+.wpn-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 10px 10px;
+  color: inherit;
+  text-decoration: none;
+  background: var(--panel-b);
+  border: 1px solid var(--hair);
+  border-radius: 4px;
+}
+
+.wpn-card:hover {
+  background: var(--tint-2);
+  border-color: var(--hair-lit);
+}
+
+.wpn-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.wpn-card-name {
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.25;
+}
+
+.wpn-card-tags,
+.wpn-card-frame,
+.wpn-card-rate {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin: 0;
+  color: var(--bone-dim);
+}
+
+.wpn-card-tags em {
+  font-style: normal;
+  color: var(--bone-faint);
+}
+
+.wpn-card-frame {
+  text-align: center;
+  max-width: 100%;
+}
+
+/* 卡片底那一行评级：一张卡片最多三家，挤在一行里不许换行，
+   否则同一排卡片的底会参差不齐。档位串本身也可能很长（刷取清单写的是
+   「清怪：T0 · 高难：T1 · 输出：T2.5」），超出就截断，全文挂在 title 上。 */
+.wpn-card-rate {
+  flex-wrap: nowrap;
+  max-width: 100%;
+}
+
+.wpn-card-rate .wpn-rate {
+  min-width: 0;
+  padding: 0 5px 1px;
+  gap: 4px;
+}
+
+.wpn-card-rate .wpn-rate b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wpn-card-frame span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wpn-tag-ico {
+  flex: none;
+}
+
+/* 类型与弹药那几枚走 sprite，跟着文字颜色变。它们比方形图标扁得多
+   （狙击枪是 123×32），所以按高度定尺寸，宽度随原比例。 */
+.wpn-tag-svg {
+  flex: none;
+  height: 11px;
+  width: auto;
+  max-width: 42px;
+  fill: currentColor;
+}
+
+.wpn-tag-svg.wide {
+  height: 10px;
 }
 
 /* ── 左栏：结果 ── */

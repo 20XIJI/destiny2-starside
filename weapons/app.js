@@ -216,19 +216,280 @@
 
   window.addEventListener('scroll', tipHide, { passive: true });
 
-  // ── 左栏 ──────────────────────────────────────────────────────────
-  var LIMIT = 80;   // 一次最多列这么多：输入一个字就铺两千行没人读得完
+  // ── sprite 图标 ───────────────────────────────────────────────────
+  // 武器类型与弹药那二十枚是内联 sprite 里的 symbol，用 <use> 取。走 SVG 而不是
+  // 位图，是因为它们要跟着文字变色：元素跟元素色、勇士跟红、其余素白。
+  var SVG = 'http://www.w3.org/2000/svg';
 
-  function list(text) {
-    var want = text.trim().toLowerCase();
-    var got = want ? D.w.filter(function (w) { return w.k.indexOf(want) >= 0; }) : D.w;
+  // 卡片上给作者留的那一个字，与词条图标右上角那枚角标同一套记号。
+  var AUTHOR_LETTER = { aegis: 'A', lgpig: 'L', compendium: 'C' };
+
+  function glyph(id, cls) {
+    var svg = document.createElementNS(SVG, 'svg');
+    svg.setAttribute('class', cls);
+    svg.setAttribute('aria-hidden', 'true');
+    var use = document.createElementNS(SVG, 'use');
+    use.setAttribute('href', '#i-' + id);
+    svg.appendChild(use);
+    return svg;
+  }
+
+  // ── 搜什么、怎么排 ────────────────────────────────────────────────
+  var LIMIT = 80;        // 列表那一档一次最多列这么多
+  var PAGE = 120;        // 网格那一档一屏一批，滚到底再添下一批
+  var found = D.w;       // 当前命中的那一批
+  var laid = 0;          // 网格已经铺了几张
+  var view = 'grid';
+  try {
+    if (localStorage.getItem('wpnview') === 'list') { view = 'list'; }
+  } catch (e) { /* 隐私模式下读不到，用默认那一档 */ }
+
+  // ── 筛选条 ────────────────────────────────────────────────────────
+  // destiny.report 那边是一套要背的查询语法（stat:range:>70）。这里换成开关：
+  // 同一组里选几个是「或」，组与组之间是「且」，与站内别的页面同一套规矩。
+  // 每枚开关上标着「按当前其余条件，选它还剩多少」——按下去是不是空的，按之前就看得见。
+  var FACETS = [
+    { key: 'tk', name: '元素', pic: 'el', text: function (w) { return w.el; } },
+    { key: 'am', name: '弹药', pic: 'am' },
+    { key: 'br', name: '勇士', pic: 'ch' },
+    { key: 't', name: '类型', pic: 'ty', drop: true },
+  ];
+  var FLAGS = [
+    { key: 'tier', name: '异域', hit: function (w) { return w.tier === 6; } },
+    { key: 'craft', name: '可锻造', hit: function (w) { return !!w.craft; } },
+    { key: 'tiering', name: '支持阶级', hit: function (w) { return !!w.tiering; } },
+    { key: 'rated', name: '有评级', hit: function (w) { return !!Object.keys(w.r).length; } },
+  ];
+  var on = {};                      // {维度: {取值: true}}
+  FACETS.concat(FLAGS).forEach(function (f) { on[f.key] = {}; });
+
+  function live(dim) {
+    return Object.keys(on[dim]).length;
+  }
+
+  // 按「除了 skip 这一维之外的全部条件」筛一遍。算每枚开关的剩余数用得上。
+  function narrow(skip) {
+    var want = q.value.trim().toLowerCase();
+    return D.w.filter(function (w) {
+      if (want && w.k.indexOf(want) < 0) { return false; }
+      for (var i = 0; i < FACETS.length; i++) {
+        var f = FACETS[i];
+        if (f.key !== skip && live(f.key) && !on[f.key][w[f.key] || '']) { return false; }
+      }
+      for (var j = 0; j < FLAGS.length; j++) {
+        var g = FLAGS[j];
+        if (g.key !== skip && live(g.key) && !g.hit(w)) { return false; }
+      }
+      return true;
+    });
+  }
+
+  function sift() {
+    found = narrow(null);
+    count.textContent = '结果 ' + found.length;
+  }
+
+  // 名字别跟数值那边的 tally() 撞：函数声明会提升，重名的那个会把先写的整个盖掉，
+  // 而 JS 不会报重复定义——只在调用时炸出一句 forEach is not a function。
+  function countBy(rows, key) {
+    var out = {};
+    rows.forEach(function (w) {
+      var v = w[key] || '';
+      if (v) { out[v] = (out[v] || 0) + 1; }
+    });
+    return out;
+  }
+
+  // 筛选条只建一次，之后原地改：整条重建会把焦点弄丢，还会把「类型」那个
+  // 展开着的下拉关掉。
+  var switches = [];
+
+  function facets() {
+    var host = document.getElementById('facets');
+    FACETS.forEach(function (f) {
+      var all = countBy(D.w, f.key);
+      var keys = Object.keys(all).sort(function (a, b) { return all[b] - all[a]; });
+      if (keys.length < 2) { return; }
+      var box = el('div', 'wpn-facet');
+      box.appendChild(el('span', 'wpn-facet-name', f.name));
+      var wrap = box;
+      if (f.drop) {
+        var fold = el('details', 'drop');
+        fold.appendChild(el('summary', 'toggle', '挑一种'));
+        wrap = el('div', 'menu');
+        fold.appendChild(wrap);
+        box.appendChild(fold);
+      }
+      keys.forEach(function (v) {
+        var b = el('button', 'toggle wpn-facet-one');
+        b.type = 'button';
+        var pic = f.pic && D.o[f.pic] && D.o[f.pic][v];
+        if (pic && (f.pic === 'el' || f.pic === 'ch')) {
+          b.appendChild(icon(pic, 14, 'wpn-tag-ico'));
+        } else if (pic) {
+          b.appendChild(glyph(pic, 'wpn-tag-svg'));
+        }
+        b.appendChild(el('span', '', f.text ? f.text(by0(f.key, v)) : v));
+        var tail = el('em', '', '');
+        b.appendChild(tail);
+        b.addEventListener('click', function () {
+          if (on[f.key][v]) { delete on[f.key][v]; } else { on[f.key][v] = true; }
+          refresh();
+        });
+        switches.push({ node: b, tail: tail, dim: f.key, value: v });
+        wrap.appendChild(b);
+      });
+      host.appendChild(box);
+    });
+    var flags = el('div', 'wpn-facet');
+    flags.appendChild(el('span', 'wpn-facet-name', '别的'));
+    FLAGS.forEach(function (g) {
+      var b = el('button', 'toggle wpn-facet-one');
+      b.type = 'button';
+      b.appendChild(el('span', '', g.name));
+      var tail = el('em', '', '');
+      b.appendChild(tail);
+      b.addEventListener('click', function () {
+        if (on[g.key][1]) { delete on[g.key][1]; } else { on[g.key][1] = true; }
+        refresh();
+      });
+      switches.push({ node: b, tail: tail, dim: g.key, value: 1, hit: g.hit });
+      flags.appendChild(b);
+    });
+    var clear = el('button', 'op wpn-facet-clear', '全部清掉');
+    clear.type = 'button';
+    clear.hidden = true;
+    clear.addEventListener('click', function () {
+      FACETS.concat(FLAGS).forEach(function (f) { on[f.key] = {}; });
+      q.value = '';
+      refresh();
+    });
+    flags.appendChild(clear);
+    host.appendChild(flags);
+    switches.clear = clear;
+  }
+
+  // 每枚开关末尾那个数是「按当前其余条件，选它还剩多少」。按下去会不会是空的，
+  // 按之前就看得见。剩 0 的压暗但不禁用：那一档仍然存在，只是当前条件下没有。
+  function tick() {
+    var cache = {};
+    switches.forEach(function (sw) {
+      var rows = cache[sw.dim] || (cache[sw.dim] = narrow(sw.dim));
+      var n = sw.hit ? rows.filter(sw.hit).length
+        : rows.filter(function (w) { return (w[sw.dim] || '') === sw.value; }).length;
+      var pressed = !!on[sw.dim][sw.value];
+      sw.tail.textContent = String(n);
+      sw.node.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+      sw.node.classList.toggle('none', !n && !pressed);
+    });
+    var any = FACETS.concat(FLAGS).some(function (f) { return live(f.key); });
+    switches.clear.hidden = !any && !q.value;
+  }
+
+  // 拿一条带这个取值的记录出来，给要显示别的字段的那种维度用（元素开关写中文名，
+  // 而筛的是着色 token）。
+  var byValue = {};
+  function by0(key, v) {
+    var cache = byValue[key] || (byValue[key] = {});
+    if (!cache[v]) {
+      cache[v] = D.w.filter(function (w) { return (w[key] || '') === v; })[0] || {};
+    }
+    return cache[v];
+  }
+
+  function refresh() {
+    sift();
+    tick();
+    paint();
+  }
+
+  // ── 网格：一把枪一张卡片 ──────────────────────────────────────────
+  // 卡片上那一行小图标照 destiny.report 的次序：元素、弹药、武器类型、勇士、赛季。
+  // 站内比它多一行——两位作者的评级，那是这一页存在的理由。
+  function card(w) {
+    var a = el('a', 'wpn-card');
+    a.href = '#' + w.h;
+    a.appendChild(gun(w, 64, 'wpn-card-ico'));
+    a.appendChild(el('strong', 'wpn-card-name', w.n));
+
+    var tags = el('p', 'wpn-card-tags');
+    if (D.o.el[w.tk]) {
+      tags.appendChild(icon(D.o.el[w.tk], 14, 'wpn-tag-ico'));
+    }
+    if (D.o.am[w.am]) { tags.appendChild(glyph(D.o.am[w.am], 'wpn-tag-svg')); }
+    if (D.o.ty[w.t]) { tags.appendChild(glyph(D.o.ty[w.t], 'wpn-tag-svg wide')); }
+    if (w.br && D.o.ch[w.br]) {
+      tags.appendChild(icon(D.o.ch[w.br], 14, 'wpn-tag-ico champ'));
+    }
+    if (w.sea) { tags.appendChild(el('em', '', 'S' + w.sea)); }
+    a.appendChild(tags);
+
+    if (w.fr) {
+      var fr = el('p', 'wpn-card-frame');
+      fr.appendChild(icon(w.fi, 16, ''));
+      fr.appendChild(el('span', '', w.fr));
+      a.appendChild(fr);
+    }
+
+    // 卡片上的评级只写首字加档位：全名「小棒猪-LGpig」会把卡片撑成两行，
+    // 一整排卡片的底就参差不齐了。谁是谁在详情页与悬停里写全。
+    var rate = el('p', 'wpn-card-rate');
+    Object.keys(D.a).forEach(function (who) {
+      if (!w.r[who] || !AUTHOR_LETTER[who]) { return; }
+      var b = el('span', 'wpn-rate');
+      b.appendChild(el('i', '', AUTHOR_LETTER[who]));
+      b.appendChild(el('b', '', w.r[who]));
+      b.title = D.a[who][0] + ' 给 ' + w.r[who];
+      rate.appendChild(b);
+    });
+    if (rate.childNodes.length) { a.appendChild(rate); }
+    return a;
+  }
+
+  var more = null;        // 滚到它就添下一批
+  var watch = null;
+
+  function feed(box) {
+    var batch = found.slice(laid, laid + PAGE);
+    batch.forEach(function (w) { box.insertBefore(card(w), more); });
+    laid += batch.length;
+    if (laid >= found.length && more) {
+      more.remove();
+      more = null;
+    }
+  }
+
+  function grid() {
+    one.textContent = '';
+    laid = 0;
+    if (watch) { watch.disconnect(); }
+    if (!found.length) {
+      one.appendChild(el('p', 'wpn-empty', '没有这把枪。换几个字试试。'));
+      return;
+    }
+    var box = el('div', 'wpn-cards');
+    more = el('p', 'wpn-more', '再往下还有…');
+    box.appendChild(more);
+    one.appendChild(box);
+    feed(box);
+    if (more) {
+      // 滚到底再添下一批：两千多张卡片一次铺完，首屏要等好几秒。
+      watch = new IntersectionObserver(function (rows) {
+        if (rows.some(function (r) { return r.isIntersecting; })) { feed(box); }
+      }, { rootMargin: '600px' });
+      watch.observe(more);
+    }
+  }
+
+  // ── 列表：挑中一把之后左边那一栏 ──────────────────────────────────
+  function list() {
+    var got = found;
     // 选中的那把排到最前：列表只铺前 80 条，按名字排下去往往轮不到它，
     // 读者就会看到右边显示着一把、左边却没有它。
     var now = location.hash.slice(1);
     if (now && by[now]) {
       got = [by[now]].concat(got.filter(function (w) { return w.h !== now; }));
     }
-    count.textContent = '结果 ' + got.length;
     hits.textContent = '';
     got.slice(0, LIMIT).forEach(function (w) {
       var li = el('li');
@@ -726,13 +987,44 @@
     return box;
   }
 
-  function route() {
-    show(location.hash.slice(1));
-    mark();
+  // ── 两档版面 ──────────────────────────────────────────────────────
+  // 挑中一把枪之前是满幅的卡片墙，挑中之后左边收成一列结果、右边铺开那一把。
+  // destiny.report 也是这么分的：初始页没有左栏，它要给卡片让出整幅宽度。
+  function paint() {
+    var now = location.hash.slice(1);
+    var picked = !!(now && by[now]);
+    document.querySelector('.wpn-body').classList.toggle('one-up', !picked);
+    document.querySelector('.wpn-view').hidden = picked;
+    if (picked) {
+      if (watch) { watch.disconnect(); watch = null; }
+      list();
+      show(now);
+    } else if (view === 'list') {
+      list();
+      one.textContent = '';
+      one.appendChild(el('p', 'wpn-empty', '左边挑一把枪，或在上面按名字搜。'));
+    } else {
+      grid();
+    }
   }
 
-  q.addEventListener('input', function () { list(q.value); });
-  window.addEventListener('hashchange', route);
-  list('');
-  route();
+  function setView(next, quiet) {
+    view = next;
+    try { localStorage.setItem('wpnview', next); } catch (e) { /* 存不下就算了 */ }
+    gridBtn.setAttribute('aria-pressed', next === 'grid' ? 'true' : 'false');
+    listBtn.setAttribute('aria-pressed', next === 'list' ? 'true' : 'false');
+    document.querySelector('.wpn-body').classList.toggle('as-list', next === 'list');
+    if (!quiet) { paint(); }
+  }
+
+  var gridBtn = document.getElementById('v-grid');
+  var listBtn = document.getElementById('v-list');
+  gridBtn.addEventListener('click', function () { setView('grid'); });
+  listBtn.addEventListener('click', function () { setView('list'); });
+
+  q.addEventListener('input', refresh);
+  window.addEventListener('hashchange', function () { tipHide(); paint(); });
+  facets();
+  setView(view, true);
+  refresh();
 }());

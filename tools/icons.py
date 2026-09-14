@@ -52,6 +52,17 @@ CHAMP = {
     3: '/common/destiny2_content/icons/DestinyBreakerTypeDefinition_825a438c85404efd6472ff9e97fc7251.png',
 }
 
+# 六个元素的官方图标，路径取自 DestinyDamageTypeDefinition 的 displayProperties.icon
+# （键是 defaultDamageType 那个枚举）。5 是「突袭」，库里没图，站内也用不到。
+ELEM = {
+    1: '/common/destiny2_content/icons/DestinyDamageTypeDefinition_3385a924fd3ccb92c343ade19f19a370.png',
+    2: '/common/destiny2_content/icons/DestinyDamageTypeDefinition_092d066688b879c807c3b460afdd61e6.png',
+    3: '/common/destiny2_content/icons/DestinyDamageTypeDefinition_2a1773e10968f2d088b97c22b22bba9e.png',
+    4: '/common/destiny2_content/icons/DestinyDamageTypeDefinition_ceb2f6197dccf3958bb31cc783eb97a0.png',
+    6: '/common/destiny2_content/icons/DestinyDamageTypeDefinition_530c4c3e7981dc2aefd24fd3293482bf.png',
+    7: '/common/destiny2_content/icons/DestinyDamageTypeDefinition_b2fe51a94f3533f97079dfa0d27a4096.png',
+}
+
 CHROME = {
     'mw': '/img/destiny_content/items/masterwork-overlay.png',
     'tier': '/img/destiny_content/items/inventory-item-tier5.png',
@@ -140,6 +151,8 @@ def wanted():
     for path in CHROME.values():
         need.setdefault(path, 96)
     for path in CHAMP.values():
+        need.setdefault(path, 64)
+    for path in ELEM.values():
         need.setdefault(path, 64)
     if clash:
         die('这几张图在两页要两个尺寸，得先定版式：\n  %s'
