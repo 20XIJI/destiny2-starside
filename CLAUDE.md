@@ -53,7 +53,8 @@ mods.py            官方物品表 → tools/mod-variants.json（护甲模组变
                    与 tools/moves.json（位移技能）、tools/artifacts.json（七件神器），
                    图标一并取回
 facts.py           Bungie manifest → data/facts/（物品、武器词条池、效果与属性、
-                   护甲套装）。manifest 是冻结快照，跑一次、产物入库，不留抓取代码
+                   护甲套装、属性插值曲线）。manifest 是冻结快照，跑一次、产物入库，
+                   不留抓取代码。勇士克制按固有框架挂的 SandboxPerk 推，不读 breakerType
 resolve.py         中文名 → itemHash。槽位限定候选，复刻按「源稿标的版本后缀 →
                    源稿列的词条与来源 → 非大师非特殊版 → 有收藏条目」逐条判，
                    分不出就交出候选、不猜；另出给产出戳主键的戳号器
@@ -67,6 +68,9 @@ markup.py          源稿方言与公共件：职业／分支／配装三轴（�
 shell.py           站点外壳与落盘：head 元信息、导航条、页脚、ROOT、页面清单、emit()
 convert-*.py       四个生成器，各自只写自己那种数据形状的结构层；三个资料生成器
                    顺手写 data/index/ 的索引，并给行、模组与套装戳主键 data-hash
+build-weapons.py   事实层 + 人写层 → 武器库：索引 data.js、全站共享的词条字典
+                   plugs.js、一把一份的 w/*.json。属性基线每次构建都对一遍 manifest
+                   自己写的显示值，对不上当场中止
 migrate.py         配装源稿 markdown ⇄ 结构化记录，来回逐字节比对；资料页该结构化
                    还是留 markdown 由 --classify 按行标题能否落到主键上机械判定
 check_output.py    产出逐字保真：与某个 commit 的产出逐字节比，差异必须落在
@@ -112,6 +116,7 @@ json2xlsx.py       把上面那份 JSON 还原成 xlsx，供核对与二次编�
 | `.claude/rules/builds.md` | 推荐配装页：版面、护甲模组变体、源稿格式、合集、悬停详情、填表页 | `tools/convert-build.py`、`vocab.py`、`mods.py`、`builds/**`、`references/builds/**` |
 | `.claude/rules/backend.md` | 云函数与在线编辑台：认证、角色、三张表、就地编辑、审核台、配装投稿 | `functions/**`、`admin/**`、`tools/sync.py`、`build-terms.py` |
 | `.claude/rules/frontend.md` | 全站搜索索引与 `assets/app.js` | `assets/app.js`、`assets/search.js`、`tools/build-search.py` |
+| `.claude/rules/weapons.md` | 武器库：属性插值、勇士推导、赛季查表、强化版合并、作者推荐落图标 | `tools/build-weapons.py`、`facts.py`、`weapons/**`、`references/items/**` |
 
 加一条子系统约定就改对应那一份，不搬回本文件。本文件只收每次都用得上的东西；
 搬回来等于让每个 session 都为一次都不会读的内容付 context。
@@ -127,6 +132,7 @@ python3 tools/convert-artifact-mods.py        # 源稿 references/artifact-mods.
 python3 tools/convert-armor-sets.py           # 源稿 references/armor-sets.md
 python3 tools/convert-doc.py [slug]           # 源稿 references/docs/*.md，省略 slug 即全部
 python3 tools/convert-build.py                # 源稿 references/builds/<赛季>/*.md
+python3 tools/build-weapons.py                # 武器库，源稿 references/items/*.json
 python3 tools/build-search.py                 # 全站搜索索引 assets/search.js
 python3 tools/check_output.py [--against REF] # 产出与某个 commit 逐字节比对
 python3 tools/check_shell.py                  # 各页外壳逐字一致

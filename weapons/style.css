@@ -1,7 +1,7 @@
-/* 武器库。版面照 destiny.report：左栏结果、右栏详情，详情里再分主栏与侧栏。
-   版心比资料页宽一档，三栏并排才放得下。 */
+/* 武器库。版面照 destiny.report：左栏结果、中栏词条与评语、右栏标签片与数值。
+   版心走主档最宽那一挡：三栏并排，中栏还要铺得下一张十几列的词条矩阵。 */
 :root {
-  --wrap: 1240px;
+  --wrap: 1500px;
   --min: 320px;
   --accent: var(--c-legend);
 }
@@ -11,8 +11,8 @@
   margin: 0 0 14px;
 }
 
-.wpn-find input {
-  width: 100%;
+.wpn-find input,
+.wpn-mod-find {
   box-sizing: border-box;
   padding: 10px 12px;
   font: inherit;
@@ -22,15 +22,23 @@
   border-radius: 4px;
 }
 
-.wpn-find input::placeholder {
+.wpn-find input {
+  width: 100%;
+}
+
+.wpn-find input::placeholder,
+.wpn-mod-find::placeholder {
   color: var(--bone-faint);
 }
 
-.wpn-find input:focus-visible {
+.wpn-find input:focus-visible,
+.wpn-mod-find:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
 }
 
+/* 三栏：结果 248 + 详情，详情里再切主栏与 300 的数值栏。两层嵌套而不是一层
+   三列，是因为枪名那一行要横跨后两栏——它是这一整块的标题，不属于中栏。 */
 .wpn-body {
   display: grid;
   grid-template-columns: 248px minmax(0, 1fr);
@@ -49,7 +57,7 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  max-height: 72vh;
+  max-height: 78vh;
   overflow-y: auto;
   border: 1px solid var(--hair);
   border-radius: 4px;
@@ -103,7 +111,7 @@
   color: var(--bone-dim);
 }
 
-/* ── 右栏：一把枪 ── */
+/* ── 枪名那一行 ── */
 .wpn-one {
   min-width: 0;
 }
@@ -133,6 +141,10 @@
   background: color-mix(in oklab, var(--c-exotic) 16%, transparent);
 }
 
+.wpn-title {
+  min-width: 0;
+}
+
 .wpn-title h2 {
   margin: 0;
 }
@@ -142,18 +154,43 @@
   color: var(--bone-dim);
 }
 
+/* 评级贴着枪名：那是读者点进这把枪最想先看到的一件事，与名字放在一起省一次扫视。 */
+.wpn-rates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 0;
+}
+
+.wpn-rate {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 1px 8px 2px;
+  border: 1px solid var(--hair-lit);
+  border-radius: 3px;
+  background: var(--tint-1);
+}
+
+.wpn-rate i {
+  font-style: normal;
+  color: var(--bone-faint);
+  letter-spacing: .08em;
+}
+
+.wpn-rate b {
+  color: var(--accent);
+}
+
 .wpn-split {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 260px;
+  grid-template-columns: minmax(0, 1fr) 300px;
   gap: 18px;
   align-items: start;
   margin-top: 12px;
 }
 
-.wpn-main {
-  min-width: 0;
-}
-
+.wpn-main,
 .wpn-side {
   min-width: 0;
 }
@@ -170,6 +207,15 @@
   border: 1px solid var(--hair-lit);
   border-radius: 999px;
   background: var(--tint-1);
+}
+
+.wpn-chip[tabindex] {
+  cursor: help;
+}
+
+.wpn-chip[tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 .wpn-chip.exotic {
@@ -208,63 +254,87 @@
   letter-spacing: .12em;
 }
 
-.wpn-by,
 .wpn-stats,
-.wpn-sockets {
+.wpn-sockets,
+.wpn-mods,
+.wpn-says,
+.wpn-alt {
   margin-top: 18px;
   padding-top: 10px;
   border-top: 1px solid var(--hair);
 }
 
-.wpn-by h3,
 .wpn-stats h3,
-.wpn-sockets h3 {
+.wpn-sockets h3,
+.wpn-mods h3,
+.wpn-says h3,
+.wpn-alt h3 {
   margin: 0 0 8px;
   color: var(--bone-dim);
 }
 
-.wpn-by dl,
 .wpn-stats dl {
+  margin: 0;
+}
+
+/* 整行可聚焦：悬停它出的是「这个数由哪几件东西凑成」，与悬停词条那一层分工不同。 */
+.wpn-statrow {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
   gap: 4px 12px;
-  margin: 0;
+  align-items: center;
+  padding: 1px 2px;
+  border-radius: 3px;
+  cursor: help;
 }
 
-.wpn-by dt,
-.wpn-stats dt {
+.wpn-statrow:hover {
+  background: var(--row-hover);
+}
+
+.wpn-statrow:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+}
+
+.wpn-statrow dt {
   color: var(--bone-dim);
 }
 
-.wpn-by dd,
-.wpn-stats dd {
-  margin: 0;
-}
-
-/* 作者写的那一格里有格内换行，照原样断行。 */
-.wpn-by dd {
-  white-space: pre-line;
-}
-
-/* ── 数值条 ── */
-.wpn-stats dd {
+.wpn-statrow dd {
   display: flex;
   gap: 8px;
   align-items: center;
+  margin: 0;
 }
 
+/* ── 数值条 ──
+   按来源分段，**只换明度不换色相**：design.md 写着整页唯一的饱和色来自游戏
+   自身的编码，给「词条加的那一段」配一个蓝属于凭空造色。基础段最实，往后依次
+   变淡；负值段走斜纹，同样不靠红色。 */
 .wpn-rail {
+  position: relative;
+  display: flex;
   flex: 1 1 auto;
   height: 6px;
   background: var(--tint-2);
   border-radius: 3px;
+  overflow: hidden;
 }
 
-.wpn-bar {
+.wpn-seg {
   display: block;
   height: 100%;
+  background: color-mix(in oklab, var(--accent) 55%, transparent);
+}
+
+.wpn-seg.base {
   background: var(--accent);
-  border-radius: 3px;
+}
+
+.wpn-seg.neg {
+  background: repeating-linear-gradient(135deg,
+    var(--bone-faint) 0 2px, transparent 2px 4px);
 }
 
 /* 不画条的那几项留一段等宽的空，数字才与上下对齐。 */
@@ -272,11 +342,35 @@
   background: none;
 }
 
-.wpn-stats dd b {
+/* 悬停预览：主条底下另起一条，只画差额那一段。 */
+.wpn-ghost {
+  position: absolute;
+  bottom: 0;
+  height: 2px;
+  background: var(--bone-hi);
+}
+
+.wpn-ghost.down {
+  background: repeating-linear-gradient(135deg,
+    var(--bone-hi) 0 2px, transparent 2px 4px);
+}
+
+.wpn-statrow dd b {
   flex: none;
-  min-width: 2.5em;
+  min-width: 2.2em;
   text-align: right;
   font-weight: 600;
+}
+
+.wpn-next {
+  flex: none;
+  min-width: 3em;
+  font-style: normal;
+  color: var(--bone-hi);
+}
+
+.wpn-next.down {
+  color: var(--bone-dim);
 }
 
 /* 说明面板：点中那一枚讲什么。左缘一道强调色，与游戏里异域说明那一块同形。 */
@@ -296,10 +390,22 @@
   border-radius: 50%;
 }
 
-.wpn-note p {
+.wpn-note p,
+.wpn-tip p {
   margin: 4px 0 0;
   color: var(--bone-dim);
   white-space: pre-line;
+}
+
+.wpn-tip-head {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin: 0;
+}
+
+.wpn-tip-head strong {
+  color: var(--bone-hi);
 }
 
 /* ── 词条矩阵：一列一个槽位，纵向排该槽位的全部选项 ── */
@@ -324,6 +430,7 @@
 }
 
 .wpn-plug {
+  position: relative;
   display: grid;
   place-items: center;
   width: 48px;
@@ -353,11 +460,129 @@
   outline-offset: 2px;
 }
 
+/* 「这一枚还有强化版」：圆**内**左缘一道竖条加一个朝上的箭头，不往圆外挂东西——
+   圆外那一圈留给选中态与作者角标，三样各占各的位置才不会读混。
+   记号走骨白不走金：金在站内已经归异域装备所有，再给强化版一份，
+   「颜色即编码」当场失效。 */
+.wpn-plug.enh::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 50%;
+  width: 4px;
+  height: 18px;
+  transform: translateY(-50%);
+  background: var(--bone-hi);
+  clip-path: polygon(50% 0, 100% 34%, 68% 34%, 68% 100%, 32% 100%, 32% 34%, 0 34%);
+}
+
+/* 作者推荐：右上角一枚首字角标，两家都推就并排两枚。 */
+.wpn-rec {
+  position: absolute;
+  right: -3px;
+  top: -3px;
+  display: flex;
+  gap: 1px;
+}
+
+.wpn-rec i {
+  display: grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  font-style: normal;
+  font-size: 10px;
+  line-height: 1;
+  color: var(--ink);
+  background: var(--bone-hi);
+  border-radius: 50%;
+}
+
+/* ── 可选模组 ── */
+.wpn-mods-head {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.wpn-mods-head h3 {
+  margin: 0;
+}
+
+.wpn-mod-find {
+  width: 160px;
+}
+
+.wpn-modrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* ── 作者怎么说 ── */
+.wpn-say {
+  margin-top: 10px;
+  padding-left: 10px;
+  border-left: 2px solid var(--hair-lit);
+}
+
+.wpn-say h4 {
+  margin: 0 0 4px;
+  font-size: inherit;
+  color: var(--bone-faint);
+}
+
+.wpn-say p {
+  margin: 0 0 4px;
+  white-space: pre-line;
+}
+
+/* ── 别的版本 ── */
+.wpn-alt ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wpn-altone {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 4px 6px;
+  color: inherit;
+  text-decoration: none;
+  border-radius: 3px;
+}
+
+.wpn-altone:hover {
+  background: var(--row-hover);
+}
+
+.wpn-altone.on {
+  background: var(--tint-2);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.wpn-altone span {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wpn-altone em {
+  flex: none;
+  font-style: normal;
+  color: var(--bone-faint);
+}
+
 /* ── 悬停说明 ── */
 .wpn-tip {
   position: absolute;
   z-index: 30;
-  max-width: 280px;
+  max-width: 300px;
   padding: 8px 10px;
   color: var(--bone-hi);
   background: var(--ink-lift);
@@ -366,18 +591,52 @@
   pointer-events: none;
 }
 
-.wpn-tip p {
-  margin: 4px 0 0;
+.wpn-tag-enh {
+  padding: 0 5px;
+  color: var(--ink);
+  background: var(--bone-hi);
+  border-radius: 2px;
+}
+
+.wpn-sum {
+  margin-top: 6px;
+  border-collapse: collapse;
+}
+
+.wpn-sum th {
+  padding: 0 10px 0 0;
+  font-weight: 400;
   color: var(--bone-dim);
-  white-space: pre-line;
+  text-align: left;
+}
+
+.wpn-sum td {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.wpn-sum td.cond {
+  color: var(--bone-faint);
+}
+
+.wpn-sum tr.total th,
+.wpn-sum tr.total td {
+  padding-top: 3px;
+  color: var(--bone-hi);
+  border-top: 1px solid var(--hair-lit);
+}
+
+.wpn-tip-note,
+.wpn-tip-rec {
+  color: var(--bone-faint);
 }
 
 .wpn-empty {
   color: var(--bone-dim);
 }
 
-/* 窄屏依次落成一栏：248px 的结果栏与 260px 的数值栏在手机上会把正文挤没。 */
-@media (max-width: 900px) {
+/* 窄屏依次落成一栏：248px 的结果栏与 300px 的数值栏在手机上会把正文挤没。 */
+@media (max-width: 1000px) {
   .wpn-split {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -391,4 +650,21 @@
   .wpn-hits {
     max-height: 38vh;
   }
+}
+
+/* 折起来那一栏：只露选中的那一枚，点开在矩阵下方摊出全部取值。 */
+.wpn-fold {
+  display: flex;
+}
+
+.wpn-pick {
+  margin-top: 10px;
+  padding: 10px;
+  background: var(--tint-1);
+  border: 1px solid var(--hair);
+  border-radius: 4px;
+}
+
+.wpn-pick .wpn-modrow {
+  margin-top: 0;
 }

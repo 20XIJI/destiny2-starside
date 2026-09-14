@@ -67,7 +67,7 @@
 |送魂者|{ico|![](icons/8d15aa9b20.webp)}|T0.5|区域拒止\\72|{el-arc|电弧}|{champ|![](icons/8b37bb6db2.webp)}|自填\\{perk|即兴弹药}\\{perk|爆破专家}\\爆炸分配器|{perk|羸弱能量球}\\{perk|伏特子弹}\\任意合适增伤|{src|异端深渊}|||||顶级 perk 池和原始特性|
 |铭纹-41|{ico|![](icons/afacfeba23.webp)}|T1|区域拒止\\72|{el-solar|烈日}|{champ|![](icons/8b37bb6db2.webp)}|自填\\{perk|治疗弹匣}|{perk|羸弱能量球}\\{perk|二元轨道}\\斩首/{perk|武器大师}\\{perk|辉耀炽热}|{src|高塔纪念碑\\班西}|||||所有区域拒止榴弹中最平庸的 perk 池和起源特性，会用在石板{art-perk|元素超充器}转火系大招和{exotic|千语}松身裤挂突破清场|
 | == 微型导弹 T0 总伤 57426 切换 DPS 4603：最常用作山巅跳跑图，顶级的切换 DPS == |
-|机巧纬线|{ico|![](icons/9192b1b40c.webp)}|T0|微型导弹\\90|{el-strand|缚丝}|{champ|![](icons/b7c4048b87.webp)}|{perk|空中扳机}\\{perk|嫉妒军械库}\\{perk|滑行射击}|{perk|双脚架}\\{perk|聚合充能}/{perk|元素磨砺}\\{perk|诱导推销}|{src|高塔纪念碑}|||||顶级 perk 池和原始特性，山巅跳跑图有空板+{perk|双脚架}，输出有嫉妒军火+聚合是其他两把榴弹无法逾越的大山|
+|机巧纬线|{ico|![](icons/9192b1b40c.webp)}|T0|微型导弹\\90|{el-strand|缚丝}|{champ|![](icons/b7c4048b87.webp)}|{perk|空中扳机}\\{perk|嫉妒军械库}\\{perk|滑行射击}|{perk|双脚架}\\{perk|聚合充能}/{perk|元素磨砺}\\{perk|诱导推销}|{src|高塔纪念碑}|||||顶级 perk 池和原始特性，山巅跳跑图有空板+{perk|双脚架}，输出有{perk|嫉妒军械库}+聚合是其他两把榴弹无法逾越的大山|
 |经纬仪|{ico|![](icons/4b75e924b1.webp)}|T1|微型导弹\\90|{el-arc|电弧}|{champ|![](icons/b7c4048b87.webp)}|重建|{perk|元素磨砺}\\狂乱|{src|高塔纪念碑\\萨瓦拉}|||||唯一的一把副手山巅|
 | == 波形 T2：在一些平光本可以用作清怪，出现在一些 raid 长直道速通，拼好牢活动中的冰波形重力井曾经经常用来收集子弹，可惜的是如今已经绝版，但现在有 pvp2 件套代替出场率会降低 == |
 |新太平洋碑文|{ico|![](icons/784e303472.webp)}|T2|波形\\72|{el-stasis|冰影}|{champ|![](icons/b7c4048b87.webp)}|{perk|空中扳机}/{perk|金中藏弹}\\{perk|连锁反应}\\{perk|爆破专家}|转向\\{perk|杀戮弹匣}/{perk|收割者贡品}|{src|深渊机灵}|||||优秀的 perk 池。适合药剂包，拼好牢绝版版本有{perk|重力井}|
@@ -76,7 +76,7 @@
 |狂野飞禽|{ico|![](icons/11454a5d8d.webp)}|T2.5|双重火力\\120|{el-void|虚空}|{champ|![](icons/b7c4048b87.webp)}|自填\\{perk|嫉妒军械库}|{perk|枯萎凝视}\\{perk|聚合充能}/{perk|诱导推销}\\{perk|元素磨砺}|{src|守望者尖塔}|||||顶级 perk 池和原始特性，旧版本有{perk|金中藏弹}和{perk|重力井}已绝版|
 |礼拜|{ico|![](icons/7b307e094e.webp)}|T2.5|双重火力\\120|{el-stasis|冰影}|{champ|![](icons/b7c4048b87.webp)}|{perk|滑行健射}\\{perk|嫉妒军械库}|{perk|金中藏弹}\\{perk|冰冷弹匣}|{src|世界}|||||现存唯一可刷取的金中双发{deb-arc|致盲}榴弹|
 | == 轻质 T4：最意义不明的框架，双发榴弹在现版本几乎没有用处然而也是是他的纯上位 == |
-|拯救者的喝彩|{ico|![](icons/605abf587a.webp)}|T3|轻质\\90|{el-arc|电弧}|{champ|![](icons/8b37bb6db2.webp)}|{perk|涓流充能}|换档|{src|巅峰\\先锋}| {num|3422} | {num|43373} |||{perk|涓流充能}+换档一直射很好玩，DPS 比融合高但总伤太低|
+|拯救者的喝彩|{ico|![](icons/605abf587a.webp)}|T3|轻质\\90|{el-arc|电弧}|{champ|![](icons/8b37bb6db2.webp)}|{perk|涓流充能}|换挡|{src|巅峰\\先锋}| {num|3422} | {num|43373} |||{perk|涓流充能}+换挡一直射很好玩，DPS 比融合高但总伤太低|
 
 
 ## 霰弹枪
@@ -86,24 +86,24 @@
 | 武器 | 图标 | 评级 | 框架\\射速 | 属性 | 勇士 | Perk 三号位 | Perk 四号位 | 获取地点 | DPS | 总伤 | 切换 DPS | 备注 | 评级理由 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | == 攻击 T0：虽然比最顶级 DPS 的速射和轻质略低，但是有唯一一把真正的顶级双增伤喷子裁决定论。最好的弹药经济：高总伤和高弹药盒总伤。 == |
-|裁决定论|{ico|![](icons/1e35c28b8c.webp)}|T0|攻击\\60|{el-arc|电弧}|{champ|![](icons/b7c4048b87.webp)}|{perk|聚合充能}|战壕炮管\\{perk|元素磨砺}|{src|玻璃拱顶}| {num|5398} | {num|108395} ||{art-perk|电弧复合}|顶级 perk 池和原始特性，最强输出绿弹之一，常与{exotic|混乱无序}和驱逐引擎搭配输出，宗师警戒等高难本也常有他的身影，强度堪比大帝喷，俗称小帝喷|
-|猝死|{ico|![](icons/3275d0840c.webp)}|T0.5|攻击\\60|{el-void|虚空}|{champ|![](icons/b7c4048b87.webp)}|雪上\\重建|{perk|集体行动}\\{perk|元素磨砺}\\战壕炮管|{src|预言}|||||雪上+任意增伤的组合在如今版本多见于冰猎{exotic|忠诚面具}的组合，碎片{el-stasis|刺激的低语}弥补了填装需求，冰飞镖本身也有一定的伤害和清怪能力|
-|最后生存者|{ico|![](icons/a9e7f648e4.webp)}|T1|攻击\\60|{el-solar|烈日}|{champ|![](icons/b7c4048b87.webp)}|{perk|盗墓者}/{perk|金中藏弹}|战壕炮管|{src|智谋}|||||{perk|边打边跑}原始特性可以在击杀后部分填装弹匣|
+|裁决定论|{ico|![](icons/1e35c28b8c.webp)}|T0|攻击\\60|{el-arc|电弧}|{champ|![](icons/b7c4048b87.webp)}|{perk|聚合充能}|{perk|战嚎炮管}\\{perk|元素磨砺}|{src|玻璃拱顶}| {num|5398} | {num|108395} ||{art-perk|电弧复合}|顶级 perk 池和原始特性，最强输出绿弹之一，常与{exotic|混乱无序}和驱逐引擎搭配输出，宗师警戒等高难本也常有他的身影，强度堪比大帝喷，俗称小帝喷|
+|猝死|{ico|![](icons/3275d0840c.webp)}|T0.5|攻击\\60|{el-void|虚空}|{champ|![](icons/b7c4048b87.webp)}|雪上\\重建|{perk|集体行动}\\{perk|元素磨砺}\\{perk|战嚎炮管}|{src|预言}|||||雪上+任意增伤的组合在如今版本多见于冰猎{exotic|忠诚面具}的组合，碎片{el-stasis|刺激的低语}弥补了填装需求，冰飞镖本身也有一定的伤害和清怪能力|
+|最后生存者|{ico|![](icons/a9e7f648e4.webp)}|T1|攻击\\60|{el-solar|烈日}|{champ|![](icons/b7c4048b87.webp)}|{perk|盗墓者}/{perk|金中藏弹}|{perk|战嚎炮管}|{src|智谋}|||||{perk|边打边跑}原始特性可以在击杀后部分填装弹匣|
 | == 速射 T0：霰弹枪最强的输出 DPS 框架，动能合成的最大受益者之一，雪上加霜打拳的最常用框架，但在没有动能合成时，是每盒弹药总伤最低的框架之一，在宗师警戒等高难副本弹药经济较差 == |
 |威胁等级|{ico|![](icons/4e1a22f97e.webp)}|T0|速射\\140|{el-kinetic|动能}|{champ|![](icons/8b37bb6db2.webp)}|{perk|级联点}\\雪上|{perk|全明星}\\战壕|{src|众神殿}|| {num|接近无限} | {num|7087\\(级联点)} |{art-perk|动能合成}|顶级 perk 池和原始特性，最强输出绿弹之一，吃满{art-perk|动能合成}红利的喷子，有{exotic|寄生虫}双发独头喷+{perk|级联点}{perk|全明星}搭配 pvp2 件套的顶级 dps，高难下本还有{exotic|缩影}+{perk|级联点}{perk|全明星}。注：双排锻炉眷属存在 bug，反复切换原始特性可以大幅提高持续时间|
-|完美悖论|{ico|![](icons/64d11c0359.webp)}|T0|速射\\140|{el-kinetic|动能}|{champ|![](icons/8b37bb6db2.webp)}|{perk|阻止力}/{perk|威胁探测}\\{perk|拳击手}/{perk|威胁移除器}\\{perk|沙场备战}（旧版）|{perk|雪上加霜}/{perk|全明星}\\战壕炮管|{src|世界\\班西（旧版）}| {num|4126} | {num|接近无限} ||{art-perk|动能合成}|{perk|光照无影}是霰弹枪最顶级的原始特性，让他成为最好用的打拳喷\\{perk|阻止力}+{perk|全明星}是无脑摁射输出的优秀选择|
-|固定低音|{ico|![](icons/fe1af8711a.webp)}|T0|速射\\140|{el-void|虚空}|{champ|![](icons/8b37bb6db2.webp)}|{perk|盗墓者}|{perk|雪上加霜}\\战壕炮管|{src|海王星}|||||原始特性小火箭作为免费的额外伤害，和推推炮同属性|
-|IKELOS_SG_v1.0.3|{ico|![](icons/05860cf7c3.webp)}|T1|速射\\140|{el-solar|烈日}|{champ|![](icons/8b37bb6db2.webp)}|{perk|盗墓者}|{perk|雪上加霜}\\战壕炮管|{src|炽天使}|||||最主要用作打拳，只要有{perk|雪上加霜}和合适的填装 perk 就没有问题|
-|弑神者|{ico|![](icons/98d47cc4ef.webp)}|T1|速射\\140|{el-arc|电弧}|{champ|![](icons/8b37bb6db2.webp)}|自填\\{perk|金中藏弹}|{perk|雪上加霜}\\战壕炮管|{src|涅索斯}|||||虽然没有{perk|盗墓者}，但是起源特性可以拿到双倍弹匣非常合适|
-|一小步|{ico|![](icons/77478c0f4c.webp)}|T1|速射\\140|{el-stasis|冰影}|{champ|![](icons/8b37bb6db2.webp)}|{perk|盗墓者}\\{perk|金中藏弹}|{perk|雪上加霜}\\战壕炮管|{src|月球}|||||完美悖论下位，可以补充暗影条|
+|完美悖论|{ico|![](icons/64d11c0359.webp)}|T0|速射\\140|{el-kinetic|动能}|{champ|![](icons/8b37bb6db2.webp)}|{perk|阻止力}/{perk|威胁探测}\\{perk|拳击手}/{perk|威胁移除器}\\{perk|沙场备战}（旧版）|{perk|雪上加霜}/{perk|全明星}\\{perk|战嚎炮管}|{src|世界\\班西（旧版）}| {num|4126} | {num|接近无限} ||{art-perk|动能合成}|{perk|光照无影}是霰弹枪最顶级的原始特性，让他成为最好用的打拳喷\\{perk|阻止力}+{perk|全明星}是无脑摁射输出的优秀选择|
+|固定低音|{ico|![](icons/fe1af8711a.webp)}|T0|速射\\140|{el-void|虚空}|{champ|![](icons/8b37bb6db2.webp)}|{perk|盗墓者}|{perk|雪上加霜}\\{perk|战嚎炮管}|{src|海王星}|||||原始特性小火箭作为免费的额外伤害，和推推炮同属性|
+|IKELOS_SG_v1.0.3|{ico|![](icons/05860cf7c3.webp)}|T1|速射\\140|{el-solar|烈日}|{champ|![](icons/8b37bb6db2.webp)}|{perk|盗墓者}|{perk|雪上加霜}\\{perk|战嚎炮管}|{src|炽天使}|||||最主要用作打拳，只要有{perk|雪上加霜}和合适的填装 perk 就没有问题|
+|弑神者|{ico|![](icons/98d47cc4ef.webp)}|T1|速射\\140|{el-arc|电弧}|{champ|![](icons/8b37bb6db2.webp)}|自填\\{perk|金中藏弹}|{perk|雪上加霜}\\{perk|战嚎炮管}|{src|涅索斯}|||||虽然没有{perk|盗墓者}，但是起源特性可以拿到双倍弹匣非常合适|
+|一小步|{ico|![](icons/77478c0f4c.webp)}|T1|速射\\140|{el-stasis|冰影}|{champ|![](icons/8b37bb6db2.webp)}|{perk|盗墓者}\\{perk|金中藏弹}|{perk|雪上加霜}\\{perk|战嚎炮管}|{src|月球}|||||完美悖论下位，可以补充暗影条|
 | == 精密 T0.5：精密实际上是攻击喷的全面弱化版，但是他的弹药生成比攻击高弥补了部分不足，给到这么高的评级理由是他是在高难本中最好的反屏障紫绿弹，在如此缺少反屏障手段的最终版本出场率甚至高于攻击喷 == |
-|末日先知|{ico|![](icons/f14ae23d8f.webp)}|T0|精密\\65|{el-arc|电弧}|{champ|![](icons/a9911a3dfe.webp)}|{perk|空中扳机}\\嫉妒军火\\重建/{perk|超充弹匣}|战壕炮管\\换档|{src|花园}| {num|3328} | {num|55236} |||顶级三号位和最好的反屏障原始特性，{exotic|混乱无序}强度红利|
-|斗牛士 64|{ico|![](icons/84a383135b.webp)}|T0.5|精密\\65|{el-arc|电弧}|{champ|![](icons/a9911a3dfe.webp)}|{perk|金中藏弹}\\{perk|超充弹匣}|{perk|雪上加霜}\\换档/{perk|集体行动}|{src|贪婪之握}|||||最好的副手反屏障打拳喷，适合冰泰坦飞蛾术使用|
-|碎晶石|{ico|![](icons/0786a4c170.webp)}|T0.5|精密\\65|{el-stasis|冰影}|{champ|![](icons/a9911a3dfe.webp)}|{perk|金中藏弹}\\{perk|雪上加霜}|战壕炮管|{src|破碎王座}|||||{exotic|忠诚面具}冰猎可用（碎晶石+裁决定论+{exotic|混乱无序}）|
-|玫瑰罗盘|{ico|![](icons/6c8cb56752.webp)}|T0.5|精密\\65|{el-solar|烈日}|{champ|![](icons/a9911a3dfe.webp)}|{perk|盗墓者}|战壕炮管|{src|至日}||||||
+|末日先知|{ico|![](icons/f14ae23d8f.webp)}|T0|精密\\65|{el-arc|电弧}|{champ|![](icons/a9911a3dfe.webp)}|{perk|空中扳机}\\{perk|嫉妒军械库}\\重建/{perk|超充弹匣}|{perk|战嚎炮管}\\换挡|{src|花园}| {num|3328} | {num|55236} |||顶级三号位和最好的反屏障原始特性，{exotic|混乱无序}强度红利|
+|斗牛士 64|{ico|![](icons/84a383135b.webp)}|T0.5|精密\\65|{el-arc|电弧}|{champ|![](icons/a9911a3dfe.webp)}|{perk|金中藏弹}\\{perk|超充弹匣}|{perk|雪上加霜}\\换挡/{perk|集体行动}|{src|贪婪之握}|||||最好的副手反屏障打拳喷，适合冰泰坦飞蛾术使用|
+|碎晶石|{ico|![](icons/0786a4c170.webp)}|T0.5|精密\\65|{el-stasis|冰影}|{champ|![](icons/a9911a3dfe.webp)}|{perk|金中藏弹}\\{perk|雪上加霜}|{perk|战嚎炮管}|{src|破碎王座}|||||{exotic|忠诚面具}冰猎可用（碎晶石+裁决定论+{exotic|混乱无序}）|
+|玫瑰罗盘|{ico|![](icons/6c8cb56752.webp)}|T0.5|精密\\65|{el-solar|烈日}|{champ|![](icons/a9911a3dfe.webp)}|{perk|盗墓者}|{perk|战嚎炮管}|{src|至日}||||||
 | == 轻质 T0.5：轻质的 DPS 比速射略低，总伤和弹药经济比速射略高，星界虚无在副手的伤害仅次于裁决定论之下，有部分人会喜好轻质喷打拳的手感 == |
-|星界虚无|{ico|![](icons/31e8acc21e.webp)}|T0.5|轻质\\80|{el-solar|烈日}|{champ|![](icons/8b37bb6db2.webp)}|{perk|回转弹药}\\{perk|金中藏弹}\\{perk|嫉妒军械库}|{perk|聚合充能}/{perk|元素磨砺}\\战壕炮管\\{perk|雪上加霜}\\{perk|诱导推销}|{src|沙漠}| {num|4314} | {num|52680} |||顶级 perk 池和原始特性，可搭配驱逐引擎和{exotic|寄生虫}打三切，高难也可使用，{perk|回转弹药}可直接喷完|
-|异蚀 IV|{ico|![](icons/9d30fad369.webp)}|T1|轻质\\80|{el-arc|电弧}|{champ|![](icons/8b37bb6db2.webp)}|{perk|盗墓者}\\自填\\{perk|金中藏弹}|雪上\\战壕炮管|{src|先锋}||||||
+|星界虚无|{ico|![](icons/31e8acc21e.webp)}|T0.5|轻质\\80|{el-solar|烈日}|{champ|![](icons/8b37bb6db2.webp)}|{perk|回转弹药}\\{perk|金中藏弹}\\{perk|嫉妒军械库}|{perk|聚合充能}/{perk|元素磨砺}\\{perk|战嚎炮管}\\{perk|雪上加霜}\\{perk|诱导推销}|{src|沙漠}| {num|4314} | {num|52680} |||顶级 perk 池和原始特性，可搭配驱逐引擎和{exotic|寄生虫}打三切，高难也可使用，{perk|回转弹药}可直接喷完|
+|异蚀 IV|{ico|![](icons/9d30fad369.webp)}|T1|轻质\\80|{el-arc|电弧}|{champ|![](icons/8b37bb6db2.webp)}|{perk|盗墓者}\\自填\\{perk|金中藏弹}|雪上\\{perk|战嚎炮管}|{src|先锋}||||||
 | == 重型点射 T2：本身是所有喷子中最高的总伤，有事不过四的加持会更夸张，DPS 与精密喷接近，但因为要贴脸打精准，完全比不过同类收益，由于只需要两发就可以触发级联点会作为威胁等级的触发器 == |
 |奥术之拥|{ico|![](icons/0f510fcc47.webp)}|T2|重型点射\\62|{el-arc|电弧}|{champ|![](icons/b7c4048b87.webp)}|{perk|事不过四}\\重建/{perk|嫉妒刺客}|{perk|聚合充能}\\{perk|精准工具}|{src|至日}| {num|3256} | {num|104727} ||突破清场填装|{perk|事不过四}有极高总伤，电属性适合药剂包神器|
 |纯粹回忆|{ico|![](icons/1985ae8893.webp)}|T3|重型点射\\62|{el-void|虚空}|{champ|![](icons/b7c4048b87.webp)}|{perk|嫉妒军械库}|{perk|诱导推销}\\{perk|枯萎凝视}|{src|熔炉}|||||{perk|枯萎凝视}有点意思，但是没有太多运用空间|
@@ -124,7 +124,7 @@
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 |阴谋淬砺|{ico|![](icons/6411d9c841.webp)}|T0|动态热量\\140|{el-stasis|冰影}|{champ|![](icons/8b37bb6db2.webp)}|斩首|火线\\{perk|诱导推销}|{src|平衡}| {num|5637} | {num|77313} ||{art-perk|狙击手冥想}|顶级框架顶级原始特性优秀 perk 池，速射射速攻击伤害，命运 2 最优秀的精准输出绿弹，需要学习触发动态热量限制器的手法，最好要{perk|电离散热器}和大师散热，武器模组专家散热|
 |普莱蒂斯的复仇|{ico|![](icons/44fcbaf37a.webp)}|T0|速射\\140|{el-kinetic|动能}|{champ|![](icons/8b37bb6db2.webp)}|{perk|动能震颤}/{perk|事不过四}|{perk|全明星}/{perk|元素磨砺}|{src|玻璃拱顶}| {num|4147} | {num|接近无限} ||{art-perk|狙击手冥想}|顶级 perk 池顶级原始特性，除了本身不错的输出能力，{perk|动能震颤}+{perk|全明星}的组合也是非常优质的过机制狙击|
-|舵手|{ico|![](icons/6e40febea7.webp)}|T0|高冲\\72|{el-arc|电弧}|{champ|![](icons/b7c4048b87.webp)}|光之触碰\\{perk|速射瞄准}|{perk|元素磨砺}/换档\\斩首|{src|PVP}| {num|3667\\(疾跑取消后摇)} | {num|200983} ||{art-perk|狙击手冥想}\\/{art-perk|电弧复合}|虽然 DPS 比其他框架略低，但其高到不现实的总伤可以在一些大长轴搭配{exotic|混乱无序}使用，单发伤害高，是优秀的副手机制狙，有疾跑取消换弹后摇的手法，注意{perk|高爆载荷}会减少伤害通常不建议使用|
+|舵手|{ico|![](icons/6e40febea7.webp)}|T0|高冲\\72|{el-arc|电弧}|{champ|![](icons/b7c4048b87.webp)}|光之触碰\\{perk|速射瞄准}|{perk|元素磨砺}/换挡\\斩首|{src|PVP}| {num|3667\\(疾跑取消后摇)} | {num|200983} ||{art-perk|狙击手冥想}\\/{art-perk|电弧复合}|虽然 DPS 比其他框架略低，但其高到不现实的总伤可以在一些大长轴搭配{exotic|混乱无序}使用，单发伤害高，是优秀的副手机制狙，有疾跑取消换弹后摇的手法，注意{perk|高爆载荷}会减少伤害通常不建议使用|
 |巴拉巴拉|{ico|![](icons/32008f6e45.webp)}|T1|攻击\\72|{el-kinetic|动能}|{champ|![](icons/b7c4048b87.webp)}|三连击|{perk|全明星}/{perk|元素磨砺}\\转向|{src|高塔纪念碑\\萨瓦拉}| {num|6403\\4867} | {num|74682\\接近无限} ||转向\\{perk|元素磨砺}\\{art-perk|狙击手冥想}|使用场景局限。宝库狙的攻击框架版本，在有{perk|加速突击}的情况 DPS 比宝库狙高，用转向时配合{perk|加速突击}是伤害最高的狙击，但考虑到{perk|加速突击}已经绝版并且大部分人不会喜欢攻击框架的手感略微降低评级|
 |拥抱身份|{ico|![](icons/b1303b0568.webp)}|T1|适配\\90|{el-void|虚空}|{champ|![](icons/a9911a3dfe.webp)}|斩首|转向\\{perk|聚合充能}/{perk|元素磨砺}|{src|苍白之心}| {num|5670} | {num|64828} ||斩首转向\\{art-perk|狙击手冥想}|使用场景局限。顶级 perk 池，由于巴拉巴拉{perk|加速突击}绝版所以斩首+转向是目前能刷到的最高伤害狙击，但是绝大部分情况不会有人喜欢叠转向\\替代：贪婪狙|
 |IKELOS_SR_v1.0.3|{ico|![](icons/f48c7119cf.webp)}|T1|速射\\140|{el-solar|烈日}|{champ|![](icons/8b37bb6db2.webp)}|{perk|事不过四}|{perk|聚焦狂怒}|{src|炽天使}| {num|3290} | {num|104301} ||{art-perk|狙击手冥想}\\燃烧狙击子弹|燃烧狙击子弹+{art-perk|狙击手冥想}非常适合火速射狙的发挥\\替代：花园狙\\注：{perk|聚焦狂怒}比{perk|精准工具}总增伤高|
@@ -174,7 +174,7 @@
 |冰川矿物|{ico|![](icons/965dc7d402.webp)}|T2|高冲|{el-void|虚空}|{champ|![](icons/b7c4048b87.webp)}|{perk|丰盈满溢}\\{perk|嫉妒刺客}|{perk|受控连射}\\洪涝|{src|曙光节}|||||绝版|
 |既定观点问题|{ico|![](icons/2e8e201d62.webp)}|T2|高冲|{el-arc|电弧}|{champ|![](icons/b7c4048b87.webp)}|{perk|丰盈满溢}\\{perk|嫉妒刺客}|{perk|受控连射}\\洪涝|{src|萨瓦拉}|||||先锋球声望 bug 不好获得|
 | == 精密 T2.5：总伤仅次于高冲，DPS 处于中间水平，因为反屏障在高难本可以作为精密喷的下位替代 == |
-|主原料|{ico|![](icons/c5cc59dc66.webp)}|T2|精密|{el-arc|电弧}|{champ|![](icons/a9911a3dfe.webp)}|{perk|涓流充能}\\{perk|金中藏弹}|换档\\洪涝|{src|火力战队\\先锋}| {num|2989} | {num|82701} |||{perk|加速突击}+{perk|涓流充能}+换档是所有融合中的最高 DPS\\{perk|金中藏弹}+洪涝/换档，可让松身裤猎人使用|
+|主原料|{ico|![](icons/c5cc59dc66.webp)}|T2|精密|{el-arc|电弧}|{champ|![](icons/a9911a3dfe.webp)}|{perk|涓流充能}\\{perk|金中藏弹}|换挡\\洪涝|{src|火力战队\\先锋}| {num|2989} | {num|82701} |||{perk|加速突击}+{perk|涓流充能}+换挡是所有融合中的最高 DPS\\{perk|金中藏弹}+洪涝/换挡，可让松身裤猎人使用|
 |渐速音-42|{ico|![](icons/90f30543ea.webp)}|T2|精密|{el-strand|缚丝}|{champ|![](icons/a9911a3dfe.webp)}|{perk|丰盈满溢}\\切割|{perk|聚合充能}/{perk|受控连射}\\{perk|腹背受敌}\\洪涝|{src|赛雀联赛}|||||perk 池非常不错|
 |轴向缺漏|{ico|![](icons/5f13d062c5.webp)}|T2|精密|{el-solar|烈日}|{champ|![](icons/a9911a3dfe.webp)}|重建|洪涝\\{perk|腹背受敌}|{src|苍白之心}||||||
 |插头一号|{ico|![](icons/df4f5dbd2f.webp)}|T2|精密|{el-arc|电弧}|{champ|![](icons/a9911a3dfe.webp)}|重建|洪涝|{src|萨瓦拉}||||||
@@ -191,7 +191,7 @@
 |后见之明|{ico|![](icons/d5f841af9c.webp)}|T3|适配|{el-void|虚空}|{champ|![](icons/a9911a3dfe.webp)}|{perk|金中藏弹}|洪涝\\斩首|{src|仄}|||||{el-void|虚空}属性没有特别好的反屏障绿弹，勉强可用|
 |VS 重力滞止|{ico|![](icons/683a10f11c.webp)}|T3|适配|{el-void|虚空}|{champ|![](icons/a9911a3dfe.webp)}|{perk|金中藏弹}|{perk|受控连射}\\{perk|枯萎凝视}|{src|晚星之主}|||||{el-void|虚空}属性没有特别好的反屏障绿弹，勉强可用|
 |塔霍马 01|{ico|![](icons/b273081626.webp)}|T3|攻击|{el-strand|缚丝}|{champ|![](icons/b7c4048b87.webp)}|{perk|丰盈满溢}\\{perk|嫉妒刺客}\\{perk|金中藏弹}\\{perk|集体爆破}|{perk|聚合充能}/{perk|受控连射}\\洪涝\\{perk|集体行动}\\{perk|集体拳击}|{src|扭曲}|||||perk 池优秀，{perk|集体爆破}+{perk|集体拳击}的组合有意思|
-|回火发电机|{ico|![](icons/71787116d0.webp)}|T3|攻击|{el-arc|电弧}|{champ|![](icons/b7c4048b87.webp)}|{perk|丰盈满溢}\\{perk|超充弹匣}\\{perk|回转弹药}|{perk|震颤反馈}/换档\\{perk|腹背受敌}|{src|竞技场}| {num|2799} | {num|55244} |||因为锻炉眷属原始特性可以和威胁等级{exotic|缩影}一起使用，{perk|震颤反馈}一发触发|
+|回火发电机|{ico|![](icons/71787116d0.webp)}|T3|攻击|{el-arc|电弧}|{champ|![](icons/b7c4048b87.webp)}|{perk|丰盈满溢}\\{perk|超充弹匣}\\{perk|回转弹药}|{perk|震颤反馈}/换挡\\{perk|腹背受敌}|{src|竞技场}| {num|2799} | {num|55244} |||因为锻炉眷属原始特性可以和威胁等级{exotic|缩影}一起使用，{perk|震颤反馈}一发触发|
 |有限未知|{ico|![](icons/4fde0cfa6a.webp)}|T3|攻击|{el-solar|烈日}|{champ|![](icons/b7c4048b87.webp)}|重建\\{perk|金中藏弹}|{perk|受控连射}\\洪涝\\{perk|诱导推销}|{src|沙漠}||||||
 
 

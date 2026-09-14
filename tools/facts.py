@@ -14,6 +14,7 @@ manifest 是冻结快照——不会再有新赛季，所以这里跑一次、�
                                 收藏条目与来源、发布版本、特殊版本与锻造角标、
                                 manifest 序号
     data/facts/perk-pools.json  武器版本 × 栏位 × 词条 hash
+    data/facts/stat-groups.json 武器属性的插值曲线：投资值 → 游戏里显示的那个数
     data/facts/armor-sets.json  护甲套装的成员与 2 件 / 4 件效果
     data/facts/effects.json     增益与减益（增幅、致盲、冻结、虚弱……）。**这一类不在
                                 物品表里**，主键是 traitHash 与 sandboxPerkHash，
@@ -62,21 +63,43 @@ KEEP_TYPES = frozenset({2, 3, 19})
 ICON_PREFIX = '/common/destiny2_content/icons/'
 
 # 栏位所属的类目。固有特性要留——异域武器的框架差异就写在这里（「故我在」的不同
-# 框架、「单人合唱」的不同催化剂都是 socket 数据本身）。装饰与武器模组不留。
+# 框架、「单人合唱」的不同催化剂都是 socket 数据本身）。装饰不留。
 CAT_INTRINSIC = 3956125808
 CAT_TRAITS = 4241085061
-KEEP_CATS = (CAT_INTRINSIC, CAT_TRAITS)
+# 「武器模组」类目里混着四种东西，只取前两种（判据见 GEAR_KINDS）。大师工作**不在**
+# 武器特性类目里，它和可选模组同属这一个。
+CAT_GEAR = 2685412949
+KEEP_CATS = (CAT_INTRINSIC, CAT_TRAITS, CAT_GEAR)
 
 # 击杀记录器也挂在「武器特性」类目下，不剔每把枪凭空多一栏。判据取 socket 类型的
 # 白名单首项，不取初始插件——后者有超过五分之一的槽是空的，漏判率太高。
 DROP_PREFIX = 'v400.plugs.weapons.masterworks.trackers'
 
+# CAT_GEAR 那一类里留哪些。可选模组按枪型分成十几个 v460.weapon.mod_* 的池；
+# 大师工作整池 167 项 = 「N 阶：属性」126 个 + 「大师杰作：属性」14 种各若干变体，
+# 只留后者：前者是同一件事的十档刻度，铺成图标就是一张十四乘十的乘法表。
+# 锻造（crafting.*）与装备阶级（weapon_tiering.*）两组不留：它们是触发器，
+# 自身 investmentStats 全空，效果是「把别的栏换成强化版」，画不成可选项。
+GEAR_KINDS = ('v400.weapon.mod', 'v460.weapon.mod', 'v900.weapon.mod',
+              'v400.plugs.weapons.masterworks')
+MASTERWORK_KIND = 'v400.plugs.weapons.masterworks'
+MASTERWORK_KEEP = '大师杰作'
+EMPTY_SLOT = '空模组插槽'
+
 # 站内角标要用的两位，判据都是「这把枪有没有那种 socket」：
 #   craft   可锻造（563 把）
-#   tiering 支持装备阶级升级（546 把）。**这一位只说支持，不说现在是几阶**——
-#           档位是掉落实例的属性，定义表里给的是「可升到 2/3/4/5 阶」的池。
-FLAG_SOCKETS = {'craft': 'crafting.plugs.frame_identifiers',
-                'tiering': 'weapon_tiering.plugs.mods.enhancers'}
+#   tiering 支持装备阶级升级。**这一位只说支持，不说现在是几阶**——档位是掉落实例
+#           的属性（DestinyItemInstanceComponent.gearTier），定义表里给的是
+#           「可升到 2/3/4/5 阶」的池。两条路互斥：非锻造武器走 weapon_tiering，
+#           可锻造武器走 crafting 的 transfusers.level，只认前者会漏掉后面那 563 把。
+FLAG_SOCKETS = {'craft': ('crafting.plugs.frame_identifiers',),
+                'tiering': ('weapon_tiering.plugs.mods.enhancers',
+                            'crafting.plugs.weapons.mods.transfusers.level')}
+
+# 勇士克制不在武器的 breakerType 上——全 manifest 只有 18 条非 0。Bungie 把它编码在
+# 固有框架插件所挂的 SandboxPerk 上，那些 perk 的名字以 Destiny 符号字体的私有区
+# 码位开头。按这条推导覆盖 2208 把武器，与 destiny.report 实时数据 2205/2207 一致。
+BREAKER_GLYPH = {'\ue070': 1, '\ue071': 2, '\ue072': 3}
 
 
 def src_path(src, lang, name):
@@ -153,6 +176,20 @@ def project(item, other):
     plug = (item.get('plug') or {}).get('plugCategoryIdentifier')
     if plug:
         out['plug'] = plug
+    # 投资属性。这是**插值前**的原始值，与上面 stats 那一份（插值后的显示值）不是
+    # 一回事：武器页要按「基线 + 选中的插件」重算，只能在投资值这一侧加。
+    # 第三位是 isConditionallyActive——「亡命之徒」那类击杀后才生效的加成靠它区分，
+    # 不留这一位就会把条件加成当成常驻的算进属性条。
+    if plug or item.get('itemType') == 3:
+        # 武器那一侧 **0 也要留**：投资值 0 经曲线出来往往不是 0——「长臂」的每分钟
+        # 发射数投资值就是 0，而它那一组的曲线把 0 映到 120。丢掉这一条，页面上
+        # 那一格会显示 0。插件那一侧的 0 是真的没加成，丢掉省地方。
+        keep = item.get('itemType') == 3
+        inv = [[s['statTypeHash'], s['value']] + ([1] if s.get('isConditionallyActive') else [])
+               for s in item.get('investmentStats') or ()
+               if keep or s.get('value')]
+        if inv:
+            out['inv'] = inv
     return out
 
 
@@ -163,13 +200,34 @@ def socket_kind(entry, socket_types):
     return wl[0].get('categoryIdentifier', '') if wl else ''
 
 
-def columns(weapon, socket_types, plug_sets):
-    """一把武器的栏位。返回 [{i, kind, type, init, plugs}]，栏序即列表下标。"""
+def gear_keep(kind, plug_hashes, names):
+    """CAT_GEAR 那一类留不留，留的话留哪几个插件。返回 None 表示整栏不要。
+
+    大师工作那一栏只留「大师杰作：属性」；同名的变体（+10 与 +10 再加全属性 +3）
+    在库里是几个 hash，各留各的，由渲染那一侧按名字合并。
+    """
+    if not kind.startswith(GEAR_KINDS):
+        return None
+    if kind.startswith(MASTERWORK_KIND):
+        return [h for h in plug_hashes
+                if names.get(str(h), '').startswith(MASTERWORK_KEEP)]
+    # 「空模组插槽」是没插东西时的占位，不是一个选项。
+    return [h for h in plug_hashes if names.get(str(h), '') != EMPTY_SLOT]
+
+
+def columns(weapon, socket_types, plug_sets, names):
+    """一把武器的栏位。返回 [{i, kind, type, init, plugs, gear}]，栏序即列表下标。
+
+    `gear` 这一位标出「不是掉落时随机开出来的东西」——可选模组与大师工作，
+    随时能换。`resolve.weapon_pool()` 按这一位跳过它们：那个池是拿来给资料页的
+    词条名戳主键的，把「备用弹匣」「大师杰作：射程」并进去会改动既有产出。
+    """
     blk = weapon.get('sockets') or {}
     entries = blk.get('socketEntries') or []
     out = []
     for cat in blk.get('socketCategories') or []:
-        if cat.get('socketCategoryHash') not in KEEP_CATS:
+        ch = cat.get('socketCategoryHash')
+        if ch not in KEEP_CATS:
             continue
         for i in cat.get('socketIndexes') or []:
             if i >= len(entries):
@@ -186,15 +244,56 @@ def columns(weapon, socket_types, plug_sets):
                     # 老版本的武器留着已经开不出来的词条，这一位是唯一的判据。
                     if p.get('currentlyCanRoll') and p.get('plugItemHash'):
                         plugs.append(p['plugItemHash'])
+            gear = ch == CAT_GEAR
+            if gear:
+                plugs = gear_keep(kind, plugs, names)
+                if not plugs:
+                    continue
             col = {'i': i, 'kind': kind,
                    'type': e.get('socketTypeHash'),
                    'rand': bool(e.get('randomizedPlugSetHash'))}
-            if e.get('singleInitialItemHash'):
+            if gear:
+                col['gear'] = True
+            elif e.get('singleInitialItemHash'):
+                # 装备栏的「初始插件」是空模组插槽，不是一个选项。
                 col['init'] = e['singleInitialItemHash']
             if plugs:
                 col['plugs'] = plugs
             out.append(col)
     return out
+
+
+def breaker_perks(src):
+    """勇士克制的 SandboxPerk → breakerType。全库 19 条，按名字首字符的私有区码位认。
+
+    这几条 perk 的名字是 `\ue070屏障` 这样的形状：一个 Destiny 符号字体的码位加
+    一个词。按码位认不按词认——词在不同语言下不一样，码位不会变。
+    """
+    out = {}
+    for h, v in load(src, 'zh', 'DestinySandboxPerkDefinition').items():
+        name = ((v.get('displayProperties') or {}).get('name') or '')
+        got = BREAKER_GLYPH.get(name[:1])
+        if got:
+            out[int(h)] = got
+    if not out:
+        die('一条勇士克制 perk 都没认出来，BREAKER_GLYPH 的码位对不上这份 manifest')
+    return out
+
+
+def breaker_of(item, pools_row, perk_breaker, items):
+    """这把枪破哪种勇士。自身 breakerType 优先，其次看固有框架挂的 SandboxPerk。"""
+    if item.get('breakerType'):
+        return item['breakerType']
+    for col in pools_row or ():
+        if col.get('kind') != 'intrinsics':
+            continue
+        for h in [col.get('init')] + list(col.get('plugs') or ()):
+            frame = items.get(str(h)) if h else None
+            for perk in (frame or {}).get('perks') or ():
+                got = perk_breaker.get(perk.get('perkHash'))
+                if got:
+                    return got
+    return 0
 
 
 def sort_key(pair):
@@ -238,12 +337,14 @@ def distill(src):
     # scaledStats 列的就是那一份，顺序即游戏里的顺序。按值过滤会把真正的 0
     # （防御抗性 0）一起滤掉，所以按表不按值。
     groups = load(src, 'zh', 'DestinyStatGroupDefinition')
+    sgroups = {}
     for h, item in items.items():
         row = kept.get(h)
         if row is None:
             continue
         block = item.get('stats') or {}
-        group = groups.get(str(block.get('statGroupHash') or ''))
+        gh = str(block.get('statGroupHash') or '')
+        group = groups.get(gh)
         if not group:
             continue
         vals = block.get('stats') or {}
@@ -254,6 +355,17 @@ def distill(src):
         if got:
             # 顺序即游戏里的显示顺序，所以存成数组不存字典。
             row['stats'] = got
+        if item.get('itemType') != 3:
+            continue
+        # 武器页要按「基线 + 插件」重算，所以得带上这一组的插值曲线。只收武器用到
+        # 的那几十组，护甲那批不收。
+        row['sg'] = gh
+        if gh not in sgroups:
+            sgroups[gh] = {str(sd['statHash']):
+                           [sd.get('maximumValue') or 0,
+                            [[pt['value'], pt['weight']]
+                             for pt in sd.get('displayInterpolation') or ()]]
+                           for sd in group.get('scaledStats') or ()}
     del groups
     gc.collect()
 
@@ -275,11 +387,14 @@ def distill(src):
 
     socket_types = load(src, 'zh', 'DestinySocketTypeDefinition')
     plug_sets = load(src, 'zh', 'DestinyPlugSetDefinition')
+    # 大师工作那一栏按名字筛，所以切栏之前得先有一张 hash → 中文名的表。
+    names = {h: (row.get('n') or {}).get('zh', '') for h, row in kept.items()}
+    perk_breaker = breaker_perks(src)
     pools, triples = {}, 0
     for h, item in items.items():
         if item.get('itemType') != 3 or item.get('redacted'):
             continue
-        cols = columns(item, socket_types, plug_sets)
+        cols = columns(item, socket_types, plug_sets, names)
         if not cols:
             continue
         pools[h] = cols
@@ -287,10 +402,13 @@ def distill(src):
         row = kept.get(h)
         if row is None:
             continue
+        got = breaker_of(item, cols, perk_breaker, items)
+        if got:
+            row['breaker'] = got
         kinds = {socket_kind(e, socket_types)
                  for e in (item.get('sockets') or {}).get('socketEntries') or ()}
         for flag, want in FLAG_SOCKETS.items():
-            if want in kinds:
+            if kinds.intersection(want):
                 row[flag] = True
     # 神器 → 它自己那批模组。带槽的那一条是 itemType 0 的影子条目（真正的
     # itemType 28 那条没有 socket），槽按档位分组，最后一组是「重置神器」不算。
@@ -419,9 +537,11 @@ def distill(src):
     a = dump(os.path.join(OUT_DIR, 'items.json'), kept, True)
     b = dump(os.path.join(OUT_DIR, 'perk-pools.json'), pools, True)
     c = dump(os.path.join(OUT_DIR, 'armor-sets.json'), sets, True)
+    g = dump(os.path.join(OUT_DIR, 'stat-groups.json'), sgroups, True)
     print('data/facts/items.json       %7d 条  %6.1f KB' % (len(kept), a / 1024))
     print('data/facts/perk-pools.json  %7d 把  %6.1f KB  三元组 %d'
           % (len(pools), b / 1024, triples))
+    print('data/facts/stat-groups.json %7d 组  %6.1f KB' % (len(sgroups), g / 1024))
     d = dump(os.path.join(OUT_DIR, 'effects.json'), effects, True)
     print('data/facts/armor-sets.json  %7d 套  %6.1f KB  效果 %d'
           % (len(sets), c / 1024, sum(len(s['bonuses']) for s in sets.values())))

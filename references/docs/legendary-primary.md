@@ -112,9 +112,9 @@
 | 克洛塔之语 | {ico|![](icons/47a805a5c2.webp)} | T0 | 精密\\180 | {el-void|虚空} | {champ|![](icons/a9911a3dfe.webp)} | {perk|冲击支撑}\\{perk|爆破专家} | 狂乱\\{perk|武器大师}\\{perk|不稳定弹药} | {src|克洛塔的末日} | 180 的最佳之选 |
 | 无爱 | {ico|![](icons/75d2a96e94.webp)} | T0 | 重型点射\\257 | {el-strand|缚丝} | {champ|![](icons/b7c4048b87.webp)} | 高强度备弹\\{perk|快速命中} | {perk|元素磨砺} | {src|分离教义} | 虽然{exotic|幸运裤}已不复往日荣光，顶级的 perk 池和顶级的原始特性让他成为最好的双发手炮，通常与艾莲娜一起使用，{el-strand|缚丝}属性适合废墟石板神器 |
 | 艾恩伍德 03 | {ico|![](icons/1522c4a98c.webp)} | T0 | 散射\\100 | {el-void|虚空} | {champ|![](icons/8b37bb6db2.webp)} | {perk|冲击支撑}\\{perk|威胁移除器} | {perk|腹背受敌}\\{perk|集体行动}\\{perk|武器大师}/{perk|雪上加霜}\\{perk|不稳定弹药} | {src|扭曲} | 最高 DPS 框架的{el-void|虚空}属性，perk 池优秀 |
-| 金质消除者 | {ico|![](icons/3093e6820a.webp)} | T0 | 散射\\100 | {el-kinetic|动能} | {champ|![](icons/8b37bb6db2.webp)} | {perk|威胁探测}\\{perk|威胁移除器}\\{perk|盗墓者} | 战壕炮管\\{perk|级联点} | {src|试炼} | 作为{el-kinetic|动能}属性是最高的散射手炮伤害\\替代：三冠得主（守护者游戏） |
+| 金质消除者 | {ico|![](icons/3093e6820a.webp)} | T0 | 散射\\100 | {el-kinetic|动能} | {champ|![](icons/8b37bb6db2.webp)} | {perk|威胁探测}\\{perk|威胁移除器}\\{perk|盗墓者} | {perk|战嚎炮管}\\{perk|级联点} | {src|试炼} | 作为{el-kinetic|动能}属性是最高的散射手炮伤害\\替代：三冠得主（守护者游戏） |
 | 后代 | {ico|![](icons/187a595f89.webp)} | T1 | 精密\\180 | {el-arc|电弧} | {champ|![](icons/a9911a3dfe.webp)} | {perk|伏特子弹} | {perk|高爆载荷}\\狂乱 | {src|深岩墓室} | 伏特+高爆的组合非常适合清怪 |
-| 野兽国度 | {ico|![](icons/450b9cdebc.webp)} | T1 | 适配\\140 | {el-arc|电弧} | {champ|![](icons/a9911a3dfe.webp)} | 换档 | {perk|集体行动} | {src|最后一愿} | 仅限药剂包{exotic|幸运裤}的玩法 |
+| 野兽国度 | {ico|![](icons/450b9cdebc.webp)} | T1 | 适配\\140 | {el-arc|电弧} | {champ|![](icons/a9911a3dfe.webp)} | 换挡 | {perk|集体行动} | {src|最后一愿} | 仅限药剂包{exotic|幸运裤}的玩法 |
 | 命运终结者 | {ico|![](icons/17789ee30d.webp)} | T1 | 适配\\140 | {el-kinetic|动能} | {champ|![](icons/a9911a3dfe.webp)} | {perk|高爆载荷}\\{perk|动能震颤} | 狂乱\\{perk|元素磨砺}\\{perk|萤火虫} | {src|玻璃拱顶} | 手感好，perk 池和起源特性优秀 |
 | 扎乌利的克星 | {ico|![](icons/f31ee3f087.webp)} | T1 | 适配\\140 | {el-solar|烈日} | {champ|![](icons/a9911a3dfe.webp)} | {perk|高爆载荷}\\转向（王陨版本） | {perk|混沌重塑}\\{perk|辉耀炽热} | {src|众神殿\\国王的陨落} | 分为众神殿和王陨两种版本，众神殿起源特性提供额外的弹药生成和面板，王陨起源在有盟友时有额外填装效果，众神殿版本同时拥有两种起源特性，王陨版本有转向 |
 | 改装 B-7 手枪 | {ico|![](icons/b77227234a.webp)} | T1.5 | 动态热量\\180 | {el-stasis|冰影} | {champ|![](icons/8b37bb6db2.webp)} | {perk|萤火虫} | 墓碑 | {src|无序边界} | 替代\\鹰月/庄严追忆 |

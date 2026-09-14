@@ -194,6 +194,7 @@ class Facts:
 
         self.items = read('items.json')
         self.pools = read('perk-pools.json')
+        self.groups = read('stat-groups.json')
         self.sets = read('armor-sets.json')
         self.effects = read('effects.json')
         self.stats = read('stats.json')
@@ -217,9 +218,15 @@ class Facts:
         return (self.items.get(str(h)) or {}).get('n', {}).get('zh', '')
 
     def pool_names(self, h):
-        """这把武器各栏能开出的词条名。起源特性在 init 上，与池取并集。"""
+        """这把武器各栏能开出的词条名。起源特性在 init 上，与池取并集。
+
+        带 `gear` 的栏跳过，理由同 weapon_pool()：那几栏在同类武器上几乎一模一样，
+        并进来会让复刻版本之间的重合度全部拉高，消歧就失灵了。
+        """
         out = set()
         for col in self.pools.get(str(h)) or []:
+            if col.get('gear'):
+                continue
             for p in col.get('plugs') or ():
                 out.add(norm(self.name(p)))
             if col.get('init'):
@@ -496,6 +503,15 @@ def stamper(page):
 PERK_ALIAS = {
     '「Yeehaw」狂暴': ('狂暴', '越橘的特征插件就是「狂暴」，前缀是站内给这把枪加的花名'),
     '弓手节奏²': ('弓手节奏', '催化剂给的是特殊版「弓手节奏」，上标 2 记的是 0.75² 蓄力倍率'),
+    # 下面六条是刷取清单里的通行简称与另一种译名。**不改源稿**：这些写法对读者不是
+    # 错的，改成库里的键反而让熟悉那个叫法的人对不上。判据是「这个写法对读者是错的，
+    # 还是只对库里的键是错的」——是后者就落在这张表上。
+    '不稳定弹药': ('失衡弹药', 'Destabilizing Rounds 的另一种译名，源稿两家各写一种'),
+    '斩首': ('斩首武器', 'Vorpal Weapon，刷取清单省掉了「武器」两个字'),
+    '自填': ('自动填装枪套', '刷取清单的简称；那几把枪的池里只有「自动填装枪套」这一条带「填」'),
+    '光之触碰': ('光能之触', '舵手那一行的写法，库里叫「光能之触」'),
+    '诱导': ('诱导推销', '刷取清单的简称；同池只有「诱导推销」一条'),
+    '高强度备弹': ('高强度型弹药储备', '刷取清单的简称'),
 }
 
 # 这一列里不是实体的那些名字：源稿作者给槽位或机制起的说明词。逐条按
@@ -529,10 +545,16 @@ SLASH = re.compile(r'[／/]')
 
 
 def weapon_pool(facts, keys):
-    """这一行那件东西各栏能开出的词条：归一化名 → hash 列表。起源写在 init 上。"""
+    """这一行那件东西各栏能开出的词条：归一化名 → hash 列表。起源写在 init 上。
+
+    带 `gear` 的栏跳过。那是可选模组与大师工作——随时能换的东西，不是掉落时开出来
+    的词条。把「备用弹匣」「大师杰作：射程」并进这个池，资料页按名字戳主键时会撞上。
+    """
     out = {}
     for key in keys:
         for col in facts.pools.get(str(key)) or ():
+            if col.get('gear'):
+                continue
             plugs = list(col.get('plugs') or ())
             if col.get('init'):
                 plugs.append(col['init'])

@@ -1496,6 +1496,91 @@ test('the visitor count is read from the database once a minute per instance', a
     '一分钟内第二次读计数又打了数据库')
 })
 
+// ── 武器库的属性算法 ────────────────────────────────────────────────
+// 这一页唯一「算错了页面照样好看」的地方：属性条画出来总是一根条加一个数，
+// 数错了肉眼看不出来。生成器那一侧每次构建都对一遍（build-weapons.self_check），
+// 这里对的是**浏览器跑的那一份**——两侧各写了一遍同一个公式，会不会走散只有
+// 这条测试管得住。
+//
+// 取法：从 weapons/app.js 里把那三个函数原样抠出来跑。抠不到就当场失败——
+// 改名或删掉都说明这条契约变了，该被看见。
+function weaponMath() {
+  const src = fs.readFileSync(path.join(root, 'weapons/app.js'), 'utf8')
+  const grab = (name) => {
+    const at = src.indexOf('function ' + name + '(')
+    assert.ok(at >= 0, `weapons/app.js 里找不到 ${name}()`)
+    let depth = 0, i = src.indexOf('{', at)
+    for (let j = i; j < src.length; j++) {
+      if (src[j] === '{') depth++
+      else if (src[j] === '}' && --depth === 0) return src.slice(at, j + 1)
+    }
+    assert.fail(`${name}() 的花括号没配上`)
+  }
+  const box = {}
+  vm.createContext(box)
+  vm.runInContext(['interp', 'bankers', 'shown'].map(grab).join('\n'), box)
+  return box
+}
+
+function weaponFacts() {
+  const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8')
+  const strip = (text) => JSON.parse(text.slice(text.indexOf('=') + 1).trim().replace(/;\s*$/, ''))
+  const items = {}
+  for (const line of read('data/facts/items.json').split('\n')) {
+    const row = line.trim().replace(/,$/, '')
+    if (!row || row === '{' || row === '}') continue
+    const cut = row.indexOf(':')
+    items[JSON.parse(row.slice(0, cut))] = JSON.parse(row.slice(cut + 1))
+  }
+  return { D: strip(read('weapons/data.js')), G: strip(read('weapons/plugs.js')), items }
+}
+
+test('the weapon page math reproduces every stat the manifest itself prints', () => {
+  const { shown } = weaponMath()
+  const { D, G, items } = weaponFacts()
+  let checked = 0
+  const bad = []
+  for (const w of D.w) {
+    const d = JSON.parse(fs.readFileSync(path.join(root, 'weapons/w', w.h + '.json'), 'utf8'))
+    const rows = G.g[d.sg]
+    if (!rows) continue
+    const base = new Map(d.base)
+    const want = new Map(items[w.h].stats || [])
+    for (const [si, top, curve] of rows) {
+      const v = base.get(si)
+      const got = v == null ? 0 : shown(v, top, curve)
+      const exp = want.get(String(D.s[si][2])) || 0
+      checked++
+      if (got !== exp) bad.push(`${w.n} ${D.s[si][0]}：算出 ${got}，manifest 写的是 ${exp}`)
+    }
+  }
+  assert.ok(checked > 20000, `只对了 ${checked} 个格子，产出像是没构建`)
+  assert.deepEqual(bad.slice(0, 5), [], `${bad.length} 个格子对不上`)
+})
+
+test('the interpolation curve is clamped at both ends, not extrapolated', () => {
+  const { interp, shown } = weaponMath()
+  // 霰弹枪的伤害曲线不从 0 起。投资值 0 在游戏里显示 65：按前两点的斜率往下
+  // 延出去会得到 64.58，全表 30 个格子栽在这上面。
+  const curve = [[10, 65], [70, 70], [100, 85]]
+  assert.equal(interp(0, curve), 65)
+  assert.equal(interp(-40, curve), 65)
+  assert.equal(interp(200, curve), 85)
+  assert.equal(interp(40, curve), 67.5)
+  // 上限先截断再插值。
+  assert.equal(shown(300, 100, [[0, 0], [100, 100]]), 100)
+})
+
+test('stat rounding goes to the even side, not always up', () => {
+  const { bankers, shown } = weaponMath()
+  assert.equal(bankers(64.5), 64)
+  assert.equal(bankers(65.5), 66)
+  assert.equal(bankers(64.4), 64)
+  assert.equal(bankers(64.6), 65)
+  // 四舍五入会把这一格算成 23，manifest 写的是 22。
+  assert.equal(shown(30, 100, [[0, 10], [100, 50]]), 22)
+})
+
 async function main() {
   let failures = 0
   for (const [name, fn] of tests) {
