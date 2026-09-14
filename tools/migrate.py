@@ -1,0 +1,314 @@
+#!/usr/bin/env python3
+"""内容层迁移：配装源稿 markdown ⇄ 结构化记录。
+
+用法：
+    python3 tools/migrate.py --check          # 全部源稿跑一遍来回，逐字节比对
+    python3 tools/migrate.py --check <文件>    # 只跑一篇，不等时打印差异
+
+**验收靠反向序列化**：解析成记录再写回 markdown，与原文逐字节相同才算这个 schema
+没丢东西。不等就报出，不放过。这套手法照搬各生成器已有的逐字保真闸门。
+
+记录用中文键，与源稿逐条对得上：键名即源稿那一行的键，读 JSON 的人不必先学一套
+英文对照。多值字段（碎片、模组、护甲每个部位）切成数组，传说武器切成
+{名字, 词条} 一对；能切开又拼得回去，才证明切法没丢信息。
+
+合集一个文件几套：`成员` 是成员记录的数组，头部键由整份共用的那几个补齐，
+与 convert-build.py 的 solo_src() 同一条规矩。
+"""
+
+import argparse
+import os
+import re
+import sys
+
+import markup
+import shell
+from markup import die, must
+
+SRC_DIR = shell.BUILD_DIR
+
+# 头部键，顺序即写回时的顺序。与 convert-build.META_KEYS 同一份内容，多一个「合集」。
+HEAD_KEYS = ('合集', '推荐人', '描述', '更新', '场景', '标签', '分支', '强度', '核心')
+
+# 分节 → 这一节里允许出现的槽位键，顺序即写回顺序。空表示这一节是散文。
+SECTIONS = (
+    ('审核意见', ()),
+    ('合集介绍', ()),
+    ('职业', ('职业', '超能', '星相', '碎片', '手雷', '近战', '移动', '职业技能')),
+    ('武器', ('异域武器', '传说武器')),
+    ('护甲', ('异域护甲', '套装', '头盔', '护臂', '胸甲', '腿部', '职业物品')),
+    ('神器', ('神器', '模组')),
+    ('六维', ('六维',)),
+    ('注解', ()),
+)
+SECT_KEYS = dict(SECTIONS)
+
+# 切成数组的键。传说武器另有一套切法（枪名 | 词条、词条），单独处理。
+MULTI = frozenset({'星相', '碎片', '手雷', '近战', '职业技能', '移动', '模组',
+                   '头盔', '护臂', '胸甲', '腿部', '职业物品', '场景', '标签'})
+GUN = '传说武器'
+# 推荐人一行一个，名字与链接用 | 分开。
+PEOPLE = '推荐人'
+
+KEY_LINE = re.compile(r'^([^：\n]+)：(.*)$')
+
+
+def split_set(md):
+    """合集切成 [整份头部, 成员一, 成员二…]。判据与 convert-build.split_set 同一条。"""
+    parts = re.split(r'^# ', md, flags=re.M)
+    return [p for p in parts if p.strip()]
+
+
+def parse_block(text):
+    """一套配装（或合集的整份头部）→ 记录。text 不含开头的「# 」。"""
+    head, _, rest = text.partition('\n')
+    rec = {'标题': head.strip()}
+    body = rest
+    cut = body.find('\n## ')
+    front, sections = (body[:cut], body[cut:]) if cut >= 0 else (body, '')
+    for line in front.split('\n'):
+        m = KEY_LINE.match(line)
+        if not m:
+            if line.strip():
+                die('头部有一行既不是键值也不是空行：%r' % line)
+            continue
+        key, val = m.group(1), m.group(2).strip()
+        if key not in HEAD_KEYS:
+            die('头部出现没登记的键「%s」' % key)
+        if key == PEOPLE:
+            rec.setdefault(key, []).append(val)
+        elif key in MULTI:
+            rec[key] = [x.strip() for x in val.split('、') if x.strip()]
+        else:
+            rec[key] = val
+    for chunk in sections.split('\n## ')[1:]:
+        name, _, content = chunk.partition('\n')
+        name = name.strip()
+        keys = SECT_KEYS.get(name)
+        if keys is None:
+            die('出现没登记的分节「%s」' % name)
+        rec.setdefault('节', {})[name] = (
+            parse_fields(content, name, keys) if keys else prose(content).rstrip('\n'))
+    return rec
+
+
+def prose(text):
+    """散文原样存一个字段，连空白一起。
+
+    **不按空行分段**：源稿里有只含空格的行，也有连着两个空行，按空行切再拼回去
+    会把它们抹平。分段是渲染时的事，`convert-build.prose()` 已经在做。"""
+    return text[1:] if text.startswith('\n') else text
+
+
+def parse_fields(text, sect, keys):
+    out = {}
+    for line in text.split('\n'):
+        if not line.strip():
+            continue
+        m = must(KEY_LINE.match(line),
+                 '「%s」一节里有一行不是键值：%r' % (sect, line))
+        key, val = m.group(1), m.group(2).strip()
+        if key not in keys:
+            die('「%s」一节里出现没登记的键「%s」' % (sect, key))
+        if key == GUN:
+            gun, _, perks = val.partition('|')
+            out.setdefault(key, []).append(
+                {'名字': gun.strip(),
+                 '词条': [x.strip() for x in perks.split('、') if x.strip()]})
+        elif key in MULTI:
+            out[key] = [x.strip() for x in val.split('、') if x.strip()]
+        else:
+            out[key] = val
+    return out
+
+
+def parse(md):
+    parts = split_set(md.lstrip('\n'))
+    if not parts:
+        die('源稿是空的')
+    first = parse_block(parts[0])
+    if len(parts) > 1:
+        first['成员'] = [parse_block(p) for p in parts[1:]]
+    return first
+
+
+# ── 写回 ──────────────────────────────────────────────────────────────
+
+
+def join(key, val):
+    if key == GUN:
+        return ['%s：%s' % (key, g['名字'] + (' | ' + '、'.join(g['词条'])
+                                             if g['词条'] else ''))
+                for g in val]
+    if key == PEOPLE:
+        return ['%s：%s' % (key, v) for v in val]
+    if isinstance(val, list):
+        return ['%s：%s' % (key, '、'.join(val))]
+    return ['%s：%s' % (key, val)]
+
+
+def write_block(rec):
+    out = ['# %s' % rec['标题'], '']
+    for key in HEAD_KEYS:
+        if key in rec:
+            out += join(key, rec[key])
+    for name, keys in SECTIONS:
+        node = (rec.get('节') or {}).get(name)
+        if node is None:
+            continue
+        out += ['', '## %s' % name, '']
+        if keys:
+            for key in keys:
+                if key in node:
+                    out += join(key, node[key])
+        else:
+            out.append(node)
+    return '\n'.join(out)
+
+
+def write(rec):
+    body = write_block(rec)
+    for member in rec.get('成员') or ():
+        body += '\n\n' + write_block(member)
+    return body + '\n'
+
+
+# ── 资料页分类 ────────────────────────────────────────────────────────
+
+# 行标题上的装饰：神器模组页写「### 一级 · 名称」，技能冷却页写「**闪电手雷**」，
+# 两者都不是名字的一部分。
+TIER_TAIL = re.compile(r'^[一二三]级\s*·\s*')
+BOLD = re.compile(r'\*\*([^*]+)\*\*')
+# 列标题与不具名的行（「序号」「光等差」这一类），它们本来就不指向任何东西。
+NOT_A_NAME = frozenset({
+    '武器', '名称', '金装', '变量', '标记', '技能', '名字', '效果', '模组', '部位',
+    '属性', '类型', '套装', '来源', '分组', '序号', '副本名称', '光等差'})
+
+
+def row_title(cell):
+    text = TIER_TAIL.sub('', strip_markup(cell).replace(markup.CELL_BREAK, '').strip())
+    hit = BOLD.fullmatch(text)
+    return (hit.group(1) if hit else text.replace('**', '')).strip()
+
+
+def strip_markup(text):
+    for _ in range(4):
+        text = re.sub(r'\{[\w-]+\|([^{}]*)\}', r'\1', text)
+    return re.sub(r'!\[\]\([^)]*\)', '', text).strip()
+
+
+def row_titles(path):
+    out = []
+    with open(path, encoding='utf-8') as f:
+        for raw in f:
+            line = raw.rstrip('\n')
+            if line.startswith('### '):
+                out.append(row_title(line[4:]))
+                continue
+            spans = markup.cells(line)
+            if not spans or len(spans) < 2:
+                continue
+            name = row_title(line[spans[0][0]:spans[0][1]])
+            if (not name or name in NOT_A_NAME or name.startswith('==')
+                    or set(name) <= set('-')):
+                continue
+            out.append(name)
+    return out
+
+
+def classify():
+    """哪些资料页该转成结构化记录。**判据是机械的**：行标题能落到事实层的主键上
+    就结构化，否则继续 markdown。不靠人逐篇拍板，加一页也不必回来登记。"""
+    sys.path.insert(0, os.path.join(shell.ROOT, 'tools'))
+    import resolve
+    facts = resolve.Facts()
+    known = {resolve.norm(v['n']['zh']) for v in facts.items.values()}
+    known |= {resolve.norm(v['n']['zh']) for v in facts.effects.values()}
+    known |= {resolve.norm(v['n']['zh']) for v in facts.stats.values()}
+    known |= {resolve.set_key(s['name']['zh']) for s in facts.sets.values()}
+
+    docs = os.path.join(shell.ROOT, 'references', 'docs')
+    paths = [os.path.join(docs, f) for f in sorted(os.listdir(docs)) if f.endswith('.md')]
+    paths += [os.path.join(shell.ROOT, 'references', f)
+              for f in ('artifact-mods.md', 'armor-sets.md')]
+    rows = []
+    for path in paths:
+        names = row_titles(path)
+        hit = sum(1 for n in names
+                  if resolve.norm(n) in known or resolve.set_key(n) in known)
+        rows.append((os.path.basename(path)[:-3], len(names), hit))
+
+    groups = {'结构化': [], 'markdown': [], '无表格行': []}
+    for name, total, hit in rows:
+        where = ('无表格行' if not total
+                 else '结构化' if 100 * hit / total >= 50 else 'markdown')
+        groups[where].append((name, total, hit))
+    for where in ('结构化', 'markdown', '无表格行'):
+        got = groups[where]
+        print('%s %d 篇' % (where, len(got)))
+        for name, total, hit in sorted(got, key=lambda r: -(r[2] / r[1] if r[1] else 0)):
+            pct = ('%5.1f%%' % (100 * hit / total)) if total else '    —'
+            print('    %-22s %4d 行，命中 %4d %s' % (name, total, hit, pct))
+    return 0
+
+
+# ── 验收 ──────────────────────────────────────────────────────────────
+
+
+def sources():
+    for season in sorted(os.listdir(SRC_DIR)):
+        root = os.path.join(SRC_DIR, season)
+        if not os.path.isdir(root):
+            continue
+        for name in sorted(os.listdir(root)):
+            if name.endswith('.md'):
+                yield os.path.join(root, name)
+
+
+def check(only=None):
+    bad, n = [], 0
+    for path in sources():
+        if only and only not in path:
+            continue
+        n += 1
+        with open(path, encoding='utf-8') as f:
+            want = f.read()
+        try:
+            got = write(parse(want))
+        except SystemExit as e:
+            bad.append((path, str(e)))
+            continue
+        if got != want:
+            bad.append((path, first_diff(want, got)))
+    print('配装源稿 %d 篇，来回逐字节相同 %d 篇，不等 %d 篇'
+          % (n, n - len(bad), len(bad)))
+    for path, why in bad[:12]:
+        print('  %s\n      %s' % (os.path.relpath(path, shell.ROOT), why))
+    return 1 if bad else 0
+
+
+def first_diff(want, got):
+    a, b = want.split('\n'), got.split('\n')
+    for i in range(max(len(a), len(b))):
+        x = a[i] if i < len(a) else '（没有这一行）'
+        y = b[i] if i < len(b) else '（没有这一行）'
+        if x != y:
+            return '第 %d 行\n      原稿 %r\n      写回 %r' % (i + 1, x, y)
+    return '长度不同'
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument('--check', action='store_true', help='配装源稿跑一遍来回比对')
+    ap.add_argument('--classify', action='store_true', help='资料页该结构化还是留 markdown')
+    ap.add_argument('only', nargs='?', help='只跑文件名含这一段的那些')
+    a = ap.parse_args()
+    if a.classify:
+        return classify()
+    if not a.check:
+        ap.error('要做什么？--check 跑配装来回比对，--classify 给资料页分类')
+    return check(a.only)
+
+
+if __name__ == '__main__':
+    sys.exit(main())
