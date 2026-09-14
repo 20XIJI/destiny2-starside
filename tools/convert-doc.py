@@ -435,7 +435,9 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=
             row.append(wrap('th', broke(cells[0]), attrs))
             # 行标题指向的那件东西的主键。戳在 <tr> 上不戳在 <th> 上：合并块里
             # 只有第一行有 <th>，而整块说的是同一件东西。
-            stamp = STAMP(text_of(cells[0])) if STAMP else ''
+            # **取渲染后那一格**，与索引里的名字同一份：源稿原文里格内换行还是
+            # 字面的两个反斜杠，拿它去查源稿线索一个都对不上（复刻那几把就是这么漏的）。
+            stamp = STAMP(text_of(row[0])) if STAMP else ''
         for ci, c in enumerate(cells[1:], start=1):
             if ci in tiers:
                 tier = tier_of(c, tiers[ci])

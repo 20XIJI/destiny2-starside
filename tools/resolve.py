@@ -102,6 +102,10 @@ DERIVED = {
     '抓钩缠结': ('缠结', '抓钩产生的缠结，库里只有「缠结」这个关键词'),
     # 术士虚空星相只有 5 个，没有这一条：它是「混沌加速」给手雷充能后的那个形态名。
     '手持超新星': ('混沌加速', '「混沌加速」给手雷充能后的形态，库里只有星相本身'),
+    # 异域武器页给「英勇利刃」的核心与催化剂单写了一行。**那是它自己的两个槽**：
+    # v950.new.sword0.perk_upgrades（冲击／折射／陀螺核心）与 .masterwork（催化剂）。
+    # 库里只有那一件武器，差别在装了哪个插件上。
+    '英勇利刃 2：核心之击': ('英勇利刃', '同一把武器的核心与催化剂两个槽'),
 }
 
 # 复刻的两个版本词条池完全相同、来源列也定不下来时，由人钉一个 hash。
@@ -125,7 +129,6 @@ NOT_ITEMS = {
     '熔炉竞技场调整': '棱镜页的机制小节',
     '灼烧效果伤害缩放': '烈日页的机制小节',
     '速装终结技': '护甲模组页的复合行，变体表里没登记',
-    '英勇利刃 2：核心之击': '异域武器的任务步骤，不是武器条目',
     '冰影水晶': '冰影页的机制名，库里没有同名条目',
     '线虫': '缚丝页的机制名，库里没有同名条目',
 }
@@ -396,6 +399,11 @@ def stamper(page):
             # 戳的形态照 effects.json 自己的键走，带前缀，免得两个号段混在一位上。
             eff = resolve_effect(facts, name)
             got = [eff] if eff else []
+        if not got and name in DERIVED:
+            # 派生条目指回基那一条：同一把武器的第二种形态、某个关键词赋予的弹药，
+            # 库里都只有基那一条，反查时它们本就该落在同一件东西上。
+            base = DERIVED[name][0]
+            got = [x for x in (resolve_effect(facts, base),) if x] or pool(facts, base, page)
         return ' data-hash="%s"' % ' '.join(got) if got else ''
 
     return stamp
@@ -645,6 +653,10 @@ def names():
         for e in pagedex.must_read(page)['entries']:
             keys = (e.get('hash') or '').split()
             if not keys or (page == SET_PAGE and norm(e['name']) in aliases):
+                continue
+            # 站内自己标了版本后缀的行（「鲁莽神谕\\众神殿版本」）与派生条目
+            # （「不稳定弹药」指回「不稳定」）本来就与库里的名字不同，不是写错。
+            if e['name'] in DERIVED or VERSION_TAIL.match(e['name']):
                 continue
             total += 1
             lib = {x for x in (key_name(facts, k) for k in keys) if x}
