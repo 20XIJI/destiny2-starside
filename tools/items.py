@@ -122,10 +122,6 @@ MECH = {
 }
 
 
-# 库里的名字与游戏内写法不一致时在这里改正，改的是表的键。
-NAME_FIX = {
-    'D.A.R.C.I': 'D.A.R.C.I.',    # 库里漏了词尾那一点
-}
 
 
 # 更长的专名：这几段文字整体屏蔽，里面的短词不再单独命中。与 STOP 的区别是
@@ -248,7 +244,6 @@ def distill(src):
             continue
         hit = bucket(item)
         if hit:
-            name = NAME_FIX.get(name, name)
             seen.setdefault(name, {}).setdefault(hit[0], set()).add(hit[1])
 
     counts = {'el': 0, 'exotic': 0, 'art-perk': 0}

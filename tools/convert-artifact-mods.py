@@ -9,6 +9,7 @@
 解析不上的结构、对不上的计数一律抛错中止，不出半成品。
 """
 
+import json
 import os
 import re
 import sys
@@ -26,9 +27,26 @@ ICON_DIR = os.path.join(OUT_DIR, 'icons')
 PAGE_TITLE = '神器模组 · Starside'
 
 _STAMP = None
+_ARTS = None
 
 
-def stamp(name):
+def art_pool(artifact):
+    """这件神器自己那批模组的主键集合。
+
+    **同名的神器模组在库里有两条**（147 条里 36 处）：同名、同类、同图，只有 index
+    不同，光看物品表分不出。神器本体带着自己的模组槽，池里列的就是它那 21 个，
+    按它收窄即得唯一那一条。data/facts/artifacts.json 存的就是这份分组。"""
+    global _ARTS
+    if _ARTS is None:
+        with open(os.path.join(shell.ROOT, 'data', 'facts', 'artifacts.json'),
+                  encoding='utf-8') as f:
+            raw = json.load(f)
+        _ARTS = {resolve.norm(k): {h for t in v['tiers'] for h in t}
+                 for k, v in raw.items()}
+    return _ARTS.get(resolve.norm(artifact), set())
+
+
+def stamp(name, artifact=''):
     """模组的主键。这一页的单位是模组，不是表格行。
 
     惰性装配：check_terms.py 会 importlib 载这个模块取着色词表，import 时就读
@@ -36,7 +54,15 @@ def stamp(name):
     global _STAMP
     if _STAMP is None:
         _STAMP = resolve.stamper('artifact-mods') or (lambda _: '')
-    return _STAMP(name)
+    got = _STAMP(name)
+    keys = got[len(' data-hash="'):-1].split() if got else []
+    if len(keys) > 1 and artifact:
+        mine = [k for k in keys if k in art_pool(artifact)]
+        if len(mine) == 1:
+            return ' data-hash="%s"' % mine[0]
+        if mine:
+            keys = mine
+    return ' data-hash="%s"' % ' '.join(keys) if keys else ''
 
 N_SECTIONS = 7
 N_MODS = 147
@@ -244,7 +270,7 @@ def render(page, digest='', dex=None):
             o.append('<div class="mod-row">')
             for mod in row:
                 name = text_of(mod['name'], collapse=True)
-                key = stamp(text_of(mod['name']))
+                key = stamp(text_of(mod['name']), s['name'])
                 dex.add(hash=key[len(' data-hash="'):-1] if key else '',
                         anchor='art-%d' % i, kind=label, name=name,
                         icon='%s/%s' % (PAGE, icon_src(mod['icon'])),

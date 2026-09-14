@@ -20,6 +20,9 @@ manifest 是冻结快照——不会再有新赛季，所以这里跑一次、�
                                 站内六个元素页上成段的效果名就靠它落主键
     data/facts/stats.json       属性（充能效率、防御抗性、射程、稳定性……）。武器 PERK
                                 页上有一整节写的是属性不是 Perk，主键是 statHash
+    data/facts/artifacts.json   七件神器，每件按档位列出它自己的那批模组。**同名的
+                                神器模组在库里有两条**（36 处），靠这张表才分得出
+                                哪一条属于哪件神器
 
 **不做全量**：zh-chs 的物品表 189.5 MB，这里只取站内页面引用得到的那几类与用得上的
 字段，产出小三个数量级。丢掉的是描述全文、截图、投资属性、奖励表这些站内不用的。
@@ -259,6 +262,46 @@ def distill(src):
         for flag, want in FLAG_SOCKETS.items():
             if want in kinds:
                 row[flag] = True
+    # 神器 → 它自己那批模组。带槽的那一条是 itemType 0 的影子条目（真正的
+    # itemType 28 那条没有 socket），槽按档位分组，最后一组是「重置神器」不算。
+    # DestinyArtifactDefinition 只有当前那一件，覆盖不了站内文档的七件。
+    arts = {}
+    for h, item in items.items():
+        if item.get('itemType') != 0 or item.get('redacted'):
+            continue
+        entries = (item.get('sockets') or {}).get('socketEntries') or []
+        if not entries:
+            continue
+        kinds = {socket_kind(e, socket_types) for e in entries}
+        if not any('artifact' in k for k in kinds):
+            continue
+        # 槽里的池是**累积**的：二档那一池包含一档全部。相邻作差才是这一档真正
+        # 新开的那七个。末尾那一池只剩占位（「空神器模组」），整池丢掉。
+        stacks, seen = [], set()
+        for e in entries:
+            key = e.get('reusablePlugSetHash') or e.get('randomizedPlugSetHash')
+            if not key or key in seen:
+                continue
+            seen.add(key)
+            pool = [str(p['plugItemHash'])
+                    for p in (plug_sets.get(str(key)) or {}).get('reusablePlugItems') or ()
+                    if (items.get(str(p['plugItemHash'])) or {})
+                    .get('plug', {}).get('plugCategoryIdentifier') == 'artifact_perks'
+                    and not (items[str(p['plugItemHash'])]['displayProperties']['name']
+                             .startswith(('空', '重置')))]
+            if pool:
+                stacks.append(pool)
+        tiers, had = [], set()
+        for pool in stacks:
+            fresh = [x for x in pool if x not in had]
+            had |= set(pool)
+            if fresh:
+                tiers.append(fresh)
+        if tiers:
+            name = item['displayProperties']['name']
+            arts.setdefault(name, {'n': {'zh': name},
+                                   'tiers': []})
+            arts[name]['tiers'] = tiers
     del socket_types, plug_sets, items
     gc.collect()
 
@@ -342,6 +385,13 @@ def distill(src):
     print('data/facts/armor-sets.json  %7d 套  %6.1f KB  效果 %d'
           % (len(sets), c / 1024, sum(len(s['bonuses']) for s in sets.values())))
     e = dump(os.path.join(OUT_DIR, 'stats.json'), stats, True)
+    f_ = os.path.join(OUT_DIR, 'artifacts.json')
+    os.makedirs(OUT_DIR, exist_ok=True)
+    with open(f_, 'w', encoding='utf-8') as fh:
+        fh.write(json.dumps(arts, ensure_ascii=False, indent=1, sort_keys=True) + '\n')
+    print('data/facts/artifacts.json   %7d 件  %6.1f KB  档位 %s'
+          % (len(arts), os.path.getsize(f_) / 1024,
+             '、'.join(str(len(v['tiers'])) for v in arts.values())))
     print('data/facts/effects.json     %7d 条  %6.1f KB  trait %d、perk %d'
           % (len(effects), d / 1024,
              sum(1 for v in effects.values() if v['k'] == 'trait'),

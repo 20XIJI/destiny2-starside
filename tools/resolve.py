@@ -615,12 +615,56 @@ def audit():
     return 0 if not left else 1
 
 
+def key_name(facts, key):
+    """一个主键在库里叫什么。"""
+    if key.startswith('set:'):
+        got = facts.sets.get(key[4:])
+        return got['name']['zh'] if got else None
+    if key.startswith(('trait:', 'perk:')):
+        got = facts.effects.get(key)
+        return got['n']['zh'] if got else None
+    if key.startswith('stat:'):
+        got = facts.stats.get(key[5:])
+        return got['n']['zh'] if got else None
+    got = facts.items.get(key)
+    return got['n']['zh'] if got else None
+
+
+def names():
+    """站内的写法与库里的名字逐条比。**名字以库为准**，站内那份是手写的。
+
+    套装的来源名不参与：词表给一套登两个键，来源那一个本来就与套装名不同。
+    """
+    sys.path.insert(0, os.path.join(shell.ROOT, 'tools'))
+    import pagedex
+    facts = Facts()
+    aliases = set_sources()
+    diff = []
+    total = 0
+    for page in pagedex.TOKENS:
+        for e in pagedex.must_read(page)['entries']:
+            keys = (e.get('hash') or '').split()
+            if not keys or (page == SET_PAGE and norm(e['name']) in aliases):
+                continue
+            total += 1
+            lib = {x for x in (key_name(facts, k) for k in keys) if x}
+            if lib and norm(e['name']) not in {norm(x) for x in lib}:
+                diff.append((page, e['name'], sorted(lib)))
+    print('带主键的条目 %d 条，站内写法与库里不同的 %d 条' % (total, len(diff)))
+    for page, name, lib in diff:
+        print('  %-22s 站内 %-22s 库里 %s' % (page, name, '、'.join(lib)))
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--audit', action='store_true', help='把站内的名字全跑一遍')
+    ap.add_argument('--names', action='store_true', help='站内写法与库里的名字逐条比')
     a = ap.parse_args()
+    if a.names:
+        return names()
     if not a.audit:
-        ap.error('要做什么？现在只有 --audit')
+        ap.error('要做什么？--audit 查归属，--names 比名字')
     return audit()
 
 
