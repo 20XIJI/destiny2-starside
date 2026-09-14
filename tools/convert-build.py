@@ -19,6 +19,7 @@ import sys
 from urllib.parse import quote
 
 import items
+import migrate
 import shell
 import vocab
 from html import escape
@@ -52,23 +53,48 @@ ELEMENT_TOKEN = {b: 'el-%s' % slug for b, slug in BRANCH.items()}
 # 「移动：」不查表——跳跃与瞬移这类移动手段站内还没有资料页，落成纯文本。
 
 
-def where(md):
+def must_title(rec, msg):
+    title = (rec or {}).get('标题', '').strip()
+    if not title:
+        die(msg)
+    return title
+
+
+def guns(rec) -> 'list[dict]':
+    """这一套的传说武器：[{名字, 词条}]。记录里本来就是切好的一对。"""
+    return list(migrate.flat(rec).get('传说武器') or [])
+
+
+def where(rec):
     """报错里的定位：这是哪一套配装。合集一个文件里五套，不说哪一套没法改。"""
-    title = md.split('\n', 1)[0]
-    return '（配装/合集：%s）' % title[2:].strip() if title.startswith('# ') else ''
+    title = (rec or {}).get('标题', '')
+    return '（配装/合集：%s）' % title if title else ''
 
 
-def meta(md, key, required=True):
-    hit = re.search(r'^%s：(.*)$' % key, md, re.M)
-    if hit is None:
+def meta(rec, key, required=True):
+    """记录里的一个值，取成字符串。多值键按源稿的写法用「、」接回去。
+
+    **「键在但值空」与「键不在」是两回事**：源稿写着「星相：」而后面没有内容时，
+    这一行是在的，只是这一套没有星相。required 判的是键在不在，不是值空不空。"""
+    got = migrate.flat(rec)
+    if key not in got:
         if required:
-            die('源稿缺「%s：」一行%s' % (key, where(md)))
+            die('源稿缺「%s：」一行%s' % (key, where(rec)))
         return ''
-    return hit.group(1).strip()
+    v = got[key]
+    return '、'.join(v) if isinstance(v, list) else (v or '')
 
 
-def names(md, key, required=True):
-    v = meta(md, key, required)
+def names(rec, key, required=True):
+    """记录里的一个多值键。记录里本来就是数组，不必再切。"""
+    got = migrate.flat(rec)
+    if key not in got:
+        if required:
+            die('源稿缺「%s：」一行%s' % (key, where(rec)))
+        return []
+    v = got[key]
+    if isinstance(v, list):
+        return list(v)
     return [x.strip() for x in v.split('、') if x.strip()]
 
 
@@ -245,14 +271,14 @@ def rig_of(cells, tool=''):
             % (guns * 15 + (len(live) - guns) * 10, len(live), ''.join(cells), tool))
 
 
-def people(md, link=True):
+def people(rec, link=True):
     """推荐人：一行一个，`名字 | 链接`，链接可省。
 
     link=False 出纯文本那一版，给索引页用：那张卡整张是一个 <a>，里面再套一个
     会被 HTML 解析器在内层处把外层关掉，卡片右半边就不再是通往配装的链接。
     """
     out = []
-    for line in re.findall(r'^推荐人：(.*)$', md, re.M):
+    for line in (rec.get('推荐人') or ()):
         parts = [x.strip() for x in line.split('|')]
         name, url = parts[0], parts[1] if len(parts) > 1 else ''
         if not name:
@@ -390,11 +416,9 @@ def page_items(md):
     if got:
         out.append((got, '异域武器', None))
     out += [(n, '异域护甲', None) for n in exotic_armor(md)]
-    for line in re.findall(r'^传说武器：(.*)$', md, re.M):
-        parts = [x.strip() for x in line.split('|')]
-        out.append((parts[0], '传说武器', None))
-        out += [(p.strip(), 'Perk', None)
-                for p in (parts[1].split('、') if len(parts) > 1 else []) if p.strip()]
+    for gun in guns(md):
+        out.append((gun['名字'], '传说武器', None))
+        out += [(p, 'Perk', None) for p in gun['词条']]
     for seg in meta(md, '套装', required=False).split('×'):
         m = re.match(r'^(.+?)\s*([24])\s*件$', seg.strip())
         if m:
@@ -441,15 +465,9 @@ def facets(scenes, tags):
     return '<div class="facets">%s</div>' % rows if rows else ''
 
 
-def section_of(md, name):
-    """取一个分节的正文，到下一个 `## ` 或文末为止。
-
-    「注解」与「合集介绍」各自 split 一次就够——它们在源稿里排在最后。审核意见排在
-    最前（它是对整套配装的判词，读者在页顶就该看见），后面还跟着别的分节，所以要
-    有边界。
-    """
-    m = re.search(r'^## %s[ \t]*$(.*?)(?=^## |\Z)' % re.escape(name), md, re.S | re.M)
-    return m.group(1).strip() if m else ''
+def section_of(rec, name):
+    """取一个散文分节的正文。记录里它就是一个字段，不必再切边界。"""
+    return ((rec.get('节') or {}).get(name) or '').strip()
 
 
 def prose(text):
@@ -515,8 +533,8 @@ def stamp_of(md):
     return stamp
 
 
-def split_set(md):
-    """源稿 → (头部, [每套的源稿, …])。`# ` 起一块，首块是头部。
+def split_set(rec):
+    """记录 → (头部, [每套的记录, …])。`成员` 非空即合集，首个记录是头部。
 
     单套配装只有一个 `# `，切出来成员为空、头部即整份——两条路因此共用一个入口。
     **全脚本只有这一处认这个分隔符**：成员块内部就是单套配装的源稿，一字不改，
@@ -526,8 +544,7 @@ def split_set(md):
     第二套会出一个空合集；只按 `# ` 判，注解里手滑打出的一个 `# ` 会把半篇正文
     静默切成第二套。
     """
-    parts = re.split(r'\n(?=# )', md.strip())
-    head, members = parts[0], parts[1:]
+    head, members = rec, list(rec.get('成员') or ())
     flag = meta(head, '合集', required=False)
     if flag and flag != '是':
         die('「合集：」只认「是」；不是合集就把整行删掉，源稿写的是 %r' % flag)
@@ -635,13 +652,21 @@ def set_facts(idx, head, members):
     return branch, cores, who, roles
 
 
-def solo_src(head, md):
-    """「复制这一套」给的那一份：成员块补上从合集头部继承的那几个键，粘回配装
-    工具就是一份完整的单套源稿。少了它们，导入之后推荐人与强度是空的。"""
-    add = ['%s：%s' % (k, meta(head, k, required=False))
-           for k in ('推荐人', '更新', '场景', '强度')]
-    lines = md.strip().split('\n')
-    return '\n'.join(lines[:1] + [x for x in add if not x.endswith('：')] + lines[1:])
+INHERITED = ('推荐人', '更新', '场景', '强度')
+
+
+def solo_src(head, rec):
+    """「复制这一套」给的那一份：成员记录补上从合集头部继承的那几个键，写成
+    markdown 粘回配装工具就是一份完整的单套源稿。少了它们，导入之后推荐人与
+    强度是空的。
+
+    这一份是**导出格式**，不是源稿：填表页的导入认 markdown，所以在这里写回去。"""
+    got = dict(rec)
+    got.pop('成员', None)
+    for key in INHERITED:
+        if key not in got and key in head:
+            got[key] = head[key]
+    return migrate.write(got).rstrip('\n')
 
 
 def finish(o, scripts):
@@ -696,11 +721,10 @@ def blocks_of(idx, mv, arts, md, ns=''):
     if ex_gun:
         rigs.append(rig_of([item(idx, '异域武器', ex_gun, prefer,
                                  cls='item gun', bare=True)]))
-    for line in re.findall(r'^传说武器：(.*)$', md, re.M):
-        gun, _, perks = line.partition('|')
-        cells = [item(idx, '传说武器', gun.strip(), prefer, cls='item gun', bare=True)]
-        cells += [item(idx, 'Perk', p.strip(), prefer, cls='item perk-cell', bare=True)
-                  for p in perks.split('、') if p.strip()]
+    for gun in guns(md):
+        cells = [item(idx, '传说武器', gun['名字'], prefer, cls='item gun', bare=True)]
+        cells += [item(idx, 'Perk', p, prefer, cls='item perk-cell', bare=True)
+                  for p in gun['词条']]
         rigs.append(rig_of(cells))
     o += ['<section class="block" id="%ssec-2">' % ns,
           '<h2 class="sect-label">武器</h2>'] + row(rigs) + ['</section>', '']
@@ -755,11 +779,11 @@ def blocks_of(idx, mv, arts, md, ns=''):
         o += row([x for panel in parts for x in panel])
     o += ['</section>', '']
 
-    note = md.split('## 注解', 1)
-    if len(note) == 2 and note[1].strip():
+    note = section_of(md, '注解')
+    if note:
         o += ['<section class="block" id="%ssec-5">' % ns,
               '<h2 class="sect-label">注解</h2>']
-        o += prose(note[1].strip())
+        o += prose(note)
         o += ['</section>', '']
     return o
 
@@ -775,8 +799,7 @@ def render(idx, mv, arts, md, slug, season, name_cn, doc_id):
 
 
 def render_solo(idx, mv, arts, md, slug, season, name_cn, doc_id):
-    title = must(re.match(r'^#\s+(.+)$', md.split('\n')[0]),
-                 '源稿第一行必须是「# 配装名」').group(1).strip()
+    title = must_title(md, '源稿里必须有「标题」')
     stamp, desc = stamp_of(md), meta(md, '描述', required=False)
     # 描述在这一页是正文（首页卡片与 meta 也用它），所以允许写着色标记：
     # 正文走 inline()，meta 与卡片用剥干净的那一份，不然标记会漏进 <meta>。
@@ -836,7 +859,8 @@ def render_solo(idx, mv, arts, md, slug, season, name_cn, doc_id):
          '</div>',
          # 「复制配装」复制的就是这一份：剥掉着色标记的源稿，粘回配装工具能直接
          # 导入。站内没有第二处存它，所以它落在页面上而不是另拉一个文件。
-         '<pre id="src" hidden>%s</pre>' % escape(uncolor(md)),
+         # 这一格是给填表页「导入」用的导出文本，认 markdown，所以写回去。
+         '<pre id="src" hidden>%s</pre>' % escape(uncolor(migrate.write(md))),
          '</header>', '',
          verdict(md)]
     o += blocks_of(idx, mv, arts, md)
@@ -853,8 +877,7 @@ def one_of(idx, mv, arts, head, scenes, md, n):
     与左栏那列图打架。铭牌末位写标签；单套写在那个位置的是强度，而强度对整份
     合集只有一个值，已经写在页顶的铭牌上。
     """
-    title = must(re.match(r'^#\s+(.+)$', md.split('\n')[0]),
-                 '合集里每一套的第一行必须是「# 配装名称」').group(1).strip()
+    title = must_title(md, '合集里每一套都要有「标题」')
     branch, who = branch_of(md), class_of(md)
     desc = meta(md, '描述', required=False)
     role = '、'.join(tags_of(md, scenes))
@@ -885,8 +908,7 @@ def render_set(idx, mv, arts, head, members, slug, season, name_cn, doc_id):
     ——与列组页、折线图页「默认隐藏不写进 HTML」同一条约定。无 JS 时它天然就是
     竖排，全部可读，#set-3 照旧跳得到。
     """
-    title = must(re.match(r'^#\s+(.+)$', head.split('\n')[0]),
-                 '源稿第一行必须是「# 合集名」').group(1).strip()
+    title = must_title(head, '合集源稿里必须有「标题」')
     stamp, desc = stamp_of(head), meta(head, '描述', required=False)
     desc_text = text_of(inline(desc, rich=True), collapse=True)
     cat = tier_of(head)
@@ -920,11 +942,11 @@ def render_set(idx, mv, arts, head, members, slug, season, name_cn, doc_id):
          '</div>', '</header>', '',
          verdict(head)]
 
-    why = head.split('## 合集介绍', 1)
-    if len(why) == 2 and why[1].strip():
+    why = section_of(head, '合集介绍')
+    if why:
         o += ['<section class="block" id="why">',
               '<h2 class="sect-label">合集介绍</h2>']
-        o += prose(why[1].strip())
+        o += prose(why)
         o += ['</section>', '']
 
     # 视图开关落在左栏的头上，不做成 .toolbar：那一套由 app.js 建，而配装页不引
@@ -935,8 +957,7 @@ def render_set(idx, mv, arts, head, members, slug, season, name_cn, doc_id):
           'data-setview aria-pressed="false">展开全部</button></p>' % len(members),
           '<ol>']
     for n, m in enumerate(members, 1):
-        mt = must(re.match(r'^#\s+(.+)$', m.split('\n')[0]),
-                  '合集里每一套的第一行必须是「# 配装名称」').group(1).strip()
+        mt = must_title(m, '合集里每一套都要有「标题」')
         mb = branch_of(m)
         # 一行三列：图 / 职业·元素 / 名字·标签。**职业与元素单占中间那一列**，
         # 挤进副名那一行时 208px 的目录只剩得下一个标签，标签整段被省略号吃掉。
@@ -1065,12 +1086,11 @@ def season_dirs():
 
 
 def build(idx, dirname, season, name_cn, slug):
-    src = os.path.join(SRC_DIR, dirname, slug + '.md')
+    src = os.path.join(SRC_DIR, dirname, slug + '.json')
     with source_context(os.path.relpath(os.path.realpath(src), shell.ROOT)):
         outdir = os.path.join(shell.ROOT, OUT_DIR, season, slug)
         os.makedirs(outdir, exist_ok=True)
-        with open(src, encoding='utf-8') as f:
-            md = f.read()
+        md = migrate.load(src)
         # _id 与 sync.py 的 id_of() 同一条：references/ 下的相对路径去掉 .md，
         # 所以那一截是源稿目录名 dirname，不是产出目录用的 season。
         out, title = render(idx, extra('移动'), extra('神器本体'),
@@ -1856,11 +1876,11 @@ def main():
     made = []
     for dirname, season, name_cn in season_dirs():
         for f in sorted(os.listdir(os.path.join(SRC_DIR, dirname))):
-            if not f.endswith('.md') or (only and f[:-3] != only):
+            if not f.endswith('.json') or (only and f[:-5] != only):
                 continue
-            made.append(build(idx, dirname, season, name_cn, f[:-3]))
+            made.append(build(idx, dirname, season, name_cn, f[:-5]))
     if not made:
-        die('没有配装源稿可生成' + ('：找不到 %s.md' % only if only else ''))
+        die('没有配装源稿可生成' + ('：找不到 %s.json' % only if only else ''))
     if not only:
         render_index(made)
         # 没有合集就不出那一页：出一张空索引不如不出。shell.pages() 用同一条

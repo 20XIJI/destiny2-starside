@@ -38,6 +38,7 @@ import stat
 import tempfile
 
 import markup
+import migrate
 import shell
 
 OUT = 'tools/items.json'
@@ -589,7 +590,7 @@ def build_pages():
         if not os.path.isdir(d):
             continue
         for name in sorted(os.listdir(d)):
-            if name.endswith('.md'):
+            if name.endswith('.json'):
                 yield os.path.join(d, name)
 
 
@@ -676,6 +677,48 @@ def atomic_write(path, text):
             os.unlink(tmp)
 
 
+# 配装记录里要着色的那几个字段：描述与三个散文分节。与从前 prose_spans() 选中的
+# 那些行一一对应——「描述：」那一行的值，以及注解／审核意见／合集介绍整段。
+PROSE_FIELDS = ('描述',)
+PROSE_SECTIONS = ('审核意见', '注解', '合集介绍')
+
+
+def normalize_record(rec, terms, names, banned, path, reports, where=''):
+    """一条配装记录里的散文就地纠正。逐行处理，与它还是 markdown 时同一口径。"""
+    totals = [0, 0, 0]
+
+    def fix(text, label):
+        out, counts = [], [0, 0, 0]
+        for line in text.split('\n'):
+            # 散文里以 # 开头的行是作者写的小标题，不参与正名与补色。
+            if line.lstrip().startswith('#'):
+                out.append(line)
+                continue
+            body, *got = normalize_text(line, terms=terms, names=names, banned=banned)
+            out.append(body)
+            counts = [a + b for a, b in zip(counts, got)]
+            if body != line:
+                reports.append('%s %s [正名 %d，纠色 %d，补色 %d] %s → %s'
+                               % (os.path.relpath(path, shell.ROOT), label, *got,
+                                  line, body))
+        return '\n'.join(out), counts
+
+    for key in PROSE_FIELDS:
+        if rec.get(key):
+            rec[key], got = fix(rec[key], where + key)
+            totals = [a + b for a, b in zip(totals, got)]
+    for key in PROSE_SECTIONS:
+        node = (rec.get('节') or {}).get(key)
+        if node:
+            rec['节'][key], got = fix(node, where + key)
+            totals = [a + b for a, b in zip(totals, got)]
+    for k, member in enumerate(rec.get('成员') or (), 1):
+        got = normalize_record(member, terms, names, banned, path, reports,
+                               where='第%d套·' % k)
+        totals = [a + b for a, b in zip(totals, got)]
+    return totals
+
+
 def normalize_files(documents, builds):
     import check_terms
     terms, _ = load()
@@ -684,8 +727,16 @@ def normalize_files(documents, builds):
     banned = [(w, t[0]) for t in check_terms.TERMS for w in t[2]]
     totals = [0, 0, 0]
     changed = 0
-    for path, prose in ([(os.path.join(shell.ROOT, p), False) for p in documents]
-                        + [(p, True) for p in builds]):
+    for path in builds:
+        rec = migrate.load(path)
+        reports = []
+        counts = normalize_record(rec, terms, names, banned, path, reports)
+        if any(counts):
+            totals = [a + b for a, b in zip(totals, counts)]
+            atomic_write(path, migrate.dump(rec))
+            changed += 1
+            print('\n'.join(reports))
+    for path, prose in [(os.path.join(shell.ROOT, p), False) for p in documents]:
         with open(path, encoding='utf-8', newline='') as f:
             original = f.read()
         lines = original.splitlines(keepends=True)

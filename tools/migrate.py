@@ -17,6 +17,7 @@
 """
 
 import argparse
+import json
 import os
 import re
 import sys
@@ -130,6 +131,37 @@ def parse(md):
     if len(parts) > 1:
         first['成员'] = [parse_block(p) for p in parts[1:]]
     return first
+
+
+def flat(rec):
+    """记录 → {键: 值} 的扁平视图。
+
+    32 个键跨分节零重名（107 篇源稿实测），所以摊平不会撞；摊平之后取值的人不必
+    先知道「碎片」写在哪一节里。散文分节按分节名做键。
+    """
+    out = {k: v for k, v in rec.items() if k in HEAD_KEYS}
+    for name, node in (rec.get('节') or {}).items():
+        if isinstance(node, dict):
+            out.update(node)
+        else:
+            out[name] = node
+    return out
+
+
+def load(path):
+    """读一篇结构化源稿。坏掉的 JSON 当场报出文件名——生成器一次跑一百多篇，
+    只说「第几个字符」找不着是哪一篇。"""
+    with open(path, encoding='utf-8') as f:
+        try:
+            return json.load(f)
+        except ValueError as e:
+            die('%s 不是合法的结构化源稿：%s' % (os.path.basename(path), e))
+
+
+def dump(rec):
+    """规范化 JSON：稳定键序、稳定缩进。库里存的是这份文本，整篇 sha1 的三方比
+    因此仍然成立——同一份记录任何时候都序列化成同样的字节。"""
+    return json.dumps(rec, ensure_ascii=False, indent=1, sort_keys=True) + '\n'
 
 
 # ── 写回 ──────────────────────────────────────────────────────────────
@@ -281,26 +313,29 @@ def sources():
         if not os.path.isdir(root):
             continue
         for name in sorted(os.listdir(root)):
-            if name.endswith('.md'):
+            if name.endswith('.json'):
                 yield os.path.join(root, name)
 
 
 def check(only=None):
+    """记录 → markdown → 记录，一圈回来必须是同一条记录。
+
+    markdown 那一步是**导出格式**：填表页导出的文本要能粘回去。这一条守的是那条
+    往返不丢东西——多值切得开又拼得回、散文连空白一起原样。"""
     bad, n = [], 0
     for path in sources():
         if only and only not in path:
             continue
         n += 1
-        with open(path, encoding='utf-8') as f:
-            want = f.read()
+        want = load(path)
         try:
-            got = write(parse(want))
+            got = parse(write(want))
         except SystemExit as e:
             bad.append((path, str(e)))
             continue
         if got != want:
-            bad.append((path, first_diff(want, got)))
-    print('配装源稿 %d 篇，来回逐字节相同 %d 篇，不等 %d 篇'
+            bad.append((path, first_diff(dump(want), dump(got))))
+    print('配装源稿 %d 篇，导出再读回仍是同一条记录 %d 篇，不等 %d 篇'
           % (n, n - len(bad), len(bad)))
     for path, why in bad[:12]:
         print('  %s\n      %s' % (os.path.relpath(path, shell.ROOT), why))
@@ -319,14 +354,14 @@ def first_diff(want, got):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument('--check', action='store_true', help='配装源稿跑一遍来回比对')
+    ap.add_argument('--check', action='store_true', help='记录→markdown→记录 的回环')
     ap.add_argument('--classify', action='store_true', help='资料页该结构化还是留 markdown')
     ap.add_argument('only', nargs='?', help='只跑文件名含这一段的那些')
     a = ap.parse_args()
     if a.classify:
         return classify()
     if not a.check:
-        ap.error('要做什么？--check 跑配装来回比对，--classify 给资料页分类')
+        ap.error('要做什么？--check 跑回环比对，--classify 给资料页分类')
     return check(a.only)
 
 

@@ -76,7 +76,9 @@ def build():
     for rel, ok in check_terms.sources():
         more = sorted(ok - known)
         if more:
-            extra[rel[len('references/'):-3]] = more
+            # 键是源稿的 _id：去掉 references/ 前缀与扩展名（配装是 .json，
+            # 别处是 .md），与 sync.py 的 id_of() 同一条。
+            extra[rel[len('references/'):].rsplit('.', 1)[0]] = more
     lines.append('pageClasses: {')
     lines += ['  %s: %s,' % (j(k), j(v)) for k, v in sorted(extra.items())]
     lines.append('},')

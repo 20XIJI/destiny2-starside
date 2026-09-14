@@ -13,7 +13,7 @@
     盘上新加一篇          → 推上去（库里没东西可丢，不算撞车）
 
 编辑台上通过的配装投稿也在这一步落盘：库里标了 ok=1 且带着 season 与 slug 的那些，
-盘上还没有就写成 references/builds/<season>/<slug>.md。**在线只能标状态，写盘只在
+盘上还没有就写成 references/builds/<season>/<slug>.json。**在线只能标状态，写盘只在
 本机**——那两截是路径，验在云函数（形状与查重），落在这里。
 
 只比 hash 不记基线的话，「不同」永远推不出方向：那样一次 --push 就会把线上刚
@@ -39,6 +39,7 @@ import urllib.error
 import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import migrate
 import shell
 
 ROOT = shell.ROOT
@@ -89,18 +90,33 @@ def sha1(text):
     return hashlib.sha1(text.encode()).hexdigest()
 
 
+def is_build(doc_id):
+    """配装那一档。它的源稿是结构化记录，别处仍是 markdown。"""
+    return doc_id.startswith('builds/')
+
+
 def id_of(path):
-    """绝对路径 → 库里的 _id。"""
-    return os.path.relpath(path, REFS)[:-3].replace(os.sep, '/')
+    """绝对路径 → 库里的 _id。扩展名不进 _id：配装是 .json，别处是 .md。"""
+    rel = os.path.relpath(path, REFS).replace(os.sep, '/')
+    return rel.rsplit('.', 1)[0]
 
 
 def path_of(doc_id):
     """库里的 _id → 绝对路径。**必须落在 references/ 之内**，realpath 挡穿越——
     _id 从库里来，而库是联网的那一侧。"""
-    p = os.path.realpath(os.path.join(REFS, doc_id + '.md'))
+    ext = '.json' if is_build(doc_id) else '.md'
+    p = os.path.realpath(os.path.join(REFS, doc_id + ext))
     if not p.startswith(REFS + os.sep):
         raise RuntimeError('这个 _id 指到 references/ 外面去了：%s' % doc_id)
     return p
+
+
+def as_source(doc_id, text):
+    """投稿那一侧递过来的是 markdown，落盘要的是记录。别处原样。
+
+    **只有这一处认 markdown**，而且只在「读者投稿」这条入口上：填表页导出的那份
+    文本要能粘回去。库里与盘上都存记录本身，不做第二次转换。"""
+    return migrate.dump(migrate.parse(text)) if is_build(doc_id) else text
 
 
 def on_disk():
@@ -114,7 +130,7 @@ def on_disk():
         if not os.path.isdir(d):
             continue
         for name in sorted(os.listdir(d)):
-            if name.endswith('.md'):
+            if name.endswith(('.md', '.json')):
                 p = os.path.join(d, name)
                 with open(p, encoding='utf-8') as f:
                     out[id_of(p)] = f.read()
@@ -162,7 +178,7 @@ def send(doc_id, md):
 
 
 def land(subs, dropped=()):
-    """编辑台上通过的投稿 → references/builds/<season>/<slug>.md。
+    """编辑台上通过的投稿 → references/builds/<season>/<slug>.json。
 
     只写盘上还没有的那些：重跑一次不该把已经改过的源稿按投稿原文盖回去。
 
@@ -190,7 +206,7 @@ def land(subs, dropped=()):
         if not md.startswith('# '):
             print('  ? 投稿 %s 首行不是配装名，跳过' % sub['_id'])
             continue
-        put(p, md)
+        put(p, as_source('builds/%s/%s' % (season, slug), md))
         wrote.append('builds/%s/%s' % (season, slug))
         print('已落盘配装 %s' % wrote[-1], flush=True)
     if wrote:
@@ -322,6 +338,7 @@ def sync():
         # 走「全忽略 + 白名单」，.remote 不是 .md，不会入库。
         for doc_id in stuck:
             if doc_id in db:
+                # 旁置的那一份留 markdown：它是给人比对用的，不是源稿。
                 put(path_of(doc_id) + '.remote', db[doc_id])
         print('\n冲突 %d 篇：这些源稿未改动；其他已完成项见上方回执' % len(stuck))
         for doc_id in stuck:

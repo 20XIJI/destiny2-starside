@@ -8,6 +8,7 @@
 一种源稿格式不划算。改了这里的署名或免责声明，首页要跟着改，闸门会提醒。
 """
 
+import json
 import os
 import re
 
@@ -48,11 +49,12 @@ def pages():
         if not season.startswith(SEASON + '-'):
             continue
         for name in sorted(os.listdir(os.path.join(BUILD_DIR, season))):
-            if not name.endswith('.md'):
+            if not name.endswith('.json'):
                 continue
-            detail.append('builds/%s/%s/index.html' % (SEASON, name[:-3]))
+            detail.append('builds/%s/%s/index.html' % (SEASON, name[:-5]))
             with open(os.path.join(BUILD_DIR, season, name), encoding='utf-8') as f:
-                if re.search(r'^合集：是$', f.read(), re.M):
+                # 配装源稿是结构化记录：合集的判据是「成员」非空，不再扫文本。
+                if json.load(f).get('成员'):
                     has_set = True
     out.append('builds/index.html')
     if has_set:

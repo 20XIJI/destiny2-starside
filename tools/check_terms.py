@@ -199,6 +199,9 @@ KEEP = ['削弱清敌', 'Destiny 2: Boss Damage', '吞食裂缝',
 
 
 def read(path):
+    # 配装源稿是结构化记录，就按它本身检——**不渲染回 markdown 再用正则扫**，
+    # 那等于拿一份派生文本当源稿。着色标记写在记录的字符串值里，正则照样找得到，
+    # 报错行号指的也是源稿自己那一行。
     with open(os.path.join(shell.ROOT, path), encoding='utf-8') as f:
         return f.read()
 
@@ -263,7 +266,7 @@ def sources():
         if not os.path.isdir(d):
             continue
         for name in sorted(os.listdir(d)):
-            if name.endswith('.md'):
+            if name.endswith('.json'):
                 out.append(('references/builds/%s/%s' % (season, name), build_ok))
     return out
 

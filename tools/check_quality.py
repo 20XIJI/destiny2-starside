@@ -29,6 +29,7 @@ import urllib.request
 import check_terms
 import items
 import markup
+import migrate
 
 sys.dont_write_bytecode = True
 TOOLS = Path(__file__).resolve().parent
@@ -351,6 +352,26 @@ class ArtifactPicker(unittest.TestCase):
                             % (name, sep, mods[0][1]))
 
 
+def prose_of(rec, where=''):
+    """一条配装记录里的散文：[(字段名, 正文)]，合集的成员一并走。"""
+    out = []
+    for key in items.PROSE_FIELDS:
+        if rec.get(key):
+            out.append((where + key, rec[key]))
+    for key in items.PROSE_SECTIONS:
+        node = (rec.get('节') or {}).get(key)
+        if node:
+            out.append((where + key, node))
+    for k, member in enumerate(rec.get('成员') or (), 1):
+        out += prose_of(member, '第%d套·' % k)
+    return out
+
+
+def as_record(md):
+    """夹具正文按 markdown 写（一眼看得出形状），落盘是结构化记录。"""
+    return migrate.dump(migrate.parse(md))
+
+
 class Generated(unittest.TestCase):
     """入库的生成物与它们的来源对得上。
 
@@ -413,16 +434,17 @@ class BuildProseColors(unittest.TestCase):
                   banned=[(w, t[0]) for t in check_terms.TERMS for w in t[2]])
         seen, bad = 0, []
         for path in items.build_pages():
-            lines = Path(path).read_text(encoding='utf-8').splitlines()
-            for i, off in items.prose_spans(lines).items():
-                text = lines[i][off:]
-                if '{' not in text:
-                    continue
-                seen += 1
-                if items.normalize_text(markup.uncolor(text), **kw)[0] != text:
-                    bad.append('%s:%d' % (os.path.relpath(path, items.shell.ROOT), i + 1))
+            rec = migrate.load(path)
+            for label, text in prose_of(rec):
+                for i, line in enumerate(text.split('\n'), 1):
+                    if '{' not in line:
+                        continue
+                    seen += 1
+                    if items.normalize_text(markup.uncolor(line), **kw)[0] != line:
+                        bad.append('%s %s:%d'
+                                   % (os.path.relpath(path, items.shell.ROOT), label, i))
         # 一行都没读到时这条也是全绿：配装源稿挪了地方就当场报出来。
-        self.assertGreater(seen, 100, '只读到 %d 行带着色的配装散文，路径变了？' % seen)
+        self.assertGreater(seen, 100, '只读到 %d 行带着色的配装散文，字段变了？' % seen)
         self.assertEqual(bad, [], '剥掉标记再补色补不回原样：\n  ' + '\n  '.join(bad))
 
 
@@ -627,23 +649,27 @@ class Deployment(Isolated):
 
 class Deletion(Isolated):
     ID = 'builds/s29-fixture/one-hunter'
-    A = '# A\n'
-    B = '# B\n'
+    # 配装的源稿是结构化记录：盘上与库里存的都是它。投稿那一侧递过来的仍是
+    # 填表页导出的 markdown，由 sync.as_source() 在入口处转成记录。
+    A_MD = '# A\n'
+    B_MD = '# B\n'
+    A = migrate.dump(migrate.parse(A_MD))
+    B = migrate.dump(migrate.parse(B_MD))
 
     def setUp(self):
         super().setUp()
         self.replace(sync, 'ROOT', str(self.root))
         self.replace(sync, 'REFS', str(self.root / 'references'))
         self.replace(sync, 'BASE', str(self.root / '.git/starside-sync.json'))
-        self.path = self.file('references/' + self.ID + '.md', self.A)
+        self.path = self.file('references/' + self.ID + '.json', self.A)
         self.file('.git/starside-sync.json', json.dumps({self.ID: sync.sha1(self.A)}))
         self.db = {self.ID: self.A}
         self.landed = {self.ID: sync.sha1(self.A)}
         self.subs = [
             {'_id': 'approved', 'ok': 1, 'drop': 0, 'season': 's29-fixture',
-             'slug': 'one-hunter', 'md': self.A},
+             'slug': 'one-hunter', 'md': self.A_MD},
             {'_id': 'delete', 'ok': 1, 'drop': 1, 'season': 's29-fixture',
-             'slug': 'one-hunter', 'md': self.A},
+             'slug': 'one-hunter', 'md': self.A_MD},
         ]
         self.calls = []
         self.fail_drop = False
@@ -735,7 +761,7 @@ class Deletion(Isolated):
         self.assertEqual(sync.baseline(), {})
 
     def test_remote_failure_keeps_local_baseline_and_remote_sidecar(self):
-        sidecar = self.file('references/' + self.ID + '.md.remote', 'compare')
+        sidecar = self.file('references/' + self.ID + '.json.remote', 'compare')
         self.fail_drop = True
         with self.assertRaisesRegex(RuntimeError, 'injected drop'):
             sync.take([self.ID], False)
@@ -765,7 +791,7 @@ class Deletion(Isolated):
     def test_mine_rejects_every_deletion_before_restoring(self):
         self.changed()
         self.subs.append(dict(self.subs[-1], _id='delete-again'))
-        sidecar = self.file('references/' + self.ID + '.md.remote', self.A)
+        sidecar = self.file('references/' + self.ID + '.json.remote', self.A)
         sync.take([self.ID], True)
         actions = [a for a, _ in self.calls if a in ('mark', 'push')]
         self.assertEqual(actions, ['mark', 'mark', 'push'])
@@ -780,7 +806,7 @@ class Deletion(Isolated):
         self.changed()
         self.subs.append(dict(self.subs[-1], _id='delete-again'))
         self.fail_mark = 'delete-again'
-        sidecar = self.file('references/' + self.ID + '.md.remote', self.A)
+        sidecar = self.file('references/' + self.ID + '.json.remote', self.A)
         with self.assertRaisesRegex(RuntimeError, 'injected mark'):
             sync.take([self.ID], True)
         self.assertEqual(self.db[self.ID], self.A)
@@ -791,7 +817,7 @@ class Deletion(Isolated):
 
     def test_theirs_explicitly_accepts_delete_despite_local_edits(self):
         self.changed()
-        sidecar = self.file('references/' + self.ID + '.md.remote', self.A)
+        sidecar = self.file('references/' + self.ID + '.json.remote', self.A)
         sync.take([self.ID], False)
         self.assertFalse(self.path.exists())
         self.assertFalse(sidecar.exists())
@@ -960,15 +986,20 @@ class Generation(Isolated):
            '场景：突袭\n强度：强力\n\n' + SOLO + '\n'
            + SOLO.replace('# 示例\n', '# 第二套\n', 1))
 
+    def build_file(self, path, md):
+        """配装夹具：正文仍按 markdown 写（那样一眼看得出形状），落盘是结构化
+        记录。两种形态一一对应，由 migrate.py --check 钉着。"""
+        return self.file(path, migrate.dump(migrate.parse(md)))
+
     def setUp(self):
         super().setUp()
         self.replace(build.shell, 'ROOT', str(self.root))
         self.replace(build, 'SRC_DIR', str(self.root / 'references/builds'))
         self.replace(build, 'SEASON', 's29')
         self.replace(sys, 'argv', ['convert-build.py'])
-        self.file('references/builds/s29-fixture/alpha-hunter.md', self.SOLO)
-        self.beta = self.file('references/builds/s29-fixture/beta-hunter.md', self.SOLO)
-        self.file('references/builds/s28-history/history-hunter.md', self.SOLO)
+        self.build_file('references/builds/s29-fixture/alpha-hunter.json', self.SOLO)
+        self.beta = self.build_file('references/builds/s29-fixture/beta-hunter.json', self.SOLO)
+        self.build_file('references/builds/s28-history/history-hunter.json', self.SOLO)
         self.orphan = self.file('builds/s29/orphan-hunter/index.html', 'orphan')
         self.unknown = self.file('builds/s29/orphan-hunter/notes.txt', 'keep unknown')
         self.file('builds/s29/orphan-hunter/style.css', 'keep style')
@@ -1035,9 +1066,9 @@ class Generation(Isolated):
         for md, missing, title in ((self.SOLO.replace('超能：测试超能\n', '').replace('核心：测试超能', '核心：测试套装'), '超能', '示例'),
                                    (self.SET.replace('# 第二套\n推荐人：示例作者\n描述：示例说明\n更新：2026.9.5\n场景：突袭\n标签：输出\n分支：烈日\n',
                                                      '# 第二套\n推荐人：示例作者\n描述：示例说明\n更新：2026.9.5\n场景：突袭\n标签：输出\n'), '分支', '第二套')):
-            self.beta.write_text(md)
+            self.beta.write_text(as_record(md))
             error = self.exits(build.main)
-            self.assertIn('references/builds/s29-fixture/beta-hunter.md', error)
+            self.assertIn('references/builds/s29-fixture/beta-hunter.json', error)
             self.assertIn(missing, error)
             self.assertIn(title, error)
 
@@ -1057,7 +1088,7 @@ class Generation(Isolated):
 
     def test_normalization_does_not_rescue_unknown_equipment(self):
         self.replace(items.shell, 'BUILD_DIR', str(self.root / 'references/builds'))
-        self.beta.write_text(self.SOLO.replace('测试超能', '不存在的装备'),
+        self.beta.write_text(as_record(self.SOLO.replace('测试超能', '不存在的装备')),
                              encoding='utf-8')
         before = self.beta.read_bytes()
         with patch.object(items.shell, 'ROOT', str(TOOLS.parent)):
@@ -1070,7 +1101,7 @@ class Generation(Isolated):
 
 
     def test_full_generation_prunes_only_orphan_html_across_all_seasons(self):
-        self.beta.write_text(self.SET, encoding='utf-8')
+        self.beta.write_text(as_record(self.SET), encoding='utf-8')
         self.home(True)
         build.main()
         self.assertFalse(self.orphan.exists())
@@ -1093,14 +1124,15 @@ class Generation(Isolated):
         不一致时，一份进得了库的源稿卡住整次构建，而卡住的那一篇与改动无关。
         """
         self.replace(sys, 'argv', ['convert-build.py', 'beta-hunter'])
-        self.beta.write_text(self.SOLO.replace('神器：测试神器\n模组：\n', ''),
+        self.beta.write_text(as_record(self.SOLO.replace('神器：测试神器\n模组：\n', '')),
                              encoding='utf-8')
         build.main()
         page = (self.root / 'builds/s29/beta-hunter/index.html').read_text()
         self.assertNotIn('神器模组', page)
 
-        self.beta.write_text(self.SOLO.replace('神器：测试神器\n', '')
-                             .replace('模组：', '模组：测试模组'), encoding='utf-8')
+        self.beta.write_text(as_record(self.SOLO.replace('神器：测试神器\n', '')
+                                       .replace('模组：', '模组：测试模组')),
+                             encoding='utf-8')
         error = self.exits(build.main)
         self.assertIn('神器', error)
         self.assertIn('示例', error)
@@ -1123,16 +1155,16 @@ class Generation(Isolated):
         self.assertEqual(self.orphan.read_text(), 'orphan')
 
     def test_empty_sources_do_not_clear_existing_site(self):
-        for path in (self.root / 'references/builds').glob('*/*.md'):
+        for path in (self.root / 'references/builds').glob('*/*.json'):
             path.unlink()
         self.exits(build.main)
         self.assertEqual(self.orphan.read_text(), 'orphan')
 
     def test_last_set_removal_enforces_home_gate_then_removes_link(self):
-        self.beta.write_text(self.SET, encoding='utf-8')
+        self.beta.write_text(as_record(self.SET), encoding='utf-8')
         self.home(True)
         build.main()
-        self.beta.write_text(self.SOLO, encoding='utf-8')
+        self.beta.write_text(as_record(self.SOLO), encoding='utf-8')
         # 留一个孤儿，确认首页闸门失败时也不能开始详情清理。
         self.file('builds/s29/orphan-hunter/index.html', 'orphan')
         message = self.exits(build.main)
@@ -1147,7 +1179,7 @@ class Generation(Isolated):
         self.assertIn('href="new/index.html"', (self.root / 'builds/index.html').read_text())
 
     def test_old_season_set_stays_without_creating_current_set_entry(self):
-        self.file('references/builds/s28-history/history-hunter.md', self.SET)
+        self.build_file('references/builds/s28-history/history-hunter.json', self.SET)
         build.main()
         self.assertTrue((self.root / 'builds/s28/history-hunter/index.html').is_file())
         self.assertFalse((self.root / 'builds/sets/index.html').exists())
@@ -1233,9 +1265,10 @@ class Normalization(Isolated):
               '### 装填\n能量球\n## 武器\n传说武器：装填\n'
               '# 第二套装填\n描述：能量球\n## 护甲\n头盔：重型弹药搜寻者\n'
               '## 注解\n能量球\n')
-        path = self.file('references/builds/s29-fixture/set.md', md)
+        path = self.file('references/builds/s29-fixture/set.json', as_record(md))
         items.apply_builds()
-        self.assertEqual(path.read_text(), md.replace('能量球', '{orb|能量球}'))
+        self.assertEqual(path.read_text(),
+                         as_record(md.replace('能量球', '{orb|能量球}')))
 
     def test_table_identity_whitespace_and_idempotence(self):
         md = ('# 装填\r\n列组：装填 = 能量球\r\n## 正文\r\n'

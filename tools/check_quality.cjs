@@ -853,18 +853,33 @@ test('a live build whose body did not come back never falls back to the submissi
 // ——那一行长到把配装名挤成一个省略号，而填表页那一侧 lacking() 非空即 return，
 // 这几份合集一个字都改不回去。三道闸门与 npm test 当时全绿。
 function buildSources() {
-  const dir = path.join(root, 'references/builds')
+  // 源稿是结构化记录，而填表页与审核台认的是 markdown。**读产出里那段导出文本**，
+  // 不读源稿：生成器交给填表页的正是它（<pre id="src"> / <pre class="src">），
+  // 这条测试问的也正是「表单接不接受生成器给它的那一份」。
+  const dir = path.join(root, 'builds')
   const out = []
   for (const season of fs.readdirSync(dir)) {
     const sd = path.join(dir, season)
-    if (!fs.statSync(sd).isDirectory()) continue
-    for (const file of fs.readdirSync(sd).filter((x) => x.endsWith('.md'))) {
-      out.push([file, fs.readFileSync(path.join(sd, file), 'utf8')])
+    if (!/^s\d+$/.test(season) || !fs.statSync(sd).isDirectory()) continue
+    for (const slug of fs.readdirSync(sd)) {
+      const page = path.join(sd, slug, 'index.html')
+      if (!fs.existsSync(page)) continue
+      const html = fs.readFileSync(page, 'utf8')
+      const blocks = html.match(/<pre (?:id="src"|class="src") hidden>([^]*?)<\/pre>/g) || []
+      blocks.forEach((block, i) => {
+        const body = block.replace(/^<pre [^>]*>/, '').replace(/<\/pre>$/, '')
+        out.push([`${slug}${blocks.length > 1 ? '#' + (i + 1) : ''}`, unescapeHtml(body)])
+      })
     }
   }
   // 光「一条都没报」不够：读不到源稿时零命中也是全绿。
-  assert.ok(out.length > 50, `references/builds 下只读到 ${out.length} 篇源稿，路径变了？`)
+  assert.ok(out.length > 50, `builds/ 下只读到 ${out.length} 段导出文本，路径变了？`)
   return out
+}
+
+function unescapeHtml(text) {
+  return text.replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&')
 }
 
 test('a source the build accepts is never reported as incomplete by the console', () => {
