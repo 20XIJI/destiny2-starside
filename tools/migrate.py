@@ -179,10 +179,7 @@ def write(rec):
 # 两者都不是名字的一部分。
 TIER_TAIL = re.compile(r'^[一二三]级\s*·\s*')
 BOLD = re.compile(r'\*\*([^*]+)\*\*')
-# 列标题与不具名的行（「序号」「光等差」这一类），它们本来就不指向任何东西。
-NOT_A_NAME = frozenset({
-    '武器', '名称', '金装', '变量', '标记', '技能', '名字', '效果', '模组', '部位',
-    '属性', '类型', '套装', '来源', '分组', '序号', '副本名称', '光等差'})
+SEPARATOR = re.compile(r'^\|[\s|:-]+\|?\s*$')
 
 
 def row_title(cell):
@@ -198,21 +195,26 @@ def strip_markup(text):
 
 
 def row_titles(path):
-    out = []
+    """一页里所有行标题。
+
+    **表头按结构认，不按名字认**：下一行是 `|---|` 的那一行就是表头。列名各页不同
+    （「武器」「名字」「PERK」「光等差」），列一张名单永远漏，而分隔行的位置是确定的。"""
     with open(path, encoding='utf-8') as f:
-        for raw in f:
-            line = raw.rstrip('\n')
-            if line.startswith('### '):
-                out.append(row_title(line[4:]))
-                continue
-            spans = markup.cells(line)
-            if not spans or len(spans) < 2:
-                continue
-            name = row_title(line[spans[0][0]:spans[0][1]])
-            if (not name or name in NOT_A_NAME or name.startswith('==')
-                    or set(name) <= set('-')):
-                continue
-            out.append(name)
+        lines = f.read().split('\n')
+    out = []
+    for i, line in enumerate(lines):
+        if line.startswith('### '):
+            out.append(row_title(line[4:]))
+            continue
+        spans = markup.cells(line)
+        if not spans or len(spans) < 2:
+            continue
+        if i + 1 < len(lines) and SEPARATOR.match(lines[i + 1]):
+            continue
+        name = row_title(line[spans[0][0]:spans[0][1]])
+        if not name or name.startswith('==') or set(name) <= set('-'):
+            continue
+        out.append(name)
     return out
 
 
@@ -222,10 +224,27 @@ def classify():
     sys.path.insert(0, os.path.join(shell.ROOT, 'tools'))
     import resolve
     facts = resolve.Facts()
+    composite, effects = resolve.variants(), resolve.effects()
+    sources, hints = resolve.set_sources(), resolve.source_hints()
+
     known = {resolve.norm(v['n']['zh']) for v in facts.items.values()}
     known |= {resolve.norm(v['n']['zh']) for v in facts.effects.values()}
     known |= {resolve.norm(v['n']['zh']) for v in facts.stats.values()}
     known |= {resolve.set_key(s['name']['zh']) for s in facts.sets.values()}
+
+    def lands(name, page):
+        """这个名字落不落得到主键上。
+
+        有范围定义的页走解析器那一条，别名、派生、复刻消歧都算数；没有范围定义的
+        页（刷取清单、传说武器榜、技能冷却这些不进配装词表的）只问「这个名字在
+        事实层里存不存在」——分类要判的是「行标题是不是具名实体」，范围收窄是
+        精化，不是前提。"""
+        if page in resolve.SCOPES:
+            where, _ = resolve.classify(facts, name, page, composite, effects,
+                                        sources, hints)
+            return where in ('物品', '套装', '来源别名', '效果', '派生', '待指定')
+        name = resolve.ALIASES.get(name.strip(), name)
+        return resolve.norm(name) in known or resolve.set_key(name) in known
 
     docs = os.path.join(shell.ROOT, 'references', 'docs')
     paths = [os.path.join(docs, f) for f in sorted(os.listdir(docs)) if f.endswith('.md')]
@@ -233,10 +252,12 @@ def classify():
               for f in ('artifact-mods.md', 'armor-sets.md')]
     rows = []
     for path in paths:
+        slug = os.path.basename(path)[:-3]
+        # 六个元素页在词表里挂在 elements/ 下，别处按文件名即页名。
+        page = ('elements/%s' % slug) if 'elements/%s' % slug in resolve.SCOPES else slug
         names = row_titles(path)
-        hit = sum(1 for n in names
-                  if resolve.norm(n) in known or resolve.set_key(n) in known)
-        rows.append((os.path.basename(path)[:-3], len(names), hit))
+        hit = sum(1 for n in names if lands(n, page))
+        rows.append((slug, len(names), hit))
 
     groups = {'结构化': [], 'markdown': [], '无表格行': []}
     for name, total, hit in rows:
