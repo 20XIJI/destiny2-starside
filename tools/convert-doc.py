@@ -432,7 +432,7 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=
             band = 1
             continue
         row = []
-        stamp = ''
+        stamp = []
         if n:
             band ^= 1               # 每遇到一个新行标题翻一次
             attrs = ' scope="row"' + (' rowspan="%d"' % n if n > 1 else '')
@@ -442,7 +442,7 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=
             # **取渲染后那一格**，与索引里的名字同一份：源稿原文里格内换行还是
             # 字面的两个反斜杠，拿它去查源稿线索一个都对不上（复刻那几把就是这么漏的）。
             shown = text_of(row[0], collapse=True)
-            stamp = STAMP(shown) if STAMP else ''
+            stamp = STAMP(shown) if STAMP else []
             if STAMP and not stamp:
                 # 整行写的是一个组合（「复兴\\噬星者」「故我在\\（意外缓刑）\\涡流」），
                 # 格内换行把它切成几截。合起来查不到时逐截查，取并集。
@@ -465,9 +465,8 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=
             # 名字取**渲染后**那一格，不取源稿原文：着色标记要剥掉、格内换行已经
             # 变成 <br>，与 vocab 从产出的 <th> 取文那一份才对得上。
             index_row(DEX, row[0], stamp, body, lane)
-        o.append('<tr%s%s%s>%s</tr>'
-                 % (mark, stamp, ' data-band="%d"' % band if banded else '',
-                    body))
+        o.append('<tr%s%s>%s</tr>'
+                 % (mark, ' data-band="%d"' % band if banded else '', body))
     o += ['</tbody>', '</table>']
     return o
 
@@ -477,7 +476,7 @@ def index_row(dex, title, stamp, body, lane):
     anchor, label = SECTION
     mine, theirs = ((), ()) if PAGE in pagedex.NO_DESC else pagedex.split_spirit(pagedex.tds(body))
     icon = pagedex.IMG.search(body)
-    key = stamp[len(' data-hash="'):-1] if stamp else ''
+    key = ' '.join(stamp)
     dex.add(hash=key, anchor=anchor, kind=lane or label,
             name=text_of(title, collapse=True),
             icon='%s/%s' % (PAGE, icon.group(1)) if icon else '',
@@ -487,8 +486,7 @@ def index_row(dex, title, stamp, body, lane):
     # **中间那一条也要自己的主键**：它是另一件东西，不是行标题那件的别名。
     for name, ico in pagedex.SPIRIT.findall(body):
         shown = text_of(name, collapse=True)
-        mark = STAMP(shown) if STAMP else ''
-        dex.add(hash=mark[len(' data-hash="'):-1] if mark else '',
+        dex.add(hash=' '.join(STAMP(shown) if STAMP else []),
                 anchor=anchor, kind=lane or label, name=shown,
                 icon='%s/%s' % (PAGE, ico), desc=pagedex.wrap(*pagedex.panel(theirs)))
 

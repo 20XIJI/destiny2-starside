@@ -28,10 +28,12 @@ EXTRA = ('assets/search.js', 'builds/vocab.js', 'builds/desc.js',
 # 允许的差异：把新那一行按这几条抹平之后，必须与旧那一行逐字相同。
 # 每一条都要写清楚它是哪一步引入的，以及为什么旧版没有。
 ALLOWED = (
-    # Q13：产出的表格行、模组与套装戳上主键，vocab 从此读主键不再按名字猜。
+    # 行、模组与套装上曾经戳过一位 data-hash。主键的去处是 data/index/<页>.json，
+    # 产出里那一份没有任何读者，本轮去掉。规则两侧都跑，所以带属性的旧产出与
+    # 不带属性的新产出在这里相等。
     (re.compile(r'(<(?:tr|article)\b[^>]*?) data-hash="[^"]*"'), r'\1',
-     '阶段 4 给行、模组与套装戳主键'),
-    # <main> 上那个 data-hash 是源稿 sha1，与行上的主键不是一回事，改名让两者分开。
+     '行级主键只进索引，不写进 HTML'),
+    # <main> 上那个 data-hash 是源稿 sha1，本轮改名让它与主键这个词分开。
     (re.compile(r'(<main\b[^>]*?) data-src-hash='), r'\1 data-hash=',
      '<main> 的源稿 sha1 改名为 data-src-hash'),
 )

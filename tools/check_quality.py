@@ -431,7 +431,7 @@ class BuildProseColors(unittest.TestCase):
     def test_stripping_then_normalizing_restores_every_build(self):
         terms, _ = items.load()
         kw = dict(terms=terms, names=sorted(terms, key=len, reverse=True),
-                  banned=[(w, t[0]) for t in check_terms.TERMS for w in t[2]])
+                  banned=check_terms.banned_pairs())
         seen, bad = 0, []
         for path in items.build_pages():
             rec = migrate.load(path)
@@ -976,6 +976,89 @@ class SyncErrors(Isolated):
         self.assertEqual(waits, [0.3, 1, 3, 8])
 
 
+class BadSubmission(Isolated):
+    """一篇解析不了的投稿不许把整轮对账带走。
+
+    投稿的 markdown 在编辑台上改得动，而云函数那侧只校验首行以 `# ` 开头。改出
+    一个没登记的头部键，migrate.parse() 就 markup.die()。对账排在 deploy.py 发
+    文件之前且必须成功，所以那一篇会让整站发不出去，同一批里别的投稿也落不了盘。
+    """
+
+    SEASON = 's29-fixture'
+    GOOD = '# 好的\n推荐人：甲\n'
+    BAD = '# 坏的\n碎片1：这个键没登记\n'
+
+    def setUp(self):
+        super().setUp()
+        self.replace(sync, 'ROOT', str(self.root))
+        self.replace(sync, 'REFS', str(self.root / 'references'))
+        (self.root / 'references' / 'builds' / self.SEASON).mkdir(parents=True)
+
+    def subs(self, *pairs):
+        return [{'_id': 'sub-' + slug, 'ok': 1, 'drop': 0,
+                 'season': self.SEASON, 'slug': slug, 'md': md}
+                for slug, md in pairs]
+
+    def test_a_broken_submission_is_skipped_and_named(self):
+        wrote = sync.land(self.subs(('bad-hunter', self.BAD),
+                                    ('good-hunter', self.GOOD)))
+        self.assertEqual(wrote, ['builds/%s/good-hunter' % self.SEASON],
+                         '坏的那一篇应当跳过，好的那一篇照常落盘')
+        said = self.output.getvalue()
+        for want in ('sub-bad-hunter', 'builds/%s/bad-hunter' % self.SEASON, '碎片1'):
+            self.assertIn(want, said, '跳过要说清是哪一篇、为什么：%s' % said)
+        self.assertFalse((self.root / ('references/builds/%s/bad-hunter.json'
+                                       % self.SEASON)).exists(), '解析不了就不该留半截文件')
+
+    def test_other_failures_still_surface(self):
+        """只接 markup.die() 那一种中止，别的异常照旧抛出去，不许被这层吞掉。"""
+        def boom(*args, **kwargs):
+            raise RuntimeError('别的毛病')
+        self.replace(sync, 'as_source', boom)
+        with self.assertRaises(RuntimeError):
+            sync.land(self.subs(('good-hunter', self.GOOD)))
+
+
+class EntityClash(unittest.TestCase):
+    """同一页两行落到同一个主键上时，后一行不许静默盖掉前一行。
+
+    从前 `block[col] = val` 直接覆盖：购物清单上「陨落铡刀」两行（两张图、一行 S
+    一行 D）都解析到 1815105249，站上就只剩 D，没有任何人知道 S 那一行去哪了。
+    现在留先出现的那一行并把撞车报出来，条数由 CLASH_BASELINE 钉着。
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.ent = load('quality_entities', 'entities.py')
+        cls.recs, cls.missed, cls.clash = cls.ent.collect()
+
+    def test_clashes_are_reported_not_swallowed(self):
+        self.assertLessEqual(
+            len(self.clash), self.ent.CLASH_BASELINE,
+            '撞车涨了，又多丢了作者记录：%s'
+            % [(c[0], c[2], c[4]) for c in self.clash[self.ent.CLASH_BASELINE:]])
+
+    def test_every_clash_names_both_rows(self):
+        """报出来的每一条都要说清是哪一页、哪个主键、留了谁、丢了谁。
+
+        两行标题相同是允许的（刷取清单上「食莲者」新旧两版就是这样），那正是
+        PINNED 分不开它们的原因；字段一个都不许空，否则报告没法据以排查。
+        """
+        for row in self.clash:
+            self.assertEqual(len(row), 5, '撞车报告的形状变了：%r' % (row,))
+            for part in row:
+                self.assertTrue(str(part).strip(), '撞车报告缺字段：%r' % (row,))
+
+    def test_the_first_row_is_the_one_kept(self):
+        """留先出现的那一行——源稿的行序就是那一页自己的排序。"""
+        rows = {p: [self.ent.shown(t) for t, _ in self.ent.rows_of(p)]
+                for p in {c[0] for c in self.clash}}
+        for page, _head, _name, first, second in self.clash:
+            order = rows[page]
+            self.assertLessEqual(order.index(first), order.index(second),
+                                 '%s 留下的「%s」排在丢掉的「%s」后面' % (page, first, second))
+
+
 class Generation(Isolated):
     SOLO = ('# 示例\n推荐人：示例作者\n描述：示例说明\n更新：2026.9.5\n'
             '场景：突袭\n标签：输出\n分支：烈日\n强度：强力\n核心：测试超能\n\n## 职业\n'
@@ -1208,7 +1291,7 @@ class Normalization(Isolated):
         self.replace(items.shell, 'ROOT', str(self.root))
         self.replace(items.shell, 'BUILD_DIR', str(self.root / 'references/builds'))
         self.kw = dict(terms=terms, names=sorted(terms, key=len, reverse=True),
-                       banned=[(w, t[0]) for t in check_terms.TERMS for w in t[2]])
+                       banned=check_terms.banned_pairs())
         self.doc = self.file('references/docs/fixture.md', '# 示例\n\n## 正文\n')
 
     def test_unknown_targets_fail_without_writes_or_success_summary(self):
@@ -1323,6 +1406,55 @@ class Normalization(Isolated):
         self.assertTrue(any('unknown' in error for error in bad), bad)
         doc = load('quality_doc', 'convert-doc.py')
         self.exits(lambda: doc.wrap('p', '{orb|能量球'))
+
+
+class WeaponOrder(unittest.TestCase):
+    """武器库索引的两条排版约定，都是「错了页面照样好看」的那一类。
+
+    一条枪排错位置、一把枪拆成两张卡片，肉眼都要一张张数才看得出来，而它们
+    正是读者开屏第一眼看到的东西。判据从 build-weapons.py 自己那几个函数取，
+    不在这里另写一份刻度。
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.bw = load('quality_weapons', 'build-weapons.py')
+        text = (TOOLS.parent / 'weapons' / 'data.js').read_text(encoding='utf-8')
+        cls.rows = json.loads(text[text.index('=') + 1:].strip().rstrip(';'))['w']
+
+    def key(self, row):
+        """与 payload() 排序用的那一把钥匙同义：各家档位的平均，评过的家数多的在前。"""
+        got = [self.bw.rank_of(v) for v in row['r'].values()]
+        got = [g for g in got if g is not None]
+        if not got:
+            return (self.bw.UNRATED, 0, self.bw.UNRATED)
+        return (sum(got) / len(got), -len(got), min(got))
+
+    def test_the_index_is_ordered_by_both_authors_at_once(self):
+        keys = [self.key(row) for row in self.rows]
+        bad = [i for i in range(1, len(keys)) if keys[i] < keys[i - 1]]
+        self.assertFalse(bad, '索引第 %s 条排在了比它差的那一档后面，跑一次 '
+                              'python3 tools/build-weapons.py' % (bad[:3],))
+
+    def test_the_best_of_every_scale_comes_first(self):
+        """不写死「两家」：作者表加一位就该跟着走，而不是让这条以误导的话失败。"""
+        top = self.key(self.rows[0])
+        self.assertEqual(top[0], 0, '开屏第一把不是各家都给了最高档的那一把')
+        most = min(self.key(row)[1] for row in self.rows)
+        self.assertEqual(top[1], most,
+                         '开屏第一把评过的家数不是最多的那一档（最多 %d 家）' % -most)
+
+    def test_one_weapon_gets_one_card(self):
+        """同名两条记录各带一家评级，就是两张卡片——collapse() 管的正是这个。"""
+        seen = {}
+        for row in self.rows:
+            if not row['r']:
+                continue
+            seen.setdefault(row['n'], []).append(sorted(row['r']))
+        split = {n: v for n, v in seen.items()
+                 if len(v) > 1 and len({w for one in v for w in one}) > 1
+                 and not any(set(a) & set(b) for a in v for b in v if a is not b)}
+        self.assertFalse(split, '这些枪被拆成了几张卡片，各带一家的评级：%s' % split)
 
 
 if __name__ == '__main__':

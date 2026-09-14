@@ -206,7 +206,19 @@ def land(subs, dropped=()):
         if not md.startswith('# '):
             print('  ? 投稿 %s 首行不是配装名，跳过' % sub['_id'])
             continue
-        put(p, as_source('builds/%s/%s' % (season, slug), md))
+        try:
+            body = as_source('builds/%s/%s' % (season, slug), md)
+        except SystemExit as why:
+            # 投稿的 markdown 在控制台里改得动，改出一个没登记的头部键，
+            # migrate.parse() 就 markup.die()。**不许让这一篇把整轮对账带走**：
+            # deploy.py 每次发文件之前无条件对一次账，对账停住即整站发不出去，
+            # 而同一批里别的投稿本来都是好的。这里跳过它并带上解析器的原话，
+            # 下一轮它还在库里，改对了自然落盘。只接 SystemExit——那是
+            # markup.die() 的信号，别的异常照旧抛出去。
+            print('  ? 投稿 %s（builds/%s/%s）解析不了，跳过：%s'
+                  % (sub['_id'], season, slug, why))
+            continue
+        put(p, body)
         wrote.append('builds/%s/%s' % (season, slug))
         print('已落盘配装 %s' % wrote[-1], flush=True)
     if wrote:

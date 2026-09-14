@@ -188,6 +188,16 @@ TERMS = [
     ('仄', None, ['老九']),
 ]
 
+
+def banned_pairs():
+    """禁用写法 → 正名，摊平成一张对照表。
+
+    TERMS 的元组形状（`t[0]` 正名、`t[2]` 禁用写法）只由这一个函数知道。
+    从前 build-weapons、items 与两处回归各自把这句推导抄了一遍，改 TERMS 的
+    结构要同时动四个文件。
+    """
+    return [(w, t[0]) for t in TERMS for w in t[2]]
+
 # 游戏内的专有名词，字面撞上禁用写法时按原名放行。整条短语落在里面才算数，
 # 「削弱」单用照旧报错。
 KEEP = ['削弱清敌', 'Destiny 2: Boss Damage', '吞食裂缝',

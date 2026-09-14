@@ -3,7 +3,16 @@
 :root {
   --wrap: 1500px;
   --min: 320px;
-  --accent: var(--c-legend);
+  /* **强调色去饱和**。design.md 一节：整页唯一的饱和色来自游戏自身的编码。
+     这一页满屏都是元素色、弹药色、勇士红与异域金，全是那种编码；把 --accent
+     接到传说紫上，焦点环、卡片悬停、选中态、数值条与评级值就一起变成同一支洋红
+     ——它既不是元素编码，也不再是稀有度编码（稀有度只该落在「传说武器」那一枚
+     标签片上），只是把整页染了一遍，把真正带信息的那些颜色淹掉。
+     接回骨白之后，强调靠亮度与字重，与 design.md 二节一致。 */
+  --accent: var(--bone-hi);
+  /* 数值条分段的三档明度。同一支骨白，浓度即「这一段是谁加的」。 */
+  --bar-base: #ffffffb8;
+  --bar-plug: #ffffff59;
 }
 
 /* ── 搜索框 ── */
@@ -11,30 +20,32 @@
   margin: 0 0 14px;
 }
 
-.wpn-find input,
-.wpn-mod-find {
+.wpn-find input {
   box-sizing: border-box;
-  padding: 10px 12px;
+  width: 100%;
+  max-width: 420px;
+  padding: 7px 11px;
   font: inherit;
   color: var(--bone-hi);
   background: var(--field-fill);
   border: 1px solid var(--hair-lit);
   border-radius: 4px;
+  transition: border-color .14s ease;
 }
 
-.wpn-find input {
-  width: 100%;
+.wpn-find input:hover {
+  border-color: var(--bone-faint);
 }
 
-.wpn-find input::placeholder,
-.wpn-mod-find::placeholder {
-  color: var(--bone-faint);
-}
-
-.wpn-find input:focus-visible,
-.wpn-mod-find:focus-visible {
+.wpn-find input:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wpn-find input {
+    transition: none;
+  }
 }
 
 /* sprite 只是一堆 symbol 的仓库，不占版面。 */
@@ -54,7 +65,15 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px 14px;
-  margin: 0 0 12px;
+  align-items: center;
+  margin: 0 0 10px;
+}
+
+/* 视图开关顶到筛选条那一行的最右端。 */
+.wpn-view {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
 }
 
 .wpn-facet {
@@ -65,20 +84,40 @@
 }
 
 .wpn-facet-name {
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   letter-spacing: .12em;
 }
 
-.wpn-facet-one {
+/* 开关的高度只由文字那一行决定：图标槽写死 14×14（位图）与 18×13（SVG），
+   下拉那一枚的 <summary> 同样吃 min-height。三种内容因此排得齐。 */
+.wpn-facet-one,
+.wpn-facets .drop > summary {
   display: inline-flex;
-  gap: 5px;
+  gap: 6px;
   align-items: center;
+  min-height: 28px;
+  transition: border-color .14s ease, color .14s ease;
 }
 
+.wpn-facet-one .wpn-tag-ico {
+  width: 14px;
+  height: 14px;
+}
+
+/* SVG 自己按 preserveAspectRatio 在这个槽里居中缩放，扁的宽的都不变形。 */
+.wpn-facet-one .wpn-tag-svg {
+  width: 18px;
+  height: 13px;
+  max-width: none;
+}
+
+/* 末尾那个数右对齐等宽：不等宽时同一列的数字左右跳，按钮看着也不齐。 */
 .wpn-facet-one em {
   font-style: normal;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font-variant-numeric: tabular-nums;
+  min-width: 2.4em;
+  text-align: right;
 }
 
 .wpn-facet-one.none {
@@ -87,20 +126,6 @@
 
 .wpn-facet-clear {
   margin-left: 4px;
-}
-
-/* 计数与视图开关排在版心这一层：网格那一档没有左栏，计数藏在里面就看不见了。 */
-.wpn-bar {
-  display: flex;
-  gap: 12px;
-  align-items: baseline;
-  justify-content: space-between;
-  margin: 0 0 12px;
-}
-
-.wpn-view {
-  display: flex;
-  gap: 6px;
 }
 
 /* 三栏：结果 248 + 详情，详情里再切主栏与 300 的数值栏。两层嵌套而不是一层
@@ -125,28 +150,74 @@
    一行八张（1500px 版心下），每张自上而下：图标、名字、一行小图标、框架、评级。
    前四样照 destiny.report 的次序；评级那一行是站内比它多出来的，也是这一页存在
    的理由，所以留在卡片上而不是藏进详情。 */
+/* 一行**八张**，列宽由版心均分，不按 minmax 让浏览器自己数——auto-fill 在
+   1500px 版心下给出的是 8 张，窗口一窄就悄悄变成 7 张再变 6 张，每一档的卡片
+   宽度都不一样，图标与四行字的比例跟着漂。这里改成逐档写死：每一档的列数
+   是定的，读者缩窗口看到的是「一行少几张」，不是「每张都变形」。 */
 .wpn-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 14px 12px;
 }
 
+@media (max-width: 1200px) {
+  .wpn-cards { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}
+
+@media (max-width: 1040px) {
+  .wpn-cards { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (max-width: 720px) {
+  .wpn-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 480px) {
+  .wpn-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* 屏外的卡片不参与布局与绘制。铺满是 2208 张、四万多个元素，其中一千六百张
+   还各带一层 mix-blend-mode 的大师工作辉光，每一层都是一次独立的混合合成。
+   卡片子树里只有 span/img/strong/p/em/i/b，没有粘顶元素，paint containment 裁不到东西。
+   181px 是 1440px 宽下的卡片高，只是没渲染过时的初始估值，渲染过一次浏览器
+   就改用实测值。 */
 .wpn-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 181px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  padding: 12px 10px 10px;
+  padding: 14px 10px 11px;
   color: inherit;
   text-decoration: none;
   background: var(--panel-b);
   border: 1px solid var(--hair);
-  border-radius: 4px;
+  border-radius: 5px;
+  transition: border-color .14s ease, background-color .14s ease, transform .14s ease;
+  /* 四行三档字号：名字最重，小图标与框架次之，评级最轻。
+     全是正文那一档（15px/1.85）时四行一样重，扫的时候没有落点，
+     一张卡片还要 217px 高。 */
+  font-size: 12px;
+  line-height: 1.4;
 }
 
+/* 悬停：框提亮、底抬一档、整张上移 1px。只改边框那一版在一屏八十张卡片里
+   仍然不够显眼，而这三样都不占色相——design.md 二节，强调靠亮度与字重。 */
 .wpn-card:hover {
-  background: var(--tint-2);
-  border-color: var(--hair-lit);
+  border-color: var(--bone-faint);
+  background: var(--ink-lift);
+  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wpn-card {
+    transition: none;
+  }
+
+  .wpn-card:hover {
+    transform: none;
+  }
 }
 
 .wpn-card:focus-visible {
@@ -155,9 +226,13 @@
 }
 
 .wpn-card-name {
+  max-width: 100%;
+  font-size: 13px;
   font-weight: 600;
+  line-height: 1.3;
   text-align: center;
-  line-height: 1.25;
+  /* 最长的名字（IKELOS_SMG_v1.0.3）正好顶满内容盒：断得开就断，断不开就截。 */
+  overflow-wrap: anywhere;
 }
 
 .wpn-card-tags,
@@ -226,8 +301,8 @@
 
 /* ── 左栏：结果 ── */
 .wpn-count {
-  margin: 0 0 6px;
-  color: var(--bone-faint);
+  margin: 0;
+  color: var(--bone-dim);
   letter-spacing: .12em;
 }
 
@@ -452,9 +527,7 @@
 
 .wpn-stats h3,
 .wpn-sockets h3,
-.wpn-mods h3,
-.wpn-says h3,
-.wpn-alt h3 {
+.wpn-mods h3 {
   margin: 0 0 8px;
   color: var(--bone-dim);
 }
@@ -463,15 +536,32 @@
   margin: 0;
 }
 
-/* 整行可聚焦：悬停它出的是「这个数由哪几件东西凑成」，与悬停词条那一层分工不同。 */
+/* 整行可聚焦：悬停它出的是「这个数由哪几件东西凑成」，与悬停词条那一层分工不同。
+
+   条**独占第二行、横跨整宽**，槽宽因此与标签的字数无关，同一个 37 在每一行
+   都画成同样长。bar() 里的分母也是钉死的 100，两者一起保证跨行可比。 */
+.wpn-statlist {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
 .wpn-statrow {
   display: grid;
-  grid-template-columns: max-content minmax(0, 1fr);
-  gap: 4px 12px;
-  align-items: center;
-  padding: 1px 2px;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 5px 10px;
+  align-items: baseline;
+  padding: 5px 7px;
   border-radius: 3px;
   cursor: help;
+  transition: background-color .12s ease;
+}
+
+.wpn-stat-name {
+  color: var(--bone-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .wpn-statrow:hover {
@@ -483,26 +573,25 @@
   outline-offset: 0;
 }
 
-.wpn-statrow dt {
-  color: var(--bone-dim);
+@media (prefers-reduced-motion: reduce) {
+  .wpn-statrow {
+    transition: none;
+  }
 }
 
-.wpn-statrow dd {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin: 0;
-}
 
 /* ── 数值条 ──
    按来源分段，**只换明度不换色相**：design.md 写着整页唯一的饱和色来自游戏
    自身的编码，给「词条加的那一段」配一个蓝属于凭空造色。基础段最实，往后依次
-   变淡；负值段走斜纹，同样不靠红色。 */
+   变淡；负值段走斜纹，同样不靠红色。
+   段与段之间留一道 1px 的槽底色，不然两段浓度相近时看着是一整条。 */
 .wpn-rail {
   position: relative;
   display: flex;
-  flex: 1 1 auto;
+  gap: 1px;
+  grid-column: 1 / -1;
   height: 6px;
+  margin-top: 1px;
   background: var(--tint-2);
   border-radius: 3px;
   overflow: hidden;
@@ -511,11 +600,11 @@
 .wpn-seg {
   display: block;
   height: 100%;
-  background: color-mix(in oklab, var(--accent) 55%, transparent);
+  background: var(--bar-plug);
 }
 
 .wpn-seg.base {
-  background: var(--accent);
+  background: var(--bar-base);
 }
 
 .wpn-seg.neg {
@@ -523,10 +612,7 @@
     var(--bone-faint) 0 2px, transparent 2px 4px);
 }
 
-/* 不画条的那几项留一段等宽的空，数字才与上下对齐。 */
-.wpn-rail.bare {
-  background: none;
-}
+
 
 /* 悬停预览：主条底下另起一条，只画差额那一段。 */
 .wpn-ghost {
@@ -541,15 +627,13 @@
     var(--bone-hi) 0 2px, transparent 2px 4px);
 }
 
-.wpn-statrow dd b {
-  flex: none;
+.wpn-statrow b {
   min-width: 2.2em;
   text-align: right;
   font-weight: 600;
 }
 
 .wpn-next {
-  flex: none;
   min-width: 3em;
   font-style: normal;
   color: var(--bone-hi);
@@ -559,21 +643,35 @@
   color: var(--bone-dim);
 }
 
-/* 说明面板：点中那一枚讲什么。左缘一道强调色，与游戏里异域说明那一块同形。 */
+/* 固有那一块：这把枪是什么框架，常驻在 Perk 池下方，不跟着点击换内容。
+   左缘一道实线，与游戏里异域说明那一块同形。 */
 .wpn-note {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: flex-start;
-  margin-bottom: 12px;
-  padding: 10px 12px;
+  margin-top: 14px;
+  padding: 12px 14px;
   background: var(--tint-1);
-  border-left: 3px solid var(--accent);
+  border-left: 3px solid var(--bone-faint);
   border-radius: 0 4px 4px 0;
 }
 
 .wpn-note-ico {
   flex: none;
   border-radius: 50%;
+}
+
+.wpn-note-body {
+  min-width: 0;
+}
+
+/* 栏名写成一枚小牌子：它回答的是「这一段讲的是哪一栏」，不是标题的一部分。 */
+.wpn-note-tag {
+  padding: 0 6px 1px;
+  color: var(--ink);
+  background: var(--bone-dim);
+  border-radius: 2px;
+  letter-spacing: .08em;
 }
 
 .wpn-note p,
@@ -611,7 +709,7 @@
 }
 
 .wpn-col-name {
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   white-space: nowrap;
 }
 
@@ -626,14 +724,28 @@
   background: var(--tint-1);
   border: 1px solid var(--hair-lit);
   border-radius: 50%;
+  transition: border-color .14s ease, box-shadow .14s ease;
 }
 
 .wpn-plug img {
   border-radius: 50%;
 }
 
+/* 可选模组与大师杰作画成方格：它们是升满之后自己挑的，随时能换；圆格那些是
+   掉落时随机开出来的。形状分开，读者不必读栏名就知道哪些是自己说了算的。 */
+.wpn-mods .wpn-plug,
+.wpn-mods .wpn-plug img {
+  border-radius: 4px;
+}
+
 .wpn-plug:hover {
   border-color: var(--bone-dim);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wpn-plug {
+    transition: none;
+  }
 }
 
 .wpn-plug.on {
@@ -707,27 +819,63 @@
   border-radius: 50%;
 }
 
-/* ── 可选模组 ── */
-.wpn-mods-head {
-  display: flex;
-  gap: 10px;
-  align-items: baseline;
-  justify-content: space-between;
+/* ── 站内那一段 ──
+   manifest 抄来的那句只说「击杀后提高填装速度」，站内武器 PERK 详解那一页写的
+   是提多少、怎么触发、强化版差多少。两段并排出现时要分得开，所以站内那一段
+   缩进、压暗半档，并在左缘留一道线。
+
+   `.enh`（源表里的 ↑ 标记）在那一页的样式表里，这里按后代选择器再写一次：
+   那一份只服务那一页，把它提到 site.css 等于让每一页都下载一条只有两页用的规则。 */
+.wpn-site {
+  margin-top: 8px;
+  padding-left: 9px;
+  border-left: 1px solid var(--hair-lit);
 }
 
-.wpn-mods-head h3 {
+/* 站内那一段走正文色，manifest 抄来的那句留在 --bone-dim。层级反过来才对：
+   这一页存在的理由就是站内那一段，泛泛那句只是它的引子。 */
+.wpn-site p {
   margin: 0;
+  color: var(--bone);
 }
 
-.wpn-mod-find {
-  width: 160px;
+.wpn-site .enh {
+  color: var(--bone-hi);
+  font-weight: 600;
+}
+
+.wpn-site-link {
+  display: inline-block;
+  margin-top: 8px;
+  color: var(--bone-dim);
+}
+
+.wpn-site-link:hover {
+  color: var(--bone-hi);
+}
+
+/* ── 可选模组 ──
+   大师杰作一块、模组一块，中间一道发丝线。两边都是「自己说了算」的那类东西，
+   但一个是十四选一、一个是随便挂，混成一行读者分不清哪个栏名管到哪里。 */
+.wpn-modwrap {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-top: 8px;
+}
+
+.wpn-modwrap > .wpn-colbox {
+  flex: none;
+  align-items: flex-start;
+  padding-right: 14px;
+  border-right: 1px solid var(--hair);
 }
 
 .wpn-modrow {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 8px;
+  min-width: 0;
 }
 
 /* ── 作者怎么说 ── */
@@ -791,7 +939,7 @@
 .wpn-tip {
   position: absolute;
   z-index: 30;
-  max-width: 300px;
+  max-width: 380px;
   padding: 8px 10px;
   color: var(--bone-hi);
   background: var(--ink-lift);
@@ -835,7 +983,6 @@
   border-top: 1px solid var(--hair-lit);
 }
 
-.wpn-tip-note,
 .wpn-tip-rec {
   color: var(--bone-faint);
 }
@@ -888,7 +1035,7 @@
   mix-blend-mode: screen;
 }
 
-/* 折起来那一栏：只露选中的那一枚，点开在矩阵下方摊出全部取值。 */
+/* 折起来那一栏（大师杰作）：只露选中的那一枚，点开在模组行下方摊出全部取值。 */
 .wpn-fold {
   display: flex;
 }
@@ -901,6 +1048,3 @@
   border-radius: 4px;
 }
 
-.wpn-pick .wpn-modrow {
-  margin-top: 0;
-}

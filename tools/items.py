@@ -719,7 +719,7 @@ def normalize_files(documents, builds):
     terms, _ = load()
     check_terms.check_token_targets(terms)
     names = sorted(terms, key=len, reverse=True)
-    banned = [(w, t[0]) for t in check_terms.TERMS for w in t[2]]
+    banned = check_terms.banned_pairs()
     totals = [0, 0, 0]
     changed = 0
     for path in builds:

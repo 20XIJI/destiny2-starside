@@ -41,11 +41,6 @@ OUT_DIR = os.path.join(shell.ROOT, 'armor-sets')
 set_key = resolve.set_of      # 套装名 → set:<hash>，与刷取清单页共用一份实现
 
 
-def set_stamp(name):
-    key = set_key(name)
-    return ' data-hash="%s"' % key if key else ''
-
-
 N_CATEGORIES = 7
 N_SETS = 56
 N_BONUSES = 112
@@ -335,8 +330,7 @@ def render(cats: list[Category], md: str, digest: str = '',
             anchor = 'set-%d-%d' % (ci, si)
             key = set_key(st.name)
             source = dict(st.meta).get('来源', '')
-            parts.append('<article class="set" id="%s"%s>\n'
-                         % (anchor, ' data-hash="%s"' % key if key else ''))
+            parts.append('<article class="set" id="%s">\n' % anchor)
             parts.append('<div class="set-id">\n')
             parts.append('<h3>%s</h3>\n' % html.escape(st.name))
             if st.meta:

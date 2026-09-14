@@ -465,14 +465,6 @@ class Markers:
         return None if token is None else (token, self.text[start:end])
 
 
-def inner_marker(text, at):
-    """text[at] 落在哪个 {token|内容} 里，返回 (token, 内容)；不在标记里就是 None。
-
-    一份文本只查一两次时用这个；要在同一份文本上查很多次，建一个 Markers 复用。
-    """
-    return Markers(text).at(at)
-
-
 def whole_marker(md):
     """整块恰好被一个 {token|…} 包住时返回 (token, 内容)，否则 None。
 

@@ -28,7 +28,7 @@ from markup import die, must
 
 SRC_DIR = shell.BUILD_DIR
 
-# 头部键，顺序即写回时的顺序。与 convert-build.META_KEYS 同一份内容，多一个「合集」。
+# 头部键，顺序即写回时的顺序。
 HEAD_KEYS = ('合集', '推荐人', '描述', '更新', '场景', '标签', '分支', '强度', '核心')
 
 # 分节 → 这一节里允许出现的槽位键，顺序即写回顺序。空表示这一节是散文。

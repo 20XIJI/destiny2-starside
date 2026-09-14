@@ -2,10 +2,10 @@
 """武器库：一把枪一页，事实层与人写层按同一个主键合在一起。
 
 站内关于一把枪的信息从前散在六七页上——购物清单写评级与推荐 Perk，刷取清单写
-另一套评级与评语，异域武器详解写机制，manifest 给出词条池与数值。这一页不新写
+另一套评级与评语，异域武器详解写机制，manifest 给出 Perk 池与数值。这一页不新写
 任何数据，它按主键把那几处**合起来显示**：改源稿这一页跟着变，它不是第七处真相。
 
-    data/facts/          manifest 蒸馏：名字、类型、元素、勇士、数值基线、词条池、
+    data/facts/          manifest 蒸馏：名字、类型、元素、勇士、数值基线、Perk 池、
                          插值曲线、图标
     references/items/    人写层：每位作者各占一块，各写各的列
     data/icons.json      主键 → 官方图文件名
@@ -18,7 +18,7 @@
     weapons/index.html 只有外壳与一个空容器，交互在手写的 weapons/app.js 里
 
 词条字典为什么共享：2208 把枪合起来只用到一千多个不同插件，而同一枚「膛线枪管」
-出现在五百多把枪的词条池里。每份详情各存一遍名字、图标与说明，那部分占了产出的
+出现在五百多把枪的 Perk 池里。每份详情各存一遍名字、图标与说明，那部分占了产出的
 86%；抽出来做成一份全站共用的字典，总量从四十来 MB 降到两三 MB，且它与索引一样
 只下一次、从第二把枪起零成本。
 
@@ -40,8 +40,6 @@ OUT_DIR = os.path.join(shell.ROOT, 'weapons')
 ITEM_DIR = os.path.join(shell.ROOT, 'references', 'items')
 
 PAGE_TITLE = '武器库'
-PAGE_DESC = ('Destiny 2 武器库——按名字查一把枪，一页看全它的词条池、数值、'
-             '评级与推荐配搭，Aegis 与小棒猪两份口径并列显示。')
 
 # 元素由 manifest 的 defaultDamageType 给，是个枚举。名字与着色 token 站内已有
 # 定义（assets/site.css 的 :root），这里只把枚举号翻成那个 token。
@@ -102,13 +100,6 @@ PERK_COLS = {
     'lgpig': ('Perk 三号位', 'Perk 四号位'),
 }
 
-# 作者表里该进评论区的那几列：整段的话，不是字段。
-PROSE_COLS = ('注解', '评级理由', '理由一', '理由二', '理由三', '备注', '说明')
-
-# 作者表里该进右栏的短字段。评级单独提到标题行，不在这里。
-BRIEF_COLS = ('排名', '赛季', '弹药生成', '充能效率', '护盾',
-              '总伤', 'DPS', '切换 DPS', '大师')
-
 # 这一页不显示的列：图标由主键定；来源另有去处；属性、框架、勇士三样事实层已经有了，
 # 人写层那一份只是同一件事的另一种写法。
 SKIP_COL = frozenset({'图标', '属性', '框架', '框架 · 射速', '勇士',
@@ -123,10 +114,10 @@ SKIP_COL = frozenset({'图标', '属性', '框架', '框架 · 射速', '勇士'
 COLUMN = {
     'intrinsics': '固有', 'origins': '起源特性',
     'barrels': '枪管', 'magazines': '弹匣', 'magazines_gl': '弹匣',
-    'tubes': '发射管', 'scopes': '瞄准镜', 'batteries': '电池',
+    'tubes': '发射器枪管', 'scopes': '瞄准镜', 'batteries': '电池',
     'blades': '刀锋', 'guards': '刀剑格', 'bowstrings': '弓弦',
     'arrows': '箭矢', 'hafts': '把手', 'stocks': '枪托', 'grips': '握把',
-    'rails': '导轨', 'bolts': '弩弦',
+    'rails': '导轨', 'bolts': '弩弹',
     # 异域的催化剂槽。机器名带 empty 是因为它出厂时是空的，不是说这一栏没用。
     'v400.empty.exotic.masterwork': '催化剂',
     # 新刀剑那两栏是同一件事的新机器名。
@@ -183,7 +174,10 @@ def sprite(src):
             die('destiny-icons 里找不到 %s.svg：%s' % (name, src))
         with open(path, encoding='utf-8') as f:
             text = f.read()
-        box = re.search(r'viewBox="([^"]+)"', text).group(1)
+        got = re.search(r'viewBox="([^"]+)"', text)
+        if not got:
+            die('%s 没有 viewBox，抽不出坐标系' % path)
+        box = got.group(1)
         body = text[text.index('>', text.index('<svg')) + 1:text.rindex('</svg>')]
         body = re.sub(r'<title>.*?</title>', '', body, flags=re.S)
         body = re.sub(r'<!--.*?-->', '', body, flags=re.S)
@@ -210,6 +204,30 @@ def load_sprite():
             '  python3 tools/build-weapons.py --sprite <那个目录>')
     with open(TYPE_ICONS, encoding='utf-8') as f:
         return json.load(f)
+
+
+# 站内那一页写的词条说明。manifest 抄来的是一句概括（「击杀后短暂提高填装速度」），
+# 站内那一页写的是实测的数值、触发条件与强化版差额——后者才是这个工具存在的理由，
+# 不然读者直接看 destiny.report 就够了。两份都进浮层：manifest 那句在上，
+# 站内那一段在下，并给出跳过去的锚点。
+SITE_PERKS = os.path.join(shell.ROOT, 'data', 'index', 'weapon-perks.json')
+
+
+def site_perks():
+    """{插件主键: [说明 HTML, 锚点, 分节名]}。
+
+    索引里一条登记的是一族同名插件（「适配点射」挂着 16 个 hash），逐个摊开——
+    普通版与强化版是两个 hash，两边都要查得到。
+    """
+    with open(SITE_PERKS, encoding='utf-8') as f:
+        rows = json.load(f)['entries']
+    out = {}
+    for e in rows:
+        if not e.get('desc'):
+            continue
+        for h in (e.get('hash') or '').split():
+            out.setdefault(h, [e['desc'], e['anchor'], e['kind']])
+    return out
 
 
 def records():
@@ -276,9 +294,15 @@ TIER_RANK = re.compile(r'T(\d+(?:\.\d+)?)')
 NO_TIER = 3.5
 
 
+# 汉字与拉丁之间留一个空格，照 design.md 那张表。冒号删掉之后「高难：T1.5」会连成
+# 「高难T1.5」，而这是开屏重复次数最多的一串字。
+GRADE_GAP = re.compile(r'([\u4e00-\u9fff])([A-Za-z0-9])')
+
+
 def grade(text):
     """一格评级 → 卡片上写的那一行。"""
-    return ' '.join(GRADE_CUT.sub('', x) for x in plain(text).split(' · ') if x)
+    return ' '.join(GRADE_GAP.sub(r'\1 \2', GRADE_CUT.sub('', x))
+                    for x in plain(text).split(' · ') if x)
 
 
 def rank_of(text):
@@ -304,8 +328,32 @@ def season_of(row):
     return SEASON.get(rel, 0)
 
 
+def banned_pairs():
+    """禁用写法 → 正名。表与推导都在 `check_terms.banned_pairs()`，这里只把那次
+    import 推迟到用时：check_terms 会连带 import items 并读 tools/items.json，
+    放模块层就等于把这一步搬到每次构建的最前面。"""
+    import check_terms
+    return check_terms.banned_pairs()
+
+
+def say(text, banned):
+    """manifest 抄进来的那句说明 → 按站内正名改过的那一句。
+
+    这是全站**唯一一片绕过 G1 的中文正文**：源稿那一侧有 items.py --normalize 与
+    check_terms 两道管着，而词条说明是从 manifest 直接抄进产出的，1341 枚里 84 枚
+    带着禁用写法（装填、敌人、削弱、重型弹药……），落在 2208 把里的 1291 把上。
+    这里补上那一道，收尾再反查一遍。
+    """
+    import items
+    return items.rename(text, banned, [])[0]
+
+
 class Dict:
-    """全站共享的词条字典。一条 [名字, 图标, 说明, 投资属性, 强化版]。
+    """全站共享的词条字典。一条 [名字, 图标, 说明, 投资属性, 强化版, 站内说明]。
+
+    第六位是站内说明在 `d` 表里的位置，**从 1 起数**，`0` 表示武器 PERK 详解
+    那一页没写它。说明整段收进 `d` 去重：那一页一条登记覆盖一族同名插件，
+    646 枚插件只对应 372 段说明，逐行各存一份要多花 40 KB gz。
 
     第五位是强化版：`0` 表示没有，否则是 [强化版说明, 强化版投资属性]。普通版与
     强化版在库里是两个 hash，同名同图，说明差一句（「一次元素伤害爆炸」→「一次
@@ -316,18 +364,45 @@ class Dict:
     def __init__(self, facts, table, stat_of):
         self.facts, self.table, self.stat_of = facts, table, stat_of
         self.rows, self.at = [], {}
+        self.banned = banned_pairs()
+        self.site = site_perks()
+        self.notes, self.note_at = [], {}
+
+    def note(self, *hs):
+        """站内说明 → `d` 表里的位置（从 1 起）。查不到回 0。
+
+        普通版与强化版是两个 hash，那一页常常只登记了其中一个，两边都查一次。
+        """
+        for h in hs:
+            got = self.site.get(str(h)) if h else None
+            if not got:
+                continue
+            key = tuple(got)
+            if key not in self.note_at:
+                self.notes.append(got)
+                self.note_at[key] = len(self.notes)
+            return self.note_at[key]
+        return 0
 
     def inv(self, r):
-        """属性一律换成 data.js 里 s 的下标，前端不必再拿 hash 查一遍表。"""
-        return [[self.stat_of(x[0])] + list(x[1:]) for x in r.get('inv') or ()] or 0
+        """属性一律换成 data.js 里 s 的下标，前端不必再拿 hash 查一遍表。
+
+        库里没有名字的那两条整条丢掉：画不出名字的一行加成读者看不懂。
+        """
+        out = []
+        for x in r.get('inv') or ():
+            at = self.stat_of(x[0])
+            if at is not None:
+                out.append([at] + list(x[1:]))
+        return out or 0
 
     def row(self, h):
         r = self.facts.items.get(str(h)) or {}
         got = self.table.get(icons.icon_of(self.facts, str(h)) or '')
         return [r.get('n', {}).get('zh', str(h)),
                 got['file'] if got else '',
-                (r.get('desc') or {}).get('zh', ''),
-                self.inv(r), 0]
+                say((r.get('desc') or {}).get('zh', ''), self.banned),
+                self.inv(r), 0, 0]
 
     def add(self, h, enh=None):
         key = (str(h), str(enh) if enh else '')
@@ -335,7 +410,9 @@ class Dict:
             row = self.row(h)
             if enh:
                 e = self.facts.items.get(str(enh)) or {}
-                row[4] = [(e.get('desc') or {}).get('zh', ''), self.inv(e)]
+                row[4] = [say((e.get('desc') or {}).get('zh', ''), self.banned),
+                          self.inv(e)]
+            row[5] = self.note(h, enh)
             self.at[key] = len(self.rows)
             self.rows.append(row)
         return self.at[key]
@@ -444,7 +521,7 @@ def wanted(rec):
 def relocate(facts, recs, by_name):
     """把人写记录挪到「作者写的词条真能开出来」的那个版本上。
 
-    复刻让同一把枪有好几个 itemHash，各自的词条池不一样。源稿那一行戳的是站内
+    复刻让同一把枪有好几个 itemHash，各自的 Perk 池不一样。源稿那一行戳的是站内
     资料页选中的那个版本，而作者写的推荐往往是另一版的——实测落不到池里的 587 条
     里有 434 条属于这种，那些名字在**同名的另一个 hash** 的池里就有。
 
@@ -474,6 +551,61 @@ def relocate(facts, recs, by_name):
     return out, moved
 
 
+def collapse(facts, recs):
+    """同名的几条记录收成一条：一把枪在卡片墙上只该有一张卡片。
+
+    复刻让同一把枪有好几个 itemHash。购物清单与刷取清单各按自己那一行列的词条
+    解析主键（resolve.pick() 的「词条重合」那一档），于是同一把枪常常落在不同的
+    版本上——实测 18 把因此在墙上出现两次，各带一家的评级。而双维度排序要的是
+    两家写在同一行上，读者要的也是一把枪一张卡片。
+
+    **只收作者互不重叠的那些**。Aegis 给同一把枪的两个版本各写过一行时（「唠叨
+    龙骨」等 9 把），那是她有意分开评的两版，收成一条就得扔掉其中一行。
+
+    落到哪一版：能开出全部作者推荐词条最多的那一版；并列取 Aegis 写过的那一版，
+    再并列取发布赛季最新的。
+    """
+    groups = {}
+    for key in recs:
+        groups.setdefault((facts.items.get(key) or {}).get('n', {}).get('zh', ''),
+                          []).append(key)
+    out, merged = {}, 0
+    for keys in groups.values():
+        seen = [who for k in keys for who in (recs[k].get('来自') or {})]
+        if len(keys) < 2 or len(seen) != len(set(seen)):
+            for k in keys:
+                out[k] = recs[k]
+            continue
+        names = [norm(n) for k in keys for n in wanted(recs[k])]
+
+        def score(k):
+            pool = pool_of(facts, k)
+            return (sum(1 for n in names if n in pool),
+                    1 if 'aegis' in (recs[k].get('来自') or {}) else 0,
+                    season_of(facts.items.get(k) or {}))
+
+        best = max(keys, key=score)
+        rec = {'名': recs[best].get('名', ''), '来自': {}}
+        for k in keys:
+            rec['来自'].update(recs[k].get('来自') or {})
+        out[best] = rec
+        merged += len(keys) - 1
+    return out, merged
+
+
+# 双维度名次：两家各给一档，取平均。都写过的那一档并列时排在只有一家写过的前面
+# ——「两个人都说它是这一档」比一个人说的确。没人评过的沉到最后，它们只有事实层
+# 那一份，没人替读者挑过。
+UNRATED = 99
+
+
+def ranks(rec):
+    """一条记录里各家给的名次，认不出档位的按 NO_TIER 算。"""
+    got = [rank_of(b.get('评级', ''))
+           for b in (rec.get('来自') or {}).values() if b.get('评级')]
+    return [g for g in got if g is not None]
+
+
 def payload(resolve, facts, recs, table):
     """投影分三层。
 
@@ -493,11 +625,21 @@ def payload(resolve, facts, recs, table):
                 top[sh] = val
 
     def stat_of(h):
+        """属性 → data.js 的 s 表下标。**库里没有名字的返回 None**。
+
+        manifest 的 DestinyStatDefinition 里有两条（3291498656 / 3291498659）
+        displayProperties.name 是空串，Bungie 自己没给名。从前回落成 hash 字面量，
+        于是瞄准镜那一类词条的悬停浮层上写着「3291498656  +1」。查不到名字的那一行
+        整行不画——写一串数字给读者，比不写更糟。
+        """
         h = str(h)
         if h not in stat_at:
-            stat_at[h] = len(stats)
-            stats.append([(facts.stats.get(h) or {}).get('n', {}).get('zh', h),
-                          1 if top.get(h, 0) > 100 else 0, int(h)])
+            name = (facts.stats.get(h) or {}).get('n', {}).get('zh', '').strip()
+            if not name:
+                stat_at[h] = None
+            else:
+                stat_at[h] = len(stats)
+                stats.append([name, 1 if top.get(h, 0) > 100 else 0, int(h)])
         return stat_at[h]
 
     bag = Dict(facts, table, stat_of)
@@ -507,6 +649,7 @@ def payload(resolve, facts, recs, table):
             by_name.setdefault(row['n']['zh'], []).append(key)
 
     recs, moved = relocate(facts, recs, by_name)
+    recs, merged = collapse(facts, recs)
     out, detail, missed = [], {}, []
     for key in sorted((k for k, v in facts.items.items() if v.get('ty') == 3), key=int):
         row = facts.items[key]
@@ -601,7 +744,7 @@ def payload(resolve, facts, recs, table):
             # 「亡命之徒」击杀后才加填装，把它算进基线，读者看到的就是一把
             # 永远处在击杀后状态的枪。
             'base': [[stat_of(x[0]), x[1]] for x in row.get('inv') or ()
-                     if len(x) == 2 and str(x[0]) in facts.stats],
+                     if len(x) == 2 and stat_of(x[0]) is not None],
             'c': cols,
             'm': mods,
             'rec': {str(k): v for k, v in sorted(hit.items())},
@@ -611,17 +754,14 @@ def payload(resolve, facts, recs, table):
     def file_of(path):
         return (table.get(path) or {}).get('file', '')
 
-    # 开屏按档位排：两家里最好的那一档在前，同一档内按武器类型聚拢，
+    # 开屏按两家评级的平均档位排：S 与 T0 都拿到的排在最前，依次往下。
     # 异域不单列——它按自己的档位混在传说中间，读者找的是「这一档有哪些枪」。
-    # 没有评级的沉到最后，它们只有事实层那一份，没人替读者挑过。
     ranked = {}
     for key, rec in recs.items():
-        got = [rank_of(b.get('评级', ''))
-               for b in (rec.get('来自') or {}).values() if b.get('评级')]
-        got = [g for g in got if g is not None]
+        got = ranks(rec)
         if got:
-            ranked[key] = min(got)
-    out.sort(key=lambda w: (ranked.get(w['h'], 99), w['t'], w['n']))
+            ranked[key] = (sum(got) / len(got), -len(got), min(got))
+    out.sort(key=lambda w: ranked.get(w['h'], (UNRATED, 0, UNRATED)) + (w['t'], w['n']))
 
     chrome = {k: file_of(v) for k, v in icons.CHROME.items()}
     # 逐条不再各存一份图名：元素六种、勇士三种、类型十七种、弹药三种，
@@ -638,8 +778,8 @@ def payload(resolve, facts, recs, table):
         die('武器图标的装饰层还没拉：%s\n  跑 python3 tools/icons.py --pull'
             % '、'.join(missing))
     return ({'a': AUTHORS, 's': stats, 'w': out, 'o': chrome},
-            {'p': bag.rows, 'g': group_table(facts, stat_at)},
-            detail, missed, moved)
+            {'p': bag.rows, 'd': bag.notes, 'g': group_table(facts, stat_at)},
+            detail, missed, moved, merged)
 
 
 def interp(v, curve):
@@ -673,6 +813,22 @@ def show(v, top, curve):
         v = min(v, top)
     return int(decimal.Decimal(repr(interp(v, curve))).quantize(
         0, rounding=decimal.ROUND_HALF_EVEN))
+
+
+def term_check(dic):
+    """产出里的中文正文不许带禁用写法。这一页的词条说明是从 manifest 直接抄的，
+    不经源稿，G1 扫不到它——这一条就是补上的那一道。"""
+    bad = []
+    banned = banned_pairs()
+    for row in dic['p']:
+        texts = [row[2]] + ([row[4][0]] if row[4] else [])
+        for wrong, right in banned:
+            for text in texts:
+                if wrong in text:
+                    bad.append('%s：「%s」应写作「%s」' % (row[0], wrong, right))
+    if bad:
+        die('词条说明里还有 %d 处禁用写法：\n  %s'
+            % (len(bad), '\n  '.join(sorted(set(bad))[:10])))
 
 
 def self_check(facts, detail, dic, stats):
@@ -710,7 +866,7 @@ def group_table(facts, stat_at):
     for gh, group in (facts.groups or {}).items():
         rows = []
         for sh, (top, curve) in group.items():
-            if sh in stat_at:
+            if stat_at.get(sh) is not None:
                 rows.append([stat_at[sh], top, curve])
         if rows:
             out[gh] = rows
@@ -724,7 +880,15 @@ def group_table(facts, stat_at):
 #   miss    作者写了、这把枪的池里却开不出来的词条名
 #   champ   manifest 推的勇士与作者「勇士」那一列对不上的枪
 #   frames  manifest 推的勇士与 weapon-frames.md 那一列对不上的枪
-BASELINE = {'miss': 76, 'champ': 6, 'frames': 1}
+#
+# 76 → 77：「金刚磐石」两家写的是两个复刻版本，新版把 {perk|切割} 取消了。
+#           收成一条之后只剩一版的池，刷取清单那一行的「切割」落不进去。
+# 77 → 78：「陨落铡刀」购物清单上有两行，两张图不一样、一行 S 一行 D，却都解析到
+#           1815105249 上。entities 从前后写盖前写、留下 D 那一行，现在改成留先出现
+#           的 S 那一行（撞车另有 entities.CLASH_BASELINE 管着）。S 那一行列的
+#           {perk|元素磨砺} 不在 1815105249 的池里——**这一条 miss 本身就是证据**：
+#           那一行说的不是这个主键。根因在解析层，见 entities.CLASH_BASELINE 的注释。
+BASELINE = {'miss': 78, 'champ': 6, 'frames': 1}
 
 # 源稿「勇士」那一格写的是三枚图标之一。图标 → 破盾类型的对应用事实层那 17 把
 # 自带 breakerType 的异域反查出来，零冲突：贯穿护盾 4 把、干扰 7 把、眩晕 6 把。
@@ -844,34 +1008,31 @@ def sprite_tag():
 
 
 def render(n_weapon, n_rated):
-    o = [shell.head(PAGE_TITLE, PAGE_DESC, app_js=False),
+    o = [shell.head(PAGE_TITLE, '', app_js=False),
          shell.nav('武器库'),
          # 两份脚本都 defer：data.js 是索引，app.js 只读它，顺序即依赖。
-         # **plugs.js 不在这里**：那是 65 KB gz 的词条字典，只有点开某一把枪
+         # **plugs.js 不在这里**：那是 101 KB gz 的词条字典，只有点开某一把枪
          # 才用得上，挂在首屏等于让「只是来搜个名字」的读者白下一份。它由
          # app.js 在空闲时预取，首次点开时兜底等它。
          # 不放进 shell.head()——那一段是全站逐字一致的外壳，
          # 页面专属的东西进去就等于给每一页都开一个口子。
          '<script defer src="data.js"></script>',
          '<script defer src="app.js"></script>',
-         shell.page_head(PAGE_TITLE, PAGE_DESC),
+         shell.page_head(PAGE_TITLE),
          '<main class="wpn">',
          # 整页只有一个分节：内容由 app.js 按选中的那把枪现画，落地锚点是
          # #<主键>，不是分节。全站搜索要求每一页至少有一个带 id 的分节
          # （链过去得落得到位置），这一个就是它。
          '<section id="find">',
-         '<h2 class="sect-label">按名字挑一把枪</h2>',
          '<form class="wpn-find" role="search" onsubmit="return false">',
-         '<input id="q" type="search" autocomplete="off" spellcheck="false"'
-         ' placeholder="按名字找一把枪" aria-label="按名字找一把枪">',
+         '<input id="q" type="search" autocomplete="off" spellcheck="false">',
          '</form>',
          # 筛选条由 app.js 按索引里真有的取值现建，不写死：换一批武器进来，
          # 多出来的元素或武器类型会自己长出一枚开关。
-         '<div class="wpn-facets" id="facets"></div>',
-         # 计数与视图开关排在版心这一层：网格那一档没有左栏，计数不能藏在里面。
-         '<div class="wpn-bar">',
+         # 计数与视图开关并进筛选条那一行，不另占一行：卡片墙上方每一像素都要省。
+         '<div class="wpn-facets" id="facets">',
          '<p id="count" class="wpn-count" role="status"></p>',
-         '<nav class="wpn-view" aria-label="换一种排法">',
+         '<nav class="wpn-view">',
          '<button id="v-grid" class="toggle" type="button" aria-pressed="true">网格</button>',
          '<button id="v-list" class="toggle" type="button" aria-pressed="false">列表</button>',
          '</nav>',
@@ -888,11 +1049,15 @@ def render(n_weapon, n_rated):
          sprite_tag(),
          '</section>',
          '</main>', '',
+         # 待测值那句话全站只有 shell.unsure_note() 一处定义；方括号那句与异域武器
+         # 详解页同一句——这一页显示的正是那一页的记录，标记被 plain() 剥成裸字符
+         # 之后，读者没有别的线索认得出它们。
          shell.foot(stamp(),
-                    '共 %d 把；其中 %d 把有作者写的评级与推荐，两位作者的口径'
-                    '并列显示，不合并。' % (n_weapon, n_rated),
-                    source='本页不另立数据：词条池、数值与勇士克制来自 Bungie 的'
-                           ' manifest，评级、推荐与评语来自各自作者那一份。')]
+                    shell.unsure_note('?') + '方括号内是 PvP 数值。'
+                    + '共 %d 把；其中 %d 把有作者写的评级与推荐，'
+                      '三位作者的口径并列显示，不合并。' % (n_weapon, n_rated),
+                    source='本页不另立数据：Perk 池、数值与勇士克制来自 Bungie 的'
+                           ' manifest，评级、推荐与评语来自各自作者那一份')]
     return '\n'.join(o) + '\n'
 
 
@@ -905,8 +1070,9 @@ def main():
     import resolve
     facts = resolve.Facts()
     recs = records()
-    data, dic, detail, missed, moved = payload(resolve, facts, recs, icons.load())
+    data, dic, detail, missed, moved, merged = payload(resolve, facts, recs, icons.load())
     self_check(facts, detail, dic, data['s'])
+    term_check(dic)
     os.makedirs(os.path.join(OUT_DIR, 'w'), exist_ok=True)
 
     def write(name, body):
@@ -929,12 +1095,15 @@ def main():
     marked = sum(1 for d in detail.values() if d['rec'])
     print('weapons/data.js   %7.1f KB  武器 %d（有评级 %d）'
           % (a / 1024, len(data['w']), rated))
-    print('weapons/plugs.js  %7.1f KB  词条 %d、插值组 %d、属性 %d'
-          % (b / 1024, len(dic['p']), len(dic['g']), len(data['s'])))
+    print('weapons/plugs.js  %7.1f KB  词条 %d（站内写过说明的 %d）、站内说明 %d 段、'
+          '插值组 %d、属性 %d'
+          % (b / 1024, len(dic['p']), sum(1 for r in dic['p'] if r[5]), len(dic['d']),
+             len(dic['g']), len(data['s'])))
     print('weapons/w/        %7.1f KB  %d 份，每份平均 %.1f KB；推荐落位 %d 把'
           % (total / 1024, len(detail), total / 1024 / max(1, len(detail)), marked))
     champ, frames = cross_check(facts, recs, missed)
     print('  人写记录挪到别版本上的 %d 条（那一版才开得出作者写的词条）' % moved)
+    print('  同名不同主键收成一条的 %d 条（两家落在了不同的复刻版本上）' % merged)
     print('  勇士反查：与作者那一列不一致 %d 条，与 weapon-frames.md 不一致 %d 条'
           % (len(champ), len(frames)))
     if missed:

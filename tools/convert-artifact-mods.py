@@ -53,16 +53,15 @@ def stamp(name, artifact=''):
     12 MB 事实层等于让闸门白等。"""
     global _STAMP
     if _STAMP is None:
-        _STAMP = resolve.stamper('artifact-mods') or (lambda _: '')
-    got = _STAMP(name)
-    keys = got[len(' data-hash="'):-1].split() if got else []
+        _STAMP = resolve.stamper('artifact-mods') or (lambda _: [])
+    keys = list(_STAMP(name))
     if len(keys) > 1 and artifact:
         mine = [k for k in keys if k in art_pool(artifact)]
         if len(mine) == 1:
-            return ' data-hash="%s"' % mine[0]
+            return mine
         if mine:
             keys = mine
-    return ' data-hash="%s"' % ' '.join(keys) if keys else ''
+    return keys
 
 N_SECTIONS = 7
 N_MODS = 147
@@ -270,8 +269,7 @@ def render(page, digest='', dex=None):
             o.append('<div class="mod-row">')
             for mod in row:
                 name = text_of(mod['name'], collapse=True)
-                key = stamp(text_of(mod['name']), s['name'])
-                dex.add(hash=key[len(' data-hash="'):-1] if key else '',
+                dex.add(hash=' '.join(stamp(text_of(mod['name']), s['name'])),
                         anchor='art-%d' % i, kind=label, name=name,
                         icon='%s/%s' % (PAGE, icon_src(mod['icon'])),
                         pos='%d,%s' % (ri, mod['tier']),
@@ -279,8 +277,7 @@ def render(page, digest='', dex=None):
                         # 拼接，前后各留一个，与 <div class="mod-desc"> 包住的完全相同。
                         desc='\n%s\n' % '\n'.join('<p>%s</p>' % p
                                                   for _, _, p in mod['desc']))
-                o += ['<article class="mod" data-tier="%d"%s>'
-                      % (mod['tier'], key),
+                o += ['<article class="mod" data-tier="%d">' % mod['tier'],
                       mod['icon'],
                       '<h4%s>%s</h4>' % (bmark(mod['at']), mod['name']),
                       '<div class="mod-desc">']

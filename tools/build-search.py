@@ -119,8 +119,13 @@ def scan(url):
     rows = []
     for i, (at, anchor) in enumerate(cuts):
         chunk = src[at:cuts[i + 1][0] if i + 1 < len(cuts) else len(src)]
+        items = items_of(chunk, anchor, tables)
+        # 分节标题只用来给条目标归属，没有条目就不需要它。武器库那一节的内容
+        # 由 app.js 现画，产出里只有一个空容器，本来就没有标题可取。
+        if not items:
+            continue
         sect = label_of(chunk, url)
-        for hold, name, full in items_of(chunk, anchor, tables):
+        for hold, name, full in items:
             rows.append({'u': url, 'a': hold, 'l': sect, 'n': name, 'x': full})
     return {'u': url, 't': title, 'd': desc}, rows
 

@@ -1504,22 +1504,31 @@ test('the visitor count is read from the database once a minute per instance', a
 //
 // 取法：从 weapons/app.js 里把那三个函数原样抠出来跑。抠不到就当场失败——
 // 改名或删掉都说明这条契约变了，该被看见。
-function weaponMath() {
-  const src = fs.readFileSync(path.join(root, 'weapons/app.js'), 'utf8')
-  const grab = (name) => {
-    const at = src.indexOf('function ' + name + '(')
-    assert.ok(at >= 0, `weapons/app.js 里找不到 ${name}()`)
-    let depth = 0, i = src.indexOf('{', at)
-    for (let j = i; j < src.length; j++) {
-      if (src[j] === '{') depth++
-      else if (src[j] === '}' && --depth === 0) return src.slice(at, j + 1)
-    }
-    assert.fail(`${name}() 的花括号没配上`)
+function grabFn(src, name) {
+  const at = src.indexOf('function ' + name + '(')
+  assert.ok(at >= 0, `weapons/app.js 里找不到 ${name}()`)
+  let depth = 0
+  for (let j = src.indexOf('{', at); j < src.length; j++) {
+    if (src[j] === '{') depth++
+    else if (src[j] === '}' && --depth === 0) return src.slice(at, j + 1)
   }
+  assert.fail(`${name}() 的花括号没配上`)
+}
+
+function appSource() {
+  return fs.readFileSync(path.join(root, 'weapons/app.js'), 'utf8')
+}
+
+function runInBox(code) {
   const box = {}
   vm.createContext(box)
-  vm.runInContext(['interp', 'bankers', 'shown'].map(grab).join('\n'), box)
+  vm.runInContext(code, box)
   return box
+}
+
+function weaponMath() {
+  const src = appSource()
+  return runInBox(['interp', 'bankers', 'shown'].map((n) => grabFn(src, n)).join('\n'))
 }
 
 function weaponFacts() {
@@ -1597,6 +1606,49 @@ test('stat rounding goes to the even side, not always up', () => {
   assert.equal(bankers(64.6), 65)
   // 四舍五入会把这一格算成 23，manifest 写的是 22。
   assert.equal(shown(30, 100, [[0, 10], [100, 50]]), 22)
+})
+
+// ── 武器库的挑枪逻辑 ────────────────────────────────────────────────
+// 两条都是「错了页面照样画得出来」的那一类：槽位词搜不出东西、大师杰作那一栏
+// 整个不见了，页面本身没有任何异常，只是少了一块，要一页页看才发现。
+function weaponPick() {
+  const src = appSource()
+  const table = src.match(/var KINETIC_SLOT = \{[^}]*\};/)
+  assert.ok(table, 'weapons/app.js 里找不到 KINETIC_SLOT')
+  return runInBox([table[0], grabFn(src, 'slot'), grabFn(src, 'mwOf')].join('\n'))
+}
+
+test('every weapon falls into exactly one of the three ammo slots', () => {
+  const { slot } = weaponPick()
+  const { D } = weaponFacts()
+  const tally = { 主手: 0, 副手: 0, 威能: 0 }
+  for (const w of D.w) {
+    const got = slot(w)
+    assert.ok(got in tally, `${w.n} 落到了第四个槽位：${got}`)
+    tally[got]++
+    // 威能弹药一律挂威能槽，其余按元素分动能／能量两侧。
+    if (w.am === '威能') assert.equal(got, '威能', `${w.n} 是威能弹药却没挂威能槽`)
+    else assert.notEqual(got, '威能', `${w.n} 不是威能弹药却挂了威能槽`)
+  }
+  assert.equal(tally.主手 + tally.副手 + tally.威能, D.w.length, '三个槽位没把全表分完')
+  for (const [name, n] of Object.entries(tally)) assert.ok(n > 0, `${name} 一把都没有`)
+})
+
+test('the masterwork column is found even though it sits at index 0', () => {
+  const { mwOf } = weaponPick()
+  // 它恒是第 0 栏（build-weapons.py 把它 insert(0)）。写成 if (mwOf(d)) 那一栏
+  // 就永远画不出来，而页面只是少了一块，不报错。
+  assert.strictEqual(mwOf({ c: [['大师杰作', [1], 1, 1], ['固有', [2], 0]] }), 0)
+  assert.strictEqual(mwOf({ c: [['固有', [2], 0]] }), null)
+  const { D } = weaponFacts()
+  let seen = 0
+  for (const w of D.w.slice(0, 200)) {
+    const d = JSON.parse(fs.readFileSync(path.join(root, 'weapons/w', w.h + '.json'), 'utf8'))
+    const want = d.c.findIndex((col) => col[3])
+    assert.strictEqual(mwOf(d), want < 0 ? null : want, `${w.n} 的大师杰作那一栏取错了`)
+    if (want >= 0) seen++
+  }
+  assert.ok(seen > 0, '取样的 200 把里一把带大师杰作的都没有，样本选错了')
 })
 
 async function main() {

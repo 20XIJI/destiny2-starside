@@ -431,18 +431,23 @@ def shared():
 
 
 def stamper(page):
-    """一页的戳号器：名字 → ` data-hash="…"`，戳不上就回空串。
+    """一页的戳号器：名字 → 主键清单，戳不上就回空列表。
 
     **只给有范围定义的那些页戳**，也就是 vocab.py 要扫的那 17 页——戳 hash 的用处
-    正是让它从按名字猜改成读主键。别的页的行标题不参与跨页引用，戳了没人读。
+    正是让索引从按名字猜改成读主键。别的页的行标题不参与跨页引用，戳了没人读。
 
-    词条与模组是一族，一格里可能有几个 hash（「双重装填」有普通与强化两条），
-    按空格分开写在同一位上；武器与护甲只有一个。
+    词条与模组是一族，一个名字可能对应几个 hash（「双重装填」有普通与强化两条），
+    所以一律回列表；武器与护甲那几页每次只有一条。
+
+    **交主键，不交 HTML 片段。**主键的去处是 data/index/<页>.json，那一份才是
+    跨页引用读的。从前这里回的是 ` data-hash="…"`，三个生成器各按
+    `len(' data-hash="')` 切回来——属性名一改，切出来的是一串仍然全是数字、
+    看着合法的截断主键，而 HTML 那一侧是对的，两者从此分歧。
     """
     if page in SET_PAGES:
         def set_stamp(name, parts=()):     # parts 用不上：套装名不是组合行
             key = set_of(name)
-            return ' data-hash="%s"' % key if key else ''
+            return [key] if key else []
         return set_stamp
     if page not in SCOPES:
         return None
@@ -490,7 +495,7 @@ def stamper(page):
         for extra in paren_keys(facts, name, page):
             if extra not in got:
                 got.append(extra)
-        return ' data-hash="%s"' % ' '.join(got) if got else ''
+        return got
 
     return stamp
 
@@ -786,22 +791,6 @@ def set_sources():
         return {norm(m) for m in SET_SOURCE.findall(f.read())}
 
 
-# 源稿里能拿来定版本的那几列。购物清单四页写着枪管、弹匣、两栏 Perk 与起源特性，
-# 异域两页写着专属 Perk；这些正是各版本词条池的差别所在。
-HINT_DOCS = {
-    'shopping-primary': 'docs/shopping-primary.md',
-    'shopping-special': 'docs/shopping-special.md',
-    'shopping-heavy': 'docs/shopping-heavy.md',
-    'shopping-other': 'docs/shopping-other.md',
-    'exotic-weapon': 'docs/exotic-weapon.md',
-    'exotic-armor': 'docs/exotic-armor.md',
-    # 刷取清单那几页同样写了获取地点与 Perk 列，复刻靠的正是这两样。
-    'exotic-weapons': 'docs/exotic-weapons.md',
-    'exotic-armors': 'docs/exotic-armors.md',
-    'legendary-primary': 'docs/legendary-primary.md',
-    'legendary-special': 'docs/legendary-special.md',
-    'legendary-heavy': 'docs/legendary-heavy.md',
-}
 MARKER = re.compile(r'\{([\w-]+)\|([^{}]*)\}')
 IMG = re.compile(r'!\[\]\([^)]*\)')
 
@@ -819,7 +808,12 @@ def source_hints():
     生成器在渲染每一行时本来就拿得到这一行的 Perk 列，所以这不是审计专用的拐杖，
     是解析器在真实管线里同样会收到的那份输入。"""
     out = {}
-    for page, rel in HINT_DOCS.items():
+    # 单件页即线索页：购物清单写着枪管、弹匣、两栏 Perk 与起源特性，异域两页
+    # 写着专属 Perk，刷取清单写着获取地点与 Perk 列——复刻各版本的差别正在这些列上。
+    # **名单不另抄一份**：抄一份就会漏登记，而漏掉的那一页 source_hints() 回空，
+    # 它整页的行会拿 version='' perks=() 掉到 pick() 的末两档去。
+    for page in sorted(SINGLE_PAGES):
+        rel = 'docs/%s.md' % page
         path = os.path.join(shell.ROOT, 'references', rel)
         if not os.path.exists(path):
             continue

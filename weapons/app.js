@@ -18,7 +18,7 @@
   var D = window.WPN;
   if (!D) { return; }
 
-  // 词条字典 65 KB gz，只有点开某一把枪才用得上。空闲时预取，点得比预取快就
+  // 词条字典 101 KB gz，只有点开某一把枪才用得上。空闲时预取，点得比预取快就
   // 在这里等它一下。取不到就说取不到，不画一个没有词条的详情页冒充完整。
   var G = null, queue = [], asked = false;
 
@@ -54,9 +54,20 @@
   var one = document.getElementById('one');
   var tip = document.getElementById('tip');
 
+  // 槽位不是索引里的字段，由元素与弹药推：动能、冰影、缚丝挂动能槽，
+  // 烈日、虚空、电弧挂能量槽，威能弹药的一律挂威能槽。游戏内就是这么分的，
+  // 读者却按「主手副手」说话，所以两种说法都收进检索键。
+  var KINETIC_SLOT = { 'el-kinetic': 1, 'el-stasis': 1, 'el-strand': 1 };
+
+  function slot(w) {
+    if (w.am === '威能') { return '威能'; }
+    return KINETIC_SLOT[w.tk] ? '主手' : '副手';
+  }
+
   // 检索键预先拼好：每次输入都重算一遍 2200 条的拼接是白算。
   D.w.forEach(function (w) {
-    w.k = (w.n + ' ' + (w.en || '') + ' ' + (w.t || '') + ' ' + (w.el || '')).toLowerCase();
+    w.k = (w.n + ' ' + (w.en || '') + ' ' + (w.t || '') + ' ' + (w.el || '')
+      + ' ' + (w.am || '') + ' ' + slot(w)).toLowerCase();
   });
   var by = {};
   D.w.forEach(function (w) { by[w.h] = w; });
@@ -89,6 +100,13 @@
     return box;
   }
 
+  // 首屏之内的图标不写 loading="lazy"，改写 fetchpriority="high"：lazy 会让它们
+  // 等布局算完才开始下载，是反模式。判定只有 eager 这一个计数器——1440×900 下
+  // 卡片墙一行八张、首屏露出两行，每张卡片最多九张图，取 2×8 张卡片为界。
+  // 改版式让首屏塞得下更多卡片时，同步改 EAGER_CARDS。
+  var EAGER_CARDS = 16;
+  var eager = 0;
+
   function icon(file, size, cls) {
     var img = el('img', cls);
     img.src = file ? '../assets/icons/' + file
@@ -96,7 +114,7 @@
     img.alt = '';
     img.width = size;
     img.height = size;
-    img.loading = 'lazy';
+    if (eager > 0) { img.setAttribute('fetchpriority', 'high'); } else { img.loading = 'lazy'; }
     return img;
   }
 
@@ -136,6 +154,19 @@
   // 手里拿到的也是强化版。两版的差额在悬停浮层里都列出来，不藏。
   function statsOf(p) { return (p[4] && p[4][1]) || p[3] || 0; }
   function descOf(p) { return (p[4] && p[4][0]) || p[2] || ''; }
+
+  // 站内那一段。p[5] 是 G.d 里的位置，从 1 起数；0 表示武器 PERK 详解那一页
+  // 没写它。manifest 抄来的那句只说「击杀后提高填装速度」，站内那一段写的是
+  // 提多少、怎么触发、强化版差多少——这一页合起来显示，正是它存在的理由。
+  function siteOf(p) { return (p[5] && G.d && G.d[p[5] - 1]) || null; }
+
+  // 说明整段是站内产出的 HTML（带 <span class="unsure"> 与 <span class="enh">），
+  // 照原样挂上去，不在这里重排一遍版。
+  function siteBlock(got, cls) {
+    var box = el('div', cls);
+    box.innerHTML = got[0];
+    return box;
+  }
 
   // 一套配置下每项属性的投资值总和，以及它是由哪几件东西加起来的。
   // 条件生效的那些（亡命之徒击杀后才加填装）不计入总和，只记在明细里备注。
@@ -222,7 +253,17 @@
   var SVG = 'http://www.w3.org/2000/svg';
 
   // 卡片上给作者留的那一个字，与词条图标右上角那枚角标同一套记号。
-  var AUTHOR_LETTER = { aegis: 'A', lgpig: 'L', compendium: 'C' };
+  // 与 build-weapons.py 的 AUTHOR_MARK 对上。第三位作者只出评语、不出评级，
+  // 给他一个角标会把「他写过这一把」读成「他推荐这一枚词条」。
+  var AUTHOR_LETTER = { aegis: 'A', lgpig: 'L' };
+
+  // 弹药符号按游戏内的颜色走：特殊是绿、威能是紫，主武器在游戏里就是素白。
+  // 用的是 site.css 里那两个既有的着色类，不为这一页另起一套。
+  var AMMO_CLASS = { 主武器: '', 特殊: 'ammo-special', 威能: 'ammo-heavy' };
+
+  function ammoClass(name) {
+    return ('wpn-tag-svg ' + (AMMO_CLASS[name] || '')).trim();
+  }
 
   function glyph(id, cls) {
     var svg = document.createElementNS(SVG, 'svg');
@@ -255,9 +296,9 @@
     { key: 't', name: '类型', pic: 'ty', drop: true },
   ];
   var FLAGS = [
-    { key: 'tier', name: '异域', hit: function (w) { return w.tier === 6; } },
-    { key: 'craft', name: '可锻造', hit: function (w) { return !!w.craft; } },
-    { key: 'tiering', name: '支持阶级', hit: function (w) { return !!w.tiering; } },
+    { key: 'tier', name: '异域武器', hit: function (w) { return w.tier === 6; } },
+    { key: 'craft', name: '锻造武器', hit: function (w) { return !!w.craft; } },
+    { key: 'tiering', name: 'T 级武器', hit: function (w) { return !!w.tiering; } },
     { key: 'rated', name: '有评级', hit: function (w) { return !!Object.keys(w.r).length; } },
   ];
   var on = {};                      // {维度: {取值: true}}
@@ -304,6 +345,10 @@
   // 展开着的下拉关掉。
   var switches = [];
 
+  function view0() {
+    return document.querySelector('.wpn-view');
+  }
+
   function facets() {
     var host = document.getElementById('facets');
     FACETS.forEach(function (f) {
@@ -327,7 +372,7 @@
         if (pic && (f.pic === 'el' || f.pic === 'ch')) {
           b.appendChild(icon(pic, 14, 'wpn-tag-ico'));
         } else if (pic) {
-          b.appendChild(glyph(pic, 'wpn-tag-svg'));
+          b.appendChild(glyph(pic, f.pic === 'am' ? ammoClass(v) : 'wpn-tag-svg'));
         }
         b.appendChild(el('span', '', f.text ? f.text(by0(f.key, v)) : v));
         var tail = el('em', '', '');
@@ -339,10 +384,10 @@
         switches.push({ node: b, tail: tail, dim: f.key, value: v });
         wrap.appendChild(b);
       });
-      host.appendChild(box);
+      host.insertBefore(box, view0());
     });
     var flags = el('div', 'wpn-facet');
-    flags.appendChild(el('span', 'wpn-facet-name', '别的'));
+    flags.appendChild(el('span', 'wpn-facet-name', '其他'));
     FLAGS.forEach(function (g) {
       var b = el('button', 'toggle wpn-facet-one');
       b.type = 'button';
@@ -365,7 +410,7 @@
       refresh();
     });
     flags.appendChild(clear);
-    host.appendChild(flags);
+    host.insertBefore(flags, view0());
     switches.clear = clear;
   }
 
@@ -406,7 +451,8 @@
   // ── 网格：一把枪一张卡片 ──────────────────────────────────────────
   // 卡片上那一行小图标照 destiny.report 的次序：元素、弹药、武器类型、勇士、赛季。
   // 站内比它多一行——两位作者的评级，那是这一页存在的理由。
-  function card(w) {
+  function card(w, at) {
+    eager = at < EAGER_CARDS ? 1 : 0;
     var a = el('a', 'wpn-card');
     a.href = '#' + w.h;
     a.appendChild(gun(w, 64, 'wpn-card-ico'));
@@ -416,7 +462,7 @@
     if (D.o.el[w.tk]) {
       tags.appendChild(icon(D.o.el[w.tk], 14, 'wpn-tag-ico'));
     }
-    if (D.o.am[w.am]) { tags.appendChild(glyph(D.o.am[w.am], 'wpn-tag-svg')); }
+    if (D.o.am[w.am]) { tags.appendChild(glyph(D.o.am[w.am], ammoClass(w.am))); }
     if (D.o.ty[w.t]) { tags.appendChild(glyph(D.o.ty[w.t], 'wpn-tag-svg wide')); }
     if (w.br && D.o.ch[w.br]) {
       tags.appendChild(icon(D.o.ch[w.br], 14, 'wpn-tag-ico champ'));
@@ -443,6 +489,7 @@
       rate.appendChild(b);
     });
     if (rate.childNodes.length) { a.appendChild(rate); }
+    eager = 0;
     return a;
   }
 
@@ -451,7 +498,7 @@
 
   function feed(box) {
     var batch = found.slice(laid, laid + PAGE);
-    batch.forEach(function (w) { box.insertBefore(card(w), more); });
+    batch.forEach(function (w, i) { box.insertBefore(card(w, laid + i), more); });
     laid += batch.length;
     if (laid >= found.length && more) {
       more.remove();
@@ -511,7 +558,7 @@
       hits.appendChild(el('li', 'wpn-more', '还有 ' + (got.length - LIMIT) + ' 把，再输几个字'));
     }
     if (!got.length) {
-      hits.appendChild(el('li', 'wpn-more', '没有这把枪'));
+      hits.appendChild(el('li', 'wpn-more', '没有这把枪。换几个字试试。'));
     }
     mark();
   }
@@ -523,42 +570,48 @@
     });
   }
 
+  // 固有那一栏的栏名，与 build-weapons.py 的 COLUMN 表对上；大师杰作那一栏
+  // 由第四位（折起来显示）认，不按栏名认——栏名是给读者看的，会改。
+  var FRAME_COL = '固有';
+  var SITE_TITLE = '武器 PERK 详解';
+
+  function frameOf(d) {
+    var got = (d.c || []).filter(function (c) {
+      return c[0] === FRAME_COL && c[1].length;
+    });
+    return got[0] || null;
+  }
+
+  function mwOf(d) {
+    for (var i = 0; i < (d.c || []).length; i++) {
+      if (d.c[i][3]) { return i; }
+    }
+    return null;
+  }
+
   // ── 标签片 ────────────────────────────────────────────────────────
   function chips(w, d) {
     var box = el('div', 'wpn-chips');
-    function add(text, cls, why, pic) {
+    function add(text, cls, pic) {
       if (!text) { return; }
       var n = el('span', 'wpn-chip' + (cls ? ' ' + cls : ''));
-      if (pic) { n.appendChild(icon(pic, 14, 'wpn-chip-ico')); }
+      if (pic) { n.appendChild(pic); }
       n.appendChild(el('span', '', text));
-      if (why) {
-        n.tabIndex = 0;
-        tipOn(n, function (host) { host.appendChild(el('p', '', why)); });
-      }
       box.appendChild(n);
     }
-    add(w.el, w.tk);
-    add(w.br, 'champ',
-      '这把枪自带' + w.br + '，打对应的勇士不必再靠神器模组。\n'
-      + '来自它的固有框架：勇士克制是框架自带的，同一个框架的枪破同一种。', w.bri);
-    add(w.t, '');
-    add(w.am, '');
-    // 框架名就是固有那一列里的那一枚，与矩阵第一格是同一件事。
-    var frame = (d.c || []).filter(function (c) { return c[0] === '固有'; })[0];
-    if (frame && frame[1].length) { add(G.p[frame[1][0]][0], ''); }
-    add(w.tier === 6 ? '异域' : '传说', w.tier === 6 ? 'exotic' : 'legend');
-    // 赛季两个数：首发是事实，在池是 Aegis 写的那一列，两件事不一样。
-    var pool = ((d.by.aegis || {})['赛季'] || '').replace(/\{[\w-]+\|([^{}]*)\}/g, '$1');
-    if (w.sea || pool) {
-      add((w.sea ? w.sea + ' 季' : '赛季未知') + (pool ? ' · 现在 ' + pool + ' 季在池' : ''), '',
-        (w.sea ? '首发于第 ' + w.sea + ' 赛季。' : '首发赛季查不出来：这把枪的发布版本号是活动武器共用的那一个。')
-        + (pool ? '\nAegis 记的是它现在还能在第 ' + pool + ' 赛季的池子里刷到。' : ''));
-    }
-    add(w.craft ? '可锻造' : '', '', '这把枪可以在塑形台上打造，打造出来的那把能上强化 Perk。');
-    add(w.tiering ? '支持阶级' : '', '',
-      '这把枪吃装备阶级：2 阶把两个 Perk 栏换成强化版，3 阶解锁强化模组，'
-      + '4 阶把枪管与弹匣换成强化版，5 阶换起源特性并解锁皮肤。\n'
-      + '现在是几阶是掉落那一把自己的属性，定义表里查不到，所以这里只说「支持」。');
+    // 图标与筛选条上那一套同源（D.o 的四张共享表），一枚标签片与它对应的那枚
+    // 开关因此长得一样，读者认得出是同一件事。
+    add(w.el, w.tk, D.o.el[w.tk] && icon(D.o.el[w.tk], 14, 'wpn-chip-ico'));
+    add(w.br, 'champ', D.o.ch[w.br] && icon(D.o.ch[w.br], 14, 'wpn-chip-ico'));
+    add(w.t, '', D.o.ty[w.t] && glyph(D.o.ty[w.t], 'wpn-tag-svg wide'));
+    add(w.am, '', D.o.am[w.am] && glyph(D.o.am[w.am], ammoClass(w.am)));
+    // 框架名就是固有那一列里的那一枚，与矩阵下方那一块是同一件事。
+    var frame = frameOf(d);
+    if (frame) { add(G.p[frame[1][0]][0], ''); }
+    add(w.tier === 6 ? '异域武器' : '传说武器', w.tier === 6 ? 'exotic' : 'legend');
+    if (w.sea) { add('第 ' + w.sea + ' 赛季', ''); }
+    add(w.craft ? '锻造武器' : '', '');
+    add(w.tiering ? 'T 级武器' : '', '');
     return box;
   }
 
@@ -566,31 +619,33 @@
   // 条按来源分段，但只用同一个强调色的几档明度，不换色相：design.md 写着
   // 「整页唯一的饱和色来自游戏自身的编码」，给「词条加的那一段」配一个蓝
   // 属于凭空造色。负值段走斜纹，同样不靠红色。
-  function bar(rows, si, top, preview) {
+  // 分母钉死 100：这条轴要跨行可比，不按各行自己的上限伸缩。
+  var SPAN = 100;
+
+  function bar(rows, preview) {
     var rail = el('span', 'wpn-rail');
     var pos = 0, neg = 0;
     rows.forEach(function (part) {
       if (part[2]) { return; }        // 条件生效的不画进条里
       if (part[1] >= 0) { pos += part[1]; } else { neg -= part[1]; }
     });
-    var span = Math.max(top || 100, 1);
     var seen = 0;
     rows.forEach(function (part, i) {
       if (part[2] || part[1] <= 0) { return; }
       var seg = el('span', 'wpn-seg' + (i === 0 ? ' base' : ''));
-      seg.style.width = Math.min(100, part[1] / span * 100) + '%';
+      seg.style.width = Math.min(100, part[1] / SPAN * 100) + '%';
       rail.appendChild(seg);
       seen += part[1];
     });
     if (neg) {
       var cut = el('span', 'wpn-seg neg');
-      cut.style.width = Math.min(100, neg / span * 100) + '%';
+      cut.style.width = Math.min(100, neg / SPAN * 100) + '%';
       rail.appendChild(cut);
     }
     if (preview != null) {
       var ghost = el('span', 'wpn-ghost' + (preview < 0 ? ' down' : ''));
-      ghost.style.left = Math.max(0, Math.min(100, (preview < 0 ? seen + preview : seen) / span * 100)) + '%';
-      ghost.style.width = Math.min(100, Math.abs(preview) / span * 100) + '%';
+      ghost.style.left = Math.max(0, Math.min(100, (preview < 0 ? seen + preview : seen) / SPAN * 100)) + '%';
+      ghost.style.width = Math.min(100, Math.abs(preview) / SPAN * 100) + '%';
       rail.appendChild(ghost);
     }
     return rail;
@@ -601,30 +656,25 @@
     var soon = preview ? readout(d, picked, preview) : null;
     var box = el('section', 'wpn-stats');
     box.appendChild(el('h3', '', '数值'));
-    var dl = el('dl');
+    var dl = el('div', 'wpn-statlist');
     now.forEach(function (row, i) {
       var next = soon ? soon[i] : null;
-      var dt = el('dt', '', row.name);
-      var dd = el('dd');
-      // 量纲不同的（每分钟发射数、弹匣）只写数——给它们画一条按 100 封顶的条，
-      // 条会永远满格，读者以为那是「满」。
-      if (row.big) {
-        dd.appendChild(el('span', 'wpn-rail bare'));
-      } else {
-        dd.appendChild(bar(row.parts, row.si, 100,
-          next && next.value !== row.value ? next.value - row.value : null));
-      }
-      dd.appendChild(el('b', '', String(row.value)));
-      if (next && next.value !== row.value) {
-        dd.appendChild(el('i', 'wpn-next' + (next.value > row.value ? ' up' : ' down'),
-          (next.value > row.value ? '▲' : '▼') + next.value));
-      }
       // 第二层悬停：这个数是怎么加出来的。悬停词条出的是「这一枚值多少」，
       // 这里出的是「这一项由哪几件东西凑成」，两个问题不同，都要。
       var line = el('div', 'wpn-statrow');
       line.tabIndex = 0;
-      line.appendChild(dt);
-      line.appendChild(dd);
+      line.appendChild(el('span', 'wpn-stat-name', row.name));
+      line.appendChild(el('b', '', String(row.value)));
+      if (next && next.value !== row.value) {
+        line.appendChild(el('i', 'wpn-next' + (next.value > row.value ? ' up' : ' down'),
+          (next.value > row.value ? '▲' : '▼') + next.value));
+      }
+      // 量纲不同的（每分钟发射数、弹匣）不画条——给它们画一条按 100 封顶的条，
+      // 条会永远满格，读者以为那是「满」。
+      if (!row.big) {
+        line.appendChild(bar(row.parts,
+          next && next.value !== row.value ? next.value - row.value : null));
+      }
       tipOn(line, function (host) {
         host.appendChild(el('strong', '', row.name));
         var t = el('table', 'wpn-sum');
@@ -658,6 +708,8 @@
     if (p[4]) { head.appendChild(el('span', 'wpn-tag-enh', '强化')); }
     host.appendChild(head);
     if (descOf(p)) { host.appendChild(el('p', '', descOf(p))); }
+    var got = siteOf(p);
+    if (got) { host.appendChild(siteBlock(got, 'wpn-site')); }
     var rows = statsOf(p) || [];
     if (rows.length) {
       var t = el('table', 'wpn-sum');
@@ -668,12 +720,6 @@
         t.appendChild(tr);
       });
       host.appendChild(t);
-    }
-    if (p[4] && p[3] && p[3].length) {
-      host.appendChild(el('p', 'wpn-tip-note', '上面是强化版的数值；未强化时 '
-        + p[3].map(function (s) {
-          return D.s[s[0]][0] + ' ' + (s[1] > 0 ? '+' : '') + s[1];
-        }).join('、') + '。'));
     }
   }
 
@@ -739,28 +785,40 @@
     return cell;
   }
 
+  // 矩阵下方那一块：这把枪的固有 PERK，常驻不变。
+  // 它一栏恒只有一枚，摆进矩阵等于给一整列只画一个格子；而它说的是「这把枪是
+  // 什么框架」，是读这把枪的前提，所以钉在池子下面一直显示，不跟着点击换内容。
+  // 换成哪一枚的说明由悬停浮层回答，两处分工不同。
+  function frameNote(at) {
+    var p = G.p[at];
+    var box = el('section', 'wpn-note');
+    box.appendChild(icon(p[1], 44, 'wpn-note-ico'));
+    var t = el('div', 'wpn-note-body');
+    var head = el('p', 'wpn-tip-head');
+    head.appendChild(el('span', 'wpn-note-tag', '固有'));
+    head.appendChild(el('strong', '', p[0]));
+    t.appendChild(head);
+    if (descOf(p)) { t.appendChild(el('p', '', descOf(p))); }
+    var got = siteOf(p);
+    if (got) {
+      t.appendChild(siteBlock(got, 'wpn-site'));
+      // 链接只在这一块给：悬停浮层是 pointer-events: none 的，里面的链接点不到。
+      var a = el('a', 'wpn-site-link', SITE_TITLE);
+      a.href = '../weapon-perks/index.html#' + got[1];
+      t.appendChild(a);
+    }
+    box.appendChild(t);
+    return box;
+  }
+
   function matrix(d, rec, pick) {
     var box = el('section', 'wpn-sockets');
-    box.appendChild(el('h3', '', '词条池'));
-    var note = el('div', 'wpn-note');
-    box.appendChild(note);
-    pick.tell = function (at) {
-      var p = G.p[at];
-      note.textContent = '';
-      note.appendChild(icon(p[1], 40, 'wpn-note-ico'));
-      var t = el('div');
-      var head = el('p', 'wpn-tip-head');
-      head.appendChild(el('strong', '', p[0]));
-      if (p[4]) { head.appendChild(el('span', 'wpn-tag-enh', '强化')); }
-      t.appendChild(head);
-      if (descOf(p)) { t.appendChild(el('p', '', descOf(p))); }
-      note.appendChild(t);
-    };
+    box.appendChild(el('h3', '', 'Perk 池'));
     var grid = el('div', 'wpn-grid');
-    var fold = el('div', 'wpn-pick');
-    fold.hidden = true;
+    // 固有与大师杰作都不在这里：前者常驻在矩阵下方，后者跟可选模组一样随时能换，
+    // 挪进那一节。矩阵里剩下的才是掉落时随机开出来的那几栏。
     d.c.forEach(function (col, i) {
-      if (col[3]) { grid.appendChild(folded(col, i, rec, pick, fold)); return; }
+      if (col[3] || col[0] === FRAME_COL) { return; }
       var cell = el('div', 'wpn-colbox');
       cell.appendChild(el('span', 'wpn-col-name', col[0]));
       col[1].forEach(function (at) {
@@ -769,36 +827,38 @@
       grid.appendChild(cell);
     });
     box.appendChild(grid);
-    box.appendChild(fold);
+    var frame = frameOf(d);
+    if (frame) { box.appendChild(frameNote(frame[1][0])); }
     return box;
   }
 
   // ── 可选模组 ──────────────────────────────────────────────────────
   // 不并进矩阵：词条是掉落时随机开出来的，模组是随时能换的，混在一张表里
   // 那二十几枚会让人以为它们也是随机词条。
-  function modBlock(d, pick) {
+  //
+  // 大师杰作排在这一行最前：它同样是升满之后自己挑的一项，与模组是同一类事，
+  // 与随机词条不是。两者都画成方格，矩阵里那些圆格一眼分得开。
+  function modBlock(d, pick, rec) {
     var box = el('section', 'wpn-mods');
-    var head = el('div', 'wpn-mods-head');
-    head.appendChild(el('h3', '', '可选模组'));
-    var find = el('input', 'wpn-mod-find');
-    find.type = 'search';
-    find.placeholder = '按名字找';
-    find.setAttribute('aria-label', '在可选模组里按名字找');
-    head.appendChild(find);
-    box.appendChild(head);
-    var row = el('div', 'wpn-modrow');
-    var seats = d.m.map(function (at) {
-      var b = seat(at, {}, pick.m === at, pick, 'm');
-      row.appendChild(b);
-      return b;
-    });
-    box.appendChild(row);
-    find.addEventListener('input', function () {
-      var want = find.value.trim().toLowerCase();
-      seats.forEach(function (b, i) {
-        b.hidden = !!want && G.p[d.m[i]][0].toLowerCase().indexOf(want) < 0;
+    box.appendChild(el('h3', '', '可选模组'));
+    var fold = el('div', 'wpn-pick');
+    fold.hidden = true;
+    var wrap = el('div', 'wpn-modwrap');
+    // 大师杰作自成一块，不混进模组那一行：它带着自己的栏名，塞进 flex-wrap 的
+    // 行里会让二十几枚模组绕着那个栏名换行，栏名与它下面那一枚也就对不上了。
+    // **按 != null 判，不按真假判**：大师杰作恒是第 0 栏（build-weapons.py 把它
+    // insert(0)），写成 if (mw) 那一栏就永远画不出来。
+    var mw = mwOf(d);
+    if (mw != null) { wrap.appendChild(folded(d.c[mw], mw, rec, pick, fold)); }
+    if (d.m.length) {
+      var row = el('div', 'wpn-modrow');
+      d.m.forEach(function (at) {
+        row.appendChild(seat(at, {}, pick.m === at, pick, 'm'));
       });
-    });
+      wrap.appendChild(row);
+    }
+    box.appendChild(wrap);
+    box.appendChild(fold);
     return box;
   }
 
@@ -847,7 +907,10 @@
       then(d);
     }).catch(function (why) {
       // 取不到就说清楚取不到，不画一个缺了半截的页面当成完整的。
-      then({ err: String(why), c: [], m: [], base: [], rec: {}, by: {}, alt: [] });
+      // 写给读者的是「哪一步没成」，不是 JS 的异常 toString——「Error: 404」
+      // 对着屏幕的人什么也解释不了。原样那一句留给 console，排障要用。
+      console.error('weapons: 取 w/' + h + '.json 失败', why);
+      then({ err: '这一把的详情没取到。刷新一次，或过一会儿再来。' });
     });
   }
 
@@ -892,7 +955,7 @@
       if (location.hash.slice(1) !== h) { return; }   // 读者已经点了别的
       if (d.err) {
         main.textContent = '';
-        main.appendChild(el('p', 'wpn-empty', '这一把的详情没取到（' + d.err + '）'));
+        main.appendChild(el('p', 'wpn-empty', d.err));
         return;
       }
       plugs(function (why) { draw(d, why); });
@@ -919,7 +982,6 @@
       pick.set = function (key, at) {
         if (key === 'm') { pick.m = pick.m === at ? null : at; } else { pick.c[key] = at; }
         stamp();
-        pick.tell(at);
         repaint(null);
       };
       pick.hover = function (key, at) {
@@ -945,7 +1007,9 @@
         main.appendChild(s);
       }
       if (d.c.length) { main.appendChild(matrix(d, d.rec || {}, pick)); }
-      if (d.m.length) { main.appendChild(modBlock(d, pick)); }
+      if (d.m.length || mwOf(d) != null) {
+        main.appendChild(modBlock(d, pick, d.rec || {}));
+      }
       // 评语排在词条之后：读者先看事实，再看评价。
       var said = el('section', 'wpn-says');
       Object.keys(D.a).forEach(function (who) {
@@ -953,22 +1017,17 @@
         var node = block && says(who, block);
         if (node) { said.appendChild(node); }
       });
-      if (said.childNodes.length) {
-        said.insertBefore(el('h3', '', '作者怎么说'), said.firstChild);
-        main.appendChild(said);
-      }
+      if (said.childNodes.length) { main.appendChild(said); }
 
       side.appendChild(chips(w, d));
       repaint(null);
       if (d.alt && d.alt.length) { side.appendChild(versions(d.alt, h)); }
-      if (d.c.length && d.c[0][1].length) { pick.tell(pick.c[0]); }
     }
   }
 
   // 复刻让同一把枪有好几个版本，各自的词条池不一样。
   function versions(alt, now) {
     var box = el('section', 'wpn-alt');
-    box.appendChild(el('h3', '', '别的版本'));
     var ol = el('ol');
     [{ h: now }].concat(alt.map(function (x) { return { h: x[0], sea: x[1] }; }))
       .forEach(function (x) {
@@ -1022,7 +1081,13 @@
   gridBtn.addEventListener('click', function () { setView('grid'); });
   listBtn.addEventListener('click', function () { setView('list'); });
 
-  q.addEventListener('input', refresh);
+  // 输入防抖。每敲一个字都会把卡片墙整片重建——一批 120 张就是两千多个元素、
+  // 八百多张 <img> 建了又丢。连着敲一个六字的枪名，不防抖是把这件事做六遍。
+  var typing = null;
+  q.addEventListener('input', function () {
+    clearTimeout(typing);
+    typing = setTimeout(refresh, 120);
+  });
   window.addEventListener('hashchange', function () { tipHide(); paint(); });
   facets();
   setView(view, true);

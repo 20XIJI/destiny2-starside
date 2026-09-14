@@ -48,7 +48,6 @@ OUT_DIR = os.path.join(shell.ROOT, 'data', 'facts')
 SRC = os.path.join(os.path.dirname(shell.ROOT), '..', 'github',
                    'Destiny-item-list', 'manifest_raw')
 
-LANGS = ('zh', 'en')
 DIRS = {'zh': 'zh-chs', 'en': 'en'}
 
 # 站内页面引用得到的那几类。19 是插件（词条、护甲模组、碎片、星相、超能、手雷、

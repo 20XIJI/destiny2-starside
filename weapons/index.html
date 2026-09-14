@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>武器库</title>
-<meta name="description" content="Destiny 2 武器库——按名字查一把枪，一页看全它的词条池、数值、评级与推荐配搭，Aegis 与小棒猪两份口径并列显示。">
+<meta name="description" content="">
 <meta name="theme-color" content="#0b0d14">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="Starside">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:title" content="武器库">
-<meta property="og:description" content="Destiny 2 武器库——按名字查一把枪，一页看全它的词条池、数值、评级与推荐配搭，Aegis 与小棒猪两份口径并列显示。">
+<meta property="og:description" content="">
 <link rel="preload" href="../assets/fonts/chakra-petch-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../assets/site.css">
@@ -30,19 +30,16 @@
 <script defer src="app.js"></script>
 <header class="page-head">
 <h1>武器库</h1>
-<p class="page-note">Destiny 2 武器库——按名字查一把枪，一页看全它的词条池、数值、评级与推荐配搭，Aegis 与小棒猪两份口径并列显示。</p>
 </header>
 
 <main class="wpn">
 <section id="find">
-<h2 class="sect-label">按名字挑一把枪</h2>
 <form class="wpn-find" role="search" onsubmit="return false">
-<input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="按名字找一把枪" aria-label="按名字找一把枪">
+<input id="q" type="search" autocomplete="off" spellcheck="false">
 </form>
-<div class="wpn-facets" id="facets"></div>
-<div class="wpn-bar">
+<div class="wpn-facets" id="facets">
 <p id="count" class="wpn-count" role="status"></p>
-<nav class="wpn-view" aria-label="换一种排法">
+<nav class="wpn-view">
 <button id="v-grid" class="toggle" type="button" aria-pressed="true">网格</button>
 <button id="v-list" class="toggle" type="button" aria-pressed="false">列表</button>
 </nav>
@@ -59,8 +56,8 @@
 </main>
 
 <footer class="site-foot">
-<p><span class="stamp">更新 2026.9.10</span>共 2208 把；其中 863 把有作者写的评级与推荐，两位作者的口径并列显示，不合并。</p>
-<p>数据源：本页不另立数据：词条池、数值与勇士克制来自 Bungie 的 manifest，评级、推荐与评语来自各自作者那一份。。本页在其基础上统一了术语、标点与排版。</p>
+<p><span class="stamp">更新 2026.9.10</span>数值以游戏内实测为准，标注 <span class="unsure">?</span> 的条目尚待核实。方括号内是 PvP 数值。共 2208 把；其中 851 把有作者写的评级与推荐，三位作者的口径并列显示，不合并。</p>
+<p>数据源：本页不另立数据：Perk 池、数值与勇士克制来自 Bungie 的 manifest，评级、推荐与评语来自各自作者那一份。本页在其基础上统一了术语、标点与排版。</p>
 <p>© 2026 日栎w · <a href="https://space.bilibili.com/26117485" target="_blank" rel="noopener">哔哩哔哩</a></p>
 <p class="legal">Starside 为非官方资料站，与 Bungie, Inc. 无从属关系。Destiny 2 及相关名称、标识为 Bungie, Inc. 的商标。</p>
 <p class="legal"><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">鲁ICP备2026052166号-1</a></p>
