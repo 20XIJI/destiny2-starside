@@ -152,6 +152,8 @@ references/*
 !references/builds/
 !references/builds/*/
 !references/builds/*/*.md
+!references/items/
+!references/items/*.json
 .archived/
 
 # Python 字节码缓存（tools/ 下的生成器一跑就有）

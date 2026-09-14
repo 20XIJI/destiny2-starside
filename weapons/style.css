@@ -1,0 +1,209 @@
+/* 武器库。版心比资料页宽一档：左栏结果 + 右栏详情要并排放得下。 */
+:root {
+  --wrap: 1180px;
+  --min: 320px;
+  --accent: var(--c-legend);
+}
+
+.wpn-find {
+  margin: 0 0 12px;
+}
+
+.wpn-find input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  font: inherit;
+  color: var(--bone-hi);
+  background: var(--field-fill);
+  border: 1px solid var(--hair-lit);
+  border-radius: 4px;
+}
+
+.wpn-find input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.wpn-body {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+/* ── 左栏 ── */
+.wpn-hits {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 74vh;
+  overflow-y: auto;
+  border: 1px solid var(--hair);
+  border-radius: 4px;
+}
+
+.wpn-hit {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 8px;
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--hair);
+}
+
+.wpn-hit:hover {
+  background: var(--row-hover);
+}
+
+.wpn-hit.on {
+  background: var(--tint-2);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.wpn-hit-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.wpn-hit-text strong {
+  font-weight: 600;
+}
+
+.wpn-hit-text small {
+  color: var(--bone-dim);
+}
+
+.wpn-more {
+  padding: 8px;
+  color: var(--bone-dim);
+}
+
+/* ── 右栏 ── */
+.wpn-one {
+  min-width: 0;
+}
+
+.wpn-head {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.wpn-head h2 {
+  margin: 0;
+}
+
+.wpn-en {
+  margin: 2px 0 6px;
+  color: var(--bone-dim);
+}
+
+.wpn-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+}
+
+.wpn-chip {
+  padding: 1px 8px;
+  border: 1px solid var(--hair-lit);
+  border-radius: 999px;
+}
+
+.wpn-flavor {
+  color: var(--bone-dim);
+  font-style: italic;
+}
+
+.wpn-src {
+  color: var(--bone-dim);
+}
+
+.wpn-by,
+.wpn-stats,
+.wpn-sockets {
+  margin-top: 18px;
+  padding-top: 10px;
+  border-top: 1px solid var(--hair);
+}
+
+.wpn-by h3,
+.wpn-stats h3,
+.wpn-sockets h3 {
+  margin: 0 0 8px;
+}
+
+.wpn-by dl,
+.wpn-stats dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 4px 12px;
+  margin: 0;
+}
+
+.wpn-by dt,
+.wpn-stats dt {
+  color: var(--bone-dim);
+}
+
+.wpn-by dd,
+.wpn-stats dd {
+  margin: 0;
+}
+
+.wpn-stats dd {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.wpn-bar {
+  height: 8px;
+  max-width: 180px;
+  flex: 1 1 auto;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+.wpn-col {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--hair);
+}
+
+.wpn-col-name {
+  color: var(--bone-dim);
+}
+
+.wpn-pool {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+
+.wpn-plug {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.wpn-empty {
+  color: var(--bone-dim);
+}
+
+/* 窄屏改上下两栏：260px 的左栏在手机上会把右栏挤到读不了。 */
+@media (max-width: 720px) {
+  .wpn-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .wpn-hits {
+    max-height: 40vh;
+  }
+}

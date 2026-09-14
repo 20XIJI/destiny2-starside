@@ -2309,6 +2309,7 @@ body:has(.hero) {
 /* 各页的编码归属。依据全部取自游戏自身：异域装备即金黄、战斗人员即红、
    特殊弹药即绿、神器模组即青绿。查不到依据的页面不给色。 */
 .entries > li.k-perk { --edge: var(--c-perk); }
+.entries > li.k-legend { --edge: var(--c-legend); }
 .entries > li.k-charge { --edge: var(--c-charge); }
 .entries > li.k-exotic { --edge: var(--c-exotic); }
 .entries > li.k-prism { --edge: var(--c-prism); }

@@ -19,7 +19,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HOME = 'index.html'
 # 两个专属生成器各出一页，其余的从 references/docs/ 现扫——新增一篇资料就不必
 # 记得回来改这张表了。
-FIXED = [HOME, 'armor-sets/index.html', 'artifact-mods/index.html']
+FIXED = [HOME, 'armor-sets/index.html', 'artifact-mods/index.html',
+         'weapons/index.html']
 DOC_DIR = os.path.join(ROOT, 'references', 'docs')
 BUILD_DIR = os.path.join(ROOT, 'references', 'builds')
 # 当前赛季。配装按赛季目录存档，**只有这一季进页面清单**——旧赛季照常生成（外壳

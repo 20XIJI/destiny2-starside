@@ -131,6 +131,12 @@ def project(item, other):
         out['icon'] = icon(dp['icon'])
     if item.get('iconWatermark'):
         out['wm'] = icon(item['iconWatermark'])
+    if dp.get('description'):
+        out['desc'] = two(dp.get('description'), od.get('description'))
+    if item.get('flavorText'):
+        out['flavor'] = two(item.get('flavorText'), other.get('flavorText'))
+    if item.get('breakerType'):
+        out['breaker'] = item['breakerType']
     if item.get('isAdept'):
         out['adept'] = True
     if item.get('isHolofoil'):
@@ -225,6 +231,30 @@ def distill(src):
             continue
         kept[h] = project(item, other[h])
     del other
+    gc.collect()
+
+    # 数值只收**游戏里会显示的那几项**。物品的 stats.stats 里混着一堆恒为 0 的
+    # 占位（攻击、能量、变焦），该显示哪些由它自己的 statGroup 定：
+    # scaledStats 列的就是那一份，顺序即游戏里的顺序。按值过滤会把真正的 0
+    # （防御抗性 0）一起滤掉，所以按表不按值。
+    groups = load(src, 'zh', 'DestinyStatGroupDefinition')
+    for h, item in items.items():
+        row = kept.get(h)
+        if row is None:
+            continue
+        block = item.get('stats') or {}
+        group = groups.get(str(block.get('statGroupHash') or ''))
+        if not group:
+            continue
+        vals = block.get('stats') or {}
+        # scaledStats 列到、而物品的 stats 里没写的那几项，游戏里显示 0
+        # （「故我在」的防御持久就是这样），按表补齐，不按「有没有值」筛。
+        got = [(str(s['statHash']), (vals.get(str(s['statHash'])) or {}).get('value') or 0)
+               for s in group.get('scaledStats') or ()]
+        if got:
+            # 顺序即游戏里的显示顺序，所以存成数组不存字典。
+            row['stats'] = got
+    del groups
     gc.collect()
 
     # 来源要从收藏条目上取：物品自己的 displaySource 在复刻武器上一律是「随机特性：
@@ -378,10 +408,12 @@ def distill(src):
         if v.get('redacted') or not (dp.get('name') or '').strip():
             continue
         od = (en_s.get(h) or {}).get('displayProperties') or {}
-        row = {'n': two(dp.get('name'), od.get('name'))}
+        srow: dict[str, object] = {'n': two(dp.get('name'), od.get('name'))}
         if dp.get('description'):
-            row['desc'] = two(dp.get('description'), od.get('description'))
-        stats[h] = row
+            srow['desc'] = two(dp.get('description'), od.get('description'))
+        if dp.get('icon'):
+            srow['icon'] = icon(dp['icon'])
+        stats[h] = srow
     del zh_s, en_s
 
     a = dump(os.path.join(OUT_DIR, 'items.json'), kept, True)

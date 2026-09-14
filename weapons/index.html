@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>武器库</title>
+<meta name="description" content="Destiny 2 武器库——按名字查一把枪，一页看全它的词条池、数值、评级与推荐配搭，Aegis 与小棒猪两份口径并列显示。">
+<meta name="theme-color" content="#0b0d14">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Starside">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:title" content="武器库">
+<meta property="og:description" content="Destiny 2 武器库——按名字查一把枪，一页看全它的词条池、数值、评级与推荐配搭，Aegis 与小棒猪两份口径并列显示。">
+<link rel="preload" href="../assets/fonts/chakra-petch-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="site-head">
+<nav class="site-nav">
+<span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>
+<a class="home" href="../index.html">Starside</a>
+<span class="sep">/</span>
+<span aria-current="page">武器库</span>
+</nav>
+</div>
+
+<script defer src="data.js"></script>
+<script defer src="app.js"></script>
+<header class="page-head">
+<h1>武器库</h1>
+<p class="page-note">Destiny 2 武器库——按名字查一把枪，一页看全它的词条池、数值、评级与推荐配搭，Aegis 与小棒猪两份口径并列显示。</p>
+</header>
+
+<main class="wpn">
+<section id="find">
+<h2 class="sect-label">按名字挑一把枪</h2>
+<form class="wpn-find" role="search" onsubmit="return false">
+<input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="按名字找一把枪" aria-label="按名字找一把枪">
+</form>
+<div class="wpn-body">
+<ol id="hits" class="wpn-hits"></ol>
+<article id="one" class="wpn-one"></article>
+</div>
+</section>
+</main>
+
+<footer class="site-foot">
+<p><span class="stamp">更新 2026.9.10</span>两位作者的口径并列显示，不合并；共 906 把。</p>
+<p>数据源：本页不另立数据：词条池与数值来自 Bungie 的 manifest，评级、推荐与评语来自各自作者那一份。。本页在其基础上统一了术语、标点与排版。</p>
+<p>© 2026 日栎w · <a href="https://space.bilibili.com/26117485" target="_blank" rel="noopener">哔哩哔哩</a></p>
+<p class="legal">Starside 为非官方资料站，与 Bungie, Inc. 无从属关系。Destiny 2 及相关名称、标识为 Bungie, Inc. 的商标。</p>
+<p class="legal"><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">鲁ICP备2026052166号-1</a></p>
+</footer>
+<script type="speculationrules">{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}</script>
+<script>(function(){var d=new Date(Date.now()+288e5).toISOString().slice(0,10);var o=document.getElementById("sv"),f=1;try{f=localStorage.getItem("svd")===d?0:1;if(f)localStorage.setItem("svd",d)}catch(_){}if(!f){if(!o)return;try{var c=localStorage.getItem("svt")||"",i=c.indexOf("|"),a=Date.now()-c.slice(0,i);if(i>0&&a>=0&&a<6e5){o.textContent=c.slice(i+1);return}}catch(_){}}var r=f?fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({a:"hit",s:o?1:0})}):fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api?a=stats");r.then(function(x){return x.json()}).then(function(s){if(o){var t="今日 "+s.today+" 位访客 · 累计 "+s.total;o.textContent=t;try{localStorage.setItem("svt",Date.now()+"|"+t)}catch(_){}}},function(x){if(o)o.textContent="访问统计取不到："+x})})()</script>
+<script>try{if(localStorage.sa_at&&document.querySelector("main[data-src]")){var l=document.querySelector('link[href$="assets/site.css"]');if(l)import(l.href.replace("assets/site.css","admin/edit.js"))}}catch(_){}</script>
+<script>(function(){if(!/\.tcloudbase(app)?\.com$/.test(location.hostname))return;var u="https://starside.work"+location.pathname+location.search+location.hash;document.title="【测试地址】"+document.title;function link(t,big){var a=document.createElement("a");a.href=u;a.textContent=t;a.style.cssText=big?"padding:.7em 1.6em;border:1px solid var(--accent);border-radius:2px;color:var(--accent);text-decoration:none;font-size:16px":"color:var(--accent);white-space:nowrap";return a}var bar=document.createElement("div");bar.style.cssText="position:fixed;left:0;right:0;bottom:0;z-index:99;display:flex;flex-wrap:wrap;gap:.2em 1em;align-items:center;justify-content:center;padding:.55em 1em;background-color:var(--ink-lift);border-top:1px solid var(--hair-lit);color:var(--bone);font:13px/1.7 var(--font-cn)";bar.append("这是测试地址，站点已经搬到 starside.work ",link("立即换过去"));var box=document.createElement("div");box.style.cssText="position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;gap:1.4em;align-items:center;justify-content:center;padding:2em;text-align:center;background-color:var(--ink);color:var(--bone);font:15px/1.9 var(--font-cn)";var say=document.createElement("p");say.textContent="你打开的是测试地址。站点的正式地址是 starside.work，请改用它并更新收藏。";say.style.cssText="margin:0;max-width:32em";var stay=document.createElement("button");stay.type="button";stay.disabled=true;stay.style.cssText="background:none;border:0;color:var(--bone-faint);font:13px/1.7 var(--font-cn);cursor:pointer";var n=5;stay.textContent="仍要留在测试地址（"+n+"）";var t=setInterval(function(){n--;stay.textContent="仍要留在测试地址"+(n?"（"+n+"）":"");if(!n){clearInterval(t);stay.disabled=false}},1000);stay.onclick=function(){box.remove();document.body.appendChild(bar)};box.append(say,link("去 starside.work",1),stay);document.body.appendChild(box)})()</script>
+</body>
+</html>
+

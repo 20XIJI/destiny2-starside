@@ -85,6 +85,23 @@ def wanted():
                 continue
             if need.setdefault(path, width(page)) != width(page):
                 clash.append((path, page))
+    # 武器库那一页要画每把枪的词条网格，图是插件自己的。这些插件多数不在任何
+    # 资料页上有行，靠上面那一圈扫不到；范围取「有记录的武器」的池，不是全部
+    # 2208 把——没记录的枪那一页不显示。
+    import entities
+    for book in sorted(os.listdir(entities.OUT_DIR)) if os.path.isdir(entities.OUT_DIR) else ():
+        if not book.endswith('.json'):
+            continue
+        with open(os.path.join(entities.OUT_DIR, book), encoding='utf-8') as fh:
+            for key in json.load(fh):
+                for col in facts.pools.get(key) or ():
+                    plugs = list(col.get('plugs') or ())
+                    if col.get('init'):
+                        plugs.append(col['init'])
+                    for one in plugs:
+                        path = icon_of(facts, str(one))
+                        if path:
+                            need.setdefault(path, 64)
     if clash:
         die('这几张图在两页要两个尺寸，得先定版式：\n  %s'
             % '\n  '.join('%s ← %s' % x for x in clash[:10]))
