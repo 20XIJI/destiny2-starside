@@ -18,7 +18,7 @@ import os
 import re
 
 import pagedex
-from pagedex import ELEM_PAGES, TOKENS
+from pagedex import ELEM_PAGES
 import shell
 from markup import die, text_of
 
@@ -73,6 +73,17 @@ def variants():
     return out
 
 
+def sources():
+    """配装词表读哪几页：从 SLOTS 现取。
+
+    **索引覆盖的页比这里多**——资料页只要行标题落得到主键就建索引，那是站内自己的
+    物品表；配装词表只是它的一个消费者，读的是 SLOTS 逐槽位写明的那几页。两件事
+    从前共用 pagedex.TOKENS 一张表，于是给索引加一页就等于给「异域武器」这种查法
+    多一个撞车来源。真相留在 SLOTS 一处，这里现取。
+    """
+    return sorted({p for pages in SLOTS.values() for p in pages})
+
+
 def build():
     """全部条目。同名的挂在一个键下，取用时由 pick() 挑。
 
@@ -81,7 +92,7 @@ def build():
     属性就让 id="…" 后面不再紧跟 >），还猜不出主键。
     """
     idx = {}
-    for page in TOKENS:
+    for page in sources():
         got = pagedex.must_read(page)
         SEARCHABLE[page] = got['searchable']
         for row in got['entries']:
@@ -198,7 +209,7 @@ def check_landing(idx):
     这一条只在有搜索框的页面上成立；没有搜索框的页面只滚到分节。
     """
     texts = {}
-    for page in TOKENS:
+    for page in sources():
         if not searchable(page):
             continue
         with open(os.path.join(shell.ROOT, *page.split('/'), 'index.html'),
@@ -226,13 +237,13 @@ def main():
     for hits in idx.values():
         for h in hits:
             per[h['page']] = per.get(h['page'], 0) + 1
-    for page in TOKENS:
+    for page in sources():
         print('%-26s %4d' % (page, per.get(page, 0)))
     print('合计 %d 条，%d 个名字，%d 个名字撞车' % (total, len(idx), len(dup)))
     print('落地检查：%d 条带过滤词，全部滤得出条目；'
           '无搜索框的页面 %s 只滚到分节'
           % (check_landing(idx),
-             '、'.join(p for p in TOKENS if not searchable(p)) or '无'))
+             '、'.join(p for p in sources() if not searchable(p)) or '无'))
     for k, v in sorted(dup.items())[:15]:
         print('  %s ← %s' % (k, '、'.join(h['page'] for h in v)))
 

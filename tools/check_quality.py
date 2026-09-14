@@ -1018,7 +1018,8 @@ class Generation(Isolated):
                 icon='fixture.webp', token='', anchor='sec-1', q='', desc='示例说明'))
         self.replace(build.vocab, 'build', lambda: copy.deepcopy(idx))
         # 词表夹具声明没有页内搜索；落地校验、渲染、结构闸门与 emit 均走真实实现。
-        self.replace(build.vocab, 'SEARCHABLE', {page: False for page in build.vocab.TOKENS})
+        self.replace(build.vocab, 'SEARCHABLE',
+                     {page: False for page in build.vocab.sources()})
 
     def home(self, sets):
         links = [('builds/index.html', '配装'), ('builds/new/index.html', ''),
