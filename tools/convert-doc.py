@@ -472,8 +472,12 @@ def index_row(dex, title, stamp, body, lane):
             icon='%s/%s' % (PAGE, icon.group(1)) if icon else '',
             desc=pagedex.wrap(*pagedex.panel(mine)))
     # 异域职业物品那张表一行摆两条词条：行标题一条，中间一格再一条。
+    # **中间那一条也要自己的主键**：它是另一件东西，不是行标题那件的别名。
     for name, ico in pagedex.SPIRIT.findall(body):
-        dex.add(anchor=anchor, kind=lane or label, name=text_of(name, collapse=True),
+        shown = text_of(name, collapse=True)
+        mark = STAMP(shown) if STAMP else ''
+        dex.add(hash=mark[len(' data-hash="'):-1] if mark else '',
+                anchor=anchor, kind=lane or label, name=shown,
                 icon='%s/%s' % (PAGE, ico), desc=pagedex.wrap(*pagedex.panel(theirs)))
 
 

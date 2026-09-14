@@ -299,9 +299,18 @@ def distill(src):
                 tiers.append(fresh)
         if tiers:
             name = item['displayProperties']['name']
-            arts.setdefault(name, {'n': {'zh': name},
-                                   'tiers': []})
+            arts.setdefault(name, {'n': {'zh': name}, 'tiers': []})
             arts[name]['tiers'] = tiers
+    # 神器本体自己那一条是 itemType 28，不在投影范围里（它没有 plug 块），
+    # 可它的主键与图标是配装页那枚徽章要用的，所以在这里一并记下。
+    for item in items.values():
+        if item.get('itemTypeAndTierDisplayName') != '传说 神器':
+            continue
+        got = arts.get(item['displayProperties']['name'])
+        if got is not None and not got.get('hash'):
+            got['hash'] = str(item['hash'])
+            got['icon'] = icon(item['displayProperties'].get('icon'))
+
     del socket_types, plug_sets, items
     gc.collect()
 

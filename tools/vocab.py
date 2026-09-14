@@ -40,12 +40,12 @@ VARIANTS = os.path.join(shell.ROOT, 'tools', 'mod-variants.json')
 
 def variants():
     """护甲模组的变体：站内一行盖住一族（「虹吸」一行盖住 16 枚元素虹吸），
-    配装要指到具体那一枚。表由 tools/mods.py 从官方物品表蒸馏，图标现取现存。
+    配装要指到具体那一枚。表由 tools/mods.py 从事实层蒸馏，图标现取现存。
 
     **锚点仍是复合那一行**——说明、数值与三档能耗都写在那里，跳过去才有东西读；
     格子上把行名写成副名，读者知道自己点过去会落在哪一条上。"""
     if not os.path.exists(VARIANTS):
-        die('缺 tools/mod-variants.json，跑一次 tools/mods.py --distill <官方物品表>')
+        die('缺 tools/mod-variants.json，跑一次 tools/mods.py --distill')
     with open(VARIANTS, encoding='utf-8') as f:
         table = json.load(f)
     out = []
@@ -64,6 +64,8 @@ def variants():
                 % (meta['icon'], want))
         out.append({'page': 'armor-mods', 'anchor': meta['anchor'], 'kind': meta['part'],
                     'name': name, 'icon': 'armor-mods/icons/%s' % meta['icon'],
+                    # 变体自己的主键：它是一枚具体的模组，不是复合行那一条的别名。
+                    'hash': meta.get('hash', ''),
                     'token': '', 'sub': meta['row'], 'pos': '', 'desc': '',
                     # 落地过滤用复合行的名字：变体名在那一页一次都不出现，
                     # 拿它去过滤会滤成空页，看着像跳错了。

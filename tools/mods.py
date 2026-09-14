@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""从官方物品表蒸馏两张配装页要用的表，并取回它们的图标。
+"""从事实层蒸馏两张配装页要用的表，并取回它们的图标。
 
 用法：
-    python3 tools/mods.py --distill <items-full.json>   # 护甲模组变体，顺带报缺口
-    python3 tools/mods.py --moves   <items-full.json>   # 位移技能
-    python3 tools/mods.py --arts    <items-full.json>   # 七件赛季神器
+    python3 tools/mods.py --distill   # 护甲模组变体，顺带报缺口
+    python3 tools/mods.py --moves     # 位移技能
+    python3 tools/mods.py --arts      # 七件赛季神器
     python3 tools/mods.py --icons                       # 按两张表下载图标并转 WebP
 
 **位移技能与神器本体站内都没有图**：位移技能（跳跃、滑翔、瞬移）连资料页都没有；
@@ -99,7 +99,27 @@ def rows_of():
     return out
 
 
-def distill(path):
+ICON_BASE = 'https://www.bungie.net/common/destiny2_content/icons/'
+
+
+def library():
+    """事实层的物品表，摆成这个脚本原来那份导出的形状，外加主键。
+
+    **不再要人工指一份 49 MB 的导出**：manifest 的蒸馏产物已经在 data/facts/ 里入库，
+    同一份事实两个副本迟早各走各的。字段名保持原样，转换只在这一处。
+    """
+    path = os.path.join(shell.ROOT, 'data', 'facts', 'items.json')
+    if not os.path.exists(path):
+        die('事实层还没蒸馏：先跑 python3 tools/facts.py --distill')
+    with open(path, encoding='utf-8') as f:
+        got = json.load(f)
+    return {h: {'hash': h, 'name_zh': v['n']['zh'],
+                'typeName_zh': v.get('tt', {}).get('zh', ''),
+                'icon': ICON_BASE + v['icon'] if v.get('icon') else ''}
+            for h, v in got.items()}
+
+
+def distill():
     rows = rows_of()
     # 已经下好的图标沿用：地址没变就没必要重下，也不该换文件名——文件名换一次，
     # 读者的浏览器缓存就白掉一份。
@@ -107,8 +127,7 @@ def distill(path):
     if os.path.exists(OUT):
         with open(OUT, encoding='utf-8') as f:
             old = json.load(f)
-    with open(path, encoding='utf-8') as f:
-        items = json.load(f)['items']
+    items = library()
     table, gaps = {}, {}
     for v in items.values():
         part = PART.get(v.get('typeName_zh') or '')
@@ -130,7 +149,8 @@ def distill(path):
             continue
         url = v.get('icon', '')
         was = old.get(name, {})
-        table[name] = {'row': row, 'part': part, 'anchor': base[row], 'url': url,
+        table[name] = {'hash': v['hash'], 'row': row, 'part': part,
+                       'anchor': base[row], 'url': url,
                        'icon': was.get('icon', '') if was.get('url') == url else ''}
     with open(OUT, 'w', encoding='utf-8') as f:
         json.dump(table, f, ensure_ascii=False, indent=0, sort_keys=True)
@@ -159,7 +179,42 @@ def arts_of():
             for e in pagedex.must_read('artifact-mods')['entries']}
 
 
-def pull(path, type_zh, out_path, want, keep=None):
+def arts():
+    """七件神器本体 → tools/artifacts.json。
+
+    读 data/facts/artifacts.json，不去物品表里按类型名筛：神器本体是 itemType 28，
+    没有 plug 块，本来就不在事实层的物品投影里；而那份表建它时顺手记了主键与图标。
+    表里存站内那个写法（「NPA 斥力调节器」中间有排版空格），配装源稿按它查。
+    """
+    path = os.path.join(shell.ROOT, 'data', 'facts', 'artifacts.json')
+    with open(path, encoding='utf-8') as f:
+        lib = json.load(f)
+    old = {}
+    if os.path.exists(ARTS):
+        with open(ARTS, encoding='utf-8') as f:
+            old = json.load(f)
+    keep = arts_of()
+    table = {}
+    for name, v in lib.items():
+        shown = keep.get(items.norm(name))
+        if not shown:
+            continue
+        url = ICON_BASE + v['icon'] if v.get('icon') else ''
+        if not url:
+            die('%s 没有图标地址' % shown)
+        was = old.get(shown, {})
+        table[shown] = {'hash': v['hash'], 'url': url,
+                        'icon': was.get('icon', '') if was.get('url') == url else ''}
+    if len(table) != len(keep):
+        die('神器应有 %d 件，实际 %d 件：%s'
+            % (len(keep), len(table), '、'.join(sorted(set(keep.values()) - set(table)))))
+    with open(ARTS, 'w', encoding='utf-8') as f:
+        json.dump(table, f, ensure_ascii=False, indent=0, sort_keys=True)
+    print('%s —— %d 件神器：%s'
+          % (os.path.relpath(ARTS, shell.ROOT), len(table), '、'.join(sorted(table))))
+
+
+def pull(type_zh, out_path, want, keep=None):
     """官方物品表里某一类 → {名字: {url, icon}}。位移技能与神器共用这一份。
 
     表里同名条目有好几份（位移技能每个职业各挂一份，神器有赛季版与常驻版），
@@ -170,9 +225,8 @@ def pull(path, type_zh, out_path, want, keep=None):
     if os.path.exists(out_path):
         with open(out_path, encoding='utf-8') as f:
             old = json.load(f)
-    with open(path, encoding='utf-8') as f:
-        table_in = json.load(f)['items']
-    table = {}
+    table_in = library()
+    cand = {}
     for v in table_in.values():
         if v.get('typeName_zh') != type_zh or not v.get('name_zh'):
             continue
@@ -180,12 +234,19 @@ def pull(path, type_zh, out_path, want, keep=None):
             continue
         # 表里存站内那个写法：配装源稿与填表页的词表都按站内的名字查这张表。
         name = keep[items.norm(v['name_zh'])] if keep is not None else v['name_zh']
-        url = v.get('icon', '')
-        if not url:
+        if not v.get('icon'):
             die('%s 没有图标地址' % name)
+        cand.setdefault(name, []).append(v)
+    table = {}
+    for name, got in cand.items():
         was = old.get(name, {})
-        table.setdefault(name, {'url': url,
-                                'icon': was.get('icon', '') if was.get('url') == url else ''})
+        # 同名条目有好几份（位移技能每个职业各挂一份），图与名字都一样。
+        # **优先沿用已存的那一个地址**：换地址就要换本地文件名，而文件名换一次，
+        # 读者那一年的浏览器缓存就白掉一份。都对不上时按主键取最小的，保证可复现。
+        pick = next((x for x in got if x['icon'] == was.get('url')), None)
+        pick = pick or min(got, key=lambda x: int(x['hash']))
+        table[name] = {'hash': pick['hash'], 'url': pick['icon'],
+                       'icon': was.get('icon', '') if was.get('url') == pick['icon'] else ''}
     if len(table) != want:
         missing = sorted(set((keep or {}).values()) - set(table))
         die('「%s」应有 %d 条，实际 %d 条%s'
@@ -248,14 +309,12 @@ def icons(table_path=None, icon_dir=None):
 
 
 def main():
-    if len(sys.argv) == 3 and sys.argv[1] == '--distill':
-        distill(sys.argv[2])
-    elif len(sys.argv) == 3 and sys.argv[1] == '--moves':
-        pull(sys.argv[2], '位移技能', MOVES, 10)
-    elif len(sys.argv) == 3 and sys.argv[1] == '--arts':
-        # 官方物品表里躺着二十件历代神器，只取站内那一页有的七件
-        keep = arts_of()
-        pull(sys.argv[2], '传说 神器', ARTS, len(keep), keep)
+    if len(sys.argv) == 2 and sys.argv[1] == '--distill':
+        distill()
+    elif len(sys.argv) == 2 and sys.argv[1] == '--moves':
+        pull('位移技能', MOVES, 10)
+    elif len(sys.argv) == 2 and sys.argv[1] == '--arts':
+        arts()
     elif len(sys.argv) == 2 and sys.argv[1] == '--icons':
         icons()
         icons(MOVES, EXTRA_ICON_DIR)
