@@ -165,6 +165,17 @@ def norm(name):
     return SUFFIX.sub('', SPACE.sub('', (name or '').strip())).strip()
 
 
+def norm_keep(name):
+    """去排版空格，**留着站内自加的括注**。
+
+    norm() 把括注当消歧后缀剥掉，那是为了拿名字去库里查——库里没有那个括注。
+    但括注正是站内用来分开两行的东西，两处要看得见它：建源稿线索表时，按 norm()
+    建键会把「突进」与「突进（巴洛克）」两行的来源与 Perk 混成一条，其中一行拿到
+    的是另一行的来源；判「括注里写的是不是另一件东西」时同理。
+    """
+    return SPACE.sub('', (name or '').strip())
+
+
 def fold(name):
     """再狠一档：去全部标点与空白、全角转半角、统一大小写。只在前几档都落空时用。"""
     return FOLD.sub('', unicodedata.normalize('NFKC', norm(name))).upper()
@@ -435,7 +446,7 @@ def stamper(page):
         if not name:
             return ''
         if page in SINGLE_PAGES:
-            src, perks = hints.get((page, norm(name)), ('', ()))
+            src, perks = hints.get((page, norm_keep(name)), ('', ()))
             hit = one(facts, name, page, version=src, perks=perks)[0]
             got = [hit] if hit else []
         else:
@@ -467,6 +478,11 @@ def stamper(page):
         if not got and len(parts) > 1:
             # 整行是一个组合，逐截解析取并集。
             got = composite(facts, page, parts)
+        # 括注里写的是另一件东西时并进来：「烈焰战锤（无敌索尔）」说的是这个超能
+        # 装上那个星相之后，两边都该反查得到它。
+        for extra in paren_keys(facts, name, page):
+            if extra not in got:
+                got.append(extra)
         return ' data-hash="%s"' % ' '.join(got) if got else ''
 
     return stamp
@@ -600,6 +616,34 @@ SPIRIT_TAIL = '之灵'
 
 # 行标题里的括注是限定不是名字：「故我在（意外缓刑）涡流」的中间那截写的是框架。
 PAREN = re.compile(r'^[（(](.*)[）)]$')
+
+# 「烈焰战锤（无敌索尔）」——括注里写的是另一件东西，这一行说的是两者合起来。
+# 站内 21 条带括注的行标题里只有 2 条是这种（另一条是「射击套件（邪冬的谎言）」），
+# 其余写的是元素、武器类型、来源，都解析不到实体，因此不受影响。
+NAMED_PAREN = re.compile(r'^(?P<base>.+?)[（(](?P<inner>[^（）()]+)[）)]$')
+
+
+def paren_keys(facts, name, page):
+    """行标题括注里那件东西的主键，括注写的不是东西就是空。
+
+    先按本页范围查，再查效果，都不中才放开范围——「邪冬的谎言」是一把武器，
+    写在武器 PERK 页上，本页范围里只有插件。放开之后照样要挑单一版本。
+    """
+    got = NAMED_PAREN.match(norm_keep(name))
+    if not got:
+        return []
+    inner = got.group('inner').strip()
+    hits = candidates(facts, inner, page)
+    if hits:
+        return hits
+    eff = resolve_effect(facts, inner)
+    if eff:
+        return [eff]
+    wide = facts.by_zh.get(norm(inner)) or []
+    if not wide:
+        return []
+    one_hit = pick(facts, wide)[0]
+    return [one_hit] if one_hit else []
 
 
 def composite(facts, page, parts):
@@ -784,8 +828,8 @@ def source_hints():
                             if part:
                                 perks.append(part)
                 if perks or src:
-                    was = out.get((page, norm(name)), ('', []))
-                    out[(page, norm(name))] = (src or was[0], was[1] + perks)
+                    was = out.get((page, norm_keep(name)), ('', []))
+                    out[(page, norm_keep(name))] = (src or was[0], was[1] + perks)
     return out
 
 
@@ -848,7 +892,7 @@ def classify(facts, name, page, key, composite, effect_names, sources, hints):
         return '未解析', '套装表里既不是套装名也不是来源名'
     if page not in SCOPES:
         return '未解析', '这一页还没写范围定义'
-    src, perks = hints.get((page, norm(name)), ('', ()))
+    src, perks = hints.get((page, norm_keep(name)), ('', ()))
     h, why = resolve(facts, name, page, version=src, perks=perks)
     if h is not None:
         return '物品', why
