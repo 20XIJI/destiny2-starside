@@ -460,38 +460,43 @@
   outline-offset: 2px;
 }
 
-/* 「这一枚还有强化版」：圆内一道金环，左上角一枚朝上的金箭头。照 DIM 与
-   destiny.report 那一套——两家都把强化画在 Perk 图标自己身上，不另占一个位置。
-   金环在**内**、选中的强调色环在**外**，作者角标在右上角，三样各占各的位置。
+/* 「这一枚还有强化版」照搬 DIM 的画法，三样金：底边往上的渐变、左缘一道竖条、
+   左侧一枚朝上的箭头。前两样是背景层，被 border-radius 裁成圆、压在图标底下；
+   箭头画在最上面，稍稍探出圆外。
+   圆外那一圈留给选中态，右上角留给作者角标，三处各占各的位置。
+
+   几何逐条对着 DIM 那段 SVG 折算（viewBox 100，我们的圆内径 46px）：
+   竖条 x=5..11 → 5%..11%；渐变 50% 处透明、100% 处实心；
+   箭头 path M5,50 l0,-24 l-6,0 l9,-16 l9,16 l-6,0 l0,24 z 的七个点归一化成
+   18×40 的盒子，即下面那个 polygon。
 
    偏离 design.md「整页唯一的饱和色来自游戏自身的编码」这一条的理由：这个金
    **就是**游戏自身的编码。Bungie 在 DestinyInventoryItemConstantsDefinition 里
    给强化物品专门下发了一张金色叠加图（enhanced-item-overlay.png），游戏内的
-   强化 Perk 也是这个金。它与异域金分得开：异域是 #fcb70a 的橙金，这个是偏绿的
-   浅金，ΔE 足够，且两者从不落在同一个元素上——异域金只上装备名与图块边框，
-   这个只上 Perk 圆圈。 */
+   强化 Perk 也是这个金，DIM 与 destiny.report 两家照搬。它与异域金分得开：
+   异域是 #fcb70a 的橙金，这个是偏绿的浅金，且两者从不落在同一个元素上——
+   异域金只上装备名与图块边框，这个只上 Perk 圆圈。 */
 :root {
   --c-enh: #eade8b;
 }
 
-.wpn-plug.enh::before {
-  content: "";
-  position: absolute;
-  inset: 2px;
-  border: 2px solid var(--c-enh);
-  border-radius: 50%;
-  pointer-events: none;
+.wpn-plug.enh {
+  background-image:
+    linear-gradient(to right, transparent 5%, var(--c-enh) 5%,
+      var(--c-enh) 11%, transparent 11%),
+    linear-gradient(to bottom, transparent 50%, var(--c-enh) 100%);
 }
 
 .wpn-plug.enh::after {
   content: "";
   position: absolute;
-  left: -1px;
-  top: -2px;
+  left: 0;
+  top: 4px;
   width: 8px;
-  height: 15px;
+  height: 18px;
   background: var(--c-enh);
-  clip-path: polygon(50% 0, 100% 40%, 70% 40%, 70% 100%, 30% 100%, 30% 40%, 0 40%);
+  clip-path: polygon(33.3% 100%, 33.3% 40%, 0 40%, 50% 0,
+    100% 40%, 66.7% 40%, 66.7% 100%);
 }
 
 /* 作者推荐：右上角一枚首字角标，两家都推就并排两枚。 */
