@@ -102,10 +102,11 @@ DERIVED = {
     '抓钩缠结': ('缠结', '抓钩产生的缠结，库里只有「缠结」这个关键词'),
     # 术士虚空星相只有 5 个，没有这一条：它是「混沌加速」给手雷充能后的那个形态名。
     '手持超新星': ('混沌加速', '「混沌加速」给手雷充能后的形态，库里只有星相本身'),
-    # 异域武器页给「英勇利刃」的核心与催化剂单写了一行。**那是它自己的两个槽**：
-    # v950.new.sword0.perk_upgrades（冲击／折射／陀螺核心）与 .masterwork（催化剂）。
-    # 库里只有那一件武器，差别在装了哪个插件上。
-    '英勇利刃 2：核心之击': ('英勇利刃', '同一把武器的核心与催化剂两个槽'),
+    # 异域武器页给「英勇利刃」装上冲击核心之后单写了一行。**那是它自己的一个槽**
+    # （v950.new.sword0.perk_upgrades，池里是冲击／折射／陀螺三个核心），所以这一行
+    # 同时指向武器本体与那枚插件——反查「哪些配装用了英勇利刃」与「用了冲击核心」
+    # 都该找得到它。
+    '英勇利刃 2：冲击核心': (('英勇利刃', '冲击核心'), '这把武器装上冲击核心之后'),
 }
 
 # 复刻的两个版本词条池完全相同、来源列也定不下来时，由人钉一个 hash。
@@ -402,10 +403,17 @@ def stamper(page):
             eff = resolve_effect(facts, name)
             got = [eff] if eff else []
         if not got and name in DERIVED:
-            # 派生条目指回基那一条：同一把武器的第二种形态、某个关键词赋予的弹药，
-            # 库里都只有基那一条，反查时它们本就该落在同一件东西上。
+            # 派生条目指回基那几条：某个关键词赋予的弹药、一把武器装上某个插件之后，
+            # 库里只有基那一条（或几条），反查时它们本就该落在同一件东西上。
             base = DERIVED[name][0]
-            got = [x for x in (resolve_effect(facts, base),) if x] or pool(facts, base, page)
+            for one_base in ((base,) if isinstance(base, str) else base):
+                eff = resolve_effect(facts, one_base)
+                if eff:
+                    got.append(eff)
+                    continue
+                # 基不一定与这一行同类（「冲击核心」是插件，写在异域武器页上），
+                # 所以不按本页的范围收窄，只按名字查。
+                got += pool(facts, one_base, page) or facts.by_zh.get(norm(one_base), [])
         return ' data-hash="%s"' % ' '.join(got) if got else ''
 
     return stamp
@@ -554,7 +562,8 @@ def classify(facts, name, page, composite, effect_names, sources, hints):
         return '效果', eff
     base = DERIVED.get(name)
     if base:
-        root = resolve_effect(facts, base[0]) or resolve(facts, base[0], page)[0]
+        first = base[0] if isinstance(base[0], str) else base[0][0]
+        root = resolve_effect(facts, first) or resolve(facts, first, page)[0]
         if root:
             return '派生', '%s ← %s' % (root, base[1])
     if name in composite:
