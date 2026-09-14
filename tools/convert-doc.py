@@ -437,7 +437,7 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=
             # 只有第一行有 <th>，而整块说的是同一件东西。
             # **取渲染后那一格**，与索引里的名字同一份：源稿原文里格内换行还是
             # 字面的两个反斜杠，拿它去查源稿线索一个都对不上（复刻那几把就是这么漏的）。
-            stamp = STAMP(text_of(row[0])) if STAMP else ''
+            stamp = STAMP(text_of(row[0], collapse=True)) if STAMP else ''
         for ci, c in enumerate(cells[1:], start=1):
             if ci in tiers:
                 tier = tier_of(c, tiers[ci])

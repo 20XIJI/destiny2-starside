@@ -136,8 +136,10 @@ NOT_ITEMS = {
 # 护甲套装页不查物品表：套装本身是 DestinyEquipableItemSetDefinition，另一份表。
 SET_PAGE = 'armor-sets'
 
+# 汉字与拉丁／数字之间那个排版空格（design.md 三节）。数字后面跟的单位号也算在
+# 拉丁那一侧：「21% 的亢奋」在库里是「21%的亢奋」。
 SPACE = re.compile(r'(?<=[一-鿿])[  ](?=[0-9A-Za-z])'
-                   r'|(?<=[0-9A-Za-z])[  ](?=[一-鿿])')
+                   r'|(?<=[0-9A-Za-z%])[  ](?=[一-鿿])')
 SUFFIX = re.compile(r'（[^（）]*）$')
 FOLD = re.compile(r'[\s.\'"_·“”‘’]')
 
