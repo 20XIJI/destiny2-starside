@@ -23,6 +23,7 @@
     q       落地时的页内过滤词，空串表示这一条不过滤
     pos     只有神器模组给：'行,档'
     desc    这一条在站内的说明，原样带着着色 span
+    of      只有子条目给：它挂在哪一行的主键下（异域的 PERK 列）
 """
 
 import json
@@ -34,7 +35,7 @@ from markup import die, text_of
 
 OUT_DIR = os.path.join(shell.ROOT, 'data', 'index')
 
-FIELDS = ('hash', 'anchor', 'kind', 'name', 'icon', 'sub', 'q', 'pos', 'desc')
+FIELDS = ('hash', 'anchor', 'kind', 'name', 'icon', 'sub', 'q', 'pos', 'desc', 'of')
 
 
 # 元素页 → 着色 token。六个分支页上的碎片、星相、超能、手雷、近战都归本元素。
@@ -106,6 +107,30 @@ def panel(cells):
     return desc, ' '.join(val)
 
 
+# 异域那两页的 PERK 格：图标打头，后面用 <br> 隔开这一行那件东西自己的几个词条
+# （「阿格尔的召唤／雷加的叠句／↑意志实体」）。判据是格子的形状不是页名——购物
+# 清单那四页的 .perk 格是一格一个裸名字，没有打头那枚图标。
+PERK_CELL = re.compile(r'^<img[^>]*src="(icons/[^"]+)"[^>]*>(.+)$', re.S)
+
+
+def exotic_perks(cells):
+    """这一行 PERK 格里的 [(名字, 图标)]，没有这种格就是空。
+    一格里几个名字共用打头那枚图标——那是这件异域的词条图，本来就只有一枚。"""
+    for cls, inner in cells:
+        if cls != 'perk':
+            continue
+        hit = PERK_CELL.match(inner.strip())
+        if not hit:
+            continue
+        out = []
+        for part in hit.group(2).split('<br>'):
+            shown = text_of(part, collapse=True)
+            if shown:
+                out.append((shown, hit.group(1)))
+        return out
+    return []
+
+
 def split_spirit(cells):
     """异域职业物品那张表一行摆两条词条，左半属行标题，右半属 <td class="spirit">
     里那一条。不在这里切开，左边那条会把右边整条说明当成自己的数值格。"""
@@ -137,11 +162,12 @@ class Index:
         self.rows = []
 
     def add(self, *, hash='', anchor='', kind='', name='', icon='',
-            sub='', q=None, pos='', desc=''):
+            sub='', q=None, pos='', desc='', of=''):
         # q 缺省跟着 name 走；显式给空串表示这一条不参与页内过滤（分节标题那一类）。
         self.rows.append({'hash': hash, 'anchor': anchor, 'kind': kind,
                           'name': name, 'icon': icon, 'sub': sub,
-                          'q': name if q is None else q, 'pos': pos, 'desc': desc})
+                          'q': name if q is None else q, 'pos': pos, 'desc': desc,
+                          'of': of})
 
     def write(self):
         os.makedirs(OUT_DIR, exist_ok=True)

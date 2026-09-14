@@ -85,7 +85,10 @@ def build():
         got = pagedex.must_read(page)
         SEARCHABLE[page] = got['searchable']
         for row in got['entries']:
-            if row['name']:
+            # 子条目不进配装词表：异域那两页 PERK 列里的词条挂在行标题下（of），
+            # 是另一件东西。混进来，「异域武器：狂暴」这种查法就会查到一枚词条。
+            # 它们的用处在按武器反查词条那一侧，从索引直接读。
+            if row['name'] and not row['of']:
                 idx.setdefault(row['name'], []).append(
                     dict(row, page=page, token=got['token']))
     for e in variants():

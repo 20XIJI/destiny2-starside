@@ -44,6 +44,9 @@ ROTA_LINE = re.compile(r'^轮换：(.*)$', re.M)
 
 # 行标题 → 主键的戳号器，按页装配；没有范围定义的页是 None。
 STAMP = None
+# 异域那两页 PERK 列里那些名字 → 主键。与 STAMP 不同，它按这一行那件东西自己的
+# socket 池查，所以要连着行标题的主键一起给，全站共用一个。
+PERK = None
 # 本页的索引与当前分节（锚点, 标签）。与 ICONS 同一种写法：渲染要用、又隔着两层
 # 函数，所以由 build() 与 render() 逐层装上，不改中间那两个签名。
 DEX = None
@@ -473,6 +476,7 @@ def index_row(dex, title, stamp, body, lane):
             name=text_of(title, collapse=True),
             icon='%s/%s' % (PAGE, icon.group(1)) if icon else '',
             desc=pagedex.wrap(*pagedex.panel(mine)))
+    index_perks(dex, key, mine, anchor, lane or label, dex.rows[-1]['name'])
     # 异域职业物品那张表一行摆两条词条：行标题一条，中间一格再一条。
     # **中间那一条也要自己的主键**：它是另一件东西，不是行标题那件的别名。
     for name, ico in pagedex.SPIRIT.findall(body):
@@ -481,6 +485,31 @@ def index_row(dex, title, stamp, body, lane):
         dex.add(hash=mark[len(' data-hash="'):-1] if mark else '',
                 anchor=anchor, kind=lane or label, name=shown,
                 icon='%s/%s' % (PAGE, ico), desc=pagedex.wrap(*pagedex.panel(theirs)))
+
+
+def index_perks(dex, key, cells, anchor, kind, row_name):
+    """异域那两页 PERK 格里的名字 → 挂在行标题主键下的子条目。
+
+    这一列写的是这件异域自己的词条（「阿格尔的召唤」「飞掠尖刺」），站内从前
+    只把行标题记进索引，这些名字一个都查不到。它们是另一件东西，不是武器的别名，
+    所以各自带主键；同时用 of 记下自己挂在哪一行，配装词表照旧只认行标题那一层。
+
+    要不要抽这一列由格子的形状定（见 pagedex.exotic_perks），不列页名。
+    """
+    if PERK is None or not key:
+        return
+    for name, icon in pagedex.exotic_perks(cells):
+        got = PERK(key.split(), name)
+        if got is None:          # 槽位说明词（「可制作 Perk」），不是一件东西
+            continue
+        if not got:
+            die('%s 的 PERK 列里「%s」解析不到主键：改成 manifest 的正名，'
+                '或写进 resolve.PERK_LABELS 说明它不是实体' % (row_name, name))
+        dex.add(hash=' '.join(got), anchor=anchor, kind=kind,
+                name=name, icon='%s/%s' % (PAGE, icon),
+                # 落地过滤用行标题那件东西的名字：词条名在页内搜索框里同样搜得到，
+                # 滤出来的正是同一行，但行标题那个词在这一页上一定存在。
+                q=row_name, of=key)
 
 
 def cards_of(spec, up):
@@ -874,7 +903,7 @@ def check(md, out, slug):
 
 
 def build(slug):
-    global ICONS, STAMP, DEX, PAGE
+    global ICONS, STAMP, DEX, PAGE, PERK
     src = os.path.join(SRC_DIR, slug + '.md')
     with source_context(os.path.relpath(os.path.realpath(src), shell.ROOT)):
         if not os.path.exists(src):
@@ -891,6 +920,8 @@ def build(slug):
             die('「首屏图标：」要写一个整数，源稿写的是 %r' % eager)
         ICONS = Icons(outdir, int(eager) if eager else 0)
         STAMP = resolve.stamper(where)
+        # PERK 列只长在有戳号器的那几页上，格子的形状再筛一道，不另列页名。
+        PERK = resolve.perk_stamper() if STAMP else None
         PAGE = where
         # 只给要被跨页引用的那些页建索引，与戳号同一条判据。
         # 有没有页内搜索框按源稿那三个键定，与 render() 建工具条用的是同一批值：

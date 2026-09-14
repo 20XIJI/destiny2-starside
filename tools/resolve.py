@@ -419,6 +419,121 @@ def stamper(page):
     return stamp
 
 
+
+# ── 异域那两页的 PERK 列 ───────────────────────────────────────────────
+
+
+# 站内给某件东西起的写法，库里叫另一个名字。两条都核对过描述，指的是同一件。
+PERK_ALIAS = {
+    '「Yeehaw」狂暴': ('狂暴', '越橘的特征插件就是「狂暴」，前缀是站内给这把枪加的花名'),
+    '弓手节奏²': ('弓手节奏', '催化剂给的是特殊版「弓手节奏」，上标 2 记的是 0.75² 蓄力倍率'),
+}
+
+# 这一列里不是实体的那些名字：源稿作者给槽位或机制起的说明词。逐条按
+# displayProperties.name 在 98 张 zh component 里精确搜过，一个都没有。
+PERK_LABELS = {
+    '可制作 Perk': '槽位说明：这一栏由锻造决定，指的不是某一个词条',
+    '可打造 Perk': '同上，源稿在蠕虫低语那一行写的是「打造」',
+    '可塑造 Perk': '同上，源稿在可塑形的那几把上写的是「塑造」',
+    '可制作改装': '槽位说明：催化剂开出的是一个可选改装位',
+    '可塑造改装': '同上',
+    '可选 Perk': '槽位说明：这一栏在几个固定词条里挑一个',
+    '随机 Perk': '槽位说明：隼月的特征栏是随机池',
+    '米达雷达': '站内给「机瞄期间雷达保持可见」这条固有机制起的名',
+    '点射模式': '站内给零号修订起源栏两选一（Häkke 轻型／重型短点射）起的名',
+    '慈悲触碰': '恶意触碰那一行写的第二个催化剂效果，库里没有同名条目',
+    '能量核心': '站内对冲击／折射／陀螺三个核心的统称',
+    '催化剂': '英勇利刃那一行的栏目名，不是某一枚催化剂',
+}
+
+# 两张表的键照源稿原样写，查的时候按 norm() 归一：「可制作 Perk」那个排版空格
+# 归一后就没了，拿原样的键去比一条都对不上。
+PERK_LABEL_KEYS = frozenset(norm(k) for k in PERK_LABELS)
+PERK_ALIAS_KEYS = {norm(k): v for k, v in PERK_ALIAS.items()}
+
+# 「恐慌反应 I–V」：库里是恐慌反应、恐慌反应II…恐慌反应V 五条，站内并成一行写。
+ROMAN_SPAN = re.compile(r'^(?P<base>.+?)[  ]*[IVX]+[–—-][IVX]+$')
+ROMAN_TAIL = re.compile(r'^[IVX]+$')
+
+# 「射手瞄具／战斗瞄具」：一格里并排写着同一栏的两个插件。
+SLASH = re.compile(r'[／/]')
+
+
+def weapon_pool(facts, keys):
+    """这一行那件东西各栏能开出的词条：归一化名 → hash 列表。起源写在 init 上。"""
+    out = {}
+    for key in keys:
+        for col in facts.pools.get(str(key)) or ():
+            plugs = list(col.get('plugs') or ())
+            if col.get('init'):
+                plugs.append(col['init'])
+            for p in plugs:
+                name = norm(facts.name(p))
+                if not name:
+                    continue
+                got = out.setdefault(name, [])
+                if str(p) not in got:
+                    got.append(str(p))
+    return out
+
+
+def perk_key(facts, keys, name):
+    """异域 PERK 那一格里的一个名字 → 主键列表。
+
+    三种返回分得清清楚楚，别让「不是实体」与「没查到」共用一个空列表：
+    None 是槽位说明词，本来就不该进索引；空列表是该有主键却没查出来，由调用方报出。
+
+    **按这一行那件东西自己的 socket 池查，不按全表查名字**：池就是「这件东西能
+    开出什么」的定义，池里查得到即无歧义。全表按名字查会撞上别的枪的同名词条
+    （「狂暴」在库里有 5 条 sandboxPerk、3 条插件）。
+    池里没有的才退到 sandboxPerk——催化剂给的效果不在武器自己的槽上。
+    """
+    name = norm((name or '').lstrip('↑').strip())
+    if not name or name in PERK_LABEL_KEYS:
+        return None
+    name = PERK_ALIAS_KEYS.get(name, (name,))[0]
+    pool_names = weapon_pool(facts, keys)
+    got = []
+    for part in [x.strip() for x in SLASH.split(name) if x.strip()]:
+        got += _perk_one(facts, pool_names, part)
+    return got
+
+
+def _perk_one(facts, pool_names, name):
+    if name in pool_names:
+        return pool_names[name]
+    span = ROMAN_SPAN.match(name)
+    if span:
+        base = span.group('base').strip()
+        fam = [(n, hs) for n, hs in pool_names.items()
+               if n == base or (n.startswith(base) and ROMAN_TAIL.match(n[len(base):]))]
+        if fam:
+            return [h for _, hs in sorted(fam) for h in hs]
+    eff = resolve_effect(facts, name)
+    return [eff] if eff else []
+
+
+def collapsed(shown, lib):
+    """站内把一族或一对并成一格写，是不是恰好盖住库里这几条。
+
+    「恐慌反应 I–V」盖住恐慌反应、恐慌反应II…V；「射手瞄具／战斗瞄具」盖住那两条。
+    这两种不是名字写错，但也不能只凭形状就放过——真盖住了才算数。"""
+    span = ROMAN_SPAN.match(shown)
+    if span:
+        base = norm(span.group('base'))
+        return all(norm(x) == base or (norm(x).startswith(base)
+                                       and ROMAN_TAIL.match(norm(x)[len(base):]))
+                   for x in lib)
+    parts = [norm(x) for x in SLASH.split(shown) if x.strip()]
+    return len(parts) > 1 and sorted(parts) == sorted(norm(x) for x in lib)
+
+
+def perk_stamper():
+    """异域那两页共用一个：(这一行的主键们, 名字) → 主键列表。"""
+    facts, _ = shared()
+    return lambda keys, name: perk_key(facts, keys, name)
+
+
 # ── 审计 ──────────────────────────────────────────────────────────────
 
 
@@ -669,10 +784,18 @@ def names():
             # （「不稳定弹药」指回「不稳定」）本来就与库里的名字不同，不是写错。
             if e['name'] in DERIVED or VERSION_TAIL.match(e['name']):
                 continue
+            # 异域 PERK 列里的名字：前面那个上箭头是站内标催化剂的记号，不是名字；
+            # 站内为这一格另起的写法（「弓手节奏²」）已在 PERK_ALIAS 里逐条记过依据。
+            shown = norm(e['name'].lstrip('↑'))
+            if e.get('of') and shown in PERK_ALIAS_KEYS:
+                continue
             total += 1
             lib = {x for x in (key_name(facts, k) for k in keys) if x}
-            if lib and norm(e['name']) not in {norm(x) for x in lib}:
-                diff.append((page, e['name'], sorted(lib)))
+            if not lib or shown in {norm(x) for x in lib}:
+                continue
+            if e.get('of') and collapsed(shown, lib):
+                continue
+            diff.append((page, e['name'], sorted(lib)))
     print('带主键的条目 %d 条，站内写法与库里不同的 %d 条' % (total, len(diff)))
     for page, name, lib in diff:
         print('  %-22s 站内 %-22s 库里 %s' % (page, name, '、'.join(lib)))
