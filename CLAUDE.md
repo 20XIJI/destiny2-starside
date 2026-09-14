@@ -71,6 +71,10 @@ migrate.py         配装源稿 markdown ⇄ 结构化记录，来回逐字节�
                    还是留 markdown 由 --classify 按行标题能否落到主键上机械判定
 check_output.py    产出逐字保真：与某个 commit 的产出逐字节比，差异必须落在
                    ALLOWED 那张表里，每条带一行理由
+icons.py           按主键把官方图拉回来转 WebP，落 assets/icons/，
+                   data/icons.json 记「官方图 → 文件名」。一件东西一张图
+check_icons.py     换图之前逐行比「现在显示的图」与「主键的官方图」，
+                   两边同一套编码参数、文件名即内容 md5，名字相同即像素相同
 build-search.py    各页产出 → assets/search.js，首页那只搜索框搜的就是它
 build-terms.py     两道闸门的词表 → admin/terms.js（前端提示），
                    资料页树与配装的五张词表 → admin/pages.js（审核台左栏与列表），
@@ -147,6 +151,10 @@ python3 tools/facts.py --distill              # manifest → data/facts/（换 m
 python3 tools/resolve.py --audit              # 站内每个名字都落得到主键上
 python3 tools/migrate.py --check              # 配装源稿来回逐字节比对
 python3 tools/migrate.py --classify           # 资料页该结构化还是留 markdown
+python3 tools/resolve.py --names              # 站内写法与库里的名字逐条比
+python3 tools/icons.py                        # 只报要拉多少、缺什么
+python3 tools/icons.py --pull                 # 拉官方图转 WebP，已在盘上的沿用
+python3 tools/check_icons.py [--list]         # 换图会换掉哪些，逐页计数
 
 tools/ship.sh "提交信息"                       # 一轮发版：对账 → 构建 → 提交 → 部署 → 推送
 python3 tools/sync.py                         # 库与仓库对账，双向都走，部署后自动跑
