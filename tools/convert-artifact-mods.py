@@ -301,7 +301,7 @@ def main():
 
     icons = Icons(OUT_DIR, N_EAGER)
     page = parse(md, icons)
-    dex = pagedex.Index(PAGE, 'art-perk')
+    dex = pagedex.Index(PAGE, 'art-perk', searchable=True)
     out = render(page, src_hash(md), dex)
     check(page, out, icons)
 

@@ -1,6 +1,7 @@
 {
  "page": "shopping-special",
  "token": "",
+ "searchable": true,
  "entries": [
   {"anchor": "sec-2", "hash": "2452936816", "icon": "shopping-special/icons/5ec1f8389e.webp", "kind": "榴弹发射器-后膛", "name": "VS 速度指挥", "q": "VS 速度指挥"},
   {"anchor": "sec-2", "hash": "3718184802", "icon": "shopping-special/icons/7aff96017d.webp", "kind": "榴弹发射器-后膛", "name": "驱逐引擎", "q": "驱逐引擎"},

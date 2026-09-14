@@ -28,7 +28,6 @@ import mods
 import pagedex
 import resolve
 import shell
-import vocab
 from markup import (bmark, die, eq, loading_attr, meta_of, no_nested_span, plain,
                     src_hash, text_of)
 
@@ -378,7 +377,7 @@ def render(cats: list[Category], md: str, digest: str = '',
                 body = render_blocks(b.blocks)
                 # 说明前面接上效果名，与 vocab 从 BONUS 那一条拼出来的逐字相同。
                 # 剥掉 data-b：那是就地编辑反查源稿的行号，说明摆进配装页时没有用处。
-                desc = vocab.BMARK.sub(
+                desc = pagedex.BMARK.sub(
                     '', '<p class="bn">%s</p>%s' % (html.escape(b.name), body))
                 pairs = [(st.name, source)]
                 if source and source != st.name:
@@ -623,7 +622,7 @@ def main() -> None:
             fill_icons(cats)
         attach_icons(cats)
 
-    dex = pagedex.Index('armor-sets')
+    dex = pagedex.Index('armor-sets', searchable=True)
     out = render(cats, md, src_hash(md), dex)
     check(cats, out)
 

@@ -1,6 +1,7 @@
 {
  "page": "weapon-perks",
  "token": "perk",
+ "searchable": true,
  "entries": [
   {"anchor": "sec-1", "desc": "<p>被动提供 +25 冷却效率与 <span class=\"enh\">↑+2</span> 填装速度，代价是伤害降低 2%。<br> <br>热量武器如何运作？</p>", "hash": "1507295317 1806718225", "icon": "weapon-perks/icons/f02f5739de.webp", "kind": "武器 PERK", "name": "加速散热器", "q": "加速散热器"},
   {"anchor": "sec-1", "desc": "<p>武器击杀时：<br>伤害提高 30%（手炮 27%），+10 射程，开火恢复延迟／充能时间倍率／蓄力时间倍率 1.2×，持续 7 <span class=\"enh\">↑8</span> 秒。<br>收枪移除该<span class=\"buff\">增益</span>。</p>", "hash": "2889515627 3673922083", "icon": "weapon-perks/icons/5b08fdc2e2.webp", "kind": "武器 PERK", "name": "柔缓", "q": "柔缓"},

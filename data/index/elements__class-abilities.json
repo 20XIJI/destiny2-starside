@@ -1,6 +1,7 @@
 {
  "page": "elements/class-abilities",
  "token": "",
+ "searchable": false,
  "entries": [
   {"anchor": "sec-1", "icon": "elements/class-abilities/icons/cba8013059.webp", "kind": "分节", "name": "猎人"},
   {"anchor": "sec-1", "desc": "<p>相对泰坦与术士的固有优势：<br> <br> 基础疾跑速度 8.5 米每秒，另两个职业是 8 米每秒。<br> 基准敏捷 100 <span class=\"pvp\">[70]</span>，取出与收起动画时长 0.9× <span class=\"pvp\">[0.95×]</span>。<br> <span class=\"note\">这份疾跑加速等同于异域护甲提供的那一份，只与轻质框架武器叠加。</span></p>", "icon": "elements/class-abilities/icons/0ebd16171b.webp", "kind": "猎人", "name": "固有 Perk", "q": "固有 Perk"},

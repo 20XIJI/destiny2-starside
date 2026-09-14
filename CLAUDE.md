@@ -32,6 +32,10 @@ Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构�
 
 `serve.json` 关掉了 `cleanUrls`，站内链接一律写全 `xxx/index.html`。
 
+`data/` 是机器生成、入库的两层：`data/facts/` 由 `facts.py` 从 Bungie manifest 蒸馏
+（物品 19356 条、武器词条池 2208 把、效果与属性、护甲套装），`data/index/` 由三个资料
+生成器渲染时写出（17 页 2299 条，主键 → 锚点、分节、图标、说明）。两层都不手改。
+
 `references/` 入库的是源稿：`artifact-mods.md`、`armor-sets.md`，以及 `docs/` 下的资料文档。转写中间产物 `armor_transcription.*` 在 `.archived/`，整个目录已 gitignore，不当源稿用。
 
 `.gitignore` 对 `references/` 是「全忽略 + 白名单」：只放行上面那两个文件与 `docs/*.md`。新增文档源稿一律放 `references/docs/`，丢在 `references/` 根下会被静默忽略，`git status` 干净但源稿没入库。放进去之后 `git check-ignore -v <路径>` 应无输出。
@@ -48,14 +52,25 @@ Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构�
 mods.py            官方物品表 → tools/mod-variants.json（护甲模组变体）
                    与 tools/moves.json（位移技能）、tools/artifacts.json（七件神器），
                    图标一并取回
-vocab.py           配装词表：从已生成的资料页现扫「名字 → 图标、页面、锚点、着色」，
-                   槽位 → 来源页的对应在这里一处定义
+facts.py           Bungie manifest → data/facts/（物品、武器词条池、效果与属性、
+                   护甲套装）。manifest 是冻结快照，跑一次、产物入库，不留抓取代码
+resolve.py         中文名 → itemHash。槽位限定候选，复刻按「源稿标的版本后缀 →
+                   源稿列的词条与来源 → 非大师非特殊版 → 有收藏条目」逐条判，
+                   分不出就交出候选、不猜；另出给产出戳主键的戳号器
+pagedex.py         页面索引：生成器渲染时登记条目，落成 data/index/<页>.json。
+                   页面 → 着色 token、格子切分、说明取法都在这里
+vocab.py           配装词表：读 data/index/ 那批索引，槽位 → 来源页的对应在这里一处定义
 markup.py          源稿方言与公共件：职业／分支／配装三轴（场景·强度·标签）词表、
                    表格切格（Python 这一侧唯一定义，JS 那一侧是 admin/dialect.js）、
                    「键：值」行、空行分段、
                    剥标签取文本、保真前的归一化、计数比对、图片尺寸、图标登记
 shell.py           站点外壳与落盘：head 元信息、导航条、页脚、ROOT、页面清单、emit()
-convert-*.py       四个生成器，各自只写自己那种数据形状的结构层
+convert-*.py       四个生成器，各自只写自己那种数据形状的结构层；三个资料生成器
+                   顺手写 data/index/ 的索引，并给行、模组与套装戳主键 data-hash
+migrate.py         配装源稿 markdown ⇄ 结构化记录，来回逐字节比对；资料页该结构化
+                   还是留 markdown 由 --classify 按行标题能否落到主键上机械判定
+check_output.py    产出逐字保真：与某个 commit 的产出逐字节比，差异必须落在
+                   ALLOWED 那张表里，每条带一行理由
 build-search.py    各页产出 → assets/search.js，首页那只搜索框搜的就是它
 build-terms.py     两道闸门的词表 → admin/terms.js（前端提示），
                    资料页树与配装的五张词表 → admin/pages.js（审核台左栏与列表），
@@ -109,6 +124,7 @@ python3 tools/convert-armor-sets.py           # 源稿 references/armor-sets.md
 python3 tools/convert-doc.py [slug]           # 源稿 references/docs/*.md，省略 slug 即全部
 python3 tools/convert-build.py                # 源稿 references/builds/<赛季>/*.md
 python3 tools/build-search.py                 # 全站搜索索引 assets/search.js
+python3 tools/check_output.py [--against REF] # 产出与某个 commit 逐字节比对
 python3 tools/check_shell.py                  # 各页外壳逐字一致
 python3 tools/check_terms.py                  # 术语正名、着色 token、更新时间
 python3 tools/check_type.py                   # 字距与中文、CSS 简写有效性、产出结构
@@ -126,6 +142,11 @@ python3 tools/items.py --builds              # 只给配装源稿的描述与注
 python3 tools/items.py --normalize [slug]    # 按词表纠正全部源稿，构建时自动跑
 
 python3 tools/json2xlsx.py <抓取的.json>      # 还原成 xlsx，供核对与手改
+
+python3 tools/facts.py --distill              # manifest → data/facts/（换 manifest 才跑）
+python3 tools/resolve.py --audit              # 站内每个名字都落得到主键上
+python3 tools/migrate.py --check              # 配装源稿来回逐字节比对
+python3 tools/migrate.py --classify           # 资料页该结构化还是留 markdown
 
 tools/ship.sh "提交信息"                       # 一轮发版：对账 → 构建 → 提交 → 部署 → 推送
 python3 tools/sync.py                         # 库与仓库对账，双向都走，部署后自动跑

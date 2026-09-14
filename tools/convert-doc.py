@@ -22,7 +22,6 @@ import markup
 import pagedex
 import resolve
 import shell
-import vocab
 from markup import (IMG, LINK, Icons, bmark, die, inline, meta_line, meta_of,
                     no_nested_span, plain, source_context, src_hash, text_of, whole_marker)
 
@@ -465,17 +464,17 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=
 def index_row(dex, title, stamp, body, lane):
     """一行 → 索引里的条目。说明用 vocab 那三个现成的抽法，不另写一份。"""
     anchor, label = SECTION
-    mine, theirs = ((), ()) if PAGE in vocab.NO_DESC else vocab.split_spirit(vocab.tds(body))
-    icon = vocab.IMG.search(body)
+    mine, theirs = ((), ()) if PAGE in pagedex.NO_DESC else pagedex.split_spirit(pagedex.tds(body))
+    icon = pagedex.IMG.search(body)
     key = stamp[len(' data-hash="'):-1] if stamp else ''
     dex.add(hash=key, anchor=anchor, kind=lane or label,
             name=text_of(title, collapse=True),
             icon='%s/%s' % (PAGE, icon.group(1)) if icon else '',
-            desc=vocab.wrap(*vocab.panel(mine)))
+            desc=pagedex.wrap(*pagedex.panel(mine)))
     # 异域职业物品那张表一行摆两条词条：行标题一条，中间一格再一条。
-    for name, ico in vocab.SPIRIT.findall(body):
+    for name, ico in pagedex.SPIRIT.findall(body):
         dex.add(anchor=anchor, kind=lane or label, name=text_of(name, collapse=True),
-                icon='%s/%s' % (PAGE, ico), desc=vocab.wrap(*vocab.panel(theirs)))
+                icon='%s/%s' % (PAGE, ico), desc=pagedex.wrap(*pagedex.panel(theirs)))
 
 
 def cards_of(spec, up):
@@ -790,7 +789,7 @@ def render(md, slug):
         SECTION = ('sec-%d' % si, text_of(head_html, collapse=True))
         dex = DEX
         if dex is not None:
-            head_icon = vocab.IMG.search(head_html)
+            head_icon = pagedex.IMG.search(head_html)
             if head_icon and SECTION[1]:
                 # 分节标题自带的图标也进索引：配装页首要用真的职业图标。
                 # **不带过滤词**：拿分节名去页内过滤会把整页行滤光，落地是一张空页。
@@ -888,7 +887,13 @@ def build(slug):
         STAMP = resolve.stamper(where)
         PAGE = where
         # 只给要被跨页引用的那些页建索引，与戳号同一条判据。
-        DEX = pagedex.Index(where, vocab.TOKENS[where]) if where in vocab.TOKENS else None
+        # 有没有页内搜索框按源稿那三个键定，与 render() 建工具条用的是同一批值：
+        # 「导航：是」才建，列组页与折线图页整块不建。
+        searchable = (meta_of(md, '导航', required=False) == '是'
+                      and not re.search(r'^列组：', md, re.M)
+                      and meta_of(md, '图表', required=False) != '是')
+        DEX = (pagedex.Index(where, pagedex.TOKENS[where], searchable)
+               if where in pagedex.TOKENS else None)
 
         out, title = render(md, slug)
         check(md, out, slug)

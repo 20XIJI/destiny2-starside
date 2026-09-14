@@ -1,6 +1,7 @@
 {
  "page": "elements/void",
  "token": "el-void",
+ "searchable": true,
  "entries": [
   {"anchor": "sec-1", "desc": "<p>激活时恢复 70 <span class=\"health\">生命值</span>并提供<span class=\"el-void\">吞食</span>，持续 10+5 秒。<br> 重新激活再恢复 70 <span class=\"health\">生命值</span>并刷新 5+3 秒。<br> <br> <span class=\"el-void\">吞食</span>期间击杀：<br> 恢复 70 <span class=\"health\">生命值</span>，获得<span class=\"pickup\">手雷技能能量</span>，并刷新 5+3 秒。<br> 击杀回能：<span class=\"enemy\">T1 级战斗人员</span> 7.5% ｜ <span class=\"enemy\">T2</span> 11.6% ｜ <span class=\"enemy\">T3</span> 13.75% ｜ <span class=\"enemy\">T4</span> 20% ｜ <span class=\"bar-orange\">守护者</span> 20%。</p>", "hash": "trait:3078132110", "icon": "elements/void/icons/908f4e5a73.webp", "kind": "效果", "name": "吞食", "q": "吞食"},
   {"anchor": "sec-1", "desc": "<p>隐形并获得多项<span class=\"buff\">增益</span>，同时最大雷达射程降到 24 米，持续 5+2 秒。做出攻势动作立即结束。<br> <span class=\"note\">雷达增强装置模组可移除雷达缩减。重新施加隐身时，只要没破隐，会刷新持续最久的那一份。</span><br> <br> <span class=\"enemy\">战斗人员</span>无法直接锁定使用者，通常朝最后可见的位置射击或干脆停火；做出高噪声动作时会追踪但不射击。<br> <span class=\"bar-orange\">守护者</span>看不到使用者的<span class=\"health\">生命值</span>条；使用者的雷达每 5 秒才脉冲 0.6 秒，做高噪声动作时也会脉冲。<br> 会追踪（追踪投射物）或扫描（<span class=\"el-solar\">烈焰手雷</span>）的武器与技能不会锁定使用者，已锁定的也会脱锁。<br> <br> 攻势动作（立即破隐）：<br> 射击 ｜ 手雷、近战、超能或瞬移技能 ｜ 放置屏障或裂痕 ｜ 召唤载具。<br> <br> 高噪声动作（暴露位置但不破隐）：<br> 开始冲刺 ｜ 非瞬移的移动技能 ｜ 猎人职业技能。</p>", "hash": "trait:655301426", "icon": "elements/void/icons/49d46ca870.webp", "kind": "效果", "name": "隐身", "q": "隐身"},

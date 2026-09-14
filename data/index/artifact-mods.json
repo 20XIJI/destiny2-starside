@@ -1,6 +1,7 @@
 {
  "page": "artifact-mods",
  "token": "art-perk",
+ "searchable": true,
  "entries": [
   {"anchor": "art-1", "desc": "\n<p>击破<span class=\"enemy\">战斗人员护盾</span>：</p>\n<p>+20 稳定性，<br>+20 操控性，<br>+20 填装速度，持续 10 秒。<br><span class=\"ammo-heavy\">刀剑</span>获得 +20 防御抗性。</p>\n", "hash": "3116632774 3834273543", "icon": "artifact-mods/icons/fb7e47a66a.webp", "kind": "加密数据盘 （反叛）", "name": "乘胜追击", "pos": "0,1", "q": "乘胜追击"},
   {"anchor": "art-1", "desc": "\n<p>击杀<span class=\"deb-arc\">电弧减益战斗人员</span>：</p>\n<p>获得 <span class=\"el-arc\">x1 电光充能</span>。</p>\n<p>在 6 秒内连续击杀 3 名<span class=\"deb-arc\">电弧减益战斗人员</span>：<br>生成一个<span class=\"orb\">能量球</span>，提供 <span class=\"orb\">7.15% 超能能量</span>，并<span class=\"health\">恢复 40 点生命值</span>。</p>\n", "hash": "2903198438 3585856470", "icon": "artifact-mods/icons/8ed5f7d5d9.webp", "kind": "加密数据盘 （反叛）", "name": "电介质", "pos": "0,2", "q": "电介质"},

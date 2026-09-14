@@ -1,6 +1,7 @@
 {
  "page": "armor-mods",
  "token": "",
+ "searchable": true,
  "entries": [
   {"anchor": "sec-1", "desc": "<p><span class=\"ammo-special\">特殊弹药</span>搜寻者：<br> 1.25× ｜ 1.4× ｜ 1.5× 弹药进度倍率。<br> <br> <span class=\"ammo-heavy\">威能弹药</span>搜寻者：<br> 1.25× ｜ 1.4× ｜ 1.5× 弹药进度倍率。</p>", "icon": "armor-mods/icons/fc4ae31f8f.webp", "kind": "头盔", "name": "弹药搜寻者", "q": "弹药搜寻者"},
   {"anchor": "sec-1", "desc": "<p>生成与模组匹配的弹药块时：<br> <span class=\"enemy\">盟友</span>获得一份相同的弹药块。<br> <br> 弹药斥候弹药块的拾取量：<br> 常规弹药块的 37% ｜ 67% ｜ 100%。<br> <br> 强化弹药块的出现概率由<span class=\"enemy\">盟友</span>的武器属性决定。<br> <span class=\"note\">这一块的强化外观只是发光，不增加弹药获取量；别处掉的强化弹药块照常加量。</span></p>", "icon": "armor-mods/icons/71a7b2fb1c.webp", "kind": "头盔", "name": "弹药斥候", "q": "弹药斥候"},

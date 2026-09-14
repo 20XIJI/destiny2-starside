@@ -1,6 +1,7 @@
 {
  "page": "armor-sets",
  "token": "",
+ "searchable": true,
  "entries": [
   {"anchor": "set-1-1", "desc": "<p class=\"bn\">拉斯普廷的怒火</p><p>使用非直接命中、<span class=\"el-solar\">烈日</span>技能、第七炽天使/似像者武器、<span class=\"exotic\">睡者之吼</span>、<span class=\"exotic\">全面爆发</span>造成最后一击时：</p><p>获得一层<span class=\"term\">战争思维充能</span>，持续 10 秒，最多叠至 10 层。<br>在过期时失去所有层数。</p><p>每层<span class=\"term\">战争思维充能</span>提供 +3 手雷属性和 +3 武器属性，10 层时达到 +30 手雷属性、+30 武器属性。</p>", "hash": "set:222121557", "icon": "armor-sets/icons/001.png", "kind": "2 件", "name": "第七炽天使", "q": "第七炽天使", "sub": "发射基地"},
   {"anchor": "set-1-1", "desc": "<p class=\"bn\">拉斯普廷的怒火</p><p>使用非直接命中、<span class=\"el-solar\">烈日</span>技能、第七炽天使/似像者武器、<span class=\"exotic\">睡者之吼</span>、<span class=\"exotic\">全面爆发</span>造成最后一击时：</p><p>获得一层<span class=\"term\">战争思维充能</span>，持续 10 秒，最多叠至 10 层。<br>在过期时失去所有层数。</p><p>每层<span class=\"term\">战争思维充能</span>提供 +3 手雷属性和 +3 武器属性，10 层时达到 +30 手雷属性、+30 武器属性。</p>", "hash": "set:222121557", "icon": "armor-sets/icons/001.png", "kind": "2 件", "name": "发射基地", "q": "发射基地", "sub": "第七炽天使"},

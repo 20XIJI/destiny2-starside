@@ -30,6 +30,7 @@ import sys
 import urllib.request
 
 import items
+import pagedex
 import shell
 import vocab
 from markup import die, img_size
@@ -91,9 +92,9 @@ def gone(row, name):
 
 
 def rows_of():
-    """站内护甲模组页的行：{部位: {行名: 锚点}}。源稿即清单，不另存一份名单。"""
+    """站内护甲模组页的行：{部位: {行名: 锚点}}。索引即清单，不另存一份名单。"""
     out = {}
-    for e in vocab.scan_page('armor-mods'):
+    for e in pagedex.must_read('armor-mods')['entries']:
         out.setdefault(e['kind'], {})[e['name']] = e['anchor']
     return out
 
@@ -155,7 +156,7 @@ def arts_of():
     站内按 design.md 三节在汉字与拉丁之间写排版空格（NPA 斥力调节器），官方物品表
     里没有，所以键归一化、值留站内那个写法。"""
     return {items.norm(vocab.bare_kind(e['kind'])): vocab.bare_kind(e['kind'])
-            for e in vocab.scan_page('artifact-mods')}
+            for e in pagedex.must_read('artifact-mods')['entries']}
 
 
 def pull(path, type_zh, out_path, want, keep=None):

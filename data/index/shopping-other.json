@@ -1,6 +1,7 @@
 {
  "page": "shopping-other",
  "token": "",
+ "searchable": true,
  "entries": [
   {"anchor": "sec-2", "hash": "593808239", "icon": "shopping-other/icons/8a126a8a14.webp", "kind": "其他", "name": "翻新 A499", "q": "翻新 A499"},
   {"anchor": "sec-2", "hash": "1361871430", "icon": "shopping-other/icons/a244fc9b50.webp", "kind": "其他", "name": "韦兰迪夫-D", "q": "韦兰迪夫-D"},

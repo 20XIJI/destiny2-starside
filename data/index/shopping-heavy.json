@@ -1,6 +1,7 @@
 {
  "page": "shopping-heavy",
  "token": "",
+ "searchable": true,
  "entries": [
   {"anchor": "sec-2", "icon": "shopping-heavy/icons/d34f43defa.webp", "kind": "榴弹发射器-弹鼓", "name": "边缘交通猛攻版本", "q": "边缘交通猛攻版本"},
   {"anchor": "sec-2", "hash": "2452936817", "icon": "shopping-heavy/icons/baa57b2d8b.webp", "kind": "榴弹发射器-弹鼓", "name": "VS 寒冷抑制", "q": "VS 寒冷抑制"},

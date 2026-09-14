@@ -1,6 +1,7 @@
 {
  "page": "shopping-primary",
  "token": "",
+ "searchable": true,
  "entries": [
   {"anchor": "sec-2", "hash": "1801007332", "icon": "shopping-primary/icons/aaeac6f97a.webp", "kind": "自动步枪", "name": "毫不迟疑", "q": "毫不迟疑"},
   {"anchor": "sec-2", "hash": "2579693381", "icon": "shopping-primary/icons/8cf1bbff37.webp", "kind": "自动步枪", "name": "永恒之尖", "q": "永恒之尖"},

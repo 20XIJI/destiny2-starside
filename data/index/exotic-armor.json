@@ -1,6 +1,7 @@
 {
  "page": "exotic-armor",
  "token": "exotic",
+ "searchable": true,
  "entries": [
   {"anchor": "sec-1", "desc": "<p>用充能近战击杀或<span class=\"enemy\">终结技</span>击杀时：<br> 获得<span class=\"el-void\">虚空隐身</span>，回复 67 点<span class=\"health\">生命值</span>。<br> 由<span class=\"enemy\">终结技</span>触发时，<span class=\"el-void\">隐身</span>持续时间额外 +3 秒。<br> <br> <span class=\"el-void\">隐身</span>持续时间（括号内为<span class=\"enemy\">终结技</span>触发）：<br> <span class=\"bar-red\">红血</span> = 7 秒（10）<br> <span class=\"bar-orange\">橙血</span>｜<span class=\"bar-orange\">守护者</span> = 10 秒（13）<br> <span class=\"bar-yellow\">初级首领</span>及以上 = 13 秒（16）</p>", "hash": "3400283633", "icon": "exotic-armor/icons/23dd31daa6.webp", "kind": "猎人", "name": "刺客风帽", "q": "刺客风帽"},
   {"anchor": "sec-1", "desc": "<p>装备<span class=\"el-solar\">权衡飞刀</span>时：<br> <br> <span class=\"el-solar\">权衡飞刀</span>获得第二次弹跳，追踪大幅增强。<br> <br> 2.5 秒内造成 3 次<span class=\"stack\">精准命中</span>：<br> 获得「强化飞刀」，持续 10 秒。<br> 之后每次<span class=\"stack\">精准命中</span>再延长 5 秒，最长 30 秒。<br> <br> 强化飞刀：<br> 生效期间<span class=\"el-solar\">权衡飞刀</span>伤害提高 300%<span class=\"pvp\">[100%]</span>，近战属性 +50。<br> 命中可眩晕<span class=\"enemy\">势不可挡勇士</span>。<br> 命中后该<span class=\"buff\">增益</span>即消耗。</p>", "hash": "89619507", "icon": "exotic-armor/icons/af73f0a26d.webp", "kind": "猎人", "name": "阿斯瑞思之拥", "q": "阿斯瑞思之拥"},

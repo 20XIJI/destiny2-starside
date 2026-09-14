@@ -1,6 +1,7 @@
 {
  "page": "elements/solar",
  "token": "el-solar",
+ "searchable": true,
  "entries": [
   {"anchor": "sec-1", "desc": "<p>每层<span class=\"el-solar\">治愈</span>在 0.1 秒内恢复 60 <span class=\"pvp\">[30]</span> <span class=\"health\">生命值</span>。<br> 两次激活之间有 1 秒冷却，冷却期间再次激活不恢复<span class=\"health\">生命值</span>。</p>", "hash": "trait:3263723277", "icon": "elements/solar/icons/32e5c8f078.webp", "kind": "效果", "name": "治愈", "q": "治愈"},
   {"anchor": "sec-1", "desc": "<p><span class=\"el-solar\">烈日</span>元素拾取物。<br> <br> 拾取提供 11.25% <span class=\"pickup\">手雷技能能量</span>。<br> <span class=\"enemy\">自己</span>生成的<span class=\"el-solar\">焰灵</span>对<span class=\"enemy\">盟友</span>不生效。<br> 停留 25 秒后消失，两次生成之间有 5 秒冷却。</p>", "hash": "trait:37177486", "icon": "elements/solar/icons/63aab56786.webp", "kind": "效果", "name": "焰灵", "q": "焰灵"},
