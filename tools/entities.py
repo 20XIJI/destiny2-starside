@@ -157,9 +157,11 @@ def dump(recs):
     out = []
     for name, book in sorted(books.items()):
         path = os.path.join(OUT_DIR, name + '.json')
+        # 记录里**不排键**：作者那一块的键序就是他原表的列序，排一遍就把
+        # 「排名、评级、属性、框架、来源…」打乱成字典序，页面照着念会很难读。
+        # 顶层按主键排，逐条可比。
         body = ',\n'.join(
-            ' %s: %s' % (json.dumps(k), json.dumps(book[k], ensure_ascii=False,
-                                                   sort_keys=True))
+            ' %s: %s' % (json.dumps(k), json.dumps(book[k], ensure_ascii=False))
             for k in sorted(book, key=int))
         with open(path, 'w', encoding='utf-8') as f:
             f.write('{\n%s\n}\n' % body)

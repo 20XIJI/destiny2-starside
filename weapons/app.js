@@ -84,6 +84,12 @@
   function list(text) {
     var want = text.trim().toLowerCase();
     var got = want ? D.w.filter(function (w) { return w.k.indexOf(want) >= 0; }) : D.w;
+    // 选中的那把排到最前：列表只铺前 80 条，按名字排下去往往轮不到它，
+    // 读者就会看到右边显示着一把、左边却没有它。
+    var now = location.hash.slice(1);
+    if (now && by[now]) {
+      got = [by[now]].concat(got.filter(function (w) { return w.h !== now; }));
+    }
     count.textContent = '结果 ' + got.length;
     hits.textContent = '';
     got.slice(0, LIMIT).forEach(function (w) {
@@ -135,15 +141,20 @@
     box.appendChild(el('h3', '', '数值'));
     var dl = el('dl');
     d.st.forEach(function (pair) {
-      dl.appendChild(el('dt', '', D.s[pair[0]] || pair[0]));
+      var meta = D.s[pair[0]] || ['', 0];
+      dl.appendChild(el('dt', '', meta[0]));
       var dd = el('dd');
-      var rail = el('span', 'wpn-rail');
-      var bar = el('span', 'wpn-bar');
-      // 数值的量纲各不相同（伤害 0–100、弹药容量能到几百），条长按 100 封顶，
-      // 真值照常写在旁边——条只用来一眼看出高低，不当刻度读。
-      bar.style.width = Math.min(100, pair[1]) + '%';
-      rail.appendChild(bar);
-      dd.appendChild(rail);
+      // 0–100 的那些画条，量纲不同的（每分钟发射数、弹匣）只写数——
+      // 给它们画一条按 100 封顶的条，条会永远满格，读者以为那是「满」。
+      if (!meta[1]) {
+        var rail = el('span', 'wpn-rail');
+        var bar = el('span', 'wpn-bar');
+        bar.style.width = Math.min(100, pair[1]) + '%';
+        rail.appendChild(bar);
+        dd.appendChild(rail);
+      } else {
+        dd.appendChild(el('span', 'wpn-rail bare'));
+      }
       dd.appendChild(el('b', '', String(pair[1])));
       dl.appendChild(dd);
     });
@@ -157,6 +168,20 @@
   function matrix(d) {
     var box = el('section', 'wpn-sockets');
     box.appendChild(el('h3', '', '词条池'));
+    // 说明面板：点哪一枚就讲哪一枚，开页时讲固有那一枚。悬停出的浮层是一扫而过
+    // 的，这一块是读者停下来读的那一份，两者分工不同，都要。
+    var note = el('div', 'wpn-note');
+    box.appendChild(note);
+
+    function tell(p) {
+      note.textContent = '';
+      note.appendChild(icon(p[1], 40, 'wpn-note-ico'));
+      var t = el('div');
+      t.appendChild(el('strong', '', p[0]));
+      if (p[2]) { t.appendChild(el('p', '', p[2])); }
+      note.appendChild(t);
+    }
+
     var grid = el('div', 'wpn-grid');
     d.c.forEach(function (col) {
       var cell = el('div', 'wpn-colbox');
@@ -173,23 +198,27 @@
             x.classList.remove('on');
           });
           b.classList.add('on');
+          tell(p);
         });
         cell.appendChild(b);
       });
       grid.appendChild(cell);
     });
     box.appendChild(grid);
+    // 开页先讲第一列第一枚：那是固有，异域的机制就写在它身上。
+    if (d.c.length && d.c[0][1].length) { tell(d.p[d.c[0][1][0]]); }
     return box;
   }
 
   // 记录里的值是源稿原文：{token|文字} 是着色标记，\\ 是格内换行，![](…) 是图。
-  // 这一页只读文字，标记剥掉、换行换成顿号，图整段去掉。
+  // 这一页只读文字：标记剥掉，图去掉，**格内换行还原成真的换行**——注解那一格
+  // 写的是一句断成两行的话，压成顿号会读成两件事。
   function plain(text) {
     return String(text)
       .replace(/!\[\]\([^)]*\)/g, '')
       .replace(/\{[\w-]+\|([^{}]*)\}/g, '$1')
-      .replace(/\\\\/g, ' · ')
-      .replace(/\s+/g, ' ')
+      .replace(/\\\\/g, '\n')
+      .replace(/[ \t]+/g, ' ')
       .trim();
   }
 
@@ -274,12 +303,14 @@
         s.appendChild(el('span', '', d.src));
         main.appendChild(s);
       }
-      if (d.c.length) { main.appendChild(matrix(d)); }
-      // 两位作者并列，谁写了就显示谁。顺序照 data.js 里作者表的顺序，
-      // 不按记录里的键序——那一份是 JSON 的字典序，与谁更权威无关。
+      // 两位作者排在词条矩阵之前：传说武器的矩阵有十几行，压在它后面就等于
+      // 要读者先滚过一屏图标才看得到评级与评语，而那正是站内比词条池多出来的东西。
+      // 顺序照 data.js 里作者表的顺序，不按记录里的键序——那一份是 JSON 的
+      // 字典序，与谁更权威无关。
       Object.keys(D.a).forEach(function (who) {
         if (d.by[who]) { main.appendChild(author(who, d.by[who])); }
       });
+      if (d.c.length) { main.appendChild(matrix(d)); }
       var st = stats(d);
       if (st) { side.appendChild(st); }
     });

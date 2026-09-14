@@ -101,10 +101,21 @@ def payload(facts, recs, table):
                           (row.get('desc') or {}).get('zh', '')])
         return plug_at[h]
 
+    # 哪些属性不是 0–100 的量纲：按**全表实测的最大值**判，超过 100 就不是。
+    # 每分钟发射数能到 900、弹匣能到几百，给它们画一条按 100 封顶的进度条，
+    # 条会永远满格，读者以为那是「满」。manifest 自己那一位（displayAsNumericalStat）
+    # 全表 1099 项一个 True 都没有，指望不上。
+    top = {}
+    for row in facts.items.values():
+        for sh, val in row.get('stats') or ():
+            if val > top.get(sh, 0):
+                top[sh] = val
+
     def stat_of(h):
         if h not in stat_at:
             stat_at[h] = len(stats)
-            stats.append((facts.stats.get(h) or {}).get('n', {}).get('zh', h))
+            stats.append([(facts.stats.get(h) or {}).get('n', {}).get('zh', h),
+                          1 if top.get(h, 0) > 100 else 0])
         return stat_at[h]
 
     out, detail, used = [], {}, {}
@@ -123,7 +134,9 @@ def payload(facts, recs, table):
                 cols.append([COLUMN.get(col['kind'], col['kind']), seen])
         path = icons.icon_of(facts, key)
         got = table.get(path or '')
-        by = {who: {col: strip(val) for col, val in block.items()
+        # 列名同样剥一遍：刷取清单的表头写着「框架\\\\射速」，那两个反斜杠是
+        # 源稿的格内换行记号，不是名字的一部分。
+        by = {who: {plain(col): strip(val) for col, val in block.items()
                     if col not in SKIP_COL and strip(val)}
               for who, block in (recs[key].get('来自') or {}).items()}
         out.append({
@@ -137,10 +150,10 @@ def payload(facts, recs, table):
             'ico': got['file'] if got else '',
             'br': BREAKER.get(row.get('breaker') or 0, ''),
             # 评级进索引：左栏要按它排、要显示它，为这一列再取一次详情不值当。
-            'r': {who: b['评级'] for who, b in by.items() if b.get('评级')},
+            'r': {who: plain(b['评级']) for who, b in by.items() if b.get('评级')},
         })
         detail[key] = {
-            'src': (row.get('src') or {}).get('zh', ''),
+            'src': source(row),
             'fl': (row.get('flavor') or {}).get('zh', ''),
             'st': [[stat_of(sh), val] for sh, val in row.get('stats') or ()],
             'c': cols,
@@ -156,7 +169,25 @@ def payload(facts, recs, table):
     return {'a': AUTHORS, 's': stats, 'w': out}, detail
 
 
+# 收藏条目的来源串自带「来源：」前缀，而页面上那一格已经写着「来源」两个字，
+# 照抄就成了「来源 来源：…」。
+SRC_TAG = re.compile(r'^来源[:：]\s*')
+
+
+def source(row):
+    return SRC_TAG.sub('', (row.get('src') or {}).get('zh', '')).strip()
+
+
 IMG_MARK = re.compile(r'!\[\]\([^)]*\)')
+
+
+MARK = re.compile(r'\{[\w-]+\|([^{}]*)\}')
+
+
+def plain(text):
+    """源稿原文 → 纯文字。着色标记剥掉，格内换行换成顿号——评级那一格写着
+    「高难：T0.5\\\\输出：T1」，直接塞进索引会在左栏里露出两个反斜杠。"""
+    return MARK.sub(r'\1', strip(text)).replace('\\\\', ' · ').strip()
 
 
 def strip(text):
@@ -230,13 +261,14 @@ def main():
     recs = records()
     data, detail = payload(facts, recs, icons.load())
     os.makedirs(os.path.join(OUT_DIR, 'w'), exist_ok=True)
+    # 不排键：作者那一块的列序即他原表的列序，见 entities.py。
     body = 'window.WPN=%s;\n' % json.dumps(data, ensure_ascii=False,
-                                           separators=(',', ':'), sort_keys=True)
+                                           separators=(',', ':'))
     with open(os.path.join(OUT_DIR, 'data.js'), 'w', encoding='utf-8') as f:
         f.write(body)
     total = 0
     for key, one in detail.items():
-        text = json.dumps(one, ensure_ascii=False, separators=(',', ':'), sort_keys=True)
+        text = json.dumps(one, ensure_ascii=False, separators=(',', ':'))
         total += len(text.encode())
         with open(os.path.join(OUT_DIR, 'w', key + '.json'), 'w', encoding='utf-8') as f:
             f.write(text)

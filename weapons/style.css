@@ -241,6 +241,11 @@
   margin: 0;
 }
 
+/* 作者写的那一格里有格内换行，照原样断行。 */
+.wpn-by dd {
+  white-space: pre-line;
+}
+
 /* ── 数值条 ── */
 .wpn-stats dd {
   display: flex;
@@ -262,11 +267,39 @@
   border-radius: 3px;
 }
 
+/* 不画条的那几项留一段等宽的空，数字才与上下对齐。 */
+.wpn-rail.bare {
+  background: none;
+}
+
 .wpn-stats dd b {
   flex: none;
   min-width: 2.5em;
   text-align: right;
   font-weight: 600;
+}
+
+/* 说明面板：点中那一枚讲什么。左缘一道强调色，与游戏里异域说明那一块同形。 */
+.wpn-note {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  background: var(--tint-1);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 4px 4px 0;
+}
+
+.wpn-note-ico {
+  flex: none;
+  border-radius: 50%;
+}
+
+.wpn-note p {
+  margin: 4px 0 0;
+  color: var(--bone-dim);
+  white-space: pre-line;
 }
 
 /* ── 词条矩阵：一列一个槽位，纵向排该槽位的全部选项 ── */
