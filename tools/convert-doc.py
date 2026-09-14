@@ -18,8 +18,9 @@ import re
 import sys
 from urllib.parse import quote
 
-import shell
 import markup
+import resolve
+import shell
 from markup import (IMG, LINK, Icons, bmark, die, inline, meta_line, meta_of,
                     no_nested_span, plain, source_context, src_hash, text_of, whole_marker)
 
@@ -40,6 +41,8 @@ GUIDE_LINE = re.compile(r'^攻略：(.*)$', re.M)
 # 与「色阶：」同一种做法——按整行剥离，落成表上的 data-rota，由 assets/app.js 读。
 ROTA_LINE = re.compile(r'^轮换：(.*)$', re.M)
 
+# 行标题 → 主键的戳号器，按页装配；没有范围定义的页是 None。
+STAMP = None
 ICONS: 'Icons | None' = None    # 当前页面的图标登记处，由 build() 装上
 
 
@@ -417,10 +420,14 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=
             band = 1
             continue
         row = []
+        stamp = ''
         if n:
             band ^= 1               # 每遇到一个新行标题翻一次
             attrs = ' scope="row"' + (' rowspan="%d"' % n if n > 1 else '')
             row.append(wrap('th', broke(cells[0]), attrs))
+            # 行标题指向的那件东西的主键。戳在 <tr> 上不戳在 <th> 上：合并块里
+            # 只有第一行有 <th>，而整块说的是同一件东西。
+            stamp = STAMP(text_of(cells[0])) if STAMP else ''
         for ci, c in enumerate(cells[1:], start=1):
             if ci in tiers:
                 tier = tier_of(c, tiers[ci])
@@ -434,8 +441,9 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=
                 continue
             row.append(wrap('td', broke(c)))
         prev = at
-        o.append('<tr%s%s>%s</tr>'
-                 % (mark, ' data-band="%d"' % band if banded else '', ''.join(row)))
+        o.append('<tr%s%s%s>%s</tr>'
+                 % (mark, stamp, ' data-band="%d"' % band if banded else '',
+                    ''.join(row)))
     o += ['</tbody>', '</table>']
     return o
 
@@ -700,7 +708,7 @@ def render(md, slug):
          shell.page_head(title),
          # data-src 是这一篇在库里的 _id：产出目录（elements/arc）与源稿路径
          # （docs/arc）不是同一个，就地编辑要靠它才找得回源稿。
-         '<main data-src="docs/%s" data-hash="%s">' % (slug, digest)]
+         '<main data-src="docs/%s" data-src-hash="%s">' % (slug, digest)]
 
     body = META_LINE.sub('', md[md.index('\n'):])
     parts = re.split(r'^## ', body, flags=re.M)
@@ -821,7 +829,7 @@ def check(md, out, slug):
 
 
 def build(slug):
-    global ICONS
+    global ICONS, STAMP
     src = os.path.join(SRC_DIR, slug + '.md')
     with source_context(os.path.relpath(os.path.realpath(src), shell.ROOT)):
         if not os.path.exists(src):
@@ -837,6 +845,7 @@ def build(slug):
         if eager and not eager.isdigit():
             die('「首屏图标：」要写一个整数，源稿写的是 %r' % eager)
         ICONS = Icons(outdir, int(eager) if eager else 0)
+        STAMP = resolve.stamper(where)
 
         out, title = render(md, slug)
         check(md, out, slug)

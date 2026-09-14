@@ -13,6 +13,7 @@ import os
 import re
 import sys
 
+import resolve
 import shell
 from markup import (Icons, blocks_at, bmark, die, eq, inline, meta_line, meta_of, must,
                     src_hash, text_of)
@@ -22,6 +23,19 @@ OUT_DIR = os.path.join(shell.ROOT, 'artifact-mods')
 ICON_DIR = os.path.join(OUT_DIR, 'icons')
 
 PAGE_TITLE = '神器模组 · Starside'
+
+_STAMP = None
+
+
+def stamp(name):
+    """模组的主键。这一页的单位是模组，不是表格行。
+
+    惰性装配：check_terms.py 会 importlib 载这个模块取着色词表，import 时就读
+    12 MB 事实层等于让闸门白等。"""
+    global _STAMP
+    if _STAMP is None:
+        _STAMP = resolve.stamper('artifact-mods') or (lambda _: '')
+    return _STAMP(name)
 
 N_SECTIONS = 7
 N_MODS = 147
@@ -174,7 +188,7 @@ def render(page, digest=''):
          shell.nav('神器模组', toolbar={}),
          shell.page_head(page['sub']),
          # data-src 是这一篇在库里的 _id，就地编辑靠它找回源稿
-         '<main data-src="artifact-mods" data-hash="%s">' % digest,
+         '<main data-src="artifact-mods" data-src-hash="%s">' % digest,
          '<section class="intro">']
 
     o.append('<h2 class="sect-label">%s</h2>' % page['lede'][0][2])
@@ -214,7 +228,9 @@ def render(page, digest=''):
         for row in rows_of(s['mods']):
             o.append('<div class="mod-row">')
             for mod in row:
-                o += ['<article class="mod" data-tier="%d">' % mod['tier'], mod['icon'],
+                o += ['<article class="mod" data-tier="%d"%s>'
+                      % (mod['tier'], stamp(text_of(mod['name']))),
+                      mod['icon'],
                       '<h4%s>%s</h4>' % (bmark(mod['at']), mod['name']),
                       '<div class="mod-desc">']
                 o += ['<p%s>%s</p>' % (bmark(n, m), p) for n, m, p in mod['desc']]

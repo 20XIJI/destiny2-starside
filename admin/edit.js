@@ -20,7 +20,7 @@
   // 'doc'（缺省）逐格改，'build' 整篇替换。判据写在产出的 <main> 上，不靠猜路径：
   // 配装页没有 data-b，逐格那条路在它身上无从落脚。
   var KIND = main.getAttribute('data-kind') || 'doc'
-  var PAGE_HASH = main.getAttribute('data-hash') || ''
+  var PAGE_HASH = main.getAttribute('data-src-hash') || ''
   var HERE = document.querySelector('link[href$="assets/site.css"]')
     .getAttribute('href').replace('assets/site.css', '')
 

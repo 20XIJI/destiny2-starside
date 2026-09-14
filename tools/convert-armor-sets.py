@@ -24,6 +24,7 @@ import re
 
 import check_terms
 import items
+import resolve
 import shell
 from markup import (bmark, die, eq, loading_attr, meta_of, no_nested_span, plain,
                     src_hash, text_of)
@@ -34,6 +35,18 @@ OUT_DIR = os.path.join(shell.ROOT, 'armor-sets')
 
 # ── 结构断言 ──────────────────────────────────────────────────────────
 # 对不上即中止，不出文件。源稿增删条目时同步改这里，不要放宽断言。
+
+def set_stamp(name):
+    """套装的主键。套装不在物品表里，在 DestinyEquipableItemSetDefinition 上，
+    所以自己查一次，不走 resolve.stamper()——那一条查的是物品。"""
+    facts = resolve.shared()[0]
+    key = resolve.set_key(name)
+    for h, s in facts.sets.items():
+        if resolve.set_key(s['name']['zh']) == key:
+            return ' data-hash="set:%s"' % h
+    return ''
+
+
 N_CATEGORIES = 7
 N_SETS = 56
 N_BONUSES = 112
@@ -308,14 +321,15 @@ def render(cats: list[Category], md: str, digest: str = '') -> str:
             'data-chip-label': '分类'}),
         shell.page_head(title, html.escape(meta_of(md, '导语'))),
         # data-src 是这一篇在库里的 _id，就地编辑靠它找回源稿
-        '<main data-src="armor-sets" data-hash="%s">\n' % digest])]
+        '<main data-src="armor-sets" data-src-hash="%s">\n' % digest])]
     n_img = 0
     for ci, cat in enumerate(cats, 1):
         parts.append('<section class="cat" id="cat-%d">\n' % ci)
         parts.append('<h2 class="cat-head"><span>%s</span></h2>\n'
                      % html.escape(cat.name))
         for si, st in enumerate(cat.sets, 1):
-            parts.append('<article class="set" id="set-%d-%d">\n' % (ci, si))
+            parts.append('<article class="set" id="set-%d-%d"%s>\n'
+                         % (ci, si, set_stamp(st.name)))
             parts.append('<div class="set-id">\n')
             parts.append('<h3>%s</h3>\n' % html.escape(st.name))
             if st.meta:

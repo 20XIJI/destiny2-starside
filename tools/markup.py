@@ -154,7 +154,7 @@ def bmark(a, b=None):
 
 
 def src_hash(md):
-    """源稿正文的 sha1。落成 <main data-hash>，与库里 docs 那一条的 hash 同一个算法。
+    """源稿正文的 sha1。落成 <main data-src-hash>，与库里 docs 那一条的 hash 同一个算法。
 
     就地编辑据此一步判断「这一页是不是比库里旧」：两者相等就没有待上站的改动，
     一处都不必逐格比。**要在改写链接之前算**——库里存的是源稿原文。

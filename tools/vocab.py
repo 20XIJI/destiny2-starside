@@ -46,7 +46,9 @@ LANE = re.compile(r'<tr[^>]*class="lane"[^>]*>\s*<th[^>]*>(.*?)</th>', re.S)
 MOD = re.compile(r'<article class="mod" data-tier="(\d)"[^>]*>\s*'
                  r'<img[^>]*src="([^"]+)"[^>]*>\s*<h4[^>]*>(.*?)</h4>\s*'
                  r'<div class="mod-desc">(.*?)</div>', re.S)
-SET = re.compile(r'<article class="set" id="([^"]+)">(.*?)</article>', re.S)
+# 尾部写 [^>]*：套装那一格现在还戳着 data-hash（这一套的主键）。与上面 ROW 那条
+# 同一个道理——裸标签匹配不上带属性的产出。
+SET = re.compile(r'<article class="set" id="([^"]+)"[^>]*>(.*?)</article>', re.S)
 BONUS = re.compile(r'<img class="bonus-icon" src="([^"]+)"[^>]*>'
                    r'<span class="piece">(.*?)</span><span class="bonus-name">(.*?)</span>'
                    r'\s*</h4>\s*<div class="bonus-body">(.*?)</div>', re.S)

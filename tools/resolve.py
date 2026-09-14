@@ -354,6 +354,53 @@ def resolve(facts, name, page, version='', perks=()):
     return (hits[0] if hits else None), ('全池 %d 条' % len(hits) if hits else '查不到')
 
 
+# ── 给产出戳 hash ─────────────────────────────────────────────────────
+
+
+_SHARED = None
+
+
+def shared():
+    """事实层与源稿线索只读一次。一轮构建要给四十多页戳号，每页重读 12 MB 白等。"""
+    global _SHARED
+    if _SHARED is None:
+        _SHARED = (Facts(), source_hints())
+    return _SHARED
+
+
+def stamper(page):
+    """一页的戳号器：名字 → ` data-hash="…"`，戳不上就回空串。
+
+    **只给有范围定义的那些页戳**，也就是 vocab.py 要扫的那 17 页——戳 hash 的用处
+    正是让它从按名字猜改成读主键。别的页的行标题不参与跨页引用，戳了没人读。
+
+    词条与模组是一族，一格里可能有几个 hash（「双重装填」有普通与强化两条），
+    按空格分开写在同一位上；武器与护甲只有一个。
+    """
+    if page not in SCOPES:
+        return None
+    facts, hints = shared()
+
+    def stamp(name):
+        name = (name or '').strip()
+        if not name:
+            return ''
+        if page in SINGLE_PAGES:
+            src, perks = hints.get((page, norm(name)), ('', ()))
+            hit = one(facts, name, page, version=src, perks=perks)[0]
+            got = [hit] if hit else []
+        else:
+            got = pool(facts, name, page)
+        if not got:
+            # 效果与属性（增幅、致盲、充能效率）不在物品表里，主键在别的号段上。
+            # 戳的形态照 effects.json 自己的键走，带前缀，免得两个号段混在一位上。
+            eff = resolve_effect(facts, name)
+            got = [eff] if eff else []
+        return ' data-hash="%s"' % ' '.join(got) if got else ''
+
+    return stamp
+
+
 # ── 审计 ──────────────────────────────────────────────────────────────
 
 

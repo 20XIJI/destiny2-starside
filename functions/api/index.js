@@ -536,7 +536,7 @@ async function editorRoute(a, body, event, me) {
   // 两发串行——后者只为拿 hash 与页面上那份比一次，而这一次比服务端自己做得了。
   if (a === 'pend') {
     const doc = String(body.doc || '')
-    // stale：页面上那份 data-hash 与库里对不上时才要。已通过的那些记录里，
+    // stale：页面上那份 data-src-hash 与库里对不上时才要。已通过的那些记录里，
     // before 正是页面此刻显示的原文、after 是库里现在的——拿它们逐条认，比按
     // 归一化文本盲比准，不必猜标记该怎么剥。hash 相同的常态下一条都不取。
     // judge：审核台要知道每一条此刻还定不定位得到。**这个判断只有 locate 做得准**
