@@ -43,6 +43,15 @@ BASE = HOST + '/common/destiny2_content/icons/'
 #
 # 强化 Perk 不在这里：那是画在 48px 圆图标上的，官方那张 enhanced-item-overlay
 # 是给方形物品图准备的，圆图标上用 CSS 画一道内环加一枚箭头更锐利，也少一次请求。
+# 三种破盾的官方图标，路径取自 DestinyBreakerTypeDefinition 的 displayProperties.icon
+# （enum 1/2/3 ＝ 贯穿护盾／干扰／眩晕）。这张表只有三条、不按物品主键走，所以写在
+# 这里；路径若随 manifest 变了，--pull 会当场 404 报出来，不会静默用旧图。
+CHAMP = {
+    1: '/common/destiny2_content/icons/DestinyBreakerTypeDefinition_07b9ba0194e85e46b258b04783e93d5d.png',
+    2: '/common/destiny2_content/icons/DestinyBreakerTypeDefinition_da558352b624d799cf50de14d7cb9565.png',
+    3: '/common/destiny2_content/icons/DestinyBreakerTypeDefinition_825a438c85404efd6472ff9e97fc7251.png',
+}
+
 CHROME = {
     'mw': '/img/destiny_content/items/masterwork-overlay.png',
     'tier': '/img/destiny_content/items/inventory-item-tier5.png',
@@ -130,6 +139,8 @@ def wanted():
                     need.setdefault(path, 64)
     for path in CHROME.values():
         need.setdefault(path, 96)
+    for path in CHAMP.values():
+        need.setdefault(path, 64)
     if clash:
         die('这几张图在两页要两个尺寸，得先定版式：\n  %s'
             % '\n  '.join('%s ← %s' % x for x in clash[:10]))

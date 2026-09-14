@@ -48,8 +48,11 @@ PAGE_DESC = ('Destiny 2 武器库——按名字查一把枪，一页看全它�
 ELEMENT = {1: ('动能', 'el-kinetic'), 2: ('电弧', 'el-arc'), 3: ('烈日', 'el-solar'),
            4: ('虚空', 'el-void'), 6: ('冰影', 'el-stasis'), 7: ('缚丝', 'el-strand')}
 
-# 勇士克制同样是枚举，名字取自 DestinyBreakerTypeDefinition。
-BREAKER = {1: '贯穿护盾', 2: '干扰', 3: '眩晕'}
+# 勇士克制是个枚举。**名字不取 manifest 那一份**：库里写的是效果名（贯穿护盾、
+# 干扰、眩晕），而读者关心的是「这把枪能破哪种勇士」。站内早就这么说了——
+# 「反屏障」在源稿里出现 52 次、「反过载」4 次，「贯穿护盾」一次都没有。
+# 三个勇士的正名见 check_terms.TERMS 的「屏障勇士／过载勇士／势不可挡勇士」。
+BREAKER = {1: '反屏障', 2: '反过载', 3: '反势不可挡'}
 
 # 弹药类型取自 equippingBlock.ammoType。manifest 没有专门的名字表，这三个词是
 # 游戏内的说法，与站内 references/docs/ammo.md 一致。
@@ -472,6 +475,7 @@ def payload(resolve, facts, recs, table):
             'tier': row.get('tier'),
             'ico': got['file'] if got else '',
             'br': BREAKER.get(row.get('breaker') or 0, ''),
+            'bri': (table.get(icons.CHAMP.get(row.get('breaker') or 0, '')) or {}).get('file', ''),
             'am': AMMO.get(row.get('ammo') or 0, ''),
             'sea': season_of(row),
             # 评级进索引：左栏要按它排、要显示它，为这一列再取一次详情不值当。
@@ -509,7 +513,8 @@ def payload(resolve, facts, recs, table):
         }
     chrome = {k: (table.get(v) or {}).get('file', '')
               for k, v in icons.CHROME.items()}
-    missing = [k for k, v in chrome.items() if not v]
+    missing = ([k for k, v in chrome.items() if not v]
+               + ['勇士 %d' % k for k, v in icons.CHAMP.items() if not table.get(v)])
     if missing:
         die('武器图标的装饰层还没拉：%s\n  跑 python3 tools/icons.py --pull'
             % '、'.join(missing))

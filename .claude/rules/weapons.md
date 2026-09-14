@@ -74,6 +74,12 @@ breaker = item.breakerType != 0 ? 它
            屏障 → 1 贯穿护盾    过载 → 2 干扰    势不可挡 → 3 眩晕
 ```
 
+页面上写的是**反屏障 / 反过载 / 反势不可挡**，不是 manifest 那一份效果名
+（贯穿护盾／干扰／眩晕）——读者关心的是「这把枪能破哪种勇士」，而站内早就这么说了：
+「反屏障」在源稿里出现 52 次、「反过载」4 次，「贯穿护盾」一次都没有。
+chip 上那三枚小图是官方的破盾图标，路径在 `icons.CHAMP`
+（取自 `DestinyBreakerTypeDefinition` 的 `displayProperties.icon`）。
+
 覆盖 2207/2208。站内另有两处写法当**反查样本**，不当真相：
 `references/docs/weapon-frames.md` 的「勇士」列（按框架，1539 把对得上，差 1）与
 两位作者的「勇士」列（896 把，差 6）。基线在 `BASELINE`，只许降不许升。

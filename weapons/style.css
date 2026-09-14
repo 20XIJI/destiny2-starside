@@ -203,10 +203,18 @@
 }
 
 .wpn-chip {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
   padding: 2px 10px;
   border: 1px solid var(--hair-lit);
   border-radius: 999px;
   background: var(--tint-1);
+}
+
+/* 勇士那一枚带官方破盾图：白线条图案，贴着文字左边。 */
+.wpn-chip-ico {
+  flex: none;
 }
 
 .wpn-chip[tabindex] {

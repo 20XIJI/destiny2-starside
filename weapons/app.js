@@ -265,9 +265,11 @@
   // ── 标签片 ────────────────────────────────────────────────────────
   function chips(w, d) {
     var box = el('div', 'wpn-chips');
-    function add(text, cls, why) {
+    function add(text, cls, why, pic) {
       if (!text) { return; }
-      var n = el('span', 'wpn-chip' + (cls ? ' ' + cls : ''), text);
+      var n = el('span', 'wpn-chip' + (cls ? ' ' + cls : ''));
+      if (pic) { n.appendChild(icon(pic, 14, 'wpn-chip-ico')); }
+      n.appendChild(el('span', '', text));
       if (why) {
         n.tabIndex = 0;
         tipOn(n, function (host) { host.appendChild(el('p', '', why)); });
@@ -275,7 +277,9 @@
       box.appendChild(n);
     }
     add(w.el, w.tk);
-    add(w.br, 'champ', '这把枪自带破' + w.br + '，打对应的勇士不必再靠神器模组。');
+    add(w.br, 'champ',
+      '这把枪自带' + w.br + '，打对应的勇士不必再靠神器模组。\n'
+      + '来自它的固有框架：勇士克制是框架自带的，同一个框架的枪破同一种。', w.bri);
     add(w.t, '');
     add(w.am, '');
     // 框架名就是固有那一列里的那一枚，与矩阵第一格是同一件事。
