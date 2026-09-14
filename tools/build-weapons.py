@@ -36,6 +36,9 @@ PAGE_DESC = ('Destiny 2 武器库——按名字查一把枪，一页看全它�
 ELEMENT = {1: ('动能', 'el-kinetic'), 2: ('电弧', 'el-arc'), 3: ('烈日', 'el-solar'),
            4: ('虚空', 'el-void'), 6: ('冰影', 'el-stasis'), 7: ('缚丝', 'el-strand')}
 
+# 勇士克制同样是枚举，名字取自 DestinyBreakerTypeDefinition。
+BREAKER = {1: '贯穿护盾', 2: '干扰', 3: '眩晕'}
+
 # 作者标签 → 显示名与主页。归属的真相是 references/docs/sources.md 那两张表，
 # 这里只存展示用的那一行；改了那边要跟着改这里，闸门在 entities.AUTHORS 上。
 AUTHORS = {
@@ -132,6 +135,7 @@ def payload(facts, recs, table):
             'tk': ELEMENT.get(row.get('dmg') or 0, ('', ''))[1],
             'tier': row.get('tier'),
             'ico': got['file'] if got else '',
+            'br': BREAKER.get(row.get('breaker') or 0, ''),
             # 评级进索引：左栏要按它排、要显示它，为这一列再取一次详情不值当。
             'r': {who: b['评级'] for who, b in by.items() if b.get('评级')},
         })
@@ -202,9 +206,15 @@ def render(n_weapon):
          ' placeholder="按名字找一把枪" aria-label="按名字找一把枪">',
          '</form>',
          '<div class="wpn-body">',
+         '<div class="wpn-aside">',
+         '<p id="count" class="wpn-count"></p>',
          '<ol id="hits" class="wpn-hits"></ol>',
+         '</div>',
          '<article id="one" class="wpn-one"></article>',
          '</div>',
+         # 悬停说明用一个浮层反复画，不给每枚图标各挂一个：一把枪的词条矩阵
+         # 有上百格。hidden 由 app.js 开合，无 JS 时它一直是隐藏的。
+         '<div id="tip" class="wpn-tip" role="tooltip" hidden></div>',
          '</section>',
          '</main>', '',
          shell.foot(stamp(), '两位作者的口径并列显示，不合并；共 %d 把。' % n_weapon,
