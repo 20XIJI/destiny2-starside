@@ -38,15 +38,7 @@ OUT_DIR = os.path.join(shell.ROOT, 'armor-sets')
 # ── 结构断言 ──────────────────────────────────────────────────────────
 # 对不上即中止，不出文件。源稿增删条目时同步改这里，不要放宽断言。
 
-def set_key(name):
-    """套装的主键。套装不在物品表里，在 DestinyEquipableItemSetDefinition 上，
-    所以自己查一次，不走 resolve.stamper()——那一条查的是物品。"""
-    facts = resolve.shared()[0]
-    want = resolve.set_key(name)
-    for h, s in facts.sets.items():
-        if resolve.set_key(s['name']['zh']) == want:
-            return 'set:%s' % h
-    return ''
+set_key = resolve.set_of      # 套装名 → set:<hash>，与刷取清单页共用一份实现
 
 
 def set_stamp(name):

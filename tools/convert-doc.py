@@ -56,6 +56,7 @@ ICONS: 'Icons | None' = None    # 当前页面的图标登记处，由 build() �
 
 
 CELL_BREAK = '\\\\'     # 表格单元格里的换行标记，见 render_table()
+BR = re.compile(r'<br\s*/?>')   # 渲染后那一格里的换行，切组合行标题用
 
 
 ROW_LINK = re.compile(r'\[([^\]]+)\]\((?!http)([^)#?]+/index\.html)\)')
@@ -440,7 +441,12 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=
             # 只有第一行有 <th>，而整块说的是同一件东西。
             # **取渲染后那一格**，与索引里的名字同一份：源稿原文里格内换行还是
             # 字面的两个反斜杠，拿它去查源稿线索一个都对不上（复刻那几把就是这么漏的）。
-            stamp = STAMP(text_of(row[0], collapse=True)) if STAMP else ''
+            shown = text_of(row[0], collapse=True)
+            stamp = STAMP(shown) if STAMP else ''
+            if STAMP and not stamp:
+                # 整行写的是一个组合（「复兴\\噬星者」「故我在\\（意外缓刑）\\涡流」），
+                # 格内换行把它切成几截。合起来查不到时逐截查，取并集。
+                stamp = STAMP(shown, [text_of(x, collapse=True) for x in BR.split(row[0])])
         for ci, c in enumerate(cells[1:], start=1):
             if ci in tiers:
                 tier = tier_of(c, tiers[ci])

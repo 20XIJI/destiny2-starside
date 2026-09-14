@@ -56,6 +56,15 @@ ABILITY_PLUGS = (r'\.(aspects|fragments|trinkets|totems|grenades|prism_grenade'
 
 SCOPES = {
     'exotic-weapon': ((3, 6, None),),
+    # 刷取清单那三页写的是同一批东西的定位与评语，范围与详解页一致。
+    # 「刷取清单-异域护甲」不列异域职业物品之灵，所以不带 intrinsics 那两档。
+    'exotic-weapons': ((3, 6, None),),
+    # 之灵与护甲同页：刷取清单里既有「觅敌者」这件护甲，也有「觅敌者\\矛隼」这样
+    # 的之灵组合行，两档都要在范围内，靠 composite() 整行判该读哪一种。
+    'exotic-armors': ((2, 6, None), (None, 6, r'^intrinsics')),
+    'legendary-primary': ((3, 5, None),),
+    'legendary-special': ((3, 5, None),),
+    'legendary-heavy': ((3, 5, None),),
     # 异域职业物品的「之灵」不是护甲条目，是异域固有插件（ty=19 tier=6
     # plug=intrinsics）；奥恩学派那三条另挂 enhancements.exotic.aeon_cult。
     'exotic-armor': ((2, 6, None), (None, 6, r'^intrinsics'),
@@ -107,6 +116,8 @@ DERIVED = {
     # 同时指向武器本体与那枚插件——反查「哪些配装用了英勇利刃」与「用了冲击核心」
     # 都该找得到它。
     '英勇利刃 2：冲击核心': (('英勇利刃', '冲击核心'), '这把武器装上冲击核心之后'),
+    # 刷取清单把三职业各一件的永劫臂铠并成一行；库里没有「永劫系列」这个名字。
+    '永劫系列': (('永劫安泰', '永劫灵魂', '永劫雨燕'), '三职业各一件的永劫臂铠'),
 }
 
 # 复刻的两个版本词条池完全相同、来源列也定不下来时，由人钉一个 hash。
@@ -134,8 +145,9 @@ NOT_ITEMS = {
     '线虫': '缚丝页的机制名，库里没有同名条目',
 }
 
-# 护甲套装页不查物品表：套装本身是 DestinyEquipableItemSetDefinition，另一份表。
-SET_PAGE = 'armor-sets'
+# 这两页不查物品表：套装本身是 DestinyEquipableItemSetDefinition，另一份表。
+# 「刷取清单-护甲套装」写的是同一批套装的排序与评语。
+SET_PAGES = frozenset({'armor-sets', 'farming-sets'})
 
 # 汉字与拉丁／数字之间那个排版空格（design.md 三节）。数字后面跟的单位号也算在
 # 拉丁那一侧：「21% 的亢奋」在库里是「21%的亢奋」。
@@ -283,7 +295,31 @@ def pick(facts, hits, version='', perks=()):
     if len({same_shape(facts.items[h]) for h in hits}) == 1:
         first = min(hits, key=lambda h: facts.items[h]['idx'])
         return first, '重复条目内容一致', hits
+    # 最后一档：取发布版本最新的那一个。站内写的是当前赛季的现状，复刻之后玩家
+    # 手上、掉落表里的就是最新那一版。
+    # **这不是「取序号最大」**——那一条被否过，序号是库内排序、与新旧无关。
+    # rel 是 Bungie 自己在 traitIds 上打的发布版本号（v730.season），可排序。
+    newest = release_rank(facts, hits)
+    if newest:
+        return newest, '发布版本最新', hits
     return None, '分不出版本', hits
+
+
+RELEASE = re.compile(r'^v(\d+)\.')
+
+
+def release_rank(facts, hits):
+    """候选里发布版本唯一最新的那个，并列或都没有版本号就回 None。"""
+    best, rank = None, -1
+    ties = 0
+    for h in hits:
+        got = RELEASE.match((facts.items[h].get('rel') or ''))
+        n = int(got.group(1)) if got else -1
+        if n > rank:
+            best, rank, ties = h, n, 1
+        elif n == rank:
+            ties += 1
+    return best if rank >= 0 and ties == 1 else None
 
 
 def resolve_effect(facts, name):
@@ -324,7 +360,9 @@ def split_version(facts, name, page):
 #   词条、模组、技能：**指一族，全要**。「双重装填」同时有普通特性与强化特征两条，
 #       源稿那一行的 {enh|↑2} 正是同时记着两者；护甲模组与神器模组同理有多个版本。
 SINGLE_PAGES = frozenset({'exotic-weapon', 'exotic-armor', 'shopping-primary',
-                          'shopping-special', 'shopping-heavy', 'shopping-other'})
+                          'shopping-special', 'shopping-heavy', 'shopping-other',
+                          'exotic-weapons', 'exotic-armors',
+                          'legendary-primary', 'legendary-special', 'legendary-heavy'})
 
 
 def pool(facts, name, page):
@@ -383,11 +421,16 @@ def stamper(page):
     词条与模组是一族，一格里可能有几个 hash（「双重装填」有普通与强化两条），
     按空格分开写在同一位上；武器与护甲只有一个。
     """
+    if page in SET_PAGES:
+        def set_stamp(name, parts=()):     # parts 用不上：套装名不是组合行
+            key = set_of(name)
+            return ' data-hash="%s"' % key if key else ''
+        return set_stamp
     if page not in SCOPES:
         return None
     facts, hints = shared()
 
-    def stamp(name):
+    def stamp(name, parts=()):
         name = (name or '').strip()
         if not name:
             return ''
@@ -413,7 +456,17 @@ def stamper(page):
                     continue
                 # 基不一定与这一行同类（「冲击核心」是插件，写在异域武器页上），
                 # 所以不按本页的范围收窄，只按名字查。
+                # 单件页上每个基各挑一个版本：hash 要一一对应，「永劫系列」指的是
+                # 三件臂铠各自的当前版本，不是它们全部复刻的九条。
+                if page in SINGLE_PAGES:
+                    hit = one(facts, one_base, page)[0]
+                    if hit:
+                        got.append(hit)
+                        continue
                 got += pool(facts, one_base, page) or facts.by_zh.get(norm(one_base), [])
+        if not got and len(parts) > 1:
+            # 整行是一个组合，逐截解析取并集。
+            got = composite(facts, page, parts)
         return ' data-hash="%s"' % ' '.join(got) if got else ''
 
     return stamp
@@ -525,7 +578,94 @@ def collapsed(shown, lib):
                                        and ROMAN_TAIL.match(norm(x)[len(base):]))
                    for x in lib)
     parts = [norm(x) for x in SLASH.split(shown) if x.strip()]
-    return len(parts) > 1 and sorted(parts) == sorted(norm(x) for x in lib)
+    if len(parts) > 1 and sorted(parts) == sorted(norm(x) for x in lib):
+        return True
+    # 组合行：一格里并排写着几件东西，写的还可能是简称（站内「涡流」= 库里
+    # 「涡流框架」，「觅敌者」= 「觅敌者之灵」）。判据是库里每一条名字都能在
+    # 这一格里找到它**至少一半长**的一段前缀——名字真写错了连一半都对不上。
+    flat = fold(shown)
+    for one in lib:
+        core = fold(one)
+        # 一格盖住好几条时站内本来就写简称，而那几条是在一个很小的范围里解析出来的
+        # （这把武器自己的池），两个字就够定；一格只对一条时不许这么松。
+        need = 2 if len(lib) > 1 else max(2, (len(core) + 1) // 2)
+        if not any(core[:i] in flat for i in range(len(core), need - 1, -1)):
+            return False
+    return bool(lib)
+
+
+# 异域职业物品的「之灵」在库里一律带这个后缀，刷取清单那一页写的是裸名
+# （「复兴\\噬星者」）。与 SET_TAIL 同一种做法：后缀不携带信息，查不到时补上再试。
+SPIRIT_TAIL = '之灵'
+
+# 行标题里的括注是限定不是名字：「故我在（意外缓刑）涡流」的中间那截写的是框架。
+PAREN = re.compile(r'^[（(](.*)[）)]$')
+
+
+def composite(facts, page, parts):
+    """行标题被格内换行切成几截 → 各截主键的并集。
+
+    两种行长这样：异域职业物品一行写一个之灵组合（「复兴\\噬星者」），刷取清单
+    给「故我在」按框架分了 5 行（「故我在\\（意外缓刑）\\涡流」）。整行说的是
+    那个**组合**，反查「哪些行用到噬星者之灵」「用到涡流框架」都该找得到它，
+    所以取并集而不是挑一个。
+
+    第一截解析出来的那件东西是后面几截的范围：框架名只在这把武器自己的池里查，
+    全表按「涡流」查会撞上别的枪。一截都解析不到才算整行没归属。
+    """
+    spirits = _all_spirits(facts, page, parts)
+    if spirits:
+        return spirits
+    got, head = [], []
+    for i, part in enumerate(parts):
+        hits = _one_part(facts, page, part, head)
+        if i == 0:
+            head = hits
+        for h in hits:
+            if h not in got:
+                got.append(h)
+    return got
+
+
+def _all_spirits(facts, page, parts):
+    """整行是不是一个之灵组合。**按整行判，不按单截判**：「觅敌者」在刷取清单上
+    既是一件异域护甲也是一个之灵，单看这一截分不出来；而「矛隼」「虫骸」只有
+    之灵这一种读法，所以每一截补上后缀都查得到，整行就是之灵组合。"""
+    got = []
+    for part in parts:
+        names = [x.strip() for x in
+                 SLASH.split(norm(PAREN.sub(r'\1', (part or '').strip()))) if x.strip()]
+        if not names:
+            return []
+        for one_name in names:
+            hits = candidates(facts, one_name + SPIRIT_TAIL, page)
+            if not hits:
+                return []
+            got += [h for h in hits if h not in got]
+    return got
+
+
+def _one_part(facts, page, part, head):
+    out = []
+    # 先剥括注再归一：norm() 去的是站内自加的消歧后缀（「故我在（电弧元素）」），
+    # 整截都是括注时会被它吃光。
+    part = norm(PAREN.sub(r'\1', (part or '').strip()))
+    if not part:
+        return out
+    for one_name in [x.strip() for x in SLASH.split(part) if x.strip()]:
+        hits = candidates(facts, one_name, page)
+        if not hits:
+            hits = candidates(facts, one_name + SPIRIT_TAIL, page)
+        if not hits and head:
+            # 框架与固有那几截：只在第一截那件东西自己的池里查，并允许写简称
+            # （站内写「涡流」，库里叫「涡流框架」）。
+            pool_names = weapon_pool(facts, head)
+            hits = [h for name, hs in sorted(pool_names.items())
+                    if name == one_name or name.startswith(one_name) for h in hs]
+        for h in hits[:1] if page in SINGLE_PAGES and not head else hits:
+            if h not in out:
+                out.append(h)
+    return out
 
 
 def perk_stamper():
@@ -556,6 +696,18 @@ def set_key(name):
     return SET_TAIL.sub('', norm(name)).strip()
 
 
+def set_of(name):
+    """套装名 → set:<hash>。套装不在物品表里，在 DestinyEquipableItemSetDefinition
+    上，所以自己查一次，不走 candidates()——那一条查的是物品。"""
+    want = set_key(name)
+    if not want:
+        return ''
+    for h, s in shared()[0].sets.items():
+        if set_key(s['name']['zh']) == want:
+            return 'set:%s' % h
+    return ''
+
+
 SET_SOURCE = re.compile(r'^- \*\*来源：\*\* *(.+?) *$', re.M)
 
 
@@ -577,6 +729,12 @@ HINT_DOCS = {
     'shopping-other': 'docs/shopping-other.md',
     'exotic-weapon': 'docs/exotic-weapon.md',
     'exotic-armor': 'docs/exotic-armor.md',
+    # 刷取清单那几页同样写了获取地点与 Perk 列，复刻靠的正是这两样。
+    'exotic-weapons': 'docs/exotic-weapons.md',
+    'exotic-armors': 'docs/exotic-armors.md',
+    'legendary-primary': 'docs/legendary-primary.md',
+    'legendary-special': 'docs/legendary-special.md',
+    'legendary-heavy': 'docs/legendary-heavy.md',
 }
 MARKER = re.compile(r'\{([\w-]+)\|([^{}]*)\}')
 IMG = re.compile(r'!\[\]\([^)]*\)')
@@ -632,15 +790,23 @@ def source_hints():
 
 
 def site_names():
-    """站内跨页引用得到的全部名字。现扫 vocab 的索引，不另存一份清单。"""
+    """建了索引的页上的全部行标题。直接读 data/index/，不绕 vocab。
+
+    审计管的是「站内自己的物品表覆盖到哪」，那是索引的全体；vocab 只读其中
+    配装用得上的那 17 页，拿它当入口会让新加索引的页静默不进审计。
+
+    异域 PERK 那一列的子条目不在内：它们按武器自己的 socket 池解析（perk_key），
+    解析不到就直接卡住构建，不归这条按页面范围查的路管。"""
     sys.path.insert(0, os.path.join(shell.ROOT, 'tools'))
-    import vocab
-    out = []
-    for hits in vocab.build().values():
-        for e in hits:
-            if e['kind'] != '分节':
-                out.append((e['name'], e['page']))
-    return sorted(set(out))
+    import pagedex
+    # 按 (名字, 页) 去重，不按主键去重：神器模组有 14 个名字在不同档位上各有一条，
+    # 带着主键去重会让同一个名字在报表里数两次。
+    out = {}
+    for page in pagedex.TOKENS:
+        for e in pagedex.must_read(page)['entries']:
+            if e['name'] and e['kind'] != '分节' and not e.get('of'):
+                out.setdefault((e['name'], page), e.get('hash') or '')
+    return [(n, p, k) for (n, p), k in sorted(out.items())]
 
 
 def variants():
@@ -654,14 +820,31 @@ def variants():
     return rows
 
 
-def classify(facts, name, page, composite, effect_names, sources, hints):
-    """一个名字的去向。返回 (档位, 说明)。"""
-    if page == SET_PAGE:
+def classify(facts, name, page, key, composite, effect_names, sources, hints):
+    """一个名字的去向。返回 (档位, 说明)。
+
+    **以索引里实际戳上的那一位为准**，不另算一遍。审计要回答的是「站内每个名字
+    都落到主键上了没有」，生成器戳的那一位就是答案；另算一份必然与它分歧——组合行
+    「故我在（意外缓刑）涡流」明明戳上了三个主键，却会被算成未解析。
+    只有没戳上的才往下走解释的梯子。"""
+    if page in SET_PAGES:
+        # 套装页的名字先按「是不是某一套自己的名字」判，再按「是不是它的来源名」判。
+        # 两样都戳成同一个 set: 主键，只看主键分不出这一层。
         if any(set_key(s['name']['zh']) == set_key(name)
                for s in facts.sets.values()):
             return '套装', ''
         if norm(name) in sources:
             return '来源别名', ''
+    if key:
+        if name in DERIVED:
+            return '派生', DERIVED[name][1]
+        head = key.split()[0]
+        if head.startswith('set:'):
+            return '套装', ''
+        if head.startswith(('perk:', 'trait:', 'stat:')):
+            return '效果', key
+        return '物品', key
+    if page in SET_PAGES:
         return '未解析', '套装表里既不是套装名也不是来源名'
     if page not in SCOPES:
         return '未解析', '这一页还没写范围定义'
@@ -702,14 +885,16 @@ def audit():
     facts = Facts()
     composite, effect_names = variants(), effects()
     sources, hints = set_sources(), source_hints()
-    stat, misses = {}, {}
-    for name, page in site_names():
-        bucket, _ = classify(facts, name, page, composite, effect_names,
-                             sources, hints)
+    stat, misses, pend = {}, {}, {}
+    for name, page, key in site_names():
+        bucket, why = classify(facts, name, page, key, composite, effect_names,
+                               sources, hints)
         row = stat.setdefault(page, collections.Counter())
         row[bucket] += 1
         if bucket == '未解析':
             misses.setdefault(page, []).append(name)
+        if bucket == '待指定':
+            pend.setdefault(page, []).append((name, why))
 
     total = sum(sum(r.values()) for r in stat.values())
     left = sum(r['未解析'] for r in stat.values())
@@ -729,11 +914,6 @@ def audit():
           % ('合计 %d' % total, *(tot[k] for k in ORDER)))
     print('\n有归属 %d / %d  %.1f%%' % (total - left, total,
                                        100 * (total - left) / total))
-    pend = {}
-    for name, page in site_names():
-        b, why = classify(facts, name, page, composite, effect_names, sources, hints)
-        if b == '待指定':
-            pend.setdefault(page, []).append((name, why))
     if pend:
         n = sum(len(v) for v in pend.values())
         print('\n=== 复刻分不出版本，等人钉（%d）——填进 resolve.PINNED ===' % n)
@@ -778,7 +958,7 @@ def names():
     for page in pagedex.TOKENS:
         for e in pagedex.must_read(page)['entries']:
             keys = (e.get('hash') or '').split()
-            if not keys or (page == SET_PAGE and norm(e['name']) in aliases):
+            if not keys or (page in SET_PAGES and norm(e['name']) in aliases):
                 continue
             # 站内自己标了版本后缀的行（「鲁莽神谕\\众神殿版本」）与派生条目
             # （「不稳定弹药」指回「不稳定」）本来就与库里的名字不同，不是写错。
@@ -793,7 +973,7 @@ def names():
             lib = {x for x in (key_name(facts, k) for k in keys) if x}
             if not lib or shown in {norm(x) for x in lib}:
                 continue
-            if e.get('of') and collapsed(shown, lib):
+            if collapsed(shown, lib):
                 continue
             diff.append((page, e['name'], sorted(lib)))
     print('带主键的条目 %d 条，站内写法与库里不同的 %d 条' % (total, len(diff)))

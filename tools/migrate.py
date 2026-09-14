@@ -272,7 +272,9 @@ def classify():
         事实层里存不存在」——分类要判的是「行标题是不是具名实体」，范围收窄是
         精化，不是前提。"""
         if page in resolve.SCOPES:
-            where, _ = resolve.classify(facts, name, page, composite, effects,
+            # 主键那一位传空：分类要判的是「这个名字解析得出来吗」，此时页面还
+            # 没生成，索引里也就还没有它戳上的那一位。
+            where, _ = resolve.classify(facts, name, page, '', composite, effects,
                                         sources, hints)
             return where in ('物品', '套装', '来源别名', '效果', '派生', '待指定')
         return resolve.norm(name) in known or resolve.set_key(name) in known

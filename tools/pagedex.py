@@ -53,7 +53,12 @@ TOKENS = dict({'elements/%s' % e: t for e, t in ELEMENTS.items()},
                  'artifact-mods': 'art-perk', 'weapon-perks': 'perk',
                  'armor-mods': '', 'armor-sets': '',
                  'shopping-primary': '', 'shopping-special': '',
-                 'shopping-heavy': '', 'shopping-other': ''})
+                 'shopping-heavy': '', 'shopping-other': '',
+                 # 刷取清单那四页：同一批东西的定位与评语，身份与详解页那边一致。
+                 'exotic-weapons': 'exotic', 'exotic-armors': 'exotic',
+                 'farming-sets': '',
+                 'legendary-primary': '', 'legendary-special': '',
+                 'legendary-heavy': ''})
 
 TD = re.compile(r'<td([^>]*)>(.*?)</td>', re.S)
 CLS = re.compile(r'class="([^"]+)"')
