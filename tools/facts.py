@@ -278,6 +278,8 @@ def distill(src):
             bonuses.append({
                 'n': p['requiredSetCount'],
                 'hash': p['sandboxPerkHash'],
+                # 效果自己的图标。站内那一页的图标从英文原表抽，抽不到的按这个补。
+                'icon': icon(pz['displayProperties'].get('icon')),
                 'name': two(pz['displayProperties'].get('name'),
                             pe['displayProperties'].get('name')),
                 'desc': two(pz['displayProperties'].get('description'),

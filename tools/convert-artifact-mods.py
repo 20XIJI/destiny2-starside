@@ -13,6 +13,7 @@ import os
 import re
 import sys
 
+import pagedex
 import resolve
 import shell
 from markup import (Icons, blocks_at, bmark, die, eq, inline, meta_line, meta_of, must,
@@ -182,8 +183,19 @@ def rows_of(mods):
         yield row
 
 
-def render(page, digest=''):
+PAGE = 'artifact-mods'
+ICON_SRC = re.compile(r'src="([^"]+)"')
+
+
+def icon_src(img):
+    """<img …> → 它的 src。索引里存路径，不存整个标签。"""
+    hit = ICON_SRC.search(img or '')
+    return hit.group(1) if hit else ''
+
+
+def render(page, digest='', dex=None):
     md = page['md']
+    dex = dex if dex is not None else pagedex.Index(PAGE, 'art-perk')
     o = [shell.head(PAGE_TITLE, meta_of(md, '描述'), app_js=True),
          shell.nav('神器模组', toolbar={}),
          shell.page_head(page['sub']),
@@ -224,12 +236,25 @@ def render(page, digest=''):
             o.append('<div class="tier-head" data-tier="%d">'
                      '<span class="rhombi" aria-hidden="true">%s</span></div>' % (tier, pips))
         o += ['</div>', '</div>', '<div class="tiers">']
+        # 分节名带括注，与 vocab 从 <h2> 取文那一份逐字相同。
+        label = text_of(s['name'] + (' <small>%s</small>' % s['paren']
+                                     if s['paren'] else ''), collapse=True)
         # 行是结构：搜索隐藏任一模组时，其后模组的列位不受影响
-        for row in rows_of(s['mods']):
+        for ri, row in enumerate(rows_of(s['mods'])):
             o.append('<div class="mod-row">')
             for mod in row:
+                name = text_of(mod['name'], collapse=True)
+                key = stamp(text_of(mod['name']))
+                dex.add(hash=key[len(' data-hash="'):-1] if key else '',
+                        anchor='art-%d' % i, kind=label, name=name,
+                        icon='%s/%s' % (PAGE, icon_src(mod['icon'])),
+                        pos='%d,%s' % (ri, mod['tier']),
+                        # 说明照产出那一份逐字存：段落之间的换行来自外层按 \n
+                        # 拼接，前后各留一个，与 <div class="mod-desc"> 包住的完全相同。
+                        desc='\n%s\n' % '\n'.join('<p>%s</p>' % p
+                                                  for _, _, p in mod['desc']))
                 o += ['<article class="mod" data-tier="%d"%s>'
-                      % (mod['tier'], stamp(text_of(mod['name']))),
+                      % (mod['tier'], key),
                       mod['icon'],
                       '<h4%s>%s</h4>' % (bmark(mod['at']), mod['name']),
                       '<div class="mod-desc">']
@@ -276,13 +301,16 @@ def main():
 
     icons = Icons(OUT_DIR, N_EAGER)
     page = parse(md, icons)
-    out = render(page, src_hash(md))
+    dex = pagedex.Index(PAGE, 'art-perk')
+    out = render(page, src_hash(md), dex)
     check(page, out, icons)
 
     shell.emit(OUT_DIR, out, '分节 %d、模组 %d、图标引用 %d，着色 %d 处'
                % (len(page['sections']),
                   sum(len(s['mods']) for s in page['sections']), icons.refs,
                   out.count('<span class="')))
+    _, n = dex.write()
+    print('data/index/%s.json  %d 条' % (PAGE, n))
 
 
 if __name__ == '__main__':

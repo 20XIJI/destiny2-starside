@@ -24,8 +24,11 @@ import re
 
 import check_terms
 import items
+import mods
+import pagedex
 import resolve
 import shell
+import vocab
 from markup import (bmark, die, eq, loading_attr, meta_of, no_nested_span, plain,
                     src_hash, text_of)
 
@@ -36,25 +39,33 @@ OUT_DIR = os.path.join(shell.ROOT, 'armor-sets')
 # ── 结构断言 ──────────────────────────────────────────────────────────
 # 对不上即中止，不出文件。源稿增删条目时同步改这里，不要放宽断言。
 
-def set_stamp(name):
+def set_key(name):
     """套装的主键。套装不在物品表里，在 DestinyEquipableItemSetDefinition 上，
     所以自己查一次，不走 resolve.stamper()——那一条查的是物品。"""
     facts = resolve.shared()[0]
-    key = resolve.set_key(name)
+    want = resolve.set_key(name)
     for h, s in facts.sets.items():
-        if resolve.set_key(s['name']['zh']) == key:
-            return ' data-hash="set:%s"' % h
+        if resolve.set_key(s['name']['zh']) == want:
+            return 'set:%s' % h
     return ''
+
+
+def set_stamp(name):
+    key = set_key(name)
+    return ' data-hash="%s"' % key if key else ''
 
 
 N_CATEGORIES = 7
 N_SETS = 56
 N_BONUSES = 112
-N_ICONS = 110  # 另 2 处英文原表本身就是空白占位，不输出 <img>
+N_ICONS = 112       # 页面引用的图标数，现在每条效果都有图
+N_TABLE_ICONS = 110  # 英文原表能给出的枚数；另 2 处原表是空白占位，
+                     # 由 --fill-icons 按 manifest 的效果图标补（054、056）
 
 # 1440×900 首屏内的图标数
 N_EAGER = 2
 
+ICON_BASE = 'https://www.bungie.net/common/destiny2_content/icons/'
 ICON_PX = 56  # 图标存储边长；显示 40px，留 1.4x 密度
 ICON_DISPLAY = 40
 ALPHA_BITS = 4  # alpha 量化档数。剪影图 3x 放大与原图并排看不出差别
@@ -304,7 +315,9 @@ def render_blocks(blocks: list) -> str:
     return ''.join(out)
 
 
-def render(cats: list[Category], md: str, digest: str = '') -> str:
+def render(cats: list[Category], md: str, digest: str = '',
+           dex: 'pagedex.Index | None' = None) -> str:
+    dex = dex if dex is not None else pagedex.Index('armor-sets')
     # 页面元信息全在源稿头部，与 references/docs/ 那 39 篇同一套键。
     # 改文案改 markdown，这里不留字面串。
     m = re.match(r'^#\s+(.+)$', md.split('\n')[0])
@@ -328,8 +341,11 @@ def render(cats: list[Category], md: str, digest: str = '') -> str:
         parts.append('<h2 class="cat-head"><span>%s</span></h2>\n'
                      % html.escape(cat.name))
         for si, st in enumerate(cat.sets, 1):
-            parts.append('<article class="set" id="set-%d-%d"%s>\n'
-                         % (ci, si, set_stamp(st.name)))
+            anchor = 'set-%d-%d' % (ci, si)
+            key = set_key(st.name)
+            source = dict(st.meta).get('来源', '')
+            parts.append('<article class="set" id="%s"%s>\n'
+                         % (anchor, ' data-hash="%s"' % key if key else ''))
             parts.append('<div class="set-id">\n')
             parts.append('<h3>%s</h3>\n' % html.escape(st.name))
             if st.meta:
@@ -359,8 +375,21 @@ def render(cats: list[Category], md: str, digest: str = '') -> str:
                 parts.append('<span class="piece">%s 件</span>' % b.piece)
                 parts.append('<span class="bonus-name">%s</span>' % html.escape(b.name))
                 parts.append('</h4>\n')
-                parts.append('<div class="bonus-body">%s</div>\n'
-                             % render_blocks(b.blocks))
+                body = render_blocks(b.blocks)
+                # 说明前面接上效果名，与 vocab 从 BONUS 那一条拼出来的逐字相同。
+                # 剥掉 data-b：那是就地编辑反查源稿的行号，说明摆进配装页时没有用处。
+                desc = vocab.BMARK.sub(
+                    '', '<p class="bn">%s</p>%s' % (html.escape(b.name), body))
+                pairs = [(st.name, source)]
+                if source and source != st.name:
+                    pairs.append((source, st.name))
+                for shown, other in pairs:
+                    # 玩家按来源叫套装（「玻璃拱顶四件套」），所以来源也做一个键，
+                    # 两条指向同一处，格子上把另一个写成副名。
+                    dex.add(hash=key, anchor=anchor, kind='%s 件' % b.piece,
+                            name=shown, sub=other, desc=desc,
+                            icon='armor-sets/icons/%s' % b.icon if b.icon else '')
+                parts.append('<div class="bonus-body">%s</div>\n' % body)
                 parts.append('</section>\n')
             parts.append('</div>\n')
             parts.append('</article>\n')
@@ -514,9 +543,50 @@ def extract_icons(cats: list[Category], export: str) -> None:
                 flat.save(os.path.join(OUT_DIR, 'icons', name), optimize=True)
                 b.icon = name
                 written += 1
-    if written != N_ICONS:
-        die('写出 %d 枚图标，应为 %d' % (written, N_ICONS))
+    if written != N_TABLE_ICONS:
+        die('从英文原表写出 %d 枚图标，应为 %d' % (written, N_TABLE_ICONS))
     print('图标：写出 %d 枚到 armor-sets/icons/' % written)
+
+
+def fill_icons(cats: list[Category]) -> None:
+    """英文原表没给图的那几枚，按 manifest 的效果图标补上。
+
+    套装效果在库里是 sandboxPerk，自带一枚 96×96 的白剪影，与英文原表那批同构，
+    所以走同一套处理（只取 alpha、降到 56px、量化到 16 档），补出来的与旁边那些
+    逐像素同规格。名字照旧是文档顺序的序号，不按 hash——那一页的缓存承诺建立在
+    「改内容必然换名」上，序号命名是这一页自己的例外，见 README「部署与缓存」。
+    """
+    try:
+        from PIL import Image
+    except ImportError:
+        die('补图标需要 Pillow：pip install Pillow')
+    facts = resolve.shared()[0]
+    by_key = {resolve.set_key(s['name']['zh']): s for s in facts.sets.values()}
+    levels = (1 << ALPHA_BITS) - 1
+    ramp = [round(round(v / 255 * levels) / levels * 255) for v in range(256)]
+    out = os.path.join(OUT_DIR, 'icons')
+    os.makedirs(out, exist_ok=True)
+    idx = filled = 0
+    for cat in cats:
+        for st in cat.sets:
+            lib = by_key.get(resolve.set_key(st.name))
+            for k, b in enumerate(st.bonuses):
+                idx += 1
+                name = '%03d.png' % idx
+                if os.path.exists(os.path.join(out, name)):
+                    continue
+                url = ((lib or {}).get('bonuses') or [{}] * 4)[k].get('icon') if lib else ''
+                if not url:
+                    die('%s 的 %s 件效果缺图标，库里也没有' % (st.name, b.piece))
+                raw = mods.fetch(ICON_BASE + url)
+                im = Image.open(io.BytesIO(raw)).convert('RGBA')
+                alpha = im.split()[3].resize((ICON_PX, ICON_PX), Image.Resampling.LANCZOS)
+                flat = Image.new('LA', (ICON_PX, ICON_PX))
+                flat.putdata([(255, v) for v in alpha.point(ramp).tobytes()])
+                flat.save(os.path.join(out, name), optimize=True)
+                print('  补 %s ← %s（%s %s 件）' % (name, url, st.name, b.piece))
+                filled += 1
+    print('补图标：%d 枚' % filled)
 
 
 def attach_icons(cats: list[Category]) -> None:
@@ -539,6 +609,8 @@ def main() -> None:
     ap = argparse.ArgumentParser(description='护甲套装效果页生成器')
     ap.add_argument('--icons', metavar='EXPORT.HTML',
                     help='顺带从英文原表导出文件重抽图标（默认沿用 icons/ 里已有的）')
+    ap.add_argument('--fill-icons', action='store_true',
+                    help='英文原表没给图的那几枚，按 manifest 的效果图标补上')
     args = ap.parse_args()
 
     md = open(SRC, encoding='utf-8').read()
@@ -547,9 +619,12 @@ def main() -> None:
     if args.icons:
         extract_icons(cats, args.icons)
     else:
+        if args.fill_icons:
+            fill_icons(cats)
         attach_icons(cats)
 
-    out = render(cats, md, src_hash(md))
+    dex = pagedex.Index('armor-sets')
+    out = render(cats, md, src_hash(md), dex)
     check(cats, out)
 
     os.makedirs(OUT_DIR, exist_ok=True)
@@ -559,6 +634,8 @@ def main() -> None:
                % (len(cats), sets, bonuses,
                   sum(1 for c in cats for s in c.sets for b in s.bonuses if b.icon),
                   sum(hits.values())))
+    _, n = dex.write()
+    print('data/index/armor-sets.json  %d 条' % n)
 
 
 if __name__ == '__main__':

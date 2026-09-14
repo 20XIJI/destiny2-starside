@@ -19,8 +19,10 @@ import sys
 from urllib.parse import quote
 
 import markup
+import pagedex
 import resolve
 import shell
+import vocab
 from markup import (IMG, LINK, Icons, bmark, die, inline, meta_line, meta_of,
                     no_nested_span, plain, source_context, src_hash, text_of, whole_marker)
 
@@ -43,6 +45,11 @@ ROTA_LINE = re.compile(r'^轮换：(.*)$', re.M)
 
 # 行标题 → 主键的戳号器，按页装配；没有范围定义的页是 None。
 STAMP = None
+# 本页的索引与当前分节（锚点, 标签）。与 ICONS 同一种写法：渲染要用、又隔着两层
+# 函数，所以由 build() 与 render() 逐层装上，不改中间那两个签名。
+DEX = None
+PAGE = ''
+SECTION = ('', '')
 ICONS: 'Icons | None' = None    # 当前页面的图标登记处，由 build() 装上
 
 
@@ -398,6 +405,7 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=
     banded = any(n > 1 for n in span)
     band = 1
     prev = None
+    lane = ''
     for ri, (cells, n) in enumerate(zip(rows, span)):
         # lines[0] 是表头、lines[1] 是分隔行。**连号就不戳**：一张表的行在源稿里
         # 本来连着，逐行戳一遍 413 行的表要多出一千多字节 gzip。省掉的那些由
@@ -412,6 +420,7 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=
         # 横幅行自己领一个 <tbody>：组间那道横线照旧由 CSS 的 tbody + tbody 画，
         # 搜索时 app.js 也按这个 tbody 数「这一组还剩几行可见」。
         if isinstance(cells, str):
+            lane = text_of(broke(cells), collapse=True)
             o += ['</tbody>', '<tbody>',
                   '<tr class="lane"%s>%s</tr>'
                   % (mark, wrap('th', broke(cells),
@@ -441,11 +450,32 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=
                 continue
             row.append(wrap('td', broke(c)))
         prev = at
+        body = ''.join(row)
+        if DEX is not None and n:
+            # 名字取**渲染后**那一格，不取源稿原文：着色标记要剥掉、格内换行已经
+            # 变成 <br>，与 vocab 从产出的 <th> 取文那一份才对得上。
+            index_row(DEX, row[0], stamp, body, lane)
         o.append('<tr%s%s%s>%s</tr>'
                  % (mark, stamp, ' data-band="%d"' % band if banded else '',
-                    ''.join(row)))
+                    body))
     o += ['</tbody>', '</table>']
     return o
+
+
+def index_row(dex, title, stamp, body, lane):
+    """一行 → 索引里的条目。说明用 vocab 那三个现成的抽法，不另写一份。"""
+    anchor, label = SECTION
+    mine, theirs = ((), ()) if PAGE in vocab.NO_DESC else vocab.split_spirit(vocab.tds(body))
+    icon = vocab.IMG.search(body)
+    key = stamp[len(' data-hash="'):-1] if stamp else ''
+    dex.add(hash=key, anchor=anchor, kind=lane or label,
+            name=text_of(title, collapse=True),
+            icon='%s/%s' % (PAGE, icon.group(1)) if icon else '',
+            desc=vocab.wrap(*vocab.panel(mine)))
+    # 异域职业物品那张表一行摆两条词条：行标题一条，中间一格再一条。
+    for name, ico in vocab.SPIRIT.findall(body):
+        dex.add(anchor=anchor, kind=lane or label, name=text_of(name, collapse=True),
+                icon='%s/%s' % (PAGE, ico), desc=vocab.wrap(*vocab.panel(theirs)))
 
 
 def cards_of(spec, up):
@@ -754,8 +784,18 @@ def render(md, slug):
             chip = ('<a class="chip" href="%s" target="_blank" rel="noopener">%s</a>'
                     % (hit.group(2), hit.group(1)))
         # 分节标题里也允许放图标：源表每个职业段前有一枚职业徽章，标题是它的位置
-        o.append('<h2 class="sect-label"%s>%s%s</h2>'
-                 % (bmark(at), inline(icon_sub(label), rich=True), chip))
+        head_html = inline(icon_sub(label), rich=True)
+        o.append('<h2 class="sect-label"%s>%s%s</h2>' % (bmark(at), head_html, chip))
+        global SECTION
+        SECTION = ('sec-%d' % si, text_of(head_html, collapse=True))
+        dex = DEX
+        if dex is not None:
+            head_icon = vocab.IMG.search(head_html)
+            if head_icon and SECTION[1]:
+                # 分节标题自带的图标也进索引：配装页首要用真的职业图标。
+                # **不带过滤词**：拿分节名去页内过滤会把整页行滤光，落地是一张空页。
+                dex.add(anchor=SECTION[0], kind='分节', name=SECTION[1],
+                        icon='%s/%s' % (PAGE, head_icon.group(1)), q='')
         o += render_blocks(chunk, scales, groups, marks, curves, up, rota, at + 1)
         o.append('</section>')
 
@@ -829,7 +869,7 @@ def check(md, out, slug):
 
 
 def build(slug):
-    global ICONS, STAMP
+    global ICONS, STAMP, DEX, PAGE
     src = os.path.join(SRC_DIR, slug + '.md')
     with source_context(os.path.relpath(os.path.realpath(src), shell.ROOT)):
         if not os.path.exists(src):
@@ -846,6 +886,9 @@ def build(slug):
             die('「首屏图标：」要写一个整数，源稿写的是 %r' % eager)
         ICONS = Icons(outdir, int(eager) if eager else 0)
         STAMP = resolve.stamper(where)
+        PAGE = where
+        # 只给要被跨页引用的那些页建索引，与戳号同一条判据。
+        DEX = pagedex.Index(where, vocab.TOKENS[where]) if where in vocab.TOKENS else None
 
         out, title = render(md, slug)
         check(md, out, slug)
@@ -857,6 +900,9 @@ def build(slug):
                 '（首屏放不下就写 0）' % (slug, ICONS.refs))
 
         shell.emit(outdir, out, title)
+        if DEX is not None:
+            _, n = DEX.write()  # noqa
+            print('  data/index/%s.json  %d 条' % (where, n))
 
 
 def main():
