@@ -124,6 +124,10 @@ COLUMN = {
     'blades': '刀锋', 'guards': '刀剑格', 'bowstrings': '弓弦',
     'arrows': '箭矢', 'hafts': '把手', 'stocks': '枪托', 'grips': '握把',
     'rails': '导轨', 'bolts': '弩弦',
+    # 异域的催化剂槽。机器名带 empty 是因为它出厂时是空的，不是说这一栏没用。
+    'v400.empty.exotic.masterwork': '催化剂',
+    # 新刀剑那两栏是同一件事的新机器名。
+    'v950.new.sword0.blades': '刀锋', 'v950.new.sword0.guards': '刀剑格',
 }
 FRAME_KIND = 'frames'
 MW_KIND = 'v400.plugs.weapons.masterworks'
@@ -459,6 +463,8 @@ def payload(resolve, facts, recs, table):
                  for who, b in (rec.get('来自') or {}).items()}
         item = {
             'h': key,
+            # 赛季水印：一张整幅图，角标画在它自己那个左上角上。
+            'wm': (table.get(row.get('wm') or '') or {}).get('file', ''),
             'n': row['n']['zh'],
             'en': row['n'].get('en', ''),
             't': (row.get('t') or {}).get('zh', ''),
@@ -475,6 +481,9 @@ def payload(resolve, facts, recs, table):
         for flag in ('craft', 'tiering'):
             if row.get(flag):
                 item[flag] = 1
+        # 大师工作的金色辉光：这一栏在，说明这把枪升得满，图标底下那层光就该亮。
+        if mw:
+            item['mw'] = 1
         out.append(item)
 
         # 同名的别版本：复刻让同一把枪有好几个 hash，读者要能在版本之间跳。
@@ -498,7 +507,13 @@ def payload(resolve, facts, recs, table):
             'by': block,
             'alt': alt,
         }
-    return ({'a': AUTHORS, 's': stats, 'w': out},
+    chrome = {k: (table.get(v) or {}).get('file', '')
+              for k, v in icons.CHROME.items()}
+    missing = [k for k, v in chrome.items() if not v]
+    if missing:
+        die('武器图标的装饰层还没拉：%s\n  跑 python3 tools/icons.py --pull'
+            % '、'.join(missing))
+    return ({'a': AUTHORS, 's': stats, 'w': out, 'o': chrome},
             {'p': bag.rows, 'g': group_table(facts, stat_at)},
             detail, missed, moved)
 

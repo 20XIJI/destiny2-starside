@@ -38,6 +38,7 @@ import argparse
 import gc
 import json
 import os
+import re
 import sys
 
 import shell
@@ -84,7 +85,8 @@ GEAR_KINDS = ('v400.weapon.mod', 'v460.weapon.mod', 'v900.weapon.mod',
               'v400.plugs.weapons.masterworks')
 MASTERWORK_KIND = 'v400.plugs.weapons.masterworks'
 MASTERWORK_KEEP = '大师杰作'
-EMPTY_SLOT = '空模组插槽'
+# 「空模组插槽」「空催化插槽」这类是没插东西时的占位，不是一个选项。
+EMPTY_SLOT = re.compile(r'^空.*插槽$')
 
 # 站内角标要用的两位，判据都是「这把枪有没有那种 socket」：
 #   craft   可锻造（563 把）
@@ -211,8 +213,7 @@ def gear_keep(kind, plug_hashes, names):
     if kind.startswith(MASTERWORK_KIND):
         return [h for h in plug_hashes
                 if names.get(str(h), '').startswith(MASTERWORK_KEEP)]
-    # 「空模组插槽」是没插东西时的占位，不是一个选项。
-    return [h for h in plug_hashes if names.get(str(h), '') != EMPTY_SLOT]
+    return [h for h in plug_hashes if not EMPTY_SLOT.match(names.get(str(h), ''))]
 
 
 def columns(weapon, socket_types, plug_sets, names):
@@ -249,6 +250,9 @@ def columns(weapon, socket_types, plug_sets, names):
                 plugs = gear_keep(kind, plugs, names)
                 if not plugs:
                     continue
+            else:
+                plugs = [h for h in plugs
+                         if not EMPTY_SLOT.match(names.get(str(h), ''))]
             col = {'i': i, 'kind': kind,
                    'type': e.get('socketTypeHash'),
                    'rand': bool(e.get('randomizedPlugSetHash'))}

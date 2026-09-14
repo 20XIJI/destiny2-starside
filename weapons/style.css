@@ -460,20 +460,38 @@
   outline-offset: 2px;
 }
 
-/* 「这一枚还有强化版」：圆**内**左缘一道竖条加一个朝上的箭头，不往圆外挂东西——
-   圆外那一圈留给选中态与作者角标，三样各占各的位置才不会读混。
-   记号走骨白不走金：金在站内已经归异域装备所有，再给强化版一份，
-   「颜色即编码」当场失效。 */
+/* 「这一枚还有强化版」：圆内一道金环，左上角一枚朝上的金箭头。照 DIM 与
+   destiny.report 那一套——两家都把强化画在 Perk 图标自己身上，不另占一个位置。
+   金环在**内**、选中的强调色环在**外**，作者角标在右上角，三样各占各的位置。
+
+   偏离 design.md「整页唯一的饱和色来自游戏自身的编码」这一条的理由：这个金
+   **就是**游戏自身的编码。Bungie 在 DestinyInventoryItemConstantsDefinition 里
+   给强化物品专门下发了一张金色叠加图（enhanced-item-overlay.png），游戏内的
+   强化 Perk 也是这个金。它与异域金分得开：异域是 #fcb70a 的橙金，这个是偏绿的
+   浅金，ΔE 足够，且两者从不落在同一个元素上——异域金只上装备名与图块边框，
+   这个只上 Perk 圆圈。 */
+:root {
+  --c-enh: #eade8b;
+}
+
 .wpn-plug.enh::before {
   content: "";
   position: absolute;
-  left: 3px;
-  top: 50%;
-  width: 4px;
-  height: 18px;
-  transform: translateY(-50%);
-  background: var(--bone-hi);
-  clip-path: polygon(50% 0, 100% 34%, 68% 34%, 68% 100%, 32% 100%, 32% 34%, 0 34%);
+  inset: 2px;
+  border: 2px solid var(--c-enh);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.wpn-plug.enh::after {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: -2px;
+  width: 8px;
+  height: 15px;
+  background: var(--c-enh);
+  clip-path: polygon(50% 0, 100% 40%, 70% 40%, 70% 100%, 30% 100%, 30% 40%, 0 40%);
 }
 
 /* 作者推荐：右上角一枚首字角标，两家都推就并排两枚。 */
@@ -650,6 +668,33 @@
   .wpn-hits {
     max-height: 38vh;
   }
+}
+
+/* ── 枪图标的叠加层 ──
+   底图、赛季水印、装备阶级角标、锻造标记四层叠满同一个方块。每张官方图都把
+   图案画在自己那一侧的透明区上，所以这里不摆位，只管对齐。
+   锻造那两层整体镜像：红条本来在左缘、四点在左下角，与阶级角标（左缘五颗
+   菱形）正面撞上；翻过去之后红条到右缘、四点到右下角，一左一右分得开。 */
+.wpn-ico {
+  position: relative;
+  flex: none;
+  display: block;
+}
+
+.wpn-ico img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.wpn-ico-craft {
+  transform: scaleX(-1);
+}
+
+/* 大师工作那层是一片从底边往上散的淡金辉光，叠加混合才不会把底图压灰。 */
+.wpn-ico-mw {
+  mix-blend-mode: screen;
 }
 
 /* 折起来那一栏：只露选中的那一枚，点开在矩阵下方摊出全部取值。 */

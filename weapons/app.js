@@ -68,6 +68,27 @@
     return n;
   }
 
+  // 一把枪的图标是叠出来的，层序照游戏里那一套：底图、大师工作那层从底下往上
+  // 照的淡金辉光、赛季水印（左上角）、装备阶级角标（左缘五颗菱形）、锻造标记
+  // （整层镜像到右侧：红条到右缘、四点到右下角）。每张都是整幅图，图案画在
+  // 自己那一侧的透明区上，所以这里只管叠满，不管摆位。
+  //
+  // 24 档不叠：那几枚角标缩到这个尺寸只剩几个像素的糊点，认不出是什么。
+  function gun(w, size, cls) {
+    if (size < 32) { return icon(w.ico, size, cls); }
+    var box = el('span', 'wpn-ico' + (cls ? ' ' + cls : ''));
+    box.style.width = box.style.height = size + 'px';
+    box.appendChild(icon(w.ico, size, ''));
+    if (w.mw) { box.appendChild(icon(D.o.mw, size, 'wpn-ico-mw')); }
+    if (w.wm) { box.appendChild(icon(w.wm, size, 'wpn-ico-wm')); }
+    if (w.tiering) { box.appendChild(icon(D.o.tier, size, 'wpn-ico-tier')); }
+    if (w.craft) {
+      box.appendChild(icon(D.o['craft-bg'], size, 'wpn-ico-craft'));
+      box.appendChild(icon(D.o.craft, size, 'wpn-ico-craft'));
+    }
+    return box;
+  }
+
   function icon(file, size, cls) {
     var img = el('img', cls);
     img.src = file ? '../assets/icons/' + file
@@ -213,7 +234,7 @@
       var li = el('li');
       var a = el('a', 'wpn-hit');
       a.href = '#' + w.h;
-      a.appendChild(icon(w.ico, 32, 'wpn-hit-ico'));
+      a.appendChild(gun(w, 32, 'wpn-hit-ico'));
       var box = el('span', 'wpn-hit-text');
       box.appendChild(el('strong', '', w.n));
       var tags = [w.el, w.t];
@@ -576,7 +597,7 @@
 
     var head = el('header', 'wpn-head');
     var tile = el('span', 'wpn-tile' + (w.tier === 6 ? ' exotic' : ''));
-    tile.appendChild(icon(w.ico, 64, ''));
+    tile.appendChild(gun(w, 64, ''));
     head.appendChild(tile);
     var t = el('div', 'wpn-title');
     t.appendChild(el('h2', '', w.n));

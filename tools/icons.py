@@ -28,7 +28,27 @@ import pagedex
 import shell
 from markup import die
 
-BASE = 'https://www.bungie.net/common/destiny2_content/icons/'
+HOST = 'https://www.bungie.net'
+BASE = HOST + '/common/destiny2_content/icons/'
+
+# 叠在武器图标上的那几张，路径写在 DestinyInventoryItemConstantsDefinition 里。
+# 它们不按主键取——是一套固定的装饰层，每张都是整幅、把图案画在自己那一侧的
+# 透明区上，所以摆位不用这边定，原样叠满即可。
+#
+# 阶级那五张按档位递增（2 阶两颗菱形……5 阶五颗金菱形，1 阶是空图）。定义表里
+# 查不到某一把现在是几阶——那是掉落实例上的 DestinyItemInstanceComponent.gearTier。
+# 这里取第五张：吃阶级的枪，它的升级插槽里恒是「2 阶到 5 阶」五条，所以「最高
+# 可升到 5 阶」是定义层面的事实，角标画的就是这一件事。
+# 锻造那两层整体镜像到右侧（红条到右缘、四点到右下角），与阶级角标分居两边。
+#
+# 强化 Perk 不在这里：那是画在 48px 圆图标上的，官方那张 enhanced-item-overlay
+# 是给方形物品图准备的，圆图标上用 CSS 画一道内环加一枚箭头更锐利，也少一次请求。
+CHROME = {
+    'mw': '/img/destiny_content/items/masterwork-overlay.png',
+    'tier': '/img/destiny_content/items/inventory-item-tier5.png',
+    'craft': '/img/destiny_content/items/crafted-icon-overlay.png',
+    'craft-bg': '/img/destiny_content/items/crafted-icon-background.png',
+}
 
 OUT_DIR = os.path.join(shell.ROOT, 'assets', 'icons')
 TABLE = os.path.join(shell.ROOT, 'data', 'icons.json')
@@ -97,6 +117,9 @@ def wanted():
         own = icon_of(facts, key)
         if own:
             need.setdefault(own, 64)
+        # 赛季水印：一张整幅图，角标画在它自己那个角上。全库 45 种。
+        if row.get('wm'):
+            need.setdefault(row['wm'], 96)
         for col in facts.pools.get(key) or ():
             plugs = list(col.get('plugs') or ())
             if col.get('init'):
@@ -105,6 +128,8 @@ def wanted():
                 path = icon_of(facts, str(one))
                 if path:
                     need.setdefault(path, 64)
+    for path in CHROME.values():
+        need.setdefault(path, 96)
     if clash:
         die('这几张图在两页要两个尺寸，得先定版式：\n  %s'
             % '\n  '.join('%s ← %s' % x for x in clash[:10]))
@@ -112,7 +137,9 @@ def wanted():
 
 
 def fetch(path):
-    req = urllib.request.Request(BASE + path,
+    # 以 / 打头的是站点绝对路径（装饰层在 /img/ 下，不在图标目录里）；
+    # 其余仍按图标目录相对取，data/icons.json 里已有的两千多条键不受影响。
+    req = urllib.request.Request((HOST + path) if path.startswith('/') else BASE + path,
                                  headers={'User-Agent': 'starside-build'})
     with urllib.request.urlopen(req, timeout=30) as r:
         return r.read()
