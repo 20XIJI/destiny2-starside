@@ -86,6 +86,10 @@ KEEP_TYPES = frozenset({2, 3, 19})
 ITEM_FIELDS = ('index', 'itemType', 'itemSubType', 'classType',
                'defaultDamageType', 'breakerType', 'collectibleHash',
                'isAdept', 'isHolofoil', 'itemCategoryHashes')
+# 与 iconWatermark 并排的那张「本季主打」水印。manifest 里还有一位
+# iconWatermarkShelved（日落版），实测 13904 条**与 Featured 逐字节相同**，
+# Bungie 两位填的是同一个值，所以只收一张。
+WATERMARKS = ('iconWatermark', 'iconWatermarkFeatured')
 
 # 图标 URL 的公共前缀，存的时候剥掉，用的时候由 resolve.icon_path() 补回来。
 # 38894 条各省 35 字节。不带这个前缀的（Bungie 自己的占位图 /img/misc/…）原样留着，
@@ -113,6 +117,36 @@ BREAKER_GLYPH = {'': 1, '': 2, '': 3}
 # 配装页那枚徽章要用的，所以按「artifacts.json 引用到的本体」补进物品表——判据在
 # 引用上，不另列一份七件的名单。
 ARTIFACT_TIER = '传说 神器'
+
+# 插槽的语义标签。manifest 的 categoryIdentifier 有 14 种叫法，说的却是同几件事；
+# 站内每个消费方各归各的，就会各归各的错。这一位把它归一次，写进 socket-types 的
+# derived 里，两边（资料页戳主键、配装画栏）读同一份。
+#
+# 与 destiny.report 的三分（barrel / perk / origin）同一思路，但我们留着它不要的
+# 那三档——固有提成了字段，大师与模组站内的配装工具要用。
+SOCKET_KIND = {
+    'intrinsics': 'intrinsic',
+    'frames': 'trait',
+    'origins': 'origin',
+    'barrels': 'stat', 'magazines': 'stat', 'magazines_gl': 'stat', 'scopes': 'stat',
+    'tubes': 'stat', 'batteries': 'stat', 'stocks': 'stat', 'blades': 'stat',
+    'guards': 'stat', 'bowstrings': 'stat', 'arrows': 'stat', 'hafts': 'stat',
+    'grips': 'stat',
+}
+TRACKER_KIND = 'v400.plugs.weapons.masterworks.trackers'
+MOD_KINDS = ('v400.weapon.mod', 'v460.weapon.mod', 'v900.weapon.mod')
+# 大师工作的写法不止一种：v400.plugs.weapons.masterworks 之外还有
+# plugs.masterworks.weapons.default（22 种）与各代异域专属的
+# v620/v700.exotic.weapon.masterwork。按含不含 masterwork 认，不按前缀列名单。
+MASTERWORK_MARK = 'masterwork'
+# 外观：皮肤、着色器、饰品。站内一个读者都没有，标出来是为了「other 里不该再有
+# 认得出的东西」——剩下的 other 才是真的没见过。
+COSMETIC_MARKS = ('skins', 'shader', 'ornament')
+
+# 数值越低越好的那三项。**manifest 里推不出来**：它们与另外 23 项属性的
+# statCategory 与 aggregationType 完全相同，没有任何一位把它们分开。所以这一份
+# 是人记的，改了游戏才会变。destiny.report 也是硬编码同样三条。
+LOWER_IS_BETTER = frozenset({447667954, 2961396640, 3481294762})  # 蓄力时间 充能时间 发热量
 
 ZH, EN = 'zh-CN', 'en'
 
@@ -187,8 +221,9 @@ def project(key, item, other):
     for field in ITEM_FIELDS:
         if field in item:
             out[field] = item[field]
-    if 'iconWatermark' in item:
-        out['iconWatermark'] = icon_of(item['iconWatermark'])
+    for field in WATERMARKS:
+        if field in item:
+            out[field] = icon_of(item[field])
     if 'icon' in dp:
         out['icon'] = icon_of(dp['icon'])
     text = i18n_of(
@@ -231,11 +266,19 @@ def project(key, item, other):
                 one['isConditionallyActive'] = True
             stats.append(one)
         out['investmentStats'] = stats
+    derived = {}
     rel = [t for t in item.get('traitIds') or () if t.startswith('releases.')]
     if rel:
         # 发布版本（releases.v970.core 一类）比赛季水印好认：水印是一张图，
         # 这是一个可排序的版本号。
-        out['derived'] = {'release': rel[0][len('releases.'):]}
+        derived['release'] = rel[0][len('releases.'):]
+    foundry = [t for t in item.get('traitIds') or () if t.startswith('foundry.')]
+    if foundry:
+        # 铸造厂（Häkke、Omolon、Veist…），779 把枪有。站内购物清单那一列写的
+        # 就是它，从前靠人写。
+        derived['foundry'] = foundry[0][len('foundry.'):]
+    if derived:
+        out['derived'] = derived
     return out
 
 
@@ -453,6 +496,18 @@ def distill(src):
                 if e.get(field):
                     want_sets.add(str(e[field]))
         derived = row.setdefault('derived', {})
+        # 固有框架提成一位。2208 把枪每一把都要显示它（站内「框架」那一列正是它，
+        # 实测吻合 99.5%），藏在 sockets 里要遍历 intrinsics 栏才拿得到。
+        for e in (item.get('sockets') or {}).get('socketEntries') or ():
+            if socket_kind(e, socket_types) != 'intrinsics':
+                continue
+            head = e.get('singleInitialItemHash')
+            if not head:
+                pool = e.get('reusablePlugItems') or []
+                head = pool[0]['plugItemHash'] if pool else None
+            if head:
+                derived['archetype'] = head
+            break
         breaker = breaker_of(item, socket_types, perk_breaker, items)
         if breaker:
             # 推出来的，不是 manifest 的 breakerType——根上那一位是 Bungie 自己写的，
@@ -490,12 +545,25 @@ def distill(src):
     types = {}
     for h in want_types:
         st = socket_types.get(h) or {}
-        one = {'hash': int(h)}
+        one: dict[str, object] = {'hash': int(h)}
         if 'socketCategoryHash' in st:
             one['socketCategoryHash'] = st['socketCategoryHash']
-        one['plugWhitelist'] = [{'categoryHash': w['categoryHash'],
-                                 'categoryIdentifier': w['categoryIdentifier']}
-                                for w in st.get('plugWhitelist') or ()]
+        wl = [{'categoryHash': w['categoryHash'],
+               'categoryIdentifier': w['categoryIdentifier']}
+              for w in st.get('plugWhitelist') or ()]
+        one['plugWhitelist'] = wl
+        ident = wl[0]['categoryIdentifier'] if wl else ''
+        if ident.startswith(TRACKER_KIND):
+            kind = 'tracker'
+        elif MASTERWORK_MARK in ident:
+            kind = 'masterwork'
+        elif ident.startswith(MOD_KINDS):
+            kind = 'mod'
+        elif any(m in ident for m in COSMETIC_MARKS):
+            kind = 'cosmetic'
+        else:
+            kind = SOCKET_KIND.get(ident, 'other')
+        one['derived'] = {'kind': kind}
         types[h] = one
     del socket_types, plug_sets
     gc.collect()
@@ -541,6 +609,10 @@ def distill(src):
         c = coll_zh.get(h)
         if not c:
             continue
+        if c.get('sourceHash'):
+            # 来源的主键。站内「来源」那一列今天写的是中文散文，接上这一位之后
+            # 那一列也能从主键派生。
+            row['sourceHash'] = c['sourceHash']
         for lang, text in i18n_of(('sourceString', c.get('sourceString'),
                                    (coll_en.get(h) or c).get('sourceString'))).items():
             row.setdefault('i18n', {}).setdefault(lang, {}).update(text)
@@ -604,8 +676,14 @@ def distill(src):
 
     stats_zh = load(src, 'zh', 'DestinyStatDefinition')
     stats_en = load(src, 'en', 'DestinyStatDefinition')
-    stats = {h: plain(h, v, stats_en.get(h))
-             for h, v in stats_zh.items() if not v.get('redacted')}
+    stats = {}
+    for h, v in stats_zh.items():
+        if v.get('redacted'):
+            continue
+        one = plain(h, v, stats_en.get(h))
+        if int(h) in LOWER_IS_BETTER:
+            one['derived'] = {'lowerIsBetter': True}
+        stats[h] = one
     del stats_zh, stats_en, items
     gc.collect()
 
