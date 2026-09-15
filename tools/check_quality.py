@@ -641,8 +641,9 @@ class EntitySource(unittest.TestCase):
                     % (slug, head, times, 1 + len(more)))
         # 3512 ＝ 2429 行的行首加上它们的 covers。元素页、棱镜页与职业技能页的行
         # 从前互相写着对方分支的那一枚（电弧的「重击」与棱镜的「重击」是两枚不同的
-        # hash，各自有一段说明），摘掉那 88 枚之后是这个数。
-        self.assertEqual((rows, refs), (2429, 3512),
+        # hash，各自有一段说明），摘掉那 88 枚、再摘掉烈焰战锤那一行写的「无敌索尔」
+        # （那不是它的另一枚 hash，是改造它的那个星相）之后是这个数。
+        self.assertEqual((rows, refs), (2429, 3511),
                          '源稿的行数或主键引用数变了：%d 行、%d 个引用' % (rows, refs))
 
 
