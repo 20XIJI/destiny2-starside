@@ -109,7 +109,7 @@ def library():
     **不再要人工指一份 49 MB 的导出**：manifest 的蒸馏产物已经在 data/manifest/ 里入库，
     同一份事实两个副本迟早各走各的。字段名保持原样，转换只在这一处。
     """
-    path = os.path.join(shell.ROOT, 'data', 'manifest', 'items.json')
+    path = os.path.join(shell.ROOT, 'data', 'manifest', 'inventory-items.json')
     if not os.path.exists(path):
         die('事实层还没蒸馏：先跑 python3 tools/facts.py --distill')
     with open(path, encoding='utf-8') as f:
@@ -117,7 +117,7 @@ def library():
     def one(h, v):
         art = resolve.icon_path(v) or ''
         return {'hash': h, 'name_zh': resolve.text(v),
-                'typeName_zh': (v.get('itemTypeAndTierDisplayName') or {}).get(resolve.ZH, ''),
+                'typeName_zh': resolve.text(v, 'itemTypeAndTierDisplayName'),
                 'icon': ICON_BASE + art if art else ''}
 
     return {h: one(h, v) for h, v in got.items()}
@@ -186,26 +186,26 @@ def arts_of():
 def arts():
     """七件神器本体 → tools/artifacts.json。
 
-    读 data/manifest/artifacts.json，不去物品表里按类型名筛：神器本体是 itemType 28，
-    没有 plug 块，本来就不在事实层的物品投影里；而那份表建它时顺手记了主键与图标。
-    那张表按主键建键，名字在 displayProperties 里；站内那个写法（「NPA 斥力调节器」
-    中间有排版空格）由 arts_of() 从索引现取，配装源稿按它查。
+    神器的档位分组挂在本体那条物品记录的 derived.tiers 上，不单出一张表——那张表
+    的键本来就是本体的 itemHash。本体是 itemType 28、没有 plug 块，本来落不进物品
+    投影，是按「有 derived.tiers」补进去的。站内那个写法（「NPA 斥力调节器」中间有
+    排版空格）由 arts_of() 从索引现取，配装源稿按它查。
     """
-    path = os.path.join(shell.ROOT, 'data', 'manifest', 'artifacts.json')
-    with open(path, encoding='utf-8') as f:
-        lib = json.load(f)
+    shown_by = library()
+    lib = {h: v for h, v in items_lib().items()
+           if 'tiers' in (v.get('derived') or {})}
     old = {}
     if os.path.exists(ARTS):
         with open(ARTS, encoding='utf-8') as f:
             old = json.load(f)
     keep = arts_of()
     table = {}
-    for v in lib.values():
-        shown = keep.get(items.norm(resolve.text(v)))
+    for h, v in lib.items():
+        row = shown_by.get(h) or {}
+        shown = keep.get(items.norm(row.get('name_zh', '')))
         if not shown:
             continue
-        art_icon = resolve.icon_path(v)
-        url = ICON_BASE + art_icon if art_icon else ''
+        url = row.get('icon') or ''
         if not url:
             die('%s 没有图标地址' % shown)
         was = old.get(shown, {})

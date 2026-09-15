@@ -98,11 +98,10 @@ CLAIM_BASELINE = 214
 # 池里形近的是「高爆载荷」。是不是笔误要人判，判了再改源稿。
 MISS_BASELINE = 1
 
-# 随语言变的 manifest 字段，整份搬进 i18n.<语言>。displayProperties.description
-# 改叫 database_details——它与我们测的 realgame_details 并排摆着，
-# 叫 description 分不出谁是谁。
-BILINGUAL = ('itemTypeDisplayName', 'itemTypeAndTierDisplayName',
-             'flavorText', 'sourceString')
+# 来源那一句长在收藏条目上，不在物品记录上（一张 Bungie 定义表一个文件）。
+# 实体层要它——「输入一个 hash 拿到关于它的全部」——所以在这里按 collectibleHash
+# 接回来，接法只有 facts.source() 一处。
+SOURCE_FIELD = 'sourceString'
 
 
 def role_of(row):
@@ -128,23 +127,21 @@ def from_index(page):
     return out
 
 
-def manifest_part(row):
-    """manifest 那一半：与语言无关的留根上，随语言变的进 i18n。"""
-    out, i18n = {}, {}
-    for key, val in row.items():
-        if key == 'displayProperties':
-            for lang, text in (val.get('name') or {}).items():
-                i18n.setdefault(lang, {})['name'] = text
-            for lang, text in (val.get('description') or {}).items():
-                i18n.setdefault(lang, {})['database_details'] = text
-            if val.get('icon'):
-                out['icon'] = {'source': val['icon']}
-            continue
-        if key in BILINGUAL:
-            for lang, text in (val or {}).items():
-                i18n.setdefault(lang, {})[key] = text
-            continue
-        out[key] = val
+def manifest_part(facts, row):
+    """manifest 那一半：与语言无关的留根上，随语言变的进 i18n。
+
+    事实层已经把语言边界划好了（`i18n -> <语言> -> <字段>`），这里只是把它原样
+    接过来，再补一样事实层按表分开存的东西：来源那一句。
+    """
+    out = {key: val for key, val in row.items() if key not in ('i18n', 'icon')}
+    if row.get('icon'):
+        out['icon'] = {'source': row['icon']}
+    i18n = {lang: dict(fields) for lang, fields in (row.get('i18n') or {}).items()}
+    for lang in (resolve.ZH, resolve.EN):
+        got = facts.source(row['hash'], lang) if row.get('collectibleHash') else ''
+        if got and not (lang == resolve.EN
+                        and got == i18n.get(resolve.ZH, {}).get(SOURCE_FIELD)):
+            i18n.setdefault(lang, {})[SOURCE_FIELD] = got
     return out, i18n
 
 
@@ -384,7 +381,7 @@ def build(facts):
                         % (page, row.get('name', ''), key))
                 have = out.get(key)
                 if have is None:
-                    plain, i18n = manifest_part(lib)
+                    plain, i18n = manifest_part(facts, lib)
                     have = dict(plain)
                     if i18n:
                         have['i18n'] = i18n
@@ -417,7 +414,7 @@ def build(facts):
         lib = facts.at(key)
         if lib is None:
             continue
-        plain, i18n = manifest_part(lib)
+        plain, i18n = manifest_part(facts, lib)
         got = dict(plain)
         if i18n:
             got['i18n'] = i18n

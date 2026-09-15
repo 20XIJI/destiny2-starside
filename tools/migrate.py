@@ -260,7 +260,8 @@ def classify():
     sources, hints = resolve.set_sources(), resolve.source_hints()
 
     known = {resolve.norm(resolve.text(v)) for v in facts.items.values()}
-    known |= {resolve.norm(resolve.text(v)) for v in facts.effects.values()}
+    known |= {resolve.norm(resolve.text(v)) for v in facts.perks.values()}
+    known |= {resolve.norm(resolve.text(v)) for v in facts.traits.values()}
     known |= {resolve.norm(resolve.text(v)) for v in facts.stats.values()}
     known |= {resolve.set_key(resolve.text(s)) for s in facts.sets.values()}
 

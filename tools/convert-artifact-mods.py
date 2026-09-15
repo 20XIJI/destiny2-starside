@@ -35,15 +35,14 @@ def art_pool(artifact):
 
     **同名的神器模组在库里有两条**（147 条里 36 处）：同名、同类、同图，只有 index
     不同，光看物品表分不出。神器本体带着自己的模组槽，池里列的就是它那 21 个，
-    按它收窄即得唯一那一条。data/manifest/artifacts.json 存的就是这份分组。"""
+    按它收窄即得唯一那一条。这份分组挂在神器本体那条物品记录的 derived.tiers 上。"""
     global _ARTS
     if _ARTS is None:
-        with open(os.path.join(shell.ROOT, 'data', 'manifest', 'artifacts.json'),
-                  encoding='utf-8') as f:
-            raw = json.load(f)
-        # 那张表按主键建键，这里要的是按名字查，所以取 displayProperties 里那个名字。
-        _ARTS = {resolve.norm(resolve.text(v)): {h for t in v['tiers'] for h in t}
-                 for v in raw.values()}
+        facts = resolve.shared()[0]
+        _ARTS = {resolve.norm(resolve.text(v)):
+                 {str(m['itemHash'])
+                  for tier in v['derived']['tiers'] for m in tier['items']}
+                 for v in facts.items.values() if 'tiers' in (v.get('derived') or {})}
     return _ARTS.get(resolve.norm(artifact), set())
 
 

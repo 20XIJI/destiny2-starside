@@ -110,15 +110,15 @@ def width(page):
 def icon_of(facts, key):
     """一个主键在库里的官方图路径。查不到的返回 None。
 
-    套装那一档的图挂在它的 setPerks 上，不在套装自己的 displayProperties 里
-    ——一个套装的 2 件与 4 件效果各有一张，取第一张。
+    套装自己没有图，图挂在它的 setPerks 指向的那条 SandboxPerk 上——一个套装的
+    2 件与 4 件效果各有一张，取第一张。
     """
     row = facts.at(key)
     got = resolve.icon_path(row)
     if got:
         return got
     for bonus in (row or {}).get('setPerks') or ():
-        got = resolve.icon_path(bonus)
+        got = resolve.icon_path(facts.ref(bonus['perk']))
         if got:
             return got
     return None
@@ -167,9 +167,9 @@ def wanted():
         if own:
             need.setdefault(own, 64)
         # 赛季水印：一张整幅图，角标画在它自己那个角上。全库 45 种。
-        if row.get('wm'):
-            need.setdefault(row['wm'], 96)
-        for col in facts.pools.get(key) or ():
+        if row.get('iconWatermark'):
+            need.setdefault(row['iconWatermark'], 96)
+        for col in facts.pool(key):
             plugs = list(col.get('plugs') or ())
             if col.get('init'):
                 plugs.append(col['init'])

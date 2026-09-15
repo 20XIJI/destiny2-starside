@@ -547,7 +547,7 @@ def fill_icons(cats: list[Category]) -> None:
     except ImportError:
         die('补图标需要 Pillow：pip install Pillow')
     facts = resolve.shared()[0]
-    by_key = {resolve.set_key(s['name']['zh']): s for s in facts.sets.values()}
+    by_key = {resolve.set_key(resolve.text(s)): s for s in facts.sets.values()}
     levels = (1 << ALPHA_BITS) - 1
     ramp = [round(round(v / 255 * levels) / levels * 255) for v in range(256)]
     out = os.path.join(OUT_DIR, 'icons')
@@ -561,7 +561,10 @@ def fill_icons(cats: list[Category]) -> None:
                 name = '%03d.png' % idx
                 if os.path.exists(os.path.join(out, name)):
                     continue
-                url = ((lib or {}).get('bonuses') or [{}] * 4)[k].get('icon') if lib else ''
+                # 效果的图挂在它指向的那条 SandboxPerk 上，套装自己没有图。
+                perks = (lib or {}).get('setPerks') or []
+                url = (resolve.icon_path(facts.ref(perks[k]['perk']))
+                       if k < len(perks) else '')
                 if not url:
                     die('%s 的 %s 件效果缺图标，库里也没有' % (st.name, b.piece))
                 raw = mods.fetch(ICON_BASE + url)

@@ -40,19 +40,45 @@ import shell
 FACTS = os.path.join(shell.ROOT, 'data', 'manifest')
 ZH, EN = 'zh-CN', 'en'
 
+# 一把武器的栏位怎么切。**这几条是站内口径不是 Bungie 事实**，所以住在这里而不是
+# 事实层：哪几栏算词条、击杀记录器剔掉、空插槽剔掉、大师工作只留「大师杰作」。
+# 固有特性要留——异域武器的框架差异就写在那一栏里（「故我在」的不同框架、
+# 「单人合唱」的不同催化剂都是 socket 数据本身）。装饰不留。
+CAT_INTRINSIC = 3956125808
+CAT_TRAITS = 4241085061
+# 「武器模组」类目里混着四种东西，只取前两种（判据见 GEAR_KINDS）。大师工作**不在**
+# 武器特性类目里，它和可选模组同属这一个。
+CAT_GEAR = 2685412949
+KEEP_CATS = (CAT_INTRINSIC, CAT_TRAITS, CAT_GEAR)
+DROP_PREFIX = 'v400.plugs.weapons.masterworks.trackers'
+# CAT_GEAR 那一类里留哪些。可选模组按枪型分成十几个 v460.weapon.mod_* 的池；
+# 锻造（crafting.*）与装备阶级（weapon_tiering.*）两组不留：它们是触发器，
+# 自身 investmentStats 全空，效果是「把别的栏换成强化版」，画不成可选项。
+GEAR_KINDS = ('v400.weapon.mod', 'v460.weapon.mod', 'v900.weapon.mod',
+              'v400.plugs.weapons.masterworks')
+MASTERWORK_KIND = 'v400.plugs.weapons.masterworks'
+MASTERWORK_KEEP = '大师杰作'
+# 「空模组插槽」「空催化插槽」这类是没插东西时的占位，不是一个选项。
+EMPTY_SLOT = re.compile(r'^空.*插槽$')
+
 
 def text(rec, field='name', lang=ZH):
-    """一条事实记录的 displayProperties.<field> 里那一种语言。
+    """一条记录的某个字段在某种语言下的文本。**全站唯一的取文入口。**
 
-    事实层照 manifest 拼全字段名之后，取名字要走三层；全站只在这里写一次。
+    事实层的语言文本全住在 `i18n` 里，形状恒为 `i18n -> <语言> -> <字段>`，
+    而 `en` 只写与 `zh-CN` 不同的那几个字段，所以英文取不到时回落到中文——
+    那正是「两边逐字相同」的意思，不是「没有英文」。
     """
-    return ((((rec or {}).get('displayProperties') or {}).get(field) or {})
-            .get(lang) or '')
+    block = ((rec or {}).get('i18n') or {})
+    got = (block.get(lang) or {}).get(field)
+    if got is None and lang != ZH:
+        got = (block.get(ZH) or {}).get(field)
+    return got or ''
 
 
 def icon_path(rec):
-    """一条事实记录的官方图路径（ICON_PREFIX 已剥）。没有图的返回 None。"""
-    return ((rec or {}).get('displayProperties') or {}).get('icon')
+    """一条记录的官方图路径（ICON_PREFIX 已剥）。没有图的返回 None。"""
+    return (rec or {}).get('icon')
 
 # 站内页面 → 候选范围，一页可以有几档。每档是 (itemType 或 None, tierType 或 None,
 # 插件类别正则 或 None)，None 表示这一位不限；命中任意一档即算在范围内。判据从
@@ -208,14 +234,21 @@ class Facts:
             with open(path, encoding='utf-8') as f:
                 return json.load(f)
 
-        self.items = read('items.json')
-        self.pools = read('perk-pools.json')
+        self.items = read('inventory-items.json')
         self.groups = read('stat-groups.json')
-        self.sets = read('armor-sets.json')
-        self.effects = read('effects.json')
+        self.sets = read('equipable-item-sets.json')
+        self.perks = read('sandbox-perks.json')
+        self.traits = read('traits.json')
         self.stats = read('stats.json')
+        self.plug_sets = read('plug-sets.json')
+        self.socket_types = read('socket-types.json')
+        self.tables = {'inventory-items': self.items, 'sandbox-perks': self.perks,
+                       'traits': self.traits, 'stats': self.stats,
+                       'equipable-item-sets': self.sets}
+        self._pools = {}
         self.eff_by_name = {}
-        for table, prefix in ((self.effects, ''), (self.stats, 'stat:')):
+        for table, prefix in ((self.traits, 'trait:'), (self.perks, 'perk:'),
+                              (self.stats, 'stat:')):
             for h, v in table.items():
                 for key in (text(v), text(v, lang=EN)):
                     if key:
@@ -234,19 +267,119 @@ class Facts:
     def at(self, key):
         """按主键取那条记录，不管它落在哪张表上。
 
-        前缀只在 effects.json 上是真消歧——它把 trait 与 sandboxPerk 两个 hash
-        空间合进了一张表，同一个数字两边都可能有。stats 与 armor-sets 各只装一个
-        空间，键就是裸 hash，前缀在查这一侧剥掉。**解前缀只在这里做一次**：从前
-        key_name() 与 icons.icon_of() 各写一份，三张表两种约定，改一处漏一处。
+        事实层的键一律是裸 hash、文件即命名空间，所以前缀只活在**站内的键**上，
+        用来说这个数字该去哪张表查——裸 hash 不唯一，`inventory-items` 与
+        `sandbox-perks` 撞了 52 个号。**解前缀只在这里做一次**：从前 key_name()
+        与 icons.icon_of() 各写一份，改一处漏一处。
         """
         key = str(key)
-        if key.startswith(('trait:', 'perk:')):
-            return self.effects.get(key)
-        if key.startswith('stat:'):
-            return self.stats.get(key[len('stat:'):])
-        if key.startswith('set:'):
-            return self.sets.get(key[len('set:'):])
+        for prefix, table in (('perk:', self.perks), ('trait:', self.traits),
+                              ('stat:', self.stats), ('set:', self.sets)):
+            if key.startswith(prefix):
+                return table.get(key[len(prefix):])
         return self.items.get(key)
+
+    def ref(self, pair):
+        """按 `[表名, 主键]` 二元组取那条记录。**跨表引用只有这一种写法。**
+
+        裸 hash 不唯一：`inventory-items` 与 `sandbox-perks` 撞了 52 个号，
+        `1350878542` 既是物品「改良汇编器」又是 SandboxPerk「快速冷却」。
+        """
+        table, key = pair
+        got = self.tables.get(table)
+        if got is None:
+            markup.die('没有这张表：%s' % table)
+        return got.get(str(key))
+
+    def source(self, h, lang=ZH):
+        """这件东西的来源那句话。
+
+        它写在**收藏条目**上——物品自己的 displaySource 在复刻武器上一律是「随机
+        特性：此物品无法从收藏品再次获取」，分不出版本；collectible 的 sourceString
+        才写着「来源：众神殿」，那正是站内源稿标版本用的那个词。蒸馏时已经按
+        collectibleHash 接到物品记录上了（9238 对 9238，严格一对一）。
+        """
+        return text(self.items.get(str(h)), 'sourceString', lang)
+
+    def kind_of(self, entry):
+        """一个槽的类别标识，取 socket 类型白名单的首项。"""
+        st = self.socket_types.get(str(entry.get('socketTypeHash')))
+        wl = (st or {}).get('plugWhitelist') or []
+        return wl[0].get('categoryIdentifier', '') if wl else ''
+
+    def pool(self, h):
+        """一把武器的栏位：`[{i, kind, type, rand, init, plugs, gear}]`，栏序即下标。
+
+        **这是站内口径，不是 Bungie 事实**，所以切在这里不切在事实层：哪几栏算词条、
+        击杀记录器剔掉、空插槽剔掉、大师工作只留「大师杰作」，每一条都是为了页面上
+        那张表好看。事实层存的是整份 `sockets`，两个读者共用这一份切法——资料页拿它
+        给词条名戳主键，武器库拿它画栏。
+
+        `gear` 那一位标出「不是掉落时随机开出来的东西」——可选模组与大师工作，
+        随时能换。消歧与戳主键那两处按这一位跳过它们：那几栏在同类武器上几乎一模
+        一样，并进来会让复刻版本之间的重合度全部拉高，消歧就失灵了。
+        """
+        key = str(h)
+        got = self._pools.get(key)
+        if got is None:
+            got = self._pools[key] = self._columns(key)
+        return got
+
+    def _columns(self, key):
+        blk = (self.items.get(key) or {}).get('sockets') or {}
+        entries = blk.get('socketEntries') or []
+        out = []
+        for cat in blk.get('socketCategories') or ():
+            ch = cat.get('socketCategoryHash')
+            if ch not in KEEP_CATS:
+                continue
+            for i in cat.get('socketIndexes') or ():
+                if i >= len(entries):
+                    markup.die('%s 的 socketIndexes 指到 socketEntries 之外：%d'
+                               % (key, i))
+                e = entries[i]
+                kind = self.kind_of(e)
+                # 击杀记录器也挂在「武器特性」类目下，不剔每把枪凭空多一栏。判据取
+                # socket 类型的白名单首项，不取初始插件——后者有超过五分之一的槽
+                # 是空的，漏判率太高。
+                if kind.startswith(DROP_PREFIX):
+                    continue
+                ps = e.get('randomizedPlugSetHash') or e.get('reusablePlugSetHash')
+                plugs = []
+                for p in (self.plug_sets.get(str(ps)) or {}).get('reusablePlugItems') or ():
+                    # 老版本的武器留着已经开不出来的词条，这一位是唯一的判据。
+                    if p.get('currentlyCanRoll', True):
+                        plugs.append(p['plugItemHash'])
+                gear = ch == CAT_GEAR
+                if gear:
+                    plugs = self._gear_keep(kind, plugs)
+                    if not plugs:
+                        continue
+                else:
+                    plugs = [x for x in plugs if not EMPTY_SLOT.match(self.name(x))]
+                col = {'i': i, 'kind': kind, 'type': e.get('socketTypeHash'),
+                       'rand': bool(e.get('randomizedPlugSetHash'))}
+                if gear:
+                    col['gear'] = True
+                elif e.get('singleInitialItemHash'):
+                    # 装备栏的「初始插件」是空模组插槽，不是一个选项。
+                    col['init'] = e['singleInitialItemHash']
+                if plugs:
+                    col['plugs'] = plugs
+                out.append(col)
+        return out
+
+    def _gear_keep(self, kind, plugs):
+        """CAT_GEAR 那一类留不留，留的话留哪几个插件。None 表示整栏不要。
+
+        大师工作那一栏只留「大师杰作：属性」：同池里另外 126 项是「N 阶：属性」，
+        那是同一件事的十档刻度，铺成图标就是一张十四乘十的乘法表。
+        """
+        if not kind.startswith(GEAR_KINDS):
+            return None
+        if kind.startswith(MASTERWORK_KIND):
+            return [x for x in plugs if self.name(x).startswith(MASTERWORK_KEEP)]
+        return [x for x in plugs if not EMPTY_SLOT.match(self.name(x))]
 
     def name(self, h):
         return text(self.items.get(str(h)))
@@ -258,7 +391,7 @@ class Facts:
         并进来会让复刻版本之间的重合度全部拉高，消歧就失灵了。
         """
         out = set()
-        for col in self.pools.get(str(h)) or []:
+        for col in self.pool(h):
             if col.get('gear'):
                 continue
             for p in col.get('plugs') or ():
@@ -299,7 +432,7 @@ def same_shape(row):
     """两条记录在站内用得到的字段上是不是一模一样。"""
     derived = row.get('derived') or {}
     return (text(row), icon_path(row),
-            (row.get('itemTypeAndTierDisplayName') or {}).get(ZH),
+            text(row, 'itemTypeAndTierDisplayName'),
             derived.get('release'), row.get('iconWatermark'),
             row.get('defaultDamageType'),
             (row.get('inventory') or {}).get('tierType'))
@@ -329,8 +462,7 @@ def pick(facts, hits, version='', perks=()):
             hits = full
     if version:
         src = VERSION_SOURCE.get(version, version).rstrip('版本')
-        same = [h for h in hits if src
-                and src in (facts.items[h].get('sourceString') or {}).get(ZH, '')]
+        same = [h for h in hits if src and src in facts.source(h)]
         if len(same) == 1:
             return same[0], '版本后缀', same
         if same:
@@ -427,8 +559,7 @@ def split_version(facts, name, page):
             continue
         hits = candidates(facts, base, page)
         want = VERSION_SOURCE.get(tail, tail)
-        if hits and any(want in (facts.items[h].get('sourceString') or {}).get(ZH, '')
-                        for h in hits):
+        if hits and any(want in facts.source(h) for h in hits):
             return base, tail
     return name, ''
 
@@ -626,7 +757,7 @@ def weapon_pool(facts, keys):
     """
     out = {}
     for key in keys:
-        for col in facts.pools.get(str(key)) or ():
+        for col in facts.pool(key):
             if col.get('gear'):
                 continue
             plugs = list(col.get('plugs') or ())

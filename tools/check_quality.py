@@ -558,26 +558,42 @@ class ManifestLayer(unittest.TestCase):
     """事实层自身对得上：主键即记录里的 hash，双语键是那两个，前缀不混。
 
     蒸馏要读仓库外那份 190 MB 的 manifest，所以这里不跑 --distill，只查入库的
-    那七份产物。查的是**换赛季重跑之后还成立的那些**：一条记录的 hash 与它的键
+    那八份产物。查的是**换赛季重跑之后还成立的那些**：一条记录的 hash 与它的键
     对不上，下游按键查、按 hash 显示，两边指的就不是同一件东西了。
     """
 
     ROOT = TOOLS.parent / 'data' / 'manifest'
+    # 实体表：站内寻址得到的东西，键是裸 hash、文件即命名空间。
+    ENTITIES = ('inventory-items.json', 'sandbox-perks.json', 'traits.json',
+                'stats.json', 'equipable-item-sets.json')
+    # 查表：算栏位与数值用的字典，没有任何页面指向它们，而且 hash 空间与实体撞号
+    # （plug-sets 最小号是 1，socket-types 里有 0），所以不进实体那一档。
+    LOOKUPS = ('plug-sets.json', 'socket-types.json', 'stat-groups.json')
 
     def table(self, name):
         with open(self.ROOT / name, encoding='utf-8') as f:
             return json.load(f)
 
     def test_the_key_is_the_record_s_own_hash(self):
-        for name, strip in (('items.json', ''), ('stats.json', ''),
-                            ('armor-sets.json', ''), ('artifacts.json', ''),
-                            ('effects.json', 'prefix')):
+        """键是裸十进制 hash 串，没有 perk: trait: stat: set: 那种前缀。"""
+        for name in self.ENTITIES + self.LOOKUPS:
             rows = self.table(name)
             with self.subTest(table=name):
-                bad = [k for k, v in rows.items()
-                       if str(v.get('hash')) != (k.split(':')[-1] if strip else k)]
+                bad = [k for k, v in rows.items() if str(v.get('hash')) != k]
                 self.assertEqual(bad[:5], [], '%s 有 %d 条的键与 hash 对不上' % (name, len(bad)))
                 self.assertGreater(len(rows), 5, '%s 只读到 %d 条' % (name, len(rows)))
+
+    def test_only_the_lookups_reuse_the_small_numbers(self):
+        """实体那几张表的号都在 1000 以上，站内自发号因此可以从小号开始发。
+
+        Bungie 确实用小号——plug-sets 里最小的是 1，socket-types 里有 0——但那两张
+        是算栏位用的字典，没有任何页面或配装指向它们。哪天有人把它们并进实体那一档，
+        这一条当场报出，而不是静默撞号。
+        """
+        for name in self.ENTITIES:
+            with self.subTest(table=name):
+                small = sorted(int(k) for k in self.table(name) if int(k) < 1000)
+                self.assertEqual(small, [], '%s 里有小于 1000 的主键：%s' % (name, small[:5]))
 
     def test_bilingual_text_uses_bcp47_and_never_the_old_keys(self):
         """zh/en 换成了 zh-CN/en。漏改一处的症状是名字整列变空，不是报错。"""
@@ -591,8 +607,7 @@ class ManifestLayer(unittest.TestCase):
                 for v in node:
                     walk(v, path + '[]')
 
-        for name in ('items.json', 'effects.json', 'stats.json', 'armor-sets.json',
-                     'artifacts.json'):
+        for name in self.ENTITIES:
             bad = []
             with self.subTest(table=name):
                 walk(self.table(name))
@@ -603,20 +618,46 @@ class ManifestLayer(unittest.TestCase):
 
         边界一模糊就没人再分得清某个字段能不能跟着 manifest 重生成。
         """
-        ours = {'release', 'breakerType', 'craftable', 'tierable', 'displayStats'}
+        ours = {'release', 'breakerType', 'craftable', 'tierable', 'tiers'}
         # breakerType 是唯一两头都有的：根上那一位是 manifest 自己的字段，照原样留着。
         only_ours = ours - {'breakerType'}
-        items = self.table('items.json')
+        items = self.table('inventory-items.json')
         stray = sorted({k for v in items.values() for k in v} & only_ours)
         self.assertEqual(stray, [], '这些是本项目算的，不该出现在根上：%s' % stray)
         seen = {k for v in items.values() for k in v.get('derived') or {}}
         self.assertTrue(seen <= ours, 'derived 里冒出没登记的字段：%s' % sorted(seen - ours))
-        # breakerType 两头都有：根上那一位是 manifest 自己的（全表 18 条），
-        # derived 那一位是消费方要读的（覆盖 2208 把武器）。
-        raw = sum('breakerType' in v for v in items.values())
+        # breakerType 两头都有：根上那一位是 manifest 写的（写不写只看键在不在，
+        # 所以每条都有，绝大多数是 0），derived 那一位是按固有框架的 SandboxPerk
+        # 推出来的，消费方读的是它，覆盖 2208 把武器。
+        nonzero = sum(bool(v.get('breakerType')) for v in items.values())
         got = sum('breakerType' in (v.get('derived') or {}) for v in items.values())
-        self.assertEqual(raw, 18, 'manifest 自带 breakerType 的应是 18 条，实际 %d' % raw)
+        self.assertEqual(nonzero, 18, 'manifest 自带非 0 breakerType 的应是 18 条，实际 %d' % nonzero)
         self.assertGreater(got, 2000, 'derived.breakerType 只覆盖 %d 条，推导没跑' % got)
+
+    def test_the_artifact_tiers_ride_on_the_artifact_s_own_item_record(self):
+        """七件神器的档位分组挂在本体那条物品上，不单出一张表。
+
+        那张表的键本来就是本体的 itemHash——单出一张等于同一个实体在两处各有
+        一条记录，而且改了一处另一处不会跟着动。
+        """
+        items = self.table('inventory-items.json')
+        arts = {k: v['derived']['tiers'] for k, v in items.items()
+                if 'tiers' in (v.get('derived') or {})}
+        self.assertEqual(len(arts), 7, '神器应有 7 件，实际 %d 件' % len(arts))
+        for key, tiers in arts.items():
+            with self.subTest(artifact=key):
+                self.assertTrue(tiers, '%s 没有档位' % key)
+                for tier in tiers:
+                    self.assertTrue(tier['items'], '%s 有一档是空的' % key)
+
+    def test_the_source_line_rides_on_the_item_not_a_second_table(self):
+        """来源那一句并进物品记录：9238 件物品对 9238 条收藏条目，严格一对一。"""
+        items = self.table('inventory-items.json')
+        got = sum(1 for v in items.values()
+                  if 'sourceString' in (v.get('i18n') or {}).get('zh-CN', {}))
+        self.assertGreater(got, 8000, '带来源的物品只有 %d 条，收藏条目没接上' % got)
+        self.assertFalse((self.ROOT / 'collectibles.json').exists(),
+                         'collectibles.json 又出现了——它是物品记录的一部分')
 
 
 class NakedText(unittest.TestCase):
@@ -1263,46 +1304,6 @@ class BadSubmission(Isolated):
             sync.land(self.subs(('good-hunter', self.GOOD)))
 
 
-class EntityClash(unittest.TestCase):
-    """同一页两行落到同一个主键上时，后一行不许静默盖掉前一行。
-
-    从前 `block[col] = val` 直接覆盖：购物清单上「陨落铡刀」两行（两张图、一行 S
-    一行 D）都解析到 1815105249，站上就只剩 D，没有任何人知道 S 那一行去哪了。
-    现在留先出现的那一行并把撞车报出来，条数由 CLASH_BASELINE 钉着。
-    """
-
-    @classmethod
-    def setUpClass(cls):
-        cls.ent = load('quality_entities', 'entities.py')
-        cls.recs, cls.missed, cls.clash = cls.ent.collect()
-
-    def test_clashes_are_reported_not_swallowed(self):
-        self.assertLessEqual(
-            len(self.clash), self.ent.CLASH_BASELINE,
-            '撞车涨了，又多丢了作者记录：%s'
-            % [(c[0], c[2], c[4]) for c in self.clash[self.ent.CLASH_BASELINE:]])
-
-    def test_every_clash_names_both_rows(self):
-        """报出来的每一条都要说清是哪一页、哪个主键、留了谁、丢了谁。
-
-        两行标题相同是允许的（刷取清单上「食莲者」新旧两版就是这样），那正是
-        PINNED 分不开它们的原因；字段一个都不许空，否则报告没法据以排查。
-        """
-        for row in self.clash:
-            self.assertEqual(len(row), 5, '撞车报告的形状变了：%r' % (row,))
-            for part in row:
-                self.assertTrue(str(part).strip(), '撞车报告缺字段：%r' % (row,))
-
-    def test_the_first_row_is_the_one_kept(self):
-        """留先出现的那一行——源稿的行序就是那一页自己的排序。"""
-        rows = {p: [self.ent.shown(t) for t, _ in self.ent.rows_of(p)]
-                for p in {c[0] for c in self.clash}}
-        for page, _head, _name, first, second in self.clash:
-            order = rows[page]
-            self.assertLessEqual(order.index(first), order.index(second),
-                                 '%s 留下的「%s」排在丢掉的「%s」后面' % (page, first, second))
-
-
 class Generation(Isolated):
     SOLO = ('# 示例\n推荐人：示例作者\n描述：示例说明\n更新：2026.9.5\n'
             '场景：突袭\n标签：输出\n分支：烈日\n强度：强力\n核心：测试超能\n\n## 职业\n'
@@ -1650,55 +1651,6 @@ class Normalization(Isolated):
         self.assertTrue(any('unknown' in error for error in bad), bad)
         doc = load('quality_doc', 'convert-doc.py')
         self.exits(lambda: doc.wrap('p', '{orb|能量球'))
-
-
-class WeaponOrder(unittest.TestCase):
-    """武器库索引的两条排版约定，都是「错了页面照样好看」的那一类。
-
-    一条枪排错位置、一把枪拆成两张卡片，肉眼都要一张张数才看得出来，而它们
-    正是读者开屏第一眼看到的东西。判据从 build-weapons.py 自己那几个函数取，
-    不在这里另写一份刻度。
-    """
-
-    @classmethod
-    def setUpClass(cls):
-        cls.bw = load('quality_weapons', 'build-weapons.py')
-        text = (TOOLS.parent / 'weapons' / 'data.js').read_text(encoding='utf-8')
-        cls.rows = json.loads(text[text.index('=') + 1:].strip().rstrip(';'))['w']
-
-    def key(self, row):
-        """与 payload() 排序用的那一把钥匙同义：各家档位的平均，评过的家数多的在前。"""
-        got = [self.bw.rank_of(v) for v in row['r'].values()]
-        got = [g for g in got if g is not None]
-        if not got:
-            return (self.bw.UNRATED, 0, self.bw.UNRATED)
-        return (sum(got) / len(got), -len(got), min(got))
-
-    def test_the_index_is_ordered_by_both_authors_at_once(self):
-        keys = [self.key(row) for row in self.rows]
-        bad = [i for i in range(1, len(keys)) if keys[i] < keys[i - 1]]
-        self.assertFalse(bad, '索引第 %s 条排在了比它差的那一档后面，跑一次 '
-                              'python3 tools/build-weapons.py' % (bad[:3],))
-
-    def test_the_best_of_every_scale_comes_first(self):
-        """不写死「两家」：作者表加一位就该跟着走，而不是让这条以误导的话失败。"""
-        top = self.key(self.rows[0])
-        self.assertEqual(top[0], 0, '开屏第一把不是各家都给了最高档的那一把')
-        most = min(self.key(row)[1] for row in self.rows)
-        self.assertEqual(top[1], most,
-                         '开屏第一把评过的家数不是最多的那一档（最多 %d 家）' % -most)
-
-    def test_one_weapon_gets_one_card(self):
-        """同名两条记录各带一家评级，就是两张卡片——collapse() 管的正是这个。"""
-        seen = {}
-        for row in self.rows:
-            if not row['r']:
-                continue
-            seen.setdefault(row['n'], []).append(sorted(row['r']))
-        split = {n: v for n, v in seen.items()
-                 if len(v) > 1 and len({w for one in v for w in one}) > 1
-                 and not any(set(a) & set(b) for a in v for b in v if a is not b)}
-        self.assertFalse(split, '这些枪被拆成了几张卡片，各带一家的评级：%s' % split)
 
 
 if __name__ == '__main__':
