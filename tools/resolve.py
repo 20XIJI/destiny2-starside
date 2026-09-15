@@ -313,15 +313,28 @@ def pick(facts, hits, version='', perks=()):
     强化孪生条目。"""
     if len(hits) == 1:
         return hits[0], '唯一', hits
+    want = {norm(p) for p in perks if p} - {'无', ''}
+    # **一把枪的身份就是它的插槽池。**这一行列了枪管、弹匣、两栏 Perk 与起源特性，
+    # 全部开得出来的那一版就是它说的那一把——这是判定，不是从几个候选里挑。别的
+    # 判据都是间接的：「来源」是拿两三个字去 Bungie 散文里做子串匹配，复刻之后旧那
+    # 一版的 sourceString 还留着当年那个地点、新那一版一律是「随机特性：此物品无法
+    # 从收藏品再次获取。」，于是它稳定地选中已经停掉的旧版；「非大师非特殊版」与
+    # 「有收藏条目」连词条都不看。实测按这一条改正 95 行，其中 21%的亢奋 现选的那一版
+    # 只开得出这一行 12 个词条里的 3 个，另一版 12 个全开得出。
+    if want:
+        full = [h for h in hits if want <= facts.pool_names(h)]
+        if len(full) == 1:
+            return full[0], '词条全覆盖', full
+        if full:
+            hits = full
     if version:
-        want = VERSION_SOURCE.get(version, version).rstrip('版本')
-        same = [h for h in hits if want
-                and want in (facts.items[h].get('sourceString') or {}).get(ZH, '')]
+        src = VERSION_SOURCE.get(version, version).rstrip('版本')
+        same = [h for h in hits if src
+                and src in (facts.items[h].get('sourceString') or {}).get(ZH, '')]
         if len(same) == 1:
             return same[0], '版本后缀', same
         if same:
             hits = same
-    want = {norm(p) for p in perks if p} - {'无', ''}
     if want:
         scored = [(len(want & facts.pool_names(h)), facts.items[h]['index'], h) for h in hits]
         top = max(s for s, _, _ in scored)
@@ -330,6 +343,19 @@ def pick(facts, hits, version='', perks=()):
             return best[0], '词条重合', best
         if top:
             hits = best
+    # **站内写的是当前赛季的现状**，复刻之后玩家手上、掉落表里的就是最新那一版，
+    # 所以「最新」排在「非大师」「有收藏条目」之前——后两条连词条都不看。
+    # **这不是「取序号最大」**：序号是库内排序、与新旧无关，那一条被否过。
+    # rel 是 Bungie 自己在 traitIds 上打的发布版本号（v730.season），可排序。
+    fresh = release_rank(facts, hits)
+    if fresh and len(hits) > 1:
+        top = (facts.items[fresh].get('derived') or {}).get('release')
+        same_rel = [h for h in hits
+                    if (facts.items[h].get('derived') or {}).get('release') == top]
+        if len(same_rel) == 1:
+            return same_rel[0], '发布版本最新', same_rel
+        if same_rel:
+            hits = same_rel
     # 大师版与特殊版本是同名的另一件东西，不是「另一个版本」：源稿写的是普通版，
     # 要大师版会在名字里写出来。两条都是语义判据。
     for flag in ('isAdept', 'isHolofoil'):
@@ -352,14 +378,10 @@ def pick(facts, hits, version='', perks=()):
     if len({same_shape(facts.items[h]) for h in hits}) == 1:
         first = min(hits, key=lambda h: facts.items[h]['index'])
         return first, '重复条目内容一致', hits
-    # 最后一档：取发布版本最新的那一个。站内写的是当前赛季的现状，复刻之后玩家
-    # 手上、掉落表里的就是最新那一版。
-    # **这不是「取序号最大」**——那一条被否过，序号是库内排序、与新旧无关。
-    # rel 是 Bungie 自己在 traitIds 上打的发布版本号（v730.season），可排序。
-    newest = release_rank(facts, hits)
-    if newest:
-        return newest, '发布版本最新', hits
-    return None, '分不出版本', hits
+    # 走到这里说明同名同发布版本的还有好几条，那就是库里确实有这么几条。
+    # 取序号最小的那个并把候选一并交出，等人工筛。
+    first = min(hits, key=lambda h: facts.items[h]['index'])
+    return first, '并列 %d 条待筛' % len(hits), hits
 
 
 RELEASE = re.compile(r'^v(\d+)\.')
@@ -444,6 +466,13 @@ def one(facts, name, page, version='', perks=()):
             hits, version = candidates(facts, base, page), tail
     if not hits:
         return None, '查不到', []
+    # norm() 把括注当消歧后缀剥掉，那是为查询那一侧准备的——站内写「故我在（电弧元素）」，
+    # 库里没有那个括注。可它同样剥掉了库里名字上的括注，于是 Bungie 自己带括注的那些
+    # 被并进了不带括注的那一条：查「渊博学者」会同时命中「渊博学者（专家）」，而后者是
+    # 专家难度掉落的另一件东西。库里有名字一字不差的候选时，带括注的那些不参选。
+    exact = [h for h in hits if norm_keep(text(facts.items[h])) == norm_keep(name)]
+    if exact and len(exact) < len(hits):
+        hits = exact
     return pick(facts, hits, version, perks)
 
 
@@ -573,6 +602,7 @@ PERK_LABELS = {
     '慈悲触碰': '恶意触碰那一行写的第二个催化剂效果，库里没有同名条目',
     '能量核心': '站内对冲击／折射／陀螺三个核心的统称',
     '催化剂': '英勇利刃那一行的栏目名，不是某一枚催化剂',
+    '无': '起源特性那一列写「这把枪没有起源特性」，购物清单三页共 63 格',
 }
 
 # 两张表的键照源稿原样写，查的时候按 norm() 归一：「可制作 Perk」那个排版空格
@@ -645,7 +675,16 @@ def _perk_one(facts, pool_names, name):
         if fam:
             return [h for _, hs in sorted(fam) for h in hs]
     eff = resolve_effect(facts, name)
-    return [eff] if eff else []
+    if eff:
+        return [eff]
+    if not pool_names:
+        # 这一行不是武器（棱镜页的手雷与近战格挂在属性主键上），没有池可查。
+        # 池存在时按全表名字查会撞上别的枪的同名词条，池为空时撞不上任何东西，
+        # 而交白卷是把「站上写着一件东西、实体层指不到它」留在原地。
+        # 同名的好几条就是库里确实有这么几条（电光手雷在电弧分支与棱镜分支各一条），
+        # 一并交出，不挑。
+        return list(facts.by_zh.get(name) or [])
+    return []
 
 
 def collapsed(shown, lib):
@@ -885,7 +924,10 @@ def source_hints():
                         continue
                     for part in body.split(markup.CELL_BREAK):
                         part = part.strip().lstrip('↑')
-                        if part:
+                        # 画了删除线的那一条，标的正是「最新这一版已经开不出来了」。
+                        # 它是源稿按最新数据得出的结论，不该进「这一版必须开得出」
+                        # 的那个集合——留着会让全覆盖永远不成立。
+                        if part and not part.startswith('~~'):
                             perks.append(part)
             if perks or src:
                 was = out.get((page, norm_keep(name)), ('', []))

@@ -90,14 +90,13 @@ from markup import die
 # 二、短名是长名的一截（3 组）：缠结／抓钩缠结、瓦解／瓦解弹药、不稳定／不稳定弹药。
 # 三、两行名字一模一样（11 组）：渗透、布瑞遗产、暴雷之触、食莲者、应许之物……
 #     要分开得先改源稿，把两行的标题写得能区分。
-CLAIM_BASELINE = 215
+CLAIM_BASELINE = 214
 
 # 引用格里解不出主键的名字数。**只许降不许升**：每一处都是页面上写着一件东西、
-# 而实体层指不到它。现存 126 处，大半是起源特性——那一列写的名字不在这把枪自己的
-# socket 池里（复刻版本之间池不同，源稿标的是另一版）。与 build-weapons 的
-# BASELINE['miss'] 同一类，治法也一样：改源稿的写法，或往 resolve.PERK_ALIAS 里
-# 添一条。
-MISS_BASELINE = 126
+# 而实体层指不到它。剩下的这一处是 legendary-primary 的「允诺」：那一行的 Perk
+# 四号位写着「高爆弹药」，库里有这个词条（三条），而允诺的两个版本池里都没有，
+# 池里形近的是「高爆载荷」。是不是笔误要人判，判了再改源稿。
+MISS_BASELINE = 1
 
 # 随语言变的 manifest 字段，整份搬进 i18n.<语言>。displayProperties.description
 # 改叫 database_details——它与我们测的 realgame_details 并排摆着，
@@ -166,16 +165,24 @@ IMG_SRC = re.compile(r'!\[\]\([^)]*\)')
 LINK_SRC = re.compile(r'\[([^\]]*)\]\([^)]*\)')
 # 一格里并列几件东西时用的分隔符。
 SPLIT = re.compile(r'%s|／|/|｜|、' % re.escape(markup.CELL_BREAK))
-# 这几个标记里写的是数值或枚举，不是别的实体。元素与勇士在实体自己身上已经有了
+# 这几个标记里写的是一件东西的名字。**只列这一头**：源稿里的三十多个标记绝大多数
+# 是给术语上色的（敌人、增益、减益、能量球、护甲充能、注解……），列「哪些不是名字」
+# 要把它们全数出来，漏一个就把一句散文当成引用、拿它去戳主键、戳不到再计一笔
+# 解析失败——「不测，就不测 :)」曾被这样当成一个词条名查了两遍。
+REF = frozenset({'perk', 'exotic', 'art-perk', 'spirit',
+                 'sk-arc', 'sk-solar', 'sk-stasis', 'sk-strand', 'sk-void'})
+# 这几个标记里写的是数值或枚举。元素与勇士在实体自己身上已经有了
 # （defaultDamageType 与 derived.breakerType），这里记的是这一页怎么写它。
 ENUM = frozenset({'num', 'champ', 'cd', 'slot', 'cost', 'na', 'src', 'stack',
                   'el-kinetic', 'el-arc', 'el-solar', 'el-void', 'el-stasis',
                   'el-strand', 'el-prismatic'})
+# 源稿给「这一条已经取消了」画的删除线。名字本身是对的，查主键之前剥掉。
+STRIKE = re.compile(r'~~(.*?)~~')
 
 
 def bare(text):
-    """剥掉图与链接，只留文字。"""
-    return LINK_SRC.sub(r'\1', IMG_SRC.sub('', text)).strip()
+    """剥掉图、链接与删除线，只留文字。"""
+    return STRIKE.sub(r'\1', LINK_SRC.sub(r'\1', IMG_SRC.sub('', text))).strip()
 
 
 def vocab_of(entries):
@@ -199,7 +206,9 @@ def cell_kind(text):
         return ''
     tags = {t for t, _ in MARKER.findall(text)}
     if MARKED.match(text) and tags:
-        return '值' if tags <= ENUM else '引'
+        if tags & REF:
+            return '引'
+        return '值' if tags <= ENUM else '文'
     return '值' if NUMERIC.match(bare(text)) else '文'
 
 
