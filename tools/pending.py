@@ -76,66 +76,13 @@ def collect(facts):
 
     groups = []
 
-    # ① 同一行在两页落到两枚主键
-    #
-    # **按站内行名分组，不按库里的名字。**「审判」与「审判\\玖的仪式版本」是站点
-    # 有意分开的两行——前者要当前那一版，后者指名了 v820 那一版，来源那句话逐字
-    # 对得上。按库里的名字分组会把它们当成冲突，合并就把指定版本挪没了。
-    #
-    # 弹药槽也要分开：极高反射与隐士各有两把同名不同弹药位的枪。
-    def ammo(h):
-        return ((facts.items.get(str(h)) or {}).get('equippingBlock') or {}).get('ammoType')
-
-    by = collections.defaultdict(list)
-    for slug, d in pages.items():
-        for h, blocks in d['said'].items():
-            row = facts.items.get(h)
-            if not row or row.get('itemType') != 3:
-                continue
-            for b in blocks:
-                by[(b['i18n']['zh-CN'].get('name', ''), ammo(h))].append((slug, h))
-    items = []
-    for (name, _), rows in sorted(by.items()):
-        keys = sorted({h for _, h in rows})
-        if len(keys) < 2 or len({s for s, _ in rows}) < 2:
-            continue
-        items.append({'label': name, 'options': [
-            {'value': h, 'title': nm(h), 'icon': icon(h),
-             'lines': ['主键 %s' % h, ty(h), '发布 %s' % (rel(h) or '—'),
-                       '库里叫「%s」' % nm(h)] + where(h)
-                      + [(facts.source(h) or '（无来源）')[:52]]}
-            for h in keys]})
-    groups.append({
-        'id': 'dup', 'title': '同一件武器在两页顶着两枚主键',
-        'note': 'legendary-* 与 shopping-* 各挑各的版本。选中的那一枚两页统一用。',
-        'items': items})
-
-    # ② 几行共用同一串主键，只能靠序位区分
-    items = []
-    for slug, d in pages.items():
-        for h, blocks in d['said'].items():
-            if len(blocks) < 2:
-                continue
-            items.append({'label': '%s · %s' % (slug, nm(h) or h),
-                          'shared': {'title': nm(h) or h, 'icon': icon(h),
-                                     'lines': ['主键 %s' % h, ty(h),
-                                               '覆盖 %d 枚' % (1 + len(blocks[0].get('covers') or []))]
-                                              + where(h)},
-                          'rows': [b['i18n']['zh-CN'].get('name', '') for b in blocks],
-                          'options': [
-                              {'value': 'keep', 'title': '保持现状',
-                               'lines': ['源稿里第 k 次出现取第 k 块']},
-                              {'value': 'split', 'title': '拆成各自的主键',
-                               'lines': ['按适用范围把那串主键分开', '分不出的发自发号']},
-                              {'value': 'merge', 'title': '合成一行',
-                               'lines': ['几条说明并成一块']}]})
-    items.sort(key=lambda x: -len(x['rows']))
-    groups.append({
-        'id': 'seq', 'title': '几行共用同一串主键，只能靠序位区分',
-        'note': '「攻击型框架」五行共用同一串 40 枚主键，行名只靠括注分。'
-                'manifest 里没有任何一位说这枚插件属于哪种枪。',
-        'items': items})
-
+    # ① 与 ② 已定，不再列进清单：
+    #   同一行在两页落到两枚主键 —— 31 组已按「有催化槽 → 发布版本新 → 有收藏条目
+    #     → 栏位更全」合并，候选先排掉被别的行名占着的主键；剩下的只有极高反射与
+    #     隐士两个名字，它们是同名不同弹药位的两把枪，本来就该各留一条。
+    #   几行共用同一串主键 —— 保持现状。那是一个实体的几个侧面（暴雷之触四行讲
+    #     接触爆炸、手雷充能、脉冲轨迹、漫游风暴），页面照旧画几行是对的；
+    #     逐条给更合适的版面记在 260915-对照V1做生成器.md 里。
     # ③ covers 里装的不是「同一物的另一个 hash」
     items = []
     for slug, d in pages.items():
