@@ -924,11 +924,13 @@ def build(slug):
             die('找不到源稿 %s' % src)
         with open(src, encoding='utf-8') as f:
             md = f.read()
-        # **在补行之前算**：库里与编辑台存的是盘上这一份，不是补全之后那一份。
-        digest = src_hash(md)
-        # 行的内容在 research/<页>.json 里，源稿只留分节、表头与页面元信息。
-        # 补回来再交给下面这一整条渲染链，产出因此与迁移前逐字节相同。
+        # 行的内容在 references/research/<页>.json 里，源稿只留分节、表头与页面
+        # 元信息。补回来再交给下面这一整条渲染链，产出因此与迁移前逐字节相同。
         md = research.inject(md, slug)
+        # **在补行之后算**：编辑台按「源稿第几行第几格」定位，库里存的正是补全的
+        # 那一份（sync.whole()）。戳瘦源稿的哈希出去，两边永远对不上，页面会被
+        # 当成永远过期。
+        digest = src_hash(md)
 
         where = where_of(md, slug)
         outdir = os.path.join(shell.ROOT, *where.split('/'))

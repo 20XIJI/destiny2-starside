@@ -166,7 +166,7 @@ def icon_paths(cell):
     return ICON_SRC.findall(cell or '')
 
 
-def split(line):
+def split_row(line):
     """表格行 → 每一格的原文。不是表格行返回 None。"""
     got = markup.cells(line)
     return None if got is None else [line[a:b] for a, b in got]
@@ -244,7 +244,7 @@ def tables(lines):
     for i, line in enumerate(lines[:-1]):
         if not RULE_LINE.match(lines[i + 1].strip()):
             continue
-        head = split(line)
+        head = split_row(line)
         if head is not None:
             out.append((i, head))
     return out
@@ -324,18 +324,16 @@ def where_of(page):
     return got.group(1).strip() if got else page
 
 
-def extract(page, stamp):
-    """源稿的表 → 人写层，并把源稿瘦成「分节 + 表头 + 页面元信息」。
+def split(page, text, stamp):
+    """一份补全的源稿 → (瘦身后的源稿, columns, entries)。纯内存，不落盘。
 
-    stamp 是 resolve.stamper(产出目录) 给的戳号器，按行标题定这一行落在哪几个
-    主键上。**戳出来就存下来**：分不出的那几处要人改，改在数据里比改在脚本里好。
+    与 inject() 互为逆操作：inject(split(x)[0]) 与 x 逐格相同。**只逐格相同，
+    不逐字节相同**——源稿里表格行的空格写法本来就不统一（916 行），而渲染前
+    markup.cells 就把空格剥掉了，产出只认格。
     """
-    src = os.path.join(shell.ROOT, 'references', 'docs', page + '.md')
-    with open(src, encoding='utf-8') as f:
-        lines = f.read().split('\n')
+    lines = text.split('\n')
     heads = tables(lines)
     at = {i: n for n, (i, _) in enumerate(heads)}
-
     columns, entries, thin, sec, head, table = [], [], [], '', None, -1
     for i, line in enumerate(lines):
         m = SECTION.match(line)
@@ -346,7 +344,7 @@ def extract(page, stamp):
             columns.append([[c, f] for c, f in zip(head, fields_of(head))])
             thin.append(line)
             continue
-        cells = split(line)
+        cells = split_row(line)
         if cells is None or RULE_LINE.match(line.strip()) or head is None:
             thin.append(line)
             continue
@@ -359,24 +357,38 @@ def extract(page, stamp):
             die('%s「%s」有一行 %d 格，表头是 %d 格：%r'
                 % (page, sec, len(cells), len(head), cells[0][:30]))
         entry = {'table': table, 'kind': sec}
-        for name, text in zip(fields_of(head), cells):
-            put(entry, name, text)
-        # 没有槽位限定的那几页（buff-debuffs、ability-cooldown）没有戳号器，
-        # 行标题落不到主键上是这几页的常态，不是错。
+        for name, cell in zip(fields_of(head), cells):
+            put(entry, name, cell)
         shown = shown_of(cells[0])
         got = stamp_keys(stamp, cells[0])
         if got:
-            entry['members'] = [int(h) for h in got if h.isdigit()]
+            nums = [int(h) for h in got if h.isdigit()]
             other = [h for h in got if not h.isdigit()]
+            # 空的不写：`members: []` 与「没有 members」在 JSON 里是两条记录，
+            # 而人眼看不出区别——这一条曾让 split∘inject 的往返比对整页报红。
+            if nums:
+                entry['members'] = nums
             if other:
                 entry['keys'] = other
         elif shown and stamp:
             # 合成键按产出路径建，与 convert-doc 那一侧一致。
             entry['keys'] = [minted(where_of(page), shown)]
         entries.append(entry)
+    return '\n'.join(thin), columns, entries
+
+
+def extract(page, stamp):
+    """源稿的表 → 人写层，并把源稿瘦成「分节 + 表头 + 页面元信息」。
+
+    stamp 是 resolve.stamper(产出目录) 给的戳号器，按行标题定这一行落在哪几个
+    主键上。**戳出来就存下来**：分不出的那几处要人改，改在数据里比改在脚本里好。
+    """
+    src = os.path.join(shell.ROOT, 'references', 'docs', page + '.md')
+    with open(src, encoding='utf-8') as f:
+        thin, columns, entries = split(page, f.read(), stamp)
     size = write(page, columns, entries)
     with open(src, 'w', encoding='utf-8') as f:
-        f.write('\n'.join(thin))
+        f.write(thin)
     return len(entries), size
 
 

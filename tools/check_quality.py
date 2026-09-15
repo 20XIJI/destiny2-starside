@@ -460,6 +460,28 @@ class Generated(unittest.TestCase):
                                  len(got['entries']) + 2 * len(got['columns']),
                                  '%s 补回去的行数与条目数对不上' % page)
 
+    def test_the_full_source_splits_back_into_exactly_what_it_came_from(self):
+        """inject 与 split 互为逆操作。
+
+        编辑台的整条链建在这上面：库里存的是补全的源稿（sync.whole），改回来
+        再拆成瘦源稿与人写层（sync.parts）。拆不回原样的症状最坏——人在编辑台上
+        改了一个字，落盘时整页的别处跟着变，而 git diff 看着像是他改的。
+        """
+        import pagedex
+        import resolve
+        for page in research.pages():
+            src = TOOLS.parent / 'references' / 'docs' / ('%s.md' % page)
+            thin = src.read_text(encoding='utf-8')
+            where = research.where_of(page)
+            stamp = resolve.stamper(where) if where in pagedex.TOKENS else None
+            got = research.must_read(page)
+            with self.subTest(page=page):
+                back, columns, entries = research.split(
+                    page, research.inject(thin, page), stamp)
+                self.assertEqual(back, thin, '%s 拆回来的源稿与盘上那份不一样' % page)
+                self.assertEqual(columns, got['columns'], '%s 的 columns 变了' % page)
+                self.assertEqual(entries, got['entries'], '%s 的条目变了' % page)
+
     def test_the_search_index_carries_the_english_names(self):
         """搜 One-Two Punch 要搜得到雪上加霜。
 
