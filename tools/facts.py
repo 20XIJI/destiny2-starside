@@ -497,6 +497,85 @@ def breaker_of(item, socket_types, perk_breaker, items):
     return 0
 
 
+# 站内写的那些字段。**这是一份名单，不是判据**——判据在 carry_site 那里，是结构上的
+# 「这一轮没蒸出来的键」；这份名单只给 link() 用，它要知道该把哪些字段互相补齐。
+SITE_FIELDS = ('realgame_details', 'realgame_details#2', '效果', '异域 PERK', '右栏',
+               '冷却与槽位', '基础冷却', '冷却', '属性变化', '碎片槽位', '来源')
+
+
+def link(tabs, icon_dir):
+    """由记录推记录，跑几遍结果相同。三件事：
+
+    **一、本地图。**`icon` 是 Bungie 原图的文件名（拉图要用它的扩展名），`icon_local`
+    是站上发的那一张。两个都存：读图的不必换扩展名，拉图的不必重蒸 manifest。
+
+    **二、同一件东西的几枚 hash 互相补齐。**一个站内的行常常盖住好几枚 hash——普通版
+    与强化版、一族元素变体，`covers` 记着。从前说明只落在行首那一枚上，另外 821 枚是
+    空的，查强化版查得到、查普通版查不到。现在同组每一枚都拿到同一份说明。
+
+    `covers` 本身**不改方向**：它是源稿那一行写下来的「这一行还盖住谁」，反向写回去
+    会让第二遍跑时组与组连成一片传递合并（实测一条记录的 covers 从 8 枚涨成一串）。
+
+    **三、SandboxPerk 那一侧。**站内的实测说明写在**插件**上（「雪上加霜」写在
+    788178929 上），而 374284927 才是那枚效果本身。一枚效果名下的插件对同一个字段
+    只有一种说法时抄过来；有好几种说法的（`3486450016` 有 41 种）那段文字属于各个
+    插件、不属于这枚效果，不抄，靠 `onItems` 指回去。
+    """
+    items, perks, sets = tabs['inventory-items'], tabs['sandbox-perks'], tabs[
+        'equipable-item-sets']
+    for table in tabs.values():
+        for row in table.values():
+            row.pop('icon_local', None)
+            if 'icon' not in row:
+                continue
+            name = os.path.splitext(os.path.basename(row['icon']))[0] + '.webp'
+            if os.path.exists(os.path.join(icon_dir, name)):
+                row['icon_local'] = 'assets/icons/' + name
+
+    def site_of(row):
+        zh = (row.get('i18n') or {}).get('zh-CN') or {}
+        return {f: zh[f] for f in SITE_FIELDS if zh.get(f)}
+
+    for table in tabs.values():
+        groups = []
+        for key, row in table.items():
+            if row.get('covers'):
+                groups.append([key] + [str(c) for c in row['covers']])
+        for group in groups:
+            rows = [table[k] for k in group if k in table]
+            said = {}
+            for row in rows:
+                said.update(site_of(row))
+            for row in rows:
+                row.setdefault('i18n', {}).setdefault('zh-CN', {}).update(said)
+
+    says = collections.defaultdict(lambda: collections.defaultdict(set))
+    back = collections.defaultdict(set)
+    for key, row in items.items():
+        mine = site_of(row)
+        for p in row.get('perks') or ():
+            ph = str(p['perkHash'])
+            back[ph].add(int(key))
+            for f, v in mine.items():
+                says[ph][f].add(v)
+    for one in sets.values():
+        for p in one.get('setPerks') or ():
+            for member in one.get('setItems') or ():
+                back[p['perk'][1]].add(int(member))
+    for ph, fields in says.items():
+        row = perks.get(ph)
+        if row is None:
+            continue
+        zh = row.setdefault('i18n', {}).setdefault('zh-CN', {})
+        for f, vals in fields.items():
+            if len(vals) == 1 and not zh.get(f):
+                zh[f] = next(iter(vals))
+    for ph, owners in back.items():
+        row = perks.get(ph)
+        if row is not None:
+            row['onItems'] = sorted(owners)
+
+
 def carry_site(path, payload):
     """把盘上那一份里**站内写的东西**带过来。
 
@@ -868,10 +947,12 @@ def distill(src):
     # 实体表落 data/，构建期字典落 data/lookup/——后者不是实体：没有页面或配装
     # 指向它们，而且 hash 空间与实体撞号（plug-sets 最小号是 1，socket-types 里有 0）。
     LOOKUPS = ('plug-sets.json', 'socket-types.json', 'stat-groups.json')
+    for name, payload, _ in out:
+        carry_site(os.path.join(LOOKUP_DIR if name in LOOKUPS else OUT_DIR, name), payload)
+    link({n[:-5]: p for n, p, _ in out}, os.path.join(shell.ROOT, 'assets', 'icons'))
     total = 0
     for name, payload, unit in out:
         where = LOOKUP_DIR if name in LOOKUPS else OUT_DIR
-        carry_site(os.path.join(where, name), payload)
         size = dump(os.path.join(where, name), payload)
         total += size
         print('%-38s %6d %s  %9.1f KB'
@@ -880,14 +961,35 @@ def distill(src):
     print('%-38s %9.1f KB' % ('合计', total / 1024))
 
 
+def relink():
+    """只跑 link()。改了记录里站内写的那些字段之后跑它，不必重蒸 manifest。"""
+    names = ('inventory-items.json', 'sandbox-perks.json', 'traits.json', 'stats.json',
+             'equipable-item-sets.json')
+    tabs = {}
+    for name in names:
+        with open(os.path.join(OUT_DIR, name), encoding='utf-8') as f:
+            tabs[name[:-5]] = json.load(f)
+    link(tabs, os.path.join(shell.ROOT, 'assets', 'icons'))
+    for name in names:
+        size = dump(os.path.join(OUT_DIR, name), tabs[name[:-5]])
+        print('%-38s %6d 条  %9.1f KB'
+              % (os.path.relpath(os.path.join(OUT_DIR, name), shell.ROOT),
+                 len(tabs[name[:-5]]), size / 1024))
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument('--distill', action='store_true', help='蒸馏十份定义表')
+    ap.add_argument('--distill', action='store_true', help='从 manifest 重蒸八份定义表')
+    ap.add_argument('--link', action='store_true',
+                    help='只跑由记录推记录那一步：本地图、同物的几枚 hash 互补、效果补齐')
     ap.add_argument('--src', default=SRC, help='manifest_raw 目录')
     a = ap.parse_args()
-    if not a.distill:
-        ap.error('要做什么？现在只有 --distill')
-    distill(os.path.realpath(a.src))
+    if a.distill:
+        distill(os.path.realpath(a.src))
+    elif a.link:
+        relink()
+    else:
+        ap.error('要做什么？--distill 或 --link')
 
 
 if __name__ == '__main__':
