@@ -37,7 +37,7 @@ import json
 import os
 import sys
 
-import pagedex
+import entitydb
 import research
 import shell
 from markup import CELL_BREAK, cells as cell_spans, die, inline, text_of
@@ -132,9 +132,10 @@ def collect():
                 % (page, mark, source_mark(page).replace('\n', '\n  ')))
         # 同名两行只登记先出现的那一个：后面撞车那一条会把它们都报出来。
         index = {}
-        for e in pagedex.must_read(page)['entries']:
-            if not e.get('of') and e['keys']:
-                index.setdefault(e['name'], e['keys'])
+        for keys, ent, block in entitydb.rows(page):
+            if not block.get('of') and keys:
+                index.setdefault(entitydb.said(block, 'name') or entitydb.text(ent),
+                                 keys)
         taken = {}
         for title, cols in rows_of(page):
             name = shown(title)

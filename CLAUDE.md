@@ -32,10 +32,24 @@ Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构�
 
 `serve.json` 关掉了 `cleanUrls`，站内链接一律写全 `xxx/index.html`。
 
-`data/` 是机器生成、入库的三层：`data/manifest/` 由 `facts.py` 从 Bungie manifest 蒸馏
-（物品 19356 条、武器词条池 2208 把、效果与属性、护甲套装），`data/index/` 由三个资料
-生成器渲染时写出（23 页 3396 条，主键 → 锚点、分节、图标、说明），`data/entities/` 由
-`build-entities.py` 把前者与人写层按主键合起来。三层都不手改。
+`data/` 是机器生成的两层，都不手改：
+
+- **`data/manifest/`**（24 MB）由 `facts.py` 从 Bungie manifest 蒸馏，物品 19356 条、
+  武器词条池 2208 把、效果与属性、护甲套装。
+- **`data/entities/`**（8 MB）由 `build-entities.py` 把 manifest、人写层与渲染器的
+  产出按主键合起来：`items` / `effects` / `stats` / `armor-sets` / `mechanics` 五张表
+  （与 manifest 的表对齐，切分判据是主键前缀），外加 `pages.json` 记每一页要哪些
+  实体、什么顺序。**一个 hash 一条记录，站内关于它的一切都挂在它名下。**
+
+`data/index/` 是渲染器交给实体层的中间产物，`build-entities.py` 当场收走，**不入库**。
+
+实体层一条记录的形状：与语言无关的 manifest 字段在根上，**凡是随语言变的都在某个
+`i18n.<语言>` 底下**（名字、类型名、品阶名、`database_details`、风味文本、来源串），
+`relations` 记普通版与强化版的成员与角色（`role` 由 `tierType` 现算），`pages` 一页
+一块记「这一页对它说了什么」——评级、排名、评级理由、注解、枪管、弹匣……站内 23 页
+有 287 种列名，写死字段名等于每加一页改一次脚本。同一件东西被两位作者各写一套时
+两块并列，谁也不盖谁，而且看得出是谁写的。取值走 `entitydb`：`all()` / `table()` /
+`rows(页)` / `text(实体, 字段, 语言)` / `said(页面块, 字段)`。
 
 **人写层在 `references/research/<页>.json`，那是唯一人编辑的地方。**资料页的源稿因此
 只剩分节、表头与页面元信息，行的内容在人写层；`convert-doc.py` 构建时把行补回表里
@@ -79,11 +93,16 @@ resolve.py         中文名 → itemHash。槽位限定候选，复刻按「源
                    源稿列的词条与来源 → 非大师非特殊版 → 有收藏条目」逐条判，
                    分不出就交出候选、不猜；另出给产出戳主键的戳号器
 research.py        人写层：references/research/<页>.json 的读写与「把行补回源稿的表里」。
-                   --extract 把一页的表迁进来，源稿就地瘦身
-build-entities.py  data/manifest/ + 人写层 + data/index/ → data/entities/<页>.json。
-                   一份人写说明展开到它的每个成员（雪上加霜 2 个、有的 58 个），
-                   谁是普通版谁是强化版按 tierType 现算；一个主键被两条记录认领
-                   即报出，基线只许降不许升
+                   --extract 把一页的表迁进来，源稿就地瘦身；行标题落不到库里主键
+                   上时合成一个（row: 前缀），规则只在 minted() 一处
+build-entities.py  data/manifest/ + 人写层 + data/index/ → data/entities/。
+                   **按索引迭代、用主键回接人写层**：索引是页面结构的权威，它知道
+                   这一页有哪些行、什么顺序，也知道人写层不知道的那几类（带图标的
+                   分节标题、异域 PERK 的子条目）。一份人写说明展开到它的每个成员
+                   （雪上加霜 2 个、有的 58 个）；两条人写记录抢同一个主键即报出，
+                   基线只许降不许升
+entitydb.py        实体层的读取入口。与 entities.py 不是一回事——那一份是武器库的
+                   人写层抽取器，名字撞了，各看各的 docstring
 pagedex.py         页面索引：生成器渲染时登记条目，落成 data/index/<页>.json。
                    页面 → 着色 token、格子切分、说明取法都在这里
 vocab.py           配装词表：读 data/index/ 那批索引，槽位 → 来源页的对应在这里一处定义
@@ -159,7 +178,7 @@ python3 tools/convert-artifact-mods.py        # 源稿 references/artifact-mods.
 python3 tools/convert-armor-sets.py           # 源稿 references/armor-sets.md
 python3 tools/convert-doc.py [slug]           # 源稿 references/docs/*.md，省略 slug 即全部
 python3 tools/research.py --extract <slug>    # 一页的表 → references/research/，源稿瘦身
-python3 tools/build-entities.py [页]          # 事实层 + 人写层 → data/entities/
+python3 tools/build-entities.py               # 事实层 + 人写层 + 索引 → data/entities/
 python3 tools/convert-build.py                # 源稿 references/builds/<赛季>/*.md
 python3 tools/build-weapons.py                # 武器库，源稿 references/items/*.json
 python3 tools/build-search.py                 # 全站搜索索引 assets/search.js

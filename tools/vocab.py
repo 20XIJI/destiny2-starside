@@ -17,7 +17,7 @@ import json
 import os
 import re
 
-import pagedex
+import entitydb
 from pagedex import ELEM_PAGES
 import shell
 from markup import die, text_of
@@ -87,21 +87,34 @@ def sources():
 def build():
     """全部条目。同名的挂在一个键下，取用时由 pick() 挑。
 
-    读 data/index/ 那批索引，不扫产出的 HTML：锚点、分节与说明本来就只有生成器
-    自己知道，由它顺手交出来；回头用正则猜要咬死产出结构（给套装那一格加一个
+    读 data/entities/，不扫产出的 HTML：锚点、分节与说明本来就只有生成器自己
+    知道，由它经实体层交出来；回头用正则猜要咬死产出结构（给套装那一格加一个
     属性就让 id="…" 后面不再紧跟 >），还猜不出主键。
     """
     idx = {}
     for page in sources():
-        got = pagedex.must_read(page)
-        SEARCHABLE[page] = got['searchable']
-        for row in got['entries']:
+        meta = entitydb.page(page)
+        SEARCHABLE[page] = meta['searchable']
+        for keys, ent, block in entitydb.rows(page):
+            name = entitydb.said(block, 'name') or entitydb.text(ent)
             # 子条目不进配装词表：异域那两页 PERK 列里的词条挂在行标题下（of），
             # 是另一件东西。混进来，「异域武器：狂暴」这种查法就会查到一枚词条。
-            # 它们的用处在按武器反查词条那一侧，从索引直接读。
-            if row['name'] and not row['of']:
-                idx.setdefault(row['name'], []).append(
-                    dict(row, page=page, token=got['token']))
+            # 它们的用处在按武器反查词条那一侧，从实体层直接读。
+            if not name or block.get('of'):
+                continue
+            idx.setdefault(name, []).append({
+                'keys': keys, 'name': name, 'page': page,
+                'token': meta['token'],
+                'kind': block.get('kind', ''), 'anchor': block.get('anchor', ''),
+                'icon': block.get('icon', ''), 'pos': block.get('pos', ''),
+                'of': block.get('of', ''),
+                'desc': block.get('details_html', ''),
+                'sub': entitydb.said(block, 'sub'),
+                # 分节标题那一条不带过滤词：拿分节名去页内过滤会把整页行
+                # 滤光，落地是一张空页。判据即 kind，与索引那一侧同一条。
+                'q': entitydb.said(block, 'q')
+                     or ('' if block.get('kind') == '分节' else name),
+            })
     for e in variants():
         # 变体在站内没有独立的一行，说明只有复合那一行有（「电弧虹吸」的机制就写
         # 在「虹吸」那一行上）。sub 存的正是那一行的名字，照它借过来。

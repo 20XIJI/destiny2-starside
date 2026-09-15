@@ -397,32 +397,55 @@ class Generated(unittest.TestCase):
                          'admin/pages.js 过期了，跑 python3 tools/build-terms.py')
 
     def test_entities_match_the_manifest_and_the_research_layer(self):
-        """实体层是 data/manifest/ 与 references/research/ 合出来的，不手改。
+        """实体层是 data/manifest/、references/research/ 与 data/index/ 合出来的，
+        不手改。
 
         过期的后果最像「没坏」：页面照旧渲染（那条路走人写层），只有按 hash 查
         实体的那些消费方读到旧值。所以这一条必须在这里查——npm run build 里
         build-entities.py 排在闸门前面，闸门永远看到的是刚生成的那一份。
         """
+        import entitydb
         import resolve
-        facts = resolve.Facts()
-        for page in research.pages():
-            with self.subTest(page=page):
-                rows, _, _ = build_entities.build(page, facts)
-                want = json.loads(self.read('data/entities/%s.json'
-                                            % page.replace('/', '__')))
-                # 逐主键报，不整份对：这份文件 400 万字符，整份不等的提示
-                # 印出来没人读得动，而「哪个主键对不上」一眼就能查。
-                hint = 'data/entities/%s.json 过期了，跑 python3 tools/build-entities.py' % page
-                self.assertEqual(sorted(rows), sorted(want), hint)
-                for key in sorted(rows):
-                    self.assertEqual(rows[key], want[key], '%s：%s 这一条对不上' % (hint, key))
-        self.assertGreater(len(research.pages()), 0, '一页人写层都没扫到')
+        rows, order_of, _, _ = build_entities.build(resolve.Facts())
+        want = entitydb.all()
+        hint = 'data/entities/ 过期了，跑 python3 tools/build-entities.py'
+        # 逐主键报，不整份对：这几份合起来六百多万字符，整份不等的提示印出来
+        # 没人读得动，而「哪个主键对不上」一眼就能查。
+        self.assertEqual(sorted(rows), sorted(want), hint)
+        for key in sorted(rows):
+            self.assertEqual(rows[key], want[key], '%s：%s 这一条对不上' % (hint, key))
+        self.assertGreater(len(rows), 2000, '只算出 %d 条实体' % len(rows))
+        for page, at in order_of.items():
+            self.assertEqual([list(x) for x in at],
+                             [list(x) for x in entitydb.order(page)],
+                             '%s：%s 的行序对不上' % (hint, page))
+
+    def test_every_entity_field_sits_on_the_right_side_of_the_language_line(self):
+        """随语言变的都在某个 i18n 底下，不随语言变的都不在。
+
+        判据只有一条：换一种语言，这个值会不会变。漏一处的症状是「中文站看着
+        正常」——根上那份中文照旧显示，只有换语言时才露出来，而那时没人在看。
+        """
+        import entitydb
+        langs = {'zh-CN', 'en'}
+        bad = []
+        for key, row in entitydb.all().items():
+            for name, val in row.items():
+                # 双语字段的形状就是 {语言: 文本}；根上出现即说明漏搬了。
+                if isinstance(val, dict) and set(val) & langs and name != 'i18n':
+                    bad.append('%s 的 %s 还在根上' % (key, name))
+            for lang, fields in (row.get('i18n') or {}).items():
+                self.assertIn(lang, langs, '%s 的 i18n 里有没登记的语言 %s' % (key, lang))
+                for name, val in fields.items():
+                    if not isinstance(val, str):
+                        bad.append('%s 的 i18n.%s.%s 不是文本' % (key, lang, name))
+        self.assertEqual(bad[:6], [], '语言边界破了 %d 处' % len(bad))
 
     def test_every_research_entry_reaches_the_page_it_claims(self):
         """人写层的每一条都要能补回它那一页的表里，而且补出来的是合法表格行。
 
-        源稿只剩分节与表头之后，「这一条落在哪张表」由 kind 决定。写错一个字，
-        inject() 当场报出——但那是构建时；这一条让它在 npm test 就红。
+        源稿只剩分节与表头之后，「这一条落在哪张表」由 table 序号决定。写错一个
+        数，inject() 当场报出——但那是构建时；这一条让它在 npm test 就红。
         """
         for page in research.pages():
             got = research.must_read(page)
@@ -431,8 +454,8 @@ class Generated(unittest.TestCase):
                 self.assertTrue(src.exists(), '%s 没有对应的源稿' % page)
                 full = research.inject(src.read_text(encoding='utf-8'), page)
                 rows = [ln for ln in full.split('\n') if ln.startswith('|')]
-                # 每张表两行不是数据：表头与分隔行。一节可以有好几张表
-                # （棱镜页每个职业三张），所以按表数算，不按分节数算。
+                # 每张表两行不是数据：表头与分隔行。一节可以有好几张表（棱镜页
+                # 每个职业三张），所以按表数算，不按分节数算。
                 self.assertEqual(len(rows),
                                  len(got['entries']) + 2 * len(got['columns']),
                                  '%s 补回去的行数与条目数对不上' % page)

@@ -172,6 +172,55 @@ def split(line):
     return None if got is None else [line[a:b] for a, b in got]
 
 
+def parts_of(cell):
+    """一格源稿原文按格内换行切开，各截的显示名。
+
+    整行写的是一个组合时（「复兴\\\\噬星者」「继电器防御者\\\\ 强化型继电器防御者」），
+    合起来查不到主键，要逐截查取并集。与 convert-doc 那一侧同一条路。
+    """
+    return [shown_of(x) for x in cell.split(markup.CELL_BREAK)]
+
+
+def stamp_keys(stamp, cell):
+    """这一格该落到哪几个主键上。没有戳号器就回空。"""
+    if not stamp:
+        return []
+    shown = shown_of(cell)
+    if not shown:
+        return []
+    got = stamp(shown)
+    return list(got) if got else list(stamp(shown, parts_of(cell)) or ())
+
+
+def shown_of(cell):
+    """一格源稿原文 → 页面上显示的那个名字。
+
+    剥掉着色标记与图，收掉格内换行 `\\\\`。戳号器与合成键两边都按这个形态给，
+    产出那一侧取的是渲染后的 `<th>`（标记已经成了 `<span>`、换行成了 `<br>`），
+    两者必须是同一个字符串，否则同一行在两边合出两个不同的主键。
+
+    剥标记走 resolve.bare()，不另写一份。
+    """
+    import resolve
+    return markup.text_of(resolve.bare(cell), collapse=True).replace(
+        markup.CELL_BREAK, '')
+
+
+def minted(page, shown):
+    """行标题落不到库里的主键上时，按页与显示名合成一个。
+
+    59 行落在这里，三类：真机制（弩弹、刀剑格挡——库里没有对应物品）、组合行
+    （「故我在（意外缓刑）涡流」）、复刻版本行（「陨落铡刀猛攻版本」）。后两类其实
+    是解析失败，早晚该拿到真主键；合成键让它们先有个落点，实体层因此覆盖得到页面上
+    的每一行。**合成的不是 Bungie 主键，前缀写明。**
+
+    **规则只有这一处**：人写层抽取与页面渲染两边都调它，两边合出来的键必须一样，
+    否则页面那一侧的锚点与渲染结果落不到实体上。名字用渲染后的显示名（格内换行
+    已经收掉），不用源稿原格。
+    """
+    return 'row:%s/%s' % (page, shown)
+
+
 def source(page):
     """一篇资料页源稿的完整正文：盘上那份 + 人写层补回去的行。
 
@@ -314,12 +363,16 @@ def extract(page, stamp):
             put(entry, name, text)
         # 没有槽位限定的那几页（buff-debuffs、ability-cooldown）没有戳号器，
         # 行标题落不到主键上是这几页的常态，不是错。
-        got = stamp(markup.text_of(cells[0], collapse=True)) if stamp else None
+        shown = shown_of(cells[0])
+        got = stamp_keys(stamp, cells[0])
         if got:
             entry['members'] = [int(h) for h in got if h.isdigit()]
             other = [h for h in got if not h.isdigit()]
             if other:
                 entry['keys'] = other
+        elif shown and stamp:
+            # 合成键按产出路径建，与 convert-doc 那一侧一致。
+            entry['keys'] = [minted(where_of(page), shown)]
         entries.append(entry)
     size = write(page, columns, entries)
     with open(src, 'w', encoding='utf-8') as f:

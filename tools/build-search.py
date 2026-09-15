@@ -24,6 +24,7 @@ import json
 import os
 import re
 
+import entitydb
 import markup
 import shell
 
@@ -113,24 +114,24 @@ _EN: dict[str, dict[str, str]] = {}
 def english(url):
     """这一页的 {中文名: 英文名}。库里两边一样的不收。
 
-    英文来自 data/entities/<页>.json 的 i18n.en.name，那一份是 manifest 蒸馏来的
-    ——18840/19356 条本来就带着英文，这里只是让它露出来：搜 One-Two Punch 也能
-    搜到雪上加霜。**只进全文那一格，不上页面**：站点是中文站，英文名在正文里
-    出现一次都会破坏版式。
+    英文来自实体层的 i18n.en.name，那一份是 manifest 蒸馏来的——18840/19356 条
+    本来就带着英文，这里只是让它露出来：搜 One-Two Punch 也能搜到雪上加霜。
+    **只进全文那一格，不上页面**：站点是中文站，英文名在正文里出现一次都会破坏
+    版式。
     """
     page = url[:-len('/index.html')]
     if page not in _EN:
-        path = os.path.join(shell.ROOT, 'data', 'entities',
-                            page.replace('/', '__') + '.json')
         table = {}
-        if os.path.exists(path):
-            with open(path, encoding='utf-8') as f:
-                for row in json.load(f).values():
-                    zh = ((row.get('i18n') or {}).get('zh-CN') or {}).get('name')
-                    en = ((row.get('i18n') or {}).get('en') or {}).get('name')
-                    shown = (row.get('research') or {}).get('name')
-                    if en and en != zh and shown:
-                        table.setdefault(shown, en)
+        try:
+            rows = entitydb.rows(page)
+        except SystemExit:
+            rows = []
+        for _keys, ent, block in rows:
+            zh = entitydb.text(ent, 'name')
+            en = entitydb.text(ent, 'name', 'en')
+            shown = entitydb.said(block, 'name') or zh
+            if en and en != zh and shown:
+                table.setdefault(shown, en)
         _EN[page] = table
     return _EN[page]
 

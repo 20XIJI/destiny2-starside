@@ -24,6 +24,7 @@ import subprocess
 import sys
 import urllib.request
 
+import entitydb
 import pagedex
 import resolve
 import shell
@@ -116,14 +117,12 @@ def wanted():
     for page in pagedex.TOKENS:
         if page in SKIP:
             continue
-        got = pagedex.read(page)
-        if got is None:
-            die('%s 还没有索引：先跑一次 npm run build' % page)
-        for row in got['entries']:
-            if row.get('of') or not row['icon']:
+        for keys, _, block in entitydb.rows(page):
+            # 子条目不算：异域那两页 PERK 列里的词条挂在行标题下（of），
+            # 它们共用打头那一枚图。
+            if block.get('of') or not block.get('icon'):
                 continue
-            path = next((p for p in (icon_of(facts, k)
-                                     for k in row['keys']) if p), None)
+            path = next((p for p in (icon_of(facts, k) for k in keys) if p), None)
             if not path:
                 blank[page] += 1
                 continue

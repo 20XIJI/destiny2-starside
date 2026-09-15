@@ -482,8 +482,12 @@ def index_row(dex, title, stamp, body, lane):
     anchor, label = SECTION
     mine, theirs = ((), ()) if PAGE in pagedex.NO_DESC else pagedex.split_spirit(pagedex.tds(body))
     icon = pagedex.IMG.search(body)
-    dex.add(keys=stamp, anchor=anchor, kind=lane or label,
-            name=text_of(title, collapse=True),
+    shown = text_of(title, collapse=True)
+    # 落不到库里主键上的行合成一个，规则在 research.minted() 一处定义——人写层
+    # 抽取那一侧用的是同一个，两边合出来的键要一样，实体才对得上这一行的锚点。
+    keys = list(stamp) or ([research.minted(PAGE, shown)] if shown else [])
+    dex.add(keys=keys, anchor=anchor, kind=lane or label,
+            name=shown,
             icon='%s/%s' % (PAGE, icon.group(1)) if icon else '',
             desc=pagedex.wrap(*pagedex.panel(mine)))
     index_perks(dex, stamp, mine, anchor, lane or label, dex.rows[-1]['name'])
@@ -837,7 +841,8 @@ def render(md, slug, digest):
             if head_icon and SECTION[1]:
                 # 分节标题自带的图标也进索引：配装页首要用真的职业图标。
                 # **不带过滤词**：拿分节名去页内过滤会把整页行滤光，落地是一张空页。
-                dex.add(anchor=SECTION[0], kind='分节', name=SECTION[1],
+                dex.add(keys=[research.minted(PAGE, '分节/' + SECTION[1])],
+                        anchor=SECTION[0], kind='分节', name=SECTION[1],
                         icon='%s/%s' % (PAGE, head_icon.group(1)), q='')
         o += render_blocks(chunk, scales, groups, marks, curves, up, rota, at + 1)
         o.append('</section>')
