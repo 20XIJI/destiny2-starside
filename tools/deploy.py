@@ -23,7 +23,10 @@ import tempfile
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 REF = "refs/deploy"
 CLOUD = "destiny2-starside"  # 静态托管上的挂载路径，与 tcb app deploy 的 --deploy-path 相同
-SKIP_DIRS = ("tools/", "references/", "functions/", ".github/", ".claude/")
+# data/ 是构建的输入不是站点的资源：21 MB、31 个文件，站上没有任何读者
+# （产出的 .js/.html/.css 里零处引用 data/ 路径）。发它等于每次把事实层
+# 又传一遍。已经发上去的那批要 --all --prune 才清得掉。
+SKIP_DIRS = ("tools/", "references/", "functions/", ".github/", ".claude/", "data/")
 SKIP_FILES = {"package.json", "cloudbaserc.json", "serve.json", ".gitignore", ".env.example", "LICENSE"}
 
 

@@ -465,6 +465,31 @@ class DeploySelection(unittest.TestCase):
         self.assertFalse(deploy.keep('references/docs/changelog.md'))
         self.assertFalse(deploy.keep('CLAUDE.md') or deploy.keep('cloudbaserc.json'))
 
+    def test_the_fact_layer_is_not_uploaded_and_nothing_on_the_site_wants_it(self):
+        """data/ 是构建的输入，不是站点的资源。
+
+        两头都要断言。keep() 挡住它，是因为产出里没有任何读者；哪天有人让某一页
+        去 fetch 一份事实表，keep() 会静默地让那次请求 404——症状是「本地 npm start
+        好好的，发上去那一块空了」。所以正查 keep()，反查产出里没有人引用它。
+        """
+        self.assertFalse(deploy.keep('data/facts/items.json'))
+        self.assertFalse(deploy.keep('data/index/weapon-perks.json'))
+        root = TOOLS.parent
+        want = re.compile(r'(?<![\w-])data/')
+        wired, seen = [], 0
+        for path in root.rglob('*'):
+            if path.suffix not in ('.html', '.js', '.css') or not path.is_file():
+                continue
+            rel = path.relative_to(root).as_posix()
+            if not deploy.keep(rel) or rel.startswith('node_modules/'):
+                continue
+            seen += 1
+            if want.search(path.read_text(encoding='utf-8', errors='ignore')):
+                wired.append(rel)
+        self.assertEqual(wired, [], '这些产出引用了 data/，而 keep() 不发它，线上会 404')
+        # 反查那一半靠扫得到东西才成立：keep() 或后缀表一变，零命中也是全绿。
+        self.assertGreater(seen, 200, '只扫到 %d 个产出，反查这一半没生效' % seen)
+
     def test_listing_drops_the_files_that_never_ship(self):
         self.assertEqual(deploy.listing('a.md\0index.html\0'), ['index.html'])
 
