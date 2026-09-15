@@ -65,12 +65,17 @@ ROW_LINK = re.compile(r'\[([^\]]+)\]\((?!http)([^)#?]+/index\.html)\)')
 
 def anchors_of(path):
     """一篇源稿的「行标题 → 分节锚点」。从源稿现算，不读产出——同一次构建里
-    产出可能还是上一版，锚点会指错分节。锚点即分节序号，与 render() 一致。"""
+    产出可能还是上一版，锚点会指错分节。锚点即分节序号，与 render() 一致。
+
+    **先把目标页的人写层补回去再扫**：源稿瘦身之后那里只剩表头，行标题一个都
+    找不到，跨页链接会静默丢掉 ?q= 那一截——页面照旧能点开，只是不再落到行上。
+    """
     if path not in _ANCHORS:
         table = {}
         if os.path.exists(path):
             with open(path, encoding='utf-8') as f:
                 doc = f.read()
+            doc = research.inject(doc, os.path.basename(path)[:-len('.md')])
             n = 0
             for line in doc.split('\n'):
                 if line.startswith('## '):

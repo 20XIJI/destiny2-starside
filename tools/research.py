@@ -8,8 +8,9 @@ data/entities/，那一份是产物。**人只编辑这一层。**
 
     {
       "page": "weapon-perks",
-      "columns": {"PERK": "name", "图标": "icon", "说明": "realgame_details",
-                  "来源": "来源"},
+      "columns": [[["PERK", "name"], ["图标", "icon"], ["说明", "realgame_details"]],
+                  [["PERK", "name"], ["图标", "icon"], ["来源", "来源"],
+                   ["说明", "realgame_details"]]],
       "entries": [
         {"kind": "武器 PERK",
          "members": [2679249093, 788178929],
@@ -20,6 +21,10 @@ data/entities/，那一份是产物。**人只编辑这一层。**
     }
 
 三件事值得先说清楚。
+
+**columns 一张表一份，按位置写。**一个页面可以有好几张表，表头各不相同，
+异域护甲页还有一张 `左栏|图标|说明|右栏|图标|说明`——一行摆两件东西，列名重复。
+按列名建一张页级的表对不上这些，所以按表、按位置存「列名 → 字段名」的有序对。
 
 **columns 写在文件里，不写在代码里。**站内 37 页有 96 种表头、287 种列名
 （「排名」「评级」「框架\\\\射速」「Perk 三号位」…）。把「列名 → 字段名」硬编码
@@ -57,9 +62,11 @@ DIR = os.path.join(shell.ROOT, 'references', 'research')
 ZH = 'zh-CN'
 # 不随语言变的字段名。其余一律进 i18n.<语言>。
 PLAIN = frozenset({'icon'})
-ICON_CELL = re.compile(r'^\{ico\|!\[\]\((.+)\)\}$')
+ICON_SRC = re.compile(r'!\[\]\(([^)]+)\)')
 RULE_LINE = re.compile(r'^\|[\s:|-]+\|$')
 SECTION = re.compile(r'^##\s+(.+?)\s*$')
+# 表内横幅行 `| == 近战技能 == |`。与 convert-doc.lane_of() 同一条判据。
+LANE = re.compile(r'^==\s*(.+?)\s*==$')
 
 
 def path(page):
@@ -88,10 +95,9 @@ def write(page, columns, entries):
     os.makedirs(DIR, exist_ok=True)
     body = ',\n'.join('    %s' % json.dumps(e, ensure_ascii=False, sort_keys=True)
                       for e in entries)
-    text = ('{\n  "page": %s,\n  "columns": %s,\n  "entries": [\n%s\n  ]\n}\n'
-            % (json.dumps(page, ensure_ascii=False),
-               json.dumps(columns, ensure_ascii=False),
-               body))
+    heads = ',\n'.join('    %s' % json.dumps(c, ensure_ascii=False) for c in columns)
+    text = ('{\n  "page": %s,\n  "columns": [\n%s\n  ],\n  "entries": [\n%s\n  ]\n}\n'
+            % (json.dumps(page, ensure_ascii=False), heads, body))
     with open(path(page), 'w', encoding='utf-8') as f:
         f.write(text)
     return os.path.getsize(path(page))
@@ -150,20 +156,14 @@ def put(entry, name, value, lang=ZH):
         entry.setdefault('i18n', {}).setdefault(lang, {})[name] = value
 
 
-def to_cell(entry, name, lang=ZH):
-    """字段 → 源稿里那一格的原文。图标那一格要把 {ico|![]()} 的壳套回去。"""
-    got = field(entry, name, lang)
-    return '{ico|![](%s)}' % got if name == 'icon' and got else got
+def icon_paths(cell):
+    """图标那一格里引到的图，按出现顺序。
 
-
-def from_cell(name, text):
-    """源稿里那一格的原文 → 字段值。"""
-    if name != 'icon':
-        return text
-    m = ICON_CELL.match(text)
-    if not m:
-        die('图标那一格不是 {ico|![](…)} 的形状：%r' % text[:60])
-    return m.group(1)
+    **格子存原文，不拆成路径。**站内那一列有四种形状：{ico|![](…)}（3044 处）、
+    {ico2|…}、{ico4|…}，以及裸的 ![](…)。拆开存等于挑一种当唯一形状，另外三种
+    要么丢信息要么要额外记一位；存原文则往返天然逐字节相同，要路径的在这里取。
+    """
+    return ICON_SRC.findall(cell or '')
 
 
 def split(line):
@@ -172,49 +172,77 @@ def split(line):
     return None if got is None else [line[a:b] for a, b in got]
 
 
+def source(page):
+    """一篇资料页源稿的完整正文：盘上那份 + 人写层补回去的行。
+
+    **凡是要读行内容的地方都走这里。**源稿瘦身之后，直接 open() 读到的只有分节与
+    表头；漏一处的症状都不是报错，而是那一处静默地当这一页没有行——跨页链接丢掉
+    ?q=、复刻消歧掉到末档选错版本、词表少收一批 Perk 名。只读页面头部键
+    （路径／更新／卡片／数据源／鸣谢）的地方不必走这里，那些键还在盘上那份里。
+    """
+    path = os.path.join(shell.ROOT, 'references', 'docs', page + '.md')
+    with open(path, encoding='utf-8') as f:
+        return inject(f.read(), page)
+
+
+def tables(lines):
+    """文档里每张表的 (表头行号, 表头各格)，按出现顺序。
+
+    **表按序号定位，不按分节名。**一节里可以有好几张表（棱镜页每个职业三张），
+    分节标题里还可能带图；名字当不了坐标，序号可以。
+    """
+    out = []
+    for i, line in enumerate(lines[:-1]):
+        if not RULE_LINE.match(lines[i + 1].strip()):
+            continue
+        head = split(line)
+        if head is not None:
+            out.append((i, head))
+    return out
+
+
 def inject(md, page):
     """把人写层的条目补回源稿的表里。
 
     源稿留的是分节、表头与页面元信息，行的内容在人写层。补回来之后交给现有的
     render_table，**产出因此与迁移前逐字节相同是构造性的**，不靠事后比对。
 
-    行按 kind 落进同名的那个分节，顺序即人写层里的顺序。
+    条目按 table 序号落回它那张表，顺序即人写层里的顺序。横幅行（`| == 组名 == |`）
+    也是行，照样按序回去。
     """
     got = read(page)
     if got is None:
         return md
     columns = got['columns']
-    lanes = {}
+    lines = md.split('\n')
+    heads = tables(lines)
+    rows = {}
     for e in got['entries']:
-        lanes.setdefault(e['kind'], []).append(e)
+        rows.setdefault(e['table'], []).append(e)
+    if len(columns) != len(heads):
+        die('%s 的人写层登记了 %d 张表，源稿里有 %d 张'
+            % (page, len(columns), len(heads)))
+    stray = sorted(set(rows) - set(range(len(heads))))
+    if stray:
+        die('%s 的人写层指到第 %s 张表，源稿里只有 %d 张'
+            % (page, '、'.join(map(str, stray)), len(heads)))
 
-    out, lines, sec = [], md.split('\n'), ''
-    used = set()
+    out, at = [], {i: n for n, (i, _) in enumerate(heads)}
     for i, line in enumerate(lines):
         out.append(line)
-        m = SECTION.match(line)
-        if m:
-            sec = m.group(1)
+        if i == 0 or i - 1 not in at:
             continue
-        # 分隔行的上一行是表头：在分隔行之后把这一节的行补进去。
-        if not RULE_LINE.match(line.strip()) or i == 0:
-            continue
-        head = split(lines[i - 1])
-        if head is None:
-            continue
-        miss = [c for c in head if c not in columns]
-        if miss:
-            die('%s「%s」的表头有没登记的列：%s\n'
-                '  references/research/%s.json 的 columns 里加上它们'
-                % (page, sec, '、'.join(miss), page.replace('/', '__')))
-        if sec in used:
-            die('%s 的「%s」出现了两次表头，人写层分不出行该落哪一张表' % (page, sec))
-        used.add(sec)
-        for e in lanes.get(sec) or ():
-            out.append('| %s |' % ' | '.join(to_cell(e, columns[c]) for c in head))
-    stray = sorted(set(lanes) - used)
-    if stray:
-        die('%s 的人写层里有这些分节，源稿里却没有同名的表：%s' % (page, '、'.join(stray)))
+        n = at[i - 1]
+        head = heads[n][1]
+        want = [c for c, _ in columns[n]]
+        if want != head:
+            die('%s 第 %d 张表的表头与人写层登记的对不上：\n  源稿 %s\n  登记 %s'
+                % (page, n, ' | '.join(head), ' | '.join(want)))
+        for e in rows.get(n) or ():
+            if 'banner' in e:
+                out.append('| %s |' % e['banner'])
+                continue
+            out.append('| %s |' % ' | '.join(field(e, f) for _, f in columns[n]))
     return '\n'.join(out)
 
 
@@ -222,8 +250,18 @@ def inject(md, page):
 RENAME = {'图标': 'icon', '说明': 'realgame_details'}
 
 
-def field_of(col, first):
-    return 'name' if col == first else RENAME.get(col, col)
+def fields_of(head):
+    """表头各格 → 各自的字段名。
+
+    重名列加序号后缀：异域护甲页有一张 `左栏|图标|说明|右栏|图标|说明`，一行摆
+    两件东西。不加后缀，后三格会盖掉前三格，一行两件变成同一件画两遍。
+    """
+    out, seen = [], {}
+    for col in head:
+        name = 'name' if col == head[0] else RENAME.get(col, col)
+        seen[name] = seen.get(name, 0) + 1
+        out.append(name if seen[name] == 1 else '%s#%d' % (name, seen[name]))
+    return out
 
 
 def where_of(page):
@@ -246,34 +284,37 @@ def extract(page, stamp):
     src = os.path.join(shell.ROOT, 'references', 'docs', page + '.md')
     with open(src, encoding='utf-8') as f:
         lines = f.read().split('\n')
+    heads = tables(lines)
+    at = {i: n for n, (i, _) in enumerate(heads)}
 
-    columns, entries, thin, sec, head = {}, [], [], '', None
+    columns, entries, thin, sec, head, table = [], [], [], '', None, -1
     for i, line in enumerate(lines):
         m = SECTION.match(line)
         if m:
-            sec, head = m.group(1), None
+            sec = m.group(1)
+        if i in at:
+            table, head = at[i], heads[at[i]][1]
+            columns.append([[c, f] for c, f in zip(head, fields_of(head))])
             thin.append(line)
             continue
         cells = split(line)
-        if cells is None:
+        if cells is None or RULE_LINE.match(line.strip()) or head is None:
             thin.append(line)
             continue
-        if i + 1 < len(lines) and RULE_LINE.match(lines[i + 1].strip()):
-            head = cells
-            for c in cells:
-                columns[c] = field_of(c, cells[0])
-            thin.append(line)
-            continue
-        if RULE_LINE.match(line.strip()) or head is None:
-            thin.append(line)
+        lane = LANE.match(cells[0]) if len(cells) == 1 else None
+        if lane:
+            # 横幅行也是行，按序收进来；它没有格，只有组名。
+            entries.append({'table': table, 'kind': sec, 'banner': cells[0]})
             continue
         if len(cells) != len(head):
             die('%s「%s」有一行 %d 格，表头是 %d 格：%r'
                 % (page, sec, len(cells), len(head), cells[0][:30]))
-        entry = {'kind': sec}
-        for col, text in zip(head, cells):
-            put(entry, field_of(col, head[0]), from_cell(field_of(col, head[0]), text))
-        got = stamp(markup.text_of(cells[0], collapse=True))
+        entry = {'table': table, 'kind': sec}
+        for name, text in zip(fields_of(head), cells):
+            put(entry, name, text)
+        # 没有槽位限定的那几页（buff-debuffs、ability-cooldown）没有戳号器，
+        # 行标题落不到主键上是这几页的常态，不是错。
+        got = stamp(markup.text_of(cells[0], collapse=True)) if stamp else None
         if got:
             entry['members'] = [int(h) for h in got if h.isdigit()]
             other = [h for h in got if not h.isdigit()]

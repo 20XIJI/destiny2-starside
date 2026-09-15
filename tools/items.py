@@ -301,10 +301,8 @@ def perks():
     """两页 PERK 列上的专属 Perk 名。"""
     out = set()
     for name in PERK_DOCS:
-        path = os.path.join(shell.ROOT, DOC_DIR, name)
-        with open(path, encoding='utf-8') as f:
-            for mo in PERK_RE.finditer(f.read()):
-                out.add(norm(mo.group(1)))
+        for mo in PERK_RE.finditer(research.source(name[:-len('.md')])):
+            out.add(norm(mo.group(1)))
     return out
 
 
@@ -328,9 +326,7 @@ PERK_MIN = 3
 def distill_perks():
     """两个来源 → tools/perks.json。"""
     names = set()
-    path = os.path.join(shell.ROOT, DOC_DIR, PERK_SRC)
-    with open(path, encoding='utf-8') as f:
-        lines = f.read().split('\n')
+    lines = research.source(PERK_SRC[:-len('.md')]).split('\n')
     sect = None
     for i, line in enumerate(lines):
         if line.startswith('## '):
@@ -346,14 +342,12 @@ def distill_perks():
         if len(name) >= PERK_MIN:
             names.add(name)
     for page in PERK_PAGES:
-        path = os.path.join(shell.ROOT, DOC_DIR, page)
-        if not os.path.exists(path):
+        if not os.path.exists(os.path.join(shell.ROOT, DOC_DIR, page)):
             continue
-        with open(path, encoding='utf-8') as f:
-            for mo in PERK_CELL.finditer(f.read()):
-                name = norm(mo.group(1).replace('~~', '').strip())
-                if len(name) >= PERK_MIN:
-                    names.add(name)
+        for mo in PERK_CELL.finditer(research.source(page[:-len('.md')])):
+            name = norm(mo.group(1).replace('~~', '').strip())
+            if len(name) >= PERK_MIN:
+                names.add(name)
     names = sorted(n for n in names if n not in STOP and '|' not in n)
     with open(os.path.join(shell.ROOT, PERKS), 'w', encoding='utf-8') as f:
         f.write('[\n%s\n]\n' % ',\n'.join('  ' + json.dumps(n, ensure_ascii=False)

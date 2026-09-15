@@ -38,6 +38,7 @@ import os
 import sys
 
 import pagedex
+import research
 import shell
 from markup import CELL_BREAK, cells as cell_spans, die, inline, text_of
 
@@ -76,32 +77,32 @@ def source_mark(page):
 
 
 def rows_of(page):
-    """[(行标题源稿原文, {列名: 源稿原文})]。首格留空即沿用上一行的行标题。"""
-    path = os.path.join(shell.ROOT, 'references', 'docs', page + '.md')
+    """[(行标题源稿原文, {列名: 源稿原文})]。首格留空即沿用上一行的行标题。
+
+    走 research.source()：行的内容在人写层，盘上那份只剩表头。
+    """
     out, head, last = [], None, None
-    with open(path, encoding='utf-8') as f:
-        for line in f:
-            line = line.rstrip('\n')
-            if not line.startswith('|'):
-                head = None
-                continue
-            spans = cell_spans(line)
-            if not spans:
-                continue
-            cols = [line[a:b].strip() for a, b in spans]
-            if set(''.join(cols)) <= set('-: '):
-                continue
-            if head is None:
-                head = cols
-                continue
-            # 横幅行（`| == 手雷 · 猎人与泰坦 == |`）不是数据行。
-            if cols and cols[0].startswith('=='):
-                continue
-            title = cols[0] or last
-            if not title:
-                continue
-            last = title
-            out.append((title, dict(zip(head, cols))))
+    for line in research.source(page).split('\n'):
+        if not line.startswith('|'):
+            head = None
+            continue
+        spans = cell_spans(line)
+        if not spans:
+            continue
+        cols = [line[a:b].strip() for a, b in spans]
+        if set(''.join(cols)) <= set('-: '):
+            continue
+        if head is None:
+            head = cols
+            continue
+        # 横幅行（`| == 手雷 · 猎人与泰坦 == |`）不是数据行。
+        if cols and cols[0].startswith('=='):
+            continue
+        title = cols[0] or last
+        if not title:
+            continue
+        last = title
+        out.append((title, dict(zip(head, cols))))
     return out
 
 

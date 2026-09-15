@@ -34,6 +34,7 @@ import sys
 import unicodedata
 
 import markup
+import research
 import shell
 
 FACTS = os.path.join(shell.ROOT, 'data', 'manifest')
@@ -844,7 +845,12 @@ def source_hints():
     """{(页面, 名字): (来源, [Perk 名…])}。现扫源稿，不另存一份。
 
     生成器在渲染每一行时本来就拿得到这一行的 Perk 列，所以这不是审计专用的拐杖，
-    是解析器在真实管线里同样会收到的那份输入。"""
+    是解析器在真实管线里同样会收到的那份输入。
+
+    **先把人写层补回去再扫**：行的内容已经搬过去了，源稿只剩表头。不补，这几页
+    整页拿 version='' perks=() 掉到 pick() 的末两档，复刻会选错版本——症状是
+    索引里的主键悄悄换成另一把同名枪，页面上一个字都不变。
+    """
     out = {}
     # 单件页即线索页：购物清单写着枪管、弹匣、两栏 Perk 与起源特性，异域两页
     # 写着专属 Perk，刷取清单写着获取地点与 Perk 列——复刻各版本的差别正在这些列上。
@@ -856,34 +862,34 @@ def source_hints():
         if not os.path.exists(path):
             continue
         with open(path, encoding='utf-8') as f:
-            for raw in f:
-                line = raw.rstrip('\n')
-                # 切格走 markup.cells：{ico|![](…)} 里本身带竖线，裸 split 会切碎。
-                spans = markup.cells(line)
-                if not spans or len(spans) < 3:
-                    continue
-                cells = [line[a:b] for a, b in spans]
-                # 词表那一侧取文时格内换行已经没了，键要对齐到同一形态。
-                name = bare(cells[0]).replace(markup.CELL_BREAK, '')
-                if not name or name in ('武器', '名称', '金装') or name.startswith('=='):
-                    continue
-                perks, src = [], ''
-                for cell in cells[1:]:
-                    for tag, body in MARKER.findall(cell):
-                        body = IMG.sub('', body)
-                        if tag == 'src' and not src:
-                            # 来源列写的就是玩家管这次掉落叫什么，与收藏条目的
-                            # sourceString 对得上，正是复刻之间唯一的差别。
-                            src = body.strip().strip('~')
-                        if tag != 'perk':
-                            continue
-                        for part in body.split(markup.CELL_BREAK):
-                            part = part.strip().lstrip('↑')
-                            if part:
-                                perks.append(part)
-                if perks or src:
-                    was = out.get((page, norm_keep(name)), ('', []))
-                    out[(page, norm_keep(name))] = (src or was[0], was[1] + perks)
+            doc = research.inject(f.read(), page)
+        for line in doc.split('\n'):
+            # 切格走 markup.cells：{ico|![](…)} 里本身带竖线，裸 split 会切碎。
+            spans = markup.cells(line)
+            if not spans or len(spans) < 3:
+                continue
+            cells = [line[a:b] for a, b in spans]
+            # 词表那一侧取文时格内换行已经没了，键要对齐到同一形态。
+            name = bare(cells[0]).replace(markup.CELL_BREAK, '')
+            if not name or name in ('武器', '名称', '金装') or name.startswith('=='):
+                continue
+            perks, src = [], ''
+            for cell in cells[1:]:
+                for tag, body in MARKER.findall(cell):
+                    body = IMG.sub('', body)
+                    if tag == 'src' and not src:
+                        # 来源列写的就是玩家管这次掉落叫什么，与收藏条目的
+                        # sourceString 对得上，正是复刻之间唯一的差别。
+                        src = body.strip().strip('~')
+                    if tag != 'perk':
+                        continue
+                    for part in body.split(markup.CELL_BREAK):
+                        part = part.strip().lstrip('↑')
+                        if part:
+                            perks.append(part)
+            if perks or src:
+                was = out.get((page, norm_keep(name)), ('', []))
+                out[(page, norm_keep(name))] = (src or was[0], was[1] + perks)
     return out
 
 

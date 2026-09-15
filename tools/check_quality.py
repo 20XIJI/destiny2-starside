@@ -431,9 +431,11 @@ class Generated(unittest.TestCase):
                 self.assertTrue(src.exists(), '%s 没有对应的源稿' % page)
                 full = research.inject(src.read_text(encoding='utf-8'), page)
                 rows = [ln for ln in full.split('\n') if ln.startswith('|')]
-                self.assertEqual(len(rows), len(got['entries']) + 2 * len(
-                    {e['kind'] for e in got['entries']}),
-                    '%s 补回去的行数与条目数对不上（表头与分隔行各一行）' % page)
+                # 每张表两行不是数据：表头与分隔行。一节可以有好几张表
+                # （棱镜页每个职业三张），所以按表数算，不按分节数算。
+                self.assertEqual(len(rows),
+                                 len(got['entries']) + 2 * len(got['columns']),
+                                 '%s 补回去的行数与条目数对不上' % page)
 
     def test_the_cloud_function_carries_the_same_dialect(self):
         # 云函数只 require 得到自己目录下的东西，所以那一份是复制过去的。
