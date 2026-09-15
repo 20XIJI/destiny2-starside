@@ -597,9 +597,20 @@ class EntitySource(unittest.TestCase):
             if keys:
                 yield n, keys
 
+    def page_rows(self):
+        """页面 JSON 点名的主键。矩阵表那种一行指向别的主键的格子放在那里——
+        列头是版面、格子是引用，都不是这枚实体自己的事实。"""
+        got = collections.defaultdict(set)
+        for path in sorted((self.ROOT / 'references' / 'pages').glob('*.json')):
+            one = json.loads(path.read_text(encoding='utf-8'))
+            for sec in one.get('matrix') or ():
+                got[one['page']].update(sec.get('行') or ())
+        return got
+
     def test_every_source_row_lands_on_a_record_that_says_something(self):
         import resolve
         facts = resolve.Facts()
+        inpage = self.page_rows()
         rows = refs = 0
         for slug in tuple(self.BODY) + tuple(self.AUTHORED):
             who = self.AUTHORED.get(slug)
@@ -620,12 +631,18 @@ class EntitySource(unittest.TestCase):
                 else:
                     said = (row.get('authors') or {}).get(who) or {}
                     more = said.get('variants') or ()
-                self.assertTrue(said, '%s 的 %s 名下没有站内写的东西' % (slug, head))
+                self.assertTrue(said or head in inpage.get(slug, ()),
+                                '%s 的 %s 名下没有站内写的东西' % (slug, head))
+                if not said:
+                    continue
                 self.assertLessEqual(
                     times, 1 + len(more),
                     '%s 的 %s 在源稿里出现 %d 次，记录里只有 %d 段'
                     % (slug, head, times, 1 + len(more)))
-        self.assertEqual((rows, refs), (2429, 3624),
+        # 3512 ＝ 2429 行的行首加上它们的 covers。元素页、棱镜页与职业技能页的行
+        # 从前互相写着对方分支的那一枚（电弧的「重击」与棱镜的「重击」是两枚不同的
+        # hash，各自有一段说明），摘掉那 88 枚之后是这个数。
+        self.assertEqual((rows, refs), (2429, 3512),
                          '源稿的行数或主键引用数变了：%d 行、%d 个引用' % (rows, refs))
 
 

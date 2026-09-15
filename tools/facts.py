@@ -586,6 +586,7 @@ def link(tabs, icon_dir):
         'equipable-item-sets']
     for table in tabs.values():
         for row in table.values():
+            row.pop('icon_from', None)
             if 'icon' not in row:
                 # Bungie 没给图的那些，站上发的是自己画的一张（护甲模组族那 11 个、
                 # 刀剑那三项属性、自发主键的机制行）。`icon_local` 是人写的，不动。
@@ -611,6 +612,14 @@ def link(tabs, icon_dir):
                 said.update(site_of(row))
             for row in rows:
                 row.setdefault('i18n', {}).setdefault('zh-CN', {}).update(said)
+            # 图取**基础版**那一枚。同一行常常盖着普通版与强化版，强化版的图上多一道
+            # 金条与金箭头，站内一律显示素的那张。判据是品阶名里带不带「强化」——
+            # tierType 分不出来：武器模组那一批两版都是 5。
+            base = [k for k, row in zip(group, rows)
+                    if '强化' not in ((row.get('i18n') or {}).get('zh-CN') or {})
+                    .get('itemTypeAndTierDisplayName', '')]
+            if base and base[0] != group[0] and 'icon' in table[base[0]]:
+                rows[0]['icon_from'] = int(base[0])
 
     for row in perks.values():
         row.pop('onItems', None)
@@ -677,6 +686,17 @@ def seeds(root):
                     continue
                 for key in line.strip().partition('  ')[0].split():
                     key = re.sub(r'^(perk|trait|stat|set):', '', key)
+                    if key.isdigit():
+                        got.add(key)
+    # 页面 JSON 点名的也算：矩阵表那种一行指向别的主键的格子放在那里，被指到的
+    # 那几枚不在任何一行的行首上，只有这一条路够得到它们。
+    for path in sorted(glob.glob(os.path.join(root, 'references', 'pages', '*.json'))):
+        with open(path, encoding='utf-8') as fh:
+            one = json.load(fh)
+        for sec in one.get('matrix') or ():
+            for cells in (sec.get('行') or {}).values():
+                for cell in cells:
+                    key = re.sub(r'^(perk|trait|stat|set):', '', str(cell or ''))
                     if key.isdigit():
                         got.add(key)
     if len(got) < 2000:
