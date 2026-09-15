@@ -6,6 +6,7 @@ python3 tools/check_quality.py
 不读取令牌、不启动子进程、不连接网络。生成器只替换资料词表来源，渲染与落盘走实码。
 """
 import base64
+import collections
 import copy
 from email.message import Message
 import gzip
@@ -619,7 +620,8 @@ class ManifestLayer(unittest.TestCase):
 
         边界一模糊就没人再分得清某个字段能不能跟着 manifest 重生成。
         """
-        ours = {'release', 'breakerType', 'craftable', 'tierable', 'tiers'}
+        ours = {'release', 'breakerType', 'craftable', 'tierable', 'tiers',
+                'archetype', 'foundry'}
         # breakerType 是唯一两头都有的：根上那一位是 manifest 自己的字段，照原样留着。
         only_ours = ours - {'breakerType'}
         items = self.table('inventory-items.json')
@@ -634,6 +636,34 @@ class ManifestLayer(unittest.TestCase):
         got = sum('breakerType' in (v.get('derived') or {}) for v in items.values())
         self.assertEqual(nonzero, 18, 'manifest 自带非 0 breakerType 的应是 18 条，实际 %d' % nonzero)
         self.assertGreater(got, 2000, 'derived.breakerType 只覆盖 %d 条，推导没跑' % got)
+
+    def test_the_normalised_socket_kinds_cover_what_the_site_slices(self):
+        """插槽的语义标签是一处定义，切栏那一侧只读它，不再各归各的。
+
+        manifest 的 categoryIdentifier 有 14 种叫法说的却是同几件事。这一条钉住
+        六档主要标签都还在——某一档掉了的症状是那一栏整列不见，页面上看不出来。
+        """
+        kinds = collections.Counter(v['derived']['kind']
+                                    for v in self.table('socket-types.json').values())
+        for want in ('intrinsic', 'trait', 'origin', 'stat', 'masterwork', 'mod'):
+            self.assertIn(want, kinds, '语义标签少了 %s' % want)
+        self.assertLess(kinds['other'], 80,
+                        '认不出的插槽类型涨到 %d 种，词表跟不上 manifest 了' % kinds['other'])
+
+    def test_the_hand_kept_facts_are_still_there(self):
+        """manifest 里推不出来、只能人记的那几位。
+
+        `lowerIsBetter` 那三项与另外 23 项的 statCategory 与 aggregationType 完全
+        相同，没有任何一位把它们分开。掉了的症状是属性条方向画反，读者看不出来。
+        """
+        low = {h for h, v in self.table('stats.json').items()
+               if (v.get('derived') or {}).get('lowerIsBetter')}
+        self.assertEqual(low, {'447667954', '2961396640', '3481294762'},
+                         '越低越好的那三项变了：%s' % sorted(low))
+        items = self.table('inventory-items.json')
+        arch = sum(1 for v in items.values()
+                   if (v.get('derived') or {}).get('archetype'))
+        self.assertGreater(arch, 2000, 'derived.archetype 只覆盖 %d 把枪' % arch)
 
     def test_the_artifact_tiers_ride_on_the_artifact_s_own_item_record(self):
         """七件神器的档位分组挂在本体那条物品上，不单出一张表。
