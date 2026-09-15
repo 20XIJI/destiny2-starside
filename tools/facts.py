@@ -208,6 +208,29 @@ SEASON = {
 # 15、18、22、25 季，判不出；v350.season 那 45 件至日活动护甲自成一张水印、没有
 # 同伴可比。
 
+# 活动武器的赛季号。它们全塞在 `releases.v400.season` 这一个 traitId 里，横跨六季，
+# 而 manifest 上再没有别的信号——`seasonHash` 是空的，赛季水印十六件共用同一张。
+# 这一档抄 destiny.report：两边都有赛季号的 2190 件逐条相同，所以它那一份可信，
+# 这十六件只是我们查不到、它查得到。
+SEASON_BY_ITEM = {
+    177568179: 22,    # 恐怖故事
+    413901114: 22,    # 寰宇
+    425681240: 25,    # 寰宇
+    528834068: 8,     # 布瑞科技狼人
+    689294985: 25,    # 侏罗纪绿
+    1280894514: 18,   # 机械死神
+    2261046232: 15,   # 侏罗纪绿
+    2477980485: 25,   # 机械死神
+    2603335652: 18,   # 侏罗纪绿
+    2869466318: 18,   # 布瑞科技狼人
+    3103255595: 22,   # 侏罗纪绿
+    3325463374: 4,    # 雷神
+    3558681245: 25,   # 布瑞科技狼人
+    3649985571: 25,   # 奥术之拥
+    3829285960: 4,    # 恐怖故事
+    3871226707: 22,   # 机械死神
+}
+
 RPM = '4284893193'          # 每分钟发射数
 
 # **射速由枪型 × 框架决定**，不由具体哪一把枪决定：站内 149 处写法归并成 65 个
@@ -382,9 +405,10 @@ def project(key, item, other):
         # 发布版本（releases.v970.core 一类）比赛季水印好认：水印是一张图，
         # 这是一个可排序的版本号。
         derived['release'] = rel[0][len('releases.'):]
-        if derived['release'] in SEASON:
+        got = SEASON_BY_ITEM.get(int(key)) or SEASON.get(derived['release'])
+        if got:
             # 赛季号查表得来，不是 manifest 的字段，所以与 release 并排放在 derived 里。
-            derived['season'] = SEASON[derived['release']]
+            derived['season'] = got
     foundry = [t for t in item.get('traitIds') or () if t.startswith('foundry.')]
     if foundry:
         # 铸造厂（Häkke、Omolon、Veist…），779 把枪有。站内购物清单那一列写的
