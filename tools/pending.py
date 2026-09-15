@@ -57,25 +57,53 @@ def collect(facts):
     def rel(h):
         return ((facts.items.get(str(h)) or {}).get('derived') or {}).get('release') or ''
 
+    # 主键 → 站内各页把它显示成什么名字。**没有这一行就判不动**：卡片上只有库里
+    # 那个名字时，读者看不出「这一枚在购物清单上叫什么、在刷取清单上叫什么」。
+    shown = collections.defaultdict(list)
+    for slug, d in pages.items():
+        for h, blocks in d['said'].items():
+            for b in blocks:
+                shown[h].append('%s「%s」' % (slug, b['i18n']['zh-CN'].get('name', '')))
+            for b in blocks:
+                for x in b.get('covers') or ():
+                    tag = '%s「%s」（covers）' % (slug, b['i18n']['zh-CN'].get('name', ''))
+                    if tag not in shown[x]:
+                        shown[x].append(tag)
+
+    def where(h):
+        got = shown.get(str(h)) or []
+        return got or ['站内没有一行直接指它']
+
     groups = []
 
-    # ① 同名武器在两页落到两枚主键
+    # ① 同一行在两页落到两枚主键
+    #
+    # **按站内行名分组，不按库里的名字。**「审判」与「审判\\玖的仪式版本」是站点
+    # 有意分开的两行——前者要当前那一版，后者指名了 v820 那一版，来源那句话逐字
+    # 对得上。按库里的名字分组会把它们当成冲突，合并就把指定版本挪没了。
+    #
+    # 弹药槽也要分开：极高反射与隐士各有两把同名不同弹药位的枪。
+    def ammo(h):
+        return ((facts.items.get(str(h)) or {}).get('equippingBlock') or {}).get('ammoType')
+
     by = collections.defaultdict(list)
     for slug, d in pages.items():
         for h, blocks in d['said'].items():
             row = facts.items.get(h)
-            if row and row.get('itemType') == 3:
-                by[resolve.text(row)].append((slug, h))
+            if not row or row.get('itemType') != 3:
+                continue
+            for b in blocks:
+                by[(b['i18n']['zh-CN'].get('name', ''), ammo(h))].append((slug, h))
     items = []
-    for name, rows in sorted(by.items()):
+    for (name, _), rows in sorted(by.items()):
         keys = sorted({h for _, h in rows})
-        if len(keys) < 2:
+        if len(keys) < 2 or len({s for s, _ in rows}) < 2:
             continue
         items.append({'label': name, 'options': [
             {'value': h, 'title': nm(h), 'icon': icon(h),
              'lines': ['主键 %s' % h, ty(h), '发布 %s' % (rel(h) or '—'),
-                       '在这几页：' + '、'.join(sorted({s for s, hh in rows if hh == h})),
-                       (facts.source(h) or '（无来源）')[:52]]}
+                       '库里叫「%s」' % nm(h)] + where(h)
+                      + [(facts.source(h) or '（无来源）')[:52]]}
             for h in keys]})
     groups.append({
         'id': 'dup', 'title': '同一件武器在两页顶着两枚主键',
@@ -91,7 +119,8 @@ def collect(facts):
             items.append({'label': '%s · %s' % (slug, nm(h) or h),
                           'shared': {'title': nm(h) or h, 'icon': icon(h),
                                      'lines': ['主键 %s' % h, ty(h),
-                                               '覆盖 %d 枚' % (1 + len(blocks[0].get('covers') or []))]},
+                                               '覆盖 %d 枚' % (1 + len(blocks[0].get('covers') or []))]
+                                              + where(h)},
                           'rows': [b['i18n']['zh-CN'].get('name', '') for b in blocks],
                           'options': [
                               {'value': 'keep', 'title': '保持现状',
@@ -124,7 +153,7 @@ def collect(facts):
                     'label': '%s · %s' % (slug, b['i18n']['zh-CN'].get('name', '')),
                     'members': [{'title': nm(x) or x, 'icon': icon(x),
                                  'lines': ['主键 %s' % x, ty(x),
-                                           '行首' if x == h else 'covers']}
+                                           '行首' if x == h else 'covers'] + where(x)}
                                 for x in [h] + cov],
                     'options': [
                         {'value': 'split', 'title': '拆成各自的行',
@@ -146,7 +175,8 @@ def collect(facts):
                 used.update(b.get('covers') or [])
     items = [{'label': '%s · %s' % (v['kind'], v['name']),
               'members': [{'title': v['name'], 'icon': icon(h),
-                           'lines': ['主键 %s' % h, v['from']]}],
+                           'lines': ['主键 %s' % h, v['from'],
+                                     '站内没有一行直接指它']}],
               'options': [{'value': 'keep', 'title': '留着',
                            'lines': ['配装工具要引用职业与来源']},
                           {'value': 'drop', 'title': '删掉',
