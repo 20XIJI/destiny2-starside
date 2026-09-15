@@ -270,7 +270,7 @@ def render(page, digest='', dex=None):
             o.append('<div class="mod-row">')
             for mod in row:
                 name = text_of(mod['name'], collapse=True)
-                dex.add(hash=' '.join(stamp(text_of(mod['name']), s['name'])),
+                dex.add(keys=stamp(text_of(mod['name']), s['name']),
                         anchor='art-%d' % i, kind=label, name=name,
                         icon='%s/%s' % (PAGE, icon_src(mod['icon'])),
                         pos='%d,%s' % (ri, mod['tier']),

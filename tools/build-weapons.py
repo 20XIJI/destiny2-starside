@@ -227,7 +227,7 @@ def site_perks():
     for e in rows:
         if not e.get('desc'):
             continue
-        for h in (e.get('hash') or '').split():
+        for h in e.get('keys') or ():
             out.setdefault(h, [e['desc'], e['anchor'], e['kind']])
     return out
 

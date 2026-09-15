@@ -3,13 +3,13 @@
  "token": "",
  "searchable": true,
  "entries": [
-  {"anchor": "sec-2", "hash": "593808239", "icon": "shopping-other/icons/8a126a8a14.webp", "kind": "其他", "name": "翻新 A499", "q": "翻新 A499"},
-  {"anchor": "sec-2", "hash": "1361871430", "icon": "shopping-other/icons/a244fc9b50.webp", "kind": "其他", "name": "韦兰迪夫-D", "q": "韦兰迪夫-D"},
-  {"anchor": "sec-2", "hash": "42435996", "icon": "shopping-other/icons/d53b47fdec.webp", "kind": "其他", "name": "完美逆行", "q": "完美逆行"},
-  {"anchor": "sec-2", "hash": "3615748501", "icon": "shopping-other/icons/f033972fd8.webp", "kind": "其他", "name": "好建议", "q": "好建议"},
-  {"anchor": "sec-2", "hash": "135971347", "icon": "shopping-other/icons/f584d3c80d.webp", "kind": "其他", "name": "Ψ永恒 IV", "q": "Ψ永恒 IV"},
-  {"anchor": "sec-2", "hash": "3524386983", "icon": "shopping-other/icons/ab1d62eb98.webp", "kind": "其他", "name": "沉没", "q": "沉没"},
-  {"anchor": "sec-2", "hash": "2462965802", "icon": "shopping-other/icons/f6fef56394.webp", "kind": "其他", "name": "无礼言论", "q": "无礼言论"},
-  {"anchor": "sec-2", "hash": "1553681400", "icon": "shopping-other/icons/48c6c6d7b4.webp", "kind": "其他", "name": "隐晦沙漏", "q": "隐晦沙漏"}
+  {"anchor": "sec-2", "icon": "shopping-other/icons/8a126a8a14.webp", "keys": ["593808239"], "kind": "其他", "name": "翻新 A499", "q": "翻新 A499"},
+  {"anchor": "sec-2", "icon": "shopping-other/icons/a244fc9b50.webp", "keys": ["1361871430"], "kind": "其他", "name": "韦兰迪夫-D", "q": "韦兰迪夫-D"},
+  {"anchor": "sec-2", "icon": "shopping-other/icons/d53b47fdec.webp", "keys": ["42435996"], "kind": "其他", "name": "完美逆行", "q": "完美逆行"},
+  {"anchor": "sec-2", "icon": "shopping-other/icons/f033972fd8.webp", "keys": ["3615748501"], "kind": "其他", "name": "好建议", "q": "好建议"},
+  {"anchor": "sec-2", "icon": "shopping-other/icons/f584d3c80d.webp", "keys": ["135971347"], "kind": "其他", "name": "Ψ永恒 IV", "q": "Ψ永恒 IV"},
+  {"anchor": "sec-2", "icon": "shopping-other/icons/ab1d62eb98.webp", "keys": ["3524386983"], "kind": "其他", "name": "沉没", "q": "沉没"},
+  {"anchor": "sec-2", "icon": "shopping-other/icons/f6fef56394.webp", "keys": ["2462965802"], "kind": "其他", "name": "无礼言论", "q": "无礼言论"},
+  {"anchor": "sec-2", "icon": "shopping-other/icons/48c6c6d7b4.webp", "keys": ["1553681400"], "kind": "其他", "name": "隐晦沙漏", "q": "隐晦沙漏"}
  ]
 }

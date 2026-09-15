@@ -65,7 +65,7 @@ def variants():
         out.append({'page': 'armor-mods', 'anchor': meta['anchor'], 'kind': meta['part'],
                     'name': name, 'icon': 'armor-mods/icons/%s' % meta['icon'],
                     # 变体自己的主键：它是一枚具体的模组，不是复合行那一条的别名。
-                    'hash': meta.get('hash', ''),
+                    'keys': meta.get('keys') or [],
                     'token': '', 'sub': meta['row'], 'pos': '', 'desc': '',
                     # 落地过滤用复合行的名字：变体名在那一页一次都不出现，
                     # 拿它去过滤会滤成空页，看着像跳错了。

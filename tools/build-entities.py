@@ -93,7 +93,7 @@ def anchors(page):
     if not got:
         return out
     for e in got['entries']:
-        for h in (e.get('hash') or '').split():
+        for h in e.get('keys') or ():
             out.setdefault(h, e.get('anchor') or '')
     return out
 

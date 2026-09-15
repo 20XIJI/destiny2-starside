@@ -371,7 +371,8 @@ def render(cats: list[Category], md: str, digest: str = '',
                 for shown, other in pairs:
                     # 玩家按来源叫套装（「玻璃拱顶四件套」），所以来源也做一个键，
                     # 两条指向同一处，格子上把另一个写成副名。
-                    dex.add(hash=key, anchor=anchor, kind='%s 件' % b.piece,
+                    dex.add(keys=[key] if key else [], anchor=anchor,
+                            kind='%s 件' % b.piece,
                             name=shown, sub=other, desc=desc,
                             icon='armor-sets/icons/%s' % b.icon if b.icon else '')
                 parts.append('<div class="bonus-body">%s</div>\n' % body)

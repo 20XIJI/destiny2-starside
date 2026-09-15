@@ -35,7 +35,9 @@ from markup import die, text_of
 
 OUT_DIR = os.path.join(shell.ROOT, 'data', 'index')
 
-FIELDS = ('hash', 'anchor', 'kind', 'name', 'icon', 'sub', 'q', 'pos', 'desc', 'of')
+# keys 是主键数组。从前是一串空格拼接的字符串（"788178929 2679249093"），
+# 六处消费者各自 .split() 一遍——那是把结构化的东西压成文本再各自解回来。
+FIELDS = ('keys', 'anchor', 'kind', 'name', 'icon', 'sub', 'q', 'pos', 'desc', 'of')
 
 
 # 元素页 → 着色 token。六个分支页上的碎片、星相、超能、手雷、近战都归本元素。
@@ -166,10 +168,10 @@ class Index:
         self.searchable = searchable
         self.rows = []
 
-    def add(self, *, hash='', anchor='', kind='', name='', icon='',
+    def add(self, *, keys=(), anchor='', kind='', name='', icon='',
             sub='', q=None, pos='', desc='', of=''):
         # q 缺省跟着 name 走；显式给空串表示这一条不参与页内过滤（分节标题那一类）。
-        self.rows.append({'hash': hash, 'anchor': anchor, 'kind': kind,
+        self.rows.append({'keys': list(keys), 'anchor': anchor, 'kind': kind,
                           'name': name, 'icon': icon, 'sub': sub,
                           'q': name if q is None else q, 'pos': pos, 'desc': desc,
                           'of': of})

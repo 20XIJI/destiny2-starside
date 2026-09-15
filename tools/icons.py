@@ -123,7 +123,7 @@ def wanted():
             if row.get('of') or not row['icon']:
                 continue
             path = next((p for p in (icon_of(facts, k)
-                                     for k in (row['hash'] or '').split()) if p), None)
+                                     for k in row['keys']) if p), None)
             if not path:
                 blank[page] += 1
                 continue

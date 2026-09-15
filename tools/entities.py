@@ -133,8 +133,8 @@ def collect():
         # 同名两行只登记先出现的那一个：后面撞车那一条会把它们都报出来。
         index = {}
         for e in pagedex.must_read(page)['entries']:
-            if not e.get('of') and e['hash']:
-                index.setdefault(e['name'], e['hash'])
+            if not e.get('of') and e['keys']:
+                index.setdefault(e['name'], e['keys'])
         taken = {}
         for title, cols in rows_of(page):
             name = shown(title)
@@ -144,7 +144,7 @@ def collect():
                 continue
             # 一行可能带几个主键（组合行、词条一族）。**记录挂在第一个上**：
             # 那是这一行说的那件东西，其余是它带的插件，各自另有自己的记录。
-            head = key.split()[0]
+            head = key[0]
             if not head.isdigit() or facts.items.get(head, {}).get('itemType') != 3:
                 continue
             if head in taken:

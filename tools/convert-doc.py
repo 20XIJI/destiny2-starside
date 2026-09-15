@@ -482,22 +482,21 @@ def index_row(dex, title, stamp, body, lane):
     anchor, label = SECTION
     mine, theirs = ((), ()) if PAGE in pagedex.NO_DESC else pagedex.split_spirit(pagedex.tds(body))
     icon = pagedex.IMG.search(body)
-    key = ' '.join(stamp)
-    dex.add(hash=key, anchor=anchor, kind=lane or label,
+    dex.add(keys=stamp, anchor=anchor, kind=lane or label,
             name=text_of(title, collapse=True),
             icon='%s/%s' % (PAGE, icon.group(1)) if icon else '',
             desc=pagedex.wrap(*pagedex.panel(mine)))
-    index_perks(dex, key, mine, anchor, lane or label, dex.rows[-1]['name'])
+    index_perks(dex, stamp, mine, anchor, lane or label, dex.rows[-1]['name'])
     # 异域职业物品那张表一行摆两条词条：行标题一条，中间一格再一条。
     # **中间那一条也要自己的主键**：它是另一件东西，不是行标题那件的别名。
     for name, ico in pagedex.SPIRIT.findall(body):
         shown = text_of(name, collapse=True)
-        dex.add(hash=' '.join(STAMP(shown) if STAMP else []),
+        dex.add(keys=STAMP(shown) if STAMP else (),
                 anchor=anchor, kind=lane or label, name=shown,
                 icon='%s/%s' % (PAGE, ico), desc=pagedex.wrap(*pagedex.panel(theirs)))
 
 
-def index_perks(dex, key, cells, anchor, kind, row_name):
+def index_perks(dex, keys, cells, anchor, kind, row_name):
     """异域那两页 PERK 格里的名字 → 挂在行标题主键下的子条目。
 
     这一列写的是这件异域自己的词条（「阿格尔的召唤」「飞掠尖刺」），站内从前
@@ -506,20 +505,20 @@ def index_perks(dex, key, cells, anchor, kind, row_name):
 
     要不要抽这一列由格子的形状定（见 pagedex.exotic_perks），不列页名。
     """
-    if PERK is None or not key:
+    if PERK is None or not keys:
         return
     for name, icon in pagedex.exotic_perks(cells):
-        got = PERK(key.split(), name)
+        got = PERK(list(keys), name)
         if got is None:          # 槽位说明词（「可制作 Perk」），不是一件东西
             continue
         if not got:
             die('%s 的 PERK 列里「%s」解析不到主键：改成 manifest 的正名，'
                 '或写进 resolve.PERK_LABELS 说明它不是实体' % (row_name, name))
-        dex.add(hash=' '.join(got), anchor=anchor, kind=kind,
+        dex.add(keys=got, anchor=anchor, kind=kind,
                 name=name, icon='%s/%s' % (PAGE, icon),
                 # 落地过滤用行标题那件东西的名字：词条名在页内搜索框里同样搜得到，
                 # 滤出来的正是同一行，但行标题那个词在这一页上一定存在。
-                q=row_name, of=key)
+                q=row_name, of=list(keys))
 
 
 def cards_of(spec, up):

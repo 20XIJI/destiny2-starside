@@ -40,7 +40,7 @@ def compare():
             if row.get('of') or not row['icon']:
                 continue
             path = next((p for p in (icons.icon_of(facts, k)
-                                     for k in (row['hash'] or '').split()) if p), None)
+                                     for k in row['keys']) if p), None)
             if not path:
                 stat[page]['没图'] += 1
                 continue

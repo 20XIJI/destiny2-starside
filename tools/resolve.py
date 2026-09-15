@@ -909,7 +909,7 @@ def site_names():
     for page in pagedex.TOKENS:
         for e in pagedex.must_read(page)['entries']:
             if e['name'] and e['kind'] != '分节' and not e.get('of'):
-                out.setdefault((e['name'], page), e.get('hash') or '')
+                out.setdefault((e['name'], page), ' '.join(e.get('keys') or ()))
     return [(n, p, k) for (n, p), k in sorted(out.items())]
 
 
@@ -1052,7 +1052,7 @@ def names():
     total = 0
     for page in pagedex.TOKENS:
         for e in pagedex.must_read(page)['entries']:
-            keys = (e.get('hash') or '').split()
+            keys = e.get('keys') or []
             if not keys or (page in SET_PAGES and norm(e['name']) in aliases):
                 continue
             # 站内自己标了版本后缀的行（「鲁莽神谕\\众神殿版本」）与派生条目
