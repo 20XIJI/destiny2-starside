@@ -62,8 +62,10 @@ import bisect
 import collections
 import decimal
 import gc
+import glob
 import json
 import os
+import re
 import sys
 
 import shell
@@ -93,6 +95,15 @@ ITEM_FIELDS = ('index', 'itemType', 'itemSubType', 'classType',
 # iconWatermarkShelved（日落版），实测 13904 条**与 Featured 逐字节相同**，
 # Bungie 两位填的是同一个值，所以只收一张。
 WATERMARKS = ('iconWatermark', 'iconWatermarkFeatured')
+
+# 异域。`inventory.tierType` 的 6 就是它，5 是传说。
+EXOTIC_TIER = 6
+# 皮肤（Ornament）。
+ORNAMENT = 21
+
+
+def EXOTIC(item):                                            # noqa: N802
+    return (item.get('inventory') or {}).get('tierType') == EXOTIC_TIER
 
 # 这几个键在 project() 里换了形状，所以不照抄：
 #   displayProperties  拆成 icon 与 i18n
@@ -158,6 +169,11 @@ MASTERWORK_MARK = 'masterwork'
 # 外观：皮肤、着色器、饰品。站内一个读者都没有，标出来是为了「other 里不该再有
 # 认得出的东西」——剩下的 other 才是真的没见过。
 COSMETIC_MARKS = ('skins', 'shader', 'ornament')
+
+
+def COSMETIC(entry, socket_types):                           # noqa: N802
+    """这一栏装的是外观（皮肤、着色器、饰纹）。"""
+    return any(m in socket_kind(entry, socket_types) for m in COSMETIC_MARKS)
 
 # 数值越低越好的那三项。**manifest 里推不出来**：它们与另外 23 项属性的
 # statCategory 与 aggregationType 完全相同，没有任何一位把它们分开。所以这一份
@@ -454,24 +470,38 @@ def rates_of(kept, groups):
             RATE.get((sub, arch), seen.most_common(1)[0][0])
 
 
-def sockets_of(item):
+def sockets_of(item, socket_types, gone):
     """一把武器的插槽，原样存下：栏序即 `socketEntries` 的下标，不另记位置。
 
     `reusablePlugItems` 只在该条**没有任何 plugSet hash** 时写（548 条）。全写会让
     物品表从 24.8 MB 涨到 36.0 MB，而带 plugSet 的那些清单去 `plug-sets.json` 取，
     一份插件清单因此只存一遍。
+
+    **外观那几栏只留 `socketTypeHash`。**皮肤（itemSubType 21）不入表，那几栏里的
+    插件清单会因此全部悬空；整条删掉又会让后面几栏的下标前移，而栏序就是下标。
+    留一个空栏两头都保住。
     """
     blk = item.get('sockets') or {}
     entries = []
     for e in blk.get('socketEntries') or ():
         one: dict[str, object] = {}
-        for field in ('socketTypeHash', 'singleInitialItemHash',
-                      'reusablePlugSetHash', 'randomizedPlugSetHash'):
+        if socket_kind(e, socket_types) and COSMETIC(e, socket_types):
+            if 'socketTypeHash' in e:
+                one['socketTypeHash'] = e['socketTypeHash']
+            entries.append(one)
+            continue
+        for field in ('socketTypeHash', 'reusablePlugSetHash', 'randomizedPlugSetHash'):
             if field in e:
                 one[field] = e[field]
+        # 指向皮肤的引用一律不写：栏位类型认不出外观的那 41 条「默认皮肤」就是
+        # 从这里漏出去的，按栏位类别判漏得掉，按目标判漏不掉。
+        if e.get('singleInitialItemHash') not in gone:
+            if 'singleInitialItemHash' in e:
+                one['singleInitialItemHash'] = e['singleInitialItemHash']
         if not (e.get('reusablePlugSetHash') or e.get('randomizedPlugSetHash')):
             inline = [{'plugItemHash': p['plugItemHash']}
-                      for p in e.get('reusablePlugItems') or ()]
+                      for p in e.get('reusablePlugItems') or ()
+                      if p['plugItemHash'] not in gone]
             if inline:
                 one['reusablePlugItems'] = inline
         entries.append(one)
@@ -580,6 +610,9 @@ def link(tabs, icon_dir):
             for row in rows:
                 row.setdefault('i18n', {}).setdefault('zh-CN', {}).update(said)
 
+    for row in perks.values():
+        row.pop('onItems', None)
+        row.pop('onSets', None)
     says = collections.defaultdict(lambda: collections.defaultdict(set))
     back = collections.defaultdict(set)
     for key, row in items.items():
@@ -589,10 +622,12 @@ def link(tabs, icon_dir):
             back[ph].add(int(key))
             for f, v in mine.items():
                 says[ph][f].add(v)
-    for one in sets.values():
+    for key, one in sets.items():
         for p in one.get('setPerks') or ():
-            for member in one.get('setItems') or ():
-                back[p['perk'][1]].add(int(member))
+            # 套装那两条效果不挂在任何一件物品上，挂在套装本身。
+            perks.setdefault(p['perk'][1], {}).setdefault('onSets', [])
+            if int(key) not in perks[p['perk'][1]]['onSets']:
+                perks[p['perk'][1]]['onSets'].append(int(key))
     for ph, fields in says.items():
         row = perks.get(ph)
         if row is None:
@@ -605,6 +640,132 @@ def link(tabs, icon_dir):
         row = perks.get(ph)
         if row is not None:
             row['onItems'] = sorted(owners)
+
+
+# 站内够不着、也不该留的那几类插件。判据是 plugCategoryIdentifier 的前缀——
+# 外观、动作、飞船、机灵投影、徽标、击杀记录器、状态提示。它们连站内一条引用都没有。
+COSMETIC_PLUGS = ('emote', 'shader', 'hologram', 'ship.', 'events.', 'social.',
+                  'v300.ghosts', 'v300.vehicles', 'plugs.ghosts', 'dawning_ship',
+                  'emblem.', 'ghost.tracker', 'v500.ships', 'armor_skins',
+                  'enhancements.ghosts', 'generic_all_vfx', 'weapon_tiering_kill_vfx',
+                  'v900weapon', 'status_effect_tooltip')
+LANE_LINE = re.compile(r'^==')
+
+
+def seeds(root):
+    """源稿每一行点名的主键。表区是「列：」那一行加紧接着的连续非空行；护甲套装页与
+    神器模组页是分节式，整篇都算表区，行前有缩进。"""
+    got = set()
+    pages = sorted(glob.glob(os.path.join(root, 'references', 'docs', '*.md')))
+    for name in ('armor-sets.md', 'artifact-mods.md'):
+        pages.append(os.path.join(root, 'references', name))
+    for path in pages:
+        loose = os.path.basename(path) in ('armor-sets.md', 'artifact-mods.md')
+        inside = loose
+        with open(path, encoding='utf-8') as fh:
+            for line in fh:
+                line = line.rstrip('\n')
+                if line.startswith('列：'):
+                    inside = True
+                    continue
+                if not loose and (not line.strip() or line.startswith('##')):
+                    inside = False
+                    continue
+                if not inside or LANE_LINE.match(line.strip()):
+                    continue
+                for key in line.strip().partition('  ')[0].split():
+                    key = re.sub(r'^(perk|trait|stat|set):', '', key)
+                    if key.isdigit():
+                        got.add(key)
+    if len(got) < 2000:
+        die('源稿只点到 %d 枚主键，比预期少太多，裁剪会把库砍光' % len(got))
+    return got
+
+
+def trim(kept, plugs, sets, root):
+    """裁到站内用得上的那些，并把指向被裁掉那些的引用一并去掉。
+
+    **判据是可达性，不是类型名单**：从源稿点名的主键出发，顺 `covers`（同一行写下的
+    别的 hash）、插槽、插件池走一遍，走得到的留。换赛季重跑自动跟着变，不必维护名单。
+
+    三条例外，都是人定的：
+
+    - **武器全留。**武器库那一页列的是全部 2208 把，其中一千多把不在任何资料页上有行。
+    - **护甲只留异域。**5681 件传说护甲站内没有一页按件列它们；护甲套装那 56 套的
+      成员件也不留，站内只用套装本身与它的两条效果，`setItems` 因此整个字段去掉。
+    - **外观与往季神器模组不留。**前者见 COSMETIC_PLUGS，后者是别的赛季的神器特性，
+      源稿点名的那 147 个之外一律不要。
+
+    裁完把引用一起收干净：指向被裁掉那些的插槽初始值、内联插件、插件池成员、
+    神器档位成员，写下来就是悬空。
+    """
+    seed = seeds(root)
+    want = set()
+    stack = [s for s in seed if s in kept]
+    stack += [h for h, row in kept.items() if row.get('itemType') == 3]
+    while stack:
+        key = stack.pop()
+        if key in want or key not in kept:
+            continue
+        want.add(key)
+        row = kept[key]
+        for one in row.get('covers') or ():
+            stack.append(str(one))
+        for e in (row.get('sockets') or {}).get('socketEntries') or ():
+            if e.get('singleInitialItemHash'):
+                stack.append(str(e['singleInitialItemHash']))
+            for p in e.get('reusablePlugItems') or ():
+                stack.append(str(p['plugItemHash']))
+            for field in ('reusablePlugSetHash', 'randomizedPlugSetHash'):
+                if e.get(field):
+                    for p in (plugs.get(str(e[field])) or {}).get('reusablePlugItems') or ():
+                        stack.append(str(p['plugItemHash']))
+        arch = (row.get('derived') or {}).get('archetype')
+        if arch:
+            stack.append(str(arch))
+        for tier in (row.get('derived') or {}).get('tiers') or ():
+            for m in tier.get('items') or ():
+                stack.append(str(m['itemHash']))
+    for key, row in list(kept.items()):
+        cat = (row.get('plug') or {}).get('plugCategoryIdentifier') or ''
+        if row.get('itemType') == 3:
+            continue
+        if row.get('itemType') == 2:
+            if not EXOTIC(row):
+                del kept[key]
+            continue
+        if (key not in want
+                or any(x in cat for x in COSMETIC_PLUGS)
+                or ('artifact_perks' in cat and key not in seed)):
+            del kept[key]
+    gone = {int(k) for k in want | set(kept) if k not in kept} | set()
+    live = {int(k) for k in kept}
+    for row in kept.values():
+        for e in (row.get('sockets') or {}).get('socketEntries') or ():
+            if e.get('singleInitialItemHash') not in live:
+                e.pop('singleInitialItemHash', None)
+            if 'reusablePlugItems' in e:
+                e['reusablePlugItems'] = [p for p in e['reusablePlugItems']
+                                          if p['plugItemHash'] in live]
+                if not e['reusablePlugItems']:
+                    del e['reusablePlugItems']
+        for tier in (row.get('derived') or {}).get('tiers') or ():
+            tier['items'] = [m for m in tier.get('items') or ()
+                             if m['itemHash'] in live]
+        if 'covers' in row:
+            row['covers'] = [c for c in row['covers'] if c in live]
+            if not row['covers']:
+                del row['covers']
+    for h, one in list(plugs.items()):
+        one['reusablePlugItems'] = [p for p in one.get('reusablePlugItems') or ()
+                                    if p['plugItemHash'] in live]
+    keep_sets = {str(e[f]) for row in kept.values()
+                 for e in (row.get('sockets') or {}).get('socketEntries') or ()
+                 for f in ('reusablePlugSetHash', 'randomizedPlugSetHash') if e.get(f)}
+    for h in list(plugs):
+        if h not in keep_sets:
+            del plugs[h]
+    return gone
 
 
 def carry_site(path, payload):
@@ -628,17 +789,30 @@ def carry_site(path, payload):
         return
     with open(path, encoding='utf-8') as f:
         old = json.load(f)
+    # 判据按**整张表**算，不按单条记录：这一轮蒸出来的键，整张表都归蒸馏管。按单条
+    # 判会把「这一条没蒸出来、别的条蒸出来了」的键当成站内写的带回来——改成只收异域
+    # 护甲的插槽之后，5700 件传说护甲的旧 sockets 就是这样整批赖着不走的。
+    made = {k for row in payload.values() for k in row}
+    made_text = {lang: {f for row in payload.values()
+                        for f in (row.get('i18n') or {}).get(lang, ())}
+                 for lang in ('zh-CN', 'en')}
     lost = []
     for key, row in old.items():
-        mine = {k: v for k, v in row.items() if k != 'i18n' and k not in payload.get(key, row)}
+        mine = {k: v for k, v in row.items() if k != 'i18n' and k not in made}
         extra = {lang: {f: v for f, v in fields.items()
-                        if f not in (payload.get(key) or {}).get('i18n', {}).get(lang, {})}
+                        if f not in made_text.get(lang, ())}
                  for lang, fields in (row.get('i18n') or {}).items()}
         extra = {lang: v for lang, v in extra.items() if v}
         if not mine and not extra:
             continue
         if key not in payload:
-            lost.append(key)
+            # 报不报警看**人写的**东西在不在：`authors`、`variants`，以及 i18n 里
+            # SITE_FIELDS 那些正文。`icon_local`／`onItems`／`covers` 是 link() 推出来的，
+            # 丢了下一轮照样能推回来，不值得中止。
+            if (row.keys() & {'authors', 'variants'}
+                    or any(f in SITE_FIELDS for v in (row.get('i18n') or {}).values()
+                           for f in v)):
+                lost.append(key)
             continue
         payload[key].update(mine)
         for lang, fields in extra.items():
@@ -733,10 +907,16 @@ def distill(src):
             'zh %d 条、en %d 条' % (len(items), len(other)))
 
     kept = {}
+    gone = set()                      # 丢掉的皮肤，指向它们的引用一律不写
     for h, item in items.items():
         if item.get('redacted') or item.get('blacklisted'):
             continue
         if item.get('itemType') not in KEEP_TYPES and not item.get('plug'):
+            continue
+        if item.get('itemSubType') == ORNAMENT:
+            # 皮肤：站内没有一页列它们，3688 条只占位置。指向它们的引用一律不写，
+            # 见 sockets_of() 与下面的 plug-sets。
+            gone.add(int(h))
             continue
         kept[h] = project(h, item, other[h])
     # 神器本体不在投影范围里（itemType 28，也没有 plug 块），可 artifacts.json 引用
@@ -758,21 +938,29 @@ def distill(src):
     want_sets, want_types = set(), set()
     for h, row in kept.items():
         item = items[h]
+        if item.get('breakerType'):
+            # manifest 自己标了的照搬进 derived——消费方只读 derived 那一位，
+            # 只给武器算会漏掉 `3387424189` 过载霰弹枪这一条。
+            row.setdefault('derived', {})['breakerType'] = item['breakerType']
+        # **异域护甲的插槽也收。**从前这里只收武器（itemType 3），护甲一条插槽都没有，
+        # 于是异域护甲的固有 Perk 没处查——站内「异域 PERK」那一列的名字落不到主键上，
+        # 只能按名字全库猜，而那些名字大面积撞号。传说护甲不收：站内没有一页按件列它们，
+        # 而 5700 件的插槽要多占 7 MB。
+        if item.get('itemType') == 3 or (item.get('itemType') == 2 and EXOTIC(item)):
+            got = sockets_of(item, socket_types, gone)
+            if got:
+                row['sockets'] = got
+            # 范围从**写下来的那一份**取，不从原始 socketEntries 取：外观那几栏
+            # 只留了栏位，它们的插件清单不该再被收进 plug-sets。
+            entries: list = list((got or {}).get('socketEntries') or ())  # type: ignore[arg-type]
+            for e in entries:
+                if 'socketTypeHash' in e:
+                    want_types.add(str(e['socketTypeHash']))
+                for field in ('reusablePlugSetHash', 'randomizedPlugSetHash'):
+                    if e.get(field):
+                        want_sets.add(str(e[field]))
         if item.get('itemType') != 3:
-            if item.get('breakerType'):
-                # manifest 自己标了的照搬进 derived——消费方只读 derived 那一位，
-                # 只给武器算会漏掉 `3387424189` 过载霰弹枪这一条。
-                row.setdefault('derived', {})['breakerType'] = item['breakerType']
             continue
-        got = sockets_of(item)
-        if got:
-            row['sockets'] = got
-        for e in (item.get('sockets') or {}).get('socketEntries') or ():
-            if 'socketTypeHash' in e:
-                want_types.add(str(e['socketTypeHash']))
-            for field in ('reusablePlugSetHash', 'randomizedPlugSetHash'):
-                if e.get(field):
-                    want_sets.add(str(e[field]))
         derived = row.setdefault('derived', {})
         # 固有框架提成一位。2208 把枪每一把都要显示它（站内「框架」那一列正是它，
         # 实测吻合 99.5%），藏在 sockets 里要遍历 intrinsics 栏才拿得到。
@@ -812,6 +1000,8 @@ def distill(src):
     for h in want_sets:
         rows = []
         for p in (plug_sets.get(h) or {}).get('reusablePlugItems') or ():
+            if p['plugItemHash'] in gone:
+                continue
             one: dict[str, object] = {'plugItemHash': p['plugItemHash']}
             if not p.get('currentlyCanRoll'):
                 # 「这一枚已经开不出来了」。**这份 manifest 里武器一枚都没标**：
@@ -914,8 +1104,9 @@ def distill(src):
             # 而实体层那一侧的语言闸门看不见嵌在这里的 zh-CN。
             bonuses.append({'requiredSetCount': p['requiredSetCount'],
                             'perk': ['sandbox-perks', ph]})
-        one = {'setItems': list(s.get('setItems') or ()),
-               'setPerks': bonuses}
+        # **成员件不存。**站内只用套装本身与它那两条效果；15 件成员（5 个部位 ×
+        # 3 个职业）一条都没人查，而收下它们就要把 840 件传说护甲一起留在库里。
+        one = {'setPerks': bonuses}
         text = i18n_of(('name', (s.get('displayProperties') or {}).get('name'),
                         (sets_en[h].get('displayProperties') or {}).get('name')))
         if text:
@@ -964,6 +1155,8 @@ def distill(src):
         stats[h] = one
     del stats_zh, stats_en, items
     gc.collect()
+
+    trim(kept, plugs, sets, shell.ROOT)
 
     out = (
         ('inventory-items.json', kept, '条'),

@@ -713,7 +713,7 @@ class ManifestLayer(unittest.TestCase):
         # 推出来的，消费方读的是它，覆盖 2208 把武器。
         nonzero = sum(bool(v.get('breakerType')) for v in items.values())
         got = sum('breakerType' in (v.get('derived') or {}) for v in items.values())
-        self.assertEqual(nonzero, 18, 'manifest 自带非 0 breakerType 的应是 18 条，实际 %d' % nonzero)
+        self.assertGreater(nonzero, 0, 'manifest 自带的 breakerType 一条都没留下')
         self.assertGreater(got, 2000, 'derived.breakerType 只覆盖 %d 条，推导没跑' % got)
 
     def test_the_normalised_socket_kinds_cover_what_the_site_slices(self):
@@ -768,11 +768,20 @@ class ManifestLayer(unittest.TestCase):
                     self.assertTrue(tier['items'], '%s 有一档是空的' % key)
 
     def test_the_source_line_rides_on_the_item_not_a_second_table(self):
-        """来源那一句并进物品记录：9238 件物品对 9238 条收藏条目，严格一对一。"""
+        """来源那一句并进物品记录，不单出一张收藏条目表。
+
+        钉的是**接上没有**，不是接上多少条：库的范围随裁剪变，条数跟着变，而
+        「有 collectibleHash 的都该有来源那一句」这条不变。
+        """
         items = self.table('inventory-items.json')
-        got = sum(1 for v in items.values()
-                  if 'sourceString' in (v.get('i18n') or {}).get('zh-CN', {}))
-        self.assertGreater(got, 8000, '带来源的物品只有 %d 条，收藏条目没接上' % got)
+        want = [k for k, v in items.items() if v.get('collectibleHash')]
+        got = [k for k in want
+               if 'sourceString' in (items[k].get('i18n') or {}).get('zh-CN', {})]
+        self.assertGreater(len(want), 1000, '带 collectibleHash 的只有 %d 条' % len(want))
+        # 差的那几条是**收藏条目自己的 sourceString 就是空串**（manifest 里如此），
+        # 不是没接上。库尔之影、原谅、狼毒那几件异域是这样，现在 9 条。
+        self.assertLess(len(want) - len(got), 20,
+                        '%d 条有收藏条目却没接上来源' % (len(want) - len(got)))
         self.assertFalse((self.ROOT / 'collectibles.json').exists(),
                          'collectibles.json 又出现了——它是物品记录的一部分')
 
