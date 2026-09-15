@@ -586,9 +586,11 @@ def link(tabs, icon_dir):
         'equipable-item-sets']
     for table in tabs.values():
         for row in table.values():
-            row.pop('icon_local', None)
             if 'icon' not in row:
+                # Bungie 没给图的那些，站上发的是自己画的一张（护甲模组族那 11 个、
+                # 刀剑那三项属性、自发主键的机制行）。`icon_local` 是人写的，不动。
                 continue
+            row.pop('icon_local', None)
             name = os.path.splitext(os.path.basename(row['icon']))[0] + '.webp'
             if os.path.exists(os.path.join(icon_dir, name)):
                 row['icon_local'] = 'assets/icons/' + name
