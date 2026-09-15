@@ -621,7 +621,7 @@ class ManifestLayer(unittest.TestCase):
         边界一模糊就没人再分得清某个字段能不能跟着 manifest 重生成。
         """
         ours = {'release', 'breakerType', 'craftable', 'tierable', 'tiers',
-                'archetype', 'foundry'}
+                'archetype', 'foundry', 'rate'}
         # breakerType 是唯一两头都有的：根上那一位是 manifest 自己的字段，照原样留着。
         only_ours = ours - {'breakerType'}
         items = self.table('inventory-items.json')
@@ -664,6 +664,13 @@ class ManifestLayer(unittest.TestCase):
         arch = sum(1 for v in items.values()
                    if (v.get('derived') or {}).get('archetype'))
         self.assertGreater(arch, 2000, 'derived.archetype 只覆盖 %d 把枪' % arch)
+        # 射速挂在框架那枚插件上、按枪型分档：同一枚「攻击型框架」在霰弹枪上是 60、
+        # 在火箭发射器上是 25，掉成一个数就有一半的枪显示错的射速。
+        rate = {h: v['derived']['rate'] for h, v in items.items()
+                if (v.get('derived') or {}).get('rate')}
+        self.assertGreater(len(rate), 150, '只有 %d 枚框架挂上射速' % len(rate))
+        self.assertEqual(rate['3468089894']['7'], 60, '霰弹枪攻击型框架的射速应是 60')
+        self.assertEqual(rate['3468089894']['10'], 25, '火箭攻击型框架的射速应是 25')
 
     def test_the_artifact_tiers_ride_on_the_artifact_s_own_item_record(self):
         """七件神器的档位分组挂在本体那条物品上，不单出一张表。

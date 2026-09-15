@@ -58,6 +58,9 @@ manifest 是冻结快照——不会再有新赛季，所以这里跑一次、�
 """
 
 import argparse
+import bisect
+import collections
+import decimal
 import gc
 import json
 import os
@@ -147,6 +150,42 @@ COSMETIC_MARKS = ('skins', 'shader', 'ornament')
 # statCategory 与 aggregationType 完全相同，没有任何一位把它们分开。所以这一份
 # 是人记的，改了游戏才会变。destiny.report 也是硬编码同样三条。
 LOWER_IS_BETTER = frozenset({447667954, 2961396640, 3481294762})  # 蓄力时间 充能时间 发热量
+
+RPM = '4284893193'          # 每分钟发射数
+
+# **射速由枪型 × 框架决定**，不由具体哪一把枪决定：站内 149 处写法归并成 65 个
+# （枪型，框架）组，组内一致。所以它挂在框架那枚插件上，一个枪型一个值。
+#
+# 默认取该组里标称射速的众数。manifest 的标称值与站内实测差出 5% 以上的写在这里，
+# 以实测为准、取整到最近的 5；实测那一列在 `references/docs/weapon-frames.md` 的
+# 「真实 射速」。同一枚插件在两个枪型上是两个值（`3468089894` 攻击型框架在霰弹枪
+# 上 60、在火箭发射器上 25），所以键是这一对，不是插件自己。
+RATE = {
+    (7, 3983457027): 60,    # 霰弹枪 攻击型框架      标称 55，实测 60.0
+    (7, 3468089894): 60,    # 霰弹枪 攻击型框架      标称 55，实测 60.0
+    (7, 1636108362): 70,    # 霰弹枪 精密框架        标称 65，实测 72.0
+    (7, 895140517): 70,     # 霰弹枪 精密框架        标称 65，实测 72.0
+    (7, 918679156): 70,     # 霰弹枪 精确重击框架     标称 65，实测 72.4
+    (7, 1458010786): 90,    # 霰弹枪 轻质框架        标称 80，实测 92.3
+    (7, 407573255): 95,     # 霰弹枪 速射重弹        标称 87，实测 94.7
+    (7, 3923638944): 150,   # 霰弹枪 重型点射        标称 62，实测 150.0
+    (10, 3468089894): 25,   # 火箭发射器 攻击型框架   标称 25，实测 27.3
+    (10, 3419274965): 25,   # 火箭发射器 精密框架     标称 15，实测 24.2
+    (10, 216781713): 25,    # 火箭发射器 精密框架     标称 15，实测 24.2
+    (10, 1294026524): 25,   # 火箭发射器 适配框架     标称 20，实测 25.2
+    (10, 1019291327): 25,   # 火箭发射器 高冲击力框架  标称 15，实测 24.0
+    (12, 1019291327): 35,   # 狙击步枪 高冲击力框架    标称 72，实测 36.0
+    (13, 2928496916): 55,   # 脉冲步枪 微型导弹框架    标称 200，实测 53.1
+    (23, 1759472859): 30,   # 榴弹发射器 双重火力     标称 100，实测 31.9
+    (23, 3758615625): 35,   # 榴弹发射器 微型导弹框架  标称 90，实测 36.4
+    (23, 1395789926): 40,   # 榴弹发射器 波形框架     标称 72，实测 40.0
+    (23, 474269988): 35,    # 榴弹发射器 轻质框架     标称 90，实测 36.4
+    (25, 1294026524): 900,  # 追踪步枪 适配框架       标称 1000，实测 897.9
+    (31, 1019291327): 30,   # 弓箭 高冲击力框架       标称 80，实测 28.7
+    (33, 1986105578): 60,   # 偃月 攻击型偃月        标称 45，实测 59.8
+    (33, 1316753551): 65,   # 偃月 适配偃月          标称 55，实测 66.1
+    (33, 1956005708): 85,   # 偃月 速射偃月          标称 80，实测 84.1
+}
 
 ZH, EN = 'zh-CN', 'en'
 
@@ -298,6 +337,63 @@ def stats_of(item):
         return None
     # 从前这一位是字符串，2208 处。值位置上的 hash 一律整数。
     return {'statGroupHash': block['statGroupHash']}
+
+
+def shown(row, group, stat):
+    """一件东西某一项属性的显示值。算不出返回 None。
+
+    公式四个细节缺一不可：不加默认插件；先按 `scaledStats.maximumValue` 截断
+    再插值；两端截断不外推；银行家舍入。**属性组不缩放这一项时，投资值本身就是
+    显示值**——刀剑的弹药生成、5 把枪的每分钟发射数与伤害走的是这一条。
+    """
+    seen = [s for s in row.get('investmentStats') or ()
+            if str(s['statTypeHash']) == stat]
+    if not seen:
+        return None
+    # 判据是「这一项在不在」，不是「值是不是 0」：投资值 0 过曲线出来可以是 55，
+    # 攻击型霰弹枪与微型导弹手枪整批都是这样。
+    base = sum(s['value'] for s in seen if not s.get('isConditionallyActive'))
+    for s in (group or {}).get('scaledStats') or ():
+        if str(s['statHash']) != stat:
+            continue
+        v = min(base, s['maximumValue'])
+        pts = s['displayInterpolation']
+        if not pts:
+            return v
+        xs = [p['value'] for p in pts]
+        ys = [p['weight'] for p in pts]
+        if v <= xs[0]:
+            return ys[0]
+        if v >= xs[-1]:
+            return ys[-1]
+        i = bisect.bisect_right(xs, v) - 1
+        span = ys[i] + (v - xs[i]) * (ys[i + 1] - ys[i]) / (xs[i + 1] - xs[i])
+        return int(decimal.Decimal(span).quantize(0, rounding=decimal.ROUND_HALF_EVEN))
+    return base
+
+
+def rates_of(kept, groups):
+    """射速写在框架那枚插件的 `derived.rate` 上，键是枪型。
+
+    从前站内 149 行各存一份，改个数要改 149 处；而这个量由枪型与框架决定，
+    一枚框架插件在一个枪型下只有一个值（210 组里 205 组的标称射速唯一，
+    另 5 组取众数）。取值规矩见 `RATE`。
+    """
+    by = collections.defaultdict(collections.Counter)
+    for h, row in kept.items():
+        if row.get('itemType') != 3:
+            continue
+        arch = (row.get('derived') or {}).get('archetype')
+        if not arch:
+            continue
+        got = shown(row, groups.get(str((row.get('stats') or {}).get('statGroupHash'))), RPM)
+        if got:
+            by[(row.get('itemSubType'), arch)][got] += 1
+    for (sub, arch), seen in by.items():
+        if str(arch) not in kept:
+            die('框架 %s 不在物品表里，射速挂不上去' % arch)
+        kept[str(arch)].setdefault('derived', {}).setdefault('rate', {})[str(sub)] = \
+            RATE.get((sub, arch), seen.most_common(1)[0][0])
 
 
 def sockets_of(item):
@@ -591,6 +687,8 @@ def distill(src):
                                      for pt in s.get('displayInterpolation') or ()],
         } for s in g.get('scaledStats') or ()]
         groups[h] = one
+
+    rates_of(kept, groups)
 
     # 来源要从收藏条目上取：物品自己的 displaySource 在复刻武器上一律是「随机特性：
     # 此物品无法从收藏品再次获取」，分不出版本；collectible 的 sourceString 才写着
