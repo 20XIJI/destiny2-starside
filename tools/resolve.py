@@ -347,8 +347,15 @@ class Facts:
                 ps = e.get('randomizedPlugSetHash') or e.get('reusablePlugSetHash')
                 plugs = []
                 for p in (self.plug_sets.get(str(ps)) or {}).get('reusablePlugItems') or ():
-                    # 老版本的武器留着已经开不出来的词条，这一位是唯一的判据。
+                    # 已经开不出来的那一位。这份 manifest 里武器一枚都没标，
+                    # 全库 4416 个 false 都在护甲的池子上。
                     if p.get('currentlyCanRoll', True):
+                        plugs.append(p['plugItemHash'])
+                # **插件也可以直接内联在这一栏上，不经 plugSet。**起源特性那一栏
+                # 常常是这样（548 条），从前只读 plugSet，那 2124 枚起源全漏在池外
+                # ——而「词条全覆盖」是主键判定的第一档判据。
+                for p in e.get('reusablePlugItems') or ():
+                    if p['plugItemHash'] not in plugs:
                         plugs.append(p['plugItemHash'])
                 gear = ch == CAT_GEAR
                 if gear:
