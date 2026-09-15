@@ -111,7 +111,37 @@ def EXOTIC(item):                                            # noqa: N802
 #   两张水印  路径归一化成文件名
 #   inventory / equippingBlock / plug / perks / investmentStats / sockets / stats
 #     只留站内读得到的那几位，各自在下面有一行理由
-RESHAPED = frozenset({
+# manifest 上有、站内一个读者都没有的那些。当初开的是「全收，以后发现真没用到
+# 再去掉」，这就是那一次去掉：物品表 63 个字段里这 38 个占 24.9%（5.0 MB），
+# 分四类，各自的理由——
+#
+#   UI 与外壳          action（「拆解」这个动词）、tooltipNotifications、tooltipStyle、
+#                      backgroundColor、uiItemDisplayStyle、allowActions、equippable、
+#                      nonTransferrable、isWrapper、isFeaturedItem、specialItemType、
+#                      doesPostmasterPullHaveSideEffects、acquireRewardSiteHash、
+#                      acquireUnlockHash
+#   大图与预览          screenshot、preview、secondaryIcon、iconWatermarkShelved
+#   已有更好的那一位    damageTypes／damageTypeHashes／defaultDamageTypeHash（留
+#                      defaultDamageType 那个枚举）、traitHashes（留 traitIds，
+#                      derived.release 认的就是它）、breakerTypeHash（留
+#                      derived.breakerType，全表只有 17 条）、seasonHash（7 条全空，
+#                      留 derived.season）、quality（版本与灌注档位，站内按
+#                      iconWatermark 认赛季）、translationBlock（锻造图样，站内按
+#                      derived.craftable 认）
+#   指向没收的表        loreHash（DestinyLoreDefinition 不收）、objectives、talentGrid、
+#                      sack、metrics、value、preview
+DROPPED = frozenset({
+    'action', 'tooltipNotifications', 'tooltipStyle', 'backgroundColor',
+    'uiItemDisplayStyle', 'allowActions', 'equippable', 'nonTransferrable',
+    'isWrapper', 'isFeaturedItem', 'specialItemType',
+    'doesPostmasterPullHaveSideEffects', 'acquireRewardSiteHash', 'acquireUnlockHash',
+    'screenshot', 'preview', 'secondaryIcon', 'iconWatermarkShelved',
+    'damageTypes', 'damageTypeHashes', 'defaultDamageTypeHash', 'traitHashes',
+    'breakerTypeHash', 'seasonHash', 'quality', 'translationBlock',
+    'loreHash', 'objectives', 'talentGrid', 'sack', 'metrics', 'value',
+})
+
+RESHAPED = DROPPED | frozenset({
     'hash', 'redacted', 'blacklisted', 'displayProperties',
     'itemTypeDisplayName', 'itemTypeAndTierDisplayName', 'flavorText', 'displaySource',
     'iconWatermark', 'iconWatermarkFeatured',
@@ -838,7 +868,11 @@ def carry_site(path, payload):
     # 判据按**整张表**算，不按单条记录：这一轮蒸出来的键，整张表都归蒸馏管。按单条
     # 判会把「这一条没蒸出来、别的条蒸出来了」的键当成站内写的带回来——改成只收异域
     # 护甲的插槽之后，5700 件传说护甲的旧 sockets 就是这样整批赖着不走的。
-    made = {k for row in payload.values() for k in row}
+    # DROPPED 那批整张表都不再产出，不加进来会被当成「站内写的」整批带回来。
+    made = ({k for row in payload.values() for k in row} | DROPPED
+            | {'insertAction', 'visibility', 'isPreviewEnabled', 'overridesUiAppearance',
+               'hideDuplicateReusablePlugs', 'avoidDuplicatesOnInitialization',
+               'alwaysRandomizeSockets', 'currencyScalars'})
     made_text = {lang: {f for row in payload.values()
                         for f in (row.get('i18n') or {}).get(lang, ())}
                  for lang in ('zh-CN', 'en')}
@@ -1062,7 +1096,12 @@ def distill(src):
     for h in want_types:
         st = socket_types.get(h) or {}
         one: dict[str, object] = {}
-        one.update({f: v for f, v in st.items() if f not in SKIP})
+        # 插槽类型上那几位是「这一栏在界面上怎么表现」——插入动作、可不可预览、
+        # 要不要盖掉外观、随不随机——站内一个读者都没有，占 124 KB。
+        ui = ('insertAction', 'visibility', 'isPreviewEnabled', 'overridesUiAppearance',
+              'hideDuplicateReusablePlugs', 'avoidDuplicatesOnInitialization',
+              'alwaysRandomizeSockets', 'currencyScalars')
+        one.update({f: v for f, v in st.items() if f not in SKIP and f not in ui})
         wl = [{'categoryHash': w['categoryHash'],
                'categoryIdentifier': w['categoryIdentifier']}
               for w in st.get('plugWhitelist') or ()]
