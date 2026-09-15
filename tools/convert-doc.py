@@ -20,6 +20,7 @@ from urllib.parse import quote
 
 import markup
 import pagedex
+import research
 import resolve
 import shell
 from markup import (IMG, LINK, Icons, bmark, die, inline, meta_line, meta_of,
@@ -674,9 +675,9 @@ def where_of(md, slug):
     return meta_of(md, '路径', required=False) or slug
 
 
-def render(md, slug):
-    # **在 land() 改写链接之前算**：库里存的是源稿原文，两边要对得上
-    digest = src_hash(md)
+def render(md, slug, digest):
+    # digest 由调用方给：它是**盘上那份源稿**的 sha1，而这里的 md 可能已经把
+    # 人写层的行补回表里了。库里存的是盘上那一份，两边要对得上。
     md = land(md, slug)
     m = re.match(r'^#\s+(.+)$', md.split('\n')[0])
     if not m:
@@ -914,6 +915,11 @@ def build(slug):
             die('找不到源稿 %s' % src)
         with open(src, encoding='utf-8') as f:
             md = f.read()
+        # **在补行之前算**：库里与编辑台存的是盘上这一份，不是补全之后那一份。
+        digest = src_hash(md)
+        # 行的内容在 research/<页>.json 里，源稿只留分节、表头与页面元信息。
+        # 补回来再交给下面这一整条渲染链，产出因此与迁移前逐字节相同。
+        md = research.inject(md, slug)
 
         where = where_of(md, slug)
         outdir = os.path.join(shell.ROOT, *where.split('/'))
@@ -936,7 +942,7 @@ def build(slug):
         DEX = (pagedex.Index(where, pagedex.TOKENS[where], searchable)
                if where in pagedex.TOKENS else None)
 
-        out, title = render(md, slug)
+        out, title = render(md, slug, digest)
         check(md, out, slug)
         # 有图却没写「首屏图标：」时静默退回 0，首屏那几张就全带上 loading="lazy"，
         # 要等布局算完才开始下载。漏写与「写 0」产出完全一样，页面上看不出区别，

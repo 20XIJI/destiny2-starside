@@ -39,6 +39,7 @@ import tempfile
 
 import markup
 import migrate
+import research
 import shell
 
 OUT = 'tools/items.json'
@@ -510,8 +511,29 @@ def naked_text(frags):
     return markup.text_of(GAP.join(out))
 
 
+def research_hits(terms, names, slug=None):
+    """人写层里该着色的裸出现，形状与 scan() 一致。
+
+    人写层没有 markdown 的表格几何：没有分隔行可认表头，也没有首格可认行标题。
+    这两件事由数据自己说——name 那个字段就是行标题，research.prose() 把它排掉。
+    位置按「条目在文件里的那一行」报：人写层一条一行，指得回去。
+    """
+    out = []
+    for page in research.pages():
+        if slug is not None and page != slug:
+            continue
+        rel = os.path.relpath(research.path(page), shell.ROOT)
+        for entry, line in research.numbered(page):
+            for _, text in research.prose(entry):
+                # keys=False：人写层的值是自由散文，不认「键：值」行。理由与
+                # normalize_record() 那一处相同。
+                for a, b, word in reversed(hits_in(text, terms, names, keys=False)):
+                    out.append((rel, line, a, b, word))
+    return out
+
+
 def scan(slug=None):
-    """[(源稿路径, 行号, 起, 止, 词)]，按源稿顺序。"""
+    """[(源稿路径, 行号, 起, 止, 词)]，按源稿顺序。人写层一并扫。"""
     terms, _ = load()
     names = sorted(terms, key=len, reverse=True)
     out = []
@@ -524,7 +546,7 @@ def scan(slug=None):
                 continue
             for a, b, word in reversed(hits_in(line, terms, names)):
                 out.append((rel, n, a, b, word))
-    return out
+    return out + research_hits(terms, names, slug)
 
 
 def suggest(slug=None):
@@ -541,6 +563,28 @@ def suggest(slug=None):
             text = lines[n - 1][a:b]
             print('  L%-5d %-14s → {%s|%s}  (%s)' % (n, text, token, text, kind))
     print('\n合计 %d 处待着色。--apply 落进源稿，再跑 npm run build。' % len(found))
+
+
+def apply_research(terms, names, slug=None):
+    """把建议落进人写层。与 apply() 同一条着色实现，只是落点不同。"""
+    total = 0
+    for page in research.pages():
+        if slug is not None and page != slug:
+            continue
+        got = research.must_read(page)
+        n = 0
+        for entry in got['entries']:
+            for key, text in research.prose(entry):
+                text, count = color_text(text, terms, names, keys=False)
+                n += count
+                if count:
+                    research.put(entry, key, text)
+        if n:
+            research.write(page, got['columns'], got['entries'])
+            print('references/research/%s.json —— 落了 %d 处'
+                  % (page.replace('/', '__'), n))
+            total += n
+    return total
 
 
 def apply(slug=None):
@@ -565,6 +609,7 @@ def apply(slug=None):
                 f.write('\n'.join(lines))
             print('%s —— 落了 %d 处' % (rel, n))
             total += n
+    total += apply_research(terms, names, slug)
     print('合计 %d 处。跑 npm run build，再看 git diff。' % total)
 
 

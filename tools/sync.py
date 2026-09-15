@@ -90,13 +90,18 @@ def sha1(text):
     return hashlib.sha1(text.encode()).hexdigest()
 
 
+def is_json(doc_id):
+    """源稿是结构化记录的那几档：配装，以及资料页的人写层。别处仍是 markdown。"""
+    return doc_id.startswith(('builds/', 'research/'))
+
+
 def is_build(doc_id):
-    """配装那一档。它的源稿是结构化记录，别处仍是 markdown。"""
+    """配装那一档。投稿这条入口只开给它。"""
     return doc_id.startswith('builds/')
 
 
 def id_of(path):
-    """绝对路径 → 库里的 _id。扩展名不进 _id：配装是 .json，别处是 .md。"""
+    """绝对路径 → 库里的 _id。扩展名不进 _id：配装与人写层是 .json，别处是 .md。"""
     rel = os.path.relpath(path, REFS).replace(os.sep, '/')
     return rel.rsplit('.', 1)[0]
 
@@ -104,7 +109,7 @@ def id_of(path):
 def path_of(doc_id):
     """库里的 _id → 绝对路径。**必须落在 references/ 之内**，realpath 挡穿越——
     _id 从库里来，而库是联网的那一侧。"""
-    ext = '.json' if is_build(doc_id) else '.md'
+    ext = '.json' if is_json(doc_id) else '.md'
     p = os.path.realpath(os.path.join(REFS, doc_id + ext))
     if not p.startswith(REFS + os.sep):
         raise RuntimeError('这个 _id 指到 references/ 外面去了：%s' % doc_id)
@@ -122,7 +127,9 @@ def as_source(doc_id, text):
 def on_disk():
     """盘上的全部源稿：{_id: 正文}。清单即 .gitignore 白名单放行的那几处。"""
     out = {}
-    heads = [os.path.join(REFS, 'docs')]
+    # 人写层与资料页源稿是一对：源稿留分节与表头，行的内容在人写层。**两份都要
+    # 对账**，只同步源稿的话，编辑台库里那一页就只剩一副空表。
+    heads = [os.path.join(REFS, 'docs'), os.path.join(REFS, 'research')]
     builds = os.path.join(REFS, 'builds')
     if os.path.isdir(builds):
         heads += [os.path.join(builds, d) for d in sorted(os.listdir(builds))]

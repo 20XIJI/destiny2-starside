@@ -32,9 +32,17 @@ Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构�
 
 `serve.json` 关掉了 `cleanUrls`，站内链接一律写全 `xxx/index.html`。
 
-`data/` 是机器生成、入库的两层：`data/manifest/` 由 `facts.py` 从 Bungie manifest 蒸馏
+`data/` 是机器生成、入库的三层：`data/manifest/` 由 `facts.py` 从 Bungie manifest 蒸馏
 （物品 19356 条、武器词条池 2208 把、效果与属性、护甲套装），`data/index/` 由三个资料
-生成器渲染时写出（23 页 3396 条，主键 → 锚点、分节、图标、说明）。两层都不手改。
+生成器渲染时写出（23 页 3396 条，主键 → 锚点、分节、图标、说明），`data/entities/` 由
+`build-entities.py` 把前者与人写层按主键合起来。三层都不手改。
+
+**人写层在 `references/research/<页>.json`，那是唯一人编辑的地方。**资料页的源稿因此
+只剩分节、表头与页面元信息，行的内容在人写层；`convert-doc.py` 构建时把行补回表里
+再渲染，产出与迁移前逐字节相同是构造性的。人写层存源稿方言（`{token|文字}` 与格内
+换行 `\\`），条目是有序表不是按名字建的字典——同一页真有同名不同物的两行。
+列名到字段名的对应写在文件自己的 `columns` 里，不写进脚本：站内 37 页有 96 种表头、
+287 种列名，硬编码等于每迁一页改一次脚本。
 
 `data/manifest/` 的字段名照 Manifest 拼全（`displayProperties.name`、`itemType`、
 `inventory.tierType`），双语键是 `zh-CN` 与 `en`。**根上只放 Manifest 自己的字段，
@@ -70,6 +78,12 @@ facts.py           Bungie manifest → data/manifest/（物品、武器词条池
 resolve.py         中文名 → itemHash。槽位限定候选，复刻按「源稿标的版本后缀 →
                    源稿列的词条与来源 → 非大师非特殊版 → 有收藏条目」逐条判，
                    分不出就交出候选、不猜；另出给产出戳主键的戳号器
+research.py        人写层：references/research/<页>.json 的读写与「把行补回源稿的表里」。
+                   --extract 把一页的表迁进来，源稿就地瘦身
+build-entities.py  data/manifest/ + 人写层 + data/index/ → data/entities/<页>.json。
+                   一份人写说明展开到它的每个成员（雪上加霜 2 个、有的 58 个），
+                   谁是普通版谁是强化版按 tierType 现算；一个主键被两条记录认领
+                   即报出，基线只许降不许升
 pagedex.py         页面索引：生成器渲染时登记条目，落成 data/index/<页>.json。
                    页面 → 着色 token、格子切分、说明取法都在这里
 vocab.py           配装词表：读 data/index/ 那批索引，槽位 → 来源页的对应在这里一处定义
@@ -144,6 +158,8 @@ npm test                                      # 两份离线回归，约 1 秒�
 python3 tools/convert-artifact-mods.py        # 源稿 references/artifact-mods.md
 python3 tools/convert-armor-sets.py           # 源稿 references/armor-sets.md
 python3 tools/convert-doc.py [slug]           # 源稿 references/docs/*.md，省略 slug 即全部
+python3 tools/research.py --extract <slug>    # 一页的表 → references/research/，源稿瘦身
+python3 tools/build-entities.py [页]          # 事实层 + 人写层 → data/entities/
 python3 tools/convert-build.py                # 源稿 references/builds/<赛季>/*.md
 python3 tools/build-weapons.py                # 武器库，源稿 references/items/*.json
 python3 tools/build-search.py                 # 全站搜索索引 assets/search.js
