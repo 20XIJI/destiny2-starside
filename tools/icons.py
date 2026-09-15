@@ -93,15 +93,20 @@ def width(page):
 
 
 def icon_of(facts, key):
-    """一个主键在库里的官方图路径。
+    """一个主键在库里的官方图路径。查不到的返回 None。
 
-    **套装与属性这两类取页面本地图，不取官方图。**不是库里没有——229 条走这条路
-    的条目里 225 条在 armor-sets.json 的 setPerks 与 stats.json 上都有 icon 字段。
-    它们没进来是因为这两页的图是从英文原表抠的，换成官方图是换图不是补图。
+    套装那一档的图挂在它的 setPerks 上，不在套装自己的 displayProperties 里
+    ——一个套装的 2 件与 4 件效果各有一张，取第一张。
     """
-    if key.startswith(('set:', 'stat:')):
-        return None
-    return resolve.icon_path(facts.at(key))
+    row = facts.at(key)
+    got = resolve.icon_path(row)
+    if got:
+        return got
+    for bonus in (row or {}).get('setPerks') or ():
+        got = resolve.icon_path(bonus)
+        if got:
+            return got
+    return None
 
 
 def wanted():

@@ -216,7 +216,10 @@ def build(facts):
                 orphan += 1
                 continue
             entry = said.get(tuple(keys)) or {}
-            at = order_of.setdefault(page, [])
+            # 行序一行一条，**不按主键逐个记**：一行带六个主键（一族词条）时
+            # 按主键记会把这一行在页面上重复六次。块下标取第一个主键那一条——
+            # 那是这一行说的那件东西。
+            first = True
             for key in keys:
                 lib = {} if key.startswith('row:') else facts.at(key)
                 if lib is None:
@@ -233,7 +236,10 @@ def build(facts):
                     out[key] = have
                 have.setdefault('pages', {}).setdefault(page, []).append(
                     page_part(page, entry, row))
-                at.append((keys, len(have['pages'][page]) - 1))
+                if first:
+                    order_of.setdefault(page, []).append(
+                        (keys, len(have['pages'][page]) - 1))
+                    first = False
     return out, order_of, claims, orphan
 
 
