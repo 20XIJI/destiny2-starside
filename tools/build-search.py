@@ -107,6 +107,34 @@ def title_of(url, src):
                             '%s 没有 <title>' % url).group(1)).rsplit(' · ', 1)[0]
 
 
+_EN: dict[str, dict[str, str]] = {}
+
+
+def english(url):
+    """这一页的 {中文名: 英文名}。库里两边一样的不收。
+
+    英文来自 data/entities/<页>.json 的 i18n.en.name，那一份是 manifest 蒸馏来的
+    ——18840/19356 条本来就带着英文，这里只是让它露出来：搜 One-Two Punch 也能
+    搜到雪上加霜。**只进全文那一格，不上页面**：站点是中文站，英文名在正文里
+    出现一次都会破坏版式。
+    """
+    page = url[:-len('/index.html')]
+    if page not in _EN:
+        path = os.path.join(shell.ROOT, 'data', 'entities',
+                            page.replace('/', '__') + '.json')
+        table = {}
+        if os.path.exists(path):
+            with open(path, encoding='utf-8') as f:
+                for row in json.load(f).values():
+                    zh = ((row.get('i18n') or {}).get('zh-CN') or {}).get('name')
+                    en = ((row.get('i18n') or {}).get('en') or {}).get('name')
+                    shown = (row.get('research') or {}).get('name')
+                    if en and en != zh and shown:
+                        table.setdefault(shown, en)
+        _EN[page] = table
+    return _EN[page]
+
+
 def scan(url):
     src = read(url)
     title = title_of(url, src)
@@ -125,8 +153,11 @@ def scan(url):
         if not items:
             continue
         sect = label_of(chunk, url)
+        seen = english(url)
         for hold, name, full in items:
-            rows.append({'u': url, 'a': hold, 'l': sect, 'n': name, 'x': full})
+            en = seen.get(name)
+            rows.append({'u': url, 'a': hold, 'l': sect, 'n': name,
+                         'x': '%s %s' % (full, en) if en else full})
     return {'u': url, 't': title, 'd': desc}, rows
 
 

@@ -437,6 +437,27 @@ class Generated(unittest.TestCase):
                                  len(got['entries']) + 2 * len(got['columns']),
                                  '%s 补回去的行数与条目数对不上' % page)
 
+    def test_the_search_index_carries_the_english_names(self):
+        """搜 One-Two Punch 要搜得到雪上加霜。
+
+        英文名一直在事实层里（18840/19356 条），这一条钉住它露在搜索索引的全文
+        那一格上。掉了的症状是「搜中文照样能搜到」，没有人会发现。
+        """
+        rows = [json.loads(line.rstrip(','))
+                for line in self.read('assets/search.js').split('\n')
+                if line.strip().startswith('{')]
+        entries = [r for r in rows if 'n' in r]
+        self.assertGreater(len(entries), 3000, '只读到 %d 个条目' % len(entries))
+        got = [r for r in entries if r['n'] == '雪上加霜']
+        self.assertTrue(got, '搜索索引里没有雪上加霜')
+        for r in got:
+            self.assertTrue(r['x'].endswith('One-Two Punch'),
+                            '雪上加霜的全文没带上英文名：%r' % r['x'][-40:])
+        withen = sum(1 for r in entries
+                     if re.search(r"[A-Za-z][A-Za-z .,'-]{2,}\Z", r['x']))
+        self.assertGreater(withen, 1500,
+                           '只有 %d 个条目带英文名，英文没接进来' % withen)
+
     def test_the_cloud_function_carries_the_same_dialect(self):
         # 云函数只 require 得到自己目录下的东西，所以那一份是复制过去的。
         self.assertEqual(self.read('functions/api/dialect.js'), self.read('admin/dialect.js'),
