@@ -51,7 +51,7 @@ ELEMENT = {1: ('动能', 'el-kinetic'), 2: ('电弧', 'el-arc'), 3: ('烈日', '
 # 干扰、眩晕），而读者关心的是「这把枪能破哪种勇士」。站内早就这么说了——
 # 「反屏障」在源稿里出现 52 次、「反过载」4 次，「贯穿护盾」一次都没有。
 # 三个勇士的正名见 check_terms.TERMS 的「屏障勇士／过载勇士／势不可挡勇士」。
-BREAKER = {1: '反屏障', 2: '反过载', 3: '反势不可挡'}
+BREAKER = icons.BREAKER      # 一处定义在 icons.py，实体层按同一份解表格里那一格
 
 # 弹药类型取自 equippingBlock.ammoType。manifest 没有专门的名字表，这三个词是
 # 游戏内的说法，与站内 references/docs/ammo.md 一致。
@@ -896,8 +896,8 @@ BASELINE = {'miss': 78, 'champ': 6, 'frames': 1}
 
 # 源稿「勇士」那一格写的是三枚图标之一。图标 → 破盾类型的对应用事实层那 17 把
 # 自带 breakerType 的异域反查出来，零冲突：贯穿护盾 4 把、干扰 7 把、眩晕 6 把。
-CHAMP_ICON = {'a9911a3dfe': 1, '8b37bb6db2': 2, 'b7c4048b87': 3}
-CHAMP_CELL = re.compile(r'icons/(\w+)\.webp')
+CHAMP_ICON = icons.CHAMP_FILE
+CHAMP_CELL = icons.CHAMP_CELL
 FRAME_DOC = os.path.join(shell.ROOT, 'references', 'docs', 'weapon-frames.md')
 
 

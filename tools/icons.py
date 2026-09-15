@@ -20,11 +20,11 @@ import collections
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 import urllib.request
 
-import entitydb
 import pagedex
 import resolve
 import shell
@@ -48,6 +48,21 @@ BASE = HOST + '/common/destiny2_content/icons/'
 # 三种破盾的官方图标，路径取自 DestinyBreakerTypeDefinition 的 displayProperties.icon
 # （enum 1/2/3 ＝ 贯穿护盾／干扰／眩晕）。这张表只有三条、不按物品主键走，所以写在
 # 这里；路径若随 manifest 变了，--pull 会当场 404 报出来，不会静默用旧图。
+# 勇士那三档。站内写法是「反屏障／反过载／反势不可挡」，不是 manifest 的效果名
+# （贯穿护盾／干扰／眩晕）——按站内出现频次定，见 .claude/rules/weapons.md。
+# **一处定义**：武器库按它画标签，实体层按它把表格里那一格的破盾图标解成档位。
+BREAKER = {1: '反屏障', 2: '反过载', 3: '反势不可挡'}
+# 站内那张破盾图（内容 md5 前 10 位）→ 档位。
+CHAMP_FILE = {'a9911a3dfe': 1, '8b37bb6db2': 2, 'b7c4048b87': 3}
+CHAMP_CELL = re.compile(r'icons/(\w+)\.webp')
+
+
+def champ_of(cell):
+    """表格里那一格破盾图 → 档位名。认不出就回空串。"""
+    got = CHAMP_CELL.search(cell or '')
+    return BREAKER.get(CHAMP_FILE.get(got.group(1), 0), '') if got else ''
+
+
 CHAMP = {
     1: '/common/destiny2_content/icons/DestinyBreakerTypeDefinition_07b9ba0194e85e46b258b04783e93d5d.png',
     2: '/common/destiny2_content/icons/DestinyBreakerTypeDefinition_da558352b624d799cf50de14d7cb9565.png',
@@ -122,12 +137,18 @@ def wanted():
     for page in pagedex.TOKENS:
         if page in SKIP:
             continue
-        for keys, _, block in entitydb.rows(page):
+        got = pagedex.read(page)
+        if got is None:
+            die('%s 还没有索引：先跑一次 npm run build' % page)
+        # 位置与图从索引取，不从实体层取：**那是渲染器才知道的事**，不是关于这件
+        # 东西的事实。实体层里存一份等于把同一件事记在错的一侧。
+        for row in got['entries']:
             # 子条目不算：异域那两页 PERK 列里的词条挂在行标题下（of），
             # 它们共用打头那一枚图。
-            if block.get('of') or not block.get('icon'):
+            if row.get('of') or not row.get('icon'):
                 continue
-            path = next((p for p in (icon_of(facts, k) for k in keys) if p), None)
+            path = next((p for p in (icon_of(facts, k)
+                                     for k in row['keys']) if p), None)
             if not path:
                 blank[page] += 1
                 continue

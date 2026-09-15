@@ -18,7 +18,6 @@ import collections
 import os
 import sys
 
-import entitydb
 import icons
 import pagedex
 import shell
@@ -34,23 +33,26 @@ def compare():
     for page in pagedex.TOKENS:
         if page in icons.SKIP:
             continue
-        for keys, ent, block in entitydb.rows(page):
-            if block.get('of') or not block.get('icon'):
+        got = pagedex.read(page)
+        if got is None:
+            continue
+        for row in got['entries']:
+            if row.get('of') or not row.get('icon'):
                 continue
-            path = next((p for p in (icons.icon_of(facts, k) for k in keys) if p), None)
+            path = next((p for p in (icons.icon_of(facts, k)
+                                     for k in row['keys']) if p), None)
             if not path:
                 stat[page]['没图'] += 1
                 continue
             if path not in table:
                 stat[page]['还没拉'] += 1
                 continue
-            now = os.path.basename(block['icon'])
+            now = os.path.basename(row['icon'])
             if now == table[path]['file']:
                 stat[page]['一致'] += 1
             else:
                 stat[page]['不同'] += 1
-                diff.append((page, entitydb.said(block, 'name') or entitydb.text(ent),
-                             now, table[path]['file']))
+                diff.append((page, row.get('name', ''), now, table[path]['file']))
     return stat, diff
 
 
