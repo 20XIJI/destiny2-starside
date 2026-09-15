@@ -94,6 +94,19 @@ ITEM_FIELDS = ('index', 'itemType', 'itemSubType', 'classType',
 # Bungie 两位填的是同一个值，所以只收一张。
 WATERMARKS = ('iconWatermark', 'iconWatermarkFeatured')
 
+# 这几个键在 project() 里换了形状，所以不照抄：
+#   displayProperties  拆成 icon 与 i18n
+#   那三个显示名与 displaySource  随语言变，进 i18n
+#   两张水印  路径归一化成文件名
+#   inventory / equippingBlock / plug / perks / investmentStats / sockets / stats
+#     只留站内读得到的那几位，各自在下面有一行理由
+RESHAPED = frozenset({
+    'hash', 'redacted', 'blacklisted', 'displayProperties',
+    'itemTypeDisplayName', 'itemTypeAndTierDisplayName', 'flavorText', 'displaySource',
+    'iconWatermark', 'iconWatermarkFeatured',
+    'inventory', 'equippingBlock', 'plug', 'perks', 'investmentStats', 'sockets', 'stats',
+})
+
 # 图标 URL 的公共前缀，存的时候剥掉，用的时候由 resolve.icon_path() 补回来。
 # 38894 条各省 35 字节。不带这个前缀的（Bungie 自己的占位图 /img/misc/…）原样留着，
 # 那也是它给的路径，由取图那一侧判要不要用。
@@ -234,11 +247,20 @@ def icon_of(url):
     return s[len(ICON_PREFIX):] if s.startswith(ICON_PREFIX) else s
 
 
+# 键本身、以及对站内没有意义的两个删除标记。除这三个之外，manifest 上有的键一律
+# 原样写下来——白名单开窄过一次，`damageType`（这枚效果属哪个元素，着色闸门的依据）
+# 与 `isDisplayable` 就是那样在 5200 条 SandboxPerk 上整列消失的。
+SKIP = ('hash', 'redacted', 'blacklisted', 'displayProperties')
+
+
 def plain(key, zh, en, extra=None):
-    """sandbox-perks / traits / stats 三张表共用的一条：只有 hash、icon、i18n。"""
+    """sandbox-perks / traits / stats 三张表共用的一条。
+
+    `displayProperties` 拆成 `icon` 与 `i18n`（图与语言各归各的），其余字段原样照抄。
+    """
     dp = zh.get('displayProperties') or {}
     od = (en or {}).get('displayProperties') or {}
-    out: dict[str, object] = {'hash': int(key)}
+    out: dict[str, object] = {f: v for f, v in zh.items() if f not in SKIP}
     if 'icon' in dp:
         out['icon'] = icon_of(dp['icon'])
     text = i18n_of(('name', dp.get('name'), od.get('name')),
@@ -256,10 +278,9 @@ def project(key, item, other):
     Bungie 的还是我们的」，看它在不在 `derived` 里就够了。
     """
     dp, od = item['displayProperties'], other['displayProperties']
-    out: dict[str, object] = {'hash': int(key)}
-    for field in ITEM_FIELDS:
-        if field in item:
-            out[field] = item[field]
+    # manifest 上有的键一律原样写下来，下面这几个除外——它们在这里换了形状，
+    # 各自有一行理由：图与语言拆出去、几个大块只留站内读得到的那一位。
+    out: dict[str, object] = {f: v for f, v in item.items() if f not in RESHAPED}
     for field in WATERMARKS:
         if field in item:
             out[field] = icon_of(item[field])
@@ -268,6 +289,7 @@ def project(key, item, other):
     text = i18n_of(
         ('name', dp.get('name'), od.get('name')),
         ('database_details', dp.get('description'), od.get('description')),
+        ('displaySource', item.get('displaySource'), other.get('displaySource')),
         ('itemTypeDisplayName', item.get('itemTypeDisplayName'),
          other.get('itemTypeDisplayName')),
         ('itemTypeAndTierDisplayName', item.get('itemTypeAndTierDisplayName'),
@@ -282,9 +304,14 @@ def project(key, item, other):
     eq = item.get('equippingBlock') or {}
     if 'ammoType' in eq:
         out['equippingBlock'] = {'ammoType': eq['ammoType']}
-    plug = (item.get('plug') or {}).get('plugCategoryIdentifier')
-    if plug is not None:
-        out['plug'] = {'plugCategoryIdentifier': plug}
+    # 装这枚插件要花几点护甲能量。护甲模组页的「费用」那一列就是它，从前那 70 格
+    # 各存一份，而 manifest 上本来就有。
+    src = item.get('plug') or {}
+    plug = {f: src[f] for f in ('plugCategoryIdentifier',) if f in src}
+    if 'energyCost' in src and 'energyCost' in src['energyCost']:
+        plug['energyCost'] = src['energyCost']['energyCost']
+    if plug:
+        out['plug'] = plug
     # 这件东西挂的 SandboxPerk。它是物品表通向 sandbox-perks.json 的唯一连接键，
     # 断了就只能靠「图标相同、名字相同」去桥——雪上加霜的 SandboxPerk 是 374284927，
     # 那条链从前只活在仓库外的原始 manifest 里。
@@ -470,8 +497,53 @@ def breaker_of(item, socket_types, perk_breaker, items):
     return 0
 
 
+def carry_site(path, payload):
+    """把盘上那一份里**站内写的东西**带过来。
+
+    站内写的与 manifest 字段住在同一条记录里（一个 hash 一条记录，关于它的一切
+    挂在它名下），所以这里必须显式接住，否则 `--distill` 一跑就全冲掉。判据是
+    结构上的、不靠列名单：**这一轮没蒸出来的键就是站内的**——
+
+    - 根上：`Aegis`、`LGpig`（两位作者的评级与推荐）、`variants`（同一来源对同一
+      枚 hash 说了不止一段时的第二段起）、`covers`（同一件东西的别的 hash）、
+      以及 Bungie 压根没给图时站内自己配的 `icon`。
+    - `i18n.<语言>` 里：`realgame_details`、`异域 PERK`、`冷却与槽位` 这些
+      Compendium 那一档的正文。它是站内的根本数据，不是谁的判断，所以与
+      `name`、`database_details` 并排，不缩进一层。
+
+    盘上有、这次没蒸出来的记录当场报出：那说明白名单收窄了，而那条记录名下还挂着
+    站内的东西，静默丢掉就是丢数据。
+    """
+    if not os.path.exists(path):
+        return
+    with open(path, encoding='utf-8') as f:
+        old = json.load(f)
+    lost = []
+    for key, row in old.items():
+        mine = {k: v for k, v in row.items() if k != 'i18n' and k not in payload.get(key, row)}
+        extra = {lang: {f: v for f, v in fields.items()
+                        if f not in (payload.get(key) or {}).get('i18n', {}).get(lang, {})}
+                 for lang, fields in (row.get('i18n') or {}).items()}
+        extra = {lang: v for lang, v in extra.items() if v}
+        if not mine and not extra:
+            continue
+        if key not in payload:
+            lost.append(key)
+            continue
+        payload[key].update(mine)
+        for lang, fields in extra.items():
+            payload[key].setdefault('i18n', {}).setdefault(lang, {}).update(fields)
+    if lost:
+        die('%s 里这些记录名下挂着站内写的东西，这次却没蒸出来：%s'
+            % (os.path.basename(path), '、'.join(sorted(lost)[:8])))
+
+
 def dump(path, payload):
-    """一条记录一行。这几份随 manifest 重生成并入库，按行写让 git 存得下增量。"""
+    """一条记录一行。这几份随 manifest 重生成并入库，按行写让 git 存得下增量。
+
+    **记录里不写 `hash`**：键就是它，30058 条逐条核对过零例外。写下来是同一个
+    事实存两处，也是 1.1 MB。
+    """
     os.makedirs(os.path.dirname(path), exist_ok=True)
     rows = ',\n'.join(
         '  %s: %s' % (json.dumps(k), json.dumps(v, ensure_ascii=False, sort_keys=True))
@@ -637,13 +709,14 @@ def distill(src):
                 # 写下来是 0 处。留着，收护甲插槽那天它就有用了。
                 one['currentlyCanRoll'] = False
             rows.append(one)
-        plugs[h] = {'hash': int(h), 'reusablePlugItems': rows}
+        one = {f: v for f, v in plug_sets[h].items() if f not in SKIP}
+        one['reusablePlugItems'] = rows
+        plugs[h] = one
     types = {}
     for h in want_types:
         st = socket_types.get(h) or {}
-        one: dict[str, object] = {'hash': int(h)}
-        if 'socketCategoryHash' in st:
-            one['socketCategoryHash'] = st['socketCategoryHash']
+        one: dict[str, object] = {}
+        one.update({f: v for f, v in st.items() if f not in SKIP})
         wl = [{'categoryHash': w['categoryHash'],
                'categoryIdentifier': w['categoryIdentifier']}
               for w in st.get('plugWhitelist') or ()]
@@ -672,10 +745,7 @@ def distill(src):
     for h, g in load(src, 'zh', 'DestinyStatGroupDefinition').items():
         if h not in want_groups:
             continue
-        one: dict[str, object] = {'hash': int(h)}
-        for field in ('maximumValue', 'uiPosition'):
-            if field in g:
-                one[field] = g[field]
+        one: dict[str, object] = {f: v for f, v in g.items() if f not in SKIP}
         one['scaledStats'] = [{
             'statHash': s['statHash'],
             'maximumValue': s['maximumValue'],
@@ -734,7 +804,7 @@ def distill(src):
             # 而实体层那一侧的语言闸门看不见嵌在这里的 zh-CN。
             bonuses.append({'requiredSetCount': p['requiredSetCount'],
                             'perk': ['sandbox-perks', ph]})
-        one = {'hash': int(h), 'setItems': list(s.get('setItems') or ()),
+        one = {'setItems': list(s.get('setItems') or ()),
                'setPerks': bonuses}
         text = i18n_of(('name', (s.get('displayProperties') or {}).get('name'),
                         (sets_en[h].get('displayProperties') or {}).get('name')))
@@ -801,6 +871,7 @@ def distill(src):
     total = 0
     for name, payload, unit in out:
         where = LOOKUP_DIR if name in LOOKUPS else OUT_DIR
+        carry_site(os.path.join(where, name), payload)
         size = dump(os.path.join(where, name), payload)
         total += size
         print('%-38s %6d %s  %9.1f KB'

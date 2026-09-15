@@ -38,6 +38,10 @@ import research
 import shell
 
 FACTS = os.path.join(shell.ROOT, 'data')
+# 站内自发的主键：manifest 里查无同名的那 42 枚（三个职业、11 个副本来源、
+# 11 个模组族、13 条机制行、4 个站内自造的概念）。号从 2^32 往上发，与
+# Bungie 的 uint32 永不相撞。它是第六张实体表——28 枚名下挂着站内说明。
+MINTED = os.path.join(shell.ROOT, 'references', 'minted.json')
 ZH, EN = 'zh-CN', 'en'
 
 # 一把武器的栏位怎么切。**这几条是站内口径不是 Bungie 事实**，所以住在这里而不是
@@ -242,9 +246,11 @@ class Facts:
         self.stats = read('stats.json')
         self.plug_sets = read(os.path.join('lookup', 'plug-sets.json'))
         self.socket_types = read(os.path.join('lookup', 'socket-types.json'))
+        with open(MINTED, encoding='utf-8') as f:
+            self.minted = json.load(f)
         self.tables = {'inventory-items': self.items, 'sandbox-perks': self.perks,
                        'traits': self.traits, 'stats': self.stats,
-                       'equipable-item-sets': self.sets}
+                       'equipable-item-sets': self.sets, 'minted': self.minted}
         self._pools = {}
         self.eff_by_name = {}
         for table, prefix in ((self.traits, 'trait:'), (self.perks, 'perk:'),
@@ -277,7 +283,7 @@ class Facts:
                               ('stat:', self.stats), ('set:', self.sets)):
             if key.startswith(prefix):
                 return table.get(key[len(prefix):])
-        return self.items.get(key)
+        return self.items.get(key) or self.minted.get(key)
 
     def ref(self, pair):
         """按 `[表名, 主键]` 二元组取那条记录。**跨表引用只有这一种写法。**

@@ -577,13 +577,18 @@ class ManifestLayer(unittest.TestCase):
             return json.load(f)
 
     def test_the_key_is_the_record_s_own_hash(self):
-        """键是裸十进制 hash 串，没有 perk: trait: stat: set: 那种前缀。"""
+        """记录里不写 `hash`：键就是它。
+
+        写下来是同一个事实存两处，30058 条逐条核对过零例外，还白占 1.1 MB。
+        """
         for name in self.ENTITIES + self.LOOKUPS:
-            rows = self.table(name)
             with self.subTest(table=name):
-                bad = [k for k, v in rows.items() if str(v.get('hash')) != k]
-                self.assertEqual(bad[:5], [], '%s 有 %d 条的键与 hash 对不上' % (name, len(bad)))
-                self.assertGreater(len(rows), 5, '%s 只读到 %d 条' % (name, len(rows)))
+                rows = self.table(name)
+                bad = [k for k, v in rows.items() if 'hash' in v]
+                self.assertEqual(bad[:5], [], '%s 有 %d 条又把 hash 写进了记录里'
+                                 % (name, len(bad)))
+                bad = [k for k in rows if not k.isdigit()]
+                self.assertEqual(bad[:5], [], '%s 的键不是裸十进制 hash' % name)
 
     def test_only_the_lookups_reuse_the_small_numbers(self):
         """实体那几张表的号都在 1000 以上，站内自发号因此可以从小号开始发。
