@@ -1535,7 +1535,7 @@ function weaponFacts() {
   const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8')
   const strip = (text) => JSON.parse(text.slice(text.indexOf('=') + 1).trim().replace(/;\s*$/, ''))
   const items = {}
-  for (const line of read('data/facts/items.json').split('\n')) {
+  for (const line of read('data/manifest/items.json').split('\n')) {
     const row = line.trim().replace(/,$/, '')
     if (!row || row === '{' || row === '}') continue
     const cut = row.indexOf(':')
@@ -1554,7 +1554,7 @@ test('the weapon page math reproduces every stat the manifest itself prints', ()
     const rows = G.g[d.sg]
     if (!rows) continue
     const base = new Map(d.base)
-    const want = new Map(items[w.h].stats || [])
+    const want = new Map((items[w.h].derived || {}).displayStats || [])
     for (const [si, top, curve] of rows) {
       const v = base.get(si)
       const got = v == null ? 0 : shown(v, top, curve)

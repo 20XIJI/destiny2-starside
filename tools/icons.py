@@ -6,7 +6,7 @@
 8 种，47/59/69/70 那几档是从 Google 表格里抠出来的图，不是官方原图）；以及**图标
 与它画的那件东西之间没有联系**，换图要人去每一页的源稿里找。
 
-这里把两件事都交给主键：图由 data/facts/ 里那件东西的 icon 字段定，官方原图
+这里把两件事都交给主键：图由 data/manifest/ 里那件东西的 icon 字段定，官方原图
 96×96 拉回来按版式转一档，文件名仍是内容的 md5 前 10 位（图标目录一年的浏览器
 缓存就建立在「改内容必然换名」上，见 README「换图」）。
 
@@ -25,6 +25,7 @@ import sys
 import urllib.request
 
 import pagedex
+import resolve
 import shell
 from markup import die
 
@@ -93,10 +94,10 @@ def width(page):
 def icon_of(facts, key):
     """一个主键在库里的官方图路径。套装与属性没有图。"""
     if key.startswith(('perk:', 'trait:')):
-        return (facts.effects.get(key) or {}).get('icon')
+        return resolve.icon_path(facts.effects.get(key))
     if key.startswith(('set:', 'stat:')):
         return None
-    return (facts.items.get(key) or {}).get('icon')
+    return resolve.icon_path(facts.items.get(key))
 
 
 def wanted():
@@ -130,7 +131,7 @@ def wanted():
     # 列的就是这 2208 把，没有作者记录的那些照样画词条池。可选模组与大师杰作
     # 两栏的图也在这里一并要回来。
     for key, row in facts.items.items():
-        if row.get('ty') != 3:
+        if row.get('itemType') != 3:
             continue
         # 枪自己那一张：左栏每一行与右栏的「别的版本」都要画它。资料页上有行的
         # 那几百把由上面那一圈带进来了，剩下的一千多把只有这一页显示。

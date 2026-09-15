@@ -10,18 +10,18 @@ manifest 是冻结快照——不会再有新赛季，所以这里跑一次、�
 
 产出三份，键一律是 hash 字符串，人写的名字一律是 {"zh": …, "en": …}：
 
-    data/facts/items.json       物品投影：名字、类型、品阶、元素、图标、赛季水印、
+    data/manifest/items.json       物品投影：名字、类型、品阶、元素、图标、赛季水印、
                                 收藏条目与来源、发布版本、特殊版本与锻造角标、
                                 manifest 序号
-    data/facts/perk-pools.json  武器版本 × 栏位 × 词条 hash
-    data/facts/stat-groups.json 武器属性的插值曲线：投资值 → 游戏里显示的那个数
-    data/facts/armor-sets.json  护甲套装的成员与 2 件 / 4 件效果
-    data/facts/effects.json     增益与减益（增幅、致盲、冻结、虚弱……）。**这一类不在
+    data/manifest/perk-pools.json  武器版本 × 栏位 × 词条 hash
+    data/manifest/stat-groups.json 武器属性的插值曲线：投资值 → 游戏里显示的那个数
+    data/manifest/armor-sets.json  护甲套装的成员与 2 件 / 4 件效果
+    data/manifest/effects.json     增益与减益（增幅、致盲、冻结、虚弱……）。**这一类不在
                                 物品表里**，主键是 traitHash 与 sandboxPerkHash，
                                 站内六个元素页上成段的效果名就靠它落主键
-    data/facts/stats.json       属性（充能效率、防御抗性、射程、稳定性……）。武器 PERK
+    data/manifest/stats.json       属性（充能效率、防御抗性、射程、稳定性……）。武器 PERK
                                 页上有一整节写的是属性不是 Perk，主键是 statHash
-    data/facts/artifacts.json   七件神器，每件按档位列出它自己的那批模组。**同名的
+    data/manifest/artifacts.json   七件神器，每件按档位列出它自己的那批模组。**同名的
                                 神器模组在库里有两条**（36 处），靠这张表才分得出
                                 哪一条属于哪件神器
 
@@ -44,7 +44,7 @@ import sys
 import shell
 from markup import die
 
-OUT_DIR = os.path.join(shell.ROOT, 'data', 'facts')
+OUT_DIR = os.path.join(shell.ROOT, 'data', 'manifest')
 SRC = os.path.join(os.path.dirname(shell.ROOT), '..', 'github',
                    'Destiny-item-list', 'manifest_raw')
 
@@ -93,14 +93,17 @@ EMPTY_SLOT = re.compile(r'^空.*插槽$')
 #           的属性（DestinyItemInstanceComponent.gearTier），定义表里给的是
 #           「可升到 2/3/4/5 阶」的池。两条路互斥：非锻造武器走 weapon_tiering，
 #           可锻造武器走 crafting 的 transfusers.level，只认前者会漏掉后面那 563 把。
-FLAG_SOCKETS = {'craft': ('crafting.plugs.frame_identifiers',),
-                'tiering': ('weapon_tiering.plugs.mods.enhancers',
-                            'crafting.plugs.weapons.mods.transfusers.level')}
+# 这两位按槽的存在与否推出来，manifest 里没有对应字段，所以进 derived。
+FLAG_SOCKETS = {'craftable': ('crafting.plugs.frame_identifiers',),
+                'tierable': ('weapon_tiering.plugs.mods.enhancers',
+                             'crafting.plugs.weapons.mods.transfusers.level')}
 
 # 勇士克制不在武器的 breakerType 上——全 manifest 只有 18 条非 0。Bungie 把它编码在
 # 固有框架插件所挂的 SandboxPerk 上，那些 perk 的名字以 Destiny 符号字体的私有区
 # 码位开头。按这条推导覆盖 2208 把武器，与 destiny.report 实时数据 2205/2207 一致。
 BREAKER_GLYPH = {'\ue070': 1, '\ue071': 2, '\ue072': 3}
+
+ZH, EN = 'zh-CN', 'en'
 
 
 def src_path(src, lang, name):
@@ -119,9 +122,12 @@ def load(src, lang, name):
 
 
 def two(zh, en):
-    """一对双语文本。两边相同时只留一份，让产出小一截也让 diff 干净。"""
+    """一对双语文本。两边相同时只留一份，让产出小一截也让 diff 干净。
+
+    语言键用 BCP 47（zh-CN / en），与实体层 i18n 那一档同一套；从前是 zh/en。
+    """
     zh, en = (zh or '').strip(), (en or '').strip()
-    return {'zh': zh} if zh == en else {'zh': zh, 'en': en}
+    return {ZH: zh} if zh == en else {ZH: zh, EN: en}
 
 
 def icon(url):
@@ -129,56 +135,80 @@ def icon(url):
     return url[len(ICON_PREFIX):] if url.startswith(ICON_PREFIX) else url
 
 
-def project(item, other):
-    """一条物品投影。other 是同一个 hash 在另一种语言下的记录。"""
+def project(key, item, other):
+    """一条物品投影。other 是同一个 hash 在另一种语言下的记录。
+
+    字段名照 Manifest 拼全，**根上只放 DestinyInventoryItemDefinition 自己的字段**；
+    本项目算出来的一律进 derived。边界因此是结构上的，不靠人记：问「这个字段是
+    Bungie 的还是我们的」，看它在不在 derived 里就够了。
+    """
     dp, od = item['displayProperties'], other['displayProperties']
     inv = item.get('inventory') or {}
-    out = {
-        'n': two(dp.get('name'), od.get('name')),
-        't': two(item.get('itemTypeDisplayName'), other.get('itemTypeDisplayName')),
-        'tt': two(item.get('itemTypeAndTierDisplayName'),
-                  other.get('itemTypeAndTierDisplayName')),
-        'ty': item.get('itemType'),
-        'st': item.get('itemSubType'),
-        'tier': inv.get('tierType'),
-        'idx': item.get('index'),
-    }
-    for key, val in (('dmg', item.get('defaultDamageType')),
-                     ('cls', item.get('classType')),
-                     ('ammo', (item.get('equippingBlock') or {}).get('ammoType')),
-                     ('coll', item.get('collectibleHash')),
-                     ('bucket', inv.get('bucketTypeHash'))):
-        # 0 与 None 在这些字段上都表示「没有」，一律不写，省掉一大片噪声。
-        if val:
-            out[key] = val
-    if dp.get('icon'):
-        out['icon'] = icon(dp['icon'])
-    if item.get('iconWatermark'):
-        out['wm'] = icon(item['iconWatermark'])
+    disp: dict[str, object] = {'name': two(dp.get('name'), od.get('name'))}
     if dp.get('description'):
-        out['desc'] = two(dp.get('description'), od.get('description'))
+        disp['description'] = two(dp.get('description'), od.get('description'))
+    if dp.get('icon'):
+        disp['icon'] = icon(dp['icon'])
+    out = {
+        'hash': int(key),
+        'index': item.get('index'),
+        'displayProperties': disp,
+        'itemType': item.get('itemType'),
+        'itemSubType': item.get('itemSubType'),
+        'itemTypeDisplayName': two(item.get('itemTypeDisplayName'),
+                                   other.get('itemTypeDisplayName')),
+        'itemTypeAndTierDisplayName': two(item.get('itemTypeAndTierDisplayName'),
+                                          other.get('itemTypeAndTierDisplayName')),
+        'inventory': {'tierType': inv.get('tierType')},
+    }
+    # 0 与 None 在这几个字段上都表示「没有」，一律不写，省掉一大片噪声。
+    if inv.get('bucketTypeHash'):
+        out['inventory']['bucketTypeHash'] = inv['bucketTypeHash']
+    for field, val in (('defaultDamageType', item.get('defaultDamageType')),
+                       ('classType', item.get('classType')),
+                       ('collectibleHash', item.get('collectibleHash'))):
+        if val:
+            out[field] = val
+    ammo = (item.get('equippingBlock') or {}).get('ammoType')
+    if ammo:
+        out['equippingBlock'] = {'ammoType': ammo}
+    if item.get('iconWatermark'):
+        out['iconWatermark'] = icon(item['iconWatermark'])
     if item.get('flavorText'):
-        out['flavor'] = two(item.get('flavorText'), other.get('flavorText'))
-    if item.get('breakerType'):
-        out['breaker'] = item['breakerType']
+        out['flavorText'] = two(item.get('flavorText'), other.get('flavorText'))
     if item.get('isAdept'):
-        out['adept'] = True
+        out['isAdept'] = True
     if item.get('isHolofoil'):
         # 复刻里的「特殊版本」就是这一位，不用靠序号或来源猜。
-        out['holo'] = True
+        out['isHolofoil'] = True
+    cats = item.get('itemCategoryHashes') or []
+    if cats:
+        out['itemCategoryHashes'] = cats
+    plug = (item.get('plug') or {}).get('plugCategoryIdentifier')
+    if plug:
+        out['plug'] = {'plugCategoryIdentifier': plug}
+    # 这件东西挂的 SandboxPerk。从前不收，于是物品表与 effects.json 之间没有存下来
+    # 的连接键，只能靠「图标相同、名字相同」去桥——雪上加霜的 SandboxPerk 是
+    # 374284927，那条链从前只活在仓库外的原始 manifest 里。
+    perks = [p['perkHash'] for p in item.get('perks') or () if p.get('perkHash')]
+    if perks:
+        out['perks'] = perks
+
+    derived = {}
+    if item.get('breakerType'):
+        # manifest 自己那一位，全表只有 18 条非 0，照原样留在根上。
+        out['breakerType'] = item['breakerType']
+        # derived 里那一位是**消费方唯一要读的那个**：有原始值就用原始值，
+        # 没有就按固有框架插件的 SandboxPerk 名推（见 breaker_of）。17 条武器
+        # 两条路都走得通，推导优先——覆盖 2208 把，而原始值只覆盖 18 条。
+        derived['breakerType'] = item['breakerType']
     rel = [t for t in item.get('traitIds') or () if t.startswith('releases.')]
     if rel:
         # 发布版本（releases.v970.core 一类）比赛季水印好认：水印是一张图，
         # 这是一个可排序的版本号。
-        out['rel'] = rel[0][len('releases.'):]
-    cats = item.get('itemCategoryHashes') or []
-    if cats:
-        out['cat'] = cats
-    plug = (item.get('plug') or {}).get('plugCategoryIdentifier')
-    if plug:
-        out['plug'] = plug
-    # 投资属性。这是**插值前**的原始值，与上面 stats 那一份（插值后的显示值）不是
-    # 一回事：武器页要按「基线 + 选中的插件」重算，只能在投资值这一侧加。
+        derived['release'] = rel[0][len('releases.'):]
+    # 投资属性。这是**插值前**的原始值，与 derived.displayStats（插值后的显示值）
+    # 不是一回事：武器页要按「基线 + 选中的插件」重算，只能在投资值这一侧加。
     # 第三位是 isConditionallyActive——「亡命之徒」那类击杀后才生效的加成靠它区分，
     # 不留这一位就会把条件加成当成常驻的算进属性条。
     if plug or item.get('itemType') == 3:
@@ -186,11 +216,14 @@ def project(item, other):
         # 发射数投资值就是 0，而它那一组的曲线把 0 映到 120。丢掉这一条，页面上
         # 那一格会显示 0。插件那一侧的 0 是真的没加成，丢掉省地方。
         keep = item.get('itemType') == 3
-        inv = [[s['statTypeHash'], s['value']] + ([1] if s.get('isConditionallyActive') else [])
-               for s in item.get('investmentStats') or ()
-               if keep or s.get('value')]
-        if inv:
-            out['inv'] = inv
+        stats = [[st['statTypeHash'], st['value']]
+                 + ([1] if st.get('isConditionallyActive') else [])
+                 for st in item.get('investmentStats') or ()
+                 if keep or st.get('value')]
+        if stats:
+            out['investmentStats'] = stats
+    if derived:
+        out['derived'] = derived
     return out
 
 
@@ -331,7 +364,7 @@ def distill(src):
             continue
         if item.get('itemType') not in KEEP_TYPES and not item.get('plug'):
             continue
-        kept[h] = project(item, other[h])
+        kept[h] = project(h, item, other[h])
     del other
     gc.collect()
 
@@ -356,13 +389,15 @@ def distill(src):
         got = [(str(s['statHash']), (vals.get(str(s['statHash'])) or {}).get('value') or 0)
                for s in group.get('scaledStats') or ()]
         if got:
-            # 顺序即游戏里的显示顺序，所以存成数组不存字典。
-            row['stats'] = got
+            # 顺序即游戏里的显示顺序，所以存成数组不存字典。这一份是**按 statGroup
+            # 的 scaledStats 选过、排过、补过 0** 的，形状是本项目定的，所以进 derived；
+            # 根上的 stats 只留 manifest 自己的 statGroupHash。
+            row.setdefault('derived', {})['displayStats'] = got
         if item.get('itemType') != 3:
             continue
         # 武器页要按「基线 + 插件」重算，所以得带上这一组的插值曲线。只收武器用到
         # 的那几十组，护甲那批不收。
-        row['sg'] = gh
+        row['stats'] = {'statGroupHash': gh}
         if gh not in sgroups:
             sgroups[gh] = {str(sd['statHash']):
                            [sd.get('maximumValue') or 0,
@@ -378,20 +413,22 @@ def distill(src):
     coll_zh = load(src, 'zh', 'DestinyCollectibleDefinition')
     coll_en = load(src, 'en', 'DestinyCollectibleDefinition')
     for row in kept.values():
-        c = coll_zh.get(str(row.get('coll') or ''))
+        c = coll_zh.get(str(row.get('collectibleHash') or ''))
         if not c:
             continue
         text = two(c.get('sourceString'),
-                   (coll_en.get(str(row['coll'])) or c).get('sourceString'))
-        if text.get('zh') or text.get('en'):
-            row['src'] = text
+                   (coll_en.get(str(row['collectibleHash'])) or c).get('sourceString'))
+        if text.get(ZH) or text.get(EN):
+            # DestinyCollectibleDefinition.sourceString——是 Bungie 的字段，只是长在
+            # 另一张表上，所以按它自己的名字放根上，不进 derived。
+            row['sourceString'] = text
     del coll_zh, coll_en
     gc.collect()
 
     socket_types = load(src, 'zh', 'DestinySocketTypeDefinition')
     plug_sets = load(src, 'zh', 'DestinyPlugSetDefinition')
     # 大师工作那一栏按名字筛，所以切栏之前得先有一张 hash → 中文名的表。
-    names = {h: (row.get('n') or {}).get('zh', '') for h, row in kept.items()}
+    names = {h: row['displayProperties']['name'][ZH] for h, row in kept.items()}
     perk_breaker = breaker_perks(src)
     pools, triples = {}, 0
     for h, item in items.items():
@@ -407,12 +444,13 @@ def distill(src):
             continue
         got = breaker_of(item, cols, perk_breaker, items)
         if got:
-            row['breaker'] = got
+            # 推出来的，不是 manifest 的 breakerType——全表只有 18 条非 0。
+            row.setdefault('derived', {})['breakerType'] = got
         kinds = {socket_kind(e, socket_types)
                  for e in (item.get('sockets') or {}).get('socketEntries') or ()}
         for flag, want in FLAG_SOCKETS.items():
             if kinds.intersection(want):
-                row[flag] = True
+                row.setdefault('derived', {})[flag] = True
     # 神器 → 它自己那批模组。带槽的那一条是 itemType 0 的影子条目（真正的
     # itemType 28 那条没有 socket），槽按档位分组，最后一组是「重置神器」不算。
     # DestinyArtifactDefinition 只有当前那一件，覆盖不了站内文档的七件。
@@ -449,8 +487,11 @@ def distill(src):
             if fresh:
                 tiers.append(fresh)
         if tiers:
+            # 带槽的这一条是 itemType 0 的影子条目，它的 hash 不是神器本体的。
+            # 先按名字聚，下面认到本体那一条时再换成本体的 hash 当键。
             name = item['displayProperties']['name']
-            arts.setdefault(name, {'n': {'zh': name}, 'tiers': []})
+            arts.setdefault(name, {'displayProperties': {'name': {ZH: name}},
+                                   'tiers': []})
             arts[name]['tiers'] = tiers
     # 神器本体自己那一条是 itemType 28，不在投影范围里（它没有 plug 块），
     # 可它的主键与图标是配装页那枚徽章要用的，所以在这里一并记下。
@@ -459,8 +500,15 @@ def distill(src):
             continue
         got = arts.get(item['displayProperties']['name'])
         if got is not None and not got.get('hash'):
-            got['hash'] = str(item['hash'])
-            got['icon'] = icon(item['displayProperties'].get('icon'))
+            got['hash'] = item['hash']
+            got['displayProperties']['icon'] = icon(item['displayProperties'].get('icon'))
+    # 主键当键，与别的表一致。认不到本体的（站内七件都认得到）当场报出，不静默留
+    # 一条按名字建的键——那正是从前这张表与别处对不上的原因。
+    missing = sorted(k for k, v in arts.items() if not v.get('hash'))
+    if missing:
+        die('这几件神器找不到本体那一条（itemTypeAndTierDisplayName 为「传说 神器」），'
+            '主键建不起来：%s' % '、'.join(missing))
+    arts = {str(v['hash']): v for v in arts.values()}
 
     del socket_types, plug_sets, items
     gc.collect()
@@ -479,20 +527,27 @@ def distill(src):
                 die('套装 %s 的 %d 件效果 %s 不在 SandboxPerk 表里' % (h, p['requiredSetCount'], ph))
             pe = perks_en.get(ph, pz)
             bonuses.append({
-                'n': p['requiredSetCount'],
-                'hash': p['sandboxPerkHash'],
-                # 效果自己的图标。站内那一页的图标从英文原表抽，抽不到的按这个补。
-                'icon': icon(pz['displayProperties'].get('icon')),
-                'name': two(pz['displayProperties'].get('name'),
-                            pe['displayProperties'].get('name')),
-                'desc': two(pz['displayProperties'].get('description'),
-                            pe['displayProperties'].get('description')),
+                # 从前这一位叫 n，装的是件数（2 或 4），而 items.json 的 n 装的是
+                # 名字——同一层目录里一个键名两个意思。按 manifest 自己的名字写。
+                'requiredSetCount': p['requiredSetCount'],
+                'sandboxPerkHash': p['sandboxPerkHash'],
+                'displayProperties': {
+                    'name': two(pz['displayProperties'].get('name'),
+                                pe['displayProperties'].get('name')),
+                    'description': two(pz['displayProperties'].get('description'),
+                                       pe['displayProperties'].get('description')),
+                    # 效果自己的图标。站内那一页的图标从英文原表抽，抽不到的按这个补。
+                    'icon': icon(pz['displayProperties'].get('icon')),
+                },
             })
         sets[h] = {
-            'name': two(s['displayProperties'].get('name'),
-                        sets_en[h]['displayProperties'].get('name')),
-            'items': s.get('setItems') or [],
-            'bonuses': bonuses,
+            'hash': int(h),
+            'displayProperties': {
+                'name': two(s['displayProperties'].get('name'),
+                            sets_en[h]['displayProperties'].get('name')),
+            },
+            'setItems': s.get('setItems') or [],
+            'setPerks': bonuses,
         }
 
     effects = {}
@@ -507,11 +562,12 @@ def distill(src):
             if tag == 'perk' and not v.get('isDisplayable'):
                 continue
             od = (en_t.get(h) or {}).get('displayProperties') or {}
-            row = {'k': tag, 'n': two(dp.get('name'), od.get('name'))}
+            disp: dict[str, object] = {'name': two(dp.get('name'), od.get('name'))}
             if dp.get('description'):
-                row['desc'] = two(dp.get('description'), od.get('description'))
+                disp['description'] = two(dp.get('description'), od.get('description'))
             if dp.get('icon'):
-                row['icon'] = icon(dp['icon'])
+                disp['icon'] = icon(dp['icon'])
+            row = {'hash': int(h), 'kind': tag, 'displayProperties': disp}
             if v.get('displayHint'):
                 # trait 里 35 条是 keyword（游戏内的状态：不稳定、冻结、超凡），
                 # 另 11 条是分类标签（光能增益、赛季）。这一位把两者分开。
@@ -529,38 +585,35 @@ def distill(src):
         if v.get('redacted') or not (dp.get('name') or '').strip():
             continue
         od = (en_s.get(h) or {}).get('displayProperties') or {}
-        srow: dict[str, object] = {'n': two(dp.get('name'), od.get('name'))}
+        disp: dict[str, object] = {'name': two(dp.get('name'), od.get('name'))}
         if dp.get('description'):
-            srow['desc'] = two(dp.get('description'), od.get('description'))
+            disp['description'] = two(dp.get('description'), od.get('description'))
         if dp.get('icon'):
-            srow['icon'] = icon(dp['icon'])
-        stats[h] = srow
+            disp['icon'] = icon(dp['icon'])
+        stats[h] = {'hash': int(h), 'displayProperties': disp}
     del zh_s, en_s
 
     a = dump(os.path.join(OUT_DIR, 'items.json'), kept, True)
     b = dump(os.path.join(OUT_DIR, 'perk-pools.json'), pools, True)
     c = dump(os.path.join(OUT_DIR, 'armor-sets.json'), sets, True)
     g = dump(os.path.join(OUT_DIR, 'stat-groups.json'), sgroups, True)
-    print('data/facts/items.json       %7d 条  %6.1f KB' % (len(kept), a / 1024))
-    print('data/facts/perk-pools.json  %7d 把  %6.1f KB  三元组 %d'
+    print('data/manifest/items.json       %7d 条  %6.1f KB' % (len(kept), a / 1024))
+    print('data/manifest/perk-pools.json  %7d 把  %6.1f KB  三元组 %d'
           % (len(pools), b / 1024, triples))
-    print('data/facts/stat-groups.json %7d 组  %6.1f KB' % (len(sgroups), g / 1024))
+    print('data/manifest/stat-groups.json %7d 组  %6.1f KB' % (len(sgroups), g / 1024))
     d = dump(os.path.join(OUT_DIR, 'effects.json'), effects, True)
-    print('data/facts/armor-sets.json  %7d 套  %6.1f KB  效果 %d'
-          % (len(sets), c / 1024, sum(len(s['bonuses']) for s in sets.values())))
+    print('data/manifest/armor-sets.json  %7d 套  %6.1f KB  效果 %d'
+          % (len(sets), c / 1024, sum(len(s['setPerks']) for s in sets.values())))
     e = dump(os.path.join(OUT_DIR, 'stats.json'), stats, True)
-    f_ = os.path.join(OUT_DIR, 'artifacts.json')
-    os.makedirs(OUT_DIR, exist_ok=True)
-    with open(f_, 'w', encoding='utf-8') as fh:
-        fh.write(json.dumps(arts, ensure_ascii=False, indent=1, sort_keys=True) + '\n')
-    print('data/facts/artifacts.json   %7d 件  %6.1f KB  档位 %s'
-          % (len(arts), os.path.getsize(f_) / 1024,
+    f_ = dump(os.path.join(OUT_DIR, 'artifacts.json'), arts, True)
+    print('data/manifest/artifacts.json   %7d 件  %6.1f KB  档位 %s'
+          % (len(arts), f_ / 1024,
              '、'.join(str(len(v['tiers'])) for v in arts.values())))
-    print('data/facts/effects.json     %7d 条  %6.1f KB  trait %d、perk %d'
+    print('data/manifest/effects.json     %7d 条  %6.1f KB  trait %d、perk %d'
           % (len(effects), d / 1024,
-             sum(1 for v in effects.values() if v['k'] == 'trait'),
-             sum(1 for v in effects.values() if v['k'] == 'perk')))
-    print('data/facts/stats.json       %7d 条  %6.1f KB' % (len(stats), e / 1024))
+             sum(1 for v in effects.values() if v['kind'] == 'trait'),
+             sum(1 for v in effects.values() if v['kind'] == 'perk')))
+    print('data/manifest/stats.json       %7d 条  %6.1f KB' % (len(stats), e / 1024))
 
 
 def main():

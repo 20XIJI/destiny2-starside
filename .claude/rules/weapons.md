@@ -17,9 +17,10 @@ paths:
 ## 数据在哪
 
 ```
-data/facts/items.json        名字、类型、元素、弹药、勇士、发布版本、数值基线（inv）
-data/facts/perk-pools.json   一把枪的栏位：固有、随机词条、可选模组、大师杰作
-data/facts/stat-groups.json  属性插值曲线，79 组
+data/manifest/items.json        名字、类型、元素、弹药、勇士、发布版本、
+                                数值基线（investmentStats）
+data/manifest/perk-pools.json   一把枪的栏位：固有、随机词条、可选模组、大师杰作
+data/manifest/stat-groups.json  属性插值曲线，79 组
 references/items/*.json      人写层，三卷，由 tools/entities.py 从九张资料页抽出
 data/icons.json              主键 → 官方图文件名
 ```

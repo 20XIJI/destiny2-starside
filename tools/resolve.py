@@ -36,7 +36,22 @@ import unicodedata
 import markup
 import shell
 
-FACTS = os.path.join(shell.ROOT, 'data', 'facts')
+FACTS = os.path.join(shell.ROOT, 'data', 'manifest')
+ZH, EN = 'zh-CN', 'en'
+
+
+def text(rec, field='name', lang=ZH):
+    """一条事实记录的 displayProperties.<field> 里那一种语言。
+
+    事实层照 manifest 拼全字段名之后，取名字要走三层；全站只在这里写一次。
+    """
+    return ((((rec or {}).get('displayProperties') or {}).get(field) or {})
+            .get(lang) or '')
+
+
+def icon_path(rec):
+    """一条事实记录的官方图路径（ICON_PREFIX 已剥）。没有图的返回 None。"""
+    return ((rec or {}).get('displayProperties') or {}).get('icon')
 
 # 站内页面 → 候选范围，一页可以有几档。每档是 (itemType 或 None, tierType 或 None,
 # 插件类别正则 或 None)，None 表示这一位不限；命中任意一档即算在范围内。判据从
@@ -201,21 +216,22 @@ class Facts:
         self.eff_by_name = {}
         for table, prefix in ((self.effects, ''), (self.stats, 'stat:')):
             for h, v in table.items():
-                for key in (v['n']['zh'], v['n'].get('en')):
+                for key in (text(v), text(v, lang=EN)):
                     if key:
                         self.eff_by_name.setdefault(norm(key), []).append(prefix + h)
         self.by_zh, self.by_en, self.by_fold = {}, {}, {}
         for h, v in self.items.items():
-            self.by_zh.setdefault(norm(v['n']['zh']), []).append(h)
-            en = v['n'].get('en')
+            zh = text(v)
+            self.by_zh.setdefault(norm(zh), []).append(h)
+            en = text(v, lang=EN)
             if en:
                 self.by_en.setdefault(norm(en), []).append(h)
-            self.by_fold.setdefault(fold(v['n']['zh']), []).append(h)
+            self.by_fold.setdefault(fold(zh), []).append(h)
             if en:
                 self.by_fold.setdefault(fold(en), []).append(h)
 
     def name(self, h):
-        return (self.items.get(str(h)) or {}).get('n', {}).get('zh', '')
+        return text(self.items.get(str(h)))
 
     def pool_names(self, h):
         """这把武器各栏能开出的词条名。起源特性在 init 上，与池取并集。
@@ -237,11 +253,12 @@ class Facts:
 
 def in_scope(row, scopes):
     for ty, tier, plug in scopes:
-        if ty is not None and row['ty'] != ty:
+        if ty is not None and row['itemType'] != ty:
             continue
-        if tier is not None and row.get('tier') != tier:
+        if tier is not None and (row.get('inventory') or {}).get('tierType') != tier:
             continue
-        if plug is not None and not re.search(plug, row.get('plug') or ''):
+        if plug is not None and not re.search(
+                plug, (row.get('plug') or {}).get('plugCategoryIdentifier') or ''):
             continue
         return True
     return False
@@ -262,8 +279,12 @@ def candidates(facts, name, page):
 
 def same_shape(row):
     """两条记录在站内用得到的字段上是不是一模一样。"""
-    return (row['n']['zh'], row.get('icon'), row.get('tt', {}).get('zh'),
-            row.get('rel'), row.get('wm'), row.get('dmg'), row.get('tier'))
+    derived = row.get('derived') or {}
+    return (text(row), icon_path(row),
+            (row.get('itemTypeAndTierDisplayName') or {}).get(ZH),
+            derived.get('release'), row.get('iconWatermark'),
+            row.get('defaultDamageType'),
+            (row.get('inventory') or {}).get('tierType'))
 
 
 def pick(facts, hits, version='', perks=()):
@@ -277,14 +298,14 @@ def pick(facts, hits, version='', perks=()):
     if version:
         want = VERSION_SOURCE.get(version, version).rstrip('版本')
         same = [h for h in hits if want
-                and want in (facts.items[h].get('src') or {}).get('zh', '')]
+                and want in (facts.items[h].get('sourceString') or {}).get(ZH, '')]
         if len(same) == 1:
             return same[0], '版本后缀', same
         if same:
             hits = same
     want = {norm(p) for p in perks if p} - {'无', ''}
     if want:
-        scored = [(len(want & facts.pool_names(h)), facts.items[h]['idx'], h) for h in hits]
+        scored = [(len(want & facts.pool_names(h)), facts.items[h]['index'], h) for h in hits]
         top = max(s for s, _, _ in scored)
         best = [h for s, _, h in scored if s == top]
         if top and len(best) == 1:
@@ -293,7 +314,7 @@ def pick(facts, hits, version='', perks=()):
             hits = best
     # 大师版与特殊版本是同名的另一件东西，不是「另一个版本」：源稿写的是普通版，
     # 要大师版会在名字里写出来。两条都是语义判据。
-    for flag in ('adept', 'holo'):
+    for flag in ('isAdept', 'isHolofoil'):
         plain = [h for h in hits if not facts.items[h].get(flag)]
         if plain and len(plain) < len(hits):
             hits = plain
@@ -301,7 +322,7 @@ def pick(facts, hits, version='', perks=()):
         return hits[0], '非大师非特殊版', hits
     # 有收藏条目的那个才是玩家拿得到的正主；同名的另一条往往是没有收藏、
     # 只在载具/预览里用的副本。这是语义判据，不是按序号猜。
-    owned = [h for h in hits if facts.items[h].get('coll')]
+    owned = [h for h in hits if facts.items[h].get('collectibleHash')]
     if len(owned) == 1:
         return owned[0], '有收藏条目', owned
     if owned:
@@ -311,7 +332,7 @@ def pick(facts, hits, version='', perks=()):
     # 剩下的若逐字段相同（同名、同图、同类型、同发布版本、同水印），选哪个都一样，
     # 取序号最小的那个并说明依据；不同则交出候选。
     if len({same_shape(facts.items[h]) for h in hits}) == 1:
-        first = min(hits, key=lambda h: facts.items[h]['idx'])
+        first = min(hits, key=lambda h: facts.items[h]['index'])
         return first, '重复条目内容一致', hits
     # 最后一档：取发布版本最新的那一个。站内写的是当前赛季的现状，复刻之后玩家
     # 手上、掉落表里的就是最新那一版。
@@ -331,7 +352,7 @@ def release_rank(facts, hits):
     best, rank = None, -1
     ties = 0
     for h in hits:
-        got = RELEASE.match((facts.items[h].get('rel') or ''))
+        got = RELEASE.match((facts.items[h].get('derived') or {}).get('release') or '')
         n = int(got.group(1)) if got else -1
         if n > rank:
             best, rank, ties = h, n, 1
@@ -366,7 +387,7 @@ def split_version(facts, name, page):
             continue
         hits = candidates(facts, base, page)
         want = VERSION_SOURCE.get(tail, tail)
-        if hits and any(want in (facts.items[h].get('src') or {}).get('zh', '')
+        if hits and any(want in (facts.items[h].get('sourceString') or {}).get(ZH, '')
                         for h in hits):
             return base, tail
     return name, ''
@@ -774,7 +795,7 @@ def set_of(name):
     if not want:
         return ''
     for h, s in shared()[0].sets.items():
-        if set_key(s['name']['zh']) == want:
+        if set_key(text(s)) == want:
             return 'set:%s' % h
     return ''
 
@@ -890,7 +911,7 @@ def classify(facts, name, page, key, composite, effect_names, sources, hints):
     if page in SET_PAGES:
         # 套装页的名字先按「是不是某一套自己的名字」判，再按「是不是它的来源名」判。
         # 两样都戳成同一个 set: 主键，只看主键分不出这一层。
-        if any(set_key(s['name']['zh']) == set_key(name)
+        if any(set_key(text(s)) == set_key(name)
                for s in facts.sets.values()):
             return '套装', ''
         if norm(name) in sources:
@@ -993,15 +1014,15 @@ def key_name(facts, key):
     """一个主键在库里叫什么。"""
     if key.startswith('set:'):
         got = facts.sets.get(key[4:])
-        return got['name']['zh'] if got else None
+        return text(got) if got else None
     if key.startswith(('trait:', 'perk:')):
         got = facts.effects.get(key)
-        return got['n']['zh'] if got else None
+        return text(got) if got else None
     if key.startswith('stat:'):
         got = facts.stats.get(key[5:])
-        return got['n']['zh'] if got else None
+        return text(got) if got else None
     got = facts.items.get(key)
-    return got['n']['zh'] if got else None
+    return text(got) if got else None
 
 
 def names():

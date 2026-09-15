@@ -31,6 +31,7 @@ import urllib.request
 
 import items
 import pagedex
+import resolve
 import shell
 import vocab
 from markup import die, img_size
@@ -105,18 +106,21 @@ ICON_BASE = 'https://www.bungie.net/common/destiny2_content/icons/'
 def library():
     """事实层的物品表，摆成这个脚本原来那份导出的形状，外加主键。
 
-    **不再要人工指一份 49 MB 的导出**：manifest 的蒸馏产物已经在 data/facts/ 里入库，
+    **不再要人工指一份 49 MB 的导出**：manifest 的蒸馏产物已经在 data/manifest/ 里入库，
     同一份事实两个副本迟早各走各的。字段名保持原样，转换只在这一处。
     """
-    path = os.path.join(shell.ROOT, 'data', 'facts', 'items.json')
+    path = os.path.join(shell.ROOT, 'data', 'manifest', 'items.json')
     if not os.path.exists(path):
         die('事实层还没蒸馏：先跑 python3 tools/facts.py --distill')
     with open(path, encoding='utf-8') as f:
         got = json.load(f)
-    return {h: {'hash': h, 'name_zh': v['n']['zh'],
-                'typeName_zh': v.get('tt', {}).get('zh', ''),
-                'icon': ICON_BASE + v['icon'] if v.get('icon') else ''}
-            for h, v in got.items()}
+    def one(h, v):
+        art = resolve.icon_path(v) or ''
+        return {'hash': h, 'name_zh': resolve.text(v),
+                'typeName_zh': (v.get('itemTypeAndTierDisplayName') or {}).get(resolve.ZH, ''),
+                'icon': ICON_BASE + art if art else ''}
+
+    return {h: one(h, v) for h, v in got.items()}
 
 
 def distill():
@@ -182,11 +186,12 @@ def arts_of():
 def arts():
     """七件神器本体 → tools/artifacts.json。
 
-    读 data/facts/artifacts.json，不去物品表里按类型名筛：神器本体是 itemType 28，
+    读 data/manifest/artifacts.json，不去物品表里按类型名筛：神器本体是 itemType 28，
     没有 plug 块，本来就不在事实层的物品投影里；而那份表建它时顺手记了主键与图标。
-    表里存站内那个写法（「NPA 斥力调节器」中间有排版空格），配装源稿按它查。
+    那张表按主键建键，名字在 displayProperties 里；站内那个写法（「NPA 斥力调节器」
+    中间有排版空格）由 arts_of() 从索引现取，配装源稿按它查。
     """
-    path = os.path.join(shell.ROOT, 'data', 'facts', 'artifacts.json')
+    path = os.path.join(shell.ROOT, 'data', 'manifest', 'artifacts.json')
     with open(path, encoding='utf-8') as f:
         lib = json.load(f)
     old = {}
@@ -195,15 +200,16 @@ def arts():
             old = json.load(f)
     keep = arts_of()
     table = {}
-    for name, v in lib.items():
-        shown = keep.get(items.norm(name))
+    for v in lib.values():
+        shown = keep.get(items.norm(resolve.text(v)))
         if not shown:
             continue
-        url = ICON_BASE + v['icon'] if v.get('icon') else ''
+        art_icon = resolve.icon_path(v)
+        url = ICON_BASE + art_icon if art_icon else ''
         if not url:
             die('%s 没有图标地址' % shown)
         was = old.get(shown, {})
-        table[shown] = {'hash': v['hash'], 'url': url,
+        table[shown] = {'hash': str(v['hash']), 'url': url,
                         'icon': was.get('icon', '') if was.get('url') == url else ''}
     if len(table) != len(keep):
         die('神器应有 %d 件，实际 %d 件：%s'

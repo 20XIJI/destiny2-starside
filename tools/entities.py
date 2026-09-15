@@ -23,7 +23,7 @@
 的定义，换成别的名字等于替他改说法。
 
 值存**源稿原文**（带 {token|…} 与格内换行 \\\\），因为页面要能从记录重新生成。
-manifest 给出的基础信息不抄进来：那一份在 data/facts/ 里按同一个 hash 放着，
+manifest 给出的基础信息不抄进来：那一份在 data/manifest/ 里按同一个 hash 放着，
 机器生成、人不改，构建时按 hash 合。抄进来就又是两份真相。
 
 用法：
@@ -144,7 +144,7 @@ def collect():
             # 一行可能带几个主键（组合行、词条一族）。**记录挂在第一个上**：
             # 那是这一行说的那件东西，其余是它带的插件，各自另有自己的记录。
             head = key.split()[0]
-            if not head.isdigit() or facts.items.get(head, {}).get('ty') != 3:
+            if not head.isdigit() or facts.items.get(head, {}).get('itemType') != 3:
                 continue
             if head in taken:
                 clash.append((page, head, facts.name(head), taken[head], name))
@@ -160,7 +160,7 @@ def collect():
 
 
 def volume(facts, key):
-    ammo = (facts.items.get(key) or {}).get('ammo') or 0
+    ammo = ((facts.items.get(key) or {}).get('equippingBlock') or {}).get('ammoType') or 0
     return AMMO_VOLUME.get(ammo, 'weapon-other')
 
 

@@ -32,9 +32,20 @@ Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构�
 
 `serve.json` 关掉了 `cleanUrls`，站内链接一律写全 `xxx/index.html`。
 
-`data/` 是机器生成、入库的两层：`data/facts/` 由 `facts.py` 从 Bungie manifest 蒸馏
+`data/` 是机器生成、入库的两层：`data/manifest/` 由 `facts.py` 从 Bungie manifest 蒸馏
 （物品 19356 条、武器词条池 2208 把、效果与属性、护甲套装），`data/index/` 由三个资料
-生成器渲染时写出（17 页 2299 条，主键 → 锚点、分节、图标、说明）。两层都不手改。
+生成器渲染时写出（23 页 3396 条，主键 → 锚点、分节、图标、说明）。两层都不手改。
+
+`data/manifest/` 的字段名照 Manifest 拼全（`displayProperties.name`、`itemType`、
+`inventory.tierType`），双语键是 `zh-CN` 与 `en`。**根上只放 Manifest 自己的字段，
+本项目算出来的一律在 `derived` 里**：发布版本 `release`、勇士克制 `breakerType`、
+可塑造 `craftable`、可升阶 `tierable`、插值后的显示值 `displayStats`。问某个字段
+是 Bungie 的还是我们的，看它在不在 `derived` 里即可，`check_quality.py` 的
+`ManifestLayer` 钉着这条边界。取名字走 `resolve.text()`，取官方图路径走
+`resolve.icon_path()`，各只有一处实现。
+
+`data/` 不上传：它是构建的输入不是站点的资源，`deploy.py` 的 `keep()` 挡着，
+产出里引用 `data/` 路径即闸门报错。
 
 `references/` 入库的是源稿：`artifact-mods.md`、`armor-sets.md`，以及 `docs/` 下的资料文档。转写中间产物 `armor_transcription.*` 在 `.archived/`，整个目录已 gitignore，不当源稿用。
 
@@ -52,9 +63,10 @@ Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构�
 mods.py            官方物品表 → tools/mod-variants.json（护甲模组变体）
                    与 tools/moves.json（位移技能）、tools/artifacts.json（七件神器），
                    图标一并取回
-facts.py           Bungie manifest → data/facts/（物品、武器词条池、效果与属性、
+facts.py           Bungie manifest → data/manifest/（物品、武器词条池、效果与属性、
                    护甲套装、属性插值曲线）。manifest 是冻结快照，跑一次、产物入库，
-                   不留抓取代码。勇士克制按固有框架挂的 SandboxPerk 推，不读 breakerType
+                   不留抓取代码。字段名照 Manifest 拼全，算出来的进 derived。勇士克制
+                   按固有框架挂的 SandboxPerk 推，manifest 自带那一位全表只有 18 条
 resolve.py         中文名 → itemHash。槽位限定候选，复刻按「源稿标的版本后缀 →
                    源稿列的词条与来源 → 非大师非特殊版 → 有收藏条目」逐条判，
                    分不出就交出候选、不猜；另出给产出戳主键的戳号器
@@ -154,7 +166,7 @@ python3 tools/items.py --normalize [slug]    # 按词表纠正全部源稿，构
 
 python3 tools/json2xlsx.py <抓取的.json>      # 还原成 xlsx，供核对与手改
 
-python3 tools/facts.py --distill              # manifest → data/facts/（换 manifest 才跑）
+python3 tools/facts.py --distill              # manifest → data/manifest/（换 manifest 才跑）
 python3 tools/resolve.py --audit              # 站内每个名字都落得到主键上
 python3 tools/migrate.py --check              # 配装源稿来回逐字节比对
 python3 tools/migrate.py --classify           # 资料页该结构化还是留 markdown

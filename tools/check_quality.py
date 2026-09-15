@@ -400,6 +400,71 @@ class Generated(unittest.TestCase):
                          'functions/api/dialect.js 与 admin/dialect.js 分家了，跑一次构建')
 
 
+class ManifestLayer(unittest.TestCase):
+    """事实层自身对得上：主键即记录里的 hash，双语键是那两个，前缀不混。
+
+    蒸馏要读仓库外那份 190 MB 的 manifest，所以这里不跑 --distill，只查入库的
+    那七份产物。查的是**换赛季重跑之后还成立的那些**：一条记录的 hash 与它的键
+    对不上，下游按键查、按 hash 显示，两边指的就不是同一件东西了。
+    """
+
+    ROOT = TOOLS.parent / 'data' / 'manifest'
+
+    def table(self, name):
+        with open(self.ROOT / name, encoding='utf-8') as f:
+            return json.load(f)
+
+    def test_the_key_is_the_record_s_own_hash(self):
+        for name, strip in (('items.json', ''), ('stats.json', ''),
+                            ('armor-sets.json', ''), ('artifacts.json', ''),
+                            ('effects.json', 'prefix')):
+            rows = self.table(name)
+            with self.subTest(table=name):
+                bad = [k for k, v in rows.items()
+                       if str(v.get('hash')) != (k.split(':')[-1] if strip else k)]
+                self.assertEqual(bad[:5], [], '%s 有 %d 条的键与 hash 对不上' % (name, len(bad)))
+                self.assertGreater(len(rows), 5, '%s 只读到 %d 条' % (name, len(rows)))
+
+    def test_bilingual_text_uses_bcp47_and_never_the_old_keys(self):
+        """zh/en 换成了 zh-CN/en。漏改一处的症状是名字整列变空，不是报错。"""
+        def walk(node, path=''):
+            if isinstance(node, dict):
+                if 'zh' in node and 'displayProperties' not in node:
+                    bad.append(path)
+                for k, v in node.items():
+                    walk(v, path + '.' + k)
+            elif isinstance(node, list):
+                for v in node:
+                    walk(v, path + '[]')
+
+        for name in ('items.json', 'effects.json', 'stats.json', 'armor-sets.json',
+                     'artifacts.json'):
+            bad = []
+            with self.subTest(table=name):
+                walk(self.table(name))
+                self.assertEqual(sorted(set(bad))[:5], [], '%s 里还有旧的 zh 键' % name)
+
+    def test_manifest_facts_and_our_own_stay_on_their_own_sides(self):
+        """根上只放 manifest 的字段，本项目算出来的只在 derived 里。
+
+        边界一模糊就没人再分得清某个字段能不能跟着 manifest 重生成。
+        """
+        ours = {'release', 'breakerType', 'craftable', 'tierable', 'displayStats'}
+        # breakerType 是唯一两头都有的：根上那一位是 manifest 自己的字段，照原样留着。
+        only_ours = ours - {'breakerType'}
+        items = self.table('items.json')
+        stray = sorted({k for v in items.values() for k in v} & only_ours)
+        self.assertEqual(stray, [], '这些是本项目算的，不该出现在根上：%s' % stray)
+        seen = {k for v in items.values() for k in v.get('derived') or {}}
+        self.assertTrue(seen <= ours, 'derived 里冒出没登记的字段：%s' % sorted(seen - ours))
+        # breakerType 两头都有：根上那一位是 manifest 自己的（全表 18 条），
+        # derived 那一位是消费方要读的（覆盖 2208 把武器）。
+        raw = sum('breakerType' in v for v in items.values())
+        got = sum('breakerType' in (v.get('derived') or {}) for v in items.values())
+        self.assertEqual(raw, 18, 'manifest 自带 breakerType 的应是 18 条，实际 %d' % raw)
+        self.assertGreater(got, 2000, 'derived.breakerType 只覆盖 %d 条，推导没跑' % got)
+
+
 class NakedText(unittest.TestCase):
     """两道漏着色闸门共用的裸文本视图：剥掉的标签必须留下隔断。
 
@@ -472,7 +537,7 @@ class DeploySelection(unittest.TestCase):
         去 fetch 一份事实表，keep() 会静默地让那次请求 404——症状是「本地 npm start
         好好的，发上去那一块空了」。所以正查 keep()，反查产出里没有人引用它。
         """
-        self.assertFalse(deploy.keep('data/facts/items.json'))
+        self.assertFalse(deploy.keep('data/manifest/items.json'))
         self.assertFalse(deploy.keep('data/index/weapon-perks.json'))
         root = TOOLS.parent
         want = re.compile(r'(?<![\w-])data/')

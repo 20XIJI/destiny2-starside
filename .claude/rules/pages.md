@@ -227,7 +227,7 @@ python3 tools/convert-armor-sets.py --icons <英文原表导出.html>   # 从英
 python3 tools/convert-armor-sets.py --fill-icons                # 缺的按 manifest 补
 ```
 
-英文原表有 2 处是空白占位（054、056），`--fill-icons` 从 `data/facts/armor-sets.json` 取
+英文原表有 2 处是空白占位（054、056），`--fill-icons` 从 `data/manifest/armor-sets.json` 取
 那条效果的 `sandboxPerk` 图标补上。库里那批是 96×96 白剪影，与英文原表那批同构，
 所以走同一套处理，补出来的与旁边那些逐像素同规格。缺图不会静默留空：`N_ICONS` 是
 112，少一枚就中止。

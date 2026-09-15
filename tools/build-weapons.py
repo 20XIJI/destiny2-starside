@@ -5,7 +5,7 @@
 另一套评级与评语，异域武器详解写机制，manifest 给出 Perk 池与数值。这一页不新写
 任何数据，它按主键把那几处**合起来显示**：改源稿这一页跟着变，它不是第七处真相。
 
-    data/facts/          manifest 蒸馏：名字、类型、元素、勇士、数值基线、Perk 池、
+    data/manifest/          manifest 蒸馏：名字、类型、元素、勇士、数值基线、Perk 池、
                          插值曲线、图标
     references/items/    人写层：每位作者各占一块，各写各的列
     data/icons.json      主键 → 官方图文件名
@@ -33,6 +33,7 @@ import re
 import sys
 
 import icons
+import resolve
 import shell
 from markup import die
 
@@ -145,7 +146,8 @@ ENH_PAIR = {
 # 入库；仓库本身不进来，也不留抓取代码——那套图标不随赛季变。
 TYPE_ICONS = os.path.join(shell.ROOT, 'tools', 'type-icons.json')
 
-# 站内的武器类型名 → 那套图标里的文件名。17 种，与 data/facts 里的 t.zh 一一对上。
+# 站内的武器类型名 → 那套图标里的文件名。17 种，与 data/manifest 里的
+# itemTypeDisplayName.zh-CN 一一对上。
 TYPE_ICON = {
     '自动步枪': 'auto_rifle', '战斗弓箭': 'bow', '融合步枪': 'fusion_rifle',
     '偃月': 'glaive', '榴弹发射器': 'grenade_launcher', '手炮': 'hand_cannon',
@@ -316,13 +318,13 @@ def rank_of(text):
 
 
 def source(row):
-    text = (row.get('src') or {}).get('zh', '').strip()
+    text = (row.get('sourceString') or {}).get(resolve.ZH, '').strip()
     return '' if text == NO_SOURCE else SRC_TAG.sub('', text).strip()
 
 
 def season_of(row):
     """首发赛季。查不出来就不写——写错比不写更糟。"""
-    rel = row.get('rel')
+    rel = (row.get('derived') or {}).get('release')
     if not rel or rel == SEASON_DIRTY:
         return 0
     return SEASON.get(rel, 0)
@@ -390,7 +392,7 @@ class Dict:
         库里没有名字的那两条整条丢掉：画不出名字的一行加成读者看不懂。
         """
         out = []
-        for x in r.get('inv') or ():
+        for x in r.get('investmentStats') or ():
             at = self.stat_of(x[0])
             if at is not None:
                 out.append([at] + list(x[1:]))
@@ -399,9 +401,9 @@ class Dict:
     def row(self, h):
         r = self.facts.items.get(str(h)) or {}
         got = self.table.get(icons.icon_of(self.facts, str(h)) or '')
-        return [r.get('n', {}).get('zh', str(h)),
+        return [resolve.text(r) or str(h),
                 got['file'] if got else '',
-                say((r.get('desc') or {}).get('zh', ''), self.banned),
+                say(resolve.text(r, 'description'), self.banned),
                 self.inv(r), 0, 0]
 
     def add(self, h, enh=None):
@@ -410,7 +412,7 @@ class Dict:
             row = self.row(h)
             if enh:
                 e = self.facts.items.get(str(enh)) or {}
-                row[4] = [say((e.get('desc') or {}).get('zh', ''), self.banned),
+                row[4] = [say(resolve.text(e, 'description'), self.banned),
                           self.inv(e)]
             row[5] = self.note(h, enh)
             self.at[key] = len(self.rows)
@@ -419,7 +421,7 @@ class Dict:
 
 
 def is_enhanced(row):
-    return (row.get('t') or {}).get('zh', '').startswith(ENH_TYPE)
+    return (row.get('itemTypeDisplayName') or {}).get(resolve.ZH, '').startswith(ENH_TYPE)
 
 
 def by_name_once(facts, plugs):
@@ -450,11 +452,12 @@ def merge(facts, plugs):
     base, extra, seen = [], {}, {}
     for h in plugs:
         r = facts.items.get(str(h)) or {}
-        name = (r.get('n') or {}).get('zh', '')
+        name = resolve.text(r)
         if is_enhanced(r):
             extra.setdefault(ENH_PAIR.get(int(h)) or name, h)
             continue
-        key = (name, r.get('icon'), (r.get('desc') or {}).get('zh', ''), r.get('tier'))
+        key = (name, resolve.icon_path(r), resolve.text(r, 'description'),
+               (r.get('inventory') or {}).get('tierType'))
         if key in seen:
             continue
         seen[key] = h
@@ -530,7 +533,7 @@ def relocate(facts, recs, by_name):
     out, moved = {}, 0
     for key, rec in recs.items():
         names = [norm(n) for n in wanted(rec)]
-        alts = by_name.get((facts.items.get(key) or {}).get('n', {}).get('zh', ''), [])
+        alts = by_name.get(resolve.text(facts.items.get(key)), [])
         if not names or len(alts) < 2:
             out[key] = rec
             continue
@@ -567,8 +570,7 @@ def collapse(facts, recs):
     """
     groups = {}
     for key in recs:
-        groups.setdefault((facts.items.get(key) or {}).get('n', {}).get('zh', ''),
-                          []).append(key)
+        groups.setdefault(resolve.text(facts.items.get(key)), []).append(key)
     out, merged = {}, 0
     for keys in groups.values():
         seen = [who for k in keys for who in (recs[k].get('来自') or {})]
@@ -620,7 +622,7 @@ def payload(resolve, facts, recs, table):
     # 全表 1099 项一个 True 都没有，指望不上。
     top = {}
     for row in facts.items.values():
-        for sh, val in row.get('stats') or ():
+        for sh, val in (row.get('derived') or {}).get('displayStats') or ():
             if val > top.get(sh, 0):
                 top[sh] = val
 
@@ -634,7 +636,7 @@ def payload(resolve, facts, recs, table):
         """
         h = str(h)
         if h not in stat_at:
-            name = (facts.stats.get(h) or {}).get('n', {}).get('zh', '').strip()
+            name = resolve.text(facts.stats.get(h)).strip()
             if not name:
                 stat_at[h] = None
             else:
@@ -645,13 +647,13 @@ def payload(resolve, facts, recs, table):
     bag = Dict(facts, table, stat_of)
     by_name = {}
     for key, row in facts.items.items():
-        if row.get('ty') == 3:
-            by_name.setdefault(row['n']['zh'], []).append(key)
+        if row.get('itemType') == 3:
+            by_name.setdefault(resolve.text(row), []).append(key)
 
     recs, moved = relocate(facts, recs, by_name)
     recs, merged = collapse(facts, recs)
     out, detail, missed = [], {}, []
-    for key in sorted((k for k, v in facts.items.items() if v.get('ty') == 3), key=int):
+    for key in sorted((k for k, v in facts.items.items() if v.get('itemType') == 3), key=int):
         row = facts.items[key]
         rec = recs.get(key) or {}
         cols, mods, mw, seat, frames = [], [], [], {}, 0
@@ -692,9 +694,10 @@ def payload(resolve, facts, recs, table):
             # 矩阵拉高一倍，而它们是同一件事的十四个取值，不是十四个并列的选项。
             cols.insert(0, [MW_NAME, mw, 1, 1])
         hit, miss = picks(resolve, facts, key, rec, seat)
-        missed += [(key, row['n']['zh']) + m for m in miss]
+        missed += [(key, resolve.text(row)) + m for m in miss]
 
-        el = ELEMENT.get(row.get('dmg') or 0, ('', ''))
+        derived = row.get('derived') or {}
+        el = ELEMENT.get(row.get('defaultDamageType') or 0, ('', ''))
         got = table.get(icons.icon_of(facts, key) or '')
         block = {who: {plain(c): strip(v) for c, v in b.items()
                        if c not in SKIP_COL and strip(v)}
@@ -702,23 +705,24 @@ def payload(resolve, facts, recs, table):
         item = {
             'h': key,
             # 赛季水印：一张整幅图，角标画在它自己那个左上角上。
-            'wm': (table.get(row.get('wm') or '') or {}).get('file', ''),
-            'n': row['n']['zh'],
-            'en': row['n'].get('en', ''),
-            't': (row.get('t') or {}).get('zh', ''),
+            'wm': (table.get(row.get('iconWatermark') or '') or {}).get('file', ''),
+            'n': resolve.text(row),
+            'en': resolve.text(row, lang=resolve.EN),
+            't': (row.get('itemTypeDisplayName') or {}).get(resolve.ZH, ''),
             'el': el[0], 'tk': el[1],
-            'tier': row.get('tier'),
+            'tier': (row.get('inventory') or {}).get('tierType'),
             'ico': got['file'] if got else '',
-            'br': BREAKER.get(row.get('breaker') or 0, ''),
-            'am': AMMO.get(row.get('ammo') or 0, ''),
+            'br': BREAKER.get(derived.get('breakerType') or 0, ''),
+            'am': AMMO.get((row.get('equippingBlock') or {}).get('ammoType') or 0, ''),
             'sea': season_of(row),
             # 评级进索引：左栏要按它排、要显示它，为这一列再取一次详情不值当。
             'r': {who: grade(b['评级'])
                   for who, b in (rec.get('来自') or {}).items() if b.get('评级')},
         }
-        for flag in ('craft', 'tiering'):
-            if row.get(flag):
-                item[flag] = 1
+        # 产出这两位的键名保持 craft / tiering——weapons/app.js 按它们读。
+        for out_key, fact_key in (('craft', 'craftable'), ('tiering', 'tierable')):
+            if derived.get(fact_key):
+                item[out_key] = 1
         # 大师工作的金色辉光：这一栏在，说明这把枪升得满，图标底下那层光就该亮。
         if mw:
             item['mw'] = 1
@@ -732,18 +736,18 @@ def payload(resolve, facts, recs, table):
 
         # 同名的别版本：复刻让同一把枪有好几个 hash，读者要能在版本之间跳。
         alt = [[k, season_of(facts.items[k])]
-               for k in by_name.get(row['n']['zh'], []) if k != key]
+               for k in by_name.get(resolve.text(row), []) if k != key]
         alt.sort(key=lambda x: -x[1])
         detail[key] = {
             # 来源两段：作者写的那一份在前——她标的是「这一版现在从哪来」，
             # manifest 的收藏条目写的是这把枪当初的来路，两件事都要。
             'src': [plain((block.get('aegis') or {}).get('来源', '')), source(row)],
-            'fl': (row.get('flavor') or {}).get('zh', ''),
-            'sg': row.get('sg', ''),
+            'fl': (row.get('flavorText') or {}).get(resolve.ZH, ''),
+            'sg': (row.get('stats') or {}).get('statGroupHash', ''),
             # 基线只取无条件生效的那些。第三位是 isConditionallyActive——
             # 「亡命之徒」击杀后才加填装，把它算进基线，读者看到的就是一把
             # 永远处在击杀后状态的枪。
-            'base': [[stat_of(x[0]), x[1]] for x in row.get('inv') or ()
+            'base': [[stat_of(x[0]), x[1]] for x in row.get('investmentStats') or ()
                      if len(x) == 2 and stat_of(x[0]) is not None],
             'c': cols,
             'm': mods,
@@ -843,7 +847,7 @@ def self_check(facts, detail, dic, stats):
         if not rows:
             continue
         base = dict(one['base'])
-        want = dict(facts.items[key].get('stats') or ())
+        want = dict((facts.items[key].get('derived') or {}).get('displayStats') or ())
         for si, top, curve in rows:
             v = base.get(si)
             got = 0 if v is None else show(v, top, curve)
@@ -945,25 +949,27 @@ def cross_check(facts, recs, missed):
             got = CHAMP_CELL.search(block.get('勇士') or '')
             if got and got.group(1) in CHAMP_ICON:
                 said.add(CHAMP_ICON[got.group(1)])
-        if said and (row.get('breaker') or 0) not in said:
+        breaker = (row.get('derived') or {}).get('breakerType') or 0
+        if said and breaker not in said:
             champ.append('%s %s：推导 %s，作者写的是 %s'
-                         % (key, facts.name(key), row.get('breaker'), sorted(said)))
+                         % (key, facts.name(key), breaker or None, sorted(said)))
     table = frame_champs()
     for key, row in facts.items.items():
-        if row.get('ty') != 3 or row.get('tier') != 5:
+        if row.get('itemType') != 3 or (row.get('inventory') or {}).get('tierType') != 5:
             continue
         intr = [c for c in facts.pools.get(key) or () if c.get('kind') == 'intrinsics']
         if not intr:
             continue
         fh = intr[0].get('init') or (intr[0].get('plugs') or [None])[0]
         name = facts.name(fh)
-        kind = (row.get('t') or {}).get('zh', '')
+        kind = (row.get('itemTypeDisplayName') or {}).get(resolve.ZH, '')
+        breaker = (row.get('derived') or {}).get('breakerType') or 0
         for (k, short), want in sorted(table.items(), key=lambda x: -len(x[0][1])):
             if k == kind and short in name:
-                if want != (row.get('breaker') or 0):
+                if want != breaker:
                     frames.append('%s %s（%s %s）：推导 %s，框架表写的是 %s'
                                   % (key, facts.name(key), kind, name,
-                                     row.get('breaker'), want))
+                                     breaker or None, want))
                 break
     bad = []
     for tag, got in (('miss', len(missed)), ('champ', len(champ)), ('frames', len(frames))):
