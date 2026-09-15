@@ -37,7 +37,7 @@ import markup
 import research
 import shell
 
-FACTS = os.path.join(shell.ROOT, 'data', 'manifest')
+FACTS = os.path.join(shell.ROOT, 'data')
 ZH, EN = 'zh-CN', 'en'
 
 # 一把武器的栏位怎么切。**这几条是站内口径不是 Bungie 事实**，所以住在这里而不是
@@ -235,13 +235,13 @@ class Facts:
                 return json.load(f)
 
         self.items = read('inventory-items.json')
-        self.groups = read('stat-groups.json')
+        self.groups = read(os.path.join('lookup', 'stat-groups.json'))
         self.sets = read('equipable-item-sets.json')
         self.perks = read('sandbox-perks.json')
         self.traits = read('traits.json')
         self.stats = read('stats.json')
-        self.plug_sets = read('plug-sets.json')
-        self.socket_types = read('socket-types.json')
+        self.plug_sets = read(os.path.join('lookup', 'plug-sets.json'))
+        self.socket_types = read(os.path.join('lookup', 'socket-types.json'))
         self.tables = {'inventory-items': self.items, 'sandbox-perks': self.perks,
                        'traits': self.traits, 'stats': self.stats,
                        'equipable-item-sets': self.sets}

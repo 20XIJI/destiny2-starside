@@ -562,7 +562,7 @@ class ManifestLayer(unittest.TestCase):
     对不上，下游按键查、按 hash 显示，两边指的就不是同一件东西了。
     """
 
-    ROOT = TOOLS.parent / 'data' / 'manifest'
+    ROOT = TOOLS.parent / 'data'
     # 实体表：站内寻址得到的东西，键是裸 hash、文件即命名空间。
     ENTITIES = ('inventory-items.json', 'sandbox-perks.json', 'traits.json',
                 'stats.json', 'equipable-item-sets.json')
@@ -571,7 +571,8 @@ class ManifestLayer(unittest.TestCase):
     LOOKUPS = ('plug-sets.json', 'socket-types.json', 'stat-groups.json')
 
     def table(self, name):
-        with open(self.ROOT / name, encoding='utf-8') as f:
+        where = self.ROOT / 'lookup' if name in self.LOOKUPS else self.ROOT
+        with open(where / name, encoding='utf-8') as f:
             return json.load(f)
 
     def test_the_key_is_the_record_s_own_hash(self):

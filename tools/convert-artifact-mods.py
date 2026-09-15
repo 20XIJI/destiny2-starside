@@ -9,7 +9,6 @@
 解析不上的结构、对不上的计数一律抛错中止，不出半成品。
 """
 
-import json
 import os
 import re
 import sys

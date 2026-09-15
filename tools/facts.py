@@ -66,7 +66,8 @@ import sys
 import shell
 from markup import die
 
-OUT_DIR = os.path.join(shell.ROOT, 'data', 'manifest')
+OUT_DIR = os.path.join(shell.ROOT, 'data')
+LOOKUP_DIR = os.path.join(OUT_DIR, 'lookup')
 SRC = os.path.join(os.path.dirname(shell.ROOT), '..', 'github',
                    'Destiny-item-list', 'manifest_raw')
 
@@ -596,12 +597,17 @@ def distill(src):
         ('socket-types.json', types, '种'),
         ('stat-groups.json', groups, '组'),
     )
+    # 实体表落 data/，构建期字典落 data/lookup/——后者不是实体：没有页面或配装
+    # 指向它们，而且 hash 空间与实体撞号（plug-sets 最小号是 1，socket-types 里有 0）。
+    LOOKUPS = ('plug-sets.json', 'socket-types.json', 'stat-groups.json')
     total = 0
     for name, payload, unit in out:
-        size = dump(os.path.join(OUT_DIR, name), payload)
+        where = LOOKUP_DIR if name in LOOKUPS else OUT_DIR
+        size = dump(os.path.join(where, name), payload)
         total += size
-        print('data/manifest/%-24s %6d %s  %9.1f KB'
-              % (name, len(payload), unit, size / 1024))
+        print('%-38s %6d %s  %9.1f KB'
+              % (os.path.relpath(os.path.join(where, name), shell.ROOT),
+                 len(payload), unit, size / 1024))
     print('%-38s %9.1f KB' % ('合计', total / 1024))
 
 

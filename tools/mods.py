@@ -109,7 +109,7 @@ def library():
     **不再要人工指一份 49 MB 的导出**：manifest 的蒸馏产物已经在 data/manifest/ 里入库，
     同一份事实两个副本迟早各走各的。字段名保持原样，转换只在这一处。
     """
-    path = os.path.join(shell.ROOT, 'data', 'manifest', 'inventory-items.json')
+    path = os.path.join(shell.ROOT, 'data', 'inventory-items.json')
     if not os.path.exists(path):
         die('事实层还没蒸馏：先跑 python3 tools/facts.py --distill')
     with open(path, encoding='utf-8') as f:
@@ -192,8 +192,9 @@ def arts():
     排版空格）由 arts_of() 从索引现取，配装源稿按它查。
     """
     shown_by = library()
-    lib = {h: v for h, v in items_lib().items()
-           if 'tiers' in (v.get('derived') or {})}
+    with open(os.path.join(shell.ROOT, 'data', 'inventory-items.json'), encoding='utf-8') as f:
+        lib = {h: v for h, v in json.load(f).items()
+               if 'tiers' in (v.get('derived') or {})}
     old = {}
     if os.path.exists(ARTS):
         with open(ARTS, encoding='utf-8') as f:
