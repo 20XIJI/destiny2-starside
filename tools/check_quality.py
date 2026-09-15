@@ -555,6 +555,80 @@ class Generated(unittest.TestCase):
                          'functions/api/dialect.js 与 admin/dialect.js 分家了，跑一次构建')
 
 
+class EntitySource(unittest.TestCase):
+    """源稿与记录对得上：每一行的主键都落得到记录，那条记录名下有站内写的东西。
+
+    源稿只剩分节、表头与主键清单，内容全在记录里。这两边一旦对不上，页面就会
+    少一行或画出一行空的，而两边各自都是合法的 JSON 与 markdown，没有别的闸门
+    看得见。同一页里同一枚主键出现 k 次时，那个来源名下要有 k 段（本体 1 段 +
+    variants k-1 段）。
+    """
+
+    ROOT = TOOLS.parent
+    # 「数据源：是」那些页写的是站内的根本数据，落在记录本体；另两家是作者，
+    # 落在 authors 名下。一页归谁只在这里定一次。
+    BODY = ('weapon-perks', 'armor-mods', 'exotic-weapon', 'exotic-armor', 'arc',
+            'solar', 'void', 'stasis', 'strand', 'prismatic', 'class-abilities')
+    AUTHORED = {**{p: 'Aegis' for p in ('shopping-primary', 'shopping-special',
+                                        'shopping-heavy', 'shopping-other')},
+                **{p: 'LGpig' for p in ('legendary-primary', 'legendary-special',
+                                        'legendary-heavy', 'exotic-weapons',
+                                        'exotic-armors', 'farming-sets')}}
+    # 这几个键是 manifest 那一侧的，不算「站内写的东西」。
+    MANIFEST_TEXT = frozenset({'name', 'database_details', 'itemTypeDisplayName',
+                               'itemTypeAndTierDisplayName', 'flavorText',
+                               'sourceString', 'displaySource'})
+    LANE = re.compile(r'^==\s*(.+?)\s*==$')
+
+    def rows(self, slug):
+        """一页源稿的表区：每一行的主键清单，按出现顺序。"""
+        path = self.ROOT / 'references' / 'docs' / ('%s.md' % slug)
+        inside = False
+        for n, line in enumerate(path.read_text(encoding='utf-8').split('\n'), 1):
+            if line.startswith('列：'):
+                inside = True
+                continue
+            if not line.strip() or line.startswith('##'):
+                inside = False
+                continue
+            if not inside or self.LANE.match(line.strip()):
+                continue
+            keys = line.partition('  ')[0].split()
+            if keys:
+                yield n, keys
+
+    def test_every_source_row_lands_on_a_record_that_says_something(self):
+        import resolve
+        facts = resolve.Facts()
+        rows = refs = 0
+        for slug in tuple(self.BODY) + tuple(self.AUTHORED):
+            who = self.AUTHORED.get(slug)
+            seen = collections.Counter()
+            for n, keys in self.rows(slug):
+                rows += 1
+                refs += len(keys)
+                for key in keys:
+                    self.assertIsNotNone(facts.at(key),
+                                         '%s:%d 主键 %s 落不到记录上' % (slug, n, key))
+                seen[keys[0]] += 1
+            for head, times in seen.items():
+                row = facts.at(head)
+                if who is None:
+                    said = {k: v for k, v in (row.get('i18n') or {}).get('zh-CN', {}).items()
+                            if k not in self.MANIFEST_TEXT}
+                    more = row.get('variants') or ()
+                else:
+                    said = (row.get('authors') or {}).get(who) or {}
+                    more = said.get('variants') or ()
+                self.assertTrue(said, '%s 的 %s 名下没有站内写的东西' % (slug, head))
+                self.assertLessEqual(
+                    times, 1 + len(more),
+                    '%s 的 %s 在源稿里出现 %d 次，记录里只有 %d 段'
+                    % (slug, head, times, 1 + len(more)))
+        self.assertEqual((rows, refs), (2429, 3624),
+                         '源稿的行数或主键引用数变了：%d 行、%d 个引用' % (rows, refs))
+
+
 class ManifestLayer(unittest.TestCase):
     """事实层自身对得上：主键即记录里的 hash，双语键是那两个，前缀不混。
 
