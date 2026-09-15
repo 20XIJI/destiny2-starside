@@ -140,9 +140,12 @@ def i18n_of(*fields):
     """
     zh, en = {}, {}
     for field, z, e in fields:
-        if z is not None:
+        # 空串不是值，是「这一条没有这个字段」。manifest 里到处是空串占位
+        # （10418 条物品的 database_details、10255 条的 flavorText），存下来
+        # 只是让每个消费方都得再写一次 `or ''`。
+        if z:
             zh[field] = z
-        if e is not None and e != z:
+        if e and e != z:
             en[field] = e
     out = {}
     if zh:
@@ -237,21 +240,21 @@ def project(key, item, other):
 
 
 def stats_of(item):
-    """物品自己那一份数值，原样搬下来。
+    """物品用哪一组插值曲线。**算出来的那几个显示值不存。**
 
-    从前这里存的是 `derived.displayStats`——按该物品 statGroup 的 scaledStats
-    选过、排过、补过 0 的显示值。那是渲染口径不是事实，而且它可以从这一份加
-    `stat-groups.json` 逐项重建（实测 8246 条全部对得上）。选序交给消费方现做。
+    Bungie 在 `stats.stats` 上预先算好了每一项的显示值，但它 100% 可以由
+    `investmentStats` 过这一组的 `displayInterpolation` 重建——实测 8246 条逐值
+    相等，零出入。存下来是把同一条推导链的两端都记一遍，1720 KB。
+    从前 `derived.displayStats` 被删掉正是这个理由，那一份与这一份是同一件事。
+
+    公式四个细节缺一不可：不加默认插件；先按 `scaledStats.maximumValue` 截断
+    再插值；两端截断不外推；银行家舍入。
     """
     block = item.get('stats') or {}
-    out: dict[str, object] = {}
-    if 'statGroupHash' in block:
-        # 从前这一位是字符串，2208 处。值位置上的 hash 一律整数。
-        out['statGroupHash'] = block['statGroupHash']
-    if 'stats' in block:
-        out['stats'] = {str(h): {'value': v['value']}
-                        for h, v in block['stats'].items()}
-    return out or None
+    if 'statGroupHash' not in block:
+        return None
+    # 从前这一位是字符串，2208 处。值位置上的 hash 一律整数。
+    return {'statGroupHash': block['statGroupHash']}
 
 
 def sockets_of(item):
@@ -435,6 +438,10 @@ def distill(src):
     for h, row in kept.items():
         item = items[h]
         if item.get('itemType') != 3:
+            if item.get('breakerType'):
+                # manifest 自己标了的照搬进 derived——消费方只读 derived 那一位，
+                # 只给武器算会漏掉 `3387424189` 过载霰弹枪这一条。
+                row.setdefault('derived', {})['breakerType'] = item['breakerType']
             continue
         got = sockets_of(item)
         if got:
@@ -474,7 +481,9 @@ def distill(src):
         for p in (plug_sets.get(h) or {}).get('reusablePlugItems') or ():
             one: dict[str, object] = {'plugItemHash': p['plugItemHash']}
             if not p.get('currentlyCanRoll'):
-                # 老版本的武器留着已经开不出来的词条，这一位是唯一的判据。
+                # 「这一枚已经开不出来了」。**这份 manifest 里武器一枚都没标**：
+                # 全库 4416 项全在护甲的 plug-set 上，而护甲插槽不收，所以这一位
+                # 写下来是 0 处。留着，收护甲插槽那天它就有用了。
                 one['currentlyCanRoll'] = False
             rows.append(one)
         plugs[h] = {'hash': int(h), 'reusablePlugItems': rows}
@@ -491,10 +500,14 @@ def distill(src):
     del socket_types, plug_sets
     gc.collect()
 
-    # 属性组整张表收下（112 组）。从前只收武器用到的 79 组，于是护甲那边的显示值
-    # 重建不出来。按「一张定义表一个文件」整份存着，加一页不必回来登记。
+    # 只收被物品引用到的那 84 组，与另两张查表同一口径。整张 112 组存过一版，
+    # 多出来的 28 组一个引用都没有——查表的范围就该是「有人查」。
+    want_groups = {str((r.get('stats') or {}).get('statGroupHash'))
+                   for r in kept.values() if r.get('stats')}
     groups = {}
     for h, g in load(src, 'zh', 'DestinyStatGroupDefinition').items():
+        if h not in want_groups:
+            continue
         one: dict[str, object] = {'hash': int(h)}
         for field in ('maximumValue', 'uiPosition'):
             if field in g:
@@ -559,10 +572,13 @@ def distill(src):
             one['i18n'] = text
         sets[h] = one
 
+    # **收全，不按 isDisplayable 筛。**物品记录的 `perks[].perkHash` 是物品表通向
+    # 这张表的唯一连接键，筛掉 670 种之后那条链有 3513 处指空，而其中 8 条带着
+    # 框架说明（`224136176` 的「在垂直方向上的后坐轨迹更加规则。可进行4发点射。」）。
+    # 引用图自洽比表小一点重要。
     perks = {}
     for h, v in perks_zh.items():
-        if v.get('redacted') or not v.get('isDisplayable'):
-            # isDisplayable 挡掉名字写着「机密」的那批占位。
+        if v.get('redacted'):
             continue
         perks[h] = plain(h, v, perks_en.get(h))
     del sets_zh, sets_en, perks_zh, perks_en
@@ -570,9 +586,15 @@ def distill(src):
 
     traits_zh = load(src, 'zh', 'DestinyTraitDefinition')
     traits_en = load(src, 'en', 'DestinyTraitDefinition')
+    # 全表 554 条里 508 条两种语言的名字都是空串。站内按名字查这张表，那 508 条
+    # 永远查不到；物品记录上又没有指向 traits 的键（`traitHashes` 零读者，没收），
+    # 所以它们既进不来也出不去。只留叫得出名字的 46 条。
     traits = {}
     for h, v in traits_zh.items():
         if v.get('redacted'):
+            continue
+        dp = v.get('displayProperties') or {}
+        if not (dp.get('name') or '').strip():
             continue
         # 46 条里 35 条是 keyword（游戏内的状态：不稳定、冻结、超凡），另 11 条是
         # 分类标签（光能增益、赛季），那 11 条的 displayHint 是空串。
