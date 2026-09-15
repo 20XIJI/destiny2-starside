@@ -230,6 +230,23 @@ class Facts:
             if en:
                 self.by_fold.setdefault(fold(en), []).append(h)
 
+    def at(self, key):
+        """按主键取那条记录，不管它落在哪张表上。
+
+        前缀只在 effects.json 上是真消歧——它把 trait 与 sandboxPerk 两个 hash
+        空间合进了一张表，同一个数字两边都可能有。stats 与 armor-sets 各只装一个
+        空间，键就是裸 hash，前缀在查这一侧剥掉。**解前缀只在这里做一次**：从前
+        key_name() 与 icons.icon_of() 各写一份，三张表两种约定，改一处漏一处。
+        """
+        key = str(key)
+        if key.startswith(('trait:', 'perk:')):
+            return self.effects.get(key)
+        if key.startswith('stat:'):
+            return self.stats.get(key[len('stat:'):])
+        if key.startswith('set:'):
+            return self.sets.get(key[len('set:'):])
+        return self.items.get(key)
+
     def name(self, h):
         return text(self.items.get(str(h)))
 
@@ -1012,16 +1029,7 @@ def audit():
 
 def key_name(facts, key):
     """一个主键在库里叫什么。"""
-    if key.startswith('set:'):
-        got = facts.sets.get(key[4:])
-        return text(got) if got else None
-    if key.startswith(('trait:', 'perk:')):
-        got = facts.effects.get(key)
-        return text(got) if got else None
-    if key.startswith('stat:'):
-        got = facts.stats.get(key[5:])
-        return text(got) if got else None
-    got = facts.items.get(key)
+    got = facts.at(key)
     return text(got) if got else None
 
 
