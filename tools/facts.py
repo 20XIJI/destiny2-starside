@@ -164,6 +164,34 @@ COSMETIC_MARKS = ('skins', 'shader', 'ornament')
 # 是人记的，改了游戏才会变。destiny.report 也是硬编码同样三条。
 LOWER_IS_BETTER = frozenset({447667954, 2961396640, 3481294762})  # 蓄力时间 充能时间 发热量
 
+# 发布版本 → 赛季号。**不能算，只能查**：版本号跳跃不规则（420→450、540→600、
+# 820→900→910→950→960→970），且 v500 起资料片本体（.annual/.core）与它的首季
+# （.season）共用一个赛季。
+#
+# 这张表与 DIM 的 watermark-to-season 交叉验证过：可比的 2115 件里 1745 件逐条
+# 相同，唯一的分歧是 DIM 那张表**停在第 28 季**，把第 29 季的 370 件错标成 28。
+# 所以不要反过来抄它。
+#
+# 脏桶只有 v400.season：活动武器全塞在这一个 traitId 里，横跨六季，判不出就不写。
+SEASON = {
+    'v300.annual': 1,  'v310.season': 2,  'v320.season': 3,  'v400.annual': 4,
+    'v410.season': 5,  'v420.season': 6,  'v450.season': 7,  'v460.season': 8,
+    'v470.season': 9,  'v480.season': 10, 'v490.season': 11,
+    'v500.annual': 12, 'v500.season': 12, 'v510.season': 13, 'v520.season': 14,
+    'v530.season': 15, 'v540.season': 15, 'v600.annual': 16, 'v600.season': 16,
+    'v610.season': 17, 'v620.season': 18, 'v630.season': 19,
+    'v700.annual': 20, 'v700.season': 20, 'v710.season': 21, 'v720.season': 22,
+    'v730.season': 23, 'v800.annual': 24, 'v800.season': 24, 'v810.season': 25,
+    'v820.season': 26, 'v900.core': 27, 'v900.dlc': 27, 'v910': 27, 'v910.core': 27,
+    'v950': 28, 'v950.core': 28, 'v950.dlc': 28,
+    'v960': 29, 'v960.core': 29, 'v970': 29, 'v970.core': 29,
+}
+# 没有后缀的 v910/v950/v960/v970 与各自的 .core 共用同一张赛季水印，逐件核对过
+# （v960 那 30 件与 v960.core 那 28 件都是 e78fd9419f99464816…），所以同一季。
+# 留空的只有两桶：v400.season 是活动武器，destiny.report 给的赛季号横跨第 4、8、
+# 15、18、22、25 季，判不出；v350.season 那 45 件至日活动护甲自成一张水印、没有
+# 同伴可比。
+
 RPM = '4284893193'          # 每分钟发射数
 
 # **射速由枪型 × 框架决定**，不由具体哪一把枪决定：站内 149 处写法归并成 65 个
@@ -338,6 +366,9 @@ def project(key, item, other):
         # 发布版本（releases.v970.core 一类）比赛季水印好认：水印是一张图，
         # 这是一个可排序的版本号。
         derived['release'] = rel[0][len('releases.'):]
+        if derived['release'] in SEASON:
+            # 赛季号查表得来，不是 manifest 的字段，所以与 release 并排放在 derived 里。
+            derived['season'] = SEASON[derived['release']]
     foundry = [t for t in item.get('traitIds') or () if t.startswith('foundry.')]
     if foundry:
         # 铸造厂（Häkke、Omolon、Veist…），779 把枪有。站内购物清单那一列写的

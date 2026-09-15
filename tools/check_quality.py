@@ -699,8 +699,8 @@ class ManifestLayer(unittest.TestCase):
 
         边界一模糊就没人再分得清某个字段能不能跟着 manifest 重生成。
         """
-        ours = {'release', 'breakerType', 'craftable', 'tierable', 'tiers',
-                'archetype', 'foundry', 'rate'}
+        ours = {'release', 'season', 'breakerType', 'craftable', 'tierable', 'tiers',
+                'archetype', 'foundry', 'rate', 'kind', 'lowerIsBetter'}
         # breakerType 是唯一两头都有的：根上那一位是 manifest 自己的字段，照原样留着。
         only_ours = ours - {'breakerType'}
         items = self.table('inventory-items.json')
