@@ -93,7 +93,7 @@ WIDE = frozenset({'shopping-primary', 'shopping-special', 'shopping-heavy',
                   'legendary-heavy'})
 
 # 图标不由主键定的那几页，这里不管：
-#   armor-sets / farming-sets  行标题是套装，套装自己没有图；那一页的 112 枚效果图
+#   armor-sets / farming-sets  图是套装效果那条 SandboxPerk 的；armor-sets 的 112 枚效果图
 #                              已经是 manifest 的 sandboxPerk 官方图（--fill-icons 补的），
 #                              且按序号命名、走另一套缓存规矩（README）。
 SKIP = frozenset({'armor-sets', 'farming-sets'})

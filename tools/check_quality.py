@@ -608,15 +608,17 @@ class EntitySource(unittest.TestCase):
         return got
 
     def points_at(self, facts, head):
-        """这一行指到的实体：固有栏那几枚插件，加它的催化剂。
+        """这一行指到的实体：组合的成员，固有栏那几枚插件，加它的催化剂。
 
         异域拆开之后，护甲那一行的正文整段归它那一枚异域 perk，装备记录上确实
         一个字都不剩——那是对的结果，不是缺陷。所以这一条问的是「这一行说的那件
         东西，站内有没有写过什么」，而不是「行首那一条记录上有没有字」。
+        「故我在（任意元素）」这种组合行只有名字，正文在它两枚固有 Perk 名下。
         """
         row = facts.at(head) or {}
         kinds = self.socket_kinds()
-        out = list((row.get('derived') or {}).get('catalyst') or ())
+        out = list(row.get('members') or ())
+        out += (row.get('derived') or {}).get('catalyst') or ()
         for e in (row.get('sockets') or {}).get('socketEntries') or ():
             if kinds.get(str(e.get('socketTypeHash'))) not in ('intrinsic', 'trait'):
                 continue
@@ -658,6 +660,7 @@ class EntitySource(unittest.TestCase):
                 if who is None:
                     said = {k: v for k, v in (row.get('i18n') or {}).get('zh-CN', {}).items()
                             if k not in self.MANIFEST_TEXT}
+                    said.update({k: row[k] for k in ('weaponTypes', 'enhanced') if row.get(k)})
                     more = row.get('variants') or ()
                 else:
                     said = (row.get('authors') or {}).get(who) or {}
@@ -675,12 +678,87 @@ class EntitySource(unittest.TestCase):
                     times, 1 + len(more),
                     '%s 的 %s 在源稿里出现 %d 次，记录里只有 %d 段'
                     % (slug, head, times, 1 + len(more)))
-        # 3512 ＝ 2429 行的行首加上它们的 covers。元素页、棱镜页与职业技能页的行
+        # 3135 ＝ 2413 行的行首加上它们的 covers。元素页、棱镜页与职业技能页的行
         # 从前互相写着对方分支的那一枚（电弧的「重击」与棱镜的「重击」是两枚不同的
         # hash，各自有一段说明），摘掉那 88 枚、再摘掉烈焰战锤那一行写的「无敌索尔」
         # （那不是它的另一枚 hash，是改造它的那个星相）之后是这个数。
-        self.assertEqual((rows, refs), (2429, 3511),
+        self.assertEqual((rows, refs), (2413, 3135),
                          '源稿的行数或主键引用数变了：%d 行、%d 个引用' % (rows, refs))
+
+    def test_an_enhancement_names_the_aspects_that_cause_it(self):
+        """技能记录上的 `enhanced`：装上 `by` 里任一枚星相之后，这项技能多出来的效果。
+
+        页面在技能那一行下面画一行强化版，名字与图取 `by` 那几条记录，所以 `by`
+        里每一枚都必须是星相；冰影分支的星相类目以 `.totems` 结尾。碎片对各项技能
+        的作用写在碎片自己的说明里，不进这里。
+        """
+        import resolve
+        facts = resolve.Facts()
+        seen = 0
+        for table in (facts.items, facts.perks, facts.traits):
+            for key, row in table.items():
+                for e in row.get('enhanced') or ():
+                    seen += 1
+                    self.assertEqual(set(e), {'by', 'realgame_details'},
+                                     '%s 的 enhanced 字段不对：%s' % (key, sorted(e)))
+                    self.assertTrue(e['realgame_details'], '%s 的 enhanced 没有说明' % key)
+                    self.assertTrue(e['by'], '%s 的 enhanced 没写星相' % key)
+                    for by in e['by']:
+                        aspect = facts.at(str(by))
+                        self.assertIsNotNone(aspect,
+                                             '%s 的 enhanced.by %s 落不到记录上' % (key, by))
+                        self.assertTrue(((aspect.get('plug') or {})
+                                         .get('plugCategoryIdentifier', '')
+                                         .endswith(('.aspects', '.totems'))),
+                                        '%s 的 enhanced.by %s 不是星相' % (key, by))
+        self.assertEqual(seen, 30, '技能强化的条数变了：%d' % seen)
+
+    def test_a_frame_note_per_weapon_type_names_types_that_carry_the_frame(self):
+        """框架记录上的 `weaponTypes`：这枚框架在这几种枪型上的说明。
+
+        同名框架在 manifest 里有好几枚 hash，却不是一个枪型一枚（攻击型框架的
+        3468089894 同时用在七种枪型上），所以按枪型记在页面那一枚上，与
+        `derived.rate[itemSubType]` 同一种键法。列出的每个枪型都要真有武器用着同名框架。
+        """
+        import resolve
+        facts = resolve.Facts()
+        carried = collections.defaultdict(set)
+        for row in facts.items.values():
+            frame = (row.get('derived') or {}).get('archetype')
+            if frame:
+                name = ((facts.items.get(str(frame)) or {}).get('i18n') or {}).get(
+                    'zh-CN', {}).get('name')
+                carried[name].add(row.get('itemSubType'))
+        seen = 0
+        for key, row in facts.items.items():
+            name = row['i18n']['zh-CN']['name'] if row.get('weaponTypes') else None
+            for e in row.get('weaponTypes') or ():
+                seen += 1
+                self.assertEqual(set(e), {'itemSubType', 'realgame_details'},
+                                 '%s 的 weaponTypes 字段不对：%s' % (key, sorted(e)))
+                self.assertTrue(e['realgame_details'], '%s 的 weaponTypes 没有说明' % key)
+                self.assertTrue(e['itemSubType'], '%s 的 weaponTypes 没写枪型' % key)
+                stray = set(e['itemSubType']) - carried[name]
+                self.assertFalse(stray, '%s「%s」列了没有武器用它的枪型 %s'
+                                 % (key, name, sorted(stray)))
+        self.assertEqual(seen, 12, '按枪型的框架说明条数变了：%d' % seen)
+
+    def test_a_combination_row_lists_members_that_exist(self):
+        """站内自发的「组合」：一行说的是几件东西合在一起——故我在与它的固有 Perk、
+        框架，英勇利刃与插着的核心，手持超新星与四颗手雷加混沌加速。
+
+        成员都要落到库里的记录上；成员本身再是站内自发的号，组合就套了第二层。
+        """
+        import resolve
+        facts = resolve.Facts()
+        combos = {k: r for k, r in facts.minted.items() if r.get('kind') == '组合'}
+        for key, row in combos.items():
+            members = row.get('members') or ()
+            self.assertGreaterEqual(len(members), 2, '组合 %s 的成员不到两个' % key)
+            for m in members:
+                self.assertTrue(str(m) in facts.items,
+                                '组合 %s 的成员 %s 不是库里的物品' % (key, m))
+        self.assertEqual(len(combos), 11, '组合的条数变了：%d' % len(combos))
 
 
 class ManifestLayer(unittest.TestCase):

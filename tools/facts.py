@@ -949,7 +949,9 @@ def carry_site(path, payload):
     结构上的、不靠列名单：**这一轮没蒸出来的键就是站内的**——
 
     - 根上：`Aegis`、`LGpig`（两位作者的评级与推荐）、`variants`（同一来源对同一
-      枚 hash 说了不止一段时的第二段起）、`covers`（同一件东西的别的 hash）、
+      枚 hash 说了不止一段时的第二段起）、`enhanced`（装上 `by` 里的星相之后这项
+      技能多出来的效果）、`weaponTypes`（框架在某几种枪型上的说明）、
+      `covers`（同一件东西的别的 hash）、
       以及 Bungie 压根没给图时站内自己配的 `icon`。
     - `i18n.<语言>` 里：`realgame_details`、`异域 PERK`、`冷却与槽位` 这些
       Compendium 那一档的正文。它是站内的根本数据，不是谁的判断，所以与
@@ -983,10 +985,10 @@ def carry_site(path, payload):
         if not mine and not extra:
             continue
         if key not in payload:
-            # 报不报警看**人写的**东西在不在：`authors`、`variants`，以及 i18n 里
-            # SITE_FIELDS 那些正文。`icon_local`／`onItems`／`covers` 是 link() 推出来的，
-            # 丢了下一轮照样能推回来，不值得中止。
-            if (row.keys() & {'authors', 'variants'}
+            # 报不报警看**人写的**东西在不在：`authors`、`variants`、`enhanced`、
+            # `weaponTypes`，以及 i18n 里 SITE_FIELDS 那些正文。`icon_local`／`onItems`／
+            # `covers` 是 link() 推出来的，丢了下一轮照样能推回来，不值得中止。
+            if (row.keys() & {'authors', 'variants', 'enhanced', 'weaponTypes'}
                     or any(f in SITE_FIELDS for v in (row.get('i18n') or {}).values()
                            for f in v)):
                 lost.append(key)
