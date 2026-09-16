@@ -828,8 +828,11 @@ def perk_key(facts, keys, name):
     开出什么」的定义，池里查得到即无歧义。全表按名字查会撞上别的枪的同名词条
     （「狂暴」在库里有 5 条 sandboxPerk、3 条插件）。
     池里没有的才退到 sandboxPerk——催化剂给的效果不在武器自己的槽上。
+
+    划掉的词条照样查：`{perk|~~加速突击~~}` 指的仍是那一枚，`~~` 说的是作者
+    不再推荐它，与它是哪一枚无关。剥法与 items.py 抽 Perk 词表那一处相同。
     """
-    name = norm((name or '').lstrip('↑').strip())
+    name = norm((name or '').replace('~~', '').lstrip('↑').strip())
     if not name or name in PERK_LABEL_KEYS:
         return None
     name = PERK_ALIAS_KEYS.get(name, (name,))[0]
