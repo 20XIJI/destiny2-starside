@@ -294,15 +294,51 @@ def distill(src):
 # 着 exotic 而不是 perk：site.css 的 --c-exotic 注释写着「专属 Perk 名同族」，
 # 两者渲染色相同，而 {perk|…} 按 .claude/rules/pages.md 是整格排版标记，不是行内着色 token。
 PERK_DOCS = ('exotic-armor.md', 'exotic-weapon.md')
-PERK_RE = re.compile(r'\{perk\|!\[\]\([^)]*\)\\\\([^}|]*)\}')
+# 固有那两栏的语义标签，与 socket-types 的 derived.kind 同一份。
+PERK_KINDS = ('intrinsic', 'trait')
 
 
 def perks():
-    """两页 PERK 列上的专属 Perk 名。"""
+    """异域两页上那些专属 Perk 名：固有的几枚，加催化剂与它给出的效果。
+
+    **按主键取，不扫源稿。**源稿只剩主键清单，正文里的「异域 PERK」那一格已经
+    拆到各枚 perk 自己名下，没有一处还写着名字。名字因此顺着引用走：异域装备
+    固有栏里那几枚插件（`derived.kind` 是 intrinsic 或 trait）、`derived.catalyst`
+    记着的催化剂，以及催化剂 `perks[]` 指到的那几枚效果。
+    """
+    root = shell.ROOT
+    with open(os.path.join(root, 'data', 'inventory-items.json'), encoding='utf-8') as f:
+        rows = json.load(f)
+    with open(os.path.join(root, 'data', 'sandbox-perks.json'), encoding='utf-8') as f:
+        effects = json.load(f)
+    with open(os.path.join(root, 'data', 'lookup', 'socket-types.json'),
+              encoding='utf-8') as f:
+        kinds = {h: v['derived']['kind'] for h, v in json.load(f).items()}
+
+    def shown(table, key):
+        return ((table.get(str(key)) or {}).get('i18n') or {}).get('zh-CN', {}).get('name')
+
     out = set()
     for name in PERK_DOCS:
-        for mo in PERK_RE.finditer(research.source(name[:-len('.md')])):
-            out.add(norm(mo.group(1)))
+        for head in research.heads(name[:-len('.md')]):
+            row = rows.get(head)
+            if row is None:
+                continue
+            want = []
+            for e in (row.get('sockets') or {}).get('socketEntries') or ():
+                if kinds.get(str(e.get('socketTypeHash'))) not in PERK_KINDS:
+                    continue
+                if e.get('singleInitialItemHash'):
+                    want.append(e['singleInitialItemHash'])
+                want += [p['plugItemHash'] for p in e.get('reusablePlugItems') or ()]
+            # 催化剂**那件物品**的名字站内一次都没写过（写的是它给的那枚效果），
+            # 所以只顺着它取效果，不把它自己收进来。
+            for key in list(want) + list((row.get('derived') or {}).get('catalyst') or ()):
+                want += [p['perkHash'] for p in (rows.get(str(key)) or {}).get('perks') or ()]
+            for key in want:
+                got = shown(rows, key) or shown(effects, key)
+                if got and len(got) > 1 and '[' not in got:
+                    out.add(norm(got))
     return out
 
 

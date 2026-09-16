@@ -234,6 +234,34 @@ def source(page):
         return inject(f.read(), page)
 
 
+def heads(page):
+    """一页源稿表区里每一行的行首主键，按出现顺序。
+
+    表区是「列：」那一行加紧接着的连续非空行，遇空行或 `##` 结束。一行可以写
+    好几枚主键，第一枚是行首、说的是这一行那件东西，其余是它盖住的别的 hash。
+    横幅行（`== 组名 ==`）不带主键，跳过。
+
+    源稿只剩主键清单之后，这是「这一页有哪些行」的唯一入口。
+    """
+    path = os.path.join(shell.ROOT, 'references', 'docs', page + '.md')
+    out, inside = [], False
+    with open(path, encoding='utf-8') as fh:
+        for line in fh:
+            line = line.rstrip('\n')
+            if line.startswith('列：'):
+                inside = True
+                continue
+            if not line.strip() or line.startswith('##'):
+                inside = False
+                continue
+            if not inside or line.strip().startswith('=='):
+                continue
+            keys = line.strip().partition('  ')[0].split()
+            if keys:
+                out.append(keys[0])
+    return out
+
+
 def tables(lines):
     """文档里每张表的 (表头行号, 表头各格)，按出现顺序。
 

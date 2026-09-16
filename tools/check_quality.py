@@ -607,6 +607,37 @@ class EntitySource(unittest.TestCase):
                 got[one['page']].update(sec.get('行') or ())
         return got
 
+    def points_at(self, facts, head):
+        """这一行指到的实体：固有栏那几枚插件，加它的催化剂。
+
+        异域拆开之后，护甲那一行的正文整段归它那一枚异域 perk，装备记录上确实
+        一个字都不剩——那是对的结果，不是缺陷。所以这一条问的是「这一行说的那件
+        东西，站内有没有写过什么」，而不是「行首那一条记录上有没有字」。
+        """
+        row = facts.at(head) or {}
+        kinds = self.socket_kinds()
+        out = list((row.get('derived') or {}).get('catalyst') or ())
+        for e in (row.get('sockets') or {}).get('socketEntries') or ():
+            if kinds.get(str(e.get('socketTypeHash'))) not in ('intrinsic', 'trait'):
+                continue
+            if e.get('singleInitialItemHash'):
+                out.append(e['singleInitialItemHash'])
+            out += [p['plugItemHash'] for p in e.get('reusablePlugItems') or ()]
+        # 再往下一跳：护甲那一侧的名字按 resolve.perk_key() 落在 SandboxPerk 上，
+        # 不在插槽里那枚插件上——`facts.pool()` 只覆盖武器。两侧最终都在效果这一层
+        # 对得上（武器那一侧由 link() 从插件抄过去），所以这里两跳都走。
+        out += [p['perkHash'] for key in list(out)
+                for p in (facts.at(str(key)) or {}).get('perks') or ()]
+        return ['perk:%s' % x for x in out] + [str(x) for x in out]
+
+    @classmethod
+    def socket_kinds(cls):
+        if not hasattr(cls, '_kinds'):
+            with open(cls.ROOT / 'data' / 'lookup' / 'socket-types.json',
+                      encoding='utf-8') as f:
+                cls._kinds = {h: v['derived']['kind'] for h, v in json.load(f).items()}
+        return cls._kinds
+
     def test_every_source_row_lands_on_a_record_that_says_something(self):
         import resolve
         facts = resolve.Facts()
@@ -631,6 +662,11 @@ class EntitySource(unittest.TestCase):
                 else:
                     said = (row.get('authors') or {}).get(who) or {}
                     more = said.get('variants') or ()
+                if not said and who is None:
+                    said = {k: v for h in self.points_at(facts, head)
+                            for k, v in ((facts.at(h) or {}).get('i18n')
+                                         or {}).get('zh-CN', {}).items()
+                            if k not in self.MANIFEST_TEXT}
                 self.assertTrue(said or head in inpage.get(slug, ()),
                                 '%s 的 %s 名下没有站内写的东西' % (slug, head))
                 if not said:
@@ -718,7 +754,7 @@ class ManifestLayer(unittest.TestCase):
         边界一模糊就没人再分得清某个字段能不能跟着 manifest 重生成。
         """
         ours = {'release', 'season', 'breakerType', 'craftable', 'tierable', 'tiers',
-                'archetype', 'foundry', 'rate', 'kind', 'lowerIsBetter'}
+                'archetype', 'catalyst', 'foundry', 'rate', 'kind', 'lowerIsBetter'}
         # breakerType 是唯一两头都有的：根上那一位是 manifest 自己的字段，照原样留着。
         only_ours = ours - {'breakerType'}
         items = self.table('inventory-items.json')

@@ -156,6 +156,9 @@ references/*
 !references/items/*.json
 !references/research/
 !references/research/*.json
+!references/pages/
+!references/pages/*.json
+!references/minted.json
 .archived/
 
 # 渲染器交给实体层的中间产物：三个资料生成器渲染时写出，build-entities.py 当场

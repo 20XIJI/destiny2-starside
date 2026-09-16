@@ -1,0 +1,128 @@
+{
+ "page": "prismatic",
+ "matrix": [
+  {
+   "节": "猎人",
+   "列": [
+    {
+     "名": "电弧",
+     "图": "elements/prismatic/icons/205bfcb812.webp"
+    },
+    {
+     "名": "烈日",
+     "图": "elements/prismatic/icons/8fff5c49b3.webp"
+    },
+    {
+     "名": "虚空",
+     "图": "elements/prismatic/icons/70caf4a733.webp"
+    },
+    {
+     "名": "冰影",
+     "图": "elements/prismatic/icons/357ddde8cc.webp"
+    },
+    {
+     "名": "缚丝",
+     "图": "elements/prismatic/icons/120c0fddfd.webp"
+    }
+   ],
+   "行": {
+    "stat:1735777505": [
+     "1582574009",
+     "2842514288",
+     "886607940",
+     "1399216",
+     "1225978592"
+    ],
+    "stat:3493869314": [
+     "2657901005",
+     "2657901004",
+     "1139822081",
+     "1341767667",
+     "1680616210"
+    ]
+   }
+  },
+  {
+   "节": "泰坦",
+   "列": [
+    {
+     "名": "电弧",
+     "图": "elements/prismatic/icons/d70650ed73.webp"
+    },
+    {
+     "名": "烈日",
+     "图": "elements/prismatic/icons/90ca587869.webp"
+    },
+    {
+     "名": "虚空",
+     "图": "elements/prismatic/icons/d3a5c298cf.webp"
+    },
+    {
+     "名": "冰影",
+     "图": "elements/prismatic/icons/6b8643428f.webp"
+    },
+    {
+     "名": "缚丝",
+     "图": "elements/prismatic/icons/f479be4b19.webp"
+    }
+   ],
+   "行": {
+    "stat:1735777505": [
+     "1323461861",
+     "2400634603",
+     "2265076177",
+     "1399217",
+     "1517917190"
+    ],
+    "stat:3493869314": [
+     "1980796563",
+     "852252788",
+     "1980796560",
+     "1980796561",
+     "1980796564"
+    ]
+   }
+  },
+  {
+   "节": "术士",
+   "列": [
+    {
+     "名": "电弧",
+     "图": "elements/prismatic/icons/11ca92f0ac.webp"
+    },
+    {
+     "名": "烈日",
+     "图": "elements/prismatic/icons/ddc8bb152d.webp"
+    },
+    {
+     "名": "虚空",
+     "图": "elements/prismatic/icons/9e43e17795.webp"
+    },
+    {
+     "名": "冰影",
+     "图": "elements/prismatic/icons/f8e47a3c1f.webp"
+    },
+    {
+     "名": "缚丝",
+     "图": "elements/prismatic/icons/8e7f92abd0.webp"
+    }
+   ],
+   "行": {
+    "stat:1735777505": [
+     "2481624867",
+     "1841016428",
+     "1016030582",
+     "1399219",
+     "3994381207"
+    ],
+    "stat:3493869314": [
+     "1232050831",
+     "1470370538",
+     "2299867342",
+     "2543177538",
+     "2307689415"
+    ]
+   }
+  }
+ ]
+}

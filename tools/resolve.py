@@ -546,15 +546,47 @@ def release_rank(facts, hits):
     return best if rank >= 0 and ties == 1 else None
 
 
-def resolve_effect(facts, name):
+def plugs_of(facts, keys):
+    """这几件东西的插槽里挂得到的全部插件主键。
+
+    初始插件、内联清单与两种插件池都算——罗马数字那一族（恐慌反应 II…V）与
+    故我在的四个元素版本只在池里，光看初始插件够不着。
+    """
+    out = set()
+    for key in keys:
+        row = facts.at(str(key)) or {}
+        for e in (row.get('sockets') or {}).get('socketEntries') or ():
+            if e.get('singleInitialItemHash'):
+                out.add(str(e['singleInitialItemHash']))
+            out |= {str(p['plugItemHash']) for p in e.get('reusablePlugItems') or ()}
+            for field in ('reusablePlugSetHash', 'randomizedPlugSetHash'):
+                if e.get(field):
+                    out |= {str(p['plugItemHash'])
+                            for p in (facts.plug_sets.get(str(e[field])) or {}).get(
+                                'reusablePlugItems') or ()}
+    return out
+
+
+def resolve_effect(facts, name, owner=()):
     """效果名或属性名 → traitHash / sandboxPerkHash / statHash。增幅、致盲、冻结
     这一类不在物品表里，主键在 DestinyTraitDefinition 与 DestinySandboxPerkDefinition
     上；充能效率、防御抗性这一类在 DestinyStatDefinition 上。
 
-    trait 优先：同名两边都有时（「瓦解」），trait 才是那个状态本身。"""
+    trait 优先：同名两边都有时（「瓦解」），trait 才是那个状态本身。
+
+    **同名的好几枚按宿主收敛。**「快速冷却」库里有两枚：冰霜-EE5 那一枚是「冲刺
+    提供能量」，另一枚是载具的召唤冷却；按名字全表排序会挑中后者，而两枚的名字
+    一模一样，落错了从数据上看不出来。给了 owner 就先在这件东西自己插槽挂得到的
+    那些插件的 perks 里找，找不到才回到全表。"""
     hits = facts.eff_by_name.get(norm(name)) or []
     if not hits:
         return None
+    if owner:
+        mine = {'perk:%s' % p['perkHash'] for key in plugs_of(facts, owner)
+                for p in (facts.at(key) or {}).get('perks') or ()}
+        near = [h for h in hits if h in mine]
+        if near:
+            hits = near
     return sorted(hits, key=lambda h: (not h.startswith('trait:'), h))[0]
 
 
@@ -804,11 +836,11 @@ def perk_key(facts, keys, name):
     pool_names = weapon_pool(facts, keys)
     got = []
     for part in [x.strip() for x in SLASH.split(name) if x.strip()]:
-        got += _perk_one(facts, pool_names, part)
+        got += _perk_one(facts, pool_names, part, keys)
     return got
 
 
-def _perk_one(facts, pool_names, name):
+def _perk_one(facts, pool_names, name, owner=()):
     if name in pool_names:
         return pool_names[name]
     span = ROMAN_SPAN.match(name)
@@ -818,7 +850,7 @@ def _perk_one(facts, pool_names, name):
                if n == base or (n.startswith(base) and ROMAN_TAIL.match(n[len(base):]))]
         if fam:
             return [h for _, hs in sorted(fam) for h in hs]
-    eff = resolve_effect(facts, name)
+    eff = resolve_effect(facts, name, owner)
     if eff:
         return [eff]
     if not pool_names:

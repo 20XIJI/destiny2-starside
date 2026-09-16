@@ -577,6 +577,96 @@ def socket_kind(entry, socket_types):
     return wl[0].get('categoryIdentifier', '') if wl else ''
 
 
+# 大师杰作槽里不算催化剂的那几档：击杀记录器、属性大师杰作、旧的通用大师杰作。
+# 它们的 categoryIdentifier 都带 masterwork，按含不含 masterwork 认会把它们收进来。
+NOT_CATALYST = ('.masterworks.stat', '.masterworks.generic', 'armor.masterworks')
+
+
+def CATALYST_SOCKET(entry, socket_types):                    # noqa: N802
+    """这一栏是催化槽。"""
+    ident = socket_kind(entry, socket_types)
+    return (MASTERWORK_MARK in ident and not ident.startswith(TRACKER_KIND)
+            and not any(m in ident for m in NOT_CATALYST))
+
+
+def own_catalyst_cats(items, socket_types):
+    """催化槽白名单里**只被一把异域武器引用**的类目。
+
+    白名单里另有几个是好几把枪共用的（`exotic_weapon_masterwork_upgrade` 133 把、
+    `v400.empty.exotic.masterwork` 115 把、`catalysts` 17 把）：它们说的是「这一档
+    异域都有催化槽」，不是「这一枚是它的催化剂」，按它们查会把别人的催化剂收进来。
+    """
+    use = collections.Counter()
+    for item in items.values():
+        if item.get('itemType') != 3 or not EXOTIC(item):
+            continue
+        for e in (item.get('sockets') or {}).get('socketEntries') or ():
+            if not CATALYST_SOCKET(e, socket_types):
+                continue
+            st = socket_types.get(str(e.get('socketTypeHash'))) or {}
+            for w in {x.get('categoryIdentifier', '') for x in st.get('plugWhitelist') or ()}:
+                if not any(m in w for m in NOT_CATALYST):
+                    use[w] += 1
+    return {k for k, n in use.items() if n == 1}
+
+
+def catalysts_of(item, items, socket_types, plug_sets, by_cat):
+    """这把枪的催化剂：催化槽里插得进去的那些。
+
+    **两条路都要走。**槽里现成的清单（初始、内联、插件池）覆盖 105 把；另外 29 把
+    老枪的催化剂只在「plugCategoryIdentifier 落在这个槽白名单上」那一侧，
+    `1783582993 血色浪漫催化` 就是这么找回来的。
+
+    留下来的判据是结构的：`tierType` 6，或者带 `perks`。剩下的是插槽状态——
+    「可以将异域催化插入此插槽」与「将此武器升级为大师杰作」两条，名字跟着武器叫
+    （同样叫「血色浪漫催化」），只看名字分不出来。
+
+    一把枪不止一枚是常态：29 把是同一枚催化剂的重复版，12 把的催化槽本来就是
+    一池多选（库尔之影四枚魂火、零号修订四个可制作改装），站内那一格因此写的是
+    「可选 Perk」「可制作改装」这样的槽位说明词，不是某一个名字。
+
+    **任务态不留。**同一枚催化剂在库里常有两条：解锁前那条叫「升级大师杰作」、
+    品阶普通、说明写着「使用越橘消灭敌人可解锁此升级」，解锁后那条叫「越橘催化」、
+    品阶异域。两条给的效果是同一批，前者是后者的子集。按「效果被品阶更高的那一枚
+    全包住」丢掉前者——名字分不出来，它跟着武器叫。
+    """
+    got = []
+    for e in (item.get('sockets') or {}).get('socketEntries') or ():
+        if not CATALYST_SOCKET(e, socket_types):
+            continue
+        pool = []
+        if e.get('singleInitialItemHash'):
+            pool.append(str(e['singleInitialItemHash']))
+        pool += [str(p['plugItemHash']) for p in e.get('reusablePlugItems') or ()]
+        for field in ('reusablePlugSetHash', 'randomizedPlugSetHash'):
+            if e.get(field):
+                pool += [str(p['plugItemHash'])
+                         for p in (plug_sets.get(str(e[field])) or {}).get(
+                             'reusablePlugItems') or ()]
+        st = socket_types.get(str(e.get('socketTypeHash'))) or {}
+        for w in {x.get('categoryIdentifier', '') for x in st.get('plugWhitelist') or ()}:
+            pool += by_cat.get(w, ())
+        for key in pool:
+            one = items.get(key)
+            if not one or key in got:
+                continue
+            if (one.get('inventory') or {}).get('tierType') == 6 or one.get('perks'):
+                got.append(key)
+
+    def spec(key):
+        one = items.get(key) or {}
+        return (frozenset(p['perkHash'] for p in one.get('perks') or ()),
+                (one.get('inventory') or {}).get('tierType') or 0)
+    keep = []
+    for key in got:
+        mine, tier = spec(key)
+        if mine and any(other != key and spec(other)[1] > tier and mine <= spec(other)[0]
+                        for other in got):
+            continue
+        keep.append(key)
+    return sorted({int(x) for x in keep})
+
+
 def breaker_perks(src):
     """勇士克制的 SandboxPerk → breakerType。全库 19 条，按名字首字符的私有区码位认。
 
@@ -799,6 +889,8 @@ def trim(kept, plugs, sets, root):
         arch = (row.get('derived') or {}).get('archetype')
         if arch:
             stack.append(str(arch))
+        for one in (row.get('derived') or {}).get('catalyst') or ():
+            stack.append(str(one))
         for tier in (row.get('derived') or {}).get('tiers') or ():
             for m in tier.get('items') or ():
                 stack.append(str(m['itemHash']))
@@ -828,6 +920,11 @@ def trim(kept, plugs, sets, root):
         for tier in (row.get('derived') or {}).get('tiers') or ():
             tier['items'] = [m for m in tier.get('items') or ()
                              if m['itemHash'] in live]
+        cat = (row.get('derived') or {}).get('catalyst')
+        if cat:
+            row['derived']['catalyst'] = [c for c in cat if c in live]
+            if not row['derived']['catalyst']:
+                del row['derived']['catalyst']
         if 'covers' in row:
             row['covers'] = [c for c in row['covers'] if c in live]
             if not row['covers']:
@@ -1015,6 +1112,10 @@ def distill(src):
     socket_types = load(src, 'zh', 'DestinySocketTypeDefinition')
     plug_sets = load(src, 'zh', 'DestinyPlugSetDefinition')
     perk_breaker = breaker_perks(src)
+    own_cats = {}
+    for cat in own_catalyst_cats(items, socket_types):
+        own_cats[cat] = [h for h, v in items.items()
+                         if (v.get('plug') or {}).get('plugCategoryIdentifier') == cat]
     want_sets, want_types = set(), set()
     for h, row in kept.items():
         item = items[h]
@@ -1054,6 +1155,12 @@ def distill(src):
             if head:
                 derived['archetype'] = head
             break
+        if EXOTIC(item):
+            # 催化剂是异域独有的。传说武器的大师杰作槽里装的是「1 阶：冲击」那
+            # 三十二枚属性档位，按同一条路查会把它们当成催化剂。
+            got = catalysts_of(item, items, socket_types, plug_sets, own_cats)
+            if got:
+                derived['catalyst'] = got
         breaker = breaker_of(item, socket_types, perk_breaker, items)
         if breaker:
             # 推出来的，不是 manifest 的 breakerType——根上那一位是 Bungie 自己写的，
