@@ -61,6 +61,9 @@ IMG = re.compile(r'!\[\]\(([^)]+)\)')
 TAG = re.compile(r'<(?:"[^"]*"|\'[^\']*\'|[^>])*>')
 # 着色 span 不得嵌套：嵌套说明整块判定或分支顺序被改坏了。
 NESTED_SPAN = re.compile(r'<span[^>]*>[^<]*<span')
+# 按主键取的官方图，文件名是 Bungie 的图名。见 Icons。
+ASSET_ICONS = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+                           'assets', 'icons')
 
 
 def die(msg) -> NoReturn:
@@ -372,6 +375,9 @@ class Icons:
     原地覆盖一张图会让读者看一年的旧图，而控制台刷新只清得掉节点缓存，清不掉
     已经发出去的浏览器缓存。所以在这里拦住。
 
+    assets/icons/ 下那一批不复核：文件名是 Bungie 官方图的名字，那个名字本身
+    就是内容哈希，「改内容必然换名」由 Bungie 保证。
+
     rel 既是相对 outdir 的路径，也是产出里的 src，两者同一个字符串。
     """
 
@@ -389,7 +395,8 @@ class Icons:
             with open(path, 'rb') as f:
                 data = f.read()
             want = hashlib.md5(data).hexdigest()[:10] + os.path.splitext(rel)[1]
-            if os.path.basename(rel) != want:
+            official = os.path.dirname(os.path.realpath(path)) == ASSET_ICONS
+            if not official and os.path.basename(rel) != want:
                 die('%s 的内容与文件名对不上，应叫 %s。\n'
                     '  图标按内容哈希命名，改内容就要换名字——这是给图标目录设长缓存\n'
                     '  的前提，原地覆盖会让读者看到过期的图。换图按 README「换图」\n'

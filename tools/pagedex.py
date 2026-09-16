@@ -28,6 +28,7 @@
 
 import json
 import os
+import posixpath
 import re
 
 import shell
@@ -64,12 +65,23 @@ TOKENS = dict({'elements/%s' % e: t for e, t in ELEMENTS.items()},
 
 TD = re.compile(r'<td([^>]*)>(.*?)</td>', re.S)
 CLS = re.compile(r'class="([^"]+)"')
-IMG = re.compile(r'<img[^>]*src="(icons/[^"]+)"')
+# 图的 src 相对本页目录：资料页自己的图在 icons/ 下，按主键取的官方图在
+# ../assets/icons/ 下。索引里一律记相对站根的路径，见 site_path()。
+IMG = re.compile(r'<img[^>]*src="([^"]+)"')
 # 异域职业物品那张表一行摆两条词条：行标题一条，中间一格再一条（源稿写
 # `{spirit|噬星者之灵}`，整格只有这一个标记，class 因此落在 <td> 上）。
 # 只认行标题会漏掉一半——36 条里只进来 18 条。
 SPIRIT = re.compile(r'<td class="spirit">(.*?)</td>\s*<td class="ico">'
-                    r'<img[^>]*src="(icons/[^"]+)"', re.S)
+                    r'<img[^>]*src="([^"]+)"', re.S)
+
+
+def site_path(page, src):
+    """页面里一枚 <img> 的 src → 索引里的图标路径，相对站根。
+
+    elements/arc 页上的 `../../assets/icons/x.webp` 记成 `assets/icons/x.webp`，
+    shopping-primary 页上的 `icons/x.webp` 记成 `shopping-primary/icons/x.webp`。
+    """
+    return posixpath.normpath(posixpath.join(page, src))
 
 
 # 带页内搜索框的页面：链接落到行上而不是分节上。app.js 见 ?q= 即先过滤再滚，
@@ -117,7 +129,7 @@ def panel(cells):
 # 异域那两页的 PERK 格：图标打头，后面用 <br> 隔开这一行那件东西自己的几个词条
 # （「阿格尔的召唤／雷加的叠句／↑意志实体」）。判据是格子的形状不是页名——购物
 # 清单那四页的 .perk 格是一格一个裸名字，没有打头那枚图标。
-PERK_CELL = re.compile(r'^<img[^>]*src="(icons/[^"]+)"[^>]*>(.+)$', re.S)
+PERK_CELL = re.compile(r'^<img[^>]*src="([^"]+)"[^>]*>(.+)$', re.S)
 
 
 def exotic_perks(cells):

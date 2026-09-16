@@ -22,6 +22,7 @@ import markup
 import pagedex
 import research
 import resolve
+import rows
 import shell
 from markup import (IMG, LINK, Icons, bmark, die, inline, meta_line, meta_of,
                     no_nested_span, plain, source_context, src_hash, text_of, whole_marker)
@@ -45,6 +46,10 @@ ROTA_LINE = re.compile(r'^轮换：(.*)$', re.M)
 
 # 行标题 → 主键的戳号器，按页装配；没有范围定义的页是 None。
 STAMP = None
+# 主键骨架那种源稿展开之后，表格行的行号（0 起）→ 源稿那一行写的主键，
+# 以及这一行「异域 PERK」格里每个名字的主键。有这两份就不必按名字去戳。
+ROW_KEYS: dict[int, list[str]] = {}
+ROW_PERKS: dict[int, dict[str, str]] = {}
 # 异域那两页 PERK 列里那些名字 → 主键。与 STAMP 不同，它按这一行那件东西自己的
 # socket 池查，所以要连着行标题的主键一起给，全站共用一个。
 PERK = None
@@ -60,10 +65,6 @@ CELL_BREAK = '\\\\'     # 表格单元格里的换行标记，见 render_table()
 BR = re.compile(r'<br\s*/?>')   # 渲染后那一格里的换行，切组合行标题用
 
 
-# 主键骨架的表区：「列：…」那一行。见 build()。
-SKELETON = re.compile(r'^列：', re.M)
-
-
 ROW_LINK = re.compile(r'\[([^\]]+)\]\((?!http)([^)#?]+/index\.html)\)')
 
 
@@ -73,6 +74,7 @@ def anchors_of(path):
 
     **先把目标页的人写层补回去再扫**：源稿瘦身之后那里只剩表头，行标题一个都
     找不到，跨页链接会静默丢掉 ?q= 那一截——页面照旧能点开，只是不再落到行上。
+    主键骨架那种源稿的行标题写在主键后面两个空格之后。
     """
     if path not in _ANCHORS:
         table = {}
@@ -80,17 +82,27 @@ def anchors_of(path):
             with open(path, encoding='utf-8') as f:
                 doc = f.read()
             doc = research.inject(doc, os.path.basename(path)[:-len('.md')])
-            n = 0
+            n, skeleton = 0, False
             for line in doc.split('\n'):
+                first = None
                 if line.startswith('## '):
                     n += 1
+                    skeleton = False
+                elif line.startswith('列：'):
+                    skeleton = True
+                elif not line.strip():
+                    skeleton = False
+                elif skeleton and n and not line.strip().startswith('=='):
+                    first = line.strip().partition('  ')[2]
                 elif line.startswith('|') and n:
                     cells = split_cells(line)
                     if cells and not is_rule(cells) and lane_of(cells) is None:
-                        name = text_of(re.sub(r'\{[\w-]+\|', '', cells[0]).replace('}', ''),
-                                       collapse=True)
-                        if name and name not in table:
-                            table[name] = 'sec-%d' % n
+                        first = cells[0]
+                if first:
+                    name = text_of(re.sub(r'\{[\w-]+\|', '', first).replace('}', ''),
+                                   collapse=True)
+                    if name and name not in table:
+                        table[name] = 'sec-%d' % n
         _ANCHORS[path] = table
     return _ANCHORS[path]
 
@@ -452,7 +464,7 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=
             # **取渲染后那一格**，与索引里的名字同一份：源稿原文里格内换行还是
             # 字面的两个反斜杠，拿它去查源稿线索一个都对不上（复刻那几把就是这么漏的）。
             shown = text_of(row[0], collapse=True)
-            stamp = STAMP(shown) if STAMP else []
+            stamp = ROW_KEYS.get(at) or (STAMP(shown) if STAMP else [])
             if STAMP and not stamp:
                 # 整行写的是一个组合（「复兴\\噬星者」「故我在\\（意外缓刑）\\涡流」），
                 # 格内换行把它切成几截。合起来查不到时逐截查，取并集。
@@ -474,14 +486,14 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=
         if DEX is not None and n:
             # 名字取**渲染后**那一格，不取源稿原文：着色标记要剥掉、格内换行已经
             # 变成 <br>，与 vocab 从产出的 <th> 取文那一份才对得上。
-            index_row(DEX, row[0], stamp, body, lane)
+            index_row(DEX, row[0], stamp, body, lane, ROW_PERKS.get(at))
         o.append('<tr%s%s>%s</tr>'
                  % (mark, ' data-band="%d"' % band if banded else '', body))
     o += ['</tbody>', '</table>']
     return o
 
 
-def index_row(dex, title, stamp, body, lane):
+def index_row(dex, title, stamp, body, lane, perks=None):
     """一行 → 索引里的条目。说明用 vocab 那三个现成的抽法，不另写一份。"""
     anchor, label = SECTION
     mine, theirs = ((), ()) if PAGE in pagedex.NO_DESC else pagedex.split_spirit(pagedex.tds(body))
@@ -492,30 +504,42 @@ def index_row(dex, title, stamp, body, lane):
     keys = list(stamp) or ([research.minted(PAGE, shown)] if shown else [])
     dex.add(keys=keys, anchor=anchor, kind=lane or label,
             name=shown,
-            icon='%s/%s' % (PAGE, icon.group(1)) if icon else '',
+            icon=pagedex.site_path(PAGE, icon.group(1)) if icon else '',
             desc=pagedex.wrap(*pagedex.panel(mine)))
-    index_perks(dex, stamp, mine, anchor, lane or label, dex.rows[-1]['name'])
+    index_perks(dex, stamp, mine, anchor, lane or label, dex.rows[-1]['name'], perks)
     # 异域职业物品那张表一行摆两条词条：行标题一条，中间一格再一条。
     # **中间那一条也要自己的主键**：它是另一件东西，不是行标题那件的别名。
     for name, ico in pagedex.SPIRIT.findall(body):
         shown = text_of(name, collapse=True)
         dex.add(keys=STAMP(shown) if STAMP else (),
                 anchor=anchor, kind=lane or label, name=shown,
-                icon='%s/%s' % (PAGE, ico), desc=pagedex.wrap(*pagedex.panel(theirs)))
+                icon=pagedex.site_path(PAGE, ico), desc=pagedex.wrap(*pagedex.panel(theirs)))
 
 
-def index_perks(dex, keys, cells, anchor, kind, row_name):
+def index_perks(dex, keys, cells, anchor, kind, row_name, perks=None):
     """异域那两页 PERK 格里的名字 → 挂在行标题主键下的子条目。
 
     这一列写的是这件异域自己的词条（「阿格尔的召唤」「飞掠尖刺」），站内从前
     只把行标题记进索引，这些名字一个都查不到。它们是另一件东西，不是武器的别名，
     所以各自带主键；同时用 of 记下自己挂在哪一行，配装词表照旧只认行标题那一层。
 
-    要不要抽这一列由格子的形状定（见 pagedex.exotic_perks），不列页名。
+    perks 是主键骨架那种源稿由 rows.py 交来的 {名字: 主键}：名字本来就是从这些
+    主键上取的，直接用，不按名字反查（催化剂给的效果不在武器自己的插件池里，
+    反查必然落空）。没有 perks 时要不要抽这一列由格子的形状定（见
+    pagedex.exotic_perks），不列页名。
     """
-    if PERK is None or not keys:
+    if not keys:
         return
-    for name, icon in pagedex.exotic_perks(cells):
+    shown = pagedex.exotic_perks(cells)
+    if perks is not None:
+        icon = pagedex.site_path(PAGE, shown[0][1]) if shown else ''
+        for name, key in perks.items():
+            dex.add(keys=[key], anchor=anchor, kind=kind, name=name, icon=icon,
+                    q=row_name, of=list(keys))
+        return
+    if PERK is None:
+        return
+    for name, icon in shown:
         got = PERK(list(keys), name)
         if got is None:          # 槽位说明词（「可制作 Perk」），不是一件东西
             continue
@@ -523,7 +547,7 @@ def index_perks(dex, keys, cells, anchor, kind, row_name):
             die('%s 的 PERK 列里「%s」解析不到主键：改成 manifest 的正名，'
                 '或写进 resolve.PERK_LABELS 说明它不是实体' % (row_name, name))
         dex.add(keys=got, anchor=anchor, kind=kind,
-                name=name, icon='%s/%s' % (PAGE, icon),
+                name=name, icon=pagedex.site_path(PAGE, icon),
                 # 落地过滤用行标题那件东西的名字：词条名在页内搜索框里同样搜得到，
                 # 滤出来的正是同一行，但行标题那个词在这一页上一定存在。
                 q=row_name, of=list(keys))
@@ -847,7 +871,7 @@ def render(md, slug, digest):
                 # **不带过滤词**：拿分节名去页内过滤会把整页行滤光，落地是一张空页。
                 dex.add(keys=[research.minted(PAGE, '分节/' + SECTION[1])],
                         anchor=SECTION[0], kind='分节', name=SECTION[1],
-                        icon='%s/%s' % (PAGE, head_icon.group(1)), q='')
+                        icon=pagedex.site_path(PAGE, head_icon.group(1)), q='')
         o += render_blocks(chunk, scales, groups, marks, curves, up, rota, at + 1)
         o.append('</section>')
 
@@ -921,7 +945,7 @@ def check(md, out, slug):
 
 
 def build(slug):
-    global ICONS, STAMP, DEX, PAGE, PERK
+    global ICONS, STAMP, DEX, PAGE, PERK, ROW_KEYS, ROW_PERKS
     src = os.path.join(SRC_DIR, slug + '.md')
     with source_context(os.path.relpath(os.path.realpath(src), shell.ROOT)):
         if not os.path.exists(src):
@@ -931,20 +955,18 @@ def build(slug):
         # 行的内容在 references/research/<页>.json 里，源稿只留分节、表头与页面
         # 元信息。补回来再交给下面这一整条渲染链，产出因此与迁移前逐字节相同。
         md = research.inject(md, slug)
-        if SKELETON.search(md):
-            # 主键骨架那种表区（「列：A | B | C」加一行一枚主键），这条渲染链不认：
-            # 它只认 `| 表头 |` 那种 markdown 表。不中止的症状不是报错，是**静默清空**
-            # ——40 篇源稿里 21 篇是骨架，跑一次就把那 21 页写成十来 KB 的空壳，
-            # 而正文逐字保真两边都空、照样放行。行的内容现在在 data/ 那几张按主键
-            # 建的表里，接回来之前这一页不生成。
-            die('%s 的源稿是主键骨架，这条渲染链只认 `| 表头 |` 那种表。'
-                '先把生成器接回 data/ 的主键表，再跑它' % slug)
+        where = where_of(md, slug)
+        # 主键骨架那种表区（「列：A | B | C」加一行一枚主键）展开成 `| 表头 |` 的表，
+        # 格子从记录上取，见 rows.py。这条渲染链只认后一种：骨架原样交进去不报错，
+        # 而是把整页的表静默画空，正文逐字保真两边都空、照样放行。
+        ROW_KEYS, ROW_PERKS = {}, {}
+        if rows.is_skeleton(md):
+            md, ROW_KEYS, ROW_PERKS = rows.expand(md, slug, where)
         # **在补行之后算**：编辑台按「源稿第几行第几格」定位，库里存的正是补全的
         # 那一份（sync.whole()）。戳瘦源稿的哈希出去，两边永远对不上，页面会被
         # 当成永远过期。
         digest = src_hash(md)
 
-        where = where_of(md, slug)
         outdir = os.path.join(shell.ROOT, *where.split('/'))
         if not os.path.isdir(outdir):
             die('输出目录不存在：%s/（新页面要先建目录并写 style.css）' % where)
@@ -985,6 +1007,7 @@ def main():
         die(__doc__)
     if len(sys.argv) == 2:
         build(sys.argv[1])
+        unbuilt()
         print('仅更新本资料页；未更新搜索、配装词表与悬停说明。发布前运行 npm run build')
         return
     slugs = sorted(f[:-3] for f in os.listdir(SRC_DIR) if f.endswith('.md'))
@@ -992,6 +1015,14 @@ def main():
         die('references/docs/ 下没有 .md 源稿')
     for slug in slugs:
         build(slug)
+    unbuilt()
+
+
+def unbuilt():
+    """记录上取不出来的格子。页面照写（那一格留空），全部写完再一次报出并中止。"""
+    if rows.PROBLEMS:
+        die('%d 格从记录上取不出来：\n%s' % (len(rows.PROBLEMS), '\n'.join(
+            '  %s｜%s｜%s：%s' % p for p in rows.PROBLEMS)))
 
 
 if __name__ == '__main__':

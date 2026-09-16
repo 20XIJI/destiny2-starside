@@ -31,6 +31,7 @@ import check_terms
 import items
 import markup
 import research
+import rows
 import migrate
 
 sys.dont_write_bytecode = True
@@ -565,15 +566,9 @@ class EntitySource(unittest.TestCase):
     """
 
     ROOT = TOOLS.parent
-    # 「数据源：是」那些页写的是站内的根本数据，落在记录本体；另两家是作者，
-    # 落在 authors 名下。一页归谁只在这里定一次。
-    BODY = ('weapon-perks', 'armor-mods', 'exotic-weapon', 'exotic-armor', 'arc',
-            'solar', 'void', 'stasis', 'strand', 'prismatic', 'class-abilities')
-    AUTHORED = {**{p: 'Aegis' for p in ('shopping-primary', 'shopping-special',
-                                        'shopping-heavy', 'shopping-other')},
-                **{p: 'LGpig' for p in ('legendary-primary', 'legendary-special',
-                                        'legendary-heavy', 'exotic-weapons',
-                                        'exotic-armors', 'farming-sets')}}
+    # 一页的正文归谁（记录本体还是某位作者）只在 rows.py 定一次，渲染与这里共用。
+    BODY = tuple(sorted(rows.BODY))
+    AUTHORED = rows.AUTHORED
     # 这几个键是 manifest 那一侧的，不算「站内写的东西」。
     MANIFEST_TEXT = frozenset({'name', 'database_details', 'itemTypeDisplayName',
                                'itemTypeAndTierDisplayName', 'flavorText',
