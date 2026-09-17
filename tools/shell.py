@@ -87,9 +87,14 @@ LEGAL = ('<p class="legal">Starside 为非官方资料站，与 Bungie, Inc. 无
          'Destiny 2 及相关名称、标识为 Bungie, Inc. 的商标。</p>')
 
 # 备案号。每一页都要挂，且必须链到各自的查询页——这是备案要求，不是版式选择。
-ICP = ('<p class="legal"><a href="https://beian.miit.gov.cn/" '
+# 公安那枚盾形标不写 <img>：相对路径按页面深度各不相同，而 CSS 里 url() 按样式表
+# 的位置解析，与页面深浅无关，所以徽章走 site.css 里 a.beian::before 的背景图。
+# 图是无损 WebP（36×40，四角透明），文件名取内容 md5 前 10 位：.webp 按后缀给
+# 一年缓存，换图必须换名（与 icons/ 同一条，见 README「部署与缓存」）。
+ICP = ('<p class="legal">ICP备案/许可证号：'
+       '<a href="https://beian.miit.gov.cn/" '
        'target="_blank" rel="noopener">鲁ICP备2026052166号-1</a> '
-       '<a href="https://beian.mps.gov.cn/#/query/webSearch?code=37010202700801" '
+       '<a class="beian" href="https://beian.mps.gov.cn/#/query/webSearch?code=37010202700801" '
        'target="_blank" rel="noreferrer">鲁公网安备37010202700801号</a></p>')
 
 # 站内导航预取：悬停即取，页面本身十几 KB，切换基本无感。不支持的浏览器忽略。
