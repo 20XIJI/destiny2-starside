@@ -30,8 +30,7 @@ OUT = os.path.join(os.path.expanduser('~'), 'Desktop', 'docs', '2609',
 
 def collect(facts):
     """四类待判项。每一类给出：为什么要判、可选项、以及判完要落到哪。"""
-    minted = json.load(open(os.path.join(shell.ROOT, 'references', 'minted.json'),
-                            encoding='utf-8'))
+    minted = facts.minted
     pages = {}
     for p in sorted(glob.glob(os.path.join(shell.ROOT, 'references', 'research', '*.json'))):
         d = json.load(open(p, encoding='utf-8'))
