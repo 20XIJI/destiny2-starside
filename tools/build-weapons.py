@@ -759,7 +759,7 @@ def main() -> int:
     out, stats = build(rows.facts())
     self_check(stats)
     for rel, body in out.items():
-        path = os.path.join(shell.ROOT, rel)
+        path = os.path.join(shell.SITE, rel)
         if rel.endswith('index.html'):
             shell.emit(os.path.dirname(path), body, '%d 把武器（%d 张卡）、%d 件异域护甲'
                        % (stats['weapons'], stats['cards'], stats['armor']))
@@ -769,7 +769,7 @@ def main() -> int:
         raw = body.encode()
         print('%s —— %.0f KB，gzip %.0f KB' % (rel, len(raw) / 1024, len(gzip.compress(raw, 9)) / 1024))
     print('作者推荐落不到池里的词条名 %d 个（基线 %d）' % (len(stats['mark_miss']), MARK_MISS_BASELINE))
-    home = os.path.join(shell.ROOT, shell.HOME)
+    home = os.path.join(shell.SITE, shell.HOME)
     with open(home, encoding='utf-8') as f:
         src = f.read()
     with open(home, 'w', encoding='utf-8') as f:

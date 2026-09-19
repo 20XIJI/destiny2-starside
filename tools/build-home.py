@@ -18,7 +18,7 @@ import re
 import markup
 import shell
 
-HOME = os.path.join(shell.ROOT, 'index.html')
+HOME = os.path.join(shell.SITE, 'index.html')
 
 # 人定的挑选。名字按页面上的正名写，页面里找不到即中止。
 PICK_PERKS = ('聚合充能', '元素磨砺', '加速突击', '失时弹匣')
@@ -51,7 +51,7 @@ MARK = re.compile(r'<!--pv-->.*?<!--/pv-->', re.S)
 
 
 def read(rel):
-    with open(os.path.join(shell.ROOT, rel), encoding='utf-8') as f:
+    with open(os.path.join(shell.SITE, rel), encoding='utf-8') as f:
         return f.read()
 
 
@@ -120,7 +120,7 @@ class Imgs:
         self.n = 0
 
     def __call__(self, path, size, title=''):
-        need(os.path.exists(os.path.join(shell.ROOT, path)), '首页预览：图不存在 %s' % path)
+        need(os.path.exists(os.path.join(shell.SITE, path)), '首页预览：图不存在 %s' % path)
         w, h = size if isinstance(size, tuple) else (size, size)
         at = markup.loading_attr(self.n, N_EAGER)
         self.n += 1

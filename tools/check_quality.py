@@ -166,14 +166,12 @@ class EditAnchors(unittest.TestCase):
     回调里，chip 永远停在「载入中…」，一句话都不报。
     """
 
-    ROOT = TOOLS.parent
+    SITE = TOOLS.parent / 'site'
     ANCHOR = re.compile(r'<main[^>]*\sdata-src="([^"]*)"')
 
     def test_every_data_src_resolves_to_a_source_file(self):
         seen = 0
-        for page in sorted(self.ROOT.rglob('index.html')):
-            if '.archived' in page.parts or 'node_modules' in page.parts:
-                continue
+        for page in sorted(self.SITE.rglob('index.html')):
             hit = self.ANCHOR.search(page.read_text(encoding='utf-8'))
             if not hit:
                 continue
@@ -181,7 +179,7 @@ class EditAnchors(unittest.TestCase):
             doc = hit.group(1)
             # 换算走 sync.path_of()，不在这里另写一份：这条断言要证的就是
             # data-src 与 id_of() 那条算法对得上，自己再推一遍等于跟自己的副本对账。
-            with self.subTest(page=str(page.relative_to(self.ROOT))):
+            with self.subTest(page=str(page.relative_to(self.SITE))):
                 self.assertTrue(os.path.isfile(sync.path_of(doc)),
                                 'data-src=%r 指不到 references/%s.md' % (doc, doc))
         # 光「全都对得上」不够：正则一旦失配，零命中也是全绿。
@@ -338,8 +336,8 @@ class ArtifactPicker(unittest.TestCase):
     断言七件神器各自收得到自己那 21 枚模组。
     """
 
-    ROOT = TOOLS.parent
-    VOCAB = ROOT / 'builds' / 'vocab.js'
+    SITE = TOOLS.parent / 'site'
+    VOCAB = SITE / 'builds' / 'vocab.js'
 
     @staticmethod
     def rows(text, key):
@@ -352,7 +350,7 @@ class ArtifactPicker(unittest.TestCase):
         vocab = self.VOCAB.read_text(encoding='utf-8')
         sep = json.loads(markup.must(re.search(r'^sep: (".*?"),?$', vocab, re.M),
                                      'builds/vocab.js 里没有 sep：契约没发出去').group(1))
-        form = (self.ROOT / 'builds' / 'new' / 'form.js').read_text(encoding='utf-8')
+        form = (self.SITE / 'builds' / 'new' / 'form.js').read_text(encoding='utf-8')
         self.assertIn('split(V.sep)', form,
                       'form.js 又自己写了一份切分符号，应该读 vocab.js 带过来的那个')
         mods = self.rows(vocab, '神器')
@@ -396,7 +394,7 @@ class Generated(unittest.TestCase):
     """
 
     def read(self, rel):
-        return (TOOLS.parent / rel).read_text(encoding='utf-8')
+        return (TOOLS.parent / 'site' / rel).read_text(encoding='utf-8')
 
     def test_terms_table_matches_its_sources(self):
         self.assertEqual(build_terms.build(), self.read('admin/terms.js'),
@@ -567,7 +565,8 @@ class Generated(unittest.TestCase):
 
     def test_the_cloud_function_carries_the_same_dialect(self):
         # 云函数只 require 得到自己目录下的东西，所以那一份是复制过去的。
-        self.assertEqual(self.read('functions/api/dialect.js'), self.read('admin/dialect.js'),
+        fn = (TOOLS.parent / 'functions' / 'api' / 'dialect.js').read_text(encoding='utf-8')
+        self.assertEqual(fn, self.read('admin/dialect.js'),
                          'functions/api/dialect.js 与 admin/dialect.js 分家了，跑一次构建')
 
 
@@ -990,7 +989,7 @@ class WeaponPage(unittest.TestCase):
             if rel.endswith('index.html'):
                 body = markup.delta_bmarks(body)
             with self.subTest(rel=rel):
-                disk = (TOOLS.parent / rel).read_text(encoding='utf-8')
+                disk = (TOOLS.parent / 'site' / rel).read_text(encoding='utf-8')
                 self.assertTrue(disk == body, '%s 与现跑生成器的产出对不上：跑 python3 tools/build-weapons.py' % rel)
 
     def test_every_enhanced_perk_has_its_base_and_author_names_resolve(self):
@@ -1049,7 +1048,7 @@ class WeaponPage(unittest.TestCase):
             row = next(x for x in F.groups[gh]['scaledStats'] if str(x['statHash']) == sh)
             curve = [n for p in row['displayInterpolation'] for n in (p['value'], p['weight'])]
             rows_.append([v, row['maximumValue'], curve, want])
-        text = (TOOLS.parent / 'weapons' / 'app.js').read_text(encoding='utf-8')
+        text = (TOOLS.parent / 'site' / 'weapons' / 'app.js').read_text(encoding='utf-8')
         prog = '\n'.join(self.js_function(text, n) for n in ('bankers', 'interp', 'shown')) + (
             '\nvar rows = JSON.parse(require("fs").readFileSync(0, "utf8")), bad = [];'
             '\nrows.forEach(function (r) { var got = shown(r[0], [0, r[1], r[2], 0]);'
@@ -1072,9 +1071,10 @@ class DeploySelection(unittest.TestCase):
     """
 
     def test_site_files_ship_and_sources_do_not(self):
-        self.assertTrue(deploy.keep('armor-mods/icons/0a1b2c3d4e.webp'))
-        self.assertTrue(deploy.keep('index.html') and deploy.keep('assets/search.js'))
-        self.assertTrue(deploy.keep('admin/index.html') and deploy.keep('admin/terms.js'))
+        self.assertTrue(deploy.keep('site/armor-mods/icons/0a1b2c3d4e.webp'))
+        self.assertTrue(deploy.keep('site/index.html') and deploy.keep('site/assets/search.js'))
+        self.assertTrue(deploy.keep('site/admin/index.html') and deploy.keep('site/admin/terms.js'))
+        self.assertFalse(deploy.keep('index.html') or deploy.keep('functions/api/index.js'))
         self.assertFalse(deploy.keep('tools/deploy.py'))
         self.assertFalse(deploy.keep('references/docs/changelog.md'))
         self.assertFalse(deploy.keep('CLAUDE.md') or deploy.keep('cloudbaserc.json'))
@@ -1095,7 +1095,7 @@ class DeploySelection(unittest.TestCase):
             if path.suffix not in ('.html', '.js', '.css') or not path.is_file():
                 continue
             rel = path.relative_to(root).as_posix()
-            if not deploy.keep(rel) or rel.startswith('node_modules/'):
+            if not deploy.keep(rel):
                 continue
             seen += 1
             if want.search(path.read_text(encoding='utf-8', errors='ignore')):
@@ -1105,7 +1105,7 @@ class DeploySelection(unittest.TestCase):
         self.assertGreater(seen, 200, '只扫到 %d 个产出，反查这一半没生效' % seen)
 
     def test_listing_drops_the_files_that_never_ship(self):
-        self.assertEqual(deploy.listing('a.md\0index.html\0'), ['index.html'])
+        self.assertEqual(deploy.listing('a.md\0site/index.html\0tools/x.py\0'), ['index.html'])
 
     def test_block_comments_go_but_line_numbers_stay(self):
         self.assertEqual(deploy.uncomment('a/*x\ny*/b'), 'a\nb')   # 换行数保住，行号不移
@@ -1124,7 +1124,7 @@ class DeploySelection(unittest.TestCase):
                                    'admin/admin.js', 'admin/dialect.js', 'builds/new/form.js',
                                    'assets/chart.js', 'assets/rota.js', 'assets/home.js',
                                    'weapons/app.js', 'weapons/style.css')
-                   if not deploy.strippable((TOOLS.parent / rel).read_text(encoding='utf-8'))]
+                   if not deploy.strippable((TOOLS.parent / 'site' / rel).read_text(encoding='utf-8'))]
         self.assertEqual(skipped, [], '这些文件的字符串里出现了 /* 或 */，整个文件会原样发')
 
 
@@ -1134,13 +1134,14 @@ class Deployment(Isolated):
     def setUp(self):
         super().setUp()
         self.file('cloudbaserc.json', '{"envId":"offline-fixture"}')
-        self.file('index.html', 'published contents')
+        self.file('site/index.html', 'published contents')
         self.replace(deploy, 'ROOT', self.root)
+        self.replace(deploy, 'SITE', self.root / 'site')
         self.replace(sys, 'argv', ['deploy.py'])
         self.statuses = ['', '', '', '', '']
         self.heads = [self.TARGET] * 5
-        self.files = 'index.html\0'
-        self.gone = 'old/index.html\0'
+        self.files = 'site/index.html\0'
+        self.gone = 'site/old/index.html\0'
         self.base = '0' * 40
         self.sync_code = 0
         self.fail_tcb = ''
@@ -1194,14 +1195,15 @@ class Deployment(Isolated):
     def test_the_manifest_answers_on_its_own_without_replaying_the_process(self):
         # plan() 是纯的：问它「这次要发什么」不必先摆好工作区状态、HEAD 与子进程。
         # 增量只发改过的、删删掉的；--all 发全部、不删任何东西。
-        self.files, self.gone = 'index.html\0new/index.html\0', 'old/index.html\0'
+        # 清单是站上的路径：仓库里的 site/ 那一层去掉。
+        self.files, self.gone = 'site/index.html\0site/new/index.html\0', 'site/old/index.html\0'
         self.assertEqual(deploy.plan(False, self.base, self.TARGET),
                          (['index.html', 'new/index.html'], ['old/index.html']))
         self.assertEqual(deploy.plan(True, self.base, self.TARGET),
                          (['index.html', 'new/index.html'], []))
 
     def test_the_manifest_never_ships_sources_or_tools(self):
-        self.files = 'index.html\0tools/deploy.py\0CLAUDE.md\0references/docs/a.md\0'
+        self.files = 'site/index.html\0tools/deploy.py\0CLAUDE.md\0references/docs/a.md\0'
         self.gone = ''
         self.assertEqual(deploy.plan(False, self.base, self.TARGET), (['index.html'], []))
 
@@ -1233,7 +1235,7 @@ class Deployment(Isolated):
         self.assertEqual((self.remote(), self.refs()), ([], []))
 
     def test_worktree_changes_during_staging_stop_all_sends(self):
-        self.statuses[3] = ' M index.html'
+        self.statuses[3] = ' M site/index.html'
         self.exits(deploy.main)
         self.assertEqual((self.remote(), self.refs()), ([], []))
 
@@ -1253,6 +1255,7 @@ class Deployment(Isolated):
         deploy.main()
         self.assertEqual(self.uploaded, 'published contents')
         self.assertEqual([args[2] for args in self.remote()], ['deploy', 'delete'])
+        self.assertEqual(self.remote()[1][3], '%s/old/index.html' % deploy.CLOUD)
         self.assertEqual(self.refs(), [('update-ref', deploy.REF, self.TARGET)])
 
     def test_dry_run_has_no_sync_remote_or_ref(self):
@@ -1677,17 +1680,19 @@ class Generation(Isolated):
     def setUp(self):
         super().setUp()
         self.replace(build.shell, 'ROOT', str(self.root))
+        self.site = self.root / 'site'
+        self.replace(build.shell, 'SITE', str(self.site))
         self.replace(build, 'SRC_DIR', str(self.root / 'references/builds'))
         self.replace(build, 'SEASON', 's29')
         self.replace(sys, 'argv', ['convert-build.py'])
         self.build_file('references/builds/s29-fixture/alpha-hunter.json', self.SOLO)
         self.beta = self.build_file('references/builds/s29-fixture/beta-hunter.json', self.SOLO)
         self.build_file('references/builds/s28-history/history-hunter.json', self.SOLO)
-        self.orphan = self.file('builds/s29/orphan-hunter/index.html', 'orphan')
-        self.unknown = self.file('builds/s29/orphan-hunter/notes.txt', 'keep unknown')
-        self.file('builds/s29/orphan-hunter/style.css', 'keep style')
-        self.file('builds/s29/orphan-hunter/icons/icon.webp', 'keep icon')
-        self.file('builds/not-season/unknown/index.html', 'keep shape')
+        self.orphan = self.file('site/builds/s29/orphan-hunter/index.html', 'orphan')
+        self.unknown = self.file('site/builds/s29/orphan-hunter/notes.txt', 'keep unknown')
+        self.file('site/builds/s29/orphan-hunter/style.css', 'keep style')
+        self.file('site/builds/s29/orphan-hunter/icons/icon.webp', 'keep icon')
+        self.file('site/builds/not-season/unknown/index.html', 'keep shape')
         self.file('tools/moves.json', '{}')
         self.file('tools/artifacts.json', '{"测试神器":{"icon":"fixture.webp"}}')
         self.home(False)
@@ -1713,7 +1718,7 @@ class Generation(Isolated):
             '更新 2020.1.1</span>%s</a></li>' % (href,
             '<dl><dt>%s</dt><dd>0</dd></dl>' % label if label else '')
             for href, label in links) + '</ul>'
-        self.file('index.html', text)
+        self.file('site/index.html', text)
 
 
     def test_index_facet_keys_match_the_cards(self):
@@ -1729,7 +1734,7 @@ class Generation(Isolated):
         """
         self.replace(sys, 'argv', ['convert-build.py'])
         build.main()
-        page = (self.root / 'builds/index.html').read_text(encoding='utf-8')
+        page = (self.site / 'builds/index.html').read_text(encoding='utf-8')
         found = re.search(r'data-facets="([^"]+)"', page)
         self.assertIsNotNone(found, '索引页的工具条没有 data-facets')
         assert found is not None      # pyright：上一行已经保证了
@@ -1762,8 +1767,8 @@ class Generation(Isolated):
         self.file('references/docs/fixture.md',
                   '# 示例\n描述：测试\n更新：2026.9.5\n\n## 正文\n'
                   '| 名称 | 说明 |\n|---|---|\n| 条目 |\n')
-        self.file('fixture/style.css', '')
-        out = self.file('fixture/index.html', 'previous page')
+        self.file('site/fixture/style.css', '')
+        out = self.file('site/fixture/index.html', 'previous page')
         error = self.exits(lambda: doc.build('fixture'))
         self.assertIn('references/docs/fixture.md', error)
         self.assertIn('第 8 行', error)
@@ -1793,13 +1798,13 @@ class Generation(Isolated):
         for path in ('builds/s29/orphan-hunter/style.css',
                      'builds/s29/orphan-hunter/icons/icon.webp',
                      'builds/not-season/unknown/index.html'):
-            self.assertTrue((self.root / path).is_file(), path)
+            self.assertTrue((self.site / path).is_file(), path)
         for path in ('builds/s29/alpha-hunter/index.html', 'builds/s29/beta-hunter/index.html',
                      'builds/s28/history-hunter/index.html', 'builds/index.html',
                      'builds/sets/index.html', 'builds/new/index.html',
                      'builds/new/set/index.html', 'builds/vocab.js', 'builds/desc.js'):
-            self.assertTrue((self.root / path).is_file(), path)
-        self.assertIn('href="sets/index.html"', (self.root / 'builds/index.html').read_text())
+            self.assertTrue((self.site / path).is_file(), path)
+        self.assertIn('href="sets/index.html"', (self.site / 'builds/index.html').read_text())
 
     def test_a_build_without_an_artifact_drops_that_section(self):
         """「神器：」可省，省了那一节整个不出；写了模组却没写神器则中止。
@@ -1811,7 +1816,7 @@ class Generation(Isolated):
         self.beta.write_text(as_record(self.SOLO.replace('神器：测试神器\n模组：\n', '')),
                              encoding='utf-8')
         build.main()
-        page = (self.root / 'builds/s29/beta-hunter/index.html').read_text()
+        page = (self.site / 'builds/s29/beta-hunter/index.html').read_text()
         self.assertNotIn('神器模组', page)
 
         self.beta.write_text(as_record(self.SOLO.replace('神器：测试神器\n', '')
@@ -1825,7 +1830,7 @@ class Generation(Isolated):
         self.replace(sys, 'argv', ['convert-build.py', 'alpha-hunter'])
         build.main()
         self.assertEqual(self.orphan.read_text(), 'orphan')
-        self.assertFalse((self.root / 'builds/index.html').exists())
+        self.assertFalse((self.site / 'builds/index.html').exists())
 
     def test_failed_detail_generation_never_prunes(self):
         self.beta.write_text('bad source', encoding='utf-8')
@@ -1850,37 +1855,37 @@ class Generation(Isolated):
         build.main()
         self.beta.write_text(as_record(self.SOLO), encoding='utf-8')
         # 留一个孤儿，确认首页闸门失败时也不能开始详情清理。
-        self.file('builds/s29/orphan-hunter/index.html', 'orphan')
+        self.file('site/builds/s29/orphan-hunter/index.html', 'orphan')
         message = self.exits(build.main)
         self.assertIn('首页还挂着 builds/sets/index.html', message)
-        self.assertFalse((self.root / 'builds/sets/index.html').exists())
+        self.assertFalse((self.site / 'builds/sets/index.html').exists())
         self.assertEqual(self.orphan.read_text(), 'orphan')
         self.home(False)
         build.main()
         self.assertFalse(self.orphan.exists())
-        self.assertNotIn('href="sets/index.html"', (self.root / 'builds/index.html').read_text())
-        self.assertNotIn('同一角色的多套配装', (self.root / 'builds/index.html').read_text())
-        self.assertIn('href="new/index.html"', (self.root / 'builds/index.html').read_text())
+        self.assertNotIn('href="sets/index.html"', (self.site / 'builds/index.html').read_text())
+        self.assertNotIn('同一角色的多套配装', (self.site / 'builds/index.html').read_text())
+        self.assertIn('href="new/index.html"', (self.site / 'builds/index.html').read_text())
 
     def test_old_season_set_stays_without_creating_current_set_entry(self):
         self.build_file('references/builds/s28-history/history-hunter.json', self.SET)
         build.main()
-        self.assertTrue((self.root / 'builds/s28/history-hunter/index.html').is_file())
-        self.assertFalse((self.root / 'builds/sets/index.html').exists())
-        self.assertNotIn('href="sets/index.html"', (self.root / 'builds/index.html').read_text())
+        self.assertTrue((self.site / 'builds/s28/history-hunter/index.html').is_file())
+        self.assertFalse((self.site / 'builds/sets/index.html').exists())
+        self.assertNotIn('href="sets/index.html"', (self.site / 'builds/index.html').read_text())
 
     def test_pruning_never_follows_season_detail_or_page_symlinks(self):
         external = self.file('outside/season/entry/index.html', 'external')
-        (self.root / 'builds/s77').symlink_to(external.parent.parent, target_is_directory=True)
-        (self.root / 'builds/s29/linked-hunter').symlink_to(external.parent, target_is_directory=True)
-        page = self.root / 'builds/s29/linked-page/index.html'
+        (self.site / 'builds/s77').symlink_to(external.parent.parent, target_is_directory=True)
+        (self.site / 'builds/s29/linked-hunter').symlink_to(external.parent, target_is_directory=True)
+        page = self.site / 'builds/s29/linked-page/index.html'
         page.parent.mkdir()
         page.symlink_to(external)
         build.main()
         self.assertEqual(external.read_text(), 'external')
         self.assertTrue(page.is_symlink())
-        self.assertTrue((self.root / 'builds/s77').is_symlink())
-        self.assertTrue((self.root / 'builds/s29/linked-hunter').is_symlink())
+        self.assertTrue((self.site / 'builds/s77').is_symlink())
+        self.assertTrue((self.site / 'builds/s29/linked-hunter').is_symlink())
 
 
 class Normalization(Isolated):
@@ -1889,6 +1894,7 @@ class Normalization(Isolated):
         terms, skipped = items.load()
         self.replace(items, 'load', lambda: (terms, skipped))
         self.replace(items.shell, 'ROOT', str(self.root))
+        self.replace(items.shell, 'SITE', str(self.root / 'site'))
         self.replace(items.shell, 'BUILD_DIR', str(self.root / 'references/builds'))
         self.kw = dict(terms=terms, names=sorted(terms, key=len, reverse=True),
                        banned=check_terms.banned_pairs())
@@ -1910,7 +1916,7 @@ class Normalization(Isolated):
 
     def test_all_real_term_errors_are_reported(self):
         self.doc.write_text('装填\n' * 65)
-        self.file('assets/site.css', '')
+        self.file('site/assets/site.css', '')
         self.replace(check_terms, 'SRC_FILES', [])
         self.replace(check_terms, 'sources', lambda: [('references/docs/fixture.md', set())])
         for name in ('check_tokens', 'check_stamps', 'check_build_count',

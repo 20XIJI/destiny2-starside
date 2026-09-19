@@ -23,7 +23,7 @@ import sys
 import resolve
 import shell
 
-ICONS = os.path.join(shell.ROOT, 'assets', 'icons')
+ICONS = os.path.join(shell.SITE, 'assets', 'icons')
 OUT = os.path.join(os.path.expanduser('~'), 'Desktop', 'docs', '2609',
                    '260915-待判清单.html')
 

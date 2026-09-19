@@ -46,7 +46,7 @@ def produced():
 
 
 def baseline(ref, path):
-    r = subprocess.run(['git', 'show', '%s:%s' % (ref, path)],
+    r = subprocess.run(['git', 'show', '%s:%s' % (ref, os.path.relpath(os.path.join(shell.SITE, path), shell.ROOT))],
                        cwd=shell.ROOT, capture_output=True)
     return None if r.returncode else r.stdout.decode('utf-8')
 
@@ -61,7 +61,7 @@ def compare(ref):
     same = allowed = 0
     changed, missing = [], []
     for path in produced():
-        full = os.path.join(shell.ROOT, path)
+        full = os.path.join(shell.SITE, path)
         if not os.path.exists(full):
             missing.append((path, '工作区里没有这个产出'))
             continue

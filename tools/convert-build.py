@@ -1087,7 +1087,7 @@ def season_dirs():
 def build(idx, dirname, season, name_cn, slug):
     src = os.path.join(SRC_DIR, dirname, slug + '.json')
     with source_context(os.path.relpath(os.path.realpath(src), shell.ROOT)):
-        outdir = os.path.join(shell.ROOT, OUT_DIR, season, slug)
+        outdir = os.path.join(shell.SITE, OUT_DIR, season, slug)
         os.makedirs(outdir, exist_ok=True)
         md = migrate.load(src)
         # _id 与 sync.py 的 id_of() 同一条：references/ 下的相对路径去掉 .md，
@@ -1308,8 +1308,8 @@ def render_index(made, sets=False):
     out = '\n'.join(x for x in o if x != '') + '\n'
     # **自己建目录**：合集索引页只在有合集时才出，站上从零变一时那个目录还不在，
     # 而 shell.emit() 只管写文件——撞上的是一句 FileNotFoundError。
-    outdir = os.path.join(shell.ROOT, OUT_DIR, 'sets') if sets \
-        else os.path.join(shell.ROOT, OUT_DIR)
+    outdir = os.path.join(shell.SITE, OUT_DIR, 'sets') if sets \
+        else os.path.join(shell.SITE, OUT_DIR)
     os.makedirs(outdir, exist_ok=True)
     shell.emit(outdir, out,
                '%d %s' % (len(live), '个合集' if sets else '套配装'))
@@ -1365,7 +1365,7 @@ def render_vocab(idx):
     body = ('window.starsideVocab = {\nsep: %s,\nlists: {\n%s\n},\nslots: %s\n};\n'
             % (json.dumps(vocab.KIND_TAIL, ensure_ascii=False),
                ',\n'.join(rows), json.dumps(slots, ensure_ascii=False)))
-    path = os.path.join(shell.ROOT, OUT_DIR, 'vocab.js')
+    path = os.path.join(shell.SITE, OUT_DIR, 'vocab.js')
     with open(path, 'w', encoding='utf-8') as f:
         f.write(body)
     print('builds/vocab.js —— %.1f KB，%d 个槽位共 %d 份列表'
@@ -1399,7 +1399,7 @@ def render_desc(idx):
                        json.dumps(v, ensure_ascii=False))
             for k, v in sorted(seen.items())]
     body = 'window.starsideDesc = {\n%s\n};\n' % ',\n'.join(rows)
-    path = os.path.join(shell.ROOT, OUT_DIR, 'desc.js')
+    path = os.path.join(shell.SITE, OUT_DIR, 'desc.js')
     with open(path, 'w', encoding='utf-8') as f:
         f.write(body)
     print('builds/desc.js —— %.1f KB，%d 条说明' % (len(body.encode()) / 1024, len(seen)))
@@ -1741,8 +1741,8 @@ def render_new(stamp, name_cn, sets=False):
     back = '../' * (up - 1)
     out = finish(o, [back + 'vocab.js', back + 'tip.js',
                      '../' * (up - 2) + 'form.js'])
-    outdir = os.path.join(shell.ROOT, OUT_DIR, 'new', 'set') if sets \
-        else os.path.join(shell.ROOT, OUT_DIR, 'new')
+    outdir = os.path.join(shell.SITE, OUT_DIR, 'new', 'set') if sets \
+        else os.path.join(shell.SITE, OUT_DIR, 'new')
     os.makedirs(outdir, exist_ok=True)
     shell.emit(outdir, out, name)
 
@@ -1801,13 +1801,13 @@ def sync_home(counts):
     """首页那三张配装卡的更新时间与套数随投稿漂，构建时按产出改写。
     时间从各自的产出页脚现读——那正是 check_terms.py 的 G4 拿来比对的值。
     counts 是 {href: (小标题, 数)}，一张卡的改写在 shell.sync_card()。"""
-    path = os.path.join(shell.ROOT, 'index.html')
+    path = os.path.join(shell.SITE, 'index.html')
     with open(path, encoding='utf-8') as f:
         home = f.read()
     for href in ('builds/index.html', 'builds/sets/index.html',
                  'builds/new/index.html', 'builds/new/set/index.html'):
         # 变量名不能叫 path：外层那个指着 index.html，收尾要写回它。
-        src = os.path.join(shell.ROOT, href)
+        src = os.path.join(shell.SITE, href)
         here = os.path.exists(src)
         card = re.search(r'<a class="entry" href="%s".*?</a>' % re.escape(href),
                          home, re.S)
@@ -1826,7 +1826,7 @@ def sync_home(counts):
 
 def prune_details(expected):
     """只清理无源稿的标准详情 HTML，保留目录、未知资产与所有符号链接。"""
-    root = os.path.join(shell.ROOT, OUT_DIR)
+    root = os.path.join(shell.SITE, OUT_DIR)
     if os.path.islink(root):
         return
     with os.scandir(root) as seasons:
@@ -1879,7 +1879,7 @@ def main():
         render_new(max(m['stamp'] for m in made), here[0], sets=True)
         live = [m for m in made if m['season'] == SEASON]
         if not any(m['set'] for m in live):
-            old_sets = os.path.join(shell.ROOT, OUT_DIR, 'sets', 'index.html')
+            old_sets = os.path.join(shell.SITE, OUT_DIR, 'sets', 'index.html')
             if os.path.isfile(old_sets) and not os.path.islink(old_sets) and not os.path.islink(os.path.dirname(old_sets)):
                 os.remove(old_sets)
         sync_home({'builds/index.html': ('配装', len([m for m in live if not m['set']])),

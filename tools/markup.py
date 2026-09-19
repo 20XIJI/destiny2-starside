@@ -63,7 +63,7 @@ TAG = re.compile(r'<(?:"[^"]*"|\'[^\']*\'|[^>])*>')
 NESTED_SPAN = re.compile(r'<span[^>]*>[^<]*<span')
 # 按主键取的官方图，文件名是 Bungie 的图名。见 Icons。
 ASSET_ICONS = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
-                           'assets', 'icons')
+                           'site', 'assets', 'icons')
 
 
 def die(msg) -> NoReturn:

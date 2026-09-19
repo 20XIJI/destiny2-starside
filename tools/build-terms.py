@@ -23,11 +23,11 @@ import items
 import markup
 import shell
 
-OUT = os.path.join(shell.ROOT, 'admin', 'terms.js')
-TREE = os.path.join(shell.ROOT, 'admin', 'pages.js')
+OUT = os.path.join(shell.SITE, 'admin', 'terms.js')
+TREE = os.path.join(shell.SITE, 'admin', 'pages.js')
 # 切格那一份的定义在 admin/，云函数只 require 得到自己目录下的东西，所以复制一份
 # 过去。两份逐字相同由 npm test 钉住；改规则改 admin/dialect.js。
-DIALECT = os.path.join(shell.ROOT, 'admin', 'dialect.js')
+DIALECT = os.path.join(shell.SITE, 'admin', 'dialect.js')
 DIALECT_FN = os.path.join(shell.ROOT, 'functions', 'api', 'dialect.js')
 
 
@@ -36,7 +36,7 @@ def j(v):
 
 
 def build():
-    css = open(os.path.join(shell.ROOT, 'assets', 'site.css'), encoding='utf-8').read()
+    css = open(os.path.join(shell.SITE, 'assets', 'site.css'), encoding='utf-8').read()
     # {类名: (它引的 --c-* 变量, 规则体是否只有 color)}。芯片按变量分组，
     # --c-orb 与 --c-stack 渲染色相同、名字不同，这一层让人靠名字分辨。
     tint = check_terms.tint_classes(css)
@@ -107,7 +107,7 @@ def tree():
 
     一行六列：[_id, 标题, 页面路径, 分组, 父页 _id, 更新时间]。
     """
-    home = open(os.path.join(shell.ROOT, 'index.html'), encoding='utf-8').read()
+    home = open(os.path.join(shell.SITE, 'index.html'), encoding='utf-8').read()
     group = {}
     for m in re.finditer(r'<h2 class="group-label">([^<]*)<span>.*?</h2>(.*?)</ul>', home, re.S):
         for href in re.findall(r'<a class="entry"[^>]*href="([^"]+)"', m.group(2)):
@@ -147,7 +147,7 @@ def tree():
     # 两页不走 convert-doc，标题与更新时间写在生成器里，这里照它们的产出取
     for pid, title, url in (('artifact-mods', '神器模组', 'artifact-mods/index.html'),
                             ('armor-sets', '护甲套装效果', 'armor-sets/index.html')):
-        html = open(os.path.join(shell.ROOT, url), encoding='utf-8').read()
+        html = open(os.path.join(shell.SITE, url), encoding='utf-8').read()
         at = re.search(r'<span class="stamp">更新 ([\d.]+)</span>', html)
         rows.append([pid, title, url, group.get(pid, '档案'), '', at.group(1) if at else ''])
     rows.sort(key=lambda r: (r[3], r[4], r[0]))

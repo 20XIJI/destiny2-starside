@@ -12,6 +12,7 @@ const vm = require('node:vm')
 const crypto = require('node:crypto')
 const zlib = require('node:zlib')
 const root = path.resolve(__dirname, '..')
+const site = path.join(root, 'site')
 const source = fs.readFileSync(process.env.QUALITY_API_SOURCE || path.join(root, 'functions/api/index.js'), 'utf8')
 const copy = (v) => v === undefined ? undefined : JSON.parse(JSON.stringify(v))
 const digest = (md) => crypto.createHash('sha1').update(md).digest('hex')
@@ -581,7 +582,7 @@ test('approving a record queued before the guard existed still refuses it', asyn
 // Python 那一份不在这里：起 python 就破了这份套件「不启动子进程」的承诺。它与「语料
 // 保持规整」这个前提由 check_quality.py 的 CellSplitting 管。
 function funcSource(file, name) {
-  const text = fs.readFileSync(path.join(root, file), 'utf8')
+  const text = fs.readFileSync(path.join(site, file), 'utf8')
   const head = new RegExp('^([ \\t]*)function ' + name + ' ?\\(', 'm').exec(text)
   assert.notEqual(head, null, `${file} 里找不到 ${name}()`)
   // 按缩进找收尾，不数花括号——cells() 的函数体里有 '{' 与 '}' 两个字符串字面量，
@@ -625,7 +626,7 @@ test('the dialect module is byte-identical in both places it has to live', () =>
   // 切格在 JS 这一侧只有 admin/dialect.js 一份定义。云函数只 require 得到自己
   // 目录下的东西，所以 build-terms.py 复制一份到 functions/api/。复制走样就是
   // 站上与库里对同一行切出不同的格——那一格改下去会落到别处。
-  const one = fs.readFileSync(path.join(root, 'admin/dialect.js'), 'utf8')
+  const one = fs.readFileSync(path.join(site, 'admin/dialect.js'), 'utf8')
   const two = fs.readFileSync(path.join(root, 'functions/api/dialect.js'), 'utf8')
   assert.equal(two, one, 'functions/api/dialect.js 与 admin/dialect.js 不一样了——跑 npm run build 重新复制')
 })
@@ -637,8 +638,8 @@ test('no consumer keeps a private copy of the splitter', () => {
   // 而构建时的 G6 不报。认的是切格独有的那一句剥空格循环：谁再抄一份回去，
   // 那一句就跟着回去，这条就响。
   const MARK = "while (b > a && line[b - 1] === ' ') b--"
-  const owns = ['admin/dialect.js', 'functions/api/dialect.js']
-  for (const rel of [...owns, 'functions/api/index.js', 'admin/edit.js', 'admin/admin.js']) {
+  const owns = ['site/admin/dialect.js', 'functions/api/dialect.js']
+  for (const rel of [...owns, 'functions/api/index.js', 'site/admin/edit.js', 'site/admin/admin.js']) {
     const has = fs.readFileSync(path.join(root, rel), 'utf8').includes(MARK)
     assert.equal(has, owns.includes(rel),
       has ? `${rel} 又自己实现了一遍切格，应该转给 dialect.js`
@@ -650,14 +651,14 @@ test('app.js and the page-specific modules it lazy-loads stay in step', () => {
   // 三段页面专属的东西拆出去之后，app.js 里只剩一句 lazy('x.js')。少了那个文件、
   // 或者拆的时候漏改了分发（还在直接调已经搬走的函数），页面上是整个 app.js
   // 抛异常、工具条与分节高亮一起没了，而构建、闸门、npm test 全都看不见。
-  const app = fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8')
+  const app = fs.readFileSync(path.join(site, 'assets/app.js'), 'utf8')
   const code = app.replace(/\/\*[\s\S]*?\*\//g, '')
   for (const [file, gone] of [['chart.js', 'chart'], ['rota.js', 'rota'], ['home.js', 'home']]) {
-    assert.ok(fs.existsSync(path.join(root, 'assets', file)), `assets/${file} 不在`)
+    assert.ok(fs.existsSync(path.join(site, 'assets', file)), `assets/${file} 不在`)
     assert.match(code, new RegExp(`lazy\\('${file}'\\)`), `app.js 没有 lazy('${file}')`)
     assert.doesNotMatch(code, new RegExp(`(?<![.\\w])${gone}\\s*\\(`),
       `app.js 还在直接调 ${gone}()，但它已经搬进 assets/${file} 了`)
-    const mod = fs.readFileSync(path.join(root, 'assets', file), 'utf8')
+    const mod = fs.readFileSync(path.join(site, 'assets', file), 'utf8')
     assert.match(mod, /export default function init\s*\(/, `assets/${file} 没有 export default init`)
   }
   assert.match(code, /document\.currentScript/,
@@ -668,20 +669,20 @@ test('both entry points load the dialect before the console that uses it', () =>
   // admin.js 的 cells()/titleEnd() 现读 window.starsideDialect。少这一句，
   // /admin/ 一开就是 undefined.cells，而闸门、构建、npm test 全都看不见——
   // 那一屏是手写的 HTML，没有任何生成器管它。
-  const html = fs.readFileSync(path.join(root, 'admin/index.html'), 'utf8')
+  const html = fs.readFileSync(path.join(site, 'admin/index.html'), 'utf8')
   const at = (src) => html.indexOf(`<script src="${src}"`)
   assert.notEqual(at('dialect.js'), -1, 'admin/index.html 没有引 dialect.js')
   assert.ok(at('dialect.js') < at('admin.js'),
     'admin/index.html 里 dialect.js 要排在 admin.js 前面')
 
   // 资料页上开编辑态走的是 edit.js 自己那条注入链，同样要先注入 dialect。
-  const edit = fs.readFileSync(path.join(root, 'admin/edit.js'), 'utf8')
+  const edit = fs.readFileSync(path.join(site, 'admin/edit.js'), 'utf8')
   const chain = /script\('admin\/dialect\.js'\)[\s\S]{0,120}script\('admin\/admin\.js'\)/
   assert.match(edit, chain, 'edit.js 注入 admin.js 之前没有先注入 dialect.js')
 })
 
 test('the dialect splits every real table row into cells that agree with its own count', () => {
-  const D = require(path.join(root, 'admin/dialect.js'))
+  const D = require(path.join(site, 'admin/dialect.js'))
   const rows = tableRows()
   assert.ok(rows.length > 4000, `只扫到 ${rows.length} 行表格行，语料挪走了？`)
   for (const [where, n, line] of rows) {
@@ -746,7 +747,7 @@ function adminApi(extra) {
   const sandbox = { console, module: { exports: {} }, window: { addEventListener() {} }, ...extra }
   vm.createContext(sandbox)
   for (const rel of ['admin/dialect.js', 'admin/terms.js', 'admin/admin.js']) {
-    vm.runInContext(fs.readFileSync(path.join(root, rel), 'utf8'), sandbox, { filename: rel })
+    vm.runInContext(fs.readFileSync(path.join(site, rel), 'utf8'), sandbox, { filename: rel })
   }
   return { api: sandbox.module.exports, terms: sandbox.window.starsideTerms }
 }
@@ -856,7 +857,7 @@ function buildSources() {
   // 源稿是结构化记录，而填表页与审核台认的是 markdown。**读产出里那段导出文本**，
   // 不读源稿：生成器交给填表页的正是它（<pre id="src"> / <pre class="src">），
   // 这条测试问的也正是「表单接不接受生成器给它的那一份」。
-  const dir = path.join(root, 'builds')
+  const dir = path.join(site, 'builds')
   const out = []
   for (const season of fs.readdirSync(dir)) {
     const sd = path.join(dir, season)
@@ -900,7 +901,7 @@ test('a source the build accepts is never reported as incomplete by the console'
    两张表是同一条规则的两种编码（这里按正则，那里按键名），已经漂过：admin.js 的
    强度认「强度」与「类别」两个键，form.js 只认「强度」。 */
 test('a source the build accepts can always be submitted from the form page', () => {
-  const form = require(path.join(root, 'builds/new/form.js'))
+  const form = require(path.join(site, 'builds/new/form.js'))
   const bad = []
   for (const [file, md] of buildSources()) {
     // 合集走 set 那一页（每一套还要过 PER），单套走另一页。判据与 convert-build.py
@@ -916,7 +917,7 @@ test('a source the build accepts can always be submitted from the form page', ()
 // 两张表答的是同一个问题，答案必须一致：一边说缺、一边说齐，就是又一次事故的形状。
 test('the console and the form page agree on which sources are complete', () => {
   const { api } = adminApi()
-  const form = require(path.join(root, 'builds/new/form.js'))
+  const form = require(path.join(site, 'builds/new/form.js'))
   const split = []
   for (const [file, md] of buildSources()) {
     const console_ = api.missing(md).length > 0
@@ -930,7 +931,7 @@ test('the console and the form page agree on which sources are complete', () => 
 // 填表页当场去掉会被读成源稿结构的符号：行首的 # 与不成对的花括号。合法的着色标记
 // 要留着，审核台与编辑遮罩载进来的源稿带着它们。
 test('the form strips line-leading hashes and stray braces but keeps color markers', () => {
-  const { tidy } = require(path.join(root, 'builds/new/form.js'))
+  const { tidy } = require(path.join(site, 'builds/new/form.js'))
   const t = (s) => tidy(s).text
   assert.equal(t('#1 刚需圣贤2\n## 注解\n  #② 神器'), '1 刚需圣贤2\n注解\n② 神器')
   assert.equal(t('见 #3 那条'), '见 #3 那条', '行中的 # 不动')
@@ -956,7 +957,7 @@ test('the form strips line-leading hashes and stray braces but keeps color marke
 
 // 编辑时散文格里只放文字，颜色画在镜像层；写回时按区间拼回标记。
 test('prose markers split into text and spans, shift with edits and weave back verbatim', () => {
-  const { unmark, remark, shiftSpans } = require(path.join(root, 'builds/new/form.js'))
+  const { unmark, remark, shiftSpans } = require(path.join(site, 'builds/new/form.js'))
   for (const src of ['先转{el-prismatic|超凡}（头', '{a|x{b|y}z}', '{a|{b|x}}', '{a|x{b|y}}', '无色']) {
     const u = unmark(src)
     assert.ok(u.ok, src)
@@ -1244,7 +1245,7 @@ function toolbar () {
     console
   }
   sandbox.window = sandbox
-  vm.runInNewContext(fs.readFileSync(path.join(root, 'assets/app.js'), 'utf8'), sandbox)
+  vm.runInNewContext(fs.readFileSync(path.join(site, 'assets/app.js'), 'utf8'), sandbox)
   // 场景与强度在页面那两个容器里，其余三维是工具条上那块共用面板里的三行。
   const bars = { 场景: bar, 强度: tierBar }
   const panel = () => slot.children.find((c) => c.className === 'drop')
@@ -1408,7 +1409,7 @@ test('an overlapping build sits in its first scene and moves to whichever is pic
 // 页脚访客数那段脚本从手写首页里现取：check_shell.py 钉着它与 shell.HIT 逐字一致，
 // 测的因此就是每一页上线的那一份。时钟、localStorage 与 fetch 换成桩。
 function footerCounter() {
-  const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8')
+  const html = fs.readFileSync(path.join(site, 'index.html'), 'utf8')
   const code = html.match(/<script>(\(function\(\)\{var d=new Date[\s\S]*?)<\/script>/)
   assert.ok(code, 'index.html 里找不到访客计数那段脚本')
   const store = new Map()
@@ -1546,14 +1547,14 @@ test('weapons: the query parser keeps DIM precedence and token positions', () =>
 })
 
 test('weapons: no two functions in app.js share a name', () => {
-  const text = fs.readFileSync(path.join(root, 'weapons/app.js'), 'utf8')
+  const text = fs.readFileSync(path.join(site, 'weapons/app.js'), 'utf8')
   const names = [...text.matchAll(/function (\w+)\s*\(/g)].map((m) => m[1])
   const dup = names.filter((n, i) => names.indexOf(n) !== i)
   assert.deepEqual(dup, [], '同名函数后写的会整个盖掉前一个')
 })
 
 test('weapons: every example and syntax row parses into known keywords', () => {
-  const text = fs.readFileSync(path.join(root, 'weapons/app.js'), 'utf8')
+  const text = fs.readFileSync(path.join(site, 'weapons/app.js'), 'utf8')
   const grab = (name) => {
     const m = new RegExp('var ' + name + ' = (\\[[\\s\\S]*?\\]);').exec(text)
     assert.notEqual(m, null, 'app.js 里找不到 ' + name)

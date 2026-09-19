@@ -84,7 +84,7 @@ CHROME = {
     'craft-bg': '/img/destiny_content/items/crafted-icon-background.png',
 }
 
-OUT_DIR = os.path.join(shell.ROOT, 'assets', 'icons')
+OUT_DIR = os.path.join(shell.SITE, 'assets', 'icons')
 
 # 两档版式：表格行内的小图 64，大图 96。档位按各页现有的渲染尺寸定，一页一档
 # ——同一张图在两页要两个尺寸时这里会报出来，实测站内没有这种。
@@ -246,7 +246,7 @@ def main():
         return 0
     done, failed = pull(need)
     print('新拉 %d 张，失败 %d 张，%s 共 %d 张'
-          % (done, failed, os.path.relpath(OUT_DIR, shell.ROOT),
+          % (done, failed, os.path.relpath(OUT_DIR, shell.SITE),
              len(os.listdir(OUT_DIR))))
     return 1 if failed else 0
 

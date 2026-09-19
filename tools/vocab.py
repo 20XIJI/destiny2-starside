@@ -54,7 +54,7 @@ def variants():
             die('%s 还没有图标，跑一次 tools/mods.py --icons' % name)
         # 文件名即内容的 md5 前 10 位，每次转换都复核——图标目录设了一年的浏览器
         # 缓存，原地覆盖会让读者看一年的旧图（与 markup.Icons 同一条规矩）。
-        path = os.path.join(shell.ROOT, 'armor-mods', 'icons', meta['icon'])
+        path = os.path.join(shell.SITE, 'armor-mods', 'icons', meta['icon'])
         if not os.path.exists(path):
             die('%s 的图标不在：armor-mods/icons/%s' % (name, meta['icon']))
         with open(path, 'rb') as f:
@@ -214,7 +214,7 @@ def check_landing(idx):
     for page in sources():
         if not searchable(page):
             continue
-        with open(os.path.join(shell.ROOT, *page.split('/'), 'index.html'),
+        with open(os.path.join(shell.SITE, *page.split('/'), 'index.html'),
                   encoding='utf-8') as f:
             html = f.read()
         texts[page] = [text_of(m, collapse=True) for pat in ITEM for m in pat.findall(html)]

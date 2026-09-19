@@ -1367,7 +1367,7 @@ def distill(src):
     LOOKUPS = ('plug-sets.json', 'socket-types.json', 'stat-groups.json')
     for name, payload, _ in out:
         carry_site(os.path.join(LOOKUP_DIR if name in LOOKUPS else OUT_DIR, name), payload)
-    link({n[:-5]: p for n, p, _ in out}, os.path.join(shell.ROOT, 'assets', 'icons'))
+    link({n[:-5]: p for n, p, _ in out}, os.path.join(shell.SITE, 'assets', 'icons'))
     total = 0
     for name, payload, unit in out:
         where = LOOKUP_DIR if name in LOOKUPS else OUT_DIR
@@ -1387,7 +1387,7 @@ def relink():
     for name in names:
         with open(os.path.join(OUT_DIR, name), encoding='utf-8') as f:
             tabs[name[:-5]] = json.load(f)
-    link(tabs, os.path.join(shell.ROOT, 'assets', 'icons'))
+    link(tabs, os.path.join(shell.SITE, 'assets', 'icons'))
     for name in names:
         size = dump(os.path.join(OUT_DIR, name), tabs[name[:-5]])
         print('%-38s %6d 条  %9.1f KB'

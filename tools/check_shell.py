@@ -38,7 +38,7 @@ BLOCK_COMMENT = re.compile(r'/\*.*?\*/', re.S)
 
 def shipped_size(rel):
     """这个文件发上去有多大。CSS 与 JS 按 deploy.py 剥完注释的样子算。"""
-    raw = os.path.join(shell.ROOT, rel)
+    raw = os.path.join(shell.SITE, rel)
     with open(raw, 'rb') as f:
         blob = f.read()
     if rel.endswith(('.css', '.js')):
@@ -82,11 +82,11 @@ def main() -> int:
     bad: list[str] = []
     # 全站搜索的索引也按这份清单建。新增一页却没重跑 build-search.py 时，那一页
     # 在首页搜不出来——这里当场报出，不等读者搜不到才发现。
-    with open(os.path.join(shell.ROOT, 'assets', 'search.js'), encoding='utf-8') as f:
+    with open(os.path.join(shell.SITE, 'assets', 'search.js'), encoding='utf-8') as f:
         index = f.read()
     for rel in listed:
         want = invariants(rel == shell.HOME)
-        path = os.path.join(shell.ROOT, rel)
+        path = os.path.join(shell.SITE, rel)
         if not os.path.exists(path):
             bad.append('%s：文件不存在' % rel)
             continue

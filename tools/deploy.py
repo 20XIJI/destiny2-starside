@@ -21,17 +21,17 @@ import sys
 import tempfile
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
+SITE = ROOT / "site"
 REF = "refs/deploy"
 CLOUD = "destiny2-starside"  # 静态托管上的挂载路径，与 tcb app deploy 的 --deploy-path 相同
-# data/ 是构建的输入不是站点的资源：21 MB、31 个文件，站上没有任何读者
-# （产出的 .js/.html/.css 里零处引用 data/ 路径）。发它等于每次把事实层
-# 又传一遍。已经发上去的那批要 --all --prune 才清得掉。
-SKIP_DIRS = ("tools/", "references/", "functions/", ".github/", ".claude/", "data/")
-SKIP_FILES = {"package.json", "cloudbaserc.json", "serve.json", ".gitignore", ".env.example", "LICENSE"}
+# 只发 site/ 下的文件，上传时去掉这一层：仓库里的 site/index.html 在站上是
+# destiny2-starside/index.html。源稿、工具、data/ 与云函数都在 site/ 之外。
+PREFIX = "site/"
 
 
 def keep(path: str) -> bool:
-    return not (path.startswith(SKIP_DIRS) or path.endswith(".md") or path in SKIP_FILES)
+    """git 给的仓库相对路径发不发。"""
+    return path.startswith(PREFIX)
 
 
 # 字符串字面量里的 /* 与 */。剥注释前先拿它探一遍：命中就整个文件原样发。
@@ -69,7 +69,8 @@ def git(*args: str) -> str:
 
 
 def listing(out: str) -> list[str]:
-    return [p for p in out.split("\0") if p and keep(p)]
+    """git 的 -z 输出 → 要发的文件，相对站点根（即站上的路径）。"""
+    return [p[len(PREFIX):] for p in out.split("\0") if p and keep(p)]
 
 
 def tcb(*args: str, env: str, confirm: bool = False) -> None:
@@ -88,12 +89,12 @@ def stage_one(rel: str, dst: pathlib.Path) -> None:
     这里，本地 npm start 服务的仍是带注释的那一份。
     """
     if not rel.endswith((".css", ".js")):
-        shutil.copy2(ROOT / rel, dst)
+        shutil.copy2(SITE / rel, dst)
         return
-    text = (ROOT / rel).read_text(encoding="utf-8")
+    text = (SITE / rel).read_text(encoding="utf-8")
     if not strippable(text):
         print(f"  ! {rel} 的字符串里有 /* 或 */，原样发")
-        shutil.copy2(ROOT / rel, dst)
+        shutil.copy2(SITE / rel, dst)
         return
     dst.write_text(uncomment(text), encoding="utf-8")
 

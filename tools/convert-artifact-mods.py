@@ -20,7 +20,7 @@ from markup import (Icons, blocks_at, bmark, die, eq, inline, meta_line, meta_of
                     src_hash, text_of)
 
 SRC = os.path.join(shell.ROOT, 'references', 'artifact-mods.md')
-OUT_DIR = os.path.join(shell.ROOT, 'artifact-mods')
+OUT_DIR = os.path.join(shell.SITE, 'artifact-mods')
 ICON_DIR = os.path.join(OUT_DIR, 'icons')
 
 PAGE_TITLE = '神器模组 · Starside'

@@ -366,7 +366,7 @@ class Table:
         if not got:
             self.problem(title, '图标', '%s 没有图' % key)
             return ''
-        if not os.path.exists(os.path.join(shell.ROOT, got)):
+        if not os.path.exists(os.path.join(shell.SITE, got)):
             self.problem(title, '图标', '%s 的图不在盘上：%s' % (key, got))
             return ''
         return rel(got, self.where)

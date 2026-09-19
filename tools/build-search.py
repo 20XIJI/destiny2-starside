@@ -28,7 +28,7 @@ import entitydb
 import markup
 import shell
 
-OUT = os.path.join(shell.ROOT, 'assets', 'search.js')
+OUT = os.path.join(shell.SITE, 'assets', 'search.js')
 
 # 带 id 的分节即一个跳转落点。嵌在里面的 section（护甲套装页的 .bonus）没有 id，
 # 所以按「有 id 的 section 起始标签」切块是安全的。
@@ -97,7 +97,7 @@ BUILD = re.compile(r'^builds/s\d+/')
 
 
 def read(url):
-    with open(os.path.join(shell.ROOT, url), encoding='utf-8') as f:
+    with open(os.path.join(shell.SITE, url), encoding='utf-8') as f:
         return f.read()
 
 

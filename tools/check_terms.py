@@ -221,6 +221,11 @@ def read(path):
         return f.read()
 
 
+def read_site(path):
+    with open(os.path.join(shell.SITE, path), encoding='utf-8') as f:
+        return f.read()
+
+
 def classes_in(css):
     """样式表里真正下了规则的 class。**先剥注释**：注释里提到的类名不是定义，
     带着它比对会让「{token|…} 有没有对应的类」这条闸门放行没有规则的标记——
@@ -255,9 +260,9 @@ def tint_classes(css):
 
 def sources():
     """[(源稿相对路径, 该页能用的 class 集合)]。"""
-    site = read('assets/site.css')
+    site = read_site('assets/site.css')
     base = classes_in(site)
-    out = [('references/artifact-mods.md', base | classes_in(read('artifact-mods/style.css')))]
+    out = [('references/artifact-mods.md', base | classes_in(read_site('artifact-mods/style.css')))]
     for name in sorted(os.listdir(os.path.join(shell.ROOT, DOC_DIR))):
         if not name.endswith('.md'):
             continue
@@ -269,8 +274,8 @@ def sources():
         parts = where.split('/')
         for i in range(len(parts)):
             sheet = os.path.join(*parts[:i + 1], 'style.css')
-            if os.path.exists(os.path.join(shell.ROOT, sheet)):
-                ok |= classes_in(read(sheet))
+            if os.path.exists(os.path.join(shell.SITE, sheet)):
+                ok |= classes_in(read_site(sheet))
         out.append((rel, ok))
         # 这一页的行内容在人写层里，源稿只剩分节与表头。**人写层必须一起检**：
         # 不接上，G1 的禁用写法与 G3 的未定义 token 会直接从闸门底下走过去，
@@ -282,7 +287,7 @@ def sources():
     # 配装源稿：注解那一段是散文，中文正名与着色 token 照样要守。**不进 G6 正查**
     # ——配装正文几乎全是物品名（「碎片：保护琢面、黎明琢面」），正查会要求给每一个
     # 都套 {token|}，而它们本该由查表变成带图标的链接，源稿不写颜色。
-    build_ok = base | classes_in(read('builds/style.css'))
+    build_ok = base | classes_in(read_site('builds/style.css'))
     for season in sorted(os.listdir(shell.BUILD_DIR)):
         d = os.path.join(shell.BUILD_DIR, season)
         if not os.path.isdir(d):
@@ -376,9 +381,9 @@ def armor_sets_tokens(bad, site):
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     used = {t for _, t in mod.GLOSSARY} | mod.INLINE_TOKENS
-    sheet = os.path.join(shell.ROOT, 'armor-sets', 'style.css')
+    sheet = os.path.join(shell.SITE, 'armor-sets', 'style.css')
     if os.path.exists(sheet):
-        ok = classes_in(site) | classes_in(read('armor-sets/style.css'))
+        ok = classes_in(site) | classes_in(read_site('armor-sets/style.css'))
         for t in sorted(used - ok):
             bad.append('G3 tools/convert-armor-sets.py 会发 {%s|…}，样式表里没有这个类' % t)
     return used
@@ -402,10 +407,10 @@ def check_tokens(pairs, site, bad):
 
 
 def check_stamps(bad):
-    home = read('index.html')
+    home = read_site('index.html')
     for m in re.finditer(r'<a class="entry" href="([^"]+)".*?entry-stamp">更新 ([\d.]+)<', home, re.S):
         page, want = m.group(1), m.group(2)
-        got = re.search(r'<span class="stamp">更新 ([\d.]+)</span>', read(page))
+        got = re.search(r'<span class="stamp">更新 ([\d.]+)</span>', read_site(page))
         if not got:
             bad.append('G4 %s 页脚没有更新时间' % page)
         elif got.group(1) != want:
@@ -420,12 +425,12 @@ def check_build_count(bad):
     合集那一份的 <main> 上多一个 set 类。
     """
     n = {'builds/index.html': 0, 'builds/sets/index.html': 0}
-    for path in sorted(glob.glob(os.path.join(shell.ROOT, 'builds', shell.SEASON,
+    for path in sorted(glob.glob(os.path.join(shell.SITE, 'builds', shell.SEASON,
                                               '*', 'index.html'))):
         with open(path, encoding='utf-8') as f:
             n['builds/sets/index.html' if '<main class="set ' in f.read()
               else 'builds/index.html'] += 1
-    home = read('index.html')
+    home = read_site('index.html')
     for href, want in n.items():
         card = re.search(r'<a class="entry" href="%s".*?</a>' % re.escape(href),
                          home, re.S)
@@ -548,7 +553,7 @@ def check_palette(site, used, bad):
 
 
 def main() -> int:
-    site = read('assets/site.css')
+    site = read_site('assets/site.css')
     pairs = sources()
     bad: list[str] = []
 

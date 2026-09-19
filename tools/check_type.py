@@ -38,31 +38,29 @@ PAIRED = ('a', 'li', 'ul', 'ol', 'dl', 'table', 'thead', 'tbody', 'tr',
 
 
 def read(rel: str) -> str:
-    with open(os.path.join(shell.ROOT, rel), encoding='utf-8') as f:
+    with open(os.path.join(shell.SITE, rel), encoding='utf-8') as f:
         return f.read()
 
 
 def css_files() -> list[str]:
     """全站样式表。现扫，不维护清单。"""
     out = []
-    for base, dirs, names in os.walk(shell.ROOT):
-        dirs[:] = [d for d in dirs
-                   if not d.startswith(('.', 'node_modules', 'icons', 'references'))]
+    for base, dirs, names in os.walk(shell.SITE):
+        dirs[:] = [d for d in dirs if not d.startswith(('.', 'icons'))]
         for n in names:
             if n.endswith('.css'):
-                out.append(os.path.relpath(os.path.join(base, n), shell.ROOT))
+                out.append(os.path.relpath(os.path.join(base, n), shell.SITE))
     return sorted(out)
 
 
 def pages() -> list[str]:
     """全站产出的 HTML。首页手写、其余由生成器出，两种都要验。"""
     out = []
-    for base, dirs, names in os.walk(shell.ROOT):
-        dirs[:] = [d for d in dirs
-                   if not d.startswith(('.', 'node_modules', 'icons', 'references', 'tools'))]
+    for base, dirs, names in os.walk(shell.SITE):
+        dirs[:] = [d for d in dirs if not d.startswith(('.', 'icons'))]
         for n in names:
             if n.endswith('.html'):
-                out.append(os.path.relpath(os.path.join(base, n), shell.ROOT))
+                out.append(os.path.relpath(os.path.join(base, n), shell.SITE))
     return sorted(out)
 
 

@@ -41,10 +41,10 @@ MOVES = os.path.join(shell.ROOT, 'tools', 'moves.json')
 ARTS = os.path.join(shell.ROOT, 'tools', 'artifacts.json')
 # 位移技能与神器的图标：站内没有哪一页拥有它们，所以跟头像一样放配装页自己的目录下。
 # 文件名即内容 md5，将来别的页面要引同一枚图，复制过去自然是同一个文件。
-EXTRA_ICON_DIR = os.path.join(shell.ROOT, 'builds', 'icons')
+EXTRA_ICON_DIR = os.path.join(shell.SITE, 'builds', 'icons')
 # 变体图标与站内护甲模组图标同族、同规格（64×64 WebP），所以放同一个目录：
 # 文件名即内容 md5，两处引到同一枚图时自动是同一个文件。
-ICON_DIR = os.path.join(shell.ROOT, 'armor-mods', 'icons')
+ICON_DIR = os.path.join(shell.SITE, 'armor-mods', 'icons')
 
 # 官方物品表的类型名 → 站内护甲模组页的分节。「一般护甲模组」是属性调整与套装加成，
 # 站内没有对应分节，整类不进表。
@@ -310,7 +310,7 @@ def icons(table_path=None, icon_dir=None):
     sizes = {img_size(open(os.path.join(icon_dir, m['icon']), 'rb').read())
              for m in table.values() if m.get('icon')}
     print('%s —— 新取 %d 枚，图标合计 %d 枚，尺寸 %s'
-          % (os.path.relpath(icon_dir, shell.ROOT), got,
+          % (os.path.relpath(icon_dir, shell.SITE), got,
              len({m['icon'] for m in table.values() if m.get('icon')}),
              '、'.join('%dx%d' % s for s in sorted(sizes))))
 

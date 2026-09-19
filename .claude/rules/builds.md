@@ -3,7 +3,7 @@ paths:
   - "tools/convert-build.py"
   - "tools/vocab.py"
   - "tools/mods.py"
-  - "builds/**/*"
+  - "site/builds/**/*"
   - "references/builds/**/*.md"
 ---
 

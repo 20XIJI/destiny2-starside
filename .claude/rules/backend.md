@@ -1,7 +1,7 @@
 ---
 paths:
   - "functions/**/*"
-  - "admin/**/*"
+  - "site/admin/**/*"
   - "tools/sync.py"
   - "tools/build-terms.py"
 ---

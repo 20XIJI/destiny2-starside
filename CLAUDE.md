@@ -24,13 +24,15 @@ Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构�
 
 ## 站点骨架
 
+上线的文件全在 `site/` 下：首页、各资料页目录、`assets/`、`admin/`、`builds/`、`weapons/`。本文件与 `.claude/rules/` 里写的页面与资源路径（`index.html`、`assets/site.css`、`<页目录>/`）都相对 `site/`；源稿、工具、数据与云函数（`references/`、`tools/`、`data/`、`functions/`）在仓库根。脚本里站点根是 `shell.SITE`，仓库根是 `shell.ROOT`。
+
 首页 `index.html` 手写，每个资料页在首页有一张 `.entry` 卡片（更新时间写卡片上的 `.entry-stamp`）。新增资料页要同时加卡片，否则页面没有入口。三张配装卡（配装推荐、配装合集、配装工具）的更新时间与套数由 `convert-build.py` 的 `sync_home()` 在构建时按产出改写，这几处不手改。卡片不写概括句，放那一页的真实内容（图标、名字、前三名、曲线）：每张卡里 `<!--pv-->` 与 `<!--/pv-->` 之间那一段由 `build-home.py` 从那一页的产出现写，不手改；挑哪几项写在它的 `PICK_*` 里。新增一张卡要同时在它的 `PREVIEW` 里加一条，缺了构建即中止。
 
 页面清单不在这里维护：源稿即清单（`ls references/docs/*.md`），`check_shell.py` 也从那里现扫。只有 `armor-sets/` 与 `artifact-mods/` 有专属生成器，其余全部走 `convert-doc.py`。
 
 样式按层引，顺序即优先级：`assets/site.css`（全站 token、外壳、字体、资料页骨架）在前，本页 `<页目录>/style.css` 在后。深一层的页面自动多引一层父目录的 `style.css`（`shell.py` 的 `head()` 按 `up` 判断）：六个元素页共用 `elements/style.css` 的版式，各自的 `style.css` 只留一行 `--accent`。`assets/app.js` 只有带 `.toolbar` 的页面需要引。
 
-`serve.json` 关掉了 `cleanUrls`，站内链接一律写全 `xxx/index.html`。
+`serve.json` 放在仓库根，`npm start` 用 `-c ../serve.json` 指过去；它关掉了 `cleanUrls`，站内链接一律写全 `xxx/index.html`。
 
 `data/` 是机器生成的两层，都不手改：
 
@@ -78,7 +80,7 @@ Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构�
 `ManifestLayer` 钉着这条边界。取名字走 `resolve.text()`，取官方图路径走
 `resolve.icon_path()`，各只有一处实现。
 
-`data/` 不上传：它是构建的输入不是站点的资源，`deploy.py` 的 `keep()` 挡着，
+`data/` 不上传：它是构建的输入不是站点的资源，不在 `site/` 下，
 产出里引用 `data/` 路径即闸门报错。
 
 `references/` 入库的是源稿：`artifact-mods.md`、`armor-sets.md`，以及 `docs/` 下的资料文档。转写中间产物 `armor_transcription.*` 在 `.archived/`，整个目录已 gitignore，不当源稿用。
@@ -147,7 +149,7 @@ build-terms.py     两道闸门的词表 → admin/terms.js（前端提示），
                    require 得到自己目录下的东西）
 sync.py            源稿在库与仓库之间对账：记一份基线三方比，撞车就报、不猜方向
 deploy.py          增量部署：与 refs/deploy 一 diff 即得清单，只发改过的文件；
-                   keep() 一处挡掉源稿、工具、云函数与配置
+                   只发 site/ 下的文件，上传时去掉 site/ 这一层
 check_shell.py     外壳闸门，从 shell.py 现取参照，不另存副本
 check_type.py      排版、CSS 有效性与产出结构：中文不吃拉丁字距、background
                    简写非末层不许写颜色、产出的开闭标签配得上
@@ -174,10 +176,10 @@ json2xlsx.py       把上面那份 JSON 还原成 xlsx，供核对与二次编�
 | 手册 | 管什么 | 改到这些文件时载入 |
 |---|---|---|
 | `.claude/rules/pages.md` | 三个资料生成器与源稿方言、页脚归属、更新日志的写法、从 Google 表格做一页资料 | `tools/convert-doc.py`、`convert-artifact-mods.py`、`convert-armor-sets.py`、`markup.py`、`shell.py`、`references/**/*.md` |
-| `.claude/rules/builds.md` | 推荐配装页：版面、护甲模组变体、源稿格式、合集、悬停详情、填表页 | `tools/convert-build.py`、`vocab.py`、`mods.py`、`builds/**`、`references/builds/**` |
-| `.claude/rules/backend.md` | 云函数与在线编辑台：认证、角色、三张表、就地编辑、审核台、配装投稿 | `functions/**`、`admin/**`、`tools/sync.py`、`build-terms.py` |
-| `.claude/rules/frontend.md` | 全站搜索索引与 `assets/app.js` | `assets/app.js`、`assets/search.js`、`tools/build-search.py` |
-| `.claude/rules/weapons.md` | 装备库：武器与异域护甲、三份载荷、查询语法、属性与大师杰作／T 级、强化配对、作者推荐光圈 | `tools/build-weapons.py`、`weapons/**`、`tools/type-icons.json` |
+| `.claude/rules/builds.md` | 推荐配装页：版面、护甲模组变体、源稿格式、合集、悬停详情、填表页 | `tools/convert-build.py`、`vocab.py`、`mods.py`、`site/builds/**`、`references/builds/**` |
+| `.claude/rules/backend.md` | 云函数与在线编辑台：认证、角色、三张表、就地编辑、审核台、配装投稿 | `functions/**`、`site/admin/**`、`tools/sync.py`、`build-terms.py` |
+| `.claude/rules/frontend.md` | 全站搜索索引与 `assets/app.js` | `site/assets/app.js`、`site/assets/search.js`、`tools/build-search.py` |
+| `.claude/rules/weapons.md` | 装备库：武器与异域护甲、三份载荷、查询语法、属性与大师杰作／T 级、强化配对、作者推荐光圈 | `tools/build-weapons.py`、`site/weapons/**`、`tools/type-icons.json` |
 
 加一条子系统约定就改对应那一份，不搬回本文件。本文件只收每次都用得上的东西；
 搬回来等于让每个 session 都为一次都不会读的内容付 context。
@@ -185,7 +187,7 @@ json2xlsx.py       把上面那份 JSON 还原成 xlsx，供核对与二次编�
 ## 命令
 
 ```bash
-npm start                                     # npx serve . -l 3000
+npm start                                     # npx serve site -l 3000 -c ../serve.json
 npm run build                                 # 四个生成器 + 装备库 + 首页预览 + 源稿自动纠正 + 搜索索引 + 编辑台词表 + 三道闸门
 npm test                                      # 两份离线回归，约 1 秒；改发布链或云函数前必跑
 
@@ -388,8 +390,8 @@ diff 发 `tcb hosting delete`。全部成功才动 `refs/deploy`，中途失败�
 它走 docker runner，日志与版本记录都是那条线产出的。脚本这条路直接写存储桶，
 控制台看不到日志，也没有版本可回滚。
 
-上传时不上传源稿与工具：`tools/`、`references/`、`functions/`、`.md` 与几个
-配置文件由 `keep()` 一处挡掉。改这份名单就改 `keep()`，`--all` 与增量共用它。
+只上传 `site/` 下的文件，判定只在 `keep()` 一处，`--all` 与增量共用它。上传时去掉
+`site/` 这一层：仓库里的 `site/ammo/index.html` 在站上是 `destiny2-starside/ammo/index.html`。
 
 ## 验证
 

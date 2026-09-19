@@ -15,6 +15,9 @@ import re
 import markup
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# 站点根：上线的页面与资源全在这一层，源稿、工具、数据与云函数留在仓库根。
+# 页面清单、站内链接、索引里的图标路径都相对它。
+SITE = os.path.join(ROOT, 'site')
 
 HOME = 'index.html'
 # 两个专属生成器各出一页，其余的从 references/docs/ 现扫——新增一篇资料就不必
@@ -311,7 +314,7 @@ def sync_card(home, href, count=None):
     不带锚点就把它也改了，而 check_terms 的 G4 只读第一个 <dd>，查不出来。"""
     card = markup.must(re.search(r'<a class="entry" href="%s".*?</a>' % re.escape(href), home, re.S),
                        '首页找不到 %s 那张卡' % href)
-    with open(os.path.join(ROOT, href), encoding='utf-8') as f:
+    with open(os.path.join(SITE, href), encoding='utf-8') as f:
         page = f.read()
     stamp = markup.must(re.search(r'<span class="stamp">更新 ([\d.]+)</span>', page),
                         '%s 的页脚没有更新时间' % href).group(1)
@@ -335,7 +338,7 @@ def emit(outdir, out, detail=''):
     path = os.path.join(outdir, 'index.html')
     with open(path, 'w', encoding='utf-8') as f:
         f.write(out)
-    print('%s —— %.1f KB%s' % (os.path.relpath(path, ROOT), len(out.encode()) / 1024,
+    print('%s —— %.1f KB%s' % (os.path.relpath(path, SITE), len(out.encode()) / 1024,
                                '，' + detail if detail else ''))
 
 

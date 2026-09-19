@@ -8,18 +8,19 @@ Destiny 2 中文资料台，纯静态站点，零依赖、零构建步骤，托�
 产出页面一律不手改。只有首页 `index.html` 是手写的。
 
 ```
-index.html          导航首页，手写（CloudBase 默认入口）
+site/               上线的全部文件，部署只发这一层
+  index.html        导航首页，手写（CloudBase 默认入口）
+  assets/           全站共用：site.css、app.js、搜索索引、字体
+  <页目录>/         一页一目录
+  admin/            在线编辑台，不链不收录
 references/         源稿。docs/*.md 一篇一页，builds/<赛季>/*.md 一套一页，
                     另有 artifact-mods.md 与 armor-sets.md 两份专属源稿
 tools/              二十来个脚本：四个生成器、两个索引生成器、三道闸门、
                     部署、对账，以及从官方物品表蒸馏词表的那几支
-assets/             全站共用：site.css、app.js、搜索索引、字体
-<页目录>/           一页一目录
 functions/api/      唯一的后端，一支云函数：访问计数、点赞、投稿、编辑台
-admin/              在线编辑台，不链不收录
 ```
 
-每个页目录长一个样：
+下文的页面与资源路径都相对 `site/`。每个页目录长一个样：
 
 | 文件 | 谁写 |
 |---|---|
@@ -37,7 +38,7 @@ admin/              在线编辑台，不链不收录
 ## 本地预览
 
 ```bash
-npm start          # npx serve . -l 3000
+npm start          # npx serve site -l 3000 -c ../serve.json
 npm run build      # 生成器 + 搜索索引 + 编辑台词表 + 三道闸门
 npm test           # 两份离线回归，跑 0.3 秒
 ```
@@ -52,7 +53,7 @@ npm test           # 两份离线回归，跑 0.3 秒
 
 只发改过的文件。站上绝大多数文件是图标，文件名即内容哈希、改内容必然换名，
 整目录重发就是把不会变的那批又传一遍。上次发到哪个 commit 记在 `.git` 的
-`refs/deploy` 上，与 HEAD 一 diff 即得清单。源稿、生成器、云函数与 markdown 不上传。
+`refs/deploy` 上，与 HEAD 一 diff 即得清单。只发 `site/` 下的文件，上传时去掉 `site/` 这一层。
 
 ```bash
 python3 tools/deploy.py            # 发改动

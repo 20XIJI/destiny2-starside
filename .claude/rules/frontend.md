@@ -1,10 +1,10 @@
 ---
 paths:
-  - "assets/app.js"
-  - "assets/chart.js"
-  - "assets/rota.js"
-  - "assets/home.js"
-  - "assets/search.js"
+  - "site/assets/app.js"
+  - "site/assets/chart.js"
+  - "site/assets/rota.js"
+  - "site/assets/home.js"
+  - "site/assets/search.js"
   - "tools/build-search.py"
 ---
 

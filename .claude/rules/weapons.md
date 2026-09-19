@@ -1,7 +1,7 @@
 ---
 paths:
   - "tools/build-weapons.py"
-  - "weapons/**"
+  - "site/weapons/**"
   - "tools/type-icons.json"
 ---
 

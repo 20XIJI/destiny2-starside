@@ -32,7 +32,7 @@ from markup import (bmark, die, eq, loading_attr, meta_of, no_nested_span, plain
                     src_hash, text_of)
 
 SRC = os.path.join(shell.ROOT, 'references', 'armor-sets.md')
-OUT_DIR = os.path.join(shell.ROOT, 'armor-sets')
+OUT_DIR = os.path.join(shell.SITE, 'armor-sets')
 
 
 # ── 结构断言 ──────────────────────────────────────────────────────────

@@ -967,7 +967,7 @@ def build(slug):
         # 当成永远过期。
         digest = src_hash(md)
 
-        outdir = os.path.join(shell.ROOT, *where.split('/'))
+        outdir = os.path.join(shell.SITE, *where.split('/'))
         if not os.path.isdir(outdir):
             die('输出目录不存在：%s/（新页面要先建目录并写 style.css）' % where)
         eager = meta_of(md, '首屏图标', required=False)
