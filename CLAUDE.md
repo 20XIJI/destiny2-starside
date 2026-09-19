@@ -122,13 +122,14 @@ markup.py          源稿方言与公共件：职业／分支／配装三轴（�
                    表格切格（Python 这一侧唯一定义，JS 那一侧是 admin/dialect.js）、
                    「键：值」行、空行分段、
                    剥标签取文本、保真前的归一化、计数比对、图片尺寸、图标登记
-shell.py           站点外壳与落盘：head 元信息、导航条、页脚、ROOT、页面清单、emit()
+shell.py           站点外壳与落盘：head 元信息、导航条、页脚、ROOT、页面清单、emit()、
+                   首页卡片随页面改写的 sync_card()
 convert-*.py       四个生成器，各自只写自己那种数据形状的结构层；三个资料生成器
                    顺手写 data/index/ 的索引：行、模组与套装的主键只进那一份，
                    不写进 HTML——产出里没有读者，而索引才是跨页引用读的那一份
-build-weapons.py   事实层 + 人写层 → 武器库：索引 data.js、全站共享的词条字典
-                   plugs.js、一把一份的 w/*.json。属性基线每次构建都对一遍 manifest
-                   自己写的显示值，对不上当场中止
+build-weapons.py   实体层 → 装备库（武器与异域护甲，目录 weapons/）：首屏索引 index.js、词条池与属性曲线 pool.js、
+                   说明与评语 text.js，外加页壳。只读 resolve.Facts，不写数据；浏览器
+                   那一份属性算法与 facts.shown() 由 check_quality.py 逐值比对
 migrate.py         配装源稿 markdown ⇄ 结构化记录，来回逐字节比对；资料页该结构化
                    还是留 markdown 由 --classify 按行标题能否落到主键上机械判定
 check_output.py    产出逐字保真：与某个 commit 的产出逐字节比，差异必须落在
@@ -174,7 +175,7 @@ json2xlsx.py       把上面那份 JSON 还原成 xlsx，供核对与二次编�
 | `.claude/rules/builds.md` | 推荐配装页：版面、护甲模组变体、源稿格式、合集、悬停详情、填表页 | `tools/convert-build.py`、`vocab.py`、`mods.py`、`builds/**`、`references/builds/**` |
 | `.claude/rules/backend.md` | 云函数与在线编辑台：认证、角色、三张表、就地编辑、审核台、配装投稿 | `functions/**`、`admin/**`、`tools/sync.py`、`build-terms.py` |
 | `.claude/rules/frontend.md` | 全站搜索索引与 `assets/app.js` | `assets/app.js`、`assets/search.js`、`tools/build-search.py` |
-| `.claude/rules/weapons.md` | 武器库：属性插值、勇士推导、赛季查表、强化版合并、作者推荐落图标 | `tools/build-weapons.py`、`facts.py`、`weapons/**`、`references/items/**` |
+| `.claude/rules/weapons.md` | 装备库：武器与异域护甲、三份载荷、查询语法、属性与大师杰作／T 级、强化配对、作者推荐光圈 | `tools/build-weapons.py`、`weapons/**`、`tools/type-icons.json` |
 
 加一条子系统约定就改对应那一份，不搬回本文件。本文件只收每次都用得上的东西；
 搬回来等于让每个 session 都为一次都不会读的内容付 context。
@@ -183,7 +184,7 @@ json2xlsx.py       把上面那份 JSON 还原成 xlsx，供核对与二次编�
 
 ```bash
 npm start                                     # npx serve . -l 3000
-npm run build                                 # 四个生成器 + 源稿自动纠正 + 搜索索引 + 编辑台词表 + 三道闸门
+npm run build                                 # 四个生成器 + 装备库 + 源稿自动纠正 + 搜索索引 + 编辑台词表 + 三道闸门
 npm test                                      # 两份离线回归，约 1 秒；改发布链或云函数前必跑
 
 python3 tools/convert-artifact-mods.py        # 源稿 references/artifact-mods.md
@@ -192,7 +193,7 @@ python3 tools/convert-doc.py [slug]           # 源稿 references/docs/*.md，�
 python3 tools/research.py --extract <slug>    # 一页的表 → references/research/，源稿瘦身
 python3 tools/build-entities.py               # 事实层 + 人写层 + 索引 → data/entities/
 python3 tools/convert-build.py                # 源稿 references/builds/<赛季>/*.md
-python3 tools/build-weapons.py                # 武器库，源稿 references/items/*.json
+python3 tools/build-weapons.py                # 装备库：实体层 → weapons/ 三份载荷与页壳
 python3 tools/build-search.py                 # 全站搜索索引 assets/search.js
 python3 tools/check_output.py [--against REF] # 产出与某个 commit 逐字节比对
 python3 tools/check_shell.py                  # 各页外壳逐字一致
@@ -395,8 +396,10 @@ diff 发 `tcb hosting delete`。全部成功才动 `refs/deploy`，中途失败�
    着色与排版的主闸门，见上。跑 `npm run build` 即全部执行。
 2. **`npm test`**：两份标准库写的离线回归，约 1 秒，排在 `ship.sh` 的构建之后、提交之前。
    `tools/check_quality.py` 用 `unittest`，管部署闸门、同步删除的三方比、配装生成生命周期、
-   源稿自动纠正的幂等、切格与入库生成物是否过期；`tools/check_quality.cjs` 用 `node:assert` 加一份内存版
-   database 适配器，管云函数的事务原子边界。两份都不联网、不读令牌、只写独占临时目录。
+   源稿自动纠正的幂等、切格与入库生成物是否过期，以及装备库载荷是否过期、浏览器属性算法与
+   `facts.shown()` 是否逐值一致（这一条起一次 node）；`tools/check_quality.cjs` 用 `node:assert` 加一份内存版
+   database 适配器，管云函数的事务原子边界，另管装备库的查询解析与属性纯函数。
+   两份都不联网、不读令牌、只写独占临时目录。
    改 `deploy.py`、`sync.py` 或 `functions/api/` 之前先跑它，那 15 条 `Deployment`
    测试是动发布链时唯一的安全网。
 3. headless Chrome 截图：Chrome Beta 未安装，chrome-devtools MCP 不可用。用：

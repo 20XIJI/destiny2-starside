@@ -1,1095 +1,1707 @@
-/* 武器库：按名字挑一把枪，右边一页看全。
- *
- * 数据分三层，都由 tools/build-weapons.py 生成，取的是静态文件不是接口：
- *   weapons/data.js       索引，2208 把枪的名字、类型、角标与各家评级
- *   weapons/plugs.js      **全站共享**的词条字典与属性插值曲线，只下一次
- *   weapons/w/<主键>.json  这一把的列结构、数值基线与作者写的那几列，点到才取
- * 词条字典抽出来共享是因为同一枚「膛线枪管」出现在五百多把枪的池里；各存一份，
- * 那部分占了产出的 86%。
- *
- * 版面照 destiny.report：左栏结果、中栏词条与评语、右栏标签片与数值。
- * 词条池是一张**矩阵**——一列一个槽位，纵向排该槽位能开出的全部选项。
- * 各列选中的那一枚共同决定属性条的当前值；悬停另一枚出「换成它会变成多少」。
- *
- * 地址栏记住选了谁（#<主键>），刷新与分享都落回同一把枪。
- */
+/* 装备库（武器与异域护甲）。数据三份，由 tools/build-weapons.py 从实体层生成，字段表写在
+   .claude/rules/weapons.md：
+     index.js  window.WPN        首屏：卡片墙、筛选、结果栏
+     pool.js   window.WPN_POOL   词条池、属性曲线、大师杰作与模组
+     text.js   window.WPN_TEXT   描述、说明、站内实测、作者评语
+   后两份首屏画完就在空闲时取；查询或详情先用到时立刻取。 */
 (function () {
   'use strict';
+
   var D = window.WPN;
-  if (!D) { return; }
-
-  // 词条字典 101 KB gz，只有点开某一把枪才用得上。空闲时预取，点得比预取快就
-  // 在这里等它一下。取不到就说取不到，不画一个没有词条的详情页冒充完整。
-  var G = null, queue = [], asked = false;
-
-  function plugs(then) {
-    if (G) { then(); return; }
-    if (then) { queue.push(then); }
-    if (asked) { return; }
-    asked = true;
-    var s = document.createElement('script');
-    s.src = 'plugs.js';
-    s.onload = function () {
-      G = window.WPG;
-      var run = queue.splice(0);
-      if (!G) { run.forEach(function (f) { f('plugs.js 里没有 WPG'); }); return; }
-      run.forEach(function (f) { f(); });
-    };
-    s.onerror = function () {
-      asked = false;
-      queue.splice(0).forEach(function (f) { f('词条字典没取到'); });
-    };
-    document.head.appendChild(s);
+  var root = document.getElementById('find');
+  var bar = document.querySelector('.site-head .toolbar');
+  if (!root || !bar) { return; }
+  if (!D) {
+    root.innerHTML = '<p class="empty">武器数据没有载入：weapons/index.js 取不到。</p>';
+    return;
   }
 
-  if (window.requestIdleCallback) {
-    requestIdleCallback(function () { plugs(null); });
-  } else {
-    setTimeout(function () { plugs(null); }, 1200);
-  }
+  /* ── 字段下标：与 build-weapons.py 的行一一对应 ───────────────────── */
+  var W_H = 0, W_NAME = 1, W_SUB = 2, W_EL = 3, W_AMMO = 4, W_SLOT = 5, W_BR = 6, W_SSN = 7,
+      W_TIER = 8, W_FLAG = 9, W_ICON = 10, W_WM = 11, W_FR = 12, W_SRC = 13, W_GRADE = 14,
+      W_REP = 15, W_FAM = 16;
+  var A_H = 0, A_NAME = 1, A_PART = 2, A_CLS = 3, A_SSN = 4, A_ICON = 5, A_WM = 6, A_PERKS = 7,
+      A_ROLE = 8, A_SRC = 9, A_REP = 10, A_FAM = 11;
+  var F_ADEPT = 1, F_HOLO = 2, F_CRAFT = 4, F_TIER = 8, F_MW = 16, F_ENH = 32, F_REISSUE = 64;
+  var P_HASH = 0, P_NAME = 1, P_ICON = 2, P_TYPE = 3, P_ST = 4, P_CD = 5;
+  var R_STAT = 0, R_TRAIT = 1, R_ORIGIN = 2;
 
-  var q = document.getElementById('q');
-  var hits = document.getElementById('hits');
-  var count = document.getElementById('count');
-  var one = document.getElementById('one');
-  var tip = document.getElementById('tip');
+  var V = D.v;
+  var ICONS = '../assets/icons/';
+  /* 首屏的卡片：1440×900 下卡片墙一屏 6 列 6 行。这些图不懒载，前 12 张再提优先级。 */
+  var N_EAGER = 36, N_HIGH = 12;
+  /* 卡片墙与列表一批铺多少：两千张一次铺完首屏要等好几秒，滚到底再添一批。 */
+  var BATCH = 120;
+  /* 细分行只列能再切一刀的值：多于 10 把、又不是全部。与 destiny.report 同一条。 */
+  var REFINE_MIN = 10;
+  var RAIL_MIN = 140, RAIL_MAX = 280;
 
-  // 槽位不是索引里的字段，由元素与弹药推：动能、冰影、缚丝挂动能槽，
-  // 烈日、虚空、电弧挂能量槽，威能弹药的一律挂威能槽。游戏内就是这么分的，
-  // 读者却按「主手副手」说话，所以两种说法都收进检索键。
-  var KINETIC_SLOT = { 'el-kinetic': 1, 'el-stasis': 1, 'el-strand': 1 };
-
-  function slot(w) {
-    if (w.am === '威能') { return '威能'; }
-    return KINETIC_SLOT[w.tk] ? '主手' : '副手';
-  }
-
-  // 检索键预先拼好：每次输入都重算一遍 2200 条的拼接是白算。
-  D.w.forEach(function (w) {
-    w.k = (w.n + ' ' + (w.en || '') + ' ' + (w.t || '') + ' ' + (w.el || '')
-      + ' ' + (w.am || '') + ' ' + slot(w)).toLowerCase();
-  });
-  var by = {};
-  D.w.forEach(function (w) { by[w.h] = w; });
-
-  function el(tag, cls, text) {
-    var n = document.createElement(tag);
-    if (cls) { n.className = cls; }
-    if (text != null) { n.textContent = text; }
-    return n;
-  }
-
-  // 一把枪的图标是叠出来的，层序照游戏里那一套：底图、大师工作那层从底下往上
-  // 照的淡金辉光、赛季水印（左上角）、装备阶级角标（左缘五颗菱形）、锻造标记
-  // （整层镜像到右侧：红条到右缘、四点到右下角）。每张都是整幅图，图案画在
-  // 自己那一侧的透明区上，所以这里只管叠满，不管摆位。
-  //
-  // 24 档不叠：那几枚角标缩到这个尺寸只剩几个像素的糊点，认不出是什么。
-  function gun(w, size, cls) {
-    if (size < 32) { return icon(w.ico, size, cls); }
-    var box = el('span', 'wpn-ico' + (cls ? ' ' + cls : ''));
-    box.style.width = box.style.height = size + 'px';
-    box.appendChild(icon(w.ico, size, ''));
-    if (w.mw) { box.appendChild(icon(D.o.mw, size, 'wpn-ico-mw')); }
-    if (w.wm) { box.appendChild(icon(w.wm, size, 'wpn-ico-wm')); }
-    if (w.tiering) { box.appendChild(icon(D.o.tier, size, 'wpn-ico-tier')); }
-    if (w.craft) {
-      box.appendChild(icon(D.o['craft-bg'], size, 'wpn-ico-craft'));
-      box.appendChild(icon(D.o.craft, size, 'wpn-ico-craft'));
-    }
-    return box;
-  }
-
-  // 首屏之内的图标不写 loading="lazy"，改写 fetchpriority="high"：lazy 会让它们
-  // 等布局算完才开始下载，是反模式。判定只有 eager 这一个计数器——1440×900 下
-  // 卡片墙一行八张、首屏露出两行，每张卡片最多九张图，取 2×8 张卡片为界。
-  // 改版式让首屏塞得下更多卡片时，同步改 EAGER_CARDS。
-  var EAGER_CARDS = 16;
-  var eager = 0;
-
-  function icon(file, size, cls) {
-    var img = el('img', cls);
-    img.src = file ? '../assets/icons/' + file
-      : 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
-    img.alt = '';
-    img.width = size;
-    img.height = size;
-    if (eager > 0) { img.setAttribute('fetchpriority', 'high'); } else { img.loading = 'lazy'; }
-    return img;
-  }
-
-  // ── 数值 ──────────────────────────────────────────────────────────
-  // 显示值不是投资值：先按上限截断，再过一条分段线性曲线，最后银行家舍入。
-  // 三样缺一不可——不截断，后坐方向整批错；四舍五入，2208 把里 47 把对不上；
-  // 两端外推而不截断，30 个格子差 1。直接在显示值上加插件的原始加成更是不行：
-  // 58052 个组合里 12% 会算错，最差一处差 250。
-  function interp(v, curve) {
-    if (!curve || !curve.length) { return v; }
-    if (curve.length === 1 || v <= curve[0][0]) { return curve[0][1]; }
-    var last = curve[curve.length - 1];
-    if (v >= last[0]) { return last[1]; }
-    for (var i = 0; i < curve.length - 1; i++) {
-      var a = curve[i], b = curve[i + 1];
-      if (a[0] <= v && v <= b[0]) {
-        return b[0] === a[0] ? a[1]
-          : a[1] + (b[1] - a[1]) * (v - a[0]) / (b[0] - a[0]);
-      }
-    }
-    return last[1];
-  }
-
-  // 银行家舍入：.5 进到偶数那一侧。浮点误差先抹掉，1e-9 以内当作正好落在半格上。
-  function bankers(x) {
-    var down = Math.floor(x), rest = x - down;
-    if (Math.abs(rest - 0.5) > 1e-9) { return Math.round(x); }
-    return down % 2 === 0 ? down : down + 1;
-  }
-
-  function shown(v, top, curve) {
-    return bankers(interp(top ? Math.min(v, top) : v, curve));
-  }
-
-  // 一枚词条现在算哪一版的数值：有强化版就算强化版。
-  // 默认按强化版算——作者写的推荐配搭本来就是满强化的那一套，而 T2 以上的枪
-  // 手里拿到的也是强化版。两版的差额在悬停浮层里都列出来，不藏。
-  function statsOf(p) { return (p[4] && p[4][1]) || p[3] || 0; }
-  function descOf(p) { return (p[4] && p[4][0]) || p[2] || ''; }
-
-  // 站内那一段。p[5] 是 G.d 里的位置，从 1 起数；0 表示武器 PERK 详解那一页
-  // 没写它。manifest 抄来的那句只说「击杀后提高填装速度」，站内那一段写的是
-  // 提多少、怎么触发、强化版差多少——这一页合起来显示，正是它存在的理由。
-  function siteOf(p) { return (p[5] && G.d && G.d[p[5] - 1]) || null; }
-
-  // 说明整段是站内产出的 HTML（带 <span class="unsure"> 与 <span class="enh">），
-  // 照原样挂上去，不在这里重排一遍版。
-  function siteBlock(got, cls) {
-    var box = el('div', cls);
-    box.innerHTML = got[0];
-    return box;
-  }
-
-  // 一套配置下每项属性的投资值总和，以及它是由哪几件东西加起来的。
-  // 条件生效的那些（亡命之徒击杀后才加填装）不计入总和，只记在明细里备注。
-  function tally(d, picked, swap) {
-    var sum = {}, parts = {};
-    (d.base || []).forEach(function (pair) {
-      sum[pair[0]] = (sum[pair[0]] || 0) + pair[1];
-      (parts[pair[0]] = parts[pair[0]] || []).push(['基础', pair[1], 0]);
+  /* ── 小工具 ────────────────────────────────────────────────────────── */
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
-    function feed(at, label) {
-      if (at == null) { return; }
-      var p = G.p[at];
-      if (!p) { return; }
-      (statsOf(p) || []).forEach(function (s) {
-        var cond = s.length > 2;
-        if (!cond) { sum[s[0]] = (sum[s[0]] || 0) + s[1]; }
-        (parts[s[0]] = parts[s[0]] || []).push([label || p[0], s[1], cond ? 1 : 0]);
-      });
-    }
-    d.c.forEach(function (col, i) {
-      if (!col[2]) { return; }
-      feed(swap && swap.col === i ? swap.at : picked.c[i]);
-    });
-    feed(swap && swap.col === 'm' ? swap.at : picked.m);
-    return { sum: sum, parts: parts };
   }
+  function imgTag(stem, cls, alt, eager) {
+    if (!stem) { return ''; }
+    return '<img' + (cls ? ' class="' + cls + '"' : '') + ' src="' + ICONS + stem + '.webp" alt="' +
+      esc(alt || '') + '"' + (eager === 2 ? ' fetchpriority="high"' : eager ? '' : ' loading="lazy"') + '>';
+  }
+  /* 类型与弹药小图标引页内 sprite。外层 svg 要带上那枚 symbol 的 viewBox，
+     否则没有固有尺寸，宽度按 300px 算。 */
+  var boxes = {};
+  function glyph(key, label) {
+    if (boxes[key] == null) {
+      var sym = document.getElementById('g-' + key);
+      boxes[key] = sym ? sym.getAttribute('viewBox') : '';
+      if (!sym) { console.error('sprite 里没有 g-' + key); }
+    }
+    return '<svg class="g" viewBox="' + boxes[key] + '" role="img" aria-label="' + esc(label || '') + '"><use href="#g-' + key + '"></use></svg>';
+  }
+  function store(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { console.warn('localStorage 写不进 ' + key, e); }
+  }
+  function recall(key) {
+    try { var got = localStorage.getItem(key); return got == null ? null : JSON.parse(got); } catch (e) {
+      console.warn('localStorage 读不出 ' + key, e);
+      return null;
+    }
+  }
+  function has(list, x) { return list.indexOf(x) !== -1; }
 
-  // 一把枪该显示哪几项属性、各显示成几：顺序由它那一组插值表定，与游戏里一致。
-  function readout(d, picked, swap) {
-    var rows = G.g[d.sg] || [];
-    var got = tally(d, picked, swap);
-    return rows.map(function (row) {
-      var si = row[0], v = got.sum[si];
-      return {
-        si: si,
-        name: D.s[si][0],
-        big: D.s[si][1],
-        value: v == null ? 0 : shown(v, row[1], row[2]),
-        parts: got.parts[si] || [],
+  /* ── 载入：pool.js / text.js ───────────────────────────────────────── */
+  var HERE = (document.currentScript && document.currentScript.src) || location.href;
+  var loads = {};
+  function need(name, cb) {
+    var ready = name === 'pool' ? window.WPN_POOL : window.WPN_TEXT;
+    if (ready) { if (cb) { cb(); } return true; }
+    var job = loads[name];
+    if (!job) {
+      job = loads[name] = { cbs: [], failed: false };
+      var s = document.createElement('script');
+      s.src = new URL(name + '.js', HERE).href;
+      s.onload = function () {
+        if (name === 'pool') { poolReady(); } else { textReady(); }
+        var cbs = job.cbs; job.cbs = [];
+        for (var i = 0; i < cbs.length; i++) { cbs[i](); }
       };
-    });
-  }
-
-  // ── 悬停说明 ──────────────────────────────────────────────────────
-  // 一个浮层反复用，不给每枚图标各挂一个：一把枪的矩阵有上百格。
-  // 键盘走焦点同样出说明，触屏上点一下即出——hover 一条路会把这两种人挡在外面。
-  function place(target) {
-    var box = target.getBoundingClientRect();
-    var w = tip.offsetWidth;
-    var left = box.left + box.width / 2 - w / 2;
-    // 贴边时整体推回视口内，宁可不居中也不要半截在屏外。
-    left = Math.max(8, Math.min(left, window.innerWidth - w - 8));
-    var top = box.bottom + 8;
-    if (top + tip.offsetHeight > window.innerHeight - 8) {
-      top = box.top - tip.offsetHeight - 8;
+      s.onerror = function () {
+        job.failed = true;
+        console.error('载不动 weapons/' + name + '.js');
+        root.insertAdjacentHTML('afterbegin', '<p class="empty">weapons/' + name + '.js 取不到，词条与说明画不出来。</p>');
+      };
+      document.head.appendChild(s);
     }
-    tip.style.left = (left + window.scrollX) + 'px';
-    tip.style.top = (top + window.scrollY) + 'px';
+    if (cb) { job.cbs.push(cb); }
+    return false;
+  }
+  var P = null, T = null, PIDX = {}, SIDX = null;
+  function poolReady() {
+    P = window.WPN_POOL;
+    for (var i = 0; i < P.p.length; i++) { PIDX[P.p[i][P_HASH]] = i; }
+    SIDX = {};
+    for (var j = 0; j < P.s.length; j++) { SIDX[P.s[j][1]] = j; }
+    hayCache = {};
+    perkIndex = null;
+  }
+  function textReady() {
+    T = window.WPN_TEXT;
+    hayCache = {};
   }
 
-  function tipShow(target, build) {
-    tip.textContent = '';
-    build(tip);
-    tip.hidden = false;
-    place(target);
+  /* ── 属性：与 tools/facts.py 的 shown() 同一套，四条缺一不可 ─────────
+     不加默认插件；先按上限截断再插值；两端截断不外推；银行家舍入。 */
+  function bankers(x) {
+    var f = Math.floor(x), r = x - f;
+    if (r > 0.5) { return f + 1; }
+    if (r < 0.5) { return f; }
+    return f % 2 === 0 ? f : f + 1;
+  }
+  function interp(v, curve) {
+    var n = curve.length;
+    if (!n) { return v; }
+    if (v <= curve[0]) { return curve[1]; }
+    if (v >= curve[n - 2]) { return curve[n - 1]; }
+    var i = 0;
+    while (i + 2 < n && curve[i + 2] <= v) { i += 2; }
+    var x0 = curve[i], y0 = curve[i + 1], x1 = curve[i + 2], y1 = curve[i + 3];
+    return bankers(y0 + (v - x0) * (y1 - y0) / (x1 - x0));
+  }
+  /* row 是属性组的一行：[属性下标, 上限, 曲线, 纯数值]。 */
+  function shown(v, row) {
+    return interp(Math.min(v, row[1]), row[2]);
   }
 
-  function tipHide() { tip.hidden = true; }
-
-  function tipOn(node, build, enter, leave) {
-    function open() { tipShow(node, build); if (enter) { enter(); } }
-    function shut() { tipHide(); if (leave) { leave(); } }
-    node.addEventListener('mouseenter', open);
-    node.addEventListener('focus', open);
-    node.addEventListener('mouseleave', shut);
-    node.addEventListener('blur', shut);
+  /* 后坐方向扇形：DIM 的公式，参数照 destiny.report（竖向 0.8、最大张角 180°）。 */
+  function recoilSvg(v) {
+    var dir = Math.sin((v + 5) * (Math.PI / 10)) * (100 - v);
+    var t = dir * 0.8 * (Math.PI / 180);
+    var spread = (100 - v) / 100 * 90 * (Math.PI / 180) * (t < 0 ? -1 : t > 0 ? 1 : 0);
+    var shape;
+    if (v >= 95) {
+      shape = '<line x1="' + (1 - Math.sin(t)) + '" y1="' + (1 + Math.cos(t)) + '" x2="' + (1 + Math.sin(t)) +
+        '" y2="' + (1 - Math.cos(t)) + '" stroke="#e6e2d6" stroke-width=".1"/>';
+    } else {
+      shape = '<path d="M1,1 L' + (1 + Math.sin(t + spread)) + ',' + (1 - Math.cos(t + spread)) + ' A1,1 0 0,' +
+        (t < 0 ? 1 : 0) + ' ' + (1 + Math.sin(t - spread)) + ',' + (1 - Math.cos(t - spread)) + ' Z" fill="#e6e2d6"/>';
+    }
+    return '<svg viewBox="0 0 2 1" aria-hidden="true"><circle r="1" cx="1" cy="1" fill="#ffffff10"/>' + shape + '</svg>';
   }
 
-  window.addEventListener('scroll', tipHide, { passive: true });
+  /* ── 行与分组 ──────────────────────────────────────────────────────── */
+  var WR = D.w, AR = D.a;
+  function isRep(scope, i) { return (scope === 'armor' ? AR[i][A_REP] : WR[i][W_REP]) === i; }
+  function repsOf(scope) {
+    var rows = scope === 'armor' ? AR : WR, out = [];
+    for (var i = 0; i < rows.length; i++) { if (isRep(scope, i)) { out.push(i); } }
+    return out;
+  }
+  var REPS = { wpn: repsOf('wpn'), armor: repsOf('armor') };
+  var BY_HASH = { wpn: {}, armor: {} };
+  (function () {
+    for (var i = 0; i < WR.length; i++) { BY_HASH.wpn[WR[i][W_H]] = i; }
+    for (var j = 0; j < AR.length; j++) { BY_HASH.armor[AR[j][A_H]] = j; }
+  }());
 
-  // ── sprite 图标 ───────────────────────────────────────────────────
-  // 武器类型与弹药那二十枚是内联 sprite 里的 symbol，用 <use> 取。走 SVG 而不是
-  // 位图，是因为它们要跟着文字变色：元素跟元素色、勇士跟红、其余素白。
-  var SVG = 'http://www.w3.org/2000/svg';
-
-  // 卡片上给作者留的那一个字，与词条图标右上角那枚角标同一套记号。
-  // 与 build-weapons.py 的 AUTHOR_MARK 对上。第三位作者只出评语、不出评级，
-  // 给他一个角标会把「他写过这一把」读成「他推荐这一枚词条」。
-  var AUTHOR_LETTER = { aegis: 'A', lgpig: 'L' };
-
-  // 弹药符号按游戏内的颜色走：特殊是绿、威能是紫，主武器在游戏里就是素白。
-  // 用的是 site.css 里那两个既有的着色类，不为这一页另起一套。
-  var AMMO_CLASS = { 主武器: '', 特殊: 'ammo-special', 威能: 'ammo-heavy' };
-
-  function ammoClass(name) {
-    return ('wpn-tag-svg ' + (AMMO_CLASS[name] || '')).trim();
+  function typeName(r) { return V.ty[r[W_SUB]][0]; }
+  function frameOf(r) { return V.fr[r[W_FR]]; }
+  function srcOf(r, at) { var k = r[at]; return k >= 0 ? V.src[k] : ''; }
+  function elName(r) { return V.el[r[W_EL]][0]; }
+  function rarity(r) { return V.rar[r[W_TIER]] || ''; }
+  function isExotic(r) { return r[W_TIER] === 6; }
+  function enOf(scope, i) {
+    if (!P) { return ''; }
+    return (scope === 'armor' ? P.aen : P.en)[i] || '';
   }
 
-  function glyph(id, cls) {
-    var svg = document.createElementNS(SVG, 'svg');
-    svg.setAttribute('class', cls);
-    svg.setAttribute('aria-hidden', 'true');
-    var use = document.createElementNS(SVG, 'use');
-    use.setAttribute('href', '#i-' + id);
-    svg.appendChild(use);
-    return svg;
+  /* 叠层图标：底图、水印、阶级角标、锻造层，底部打光由样式表画。 */
+  function gun(r, size, eager) {
+    var layers = imgTag(r[W_ICON], '', '', eager);
+    if (r[W_WM] >= 0) { layers += imgTag(V.wm[r[W_WM]], '', '', eager); }
+    if (r[W_FLAG] & F_TIER) { layers += imgTag(V.o.tier, '', '', eager); }
+    if (r[W_FLAG] & F_CRAFT) {
+      layers += imgTag(V.o['craft-bg'], 'flip', '', eager) + imgTag(V.o.craft, 'flip', '', eager);
+    }
+    return '<span class="gun' + (r[W_FLAG] & F_MW ? ' mw' : '') + (size ? ' ' + size : '') + '">' + layers + '</span>';
+  }
+  function armorGun(r, size, eager) {
+    var layers = imgTag(r[A_ICON], '', '', eager);
+    if (r[A_WM] >= 0) { layers += imgTag(V.wm[r[A_WM]], '', '', eager); }
+    return '<span class="gun' + (size ? ' ' + size : '') + '">' + layers + '</span>';
   }
 
-  // ── 搜什么、怎么排 ────────────────────────────────────────────────
-  var LIMIT = 80;        // 列表那一档一次最多列这么多
-  var PAGE = 120;        // 网格那一档一屏一批，滚到底再添下一批
-  var found = D.w;       // 当前命中的那一批
-  var laid = 0;          // 网格已经铺了几张
-  var view = 'grid';
-  try {
-    if (localStorage.getItem('wpnview') === 'list') { view = 'list'; }
-  } catch (e) { /* 隐私模式下读不到，用默认那一档 */ }
-
-  // ── 筛选条 ────────────────────────────────────────────────────────
-  // destiny.report 那边是一套要背的查询语法（stat:range:>70）。这里换成开关：
-  // 同一组里选几个是「或」，组与组之间是「且」，与站内别的页面同一套规矩。
-  // 每枚开关上标着「按当前其余条件，选它还剩多少」——按下去是不是空的，按之前就看得见。
-  var FACETS = [
-    { key: 'tk', name: '元素', pic: 'el', text: function (w) { return w.el; } },
-    { key: 'am', name: '弹药', pic: 'am' },
-    { key: 'br', name: '勇士', pic: 'ch' },
-    { key: 't', name: '类型', pic: 'ty', drop: true },
-  ];
-  var FLAGS = [
-    { key: 'tier', name: '异域武器', hit: function (w) { return w.tier === 6; } },
-    { key: 'craft', name: '锻造武器', hit: function (w) { return !!w.craft; } },
-    { key: 'tiering', name: 'T 级武器', hit: function (w) { return !!w.tiering; } },
-    { key: 'rated', name: '有评级', hit: function (w) { return !!Object.keys(w.r).length; } },
-  ];
-  var on = {};                      // {维度: {取值: true}}
-  FACETS.concat(FLAGS).forEach(function (f) { on[f.key] = {}; });
-
-  function live(dim) {
-    return Object.keys(on[dim]).length;
+  /* ── 词条池的读法 ──────────────────────────────────────────────────── */
+  function poolRow(i) { return P.w[i]; }
+  function cellsOf(col) { return P.L[col[2]]; }
+  function shownPlug(cell) { return cell[1] >= 0 ? cell[1] : cell[0]; }
+  function plugName(p) { return P.p[p][P_NAME]; }
+  function marksOf(i) {
+    var out = {}, m = poolRow(i)[3];
+    for (var k = 0; k < m.length; k++) { out[m[k][0]] = m[k][1]; }
+    return out;
   }
+  function optsOf(i) { var k = poolRow(i)[6]; return k >= 0 ? P.M[k] : []; }
+  function modsOf(i) { var k = poolRow(i)[7]; return k >= 0 ? P.D[k] : []; }
 
-  // 按「除了 skip 这一维之外的全部条件」筛一遍。算每枚开关的剩余数用得上。
-  function narrow(skip) {
-    var want = q.value.trim().toLowerCase();
-    return D.w.filter(function (w) {
-      if (want && w.k.indexOf(want) < 0) { return false; }
-      for (var i = 0; i < FACETS.length; i++) {
-        var f = FACETS[i];
-        if (f.key !== skip && live(f.key) && !on[f.key][w[f.key] || '']) { return false; }
+  /* ── 查询：DIM 的语法，关键字英文、值写中文 ──────────────────────── */
+  var KEYS_WPN = ['is', 'name', 'perk', 'perk1', 'perk2', 'perkname', 'perktext', 'origintrait', 'frame',
+                  'stat', 'season', 'source', 'breaker'];
+  var KEYS_ARMOR = ['is', 'name', 'perk', 'season', 'source'];
+  var POOL_KEYS = ['perk', 'perk1', 'perk2', 'perkname', 'origintrait', 'stat'];
+  var KEY_LABEL = { is: '类型、元素、槽位、弹药、稀有度、勇士与标志', name: '名字', perk: '任一栏的词条',
+    perk1: '第一特性栏', perk2: '第二特性栏', perkname: '词条名完全相同', perktext: '词条说明',
+    origintrait: '起源特性', frame: '框架', stat: '属性', season: '赛季', source: '来源', breaker: '勇士克制' };
+
+  function normQ(s) {
+    return s.replace(/：/g, ':').replace(/（/g, '(').replace(/）/g, ')').replace(/[“”]/g, '"').replace(/　/g, ' ');
+  }
+  /* 切成 token，每个带它在原文里的 [a, b)。全角标点按半角认，长度不变，位置照旧对得上。 */
+  function tokenize(src) {
+    var s = normQ(src), out = [], i = 0, n = s.length;
+    function value() {
+      var v = '', quoted = false;
+      if (s[i] === '"') {
+        quoted = true; i++;
+        while (i < n && s[i] !== '"') { v += s[i++]; }
+        if (i < n) { i++; }
+      } else {
+        while (i < n && s[i] !== ' ' && s[i] !== ')' && s[i] !== '(') { v += s[i++]; }
       }
-      for (var j = 0; j < FLAGS.length; j++) {
-        var g = FLAGS[j];
-        if (g.key !== skip && live(g.key) && !g.hit(w)) { return false; }
+      return { v: v, q: quoted };
+    }
+    while (i < n) {
+      var c = s[i];
+      if (c === ' ' || c === '\t') { i++; continue; }
+      if (c === '(' || c === ')') { out.push({ t: c, a: i, b: i + 1 }); i++; continue; }
+      var a = i, neg = false;
+      if (c === '-' && i + 1 < n && s[i + 1] !== ' ') { neg = true; i++; }
+      var m = /^([a-z][a-z0-9]*):/i.exec(s.slice(i));
+      if (m) {
+        i += m[0].length;
+        var got = value();
+        out.push({ t: 'kw', k: m[1].toLowerCase(), v: got.v, neg: neg, a: a, b: i });
+        continue;
       }
-      return true;
-    });
+      var w = value();
+      if (!neg && !w.q && /^(or|and|not)$/i.test(w.v)) {
+        out.push({ t: w.v.toLowerCase(), a: a, b: i });
+      } else if (w.v) {
+        out.push({ t: 'w', v: w.v, neg: neg, a: a, b: i });
+      }
+    }
+    return out;
+  }
+  /* not > and > or；括号分组。未知关键字当裸词；悬空的 or 与不配对的括号忽略。 */
+  function parse(tokens, keys) {
+    var at = 0;
+    function peek() { return tokens[at]; }
+    function unary() {
+      var t = peek();
+      if (!t) { return null; }
+      if (t.t === 'not') { at++; var x = unary(); return x ? { op: 'not', x: x } : null; }
+      if (t.t === '(') {
+        at++;
+        var inner = orExpr();
+        if (peek() && peek().t === ')') { at++; }
+        return inner;
+      }
+      if (t.t === 'kw' || t.t === 'w') {
+        at++;
+        var node = t.t === 'kw' && has(keys, t.k) ? { op: 'kw', k: t.k, v: t.v, tok: t }
+          : { op: 'w', v: t.t === 'kw' ? t.k + ':' + t.v : t.v, tok: t };
+        return t.neg ? { op: 'not', x: node, tok: t } : node;
+      }
+      return null;
+    }
+    function andExpr() {
+      var parts = [];
+      while (peek() && peek().t !== 'or' && peek().t !== ')') {
+        if (peek().t === 'and') { at++; continue; }
+        var x = unary();
+        if (x) { parts.push(x); } else { at++; }
+      }
+      return parts.length === 1 ? parts[0] : parts.length ? { op: 'and', xs: parts } : null;
+    }
+    function orExpr() {
+      var parts = [andExpr()];
+      while (peek() && peek().t === 'or') { at++; parts.push(andExpr()); }
+      parts = parts.filter(Boolean);
+      return parts.length === 1 ? parts[0] : parts.length ? { op: 'or', xs: parts } : null;
+    }
+    var out = [];
+    while (at < tokens.length) {
+      var x = orExpr();
+      if (x) { out.push(x); }
+      if (peek() && peek().t === ')') { at++; }
+    }
+    return out.length === 1 ? out[0] : out.length ? { op: 'and', xs: out } : null;
+  }
+  function needsPool(node) {
+    if (!node) { return false; }
+    if (node.op === 'kw') { return has(POOL_KEYS, node.k); }
+    if (node.op === 'not') { return needsPool(node.x); }
+    if (node.xs) { for (var i = 0; i < node.xs.length; i++) { if (needsPool(node.xs[i])) { return true; } } }
+    return false;
   }
 
-  function sift() {
-    found = narrow(null);
-    count.textContent = '结果 ' + found.length;
+  function fold(s) { return String(s).toLowerCase().replace(/\s+/g, ''); }
+  function cmp(spec, n) {
+    var m = /^(>=|<=|>|<|=)?(\d+(?:\.\d+)?)$/.exec(spec);
+    if (!m) { return false; }
+    var x = parseFloat(m[2]);
+    switch (m[1] || '=') {
+      case '>=': return n >= x;
+      case '<=': return n <= x;
+      case '>': return n > x;
+      case '<': return n < x;
+      default: return n === x;
+    }
   }
 
-  // 名字别跟数值那边的 tally() 撞：函数声明会提升，重名的那个会把先写的整个盖掉，
-  // 而 JS 不会报重复定义——只在调用时炸出一句 forEach is not a function。
-  function countBy(rows, key) {
-    var out = {};
-    rows.forEach(function (w) {
-      var v = w[key] || '';
-      if (v) { out[v] = (out[v] || 0) + 1; }
+  /* is: 的值 → 判定。武器与护甲各一张，值取自数据，标志是固定的几个。 */
+  var pins = recall('wpn.pins') || [];
+  function isTable(scope) {
+    var t = {};
+    if (scope === 'armor') {
+      V.cls.forEach(function (c, k) { t[c] = function (i) { return AR[i][A_CLS] === k; }; });
+      V.part.forEach(function (p, k) { t[p] = function (i) { return AR[i][A_PART] === k; }; });
+      t['异域'] = function () { return true; };
+      t['已钉选'] = function (i) { return has(pins, 'a:' + AR[i][A_H]); };
+      return t;
+    }
+    Object.keys(V.ty).forEach(function (sub) {
+      var n = V.ty[sub][0], s = +sub;
+      t[n] = function (i) { return WR[i][W_SUB] === s; };
     });
+    Object.keys(V.el).forEach(function (e) {
+      var n = V.el[e][0], k = +e;
+      t[n] = function (i) { return WR[i][W_EL] === k; };
+    });
+    V.slot.forEach(function (n, k) {
+      var prev = t[n];
+      t[n] = function (i) { return WR[i][W_SLOT] === k || (prev ? prev(i) : false); };
+    });
+    Object.keys(V.am).forEach(function (a) {
+      var n = V.am[a][0], k = +a, prev = t[n];
+      t[n] = function (i) { return WR[i][W_AMMO] === k || (prev ? prev(i) : false); };
+    });
+    Object.keys(V.rar).forEach(function (r) {
+      var k = +r;
+      t[V.rar[r]] = function (i) { return WR[i][W_TIER] === k; };
+    });
+    Object.keys(V.br).forEach(function (b) {
+      var k = +b;
+      t[V.br[b][0]] = function (i) { return WR[i][W_BR] === k; };
+    });
+    var flags = { '可锻造': F_CRAFT, '可强化': F_ENH, '可升阶': F_TIER, '专家': F_ADEPT, '全息': F_HOLO, '复刻': F_REISSUE };
+    Object.keys(flags).forEach(function (n) {
+      var f = flags[n];
+      t[n] = function (i) { return (WR[i][W_FLAG] & f) !== 0; };
+    });
+    t['已钉选'] = function (i) { return has(pins, 'w:' + WR[i][W_H]); };
+    return t;
+  }
+  var IS = { wpn: isTable('wpn'), armor: isTable('armor') };
+
+  /* 裸词搜的那一串：名字、英文名、类型、框架、词条名、描述。有什么数据就先搜什么，
+     词条池与说明到了之后缓存作废、重搜一遍。 */
+  var hayCache = {};
+  function hay(scope, i) {
+    var key = scope + i;
+    if (hayCache[key] != null) { return hayCache[key]; }
+    var parts;
+    if (scope === 'armor') {
+      var a = AR[i];
+      parts = [a[A_NAME], V.cls[a[A_CLS]], V.part[a[A_PART]], a[A_PERKS], a[A_ROLE], srcOf(a, A_SRC), enOf('armor', i)];
+      if (T && T.fa[i] >= 0) { parts.push(T.FL[T.fa[i]]); }
+    } else {
+      var r = WR[i];
+      parts = [r[W_NAME], typeName(r), frameOf(r)[0], srcOf(r, W_SRC), enOf('wpn', i)];
+      if (P) { parts.push(perkNames(i).join(' ')); }
+      if (T && T.fw[i] >= 0) { parts.push(T.FL[T.fw[i]]); }
+    }
+    return (hayCache[key] = fold(parts.join(' ')));
+  }
+  function perkNames(i, role, nth) {
+    var out = [], cols = poolRow(i)[2], seen = 0;
+    for (var c = 0; c < cols.length; c++) {
+      if (role != null && cols[c][1] !== role) { continue; }
+      if (role === R_TRAIT) { seen++; if (nth && seen !== nth) { continue; } }
+      var cells = cellsOf(cols[c]);
+      for (var k = 0; k < cells.length; k++) { out.push(plugName(shownPlug(cells[k]))); }
+    }
+    return out;
+  }
+  function perkTexts(i) {
+    var out = [], cols = poolRow(i)[2];
+    for (var c = 0; c < cols.length; c++) {
+      var cells = cellsOf(cols[c]);
+      for (var k = 0; k < cells.length; k++) { out.push(T.pd[shownPlug(cells[k])] || ''); }
+    }
+    return out.join(' ');
+  }
+  var statCache = {};
+  function defaultStat(i, sIdx) {
+    var key = i + ':' + sIdx;
+    if (statCache[key] == null) {
+      var res = compute(i, defaultRoll(i, true));
+      statCache[key] = res.byStat[sIdx] == null ? -1 : res.byStat[sIdx].value;
+    }
+    return statCache[key];
+  }
+
+  function test(scope, node, i) {
+    switch (node.op) {
+      case 'and': for (var a = 0; a < node.xs.length; a++) { if (!test(scope, node.xs[a], i)) { return false; } } return true;
+      case 'or': for (var o = 0; o < node.xs.length; o++) { if (test(scope, node.xs[o], i)) { return true; } } return false;
+      case 'not': return !test(scope, node.x, i);
+      case 'w': return hay(scope, i).indexOf(fold(node.v)) !== -1;
+      default: return kw(scope, node.k, node.v, i);
+    }
+  }
+  function kw(scope, k, v, i) {
+    var f = fold(v), r;
+    if (scope === 'armor') {
+      r = AR[i];
+      switch (k) {
+        case 'is': return IS.armor[v] ? IS.armor[v](i) : false;
+        case 'name': return fold(r[A_NAME] + enOf('armor', i)).indexOf(f) !== -1;
+        case 'perk': return fold(r[A_PERKS]).indexOf(f) !== -1;
+        case 'season': return cmp(v, r[A_SSN]);
+        case 'source': return fold(srcOf(r, A_SRC)).indexOf(f) !== -1;
+      }
+      return false;
+    }
+    r = WR[i];
+    switch (k) {
+      case 'is': return IS.wpn[v] ? IS.wpn[v](i) : false;
+      case 'name': return fold(r[W_NAME] + ' ' + enOf('wpn', i)).indexOf(f) !== -1;
+      case 'frame': return fold(frameOf(r)[0]).indexOf(f) !== -1;
+      case 'season': return cmp(v, r[W_SSN]);
+      case 'source': return fold(srcOf(r, W_SRC)).indexOf(f) !== -1;
+      case 'breaker': return r[W_BR] > 0 && fold(V.br[r[W_BR]][0]).indexOf(f) !== -1;
+      case 'perktext': return T ? fold(perkTexts(i)).indexOf(f) !== -1 : false;
+    }
+    if (!P) { return false; }
+    switch (k) {
+      case 'perk':
+        if (fold(perkNames(i).join(' ')).indexOf(f) !== -1) { return true; }
+        return T ? fold(perkTexts(i)).indexOf(f) !== -1 : false;
+      case 'perk1': return fold(perkNames(i, R_TRAIT, 1).join(' ')).indexOf(f) !== -1;
+      case 'perk2': return fold(perkNames(i, R_TRAIT, 2).join(' ')).indexOf(f) !== -1;
+      case 'perkname': return perkNames(i).some(function (n) { return fold(n) === f; });
+      case 'origintrait': return fold(perkNames(i, R_ORIGIN).join(' ')).indexOf(f) !== -1;
+      case 'stat': {
+        var m = /^([^:]+):(.+)$/.exec(v);
+        if (!m) { return false; }
+        var s = statIndex(m[1]);
+        if (s < 0) { return false; }
+        var got = defaultStat(i, s);
+        return got >= 0 && cmp(m[2], got);
+      }
+    }
+    return false;
+  }
+  function statIndex(name) {
+    for (var s = 0; s < P.s.length; s++) { if (P.s[s][1] === name) { return s; } }
+    for (var t = 0; t < P.s.length; t++) { if (P.s[t][1].indexOf(name) !== -1) { return t; } }
+    return -1;
+  }
+  function run(scope, node) {
+    var reps = REPS[scope];
+    if (!node) { return reps.slice(); }
+    return reps.filter(function (i) { return test(scope, node, i); });
+  }
+
+  /* ── 状态与地址栏 ──────────────────────────────────────────────────── */
+  var S = {
+    scope: 'wpn', q: '', view: recall('wpn.view') || 'grid', sel: null, preview: null,
+    rail: recall('wpn.rail') || 240, railOff: !!recall('wpn.railOff'), rolls: recall('wpn.rolls') || {},
+    syntax: false, pop: null, tip: null, hoverPlug: null, hoverRow: null, slotHover: false
+  };
+  function readUrl() {
+    var u = new URLSearchParams(location.search);
+    S.scope = u.get('s') === 'armor' ? 'armor' : 'wpn';
+    S.q = u.get('q') || '';
+    var w = u.get('w');
+    S.sel = w && BY_HASH[S.scope][w] != null ? BY_HASH[S.scope][w] : null;
+    S.urlRoll = null;
+    if (S.sel != null && S.scope === 'wpn' && (u.get('p') || u.get('mw') || u.get('t') || u.get('mod') || u.get('cat'))) {
+      S.urlRoll = { p: u.get('p') || '', mw: u.get('mw'), lv: u.get('lv'), t: u.get('t'), mod: u.get('mod'), cat: u.get('cat') };
+    }
+  }
+  function writeUrl(push) {
+    var u = new URLSearchParams();
+    if (S.scope === 'armor') { u.set('s', 'armor'); }
+    if (S.q) { u.set('q', S.q); }
+    if (S.sel != null) {
+      var rows = S.scope === 'armor' ? AR : WR;
+      u.set('w', rows[S.sel][0]);
+      if (S.scope === 'wpn' && P) {
+        var roll = rollOf(S.sel), def = defaultRoll(S.sel);
+        if (!sameRoll(roll, def)) {
+          var enc = encodeRoll(S.sel, roll);
+          Object.keys(enc).forEach(function (k) { u.set(k, enc[k]); });
+        }
+      }
+    }
+    var qs = u.toString();
+    var url = location.pathname + (qs ? '?' + qs : '');
+    if (push) { history.pushState(null, '', url); } else { history.replaceState(null, '', url); }
+  }
+
+  /* ── 配置：选中的词条、大师杰作、T 级、模组、催化剂 ──────────────── */
+  function defaultRoll(i, bare) {
+    var pr = poolRow(i), cols = pr[2], sel = {};
+    for (var c = 0; c < cols.length; c++) {
+      var cells = cellsOf(cols[c]);
+      if (cells.length === 1) { sel[c] = shownPlug(cells[0]); }
+    }
+    var opts = optsOf(i), rec = pr[5];
+    var mw = !bare && rec && opts.some(function (o) { return o[0] === rec; }) ? rec : '';
+    return { sel: sel, mw: mw, lv: 10, t: pr[4] ? 5 : 0, mod: -1, cat: 0 };
+  }
+  function sameRoll(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
+  function rollOf(i) {
+    var h = WR[i][W_H];
+    if (!S.rolls[h]) { S.rolls[h] = defaultRoll(i); }
+    return S.rolls[h];
+  }
+  function saveRoll(i) {
+    var h = WR[i][W_H], def = defaultRoll(i);
+    if (sameRoll(S.rolls[h], def)) { delete S.rolls[h]; }
+    store('wpn.rolls', S.rolls);
+    if (!S.rolls[h]) { S.rolls[h] = def; }
+    writeUrl(false);
+  }
+  function encodeRoll(i, roll) {
+    var cols = poolRow(i)[2], p = [];
+    for (var c = 0; c < cols.length; c++) { p.push(roll.sel[c] != null ? P.p[roll.sel[c]][P_HASH] : '-'); }
+    var out = { p: p.join(',') };
+    if (roll.mw) { out.mw = roll.mw; if (!poolRow(i)[4]) { out.lv = roll.lv; } } else { out.mw = '-'; }
+    if (poolRow(i)[4]) { out.t = roll.t; }
+    if (roll.mod >= 0) { out.mod = P.p[roll.mod][P_HASH]; }
+    if (roll.cat) { out.cat = 1; }
+    return out;
+  }
+  function decodeRoll(i, enc) {
+    var roll = defaultRoll(i), cols = poolRow(i)[2];
+    var p = (enc.p || '').split(',');
+    for (var c = 0; c < cols.length && c < p.length; c++) {
+      if (p[c] === '-' || !p[c]) { if (cellsOf(cols[c]).length > 1) { delete roll.sel[c]; } continue; }
+      var k = PIDX[+p[c]];
+      var ok = cellsOf(cols[c]).some(function (cell) { return shownPlug(cell) === k; });
+      if (ok) { roll.sel[c] = k; }
+    }
+    if (enc.mw === '-') { roll.mw = ''; } else if (enc.mw && optsOf(i).some(function (o) { return o[0] === enc.mw; })) { roll.mw = enc.mw; }
+    if (enc.lv) { roll.lv = Math.max(1, Math.min(10, +enc.lv || 10)); }
+    if (enc.t) { roll.t = Math.max(1, Math.min(5, +enc.t || 5)); }
+    if (enc.mod && PIDX[+enc.mod] != null && has(modsOf(i), PIDX[+enc.mod])) { roll.mod = PIDX[+enc.mod]; }
+    roll.cat = enc.cat ? 1 : 0;
+    return roll;
+  }
+
+  /* 大师杰作与 T 级各自加在哪几项、各加多少。算法照 destiny.report：
+     可升阶的枪，大师杰作给选中属性 +10；装着大师杰作时，T 级给这枚插件列出的每一项
+     +T（选中属性也在其中）。旧枪没有 T 级：1–9 级只给选中属性加它自己的数，满级取
+     插件本身，专家版满级时其余 +3。 */
+  function mwParts(i, roll) {
+    var out = { mw: {}, tier: {}, opt: null };
+    if (!roll.mw) { return out; }
+    var opt = null, opts = optsOf(i);
+    for (var k = 0; k < opts.length; k++) { if (opts[k][0] === roll.mw) { opt = opts[k]; } }
+    if (!opt) { return out; }
+    out.opt = opt;
+    var pr = poolRow(i), plug = P.p[opt[2]], s;
+    if (pr[4]) {
+      var tot = {};
+      plug[P_ST].concat(plug[P_CD]).forEach(function (x) { tot[x[0]] = (tot[x[0]] || 0) + x[1]; });
+      for (s in tot) {
+        if (tot[s]) { out.mw[s] = tot[s]; }
+        if (roll.t) { out.tier[s] = roll.t; }
+      }
+      return out;
+    }
+    if (roll.lv < 10) {
+      if (has(opt[4], roll.lv)) { out.mw[opt[1]] = roll.lv; }
+      return out;
+    }
+    plug[P_ST].forEach(function (x) { out.mw[x[0]] = (out.mw[x[0]] || 0) + x[1]; });
+    if ((WR[i][W_FLAG] & F_ADEPT) && opt[3] >= 0) {
+      P.p[opt[3]][P_CD].forEach(function (x) { if (x[1]) { out.mw[x[0]] = (out.mw[x[0]] || 0) + x[1]; } });
+    }
     return out;
   }
 
-  // 筛选条只建一次，之后原地改：整条重建会把焦点弄丢，还会把「类型」那个
-  // 展开着的下拉关掉。
-  var switches = [];
-
-  function view0() {
-    return document.querySelector('.wpn-view');
-  }
-
-  function facets() {
-    var host = document.getElementById('facets');
-    FACETS.forEach(function (f) {
-      var all = countBy(D.w, f.key);
-      var keys = Object.keys(all).sort(function (a, b) { return all[b] - all[a]; });
-      if (keys.length < 2) { return; }
-      var box = el('div', 'wpn-facet');
-      box.appendChild(el('span', 'wpn-facet-name', f.name));
-      var wrap = box;
-      if (f.drop) {
-        var fold = el('details', 'drop');
-        fold.appendChild(el('summary', 'toggle', '挑一种'));
-        wrap = el('div', 'menu');
-        fold.appendChild(wrap);
-        box.appendChild(fold);
+  /* 一个配置的全部属性。swap 是悬停预览：{栏: 插件}，栏写 -1 表示去掉那一栏。 */
+  function compute(i, roll, swap) {
+    var pr = poolRow(i), group = P.g[pr[0]], base = pr[1], cols = pr[2];
+    var parts = [], perks = [], cond = {};
+    for (var c = 0; c < cols.length; c++) {
+      var pick = roll.sel[c];
+      if (swap && swap.col === c) { pick = swap.plug; }
+      if (pick == null || pick < 0) { continue; }
+      (cols[c][1] === R_STAT ? parts : perks).push(pick);
+    }
+    if (roll.cat) { pr[8].forEach(function (p) { perks.push(p); }); }
+    if (roll.mod >= 0) { perks.push(roll.mod); }
+    function sum(list) {
+      var out = {};
+      list.forEach(function (p) {
+        P.p[p][P_ST].forEach(function (x) { out[x[0]] = (out[x[0]] || 0) + x[1]; });
+        P.p[p][P_CD].forEach(function (x) { cond[x[0]] = (cond[x[0]] || 0) + x[1]; });
+      });
+      return out;
+    }
+    var stages = [['s-part', sum(parts)], ['s-perk', sum(perks)]];
+    var mw = mwParts(i, roll);
+    stages.push(['s-mw', mw.mw], ['s-tier', mw.tier]);
+    var rows = [], byStat = {};
+    for (var g = 0; g < group.length; g++) {
+      if (base[g] == null) { continue; }
+      var row = group[g], s = row[0], acc = base[g];
+      var v0 = shown(acc, row), prev = v0, neg = 0, segs = [];
+      for (var k = 0; k < stages.length; k++) {
+        if (!stages[k][1][s]) { continue; }
+        acc += stages[k][1][s];
+        var v = shown(acc, row);
+        if (v > prev) { segs.push([stages[k][0], v - prev]); } else if (v < prev) { neg += prev - v; }
+        prev = v;
       }
-      keys.forEach(function (v) {
-        var b = el('button', 'toggle wpn-facet-one');
-        b.type = 'button';
-        var pic = f.pic && D.o[f.pic] && D.o[f.pic][v];
-        if (pic && (f.pic === 'el' || f.pic === 'ch')) {
-          b.appendChild(icon(pic, 14, 'wpn-tag-ico'));
-        } else if (pic) {
-          b.appendChild(glyph(pic, f.pic === 'am' ? ammoClass(v) : 'wpn-tag-svg'));
-        }
-        b.appendChild(el('span', '', f.text ? f.text(by0(f.key, v)) : v));
-        var tail = el('em', '', '');
-        b.appendChild(tail);
-        b.addEventListener('click', function () {
-          if (on[f.key][v]) { delete on[f.key][v]; } else { on[f.key][v] = true; }
-          refresh();
-        });
-        switches.push({ node: b, tail: tail, dim: f.key, value: v });
-        wrap.appendChild(b);
-      });
-      host.insertBefore(box, view0());
-    });
-    var flags = el('div', 'wpn-facet');
-    flags.appendChild(el('span', 'wpn-facet-name', '其他'));
-    FLAGS.forEach(function (g) {
-      var b = el('button', 'toggle wpn-facet-one');
-      b.type = 'button';
-      b.appendChild(el('span', '', g.name));
-      var tail = el('em', '', '');
-      b.appendChild(tail);
-      b.addEventListener('click', function () {
-        if (on[g.key][1]) { delete on[g.key][1]; } else { on[g.key][1] = true; }
-        refresh();
-      });
-      switches.push({ node: b, tail: tail, dim: g.key, value: 1, hit: g.hit });
-      flags.appendChild(b);
-    });
-    var clear = el('button', 'op wpn-facet-clear', '全部清掉');
-    clear.type = 'button';
-    clear.hidden = true;
-    clear.addEventListener('click', function () {
-      FACETS.concat(FLAGS).forEach(function (f) { on[f.key] = {}; });
-      q.value = '';
-      refresh();
-    });
-    flags.appendChild(clear);
-    host.insertBefore(flags, view0());
-    switches.clear = clear;
-  }
-
-  // 每枚开关末尾那个数是「按当前其余条件，选它还剩多少」。按下去会不会是空的，
-  // 按之前就看得见。剩 0 的压暗但不禁用：那一档仍然存在，只是当前条件下没有。
-  function tick() {
-    var cache = {};
-    switches.forEach(function (sw) {
-      var rows = cache[sw.dim] || (cache[sw.dim] = narrow(sw.dim));
-      var n = sw.hit ? rows.filter(sw.hit).length
-        : rows.filter(function (w) { return (w[sw.dim] || '') === sw.value; }).length;
-      var pressed = !!on[sw.dim][sw.value];
-      sw.tail.textContent = String(n);
-      sw.node.setAttribute('aria-pressed', pressed ? 'true' : 'false');
-      sw.node.classList.toggle('none', !n && !pressed);
-    });
-    var any = FACETS.concat(FLAGS).some(function (f) { return live(f.key); });
-    switches.clear.hidden = !any && !q.value;
-  }
-
-  // 拿一条带这个取值的记录出来，给要显示别的字段的那种维度用（元素开关写中文名，
-  // 而筛的是着色 token）。
-  var byValue = {};
-  function by0(key, v) {
-    var cache = byValue[key] || (byValue[key] = {});
-    if (!cache[v]) {
-      cache[v] = D.w.filter(function (w) { return (w[key] || '') === v; })[0] || {};
+      var withCond = cond[s] ? shown(acc + cond[s], row) : prev;
+      var item = { s: s, row: row, name: P.s[s][1], numeric: row[3], value: prev, base: v0,
+                   cond: withCond > prev ? withCond - prev : 0, neg: neg, segs: segs, acc: acc, withCond: withCond };
+      rows.push(item);
+      byStat[s] = item;
     }
-    return cache[v];
+    return { rows: rows, byStat: byStat, parts: parts, perks: perks, mw: mw };
   }
 
-  function refresh() {
-    sift();
-    tick();
-    paint();
+  /* ── 外壳：顶栏里的范围开关、查询框、计数与视图 ─────────────────── */
+  var EXAMPLES = ['is:手炮', 'perk:萤火虫', 'is:可锻造', 'season:>=27', 'stat:射程:>=60', 'breaker:反屏障',
+                  'frame:精密框架', 'is:专家'];
+  var SYNTAX = [
+    ['萤火虫 自填', '裸词：名字、类型、框架、词条名与描述里都含这些字'],
+    ['is:主手 is:手炮 is:烈日', '槽位（主手／副手／威能）、类型、元素、弹药、稀有度、勇士'],
+    ['is:泰坦 is:头盔', '异域护甲：职业、部位'],
+    ['is:可锻造 is:专家', '标志：可锻造、可强化、可升阶、专家、全息、复刻、已钉选'],
+    ['perk:萤火虫', '任一栏开得出这个词条（名字或说明）'],
+    ['perk1:高爆载荷 perk2:萤火虫', '限定第一、第二特性栏'],
+    ['perkname:"全明星"', '词条名完全相同'],
+    ['perktext:填装', '词条说明里含这些字'],
+    ['origintrait:失时弹匣', '起源特性'],
+    ['frame:适配框架', '框架'],
+    ['stat:射程:>=60', '属性，比较写 = > < >= <='],
+    ['season:>=26', '赛季'],
+    ['source:玻璃拱顶', '来源'],
+    ['breaker:反屏障', '勇士克制'],
+    ['is:手炮 (perk:萤火虫 or perk:狂乱) -is:专家', '空格是「且」，or 是「或」，- 是排除，括号分组']
+  ];
+  bar.innerHTML =
+    '<div class="wpn-q">' +
+    '<div class="wpn-scope" role="group" aria-label="范围">' +
+    '<button type="button" class="toggle" data-act="scope" data-v="wpn">武器</button>' +
+    '<button type="button" class="toggle" data-act="scope" data-v="armor">异域护甲</button></div>' +
+    '<div class="wpn-field"><input class="wpn-input" type="search" autocomplete="off" spellcheck="false" ' +
+    'role="combobox" aria-expanded="false" aria-controls="wpn-ac" aria-label="搜索装备" ' +
+    'placeholder="名字、词条，或 is:手炮 perk:萤火虫 season:&gt;=26">' +
+    '<ul class="wpn-suggest" id="wpn-ac" role="listbox" hidden></ul></div>' +
+    '<p class="wpn-count" aria-live="polite"></p>' +
+    '<div class="wpn-views">' +
+    '<button type="button" class="toggle" data-act="view" data-v="grid">卡片</button>' +
+    '<button type="button" class="toggle" data-act="view" data-v="list">列表</button>' +
+    '<button type="button" class="toggle" data-act="syntax" aria-expanded="false">语法</button>' +
+    '<div class="wpn-syntax" role="dialog" aria-label="查询语法" hidden><table>' +
+    SYNTAX.map(function (r) {
+      return '<tr><td><button type="button" class="toggle" data-act="setq" data-v="' + esc(r[0]) + '"><code>' +
+        esc(r[0]) + '</code></button></td><td>' + esc(r[1]) + '</td></tr>';
+    }).join('') +
+    '</table><p>关键字照 DIM 的写法，值用中文；DIM 里抄来的查询多数能直接用。</p></div></div>' +
+    '<div class="wpn-pills" hidden></div></div>';
+  var input = bar.querySelector('.wpn-input');
+  var acBox = bar.querySelector('.wpn-suggest');
+  var countBox = bar.querySelector('.wpn-count');
+  var pillBox = bar.querySelector('.wpn-pills');
+  var syntaxBox = bar.querySelector('.wpn-syntax');
+  root.innerHTML = '<div class="wpn-presets"></div><div class="wpn-sub"></div><div class="wpn-body"></div>';
+  var presetBox = root.querySelector('.wpn-presets');
+  var subBox = root.querySelector('.wpn-sub');
+  var body = root.querySelector('.wpn-body');
+  var tip = document.createElement('div');
+  tip.className = 'tip';
+  tip.setAttribute('role', 'tooltip');
+  tip.hidden = true;
+  document.body.appendChild(tip);
+
+  /* sticky 的结果栏要知道顶栏多高。顶栏高度随药丸行变，每次重画后量一次。 */
+  var head = document.querySelector('.site-head');
+  function measureStick() {
+    document.documentElement.style.setProperty('--stick', head.getBoundingClientRect().height + 'px');
   }
 
-  // ── 网格：一把枪一张卡片 ──────────────────────────────────────────
-  // 卡片上那一行小图标照 destiny.report 的次序：元素、弹药、武器类型、勇士、赛季。
-  // 站内比它多一行——两位作者的评级，那是这一页存在的理由。
-  function card(w, at) {
-    eager = at < EAGER_CARDS ? 1 : 0;
-    var a = el('a', 'wpn-card');
-    a.href = '#' + w.h;
-    a.appendChild(gun(w, 64, 'wpn-card-ico'));
-    a.appendChild(el('strong', 'wpn-card-name', w.n));
-
-    var tags = el('p', 'wpn-card-tags');
-    if (D.o.el[w.tk]) {
-      tags.appendChild(icon(D.o.el[w.tk], 14, 'wpn-tag-ico'));
+  /* ── 渲染：顶栏 ────────────────────────────────────────────────────── */
+  var tokens = [], tree = null, results = [], pending = false;
+  function pillIcon(t) {
+    if (t.t !== 'kw') { return ''; }
+    if (t.k === 'is') {
+      for (var e in V.el) { if (V.el[e][0] === t.v) { return imgTag(V.el[e][2], '', '', true); } }
+      for (var b in V.br) { if (V.br[b][0] === t.v) { return imgTag(V.br[b][1], '', '', true); } }
+      for (var s in V.ty) { if (V.ty[s][0] === t.v) { return glyph(V.ty[s][1]); } }
+      for (var a in V.am) { if (V.am[a][0] === t.v) { return '<span class="ammo-' + a + '">' + glyph(V.am[a][1]) + '</span>'; } }
     }
-    if (D.o.am[w.am]) { tags.appendChild(glyph(D.o.am[w.am], ammoClass(w.am))); }
-    if (D.o.ty[w.t]) { tags.appendChild(glyph(D.o.ty[w.t], 'wpn-tag-svg wide')); }
-    if (w.br && D.o.ch[w.br]) {
-      tags.appendChild(icon(D.o.ch[w.br], 14, 'wpn-tag-ico champ'));
+    if ((t.k === 'perk' || t.k === 'perkname' || t.k === 'perk1' || t.k === 'perk2' || t.k === 'origintrait') && P) {
+      var got = perkIcon(t.v);
+      if (got) { return imgTag(got, '', '', true); }
     }
-    if (w.sea) { tags.appendChild(el('em', '', 'S' + w.sea)); }
-    a.appendChild(tags);
-
-    if (w.fr) {
-      var fr = el('p', 'wpn-card-frame');
-      fr.appendChild(icon(w.fi, 16, ''));
-      fr.appendChild(el('span', '', w.fr));
-      a.appendChild(fr);
+    if (t.k === 'breaker') { for (var r in V.br) { if (V.br[r][0] === t.v) { return imgTag(V.br[r][1], '', '', true); } } }
+    return '';
+  }
+  var perkIconCache = null;
+  function perkIcon(name) {
+    if (!perkIconCache) {
+      perkIconCache = {};
+      for (var i = 0; i < P.p.length; i++) {
+        if (P.p[i][P_ICON] && !perkIconCache[P.p[i][P_NAME]]) { perkIconCache[P.p[i][P_NAME]] = P.p[i][P_ICON]; }
+      }
     }
-
-    // 卡片上的评级只写首字加档位：全名「小棒猪-LGpig」会把卡片撑成两行，
-    // 一整排卡片的底就参差不齐了。谁是谁在详情页与悬停里写全。
-    var rate = el('p', 'wpn-card-rate');
-    Object.keys(D.a).forEach(function (who) {
-      if (!w.r[who] || !AUTHOR_LETTER[who]) { return; }
-      var b = el('span', 'wpn-rate');
-      b.appendChild(el('i', '', AUTHOR_LETTER[who]));
-      b.appendChild(el('b', '', w.r[who]));
-      b.title = D.a[who][0] + ' 给 ' + w.r[who];
-      rate.appendChild(b);
+    return perkIconCache[name] || '';
+  }
+  function renderBar() {
+    bar.querySelectorAll('[data-act="scope"]').forEach(function (b) {
+      b.setAttribute('aria-pressed', b.getAttribute('data-v') === S.scope ? 'true' : 'false');
     });
-    if (rate.childNodes.length) { a.appendChild(rate); }
-    eager = 0;
-    return a;
+    bar.querySelectorAll('[data-act="view"]').forEach(function (b) {
+      b.setAttribute('aria-pressed', b.getAttribute('data-v') === S.view ? 'true' : 'false');
+    });
+    bar.querySelector('[data-act="syntax"]').setAttribute('aria-expanded', S.syntax ? 'true' : 'false');
+    syntaxBox.hidden = !S.syntax;
+    if (input.value !== S.q && document.activeElement !== input) { input.value = S.q; }
+    var total = REPS[S.scope].length, unit = S.scope === 'armor' ? '件' : '把';
+    countBox.innerHTML = !S.q ? '<b>' + total + '</b> ' + unit
+      : '<b>' + (pending ? '…' : results.length) + '</b> / ' + total + ' ' + unit;
+    var pills = tokens.filter(function (t) { return t.t === 'kw' || t.t === 'w'; });
+    pillBox.hidden = !pills.length;
+    pillBox.innerHTML = pills.map(function (t) {
+      var wait = pending && t.t === 'kw' && has(POOL_KEYS, t.k);
+      return '<span class="wpn-pill' + (wait ? ' is-wait' : '') + (t.neg ? ' is-not' : '') + '">' + pillIcon(t) +
+        (t.t === 'kw' ? '<span class="k">' + esc(t.k) + ':</span>' + esc(t.v) : esc(t.v)) +
+        '<button type="button" data-act="unpill" data-a="' + t.a + '" data-b="' + t.b + '" aria-label="去掉这一条">×</button></span>';
+    }).join('');
+    measureStick();
   }
 
-  var more = null;        // 滚到它就添下一批
-  var watch = null;
-
-  function feed(box) {
-    var batch = found.slice(laid, laid + PAGE);
-    batch.forEach(function (w, i) { box.insertBefore(card(w, laid + i), more); });
-    laid += batch.length;
-    if (laid >= found.length && more) {
-      more.remove();
-      more = null;
-    }
+  /* ── 渲染：预选行、示例与细分 ──────────────────────────────────────── */
+  function hasToken(tok) {
+    return tokens.some(function (t) { return t.t === 'kw' && !t.neg && t.k + ':' + t.v === tok; });
   }
-
-  function grid() {
-    one.textContent = '';
-    laid = 0;
-    if (watch) { watch.disconnect(); }
-    if (!found.length) {
-      one.appendChild(el('p', 'wpn-empty', '没有这把枪。换几个字试试。'));
+  function toggleRow(label, toks, counts) {
+    return '<div class="wpn-row"><span class="lbl">' + label + '</span>' + toks.map(function (tok, k) {
+      return '<button type="button" class="toggle" data-act="preset" data-v="' + esc(tok) + '" aria-pressed="' +
+        (hasToken(tok) ? 'true' : 'false') + '"><code>' + esc(tok) + '</code><span class="n">' + counts[k] + '</span></button>';
+    }).join('') + '</div>';
+  }
+  function renderPresets() {
+    if (S.scope === 'armor') {
+      var byCls = [0, 0, 0];
+      REPS.armor.forEach(function (i) { byCls[AR[i][A_CLS]]++; });
+      var order = ['术士', '泰坦', '猎人'];
+      presetBox.innerHTML = toggleRow('职业', order.map(function (c) { return 'is:' + c; }),
+        order.map(function (c) { return byCls[V.cls.indexOf(c)]; }));
       return;
     }
-    var box = el('div', 'wpn-cards');
-    more = el('p', 'wpn-more', '再往下还有…');
-    box.appendChild(more);
-    one.appendChild(box);
-    feed(box);
-    if (more) {
-      // 滚到底再添下一批：两千多张卡片一次铺完，首屏要等好几秒。
-      watch = new IntersectionObserver(function (rows) {
-        if (rows.some(function (r) { return r.isIntersecting; })) { feed(box); }
-      }, { rootMargin: '600px' });
-      watch.observe(more);
-    }
+    var bySlot = [0, 0, 0];
+    REPS.wpn.forEach(function (i) { bySlot[WR[i][W_SLOT]]++; });
+    presetBox.innerHTML = toggleRow('槽位', V.slot.map(function (s) { return 'is:' + s; }), bySlot);
   }
-
-  // ── 列表：挑中一把之后左边那一栏 ──────────────────────────────────
-  function list() {
-    var got = found;
-    // 选中的那把排到最前：列表只铺前 80 条，按名字排下去往往轮不到它，
-    // 读者就会看到右边显示着一把、左边却没有它。
-    var now = location.hash.slice(1);
-    if (now && by[now]) {
-      got = [by[now]].concat(got.filter(function (w) { return w.h !== now; }));
-    }
-    hits.textContent = '';
-    got.slice(0, LIMIT).forEach(function (w) {
-      var li = el('li');
-      var a = el('a', 'wpn-hit');
-      a.href = '#' + w.h;
-      a.appendChild(gun(w, 32, 'wpn-hit-ico'));
-      var box = el('span', 'wpn-hit-text');
-      box.appendChild(el('strong', '', w.n));
-      var tags = [w.el, w.t];
-      Object.keys(D.a).forEach(function (who) {
-        if (w.r[who]) { tags.push(w.r[who]); }
-      });
-      box.appendChild(el('small', '', tags.filter(Boolean).join(' · ')));
-      a.appendChild(box);
-      li.appendChild(a);
-      hits.appendChild(li);
+  function refineRow() {
+    var total = results.length, cnt = {}, lab = {};
+    function add(tok, label) { cnt[tok] = (cnt[tok] || 0) + 1; lab[tok] = label; }
+    results.forEach(function (i) {
+      if (S.scope === 'armor') {
+        var a = AR[i];
+        add('is:' + V.cls[a[A_CLS]], V.cls[a[A_CLS]]);
+        add('is:' + V.part[a[A_PART]], V.part[a[A_PART]]);
+        if (a[A_SRC] >= 0) { add('source:' + V.src[a[A_SRC]], '<span class="k">来源</span>' + esc(V.src[a[A_SRC]])); }
+        return;
+      }
+      var r = WR[i];
+      add('is:' + elName(r), imgTag(V.el[r[W_EL]][2], '', '', true) + esc(elName(r)));
+      if (r[W_BR]) { add('is:' + V.br[r[W_BR]][0], imgTag(V.br[r[W_BR]][1], '', '', true) + esc(V.br[r[W_BR]][0])); }
+      add('frame:' + frameOf(r)[0], esc(frameOf(r)[0]));
+      add('is:' + V.am[r[W_AMMO]][0], esc(V.am[r[W_AMMO]][0]));
+      if (r[W_SRC] >= 0) { add('source:' + V.src[r[W_SRC]], '<span class="k">来源</span>' + esc(V.src[r[W_SRC]])); }
+      if (r[W_FLAG] & F_CRAFT) { add('is:可锻造', '可锻造'); }
+      if (r[W_FLAG] & F_TIER) { add('is:可升阶', '可升阶'); }
     });
-    if (got.length > LIMIT) {
-      hits.appendChild(el('li', 'wpn-more', '还有 ' + (got.length - LIMIT) + ' 把，再输几个字'));
+    var toks = Object.keys(cnt).filter(function (t) { return cnt[t] > REFINE_MIN && cnt[t] < total && !hasToken(t); });
+    if (!toks.length) { return ''; }
+    toks.sort(function (a, b) { return cnt[b] - cnt[a]; });
+    return '<div class="wpn-row"><span class="lbl">细分</span>' + toks.map(function (t) {
+      return '<button type="button" class="toggle" data-act="refine" data-v="' + esc(t) + '" title="shift 点击排除">' +
+        lab[t] + '<span class="n">' + cnt[t] + '</span></button>';
+    }).join('') + '</div>';
+  }
+  function renderSub() {
+    if (pending) {
+      subBox.innerHTML = '<div class="wpn-row"><span class="loading">正在载入词条池</span></div>';
+      return;
     }
-    if (!got.length) {
-      hits.appendChild(el('li', 'wpn-more', '没有这把枪。换几个字试试。'));
+    if (!S.q) {
+      subBox.innerHTML = S.scope === 'armor' ? '' : '<div class="wpn-row"><span class="lbl">试试这些</span>' +
+        EXAMPLES.map(function (e) {
+          return '<button type="button" class="toggle" data-act="setq" data-v="' + esc(e) + '"><code>' + esc(e) + '</code></button>';
+        }).join('') + '</div>';
+      return;
     }
-    mark();
+    subBox.innerHTML = S.sel == null ? refineRow() : '';
   }
 
-  function mark() {
-    var now = location.hash.slice(1);
-    Array.prototype.forEach.call(hits.querySelectorAll('.wpn-hit'), function (a) {
-      a.classList.toggle('on', a.getAttribute('href') === '#' + now);
+  /* ── 渲染：卡片墙与列表 ────────────────────────────────────────────── */
+  function card(i, k) {
+    var eager = k < N_HIGH ? 2 : k < N_EAGER ? 1 : 0;
+    if (S.scope === 'armor') {
+      var a = AR[i];
+      var first = (a[A_PERKS] || '').split('、')[0];
+      return '<li><a class="wpn-card" href="' + link('armor', i) + '" data-act="open" data-i="' + i + '">' + armorGun(a, '', eager) +
+        '<div><p class="nm exo">' + esc(a[A_NAME]) + '</p><div class="wpn-meta"><span class="cls">' + V.cls[a[A_CLS]] +
+        '</span><span class="cls">' + V.part[a[A_PART]] + '</span><span class="ssn">S' + a[A_SSN] + '</span></div>' +
+        '<div class="wpn-frame">' + esc(first) + '</div>' +
+        (a[A_ROLE] ? '<div class="wpn-grades"><span><span class="by">小棒猪</span>' + esc(a[A_ROLE]) + '</span></div>' : '') +
+        '</div></a></li>';
+    }
+    var r = WR[i];
+    return '<li><a class="wpn-card" href="' + link('wpn', i) + '" data-act="open" data-i="' + i + '">' + gun(r, '', eager) +
+      '<div><p class="nm' + (isExotic(r) ? ' exo' : '') + '">' + esc(r[W_NAME]) + '</p>' + meta(r) +
+      '<div class="wpn-frame">' + esc(frameOf(r)[0]) + '</div>' + gradesHtml(r) + '</div></a></li>';
+  }
+  function meta(r) {
+    return '<div class="wpn-meta">' + imgTag(V.el[r[W_EL]][2], '', elName(r), true) +
+      '<span class="ammo-' + r[W_AMMO] + '">' + glyph(V.am[r[W_AMMO]][1], V.am[r[W_AMMO]][0]) + '</span>' +
+      glyph(V.ty[r[W_SUB]][1], typeName(r)) +
+      (r[W_BR] ? imgTag(V.br[r[W_BR]][1], '', V.br[r[W_BR]][0], true) : '') +
+      '<span class="ssn">S' + r[W_SSN] + '</span></div>';
+  }
+  function gradesHtml(r) {
+    var g = r[W_GRADE];
+    if (!g) { return ''; }
+    return '<div class="wpn-grades">' + (g[0] ? '<span><span class="by">AEGIS</span>' + esc(g[0]) + '</span>' : '') +
+      (g[1] ? '<span><span class="by">小棒猪</span>' + esc(g[1]) + '</span>' : '') + '</div>';
+  }
+  function listRow(i, dup) {
+    if (S.scope === 'armor') {
+      var a = AR[i];
+      return '<li><a href="' + link('armor', i) + '" data-act="open" data-i="' + i + '" class="wpn-lrow"><span></span>' +
+        '<span class="ssn">S' + a[A_SSN] + '</span><span></span>' + armorGun(a, 'sm') + '<span class="nm exo">' + esc(a[A_NAME]) +
+        '</span><span class="ty">' + V.cls[a[A_CLS]] + ' · ' + V.part[a[A_PART]] + '</span><span></span><span class="fr">' +
+        esc(a[A_PERKS]) + '</span><span class="wpn-grades">' + esc(a[A_ROLE]) + '</span></a></li>';
+    }
+    var r = WR[i], g = r[W_GRADE];
+    var fr = frameOf(r);
+    return '<li><a href="' + link('wpn', i) + '" data-act="open" data-i="' + i + '" class="wpn-lrow">' +
+      imgTag(V.el[r[W_EL]][2], 'el', elName(r)) + '<span class="ssn' + (dup ? ' dup' : '') + '">S' + r[W_SSN] + '</span>' +
+      '<span class="ammo-' + r[W_AMMO] + ' wpn-meta">' + glyph(V.am[r[W_AMMO]][1]) + '</span>' + gun(r, 'sm') +
+      '<span class="nm' + (isExotic(r) ? ' exo' : '') + '">' + esc(r[W_NAME]) + '</span><span class="ty">' +
+      glyph(V.ty[r[W_SUB]][1]) + esc(typeName(r)) + '</span>' +
+      (r[W_BR] ? imgTag(V.br[r[W_BR]][1], 'br', V.br[r[W_BR]][0]) : '<span></span>') +
+      '<span class="fr">' + imgTag(fr[1]) + esc(fr[0]) + '</span><span class="wpn-grades">' +
+      (g ? esc([g[0] ? 'AEGIS ' + g[0] : '', g[1] ? '小棒猪 ' + g[1] : ''].filter(Boolean).join('　')) : '') + '</span></a></li>';
+  }
+  function link(scope, i) {
+    var u = new URLSearchParams();
+    if (scope === 'armor') { u.set('s', 'armor'); }
+    if (S.q) { u.set('q', S.q); }
+    u.set('w', (scope === 'armor' ? AR : WR)[i][0]);
+    return '?' + u.toString();
+  }
+
+  var observer = null;
+  function batches(list, render, box, cls) {
+    if (observer) { observer.disconnect(); observer = null; }
+    var ol = document.createElement('ol');
+    ol.className = cls;
+    box.appendChild(ol);
+    var at = 0;
+    function more() {
+      var end = Math.min(list.length, at + BATCH), html = '';
+      for (var k = at; k < end; k++) { html += render(list[k], k); }
+      ol.insertAdjacentHTML('beforeend', html);
+      at = end;
+      if (at < list.length) {
+        var sentinel = ol.lastElementChild;
+        observer = new IntersectionObserver(function (es) {
+          if (es[0].isIntersecting) { observer.disconnect(); more(); }
+        }, { rootMargin: '800px' });
+        observer.observe(sentinel);
+      }
+    }
+    more();
+  }
+
+  function emptyState() {
+    var top = tree && tree.op === 'and' ? tree.xs : tree ? [tree] : [];
+    var noun = S.scope === 'armor' ? '异域护甲' : '武器';
+    if (top.length < 2) { return '<div class="empty"><h3>没有符合条件的' + noun + '</h3><p>换一个词，或看看「语法」。</p></div>'; }
+    var btns = top.map(function (node, k) {
+      var rest = top.filter(function (_, j) { return j !== k; });
+      var n = run(S.scope, rest.length === 1 ? rest[0] : { op: 'and', xs: rest }).length;
+      var t = node.tok || (node.x && node.x.tok);
+      var raw = t ? S.q.slice(t.a, t.b) : '';
+      return t ? '<button type="button" class="toggle" data-act="unpill" data-a="' + t.a + '" data-b="' + t.b + '">去掉 <code>' +
+        esc(raw) + '</code><span class="n">' + n + '</span></button>' : '';
+    }).join('');
+    return '<div class="empty"><h3>没有符合全部条件的' + noun + '</h3><p>去掉其中一条之后还剩：</p><div class="wpn-row">' + btns + '</div></div>';
+  }
+  function skeleton() {
+    var one = '<li><div class="wpn-card"><span class="gun"></span><div><p class="nm">占位</p><div class="wpn-meta"></div>' +
+      '<div class="wpn-frame"></div></div></div></li>';
+    return '<ol class="wpn-grid skel">' + new Array(13).join(one) + '</ol>';
+  }
+  function renderBrowse() {
+    body.innerHTML = '';
+    if (pending) { body.innerHTML = skeleton(); return; }
+    if (!results.length) { body.innerHTML = emptyState(); return; }
+    if (S.view === 'list') {
+      var names = {};
+      results.forEach(function (i) { var n = S.scope === 'armor' ? AR[i][A_NAME] : WR[i][W_NAME]; names[n] = (names[n] || 0) + 1; });
+      batches(results, function (i) {
+        return listRow(i, S.scope === 'wpn' && names[WR[i][W_NAME]] > 1);
+      }, body, 'wpn-list');
+      return;
+    }
+    batches(results, card, body, 'wpn-grid');
+  }
+
+  /* ── 渲染：结果栏 ──────────────────────────────────────────────────── */
+  function railRow(scope, i, current) {
+    var rows = scope === 'armor' ? AR : WR, r = rows[i];
+    var sub = scope === 'armor' ? V.cls[r[A_CLS]] + ' · ' + V.part[r[A_PART]] + ' · S' + r[A_SSN]
+      : imgTag(V.el[r[W_EL]][2]) + 'S' + r[W_SSN] + ' · ' + esc(typeName(r));
+    var exo = scope === 'armor' || isExotic(r);
+    return '<li><a href="' + link(scope, i) + '" data-act="open" data-i="' + i + '" data-scope="' + scope + '"' +
+      (i === current && scope === S.scope ? ' aria-current="page"' : '') + '>' +
+      (scope === 'armor' ? armorGun(r, 'sm') : gun(r, 'sm')) + '<span><span class="nm' + (exo ? ' exo' : '') + '">' +
+      esc(r[1]) + '</span><span class="sub">' + sub + '</span></span></a></li>';
+  }
+  function renderRail() {
+    if (S.railOff) {
+      return '<div class="rail-off"><button type="button" class="op" data-act="rail" aria-label="展开结果栏">›</button>' +
+        '<span class="n">' + results.length + '</span></div>';
+    }
+    var pinned = pins.map(function (p) {
+      var scope = p.slice(0, 1) === 'a' ? 'armor' : 'wpn', i = BY_HASH[scope][p.slice(2)];
+      return i == null ? '' : railRow(scope, i, S.sel);
+    }).join('');
+    return '<nav class="wpn-rail" aria-label="结果"><span class="grip" data-act="grip"></span>' +
+      (pinned ? '<div class="rail-head"><b>钉选</b>' + pins.length + '<span class="op-sep"></span>' +
+        '<button type="button" class="op" data-act="unpinall">清空</button></div><ol class="rail-list">' + pinned + '</ol>' : '') +
+      '<div class="rail-head"><b>结果</b>' + results.length + '<span class="op-sep"></span>' +
+      '<button type="button" class="op" data-act="rail">收起</button></div><ol class="rail-list rail-hits"></ol></nav>';
+  }
+  function renderSplit() {
+    if (observer) { observer.disconnect(); observer = null; }
+    body.innerHTML = '<div class="wpn-split' + (S.railOff ? ' is-off' : '') + '" style="--rail:' + S.rail + 'px">' +
+      renderRail() + '<div class="wpn-detail"></div></div>';
+    var hits = body.querySelector('.rail-hits');
+    if (hits) {
+      var at = 0, list = results;
+      var more = function () {
+        var end = Math.min(list.length, at + BATCH), html = '';
+        for (var k = at; k < end; k++) { html += railRow(S.scope, list[k], S.sel); }
+        hits.insertAdjacentHTML('beforeend', html);
+        at = end;
+        if (at < list.length) {
+          observer = new IntersectionObserver(function (es) {
+            if (es[0].isIntersecting) { observer.disconnect(); more(); }
+          }, { root: hits.parentNode, rootMargin: '400px' });
+          observer.observe(hits.lastElementChild);
+        }
+      };
+      more();
+    }
+    renderDetail();
+  }
+
+  /* ── 渲染：详情 ────────────────────────────────────────────────────── */
+  function renderDetail() {
+    var box = body.querySelector('.wpn-detail');
+    if (!box) { return; }
+    var i = S.preview != null ? S.preview : S.sel;
+    if (S.scope === 'armor') {
+      if (!T) { box.innerHTML = '<p class="loading">正在载入说明</p>'; need('text', renderDetail); return; }
+      box.innerHTML = armorDetail(i);
+      return;
+    }
+    if (!P) { box.innerHTML = '<p class="loading">正在载入词条池</p>'; need('pool', renderDetail); return; }
+    if (!T) { need('text', renderDetail); }
+    box.innerHTML = weaponDetail(i);
+  }
+
+  /* 作者在页面上的写法。数据里的键是 Aegis 与 LGpig。 */
+  var AUTHOR = { Aegis: 'AEGIS', LGpig: '小棒猪' };
+  var HALO = { 1: ['by-a', 'Aegis 推荐'], 2: ['by-l', '小棒猪推荐'], 3: ['by-al', '两位作者都推荐'] };
+  function plugButton(c, cell, marks, pressed, fixed) {
+    var p = shownPlug(cell), bits = marks[cell[0]] || 0;
+    var cls = 'plug' + (cell[1] >= 0 ? ' is-enh' : '') + (bits ? ' ' + HALO[bits][0] : '') +
+      (S.hoverPlug && S.hoverPlug.col === c && S.hoverPlug.plug === p ? ' is-hover' : '') + (fixed ? ' fixed' : '');
+    return '<button type="button" class="' + cls + '" aria-pressed="' + (pressed ? 'true' : 'false') + '"' +
+      (bits ? ' title="' + HALO[bits][1] + '"' : '') + ' data-act="perk" data-col="' + c + '" data-plug="' + p + '">' +
+      '<span class="ico">' + imgTag(P.p[p][P_ICON], '', '', true) + '</span><span class="nm">' + esc(plugName(p)) + '</span></button>';
+  }
+  function haloLegend() {
+    return '<span class="aside halo-key"><i class="by-a"></i>Aegis 推荐<i class="by-l"></i>小棒猪推荐' +
+      '<i class="by-al"></i>两位都推荐</span>';
+  }
+  function tierText(i, roll, mw) {
+    if (!roll.mw) { return 'T' + roll.t + ' 加成在装上大师杰作之后生效'; }
+    /* 选中的那一项排第一，其余按属性面板的顺序。 */
+    var pr = poolRow(i), group = P.g[pr[0]], names = [];
+    for (var g = 0; g < group.length; g++) {
+      var s = group[g][0];
+      if (pr[1][g] == null || !mw.tier[s]) { continue; }
+      if (mw.opt && s === mw.opt[1]) { names.unshift(P.s[s][1]); } else { names.push(P.s[s][1]); }
+    }
+    return 'T' + roll.t + ' 加成：' + names.join('、') + ' 各 +' + roll.t;
+  }
+  function weaponDetail(i) {
+    var r = WR[i], pr = poolRow(i), roll = rollOf(i), rep = r[W_REP];
+    var cols = pr[2], marks = marksOf(i);
+    var swap = S.hoverPlug ? { col: S.hoverPlug.col, plug: S.hoverPlug.plug } : null;
+    var res = compute(i, roll), ghost = swap ? compute(i, roll, swap) : null;
+    var matrix = cols.map(function (col, c) {
+      var cells = cellsOf(col), fixed = cells.length === 1;
+      return '<div class="col"><h4>' + esc(P.lb[col[0]]) + '</h4>' + cells.map(function (cell) {
+        return plugButton(c, cell, marks, roll.sel[c] === shownPlug(cell), fixed);
+      }).join('') + '</div>';
+    }).join('');
+    var choice = cols.some(function (col) { return cellsOf(col).length > 1; });
+    var parts = [];
+    parts.push('<header class="one-head">' + gun(r, 'lg', 2) + '<div><h2' + (isExotic(r) ? ' class="exo"' : '') + '>' +
+      esc(r[W_NAME]) + '</h2><p class="en">' + esc(enOf('wpn', i)) + '</p><p class="lore">' +
+      (T && T.fw[i] >= 0 ? esc(T.FL[T.fw[i]]) : '') + '</p></div><div class="one-acts">' +
+      '<button type="button" class="toggle" data-act="pin" aria-pressed="' + (isPinned('wpn', i) ? 'true' : 'false') + '">' +
+      (isPinned('wpn', i) ? '已钉选' : '钉选') + '</button></div></header>');
+    parts.push('<div class="one-main">');
+    if (isExotic(r) && T && T.xs[rep]) { parts.push(exoticBlock(T.xs[rep])); }
+    parts.push('<section><h3 class="sub-label">词条' + (choice ? haloLegend() : '') + '</h3><div class="matrix">' + matrix + '</div></section>');
+    var say = T && T.au[rep] ? T.au[rep] : null;
+    if (say) { parts.push('<section><h3 class="sub-label">作者评语</h3><div class="says">' + saysHtml(say) + '</div></section>'); }
+    parts.push(gearSection(i, roll, res));
+    if (pr[8].length) { parts.push(catalystSection(i, roll)); }
+    var fr = frameOf(r), fp = PIDX[fr[3]];
+    parts.push('<section><h3 class="sub-label">' + (isExotic(r) ? '异域特性' : '框架') + '</h3><div class="frame">' +
+      imgTag(fr[1], '', '', true) + '<div><b>' + esc(fr[0]) + '</b>' +
+      (fr[2][r[W_SUB]] ? '<span class="rate">' + fr[2][r[W_SUB]] + ' 发/分</span>' : '') +
+      '<p>' + (T && fp != null ? esc(T.pd[fp]) : '') + '</p></div></div></section>');
+    parts.push('</div>');
+    parts.push('<aside class="one-side"><section><div class="facts">' + factsHtml(i) + '</div></section>' +
+      '<section><h3 class="sub-label">属性</h3>' + statsPanel(res, ghost) + '</section>' +
+      versionsHtml('wpn', i) + '</aside>');
+    return '<article class="wpn-one">' + parts.join('') + '</article>';
+  }
+  function exoticBlock(x) {
+    return '<section class="site"><h3 class="sub-label">站内详情</h3><div class="xps">' + x[0].map(function (c) {
+      return '<span class="xp">' + imgTag(c[1], '', '', true) + esc(c[0]) + '</span>';
+    }).join('') + '</div><div class="prose">' + x[1] + '</div></section>';
+  }
+  function saysHtml(blocks) {
+    return blocks.map(function (b) {
+      return '<div class="say by-' + b[0].toLowerCase() + '"><div class="who">' + AUTHOR[b[0]] + '<b>' + esc(b[1]) +
+        '</b></div><div>' + b[2].map(function (p) { return '<p>' + p + '</p>'; }).join('') + '</div></div>';
+    }).join('');
+  }
+  function isPinned(scope, i) { return has(pins, (scope === 'armor' ? 'a:' : 'w:') + (scope === 'armor' ? AR : WR)[i][0]); }
+  function factsHtml(i) {
+    var r = WR[i], fr = frameOf(r), out = [];
+    function chip(q, icon, text) {
+      out.push('<button type="button" class="toggle" data-act="addq" data-v="' + esc(q) + '">' + icon + esc(text) + '</button>');
+    }
+    chip('is:' + elName(r), imgTag(V.el[r[W_EL]][2], '', '', true), elName(r));
+    if (r[W_BR]) { chip('is:' + V.br[r[W_BR]][0], imgTag(V.br[r[W_BR]][1], '', '', true), V.br[r[W_BR]][0]); }
+    chip('is:' + typeName(r), glyph(V.ty[r[W_SUB]][1]), typeName(r));
+    chip('is:' + V.am[r[W_AMMO]][0], '<span class="ammo-' + r[W_AMMO] + '">' + glyph(V.am[r[W_AMMO]][1]) + '</span>', V.am[r[W_AMMO]][0]);
+    chip('frame:' + fr[0], imgTag(fr[1], '', '', true), fr[0]);
+    chip('is:' + rarity(r), '', rarity(r));
+    chip('season:' + r[W_SSN], '', 'S' + r[W_SSN]);
+    if (r[W_SRC] >= 0) { chip('source:' + V.src[r[W_SRC]], '', V.src[r[W_SRC]]); }
+    if (r[W_FLAG] & F_CRAFT) { chip('is:可锻造', '', '可锻造'); }
+    if (r[W_FLAG] & F_TIER) { chip('is:可升阶', '', '可升阶'); }
+    return out.join('');
+  }
+  function versionsHtml(scope, i) {
+    var rows = scope === 'armor' ? AR : WR, fam = (scope === 'armor' ? V.afam : V.fam)[rows[i][scope === 'armor' ? A_FAM : W_FAM]];
+    return '<section><h3 class="sub-label">全部版本<span class="aside">' + fam.length + ' 版</span></h3><ol class="vers">' +
+      fam.map(function (k) {
+        var x = rows[k], src = scope === 'armor' ? srcOf(x, A_SRC) : srcOf(x, W_SRC);
+        var extra = scope === 'wpn' && (x[W_FLAG] & F_HOLO) ? ' · 全息' : '';
+        return '<li><a href="' + link(scope, k) + '" data-act="open" data-i="' + k + '" data-scope="' + scope + '"' +
+          (k === i ? ' aria-current="page"' : '') + '>' + (scope === 'armor' ? armorGun(x, 'sm') : gun(x, 'sm')) +
+          '<span><span class="nm">' + esc(x[1]) + '</span><br><span class="sub">S' + x[scope === 'armor' ? A_SSN : W_SSN] +
+          ' · ' + esc(src || '无来源记录') + extra + '</span></span><span class="now">' + (k === i ? '当前' : '') + '</span></a></li>';
+      }).join('') + '</ol></section>';
+  }
+
+  function mwLabel(i, roll) {
+    if (!roll.mw) { return '未装'; }
+    return poolRow(i)[4] ? roll.mw : roll.mw + ' Lv' + roll.lv;
+  }
+  function gearSection(i, roll, res) {
+    var pr = poolRow(i), opts = optsOf(i), mods = modsOf(i);
+    if (!opts.length && !mods.length) { return ''; }
+    var opt = res.mw.opt, rec = pr[5];
+    var mwSlot = '';
+    if (opts.length) {
+      var icon = opt ? P.p[opt[2]][P_ICON] : '';
+      mwSlot = '<div class="slot-cell"><button type="button" class="slot' + (opt && roll.mw === rec ? ' by-a' : '') +
+        (opt ? '' : ' is-empty') + (S.slotHover ? ' is-hover' : '') + '" data-act="mwslot" aria-haspopup="dialog" aria-label="大师杰作">' +
+        imgTag(icon, '', '', true) + '</button><div class="slot-lab"><b>大师杰作</b><span>' + esc(mwLabel(i, roll)) + '</span></div></div>';
+    }
+    var tier = '';
+    if (pr[4]) {
+      var btns = '';
+      for (var t = 1; t <= 5; t++) {
+        btns += '<button type="button" class="toggle" data-act="tier" data-v="' + t + '" aria-pressed="' + (roll.t === t ? 'true' : 'false') + '">T' + t + '</button>';
+      }
+      tier = '<div class="slot-cell tier"><div class="slot-lab"><b>T 级</b><div class="tiers">' + btns + '</div>' +
+        '<span class="hint">' + esc(tierText(i, roll, res.mw)) + '</span></div></div>';
+    }
+    var modSlot = '';
+    if (mods.length) {
+      var m = roll.mod >= 0 ? P.p[roll.mod] : null;
+      modSlot = '<div class="slot-cell"><button type="button" class="slot' + (m ? '' : ' is-empty') + '" data-act="modslot" ' +
+        'aria-haspopup="dialog" aria-label="模组">' + (m ? imgTag(m[P_ICON], '', '', true) : '') + '</button><div class="slot-lab"><b>模组</b><span>' +
+        (m ? esc(m[P_NAME]) : '未装 · 可选 ' + mods.length) + '</span></div></div>';
+    }
+    var pop = '';
+    if (S.pop === 'mw') { pop = mwPicker(i, roll); } else if (S.pop === 'mod') { pop = modPicker(i, roll); }
+    return '<section class="gear-sec"><h3 class="sub-label">大师杰作与模组</h3><div class="slots">' + mwSlot + tier + modSlot + '</div>' + pop + '</section>';
+  }
+  function mwPicker(i, roll) {
+    var pr = poolRow(i), rec = pr[5];
+    var cells = optsOf(i).map(function (o) {
+      return '<button type="button" class="pick' + (o[0] === rec ? ' by-a' : '') + '" data-act="mwpick" data-v="' + esc(o[0]) +
+        '" aria-pressed="' + (o[0] === roll.mw ? 'true' : 'false') + '"><span class="sq">' + imgTag(P.p[o[2]][P_ICON], '', '', true) +
+        '</span><span>' + esc(o[0]) + '</span></button>';
+    }).join('');
+    var lv = '';
+    if (!pr[4]) {
+      var b = '';
+      for (var k = 1; k <= 10; k++) {
+        b += '<button type="button" class="' + (k <= roll.lv ? 'on' : '') + '" data-act="level" data-v="' + k + '" aria-label="' + k + ' 级"></button>';
+      }
+      lv = '<div class="pk-lv"><span class="k">等级</span><div class="lv">' + b + '<span class="v">Lv' + roll.lv + ' / 10</span></div></div>';
+    }
+    return '<div class="picker" role="dialog" aria-label="大师杰作"><div class="pk-head"><b>大师杰作</b>' +
+      '<button type="button" class="op" data-act="mwpick" data-v="">卸下</button></div><div class="pk-grid">' + cells + '</div>' + lv + '</div>';
+  }
+  function modPicker(i, roll) {
+    var cells = modsOf(i).map(function (p) {
+      return '<button type="button" class="pick" data-act="modpick" data-v="' + p + '" aria-pressed="' + (roll.mod === p ? 'true' : 'false') +
+        '"><span class="sq">' + imgTag(P.p[p][P_ICON], '', '', true) + '</span><span>' + esc(plugName(p)) + '</span></button>';
+    }).join('');
+    return '<div class="picker wide" role="dialog" aria-label="模组"><div class="pk-head"><b>模组</b>' +
+      '<button type="button" class="op" data-act="modpick" data-v="-1">卸下</button></div><div class="pk-grid">' + cells + '</div></div>';
+  }
+  function catalystSection(i, roll) {
+    var pr = poolRow(i);
+    var effs = pr[8].map(function (p) {
+      var lines = T && T.cp[p] ? T.cp[p] : [];
+      return lines.map(function (e) { return '<p><b>' + esc(e[0]) + '</b>' + esc(e[1]) + '</p>'; }).join('');
+    }).join('');
+    return '<section><h3 class="sub-label">催化剂</h3><div class="cat"><button type="button" class="toggle" data-act="cat" aria-pressed="' +
+      (roll.cat ? 'true' : 'false') + '">' + (roll.cat ? '已装上' : '装上') + '</button><div>' + effs + '</div></div></section>';
+  }
+
+  function statsPanel(res, ghost) {
+    var bars = res.rows.filter(function (x) { return !x.numeric; });
+    var nums = res.rows.filter(function (x) { return x.numeric; });
+    var o = ['<dl class="stats">'];
+    bars.forEach(function (x) {
+      var segs = '<i class="s-base" style="width:' + (x.base - x.neg) + '%"></i>' + x.segs.map(function (s) {
+        return '<i class="' + s[0] + '" style="width:' + s[1] + '%"></i>';
+      }).join('') + (x.cond ? '<i class="s-cond" style="width:' + x.cond + '%"></i>' : '') +
+        (x.neg ? '<i class="s-neg" style="width:' + x.neg + '%"></i>' : '');
+      var d = '';
+      if (ghost && ghost.byStat[x.s]) {
+        var diff = ghost.byStat[x.s].value - x.value;
+        if (diff > 0) { segs += '<i class="s-ghost" style="width:' + diff + '%"></i>'; }
+        if (diff < 0) { segs += '<i class="g-neg" style="left:' + ghost.byStat[x.s].value + '%;width:' + (-diff) + '%"></i>'; }
+        if (diff) { d = '<span class="d' + (diff > 0 ? '' : ' dn') + '">' + (diff > 0 ? '+' : '−') + Math.abs(diff) + '</span>'; }
+      }
+      o.push('<dt' + (S.hoverRow === x.s ? ' class="is-hover"' : '') + ' data-act="statrow" data-s="' + x.s + '">' + esc(x.name) +
+        '</dt><dd data-act="statrow" data-s="' + x.s + '"><div class="bar">' + segs + '</div></dd><dd class="v">' + x.value + '</dd><dd>' + d + '</dd>');
     });
-  }
-
-  // 固有那一栏的栏名，与 build-weapons.py 的 COLUMN 表对上；大师杰作那一栏
-  // 由第四位（折起来显示）认，不按栏名认——栏名是给读者看的，会改。
-  var FRAME_COL = '固有';
-  var SITE_TITLE = '武器 PERK 详解';
-
-  function frameOf(d) {
-    var got = (d.c || []).filter(function (c) {
-      return c[0] === FRAME_COL && c[1].length;
+    o.push('<div class="gap"></div>');
+    nums.forEach(function (x) {
+      var d = '';
+      if (ghost && ghost.byStat[x.s]) {
+        var diff = ghost.byStat[x.s].value - x.value;
+        if (diff) { d = '<span class="d' + (diff > 0 ? '' : ' dn') + '">' + (diff > 0 ? '+' : '−') + Math.abs(diff) + '</span>'; }
+      }
+      o.push('<dt data-act="statrow" data-s="' + x.s + '">' + esc(x.name) + '</dt><dd class="rc">' + (x.name === '后坐方向' ? recoilSvg(x.value) : '') +
+        '</dd><dd class="v">' + x.value + '</dd><dd>' + d + '</dd>');
     });
-    return got[0] || null;
+    o.push('</dl><div class="legend">' + [
+      ['background:var(--seg-base)', '基础'], ['background:var(--seg-part)', '枪管与弹匣'], ['background:var(--seg-perk)', 'Perk'],
+      ['background:var(--c-enh)', '大师杰作'],
+      ['background-image:repeating-linear-gradient(90deg,var(--c-enh) 0 2px,transparent 2px 3px)', 'T 级'],
+      ['box-shadow:inset 0 0 0 1px var(--seg-perk)', '条件生效'],
+      ['background-image:repeating-linear-gradient(135deg,var(--bone-dim) 0 1px,transparent 1px 4px)', '扣除']
+    ].map(function (x) { return '<span><i style="' + x[0] + '"></i>' + x[1] + '</span>'; }).join('') + '</div>');
+    return o.join('');
   }
 
-  function mwOf(d) {
-    for (var i = 0; i < (d.c || []).length; i++) {
-      if (d.c[i][3]) { return i; }
+  function armorDetail(i) {
+    var a = AR[i], rep = a[A_REP];
+    var facts = [V.cls[a[A_CLS]], V.part[a[A_PART]], '异域', 'S' + a[A_SSN]];
+    var qs = ['is:' + V.cls[a[A_CLS]], 'is:' + V.part[a[A_PART]], 'is:异域', 'season:' + a[A_SSN]];
+    if (a[A_SRC] >= 0) { facts.push(V.src[a[A_SRC]]); qs.push('source:' + V.src[a[A_SRC]]); }
+    var perks = (T.ap[rep] || []).map(function (p) {
+      return '<div class="frame">' + (p[1] ? imgTag(p[1], '', '', true) : '<span></span>') + '<div><b>' + esc(p[0]) + '</b><p>' + esc(p[2]) + '</p></div></div>';
+    }).join('');
+    var say = T.aau[rep];
+    return '<article class="wpn-one"><header class="one-head">' + armorGun(a, 'lg', 2) + '<div><h2 class="exo">' + esc(a[A_NAME]) +
+      '</h2><p class="en">' + esc(enOf('armor', i)) + '</p><p class="lore">' + (T.fa[i] >= 0 ? esc(T.FL[T.fa[i]]) : '') +
+      '</p></div><div class="one-acts"><button type="button" class="toggle" data-act="pin" aria-pressed="' +
+      (isPinned('armor', i) ? 'true' : 'false') + '">' + (isPinned('armor', i) ? '已钉选' : '钉选') + '</button></div></header>' +
+      '<div class="one-main">' + (T.axs[rep] ? exoticBlock(T.axs[rep]) : '') +
+      (say ? '<section><h3 class="sub-label">作者评语</h3><div class="says">' + saysHtml(say) + '</div></section>' : '') +
+      (perks ? '<section><h3 class="sub-label">异域特性</h3>' + perks + '</section>' : '') + '</div>' +
+      '<aside class="one-side"><section><div class="facts">' + facts.map(function (f, k) {
+        return '<button type="button" class="toggle" data-act="addq" data-v="' + esc(qs[k]) + '">' + esc(f) + '</button>';
+      }).join('') + '</div></section><section><h3 class="sub-label">属性</h3><p class="src">护甲属性随掉落随机生成，定义里没有固定值。</p></section>' +
+      versionsHtml('armor', i) + '</aside></article>';
+  }
+
+  /* ── 浮层 ──────────────────────────────────────────────────────────── */
+  function showTip(html, anchor, side, narrow) {
+    tip.className = 'tip' + (narrow ? ' narrow' : '');
+    tip.innerHTML = html;
+    tip.hidden = false;
+    var r = anchor.getBoundingClientRect(), w = tip.offsetWidth, hgt = tip.offsetHeight;
+    var x = side === 'left' ? r.left - w - 12 : r.right + 12;
+    if (x + w > document.documentElement.clientWidth - 8) { x = r.left - w - 12; }
+    if (x < 8) { x = 8; }
+    var y = Math.min(r.top, window.innerHeight - hgt - 8);
+    tip.style.left = (x + window.scrollX) + 'px';
+    tip.style.top = (Math.max(8, y) + window.scrollY) + 'px';
+  }
+  function hideTip() { tip.hidden = true; }
+  function perkTip(i, col, p) {
+    var cols = poolRow(i)[2], cell = null, cells = cellsOf(cols[col]);
+    for (var k = 0; k < cells.length; k++) { if (shownPlug(cells[k]) === p) { cell = cells[k]; } }
+    if (!cell) { return ''; }
+    var base = P.p[cell[0]], enh = cell[1] >= 0 ? P.p[cell[1]] : null, shownP = P.p[p];
+    var statsTable = '';
+    var keys = {};
+    base[P_ST].forEach(function (x) { keys[x[0]] = 1; });
+    if (enh) { enh[P_ST].forEach(function (x) { keys[x[0]] = 1; }); }
+    function val(plug, s) { var v = 0; plug[P_ST].forEach(function (x) { if (x[0] == s) { v += x[1]; } }); return v; }
+    var ks = Object.keys(keys);
+    if (ks.length) {
+      statsTable = '<table><tr><td></td><td class="n" style="color:var(--bone-faint)">基础</td>' + (enh ? '<td class="e">强化</td>' : '') + '</tr>' +
+        ks.map(function (s) {
+          var b = val(base, s), e = enh ? val(enh, s) : 0;
+          return '<tr><td>' + esc(P.s[s][1]) + '</td><td class="n">' + (b > 0 ? '+' : '') + b + '</td>' +
+            (enh ? '<td class="e">' + (e > 0 ? '+' : '') + e + '</td>' : '') + '</tr>';
+        }).join('') + '</table>';
+    }
+    var bits = marksOf(i)[cell[0]] || 0;
+    var desc = T ? T.pd[p] : '', site = T && T.ps[p] >= 0 ? T.H[T.ps[p]] : '';
+    return '<header>' + imgTag(shownP[P_ICON], '', '', true) + '<div><h5>' + esc(shownP[P_NAME]) + '</h5><span class="ty">' +
+      esc(P.pt[shownP[P_TYPE]]) + (enh ? ' · 有强化版' : '') + (bits ? ' · ' + HALO[bits][1] : '') + '</span></div></header>' + statsTable +
+      (desc ? '<p class="lab">游戏内说明</p><p class="db">' + esc(desc).replace(/\n/g, '<br>') + '</p>' : '') +
+      (site ? '<p class="lab">站内实测</p>' + site : '');
+  }
+  function statTip(i, s) {
+    var roll = rollOf(i), pr = poolRow(i), res = compute(i, roll), x = res.byStat[s];
+    if (!x) { return ''; }
+    var row = x.row, g = P.g[pr[0]], base = null;
+    for (var k = 0; k < g.length; k++) { if (g[k][0] == s) { base = pr[1][k]; } }
+    var acc = base, prev = shown(acc, row), out = ['<tr><td>基础</td><td class="n">' + prev + '</td></tr>'];
+    res.parts.concat(res.perks).forEach(function (p) {
+      var add = 0;
+      P.p[p][P_ST].forEach(function (y) { if (y[0] == s) { add += y[1]; } });
+      if (!add) { return; }
+      acc += add;
+      var v = shown(acc, row);
+      if (v !== prev) { out.push('<tr><td>' + esc(plugName(p)) + '</td><td class="n">' + (v > prev ? '+' : '') + (v - prev) + '</td></tr>'); }
+      prev = v;
+    });
+    [['大师杰作', res.mw.mw], ['T' + roll.t, res.mw.tier]].forEach(function (st) {
+      if (!st[1][s]) { return; }
+      acc += st[1][s];
+      var v = shown(acc, row);
+      if (v !== prev) { out.push('<tr><td>' + st[0] + '</td><td class="n">' + (v > prev ? '+' : '') + (v - prev) + '</td></tr>'); }
+      prev = v;
+    });
+    out.push('<tr class="sum"><td>合计</td><td class="n">' + prev + '</td></tr>');
+    if (x.withCond !== prev) { out.push('<tr class="cond"><td>条件生效时</td><td class="n">' + x.withCond + '</td></tr>'); }
+    return '<h5>' + esc(x.name) + '</h5><p class="lab">显示值逐项累计</p><table>' + out.join('') + '</table>';
+  }
+  function mwTip(i) {
+    var roll = rollOf(i), res = compute(i, roll), opt = res.mw.opt, pr = poolRow(i);
+    if (!opt) { return '<h5>大师杰作</h5><p class="lab">未装。点开选一项属性。</p>'; }
+    var plug = P.p[opt[2]];
+    var main = res.mw.mw[opt[1]] || 0;
+    return '<header>' + imgTag(plug[P_ICON], '', '', true) + '<div><h5>' + esc(plug[P_NAME]) + '</h5><span class="ty">' +
+      (roll.mw === pr[5] ? 'Aegis 推荐' : '大师杰作') + '</span></div></header><table><tr><td>' + esc(opt[0]) +
+      '</td><td class="n">+' + main + '</td></tr></table>' +
+      (pr[4] && roll.t ? '<p class="lab">' + esc(tierText(i, roll, res.mw)) + '</p>' : '') +
+      (!pr[4] ? '<p class="lab">满级 +10；专家版满级时其余 +3</p>' : '');
+  }
+  function modTip(p) {
+    var plug = P.p[p];
+    var stats = plug[P_ST].map(function (x) { return '<tr><td>' + esc(P.s[x[0]][1]) + '</td><td class="n">' + (x[1] > 0 ? '+' : '') + x[1] + '</td></tr>'; }).join('');
+    return '<header>' + imgTag(plug[P_ICON], '', '', true) + '<div><h5>' + esc(plug[P_NAME]) + '</h5><span class="ty">' +
+      esc(P.pt[plug[P_TYPE]]) + '</span></div></header>' + (stats ? '<table>' + stats + '</table>' : '') +
+      (T && T.pd[p] ? '<p class="lab">游戏内说明</p><p class="db">' + esc(T.pd[p]).replace(/\n/g, '<br>') + '</p>' : '');
+  }
+
+  /* ── 自动补全 ──────────────────────────────────────────────────────── */
+  var ac = { items: [], at: -1, tok: null };
+  function currentToken() {
+    var pos = input.selectionStart == null ? input.value.length : input.selectionStart;
+    var list = tokenize(input.value);
+    for (var k = 0; k < list.length; k++) {
+      if ((list[k].t === 'kw' || list[k].t === 'w') && list[k].a < pos && pos <= list[k].b) { return list[k]; }
     }
     return null;
   }
-
-  // ── 标签片 ────────────────────────────────────────────────────────
-  function chips(w, d) {
-    var box = el('div', 'wpn-chips');
-    function add(text, cls, pic) {
-      if (!text) { return; }
-      var n = el('span', 'wpn-chip' + (cls ? ' ' + cls : ''));
-      if (pic) { n.appendChild(pic); }
-      n.appendChild(el('span', '', text));
-      box.appendChild(n);
+  var perkIndex = null;
+  function perkRows() {
+    if (!perkIndex) {
+      perkIndex = {};
+      REPS.wpn.forEach(function (i) {
+        var names = perkNames(i);
+        for (var k = 0; k < names.length; k++) {
+          var list = perkIndex[names[k]] || (perkIndex[names[k]] = []);
+          if (list[list.length - 1] !== i) { list.push(i); }
+        }
+      });
     }
-    // 图标与筛选条上那一套同源（D.o 的四张共享表），一枚标签片与它对应的那枚
-    // 开关因此长得一样，读者认得出是同一件事。
-    add(w.el, w.tk, D.o.el[w.tk] && icon(D.o.el[w.tk], 14, 'wpn-chip-ico'));
-    add(w.br, 'champ', D.o.ch[w.br] && icon(D.o.ch[w.br], 14, 'wpn-chip-ico'));
-    add(w.t, '', D.o.ty[w.t] && glyph(D.o.ty[w.t], 'wpn-tag-svg wide'));
-    add(w.am, '', D.o.am[w.am] && glyph(D.o.am[w.am], ammoClass(w.am)));
-    // 框架名就是固有那一列里的那一枚，与矩阵下方那一块是同一件事。
-    var frame = frameOf(d);
-    if (frame) { add(G.p[frame[1][0]][0], ''); }
-    add(w.tier === 6 ? '异域武器' : '传说武器', w.tier === 6 ? 'exotic' : 'legend');
-    if (w.sea) { add('第 ' + w.sea + ' 赛季', ''); }
-    add(w.craft ? '锻造武器' : '', '');
-    add(w.tiering ? 'T 级武器' : '', '');
-    return box;
+    return perkIndex;
   }
-
-  // ── 数值面板 ──────────────────────────────────────────────────────
-  // 条按来源分段，但只用同一个强调色的几档明度，不换色相：design.md 写着
-  // 「整页唯一的饱和色来自游戏自身的编码」，给「词条加的那一段」配一个蓝
-  // 属于凭空造色。负值段走斜纹，同样不靠红色。
-  // 分母钉死 100：这条轴要跨行可比，不按各行自己的上限伸缩。
-  var SPAN = 100;
-
-  function bar(rows, preview) {
-    var rail = el('span', 'wpn-rail');
-    var pos = 0, neg = 0;
-    rows.forEach(function (part) {
-      if (part[2]) { return; }        // 条件生效的不画进条里
-      if (part[1] >= 0) { pos += part[1]; } else { neg -= part[1]; }
-    });
-    var seen = 0;
-    rows.forEach(function (part, i) {
-      if (part[2] || part[1] <= 0) { return; }
-      var seg = el('span', 'wpn-seg' + (i === 0 ? ' base' : ''));
-      seg.style.width = Math.min(100, part[1] / SPAN * 100) + '%';
-      rail.appendChild(seg);
-      seen += part[1];
-    });
-    if (neg) {
-      var cut = el('span', 'wpn-seg neg');
-      cut.style.width = Math.min(100, neg / SPAN * 100) + '%';
-      rail.appendChild(cut);
-    }
-    if (preview != null) {
-      var ghost = el('span', 'wpn-ghost' + (preview < 0 ? ' down' : ''));
-      ghost.style.left = Math.max(0, Math.min(100, (preview < 0 ? seen + preview : seen) / SPAN * 100)) + '%';
-      ghost.style.width = Math.min(100, Math.abs(preview) / SPAN * 100) + '%';
-      rail.appendChild(ghost);
-    }
-    return rail;
-  }
-
-  function statPanel(d, picked, preview) {
-    var now = readout(d, picked);
-    var soon = preview ? readout(d, picked, preview) : null;
-    var box = el('section', 'wpn-stats');
-    box.appendChild(el('h3', '', '数值'));
-    var dl = el('div', 'wpn-statlist');
-    now.forEach(function (row, i) {
-      var next = soon ? soon[i] : null;
-      // 第二层悬停：这个数是怎么加出来的。悬停词条出的是「这一枚值多少」，
-      // 这里出的是「这一项由哪几件东西凑成」，两个问题不同，都要。
-      var line = el('div', 'wpn-statrow');
-      line.tabIndex = 0;
-      line.appendChild(el('span', 'wpn-stat-name', row.name));
-      line.appendChild(el('b', '', String(row.value)));
-      if (next && next.value !== row.value) {
-        line.appendChild(el('i', 'wpn-next' + (next.value > row.value ? ' up' : ' down'),
-          (next.value > row.value ? '▲' : '▼') + next.value));
-      }
-      // 量纲不同的（每分钟发射数、弹匣）不画条——给它们画一条按 100 封顶的条，
-      // 条会永远满格，读者以为那是「满」。
-      if (!row.big) {
-        line.appendChild(bar(row.parts,
-          next && next.value !== row.value ? next.value - row.value : null));
-      }
-      tipOn(line, function (host) {
-        host.appendChild(el('strong', '', row.name));
-        var t = el('table', 'wpn-sum');
-        row.parts.forEach(function (part) {
-          var tr = el('tr');
-          tr.appendChild(el('th', '', part[0] + (part[2] ? '（条件生效）' : '')));
-          tr.appendChild(el('td', part[2] ? 'cond' : '',
-            part === row.parts[0] ? String(part[1])
-              : (part[1] > 0 ? '+' : '') + part[1]));
-          t.appendChild(tr);
+  function suggest() {
+    var t = currentToken();
+    ac.tok = t;
+    ac.items = [];
+    if (!t || t.neg) { closeAc(); return; }
+    var q = input.value, rest = q.slice(0, t.a) + q.slice(t.b);
+    var restTree = parse(tokenize(rest), S.scope === 'armor' ? KEYS_ARMOR : KEYS_WPN);
+    var pool = run(S.scope, restTree), mark = {};
+    pool.forEach(function (i) { mark[i] = 1; });
+    var keys = S.scope === 'armor' ? KEYS_ARMOR : KEYS_WPN;
+    var groups = [];
+    function count(fn) { var n = 0; for (var k = 0; k < pool.length; k++) { if (fn(pool[k])) { n++; } } return n; }
+    if (t.t === 'kw' && has(keys, t.k)) {
+      var f = fold(t.v), vals = [];
+      if (t.k === 'is') {
+        Object.keys(IS[S.scope]).forEach(function (v) {
+          if (fold(v).indexOf(f) !== -1) { vals.push([v, count(IS[S.scope][v])]); }
         });
-        var tot = el('tr', 'total');
-        tot.appendChild(el('th', '', '显示值'));
-        tot.appendChild(el('td', '', String(row.value)));
-        t.appendChild(tot);
-        host.appendChild(t);
-      });
-      dl.appendChild(line);
-    });
-    box.appendChild(dl);
-    return box;
-  }
-
-  // ── 词条矩阵 ──────────────────────────────────────────────────────
-  // 每格是一枚可聚焦的圆形图标，点一下即选中——选中只改这一页的高亮与数值，
-  // 不落进地址栏：地址栏记的是「哪一把枪」，配搭是看的时候的临时状态。
-  function plugTip(at, host) {
-    var p = G.p[at];
-    var head = el('p', 'wpn-tip-head');
-    head.appendChild(el('strong', '', p[0]));
-    if (p[4]) { head.appendChild(el('span', 'wpn-tag-enh', '强化')); }
-    host.appendChild(head);
-    if (descOf(p)) { host.appendChild(el('p', '', descOf(p))); }
-    var got = siteOf(p);
-    if (got) { host.appendChild(siteBlock(got, 'wpn-site')); }
-    var rows = statsOf(p) || [];
-    if (rows.length) {
-      var t = el('table', 'wpn-sum');
-      rows.forEach(function (s) {
-        var tr = el('tr');
-        tr.appendChild(el('th', '', D.s[s[0]][0] + (s.length > 2 ? '（条件生效）' : '')));
-        tr.appendChild(el('td', s.length > 2 ? 'cond' : '', (s[1] > 0 ? '+' : '') + s[1]));
-        t.appendChild(tr);
-      });
-      host.appendChild(t);
-    }
-  }
-
-  function seat(at, rec, on, pick, colKey, act) {
-    var p = G.p[at];
-    var b = el('button', 'wpn-plug' + (on ? ' on' : '') + (p[4] ? ' enh' : ''));
-    b.type = 'button';
-    b.dataset.col = colKey;
-    b.dataset.at = at;
-    b.appendChild(icon(p[1], 40, ''));
-    b.setAttribute('aria-label', p[0]);
-    b.setAttribute('aria-pressed', on ? 'true' : 'false');
-    var who = rec[String(at)];
-    if (who) {
-      var flags = el('span', 'wpn-rec');
-      who.split('').forEach(function (ch) { flags.appendChild(el('i', '', ch)); });
-      b.appendChild(flags);
-    }
-    tipOn(b, function (host) {
-      plugTip(at, host);
-      if (who) {
-        host.appendChild(el('p', 'wpn-tip-rec', who.split('').map(function (ch) {
-          return (D.a[ch === 'A' ? 'aegis' : 'lgpig'] || [ch])[0];
-        }).join('、') + ' 推荐'));
-      }
-    }, function () { pick.hover(colKey, at); }, function () { pick.hover(null); });
-    b.addEventListener('click', act || function () { pick.set(colKey, at); });
-    return b;
-  }
-
-  // 折起来的那一栏（大师杰作）：只露选中的那一枚，点它才摊开十四项。
-  // 十四项常驻会把整张矩阵拉高一倍，而它们是同一件事的十四个取值。
-  function folded(col, i, rec, pick, host) {
-    var cell = el('div', 'wpn-colbox');
-    cell.appendChild(el('span', 'wpn-col-name', col[0]));
-    var slot = el('div', 'wpn-fold');
-    cell.appendChild(slot);
-    function shut() {
-      host.textContent = '';
-      host.hidden = true;
-      draw();
-    }
-    function draw() {
-      slot.textContent = '';
-      var b = seat(pick.c[i], rec, true, pick, i, function () {
-        if (!host.hidden) { shut(); return; }
-        host.hidden = false;
-        host.textContent = '';
-        var row = el('div', 'wpn-modrow');
-        col[1].forEach(function (at) {
-          row.appendChild(seat(at, rec, at === pick.c[i], pick, i, function () {
-            pick.set(i, at);
-            shut();
-          }));
+      } else if (t.k === 'frame' && S.scope === 'wpn') {
+        V.fr.forEach(function (fr) {
+          if (fold(fr[0]).indexOf(f) !== -1 && !vals.some(function (v) { return v[0] === fr[0]; })) {
+            vals.push([fr[0], count(function (i) { return frameOf(WR[i])[0] === fr[0]; })]);
+          }
         });
-        host.appendChild(row);
-        b.setAttribute('aria-expanded', 'true');
+      } else if (t.k === 'source') {
+        V.src.forEach(function (s, k) {
+          if (fold(s).indexOf(f) !== -1) {
+            vals.push([s, count(function (i) { return (S.scope === 'armor' ? AR[i][A_SRC] : WR[i][W_SRC]) === k; })]);
+          }
+        });
+      } else if (t.k === 'breaker') {
+        Object.keys(V.br).forEach(function (b) {
+          if (fold(V.br[b][0]).indexOf(f) !== -1) { vals.push([V.br[b][0], count(function (i) { return WR[i][W_BR] === +b; })]); }
+        });
+      } else if (t.k === 'stat' && P) {
+        P.s.forEach(function (s) { if (fold(s[1]).indexOf(f) !== -1) { vals.push([s[1] + ':', -1]); } });
+      } else if ((t.k === 'perk' || t.k === 'perkname' || t.k === 'perk1' || t.k === 'perk2' || t.k === 'origintrait') && S.scope === 'wpn') {
+        if (!P) { need('pool', suggest); }
+        else {
+          var idx = perkRows();
+          Object.keys(idx).forEach(function (n) {
+            if (f && fold(n).indexOf(f) !== -1) {
+              var c = 0;
+              idx[n].forEach(function (i) { if (mark[i]) { c++; } });
+              if (c) { vals.push([n, c]); }
+            }
+          });
+        }
+      }
+      vals = vals.filter(function (v) { return v[1] !== 0; });
+      vals.sort(function (a, b) { return b[1] - a[1]; });
+      if (vals.length) {
+        groups.push([t.k.toUpperCase() + (f ? ' · 含「' + t.v + '」' : ''), vals.map(function (v) {
+          var val = /[\s()]/.test(v[0]) ? '"' + v[0] + '"' : v[0];
+          return { text: t.k + ':' + val, label: v[0], n: v[1], icon: t.k === 'is' ? pillIcon({ t: 'kw', k: 'is', v: v[0] }) : t.k.indexOf('perk') === 0 || t.k === 'origintrait' ? (P ? imgTag(perkIcon(v[0]), '', '', true) : '') : '' };
+        })]);
+      }
+    } else if (t.t === 'w') {
+      var fw = fold(t.v);
+      var ks = keys.filter(function (k) { return k.indexOf(fw) === 0; }).map(function (k) {
+        return { text: k + ':', label: k + ':', n: -1, hint: KEY_LABEL[k], keep: true };
       });
-      b.setAttribute('aria-expanded', host.hidden ? 'false' : 'true');
-      slot.appendChild(b);
+      if (ks.length) { groups.push(['关键字', ks]); }
+      var isv = Object.keys(IS[S.scope]).filter(function (v) { return fold(v).indexOf(fw) !== -1; }).map(function (v) {
+        return { text: 'is:' + v, label: 'is:' + v, n: count(IS[S.scope][v]), icon: pillIcon({ t: 'kw', k: 'is', v: v }) };
+      }).filter(function (x) { return x.n; });
+      if (isv.length) { groups.push(['IS', isv]); }
     }
-    draw();
-    return cell;
-  }
-
-  // 矩阵下方那一块：这把枪的固有 PERK，常驻不变。
-  // 它一栏恒只有一枚，摆进矩阵等于给一整列只画一个格子；而它说的是「这把枪是
-  // 什么框架」，是读这把枪的前提，所以钉在池子下面一直显示，不跟着点击换内容。
-  // 换成哪一枚的说明由悬停浮层回答，两处分工不同。
-  function frameNote(at) {
-    var p = G.p[at];
-    var box = el('section', 'wpn-note');
-    box.appendChild(icon(p[1], 44, 'wpn-note-ico'));
-    var t = el('div', 'wpn-note-body');
-    var head = el('p', 'wpn-tip-head');
-    head.appendChild(el('span', 'wpn-note-tag', '固有'));
-    head.appendChild(el('strong', '', p[0]));
-    t.appendChild(head);
-    if (descOf(p)) { t.appendChild(el('p', '', descOf(p))); }
-    var got = siteOf(p);
-    if (got) {
-      t.appendChild(siteBlock(got, 'wpn-site'));
-      // 链接只在这一块给：悬停浮层是 pointer-events: none 的，里面的链接点不到。
-      var a = el('a', 'wpn-site-link', SITE_TITLE);
-      a.href = '../weapon-perks/index.html#' + got[1];
-      t.appendChild(a);
-    }
-    box.appendChild(t);
-    return box;
-  }
-
-  function matrix(d, rec, pick) {
-    var box = el('section', 'wpn-sockets');
-    box.appendChild(el('h3', '', 'Perk 池'));
-    var grid = el('div', 'wpn-grid');
-    // 固有与大师杰作都不在这里：前者常驻在矩阵下方，后者跟可选模组一样随时能换，
-    // 挪进那一节。矩阵里剩下的才是掉落时随机开出来的那几栏。
-    d.c.forEach(function (col, i) {
-      if (col[3] || col[0] === FRAME_COL) { return; }
-      var cell = el('div', 'wpn-colbox');
-      cell.appendChild(el('span', 'wpn-col-name', col[0]));
-      col[1].forEach(function (at) {
-        cell.appendChild(seat(at, rec, pick.c[i] === at, pick, i));
+    var html = '', n = 0;
+    groups.forEach(function (g) {
+      html += '<li class="grp" role="presentation">' + esc(g[0]) + '</li>';
+      g[1].forEach(function (it) {
+        ac.items.push(it);
+        html += '<li class="opt" role="option" id="wpn-ac-' + n + '" data-k="' + n + '" aria-selected="false">' +
+          (it.icon || '<span></span>') + '<span>' + esc(it.label) + (it.hint ? ' <code>' + esc(it.hint) + '</code>' : '') + '</span>' +
+          '<span class="n">' + (it.n >= 0 ? it.n + ' ' + (S.scope === 'armor' ? '件' : '把') : '') + '</span></li>';
+        n++;
       });
-      grid.appendChild(cell);
     });
-    box.appendChild(grid);
-    var frame = frameOf(d);
-    if (frame) { box.appendChild(frameNote(frame[1][0])); }
-    return box;
+    if (!n) { closeAc(); return; }
+    acBox.innerHTML = html + '<li class="hint" role="presentation">↑↓ 选择 · Tab 或回车补全 · Esc 收起</li>';
+    acBox.hidden = false;
+    input.setAttribute('aria-expanded', 'true');
+    ac.at = 0;
+    markAc();
   }
-
-  // ── 可选模组 ──────────────────────────────────────────────────────
-  // 不并进矩阵：词条是掉落时随机开出来的，模组是随时能换的，混在一张表里
-  // 那二十几枚会让人以为它们也是随机词条。
-  //
-  // 大师杰作排在这一行最前：它同样是升满之后自己挑的一项，与模组是同一类事，
-  // 与随机词条不是。两者都画成方格，矩阵里那些圆格一眼分得开。
-  function modBlock(d, pick, rec) {
-    var box = el('section', 'wpn-mods');
-    box.appendChild(el('h3', '', '可选模组'));
-    var fold = el('div', 'wpn-pick');
-    fold.hidden = true;
-    var wrap = el('div', 'wpn-modwrap');
-    // 大师杰作自成一块，不混进模组那一行：它带着自己的栏名，塞进 flex-wrap 的
-    // 行里会让二十几枚模组绕着那个栏名换行，栏名与它下面那一枚也就对不上了。
-    // **按 != null 判，不按真假判**：大师杰作恒是第 0 栏（build-weapons.py 把它
-    // insert(0)），写成 if (mw) 那一栏就永远画不出来。
-    var mw = mwOf(d);
-    if (mw != null) { wrap.appendChild(folded(d.c[mw], mw, rec, pick, fold)); }
-    if (d.m.length) {
-      var row = el('div', 'wpn-modrow');
-      d.m.forEach(function (at) {
-        row.appendChild(seat(at, {}, pick.m === at, pick, 'm'));
-      });
-      wrap.appendChild(row);
-    }
-    box.appendChild(wrap);
-    box.appendChild(fold);
-    return box;
-  }
-
-  // 记录里的值是源稿原文：{token|文字} 是着色标记，\\ 是格内换行，![](…) 是图。
-  // 这一页只读文字：标记剥掉，图去掉，**格内换行还原成真的换行**——注解那一格
-  // 写的是一句断成两行的话，压成顿号会读成两件事。
-  function plain(text) {
-    return String(text)
-      .replace(/!\[\]\([^)]*\)/g, '')
-      .replace(/\{[\w-]+\|([^{}]*)\}/g, '$1')
-      .replace(/\\\\/g, '\n')
-      .replace(/[ \t]+/g, ' ')
-      .trim();
-  }
-
-  var PROSE = ['注解', '评级理由', '理由一', '理由二', '理由三', '备注', '说明'];
-
-  function says(who, block) {
-    var lines = PROSE.filter(function (c) { return block[c]; });
-    if (!lines.length) { return null; }
-    var name = D.a[who] || [who, ''];
-    var box = el('section', 'wpn-say');
-    var h = el('h4');
-    var a = el('a', '', name[0]);
-    a.href = name[1];
-    a.rel = 'noopener';
-    h.appendChild(a);
-    box.appendChild(h);
-    lines.forEach(function (c) {
-      var p = el('p', '', plain(block[c]));
-      box.appendChild(p);
+  function markAc() {
+    acBox.querySelectorAll('.opt').forEach(function (li) {
+      var on = +li.getAttribute('data-k') === ac.at;
+      li.setAttribute('aria-selected', on ? 'true' : 'false');
+      if (on) { li.scrollIntoView({ block: 'nearest' }); }
     });
-    return box;
+    input.setAttribute('aria-activedescendant', ac.at >= 0 ? 'wpn-ac-' + ac.at : '');
+  }
+  function closeAc() {
+    acBox.hidden = true;
+    acBox.innerHTML = '';
+    ac.items = [];
+    ac.at = -1;
+    input.setAttribute('aria-expanded', 'false');
+    input.removeAttribute('aria-activedescendant');
+  }
+  function acceptAc(k) {
+    var it = ac.items[k], t = ac.tok;
+    if (!it || !t) { return; }
+    var q = input.value;
+    var text = (t.neg ? '-' : '') + it.text;
+    var next = q.slice(0, t.a) + text + (it.keep ? '' : ' ') + q.slice(t.b).replace(/^\s+/, '');
+    input.value = next;
+    var pos = t.a + text.length + (it.keep ? 0 : 1);
+    input.setSelectionRange(pos, pos);
+    setQuery(next, false);
+    if (it.keep) { suggest(); } else { closeAc(); }
   }
 
-  // 取过的详情留在内存里：来回点两把枪不该各取两遍。
-  var cache = {};
-
-  function detail(h, then) {
-    if (cache[h]) { then(cache[h]); return; }
-    fetch('w/' + h + '.json').then(function (r) {
-      if (!r.ok) { throw new Error(r.status); }
-      return r.json();
-    }).then(function (d) {
-      cache[h] = d;
-      then(d);
-    }).catch(function (why) {
-      // 取不到就说清楚取不到，不画一个缺了半截的页面当成完整的。
-      // 写给读者的是「哪一步没成」，不是 JS 的异常 toString——「Error: 404」
-      // 对着屏幕的人什么也解释不了。原样那一句留给 console，排障要用。
-      console.error('weapons: 取 w/' + h + '.json 失败', why);
-      then({ err: '这一把的详情没取到。刷新一次，或过一会儿再来。' });
-    });
-  }
-
-  function show(h) {
-    var w = by[h];
-    one.textContent = '';
-    tipHide();
-    if (!w) {
-      one.appendChild(el('p', 'wpn-empty', '左边挑一把枪，或在上面按名字搜。'));
+  /* ── 主流程 ────────────────────────────────────────────────────────── */
+  function evaluate() {
+    tokens = tokenize(S.q);
+    tree = parse(tokens, S.scope === 'armor' ? KEYS_ARMOR : KEYS_WPN);
+    pending = S.scope === 'wpn' && needsPool(tree) && !P;
+    if (pending) {
+      if (!waiting) { waiting = true; need('pool', function () { waiting = false; evaluate(); render(); }); }
+      results = [];
       return;
     }
-
-    var head = el('header', 'wpn-head');
-    var tile = el('span', 'wpn-tile' + (w.tier === 6 ? ' exotic' : ''));
-    tile.appendChild(gun(w, 64, ''));
-    head.appendChild(tile);
-    var t = el('div', 'wpn-title');
-    t.appendChild(el('h2', '', w.n));
-    if (w.en) { t.appendChild(el('p', 'wpn-en', w.en)); }
-    // 评级与名字放在一起：那是读者点进这把枪最想先看到的一件事。
-    var rate = el('p', 'wpn-rates');
-    Object.keys(D.a).forEach(function (who) {
-      if (!w.r[who]) { return; }
-      var b = el('span', 'wpn-rate');
-      b.appendChild(el('i', '', (D.a[who][0] || '').split(' ')[0]));
-      b.appendChild(el('b', '', w.r[who]));
-      rate.appendChild(b);
-    });
-    if (rate.childNodes.length) { t.appendChild(rate); }
-    head.appendChild(t);
-    one.appendChild(head);
-
-    var cols = el('div', 'wpn-split');
-    var main = el('div', 'wpn-main');
-    var side = el('aside', 'wpn-side');
-    cols.appendChild(main);
-    cols.appendChild(side);
-    one.appendChild(cols);
-    main.appendChild(el('p', 'wpn-empty', '读取中…'));
-
-    detail(h, function (d) {
-      if (location.hash.slice(1) !== h) { return; }   // 读者已经点了别的
-      if (d.err) {
-        main.textContent = '';
-        main.appendChild(el('p', 'wpn-empty', d.err));
-        return;
-      }
-      plugs(function (why) { draw(d, why); });
-    });
-
-    function draw(d, why) {
-      if (location.hash.slice(1) !== h) { return; }
-      main.textContent = '';
-      if (why) {
-        main.appendChild(el('p', 'wpn-empty', why));
-        return;
-      }
-      // 开页每列选第一枚。
-      var pick = {
-        c: d.c.map(function (col) { return col[1][0]; }),
-        m: d.m.length ? d.m[0] : null,
-      };
-      var statBox = null;
-      function repaint(preview) {
-        var fresh = statPanel(d, pick, preview);
-        if (statBox) { side.replaceChild(fresh, statBox); } else { side.appendChild(fresh); }
-        statBox = fresh;
-      }
-      pick.set = function (key, at) {
-        if (key === 'm') { pick.m = pick.m === at ? null : at; } else { pick.c[key] = at; }
-        stamp();
-        repaint(null);
-      };
-      pick.hover = function (key, at) {
-        repaint(key == null ? null : { col: key, at: at });
-      };
-      // 按格子自己带的 data-* 认，不按它排在第几个认：折起来那一栏只渲染一枚，
-      // 按位置数会把「第 0 个」当成整栏的第 0 项。
-      function stamp() {
-        Array.prototype.forEach.call(one.querySelectorAll('.wpn-plug'), function (b) {
-          var key = b.dataset.col, at = Number(b.dataset.at);
-          var on = key === 'm' ? pick.m === at : pick.c[Number(key)] === at;
-          b.classList.toggle('on', on);
-          b.setAttribute('aria-pressed', on ? 'true' : 'false');
-        });
-      }
-
-      if (d.fl) { main.appendChild(el('p', 'wpn-flavor', d.fl)); }
-      var src = (d.src || []).filter(Boolean);
-      if (src.length) {
-        var s = el('p', 'wpn-src');
-        s.appendChild(el('span', 'wpn-src-tag', '来源'));
-        s.appendChild(el('span', '', src.map(plain).join(' · ')));
-        main.appendChild(s);
-      }
-      if (d.c.length) { main.appendChild(matrix(d, d.rec || {}, pick)); }
-      if (d.m.length || mwOf(d) != null) {
-        main.appendChild(modBlock(d, pick, d.rec || {}));
-      }
-      // 评语排在词条之后：读者先看事实，再看评价。
-      var said = el('section', 'wpn-says');
-      Object.keys(D.a).forEach(function (who) {
-        var block = (d.by || {})[who];
-        var node = block && says(who, block);
-        if (node) { said.appendChild(node); }
-      });
-      if (said.childNodes.length) { main.appendChild(said); }
-
-      side.appendChild(chips(w, d));
-      repaint(null);
-      if (d.alt && d.alt.length) { side.appendChild(versions(d.alt, h)); }
+    results = run(S.scope, tree);
+  }
+  function render() {
+    renderBar();
+    renderPresets();
+    renderSub();
+    if (S.sel != null) { renderSplit(); } else { renderBrowse(); }
+    measureStick();
+  }
+  var typing = 0, waiting = false;
+  function setQuery(q, push) {
+    S.q = q;
+    evaluate();
+    S.preview = null;
+    writeUrl(push);
+    render();
+  }
+  function addToken(tok) {
+    var q = S.q.trim();
+    if (tokens.some(function (t) { return S.q.slice(t.a, t.b) === tok; })) { return; }
+    setQuery((q ? q + ' ' : '') + tok, false);
+    input.value = S.q;
+  }
+  function open(scope, i) {
+    if (scope !== S.scope) { S.scope = scope; S.q = ''; input.value = ''; evaluate(); }
+    S.sel = i;
+    S.preview = null;
+    S.pop = null;
+    if (scope === 'wpn' && P && S.urlRoll) {
+      S.rolls[WR[i][W_H]] = decodeRoll(i, S.urlRoll);
+      S.urlRoll = null;
     }
+    writeUrl(true);
+    render();
+    window.scrollTo(0, 0);
   }
 
-  // 复刻让同一把枪有好几个版本，各自的词条池不一样。
-  function versions(alt, now) {
-    var box = el('section', 'wpn-alt');
-    var ol = el('ol');
-    [{ h: now }].concat(alt.map(function (x) { return { h: x[0], sea: x[1] }; }))
-      .forEach(function (x) {
-        var w = by[x.h];
-        if (!w) { return; }
-        var li = el('li');
-        var a = el('a', 'wpn-altone' + (x.h === now ? ' on' : ''));
-        a.href = '#' + x.h;
-        a.appendChild(icon(w.ico, 24, ''));
-        a.appendChild(el('span', '', w.n));
-        a.appendChild(el('em', '', w.sea ? 'S' + w.sea : '—'));
-        li.appendChild(a);
-        ol.appendChild(li);
-      });
-    box.appendChild(ol);
-    return box;
-  }
-
-  // ── 两档版面 ──────────────────────────────────────────────────────
-  // 挑中一把枪之前是满幅的卡片墙，挑中之后左边收成一列结果、右边铺开那一把。
-  // destiny.report 也是这么分的：初始页没有左栏，它要给卡片让出整幅宽度。
-  function paint() {
-    var now = location.hash.slice(1);
-    var picked = !!(now && by[now]);
-    document.querySelector('.wpn-body').classList.toggle('one-up', !picked);
-    document.querySelector('.wpn-view').hidden = picked;
-    if (picked) {
-      if (watch) { watch.disconnect(); watch = null; }
-      list();
-      show(now);
-    } else if (view === 'list') {
-      list();
-      one.textContent = '';
-      one.appendChild(el('p', 'wpn-empty', '左边挑一把枪，或在上面按名字搜。'));
-    } else {
-      grid();
-    }
-  }
-
-  function setView(next, quiet) {
-    view = next;
-    try { localStorage.setItem('wpnview', next); } catch (e) { /* 存不下就算了 */ }
-    gridBtn.setAttribute('aria-pressed', next === 'grid' ? 'true' : 'false');
-    listBtn.setAttribute('aria-pressed', next === 'list' ? 'true' : 'false');
-    document.querySelector('.wpn-body').classList.toggle('as-list', next === 'list');
-    if (!quiet) { paint(); }
-  }
-
-  var gridBtn = document.getElementById('v-grid');
-  var listBtn = document.getElementById('v-list');
-  gridBtn.addEventListener('click', function () { setView('grid'); });
-  listBtn.addEventListener('click', function () { setView('list'); });
-
-  // 输入防抖。每敲一个字都会把卡片墙整片重建——一批 120 张就是两千多个元素、
-  // 八百多张 <img> 建了又丢。连着敲一个六字的枪名，不防抖是把这件事做六遍。
-  var typing = null;
-  q.addEventListener('input', function () {
+  /* ── 事件 ──────────────────────────────────────────────────────────── */
+  input.addEventListener('input', function () {
     clearTimeout(typing);
-    typing = setTimeout(refresh, 120);
+    var q = input.value;
+    typing = setTimeout(function () { setQuery(q, false); suggest(); }, 120);
   });
-  window.addEventListener('hashchange', function () { tipHide(); paint(); });
-  facets();
-  setView(view, true);
-  refresh();
+  input.addEventListener('click', suggest);
+  input.addEventListener('keydown', function (e) {
+    if (acBox.hidden) {
+      if (e.key === 'Escape') { input.blur(); }
+      return;
+    }
+    if (e.key === 'ArrowDown') { e.preventDefault(); ac.at = Math.min(ac.items.length - 1, ac.at + 1); markAc(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); ac.at = Math.max(0, ac.at - 1); markAc(); }
+    else if (e.key === 'Tab' || e.key === 'Enter') { if (ac.at >= 0) { e.preventDefault(); acceptAc(ac.at); } }
+    else if (e.key === 'Escape') { e.preventDefault(); closeAc(); }
+  });
+  input.addEventListener('blur', function () { setTimeout(closeAc, 150); });
+  acBox.addEventListener('mousedown', function (e) {
+    var li = e.target.closest('.opt');
+    if (li) { e.preventDefault(); acceptAc(+li.getAttribute('data-k')); }
+  });
+
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-act]');
+    if (!el) {
+      if (S.pop && !e.target.closest('.picker')) { S.pop = null; renderDetail(); }
+      if (S.syntax && !e.target.closest('.wpn-syntax')) { S.syntax = false; renderBar(); }
+      return;
+    }
+    var act = el.getAttribute('data-act'), v = el.getAttribute('data-v');
+    var i = S.sel;
+    switch (act) {
+      case 'scope':
+        if (v !== S.scope) { S.scope = v; S.q = ''; S.sel = null; input.value = ''; setQuery('', true); }
+        return;
+      case 'view':
+        S.view = v; store('wpn.view', v); S.sel = null; writeUrl(true); render(); return;
+      case 'syntax':
+        e.stopPropagation(); S.syntax = !S.syntax; renderBar(); return;
+      case 'setq':
+        S.syntax = false; S.sel = null; input.value = v; setQuery(v, true); return;
+      case 'preset': {
+        var hit = tokens.filter(function (t) { return t.t === 'kw' && !t.neg && t.k + ':' + t.v === v; })[0];
+        if (hit) { var q = S.q.slice(0, hit.a) + S.q.slice(hit.b); input.value = q.replace(/\s+/g, ' ').trim(); setQuery(input.value, false); }
+        else { addToken(v); }
+        return;
+      }
+      case 'refine':
+        addToken(e.shiftKey ? '-' + v : v); return;
+      case 'addq':
+        S.sel = null; addToken(v); writeUrl(true); render(); return;
+      case 'unpill': {
+        var a = +el.getAttribute('data-a'), b = +el.getAttribute('data-b');
+        var nq = (S.q.slice(0, a) + S.q.slice(b)).replace(/\s+/g, ' ').trim();
+        input.value = nq; setQuery(nq, false); return;
+      }
+      case 'open':
+        if (e.metaKey || e.ctrlKey || e.shiftKey) { return; }
+        e.preventDefault();
+        open(el.getAttribute('data-scope') || S.scope, +el.getAttribute('data-i'));
+        return;
+      case 'pin': {
+        var key = (S.scope === 'armor' ? 'a:' : 'w:') + (S.scope === 'armor' ? AR : WR)[i][0];
+        if (has(pins, key)) { pins.splice(pins.indexOf(key), 1); } else { pins.push(key); }
+        store('wpn.pins', pins); render(); return;
+      }
+      case 'unpinall':
+        pins = []; store('wpn.pins', pins); render(); return;
+      case 'rail':
+        S.railOff = !S.railOff; store('wpn.railOff', S.railOff); render(); return;
+      case 'perk': {
+        var col = +el.getAttribute('data-col'), plug = +el.getAttribute('data-plug'), roll = rollOf(i);
+        if (cellsOf(poolRow(i)[2][col]).length === 1) { return; }
+        if (roll.sel[col] === plug) { delete roll.sel[col]; } else { roll.sel[col] = plug; }
+        saveRoll(i); S.hoverPlug = null; hideTip(); renderDetail(); return;
+      }
+      case 'mwslot':
+        e.stopPropagation(); S.pop = S.pop === 'mw' ? null : 'mw'; hideTip(); renderDetail(); return;
+      case 'modslot':
+        e.stopPropagation(); S.pop = S.pop === 'mod' ? null : 'mod'; hideTip(); renderDetail(); return;
+      case 'mwpick': {
+        var r1 = rollOf(i); r1.mw = v || ''; if (!v) { S.pop = null; }
+        saveRoll(i); renderDetail(); return;
+      }
+      case 'level': {
+        var r2 = rollOf(i); r2.lv = +v; saveRoll(i); renderDetail(); return;
+      }
+      case 'tier': {
+        var r3 = rollOf(i); r3.t = +v; saveRoll(i); renderDetail(); return;
+      }
+      case 'modpick': {
+        var r4 = rollOf(i); r4.mod = +v; S.pop = null; hideTip(); saveRoll(i); renderDetail(); return;
+      }
+      case 'cat': {
+        var r5 = rollOf(i); r5.cat = r5.cat ? 0 : 1; saveRoll(i); renderDetail(); return;
+      }
+    }
+  });
+
+  /* 悬停：词条出说明并在属性条上预览；属性行出分解；结果栏的行在详情区预览。 */
+  var previewTimer = 0;
+  document.addEventListener('mouseover', function (e) {
+    var el = e.target.closest('[data-act]');
+    var inRail = e.target.closest('.wpn-rail');
+    if (inRail && el && el.getAttribute('data-act') === 'open' && S.sel != null) {
+      var k = +el.getAttribute('data-i'), scope = el.getAttribute('data-scope') || S.scope;
+      clearTimeout(previewTimer);
+      if (scope === S.scope && k !== S.preview) {
+        previewTimer = setTimeout(function () { S.preview = k === S.sel ? null : k; S.hoverPlug = null; renderDetail(); }, 120);
+      }
+      return;
+    }
+    if (!el || S.sel == null || S.scope !== 'wpn' || !P) { return; }
+    var act = el.getAttribute('data-act'), i = S.preview != null ? S.preview : S.sel;
+    if (act === 'perk') {
+      var col = +el.getAttribute('data-col'), plug = +el.getAttribute('data-plug');
+      if (!S.hoverPlug || S.hoverPlug.col !== col || S.hoverPlug.plug !== plug) {
+        var roll = rollOf(i);
+        S.hoverPlug = roll.sel[col] === plug ? null : { col: col, plug: plug };
+        renderDetail();
+        var again = body.querySelector('[data-act="perk"][data-col="' + col + '"][data-plug="' + plug + '"]');
+        if (again) { showTip(perkTip(i, col, plug), again); }
+      }
+    } else if (act === 'statrow') {
+      var s = +el.getAttribute('data-s');
+      if (S.hoverRow !== s) {
+        S.hoverRow = s;
+        showTip(statTip(i, s), body.querySelector('dt[data-s="' + s + '"]'), 'left', true);
+      }
+    } else if (act === 'mwslot' && !S.pop) {
+      showTip(mwTip(i), el);
+    } else if (act === 'modpick') {
+      var p = +el.getAttribute('data-v');
+      if (p >= 0) { showTip(modTip(p), el); }
+    }
+  });
+  document.addEventListener('mouseout', function (e) {
+    var el = e.target.closest('[data-act]');
+    var to = e.relatedTarget && e.relatedTarget.closest ? e.relatedTarget.closest('[data-act]') : null;
+    if (e.target.closest('.wpn-rail') && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('.wpn-rail'))) {
+      clearTimeout(previewTimer);
+      if (S.preview != null) { S.preview = null; renderDetail(); }
+      return;
+    }
+    if (!el || el === to) { return; }
+    var act = el.getAttribute('data-act');
+    if (act === 'perk' && (!to || to.getAttribute('data-act') !== 'perk')) {
+      if (S.hoverPlug) { S.hoverPlug = null; renderDetail(); }
+      hideTip();
+    } else if (act === 'statrow' && (!to || to.getAttribute('data-act') !== 'statrow')) {
+      S.hoverRow = null; hideTip();
+    } else if (act === 'mwslot' || act === 'modpick') {
+      hideTip();
+    }
+  });
+
+  /* 结果栏拖宽：140–280px，记在 localStorage。 */
+  document.addEventListener('mousedown', function (e) {
+    if (!e.target.closest('[data-act="grip"]')) { return; }
+    e.preventDefault();
+    var split = body.querySelector('.wpn-split'), x0 = e.clientX, w0 = S.rail;
+    function move(ev) {
+      S.rail = Math.max(RAIL_MIN, Math.min(RAIL_MAX, w0 + ev.clientX - x0));
+      split.style.setProperty('--rail', S.rail + 'px');
+    }
+    function up() {
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', up);
+      store('wpn.rail', S.rail);
+    }
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', up);
+  });
+
+  window.addEventListener('popstate', function () {
+    readUrl();
+    input.value = S.q;
+    evaluate();
+    if (S.sel != null && S.scope === 'wpn' && S.urlRoll) {
+      need('pool', function () { if (S.urlRoll) { S.rolls[WR[S.sel][W_H]] = decodeRoll(S.sel, S.urlRoll); S.urlRoll = null; } render(); });
+    }
+    render();
+  });
+  window.addEventListener('resize', measureStick);
+
+  /* ── 开屏 ──────────────────────────────────────────────────────────── */
+  readUrl();
+  input.value = S.q;
+  evaluate();
+  if (S.sel != null && S.scope === 'wpn' && S.urlRoll) {
+    need('pool', function () {
+      if (S.urlRoll) { S.rolls[WR[S.sel][W_H]] = decodeRoll(S.sel, S.urlRoll); S.urlRoll = null; }
+      render();
+    });
+  }
+  render();
+  /* 首屏画完之后空闲时取词条池与说明。 */
+  var idle = window.requestIdleCallback || function (fn) { return setTimeout(fn, 1200); };
+  idle(function () { need('pool', function () { need('text'); }); });
+
 }());

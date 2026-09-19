@@ -23,7 +23,8 @@ import shell
 
 # 除页面之外的产出。生成器写什么，这里就比什么。
 EXTRA = ('assets/search.js', 'builds/vocab.js', 'builds/desc.js',
-         'admin/terms.js', 'admin/pages.js', 'functions/api/dialect.js')
+         'admin/terms.js', 'admin/pages.js', 'functions/api/dialect.js',
+         'weapons/index.js', 'weapons/pool.js', 'weapons/text.js')
 
 # 允许的差异：把新那一行按这几条抹平之后，必须与旧那一行逐字相同。
 # 每一条都要写清楚它是哪一步引入的，以及为什么旧版没有。

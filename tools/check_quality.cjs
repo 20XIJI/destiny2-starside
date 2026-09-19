@@ -1496,6 +1496,80 @@ test('the visitor count is read from the database once a minute per instance', a
     '一分钟内第二次读计数又打了数据库')
 })
 
+// ── 武器库：weapons/app.js 的纯函数 ─────────────────────────────────────
+function weaponFns(names, deps = '') {
+  const ctx = {}
+  vm.createContext(ctx)
+  vm.runInContext(deps + names.map((n) => funcSource('weapons/app.js', n)).join('\n') +
+    '\nthis.f = {' + names.map((n) => n + ':' + n).join(',') + '}', ctx)
+  return ctx.f
+}
+
+test('weapons: the stat curve clamps, never extrapolates, and rounds half to even', () => {
+  const { bankers, interp, shown } = weaponFns(['bankers', 'interp', 'shown'])
+  assert.equal(bankers(2.5), 2)
+  assert.equal(bankers(3.5), 4)
+  assert.equal(bankers(2.4999), 2)
+  assert.equal(bankers(-0.5), 0)
+  const curve = [10, 65, 100, 90]
+  assert.equal(interp(0, curve), 65, '低于第一个点不外推')
+  assert.equal(interp(150, curve), 90, '高于最后一个点不外推')
+  assert.equal(interp(55, curve), 78, '中间按分段线性、半数取偶：77.5 → 78')
+  assert.equal(shown(150, [0, 100, [0, 0, 200, 200], 0]), 100, '先按上限截断再插值')
+  assert.equal(shown(7, [0, 100, [], 1]), 7, '属性组不缩放这一项时投资值就是显示值')
+})
+
+test('weapons: the query parser keeps DIM precedence and token positions', () => {
+  const deps = 'function has(list, x) { return list.indexOf(x) !== -1; }\n'
+  const { tokenize, parse } = weaponFns(['normQ', 'tokenize', 'parse'], deps)
+  const keys = ['is', 'perk', 'stat', 'season', 'name']
+  const q = (s) => JSON.parse(JSON.stringify(parse(tokenize(s), keys), (k, v) => k === 'tok' ? undefined : v))
+  assert.deepEqual(q('is:手炮 perk:萤火虫'),
+    { op: 'and', xs: [{ op: 'kw', k: 'is', v: '手炮' }, { op: 'kw', k: 'perk', v: '萤火虫' }] })
+  assert.deepEqual(q('is:手炮 perk:萤火虫 or perk:狂乱'),
+    { op: 'or', xs: [{ op: 'and', xs: [{ op: 'kw', k: 'is', v: '手炮' }, { op: 'kw', k: 'perk', v: '萤火虫' }] },
+      { op: 'kw', k: 'perk', v: '狂乱' }] }, 'and 比 or 绑得紧')
+  assert.deepEqual(q('is:手炮 (perk:萤火虫 or perk:狂乱)'),
+    { op: 'and', xs: [{ op: 'kw', k: 'is', v: '手炮' }, { op: 'or', xs: [{ op: 'kw', k: 'perk', v: '萤火虫' },
+      { op: 'kw', k: 'perk', v: '狂乱' }] }] }, '括号分组')
+  assert.deepEqual(q('-is:专家'), { op: 'not', x: { op: 'kw', k: 'is', v: '专家' } })
+  assert.deepEqual(q('not is:专家'), { op: 'not', x: { op: 'kw', k: 'is', v: '专家' } })
+  assert.deepEqual(q('perk:"强力首发"'), { op: 'kw', k: 'perk', v: '强力首发' }, '引号值')
+  assert.deepEqual(q('stat:射程:>=60'), { op: 'kw', k: 'stat', v: '射程:>=60' })
+  assert.deepEqual(q('is：手炮 （perk：萤火虫）'),
+    { op: 'and', xs: [{ op: 'kw', k: 'is', v: '手炮' }, { op: 'kw', k: 'perk', v: '萤火虫' }] }, '全角标点按半角认')
+  assert.deepEqual(q('foo:bar'), { op: 'w', v: 'foo:bar' }, '未知关键字当裸词')
+  assert.deepEqual(q('is:手炮 or'), { op: 'kw', k: 'is', v: '手炮' }, '悬空的 or 忽略')
+  assert.deepEqual(q('(is:手炮'), { op: 'kw', k: 'is', v: '手炮' }, '不配对的括号忽略')
+  const t = tokenize('is:手炮  perk:萤火虫')
+  assert.deepEqual(JSON.parse(JSON.stringify(t.map((x) => [x.a, x.b]))), [[0, 5], [7, 15]], 'token 记着它在原文里的位置')
+})
+
+test('weapons: no two functions in app.js share a name', () => {
+  const text = fs.readFileSync(path.join(root, 'weapons/app.js'), 'utf8')
+  const names = [...text.matchAll(/function (\w+)\s*\(/g)].map((m) => m[1])
+  const dup = names.filter((n, i) => names.indexOf(n) !== i)
+  assert.deepEqual(dup, [], '同名函数后写的会整个盖掉前一个')
+})
+
+test('weapons: every example and syntax row parses into known keywords', () => {
+  const text = fs.readFileSync(path.join(root, 'weapons/app.js'), 'utf8')
+  const grab = (name) => {
+    const m = new RegExp('var ' + name + ' = (\\[[\\s\\S]*?\\]);').exec(text)
+    assert.notEqual(m, null, 'app.js 里找不到 ' + name)
+    return vm.runInNewContext(m[1])
+  }
+  const keys = grab('KEYS_WPN').concat(grab('KEYS_ARMOR'))
+  const deps = 'function has(list, x) { return list.indexOf(x) !== -1; }\n'
+  const { tokenize } = weaponFns(['normQ', 'tokenize'], deps)
+  const samples = grab('EXAMPLES').concat(grab('SYNTAX').map((r) => r[0]))
+  for (const s of samples) {
+    for (const t of tokenize(s)) {
+      if (t.t === 'kw') { assert.ok(keys.includes(t.k), s + ' 里的 ' + t.k + ': 不是关键字') }
+    }
+  }
+})
+
 async function main() {
   let failures = 0
   for (const [name, fn] of tests) {

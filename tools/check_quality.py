@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""离线回归：部署闸门、审核删除三方比、配装生成生命周期。
+"""离线回归：部署闸门、审核删除三方比、配装生成生命周期、装备库。
 
 python3 tools/check_quality.py
 只用标准库；真实入口搭配内存 API/命令替身，全部写入独占 TemporaryDirectory。
-不读取令牌、不启动子进程、不连接网络。生成器只替换资料词表来源，渲染与落盘走实码。
+不读取令牌、不连接网络。生成器只替换资料词表来源，渲染与落盘走实码。
+唯一的子进程是 WeaponPage 起的一次 node：把 weapons/app.js 的属性函数抠出来，
+与 facts.shown() 逐值比。
 """
 import base64
 import collections
@@ -28,6 +30,7 @@ import urllib.error
 import urllib.request
 
 import check_terms
+import facts
 import items
 import markup
 import research
@@ -53,6 +56,7 @@ deploy = load('quality_deploy', 'deploy.py')
 sync = load('quality_sync', 'sync.py')
 build = load('quality_build', 'convert-build.py')
 doc = load('quality_doc', 'convert-doc.py')
+weapons = load('quality_weapons', 'build-weapons.py')
 
 
 def forbidden(*args, **kwargs):
@@ -91,15 +95,18 @@ class Entrypoints(Isolated):
     def test_help_and_invalid_options_have_no_side_effects(self):
         search = load('quality_search', 'build-search.py')
         terms = load('quality_terms', 'build-terms.py')
+        wpn = load('quality_weapons_cli', 'build-weapons.py')
         self.replace(deploy, 'ROOT', self.root)
         self.replace(deploy, 'git', forbidden)
         self.replace(search.shell, 'pages', forbidden)
         self.replace(terms, 'build', forbidden)
+        self.replace(wpn, 'build', forbidden)
         for module, cases in (
             (deploy, [('--help', 0), ('--dryrun', 2), ('--all --pruen', 2),
                       ('--check --all', 2), ('--prune', 2), ('--dry', 2), ('extra', 2)]),
             (search, [('--help', 0), ('--dry-run', 2)]),
             (terms, [('--help', 0), ('--dry-run', 2)]),
+            (wpn, [('--help', 0), ('--dry-run', 2), ('extra', 2)]),
         ):
             sentinel = self.file('output.js', 'unchanged')
             before = sentinel.stat().st_mtime_ns
@@ -961,6 +968,92 @@ class BuildProseColors(unittest.TestCase):
         self.assertEqual(bad, [], '剥掉标记再补色补不回原样：\n  ' + '\n  '.join(bad))
 
 
+class WeaponPage(unittest.TestCase):
+    """装备库：入库的三份载荷与页壳是不是现跑生成器的产物；浏览器那一份属性算法
+    与 facts.shown() 是不是逐值一致。"""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.facts = rows.facts()
+        cls.out, cls.stats = weapons.build(cls.facts)
+
+    def test_the_payload_on_disk_is_what_the_generator_makes_now(self):
+        for rel, body in self.out.items():
+            if rel.endswith('index.html'):
+                body = markup.delta_bmarks(body)
+            with self.subTest(rel=rel):
+                disk = (TOOLS.parent / rel).read_text(encoding='utf-8')
+                self.assertTrue(disk == body, '%s 与现跑生成器的产出对不上：跑 python3 tools/build-weapons.py' % rel)
+
+    def test_every_enhanced_perk_has_its_base_and_author_names_resolve(self):
+        self.assertEqual(self.stats['orphans'], [])
+        self.assertLessEqual(len(self.stats['mark_miss']), weapons.MARK_MISS_BASELINE,
+                             '\n'.join(self.stats['mark_miss']))
+
+    def test_same_as_is_one_hop_to_a_real_record(self):
+        items_ = self.facts.items
+        for h, r in items_.items():
+            if 'sameAs' not in r:
+                continue
+            with self.subTest(h=h):
+                target = items_.get(str(r['sameAs']))
+                self.assertIsNotNone(target, '%s 的 sameAs 指到库外' % h)
+                self.assertNotIn('sameAs', target or {}, '%s 的 sameAs 跳了两层' % h)
+
+    def js_function(self, text, name):
+        """与 check_quality.cjs 的 funcSource() 同一个判据：按缩进找收尾。"""
+        head = re.search(r'^([ \t]*)function ' + name + r' ?\(', text, re.M)
+        assert head is not None, 'weapons/app.js 里找不到 %s()' % name
+        rest = text[head.end():]
+        close = re.search(r'^' + head.group(1) + r'\}$', rest, re.M)
+        assert close is not None, 'weapons/app.js 的 %s() 没找到收尾' % name
+        return text[head.start():head.end() + close.end()]
+
+    def test_the_browser_computes_stats_exactly_like_facts_shown(self):
+        """全部武器 ×（基础、基础 + 各栏每一枚插件、基础 + 大师杰作 10+T）逐值比。"""
+        F = self.facts
+        cases = {}
+        for h, r in F.items.items():
+            if r.get('itemType') != 3:
+                continue
+            gh = str(r['stats']['statGroupHash'])
+            base = collections.Counter()
+            for s in r.get('investmentStats') or ():
+                if not s.get('isConditionallyActive'):
+                    base[str(s['statTypeHash'])] += s['value']
+            adds = set()
+            for col in F.pool(h):
+                for p in col.get('plugs') or ():
+                    for s in F.items[str(p)].get('investmentStats') or ():
+                        if not s.get('isConditionallyActive'):
+                            adds.add((str(s['statTypeHash']), s['value']))
+            for row in F.groups[gh].get('scaledStats') or ():
+                sh = str(row['statHash'])
+                values = {base[sh]} | {base[sh] + v for s, v in adds if s == sh}
+                values |= {base[sh] + 10 + t for t in range(6)}
+                for v in values:
+                    cases[(gh, sh, v)] = None
+        self.assertGreater(len(cases), 20000, '覆盖的格子少得不对，抽样逻辑坏了')
+        rows_ = []
+        for gh, sh, v in cases:
+            want = facts.shown({'investmentStats': [{'statTypeHash': int(sh), 'value': v}]},
+                                       F.groups[gh], sh)
+            row = next(x for x in F.groups[gh]['scaledStats'] if str(x['statHash']) == sh)
+            curve = [n for p in row['displayInterpolation'] for n in (p['value'], p['weight'])]
+            rows_.append([v, row['maximumValue'], curve, want])
+        text = (TOOLS.parent / 'weapons' / 'app.js').read_text(encoding='utf-8')
+        prog = '\n'.join(self.js_function(text, n) for n in ('bankers', 'interp', 'shown')) + (
+            '\nvar rows = JSON.parse(require("fs").readFileSync(0, "utf8")), bad = [];'
+            '\nrows.forEach(function (r) { var got = shown(r[0], [0, r[1], r[2], 0]);'
+            ' if (got !== r[3]) { bad.push([r[0], r[1], r[2].length, r[3], got]); } });'
+            '\nprocess.stdout.write(JSON.stringify(bad.slice(0, 20)) + "\\n" + bad.length);')
+        done = subprocess.run(['node', '-e', prog], input=json.dumps(rows_), capture_output=True,
+                              text=True, check=True)
+        sample, count = done.stdout.rsplit('\n', 1)
+        self.assertEqual(int(count), 0, '浏览器与 facts.shown 算得不一样（投资值, 上限, 曲线点数, 期望, 实得）：%s' % sample)
+        print('\n  装备库属性：%d 格与 facts.shown 逐值一致' % len(rows_), file=sys.stderr)
+
+
 class DeploySelection(unittest.TestCase):
     """发什么、剥不剥注释、清单怎么读——四个纯函数各自的判据。
 
@@ -1021,7 +1114,8 @@ class DeploySelection(unittest.TestCase):
         # 「今天站上这些文件走的是哪条路」，改文案时会跟着变，变了要看一眼。
         skipped = [rel for rel in ('assets/site.css', 'assets/app.js', 'assets/search.js',
                                    'admin/admin.js', 'admin/dialect.js', 'builds/new/form.js',
-                                   'assets/chart.js', 'assets/rota.js', 'assets/home.js')
+                                   'assets/chart.js', 'assets/rota.js', 'assets/home.js',
+                                   'weapons/app.js', 'weapons/style.css')
                    if not deploy.strippable((TOOLS.parent / rel).read_text(encoding='utf-8'))]
         self.assertEqual(skipped, [], '这些文件的字符串里出现了 /* 或 */，整个文件会原样发')
 

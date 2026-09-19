@@ -99,6 +99,11 @@ WIDE = frozenset({'shopping-primary', 'shopping-special', 'shopping-heavy',
 SKIP = frozenset({'armor-sets', 'farming-sets'})
 
 
+def file_of(path):
+    """官方图路径 → 站内文件名。Bungie 的图名本身是内容哈希，只换扩展名。"""
+    return os.path.splitext(os.path.basename(path))[0] + '.webp'
+
+
 def width(page):
     return 96 if page in WIDE else 64
 
@@ -148,14 +153,24 @@ def wanted():
             for b in blocks:
                 for x in b.get('covers') or ():
                     add(x, 64)
-    # 武器库：每把枪自己那张，加它各栏插件的图（含可选模组与大师杰作）。
+    # 武器库：每把枪与每件异域护甲自己那张，加武器各栏插件的图（含可选模组与
+    # 大师杰作）、催化剂，以及护甲固有与特征栏里的异域 Perk。
     for key, row in facts.items.items():
-        if row.get('itemType') != 3:
+        if row.get('itemType') not in (2, 3):
             continue
         add(key, 64)
         for field in ('iconWatermark', 'iconWatermarkFeatured'):
             if row.get(field):
                 need.setdefault(row[field], 96)
+        for c in (row.get('derived') or {}).get('catalyst') or ():
+            add(str(c), 64)
+        if row.get('itemType') == 2:
+            for e in (row.get('sockets') or {}).get('socketEntries') or ():
+                kind = ((facts.socket_types.get(str(e.get('socketTypeHash'))) or {})
+                        .get('derived') or {}).get('kind')
+                if kind in ('intrinsic', 'trait') and e.get('singleInitialItemHash'):
+                    add(str(e['singleInitialItemHash']), 64)
+            continue
         for col in facts.pool(key):
             for one in list(col.get('plugs') or ()) + ([col['init']] if col.get('init') else []):
                 add(str(one), 64)
@@ -190,7 +205,7 @@ def convert(raw, path, wide):
     subprocess.run(['cwebp', '-quiet', '-q', '82', '-alpha_q', '100',
                     '-resize', str(wide), '0', src, '-o', webp], check=True)
     os.remove(src)
-    name = os.path.splitext(os.path.basename(path))[0] + '.webp'
+    name = file_of(path)
     os.replace(webp, os.path.join(OUT_DIR, name))
     return name
 
@@ -200,8 +215,7 @@ def pull(need):
     os.makedirs(OUT_DIR, exist_ok=True)
     done = failed = 0
     for path, wide in sorted(need.items()):
-        name = os.path.splitext(os.path.basename(path))[0] + '.webp'
-        if os.path.exists(os.path.join(OUT_DIR, name)):
+        if os.path.exists(os.path.join(OUT_DIR, file_of(path))):
             continue
         try:
             raw = fetch(path)
@@ -223,9 +237,7 @@ def main():
     a = ap.parse_args()
 
     need = wanted()
-    missing = [p for p in need
-               if not os.path.exists(os.path.join(
-                   OUT_DIR, os.path.splitext(os.path.basename(p))[0] + '.webp'))]
+    missing = [p for p in need if not os.path.exists(os.path.join(OUT_DIR, file_of(p)))]
     print('站内寻址得到的官方图 %d 张（64 档 %d、96 档 %d），盘上已有 %d，还缺 %d'
           % (len(need), sum(1 for w in need.values() if w == 64),
              sum(1 for w in need.values() if w == 96),

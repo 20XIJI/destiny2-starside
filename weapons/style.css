@@ -1,1050 +1,1188 @@
-/* 武器库。版面照 destiny.report：左栏结果、中栏词条与评语、右栏标签片与数值。
-   版心走主档最宽那一挡：三栏并排，中栏还要铺得下一张十几列的词条矩阵。 */
+/* 装备库。版心走 1500 那一档：开屏是卡片目录，挑中一把之后是结果栏 + 详情的
+   并排对照，两种都是 design.md 四节里「走满 1500px」的页面类型。 */
 :root {
   --wrap: 1500px;
-  --min: 320px;
-  /* **强调色去饱和**。design.md 一节：整页唯一的饱和色来自游戏自身的编码。
-     这一页满屏都是元素色、弹药色、勇士红与异域金，全是那种编码；把 --accent
-     接到传说紫上，焦点环、卡片悬停、选中态、数值条与评级值就一起变成同一支洋红
-     ——它既不是元素编码，也不再是稀有度编码（稀有度只该落在「传说武器」那一枚
-     标签片上），只是把整页染了一遍，把真正带信息的那些颜色淹掉。
-     接回骨白之后，强调靠亮度与字重，与 design.md 二节一致。 */
+  /* 这一页满是元素编码：卡片、结果行、词条说明里到处是电弧青与烈日橙。站点缺省的
+     青色焦点环在这里会被读成「电弧」，所以强调色退回骨白，只靠亮度区分。 */
   --accent: var(--bone-hi);
-  /* 数值条分段的三档明度。同一支骨白，浓度即「这一段是谁加的」。 */
-  --bar-base: #ffffffb8;
-  --bar-plug: #ffffff59;
+  /* 强化词条的金，取站内能量球／层数那一支：游戏里的强化金 #eade8b 与它
+     ΔE 10.9，按 design.md 一节读作同一个颜色，不另造一支。依据是 Bungie 给强化
+     物品专发的那张金色叠加图（enhanced-item-overlay.png）。只上词条圆圈。 */
+  --c-enh: var(--c-stack);
+  /* 作者推荐的光圈。两位作者各一色，只画在词条图标外圈，不上文字。
+     Aegis 天蓝（与最近的 --c-stasis ΔE 29.0）；小棒猪（LGpig）取头像那只小猪的耳朵粉
+     （与最近的 --c-prism ΔE 18.2）。两位都推荐的那一圈是棱彩：六个元素色绕一圈，
+     游戏里「棱镜」本来就是把全部元素并在一起。 */
+  --c-aegis: #3d8bff;
+  --c-lgpig: #ea6c96;
+  --halo-both: conic-gradient(var(--c-arc), var(--c-solar), var(--c-void), var(--c-stasis),
+                              var(--c-strand), var(--c-prism), var(--c-arc));
+  /* 属性条按来源分段，只换明度不换色相（design.md 一节）。 */
+  --seg-base: #7d8492;
+  --seg-part: #b3b8c2;
+  --seg-perk: #e6e2d6;
+  --rail: 240px;
 }
 
-/* ── 搜索框 ── */
-.wpn-find {
-  margin: 0 0 14px;
-}
-
-.wpn-find input {
-  box-sizing: border-box;
+/* ── 顶栏里的查询框 ──────────────────────────────────────────── */
+.wpn-q {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
   width: 100%;
-  max-width: 420px;
-  padding: 7px 11px;
-  font: inherit;
+}
+
+.wpn-field {
+  position: relative;
+  flex: 0 1 760px;
+}
+
+.wpn-input {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
   color: var(--bone-hi);
-  background: var(--field-fill);
+  font: 400 14px/1.5 var(--font-body);
+  background: #ffffff08;
   border: 1px solid var(--hair-lit);
-  border-radius: 4px;
-  transition: border-color .14s ease;
+  border-radius: 0;
 }
 
-.wpn-find input:hover {
-  border-color: var(--bone-faint);
+.wpn-input::placeholder { color: var(--bone-faint); }
+
+/* 浏览器自带的清空钮是一枚蓝叉，不在本站色板里；清掉条件走药丸上的 ×。 */
+.wpn-input::-webkit-search-cancel-button { -webkit-appearance: none; }
+
+.wpn-input:focus,
+.wpn-input.is-focus {
+  background: var(--field-fill);
+  border-color: var(--accent);
+  outline: none;
 }
 
-.wpn-find input:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .wpn-find input {
-    transition: none;
-  }
-}
-
-/* sprite 只是一堆 symbol 的仓库，不占版面。 */
-.wpn-sprite {
-  position: absolute;
-  width: 0;
-  height: 0;
-  overflow: hidden;
-}
-
-/* ── 筛选条 ──
-   同一组里选几个是「或」，组与组之间是「且」。每枚开关末尾那个数是「按当前其余
-   条件，选它还剩多少」——按下去会不会是空的，按之前就看得见。剩 0 的压暗但不禁用：
-   读者仍看得到这一档存在，只是当前条件下没有。
-   `.toggle` `.op` `.drop` `.menu` 都是站内既有的控件，这里只管排布。 */
-.wpn-facets {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-  align-items: center;
-  margin: 0 0 10px;
-}
-
-/* 视图开关顶到筛选条那一行的最右端。 */
-.wpn-view {
-  display: flex;
-  gap: 6px;
-  margin-left: auto;
-}
-
-.wpn-facet {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  align-items: center;
-}
-
-.wpn-facet-name {
-  color: var(--bone-dim);
-  letter-spacing: .12em;
-}
-
-/* 开关的高度只由文字那一行决定：图标槽写死 14×14（位图）与 18×13（SVG），
-   下拉那一枚的 <summary> 同样吃 min-height。三种内容因此排得齐。 */
-.wpn-facet-one,
-.wpn-facets .drop > summary {
-  display: inline-flex;
-  gap: 6px;
-  align-items: center;
-  min-height: 28px;
-  transition: border-color .14s ease, color .14s ease;
-}
-
-.wpn-facet-one .wpn-tag-ico {
-  width: 14px;
-  height: 14px;
-}
-
-/* SVG 自己按 preserveAspectRatio 在这个槽里居中缩放，扁的宽的都不变形。 */
-.wpn-facet-one .wpn-tag-svg {
-  width: 18px;
-  height: 13px;
-  max-width: none;
-}
-
-/* 末尾那个数右对齐等宽：不等宽时同一列的数字左右跳，按钮看着也不齐。 */
-.wpn-facet-one em {
-  font-style: normal;
-  color: var(--bone-dim);
-  font-variant-numeric: tabular-nums;
-  min-width: 2.4em;
-  text-align: right;
-}
-
-.wpn-facet-one.none {
-  opacity: .4;
-}
-
-.wpn-facet-clear {
-  margin-left: 4px;
-}
-
-/* 三栏：结果 248 + 详情，详情里再切主栏与 300 的数值栏。两层嵌套而不是一层
-   三列，是因为枪名那一行要横跨后两栏——它是这一整块的标题，不属于中栏。 */
-.wpn-body {
-  display: grid;
-  grid-template-columns: 248px minmax(0, 1fr);
-  gap: 18px;
-  align-items: start;
-}
-
-/* 还没挑枪时满幅铺卡片，左栏收起来——它要给卡片墙让出整幅宽度。 */
-.wpn-body.one-up {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.wpn-body.one-up .wpn-aside {
-  display: none;
-}
-
-/* ── 卡片墙 ──
-   一行八张（1500px 版心下），每张自上而下：图标、名字、一行小图标、框架、评级。
-   前四样照 destiny.report 的次序；评级那一行是站内比它多出来的，也是这一页存在
-   的理由，所以留在卡片上而不是藏进详情。 */
-/* 一行**八张**，列宽由版心均分，不按 minmax 让浏览器自己数——auto-fill 在
-   1500px 版心下给出的是 8 张，窗口一窄就悄悄变成 7 张再变 6 张，每一档的卡片
-   宽度都不一样，图标与四行字的比例跟着漂。这里改成逐档写死：每一档的列数
-   是定的，读者缩窗口看到的是「一行少几张」，不是「每张都变形」。 */
-.wpn-cards {
-  display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
-  gap: 14px 12px;
-}
-
-@media (max-width: 1200px) {
-  .wpn-cards { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-}
-
-@media (max-width: 1040px) {
-  .wpn-cards { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-}
-
-@media (max-width: 720px) {
-  .wpn-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-}
-
-@media (max-width: 480px) {
-  .wpn-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-
-/* 屏外的卡片不参与布局与绘制。铺满是 2208 张、四万多个元素，其中一千六百张
-   还各带一层 mix-blend-mode 的大师工作辉光，每一层都是一次独立的混合合成。
-   卡片子树里只有 span/img/strong/p/em/i/b，没有粘顶元素，paint containment 裁不到东西。
-   181px 是 1440px 宽下的卡片高，只是没渲染过时的初始估值，渲染过一次浏览器
-   就改用实测值。 */
-.wpn-card {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 181px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 14px 10px 11px;
-  color: inherit;
-  text-decoration: none;
-  background: var(--panel-b);
-  border: 1px solid var(--hair);
-  border-radius: 5px;
-  transition: border-color .14s ease, background-color .14s ease, transform .14s ease;
-  /* 四行三档字号：名字最重，小图标与框架次之，评级最轻。
-     全是正文那一档（15px/1.85）时四行一样重，扫的时候没有落点，
-     一张卡片还要 217px 高。 */
-  font-size: 12px;
-  line-height: 1.4;
-}
-
-/* 悬停：框提亮、底抬一档、整张上移 1px。只改边框那一版在一屏八十张卡片里
-   仍然不够显眼，而这三样都不占色相——design.md 二节，强调靠亮度与字重。 */
-.wpn-card:hover {
-  border-color: var(--bone-faint);
-  background: var(--ink-lift);
-  transform: translateY(-1px);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .wpn-card {
-    transition: none;
-  }
-
-  .wpn-card:hover {
-    transform: none;
-  }
-}
-
-.wpn-card:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
-}
-
-.wpn-card-name {
-  max-width: 100%;
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.3;
-  text-align: center;
-  /* 最长的名字（IKELOS_SMG_v1.0.3）正好顶满内容盒：断得开就断，断不开就截。 */
-  overflow-wrap: anywhere;
-}
-
-.wpn-card-tags,
-.wpn-card-frame,
-.wpn-card-rate {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  margin: 0;
-  color: var(--bone-dim);
-}
-
-.wpn-card-tags em {
-  font-style: normal;
-  color: var(--bone-faint);
-}
-
-.wpn-card-frame {
-  text-align: center;
-  max-width: 100%;
-}
-
-/* 卡片底那一行评级：一张卡片最多三家，挤在一行里不许换行，
-   否则同一排卡片的底会参差不齐。档位串本身也可能很长（刷取清单写的是
-   「清怪：T0 · 高难：T1 · 输出：T2.5」），超出就截断，全文挂在 title 上。 */
-.wpn-card-rate {
-  flex-wrap: nowrap;
-  max-width: 100%;
-}
-
-.wpn-card-rate .wpn-rate {
-  min-width: 0;
-  padding: 0 5px 1px;
-  gap: 4px;
-}
-
-.wpn-card-rate .wpn-rate b {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.wpn-card-frame span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.wpn-tag-ico {
-  flex: none;
-}
-
-/* 类型与弹药那几枚走 sprite，跟着文字颜色变。它们比方形图标扁得多
-   （狙击枪是 123×32），所以按高度定尺寸，宽度随原比例。 */
-.wpn-tag-svg {
-  flex: none;
-  height: 11px;
-  width: auto;
-  max-width: 42px;
-  fill: currentColor;
-}
-
-.wpn-tag-svg.wide {
-  height: 10px;
-}
-
-/* ── 左栏：结果 ── */
 .wpn-count {
   margin: 0;
   color: var(--bone-dim);
-  letter-spacing: .12em;
-}
-
-.wpn-hits {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  max-height: 78vh;
-  overflow-y: auto;
-  border: 1px solid var(--hair);
-  border-radius: 4px;
-  background: var(--panel-b);
-}
-
-.wpn-hit {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  padding: 6px 8px;
-  color: inherit;
-  text-decoration: none;
-  border-bottom: 1px solid var(--hair);
-}
-
-.wpn-hit:hover {
-  background: var(--row-hover);
-}
-
-.wpn-hit.on {
-  background: var(--tint-2);
-  box-shadow: inset 3px 0 0 var(--accent);
-}
-
-.wpn-hit-ico {
-  flex: none;
-  border-radius: 3px;
-  background: var(--tint-1);
-}
-
-.wpn-hit-text {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.wpn-hit-text strong {
+  font-family: var(--font-disp);
+  font-size: 12px;
   font-weight: 600;
-}
-
-.wpn-hit-text small {
-  color: var(--bone-dim);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.wpn-more {
-  padding: 8px;
-  color: var(--bone-dim);
-}
-
-/* ── 枪名那一行 ── */
-.wpn-one {
-  min-width: 0;
-}
-
-.wpn-head {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--hair);
-}
-
-/* 图块。异域那一档在游戏里就是金底，这里照搬那个身份标记。 */
-.wpn-tile {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 76px;
-  height: 76px;
-  border: 1px solid var(--hair-lit);
-  border-radius: 4px;
-  background: var(--tint-2);
-}
-
-.wpn-tile.exotic {
-  border-color: var(--c-exotic);
-  background: color-mix(in oklab, var(--c-exotic) 16%, transparent);
-}
-
-.wpn-title {
-  min-width: 0;
-}
-
-.wpn-title h2 {
-  margin: 0;
-}
-
-.wpn-en {
-  margin: 2px 0 0;
-  color: var(--bone-dim);
-}
-
-/* 评级贴着枪名：那是读者点进这把枪最想先看到的一件事，与名字放在一起省一次扫视。 */
-.wpn-rates {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 6px 0 0;
-}
-
-.wpn-rate {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-  padding: 1px 8px 2px;
-  border: 1px solid var(--hair-lit);
-  border-radius: 3px;
-  background: var(--tint-1);
-}
-
-.wpn-rate i {
-  font-style: normal;
-  color: var(--bone-faint);
   letter-spacing: .08em;
 }
 
-.wpn-rate b {
-  color: var(--accent);
+.wpn-count b { color: var(--bone-hi); font-weight: 600; }
+
+.wpn-scope {
+  display: flex;
+  gap: 4px;
 }
 
-.wpn-split {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  gap: 18px;
-  align-items: start;
-  margin-top: 12px;
+.wpn-views {
+  position: relative;
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
 }
 
-.wpn-main,
-.wpn-side {
-  min-width: 0;
+.wpn-syntax {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 30;
+  width: 640px;
+  padding: 10px 14px 12px;
+  font: 400 12.5px/1.7 var(--font-cn);
+  background: var(--ink-lift);
+  border: 1px solid var(--hair-lit);
 }
 
-/* ── 标签片 ── */
-.wpn-chips {
+.wpn-syntax table { width: 100%; border-collapse: collapse; }
+.wpn-syntax td { padding: 3px 0; vertical-align: middle; color: var(--bone-dim); }
+.wpn-syntax td:first-child { width: 1%; padding-right: 14px; white-space: nowrap; }
+.wpn-syntax .toggle { padding: 1px 8px; }
+.wpn-syntax code { color: var(--bone-hi); font: 400 12px/1.6 var(--font-body); }
+.wpn-syntax p { margin: 8px 0 0; padding-top: 8px; color: var(--bone-faint); border-top: 1px solid var(--hair); }
+
+/* 药丸：已经写完的条件。点 × 去掉那一段，查询框里的原文同步删。 */
+.wpn-pills {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  flex-basis: 100%;
 }
 
-.wpn-chip {
+.wpn-pill {
   display: inline-flex;
-  gap: 5px;
   align-items: center;
-  padding: 2px 10px;
+  gap: 6px;
+  padding: 2px 4px 2px 8px;
+  color: var(--bone);
+  font: 400 12.5px/1.6 var(--font-cn);
+  background: var(--tint-3);
   border: 1px solid var(--hair-lit);
-  border-radius: 999px;
-  background: var(--tint-1);
 }
 
-/* 勇士那一枚带官方破盾图：白线条图案，贴着文字左边。 */
-.wpn-chip-ico {
-  flex: none;
-}
-
-.wpn-chip[tabindex] {
-  cursor: help;
-}
-
-.wpn-chip[tabindex]:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
-}
-
-.wpn-chip.exotic {
-  color: var(--c-exotic);
-  border-color: color-mix(in oklab, var(--c-exotic) 50%, transparent);
-}
-
-.wpn-chip.legend {
-  color: var(--c-legend);
-  border-color: color-mix(in oklab, var(--c-legend) 50%, transparent);
-}
-
-.wpn-chip.champ {
-  color: var(--c-enemy);
-  border-color: color-mix(in oklab, var(--c-enemy) 50%, transparent);
-}
-
-/* ── 正文块 ── */
-.wpn-flavor {
-  margin: 0 0 10px;
-  padding: 6px 0 6px 10px;
-  color: var(--bone-dim);
-  font-style: italic;
-  border-left: 2px solid var(--hair-lit);
-}
-
-.wpn-src {
-  display: flex;
-  gap: 8px;
-  align-items: baseline;
-  margin: 0;
-}
-
-.wpn-src-tag {
+.wpn-pill .k {
   color: var(--bone-faint);
+  font-family: var(--font-disp);
+  font-size: 11px;
+  letter-spacing: .06em;
+}
+
+.wpn-pill.is-not { text-decoration: line-through; text-decoration-color: var(--bone-dim); }
+
+.wpn-pill img,
+.wpn-pill svg { width: 16px; height: 16px; flex: none; fill: currentcolor; }
+
+.wpn-pill button {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  color: var(--bone-faint);
+  font: 400 14px/1 var(--font-body);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.wpn-pill button:hover { color: var(--bone-hi); }
+
+/* 补全列表 */
+.wpn-suggest {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 30;
+  width: 420px;
+  margin: 0;
+  padding: 6px 0;
+  list-style: none;
+  background: var(--ink-lift);
+  border: 1px solid var(--hair-lit);
+}
+
+.wpn-suggest .grp {
+  padding: 6px 14px 2px;
+  color: var(--bone-faint);
+  font: 600 11px/1.6 var(--font-disp);
   letter-spacing: .12em;
 }
 
-.wpn-stats,
-.wpn-sockets,
-.wpn-mods,
-.wpn-says,
-.wpn-alt {
-  margin-top: 18px;
-  padding-top: 10px;
+.wpn-suggest .opt {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 14px;
+  color: var(--bone);
+  font: 400 13px/1.6 var(--font-cn);
+  border-left: 2px solid transparent;
+}
+
+.wpn-suggest .opt[aria-selected="true"] {
+  color: var(--bone-hi);
+  background: var(--row-hover);
+  border-left-color: var(--accent);
+}
+
+.wpn-suggest .opt img { width: 22px; height: 22px; border-radius: 50%; }
+
+.wpn-suggest .opt .n,
+.wpn-suggest .opt code {
+  color: var(--bone-faint);
+  font: 400 12px/1.6 var(--font-body);
+}
+
+.wpn-suggest .hint {
+  margin: 6px 14px 2px;
+  padding-top: 6px;
+  color: var(--bone-faint);
+  font: 400 11.5px/1.6 var(--font-cn);
   border-top: 1px solid var(--hair);
 }
 
-.wpn-stats h3,
-.wpn-sockets h3,
-.wpn-mods h3 {
-  margin: 0 0 8px;
-  color: var(--bone-dim);
-}
-
-.wpn-stats dl {
-  margin: 0;
-}
-
-/* 整行可聚焦：悬停它出的是「这个数由哪几件东西凑成」，与悬停词条那一层分工不同。
-
-   条**独占第二行、横跨整宽**，槽宽因此与标签的字数无关，同一个 37 在每一行
-   都画成同样长。bar() 里的分母也是钉死的 100，两者一起保证跨行可比。 */
-.wpn-statlist {
+/* ── 浏览区 ─────────────────────────────────────────────────── */
+.wpn-row {
   display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.wpn-statrow {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  gap: 5px 10px;
-  align-items: baseline;
-  padding: 5px 7px;
-  border-radius: 3px;
-  cursor: help;
-  transition: background-color .12s ease;
-}
-
-.wpn-stat-name {
-  color: var(--bone-dim);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.wpn-statrow:hover {
-  background: var(--row-hover);
-}
-
-.wpn-statrow:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 0;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .wpn-statrow {
-    transition: none;
-  }
-}
-
-
-/* ── 数值条 ──
-   按来源分段，**只换明度不换色相**：design.md 写着整页唯一的饱和色来自游戏
-   自身的编码，给「词条加的那一段」配一个蓝属于凭空造色。基础段最实，往后依次
-   变淡；负值段走斜纹，同样不靠红色。
-   段与段之间留一道 1px 的槽底色，不然两段浓度相近时看着是一整条。 */
-.wpn-rail {
-  position: relative;
-  display: flex;
-  gap: 1px;
-  grid-column: 1 / -1;
-  height: 6px;
-  margin-top: 1px;
-  background: var(--tint-2);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.wpn-seg {
-  display: block;
-  height: 100%;
-  background: var(--bar-plug);
-}
-
-.wpn-seg.base {
-  background: var(--bar-base);
-}
-
-.wpn-seg.neg {
-  background: repeating-linear-gradient(135deg,
-    var(--bone-faint) 0 2px, transparent 2px 4px);
-}
-
-
-
-/* 悬停预览：主条底下另起一条，只画差额那一段。 */
-.wpn-ghost {
-  position: absolute;
-  bottom: 0;
-  height: 2px;
-  background: var(--bone-hi);
-}
-
-.wpn-ghost.down {
-  background: repeating-linear-gradient(135deg,
-    var(--bone-hi) 0 2px, transparent 2px 4px);
-}
-
-.wpn-statrow b {
-  min-width: 2.2em;
-  text-align: right;
-  font-weight: 600;
-}
-
-.wpn-next {
-  min-width: 3em;
-  font-style: normal;
-  color: var(--bone-hi);
-}
-
-.wpn-next.down {
-  color: var(--bone-dim);
-}
-
-/* 固有那一块：这把枪是什么框架，常驻在 Perk 池下方，不跟着点击换内容。
-   左缘一道实线，与游戏里异域说明那一块同形。 */
-.wpn-note {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  margin-top: 14px;
-  padding: 12px 14px;
-  background: var(--tint-1);
-  border-left: 3px solid var(--bone-faint);
-  border-radius: 0 4px 4px 0;
-}
-
-.wpn-note-ico {
-  flex: none;
-  border-radius: 50%;
-}
-
-.wpn-note-body {
-  min-width: 0;
-}
-
-/* 栏名写成一枚小牌子：它回答的是「这一段讲的是哪一栏」，不是标题的一部分。 */
-.wpn-note-tag {
-  padding: 0 6px 1px;
-  color: var(--ink);
-  background: var(--bone-dim);
-  border-radius: 2px;
-  letter-spacing: .08em;
-}
-
-.wpn-note p,
-.wpn-tip p {
-  margin: 4px 0 0;
-  color: var(--bone-dim);
-  white-space: pre-line;
-}
-
-.wpn-tip-head {
-  display: flex;
-  gap: 8px;
-  align-items: baseline;
-  margin: 0;
-}
-
-.wpn-tip-head strong {
-  color: var(--bone-hi);
-}
-
-/* ── 词条矩阵：一列一个槽位，纵向排该槽位的全部选项 ── */
-.wpn-grid {
-  display: flex;
-  gap: 14px;
-  overflow-x: auto;
-  padding-bottom: 6px;
-}
-
-.wpn-colbox {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-wrap: wrap;
   align-items: center;
-  flex: none;
+  gap: 6px;
+  margin: 18px 0 14px;
 }
 
-.wpn-col-name {
-  color: var(--bone-dim);
-  white-space: nowrap;
+.wpn-row > .lbl {
+  margin-right: 8px;
+  color: var(--bone-faint);
+  font: 400 12.5px/1.6 var(--font-cn);
 }
 
-.wpn-plug {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 48px;
-  height: 48px;
-  padding: 0;
-  cursor: pointer;
-  background: var(--tint-1);
-  border: 1px solid var(--hair-lit);
-  border-radius: 50%;
-  transition: border-color .14s ease, box-shadow .14s ease;
+/* 示例与细分都是「按下去改变看得见什么」，走 .toggle；一排多枚，退回素字
+   （design.md 五之二）。计数压暗，读作附注。 */
+.wpn-row .toggle {
+  padding: 4px 10px;
+  font-family: var(--font-cn);
+  font-size: 12.5px;
+  letter-spacing: normal;
 }
 
-.wpn-plug img {
-  border-radius: 50%;
-}
-
-/* 可选模组与大师杰作画成方格：它们是升满之后自己挑的，随时能换；圆格那些是
-   掉落时随机开出来的。形状分开，读者不必读栏名就知道哪些是自己说了算的。 */
-.wpn-mods .wpn-plug,
-.wpn-mods .wpn-plug img {
-  border-radius: 4px;
-}
-
-.wpn-plug:hover {
-  border-color: var(--bone-dim);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .wpn-plug {
-    transition: none;
-  }
-}
-
-.wpn-plug.on {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px color-mix(in oklab, var(--accent) 45%, transparent);
-}
-
-.wpn-plug:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-/* 「这一枚还有强化版」照搬 DIM 的画法，三样金：底边往上的渐变、左缘一道竖条、
-   左侧一枚朝上的箭头。前两样是背景层，被 border-radius 裁成圆、压在图标底下；
-   箭头画在最上面，稍稍探出圆外。
-   圆外那一圈留给选中态，右上角留给作者角标，三处各占各的位置。
-
-   几何逐条对着 DIM 那段 SVG 折算（viewBox 100，我们的圆内径 46px）：
-   竖条 x=5..11 → 5%..11%；渐变 50% 处透明、100% 处实心；
-   箭头 path M5,50 l0,-24 l-6,0 l9,-16 l9,16 l-6,0 l0,24 z 的七个点归一化成
-   18×40 的盒子，即下面那个 polygon。
-
-   偏离 design.md「整页唯一的饱和色来自游戏自身的编码」这一条的理由：这个金
-   **就是**游戏自身的编码。Bungie 在 DestinyInventoryItemConstantsDefinition 里
-   给强化物品专门下发了一张金色叠加图（enhanced-item-overlay.png），游戏内的
-   强化 Perk 也是这个金，DIM 与 destiny.report 两家照搬。它与异域金分得开：
-   异域是 #fcb70a 的橙金，这个是偏绿的浅金，且两者从不落在同一个元素上——
-   异域金只上装备名与图块边框，这个只上 Perk 圆圈。 */
-:root {
-  --c-enh: #eade8b;
-}
-
-.wpn-plug.enh {
-  background-image:
-    linear-gradient(to right, transparent 5%, var(--c-enh) 5%,
-      var(--c-enh) 11%, transparent 11%),
-    linear-gradient(to bottom, transparent 50%, var(--c-enh) 100%);
-}
-
-.wpn-plug.enh::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 4px;
-  width: 8px;
-  height: 18px;
-  background: var(--c-enh);
-  clip-path: polygon(33.3% 100%, 33.3% 40%, 0 40%, 50% 0,
-    100% 40%, 66.7% 40%, 66.7% 100%);
-}
-
-/* 作者推荐：右上角一枚首字角标，两家都推就并排两枚。 */
-.wpn-rec {
-  position: absolute;
-  right: -3px;
-  top: -3px;
-  display: flex;
-  gap: 1px;
-}
-
-.wpn-rec i {
-  display: grid;
-  place-items: center;
-  width: 14px;
-  height: 14px;
-  font-style: normal;
-  font-size: 10px;
-  line-height: 1;
-  color: var(--ink);
-  background: var(--bone-hi);
-  border-radius: 50%;
-}
-
-/* ── 站内那一段 ──
-   manifest 抄来的那句只说「击杀后提高填装速度」，站内武器 PERK 详解那一页写的
-   是提多少、怎么触发、强化版差多少。两段并排出现时要分得开，所以站内那一段
-   缩进、压暗半档，并在左缘留一道线。
-
-   `.enh`（源表里的 ↑ 标记）在那一页的样式表里，这里按后代选择器再写一次：
-   那一份只服务那一页，把它提到 site.css 等于让每一页都下载一条只有两页用的规则。 */
-.wpn-site {
-  margin-top: 8px;
-  padding-left: 9px;
-  border-left: 1px solid var(--hair-lit);
-}
-
-/* 站内那一段走正文色，manifest 抄来的那句留在 --bone-dim。层级反过来才对：
-   这一页存在的理由就是站内那一段，泛泛那句只是它的引子。 */
-.wpn-site p {
-  margin: 0;
+.wpn-row .toggle code {
+  font: 400 12px/1.5 var(--font-body);
   color: var(--bone);
 }
 
-.wpn-site .enh {
-  color: var(--bone-hi);
-  font-weight: 600;
-}
-
-.wpn-site-link {
-  display: inline-block;
-  margin-top: 8px;
-  color: var(--bone-dim);
-}
-
-.wpn-site-link:hover {
-  color: var(--bone-hi);
-}
-
-/* ── 可选模组 ──
-   大师杰作一块、模组一块，中间一道发丝线。两边都是「自己说了算」的那类东西，
-   但一个是十四选一、一个是随便挂，混成一行读者分不清哪个栏名管到哪里。 */
-.wpn-modwrap {
-  display: flex;
-  gap: 14px;
-  align-items: flex-start;
-  margin-top: 8px;
-}
-
-.wpn-modwrap > .wpn-colbox {
-  flex: none;
-  align-items: flex-start;
-  padding-right: 14px;
-  border-right: 1px solid var(--hair);
-}
-
-.wpn-modrow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  min-width: 0;
-}
-
-/* ── 作者怎么说 ── */
-.wpn-say {
-  margin-top: 10px;
-  padding-left: 10px;
-  border-left: 2px solid var(--hair-lit);
-}
-
-.wpn-say h4 {
-  margin: 0 0 4px;
-  font-size: inherit;
+.wpn-row .toggle .n {
   color: var(--bone-faint);
+  font: 400 11.5px/1 var(--font-body);
 }
 
-.wpn-say p {
-  margin: 0 0 4px;
-  white-space: pre-line;
-}
+.wpn-row .toggle img { width: 16px; height: 16px; }
 
-/* ── 别的版本 ── */
-.wpn-alt ol {
+.wpn-row .toggle .k { color: var(--bone-faint); font-size: 12px; }
+
+/* 卡片墙 */
+.wpn-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(224px, 1fr));
+  gap: 6px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.wpn-altone {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  padding: 4px 6px;
+.wpn-card {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 0 12px;
+  padding: 10px;
   color: inherit;
   text-decoration: none;
-  border-radius: 3px;
-}
-
-.wpn-altone:hover {
-  background: var(--row-hover);
-}
-
-.wpn-altone.on {
   background: var(--tint-2);
-  box-shadow: inset 3px 0 0 var(--accent);
+  border: 1px solid transparent;
+  transition: border-color .15s ease, background-color .15s ease;
 }
 
-.wpn-altone span {
-  flex: 1 1 auto;
+.wpn-card:hover,
+.wpn-card.is-hover {
+  background: var(--row-hover);
+  border-color: var(--hair-lit);
+}
+
+.wpn-card .nm {
+  display: -webkit-box;
   overflow: hidden;
-  text-overflow: ellipsis;
+  margin: 0;
+  color: var(--bone-hi);
+  font: 600 14px/1.4 var(--font-cn);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+/* 异域名字走异域金：卡片、结果栏与详情页头各有一条更具体的名字颜色规则，
+   这里用同样的选择器再声明一次。 */
+.exo,
+.wpn-card .nm.exo,
+.rail-list .nm.exo,
+.wpn-list .nm.exo { color: var(--exotic); }
+
+.wpn-meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 4px;
+  color: var(--bone-dim);
+}
+
+.wpn-meta img { width: 15px; height: 15px; }
+
+.wpn-meta svg { height: 13px; width: auto; fill: currentcolor; }
+
+.wpn-meta .ammo-2 { color: var(--ammo-special); }
+.wpn-meta .ammo-3 { color: var(--ammo-heavy); }
+
+.wpn-meta .cls { font: 400 12px/1 var(--font-cn); }
+
+.wpn-meta .ssn {
+  font: 600 11px/1 var(--font-disp);
+  letter-spacing: .06em;
+}
+
+.wpn-frame {
+  margin-top: 3px;
+  overflow: hidden;
+  color: var(--bone-dim);
+  font: 400 12px/1.5 var(--font-cn);
   white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-.wpn-altone em {
-  flex: none;
-  font-style: normal;
+.wpn-grades {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  margin-top: 3px;
+  font: 400 12px/1.5 var(--font-cn);
+  color: var(--bone);
+}
+
+.wpn-grades .by {
+  margin-right: 4px;
   color: var(--bone-faint);
+  font: 600 10px/1 var(--font-disp);
+  letter-spacing: .1em;
 }
 
-/* ── 悬停说明 ── */
-.wpn-tip {
-  position: absolute;
-  z-index: 30;
-  max-width: 380px;
-  padding: 8px 10px;
-  color: var(--bone-hi);
-  background: var(--ink-lift);
-  border: 1px solid var(--hair-lit);
-  border-radius: 4px;
-  pointer-events: none;
-}
-
-.wpn-tag-enh {
-  padding: 0 5px;
-  color: var(--ink);
-  background: var(--bone-hi);
-  border-radius: 2px;
-}
-
-.wpn-sum {
-  margin-top: 6px;
-  border-collapse: collapse;
-}
-
-.wpn-sum th {
-  padding: 0 10px 0 0;
-  font-weight: 400;
-  color: var(--bone-dim);
-  text-align: left;
-}
-
-.wpn-sum td {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-.wpn-sum td.cond {
-  color: var(--bone-faint);
-}
-
-.wpn-sum tr.total th,
-.wpn-sum tr.total td {
-  padding-top: 3px;
-  color: var(--bone-hi);
-  border-top: 1px solid var(--hair-lit);
-}
-
-.wpn-tip-rec {
-  color: var(--bone-faint);
-}
-
-.wpn-empty {
-  color: var(--bone-dim);
-}
-
-/* 窄屏依次落成一栏：248px 的结果栏与 300px 的数值栏在手机上会把正文挤没。 */
-@media (max-width: 1000px) {
-  .wpn-split {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-@media (max-width: 720px) {
-  .wpn-body {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .wpn-hits {
-    max-height: 38vh;
-  }
-}
-
-/* ── 枪图标的叠加层 ──
-   底图、赛季水印、装备阶级角标、锻造标记四层叠满同一个方块。每张官方图都把
-   图案画在自己那一侧的透明区上，所以这里不摆位，只管对齐。
-   锻造那两层整体镜像：红条本来在左缘、四点在左下角，与阶级角标（左缘五颗
-   菱形）正面撞上；翻过去之后红条到右缘、四点到右下角，一左一右分得开。 */
-.wpn-ico {
+/* 叠层图标：底图、水印、阶级角标、锻造层，最上面是底部打光。每张都是整幅图，图案画在自己那一侧
+   的透明区上，叠满即可。锻造两层整体镜像，与阶级角标分居两边。 */
+.gun {
   position: relative;
+  width: 64px;
+  height: 64px;
   flex: none;
-  display: block;
 }
 
-.wpn-ico img {
+.gun img {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
 }
 
-.wpn-ico-craft {
-  transform: scaleX(-1);
+.gun .flip { transform: scaleX(-1); }
+
+/* 底部打光：从底边往上散的一片金光，有大师杰作插槽的枪才画。颜色取自 Bungie 的
+   masterwork-overlay.png（#fed789）；那张图最底一行不透明度只有 32%，64px 下
+   几乎看不出来，所以改用同色渐变、底边 22%。画成伪元素，每张卡片少一个 img。 */
+.gun.mw::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgb(254 215 137 / .22), rgb(254 215 137 / 0) 50%);
+  pointer-events: none;
 }
 
-/* 大师工作那层是一片从底边往上散的淡金辉光，叠加混合才不会把底图压灰。 */
-.wpn-ico-mw {
-  mix-blend-mode: screen;
+.gun.lg { width: 96px; height: 96px; }
+.gun.sm { width: 32px; height: 32px; }
+
+/* 列表视图 */
+.wpn-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--hair);
 }
 
-/* 折起来那一栏（大师杰作）：只露选中的那一枚，点开在模组行下方摊出全部取值。 */
-.wpn-fold {
+.wpn-list .wpn-lrow {
+  display: grid;
+  grid-template-columns: 20px 40px 28px 36px minmax(180px, 280px) 120px 22px 200px minmax(0, 1fr);
+  align-items: center;
+  gap: 0 12px;
+  padding: 6px 10px;
+  color: inherit;
+  font: 400 13px/1.5 var(--font-cn);
+  text-decoration: none;
+  border-bottom: 1px solid var(--hair);
+}
+
+.wpn-list li:nth-child(even) .wpn-lrow { background: var(--tint-2); }
+.wpn-list .wpn-lrow:hover { background: var(--row-hover); }
+.wpn-list img.el, .wpn-list img.br { width: 18px; height: 18px; }
+.wpn-list svg { height: 13px; fill: currentcolor; }
+.wpn-list .nm { color: var(--bone-hi); font-weight: 600; }
+.wpn-list .ty { display: flex; align-items: center; gap: 8px; color: var(--bone-dim); }
+.wpn-list .fr { display: flex; align-items: center; gap: 8px; color: var(--bone-dim); }
+.wpn-list .fr img { width: 20px; height: 20px; }
+.wpn-list .ssn { color: var(--bone-faint); font: 600 11px/1 var(--font-disp); letter-spacing: .06em; }
+/* 同名的几版同时在结果里：赛季提亮，读者据此分得出是哪一版。 */
+.wpn-list .ssn.dup { color: var(--bone-hi); }
+
+/* ── 结果栏 + 详情 ──────────────────────────────────────────── */
+.wpn-split {
+  display: grid;
+  grid-template-columns: var(--rail) minmax(0, 1fr);
+  gap: 0 28px;
+  align-items: start;
+  margin-top: 18px;
+}
+
+.wpn-split.is-off { grid-template-columns: 32px minmax(0, 1fr); }
+
+.wpn-rail {
+  position: sticky;
+  top: calc(var(--stick) + 12px);
+  max-height: calc(100vh - var(--stick) - 24px);
+  overflow-y: auto;
+  border-right: 1px solid var(--hair);
+}
+
+.wpn-rail .grip {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  bottom: 0;
+  width: 6px;
+  cursor: col-resize;
+}
+
+.wpn-rail .grip:hover,
+.wpn-rail .grip.is-hover { background: linear-gradient(90deg, transparent 2px, var(--hair-lit) 2px 3px, transparent 3px); }
+
+.rail-head {
   display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 6px 0;
+  color: var(--bone-faint);
+  font: 400 12px/1.6 var(--font-cn);
 }
 
-.wpn-pick {
+.rail-head b {
+  color: var(--bone-dim);
+  font: 600 11px/1 var(--font-disp);
+  letter-spacing: .08em;
+}
+
+.rail-head .op {
+  padding: 1px 8px;
+  font-family: var(--font-cn);
+  font-size: 12px;
+  letter-spacing: normal;
+}
+
+.rail-list {
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.rail-list a {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  align-items: center;
+  gap: 0 10px;
+  padding: 5px 10px 5px 6px;
+  color: inherit;
+  text-decoration: none;
+  border-left: 2px solid transparent;
+}
+
+.rail-list a:hover,
+.rail-list a.is-hover { background: var(--row-hover); }
+
+.rail-list a[aria-current="page"] {
+  background: var(--tint-3);
+  border-left-color: var(--accent);
+}
+
+.rail-list .nm {
+  overflow: hidden;
+  color: var(--bone);
+  font: 400 13px/1.35 var(--font-cn);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.rail-list a[aria-current="page"] .nm { color: var(--bone-hi); font-weight: 600; }
+
+.rail-list .sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--bone-faint);
+  font: 400 11.5px/1.4 var(--font-cn);
+}
+
+.rail-list .sub img { width: 12px; height: 12px; }
+
+.rail-off {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-top: 4px;
+  border-right: 1px solid var(--hair);
+  min-height: 320px;
+}
+
+.rail-off .op { padding: 4px 7px; }
+
+.rail-off .n {
+  color: var(--bone-faint);
+  font: 600 11px/1 var(--font-disp);
+}
+
+/* 详情 */
+.wpn-one {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 372px;
+  gap: 0 32px;
+  align-items: start;
+}
+
+.one-head {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) auto;
+  gap: 0 20px;
+  align-items: start;
+  padding-bottom: 18px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--hair-lit);
+}
+
+.one-head h2 {
+  margin: 2px 0 0;
+  color: var(--bone-hi);
+  font: 600 28px/1.2 var(--font-cn);
+  letter-spacing: .02em;
+}
+
+.one-head h2.exo { color: var(--exotic); }
+
+.one-head .en {
+  margin: 2px 0 10px;
+  color: var(--bone-faint);
+  font: 600 12px/1.4 var(--font-disp);
+  letter-spacing: .1em;
+}
+
+.one-head .lore {
+  max-width: 60ch;
+  margin: 0;
+  color: var(--bone-dim);
+  font: 400 13.5px/1.8 var(--font-cn);
+}
+
+.one-acts {
+  display: flex;
+  gap: 6px;
+}
+
+/* 事实 chip：点下去把这一条加进查询，改变的是结果栏里看得见什么，所以是 .toggle。
+   一排十来枚，退回素字、静置不显形。 */
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.facts .toggle {
+  padding: 3px 9px;
+  color: var(--bone);
+  font-family: var(--font-cn);
+  font-size: 13px;
+  letter-spacing: normal;
+}
+
+.facts .toggle img { width: 16px; height: 16px; }
+.facts .toggle svg { width: auto; height: 12px; fill: currentcolor; }
+.facts .ammo-2 { color: var(--ammo-special); }
+.facts .ammo-3 { color: var(--ammo-heavy); }
+.facts .toggle .k { color: var(--bone-faint); font-size: 12px; }
+
+.one-main > section,
+.one-side > section { margin-bottom: 26px; }
+
+.sub-label {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0 0 10px;
+  color: var(--bone-dim);
+  font: 400 12.5px/1.6 var(--font-cn);
+}
+
+.sub-label::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--hair);
+}
+
+.sub-label .aside {
+  order: 1;
+  color: var(--bone-faint);
+  font-size: 12px;
+}
+
+.sub-label .op {
+  order: 2;
+  padding: 1px 9px;
+  font-family: var(--font-cn);
+  font-size: 12px;
+  letter-spacing: normal;
+}
+
+/* 词条矩阵：一栏一列，图标 + 名字。中文名二到六个字，只给图标要逐个悬停才知道
+   是什么，读者扫不了一整栏。 */
+.matrix {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0 6px;
+}
+
+.matrix .col h4 {
+  margin: 0 0 6px;
+  padding-bottom: 4px;
+  color: var(--bone-faint);
+  font: 400 12px/1.6 var(--font-cn);
+  border-bottom: 1px solid var(--hair);
+}
+
+.plug {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 0 8px;
+  width: 100%;
+  padding: 3px 4px;
+  color: var(--bone-dim);
+  font: 400 12.5px/1.35 var(--font-cn);
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.plug:hover,
+.plug.is-hover { color: var(--bone-hi); background: var(--row-hover); }
+
+.plug .ico {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--hair-lit);
+  border-radius: 50%;
+  background: #1c2230;
+}
+
+.plug .ico img {
+  position: absolute;
+  inset: 1px;
+  width: calc(100% - 2px);
+  height: calc(100% - 2px);
+  border-radius: 50%;
+}
+
+.plug[aria-pressed="true"] { color: var(--bone-hi); background: var(--tint-3); }
+.plug[aria-pressed="true"] .ico { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+
+.plug .nm { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+/* 强化版照 DIM 的画法，三样金：圆内底边往上的渐变、左缘一道竖条、左侧一枚朝上的
+   箭头。前两样是图标底下的背景层，被圆角裁成圆；箭头压在最上面，稍稍探出圆外。
+   几何按 DIM 那段 SVG（viewBox 100）折算：竖条 x=5..11 → 5%..11%，渐变 50% 处
+   透明、100% 处实心；箭头 M5,50 l0,-24 l-6,0 l9,-16 l9,16 l-6,0 l0,24 z 的七个点
+   归一化成下面那个 polygon。 */
+.plug.is-enh .ico {
+  background-image:
+    linear-gradient(to right, transparent 5%, var(--c-enh) 5% 11%, transparent 11%),
+    linear-gradient(to bottom, transparent 50%, var(--c-enh) 100%);
+}
+
+.plug.is-enh .ico::after {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: 3px;
+  width: 6px;
+  height: 13px;
+  background: var(--c-enh);
+  clip-path: polygon(33.3% 100%, 33.3% 40%, 0 40%, 50% 0, 100% 40%, 66.7% 40%, 66.7% 100%);
+}
+
+/* 光圈：画在图标外 3px，与选中态（图标自己的边框）分开两层，两件事同时成立时
+   都看得见。颜色由 --halo 给，棱彩那一圈是渐变，所以用遮罩把整块底色裁成环形。 */
+.plug.by-a { --halo: var(--c-aegis); }
+.plug.by-l { --halo: var(--c-lgpig); }
+.plug.by-al { --halo: var(--halo-both); }
+
+.plug[class*="by-"] .ico::before {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  background: var(--halo);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
+}
+
+/* 图例与大师杰作 chip 上那枚小环，同一套颜色。 */
+.halo-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.halo-key i,
+.dot {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  margin-left: 8px;
+  border-radius: 50%;
+  background: var(--halo);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
+}
+
+.dot { margin: 0 2px 0 0; }
+.halo-key i.by-a, .dot.by-a { --halo: var(--c-aegis); }
+.halo-key i.by-l { --halo: var(--c-lgpig); }
+.halo-key i.by-al { --halo: var(--halo-both); }
+
+/* 固定栏（起源特性只有一枚）：没有可选项，灰掉选择态。 */
+.plug.fixed { cursor: default; }
+
+/* 大师杰作与模组：两个方形插槽，与游戏里武器页那一排同形。空着画虚线框。
+   推荐的那一格同样画光圈，只是随插槽画成方的。 */
+.gear-sec { position: relative; }
+
+.slots {
+  display: flex;
+  gap: 28px;
+}
+
+.slot-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.slot {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  background: #1c2230;
+  border: 1px solid var(--hair-lit);
+  cursor: pointer;
+}
+
+.slot img { display: block; width: 100%; height: 100%; }
+.slot:hover, .slot.is-hover { border-color: var(--accent); }
+
+.slot.is-empty {
+  background: none;
+  border-style: dashed;
+}
+
+.slot.is-empty::after {
+  content: "";
+  position: absolute;
+  inset: 50% 18px auto;
+  height: 1px;
+  background: var(--bone-faint);
+}
+
+.slot.is-empty::before {
+  content: "";
+  position: absolute;
+  inset: 18px auto 18px 50%;
+  width: 1px;
+  background: var(--bone-faint);
+}
+
+.slot.by-a::before {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border: 2px solid var(--c-aegis);
+}
+
+.slot-lab {
+  display: flex;
+  flex-direction: column;
+  font: 400 12.5px/1.6 var(--font-cn);
+  color: var(--bone-dim);
+}
+
+.slot-lab b { color: var(--bone-faint); font-weight: 400; font-size: 12px; }
+
+/* T 级：这把枪自己的阶级，与大师杰作分开选。 */
+.slot-cell.tier .slot-lab { gap: 4px; }
+.tiers { display: flex; gap: 3px; }
+.tiers .toggle { padding: 1px 8px; font-size: 12px; letter-spacing: .04em; }
+.slot-lab .hint { color: var(--bone-faint); font-size: 11.5px; }
+
+.gear-sec > .tip { left: 64px; top: 40px; }
+
+.picker {
+  position: absolute;
+  top: calc(100% - 4px);
+  left: 0;
+  z-index: 40;
+  width: 460px;
+  padding: 10px 14px 12px;
+  background: var(--ink-lift);
+  border: 1px solid var(--hair-lit);
+}
+
+.picker.wide { width: 700px; }
+
+.pk-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  color: var(--bone-hi);
+  font: 600 13px/1.6 var(--font-cn);
+}
+
+.pk-head .op { margin-left: auto; padding: 1px 9px; font-family: var(--font-cn); font-size: 12px; letter-spacing: normal; }
+
+.pk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+  gap: 4px;
+}
+
+.pick {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  align-items: center;
+  gap: 0 8px;
+  padding: 4px;
+  color: var(--bone-dim);
+  font: 400 12.5px/1.4 var(--font-cn);
+  text-align: left;
+  background: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.pick:hover { background: var(--row-hover); color: var(--bone-hi); }
+.pick[aria-pressed="true"] { color: var(--bone-hi); border-color: var(--accent); background: var(--tint-3); }
+
+.pick .sq {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  background: #1c2230;
+  border: 1px solid var(--hair-lit);
+}
+
+.pick .sq img { display: block; width: 100%; height: 100%; }
+.pick.by-a .sq::before { content: ""; position: absolute; inset: -4px; border: 2px solid var(--c-aegis); }
+
+.pk-lv {
+  display: flex;
+  align-items: center;
+  gap: 14px;
   margin-top: 10px;
-  padding: 10px;
-  background: var(--tint-1);
-  border: 1px solid var(--hair);
-  border-radius: 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--hair);
+  font: 400 12.5px/1.6 var(--font-cn);
+  color: var(--bone-faint);
 }
 
+.pk-lv .sum { color: var(--bone-dim); }
+
+/* 阶级与等级：一格一档，点第几格就是几。 */
+.lv {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.lv button {
+  width: 22px;
+  height: 14px;
+  padding: 0;
+  background: var(--tint-2);
+  border: 1px solid var(--hair-lit);
+  cursor: pointer;
+}
+
+.lv button.on { background: var(--c-enh); border-color: var(--c-enh); }
+
+.lv .v {
+  margin-left: 8px;
+  color: var(--bone-hi);
+  font: 600 12px/1 var(--font-disp);
+  letter-spacing: .06em;
+}
+
+/* 框架块 */
+.frame {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 0 12px;
+  font: 400 13px/1.7 var(--font-cn);
+}
+
+.frame img { width: 40px; height: 40px; }
+.frame b { color: var(--bone-hi); font-weight: 600; }
+.frame .rate { margin-left: 10px; color: var(--bone-dim); font-family: var(--font-body); font-size: 12.5px; }
+.frame p { margin: 0; color: var(--bone-dim); }
+
+
+.src {
+  margin: 0;
+  color: var(--bone-faint);
+  font: 400 12.5px/1.7 var(--font-cn);
+}
+
+/* 作者评语：一位作者一块，左缘用他那一支光圈色，读者从词条上的光圈就能对回
+   评语是谁写的。评级放大，正文用正文最亮的一档。 */
+.says {
+  display: grid;
+  gap: 10px;
+}
+
+.say {
+  --c-author: var(--c-aegis);
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 0 18px;
+  padding: 14px 18px;
+  background: var(--tint-3);
+  border-left: 3px solid var(--c-author);
+}
+
+.say.by-lgpig { --c-author: var(--c-lgpig); }
+
+.say .who {
+  color: var(--c-author);
+  font: 600 11px/1.6 var(--font-disp);
+  letter-spacing: .1em;
+}
+
+.say .who b {
+  display: block;
+  margin-top: 2px;
+  color: var(--bone-hi);
+  font: 700 26px/1.2 var(--font-disp);
+  letter-spacing: .02em;
+}
+
+.say p {
+  margin: 0;
+  color: var(--bone-hi);
+  font: 400 14.5px/1.85 var(--font-cn);
+}
+
+.say p + p { margin-top: 6px; }
+
+/* 全部版本 */
+.vers {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vers a {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0 12px;
+  padding: 5px 8px;
+  color: inherit;
+  text-decoration: none;
+  font: 400 13px/1.5 var(--font-cn);
+}
+
+.vers a:hover { background: var(--row-hover); }
+.vers a[aria-current="page"] { background: var(--tint-3); }
+.vers .nm { color: var(--bone); }
+.vers .sub { color: var(--bone-faint); font-size: 12px; }
+.vers .now { color: var(--bone-dim); font-size: 12px; }
+
+/* ── 属性面板 ───────────────────────────────────────────────── */
+.one-side {
+  position: sticky;
+  top: calc(var(--stick) + 12px);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr) 34px 40px;
+  gap: 5px 10px;
+  align-items: center;
+  margin: 0;
+  font: 400 12.5px/1.5 var(--font-cn);
+}
+
+.stats dt {
+  color: var(--bone-dim);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.stats dd { margin: 0; }
+
+.stats .v {
+  color: var(--bone-hi);
+  font: 400 13px/1 var(--font-body);
+  text-align: right;
+}
+
+.stats .d {
+  font: 400 12px/1 var(--font-body);
+  color: var(--bone-hi);
+}
+
+.stats .d.dn { color: var(--bone-faint); }
+
+.stats .is-hover dt,
+.stats dt.is-hover { color: var(--bone-hi); }
+
+.stats .gap { grid-column: 1 / -1; height: 4px; }
+
+.bar {
+  position: relative;
+  display: flex;
+  height: 8px;
+  background: var(--tint-2);
+}
+
+.bar i { display: block; height: 100%; }
+.bar .s-base { background: var(--seg-base); }
+.bar .s-part { background: var(--seg-part); }
+.bar .s-perk { background: var(--seg-perk); }
+/* 大师杰作与 T 级那两截走强化金：游戏里大师杰作本来就是金边金光，这一截是
+   「升满之后多出来的」，与前面按来源分的明度阶不是一回事。T 级用同色竖纹分开。 */
+.bar .s-mw { background: var(--c-enh); }
+.bar .s-tier { background-image: repeating-linear-gradient(90deg, var(--c-enh) 0 2px, transparent 2px 3px); }
+/* 条件生效：只描边不填，读作「满足条件时才有这一截」。 */
+.bar .s-cond { box-shadow: inset 0 0 0 1px var(--seg-perk); }
+/* 负值：斜纹，画在被扣掉的那一截上。 */
+.bar .s-neg {
+  background-image: repeating-linear-gradient(135deg, var(--bone-dim) 0 1px, transparent 1px 4px);
+}
+/* 悬停预览：虚框标出换上之后会到哪里。 */
+.bar .s-ghost { box-shadow: inset 0 0 0 1px var(--bone-hi); background-image: repeating-linear-gradient(90deg, #ffffff14 0 2px, transparent 2px 4px); }
+
+/* 悬停预览里会被扣掉的那一截 */
+.bar .g-neg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background-image: repeating-linear-gradient(135deg, var(--ink) 0 1px, transparent 1px 3px);
+  box-shadow: inset 0 0 0 1px var(--bone-hi);
+}
+
+.stats .rc { display: flex; align-items: center; gap: 8px; }
+.stats .rc svg { width: 40px; height: 20px; }
+
+/* 图例每行三项，整块在属性栏里居中。 */
+.legend {
+  display: grid;
+  grid-template-columns: repeat(3, max-content);
+  justify-content: center;
+  gap: 4px 18px;
+  margin-top: 12px;
+  color: var(--bone-faint);
+  font: 400 11.5px/1.6 var(--font-cn);
+}
+
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { display: inline-block; width: 14px; height: 6px; }
+
+/* ── 浮层 ───────────────────────────────────────────────────── */
+.tip {
+  position: absolute;
+  z-index: 40;
+  width: 340px;
+  padding: 12px 14px;
+  font: 400 12.5px/1.75 var(--font-cn);
+  background: var(--ink-lift);
+  border: 1px solid var(--hair-lit);
+}
+
+.tip.narrow { width: 240px; }
+
+.tip header {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 0 10px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.tip header img { width: 40px; height: 40px; border-radius: 50%; }
+.tip h5 { margin: 0; color: var(--bone-hi); font: 600 15px/1.3 var(--font-cn); }
+.tip .ty { color: var(--bone-faint); font-size: 12px; }
+.tip .lab { margin: 8px 0 2px; color: var(--bone-faint); font-size: 11.5px; }
+.tip p { margin: 0; color: var(--bone); }
+.tip .db { color: var(--bone-dim); }
+
+.tip table {
+  width: 100%;
+  border-collapse: collapse;
+  font: 400 12px/1.6 var(--font-body);
+}
+
+.tip td { padding: 1px 0; }
+.tip td:first-child { color: var(--bone-dim); font-family: var(--font-cn); }
+.tip td.n { text-align: right; color: var(--bone-hi); }
+.tip td.e { text-align: right; color: var(--c-enh); }
+.tip tr.sum td { border-top: 1px solid var(--hair); padding-top: 3px; color: var(--bone-hi); }
+.tip tr.cond td { color: var(--bone-faint); }
+
+/* ── 边界态 ─────────────────────────────────────────────────── */
+.empty {
+  padding: 40px 0 56px;
+  font: 400 14px/1.8 var(--font-cn);
+  color: var(--bone-dim);
+}
+
+.empty h3 {
+  margin: 0 0 6px;
+  color: var(--bone-hi);
+  font: 600 18px/1.4 var(--font-cn);
+}
+
+.empty .wpn-row { margin: 12px 0 0; }
+
+.loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--bone-faint);
+  font: 400 12.5px/1.6 var(--font-cn);
+}
+
+.loading::before {
+  content: "";
+  width: 48px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--bone-dim) 0 30%, var(--hair) 30%);
+  background-size: 200% 100%;
+  animation: wpn-load 1.2s linear infinite;
+}
+
+@keyframes wpn-load { to { background-position: -100% 0; } }
+
+.wpn-pill.is-wait { color: var(--bone-faint); border-style: dashed; }
+
+.skel .wpn-card { pointer-events: none; }
+.skel .gun,
+.skel .nm,
+.skel .wpn-meta,
+.skel .wpn-frame { background: var(--tint-3); color: transparent; }
+.skel .wpn-meta { height: 15px; width: 70%; }
+.skel .wpn-frame { height: 14px; width: 55%; }
+
+/* 催化剂 */
+.cat {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 14px;
+  align-items: start;
+  font: 400 13px/1.7 var(--font-cn);
+}
+
+.cat .toggle { padding: 2px 10px; font-family: var(--font-cn); font-size: 12.5px; letter-spacing: normal; }
+.cat b { color: var(--bone-hi); font-weight: 600; margin-right: 8px; }
+.cat p { margin: 0; color: var(--bone-dim); }
+
+/* 站内说明里的强化值标记（源稿方言 {enh|…}），与武器 PERK 页同一套：强调靠亮度。 */
+.enh { color: var(--bone-hi); font-weight: 600; }
+
+/* 站内详情：异域那一整段展开写，不收进浮层。 */
+.site .xps { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-bottom: 10px; }
+.site .xp { display: inline-flex; align-items: center; gap: 8px; color: var(--bone-hi); font: 600 13.5px/1.6 var(--font-cn); }
+.site .xp img { width: 28px; height: 28px; border-radius: 50%; }
+.prose { font: 400 13.5px/1.9 var(--font-cn); color: var(--bone); }
+.prose p { margin: 0 0 10px; }
+.one-side .src { font-size: 12.5px; }

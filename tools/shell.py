@@ -298,6 +298,26 @@ def unsure_note(mark='[?]'):
             % mark)
 
 
+def sync_card(home, href, count=None):
+    """首页一张卡随那一页改写：更新时间取那一页页脚，count=(小标题, 数) 时改那个数。
+    返回改过的首页。**改数要带上小标题那个锚点**：一张卡里将来多一对 <dt><dd>，
+    不带锚点就把它也改了，而 check_terms 的 G4 只读第一个 <dd>，查不出来。"""
+    card = markup.must(re.search(r'<a class="entry" href="%s".*?</a>' % re.escape(href), home, re.S),
+                       '首页找不到 %s 那张卡' % href)
+    with open(os.path.join(ROOT, href), encoding='utf-8') as f:
+        page = f.read()
+    stamp = markup.must(re.search(r'<span class="stamp">更新 ([\d.]+)</span>', page),
+                        '%s 的页脚没有更新时间' % href).group(1)
+    fixed = re.sub(r'(entry-stamp">更新 )[\d.]+', lambda m: m.group(1) + stamp, card.group(0))
+    if count:
+        label, n = count
+        fixed, hit = re.subn(r'(<dt>%s</dt><dd>)\d+' % re.escape(label),
+                             lambda m: m.group(1) + str(n), fixed)
+        if hit != 1:
+            markup.die('首页 %s 那张卡上「%s」那个数有 %d 处，应当只有一处' % (href, label, hit))
+    return home[:card.start()] + fixed + home[card.end():]
+
+
 def emit(outdir, out, detail=''):
     """写出 index.html 并报一行。detail 是该页特有的结构计数。
 

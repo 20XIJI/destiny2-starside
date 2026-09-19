@@ -1800,10 +1800,7 @@ def check(out, slug):
 def sync_home(counts):
     """首页那三张配装卡的更新时间与套数随投稿漂，构建时按产出改写。
     时间从各自的产出页脚现读——那正是 check_terms.py 的 G4 拿来比对的值。
-
-    counts 是 {href: (小标题, 数)}。**改写要带上小标题那个锚点**：一张卡里
-    将来多一对 <dt><dd>（比如再写一个赛季号），不带锚点就把它也改成套数了，
-    而 G4 只读第一个 <dd>，查不出来。"""
+    counts 是 {href: (小标题, 数)}，一张卡的改写在 shell.sync_card()。"""
     path = os.path.join(shell.ROOT, 'index.html')
     with open(path, encoding='utf-8') as f:
         home = f.read()
@@ -1822,21 +1819,7 @@ def sync_home(counts):
         if not here:
             die('首页还挂着 %s 那张卡，可那一页没生成：当前赛季没有合集时它不出，'
                 '卡要一并从 index.html 里撤掉' % href)
-        card = must(card, '首页找不到 %s 那张卡' % href)
-        with open(src, encoding='utf-8') as f:
-            page = f.read()
-        stamp = must(re.search(r'<span class="stamp">更新 ([\d.]+)</span>', page),
-                     '%s 的页脚没有更新时间' % href).group(1)
-        fixed = re.sub(r'(entry-stamp">更新 )[\d.]+', lambda m: m.group(1) + stamp,
-                       card.group(0))
-        if href in counts:
-            label, n = counts[href]
-            pat = r'(<dt>%s</dt><dd>)\d+' % re.escape(label)
-            fixed, hit = re.subn(pat, lambda m: m.group(1) + str(n), fixed)
-            if hit != 1:
-                die('首页 %s 那张卡上「%s」那个数有 %d 处，应当只有一处'
-                    % (href, label, hit))
-        home = home[:card.start()] + fixed + home[card.end():]
+        home = shell.sync_card(home, href, counts.get(href))
     with open(path, 'w', encoding='utf-8') as f:
         f.write(home)
 
