@@ -1,4 +1,6 @@
 {
+  "10": {"from": "DestinyItemCategoryDefinition", "i18n": {"zh-CN": {"site_aliases": [{"name": "狙击枪"}]}}, "kind": "枪型", "name": "狙击步枪"},
+  "153950757": {"from": "DestinyItemCategoryDefinition", "i18n": {"zh-CN": {"site_aliases": [{"ammoType": 2, "name": "后膛榴弹"}, {"ammoType": 2, "name": "后膛榴弹发射器"}, {"ammoType": 3, "name": "弹鼓榴弹"}, {"ammoType": 3, "name": "弹鼓榴弹发射器"}]}}, "kind": "枪型", "name": "榴弹发射器"},
   "292102995": {"from": "DestinyMilestoneDefinition", "kind": "来源", "name": "国王的陨落"},
   "332181804": {"from": "DestinyActivityModeDefinition", "kind": "来源", "name": "梦魇狩猎"},
   "540415767": {"from": "DestinyMilestoneDefinition", "kind": "来源", "name": "克洛塔的末日"},
@@ -10,8 +12,10 @@
   "2271682572": {"from": "DestinyClassDefinition", "kind": "职业", "name": "术士"},
   "2712317338": {"from": "DestinyMilestoneDefinition", "kind": "来源", "name": "救赎花园"},
   "3181387331": {"from": "DestinyMilestoneDefinition", "kind": "来源", "name": "最后一愿"},
+  "3317538576": {"from": "DestinyItemCategoryDefinition", "i18n": {"zh-CN": {"site_aliases": [{"ammoType": 3, "name": "弩"}]}}, "kind": "枪型", "name": "弓箭"},
   "3655393761": {"from": "DestinyClassDefinition", "kind": "职业", "name": "泰坦"},
   "3699252268": {"from": "DestinyMilestoneDefinition", "kind": "来源", "name": "梦魇根源"},
+  "3954685534": {"from": "DestinyItemCategoryDefinition", "i18n": {"zh-CN": {"site_aliases": [{"name": "冲锋枪"}]}}, "kind": "枪型", "name": "微型冲锋枪"},
   "4196566271": {"from": "DestinyMilestoneDefinition", "kind": "来源", "name": "救赎的边缘"},
   "4294967296": {"from": "站内自发", "i18n": {"zh-CN": {"name": "弹药搜寻者", "效果": "{ammo-special|特殊弹药}搜寻者：\\\\ 1.25× ｜ 1.4× ｜ 1.5× 弹药进度倍率。\\\\ \\\\ {ammo-heavy|威能弹药}搜寻者：\\\\ 1.25× ｜ 1.4× ｜ 1.5× 弹药进度倍率。", "费用": "{cost|3}"}}, "icon_local": "armor-mods/icons/fc4ae31f8f.webp", "kind": "模组族", "members": [554409585, 2595839237], "name": "弹药搜寻者", "page": "armor-mods"},
   "4294967297": {"from": "站内自发", "i18n": {"zh-CN": {"name": "弹药斥候", "效果": "生成与模组匹配的弹药块时：\\\\ {enemy|盟友}获得一份相同的弹药块。\\\\ \\\\ 弹药斥候弹药块的拾取量：\\\\ 常规弹药块的 37% ｜ 67% ｜ 100%。\\\\ \\\\ 强化弹药块的出现概率由{enemy|盟友}的武器属性决定。\\\\ {note|这一块的强化外观只是发光，不增加弹药获取量；别处掉的强化弹药块照常加量。}", "费用": "{cost|1}"}}, "icon_local": "armor-mods/icons/71a7b2fb1c.webp", "kind": "模组族", "members": [25154119, 1274140735], "name": "弹药斥候", "page": "armor-mods"},
