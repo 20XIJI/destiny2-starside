@@ -2770,3 +2770,18 @@ body:has(.hero) {
 .site-foot a { color: var(--bone-dim); }
 
 .site-foot a:hover { color: var(--bone-hi); }
+
+/* 公安备案：徽章在前、编号在右。徽章用 inline-block 贴着基线微调，
+   不用 flex 居中——::before 没有基线，flex 会按底边合成基线把整行文字顶上去 */
+.site-foot a.beian::before {
+  content: "";
+  display: inline-block;
+  width: 12px;
+  height: 14px;
+  margin-right: 5px;
+  vertical-align: -3px;
+  background-image: url(e17a0a60ac.webp);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
