@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构建步骤，托管在腾讯云 CloudBase。仓库无打包器；回归测试走标准库，入口 `npm test`。
 
-资料页全部由生成器从 `references/` 下的 markdown 源稿产出，产出一律不手改：改文案改 markdown，改结构改生成器的 `render()`，两种情况都重跑脚本。只有首页 `index.html` 是手写的。
+资料页全部由生成器从 `references/` 下的 markdown 源稿产出，产出一律不手改：改文案改 markdown，改结构改生成器的 `render()`，两种情况都重跑脚本。只有首页 `index.html` 是手写的，卡片里的内容预览除外（见 `build-home.py`）。
 
 本文件写每次都用得上的那些：站点骨架、命令、闸门、部署与验证。视觉与排版规范在 `design.md`，四份子系统手册在 `.claude/rules/`，见《子系统手册》。
 
@@ -24,7 +24,7 @@ Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构�
 
 ## 站点骨架
 
-首页 `index.html` 手写，每个资料页在首页有一张 `.entry` 卡片（更新时间写卡片上的 `.entry-stamp`）。新增资料页要同时加卡片，否则页面没有入口。三张配装卡（配装推荐、配装合集、配装工具）的更新时间与套数由 `convert-build.py` 的 `sync_home()` 在构建时按产出改写，这几处不手改。
+首页 `index.html` 手写，每个资料页在首页有一张 `.entry` 卡片（更新时间写卡片上的 `.entry-stamp`）。新增资料页要同时加卡片，否则页面没有入口。三张配装卡（配装推荐、配装合集、配装工具）的更新时间与套数由 `convert-build.py` 的 `sync_home()` 在构建时按产出改写，这几处不手改。卡片不写概括句，放那一页的真实内容（图标、名字、前三名、曲线）：每张卡里 `<!--pv-->` 与 `<!--/pv-->` 之间那一段由 `build-home.py` 从那一页的产出现写，不手改；挑哪几项写在它的 `PICK_*` 里。新增一张卡要同时在它的 `PREVIEW` 里加一条，缺了构建即中止。
 
 页面清单不在这里维护：源稿即清单（`ls references/docs/*.md`），`check_shell.py` 也从那里现扫。只有 `armor-sets/` 与 `artifact-mods/` 有专属生成器，其余全部走 `convert-doc.py`。
 
@@ -130,6 +130,8 @@ convert-*.py       四个生成器，各自只写自己那种数据形状的结�
 build-weapons.py   实体层 → 装备库（武器与异域护甲，目录 weapons/）：首屏索引 index.js、词条池与属性曲线 pool.js、
                    说明与评语 text.js，外加页壳。只读 resolve.Facts，不写数据；浏览器
                    那一份属性算法与 facts.shown() 由 check_quality.py 逐值比对
+build-home.py      各页产出 → 首页每张卡的内容预览。挑哪几项写在 PICK_*，名字、数值、
+                   图标从那一页现取；轮换卡的「本周／此刻」由首页一段内联脚本按本机时钟填
 migrate.py         配装源稿 markdown ⇄ 结构化记录，来回逐字节比对；资料页该结构化
                    还是留 markdown 由 --classify 按行标题能否落到主键上机械判定
 check_output.py    产出逐字保真：与某个 commit 的产出逐字节比，差异必须落在
@@ -184,7 +186,7 @@ json2xlsx.py       把上面那份 JSON 还原成 xlsx，供核对与二次编�
 
 ```bash
 npm start                                     # npx serve . -l 3000
-npm run build                                 # 四个生成器 + 装备库 + 源稿自动纠正 + 搜索索引 + 编辑台词表 + 三道闸门
+npm run build                                 # 四个生成器 + 装备库 + 首页预览 + 源稿自动纠正 + 搜索索引 + 编辑台词表 + 三道闸门
 npm test                                      # 两份离线回归，约 1 秒；改发布链或云函数前必跑
 
 python3 tools/convert-artifact-mods.py        # 源稿 references/artifact-mods.md
@@ -194,6 +196,7 @@ python3 tools/research.py --extract <slug>    # 一页的表 → references/rese
 python3 tools/build-entities.py               # 事实层 + 人写层 + 索引 → data/entities/
 python3 tools/convert-build.py                # 源稿 references/builds/<赛季>/*.md
 python3 tools/build-weapons.py                # 装备库：实体层 → weapons/ 三份载荷与页壳
+python3 tools/build-home.py                   # 首页卡片的内容预览，从各页产出现取
 python3 tools/build-search.py                 # 全站搜索索引 assets/search.js
 python3 tools/check_output.py [--against REF] # 产出与某个 commit 逐字节比对
 python3 tools/check_shell.py                  # 各页外壳逐字一致

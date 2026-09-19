@@ -57,6 +57,7 @@ sync = load('quality_sync', 'sync.py')
 build = load('quality_build', 'convert-build.py')
 doc = load('quality_doc', 'convert-doc.py')
 weapons = load('quality_weapons', 'build-weapons.py')
+build_home = load('quality_build_home', 'build-home.py')
 
 
 def forbidden(*args, **kwargs):
@@ -404,6 +405,13 @@ class Generated(unittest.TestCase):
     def test_page_tree_matches_its_sources(self):
         self.assertEqual(build_terms.tree(), self.read('admin/pages.js'),
                          'admin/pages.js 过期了，跑 python3 tools/build-terms.py')
+
+    def test_home_previews_match_the_pages(self):
+        """首页卡片里的预览是 build-home.py 从各页产出现取的。页面改了而首页没重跑时，
+        首页上的前三名、数值与图标停在旧的那一版，页面照旧渲染，三道闸门也看不出来。"""
+        home = self.read('index.html')
+        self.assertEqual(build_home.render(home), home,
+                         'index.html 的卡片预览过期了，跑 python3 tools/build-home.py')
 
     def test_entities_match_the_manifest_and_the_research_layer(self):
         """实体层是 data/manifest/、references/research/ 与 data/index/ 合出来的，
