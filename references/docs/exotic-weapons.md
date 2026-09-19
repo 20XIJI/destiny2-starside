@@ -71,7 +71,7 @@
 | 终局螺旋钻 | {ico|![](icons/c8655203ea.webp)} | 高难：T2\\输出：T2 | 203955 | 1230 | {champ|![](icons/b7c4048b87.webp)} | 使用场景与{exotic|混乱无序}类似，但在伤害层面和功能性都比不上{exotic|混乱无序} | 超能回转被砍的受害者之一，如今成为{exotic|混乱无序}的下位替代 |  |
 | 爱莲娜之誓 | {ico|![](icons/f432260cac.webp)} | 高难：T2 |  |  | {champ|![](icons/a9911a3dfe.webp)} | 绑定{exotic|幸运裤}和废墟石板，无爱双切，暴发伤害稳定一轮击杀{enemy|勇士}，·破屏障触发的{deb-solar|点燃}能吃{exotic|幸运裤}和武器增伤，直接炸死{enemy|屏障勇士} |  |  |
 | D.A.R.C.I | {ico|![](icons/2d581349a5.webp)} | 输出：T2（狙击辅助工具枪） | 73429 | 3566 | {champ|![](icons/8b37bb6db2.webp)} | 作为一把工具枪，达西对紫狙的{el-arc|增幅}只有 15%，带达西的收益可能跟一起带翻新的收益一样 |  |  |
-| 血色浪漫 | {ico|![](icons/7c94f757f5.webp)} | 清怪：T2 |  |  | {champ|![](icons/b7c4048b87.webp)} | 100 弹药生成，自带回血，清怪能力合格 |  |  |
+| 血色浪漫 | {ico|![](icons/7c94f757f5.webp)} | 清怪：T1 |  |  | {champ|![](icons/b7c4048b87.webp)} | 100 弹药生成，自带回血，清怪能力合格，优秀的叠{art-perk|单人特工}武器 |  |  |
 | 精致坟墓 | {ico|![](icons/65012d5da1.webp)} | 清怪：T2（电术{el-arc|电荷思维}） |  |  | {champ|![](icons/8b37bb6db2.webp)} | 仅限电术{el-arc|电荷思维}使用，{exotic|地磁安定靴}废墟石板贪婪套转大招，npa 放大招 |  |  |
 | 大序曲 | {ico|![](icons/d42c74e0fe.webp)} | 输出：T2 | 187194 | 4373 | {champ|![](icons/b7c4048b87.webp)} | 需要提前叠 20 层的输出才够看，但是叠层的手感实在太差也不一定有那么多怪给所有人叠层，适合在晚星之主等大长轴使用搭配药剂包突破清场+{art-perk|电弧复合} |  |  |
 | 破冰者 | {ico|![](icons/e9bb0cb049.webp)} | 高难：T2 |  |  | {champ|![](icons/a9911a3dfe.webp)} | 绑定贪婪套刺激低语冰泰坦，本身并不是特别强 |  |  |
