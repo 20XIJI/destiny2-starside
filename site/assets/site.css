@@ -138,9 +138,9 @@
      购物清单共用，所以定义在这里。Aegis 天蓝（与最近的 --c-stasis ΔE 29.0）；
      小棒猪（LGpig）取头像那只小猪的耳朵粉（与最近的 --c-prism ΔE 18.2）。两位都
      推荐的那一圈是棱彩：六个元素色绕一圈，游戏里「棱镜」本来就是把全部元素并在一起。
-     这三个是 UI 槽位，不是着色 token：源稿里写不出 {c-aegis|…}，所以不进色板页。 */
-  --c-aegis: #3d8bff;
-  --c-lgpig: #ea6c96;
+     这三个是 UI 槽位，不是着色 token：源稿里写不出来，所以不叫 --c-*，也不进色板页。 */
+  --au-aegis: #3d8bff;
+  --au-lgpig: #ea6c96;
   --halo-both: conic-gradient(var(--c-arc), var(--c-solar), var(--c-void), var(--c-stasis),
                               var(--c-strand), var(--c-prism), var(--c-arc));
 
@@ -2881,12 +2881,14 @@ body:has(.hero) {
              font: 600 12.5px/1.5 var(--font-cn); }
 .x-au-who .tags { justify-content: center; }
 .x-au-body p { color: var(--note); font-size: 13px; line-height: 1.65; }
-.w-aegis { color: var(--c-aegis); }
-.w-lgpig { color: var(--c-lgpig); }
+/* 作者名的颜色跟着光圈走。写成后代选择器：它们是作者区的组件，
+   源稿里写不出 {w-aegis|…}，不是着色 token。 */
+.x-au-name .w-aegis { color: var(--au-aegis); }
+.x-au-name .w-lgpig { color: var(--au-lgpig); }
 .tier { flex: none; min-width: 28px; padding: 1px 5px; text-align: center;
         font: 700 12.5px/1.3 var(--font-disp); color: var(--bone-hi); border: 1px solid; }
-.tier.by-a { border-color: var(--c-aegis); }
-.tier.by-l { border-color: var(--c-lgpig); }
+.tier.by-a { border-color: var(--au-aegis); }
+.tier.by-l { border-color: var(--au-lgpig); }
 .tier-long { font-size: 12px; line-height: 1.6; color: var(--bone); }
 
 /* 作者自己的字段：应用场景、获取地点、DPS、总伤。值里有着色 span，所以用 <b> */
@@ -2976,8 +2978,8 @@ body:has(.hero) {
 .plug .ico > img { display: block; width: 22px; height: 22px; border-radius: 50%; }
 /* 光圈画在图标外 3px。棱彩那一圈是渐变，所以用遮罩把整块底色裁成环形，
    与装备库同一套做法（weapons/style.css）。 */
-.plug.by-a { --halo: var(--c-aegis); }
-.plug.by-l { --halo: var(--c-lgpig); }
+.plug.by-a { --halo: var(--au-aegis); }
+.plug.by-l { --halo: var(--au-lgpig); }
 .plug.by-al { --halo: var(--halo-both); }
 .plug[class*="by-"] .ico::before {
   content: "";

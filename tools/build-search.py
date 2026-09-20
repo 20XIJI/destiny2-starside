@@ -24,8 +24,9 @@ import json
 import os
 import re
 
-import entitydb
 import markup
+import pagedex
+import rows as rows_mod
 import shell
 
 OUT = os.path.join(shell.SITE, 'assets', 'search.js')
@@ -45,6 +46,9 @@ MOD = re.compile(r'<article class="mod"[^>]*>(.*?)</article>', re.S)
 MOD_NAME = re.compile(r'<h4[^>]*>(.*?)</h4>', re.S)
 SET = re.compile(r'<article class="set" id="([^"]+)"[^>]*>(.*?)</article>', re.S)
 SET_NAME = re.compile(r'<h3[^>]*>(.*?)</h3>', re.S)
+# 按记录排版的那几页：一条记录一个 article.rec，名字在身份格的 .nm 里
+REC = re.compile(r'<article class="rec[^"]*"[^>]*>(.*?)</article>', re.S)
+REC_NAME = re.compile(r'<div class="nm[^"]*">(.*?)</div>', re.S)
 TITLE = re.compile(r'<title>(.*?)</title>', re.S)
 DESC = re.compile(r'<meta name="description" content="([^"]*)"')
 BR = re.compile(r'<br\s*/?>')
@@ -75,6 +79,9 @@ def items_of(chunk, anchor, tables=True):
     for mod in MOD.findall(chunk):
         out.append((anchor, text(markup.must(
             MOD_NAME.search(mod), '模组取不到名称').group(1)), text(mod)))
+    for rec in REC.findall(chunk):
+        out.append((anchor, text(markup.must(
+            REC_NAME.search(rec), '记录取不到名称').group(1)), text(rec)))
     carry = ''
     for row in ROW.findall(THEAD.sub('', chunk)) if tables else []:
         cells = CELL.findall(row)
@@ -112,26 +119,26 @@ _EN: dict[str, dict[str, str]] = {}
 
 
 def english(url):
-    """这一页的 {中文名: 英文名}。库里两边一样的不收。
+    """这一页的 {页面上写的名字: 英文名}。库里两边一样的不收。
 
-    英文来自实体层的 i18n.en.name，那一份是 manifest 蒸馏来的——18840/19356 条
-    本来就带着英文，这里只是让它露出来：搜 One-Two Punch 也能搜到雪上加霜。
-    **只进全文那一格，不上页面**：站点是中文站，英文名在正文里出现一次都会破坏
-    版式。
+    英文来自记录的 i18n.en.name，那一份是 manifest 蒸馏来的——这里只是让它露出来：
+    搜 One-Two Punch 也能搜到雪上加霜。页面上写的名字取页面索引的 name
+    （行标题以源稿为准，记录名不一定是站内写法）。
+    **只进全文那一格，不上页面**：站点是中文站，英文名在正文里出现一次都会破坏版式。
     """
     page = url[:-len('/index.html')]
     if page not in _EN:
         table = {}
-        try:
-            rows = entitydb.rows(page)
-        except SystemExit:
-            rows = []
-        for _keys, ent, block in rows:
-            zh = entitydb.text(ent, 'name')
-            en = entitydb.text(ent, 'name', 'en')
-            shown = entitydb.said(block, 'name') or zh
-            if en and en != zh and shown:
-                table.setdefault(shown, en)
+        got = pagedex.read(page)
+        for row in (got or {}).get('entries', ()):
+            shown = row.get('name')
+            for key in row.get('keys') or ():
+                rec = rows_mod.facts().at(str(key)) or {}
+                zh = ((rec.get('i18n') or {}).get('zh-CN') or {}).get('name')
+                en = ((rec.get('i18n') or {}).get('en') or {}).get('name')
+                if en and en != zh and shown:
+                    table.setdefault(shown, en)
+                    break
         _EN[page] = table
     return _EN[page]
 

@@ -102,14 +102,14 @@ def build():
                 # 子条目不进配装词表：异域那两页 PERK 列里的词条挂在行标题下，
                 # 是另一件东西。混进来，「异域武器：狂暴」会查到一枚词条。
                 continue
-            idx.setdefault(row['name'], []).append(
+            idx.setdefault(key_of(row['name']), []).append(
                 dict(row, page=page, token=got['token']))
     for e in variants():
         # 变体在站内没有独立的一行，说明只有复合那一行有（「电弧虹吸」的机制就写
         # 在「虹吸」那一行上）。sub 存的正是那一行的名字，照它借过来。
-        e['desc'] = next((r['desc'] for r in idx.get(e['sub'], ())
+        e['desc'] = next((r['desc'] for r in idx.get(key_of(e['sub']), ())
                           if r['page'] == 'armor-mods'), '')
-        idx.setdefault(e['name'], []).append(e)
+        idx.setdefault(key_of(e['name']), []).append(e)
     return idx
 
 
@@ -152,6 +152,15 @@ def bare_kind(kind):
 TAIL = re.compile(r'（([^（）]+)）$')
 
 
+def key_of(name):
+    """查表用的键：去掉汉字与拉丁之间那个排版空格。
+
+    配装源稿两种写法都有（「斗牛士 64」「赫沃斯托夫7G-0X」），而记录里一律没有
+    这个空格、页面上一律有。两侧都按去空格比，写法差一个空格不再算查不到。
+    """
+    return name.replace(' ', '').replace('\u00a0', '')
+
+
 def pick(idx, name, slot, kind=None, prefer=''):
     """按名字取条目。范围由槽位限定，kind 再按分节收一道（部位、件数）。
 
@@ -166,11 +175,11 @@ def pick(idx, name, slot, kind=None, prefer=''):
     if slot not in SLOTS:
         die('槽位「%s」没有登记来源页' % slot)
     tail = ''
-    if name not in idx:
+    if key_of(name) not in idx:
         hit = TAIL.search(name)
         if hit:
             tail, name = hit.group(1), name[:hit.start()]
-    hits = [h for h in idx.get(name, []) if h['page'] in SLOTS[slot]]
+    hits = [h for h in idx.get(key_of(name), []) if h['page'] in SLOTS[slot]]
     if kind is not None:
         # 分节标题带括注时按括注前那一截比（神器模组页写「废墟石板 （异端）」），
         # 括注是来源赛季，不是这件神器的名字。
@@ -200,7 +209,10 @@ def pick(idx, name, slot, kind=None, prefer=''):
 
 ITEM = (re.compile(r'<tr(?![^>]*class="lane")[^>]*>(.*?)</tr>', re.S),
         re.compile(r'<article class="mod"[^>]*>(.*?)</article>', re.S),
-        re.compile(r'<article class="set"[^>]*>(.*?)</article>', re.S))
+        re.compile(r'<article class="set"[^>]*>(.*?)</article>', re.S),
+        # 按记录排版的那几页：一条记录一个 article.rec（tools/render.py），
+        # 职业物品的之灵行同样是 article.sp-row.rec。
+        re.compile(r'<article class="[^"]*\brec\b[^"]*"[^>]*>(.*?)</article>', re.S))
 
 
 def check_landing(idx):

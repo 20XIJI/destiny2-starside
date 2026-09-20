@@ -562,9 +562,22 @@ def research_hits(terms, names, slug=None):
     return out
 
 
+def no_forward():
+    """只参与反查、不参与正查的词：LOOSE，加异域装备的专属 Perk 名。
+
+    专属 Perk 名与散文里的普通词、别的装备名大量同形（集群猎人、大师、解构、
+    不屈、狂暴）。这些名字从前只以「整格连写」的形式进表，正查碰不到它们；
+    改成按主键逐条取之后再参与正查，等于要求全站给「大师」「解构」着色。
+    token 留着，G2 照旧管「着错了色」。
+    """
+    return LOOSE | set(perks())
+
+
 def scan(slug=None):
     """[(源稿路径, 行号, 起, 止, 词)]，按源稿顺序。人写层一并扫。"""
     terms, _ = load()
+    skip_words = no_forward()
+    terms = {k: v for k, v in terms.items() if k not in skip_words}
     names = sorted(terms, key=len, reverse=True)
     out = []
     for rel in pages(slug):
@@ -793,6 +806,9 @@ def normalize_files(documents, builds):
     import check_terms
     terms, _ = load()
     check_terms.check_token_targets(terms)
+    # 与 scan() 同一份排除表：只参与反查的那些词不在这里补色，否则「大师」
+    # 「解构」「集群猎人」会被自动染成异域名。
+    terms = {k: v for k, v in terms.items() if k not in no_forward()}
     names = sorted(terms, key=len, reverse=True)
     banned = check_terms.banned_pairs()
     totals = [0, 0, 0]

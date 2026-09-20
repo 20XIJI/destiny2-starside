@@ -290,6 +290,21 @@ def cells(line):
     return out[:-1] if len(out) > 1 else out
 
 
+# 主键骨架那种源稿的一行：主键（可带它盖住的别的 hash）＋两个空格＋行标题。
+SKELETON_ROW = re.compile(r'^((?:perk:|trait:|stat:|set:)?\d+'
+                          r'(?: (?:perk:|trait:|stat:|set:)?\d+)*)  (\S.*)$')
+
+
+# 汉字与数字、拉丁之间留一个空格（design.md 三节）。manifest 的名字里没有它，
+# 站内一律写成「斗牛士 64」「SUROS 遗产」，所以显示与入索引时现补。
+CJK_LATIN = re.compile(r'(?<=[\u4e00-\u9fff])(?=[0-9A-Za-z])'
+                       r'|(?<=[0-9A-Za-z])(?=[\u4e00-\u9fff])')
+
+
+def spaced(text):
+    return CJK_LATIN.sub(' ', text) if text else text
+
+
 def row_title_end(line):
     """表格行首格里「行的身份」那一段的结束位置；不是表格行就是 0。
 
@@ -297,7 +312,12 @@ def row_title_end(line):
     留空即向上合并，身份在第二格；只算到格内换行 ``\\`` 为止——切枪 DPS 页的
     首格写成「**隐秘追猎**\\凯德的复仇、星界夜鹰」，``\\`` 之后列的是配装件，
     那是内容不是身份，照常参与着色。
+
+    主键骨架那种源稿整行都是身份：主键加行标题，正文在记录上。整行排除，
+    否则行标题会被当成正文，闸门要求给它着色，而着了色主键那一行就解析不了。
     """
+    if SKELETON_ROW.match(line.strip()):
+        return len(line)
     span = cells(line)
     if not span:
         return 0

@@ -684,8 +684,8 @@
 
 /* 光圈：画在图标外 3px，与选中态（图标自己的边框）分开两层，两件事同时成立时
    都看得见。颜色由 --halo 给，棱彩那一圈是渐变，所以用遮罩把整块底色裁成环形。 */
-.plug.by-a { --halo: var(--c-aegis); }
-.plug.by-l { --halo: var(--c-lgpig); }
+.plug.by-a { --halo: var(--au-aegis); }
+.plug.by-l { --halo: var(--au-lgpig); }
 .plug.by-al { --halo: var(--halo-both); }
 
 .plug[class*="by-"] .ico::before {
@@ -718,8 +718,8 @@
 }
 
 .dot { margin: 0 2px 0 0; }
-.halo-key i.by-a, .dot.by-a { --halo: var(--c-aegis); }
-.halo-key i.by-l { --halo: var(--c-lgpig); }
+.halo-key i.by-a, .dot.by-a { --halo: var(--au-aegis); }
+.halo-key i.by-l { --halo: var(--au-lgpig); }
 .halo-key i.by-al { --halo: var(--halo-both); }
 
 /* 固定栏（起源特性只有一枚）：没有可选项，灰掉选择态。 */
@@ -778,7 +778,7 @@
   content: "";
   position: absolute;
   inset: -5px;
-  border: 2px solid var(--c-aegis);
+  border: 2px solid var(--au-aegis);
 }
 
 .slot-lab {
@@ -854,7 +854,7 @@
 }
 
 .pick .sq img { display: block; width: 100%; height: 100%; }
-.pick.by-a .sq::before { content: ""; position: absolute; inset: -4px; border: 2px solid var(--c-aegis); }
+.pick.by-a .sq::before { content: ""; position: absolute; inset: -4px; border: 2px solid var(--au-aegis); }
 
 .pk-lv {
   display: flex;
@@ -922,7 +922,7 @@
 }
 
 .say {
-  --c-author: var(--c-aegis);
+  --c-author: var(--au-aegis);
   display: grid;
   grid-template-columns: 76px minmax(0, 1fr);
   gap: 0 18px;
@@ -931,7 +931,7 @@
   border-left: 3px solid var(--c-author);
 }
 
-.say.by-lgpig { --c-author: var(--c-lgpig); }
+.say.by-lgpig { --c-author: var(--au-lgpig); }
 
 .say .who {
   color: var(--c-author);

@@ -642,7 +642,11 @@ def record_region(lines):
         if cur is None:
             cur = (None, [])
             groups.append(cur)
-        cur[1].append(hit.group(1).split()[0])
+        key = hit.group(1).split()[0]
+        ctx0 = CTX
+        if ctx0 is not None:
+            ctx0.titles[key] = hit.group(2).strip()   # 行标题以源稿为准
+        cur[1].append(key)
 
     ctx = CTX
     if ctx is None:
@@ -650,12 +654,32 @@ def record_region(lines):
     dex = DEX
     if dex is not None:
         anchor, label = SECTION
+
+        def put(key, kind, q=None):
+            icon = rows.icon_file(key)
+            dex.add(keys=[key], anchor=anchor, kind=kind, name=ctx.name(key),
+                    icon=pagedex.site_path(PAGE, rows.rel(icon, PAGE)) if icon else '',
+                    **({} if q is None else {'q': q}))
+
         for lane, keys in groups:
             for key in keys:
-                icon = rows.icon_file(key)
-                dex.add(keys=[key], anchor=anchor, kind=lane or label,
-                        name=ctx.name(key),
-                        icon=pagedex.site_path(PAGE, rows.rel(icon, PAGE)) if icon else '')
+                if layout.is_class_item(key):
+                    # 职业物品的名字只在块标题上，页内过滤拿它滤不出任何一行；
+                    # 两栏的之灵各自是一行，登记它们。
+                    put(key, lane or label, q='')
+                    for col in (rows.facts().at(key) or {}).get('site_perkColumns') or ():
+                        for spirit in col:
+                            put(str(spirit), lane or label)
+                    continue
+                put(key, lane or label)
+                for e in (rows.facts().at(key) or {}).get('enhanced') or ():
+                    for by in e['by']:
+                        dex.add(keys=[key], anchor=anchor, kind=lane or label,
+                                name='%s（%s）' % (ctx.name(key), ctx.name(str(by))),
+                                icon=pagedex.site_path(PAGE, rows.rel(rows.icon_file(str(by)),
+                                                                     PAGE))
+                                if rows.icon_file(str(by)) else '',
+                                q=ctx.name(key))
     return [layout.section_blocks(ctx, groups, SECTION[1], rows.AUTHORED.get(SLUG, 'Aegis'))]
 
 
@@ -847,10 +871,11 @@ def render(md, slug, digest):
         # 搜索按表格行工作，data-item 认的就是 .gen 的行。没有表格的页面给了搜索框
         # 也永远零命中，所以只给跳转 chip——app.js 见 data-item 缺席即走那一档。
         # 两处 if 分开写是为了保住属性顺序：既有页面的产出因此零 diff。
-        rows = bool(re.search(r'^\|[-\s|]+\|$', md, re.M))
+        # 按记录排版的那几页没有 markdown 表格，条目是 article.rec
+        rows = bool(re.search(r'^\|[-\s|]+\|$', md, re.M)) or slug in NEW
         nav = {'data-section': '.block'}
         if rows:
-            nav['data-item'] = '.gen tbody tr:not(.lane)'
+            nav['data-item'] = '.rec' if slug in NEW else '.gen tbody tr:not(.lane)'
         nav['data-label'] = '.sect-label'
         if rows:
             nav['data-noun'] = '条目'
@@ -975,7 +1000,7 @@ def check_records(md, out, slug):
     # 两侧同样归一化：中文与拉丁之间那个排版空格是渲染加的，不算内容（design.md 三节）
     got = plain(text_of(main))
     # 名字本身可能带着色标记与格内换行，两侧都取渲染后的纯文本
-    want = {k: plain(text_of(ctx.name_html(k))) for k in keys}
+    want = {k: plain(text_of(ctx.title_html(k))) for k in keys}
     missing = [k for k in keys if want[k] and want[k] not in got]
     if missing:
         die('%s 有 %d 枚主键没画出来：%s'

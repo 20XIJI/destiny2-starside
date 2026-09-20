@@ -151,6 +151,47 @@ def parse_blocks(raw: str, base: int = 0) -> list:
     return blocks
 
 
+# 主键骨架的一行：套装不缩进，它的两条效果缩进两格。
+SKEL_ROW = re.compile(r'^(\s*)((?:set|perk):\d+)  (.+)$')
+
+
+def is_skeleton(md: str) -> bool:
+    return any(SKEL_ROW.match(ln) for ln in md.split('\n'))
+
+
+def expand(md: str) -> str:
+    """主键骨架 → 这一页原来的源稿形状。
+
+    来源、标签与两条效果的正文都在记录上（i18n.zh-CN 的「来源」「标签」与
+    realgame_details），源稿只留主键与顺序。展开之后交给 parse()，解析与渲染
+    一个字不改。
+    """
+    import rows
+    out = []
+    for line in md.split('\n'):
+        hit = SKEL_ROW.match(line)
+        if not hit:
+            out.append(line)
+            continue
+        indent, key, title = hit.group(1), hit.group(2), hit.group(3).strip()
+        rec = rows.facts().at(key)
+        if rec is None:
+            die('主键 %s 落不到记录上（%s）' % (key, title))
+        zh = rows.zh(rec)
+        if not indent:                      # 套装那一行
+            out += ['### %s' % zh.get('name', title), '']
+            # 顺序即原稿：来源／赛季／更新／类型在前，标签压末尾
+            for field in ('来源', '赛季', '更新', '类型', '标签'):
+                if zh.get(field):
+                    out.append('- **%s：** %s' % (field, zh[field]))
+            out.append('')
+            continue
+        count, _, name = title.partition('｜')   # 「2 件｜拉斯普廷的怒火」
+        out += ['#### %s｜%s' % (count.strip(), name.strip() or zh.get('name', '')), '',
+                (zh.get('realgame_details') or zh.get('database_details') or '').strip(), '']
+    return '\n'.join(out)
+
+
 def parse(md: str) -> list[Category]:
     cats: list[Category] = []
     body = md[md.index('## '):]
@@ -603,7 +644,8 @@ def main() -> None:
     args = ap.parse_args()
 
     md = open(SRC, encoding='utf-8').read()
-    cats = parse(md)
+    # 源稿是主键骨架时先展开成这一页原来的形状，解析与渲染因此不必知道这件事。
+    cats = parse(expand(md) if is_skeleton(md) else md)
 
     if args.icons:
         extract_icons(cats, args.icons)

@@ -52,6 +52,7 @@ class Page:
         self.img = img            # markup.Icons().html
         self.dex = dex            # pagedex 的索引，可以是 None
         self.section = ''
+        self.titles = {}          # 主键 → 源稿写的行标题
         self.matrix_rows = set()  # 矩阵行首用掉的记录，不再单独占一行
 
     # ── 取值 ────────────────────────────────────────────────────────
@@ -59,13 +60,21 @@ class Page:
         return rows.zh(rows.facts().at(key) or {})
 
     def name(self, key):
-        """纯文本的名字，给索引与自检用。"""
-        return PUA.sub('', rows.name_of(key) or '').strip()
+        """纯文本的名字，给索引与自检用。行标题是站内写法（「鲁莽神谕\\众神殿版本」
+        这种带版本后缀的），源稿写了就以它为准；没写才用记录名。"""
+        got = self.titles.get(key)
+        if got:
+            return markup.text_of(self.line(got), collapse=True)
+        return markup.spaced(PUA.sub('', rows.name_of(key) or '').strip())
+
+    def title_html(self, key):
+        got = self.titles.get(key)
+        return self.line(got) if got else self.name_html(key)
 
     def name_html(self, key):
-        """页面上显示的名字：自发主键的名字里带着色标记与格内换行
+        """页面上显示的名字：名字里可能带着色标记与格内换行
         （「故我在\\（{el-arc|电弧}导体）\\波形」），所以走渲染，不转义。"""
-        return self.line(self.name(key))
+        return self.line(markup.spaced(PUA.sub('', rows.name_of(key) or '').strip()))
 
     def icon(self, key, size=''):
         got = rows.icon_file(key)
@@ -145,7 +154,7 @@ def idcell(p, key, subs=(), name_cls='', extra=''):
     """身份格：图标在上，名字与副行在下，上下左右居中。"""
     sub = ''.join('<span>%s</span>' % s for s in subs if s)
     return cell('idc', '%s<div class="nm %s">%s</div>%s%s'
-                % (p.icon(key), name_cls, p.name_html(key),
+                % (p.icon(key), name_cls, p.title_html(key),
                    '<div class="sub">%s</div>' % sub if sub else '', extra))
 
 
@@ -157,7 +166,11 @@ def colhead(cls, labels):
 
 # ── 数值、子行、成员 ────────────────────────────────────────────────
 def stats_of(p, key):
+    """数值格。武器 PERK 那几类（词条、模组、框架、起源）不画：它们的数值
+    说明里已经写了一遍。"""
     rec = rows.facts().at(key) or {}
+    if kind(key) == 'plug':
+        return ''
     out = []
     cost = (rec.get('plug') or {}).get('energyCost')
     if cost is None and p.zh(key).get('费用'):
@@ -462,7 +475,7 @@ def class_items(p, keys):
     blank = cell('idc', '') + cell('txt', '')
 
     def block(title, left, right):
-        body = ''.join('<div class="sp-row">%s%s</div>'
+        body = ''.join('<article class="sp-row rec">%s%s</article>'
                        % (spirit(p, left[i]) if i < len(left) else blank,
                           spirit(p, right[i]) if i < len(right) else blank)
                        for i in range(max(len(left), len(right))))
@@ -524,7 +537,7 @@ HEADS = {
 
 
 def section_blocks(p, groups, section='', author='Aegis'):
-    """一节的主键 → HTML。groups 是 [(组名 or None, [主键…])]。
+    """一节的主键 → HTML。groups 是 [(组名 or None, [主键…])]，行标题在 p.titles 里。
 
     列由这一节里出现的字段定：整节都没有数值的不画数值列，整节都没有来源的不画来源列。
     """

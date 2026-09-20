@@ -80,10 +80,63 @@ META_LINE = meta_line(META_KEYS)
 
 # 图标引用顺序即文档顺序：parse() 按提示徽章 → 分节徽章 → 模组图标依次取图
 def img(icons, name, cls):
-    return icons.html('icons/' + name, cls)
+    # 带斜杠的是相对本页的整条路径（记录给的 assets/icons/…），不再往前面贴 icons/
+    return icons.html(name if '/' in name else 'icons/' + name, cls)
+
+
+# 主键骨架的一行：神器不缩进，它的模组缩进两格。
+SKEL_ROW = re.compile(r'^(\s*)(\d+)  (.+)$')
+
+# 标签里的元素名着色。动能在游戏内即是白，这一页不给它上色，与原来的源稿一致。
+TAG_TOKEN = {'虚空': 'el-void', '电弧': 'el-arc', '烈日': 'el-solar',
+             '冰影': 'el-stasis', '缚丝': 'el-strand', '棱镜': 'el-prismatic'}
+
+
+def expand(md):
+    """主键骨架 → 这一页原来的源稿形状。
+
+    徽章、括注、标签与每个模组的正文都在记录上（site_emblem／site_season／
+    site_elements／site_weaponTypes／realgame_details），源稿只留主键与顺序。
+    展开之后交给下面的 parse()，解析与渲染一个字不改。
+    """
+    import rows
+    out = []
+    for line in md.split('\n'):
+        hit = SKEL_ROW.match(line)
+        if not hit:
+            out.append(line)
+            continue
+        indent, key, title = hit.group(1), hit.group(2), hit.group(3).strip()
+        rec = rows.facts().at(key)
+        if rec is None:
+            die('%s：主键 %s 落不到记录上（%s）' % ('artifact-mods', key, title))
+        zh = rows.zh(rec)
+        if not indent:                      # 神器那一行
+            tags = ' | '.join('{%s|%s}' % (TAG_TOKEN[e], e) if e in TAG_TOKEN else e
+                              for e in zh.get('site_elements') or ())
+            kinds = ' | '.join(zh.get('site_weaponTypes') or ())
+            out.append('徽章：%s' % rec['site_emblem'])
+            if zh.get('site_season'):
+                out.append('括注：（%s）' % zh['site_season'])
+            if tags or kinds:
+                out.append('标签（站点补充）：%s' % '<br>'.join(x for x in (tags, kinds) if x))
+            continue
+        icon = rows.icon_file(key)           # 模组图走站内那一份，记录上写着
+        if not icon:
+            die('%s 没有图标' % title)
+        out.append('### %s' % title)
+        out.append('图标：%s' % rows.rel(icon, 'artifact-mods'))
+        out.append('')
+        out.append((zh.get('realgame_details') or '').strip())
+        out.append('')
+    return '\n'.join(out)
 
 
 # ── 解析源稿 ────────────────────────────────────────────────────────────
+def is_skeleton(md):
+    return any(SKEL_ROW.match(ln) for ln in md.split('\n'))
+
+
 def parse(md, icons):
     """源稿 → page 字典。字典的形状就是 render() 的契约。"""
     page = {'sub': '', 'lede': [], 'notice': {}, 'sections': []}
@@ -321,8 +374,10 @@ def main():
     with open(SRC, encoding='utf-8') as f:
         md = f.read()
 
+    # 源稿是主键骨架时先展开成这一页原来的形状，解析与渲染因此不必知道这件事。
+    src = expand(md) if is_skeleton(md) else md
     icons = Icons(OUT_DIR, N_EAGER)
-    page = parse(md, icons)
+    page = parse(src, icons)
     dex = pagedex.Index(PAGE, 'art-perk', searchable=True)
     out = render(page, src_hash(md), dex)
     check(page, out, icons)

@@ -195,8 +195,21 @@ def pv_table(head, body):
 
 # ── 各页取值 ──
 
+REC = re.compile(r'<article class="rec[^"]*"[^>]*>(.*?)</article>', re.S)
+REC_NAME = re.compile(r'<div class="nm[^"]*">(.*?)</div>', re.S)
+REC_ICON = re.compile(r'<img[^>]+src="([^"]+)"')
+REC_TIER = re.compile(r'<span class="tier [^"]*">(.*?)</span>', re.S)
+REC_TAG = re.compile(r'<b class="tag">(.*?)</b>', re.S)
+# 评级写成一整句的那种不装徽标，单独一行（见 render.author_rows）
+REC_TIER_LONG = re.compile(r'<div class="tier-long">(.*?)</div>', re.S)
+
+
 def lg_list(slug):
-    """LGpig 刷取清单：按分节 → [(名字, 图, 评级或定位)]，页内顺序即他的排序"""
+    """LGpig 刷取清单：按分节 → [(名字, 图, 评级或定位)]，页内顺序即他的排序。
+
+    按记录排版的那几页一条记录一个 article.rec，评级在作者格的徽标上、定位在
+    标签上；还是表格的页面照旧按行取。
+    """
     out = []
     for _, sec in sections(slug):
         got = []
@@ -204,6 +217,16 @@ def lg_list(slug):
             for r in rows(slug, t):
                 if r[1][1]:
                     got.append((r[0][0], r[1][1], r[2][0]))
+        for m in REC.finditer(sec):
+            body = m.group(1)
+            name, icon = REC_NAME.search(body), REC_ICON.search(body)
+            if not (name and icon):
+                continue
+            grade = (REC_TIER.search(body) or REC_TIER_LONG.search(body)
+                     or REC_TAG.search(body))
+            got.append((text(name.group(1)),
+                        re.sub(r'^(\.\./)+', '', icon.group(1)),
+                        text(grade.group(1)) if grade else ''))
         out.append(got)
     return out
 
@@ -260,6 +283,13 @@ def perks(img):
         for r in rows('weapon-perks', t):
             if r[1][1]:
                 pool.setdefault(r[0][0], r[1][1])
+    # 这一页已按记录排版：一条记录一个 article.rec，名字与图各在格里
+    for _, sec in sections('weapon-perks'):
+        for m in REC.finditer(sec):
+            name, icon = REC_NAME.search(m.group(1)), REC_ICON.search(m.group(1))
+            if name and icon:
+                pool.setdefault(text(name.group(1)),
+                                re.sub(r'^(\.\./)+', '', icon.group(1)))
     return pv_items(img, [([find('武器 PERK 页', pool, n)], n, '', '') for n in PICK_PERKS])
 
 

@@ -296,6 +296,10 @@
 
   /* 表内横幅行是组名不是条目，不参与命中，改为跟着自己那一组的可见行走 */
   var lanes = ITEM ? Array.prototype.slice.call(document.querySelectorAll('tr.lane')) : [];
+  /* 按记录排版那几页的组名：同组的条目是它后面的兄弟节点，到下一个组名为止。
+     不能照搬横幅行那一条——那一条按 parentNode 判，而这里同一个父节点下
+     几组条目连着排。 */
+  var groups = ITEM ? Array.prototype.slice.call(document.querySelectorAll('.grp')) : [];
   /* 分节里再分的小标题（配装索引页的职业），跟着紧随其后那一组的可见条目走。
      **这一条只能在 JS 里做**：CSS 要写成 .sub-label:has(+ ul:not(:has(> li:not([hidden]))))，
      而 :has() 不许再套 :has()，整条是无效选择器——写在样式表里不报错也不生效。 */
@@ -653,6 +657,14 @@
        不留一条光杆组名。 */
     lanes.forEach(function (lane) {
       lane.hidden = !lane.parentNode.querySelector('tr:not(.lane):not([hidden])');
+    });
+    groups.forEach(function (grp) {
+      var on = false;
+      for (var n = grp.nextElementSibling; n && !n.classList.contains('grp');
+           n = n.nextElementSibling) {
+        if (n.classList.contains('rec') && !n.hidden) { on = true; break; }
+      }
+      grp.hidden = !on;
     });
     trimSubs();
     /* 本来就没有条目的分节不参与过滤：增伤页的「世界与活动」整节是几段规则、
