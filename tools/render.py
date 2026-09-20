@@ -286,6 +286,30 @@ def members(p, key):
                       for m in got))
 
 
+def member_text(p, key):
+    """组合行的正文：各成员的实测挨着画。「故我在（电弧元素）」那一行讲的就是电弧
+    导体与风暴使者这两条固有。
+
+    跳过三类成员：第一位（装备本身，正文在它自己那一行）、本页已经单独占一行的
+    （虚空页的手持超新星点名了四枚手雷，那四枚各有各的行，抄过来就是同一段话在一页
+    里出现两次）、以及正文与已画过的逐字相同的。
+
+    **只画在 BODY 那几页**：刷取清单那一行写的是评级与理由，正文归资料页；同一段话
+    出现在两页上，读者无从判断哪一份是新的。
+    """
+    rec = rows.facts().at(key) or {}
+    if not rows.combo(rec) or p.page not in rows.BODY:
+        return ''
+    own = set(rows.heads(p.page))
+    out, seen = [], set()
+    for m in (rec.get('members') or ())[1:]:
+        got = rows.zh(rows.facts().at(str(m))).get('realgame_details', '').strip()
+        if got and str(m) not in own and got not in seen:
+            seen.add(got)
+            out.append(p.prose(got))
+    return ''.join(out)
+
+
 # ── 作者区：一位作者两格，加作者只多一行 ────────────────────────────
 def author_fields(p, a):
     got = [(k, v) for k, v in sorted(a.items())
@@ -360,7 +384,7 @@ def rec_plain(p, key, cols, narrow=''):
     z = p.zh(key)
     body = (members(p, key)
             + p.prose(z.get('realgame_details') or z.get('效果') or z.get('database_details', ''))
-            + enhanced(p, key) + by_types(p, key))
+            + member_text(p, key) + enhanced(p, key) + by_types(p, key))
     out = [idcell(p, key), cell('r-txt', body)]
     if 'st' in cols:
         out.append(cell('r-mid r-val', stats_of(p, key)))
@@ -371,12 +395,30 @@ def rec_plain(p, key, cols, narrow=''):
         len(cols), narrow, ' has-au' if au else '', ''.join(out), au)
 
 
+def perk_chips(p, got):
+    """「异域特性」那一格：一名一图，一池多选的几枚收进一个框并标出几选一。
+
+    图与名字分两份取：催化剂那几条的名字是它给的效果，图在催化剂或它给的那枚 Perk
+    上（见 rows.perk_item）。不标几选一的话，英勇利刃那四枚催化剂并排列着，读者会
+    当成四条都生效。
+    """
+    def one(n):
+        return ('<span class="xp-1">%s<span class="xp-n">%s</span></span>'
+                % (p.icon(got.icons[n]), html.escape(PUA.sub('', n))))
+
+    picked = {n for group in got.picks for n in group}
+    rows_ = [''.join(one(n) for n in got.names if n not in picked)]
+    # 一组一行：选项组与固定那几枚挤在同一行时，读者分不清方框收到哪一枚为止
+    rows_ += ['<span class="xp-pick"><b class="xp-of">%d 选 1</b>%s</span>'
+              % (len(group), ''.join(one(n) for n in group)) for group in got.picks]
+    return ''.join('<div class="xp">%s</div>' % r for r in rows_ if r)
+
+
 def rec_exotic(p, key):
     """异域武器与异域护甲：异域 | 异域特性 | 作者区。异域不画来源。"""
     rec = rows.facts().at(key) or {}
     z = p.zh(key)
-    names, first = rows.exotic_perks(key)
-    perk = ''.join('<span class="xp-n">%s</span>' % html.escape(PUA.sub('', n)) for n in names)
+    perk = perk_chips(p, rows.exotic_perks(key))
     text = rows.exotic_text(key, z.get('realgame_details', ''))
     season = (rec.get('derived') or {}).get('season')
     au = author_rows(p, key, 'LGpig')
@@ -384,8 +426,7 @@ def rec_exotic(p, key):
             % (' has-au' if au else '',
                idcell(p, key, [z.get('itemTypeDisplayName'),
                                '赛季 %s' % season if season else ''], 'exo'),
-               cell('r-txt r-perk', '<div class="xp">%s%s</div>%s'
-                    % (p.icon(first, 'round') if first else '', perk, p.prose(text))),
+               cell('r-txt r-perk', '%s%s' % (perk, p.prose(text))),
                au))
 
 

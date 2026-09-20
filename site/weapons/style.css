@@ -906,6 +906,8 @@
 .frame b { color: var(--bone-hi); font-weight: 600; }
 .frame .rate { margin-left: 10px; color: var(--bone-dim); font-family: var(--font-body); font-size: 12.5px; }
 .frame p { margin: 0; color: var(--bone-dim); }
+/* 固有随机的那把在这一块里排 8 条，条与条之间留一行 */
+.frame + .frame { margin-top: 12px; }
 
 
 .src {
@@ -924,7 +926,7 @@
 .say {
   --c-author: var(--au-aegis);
   display: grid;
-  grid-template-columns: 76px minmax(0, 1fr);
+  grid-template-columns: 92px minmax(0, 1fr);
   gap: 0 18px;
   padding: 14px 18px;
   background: var(--tint-3);
@@ -939,12 +941,22 @@
   letter-spacing: .1em;
 }
 
+/* 一个维度一行：维度小字在前，档位大字在后，中间不断行 */
 .say .who b {
-  display: block;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 6px;
   margin-top: 2px;
   color: var(--bone-hi);
-  font: 700 26px/1.2 var(--font-disp);
+  font: 700 22px/1.25 var(--font-disp);
   letter-spacing: .02em;
+}
+
+.say .who .dim {
+  color: var(--bone-dim);
+  font: 600 11px/1 var(--font-disp);
+  letter-spacing: .1em;
 }
 
 .say p {
@@ -1172,9 +1184,12 @@
 .enh { color: var(--bone-hi); font-weight: 600; }
 
 /* 站内详情：异域那一整段展开写，不收进浮层。 */
-.site .xps { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-bottom: 10px; }
-.site .xp { display: inline-flex; align-items: center; gap: 8px; color: var(--bone-hi); font: 600 13.5px/1.6 var(--font-cn); }
-.site .xp img { width: 28px; height: 28px; border-radius: 50%; }
+/* align-items 缺省是 stretch：选项框会被拉到整行高，里面的 28px 图标贴在内边距上，
+   而「N 选 1」那行小字按拉伸后的高度居中，看起来图标偏上 */
+.xps { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; margin-bottom: 6px; }
+.xps:last-of-type { margin-bottom: 10px; }
+.wpn-xp { display: inline-flex; align-items: center; gap: 8px; color: var(--bone-hi); font: 600 13.5px/1.6 var(--font-cn); }
+.wpn-xp img { width: 28px; height: 28px; border-radius: 50%; }
 .prose { font: 400 13.5px/1.9 var(--font-cn); color: var(--bone); }
 .prose p { margin: 0 0 10px; }
 .one-side .src { font-size: 12.5px; }

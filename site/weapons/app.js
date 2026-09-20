@@ -24,7 +24,7 @@
       A_ROLE = 8, A_SRC = 9, A_REP = 10, A_FAM = 11;
   var F_ADEPT = 1, F_HOLO = 2, F_CRAFT = 4, F_TIER = 8, F_MW = 16, F_ENH = 32, F_REISSUE = 64;
   var P_HASH = 0, P_NAME = 1, P_ICON = 2, P_TYPE = 3, P_ST = 4, P_CD = 5;
-  var R_STAT = 0, R_TRAIT = 1, R_ORIGIN = 2;
+  var R_STAT = 0, R_TRAIT = 1, R_ORIGIN = 2, R_INTRINSIC = 3;
 
   var V = D.v;
   var ICONS = '../assets/icons/';
@@ -195,6 +195,14 @@
   function cellsOf(col) { return P.L[col[2]]; }
   function shownPlug(cell) { return cell[1] >= 0 ? cell[1] : cell[0]; }
   function plugName(p) { return P.p[p][P_NAME]; }
+  /* 固有开成一栏的那把（故我在的 8 枚异域内在随机开一枚）：返回那一栏，否则 null。
+     有这一栏就说明这把枪没有单一固有，「异域特性」那一块与事实 chip 都不能只写一枚。 */
+  function intrinsicCol(i) {
+    if (!P) { return null; }
+    var cols = poolRow(i)[2];
+    for (var c = 0; c < cols.length; c++) { if (cols[c][1] === R_INTRINSIC) { return cols[c]; } }
+    return null;
+  }
   function marksOf(i) {
     var out = {}, m = poolRow(i)[3];
     for (var k = 0; k < m.length; k++) { out[m[k][0]] = m[k][1]; }
@@ -1047,11 +1055,15 @@
     if (say) { parts.push('<section><h3 class="sub-label">作者评语</h3><div class="says">' + saysHtml(say) + '</div></section>'); }
     parts.push(gearSection(i, roll, res));
     if (pr[8].length) { parts.push(catalystSection(i, roll)); }
-    var fr = frameOf(r), fp = PIDX[fr[3]];
-    parts.push('<section><h3 class="sub-label">' + (isExotic(r) ? '异域特性' : '框架') + '</h3><div class="frame">' +
-      imgTag(fr[1], '', '', true) + '<div><b>' + esc(fr[0]) + '</b>' +
+    var fr = frameOf(r), fp = PIDX[fr[3]], icol = intrinsicCol(i);
+    var frames = icol ? cellsOf(icol).map(function (cell) {
+      var p = shownPlug(cell);
+      return '<div class="frame">' + imgTag(P.p[p][P_ICON], '', '', true) + '<div><b>' + esc(plugName(p)) +
+        '</b><p>' + (T && T.pd[p] ? esc(T.pd[p]) : '') + '</p></div></div>';
+    }).join('') : '<div class="frame">' + imgTag(fr[1], '', '', true) + '<div><b>' + esc(fr[0]) + '</b>' +
       (fr[2][r[W_SUB]] ? '<span class="rate">' + fr[2][r[W_SUB]] + ' 发/分</span>' : '') +
-      '<p>' + (T && fp != null ? esc(T.pd[fp]) : '') + '</p></div></div></section>');
+      '<p>' + (T && fp != null ? esc(T.pd[fp]) : '') + '</p></div></div>';
+    parts.push('<section><h3 class="sub-label">' + (isExotic(r) ? '异域特性' : '框架') + '</h3>' + frames + '</section>');
     parts.push('</div>');
     parts.push('<aside class="one-side"><section><div class="facts">' + factsHtml(i) + '</div></section>' +
       '<section><h3 class="sub-label">属性</h3>' + statsPanel(res, ghost) + '</section>' +
@@ -1059,14 +1071,40 @@
     return '<article class="wpn-one">' + parts.join('') + '</article>';
   }
   function exoticBlock(x) {
-    return '<section class="site"><h3 class="sub-label">站内详情</h3><div class="xps">' + x[0].map(function (c) {
-      return '<span class="xp">' + imgTag(c[1], '', '', true) + esc(c[0]) + '</span>';
-    }).join('') + '</div><div class="prose">' + x[1] + '</div></section>';
+    /* c[2] 是选项组号：一个插槽只插得下一枚，同组的框起来并标出几选一，
+       否则英勇利刃那四枚催化剂并排列着，读成四条都生效。 */
+    var chips = x[0], loose = '', rows = [], i = 0;
+    while (i < chips.length) {
+      var g = chips[i][2];
+      if (g == null) { loose += chipHtml(chips[i]); i++; continue; }
+      var j = i, box = '<span class="xp-pick"><b class="xp-of">';
+      while (j < chips.length && chips[j][2] === g) { j++; }
+      box += (j - i) + ' 选 1</b>';
+      for (var k = i; k < j; k++) { box += chipHtml(chips[k]); }
+      rows.push(box + '</span>');
+      i = j;
+    }
+    /* 一组一行：与固定那几枚挤在同一行时，读者分不清方框收到哪一枚为止 */
+    if (loose) { rows.unshift(loose); }
+    return '<section class="site"><h3 class="sub-label">站内详情</h3>' +
+      rows.map(function (r) { return '<div class="xps">' + r + '</div>'; }).join('') +
+      '<div class="prose">' + x[1] + '</div></section>';
   }
+  /* 类名不叫 xp：site.css 的 .xp 是资料页那一行的容器，带 margin-bottom，
+     两个页面共用外壳样式表，用同名会给每枚 chip 多加一截下外边距 */
+  function chipHtml(c) { return '<span class="wpn-xp">' + imgTag(c[1], '', '', true) + esc(c[0]) + '</span>'; }
   function saysHtml(blocks) {
     return blocks.map(function (b) {
-      return '<div class="say by-' + b[0].toLowerCase() + '"><div class="who">' + AUTHOR[b[0]] + '<b>' + esc(b[1]) +
-        '</b></div><div>' + b[2].map(function (p) { return '<p>' + p + '</p>'; }).join('') + '</div></div>';
+      /* 末一位只有组合有：这条评级说的是哪一枚固有配哪一种框架，画在评语正上方。 */
+      var roll = b[3] ? '<div class="xps">' + b[3].map(function (c) {
+        return chipHtml(c);
+      }).join('') + '</div>' : '';
+      /* 评级按维度一行一档：小棒猪给异域分「输出／清怪／高难」三档，拼成一行读不出配对 */
+      var tier = b[1].map(function (t) {
+        return '<b>' + (t[0] ? '<span class="dim">' + esc(t[0]) + '</span>' : '') + esc(t[1]) + '</b>';
+      }).join('');
+      return '<div class="say by-' + b[0].toLowerCase() + '"><div class="who">' + AUTHOR[b[0]] + tier +
+        '</div><div>' + roll + b[2].map(function (p) { return '<p>' + p + '</p>'; }).join('') + '</div></div>';
     }).join('');
   }
   function isPinned(scope, i) { return has(pins, (scope === 'armor' ? 'a:' : 'w:') + (scope === 'armor' ? AR : WR)[i][0]); }
@@ -1079,7 +1117,8 @@
     if (r[W_BR]) { chip('is:' + V.br[r[W_BR]][0], imgTag(V.br[r[W_BR]][1], '', '', true), V.br[r[W_BR]][0]); }
     chip('is:' + typeName(r), glyph(V.ty[r[W_SUB]][1]), typeName(r));
     chip('is:' + V.am[r[W_AMMO]][0], '<span class="ammo-' + r[W_AMMO] + '">' + glyph(V.am[r[W_AMMO]][1]) + '</span>', V.am[r[W_AMMO]][0]);
-    chip('frame:' + fr[0], imgTag(fr[1], '', '', true), fr[0]);
+    /* 固有随机的那把没有单一框架，这一枚 chip 会把其中一枚说成固定的 */
+    if (!intrinsicCol(i)) { chip('frame:' + fr[0], imgTag(fr[1], '', '', true), fr[0]); }
     chip('is:' + rarity(r), '', rarity(r));
     chip('season:' + r[W_SSN], '', 'S' + r[W_SSN]);
     if (r[W_SRC] >= 0) { chip('source:' + V.src[r[W_SRC]], '', V.src[r[W_SRC]]); }

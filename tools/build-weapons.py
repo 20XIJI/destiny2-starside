@@ -51,7 +51,7 @@ TIER_KINDS = frozenset({'weapon_tiering_kill_vfx', 'weapon_tiering_tier5_skins',
 
 # 词条栏的栏名，按插槽类型白名单首项认。特征栏写「Perk 1／Perk 2」，起源栏用站内
 # 的「起源特性」，其余取 Bungie 给这类插件的类型名。认不出的类型当场中止，不猜。
-LABEL = {'barrels': '枪管', 'magazines': '弹匣', 'magazines_gl': '弹匣',
+LABEL = {'intrinsics': '固有', 'barrels': '枪管', 'magazines': '弹匣', 'magazines_gl': '弹匣',
          'origins': '起源特性', 'scopes': '瞄准镜', 'tubes': '发射器枪管',
          'batteries': '电池', 'stocks': '枪托', 'blades': '刀片', 'guards': '刀剑格',
          'bowstrings': '弓弦', 'arrows': '箭矢', 'hafts': '把手', 'grips': '握把',
@@ -201,13 +201,18 @@ class Build:
         return out
 
     def columns(self, h):
-        """词条栏：[[栏名, 角色, 格…], …]。固有与装备栏不在这里。"""
+        """词条栏：[[栏名, 角色, 格…], …]。装备栏不在这里，固有栏只在随机时进来。
+
+        固有栏画在「异域特性」那一块，一把枪一枚，所以通常不进这张表。故我在例外：
+        它的固有栏是 8 枚互不相干的异域内在随机开一枚，插着的那一枚只是一次掉落，
+        整栏列出来读者才看得见开得出什么。
+        """
         cols, trait = [], 0
         for col in self.f.pool(h):
             if col.get('gear') or col['kind'] == CATALYST_KIND:
                 continue
             role = ((self.f.socket_types.get(str(col['type'])) or {}).get('derived') or {}).get('kind')
-            if role == 'intrinsic':
+            if role == 'intrinsic' and not col.get('rand'):
                 continue
             if col['kind'] == TRAIT:
                 trait += 1
@@ -217,7 +222,8 @@ class Build:
                 label = LABEL.get(col['kind'])
                 if not label:
                     markup.die('%s 有一栏认不出：%s，补进 build-weapons.LABEL' % (h, col['kind']))
-                role = 'origin' if role == 'origin' else 'stat'
+                if role not in ('intrinsic', 'origin'):
+                    role = 'stat'
             plugs = list(col.get('plugs') or ()) or ([col['init']] if col.get('init') else [])
             cells = self.cells(plugs, h)
             if cells:
@@ -364,34 +370,81 @@ def source_of(b, h, authors):
     return got[3:] if got.startswith('来源：') else ''
 
 
-def author_blocks(b, authors):
-    """作者评语：[[作者, 评级, [段落 HTML…]], …]。"""
+def rolls_of(F, h):
+    """挂在这件装备的组合记录上的评级，好的在前。
+
+    故我在的评级不在本体名下：一条评级说的是「哪一枚固有配哪一种框架」，所以写在
+    组合记录上（`kind: 组合`，`members` 第一位是装备本身）。本体那一行因此没有评级，
+    要把这几条搬回来才看得见。
+    """
     out = []
-    a = authors.get('Aegis')
-    if a:
-        texts = [a.get('explanation_1')]
-        out.append(['Aegis', plain(a.get('aegis_tier') or '').strip(), texts])
-    lg = authors.get('LGpig')
-    if lg:
-        texts = [lg.get(k) for k in ('lgpig_tier_explanation', 'notes', 'explanation_1',
+    for rec in F.minted.values():
+        got = [str(m) for m in rec.get('members') or ()]
+        if rec.get('kind') != '组合' or not got or got[0] != h:
+            continue
+        # 自发主键的作者块沿用源表的中文列名作键（见 CLAUDE.md），翻成武器记录那一套
+        # 字段名，评级与理由才取得到。
+        au = {who: {rows.AUTHOR_FIELDS[who].get(k, k): v for k, v in blk.items()}
+              for who, blk in rows.authors_of(rec).items() if who in rows.AUTHOR_FIELDS}
+        if any(au.values()):
+            out.append({'parts': got[1:], 'au': au})
+    out.sort(key=lambda r: rank_of(r['au']))
+    return out
+
+
+def tier_pairs(raw):
+    """评级那一格 → [[维度, 档位]…]。
+
+    小棒猪给异域按标签维度分档，一格里写着「高难：T0.5\\\\输出：T1」。拼成一行
+    「高难T0.5 输出T1」交给页面，26px 的窄栏会从「高」「难」之间断开，读者也看不出
+    哪一档属于哪个维度。没写维度的（「T0」「特殊用途」，314 条里 232 条）维度留空。
+    """
+    out = []
+    for seg in parts(raw):
+        dim, sep, tier = seg.partition('：')
+        out.append([dim, tier] if sep else ['', dim])
+    return out
+
+
+def one_author_block(b, who, au, parts_=None):
+    """一位作者一块：[作者, [[维度, 档位]…], [段落 HTML…]]，组合的那几块多一位成员图标。"""
+    if who == 'Aegis':
+        texts = [au.get('explanation_1')]
+        grade = tier_pairs(au.get('aegis_tier') or '')
+    else:
+        texts = [au.get(k) for k in ('lgpig_tier_explanation', 'notes', 'explanation_1',
                                      'explanation_2', 'explanation_3')]
-        grade = ' '.join(parts(lg.get('lgpig_tier') or lg.get('role') or '')).replace('：', '')
-        out.append(['LGpig', grade, texts])
-    for block in out:
-        block[2] = [markup.inline(t.replace(markup.CELL_BREAK, '<br>'), rich=True)
-                    for t in block[2] if t and t.strip()]
-    return [x for x in out if x[1] or x[2]]
+        grade = tier_pairs(au.get('lgpig_tier') or au.get('role') or '')
+    paras = [markup.inline(t.replace(markup.CELL_BREAK, '<br>'), rich=True)
+             for t in texts if t and t.strip()]
+    if not (grade or paras):
+        return None
+    block = [who, grade, paras]
+    if parts_:
+        block.append([[b.f.name(m), stem((b.f.at(m) or {}).get('icon'))] for m in parts_])
+    return block
+
+
+def author_blocks(b, authors, rolls=()):
+    """作者评语：[[作者, [[维度, 档位]…], [段落 HTML…], [[成员名, 图标]…]], …]。
+    末一位只有组合有。"""
+    out = [one_author_block(b, who, authors[who]) for who in ('Aegis', 'LGpig') if authors.get(who)]
+    for roll in rolls:
+        out += [one_author_block(b, who, roll['au'][who], roll['parts'])
+                for who in ('Aegis', 'LGpig') if roll['au'].get(who)]
+    return [x for x in out if x]
 
 
 def exotic_block(b, h):
     """异域的站内详情：[[名字, 图标]…] 与正文 HTML。与异域武器、异域护甲两页那一格
     是同一份正文，取法只在 rows.py 一处。"""
     rec = b.f.items[h]
-    names, _ = rows.exotic_perks(h)
-    chips = []
-    for n, k in names.items():
-        r = b.f.at(k) or {}
-        chips.append([n, stem(r.get('icon')) if r.get('icon') and not k.startswith('perk:') else ''])
+    got = rows.exotic_perks(h)
+    # 图与名字分两份取：催化剂那几条的名字是它给的效果，图在催化剂或那枚 Perk 上。
+    # 末一位是选项组号：一个插槽只插得下一枚，页面按组号把它们框起来。
+    of = {n: i for i, group in enumerate(got.picks) for n in group}
+    chips = [[n, stem((b.f.at(got.icons[n]) or {}).get('icon'))] + ([of[n]] if n in of else [])
+             for n in got.names]
     text = rows.exotic_text(h, rec['i18n'][resolve.ZH].get('realgame_details', ''))
     return [chips, b.site_html(text)] if text else [chips, '']
 
@@ -414,7 +467,7 @@ def build(facts):
         info[h] = {'name': name, 'stripped': ADEPT_TAIL.sub('', name) if adept else name,
                    'season': d.get('season') or 0, 'adept': adept, 'holo': bool(r.get('isHolofoil')),
                    'cols': cols, 'authors': zh.get('site_authors') or {},
-                   'cells': sum(len(c[2]) for c in cols)}
+                   'rolls': rolls_of(F, h), 'cells': sum(len(c[2]) for c in cols)}
 
     groups = collections.defaultdict(list)
     for h, x in info.items():
@@ -430,10 +483,13 @@ def build(facts):
             for k, v in info[h]['authors'].items():
                 merged.setdefault(k, v)
         info[rep]['group_authors'] = merged
+        # 评级写在组合上时（故我在），卡片徽标与开屏排序取最好的那一条
+        info[rep]['rated'] = merged or (info[rep]['rolls'][0]['au']
+                                        if info[rep]['rolls'] else {})
         for h in members:
             rep_of[h] = rep
         reps.append(rep)
-    reps.sort(key=lambda h: (rank_of(info[h]['group_authors']), -len(info[h]['group_authors']),
+    reps.sort(key=lambda h: (rank_of(info[h]['rated']), -len(info[h]['rated']),
                              weapons[h]['itemSubType'], -info[h]['season'], info[h]['name']))
     others = sorted((h for h in weapons if rep_of[h] != h),
                     key=lambda h: (reps.index(rep_of[h]), info[h]['adept'], info[h]['holo']))
@@ -486,7 +542,7 @@ def build(facts):
             list(SLOT).index(r['inventory']['bucketTypeHash']), d.get('breakerType') or 0,
             x['season'], r['inventory']['tierType'], flags, stem(r.get('icon')),
             stem(r.get('iconWatermark')), frame_idx[fr_h], source_idx.get(src, -1),
-            grades(authors) if rep_of[h] == h else 0, row_of[rep_of[h]], fam_of[h],
+            grades(x['rated']) if rep_of[h] == h else 0, row_of[rep_of[h]], fam_of[h],
             resolve.text(r, lang='en') or ''])
         base = collections.Counter()
         present = []
@@ -506,7 +562,7 @@ def build(facts):
         if flavor:
             wtext_fl[h] = flavor
         if rep_of[h] == h:
-            blocks = author_blocks(b, authors)
+            blocks = author_blocks(b, authors, x['rolls'])
             if blocks:
                 wauthors[h] = blocks
         if r['inventory']['tierType'] == 6:
@@ -555,7 +611,7 @@ def build(facts):
         if src and src not in source_idx:
             source_idx[src] = len(sources)
             sources.append(src)
-        names, _ = rows.exotic_perks(h)
+        names = rows.exotic_perks(h).names
         perks = []
         for n, k in names.items():
             pr = F.at(k) or {}
@@ -622,7 +678,8 @@ def build(facts):
              for h, v in b.plugs.items()]
     groups = {gh: [[sidx[str(x[0])]] + x[1:] for x in rows_] for gh, rows_ in b.groups.items()}
     cell_lists, mw_lists, mod_lists = Table(), Table(), Table()
-    role_code = {'stat': 0, 'trait': 1, 'origin': 2}
+    # 固有单列一档：它不进枪管弹匣那一截属性，也不算 Perk 1／Perk 2。
+    role_code = {'stat': 0, 'trait': 1, 'origin': 2, 'intrinsic': 3}
     wp = []
     for h in order:
         group, base, cols, (tiered, rec, opts), mods, cats = wpool[h]

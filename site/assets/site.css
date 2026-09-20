@@ -2857,10 +2857,23 @@ body:has(.hero) {
 .r-exotic > .x-au-who { grid-column: 2; }
 .r-exotic > .x-au-body { grid-column: 3; }
 .r-exotic .r-id > img { width: 56px; height: 56px; }
-.xp { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-.xp > img { width: 28px; height: 28px; border-radius: 50%; }
+.xp { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; margin-bottom: 6px; }
+.xp:last-of-type { margin-bottom: 8px; }
+.xp-1 { display: inline-flex; align-items: center; gap: 8px; }
+/* 一个插槽只插得下一枚：框起来并标出几选一，否则并排列着读成几条都生效 */
+.xp-pick {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  padding: 4px 12px;
+  border: 1px solid var(--hair-lit);
+  border-radius: 999px;
+}
+
+.xp-of { color: var(--bone-dim); font: 400 11.5px var(--font-body); letter-spacing: .06em; }
+.xp-1 > img { width: 28px; height: 28px; border-radius: 50%; }
 .xp-n { font: 600 14.5px var(--font-cn); color: var(--exotic); }
-.xp-n + .xp-n::before { content: "／"; color: var(--bone-faint); margin-right: 8px; font-weight: 400; }
 
 /* 定位标签：不可点，所以不带边框（边框是 .toggle 与 .op 的静置长相，
    design.md 五之二），只铺一层白叠色。放在 <b> 里：里面常有着色 span，

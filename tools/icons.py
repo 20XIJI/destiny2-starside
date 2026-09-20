@@ -136,6 +136,7 @@ def wanted():
     """
     sys.path.insert(0, os.path.join(shell.ROOT, 'tools'))
     import resolve
+    import rows
     facts = resolve.Facts()
     need = {}
 
@@ -174,6 +175,11 @@ def wanted():
         for col in facts.pool(key):
             for one in list(col.get('plugs') or ()) + ([col['init']] if col.get('init') else []):
                 add(str(one), 64)
+        # 选项槽里的异域插件（英勇利刃那三枚核心）不在 pool() 里：那一栏按
+        # plugCategoryIdentifier 落在可选模组之外，整栏被 _gear_keep 摘掉。
+        for group in rows.option_plugs(row):
+            for one in group:
+                add(one, 64)
     for path in CHROME.values():
         need.setdefault(path, 96)
     for path in list(CHAMP.values()) + list(ELEM.values()):

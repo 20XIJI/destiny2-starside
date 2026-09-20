@@ -88,6 +88,7 @@ _FACTS = None
 _USERS = None
 _TYPES = None
 _ELSEWHERE = None
+_CLAIMED = None
 
 
 def facts():
@@ -289,7 +290,9 @@ def reach(key):
     if combo(rec):
         plugs = [str(m) for m in rec.get('members', [])[1:]]
     else:
-        plugs = perk_plugs(rec, pools=True) + [str(c) for c in (rec.get('derived') or {}).get('catalyst') or ()]
+        plugs = (perk_plugs(rec, pools=True)
+                 + [h for g in option_plugs(rec) for h in g]
+                 + [str(c) for c in (rec.get('derived') or {}).get('catalyst') or ()])
     out = []
     for h in plugs:
         for one in [h] + ['perk:%s' % p['perkHash'] for p in (facts().at(h) or {}).get('perks') or ()]:
@@ -298,26 +301,42 @@ def reach(key):
     return out
 
 
+def claimed():
+    """被组合记录点名的成员（第一位是装备本身，不算）。
+
+    一枚固有归组合行：站内关于电弧导体的话写在「故我在（电弧元素）」那一行上，装备
+    那一行不再列它的名字，也不合它的正文。故我在的固有栏与刀剑框架栏都是随机池
+    （8 枚固有、5 种框架），插着的那一枚只是一次掉落，列在装备行上读者会当成固定的。
+
+    判据是记录自己的 kind，与它出现在哪一页无关：同几枚固有在异域武器详解页与刷取
+    清单页各组过一次合，两处的认领是同一件事。
+    """
+    global _CLAIMED
+    if _CLAIMED is None:
+        _CLAIMED = set()
+        for key, rec in facts().minted.items():
+            if combo(rec):
+                _CLAIMED.update(reach(key))
+    return _CLAIMED
+
+
 def users():
     """异域两页每一枚宿主被几行够得着。只被一行够得着的，它的正文才属于那一行。
 
     同一枚效果常挂在好几件东西上（「治疗弹匣」既是朱雀意图之刃的催化剂，也是武器
     PERK 页的一行），那段文字是别处写的，合进这一行等于把别页的正文抄过来。
-    组合行点名的成员归组合，不算进装备那一行。
+    组合点名的成员归组合，不算进装备那一行。
     """
     global _USERS
     if _USERS is None:
         _USERS = collections.Counter()
-        claimed = set()
         for page in EXOTIC:
             for head in heads(page):
-                rec = facts().at(head) or {}
-                if combo(rec):
-                    claimed.update(reach(head))
+                if combo(facts().at(head)):
                     continue
                 for h in reach(head):
                     _USERS[h] += 1
-        for h in claimed:
+        for h in claimed():
             _USERS[h] = 0
     return _USERS
 
@@ -380,38 +399,135 @@ def author_block(rec, who):
     return authors_of(rec).get(who) or {}
 
 
+EMPTY_SOCKET = 'crafting.recipes.empty_socket'
+EMPTY_SLOT = re.compile(r'^空.*插槽$')
+# 选项槽扫的是「剩下那些」：固有、特征、催化、击杀记录器、外观各有归处。
+OPTION_SKIP = frozenset({'intrinsic', 'trait', 'masterwork', 'tracker', 'cosmetic'})
+
+# 「异域 PERK」那一格交出来的四样。picks 是一池多选的那几组，组里的名字都在 names 里。
+Perks = collections.namedtuple('Perks', 'names first icons picks')
+
+
+def socket_pool(e):
+    """一个插槽插得进去的全部插件：初始那枚、内联那几枚、插件池里那些。"""
+    out = []
+    if e.get('singleInitialItemHash'):
+        out.append(str(e['singleInitialItemHash']))
+    out += [str(p['plugItemHash']) for p in e.get('reusablePlugItems') or ()]
+    for field in ('reusablePlugSetHash', 'randomizedPlugSetHash'):
+        if e.get(field):
+            out += [str(p['plugItemHash']) for p in
+                    (facts().plug_sets.get(str(e[field])) or {}).get('reusablePlugItems') or ()]
+    return list(dict.fromkeys(out))
+
+
+def option_plugs(rec):
+    """选项槽里的异域插件，一槽一组：英勇利刃的冲击核心／折射核心／陀螺核心那一栏。
+
+    判据是「插得进去的是异域品阶的东西」。同一批槽里还有形态、属性模组与水晶颜色，
+    都是传说及以下，按这一条自然落在外面。两页 494 行里只有英勇利刃命中。
+    """
+    out = []
+    for e in (rec.get('sockets') or {}).get('socketEntries') or ():
+        if socket_kind(e) in OPTION_SKIP:
+            continue
+        got = [h for h in socket_pool(e)
+               if ((facts().at(h) or {}).get('inventory') or {}).get('tierType') == 6
+               and name_of(h) and not EMPTY_SLOT.match(name_of(h))]
+        if got:
+            out.append(got)
+    return out
+
+
+def live_catalyst(c):
+    """任务态那条不算。解锁前的催化剂在库里另有一条，跟着武器叫（SUROS政权那把叫
+    「升级大师杰作」）、品阶普通、给的效果没名字，三条合起来只有这一枚。"""
+    rec = facts().at(c) or {}
+    return ((rec.get('inventory') or {}).get('tierType') == 6
+            or any(name_of('perk:%s' % p['perkHash']) for p in rec.get('perks') or ()))
+
+
+def perk_item(pk):
+    """一条效果落在哪件插件上：`onItems` 里与它同名、又有图的那件，没有就回 None。
+
+    催化剂有两种。一种给的是现成的武器 Perk（墓园双星的「目标锁定」、零号修订的
+    「不法之徒」），那条效果同时挂在那枚插件上，图取插件自己的；另一种是这把枪独有的
+    效果（故我在的「超凡钢铁」），库里只有催化剂那件东西带图。179 条里前者 103 条。
+    同名两件是基础版与强化版，取不带 `sameAs` 的那一件。
+    """
+    n = name_of(pk)
+    got = [str(i) for i in (facts().at(pk) or {}).get('onItems') or ()
+           if name_of(str(i)) == n and icon_file(str(i))]
+    if not got:
+        return None
+    return next((h for h in got if not (facts().at(h) or {}).get('sameAs')), got[0])
+
+
 def exotic_perks(key):
-    """「异域 PERK」那一格：({名字: 主键}, 取图的那一枚)。第一枚的图，固有与特征的
-    名字，↑催化剂给的效果名。名字按格里的顺序排，主键交给页面索引，不再按名字反查。
+    """「异域 PERK」那一格：`Perks(names, first, icons, picks)`。固有与
+    特征的名字，↑催化剂给的效果名。名字按格里的顺序排，主键交给页面索引，不再按
+    名字反查。
+
+    **图与主键分两份交出**：催化剂那一条写的是它给的效果（`perk:…`），效果自己没有
+    图，图在催化剂那件东西上。合成一份的话，要么丢主键、要么丢图。
 
     与武器同名的固有框架（朱雀意图之刃那一枚）不列：名字不带信息。护甲的异域 perk
     常与护甲同名（爆炸波行者），照列。没有固有与特征栏的（永劫教派三件）列物品自己
-    挂的效果。催化剂的效果没有名字时列催化剂自己的名字。
+    挂的效果。催化剂的效果没有名字时列催化剂自己的名字。组合点名过的不列，见
+    claimed()。空插槽占位（死亡信使那一栏插着「空特征插槽」）不列：它不是一条 Perk，
+    库里也没给它图。催化剂那几条的图按 perk_item() 分流。
+
+    `picks` 是一池多选的那几组：一个插槽只插得下一枚，页面上要标出来，否则四枚
+    催化剂并排列着，读者会当成四条都生效。组里的名字都在 `names` 里，按格里的顺序。
     """
     rec = facts().at(key) or {}
     frame = None
     if combo(rec):
         plugs = [str(m) for m in rec.get('members', [])[1:]]
-        catalysts = []
+        catalysts, options = [], []
     else:
-        plugs = perk_plugs(rec) or ['perk:%s' % p['perkHash'] for p in rec.get('perks') or ()]
-        catalysts = [str(c) for c in (rec.get('derived') or {}).get('catalyst') or ()]
+        plugs = [h for h in perk_plugs(rec) if h not in claimed()] or \
+            ['perk:%s' % p['perkHash'] for p in rec.get('perks') or ()]
+        catalysts = [str(c) for c in (rec.get('derived') or {}).get('catalyst') or ()
+                     if live_catalyst(str(c))]
+        options = option_plugs(rec)
         arch = (rec.get('derived') or {}).get('archetype')
         if arch and name_of(str(arch)) == zh(rec).get('name'):
             frame = str(arch)
-    names, first = {}, None
+    names, icons, picks, first = {}, {}, [], None
     for h in plugs:
         n = name_of(h)
-        if not n or h == frame or n in names:
+        pci = ((facts().at(h) or {}).get('plug') or {}).get('plugCategoryIdentifier')
+        if not n or h == frame or n in names or pci == EMPTY_SOCKET:
             continue
-        names[n] = h
+        names[n] = icons[n] = h
         first = first or h
+    for got in options:
+        group = []
+        for h in got:
+            n = name_of(h)
+            if n in names:
+                continue
+            names[n] = icons[n] = h
+            group.append(n)
+        if len(group) > 1:
+            picks.append(group)
+    chosen = []
     for c in catalysts:
         got = [('perk:%s' % p['perkHash'], name_of('perk:%s' % p['perkHash']))
                for p in (facts().at(c) or {}).get('perks') or ()]
         for h, n in [x for x in got if x[1]] or [(c, name_of(c))]:
-            names.setdefault('↑' + n, h)
-    return names, first
+            if '↑' + n in names:
+                continue
+            names['↑' + n] = h
+            icons['↑' + n] = perk_item(h) or c
+            chosen.append('↑' + n)
+    # 催化槽一池多选的那 11 把（库尔之影四枚魂火、墓园双星四个改装）：装上的只有
+    # 一枚。一枚催化剂给几条效果是另一回事（条件终局那枚同时给治疗弹匣与霜华窃取者），
+    # 所以按催化剂的枚数判，不按名字条数。
+    if len(catalysts) > 1 and len(chosen) > 1:
+        picks.append(chosen)
+    return Perks(names, first, icons, picks)
 
 
 # ── 矩阵表 ────────────────────────────────────────────────────────────
@@ -536,7 +652,7 @@ class Table:
         if f == 'icon':
             return self.icon(key, title)
         if page in EXOTIC and f == '异域 PERK':
-            names, first = exotic_perks(key)
+            names, first = exotic_perks(key)[:2]
             self.perks = names
             if not names:
                 self.problem(title, col, '插槽与催化剂里没有叫得出名字的')
