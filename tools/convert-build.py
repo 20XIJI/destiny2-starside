@@ -61,8 +61,12 @@ def must_title(rec, msg):
 
 
 def guns(rec) -> 'list[dict]':
-    """这一套的传说武器：[{名字, 词条}]。记录里本来就是切好的一对。"""
-    return list(migrate.flat(rec).get('传说武器') or [])
+    """这一套的传说武器：`[{名字, 词条}]`，值都取成「名字#主键」那一段。
+
+    记录里本来就是切好的一对；这里只把主键接回名字后面，让下游与别的槽位同形。
+    """
+    return [{'名字': migrate.show(g), '词条': [migrate.show(p) for p in g.get('词条') or ()]}
+            for g in migrate.flat(rec).get('传说武器') or []]
 
 
 def where(rec):
@@ -82,7 +86,12 @@ def meta(rec, key, required=True):
             die('源稿缺「%s：」一行%s' % (key, where(rec)))
         return ''
     v = got[key]
-    return '、'.join(v) if isinstance(v, list) else (v or '')
+    # 值是 `{名字, 主键}` 一对，取成「名字#主键」那一段：查表按主键，显示要名字，
+    # 两者在同一段里，取用的人按 vocab.cut() 分开。切法只有 migrate.show() 一处。
+    if key == migrate.SETS:
+        return ' × '.join(migrate.show_set(x) for x in v)
+    return ('、'.join(migrate.show(x) for x in v) if isinstance(v, list)
+            else (migrate.show(v) or ''))
 
 
 def names(rec, key, required=True):
@@ -94,8 +103,8 @@ def names(rec, key, required=True):
         return []
     v = got[key]
     if isinstance(v, list):
-        return list(v)
-    return [x.strip() for x in v.split('、') if x.strip()]
+        return [migrate.show(x) for x in v]
+    return [x.strip() for x in migrate.show(v).split('、') if x.strip()]
 
 
 # 格档 → 图标边长。主角格（异域、传说枪、套装）56，配料格 32，rig 里的 Perk 24。
@@ -395,7 +404,7 @@ def exotic_gun(md):
     """
     got = migrate.flat(md).get('异域武器')
     if isinstance(got, dict):
-        return got['名字'], list(got.get('词条') or ())
+        return migrate.show(got), [migrate.show(p) for p in got.get('词条') or ()]
     return (got or ''), []
 
 
@@ -404,8 +413,14 @@ EX_IDX = None
 
 def ex_perk_slot(name):
     """异域的词条查哪个槽：先看异域武器详解页上它自己那一条，没有再落回武器 PERK
-    页。零号修订那一列可 roll 的词条在后一处，故我在的固有在前一处。"""
-    got = (EX_IDX or {}).get(vocab.key_of(name)) or ()
+    页。零号修订那一列可 roll 的词条在后一处，故我在的固有在前一处。
+
+    源稿写了主键就按主键判：同名的两条（故我在的狼群弹药与加拉尔号角的那一条）
+    各在各的槽，按名字判会判到先登记的那一条上去。"""
+    bare, key = vocab.cut(name)
+    if key:
+        return '异域词条' if vocab.by_key(key, '异域词条') else 'Perk'
+    got = (EX_IDX or {}).get(vocab.key_of(bare)) or ()
     return '异域词条' if any(e.get('kind') == '异域词条' for e in got) else 'Perk'
 
 
@@ -421,7 +436,7 @@ def exotic_armor(md):
             '三项，源稿写的是 %r' % '、'.join(got))
     if len(got) > 3:
         die('「异域护甲：」最多三项，源稿写的是 %r' % '、'.join(got))
-    if len(got) == 3 and not all(n.endswith(SPIRIT) for n in got[1:]):
+    if len(got) == 3 and not all(vocab.bare(n).endswith(SPIRIT) for n in got[1:]):
         die('「异域护甲：」写三项只有异域职业物品那一种，后两项都得是「…%s」，'
             '源稿写的是 %r' % (SPIRIT, '、'.join(got)))
     return got
@@ -461,7 +476,9 @@ def page_items(md):
 def core_pick(idx, md, prefer):
     """核心那枚 96px 的图。可以是本页配过的任一件东西，不限异域。"""
     core = meta(md, '核心')
-    hit = [x for x in page_items(md) if x[0] == core]
+    # **核心不戳主键**：它是一个指回本页某一格的引用，不是独立的一件东西，
+    # 所以按名字回查那一格，主键从那一格上拿。
+    hit = [x for x in page_items(md) if vocab.bare(x[0]) == core]
     if not hit:
         die('「核心：」要等于本页配过的某一件东西，源稿写的是 %r' % core)
     return vocab.pick(idx, core, hit[0][1], kind=hit[0][2], prefer=prefer)
@@ -538,7 +555,7 @@ def branch_of(md):
 
 
 def class_of(md):
-    who = meta(md, '职业')
+    who = vocab.bare(meta(md, '职业'))
     if who not in CLASSES:
         die('「职业：」要写猎人、泰坦、术士之一，源稿写的是 %r' % who)
     return who
@@ -1145,7 +1162,7 @@ def build(idx, dirname, season, name_cn, slug):
         else:
             branch = meta(md, '分支')
             core = icon_of(core_pick(idx, md, 'elements/%s' % BRANCH[branch]), 64)
-            cls = meta(md, '职业')
+            cls = class_of(md)
             scenes = scene_of(md)
             tags = tags_of(md, scenes)
         return {'u': '%s/%s/%s/index.html' % (OUT_DIR, season, slug), 't': title,
@@ -1420,7 +1437,9 @@ def render_vocab(idx):
     与生成器查的是同一份词表，所以填表页列得出来的名字，生成器一定查得到；
     表只建一次，两处用。一条一行，git 存得下增量。
 
-    一行七列 [名字, 分节, 页面, 图标, 着色, 副名, 位置]，尾部的空列剥掉。
+    一行八列 [名字, 分节, 页面, 图标, 着色, 副名, 位置, 主键]，尾部的空列剥掉。
+    **主键是唯一真相**：填表页写出的源稿在名字后面接 `#主键`，生成器按它查表，
+    站内改名不再牵动源稿。
     位置只有神器模组给（'行,档'），填表页照它把选择器摆成 7 列 × 3 行。页面那一列是
     填表页收窄候选的依据：源稿一选「分支：棱镜」，五个技能槽就只留 elements/
     prismatic 那一页的条目——与生成器 vocab.pick(prefer=…) 同一条规则。
@@ -1448,7 +1467,8 @@ def render_vocab(idx):
                 if e['page'] in pages:
                     by_slot.setdefault(slot, set()).add(
                         (e['name'], e['kind'], e['page'], e['icon'],
-                         e['token'], e.get('sub', ''), e.get('pos', '')))
+                         e['token'], e.get('sub', ''), e.get('pos', ''),
+                         str((e.get('keys') or [''])[0])))
     # 页面集合相同的槽位共用一份列表，键取头一个用到它的槽位名。
     # 共用一份列表的判据是「页面集合 + 钉死的分节」都相同：异域武器与异域词条同页，
     # 只按页面并会让后者拿到前者那一份。
@@ -1460,7 +1480,8 @@ def render_vocab(idx):
     # 位移技能不在 vocab.SLOTS 里——它没有来源页，名字与图标来自官方物品表。
     # 填表页照样要选得到，所以在这里并成一份普通的列表。
     for kind, tag in (('移动', '位移技能'), ('神器本体', '神器')):
-        by_slot[kind] = {(n, tag, '', icon, '', '', '') for n, icon in extra(kind).items()}
+        by_slot[kind] = {(n, tag, '', icon, '', '', '', '')
+                         for n, icon in extra(kind).items()}
         owner[('__%s__' % kind,)] = kind
         slots[kind] = kind
     rows = []

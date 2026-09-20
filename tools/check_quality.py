@@ -328,6 +328,73 @@ class CellSplitting(unittest.TestCase):
 
 
 
+class BuildKeys(unittest.TestCase):
+    """配装源稿的槽位值写成 `名字#主键`，**主键是唯一真相**。
+
+    从前写的是名字：站内一改名，120 篇源稿跟着改；同名不同物还要靠人写的消歧括注。
+    改成主键之后这两样都不必了，代价是每一格都得有主键、且查得到——下面各一条。
+    名字留作显示与人读 diff，对不上只报一行、不中止（vocab.NAME_DRIFT）。
+    """
+
+    SITE = TOOLS.parent / 'site'
+
+    # 源稿的键 → 它查哪个槽位。护甲那五个部位查「护甲模组」，模组查「神器」。
+    SLOT_OF = {'职业': '职业', '超能': '超能', '手雷': '手雷', '近战': '近战',
+               '星相': '星相', '碎片': '碎片', '职业技能': '职业技能',
+               '异域护甲': '异域护甲', '头盔': '护甲模组', '护臂': '护甲模组',
+               '胸甲': '护甲模组', '腿部': '护甲模组', '职业物品': '护甲模组',
+               '模组': '神器'}
+
+    @staticmethod
+    def lines():
+        """每篇源稿写回 markdown 之后的每一行：`(篇名, 键, 值)`。
+
+        走 write() 而不是直接读记录：那是导出格式，填表页与审核台看见的就是它。
+        """
+        sys.path.insert(0, str(TOOLS))
+        import migrate
+        for path in sorted(TOOLS.parent.glob('references/builds/*/*.json')):
+            for line in migrate.write(migrate.load(str(path))).split('\n'):
+                key, sep, val = line.partition('：')
+                if sep and val.strip():
+                    yield path.name, key.strip(), val.strip()
+
+    def test_every_slot_value_carries_a_key(self):
+        """一格一个主键。缺了就是旧格式混进来了，而两种写法并存时改一处就漏一处。"""
+        sys.path.insert(0, str(TOOLS))
+        import migrate
+        bad = []
+        for name, key, val in self.lines():
+            if key not in self.SLOT_OF:
+                continue
+            for seg in val.split('、'):
+                if migrate.MARK not in seg:
+                    bad.append('%s｜%s：%s' % (name, key, seg))
+        self.assertEqual(bad[:6], [], '%d 个槽位值没有主键' % len(bad))
+
+    def test_every_key_lands_on_a_row_the_form_can_pick(self):
+        """主键查得到。查不到说明那一页删了那一行，或者主键抄错了。"""
+        sys.path.insert(0, str(TOOLS))
+        import migrate
+        text = (self.SITE / 'builds' / 'vocab.js').read_text(encoding='utf-8')
+        slots = json.loads(markup.must(
+            re.search(r'^slots: (\{.*\})[,;]?$', text, re.M),
+            'builds/vocab.js 里没有 slots').group(1))
+        keys = {slot: {r[7] for r in ArtifactPicker.rows(text, owner)
+                       if len(r) > 7 and r[7]}
+                for slot, owner in slots.items()}
+        bad = []
+        for name, key, val in self.lines():
+            slot = self.SLOT_OF.get(key)
+            if not slot:
+                continue
+            for seg in val.split('、'):
+                got = seg.partition(migrate.MARK)[2].strip()
+                if got and got not in keys.get(slot, ()):
+                    bad.append('%s｜%s：%s' % (name, key, seg))
+        self.assertEqual(bad[:6], [], '%d 个主键在词表里查不到' % len(bad))
+
+
 class FormCandidates(unittest.TestCase):
     """填表页每一格只列这一格选得出来的。
 

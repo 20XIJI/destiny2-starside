@@ -46,7 +46,14 @@ SECT_KEYS = dict(SECTIONS)
 
 # 切成数组的键。传说武器另有一套切法（枪名 | 词条、词条），单独处理。
 MULTI = frozenset({'星相', '碎片', '手雷', '近战', '职业技能', '移动', '模组',
-                   '头盔', '护臂', '胸甲', '腿部', '职业物品', '场景', '标签'})
+                   '头盔', '护臂', '胸甲', '腿部', '职业物品', '场景', '标签',
+                   # 异域职业物品那一格写「职业物品、之灵、之灵」三件，各是一件
+                   # 自己的东西，各戳自己的主键，所以切开存。
+                   '异域护甲'})
+# 套装那一格是「名字 N 件 × 名字 N 件」：一到两条套装效果，件数落在格子上。
+# 切成 [{名字, 件数}]，与传说武器那一对同构，主键因此有地方落。
+SETS = '套装'
+SET_SEG = re.compile(r'^(.+?)\s*([24])\s*件$')
 GUN = '传说武器'
 # 异域武器也能带词条（零号修订那类可 roll 的异域），写法与传说武器同一种：
 # 「名字 | 词条、词条」。没有词条时仍是一个裸名字，110 篇旧源稿因此一个字不用改。
@@ -55,6 +62,23 @@ EX_GUN = '异域武器'
 PEOPLE = '推荐人'
 
 KEY_LINE = re.compile(r'^([^：\n]+)：(.*)$')
+
+# 主键跟在名字后面，用 # 分开：「故我在#1681583613」。名字里不出现 #，所以这一刀
+# 与 `|`、`、`、`×` 那几层不冲突。主键是唯一真相，名字留作显示与人读 diff。
+MARK = '#'
+
+
+def cut(val):
+    """一个槽位值 → `{名字, 主键}`。没戳主键的先只存名字，由 --stamp 补上。"""
+    name, sep, key = val.partition(MARK)
+    return {'名字': name.strip(), '主键': key.strip()} if sep else name.strip()
+
+
+def show(val):
+    """`{名字, 主键}` → 写回源稿的那一段。"""
+    if not isinstance(val, dict):
+        return val
+    return val['名字'] + (MARK + val['主键'] if val.get('主键') else '')
 
 
 def split_set(md):
@@ -114,20 +138,43 @@ def parse_fields(text, sect, keys):
         key, val = m.group(1), m.group(2).strip()
         if key not in keys:
             die('「%s」一节里出现没登记的键「%s」' % (sect, key))
-        if key == GUN:
+        if key in (GUN, EX_GUN) and ('|' in val or key == GUN):
             gun, _, perks = val.partition('|')
-            out.setdefault(key, []).append(
-                {'名字': gun.strip(),
-                 '词条': [x.strip() for x in perks.split('、') if x.strip()]})
-        elif key == EX_GUN and '|' in val:
-            gun, _, perks = val.partition('|')
-            out[key] = {'名字': gun.strip(),
-                        '词条': [x.strip() for x in perks.split('、') if x.strip()]}
+            got = dict(gun_of(gun.strip()),
+                       词条=[cut(x.strip()) for x in perks.split('、') if x.strip()])
+            if key == GUN:
+                out.setdefault(key, []).append(got)
+            else:
+                out[key] = got
+        elif key == EX_GUN:
+            out[key] = cut(val)
+        elif key == SETS:
+            out[key] = [cut_set(x.strip()) for x in val.split('×') if x.strip()]
         elif key in MULTI:
-            out[key] = [x.strip() for x in val.split('、') if x.strip()]
+            out[key] = [cut(x.strip()) for x in val.split('、') if x.strip()]
         else:
-            out[key] = val
+            out[key] = cut(val) if key in STAMPED else val
     return out
+
+
+# 这几个键的值戳主键。其余（六维、场景、标签、移动、推荐人）站内没有资料页条目，
+# 查不到也就戳不上，照旧只存文字。
+STAMPED = frozenset({'职业', '超能', '手雷', '近战', '职业技能', '星相', '碎片',
+                     '异域护甲', '头盔', '护臂', '胸甲', '腿部', '职业物品', '模组'})
+
+
+def gun_of(seg):
+    got = cut(seg)
+    return got if isinstance(got, dict) else {'名字': got}
+
+
+def cut_set(seg):
+    """一段套装：`名字#主键 N 件`。件数落在格子上——2 件与 4 件是两条不同的效果，
+    名字一样，不标出来分不出。"""
+    hit = must(SET_SEG.match(seg), '套装那一格写成「名字 N 件」，源稿写的是 %r' % seg)
+    got = gun_of(hit.group(1).strip())
+    got['件数'] = '%s 件' % hit.group(2)
+    return got
 
 
 def parse(md):
@@ -174,19 +221,28 @@ def dump(rec):
 # ── 写回 ──────────────────────────────────────────────────────────────
 
 
+def show_set(x):
+    """一段套装写回源稿的样子：`名字#主键 N 件`。"""
+    return '%s %s' % (show(x), x['件数'])
+
+
+def gun_line(g):
+    perks = '、'.join(show(p) for p in g.get('词条') or ())
+    return show(g) + (' | ' + perks if perks else '')
+
+
 def join(key, val):
-    if key == EX_GUN and isinstance(val, dict):
-        return ['%s：%s' % (key, val['名字'] + (' | ' + '、'.join(val['词条'])
-                                               if val['词条'] else ''))]
+    if key == SETS:
+        return ['%s：%s' % (key, ' × '.join(show_set(x) for x in val))]
+    if key == EX_GUN:
+        return ['%s：%s' % (key, gun_line(val) if isinstance(val, dict) else val)]
     if key == GUN:
-        return ['%s：%s' % (key, g['名字'] + (' | ' + '、'.join(g['词条'])
-                                             if g['词条'] else ''))
-                for g in val]
+        return ['%s：%s' % (key, gun_line(g)) for g in val]
     if key == PEOPLE:
         return ['%s：%s' % (key, v) for v in val]
     if isinstance(val, list):
-        return ['%s：%s' % (key, '、'.join(val))]
-    return ['%s：%s' % (key, val)]
+        return ['%s：%s' % (key, '、'.join(show(v) for v in val))]
+    return ['%s：%s' % (key, show(val))]
 
 
 def write_block(rec):
@@ -362,16 +418,153 @@ def first_diff(want, got):
     return '长度不同'
 
 
+# ── 戳主键 ────────────────────────────────────────────────────────────
+
+# 记录里哪些键的值要戳主键，以及它们查哪个槽位。护甲那五个部位查「护甲模组」，
+# 分节名即部位；模组查「神器」，分节名即那一件神器。
+PART_SLOTS = ('头盔', '护臂', '胸甲', '腿部', '职业物品')
+PLAIN_SLOTS = ('超能', '手雷', '近战', '职业技能', '星相', '碎片')
+
+SET_SEG = re.compile(r'^(.+?)\s*([24])\s*件$')
+
+
+def cells(rec):
+    """一套配装里要戳主键的每一格：`(槽位, 分节, 取值, 写回)`。
+
+    **顺序即同名时的优先级**，与 convert-build.page_items() 同一条：主角在前
+    （异域、传说枪、套装），配料在后。「核心：」不单列——它必须等于本页配过的某一件
+    东西，戳完之后按名字回查那一格的主键。
+    """
+    out = []
+
+    def one(slot, kind, get, put):
+        out.append((slot, kind, get, put))
+
+    def stamped(v, h):
+        """戳上主键，值上原有的别的字段（词条、件数）原样留着。"""
+        return dict(v if isinstance(v, dict) else {'名字': v}, 主键=h)
+
+    def pair(slot, kind, box, key):
+        """值是 `{名字, 主键}` 一对的那种格子。裸字符串的先当成只有名字。"""
+        one(slot, kind,
+            lambda: box[key]['名字'] if isinstance(box[key], dict) else box[key],
+            lambda h: box.__setitem__(key, stamped(box[key], h)))
+
+    def here(slot, kind, box):
+        """值本身就是一对（传说武器、套装）：主键落在这一对上，不再往里套一层。"""
+        one(slot, kind, lambda: box['名字'], lambda h: box.__setitem__('主键', h))
+
+    def item(slot, kind, seq, i):
+        one(slot, kind,
+            lambda: seq[i]['名字'] if isinstance(seq[i], dict) else seq[i],
+            lambda h: seq.__setitem__(i, stamped(seq[i], h)))
+
+    weapons = (rec.get('节') or {}).get('武器') or {}
+    if weapons.get('异域武器'):
+        pair('异域武器', None, weapons, '异域武器')
+        got = weapons['异域武器']
+        for i in range(len(got.get('词条') or ()) if isinstance(got, dict) else 0):
+            item('异域词条', None, got['词条'], i)
+    armor = (rec.get('节') or {}).get('护甲') or {}
+    for i in range(len(armor.get('异域护甲') or ())):
+        item('异域护甲', None, armor['异域护甲'], i)
+    for g in weapons.get('传说武器') or ():
+        here('传说武器', None, g)
+        for i in range(len(g.get('词条') or ())):
+            item('Perk', None, g['词条'], i)
+    for box in armor.get('套装') or ():
+        here('套装', box['件数'], box)
+    for key in PLAIN_SLOTS:
+        for sect in (rec.get('节') or {}).values():
+            if not isinstance(sect, dict) or key not in sect:
+                continue
+            if isinstance(sect[key], list):
+                for i in range(len(sect[key])):
+                    item(key, None, sect[key], i)
+            else:
+                pair(key, None, sect, key)
+    for part in PART_SLOTS:
+        for i in range(len(armor.get(part) or ())):
+            item('护甲模组', part, armor[part], i)
+    art = (rec.get('节') or {}).get('神器') or {}
+    if art.get('神器'):
+        name = art['神器']['名字'] if isinstance(art['神器'], dict) else art['神器']
+        for i in range(len(art.get('模组') or ())):
+            item('神器', name, art['模组'], i)
+    cls = (rec.get('节') or {}).get('职业') or {}
+    if cls.get('职业'):
+        pair('职业', '分节', cls, '职业')
+    return out
+
+
+def blocks(rec):
+    """一份源稿里的每一套：单套就是它自己，合集是头部加每个成员。"""
+    return [rec] + list(rec.get('成员') or ())
+
+
+def stamp(write_back=False, only=None):
+    """按现有的 vocab.pick 逐个槽位值查出主键，写进记录。
+
+    查不到的逐条打印、不写盘：一次看全比一条一中止便宜。
+    """
+    sys.path.insert(0, os.path.join(shell.ROOT, 'tools'))
+    import vocab
+    idx = vocab.build()
+    ok = miss = 0
+    bad, touched = [], 0
+    for path in sources():
+        if only and only not in path:
+            continue
+        rec = load(path)
+        changed = False
+        for block in blocks(rec):
+            branch = block.get('分支') or rec.get('分支') or ''
+            prefer = ('elements/%s' % markup.BRANCH[branch]
+                      if branch in markup.BRANCH else '')
+            for slot, kind, get, put in cells(block):
+                name = get()
+                if not name:
+                    continue
+                got, err = vocab.find(idx, name, slot, kind=kind, prefer=prefer)
+                if got is None:
+                    miss += 1
+                    bad.append((os.path.basename(path), slot,
+                                '%s：%s' % (name, (err or '').split('\n')[0])))
+                    continue
+                keys = got.get('keys') or []
+                if not keys:
+                    miss += 1
+                    bad.append((os.path.basename(path), slot, name + '（条目上没有主键）'))
+                    continue
+                ok += 1
+                if write_back:
+                    put(str(keys[0]))
+                    changed = True
+        if write_back and changed:
+            with open(path, 'w', encoding='utf-8') as f:
+                f.write(dump(rec))
+            touched += 1
+    print('槽位值 %d 个查得到主键，%d 个查不到%s'
+          % (ok, miss, '；写回 %d 篇' % touched if write_back else '（没写盘）'))
+    for name, slot, why in bad[:40]:
+        print('  %s｜%s：%s' % (name, slot, why))
+    return 1 if miss else 0
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--check', action='store_true', help='记录→markdown→记录 的回环')
     ap.add_argument('--classify', action='store_true', help='资料页该结构化还是留 markdown')
+    ap.add_argument('--stamp', action='store_true', help='给每个槽位值戳上主键')
+    ap.add_argument('--write', action='store_true', help='与 --stamp 连用：写回源稿')
     ap.add_argument('only', nargs='?', help='只跑文件名含这一段的那些')
     a = ap.parse_args()
     if a.classify:
         return classify()
+    if a.stamp:
+        return stamp(a.write, a.only)
     if not a.check:
-        ap.error('要做什么？--check 跑回环比对，--classify 给资料页分类')
+        ap.error('要做什么？--check 跑回环比对，--classify 给资料页分类，--stamp 戳主键')
     return check(a.only)
 
 

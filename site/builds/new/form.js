@@ -395,6 +395,9 @@
   }
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
 
+  /* 主键跟在名字后面，用这个字符分开。与 tools/migrate.py 的 MARK 同一个。 */
+  var MARK = '#';
+
   /* 异域那一组：枪在左，词条竖排在右。摆得出词条时它占两列，摆不出只有枪一列。
      --n 是行里的份额（枪 15、词条 10），--c 是露出来的列数，两个都是样式表算
      宽度用的；不重算的话，摆出词条的那一组仍按一格宽，枪名竖着折。 */
@@ -1255,18 +1258,19 @@
       var el = pen.querySelector('[data-key="' + key + '"]');
       if (el) setField(el, v || '');
     }
+    /* 源稿的一段 → 词表那一行。**写了主键就只按主键查**：同名不同物（故我在的
+       狼群弹药与加拉尔号角的那一条）按名字查会查到先登记的那一条上去。 */
     function rowOfName(slot, kind, name) {
       var l = slot === '元素' ? branches() : options(slot, kind);
-      var hit = l.filter(function (r) { return r[0] === name; })[0];
-      if (hit) return hit;
-      // 带消歧括注的（「隐士（冲锋枪）」）。**整名查不到才拆**：站内自加的消歧
-      // 后缀本身就是名字的一部分（「故我在（电弧元素）」），见名就拆会丢正主。
-      var m = /（([^（）]+)）$/.exec(name);
-      if (!m) return undefined;
-      var bareName = name.slice(0, m.index);
-      return l.filter(function (r) {
-        return r[0] === bareName && bare(r[1]) === m[1];
-      })[0];
+      var at = name.indexOf(MARK);
+      if (at > -1) {
+        // **按主键查就不再按分节收**：棱镜页上的星相挂在职业那一节下
+        //（「猎人」），按 kind 收会把它们整批挡掉，而主键本来就唯一。
+        var key = name.slice(at + 1);
+        var all = slot === '元素' ? l : (V.lists[V.slots[slot]] || []);
+        return all.filter(function (r) { return r[7] === key; })[0];
+      }
+      return l.filter(function (r) { return r[0] === name; })[0];
     }
     /* 收起的格子先放出来再填：留着 hidden 的格子有值，源稿里会凭空多一项。 */
     function reveal(cell) {
@@ -1316,7 +1320,7 @@
     set('注解', got.notes);
 
     // 身份先定：跟职业绑定的两个槽按它收候选，分支决定候选的排序与整页强调色。
-    var cls = one('职业');
+    var cls = one('职业').split(MARK)[0];
     if (cls && CLASS_ORDER.indexOf(cls) > -1) state.职业 = cls;
     else if (cls) skip.push('职业：' + cls);
     var br = one('分支');
@@ -1508,13 +1512,18 @@
      **元素页上的同名条目不补括注**：那一族由 vocab.pick 的 prefer（配装的分支）
      挑，而 prefer 只会是某个 elements/ 页。给棱镜配装的「地狱火」写上「（星相）」
      反倒把它钉到烈日页去——括注在 prefer 之前收窄。 */
+  /* 写进源稿的那一段：`名字#主键`。**主键是唯一真相**，生成器按它查表；名字留作
+     显示与人读 diff，站内改名不再牵动源稿。位移技能站内没有资料页条目，没有主键
+     可写，照旧只写名字。 */
   function srcName(cell) {
     var row = cell.row;
-    if (row[2].indexOf('elements/') === 0) return row[0];
-    var dup = options(cell.dataset.slot, cell.dataset.kind || '', true).some(function (r) {
-      return r[0] === row[0] && r[2] !== row[2];
-    });
-    return dup ? row[0] + '（' + bare(row[1]) + '）' : row[0];
+    return row[7] ? row[0] + MARK + row[7] : row[0];
+  }
+
+  /* 只有名字在手时补上主键（职业那一格的值由 state 算出来，不挂 .row）。 */
+  function withKey(slot, kind, name) {
+    var hit = options(slot, kind).filter(function (r) { return r[0] === name; })[0];
+    return hit && hit[7] ? name + MARK + hit[7] : name;
   }
 
   function joined(sel, scope) {
@@ -1576,7 +1585,8 @@
 
   function slotsMd() {
     var md = '\n## 职业\n\n';
-    md += line('职业', state.职业);
+    // 职业那一格的值由 state 算出来，不挂 .row，所以主键从候选里现查一次。
+    md += line('职业', state.职业 ? withKey('职业', '分节', state.职业) : '');
     md += line('超能', joined('[data-slot="超能"]'));
     md += line('星相', joined('[data-slot="星相"]'));
     md += line('碎片', joined('[data-slot="碎片"]'));
@@ -1606,7 +1616,7 @@
     md += line('套装', picked('[data-slot="套装"]').sort(function (a, b) {
       return a.row[1].localeCompare(b.row[1]);
     }).map(function (c) {
-      return c.row[0] + ' ' + c.row[1];
+      return srcName(c) + ' ' + c.row[1];
     }).join(' × '));
     PARTS.forEach(function (part) {
       md += line(part, joined('[data-kind="' + part + '"]'));
@@ -1615,7 +1625,7 @@
     md += '\n## 神器\n\n';
     md += line('神器', state.神器);
     md += line('模组', mods().filter(function (m) { return m.row; })
-      .map(function (m) { return m.row[0]; }).join('、'));
+      .map(srcName).join('、'));
 
     md += '\n## 六维\n\n';
     md += '六维：' + STATS.map(function (s) {

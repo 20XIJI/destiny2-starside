@@ -65,12 +65,35 @@ def variants():
         out.append({'page': 'armor-mods', 'anchor': meta['anchor'], 'kind': meta['part'],
                     'name': name, 'icon': 'armor-mods/icons/%s' % meta['icon'],
                     # 变体自己的主键：它是一枚具体的模组，不是复合行那一条的别名。
-                    'keys': meta.get('keys') or [],
+                    # 表是 mods.py 从官方物品表蒸的，那一步没记主键；按名字回实体层
+                    # 现查，87 条逐条唯一命中。
+                    'keys': [h for h in [variant_key(name)] if h],
                     'token': '', 'sub': meta['row'], 'pos': '', 'desc': '',
                     # 落地过滤用复合行的名字：变体名在那一页一次都不出现，
                     # 拿它去过滤会滤成空页，看着像跳错了。
                     'q': meta['row']})
     return out
+
+
+_VARIANT_KEYS = None
+
+
+def variant_key(name):
+    """一枚护甲模组变体的主键：按名字在实体层里查，唯一命中才算。
+
+    同名多枚或查不到都回 None——戳主键那一趟会把它当成「条目上没有主键」报出来，
+    比在这里猜一枚强。
+    """
+    global _VARIANT_KEYS
+    if _VARIANT_KEYS is None:
+        import resolve
+        got = {}
+        for h, rec in resolve.shared()[0].items.items():
+            n = ((rec.get('i18n') or {}).get('zh-CN') or {}).get('name')
+            if n:
+                got.setdefault(n, []).append(h)
+        _VARIANT_KEYS = {n: v[0] for n, v in got.items() if len(v) == 1}
+    return _VARIANT_KEYS.get(name)
 
 
 def sources():
@@ -92,6 +115,7 @@ def build():
     就让 id="…" 后面不再紧跟 >），还猜不出主键。
     """
     idx = {}
+    BY_KEY.clear()
     for page in sources():
         got = pagedex.must_read(page)
         SEARCHABLE[page] = got['searchable']
@@ -102,15 +126,31 @@ def build():
                 # 子条目不进配装词表：异域那两页 PERK 列里的词条挂在行标题下，
                 # 是另一件东西。混进来，「异域武器：狂暴」会查到一枚词条。
                 continue
-            idx.setdefault(key_of(row['name']), []).append(
-                dict(row, page=page, token=got['token']))
+            e = dict(row, page=page, token=got['token'])
+            idx.setdefault(key_of(row['name']), []).append(e)
+            for h in row['keys']:
+                BY_KEY.setdefault(str(h), []).append(e)
     for e in variants():
         # 变体在站内没有独立的一行，说明只有复合那一行有（「电弧虹吸」的机制就写
         # 在「虹吸」那一行上）。sub 存的正是那一行的名字，照它借过来。
         e['desc'] = next((r['desc'] for r in idx.get(key_of(e['sub']), ())
                           if r['page'] == 'armor-mods'), '')
         idx.setdefault(key_of(e['name']), []).append(e)
+        for h in e['keys']:
+            BY_KEY.setdefault(str(h), []).append(e)
     return idx
+
+
+# 主键 → 条目。一枚主键可能被几页收（同一把枪在购物清单与刷取清单各有一行），
+# 所以存成列表，由槽位限定的来源页挑出那一条。
+BY_KEY = {}
+
+
+def by_key(key, slot):
+    """按主键取这一槽位该用的那一条。取不到回 None。"""
+    pages = SLOTS.get(slot) or ()
+    got = [e for e in BY_KEY.get(str(key), ()) if e['page'] in pages]
+    return got[0] if got else None
 
 
 # 槽位 → 允许的来源页。查表按槽位限定范围，同名撞车因此撞不上：
@@ -155,9 +195,20 @@ def bare_kind(kind):
     return kind.split(KIND_TAIL)[0].strip()
 
 
-# 消歧括注：源稿在名字后面写分节挑一条同名的（「隐士（冲锋枪）」）。
-# Bungie 在不同弹药档上复用枪名，站内因此有真正的同名不同物。
-TAIL = re.compile(r'（([^（）]+)）$')
+# 主键跟在名字后面，用 # 分开（migrate.MARK 同一个字符）。**主键是唯一真相**：
+# 查表只按它，名字留作显示与人读 diff。名字里不出现 #。
+MARK = '#'
+
+
+def cut(value):
+    """`名字#主键` → `(名字, 主键)`。没戳主键的回 `(名字, '')`。"""
+    name, sep, key = str(value).partition(MARK)
+    return (name.strip(), key.strip()) if sep else (str(value).strip(), '')
+
+
+def bare(value):
+    """源稿里那一段去掉主键，只剩显示用的名字。"""
+    return cut(value)[0]
 
 
 def key_of(name):
@@ -176,17 +227,36 @@ def pick(idx, name, slot, kind=None, prefer=''):
     棱镜配装该链到棱镜页。同页同名的几条是同一件东西的不同档（神器模组的
     一/二/三级），取第一条即可，链过去落在同一页同一节。
 
-    prefer 也定不下来时看名字末尾的消歧括注：「隐士（冲锋枪）」只取冲锋枪那一条。
-    **括注只在整名查不到时才拆**——站内自加的消歧后缀本身就是名字的一部分
-    （「故我在（电弧元素）」），见名就拆会把那条正主弄丢。
+    **按名字查只剩「核心：」一条路**：它是指回本页某一格的引用，不是独立的一件
+    东西，所以不戳主键。别的槽位都写着主键，消歧括注那一层因此撤了。
+    """
+    got, err = find(idx, name, slot, kind=kind, prefer=prefer)
+    if got is None:
+        die(err or '「%s：%s」查不到' % (slot, name))
+    return got
+
+
+def find(idx, name, slot, kind=None, prefer=''):
+    """pick() 的本体，取不到回 `(None, 该报的那句话)`，不中止。
+
+    戳主键那一趟（`migrate.py --stamp`）要一次看全查不到的有哪些，一条一中止
+    得跑上百遍才看得到全貌；渲染那一条照旧由 pick() 当场中止。
+
+    **源稿写了主键就只按主键查**：站内改名不再牵动源稿，同名不同物也不必靠消歧
+    括注那一层人写的判断。名字对不上时按主键那一条渲染，并报一行——那是站内改了
+    名字，源稿跟着改一次即可，不该中止整次构建。
     """
     if slot not in SLOTS:
-        die('槽位「%s」没有登记来源页' % slot)
-    tail = ''
-    if key_of(name) not in idx:
-        hit = TAIL.search(name)
-        if hit:
-            tail, name = hit.group(1), name[:hit.start()]
+        return None, '槽位「%s」没有登记来源页' % slot
+    name, key = cut(name)
+    if key:
+        got = by_key(key, slot)
+        if got is None:
+            return None, ('「%s：%s#%s」的主键在 %s 里查不到。那一页删了这一行，'
+                          '或者主键抄错了。' % (slot, name, key, '、'.join(SLOTS[slot])))
+        if key_of(got['name']) != key_of(name):
+            NAME_DRIFT.append((slot, name, got['name'], key))
+        return got, None
     want = SLOT_KIND.get(slot)
     hits = [h for h in idx.get(key_of(name), [])
             if h['page'] in SLOTS[slot]
@@ -196,27 +266,27 @@ def pick(idx, name, slot, kind=None, prefer=''):
         # 分节标题带括注时按括注前那一截比（神器模组页写「废墟石板 （异端）」），
         # 括注是来源赛季，不是这件神器的名字。
         hits = [h for h in hits if bare_kind(h['kind']) == kind]
-    if tail and hits:
-        narrowed = [h for h in hits if bare_kind(h['kind']) == tail]
-        if not narrowed:
-            die('「%s：%s（%s）」的括注对不上任何一条。站内的同名条目是：\n  %s'
-                % (slot, name, tail,
-                   '\n  '.join('%s · %s' % (h['page'], h['kind']) for h in hits)))
-        hits = narrowed
     if not hits:
         where = '、'.join(SLOTS[slot])
-        die('「%s：%s」在 %s 里查不到。站内查得到才写得进配装——'
-            '确认写法与资料页一致，或先把它补进对应的资料页。' % (slot, name, where))
+        return None, ('「%s：%s」在 %s 里查不到。站内查得到才写得进配装——'
+                      '确认写法与资料页一致，或先把它补进对应的资料页。'
+                      % (slot, name, where))
     if prefer:
         same = [h for h in hits if h['page'] == prefer]
         if same:
             hits = same
     if len({h['page'] for h in hits}) > 1:
-        die('「%s：%s」在站内有多条同名条目，分不出该链哪一条：\n  %s\n'
-            '在名字后面写分节挑一条，如「%s：%s（%s）」'
-            % (slot, name, '\n  '.join('%s · %s' % (h['page'], h['kind']) for h in hits),
-               slot, name, bare_kind(hits[0]['kind'])))
-    return hits[0]
+        return None, ('「%s：%s」在站内有多条同名条目，分不出该链哪一条：\n  %s\n'
+                      '在名字后面写分节挑一条，如「%s：%s（%s）」'
+                      % (slot, name,
+                         '\n  '.join('%s · %s' % (h['page'], h['kind']) for h in hits),
+                         slot, name, bare_kind(hits[0]['kind'])))
+    return hits[0], None
+
+
+# 源稿写的名字与库里的对不上：站内改了名字，源稿跟着改一次即可。攒着一次报完，
+# 不中止——主键那一位已经把它落到了正确的一条上。
+NAME_DRIFT = []
 
 
 ITEM = (re.compile(r'<tr(?![^>]*class="lane")[^>]*>(.*?)</tr>', re.S),

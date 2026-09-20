@@ -116,7 +116,11 @@ function fingerprint(md) {
   // 全文扫会静默抓到第一套成员的，调换前两套的顺序再投指纹就变了、顶不掉旧的，
   // 站上于是多出一份重复的合集，点赞数跟着甩掉。单套只有一个 `# `，切了等于没切。
   const head = md.split(/\n# /)[0]
-  const parts = SAME.map((re) => ((re.exec(head) || ['', ''])[1] || '').replace(/\s+/g, ' ').trim())
+  // 主键不进指纹：源稿的槽位值写成「名字#主键」，而同一套的判据是人读的那五项。
+  // 带上主键的话，站内换一枚主键就让审过一轮的稿子认不出自己那一份，
+  // 老稿子（那时还没戳主键）再投一次也会多出一份重复的。
+  const parts = SAME.map((re) => ((re.exec(head) || ['', ''])[1] || '')
+    .split('#')[0].replace(/\s+/g, ' ').trim())
   // \u0001 当分隔符：正文里不会出现，拼接因此不会把两项混成一项
   return crypto.createHash('sha1').update(parts.join('\u0001')).digest('hex')
 }
