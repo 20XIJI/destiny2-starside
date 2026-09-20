@@ -34,54 +34,73 @@ Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构�
 
 `serve.json` 放在仓库根，`npm start` 用 `-c ../serve.json` 指过去；它关掉了 `cleanUrls`，站内链接一律写全 `xxx/index.html`。
 
-`data/` 是机器生成的两层，都不手改：
+`data/` 是站内的数据层。**一个 hash 一条记录，站内关于它的一切都挂在它名下。**
+实体表按 Bungie 定义表分文件，键是裸十进制 hash 串，文件即命名空间：
 
-- **`data/manifest/`**（24 MB）由 `facts.py` 从 Bungie manifest 蒸馏，物品 19356 条、
-  武器词条池 2208 把、效果与属性、护甲套装。
-- **`data/entities/`**（8 MB）由 `build-entities.py` 把 manifest、人写层与渲染器的
-  产出按主键合起来：`items` / `effects` / `stats` / `armor-sets` / `mechanics` 五张表
-  （与 manifest 的表对齐，切分判据是主键前缀），外加 `pages.json` 记每一页要哪些
-  实体、什么顺序。**一个 hash 一条记录，站内关于它的一切都挂在它名下。**
+| 文件 | 定义表 | 条数 | 装什么 |
+|---|---|---|---|
+| `inventory-items.json` | `DestinyInventoryItemDefinition` | 5745 | 武器、护甲与可装配的插件（词条、模组、碎片、星相、技能、神器特性）。收藏条目的来源句并在 `i18n.*.sourceString`，神器档位并在 `derived.tiers` |
+| `sandbox-perks.json` | `DestinySandboxPerkDefinition` | 5200 | 效果。`onItems` / `onSets` 指回挂着它的物品与套装 |
+| `traits.json` | `DestinyTraitDefinition` | 46 | 游戏内状态（不稳定、冻结）与分类标签 |
+| `stats.json` | `DestinyStatDefinition` | 79 | 属性 |
+| `equipable-item-sets.json` | `DestinyEquipableItemSetDefinition` | 56 | 护甲套装 |
+| `minted.json` | — | 56 | 主键台账，人编辑 |
 
-`data/index/` 是渲染器交给实体层的中间产物，`build-entities.py` 当场收走，**不入库**。
+`data/lookup/` 下的 `plug-sets`、`socket-types`、`stat-groups` 是构建期字典，不是实体：
+没有页面或配装指向它们，而且号与实体表相撞（`plug-sets` 最小号是 1，`socket-types`
+里有 0）。
 
-实体层一条记录只有四类东西：
+一条记录上的字段分四处：
 
 | 在哪 | 是什么 |
 |---|---|
-| 根上 | 与语言无关的 Manifest 字段 + `icon.source` + `derived` + `relations` |
-| `i18n.<语言>` | **凡是随语言变的**：`name`、`itemTypeDisplayName`、`itemTypeAndTierDisplayName`、`database_details`（官方怎么描述）、`realgame_details`（实际怎么工作）、`flavorText`、`sourceString` |
-| `pages.<页>[]` 的 `refs` | 这一页提到的别的实体，**存主键不存名字**：枪管、弹匣、Perk 1／2、起源特性 |
-| 同上的 `values` / `i18n` | 数值与词表（排名、赛季、评级、框架、勇士、元素、来源）／ 这一页的散文（注解、评级理由） |
+| 根上，manifest 字段 | manifest 上有这个键就原样写下，不按值筛：`classType: 0` 是泰坦，`breakerType: 0` 是不破盾。`icon` 是官方图文件名，`icon_local` 是站上那张 WebP |
+| `derived` | 本项目从 manifest 算出来的：`release`、`season`、`archetype`、`breakerType`、`tierable`、`craftable`、`foundry`、`rate`、`catalyst`、`tiers`，属性表的 `lowerIsBetter`。登记名单由 `check_quality.py` 的 `ManifestLayer` 钉着 |
+| `i18n.<zh-CN\|en>.<字段>` | 随语言变的。manifest 那一侧：`name`、`itemTypeDisplayName`、`itemTypeAndTierDisplayName`、`flavorText`、`sourceString`、`displaySource`，以及官方描述 `database_details`（即 Bungie 的 `description`）。站内写的：`realgame_details`（实测怎么工作）、`site_authors`（Aegis 与 LGpig 的评级与推荐）、`site_frameStats`（武器框架页的数值）、`site_source`。站内正文只写 `zh-CN`；`en` 不写与 `zh-CN` 逐字相同的字段 |
+| 根上，站内字段 | `sameAs`、`enhanced`、`weaponTypes`，以及 `site_` 前缀的词表字段（`site_artifact`、`site_tier`、`site_cooldownSeconds`、`site_emblem` 等） |
 
-**位置与渲染一概不进实体**：锚点、页内筛选词、渲染后的 HTML、页面目录下的图，
-说的是「它在页面上长在哪、画成什么样」，是构建期的东西，留在 `data/index/`。
+站内的三种结构字段：
 
-格子归到 refs／values／i18n 的判据下在**格子自己的形状**上，不按列名——站内 23 页
-有 287 种列名，按列名分等于每加一页改一次脚本。词表列（评级只有 6 个取值）与散文列
-（21 条评级理由 21 个取值）由「值重不重复」分开，不拍阈值。
+- **`sameAs: <行首 hash>`**：同一件东西的几枚 hash（普通版与强化版、一族元素变体）。
+  成员只写这一位，站内正文只在行首那条上；行首一律是基础版，自己不带 `sameAs`，
+  只跳一层。
+- **`enhanced: [{by: [星相 hash…], realgame_details}]`**：装上 `by` 里的星相之后这项
+  技能多出来的效果。碎片不算。
+- **`weaponTypes: [{itemSubType: [...], realgame_details}]`**：框架在某几种枪型上的说明。
 
-被引用到的主键即使站上没有独立一行也建实体（180 条，只有 Manifest 事实、没有
-`pages`），引用图因此自洽。取值走 `entitydb`：`all()` / `table()` / `page()` /
-`rows(页)` / `text(实体, 字段, 语言)` / `said(页面块, 字段)`。
+以 Compendium 中文列名作键的字段：`sandbox-perks.json` 与 `minted.json` 的
+`i18n.zh-CN` 里的 `效果`、`来源`、`冷却与槽位`、`属性变化`、`碎片槽位`、`异域 PERK`、
+`右栏`、`费用` 等，`equipable-item-sets.json` 的 `标签`、`来源`、`类型`、`赛季`、`更新`。
+`sandbox-perks.json` 有 29 条作者评语在根上的 `authors` 里，不在 `site_authors`。
 
-**人写层在 `references/research/<页>.json`，那是唯一人编辑的地方。**资料页的源稿因此
-只剩分节、表头与页面元信息，行的内容在人写层；`convert-doc.py` 构建时把行补回表里
-再渲染，产出与迁移前逐字节相同是构造性的。人写层存源稿方言（`{token|文字}` 与格内
-换行 `\\`），条目是有序表不是按名字建的字典——同一页真有同名不同物的两行。
-列名到字段名的对应写在文件自己的 `columns` 里，不写进脚本：站内 37 页有 96 种表头、
-287 种列名，硬编码等于每迁一页改一次脚本。
+`minted.json` 收 Bungie 实体表里没有的东西，`kind` 六种：机制、来源、模组族、组合、
+枪型、职业。18 条借 Bungie 别的定义表的号（`from` 写表名：Milestone 9、ItemCategory 4、
+Class 3、ActivityMode 1、Destination 1），38 条站内自发，号从 2^32（4294967296）起：
+Bungie 的 hash 是 uint32，永不相撞。`模组族` 与 `组合` 用 `members` 列成员。
+资料页源稿按号引用它，号发出去不改。说「库里没有」之前先扫全部 99 张定义表。
 
-`data/manifest/` 的字段名照 Manifest 拼全（`displayProperties.name`、`itemType`、
-`inventory.tierType`），双语键是 `zh-CN` 与 `en`。**根上只放 Manifest 自己的字段，
-本项目算出来的一律在 `derived` 里**：发布版本 `release`、勇士克制 `breakerType`、
-可塑造 `craftable`、可升阶 `tierable`、插值后的显示值 `displayStats`。问某个字段
-是 Bungie 的还是我们的，看它在不在 `derived` 里即可，`check_quality.py` 的
-`ManifestLayer` 钉着这条边界。取名字走 `resolve.text()`，取官方图路径走
-`resolve.icon_path()`，各只有一处实现。
+谁写哪一份：
 
-`data/` 不上传：它是构建的输入不是站点的资源，不在 `site/` 下，
-产出里引用 `data/` 路径即闸门报错。
+- `python3 tools/facts.py --distill` 从 manifest 原始导出（默认路径见 `facts.SRC`）重蒸
+  五张实体表与 `lookup/`。manifest 是冻结快照，产物入库。这一轮没蒸出来的键即站内写的，
+  由 `carry_site()` 原样带回；盘上有、这一轮没蒸出来的记录名下挂着站内字段时中止。
+- 站内字段直接改 JSON，改完跑 `python3 tools/facts.py --link`：它重算 `icon_local` 与
+  效果表的 `onItems` / `onSets`。
+- `minted.json` 手写。
+
+读取走 `resolve.Facts`；取名字走 `resolve.text()`，取官方图路径走 `resolve.icon_path()`，
+各只有一处实现。
+
+资料页与记录的对应：`references/docs/` 下 21 页的表格只写主键，行的内容在记录上，
+改这些页的文案改记录，不改源稿；表区格式见 `.claude/rules/pages.md`。
+`ability-cooldown`、`buff-debuffs` 两页的行在 `references/research/<页>.json`，
+`convert-doc.py` 构建时把行补回表里。其余资料页是纯 markdown。
+
+`data/index/` 是页面索引：三个资料生成器渲染时由 `pagedex.py` 写出，`vocab.py` 从这里
+查「名字 → 图标、页面、锚点」，每次构建重写，不入库。
+
+`data/` 不上传：它是构建的输入不是站点的资源，不在 `site/` 下。`deploy.py` 的 `keep()`
+只发 `site/`，`npm test` 的 `DeploySelection` 反查产出里没有引用 `data/` 的。
 
 `references/` 入库的是源稿：`artifact-mods.md`、`armor-sets.md`，以及 `docs/` 下的资料文档。转写中间产物 `armor_transcription.*` 在 `.archived/`，整个目录已 gitignore，不当源稿用。
 
@@ -99,9 +118,9 @@ Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构�
 mods.py            官方物品表 → tools/mod-variants.json（护甲模组变体）
                    与 tools/moves.json（位移技能）、tools/artifacts.json（七件神器），
                    图标一并取回
-facts.py           Bungie manifest → data/manifest/（物品、武器词条池、效果与属性、
-                   护甲套装、属性插值曲线）。manifest 是冻结快照，跑一次、产物入库，
-                   不留抓取代码。字段名照 Manifest 拼全，算出来的进 derived。勇士克制
+facts.py           Bungie manifest → data/ 的五张实体表与 data/lookup/。manifest 是冻结
+                   快照，跑一次、产物入库，不留抓取代码。算出来的进 derived；--link
+                   由记录推记录（icon_local、onItems／onSets）。勇士克制
                    按固有框架挂的 SandboxPerk 推，manifest 自带那一位全表只有 18 条
 resolve.py         中文名 → itemHash。槽位限定候选，复刻按「源稿标的版本后缀 →
                    源稿列的词条与来源 → 非大师非特殊版 → 有收藏条目」逐条判，
@@ -109,14 +128,7 @@ resolve.py         中文名 → itemHash。槽位限定候选，复刻按「源
 research.py        人写层：references/research/<页>.json 的读写与「把行补回源稿的表里」。
                    --extract 把一页的表迁进来，源稿就地瘦身；行标题落不到库里主键
                    上时合成一个（row: 前缀），规则只在 minted() 一处
-build-entities.py  data/manifest/ + 人写层 + data/index/ → data/entities/。
-                   **按索引迭代、用主键回接人写层**：索引是页面结构的权威，它知道
-                   这一页有哪些行、什么顺序，也知道人写层不知道的那几类（带图标的
-                   分节标题、异域 PERK 的子条目）。一份人写说明展开到它的每个成员
-                   （雪上加霜 2 个、有的 58 个）；两条人写记录抢同一个主键即报出，
-                   基线只许降不许升
-entitydb.py        实体层的读取入口。与 entities.py 不是一回事——那一份是武器库的
-                   人写层抽取器，名字撞了，各看各的 docstring
+entitydb.py        读 data/entities/，这个目录已不存在；只剩 build-search.py 引用它
 pagedex.py         页面索引：生成器渲染时登记条目，落成 data/index/<页>.json。
                    页面 → 着色 token、格子切分、说明取法都在这里
 vocab.py           配装词表：读 data/index/ 那批索引，槽位 → 来源页的对应在这里一处定义
@@ -136,8 +148,6 @@ build-home.py      各页产出 → 首页每张卡的内容预览。挑哪几�
                    图标从那一页现取；轮换卡的「本周／此刻」由首页一段内联脚本按本机时钟填
 migrate.py         配装源稿 markdown ⇄ 结构化记录，来回逐字节比对；资料页该结构化
                    还是留 markdown 由 --classify 按行标题能否落到主键上机械判定
-check_output.py    产出逐字保真：与某个 commit 的产出逐字节比，差异必须落在
-                   ALLOWED 那张表里，每条带一行理由
 icons.py           按主键把官方图拉回来转 WebP，落 assets/icons/，
                    data/icons.json 记「官方图 → 文件名」。一件东西一张图
 check_icons.py     换图之前逐行比「现在显示的图」与「主键的官方图」，
@@ -195,12 +205,10 @@ python3 tools/convert-artifact-mods.py        # 源稿 references/artifact-mods.
 python3 tools/convert-armor-sets.py           # 源稿 references/armor-sets.md
 python3 tools/convert-doc.py [slug]           # 源稿 references/docs/*.md，省略 slug 即全部
 python3 tools/research.py --extract <slug>    # 一页的表 → references/research/，源稿瘦身
-python3 tools/build-entities.py               # 事实层 + 人写层 + 索引 → data/entities/
 python3 tools/convert-build.py                # 源稿 references/builds/<赛季>/*.md
 python3 tools/build-weapons.py                # 装备库：实体层 → weapons/ 三份载荷与页壳
 python3 tools/build-home.py                   # 首页卡片的内容预览，从各页产出现取
 python3 tools/build-search.py                 # 全站搜索索引 assets/search.js
-python3 tools/check_output.py [--against REF] # 产出与某个 commit 逐字节比对
 python3 tools/check_shell.py                  # 各页外壳逐字一致
 python3 tools/check_terms.py                  # 术语正名、着色 token、更新时间
 python3 tools/check_type.py                   # 字距与中文、CSS 简写有效性、产出结构
@@ -219,7 +227,8 @@ python3 tools/items.py --normalize [slug]    # 按词表纠正全部源稿，构
 
 python3 tools/json2xlsx.py <抓取的.json>      # 还原成 xlsx，供核对与手改
 
-python3 tools/facts.py --distill              # manifest → data/manifest/（换 manifest 才跑）
+python3 tools/facts.py --distill              # manifest → data/ 与 data/lookup/（换 manifest 才跑）
+python3 tools/facts.py --link                 # 改完记录上的站内字段后跑
 python3 tools/resolve.py --audit              # 站内每个名字都落得到主键上
 python3 tools/migrate.py --check              # 配装源稿来回逐字节比对
 python3 tools/migrate.py --classify           # 资料页该结构化还是留 markdown

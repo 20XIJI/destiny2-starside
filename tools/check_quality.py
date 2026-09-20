@@ -51,7 +51,6 @@ def load(name, filename):
 
 
 build_terms = load('quality_build_terms', 'build-terms.py')
-build_entities = load('quality_build_entities', 'build-entities.py')
 deploy = load('quality_deploy', 'deploy.py')
 sync = load('quality_sync', 'sync.py')
 build = load('quality_build', 'convert-build.py')
@@ -410,30 +409,6 @@ class Generated(unittest.TestCase):
         home = self.read('index.html')
         self.assertEqual(build_home.render(home), home,
                          'index.html 的卡片预览过期了，跑 python3 tools/build-home.py')
-
-    def test_entities_match_the_manifest_and_the_research_layer(self):
-        """实体层是 data/manifest/、references/research/ 与 data/index/ 合出来的，
-        不手改。
-
-        过期的后果最像「没坏」：页面照旧渲染（那条路走人写层），只有按 hash 查
-        实体的那些消费方读到旧值。所以这一条必须在这里查——npm run build 里
-        build-entities.py 排在闸门前面，闸门永远看到的是刚生成的那一份。
-        """
-        import entitydb
-        import resolve
-        rows, order_of = build_entities.build(resolve.Facts())[:2]
-        want = entitydb.all()
-        hint = 'data/entities/ 过期了，跑 python3 tools/build-entities.py'
-        # 逐主键报，不整份对：这几份合起来六百多万字符，整份不等的提示印出来
-        # 没人读得动，而「哪个主键对不上」一眼就能查。
-        self.assertEqual(sorted(rows), sorted(want), hint)
-        for key in sorted(rows):
-            self.assertEqual(rows[key], want[key], '%s：%s 这一条对不上' % (hint, key))
-        self.assertGreater(len(rows), 2000, '只算出 %d 条实体' % len(rows))
-        for page, at in order_of.items():
-            self.assertEqual([list(x) for x in at],
-                             [list(x) for x in entitydb.order(page)],
-                             '%s：%s 的行序对不上' % (hint, page))
 
     def test_every_entity_field_sits_on_the_right_side_of_the_language_line(self):
         """随语言变的都在某个 i18n 底下，不随语言变的都不在。

@@ -160,8 +160,7 @@ references/*
 !references/pages/*.json
 .archived/
 
-# 渲染器交给实体层的中间产物：三个资料生成器渲染时写出，build-entities.py 当场
-# 收进 data/entities/。它里面的东西在实体层里都有一份，入库就是同一件事存两遍。
+# 页面索引：三个资料生成器渲染时由 tools/pagedex.py 写出，每次构建重写。
 data/index/
 
 # Python 字节码缓存（tools/ 下的生成器一跑就有）

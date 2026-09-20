@@ -6,6 +6,6 @@
     "start": "npx serve site -l 3000 -c ../serve.json",
     "dev": "npx serve site -l 3000 -c ../serve.json",
     "test": "python3 tools/check_quality.py && node tools/check_quality.cjs",
-    "build": "python3 tools/items.py --normalize && python3 tools/convert-artifact-mods.py && python3 tools/convert-armor-sets.py && python3 tools/convert-doc.py && python3 tools/build-entities.py && python3 tools/convert-build.py && python3 tools/build-weapons.py && python3 tools/build-home.py && python3 tools/build-search.py && python3 tools/build-terms.py && python3 tools/check_shell.py && python3 tools/check_terms.py && python3 tools/check_type.py"
+    "build": "python3 tools/items.py --normalize && python3 tools/convert-artifact-mods.py && python3 tools/convert-armor-sets.py && python3 tools/convert-doc.py &&python3 tools/convert-build.py && python3 tools/build-weapons.py && python3 tools/build-home.py && python3 tools/build-search.py && python3 tools/build-terms.py && python3 tools/check_shell.py && python3 tools/check_terms.py && python3 tools/check_type.py"
   }
 }
