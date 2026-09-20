@@ -134,6 +134,16 @@
 
   /* UI 强调色：焦点环、当前 chip、卡片左缘。原先直接写 --c-arc，于是
      元素页想换个颜色就得整条重抄。子页面覆盖这一个变量即可。 */
+  /* 作者推荐的光圈。两位作者各一色，只画在词条图标外圈，不上文字。装备库与
+     购物清单共用，所以定义在这里。Aegis 天蓝（与最近的 --c-stasis ΔE 29.0）；
+     小棒猪（LGpig）取头像那只小猪的耳朵粉（与最近的 --c-prism ΔE 18.2）。两位都
+     推荐的那一圈是棱彩：六个元素色绕一圈，游戏里「棱镜」本来就是把全部元素并在一起。
+     这三个是 UI 槽位，不是着色 token：源稿里写不出 {c-aegis|…}，所以不进色板页。 */
+  --c-aegis: #3d8bff;
+  --c-lgpig: #ea6c96;
+  --halo-both: conic-gradient(var(--c-arc), var(--c-solar), var(--c-void), var(--c-stasis),
+                              var(--c-strand), var(--c-prism), var(--c-arc));
+
   --accent: var(--c-arc);
   /* 强调色的暖端，只服务首屏那枚发电能量核的悬停态。一冷一暖是那件东西
      唯一的状态变化，借的是烈日橙的渲染色——外壳上不会出现元素着色，
@@ -2785,3 +2795,199 @@ body:has(.hero) {
   background-repeat: no-repeat;
   background-position: center;
 }
+
+/* ── 按记录排版的资料页 ─────────────────────────────────────────────────
+   一种记录一套网格（tools/render.py 的 kind()），同种记录跨页、跨节共用同一份
+   定义，列因此自然对齐。列之间一道发丝线分栏；身份格与数值格上下左右居中，
+   正文格左对齐、上下居中；列名跟着本列的数据走（design.md 四节）。
+
+   轨道由种类给：某条记录没有这个字段，那一格空着；整节都没有的轨道整节不画，
+   所以同一种记录有几种列数（.c0/.c1/.c2）。 */
+.rec, .colhead { display: grid; }
+.rec { border-top: 1px solid var(--hair); }
+.colhead { margin-top: 12px; background: var(--head-fill); border-bottom: 1px solid var(--hair-lit); }
+.colhead > div { padding: 8px 10px; white-space: nowrap; font: 600 12.5px var(--font-cn);
+                 color: var(--bone-dim); }
+.colhead > .c { text-align: center; }
+.colhead > .l { text-align: left; }
+.colhead > div + div, .rec > .cell + .cell { border-left: 1px solid var(--hair); }
+.colhead + .rec, .grp + .rec { border-top: 0; }
+.grp { padding: 16px 16px 8px; font: 600 13px var(--font-cn); color: var(--bone-dim);
+       border-bottom: 1px solid var(--hair); }
+
+.cell { min-width: 0; padding: 9px 14px; display: flex; flex-direction: column;
+        justify-content: center; }
+.cell.idc { align-items: center; text-align: center; gap: 4px; background: var(--tint-1); }
+.cell.mid { align-items: center; text-align: center; }
+.cell p { margin: 0 0 5px; font-size: 13.5px; line-height: 1.65; }
+.cell p:last-child { margin-bottom: 0; }
+.idc .nm { font: 600 14.5px/1.35 var(--font-cn); color: var(--bone-hi); }
+.idc .nm.exo, .rec .exo { color: var(--exotic); }
+.idc .sub { display: flex; flex-direction: column; align-items: center; font-size: 12.5px;
+            line-height: 1.6; color: var(--bone-dim); }
+.idc .sub b, .rec .dim b { color: var(--bone-hi); font-weight: 600; }
+.rec .dim, .ci-grp .dim { color: var(--bone-dim); }
+
+/* 效果、碎片、技能、星相、插件、套装效果 */
+.k-plain.c0 { grid-template-columns: 11em minmax(0, 1fr); }
+.k-plain.c1 { grid-template-columns: 11em minmax(0, 1fr) 13em; }
+.k-plain.c1.narrow { grid-template-columns: 11em minmax(0, 1fr) 7.5em; }
+.k-plain.c2 { grid-template-columns: 11em minmax(0, 1fr) 9em 12em; }
+.k-plain .idc > img { width: 48px; height: 48px; }
+.k-plain > .x-au-who { grid-column: 1; }
+.k-plain > .x-au-body { grid-column: 2 / -1; }
+.st { font-size: 12.5px; line-height: 1.75; color: var(--bone-dim); }
+.st > div { white-space: nowrap; }
+.st b { color: var(--bone-hi); font-weight: 600; }
+.slots { display: flex; justify-content: center; align-items: center; gap: 6px; }
+.slots i { width: 9px; height: 9px; transform: rotate(45deg); border: 1px solid var(--bone-dim); }
+
+/* 子行：星相带来的强化、框架在某几种枪型上的说明 */
+.sub-row { margin-top: 9px; padding: 8px 12px; background: var(--tint-2);
+           border-left: 2px solid var(--hair-lit); }
+.sub-h { display: flex; align-items: center; gap: 7px; margin-bottom: 6px;
+         font-size: 12.5px; color: var(--bone-dim); }
+.sub-h > img { width: 20px; height: 20px; }
+.sub-h span[class^="el-"] { font-weight: 600; }
+
+/* 异域：异域 | 异域特性，作者区在特性下面 */
+.k-exotic { grid-template-columns: 12em 7.5em minmax(0, 1fr); }
+.k-exotic.has-au > .idc { grid-row: span 2; }
+.k-exotic > .perk { grid-column: 2 / -1; }
+.k-exotic > .x-au-who { grid-column: 2; }
+.k-exotic > .x-au-body { grid-column: 3; }
+.k-exotic .idc > img { width: 56px; height: 56px; }
+.xp { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.xp > img { width: 28px; height: 28px; border-radius: 50%; }
+.xp-n { font: 600 14.5px var(--font-cn); color: var(--exotic); }
+.xp-n + .xp-n::before { content: "／"; color: var(--bone-faint); margin-right: 8px; font-weight: 400; }
+
+/* 定位标签：不可点，所以不带边框（边框是 .toggle 与 .op 的静置长相，
+   design.md 五之二），只铺一层白叠色。放在 <b> 里：里面常有着色 span，
+   外层再是 span 会触发 no_nested_span。 */
+.tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.tag { display: inline-block; padding: 1px 8px; font: 600 12px/1.7 var(--font-cn);
+       color: var(--bone-hi); background: #ffffff12; }
+.why { display: flex; align-items: baseline; gap: 9px; }
+.why > .tag { flex: none; }
+
+/* 作者区：一位作者两格，与记录用同一套列。加作者只多一行，不加列 */
+.x-au-who, .x-au-body { padding: 5px 14px; border-top: 1px dashed var(--hair);
+                        background: #ffffff03; }
+.rec > .x-au-body { border-left: 0; }
+.rec > .x-au-who { border-left: 0; }
+.x-au-who { gap: 6px; }
+.x-au-name { display: flex; justify-content: center; align-items: center; gap: 8px;
+             font: 600 12.5px/1.5 var(--font-cn); }
+.x-au-who .tags { justify-content: center; }
+.x-au-body p { color: var(--note); font-size: 13px; line-height: 1.65; }
+.w-aegis { color: var(--c-aegis); }
+.w-lgpig { color: var(--c-lgpig); }
+.tier { flex: none; min-width: 28px; padding: 1px 5px; text-align: center;
+        font: 700 12.5px/1.3 var(--font-disp); color: var(--bone-hi); border: 1px solid; }
+.tier.by-a { border-color: var(--c-aegis); }
+.tier.by-l { border-color: var(--c-lgpig); }
+.tier-long { font-size: 12px; line-height: 1.6; color: var(--bone); }
+
+/* 作者自己的字段：应用场景、获取地点、DPS、总伤。值里有着色 span，所以用 <b> */
+.f-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 3px 18px;
+         margin-bottom: 6px; font-size: 12.5px; }
+.f-k { color: var(--bone-faint); margin-right: 4px; }
+.f-k::after { content: "："; }
+.f-v { font-weight: 400; color: var(--bone); white-space: nowrap; }
+
+/* 模组族与组合：成员图标排一行，成员不单独占行 */
+.mem { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-bottom: 9px;
+       font-size: 12.5px; color: var(--bone-dim); }
+.mem-1 { display: flex; align-items: center; gap: 6px; }
+.mem-1 > img { width: 20px; height: 20px; }
+
+/* 职业物品：两栏按行对齐，中间一道亮一档的发丝线分开两份清单 */
+.ci-grp { padding: 18px 0 6px; }
+.ci-grp + .ci-grp { border-top: 1px solid var(--hair-lit); margin-top: 10px; }
+.ci-h { display: flex; align-items: center; gap: 10px; margin: 0 0 12px;
+        font: 600 15px var(--font-cn); color: var(--bone-hi); }
+.ci-h > img { width: 28px; height: 28px; }
+.ci-h > img + img { margin-left: -4px; }
+.ci-h .dim { font-size: 12.5px; font-weight: 400; }
+.sp-head, .sp-row { display: grid;
+                    grid-template-columns: 9.5em minmax(0, 1fr) 9.5em minmax(0, 1fr); }
+.sp-head h4 { grid-column: span 2; margin: 0; padding: 8px 0; text-align: center;
+              font: 600 12.5px var(--font-cn); color: var(--bone-dim);
+              background: var(--head-fill); border-bottom: 1px solid var(--hair-lit); }
+.sp-head h4 + h4, .sp-row > .cell:nth-child(3) { border-left: 1px solid var(--hair-lit); }
+.sp-row { border-top: 1px solid var(--hair); }
+.sp-head + .sp-row { border-top: 0; }
+.sp-row > .cell:nth-child(2), .sp-row > .cell:nth-child(4) { border-left: 1px solid var(--hair); }
+.sp-row .idc > img { width: 40px; height: 40px; }
+.sp-row .idc .nm { font-size: 14px; }
+.sp-row p { font-size: 13px; line-height: 1.7; }
+
+/* 矩阵：行是技能位，列是五个分支 */
+.mx-head, .mx-row { display: grid; grid-template-columns: 9em repeat(5, minmax(0, 1fr)); }
+.mx-head > div { display: flex; align-items: center; justify-content: center; gap: 6px;
+                 padding: 8px 10px; font: 600 12.5px var(--font-cn); color: var(--bone-dim);
+                 background: var(--head-fill); border-bottom: 1px solid var(--hair-lit); }
+.mx-head > div + div, .mx-row > .cell + .cell { border-left: 1px solid var(--hair); }
+.mx-row { border-top: 1px solid var(--hair); }
+.mx-head + .mx-row { border-top: 0; }
+.mx-row > .cell { padding: 8px; gap: 5px; font-size: 12.5px; }
+.mx-row img { width: 28px; height: 28px; }
+.mx-head img { width: 20px; height: 20px; }
+.mx-row > .idc .nm { font-size: 14px; }
+
+/* 护甲模组保留原来的三列卡片 */
+.mods { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.mod { padding: 14px 16px; border-top: 1px solid var(--hair); }
+.mod + .mod { border-left: 1px solid var(--hair); }
+.mods > .mod:nth-child(3n+1) { border-left: 0; }
+.mod-h { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.mod-h > img { width: 36px; height: 36px; }
+.mod-n { flex: 1; text-align: center; font: 600 14.5px var(--font-cn); color: var(--bone-hi); }
+.mod-c { font-size: 11.5px; color: var(--bone-dim); white-space: nowrap; }
+.mod-c b { font-size: 14px; color: var(--c-charge); }
+.mod p { margin: 0 0 6px; font-size: 13px; line-height: 1.65; }
+
+/* 武器：名次 | 武器 | 参数 | 五栏推荐 | 大师杰作，作者区在下面 */
+.k-weapon { grid-template-columns: 3em 9em 10.5em repeat(5, minmax(0, 1fr)) 7.5em; }
+.k-weapon.has-au > .rank, .k-weapon.has-au > .idc, .k-weapon.has-au > .x-facts { grid-row: span 2; }
+.k-weapon > .x-au-who { grid-column: 4; }
+.k-weapon > .x-au-body { grid-column: 5 / -1; }
+.k-weapon .idc > img { width: 48px; height: 48px; }
+.rank { font: 700 16px var(--font-disp); color: var(--bone-faint); }
+.x-mini { display: flex; flex-direction: column; align-items: center; gap: 1px; margin-top: 2px;
+          font-size: 12px; line-height: 1.6; color: var(--bone-dim); }
+.x-mini > div { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+.x-mini b { color: var(--bone-hi); font-weight: 600; }
+.x-mini [class^="el-"] { font-weight: 600; }
+.x-facts { align-items: flex-start; }
+.x-facts dl { display: grid; grid-template-columns: auto auto; column-gap: 10px; row-gap: 5px;
+              margin: 0; font-size: 12.5px; line-height: 1.5; }
+.x-facts dt { color: var(--bone-faint); white-space: nowrap; }
+.x-facts dt::after { content: "："; }
+.x-facts dd { margin: 0; display: flex; align-items: center; gap: 5px; color: var(--bone);
+              text-align: left; white-space: nowrap; }
+.x-mini img, .x-facts img { width: 16px; height: 16px; }
+.slot { padding: 12px 8px; }
+.picks { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; }
+.plug { display: flex; align-items: center; gap: 7px; font-size: 12.5px; line-height: 1.35;
+        color: var(--c-perk); text-align: left; }
+.plug .ico { position: relative; display: inline-block; flex: none; margin: 4px; }
+.plug .ico > img { display: block; width: 22px; height: 22px; border-radius: 50%; }
+/* 光圈画在图标外 3px。棱彩那一圈是渐变，所以用遮罩把整块底色裁成环形，
+   与装备库同一套做法（weapons/style.css）。 */
+.plug.by-a { --halo: var(--c-aegis); }
+.plug.by-l { --halo: var(--c-lgpig); }
+.plug.by-al { --halo: var(--halo-both); }
+.plug[class*="by-"] .ico::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: var(--halo);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
+}
+.plug s { color: var(--bone-faint); }
+.plug-none { font-size: 12.5px; color: var(--bone-faint); }
+.plug.mwp { color: var(--bone); }

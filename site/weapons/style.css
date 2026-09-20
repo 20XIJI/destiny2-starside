@@ -9,14 +9,6 @@
      ΔE 10.9，按 design.md 一节读作同一个颜色，不另造一支。依据是 Bungie 给强化
      物品专发的那张金色叠加图（enhanced-item-overlay.png）。只上词条圆圈。 */
   --c-enh: var(--c-stack);
-  /* 作者推荐的光圈。两位作者各一色，只画在词条图标外圈，不上文字。
-     Aegis 天蓝（与最近的 --c-stasis ΔE 29.0）；小棒猪（LGpig）取头像那只小猪的耳朵粉
-     （与最近的 --c-prism ΔE 18.2）。两位都推荐的那一圈是棱彩：六个元素色绕一圈，
-     游戏里「棱镜」本来就是把全部元素并在一起。 */
-  --c-aegis: #3d8bff;
-  --c-lgpig: #ea6c96;
-  --halo-both: conic-gradient(var(--c-arc), var(--c-solar), var(--c-void), var(--c-stasis),
-                              var(--c-strand), var(--c-prism), var(--c-arc));
   /* 属性条按来源分段，只换明度不换色相（design.md 一节）。 */
   --seg-base: #7d8492;
   --seg-part: #b3b8c2;

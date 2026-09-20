@@ -20,6 +20,7 @@ from urllib.parse import quote
 
 import markup
 import pagedex
+import render as layout   # 本文件自己有个 render()，别名避开
 import research
 import resolve
 import rows
@@ -28,6 +29,20 @@ from markup import (IMG, LINK, Icons, bmark, die, inline, meta_line, meta_of,
                     no_nested_span, plain, source_context, src_hash, text_of, whole_marker)
 
 SRC_DIR = os.path.join(shell.ROOT, 'references', 'docs')
+
+# 按记录的种类排版的那几页：源稿只写主键，格子与列都由记录决定（见 render.py）。
+# 其余页面走下面那条表格渲染链，一个字不动。
+NEW = frozenset({
+    'weapon-perks', 'farming-sets',
+    'shopping-primary', 'shopping-special', 'shopping-heavy', 'shopping-other',
+    'exotic-armor', 'exotic-armors', 'exotic-weapon', 'exotic-weapons',
+    'arc', 'solar', 'void', 'stasis', 'strand', 'prismatic', 'class-abilities',
+})
+KEY = r'(?:perk:|trait:|stat:|set:)?\d+'
+REC_ROW = re.compile(r'^(%s(?: %s)*)  (.+)$' % (KEY, KEY))
+COLS = re.compile(r'^列：')
+CTX = None          # render.Page，build() 里装上
+SLUG = ''
 
 # 头部的「键：值」行。键名固定，正文行不会被误认。
 META_KEYS = ('描述', '更新', '页脚', '待测标记', '鸣谢', '数据源', '导航', '路径', '上级',
@@ -605,6 +620,45 @@ def guides_of(spec):
             '</a>', '</li>']
 
 
+def record_region(lines):
+    """一节里的主键行 → 版式，行同时登记进页面索引。
+
+    源稿只剩「== 组 ==」与「主键  行标题」两种行；列头那一行（还留在源稿里的）
+    直接跳过：列由记录的种类决定，不由它决定。
+    """
+    groups, cur = [], None
+    for raw in lines:
+        line = raw.strip()
+        if not line or COLS.match(line):
+            continue
+        lane = LANE.match(line)
+        if lane:
+            cur = (lane.group(1).strip(), [])
+            groups.append(cur)
+            continue
+        hit = REC_ROW.match(line)
+        if not hit:
+            die('%s 的主键区里有认不出的行：%r' % (PAGE, line[:60]))
+        if cur is None:
+            cur = (None, [])
+            groups.append(cur)
+        cur[1].append(hit.group(1).split()[0])
+
+    ctx = CTX
+    if ctx is None:
+        die('record_region() 在 build() 之前跑了：CTX 还没装上')
+    dex = DEX
+    if dex is not None:
+        anchor, label = SECTION
+        for lane, keys in groups:
+            for key in keys:
+                icon = rows.icon_file(key)
+                dex.add(keys=[key], anchor=anchor, kind=lane or label,
+                        name=ctx.name(key),
+                        icon=pagedex.site_path(PAGE, rows.rel(icon, PAGE)) if icon else '')
+    return [layout.section_blocks(ctx, groups, SECTION[1], rows.AUTHORED.get(SLUG, 'Aegis'))]
+
+
 def render_blocks(chunk, scales=None, groups=None, marks=None, curves=None, up=0,
                   rota=None, base=0):
     """分节正文 → 段落、列表、定义列表、表格、卡片。
@@ -631,6 +685,16 @@ def render_blocks(chunk, scales=None, groups=None, marks=None, curves=None, up=0
                 o += guides_of(lines[i].rstrip()[len('攻略：'):])
                 i += 1
             o.append('</ul>')
+            continue
+
+        if SLUG in NEW and (REC_ROW.match(line) or COLS.match(line) or LANE.match(line)):
+            start = i
+            while i < len(lines):
+                one = lines[i].strip()
+                if one and not (REC_ROW.match(one) or COLS.match(one) or LANE.match(one)):
+                    break
+                i += 1
+            o += record_region(lines[start:i])
             continue
 
         if line.lstrip().startswith('|'):
@@ -893,6 +957,34 @@ def render(md, slug, digest):
 
 
 # ── 自检 ────────────────────────────────────────────────────────────────
+def check_records(md, out, slug):
+    """按记录排版的那几页：正文不在源稿里，逐字保真换成三条。
+
+    一、源稿列的每一枚主键都在产出里露了名字；二、没有没转换的着色标记；
+    三、span 不嵌套。行的内容对不对由 render.py 取数那一侧保证——它取不到就中止。
+    """
+    ctx = CTX
+    if ctx is None:
+        die('check_records() 在 build() 之前跑了：CTX 还没装上')
+    keys = []
+    for raw in md.split('\n'):
+        hit = REC_ROW.match(raw.strip())
+        if hit:
+            keys.append(hit.group(1).split()[0])
+    main = out[out.index('<main '):out.index('</main>')]
+    # 两侧同样归一化：中文与拉丁之间那个排版空格是渲染加的，不算内容（design.md 三节）
+    got = plain(text_of(main))
+    # 名字本身可能带着色标记与格内换行，两侧都取渲染后的纯文本
+    want = {k: plain(text_of(ctx.name_html(k))) for k in keys}
+    missing = [k for k in keys if want[k] and want[k] not in got]
+    if missing:
+        die('%s 有 %d 枚主键没画出来：%s'
+            % (slug, len(missing), '、'.join('%s（%s）' % (k, want[k]) for k in missing[:5])))
+    if '{' in main or '}' in main:
+        die('%s 有没转换的着色标记' % slug)
+    no_nested_span(main, '%s（检查 wrap() 的整块判定）' % slug)
+
+
 def check(md, out, slug):
     """正文逐字保真：产出剥掉标签后与源稿逐字相等。
 
@@ -945,7 +1037,8 @@ def check(md, out, slug):
 
 
 def build(slug):
-    global ICONS, STAMP, DEX, PAGE, PERK, ROW_KEYS, ROW_PERKS
+    global ICONS, STAMP, DEX, PAGE, PERK, ROW_KEYS, ROW_PERKS, CTX, SLUG
+    SLUG = slug
     src = os.path.join(SRC_DIR, slug + '.md')
     with source_context(os.path.relpath(os.path.realpath(src), shell.ROOT)):
         if not os.path.exists(src):
@@ -960,7 +1053,7 @@ def build(slug):
         # 格子从记录上取，见 rows.py。这条渲染链只认后一种：骨架原样交进去不报错，
         # 而是把整页的表静默画空，正文逐字保真两边都空、照样放行。
         ROW_KEYS, ROW_PERKS = {}, {}
-        if rows.is_skeleton(md):
+        if rows.is_skeleton(md) and slug not in NEW:
             md, ROW_KEYS, ROW_PERKS = rows.expand(md, slug, where)
         # **在补行之后算**：编辑台按「源稿第几行第几格」定位，库里存的正是补全的
         # 那一份（sync.whole()）。戳瘦源稿的哈希出去，两边永远对不上，页面会被
@@ -978,6 +1071,7 @@ def build(slug):
         # PERK 列只长在有戳号器的那几页上，格子的形状再筛一道，不另列页名。
         PERK = resolve.perk_stamper() if STAMP else None
         PAGE = where
+        CTX = layout.Page(slug, where, ICONS.html)
         # 只给要被跨页引用的那些页建索引，与戳号同一条判据。
         # 有没有页内搜索框按源稿那三个键定，与 render() 建工具条用的是同一批值：
         # 「导航：是」才建，列组页与折线图页整块不建。
@@ -988,7 +1082,7 @@ def build(slug):
                if where in pagedex.TOKENS else None)
 
         out, title = render(md, slug, digest)
-        check(md, out, slug)
+        (check_records if slug in NEW else check)(md, out, slug)
         # 有图却没写「首屏图标：」时静默退回 0，首屏那几张就全带上 loading="lazy"，
         # 要等布局算完才开始下载。漏写与「写 0」产出完全一样，页面上看不出区别，
         # 所以这一位必须由源稿明说：新页面的作者要么量过首屏、要么确认首屏没有图。
