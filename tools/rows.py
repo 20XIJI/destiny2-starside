@@ -503,10 +503,15 @@ def frame_row(rec):
 def exotic_pool(key):
     """一件异域自己开得出来的词条：`{显示名: 取图的主键}`。
 
-    两处并起来。一处是「异域特性」那一格里的几条（`exotic_perks`）；另一处是特征栏
-    与起源栏的插件池——零号修订那一列可 roll 的六条、故我在的五种刀剑框架都在后者，
-    它们不是格子里那几条。组合行（故我在的四条元素行）自己不是一件装备，池看它
-    第一位成员，行名已经钉死的那几条不再列。
+    两处并起来。一处是「异域特性」那一格里的几条（`exotic_perks`）；另一处是固有栏、
+    特征栏与起源栏的插件池——零号修订那一列可 roll 的六条、故我在的五种刀剑框架与
+    八条异域固有都在后者，它们不是格子里那几条。组合行（故我在的四条元素行）自己
+    不是一件装备，池看它第一位成员，行名已经钉死的那几条不再列。
+
+    **固有栏按这件装备自己的那一枚登记。**故我在那八条固有与别的异域重名（狼群弹药
+    在加拉尔号角名下也有一条），但各是一枚自己的 hash：故我在的狼群弹药是
+    1959135343，加拉尔号角的是 2962361451。不登记的话，站内关于「故我在的狼群弹药」
+    就只剩别人名下那一份可查。
     """
     rec = facts().at(key) or {}
     got = exotic_perks(key)
@@ -520,7 +525,7 @@ def exotic_pool(key):
     for col in facts().pool(host):
         kind = ((facts().socket_types.get(str(col['type'])) or {})
                 .get('derived') or {}).get('kind')
-        if col.get('gear') or kind not in ('trait', 'origin'):
+        if col.get('gear') or kind not in ('intrinsic', 'trait', 'origin'):
             continue
         for h in col.get('plugs') or ():
             n = name_of(str(h))

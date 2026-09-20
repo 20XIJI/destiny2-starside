@@ -1219,7 +1219,9 @@ button.item { width: 100%; }
 /* 神器模组照神器盘摆：列对应那件神器的七行，纵向一/二/三级，位置由词表的 pos 给。
    挑的时候不必数——你在游戏里看见的就是这个形状。 */
 .picker-grid.art .item { min-height: 62px; }
-.picker-grid .item .kd { display: block; color: var(--bone-faint); font-size: 10px; }
+/* 类型那一行横跨两列。.item 的第一列是 auto——不跨列时「榴弹发射器-后膛」会把
+   图标那一列撑到它自己的宽度，名字只剩十来像素，「奥尔文之槌」折成一字一行。 */
+.picker-grid .item .kd { grid-column: 1 / -1; color: var(--bone-faint); font-size: 10px; }
 
 /* ── 悬停详情面板 ─────────────────────────────────────────────────────
    指着候选或成品格时，把这一条在站内那一页上的说明就地摆出来。
