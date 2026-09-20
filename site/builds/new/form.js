@@ -395,22 +395,15 @@
   }
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
 
-  /* 这一格挑的那件东西自己带的候选。词表里查不到就不收窄：列不全好过列不出来。
-
-     之灵按栏收：一件异域职业物品两栏各 8 条，掉落时一栏开一条，从 36 条里随便
-     挑两条在游戏里开不出来。Perk 按这把枪自己的池收：从前列的是整张武器 PERK
-     页 395 条，选出来的组合枪上开不出来。 */
-  /* 一组里露出来几格，--n 与 --c 就得跟着算：这两个数是样式表算宽度用的
-     （--n 是行里的份额，按枪 15、Perk 10 加权；--c 是露出来的格数，用来扣掉
-     面板与格间那份固定开销）。生成器按初始格数写死一次，收放之后不重算的话，
-     异域那一组仍按一格宽，三格叠在一起、枪名竖着折。取法与 convert-build.rig_of
-     同一条。 */
-  function sizeRig(rig) {
+  /* 异域那一组：枪在左，词条竖排在右。摆得出词条时它占两列，摆不出只有枪一列。
+     --n 是行里的份额（枪 15、词条 10），--c 是露出来的列数，两个都是样式表算
+     宽度用的；不重算的话，摆出词条的那一组仍按一格宽，枪名竖着折。 */
+  function sizeExRig(rig) {
     if (!rig) return;
-    var live = [].filter.call(rig.querySelectorAll('.item'), function (c) { return !c.hidden; });
-    var guns = live.filter(function (c) { return c.classList.contains('gun'); }).length;
-    rig.style.setProperty('--n', guns * 15 + (live.length - guns) * 10);
-    rig.style.setProperty('--c', live.length);
+    var box = rig.querySelector('.ex-perks');
+    var on = box && !box.hidden;
+    rig.style.setProperty('--n', on ? 25 : 15);
+    rig.style.setProperty('--c', on ? 2 : 1);
   }
 
   /* 职业物品带之灵时那一格横跨两列，这一行因此多要一列。 */
@@ -421,28 +414,104 @@
     slot.style.setProperty('--n', pair.parentNode.children.length + (box && !box.hidden ? 1 : 0));
   }
 
+  /* 候选按栏收窄。data-col 是栏序，落在三处格子上：职业物品的两条之灵、异域枪
+     的两栏词条、传说枪的 Perk 1 / Perk 2 / 起源特性。一栏的东西在另一栏上开不
+     出来，两格共用一份候选就是让人选出一套游戏里配不出来的枪。 */
+  /* 异域的词条格跟着这把枪走：一栏一格，栏数由词表给。**只在选得出来的时候才出
+     格子**——141 把里 18 把有得选（可 roll 的零号修订、四选一催化的库尔之影、故我在
+     的框架与固有、英勇利刃的催化与核心），其余那些掉落时就钉死了，出一格只会让人
+     点开一张挑不出东西的网格。不预填任何一枚：选哪一条是填表人的判断。
+
+     选中与导入两条路都走这一个，否则导入一份写了词条的稿子时盒子还收着，页面上
+     只剩一把光杆枪。 */
+  function syncExPerks(gun) {
+    var box = gun.parentNode.querySelector('.ex-perks');
+    if (!box) return;
+    var ex = gun.row ? (V.exoticCols || {})[gun.row[0]] : null;
+    [].forEach.call(box.querySelectorAll('[data-slot="异域词条"]'), function (c, k) {
+      var on = !!ex && !!ex[k];
+      if (!on && c.row) fill(c, null);
+      c.hidden = !on;
+    });
+    box.hidden = !ex;
+    sizeExRig(gun.closest('.rig'));
+  }
+
+  /* 一把枪占哪个槽：k 动能、e 能量、h 威能。词表里查不到就回空串，那一把不参与
+     挡槽——挡不住好过挡错。 */
+  function bucketOf(row) {
+    return (row && (V.buckets || {})[row[0]]) || '';
+  }
+
+  /* 36 条之灵的名字。之灵与职业物品同在「职业金」那一节里，靠这一份分开。 */
+  var SPIRIT = null;
+  function spiritNames() {
+    if (!SPIRIT) {
+      SPIRIT = {};
+      var all = V.spirits || {};
+      Object.keys(all).forEach(function (k) {
+        all[k].forEach(function (one) {
+          one.forEach(function (n) { SPIRIT[n] = 1; });
+        });
+      });
+    }
+    return SPIRIT;
+  }
+
   function narrow(btn, list) {
-    var V2 = V.spirits || {}, col = btn.dataset.col;
-    if (col) {
+    var col = Number(btn.dataset.col || 0), slot = btn.dataset.slot;
+    if (slot === '异域护甲') {
+      // 之灵只在职业物品下面那两格里选：它不是单独穿得上的一件，摆在主格里
+      // 会让人把「噬星者之灵」当成一件异域护甲填进去。
+      if (!col) {
+        var spirit = spiritNames();
+        return list.filter(function (r) { return !spirit[r[0]]; });
+      }
       var gear = btn.closest('.pair').querySelector('.item.gear');
-      var cols = gear && gear.row ? V2[gear.row[0]] : null;
-      if (!cols) return [];
-      var want = cols[Number(col) - 1] || [];
+      var spirits = gear && gear.row ? (V.spirits || {})[gear.row[0]] : null;
+      if (!spirits) return [];
+      var want = spirits[col - 1] || [];
       return list.filter(function (r) { return want.indexOf(r[0]) > -1; });
     }
-    var slot = btn.dataset.slot;
+    // 三个槽位各装一把枪。异域占了哪个槽，传说那两格就不能再填同一个槽的——
+    // 异域选了能量枪，两把传说只剩动能与威能可填。
+    if (slot === '传说武器') {
+      var used = {};
+      var ex = pen.querySelector('[data-slot="异域武器"]');
+      used[bucketOf(ex && ex.row)] = 1;
+      [].forEach.call(pen.querySelectorAll('[data-slot="传说武器"]'), function (c) {
+        if (c !== btn && c.row) used[bucketOf(c.row)] = 1;
+      });
+      delete used[''];
+      return list.filter(function (r) { return !used[bucketOf(r)]; });
+    }
+    // 套装效果游戏里只配得出两种：同一套的 2 件 + 4 件，或者两套各 2 件。
+    // 一格选了 4 件，另一格就只剩同一套的 2 件。
+    if (slot === '套装') {
+      var mate = [].filter.call(pen.querySelectorAll('[data-slot="套装"]'),
+        function (c) { return c !== btn && c.row; })[0];
+      if (!mate) return list;
+      var set = mate.row[0], four = mate.row[1] === '4 件';
+      return list.filter(function (r) {
+        if (r[0] === set && r[1] === mate.row[1]) return false;
+        return four ? (r[0] === set && r[1] === '2 件')
+          : (r[1] === '2 件' || r[0] === set);
+      });
+    }
     if (slot !== 'Perk' && slot !== '异域词条') return list;
     var rig = btn.closest('.rig');
     var gun = rig && rig.querySelector('.item.gun');
-    if (!gun || !gun.row) return list;
+    if (!gun || !gun.row || !col) return list;
     var keep = {};
     if (slot === '异域词条') {
-      ((V.exotic || {})[gun.row[0]] || []).forEach(function (n) { keep[n] = 1; });
+      var ex = (V.exoticCols || {})[gun.row[0]];
+      if (!ex) return [];
+      (ex[col - 1] || []).forEach(function (n) { keep[n] = 1; });
     } else {
       var own = (V.perks || {})[gun.row[0]];
       if (!own) return list;
       var all = V.lists[V.slots['Perk']] || [];
-      own.forEach(function (i) { if (all[i]) keep[all[i][0]] = 1; });
+      (own[col - 1] || []).forEach(function (i) { if (all[i]) keep[all[i][0]] = 1; });
     }
     var hit = list.filter(function (r) { return keep[r[0]]; });
     return hit.length ? hit : list;
@@ -819,35 +888,31 @@
         sizeArmor(btn.parentNode);
       }
     }
-    // 可 roll 的异域（零号修订、死亡信使这些）两列词条与传说枪一样能挑；词表里
-    // 查得到候选时那两格才冒出来，固定词条的异域照旧只有一格。
     if (slot === '异域武器') {
-      var pcs = [].slice.call(btn.parentNode.querySelectorAll('[data-slot="异域词条"]'));
-      var can = !!row && !!(V.exotic || {})[row[0]];
-      pcs.forEach(function (c) {
-        if (!can && c.row) fill(c, null);
-        c.hidden = !can;
-      });
-      sizeRig(btn.closest('.rig'));
-      // 这一把有默认组合时先填上（英勇利刃一律超利刃 + 冲击核心），填表人改得掉。
-      var def = row ? (V.exoticDefault || {})[row[0]] : null;
-      if (def) {
-        def.forEach(function (n, k) {
-          if (!pcs[k] || pcs[k].row) return;
-          var one = options('异域词条', '异域词条').filter(function (r) { return r[0] === n; })[0];
-          if (one) fill(pcs[k], one);
+      syncExPerks(btn);
+      // 三个槽位各装一把：异域占了哪个槽，传说那两格里同槽的那一把就配不出来了。
+      var took = bucketOf(row);
+      if (took) {
+        [].forEach.call(pen.querySelectorAll('[data-slot="传说武器"]'), function (c) {
+          if (c.row && bucketOf(c.row) === took) fill(c, null);
         });
       }
     }
     // 4 件套在游戏里同时给 2 件效果，所以选了 4 件就把同一套的 2 件补进另一格。
-    // 只补空格：另一格已经有东西，那是填表人自己选的，不替他改。
-    if (btn.dataset.slot === '套装' && row && row[1] === '4 件') {
-      var two = options('套装').filter(function (r) {
-        return r[0] === row[0] && r[1] === '2 件';
-      })[0];
+    // 另一格里配不出来的先清掉：两套各 2 件、同一套 2 件 + 4 件，只有这两种成立。
+    if (btn.dataset.slot === '套装' && row) {
       var other = [].filter.call(pen.querySelectorAll('[data-slot="套装"]'),
-        function (c) { return c !== btn && !c.row; })[0];
-      if (two && other) fill(other, two);
+        function (c) { return c !== btn; })[0];
+      var clash = other && other.row && (row[1] === '4 件'
+        ? !(other.row[0] === row[0] && other.row[1] === '2 件')
+        : other.row[1] === '4 件' && other.row[0] !== row[0]);
+      if (clash) fill(other, null);
+      if (other && !other.row && row[1] === '4 件') {
+        var two = options('套装').filter(function (r) {
+          return r[0] === row[0] && r[1] === '2 件';
+        })[0];
+        if (two) fill(other, two);
+      }
     }
     close();
     write();
@@ -1161,17 +1226,18 @@
     [].forEach.call(pen.querySelectorAll('.slot-count'), function (box) {
       setCount(box.closest('.slot'), Number(box.dataset.n));
     });
-    // 之灵那两格与异域枪的两个 Perk 格都是自动收放的，收回去之后行与组的格数
-    // 跟着复位——不复位会留下一行按四列排的护甲与一组按三格排的异域枪。
+    // 之灵那两格与异域枪的两格词条都是自动收放的，收回去之后行与组的格数
+    // 跟着复位——不复位会留下一行按四列排的护甲与一组按两列排的异域枪。
     [].forEach.call(pen.querySelectorAll('.spirits'), function (box) {
       box.hidden = true;
       sizeArmor(box.parentNode);
     });
-    [].forEach.call(pen.querySelectorAll('#sec-2 .rig'), function (rig) {
-      [].forEach.call(rig.querySelectorAll('[data-slot="异域词条"]'), function (c) {
+    [].forEach.call(pen.querySelectorAll('.ex-perks'), function (box) {
+      [].forEach.call(box.querySelectorAll('[data-slot="异域词条"]'), function (c) {
         c.hidden = true;
       });
-      sizeRig(rig);
+      box.hidden = true;
+      sizeExRig(box.closest('.rig'));
     });
     state.职业 = state.分支 = state.神器 = state.核心 = '';
     mods().forEach(function (m) { m.dataset.kind = ''; });
@@ -1204,6 +1270,14 @@
     }
     /* 收起的格子先放出来再填：留着 hidden 的格子有值，源稿里会凭空多一项。 */
     function reveal(cell) {
+      // 之灵与异域词条那几格住在一个平时收着的盒子里：只放开格子、盒子照旧藏着，
+      // 页面上就是一件光杆装备。
+      var box = cell.closest('.spirits, .ex-perks');
+      if (box && box.hidden) {
+        box.hidden = false;
+        if (box.classList.contains('spirits')) sizeArmor(box.parentNode);
+        else sizeExRig(box.closest('.rig'));
+      }
       var li = cell.closest('li');
       if (!cell.hidden && !(li && li.hidden)) return;
       var mark = cell.dataset.addable || (li && li.dataset.addable);
@@ -1263,6 +1337,7 @@
       var exSeg = gun.split('|');
       var exCell = cells('[data-slot="异域武器"]')[0];
       put('异域武器', '', exSeg[0].trim(), exCell);
+      if (exCell) syncExPerks(exCell);
       var exPcs = cells('[data-slot="异域词条"]', exCell && exCell.parentNode);
       (exSeg[1] || '').split('、').map(function (x) { return x.trim(); })
         .filter(Boolean).forEach(function (pk, k) { put('异域词条', '', pk, exPcs[k]); });

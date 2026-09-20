@@ -479,6 +479,12 @@ button.item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
 .spirits > .item.gear .nm { font-size: 11px; }
 .spirits > .item.gear.empty { min-height: 34px; }
 
+/* 异域武器：枪在左，它选得出来的词条在右边竖排——与上面职业物品带两条之灵
+   同一种读法。词条格是 .rig 的 flex 子项，所以这一层要自己声明 flex：
+   .rig > .item 那一条只管按钮，管不到这个盒子。 */
+.ex-perks { flex: 1 1 0; min-width: 0; display: grid; gap: 4px; align-content: stretch; }
+.ex-perks > .item.perk-cell.empty { min-height: 34px; }
+
 /* Perk 挂在它那把枪后面，收窄一档读作从属 */
 .item.perk-cell { padding: 8px; }
 .item.perk-cell img { width: 24px; height: 24px; }
@@ -1080,6 +1086,8 @@ body:has(.entries) { --wrap: 1500px; }
    连同已经填好的第一条一起收掉。 */
 #sheet.preview .cells > li:not(:has(.item:not(.empty))),
 #sheet.preview .rig > .item.empty,
+#sheet.preview .ex-perks > .item.empty,
+#sheet.preview .ex-perks:not(:has(.item:not(.empty))),
 #sheet.preview .pair > .item.empty,
 #sheet.preview .slot h3 > .item.empty,
 #sheet.preview .slot-tool,

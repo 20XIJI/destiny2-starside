@@ -328,6 +328,110 @@ class CellSplitting(unittest.TestCase):
 
 
 
+class FormCandidates(unittest.TestCase):
+    """填表页每一格只列这一格选得出来的。
+
+    按栏收：一栏的词条在另一栏上开不出来。
+
+    两格共用一份候选时，填表人选得出一套游戏里配不出来的枪——「无足雨燕」第一栏
+    的萤火虫与第二栏的亡命之徒能同时选上，而那两条本来就在同一把枪的两列里各选
+    一条。异域那一组同理：故我在是「五种刀剑框架 | 八条异域固有」，英勇利刃是
+    「四枚催化 | 三枚核心」。
+
+    另一条：**选得出来才出格子**。141 把异域里只有 18 把的词条是掉落时开的，
+    其余钉死；从前每一把都冒出两个词条格，点开是一张挑不出东西的网格。
+    """
+
+    SITE = TOOLS.parent / 'site'
+
+    def vocab(self):
+        text = (self.SITE / 'builds' / 'vocab.js').read_text(encoding='utf-8')
+        self.text = text
+
+        def field(key):
+            hit = markup.must(re.search(r'^%s: (\{.*\})[,;]?$' % key, text, re.M),
+                              'builds/vocab.js 里没有 %s：先跑一次 npm run build' % key)
+            return json.loads(hit.group(1))
+        return field('perks'), field('exoticCols'), ArtifactPicker.rows(text, 'Perk')
+
+    def test_a_legendary_gun_lists_each_column_on_its_own_cell(self):
+        perks, _, plist = self.vocab()
+        self.assertGreater(len(perks), 700, '武器的词条池是空的')
+        for name, cols in perks.items():
+            with self.subTest(gun=name):
+                self.assertEqual(len(cols), 3,
+                                 '%s 的词条池不是「一栏、二栏、起源栏」三份' % name)
+                for at in [i for c in cols for i in c]:
+                    self.assertLess(at, len(plist), '%s 的下标指到 Perk 列表之外' % name)
+        both = [n for n, c in perks.items() if c[0] and c[1]]
+        self.assertGreater(len(both), 700, '两栏都有候选的枪只剩 %d 把' % len(both))
+        # 同一把枪的两栏不该是同一份：那正是从前两格共用一份候选的样子。
+        same = [n for n, c in perks.items() if c[0] and c[0] == c[1]]
+        self.assertEqual(same[:5], [], '这些枪的两栏候选一模一样')
+
+    def test_only_an_exotic_with_a_real_choice_gets_perk_cells(self):
+        _, ex, _ = self.vocab()
+        for name, cols in ex.items():
+            with self.subTest(gun=name):
+                self.assertLessEqual(len(cols), 2, '%s 列了两栏以上' % name)
+                for one in cols:
+                    self.assertGreater(len(one), 1,
+                                       '%s 有一栏只有一个选项，那不是「选」' % name)
+        self.assertEqual([len(c) for c in ex['故我在']], [5, 8],
+                         '故我在应是五种刀剑框架加八条异域固有')
+        self.assertEqual([len(c) for c in ex['英勇利刃']], [4, 3],
+                         '英勇利刃应是四枚催化加三枚核心')
+        self.assertNotIn('荆棘', ex, '词条钉死的异域不该出词条格')
+        self.assertLess(len(ex), 40, '有得选的异域忽然多了一批：%d 把' % len(ex))
+
+    def test_the_exotic_gun_cell_lists_each_gun_once(self):
+        """异域武器那一栏只收真装备：组合行是同一把枪换一套固有，不是另一把异域。"""
+        self.vocab()
+        guns = [r[0] for r in ArtifactPicker.rows(self.text, '异域武器')]
+        self.assertEqual(len(guns), len(set(guns)), '异域武器那一栏有重名')
+        for name in ('故我在', '英勇利刃'):
+            same = [n for n in guns if n.startswith(name)]
+            self.assertEqual(same, [name], '%s 在清单里出现了 %d 次' % (name, len(same)))
+
+    def test_a_weapon_knows_which_slot_it_takes(self):
+        """三个槽位各装一把枪：填表页靠 `buckets` 挡住两把枪抢同一个槽。
+
+        购物清单那四页按弹药分（主武器、特殊、威能），不是按槽位分——动能与能量两个
+        槽都装得下主武器与特殊武器，按页面判会把半数选项判错。
+        """
+        text = (self.SITE / 'builds' / 'vocab.js').read_text(encoding='utf-8')
+        got = json.loads(markup.must(
+            re.search(r'^buckets: (\{.*\})[,;]?$', text, re.M),
+            'builds/vocab.js 里没有 buckets').group(1))
+        self.assertEqual(set(got.values()), {'k', 'e', 'h'}, '槽位不是那三个')
+        self.assertEqual((got.get('故我在'), got.get('英勇利刃')), ('e', 'k'),
+                         '故我在占能量槽、英勇利刃占动能槽')
+        for key in ('异域武器', '传说武器'):
+            miss = [r[0] for r in ArtifactPicker.rows(text, key) if r[0] not in got]
+            self.assertEqual(miss[:5], [], '%s 里有 %d 把枪没有槽位' % (key, len(miss)))
+
+    def test_the_armor_cell_lists_only_what_can_be_worn(self):
+        """异域护甲那一栏：穿得上的才进词表，之灵留着但归那两格。
+
+        「永劫教派」那三条是 itemType 19 的模组，配装里穿不上；之灵不是单独穿得上
+        的一件，摆在主格里会让人把「噬星者之灵」当成一件异域护甲填进去。
+        """
+        self.vocab()
+        armor = ArtifactPicker.rows(self.text, '异域护甲')
+        kinds = {r[1] for r in armor}
+        self.assertNotIn('永劫教派', kinds, '穿不上的学派模组又进了异域护甲那一栏')
+        spirits = json.loads(markup.must(
+            re.search(r'^spirits: (\{.*\})[,;]?$', self.text, re.M),
+            'builds/vocab.js 里没有 spirits').group(1))
+        names = {n for cols in spirits.values() for one in cols for n in one}
+        self.assertEqual(len(names), 36, '之灵不是 36 条：%d' % len(names))
+        have = {r[0] for r in armor}
+        self.assertTrue(names <= have, '之灵掉出了词表，那两格就列不出候选')
+        # 主格列的是这一栏减掉之灵：三个职业各 45 件加三件职业物品。
+        self.assertEqual(len(have - names), 138,
+                         '主格列得出 %d 件，应是 45×3 加三件职业物品' % len(have - names))
+
+
 class ArtifactPicker(unittest.TestCase):
     """填表页挑神器模组，靠 form.js 的 bare() 把分节标题「废墟石板 （异端）」切成
     神器名。切分符号从前在 vocab.bare_kind 与 form.js 各写一份，改一处就错开：

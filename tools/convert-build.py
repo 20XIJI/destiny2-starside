@@ -401,10 +401,6 @@ def exotic_gun(md):
 
 EX_IDX = None
 
-# 选中这把异域时两个词条格预填成这一组。库里没有「默认」这一位——它是编辑判断，
-# 不是 manifest 的事实：英勇利刃的配装一律按超利刃 + 冲击核心写。填表人照样改得掉。
-EX_DEFAULT = {'英勇利刃': ['超利刃', '冲击核心']}
-
 
 def ex_perk_slot(name):
     """异域的词条查哪个槽：先看异域武器详解页上它自己那一条，没有再落回武器 PERK
@@ -1356,6 +1352,68 @@ def render_index(made, sets=False):
                '%d %s' % (len(live), '个合集' if sets else '套配装'))
 
 
+# 三个武器槽位的 bucketTypeHash。一把枪只属于一个槽，与装备库的预选行同一份口径。
+BUCKET = {'1498876634': 'k', '2465295065': 'e', '953998645': 'h'}
+
+
+def weapon_buckets(idx):
+    """`{武器名: 'k'|'e'|'h'}`：这把枪占哪个槽。
+
+    填表页靠它挡住「两把枪抢同一个槽」——异域选了能量枪，两把传说就只剩动能与
+    威能可填。购物清单那四页按弹药分（主武器、特殊、威能），不是按槽位分：
+    动能与能量两个槽都装得下主武器与特殊武器，按页面判会把半数选项判错。
+    """
+    facts = rows.facts()
+    pages = set(vocab.SLOTS['传说武器'] + vocab.SLOTS['异域武器'])
+    out = {}
+    for hits in idx.values():
+        for e in hits:
+            if e.get('page') not in pages:
+                continue
+            rec = facts.items.get(str((e.get('keys') or [None])[0])) or {}
+            got = BUCKET.get(str((rec.get('inventory') or {}).get('bucketTypeHash')))
+            if got:
+                out[e['name']] = got
+    return out
+
+
+def real_weapons(idx):
+    """异域武器那一栏里选得出来的：库里真有那件武器的名字。
+
+    详解页上还有几条站内自发的组合行（「故我在（电弧元素）」「英勇利刃 2：冲击
+    核心」），它们说的是同一把枪换一套固有之后的样子，不是另一把异域；摆进选择器
+    就是故我在在清单里出现五遍。选哪一套固有归词条那两格管，见 exotic_columns()。
+    """
+    facts = rows.facts()
+    return {e['name'] for hits in idx.values() for e in hits
+            if e.get('page') == 'exotic-weapon'
+            and (facts.items.get(str((e.get('keys') or [None])[0])) or {}
+                 ).get('itemType') == 3}
+
+
+def wearable_armor(idx):
+    """异域护甲那一栏里穿得上的名字：护甲件，加职业物品那两栏的 36 条之灵。
+
+    异域护甲详解页上还列着「永劫教派」那三条，它们是 `itemType` 19 的模组
+    （库里写「永劫教派模组 普通」），资料页上照列，配装里穿不上——摆进选择器
+    只是三条选了也生成不出源稿的噪声。判据现取，不写名单。
+    """
+    facts = rows.facts()
+    spirits = {str(h) for rec in facts.items.values()
+               for col in rec.get('site_perkColumns') or ()
+               for h in col}
+    out = set()
+    for hits in idx.values():
+        for e in hits:
+            if e.get('page') != 'exotic-armor':
+                continue
+            key = str((e.get('keys') or [None])[0])
+            rec = facts.items.get(key) or {}
+            if rec.get('itemType') == 2 or key in spirits:
+                out.add(e['name'])
+    return out
+
+
 def render_vocab(idx):
     """builds/vocab.js：填表页的词表。
 
@@ -1372,10 +1430,16 @@ def render_vocab(idx):
     """
     by_slot = {}
     pinned = set(vocab.SLOT_KIND.values())
+    wear = wearable_armor(idx)
+    guns = real_weapons(idx)
     for hits in idx.values():
         for e in hits:
             bare = vocab.bare_kind(e['kind'])
             for slot, pages in vocab.SLOTS.items():
+                if slot == '异域护甲' and e['name'] not in wear:
+                    continue
+                if slot == '异域武器' and e['name'] not in guns:
+                    continue
                 # 钉了分节的槽位只收那一种，别的槽位反过来不收它们：异域武器详解页上
                 # 武器行与它的词条同页，只按页面分会把 488 条词条并进异域武器那一栏。
                 want = vocab.SLOT_KIND.get(slot)
@@ -1416,13 +1480,13 @@ def render_vocab(idx):
     # 全部列不出候选，而页面照常渲染、三道闸门全绿。测试当时只能拿正则去
     # form.js 的源码里刮那个字面量。现在从这里发过去，两边同一个来源。
     body = ('window.starsideVocab = {\nsep: %s,\nlists: {\n%s\n},\nslots: %s,'
-            '\nperks: %s,\nspirits: %s,\nexotic: %s,\nexoticDefault: %s\n};\n'
+            '\nperks: %s,\nspirits: %s,\nexoticCols: %s,\nbuckets: %s\n};\n'
             % (json.dumps(vocab.KIND_TAIL, ensure_ascii=False),
                ',\n'.join(rows), json.dumps(slots, ensure_ascii=False),
                json.dumps(weapon_perks(idx, perk_at), ensure_ascii=False, sort_keys=True),
                json.dumps(spirit_columns(idx), ensure_ascii=False, sort_keys=True),
-               json.dumps(exotic_perk_names(idx), ensure_ascii=False, sort_keys=True),
-               json.dumps(EX_DEFAULT, ensure_ascii=False, sort_keys=True)))
+               json.dumps(exotic_columns(idx), ensure_ascii=False, sort_keys=True),
+               json.dumps(weapon_buckets(idx), ensure_ascii=False, sort_keys=True)))
     path = os.path.join(shell.SITE, OUT_DIR, 'vocab.js')
     with open(path, 'w', encoding='utf-8') as f:
         f.write(body)
@@ -1431,14 +1495,16 @@ def render_vocab(idx):
 
 
 def weapon_perks(idx, perk_at):
-    """`{武器名: [Perk 列表下标…]}`：这把枪自己开得出来的词条。
+    """`{武器名: [[Perk 一栏的下标…], [二栏…], [起源栏…]]}`：这把枪各栏开得出来的。
 
-    从前 Perk 那两格列的是整张武器 PERK 页（395 条），选出来的组合枪上开不出来。
-    池走 `Facts.pool()` 的特征栏与起源栏，与装备库同一份取法；主键取索引条目自己
-    带的那一枚，不按名字反查——「隐士（冲锋枪）」这类带消歧括注的名字查不回去。
+    从前 Perk 那两格列的是整张武器 PERK 页（395 条），选出来的组合枪上开不出来；
+    后来收到「这把枪自己的池」，两格却共用同一份——一栏的词条在另一栏上开不出来。
+    现在**栏序即下标**：第一格只列第一栏，第二格只列第二栏，起源特性那一格列起源栏。
+    池走 `Facts.pool()`，与装备库同一份取法；主键取索引条目自己带的那一枚，不按名字
+    反查——「隐士（冲锋枪）」这类带消歧括注的名字查不回去。
 
     只留在武器 PERK 页上有条目的那些：源稿写下的名字要由 `vocab.pick` 查得到图标与
-    链接，页上没有的写进去，生成器当场中止。692 把因此有候选，其余照旧列整页——
+    链接，页上没有的写进去，生成器当场中止。一栏都空的不进表，那一格照旧列整页——
     列不全好过列不出来。
     """
     facts = rows.facts()
@@ -1452,38 +1518,88 @@ def weapon_perks(idx, perk_at):
             rec = facts.items.get(str(key)) if key else None
             if not rec or rec.get('itemType') != 3:
                 continue
-            got = set()
+            traits, origin = [], set()
             for col in facts.pool(str(key)):
                 kind = ((facts.socket_types.get(str(col['type'])) or {})
                         .get('derived') or {}).get('kind')
                 if col.get('gear') or kind not in ('trait', 'origin'):
                     continue
-                for p in list(col.get('plugs') or ()) + ([col['init']] if col.get('init') else []):
-                    at = perk_at.get(facts.name(p))
-                    if at is not None:
-                        got.add(at)
-            if got:
-                out.setdefault(e['name'], set()).update(got)
-    return {n: sorted(v) for n, v in out.items()}
+                got = {at for p in list(col.get('plugs') or ())
+                       + ([col['init']] if col.get('init') else [])
+                       for at in [perk_at.get(facts.name(p))] if at is not None}
+                if kind == 'origin':
+                    origin |= got
+                else:
+                    traits.append(got)
+            got = (traits + [set(), set()])[:2] + [origin]
+            if not any(got):
+                continue
+            # 同一把枪在几页上各有一条索引，按栏并——不是按整把并。
+            have = out.setdefault(e['name'], [set(), set(), set()])
+            for a, b in zip(have, got):
+                a |= b
+    return {n: [sorted(c) for c in v] for n, v in out.items()}
 
 
-def exotic_perk_names(idx):
-    """`{异域武器名: [词条名…]}`：这把异域自己开得出来的。
+def exotic_columns(idx):
+    """`{异域武器名: [[第一栏的名字…], [第二栏…]]}`：这把异域自己选得出来的几栏。
 
-    两处并起来。一处是「异域特性」格里那几条（故我在的八条固有与五种框架、英勇
-    利刃的三枚核心与四枚催化），它们各是一件东西、只在异域武器详解页上；另一处是
-    可 roll 的异域那一列（零号修订、死亡信使这些），条目在武器 PERK 页上。
+    **一栏至少两枚才算选得出来。**141 把异域里 85 把有得选，其余那 56 把的词条是
+    掉落时就钉死的；从前它们照样冒出两个词条格，点开是一张挑不出东西的网格。
+
+    按这个顺序取前两栏：特征栏（零号修订可 roll 的那一列、故我在的五种刀剑框架）、
+    固有栏（故我在的八条异域固有）、催化剂（英勇利刃四选一，任务态那条不算，
+    判据在 `rows.live_catalyst`）、异域选项栏（英勇利刃的三枚核心）。故我在因此是
+    「框架 | 固有」，英勇利刃是「催化 | 核心」，两处都与游戏里的选法对得上。
+
+    名字要在填表页那两份候选里查得到（异域词条与武器 PERK），否则选出来的那一条
+    生成器落不到主键上。剩不到两枚的栏整栏丢掉。
     """
     facts = rows.facts()
+    ok = {e['name'] for hits in idx.values() for e in hits
+          if (e.get('page') == 'exotic-weapon'
+              and vocab.bare_kind(e.get('kind', '')) == '异域词条')
+          or (e.get('page') == 'weapon-perks'
+              and vocab.bare_kind(e.get('kind', '')) == '武器 PERK')}
+
+    def columns(key):
+        rec = facts.at(key) or {}
+        trait, intrinsic = [], []
+        for col in facts.pool(key):
+            kind = ((facts.socket_types.get(str(col['type'])) or {})
+                    .get('derived') or {}).get('kind')
+            if col.get('gear') or kind not in ('trait', 'intrinsic'):
+                continue
+            (trait if kind == 'trait' else intrinsic).append(
+                [facts.name(p) for p in col.get('plugs') or ()])
+        # 催化那一栏按**催化剂的枚数**判，不按名字条数：一枚催化剂给几条效果
+        # （条件终局那枚同时给治疗弹匣与霜华窃取者）不是「几选一」，与
+        # rows.exotic_perks() 的 picks 同一条。
+        live = [str(c) for c in (rec.get('derived') or {}).get('catalyst') or ()
+                if rows.live_catalyst(str(c))]
+        cat = [rows.name_of('perk:%s' % p['perkHash']) or facts.name(c)
+               for c in live
+               for p in (facts.at(c) or {}).get('perks') or [{'perkHash': 0}]] \
+            if len(live) > 1 else []
+        got = trait + intrinsic + [cat] + [[facts.name(h) for h in g]
+                                           for g in rows.option_plugs(rec)]
+        out = []
+        for one in got:
+            names = [n for n in dict.fromkeys(one) if n in ok]
+            if len(names) > 1:
+                out.append(names)
+        return out[:2]
+
     out = {}
     for hits in idx.values():
         for e in hits:
             if e.get('page') != 'exotic-weapon' or e.get('kind') == '异域词条':
                 continue
             key = str((e.get('keys') or [None])[0])
-            if not facts.at(key):
+            rec = facts.at(key)
+            if not rec or rec.get('itemType') != 3:
                 continue
-            got = list(rows.exotic_pool(key))
+            got = columns(key)
             if got:
                 out[e['name']] = got
     return out
@@ -1556,7 +1672,8 @@ def slot_cell(slot, kind='', cls='item', label='', bare=False, hidden=False,
     # data-addable 是「这一格由某枚按钮叫出来」的记号，按钮上的 data-add 与它对上。
     # 记号落在最外层：不套 <li> 的（rig 里的格子）就落在按钮自己身上。
     mark = (' data-addable="%s"' % addable if addable else '') + (' hidden' if hidden else '')
-    # data-col 是异域职业物品那两格：候选只列它自己那一栏的 8 条之灵。
+    # data-col 是栏序：候选只列这一栏开得出来的那几条。异域职业物品的两条之灵、
+    # 异域武器的两栏词条、传说枪的 Perk 1 / Perk 2 / 起源特性都按它收窄。
     cell = ('<button type="button" class="%s empty" data-slot="%s"%s%s%s>'
             '<span class="nm">%s</span></button>'
             % (cls, slot, ' data-kind="%s"' % kind if kind else '',
@@ -1613,24 +1730,29 @@ def new_blocks():
         # 所以单给一格、默认收起，按 ＋ 才出来。
         return rig_of([slot_cell(name, cls='item gun', label=name, bare=True),
                        slot_cell('Perk', kind='武器 PERK', cls='item perk-cell',
-                                 label='Perk', bare=True),
+                                 label='Perk 1', bare=True, col='1'),
                        slot_cell('Perk', kind='武器 PERK', cls='item perk-cell',
-                                 label='Perk', bare=True),
+                                 label='Perk 2', bare=True, col='2'),
                        slot_cell('Perk', kind='起源特性', cls='item perk-cell',
                                  label='起源特性', bare=True, hidden=True,
-                                 addable='起源特性')],
+                                 addable='起源特性', col='3')],
                       tool='<button type="button" class="op slot-tool" data-add="起源特性"'
                            ' title="加一个起源特性" aria-label="加一个起源特性">'
                            '＋</button>')
 
-    # 异域那一组也备着两个 Perk 格：可 roll 的异域（零号修订、死亡信使这些）两列
-    # 词条与传说枪一样能挑，词表里查得到候选时它们才冒出来。
-    o += row([rig_of([slot_cell('异域武器', cls='item gun', label='异域武器', bare=True),
-                      slot_cell('异域词条', cls='item perk-cell',
-                                label='词条', bare=True, hidden=True),
-                      slot_cell('异域词条', cls='item perk-cell',
-                                label='词条', bare=True, hidden=True)]),
-              gun_rig('传说武器'), gun_rig('传说武器')])
+    # 异域那一组：枪在左，它选得出来的词条在右边竖排两行——与异域职业物品的两条
+    # 之灵同一种读法。一栏一格，候选按 data-col 收到它自己那一栏；选不出词条的
+    # 异域（141 把里 56 把）一格都不出。收放由 form.js 按词表判，不给按钮：
+    # 那是游戏规则不是版面偏好。--n / --c 由 form.js 的 sizeExRig() 跟着改。
+    ex = ('<div class="rig ex-rig" style="--n:15;--c:1">'
+          + slot_cell('异域武器', cls='item gun', label='异域武器', bare=True)
+          + '<div class="ex-perks" hidden>'
+          + slot_cell('异域词条', cls='item perk-cell', label='词条', bare=True,
+                      hidden=True, col='1')
+          + slot_cell('异域词条', cls='item perk-cell', label='词条', bare=True,
+                      hidden=True, col='2')
+          + '</div></div>')
+    o += row([ex, gun_rig('传说武器'), gun_rig('传说武器')])
     o += ['</section>', '']
 
     # 神器先选件，七个模组按它限定——「电介质」在加密数据盘与废墟石板下各有一条。
