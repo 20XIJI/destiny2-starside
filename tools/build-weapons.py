@@ -707,7 +707,7 @@ def stamp():
     """页脚的更新时间：评级与站内正文来自的那几页里最晚的一天。"""
     dates = []
     for page in sorted(set(rows.AUTHORED) | rows.EXOTIC):
-        with open(os.path.join(shell.DOC_DIR, page + '.md'), encoding='utf-8') as f:
+        with open(rows.src_path(page), encoding='utf-8') as f:
             got = markup.meta_of(f.read(), '更新')
         dates.append((tuple(int(x) for x in got.split('.')), got))
     return max(dates)[1]

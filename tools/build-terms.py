@@ -85,7 +85,7 @@ def build():
     lines.append('guard: %s,' % j(items.GUARD))
     # G1 的白名单与 G6 的正查范围，两处都照 Python 那一侧原样带过去，不在前端另立。
     lines.append('keep: %s,' % j(check_terms.KEEP))
-    lines.append('g6: %s,' % j(sorted(p[len('references/docs/'):-3] for p in items.pages())))
+    lines.append('g6: %s,' % j(sorted(os.path.basename(p)[:-3] for p in items.pages())))
     lines.append('items: [')
     lines += ['  %s,' % j([w, tok, kind]) for w, (tok, kind) in words]
     lines.append(']}\n')
@@ -114,15 +114,13 @@ def tree():
             group[href.replace('/index.html', '')] = m.group(1)
 
     docs = {}
-    for name in sorted(os.listdir(os.path.join(shell.ROOT, check_terms.DOC_DIR))):
-        if not name.endswith('.md'):
-            continue
-        md = open(os.path.join(shell.ROOT, check_terms.DOC_DIR, name), encoding='utf-8').read()
-        slug = name[:-3]
+    for slug, path in shell.sources():
+        md = open(path, encoding='utf-8').read()
+        name = os.path.basename(path)
         where = re.search(r'^路径：(.*)$', md, re.M)
         stamp = re.search(r'^更新：(.*)$', md, re.M)
         docs[slug] = {
-            'id': 'docs/' + slug,
+            'id': shell.doc_id(path),
             'title': markup.must(re.match(r'#\s+(.+)', md),
                                  '%s 首行不是「# 标题」' % name).group(1).strip(),
             'where': where.group(1).strip() if where else slug,

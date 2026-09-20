@@ -20,16 +20,57 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE = os.path.join(ROOT, 'site')
 
 HOME = 'index.html'
-# 两个专属生成器各出一页，其余的从 references/docs/ 现扫——新增一篇资料就不必
-# 记得回来改这张表了。
+# 两个专属生成器各出一页，其余的从源稿现扫——新增一篇资料就不必记得回来改这张表了。
 FIXED = [HOME, 'armor-sets/index.html', 'artifact-mods/index.html',
          'weapons/index.html']
+# 源稿分两处，判据是这一页的行写不写主键：`keys/` 是主键骨架，行的内容在 data/ 的
+# 记录上，源稿只写主键、顺序与分节；`docs/` 是散文与表，内容就在源稿里。两处同构
+# ——一篇 .md 一个页面，库里的 `_id` 就是它在 `references/` 下的相对路径去掉 `.md`，
+# 所以清单、闸门与词表都走下面这两个函数，不各自拼路径。
 DOC_DIR = os.path.join(ROOT, 'references', 'docs')
+KEY_DIR = os.path.join(ROOT, 'references', 'keys')
 BUILD_DIR = os.path.join(ROOT, 'references', 'builds')
+
+
+def src_dirs():
+    """两处源稿的绝对路径。**按 ROOT 现拼**：回归把 ROOT 换成临时目录，
+    模块加载时算死的常量跟不过去，整套夹具会落在真仓库上。"""
+    return (os.path.join(ROOT, 'references', 'docs'),
+            os.path.join(ROOT, 'references', 'keys'))
 # 当前赛季。配装按赛季目录存档，**只有这一季进页面清单**——旧赛季照常生成（外壳
 # 因此不与全站分叉），但索引页、全站搜索与外壳闸门都不收，站内点不到；手里已有
 # 链接的人仍打得开。换季改这一个字符串。
 SEASON = 's29'
+
+
+def sources():
+    """全部资料页源稿：[(slug, 绝对路径)]，按 slug 排，两处合成一份清单。
+
+    两个专属生成器那两篇（artifact-mods、armor-sets）也在里面：它们与别的资料页
+    同构，只是各有各的生成器。
+    """
+    out = []
+    for d in src_dirs():
+        if not os.path.isdir(d):
+            continue
+        out += [(n[:-len('.md')], os.path.join(d, n))
+                for n in os.listdir(d) if n.endswith('.md')]
+    return sorted(out)
+
+
+def source_path(slug):
+    """一篇源稿的绝对路径。两处现找，找不到回 None。"""
+    for d in src_dirs():
+        p = os.path.join(d, slug + '.md')
+        if os.path.exists(p):
+            return p
+    return None
+
+
+def doc_id(path):
+    """源稿路径 → 库里的 `_id`（`docs/arc`、`keys/weapon-perks`）。"""
+    return os.path.relpath(path, os.path.join(ROOT, 'references')).replace(
+        os.sep, '/')[:-len('.md')]
 
 
 def pages():
@@ -38,13 +79,13 @@ def pages():
     外壳闸门与全站搜索索引都从这里取，两处因此不会各扫各的。
     """
     out = list(FIXED)
-    for name in sorted(os.listdir(DOC_DIR)):
-        if not name.endswith('.md'):
+    for slug, path in sources():
+        if '%s/index.html' % slug in FIXED:
             continue
-        with open(os.path.join(DOC_DIR, name), encoding='utf-8') as f:
+        with open(path, encoding='utf-8') as f:
             md = f.read()
         where = re.search(r'^路径：(.*)$', md, re.M)
-        out.append('%s/index.html' % (where.group(1).strip() if where else name[:-3]))
+        out.append('%s/index.html' % (where.group(1).strip() if where else slug))
     # 合集索引页只在真有合集时才出，也只在那时进清单——一个都没有时出一张空
     # 索引不如不出，而清单里挂一个不存在的页面会让外壳闸门当场报错。判据与
     # convert-build.py 的 main() 同一条。

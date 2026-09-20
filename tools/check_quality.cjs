@@ -684,8 +684,8 @@ test('both entry points load the dialect before the console that uses it', () =>
 test('the dialect splits every real table row into cells that agree with its own count', () => {
   const D = require(path.join(site, 'admin/dialect.js'))
   const rows = tableRows()
-  // 17 页改写成主键骨架之后表格行剩 3841 行，下限与 Python 那一侧同取 3500。
-  assert.ok(rows.length > 3500, `只扫到 ${rows.length} 行表格行，语料挪走了？`)
+  // 主键骨架那 23 篇没有表格行，语料就是 docs/ 那 16 篇；下限与 Python 那一侧同取 1800。
+  assert.ok(rows.length > 1800, `只扫到 ${rows.length} 行表格行，语料挪走了？`)
   for (const [where, n, line] of rows) {
     const spans = D.cellSpans(line)
     assert.notEqual(spans, null, `${where}:${n} 整行不认——那一格永远改不了`)

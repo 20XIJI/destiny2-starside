@@ -16,7 +16,7 @@ render_table，渲染链不必知道格子从哪来。
 
 - 行标题：源稿。
 - 站内写的：「数据源：是」那几页落在记录本体的 `i18n.zh-CN`，购物清单与刷取清单落在
-  `authors.<作者>`。字段名按 research.fields_of()：首列 name、「图标」icon、「说明」
+  `authors.<作者>`。字段名按 fields_of()：首列 name、「图标」icon、「说明」
   realgame_details，其余即列名，同一张表里重名的第二列加 `#2`。同一枚主键在一页里
   第 k 次出现取第 k 段：本页标了 `page` 的变体排最前，然后是本体，再是其余变体。
 - 从主键现取：DERIVED 那几列，见各自的函数。
@@ -38,7 +38,6 @@ import re
 
 import icons
 import markup
-import research
 import resolve
 import shell
 from facts import shown
@@ -96,6 +95,83 @@ def facts():
     if _FACTS is None:
         _FACTS = resolve.shared()[0]
     return _FACTS
+
+
+# 列名 → 字段名。只有这三个另起名字，其余用列名本身。
+RENAME = {'图标': 'icon', '说明': 'realgame_details'}
+
+
+def src_path(page):
+    """一页源稿的绝对路径。主键骨架在 references/keys/，散文与表在 docs/。"""
+    got = shell.source_path(page)
+    if got is None:
+        markup.die('找不到源稿：%s' % page)
+    return got
+
+
+def heads(page):
+    """一页源稿表区里每一行的行首主键，按出现顺序。
+
+    表区是「列：」那一行加紧接着的连续非空行，遇空行或 `##` 结束。一行可以写
+    好几枚主键，第一枚是行首、说的是这一行那件东西，其余是它盖住的别的 hash。
+    横幅行（`== 组名 ==`）不带主键，跳过。
+
+    源稿只剩主键清单，所以这是「这一页有哪些行」的唯一入口。
+    """
+    out, inside = [], False
+    with open(src_path(page), encoding='utf-8') as fh:
+        for line in fh:
+            line = line.rstrip('\n')
+            if line.startswith('列：'):
+                inside = True
+                continue
+            if not line.strip() or line.startswith('##'):
+                inside = False
+                continue
+            if not inside or line.strip().startswith('=='):
+                continue
+            keys = line.strip().partition('  ')[0].split()
+            if keys:
+                out.append(keys[0])
+    return out
+
+
+def fields_of(head):
+    """表头各格 → 各自的字段名。
+
+    重名列加序号后缀：异域护甲页有一张 `左栏|图标|说明|右栏|图标|说明`，一行摆
+    两件东西。不加后缀，后三格会盖掉前三格，一行两件变成同一件画两遍。
+    """
+    out, seen = [], {}
+    for col in head:
+        name = 'name' if col == head[0] else RENAME.get(col, col)
+        seen[name] = seen.get(name, 0) + 1
+        out.append(name if seen[name] == 1 else '%s#%d' % (name, seen[name]))
+    return out
+
+
+def where_of(page):
+    """页面的产出目录。「路径：」把它挂到子目录里，缺省就是 slug 本身。
+
+    与 convert-doc.where_of() 同一条判据；跨页链接按目录拼，取错了整条链接落空。
+    """
+    with open(src_path(page), encoding='utf-8') as f:
+        got = re.search(r'^路径：(.*)$', f.read(), re.M)
+    return got.group(1).strip() if got else page
+
+
+def minted(page, shown):
+    """行标题落不到库里的主键上时，按页与显示名合成一个。
+
+    59 行落在这里，三类：真机制（弩弹、刀剑格挡——库里没有对应物品）、组合行
+    （「故我在（意外缓刑）涡流」）、复刻版本行（「陨落铡刀猛攻版本」）。后两类其实
+    是解析失败，早晚该拿到真主键；合成键让它们先有个落点，实体层因此覆盖得到页面
+    上的每一行。**合成的不是 Bungie 主键，前缀写明。**
+
+    **规则只有这一处**：页面渲染与页面索引两边都调它，合出来的键必须一样，否则
+    锚点与渲染结果落不到同一条实体上。名字用渲染后的显示名（格内换行已经收掉）。
+    """
+    return 'row:%s/%s' % (page, shown)
 
 
 def is_skeleton(md):
@@ -234,7 +310,7 @@ def users():
         _USERS = collections.Counter()
         claimed = set()
         for page in EXOTIC:
-            for head in research.heads(page):
+            for head in heads(page):
                 rec = facts().at(head) or {}
                 if combo(rec):
                     claimed.update(reach(head))
@@ -256,7 +332,7 @@ def elsewhere():
     if _ELSEWHERE is None:
         _ELSEWHERE = set()
         for page in BODY - EXOTIC:
-            for head in research.heads(page):
+            for head in heads(page):
                 got = zh(facts().at(head)).get('realgame_details', '').strip()
                 if got:
                     _ELSEWHERE.add(got)
@@ -364,7 +440,7 @@ class Table:
     def __init__(self, page, where, section, head, seen):
         self.page, self.where, self.section = page, where, section
         self.head = head
-        self.fields = research.fields_of(head)
+        self.fields = fields_of(head)
         self.seen = seen            # 这一页里每枚主键已经出现过几次，跨表累计
         self.rank = 0
         self.lane = ''
@@ -509,7 +585,7 @@ class Table:
             if not tok:
                 markup.die('%s 矩阵表的列头认不出元素：%r' % (self.page, col))
             src = self.icon_src(target, title)
-            href = rel('%s/index.html' % research.where_of(tok.group(2)), self.where)
+            href = rel('%s/index.html' % where_of(tok.group(2)), self.where)
             cells.append('{%s|%s[%s](%s)}' % (tok.group(1), '![](%s) ' % src if src else '',
                                              name_of(target), href))
         return cells

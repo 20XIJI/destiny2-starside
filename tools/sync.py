@@ -40,7 +40,6 @@ import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import migrate
-import research
 import shell
 
 ROOT = shell.ROOT
@@ -96,41 +95,6 @@ def is_json(doc_id):
     return doc_id.startswith('builds/')
 
 
-def slug_of(doc_id):
-    """资料页的 _id → 源稿 slug。不是资料页就返回 None。"""
-    return doc_id[len('docs/'):] if doc_id.startswith('docs/') else None
-
-
-def whole(doc_id, text):
-    """盘上那份 → 库里那份。**资料页要把人写层补回去。**
-
-    编辑台按「源稿第几行第几格」定位，而行的内容已经搬进人写层了，盘上只剩表头。
-    库里存补全的那一份，逐格编辑、逐处审核、并发合并整套照旧成立，一行都不用改。
-    拉回来时再拆开（见 parts）。
-    """
-    slug = slug_of(doc_id)
-    return research.inject(text, slug) if slug and research.read(slug) else text
-
-
-def parts(doc_id, text):
-    """库里那份 → 盘上那几份。资料页拆成瘦源稿与人写层，别处原样一份。
-
-    返回 [(绝对路径, 正文)]。**拆不开就当场报出**，不留半截：一篇拆坏的源稿
-    静默落盘，下一次构建才炸，而那时已经看不出是谁写坏的。
-    """
-    slug = slug_of(doc_id)
-    if not (slug and research.read(slug)):
-        return [(path_of(doc_id), text)]
-    sys.path.insert(0, os.path.join(shell.ROOT, 'tools'))
-    import pagedex
-    import resolve
-    where = research.where_of(slug)
-    stamp = resolve.stamper(where) if where in pagedex.TOKENS else None
-    thin, columns, entries = research.split(slug, text, stamp)
-    research.write(slug, columns, entries)
-    return [(path_of(doc_id), thin)]
-
-
 def is_build(doc_id):
     """配装那一档。投稿这条入口只开给它。"""
     return doc_id.startswith('builds/')
@@ -161,9 +125,13 @@ def as_source(doc_id, text):
 
 
 def on_disk():
-    """盘上的全部源稿：{_id: 正文}。清单即 .gitignore 白名单放行的那几处。"""
+    """盘上的全部源稿：{_id: 正文}。清单即 .gitignore 白名单放行的那几处。
+
+    资料页分两处：`docs/` 散文与表、`keys/` 主键骨架。两处同构，`_id` 就是它在
+    `references/` 下的相对路径去掉扩展名，编辑台因此不必知道一篇落在哪一边。
+    """
     out = {}
-    heads = [os.path.join(REFS, 'docs')]
+    heads = [os.path.join(REFS, 'docs'), os.path.join(REFS, 'keys')]
     builds = os.path.join(REFS, 'builds')
     if os.path.isdir(builds):
         heads += [os.path.join(builds, d) for d in sorted(os.listdir(builds))]
@@ -174,13 +142,7 @@ def on_disk():
             if name.endswith(('.md', '.json')):
                 p = os.path.join(d, name)
                 with open(p, encoding='utf-8') as f:
-                    doc_id = id_of(p)
-                    out[doc_id] = whole(doc_id, f.read())
-    for name in ('artifact-mods.md', 'armor-sets.md'):
-        p = os.path.join(REFS, name)
-        if os.path.exists(p):
-            with open(p, encoding='utf-8') as f:
-                out[id_of(p)] = f.read()
+                    out[id_of(p)] = f.read()
     return out
 
 
@@ -361,8 +323,7 @@ def sync():
             stuck.append(doc_id)
             continue
         else:
-            for path, body in parts(doc_id, r):
-                put(path, body)
+            put(path_of(doc_id), r)
             pulled.append(doc_id)
             dh = sha1(r)
             completed = '已拉取'
@@ -437,8 +398,7 @@ def take(ids, mine):
         else:
             if doc_id not in db:
                 sys.exit('%s 库里没有，谈不上以库里的为准' % doc_id)
-            for path, body in parts(doc_id, db[doc_id]):
-                put(path, body)
+            put(path_of(doc_id), db[doc_id])
             base[doc_id] = sha1(db[doc_id])
             # 盘上就是库里这一版了，landed 跟着走：不写的话审核台一直标着「已改」，
             # 直到下一次整轮 sync 才收敛。**只在不等时才发**，与 sync() 同一个契约

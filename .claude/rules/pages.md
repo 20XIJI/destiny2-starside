@@ -8,6 +8,7 @@ paths:
   - "tools/shell.py"
   - "references/*.md"
   - "references/docs/*.md"
+  - "references/keys/*.md"
 ---
 
 # 资料页与源稿
@@ -15,14 +16,15 @@ paths:
 管三个资料生成器与它们吃的源稿：通用资料文档、神器模组页、护甲套装页，
 以及页脚归属、更新日志的写法、从 Google 表格做一页资料那条流水线。
 改 `tools/convert-doc.py`、`rows.py`、`convert-artifact-mods.py`、`convert-armor-sets.py`、
-`markup.py`、`shell.py`，或写 `references/` 下的源稿之前读这一份。
+`markup.py`、`shell.py`，或写 `references/` 下的源稿之前读这一份。源稿分两处：
+主键骨架在 `references/keys/`，散文与表在 `references/docs/`（见 `CLAUDE.md`）。
 
 产出一律不手改：改文案改 markdown，改结构改生成器的 `render()`，两种情况都重跑脚本。
 站点全局的机制与闸门在 `CLAUDE.md`，排版规范在 `design.md`。
 
 ## 资料文档页
 
-`tools/convert-doc.py` 是通用的一篇 markdown 一个页面：`references/docs/<slug>.md` → `<slug>/index.html`。加一篇资料就是往 `references/docs/` 丢一个 .md、建好输出目录与 `style.css`、跑一次脚本，再去首页 `index.html` 加一张卡片。`check_shell.py` 从 `references/docs/` 现扫页面清单，不必回去登记。前两个生成器各自绑定一种数据形状（神器/模组/档位、分类/套装/2 件 4 件），这一个不绑，走的是通用文档结构。
+`tools/convert-doc.py` 是通用的一篇 markdown 一个页面：`<slug>.md` → `<slug>/index.html`，源稿落在 `docs/` 还是 `keys/` 由 `shell.source_path()` 现找。加一篇资料就是挑一处丢一个 .md、建好输出目录与 `style.css`、跑一次脚本，再去首页 `index.html` 加一张卡片。`check_shell.py` 从两处现扫页面清单，不必回去登记。前两个生成器各自绑定一种数据形状（神器/模组/档位、分类/套装/2 件 4 件），这一个不绑，走的是通用文档结构。
 
 排版按 `design.md` 第四节：版心一档写在页面表的 `:root { --wrap: … }` 上（连续阅读 760px、宽表 1060px、全量宽表 1500px），表格走满版心，同一页里列形相同的几张表用 `table-layout: fixed` 把列宽对齐。
 
@@ -84,7 +86,7 @@ app.js 按表头文本找列、按首格开头的两位时刻找行（首列写�
 | 表格里再来一行 `\|---\|` | 另起一个 `<tbody>` |
 | 单独一格的一行 `\| == 组名 == \|` | 横幅行：`<tr class="lane">` + 跨满表宽的 `<th scope="colgroup">`，自领一个 `<tbody>` |
 | 数据行首格留空 | 向上合并进上一个行标题（`rowspan`），整表带 `data-band` 交替位 |
-| 分节里一行 `卡片：slug、slug` | 首页那种 `.entry` 卡片，一条一张。标题、描述与更新时间从 `references/docs/<slug>.md` 现读，不在这里重抄；卡片因此没有节点图标与右侧数值，那两样是首页手写的、推导不出来。这一段不进逐字保真 |
+| 分节里一行 `卡片：slug、slug` | 首页那种 `.entry` 卡片，一条一张。标题、描述与更新时间从那一篇源稿现读，不在这里重抄；卡片因此没有节点图标与右侧数值，那两样是首页手写的、推导不出来。这一段不进逐字保真 |
 | 分节里一行 `攻略：标题 \| 图 \| 链接 \| 注解` | 一行一张指向站外文档的图卡（`.guides > li > a.guide`），注解可省。连着写的几行合成一个 `<ul>`。标题与配图站内没有第二份，所以整行剥离、不进逐字保真 |
 | 分节里一行 `轮换：YYYY.M.D H:MM` | 该节的表是一条按周走的轮换轴，起始周与周界写在这里，落成表上的 `data-rota`，轮盘由 `app.js` 从表现读后建出、表随即收起。起始周按周界那一天算：游戏每周三 01:00 重置，写周一会让整轴错开 |
 | 分节里一行 `色阶：列名 阈值 阈值 …` | 该列的数值格按落在第几档带上 `data-tier`，颜色由页面样式表定。一节可写多条，一列一条 |
@@ -124,7 +126,7 @@ app.js 按表头文本找列、按首格开头的两位时刻找行（首列写�
 |---|---|
 | 行标题 | 源稿。行首是套装效果（记录带 `onSets`）时画它所属套装的名字 |
 | 图标 | 记录的 `icon_local`；带 `icon_from` 时取那一枚的；组合没有自己的图时取第一个成员的 |
-| 正文列 | 「数据源：是」那几页取记录本体的 `i18n.zh-CN`，购物清单与刷取清单取 `authors.<作者>`，归属只在 `rows.BODY`／`rows.AUTHORED` 定义。字段名按 `research.fields_of()`：「说明」是 `realgame_details`，其余即列名，同一张表里重名的第二列加 `#2` |
+| 正文列 | 「数据源：是」那几页取记录本体的 `i18n.zh-CN`，购物清单与刷取清单取 `authors.<作者>`，归属只在 `rows.BODY`／`rows.AUTHORED` 定义。字段名按 `rows.fields_of()`：「说明」是 `realgame_details`，其余即列名，同一张表里重名的第二列加 `#2` |
 | 同一主键在一页里第 k 次出现 | 依次排「本页标了 `page` 的变体、本体、其余变体」，取第 k 段 |
 | 属性、框架、框架\\射速、赛季、排名、勇士、弹药生成、充能效率、伤害、件数、费用 | 从主键现算，见 `rows.DERIVED`；组合行看第一个成员。作者块或本体写了同名字段时取写的 |
 | 异域两页的「异域 PERK」 | 固有与特征栏插着的插件名，接 `↑` 与催化剂给的效果名。与武器同名的固有框架不列；没有这两栏的物品列它自己的 `perks` |
@@ -155,7 +157,7 @@ app.js 按表头文本找列、按首格开头的两位时刻找行（首列写�
 
 ## 神器模组页
 
-`artifact-mods/index.html` 由 `tools/convert-artifact-mods.py` 从 `references/artifact-mods.md` 生成，**不手改**。改文案改 markdown，改结构改 `render()`，两种情况都重跑脚本。
+`artifact-mods/index.html` 由 `tools/convert-artifact-mods.py` 从 `references/keys/artifact-mods.md` 生成，**不手改**。改文案改 markdown，改结构改 `render()`，两种情况都重跑脚本。
 
 与护甲套装页同构：源稿是可编辑的 markdown，转换本身即保真，git diff 即变更记录，不设补丁表。
 
@@ -191,7 +193,7 @@ app.js 按表头文本找列、按首格开头的两位时刻找行（首列写�
 
 ## 护甲套装页
 
-`armor-sets/index.html` 由 `tools/convert-armor-sets.py` 从 `references/armor-sets.md` 生成，**不手改**。改文案改 markdown，改结构改 `render()`，两种情况都重跑脚本。
+`armor-sets/index.html` 由 `tools/convert-armor-sets.py` 从 `references/keys/armor-sets.md` 生成，**不手改**。改文案改 markdown，改结构改 `render()`，两种情况都重跑脚本。
 
 源稿是 Flamia 的中文人工翻译稿，按 7 个分类重排过。英文原表（Destiny Data Compendium 的 Google 表格导出）比它新，只承担两件事：提供 112 枚效果图标，以及核对数值。它 21 MB、大半是内嵌字体，已在 `.gitignore` 里，**不入库**。
 
@@ -311,7 +313,7 @@ G3 钉住 `{act|…}` 的类定义。
    `cwebp -q 82 -alpha_q 100`，哈希按编码之后的字节算：先编码再命名，顺序反了
    文件名对不上内容。同一枚图已在别的页面出现过时，直接复制那个文件过来：
    文件名即内容 md5，两页因此引的是同一枚图。
-4. 源稿落在 `references/docs/<slug>.md`，其余按《资料文档页》那一节办。
+4. 源稿落在 `references/docs/<slug>.md`（整页由源稿说了算的那一处），其余按《资料文档页》那一节办。
 
 ### 为什么不用 SingleFile
 
@@ -374,5 +376,5 @@ G3 钉住 `{act|…}` 的类定义。
 
 `tools/check_shell.py` 把这些约定钉成闸门：各个页面的 head 元信息、站标、署名、免责声明
 必须逐字一致，提到 Destiny Data Compendium 就必须用 `shell.COMPENDIUM` 那一句，每页都要有
-格式合规的更新时间。页面清单从 `references/docs/` 现扫，新增一篇资料不必回去登记。
+格式合规的更新时间。页面清单从两处源稿现扫，新增一篇资料不必回去登记。
 

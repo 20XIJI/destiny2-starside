@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""把 references/docs/*.md 转成资料页。
+"""把资料页源稿转成资料页：散文与表在 references/docs/，主键骨架在 references/keys/。
 
 用法：
     python3 tools/convert-doc.py            # 全部重新生成
     python3 tools/convert-doc.py ammo       # 只生成一篇
 
-一篇 markdown 对应一个页面目录：references/docs/<slug>.md → <slug>/index.html。
+一篇 markdown 对应一个页面目录：<slug>.md → <slug>/index.html，源稿在哪一处由 shell.source_path() 现找。
 页面自己的样式写在 <slug>/style.css，本脚本不碰。
 
 排版按 design.md 第四节：连续阅读版心 760px 居中，表格按内容定宽再居中。
@@ -21,14 +21,12 @@ from urllib.parse import quote
 import markup
 import pagedex
 import render as layout   # 本文件自己有个 render()，别名避开
-import research
 import resolve
 import rows
 import shell
 from markup import (IMG, LINK, Icons, bmark, die, inline, meta_line, meta_of,
                     no_nested_span, plain, source_context, src_hash, text_of, whole_marker)
 
-SRC_DIR = os.path.join(shell.ROOT, 'references', 'docs')
 
 # 按记录的种类排版的那几页：源稿只写主键，格子与列都由记录决定（见 render.py）。
 # 其余页面走下面那条表格渲染链，一个字不动。
@@ -87,16 +85,13 @@ def anchors_of(path):
     """一篇源稿的「行标题 → 分节锚点」。从源稿现算，不读产出——同一次构建里
     产出可能还是上一版，锚点会指错分节。锚点即分节序号，与 render() 一致。
 
-    **先把目标页的人写层补回去再扫**：源稿瘦身之后那里只剩表头，行标题一个都
-    找不到，跨页链接会静默丢掉 ?q= 那一截——页面照旧能点开，只是不再落到行上。
     主键骨架那种源稿的行标题写在主键后面两个空格之后。
     """
     if path not in _ANCHORS:
         table = {}
-        if os.path.exists(path):
+        if path and os.path.exists(path):
             with open(path, encoding='utf-8') as f:
                 doc = f.read()
-            doc = research.inject(doc, os.path.basename(path)[:-len('.md')])
             n, skeleton = 0, False
             for line in doc.split('\n'):
                 first = None
@@ -137,7 +132,7 @@ def land(md, slug):
     def fix(m):
         text, url = m.group(1), m.group(2)
         target = os.path.normpath(os.path.join(here, os.path.dirname(url)))
-        table = anchors_of(os.path.join(SRC_DIR, os.path.basename(target) + '.md'))
+        table = anchors_of(shell.source_path(os.path.basename(target)))
         hold = table.get(text.strip())
         return ('[%s](%s?q=%s#%s)' % (text, url, quote(text.strip()), hold)
                 if hold else m.group(0))
@@ -514,9 +509,8 @@ def index_row(dex, title, stamp, body, lane, perks=None):
     mine, theirs = ((), ()) if PAGE in pagedex.NO_DESC else pagedex.split_spirit(pagedex.tds(body))
     icon = pagedex.IMG.search(body)
     shown = text_of(title, collapse=True)
-    # 落不到库里主键上的行合成一个，规则在 research.minted() 一处定义——人写层
-    # 抽取那一侧用的是同一个，两边合出来的键要一样，实体才对得上这一行的锚点。
-    keys = list(stamp) or ([research.minted(PAGE, shown)] if shown else [])
+    # 落不到库里主键上的行合成一个，规则在 rows.minted() 一处定义。
+    keys = list(stamp) or ([rows.minted(PAGE, shown)] if shown else [])
     dex.add(keys=keys, anchor=anchor, kind=lane or label,
             name=shown,
             icon=pagedex.site_path(PAGE, icon.group(1)) if icon else '',
@@ -572,14 +566,14 @@ def cards_of(spec, up):
     """「卡片：slug、slug」→ 首页那种 .entry 卡片，一条一张。
 
     标题、描述与更新时间从被指向的那篇源稿现读，**不在这里重抄一遍**——那三样
-    在 references/docs/<slug>.md 里已经写过，抄第二份就会各改各的。
+    在那一篇源稿里已经写过，抄第二份就会各改各的。
     卡片因此没有节点图标与右侧数值：那两样是首页手写的，一张一套，推导不出来。
     """
     o = ['<ul class="entries">']
     for slug in [x.strip() for x in spec.split('、') if x.strip()]:
-        path = os.path.join(SRC_DIR, slug + '.md')
-        if not os.path.exists(path):
-            die('「卡片：」指的 %r 在 references/docs/ 下没有源稿' % slug)
+        path = shell.source_path(slug)
+        if path is None:
+            die('「卡片：」指的 %r 在 references/ 下没有源稿' % slug)
         with open(path, encoding='utf-8') as f:
             doc = f.read()
         hit = re.match(r'^#\s+(.+)$', doc.split('\n')[0])
@@ -801,9 +795,19 @@ def where_of(md, slug):
     return meta_of(md, '路径', required=False) or slug
 
 
+def doc_id_of(slug):
+    """这一篇在库里的 `_id`：源稿落在 docs/ 还是 keys/ 就写哪一处。
+
+    产出目录（elements/arc）与源稿路径（keys/arc）不是同一个，就地编辑靠这一位
+    找回源稿；写错了整页永远定位不到。
+    """
+    path = shell.source_path(slug)
+    return shell.doc_id(path) if path else 'docs/%s' % slug
+
+
 def render(md, slug, digest):
-    # digest 由调用方给：它是**盘上那份源稿**的 sha1，而这里的 md 可能已经把
-    # 人写层的行补回表里了。库里存的是盘上那一份，两边要对得上。
+    # digest 由调用方给：它是**盘上那份源稿**的 sha1，而这里的 md 可能已经把骨架
+    # 展开成表了。库里存的是盘上那一份，两边要对得上。
     md = land(md, slug)
     m = re.match(r'^#\s+(.+)$', md.split('\n')[0])
     if not m:
@@ -874,12 +878,12 @@ def render(md, slug, digest):
         # 也永远零命中，所以只给跳转 chip——app.js 见 data-item 缺席即走那一档。
         # 两处 if 分开写是为了保住属性顺序：既有页面的产出因此零 diff。
         # 按记录排版的那几页没有 markdown 表格，条目是 article.rec
-        rows = bool(re.search(r'^\|[-\s|]+\|$', md, re.M)) or slug in NEW
+        has_items = bool(re.search(r'^\|[-\s|]+\|$', md, re.M)) or slug in NEW
         nav = {'data-section': '.block'}
-        if rows:
+        if has_items:
             nav['data-item'] = '.rec' if slug in NEW else '.gen tbody tr:not(.lane)'
         nav['data-label'] = '.sect-label'
-        if rows:
+        if has_items:
             nav['data-noun'] = '条目'
         nav['data-chip-label'] = '分节'
         toolbar = dict(toolbar or {}, **nav)
@@ -902,9 +906,9 @@ def render(md, slug, digest):
          shell.nav(title, toolbar, up=up,
                    parent=[x.strip() for x in meta('上级', required=False).split('、') if x.strip()]),
          shell.page_head(title),
-         # data-src 是这一篇在库里的 _id：产出目录（elements/arc）与源稿路径
+         # data-src 是这一篇在库里的 _id，取法见 doc_id_of()
          # （docs/arc）不是同一个，就地编辑要靠它才找得回源稿。
-         '<main data-src="docs/%s" data-src-hash="%s">' % (slug, digest)]
+         '<main data-src="%s" data-src-hash="%s">' % (doc_id_of(slug), digest)]
 
     body = META_LINE.sub('', md[md.index('\n'):])
     parts = re.split(r'^## ', body, flags=re.M)
@@ -960,7 +964,7 @@ def render(md, slug, digest):
             if head_icon and SECTION[1]:
                 # 分节标题自带的图标也进索引：配装页首要用真的职业图标。
                 # **不带过滤词**：拿分节名去页内过滤会把整页行滤光，落地是一张空页。
-                dex.add(keys=[research.minted(PAGE, '分节/' + SECTION[1])],
+                dex.add(keys=[rows.minted(PAGE, '分节/' + SECTION[1])],
                         anchor=SECTION[0], kind='分节', name=SECTION[1],
                         icon=pagedex.site_path(PAGE, head_icon.group(1)), q='')
         o += render_blocks(chunk, scales, groups, marks, curves, up, rota, at + 1)
@@ -1066,26 +1070,22 @@ def check(md, out, slug):
 def build(slug):
     global ICONS, STAMP, DEX, PAGE, PERK, ROW_KEYS, ROW_PERKS, CTX, SLUG
     SLUG = slug
-    src = os.path.join(SRC_DIR, slug + '.md')
+    src = shell.source_path(slug) or os.path.join(shell.DOC_DIR, slug + '.md')
     with source_context(os.path.relpath(os.path.realpath(src), shell.ROOT)):
         if not os.path.exists(src):
             die('找不到源稿 %s' % src)
         with open(src, encoding='utf-8') as f:
             md = f.read()
-        # 行的内容在 references/research/<页>.json 里，源稿只留分节、表头与页面
-        # 元信息。补回来再交给下面这一整条渲染链，产出因此与迁移前逐字节相同。
-        md = research.inject(md, slug)
         where = where_of(md, slug)
+        # **盘上那一份的 sha1，在展开之前算**：编辑台拿它与库里 docs 那一条的 hash
+        # 比，而库里存的正是盘上这一份。拿展开后的算，四页骨架会永远被判成过期。
+        digest = src_hash(md)
         # 主键骨架那种表区（「列：A | B | C」加一行一枚主键）展开成 `| 表头 |` 的表，
         # 格子从记录上取，见 rows.py。这条渲染链只认后一种：骨架原样交进去不报错，
         # 而是把整页的表静默画空，正文逐字保真两边都空、照样放行。
         ROW_KEYS, ROW_PERKS = {}, {}
         if rows.is_skeleton(md) and slug not in NEW:
             md, ROW_KEYS, ROW_PERKS = rows.expand(md, slug, where)
-        # **在补行之后算**：编辑台按「源稿第几行第几格」定位，库里存的正是补全的
-        # 那一份（sync.whole()）。戳瘦源稿的哈希出去，两边永远对不上，页面会被
-        # 当成永远过期。
-        digest = src_hash(md)
 
         outdir = os.path.join(shell.SITE, *where.split('/'))
         if not os.path.isdir(outdir):
@@ -1131,9 +1131,10 @@ def main():
         unbuilt()
         print('仅更新本资料页；未更新搜索、配装词表与悬停说明。发布前运行 npm run build')
         return
-    slugs = sorted(f[:-3] for f in os.listdir(SRC_DIR) if f.endswith('.md'))
+    slugs = [slug for slug, _ in shell.sources()
+             if '%s/index.html' % slug not in shell.FIXED]
     if not slugs:
-        die('references/docs/ 下没有 .md 源稿')
+        die('references/docs/ 与 references/keys/ 下没有 .md 源稿')
     for slug in slugs:
         build(slug)
     unbuilt()

@@ -280,10 +280,7 @@ def classify():
             return where in ('物品', '套装', '来源别名', '效果', '派生', '待指定')
         return resolve.norm(name) in known or resolve.set_key(name) in known
 
-    docs = os.path.join(shell.ROOT, 'references', 'docs')
-    paths = [os.path.join(docs, f) for f in sorted(os.listdir(docs)) if f.endswith('.md')]
-    paths += [os.path.join(shell.ROOT, 'references', f)
-              for f in ('artifact-mods.md', 'armor-sets.md')]
+    paths = [path for _, path in shell.sources()]
     rows = []
     for path in paths:
         slug = os.path.basename(path)[:-3]

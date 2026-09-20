@@ -28,7 +28,7 @@ Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构�
 
 首页 `index.html` 手写，每个资料页在首页有一张 `.entry` 卡片（更新时间写卡片上的 `.entry-stamp`）。新增资料页要同时加卡片，否则页面没有入口。三张配装卡（配装推荐、配装合集、配装工具）的更新时间与套数由 `convert-build.py` 的 `sync_home()` 在构建时按产出改写，这几处不手改。卡片不写概括句，放那一页的真实内容（图标、名字、前三名、曲线）：每张卡里 `<!--pv-->` 与 `<!--/pv-->` 之间那一段由 `build-home.py` 从那一页的产出现写，不手改；挑哪几项写在它的 `PICK_*` 里。新增一张卡要同时在它的 `PREVIEW` 里加一条，缺了构建即中止。
 
-页面清单不在这里维护：源稿即清单（`ls references/docs/*.md`），`check_shell.py` 也从那里现扫。只有 `armor-sets/` 与 `artifact-mods/` 有专属生成器，其余全部走 `convert-doc.py`。
+页面清单不在这里维护：源稿即清单（`shell.sources()` 扫 `references/docs/` 与 `references/keys/`），`check_shell.py` 也从那里现扫。只有 `armor-sets/` 与 `artifact-mods/` 有专属生成器，其余全部走 `convert-doc.py`。
 
 样式按层引，顺序即优先级：`assets/site.css`（全站 token、外壳、字体、资料页骨架）在前，本页 `<页目录>/style.css` 在后。深一层的页面自动多引一层父目录的 `style.css`（`shell.py` 的 `head()` 按 `up` 判断）：六个元素页共用 `elements/style.css` 的版式，各自的 `style.css` 只留一行 `--accent`。`assets/app.js` 只有带 `.toolbar` 的页面需要引。
 
@@ -91,10 +91,9 @@ Bungie 的 hash 是 uint32，永不相撞。`模组族` 与 `组合` 用 `member
 读取走 `resolve.Facts`；取名字走 `resolve.text()`，取官方图路径走 `resolve.icon_path()`，
 各只有一处实现。
 
-资料页与记录的对应：`references/docs/` 下 21 页的表格只写主键，行的内容在记录上，
+资料页与记录的对应：`references/keys/` 下那 23 页只写主键，行的内容在记录上，
 改这些页的文案改记录，不改源稿；表区格式见 `.claude/rules/pages.md`。
-`ability-cooldown`、`buff-debuffs` 两页的行在 `references/research/<页>.json`，
-`convert-doc.py` 构建时把行补回表里。其余资料页是纯 markdown。
+`references/docs/` 下那 19 页是散文与表，内容就在源稿里，改文案改 markdown。
 
 `data/index/` 是页面索引：三个资料生成器渲染时由 `pagedex.py` 写出，`vocab.py` 从这里
 查「名字 → 图标、页面、锚点」，每次构建重写，不入库。
@@ -102,9 +101,21 @@ Bungie 的 hash 是 uint32，永不相撞。`模组族` 与 `组合` 用 `member
 `data/` 不上传：它是构建的输入不是站点的资源，不在 `site/` 下。`deploy.py` 的 `keep()`
 只发 `site/`，`npm test` 的 `DeploySelection` 反查产出里没有引用 `data/` 的。
 
-`references/` 入库的是源稿：`artifact-mods.md`、`armor-sets.md`，以及 `docs/` 下的资料文档。转写中间产物 `armor_transcription.*` 在 `.archived/`，整个目录已 gitignore，不当源稿用。
+`references/` 入库的是源稿，**按「这一页的行写不写主键」分两处**：
 
-`.gitignore` 对 `references/` 是「全忽略 + 白名单」：只放行上面那两个文件与 `docs/*.md`。新增文档源稿一律放 `references/docs/`，丢在 `references/` 根下会被静默忽略，`git status` 干净但源稿没入库。放进去之后 `git check-ignore -v <路径>` 应无输出。
+| 目录 | 篇数 | 装什么 | 改文案改哪 |
+|---|---|---|---|
+| `references/keys/` | 23 | 主键骨架：分节、表头与一行一枚主键（`artifact-mods.md`、`armor-sets.md` 也在这里） | 改 `data/` 的记录 |
+| `references/docs/` | 19 | 散文与表：正文与每一格都写在源稿里 | 改这一篇 markdown |
+
+两处同构：一篇 `.md` 一个页面，`_id` 就是它在 `references/` 下的相对路径去掉 `.md`
+（`keys/arc`、`docs/boss-hp`），落在哪一边由 `shell.source_path()` 现找，别处不拼路径。
+一篇从骨架化还是散文，`tools/migrate.py --classify` 按行标题能否落到主键上机械判定。
+转写中间产物 `armor_transcription.*` 在 `.archived/`，整个目录已 gitignore，不当源稿用。
+
+`.gitignore` 对 `references/` 是「全忽略 + 白名单」：只放行 `docs/`、`keys/`、`builds/`
+与 `pages/`。新增源稿按上表挑一处放进去，丢在 `references/` 根下会被静默忽略，
+`git status` 干净但源稿没入库。放进去之后 `git check-ignore -v <路径>` 应无输出。
 
 规范在 `design.md`，改样式、定颜色、加页面之前先读。那里写死了色相归属、ΔE 判据、中文空格规矩、版心与外壳的分工。
 
@@ -125,9 +136,6 @@ facts.py           Bungie manifest → data/ 的五张实体表与 data/lookup/�
 resolve.py         中文名 → itemHash。槽位限定候选，复刻按「源稿标的版本后缀 →
                    源稿列的词条与来源 → 非大师非特殊版 → 有收藏条目」逐条判，
                    分不出就交出候选、不猜；另出给产出戳主键的戳号器
-research.py        人写层：references/research/<页>.json 的读写与「把行补回源稿的表里」。
-                   --extract 把一页的表迁进来，源稿就地瘦身；行标题落不到库里主键
-                   上时合成一个（row: 前缀），规则只在 minted() 一处
 pagedex.py         页面索引：生成器渲染时登记条目，落成 data/index/<页>.json。
                    页面 → 着色 token、格子切分、说明取法都在这里
 vocab.py           配装词表：读 data/index/ 那批索引，槽位 → 来源页的对应在这里一处定义
@@ -200,10 +208,9 @@ npm start                                     # npx serve site -l 3000 -c ../ser
 npm run build                                 # 四个生成器 + 装备库 + 首页预览 + 源稿自动纠正 + 搜索索引 + 编辑台词表 + 三道闸门
 npm test                                      # 两份离线回归，约 1 秒；改发布链或云函数前必跑
 
-python3 tools/convert-artifact-mods.py        # 源稿 references/artifact-mods.md
-python3 tools/convert-armor-sets.py           # 源稿 references/armor-sets.md
-python3 tools/convert-doc.py [slug]           # 源稿 references/docs/*.md，省略 slug 即全部
-python3 tools/research.py --extract <slug>    # 一页的表 → references/research/，源稿瘦身
+python3 tools/convert-artifact-mods.py        # 源稿 references/keys/artifact-mods.md
+python3 tools/convert-armor-sets.py           # 源稿 references/keys/armor-sets.md
+python3 tools/convert-doc.py [slug]           # 源稿 references/{docs,keys}/*.md，省略 slug 即全部
 python3 tools/convert-build.py                # 源稿 references/builds/<赛季>/*.md
 python3 tools/build-weapons.py                # 装备库：实体层 → weapons/ 三份载荷与页壳
 python3 tools/build-home.py                   # 首页卡片的内容预览，从各页产出现取
@@ -263,7 +270,7 @@ pyright tools/*.py
 | `check_type.py` | 字距与中文、CSS 简写有效性、产出结构，三条，编号 T1–T3 |
 | `check_shell.py` | 各页 head 元信息、站标、署名、免责声明逐字一致，更新时间格式合规，页面清单里每一页都进了搜索索引 |
 
-`check_shell.py` 的页面清单从 `references/docs/` 现扫，新增一篇资料不必回去登记；
+`check_shell.py` 的页面清单从两处源稿现扫，新增一篇资料不必回去登记；
 不变片段表里有 `shell.HIT` 与 `shell.EDIT`，改这两处要连手写的首页 `index.html` 一起改。
 
 ### 术语与着色的一处定义
@@ -277,7 +284,7 @@ pyright tools/*.py
 3. G3 token 有定义：源稿里每个 `{token|文字}` 都要在 `site.css` 或该页样式表里有对应类；反过来，`site.css` 的着色类一次都没被用到即死配置，当场报出。
 4. G4 更新时间一致：资料页页脚的「更新 YYYY.M.D」与首页卡片上那个必须相等。首页那三张配装卡的更新时间与套数由构建改写（`convert-build.py` 的 `sync_home()`），这一条兜住手改；别的卡片写的是页面结构，由各生成器的 `N_*` 钉着。
 5. G5 更新日志的类型：只有新增、改动、订正三种，同一天里每种连成一段。写法见 `.claude/rules/pages.md` 的《更新日志的写法》。
-6. G7 色板齐全：配色总览页 `references/docs/palette.md` 列的渲染色与着色类，必须与 `site.css` 现有的逐条相等，两个方向都管：改了 `:root` 的色号忘了改源稿、加了新 token 忘了上页，都当场报出。认哪些类算着色类只有 `tint_classes()` 一处（G3 与 G7 共用）：源稿里写得出 `{name|…}` 的才算，外壳与组件的类照样引强调色，但它们写不进源稿，不进色板页。那一页「## 页面专属」以下的一节比对到此为止：页面专属的类定义在各页样式表里，不归 `site.css` 管。
+6. G7 色板齐全：配色总览页 `references/docs/palette.md`（散文那一处）列的渲染色与着色类，必须与 `site.css` 现有的逐条相等，两个方向都管：改了 `:root` 的色号忘了改源稿、加了新 token 忘了上页，都当场报出。认哪些类算着色类只有 `tint_classes()` 一处（G3 与 G7 共用）：源稿里写得出 `{name|…}` 的才算，外壳与组件的类照样引强调色，但它们写不进源稿，不进色板页。那一页「## 页面专属」以下的一节比对到此为止：页面专属的类定义在各页样式表里，不归 `site.css` 管。
 7. G6 该着色的都着了：两个方向都管。正查的范围是三份表的并集：`tools/items.json`、`items.py` 的 `MECH`，以及 `TERMS` 里定了 token 的术语。G2 只管「着错了色」：`Markers.at()` 返回 `None` 时它整条跳过，所以没有这一条正查时「勇士」「守护者」「能量球」可以全站裸着不被发现（曾漏 774 处）。正查里的词在正文里出现就得着色，漏了当场报出，跑 `python3 tools/items.py --apply` 补上。不参与正查的写进 `items.py` 的 `LOOSE`（同形的普通用法比术语用法还多，如「恢复」），token 留着让 G2 照旧管着色对错。反查：已着色的 token 必须与库里的归属一致。「骨灰余烬」属烈日、「连锁闪电」属电弧是 Bungie 的 manifest 定的事实，不由人记。反查管元素、异域与 `orb` 三桶（`orb` 是能量球与超能那一支金色，写不进异域装备名——神器模组页曾把「库尔之影」「故我在」等 10 个异域名着成 `orb`，15 处无人报出）：神器模组的元素归属库里没有（`typeName_zh` 一律是「传说 神器特性」），钉死会把神器模组页那 12 处更细的着色降级；`{named|…}` `{stack|…}` 这类排版标记也不归它管。
 
 Perk 名整条包在 `{perk|…}` 里，走 `--c-perk`。`.perk` 定义在 `assets/site.css`，全站一处。
@@ -304,7 +311,7 @@ G6 正查会把「动能震颤」「不稳定弹药」从中间切开，各染�
 
 建表时归一化：去汉字与拉丁之间的排版空格（源稿按 design.md 三节写「Vex 揭秘者」，库里没有那个空格），去站内自加的消歧后缀（「故我在（电弧元素）」）。匹配那一侧要把空格允许回来：`pattern()` 在中英交界处插 `[ \u00a0]?`，拿归一化过的键去字面匹配会让 12 个中英混排的名字整批漏掉；落标记时包的是源稿原文，不是表的键，否则那个排版空格会被吃掉。原始导出 49 MB，不入库；换赛季重跑 `--distill`。
 
-范围是 `references/docs/` 去掉 changelog 与 palette，加上 `references/artifact-mods.md`，`pages()` 一处定义，`--suggest`、`--apply` 与 G6 共用。那一页也走显式 `{token|文字}`，模组名写在 `### 一级 · 名称` 标题行上不参与铺色（`items.py` 遇到 `#` 开头的行直接跳过）。`armor-sets.md` 不在内：它走词表着色，源稿是纯中文，落标记等于换掉那一页的着色路径。
+范围是两处源稿去掉 changelog、palette 与 armor-sets，`pages()` 一处定义，`--suggest`、`--apply` 与 G6 共用。那一页也走显式 `{token|文字}`，模组名写在 `### 一级 · 名称` 标题行上不参与铺色（`items.py` 遇到 `#` 开头的行直接跳过）。`armor-sets.md` 不在内：它走词表着色，落标记等于换掉那一页的着色路径。
 
 新词先 `--suggest` 看一眼再 `--apply`。库里 6738 个模组名与中文常用词大量同形（充能 618 次、爆炸 413 次、霰弹枪 65 次都是物品名），按词表铺开会把正文里的普通动词染成专名。`--suggest` 只打印，确认无误再 `--apply` 就地落进源稿。跳过四处：行标题那一格（已有结构身份，但只算到格内换行 `\\` 为止，首格留空即向上合并，身份在第二格）、链接目标与图片路径、`GUARD` 里那些更长的专名、已经在某个 `{token|…}` 里面的。
 

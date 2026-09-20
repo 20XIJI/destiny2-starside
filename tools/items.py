@@ -39,12 +39,10 @@ import tempfile
 
 import markup
 import migrate
-import research
 import shell
 
 OUT = 'tools/items.json'
 PERKS = 'tools/perks.json'
-DOC_DIR = 'references/docs'
 
 EL = {'电弧': 'el-arc', '烈日': 'el-solar', '虚空': 'el-void',
       '缚丝': 'el-strand', '冰影': 'el-stasis', '棱镜': 'el-prismatic'}
@@ -312,7 +310,7 @@ def exotic_perks():
     import rows
     whole, solo = set(), set()
     for page in PERK_DOCS:
-        for head in research.heads(page[:-len('.md')]):
+        for head in rows.heads(page[:-len('.md')]):
             got = [norm(n.lstrip('\u2191')) for n in rows.exotic_perks(head)[0]]
             got = [n for n in got if len(n) > 1 and '[' not in n]
             whole |= set(got)
@@ -346,7 +344,7 @@ PERK_MIN = 3
 def distill_perks():
     """两个来源 → tools/perks.json。"""
     names = set()
-    lines = research.source(PERK_SRC[:-len('.md')]).split('\n')
+    lines = read_source(PERK_SRC[:-len('.md')]).split('\n')
     sect = None
     for i, line in enumerate(lines):
         if line.startswith('## '):
@@ -362,9 +360,9 @@ def distill_perks():
         if len(name) >= PERK_MIN:
             names.add(name)
     for page in PERK_PAGES:
-        if not os.path.exists(os.path.join(shell.ROOT, DOC_DIR, page)):
+        if shell.source_path(page[:-len('.md')]) is None:
             continue
-        for mo in PERK_CELL.finditer(research.source(page[:-len('.md')])):
+        for mo in PERK_CELL.finditer(read_source(page[:-len('.md')])):
             name = norm(mo.group(1).replace('~~', '').strip())
             if len(name) >= PERK_MIN:
                 names.add(name)
@@ -431,27 +429,29 @@ def row_title_end(line):
     return markup.row_title_end(line)
 
 
-# 神器模组页也走显式 {token|文字}，一并铺色。护甲套装页不在内：它走词表着色，
-# 源稿是纯中文，落标记等于换掉那一页的着色路径（design.md「两条着色路径」）。
-EXTRA_PAGES = ['references/artifact-mods.md']
+def read_source(page):
+    """一篇源稿的全文。主键骨架在 references/keys/，散文与表在 docs/。"""
+    path = shell.source_path(page)
+    if path is None:
+        markup.die('找不到源稿：%s' % page)
+    with open(path, encoding='utf-8') as f:
+        return f.read()
 
 
 def pages(slug=None):
     matched = False
-    names = sorted(os.listdir(os.path.join(shell.ROOT, DOC_DIR)))
-    extra = [r for r in EXTRA_PAGES
-             if os.path.exists(os.path.join(shell.ROOT, r))]
-    for rel in ['%s/%s' % (DOC_DIR, n) for n in names] + extra:
-        name = os.path.basename(rel)
+    for name, path in shell.sources():
         # 更新日志是日志不是资料：它的条目名指向别的页面，句式与字数另有约定
         # （.claude/rules/pages.md「文案七条」），不跟着全站铺色。
         # 配色总览是站务页，正文里的术语是在讲颜色不是在讲机制。
-        if not name.endswith('.md') or name in ('changelog.md', 'palette.md'):
+        # 护甲套装页不在内：它走词表着色，源稿是纯中文，落标记等于换掉那一页的
+        # 着色路径（design.md「两条着色路径」）。
+        if name in ('changelog', 'palette', 'armor-sets'):
             continue
-        if slug is not None and name != slug + '.md':
+        if slug is not None and name != slug:
             continue
         matched = True
-        yield rel
+        yield os.path.relpath(path, shell.ROOT)
     if slug is not None and not matched:
         markup.die('没有可处理的资料源稿：%s；参数应为裸 slug，不含 .md 或路径' % slug)
 
@@ -530,27 +530,6 @@ def naked_text(frags):
     return markup.text_of(GAP.join(out))
 
 
-def research_hits(terms, names, slug=None):
-    """人写层里该着色的裸出现，形状与 scan() 一致。
-
-    人写层没有 markdown 的表格几何：没有分隔行可认表头，也没有首格可认行标题。
-    这两件事由数据自己说——name 那个字段就是行标题，research.prose() 把它排掉。
-    位置按「条目在文件里的那一行」报：人写层一条一行，指得回去。
-    """
-    out = []
-    for page in research.pages():
-        if slug is not None and page != slug:
-            continue
-        rel = os.path.relpath(research.path(page), shell.ROOT)
-        for entry, line in research.numbered(page):
-            for _, text in research.prose(entry):
-                # keys=False：人写层的值是自由散文，不认「键：值」行。理由与
-                # normalize_record() 那一处相同。
-                for a, b, word in reversed(hits_in(text, terms, names, keys=False)):
-                    out.append((rel, line, a, b, word))
-    return out
-
-
 def no_forward():
     """只参与反查、不参与正查的词：LOOSE，加异域 PERK 那一格里连写的名字。
 
@@ -573,7 +552,7 @@ def forward_terms():
 
 
 def scan(slug=None):
-    """[(源稿路径, 行号, 起, 止, 词)]，按源稿顺序。人写层一并扫。"""
+    """[(源稿路径, 行号, 起, 止, 词)]，按源稿顺序。"""
     terms = forward_terms()
     names = sorted(terms, key=len, reverse=True)
     out = []
@@ -586,7 +565,7 @@ def scan(slug=None):
                 continue
             for a, b, word in reversed(hits_in(line, terms, names)):
                 out.append((rel, n, a, b, word))
-    return out + research_hits(terms, names, slug)
+    return out
 
 
 def suggest(slug=None):
@@ -603,28 +582,6 @@ def suggest(slug=None):
             text = lines[n - 1][a:b]
             print('  L%-5d %-14s → {%s|%s}  (%s)' % (n, text, token, text, kind))
     print('\n合计 %d 处待着色。--apply 落进源稿，再跑 npm run build。' % len(found))
-
-
-def apply_research(terms, names, slug=None):
-    """把建议落进人写层。与 apply() 同一条着色实现，只是落点不同。"""
-    total = 0
-    for page in research.pages():
-        if slug is not None and page != slug:
-            continue
-        got = research.must_read(page)
-        n = 0
-        for entry in got['entries']:
-            for key, text in research.prose(entry):
-                text, count = color_text(text, terms, names, keys=False)
-                n += count
-                if count:
-                    research.put(entry, key, text)
-        if n:
-            research.write(page, got['columns'], got['entries'])
-            print('references/research/%s.json —— 落了 %d 处'
-                  % (page.replace('/', '__'), n))
-            total += n
-    return total
 
 
 def apply(slug=None):
@@ -649,7 +606,6 @@ def apply(slug=None):
                 f.write('\n'.join(lines))
             print('%s —— 落了 %d 处' % (rel, n))
             total += n
-    total += apply_research(terms, names, slug)
     print('合计 %d 处。跑 npm run build，再看 git diff。' % total)
 
 

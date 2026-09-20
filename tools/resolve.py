@@ -34,7 +34,6 @@ import sys
 import unicodedata
 
 import markup
-import research
 import shell
 
 FACTS = os.path.join(shell.ROOT, 'data')
@@ -1075,12 +1074,11 @@ def source_hints():
     # **名单不另抄一份**：抄一份就会漏登记，而漏掉的那一页 source_hints() 回空，
     # 它整页的行会拿 version='' perks=() 掉到 pick() 的末两档去。
     for page in sorted(SINGLE_PAGES):
-        rel = 'docs/%s.md' % page
-        path = os.path.join(shell.ROOT, 'references', rel)
-        if not os.path.exists(path):
+        path = shell.source_path(page)
+        if path is None:
             continue
         with open(path, encoding='utf-8') as f:
-            doc = research.inject(f.read(), page)
+            doc = f.read()
         for line in doc.split('\n'):
             # 切格走 markup.cells：{ico|![](…)} 里本身带竖线，裸 split 会切碎。
             spans = markup.cells(line)

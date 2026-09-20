@@ -40,8 +40,8 @@ import items
 import markup
 import shell
 
-SRC_FILES = ['references/artifact-mods.md', 'references/armor-sets.md']
 DOC_DIR = 'references/docs'
+KEY_DIR = 'references/keys'
 
 # 一行钉两件事：中文怎么写，以及着色落到哪个 token 上。
 #   (正名, 唯一 token 或 None, [禁用写法])
@@ -262,14 +262,12 @@ def sources():
     """[(源稿相对路径, 该页能用的 class 集合)]。"""
     site = read_site('assets/site.css')
     base = classes_in(site)
-    out = [('references/artifact-mods.md', base | classes_in(read_site('artifact-mods/style.css')))]
-    for name in sorted(os.listdir(os.path.join(shell.ROOT, DOC_DIR))):
-        if not name.endswith('.md'):
-            continue
-        rel = '%s/%s' % (DOC_DIR, name)
+    out = []
+    for slug, path in shell.sources():
+        rel = os.path.relpath(path, shell.ROOT)
         md = read(rel)
         where = re.search(r'^路径：(.*)$', md, re.M)
-        where = where.group(1).strip() if where else name[:-3]
+        where = where.group(1).strip() if where else slug
         ok = set(base)
         parts = where.split('/')
         for i in range(len(parts)):
@@ -277,13 +275,6 @@ def sources():
             if os.path.exists(os.path.join(shell.SITE, sheet)):
                 ok |= classes_in(read_site(sheet))
         out.append((rel, ok))
-        # 这一页的行内容在人写层里，源稿只剩分节与表头。**人写层必须一起检**：
-        # 不接上，G1 的禁用写法与 G3 的未定义 token 会直接从闸门底下走过去，
-        # 而闸门照旧报「术语一致」。与配装源稿同一条路：整文件正则扫，着色标记
-        # 写在字符串值里，正则找得到，报错行号指的也是人写层自己那一行。
-        mine = 'references/research/%s.json' % (where.replace('/', '__'))
-        if os.path.exists(os.path.join(shell.ROOT, mine)):
-            out.append((mine, ok))
     # 配装源稿：注解那一段是散文，中文正名与着色 token 照样要守。**不进 G6 正查**
     # ——配装正文几乎全是物品名（「碎片：保护琢面、黎明琢面」），正查会要求给每一个
     # 都套 {token|}，而它们本该由查表变成带图标的链接，源稿不写颜色。
@@ -557,27 +548,25 @@ def main() -> int:
     pairs = sources()
     bad: list[str] = []
 
-    # G1／G2 管三处：两份 markdown 源稿、资料页的源稿与人写层、配装的结构化记录。
-    # 人写层漏掉的症状是「禁用写法照旧放行，闸门仍报术语一致」。
-    check_terms(SRC_FILES + [rel for rel, _ in pairs
-                             if rel.startswith((DOC_DIR, 'references/research/',
-                                                'references/builds/'))], bad)
+    # G1／G2 管两处：资料页的源稿（散文与主键骨架各一处），以及配装的结构化记录。
+    check_terms([rel for rel, _ in pairs
+                 if rel.startswith((DOC_DIR, KEY_DIR, 'references/builds/'))], bad)
     used = check_tokens(pairs, site, bad)
     check_stamps(bad)
     check_build_count(bad)
     check_acts(bad)
     check_palette(site, used, bad)
-    # G6 的反查（已着色的对不对）是纯正则，人写层照样查得动；正查那一半走
-    # items.scan()，范围由 items.pages() 定。
-    check_items(SRC_FILES + [rel for rel, _ in pairs
-                             if rel.startswith((DOC_DIR, 'references/research/'))], bad)
+    # G6 的反查（已着色的对不对）是纯正则；正查那一半走 items.scan()，范围由
+    # items.pages() 定。
+    check_items([rel for rel, _ in pairs
+                 if rel.startswith((DOC_DIR, KEY_DIR))], bad)
 
     if bad:
         print('术语与着色不一致：', file=sys.stderr)
         for line in bad:
             print('  ' + line, file=sys.stderr)
         return 1
-    print('术语一致：%d 条规则，%d 篇源稿' % (len(TERMS), len(pairs) + 1))
+    print('术语一致：%d 条规则，%d 篇源稿' % (len(TERMS), len(pairs)))
     return 0
 
 

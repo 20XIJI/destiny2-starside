@@ -145,9 +145,12 @@ envId 不进环境变量：它写在 `shell.API` 里、要落进每个页面的�
 白名单」，`.remote` 不是 `.md`，不会入库），比过之后 `--mine` 或 `--theirs` 择一，
 两者都顺手清掉那个 `.remote`。撞车那几篇的基线不动。记了下一轮就分不出方向。
 
-`_id` 即源稿在 `references/` 下的相对路径去掉 `.md`（`docs/exotic-weapon`、
-`artifact-mods`、`builds/s29-凯旋纪念碑/xxx-warlock`），换算只有 `id_of` / `path_of`
+`_id` 即源稿在 `references/` 下的相对路径去掉扩展名（`docs/boss-hp`、
+`keys/exotic-weapon`、`builds/s29-凯旋纪念碑/xxx-warlock`），换算只有 `id_of` / `path_of`
 两处，后者用 `realpath` 挡穿越：`_id` 从库里来，而库是联网的那一侧。
+源稿分两处（`docs/` 散文与表、`keys/` 主键骨架），`_id` 因此带着目录名；
+**`keys/` 那 23 页的行内容在 `data/` 的记录上，库里没有**，就地编辑只改得动分节标题
+与源稿里那几段散文，格子改不动。
 
 日常一轮就是 `tools/ship.sh "提交信息"`，它按序跑这五步，任一步失败即停：
 

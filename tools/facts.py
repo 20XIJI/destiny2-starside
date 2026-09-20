@@ -811,9 +811,8 @@ def seeds(root):
     """源稿每一行点名的主键。表区是「列：」那一行加紧接着的连续非空行；护甲套装页与
     神器模组页是分节式，整篇都算表区，行前有缩进。"""
     got = set()
-    pages = sorted(glob.glob(os.path.join(root, 'references', 'docs', '*.md')))
-    for name in ('armor-sets.md', 'artifact-mods.md'):
-        pages.append(os.path.join(root, 'references', name))
+    pages = sorted(glob.glob(os.path.join(root, 'references', 'docs', '*.md'))
+                   + glob.glob(os.path.join(root, 'references', 'keys', '*.md')))
     for path in pages:
         loose = os.path.basename(path) in ('armor-sets.md', 'artifact-mods.md')
         inside = loose

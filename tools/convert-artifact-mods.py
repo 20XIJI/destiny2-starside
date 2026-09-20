@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""把 references/artifact-mods.md 转成神器模组页。
+"""把 references/keys/artifact-mods.md 转成神器模组页。
 
 用法：
     python3 tools/convert-artifact-mods.py
@@ -19,7 +19,7 @@ import shell
 from markup import (Icons, blocks_at, bmark, die, eq, inline, meta_line, meta_of, must,
                     src_hash, text_of)
 
-SRC = os.path.join(shell.ROOT, 'references', 'artifact-mods.md')
+SRC = os.path.join(shell.KEY_DIR, 'artifact-mods.md')
 OUT_DIR = os.path.join(shell.SITE, 'artifact-mods')
 ICON_DIR = os.path.join(OUT_DIR, 'icons')
 
@@ -277,7 +277,7 @@ def render(page, digest='', dex=None):
          shell.nav('神器模组', toolbar={}),
          shell.page_head(page['sub']),
          # data-src 是这一篇在库里的 _id，就地编辑靠它找回源稿
-         '<main data-src="artifact-mods" data-src-hash="%s">' % digest,
+         '<main data-src="keys/artifact-mods" data-src-hash="%s">' % digest,
          '<section class="intro">']
 
     o.append('<h2 class="sect-label">%s</h2>' % page['lede'][0][2])

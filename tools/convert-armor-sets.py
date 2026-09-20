@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""护甲套装效果页生成器：references/armor-sets.md → armor-sets/index.html。
+"""护甲套装效果页生成器：references/keys/armor-sets.md → armor-sets/index.html。
 
 源稿是 Flamia 的中文人工翻译稿，按 7 个分类重排过，数值已逐条对照英文原表
 （Destiny Data Compendium 的 Google 表格导出）订正。**改这一页的文案就改
@@ -31,7 +31,7 @@ import shell
 from markup import (bmark, die, eq, loading_attr, meta_of, no_nested_span, plain,
                     src_hash, text_of)
 
-SRC = os.path.join(shell.ROOT, 'references', 'armor-sets.md')
+SRC = os.path.join(shell.KEY_DIR, 'armor-sets.md')
 OUT_DIR = os.path.join(shell.SITE, 'armor-sets')
 
 
@@ -345,7 +345,7 @@ def render_blocks(blocks: list) -> str:
 def render(cats: list[Category], md: str, digest: str = '',
            dex: 'pagedex.Index | None' = None) -> str:
     dex = dex if dex is not None else pagedex.Index('armor-sets')
-    # 页面元信息全在源稿头部，与 references/docs/ 那 39 篇同一套键。
+    # 页面元信息全在源稿头部，与别的资料页同一套键。
     # 改文案改 markdown，这里不留字面串。
     m = re.match(r'^#\s+(.+)$', md.split('\n')[0])
     if not m:
@@ -361,7 +361,7 @@ def render(cats: list[Category], md: str, digest: str = '',
             'data-chip-label': '分类'}),
         shell.page_head(title, html.escape(meta_of(md, '导语'))),
         # data-src 是这一篇在库里的 _id，就地编辑靠它找回源稿
-        '<main data-src="armor-sets" data-src-hash="%s">\n' % digest])]
+        '<main data-src="keys/armor-sets" data-src-hash="%s">\n' % digest])]
     n_img = 0
     for ci, cat in enumerate(cats, 1):
         parts.append('<section class="cat" id="cat-%d">\n' % ci)

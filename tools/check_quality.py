@@ -33,9 +33,9 @@ import check_terms
 import facts
 import items
 import markup
-import research
 import rows
 import migrate
+import shell
 
 sys.dont_write_bytecode = True
 TOOLS = Path(__file__).resolve().parent
@@ -263,7 +263,8 @@ class MarkerIndex(unittest.TestCase):
                         self.fail('%s 第 %d 字节起那一窗 at=%d 索引与回扫不一致'
                                   % (src.name, start, at))
         # 光「全都对得上」不够：读不到源稿时零命中也是全绿。
-        self.assertGreater(seen, 10000, '只比对了 %d 个括号边界点，语料没读到？' % seen)
+        # 此刻 5579 个点：主键骨架那 23 篇几乎没有着色标记，点都在 docs/ 那几篇上。
+        self.assertGreater(seen, 4500, '只比对了 %d 个括号边界点，语料没读到？' % seen)
 
 
 class CellSplitting(unittest.TestCase):
@@ -321,8 +322,9 @@ class CellSplitting(unittest.TestCase):
 
     def test_the_scan_actually_found_the_corpus(self):
         # 语料挪走或者上面的判据写错时，前三条会变成"零行全过"的空转。
-        # 17 页改写成主键骨架之后表格行剩 3841 行，下限取 3500 留出编辑余量。
-        self.assertGreater(sum(1 for _ in self.rows()), 3500)
+        # 主键骨架那 23 篇没有表格行（行写成主键），语料就是 docs/ 那 16 篇，
+        # 此刻 2027 行；下限取 1800 留出编辑余量。
+        self.assertGreater(sum(1 for _ in self.rows()), 1800)
 
 
 
@@ -411,47 +413,6 @@ class Generated(unittest.TestCase):
         self.assertEqual(build_home.render(home), home,
                          'index.html 的卡片预览过期了，跑 python3 tools/build-home.py')
 
-    def test_every_research_entry_reaches_the_page_it_claims(self):
-        """人写层的每一条都要能补回它那一页的表里，而且补出来的是合法表格行。
-
-        源稿只剩分节与表头之后，「这一条落在哪张表」由 table 序号决定。写错一个
-        数，inject() 当场报出——但那是构建时；这一条让它在 npm test 就红。
-        """
-        for page in research.pages():
-            got = research.must_read(page)
-            src = TOOLS.parent / 'references' / 'docs' / ('%s.md' % page)
-            with self.subTest(page=page):
-                self.assertTrue(src.exists(), '%s 没有对应的源稿' % page)
-                full = research.inject(src.read_text(encoding='utf-8'), page)
-                rows = [ln for ln in full.split('\n') if ln.startswith('|')]
-                # 每张表两行不是数据：表头与分隔行。一节可以有好几张表（棱镜页
-                # 每个职业三张），所以按表数算，不按分节数算。
-                self.assertEqual(len(rows),
-                                 len(got['entries']) + 2 * len(got['columns']),
-                                 '%s 补回去的行数与条目数对不上' % page)
-
-    def test_the_full_source_splits_back_into_exactly_what_it_came_from(self):
-        """inject 与 split 互为逆操作。
-
-        编辑台的整条链建在这上面：库里存的是补全的源稿（sync.whole），改回来
-        再拆成瘦源稿与人写层（sync.parts）。拆不回原样的症状最坏——人在编辑台上
-        改了一个字，落盘时整页的别处跟着变，而 git diff 看着像是他改的。
-        """
-        import pagedex
-        import resolve
-        for page in research.pages():
-            src = TOOLS.parent / 'references' / 'docs' / ('%s.md' % page)
-            thin = src.read_text(encoding='utf-8')
-            where = research.where_of(page)
-            stamp = resolve.stamper(where) if where in pagedex.TOKENS else None
-            got = research.must_read(page)
-            with self.subTest(page=page):
-                back, columns, entries = research.split(
-                    page, research.inject(thin, page), stamp)
-                self.assertEqual(back, thin, '%s 拆回来的源稿与盘上那份不一样' % page)
-                self.assertEqual(columns, got['columns'], '%s 的 columns 变了' % page)
-                self.assertEqual(entries, got['entries'], '%s 的条目变了' % page)
-
     def test_the_search_index_carries_the_english_names(self):
         """搜 One-Two Punch 要搜得到雪上加霜。
 
@@ -501,7 +462,7 @@ class EntitySource(unittest.TestCase):
 
     def rows(self, slug):
         """一页源稿的表区：每一行的主键清单，按出现顺序。"""
-        path = self.ROOT / 'references' / 'docs' / ('%s.md' % slug)
+        path = Path(shell.source_path(slug) or '')
         inside = False
         for n, line in enumerate(path.read_text(encoding='utf-8').split('\n'), 1):
             if line.startswith('列：'):
@@ -1675,7 +1636,7 @@ class Generation(Isolated):
 
     def test_table_error_identifies_real_source_line_without_writing(self):
         doc = load('quality_doc_location', 'convert-doc.py')
-        self.replace(doc, 'SRC_DIR', str(self.root / 'references/docs'))
+        self.replace(doc.shell, 'ROOT', str(self.root))
         self.file('references/docs/fixture.md',
                   '# 示例\n描述：测试\n更新：2026.9.5\n\n## 正文\n'
                   '| 名称 | 说明 |\n|---|---|\n| 条目 |\n')
@@ -1835,7 +1796,6 @@ class Normalization(Isolated):
     def test_all_real_term_errors_are_reported(self):
         self.doc.write_text('装填\n' * 65)
         self.file('site/assets/site.css', '')
-        self.replace(check_terms, 'SRC_FILES', [])
         self.replace(check_terms, 'sources', lambda: [('references/docs/fixture.md', set())])
         for name in ('check_tokens', 'check_stamps', 'check_build_count',
                      'check_acts', 'check_palette', 'check_items'):

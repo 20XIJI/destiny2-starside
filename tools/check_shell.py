@@ -7,7 +7,7 @@ index.html。本脚本从 shell.py 现取不变片段去比对每一个页面—
 
 用法：python3 tools/check_shell.py    改完 shell.py 或手写首页后跑一次。
 
-页面清单取自 shell.pages()，从 references/docs/ 现扫，新增一篇不必回来改这个文件。
+页面清单取自 shell.pages()，从 references/docs/ 与 references/keys/ 现扫，新增一篇不必回来改这个文件。
 """
 
 import gzip

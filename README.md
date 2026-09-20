@@ -28,8 +28,9 @@ functions/api/      唯一的后端，一支云函数：访问计数、点赞、
 | `style.css` | 手写，只写本页与 `site.css` 的真差异 |
 | `icons/*.webp` | 图标，文件名是内容的 md5 前 10 位 |
 
-页面清单不在这里维护，源稿即清单：`ls references/docs/*.md` 就是当前篇数，
-`check_shell.py` 也从那里现扫。加一篇资料不必回来登记。
+页面清单不在这里维护，源稿即清单：`references/docs/`（散文与表）与
+`references/keys/`（主键骨架）两处 `.md` 合起来就是当前篇数，`check_shell.py`
+也从那里现扫。加一篇资料不必回来登记。
 
 页面之间用显式相对路径互链（`../artifact-mods/index.html`），不依赖静态托管的目录
 索引解析。资源引用同样用相对路径：站内绝对路径在 `file://` 下会指向磁盘根目录，
@@ -128,7 +129,8 @@ python3 tools/deploy.py --all      # 整站重发，首次部署或换机器时�
 
 ## 新增一页资料
 
-普通资料文档不必新建组件：写一篇 markdown 丢进 `references/docs/`，建好
+普通资料文档不必新建组件：写一篇 markdown 丢进 `references/docs/`（行的内容写在
+记录上的那种丢 `references/keys/`），建好
 `<slug>/style.css`，跑 `python3 tools/convert-doc.py`，再去首页加一张卡片。
 源稿格式（键值行、表格方言、着色标记、色阶、列组、折线图）写在
 `.claude/rules/pages.md`。
@@ -143,8 +145,8 @@ python3 tools/deploy.py --all      # 整站重发，首次部署或换机器时�
 神器模组页与护甲套装页各绑一种数据形状，各有自己的生成器与自检计数：
 
 ```bash
-python3 tools/convert-artifact-mods.py                    # 源稿 references/artifact-mods.md
-python3 tools/convert-armor-sets.py                       # 源稿 references/armor-sets.md
+python3 tools/convert-artifact-mods.py                    # 源稿 references/keys/artifact-mods.md
+python3 tools/convert-armor-sets.py                       # 源稿 references/keys/armor-sets.md
 python3 tools/convert-armor-sets.py --icons <英文原表.html>  # 换了英文原表才重抽图标
 ```
 

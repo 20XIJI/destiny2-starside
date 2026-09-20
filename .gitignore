@@ -143,19 +143,15 @@ vite.config.ts.timestamp-*
 .vite/
 
 # references/ 放英文原表的导出（21 MB，大半是内嵌字体），只用来核对数值与重抽图标，不入库。
-# 例外是两份正文源稿：两个生成器要靠它们生成页面。
+# 入库的是源稿那四处：docs/ 散文与表、keys/ 主键骨架、builds/ 配装、pages/ 矩阵表。
 references/*
-!references/armor-sets.md
-!references/artifact-mods.md
 !references/docs/
 !references/docs/*.md
+!references/keys/
+!references/keys/*.md
 !references/builds/
 !references/builds/*/
 !references/builds/*/*.md
-!references/items/
-!references/items/*.json
-!references/research/
-!references/research/*.json
 !references/pages/
 !references/pages/*.json
 .archived/
