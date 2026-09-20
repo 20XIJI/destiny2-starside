@@ -447,6 +447,64 @@ def live_catalyst(c):
             or any(name_of('perk:%s' % p['perkHash']) for p in rec.get('perks') or ()))
 
 
+_FRAMES = None
+
+
+def frame_rows():
+    """武器框架页那 93 行：`(框架名, 枪型, 弹药) → 那一行`。
+
+    **键是这个三元组，不是框架主键**：同名框架在库里有好几枚 hash（「精密框架」
+    既是 1636108362 也是 1322370662），表行只挂在其中一枚上，按 hash 配只覆盖
+    1494 把、按这个三元组覆盖 2032 把。弹药那一位是为「动态热量武器 + 手炮」那
+    两行来的：一行主武器、一行特殊弹药（无礼言论），去掉它这个键就不唯一。
+    """
+    global _FRAMES
+    if _FRAMES is None:
+        _FRAMES = {}
+        for h, rec in facts().items.items():
+            for row in zh(rec).get('site_frameStats') or ():
+                _FRAMES[(name_of(h), row.get('itemSubType'), row.get('ammoType'))] = row
+    return _FRAMES
+
+
+def frame_row(rec):
+    """一件武器在武器框架页上的那一行，没有就回 None。异域自己的框架不在表里。"""
+    arch = (rec.get('derived') or {}).get('archetype')
+    if not arch:
+        return None
+    return frame_rows().get((name_of(str(arch)), rec.get('itemSubType'),
+                             (rec.get('equippingBlock') or {}).get('ammoType')))
+
+
+def exotic_pool(key):
+    """一件异域自己开得出来的词条：`{显示名: 取图的主键}`。
+
+    两处并起来。一处是「异域特性」那一格里的几条（`exotic_perks`）；另一处是特征栏
+    与起源栏的插件池——零号修订那一列可 roll 的六条、故我在的五种刀剑框架都在后者，
+    它们不是格子里那几条。组合行（故我在的四条元素行）自己不是一件装备，池看它
+    第一位成员，行名已经钉死的那几条不再列。
+    """
+    rec = facts().at(key) or {}
+    got = exotic_perks(key)
+    out = {n.lstrip('↑'): k for n, k in got.icons.items()}
+    mine, host = set(), key
+    if combo(rec):
+        mine = {name_of(str(m)) for m in rec.get('members') or ()}
+        host = str((rec.get('members') or [''])[0])
+        for n, k in exotic_perks(host).icons.items():
+            out.setdefault(n.lstrip('↑'), k)
+    for col in facts().pool(host):
+        kind = ((facts().socket_types.get(str(col['type'])) or {})
+                .get('derived') or {}).get('kind')
+        if col.get('gear') or kind not in ('trait', 'origin'):
+            continue
+        for h in col.get('plugs') or ():
+            n = name_of(str(h))
+            if n:
+                out.setdefault(n, str(h))
+    return {n: k for n, k in out.items() if n and n not in mine}
+
+
 def perk_item(pk):
     """一条效果落在哪件插件上：`onItems` 里与它同名、又有图的那件，没有就回 None。
 

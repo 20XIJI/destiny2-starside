@@ -395,6 +395,59 @@
   }
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
 
+  /* 这一格挑的那件东西自己带的候选。词表里查不到就不收窄：列不全好过列不出来。
+
+     之灵按栏收：一件异域职业物品两栏各 8 条，掉落时一栏开一条，从 36 条里随便
+     挑两条在游戏里开不出来。Perk 按这把枪自己的池收：从前列的是整张武器 PERK
+     页 395 条，选出来的组合枪上开不出来。 */
+  /* 一组里露出来几格，--n 与 --c 就得跟着算：这两个数是样式表算宽度用的
+     （--n 是行里的份额，按枪 15、Perk 10 加权；--c 是露出来的格数，用来扣掉
+     面板与格间那份固定开销）。生成器按初始格数写死一次，收放之后不重算的话，
+     异域那一组仍按一格宽，三格叠在一起、枪名竖着折。取法与 convert-build.rig_of
+     同一条。 */
+  function sizeRig(rig) {
+    if (!rig) return;
+    var live = [].filter.call(rig.querySelectorAll('.item'), function (c) { return !c.hidden; });
+    var guns = live.filter(function (c) { return c.classList.contains('gun'); }).length;
+    rig.style.setProperty('--n', guns * 15 + (live.length - guns) * 10);
+    rig.style.setProperty('--c', live.length);
+  }
+
+  /* 职业物品带之灵时那一格横跨两列，这一行因此多要一列。 */
+  function sizeArmor(pair) {
+    var slot = pair && pair.closest('.slot');
+    if (!slot) return;
+    var box = pair.querySelector('.spirits');
+    slot.style.setProperty('--n', pair.parentNode.children.length + (box && !box.hidden ? 1 : 0));
+  }
+
+  function narrow(btn, list) {
+    var V2 = V.spirits || {}, col = btn.dataset.col;
+    if (col) {
+      var gear = btn.closest('.pair').querySelector('.item.gear');
+      var cols = gear && gear.row ? V2[gear.row[0]] : null;
+      if (!cols) return [];
+      var want = cols[Number(col) - 1] || [];
+      return list.filter(function (r) { return want.indexOf(r[0]) > -1; });
+    }
+    var slot = btn.dataset.slot;
+    if (slot !== 'Perk' && slot !== '异域词条') return list;
+    var rig = btn.closest('.rig');
+    var gun = rig && rig.querySelector('.item.gun');
+    if (!gun || !gun.row) return list;
+    var keep = {};
+    if (slot === '异域词条') {
+      ((V.exotic || {})[gun.row[0]] || []).forEach(function (n) { keep[n] = 1; });
+    } else {
+      var own = (V.perks || {})[gun.row[0]];
+      if (!own) return list;
+      var all = V.lists[V.slots['Perk']] || [];
+      own.forEach(function (i) { if (all[i]) keep[all[i][0]] = 1; });
+    }
+    var hit = list.filter(function (r) { return keep[r[0]]; });
+    return hit.length ? hit : list;
+  }
+
   /* 一个槽位的候选。row = [名字, 分节, 页面, 图标, 着色, 副名]。 */
   function options(slot, kind, unsorted) {
     var all = V.lists[V.slots[slot]] || [];
@@ -592,15 +645,14 @@
     close();
     if (same) return;
 
+    // 异域的词条两处都有：格子里那几条在异域武器详解页，可 roll 的那一列在武器
+    // PERK 页。并起来再按这把枪自己的名单收，见 narrow()。
     var list = kind === '__art__' ? artifacts()
       : slot === '核心' ? coreList()
       : slot === '元素' ? branches()
+      : slot === '异域词条' ? options('异域词条', '异域词条').concat(options('Perk', '武器 PERK'))
       : options(slot, kind);
-    if (btn.dataset.only) {
-      list = list.filter(function (r) {
-        return r[0].slice(-btn.dataset.only.length) === btn.dataset.only;
-      });
-    }
+    list = narrow(btn, list);
     // 神器模组按所选那一件限定。没选之前不列——七件神器各 21 枚，混在一起是
     // 147 条，且它们在神器盘上的位置一件一套，摆出来会七枚叠在同一格。
     // 这三格的候选都要先有前提：神器模组按所选那一件收，元素按所选职业收
@@ -754,14 +806,37 @@
       });
     }
     fill(btn, row);
-    // 异域职业物品带两条异域词条，站内把词条各自列成一条（「刺客之灵」），所以
-    // 选中「…之灵」时把同一格里的第二个槽放出来，选别的异域时收回并清空。
-    if (slot === '异域护甲' && !btn.dataset.only) {
-      var second = btn.parentNode.querySelector('[data-only]');
-      var on = !!row && row[0].slice(-SPIRIT.length) === SPIRIT;
-      if (second) {
-        if (!on && second.row) fill(second, null);
-        second.hidden = !on;
+    // 异域职业物品一件装备带两条之灵，各从自己那一栏里开，所以选中它时把下面
+    // 那两个槽放出来，选别的异域时收回并清空。
+    if (slot === '异域护甲' && !btn.dataset.col) {
+      var box = btn.parentNode.querySelector('.spirits');
+      var on = !!row && !!(V.spirits || {})[row[0]];
+      if (box) {
+        if (!on) [].forEach.call(box.querySelectorAll('[data-col]'), function (c) {
+          if (c.row) fill(c, null);
+        });
+        box.hidden = !on;
+        sizeArmor(btn.parentNode);
+      }
+    }
+    // 可 roll 的异域（零号修订、死亡信使这些）两列词条与传说枪一样能挑；词表里
+    // 查得到候选时那两格才冒出来，固定词条的异域照旧只有一格。
+    if (slot === '异域武器') {
+      var pcs = [].slice.call(btn.parentNode.querySelectorAll('[data-slot="异域词条"]'));
+      var can = !!row && !!(V.exotic || {})[row[0]];
+      pcs.forEach(function (c) {
+        if (!can && c.row) fill(c, null);
+        c.hidden = !can;
+      });
+      sizeRig(btn.closest('.rig'));
+      // 这一把有默认组合时先填上（英勇利刃一律超利刃 + 冲击核心），填表人改得掉。
+      var def = row ? (V.exoticDefault || {})[row[0]] : null;
+      if (def) {
+        def.forEach(function (n, k) {
+          if (!pcs[k] || pcs[k].row) return;
+          var one = options('异域词条', '异域词条').filter(function (r) { return r[0] === n; })[0];
+          if (one) fill(pcs[k], one);
+        });
       }
     }
     // 4 件套在游戏里同时给 2 件效果，所以选了 4 件就把同一套的 2 件补进另一格。
@@ -836,9 +911,6 @@
   /* 六维一格的写法。四个预设，值即源稿里的记法：不限 ~、至少 80+、指定 80、
      区间 150～200。四个词都是两个字，chip 排出来一样宽。
      **这张表只在这里定义一次**——生成器只出空格子，写法是纯 UI。 */
-  // 异域职业物品那些词条的词尾。生成器的 SPIRIT 是同一个字串，两处都按它认。
-  var SPIRIT = '之灵';
-
   var STAT_MODES = [['~', '不限'], ['+', '至少'], ['=', '指定'], ['-', '区间']];
 
   function statText(btn) {
@@ -1089,8 +1161,17 @@
     [].forEach.call(pen.querySelectorAll('.slot-count'), function (box) {
       setCount(box.closest('.slot'), Number(box.dataset.n));
     });
-    [].forEach.call(pen.querySelectorAll('[data-only]'), function (c) {
-      c.hidden = true;                 // 异域职业物品那第二条词条的格子
+    // 之灵那两格与异域枪的两个 Perk 格都是自动收放的，收回去之后行与组的格数
+    // 跟着复位——不复位会留下一行按四列排的护甲与一组按三格排的异域枪。
+    [].forEach.call(pen.querySelectorAll('.spirits'), function (box) {
+      box.hidden = true;
+      sizeArmor(box.parentNode);
+    });
+    [].forEach.call(pen.querySelectorAll('#sec-2 .rig'), function (rig) {
+      [].forEach.call(rig.querySelectorAll('[data-slot="异域词条"]'), function (c) {
+        c.hidden = true;
+      });
+      sizeRig(rig);
     });
     state.职业 = state.分支 = state.神器 = state.核心 = '';
     mods().forEach(function (m) { m.dataset.kind = ''; });
@@ -1178,10 +1259,17 @@
     });
 
     var gun = one('异域武器');
-    if (gun) put('异域武器', '', gun, cells('[data-slot="异域武器"]')[0]);
+    if (gun) {
+      var exSeg = gun.split('|');
+      var exCell = cells('[data-slot="异域武器"]')[0];
+      put('异域武器', '', exSeg[0].trim(), exCell);
+      var exPcs = cells('[data-slot="异域词条"]', exCell && exCell.parentNode);
+      (exSeg[1] || '').split('、').map(function (x) { return x.trim(); })
+        .filter(Boolean).forEach(function (pk, k) { put('异域词条', '', pk, exPcs[k]); });
+    }
 
     // 传说武器一行一把，Perk 跟在竖线后面；第三项是起源特性，它那一格默认收起。
-    var rigs = cells('#sec-2 .rig').slice(1);
+    var rigs = cells('#sec-2 .rig').slice(1);   // 第一组是异域，上面已经填过
     (got.head['传说武器'] || []).forEach(function (line, i) {
       var seg = line.split('|');
       var name = seg[0].trim();
@@ -1423,7 +1511,12 @@
     md += line('职业技能', joined('[data-slot="职业技能"]'));
 
     md += '\n## 武器\n\n';
-    md += line('异域武器', joined('[data-slot="异域武器"]'));
+    var exRig = pen.querySelector('#sec-2 .rig');
+    var exGun = picked('[data-slot="异域武器"]', exRig)[0];
+    if (exGun) {
+      var exPerks = joined('[data-slot="异域词条"]', exRig);
+      md += '异域武器：' + srcName(exGun) + (exPerks ? ' | ' + exPerks : '') + '\n';
+    }
     [].forEach.call(pen.querySelectorAll('#sec-2 .rig'), function (rig) {
       var gun = picked('[data-slot="传说武器"]', rig)[0];
       if (!gun) return;

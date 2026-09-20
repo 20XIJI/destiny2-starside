@@ -122,6 +122,9 @@ SLOTS = {
     # 列了一遍（凤凰俯冲在烈日页与这一页各有一条），限定到一页即不必猜。
     '职业技能': ('elements/class-abilities',),
     '异域武器': ('exotic-weapon',),
+    # 异域自己开得出来的词条（故我在的八条固有、英勇利刃的三枚核心与四枚催化）。
+    # 与武器行同页，靠分节分开，见 SLOT_KIND。
+    '异域词条': ('exotic-weapon',),
     '传说武器': ('shopping-primary', 'shopping-special', 'shopping-heavy', 'shopping-other'),
     'Perk': ('weapon-perks',),
     '异域护甲': ('exotic-armor',),
@@ -135,6 +138,11 @@ SLOTS = {
     # 查的名字因此是职业名，显示的名字由调用方用 label 换成分支名。
     '元素': tuple(ELEM_PAGES),
 }
+
+
+# 槽位只认这一种分节。异域那一页上武器行与它的词条同页，页面限定分不开，靠这一位
+# 分；反过来，钉了分节的那几种不进别的槽位——「异域武器：光能聚集」因此查不到。
+SLOT_KIND = {'异域词条': '异域词条'}
 
 
 # 分节标题里那个消歧括注的起头。**只有这一处定义**：它随 vocab.js 发到填表页，
@@ -179,7 +187,11 @@ def pick(idx, name, slot, kind=None, prefer=''):
         hit = TAIL.search(name)
         if hit:
             tail, name = hit.group(1), name[:hit.start()]
-    hits = [h for h in idx.get(key_of(name), []) if h['page'] in SLOTS[slot]]
+    want = SLOT_KIND.get(slot)
+    hits = [h for h in idx.get(key_of(name), [])
+            if h['page'] in SLOTS[slot]
+            and (bare_kind(h['kind']) == want if want
+                 else bare_kind(h['kind']) not in set(SLOT_KIND.values()))]
     if kind is not None:
         # 分节标题带括注时按括注前那一截比（神器模组页写「废墟石板 （异端）」），
         # 括注是来源赛季，不是这件神器的名字。

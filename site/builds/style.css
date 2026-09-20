@@ -468,10 +468,16 @@ button.item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
    都会被拆成块级——悬停详情面板里的说明就是这么断了行的。 */
 .pair { display: grid; gap: 4px; }
 
-.pair:has(> :nth-child(2):not([hidden])) > .item.gear { padding: 5px 8px; }
-.pair:has(> :nth-child(2):not([hidden])) > .item.gear img { width: 32px; height: 32px; }
-.pair:has(> :nth-child(2):not([hidden])) > .item.gear .nm { font-size: 11.5px; }
-.pair:has(> :nth-child(2):not([hidden])) > .item.gear.empty { min-height: 37px; }
+/* 异域职业物品：职业物品在左，它那两条之灵在右边竖排两行——与 .rig 里「枪 + 它的
+   Perk」同一种读法，两条之灵从属于这一件装备。之灵收窄一档读作从属。 */
+/* 两条之灵要一行放得下自己的名字，所以这一格占两列宽（主角行的格子封顶 264px，
+   一列装不下「觅敌者之灵」而不折成三行）。 */
+.pair:has(> .spirits:not([hidden])) { grid-column: span 2; grid-template-columns: auto minmax(120px, 1fr); }
+.spirits { display: grid; gap: 4px; align-content: stretch; }
+.spirits > .item.gear { padding: 5px 8px; }
+.spirits > .item.gear img { width: 24px; height: 24px; }
+.spirits > .item.gear .nm { font-size: 11px; }
+.spirits > .item.gear.empty { min-height: 34px; }
 
 /* Perk 挂在它那把枪后面，收窄一档读作从属 */
 .item.perk-cell { padding: 8px; }

@@ -668,6 +668,16 @@ def record_region(lines):
                             put(str(spirit), lane or label)
                     continue
                 put(key, lane or label)
+                # 异域那两页的「异域特性」格里每个名字各是一件东西（故我在的八条
+                # 固有、英勇利刃的三枚核心），各自带主键。登记它们，配装词表才查得到
+                # ——改走 record_region 之前它们是进索引的，那一版丢在迁移里了。
+                # kind 写死「异域词条」：武器行与它的词条同页，槽位靠分节分开。
+                for nm, ik in rows.exotic_pool(key).items():
+                    ico = rows.icon_file(ik)
+                    dex.add(keys=[ik], anchor=anchor, kind='异域词条',
+                            name=nm, q=ctx.name(key),
+                            icon=pagedex.site_path(PAGE, rows.rel(ico, PAGE)) if ico else '',
+                            desc=layout.panel_of(ctx, ik))
                 for e in (rows.facts().at(key) or {}).get('enhanced') or ():
                     for by in e['by']:
                         dex.add(keys=[key], anchor=anchor, kind=lane or label,

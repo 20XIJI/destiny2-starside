@@ -48,6 +48,9 @@ SECT_KEYS = dict(SECTIONS)
 MULTI = frozenset({'星相', '碎片', '手雷', '近战', '职业技能', '移动', '模组',
                    '头盔', '护臂', '胸甲', '腿部', '职业物品', '场景', '标签'})
 GUN = '传说武器'
+# 异域武器也能带词条（零号修订那类可 roll 的异域），写法与传说武器同一种：
+# 「名字 | 词条、词条」。没有词条时仍是一个裸名字，110 篇旧源稿因此一个字不用改。
+EX_GUN = '异域武器'
 # 推荐人一行一个，名字与链接用 | 分开。
 PEOPLE = '推荐人'
 
@@ -116,6 +119,10 @@ def parse_fields(text, sect, keys):
             out.setdefault(key, []).append(
                 {'名字': gun.strip(),
                  '词条': [x.strip() for x in perks.split('、') if x.strip()]})
+        elif key == EX_GUN and '|' in val:
+            gun, _, perks = val.partition('|')
+            out[key] = {'名字': gun.strip(),
+                        '词条': [x.strip() for x in perks.split('、') if x.strip()]}
         elif key in MULTI:
             out[key] = [x.strip() for x in val.split('、') if x.strip()]
         else:
@@ -168,6 +175,9 @@ def dump(rec):
 
 
 def join(key, val):
+    if key == EX_GUN and isinstance(val, dict):
+        return ['%s：%s' % (key, val['名字'] + (' | ' + '、'.join(val['词条'])
+                                               if val['词条'] else ''))]
     if key == GUN:
         return ['%s：%s' % (key, g['名字'] + (' | ' + '、'.join(g['词条'])
                                              if g['词条'] else ''))

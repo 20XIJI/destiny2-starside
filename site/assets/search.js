@@ -2722,7 +2722,7 @@ window.starsideIndex = [
 {"u":"shopping-primary/index.html","a":"sec-4","l":"手炮","n":"前线之泣","x":"65前线之泣烈日射速 180弹药生成 48赛季 29框架精密勇士屏障来源铁旗槽化枪管合金弹匣快速命中杀戮弹匣藏匿之狼填装速度AegisE没有溅射或硬直 Perk 框架还行 起源不错 Frontier's Cry"},
 {"u":"shopping-primary/index.html","a":"sec-4","l":"手炮","n":"恐怖诺言","x":"66恐怖诺言动能射速 140弹药生成 60赛季 10框架适配勇士屏障来源仄 永恒挑战速射HCS大口径弹药合金弹匣自动填装枪套丰盈满溢斗剑士无填装速度AegisE框架好 但其他方面很差 Dire Promise"},
 {"u":"shopping-primary/index.html","a":"sec-4","l":"手炮","n":"野兽天性","x":"67野兽天性电弧射速 180弹药生成 57赛季 11框架精密勇士屏障来源仄速射HCS合金弹匣维持生计蜻蜓无填装速度AegisE框架尚可 但 3/4 号位都很差 Nature of the Beast"},
-{"u":"shopping-primary/index.html","a":"sec-4","l":"手炮","n":"稳健之手","x":"68稳健之手动能射速 120弹药生成 40赛季 12框架攻击型勇士势不来源铁旗速射HCS大口径弹药合金弹匣不法之徒斗剑士泉源无填装速度AegisE最差框架 Perk 也糟糕 The Steady Hand"},
+{"u":"shopping-primary/index.html","a":"sec-4","l":"手炮","n":"稳健之手","x":"68稳健之手动能射速 120弹药生成 40赛季 12框架攻击型勇士势不来源铁旗速射HCS大口径弹药合金弹匣不法之徒斗剑士泉源无填装速度AegisE最差框架 Perk 也糟糕 Steady Hands"},
 {"u":"shopping-primary/index.html","a":"sec-5","l":"脉冲步枪","n":"乔科斯的长剑","x":"1乔科斯的长剑虚空射速 324弹药生成 49赛季 29框架重型点射勇士势不来源熔炉竞技场槽化枪管大口径弹药合金弹匣冲击支撑蜻蜓边打边劫爆破专家失衡弹药枯萎凝视杀戮弹匣亡命之徒加速突击填装速度AegisS起源优秀 框架优秀 Perk 多样 还有双硬直组合小棒猪T0.5伤害最高最好的脉冲框架，perk 池优秀，边打边劫+枯萎凝视的组合可作为工具枪 Joxer's Longsword"},
 {"u":"shopping-primary/index.html","a":"sec-5","l":"脉冲步枪","n":"狼掌","x":"2狼掌虚空射速 540弹药生成 46赛季 29框架速射勇士过载来源铁旗槽化枪管箭头制退器大口径弹药合金弹匣冲击支撑失衡弹药狂暴羸弱能量球藏匿之狼填装速度AegisS起源优秀 + 框架优秀 + 经典虚空组合 Claws of the Wolf"},
 {"u":"shopping-primary/index.html","a":"sec-5","l":"脉冲步枪","n":"无足雨燕","x":"3无足雨燕虚空射速 450弹药生成 56赛季 28框架轻质勇士过载来源试炼槽化枪管箭头制退器合金弹匣冲击支撑萤火虫失衡弹药枯萎凝视铤而走险轻捷脚步填装速度AegisS用更好的起源换 3 号位有萤火虫 不太值得 The Martlet"},
