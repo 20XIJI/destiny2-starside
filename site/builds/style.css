@@ -595,6 +595,11 @@ body:has(.entries) { --wrap: 1500px; }
    而它们的居中是这一块的骨架。 */
 .facet-block {
   position: relative;
+  /* **与页首、卡片同一根版心。**不收进来的话它铺满视口，而触发器是按这一块的
+     左缘钉的：视口宽过 --wrap 之后标题跟着版心右移，筛选那一枚还贴在视口左缘，
+     两者越拉越远（2400px 时差 450px）。 */
+  max-width: var(--wrap);
+  margin-inline: auto;
 }
 
 .facet-tuck {
