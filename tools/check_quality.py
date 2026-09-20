@@ -321,7 +321,8 @@ class CellSplitting(unittest.TestCase):
 
     def test_the_scan_actually_found_the_corpus(self):
         # 语料挪走或者上面的判据写错时，前三条会变成"零行全过"的空转。
-        self.assertGreater(sum(1 for _ in self.rows()), 4000)
+        # 17 页改写成主键骨架之后表格行剩 3841 行，下限取 3500 留出编辑余量。
+        self.assertGreater(sum(1 for _ in self.rows()), 3500)
 
 
 
@@ -562,12 +563,12 @@ class EntitySource(unittest.TestCase):
         import resolve
         facts = resolve.Facts()
         inpage = self.page_rows()
-        rows = refs = 0
+        nrows = refs = 0
         for slug in tuple(self.BODY) + tuple(self.AUTHORED):
             who = self.AUTHORED.get(slug)
             seen = collections.Counter()
             for n, keys in self.rows(slug):
-                rows += 1
+                nrows += 1
                 refs += len(keys)
                 for key in keys:
                     self.assertIsNotNone(facts.at(key),
@@ -581,7 +582,7 @@ class EntitySource(unittest.TestCase):
                     said.update({k: row[k] for k in ('weaponTypes', 'enhanced') if row.get(k)})
                     more = row.get('variants') or ()
                 else:
-                    said = (row.get('authors') or {}).get(who) or {}
+                    said = rows.author_block(row, who)
                     more = said.get('variants') or ()
                 if not said and who is None:
                     said = {k: v for h in self.points_at(facts, head)
@@ -596,12 +597,14 @@ class EntitySource(unittest.TestCase):
                     times, 1 + len(more),
                     '%s 的 %s 在源稿里出现 %d 次，记录里只有 %d 段'
                     % (slug, head, times, 1 + len(more)))
-        # 3135 ＝ 2413 行的行首加上它们的 covers。元素页、棱镜页与职业技能页的行
+        # 3031 ＝ 2395 行的行首加上它们的 covers。元素页、棱镜页与职业技能页的行
         # 从前互相写着对方分支的那一枚（电弧的「重击」与棱镜的「重击」是两枚不同的
         # hash，各自有一段说明），摘掉那 88 枚、再摘掉烈焰战锤那一行写的「无敌索尔」
-        # （那不是它的另一枚 hash，是改造它的那个星相）之后是这个数。
-        self.assertEqual((rows, refs), (2413, 3135),
-                         '源稿的行数或主键引用数变了：%d 行、%d 个引用' % (rows, refs))
+        # （那不是它的另一枚 hash，是改造它的那个星相）之后是这个数。异域护甲页的
+        # 职业金那一节列的是三件职业物品，不是 18 行之灵：两栏各有哪些之灵写在
+        # 记录的 site_perkColumns 上。
+        self.assertEqual((nrows, refs), (2395, 3031),
+                         '源稿的行数或主键引用数变了：%d 行、%d 个引用' % (nrows, refs))
 
     def test_an_enhancement_names_the_aspects_that_cause_it(self):
         """技能记录上的 `enhanced`：装上 `by` 里任一枚星相之后，这项技能多出来的效果。
@@ -865,7 +868,7 @@ class BuildProseColors(unittest.TestCase):
     """
 
     def test_stripping_then_normalizing_restores_every_build(self):
-        terms, _ = items.load()
+        terms = items.forward_terms()          # 与构建时补色同一份词表
         kw = dict(terms=terms, names=sorted(terms, key=len, reverse=True),
                   banned=check_terms.banned_pairs())
         seen, bad = 0, []
@@ -1691,7 +1694,9 @@ class Generation(Isolated):
         before = self.beta.read_bytes()
         with patch.object(items.shell, 'ROOT', str(TOOLS.parent)):
             terms, _ = items.load()
-        with patch.object(items, 'load', return_value=(terms, [])):
+            forward = items.forward_terms()
+        with patch.object(items, 'load', return_value=(terms, [])), \
+                patch.object(items, 'forward_terms', return_value=forward):
             items.apply_builds()
         self.assertEqual(self.beta.read_bytes(), before)
         self.assertIn('不存在的装备', self.exits(build.main))
@@ -1801,7 +1806,11 @@ class Normalization(Isolated):
     def setUp(self):
         super().setUp()
         terms, skipped = items.load()
+        # 词表与正查排除表都从仓库这一份现取：它们读 tools/ 与 data/，与这里
+        # 造的临时源稿无关，跟着 ROOT 搬会让每条测试都得先摆一套数据层。
+        forward = items.forward_terms()
         self.replace(items, 'load', lambda: (terms, skipped))
+        self.replace(items, 'forward_terms', lambda: forward)
         self.replace(items.shell, 'ROOT', str(self.root))
         self.replace(items.shell, 'SITE', str(self.root / 'site'))
         self.replace(items.shell, 'BUILD_DIR', str(self.root / 'references/builds'))

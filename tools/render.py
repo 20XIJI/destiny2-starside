@@ -319,7 +319,7 @@ def tags(p, raw):
 def author_rows(p, key, first=None):
     """这条记录上每位作者一行：名字、评级与标签一格，评语一格。本页的作者排第一。"""
     rec = rows.facts().at(key) or {}
-    au = p.zh(key).get('site_authors') or rec.get('authors') or {}
+    au = rows.authors_of(rec)
     out = []
     for who, label, tier_key, cls in sorted(AUTHORS, key=lambda x: x[0] != first):
         a = au.get(who)
@@ -436,8 +436,7 @@ def masterwork_plug(key, stat):
 def rec_weapon(p, key, rank, author):
     """购物清单与排行：名次 | 武器 | 参数 | 五栏推荐 | 大师杰作，作者区在下面。"""
     rec = rows.facts().at(key) or {}
-    z = p.zh(key)
-    au_all = z.get('site_authors') or {}
+    au_all = rows.authors_of(rec)
     A, L = au_all.get('Aegis') or {}, au_all.get('LGpig') or {}
     d = rec.get('derived') or {}
     arch = d.get('archetype')

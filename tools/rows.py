@@ -293,6 +293,17 @@ def exotic_text(key, own):
     return (' %s ' % PARA).join(paras[:1] + hosts + paras[1:])
 
 
+def authors_of(rec):
+    """一条记录上的作者块 `{作者: 那一段}`。站内字段随语言走，落在
+    `i18n.zh-CN.site_authors`；效果表那 29 条作者评语在根上的 `authors`。
+    取法只有这一处，页面、词表与回归共用。"""
+    return zh(rec).get('site_authors') or rec.get('authors') or {}
+
+
+def author_block(rec, who):
+    return authors_of(rec).get(who) or {}
+
+
 def exotic_perks(key):
     """「异域 PERK」那一格：({名字: 主键}, 取图的那一枚)。第一枚的图，固有与特征的
     名字，↑催化剂给的效果名。名字按格里的顺序排，主键交给页面索引，不再按名字反查。
@@ -368,8 +379,7 @@ class Table:
         self.seen[key] += 1
         who = AUTHORED.get(self.page)
         if who:
-            authors = zh(rec).get('site_authors') or rec.get('authors') or {}
-            base = authors.get(who) or {}
+            base = author_block(rec, who)
             seq = [base] + list(base.get('variants') or ())
         else:
             vs = rec.get('variants') or ()

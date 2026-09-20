@@ -86,6 +86,9 @@ STOP = {
     '入侵者',
     # 神器模组，也是虚空星相「手持超新星」的后半截。
     '超新星',
+    # 「英勇利刃 2：冲击核心」那枚异域 Perk 与刀剑通用的光刃 Perk 同名，
+    # 散文里的 4 处全是后者（DPS 页的刀剑连招、三套配装的光剑配法）。
+    '冲击核心',
     # 神器模组，也是支援框架自动步枪与机枪施加的那个治疗状态。
     '快速治疗',
     # 电弧手雷，但战狮射出的「弹跳手雷」是虚空榴弹的射弹。
@@ -290,56 +293,37 @@ def distill(src):
 
 # 异域装备的专属 Perk 名。这一类的真相不在 Bungie 的物品表里——manifest 那边
 # perk 属于 sandbox 条目，typeName 分不出「异域装备自带」与别的特性。真相在
-# exotic-armor / exotic-weapon 两页的 PERK 列上，所以现扫那两页，不另存副本。
+# exotic-armor / exotic-weapon 两页的 PERK 列上，顺着那两页的行主键取。
 # 着 exotic 而不是 perk：site.css 的 --c-exotic 注释写着「专属 Perk 名同族」，
 # 两者渲染色相同，而 {perk|…} 按 .claude/rules/pages.md 是整格排版标记，不是行内着色 token。
 PERK_DOCS = ('exotic-armor.md', 'exotic-weapon.md')
-# 固有那两栏的语义标签，与 socket-types 的 derived.kind 同一份。
-PERK_KINDS = ('intrinsic', 'trait')
+
+
+def exotic_perks():
+    """异域两页「异域 PERK」那一格上的名字 → (全部, 那一格只写着一个名字的)。
+
+    **格子怎么排就怎么取**：名字由 `rows.exotic_perks()` 一处给，与页面同一份实现。
+    去掉 `perk_names()` 里已有的：那一格也列催化剂给的效果与特征栏里随枪滚出来的
+    Perk（玉兔的「边打边劫」、狼毒催化剂的「羸弱能量球」），那些是通用 Perk 名，
+    购物清单与配装散文里一律写 `{perk|…}`。
+
+    分出「单名格」是为了正查，见 no_forward()。
+    """
+    import rows
+    whole, solo = set(), set()
+    for page in PERK_DOCS:
+        for head in research.heads(page[:-len('.md')]):
+            got = [norm(n.lstrip('\u2191')) for n in rows.exotic_perks(head)[0]]
+            got = [n for n in got if len(n) > 1 and '[' not in n]
+            whole |= set(got)
+            if len(got) == 1:
+                solo.add(got[0])
+    known = set(perk_names())
+    return whole - known, solo - known
 
 
 def perks():
-    """异域两页上那些专属 Perk 名：固有的几枚，加催化剂与它给出的效果。
-
-    **按主键取，不扫源稿。**源稿只剩主键清单，正文里的「异域 PERK」那一格已经
-    拆到各枚 perk 自己名下，没有一处还写着名字。名字因此顺着引用走：异域装备
-    固有栏里那几枚插件（`derived.kind` 是 intrinsic 或 trait）、`derived.catalyst`
-    记着的催化剂，以及催化剂 `perks[]` 指到的那几枚效果。
-    """
-    root = shell.ROOT
-    with open(os.path.join(root, 'data', 'inventory-items.json'), encoding='utf-8') as f:
-        rows = json.load(f)
-    with open(os.path.join(root, 'data', 'sandbox-perks.json'), encoding='utf-8') as f:
-        effects = json.load(f)
-    with open(os.path.join(root, 'data', 'lookup', 'socket-types.json'),
-              encoding='utf-8') as f:
-        kinds = {h: v['derived']['kind'] for h, v in json.load(f).items()}
-
-    def shown(table, key):
-        return ((table.get(str(key)) or {}).get('i18n') or {}).get('zh-CN', {}).get('name')
-
-    out = set()
-    for name in PERK_DOCS:
-        for head in research.heads(name[:-len('.md')]):
-            row = rows.get(head)
-            if row is None:
-                continue
-            want = []
-            for e in (row.get('sockets') or {}).get('socketEntries') or ():
-                if kinds.get(str(e.get('socketTypeHash'))) not in PERK_KINDS:
-                    continue
-                if e.get('singleInitialItemHash'):
-                    want.append(e['singleInitialItemHash'])
-                want += [p['plugItemHash'] for p in e.get('reusablePlugItems') or ()]
-            # 催化剂**那件物品**的名字站内一次都没写过（写的是它给的那枚效果），
-            # 所以只顺着它取效果，不把它自己收进来。
-            for key in list(want) + list((row.get('derived') or {}).get('catalyst') or ()):
-                want += [p['perkHash'] for p in (rows.get(str(key)) or {}).get('perks') or ()]
-            for key in want:
-                got = shown(rows, key) or shown(effects, key)
-                if got and len(got) > 1 and '[' not in got:
-                    out.add(norm(got))
-    return out
+    return exotic_perks()[0]
 
 
 # 武器 Perk 名的词表：两个来源现扫，落成 tools/perks.json。
@@ -400,13 +384,18 @@ def perk_names():
         return json.load(f)
 
 
-def load():
-    """{名字: (token, 分类名)}。check_terms.py 的 G6 与 --suggest 共用这一份。"""
+def library():
+    """tools/items.json 原样：物品专名与 token 的对应表。"""
     path = os.path.join(shell.ROOT, OUT)
     if not os.path.exists(path):
         markup.die('%s 不存在，先跑 python3 tools/items.py --distill <导出.json>' % OUT)
     with open(path, encoding='utf-8') as f:
-        data = json.load(f)
+        return json.load(f)
+
+
+def load():
+    """{名字: (token, 分类名)}。check_terms.py 的 G6 与 --suggest 共用这一份。"""
+    data = library()
     # 库侧也照 STOP 滤一道。distill 落盘时已经滤过一遍，但那份 json 只在换赛季
     # 重跑时才更新；加载时再滤，改 STOP 当场生效，不必先拿到 49 MB 的官方导出。
     terms = {k: tuple(v) for k, v in data['terms'].items() if k not in STOP}
@@ -563,21 +552,29 @@ def research_hits(terms, names, slug=None):
 
 
 def no_forward():
-    """只参与反查、不参与正查的词：LOOSE，加异域装备的专属 Perk 名。
+    """只参与反查、不参与正查的词：LOOSE，加异域 PERK 那一格里连写的名字。
 
-    专属 Perk 名与散文里的普通词、别的装备名大量同形（集群猎人、大师、解构、
-    不屈、狂暴）。这些名字从前只以「整格连写」的形式进表，正查碰不到它们；
-    改成按主键逐条取之后再参与正查，等于要求全站给「大师」「解构」着色。
+    一格写着好几个名字时（多数异域），那几个名字与散文里的普通词、别的装备名
+    大量同形：大师、解构、救赎、不屈、集群猎人。要求全站给这些词着色会把「大师
+    杰作」「解构完装备」染成装备名。一格只有一个名字的（光能盛宴、屏障手雷）照旧
+    参与正查——站内散文里的这些词一直是着色的，不放行的话填表页擦掉颜色就补不回来。
+    库侧认领了的（破冰者既是异域狙击枪也是它自己的固有 Perk）按装备名办，照旧正查。
     token 留着，G2 照旧管「着错了色」。
     """
-    return LOOSE | set(perks())
+    whole, solo = exotic_perks()
+    return LOOSE | (whole - solo - set(library()['terms']))
+
+
+def forward_terms():
+    """正查与自动补色共用的那份词表：load() 去掉只参与反查的那些。一处定义。"""
+    terms, _ = load()
+    skip_words = no_forward()
+    return {k: v for k, v in terms.items() if k not in skip_words}
 
 
 def scan(slug=None):
     """[(源稿路径, 行号, 起, 止, 词)]，按源稿顺序。人写层一并扫。"""
-    terms, _ = load()
-    skip_words = no_forward()
-    terms = {k: v for k, v in terms.items() if k not in skip_words}
+    terms = forward_terms()
     names = sorted(terms, key=len, reverse=True)
     out = []
     for rel in pages(slug):
@@ -804,11 +801,8 @@ def normalize_record(rec, terms, names, banned, path, reports, where=''):
 
 def normalize_files(documents, builds):
     import check_terms
-    terms, _ = load()
-    check_terms.check_token_targets(terms)
-    # 与 scan() 同一份排除表：只参与反查的那些词不在这里补色，否则「大师」
-    # 「解构」「集群猎人」会被自动染成异域名。
-    terms = {k: v for k, v in terms.items() if k not in no_forward()}
+    check_terms.check_token_targets(load()[0])
+    terms = forward_terms()
     names = sorted(terms, key=len, reverse=True)
     banned = check_terms.banned_pairs()
     totals = [0, 0, 0]
