@@ -299,7 +299,7 @@
   /* 按记录排版那几页的组名：同组的条目是它后面的兄弟节点，到下一个组名为止。
      不能照搬横幅行那一条——那一条按 parentNode 判，而这里同一个父节点下
      几组条目连着排。 */
-  var groups = ITEM ? Array.prototype.slice.call(document.querySelectorAll('.grp')) : [];
+  var groups = ITEM ? Array.prototype.slice.call(document.querySelectorAll('.r-grp')) : [];
   /* 分节里再分的小标题（配装索引页的职业），跟着紧随其后那一组的可见条目走。
      **这一条只能在 JS 里做**：CSS 要写成 .sub-label:has(+ ul:not(:has(> li:not([hidden]))))，
      而 :has() 不许再套 :has()，整条是无效选择器——写在样式表里不报错也不生效。 */
@@ -660,7 +660,7 @@
     });
     groups.forEach(function (grp) {
       var on = false;
-      for (var n = grp.nextElementSibling; n && !n.classList.contains('grp');
+      for (var n = grp.nextElementSibling; n && !n.classList.contains('r-grp');
            n = n.nextElementSibling) {
         if (n.classList.contains('rec') && !n.hidden) { on = true; break; }
       }

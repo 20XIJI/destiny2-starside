@@ -61,13 +61,23 @@ class Page:
 
     def name(self, key):
         """纯文本的名字，给索引与自检用。行标题是站内写法（「鲁莽神谕\\众神殿版本」
-        这种带版本后缀的），源稿写了就以它为准；没写才用记录名。"""
+        这种带版本后缀的），源稿写了就以它为准；没写才用记录名。
+
+        套装效果那一行在站内叫它所属的套装（源稿写的是效果名，当校验位），
+        与表格链的 rows.lines() 同一条。"""
+        rec = rows.facts().at(key) or {}
+        if rec.get('onSets'):
+            got = rows.zh(rows.facts().sets.get(str(rec['onSets'][0])) or {}).get('name')
+            if got:
+                return got
         got = self.titles.get(key)
         if got:
             return markup.text_of(self.line(got), collapse=True)
         return markup.spaced(PUA.sub('', rows.name_of(key) or '').strip())
 
     def title_html(self, key):
+        if (rows.facts().at(key) or {}).get('onSets'):
+            return self.line(self.name(key))      # 套装效果显示套装名
         got = self.titles.get(key)
         return self.line(got) if got else self.name_html(key)
 
@@ -79,6 +89,10 @@ class Page:
     def icon(self, key, size=''):
         got = rows.icon_file(key)
         if not got or not os.path.exists(os.path.join(rows.shell.SITE, got)):
+            # 不静默回空串：没图的格子在页面上看不出是漏了，交给 rows.PROBLEMS
+            # 汇总，生成器当场中止（与表格链的 icon_src 同一条）。
+            rows.PROBLEMS.append((self.page, self.name(key), '图标',
+                                  '%s 没有图' % key))
             return ''
         return self.img(rows.rel(got, self.where), size)
 
@@ -100,13 +114,24 @@ class Page:
         return out.replace(BR, '<br>')
 
     def prose(self, text):
+        """正文 → 段落。三种分段都认：格内换行两次（源稿方言）、空行（记录里
+        直接写的真换行）、以及 `- ` 列表。
+
+        **只在着色标记之外切**：一条说明常把几行包在同一个 `{el-kinetic|…}` 里，
+        从中间切开两半都是未闭合的标记，渲染当场中止。
+        """
         if not text:
             return ''
         out = []
-        for para in text.split(PARA):
-            para = para.strip()
-            if para:
-                out.append('<p>%s</p>' % '<br>'.join(self.line(x) for x in para.split(BR)))
+        for para in top_split(text.replace(PARA, '\n\n'), '\n\n'):
+            lines = [x.strip() for x in top_split(para.replace(BR, '\n'), '\n') if x.strip()]
+            if not lines:
+                continue
+            if all(x.startswith('- ') for x in lines):
+                out.append('<ul>%s</ul>'
+                           % ''.join('<li>%s</li>' % self.line(x[2:]) for x in lines))
+            else:
+                out.append('<p>%s</p>' % '<br>'.join(self.line(x) for x in lines))
         return ''.join(out)
 
 
@@ -146,21 +171,42 @@ def elem_token(key):
 
 
 # ── 格子 ────────────────────────────────────────────────────────────
+def top_split(text, sep):
+    """按 sep 切，但只切在着色标记之外。标记里面的换行属于那一段文字。"""
+    out, depth, start, i = [], 0, 0, 0
+    while i < len(text):
+        open_at = markup.OPEN_MARK.match(text, i)
+        if open_at:
+            depth += 1
+            i = open_at.end()
+            continue
+        if text[i] == '}' and depth:
+            depth -= 1
+        elif depth == 0 and text.startswith(sep, i):
+            out.append(text[start:i])
+            i += len(sep)
+            start = i
+            continue
+        i += 1
+    out.append(text[start:])
+    return out
+
+
 def cell(cls, inner):
-    return '<div class="cell %s">%s</div>' % (cls, inner)
+    return '<div class="r-cell %s">%s</div>' % (cls, inner)
 
 
 def idcell(p, key, subs=(), name_cls='', extra=''):
     """身份格：图标在上，名字与副行在下，上下左右居中。"""
     sub = ''.join('<span>%s</span>' % s for s in subs if s)
-    return cell('idc', '%s<div class="nm %s">%s</div>%s%s'
+    return cell('r-id', '%s<div class="r-nm %s">%s</div>%s%s'
                 % (p.icon(key), name_cls, p.title_html(key),
-                   '<div class="sub">%s</div>' % sub if sub else '', extra))
+                   '<div class="r-sub">%s</div>' % sub if sub else '', extra))
 
 
 def colhead(cls, labels):
     """一节开头那一行列名，由种类生成。每项 (对齐, 文字)：c 居中、l 左对齐。"""
-    return '<div class="colhead %s">%s</div>' % (
+    return '<div class="r-head %s">%s</div>' % (
         cls, ''.join('<div class="%s">%s</div>' % (a, t) for a, t in labels))
 
 
@@ -194,7 +240,7 @@ def stats_of(p, key):
     for s in rec.get('investmentStats') or ():
         name = rows.zh(rows.facts().stats.get(str(s['statTypeHash'])) or {}).get('name', '')
         if name == '星相能量容量':
-            out.append('<div class="slots">碎片槽 %s</div>'
+            out.append('<div class="r-slots">碎片槽 %s</div>'
                        % ''.join('<i></i>' for _ in range(s['value'])))
         elif name and '消耗' not in name and s['value']:
             out.append('<div>%s <b>%+d</b></div>' % (html.escape(name), s['value']))
@@ -208,8 +254,12 @@ def enhanced(p, key):
         who = ''.join('%s<span class="%s">%s</span>'
                       % (p.icon(str(b)), elem_token(str(b)), p.name_html(str(b)))
                       for b in e['by'])
-        out.append('<div class="sub-row"><div class="sub-h">装上 %s 之后</div>%s</div>'
-                   % (who, p.prose(e['realgame_details'])))
+        # data-name 是这一行在站内的叫法，搜索索引与页面索引按它收条目
+        out.append('<div class="r-sub-row" data-name="%s">'
+                   '<div class="r-sub-h">装上 %s 之后</div>%s</div>'
+                   % (html.escape('%s（%s）' % (p.name(key),
+                                               '、'.join(p.name(str(b)) for b in e['by']))),
+                      who, p.prose(e['realgame_details'])))
     return ''.join(out)
 
 
@@ -219,8 +269,10 @@ def by_types(p, key):
     out = []
     for w in (rows.facts().at(key) or {}).get('weaponTypes') or ():
         who = '、'.join(names.get(t, str(t)) for t in w['itemSubType'])
-        out.append('<div class="sub-row"><div class="sub-h">在 <b>%s</b> 上</div>%s</div>'
-                   % (html.escape(who), p.prose(w['realgame_details'])))
+        out.append('<div class="r-sub-row" data-name="%s">'
+                   '<div class="r-sub-h">在 <b>%s</b> 上</div>%s</div>'
+                   % (html.escape('%s（%s）' % (p.name(key), who)),
+                      html.escape(who), p.prose(w['realgame_details'])))
     return ''.join(out)
 
 
@@ -251,7 +303,7 @@ def author_paras(p, a, who, paired=()):
     if who == 'LGpig' and a.get('lgpig_tier_explanation'):
         paras.insert(0, a['lgpig_tier_explanation'])
     if paired and len(paired) == len(paras):
-        return ''.join('<p class="why"><b class="tag">%s</b>%s</p>'
+        return ''.join('<p class="why"><b class="r-tag">%s</b>%s</p>'
                        % (p.line(t), '<br>'.join(p.line(x) for x in one.split(BR)))
                        for t, one in zip(paired, paras))
     return ''.join('<p>%s</p>' % '<br>'.join(p.line(x) for x in one.split(BR))
@@ -260,8 +312,8 @@ def author_paras(p, a, who, paired=()):
 
 def tags(p, raw):
     got = [t.strip() for t in (raw or '').split(BR) if t.strip()]
-    return ('<div class="tags">%s</div>'
-            % ''.join('<b class="tag">%s</b>' % p.line(t) for t in got)) if got else ''
+    return ('<div class="r-tags">%s</div>'
+            % ''.join('<b class="r-tag">%s</b>' % p.line(t) for t in got)) if got else ''
 
 
 def author_rows(p, key, first=None):
@@ -278,33 +330,44 @@ def author_rows(p, key, first=None):
         body = author_fields(p, a) + author_paras(p, a, who, role)
         badge, tg = '', '' if 'class="why"' in body else tags(p, a.get('role'))
         if tier and len(tier) <= 4:
-            badge = '<span class="tier %s">%s</span>' % (cls, html.escape(tier))
+            badge = '<span class="r-tier %s">%s</span>' % (cls, html.escape(tier))
         elif tier:
             # 评级写成一整句的（「T0\\输出：T1\\清怪：T1」）装不进徽标，单独一行
-            tg = '<div class="tier-long">%s</div>' % p.line(tier) + tg
+            tg = '<div class="r-tier-long">%s</div>' % p.line(tier) + tg
         if not (badge or tg or body):
             continue
-        out.append(cell('mid x-au-who',
+        out.append(cell('r-mid x-au-who',
                         '<div class="x-au-name"><span class="w-%s">%s</span>%s</div>%s'
                         % (who.lower(), label, badge, tg))
-                   + cell('txt x-au-body', body))
+                   + cell('r-txt x-au-body', body))
     return ''.join(out)
 
 
 # ── 一条记录 ────────────────────────────────────────────────────────
+def panel_of(p, key):
+    """这一条在配装填表页悬停面板里显示什么：数值一行在上，正文在下。
+
+    与页面上画的是同一份取法，所以两处不会说不同的话。
+    """
+    z = p.zh(key)
+    body = p.prose(z.get('realgame_details') or z.get('效果') or z.get('database_details', ''))
+    val = markup.text_of(stats_of(p, key), collapse=True)
+    return ('<p class="v">%s</p>' % val if val else '') + body
+
+
 def rec_plain(p, key, cols, narrow=''):
     """效果、碎片、技能、星相、插件、套装效果：名称 | 说明 (| 数值) (| 来源)。"""
     z = p.zh(key)
     body = (members(p, key)
             + p.prose(z.get('realgame_details') or z.get('效果') or z.get('database_details', ''))
             + enhanced(p, key) + by_types(p, key))
-    out = [idcell(p, key), cell('txt', body)]
+    out = [idcell(p, key), cell('r-txt', body)]
     if 'st' in cols:
-        out.append(cell('mid st', stats_of(p, key)))
+        out.append(cell('r-mid r-val', stats_of(p, key)))
     if 'src' in cols:
-        out.append(cell('mid st', p.line(z.get('site_source') or z.get('来源') or '')))
+        out.append(cell('r-mid r-val', p.line(z.get('site_source') or z.get('来源') or '')))
     au = author_rows(p, key, 'LGpig')
-    return '<article class="rec k-plain c%d%s%s">%s%s</article>' % (
+    return '<article class="rec r-plain r-c%d%s%s">%s%s</article>' % (
         len(cols), narrow, ' has-au' if au else '', ''.join(out), au)
 
 
@@ -317,11 +380,11 @@ def rec_exotic(p, key):
     text = rows.exotic_text(key, z.get('realgame_details', ''))
     season = (rec.get('derived') or {}).get('season')
     au = author_rows(p, key, 'LGpig')
-    return ('<article class="rec k-exotic%s">%s%s%s</article>'
+    return ('<article class="rec r-exotic%s">%s%s%s</article>'
             % (' has-au' if au else '',
                idcell(p, key, [z.get('itemTypeDisplayName'),
                                '赛季 %s' % season if season else ''], 'exo'),
-               cell('txt perk', '<div class="xp">%s%s</div>%s'
+               cell('r-txt r-perk', '<div class="xp">%s%s</div>%s'
                     % (p.icon(first, 'round') if first else '', perk, p.prose(text))),
                au))
 
@@ -343,10 +406,10 @@ def picks(raw):
 def plug(p, key, name, struck, by):
     got = rows.resolve.perk_key(rows.facts(), [key], name)
     if got is None:                       # 槽位说明词（「无」），不是插件
-        return '<div class="plug-none">%s</div>' % html.escape(name)
+        return '<div class="r-plug-none">%s</div>' % html.escape(name)
     path = next((rows.icon_file(h) for h in got if rows.icon_file(h)), None)
     label = '<s>%s</s>' % html.escape(name) if struck else html.escape(name)
-    return ('<div class="plug %s">%s<span>%s</span></div>'
+    return ('<div class="r-plug %s">%s<span>%s</span></div>'
             % ({'a': 'by-a', 'l': 'by-l', 'al': 'by-al'}[by],
                '<span class="ico">%s</span>' % p.path_icon(path) if path else '', label))
 
@@ -416,35 +479,23 @@ def rec_weapon(p, key, rank, author):
         mark.update(dict(a))
         order = [n for n, _ in a] + [n for n, _ in l_ if n not in dict(a)]
         la, ll = {n for n, _ in a}, {n for n, _ in l_}
-        slots.append(cell('mid slot', '<div class="picks">%s</div>' % ''.join(
+        slots.append(cell('r-mid r-slot', '<div class="r-picks">%s</div>' % ''.join(
             plug(p, key, n, mark[n], 'al' if n in la and n in ll else 'a' if n in la else 'l')
             for n in order)))
     mw = (A.get('masterwork') or '').strip()
     mwp = masterwork_plug(key, mw) if mw else None
-    slots.append(cell('mid slot', '<div class="picks"><div class="plug mwp">%s<span>%s</span></div></div>'
+    slots.append(cell('r-mid r-slot', '<div class="r-picks"><div class="r-plug r-mwp">%s<span>%s</span></div></div>'
                       % ('<span class="ico">%s</span>' % p.icon(mwp) if mwp else '',
                          html.escape(p.name(mwp).split('：', 1)[1] if mwp else mw)) if mw else ''))
 
     au = author_rows(p, key, author)
-    return ('<article class="rec k-weapon%s">%s%s%s%s%s</article>'
-            % (' has-au' if au else '', cell('mid rank', str(rank)),
+    return ('<article class="rec r-weapon%s">%s%s%s%s%s</article>'
+            % (' has-au' if au else '', cell('r-mid r-rank', str(rank)),
                idcell(p, key, (), '', '<div class="x-mini">%s</div>'
                       % ''.join('<div>%s</div>' % m for m in mini)),
                cell('x-facts', '<dl>%s</dl>' % ''.join(
                    '<dt>%s</dt><dd>%s</dd>' % (k, v) for k, v in facts_rows)),
                ''.join(slots), au))
-
-
-def rec_mod(p, key):
-    """护甲模组保留原来的三列卡片：图标、名字、费用一行，说明在下面。"""
-    z = p.zh(key)
-    cost = (rows.facts().at(key) or {}).get('plug', {}).get('energyCost')
-    if cost is None and z.get('费用'):
-        cost = markup.text_of(p.line(z['费用']))
-    return ('<div class="mod"><div class="mod-h">%s<span class="mod-n">%s</span>%s</div>%s</div>'
-            % (p.icon(key), html.escape(p.name(key)),
-               '<span class="mod-c"><b>%s</b> 费用</span>' % cost if cost is not None else '',
-               members(p, key) + p.prose(z.get('realgame_details') or z.get('效果') or '')))
 
 
 def stem(path):
@@ -456,7 +507,7 @@ CLASS_ITEM_TYPES = ('猎人披风', '泰坦印记', '术士臂环')
 
 
 def spirit(p, key):
-    return idcell(p, key, (), 'exo') + cell('txt', p.prose(p.zh(key).get('realgame_details', '')))
+    return idcell(p, key, (), 'exo') + cell('r-txt', p.prose(p.zh(key).get('realgame_details', '')))
 
 
 def class_items(p, keys):
@@ -472,7 +523,7 @@ def class_items(p, keys):
             markup.die('%s 没有 site_perkColumns，两栏画不出来' % k)
         cols[k] = ([str(x) for x in got[0]], [str(x) for x in got[1]])
     shared = [set.intersection(*[set(cols[k][i]) for k in keys]) for i in (0, 1)]
-    blank = cell('idc', '') + cell('txt', '')
+    blank = cell('r-id', '') + cell('r-txt', '')
 
     def block(title, left, right):
         body = ''.join('<article class="sp-row rec">%s%s</article>'
@@ -508,7 +559,9 @@ def matrix(p, section):
     got = rows.matrix(p.page)
     out = []
     for sec in got or ():
-        if sec['节'] not in section:
+        # 与 rows.matrix_row 同一条：按相等比。包含比会让「猎人与泰坦」这种
+        # 分节名同时画出两张矩阵。
+        if sec['节'] != section:
             continue
         head = ''.join('<div class="c">%s%s</div>'
                        % (p.path_icon(c['图'], 'glyph') if c.get('图') else '',
@@ -517,10 +570,10 @@ def matrix(p, section):
         body = []
         for rk, cells in sec['行'].items():
             p.matrix_rows.add(rk)
-            row = ''.join(cell('mid', '%s<span>%s</span>' % (p.icon(c), p.name_html(c)))
+            row = ''.join(cell('r-mid', '%s<span>%s</span>' % (p.icon(c), p.name_html(c)))
                           for c in cells)
-            body.append('<div class="mx-row">%s%s</div>'
-                        % (cell('idc', '%s<div class="nm">%s</div>'
+            body.append('<div class="mx-row rec">%s%s</div>'
+                        % (cell('r-id', '%s<div class="r-nm">%s</div>'
                                 % (p.icon(rk), p.name_html(rk))), row))
         out.append('<div class="mx"><div class="mx-head"><div class="c">共享技能</div>%s</div>%s</div>'
                    % (head, ''.join(body)))
@@ -529,10 +582,10 @@ def matrix(p, section):
 
 # ── 一节 ────────────────────────────────────────────────────────────
 HEADS = {
-    'k-exotic': [('c', '异域'), ('l', '异域特性')],
-    'k-weapon': [('c', '名次'), ('c', '武器'), ('c', '参数'), ('c', '枪管'), ('c', '弹匣'),
+    'r-exotic': [('c', '异域'), ('l', '异域特性')],
+    'r-weapon': [('c', '名次'), ('c', '武器'), ('c', '参数'), ('c', '枪管'), ('c', '弹匣'),
                  ('c', 'Perk 1'), ('c', 'Perk 2'), ('c', '起源特性'), ('c', '大师杰作')],
-    'k-plain': [('c', '名称'), ('l', '说明')],
+    'r-plain': [('c', '名称'), ('l', '说明')],
 }
 
 
@@ -544,8 +597,6 @@ def section_blocks(p, groups, section='', author='Aegis'):
     keys = [k for _, ks in groups for k in ks]
     if not keys:
         return ''
-    if p.page == 'armor-mods':
-        return '<div class="mods">%s</div>' % ''.join(rec_mod(p, k) for k in keys)
     if all(is_class_item(k) for k in keys):
         return class_items(p, keys)
 
@@ -553,24 +604,28 @@ def section_blocks(p, groups, section='', author='Aegis'):
     if rows.matrix(p.page):
         out.append(matrix(p, section))
     kinds = {kind(k) for k in keys}
-    fam = ('k-exotic' if kinds == {'exotic'} else 'k-weapon' if kinds == {'weapon'} else 'k-plain')
+    # 一节里以哪种记录为主就用哪种列名：异域排行页每节混着一两条插件，
+    # 按「全等于异域」判会给 136 行异域配上「名称｜说明」那套列名。
+    main_kind = max(kinds, key=lambda k: sum(1 for x in keys if kind(x) == k))
+    fam = ('r-exotic' if main_kind == 'exotic' else 'r-weapon' if main_kind == 'weapon'
+           else 'r-plain')
     cols, narrow = [], ''
-    if fam == 'k-plain':
+    if fam == 'r-plain':
         vals = [markup.text_of(stats_of(p, k)) for k in keys]
         if any(vals):
             cols.append('st')
             # 整节的数值都短（费用 1、碎片槽 ◇◇）时收窄这一轨，不留半列空白
-            narrow = ' narrow' if max(len(v) for v in vals) <= 10 else ''
+            narrow = ' r-narrow' if max(len(v) for v in vals) <= 10 else ''
         if any(p.zh(k).get('site_source') or p.zh(k).get('来源') for k in keys):
             cols.append('src')
         heads = HEADS[fam] + [(('c', '数值') if c == 'st' else ('c', '来源')) for c in cols]
-        out.append(colhead('k-plain c%d%s' % (len(cols), narrow), heads))
+        out.append(colhead('r-plain r-c%d%s' % (len(cols), narrow), heads))
     else:
         out.append(colhead(fam, HEADS[fam]))
 
     for name, ks in groups:
         if name:
-            out.append('<div class="grp">%s</div>' % html.escape(name))
+            out.append('<div class="r-grp">%s</div>' % html.escape(name))
         for i, k in enumerate(ks, 1):
             if k in p.matrix_rows:          # 矩阵行首那一条不再单独占一行
                 continue

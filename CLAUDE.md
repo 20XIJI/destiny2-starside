@@ -128,7 +128,6 @@ resolve.py         中文名 → itemHash。槽位限定候选，复刻按「源
 research.py        人写层：references/research/<页>.json 的读写与「把行补回源稿的表里」。
                    --extract 把一页的表迁进来，源稿就地瘦身；行标题落不到库里主键
                    上时合成一个（row: 前缀），规则只在 minted() 一处
-entitydb.py        读 data/entities/，这个目录已不存在；只剩 build-search.py 引用它
 pagedex.py         页面索引：生成器渲染时登记条目，落成 data/index/<页>.json。
                    页面 → 着色 token、格子切分、说明取法都在这里
 vocab.py           配装词表：读 data/index/ 那批索引，槽位 → 来源页的对应在这里一处定义

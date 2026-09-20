@@ -60,6 +60,22 @@ EXOTIC = frozenset({'exotic-weapon', 'exotic-armor'})
 ELEMENT = {1: ('el-kinetic', '动能'), 2: ('el-arc', '电弧'), 3: ('el-solar', '烈日'),
            4: ('el-void', '虚空'), 6: ('el-stasis', '冰影'), 7: ('el-strand', '缚丝')}
 
+# 作者写的那几格：源表的中文列名 → 作者块里的字段名。两位作者的字段名不同
+# （aegis_tier／lgpig_tier），所以按作者分表。键名见 data/ 的 site_authors。
+# 同一段站内正文的几种叫法：物品记录用英文字段名，自发主键沿用源表的中文列名
+TEXT_FIELDS = ('realgame_details', '效果', '说明')
+
+AUTHOR_FIELDS = {
+    'Aegis': {'评级': 'aegis_tier', '来源': 'aegis_source', '枪管': 'barrel',
+              '弹匣': 'magazine', '大师': 'masterwork', 'Perk 1': 'perk1',
+              'Perk 2': 'perk2', '起源特性': 'origin', '注解': 'explanation_1'},
+    'LGpig': {'评级': 'lgpig_tier', '获取地点': 'lgpig_source', '定位': 'role',
+              'Perk 三号位': 'perk1', 'Perk 四号位': 'perk2', 'DPS': 'dps',
+              '总伤': 'total_damage', '切换 DPS': 'swap_dps', '备注': 'notes',
+              '评级理由': 'lgpig_tier_explanation',
+              '理由一': 'explanation_1', '理由二': 'explanation_2', '理由三': 'explanation_3'},
+}
+
 AMMO_GEN = '1931675084'     # 弹药生成
 CHARGE_RATE = '3022301683'  # 充能效率（刀剑）
 IMPACT = '4043523819'       # 伤害（刀剑）
@@ -352,7 +368,8 @@ class Table:
         self.seen[key] += 1
         who = AUTHORED.get(self.page)
         if who:
-            base = (rec.get('authors') or {}).get(who) or {}
+            authors = zh(rec).get('site_authors') or rec.get('authors') or {}
+            base = authors.get(who) or {}
             seq = [base] + list(base.get('variants') or ())
         else:
             vs = rec.get('variants') or ()
@@ -451,9 +468,21 @@ class Table:
             if got is None:
                 self.problem(title, col, '派生不出来')
             return got or ''
+        who = AUTHORED.get(self.page)
+        if who and not block.get(f):
+            # 作者那几格的字段名是英文，列名是中文，对应写在 AUTHOR_FIELDS 一处
+            f = AUTHOR_FIELDS.get(who, {}).get(col.replace(markup.CELL_BREAK, ''), f)
+        if f not in block:
+            # 同一段正文在不同记录上叫法不同：物品记录写 realgame_details，
+            # 自发主键（模组族、组合）写「效果」。
+            for alias in TEXT_FIELDS:
+                if f in TEXT_FIELDS and alias in block:
+                    f = alias
+                    break
         got = block.get(f) or ''
-        if not got and f == 'realgame_details':
-            self.problem(title, col, '%s 没有说明' % key)
+        # 取不到就记一笔。作者没写的那一格不算——这一页的作者本来就可以留空。
+        if f not in block and not who:
+            self.problem(title, col, '%s 名下没有「%s」' % (key, f))
         return got
 
     def matrix_cells(self, title, sec, pair):

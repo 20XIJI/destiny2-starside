@@ -2,7 +2,7 @@
 """人写层：站内实测出来的东西，以及它落在哪几个主键上。
 
 事实层（data/manifest/）是 Bungie 说的，这一层是我们测的。两边按主键合成
-data/entities/，那一份是产物。**人只编辑这一层。**
+data/ 的记录，那一份是产物。**人只编辑这一层。**
 
 一页一份 references/research/<页>.json：
 

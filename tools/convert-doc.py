@@ -659,6 +659,8 @@ def record_region(lines):
             icon = rows.icon_file(key)
             dex.add(keys=[key], anchor=anchor, kind=kind, name=ctx.name(key),
                     icon=pagedex.site_path(PAGE, rows.rel(icon, PAGE)) if icon else '',
+                    # 配装填表页的悬停面板读这一段；缺了面板整块不出
+                    desc=layout.panel_of(ctx, key),
                     **({} if q is None else {'q': q}))
 
         for lane, keys in groups:

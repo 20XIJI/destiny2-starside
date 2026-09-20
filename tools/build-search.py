@@ -20,6 +20,7 @@
 """
 
 import argparse
+import html as htmllib
 import json
 import os
 import re
@@ -47,8 +48,11 @@ MOD_NAME = re.compile(r'<h4[^>]*>(.*?)</h4>', re.S)
 SET = re.compile(r'<article class="set" id="([^"]+)"[^>]*>(.*?)</article>', re.S)
 SET_NAME = re.compile(r'<h3[^>]*>(.*?)</h3>', re.S)
 # 按记录排版的那几页：一条记录一个 article.rec，名字在身份格的 .nm 里
-REC = re.compile(r'<article class="rec[^"]*"[^>]*>(.*?)</article>', re.S)
-REC_NAME = re.compile(r'<div class="nm[^"]*">(.*?)</div>', re.S)
+REC = re.compile(r'<article class="[^"]*\brec\b[^"]*"[^>]*>(.*?)</article>', re.S)
+REC_DIV = re.compile(r'<div class="[^"]*\brec\b[^"]*"[^>]*>(.*?)</div>\s*</div>', re.S)
+REC_NAME = re.compile(r'<div class="r-nm[^"]*">(.*?)</div>', re.S)
+# 子行（星相强化、按枪型的说明）在站内有自己的名字，写在行上的 data-name
+SUB_NAME = re.compile(r'^ data-name="([^"]+)"')
 TITLE = re.compile(r'<title>(.*?)</title>', re.S)
 DESC = re.compile(r'<meta name="description" content="([^"]*)"')
 BR = re.compile(r'<br\s*/?>')
@@ -82,6 +86,16 @@ def items_of(chunk, anchor, tables=True):
     for rec in REC.findall(chunk):
         out.append((anchor, text(markup.must(
             REC_NAME.search(rec), '记录取不到名称').group(1)), text(rec)))
+    # 子行嵌着好几层 div，按「下一行子行或本条记录结束」切，正则配不住闭合标签
+    for piece in chunk.split('<div class="r-sub-row"')[1:]:
+        got = SUB_NAME.match(piece)
+        if got:
+            out.append((anchor, htmllib.unescape(got.group(1)),
+                        text(piece.split('</article>')[0])))
+    for rec in REC_DIV.findall(chunk):
+        got = REC_NAME.search(rec)
+        if got:
+            out.append((anchor, text(got.group(1)), text(rec)))
     carry = ''
     for row in ROW.findall(THEAD.sub('', chunk)) if tables else []:
         cells = CELL.findall(row)
@@ -129,7 +143,9 @@ def english(url):
     page = url[:-len('/index.html')]
     if page not in _EN:
         table = {}
-        got = pagedex.read(page)
+        # 建了索引的页面读不到就中止（半份词表比没有更糟）；本来就没建索引的
+        # 页面（ability-cooldown 这类不被跨页引用的）跳过。
+        got = pagedex.must_read(page) if page in pagedex.TOKENS else None
         for row in (got or {}).get('entries', ()):
             shown = row.get('name')
             for key in row.get('keys') or ():

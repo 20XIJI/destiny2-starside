@@ -410,27 +410,6 @@ class Generated(unittest.TestCase):
         self.assertEqual(build_home.render(home), home,
                          'index.html 的卡片预览过期了，跑 python3 tools/build-home.py')
 
-    def test_every_entity_field_sits_on_the_right_side_of_the_language_line(self):
-        """随语言变的都在某个 i18n 底下，不随语言变的都不在。
-
-        判据只有一条：换一种语言，这个值会不会变。漏一处的症状是「中文站看着
-        正常」——根上那份中文照旧显示，只有换语言时才露出来，而那时没人在看。
-        """
-        import entitydb
-        langs = {'zh-CN', 'en'}
-        bad = []
-        for key, row in entitydb.all().items():
-            for name, val in row.items():
-                # 双语字段的形状就是 {语言: 文本}；根上出现即说明漏搬了。
-                if isinstance(val, dict) and set(val) & langs and name != 'i18n':
-                    bad.append('%s 的 %s 还在根上' % (key, name))
-            for lang, fields in (row.get('i18n') or {}).items():
-                self.assertIn(lang, langs, '%s 的 i18n 里有没登记的语言 %s' % (key, lang))
-                for name, val in fields.items():
-                    if not isinstance(val, str):
-                        bad.append('%s 的 i18n.%s.%s 不是文本' % (key, lang, name))
-        self.assertEqual(bad[:6], [], '语言边界破了 %d 处' % len(bad))
-
     def test_every_research_entry_reaches_the_page_it_claims(self):
         """人写层的每一条都要能补回它那一页的表里，而且补出来的是合法表格行。
 
@@ -471,51 +450,6 @@ class Generated(unittest.TestCase):
                 self.assertEqual(back, thin, '%s 拆回来的源稿与盘上那份不一样' % page)
                 self.assertEqual(columns, got['columns'], '%s 的 columns 变了' % page)
                 self.assertEqual(entries, got['entries'], '%s 的条目变了' % page)
-
-    def test_a_page_block_holds_only_what_that_page_said(self):
-        """页面块里只有四样：kind、refs、values、i18n。
-
-        位置与渲染（锚点、页内筛选词、渲染后的 HTML、页面目录下的图）一概不进
-        实体——那是渲染器才知道的事，不是关于这件东西的事实，它们留在
-        data/index/ 那个不入库的中间产物里。漏回来的症状是「看着也能用」：
-        两处都有一份，改了一处另一处照旧，而谁是准的说不清。
-        """
-        import entitydb
-        allowed = {'kind', 'refs', 'values', 'i18n'}
-        bad, seen = [], 0
-        for key, row in entitydb.all().items():
-            for page, blocks in (row.get('pages') or {}).items():
-                for block in blocks:
-                    seen += 1
-                    stray = sorted(set(block) - allowed)
-                    if stray:
-                        bad.append('%s 在 %s 的块上有 %s' % (key, page, stray))
-        self.assertEqual(bad[:5], [], '页面块混进了不该有的字段 %d 处' % len(bad))
-        self.assertGreater(seen, 3000, '只读到 %d 个页面块' % seen)
-
-    def test_every_reference_points_at_an_entity_and_no_value_carries_markup(self):
-        """refs 里的每个主键都指得到实体；values 里不许有着色标记。
-
-        refs 存的是主键不是名字——名字改了，指向不该跟着断。values 存的是值不是
-        渲染形态：留着 `{num|56}` 等于把渲染当数据，读的人还要自己解一次。
-        """
-        import entitydb
-        lib = entitydb.all()
-        dangling, marked, seen = [], [], 0
-        for key, row in lib.items():
-            for page, blocks in (row.get('pages') or {}).items():
-                for block in blocks:
-                    for field, keys in (block.get('refs') or {}).items():
-                        for k in keys:
-                            seen += 1
-                            if k not in lib:
-                                dangling.append('%s·%s·%s → %s' % (key, page, field, k))
-                    for field, val in (block.get('values') or {}).items():
-                        if '{' in val and '|' in val:
-                            marked.append('%s·%s·%s = %r' % (key, page, field, val))
-        self.assertEqual(dangling[:5], [], '有 %d 处引用指不到实体' % len(dangling))
-        self.assertEqual(marked[:5], [], '有 %d 处 values 还带着标记' % len(marked))
-        self.assertGreater(seen, 5000, '只读到 %d 处引用' % seen)
 
     def test_the_search_index_carries_the_english_names(self):
         """搜 One-Two Punch 要搜得到雪上加霜。
