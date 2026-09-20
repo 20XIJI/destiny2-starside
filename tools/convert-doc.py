@@ -686,6 +686,16 @@ def record_region(lines):
                                                                      PAGE))
                                 if rows.icon_file(str(by)) else '',
                                 q=ctx.name(key))
+                # 画成子行的组合（故我在的四条元素行）照旧各进一条：配装源稿按它们
+                # 的名字选异域武器，落点是宿主那一行的锚点。
+                for sub in rows.subs_of(SLUG, key):
+                    # 图取组合自己的（没有就是宿主那把枪的）：配装页把它摆在异域
+                    # 武器那一格上，画成固有 Perk 的图读者认不出是哪把枪。
+                    ico = rows.icon_file(sub)
+                    dex.add(keys=[sub], anchor=anchor, kind=lane or label,
+                            name=ctx.name(sub), q=ctx.name(key),
+                            icon=pagedex.site_path(PAGE, rows.rel(ico, PAGE)) if ico else '',
+                            desc=layout.panel_of(ctx, sub))
     return [layout.section_blocks(ctx, groups, SECTION[1], rows.AUTHORED.get(SLUG, 'Aegis'))]
 
 

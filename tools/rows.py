@@ -191,6 +191,30 @@ def combo(rec):
     return (rec or {}).get('kind') == '组合'
 
 
+_SUBS = {}
+
+
+def subs_of(page, key):
+    """画在 `key` 那一行底下的组合，按 minted.json 里的顺序。`page` 是源稿的 slug。
+
+    组合记录标着 `page`，归那一页。**源稿列了它，它自己占一行**（虚空页的手持
+    超新星）；**没列就画在第一位成员那一行底下**（故我在的四条元素行、英勇利刃的
+    冲击核心）——它们说的是同一把枪换一套固有之后的样子，单独占一行读者会当成
+    另一把异域。子行的标题写在记录的 `site_when` 上。
+
+    记录里的 `page` 写的是产出目录（`elements/void`），所以拿 where_of() 比。
+    """
+    if page not in _SUBS:
+        listed = set(heads(page))
+        where = where_of(page)
+        got = collections.defaultdict(list)
+        for k, rec in facts().minted.items():
+            if combo(rec) and rec.get('page') == where and k not in listed:
+                got[str((rec.get('members') or [''])[0])].append(k)
+        _SUBS[page] = got
+    return _SUBS[page].get(key, [])
+
+
 # ── 图 ────────────────────────────────────────────────────────────────
 def icon_file(key):
     """一枚主键站上发的那张图，路径相对站根。没有就回 None。

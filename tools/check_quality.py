@@ -558,13 +558,13 @@ class EntitySource(unittest.TestCase):
                     times, 1 + len(more),
                     '%s 的 %s 在源稿里出现 %d 次，记录里只有 %d 段'
                     % (slug, head, times, 1 + len(more)))
-        # 3031 ＝ 2395 行的行首加上它们的 covers。元素页、棱镜页与职业技能页的行
+        # 3026 ＝ 2390 行的行首加上它们的 covers。元素页、棱镜页与职业技能页的行
         # 从前互相写着对方分支的那一枚（电弧的「重击」与棱镜的「重击」是两枚不同的
         # hash，各自有一段说明），摘掉那 88 枚、再摘掉烈焰战锤那一行写的「无敌索尔」
         # （那不是它的另一枚 hash，是改造它的那个星相）之后是这个数。异域护甲页的
         # 职业金那一节列的是三件职业物品，不是 18 行之灵：两栏各有哪些之灵写在
         # 记录的 site_perkColumns 上。
-        self.assertEqual((nrows, refs), (2395, 3031),
+        self.assertEqual((nrows, refs), (2390, 3026),
                          '源稿的行数或主键引用数变了：%d 行、%d 个引用' % (nrows, refs))
 
     def test_an_enhancement_names_the_aspects_that_cause_it(self):

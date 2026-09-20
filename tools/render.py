@@ -276,9 +276,13 @@ def by_types(p, key):
     return ''.join(out)
 
 
-def members(p, key):
-    """模组族与组合：成员图标排一行，成员不单独占行。"""
-    got = [str(m) for m in (rows.facts().at(key) or {}).get('members') or ()]
+def members(p, key, skip=0):
+    """模组族与组合：成员图标排一行，成员不单独占行。
+
+    `skip` 跳过前几位：组合画成子行时，第一位成员就是它挂着的那一行，再画一遍
+    等于让读者在「故我在」底下又看见一次「故我在」。
+    """
+    got = [str(m) for m in (rows.facts().at(key) or {}).get('members') or ()][skip:]
     if not got:
         return ''
     return ('<div class="mem">%s</div>'
@@ -310,6 +314,27 @@ def member_text(p, key):
     return ''.join(out)
 
 
+def combos(p, key):
+    """组合子行：源稿没列的组合画在第一位成员那一行底下，见 rows.subs_of()。
+
+    标题是记录上的 `site_when`（「当装上」「当{el-arc|电弧}元素」）接这一套的成员，
+    与星相强化子行同一种画法；底下是成员各自的实测。**成员只画在标题上**：再画一行
+    图标，「当装上 冲击核心」底下就又是一枚冲击核心。
+    """
+    out = []
+    for k in rows.subs_of(p.page, key):
+        z = p.zh(k)
+        if not z.get('site_when'):
+            markup.die('组合 %s 画成子行却没写 site_when' % k)
+        mem = [str(m) for m in (rows.facts().at(k) or {}).get('members') or ()][1:]
+        out.append('<div class="r-sub-row" data-name="%s"><div class="r-sub-h">%s%s</div>'
+                   '%s%s</div>'
+                   % (html.escape(p.name(k)), p.line(z['site_when']),
+                      ''.join('%s<b>%s</b>' % (p.icon(m), p.name_html(m)) for m in mem),
+                      p.prose(z.get('realgame_details', '')), member_text(p, k)))
+    return ''.join(out)
+
+
 # ── 作者区：一位作者两格，加作者只多一行 ────────────────────────────
 def author_fields(p, a):
     got = [(k, v) for k, v in sorted(a.items())
@@ -327,7 +352,9 @@ def author_paras(p, a, who, paired=()):
     if who == 'LGpig' and a.get('lgpig_tier_explanation'):
         paras.insert(0, a['lgpig_tier_explanation'])
     if paired and len(paired) == len(paras):
-        return ''.join('<p class="why"><b class="r-tag">%s</b>%s</p>'
+        # 正文包进一件 <b>：.why 是两栏 flex，不包的话正文里每个着色 span
+        # 各自成了一个 flex item，一个词挤成一竖列。
+        return ''.join('<p class="why"><b class="r-tag">%s</b><b class="why-t">%s</b></p>'
                        % (p.line(t), '<br>'.join(p.line(x) for x in one.split(BR)))
                        for t, one in zip(paired, paras))
     return ''.join('<p>%s</p>' % '<br>'.join(p.line(x) for x in one.split(BR))
@@ -384,7 +411,8 @@ def rec_plain(p, key, cols, narrow=''):
     z = p.zh(key)
     body = (members(p, key)
             + p.prose(z.get('realgame_details') or z.get('效果') or z.get('database_details', ''))
-            + member_text(p, key) + enhanced(p, key) + by_types(p, key))
+            + member_text(p, key) + enhanced(p, key) + by_types(p, key)
+            + combos(p, key))
     out = [idcell(p, key), cell('r-txt', body)]
     if 'st' in cols:
         out.append(cell('r-mid r-val', stats_of(p, key)))
@@ -426,7 +454,7 @@ def rec_exotic(p, key):
             % (' has-au' if au else '',
                idcell(p, key, [z.get('itemTypeDisplayName'),
                                '赛季 %s' % season if season else ''], 'exo'),
-               cell('r-txt r-perk', '%s%s' % (perk, p.prose(text))),
+               cell('r-txt r-perk', '%s%s%s' % (perk, p.prose(text), combos(p, key))),
                au))
 
 

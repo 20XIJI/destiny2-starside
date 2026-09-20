@@ -2855,8 +2855,9 @@ body:has(.hero) {
 /* 子行：星相带来的强化、框架在某几种枪型上的说明 */
 .r-sub-row { margin-top: 9px; padding: 8px 12px; background: var(--tint-2);
            border-left: 2px solid var(--hair-lit); }
-.r-sub-h { display: flex; align-items: center; gap: 7px; margin-bottom: 6px;
+.r-sub-h { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-bottom: 6px;
          font-size: 12.5px; color: var(--bone-dim); }
+.r-sub-h > b { font-weight: 600; color: var(--bone); }
 .r-sub-h > img { width: 20px; height: 20px; }
 .r-sub-h span[class^="el-"] { font-weight: 600; }
 
@@ -2893,6 +2894,8 @@ body:has(.hero) {
        color: var(--bone-hi); background: #ffffff12; }
 .why { display: flex; align-items: baseline; gap: 9px; }
 .why > .r-tag { flex: none; }
+/* 正文这一件要允许收窄到内容宽度以下，否则标签挤走它、整段折成一竖列 */
+.why > .why-t { min-width: 0; font-weight: 400; }
 
 /* 作者区：一位作者两格，与记录用同一套列。加作者只多一行，不加列 */
 .x-au-who, .x-au-body { padding: 5px 14px; border-top: 1px dashed var(--hair);
