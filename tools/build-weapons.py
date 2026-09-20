@@ -370,6 +370,58 @@ def source_of(b, h, authors):
     return got[3:] if got.startswith('来源：') else ''
 
 
+# 弹药块拾取量那张表的行名 → (itemSubType, ammoType)。表里按「读者怎么叫」分行，
+# 库里按枚举分：火箭手枪是装特殊弹药的手枪，火箭脉冲是装特殊弹药的脉冲步枪，
+# 重型弩箭是装威能弹药的战斗弓箭。数值不在这里，见 brick_table()。
+BRICK_ROWS = {
+    ('绿弹', '霰弹枪'): (7, 2), ('绿弹', '榴弹发射器'): (23, 2), ('绿弹', '融合步枪'): (11, 2),
+    ('绿弹', '狙击枪'): (12, 2), ('绿弹', '追踪步枪'): (25, 2), ('绿弹', '偃月'): (33, 2),
+    ('绿弹', '火箭手枪'): (17, 2), ('绿弹', '火箭脉冲'): (13, 2),
+    ('重弹', '刀剑'): (18, 3), ('重弹', '榴弹发射器'): (23, 3), ('重弹', '火箭发射器'): (10, 3),
+    ('重弹', '线性融合步枪'): (22, 3), ('重弹', '机枪'): (8, 3), ('重弹', '重型弩箭'): (31, 3),
+}
+BRICK_PAGE = os.path.join(shell.ROOT, 'references', 'docs', 'ammo.md')
+# 框架行上页面的那几项，顺序即载荷里的下标；app.js 顶上那几行常量要跟着改。
+FRAME_FIELDS = ('tier', 'add_score', 'boss_score', 'ads_falloff_range',
+                'true_rpm', 'base_reload', 'typical_mdps', 'typical_bdps',
+                'minor_brick', 'boss_brick')
+
+
+def brick_table():
+    """`(枪型, 弹药) → [常规, 常规+回收利用, 强化, 强化+回收利用]`。
+
+    数值现读弹药生成机制那一页的「弹药块拾取量」表，不在这里抄第二份：那张表是
+    实测结果，会随版本改，抄过来就会各改各的。这一页因此是装备库唯一读源稿的地方,
+    读的也只是别人写好的一张表。行名对应表见 BRICK_ROWS，对不上的行当场中止。
+    """
+    with open(BRICK_PAGE, encoding='utf-8') as fh:
+        body = fh.read().split('## 弹药块拾取量', 1)
+    if len(body) != 2:
+        markup.die('%s 里找不到「弹药块拾取量」一节' % BRICK_PAGE)
+    out, lane = {}, ''
+    for line in body[1].split('\n'):
+        if not line.startswith('|'):
+            if line.startswith('##'):
+                break
+            continue
+        spans = markup.cells(line)
+        if spans is None:
+            continue
+        cells = [line[a:b].strip() for a, b in spans]
+        head = markup.text_of(markup.inline(cells[0]), collapse=True).strip('= ')
+        if len(cells) == 1:
+            lane = head or lane
+            continue
+        if head in ('武器', '---') or set(head) <= {'-'}:
+            continue
+        key = BRICK_ROWS.get((lane, head))
+        if key is None:
+            markup.die('弹药块拾取量表里「%s · %s」没有对应的枪型，补进 BRICK_ROWS' % (lane, head))
+        out['%d,%d' % key] = [markup.text_of(markup.inline(c), collapse=True).replace(
+            markup.CELL_BREAK, ' ') for c in cells[1:]]
+    return out
+
+
 def rolls_of(F, h):
     """挂在这件装备的组合记录上的评级，好的在前。
 
@@ -557,7 +609,8 @@ def build(facts):
                     if (F.perks.get(str(p['perkHash'])) or {}).get('isDisplayable')]
             cats_text[str(c)] = [[b.text(e), b.say(b.text(e, 'database_details'))] for e in effs]
         wpool[h] = [str(r['stats']['statGroupHash']), [[k, base[k]] for k in present],
-                    x['cols'], [1 if tiered else 0, rec_mw, opts], [int(m) for m in mods], catalysts]
+                    x['cols'], [1 if tiered else 0, rec_mw, opts], [int(m) for m in mods], catalysts,
+                    rows.frame_row(r)]
         flavor = b.text(r, 'flavorText')
         if flavor:
             wtext_fl[h] = flavor
@@ -681,8 +734,9 @@ def build(facts):
     # 固有单列一档：它不进枪管弹匣那一截属性，也不算 Perk 1／Perk 2。
     role_code = {'stat': 0, 'trait': 1, 'origin': 2, 'intrinsic': 3}
     wp = []
+    frame_rows = Table()
     for h in order:
-        group, base, cols, (tiered, rec, opts), mods, cats = wpool[h]
+        group, base, cols, (tiered, rec, opts), mods, cats, frame = wpool[h]
         enc_cols, bits = [], []
         for label, role, cells in cols:
             lst = [[pidx[str(c[0])], pidx[str(c[1])] if c[1] else -1] for c in cells]
@@ -695,9 +749,11 @@ def build(facts):
         base = [have.get(x[0]) for x in b.groups[group]]
         wp.append([group, base, enc_cols, bits, tiered, rec, mw_lists.of(enc_opts) if opts else -1,
                    mod_lists.of([pidx[str(m)] for m in mods]) if mods else -1,
-                   [pidx[str(c)] for c in cats]])
+                   [pidx[str(c)] for c in cats],
+                   frame_rows.of([frame.get(k) for k in FRAME_FIELDS]) if frame else -1])
     pool = {'s': [[int(h)] + v for h, v in b.stats.items()], 'g': groups, 'p': plist, 'pt': ptypes.items, 'lb': labels.items,
             'L': cell_lists.items, 'M': mw_lists.items, 'D': mod_lists.items, 'w': wp,
+            'fr2': frame_rows.items, 'brick': brick_table(),
             'en': en_w, 'aen': en_a}
 
     htmls, flavors = Table(), Table()

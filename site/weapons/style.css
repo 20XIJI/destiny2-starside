@@ -574,6 +574,42 @@
 .one-main > section,
 .one-side > section { margin-bottom: 26px; }
 
+/* 框架数值：评级与两个分数打头，其余一项一行，与属性那一块同一档字号 */
+.fr-top {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 8px;
+  font: 400 12.5px/1.5 var(--font-cn);
+  color: var(--bone-dim);
+}
+
+.fr-top b { color: var(--bone-hi); font-weight: 600; }
+.fr-tier { font: 700 22px/1 var(--font-disp); letter-spacing: .02em; }
+
+.fr-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 5px 10px;
+  margin: 0;
+  font: 400 12.5px/1.5 var(--font-cn);
+}
+
+.fr-list dt { color: var(--bone-dim); }
+.fr-list dd { margin: 0; color: var(--bone-hi); font-variant-numeric: tabular-nums; text-align: right; }
+.fr-list dd i { color: var(--bone-dim); font-style: normal; }
+
+.fr-note {
+  margin: 8px 0 0;
+  color: var(--bone-faint);
+  font: 400 11.5px/1.6 var(--font-cn);
+}
+
+.fr-note b { color: var(--bone-dim); font-weight: 600; }
+.fr-top-note { margin: -2px 0 10px; }
+.fr-more { float: right; color: var(--bone-faint); font-weight: 400; letter-spacing: 0; }
+.fr-more:hover { color: var(--accent); }
+
 .sub-label {
   display: flex;
   align-items: baseline;

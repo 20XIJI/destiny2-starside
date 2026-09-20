@@ -26,6 +26,16 @@
   --bone-dim: #9aa0ac;
   --bone-faint: #5b6472;
   --hair: #2a3040;
+  /* 八档色阶：色阶表的 data-tier 与武器框架页的字母分级同引这一条弧，越绿越好。
+     装备库右栏那枚分级徽标也引它，八个色值因此只有这一份。 */
+  --g-1: #f9837c;
+  --g-2: #ff9669;
+  --g-3: #ffa956;
+  --g-4: #ffbb48;
+  --g-5: #efcb47;
+  --g-6: #d5d855;
+  --g-7: #b2e16e;
+  --g-8: #85e589;
   --hair-lit: #3c4457;
 
   /* 字体三分工。Chakra Petch 与 SF Mono 均不含中文，浏览器按字符逐族回退：
@@ -995,14 +1005,14 @@ main {
 
    .g-* 是武器框架页的七档字母分级，借的是同一条弧：同一条弧在站内只有一种
    含义——越绿越好。别名写在这里而不是那一页，八个色值才只有一份。 */
-.gen tbody td[data-tier="1"], .gen tbody td.g-f { color: #f9837c; }
-.gen tbody td[data-tier="2"], .gen tbody td.g-e { color: #ff9669; }
-.gen tbody td[data-tier="3"], .gen tbody td.g-d { color: #ffa956; }
-.gen tbody td[data-tier="4"] { color: #ffbb48; }
-.gen tbody td[data-tier="5"], .gen tbody td.g-c { color: #efcb47; }
-.gen tbody td[data-tier="6"], .gen tbody td.g-b { color: #d5d855; }
-.gen tbody td[data-tier="7"], .gen tbody td.g-a { color: #b2e16e; }
-.gen tbody td[data-tier="8"], .gen tbody td.g-s { color: #85e589; }
+.gen tbody td[data-tier="1"], .gen tbody td.g-f { color: var(--g-1); }
+.gen tbody td[data-tier="2"], .gen tbody td.g-e { color: var(--g-2); }
+.gen tbody td[data-tier="3"], .gen tbody td.g-d { color: var(--g-3); }
+.gen tbody td[data-tier="4"] { color: var(--g-4); }
+.gen tbody td[data-tier="5"], .gen tbody td.g-c { color: var(--g-5); }
+.gen tbody td[data-tier="6"], .gen tbody td.g-b { color: var(--g-6); }
+.gen tbody td[data-tier="7"], .gen tbody td.g-a { color: var(--g-7); }
+.gen tbody td[data-tier="8"], .gen tbody td.g-s { color: var(--g-8); }
 
 /* ── 首页 ──
    首页把网格调到看得见的一档，并让一道光扫过它。资料页不跟——那些页面背后是

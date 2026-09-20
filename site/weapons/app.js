@@ -25,6 +25,10 @@
   var F_ADEPT = 1, F_HOLO = 2, F_CRAFT = 4, F_TIER = 8, F_MW = 16, F_ENH = 32, F_REISSUE = 64;
   var P_HASH = 0, P_NAME = 1, P_ICON = 2, P_TYPE = 3, P_ST = 4, P_CD = 5;
   var R_STAT = 0, R_TRAIT = 1, R_ORIGIN = 2, R_INTRINSIC = 3;
+  /* 框架行上页面的那几项，下标与 build-weapons.FRAME_FIELDS 同序 */
+  var FR_TIER = 0, FR_ADD = 1, FR_BOSS = 2, FR_RANGE = 3, FR_RPM = 4, FR_RELOAD = 5, FR_MDPS = 6, FR_BDPS = 7,
+    FR_MBRICK = 8, FR_BBRICK = 9;
+  var TIER_STEP = { F: 1, E: 2, D: 3, C: 5, B: 6, A: 7, S: 8 };
 
   var V = D.v;
   var ICONS = '../assets/icons/';
@@ -483,7 +487,7 @@
 
   /* ── 状态与地址栏 ──────────────────────────────────────────────────── */
   var S = {
-    scope: 'wpn', q: '', view: recall('wpn.view') || 'grid', sel: null, preview: null,
+    scope: 'wpn', q: '', view: recall('wpn.view') || 'grid', sel: null,
     rail: recall('wpn.rail') || 240, railOff: !!recall('wpn.railOff'), rolls: recall('wpn.rolls') || {},
     syntax: false, pop: null, tip: null, hoverPlug: null, hoverRow: null, slotHover: false
   };
@@ -993,7 +997,7 @@
   function renderDetail() {
     var box = body.querySelector('.wpn-detail');
     if (!box) { return; }
-    var i = S.preview != null ? S.preview : S.sel;
+    var i = S.sel;
     if (S.scope === 'armor') {
       if (!T) { box.innerHTML = '<p class="loading">正在载入说明</p>'; need('text', renderDetail); return; }
       box.innerHTML = armorDetail(i);
@@ -1067,7 +1071,7 @@
     parts.push('</div>');
     parts.push('<aside class="one-side"><section><div class="facts">' + factsHtml(i) + '</div></section>' +
       '<section><h3 class="sub-label">属性</h3>' + statsPanel(res, ghost) + '</section>' +
-      versionsHtml('wpn', i) + '</aside>');
+      frameStatsHtml(i) + versionsHtml('wpn', i) + '</aside>');
     return '<article class="wpn-one">' + parts.join('') + '</article>';
   }
   function exoticBlock(x) {
@@ -1125,6 +1129,42 @@
     if (r[W_FLAG] & F_CRAFT) { chip('is:可锻造', '', '可锻造'); }
     if (r[W_FLAG] & F_TIER) { chip('is:可升阶', '', '可升阶'); }
     return out.join('');
+  }
+  /* 武器框架页那一行：评级、两个分数、四项数值，外加这一类枪的弹药块拾取量。
+     配不上行的（146 把异域自带框架 + 30 把传说）整块不画。 */
+  function frameStatsHtml(i) {
+    if (!P) { return ''; }
+    var r = WR[i], k = poolRow(i)[9], fr = k >= 0 ? P.fr2[k] : null;
+    var brick = P.brick[r[W_SUB] + ',' + r[W_AMMO]];
+    if (!fr && !brick) { return ''; }
+    var out = '';
+    if (fr) {
+      out += '<div class="fr-top"><span class="fr-tier" style="color:var(--g-' + (TIER_STEP[fr[FR_TIER]] || 4) + ')">' +
+        esc(fr[FR_TIER]) + '</span><span>清怪 <b>' + esc(fr[FR_ADD]) + '</b></span>' +
+        '<span>首领 <b>' + esc(fr[FR_BOSS]) + '</b></span></div>';
+      out += '<dl class="fr-list">' +
+        row('瞄准衰减射程', fr[FR_RANGE]) + row('真实射速', fr[FR_RPM]) +
+        row('基础填装', fr[FR_RELOAD] == null ? null : fr[FR_RELOAD] + ' 秒') +
+        row('典型红血 DPS', fr[FR_MDPS]) + row('典型首领 DPS', fr[FR_BDPS]) +
+        row('红血单弹药盒', fr[FR_MBRICK]) + row('首领单弹药盒', fr[FR_BBRICK]) +
+        brickRow(brick) + '</dl>' + brickNote(brick);
+    } else {
+      out += '<dl class="fr-list">' + brickRow(brick) + '</dl>' + brickNote(brick);
+    }
+    function row(k2, v) { return v == null || v === '' ? '' : '<dt>' + esc(k2) + '</dt><dd>' + esc(v) + '</dd>'; }
+    /* 「常规 强化」两个数，方括号里是装了回收利用之后的量 */
+    function brickRow(b) {
+      if (!b) { return ''; }
+      function one(n, m) { return esc(n) + (m && m !== n ? '<i>[' + esc(m) + ']</i>' : ''); }
+      return '<dt>弹药块 常规·强化</dt><dd>' + one(b[0], b[1]) + ' ' + one(b[2], b[3]) + '</dd>';
+    }
+    function brickNote(b) {
+      return b ? '<p class="fr-note">方括号内是装上<b>回收利用</b>之后的量</p>' : '';
+    }
+    /* 这一块讲的是框架，不是这一把：同框架的枪在这里的数值一模一样，
+       差别在词条、属性与大师杰作上，那几样画在上面的「属性」与「词条」里 */
+    return '<section><h3 class="sub-label">框架数值<a class="fr-more" href="../weapon-frames/index.html">全部 →</a></h3>' +
+      '<p class="fr-note fr-top-note">数值是这一类框架的水平，不是这把枪自己的表现</p>' + out + '</section>';
   }
   function versionsHtml(scope, i) {
     var rows = scope === 'armor' ? AR : WR, fam = (scope === 'armor' ? V.afam : V.fam)[rows[i][scope === 'armor' ? A_FAM : W_FAM]];
@@ -1518,7 +1558,6 @@
   function setQuery(q, push) {
     S.q = q;
     evaluate();
-    S.preview = null;
     writeUrl(push);
     render();
   }
@@ -1531,7 +1570,6 @@
   function open(scope, i) {
     if (scope !== S.scope) { S.scope = scope; S.q = ''; input.value = ''; evaluate(); }
     S.sel = i;
-    S.preview = null;
     S.pop = null;
     if (scope === 'wpn' && P && S.urlRoll) {
       S.rolls[WR[i][W_H]] = decodeRoll(i, S.urlRoll);
@@ -1643,20 +1681,10 @@
   });
 
   /* 悬停：词条出说明并在属性条上预览；属性行出分解；结果栏的行在详情区预览。 */
-  var previewTimer = 0;
   document.addEventListener('mouseover', function (e) {
     var el = e.target.closest('[data-act]');
-    var inRail = e.target.closest('.wpn-rail');
-    if (inRail && el && el.getAttribute('data-act') === 'open' && S.sel != null) {
-      var k = +el.getAttribute('data-i'), scope = el.getAttribute('data-scope') || S.scope;
-      clearTimeout(previewTimer);
-      if (scope === S.scope && k !== S.preview) {
-        previewTimer = setTimeout(function () { S.preview = k === S.sel ? null : k; S.hoverPlug = null; renderDetail(); }, 120);
-      }
-      return;
-    }
     if (!el || S.sel == null || S.scope !== 'wpn' || !P) { return; }
-    var act = el.getAttribute('data-act'), i = S.preview != null ? S.preview : S.sel;
+    var act = el.getAttribute('data-act'), i = S.sel;
     if (act === 'perk') {
       var col = +el.getAttribute('data-col'), plug = +el.getAttribute('data-plug');
       if (!S.hoverPlug || S.hoverPlug.col !== col || S.hoverPlug.plug !== plug) {
@@ -1682,11 +1710,6 @@
   document.addEventListener('mouseout', function (e) {
     var el = e.target.closest('[data-act]');
     var to = e.relatedTarget && e.relatedTarget.closest ? e.relatedTarget.closest('[data-act]') : null;
-    if (e.target.closest('.wpn-rail') && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('.wpn-rail'))) {
-      clearTimeout(previewTimer);
-      if (S.preview != null) { S.preview = null; renderDetail(); }
-      return;
-    }
     if (!el || el === to) { return; }
     var act = el.getAttribute('data-act');
     if (act === 'perk' && (!to || to.getAttribute('data-act') !== 'perk')) {
