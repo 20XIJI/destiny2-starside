@@ -20,8 +20,9 @@
   var W_H = 0, W_NAME = 1, W_SUB = 2, W_EL = 3, W_AMMO = 4, W_SLOT = 5, W_BR = 6, W_SSN = 7,
       W_TIER = 8, W_FLAG = 9, W_ICON = 10, W_WM = 11, W_FR = 12, W_SRC = 13, W_GRADE = 14,
       W_REP = 15, W_FAM = 16;
-  /* 套装行 t[i]：hash（set:…）、名字、英文名、类型（来源活动）、赛季、标签、效果。 */
-  var T_H = 0, T_NAME = 1, T_EN = 2, T_KIND = 3, T_SSN = 4, T_TAG = 5, T_FX = 6;
+  /* 套装行 t[i]：hash（set:…）、名字、英文名、来源、类型、赛季、标签、效果。
+     来源写活动名（发射基地），类型写活动种类（熔炉竞技场行动），56 套各写其一。 */
+  var T_H = 0, T_NAME = 1, T_EN = 2, T_SRC = 3, T_KIND = 4, T_SSN = 5, T_TAG = 6, T_FX = 7;
   var A_H = 0, A_NAME = 1, A_PART = 2, A_CLS = 3, A_SSN = 4, A_ICON = 5, A_WM = 6, A_PERKS = 7,
       A_ROLE = 8, A_SRC = 9, A_REP = 10, A_FAM = 11;
   var F_ADEPT = 1, F_HOLO = 2, F_CRAFT = 4, F_TIER = 8, F_MW = 16, F_ENH = 32, F_REISSUE = 64;
@@ -349,10 +350,11 @@
   function isTable(scope) {
     var t = {};
     if (scope === 'sets') {
-      // 套装只有「类型」（来源活动）这一维值得当 is: 用，赛季走 season:。
-      SR.forEach(function (row) { if (row[T_KIND]) { t[row[T_KIND]] = function () { return false; }; } });
-      Object.keys(t).forEach(function (name) {
-        t[name] = function (i) { return SR[i][T_KIND] === name; };
+      // 套装按来源筛：来源写活动名、类型写活动种类，两列都收进 is:。
+      SR.forEach(function (row) {
+        [row[T_SRC], row[T_KIND]].forEach(function (v) {
+          if (v) { t[v] = function (i) { return SR[i][T_SRC] === v || SR[i][T_KIND] === v; }; }
+        });
       });
       t['已钉选'] = function (i) { return has(pins, 't:' + SR[i][T_H]); };
       return t;
@@ -407,7 +409,7 @@
     var parts;
     if (scope === 'sets') {
       var t = SR[i];
-      parts = [t[T_NAME], t[T_EN], t[T_KIND], t[T_SSN], t[T_TAG]].concat(
+      parts = [t[T_NAME], t[T_EN], t[T_SRC], t[T_KIND], t[T_SSN], t[T_TAG]].concat(
         t[T_FX].map(function (f) { return f[0]; }));
       if (T && T.st[i]) { T.st[i].forEach(function (f) { parts.push(f[4]); }); }
     } else if (scope === 'armor') {
@@ -468,7 +470,7 @@
         case 'name': return fold(t[T_NAME] + ' ' + t[T_EN]).indexOf(f) !== -1;
         case 'perk': return fold(t[T_FX].map(function (x) { return x[0]; }).join(' ')).indexOf(f) !== -1;
         case 'season': return fold(t[T_SSN]).indexOf(f) !== -1;
-        case 'source': return fold(t[T_KIND]).indexOf(f) !== -1;
+        case 'source': return fold(t[T_SRC] + ' ' + t[T_KIND]).indexOf(f) !== -1;
       }
       return false;
     }
@@ -877,7 +879,8 @@
       // 主角是两条效果，摞在名字左边会让人读成「一件装备的两枚图标」。
       return '<li><a class="wpn-card set-card" href="' + link('sets', i) + '" data-act="open" data-i="' + i + '">' +
         '<div><p class="nm">' + esc(t[T_NAME]) + '</p>' +
-        '<div class="wpn-meta"><span class="cls">' + esc(t[T_KIND]) + '</span>' +
+        '<div class="wpn-meta">' +
+        (setSrc(t) ? '<span class="cls">' + esc(setSrc(t)) + '</span>' : '') +
         (t[T_SSN] ? '<span class="ssn">' + esc(t[T_SSN]) + '</span>' : '') + '</div>' +
         '<div class="set-lines">' + t[T_FX].map(function (f) {
           return '<span>' + pathImg(f[2], eager) + '<b>' + f[1] + ' 件</b>' + esc(f[0]) + '</span>';
@@ -918,7 +921,7 @@
       var t = SR[i];
       return '<li><a href="' + link('sets', i) + '" data-act="open" data-i="' + i + '" class="wpn-lrow"><span></span>' +
         '<span class="ssn">' + esc(t[T_SSN]) + '</span><span></span>' + pathImg(t[T_FX][0] ? t[T_FX][0][2] : '') +
-        '<span class="nm">' + esc(t[T_NAME]) + '</span><span class="ty">' + esc(t[T_KIND]) +
+        '<span class="nm">' + esc(t[T_NAME]) + '</span><span class="ty">' + esc(setSrc(t)) +
         '</span><span></span><span class="fr">' +
         esc(t[T_FX].map(function (f) { return f[1] + ' 件 ' + f[0]; }).join('｜')) +
         '</span><span class="wpn-grades">' + esc(t[T_TAG]) + '</span></a></li>';
@@ -1082,6 +1085,9 @@
      那一页的产出现取，样式跟着内联进页壳。强度光环、审核意见、合集的马赛克与
      「3 套」角标因此原样都在，这一页一条都不必重画。赞数那一枚在这里是死的：
      它由配装页自己的脚本填，这一页不引那份。 */
+  /* 一套的来源：来源那一列写活动名，类型那一列写活动种类，56 套各写其一。 */
+  function setSrc(t) { return t[T_SRC] || t[T_KIND] || ''; }
+
   function usedByHtml(hash) {
     var got = T && T.bd ? T.bd[String(hash)] : null;
     if (!got || !got.length) { return ''; }
@@ -1377,8 +1383,10 @@
      属性那一块不画——套装效果不改属性。 */
   function setDetail(i) {
     var t = SR[i], fx = (T.st && T.st[i]) || [];
-    var facts = [t[T_KIND], t[T_SSN]].filter(Boolean);
-    var qs = ['source:' + t[T_KIND], 'season:' + t[T_SSN]];
+    var facts = [t[T_SRC], t[T_KIND], t[T_SSN]].filter(Boolean);
+    var qs = facts.map(function (v) {
+      return (v === t[T_SSN] ? 'season:' : 'source:') + v;
+    });
     return '<article class="wpn-one"><header class="one-head">' +
       '<span class="set-fx lg">' + t[T_FX].map(function (f) {
         return pathImg(f[2], 2);

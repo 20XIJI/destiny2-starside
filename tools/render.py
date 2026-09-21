@@ -550,11 +550,14 @@ def rec_weapon(p, key, rank, author):
         slots.append(cell('r-mid r-slot', '<div class="r-picks">%s</div>' % ''.join(
             plug(p, key, n, mark[n], 'al' if n in la and n in ll else 'a' if n in la else 'l')
             for n in order)))
-    mw = (A.get('masterwork') or '').strip()
-    mwp = masterwork_plug(key, mw) if mw else None
-    slots.append(cell('r-mid r-slot', '<div class="r-picks"><div class="r-plug r-mwp">%s<span>%s</span></div></div>'
-                      % ('<span class="ico">%s</span>' % p.icon(mwp) if mwp else '',
-                         html.escape(p.name(mwp).split('：', 1)[1] if mwp else mw)) if mw else ''))
+    # 大师杰作一格可以写几枚：「填装\\操控性」说的是这两枚都行，不是一枚叫这个名字
+    # 的插件。与别的几栏同形，一枚一个格子。
+    mws = [x.strip() for x in (A.get('masterwork') or '').split(BR) if x.strip()]
+    slots.append(cell('r-mid r-slot', ('<div class="r-picks">%s</div>' % ''.join(
+        '<div class="r-plug r-mwp">%s<span>%s</span></div>'
+        % ('<span class="ico">%s</span>' % p.icon(mwp) if mwp else '',
+           html.escape(p.name(mwp).split('：', 1)[1] if mwp else mw))
+        for mw, mwp in ((x, masterwork_plug(key, x)) for x in mws))) if mws else ''))
 
     au = author_rows(p, key, author)
     return ('<article class="rec r-weapon%s">%s%s%s%s%s</article>'

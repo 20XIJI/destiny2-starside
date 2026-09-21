@@ -459,7 +459,8 @@ def set_rows(b, htmls):
     # 按类型（来源活动）再按名字排：与护甲套装页同一条读法，开屏就是分好组的。
     rows_, texts = [], []
     order = sorted(b.f.sets.items(),
-                   key=lambda kv: (rows.zh(kv[1]).get('类型', ''), rows.zh(kv[1]).get('name', '')))
+                   key=lambda kv: (rows.zh(kv[1]).get('来源') or rows.zh(kv[1]).get('类型', ''),
+                                   rows.zh(kv[1]).get('name', '')))
     for h, rec in order:
         z = rows.zh(rec)
         effects, detail = [], []
@@ -475,8 +476,10 @@ def set_rows(b, htmls):
                            set_author(pk.get('authors') or {})])
         rows_.append(['set:%s' % h, z.get('name', ''),
                       resolve.text(rec, 'name', 'en') or '',
-                      z.get('类型', ''), z.get('赛季', ''), z.get('标签', ''),
-                      effects])
+                      # 来源与类型是 Compendium 的两列：一列写活动名（发射基地），
+                      # 一列写活动种类（熔炉竞技场行动）。56 套各写其一，两列都发。
+                      z.get('来源', ''), z.get('类型', ''),
+                      z.get('赛季', ''), z.get('标签', ''), effects])
         texts.append(detail)
     return rows_, texts
 

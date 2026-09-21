@@ -347,10 +347,12 @@ class WeaponsExtras(unittest.TestCase):
         for row in got:
             with self.subTest(set=row[1]):
                 self.assertTrue(row[0].startswith('set:'), '%s 的主键不是 set: 那一种' % row[1])
-                self.assertEqual([f[1] for f in row[6]], [2, 4],
+                self.assertEqual([f[1] for f in row[7]], [2, 4],
                                  '%s 不是「2 件 + 4 件」两条效果' % row[1])
-                for one in row[6]:
+                for one in row[7]:
                     self.assertTrue(one[2], '%s 的效果没有图' % row[1])
+                # 来源那一列写活动名，类型那一列写活动种类，56 套各写其一。
+                self.assertTrue(row[3] or row[4], '%s 既没有来源也没有类型' % row[1])
         text = self.load('text.js', 'WPN_TEXT')
         self.assertEqual(len(text['st']), 56, '套装的详情正文条数对不上')
 
