@@ -1094,15 +1094,29 @@
       '<div class="rail-head"><b>结果</b>' + results.length + '<span class="op-sep"></span>' +
       '<button type="button" class="op" data-act="rail">收起</button></div><ol class="rail-list rail-hits"></ol></nav>';
   }
+  /* 结果栏整个重画：点一行、钉选、前进后退都会走到这里。结果没变就留住栏里的滚动
+     位置，先把上次已经画出来的行数画够，否则 scrollTop 落在还没画的地方会被截回去。 */
+  var railList = null;
+  function sameList(a, b) {
+    if (!a || a.length !== b.length) { return false; }
+    for (var k = 0; k < a.length; k++) { if (a[k] !== b[k]) { return false; } }
+    return true;
+  }
   function renderSplit() {
     if (observer) { observer.disconnect(); observer = null; }
+    var old = body.querySelector('.wpn-rail'), keepTop = 0, keepRows = 0;
+    if (old && sameList(railList, results)) {
+      keepTop = old.scrollTop;
+      keepRows = old.querySelectorAll('.rail-hits > li').length;
+    }
+    railList = results;
     body.innerHTML = '<div class="wpn-split' + (S.railOff ? ' is-off' : '') + '" style="--rail:' + S.rail + 'px">' +
       renderRail() + '<div class="wpn-detail"></div></div>';
     var hits = body.querySelector('.rail-hits');
     if (hits) {
       var at = 0, list = results;
-      var more = function () {
-        var end = Math.min(list.length, at + BATCH), html = '';
+      var more = function (want) {
+        var end = Math.min(list.length, at + Math.max(BATCH, want || 0)), html = '';
         for (var k = at; k < end; k++) { html += railRow(S.scope, list[k], S.sel); }
         hits.insertAdjacentHTML('beforeend', html);
         at = end;
@@ -1113,7 +1127,8 @@
           observer.observe(hits.lastElementChild);
         }
       };
-      more();
+      more(keepRows);
+      if (keepTop) { hits.parentNode.scrollTop = keepTop; }
     }
     renderDetail();
   }
