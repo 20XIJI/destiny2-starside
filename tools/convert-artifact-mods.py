@@ -126,7 +126,7 @@ def expand(md):
             die('%s 没有图标' % title)
         out.append('### %s' % title)
         out.append('图标：%s' % rows.rel(icon, 'artifact-mods'))
-        # 主键顺手带下去：索引那一侧从前按名字回查，同名的三条里挑不出这一枚
+        # 主键顺手带下去：索引按它登记，不按名字回查——同名的三条里挑不出这一枚
         #（「乘胜追击」既是神器模组，也是冷酷无情的固有 Perk）。源稿写着它，用它。
         out.append('主键：%s' % key)
         out.append('')

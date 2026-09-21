@@ -1038,13 +1038,16 @@
       return tags === undefined || tags.length > 0
     })
   }
+  // 职业那一行写成「猎人#主键」，分组只按职业名。
+  function clsName (md) { return (line(md, '职业') || '').split('#')[0].trim() }
+
   function clsOf (b) {
-    if (!isSet(b.md)) return line(b.md, '职业') || '没写职业'
+    if (!isSet(b.md)) return clsName(b.md) || '没写职业'
     // 合集的职业由成员现算：一个角色的一组配装职业都一样，一队人各穿一套的
     // 那种自成一格，与站上索引页那条规矩同源。
     var all = []
     setsOf(b.md).forEach(function (m) {
-      var c = line(m, '职业')
+      var c = clsName(m)
       if (c && all.indexOf(c) < 0) all.push(c)
     })
     return all.length === 1 ? all[0] : all.length ? MIXED : '没写职业'
@@ -1817,7 +1820,8 @@
   // 「八位随机串-职业」。八位 36 进制约 2.8 万亿种，重名几乎不会发生；
   // 真重了后端当场拒——slug 即文件名，重了会把上一份源稿盖掉。
   function defaultSlug (md) {
-    var m = /^职业：\s*(\S+)\s*$/m.exec(md)
+    // 职业那一行写成「猎人#主键」：主键跟在 # 后面，slug 只要职业名。
+    var m = /^职业：\s*([^#\s]+)/m.exec(md)
     var tail = (m && LATIN[m[1]]) || 'build'
     var head = ''
     for (var i = 0; i < 8; i++) head += RAND.charAt(Math.floor(Math.random() * RAND.length))

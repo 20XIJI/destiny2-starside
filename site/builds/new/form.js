@@ -433,7 +433,11 @@
     var ex = gun.row ? (V.exoticCols || {})[gun.row[0]] : null;
     [].forEach.call(box.querySelectorAll('[data-slot="异域词条"]'), function (c, k) {
       var on = !!ex && !!ex[k];
-      if (!on && c.row) fill(c, null);
+      // 格子里原先那一枚不在这把枪这一栏里就清掉：换一把同样有词条栏的异域时，
+      // 留着它就写出「英勇利刃 | 涡流框架」这种游戏里配不出来的枪。
+      if (c.row && !(on && ex[k].some(function (one) { return one[0] === c.row[0]; }))) {
+        fill(c, null);
+      }
       c.hidden = !on;
     });
     box.hidden = !ex;
@@ -518,7 +522,13 @@
     if (slot === '异域词条') {
       var ex = (V.exoticCols || {})[gun.row[0]];
       if (!ex) return [];
-      (ex[col - 1] || []).forEach(function (n) { keep[n] = 1; });
+      // 一栏一条 [名字, 这把枪自己那一枚的主键]。词表里同名的有好几条（故我在的
+      // 狼群弹药与加拉尔号角的那一条各是一枚），每个名字只留一行：主键对得上的
+      // 那一条，对不上就取第一条。
+      return (ex[col - 1] || []).map(function (one) {
+        var same = list.filter(function (r) { return r[0] === one[0]; });
+        return same.filter(function (r) { return r[7] === one[1]; })[0] || same[0];
+      }).filter(Boolean);
     } else {
       var own = (V.perks || {})[gun.row[0]];
       if (!own) return list;
@@ -1277,11 +1287,18 @@
         //（「猎人」），按 kind 硬收会把它们整批挡掉；可同一枚神器模组又挂在好几件
         // 神器下、档位各不相同（群敌飞梭在好奇之器上是一级、在女王兰香炉上是三级），
         // 这时要取所选那一件神器下的那一条。
-        var key = name.slice(at + 1);
+        // 再按名字收一道：一枚主键在一个槽位里不一定只有一条（护甲模组的变体与它
+        // 那一族的复合行、一套护甲的站内名与来源名）。两道都是偏好，与生成器的
+        // vocab.by_key() 同一条——导入落到哪一条，导出就写回哪一条。
+        var key = name.slice(at + 1), label = name.slice(0, at);
         var all = slot === '元素' ? l : (V.lists[V.slots[slot]] || []);
         var hits = all.filter(function (r) { return r[7] === key; });
-        var same = kind ? hits.filter(function (r) { return bare(r[1]) === kind; }) : [];
-        return (same.length ? same : hits)[0];
+        [function (r) { return kind && bare(r[1]) === kind; },
+         function (r) { return r[0] === label; }].forEach(function (keep) {
+          var got = hits.filter(keep);
+          if (got.length) hits = got;
+        });
+        return hits[0];
       }
       return l.filter(function (r) { return r[0] === name; })[0];
     }
@@ -1540,7 +1557,7 @@
      挑，而 prefer 只会是某个 elements/ 页。给棱镜配装的「地狱火」写上「（星相）」
      反倒把它钉到烈日页去——括注在 prefer 之前收窄。 */
   /* 写进源稿的那一段：`名字#主键`。**主键是唯一真相**，生成器按它查表；名字留作
-     显示与人读 diff，站内改名不再牵动源稿。位移技能站内没有资料页条目，没有主键
+     显示与人读 diff，站内改名不牵动源稿。位移技能站内没有资料页条目，没有主键
      可写，照旧只写名字。 */
   function srcName(cell) {
     var row = cell.row;
@@ -1700,7 +1717,7 @@
     if (!id) return;
     var who = [];
     sets.forEach(function (md) {
-      var c = keyOf(md, '职业');
+      var c = keyOf(md, '职业').split(MARK)[0];
       if (c && who.indexOf(c) < 0) who.push(c);
     });
     who.sort(function (a, b) { return CLASS_ORDER.indexOf(a) - CLASS_ORDER.indexOf(b); });
@@ -1740,7 +1757,7 @@
       var br = keyOf(md, '分支');
       var who = document.createElement('i');
       who.className = 'who';
-      who.textContent = keyOf(md, '职业');
+      who.textContent = keyOf(md, '职业').split(MARK)[0];
       var elm = document.createElement('em');
       if (BRANCH[br]) elm.className = 'el-' + BRANCH[br];
       elm.textContent = br;

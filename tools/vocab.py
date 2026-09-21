@@ -146,16 +146,35 @@ def build():
 BY_KEY = {}
 
 
-def by_key(key, slot, kind=None):
+def in_slot(e, slot):
+    """这一条进不进得了这个槽位：来源页在 SLOTS 里，分节合 SLOT_KIND 那一条。
+
+    钉了分节的槽位只收那一种，别的槽位反过来不收它们——异域武器详解页上武器行与
+    它的词条同页，「异域武器：光能聚集」因此查不到。按名字查与按主键查都走这一处。
+    """
+    if e['page'] not in (SLOTS.get(slot) or ()):
+        return False
+    want = SLOT_KIND.get(slot)
+    got = bare_kind(e['kind'])
+    return got == want if want else got not in set(SLOT_KIND.values())
+
+
+def by_key(key, slot, kind=None, name=''):
     """按主键取这一槽位该用的那一条。取不到回 None。
 
-    **分节只当偏好**：同一枚神器模组挂在好几件神器下、档位与位置各不相同，要取
-    所选那一件下的那一条；可棱镜页的星相挂在职业那一节下，按分节硬收会挡掉。
+    **一枚主键在一个槽位里不一定只有一条**：护甲模组的变体与它那一族的复合行共用
+    主键（「虚空弹药生成」与「弹药生成」），一套护甲的 2 件与 4 件、它的站内名与
+    来源名（「埃希恩记忆」与「玻璃拱顶」）共用 `set:` 主键，一枚神器模组挂在好几件
+    神器下。所以先按分节收、再按名字收，两道都是偏好：收不到就不收，取剩下的第一条。
+    分节不能当限制——棱镜页的星相挂在职业那一节下（「猎人」）。
     """
-    pages = SLOTS.get(slot) or ()
-    got = [e for e in BY_KEY.get(str(key), ()) if e['page'] in pages]
-    same = [e for e in got if kind and bare_kind(e['kind']) == kind]
-    return (same or got or [None])[0]
+    got = [e for e in BY_KEY.get(str(key), ()) if in_slot(e, slot)]
+    for keep in (lambda e: kind and bare_kind(e['kind']) == kind,
+                 lambda e: name and key_of(e['name']) == key_of(name)):
+        narrowed = [e for e in got if keep(e)]
+        if narrowed:
+            got = narrowed
+    return got[0] if got else None
 
 
 # 槽位 → 允许的来源页。查表按槽位限定范围，同名撞车因此撞不上：
@@ -233,7 +252,7 @@ def pick(idx, name, slot, kind=None, prefer=''):
     一/二/三级），取第一条即可，链过去落在同一页同一节。
 
     **按名字查只剩「核心：」一条路**：它是指回本页某一格的引用，不是独立的一件
-    东西，所以不戳主键。别的槽位都写着主键，消歧括注那一层因此撤了。
+    东西，所以不戳主键。别的槽位都写着主键，由主键分开同名不同物，不写消歧括注。
     """
     got, err = find(idx, name, slot, kind=kind, prefer=prefer)
     if got is None:
@@ -247,7 +266,7 @@ def find(idx, name, slot, kind=None, prefer=''):
     戳主键那一趟（`migrate.py --stamp`）要一次看全查不到的有哪些，一条一中止
     得跑上百遍才看得到全貌；渲染那一条照旧由 pick() 当场中止。
 
-    **源稿写了主键就只按主键查**：站内改名不再牵动源稿，同名不同物也不必靠消歧
+    **源稿写了主键就只按主键查**：站内改名不牵动源稿，同名不同物也不必靠消歧
     括注那一层人写的判断。名字对不上时按主键那一条渲染，并报一行——那是站内改了
     名字，源稿跟着改一次即可，不该中止整次构建。
     """
@@ -255,18 +274,14 @@ def find(idx, name, slot, kind=None, prefer=''):
         return None, '槽位「%s」没有登记来源页' % slot
     name, key = cut(name)
     if key:
-        got = by_key(key, slot, kind)
+        got = by_key(key, slot, kind, name)
         if got is None:
             return None, ('「%s：%s#%s」的主键在 %s 里查不到。那一页删了这一行，'
                           '或者主键抄错了。' % (slot, name, key, '、'.join(SLOTS[slot])))
         if key_of(got['name']) != key_of(name):
             NAME_DRIFT.append((slot, name, got['name'], key))
         return got, None
-    want = SLOT_KIND.get(slot)
-    hits = [h for h in idx.get(key_of(name), [])
-            if h['page'] in SLOTS[slot]
-            and (bare_kind(h['kind']) == want if want
-                 else bare_kind(h['kind']) not in set(SLOT_KIND.values()))]
+    hits = [h for h in idx.get(key_of(name), []) if in_slot(h, slot)]
     if kind is not None:
         # 分节标题带括注时按括注前那一截比（神器模组页写「废墟石板 （异端）」），
         # 括注是来源赛季，不是这件神器的名字。
@@ -282,10 +297,12 @@ def find(idx, name, slot, kind=None, prefer=''):
             hits = same
     if len({h['page'] for h in hits}) > 1:
         return None, ('「%s：%s」在站内有多条同名条目，分不出该链哪一条：\n  %s\n'
-                      '在名字后面写分节挑一条，如「%s：%s（%s）」'
+                      '在名字后面写上主键挑一条，如「%s：%s#%s」'
                       % (slot, name,
-                         '\n  '.join('%s · %s' % (h['page'], h['kind']) for h in hits),
-                         slot, name, bare_kind(hits[0]['kind'])))
+                         '\n  '.join('%s · %s · %s' % (h['page'], h['kind'],
+                                                       '、'.join(map(str, h['keys'])))
+                                      for h in hits),
+                         slot, name, (hits[0]['keys'] or ['主键'])[0]))
     return hits[0], None
 
 

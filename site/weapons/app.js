@@ -234,6 +234,12 @@
   var KEYS_WPN = ['is', 'name', 'perk', 'perk1', 'perk2', 'perkname', 'perktext', 'origintrait', 'frame',
                   'stat', 'season', 'source', 'breaker'];
   var KEYS_ARMOR = ['is', 'name', 'perk', 'season', 'source'];
+  /* 护甲套装认得的关键字：kw() 那一段只写了这几个，别的放进来补全会列出 stat:、
+     frame: 这些，选了永远是 0 条。 */
+  var KEYS_SETS = ['is', 'name', 'perk', 'season', 'source'];
+  function keysOf(scope) {
+    return scope === 'armor' ? KEYS_ARMOR : scope === 'sets' ? KEYS_SETS : KEYS_WPN;
+  }
   var POOL_KEYS = ['perk', 'perk1', 'perk2', 'perkname', 'origintrait', 'stat'];
   var KEY_LABEL = { is: '类型、元素、槽位、弹药、稀有度、勇士与标志', name: '名字', perk: '任一栏的词条',
     perk1: '第一特性栏', perk2: '第二特性栏', perkname: '词条名完全相同', perktext: '词条说明',
@@ -569,8 +575,11 @@
       var cells = cellsOf(cols[c]);
       if (cells.length === 1) { sel[c] = shownPlug(cells[0]); }
     }
-    var opts = optsOf(i), rec = pr[5];
-    var mw = !bare && rec && opts.some(function (o) { return o[0] === rec; }) ? rec : '';
+    // Aegis 推荐的大师杰作可以有几枚（「填装\\操控性」），缺省装上第一枚。
+    var opts = optsOf(i), rec = (pr[5] || []).filter(function (r) {
+      return opts.some(function (o) { return o[0] === r; });
+    });
+    var mw = !bare && rec.length ? rec[0] : '';
     return { sel: sel, mw: mw, lv: 10, t: pr[4] ? 5 : 0, mod: -1, cat: 0 };
   }
   function sameRoll(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
@@ -1276,11 +1285,11 @@
   function gearSection(i, roll, res) {
     var pr = poolRow(i), opts = optsOf(i), mods = modsOf(i);
     if (!opts.length && !mods.length) { return ''; }
-    var opt = res.mw.opt, rec = pr[5];
+    var opt = res.mw.opt, rec = pr[5] || [];
     var mwSlot = '';
     if (opts.length) {
       var icon = opt ? P.p[opt[2]][P_ICON] : '';
-      mwSlot = '<div class="slot-cell"><button type="button" class="slot' + (opt && roll.mw === rec ? ' by-a' : '') +
+      mwSlot = '<div class="slot-cell"><button type="button" class="slot' + (opt && has(rec, roll.mw) ? ' by-a' : '') +
         (opt ? '' : ' is-empty') + (S.slotHover ? ' is-hover' : '') + '" data-act="mwslot" aria-haspopup="dialog" aria-label="大师杰作">' +
         imgTag(icon, '', '', true) + '</button><div class="slot-lab"><b>大师杰作</b><span>' + esc(mwLabel(i, roll)) + '</span></div></div>';
     }
@@ -1305,9 +1314,9 @@
     return '<section class="gear-sec"><h3 class="sub-label">大师杰作与模组</h3><div class="slots">' + mwSlot + tier + modSlot + '</div>' + pop + '</section>';
   }
   function mwPicker(i, roll) {
-    var pr = poolRow(i), rec = pr[5];
+    var pr = poolRow(i), rec = pr[5] || [];
     var cells = optsOf(i).map(function (o) {
-      return '<button type="button" class="pick' + (o[0] === rec ? ' by-a' : '') + '" data-act="mwpick" data-v="' + esc(o[0]) +
+      return '<button type="button" class="pick' + (has(rec, o[0]) ? ' by-a' : '') + '" data-act="mwpick" data-v="' + esc(o[0]) +
         '" aria-pressed="' + (o[0] === roll.mw ? 'true' : 'false') + '"><span class="sq">' + imgTag(P.p[o[2]][P_ICON], '', '', true) +
         '</span><span>' + esc(o[0]) + '</span></button>';
     }).join('');
@@ -1384,8 +1393,10 @@
   function setDetail(i) {
     var t = SR[i], fx = (T.st && T.st[i]) || [];
     var facts = [t[T_SRC], t[T_KIND], t[T_SSN]].filter(Boolean);
+    // 值里有空格就加引号（「开普勒 I」「3v3 多人竞技」）：不加的话分词器在空格处
+    // 切开，后半截「I」成了裸词，把开普勒 II 也搜进来。
     var qs = facts.map(function (v) {
-      return (v === t[T_SSN] ? 'season:' : 'source:') + v;
+      return (v === t[T_SSN] ? 'season:' : 'source:') + (/\s/.test(v) ? '"' + v + '"' : v);
     });
     return '<article class="wpn-one"><header class="one-head">' +
       '<span class="set-fx lg">' + t[T_FX].map(function (f) {
@@ -1501,7 +1512,7 @@
     var plug = P.p[opt[2]];
     var main = res.mw.mw[opt[1]] || 0;
     return '<header>' + imgTag(plug[P_ICON], '', '', true) + '<div><h5>' + esc(plug[P_NAME]) + '</h5><span class="ty">' +
-      (roll.mw === pr[5] ? 'Aegis 推荐' : '大师杰作') + '</span></div></header><table><tr><td>' + esc(opt[0]) +
+      (has(pr[5] || [], roll.mw) ? 'Aegis 推荐' : '大师杰作') + '</span></div></header><table><tr><td>' + esc(opt[0]) +
       '</td><td class="n">+' + main + '</td></tr></table>' +
       (pr[4] && roll.t ? '<p class="lab">' + esc(tierText(i, roll, res.mw)) + '</p>' : '') +
       (!pr[4] ? '<p class="lab">满级 +10；专家版满级时其余 +3</p>' : '');
@@ -1544,10 +1555,10 @@
     ac.items = [];
     if (!t || t.neg) { closeAc(); return; }
     var q = input.value, rest = q.slice(0, t.a) + q.slice(t.b);
-    var restTree = parse(tokenize(rest), S.scope === 'armor' ? KEYS_ARMOR : KEYS_WPN);
+    var restTree = parse(tokenize(rest), keysOf(S.scope));
     var pool = run(S.scope, restTree), mark = {};
     pool.forEach(function (i) { mark[i] = 1; });
-    var keys = S.scope === 'armor' ? KEYS_ARMOR : KEYS_WPN;
+    var keys = keysOf(S.scope);
     var groups = [];
     function count(fn) { var n = 0; for (var k = 0; k < pool.length; k++) { if (fn(pool[k])) { n++; } } return n; }
     if (t.t === 'kw' && has(keys, t.k)) {
@@ -1656,7 +1667,7 @@
   /* ── 主流程 ────────────────────────────────────────────────────────── */
   function evaluate() {
     tokens = tokenize(S.q);
-    tree = parse(tokens, S.scope === 'armor' ? KEYS_ARMOR : KEYS_WPN);
+    tree = parse(tokens, keysOf(S.scope));
     pending = S.scope === 'wpn' && needsPool(tree) && !P;
     if (pending) {
       if (!waiting) { waiting = true; need('pool', function () { waiting = false; evaluate(); render(); }); }

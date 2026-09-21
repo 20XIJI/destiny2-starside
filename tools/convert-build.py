@@ -484,7 +484,9 @@ def core_pick(idx, md, prefer):
     hit = [x for x in page_items(md) if vocab.bare(x[0]) == core]
     if not hit:
         die('「核心：」要等于本页配过的某一件东西，源稿写的是 %r' % core)
-    return vocab.pick(idx, core, hit[0][1], kind=hit[0][2], prefer=prefer)
+    # 交那一格的「名字#主键」，不交光名字：同名的几条（「极高反射」既是手枪也是
+    # 火箭手枪）按名字分不出来，而那一格的主键早就钉死了是哪一条。
+    return vocab.pick(idx, hit[0][0], hit[0][1], kind=hit[0][2], prefer=prefer)
 
 
 def facet(label, tags):
@@ -904,7 +906,7 @@ def render_solo(idx, mv, arts, md, slug, season, name_cn, doc_id):
          # 一栏标签——它只有一个值，占一整栏显得空。
          '<p class="cls">%s%s · %s · %s<span class="season">%s · %s</span></p>'
          % (icon_of(vocab.pick(idx, meta(md, '职业'), '职业', kind='分节'), 32),
-            meta(md, '职业'),
+            class_of(md),
             '<span class="%s">%s</span>' % (ELEMENT_TOKEN[branch], branch),
             cat, season.upper(), name_cn),
          '<p class="desc">%s</p>' % inline(desc, rich=True) if desc else '',
@@ -1442,7 +1444,7 @@ def render_vocab(idx):
 
     一行八列 [名字, 分节, 页面, 图标, 着色, 副名, 位置, 主键]，尾部的空列剥掉。
     **主键是唯一真相**：填表页写出的源稿在名字后面接 `#主键`，生成器按它查表，
-    站内改名不再牵动源稿。
+    站内改名不牵动源稿。
     位置只有神器模组给（'行,档'），填表页照它把选择器摆成 7 列 × 3 行。页面那一列是
     填表页收窄候选的依据：源稿一选「分支：棱镜」，五个技能槽就只留 elements/
     prismatic 那一页的条目——与生成器 vocab.pick(prefer=…) 同一条规则。
@@ -1521,9 +1523,9 @@ def render_vocab(idx):
 def weapon_perks(idx, perk_at):
     """`{武器名: [[Perk 一栏的下标…], [二栏…], [起源栏…]]}`：这把枪各栏开得出来的。
 
-    从前 Perk 那两格列的是整张武器 PERK 页（395 条），选出来的组合枪上开不出来；
-    后来收到「这把枪自己的池」，两格却共用同一份——一栏的词条在另一栏上开不出来。
-    现在**栏序即下标**：第一格只列第一栏，第二格只列第二栏，起源特性那一格列起源栏。
+    整张武器 PERK 页（395 条）里选出来的组合，这把枪上多半开不出来；一栏的词条在
+    另一栏上也开不出来。所以**栏序即下标**：第一格只列第一栏，第二格只列第二栏，
+    起源特性那一格列起源栏。
     池走 `Facts.pool()`，与装备库同一份取法；主键取索引条目自己带的那一枚，不按名字
     反查——「隐士（冲锋枪）」这类带消歧括注的名字查不回去。
 
@@ -1566,18 +1568,20 @@ def weapon_perks(idx, perk_at):
 
 
 def exotic_columns(idx):
-    """`{异域武器名: [[第一栏的名字…], [第二栏…]]}`：这把异域自己选得出来的几栏。
+    """`{异域武器名: [[[名字, 主键]…], [第二栏…]]}`：这把异域自己选得出来的几栏。
 
-    **一栏至少两枚才算选得出来。**141 把异域里 85 把有得选，其余那 56 把的词条是
-    掉落时就钉死的；从前它们照样冒出两个词条格，点开是一张挑不出东西的网格。
+    **一栏至少两枚才算选得出来。**141 把异域里 18 把有得选，其余那些的词条掉落时
+    就钉死了，一格都不出。
 
     按这个顺序取前两栏：特征栏（零号修订可 roll 的那一列、故我在的五种刀剑框架）、
     固有栏（故我在的八条异域固有）、催化剂（英勇利刃四选一，任务态那条不算，
     判据在 `rows.live_catalyst`）、异域选项栏（英勇利刃的三枚核心）。故我在因此是
     「框架 | 固有」，英勇利刃是「催化 | 核心」，两处都与游戏里的选法对得上。
 
-    名字要在填表页那两份候选里查得到（异域词条与武器 PERK），否则选出来的那一条
-    生成器落不到主键上。剩不到两枚的栏整栏丢掉。
+    **每一枚带上这把枪自己那一枚的主键**：词表里同名的有好几条（故我在的狼群弹药
+    与加拉尔号角的那一条各是一枚），填表页按名字收会把两条都列出来，选错了就写进
+    另一把枪的主键。名字要在填表页那两份候选里查得到（异域词条与武器 PERK），否则
+    选出来的那一条生成器落不到主键上。剩不到两枚的栏整栏丢掉。
     """
     facts = rows.facts()
     ok = {e['name'] for hits in idx.values() for e in hits
@@ -1595,23 +1599,27 @@ def exotic_columns(idx):
             if col.get('gear') or kind not in ('trait', 'intrinsic'):
                 continue
             (trait if kind == 'trait' else intrinsic).append(
-                [facts.name(p) for p in col.get('plugs') or ()])
+                [(facts.name(p), str(p)) for p in col.get('plugs') or ()])
         # 催化那一栏按**催化剂的枚数**判，不按名字条数：一枚催化剂给几条效果
         # （条件终局那枚同时给治疗弹匣与霜华窃取者）不是「几选一」，与
-        # rows.exotic_perks() 的 picks 同一条。
+        # rows.exotic_perks() 的 picks 同一条。主键是催化剂那件东西自己的。
         live = [str(c) for c in (rec.get('derived') or {}).get('catalyst') or ()
                 if rows.live_catalyst(str(c))]
-        cat = [rows.name_of('perk:%s' % p['perkHash']) or facts.name(c)
+        cat = [(rows.name_of('perk:%s' % p['perkHash']) or facts.name(c), c)
                for c in live
                for p in (facts.at(c) or {}).get('perks') or [{'perkHash': 0}]] \
             if len(live) > 1 else []
-        got = trait + intrinsic + [cat] + [[facts.name(h) for h in g]
+        got = trait + intrinsic + [cat] + [[(facts.name(h), h) for h in g]
                                            for g in rows.option_plugs(rec)]
         out = []
         for one in got:
-            names = [n for n in dict.fromkeys(one) if n in ok]
-            if len(names) > 1:
-                out.append(names)
+            seen, col = set(), []
+            for name, h in one:
+                if name in ok and name not in seen:
+                    seen.add(name)
+                    col.append([name, h])
+            if len(col) > 1:
+                out.append(col)
         return out[:2]
 
     out = {}
@@ -2183,6 +2191,15 @@ def main():
     live = [m for m in made if m['season'] == SEASON]
     print('配装 %d 套，当前赛季 %s %d 套（其中 %d 个合集）'
           % (len(made), SEASON, len(live), len([m for m in live if m['set']])))
+    # 源稿写的名字与主键那一条对不上：按主键那一条画，这里报出来——站内改了名字，
+    # 源稿跟着改一次即可。不中止：主键已经把它落到了正确的一条上。
+    drift = sorted(set(vocab.NAME_DRIFT))
+    if drift:
+        print('源稿的名字与主键那一条对不上 %d 处（按主键那一条画）：' % len(drift))
+        for slot, name, got, key in drift[:12]:
+            print('  %s：%s → 库里叫 %s（%s）' % (slot, name, got, key))
+        if len(drift) > 12:
+            print('  …另 %d 处' % (len(drift) - 12))
     if only:
         print('仅更新匹配的配装详情；未更新目录、首页、搜索与关联词表。发布前运行 npm run build')
 

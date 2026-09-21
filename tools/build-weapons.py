@@ -315,8 +315,10 @@ class Build:
                     if p:
                         got |= bits[str(p)]
                 cell.append(got)
-        rec_mw = plain((authors.get('Aegis') or {}).get('masterwork') or '').strip()
-        return next((o[0] for o in opts if rec_mw and o[0].startswith(rec_mw)), '')
+        # Aegis 那一格可以写几枚：「填装\\操控性」说的是这两枚大师杰作都行。
+        # 按格内换行切开，逐枚落到这把枪的选项上，顺序照作者写的。
+        wants = parts((authors.get('Aegis') or {}).get('masterwork') or '')
+        return [o[0] for w in wants for o in opts if o[0].startswith(w)][:len(wants)]
 
     # ── 属性 ────────────────────────────────────────────────────────
     def stat_group(self, gh):

@@ -276,13 +276,9 @@ def by_types(p, key):
     return ''.join(out)
 
 
-def members(p, key, skip=0):
-    """模组族与组合：成员图标排一行，成员不单独占行。
-
-    `skip` 跳过前几位：组合画成子行时，第一位成员就是它挂着的那一行，再画一遍
-    等于让读者在「故我在」底下又看见一次「故我在」。
-    """
-    got = [str(m) for m in (rows.facts().at(key) or {}).get('members') or ()][skip:]
+def members(p, key):
+    """模组族与组合：成员图标排一行，成员不单独占行。"""
+    got = [str(m) for m in (rows.facts().at(key) or {}).get('members') or ()]
     if not got:
         return ''
     return ('<div class="mem">%s</div>'

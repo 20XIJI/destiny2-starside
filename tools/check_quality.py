@@ -380,8 +380,8 @@ class WeaponsExtras(unittest.TestCase):
 class BuildKeys(unittest.TestCase):
     """配装源稿的槽位值写成 `名字#主键`，**主键是唯一真相**。
 
-    从前写的是名字：站内一改名，120 篇源稿跟着改；同名不同物还要靠人写的消歧括注。
-    改成主键之后这两样都不必了，代价是每一格都得有主键、且查得到——下面各一条。
+    主键让站内改名不牵动源稿、同名不同物不必靠人写的消歧括注；代价是每一格都得
+    有主键、且查得到——下面各一条。
     名字留作显示与人读 diff，对不上只报一行、不中止（vocab.NAME_DRIFT）。
     """
 
@@ -444,11 +444,17 @@ class BuildKeys(unittest.TestCase):
                     r'data-d="artifact-mods&#9;([^&]*)&#9;([^"]*?)(?: （[^"]*)?"', html):
                 if arts and art not in arts:
                     wrong_art.append('%s｜%s 链到了 %s' % (path.stem, mod, art))
-            # 只比件数：页面上的名字按主键取自库里（「渴望回响」），源稿写的可能是
-            # 旧叫法（「贪婪之握」），那是 NAME_DRIFT，不是这一条要管的。
-            want = sorted(x['件数'] for b in migrate.blocks(rec)
+            # 名字与件数都比：一套的站内名与来源名（「埃希恩记忆」「玻璃拱顶」）共用
+            # 一枚 set: 主键，按主键取第一条会把源稿写的那一个换成另一个。
+            want = sorted('%s %s' % (x['名字'], x['件数']) for b in migrate.blocks(rec)
                           for x in ((b.get('节') or {}).get('护甲') or {}).get('套装') or ())
-            got = sorted(re.findall(r'data-d="armor-sets&#9;[^&]*&#9;([24] 件)"', html))
+            got = sorted('%s %s' % m for m in re.findall(
+                r'data-d="armor-sets&#9;([^&]*)&#9;([24] 件)"', html))
+            # 页头那一行印的是职业名：职业那一格带着主键，原样印出来就是
+            # 「猎人#row:elements/class-abilities/分节/猎人」。
+            head = re.search(r'<p class="cls">(.*?)</p>', html, re.S)
+            if head and '#' in re.sub(r'<[^>]+>', '', head.group(1)):
+                wrong_art.append('%s｜页头印出了主键' % path.stem)
             if want and got != want:
                 wrong_set.append('%s｜源稿 %s，页面 %s' % (path.stem, want, got))
         self.assertEqual(wrong_art[:4], [], '%d 处神器模组链到了别的神器上' % len(wrong_art))
@@ -488,7 +494,7 @@ class FormCandidates(unittest.TestCase):
     「四枚催化 | 三枚核心」。
 
     另一条：**选得出来才出格子**。141 把异域里只有 18 把的词条是掉落时开的，
-    其余钉死；从前每一把都冒出两个词条格，点开是一张挑不出东西的网格。
+    其余钉死：没得选的格子点开是一张挑不出东西的网格，所以一格都不出。
     """
 
     SITE = TOOLS.parent / 'site'
@@ -514,7 +520,7 @@ class FormCandidates(unittest.TestCase):
                     self.assertLess(at, len(plist), '%s 的下标指到 Perk 列表之外' % name)
         both = [n for n, c in perks.items() if c[0] and c[1]]
         self.assertGreater(len(both), 700, '两栏都有候选的枪只剩 %d 把' % len(both))
-        # 同一把枪的两栏不该是同一份：那正是从前两格共用一份候选的样子。
+        # 同一把枪的两栏不该是同一份：两格共用一份候选就是让人两栏各选一条互斥的。
         same = [n for n, c in perks.items() if c[0] and c[0] == c[1]]
         self.assertEqual(same[:5], [], '这些枪的两栏候选一模一样')
 

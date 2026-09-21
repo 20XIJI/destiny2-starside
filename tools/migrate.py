@@ -425,7 +425,6 @@ def first_diff(want, got):
 PART_SLOTS = ('头盔', '护臂', '胸甲', '腿部', '职业物品')
 PLAIN_SLOTS = ('超能', '手雷', '近战', '职业技能', '星相', '碎片')
 
-SET_SEG = re.compile(r'^(.+?)\s*([24])\s*件$')
 
 
 def cells(rec):
@@ -446,17 +445,15 @@ def cells(rec):
 
     def pair(slot, kind, box, key):
         """值是 `{名字, 主键}` 一对的那种格子。裸字符串的先当成只有名字。"""
-        one(slot, kind,
-            lambda: box[key]['名字'] if isinstance(box[key], dict) else box[key],
+        one(slot, kind, lambda: show(box[key]),
             lambda h: box.__setitem__(key, stamped(box[key], h)))
 
     def here(slot, kind, box):
-        """值本身就是一对（传说武器、套装）：主键落在这一对上，不再往里套一层。"""
+        """值本身就是一对（传说武器、套装）：主键落在这一对上，不往里套一层。"""
         one(slot, kind, lambda: show(box), lambda h: box.__setitem__('主键', h))
 
     def item(slot, kind, seq, i):
-        one(slot, kind,
-            lambda: seq[i]['名字'] if isinstance(seq[i], dict) else seq[i],
+        one(slot, kind, lambda: show(seq[i]),
             lambda h: seq.__setitem__(i, stamped(seq[i], h)))
 
     weapons = (rec.get('节') or {}).get('武器') or {}
