@@ -77,7 +77,7 @@ MARK_COLS = {'Aegis': ('barrel', 'magazine', 'perk1', 'perk2', 'origin'),
 MARK_BIT = {'Aegis': 1, 'LGpig': 2}
 # 作者写的词条名落不到这把枪自己池里的次数。只许降不许升：多出来一条就是有人
 # 写了库里查不到的名字，要么改源稿，要么进 resolve.PERK_ALIAS。
-MARK_MISS_BASELINE = 12
+MARK_MISS_BASELINE = 0
 
 # 两位作者的评级折成同一把尺：Aegis S…F，LGpig T0、T0.5、T1…；一格写了几段的
 # 取最好那段。没有评级的沉到最后。
@@ -419,6 +419,191 @@ def brick_table():
             markup.die('弹药块拾取量表里「%s · %s」没有对应的枪型，补进 BRICK_ROWS' % (lane, head))
         out['%d,%d' % key] = [markup.text_of(markup.inline(c), collapse=True).replace(
             markup.CELL_BREAK, ' ') for c in cells[1:]]
+    return out
+
+
+# ── 护甲套装效果 ─────────────────────────────────────────────────────
+def set_author(authors):
+    """套装效果上的作者评语：`[[作者, [], [段落 HTML…]], …]`。
+
+    效果表那 29 条评语的键是 Compendium 的中文列名（`应用场景`、`获取地点`），
+    与武器那一侧的 `explanation_N` 不是一套，所以不走 one_author_block()。
+    只取评语本身：获取地点与套装的「类型」是同一件事，已经画在 chip 上。
+    """
+    out = []
+    for who in ('Aegis', 'LGpig'):
+        got = (authors.get(who) or {}).get('realgame_details')
+        if got and got.strip():
+            out.append([who, [], [markup.inline(
+                got.replace(markup.CELL_BREAK, '<br>'), rich=True)]])
+    return out
+
+
+def set_rows(b, htmls):
+    """56 套护甲套装：索引行与详情正文。
+
+    一套两条效果（2 件与 4 件），效果各是一枚 SandboxPerk，实测与作者评语写在它
+    身上。图取效果自己的官方图——套装本身在库里没有图。
+
+    主键写成 `set:<hash>`，与站内别处对套装的寻址同一种（配装源稿也是这一种），
+    「用过它的配装」因此查得到。
+    """
+    # 效果的图取护甲套装页那一份（`armor-sets/icons/NNN.png`，序号命名）：官方图
+    # 没拉进站内图库，而那一页早就有了。与弹药块拾取量同一类例外，见 weapons.md。
+    import pagedex
+    art = {}
+    for e in pagedex.must_read('armor-sets')['entries']:
+        for key in e['keys']:
+            if e['icon']:
+                art.setdefault((str(key), e['kind']), '../' + e['icon'])
+    # 按类型（来源活动）再按名字排：与护甲套装页同一条读法，开屏就是分好组的。
+    rows_, texts = [], []
+    order = sorted(b.f.sets.items(),
+                   key=lambda kv: (rows.zh(kv[1]).get('类型', ''), rows.zh(kv[1]).get('name', '')))
+    for h, rec in order:
+        z = rows.zh(rec)
+        effects, detail = [], []
+        for one in rec.get('setPerks') or ():
+            pk = b.f.perks.get(str(one['perk'][1])) or {}
+            pz = rows.zh(pk)
+            icon = art.get(('set:%s' % h, '%d 件' % one['requiredSetCount']), '')
+            effects.append([pz.get('name', ''), one['requiredSetCount'], icon])
+            detail.append([pz.get('name', ''), one['requiredSetCount'], icon,
+                           htmls.of(b.site_html(pz.get('realgame_details', '')))
+                           if pz.get('realgame_details') else -1,
+                           b.say(pz.get('database_details', '')),
+                           set_author(pk.get('authors') or {})])
+        rows_.append(['set:%s' % h, z.get('name', ''),
+                      resolve.text(rec, 'name', 'en') or '',
+                      z.get('类型', ''), z.get('赛季', ''), z.get('标签', ''),
+                      effects])
+        texts.append(detail)
+    return rows_, texts
+
+
+# ── 用过这一件的配装 ─────────────────────────────────────────────────
+def builds_by_key():
+    """`({主键: [卡片下标…]}, [卡片 HTML…])`：站上每一套配装用过的每一枚主键。
+
+    配装源稿的槽位值写成「名字#主键」（见 .claude/rules/builds.md），所以这里按
+    主键收，不按名字——同名不同物（故我在的狼群弹药与加拉尔号角的那一条）按名字
+    收会把两把枪的配装混成一堆。
+
+    合集一份源稿装 N 套，每一套各算一次，链接都指向合集那一页。
+    """
+    sys.path.insert(0, os.path.join(shell.ROOT, 'tools'))
+    import migrate
+    out = collections.defaultdict(list)
+    cards = build_cards()
+    cards_seen = {k: v[1] for k, v in sorted(cards.items())}
+
+    def keys(node, got):
+        if isinstance(node, dict):
+            if node.get('主键'):
+                got.add(str(node['主键']))
+            for v in node.values():
+                keys(v, got)
+        elif isinstance(node, list):
+            for v in node:
+                keys(v, got)
+        return got
+
+    for path in migrate.sources():
+        dirname = os.path.basename(os.path.dirname(path))
+        hit = re.match(r'^(s\d+)-', dirname)
+        if not hit:
+            markup.die('赛季目录要写成「s29-赛季名」，现在叫 %r' % dirname)
+        slug = os.path.basename(path)[:-len('.json')]
+        rec = migrate.load(path)
+        card = cards.get('%s/%s' % (hit.group(1), slug))
+        if card is None:
+            markup.die('配装索引页上找不到 %s/%s，先跑一次 convert-build.py' % (hit.group(1), slug))
+        for block in migrate.blocks(rec):
+            for key in sorted(keys(block, set())):
+                out[key].append(card)
+    # 一套配装可能在同一枚主键上出现两次（两格同物），去重后按更新时间倒序、再按标题。
+    at, cards = {}, []
+    for key, v in cards_seen.items():
+        at[key] = len(cards)
+        cards.append(v)
+
+    def once(v):
+        seen, got = set(), []
+        for r in v:
+            if r[0] in seen:
+                continue
+            seen.add(r[0])
+            got.append(r)
+        # 先按强度（meta > 强力 > 创意），同档按更新时间倒序。
+        return [at[x[0]] for x in sorted(got, key=lambda r: (r[2][0], [-int(n) for n in
+                                                                       r[2][1].split('.')]))]
+    return {k: once(v) for k, v in out.items()}, cards
+
+
+# 卡片那一族的选择器。**样式不抄第二份**：从 builds/style.css 里现取这几条内联进
+# 页壳，配装推荐页改一处，这一页跟着变。强度光环、合集马赛克、「3 套」角标都在内。
+CARD_SEL = re.compile(r'\.entry\b|\.entry-foot|\.entry-stamp|\.likes\b|'
+                      r'\.core-mosaic|\.n-sets|data-tier|\.entries\b')
+
+
+def card_css():
+    """配装卡那一族的样式，从配装页的样式表里现取。"""
+    with open(os.path.join(shell.SITE, 'builds', 'style.css'), encoding='utf-8') as f:
+        sheet = f.read()
+    got = [part for part in re.split(r'(?<=\})\n', sheet)
+           if CARD_SEL.search(part.split('{')[0])]
+    if len(got) < 20:
+        markup.die('从 builds/style.css 里取不到配装卡的样式，只取到 %d 段' % len(got))
+    return '\n'.join(x.strip() for x in got if x.strip())
+
+
+# 强度的排序：读者先要「现在最强的那一套」。三档之外（没写强度的）沉底。
+TIER_AT = {'meta': 0, '强力': 1, '创意': 2}
+
+CARD = re.compile(
+    r'<li class="b-[a-z]+"[^>]*data-branch="([^"]*)"[^>]*data-cls="([^"]*)"[^>]*>\s*'
+    r'<a class="entry" href="([^"]+)">.*?</a>\s*</li>', re.S)
+
+
+def build_cards():
+    """配装索引页上每一张卡：`{赛季/slug: {…}}`。
+
+    **从那一页的产出现取**，与 build-home.py 取首页预览同一条：标题、推荐人、描述、
+    标签与更新时间都是渲染器算出来的（描述剥过标记、标签按场景收过），照着源稿
+    再算一遍就是把那一段逻辑抄了第二份。
+    """
+    out = {}
+    # 两页都读：合集那 10 套只在 builds/sets/index.html 上，它深一层，图的前缀也深一层。
+    for where, up in ((('builds', 'index.html'), '../'),
+                      (('builds', 'sets', 'index.html'), '../../')):
+        with open(os.path.join(shell.SITE, *where), encoding='utf-8') as f:
+            page_html = f.read()
+        out.update(cards_in(page_html, up))
+    if not out:
+        markup.die('配装索引页上一张卡都没有，先跑一次 convert-build.py')
+    return out
+
+
+def cards_in(page_html, up):
+    """一页上的每一张卡：`{赛季/slug: (键, 卡片 HTML, 更新时间)}`。
+
+    **整张卡原样搬过来**，不按字段拆了再拼：强度光环、审核意见、合集的马赛克与
+    「3 套」角标都长在这份结构上，拆一次就要在这一页把那几样各写一遍。
+    图与链接的相对路径按 up 改写到 weapons/ 这一层。
+    """
+    out = {}
+    for one in CARD.finditer(page_html):
+        href = one.group(3).lstrip('./')
+        key = href[:-len('/index.html')]
+        html = one.group(0)
+        if not html.rstrip().endswith('</li>'):
+            html = html.rstrip() + '</li>'
+        html = html.replace('href="%s"' % one.group(3), 'href="../builds/%s"' % href)
+        html = html.replace('src="%s' % up, 'src="../')
+        stamp_ = re.search(r'<span class="entry-stamp">更新 ([\d.]+)</span>', html)
+        tier = re.search(r'data-tier="([^"]*)"', html)
+        out[key] = (key, html, (TIER_AT.get(tier.group(1) if tier else '', 9),
+                                stamp_.group(1) if stamp_ else ''))
     return out
 
 
@@ -771,11 +956,21 @@ def build(facts):
         'cp': {pidx[h]: v for h, v in cats_text.items()},
         'ap': {arow[h]: v for h, v in aperks.items() if arep_of[h] == h},
     }
+    srows, stexts = set_rows(b, htmls)
+    text['st'] = stexts
     text['H'] = htmls.items
     text['FL'] = flavors.items
-    index = {'v': vocab, 'w': wrows, 'a': arows}
+    # 用过这一件的配装：按主键收，详情里画在最底下。**只收站上真有的那几页**，
+    # 配装源稿里别的主键（碎片、模组、技能）这一页上没有对应的一件东西。
+    live = set(order) | set(aorder) | {r[0] for r in srows}
+    # 卡片整段只存一份，主键那一侧记下标：819 枚主键平均各指着 4 张卡，
+    # 直接存就是把同一张卡存了三千多遍（text.js gzip 因此多 33 KB）。
+    by_key, cards = builds_by_key()
+    text['bd'] = {h: v for h, v in by_key.items() if h in live}
+    text['bdc'] = cards
+    index = {'v': vocab, 'w': wrows, 'a': arows, 't': srows}
     stats = {'weapons': len(wrows), 'cards': len(reps), 'armor': len(arows), 'armor_cards': len(areps),
-             'mark_miss': b.mark_miss, 'orphans': b.orphans}
+             'sets': len(srows), 'mark_miss': b.mark_miss, 'orphans': b.orphans}
     out = {
         'weapons/index.js': js('WPN', index),
         'weapons/pool.js': js('WPN_POOL', pool),
@@ -842,7 +1037,11 @@ def page(stats, glyphs):
               '<a href="../exotic-armor/index.html">异域护甲</a>两页' % (AEGIS_SRC, LGPIG_SRC))
     body = [
         head.replace('</head>', '<script src="index.js" defer></script>\n'
-                     '<script src="app.js" defer></script>\n</head>'),
+                     '<script src="app.js" defer></script>\n'
+                     # 配装卡那一族的样式内联进来，不抄第二份：详情里「用过它的配装」
+                     # 摆的就是配装推荐页那张卡，强度光环、审核意见、合集马赛克与
+                     # 「3 套」角标都长在那份结构上。
+                     '<style>%s</style>\n</head>' % card_css()),
         shell.nav('装备库', toolbar={}),
         '<main class="wpn">',
         '<h1 class="off-screen">装备库</h1>',

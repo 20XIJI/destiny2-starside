@@ -328,6 +328,53 @@ class CellSplitting(unittest.TestCase):
 
 
 
+class WeaponsExtras(unittest.TestCase):
+    """装备库多出来的两块：护甲套装效果，与「用过它的配装」。
+
+    后者按主键收——配装源稿主键化之后才做得到。按名字收会把同名不同物（故我在的
+    狼群弹药与加拉尔号角的那一条）的配装混成一堆。
+    """
+
+    SITE = TOOLS.parent / 'site'
+
+    def load(self, name, var):
+        text = (self.SITE / 'weapons' / name).read_text(encoding='utf-8')
+        return json.loads(text[len('window.%s = ' % var):].rstrip().rstrip(';'))
+
+    def test_every_armor_set_is_there_with_both_effects(self):
+        got = self.load('index.js', 'WPN')['t']
+        self.assertEqual(len(got), 56, '护甲套装不是 56 套：%d' % len(got))
+        for row in got:
+            with self.subTest(set=row[1]):
+                self.assertTrue(row[0].startswith('set:'), '%s 的主键不是 set: 那一种' % row[1])
+                self.assertEqual([f[1] for f in row[6]], [2, 4],
+                                 '%s 不是「2 件 + 4 件」两条效果' % row[1])
+                for one in row[6]:
+                    self.assertTrue(one[2], '%s 的效果没有图' % row[1])
+        text = self.load('text.js', 'WPN_TEXT')
+        self.assertEqual(len(text['st']), 56, '套装的详情正文条数对不上')
+
+    def test_the_builds_that_used_it_land_on_real_cards(self):
+        text = self.load('text.js', 'WPN_TEXT')
+        index = self.load('index.js', 'WPN')
+        cards = text['bdc']
+        self.assertGreater(len(cards), 100, '配装卡只有 %d 张' % len(cards))
+        live = ({str(r[0]) for r in index['w']} | {str(r[0]) for r in index['a']}
+                | {str(r[0]) for r in index['t']})
+        for key, ats in text['bd'].items():
+            with self.subTest(key=key):
+                self.assertIn(key, live, '%s 不是这一页上的一件东西' % key)
+                for at in ats:
+                    self.assertLess(at, len(cards), '卡片下标越界')
+        # 卡片整段只存一份，主键那一侧记下标：直接存要多 33 KB gzip。
+        self.assertEqual(len(cards), len({c for c in cards}), '卡片存了重复的')
+        for card in cards:
+            self.assertIn('class="entry"', card, '卡片不是配装推荐页那一张')
+        sheet = (self.SITE / 'weapons' / 'index.html').read_text(encoding='utf-8')
+        self.assertIn('.entries .entry {', sheet,
+                      '页壳里没有内联配装卡的样式，那张卡会散架')
+
+
 class BuildKeys(unittest.TestCase):
     """配装源稿的槽位值写成 `名字#主键`，**主键是唯一真相**。
 

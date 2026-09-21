@@ -1229,3 +1229,40 @@
 .prose { font: 400 13.5px/1.9 var(--font-cn); color: var(--bone); }
 .prose p { margin: 0 0 10px; }
 .one-side .src { font-size: 12.5px; }
+
+/* 用过它的配装：摆的就是配装推荐页那张卡，样式由 build-weapons.py 从那一页的
+   样式表里现取、内联进页壳（CARD_SEL 一处），这里只改这一栏要改的三样。
+
+   **一行三张，行内等高。**卡本身是 flex 竖排，网格的默认 stretch 已经让同一行
+   等高；卡内每一格在那一页定死了高度，所以只压说明那一块与图的尺寸，别的照旧。 */
+/* **要写成 .entries.used-builds**：卡片那一族的样式内联在页壳的 <style> 里，
+   排在这份表之后，同权重时它胜出；单写 .used-builds 会被那边的五列压回去。 */
+.entries.used-builds { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+                       gap: 10px; }
+.entries.used-builds .entry { gap: 7px; padding: 12px; }
+/* 核心图压到 52：那一页 64 是主角尺寸，这里它只是「哪一套」的记号。
+   强度光环挂在 .node 上，跟着一起缩。 */
+.entries.used-builds .entry .node img { width: 52px; height: 52px; }
+.entries.used-builds .entry .node .core-mosaic img { width: auto; height: auto; }
+/* 说明那一块那一页定高 112px（审核意见两行 + 简介三行）：这一栏窄，压到两行。 */
+.entries.used-builds .entry .say { height: auto; }
+.entries.used-builds .entry .say p { -webkit-line-clamp: 2; }
+.entries.used-builds .entry .say:has(.verdict) p { -webkit-line-clamp: 1; }
+.entries.used-builds .entry .tags { margin-top: 6px; }
+
+.sub-label > .n { margin-left: 6px; color: var(--bone-faint); font-weight: 400; }
+
+/* ── 护甲套装 ─────────────────────────────────────────────────────────
+   一套两条效果（2 件与 4 件），图取护甲套装页那两枚。件数写在图的右下角：
+   两枚图长得像，不标出来分不出哪一枚是 4 件那一条。 */
+.set-fx { display: flex; gap: 6px; align-items: center; }
+.set-fx .pc { position: relative; display: block; line-height: 0; }
+.set-fx .pc img { width: 36px; height: 36px; border-radius: 6px; }
+.set-fx .pc > b { position: absolute; right: -2px; bottom: -3px; padding: 0 3px;
+                  font: 700 10px/1.5 var(--font-disp); color: var(--bone-hi);
+                  background: var(--ink); }
+.set-fx.lg .pc img { width: 56px; height: 56px; }
+.set-card .set-fx { flex: none; }
+/* 详情里一条效果一块：图在左，名字与实测在右，与「框架／异域特性」同一种画法。 */
+.wpn-one .frame .pc { flex: none; }
+.wpn-one .frame .pc img { width: 40px; height: 40px; border-radius: 6px; }

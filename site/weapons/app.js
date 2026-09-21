@@ -20,6 +20,8 @@
   var W_H = 0, W_NAME = 1, W_SUB = 2, W_EL = 3, W_AMMO = 4, W_SLOT = 5, W_BR = 6, W_SSN = 7,
       W_TIER = 8, W_FLAG = 9, W_ICON = 10, W_WM = 11, W_FR = 12, W_SRC = 13, W_GRADE = 14,
       W_REP = 15, W_FAM = 16;
+  /* 套装行 t[i]：hash（set:…）、名字、英文名、类型（来源活动）、赛季、标签、效果。 */
+  var T_H = 0, T_NAME = 1, T_EN = 2, T_KIND = 3, T_SSN = 4, T_TAG = 5, T_FX = 6;
   var A_H = 0, A_NAME = 1, A_PART = 2, A_CLS = 3, A_SSN = 4, A_ICON = 5, A_WM = 6, A_PERKS = 7,
       A_ROLE = 8, A_SRC = 9, A_REP = 10, A_FAM = 11;
   var F_ADEPT = 1, F_HOLO = 2, F_CRAFT = 4, F_TIER = 8, F_MW = 16, F_ENH = 32, F_REISSUE = 64;
@@ -45,6 +47,12 @@
     return String(s).replace(/[&<>"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
+  }
+  /* 整路径的图（护甲套装那几枚在 armor-sets/icons/ 下，序号命名）。 */
+  function pathImg(path, eager) {
+    if (!path) { return ''; }
+    return '<img src="' + esc(path) + '" alt=""' +
+      (eager === 2 ? ' fetchpriority="high"' : eager ? '' : ' loading="lazy"') + '>';
   }
   function imgTag(stem, cls, alt, eager) {
     if (!stem) { return ''; }
@@ -153,18 +161,23 @@
   }
 
   /* ── 行与分组 ──────────────────────────────────────────────────────── */
-  var WR = D.w, AR = D.a;
-  function isRep(scope, i) { return (scope === 'armor' ? AR[i][A_REP] : WR[i][W_REP]) === i; }
+  var WR = D.w, AR = D.a, SR = D.t || [];
+  /* 护甲套装一套一行，没有版本也没有同族，所以每一行都是自己的代表行。 */
+  function rowsOf(scope) { return scope === 'armor' ? AR : scope === 'sets' ? SR : WR; }
+  function isRep(scope, i) {
+    return scope === 'sets' ? true : (scope === 'armor' ? AR[i][A_REP] : WR[i][W_REP]) === i;
+  }
   function repsOf(scope) {
-    var rows = scope === 'armor' ? AR : WR, out = [];
+    var rows = rowsOf(scope), out = [];
     for (var i = 0; i < rows.length; i++) { if (isRep(scope, i)) { out.push(i); } }
     return out;
   }
-  var REPS = { wpn: repsOf('wpn'), armor: repsOf('armor') };
-  var BY_HASH = { wpn: {}, armor: {} };
+  var REPS = { wpn: repsOf('wpn'), armor: repsOf('armor'), sets: repsOf('sets') };
+  var BY_HASH = { wpn: {}, armor: {}, sets: {} };
   (function () {
     for (var i = 0; i < WR.length; i++) { BY_HASH.wpn[WR[i][W_H]] = i; }
     for (var j = 0; j < AR.length; j++) { BY_HASH.armor[AR[j][A_H]] = j; }
+    for (var k = 0; k < SR.length; k++) { BY_HASH.sets[SR[k][T_H]] = k; }
   }());
 
   function typeName(r) { return V.ty[r[W_SUB]][0]; }
@@ -174,6 +187,7 @@
   function rarity(r) { return V.rar[r[W_TIER]] || ''; }
   function isExotic(r) { return r[W_TIER] === 6; }
   function enOf(scope, i) {
+    if (scope === 'sets') { return SR[i][T_EN] || ''; }
     if (!P) { return ''; }
     return (scope === 'armor' ? P.aen : P.en)[i] || '';
   }
@@ -334,6 +348,15 @@
   var pins = recall('wpn.pins') || [];
   function isTable(scope) {
     var t = {};
+    if (scope === 'sets') {
+      // 套装只有「类型」（来源活动）这一维值得当 is: 用，赛季走 season:。
+      SR.forEach(function (row) { if (row[T_KIND]) { t[row[T_KIND]] = function () { return false; }; } });
+      Object.keys(t).forEach(function (name) {
+        t[name] = function (i) { return SR[i][T_KIND] === name; };
+      });
+      t['已钉选'] = function (i) { return has(pins, 't:' + SR[i][T_H]); };
+      return t;
+    }
     if (scope === 'armor') {
       V.cls.forEach(function (c, k) { t[c] = function (i) { return AR[i][A_CLS] === k; }; });
       V.part.forEach(function (p, k) { t[p] = function (i) { return AR[i][A_PART] === k; }; });
@@ -373,7 +396,7 @@
     t['已钉选'] = function (i) { return has(pins, 'w:' + WR[i][W_H]); };
     return t;
   }
-  var IS = { wpn: isTable('wpn'), armor: isTable('armor') };
+  var IS = { wpn: isTable('wpn'), armor: isTable('armor'), sets: isTable('sets') };
 
   /* 裸词搜的那一串：名字、英文名、类型、框架、词条名、描述。有什么数据就先搜什么，
      词条池与说明到了之后缓存作废、重搜一遍。 */
@@ -382,7 +405,12 @@
     var key = scope + i;
     if (hayCache[key] != null) { return hayCache[key]; }
     var parts;
-    if (scope === 'armor') {
+    if (scope === 'sets') {
+      var t = SR[i];
+      parts = [t[T_NAME], t[T_EN], t[T_KIND], t[T_SSN], t[T_TAG]].concat(
+        t[T_FX].map(function (f) { return f[0]; }));
+      if (T && T.st[i]) { T.st[i].forEach(function (f) { parts.push(f[4]); }); }
+    } else if (scope === 'armor') {
       var a = AR[i];
       parts = [a[A_NAME], V.cls[a[A_CLS]], V.part[a[A_PART]], a[A_PERKS], a[A_ROLE], srcOf(a, A_SRC), enOf('armor', i)];
       if (T && T.fa[i] >= 0) { parts.push(T.FL[T.fa[i]]); }
@@ -433,6 +461,17 @@
   }
   function kw(scope, k, v, i) {
     var f = fold(v), r;
+    if (scope === 'sets') {
+      var t = SR[i];
+      switch (k) {
+        case 'is': return IS.sets[v] ? IS.sets[v](i) : false;
+        case 'name': return fold(t[T_NAME] + ' ' + t[T_EN]).indexOf(f) !== -1;
+        case 'perk': return fold(t[T_FX].map(function (x) { return x[0]; }).join(' ')).indexOf(f) !== -1;
+        case 'season': return fold(t[T_SSN]).indexOf(f) !== -1;
+        case 'source': return fold(t[T_KIND]).indexOf(f) !== -1;
+      }
+      return false;
+    }
     if (scope === 'armor') {
       r = AR[i];
       switch (k) {
@@ -493,7 +532,7 @@
   };
   function readUrl() {
     var u = new URLSearchParams(location.search);
-    S.scope = u.get('s') === 'armor' ? 'armor' : 'wpn';
+    S.scope = u.get('s') === 'armor' ? 'armor' : u.get('s') === 'sets' ? 'sets' : 'wpn';
     S.q = u.get('q') || '';
     var w = u.get('w');
     S.sel = w && BY_HASH[S.scope][w] != null ? BY_HASH[S.scope][w] : null;
@@ -504,11 +543,10 @@
   }
   function writeUrl(push) {
     var u = new URLSearchParams();
-    if (S.scope === 'armor') { u.set('s', 'armor'); }
+    if (S.scope !== 'wpn') { u.set('s', S.scope); }
     if (S.q) { u.set('q', S.q); }
     if (S.sel != null) {
-      var rows = S.scope === 'armor' ? AR : WR;
-      u.set('w', rows[S.sel][0]);
+      u.set('w', rowsOf(S.scope)[S.sel][0]);
       if (S.scope === 'wpn' && P) {
         var roll = rollOf(S.sel), def = defaultRoll(S.sel);
         if (!sameRoll(roll, def)) {
@@ -673,7 +711,8 @@
     '<div class="wpn-q">' +
     '<div class="wpn-scope" role="group" aria-label="范围">' +
     '<button type="button" class="toggle" data-act="scope" data-v="wpn">武器</button>' +
-    '<button type="button" class="toggle" data-act="scope" data-v="armor">异域护甲</button></div>' +
+    '<button type="button" class="toggle" data-act="scope" data-v="armor">异域护甲</button>' +
+    '<button type="button" class="toggle" data-act="scope" data-v="sets">护甲套装</button></div>' +
     '<div class="wpn-field"><input class="wpn-input" type="search" autocomplete="off" spellcheck="false" ' +
     'role="combobox" aria-expanded="false" aria-controls="wpn-ac" aria-label="搜索装备" ' +
     'placeholder="名字、词条，或 is:手炮 perk:萤火虫 season:&gt;=26">' +
@@ -748,7 +787,8 @@
     bar.querySelector('[data-act="syntax"]').setAttribute('aria-expanded', S.syntax ? 'true' : 'false');
     syntaxBox.hidden = !S.syntax;
     if (input.value !== S.q && document.activeElement !== input) { input.value = S.q; }
-    var total = REPS[S.scope].length, unit = S.scope === 'armor' ? '件' : '把';
+    var total = REPS[S.scope].length;
+    var unit = S.scope === 'armor' ? '件' : S.scope === 'sets' ? '套' : '把';
     countBox.innerHTML = !S.q ? '<b>' + total + '</b> ' + unit
       : '<b>' + (pending ? '…' : results.length) + '</b> / ' + total + ' ' + unit;
     var pills = tokens.filter(function (t) { return t.t === 'kw' || t.t === 'w'; });
@@ -819,7 +859,7 @@
       return;
     }
     if (!S.q) {
-      subBox.innerHTML = S.scope === 'armor' ? '' : '<div class="wpn-row"><span class="lbl">试试这些</span>' +
+      subBox.innerHTML = S.scope !== 'wpn' ? '' : '<div class="wpn-row"><span class="lbl">试试这些</span>' +
         EXAMPLES.map(function (e) {
           return '<button type="button" class="toggle" data-act="setq" data-v="' + esc(e) + '"><code>' + esc(e) + '</code></button>';
         }).join('') + '</div>';
@@ -831,6 +871,18 @@
   /* ── 渲染：卡片墙与列表 ────────────────────────────────────────────── */
   function card(i, k) {
     var eager = k < N_HIGH ? 2 : k < N_EAGER ? 1 : 0;
+    if (S.scope === 'sets') {
+      var t = SR[i];
+      return '<li><a class="wpn-card set-card" href="' + link('sets', i) + '" data-act="open" data-i="' + i + '">' +
+        '<span class="set-fx">' + t[T_FX].map(function (f) {
+          return '<span class="pc">' + pathImg(f[2], eager) + '<b>' + f[1] + '</b></span>';
+        }).join('') + '</span>' +
+        '<div><p class="nm">' + esc(t[T_NAME]) + '</p><div class="wpn-meta"><span class="cls">' +
+        esc(t[T_KIND]) + '</span></div><div class="wpn-frame">' +
+        esc(t[T_FX].map(function (f) { return f[0]; }).join(' · ')) + '</div>' +
+        (t[T_TAG] ? '<div class="wpn-grades"><span>' + esc(t[T_TAG]) + '</span></div>' : '') +
+        '</div></a></li>';
+    }
     if (S.scope === 'armor') {
       var a = AR[i];
       var first = (a[A_PERKS] || '').split('、')[0];
@@ -860,6 +912,15 @@
       (g[1] ? '<span><span class="by">小棒猪</span>' + esc(g[1]) + '</span>' : '') + '</div>';
   }
   function listRow(i, dup) {
+    if (S.scope === 'sets') {
+      var t = SR[i];
+      return '<li><a href="' + link('sets', i) + '" data-act="open" data-i="' + i + '" class="wpn-lrow"><span></span>' +
+        '<span class="ssn">' + esc(t[T_SSN]) + '</span><span></span>' + pathImg(t[T_FX][0] ? t[T_FX][0][2] : '') +
+        '<span class="nm">' + esc(t[T_NAME]) + '</span><span class="ty">' + esc(t[T_KIND]) +
+        '</span><span></span><span class="fr">' +
+        esc(t[T_FX].map(function (f) { return f[1] + ' 件 ' + f[0]; }).join('｜')) +
+        '</span><span class="wpn-grades">' + esc(t[T_TAG]) + '</span></a></li>';
+    }
     if (S.scope === 'armor') {
       var a = AR[i];
       return '<li><a href="' + link('armor', i) + '" data-act="open" data-i="' + i + '" class="wpn-lrow"><span></span>' +
@@ -880,9 +941,9 @@
   }
   function link(scope, i) {
     var u = new URLSearchParams();
-    if (scope === 'armor') { u.set('s', 'armor'); }
+    if (scope !== 'wpn') { u.set('s', scope); }
     if (S.q) { u.set('q', S.q); }
-    u.set('w', (scope === 'armor' ? AR : WR)[i][0]);
+    u.set('w', rowsOf(scope)[i][0]);
     return '?' + u.toString();
   }
 
@@ -998,6 +1059,11 @@
     var box = body.querySelector('.wpn-detail');
     if (!box) { return; }
     var i = S.sel;
+    if (S.scope === 'sets') {
+      if (!T) { box.innerHTML = '<p class="loading">正在载入说明</p>'; need('text', renderDetail); return; }
+      box.innerHTML = setDetail(i);
+      return;
+    }
     if (S.scope === 'armor') {
       if (!T) { box.innerHTML = '<p class="loading">正在载入说明</p>'; need('text', renderDetail); return; }
       box.innerHTML = armorDetail(i);
@@ -1006,6 +1072,21 @@
     if (!P) { box.innerHTML = '<p class="loading">正在载入词条池</p>'; need('pool', renderDetail); return; }
     if (!T) { need('text', renderDetail); }
     box.innerHTML = weaponDetail(i);
+  }
+
+  /* 用过这一件的配装。**按主键收**：配装源稿的槽位值写成「名字#主键」，同名不同物
+     按名字收会把两把枪的配装混成一堆。一套一行，点进去是那一页。 */
+  /* 用过它的配装：**摆的就是配装推荐页那张卡**，整段 HTML 由 build-weapons.py 从
+     那一页的产出现取，样式跟着内联进页壳。强度光环、审核意见、合集的马赛克与
+     「3 套」角标因此原样都在，这一页一条都不必重画。赞数那一枚在这里是死的：
+     它由配装页自己的脚本填，这一页不引那份。 */
+  function usedByHtml(hash) {
+    var got = T && T.bd ? T.bd[String(hash)] : null;
+    if (!got || !got.length) { return ''; }
+    return '<section><h3 class="sub-label">用过它的配装<b class="n">' + got.length +
+      '</b></h3><ul class="entries used-builds">' + got.map(function (k) {
+        return T.bdc[k];
+      }).join('') + '</ul></section>';
   }
 
   /* 作者在页面上的写法。数据里的键是 Aegis 与 LGpig。 */
@@ -1068,6 +1149,7 @@
       (fr[2][r[W_SUB]] ? '<span class="rate">' + fr[2][r[W_SUB]] + ' 发/分</span>' : '') +
       '<p>' + (T && fp != null ? esc(T.pd[fp]) : '') + '</p></div></div>';
     parts.push('<section><h3 class="sub-label">' + (isExotic(r) ? '异域特性' : '框架') + '</h3>' + frames + '</section>');
+    parts.push(usedByHtml(r[W_H]));
     parts.push('</div>');
     parts.push('<aside class="one-side"><section><div class="facts">' + factsHtml(i) + '</div></section>' +
       '<section><h3 class="sub-label">属性</h3>' + statsPanel(res, ghost) + '</section>' +
@@ -1289,6 +1371,31 @@
     return o.join('');
   }
 
+  /* 护甲套装：一套两条效果（2 件与 4 件），实测与作者评语写在效果身上。
+     属性那一块不画——套装效果不改属性。 */
+  function setDetail(i) {
+    var t = SR[i], fx = (T.st && T.st[i]) || [];
+    var facts = [t[T_KIND], t[T_SSN]].filter(Boolean);
+    var qs = ['source:' + t[T_KIND], 'season:' + t[T_SSN]];
+    return '<article class="wpn-one"><header class="one-head">' +
+      '<span class="set-fx lg">' + t[T_FX].map(function (f) {
+        return '<span class="pc">' + pathImg(f[2], 2) + '<b>' + f[1] + '</b></span>';
+      }).join('') + '</span>' +
+      '<div><h2>' + esc(t[T_NAME]) + '</h2><p class="en">' + esc(t[T_EN]) +
+      '</p><p class="lore">' + esc(t[T_TAG]) + '</p></div></header>' +
+      '<div class="one-main"><section><h3 class="sub-label">套装效果</h3>' +
+      fx.map(function (f) {
+        return '<div class="frame"><span class="pc">' + pathImg(f[2]) + '<b>' + f[1] + '</b></span>' +
+          '<div><b>' + esc(f[0]) + '</b>' +
+          (f[3] >= 0 ? T.H[f[3]] : '<p>' + esc(f[4]) + '</p>') +
+          (f[5] && f[5].length ? '<div class="says">' + saysHtml(f[5]) + '</div>' : '') +
+          '</div></div>';
+      }).join('') + '</section>' + usedByHtml(t[T_H]) + '</div>' +
+      '<aside class="one-side"><section><div class="facts">' + facts.map(function (f, k) {
+        return '<button type="button" class="toggle" data-act="addq" data-v="' + esc(qs[k]) + '">' + esc(f) + '</button>';
+      }).join('') + '</div></section></aside></article>';
+  }
+
   function armorDetail(i) {
     var a = AR[i], rep = a[A_REP];
     var facts = [V.cls[a[A_CLS]], V.part[a[A_PART]], '异域', 'S' + a[A_SSN]];
@@ -1304,7 +1411,8 @@
       (isPinned('armor', i) ? 'true' : 'false') + '">' + (isPinned('armor', i) ? '已钉选' : '钉选') + '</button></div></header>' +
       '<div class="one-main">' + (T.axs[rep] ? exoticBlock(T.axs[rep]) : '') +
       (say ? '<section><h3 class="sub-label">作者评语</h3><div class="says">' + saysHtml(say) + '</div></section>' : '') +
-      (perks ? '<section><h3 class="sub-label">异域特性</h3>' + perks + '</section>' : '') + '</div>' +
+      (perks ? '<section><h3 class="sub-label">异域特性</h3>' + perks + '</section>' : '') +
+      usedByHtml(a[A_H]) + '</div>' +
       '<aside class="one-side"><section><div class="facts">' + facts.map(function (f, k) {
         return '<button type="button" class="toggle" data-act="addq" data-v="' + esc(qs[k]) + '">' + esc(f) + '</button>';
       }).join('') + '</div></section><section><h3 class="sub-label">属性</h3><p class="src">护甲属性随掉落随机生成，定义里没有固定值。</p></section>' +
