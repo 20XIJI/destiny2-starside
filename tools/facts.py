@@ -69,7 +69,7 @@ import re
 import sys
 
 import shell
-from markup import die
+from markup import REC_ROW, die
 
 OUT_DIR = os.path.join(shell.ROOT, 'data')
 LOOKUP_DIR = os.path.join(OUT_DIR, 'lookup')
@@ -804,33 +804,21 @@ COSMETIC_PLUGS = ('emote', 'shader', 'hologram', 'ship.', 'events.', 'social.',
                   'emblem.', 'ghost.tracker', 'v500.ships', 'armor_skins',
                   'enhancements.ghosts', 'generic_all_vfx', 'weapon_tiering_kill_vfx',
                   'v900weapon', 'status_effect_tooltip')
-LANE_LINE = re.compile(r'^==')
 
 
 def seeds(root):
-    """源稿每一行点名的主键。表区是「列：」那一行加紧接着的连续非空行；护甲套装页与
-    神器模组页是分节式，整篇都算表区，行前有缩进。"""
+    """源稿每一行点名的主键。行按生成器那一条认（markup.REC_ROW）：主键页里「主键
+    [主键…]  行标题」的每一行，不管在不在「列：」表区里——异域护甲页「职业金」那一节
+    没有表头，三件职业物品只写成这样三行。散文页（references/docs/）不写主键。"""
     got = set()
-    pages = sorted(glob.glob(os.path.join(root, 'references', 'docs', '*.md'))
-                   + glob.glob(os.path.join(root, 'references', 'keys', '*.md')))
-    for path in pages:
-        loose = os.path.basename(path) in ('armor-sets.md', 'artifact-mods.md')
-        inside = loose
+    for path in sorted(glob.glob(os.path.join(root, 'references', 'keys', '*.md'))):
         with open(path, encoding='utf-8') as fh:
             for line in fh:
-                line = line.rstrip('\n')
-                if line.startswith('列：'):
-                    inside = True
+                hit = REC_ROW.match(line.strip())
+                if not hit:
                     continue
-                if not loose and (not line.strip() or line.startswith('##')):
-                    inside = False
-                    continue
-                if not inside or LANE_LINE.match(line.strip()):
-                    continue
-                for key in line.strip().partition('  ')[0].split():
-                    key = re.sub(r'^(perk|trait|stat|set):', '', key)
-                    if key.isdigit():
-                        got.add(key)
+                for key in hit.group(1).split():
+                    got.add(re.sub(r'^(perk|trait|stat|set):', '', key))
     # 页面 JSON 点名的也算：矩阵表那种一行指向别的主键的格子放在那里，被指到的
     # 那几枚不在任何一行的行首上，只有这一条路够得到它们。
     for path in sorted(glob.glob(os.path.join(root, 'references', 'pages', '*.json'))):
@@ -847,11 +835,46 @@ def seeds(root):
     return got
 
 
+def site_links(path):
+    """盘上记录的站内字段点名的别的记录：`{主键: [主键…]}`。这一轮蒸出来的记录还没
+    带回站内字段（carry_site() 在裁剪之后），所以读盘上那一份。"""
+    if not os.path.exists(path):
+        return {}
+    with open(path, encoding='utf-8') as f:
+        old = json.load(f)
+    return {k: [str(x) for col in v['site_perkColumns'] for x in col]
+            for k, v in old.items() if v.get('site_perkColumns')}
+
+
+def cheaper(kept):
+    """护甲模组的降费版：同名、同类目、有一枚费用更高的，自己没有收藏条目。
+
+    与标准版的 perks、图标、引用它们的护甲完全相同，16 组的描述少一句护甲充能说明；
+    站内每一页都写标准版。它们挂在异域护甲的插件池里，顺插槽走得到。"""
+    def cost(row):
+        got = (row.get('plug') or {}).get('energyCost')
+        return (got.get('energyCost') if isinstance(got, dict) else got) or 0
+    peers = collections.defaultdict(list)
+    for k, row in kept.items():
+        cat = (row.get('plug') or {}).get('plugCategoryIdentifier')
+        name = ((row.get('i18n') or {}).get('zh-CN') or {}).get('name')
+        if cat and name:
+            peers[(name, cat)].append(k)
+    out = set()
+    for group in peers.values():
+        top = max(cost(kept[k]) for k in group)
+        out |= {k for k in group
+                if cost(kept[k]) < top and not kept[k].get('collectibleHash')}
+    return out
+
+
 def trim(kept, plugs, sets, root):
     """裁到站内用得上的那些，并把指向被裁掉那些的引用一并去掉。
 
     **判据是可达性，不是类型名单**：从源稿点名的主键出发，顺 `covers`（同一行写下的
     别的 hash）、插槽、插件池走一遍，走得到的留。换赛季重跑自动跟着变，不必维护名单。
+    站内字段点名的也顺着走（site_links()）：异域职业物品两栏各有哪些之灵，manifest
+    里每栏只记了初始那一枚，全表写在记录的 `site_perkColumns` 上。
 
     三条例外，都是人定的：
 
@@ -860,11 +883,14 @@ def trim(kept, plugs, sets, root):
       成员件也不留，站内只用套装本身与它的两条效果，`setItems` 因此整个字段去掉。
     - **外观与往季神器模组不留。**前者见 COSMETIC_PLUGS，后者是别的赛季的神器特性，
       源稿点名的那 147 个之外一律不要。
+    - **护甲模组的降费版不留**，见 cheaper()。
 
     裁完把引用一起收干净：指向被裁掉那些的插槽初始值、内联插件、插件池成员、
     神器档位成员，写下来就是悬空。
     """
     seed = seeds(root)
+    listed = site_links(os.path.join(root, 'data', 'inventory-items.json'))
+    cheap = cheaper(kept)
     want = set()
     stack = [s for s in seed if s in kept]
     stack += [h for h, row in kept.items() if row.get('itemType') == 3]
@@ -874,6 +900,7 @@ def trim(kept, plugs, sets, root):
             continue
         want.add(key)
         row = kept[key]
+        stack += listed.get(key, ())
         for one in row.get('covers') or ():
             stack.append(str(one))
         for e in (row.get('sockets') or {}).get('socketEntries') or ():
@@ -903,7 +930,8 @@ def trim(kept, plugs, sets, root):
             continue
         if (key not in want
                 or any(x in cat for x in COSMETIC_PLUGS)
-                or ('artifact_perks' in cat and key not in seed)):
+                or ('artifact_perks' in cat and key not in seed)
+                or key in cheap):
             del kept[key]
     gone = {int(k) for k in want | set(kept) if k not in kept} | set()
     live = {int(k) for k in kept}
@@ -996,8 +1024,8 @@ def carry_site(path, payload):
         for lang, fields in extra.items():
             payload[key].setdefault('i18n', {}).setdefault(lang, {}).update(fields)
     if lost:
-        die('%s 里这些记录名下挂着站内写的东西，这次却没蒸出来：%s'
-            % (os.path.basename(path), '、'.join(sorted(lost)[:8])))
+        die('%s 里这 %d 条记录名下挂着站内写的东西，这次却没蒸出来：%s'
+            % (os.path.basename(path), len(lost), '、'.join(sorted(lost))))
 
 
 def dump(path, payload):
@@ -1106,6 +1134,43 @@ def put_site_text(table, row, flat):
         die('%s：写回之后的站内文字与库里那一份对不上' % table)
 
 
+ARTIFACT_BODIES = (ARTIFACT_TIER, '传说 赛季神器')
+
+
+def own_season(items):
+    """每件神器当季的原版模组：`{神器名: {模组名: [hash…]}}`。
+
+    manifest 的 index 是发布顺序：一季的神器本体（「神器」与「赛季神器」两条）之后
+    紧跟着那一季全部的神器特性，直到下一件神器本体，按 index 切段即得。唯一有官方
+    定义的那一件（DestinyArtifactDefinition，35 枚）与切出来的那一段逐枚相等。
+    """
+    marks = sorted((it['index'], it['displayProperties']['name']) for it in items.values()
+                   if it.get('itemType') == 28
+                   and it.get('itemTypeAndTierDisplayName') in ARTIFACT_BODIES)
+    at = [i for i, _ in marks]
+    out = {}
+    for h, it in items.items():
+        if (it.get('plug') or {}).get('plugCategoryIdentifier') != 'artifact_perks':
+            continue
+        i = bisect.bisect_left(at, it['index']) - 1       # index 在它之前的最后一件本体
+        if i < 0 or it.get('redacted'):
+            continue
+        out.setdefault(marks[i][1], {}).setdefault(
+            it['displayProperties']['name'], []).append(int(h))
+    return out
+
+
+def own_copy(x, own, items):
+    """槽里的一枚模组 → 这件神器自己的那一枚（见 artifacts_of()）。"""
+    mine = own.get(items[str(x)]['displayProperties']['name']) or []
+    if x in mine or not mine:
+        return x
+    if len(mine) > 1:
+        die('神器模组 %s 在这件神器当季有 %d 枚同名的（%s），分不出是哪一枚'
+            % (x, len(mine), '、'.join(map(str, mine))))
+    return mine[0]
+
+
 def artifacts_of(items, plug_sets, socket_types):
     """七件神器，每件按档位列出它自己那批模组。
 
@@ -1113,9 +1178,16 @@ def artifacts_of(items, plug_sets, socket_types):
     槽按档位分组。槽里的池是**累积**的：二档那一池包含一档全部，相邻作差才是这一档
     真正新开的那七个。末尾那一池只剩占位（「空神器模组」），整池丢掉。
 
+    **槽里的模组不全是这件神器自己的。**影子条目是后来重发的版本，同名模组在几件
+    神器上指向同一枚：女王兰香炉的「群敌飞梭」槽里是废墟石板那一枚（2596646301），
+    而女王兰香炉当季有自己的 1328115224，图也不同。所以槽里那一枚不在这件神器当季
+    那一段（own_season()）里、而那一段有同名的一枚时，换成它；那一段没有同名的，
+    是重发时从别件神器借来的，留着槽里那一枚。
+
     官方的 DestinyArtifactDefinition 只有当前那一件，覆盖不了站内文档的七件，
     所以这一张是派生表、不照定义表命名。
     """
+    seasons = own_season(items)
     arts = {}
     for item in items.values():
         if item.get('itemType') != 0 or item.get('redacted'):
@@ -1143,12 +1215,13 @@ def artifacts_of(items, plug_sets, socket_types):
                 pool.append(p['plugItemHash'])
             if pool:
                 stacks.append(pool)
+        own = seasons.get(item['displayProperties']['name']) or {}
         tiers, had = [], set()
         for pool in stacks:
             fresh = [x for x in pool if x not in had]
             had |= set(pool)
             if fresh:
-                tiers.append({'items': [{'itemHash': x} for x in fresh]})
+                tiers.append({'items': [{'itemHash': own_copy(x, own, items)} for x in fresh]})
         if tiers:
             # 影子条目的 hash 不是神器本体的。先按名字聚，下面认到本体那一条时
             # 再换成本体的 hash 当键。

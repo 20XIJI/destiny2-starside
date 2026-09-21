@@ -39,7 +39,7 @@ Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构�
 
 | 文件 | 定义表 | 条数 | 装什么 |
 |---|---|---|---|
-| `inventory-items.json` | `DestinyInventoryItemDefinition` | 5760 | 武器、护甲与可装配的插件（词条、模组、碎片、星相、技能、神器特性）。收藏条目的来源句并在 `i18n.*.sourceString`，神器档位并在 `derived.tiers` |
+| `inventory-items.json` | `DestinyInventoryItemDefinition` | 5769 | 武器、护甲与可装配的插件（词条、模组、碎片、星相、技能、神器特性）。收藏条目的来源句并在 `i18n.*.sourceString`，神器档位并在 `derived.tiers` |
 | `sandbox-perks.json` | `DestinySandboxPerkDefinition` | 5200 | 效果。`onItems` / `onSets` 指回挂着它的物品与套装 |
 | `traits.json` | `DestinyTraitDefinition` | 46 | 游戏内状态（不稳定、冻结）与分类标签 |
 | `stats.json` | `DestinyStatDefinition` | 79 | 属性 |

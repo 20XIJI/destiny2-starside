@@ -25,7 +25,7 @@ import render as layout   # 本文件自己有个 render()，别名避开
 import resolve
 import rows
 import shell
-from markup import (IMG, LINK, Icons, bmark, die, inline, meta_line, meta_of,
+from markup import (IMG, LINK, REC_ROW, Icons, bmark, die, inline, meta_line, meta_of,
                     no_nested_span, plain, source_context, src_hash, text_of, whole_marker)
 
 
@@ -37,8 +37,6 @@ NEW = frozenset({
     'exotic-armor', 'exotic-armors', 'exotic-weapon', 'exotic-weapons',
     'arc', 'solar', 'void', 'stasis', 'strand', 'prismatic', 'class-abilities',
 })
-KEY = r'(?:perk:|trait:|stat:|set:)?\d+'
-REC_ROW = re.compile(r'^(%s(?: %s)*)  (.+)$' % (KEY, KEY))
 COLS = re.compile(r'^列：')
 CTX = None          # render.Page，build() 里装上
 SLUG = ''

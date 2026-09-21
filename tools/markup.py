@@ -246,6 +246,12 @@ def img_size(data):
     die('只认得 PNG、JPEG 与 WebP，这个文件都不是')
 
 
+# 主键骨架的一行：「主键 [主键…]  行标题」。第一枚是行首，其余是它盖住的 hash；
+# 前缀说这个号去哪张表查。生成器认行、蒸馏认种子都用这一条。
+KEY = r'(?:perk:|trait:|stat:|set:)?\d+'
+REC_ROW = re.compile(r'^(%s(?: %s)*)  (.+)$' % (KEY, KEY))
+
+
 # 源稿方言的切格，Python 这一侧的唯一定义。JS 那一侧是 admin/dialect.js，
 # 两份在 4500+ 行真表格上逐行相同由 check_quality.py 的 CellSplitting 钉住。
 # 两种语言没法共用源码，所以这条缝是这套方言的下限：两份，不是六份。
