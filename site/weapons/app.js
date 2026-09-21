@@ -30,7 +30,10 @@
   var R_STAT = 0, R_TRAIT = 1, R_ORIGIN = 2, R_INTRINSIC = 3;
   /* 框架行上页面的那几项，下标与 build-weapons.FRAME_FIELDS 同序 */
   var FR_TIER = 0, FR_ADD = 1, FR_BOSS = 2, FR_RANGE = 3, FR_RPM = 4, FR_RELOAD = 5, FR_MDPS = 6, FR_BDPS = 7,
-    FR_MBRICK = 8, FR_BBRICK = 9;
+    FR_MBRICK = 8, FR_BBRICK = 9, FR_CRIT = 10;
+  /* 神器模组表 pool.am 的一行：名字、图标、[[神器下标, 档位]…]、通用。神器表 pool.an 是 [名字, 锚点]。 */
+  var AM_NAME = 0, AM_ICON = 1, AM_IN = 2, AM_ALL = 3;
+  var TIER_ZH = ['', '一级', '二级', '三级'];
   var TIER_STEP = { F: 1, E: 2, D: 3, C: 5, B: 6, A: 7, S: 8 };
 
   var V = D.v;
@@ -405,6 +408,9 @@
     return t;
   }
   var IS = { wpn: isTable('wpn'), armor: isTable('armor'), sets: isTable('sets') };
+  /* 裸词是不是恰好一个 is: 的值。只认表自己的键：英文名里写出 constructor、toString
+     会取到 Object 原型上的函数。 */
+  function bareIs(scope, v) { return Object.prototype.hasOwnProperty.call(IS[scope], v); }
 
   /* 裸词搜的那一串：名字、英文名、类型、框架、词条名、描述。有什么数据就先搜什么，
      词条池与说明到了之后缓存作废、重搜一遍。 */
@@ -463,7 +469,9 @@
       case 'and': for (var a = 0; a < node.xs.length; a++) { if (!test(scope, node.xs[a], i)) { return false; } } return true;
       case 'or': for (var o = 0; o < node.xs.length; o++) { if (test(scope, node.xs[o], i)) { return true; } } return false;
       case 'not': return !test(scope, node.x, i);
-      case 'w': return hay(scope, i).indexOf(fold(node.v)) !== -1;
+      /* 裸词写全了一个 is: 的值（虚空、手炮、主手、专家）就按 is: 算：按字面搜，「虚空」
+         会把名字、词条名与描述里带这两个字的非虚空武器也搜进来。 */
+      case 'w': return bareIs(scope, node.v) ? IS[scope][node.v](i) : hay(scope, i).indexOf(fold(node.v)) !== -1;
       default: return kw(scope, node.k, node.v, i);
     }
   }
@@ -703,6 +711,7 @@
                   'frame:精密框架', 'is:专家'];
   var SYNTAX = [
     ['萤火虫 自填', '裸词：名字、类型、框架、词条名与描述里都含这些字'],
+    ['虚空 轻质 即兴弹药', '裸词恰好是一个 is: 的值（元素、类型、槽位、弹药、稀有度、勇士、标志）时按 is: 算'],
     ['is:主手 is:手炮 is:烈日', '槽位（主手／副手／威能）、类型、元素、弹药、稀有度、勇士'],
     ['is:泰坦 is:头盔', '异域护甲：职业、部位'],
     ['is:可锻造 is:专家', '标志：可锻造、可强化、可升阶、专家、全息、复刻、已钉选'],
@@ -764,6 +773,7 @@
   /* ── 渲染：顶栏 ────────────────────────────────────────────────────── */
   var tokens = [], tree = null, results = [], pending = false;
   function pillIcon(t) {
+    if (t.t === 'w' && bareIs(S.scope, t.v)) { t = { t: 'kw', k: 'is', v: t.v }; }
     if (t.t !== 'kw') { return ''; }
     if (t.k === 'is') {
       for (var e in V.el) { if (V.el[e][0] === t.v) { return imgTag(V.el[e][2], '', '', true); } }
@@ -1155,6 +1165,7 @@
     parts.push('<section><h3 class="sub-label">词条' + (choice ? haloLegend() : '') + '</h3><div class="matrix">' + matrix + '</div></section>');
     var say = T && T.au[rep] ? T.au[rep] : null;
     if (say) { parts.push('<section><h3 class="sub-label">作者评语</h3><div class="says">' + saysHtml(say) + '</div></section>'); }
+    parts.push(artifactSection(i));
     parts.push(gearSection(i, roll, res));
     if (pr[8].length) { parts.push(catalystSection(i, roll)); }
     var fr = frameOf(r), fp = PIDX[fr[3]], icol = intrinsicCol(i);
@@ -1229,7 +1240,7 @@
     if (r[W_FLAG] & F_TIER) { chip('is:可升阶', '', '可升阶'); }
     return out.join('');
   }
-  /* 武器框架页那一行：评级、两个分数、四项数值，外加这一类枪的弹药块拾取量。
+  /* 武器框架页那一行：评级、两个分数与各项数值，外加这一类枪的弹药块拾取量。
      配不上行的（146 把异域自带框架 + 30 把传说）整块不画。 */
   function frameStatsHtml(i) {
     if (!P) { return ''; }
@@ -1242,7 +1253,7 @@
         esc(fr[FR_TIER]) + '</span><span>清怪 <b>' + esc(fr[FR_ADD]) + '</b></span>' +
         '<span>首领 <b>' + esc(fr[FR_BOSS]) + '</b></span></div>';
       out += '<dl class="fr-list">' +
-        row('瞄准衰减射程', fr[FR_RANGE]) + row('真实射速', fr[FR_RPM]) +
+        row('瞄准衰减射程', fr[FR_RANGE]) + row('精准倍率', fr[FR_CRIT]) + row('真实射速', fr[FR_RPM]) +
         row('基础填装', fr[FR_RELOAD] == null ? null : fr[FR_RELOAD] + ' 秒') +
         row('典型红血 DPS', fr[FR_MDPS]) + row('典型首领 DPS', fr[FR_BDPS]) +
         row('红血单弹药盒', fr[FR_MBRICK]) + row('首领单弹药盒', fr[FR_BBRICK]) +
@@ -1276,6 +1287,38 @@
           '<span><span class="nm">' + esc(x[1]) + '</span><br><span class="sub">S' + x[scope === 'armor' ? A_SSN : W_SSN] +
           ' · ' + esc(src || '无来源记录') + extra + '</span></span><span class="now">' + (k === i ? '当前' : '') + '</span></a></li>';
       }).join('') + '</ol></section>';
+  }
+
+  /* 这把枪用得上的神器模组。专属的按神器分行：同一枚挂在两件神器上就两行都列，
+     读者要知道带哪一件神器。通用的（任何武器都触发得了，「武器击杀」那一类）每把枪
+     都一样，放在末一行。 */
+  function artifactSection(i) {
+    var k = poolRow(i)[10], own = k >= 0 ? P.AM[k] : [], all = [];
+    var byArt = P.an.map(function () { return []; });
+    own.forEach(function (j) { P.am[j][AM_IN].forEach(function (x) { byArt[x[0]].push(j); }); });
+    P.am.forEach(function (m, j) { if (m[AM_ALL]) { all.push(j); } });
+    var html = '';
+    byArt.forEach(function (list, a) {
+      if (list.length) {
+        html += '<dt>' + esc(P.an[a][0]) + '</dt><dd>' + list.map(function (j) { return amodChip(j, a); }).join('') + '</dd>';
+      }
+    });
+    if (all.length) {
+      html += '<dt>通用</dt><dd>' + all.map(function (j) { return amodChip(j, P.am[j][AM_IN][0][0]); }).join('') + '</dd>';
+    }
+    return '<section><h3 class="sub-label">可用神器模组<b class="n">' + own.length + '</b></h3><dl class="amods">' + html + '</dl></section>';
+  }
+  /* 点开是神器模组页上那件神器的一节。 */
+  function amodChip(j, a) {
+    var m = P.am[j];
+    return '<a class="amod" href="../artifact-mods/index.html#' + P.an[a][1] + '" data-act="artmod" data-v="' + j + '">' +
+      imgTag(m[AM_ICON], '', '', true) + esc(m[AM_NAME]) + '</a>';
+  }
+  function amodTip(j) {
+    var m = P.am[j], d = T ? T.amd[j] : -1;
+    var where = m[AM_IN].map(function (x) { return P.an[x[0]][0] + ' ' + TIER_ZH[x[1]]; }).join(' · ');
+    return '<header>' + imgTag(m[AM_ICON], '', '', true) + '<div><h5>' + esc(m[AM_NAME]) + '</h5><span class="ty">' +
+      esc(where) + (m[AM_ALL] ? ' · 通用' : '') + '</span></div></header>' + (d >= 0 ? '<p class="lab">站内实测</p>' + T.H[d] : '');
   }
 
   function mwLabel(i, roll) {
@@ -1831,6 +1874,8 @@
       }
     } else if (act === 'mwslot' && !S.pop) {
       showTip(mwTip(i), el);
+    } else if (act === 'artmod') {
+      showTip(amodTip(+el.getAttribute('data-v')), el);
     } else if (act === 'modpick') {
       var p = +el.getAttribute('data-v');
       if (p >= 0) { showTip(modTip(p), el); }
@@ -1846,7 +1891,7 @@
       hideTip();
     } else if (act === 'statrow' && (!to || to.getAttribute('data-act') !== 'statrow')) {
       S.hoverRow = null; hideTip();
-    } else if (act === 'mwslot' || act === 'modpick') {
+    } else if (act === 'mwslot' || act === 'modpick' || act === 'artmod') {
       hideTip();
     }
   });

@@ -761,6 +761,29 @@
 /* 固定栏（起源特性只有一枚）：没有可选项，灰掉选择态。 */
 .plug.fixed { cursor: default; }
 
+/* 神器模组：一件神器一行，神器名在左、模组在右；末一行是通用的那几枚。 */
+.amods {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 6px 16px;
+  margin: 0;
+}
+
+.amods dt { color: var(--bone-faint); font: 400 12px/28px var(--font-cn); }
+.amods dd { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0; }
+
+.amod {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--bone);
+  font: 400 13px/28px var(--font-cn);
+  text-decoration: none;
+}
+
+.amod img { width: 24px; height: 24px; border-radius: 4px; }
+.amod:hover { color: var(--accent); }
+
 /* 大师杰作与模组：两个方形插槽，与游戏里武器页那一排同形。空着画虚线框。
    推荐的那一格同样画光圈，只是随插槽画成方的。 */
 .gear-sec { position: relative; }
@@ -1241,9 +1264,14 @@
                        gap: 10px; }
 .entries.used-builds .entry { gap: 7px; padding: 12px; }
 /* 核心图压到 52：那一页 64 是主角尺寸，这里它只是「哪一套」的记号。
-   强度光环挂在 .node 上，跟着一起缩。 */
+   强度光环的框 --fr 跟着改成 52 + 3×2，与那一页 64 + 3×2 同一个算法。 */
+.entries.used-builds .entry .node { --fr: 58px; }
 .entries.used-builds .entry .node img { width: 52px; height: 52px; }
-.entries.used-builds .entry .node .core-mosaic img { width: auto; height: auto; }
+/* 合集的拼图整块也是 52，一格 25、缝 2px。那一页把尺寸写在元素自己的 style 上
+   （--sz／--tile），样式表改不动那两个变量，只能直接给宽高；写 auto 会按原图
+   尺寸显示、溢出光环。 */
+.entries.used-builds .entry .node .core-mosaic { width: 52px; height: 52px; }
+.entries.used-builds .entry .node .core-mosaic img { width: 25px; height: 25px; }
 /* 说明那一块那一页定高 112px（审核意见两行 + 简介三行）：这一栏窄，压到两行。 */
 .entries.used-builds .entry .say { height: auto; }
 .entries.used-builds .entry .say p { -webkit-line-clamp: 2; }

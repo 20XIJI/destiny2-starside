@@ -1547,6 +1547,13 @@ test('weapons: the query parser keeps DIM precedence and token positions', () =>
   assert.deepEqual(JSON.parse(JSON.stringify(t.map((x) => [x.a, x.b]))), [[0, 5], [7, 15]], 'token 记着它在原文里的位置')
 })
 
+test('weapons: a bare word counts as is: only when it is exactly one of its values', () => {
+  const { bareIs } = weaponFns(['bareIs'], 'var IS = { wpn: { 虚空: function () {} } };\n')
+  assert.equal(bareIs('wpn', '虚空'), true)
+  assert.equal(bareIs('wpn', '虚'), false, '半个值照旧按字面搜')
+  assert.equal(bareIs('wpn', 'toString'), false, 'Object 原型上的键不算')
+})
+
 test('weapons: no two functions in app.js share a name', () => {
   const text = fs.readFileSync(path.join(site, 'weapons/app.js'), 'utf8')
   const names = [...text.matchAll(/function (\w+)\s*\(/g)].map((m) => m[1])

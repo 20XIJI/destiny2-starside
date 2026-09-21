@@ -1129,6 +1129,33 @@ class WeaponPage(unittest.TestCase):
         self.assertLessEqual(len(self.stats['mark_miss']), weapons.MARK_MISS_BASELINE,
                              '\n'.join(self.stats['mark_miss']))
 
+    def test_artifact_mods_follow_type_element_and_precision(self):
+        """神器模组的适用范围：精准按枪型认，元素、枪型与稀有度按武器记录认。"""
+        precise, typed = weapons.precise_types()
+        self.assertEqual(typed - precise, {10, 11, 18, 23, 33},
+                         '打不出精准的只有火箭发射器、融合步枪、刀剑、榴弹发射器、偃月')
+        _, _, scopes = weapons.artifact_mods(self.facts)
+        F = self.facts
+
+        def first(**want):
+            for r in F.items.values():
+                if r.get('itemType') == 3 and all(
+                        (r['inventory']['tierType'] == 6) == v if k == 'exotic' else r[k] == v
+                        for k, v in want.items()):
+                    return weapons.traits_of(r, precise)
+            self.fail('库里没有 %s 的武器' % want)
+
+        sword, hand_cannon = first(itemSubType=18), first(itemSubType=9, defaultDamageType=1)
+        rocket, exotic_rocket = first(itemSubType=10, exotic=False), first(itemSubType=10, exotic=True)
+        for key, w, ok in (('2903198432', sword, False),        # 精准平等：刀剑打不出精准
+                           ('2903198432', hand_cannon, True),
+                           ('2742146822', hand_cannon, True),   # 动能裂口：动能且能打精准
+                           ('3585856467', rocket, True),        # 永恒毁灭：非异域火箭发射器
+                           ('3585856467', exotic_rocket, False),
+                           ('521275124', hand_cannon, False)):  # 不稳定神枪手：虚空武器
+            with self.subTest(key=key, w=w['itemSubType']):
+                self.assertIs(weapons.fits(scopes[key], w), ok)
+
     def test_same_as_is_one_hop_to_a_real_record(self):
         items_ = self.facts.items
         for h, r in items_.items():

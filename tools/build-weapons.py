@@ -386,7 +386,7 @@ BRICK_PAGE = os.path.join(shell.ROOT, 'references', 'docs', 'ammo.md')
 # 框架行上页面的那几项，顺序即载荷里的下标；app.js 顶上那几行常量要跟着改。
 FRAME_FIELDS = ('tier', 'add_score', 'boss_score', 'ads_falloff_range',
                 'true_rpm', 'base_reload', 'typical_mdps', 'typical_bdps',
-                'minor_brick', 'boss_brick')
+                'minor_brick', 'boss_brick', 'crit_multi')
 
 
 def brick_table():
@@ -422,6 +422,90 @@ def brick_table():
         out['%d,%d' % key] = [markup.text_of(markup.inline(c), collapse=True).replace(
             markup.CELL_BREAK, ' ') for c in cells[1:]]
     return out
+
+
+# ── 神器模组 ─────────────────────────────────────────────────────────
+# 模组记录上 site_weapons 认得的键。前六个取武器记录上同名的字段（勇士与框架取
+# derived 那一份），precision 按枪型认，见 precise_types()。
+SCOPE_KEYS = frozenset({'itemSubType', 'defaultDamageType', 'ammoType', 'tierType',
+                        'breakerType', 'archetype', 'precision'})
+# 神器模组页索引里的 kind 写成「神器名 （赛季名）」。
+ART_KIND = re.compile(r'^(.+?) （[^（）]+）$')
+
+
+def precise_types():
+    """`(能打精准伤害的枪型, 武器框架页上有的枪型)`，枪型是 itemSubType。
+
+    按武器框架页那一列精准倍率（crit_multi）认：融合步枪、榴弹发射器、偃月、火箭
+    发射器、刀剑五类整列留空，其余枪型每一行都有。同一枪型有的行有、有的行空即
+    中止：那是表里缺了数，不是这类枪有一半打不出精准。
+    """
+    got = collections.defaultdict(set)
+    for row in rows.frame_rows().values():
+        got[row['itemSubType']].add(row.get('crit_multi') is not None)
+    mixed = sorted(k for k, v in got.items() if len(v) > 1)
+    if mixed:
+        markup.die('武器框架页上枪型 %s 的精准倍率有的行写了、有的行空着' % mixed)
+    return {k for k, v in got.items() if True in v}, set(got)
+
+
+def traits_of(r, precise):
+    """一把武器在 site_weapons 那几个键上的值。"""
+    d = r.get('derived') or {}
+    return {'itemSubType': r['itemSubType'], 'defaultDamageType': r['defaultDamageType'],
+            'ammoType': r['equippingBlock']['ammoType'], 'tierType': r['inventory']['tierType'],
+            'breakerType': d.get('breakerType') or 0, 'archetype': d.get('archetype'),
+            'precision': r['itemSubType'] in precise}
+
+
+def fits(scope, w):
+    """site_weapons 上写的每个键都要对上才算能用：极寒凝视写着冰影与精准，冰影刀剑
+    不算。一个键写几个值是其一即可（远距填装：狙击枪或弓）。"""
+    return all(w[k] is v if k == 'precision' else w[k] in v for k, v in scope.items())
+
+
+def artifact_mods(F):
+    """写了 site_weapons 的神器模组：`(模组表, 神器表, {主键: 适用范围})`。
+
+    模组表一枚一行 `[名字, 图标, [[神器下标, 档位]…], 通用, 说明 HTML]`，神器表
+    `[[神器名, 锚点]…]`，顺序照神器模组页。`site_weapons` 写成 `{}` 的是通用：
+    任何武器都触发得了（「武器击杀」那一类）。
+
+    名字、归属与说明现读神器模组页的索引：同一枚模组可以挂在两件神器上（元素虹吸
+    在废墟石板与猎人日志上是同一个 hash），记录上的 site_artifact 只记得一件；
+    说明也用那一页渲染好的一份，那一页的方言不开富文本（见 CLAUDE.md），这里再
+    渲染一遍会各渲各的。
+    """
+    import pagedex
+    arts, art_at, mods, at, scopes = [], {}, [], {}, {}
+    for e in pagedex.must_read('artifact-mods')['entries']:
+        key = str(e['keys'][0])
+        rec = F.at(key) or {}
+        scope = rec.get('site_weapons')
+        if scope is None:
+            continue
+        kind = ART_KIND.match(e['kind'])
+        if not kind:
+            markup.die('神器模组页索引的 kind 不是「神器名 （赛季）」：%r' % e['kind'])
+        if kind.group(1) not in art_at:
+            art_at[kind.group(1)] = len(arts)
+            arts.append([kind.group(1), e['anchor']])
+        if key not in at:
+            at[key] = len(mods)
+            scopes[key] = scope
+            mods.append([e['name'], stem(rec.get('icon')), [], 1 if scope == {} else 0,
+                         e['desc'].strip()])
+        mods[at[key]][2].append([art_at[kind.group(1)], int(e['pos'].split(',')[1])])
+    for table in (F.items, F.minted):
+        for h, rec in table.items():
+            if 'site_weapons' not in rec:
+                continue
+            if h not in at:
+                markup.die('%s 写了 site_weapons，神器模组页上却没有这一枚' % h)
+            bad = set(rec['site_weapons']) - SCOPE_KEYS
+            if bad:
+                markup.die('%s 的 site_weapons 有认不出的键 %s，补进 SCOPE_KEYS' % (h, sorted(bad)))
+    return mods, arts, scopes
 
 
 # ── 护甲套装效果 ─────────────────────────────────────────────────────
@@ -731,8 +815,9 @@ def build(facts):
         for h in members:
             rep_of[h] = rep
         reps.append(rep)
-    reps.sort(key=lambda h: (rank_of(info[h]['rated']), -len(info[h]['rated']),
-                             weapons[h]['itemSubType'], -info[h]['season'], info[h]['name']))
+    reps.sort(key=lambda h: (rank_of(info[h]['rated']), weapons[h]['inventory']['tierType'] != 6,
+                             -len(info[h]['rated']), weapons[h]['itemSubType'], -info[h]['season'],
+                             info[h]['name']))
     others = sorted((h for h in weapons if rep_of[h] != h),
                     key=lambda h: (reps.index(rep_of[h]), info[h]['adept'], info[h]['holo']))
     order = reps + others
@@ -753,10 +838,18 @@ def build(facts):
     sources, source_idx = [], {}
     wrows, wpool, wtext_fl, wauthors, xs, cats_text = [], {}, {}, {}, {}, {}
     elements = set()
+    amods, arts, scopes = artifact_mods(F)
+    precise, typed = precise_types()
     for h in order:
         r = weapons[h]
         x = info[h]
         d = r.get('derived') or {}
+        if r['itemSubType'] not in typed:
+            markup.die('%s 的枪型 %d 在武器框架页上一行都没有，认不出它能不能打精准'
+                       % (h, r['itemSubType']))
+        traits = traits_of(r, precise)
+        # 通用的那几枚每把枪都一样，页面上从模组表里取，不逐把记。
+        own = [k for k, scope in enumerate(scopes.values()) if scope != {} and fits(scope, traits)]
         fr_h = str(d['archetype'])
         if fr_h not in frame_idx:
             fr = F.items[fr_h]
@@ -800,7 +893,7 @@ def build(facts):
             cats_text[str(c)] = [[b.text(e), b.say(b.text(e, 'database_details'))] for e in effs]
         wpool[h] = [str(r['stats']['statGroupHash']), [[k, base[k]] for k in present],
                     x['cols'], [1 if tiered else 0, rec_mw, opts], [int(m) for m in mods], catalysts,
-                    rows.frame_row(r)]
+                    rows.frame_row(r), own]
         flavor = b.text(r, 'flavorText')
         if flavor:
             wtext_fl[h] = flavor
@@ -924,9 +1017,9 @@ def build(facts):
     # 固有单列一档：它不进枪管弹匣那一截属性，也不算 Perk 1／Perk 2。
     role_code = {'stat': 0, 'trait': 1, 'origin': 2, 'intrinsic': 3}
     wp = []
-    frame_rows = Table()
+    frame_rows, art_lists = Table(), Table()
     for h in order:
-        group, base, cols, (tiered, rec, opts), mods, cats, frame = wpool[h]
+        group, base, cols, (tiered, rec, opts), mods, cats, frame, own = wpool[h]
         enc_cols, bits = [], []
         for label, role, cells in cols:
             lst = [[pidx[str(c[0])], pidx[str(c[1])] if c[1] else -1] for c in cells]
@@ -940,10 +1033,12 @@ def build(facts):
         wp.append([group, base, enc_cols, bits, tiered, rec, mw_lists.of(enc_opts) if opts else -1,
                    mod_lists.of([pidx[str(m)] for m in mods]) if mods else -1,
                    [pidx[str(c)] for c in cats],
-                   frame_rows.of([frame.get(k) for k in FRAME_FIELDS]) if frame else -1])
+                   frame_rows.of([frame.get(k) for k in FRAME_FIELDS]) if frame else -1,
+                   art_lists.of(own) if own else -1])
     pool = {'s': [[int(h)] + v for h, v in b.stats.items()], 'g': groups, 'p': plist, 'pt': ptypes.items, 'lb': labels.items,
             'L': cell_lists.items, 'M': mw_lists.items, 'D': mod_lists.items, 'w': wp,
             'fr2': frame_rows.items, 'brick': brick_table(),
+            'am': [m[:4] for m in amods], 'an': arts, 'AM': art_lists.items,
             'en': en_w, 'aen': en_a}
 
     htmls, flavors = Table(), Table()
@@ -960,6 +1055,7 @@ def build(facts):
         'axs': {arow[h]: v for h, v in xs.items() if h in arow and arep_of[h] == h},
         'cp': {pidx[h]: v for h, v in cats_text.items()},
         'ap': {arow[h]: v for h, v in aperks.items() if arep_of[h] == h},
+        'amd': [htmls.of(m[4]) if m[4] else -1 for m in amods],
     }
     srows, stexts = set_rows(b, htmls)
     text['st'] = stexts
