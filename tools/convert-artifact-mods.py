@@ -74,7 +74,7 @@ TIERS = {'一级': 1, '二级': 2, '三级': 3}
 
 # 源稿里的「键：值」行。键名固定，正文行不会被误认。
 META_KEYS = ('副标题', '描述', '更新', '页脚', '待测标记', '数据源', '鸣谢',
-             '小标题', '标题', '徽章', '括注', '图标', '标签（站点补充）', '标签')
+             '小标题', '标题', '徽章', '括注', '图标', '主键', '标签（站点补充）', '标签')
 META_LINE = meta_line(META_KEYS)
 
 
@@ -126,6 +126,9 @@ def expand(md):
             die('%s 没有图标' % title)
         out.append('### %s' % title)
         out.append('图标：%s' % rows.rel(icon, 'artifact-mods'))
+        # 主键顺手带下去：索引那一侧从前按名字回查，同名的三条里挑不出这一枚
+        #（「乘胜追击」既是神器模组，也是冷酷无情的固有 Perk）。源稿写着它，用它。
+        out.append('主键：%s' % key)
         out.append('')
         out.append((zh.get('realgame_details') or '').strip())
         out.append('')
@@ -229,7 +232,7 @@ def parse(md, icons):
         mbase = base + head_chunk.count('\n') + 1   # 第一个 ### 所在的行
         for mod_chunk in ('\n### ' + mods_chunk).split('\n### ')[1:]:
             mod_title, _, mod_body = mod_chunk.partition('\n')
-            keys_in(mod_body, 1, '模组「%s」' % mod_title.strip())
+            keys_in(mod_body, 2, '模组「%s」' % mod_title.strip())
             tier_cn, sep, mod_name = mod_title.strip().partition(' · ')
             if not sep or tier_cn not in TIERS:
                 die('模组标题要写成「### 一级 · 名称」，源稿写的是：%s' % mod_title.strip())
@@ -237,6 +240,7 @@ def parse(md, icons):
                 'tier': TIERS[tier_cn],
                 'at': mbase,                       # 「### 一级 · 名称」那一行
                 'icon': img(icons, meta(mod_body, '图标', mod_name), 'mod-icon'),
+                'key': meta_opt(mod_body, '主键'),
                 'name': inline(mod_name),
                 # 段落保持成 list：拍平成一串 <br><br> 再切回来会多一趟自造往返
                 'desc': [(n, m, inline(b)) for n, m, b in blocks_at(body(mod_body), mbase + 1)],
@@ -321,7 +325,8 @@ def render(page, digest='', dex=None):
             o.append('<div class="mod-row">')
             for mod in row:
                 name = text_of(mod['name'], collapse=True)
-                dex.add(keys=stamp(text_of(mod['name']), s['name']),
+                dex.add(keys=[mod['key']] if mod['key']
+                        else stamp(text_of(mod['name']), s['name']),
                         anchor='art-%d' % i, kind=label, name=name,
                         icon='%s/%s' % (PAGE, icon_src(mod['icon'])),
                         pos='%d,%s' % (ri, mod['tier']),

@@ -99,5 +99,5 @@
    从没渲染过时的初始估值，不必跟着内容维护。 */
 .block {
   content-visibility: auto;
-  contain-intrinsic-size: auto 900px;
+  contain-intrinsic-height: auto 900px;
 }

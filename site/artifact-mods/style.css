@@ -179,7 +179,7 @@ main { padding: 0 22px clamp(40px, calc(5 * var(--vw)), 72px); }
   grid-template-rows: auto auto;
   border-top: 1px solid var(--hair);
   content-visibility: auto;
-  contain-intrinsic-size: auto 278px;
+  contain-intrinsic-height: auto 278px;
 }
 
 .mod-row:first-child { border-top: 0; }

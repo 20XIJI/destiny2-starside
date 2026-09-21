@@ -80,5 +80,5 @@
    从没渲染过时的初始估值，不必跟着内容维护；现值取 1600px 宽下各节高度的中位数。 */
 .block {
   content-visibility: auto;
-  contain-intrinsic-size: auto 24300px;
+  contain-intrinsic-height: auto 24300px;
 }

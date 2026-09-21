@@ -126,7 +126,7 @@
   max-width: 760px;
   min-width: 0;
   content-visibility: auto;
-  contain-intrinsic-size: auto 386px;
+  contain-intrinsic-height: auto 386px;
 }
 
 .bonus + .bonus { margin-top: 26px; }

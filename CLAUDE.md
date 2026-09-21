@@ -363,7 +363,9 @@ T1 的主语取选择器最后一个 class：`.block > .sect-label` 施加在 `.
 
 套的位置有讲究：只能套在不含 sticky 后代的元素上。`content-visibility` 带 paint containment，会把内部的 sticky 裁在自己的盒子里。所以神器模组页套 `.mod-row`（不是 `.artifact`，它含 sticky 的 `.art-bar`），护甲套装页套 `.set-bonuses`（不是 `.set`，它含 sticky 的 `.set-id`）。
 
-`contain-intrinsic-size: auto <值>` 里的 `auto` 让浏览器渲染过一次后改用真实高度，那个值只是从没渲染过时的初始估值，不需要跟着内容维护。它唯一影响首屏滚动条长度与锚点跳转的过冲量，估错不会渲染错。现值取 1440px 宽下的实测中位数（`.mod-row` 278px、`.set-bonuses` 386px），实测总高偏差 5%–7%。
+**只给高度，走 `contain-intrinsic-height`。**`contain-intrinsic-size` 写一个值是把它同时当成宽和高：屏外的每一节于是各自声称自己有那么宽（购物清单是 2400px），整页被顶到比视口还宽，最后一列滚出屏外看不见。19 份样式表都犯过这一条。
+
+`contain-intrinsic-height: auto <值>` 里的 `auto` 让浏览器渲染过一次后改用真实高度，那个值只是从没渲染过时的初始估值，不需要跟着内容维护。它唯一影响首屏滚动条长度与锚点跳转的过冲量，估错不会渲染错。现值取 1440px 宽下的实测中位数（`.mod-row` 278px、`.set-bonuses` 386px），实测总高偏差 5%–7%。
 
 量真实高度时必须让页面自己的 `style.css` 也加载：断言页用 `<base href>` 指回真实目录，只重写 `../assets/` 的路径会漏掉页内相对引用，量出来能差 3 倍。量之前先把 `content-visibility` 临时置成 `visible`，否则量到的是估值本身。
 

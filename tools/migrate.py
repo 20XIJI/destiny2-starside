@@ -452,7 +452,7 @@ def cells(rec):
 
     def here(slot, kind, box):
         """值本身就是一对（传说武器、套装）：主键落在这一对上，不再往里套一层。"""
-        one(slot, kind, lambda: box['名字'], lambda h: box.__setitem__('主键', h))
+        one(slot, kind, lambda: show(box), lambda h: box.__setitem__('主键', h))
 
     def item(slot, kind, seq, i):
         one(slot, kind,

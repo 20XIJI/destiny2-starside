@@ -700,6 +700,9 @@ def stamper(page):
         name = (name or '').strip()
         if not name:
             return ''
+        pin = PINNED.get((page, norm(name)))
+        if pin:
+            return [pin]
         if page in SINGLE_PAGES:
             src, perks = hints.get((page, norm_keep(name)), ('', ()))
             hit = one(facts, name, page, version=src, perks=perks)[0]

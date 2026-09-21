@@ -873,13 +873,15 @@
     var eager = k < N_HIGH ? 2 : k < N_EAGER ? 1 : 0;
     if (S.scope === 'sets') {
       var t = SR[i];
+      // 两条效果各占一行：图、件数、效果名。**不把图摆成左边那一块**——一套的
+      // 主角是两条效果，摞在名字左边会让人读成「一件装备的两枚图标」。
       return '<li><a class="wpn-card set-card" href="' + link('sets', i) + '" data-act="open" data-i="' + i + '">' +
-        '<span class="set-fx">' + t[T_FX].map(function (f) {
-          return '<span class="pc">' + pathImg(f[2], eager) + '<b>' + f[1] + '</b></span>';
-        }).join('') + '</span>' +
-        '<div><p class="nm">' + esc(t[T_NAME]) + '</p><div class="wpn-meta"><span class="cls">' +
-        esc(t[T_KIND]) + '</span></div><div class="wpn-frame">' +
-        esc(t[T_FX].map(function (f) { return f[0]; }).join(' · ')) + '</div>' +
+        '<div><p class="nm">' + esc(t[T_NAME]) + '</p>' +
+        '<div class="wpn-meta"><span class="cls">' + esc(t[T_KIND]) + '</span>' +
+        (t[T_SSN] ? '<span class="ssn">' + esc(t[T_SSN]) + '</span>' : '') + '</div>' +
+        '<div class="set-lines">' + t[T_FX].map(function (f) {
+          return '<span>' + pathImg(f[2], eager) + '<b>' + f[1] + ' 件</b>' + esc(f[0]) + '</span>';
+        }).join('') + '</div>' +
         (t[T_TAG] ? '<div class="wpn-grades"><span>' + esc(t[T_TAG]) + '</span></div>' : '') +
         '</div></a></li>';
     }
@@ -1379,14 +1381,14 @@
     var qs = ['source:' + t[T_KIND], 'season:' + t[T_SSN]];
     return '<article class="wpn-one"><header class="one-head">' +
       '<span class="set-fx lg">' + t[T_FX].map(function (f) {
-        return '<span class="pc">' + pathImg(f[2], 2) + '<b>' + f[1] + '</b></span>';
+        return pathImg(f[2], 2);
       }).join('') + '</span>' +
       '<div><h2>' + esc(t[T_NAME]) + '</h2><p class="en">' + esc(t[T_EN]) +
       '</p><p class="lore">' + esc(t[T_TAG]) + '</p></div></header>' +
       '<div class="one-main"><section><h3 class="sub-label">套装效果</h3>' +
       fx.map(function (f) {
-        return '<div class="frame"><span class="pc">' + pathImg(f[2]) + '<b>' + f[1] + '</b></span>' +
-          '<div><b>' + esc(f[0]) + '</b>' +
+        return '<div class="frame">' + pathImg(f[2]) +
+          '<div><b>' + esc(f[0]) + '</b><span class="pieces">' + f[1] + ' 件</span>' +
           (f[3] >= 0 ? T.H[f[3]] : '<p>' + esc(f[4]) + '</p>') +
           (f[5] && f[5].length ? '<div class="says">' + saysHtml(f[5]) + '</div>' : '') +
           '</div></div>';

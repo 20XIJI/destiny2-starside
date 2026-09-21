@@ -127,5 +127,5 @@
    auto 让浏览器渲染过一次后改用真实高度，那个数只是从没渲染过时的初始估值。 */
 .block {
   content-visibility: auto;
-  contain-intrinsic-size: auto 2400px;
+  contain-intrinsic-height: auto 2400px;
 }

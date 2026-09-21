@@ -76,5 +76,5 @@
    （5307 / 5854 / 4744）。 */
 .block {
   content-visibility: auto;
-  contain-intrinsic-size: auto 5307px;
+  contain-intrinsic-height: auto 5307px;
 }

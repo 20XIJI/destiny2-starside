@@ -1705,7 +1705,7 @@ button.item { width: 100%; }
    估值取三套那一页的实测中位数，渲染过一次浏览器就改用真实高度。 */
 .set-one {
   content-visibility: auto;
-  contain-intrinsic-size: auto 2400px;
+  contain-intrinsic-height: auto 2400px;
   scroll-margin-top: calc(var(--stick) + 16px);
 }
 
