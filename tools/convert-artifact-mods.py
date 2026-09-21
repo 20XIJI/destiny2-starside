@@ -102,6 +102,7 @@ def expand(md):
     """
     import rows
     out = []
+    slots = set()                            # 当前这件神器插槽里的模组主键
     for line in md.split('\n'):
         hit = SKEL_ROW.match(line)
         if not hit:
@@ -113,6 +114,10 @@ def expand(md):
             die('%s：主键 %s 落不到记录上（%s）' % ('artifact-mods', key, title))
         zh = rows.zh(rec)
         if not indent:                      # 神器那一行
+            slots = {str(m['itemHash']) for tier in (rec.get('derived') or {}).get('tiers') or ()
+                     for m in tier['items']}
+            if not slots:
+                die('%s：%s 的记录上没有 derived.tiers' % ('artifact-mods', title))
             tags = ' | '.join('{%s|%s}' % (TAG_TOKEN[e], e) if e in TAG_TOKEN else e
                               for e in zh.get('site_elements') or ())
             kinds = ' | '.join(zh.get('site_weaponTypes') or ())
@@ -122,6 +127,11 @@ def expand(md):
             if tags or kinds:
                 out.append('标签（站点补充）：%s' % '<br>'.join(x for x in (tags, kinds) if x))
             continue
+        # 同名模组在几件神器上多半各是一枚 hash，图也不同；写成别件神器的那一枚，
+        # 这一节显示的就是别件神器的图与正文
+        if key not in slots:
+            die('%s：%s（%s）不在这件神器的插槽里，按 derived.tiers 换成它自己那一枚'
+                % ('artifact-mods', key, title))
         icon = rows.icon_file(key)           # 模组图走站内那一份，记录上写着
         if not icon:
             die('%s 没有图标' % title)

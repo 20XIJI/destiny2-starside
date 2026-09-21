@@ -1155,7 +1155,7 @@ class WeaponPage(unittest.TestCase):
                            ('2742146822', hand_cannon, True),   # 动能裂口：动能且能打精准
                            ('3585856467', rocket, True),        # 永恒毁灭：非异域火箭发射器
                            ('3585856467', exotic_rocket, False),
-                           ('521275124', hand_cannon, False)):  # 不稳定神枪手：虚空武器
+                           ('3585856471', hand_cannon, False)):  # 不稳定神枪手：虚空武器
             with self.subTest(key=key, w=w['itemSubType']):
                 self.assertIs(weapons.fits(scopes[key], w), ok)
 

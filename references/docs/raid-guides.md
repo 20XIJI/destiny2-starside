@@ -12,7 +12,7 @@
 攻略：永恒沙漠 | icons/e536a72f5c.webp | https://docs.qq.com/doc/DQ21BU3pZd1B5Qmp6
 攻略：救赎的边缘 | icons/61c6576365.webp | https://docs.qq.com/doc/DQ21GY3BIV3ZJa1hz
 攻略：克洛塔的末日 | icons/a890626de0.webp | https://docs.qq.com/doc/DQ0x6b3FXcnp1TGtP | 修订中
-攻略：梦魇根源 | icons/69e0c96eb4.webp | https://docs.qq.com/doc/DQ0RORUpxRWJ3SmFG | 修订中
+攻略：梦魇根源 | icons/69e0c96eb4.webp | https://docs.qq.com/doc/DQ0RORUpxRWJ3SmFG
 攻略：国王的陨落 | icons/bb815bae2f.webp | https://docs.qq.com/doc/DQ2hTZkpKbVpuTEV5
 攻略：门徒誓约 | icons/f43ff2553f.webp | https://docs.qq.com/doc/DQ01qTUVKWVp6UEVO
 攻略：玻璃拱顶 | icons/8bd947ebbb.webp | https://docs.qq.com/doc/DQ2VhRXFrZ3pxZkNj
