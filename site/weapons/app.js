@@ -282,7 +282,7 @@
       if (!neg && !w.q && /^(or|and|not)$/i.test(w.v)) {
         out.push({ t: w.v.toLowerCase(), a: a, b: i });
       } else if (w.v) {
-        out.push({ t: 'w', v: w.v, neg: neg, a: a, b: i });
+        out.push({ t: 'w', v: w.v, q: w.q, neg: neg, a: a, b: i });
       }
     }
     return out;
@@ -354,10 +354,12 @@
     }
   }
 
-  /* is: 的值 → 判定。武器与护甲各一张，值取自数据，标志是固定的几个。 */
+  /* is: 的值 → 判定。武器与护甲各一张，值取自数据，标志是固定的几个。表不带原型：
+     查询里写出 is:constructor、is:toString 时，普通对象会取到 Object 原型上的函数，
+     调用结果为真，整库都算命中。 */
   var pins = recall('wpn.pins') || [];
   function isTable(scope) {
-    var t = {};
+    var t = Object.create(null);
     if (scope === 'sets') {
       // 套装按来源筛：来源写活动名、类型写活动种类，两列都收进 is:。
       SR.forEach(function (row) {
@@ -408,9 +410,37 @@
     return t;
   }
   var IS = { wpn: isTable('wpn'), armor: isTable('armor'), sets: isTable('sets') };
-  /* 裸词是不是恰好一个 is: 的值。只认表自己的键：英文名里写出 constructor、toString
-     会取到 Object 原型上的函数。 */
-  function bareIs(scope, v) { return Object.prototype.hasOwnProperty.call(IS[scope], v); }
+  /* is: 的英文写法：枪型、部位、元素、弹药等由 build-weapons.py 给（V.isen），标志的
+     英文名在这里。键是 enFold() 之后的样子。 */
+  var FLAG_EN = { craftable: '可锻造', enhanceable: '可强化', adept: '专家', holofoil: '全息' };
+  function enTable(scope) {
+    var t = Object.create(null);
+    var from = scope === 'wpn' ? [V.isen.wpn, FLAG_EN] : scope === 'armor' ? [V.isen.armor] : [];
+    from.concat([{ pinned: '已钉选' }]).forEach(function (src) {
+      Object.keys(src).forEach(function (k) { t[k] = src[k]; });
+    });
+    return t;
+  }
+  var ISEN = { wpn: enTable('wpn'), armor: enTable('armor'), sets: enTable('sets') };
+  /* 英文不计大小写、空格与连字符：is:HandCannon、is:hand-cannon、is:"Hand Cannon" 都是手炮。
+     与 build-weapons.en_fold() 同一条。 */
+  function enFold(s) { return String(s).toLowerCase().replace(/[\s-]+/g, ''); }
+  /* is: 的值 → 表里那个键：中文照写，英文按 enFold() 比；认不出回空串。 */
+  function isKey(scope, v) { return IS[scope][v] ? v : ISEN[scope][enFold(v)] || ''; }
+  function isIn(scope, v, i) { var k = isKey(scope, v); return k ? IS[scope][k](i) : false; }
+  /* 没加引号的裸词恰好是一个 is: 的值时，返回那个判定；加了引号照字面搜。 */
+  function bareIs(scope, v, quoted) { return quoted ? null : IS[scope][isKey(scope, v)] || null; }
+  /* 写到一半的 is: 值能补全成哪几个：中文按包含，英文按比较键包含。 */
+  function isMatches(scope, v) {
+    var f = fold(v), ef = enFold(v), got = [];
+    Object.keys(IS[scope]).forEach(function (k) { if (fold(k).indexOf(f) !== -1) { got.push(k); } });
+    if (ef) {
+      Object.keys(ISEN[scope]).forEach(function (e) {
+        if (e.indexOf(ef) !== -1 && got.indexOf(ISEN[scope][e]) === -1) { got.push(ISEN[scope][e]); }
+      });
+    }
+    return got;
+  }
 
   /* 裸词搜的那一串：名字、英文名、类型、框架、词条名、描述。有什么数据就先搜什么，
      词条池与说明到了之后缓存作废、重搜一遍。 */
@@ -471,7 +501,10 @@
       case 'not': return !test(scope, node.x, i);
       /* 裸词写全了一个 is: 的值（虚空、手炮、主手、专家）就按 is: 算：按字面搜，「虚空」
          会把名字、词条名与描述里带这两个字的非虚空武器也搜进来。 */
-      case 'w': return bareIs(scope, node.v) ? IS[scope][node.v](i) : hay(scope, i).indexOf(fold(node.v)) !== -1;
+      case 'w': {
+        var hit = bareIs(scope, node.v, node.tok.q);
+        return hit ? hit(i) : hay(scope, i).indexOf(fold(node.v)) !== -1;
+      }
       default: return kw(scope, node.k, node.v, i);
     }
   }
@@ -480,7 +513,7 @@
     if (scope === 'sets') {
       var t = SR[i];
       switch (k) {
-        case 'is': return IS.sets[v] ? IS.sets[v](i) : false;
+        case 'is': return isIn('sets', v, i);
         case 'name': return fold(t[T_NAME] + ' ' + t[T_EN]).indexOf(f) !== -1;
         case 'perk': return fold(t[T_FX].map(function (x) { return x[0]; }).join(' ')).indexOf(f) !== -1;
         case 'season': return fold(t[T_SSN]).indexOf(f) !== -1;
@@ -491,7 +524,7 @@
     if (scope === 'armor') {
       r = AR[i];
       switch (k) {
-        case 'is': return IS.armor[v] ? IS.armor[v](i) : false;
+        case 'is': return isIn('armor', v, i);
         case 'name': return fold(r[A_NAME] + enOf('armor', i)).indexOf(f) !== -1;
         case 'perk': return fold(r[A_PERKS]).indexOf(f) !== -1;
         case 'season': return cmp(v, r[A_SSN]);
@@ -501,7 +534,7 @@
     }
     r = WR[i];
     switch (k) {
-      case 'is': return IS.wpn[v] ? IS.wpn[v](i) : false;
+      case 'is': return isIn('wpn', v, i);
       case 'name': return fold(r[W_NAME] + ' ' + enOf('wpn', i)).indexOf(f) !== -1;
       case 'frame': return fold(frameOf(r)[0]).indexOf(f) !== -1;
       case 'season': return cmp(v, r[W_SSN]);
@@ -711,7 +744,8 @@
                   'frame:精密框架', 'is:专家'];
   var SYNTAX = [
     ['萤火虫 自填', '裸词：名字、类型、框架、词条名与描述里都含这些字'],
-    ['虚空 轻质 即兴弹药', '裸词恰好是一个 is: 的值（元素、类型、槽位、弹药、稀有度、勇士、标志）时按 is: 算'],
+    ['虚空 轻质 即兴弹药', '裸词恰好是一个 is: 的值（元素、类型、槽位、弹药、稀有度、勇士、标志）时按 is: 算，加引号照字面搜'],
+    ['is:handcannon is:void', 'is: 的值也认英文，不计大小写、空格与连字符'],
     ['is:主手 is:手炮 is:烈日', '槽位（主手／副手／威能）、类型、元素、弹药、稀有度、勇士'],
     ['is:泰坦 is:头盔', '异域护甲：职业、部位'],
     ['is:可锻造 is:专家', '标志：可锻造、可强化、可升阶、专家、全息、复刻、已钉选'],
@@ -773,13 +807,14 @@
   /* ── 渲染：顶栏 ────────────────────────────────────────────────────── */
   var tokens = [], tree = null, results = [], pending = false;
   function pillIcon(t) {
-    if (t.t === 'w' && bareIs(S.scope, t.v)) { t = { t: 'kw', k: 'is', v: t.v }; }
+    if (t.t === 'w' && bareIs(S.scope, t.v, t.q)) { t = { t: 'kw', k: 'is', v: t.v }; }
     if (t.t !== 'kw') { return ''; }
     if (t.k === 'is') {
-      for (var e in V.el) { if (V.el[e][0] === t.v) { return imgTag(V.el[e][2], '', '', true); } }
-      for (var b in V.br) { if (V.br[b][0] === t.v) { return imgTag(V.br[b][1], '', '', true); } }
-      for (var s in V.ty) { if (V.ty[s][0] === t.v) { return glyph(V.ty[s][1]); } }
-      for (var a in V.am) { if (V.am[a][0] === t.v) { return '<span class="ammo-' + a + '">' + glyph(V.am[a][1]) + '</span>'; } }
+      var v = isKey(S.scope, t.v);
+      for (var e in V.el) { if (V.el[e][0] === v) { return imgTag(V.el[e][2], '', '', true); } }
+      for (var b in V.br) { if (V.br[b][0] === v) { return imgTag(V.br[b][1], '', '', true); } }
+      for (var s in V.ty) { if (V.ty[s][0] === v) { return glyph(V.ty[s][1]); } }
+      for (var a in V.am) { if (V.am[a][0] === v) { return '<span class="ammo-' + a + '">' + glyph(V.am[a][1]) + '</span>'; } }
     }
     if ((t.k === 'perk' || t.k === 'perkname' || t.k === 'perk1' || t.k === 'perk2' || t.k === 'origintrait') && P) {
       var got = perkIcon(t.v);
@@ -824,8 +859,13 @@
   }
 
   /* ── 渲染：预选行、示例与细分 ──────────────────────────────────────── */
+  /* 一个 token 当作哪一条关键字：按 is: 算的裸词也写成 is:值，预选行的开关认得它。 */
+  function tokKey(t) {
+    if (t.t === 'kw') { return t.k === 'is' && isKey(S.scope, t.v) ? 'is:' + isKey(S.scope, t.v) : t.k + ':' + t.v; }
+    return t.t === 'w' && bareIs(S.scope, t.v, t.q) ? 'is:' + isKey(S.scope, t.v) : '';
+  }
   function hasToken(tok) {
-    return tokens.some(function (t) { return t.t === 'kw' && !t.neg && t.k + ':' + t.v === tok; });
+    return tokens.some(function (t) { return !t.neg && tokKey(t) === tok; });
   }
   function toggleRow(label, toks, counts) {
     return '<div class="wpn-row"><span class="lbl">' + label + '</span>' + toks.map(function (tok, k) {
@@ -1306,7 +1346,7 @@
     if (all.length) {
       html += '<dt>通用</dt><dd>' + all.map(function (j) { return amodChip(j, P.am[j][AM_IN][0][0]); }).join('') + '</dd>';
     }
-    return '<section><h3 class="sub-label">可用神器模组<b class="n">' + own.length + '</b></h3><dl class="amods">' + html + '</dl></section>';
+    return '<section><h3 class="sub-label">可用神器模组<b class="n">' + (own.length + all.length) + '</b></h3><dl class="amods">' + html + '</dl></section>';
   }
   /* 点开是神器模组页上那件神器的一节。 */
   function amodChip(j, a) {
@@ -1496,7 +1536,18 @@
     tip.style.left = (x + window.scrollX) + 'px';
     tip.style.top = (Math.max(8, y) + window.scrollY) + 'px';
   }
-  function hideTip() { tip.hidden = true; }
+  /* 浮层现在属于哪一种 data-act，悬停着的是哪一枚词条（栏:插件）。 */
+  var hoverAct = '', hoverKey = '';
+  function hideTip() { tip.hidden = true; hoverAct = ''; hoverKey = ''; }
+  /* 关掉浮层与预览。重画了详情就回 true：指针下那个节点已经换掉，手里的 el 不在文档里。 */
+  function leaveHover() {
+    hideTip();
+    S.hoverRow = null;
+    if (!S.hoverPlug) { return false; }
+    S.hoverPlug = null;
+    renderDetail();
+    return true;
+  }
   function perkTip(i, col, p) {
     var cols = poolRow(i)[2], cell = null, cells = cellsOf(cols[col]);
     for (var k = 0; k < cells.length; k++) { if (shownPlug(cells[k]) === p) { cell = cells[k]; } }
@@ -1607,9 +1658,7 @@
     if (t.t === 'kw' && has(keys, t.k)) {
       var f = fold(t.v), vals = [];
       if (t.k === 'is') {
-        Object.keys(IS[S.scope]).forEach(function (v) {
-          if (fold(v).indexOf(f) !== -1) { vals.push([v, count(IS[S.scope][v])]); }
-        });
+        isMatches(S.scope, t.v).forEach(function (v) { vals.push([v, count(IS[S.scope][v])]); });
       } else if (t.k === 'frame' && S.scope === 'wpn') {
         V.fr.forEach(function (fr) {
           if (fold(fr[0]).indexOf(f) !== -1 && !vals.some(function (v) { return v[0] === fr[0]; })) {
@@ -1655,7 +1704,7 @@
         return { text: k + ':', label: k + ':', n: -1, hint: KEY_LABEL[k], keep: true };
       });
       if (ks.length) { groups.push(['关键字', ks]); }
-      var isv = Object.keys(IS[S.scope]).filter(function (v) { return fold(v).indexOf(fw) !== -1; }).map(function (v) {
+      var isv = isMatches(S.scope, t.v).map(function (v) {
         return { text: 'is:' + v, label: 'is:' + v, n: count(IS[S.scope][v]), icon: pillIcon({ t: 'kw', k: 'is', v: v }) };
       }).filter(function (x) { return x.n; });
       if (isv.length) { groups.push(['IS', isv]); }
@@ -1795,7 +1844,7 @@
       case 'setq':
         S.syntax = false; S.sel = null; input.value = v; setQuery(v, true); return;
       case 'preset': {
-        var hit = tokens.filter(function (t) { return t.t === 'kw' && !t.neg && t.k + ':' + t.v === v; })[0];
+        var hit = tokens.filter(function (t) { return !t.neg && tokKey(t) === v; })[0];
         if (hit) { var q = S.q.slice(0, hit.a) + S.q.slice(hit.b); input.value = q.replace(/\s+/g, ' ').trim(); setQuery(input.value, false); }
         else { addToken(v); }
         return;
@@ -1852,48 +1901,53 @@
     }
   });
 
-  /* 悬停：词条出说明并在属性条上预览；属性行出分解；结果栏的行在详情区预览。 */
+  /* 悬停：词条出说明并在属性条上预览；属性行出分解；结果栏的行在详情区预览。
+
+     **关浮层在 mouseover 里判，不靠 mouseout。**悬停词条要重画详情，指针下那枚按钮
+     被换成新节点；指针再移出去时，浏览器不给已经移除的旧节点发 mouseout，浮层就一直
+     显示着。mouseover 总是发给指针下现在那个节点，落到别的种类上（或没有 data-act 的
+     地方）就关掉。同一枚词条只重画一次：已选中的那一枚预览为空，按 hoverPlug 判会在
+     每次 mouseover 都重画。 */
   document.addEventListener('mouseover', function (e) {
     var el = e.target.closest('[data-act]');
+    var act = el ? el.getAttribute('data-act') : '';
+    /* 重画过就等下一个 mouseover：指针一动，浏览器就发给新换上的那个节点。 */
+    if (hoverAct && act !== hoverAct && leaveHover()) { return; }
     if (!el || S.sel == null || S.scope !== 'wpn' || !P) { return; }
-    var act = el.getAttribute('data-act'), i = S.sel;
+    var i = S.sel;
     if (act === 'perk') {
-      var col = +el.getAttribute('data-col'), plug = +el.getAttribute('data-plug');
-      if (!S.hoverPlug || S.hoverPlug.col !== col || S.hoverPlug.plug !== plug) {
+      var col = +el.getAttribute('data-col'), plug = +el.getAttribute('data-plug'), key = col + ':' + plug;
+      if (hoverKey !== key) {
         var roll = rollOf(i);
         S.hoverPlug = roll.sel[col] === plug ? null : { col: col, plug: plug };
         renderDetail();
         var again = body.querySelector('[data-act="perk"][data-col="' + col + '"][data-plug="' + plug + '"]');
         if (again) { showTip(perkTip(i, col, plug), again); }
+        hoverAct = act;
+        hoverKey = key;
       }
     } else if (act === 'statrow') {
       var s = +el.getAttribute('data-s');
-      if (S.hoverRow !== s) {
+      if (hoverKey !== 's' + s) {
         S.hoverRow = s;
         showTip(statTip(i, s), body.querySelector('dt[data-s="' + s + '"]'), 'left', true);
+        hoverAct = act;
+        hoverKey = 's' + s;
       }
     } else if (act === 'mwslot' && !S.pop) {
       showTip(mwTip(i), el);
+      hoverAct = act;
     } else if (act === 'artmod') {
       showTip(amodTip(+el.getAttribute('data-v')), el);
+      hoverAct = act;
     } else if (act === 'modpick') {
       var p = +el.getAttribute('data-v');
-      if (p >= 0) { showTip(modTip(p), el); }
+      if (p >= 0) { showTip(modTip(p), el); hoverAct = act; } else { leaveHover(); }
     }
   });
+  /* 指针移出窗口时没有下一个 mouseover，只能在这里关掉。 */
   document.addEventListener('mouseout', function (e) {
-    var el = e.target.closest('[data-act]');
-    var to = e.relatedTarget && e.relatedTarget.closest ? e.relatedTarget.closest('[data-act]') : null;
-    if (!el || el === to) { return; }
-    var act = el.getAttribute('data-act');
-    if (act === 'perk' && (!to || to.getAttribute('data-act') !== 'perk')) {
-      if (S.hoverPlug) { S.hoverPlug = null; renderDetail(); }
-      hideTip();
-    } else if (act === 'statrow' && (!to || to.getAttribute('data-act') !== 'statrow')) {
-      S.hoverRow = null; hideTip();
-    } else if (act === 'mwslot' || act === 'modpick' || act === 'artmod') {
-      hideTip();
-    }
+    if (!e.relatedTarget && hoverAct) { leaveHover(); }
   });
 
   /* 结果栏拖宽：140–280px，记在 localStorage。 */

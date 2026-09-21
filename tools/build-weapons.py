@@ -27,6 +27,7 @@ import markup
 import resolve
 import rows
 import shell
+import vocab
 
 TYPE_ICONS = os.path.join(shell.ROOT, 'tools', 'type-icons.json')
 
@@ -41,6 +42,50 @@ GLYPH = {6: 'auto_rifle', 7: 'shotgun', 8: 'machinegun', 9: 'hand_cannon',
 RARITY = {6: '异域', 5: '传说', 4: '稀有', 3: '罕见', 2: '普通'}
 CLASS = {0: '泰坦', 1: '猎人', 2: '术士'}
 PART = {26: '头盔', 27: '臂铠', 28: '胸甲', 29: '腿甲', 30: '职业物品'}
+
+# is: 的英文写法 → 站内那个值。枪型与部位取 manifest 的英文类型名（build() 里现取），
+# 这几组 manifest 里没有英文名可取，用 Bungie 的叫法。槽位不写 kinetic：那是元素。
+IS_EN = {
+    '动能': ('kinetic',), '电弧': ('arc',), '烈日': ('solar',), '虚空': ('void',),
+    '冰影': ('stasis',), '缚丝': ('strand',),
+    '主武器': ('primary',), '特殊': ('special',), '威能': ('heavy', 'power', 'powerslot'),
+    '主手': ('kineticslot',), '副手': ('energy', 'energyslot'),
+    '异域': ('exotic',), '传说': ('legendary',), '稀有': ('rare',), '罕见': ('uncommon',),
+    '普通': ('common',),
+    '反屏障': ('antibarrier',), '反过载': ('overload',), '反势不可挡': ('unstoppable',),
+    '战斗弓箭': ('bow',),
+}
+IS_EN_ARMOR = {'泰坦': ('titan',), '猎人': ('hunter',), '术士': ('warlock',),
+               '职业物品': ('classitem',), '异域': ('exotic',)}
+
+
+def en_fold(s):
+    """英文写法的比较键：不计大小写、空格与连字符。app.js 的 enFold() 同一条。"""
+    return re.sub(r'[\s-]+', '', s).lower()
+
+
+def is_aliases(weapons, armor, types):
+    """`{范围: {英文比较键: 站内的值}}`。枪型按 itemSubType 落到 types 那个名字上，
+    与 app.js 的 is: 表同一个键。同一个英文键落到两个值上即中止。"""
+    out = {'wpn': {}, 'armor': {}}
+
+    def add(scope, en, zh):
+        key = en_fold(en)
+        if out[scope].setdefault(key, zh) != zh:
+            markup.die('is: 的英文写法 %s 同时指着 %s 与 %s' % (en, out[scope][key], zh))
+
+    for scope, table, zh_of in (('wpn', weapons, lambda r: types[r['itemSubType']][0]),
+                                ('armor', armor, lambda r: PART[r['itemSubType']])):
+        for r in table.values():
+            en = resolve.text(r, 'itemTypeDisplayName', 'en')
+            if not en:
+                markup.die('%s 没有英文类型名，is: 的英文写法落不下' % resolve.text(r))
+            add(scope, en, zh_of(r))
+    for scope, table in (('wpn', IS_EN), ('armor', IS_EN_ARMOR)):
+        for zh, ens in table.items():
+            for en in ens:
+                add(scope, en, zh)
+    return out
 
 # 可升阶（T1–T5）的枪：带阶级外观、阶级击杀特效或阶级升级插槽的那些。与
 # destiny.report 的 isTiered 逐把比过，751 把里对上 749，差的两把是「最终恐惧」
@@ -425,12 +470,9 @@ def brick_table():
 
 
 # ── 神器模组 ─────────────────────────────────────────────────────────
-# 模组记录上 site_weapons 认得的键。前六个取武器记录上同名的字段（勇士与框架取
-# derived 那一份），precision 按枪型认，见 precise_types()。
-SCOPE_KEYS = frozenset({'itemSubType', 'defaultDamageType', 'ammoType', 'tierType',
-                        'breakerType', 'archetype', 'precision'})
-# 神器模组页索引里的 kind 写成「神器名 （赛季名）」。
-ART_KIND = re.compile(r'^(.+?) （[^（）]+）$')
+# 模组记录上 site_weapons 认得的键。前四个取武器记录上同名的字段（框架取 derived
+# 那一份），precision 按枪型认，见 precise_types()。
+SCOPE_KEYS = frozenset({'itemSubType', 'defaultDamageType', 'tierType', 'archetype', 'precision'})
 
 
 def precise_types():
@@ -449,13 +491,20 @@ def precise_types():
     return {k for k, v in got.items() if True in v}, set(got)
 
 
-def traits_of(r, precise):
-    """一把武器在 site_weapons 那几个键上的值。"""
+def traits_of(F, r, precise):
+    """一把武器在 site_weapons 那几个键上的值。框架记名字：同名框架在库里有好几枚
+    hash（「微型导弹框架」有 7 枚），按 hash 比，换一枚就悄悄对不上。
+
+    能不能打精准先看武器记录上的 site_precision，没写的按枪型：异星噬菌与牵引器火炮
+    打的是爆炸弹，枪型（机枪、霰弹枪）能打精准，它们不能。"""
     d = r.get('derived') or {}
+    own = r.get('site_precision')
+    if own is not None and not isinstance(own, bool):
+        markup.die('%s 的 site_precision 只能写 true 或 false，现在是 %r' % (resolve.text(r), own))
     return {'itemSubType': r['itemSubType'], 'defaultDamageType': r['defaultDamageType'],
-            'ammoType': r['equippingBlock']['ammoType'], 'tierType': r['inventory']['tierType'],
-            'breakerType': d.get('breakerType') or 0, 'archetype': d.get('archetype'),
-            'precision': r['itemSubType'] in precise}
+            'tierType': r['inventory']['tierType'],
+            'archetype': F.name(d['archetype']) if d.get('archetype') else '',
+            'precision': r['itemSubType'] in precise if own is None else own}
 
 
 def fits(scope, w):
@@ -467,35 +516,43 @@ def fits(scope, w):
 def artifact_mods(F):
     """写了 site_weapons 的神器模组：`(模组表, 神器表, {主键: 适用范围})`。
 
-    模组表一枚一行 `[名字, 图标, [[神器下标, 档位]…], 通用, 说明 HTML]`，神器表
-    `[[神器名, 锚点]…]`，顺序照神器模组页。`site_weapons` 写成 `{}` 的是通用：
-    任何武器都触发得了（「武器击杀」那一类）。
+    模组表一枚一行 `[名字, 图标, [[神器下标, 档位]…], 通用, 说明 HTML, 适用范围]`，
+    神器表 `[[神器名, 锚点]…]`，顺序照神器模组页。`site_weapons` 写成 `{}` 的是
+    通用：任何武器都触发得了（「武器击杀」那一类）。适用范围里的框架换成名字，
+    与 traits_of() 同一种比法。
 
-    名字、归属与说明现读神器模组页的索引：同一枚模组可以挂在两件神器上（元素虹吸
-    在废墟石板与猎人日志上是同一个 hash），记录上的 site_artifact 只记得一件；
-    说明也用那一页渲染好的一份，那一页的方言不开富文本（见 CLAUDE.md），这里再
-    渲染一遍会各渲各的。
+    名字、图标、归属与说明现读神器模组页的索引：同一枚模组可以挂在两件神器上（元素
+    虹吸在废墟石板与猎人日志上是同一个 hash），记录上的 site_artifact 只记得一件；
+    图标由那一页源稿的「图标」行定，可以与记录上的官方图不同（乘胜追击）；说明用
+    那一页渲染好的一份，那一页的方言不开富文本（见 CLAUDE.md），这里再渲染一遍会
+    各渲各的。
     """
     import pagedex
-    arts, art_at, mods, at, scopes = [], {}, [], {}, {}
+    arts, art_at, mods, at = [], {}, [], {}
     for e in pagedex.must_read('artifact-mods')['entries']:
         key = str(e['keys'][0])
         rec = F.at(key) or {}
         scope = rec.get('site_weapons')
         if scope is None:
             continue
-        kind = ART_KIND.match(e['kind'])
-        if not kind:
-            markup.die('神器模组页索引的 kind 不是「神器名 （赛季）」：%r' % e['kind'])
-        if kind.group(1) not in art_at:
-            art_at[kind.group(1)] = len(arts)
-            arts.append([kind.group(1), e['anchor']])
+        art = vocab.bare_kind(e['kind'])
+        if art not in art_at:
+            art_at[art] = len(arts)
+            arts.append([art, e['anchor']])
         if key not in at:
+            icon = os.path.normpath(e['icon'])
+            if not (icon.startswith('assets/icons/') and icon.endswith('.webp')):
+                markup.die('神器模组页上 %s 的图标不在站内图库里：%s' % (key, e['icon']))
+            names = {}
+            for h in scope.get('archetype') or ():
+                names[h] = F.name(h)
+                if not names[h]:
+                    markup.die('%s 的 site_weapons 写的框架 %s 库里没有名字' % (key, h))
             at[key] = len(mods)
-            scopes[key] = scope
-            mods.append([e['name'], stem(rec.get('icon')), [], 1 if scope == {} else 0,
-                         e['desc'].strip()])
-        mods[at[key]][2].append([art_at[kind.group(1)], int(e['pos'].split(',')[1])])
+            mods.append([e['name'], os.path.basename(icon)[:-len('.webp')], [],
+                         1 if scope == {} else 0, e['desc'].strip(),
+                         dict(scope, archetype=sorted(set(names.values()))) if names else scope])
+        mods[at[key]][2].append([art_at[art], int(e['pos'].split(',')[1])])
     for table in (F.items, F.minted):
         for h, rec in table.items():
             if 'site_weapons' not in rec:
@@ -505,7 +562,7 @@ def artifact_mods(F):
             bad = set(rec['site_weapons']) - SCOPE_KEYS
             if bad:
                 markup.die('%s 的 site_weapons 有认不出的键 %s，补进 SCOPE_KEYS' % (h, sorted(bad)))
-    return mods, arts, scopes
+    return mods, arts, {key: mods[k][5] for key, k in at.items()}
 
 
 # ── 护甲套装效果 ─────────────────────────────────────────────────────
@@ -838,7 +895,7 @@ def build(facts):
     sources, source_idx = [], {}
     wrows, wpool, wtext_fl, wauthors, xs, cats_text = [], {}, {}, {}, {}, {}
     elements = set()
-    amods, arts, scopes = artifact_mods(F)
+    amods, arts, _ = artifact_mods(F)
     precise, typed = precise_types()
     for h in order:
         r = weapons[h]
@@ -847,9 +904,9 @@ def build(facts):
         if r['itemSubType'] not in typed:
             markup.die('%s 的枪型 %d 在武器框架页上一行都没有，认不出它能不能打精准'
                        % (h, r['itemSubType']))
-        traits = traits_of(r, precise)
+        traits = traits_of(F, r, precise)
         # 通用的那几枚每把枪都一样，页面上从模组表里取，不逐把记。
-        own = [k for k, scope in enumerate(scopes.values()) if scope != {} and fits(scope, traits)]
+        own = [k for k, m in enumerate(amods) if not m[3] and fits(m[5], traits)]
         fr_h = str(d['archetype'])
         if fr_h not in frame_idx:
             fr = F.items[fr_h]
@@ -998,6 +1055,7 @@ def build(facts):
         'o': {k: stem(v) for k, v in icons.CHROME.items() if k in ('tier', 'craft', 'craft-bg')},
         'fam': fam_list,
         'afam': afam_list,
+        'isen': is_aliases(weapons, armor, types),
     }
 
     # ── 编码：插件与词条栏用下标，重复的表只存一份 ────────────────────
@@ -1113,9 +1171,9 @@ LGPIG = ('<a href="https://space.bilibili.com/169548478" target="_blank" rel="no
 
 
 def stamp():
-    """页脚的更新时间：评级与站内正文来自的那几页里最晚的一天。"""
+    """页脚的更新时间：评级、站内正文与神器模组说明来自的那几页里最晚的一天。"""
     dates = []
-    for page in sorted(set(rows.AUTHORED) | rows.EXOTIC):
+    for page in sorted(set(rows.AUTHORED) | rows.EXOTIC | {'artifact-mods'}):
         with open(rows.src_path(page), encoding='utf-8') as f:
             got = markup.meta_of(f.read(), '更新')
         dates.append((tuple(int(x) for x in got.split('.')), got))

@@ -1547,11 +1547,23 @@ test('weapons: the query parser keeps DIM precedence and token positions', () =>
   assert.deepEqual(JSON.parse(JSON.stringify(t.map((x) => [x.a, x.b]))), [[0, 5], [7, 15]], 'token 记着它在原文里的位置')
 })
 
-test('weapons: a bare word counts as is: only when it is exactly one of its values', () => {
-  const { bareIs } = weaponFns(['bareIs'], 'var IS = { wpn: { 虚空: function () {} } };\n')
-  assert.equal(bareIs('wpn', '虚空'), true)
-  assert.equal(bareIs('wpn', '虚'), false, '半个值照旧按字面搜')
-  assert.equal(bareIs('wpn', 'toString'), false, 'Object 原型上的键不算')
+test('weapons: is: reads Chinese as written and English ignoring case, spaces and hyphens', () => {
+  const deps = 'function fold(s) { return String(s).toLowerCase().replace(/\\s+/g, ""); }\n' +
+    'var IS = { wpn: Object.assign(Object.create(null), { 手炮: function () {}, 虚空: function () {} }) };\n' +
+    'var ISEN = { wpn: Object.assign(Object.create(null), { handcannon: "手炮", void: "虚空" }) };\n'
+  const { isKey, bareIs } = weaponFns(['enFold', 'isKey', 'bareIs'], deps)
+  assert.equal(isKey('wpn', '手炮'), '手炮')
+  assert.equal(isKey('wpn', 'HandCannon'), '手炮')
+  assert.equal(isKey('wpn', 'hand-cannon'), '手炮')
+  assert.equal(isKey('wpn', 'Hand Cannon'), '手炮', 'is:"Hand Cannon" 引号里的空格')
+  assert.equal(isKey('wpn', 'toString'), '', '两张表都不带原型')
+  assert.ok(bareIs('wpn', 'Void'), '裸词恰好是一个 is: 值（英文也算）时按 is: 算')
+  assert.equal(bareIs('wpn', '虚'), null, '半个值照旧按字面搜')
+  assert.equal(bareIs('wpn', '虚空', true), null, '加了引号照字面搜')
+  // is: 的表不带原型：普通对象上 is:toString 取到原型函数，调用为真，整库都算命中。
+  for (const name of ['isTable', 'enTable']) {
+    assert.match(funcSource('weapons/app.js', name), /var t = Object\.create\(null\);/, name)
+  }
 })
 
 test('weapons: no two functions in app.js share a name', () => {

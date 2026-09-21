@@ -1142,12 +1142,15 @@ class WeaponPage(unittest.TestCase):
                 if r.get('itemType') == 3 and all(
                         (r['inventory']['tierType'] == 6) == v if k == 'exotic' else r[k] == v
                         for k, v in want.items()):
-                    return weapons.traits_of(r, precise)
+                    return weapons.traits_of(F, r, precise)
             self.fail('库里没有 %s 的武器' % want)
 
         sword, hand_cannon = first(itemSubType=18), first(itemSubType=9, defaultDamageType=1)
         rocket, exotic_rocket = first(itemSubType=10, exotic=False), first(itemSubType=10, exotic=True)
+        # 异星噬菌：机枪能打精准，这一把打的是爆炸弹，记录上写着 site_precision: false
+        explosive = weapons.traits_of(F, F.items['1395261499'], precise)
         for key, w, ok in (('2903198432', sword, False),        # 精准平等：刀剑打不出精准
+                           ('2903198432', explosive, False),
                            ('2903198432', hand_cannon, True),
                            ('2742146822', hand_cannon, True),   # 动能裂口：动能且能打精准
                            ('3585856467', rocket, True),        # 永恒毁灭：非异域火箭发射器
