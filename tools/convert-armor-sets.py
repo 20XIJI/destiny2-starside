@@ -23,6 +23,7 @@ import os
 import re
 
 import check_terms
+import editmap
 import items
 import mods
 import pagedex
@@ -98,6 +99,7 @@ class Bonus:
         self.name = name
         self.blocks = blocks  # [('p'|'ul', [(源稿行号, 文字), …])]
         self.icon: str | None = None
+        self.key = ''         # 这条效果的主键，骨架展开时由 expand() 交出
 
 
 class Set:
@@ -106,6 +108,7 @@ class Set:
         self.meta = meta  # [(字段名, 值)]，不含标签
         self.tags = tags
         self.bonuses: list[Bonus] = []
+        self.key = ''         # 套装的主键，骨架展开时由 expand() 交出
 
 
 class Category:
@@ -159,15 +162,16 @@ def is_skeleton(md: str) -> bool:
     return any(SKEL_ROW.match(ln) for ln in md.split('\n'))
 
 
-def expand(md: str) -> str:
-    """主键骨架 → 这一页原来的源稿形状。
+def expand(md: str) -> tuple[str, list]:
+    """主键骨架 → 这一页原来的源稿形状，外加 `[(套装主键, [效果主键…])]`。
 
     来源、标签与两条效果的正文都在记录上（i18n.zh-CN 的「来源」「标签」与
     realgame_details），源稿只留主键与顺序。展开之后交给 parse()，解析与渲染
-    一个字不改。
+    一个字不改；主键按出现顺序交出，由 keyed() 挂回解析出来的套装与效果上。
     """
     import rows
-    out = []
+    out: list[str] = []
+    order: list = []
     for line in md.split('\n'):
         hit = SKEL_ROW.match(line)
         if not hit:
@@ -179,6 +183,7 @@ def expand(md: str) -> str:
             die('主键 %s 落不到记录上（%s）' % (key, title))
         zh = rows.zh(rec)
         if not indent:                      # 套装那一行
+            order.append((key, []))
             out += ['### %s' % zh.get('name', title), '']
             # 顺序即原稿：来源／赛季／更新／类型在前，标签压末尾
             for field in ('来源', '赛季', '更新', '类型', '标签'):
@@ -187,9 +192,21 @@ def expand(md: str) -> str:
             out.append('')
             continue
         count, _, name = title.partition('｜')   # 「2 件｜拉斯普廷的怒火」
+        order[-1][1].append(key)
         out += ['#### %s｜%s' % (count.strip(), name.strip() or zh.get('name', '')), '',
                 (zh.get('realgame_details') or zh.get('database_details') or '').strip(), '']
-    return '\n'.join(out)
+    return '\n'.join(out), order
+
+
+def keyed(cats: list[Category], order: list) -> None:
+    """expand() 交出的主键挂回套装与效果上。两边都按源稿顺序走，条数对不上即中止。"""
+    sets = [st for c in cats for st in c.sets]
+    eq('展开的套装数', len(order), len(sets))
+    for st, (key, perks) in zip(sets, order):
+        eq('%s 的效果数' % st.name, len(perks), len(st.bonuses))
+        st.key = key
+        for b, pk in zip(st.bonuses, perks):
+            b.key = pk
 
 
 def parse(md: str) -> list[Category]:
@@ -343,7 +360,8 @@ def render_blocks(blocks: list) -> str:
 
 
 def render(cats: list[Category], md: str, digest: str = '',
-           dex: 'pagedex.Index | None' = None) -> str:
+           dex: 'pagedex.Index | None' = None,
+           origins: 'editmap.Origins | None' = None) -> str:
     dex = dex if dex is not None else pagedex.Index('armor-sets')
     # 页面元信息全在源稿头部，与别的资料页同一套键。
     # 改文案改 markdown，这里不留字面串。
@@ -374,13 +392,17 @@ def render(cats: list[Category], md: str, digest: str = '',
             parts.append('<article class="set" id="%s">\n' % anchor)
             parts.append('<div class="set-id">\n')
             parts.append('<h3>%s</h3>\n' % html.escape(st.name))
+            # 来源、赛季这几项与标签都写在套装记录上，编辑台按出处找回那一格
+            def spot(field, st=st):
+                return (origins.attr((st.key, 'i18n/zh-CN/' + field, '%s · %s' % (st.name, field)))
+                        if origins is not None and st.key else '')
             if st.meta:
                 rows = ''.join(
-                    '<div><dt>%s</dt><dd>%s</dd></div>'
-                    % (html.escape(k), html.escape(v)) for k, v in st.meta)
+                    '<div><dt>%s</dt><dd%s>%s</dd></div>'
+                    % (html.escape(k), spot(k), html.escape(v)) for k, v in st.meta)
                 parts.append('<dl class="set-meta">%s</dl>\n' % rows)
             tags = ''.join('<li>%s</li>' % html.escape(t) for t in st.tags)
-            parts.append('<ul class="set-tags">%s</ul>\n' % tags)
+            parts.append('<ul class="set-tags"%s>%s</ul>\n' % (spot('标签'), tags))
             parts.append('</div>\n')
 
             parts.append('<div class="set-bonuses">\n')
@@ -416,7 +438,10 @@ def render(cats: list[Category], md: str, digest: str = '',
                             kind='%s 件' % b.piece,
                             name=shown, sub=other, desc=desc,
                             icon='armor-sets/icons/%s' % b.icon if b.icon else '')
-                parts.append('<div class="bonus-body">%s</div>\n' % body)
+                where = (origins.attr((b.key, 'i18n/zh-CN/realgame_details',
+                                       '%s · %s' % (st.name, b.name)))
+                         if origins is not None and b.key else '')
+                parts.append('<div class="bonus-body"%s>%s</div>\n' % (where, body))
                 parts.append('</section>\n')
             parts.append('</div>\n')
             parts.append('</article>\n')
@@ -463,7 +488,7 @@ def check(cats: list[Category], out: str) -> None:
     # 所以闸门放在这里：剥掉着色 span 之后，正文里不许再出现术语。
     # 只查效果正文：套装名、来源、标签与效果名不走 inline()，那几处本来就素色。
     naked = items.naked_text(
-        re.findall(r'<div class="bonus-body">(.*?)</div>', out, re.S))
+        re.findall(r'<div class="bonus-body"[^>]*>(.*?)</div>', out, re.S))
     # GUARD 那几段是故意留素的更长专名，它们裹着的短词不算漏着色
     for g in items.GUARD:
         naked = naked.replace(g, items.GAP)
@@ -484,7 +509,7 @@ def check(cats: list[Category], out: str) -> None:
     # 两侧都先归一化：空格不算内容（design.md 三节）；markdown 的标记字符
     # （**、反引号、buff 名的引号）在页面上由字重与颜色承担，不落成字符。
     marks = '*`“”'
-    bodies = re.findall(r'<div class="bonus-body">(.*?)</div>\n', out, re.S)
+    bodies = re.findall(r'<div class="bonus-body"[^>]*>(.*?)</div>\n', out, re.S)
     eq('产出里的正文块数', len(bodies), N_BONUSES)
     for b, got in zip(bonuses, bodies):
         want = plain('\n'.join('\n'.join(t for _, t in content)
@@ -645,7 +670,12 @@ def main() -> None:
 
     md = open(SRC, encoding='utf-8').read()
     # 源稿是主键骨架时先展开成这一页原来的形状，解析与渲染因此不必知道这件事。
-    cats = parse(expand(md) if is_skeleton(md) else md)
+    if is_skeleton(md):
+        src, order = expand(md)
+        cats = parse(src)
+        keyed(cats, order)
+    else:
+        cats = parse(md)
 
     if args.icons:
         extract_icons(cats, args.icons)
@@ -655,8 +685,10 @@ def main() -> None:
         attach_icons(cats)
 
     dex = pagedex.Index('armor-sets', searchable=True)
-    out = render(cats, md, src_hash(md), dex)
+    origins = editmap.Origins()
+    out = render(cats, md, src_hash(md), dex, origins)
     check(cats, out)
+    out = origins.seal(out)
 
     os.makedirs(OUT_DIR, exist_ok=True)
     sets = sum(len(c.sets) for c in cats)
@@ -665,6 +697,7 @@ def main() -> None:
                % (len(cats), sets, bonuses,
                   sum(1 for c in cats for s in c.sets for b in s.bonuses if b.icon),
                   sum(hits.values())))
+    print('armor-sets/%s  %d 处出处' % (editmap.FILE, origins.write(OUT_DIR)))
     _, n = dex.write()
     print('data/index/armor-sets.json  %d 条' % n)
 

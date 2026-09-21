@@ -1575,6 +1575,7 @@
   }
 
   function line(key, value) { return value ? key + '：' + value + '\n' : ''; }
+  function always(name, value) { return name + '：' + value + '\n'; }
 
   /* 审核意见是一个分节，不是头部键：头部键的值只能占一行，而这一段与注解一样
      想写多长写多长、能分段。排在最前——它是对整套配装的判词，读者在页顶就该
@@ -1631,9 +1632,11 @@
     var md = '\n## 职业\n\n';
     // 职业那一格的值由 state 算出来，不挂 .row，所以主键从候选里现查一次。
     md += line('职业', state.职业 ? withKey('职业', '分节', state.职业) : '');
-    md += line('超能', joined('[data-slot="超能"]'));
-    md += line('星相', joined('[data-slot="星相"]'));
-    md += line('碎片', joined('[data-slot="碎片"]'));
+    // 这三行构建要求在场、值可以空：「超能：」后面没东西就是这一套没有超能（多职业
+    // 配装常见）。空着也照写，别的槽空着就不写，构建把缺行当空。
+    md += always('超能', joined('[data-slot="超能"]'));
+    md += always('星相', joined('[data-slot="星相"]'));
+    md += always('碎片', joined('[data-slot="碎片"]'));
     md += line('手雷', joined('[data-slot="手雷"]'));
     md += line('近战', joined('[data-slot="近战"]'));
     md += line('移动', joined('[data-slot="移动"]'));

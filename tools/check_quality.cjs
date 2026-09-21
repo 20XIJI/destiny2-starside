@@ -20,7 +20,7 @@ const tests = []
 function test(name, fn) { tests.push([name, fn]) }
 
 function harness(seed = {}, hooks = {}) {
-  const store = Object.fromEntries(['counters', 'likes', 'subs', 'docs', 'edits', 'editors']
+  const store = Object.fromEntries(['counters', 'likes', 'subs', 'docs', 'recs', 'edits', 'editors']
     .map((name) => [name, new Map((seed[name] || []).map((r) => [r._id, copy(r)]))]))
   const calls = []
   let serial = 0
@@ -30,6 +30,7 @@ function harness(seed = {}, hooks = {}) {
         // db.RegExp(...) 在这一侧还原成真正的 RegExp：docs 那条路由按 ^builds/
         // 前缀挑配装，不认它的话那条路由整个测不了。
         if (value.$regex !== undefined) return new RegExp(value.$regex, value.$options || '').test(row[key])
+        if (value.$in !== undefined) return value.$in.includes(row[key])
         assert.deepEqual(Object.keys(value), ['$ne'], 'unknown query operator')
         return row[key] !== value.$ne
       }
@@ -138,7 +139,7 @@ function harness(seed = {}, hooks = {}) {
     }
   }
   const db = {
-    command: { neq: (v) => ({ $ne: v }) },
+    command: { neq: (v) => ({ $ne: v }), in: (v) => ({ $in: copy(v) }) },
     RegExp: ({ regexp, options }) => ({ $regex: regexp, $options: options || '' }),
     collection,
     async runTransaction(fn, retries) {
@@ -183,10 +184,11 @@ function harness(seed = {}, hooks = {}) {
       return { init: () => ({ database: () => db }) }
     }
   }
-  vm.runInNewContext(source + '\nexports.quality = { fingerprint, wc, LEVEL };', sandbox, { filename: 'functions/api/index.js' })
+  vm.runInNewContext(source + '\nexports.quality = { fingerprint, wc, LEVEL, canon };', sandbox, { filename: 'functions/api/index.js' })
   return {
     store, calls,
     fingerprint: sandbox.exports.quality.fingerprint,
+    canon: sandbox.exports.quality.canon,
     // 令牌缓存：种一个身份进去，who() 就不必 fetch，真正那条门跑得到。
     signIn: (token, lv, uid = 'u' + lv) =>
       sandbox.exports.quality.wc.set(token, { t: Date.now(), uid, name: '测试' + lv, lv }),
@@ -512,6 +514,154 @@ test('49 rejections fit the transaction boundary without reading documents', asy
 // 源稿方言里 | 是分隔符、{} 是着色标记。混进表格格的话那一行会多一格、或者标记不
 // 闭合，convert-doc.py 的闸门当场 die，卡住整次 npm run build，而编辑那一侧看不出
 // 任何异样。换行走自动改对那条路，这两个字符没有等价写法，所以在提交时就拒收。
+// ── 记录上的站内文字：主键页的就地编辑 ──
+// 一格的地址是「记录 + 字段路径」，底稿在 recs 那一条的 json 里。
+const REC = 'inventory-items/999767358'
+const TIER = 'i18n/zh-CN/site_authors/LGpig/lgpig_tier'
+const WHY = 'i18n/zh-CN/site_authors/LGpig/lgpig_tier_explanation'
+function recRow(h, flat, extra = {}) {
+  const json = h.canon(flat)
+  return { _id: REC, json, hash: digest(json), landed: digest(json), by: '本机', ...extra }
+}
+function recEdit(id, path, before, after, extra = {}) {
+  return { _id: id, doc: 'keys/legendary-heavy', rec: REC, path, kind: 'rec', before, after, ok: 0, by: id, ...extra }
+}
+function recHarness(flat, edits = [], extra = {}) {
+  const h = harness()
+  h.store.recs.set(REC, recRow(h, flat))
+  for (const e of edits) h.store.edits.set(e._id, copy(e))
+  for (const d of extra.docs || []) h.store.docs.set(d._id, copy(d))
+  return h
+}
+
+test('the cloud canon of a flat record matches what sync.py writes', () => {
+  const h = harness()
+  // 期望值是 facts.canon() 对同一份表的输出：键按码位排序、紧凑分隔、不转义中文。
+  const flat = { 'i18n/zh-CN/效果': '伤害 +10%\n第二行 "引号" \\ 反斜杠\t制表', 'enhanced/0/realgame_details': '强化' }
+  assert.equal(h.canon(flat),
+    '{"enhanced/0/realgame_details":"强化","i18n/zh-CN/效果":"伤害 +10%\\n第二行 \\"引号\\" \\\\ 反斜杠\\t制表"}')
+})
+
+test('a record change is queued by record and path, and refused once the text moved on', async () => {
+  const h = recHarness({ [TIER]: 'T1.5' })
+  const body = { a: 'chg', doc: 'keys/legendary-heavy', rec: REC, path: TIER, before: 'T1.5', after: 'T1', label: '灾变 · 评级' }
+  const r = await h.request(body)
+  assert.equal(r.ok, 1)
+  const e = h.store.edits.get(r.id)
+  assert.equal(e.kind, 'rec')
+  assert.equal(e.rec, REC)
+  assert.equal(e.path, TIER)
+  // 同一个人同一格再提一次是改写，从另一页提也一样：同一格在几页上都有。
+  const again = await h.request({ ...body, doc: 'keys/legendary-special', after: 'T0.5' })
+  assert.equal(again.id, r.id)
+  assert.equal(h.store.edits.size, 1)
+  assert.equal(h.store.edits.get(r.id).after, 'T0.5')
+  assert.equal((await h.request({ ...body, before: 'T2' })).error, 'stale')
+  assert.equal((await h.request({ ...body, path: 'name' })).error, 'bad path')
+  assert.equal((await h.request({ ...body, rec: 'inventory-items/../docs' })).error, 'bad rec')
+  assert.equal((await h.request({ ...body, doc: 'docs/boss-hp' })).error, 'bad doc')
+})
+
+test('a bare pipe is judged by the field, not by the page it was sent from', async () => {
+  // 同一格在刷取清单上是表格的一格、在购物清单上是一段正文。按提交的那一页判的话，
+  // 从正文那页写进去的竖线会让表格那页多一格，npm run build 当场中止。
+  const h = recHarness({ [WHY]: '旧', [TIER]: '伤害 2.8% | 5.6%' })
+  const body = { a: 'chg', doc: 'keys/shopping-other', rec: REC, before: '旧', after: '甲 | 乙' }
+  assert.match((await h.request({ ...body, path: WHY })).error, /竖线/)
+  assert.equal((await h.request({ ...body, path: WHY, after: '{buff|甲|乙}' })).ok, 1, '标记里的竖线不是分隔符')
+  // 原文本来就有裸竖线：这一格没被画进表格，照收。
+  assert.equal((await h.request({ ...body, path: TIER, before: '伤害 2.8% | 5.6%', after: '伤害 3% | 6%' })).ok, 1)
+  // 队列里躺着这条闸门上线之前存下的一条，通过时再判一次。
+  const queued = [recEdit('old', WHY, '旧', '甲 | 乙')]
+  await rejectedBatch({ recs: [recRow(h, { [WHY]: '旧' })], edits: queued }, { jobs: jobs(queued) },
+    '表格格里不能写竖线，它是分隔符；要写就用全角｜')
+})
+
+test('the only field a change may create is the site description', async () => {
+  // 页面上显示官方描述、站内还没写说明的那一格可以新添。别的键新添出来会写进
+  // manifest 字段，或把 site_authors 这种对象换成字符串，sync.py 写回时中止。
+  const h = recHarness({ [TIER]: 'T1' })
+  const add = { a: 'chg', doc: 'keys/legendary-heavy', rec: REC, before: '', after: '新写的说明' }
+  assert.equal((await h.request({ ...add, path: 'i18n/zh-CN/realgame_details' })).ok, 1)
+  for (const path of ['i18n/zh-CN/database_details', 'i18n/zh-CN/name', 'i18n/zh-CN/site_authors',
+                      'i18n/zh-CN/site_authors/LGpig/notes', 'enhanced/0/realgame_details']) {
+    assert.equal((await h.request({ ...add, path })).error, 'stale', path)
+  }
+})
+
+test('approving record changes patches the one field and rehashes, atomically with documents', async () => {
+  const rows = [recEdit('a', TIER, 'T1.5', 'T1'), recEdit('b', WHY, '顶级 perk 池', '顶级 perk 池，多人场景更适合'),
+                edit('c', 0, '甲', '甲新')]
+  const h = recHarness({ [TIER]: 'T1.5', [WHY]: '顶级 perk 池' }, rows,
+    { docs: [{ _id: 'docs/example', md: '甲', hash: digest('甲') }] })
+  assert.equal((await h.request({ a: 'emark', jobs: jobs(rows) })).ok, 1)
+  const got = h.store.recs.get(REC)
+  const flat = JSON.parse(got.json)
+  assert.equal(flat[TIER], 'T1')
+  assert.equal(flat[WHY], '顶级 perk 池，多人场景更适合')
+  assert.equal(got.json, h.canon(flat))
+  assert.equal(got.hash, digest(got.json))
+  assert.equal(got.landed, digest(h.canon({ [TIER]: 'T1.5', [WHY]: '顶级 perk 池' })), 'landed 只归 sync.py 写')
+  assert.equal(h.store.docs.get('docs/example').md, '甲新')
+  assert.equal(h.calls.filter((c) => c.op === 'update' && c.name === 'recs').length, 1)
+})
+
+test('a record change whose text moved on, or two changes to one field, reject the whole batch', async () => {
+  const flat = { [TIER]: 'T1' }
+  const stale = [recEdit('a', TIER, 'T1.5', 'T0'), edit('c', 0, '甲', '甲新')]
+  const seed = (rows) => ({ recs: [{ _id: REC, json: JSON.stringify(flat), hash: 'x' }],
+                            docs: [{ _id: 'docs/example', md: '甲', hash: digest('甲') }], edits: rows })
+  await rejectedBatch(seed(stale), { jobs: jobs(stale) })
+  const twice = [recEdit('a', TIER, 'T1', 'T0'), recEdit('b', TIER, 'T1', 'T2')]
+  await rejectedBatch(seed(twice), { jobs: jobs(twice) })
+  const gone = [recEdit('a', TIER, 'T1', 'T0')]
+  await rejectedBatch({ edits: gone }, { jobs: jobs(gone) }, 'no rec')
+})
+
+test('a record page gets its pending changes from every page and only the records that moved', async () => {
+  const other = 'inventory-items/1'
+  const rows = [recEdit('here', TIER, 'T1', 'T0'),
+                recEdit('there', WHY, '旧', '新', { doc: 'keys/legendary-special' }),
+                { ...recEdit('elsewhere', TIER, 'T1', 'T2'), rec: 'inventory-items/2' }]
+  const h = recHarness({ [TIER]: 'T1', [WHY]: '旧' }, rows)
+  h.store.recs.set(other, recRow(h, { [TIER]: 'T3' }, { _id: other }))
+  const r = await h.request({ a: 'pend', doc: 'keys/legendary-heavy',
+    recs: { [REC]: 'hash-at-build', [other]: h.store.recs.get(other).hash } })
+  assert.deepEqual(r.pend.map((e) => e._id).sort(), ['here', 'there'])
+  assert.deepEqual(Object.keys(r.recs), [REC], '库里没变的那条不带回')
+  assert.equal(r.recs[REC].json, h.store.recs.get(REC).json)
+})
+
+test('the review console learns which record changes went stale', async () => {
+  const rows = [recEdit('fresh', TIER, 'T1', 'T0'), recEdit('old', WHY, '更早的文字', '新')]
+  const h = recHarness({ [TIER]: 'T1', [WHY]: '现在的文字' }, rows,
+    { docs: [{ _id: 'keys/legendary-heavy', md: '# 页', hash: digest('# 页') }] })
+  const r = await h.request({ a: 'pend', doc: 'keys/legendary-heavy', judge: 1 })
+  assert.deepEqual(Object.fromEntries(r.pend.map((e) => [e._id, e.stale])), { fresh: false, old: true })
+})
+
+test('sync pushes records in validated batches and pages through them in a stable order', async () => {
+  // 这几个动作走 ADMIN_TOKEN（请求体里的 k），不走白名单。
+  const KEY = 'isolated-quality-token'
+  const h = harness()
+  const good = h.canon({ [TIER]: 'T1' })
+  const gz = (rows) => zlib.gzipSync(Buffer.from(JSON.stringify(rows))).toString('base64')
+  assert.equal((await h.request({ a: 'rpush', k: KEY, gz: gz([[REC, good], ['minted/4294967316', h.canon({ 'i18n/zh-CN/效果': '甲' })]]) })).ok, 1)
+  assert.equal(h.store.recs.get(REC).landed, digest(good))
+  // 一条坏的整批不写：不是规范文本、路径不对、_id 不对，三样各一。
+  for (const bad of [[REC, JSON.stringify({ [TIER]: 'T1' }, null, 1)], [REC, h.canon({ name: '甲' })], ['docs/x', good]]) {
+    const before = h.snapshot()
+    assert.equal((await h.request({ a: 'rpush', k: KEY, gz: gz([['inventory-items/3', good], bad]) })).error, 'bad rec')
+    assert.deepEqual(h.snapshot(), before)
+  }
+  const page = await h.request({ a: 'rpull', k: KEY, skip: 0 })
+  assert.deepEqual(page.recs.map((r) => r._id), [REC, 'minted/4294967316'])
+  assert.equal(page.more, 0)
+  assert.equal((await h.request({ a: 'rlanded', k: KEY, items: [['inventory-items/404', digest('x')]] })).error, 'no rec')
+  assert.equal((await h.request({ a: 'rdrop', k: KEY, ids: [REC] })).ok, 1)
+  assert.equal(h.store.recs.has(REC), false)
+})
+
 const tableDoc = '# 标题\n\n## 一节\n\n| 名称 | 说明 |\n|---|---|\n| 甲 | 旧文 |\n\n正文一段\n'
 function cellSeed() {
   return { docs: [{ _id: 'docs/example', md: tableDoc, hash: digest(tableDoc), by: 'original' }] }

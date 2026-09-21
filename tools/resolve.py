@@ -284,6 +284,18 @@ class Facts:
                 return table.get(key[len(prefix):])
         return self.items.get(key) or self.minted.get(key)
 
+    def rec_id(self, key):
+        """站内的键 → `表名/裸 hash`，即库里 recs 集合那一条的 `_id`。
+
+        解前缀与 at() 同一条：带前缀的落在对应那张表；裸号先查物品表，再查 minted。
+        """
+        key = str(key)
+        for prefix, table in (('perk:', 'sandbox-perks'), ('trait:', 'traits'),
+                              ('stat:', 'stats'), ('set:', 'equipable-item-sets')):
+            if key.startswith(prefix):
+                return '%s/%s' % (table, key[len(prefix):])
+        return '%s/%s' % ('inventory-items' if key in self.items else 'minted', key)
+
     def ref(self, pair):
         """按 `[表名, 主键]` 二元组取那条记录。**跨表引用只有这一种写法。**
 

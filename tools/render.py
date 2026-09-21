@@ -46,11 +46,12 @@ IMG = re.compile(r'!\[\]\(([^)]+)\)')
 class Page:
     """一页的渲染上下文：图标登记、相对路径、页面索引。"""
 
-    def __init__(self, page, where, img, dex=None):
+    def __init__(self, page, where, img, dex=None, origins=None):
         self.page = page          # 页面 slug
         self.where = where        # 产出相对站点根的目录
         self.img = img            # markup.Icons().html
         self.dex = dex            # pagedex 的索引，可以是 None
+        self.origins = origins    # editmap.Origins：就地编辑的出处表，可以是 None
         self.section = ''
         self.titles = {}          # 主键 → 源稿写的行标题
         self.matrix_rows = set()  # 矩阵行首用掉的记录，不再单独占一行
@@ -101,6 +102,16 @@ class Page:
             return ''
         return self.img(rows.rel(path, self.where), size)
 
+    def mark(self, *spots):
+        """这一处出自哪条记录的哪个字段 → ` data-e="N"`，就地编辑据此找回那一格。
+
+        spot 是 `(主键, 字段路径, 标签)`，几段拼成的一处传几个。"""
+        return self.origins.attr(*spots) if self.origins else ''
+
+    def spot(self, key, path, what):
+        """`(主键, 字段路径, 标签)`，标签写「记录名 · 字段」，审核台按它列出这一处。"""
+        return (key, path, '%s · %s' % (self.name(key), what))
+
     # ── 文本 ────────────────────────────────────────────────────────
     def line(self, md):
         """一行源稿方言 → HTML。格内换行有时落在着色标记里面，所以渲染完再换。"""
@@ -113,12 +124,15 @@ class Page:
                      lambda m: self.path_icon(m.group(1), 'inl'), out)
         return out.replace(BR, '<br>')
 
-    def prose(self, text):
+    def prose(self, text, attr=''):
         """正文 → 段落。三种分段都认：格内换行两次（源稿方言）、空行（记录里
         直接写的真换行）、以及 `- ` 列表。
 
         **只在着色标记之外切**：一条说明常把几行包在同一个 `{el-kinetic|…}` 里，
         从中间切开两半都是未闭合的标记，渲染当场中止。
+
+        attr 是出处（`mark()` 给的 ` data-e`），戴在每一段上：一个字段切成几段时
+        几段指向同一处，点哪一段都是改整个字段。
         """
         if not text:
             return ''
@@ -128,10 +142,10 @@ class Page:
             if not lines:
                 continue
             if all(x.startswith('- ') for x in lines):
-                out.append('<ul>%s</ul>'
-                           % ''.join('<li>%s</li>' % self.line(x[2:]) for x in lines))
+                out.append('<ul%s>%s</ul>'
+                           % (attr, ''.join('<li>%s</li>' % self.line(x[2:]) for x in lines)))
             else:
-                out.append('<p>%s</p>' % '<br>'.join(self.line(x) for x in lines))
+                out.append('<p%s>%s</p>' % (attr, '<br>'.join(self.line(x) for x in lines)))
         return ''.join(out)
 
 
@@ -192,8 +206,8 @@ def top_split(text, sep):
     return out
 
 
-def cell(cls, inner):
-    return '<div class="r-cell %s">%s</div>' % (cls, inner)
+def cell(cls, inner, attr=''):
+    return '<div class="r-cell %s"%s>%s</div>' % (cls, attr, inner)
 
 
 def idcell(p, key, subs=(), name_cls='', extra=''):
@@ -211,16 +225,18 @@ def colhead(cls, labels):
 
 
 # ── 数值、子行、成员 ────────────────────────────────────────────────
-def stats_of(p, key):
+def stats_of(p, key, mark=False):
     """数值格。武器 PERK 那几类（词条、模组、框架、起源）不画：它们的数值
-    说明里已经写了一遍。"""
+    说明里已经写了一遍。mark 为真时给站内写的那一格标出处（悬停面板不标）。"""
     rec = rows.facts().at(key) or {}
     if kind(key) == 'plug':
         return ''
     out = []
     cost = (rec.get('plug') or {}).get('energyCost')
     if cost is None and p.zh(key).get('费用'):
-        out.append('<div>费用 %s</div>' % p.line(p.zh(key)['费用']))
+        out.append('<div%s>费用 %s</div>'
+                   % (p.mark(p.spot(key, 'i18n/zh-CN/费用', '费用')) if mark else '',
+                      p.line(p.zh(key)['费用'])))
     elif cost is not None:
         out.append('<div>%s <b class="cost">%s</b></div>'
                    % ('碎片消耗' if kind(key) == 'fragment' else '费用', cost))
@@ -250,7 +266,7 @@ def stats_of(p, key):
 def enhanced(p, key):
     """星相带来的强化：子行紧跟本行之后。"""
     out = []
-    for e in (rows.facts().at(key) or {}).get('enhanced') or ():
+    for i, e in enumerate((rows.facts().at(key) or {}).get('enhanced') or []):
         who = ''.join('%s<span class="%s">%s</span>'
                       % (p.icon(str(b)), elem_token(str(b)), p.name_html(str(b)))
                       for b in e['by'])
@@ -259,7 +275,8 @@ def enhanced(p, key):
                    '<div class="r-sub-h">装上 %s 之后</div>%s</div>'
                    % (html.escape('%s（%s）' % (p.name(key),
                                                '、'.join(p.name(str(b)) for b in e['by']))),
-                      who, p.prose(e['realgame_details'])))
+                      who, p.prose(e['realgame_details'], p.mark(p.spot(
+                          key, 'enhanced/%d/realgame_details' % i, '星相强化')))))
     return ''.join(out)
 
 
@@ -267,12 +284,13 @@ def by_types(p, key):
     """框架在某几种枪型上的说明，与星相强化同一种画法。"""
     names = rows.type_names()
     out = []
-    for w in (rows.facts().at(key) or {}).get('weaponTypes') or ():
+    for i, w in enumerate((rows.facts().at(key) or {}).get('weaponTypes') or []):
         who = '、'.join(names.get(t, str(t)) for t in w['itemSubType'])
         out.append('<div class="r-sub-row" data-name="%s">'
                    '<div class="r-sub-h">在 <b>%s</b> 上</div>%s</div>'
                    % (html.escape('%s（%s）' % (p.name(key), who)),
-                      html.escape(who), p.prose(w['realgame_details'])))
+                      html.escape(who), p.prose(w['realgame_details'], p.mark(p.spot(
+                          key, 'weaponTypes/%d/realgame_details' % i, '%s 上的说明' % who)))))
     return ''.join(out)
 
 
@@ -306,7 +324,7 @@ def member_text(p, key):
         got = rows.zh(rows.facts().at(str(m))).get('realgame_details', '').strip()
         if got and str(m) not in own and got not in seen:
             seen.add(got)
-            out.append(p.prose(got))
+            out.append(p.prose(got, p.mark(p.spot(str(m), 'i18n/zh-CN/realgame_details', '说明'))))
     return ''.join(out)
 
 
@@ -323,44 +341,66 @@ def combos(p, key):
         if not z.get('site_when'):
             markup.die('组合 %s 画成子行却没写 site_when' % k)
         mem = [str(m) for m in (rows.facts().at(k) or {}).get('members') or ()][1:]
-        out.append('<div class="r-sub-row" data-name="%s"><div class="r-sub-h">%s%s</div>'
-                   '%s%s</div>'
-                   % (html.escape(p.name(k)), p.line(z['site_when']),
+        # 标题包一层 <div>：它是一处站内写的文字，要能点开改；不包的话标题里的
+        # 着色 span 与两侧文字各自成了一个 flex item，被 gap 隔开。
+        out.append('<div class="r-sub-row" data-name="%s"><div class="r-sub-h"><div%s>%s</div>%s'
+                   '</div>%s%s</div>'
+                   % (html.escape(p.name(k)),
+                      p.mark(p.spot(k, 'i18n/zh-CN/site_when', '子行标题')),
+                      p.line(z['site_when']),
                       ''.join('%s<b>%s</b>' % (p.icon(m), p.name_html(m)) for m in mem),
-                      p.prose(z.get('realgame_details', '')), member_text(p, k)))
+                      p.prose(z.get('realgame_details', ''),
+                              p.mark(p.spot(k, 'i18n/zh-CN/realgame_details', '说明'))),
+                      member_text(p, k)))
     return ''.join(out)
 
 
 # ── 作者区：一位作者两格，加作者只多一行 ────────────────────────────
-def author_fields(p, a):
+def au_label(who, k):
+    """作者块里一个字段在编辑台上叫什么：源表的中文列名，没有就用键名。"""
+    names = {v: c for c, v in rows.AUTHOR_FIELDS.get(who, {}).items()}
+    return '%s %s' % (dict((x[0], x[1]) for x in AUTHORS).get(who, who),
+                     names.get(k) or AU_LABEL.get(k) or k)
+
+
+def au_spot(p, key, who, k):
+    """作者块里一个字段的出处。作者块在记录上的位置由 rows.authors_path() 答。"""
+    base = rows.authors_path(rows.facts().at(key) or {})
+    return p.spot(key, '%s/%s/%s' % (base, who, k), au_label(who, k))
+
+
+def author_fields(p, a, key, who):
     got = [(k, v) for k, v in sorted(a.items())
            if v and not k.startswith(('explanation_', 'aegis_', 'lgpig_')) and k not in AU_SKIP]
     return ('<div class="f-row">%s</div>' % ''.join(
-        '<span class="f-k">%s</span><b class="f-v">%s</b>'
-        % (html.escape(str(AU_LABEL.get(k) or k)),
+        '<span class="f-k">%s</span><b class="f-v"%s>%s</b>'
+        % (html.escape(str(AU_LABEL.get(k) or k)), p.mark(au_spot(p, key, who, k)),
            p.line(str(v)).replace('<br>', '、').replace('、/', ' / '))
         for k, v in got)) if got else ''
 
 
-def author_paras(p, a, who, paired=()):
+def author_paras(p, a, key, who, paired=()):
     """理由一二三。带定位标签且条数相等时，一条标签配一条理由。"""
-    paras = [a[k] for k in sorted(a) if k.startswith('explanation_') and str(a[k]).strip()]
+    paras = [(k, a[k]) for k in sorted(a) if k.startswith('explanation_') and str(a[k]).strip()]
     if who == 'LGpig' and a.get('lgpig_tier_explanation'):
-        paras.insert(0, a['lgpig_tier_explanation'])
+        paras.insert(0, ('lgpig_tier_explanation', a['lgpig_tier_explanation']))
     if paired and len(paired) == len(paras):
+        role = p.mark(au_spot(p, key, who, 'role'))
         # 正文包进一件 <b>：.why 是两栏 flex，不包的话正文里每个着色 span
         # 各自成了一个 flex item，一个词挤成一竖列。
-        return ''.join('<p class="why"><b class="r-tag">%s</b><b class="why-t">%s</b></p>'
-                       % (p.line(t), '<br>'.join(p.line(x) for x in one.split(BR)))
-                       for t, one in zip(paired, paras))
-    return ''.join('<p>%s</p>' % '<br>'.join(p.line(x) for x in one.split(BR))
-                   for one in paras)
+        return ''.join('<p class="why"><b class="r-tag"%s>%s</b><b class="why-t"%s>%s</b></p>'
+                       % (role, p.line(t), p.mark(au_spot(p, key, who, k)),
+                          '<br>'.join(p.line(x) for x in one.split(BR)))
+                       for t, (k, one) in zip(paired, paras))
+    return ''.join('<p%s>%s</p>' % (p.mark(au_spot(p, key, who, k)),
+                                    '<br>'.join(p.line(x) for x in one.split(BR)))
+                   for k, one in paras)
 
 
-def tags(p, raw):
+def tags(p, raw, attr=''):
     got = [t.strip() for t in (raw or '').split(BR) if t.strip()]
-    return ('<div class="r-tags">%s</div>'
-            % ''.join('<b class="r-tag">%s</b>' % p.line(t) for t in got)) if got else ''
+    return ('<div class="r-tags"%s>%s</div>'
+            % (attr, ''.join('<b class="r-tag">%s</b>' % p.line(t) for t in got))) if got else ''
 
 
 def author_rows(p, key, first=None):
@@ -374,13 +414,16 @@ def author_rows(p, key, first=None):
             continue
         tier = a.get(tier_key)
         role = [x.strip() for x in (a.get('role') or '').split(BR) if x.strip()]
-        body = author_fields(p, a) + author_paras(p, a, who, role)
-        badge, tg = '', '' if 'class="why"' in body else tags(p, a.get('role'))
+        body = author_fields(p, a, key, who) + author_paras(p, a, key, who, role)
+        badge, tg = '', '' if 'class="why"' in body else tags(
+            p, a.get('role'), p.mark(au_spot(p, key, who, 'role')) if a.get('role') else '')
         if tier and len(tier) <= 4:
-            badge = '<span class="r-tier %s">%s</span>' % (cls, html.escape(tier))
+            badge = '<span class="r-tier %s"%s>%s</span>' % (
+                cls, p.mark(au_spot(p, key, who, tier_key)), html.escape(tier))
         elif tier:
             # 评级写成一整句的（「T0\\输出：T1\\清怪：T1」）装不进徽标，单独一行
-            tg = '<div class="r-tier-long">%s</div>' % p.line(tier) + tg
+            tg = '<div class="r-tier-long"%s>%s</div>' % (
+                p.mark(au_spot(p, key, who, tier_key)), p.line(tier)) + tg
         if not (badge or tg or body):
             continue
         out.append(cell('r-mid x-au-who',
@@ -405,15 +448,20 @@ def panel_of(p, key):
 def rec_plain(p, key, cols, narrow=''):
     """效果、碎片、技能、星相、插件、套装效果：名称 | 说明 (| 数值) (| 来源)。"""
     z = p.zh(key)
+    # 页面上显示的是哪一段就改哪一段；只有官方描述时改的是还没写的站内说明
+    field = 'realgame_details' if z.get('realgame_details') or not z.get('效果') else '效果'
     body = (members(p, key)
-            + p.prose(z.get('realgame_details') or z.get('效果') or z.get('database_details', ''))
+            + p.prose(z.get('realgame_details') or z.get('效果') or z.get('database_details', ''),
+                      p.mark(p.spot(key, 'i18n/zh-CN/' + field, '说明')))
             + member_text(p, key) + enhanced(p, key) + by_types(p, key)
             + combos(p, key))
     out = [idcell(p, key), cell('r-txt', body)]
     if 'st' in cols:
-        out.append(cell('r-mid r-val', stats_of(p, key)))
+        out.append(cell('r-mid r-val', stats_of(p, key, mark=True)))
     if 'src' in cols:
-        out.append(cell('r-mid r-val', p.line(z.get('site_source') or z.get('来源') or '')))
+        src = 'site_source' if z.get('site_source') else '来源'
+        out.append(cell('r-mid r-val', p.line(z.get(src) or ''),
+                        p.mark(p.spot(key, 'i18n/zh-CN/' + src, '来源')) if z.get(src) else ''))
     au = author_rows(p, key, 'LGpig')
     return '<article class="rec r-plain r-c%d%s%s">%s%s</article>' % (
         len(cols), narrow, ' has-au' if au else '', ''.join(out), au)
@@ -443,14 +491,16 @@ def rec_exotic(p, key):
     rec = rows.facts().at(key) or {}
     z = p.zh(key)
     perk = perk_chips(p, rows.exotic_perks(key))
-    text = rows.exotic_text(key, z.get('realgame_details', ''))
+    # 说明是几条记录的正文拼成的（装备本体、固有、催化剂），一段一段标各自的出处
+    text = ''.join(p.prose(t, p.mark(p.spot(k, 'i18n/zh-CN/realgame_details', '说明')))
+                   for k, t in rows.exotic_parts(key, z.get('realgame_details', '')))
     season = (rec.get('derived') or {}).get('season')
     au = author_rows(p, key, 'LGpig')
     return ('<article class="rec r-exotic%s">%s%s%s</article>'
             % (' has-au' if au else '',
                idcell(p, key, [z.get('itemTypeDisplayName'),
                                '赛季 %s' % season if season else ''], 'exo'),
-               cell('r-txt r-perk', '%s%s%s' % (perk, p.prose(text), combos(p, key))),
+               cell('r-txt r-perk', '%s%s%s' % (perk, text, combos(p, key))),
                au))
 
 
@@ -534,7 +584,9 @@ def rec_weapon(p, key, rank, author):
                            + BREAKER_SHORT[d['breakerType']]))
     src = A.get('aegis_source') or L.get('lgpig_source')
     if src:
-        facts_rows.append(('来源', p.line(src)))
+        facts_rows.append(('来源', p.line(src), p.mark(
+            au_spot(p, key, 'Aegis', 'aegis_source') if A.get('aegis_source')
+            else au_spot(p, key, 'LGpig', 'lgpig_source'))))
 
     slots = []
     for _, field in SLOTS:
@@ -543,9 +595,11 @@ def rec_weapon(p, key, rank, author):
         mark.update(dict(a))
         order = [n for n, _ in a] + [n for n, _ in l_ if n not in dict(a)]
         la, ll = {n for n, _ in a}, {n for n, _ in l_}
+        # 一栏里是两位作者各自推荐的并在一起，点开是两个框
         slots.append(cell('r-mid r-slot', '<div class="r-picks">%s</div>' % ''.join(
             plug(p, key, n, mark[n], 'al' if n in la and n in ll else 'a' if n in la else 'l')
-            for n in order)))
+            for n in order), p.mark(au_spot(p, key, 'Aegis', field) if field in A else None,
+                                    au_spot(p, key, 'LGpig', field) if field in L else None)))
     # 大师杰作一格可以写几枚：「填装\\操控性」说的是这两枚都行，不是一枚叫这个名字
     # 的插件。与别的几栏同形，一枚一个格子。
     mws = [x.strip() for x in (A.get('masterwork') or '').split(BR) if x.strip()]
@@ -553,7 +607,8 @@ def rec_weapon(p, key, rank, author):
         '<div class="r-plug r-mwp">%s<span>%s</span></div>'
         % ('<span class="ico">%s</span>' % p.icon(mwp) if mwp else '',
            html.escape(p.name(mwp).split('：', 1)[1] if mwp else mw))
-        for mw, mwp in ((x, masterwork_plug(key, x)) for x in mws))) if mws else ''))
+        for mw, mwp in ((x, masterwork_plug(key, x)) for x in mws))) if mws else '',
+        p.mark(au_spot(p, key, 'Aegis', 'masterwork')) if 'masterwork' in A else ''))
 
     au = author_rows(p, key, author)
     return ('<article class="rec r-weapon%s">%s%s%s%s%s</article>'
@@ -561,7 +616,8 @@ def rec_weapon(p, key, rank, author):
                idcell(p, key, (), '', '<div class="x-mini">%s</div>'
                       % ''.join('<div>%s</div>' % m for m in mini)),
                cell('x-facts', '<dl>%s</dl>' % ''.join(
-                   '<dt>%s</dt><dd>%s</dd>' % (k, v) for k, v in facts_rows)),
+                   '<dt>%s</dt><dd%s>%s</dd>' % (f[0], f[2] if len(f) > 2 else '', f[1])
+                   for f in facts_rows)),
                ''.join(slots), au))
 
 
@@ -574,7 +630,9 @@ CLASS_ITEM_TYPES = ('猎人披风', '泰坦印记', '术士臂环')
 
 
 def spirit(p, key):
-    return idcell(p, key, (), 'exo') + cell('r-txt', p.prose(p.zh(key).get('realgame_details', '')))
+    return idcell(p, key, (), 'exo') + cell('r-txt', p.prose(
+        p.zh(key).get('realgame_details', ''),
+        p.mark(p.spot(key, 'i18n/zh-CN/realgame_details', '说明'))))
 
 
 def class_items(p, keys):

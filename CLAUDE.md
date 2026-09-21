@@ -86,6 +86,8 @@ Bungie 的 hash 是 uint32，永不相撞。`模组族` 与 `组合` 用 `member
   由 `carry_site()` 原样带回；盘上有、这一轮没蒸出来的记录名下挂着站内字段时中止。
 - 站内字段直接改 JSON，改完跑 `python3 tools/facts.py --link`：它重算 `icon_local` 与
   效果表的 `onItems` / `onSets`。
+- 站内写的文字也在线上改：主键页的就地编辑改库里 `recs` 集合那一份，`tools/sync.py`
+  按三方比写回这几张表（见 `.claude/rules/backend.md`）。本机改过的记录同一轮推上去。
 - `minted.json` 手写。
 
 读取走 `resolve.Facts`；取名字走 `resolve.text()`，取官方图路径走 `resolve.icon_path()`，
@@ -138,6 +140,8 @@ resolve.py         中文名 → itemHash。槽位限定候选，复刻按「源
                    分不出就交出候选、不猜；另出给产出戳主键的戳号器
 pagedex.py         页面索引：生成器渲染时登记条目，落成 data/index/<页>.json。
                    页面 → 着色 token、格子切分、说明取法都在这里
+editmap.py         就地编辑的出处表：生成器渲染记录上的文字时登记「记录 + 字段路径」，
+                   元素戴 data-e，表落成 <页目录>/edit.json，编辑态才加载
 vocab.py           配装词表：读 data/index/ 那批索引，槽位 → 来源页的对应在这里一处定义
 markup.py          源稿方言与公共件：职业／分支／配装三轴（场景·强度·标签）词表、
                    表格切格（Python 这一侧唯一定义，JS 那一侧是 admin/dialect.js）、

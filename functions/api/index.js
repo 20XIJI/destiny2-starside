@@ -14,8 +14,10 @@ const _ = db.command
 const stat = db.collection('counters').doc('stat')
 const likes = db.collection('likes')
 const subs = db.collection('subs')
-// 在线编辑台的三张表。docs 是源稿的工作副本，git 才是发布本，两边靠内容 hash 对账。
+// 在线编辑台的四张表。docs 是源稿的工作副本，recs 是记录上站内文字的工作副本，
+// git 才是发布本，两边靠内容 hash 对账。
 const docs = db.collection('docs')
+const recs = db.collection('recs')
 const edits = db.collection('edits')
 const eds = db.collection('editors')
 
@@ -212,6 +214,63 @@ function cellSafe(text, inCell) {
   return d ? '着色标记的花括号没配对' : ''
 }
 
+// ── 记录上的站内文字 ──
+// recs 一条记录一份：_id 是「表名/裸 hash」，json 是 facts.site_text() 那张扁平表
+// {字段路径: 文字} 的规范文本。_id 与路径都从请求里来，形状在这里验。
+const REC_ID = /^(inventory-items|sandbox-perks|traits|stats|equipable-item-sets|minted)\/\d+$/
+const REC_PATH = /^(i18n\/zh-CN|enhanced|weaponTypes|authors|variants)(\/[^/]+)+$/
+// 线上只能新添这一格（页面上显示的是官方描述、站内还没写说明的那种），与
+// facts.NEW_LEAF 同一条。别的路径必须已经在记录上：新添 i18n.zh-CN 下别的键会写进
+// manifest 字段，或把 site_authors 这种对象换成字符串，sync.py 写回时当场中止。
+const NEW_LEAF = /^i18n\/zh-CN\/realgame_details$/
+// 一次对账推几条记录由 sync.py 定（按请求体大小切批），这里只挡跑飞。
+const REC_BATCH = 500
+
+// 与 facts.canon() 逐字节相同：键按码位排序、紧凑分隔、值只有字符串。hash 算它，
+// 所以两边写出来的同一份表 hash 相同，编辑台拿页面上那份与库里比才比得准。
+function canon(flat) {
+  return '{' + Object.keys(flat).sort().map((k) => JSON.stringify(k) + ':' + JSON.stringify(flat[k])).join(',') + '}'
+}
+
+// 库里一条记录 → 扁平表。坏掉的当场报出：静默当成空表的话，下一次通过会把整条
+// 记录的站内文字写成只剩一格。
+function flatOf(cur) {
+  const flat = JSON.parse(cur.json)
+  if (!flat || typeof flat !== 'object' || Array.isArray(flat)
+      || Object.values(flat).some((v) => typeof v !== 'string')) throw new Error('bad rec')
+  return flat
+}
+
+// 深度 0 上有没有竖线。与 cellSafe() 同一条深度规则。
+function barePipe(text) {
+  let d = 0
+  for (const ch of String(text)) {
+    if (ch === '{') d++
+    else if (ch === '}') d = Math.max(0, d - 1)
+    else if (ch === '|' && d === 0) return true
+  }
+  return false
+}
+
+// 一格此刻的文字。没有这一格时：能新添的算空串，不能的回 null。
+function leaf(flat, path) {
+  if (Object.prototype.hasOwnProperty.call(flat, path)) return flat[path]
+  return NEW_LEAF.test(path) ? '' : null
+}
+
+// 一批记录 → { _id: 那一条 }。_.in 按一百条一批，互不依赖，一起发。
+async function recsOf(ids, fields) {
+  const out = {}
+  const parts = []
+  for (let i = 0; i < ids.length; i += 100) parts.push(ids.slice(i, i + 100))
+  const got = await Promise.all(parts.map((part) => {
+    const q = recs.where({ _id: _.in(part) })
+    return (fields ? q.field(fields) : q).limit(part.length).get()
+  }))
+  for (const r of got) for (const d of r.data) out[d._id] = d
+  return out
+}
+
 // 令牌 → 身份，五分钟一份，与 likeMap() 缓存赞数同一套写法：校验要多打一次
 // /auth/v1/user/me，缓存让这次往返与请求数脱钩。实例回收即失效。
 const wc = new Map()
@@ -254,7 +313,7 @@ const LEVEL = {
   eds: 4,
   stats: null, hit: null, likes: null, like: null, sub: null,
   list: 'admin', mark: 'admin', pull: 'admin', push: 'admin', rekey: 'admin', drop: 'admin',
-  landed: 'admin',
+  landed: 'admin', rpull: 'admin', rpush: 'admin', rdrop: 'admin', rlanded: 'admin',
 }
 
 // 进分支之前判一次。返回值是 me，分支要用名字或 uid 时直接拿，不再各自 await 一遍。
@@ -500,6 +559,41 @@ async function editorRoute(a, body, event, me) {
   // 影响，冲突只在真的动了同一处时才发生。
   // cell 为 -1 即整块改动（段落、列表项、表格整行）；用 -1 不用 null，
   // 那一列还要参与 where 查询。
+  // 记录上的一格。页面上那段文字不在源稿里，定位靠字段路径，不靠行号与原文匹配：
+  // 路径就是它唯一的地址。提交时验一次原文还在，通过时再验一次。
+  if (a === 'chg' && body.rec !== undefined) {
+    const doc = String(body.doc || '')
+    const rec = String(body.rec || '')
+    const path = String(body.path || '')
+    if (!/^keys\/[\w-]+$/.test(doc)) throw new Error('bad doc')
+    if (!REC_ID.test(rec)) throw new Error('bad rec')
+    if (!REC_PATH.test(path)) throw new Error('bad path')
+    const before = String(body.before ?? '')
+    const after = String(body.after ?? '')
+    if (after === before) throw new Error('没改动')
+    if (after.length > MAX_ONE || before.length > MAX_ONE) throw new Error('bad text')
+    const cur = (await recs.doc(rec).get()).data[0]
+    if (!cur) throw new Error('no rec')
+    if (leaf(flatOf(cur), path) !== before) throw new Error('stale')
+    // 竖线按那一格此刻的文字判，不按提交的那一页：同一格在别的页上可能是表格的一格
+    // （护甲模组、刷取清单把记录展开成 markdown 表），多一个分隔符那一行就多一格，
+    // npm run build 当场中止。原文里本来就有裸竖线的说明它没被画进表格——不然现在
+    // 就构建不过——这种放行；原文没有的一律挡，要写就用全角｜。
+    const unsafe = cellSafe(after, !barePipe(before))
+    if (unsafe) throw new Error(unsafe)
+    const set = { doc, rec, path, label: String(body.label || '').slice(0, 200), kind: 'rec',
+                  before, after, ok: 0, at: new Date().toISOString(), by: me.name, uid: me.uid }
+    // 同一个人在同一格只留一条待审，重改即改写。**按记录与路径认，不按页**：
+    // 同一格在几页上都有，从哪一页改都是同一处。
+    const old = await edits.where({ rec, path, uid: me.uid, ok: 0 }).limit(1).get()
+    if (old.data.length) {
+      await edits.doc(old.data[0]._id).update(set)
+      return { ok: 1, id: old.data[0]._id }
+    }
+    const r = await edits.add(set)
+    return { ok: 1, id: r.id }
+  }
+
   if (a === 'chg') {
     const doc = String(body.doc || '')
     const cur = (await docs.doc(doc).get()).data[0]
@@ -554,17 +648,47 @@ async function editorRoute(a, body, event, me) {
     //
     // **两发一起走**：待审那一发与取正文那一发互不依赖，串起来就是白等一个往返。
     // 配装页开编辑态卡在这一下——iframe 要等它回来才开始载。
-    const [r, one] = await Promise.all([
+    //
+    // recs：主键页的就地编辑把本页每条记录那一份的 hash 带来（edit.json 里记着构建
+    // 时那一份）。库里 hash 不同的那几条整条带回去——页面上那几格站上还是旧的，或者
+    // 要拿库里现在的文字当底稿；相同的一条都不带。记录上的待审按记录认、不按页认：
+    // 同一格在几页上都有，从别页提的那一条这一页也要涂上。
+    const want = body.recs && typeof body.recs === 'object'
+      ? Object.keys(body.recs).filter((id) => REC_ID.test(id)) : null
+    const [r, one, rp, rs] = await Promise.all([
       edits.where({ doc, ok: 0 }).limit(200).get(),
       (body.judge || body.md) ? docs.doc(doc).get() : Promise.resolve(null),
+      want ? edits.where({ kind: 'rec', ok: 0 }).limit(500).get() : Promise.resolve(null),
+      want ? recsOf(want, { json: true, hash: true, by: true, at: true }) : Promise.resolve(null),
     ])
     const cur = one ? one.data[0] : null
     const md = cur ? cur.md : ''
-    const out = { pend: body.judge ? r.data.map((e) => ({ ...e, stale: !locate(md, e) })) : r.data }
+    let pend = r.data
+    if (want) {
+      const on = new Set(want)
+      pend = pend.filter((e) => e.kind !== 'rec').concat(rp.data.filter((e) => on.has(e.rec)))
+    }
+    if (body.judge) {
+      // 记录那几条的陈旧与否按库里那一格此刻的文字判，与 emark 通过时同一条。
+      const ids = [...new Set(pend.filter((e) => e.kind === 'rec').map((e) => e.rec))]
+      const now = ids.length ? await recsOf(ids) : {}
+      pend = pend.map((e) => ({ ...e, stale: e.kind === 'rec'
+        ? !now[e.rec] || leaf(flatOf(now[e.rec]), e.path) !== e.before
+        : !locate(md, e) }))
+    }
+    const out = { pend }
+    if (want) {
+      out.recs = {}
+      for (const id of want) {
+        const got = rs[id]
+        if (got && got.hash !== body.recs[id]) out.recs[id] = { json: got.json, hash: got.hash, by: got.by, at: got.at }
+      }
+    }
     if (body.md) { out.md = md; out.hash = cur ? cur.hash : '' }
     // hash 相等就没有待上站的改动，一条都不必取。
     if (body.stale || (body.hash && out.hash && body.hash !== out.hash)) {
       out.done = (await edits.where({ doc, ok: 1 }).limit(200).get()).data
+        .filter((e) => e.kind !== 'rec')
     }
     return out
   }
@@ -588,18 +712,37 @@ async function editorRoute(a, body, event, me) {
     try {
       return await db.runTransaction(async (tx) => {
         const groups = new Map()
-        // 先确认整批仍待审，再读取正文；驳回不需要碰 docs。
+        const cells = new Map()
+        // 先确认整批仍待审，再读取正文；驳回不需要碰 docs 与 recs。
         for (const job of jobs) {
           const e = checked(await tx.collection('edits').doc(job.id).get()).data
           if (!e) throw new Error('no edit')
           if (Number(e.ok) !== 0) throw new Error('conflict')
           if (job.ok === 1) {
-            if (!groups.has(e.doc)) groups.set(e.doc, [])
-            groups.get(e.doc).push(e)
+            const into = e.kind === 'rec' ? cells : groups
+            const key = e.kind === 'rec' ? e.rec : e.doc
+            if (!into.has(key)) into.set(key, [])
+            into.get(key).push(e)
           }
         }
         // 官方上限 100 次操作，预留开始/提交；过大整批拒绝，不拆批。
-        if (2 * jobs.length + 2 * groups.size + 2 > 100) throw new Error('batch too large')
+        if (2 * jobs.length + 2 * (groups.size + cells.size) + 2 > 100) throw new Error('batch too large')
+        // 记录那一路：每条先按库里此刻那一格核对原文，同一格两份一起通过即冲突。
+        const recChanges = []
+        for (const [id, proposals] of cells) {
+          const cur = checked(await tx.collection('recs').doc(id).get()).data
+          if (!cur) throw new Error('no rec')
+          const flat = flatOf(cur)
+          const seen = new Set()
+          for (const e of proposals) {
+            if (seen.has(e.path) || leaf(flat, e.path) !== e.before) throw new Error('conflict')
+            seen.add(e.path)
+            const unsafe = cellSafe(String(e.after), !barePipe(e.before))
+            if (unsafe) throw new Error(unsafe)
+            flat[e.path] = String(e.after)
+          }
+          recChanges.push({ id, json: canon(flat), by: proposals[proposals.length - 1].by })
+        }
         const changes = []
         for (const [id, proposals] of groups) {
           const cur = checked(await tx.collection('docs').doc(id).get()).data
@@ -634,6 +777,11 @@ async function editorRoute(a, body, event, me) {
         for (const change of changes) {
           updated(await tx.collection('docs').doc(change.id).update({
             md: change.md, hash: sha1(change.md), at, by: change.by
+          }))
+        }
+        for (const change of recChanges) {
+          updated(await tx.collection('recs').doc(change.id).update({
+            json: change.json, hash: sha1(change.json), at, by: change.by
           }))
         }
         for (let i = 0; i < jobs.length; i++) {
@@ -753,6 +901,54 @@ async function route(a, body, event) {
     const set = { md, hash, at: new Date().toISOString(), by: '本机', landed: hash }
     const r = await docs.doc(id).update(set)
     if (!r.updated) await docs.doc(id).set(set)
+    return { ok: 1 }
+  }
+
+  // ── sync.py 专用：记录上的站内文字，与 docs 那一路同一套三方比 ──
+  // 整库四千多条，一次取不回来，按 _id 排序翻页；判据是「这一页没满」。
+  if (a === 'rpull') {
+    const skip = Number(body.skip) || 0
+    const r = await recs.orderBy('_id', 'asc').skip(skip).limit(1000).get()
+    return { recs: r.data, more: r.data.length >= 1000 ? 1 : 0 }
+  }
+
+  // 请求体压过再发（gzip → base64），与 push 同一条；一批几百条，由 sync.py 按体积切。
+  // landed 与 hash 一起写：推上去的那一刻库里这一版就是盘上那一版。
+  if (a === 'rpush') {
+    const rows = JSON.parse(zlib.gunzipSync(Buffer.from(String(body.gz || ''), 'base64')).toString())
+    if (!Array.isArray(rows) || !rows.length || rows.length > REC_BATCH) throw new Error('bad batch')
+    const at = new Date().toISOString()
+    const sets = rows.map((row) => {
+      const id = String((row || [])[0] || '')
+      const json = String((row || [])[1] || '')
+      if (!REC_ID.test(id)) throw new Error('bad rec')
+      const flat = flatOf({ json })
+      if (Object.keys(flat).some((k) => !REC_PATH.test(k)) || canon(flat) !== json) throw new Error('bad rec')
+      return [id, { json, hash: sha1(json), landed: sha1(json), at, by: '本机' }]
+    })
+    // 先全部验完再写：一批里有一条坏的就一条都不写，sync.py 那一侧不必猜写到了哪儿。
+    for (let i = 0; i < sets.length; i += 20) {
+      await Promise.all(sets.slice(i, i + 20).map(([id, set]) => recs.doc(id).set(set)))
+    }
+    return { ok: 1, n: sets.length }
+  }
+
+  if (a === 'rdrop') {
+    const ids = Array.isArray(body.ids) ? body.ids.map(String) : []
+    if (!ids.length || ids.length > REC_BATCH || ids.some((id) => !REC_ID.test(id))) throw new Error('bad batch')
+    await Promise.all(ids.map((id) => recs.doc(id).remove()))
+    return { ok: 1 }
+  }
+
+  // landed 那一位按批写，与 docs 的 landed 同一个契约：写不进去就是那一条没了，报出来。
+  if (a === 'rlanded') {
+    const items = Array.isArray(body.items) ? body.items : []
+    if (!items.length || items.length > REC_BATCH) throw new Error('bad batch')
+    for (const [id, hash] of items) {
+      if (!REC_ID.test(String(id)) || !/^[0-9a-f]{40}$/.test(String(hash))) throw new Error('bad landed')
+    }
+    const r = await Promise.all(items.map(([id, hash]) => recs.doc(String(id)).update({ landed: String(hash) })))
+    if (r.some((x) => !x.updated)) throw new Error('no rec')
     return { ok: 1 }
   }
 

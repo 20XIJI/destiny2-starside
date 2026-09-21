@@ -5,8 +5,6 @@ window.starsidePages = [
   ["docs/combatant-scalars","战斗人员倍率","combatant-scalars/index.html","机制","","2026.8.14"],
   ["docs/game-mechanics","游戏机制","game-mechanics/index.html","机制","","2026.8.30"],
   ["docs/power-delta","压光伤害","power-delta/index.html","机制","","2026.8.14"],
-  ["armor-sets","护甲套装效果","armor-sets/index.html","档案","","2026.9.7"],
-  ["artifact-mods","神器模组","artifact-mods/index.html","档案","","2026.9.7"],
   ["docs/ability-cooldown","技能冷却","ability-cooldown/index.html","档案","","2026.8.25"],
   ["docs/boss-hp","首领生命值","boss-hp/index.html","档案","","2026.8.30"],
   ["docs/elements","职业分支详解","elements/index.html","档案","","2026.8.23"],

@@ -756,7 +756,8 @@ def blocks_of(idx, mv, arts, md, ns=''):
              item(idx, '元素', who, prefer, kind='分节', label=branch)]
     o += ['<section class="block" id="%ssec-1">' % ns, '<h2 class="sect-label">职业</h2>']
     o += row(group('职业', ident, key='职业')
-             + group('超能', [item(idx, '超能', meta(md, '超能'), prefer)])
+             # 「超能：」后面空着是这一套没有超能（多职业配装），格子空着画，与星相、碎片同一条
+             + group('超能', [item(idx, '超能', n, prefer) for n in names(md, '超能')])
              + group('技能', skills))
     o += row(group('星相', [item(idx, '星相', n, prefer) for n in names(md, '星相')])
              + group('碎片', [item(idx, '碎片', n, prefer) for n in names(md, '碎片')]))

@@ -142,12 +142,6 @@ def tree():
         up = parent.get(slug, '')
         g = group.get(d['where']) or (group.get(docs_where(docs, up)) if up else '') or '站务'
         rows.append([d['id'], d['title'], d['where'] + '/index.html', g, up, d['at']])
-    # 两页不走 convert-doc，标题与更新时间写在生成器里，这里照它们的产出取
-    for pid, title, url in (('artifact-mods', '神器模组', 'artifact-mods/index.html'),
-                            ('armor-sets', '护甲套装效果', 'armor-sets/index.html')):
-        html = open(os.path.join(shell.SITE, url), encoding='utf-8').read()
-        at = re.search(r'<span class="stamp">更新 ([\d.]+)</span>', html)
-        rows.append([pid, title, url, group.get(pid, '档案'), '', at.group(1) if at else ''])
     rows.sort(key=lambda r: (r[3], r[4], r[0]))
     # 配装那三张表跟着一起导：审核台左栏按类别与职业建树、列表按分支上色，
     # 而 DOM 那边只认得 b-prismatic 这种 slug。**照 markup.py 那一份导**，
@@ -165,7 +159,7 @@ def tree():
 
 def docs_where(docs, pid):
     """父页的 _id → 它的产出路径，用来去首页那张表里查它归哪个组。"""
-    slug = pid[len('docs/'):] if pid.startswith('docs/') else pid
+    slug = pid.split('/', 1)[-1]
     return docs[slug]['where'] if slug in docs else pid
 
 

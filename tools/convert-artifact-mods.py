@@ -13,6 +13,7 @@ import os
 import re
 import sys
 
+import editmap
 import pagedex
 import resolve
 import shell
@@ -274,7 +275,8 @@ def icon_src(img):
     return hit.group(1) if hit else ''
 
 
-def render(page, digest='', dex=None):
+def render(page, digest='', dex=None, origins=None):
+    """origins 是本页的出处表（editmap.Origins）：模组正文在记录上，编辑台按它找回。"""
     md = page['md']
     dex = dex if dex is not None else pagedex.Index(PAGE, 'art-perk')
     o = [shell.head(PAGE_TITLE, meta_of(md, '描述'), app_js=True),
@@ -334,10 +336,13 @@ def render(page, digest='', dex=None):
                         # 拼接，前后各留一个，与 <div class="mod-desc"> 包住的完全相同。
                         desc='\n%s\n' % '\n'.join('<p>%s</p>' % p
                                                   for _, _, p in mod['desc']))
+                where = (origins.attr((mod['key'], 'i18n/zh-CN/realgame_details',
+                                       '%s · 说明' % name))
+                         if origins is not None and mod['key'] else '')
                 o += ['<article class="mod" data-tier="%d">' % mod['tier'],
                       mod['icon'],
                       '<h4%s>%s</h4>' % (bmark(mod['at']), mod['name']),
-                      '<div class="mod-desc">']
+                      '<div class="mod-desc"%s>' % where]
                 o += ['<p%s>%s</p>' % (bmark(n, m), p) for n, m, p in mod['desc']]
                 o += ['</div>', '</article>']
             o.append('</div>')
@@ -384,13 +389,15 @@ def main():
     icons = Icons(OUT_DIR, N_EAGER)
     page = parse(src, icons)
     dex = pagedex.Index(PAGE, 'art-perk', searchable=True)
-    out = render(page, src_hash(md), dex)
+    origins = editmap.Origins()
+    out = render(page, src_hash(md), dex, origins)
     check(page, out, icons)
 
-    shell.emit(OUT_DIR, out, '分节 %d、模组 %d、图标引用 %d，着色 %d 处'
+    shell.emit(OUT_DIR, origins.seal(out), '分节 %d、模组 %d、图标引用 %d，着色 %d 处'
                % (len(page['sections']),
                   sum(len(s['mods']) for s in page['sections']), icons.refs,
                   out.count('<span class="')))
+    print('%s/%s  %d 处出处' % (PAGE, editmap.FILE, origins.write(OUT_DIR)))
     _, n = dex.write()
     print('data/index/%s.json  %d 条' % (PAGE, n))
 

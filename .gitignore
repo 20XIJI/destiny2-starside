@@ -151,10 +151,14 @@ references/*
 !references/keys/*.md
 !references/builds/
 !references/builds/*/
-!references/builds/*/*.md
+!references/builds/*/*.json
 !references/pages/
 !references/pages/*.json
 .archived/
+
+# 上线的文件全在 site/ 下。常见的全局忽略表把 site/ 当成构建产物整个忽略（mkdocs 的
+# 输出目录就叫这个），那样新加的页面与 edit.json 进不了 git add -A，也就发不上站。
+!site/
 
 # 页面索引：三个资料生成器渲染时由 tools/pagedex.py 写出，每次构建重写。
 data/index/

@@ -401,15 +401,25 @@ def own_hosts(key):
     return out
 
 
-def exotic_text(key, own):
-    """装备本体的第一段，接着各宿主的正文，再接本体其余段落。"""
+def exotic_parts(key, own):
+    """装备本体的第一段，接着各宿主的正文，再接本体其余段落：`[(主键, 文字)]`。
+
+    主键是那一段文字写在哪条记录上。本体的首段与其余段落是同一个字段，拆在宿主
+    两侧，所以本体那一枚可能出现两次。"""
     paras = [p.strip() for p in own.split(PARA) if p.strip()]
-    hosts = []
+    hosts, seen = [], set()
     for h in own_hosts(key):
         t = zh(facts().at(h)).get('realgame_details', '').strip()
-        if t and t not in hosts:
-            hosts.append(t)
-    return (' %s ' % PARA).join(paras[:1] + hosts + paras[1:])
+        if t and t not in seen:
+            seen.add(t)
+            hosts.append((h, t))
+    rest = (' %s ' % PARA).join(paras[1:])
+    return ([(key, paras[0])] if paras else []) + hosts + ([(key, rest)] if rest else [])
+
+
+def exotic_text(key, own):
+    """exotic_parts() 拼成一格。"""
+    return (' %s ' % PARA).join(t for _, t in exotic_parts(key, own))
 
 
 def authors_of(rec):
@@ -417,6 +427,11 @@ def authors_of(rec):
     `i18n.zh-CN.site_authors`；效果表那 29 条作者评语在根上的 `authors`。
     取法只有这一处，页面、词表与回归共用。"""
     return zh(rec).get('site_authors') or rec.get('authors') or {}
+
+
+def authors_path(rec):
+    """作者块在记录上的路径，取法与 authors_of() 同一条。就地编辑按它标出处。"""
+    return 'i18n/zh-CN/site_authors' if zh(rec).get('site_authors') else 'authors'
 
 
 def author_block(rec, who):
@@ -653,18 +668,21 @@ class Table:
         PROBLEMS.append((self.page, markup.text_of(resolve.bare(title), collapse=True), col, why))
 
     def block(self, rec, key):
-        """这一行的正文从哪一块取。"""
+        """这一行的正文从哪一块取：`(那一块, 它在记录上的路径)`。路径给就地编辑标出处。"""
         n = self.seen[key]
         self.seen[key] += 1
         who = AUTHORED.get(self.page)
         if who:
             base = author_block(rec, who)
-            seq = [base] + list(base.get('variants') or ())
+            at = '%s/%s' % (authors_path(rec), who)
+            seq = [(base, at)] + [(v, '%s/variants/%d' % (at, i))
+                                  for i, v in enumerate(base.get('variants') or ())]
         else:
-            vs = rec.get('variants') or ()
-            seq = ([v for v in vs if v.get('page') == self.page] + [zh(rec)]
-                   + [v for v in vs if 'page' not in v])
-        return seq[n] if n < len(seq) else None
+            vs = list(enumerate(rec.get('variants') or ()))
+            seq = ([(v, 'variants/%d' % i) for i, v in vs if v.get('page') == self.page]
+                   + [(zh(rec), 'i18n/zh-CN')]
+                   + [(v, 'variants/%d' % i) for i, v in vs if 'page' not in v])
+        return seq[n] if n < len(seq) else (None, None)
 
     def icon_src(self, key, title):
         """这一枚的图相对本页的路径。取不到记一笔、回空串。"""
@@ -682,13 +700,14 @@ class Table:
         return '{ico|![](%s)}' % got if got else ''
 
     def lines(self, raw):
-        """源稿一行 → [(格子, 主键, {PERK 名: 主键})]：本行加它的子行。
-        横幅行与子行的主键是 None。"""
+        """源稿一行 → [(格子, 主键, {PERK 名: 主键}, 出处)]：本行加它的子行。
+        横幅行与子行的主键是 None。出处与格子一一对应，站内写的那几格是
+        `(主键, 字段路径, 标签)`，别的格是 None。"""
         text = raw.strip()
         self.perks = None
         if text.startswith('=='):
             self.lane = text.strip('= ').strip()
-            return [([text], None, None)]
+            return [([text], None, None, None)]
         spec, _, title = text.partition('  ')
         keys = spec.split()
         title = title.strip()
@@ -702,8 +721,8 @@ class Table:
             title = zh(facts().sets.get(str(rec['onSets'][0]))).get('name') or title
         sec, pair = matrix_row(self.page, self.section, self.lane, key)
         if sec is not None:
-            return [(self.matrix_cells(title, sec, pair), keys, None)]
-        block = self.block(rec, key)
+            return [(self.matrix_cells(title, sec, pair), keys, None, None)]
+        block, at = self.block(rec, key)
         if block is None:
             self.problem(title, '*', '%s 名下没有第 %d 段' % (key, self.seen[key]))
             block = {}
@@ -711,14 +730,18 @@ class Table:
         out = []
         frames = rec.get('weaponTypes') if self.page == 'weapon-perks' else None
         if not (frames and not block.get('realgame_details')):
-            out.append((self.cells(key, rec, block, title), keys, self.perks))
-        for e in frames or ():
+            cells, spots = self.cells(key, rec, block, at, title)
+            out.append((cells, keys, self.perks, spots))
+        for i, e in enumerate(frames or []):
             sub = '%s（%s）' % (zh(rec).get('name'), '、'.join(type_names()[t] for t in e['itemSubType']))
-            out.append((self.sub_cells(sub, key, e['realgame_details']), None, None))
-        for e in rec.get('enhanced') or ():
+            out.append((self.sub_cells(sub, key, e['realgame_details']), None, None,
+                        self.sub_spots((key, 'weaponTypes/%d/realgame_details' % i, sub))))
+        for i, e in enumerate(rec.get('enhanced') or []):
             by = [str(b) for b in e['by']]
             sub = '、'.join(name_of(b) for b in by)
-            out.append((self.sub_cells(sub, by[0], e['realgame_details']), None, None))
+            out.append((self.sub_cells(sub, by[0], e['realgame_details']), None, None,
+                        self.sub_spots((key, 'enhanced/%d/realgame_details' % i,
+                                        '%s · %s' % (zh(rec).get('name'), sub)))))
         return out
 
     def sub_cells(self, title, icon_key, text):
@@ -728,35 +751,47 @@ class Table:
                          else text if f == 'realgame_details' else '')
         return cells
 
-    def cells(self, key, rec, block, title):
-        cells = [title]
+    def sub_spots(self, spot):
+        """子行的出处：只有说明那一格是站内写的。"""
+        return [None] + [spot if f == 'realgame_details' else None for f in self.fields[1:]]
+
+    def cells(self, key, rec, block, at, title):
+        cells: list = [title]
+        spots: list = [None]
         for col, f in zip(self.head[1:], self.fields[1:]):
-            cells.append(self.cell(key, rec, block, title, col, f))
-        return cells
+            text, field = self.cell(key, rec, block, title, col, f)
+            cells.append(text)
+            spots.append((key, '%s/%s' % (at, field), '%s · %s' % (
+                markup.text_of(resolve.bare(title), collapse=True),
+                col.replace(markup.CELL_BREAK, ''))) if field and at else None)
+        return cells, spots
 
     def cell(self, key, rec, block, title, col, f):
+        """一格：`(文字, 取自那一块里的哪个字段)`。不是从那一块原样取来的（图标、
+        派生、异域拼合）字段回 None，就地编辑不标它。"""
         page = self.page
         if f == 'icon':
-            return self.icon(key, title)
+            return self.icon(key, title), None
         if page in EXOTIC and f == '异域 PERK':
             names, first = exotic_perks(key)[:2]
             self.perks = names
             if not names:
                 self.problem(title, col, '插槽与催化剂里没有叫得出名字的')
-                return ''
+                return '', None
             src = self.icon_src(first, title) if first else ''
-            return '{perk|%s}' % markup.CELL_BREAK.join((['![](%s)' % src] if src else []) + list(names))
+            return ('{perk|%s}' % markup.CELL_BREAK.join((['![](%s)' % src] if src else [])
+                                                         + list(names)), None)
         if page in EXOTIC and f == 'realgame_details':
             got = exotic_text(key, block.get('realgame_details') or '')
             if not got:
                 self.problem(title, col, '装备与宿主都没有正文')
-            return got
+            return got, None
         derive = DERIVED.get(col)
         if derive is not None and not block.get(f):
             got = derive(self, key)
             if got is None:
                 self.problem(title, col, '派生不出来')
-            return got or ''
+            return got or '', None
         who = AUTHORED.get(self.page)
         if who and not block.get(f):
             # 作者那几格的字段名是英文，列名是中文，对应写在 AUTHOR_FIELDS 一处
@@ -772,7 +807,7 @@ class Table:
         # 取不到就记一笔。作者没写的那一格不算——这一页的作者本来就可以留空。
         if f not in block and not who:
             self.problem(title, col, '%s 名下没有「%s」' % (key, f))
-        return got
+        return got, f if isinstance(block.get(f), str) else None
 
     def matrix_cells(self, title, sec, pair):
         cols = [c['名'] for c in sec['列']]
@@ -866,9 +901,9 @@ DERIVED = {
 def expand(md, page, where):
     """整篇源稿里的表区换成 markdown 表。
 
-    回 (新正文, {行号: 主键}, {行号: {PERK 名: 主键}})，行号 0 起。
+    回 (新正文, {行号: 主键}, {行号: {PERK 名: 主键}}, {行号: [每格的出处]})，行号 0 起。
     """
-    out, keys_at, perks_at = [], {}, {}
+    out, keys_at, perks_at, spots_at = [], {}, {}, {}
     lines = md.split('\n')
     seen = collections.Counter()
     section, i = '', 0
@@ -887,14 +922,16 @@ def expand(md, page, where):
         out.append('|%s|' % '|'.join(['---'] * len(head)))
         i += 1
         while i < len(lines) and lines[i].strip() and not lines[i].startswith('##'):
-            for cells, keys, perks in table.lines(lines[i]):
+            for cells, keys, perks, spots in table.lines(lines[i]):
                 if keys:
                     keys_at[len(out)] = keys
                 if perks:
                     perks_at[len(out)] = perks
+                if spots and any(spots):
+                    spots_at[len(out)] = spots
                 # 神器模组页那一批正文按真换行分行（那一页不走表格），表格一行一条，
                 # 格内换行只能写成 \\。
                 out.append('| %s |' % ' | '.join(c.replace('\n', markup.CELL_BREAK)
                                                  for c in cells))
             i += 1
-    return '\n'.join(out), keys_at, perks_at
+    return '\n'.join(out), keys_at, perks_at, spots_at

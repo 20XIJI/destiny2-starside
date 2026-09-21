@@ -5,6 +5,8 @@
 //
 //   doc（资料页，缺省）  逐格改。定位靠生成器戳的 data-b（源稿行号），格号用
 //                        DOM 的 cellIndex 现取；提交一处落一条待审，走 chg。
+//                        主键页上来自记录的那几段戴 data-e，改的是记录上的一格
+//                        （记录 + 字段路径），出处表在同目录的 edit.json 里。
 //   build（配装详情页）  整篇替换。配装页没有 data-b，逐格无从落脚也无从校验，
 //                        所以开一层遮罩载填表页，保存走 bsave。
 //
@@ -21,12 +23,16 @@
   // 配装页没有 data-b，逐格那条路在它身上无从落脚。
   var KIND = main.getAttribute('data-kind') || 'doc'
   var PAGE_HASH = main.getAttribute('data-src-hash') || ''
+  // 主键页：表格与记录那几段的正文在实体层的记录上，源稿里只有主键。页面上的
+  // data-b 是展开之后的行号，与库里那份骨架对不上，所以散文一律按原文认，不信行号。
+  var KEYS = DOC.indexOf('keys/') === 0
   var HERE = document.querySelector('link[href$="assets/site.css"]')
     .getAttribute('href').replace('assets/site.css', '')
 
   // buildBase 只有配装那条路用：刚灌完时填表页读回来的样子，脏判据比的就是它。
+  // map 是本页的出处表（edit.json），recNow 是库里比页面新的那几条记录：{_id: {flat, by}}。
   var S = { me: null, md: null, hash: '', lines: [], pend: [], done: [], on: false,
-            buildBase: null }
+            buildBase: null, map: null, recNow: {} }
 
   var el = function (tag, cls, text) {
     var n = document.createElement(tag)
@@ -132,6 +138,7 @@
   function decode () {
     LINES.clear()
     invalidate()
+    origins()
     var prev = 0
     document.querySelectorAll('[data-b]').forEach(function (n) {
       var v = n.getAttribute('data-b').split('+')
@@ -150,6 +157,56 @@
         last = at || null
       })
     })
+  }
+
+  // ── 记录上的一格 ───────────────────────────────────────────────────
+  // 元素 → 它指的出处序号（几段拼成的一格有几个）。**产出里新出处写成空串**，
+  // 即「已出现的最大号 + 1」，指回前面某一处的才写号（见 tools/editmap.py 的 seal()）。
+  var ORIGIN = new Map()
+
+  function origins () {
+    ORIGIN.clear()
+    var top = -1
+    document.querySelectorAll('main [data-e]').forEach(function (n) {
+      ORIGIN.set(n, n.getAttribute('data-e').split(',').map(function (x) {
+        return x === '' ? ++top : Number(x)
+      }))
+    })
+  }
+
+  // 出处表只在编辑态才要，读者不下载。页面与出处表同一次构建产出、同一次部署，
+  // 走缓存的话可能拿到上一版的表，序号就对不上页面，所以每次重新验一遍。
+  function sidecar () {
+    if (S.map || !document.querySelector('main [data-e]')) return Promise.resolve()
+    return fetch('edit.json', { cache: 'no-cache' }).then(function (r) {
+      if (!r.ok) throw new Error('载不动出处表 edit.json（HTTP ' + r.status + '）')
+      return r.json()
+    }).then(function (j) { S.map = j })
+  }
+
+  // 出处 i 此刻的文字：库里比页面新就取库里的，否则就是构建时那一份。
+  function recNow (i) {
+    var e = S.map.e[i]
+    var now = S.recNow[e[0]]
+    if (!now) return e[2]
+    return Object.prototype.hasOwnProperty.call(now.flat, e[1]) ? now.flat[e[1]] : ''
+  }
+
+  // 这一格有没有待审或待上站的改动。待审按记录与路径认，与从哪一页提的无关。
+  function recState (i) {
+    var e = S.map.e[i]
+    var p = S.pend.filter(function (q) {
+      return q.kind === 'rec' && q.rec === e[0] && q.path === e[1]
+    })[0]
+    if (p) return { ok: 0, after: p.after, by: p.by }
+    var now = recNow(i)
+    if (now !== e[2]) return { ok: 1, after: now, by: (S.recNow[e[0]] || {}).by }
+    return null
+  }
+
+  // 记录里的段落有真换行，页面上是 <br>；源稿方言里格内换行是 \\。
+  function showRec (t) {
+    return show(String(t).replace(/\r?\n/g, '\\\\'))
   }
 
   // 一个块占源稿的哪几行。**多行段落是区间**，只取首行会让人改了一段却只落下第一行。
@@ -272,7 +329,7 @@
     var at = where(node)
     var found = null
     if (at) {
-      if (S.hash && S.hash === PAGE_HASH) {
+      if (S.hash && S.hash === PAGE_HASH && !KEYS) {
         var before = textAt(at)
         if (before != null) found = Object.assign({}, at, { before: before })
       } else {
@@ -319,6 +376,7 @@
         if (text) pool.set(text, pool.has(text) ? null : n)
       })
       S.pend.concat(S.done).forEach(function (p) {
+        if (p.kind === 'rec') return
         var hits = []
         groups.forEach(function (pool, key) {
           var bits = key.split(':')
@@ -351,6 +409,8 @@
   // ── 编辑态 ─────────────────────────────────────────────────────────
   var TARGET = 'main [data-b]'
 
+  // 按源稿定位的那些块。戴着 data-e 的、以及被它包着或包着它的不算：那一处
+  // 的文字在记录上，走 recTargets()。
   function targets () {
     var out = []
     document.querySelectorAll(TARGET).forEach(function (n) {
@@ -364,14 +424,29 @@
     document.querySelectorAll('main table tr:not([data-b])').forEach(function (n) {
       n.querySelectorAll('td, th').forEach(function (c) { out.push(c) })
     })
-    return out
+    return out.filter(function (n) { return !n.closest('[data-e]') && !n.querySelector('[data-e]') })
+  }
+
+  function recTargets () {
+    return Array.from(ORIGIN.keys())
+  }
+
+  // 编辑态下哪些块点得开。主键页上源稿里找不到原文的那些（行标题、从主键现算的
+  // 列）不挂：点了也只能报「无法定位」。
+  function editable () {
+    var doc = targets()
+    if (KEYS) doc = doc.filter(function (n) { return resolve(n) })
+    return doc.concat(recTargets())
   }
 
   var ORIG = new Map()          // 涂色之前那一格原样的 HTML，退出编辑态时还回去
+  var HID = []                  // 同一个字段切成几段时，涂色把新值写进第一段，其余几段收起
 
   function unshade () {
     ORIG.forEach(function (html, node) { node.innerHTML = html })
     ORIG.clear()
+    HID.forEach(function (n) { n.hidden = false })
+    HID = []
     document.querySelectorAll('.se-hit').forEach(function (n) {
       n.classList.remove('se-hit', 'se-wait', 'se-pass')
     })
@@ -405,11 +480,56 @@
       node.innerHTML = show(p.after)
       node.appendChild(was)
     })
+    if (S.map) recShade()
+  }
+
+  /* 记录那几格的涂色。一格只指一个字段时与源稿那一路同一种读法：新值换进原位，
+     旧值划掉跟在后面。**同一个字段切成几段**（一段说明画成几个 <p>）时新值整段
+     写进第一段，其余几段收起，不然每一段都各摆一遍整段新文。一格指几个字段
+     （两位作者在同一栏的推荐）时原样留着，把有改动的那几个字段的新值排在后面。 */
+  function recShade () {
+    var first = {}
+    ORIGIN.forEach(function (ids, node) {
+      var hits = ids.map(function (i) { return [i, recState(i)] }).filter(function (x) { return x[1] })
+      if (!hits.length) return
+      ORIG.set(node, node.innerHTML)
+      var wait = hits.some(function (x) { return x[1].ok === 0 })
+      node.classList.add('se-hit', wait ? 'se-wait' : 'se-pass')
+      if (ids.length === 1) {
+        var p = hits[0][1]
+        if (first[ids[0]]) {
+          node.hidden = true
+          HID.push(node)
+          return
+        }
+        first[ids[0]] = 1
+        var was = el('span', 'se-was')
+        var old = el('s')
+        // 旧值：同一个字段的每一段都要拼进来，不然划掉的只是第一段
+        old.innerHTML = showRec(S.map.e[ids[0]][2])
+        was.appendChild(old)
+        was.appendChild(el('span', 'se-by', (p.by || '?') + (p.ok === 1 ? ' · 待上站' : '')))
+        node.innerHTML = showRec(p.after)
+        node.appendChild(was)
+        return
+      }
+      hits.forEach(function (x) {
+        var add = el('span', 'se-was se-add')
+        add.innerHTML = showRec(x[1].after)
+        add.appendChild(el('span', 'se-by', S.map.e[x[0]][3] + ' · ' + (x[1].by || '?')
+          + (x[1].ok === 1 ? ' · 待上站' : '')))
+        node.appendChild(add)
+      })
+    })
   }
 
   function mark (on) {
     document.body.classList.toggle('se-on', on)
-    targets().forEach(function (n) { n.classList.toggle('se-cell', on) })
+    if (!on) {
+      document.querySelectorAll('.se-cell').forEach(function (n) { n.classList.remove('se-cell') })
+      return
+    }
+    editable().forEach(function (n) { n.classList.add('se-cell') })
   }
 
   // ── 就地那个小框 ───────────────────────────────────────────────────
@@ -420,6 +540,7 @@
   }
 
   function open (node) {
+    if (ORIGIN.has(node)) return openRec(node)
     shut()
     var at = resolve(node)
     if (!at) {
@@ -555,6 +676,120 @@
     ta.setSelectionRange(ta.value.length, ta.value.length)
   }
 
+  /* 记录上的一格（或几格）。底稿是那一格此刻的文字：库里比页面新就取库里的。
+     一处拼了几个字段（异域说明、两位作者同一栏）时一个字段一个框，各自提交。
+     **不接表格那一档的回车规则**：记录里的段落本来就有真换行，展开成表的那几页
+     由生成器换成格内换行。竖线由云函数按那一格的原文挡，与在哪一页提交无关。 */
+  function openRec (node) {
+    shut()
+    var ids = ORIGIN.get(node)
+    box = el('div', 'se-box')
+    var fields = ids.map(function (i) {
+      var e = S.map.e[i]
+      var before = recNow(i)
+      var mine = S.pend.filter(function (p) {
+        return p.kind === 'rec' && p.rec === e[0] && p.path === e[1] && p.uid === S.me.uid
+      })[0]
+      var other = S.pend.filter(function (p) {
+        return p.kind === 'rec' && p.rec === e[0] && p.path === e[1] && p.uid !== S.me.uid
+      })[0]
+      box.appendChild(el('div', 'se-where', e[3]
+        + (mine ? ' · 你的待审' : other ? ' · ' + other.by + ' 待审' : '')
+        + (S.recNow[e[0]] && before !== e[2] ? ' · 库里已改，页面未上站' : '')))
+      var ta = el('textarea')
+      ta.value = mine ? mine.after : before
+      // 页面上显示的是官方描述、记录上还没有站内说明的那一格
+      if (!before) ta.placeholder = '站内还没写这一格；写了就取代页面上显示的官方描述'
+      ta.rows = Math.min(12, ta.value.split('\n').length + Math.ceil(ta.value.length / 60))
+      box.appendChild(ta)
+      var prev = el('div', 'se-prev')
+      box.appendChild(prev)
+      var notes = el('ul', 'se-notes')
+      box.appendChild(notes)
+      return { e: e, before: before, ta: ta, prev: prev, notes: notes }
+    })
+
+    var pal = el('div', 'se-pal')
+    box.appendChild(pal)
+    var last = fields[0].ta
+    fields.forEach(function (f) { f.ta.addEventListener('focus', function () { last = f.ta }) })
+    var palette = function () {
+      pal.textContent = ''
+      Object.keys(terms().tokens).sort().forEach(function (cls) {
+        var b = el('button', cls, cls)
+        b.type = 'button'
+        b.onmousedown = function (ev) { ev.preventDefault() }
+        b.onclick = function () { wrapSel(last, cls) }
+        pal.appendChild(b)
+      })
+    }
+
+    var acts = el('div', 'se-acts')
+    var send = el('button', 'op', '提交')
+    var no = el('button', 'op', '取消')
+    send.type = no.type = 'button'
+    no.onclick = shut
+
+    var redraw = function () {
+      var T = terms()
+      var errs = 0
+      var dirty = 0
+      fields.forEach(function (f) {
+        f.prev.innerHTML = showRec(f.ta.value) || '（空）'
+        f.notes.textContent = ''
+        var r = window.starsideAdmin.lint(f.ta.value, { cols: 0, head: false }, false,
+          T.classes.concat(T.pageClasses[DOC] || []))
+        r.errs.forEach(function (x) { f.notes.appendChild(el('li', null, x)) })
+        errs += r.errs.length
+        if (f.ta.value !== f.before) dirty++
+      })
+      send.textContent = !dirty ? '无改动' : errs ? '仍要提交（' + errs + ' 处问题）' : '提交'
+      send.disabled = !dirty
+    }
+    var tick = 0
+    fields.forEach(function (f) {
+      f.ta.oninput = function () { clearTimeout(tick); tick = setTimeout(redraw, 150) }
+    })
+    palette()
+    redraw()
+    wantTerms().then(function () { palette(); redraw() }, function () {})
+    send.onclick = function () {
+      var todo = fields.filter(function (f) { return f.ta.value !== f.before })
+      if (!todo.length) { shut(); return }
+      send.disabled = true
+      // 一格一条待审，逐个提交：一条失败时前面几条已经进了队列，照实说出来。
+      var sent = 0
+      todo.reduce(function (chain, f) {
+        return chain.then(function () {
+          return call('chg', { doc: DOC, rec: f.e[0], path: f.e[1], label: f.e[3],
+                               before: f.before, after: f.ta.value })
+            .then(function () { sent++ })
+        })
+      }, Promise.resolve())
+        .then(function () { return reload() })
+        .then(function () { shut(); shade() }, function (e) {
+          send.disabled = false
+          var n = fields[0].notes
+          n.textContent = ''
+          n.appendChild(el('li', null, (sent ? '已提交 ' + sent + ' 格；' : '')
+            + (e.message === 'stale'
+              ? '这一格库里已经改过，刷新页面后重新提交'
+              : '提交失败：' + (window.starsideAdmin ? window.starsideAdmin.say(e) : e.message))))
+        })
+    }
+    acts.appendChild(send)
+    acts.appendChild(no)
+    box.appendChild(acts)
+
+    document.body.appendChild(box)
+    var r = node.getBoundingClientRect()
+    box.style.top = (window.scrollY + r.bottom + 6) + 'px'
+    box.style.left = Math.max(8, Math.min(window.innerWidth - box.offsetWidth - 8,
+      window.scrollX + r.left)) + 'px'
+    fields[0].ta.focus()
+    fields[0].ta.setSelectionRange(fields[0].ta.value.length, fields[0].ta.value.length)
+  }
+
   // 选中文字 → 点芯片 → 包成着色标记；选中的整段已经是一个标记就取消。
   function wrapSel (ta, cls) {
     var a = ta.selectionStart
@@ -575,12 +810,19 @@
     // 前者后面只为拿 hash 与页面上那份比一次——那一比服务端自己做得了。
     // **页面上那份 hash 与库里相等就没有待上站的改动**，一处都不必比；
     // 不等才把已通过的那些取回来认出「这一格站上还是旧的」，由后端一并判。
-    return call('pend', { doc: DOC, md: 1, hash: PAGE_HASH }).then(function (r) {
+    // 主键页另带出处表里每条记录构建时的 hash，库里不同的那几条整条带回来。
+    return sidecar().then(function () {
+      return call('pend', { doc: DOC, md: 1, hash: PAGE_HASH, recs: S.map ? S.map.recs : undefined })
+    }).then(function (r) {
       S.md = r.md || ''
       S.hash = r.hash || ''
       S.lines = S.md.split('\n')
       S.pend = r.pend.map(function (p) { p.ok = Number(p.ok); return p })
       S.done = (r.done || []).map(function (p) { p.ok = Number(p.ok); return p })
+      S.recNow = {}
+      Object.keys(r.recs || {}).forEach(function (id) {
+        S.recNow[id] = { flat: JSON.parse(r.recs[id].json), by: r.recs[id].by }
+      })
       invalidate()
     })
   }

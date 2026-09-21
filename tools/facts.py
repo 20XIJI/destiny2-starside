@@ -1015,6 +1015,97 @@ def dump(path, payload):
     return os.path.getsize(path)
 
 
+# ── 站内文字的工作副本 ─────────────────────────────────────────────────
+# 在线编辑台改得动的那一层：记录上站内写的文字。库里 recs 集合一条记录一份，
+# `_id` 是「表名/裸 hash」，正文是 site_text() 那张扁平表的 canon()；tools/sync.py
+# 按三方比对账，与 docs 那一路同一套规矩。
+TABLES = ('inventory-items', 'sandbox-perks', 'traits', 'stats', 'equipable-item-sets',
+          'minted')
+
+# i18n 里 manifest 那一侧的字段。minted 没有 manifest，它的 i18n 全是站内写的。
+MANIFEST_TEXT = frozenset({'name', 'itemTypeDisplayName', 'itemTypeAndTierDisplayName',
+                           'flavorText', 'sourceString', 'displaySource', 'database_details'})
+
+# 根上装站内文字的几个键。`site_` 前缀那批是数值、主键与文件名，不是文字，只在本机改。
+SITE_ROOT = ('enhanced', 'weaponTypes', 'authors', 'variants')
+
+
+def table_file(table):
+    return os.path.join(OUT_DIR, table + '.json')
+
+
+def site_text(table, row):
+    """一条记录上站内写的文字：`{字段路径: 文字}`，只收字符串叶子。
+
+    路径按层用 `/` 接，数组下标写十进制：`i18n/zh-CN/site_authors/LGpig/lgpig_tier`、
+    `enhanced/0/realgame_details`。键名里没有 `/`，所以这一刀不会切错。
+    """
+    out = {}
+
+    def walk(v, path):
+        if isinstance(v, str):
+            out['/'.join(path)] = v
+        elif isinstance(v, dict):
+            for k, x in v.items():
+                walk(x, path + [k])
+        elif isinstance(v, list):
+            for i, x in enumerate(v):
+                walk(x, path + [str(i)])
+
+    for k, v in ((row.get('i18n') or {}).get('zh-CN') or {}).items():
+        if table == 'minted' or k not in MANIFEST_TEXT:
+            walk(v, ['i18n', 'zh-CN', k])
+    for k in SITE_ROOT:
+        if k in row:
+            walk(row[k], [k])
+    return out
+
+
+def canon(flat):
+    """扁平表的规范文本。库里存它、hash 算它；云函数那一侧的 canon() 与它逐字节相同。"""
+    return json.dumps(flat, ensure_ascii=False, sort_keys=True, separators=(',', ':'))
+
+
+# 线上只能新添这一格：页面上显示的是官方描述、站内还没写说明的那种。别的路径必须已经
+# 在记录上——新添 i18n.zh-CN 下别的键会写进 manifest 字段，或把一个对象换成字符串。
+NEW_LEAF = re.compile(r'^i18n/zh-CN/realgame_details$')
+
+
+def put_site_text(table, row, flat):
+    """把库里那一份站内文字写回记录。写完 site_text(row) 必须逐项等于 flat。
+
+    线上的编辑只改已有的叶子、或新添 NEW_LEAF 那一格，所以别的路径缺了父层即中止：
+    那说明库里那一份与盘上的记录结构对不上，写下去就是凭空造结构。
+    """
+    now = site_text(table, row)
+    for path in now:
+        if path not in flat:
+            if not NEW_LEAF.match(path):
+                die('%s：库里那一份少了 %s，这一层线上删不掉' % (table, path))
+            del row['i18n']['zh-CN'][path.split('/')[2]]
+    for path, value in flat.items():
+        if now.get(path) == value:
+            continue
+        parts = path.split('/')
+        node = row
+        for i, part in enumerate(parts[:-1]):
+            if isinstance(node, list):
+                node = node[int(part)]
+                continue
+            if part not in node:
+                if not NEW_LEAF.match(path):
+                    die('%s：%s 在盘上的记录里没有 %s 这一层' % (table, path, '/'.join(parts[:i + 1])))
+                node[part] = {}
+            node = node[part]
+        last = parts[-1]
+        if isinstance(node, list):
+            node[int(last)] = value
+        else:
+            node[last] = value
+    if site_text(table, row) != flat:
+        die('%s：写回之后的站内文字与库里那一份对不上' % table)
+
+
 def artifacts_of(items, plug_sets, socket_types):
     """七件神器，每件按档位列出它自己那批模组。
 

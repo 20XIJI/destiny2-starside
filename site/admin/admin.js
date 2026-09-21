@@ -450,6 +450,10 @@
     'bad jobs': '这一批的格式不对',
     'batch too large': '待审过多，请逐处审核',
     'no edit': '这条改动记录已经不在了，刷新一下',
+    // 主键页上记录那一路。库里没有这条记录说明 sync.py 还没把它推上去。
+    'no rec': '库里还没有这条记录，等本机对账之后再改',
+    'bad rec': '这一格指的记录不合法',
+    'bad path': '这一格指的字段不合法',
     // docs 那一路翻页取配装正文时的防跑飞闸。撞上它说明库里 builds/ 的记录数量级
     // 已经不对，不是业务上限。
     'too many builds': '库里的配装条数异常，联系管理员'
@@ -599,7 +603,10 @@
     return box
   }
 
+  // 一处改动在哪：源稿那一路是行与格，记录那一路是「记录名 · 字段」（主键页上
+  // 来自记录的文字，提交时由页面的出处表给出）。
   function spot (e) {
+    if (e.kind === 'rec') return e.label || e.rec + ' · ' + e.path
     return '第 ' + (Number(e.blk) + 1) + ' 行'
       + (Number(e.cell) < 0 ? '' : '第 ' + (Number(e.cell) + 1) + ' 格')
   }
@@ -644,12 +651,19 @@
     // 同一处的几份收成一组：**它们互斥**，通过一份就得在其余里择一驳回。
     var groups = []
     var at = {}
+    // 记录那一路按「记录 + 字段」归堆：同一格在几页上都有，从哪一页提的都是同一处。
     pend.forEach(function (e) {
-      var k = e.blk + ':' + e.cell
+      var k = e.kind === 'rec' ? e.rec + '|' + e.path : e.blk + ':' + e.cell
       if (!at[k]) { at[k] = { key: k, list: [] }; groups.push(at[k]) }
       at[k].list.push(e)
     })
-    groups.sort(function (a, b) { return a.list[0].blk - b.list[0].blk })
+    // 源稿那几处按行号排在前，记录那几格按标签排在后。
+    groups.sort(function (a, b) {
+      var x = a.list[0]
+      var y = b.list[0]
+      if ((x.kind === 'rec') !== (y.kind === 'rec')) return x.kind === 'rec' ? 1 : -1
+      return x.kind === 'rec' ? spot(x).localeCompare(spot(y)) : x.blk - y.blk
+    })
     var bad = groups.filter(function (g) {
       return g.list.length > 1 || g.list.some(function (e) { return e.stale })
     })

@@ -18,6 +18,7 @@ import re
 import sys
 from urllib.parse import quote
 
+import editmap
 import markup
 import pagedex
 import render as layout   # 本文件自己有个 render()，别名避开
@@ -63,6 +64,10 @@ STAMP = None
 # 以及这一行「异域 PERK」格里每个名字的主键。有这两份就不必按名字去戳。
 ROW_KEYS: dict[int, list[str]] = {}
 ROW_PERKS: dict[int, dict[str, str]] = {}
+# 同一批行里每一格的出处：站内写的那几格是 (主键, 字段路径, 标签)，别的格是 None。
+ROW_SPOTS: dict[int, list] = {}
+# 本页的出处表（editmap.Origins），由 build() 装上，写页面之后落成 edit.json。
+ORIGINS: 'editmap.Origins | None' = None
 # 异域那两页 PERK 列里那些名字 → 主键。与 STAMP 不同，它按这一行那件东西自己的
 # socket 池查，所以要连着行标题的主键一起给，全站共用一个。
 PERK = None
@@ -490,7 +495,8 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=
                 text = grouped(int(c)) if '.' not in c else c
                 row.append('<td data-tier="%d">%s</td>' % (tier, text))
                 continue
-            row.append(wrap('td', broke(c)))
+            spot = (ROW_SPOTS.get(at) or [None] * len(cells))[ci]
+            row.append(wrap('td', broke(c), ORIGINS.attr(spot) if spot and ORIGINS else ''))
         prev = at
         body = ''.join(row)
         if DEX is not None and n:
@@ -1088,7 +1094,7 @@ def check(md, out, slug):
 
 
 def build(slug):
-    global ICONS, STAMP, DEX, PAGE, PERK, ROW_KEYS, ROW_PERKS, CTX, SLUG
+    global ICONS, STAMP, DEX, PAGE, PERK, ROW_KEYS, ROW_PERKS, ROW_SPOTS, ORIGINS, CTX, SLUG
     SLUG = slug
     src = shell.source_path(slug) or os.path.join(shell.DOC_DIR, slug + '.md')
     with source_context(os.path.relpath(os.path.realpath(src), shell.ROOT)):
@@ -1103,9 +1109,10 @@ def build(slug):
         # 主键骨架那种表区（「列：A | B | C」加一行一枚主键）展开成 `| 表头 |` 的表，
         # 格子从记录上取，见 rows.py。这条渲染链只认后一种：骨架原样交进去不报错，
         # 而是把整页的表静默画空，正文逐字保真两边都空、照样放行。
-        ROW_KEYS, ROW_PERKS = {}, {}
+        ROW_KEYS, ROW_PERKS, ROW_SPOTS = {}, {}, {}
+        ORIGINS = editmap.Origins()
         if rows.is_skeleton(md) and slug not in NEW:
-            md, ROW_KEYS, ROW_PERKS = rows.expand(md, slug, where)
+            md, ROW_KEYS, ROW_PERKS, ROW_SPOTS = rows.expand(md, slug, where)
 
         outdir = os.path.join(shell.SITE, *where.split('/'))
         if not os.path.isdir(outdir):
@@ -1118,7 +1125,7 @@ def build(slug):
         # PERK 列只长在有戳号器的那几页上，格子的形状再筛一道，不另列页名。
         PERK = resolve.perk_stamper() if STAMP else None
         PAGE = where
-        CTX = layout.Page(slug, where, ICONS.html)
+        CTX = layout.Page(slug, where, ICONS.html, origins=ORIGINS)
         # 只给要被跨页引用的那些页建索引，与戳号同一条判据。
         # 有没有页内搜索框按源稿那三个键定，与 render() 建工具条用的是同一批值：
         # 「导航：是」才建，列组页与折线图页整块不建。
@@ -1137,7 +1144,10 @@ def build(slug):
             die('%s 有 %d 处图标引用，源稿要写「首屏图标：N」'
                 '（首屏放不下就写 0）' % (slug, ICONS.refs))
 
-        shell.emit(outdir, out, title)
+        shell.emit(outdir, ORIGINS.seal(out), title)
+        n = ORIGINS.write(outdir)
+        if n:
+            print('  %s/%s  %d 处出处' % (where, editmap.FILE, n))
         if DEX is not None:
             _, n = DEX.write()  # noqa
             print('  data/index/%s.json  %d 条' % (where, n))

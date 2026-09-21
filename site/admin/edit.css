@@ -54,6 +54,9 @@
    半列宽、内容折行。撑的是行高，列宽不动。 */
 td > .se-was,
 th > .se-was { display: block; margin: 2px 0 0; }
+/* 一格拼了几个字段（两位作者同一栏的推荐）时，旧值原样留在原位，有改动的那几个
+   字段的新值一个一行排在后面。它是新值，不压暗。 */
+.se-was.se-add { display: block; margin: 4px 0 0; opacity: 1; font-size: inherit; }
 
 .se-chip { margin-left: auto; }
 .se-desk { margin-left: 8px; text-decoration: none; }

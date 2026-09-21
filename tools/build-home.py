@@ -198,10 +198,10 @@ def pv_table(head, body):
 REC = re.compile(r'<article class="rec[^"]*"[^>]*>(.*?)</article>', re.S)
 REC_NAME = re.compile(r'<div class="r-nm[^"]*">(.*?)</div>', re.S)
 REC_ICON = re.compile(r'<img[^>]+src="([^"]+)"')
-REC_TIER = re.compile(r'<span class="r-tier [^"]*">(.*?)</span>', re.S)
-REC_TAG = re.compile(r'<b class="r-tag">(.*?)</b>', re.S)
+REC_TIER = re.compile(r'<span class="r-tier [^"]*"[^>]*>(.*?)</span>', re.S)
+REC_TAG = re.compile(r'<b class="r-tag"[^>]*>(.*?)</b>', re.S)
 # 评级写成一整句的那种不装徽标，单独一行（见 render.author_rows）
-REC_TIER_LONG = re.compile(r'<div class="r-tier-long">(.*?)</div>', re.S)
+REC_TIER_LONG = re.compile(r'<div class="r-tier-long"[^>]*>(.*?)</div>', re.S)
 
 
 def lg_list(slug):

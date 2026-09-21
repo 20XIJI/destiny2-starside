@@ -1454,12 +1454,14 @@ class Deployment(Isolated):
 
 class Deletion(Isolated):
     ID = 'builds/s29-fixture/one-hunter'
-    # 配装的源稿是结构化记录：盘上与库里存的都是它。投稿那一侧递过来的仍是
-    # 填表页导出的 markdown，由 sync.as_source() 在入口处转成记录。
+    # 配装盘上是结构化记录（A、B），库里与编辑台是 markdown（A_DB、B_DB），
+    # 三方比的 hash 按库里那种写法算。投稿递过来的也是 markdown。
     A_MD = '# A\n'
     B_MD = '# B\n'
     A = migrate.dump(migrate.parse(A_MD))
     B = migrate.dump(migrate.parse(B_MD))
+    A_DB = migrate.write(migrate.parse(A_MD))
+    B_DB = migrate.write(migrate.parse(B_MD))
 
     def setUp(self):
         super().setUp()
@@ -1467,9 +1469,11 @@ class Deletion(Isolated):
         self.replace(sync, 'REFS', str(self.root / 'references'))
         self.replace(sync, 'BASE', str(self.root / '.git/starside-sync.json'))
         self.path = self.file('references/' + self.ID + '.json', self.A)
-        self.file('.git/starside-sync.json', json.dumps({self.ID: sync.sha1(self.A)}))
-        self.db = {self.ID: self.A}
-        self.landed = {self.ID: sync.sha1(self.A)}
+        self.file('.git/starside-sync.json', json.dumps({self.ID: sync.sha1(self.A_DB)}))
+        self.db = {self.ID: self.A_DB}
+        self.landed = {self.ID: sync.sha1(self.A_DB)}
+        # 记录那一路另有一组测试；这里盘上与库里都没有记录，它不发写请求。
+        self.replace(sync, 'recs_on_disk', dict)
         self.subs = [
             {'_id': 'approved', 'ok': 1, 'drop': 0, 'season': 's29-fixture',
              'slug': 'one-hunter', 'md': self.A_MD},
@@ -1484,6 +1488,8 @@ class Deletion(Isolated):
 
     def api(self, action, **kw):
         self.calls.append((action, kw))
+        if action == 'rpull':
+            return {'recs': [], 'more': 0}
         if action == 'pull':
             return {'docs': [{'_id': key, 'md': md, 'landed': self.landed.get(key, '')}
                              for key, md in self.db.items()]}
@@ -1532,7 +1538,7 @@ class Deletion(Isolated):
                     self.assertEqual(self.exits(sync.main), '2')
                 self.assertEqual(self.calls, [])
                 self.assertEqual(self.path.read_text(), self.A)
-                self.assertEqual(self.db, {self.ID: self.A})
+                self.assertEqual(self.db, {self.ID: self.A_DB})
                 self.assertEqual(Path(sync.BASE).read_bytes(), before)
 
     def test_distinct_ids_can_choose_opposite_directions(self):
@@ -1542,7 +1548,7 @@ class Deletion(Isolated):
         self.db['docs/other'] = self.B
         self.replace(sys, 'argv', ['sync.py', '--mine', self.ID, '--theirs', 'docs/other'])
         sync.main()
-        self.assertEqual(self.db[self.ID], self.B)
+        self.assertEqual(self.db[self.ID], self.B_DB)
         self.assertEqual(other.read_text(), self.B)
         self.assertEqual(sync.baseline()['docs/other'], sync.sha1(self.B))
 
@@ -1551,9 +1557,9 @@ class Deletion(Isolated):
         self.file('references/docs/new.md', '# unrelated\n')
         self.assertEqual(sync.sync(), 1)
         self.assertEqual(self.path.read_text(), self.B)
-        self.assertEqual(self.db[self.ID], self.A)
+        self.assertEqual(self.db[self.ID], self.A_DB)
         self.assertEqual(self.drops(), [])
-        self.assertEqual(sync.baseline()[self.ID], sync.sha1(self.A))
+        self.assertEqual(sync.baseline()[self.ID], sync.sha1(self.A_DB))
         self.assertEqual(self.db['docs/new'], '# unrelated\n')
         self.assertIn('删除与本地修改冲突', self.output.getvalue())
         self.assertEqual(sum(a == 'list' for a, _ in self.calls), 1)
@@ -1572,14 +1578,14 @@ class Deletion(Isolated):
             sync.take([self.ID], False)
         self.assertEqual(self.path.read_text(), self.A)
         self.assertEqual(sidecar.read_text(), 'compare')
-        self.assertEqual(sync.baseline()[self.ID], sync.sha1(self.A))
+        self.assertEqual(sync.baseline()[self.ID], sync.sha1(self.A_DB))
 
     def test_normal_sync_remote_failure_never_unlinks(self):
         self.fail_drop = True
         with self.assertRaisesRegex(RuntimeError, 'injected drop'):
             sync.sync()
         self.assertEqual(self.path.read_text(), self.A)
-        self.assertEqual(sync.baseline()[self.ID], sync.sha1(self.A))
+        self.assertEqual(sync.baseline()[self.ID], sync.sha1(self.A_DB))
 
     def test_delete_is_deduplicated_and_old_submission_cannot_restore(self):
         second = dict(self.subs[-1], _id='delete-again')
@@ -1601,8 +1607,8 @@ class Deletion(Isolated):
         actions = [a for a, _ in self.calls if a in ('mark', 'push')]
         self.assertEqual(actions, ['mark', 'mark', 'push'])
         self.assertFalse(sidecar.exists())
-        self.assertEqual(self.db[self.ID], self.B)
-        self.assertEqual(sync.baseline()[self.ID], sync.sha1(self.B))
+        self.assertEqual(self.db[self.ID], self.B_DB)
+        self.assertEqual(sync.baseline()[self.ID], sync.sha1(self.B_DB))
         self.assertEqual(sync.sync(), 0)
         self.assertEqual(self.path.read_text(), self.B)
         self.assertEqual(self.drops(), [])
@@ -1614,10 +1620,10 @@ class Deletion(Isolated):
         sidecar = self.file('references/' + self.ID + '.json.remote', self.A)
         with self.assertRaisesRegex(RuntimeError, 'injected mark'):
             sync.take([self.ID], True)
-        self.assertEqual(self.db[self.ID], self.A)
+        self.assertEqual(self.db[self.ID], self.A_DB)
         self.assertEqual(self.path.read_text(), self.B)
         self.assertEqual(sidecar.read_text(), self.A)
-        self.assertEqual(sync.baseline()[self.ID], sync.sha1(self.A))
+        self.assertEqual(sync.baseline()[self.ID], sync.sha1(self.A_DB))
         self.assertFalse(any(a == 'push' for a, _ in self.calls))
 
     def test_theirs_explicitly_accepts_delete_despite_local_edits(self):
@@ -1645,12 +1651,12 @@ class Deletion(Isolated):
         self.assertIn(str(self.path), str(caught.exception))
         self.assertEqual(self.path.read_text(), self.A)
         self.assertNotIn(self.ID, self.db)
-        self.assertEqual(sync.baseline()[self.ID], sync.sha1(self.A))
+        self.assertEqual(sync.baseline()[self.ID], sync.sha1(self.A_DB))
         self.assertEqual(sync.sync(), 1)
         self.assertEqual(self.path.read_text(), self.A)
         sync.take([self.ID], True)
         self.assertEqual(sync.sync(), 0)
-        self.assertEqual(self.db[self.ID], self.A)
+        self.assertEqual(self.db[self.ID], self.A_DB)
 
     def test_successful_deletion_baseline_survives_later_push_failure(self):
         self.file('references/docs/later.md', '# later\n')
@@ -1690,7 +1696,7 @@ class Deletion(Isolated):
     def test_missing_parent_take_preserves_baseline(self):
         self.subs = []
         target = 'builds/s30-new/new-hunter'
-        self.db[target] = self.B
+        self.db[target] = self.B_DB
         before = Path(sync.BASE).read_bytes()
         with self.assertRaises(RuntimeError) as caught:
             sync.take([target], False)
@@ -1706,7 +1712,7 @@ class Deletion(Isolated):
         self.landed = {}
         self.assertEqual(sync.sync(), 0)
         self.assertEqual([kw for action, kw in self.calls if action == 'landed'],
-                         [{'id': self.ID, 'hash': sync.sha1(self.A)}])
+                         [{'id': self.ID, 'hash': sync.sha1(self.A_DB)}])
 
         # 补完就不再发。**稳态零调用**——每轮都重发一遍就是按篇数收费。
         self.calls.clear()
@@ -1714,33 +1720,202 @@ class Deletion(Isolated):
         self.assertEqual([kw for action, kw in self.calls if action == 'landed'], [])
 
         # 线上改过、本机拉下来：landed 跟着走到落盘的那一版，那一套因此退出「通过」档。
-        self.db[self.ID] = self.B
+        self.db[self.ID] = self.B_DB
         self.calls.clear()
         self.assertEqual(sync.sync(), 0)
         self.assertEqual(self.path.read_text(), self.B)
-        self.assertEqual(self.landed[self.ID], sync.sha1(self.B))
+        self.assertEqual(self.landed[self.ID], sync.sha1(self.B_DB))
 
         # 本机改过推上去：push 顺手写了，不再多补一次。
         self.path.write_text(self.A, encoding='utf-8')
         self.calls.clear()
         self.assertEqual(sync.sync(), 0)
         self.assertEqual([kw for action, kw in self.calls if action == 'landed'], [])
-        self.assertEqual(self.landed[self.ID], sync.sha1(self.A))
+        self.assertEqual(self.landed[self.ID], sync.sha1(self.A_DB))
 
     def test_taking_theirs_moves_landed_to_the_version_on_disk(self):
         """--theirs 接受库里那份，landed 跟着走，不留一套常挂「已改」的配装。"""
         self.subs = []
-        self.db[self.ID] = self.B
-        self.path.write_text(self.B.replace('\n', ' \n'), encoding='utf-8')
+        self.db[self.ID] = self.B_DB
+        self.path.write_text(migrate.dump(migrate.parse('# C\n')), encoding='utf-8')
         self.assertEqual(sync.sync(), 1)          # 两边都动过，撞车
         self.calls.clear()
         sync.take([self.ID], False)
         self.assertEqual(self.path.read_text(), self.B)
-        self.assertEqual(self.landed[self.ID], sync.sha1(self.B))
+        self.assertEqual(self.landed[self.ID], sync.sha1(self.B_DB))
         # 只在不等时才发：云函数据此把写不进去当成那条 doc 没了。
         self.calls.clear()
         sync.take([self.ID], False)
         self.assertEqual([kw for action, kw in self.calls if action == 'landed'], [])
+
+
+class RecordSync(Isolated):
+    """记录上的站内文字：盘上 data/ 那几张表与库里 recs 集合的三方比。
+
+    主键页的就地编辑改的是它，线上通过之后由 sync.py 写回 data/，与 docs 那一路
+    同一套规矩：两边都动过就报出来、一个字不动；稳态下一次写请求都不发。
+    """
+    KEY = '999767358'
+    RID = 'inventory-items/999767358'
+    TIER = 'i18n/zh-CN/site_authors/LGpig/lgpig_tier'
+
+    def setUp(self):
+        super().setUp()
+        self.replace(sync, 'ROOT', str(self.root))
+        self.replace(sync, 'REFS', str(self.root / 'references'))
+        self.replace(sync, 'BASE', str(self.root / '.git/starside-sync.json'))
+        self.replace(facts, 'OUT_DIR', str(self.root / 'data'))
+        self.file('.git/starside-sync.json', '{}')
+        for table in facts.TABLES:
+            self.file('data/%s.json' % table, '{}\n')
+        self.write('T1.5')
+        self.db, self.landed, self.calls = {}, {}, []
+        self.replace(sync, 'api', self.api)
+        self.replace(sync, 'on_disk', dict)
+
+    def write(self, tier):
+        facts.dump(facts.table_file('inventory-items'), {self.KEY: {
+            'itemType': 3, 'i18n': {'zh-CN': {'name': '灾变', 'site_authors': {
+                'LGpig': {'lgpig_tier': tier, 'notes': ''}}}}}})
+
+    def row(self):
+        return json.loads((self.root / 'data/inventory-items.json').read_text())[self.KEY]
+
+    def api(self, action, **kw):
+        self.calls.append((action, kw))
+        if action == 'pull':
+            return {'docs': []}
+        if action == 'list':
+            return {'subs': []}
+        if action == 'rpull':
+            return {'recs': [{'_id': k, 'json': v, 'landed': self.landed.get(k, '')}
+                             for k, v in sorted(self.db.items())], 'more': 0}
+        if action == 'rpush':
+            for rid, text in json.loads(gzip.decompress(base64.b64decode(kw['gz']))):
+                self.db[rid] = text
+                self.landed[rid] = sync.sha1(text)
+            return {'ok': 1}
+        if action == 'rlanded':
+            for rid, h in kw['items']:
+                self.landed[rid] = h
+            return {'ok': 1}
+        if action == 'rdrop':
+            for rid in kw['ids']:
+                self.db.pop(rid, None)
+            return {'ok': 1}
+        return forbidden(action, kw)
+
+    def writes(self):
+        return [a for a, _ in self.calls if a in ('rpush', 'rlanded', 'rdrop')]
+
+    def test_a_new_record_goes_up_once_and_then_nothing_is_sent(self):
+        self.assertEqual(sync.sync(), 0)
+        want = facts.canon(facts.site_text('inventory-items', self.row()))
+        self.assertEqual(self.db[self.RID], want)
+        self.assertEqual(sync.baseline()[self.RID], sync.sha1(want))
+        self.assertEqual(self.writes(), ['rpush'])
+        self.calls.clear()
+        self.assertEqual(sync.sync(), 0)
+        self.assertEqual(self.writes(), [], '稳态下不该有写请求')
+
+    def test_an_approved_change_lands_in_the_table_and_moves_landed(self):
+        sync.sync()
+        # 线上通过之后库里的那一份：云函数改了 json 与 hash，landed 留着上次对账的值。
+        flat = json.loads(self.db[self.RID])
+        flat[self.TIER] = 'T1'
+        self.db[self.RID] = facts.canon(flat)
+        self.calls.clear()
+        self.assertEqual(sync.sync(), 0)
+        self.assertEqual(self.row()['i18n']['zh-CN']['site_authors']['LGpig']['lgpig_tier'], 'T1')
+        self.assertEqual(self.row()['i18n']['zh-CN']['name'], '灾变', 'manifest 那一侧不许被碰')
+        self.assertEqual(self.landed[self.RID], sync.sha1(self.db[self.RID]))
+        self.assertEqual(self.writes(), ['rlanded'])
+
+    def test_a_field_written_online_where_the_record_had_none_is_created(self):
+        sync.sync()
+        flat = json.loads(self.db[self.RID])
+        flat['i18n/zh-CN/realgame_details'] = '站内说明'
+        self.db[self.RID] = facts.canon(flat)
+        self.assertEqual(sync.sync(), 0)
+        self.assertEqual(self.row()['i18n']['zh-CN']['realgame_details'], '站内说明')
+
+    def test_both_sides_changed_is_reported_and_left_alone_until_chosen(self):
+        sync.sync()
+        flat = json.loads(self.db[self.RID])
+        flat[self.TIER] = 'T1'
+        self.db[self.RID] = facts.canon(flat)
+        self.write('T2')
+        self.calls.clear()
+        self.assertEqual(sync.sync(), 1)
+        self.assertEqual(self.row()['i18n']['zh-CN']['site_authors']['LGpig']['lgpig_tier'], 'T2')
+        self.assertEqual(json.loads(self.db[self.RID])[self.TIER], 'T1')
+        said = self.output.getvalue()
+        for want in (self.RID, self.TIER, "'T2'", "'T1'", '--theirs ' + self.RID):
+            self.assertIn(want, said)
+        self.assertEqual(self.writes(), [])
+        sync.take([self.RID], False)
+        self.assertEqual(self.row()['i18n']['zh-CN']['site_authors']['LGpig']['lgpig_tier'], 'T1')
+        self.assertEqual(sync.sync(), 0)
+
+    def test_a_record_the_cloud_wrote_in_another_shape_is_refused(self):
+        self.db[self.RID] = json.dumps({self.TIER: 'T1'}, ensure_ascii=False, indent=1)
+        with self.assertRaisesRegex(RuntimeError, '不是规范写法'):
+            sync.sync()
+
+
+class EditOrigins(unittest.TestCase):
+    """主键页的出处表：页面上每个 data-e 都落在一条记录上站内写的一格，构建时的值
+    与盘上此刻的值相同；云函数的 canon() 与 facts.canon() 逐字节相同。"""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.pages = sorted((TOOLS.parent / 'site').rglob('edit.json'))
+        cls.tables = {t: json.loads(Path(facts.table_file(t)).read_text(encoding='utf-8'))
+                      for t in facts.TABLES}
+
+    def test_every_keys_page_ships_an_origin_table(self):
+        self.assertGreaterEqual(len(self.pages), 20, '主键页的出处表少得不对：%d' % len(self.pages))
+
+    def test_every_origin_is_a_site_written_field_with_its_current_text(self):
+        for page in self.pages:
+            got = json.loads(page.read_text(encoding='utf-8'))
+            html = (page.parent / 'index.html').read_text(encoding='utf-8')
+            # 与 edit.js 的 origins() 同一种还原：空串是「已出现的最大号 + 1」。
+            seen, top = set(), -1
+            for m in re.finditer(r' data-e="([0-9,]*)"', html):
+                for part in m.group(1).split(','):
+                    if part == '':
+                        top += 1
+                        seen.add(top)
+                    else:
+                        self.assertLessEqual(int(part), top, '%s 引用了还没出现的出处' % page)
+            self.assertEqual(seen, set(range(len(got['e']))), '%s 的 data-e 与出处表条数对不上' % page)
+            for rid, path, value, label in got['e']:
+                table, key = rid.split('/', 1)
+                flat = facts.site_text(table, self.tables[table][key])
+                self.assertEqual(flat.get(path, ''), value, '%s：%s %s（%s）过期了' % (page, rid, path, label))
+                self.assertEqual(got['recs'][rid], sync.sha1(facts.canon(flat)), '%s：%s' % (page, rid))
+
+    def test_the_cloud_canon_writes_the_same_bytes(self):
+        flats = []
+        for table, rows_ in self.tables.items():
+            for row in rows_.values():
+                flat = facts.site_text(table, row)
+                if flat:
+                    flats.append(flat)
+        self.assertGreater(len(flats), 4000)
+        source = (TOOLS.parent / 'functions' / 'api' / 'index.js').read_text(encoding='utf-8')
+        canon = re.search(r'^function canon\(flat\) \{.*?^\}', source, re.M | re.S)
+        if canon is None:
+            self.fail('index.js 里找不到 canon()')
+        prog = canon.group(0) + (
+            '\nvar all = JSON.parse(require("fs").readFileSync(0, "utf8"));'
+            '\nprocess.stdout.write(JSON.stringify(all.map(canon)));')
+        done = subprocess.run(['node', '-e', prog], input=json.dumps(flats, ensure_ascii=False),
+                              capture_output=True, text=True, check=True)
+        got = json.loads(done.stdout)
+        bad = [i for i, f in enumerate(flats) if got[i] != facts.canon(f)]
+        self.assertEqual(bad, [], '两边写法不同的记录：%s' % [facts.canon(flats[i])[:80] for i in bad[:3]])
 
 
 class SyncErrors(Isolated):
