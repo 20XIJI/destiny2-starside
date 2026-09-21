@@ -146,11 +146,16 @@ def build():
 BY_KEY = {}
 
 
-def by_key(key, slot):
-    """按主键取这一槽位该用的那一条。取不到回 None。"""
+def by_key(key, slot, kind=None):
+    """按主键取这一槽位该用的那一条。取不到回 None。
+
+    **分节只当偏好**：同一枚神器模组挂在好几件神器下、档位与位置各不相同，要取
+    所选那一件下的那一条；可棱镜页的星相挂在职业那一节下，按分节硬收会挡掉。
+    """
     pages = SLOTS.get(slot) or ()
     got = [e for e in BY_KEY.get(str(key), ()) if e['page'] in pages]
-    return got[0] if got else None
+    same = [e for e in got if kind and bare_kind(e['kind']) == kind]
+    return (same or got or [None])[0]
 
 
 # 槽位 → 允许的来源页。查表按槽位限定范围，同名撞车因此撞不上：
@@ -250,7 +255,7 @@ def find(idx, name, slot, kind=None, prefer=''):
         return None, '槽位「%s」没有登记来源页' % slot
     name, key = cut(name)
     if key:
-        got = by_key(key, slot)
+        got = by_key(key, slot, kind)
         if got is None:
             return None, ('「%s：%s#%s」的主键在 %s 里查不到。那一页删了这一行，'
                           '或者主键抄错了。' % (slot, name, key, '、'.join(SLOTS[slot])))

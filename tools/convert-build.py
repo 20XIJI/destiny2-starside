@@ -395,6 +395,9 @@ TAB = '&#9;'
 
 SPIRIT = '之灵'
 
+# 神器盘七个插槽各自的档位上限，顺序即插槽顺序。
+ART_TIERS = (1, 1, 2, 2, 2, 3, 3)
+
 
 def exotic_gun(md):
     """异域武器：(名字, [词条…])。没配就是 ('', [])。
@@ -1678,7 +1681,7 @@ def render_desc(idx):
 
 
 def slot_cell(slot, kind='', cls='item', label='', bare=False, hidden=False,
-              addable='', col=''):
+              addable='', col='', tier=''):
     """填表页的空槽：点开就地展开图标网格，选中即落成与详情页一模一样的成品格。
 
     版面与候选范围写在这里一处，form.js 从 data-* 现读、不重抄一份——与 app.js
@@ -1695,10 +1698,11 @@ def slot_cell(slot, kind='', cls='item', label='', bare=False, hidden=False,
     mark = (' data-addable="%s"' % addable if addable else '') + (' hidden' if hidden else '')
     # data-col 是栏序：候选只列这一栏开得出来的那几条。异域职业物品的两条之灵、
     # 异域武器的两栏词条、传说枪的 Perk 1 / Perk 2 / 起源特性都按它收窄。
-    cell = ('<button type="button" class="%s empty" data-slot="%s"%s%s%s>'
+    cell = ('<button type="button" class="%s empty" data-slot="%s"%s%s%s%s>'
             '<span class="nm">%s</span></button>'
             % (cls, slot, ' data-kind="%s"' % kind if kind else '',
                ' data-col="%s"' % col if col else '',
+               ' data-tier="%s"' % tier if tier else '',
                mark if bare else '', label or '+'))
     return cell if bare else '<li%s>%s</li>' % (mark, cell)
 
@@ -1782,7 +1786,10 @@ def new_blocks():
     # 宽，右缘上多出一个断口。
     pick = slot_cell('神器', kind='__art__', cls='item', label='选择神器', bare=True)
     o += ['<section class="block" id="sec-3">', '<h2 class="sect-label">神器模组</h2>']
-    o += row(group('', [slot_cell('神器')] * 7, head=pick))
+    # 神器盘上七个插槽的档位上限：前两个只插得下一级，中间三个到二级，
+    # 最后两个到三级。**这是游戏规则，不是版面偏好**，所以写在格子上，
+    # 由 form.js 按它收候选，不给按钮。
+    o += row(group('', [slot_cell('神器', tier=str(t)) for t in ART_TIERS], head=pick))
     o += ['</section>', '']
 
     o += ['<section class="block" id="sec-4">', '<h2 class="sect-label">护甲</h2>']

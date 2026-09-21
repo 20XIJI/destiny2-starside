@@ -421,6 +421,39 @@ class BuildKeys(unittest.TestCase):
                     bad.append('%s｜%s：%s' % (name, key, seg))
         self.assertEqual(bad[:6], [], '%d 个槽位值没有主键' % len(bad))
 
+    def test_a_shared_key_lands_on_the_row_its_own_section_names(self):
+        """同一枚主键在一页上挂好几行时，按分节挑那一条。
+
+        一枚神器模组挂在好几件神器下、档位与位置各不相同（群敌飞梭在好奇之器上是
+        一级、在女王兰香炉上是三级）；一套护甲的 2 件与 4 件是同一枚 set: 主键。
+        只按主键取第一条时，74 篇配装的神器模组链到了别的神器上，「埃希恩记忆
+        2 件 × 4 件」画成了两个 2 件。
+        """
+        sys.path.insert(0, str(TOOLS))
+        import migrate
+        wrong_art, wrong_set = [], []
+        for path in sorted(TOOLS.parent.glob('references/builds/*/*.json')):
+            page = self.SITE / 'builds' / 's29' / path.stem / 'index.html'
+            if not page.exists():
+                continue
+            html = page.read_text(encoding='utf-8')
+            rec = migrate.load(str(path))
+            arts = {((b.get('节') or {}).get('神器') or {}).get('神器')
+                    for b in migrate.blocks(rec)} - {None}
+            for mod, art in re.findall(
+                    r'data-d="artifact-mods&#9;([^&]*)&#9;([^"]*?)(?: （[^"]*)?"', html):
+                if arts and art not in arts:
+                    wrong_art.append('%s｜%s 链到了 %s' % (path.stem, mod, art))
+            # 只比件数：页面上的名字按主键取自库里（「渴望回响」），源稿写的可能是
+            # 旧叫法（「贪婪之握」），那是 NAME_DRIFT，不是这一条要管的。
+            want = sorted(x['件数'] for b in migrate.blocks(rec)
+                          for x in ((b.get('节') or {}).get('护甲') or {}).get('套装') or ())
+            got = sorted(re.findall(r'data-d="armor-sets&#9;[^&]*&#9;([24] 件)"', html))
+            if want and got != want:
+                wrong_set.append('%s｜源稿 %s，页面 %s' % (path.stem, want, got))
+        self.assertEqual(wrong_art[:4], [], '%d 处神器模组链到了别的神器上' % len(wrong_art))
+        self.assertEqual(wrong_set[:4], [], '%d 篇的套装件数画错了' % len(wrong_set))
+
     def test_every_key_lands_on_a_row_the_form_can_pick(self):
         """主键查得到。查不到说明那一页删了那一行，或者主键抄错了。"""
         sys.path.insert(0, str(TOOLS))

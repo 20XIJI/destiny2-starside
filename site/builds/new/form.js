@@ -501,6 +501,15 @@
           : (r[1] === '2 件' || r[0] === set);
       });
     }
+    // 神器盘七个插槽各有档位上限（前两个一级、中间三个二级、最后两个三级）：
+    // 档位写在词表行的「位置」那一位上（`行,档`），上限写在格子的 data-tier 上。
+    if (slot === '神器' && btn.dataset.tier) {
+      var cap = Number(btn.dataset.tier);
+      return list.filter(function (r) {
+        var at = (r[6] || '').split(',')[1];
+        return !at || Number(at) <= cap;
+      });
+    }
     if (slot !== 'Perk' && slot !== '异域词条') return list;
     var rig = btn.closest('.rig');
     var gun = rig && rig.querySelector('.item.gun');
@@ -1264,11 +1273,15 @@
       var l = slot === '元素' ? branches() : options(slot, kind);
       var at = name.indexOf(MARK);
       if (at > -1) {
-        // **按主键查就不再按分节收**：棱镜页上的星相挂在职业那一节下
-        //（「猎人」），按 kind 收会把它们整批挡掉，而主键本来就唯一。
+        // **按主键查，分节只当偏好不当限制**：棱镜页上的星相挂在职业那一节下
+        //（「猎人」），按 kind 硬收会把它们整批挡掉；可同一枚神器模组又挂在好几件
+        // 神器下、档位各不相同（群敌飞梭在好奇之器上是一级、在女王兰香炉上是三级），
+        // 这时要取所选那一件神器下的那一条。
         var key = name.slice(at + 1);
         var all = slot === '元素' ? l : (V.lists[V.slots[slot]] || []);
-        return all.filter(function (r) { return r[7] === key; })[0];
+        var hits = all.filter(function (r) { return r[7] === key; });
+        var same = kind ? hits.filter(function (r) { return bare(r[1]) === kind; }) : [];
+        return (same.length ? same : hits)[0];
       }
       return l.filter(function (r) { return r[0] === name; })[0];
     }
@@ -1386,8 +1399,22 @@
         state.神器 = art;
         fill(head, row);
         mods().forEach(function (m) { m.dataset.kind = art; });
-        var ms = mods();
-        many('模组').forEach(function (n, i) { put('神器', art, n, ms[i]); });
+        // 按档位上限落格：源稿只记「选了哪几枚」，不记插在哪一格，而七个插槽
+        // 各有上限（前两个一级、中间三个二级、最后两个三级）。一枚模组落进
+        // 它档位允许的第一个空格；高档的先落，免得低档的把后面那几格占掉。
+        var ms = mods(), used = [];
+        many('模组').map(function (n) {
+          var r = rowOfName('神器', art, n);
+          return { n: n, t: r && r[6] ? Number(r[6].split(',')[1]) : 1 };
+        }).sort(function (a, b) { return b.t - a.t; }).forEach(function (m) {
+          var at = -1;
+          for (var k = ms.length - 1; k >= 0; k--) {
+            if (!used[k] && Number(ms[k].dataset.tier || 3) >= m.t) { at = k; }
+          }
+          if (at < 0) { skip.push('神器：' + m.n + '（七个插槽放不下这一档）'); return; }
+          used[at] = true;
+          put('神器', art, m.n, ms[at]);
+        });
       } else {
         skip.push('神器：' + art);
       }
@@ -1696,6 +1723,8 @@
     sets.forEach(function (md, i) {
       var li = document.createElement('li');
       li.className = 'b-' + (BRANCH[keyOf(md, '分支')] || '');
+      // 拖一行改顺序；只剩一套时没有顺序可改。
+      if (sets.length > 1) { li.draggable = true; li.dataset.at = i; }
       var b = document.createElement('button');
       b.type = 'button';
       b.dataset.go = i;
@@ -1722,6 +1751,7 @@
       var sub = document.createElement('span');
       sub.textContent = keyOf(md, '标签') || '未填写';
       if (i === cur) b.setAttribute('aria-current', 'true');
+      if (sets.length > 1) b.title = '拖动改顺序，或 Alt+↑／↓';
       b.appendChild(nm);
       b.appendChild(sub);
       li.appendChild(b);
@@ -1769,6 +1799,73 @@
     cur += 1;
     loadOne(md);
   }
+
+  /* 把第 j 套挪到第 k 位。**先把当前这一套存回数组再动它**，与 dropSet 同一条；
+     正在编辑的那一套跟着它自己走，不跟着位置走。 */
+  function moveSet(j, k) {
+    if (j === k || j < 0 || k < 0 || j >= sets.length || k >= sets.length) return;
+    sets[cur] = oneMd();
+    sets.splice(k, 0, sets.splice(j, 1)[0]);
+    coreOf.splice(k, 0, coreOf.splice(j, 1)[0]);
+    if (cur === j) cur = k;
+    else if (j < cur && k >= cur) cur -= 1;
+    else if (j > cur && k <= cur) cur += 1;
+    write();
+  }
+
+  /* 左栏目录拖动改顺序。落点按指针在那一行的上半还是下半定：上半插到它前面，
+     下半插到它后面，与常见的拖放列表同一种读法。 */
+  (function () {
+    var box = document.getElementById('set-tabs');
+    if (!box) return;
+    var from = -1;
+    function clear() {
+      [].forEach.call(box.querySelectorAll('.drop-before, .drop-after, .dragging'),
+        function (li) { li.classList.remove('drop-before', 'drop-after', 'dragging'); });
+    }
+    box.addEventListener('dragstart', function (e) {
+      var li = e.target.closest('li[data-at]');
+      if (!li) return;
+      from = Number(li.dataset.at);
+      li.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', String(from));
+    });
+    box.addEventListener('dragover', function (e) {
+      var li = e.target.closest('li[data-at]');
+      if (!li || from < 0) return;
+      e.preventDefault();
+      var r = li.getBoundingClientRect(), after = e.clientY > r.top + r.height / 2;
+      [].forEach.call(box.querySelectorAll('.drop-before, .drop-after'), function (x) {
+        if (x !== li) x.classList.remove('drop-before', 'drop-after');
+      });
+      li.classList.toggle('drop-after', after);
+      li.classList.toggle('drop-before', !after);
+    });
+    box.addEventListener('drop', function (e) {
+      var li = e.target.closest('li[data-at]');
+      if (!li || from < 0) return;
+      e.preventDefault();
+      var to = Number(li.dataset.at), after = li.classList.contains('drop-after');
+      // 插到它后面时，目标位置要扣掉被拿走的那一格。
+      var k = after ? (from < to ? to : to + 1) : (from < to ? to - 1 : to);
+      clear();
+      moveSet(from, k);
+      from = -1;
+    });
+    box.addEventListener('dragend', function () { clear(); from = -1; });
+    // 键盘：焦点在某一行上时 Alt+↑／↓ 挪一格，焦点跟着那一行走。
+    box.addEventListener('keydown', function (e) {
+      if (!e.altKey || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+      var go = e.target.closest('[data-go]');
+      if (!go) return;
+      e.preventDefault();
+      var j = Number(go.dataset.go), k = j + (e.key === 'ArrowUp' ? -1 : 1);
+      moveSet(j, k);
+      var again = box.querySelector('[data-go="' + Math.max(0, Math.min(k, sets.length - 1)) + '"]');
+      if (again) again.focus();
+    });
+  }());
 
   /* 移除第 j 套，不限于正在编辑的那一套：要删的多半是别的那一条。
      **先把当前这一套存回数组再动它**，不然正在编辑的改动会随这一刀丢掉。 */

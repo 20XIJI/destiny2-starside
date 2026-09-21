@@ -1664,6 +1664,23 @@ button.item { width: 100%; }
 .set-drop:hover { color: var(--bone-hi); }
 .set-drop:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 
+/* 拖动改顺序：拿起的那一行变淡，落点那一行的上沿或下沿画一道 2px 的强调色线——
+   线落在哪儿，那一套就插到哪儿。线画在行外 5px（行距的一半），不压住行内的字。 */
+.set-list li[draggable="true"] { cursor: grab; }
+.set-list li.dragging { opacity: .4; }
+.set-list li.drop-before::before,
+.set-list li.drop-after::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent);
+  pointer-events: none;
+}
+.set-list li.drop-before::before { top: -5px; }
+.set-list li.drop-after::after { bottom: -5px; }
+
 /* 这一套的核心排在名字左边，与左栏目录那一行（图 + 名字 + 定位）同形。
    **48px 见方**：32 太小按不着，96 是整份合集那一枚的尺寸，摆在这里会把这一行
    撑得比详情页高一截。图本身仍是 32（格子的 data-size）。 */
