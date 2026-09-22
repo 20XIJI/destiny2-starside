@@ -281,8 +281,28 @@
     return;
   }
 
-  var rows = ROW ? Array.prototype.slice.call(document.querySelectorAll(ROW)) : [];
-  var mods = ITEM ? Array.prototype.slice.call(document.querySelectorAll(ITEM)) : [];
+  var rows, mods, lanes, groups, subs, text;
+  function all(sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); }
+  /* 条目与跟着条目走的那几样，收一遍。首屏之后另存的页面（shell.split_rest）在
+     starside:rest 时再收一遍：那批记录在这段脚本跑完之后才插回来。 */
+  function collect() {
+    rows = ROW ? all(ROW) : [];
+    mods = ITEM ? all(ITEM) : [];
+    /* 表内横幅行是组名不是条目，不参与命中，改为跟着自己那一组的可见行走 */
+    lanes = ITEM ? all('tr.lane') : [];
+    /* 按记录排版那几页的组名：同组的条目是它后面的兄弟节点，到下一个组名为止。
+       不能照搬横幅行那一条——那一条按 parentNode 判，而这里同一个父节点下
+       几组条目连着排。 */
+    groups = ITEM ? all('.r-grp') : [];
+    /* 分节里再分的小标题（配装索引页的职业），跟着紧随其后那一组的可见条目走。
+       **这一条只能在 JS 里做**：CSS 要写成 .sub-label:has(+ ul:not(:has(> li:not([hidden]))))，
+       而 :has() 不许再套 :has()，整条是无效选择器——写在样式表里不报错也不生效。 */
+    subs = ITEM ? all('.sub-label') : [];
+    /* 上百个条目，每次按键都取 textContent 会重复遍历整棵子树，先缓存。
+       直接存小写：`hit()` 要的就是它，每次按键再转一遍是几十万字符的临时垃圾。 */
+    text = mods.map(function (mod) { return mod.textContent.toLowerCase(); });
+  }
+  collect();
 
   /* 没有工具条，或者既没有分节也没有条目——两样都没有才没得可做。
      **不能只判分节。**配装索引页曾经是一张网格、一个分节都没有，按分节判会在
@@ -294,19 +314,6 @@
     return;
   }
 
-  /* 表内横幅行是组名不是条目，不参与命中，改为跟着自己那一组的可见行走 */
-  var lanes = ITEM ? Array.prototype.slice.call(document.querySelectorAll('tr.lane')) : [];
-  /* 按记录排版那几页的组名：同组的条目是它后面的兄弟节点，到下一个组名为止。
-     不能照搬横幅行那一条——那一条按 parentNode 判，而这里同一个父节点下
-     几组条目连着排。 */
-  var groups = ITEM ? Array.prototype.slice.call(document.querySelectorAll('.r-grp')) : [];
-  /* 分节里再分的小标题（配装索引页的职业），跟着紧随其后那一组的可见条目走。
-     **这一条只能在 JS 里做**：CSS 要写成 .sub-label:has(+ ul:not(:has(> li:not([hidden]))))，
-     而 :has() 不许再套 :has()，整条是无效选择器——写在样式表里不报错也不生效。 */
-  var subs = ITEM ? Array.prototype.slice.call(document.querySelectorAll('.sub-label')) : [];
-  /* 上百个条目，每次按键都取 textContent 会重复遍历整棵子树，先缓存。
-     直接存小写：`hit()` 要的就是它，每次按键再转一遍是几十万字符的临时垃圾。 */
-  var text = mods.map(function (mod) { return mod.textContent.toLowerCase(); });
 
   /* 光杆小标题收起来。**首屏就要跑一次，不能只等 filter()**：那一份只在带 ?q=
      时跑，平常进页面从不跑，于是配装索引页上「本节没有、但别节属于本场景」的
@@ -370,7 +377,10 @@
                /* 分节就是按这一维分的：选定单一值时把重叠的那几节并成一张网格。 */
                groups: mod.indexOf('groups') > 0 };
     });
-    vals = mods.map(function (it) {
+    vals = valsOf();
+  }
+  function valsOf() {
+    return mods.map(function (it) {
       return DIMS.map(function (d) {
         var v = it.dataset[d.key];
         return v ? v.split('\t') : [];
@@ -731,6 +741,26 @@
   if (came && ITEM) {
     search.value = came;
     filter(came);
+  }
+
+  /* 首屏之后另存的记录插回来了：重收条目，按搜索框里现有的查询再过一遍。
+     带 # 进来、读者还没动过页面的，再跳一次：跳转那一刻目标前面的记录还没插回来，
+     插回来之后它被推到了下面。 */
+  if (window.starsideRest) {
+    var moved = false;
+    ['wheel', 'touchstart', 'keydown'].forEach(function (type) {
+      addEventListener(type, function () { moved = true; }, { once: true, passive: true });
+    });
+    document.addEventListener('starside:rest', function () {
+      collect();
+      if (DIMS) vals = valsOf();
+      hadItems = sections.map(function (sec) { return !!sec.querySelector(ROW || ITEM); });
+      search.placeholder = '搜索 ' + mods.length + ' 个' + NOUN;
+      trimSubs();
+      if (search.value.trim() || facetOn()) filter(search.value);
+      var at = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)));
+      if (at && !moved) at.scrollIntoView();
+    });
   }
 
   measure();

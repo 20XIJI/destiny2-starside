@@ -43,7 +43,7 @@ SLUG = ''
 
 # 头部的「键：值」行。键名固定，正文行不会被误认。
 META_KEYS = ('描述', '更新', '页脚', '待测标记', '鸣谢', '数据源', '导航', '路径', '上级',
-             '列组', '互斥列组', '默认列组', '首屏图标', '此刻', '跳转分行',
+             '列组', '互斥列组', '默认列组', '首屏图标', '首屏记录', '此刻', '跳转分行',
              '图表', '标注', '默认曲线')
 META_LINE = meta_line(META_KEYS)
 
@@ -1118,6 +1118,10 @@ def build(slug):
         if eager and not eager.isdigit():
             die('「首屏图标：」要写一个整数，源稿写的是 %r' % eager)
         ICONS = Icons(outdir, int(eager) if eager else 0)
+        # 首屏之后的记录另存，见 shell.split_rest
+        keep = meta_of(md, '首屏记录', required=False)
+        if keep and not (keep.isdigit() and int(keep) > 0):
+            die('「首屏记录：」要写一个正整数，源稿写的是 %r' % keep)
         STAMP = resolve.stamper(where)
         # PERK 列只长在有戳号器的那几页上，格子的形状再筛一道，不另列页名。
         PERK = resolve.perk_stamper() if STAMP else None
@@ -1141,7 +1145,7 @@ def build(slug):
             die('%s 有 %d 处图标引用，源稿要写「首屏图标：N」'
                 '（首屏放不下就写 0）' % (slug, ICONS.refs))
 
-        shell.emit(outdir, ORIGINS.seal(out), title)
+        shell.emit(outdir, ORIGINS.seal(out), title, int(keep) if keep else 0)
         n = ORIGINS.write(outdir)
         if n:
             print('  %s/%s  %d 处出处' % (where, editmap.FILE, n))

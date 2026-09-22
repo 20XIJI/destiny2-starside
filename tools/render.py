@@ -89,7 +89,7 @@ class Page:
         （「故我在\\（{el-arc|电弧}导体）\\波形」），所以走渲染，不转义。"""
         return self.line(markup.spaced(PUA.sub('', rows.name_of(key) or '').strip()))
 
-    def icon(self, key, size=''):
+    def icon(self, key, size='', sized=True):
         got = rows.icon_file(key)
         if not got or not os.path.exists(os.path.join(rows.shell.SITE, got)):
             # 不静默回空串：没图的格子在页面上看不出是漏了，交给 rows.PROBLEMS
@@ -97,12 +97,12 @@ class Page:
             rows.PROBLEMS.append((self.page, self.name(key), '图标',
                                   '%s 没有图' % key))
             return ''
-        return self.img(rows.rel(got, self.where), size)
+        return self.img(rows.rel(got, self.where), size, sized)
 
-    def path_icon(self, path, size=''):
+    def path_icon(self, path, size='', sized=True):
         if not path or not os.path.exists(os.path.join(rows.shell.SITE, path)):
             return ''
-        return self.img(rows.rel(path, self.where), size)
+        return self.img(rows.rel(path, self.where), size, sized)
 
     def mark(self, *spots):
         """这一处出自哪条记录的哪个字段 → ` data-e="N"`，就地编辑据此找回那一格。
@@ -200,11 +200,15 @@ def cell(cls, inner, attr=''):
     return '<div class="r-cell %s"%s>%s</div>' % (cls, attr, inner)
 
 
-def idcell(p, key, subs=(), name_cls='', extra=''):
-    """身份格：图标在上，名字与副行在下，上下左右居中。"""
+def idcell(p, key, subs=(), name_cls='', extra='', icon=None):
+    """身份格：图标在上，名字与副行在下，上下左右居中。
+
+    icon 是调用方先画好的那枚主图。首屏高优先级按图标登记的先后分配（Icons.html），
+    格子里别的小图标若先于主图登记，名额就落到小图标上、主图反而懒加载；所以
+    extra 里还有图标的调用方先画主图再传进来。"""
     sub = ''.join('<span>%s</span>' % s for s in subs if s)
     return cell('r-id', '%s<div class="r-nm %s">%s</div>%s%s'
-                % (p.icon(key), name_cls, p.title_html(key),
+                % (p.icon(key) if icon is None else icon, name_cls, p.title_html(key),
                    '<div class="r-sub">%s</div>' % sub if sub else '', extra))
 
 
@@ -487,16 +491,16 @@ def rec_exotic(p, key):
     """异域武器与异域护甲：异域 | 异域特性 | 作者区。异域不画来源。"""
     rec = rows.facts().at(key) or {}
     z = p.zh(key)
+    season = (rec.get('derived') or {}).get('season')
+    # 身份格排在异域特性前面，图标也按这个先后登记（见 idcell）
+    head = idcell(p, key, [z.get('itemTypeDisplayName'), '赛季 %s' % season if season else ''], 'exo')
     perk = perk_chips(p, rows.exotic_perks(key))
     # 说明是几条记录的正文拼成的（装备本体、固有、催化剂），一段一段标各自的出处
     text = ''.join(p.prose(t, p.mark(p.spot(k, 'i18n/zh-CN/realgame_details', '说明')))
                    for k, t in rows.exotic_parts(key, z.get('realgame_details', '')))
-    season = (rec.get('derived') or {}).get('season')
     au = author_rows(p, key, 'LGpig')
     return ('<article class="rec r-exotic%s">%s%s%s</article>'
-            % (' has-au' if au else '',
-               idcell(p, key, [z.get('itemTypeDisplayName'),
-                               '赛季 %s' % season if season else ''], 'exo'),
+            % (' has-au' if au else '', head,
                cell('r-txt r-perk', '%s%s%s' % (perk, text, combos(p, key))),
                au))
 
@@ -521,9 +525,11 @@ def plug(p, key, name, struck, by):
         return '<div class="r-plug-none">%s</div>' % html.escape(name)
     path = next((rows.icon_file(h) for h in got if rows.icon_file(h)), None)
     label = '<s>%s</s>' % html.escape(name) if struck else html.escape(name)
-    return ('<div class="r-plug %s">%s<span>%s</span></div>'
+    # 图标尺寸由 .r-plug .ico > img 钉死，不写 width/height（见 Icons.html）
+    return ('<div class="r-plug %s">%s%s</div>'
             % ({'a': 'by-a', 'l': 'by-l', 'al': 'by-al'}[by],
-               '<span class="ico">%s</span>' % p.path_icon(path) if path else '', label))
+               '<span class="ico">%s</span>' % p.path_icon(path, sized=False) if path else '',
+               label))
 
 
 def masterwork_plug(key, stat):
@@ -557,10 +563,14 @@ def rec_weapon(p, key, rank, author):
         'rate', {}).get(str(rec.get('itemSubType'))) if arch else None
     el = rows.ELEMENT.get(rec.get('defaultDamageType') or 0)
     ammo = rows.stat_of(rec, rows.AMMO_GEN)
+    # 武器图在这一行里最先出现，先登记（见 idcell）。这一行的图标尺寸都由样式表
+    # 钉死（.r-weapon .r-id > img、.x-mini img、.x-facts img、.r-plug .ico > img），
+    # 不写 width/height（见 Icons.html）。
+    gun = p.icon(key, sized=False)
 
     mini = []
     if el:
-        mini.append(p.path_icon(stem(icons_mod.ELEM[rec['defaultDamageType']]), 'glyph')
+        mini.append(p.path_icon(stem(icons_mod.ELEM[rec['defaultDamageType']]), sized=False)
                     + '<span class="%s">%s</span>' % el)
     if rate:
         mini.append('射速 <b>%s</b>' % rate)
@@ -575,9 +585,9 @@ def rec_weapon(p, key, rank, author):
         for tail in ('框架', '热量武器'):      # 这一列每行都有的后缀，不写
             if short.endswith(tail) and len(short) > len(tail):
                 short = short[:-len(tail)]
-        facts_rows.append(('框架', p.icon(str(arch), 'glyph') + html.escape(short)))
+        facts_rows.append(('框架', p.icon(str(arch), sized=False) + html.escape(short)))
     if d.get('breakerType'):
-        facts_rows.append(('勇士', p.path_icon(rows.champ_path(d['breakerType']), 'glyph')
+        facts_rows.append(('勇士', p.path_icon(rows.champ_path(d['breakerType']), sized=False)
                            + BREAKER_SHORT[d['breakerType']]))
     src = A.get('aegis_source') or L.get('lgpig_source')
     if src:
@@ -593,25 +603,25 @@ def rec_weapon(p, key, rank, author):
         order = [n for n, _ in a] + [n for n, _ in l_ if n not in dict(a)]
         la, ll = {n for n, _ in a}, {n for n, _ in l_}
         # 一栏里是两位作者各自推荐的并在一起，点开是两个框
-        slots.append(cell('r-mid r-slot', '<div class="r-picks">%s</div>' % ''.join(
+        slots.append(cell('r-mid r-slot', ''.join(
             plug(p, key, n, mark[n], 'al' if n in la and n in ll else 'a' if n in la else 'l')
             for n in order), p.mark(au_spot(p, key, 'Aegis', field) if field in A else None,
                                     au_spot(p, key, 'LGpig', field) if field in L else None)))
     # 大师杰作一格可以写几枚：「填装\\操控性」说的是这两枚都行，不是一枚叫这个名字
     # 的插件。与别的几栏同形，一枚一个格子。
     mws = [x.strip() for x in (A.get('masterwork') or '').split(BR) if x.strip()]
-    slots.append(cell('r-mid r-slot', ('<div class="r-picks">%s</div>' % ''.join(
-        '<div class="r-plug r-mwp">%s<span>%s</span></div>'
-        % ('<span class="ico">%s</span>' % p.icon(mwp) if mwp else '',
+    slots.append(cell('r-mid r-slot', ''.join(
+        '<div class="r-plug r-mwp">%s%s</div>'
+        % ('<span class="ico">%s</span>' % p.icon(mwp, sized=False) if mwp else '',
            html.escape(p.name(mwp).split('：', 1)[1] if mwp else mw))
-        for mw, mwp in ((x, masterwork_plug(key, x)) for x in mws))) if mws else '',
+        for mw, mwp in ((x, masterwork_plug(key, x)) for x in mws)),
         p.mark(au_spot(p, key, 'Aegis', 'masterwork')) if 'masterwork' in A else ''))
 
     au = author_rows(p, key, author)
     return ('<article class="rec r-weapon%s">%s%s%s%s%s</article>'
             % (' has-au' if au else '', cell('r-mid r-rank', str(rank)),
                idcell(p, key, (), '', '<div class="x-mini">%s</div>'
-                      % ''.join('<div>%s</div>' % m for m in mini)),
+                      % ''.join('<div>%s</div>' % m for m in mini), gun),
                cell('x-facts', '<dl>%s</dl>' % ''.join(
                    '<dt>%s</dt><dd%s>%s</dd>' % (f[0], f[2] if len(f) > 2 else '', f[1])
                    for f in facts_rows)),
@@ -686,7 +696,7 @@ def matrix(p, section):
         if sec['节'] != section:
             continue
         head = ''.join('<div class="c">%s%s</div>'
-                       % (p.path_icon(c['图'], 'glyph') if c.get('图') else '',
+                       % (p.path_icon(c['图']) if c.get('图') else '',
                           html.escape(c['名']))
                        for c in sec['列'])
         body = []

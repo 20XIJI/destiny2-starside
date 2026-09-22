@@ -125,8 +125,8 @@ BUILD = re.compile(r'^builds/s\d+/')
 
 
 def read(url):
-    with open(os.path.join(shell.SITE, url), encoding='utf-8') as f:
-        return f.read()
+    """整页 HTML，首屏之后另存的记录并回来（shell.read_page）。"""
+    return shell.read_page(os.path.join(shell.SITE, url))
 
 
 def title_of(url, src):

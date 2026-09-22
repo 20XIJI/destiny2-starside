@@ -463,7 +463,10 @@ class Icons:
         self.size = {}
         self.refs = 0
 
-    def html(self, rel, cls=''):
+    def html(self, rel, cls='', sized=True):
+        """一张图标的 <img>。sized 为假时不写 width/height：只给样式表已经钉死宽高的
+        场景用（购物清单那几种格子），那里尺寸由 CSS 在图到之前就定了，属性是重复的
+        字节；别处留着，靠它们在图到之前占位、不跳版。"""
         if rel not in self.size:
             path = os.path.normpath(os.path.join(self.dir, rel))
             if path not in Icons._FILES:
@@ -487,8 +490,9 @@ class Icons:
         # 引用顺序即文档顺序，首屏那几张走高优先级
         attr = loading_attr(self.refs, self.eager)
         self.refs += 1
-        return ('<img %ssrc="%s" alt="" width="%d" height="%d" %s>'
-                % ('class="%s" ' % cls if cls else '', rel, w, h, attr))
+        return ('<img %ssrc="%s" alt=""%s %s>'
+                % ('class="%s" ' % cls if cls else '', rel,
+                   ' width="%d" height="%d"' % (w, h) if sized else '', attr))
 
 
 

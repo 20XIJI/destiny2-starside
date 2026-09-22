@@ -330,9 +330,8 @@ def check_landing(idx):
     for page in sources():
         if not searchable(page):
             continue
-        with open(os.path.join(shell.SITE, *page.split('/'), 'index.html'),
-                  encoding='utf-8') as f:
-            html = f.read()
+        # 首屏之后另存的记录要一并算上（shell.read_page）
+        html = shell.read_page(os.path.join(shell.SITE, *page.split('/'), 'index.html'))
         # 条目之间用 \x00 隔开：过滤词里没有它，跨两条的命中不会凑出来。
         texts[page] = '\x00'.join(text_of(m, collapse=True)
                                    for pat in ITEM for m in pat.findall(html))

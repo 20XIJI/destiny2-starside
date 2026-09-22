@@ -8,6 +8,7 @@
 一种源稿格式不划算。改了这里的署名或免责声明，首页要跟着改，闸门会提醒。
 """
 
+import gzip
 import json
 import os
 import re
@@ -369,18 +370,145 @@ def sync_card(home, href, count=None):
     return home[:card.start()] + fixed + home[card.end():]
 
 
-def emit(outdir, out, detail=''):
+def emit(outdir, out, detail='', rest=0):
     """写出 index.html 并报一行。detail 是该页特有的结构计数。
 
     落盘前把 data-b 的绝对行号改成增量——四个生成器共用这一个出口，
     编码因此只有一处，各生成器与它们的 check() 面对的都还是绝对值。
+
+    rest 是源稿「首屏记录：」的数：非零时只把前 rest 条记录留在 index.html，
+    其余移进同目录的 rest.html 与 rest.gz（见 split_rest）。切在 delta_bmarks
+    之后：data-b 的增量按整页的文档顺序算，插回原位之后 edit.js 照常解码。
     """
     out = markup.delta_bmarks(out)
     path = os.path.join(outdir, 'index.html')
+    page, frag = split_rest(out, rest) if rest else (out, '')
+    if frag and merge_rest(page, frag) != out:
+        markup.die('%s：拆出去的记录插不回原样，split_rest 与 merge_rest 对不上'
+                   % os.path.relpath(path, SITE))
     with open(path, 'w', encoding='utf-8') as f:
-        f.write(out)
-    print('%s —— %.1f KB%s' % (os.path.relpath(path, SITE), len(out.encode()) / 1024,
-                               '，' + detail if detail else ''))
+        f.write(page)
+    for name in (REST, REST_GZ):
+        stale = os.path.join(outdir, name)
+        if not frag and os.path.exists(stale):
+            os.remove(stale)
+    if frag:
+        with open(os.path.join(outdir, REST), 'w', encoding='utf-8') as f:
+            f.write(frag)
+        with open(os.path.join(outdir, REST_GZ), 'wb') as f:
+            f.write(gzip.compress(frag.encode(), compresslevel=9, mtime=0))
+    print('%s —— %.1f KB%s%s' % (os.path.relpath(path, SITE), len(page.encode()) / 1024,
+                                 '，其余 %d 段另存 %s %.1f KB（%s %.1f KB）'
+                                 % (frag.count('<template data-rest='), REST_GZ,
+                                    os.path.getsize(os.path.join(outdir, REST_GZ)) / 1024,
+                                    REST, len(frag.encode()) / 1024) if frag else '',
+                                 '，' + detail if detail else ''))
+
+
+# ── 首屏之后的记录另存一份 ─────────────────────────────────────────────
+# 托管不压缩，购物清单一页上千 KB，慢网要七八秒才下完。源稿写「首屏记录：N」的页面
+# 只把前 N 条记录留在 index.html，其余整段移进同目录两个文件：rest.gz 是 gzip，
+# 浏览器用内建的 DecompressionStream 解开，只有原样的一成大小；rest.html 是原样，
+# 给没有 DecompressionStream 的浏览器，也给构建里要读整页的脚本（read_page）。
+# 两份的正文都是生成器原本产出的那段 HTML，插回原位与不拆逐字相同，emit 当场核对。
+REST = 'rest.html'
+REST_GZ = 'rest.gz'
+REST_PART = re.compile(r'<template data-rest="([^"]+)">(.*?)</template>', re.S)
+SECTION_OPEN = re.compile(r'<section class="block" id="([^"]+)">')
+REC_OPEN = re.compile(r'<article class="rec[ "]')
+
+
+def rest_wait(sec):
+    """留在分节里的占位：记录到了就被换掉。没有脚本时一直藏着，由 REST_JS 立起来。"""
+    return '<p class="rest-wait" data-rest-wait="%s" hidden>其余条目载入中…</p>' % sec
+
+
+# 接在 </main> 后面。内联而不另开文件：它要在页面解析到这里时就发出请求，
+# 不等 defer 脚本；也就省了一次往返。window.starsideRest 在记录插回之后兑现，
+# app.js 听 starside:rest 重新收条目，edit.js 进编辑态之前等它。
+# 取回来的前两个字节不是 gzip 头（1f 8b）说明服务器自己加了 Content-Encoding、
+# 浏览器已经解过一次，这时拿到的就是正文。
+REST_JS = (
+    '<noscript><p class="rest-wait">本页其余条目要启用 JavaScript 才能显示。</p></noscript>'
+    '<script>(function(){'
+    'var w=document.querySelectorAll("[data-rest-wait]"),i;'
+    'for(i=0;i<w.length;i++)w[i].hidden=false;'
+    'var gz=typeof DecompressionStream==="function";'
+    'window.starsideRest=fetch(gz?"' + REST_GZ + '":"' + REST + '").then(function(r){'
+    'if(!r.ok)throw new Error(r.status+" "+r.url);'
+    'if(!gz)return r.text();'
+    'return r.arrayBuffer().then(function(b){var h=new Uint8Array(b,0,2);'
+    'if(h[0]!==31||h[1]!==139)return new TextDecoder().decode(b);'
+    'return new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream("gzip"))).text()})'
+    '}).then(function(t){'
+    'var box=document.createElement("template");box.innerHTML=t;'
+    'var ps=box.content.querySelectorAll("template[data-rest]");'
+    'for(i=0;i<ps.length;i++){'
+    'var at=document.querySelector(\'[data-rest-wait="\'+ps[i].getAttribute("data-rest")+\'"]\');'
+    'at.parentNode.insertBefore(ps[i].content,at);at.remove()}'
+    'document.dispatchEvent(new Event("starside:rest"))'
+    '});'
+    'window.starsideRest.catch(function(e){console.error(e);'
+    'for(i=0;i<w.length;i++)w[i].textContent="其余条目载入失败："+e.message+"，刷新重试"})'
+    '})();</script>')
+
+
+def split_rest(html, keep):
+    """整页 → (index.html, rest.html 的正文)。
+
+    按文档顺序数记录（article.rec），前 keep 条留在页面上；此后每个分节从第一条
+    没留下的记录起、到分节结束为止整段移走，原位换成 rest_wait()。分节标题与列名
+    留着，工具条的分节标签从一开始就是齐的。rest.html 里每段一个
+    <template data-rest="分节 id">，插回时按 id 找占位。
+    """
+    page, parts, at, kept = [], [], 0, 0
+    for m in SECTION_OPEN.finditer(html):
+        end = html.index('</section>', m.end())
+        body = html[m.end():end]
+        if '<section' in body:
+            markup.die('分节里又套了分节（%s），split_rest 切不准' % m.group(1))
+        recs = []
+        for r in REC_OPEN.finditer(body):
+            close = body.index('</article>', r.start()) + len('</article>')
+            if '<article' in body[r.start() + 1:close]:
+                markup.die('记录里又套了 article（%s），split_rest 切不准' % m.group(1))
+            recs.append((r.start(), close))
+        take = min(max(keep - kept, 0), len(recs))
+        kept += take
+        if take == len(recs):
+            continue
+        cut = m.end() + (recs[take - 1][1] if take else recs[0][0])
+        page += [html[at:cut], rest_wait(m.group(1))]
+        parts.append('<template data-rest="%s">%s</template>' % (m.group(1), html[cut:end]))
+        at = end
+    if not parts:
+        markup.die('「首屏记录：%d」已经盖住了全部记录，这一页不必拆，把那一行删掉' % keep)
+    tail = html[at:]
+    close = tail.index('</main>') + len('</main>')
+    page += [tail[:close], REST_JS, tail[close:]]
+    return ''.join(page), '\n'.join(parts) + '\n'
+
+
+def merge_rest(page, frag):
+    """split_rest 的逆运算：把 rest.html 的各段插回占位，拿掉 REST_JS。"""
+    out = page.replace(REST_JS, '', 1)
+    for sec, body in REST_PART.findall(frag):
+        wait = rest_wait(sec)
+        if out.count(wait) != 1:
+            markup.die('rest.html 的分节 %s 在页面上找不到唯一的占位' % sec)
+        out = out.replace(wait, body)
+    return out
+
+
+def read_page(path):
+    """一页产出的整页 HTML：拆出去的记录并回来。构建里要读页面内容的脚本走它。"""
+    with open(path, encoding='utf-8') as f:
+        html = f.read()
+    frag = os.path.join(os.path.dirname(path), REST)
+    if os.path.basename(path) != 'index.html' or not os.path.exists(frag):
+        return html
+    with open(frag, encoding='utf-8') as f:
+        return merge_rest(html, f.read())
 
 
 def foot(stamp, first, source=None, thanks=None):

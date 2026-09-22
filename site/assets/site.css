@@ -2984,7 +2984,12 @@ body:has(.hero) {
               text-align: left; white-space: nowrap; }
 .x-mini img, .x-facts img { width: 16px; height: 16px; }
 .r-slot { padding: 12px 8px; }
-.r-picks { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; }
+/* 首屏之后另存的记录还没插回来时，分节末尾那一行提示（shell.rest_wait）。 */
+.rest-wait { margin: 14px 0 0; font-size: 13px; color: var(--bone-faint); }
+
+/* 一栏几枚词条：整组在格子里居中，组内左对齐。单列网格一层做完，不另套包层。 */
+.r-cell.r-slot { display: grid; justify-content: center; justify-items: start; align-content: center;
+                 gap: 7px; }
 .r-plug { display: flex; align-items: center; gap: 7px; font-size: 12.5px; line-height: 1.35;
         color: var(--c-perk); text-align: left; }
 .r-plug .ico { position: relative; display: inline-block; flex: none; margin: 4px; }

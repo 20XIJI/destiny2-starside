@@ -267,6 +267,36 @@ class MarkerIndex(unittest.TestCase):
         self.assertGreater(seen, 4500, '只比对了 %d 个括号边界点，语料没读到？' % seen)
 
 
+class RestSplit(unittest.TestCase):
+    """源稿写「首屏记录：N」的页面（shell.split_rest）：前 N 条记录留在 index.html，
+    其余移进 rest.html，插回原位与不拆逐字相同。"""
+
+    PAGE = ('<main data-src="keys/x">\n'
+            '<section class="block" id="sec-1">\n<h2 class="sect-label">说明</h2>\n<p>正文</p>\n</section>\n'
+            '<section class="block" id="sec-2">\n<h2 class="sect-label">甲</h2>\n<div class="r-head">列</div>'
+            '<article class="rec r-weapon">一</article><article class="rec r-weapon">二</article>'
+            '<article class="rec r-weapon">三</article>\n</section>\n'
+            '<section class="block" id="sec-3">\n<h2 class="sect-label">乙</h2>\n<div class="r-head">列</div>'
+            '<article class="rec r-weapon">四</article>\n</section>\n'
+            '</main>\n<footer></footer>')
+
+    def test_keeps_the_first_records_and_puts_the_rest_back_verbatim(self):
+        page, frag = shell.split_rest(self.PAGE, 2)
+        self.assertEqual(re.findall(r'<article class="rec r-weapon">(.)</article>', page), ['一', '二'])
+        self.assertIn('<h2 class="sect-label">乙</h2>', page, '分节标题留在页面上，工具条的分节标签一开始就齐')
+        self.assertEqual(shell.REST_PART.findall(frag),
+                         [('sec-2', '<article class="rec r-weapon">三</article>\n'),
+                          ('sec-3', '<article class="rec r-weapon">四</article>\n')])
+        self.assertEqual(page.count(shell.REST_JS), 1)
+        self.assertLess(page.index('</main>'), page.index(shell.REST_JS))
+        self.assertEqual(shell.merge_rest(page, frag), self.PAGE)
+
+    def test_a_keep_that_covers_every_record_is_refused(self):
+        with self.assertRaises(SystemExit) as got:
+            shell.split_rest(self.PAGE, 4)
+        self.assertIn('首屏记录', str(got.exception))
+
+
 class CellSplitting(unittest.TestCase):
     """切格只剩两份实现，跨语言那条缝由这些对语料的断言钉住。
 
@@ -1917,7 +1947,7 @@ class EditOrigins(unittest.TestCase):
     def test_every_origin_is_a_site_written_field_with_its_current_text(self):
         for page in self.pages:
             got = json.loads(page.read_text(encoding='utf-8'))
-            html = (page.parent / 'index.html').read_text(encoding='utf-8')
+            html = shell.read_page(str(page.parent / 'index.html'))
             # 与 edit.js 的 origins() 同一种还原：空串是「已出现的最大号 + 1」。
             seen, top = set(), -1
             for m in re.finditer(r' data-e="([0-9,]*)"', html):

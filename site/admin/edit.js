@@ -845,7 +845,9 @@
       return Promise.resolve()
     }
     chip.textContent = '载入中…'
-    return needAdmin().then(reload).then(function () {
+    // 首屏之后另存的记录（shell.split_rest）插回来之前，data-b 的增量解不全：
+    // 按文档顺序累加，缺一段就整页错位。先等它。
+    return Promise.all([needAdmin().then(reload), window.starsideRest]).then(function () {
       decode()
       S.on = true
       mark(true)

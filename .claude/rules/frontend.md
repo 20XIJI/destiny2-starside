@@ -138,6 +138,12 @@ paths:
 | `data-noun` | 模组 | 套装 | 条目 |
 | `data-chip-label` | 神器 | 分类 | 分节 |
 
+源稿写「首屏记录：」的页面（购物清单三页，见 `shell.split_rest`），首屏之后的记录在
+`app.js` 跑完之后才由页面上那段内联脚本插回来。插回时发 `starside:rest`，`app.js` 重收
+条目（`collect()`）、重算「加载时有条目的分节」，按搜索框里现有的查询再过一遍；带 `#`
+进来、读者还没滚动过的，再跳一次锚点。`edit.js` 进编辑态之前等 `window.starsideRest`：
+`data-b` 的增量按整页文档顺序解码，缺一段就整页错位。
+
 另有一个可选的 `data-chip-break`：值等于哪枚 chip 的文字，就在那枚之前插一个占满整行的空项，chip 从那里另起一行。源稿写「跳转分行：」，护甲模组页用它把五个部位与十一个副本分成两行。
 
 切一屏内容的 chip 一律 `history.replaceState`，只有钻进详情才压栈。跳转 chip
