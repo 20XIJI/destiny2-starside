@@ -1218,13 +1218,29 @@
 
 .wpn-pill.is-wait { color: var(--bone-faint); border-style: dashed; }
 
-.skel .wpn-card { pointer-events: none; }
+/* 骨架：页壳里写好的首屏（build-weapons.py 的 skeleton()），词条池没到时也拿它占位。
+   盒子沿用真卡片与开关的类，只把字换成色块；不加动画。 */
+.skel { pointer-events: none; }
 .skel .gun,
+.skel .lbl,
+.skel .toggle { color: transparent; background: var(--tint-3); }
+.skel .toggle { border-color: transparent; }
+/* 卡片里的几行只在行高正中涂一条 12px 的色带：元素那一行的行高来自继承的正文行高，
+   有 28px，整行涂满会比名字还粗。 */
 .skel .nm,
 .skel .wpn-meta,
-.skel .wpn-frame { background: var(--tint-3); color: transparent; }
-.skel .wpn-meta { height: 15px; width: 70%; }
-.skel .wpn-frame { height: 14px; width: 55%; }
+.skel .wpn-frame,
+.skel .wpn-grades {
+  color: transparent;
+  background: linear-gradient(var(--tint-3), var(--tint-3)) 0 50% / 100% 12px no-repeat;
+}
+.skel .nm { width: 80%; }
+.skel .wpn-meta { width: 70%; }
+.skel .wpn-frame { width: 55%; }
+.skel .wpn-grades { width: 40%; }
+/* 骨架比视口矮时页脚先出现在屏内，真卡片铺上后又被推出屏外，记一次版面位移。
+   align-content 要写 start：网格有多余高度时缺省把它分给各行，卡片会被拉高。 */
+.wpn-grid.skel { min-height: 100vh; align-content: start; }
 
 /* 催化剂 */
 .cat {

@@ -3,7 +3,9 @@
      index.js  window.WPN        首屏：卡片墙、筛选、结果栏
      pool.js   window.WPN_POOL   词条池、属性曲线、大师杰作与模组
      text.js   window.WPN_TEXT   描述、说明、站内实测、作者评语
-   后两份首屏画完就在空闲时取；查询或详情先用到时立刻取。 */
+   pool.js 在 load 之后取，text.js 不预取；查询或详情先用到哪一份就立刻取哪一份。
+   查询栏与首屏骨架写在页壳里（build-weapons.py 的 toolbar() 与 skeleton()），这里接上
+   事件、换成真内容。 */
 (function () {
   'use strict';
 
@@ -95,6 +97,10 @@
     if (!job) {
       job = loads[name] = { cbs: [], failed: false };
       var s = document.createElement('script');
+      /* 详情或查询在等词条池时提到高优先级：动态插入的脚本缺省是低优先级，会排在首屏
+         那一百多张卡片图后面，等它们下完才开始下。load 之后的预取不带回调，照缺省。
+         text.js 照缺省：详情不等它就画得出来，先让详情里的图下完。 */
+      if (cb && name === 'pool') { s.fetchPriority = 'high'; }
       s.src = new URL(name + '.js', HERE).href;
       s.onload = function () {
         if (name === 'pool') { poolReady(); } else { textReady(); }
@@ -332,12 +338,32 @@
     }
     return out.length === 1 ? out[0] : out.length ? { op: 'and', xs: out } : null;
   }
-  function needsPool(node) {
-    if (!node) { return false; }
-    if (node.op === 'kw') { return has(POOL_KEYS, node.k); }
-    if (node.op === 'not') { return needsPool(node.x); }
-    if (node.xs) { for (var i = 0; i < node.xs.length; i++) { if (needsPool(node.xs[i])) { return true; } } }
-    return false;
+  /* 查询要哪几份后到的数据：{pool, text}，NEED 是缺了就算不出（先显示骨架，到了再算），
+     MORE 是有什么先搜什么、到了重搜。裸词搜的串里有词条名与英文名（pool）和描述（text），
+     见 hay()；按 is: 算的裸词不搜那一串。name: 的英文名在 pool，perk: 还查说明。 */
+  var NEED = 2, MORE = 1;
+  function wants(scope, node, out) {
+    out = out || { pool: 0, text: 0 };
+    function atLeast(name, level) { out[name] = Math.max(out[name], level); }
+    if (!node) { return out; }
+    if (node.op === 'not') { return wants(scope, node.x, out); }
+    if (node.xs) {
+      for (var i = 0; i < node.xs.length; i++) { wants(scope, node.xs[i], out); }
+      return out;
+    }
+    if (node.op === 'w') {
+      if (!bareIs(scope, node.v, node.tok.q)) {
+        if (scope !== 'sets') { atLeast('pool', MORE); }
+        atLeast('text', MORE);
+      }
+    } else if (node.k === 'name') {
+      if (scope !== 'sets') { atLeast('pool', MORE); }
+    } else if (scope === 'wpn') {
+      if (has(POOL_KEYS, node.k)) { atLeast('pool', NEED); }
+      if (node.k === 'perk') { atLeast('text', MORE); }
+      if (node.k === 'perktext') { atLeast('pool', NEED); atLeast('text', NEED); }
+    }
+    return out;
   }
 
   function fold(s) { return String(s).toLowerCase().replace(/\s+/g, ''); }
@@ -547,10 +573,10 @@
       case 'season': return cmp(v, r[W_SSN]);
       case 'source': return fold(srcOf(r, W_SRC)).indexOf(f) !== -1;
       case 'breaker': return r[W_BR] > 0 && fold(V.br[r[W_BR]][0]).indexOf(f) !== -1;
-      case 'perktext': return T ? foldedTexts(i).indexOf(f) !== -1 : false;
     }
     if (!P) { return false; }
     switch (k) {
+      case 'perktext': return T ? foldedTexts(i).indexOf(f) !== -1 : false;
       case 'perk':
         if (cached('pn' + i, function () { return fold(perkNames(i).join(' ')); }).indexOf(f) !== -1) { return true; }
         return T ? foldedTexts(i).indexOf(f) !== -1 : false;
@@ -768,33 +794,17 @@
     ['breaker:反屏障', '勇士克制'],
     ['is:手炮 (perk:萤火虫 or perk:狂乱) -is:专家', '空格是「且」，or 是「或」，- 是排除，括号分组']
   ];
-  bar.innerHTML =
-    '<div class="wpn-q">' +
-    '<div class="wpn-scope" role="group" aria-label="范围">' +
-    '<button type="button" class="toggle" data-act="scope" data-v="wpn">武器</button>' +
-    '<button type="button" class="toggle" data-act="scope" data-v="armor">异域护甲</button>' +
-    '<button type="button" class="toggle" data-act="scope" data-v="sets">护甲套装</button></div>' +
-    '<div class="wpn-field"><input class="wpn-input" type="search" autocomplete="off" spellcheck="false" ' +
-    'role="combobox" aria-expanded="false" aria-controls="wpn-ac" aria-label="搜索装备" ' +
-    'placeholder="名字、词条，或 is:手炮 perk:萤火虫 season:&gt;=26">' +
-    '<ul class="wpn-suggest" id="wpn-ac" role="listbox" hidden></ul></div>' +
-    '<p class="wpn-count" aria-live="polite"></p>' +
-    '<div class="wpn-views">' +
-    '<button type="button" class="toggle" data-act="view" data-v="grid">卡片</button>' +
-    '<button type="button" class="toggle" data-act="view" data-v="list">列表</button>' +
-    '<button type="button" class="toggle" data-act="syntax" aria-expanded="false">语法</button>' +
-    '<div class="wpn-syntax" role="dialog" aria-label="查询语法" hidden><table>' +
-    SYNTAX.map(function (r) {
-      return '<tr><td><button type="button" class="toggle" data-act="setq" data-v="' + esc(r[0]) + '"><code>' +
-        esc(r[0]) + '</code></button></td><td>' + esc(r[1]) + '</td></tr>';
-    }).join('') +
-    '</table><p>关键字照 DIM 的写法，值用中文；DIM 里抄来的查询多数能直接用。</p></div></div>' +
-    '<div class="wpn-pills" hidden></div></div>';
   var input = bar.querySelector('.wpn-input');
   var acBox = bar.querySelector('.wpn-suggest');
   var countBox = bar.querySelector('.wpn-count');
   var pillBox = bar.querySelector('.wpn-pills');
   var syntaxBox = bar.querySelector('.wpn-syntax');
+  syntaxBox.querySelector('table').innerHTML = SYNTAX.map(function (r) {
+    return '<tr><td><button type="button" class="toggle" data-act="setq" data-v="' + esc(r[0]) + '"><code>' +
+      esc(r[0]) + '</code></button></td><td>' + esc(r[1]) + '</td></tr>';
+  }).join('');
+  /* 词条池没到时卡片墙拿页壳里那块骨架占位，与首屏同一份。 */
+  var SKELETON = root.querySelector('.wpn-grid.skel').outerHTML;
   root.innerHTML = '<div class="wpn-presets"></div><div class="wpn-sub"></div><div class="wpn-body"></div>';
   var presetBox = root.querySelector('.wpn-presets');
   var subBox = root.querySelector('.wpn-sub');
@@ -813,7 +823,8 @@
   }).observe(head);
 
   /* ── 渲染：顶栏 ────────────────────────────────────────────────────── */
-  var tokens = [], tree = null, results = [], pending = false;
+  /* pending：查询在等哪一份数据才算得出（'pool'、'text'），不等是空串。 */
+  var tokens = [], tree = null, results = [], pending = '';
   function pillIcon(t) {
     if (t.t === 'w' && bareIs(S.scope, t.v, t.q)) { t = { t: 'kw', k: 'is', v: t.v }; }
     if (t.t !== 'kw') { return ''; }
@@ -858,7 +869,7 @@
     var pills = tokens.filter(function (t) { return t.t === 'kw' || t.t === 'w'; });
     pillBox.hidden = !pills.length;
     pillBox.innerHTML = pills.map(function (t) {
-      var wait = pending && t.t === 'kw' && has(POOL_KEYS, t.k);
+      var wait = pending && t.t === 'kw' && (t.k === 'perktext' || (!P && has(POOL_KEYS, t.k)));
       return '<span class="wpn-pill' + (wait ? ' is-wait' : '') + (t.neg ? ' is-not' : '') + '">' + pillIcon(t) +
         (t.t === 'kw' ? '<span class="k">' + esc(t.k) + ':</span>' + esc(t.v) : esc(t.v)) +
         '<button type="button" data-act="unpill" data-a="' + t.a + '" data-b="' + t.b + '" aria-label="去掉这一条">×</button></span>';
@@ -923,7 +934,8 @@
   }
   function renderSub() {
     if (pending) {
-      subBox.innerHTML = '<div class="wpn-row"><span class="loading">正在载入词条池</span></div>';
+      subBox.innerHTML = '<div class="wpn-row"><span class="loading">' +
+        (pending === 'pool' ? '正在载入词条池' : '正在载入说明') + '</span></div>';
       return;
     }
     if (!S.q) {
@@ -1026,7 +1038,9 @@
     box.appendChild(ol);
     var at = 0;
     function more() {
-      var end = Math.min(list.length, at + BATCH), html = '';
+      /* 头一批只铺首屏那一屏（N_EAGER 张），画完后观察者报哨兵进入，再补到 BATCH 的
+         整数倍：120 张一起铺时，HTML 解析、排版与绘制都在开屏同一个长任务里。 */
+      var end = Math.min(list.length, at ? (Math.floor(at / BATCH) + 1) * BATCH : N_EAGER), html = '';
       for (var k = at; k < end; k++) { html += render(list[k], k); }
       ol.insertAdjacentHTML('beforeend', html);
       at = end;
@@ -1055,14 +1069,9 @@
     }).join('');
     return '<div class="empty"><h3>没有符合全部条件的' + noun + '</h3><p>去掉其中一条之后还剩：</p><div class="wpn-row">' + btns + '</div></div>';
   }
-  function skeleton() {
-    var one = '<li><div class="wpn-card"><span class="gun"></span><div><p class="nm">占位</p><div class="wpn-meta"></div>' +
-      '<div class="wpn-frame"></div></div></div></li>';
-    return '<ol class="wpn-grid skel">' + new Array(13).join(one) + '</ol>';
-  }
   function renderBrowse() {
     body.innerHTML = '';
-    if (pending) { body.innerHTML = skeleton(); return; }
+    if (pending) { body.innerHTML = SKELETON; return; }
     if (!results.length) { body.innerHTML = emptyState(); return; }
     if (S.view === 'list') {
       var names = {};
@@ -1798,13 +1807,22 @@
   function evaluate() {
     tokens = tokenize(S.q);
     tree = parse(tokens, keysOf(S.scope));
-    pending = S.scope === 'wpn' && needsPool(tree) && !P;
-    if (pending) {
-      if (!waiting) { waiting = true; need('pool', function () { waiting = false; evaluate(); render(); }); }
-      results = [];
-      return;
-    }
-    results = run(S.scope, tree);
+    var want = wants(S.scope, tree), have = { pool: P, text: T };
+    pending = '';
+    ['pool', 'text'].forEach(function (name) {
+      if (!want[name] || have[name]) { return; }
+      if (want[name] === NEED && !pending) { pending = name; }
+      /* 两份都要时先取 pool，到了重算时再取 text：两份分一条带宽，一起取会让 pool 晚到。 */
+      if (waiting[name] || (name === 'text' && want.pool && !P)) { return; }
+      waiting[name] = true;
+      need(name, function () {
+        waiting[name] = false;
+        var was = pending, before = results;
+        evaluate();
+        if (was || pending || !sameList(before, results)) { render(); }
+      });
+    });
+    results = pending ? [] : run(S.scope, tree);
   }
   function render() {
     renderBar();
@@ -1812,7 +1830,7 @@
     renderSub();
     if (S.sel != null) { renderSplit(); } else { renderBrowse(); }
   }
-  var typing = 0, waiting = false;
+  var typing = 0, waiting = {};
   function setQuery(q, push) {
     S.q = q;
     evaluate();
@@ -2019,6 +2037,8 @@
 
   /* ── 开屏 ──────────────────────────────────────────────────────────── */
   readUrl();
+  /* 查询框写在页壳里，脚本到之前读者可能已经敲了字：地址栏没带查询时接着用它。 */
+  if (!S.q && input.value) { S.q = input.value; writeUrl(false); }
   input.value = S.q;
   evaluate();
   if (S.sel != null && S.scope === 'wpn' && S.urlRoll) {
@@ -2028,8 +2048,7 @@
     });
   }
   render();
-  /* 首屏画完之后空闲时取词条池与说明。 */
-  var idle = window.requestIdleCallback || function (fn) { return setTimeout(fn, 1200); };
-  idle(function () { need('pool', function () { need('text'); }); });
+  /* 词条池等 load 之后再取：先取会与首屏的图抢带宽，load 也要等它下完。说明不预取。 */
+  window.addEventListener('load', function () { need('pool'); });
 
 }());

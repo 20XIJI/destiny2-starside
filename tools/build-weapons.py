@@ -4,7 +4,7 @@
     weapons/index.js   window.WPN       首屏要下：卡片墙、筛选、结果栏要的一切
     weapons/pool.js    window.WPN_POOL  词条池、属性曲线、大师杰作与模组：详情与 perk:/stat: 查询要
     weapons/text.js    window.WPN_TEXT  描述、说明、站内实测、作者评语：详情与 perktext: 查询要
-    weapons/index.html 外壳 + 空容器 + 类型小图标 sprite，内容全由 weapons/app.js 画
+    weapons/index.html 外壳 + 查询栏 + 首屏骨架 + 类型小图标 sprite，内容由 weapons/app.js 画
 
 只读实体层（resolve.Facts），不写任何数据。插件在载荷里存 hash 不存下标：地址栏里的
 配置因此跨构建有效。三份载荷的字段表写在 .claude/rules/weapons.md。
@@ -1188,8 +1188,57 @@ def sprite(glyphs):
                       for k, (box, body) in sorted(glyphs.items())))
 
 
+def toolbar():
+    """顶栏里的查询栏：范围、查询框、计数、视图与语法。写在页壳里，首次绘制时顶栏就是
+    真实高度；app.js 只接事件、填语法表（它的 SYNTAX）。"""
+    return (
+        '<div class="wpn-q">'
+        '<div class="wpn-scope" role="group" aria-label="范围">'
+        '<button type="button" class="toggle" data-act="scope" data-v="wpn">武器</button>'
+        '<button type="button" class="toggle" data-act="scope" data-v="armor">异域护甲</button>'
+        '<button type="button" class="toggle" data-act="scope" data-v="sets">护甲套装</button></div>'
+        '<div class="wpn-field"><input class="wpn-input" type="search" autocomplete="off" spellcheck="false" '
+        'role="combobox" aria-expanded="false" aria-controls="wpn-ac" aria-label="搜索装备" '
+        'placeholder="名字、词条，或 is:手炮 perk:萤火虫 season:&gt;=26">'
+        '<ul class="wpn-suggest" id="wpn-ac" role="listbox" hidden></ul></div>'
+        '<p class="wpn-count" aria-live="polite"></p>'
+        '<div class="wpn-views">'
+        '<button type="button" class="toggle" data-act="view" data-v="grid">卡片</button>'
+        '<button type="button" class="toggle" data-act="view" data-v="list">列表</button>'
+        '<button type="button" class="toggle" data-act="syntax" aria-expanded="false">语法</button>'
+        '<div class="wpn-syntax" role="dialog" aria-label="查询语法" hidden><table></table>'
+        '<p>关键字照 DIM 的写法，值用中文；DIM 里抄来的查询多数能直接用。</p></div></div>'
+        '<div class="wpn-pills" hidden></div></div>')
+
+
+# 骨架的卡片数：1440×900 下卡片墙一屏 6 列 6 行，与 app.js 的 N_EAGER 同一个数。
+N_SKEL = 36
+# 骨架里占字的全角空格：它不是可折叠的空白，撑出与真文字同高的一行，行高仍由真卡片
+# 那几条字体规则给。
+FILL = '\u3000'
+
+
+def skeleton():
+    """首屏骨架：开屏那两行开关（槽位、示例）与一屏卡片。类与真卡片同一套，高度由
+    同一份样式算出，换上真内容时版面不动；词条池没到时 app.js 也拿这块卡片墙占位。"""
+    def row(label, n):
+        return ('<div class="wpn-row"><span class="lbl">%s</span>%s</div>'
+                % (FILL * label, ('<span class="toggle"><code>%s</code></span>' % (FILL * 5)) * n))
+    card = ('<li><div class="wpn-card"><span class="gun"></span><div><p class="nm">%s</p>'
+            '<div class="wpn-meta">%s</div><div class="wpn-frame">%s</div>'
+            '<div class="wpn-grades">%s</div></div></div></li>' % ((FILL,) * 4))
+    return ('<div class="wpn-presets skel" aria-hidden="true">%s</div>'
+            '<div class="wpn-sub skel" aria-hidden="true">%s</div>'
+            '<div class="wpn-body"><ol class="wpn-grid skel" aria-hidden="true">%s</ol></div>'
+            % (row(2, 3), row(4, 8), card * N_SKEL))
+
+
 def page(stats, glyphs):
     head = shell.head('装备库 · Starside', DESC)
+    nav = shell.nav('装备库', toolbar={})
+    slot = '<div class="toolbar"></div>'
+    if slot not in nav:
+        markup.die('shell.nav() 的输出里找不到空的工具条槽位 %s，查询栏写不进去' % slot)
     first = ('武器数据取自 Bungie manifest，属性按词条实时算。方括号内是 PvP 数值。'
              + shell.unsure_note())
     source = ('Bungie manifest、%s（Aegis）与 %s（小棒猪）；异域的站内详情同'
@@ -1202,12 +1251,12 @@ def page(stats, glyphs):
                      # 摆的就是配装推荐页那张卡，强度光环、审核意见、合集马赛克与
                      # 「3 套」角标都长在那份结构上。
                      '<style>%s</style>\n</head>' % card_css()),
-        shell.nav('装备库', toolbar={}),
+        nav.replace(slot, '<div class="toolbar">%s</div>' % toolbar()),
         '<main class="wpn">',
         '<h1 class="off-screen">装备库</h1>',
         '<section id="find" aria-label="装备库"><noscript><p class="empty">装备库要开着 '
-        'JavaScript 才能查：共 %d 把武器、%d 件异域护甲。</p></noscript></section>'
-        % (stats['weapons'], stats['armor']),
+        'JavaScript 才能查：共 %d 把武器、%d 件异域护甲。</p></noscript>%s</section>'
+        % (stats['weapons'], stats['armor'], skeleton()),
         '</main>',
         sprite(glyphs),
         shell.foot(stamp(), first, source=source,

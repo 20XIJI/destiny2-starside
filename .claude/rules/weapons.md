@@ -23,9 +23,15 @@ paths:
 | 文件 | 何时载 | 内容 | gzip |
 |---|---|---|---|
 | `index.js` → `window.WPN` | 首屏 `defer` | 词表 `v` + 武器行 `w` + 护甲行 `a` | 134 KB |
-| `pool.js` → `window.WPN_POOL` | 首屏画完空闲时取；查询或详情先用到就立刻取 | 属性表、属性组曲线、插件字典、词条栏、大师杰作、模组、神器模组 | 175 KB |
-| `text.js` → `window.WPN_TEXT` | pool 之后 | 描述、Bungie 说明、站内实测、作者评语、异域站内详情、神器模组说明 | 342 KB |
-| `index.html` | — | 外壳（`shell.head/nav/foot`）+ 空容器 `section#find` + 类型小图标 sprite | — |
+| `pool.js` → `window.WPN_POOL` | load 之后取；详情或查询先用到就立刻取，按高优先级 | 属性表、属性组曲线、插件字典、词条栏、大师杰作、模组、神器模组 | 175 KB |
+| `text.js` → `window.WPN_TEXT` | 不预取；打开详情，或查询要搜说明与描述时才取，同时要 pool 的排在 pool 之后 | 描述、Bungie 说明、站内实测、作者评语、异域站内详情、神器模组说明 | 342 KB |
+| `index.html` | — | 外壳（`shell.head/nav/foot`）+ 查询栏 + 首屏骨架 + 类型小图标 sprite | — |
+
+查询栏与首屏骨架写在页壳里（`toolbar()`、`skeleton()`），首次绘制就是页面的真实结构：
+顶栏按真实高度占住，开屏两行开关与一屏卡片（`N_SKEL`，与 `app.js` 的 `N_EAGER` 同数）
+沿用真卡片的类，只把字换成色块，换上真内容时版面不动。`app.js` 接上查询栏的事件、
+填语法表，把骨架换成真内容；词条池没到时卡片墙拿同一块骨架占位。卡片墙头一批只铺
+`N_EAGER` 张，画完再补到 `BATCH` 的整数倍。
 
 插件在载荷里记下标，下标表 `pool.p` 每条带 hash；地址栏里写的是 hash，配置因此跨
 构建有效。重复的东西进去重表只存一份：词条栏的格表 `L`、大师杰作选项 `M`、模组表
@@ -211,12 +217,12 @@ destiny.report 另给锻造武器加一份强化固有特性的 +2，实体层�
 
 | 关键字 | 查什么 | 要哪份数据 |
 |---|---|---|
-| 裸词 | 名字、英文名、类型、框架、来源、词条名、描述；恰好是一个 `is:` 的值（`虚空`、`手炮`）时按 `is:` 算，加引号照字面搜 | 有什么先搜什么，数据到了重搜 |
+| 裸词 | 名字、英文名、类型、框架、来源、词条名、描述；恰好是一个 `is:` 的值（`虚空`、`手炮`）时按 `is:` 算，加引号照字面搜 | 有什么先搜什么，缺的 pool（词条名、英文名）与 text（描述）立刻去取，到了重搜 |
 | `is:` | 类型、元素、槽位（主手／副手／威能）、弹药（主武器／特殊／威能）、稀有度、勇士、标志（可锻造、可强化、可升阶、专家、全息、复刻、已钉选）；护甲是职业、部位。值也认英文，见下 | index |
-| `name:` `frame:` `season:` `source:` `breaker:` | 名字、框架、赛季（可比较）、来源、勇士 | index |
-| `perk:` `perk1:` `perk2:` `perkname:` `origintrait:` | 词条名（`perk:` 还查说明） | pool |
+| `name:` `frame:` `season:` `source:` `breaker:` | 名字、框架、赛季（可比较）、来源、勇士 | index；`name:` 的英文名要 pool，到了重搜 |
+| `perk:` `perk1:` `perk2:` `perkname:` `origintrait:` | 词条名（`perk:` 还查说明） | pool；`perk:` 的说明要 text，到了重搜 |
 | `stat:射程:>=60` | 缺省配置（固定栏选上、不装大师杰作）的显示值 | pool |
-| `perktext:` | 词条说明 | text |
+| `perktext:` | 词条说明 | pool 与 text |
 
 `is:` 的英文写法不计大小写、空格与连字符（`is:HandCannon`、`is:hand-cannon`、
 `is:"Hand Cannon"` 都是手炮），落到中文那个值上，药丸、预选行与补全都按中文值认。枪型
@@ -225,8 +231,9 @@ destiny.report 另给锻造武器加一份强化固有特性的 +2，实体层�
 在 `app.js` 的 `FLAG_EN`。槽位不写 `kinetic`：那是元素，主手写 `kineticslot`。两张表都
 不带原型：普通对象上 `is:toString` 会取到 Object 原型上的函数，整库都算命中。
 
-槽位取物品自己的 `bucketTypeHash`。要 pool 的条件在 pool 到之前显示虚线药丸与骨架
-卡片，到了自动重跑。补全按「去掉正在写的这一段之后的结果」计数。细分行只列多于
+槽位取物品自己的 `bucketTypeHash`。缺了算不出的条件（要 pool 的，以及要 text 的
+`perktext:`）在数据到之前显示虚线药丸与骨架卡片，到了自动重跑；每个条件要哪份数据由
+`app.js` 的 `wants()` 一处判定。补全按「去掉正在写的这一段之后的结果」计数。细分行只列多于
 10 把、又不是全部的值，与 destiny.report 同一条。来源取 Aegis 写的 > LGpig 写的 >
 manifest 收藏条目那一句。
 
