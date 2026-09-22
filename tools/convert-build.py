@@ -23,7 +23,7 @@ import migrate
 import rows
 import shell
 import vocab
-from html import escape
+from html import escape, unescape
 
 from markup import (BRANCH, CLASSES, CO_SCENES, REVIEW_SCENES, SCENE_TAGS, SCENES,
                     TIERS, die, inline, loading_attr, must,
@@ -31,6 +31,9 @@ from markup import (BRANCH, CLASSES, CO_SCENES, REVIEW_SCENES, SCENE_TAGS, SCENE
 
 SRC_DIR = shell.BUILD_DIR
 OUT_DIR = 'builds'
+# 详情页自己那份悬停说明，与 index.html 同目录；页面在 tip.js 的 <script data-desc>
+# 上写这个名字，prune_details() 清孤儿时连它一起清。
+PAGE_DESC = 'desc.js'
 SEASON = shell.SEASON        # 当前赛季只有一处定义，见 shell.py
 
 # 六维恒为六格，顺序钉死：游戏内就是这个顺序，配装之间横着比才对得上位置。
@@ -128,6 +131,14 @@ def icon_of(e, size, eager=False):
             % (UP, e['icon'], size, size, loading_attr(0 if eager else 1, 1)))
 
 
+def query(text):
+    """?q= 的值。汉字原样写进 href：浏览器导航时按页面编码（UTF-8）自己转成百分号，
+    目标页 location.search 读到的与 quote() 那一份逐字相同，而一个汉字原样 3 字节、
+    百分号写法 9 字节。ASCII 仍走 quote()：空格、&、#、+ 在查询串里各有意思，
+    原样写会被读成分隔符（URLSearchParams 把 + 读成空格）。"""
+    return ''.join(c if ord(c) > 127 else quote(c) for c in text)
+
+
 def item(idx, slot, name, prefer, kind=None, cls='item', bare=False, tail='', label=''):
     """一格：图标 + 名字，整格是指向资料页的链接。着色由词表给，不由源稿写。
 
@@ -145,7 +156,7 @@ def item(idx, slot, name, prefer, kind=None, cls='item', bare=False, tail='', la
     sub = ('<span class="sub">%s</span>' % e['sub']) if e.get('sub') else ''
     # 带页内搜索框的页面加 ?q=：落地先过滤到那一行再滚，不然读者落在一整节里
     # 还得自己找。app.js 的 filter() 接这个参数，与全站搜索的命中链接同一套。
-    q = ('?q=%s' % quote(e['q'])) if e['q'] and vocab.searchable(e['page']) else ''
+    q = ('?q=%s' % query(e['q'])) if e['q'] and vocab.searchable(e['page']) else ''
     # 悬停详情认的是 data-d：「页面\t名字\t分节」，builds/tip.js 拿它去 desc.js 里查。
     # 制表符在属性里写成 &#9;，源码里看得见；查得到说明的格子才写这一位，别的
     # 格子上多一个空属性只会让人以为它该弹而没弹。
@@ -185,12 +196,30 @@ GLYPH = {
 
 
 def glyph(key):
-    """面板标题前那一枚。没登记就不画，标题照旧只有文字。"""
+    """面板标题前那一枚。没登记就不画，标题照旧只有文字。
+
+    这里只出一个 <use>，图形本身由 finish() 收进页首的 sprite、每种一份：合集页一页
+    一百多枚，其实只有十四种，逐枚内联一页就多出二三十 KB。"""
     if key not in GLYPH:
         return ''
-    return ('<svg class="gl" viewBox="0 0 16 16" aria-hidden="true">'
-            '<path d="%s" fill="none" stroke="currentColor" stroke-width="1.4" '
-            'stroke-linejoin="round" stroke-linecap="round"/></svg>' % GLYPH[key])
+    return '<svg class="gl" aria-hidden="true"><use href="#gl%d"/></svg>' % list(GLYPH).index(key)
+
+
+USE = re.compile(r'<use href="#gl(\d+)"/>')
+
+
+def sprite(out):
+    """这一页 glyph() 引到的每种图形各出一个 <symbol>，收进一张不显示的 <svg>。
+
+    外层 .gl 的宽高由样式表给，<use> 缺省占满它，symbol 的 16×16 视框随之缩进那
+    14px 或 16px。描边（currentColor、1.4、圆角）写在 builds/style.css 的 .gl 上，
+    从外层穿过 <use> 继承下来，path 上只留形状：五项描边写在每条 path 上时，十四种
+    图形各用一次的单套页比逐枚内联还大 300 字节。"""
+    keys = list(GLYPH)
+    return ('<svg aria-hidden="true" style="display:none">%s</svg>'
+            % ''.join('<symbol id="gl%d" viewBox="0 0 16 16"><path d="%s"/></symbol>'
+                      % (i, GLYPH[keys[i]])
+                      for i in sorted({int(n) for n in USE.findall(out)})))
 
 
 # 站内没有图的两类：位移技能连资料页都没有，神器在站内只是分节标题一行字。
@@ -718,9 +747,17 @@ def solo_src(head, rec):
 
 def finish(o, scripts):
     """收尾：把 <script defer> 接在 </body> 之前。shell.foot() 已经吐了
-    </body></html>，直接往后接会让它跑到文档外面去。"""
+    </body></html>，直接往后接会让它跑到文档外面去。scripts 里一项是路径，
+    或（路径, 附加属性）。
+
+    页里有 glyph() 的 <use> 时，sprite 接在 <main> 的开标签后面：放到文末的话，
+    大页面还没下完时前面那些 <use> 指着一个还不存在的 symbol，标题前是空的。"""
     out = '\n'.join(x for x in o if x != '') + '\n'
-    tags = ''.join('<script src="%s" defer></script>\n' % s for s in scripts)
+    if USE.search(out):
+        at = must(re.search(r'<main\b[^>]*>', out), '页里有面板图标却没有 <main>，sprite 无处可放').end()
+        out = out[:at] + '\n' + sprite(out) + out[at:]
+    tags = ''.join('<script src="%s"%s defer></script>\n' % (s if isinstance(s, tuple) else (s, ''))
+                   for s in scripts)
     return out.replace('\n</body>\n', '\n' + tags + '</body>\n')
 
 
@@ -926,7 +963,7 @@ def render_solo(idx, mv, arts, md, slug, season, name_cn, doc_id):
     o += ['</main>', '', LIKE_JS, COPY_JS,
           shell.foot(stamp, '，%s' % meta(md, '页脚', required=False)
                      if meta(md, '页脚', required=False) else '')]
-    return finish(o, ['../../tip.js']), title
+    return finish(o, [TIP_JS]), title
 
 
 def one_of(idx, mv, arts, head, scenes, md, n):
@@ -1034,7 +1071,7 @@ def render_set(idx, mv, arts, head, members, slug, season, name_cn, doc_id):
     o += ['</main>', '', LIKE_JS, COPY_JS,
           shell.foot(stamp, '，%s' % meta(head, '页脚', required=False)
                      if meta(head, '页脚', required=False) else '')]
-    return finish(o, ['../../tip.js', '../../set.js']), title
+    return finish(o, [TIP_JS, '../../set.js']), title
 
 
 
@@ -1044,6 +1081,8 @@ def render_set(idx, mv, arts, head, members, slug, season, name_cn, doc_id):
 # 里，与另外四枚同为 chip。契约只有 data-tip-sw 一条。
 TIP_SW = '<button class="toggle tipsw" type="button" data-tip-sw>详情开关</button>'
 TIP_SW_CHIP = '<button id="tipsw" class="toggle" type="button" data-tip-sw>详情开关</button>'
+# 详情页引 tip.js 时带上本页那份说明的相对路径；填表页不带，tip.js 取整份 builds/desc.js。
+TIP_JS = ('../../tip.js', ' data-desc="%s"' % PAGE_DESC)
 
 # 截图：把这一块渲染成一张图，弹在页面上。**data-shot 的值就是要截的那一块的选择器**
 # ——tip.js 按它从按钮往上找（合集一页 N 套，往上找才不会拿到第一套）。两种壳与
@@ -1144,7 +1183,7 @@ def season_dirs():
     return out
 
 
-def build(idx, dirname, season, name_cn, slug):
+def build(idx, descs, dirname, season, name_cn, slug):
     src = os.path.join(SRC_DIR, dirname, slug + '.json')
     with source_context(os.path.relpath(os.path.realpath(src), shell.ROOT)):
         outdir = os.path.join(shell.SITE, OUT_DIR, season, slug)
@@ -1156,6 +1195,7 @@ def build(idx, dirname, season, name_cn, slug):
                             md, slug, season, name_cn, 'builds/%s/%s' % (dirname, slug))
         check(out, slug)
         shell.emit(outdir, out, title)
+        page_desc(outdir, out, descs)
         head, members = split_set(md)
         if members:
             branch, cores, who, roles = set_facts(idx, head, members)
@@ -1656,20 +1696,20 @@ def spirit_columns(idx):
     return out
 
 
-def render_desc(idx):
-    """builds/desc.js：填表页悬停时那块面板的正文。
+def desc_table(idx):
+    """悬停面板的正文：「页面\t名字\t分节」→ 说明原文。
 
     **说明不进 vocab.js。**站内的说明文本合计二十万字上下，塞进词表会让填表页一
     打开就下将近一兆——只想导入一份源稿看一眼的人也得等。所以照 assets/search.js
-    那条已有约定另出一份：不进首屏，页面加载完在空闲时预取，第一次悬停再兜一次。
-    取不到就不弹面板，填表本身照常。
+    那条已有约定另出文件：不进首屏，页面加载完在空闲时预取，第一次悬停再兜一次。
 
-    键是「页面\t名字\t分节」。分节那一段解决同名不同效果——「玻璃拱顶」的 2 件与
-    4 件是两条效果，名字一样。值是那一条在站内那一页上的说明原文，带着着色 span：
-    那些类定义在 assets/site.css，这一页已经引了它，带色不额外要钱。
+    键里的分节那一段解决同名不同效果——「玻璃拱顶」的 2 件与 4 件是两条效果，名字
+    一样。值是那一条在站内那一页上的说明原文，带着着色 span：那些类定义在
+    assets/site.css，这一页已经引了它，带色不额外要钱。
 
-    它与 search.js 同理是页面文本的第二份副本，但在另一个文件里、不进任何页面的
-    HTML，各生成器的逐字保真闸门因此照旧成立。
+    整份 builds/desc.js（填表页）与每个详情页自己那份都从这一张取，同一个键在两处
+    因此逐字相同。它们与 search.js 同理是页面文本的第二份副本，但在另一个文件里、
+    不进任何页面的 HTML，各生成器的逐字保真闸门因此照旧成立。
     """
     seen = {}
     for hits in idx.values():
@@ -1679,14 +1719,39 @@ def render_desc(idx):
             if not any(e['page'] in pages for pages in vocab.SLOTS.values()):
                 continue
             seen['%s\t%s\t%s' % (e['page'], e['name'], e['kind'])] = e['desc']
+    return seen
+
+
+def desc_js(table):
     rows = ['%s:%s' % (json.dumps(k, ensure_ascii=False),
                        json.dumps(v, ensure_ascii=False))
-            for k, v in sorted(seen.items())]
-    body = 'window.starsideDesc = {\n%s\n};\n' % ',\n'.join(rows)
+            for k, v in sorted(table.items())]
+    return 'window.starsideDesc = {\n%s\n};\n' % ',\n'.join(rows)
+
+
+def render_desc(table):
+    """builds/desc.js：填表页的候选可能是词表里的任何一条，所以它拿整张表。"""
+    body = desc_js(table)
     path = os.path.join(shell.SITE, OUT_DIR, 'desc.js')
     with open(path, 'w', encoding='utf-8') as f:
         f.write(body)
-    print('builds/desc.js —— %.1f KB，%d 条说明' % (len(body.encode()) / 1024, len(seen)))
+    print('builds/desc.js —— %.1f KB，%d 条说明' % (len(body.encode()) / 1024, len(table)))
+
+
+def page_desc(outdir, out, table):
+    """详情页自己那份说明，与 index.html 同目录：只收这一页格子上 data-d 用到的
+    那几十条。整份 desc.js 两兆，一页平均只用得到其中二十来 KB；站上的文件不压缩，
+    两兆在 1.6 Mbps 下要十三秒。
+
+    键从产出里现取，与 tip.js 读的是同一个属性。查不到的键当场中止：那一格悬停
+    会一直停在「载入中」，页面上看不出是漏了。"""
+    keys = sorted({unescape(k) for k in re.findall(r' data-d="([^"]*)"', out)})
+    lost = [k.replace('\t', ' / ') for k in keys if k not in table]
+    if lost:
+        die('%s 有 %d 格的悬停说明不在说明表里：%s'
+            % (os.path.relpath(outdir, shell.SITE), len(lost), '、'.join(lost[:6])))
+    with open(os.path.join(outdir, PAGE_DESC), 'w', encoding='utf-8') as f:
+        f.write(desc_js({k: table[k] for k in keys}))
 
 
 def slot_cell(slot, kind='', cls='item', label='', bare=False, hidden=False,
@@ -2126,7 +2191,8 @@ def sync_home(counts):
 
 
 def prune_details(expected):
-    """只清理无源稿的标准详情 HTML，保留目录、未知资产与所有符号链接。"""
+    """只清理无源稿的标准详情页（index.html 与它那份 PAGE_DESC），保留目录、
+    未知资产与所有符号链接。"""
     root = os.path.join(shell.SITE, OUT_DIR)
     if os.path.islink(root):
         return
@@ -2143,9 +2209,10 @@ def prune_details(expected):
                         continue
                     with os.scandir(detail.path) as files:
                         for page in files:
-                            if page.name == 'index.html' and page.is_file(follow_symlinks=False):
+                            if page.name in ('index.html', PAGE_DESC) and page.is_file(follow_symlinks=False):
                                 os.remove(page.path)
-                                print('清除无源稿配装页：%s' % rel)
+                                print('清除无源稿配装页：%s/%s/%s/%s'
+                                      % (OUT_DIR, season.name, detail.name, page.name))
 
 
 def main():
@@ -2158,12 +2225,13 @@ def main():
     global EX_IDX
     EX_IDX = idx
     vocab.check_landing(idx)         # 链接落地不许滤成空页
+    descs = desc_table(idx)
     made = []
     for dirname, season, name_cn in season_dirs():
         for f in sorted(os.listdir(os.path.join(SRC_DIR, dirname))):
             if not f.endswith('.json') or (only and f[:-5] != only):
                 continue
-            made.append(build(idx, dirname, season, name_cn, f[:-5]))
+            made.append(build(idx, descs, dirname, season, name_cn, f[:-5]))
     if not made:
         die('没有配装源稿可生成' + ('：找不到 %s.json' % only if only else ''))
     if not only:
@@ -2173,7 +2241,7 @@ def main():
         if any(m['set'] for m in made if m['season'] == SEASON):
             render_index(made, sets=True)
         render_vocab(idx)
-        render_desc(idx)
+        render_desc(descs)
         here = [n for _, sn, n in season_dirs() if sn == SEASON]
         if not here:
             die('references/builds/ 下没有 %s- 开头的赛季目录，填表页写不出赛季名。'

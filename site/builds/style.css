@@ -292,8 +292,21 @@ a.who:hover { color: var(--accent); }
    图脚下。其余面板的标题图是 14px 的线描字形，照旧 11px。 */
 .slot h3.art { gap: 10px; font-size: 12.5px; }
 
-/* 面板与六维的小图标：颜色跟着标题走，不占色相 */
-.gl { flex: none; width: 14px; height: 14px; color: var(--bone-dim); }
+/* 面板与六维的小图标：颜色跟着标题走，不占色相。
+
+   描边写在这里而不是每条 path 上：图形在页首 sprite 的 <symbol> 里，标题与六维里
+   只是 <use>，这五项都是继承属性，从 .gl 穿过 <use> 落到图形上，全站只写这一次。 */
+.gl {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  color: var(--bone-dim);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
 
 /* 格子网格：列数即 --n。护甲那五个部位恒为 1 列，三枚模组因此竖排，五列并排
    合起来是一张 5×3 的矩阵——那是这一页的视觉重心。 */

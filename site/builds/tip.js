@@ -6,16 +6,20 @@
    格子写上它（item()），form.js 给填表页的格子写上它（fill()）。这一份脚本因此
    不必认识行、槽位与词表。
 
-   说明另存 builds/desc.js，不进词表：二十万字塞进 vocab.js 会让配装工具一打开
-   就下将近一兆。照 assets/search.js 那条约定，页面 load 之后空闲预取、第一次
-   悬停再兜一次；取不到就不弹，页面照常。 */
+   说明另存文件，不进页面也不进词表。照 assets/search.js 那条约定，页面 load 之后
+   空闲预取、第一次悬停再兜一次；还没到时面板写「载入中」，到了就地补上。
+
+   取哪一份由引这份脚本的 <script> 声明：详情页写 data-desc，指向与页面同目录的
+   那份（只含本页格子用到的几十条，二十来 KB）；填表页不写，候选可能是词表里任何
+   一条，取与这份脚本同在 builds/ 下的整份 desc.js（两兆）。 */
 (function () {
   'use strict';
-  // desc.js 与这份脚本同在 builds/ 下，路径按自己的 src 现算，不由各页传进来。
-  var SRC = document.currentScript.src.replace(/[^/]*$/, 'desc.js');
-  var box = null, asked = false, off = 0, now = null, px = -1, py = -1;
+  var me = document.currentScript;
+  var SRC = me.dataset.desc ? new URL(me.dataset.desc, document.baseURI).href
+    : me.src.replace(/[^/]*$/, 'desc.js');
+  var box = null, asked = false, failed = false, off = 0, now = null, px = -1, py = -1;
 
-  /* 关掉之后连 desc.js 都不预取——那是一兆的东西，不想看详情的人不该下它。
+  /* 关掉之后连说明都不预取——填表页那份两兆，不想看详情的人不该下它。
      开关记在 localStorage，与点赞去重同一条约定：换浏览器要重新关一次。 */
   function shut() {
     try { return localStorage.getItem('tipoff') === '1'; } catch (_) { return false; }
@@ -24,10 +28,19 @@
   function load() {
     if (window.starsideDesc || asked) return;
     asked = true;
+    failed = false;
     var s = document.createElement('script');
     s.src = SRC;
-    // 取回来时把当前指着的那一条补画上：预取没赶上，第一次悬停就不会是空的。
-    s.onload = function () { if (now) draw(now); };
+    // 取回来时把当前指着的那一条补画上：面板里那句「载入中」就地换成说明。
+    s.onload = function () { if (now) show(now); };
+    // 取不到就在面板里写明，下一次悬停再取一次；不写的话面板一直停在「载入中」。
+    s.onerror = function () {
+      s.remove();
+      asked = false;
+      failed = true;
+      console.error('悬停详情：取不到 ' + SRC);
+      if (now) show(now);
+    };
     document.head.appendChild(s);
   }
 
@@ -40,8 +53,15 @@
     if (shut()) return;
     now = el;
     load();
+    show(el);
+  }
+
+  /* 说明还没到时照样立起面板，名字那一行照写，正文先写一句状态：指着格子却什么
+     都不出，读者分不清是没有说明还是还在路上。说明表到了而里面没有这一条，才不弹。 */
+  function show(el) {
     var key = el.dataset.d, t = window.starsideDesc;
-    var html = t && key ? t[key] : '';
+    var html = !t ? '<p>' + (failed ? '说明载入失败，指针移开再指回来会重试' : '说明载入中…') + '</p>'
+      : key ? t[key] : '';
     if (!html) {
       if (box) box.remove();
       return;
@@ -126,6 +146,13 @@
   });
 
   paint();
+
+  /* 页面还没载完时指针就停在格子上：那一下 pointerover 发生在这份脚本挂上监听之前，
+     指针不动就不会再来一次，面板要等读者挪一下才出。挂好之后按 :hover 现找一次
+     指针底下那一格——:hover 由浏览器维护，不管当时有没有人在听。 */
+  var under = document.querySelectorAll(':hover');
+  var hit0 = under.length && under[under.length - 1].closest('[data-d]');
+  if (hit0) draw(hit0);
 
   /* 截图。契约与上面两条同形：**页面出一枚带 data-shot 的按钮，值是要截的那一块的
      选择器**——详情页 main、合集里的 section.set-one、填表页 #sheet。这一份脚本只管

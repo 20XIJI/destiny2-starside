@@ -12,6 +12,7 @@ import collections
 import copy
 from email.message import Message
 import gzip
+import html
 import importlib.util
 import io
 import json
@@ -702,6 +703,34 @@ class Generated(unittest.TestCase):
         self.assertEqual(build_home.render(home), home,
                          'index.html 的卡片预览过期了，跑 python3 tools/build-home.py')
 
+    def test_each_build_page_carries_the_hover_text_of_its_own_cells(self):
+        """详情页的悬停说明取与页面同目录的那份 desc.js，而不是两兆的整份。
+
+        那一份的键必须恰好是这一页格子上 data-d 的全集：少一条，那一格悬停一直停在
+        「载入中」；每条的正文与整份 builds/desc.js 里同一个键逐字相同，填表页与详情页
+        因此给同一件装备看同一段话。只重跑了一篇配装、或者手改了产出，这里报出来。
+        """
+        def table(path):
+            text = path.read_text(encoding='utf-8')
+            self.assertTrue(text.startswith('window.starsideDesc = {') and text.endswith('};\n'),
+                            '%s 的形状不对' % path)
+            return json.loads(text[len('window.starsideDesc = '):-2])
+
+        site = TOOLS.parent / 'site'
+        full = table(site / 'builds' / 'desc.js')
+        pages = sorted(site.glob('builds/s*/*/index.html'))
+        self.assertGreater(len(pages), 50, '只找到 %d 个详情页' % len(pages))
+        bad = []
+        for page in pages:
+            keys = {html.unescape(k) for k in
+                    re.findall(r' data-d="([^"]*)"', page.read_text(encoding='utf-8'))}
+            own = table(page.parent / build.PAGE_DESC)
+            rel = page.parent.relative_to(site).as_posix()
+            bad += ['%s 多出或缺了 %s' % (rel, k.replace('\t', ' / ')) for k in sorted(keys ^ set(own))]
+            bad += ['%s 的 %s 与整份不同' % (rel, k.replace('\t', ' / '))
+                    for k in sorted(keys & set(own)) if own[k] != full.get(k)]
+        self.assertEqual(bad[:6], [], '%d 处对不上，跑一次 npm run build' % len(bad))
+
     def test_the_cloud_function_carries_the_same_dialect(self):
         # 云函数只 require 得到自己目录下的东西，所以那一份是复制过去的。
         fn = (TOOLS.parent / 'functions' / 'api' / 'dialect.js').read_text(encoding='utf-8')
@@ -1244,6 +1273,8 @@ class DeploySelection(unittest.TestCase):
         self.assertTrue(deploy.keep('site/armor-mods/icons/0a1b2c3d4e.webp'))
         self.assertTrue(deploy.keep('site/index.html') and deploy.keep('site/assets/search.js'))
         self.assertTrue(deploy.keep('site/admin/index.html') and deploy.keep('site/admin/terms.js'))
+        # 详情页自己那份悬停说明与页面同目录，跟着页面发。
+        self.assertTrue(deploy.keep('site/builds/s29/0cqrj1m0-hunter/desc.js'))
         self.assertFalse(deploy.keep('index.html') or deploy.keep('functions/api/index.js'))
         self.assertFalse(deploy.keep('tools/deploy.py'))
         self.assertFalse(deploy.keep('references/docs/changelog.md'))
@@ -2123,6 +2154,7 @@ class Generation(Isolated):
         self.beta = self.build_file('references/builds/s29-fixture/beta-hunter.json', self.SOLO)
         self.build_file('references/builds/s28-history/history-hunter.json', self.SOLO)
         self.orphan = self.file('site/builds/s29/orphan-hunter/index.html', 'orphan')
+        self.orphan_desc = self.file('site/builds/s29/orphan-hunter/desc.js', 'orphan desc')
         self.unknown = self.file('site/builds/s29/orphan-hunter/notes.txt', 'keep unknown')
         self.file('site/builds/s29/orphan-hunter/style.css', 'keep style')
         self.file('site/builds/s29/orphan-hunter/icons/icon.webp', 'keep icon')
@@ -2154,6 +2186,16 @@ class Generation(Isolated):
             for href, label in links) + '</ul>'
         self.file('site/index.html', text)
 
+
+    def test_query_keeps_han_raw_and_quotes_ascii_delimiters(self):
+        """?q= 里汉字原样写，浏览器导航时自己转成百分号；ASCII 照 quote() 转。
+
+        空格、+、&、# 原样写进查询串会被读错：URLSearchParams 把 + 读成空格，
+        & 切出第二个参数，# 截成锚点。枪名里真有空格（「斗牛士 64」）。
+        """
+        self.assertEqual(build.query('斗牛士 64'), '斗牛士%2064')
+        self.assertEqual(build.query('a+b&c#d"'), 'a%2Bb%26c%23d%22')
+        self.assertEqual(build.query('Ψ永恒 IV'), 'Ψ永恒%20IV')
 
     def test_index_facet_keys_match_the_cards(self):
         """工具条声明的每一维，都要能在卡片上读到值。
@@ -2230,6 +2272,7 @@ class Generation(Isolated):
         self.home(True)
         build.main()
         self.assertFalse(self.orphan.exists())
+        self.assertFalse(self.orphan_desc.exists())
         self.assertEqual(self.unknown.read_text(), 'keep unknown')
         for path in ('builds/s29/orphan-hunter/style.css',
                      'builds/s29/orphan-hunter/icons/icon.webp',
@@ -2238,7 +2281,9 @@ class Generation(Isolated):
         for path in ('builds/s29/alpha-hunter/index.html', 'builds/s29/beta-hunter/index.html',
                      'builds/s28/history-hunter/index.html', 'builds/index.html',
                      'builds/sets/index.html', 'builds/new/index.html',
-                     'builds/new/set/index.html', 'builds/vocab.js', 'builds/desc.js'):
+                     'builds/new/set/index.html', 'builds/vocab.js', 'builds/desc.js',
+                     'builds/s29/alpha-hunter/desc.js', 'builds/s29/beta-hunter/desc.js',
+                     'builds/s28/history-hunter/desc.js'):
             self.assertTrue((self.site / path).is_file(), path)
         self.assertIn('href="sets/index.html"', (self.site / 'builds/index.html').read_text())
 
@@ -2266,6 +2311,9 @@ class Generation(Isolated):
         self.replace(sys, 'argv', ['convert-build.py', 'alpha-hunter'])
         build.main()
         self.assertEqual(self.orphan.read_text(), 'orphan')
+        self.assertEqual(self.orphan_desc.read_text(), 'orphan desc')
+        # 只重跑一篇时那一篇自己的悬停说明照样跟着重写：键从这一版产出现取。
+        self.assertIn('示例说明', (self.site / 'builds/s29/alpha-hunter/desc.js').read_text())
         self.assertFalse((self.site / 'builds/index.html').exists())
 
     def test_failed_detail_generation_never_prunes(self):

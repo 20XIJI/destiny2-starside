@@ -112,6 +112,17 @@ export async function shot(root, opts = {}) {
      [hidden] 一并清掉——填表页没展开的可选槽位就挂在上面。 */
   clone.querySelectorAll('.head-acts, .src-tools, [hidden]').forEach((el) => el.remove());
 
+  /* 面板标题前那枚小图是一个 <use>，指向 <main> 开头那张 sprite 里的 <symbol>
+     （convert-build.py 的 glyph()）。截的那一块不一定含着 sprite——合集里截的是某一套
+     .set-one——所以把 symbol 的图形抄回每一枚 <svg>，视框一并带上，图里不留跨块引用。 */
+  clone.querySelectorAll('svg > use').forEach((use) => {
+    const ref = use.getAttribute('href') || '';
+    const sym = ref.startsWith('#') && document.getElementById(ref.slice(1));
+    if (!sym) throw new Error('图标 ' + ref + ' 在页面上找不到对应的 symbol');
+    use.parentNode.setAttribute('viewBox', sym.getAttribute('viewBox'));
+    use.replaceWith(...[...sym.childNodes].map((n) => n.cloneNode(true)));
+  });
+
   /* 合集那一节套着 content-visibility: auto，屏外不参与渲染，克隆体量出来会是估值。 */
   clone.querySelectorAll('*').forEach((el) => { el.style.contentVisibility = 'visible'; });
   clone.style.contentVisibility = 'visible';
