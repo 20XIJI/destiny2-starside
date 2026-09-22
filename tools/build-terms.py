@@ -21,7 +21,6 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import check_terms
 import items
 import markup
-import resolve
 import shell
 
 OUT = os.path.join(shell.SITE, 'admin', 'terms.js')
@@ -94,7 +93,7 @@ def build():
 
 
 def tree():
-    """资料页的树 → admin/pages.js。审核台左栏按它排，不另立第四份清单。
+    """资料页的清单 → admin/pages.js。编辑台按它写页面的标题、分组与父页，不另立第四份清单。
 
     读者看到的结构由三处现成数据拼出来，各管一段：
 
@@ -144,31 +143,18 @@ def tree():
         g = group.get(d['where']) or (group.get(docs_where(docs, up)) if up else '') or '站务'
         rows.append([d['id'], d['title'], d['where'] + '/index.html', g, up, d['at']])
     rows.sort(key=lambda r: (r[3], r[4], r[0]))
-    # 配装那三张表跟着一起导：审核台左栏按类别与职业建树、列表按分支上色，
+    # 配装那几张表跟着一起导：编辑台的场景与职业筛选、行左缘的分支色都读它，
     # 而 DOM 那边只认得 b-prismatic 这种 slug。**照 markup.py 那一份导**，
     # 不在 admin.js 里另抄一遍——多一个分支时只改那一处。
-    return ('// 由 tools/build-terms.py 生成，不手改。编辑台的资料页树，配装的职业、场景、'
-            '强度、标签与分支五张表，以及登录页那面墙的图。\n'
+    return ('// 由 tools/build-terms.py 生成，不手改。编辑台的资料页清单，'
+            '以及配装的职业、场景、强度、标签与分支五张表。\n'
             'window.starsidePages = [\n'
             + '\n'.join('  %s,' % j(r) for r in rows) + '\n]\n'
             + 'window.starsideBuilds = %s\n'
             % j({'classes': list(markup.CLASSES), 'scenes': list(markup.SCENES),
                  'tiers': list(markup.TIERS),
                  'sceneTags': {k: list(v) for k, v in markup.SCENE_TAGS.items()},
-                 'branch': markup.BRANCH})
-            + 'window.starsideWall = %s\n' % j(wall()))
-
-
-def wall():
-    """登录页左边那面墙：全部异域武器的站内图，按 manifest 的 index 排序。
-
-    图就是站上已经发着的那批（icon_local，文件名即内容哈希、长缓存），登录页只是
-    再引一次，不另存一份。"""
-    facts = resolve.Facts()
-    rows = [v for v in facts.items.values()
-            if v.get('itemType') == 3 and (v.get('inventory') or {}).get('tierType') == 6
-            and v.get('icon_local')]
-    return [v['icon_local'] for v in sorted(rows, key=lambda v: v.get('index', 0))]
+                 'branch': markup.BRANCH}))
 
 
 def docs_where(docs, pid):

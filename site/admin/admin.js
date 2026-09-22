@@ -2027,12 +2027,11 @@
     return call('me').then(function (me) {
       S.me = me
       if (!me.lv) {
-        // 登录了但不在名单里：同一个版面，右边换成 UID。墙照样要铺。
+        // 登录了但不在名单里：同一个版面，右边换成 UID。
         document.documentElement.classList.remove('signed')
         $('login').hidden = true
         $('stranger').hidden = false
         $('my-uid').textContent = me.uid
-        wall()
         return null
       }
       $('gate').hidden = true
@@ -2056,21 +2055,6 @@
         render()
       })
     })
-  }
-
-  // 登录页那面墙：站上已有的异域武器图。铺满这一格要多少张按格子现算。
-  function wall () {
-    var box = $('wall')
-    if (box.querySelector('.tiles')) return
-    var icons = window.starsideWall || []
-    if (!icons.length) return
-    var cols = Math.ceil((box.clientWidth * 1.25 + 48) / 66)
-    var rows = Math.ceil((box.clientHeight * 1.25 + 48) / 66)
-    var tiles = h('div', { class: 'tiles' })
-    for (var i = 0; i < cols * rows; i++) {
-      tiles.appendChild(h('img', { src: '../' + icons[(i * 7) % icons.length], alt: '', decoding: 'async' }))
-    }
-    box.insertBefore(tiles, box.firstChild)
   }
 
   // ── 登录页 ─────────────────────────────────────────────────────────
@@ -2144,7 +2128,6 @@
         if (e.message === 'forbidden') {
           tok(null)
           document.documentElement.classList.remove('signed')
-          wall()
           return
         }
         $('gate').hidden = true
@@ -2157,7 +2140,6 @@
       })
     } else {
       document.documentElement.classList.remove('signed')
-      wall()
     }
   }
 

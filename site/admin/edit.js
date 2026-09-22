@@ -19,6 +19,11 @@
   if (!main) return                     // 没戴标记的页面（首页、索引页、填表页）不管
 
   var DOC = main.getAttribute('data-src')
+  // 给编辑者看的这一页叫什么：页面标题，不是 docs/boss-hp 这种源稿编号。
+  function titleOf () {
+    var h1 = document.querySelector('main h1, .page-head h1')
+    return (h1 && h1.textContent.trim()) || DOC
+  }
   // 'doc'（缺省）逐格改，'build' 整篇替换。判据写在产出的 <main> 上，不靠猜路径：
   // 配装页没有 data-b，逐格那条路在它身上无从落脚。
   var KIND = main.getAttribute('data-kind') || 'doc'
@@ -81,7 +86,7 @@
         return
       }
       if (localStorage.getItem('sa_rt') !== rt) return
-      throw new Error(x.ok ? '换不到令牌' : 'forbidden')
+      throw new Error(x.ok ? '登录状态刷新失败' : 'forbidden')
     }, function (e) { renewing = null; throw e })
     return renewing
   }
@@ -93,7 +98,7 @@
       var s = document.createElement('script')
       s.src = HERE + src
       s.onload = ok
-      s.onerror = function () { no(new Error('载不动 ' + src)) }
+      s.onerror = function () { no(new Error('载入失败：' + src)) }
       document.head.appendChild(s)
     })
   }
@@ -179,7 +184,7 @@
   function sidecar () {
     if (S.map || !document.querySelector('main [data-e]')) return Promise.resolve()
     return fetch('edit.json', { cache: 'no-cache' }).then(function (r) {
-      if (!r.ok) throw new Error('载不动出处表 edit.json（HTTP ' + r.status + '）')
+      if (!r.ok) throw new Error('读取本页的编辑索引失败（HTTP ' + r.status + '）')
       return r.json()
     }).then(function (j) { S.map = j })
   }
@@ -476,7 +481,7 @@
       // 说完了。标签走 --font-disp 加字距、压暗、靠右，与正文明显不是一路：一页改
       // 十处时十个名字排在句子里是噪声，而要看时它还在。
       was.appendChild(el('span', 'se-by',
-        (p.by || '?') + (p.ok === 1 ? ' · 待上站' : '')))
+        (p.by || '?') + (p.ok === 1 ? ' · 待上线' : '')))
       node.innerHTML = show(p.after)
       node.appendChild(was)
     })
@@ -508,7 +513,7 @@
         // 旧值：同一个字段的每一段都要拼进来，不然划掉的只是第一段
         old.innerHTML = showRec(S.map.e[ids[0]][2])
         was.appendChild(old)
-        was.appendChild(el('span', 'se-by', (p.by || '?') + (p.ok === 1 ? ' · 待上站' : '')))
+        was.appendChild(el('span', 'se-by', (p.by || '?') + (p.ok === 1 ? ' · 待上线' : '')))
         node.innerHTML = showRec(p.after)
         node.appendChild(was)
         return
@@ -517,7 +522,7 @@
         var add = el('span', 'se-was se-add')
         add.innerHTML = showRec(x[1].after)
         add.appendChild(el('span', 'se-by', S.map.e[x[0]][3] + ' · ' + (x[1].by || '?')
-          + (x[1].ok === 1 ? ' · 待上站' : '')))
+          + (x[1].ok === 1 ? ' · 待上线' : '')))
         node.appendChild(add)
       })
     })
@@ -544,7 +549,7 @@
     shut()
     var at = resolve(node)
     if (!at) {
-      alert('这一处底稿已变或无法唯一定位，请等待新版页面后重新提交')
+      alert('这一处的原文已变更或无法唯一定位，请等页面更新后重新提交。')
       return
     }
     var before = at.before
@@ -556,10 +561,10 @@
     var here = at_[0]
 
     box = el('div', 'se-box')
-    box.appendChild(el('div', 'se-where', DOC + ' · 第 ' + (at.blk + 1) + ' 行'
+    box.appendChild(el('div', 'se-where', titleOf() + ' · 第 ' + (at.blk + 1) + ' 行'
       + (at.cell < 0 ? '' : ' · 第 ' + (at.cell + 1) + ' 格')
       + (mine ? ' · 你的待审'
-        : here ? ' · ' + here.by + (here.ok === 1 ? ' 通过' : ' 待审') : '')))
+        : here ? ' · ' + here.by + (here.ok === 1 ? ' 已通过' : ' 待审') : '')))
     var ta = el('textarea')
     ta.value = mine ? mine.after : before
     ta.rows = Math.min(12, ta.value.split('\n').length + Math.ceil(ta.value.length / 60))
@@ -659,7 +664,7 @@
           send.disabled = false
           notes.textContent = ''
           notes.appendChild(el('li', null, e.message === 'stale'
-            ? '这一处底稿已变或无法唯一定位，请等待新版页面后重新提交'
+            ? '这一处的原文已变更或无法唯一定位，请等页面更新后重新提交。'
             : '提交失败：' + e.message))
         })
     }
@@ -695,11 +700,11 @@
       })[0]
       box.appendChild(el('div', 'se-where', e[3]
         + (mine ? ' · 你的待审' : other ? ' · ' + other.by + ' 待审' : '')
-        + (S.recNow[e[0]] && before !== e[2] ? ' · 库里已改，页面未上站' : '')))
+        + (S.recNow[e[0]] && before !== e[2] ? ' · 已有修改通过，页面尚未更新' : '')))
       var ta = el('textarea')
       ta.value = mine ? mine.after : before
       // 页面上显示的是官方描述、记录上还没有站内说明的那一格
-      if (!before) ta.placeholder = '站内还没写这一格；写了就取代页面上显示的官方描述'
+      if (!before) ta.placeholder = '本站尚未撰写这一格；填写后将替代页面上显示的官方描述'
       ta.rows = Math.min(12, ta.value.split('\n').length + Math.ceil(ta.value.length / 60))
       box.appendChild(ta)
       var prev = el('div', 'se-prev')
@@ -773,7 +778,7 @@
           n.textContent = ''
           n.appendChild(el('li', null, (sent ? '已提交 ' + sent + ' 格；' : '')
             + (e.message === 'stale'
-              ? '这一格库里已经改过，刷新页面后重新提交'
+              ? '这一格已被他人修改，请刷新页面后重新提交'
               : '提交失败：' + (window.starsideAdmin ? window.starsideAdmin.say(e) : e.message))))
         })
     }
@@ -843,7 +848,7 @@
       S.on = true
       mark(true)
       shade()
-      if (S.pend.length) S.desk.textContent = '审核台 ' + S.pend.length
+      if (S.pend.length) S.desk.textContent = '编辑台 ' + S.pend.length
       chip.textContent = '退出编辑'
       chip.setAttribute('aria-current', 'true')
       // 两个分支分开调：合写成 (requestIdleCallback || setTimeout)(fn, 1) 时，
@@ -877,7 +882,7 @@
   function buildShut (chip) {
     var now = buildRead()
     if (now !== null && now !== S.buildBase
-        && !window.confirm('改过还没保存，关掉会丢。仍要关闭？')) return
+        && !window.confirm('有未保存的修改，关闭后将丢失。仍要关闭？')) return
     if (pane) pane.remove()
     pane = null
     S.buildBase = null
@@ -901,13 +906,13 @@
       keep.type = 'button'
       keep.onclick = function () {
         var now = buildRead()
-        if (now === null) { msg.textContent = '读不出填表页里那一份，等它载完再存'; return }
+        if (now === null) { msg.textContent = '配装工具尚未载入完成，请稍后再保存。'; return }
         keep.disabled = true
         call('bsave', { id: DOC, md: now }).then(function () {
           keep.disabled = false
           S.buildBase = buildRead()
           // **这一页是构建产物，存完一个字都不会变**，不说清就等于什么都没发生。
-          msg.textContent = '已保存到库。这一页要等本机落盘、构建再部署才更新。'
+          msg.textContent = '已保存，下次站点更新时上线。'
         }, function (e) {
           keep.disabled = false
           // 与审核台同一张 MSG：同一个 bsave，两条路不该一边中文一边 no permission。
@@ -917,7 +922,7 @@
       bar.appendChild(keep)
     } else {
       // lv 1 照样载得进可改的填表页，不说这一句，人在表里改半天找不到保存。
-      msg.textContent = '只读：保存要审核员（lv 2）权限。'
+      msg.textContent = '只读：保存需要审核员级别。'
     }
     var off = el('button', 'toggle', '关闭')
     off.type = 'button'
@@ -951,7 +956,7 @@
     return Promise.all([needAdmin(), call('pend', { doc: DOC, md: 1 })])
       .then(function (r) {
         var got = r[1]
-        if (!got.md) throw new Error('库里没有 ' + DOC + '，这一页的 data-src 对不上库')
+        if (!got.md) throw new Error('这一页暂时无法在线编辑（' + DOC + ' 尚未收录），请联系超级管理员。')
         buildPane(chip, got.md)
       })
       /* **收尾用 .catch，不用 .then 的第二个参数。**那一份只接前一环的失败，
@@ -984,7 +989,7 @@
       : function () { toggle(chip) }
     // 通往审核台的那条边。编辑态里发现一处该改、想顺手看看别人提了什么时，
     // 不必回首页再找入口。
-    var desk = el('a', 'chip se-desk', '审核台')
+    var desk = el('a', 'chip se-desk', '编辑台')
     desk.href = HERE + 'admin/index.html'
     var nav = document.querySelector('.site-nav')
     if (nav) {

@@ -17,10 +17,16 @@
 </head>
 <body>
 
-<!-- 登录与未授权共用一个版面：左边一面墙，右边表单。墙上的图由 admin.js 在这一屏
-     真要出现时才铺，已登录的人一张都不下载。 -->
+<!-- 登录与未授权共用一个版面：左边一幅纯 CSS 的星图，右边表单。星图不请求任何图片。 -->
 <div class="gate" id="gate">
-<div class="wall" id="wall" aria-hidden="true">
+<div class="wall" aria-hidden="true">
+<div class="orrery">
+<i class="ring r1"></i><i class="ring r2"></i><i class="ring r3"></i><i class="ring r4"></i>
+<i class="rays"></i><i class="dial"></i><i class="dial fine"></i><i class="halo"></i><i class="sweep"></i>
+<span class="orbit o1"><i style="--a:0deg;--c:var(--c-arc)"></i><i style="--a:60deg;--c:var(--c-solar)"></i><i style="--a:120deg;--c:var(--c-void)"></i><i style="--a:180deg;--c:var(--c-stasis)"></i><i style="--a:240deg;--c:var(--c-strand)"></i><i style="--a:300deg;--c:var(--c-prism)"></i></span>
+<span class="orbit o2"><i style="--a:30deg"></i><i style="--a:150deg"></i><i style="--a:270deg"></i></span>
+<i class="core"></i><i class="core in"></i>
+</div>
 <div class="sign"><span class="mark"><i></i><i></i><i></i></span><b>STARSIDE</b><p>Destiny 2 中文资料台 · 编辑台</p></div>
 </div>
 <div class="gate-side">

@@ -257,28 +257,92 @@ details pre { max-height: 40vh; overflow: auto; margin: 10px 0 0; padding: 12px 
 /* 有令牌那一刻就别画登录页：类由 index.html 头里那一句同步加上，零闪烁。 */
 .signed #gate { display: none; }
 .gate { display: grid; grid-template-columns: minmax(0, 1fr) 520px; min-height: 100vh; }
-.wall { position: relative; overflow: hidden; background: var(--x-well); }
-.wall .tiles {
-  position: absolute;
-  inset: -24px;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, 60px);
-  grid-auto-rows: 60px;
-  gap: 6px;
-  align-content: start;
-  opacity: .42;
-  transform: rotate(-6deg) scale(1.08);
+/* 左边那一格是一幅纯 CSS 的星图：同心细线环、两道刻度环、一圈棱彩环、轨道上的六枚
+   元素菱形与一道扫描光束。**不请求图片**：登录页一年打开没几次，为它下一百多张图不值。
+   颜色只用站内已有的：发丝线、骨白，元素菱形与棱彩环是六个元素色（--halo-both 就是
+   那一圈），扫描光束是 --accent。底纹沿用站点那张 88px 刻线网格。 */
+.wall {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(55% 55% at 54% 45%, #151c30 0%, #0b0d1400 72%),
+    repeating-linear-gradient(0deg, var(--grid) 0 1px, transparent 1px 88px),
+    repeating-linear-gradient(90deg, var(--grid) 0 1px, transparent 1px 88px),
+    var(--x-well);
 }
-/* 异域武器的图自带金底，原色铺一整面会压过右边的表单；去掉大半饱和度，只留一点金。 */
-.wall .tiles img { display: block; width: 60px; height: 60px; filter: grayscale(.82) contrast(1.05); }
-/* 墙往左下角压暗，字标落在最暗的那一角。 */
+.orrery { position: absolute; left: 54%; top: 45%; width: min(84vh, 86%); aspect-ratio: 1; transform: translate(-50%, -50%); }
+.orrery > * { position: absolute; border-radius: 50%; }
+.orrery .ring { border: 1px solid var(--hair-lit); }
+.orrery .r1 { inset: 0; opacity: .5; }
+.orrery .r2 { inset: 12%; }
+.orrery .r3 { inset: 27%; opacity: .8; }
+.orrery .r4 { inset: 40%; border-color: var(--bone-faint); }
+/* 射线只画在两圈之间，往里往外都淡出。 */
+.orrery .rays {
+  inset: 0;
+  background: repeating-conic-gradient(from 7.5deg, var(--hair-lit) 0 .2deg, transparent .2deg 15deg);
+  -webkit-mask: radial-gradient(closest-side, transparent 40%, #000 46%, #000 74%, transparent 100%);
+  mask: radial-gradient(closest-side, transparent 40%, #000 46%, #000 74%, transparent 100%);
+}
+/* 刻度环：锥形渐变切成一根根刻度，再用径向遮罩只留外沿那一圈。 */
+.orrery .dial {
+  inset: 5%;
+  background: repeating-conic-gradient(var(--bone-faint) 0 .5deg, transparent .5deg 5deg);
+  -webkit-mask: radial-gradient(closest-side, transparent calc(100% - 12px), #000 calc(100% - 12px));
+  mask: radial-gradient(closest-side, transparent calc(100% - 12px), #000 calc(100% - 12px));
+}
+.orrery .dial.fine {
+  inset: 12.6%;
+  background: repeating-conic-gradient(var(--hair-lit) 0 .25deg, transparent .25deg 1.25deg);
+  -webkit-mask: radial-gradient(closest-side, transparent calc(100% - 6px), #000 calc(100% - 6px));
+  mask: radial-gradient(closest-side, transparent calc(100% - 6px), #000 calc(100% - 6px));
+}
+/* 棱彩环：六个元素色绕一圈，与装备库「两位都推荐」那一圈同一个定义。 */
+.orrery .halo {
+  inset: 19%;
+  background: var(--halo-both);
+  opacity: .8;
+  -webkit-mask: radial-gradient(closest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
+  mask: radial-gradient(closest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
+}
+.orrery .sweep {
+  inset: 12%;
+  background: conic-gradient(from 0deg, #5fd8e000 0deg, #5fd8e000 300deg, #5fd8e01f 358deg, #5fd8e000 360deg);
+}
+/* 轨道：每个 <i> 占满整圈、按 --a 转到自己的角度，菱形画在它顶上正中。 */
+.orrery .orbit { inset: 19%; }
+.orrery .orbit.o2 { inset: 27%; }
+.orrery .orbit i { position: absolute; inset: 0; transform: rotate(var(--a)); }
+.orrery .orbit i::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: calc(50% - 5px);
+  width: 10px;
+  height: 10px;
+  background: var(--c);
+  transform: rotate(45deg);
+}
+.orrery .orbit.o2 i::before { top: -3px; left: calc(50% - 3px); width: 6px; height: 6px; border: 1px solid var(--bone-dim); background: var(--x-well); }
+.orrery .core { inset: 45.5%; border: 1px solid var(--bone-dim); border-radius: 0; transform: rotate(45deg); }
+.orrery .core.in { inset: 48.2%; border: 0; background: var(--bone-hi); }
+@media (prefers-reduced-motion: no-preference) {
+  .orrery .dial { animation: spin 240s linear infinite; }
+  .orrery .dial.fine { animation: spin 160s linear infinite reverse; }
+  .orrery .halo { animation: spin 90s linear infinite; }
+  .orrery .orbit.o1 { animation: spin 120s linear infinite reverse; }
+  .orrery .orbit.o2 { animation: spin 70s linear infinite; }
+  .orrery .sweep { animation: spin 12s linear infinite; }
+  @keyframes spin { to { transform: rotate(1turn); } }
+}
+/* 左下角压暗，字标落在最暗的那一角。 */
 .wall::after {
   content: "";
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(120% 90% at 0% 100%, #080a10 18%, #080a10d9 42%, #080a1000 78%),
-    linear-gradient(90deg, #080a1000 70%, #0b0d14);
+    radial-gradient(90% 70% at 0% 100%, #080a10 14%, #080a10cc 38%, #080a1000 70%),
+    linear-gradient(90deg, #080a1000 76%, #0b0d14);
 }
 .wall .sign { position: absolute; left: 56px; bottom: 52px; z-index: 1; display: grid; gap: 14px; }
 .wall .sign .mark { --sig: 12px; color: var(--bone-dim); }

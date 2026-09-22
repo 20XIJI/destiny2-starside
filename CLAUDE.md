@@ -165,7 +165,7 @@ check_icons.py     换图之前逐行比「现在显示的图」与「主键的�
                    两边同一套编码参数、文件名即内容 md5，名字相同即像素相同
 build-search.py    各页产出 → assets/search.js，首页那只搜索框搜的就是它
 build-terms.py     两道闸门的词表 → admin/terms.js（前端提示），
-                   资料页清单、配装的五张词表与登录页那面墙的图 → admin/pages.js，
+                   资料页清单与配装的五张词表 → admin/pages.js，
                    并把 admin/dialect.js 复制一份到 functions/api/（云函数只
                    require 得到自己目录下的东西）
 sync.py            源稿在库与仓库之间对账：记一份基线三方比，撞车就报、不猜方向
