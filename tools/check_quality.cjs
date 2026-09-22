@@ -204,7 +204,9 @@ function harness(seed = {}, hooks = {}) {
       const response = await sandbox.exports.main({ httpMethod: 'POST', body: JSON.stringify(body),
         headers: authenticated ? { authorization: 'Bearer isolated-quality-token' } : {} })
       return { status: response.statusCode, ...JSON.parse(response.body) }
-    }
+    },
+    // 原样的网关事件，给要控制事件形状的断言用（isBase64Encoded 那一类）。
+    main: (event) => sandbox.exports.main(event),
   }
 }
 const md = '# 配装\n推荐人：甲\n职业：猎人\n分支：棱镜\n核心：装备\n\n## 注解\n旧文'
@@ -700,6 +702,20 @@ test('a bare pipe in a table cell is refused before it reaches the queue', async
   assert.equal(result.status, 400)
   assert.match(result.error, /竖线/)
   assert.deepEqual(queued, [])
+})
+
+test('a body the gateway hands over as base64 reads the same as plain JSON', async () => {
+  // 访问计数那一发不带 content-type（text/plain 免掉跨域预检），网关对非 JSON 的正文
+  // 可能按 base64 转交、带 isBase64Encoded。当成 JSON 直接解会解成空对象，动作丢失。
+  const h = harness()
+  const headers = { authorization: 'Bearer isolated-quality-token' }
+  const text = JSON.stringify({ a: 'edits' })
+  const plain = await h.main({ httpMethod: 'POST', body: text, headers })
+  const coded = await h.main({ httpMethod: 'POST', body: Buffer.from(text).toString('base64'),
+    isBase64Encoded: true, headers })
+  assert.equal(plain.statusCode, 200)
+  assert.equal(coded.statusCode, plain.statusCode)
+  assert.deepEqual(JSON.parse(coded.body), JSON.parse(plain.body))
 })
 
 test('a tint marker keeps its own pipe and its own braces', async () => {

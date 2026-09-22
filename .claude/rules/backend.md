@@ -53,6 +53,10 @@ envId 不进环境变量：它写在 `shell.API` 里、要落进每个页面的�
 只有 `n`；先 update 再 set，doc 不存在时才多一次往返，首次并发写互相覆盖成 1，
 掉几个数不值得上事务。
 
+那一发 POST 不写 content-type：字符串正文缺省是 text/plain，属于跨域的简单请求，
+不必先发一次 OPTIONS 预检。云函数不看 content-type，一律把正文当 JSON 解；网关带
+`isBase64Encoded` 转交的先解 base64，`npm test` 钉着两种事件读出同一个结果。
+
 同一个浏览器每天只算一次，记的因此是访客数不是页面加载数。计数是写、挡不进
 缓存，唯一能压的就是发的次数：一天一次，调用数与访客数持平，翻多少页都不再涨。
 窗口写在 localStorage 的一个定长键上（`svd` 存天），不一天一个键。localStorage

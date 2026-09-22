@@ -170,8 +170,9 @@ HIT = ('<script>(function(){'
        'if(!f){if(!o)return;'
        'try{var c=localStorage.getItem("svt")||"",i=c.indexOf("|"),a=Date.now()-c.slice(0,i);'
        'if(i>0&&a>=0&&a<6e5){o.textContent=c.slice(i+1);return}}catch(_){}}'
-       'var r=f?fetch("%s",{method:"POST",headers:{"content-type":"application/json"},'
-       'body:JSON.stringify({a:"hit",s:o?1:0})}):fetch("%s?a=stats");'
+       # POST 不写 content-type：字符串正文缺省是 text/plain，属于跨域的简单请求，
+       # 不必先发一次 OPTIONS 预检；云函数照样把正文当 JSON 解。
+       'var r=f?fetch("%s",{method:"POST",body:JSON.stringify({a:"hit",s:o?1:0})}):fetch("%s?a=stats");'
        'r.then(function(x){return x.json()})'
        '.then(function(s){if(o){var t="今日 "+s.today+" 位访客 · 累计 "+s.total;'
        'o.textContent=t;try{localStorage.setItem("svt",Date.now()+"|"+t)}catch(_){}}},'

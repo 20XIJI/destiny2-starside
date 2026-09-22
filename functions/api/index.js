@@ -980,7 +980,10 @@ exports.main = async (event) => {
   const q = event.queryStringParameters || {}
   let body = {}
   try {
-    body = JSON.parse(event.body || '{}')
+    // 访问计数那一发不带 content-type（text/plain 免掉跨域预检）。网关对非 JSON 的
+    // 正文可能按 base64 转交，带着 isBase64Encoded 标记。
+    const raw = event.isBase64Encoded ? Buffer.from(event.body || '', 'base64').toString() : event.body
+    body = JSON.parse(raw || '{}')
   } catch {
     body = {}
   }
