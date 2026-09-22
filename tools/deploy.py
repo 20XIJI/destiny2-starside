@@ -61,6 +61,30 @@ def strippable(text: str) -> bool:
     return not any("/*" in m.group(0) or "*/" in m.group(0) for m in RISK.finditer(text))
 
 
+def dedent(text: str) -> str:
+    """每行去掉行首缩进与行尾空白，换行一个不删：行号仍与源稿对得上，列号左移缩进那么多。
+
+    只认空格与制表符。NBSP 在 CSS 里是标识符字符、不是空白，不带参数的 str.strip()
+    会连它一起剥掉，改掉以 NBSP 开头的标识符。行内的空格一个不动：`a :hover` 与
+    `a:hover` 选中的不是同一批元素，calc() 的加减号两边必须有空格。
+    """
+    return "\n".join(line.strip(" \t") for line in text.split("\n"))
+
+
+def dedentable(rel: str, text: str) -> bool:
+    """行首空白是内容的文件不许去缩进。text 是剥完块注释的那一份。
+
+    行首空白只在跨行的字面量里算内容，跨行只有两条路：JS 的模板字符串（反引号），
+    与行尾反斜杠续行的字符串（CSS 与 JS 都有）。前者按整个 .js 文件里有没有反引号判，
+    后者按去掉行尾空白后是不是以反斜杠结尾判：行尾是「反斜杠 + 空格」的，空格剥掉后
+    反斜杠就转义了换行，同样不许。判得宽：// 注释与字符串里的反引号也算，这类文件
+    只剥注释、照旧发。
+    """
+    if rel.endswith(".js") and "`" in text:
+        return False
+    return not any(line.rstrip(" \t").endswith("\\") for line in text.split("\n"))
+
+
 def git(*args: str) -> str:
     r = subprocess.run(["git", *args], cwd=ROOT, text=True, capture_output=True)
     if r.returncode:
@@ -82,11 +106,15 @@ def tcb(*args: str, env: str, confirm: bool = False) -> None:
 
 
 def stage_one(rel: str, dst: pathlib.Path) -> None:
-    """把一个文件放进暂存目录。CSS 与 JS 顺手剥掉块注释，别的原样复制。
+    """把一个文件放进暂存目录。CSS 与 JS 顺手剥掉块注释与缩进，别的原样复制。
 
     site.css 有 38% 的字符在 /* */ 里，app.js 也差不多，而 .css/.js 的浏览器缓存
-    只有 5 分钟——那些设计依据每次访问都要重发一遍。源稿一个字不动，剥只发生在
-    这里，本地 npm start 服务的仍是带注释的那一份。
+    只有 5 分钟，站上也不压缩——那些设计依据与缩进每次访问都按原始字节重发一遍。
+    源稿一个字不动，剥只发生在这里，本地 npm start 服务的仍是带注释的那一份。
+
+    改过的 .js 落盘后过一遍 node --check，不过就中止部署并报出文件名。跳不跳过由
+    strippable() 与 dedentable() 在动手之前判定；动手之后语法坏了，说明剥的规则
+    本身有漏洞，原样发出去会把这个漏洞藏起来。
     """
     if not rel.endswith((".css", ".js")):
         shutil.copy2(SITE / rel, dst)
@@ -96,7 +124,17 @@ def stage_one(rel: str, dst: pathlib.Path) -> None:
         print(f"  ! {rel} 的字符串里有 /* 或 */，原样发")
         shutil.copy2(SITE / rel, dst)
         return
-    dst.write_text(uncomment(text), encoding="utf-8")
+    out = uncomment(text)
+    if dedentable(rel, out):
+        out = dedent(out)
+    else:
+        print(f"  ! {rel} 有反引号或行尾反斜杠，只剥注释、不去缩进")
+    dst.write_text(out, encoding="utf-8")
+    if rel.endswith(".js") and out != text:
+        r = subprocess.run(["node", "--check", str(dst)], cwd=ROOT, text=True, capture_output=True)
+        if r.returncode:
+            sys.exit(f"{rel} 剥完注释与缩进后 node --check 不过，未部署，refs/deploy 不变：\n"
+                     f"{r.stderr.strip()}")
 
 
 def plan(full: bool, base: str, target: str) -> "tuple[list[str], list[str]]":

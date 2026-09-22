@@ -1306,8 +1306,10 @@ class Deployment(Isolated):
         self.base = '0' * 40
         self.sync_code = 0
         self.fail_tcb = ''
+        self.node_error = ''
         self.calls = []
         self.uploaded = None
+        self.staged = {}
         self.replace(deploy, 'git', self.git)
         self.replace(subprocess, 'run', self.command)
         mkdtemp = tempfile.mkdtemp
@@ -1338,10 +1340,15 @@ class Deployment(Isolated):
             return SimpleNamespace(stdout=self.base, returncode=0 if self.base else 1)
         if args == [sys.executable, 'tools/sync.py']:
             return SimpleNamespace(returncode=self.sync_code)
+        if args[:2] == ['node', '--check']:
+            return SimpleNamespace(returncode=int(bool(self.node_error)), stderr=self.node_error)
         if args[:3] == ['tcb', 'hosting', 'deploy']:
             self.assertEqual(args[-2:], ['-e', 'offline-fixture'])
             self.assertEqual(kw.get('input'), 'y\n' if '--prune' in args else None)
-            self.uploaded = (Path(args[3]) / 'index.html').read_text(encoding='utf-8')
+            stage = Path(args[3])
+            self.uploaded = (stage / 'index.html').read_text(encoding='utf-8')
+            self.staged = {p.relative_to(stage).as_posix(): p.read_text(encoding='utf-8')
+                           for p in stage.rglob('*') if p.is_file()}
             return SimpleNamespace(returncode=int(self.fail_tcb == 'deploy'))
         if args[:3] == ['tcb', 'hosting', 'delete']:
             return SimpleNamespace(returncode=int(self.fail_tcb == 'delete'))
@@ -1418,6 +1425,59 @@ class Deployment(Isolated):
         self.assertEqual([args[2] for args in self.remote()], ['deploy', 'delete'])
         self.assertEqual(self.remote()[1][3], '%s/old/index.html' % deploy.CLOUD)
         self.assertEqual(self.refs(), [('update-ref', deploy.REF, self.TARGET)])
+
+    def checked(self):
+        return [args[2] for kind, args in self.calls if kind == 'command' and args[:2] == ('node', '--check')]
+
+    def test_staging_strips_indentation_and_keeps_every_line(self):
+        # 行首缩进与行尾空白去掉，换行一个不少，devtools 报的行号仍落在源稿同一行。
+        # 行内空格不动：`a :hover` 与 calc() 里的空格有语义，字符串里的两个空格是内容。
+        # 块注释里的反引号随注释剥掉，不拦去缩进。
+        css = '/* 版心\n   两行说明 */\n.a :hover {\n  width: calc(100% - 2px);  \n\t}\n'
+        js = ("/* 模块说明，`code` 不是模板字符串 */\nfunction f(x) {\n    if (x) {\n"
+              "        return 'a  b';\n    }\n}\n")
+        self.file('site/assets/a.css', css)
+        self.file('site/assets/a.js', js)
+        self.files = 'site/index.html\0site/assets/a.css\0site/assets/a.js\0'
+        deploy.main()
+        self.assertEqual(self.staged['assets/a.css'], '\n\n.a :hover {\nwidth: calc(100% - 2px);\n}\n')
+        self.assertEqual(self.staged['assets/a.js'], "\nfunction f(x) {\nif (x) {\nreturn 'a  b';\n}\n}\n")
+        for rel, text in (('assets/a.css', css), ('assets/a.js', js)):
+            self.assertEqual(self.staged[rel].count('\n'), text.count('\n'), rel)
+        self.assertEqual(self.staged['index.html'], 'published contents')
+        # node --check 查的是暂存目录里那一份（<root>/starside-deploy-*/assets/a.js），CSS 不查
+        self.assertEqual([Path(p).relative_to(self.root).parts[1:] for p in self.checked()],
+                         [('assets', 'a.js')])
+        self.assertEqual(self.refs(), [('update-ref', deploy.REF, self.TARGET)])
+
+    def test_template_literals_and_continued_strings_keep_their_indentation(self):
+        # 模板字符串与行尾反斜杠续行的字符串里，行首空白是内容。这几份没有块注释，
+        # 暂存的那一份应与源稿逐字相同；内容没变的 .js 不必再过 node --check。
+        sources = {
+            'assets/tpl.js': 'const s = `\n  <b>\n    x\n  </b>`;\n',
+            'assets/cont.js': "var s = 'a\\\n    b';\n",
+            'assets/cont.css': '.a::after {\n  content: "x\\\n    y";\n}\n',
+        }
+        for rel, text in sources.items():
+            self.file('site/' + rel, text)
+        self.files = 'site/index.html\0' + ''.join('site/%s\0' % rel for rel in sources)
+        deploy.main()
+        for rel, text in sources.items():
+            self.assertEqual(self.staged[rel], text, rel)
+            self.assertIn('%s 有反引号或行尾反斜杠' % rel, self.output.getvalue())
+        self.assertEqual(self.checked(), [])
+        self.assertEqual(self.refs(), [('update-ref', deploy.REF, self.TARGET)])
+
+    def test_a_script_that_fails_node_check_after_staging_stops_every_send(self):
+        # 剥完语法坏了是剥的规则有漏洞：中止并报出文件名，不退回原样发，否则漏洞藏住了。
+        self.file('site/assets/a.js', 'if (x) {\n    y();\n}\n')
+        self.files = 'site/index.html\0site/assets/a.js\0'
+        self.node_error = "SyntaxError: Unexpected token '}'"
+        message = self.exits(deploy.main)
+        for part in ('assets/a.js', 'node --check', self.node_error):
+            self.assertIn(part, message)
+        self.assertEqual((self.remote(), self.refs()), ([], []))
+        self.assertEqual(list(self.root.glob('starside-deploy-*')), [], '暂存目录没清掉')
 
     def test_dry_run_has_no_sync_remote_or_ref(self):
         self.replace(sys, 'argv', ['deploy.py', '--dry-run'])
