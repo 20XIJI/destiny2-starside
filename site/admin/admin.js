@@ -84,54 +84,13 @@
     })
   }
 
-  // 位置 i 上是不是一个 {token| 开头；是就返回那次匹配，不是返回 null。
-  // **先看一眼首字符再切片**：在 while 里无条件 s.slice(i) 等于每前进一个字符
-  // 复制一遍剩余全串，5 KB 的块单次扫描就是一千多万次字符拷贝。
-  var OPEN = /^\{([\w-]+)\|/
-  function openAt (s, i) {
-    return s.charAt(i) === '{' ? OPEN.exec(s.slice(i)) : null
-  }
-
-  // 与 markup.inline() 同一条规则：一趟栈式扫描，支持嵌套。正则做不干净。
-  function paint (t) {
-    var out = ''
-    var d = 0
-    var i = 0
-    while (i < t.length) {
-      var m = openAt(t, i)
-      if (m) { out += '<span class="' + m[1] + '">'; d++; i += m[0].length; continue }
-      var c = t.charAt(i++)
-      if (c === '}' && d) { out += '</span>'; d--; continue }
-      out += c === '<' ? '&lt;' : c === '&' ? '&amp;' : c
-    }
-    while (d-- > 0) out += '</span>'
-    return out
-  }
-
-  // 文本里每个着色标记覆盖的区间，用来判断某处是不是已经着过色了。
-  function marked (t) {
-    var span = []
-    var stack = []
-    var i = 0
-    while (i < t.length) {
-      var m = openAt(t, i)
-      if (m) { stack.push(i); i += m[0].length; continue }
-      if (t.charAt(i) === '}' && stack.length) span.push([stack.pop(), i])
-      i++
-    }
-    return span
-  }
+  // 源稿方言（切格、行标题、着色标记）JS 这一侧只有 admin/dialect.js 一份定义。
+  // 在函数体里现读 window.starsideDialect，不在模块顶层捕获：见 edit.js 里注入次序那一段。
+  function D () { return window.starsideDialect }
 
   function inside (span, a, b) {
     return span.some(function (s) { return a >= s[0] && b <= s[1] })
   }
-
-  // 切格与行标题那一段走 admin/dialect.js：源稿方言在 JS 这一侧只有那一份定义。
-  // 从前这里的 titleEnd() 用的是不记花括号深度的 indexOf，首格带 {token|…}
-  // 的行会把身份段截在标记内部那个竖线上——4563 行语料里 382 行如此，
-  // 于是行标题里的词在编辑台上被当成正文报「该着色」，而构建时的 G6 不报。
-  function cells (line) { return window.starsideDialect.cells(line) }
-  function titleEnd (line) { return window.starsideDialect.titleEnd(line) }
 
   // ── 前端闸门 ───────────────────────────────────────────────────────
   // 这些是提示不是拦截：逐字保真与结构断言要 Python，留在本地 npm run build。
@@ -156,26 +115,6 @@
   }
   function within (rs, a, b) {
     return rs.some(function (r) { return a >= r[0] && b <= r[1] })
-  }
-
-  // 整块恰好被一个 {token|…} 包住时返回内容，否则 null。判据是首个标记的闭括号
-  // 落在末尾——中途闭合说明块里还有别的东西（`{a|白弹} → {b|绿弹}` 是两个标记）。
-  // 与 markup.whole_marker() 同一条：那一层 class 落在块上，不套 span。
-  function whole (t) {
-    var m = /^\{[\w-]+\|/.exec(t)
-    if (!m) return null
-    var depth = 1
-    var i = m[0].length
-    while (i < t.length) {
-      var o = openAt(t, i)
-      if (o) { depth++; i += o[0].length; continue }
-      if (t.charAt(i) === '}') {
-        depth--
-        if (!depth) return i === t.length - 1 ? t.slice(m[0].length, i) : null
-      }
-      i++
-    }
-    return null
   }
 
   // 下面三份都随词表走，按词表对象缓存：terms.js 是编辑态起来之后空闲补上的，
@@ -224,17 +163,15 @@
     var warns = []
     var m
 
-    var d = 0
-    var re = /\{[\w-]+\||\}/g
-    while ((m = re.exec(text))) d = m[0] === '}' ? Math.max(0, d - 1) : d + 1
+    var d = D().unclosed(text)
     if (d) errs.push('花括号没闭合，少 ' + d + ' 个右括号')
 
     // **着色 span 不得嵌套**，与 markup.no_nested_span 同一条。整块只有一个标记时
     // 那一层 class 落在块上、不出 span，所以先剥掉它再看里面。
     // `对{res|{orb|X}Y}` 就栽在这里：加一个字到标记外面，整块判定不再成立，
     // res 只能套一层 span，于是与里面的 orb 嵌套，构建当场中止。
-    var inner = whole(text.trim())
-    if (/<span[^>]*>[^<]*<span/.test(paint(inner === null ? text : inner))) {
+    var inner = D().whole(text.trim())
+    if (/<span[^>]*>[^<]*<span/.test(D().paint(inner === null ? text : inner))) {
       errs.push('着色标记套了两层。整格只有一个标记时那一层不出 span，'
         + '所以把外面的字挪进最外层标记里就好')
     }
@@ -281,17 +218,17 @@
       // 表头行不是正文，列名与标题同属「标签」，已有结构身份。
       var isHead = at.head || RULE_LINE.test((lines[n + 1] || '').trim())
       if (at.cols && line.charAt(0) === '|' && !RULE_LINE.test(line.trim()) && !/^\|\s*==/.test(line)) {
-        var c = cells(line)
+        var c = D().cells(line)
         if (c !== at.cols) errs.push('这一行 ' + c + ' 格，表头是 ' + at.cols + ' 格')
       }
       if (!g6 || isHead || !line || line.charAt(0) === '#' || KEY_LINE.test(line)) return
-      var end = titleEnd(line)
+      var end = D().titleEnd(line)
       var taken = ranges(line, [/\]\([^)]*\)/g])
       T.guard.forEach(function (g) {
         var at = 0
         while ((at = line.indexOf(g, at)) >= 0) { taken.push([at, at + g.length]); at += g.length }
       })
-      var span = marked(line)
+      var span = D().marked(line)
       // **只认每个词在这一行的第一次出现**，与原先那句 indexOf 逐字等价：首次
       // 出现落在行标题里或已经着过色，这个词就整条跳过，不去看后面还有没有。
       var bk = buckets(T.items)
@@ -459,12 +396,12 @@
   // 源稿一格 → 页面上那个样子：着色照画，图不画，格内换行 `\\` 画成真的换行。
   var IMG = /!\[[^\]]*\]\([^)]*\)/g
   function paintCell (t) {
-    return paint(String(t || '').replace(IMG, '')).replace(/\\\\/g, '<span class="br"></span>')
+    return D().paint(String(t || '').replace(IMG, '')).replace(/\\\\/g, '<span class="br"></span>')
   }
   // 源稿一格 → 纯文字。表头与行的身份用它：图、换行与着色标记都不算字。paint() 只产出
   // <span> 与 &lt; &amp; 两种转义，剥掉标签、还原转义即得 textContent，不必交给 DOM 解析。
   function plain (t) {
-    return paint(String(t || '').replace(IMG, '').replace(/\\\\/g, ' '))
+    return D().paint(String(t || '').replace(IMG, '').replace(/\\\\/g, ' '))
       .replace(/<[^>]*>/g, '').replace(/&lt;/g, '<').replace(/&amp;/g, '&')
       .replace(/\s+/g, ' ').trim()
   }
@@ -1808,7 +1745,7 @@
       var box = h('div', { class: 'x-diff' })
       ;(r.diff || '（无增删）').split('\n').forEach(function (l) {
         box.appendChild(h('div', { class: l.charAt(0) === '-' ? 'del' : l.charAt(0) === '+' ? 'add' : 'ctx' },
-          h('span', { html: paint(l.slice(2)) })))
+          h('span', { html: D().paint(l.slice(2)) })))
       })
       return box
     })
@@ -2161,7 +2098,7 @@
   // 后五件是给 admin/edit.js 那条配装编辑路的：它在配装页上现载这一份，单套与合集
   // 怎么分、填表页怎么载、怎么读、错误码怎么翻，两条路各抄一份就会漂。slotOf 那条
   // 判据还要与 convert-build.py 的 split_set() 逐字一致。
-  var api = { paint: paint, lint: lint, cells: cells,
+  var api = { lint: lint,
               missing: missing, builds: builds, when: when, refresh: refresh, start: start,
               nextWait: nextWait, changed: changed,
               slotOf: slotOf, formSrc: formSrc, readForm: readForm,

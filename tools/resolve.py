@@ -1079,17 +1079,6 @@ def set_sources():
         return {norm(m) for m in SET_SOURCE.findall(f.read())}
 
 
-MARKER = re.compile(r'\{([\w-]+)\|([^{}]*)\}')
-IMG = re.compile(r'!\[\]\([^)]*\)')
-
-
-def bare(text):
-    """剥掉着色与版式标记，只留文字。"""
-    for _ in range(4):
-        text = MARKER.sub(lambda m: m.group(2), text)
-    return IMG.sub('', text).strip()
-
-
 def source_hints():
     """{(页面, 名字): (来源, [Perk 名…])}。现扫源稿，不另存一份。
 
@@ -1118,13 +1107,13 @@ def source_hints():
                 continue
             cells = [line[a:b] for a, b in spans]
             # 词表那一侧取文时格内换行已经没了，键要对齐到同一形态。
-            name = bare(cells[0]).replace(markup.CELL_BREAK, '')
+            name = markup.strip_marks(cells[0]).replace(markup.CELL_BREAK, '')
             if not name or name in ('武器', '名称', '金装') or name.startswith('=='):
                 continue
             perks, src = [], ''
             for cell in cells[1:]:
-                for tag, body in MARKER.findall(cell):
-                    body = IMG.sub('', body)
+                for tag, body in markup.INNERMOST.findall(cell):
+                    body = markup.IMG.sub('', body)
                     if tag == 'src' and not src:
                         # 来源列写的就是玩家管这次掉落叫什么，与收藏条目的
                         # sourceString 对得上，正是复刻之间唯一的差别。

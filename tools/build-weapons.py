@@ -129,16 +129,12 @@ MARK_MISS_BASELINE = 0
 LETTER = {'S': 0, 'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E': 5, 'F': 6}
 UNRATED = 99
 
-TOKEN = re.compile(r'\{[\w-]+\|([^{}]*)\}')
 ADEPT_TAIL = re.compile(r'（[^（）]*）$')
 
 
 def plain(s):
     """源稿方言剥成纯文字：{token|文字} 只留文字。"""
-    s = s or ''
-    while TOKEN.search(s):
-        s = TOKEN.sub(r'\1', s)
-    return s.replace('~~', '')
+    return markup.uncolor(s or '').replace('~~', '')
 
 
 def parts(s):

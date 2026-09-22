@@ -25,6 +25,11 @@
      硬拦的是这一份：send 上 `if (lack.length) return`。
      导出之后，check_quality.cjs 拿库里每一篇真源稿两边各过一遍。 */
 
+  /* 着色标记的判读走 admin/dialect.js，与编辑台、云函数、构建同一条。页面上它排在
+     这一份前面；Node 里（check_quality.cjs）按相对路径 require。 */
+  var D = typeof module !== 'undefined' && module.exports
+    ? require('../../admin/dialect.js') : window.starsideDialect;
+
   /* 一套配装最多几套。上限 12：游戏内能存 20 套，再多左栏那列比右栏还长，
      而一个角色常用的就五六套。 */
   var SET_MAX = 12;
@@ -99,13 +104,12 @@
     var lead = /^[ \t]*#+[ \t]*/gm;
     while ((m = lead.exec(s))) cut[m.index] = m[0].length;
     var open = [];
-    var mark = /\{[\w-]+\||[{}]/g;
-    while ((m = mark.exec(s))) {
-      if (m[0].length > 1) open.push(m);
-      else if (m[0] === '}' && open.length) open.pop();
-      else cut[m.index] = 1;               // 裸的 {，与没有开头对应的 }
-    }
-    open.forEach(function (o) { cut[o.index] = o[0].length; });
+    D.scan(s).forEach(function (k) {
+      if (k.kind === 'open') open.push(k);
+      else if (k.kind === 'close') open.pop();
+      else if (k.kind !== 'pipe') cut[k.at] = 1;   // 裸的 {，与没有开头对应的 }
+    });
+    open.forEach(function (o) { cut[o.at] = o.end - o.at; });
     var out = '';
     var pos = at || 0;
     for (var i = 0; i < s.length; i++) {
@@ -131,17 +135,18 @@
     var spans = [];
     var open = [];
     var last = 0;
-    var re = /\{([\w-]+)\||[{}]/g;
-    var m;
-    while ((m = re.exec(s))) {
-      if (m[0] === '{' || (m[0] === '}' && !open.length)) return raw;
-      text += s.slice(last, m.index);
-      last = re.lastIndex;
-      if (m[0] === '}') {
+    var ks = D.scan(s);
+    for (var i = 0; i < ks.length; i++) {
+      var k = ks[i];
+      if (k.kind === 'pipe') continue;
+      if (k.kind === 'bare' || k.kind === 'stray') return raw;
+      text += s.slice(last, k.at);
+      last = k.end;
+      if (k.kind === 'close') {
         var o = open.pop();
         spans.push({ a: o.a, b: text.length, t: o.t });
       } else {
-        open.push({ a: text.length, t: m[1] });
+        open.push({ a: text.length, t: k.token });
       }
     }
     if (open.length) return raw;

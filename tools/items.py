@@ -376,7 +376,7 @@ def distill_perks():
         if i + 1 < len(lines) and RULE_LINE.match(lines[i + 1].strip()):
             continue                      # 表头行写的是列名
         cell = line[1:row_title_end(line)].rstrip('|')
-        name = norm(re.sub(r'\{[\w-]+\|', '', cell).replace('}', '').strip())
+        name = norm(markup.uncolor(cell).strip())
         if len(name) >= PERK_MIN:
             names.add(name)
     for page in PERK_PAGES:
@@ -702,7 +702,7 @@ def normalize_text(text, *, terms, names, banned):
     text, fixed = rename(text, banned, check_terms.protected_spans(text))
     protected = check_terms.protected_spans(text)
     tinted = 0
-    for match in reversed(list(re.finditer(r'\{([\w-]+)\|([^{}|]+)\}', text))):
+    for match in reversed(list(markup.LEAF.finditer(text))):
         if any(a <= match.start() and match.end() <= b for a, b in protected):
             continue
         token, word = match.groups()

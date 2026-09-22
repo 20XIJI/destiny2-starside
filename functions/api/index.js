@@ -5,9 +5,10 @@
 const crypto = require('crypto')
 const zlib = require('zlib')
 const tcb = require('@cloudbase/node-sdk')
-// 切格是源稿方言，JS 这一侧只有 admin/dialect.js 一份定义；这里这个文件是构建
-// 复制过去的，不手改（云函数只 require 得到自己目录下的东西）。
-const { cellSpans, rowOf } = require('./dialect.js')
+// 源稿方言（切格、着色标记、一段文字能不能原样写进一格）JS 这一侧只有
+// admin/dialect.js 一份定义；这里这个文件是构建复制过去的，不手改（云函数只
+// require 得到自己目录下的东西）。
+const { cellSpans, rowOf, cellSafe, barePipe } = require('./dialect.js')
 const app = tcb.init({ env: tcb.SYMBOL_CURRENT_ENV })
 const db = app.database()
 const _ = db.command
@@ -190,30 +191,6 @@ function patch(md, at, after) {
   return lines.join('\n')
 }
 
-// 源稿方言里 `|` 是表格分隔符、`{}` 是着色标记，正文里都不出现，所以两者都能当结构
-// 字符硬判。混进去不是"报个错就完了"：那一行会多一格、或者标记不闭合，
-// convert-doc.py 的闸门当场 die，卡住的是整次 npm run build——而编辑这一侧一点异样
-// 都看不到，下一个跑 ship.sh 的人才撞上。
-//
-// 换行走的是自动改对那条路（格内换行写两个反斜杠，编辑没有理由知道这条语法）。
-// 这两个字符没有等价写法可以替他改——换成全角是静默改内容——所以在提交时就拒收，
-// 并说清是哪一个。
-function cellSafe(text, inCell) {
-  // 竖线只在"改一格"时才是越界：整块替换写进去的是完整的一行，那一行里的竖线是
-  // 结构。而且只有深度 0 上的才算分隔符，与六份切格实现同一条规则——{el-arc|电弧}
-  // 里那个是标记的一部分，拦下它就等于不许在格里着色。
-  // 花括号两种情形都要配对，它在哪儿都是着色标记。
-  let d = 0
-  for (const ch of text) {
-    if (ch === '{') d++
-    else if (ch === '}') { if (--d < 0) return '着色标记的花括号没配对' }
-    else if (ch === '|' && d === 0 && inCell) {
-      return '表格格里不能写竖线，它是分隔符；要写就用全角｜'
-    }
-  }
-  return d ? '着色标记的花括号没配对' : ''
-}
-
 // ── 记录上的站内文字 ──
 // recs 一条记录一份：_id 是「表名/裸 hash」，json 是 facts.site_text() 那张扁平表
 // {字段路径: 文字} 的规范文本。_id 与路径都从请求里来，形状在这里验。
@@ -239,17 +216,6 @@ function flatOf(cur) {
   if (!flat || typeof flat !== 'object' || Array.isArray(flat)
       || Object.values(flat).some((v) => typeof v !== 'string')) throw new Error('bad rec')
   return flat
-}
-
-// 深度 0 上有没有竖线。与 cellSafe() 同一条深度规则。
-function barePipe(text) {
-  let d = 0
-  for (const ch of String(text)) {
-    if (ch === '{') d++
-    else if (ch === '}') d = Math.max(0, d - 1)
-    else if (ch === '|' && d === 0) return true
-  }
-  return false
 }
 
 // 一格此刻的文字。没有这一格时：能新添的算空串，不能的回 null。

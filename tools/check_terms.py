@@ -384,7 +384,7 @@ def check_tokens(pairs, site, bad):
     used = set()
     for rel, ok in pairs:
         md = read(rel)
-        for m in re.finditer(r'\{([\w-]+)\|', md):
+        for m in markup.OPEN.finditer(md):
             used.add(m.group(1))
             if m.group(1) not in ok:
                 bad.append('G3 %s:%d 用了 {%s|…}，样式表里没有这个类'
@@ -458,7 +458,7 @@ def check_items(files, bad):
         md = read(rel)
         # 只认「整个标记就是这个词」的那种，与 G2 同一条道理：词嵌在更长的短语里
         # 时着色属于短语，按词强判会把整句的颜色拆碎。
-        for m in re.finditer(r'\{([\w-]+)\|([^{}|]+)\}', md):
+        for m in markup.LEAF.finditer(md):
             token, text = m.group(1), m.group(2)
             if token not in MANAGED:
                 continue

@@ -673,7 +673,7 @@ class Table:
         self.perks = None           # 本行「异域 PERK」格里的 {名字: 主键}
 
     def problem(self, title, col, why):
-        PROBLEMS.append((self.page, markup.text_of(resolve.bare(title), collapse=True), col, why))
+        PROBLEMS.append((self.page, markup.text_of(markup.strip_marks(title), collapse=True), col, why))
 
     def block(self, rec, key):
         """这一行的正文从哪一块取：`(那一块, 它在记录上的路径)`。路径给就地编辑标出处。"""
@@ -770,7 +770,7 @@ class Table:
             text, field = self.cell(key, rec, block, title, col, f)
             cells.append(text)
             spots.append((key, '%s/%s' % (at, field), '%s · %s' % (
-                markup.text_of(resolve.bare(title), collapse=True),
+                markup.text_of(markup.strip_marks(title), collapse=True),
                 col.replace(markup.CELL_BREAK, ''))) if field and at else None)
         return cells, spots
 

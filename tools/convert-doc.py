@@ -112,8 +112,7 @@ def anchors_of(path):
                     if cells and not is_rule(cells) and lane_of(cells) is None:
                         first = cells[0]
                 if first:
-                    name = text_of(re.sub(r'\{[\w-]+\|', '', first).replace('}', ''),
-                                   collapse=True)
+                    name = text_of(markup.uncolor(first), collapse=True)
                     if name and name not in table:
                         table[name] = 'sec-%d' % n
         _ANCHORS[path] = table
@@ -783,7 +782,7 @@ def render_blocks(chunk, scales=None, groups=None, marks=None, curves=None, up=0
             prev = None
             while i < len(lines) and lines[i].startswith('- '):
                 item = lines[i][2:]
-                hit = re.match(r'\{(\w[\w-]*)\|([^{}|]+)\}', item)
+                hit = markup.LEAF.match(item)
                 html = wrap('li', item, bmark(base + i))
                 if hit and (hit.group(1), hit.group(2)) == prev:
                     html = html.replace('class="%s"' % hit.group(1),
@@ -1070,7 +1069,7 @@ def check(md, out, slug):
     body = LINK.sub(r'\1', body)                      # 链接只留文字
     body = body.replace('~~', '')                 # 划掉的线由 <s> 画，不落成字符
                                                   # 只去成对的那一种：正文里的单个 ~ 是「约等于」
-    body = re.sub(r'\{[\w-]+\|', '', body)            # 着色标记的开括号连分隔符
+    body = markup.OPEN.sub('', body)                  # 着色标记的开括号连分隔符
     want = plain(body)                                # 字重、着色与格内换行不落成字符
 
     main = out[out.index('<main '):out.index('</main>')]

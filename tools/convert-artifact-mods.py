@@ -17,7 +17,7 @@ import editmap
 import pagedex
 import resolve
 import shell
-from markup import (Icons, blocks_at, bmark, die, eq, inline, meta_line, meta_of, must,
+from markup import (OPEN, Icons, blocks_at, bmark, die, eq, inline, meta_line, meta_of, must,
                     src_hash, text_of)
 
 SRC = os.path.join(shell.KEY_DIR, 'artifact-mods.md')
@@ -381,7 +381,7 @@ def check(page, out, icons):
     eq('图标文件', len(os.listdir(ICON_DIR)), N_ICON_FILES)
     eq('span 闭合', out.count('<span'), out.count('</span>'))
     eq('残留内联样式', len(re.findall(r'style=', out)), 0)
-    eq('未转换的着色标记', len(re.findall(r'\{[\w-]+\|', out)), 0)
+    eq('未转换的着色标记', len(OPEN.findall(out)), 0)
 
     for s in page['sections']:
         if not s['mods']:

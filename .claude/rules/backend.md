@@ -443,14 +443,20 @@ gzip。省掉的那些由「没有 `data-b` 的 `<tr>` 就是上一行 +1」补�
 跨表接到上一张去；行组分界行（`|---|`）占一行却不出 `<tr>`，它后面那行也照旧带号。
 全站合计 +0.87% gzip。
 
-切格规则只有两份实现：Python 的 `markup.cells()`，JS 的 `admin/dialect.js`。
-跨语言没法共用源码，两份是下限。JS 那一侧由 `admin.js`、`edit.js` 与云函数共用同一个
-文件；云函数只 `require` 得到自己目录下的东西，所以 `functions/api/dialect.js` 是
-构建复制过去的，**不手改**，两份逐字相同由 `npm test` 钉住。
+源稿方言（切格、着色标记的判读、一段文字能不能原样写进一格）只有两份实现：Python 的
+`markup.py`（`OPEN`、`cells()`、`inline()`），JS 的 `admin/dialect.js`（`scan()`，
+切格、`paint()`、配对与 `cellSafe()` 都从它算）。跨语言没法共用源码，两份是下限。
+JS 那一侧由 `admin.js`、`edit.js`、填表页的 `form.js` 与云函数共用同一个文件；
+云函数只 `require` 得到自己目录下的东西，所以 `functions/api/dialect.js` 是构建复制
+过去的，**不手改**，两份逐字相同由 `npm test` 钉住。
 
 五处曾有分歧的地方各选定了一种，判据写在 `dialect.js` 的注释里：只有 `{token|` 才
 开一层，深度钳在 0，行首不许有空白（直接返回 `null`，不先 trim），只剥半角空格，
 首尾各去一个 `|`。选定的这一种与合并前的实现在全部 4563 行语料上结果逐字相同。
+
+云函数收改动与通过改动时按 `cellSafe()` 验新文字：裸 `{`、孤立的 `}`、没闭合的标记
+一律拒，改一格时深度 0 上的竖线也拒。判据与切格同一份，`见 { 注 | 旁 }` 里那个竖线
+在深度 0 上，写进去那一行就多一格。
 
 `check_quality.py` 的 `CellSplitting` 拿全部真表格行断言「源稿还落在两份都认的形状
 里」；`check_quality.cjs` 管 JS 那一份自己的行为，以及「没有哪个消费方又抄了一份
@@ -697,8 +703,9 @@ season 与 slug、而盘上还没有的那些解析成记录，写成 `reference
 
 #### 离线断言
 
-`paint` / `lint` / `cells` 三条纯函数不碰 DOM，`admin.js` 末尾按 `module.exports` 与
-`window.starsideAdmin` 各导一份，`edit.js` 直接用那一份，**不复制副本**。
+着色与切格（`paint`、`cells`）在 `dialect.js`，`lint` 在 `admin.js`，都不碰 DOM：
+`dialect.js` 导出为 `window.starsideDialect`，`admin.js` 末尾按 `module.exports` 与
+`window.starsideAdmin` 各导一份，`edit.js` 直接用这两份，**不复制副本**。
 
 四条断言从仓库里那几份现取，写在 scratchpad：
 

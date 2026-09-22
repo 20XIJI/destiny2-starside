@@ -52,7 +52,12 @@ _RAID_TAGS = ('输出', '机制', '五壮举')
 SCENE_TAGS = {'突袭': _RAID_TAGS, '地牢': _RAID_TAGS, 'PVP': ('3V3', '6V6'),
               '宗师/终极': (), '日常': (), '功能性': ()}
 
-COLOR_OPEN = re.compile(r'\{([\w-]+)\|')
+# 着色标记的开头 `{token|`。源稿方言在 Python 这一侧的唯一判据：只有它开一层，
+# 裸 `{` 是普通字符；`}` 在层内闭合一层，在层外是孤立的（深度钳在 0）。JS 那一侧
+# 是 admin/dialect.js 的 scan()，同一条规则。切格、着色、按层切段、剥标记都从这里走。
+OPEN = re.compile(r'\{([\w-]+)\|')
+# 一个完整的叶子标记：里面没有花括号也没有竖线。闸门认「整个标记就是这个词」用它。
+LEAF = re.compile(r'\{([\w-]+)\|([^{}|]+)\}')
 LINK = re.compile(r'\[([^\]]+)\]\(([^)]+)\)')
 # 图标：![](icons/xxx.png)。alt 恒空——图标都是行内的语义重复（旁边就是文字），
 # 给它们编 alt 只会让读屏软件把同一件事念两遍。
@@ -106,7 +111,8 @@ def text_of(frag, collapse=False):
     return re.sub(r'\s+', ' ', t).strip() if collapse else re.sub(r'\s+', '', t)
 
 
-COLOR_ONE = re.compile(r'\{[\w-]+\|([^{}]*)\}')
+# 最里层的一个标记：(token, 文字)。
+INNERMOST = re.compile(r'\{([\w-]+)\|([^{}]*)\}')
 
 
 def uncolor(md):
@@ -116,10 +122,41 @@ def uncolor(md):
     着色标记在那里没有用处，只会让人以为要照着写。
     """
     while True:
-        out = COLOR_ONE.sub(r'\1', md)
+        out = INNERMOST.sub(r'\2', md)
         if out == md:
             return out
         md = out
+
+
+def strip_marks(text):
+    """剥掉着色标记与图标，只留文字。行标题当名字用时走它。"""
+    return IMG.sub('', uncolor(text)).strip()
+
+
+def top_split(text, sep):
+    """按 sep 切，但只切在着色标记之外。标记里面的换行属于那一段文字。
+
+    一次 finditer 只停在开标记、`}` 与 sep 上：逐字符试开标记是一页几十万次正则调用。"""
+    if '{' not in text:
+        return text.split(sep)
+    scan = _SPLIT.get(sep)
+    if scan is None:
+        scan = _SPLIT[sep] = re.compile(r'(%s)|(\})|%s' % (OPEN.pattern, re.escape(sep)))
+    out, depth, start = [], 0, 0
+    for m in scan.finditer(text):
+        if m.group(1):
+            depth += 1
+        elif m.group(3):
+            if depth:
+                depth -= 1
+        elif depth == 0:
+            out.append(text[start:m.start()])
+            start = m.end()
+    out.append(text[start:])
+    return out
+
+
+_SPLIT = {}
 
 
 def plain(s, marks='*`}\\'):
@@ -255,7 +292,6 @@ REC_ROW = re.compile(r'^(%s(?: %s)*)  (.+)$' % (KEY, KEY))
 # 源稿方言的切格，Python 这一侧的唯一定义。JS 那一侧是 admin/dialect.js，
 # 两份在 4500+ 行真表格上逐行相同由 check_quality.py 的 CellSplitting 钉住。
 # 两种语言没法共用源码，所以这条缝是这套方言的下限：两份，不是六份。
-CELL_OPEN = re.compile(r'\{[\w-]+\|')
 CELL_BREAK = '\\\\'
 
 
@@ -274,7 +310,7 @@ def cells(line):
         return None
     out, depth, frm, i = [], 0, 1, 1
     while i <= len(line):
-        m = CELL_OPEN.match(line, i)
+        m = OPEN.match(line, i)
         if m:
             depth += 1
             i = m.end()
@@ -360,7 +396,7 @@ STRIKE = re.compile(r'~~(.+?)~~')
 BOLD = re.compile(r'\*\*(.+?)\*\*')
 EM = re.compile(r'(?<!\*)\*([^*]+)\*(?!\*)')
 # 着色扫描只停在开标记与 `}` 上
-COLOR_TOKEN = re.compile(COLOR_OPEN.pattern + r'|\}')
+COLOR_TOKEN = re.compile(OPEN.pattern + r'|\}')
 
 
 def inline(md, rich=False):
@@ -455,8 +491,6 @@ class Icons:
                 % ('class="%s" ' % cls if cls else '', rel, w, h, attr))
 
 
-OPEN_MARK = re.compile(r'\{([\w-]+)\|')
-
 
 class Markers:
     """一份文本里的花括号嵌套，建一次、查多次。
@@ -492,7 +526,7 @@ class Markers:
         for i, ch in enumerate(text):
             if ch == '{':
                 owner[i] = stack[-1] if stack else -1
-                m = OPEN_MARK.match(text, i)     # 按位置匹配，不切 text[i:] 复制后半段
+                m = OPEN.match(text, i)     # 按位置匹配，不切 text[i:] 复制后半段
                 frames.append([m.group(1), m.end(), n - 1] if m else [None, i, i])
                 stack.append(len(frames) - 1)
             elif ch == '}':
@@ -522,12 +556,12 @@ def whole_marker(md):
     判据是首个标记的闭括号落在末尾。中途闭合说明块里还有别的内容
     （`{a|白弹} → {b|绿弹}` 是两个标记，不是一个），那就不算整块。
     """
-    m = COLOR_OPEN.match(md)
+    m = OPEN.match(md)
     if not m:
         return None
     depth, i = 1, m.end()
     while i < len(md):
-        opener = COLOR_OPEN.match(md, i)
+        opener = OPEN.match(md, i)
         if opener:
             depth += 1
             i = opener.end()

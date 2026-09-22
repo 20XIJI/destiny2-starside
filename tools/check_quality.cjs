@@ -723,6 +723,16 @@ test('unbalanced tint braces are refused in both directions', async () => {
   }
 })
 
+test('a bare brace does not hide a pipe from the splitter', async () => {
+  // 只有 {token| 开一层。裸的 { 不开层，它后面那个竖线仍在深度 0 上：写进去那一行
+  // 多出一格，convert-doc.py 中止整次构建。裸花括号本身构建也不认，一并拒。
+  for (const after of ['见 { 注 | 旁 }', '{注}']) {
+    const { result, queued } = await change(after)
+    assert.equal(result.status, 400, after)
+    assert.deepEqual(queued, [], after)
+  }
+})
+
 test('replacing a whole row keeps the pipes that make it a row', async () => {
   const { result, queued } = await change('| 乙 | 新文 |', '| 甲 | 旧文 |', 6, -1)
   assert.equal(result.ok, 1)

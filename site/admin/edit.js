@@ -103,13 +103,12 @@
     })
   }
 
-  /* 两条编辑路都要先把编辑台那一份拉进来：资料页的闸门与着色走 lint()/paint()，
+  /* 两条编辑路都要先把编辑台那一份拉进来：资料页的闸门走 lint()，
      配装页的填表页怎么载、怎么读、错误码怎么翻走 slotOf()/formSrc()/readForm()/
      mountForm()/say()。
 
-     **dialect 先落地。**admin.js 的 cells() 与 titleEnd() 在函数体里现读
-     window.starsideDialect，不在模块顶层捕获，所以先后不影响求值，影响的是调用：
-     资料页那条路进去就切格。串着载是最省事的保证，代价是 4.6 KB。
+     **dialect 先落地。**admin.js 在函数体里现读 window.starsideDialect，不在模块
+     顶层捕获，所以先后不影响求值，影响的是调用：资料页那条路进去就切格、着色。串着载是最省事的保证，代价是 4.6 KB。
      关掉再开时不重载：脚本已经在页面上了，再插一遍只是白执行一次。
      **词表不在这条链上**：lint() 同样现读 window.starsideTerms，挪到进去之后空闲补。 */
   function needAdmin () {
@@ -119,7 +118,7 @@
 
   // **词表不进「开编辑态」这条关键路径。**它 104 KB，只有闸门提示与调色板用得上；
   // 进编辑态之后空闲预取，点开某一块时若还没到就等它一次，到了再把调色板与提示
-  // 补上。预览不等它——paint() 只认花括号，不查词表——所以改完当场就看得见渲染
+  // 补上。预览不等它——dialect 的 paint() 只认花括号，不查词表——所以改完当场就看得见渲染
   // 的样子；提示晚到不影响判断，它本来就是提示不拦截，真闸门在本机那套 Python。
   var EMPTY = { terms: [], tokens: {}, classes: [], pageClasses: {}, guard: [], items: [], keep: [], g6: [] }
   function terms () { return window.starsideTerms || EMPTY }
@@ -401,10 +400,10 @@
 
   // 把一段源稿渲染成页面上那个样子。**这是近似**：真正的渲染在
   // convert-doc.py 的 inline(rich=True) 里，浏览器里搬不动全套，只补格子里真会
-  // 出现的那四样——格内换行 \\、图标、链接、粗体。着色仍走 admin.js 的 paint()，
-  // 与 markup.inline() 同一条栈式扫描。
+  // 出现的那四样——格内换行 \\、图标、链接、粗体。着色走 dialect.js 的 paint()，
+  // 与 markup.inline() 同一条规则。
   function show (t) {
-    return window.starsideAdmin.paint(t)
+    return window.starsideDialect.paint(t)
       .replace(/\\\\/g, '<br>')
       .replace(/!\[\]\(([^)]+)\)/g, '<img src="$1" alt="">')
       .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')

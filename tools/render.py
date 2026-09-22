@@ -148,8 +148,8 @@ class Page:
         if not text:
             return ''
         out = []
-        for para in top_split(text.replace(PARA, '\n\n'), '\n\n'):
-            lines = [x.strip() for x in top_split(para.replace(BR, '\n'), '\n') if x.strip()]
+        for para in markup.top_split(text.replace(PARA, '\n\n'), '\n\n'):
+            lines = [x.strip() for x in markup.top_split(para.replace(BR, '\n'), '\n') if x.strip()]
             if not lines:
                 continue
             if all(x.startswith('- ') for x in lines):
@@ -196,32 +196,6 @@ def elem_token(key):
 
 
 # ── 格子 ────────────────────────────────────────────────────────────
-_SPLIT = {}
-
-
-def top_split(text, sep):
-    """按 sep 切，但只切在着色标记之外。标记里面的换行属于那一段文字。
-
-    一次 finditer 只停在开标记、`}` 与 sep 上：逐字符试开标记是一页几十万次正则调用。"""
-    if '{' not in text:
-        return text.split(sep)
-    scan = _SPLIT.get(sep)
-    if scan is None:
-        scan = _SPLIT[sep] = re.compile(r'(%s)|(\})|%s' % (markup.OPEN_MARK.pattern, re.escape(sep)))
-    out, depth, start = [], 0, 0
-    for m in scan.finditer(text):
-        if m.group(1):
-            depth += 1
-        elif m.group(3):
-            if depth:
-                depth -= 1
-        elif depth == 0:
-            out.append(text[start:m.start()])
-            start = m.end()
-    out.append(text[start:])
-    return out
-
-
 def cell(cls, inner, attr=''):
     return '<div class="r-cell %s"%s>%s</div>' % (cls, attr, inner)
 

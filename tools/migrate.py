@@ -281,15 +281,9 @@ SEPARATOR = re.compile(r'^\|[\s|:-]+\|?\s*$')
 
 
 def row_title(cell):
-    text = TIER_TAIL.sub('', strip_markup(cell).replace(markup.CELL_BREAK, '').strip())
+    text = TIER_TAIL.sub('', markup.strip_marks(cell).replace(markup.CELL_BREAK, '').strip())
     hit = BOLD.fullmatch(text)
     return (hit.group(1) if hit else text.replace('**', '')).strip()
-
-
-def strip_markup(text):
-    for _ in range(4):
-        text = re.sub(r'\{[\w-]+\|([^{}]*)\}', r'\1', text)
-    return re.sub(r'!\[\]\([^)]*\)', '', text).strip()
 
 
 def row_titles(path):
