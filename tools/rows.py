@@ -32,6 +32,7 @@ convert-doc 一次报出并中止。一格一格地中止要重跑二十一遍�
 """
 
 import collections
+import functools
 import json
 import os
 import re
@@ -232,6 +233,8 @@ def icon_file(key):
     return None
 
 
+# 一页几万次调用、只有几千种组合；relpath 每次都要 getcwd 两回。
+@functools.lru_cache(maxsize=None)
 def rel(path, where):
     return os.path.relpath(path, where).replace(os.sep, '/')
 
@@ -470,12 +473,17 @@ def option_plugs(rec):
     for e in (rec.get('sockets') or {}).get('socketEntries') or ():
         if socket_kind(e) in OPTION_SKIP:
             continue
-        got = [h for h in socket_pool(e)
-               if ((facts().at(h) or {}).get('inventory') or {}).get('tierType') == 6
-               and name_of(h) and not EMPTY_SLOT.match(name_of(h))]
+        got = [h for h in socket_pool(e) if exotic_plug(h)]
         if got:
             out.append(got)
     return out
+
+
+# 两页三千多行、每行把每个插槽的整个插件池过一遍，同一枚插件要判几百次。
+@functools.lru_cache(maxsize=None)
+def exotic_plug(h):
+    return (((facts().at(h) or {}).get('inventory') or {}).get('tierType') == 6
+            and bool(name_of(h)) and not EMPTY_SLOT.match(name_of(h)))
 
 
 def live_catalyst(c):

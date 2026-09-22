@@ -68,18 +68,28 @@ def strip_comments(css: str) -> str:
     return re.sub(r'/\*.*?\*/', '', css, flags=re.S)
 
 
-# ── T1 ───────────────────────────────────────────────────────────────────────
+class Page(HTMLParser):
+    """一页产出解析一趟，T1 与 T3 各取所需。
 
-class Texts(HTMLParser):
-    """收「每个 class 底下出现过哪些文字」。只取直接文字，不含后代——
-    字距施加在这个元素上，判据就该是它自己那一行字。"""
+    T1：「每个 class 底下出现过哪些文字」。只取直接文字，不含后代——字距施加在
+    这个元素上，判据就该是它自己那一行字。
+    T3：PAIRED 那几种标签的开闭配对，以及开标签被复制一份时冒出来的坏属性。"""
 
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
         self.by_class: dict[str, set[str]] = {}
         self.stack: list[tuple[str, list[str]]] = []
+        self.open: list[tuple[str, tuple[int, int]]] = []
+        self.bad: list[str] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        for name, _ in attrs:
+            # `<a href="x"<a href="x">` 会被解析成一个名叫 `<a` 的属性
+            if '<' in name or '>' in name:
+                self.bad.append('第 %d 行 <%s> 上有个名叫 %r 的属性，'
+                                '多半是开标签被复制了一份' % (self.getpos()[0], tag, name))
+        if tag in PAIRED:
+            self.open.append((tag, self.getpos()))
         if tag in ('br', 'img', 'meta', 'link', 'input', 'hr'):
             return
         cls = dict(attrs).get('class') or ''
@@ -91,7 +101,15 @@ class Texts(HTMLParser):
         for i in range(len(self.stack) - 1, -1, -1):
             if self.stack[i][0] == tag:
                 del self.stack[i:]
-                return
+                break
+        if tag not in PAIRED:
+            return
+        if self.open and self.open[-1][0] == tag:
+            self.open.pop()
+        else:
+            near = self.open[-1] if self.open else None
+            self.bad.append('第 %d 行 </%s> 配不上，最近的未闭合是 %s'
+                            % (self.getpos()[0], tag, near))
 
     def handle_data(self, data: str) -> None:
         text = data.strip()
@@ -99,6 +117,19 @@ class Texts(HTMLParser):
             return
         for cls in self.stack[-1][1]:
             self.by_class.setdefault(cls, set()).add(text)
+
+
+def parse_pages() -> dict[str, Page]:
+    out = {}
+    for rel in pages():
+        p = Page()
+        p.feed(read(rel))
+        p.close()
+        out[rel] = p
+    return out
+
+
+# ── T1 ───────────────────────────────────────────────────────────────────────
 
 
 def wide_tracking(css: str) -> list[tuple[str, str, float]]:
@@ -121,12 +152,9 @@ def wide_tracking(css: str) -> list[tuple[str, str, float]]:
     return out
 
 
-def check_tracking(bad: list[str]) -> int:
+def check_tracking(bad: list[str], parsed: dict[str, Page]) -> int:
     seen: dict[str, set[str]] = {}
-    for rel in pages():
-        p = Texts()
-        p.feed(read(rel))
-        p.close()
+    for p in parsed.values():
         for cls, texts in p.by_class.items():
             seen.setdefault(cls, set()).update(texts)
     n = 0
@@ -202,38 +230,9 @@ def check_background(bad: list[str], colors: set[str]) -> int:
 
 # ── T3 ───────────────────────────────────────────────────────────────────────
 
-class Shape(HTMLParser):
-    def __init__(self) -> None:
-        super().__init__(convert_charrefs=True)
-        self.open: list[tuple[str, tuple[int, int]]] = []
-        self.bad: list[str] = []
-
-    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        for name, _ in attrs:
-            # `<a href="x"<a href="x">` 会被解析成一个名叫 `<a` 的属性
-            if '<' in name or '>' in name:
-                self.bad.append('第 %d 行 <%s> 上有个名叫 %r 的属性，'
-                                '多半是开标签被复制了一份' % (self.getpos()[0], tag, name))
-        if tag in PAIRED:
-            self.open.append((tag, self.getpos()))
-
-    def handle_endtag(self, tag: str) -> None:
-        if tag not in PAIRED:
-            return
-        if self.open and self.open[-1][0] == tag:
-            self.open.pop()
-        else:
-            near = self.open[-1] if self.open else None
-            self.bad.append('第 %d 行 </%s> 配不上，最近的未闭合是 %s'
-                            % (self.getpos()[0], tag, near))
-
-
-def check_shape(bad: list[str]) -> int:
+def check_shape(bad: list[str], parsed: dict[str, Page]) -> int:
     n = 0
-    for rel in pages():
-        p = Shape()
-        p.feed(read(rel))
-        p.close()
+    for rel, p in parsed.items():
         for line in p.bad + ['第 %d 行 <%s> 没有闭合' % (pos[0], tag)
                              for tag, pos in p.open]:
             n += 1
@@ -243,9 +242,10 @@ def check_shape(bad: list[str]) -> int:
 
 def main() -> int:
     bad: list[str] = []
-    n1 = check_tracking(bad)
+    parsed = parse_pages()
+    n1 = check_tracking(bad, parsed)
     n2 = check_background(bad, root_colors(read('assets/site.css')))
-    n3 = check_shape(bad)
+    n3 = check_shape(bad, parsed)
     if bad:
         print('排版与结构不一致：', file=sys.stderr)
         for line in bad:

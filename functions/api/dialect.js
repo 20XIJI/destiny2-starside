@@ -24,7 +24,7 @@
 
   // **只有 `{token|` 才开一层**，不是见 `{` 就开。裸的花括号在正文里是普通字符，
   // 按它开层会把后面的竖线整段并掉。
-  var OPEN = /\{[\w-]+\|/g
+  var OPEN = /\{[\w-]+\|/y
 
   // 格内换行标记。行标题那一段只算到它为止，见 titleEnd()。
   var BREAK = '\\\\'
@@ -44,9 +44,10 @@
     var from = 1
     var i = 1
     while (i <= line.length) {
-      OPEN.lastIndex = i
-      var m = OPEN.exec(line)
-      if (m && m.index === i) { depth++; i = OPEN.lastIndex; continue }
+      if (line[i] === '{') {
+        OPEN.lastIndex = i
+        if (OPEN.exec(line)) { depth++; i = OPEN.lastIndex; continue }
+      }
       var ch = i < line.length ? line[i] : null
       // **深度钳在 0**：孤立的 `}` 不许把深度压成负数，否则后面的竖线全被并掉。
       if (ch === '}' && depth) depth--

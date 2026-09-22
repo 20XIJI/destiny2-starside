@@ -167,6 +167,7 @@ class Build:
         self.plug_site = {}       # 插件 hash → 站内实测（HTML）
         self.stats = {}           # 属性 hash → [名字, 纯数值, 越低越好]
         self.groups = {}          # 属性组 hash → 曲线表
+        self.mw_opts = {}         # (大师杰作插件, 剑, 弓, 属性) → masterwork() 的结果
         self.mark_miss = []
         self.orphans = []
 
@@ -307,6 +308,11 @@ class Build:
         rec = self.f.items[h]
         cats = set(rec.get('itemCategoryHashes') or ())
         mw, _ = self.gear(h)
+        # 两千多把枪只有六十几种组合；结果只读，同组合共用一份。插件在头一次见到时
+        # 进字典，字典顺序不受影响。
+        key = (tuple(mw), SWORD_CAT in cats, BOW_CAT in cats, frozenset(have))
+        if key in self.mw_opts:
+            return self.mw_opts[key]
         opts = collections.OrderedDict()
         for p in mw:
             name = self.f.name(p)
@@ -335,7 +341,8 @@ class Build:
             if not o[2]:
                 o[2], o[3] = o[3], 0
             o[4].sort()
-        return list(opts.values())
+        self.mw_opts[key] = list(opts.values())
+        return self.mw_opts[key]
 
     def marks(self, h, authors, cols, opts):
         """每一格的作者推荐位（1 = Aegis，2 = LGpig），外加 Aegis 推荐的大师杰作。"""

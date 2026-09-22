@@ -251,6 +251,7 @@ class Facts:
                        'traits': self.traits, 'stats': self.stats,
                        'equipable-item-sets': self.sets, 'minted': self.minted}
         self._pools = {}
+        self._weapon_pools = {}
         self.eff_by_name = {}
         for table, prefix in ((self.traits, 'trait:'), (self.perks, 'perk:'),
                               (self.stats, 'stat:')):
@@ -823,8 +824,14 @@ def weapon_pool(facts, keys):
 
     带 `gear` 的栏跳过。那是可选模组与大师工作——随时能换的东西，不是掉落时开出来
     的词条。把「备用弹匣」「大师杰作：射程」并进这个池，资料页按名字戳主键时会撞上。
+
+    一行里每个名字都要查一次池（装备库六千多次、只有七百多种），结果按 keys 记在
+    facts 上，调用方只读不改。
     """
-    out = {}
+    memo = tuple(str(k) for k in keys)
+    if memo in facts._weapon_pools:
+        return facts._weapon_pools[memo]
+    out = facts._weapon_pools[memo] = {}
     for key in keys:
         for col in facts.pool(key):
             if col.get('gear'):

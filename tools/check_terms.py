@@ -296,7 +296,7 @@ def at_line(text, at):
 
 def protected_spans(text):
     """G1 与自动正名共用：专名全文及链接目标不可改。"""
-    return ([(m.start(), m.end()) for k in KEEP
+    return ([(m.start(), m.end()) for k in KEEP if k in text
              for m in re.finditer(re.escape(k), text)]
             + [(m.start(1), m.end(1))
                for m in re.finditer(r'\]\(([^)]*)\)', text)])

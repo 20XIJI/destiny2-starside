@@ -466,6 +466,11 @@
     }
     return (hayCache[key] = fold(parts.join(' ')));
   }
+  /* 词条名与说明折叠后的整串，与 hay 共用一份缓存、同时作废。`perk:` 每敲一个字就对
+     全部武器求值一次，不缓存时每次重新拼接、折叠，耗时 10 ms 以上。 */
+  function cached(key, make) {
+    return hayCache[key] != null ? hayCache[key] : (hayCache[key] = make());
+  }
   function perkNames(i, role, nth) {
     var out = [], cols = poolRow(i)[2], seen = 0;
     for (var c = 0; c < cols.length; c++) {
@@ -476,13 +481,15 @@
     }
     return out;
   }
-  function perkTexts(i) {
-    var out = [], cols = poolRow(i)[2];
-    for (var c = 0; c < cols.length; c++) {
-      var cells = cellsOf(cols[c]);
-      for (var k = 0; k < cells.length; k++) { out.push(T.pd[shownPlug(cells[k])] || ''); }
-    }
-    return out.join(' ');
+  function foldedTexts(i) {
+    return cached('pt' + i, function () {
+      var out = [], cols = poolRow(i)[2];
+      for (var c = 0; c < cols.length; c++) {
+        var cells = cellsOf(cols[c]);
+        for (var k = 0; k < cells.length; k++) { out.push(T.pd[shownPlug(cells[k])] || ''); }
+      }
+      return fold(out.join(' '));
+    });
   }
   var statCache = {};
   function defaultStat(i, sIdx) {
@@ -540,16 +547,16 @@
       case 'season': return cmp(v, r[W_SSN]);
       case 'source': return fold(srcOf(r, W_SRC)).indexOf(f) !== -1;
       case 'breaker': return r[W_BR] > 0 && fold(V.br[r[W_BR]][0]).indexOf(f) !== -1;
-      case 'perktext': return T ? fold(perkTexts(i)).indexOf(f) !== -1 : false;
+      case 'perktext': return T ? foldedTexts(i).indexOf(f) !== -1 : false;
     }
     if (!P) { return false; }
     switch (k) {
       case 'perk':
-        if (fold(perkNames(i).join(' ')).indexOf(f) !== -1) { return true; }
-        return T ? fold(perkTexts(i)).indexOf(f) !== -1 : false;
+        if (cached('pn' + i, function () { return fold(perkNames(i).join(' ')); }).indexOf(f) !== -1) { return true; }
+        return T ? foldedTexts(i).indexOf(f) !== -1 : false;
       case 'perk1': return fold(perkNames(i, R_TRAIT, 1).join(' ')).indexOf(f) !== -1;
       case 'perk2': return fold(perkNames(i, R_TRAIT, 2).join(' ')).indexOf(f) !== -1;
-      case 'perkname': return perkNames(i).some(function (n) { return fold(n) === f; });
+      case 'perkname': return cached('pa' + i, function () { return perkNames(i).map(fold); }).indexOf(f) !== -1;
       case 'origintrait': return fold(perkNames(i, R_ORIGIN).join(' ')).indexOf(f) !== -1;
       case 'stat': {
         var m = /^([^:]+):(.+)$/.exec(v);
@@ -798,11 +805,12 @@
   tip.hidden = true;
   document.body.appendChild(tip);
 
-  /* sticky 的结果栏要知道顶栏多高。顶栏高度随药丸行变，每次重画后量一次。 */
+  /* sticky 的结果栏要知道顶栏多高。顶栏高度随药丸行与窗口宽度变；ResizeObserver 在
+     布局之后、绘制之前回调，量高度不额外触发一次重排。 */
   var head = document.querySelector('.site-head');
-  function measureStick() {
+  new ResizeObserver(function () {
     document.documentElement.style.setProperty('--stick', head.getBoundingClientRect().height + 'px');
-  }
+  }).observe(head);
 
   /* ── 渲染：顶栏 ────────────────────────────────────────────────────── */
   var tokens = [], tree = null, results = [], pending = false;
@@ -855,7 +863,6 @@
         (t.t === 'kw' ? '<span class="k">' + esc(t.k) + ':</span>' + esc(t.v) : esc(t.v)) +
         '<button type="button" data-act="unpill" data-a="' + t.a + '" data-b="' + t.b + '" aria-label="去掉这一条">×</button></span>';
     }).join('');
-    measureStick();
   }
 
   /* ── 渲染：预选行、示例与细分 ──────────────────────────────────────── */
@@ -1235,7 +1242,7 @@
     parts.push(usedByHtml(r[W_H]));
     parts.push('</div>');
     parts.push('<aside class="one-side"><section><div class="facts">' + factsHtml(i) + '</div></section>' +
-      '<section><h3 class="sub-label">属性</h3>' + statsPanel(res, ghost) + '</section>' +
+      '<section><h3 class="sub-label">属性</h3>' + statsPanel(res, ghost) + statsLegend() + '</section>' +
       frameStatsHtml(i) + versionsHtml('wpn', i) + '</aside>');
     return '<article class="wpn-one">' + parts.join('') + '</article>';
   }
@@ -1476,14 +1483,31 @@
       o.push('<dt data-act="statrow" data-s="' + x.s + '">' + esc(x.name) + '</dt><dd class="rc">' + (x.name === '后坐方向' ? recoilSvg(x.value) : '') +
         '</dd><dd class="v">' + x.value + '</dd><dd>' + d + '</dd>');
     });
-    o.push('</dl><div class="legend">' + [
+    o.push('</dl>');
+    return o.join('');
+  }
+  function statsLegend() {
+    return '<div class="legend">' + [
       ['background:var(--seg-base)', '基础'], ['background:var(--seg-part)', '枪管与弹匣'], ['background:var(--seg-perk)', 'Perk'],
       ['background:var(--c-enh)', '大师杰作'],
       ['background-image:repeating-linear-gradient(90deg,var(--c-enh) 0 2px,transparent 2px 3px)', 'T 级'],
       ['box-shadow:inset 0 0 0 1px var(--seg-perk)', '条件生效'],
       ['background-image:repeating-linear-gradient(135deg,var(--bone-dim) 0 1px,transparent 1px 4px)', '扣除']
-    ].map(function (x) { return '<span><i style="' + x[0] + '"></i>' + x[1] + '</span>'; }).join('') + '</div>');
-    return o.join('');
+    ].map(function (x) { return '<span><i style="' + x[0] + '"></i>' + x[1] + '</span>'; }).join('') + '</div>';
+  }
+  /* 悬停词条只改两处：那枚按钮的 is-hover 与属性表的预览。详情有 400–750 个元素，
+     整张重画时指针扫过词条栏每换一枚就重排一次。 */
+  function renderHover() {
+    var box = body.querySelector('.wpn-detail'), dl = box && box.querySelector('dl.stats');
+    if (!dl) { renderDetail(); return; }
+    var i = S.sel, roll = rollOf(i), h = S.hoverPlug;
+    var on = box.querySelectorAll('.plug.is-hover');
+    for (var k = 0; k < on.length; k++) { on[k].classList.remove('is-hover'); }
+    if (h) {
+      var b = box.querySelector('[data-act="perk"][data-col="' + h.col + '"][data-plug="' + h.plug + '"]');
+      if (b) { b.classList.add('is-hover'); }
+    }
+    dl.outerHTML = statsPanel(compute(i, roll), h ? compute(i, roll, { col: h.col, plug: h.plug }) : null);
   }
 
   /* 护甲套装：一套两条效果（2 件与 4 件），实测与作者评语写在效果身上。
@@ -1554,14 +1578,13 @@
   /* 浮层现在属于哪一种 data-act，悬停着的是哪一枚词条（栏:插件）。 */
   var hoverAct = '', hoverKey = '';
   function hideTip() { tip.hidden = true; hoverAct = ''; hoverKey = ''; }
-  /* 关掉浮层与预览。重画了详情就回 true：指针下那个节点已经换掉，手里的 el 不在文档里。 */
+  /* 关掉浮层与预览。 */
   function leaveHover() {
     hideTip();
     S.hoverRow = null;
-    if (!S.hoverPlug) { return false; }
+    if (!S.hoverPlug) { return; }
     S.hoverPlug = null;
-    renderDetail();
-    return true;
+    renderHover();
   }
   function perkTip(i, col, p) {
     var cols = poolRow(i)[2], cell = null, cells = cellsOf(cols[col]);
@@ -1788,7 +1811,6 @@
     renderPresets();
     renderSub();
     if (S.sel != null) { renderSplit(); } else { renderBrowse(); }
-    measureStick();
   }
   var typing = 0, waiting = false;
   function setQuery(q, push) {
@@ -1918,7 +1940,7 @@
 
   /* 悬停：词条出说明并在属性条上预览；属性行出分解；结果栏的行在详情区预览。
 
-     **关浮层在 mouseover 里判，不靠 mouseout。**悬停词条要重画详情，指针下那枚按钮
+     **关浮层在 mouseover 里判，不靠 mouseout。**悬停词条要重画属性表，指针下那一行
      被换成新节点；指针再移出去时，浏览器不给已经移除的旧节点发 mouseout，浮层就一直
      显示着。mouseover 总是发给指针下现在那个节点，落到别的种类上（或没有 data-act 的
      地方）就关掉。同一枚词条只重画一次：已选中的那一枚预览为空，按 hoverPlug 判会在
@@ -1926,8 +1948,11 @@
   document.addEventListener('mouseover', function (e) {
     var el = e.target.closest('[data-act]');
     var act = el ? el.getAttribute('data-act') : '';
-    /* 重画过就等下一个 mouseover：指针一动，浏览器就发给新换上的那个节点。 */
-    if (hoverAct && act !== hoverAct && leaveHover()) { return; }
+    /* 指针下的节点已被重画替换时，等下一个 mouseover：指针一动，浏览器就发给新换上的那个节点。 */
+    if (hoverAct && act !== hoverAct) {
+      leaveHover();
+      if (el && !el.isConnected) { return; }
+    }
     if (!el || S.sel == null || S.scope !== 'wpn' || !P) { return; }
     var i = S.sel;
     if (act === 'perk') {
@@ -1935,9 +1960,8 @@
       if (hoverKey !== key) {
         var roll = rollOf(i);
         S.hoverPlug = roll.sel[col] === plug ? null : { col: col, plug: plug };
-        renderDetail();
-        var again = body.querySelector('[data-act="perk"][data-col="' + col + '"][data-plug="' + plug + '"]');
-        if (again) { showTip(perkTip(i, col, plug), again); }
+        renderHover();
+        showTip(perkTip(i, col, plug), el);
         hoverAct = act;
         hoverKey = key;
       }
@@ -1992,7 +2016,6 @@
     }
     render();
   });
-  window.addEventListener('resize', measureStick);
 
   /* ── 开屏 ──────────────────────────────────────────────────────────── */
   readUrl();

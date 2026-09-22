@@ -2070,8 +2070,7 @@ def check(out, slug):
     # 判据走 items.hits_in，与 --builds 那一趟自动着色同一条：裸子串判断认不得
     # GUARD，「治愈裂痕」里的「治愈」自动着色照 GUARD 跳过、这里照子串报错，
     # 撞上的源稿怎么改都过不去。
-    names = sorted((w for w in items.MECH if w not in items.LOOSE),
-                   key=len, reverse=True)
+    names = items.Names(w for w in items.MECH if w not in items.LOOSE)
     left = sorted({w for _, _, w in items.hits_in(naked, items.MECH, names,
                                                   keys=False)})
     if left:

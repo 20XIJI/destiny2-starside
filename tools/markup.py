@@ -356,6 +356,13 @@ def blocks_at(chunk, base=0):
     return out
 
 
+STRIKE = re.compile(r'~~(.+?)~~')
+BOLD = re.compile(r'\*\*(.+?)\*\*')
+EM = re.compile(r'(?<!\*)\*([^*]+)\*(?!\*)')
+# 着色扫描只停在开标记与 `}` 上
+COLOR_TOKEN = re.compile(COLOR_OPEN.pattern + r'|\}')
+
+
 def inline(md, rich=False):
     """行内标记 → HTML。着色是栈式扫描，正则做不干净嵌套。
 
@@ -366,27 +373,29 @@ def inline(md, rich=False):
             ext = ' target="_blank" rel="noopener"' if m.group(2).startswith('http') else ''
             return '<a href="%s"%s>%s</a>' % (m.group(2), ext, m.group(1))
 
-        md = LINK.sub(link, md)
-        md = re.sub(r'~~(.+?)~~', r'<s>\1</s>', md)
-        md = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', md)
-        md = re.sub(r'(?<!\*)\*([^*]+)\*(?!\*)', r'<em>\1</em>', md)
+        if '](' in md:
+            md = LINK.sub(link, md)
+        if '~~' in md:
+            md = STRIKE.sub(r'<s>\1</s>', md)
+        if '*' in md:
+            md = BOLD.sub(r'<strong>\1</strong>', md)
+            md = EM.sub(r'<em>\1</em>', md)
 
-    out, pos, depth, i = [], 0, 0, 0
-    while i < len(md):
-        m = COLOR_OPEN.match(md, i)
-        if m:
-            out.append(md[pos:i])
+    if '{' not in md:
+        return md
+    out, pos, depth = [], 0, 0
+    for m in COLOR_TOKEN.finditer(md):
+        if m.group(1):
+            out.append(md[pos:m.start()])
             out.append('<span class="%s">' % m.group(1))
             depth += 1
-            i = pos = m.end()
-            continue
-        if md[i] == '}' and depth:
-            out.append(md[pos:i])
+        elif depth:
+            out.append(md[pos:m.start()])
             out.append('</span>')
             depth -= 1
-            i = pos = i + 1
+        else:
             continue
-        i += 1
+        pos = m.end()
     out.append(md[pos:])
     if depth:
         die('着色标记未闭合：%r' % md[:120])
@@ -405,7 +414,12 @@ class Icons:
     就是内容哈希，「改内容必然换名」由 Bungie 保证。
 
     rel 既是相对 outdir 的路径，也是产出里的 src，两者同一个字符串。
+
+    文件读一次记在 `_FILES`：一轮构建四十页共用两三千张图，每页各读一遍是五千次
+    打开与五万次 lstat（realpath 逐级解析）。
     """
+
+    _FILES = {}   # 绝对路径 → (应有的文件名，官方图为 None；宽高)
 
     def __init__(self, outdir, eager):
         self.dir = outdir
@@ -415,20 +429,24 @@ class Icons:
 
     def html(self, rel, cls=''):
         if rel not in self.size:
-            path = os.path.join(self.dir, rel)
-            if not os.path.exists(path):
-                die('源稿引用的图标不存在：%s' % rel)
-            with open(path, 'rb') as f:
-                data = f.read()
-            want = hashlib.md5(data).hexdigest()[:10] + os.path.splitext(rel)[1]
-            official = os.path.dirname(os.path.realpath(path)) == ASSET_ICONS
-            if not official and os.path.basename(rel) != want:
+            path = os.path.normpath(os.path.join(self.dir, rel))
+            if path not in Icons._FILES:
+                if not os.path.exists(path):
+                    die('源稿引用的图标不存在：%s' % rel)
+                with open(path, 'rb') as f:
+                    data = f.read()
+                official = os.path.dirname(os.path.realpath(path)) == ASSET_ICONS
+                Icons._FILES[path] = (
+                    None if official else hashlib.md5(data).hexdigest()[:10] + os.path.splitext(rel)[1],
+                    img_size(data))
+            want, size = Icons._FILES[path]
+            if want is not None and os.path.basename(rel) != want:
                 die('%s 的内容与文件名对不上，应叫 %s。\n'
                     '  图标按内容哈希命名，改内容就要换名字——这是给图标目录设长缓存\n'
                     '  的前提，原地覆盖会让读者看到过期的图。换图按 README「换图」\n'
                     '  那三步走：新图按新哈希存进 icons/，改源稿的引用，再删旧文件。'
                     % (rel, want))
-            self.size[rel] = img_size(data)
+            self.size[rel] = size
         w, h = self.size[rel]
         # 引用顺序即文档顺序，首屏那几张走高优先级
         attr = loading_attr(self.refs, self.eager)

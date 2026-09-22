@@ -333,14 +333,19 @@ def check_landing(idx):
         with open(os.path.join(shell.SITE, *page.split('/'), 'index.html'),
                   encoding='utf-8') as f:
             html = f.read()
-        texts[page] = [text_of(m, collapse=True) for pat in ITEM for m in pat.findall(html)]
-    bad, n = [], 0
+        # 条目之间用 \x00 隔开：过滤词里没有它，跨两条的命中不会凑出来。
+        texts[page] = '\x00'.join(text_of(m, collapse=True)
+                                   for pat in ITEM for m in pat.findall(html))
+    bad, n, lands = [], 0, {}
     for hits in idx.values():
         for e in hits:
             if not e['q'] or e['page'] not in texts:
                 continue
             n += 1
-            if not any(e['q'] in t for t in texts[e['page']]):
+            key = (e['page'], e['q'])
+            if key not in lands:
+                lands[key] = e['q'] in texts[e['page']]
+            if not lands[key]:
                 bad.append('%s → %s（过滤词 %s）' % (e['name'], e['page'], e['q']))
     if bad:
         die('这些条目的链接落地会滤成空页：\n  %s' % '\n  '.join(bad[:20]))

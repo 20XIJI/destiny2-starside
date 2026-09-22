@@ -461,11 +461,12 @@
   function paintCell (t) {
     return paint(String(t || '').replace(IMG, '')).replace(/\\\\/g, '<span class="br"></span>')
   }
-  // 源稿一格 → 纯文字。表头与行的身份用它：图、换行与着色标记都不算字。
+  // 源稿一格 → 纯文字。表头与行的身份用它：图、换行与着色标记都不算字。paint() 只产出
+  // <span> 与 &lt; &amp; 两种转义，剥掉标签、还原转义即得 textContent，不必交给 DOM 解析。
   function plain (t) {
-    var box = document.createElement('div')
-    box.innerHTML = paint(String(t || '').replace(IMG, '').replace(/\\\\/g, ' '))
-    return box.textContent.replace(/\s+/g, ' ').trim()
+    return paint(String(t || '').replace(IMG, '').replace(/\\\\/g, ' '))
+      .replace(/<[^>]*>/g, '').replace(/&lt;/g, '<').replace(/&amp;/g, '&')
+      .replace(/\s+/g, ' ').trim()
   }
 
   // 一处改动的原文与改后，改动的那一段在两边各自加亮：一格九十个字里改了四个，
@@ -510,9 +511,14 @@
       h('b', { text: w.id[w.id.length - 1] }),
       w.col ? h('span', { class: 'col', text: w.col }) : null)
   }
+  // 历史搜索每敲一个字对每条改动求一次，按改动记下。load() 换的是新对象，旧的随之作废。
+  var whereMemo = new WeakMap()
   function whereText (e) {
+    if (whereMemo.has(e)) return whereMemo.get(e)
     var w = whereOf(e)
-    return w.id.join(' › ') + (w.col ? ' · ' + w.col : '')
+    var text = w.id.join(' › ') + (w.col ? ' · ' + w.col : '')
+    whereMemo.set(e, text)
+    return text
   }
   // 表格里的一格把整行连表头摆出来，改的那一格就地写成原文与改后；别的改动走对照。
   function rowView (e) {

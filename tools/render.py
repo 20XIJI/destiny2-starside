@@ -55,6 +55,8 @@ class Page:
         self.section = ''
         self.titles = {}          # 主键 → 源稿写的行标题
         self.matrix_rows = set()  # 矩阵行首用掉的记录，不再单独占一行
+        self.lines = {}           # line() 的结果，带图的不记
+        self.panels = {}          # panel_of() 的结果，带图的不记
 
     # ── 取值 ────────────────────────────────────────────────────────
     def zh(self, key):
@@ -114,9 +116,18 @@ class Page:
 
     # ── 文本 ────────────────────────────────────────────────────────
     def line(self, md):
-        """一行源稿方言 → HTML。格内换行有时落在着色标记里面，所以渲染完再换。"""
+        """一行源稿方言 → HTML。格内换行有时落在着色标记里面，所以渲染完再换。
+
+        同一行在一页里平均出现六次，结果记下来。带图的不记：每画一次图都要登记一次
+        引用，首屏优先级按引用次数排。"""
         if not md:
             return ''
+        if md in self.lines:
+            return self.lines[md]
+        if '![' not in md:
+            out = markup.inline(md.strip(), rich=True).replace(BR, '<br>')
+            self.lines[md] = out
+            return out
         md = IMG.sub(lambda m: '\x00%s\x00' % m.group(1), md)
         out = markup.inline(md.strip(), rich=True)
         # 记录里写的图路径相对站点根（elements/solar/icons/x.webp）
@@ -185,23 +196,28 @@ def elem_token(key):
 
 
 # ── 格子 ────────────────────────────────────────────────────────────
+_SPLIT = {}
+
+
 def top_split(text, sep):
-    """按 sep 切，但只切在着色标记之外。标记里面的换行属于那一段文字。"""
-    out, depth, start, i = [], 0, 0, 0
-    while i < len(text):
-        open_at = markup.OPEN_MARK.match(text, i)
-        if open_at:
+    """按 sep 切，但只切在着色标记之外。标记里面的换行属于那一段文字。
+
+    一次 finditer 只停在开标记、`}` 与 sep 上：逐字符试开标记是一页几十万次正则调用。"""
+    if '{' not in text:
+        return text.split(sep)
+    scan = _SPLIT.get(sep)
+    if scan is None:
+        scan = _SPLIT[sep] = re.compile(r'(%s)|(\})|%s' % (markup.OPEN_MARK.pattern, re.escape(sep)))
+    out, depth, start = [], 0, 0
+    for m in scan.finditer(text):
+        if m.group(1):
             depth += 1
-            i = open_at.end()
-            continue
-        if text[i] == '}' and depth:
-            depth -= 1
-        elif depth == 0 and text.startswith(sep, i):
-            out.append(text[start:i])
-            i += len(sep)
-            start = i
-            continue
-        i += 1
+        elif m.group(3):
+            if depth:
+                depth -= 1
+        elif depth == 0:
+            out.append(text[start:m.start()])
+            start = m.end()
     out.append(text[start:])
     return out
 
@@ -438,11 +454,18 @@ def panel_of(p, key):
     """这一条在配装填表页悬停面板里显示什么：数值一行在上，正文在下。
 
     与页面上画的是同一份取法，所以两处不会说不同的话。
+
+    购物清单里同一枚词条挂在上百把枪下，结果按主键记下。带图的不记，理由同 line()。
     """
+    if key in p.panels:
+        return p.panels[key]
     z = p.zh(key)
     body = p.prose(z.get('realgame_details') or z.get('效果') or z.get('database_details', ''))
     val = markup.text_of(stats_of(p, key), collapse=True)
-    return ('<p class="v">%s</p>' % val if val else '') + body
+    out = ('<p class="v">%s</p>' % val if val else '') + body
+    if '<img' not in out:
+        p.panels[key] = out
+    return out
 
 
 def rec_plain(p, key, cols, narrow=''):

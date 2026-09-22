@@ -198,6 +198,25 @@ def rx(word):
 GUARD_RX = [re.compile(re.escape(g)) for g in GUARD]
 
 
+class Names(list):
+    """词表的名字，长词在前（先认长的），另带首字索引。
+
+    首字必然字面出现——空格只允许插在中英交界处，插不到词首。hits_in() 每行只试
+    首字在这一行里出现过的那些词：逐词判 `word[0] in line` 本身就是一趟 1400 次的
+    Python 循环，占正查的大半。
+    """
+
+    def __init__(self, words):
+        super().__init__(sorted(words, key=len, reverse=True))
+        self.first = {}
+        for k, word in enumerate(self):
+            self.first.setdefault(word[0], []).append(k)
+
+    def within(self, line):
+        """首字在 line 里出现过的词，顺序与整张表相同。"""
+        return [self[k] for k in sorted(k for c in set(line) for k in self.first.get(c, ()))]
+
+
 def norm(s):
     """比对前归一化：去中英之间的排版空格，去站内自加的消歧后缀。
 
@@ -297,6 +316,7 @@ def distill(src):
 PERK_DOCS = ('exotic-armor.md', 'exotic-weapon.md')
 
 
+@functools.cache
 def exotic_perks():
     """异域两页「异域 PERK」那一格上的名字 → (全部, 那一格只写着一个名字的)。
 
@@ -497,11 +517,7 @@ def hits_in(line, terms, names, keys=True):
             for i in range(m.start(), m.end()):
                 taken[i] = True
     out = []
-    for word in names:
-        # 首字必然字面出现——空格只允许插在中英交界处，插不到词首。一次 C 层扫串
-        # 换掉一次正则扫描，1400 条里绝大多数在这里就走了。
-        if word[0] not in line:
-            continue
+    for word in names.within(line):
         for m in rx(word).finditer(line):
             if m.start() < head or any(taken[m.start():m.end()]):
                 continue
@@ -554,7 +570,7 @@ def forward_terms():
 def scan(slug=None):
     """[(源稿路径, 行号, 起, 止, 词)]，按源稿顺序。"""
     terms = forward_terms()
-    names = sorted(terms, key=len, reverse=True)
+    names = Names(terms)
     out = []
     for rel in pages(slug):
         with open(os.path.join(shell.ROOT, rel), encoding='utf-8') as f:
@@ -587,7 +603,7 @@ def suggest(slug=None):
 def apply(slug=None):
     """把建议就地落进源稿。可重复跑——已经着色的那些下一趟自然跳过。"""
     terms, _ = load()
-    names = sorted(terms, key=len, reverse=True)
+    names = Names(terms)
     total = 0
     for rel in pages(slug):
         path = os.path.join(shell.ROOT, rel)
@@ -656,6 +672,8 @@ def rename(body, banned, keep):
     """
     hits = []
     for wrong, right in banned:
+        if wrong not in body:
+            continue
         for m in re.finditer(re.escape(wrong), body):
             if any(a <= m.start() and m.end() <= b for a, b in keep):
                 continue
@@ -759,7 +777,7 @@ def normalize_files(documents, builds):
     import check_terms
     check_terms.check_token_targets(load()[0])
     terms = forward_terms()
-    names = sorted(terms, key=len, reverse=True)
+    names = Names(terms)
     banned = check_terms.banned_pairs()
     totals = [0, 0, 0]
     changed = 0

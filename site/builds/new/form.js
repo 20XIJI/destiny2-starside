@@ -832,7 +832,11 @@
       box.toggleAttribute('data-miss', !hits.length);
     }
 
-    find.addEventListener('input', function () { draw(find.value.trim()); });
+    // 组字期间不筛：拼音字母筛不出结果，而组字中每次输入都会重画最多 240 格。
+    var ime = false;
+    find.addEventListener('input', function (e) { if (!ime && !e.isComposing) draw(find.value.trim()); });
+    find.addEventListener('compositionstart', function () { ime = true; });
+    find.addEventListener('compositionend', function () { ime = false; draw(find.value.trim()); });
     find.addEventListener('keydown', function (e) {
       if (e.isComposing || e.keyCode === 229) return;
       if (e.key === 'Escape') { close(); btn.focus(); }
