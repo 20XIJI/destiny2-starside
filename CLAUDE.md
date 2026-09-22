@@ -428,25 +428,38 @@ diff 发 `tcb hosting delete`。全部成功才动 `refs/deploy`，中途失败�
    两份都不联网、不读令牌、只写独占临时目录。
    改 `deploy.py`、`sync.py` 或 `functions/api/` 之前先跑它，那 15 条 `Deployment`
    测试是动发布链时唯一的安全网。
-3. headless Chrome 截图：Chrome Beta 未安装，chrome-devtools MCP 不可用。用：
+3. 截图用 `playwright-cli`，不用 chrome-devtools MCP。它拦 `file://`，页面走本地 http 服务；
+   命令在 scratchpad 里跑，快照与日志落在当前目录的 `.playwright-cli/` 下。端口现取空闲的：
+   占用中的端口 `goto` 照样成功，拿到的是别的服务的 404。
    ```bash
-   ("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --disable-gpu \
-     --hide-scrollbars --no-first-run --user-data-dir=<临时目录> --window-size=W,H \
-     --screenshot=<out.png> "file://<绝对路径>" >/dev/null 2>&1 &)
+   cd <scratchpad>
+   PORT=$(python3 -c 'import socket;s=socket.socket();s.bind(("127.0.0.1",0));print(s.getsockname()[1])')
+   python3 -m http.server $PORT -b 127.0.0.1 -d <仓库>/site >/dev/null 2>&1 &
+   playwright-cli -s=<会话名> open
+   playwright-cli -s=<会话名> resize 1440 900
+   playwright-cli -s=<会话名> goto http://127.0.0.1:$PORT/artifact-mods/index.html
+   playwright-cli -s=<会话名> eval "window.scrollTo({top: 8000, behavior: 'instant'})"
+   playwright-cli -s=<会话名> screenshot --filename=<scratchpad>/out.png
    ```
-   模组页有 163 张图，必须后台起进程再轮询产物，前台调用会超时。用 `sips -c H W --cropOffset Y X` 裁剪长图看局部。
-4. JS 行为断言：在 scratchpad 写断言页（复制生成物 + 追加 `<script>`，结果写进 `<pre>`），用 `--dump-dom` 取回。断言页留在 scratchpad，不进仓库。要反复跑的断言不留在这里，写进 `check_quality.py`：scratchpad 随 session 清掉，而它承诺的东西还写在这份文档里。
+   看哪一段就滚到那里截视口。`--full-page` 与高过视口的元素截图都不可信：屏外的 `.mod-row`
+   带 `content-visibility: auto`，整页截图里是空框；元素截图会把 sticky 的站头与 `.art-bar`
+   叠进画面中段。`site.css` 给 `html` 设了 `scroll-behavior: smooth`，`scrollTo` 不带
+   `behavior: 'instant'` 时是动画，紧接着读 `scrollY` 还是 0。
+4. JS 行为断言：同一个会话里对真实页面跑 `playwright-cli -s=<会话名> --raw eval "<表达式>"`，
+   返回值即结果。要赶在页面脚本之前桩掉 `fetch`、`localStorage`、`confirm`，先跑
+   `run-code "async page => { await page.addInitScript(() => { … }); }"` 再 `goto`。
+   一次性的断言不进仓库；要反复跑的写进 `check_quality.py`：scratchpad 随 session 清掉，
+   而它承诺的东西还写在这份文档里。
 
 第 3、4 条起浏览器，两条红线：
 
-- 用户明确授权才起。默认只跑第 1、2 条闸门，把改动说清楚；需要看渲染效果就先问，得到「跑」再起进程。chrome-devtools MCP 同此规矩。
-- 拿到产物立刻收进程。`--user-data-dir` 每次给一个独占的临时目录，收尾按这个目录精确回收，不误杀别的实例：
-  ```bash
-  pkill -9 -f "user-data-dir=<那个临时目录>"
-  ```
-  一次截图起 1 个主进程加数十个 helper，不收就是孤儿；收完 `pgrep -ifl chrome` 确认为空。
+- 用户明确授权才起。默认只跑第 1、2 条闸门，把改动说清楚；需要看渲染效果就先问，得到「跑」再起进程。
+- 拿到产物立刻关：`playwright-cli -s=<会话名> close`，再停掉那个 http 服务。`close` 连 daemon
+  带 Chrome 一并退出，关完 `playwright-cli list` 应为 `(no browsers)`。会话名每次独占，不用
+  `close-all` / `kill-all`：它们会关掉别处开着的会话。
 
-headless Chrome 无法滚动视口，`--dump-dom` 与 `--screenshot` 都不行。滚动类行为靠断言其配置来验证：`position`、`top` 解析值、底色不透明、祖先链无 overflow 容器、`scroll-margin-top`。
+滚动类行为（sticky 让位、当前分节高亮、锚点落点）滚到位置后直接截视口，或用 `eval` 读
+`getBoundingClientRect()`。
 
 ## 工作流
 

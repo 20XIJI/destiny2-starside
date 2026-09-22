@@ -170,6 +170,10 @@ __pycache__/
 # Claude Code 的运行时锁文件。.claude/rules/ 是子系统手册，照常入库。
 .claude/scheduled_tasks.lock
 
+# playwright-cli 把快照与日志写进当前目录。在仓库根下跑过一次，ship.sh 的
+# git add -A 就会把它们提交进 main。
+.playwright-cli/
+
 # 改版原型：放在被改页面旁边，选定方案、落进真实文件之后删。不入库，也就不会被
 # ship.sh 的 git add -A 带进 main、发上线。
 site/admin/prototype/
