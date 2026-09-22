@@ -1089,8 +1089,7 @@ class BuildProseColors(unittest.TestCase):
 
     def test_stripping_then_normalizing_restores_every_build(self):
         terms = items.forward_terms()          # 与构建时补色同一份词表
-        kw = dict(terms=terms, names=items.Names(terms),
-                  banned=check_terms.banned_pairs())
+        kw = dict(terms=terms, names=items.Names(terms))
         seen, bad = 0, []
         for path in items.build_pages():
             rec = migrate.load(path)
@@ -2239,8 +2238,7 @@ class Normalization(Isolated):
         self.replace(items.shell, 'ROOT', str(self.root))
         self.replace(items.shell, 'SITE', str(self.root / 'site'))
         self.replace(items.shell, 'BUILD_DIR', str(self.root / 'references/builds'))
-        self.kw = dict(terms=terms, names=items.Names(terms),
-                       banned=check_terms.banned_pairs())
+        self.kw = dict(terms=terms, names=items.Names(terms))
         self.doc = self.file('references/docs/fixture.md', '# 示例\n\n## 正文\n')
 
     def test_unknown_targets_fail_without_writes_or_success_summary(self):

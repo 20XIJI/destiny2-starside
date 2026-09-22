@@ -577,9 +577,9 @@ N 条提案、D 篇通过文档须满足 `N <= 49` 且 `2*N + 2*D + 2 <= 100`，
 #### 前端闸门是提示，不是拦截
 
 `admin/terms.js` 由 `tools/build-terms.py` 从现有的唯一真相导出，不另立词表：
-`check_terms.TERMS`（G1 正名、G2 token 唯一）、`check_terms.tint_classes`
-（G3 token 有定义，同时是芯片的调色板）、`items.load()`（G6 正查）。改一处两边同时
-生效。芯片那一份再用 `check_tokens()` 返回的 `used` 收一道，与 G7 的色板页同一条
+`items.TERMS`（G1 正名、G2 token 唯一）、`check_terms.tint_classes`
+（G3 token 有定义，同时是芯片的调色板）、`items.forward_terms()`（G6 正查，与构建
+同一份；只参与反查的词不送）。改一处两边同时生效。芯片那一份再用 `check_tokens()` 返回的 `used` 收一道，与 G7 的色板页同一条
 判据：不收时 50 枚里有 18 枚是外壳与组件的类（`wordmark`、`site-foot`、`entry-stamp`、
 `tool-search`…），全站源稿里一次都没出现过，点一下只会生成一个不该有的标记。
 收完剩 32 枚。一条记录一行，与 `assets/search.js` 同理，按行写让 git 存得下增量。
@@ -599,7 +599,7 @@ N 条提案、D 篇通过文档须满足 `N <= 49` 且 `2*N + 2*D + 2 <= 100`，
 「该着色」那类提示只在编辑那一块时列出来，闭合的块只显示错误：一屏都挂着的话，
 错误就淹没在提示里了。
 
-等价关系由断言页钉住：`npm run build` 过得去的源稿，前端闸门必须零错零提示。
+等价关系由 `npm test` 钉住：`npm run build` 过得去的资料页源稿，前端闸门逐行跑一遍，「该着色」提示必须为零。
 
 跑不动的留在本地：逐字保真、神器模组三个一组、每套 2 件 + 4 件、分节计数。
 一篇改坏会让 `npm run build` 中止、卡住整次部署，办法是 `git checkout` 那一篇再回

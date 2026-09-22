@@ -140,7 +140,7 @@ VERSION_SOURCE = {
 # 指的根本不是物品，所以逐类给一条可判定的判据，而不是列一张手抄名单。
 #
 #   效果名      增幅、致盲、恢复、灼烧、冻结、割裂……游戏里的 buff 与 debuff。
-#               判据：站内已经把它们记在 check_terms.TERMS 与 items.MECH 上。
+#               判据：站内已经把它们记在 items.TERMS 与 items.MECH 上。
 #   复合行      护甲模组页一行盖住若干变体（「虹吸」盖住 16 枚元素虹吸）。
 #               判据：tools/mod-variants.json 的 row 字段。
 #   来源别名    护甲套装在词表里登两个键，套装名与来源名（「幽梦之城」）。
@@ -1039,9 +1039,8 @@ def perk_stamper():
 def effects():
     """站内当作效果名管着的词。两张表都是现有的唯一真相，这里只读不抄。"""
     sys.path.insert(0, os.path.join(shell.ROOT, 'tools'))
-    import check_terms
     import items
-    out = {norm(w) for w, _, _ in check_terms.TERMS}
+    out = {norm(w) for w, _, _ in items.TERMS}
     out |= {norm(w) for w in items.MECH}
     return out
 

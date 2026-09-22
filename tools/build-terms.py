@@ -3,9 +3,9 @@
 
 **不另立词表**：三份都从现有的唯一真相现取，改一处两边同时生效。
 
-    check_terms.TERMS          → 中文正名（G1）与 token 唯一（G2）
+    items.TERMS                → 中文正名（G1）与 token 唯一（G2）
     check_terms.tint_classes   → token 有定义（G3），同时是着色芯片的调色板
-    items.load()               → 该着色的都着了（G6 正查）
+    items.forward_terms()      → 该着色的都着了（G6 正查），与构建同一份
 
 前端跑出来的是提示不是拦截：逐字保真、结构断言那几条要 Python，留在本地。
 一条记录一行，与 assets/search.js 同理——这份文件每改一次词表就要重生成并入库，
@@ -46,8 +46,10 @@ def build():
     # 这里丢掉。
     used = check_terms.check_tokens(check_terms.sources(), css, [])
 
-    terms = [[w, t, b] for w, t, b in check_terms.TERMS if b or t]
-    table, _ = items.load()
+    terms = [[w, t, b] for w, t, b in items.TERMS if b or t]
+    # G6 正查用的那一份：只参与反查的词（items.no_forward()）不送，构建不要求它们着色，
+    # 编辑台也不该提示。
+    table = items.forward_terms()
     # **一个名字在源稿里写得出几种形状，就送过去几行**。表的键是归一化过的，
     # 源稿在汉字与拉丁之间补一个排版空格；Python 那侧靠 items.pattern() 把空格
     # 允许回来，浏览器那侧按字面比对（1400 条现编译正则会拖垮逐行提示）。
@@ -56,7 +58,7 @@ def build():
     words = sorted(((v, tk) for w, tk in table.items() for v in items.variants(w)),
                    key=lambda kv: (-len(kv[0]), kv[0]))
 
-    lines = ['// 由 tools/build-terms.py 生成，不手改。改词表改 check_terms.TERMS 或 tools/items.json。',
+    lines = ['// 由 tools/build-terms.py 生成，不手改。改词表改 items.py 的 TERMS 或 tools/items.json。',
              'window.starsideTerms = {']
     lines.append('terms: [')
     lines += ['  %s,' % j(t) for t in terms]
@@ -84,7 +86,7 @@ def build():
     lines.append('},')
     lines.append('guard: %s,' % j(items.GUARD))
     # G1 的白名单与 G6 的正查范围，两处都照 Python 那一侧原样带过去，不在前端另立。
-    lines.append('keep: %s,' % j(check_terms.KEEP))
+    lines.append('keep: %s,' % j(items.KEEP))
     lines.append('g6: %s,' % j(sorted(os.path.basename(p)[:-3] for p in items.pages())))
     lines.append('items: [')
     lines += ['  %s,' % j([w, tok, kind]) for w, (tok, kind) in words]
@@ -166,7 +168,7 @@ def docs_where(docs, pid):
 def check(out):
     """空表与缺档当场报出。词表是现取的，写死条数会让每次改术语都误报。"""
     if 'terms: [\n]' in out or 'items: [\n]' in out:
-        sys.exit('词表是空的，check_terms.TERMS 或 items.json 没读到')
+        sys.exit('词表是空的，items.TERMS 或 items.json 没读到')
     for must in ('el-arc', 'exotic', 'perk', 'art-perk'):
         if '"%s"' % must not in out:
             sys.exit('terms.js 里没有 %s，调色板缺了一档' % must)

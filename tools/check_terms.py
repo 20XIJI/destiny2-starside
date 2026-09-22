@@ -5,7 +5,7 @@
 改成「填装」，六天后新增的武器框架页又带回 17 处。人工扫一遍管不住下一页，
 所以把结论落成闸门。
 
-五条检查，前四条以 TERMS 那一张表为准：
+五条检查，前四条以 items.py 的 TERMS 那一张表为准：
 
   G1 中文正名   源稿里不许出现禁用写法。
   G2 token 唯一 同一个术语只能落到同一个着色 token 上。渲染色相同的两个 token
@@ -20,7 +20,7 @@
                 认哪些类算着色类见 tint_classes()：源稿里写得出 {name|…} 的才算，
                 外壳与组件的类照样引强调色，但它们写不进源稿，不进色板页。
   G6 该着色的都着了 tools/items.json 里的词、items.py 的 MECH（元素机制名），以及
-                下面 TERMS 里定了 token 的术语，正文里出现就得着色；已着色的那些
+                items.py 的 TERMS 里定了 token 的术语，正文里出现就得着色；已着色的那些
                 token 还必须与库里的归属一致。「骨灰余烬」属烈日、「连锁闪电」属电弧
                 是 Bungie 的 manifest 定的，不由人记；着成隔壁元素只差一点色相，
                 眼睛查不出来。G2 只管「着错了色」，没着色时它一句话也不说——
@@ -42,176 +42,6 @@ import shell
 
 DOC_DIR = 'references/docs'
 KEY_DIR = 'references/keys'
-
-# 一行钉两件事：中文怎么写，以及着色落到哪个 token 上。
-#   (正名, 唯一 token 或 None, [禁用写法])
-# token 写 None 表示这个词不强制着色，只管中文写法。
-TERMS = [
-    # ── 中文正名 ──
-    ('填装', None, ['装填']),
-    # 装备稀有度：紫装在游戏内叫「传说」，与「传说战役」是同一个词
-    ('传说', None, ['传奇']),
-    ('回复倍率', None, ['技能块']),
-    # Exhaust 站内叫「疲惫」。「力竭」指同一个减益——心灵骇入与问题解决者施加的
-    # 都是它，两边都写「战斗人员输出伤害降低 25%」，靠这个数认定，不靠字面
-    ('疲惫', None, ['力竭']),
-    # 站内「特性」一律写 Perk，「起源特性」是唯一的例外：游戏内就叫这个名
-    ('起源特性', None, ['源头特性', '起源 Perk']),
-    # 「处决」不进禁用表：「优雅处决」是星相里的机制名，与终结技不是一回事
-    ('终结技', 'enemy', []),
-    ('冰霜护甲', 'el-stasis', ['冰霜铠甲']),
-    # 红血是敌人档位的最低一档，照血条颜色叫。「普通战斗人员」在正名之后与它同义
-    ('红血', 'bar-red', ['杂兵', '普通士兵', '普通敌人', '普通战斗人员']),
-    ('橙血', 'bar-orange', ['精英']),
-    # 四档敌人：红血、橙血、初级首领、首领。「黄血」「小头目」是同一档的旧写法
-    ('初级首领', 'bar-yellow', ['黄血', '小头目']),
-    # 敌人统称用游戏内的官方译名。放在「红血」之后：先认掉「普通敌人」那一组
-    # 「敌方」不进禁用表：那是形容词（敌方守护者），不是战斗人员的同义词
-    ('战斗人员', 'enemy', ['敌人']),
-    # 威能弹药：站内 token 就叫 --ammo-heavy，注释与 design.md 都写「威能弹药」
-    ('威能弹药', 'ammo-heavy', ['重型弹药']),
-    ('虚弱', 'deb-void', ['削弱']),
-    # Jolt：arc.md 里定义的那个连锁闪电减益。「电击」不进禁用表——「闪电击中」
-    # 与游戏机制页里敌人的「电击充能」都是同形不同义，钉死会满页误报
-    ('震颤', 'deb-arc', ['感电']),
-    # 打中弱点叫「精准」。「精密」留给武器框架名（精密框架、精密自动步枪），两者同源
-    # 于 Precision，混用会让读者以为框架名与命中判定是一回事
-    ('精准命中', 'stack', ['精密命中']),
-    ('精准击杀', None, ['精密击杀']),
-    # 打在目标本体上的那一份叫「直击」，与溅射／径向相对；「接触」在正文里
-    # 还当动词用（接触时引爆、接触点），只有当伤害名讲时才是这一条
-    ('直击伤害', None, ['接触伤害']),
-    # 三种勇士各自一行：中文早就统一了，钉在这里是为了 token。三个名字同属
-    # 战斗人员，着色必须都落到 enemy 上——只钉一个，另两个会在新页面上分叉，
-    # 而 --enemy 与相近的几个 token 渲染色接近，眼睛查不出来。
-    ('势不可挡勇士', 'enemy', ['不屈勇士']),
-    ('过载勇士', 'enemy', ['超载勇士']),
-    ('屏障勇士', 'enemy', ['壁垒勇士']),
-    # 职业技能名：三处写「特技闪身」、一处写「杂技闪身」，后者是孤例；
-    # 「裂缝」三处全指术士的职业技能，不是同名的 PvP 模式
-    ('特技闪身', None, ['杂技闪身']),
-    ('裂痕', None, ['裂缝']),
-    # 物品专名的写法分叉，正名一侧取该物品所在资料页的行标题。
-    # 这几组渲染出来毫无异样，只有搜索与跨页对照时才露馅
-    ('伏特子弹', None, ['福特子弹']),        # weapon-perks 行标题；刷取两页写成同音的「福特」
-    ('嫉妒军械库', None, ['嫉妒军火库', '嫉妒军火']),  # 同上；刷取两页写「军火库」与「军火」
-    ('战嚎炮管', None, ['战壕炮管']),        # weapon-perks 行标题；刷取三页写成同音的「战壕」
-    ('换挡', None, ['换档']),               # 同上；刷取三页写成同音的「换档」
-    ('精准工具', None, ['精装工具']),        # 同上；legendary-special 一处写「精装」
-    ('终局螺旋钻', None, ['终极螺旋钻']),    # exotic-weapon 行标题；crafting 一处写「终极」
-    ('冰冻奇点', None, ['冰封奇点']),        # prismatic 行标题；buff-debuffs 一处写「冰封」
-    ('层层不绝', None, ['层层不觉']),        # armor-mods 行标题；farming-sets 三处写「不觉」
-    # 突袭名。站内两种写法各占一半，取「最后一愿」
-    ('最后一愿', None, ['最后遗愿']),
-
-    # ── 只管 token，不改中文 ──
-    # 下面这些词的着色曾经分叉，两个 token 渲染色又相同或相近，肉眼查不出来
-    ('护甲充能', 'armor-charge', []),
-    ('焕光', 'el-solar', []),
-    ('恢复', 'el-solar', []),
-    # 覆盖护盾分两个词：虚空分支的那层是虚空增益，其余来源（职业属性、还治彼身、
-    # 无畏护甲）不属于任何元素。两者同色时读者会把无畏护甲当成虚空技能
-    ('虚空覆盖护盾', 'el-void', []),
-    ('覆盖护盾', 'pickup', []),
-    ('不稳定', 'deb-void', []),
-    ('压制', 'deb-void', []),
-    ('减速', 'deb-stasis', []),
-    ('灼烧', 'deb-solar', []),
-    ('点燃', 'deb-solar', []),
-    ('能量球', 'orb', []),
-    ('特殊弹药', 'ammo-special', []),
-    ('生命值', 'health', []),
-    ('首领', 'bar-yellow', ['头目', 'Boss', 'boss']),
-    # 守护者按战斗力对齐橙血那一档；「自己」是玩家一侧的表述层，留在 enemy 色
-    ('守护者', 'bar-orange', []),
-    ('自己', 'enemy', []),
-    # 「铸造者」是刀剑框架名，不能拿来指释放技能的那个人
-    ('施法者', 'enemy', []),
-    ('异域', 'exotic', []),
-    ('增益', 'buff', []),
-    ('减益', 'debuff', []),
-
-    # ── 按官方 manifest 校过的正名 ──
-    # 下面这一批出自 2026.8.30 用 Bungie manifest 的 description_zh 逐条对读，
-    # 每条的官方原文写在 ~/Desktop/docs/260830-术语校对清单.html。
-    # 站内曾经写的是社区叫法或旧译，官方文本里一次都不出现。
-    ('烈焰火苗', None, ['鬼火', '幽灵手雷']),
-    ('束缚', None, ['系缚']),
-    ('狂啸', None, ['暴风雪']),
-    ('击败他们', None, ['击倒']),
-    ('速度加成', None, ['速度助推器', '速度增强']),
-    ('力量学派', None, ['力量教派']),
-    ('洞察学派', None, ['洞察教派']),
-    ('活力学派', None, ['活力教派']),
-    ('忧愁武器', None, ['悲叹武器']),
-    ('太阳黑子', None, ['日斑']),
-    ('恢复炮台', None, ['治疗炮台', '治疗炮塔']),
-    ('虚空灵魂', None, ['虚空之魂']),
-    ('高贵追踪弹', None, ['高尚追踪弹']),
-    ('纳米蜂群', None, ['纳米机器人', '水银纳米机器']),
-    ('类虫机器人', None, ['昆虫机器人']),
-    ('闪烁重击', None, ['瞬移重击']),
-    ('遥测规律', None, ['遥测模块']),
-    ('压迫能量', None, ['压倒性力量']),
-    ('释放力量', None, ['释放能量']),
-    ('蜕变圆球', None, ['蜕变球体']),
-    ('活性放射体液', None, ['放射虫液', '放射虫池']),
-    ('先锋决心', None, ['先锋决绝']),
-    ('斥候步枪', None, ['侦察步枪']),
-    ('眩晕', None, ['击晕']),
-    ('迷失方向', None, ['迷乱']),
-    ('风暴怒吼', 'el-stasis', ['冰川咆哮']),
-    ('区域拒止', None, ['区域拒绝']),
-    # 生命值见底那个状态官方叫「重伤」。站内曾有三种写法，「关键{health|生命值}」
-    # 带着标记，纯文本的禁用词对不上，所以连标记一起钉
-    ('重伤', None, ['濒死生命值', '危急', '关键{health|生命值}']),
-    # 「焦灼」只在烈日减益那个意思上是错的；活动修改器「卡巴尔：焦灼大地」进 KEEP
-    ('灼烧', 'deb-solar', ['焦灼']),
-    # 「残存」是阿莱索尼姆与荆棘的掉落物，官方作「残余」；流明那把官方作「遗灵」。
-    # 虚空碎片「残存回声」是另一件事，进 KEEP
-    ('残余', None, ['残存']),
-
-    # ── 副本、活动与人物：官方名取自 manifest 的 source_zh 与 activities 表 ──
-    ('玻璃拱顶', None, ['玻璃宝库']),
-    ('救赎的边缘', None, ['救赎边缘']),
-    ('众神殿', None, ['万神殿']),
-    ('幽梦之城', None, ['梦城']),
-    ('铁旗', None, ['铁骑']),
-    ('赛雀联赛', None, ['快雀竞赛', '快雀竞速']),
-    ('忧伤祭坛', None, ['月球祭坛']),
-    ('异端深渊', None, ['异端深坑']),
-    ('永恒沙漠（史诗）', None, ['史诗沙漠']),
-    ('至日', None, ['高塔二至点']),
-    ('守护者游戏', None, ['高塔运动会']),
-    ('克洛塔的末日', None, ['克洛塔末日']),
-    # Xûr 的官方中文名。「老九」是社区叫法
-    ('仄', None, ['老九']),
-]
-
-
-def banned_pairs():
-    """禁用写法 → 正名，摊平成一张对照表。
-
-    TERMS 的元组形状（`t[0]` 正名、`t[2]` 禁用写法）只由这一个函数知道。
-    从前 build-weapons、items 与两处回归各自把这句推导抄了一遍，改 TERMS 的
-    结构要同时动四个文件。
-    """
-    return [(w, t[0]) for t in TERMS for w in t[2]]
-
-# 游戏内的专有名词，字面撞上禁用写法时按原名放行。整条短语落在里面才算数，
-# 「削弱」单用照旧报错。
-KEEP = ['削弱清敌', 'Destiny 2: Boss Damage', '吞食裂缝',
-        '卡巴尔：焦灼大地', '残存回声', '结晶残花',
-        # 官方物品表里的护甲模组名（tools/mod-variants.json）。配装源稿的槽位行
-        # 必须逐字写它才查得到，正名那条规矩管的是散文，不管物品的专名。
-        '重型弹药搜寻者', '重型弹药斥候',
-        # 官方物品表里的专名，不受正名管：Perk「双重装填」（Dual Loader）里的
-        # 「装填」、深岩墓室模组「种群削弱」里的「削弱」。
-        '双重装填', '种群削弱',
-        # 护甲套装效果名按官方写法，站内正名不改它们：「能量装填」是 Bungie 给
-        # 那条 SandboxPerk 的名字，改成「能量填装」就与库里对不上了。
-        '能量装填']
-
 
 def read(path):
     # 配装源稿是结构化记录，就按它本身检——**不渲染回 markdown 再用正则扫**，
@@ -294,54 +124,18 @@ def at_line(text, at):
     return text.count('\n', 0, at) + 1
 
 
-def protected_spans(text):
-    """G1 与自动正名共用：专名全文及链接目标不可改。"""
-    return ([(m.start(), m.end()) for k in KEEP if k in text
-             for m in re.finditer(re.escape(k), text)]
-            + [(m.start(1), m.end(1))
-               for m in re.finditer(r'\]\(([^)]*)\)', text)])
-
-
-def expected_token(token, text, terms):
-    """完整术语的唯一归属；两份真相冲突时拒绝猜测。"""
-    targets = {t for w, t, _ in TERMS if w == text and t}
-    item = terms.get(items.norm(text))
-    if item and item[0] in MANAGED:
-        if targets and targets != {item[0]}:
-            markup.die('词表冲突「%s」：%s / %s' %
-                       (text, '、'.join(sorted(targets)), item[0]))
-        if token in MANAGED:
-            targets.add(item[0])
-    if len(targets) > 1:
-        markup.die('词表冲突「%s」：%s' % (text, '、'.join(sorted(targets))))
-    want = next(iter(targets), None)
-    return want if want != token else None
-
-
-def check_token_targets(terms):
-    """任何源稿落盘之前核对词表交集。"""
-    for word, token, _ in TERMS:
-        if token:
-            expected_token(token, word, terms)
-
-
 def check_terms(files, bad):
-    banned = [(w, t[0]) for t in TERMS for w in t[2]]
     terms, _ = items.load()
-    check_token_targets(terms)
+    items.check_token_targets(terms)
     for rel in files:
         md = read(rel)
-        keep = protected_spans(md)
+        for at, wrong, right in items.misspelled(md):
+            bad.append('G1 %s:%d 用了「%s」，正名是「%s」'
+                       % (rel, at_line(md, at), wrong, right))
         # 括号索引一份源稿建一次，92 条术语共用。**逐次现查是文档长度的平方**，
         # 见 markup.Markers 的说明。
         marks = markup.Markers(md)
-        for wrong, right in banned:
-            for m in re.finditer(re.escape(wrong), md):
-                if any(a <= m.start() and m.end() <= b for a, b in keep):
-                    continue
-                bad.append('G1 %s:%d 用了「%s」，正名是「%s」'
-                           % (rel, at_line(md, m.start()), wrong, right))
-        for word, token, _ in TERMS:
+        for word, token, _ in items.TERMS:
             if not token:
                 continue
             for m in re.finditer(re.escape(word), md):
@@ -349,7 +143,7 @@ def check_terms(files, bad):
                 # 只管「整个标记就是这个词」的那种。词嵌在更长的短语里时，
                 # 着色属于短语（{el-arc|电弧元素能量球}、{health|治疗能量球}），
                 # 按词强判会把整句的颜色拆碎。
-                want = expected_token(hit[0], word, terms) if hit and hit[1] == word else None
+                want = items.expected_token(hit[0], word, terms) if hit and hit[1] == word else None
                 if hit and want:
                     bad.append('G2 %s:%d 「%s」着色成 {%s|…}，应是 {%s|…}'
                                % (rel, at_line(md, m.start()), word, hit[0], want))
@@ -439,32 +233,21 @@ def check_build_count(bad):
                        % (href, m.group(1), want))
 
 
-# G6 管得住的 token：元素归属与异域稀有度这两样库里是事实。别的不归它管——
-# {named|冥府三头犬 +1} 里的 named 是排版标记不是着色，强判会满页误报；
-# 神器模组的元素归属库里没有（typeName_zh 一律是「传说 神器特性」），
-# 神器模组页按各自的元素给了 12 处更细的着色，钉死反而是降级。
-# 元素机制名的归属同样是事实（取自各元素分支页的效果表），一并纳入反查——
-# 「冻结」着成 el-stasis 与 deb-stasis 渲染色相同，只有这里管得住。
-# orb 也纳入：它是能量球与超能那一支金色，写不进异域装备名。神器模组页曾把
-# 「库尔之影」「故我在」「Vex 揭秘者」等 10 个异域名着成 orb，15 处无人报出。
-MANAGED = set(items.EL.values()) | {'exotic', 'orb'} | set(items.MECH.values())
-
-
 def check_items(files, bad):
     # 反查：已着色的对不对
     terms, _ = items.load()
-    check_token_targets(terms)
+    items.check_token_targets(terms)
     for rel in files:
         md = read(rel)
         # 只认「整个标记就是这个词」的那种，与 G2 同一条道理：词嵌在更长的短语里
         # 时着色属于短语，按词强判会把整句的颜色拆碎。
         for m in markup.LEAF.finditer(md):
             token, text = m.group(1), m.group(2)
-            if token not in MANAGED:
+            if token not in items.MANAGED:
                 continue
             want = terms.get(items.norm(text))
-            target = expected_token(token, text, terms)
-            if want and want[0] in MANAGED and target:
+            target = items.expected_token(token, text, terms)
+            if want and want[0] in items.MANAGED and target:
                 bad.append('G6 %s:%d 「%s」着色成 {%s|…}，官方物品表说它是%s，应是 {%s|…}'
                            % (rel, at_line(md, m.start()), text, token, want[1], target))
 
@@ -566,7 +349,7 @@ def main() -> int:
         for line in bad:
             print('  ' + line, file=sys.stderr)
         return 1
-    print('术语一致：%d 条规则，%d 篇源稿' % (len(TERMS), len(pairs)))
+    print('术语一致：%d 条规则，%d 篇源稿' % (len(items.TERMS), len(pairs)))
     return 0
 
 

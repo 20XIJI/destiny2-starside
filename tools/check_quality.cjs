@@ -957,6 +957,28 @@ test('the editing console flags item names written with the typographic space', 
     `这些名字按源稿的写法出现时，编辑台不提示该着色，而 npm run build 的 G6 会报：${missed.slice(0, 5).join('、')}`)
 })
 
+test('the editing console asks for no tint the build does not ask for', () => {
+  // terms.js 的 items 就是构建 G6 正查那一份（items.forward_terms()）。它曾送的是
+  // items.load() 全量，多出只参与反查的 355 条：编辑台对 48 个词报了 153 条「该着色」，
+  // 而 npm run build 与 --apply 都不要求。构建过得去的源稿，这里一条都不许报。
+  const { api, terms } = adminApi()
+  const RULE = /^\|[-| ]+\|$/
+  const docs = path.join(root, 'references/docs')
+  const extra = []
+  for (const f of fs.readdirSync(docs).filter((n) => n.endsWith('.md'))) {
+    const slug = f.slice(0, -3)
+    const g6 = terms.g6.includes(slug)
+    const ok = terms.classes.concat(terms.pageClasses['docs/' + slug] || [])
+    const lines = fs.readFileSync(path.join(docs, f), 'utf8').split('\n')
+    lines.forEach((line, i) => {
+      if (!line.trim() || RULE.test(line.trim())) return
+      const head = RULE.test((lines[i + 1] || '').trim())
+      for (const w of api.lint(line, { cols: 0, head }, g6 && !head, ok).warns) extra.push(`docs/${slug}:${i + 1} ${w}`)
+    })
+  }
+  assert.deepEqual(extra.slice(0, 5), [], `编辑台多报了 ${extra.length} 条构建不要求的提示`)
+})
+
 test('the review console opens the next pending build after a verdict', () => {
   const { api } = adminApi()
   const order = ['a', 'b', 'c', 'd']

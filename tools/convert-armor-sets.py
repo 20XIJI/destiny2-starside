@@ -22,7 +22,6 @@ import io
 import os
 import re
 
-import check_terms
 import editmap
 import items
 import mods
@@ -248,7 +247,7 @@ def parse(md: str) -> list[Category]:
 # 顺序即优先级，改顺序就是改语义。
 
 def merge():
-    """全站术语（items.load() 的物品专名与元素机制 + check_terms.TERMS 的通用
+    """全站术语（items.load() 的物品专名与元素机制 + items.TERMS 的通用
     术语）+ 本页专有词。
 
     长词在前是匹配的硬要求（「威能弹药」要排在「弹药」之前），所以不靠手写顺序，
@@ -260,7 +259,7 @@ def merge():
     """
     terms, _ = items.load()
     merged = {w: tok for w, (tok, _cat) in terms.items()}
-    merged.update({t[0]: t[1] for t in check_terms.TERMS if len(t) > 1 and t[1]})
+    merged.update({t[0]: t[1] for t in items.TERMS if len(t) > 1 and t[1]})
     merged.update(dict(PAGE_TERMS))
     # LOOSE 最后减：两份表里都有「恢复」，先减再合会被后一份重新加回来，
     # 38 处动词用法（「恢复 140 生命值」「开火恢复延迟」）会整批染成烈日色。
@@ -495,7 +494,7 @@ def check(cats: list[Category], out: str) -> None:
     left = sorted({w for w in GLOSSARY_WORDS if w in naked})
     if left:
         die('这些术语在正文里没着色：%s\n'
-            '  词表由 merge() 从 items.load() 与 check_terms.TERMS 并出来；\n'
+            '  词表由 merge() 从 items.load() 与 items.TERMS 并出来；\n'
             '  同形的普通用法写进 items.py 的 LOOSE，更长的专名写进 GUARD，都带上依据。'
             % '、'.join(left))
 

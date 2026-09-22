@@ -280,7 +280,9 @@ pyright tools/*.py
 
 ### 术语与着色的一处定义
 
-`tools/check_terms.py` 的 `TERMS` 是全站术语的唯一真相。一行钉两件事：中文怎么写，以及着色落到哪个 token 上。加一条术语就往表里加一行，不在源稿里逐处约定。
+`tools/items.py` 的 `TERMS` 是全站术语的唯一真相。一行钉两件事：中文怎么写，以及着色落到哪个 token 上。加一条术语就往表里加一行，不在源稿里逐处约定。
+
+着色词表只有 `items.py` 一个 module：`TERMS`、`KEEP`、`MECH`、`LOOSE`、`STOP`、`GUARD` 与 `tools/items.json`，以及「这个词该着哪个 token」（`expected_token`）、「哪些区段不许改」（`protected_spans`）、禁用写法的出现（`misspelled`）、正查（`hits_in`）与改正（`normalize_text`）。`check_terms.py` 只负责逐篇跑闸门、报错；构建里别的脚本要词表就向 `items.py` 要，不另拼一份。
 
 七条闸门，编号即 `check_terms.py` 报错行的前缀（G6 排在末位，与脚本一致）：
 

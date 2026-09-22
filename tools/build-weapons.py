@@ -20,7 +20,6 @@ import os
 import re
 import sys
 
-import check_terms
 import icons
 import items
 import markup
@@ -157,7 +156,6 @@ class Build:
 
     def __init__(self, facts):
         self.f = facts
-        self.banned = check_terms.banned_pairs()
         self.plugs = {}           # 插件 hash → 字典条目
         self.plug_text = {}       # 插件 hash → Bungie 说明
         self.plug_site = {}       # 插件 hash → 站内实测（HTML）
@@ -173,7 +171,7 @@ class Build:
 
     def say(self, body):
         """Bungie 的说明按站内正名改写：专名与链接不动。"""
-        body, _ = items.rename(body, self.banned, check_terms.protected_spans(body))
+        body, _ = items.rename(body)
         return body
 
     def site_html(self, t):

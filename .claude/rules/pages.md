@@ -219,7 +219,7 @@ app.js 按表头文本找列、按首格开头的两位时刻找行（首列写�
 
 `GLOSSARY` 不自己存物品专名与通用术语，由 `merge()` 从两份全站表并出来：
 `items.load()`（物品专名 704 条 + 元素机制 + Perk 名，已按 `STOP` 滤过）与
-`check_terms.py` 的 `TERMS`（通用术语、敌人档位、弹药）。`TERMS` 排在后面覆盖同形的
+`items.py` 的 `TERMS`（通用术语、敌人档位、弹药）。`TERMS` 排在后面覆盖同形的
 专名——「真相」在这一页是层数增益名，不是那把异域火箭发射器。`PAGE_TERMS` 只留这
 一页专有、两份全站表都没收的那几个词。
 
@@ -359,7 +359,7 @@ G3 钉住 `{act|…}` 的类定义。
 - 改表格列的脚本用 `markup.cells()`（或它的字符串壳 `convert-doc.split_cells()`），
   不用裸 `split('|')`：`{ico|…}` 内部的竖线不是分隔符。
   `{ico|…}` 标记内部也有竖线，裸切会让带图标的行整体错位一格。
-- 术语按 `check_terms.py` 的 `TERMS` 归一，token 由闸门纠正：`{enemy|首领}`
+- 术语按 `items.py` 的 `TERMS` 归一，token 由闸门纠正：`{enemy|首领}`
   与 `{bar-yellow|首领}` 渲染色接近，眼睛查不出来。
 - 汉字与数字、拉丁之间补一个空格（design.md 三节），半角标点改全角。
 
