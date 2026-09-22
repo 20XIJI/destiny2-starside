@@ -4,8 +4,8 @@
 python3 tools/check_quality.py
 只用标准库；真实入口搭配内存 API/命令替身，全部写入独占 TemporaryDirectory。
 不读取令牌、不连接网络。生成器只替换资料词表来源，渲染与落盘走实码。
-唯一的子进程是 WeaponPage 起的一次 node：把 weapons/app.js 的属性函数抠出来，
-与 facts.shown() 逐值比。
+子进程只有 node，用来把浏览器与云函数那几份 JS 拿来与 Python 逐值比：装备库的属性
+函数对 facts.shown()、云函数的 canon() 对 facts.canon()、builds/source.js 对 split_set()。
 """
 import base64
 import collections
@@ -1915,6 +1915,35 @@ class EditOrigins(unittest.TestCase):
         got = json.loads(done.stdout)
         bad = [i for i, f in enumerate(flats) if got[i] != facts.canon(f)]
         self.assertEqual(bad, [], '两边写法不同的记录：%s' % [facts.canon(flats[i])[:80] for i in bad[:3]])
+
+
+class BuildSourceShape(unittest.TestCase):
+    """配装源稿的形状有两份实现：JS 的 builds/source.js（填表页、审核台、云函数共用）与
+    Python 的 migrate.py + convert-build.py 的 split_set()。拿全部真源稿写成的 markdown
+    两边各判一遍：单套还是合集、切出几套、齐不齐，套数上限相等。"""
+
+    def test_the_js_module_reads_every_real_source_as_the_build_does(self):
+        paths = sorted((TOOLS.parent / 'references' / 'builds').glob('*/*.json'))
+        self.assertGreater(len(paths), 50)
+        recs = [migrate.load(str(p)) for p in paths]
+        mds = [migrate.write(r) for r in recs]
+        prog = ('var B = require(%s);'
+                'var all = JSON.parse(require("fs").readFileSync(0, "utf8"));'
+                'process.stdout.write(JSON.stringify({max: B.SET_MAX, got: all.map(function (md) {'
+                '  return [B.isSet(md), B.sets(md).length, B.lacking(md)] })}));'
+                % json.dumps(str(TOOLS.parent / 'site' / 'builds' / 'source.js')))
+        done = subprocess.run(['node', '-e', prog], input=json.dumps(mds, ensure_ascii=False),
+                              capture_output=True, text=True, check=True)
+        got = json.loads(done.stdout)
+        self.assertEqual(got['max'], build.SET_MAX, 'builds/source.js 的 SET_MAX 与 convert-build.py 的不同')
+        self.assertGreater(sum(1 for is_set, _, _ in got['got'] if is_set), 5, '真源稿里没几份合集，语料挪走了？')
+        bad = []
+        for path, rec, (is_set, n, lack) in zip(paths, recs, got['got']):
+            _, members = build.split_set(rec)
+            if is_set != bool(members) or (members and n != len(members)) or lack:
+                bad.append('%s：JS 读成%s %d 套、缺 %s；构建读成 %d 套'
+                           % (path.name, '合集' if is_set else '单套', n, lack, len(members)))
+        self.assertEqual(bad, [])
 
 
 class SyncErrors(Isolated):

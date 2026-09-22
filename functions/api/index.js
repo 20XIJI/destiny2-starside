@@ -9,6 +9,9 @@ const tcb = require('@cloudbase/node-sdk')
 // admin/dialect.js 一份定义；这里这个文件是构建复制过去的，不手改（云函数只
 // require 得到自己目录下的东西）。
 const { cellSpans, rowOf, cellSafe, barePipe } = require('./dialect.js')
+// 配装源稿的形状（指纹取哪几项、库里的 _id 怎么拼）只有 builds/source.js 一份，
+// 这里是构建复制过去的那一份，不手改。
+const { same, id: buildId } = require('./source.js')
 const app = tcb.init({ env: tcb.SYMBOL_CURRENT_ENV })
 const db = app.database()
 const _ = db.command
@@ -105,30 +108,10 @@ async function stats() {
   return sc.v
 }
 
-// 同一套配装的判据：**名字、推荐人、职业、属性、核心五项一致即同一套**。
-// 不再按装备判——改一把枪就成了另一套，而再投的人多半是想更新同一份。
-// 这五项是 builds/new/form.js 的 NEED 去掉场景与强度：那边缺了不许投，这边缺了
-// 指纹也算不出区分度。**场景与强度不进指纹**——它们是站上的目录分法（分节按场景、
-// 节内按强度排），改一次不该让审过一轮的稿子认不出自己那一份，与审核意见同一条
-// 理由。标签同理，它随场景变，改场景就会连带改它。
-const SAME = [/^#[ \t]*(.*)$/m, /^推荐人：(.*)$/m, /^职业：(.*)$/m,
-              /^分支：(.*)$/m, /^核心：(.*)$/m]
-const CLASS_AT = 2
-
+// 同一套配装的指纹：取哪五项、怎么归一由 source.js 的 same() 定，与填表页、审核台
+// 同一份。\u0001 当分隔符：正文里不会出现，拼接因此不会把两项混成一项。
 function fingerprint(md) {
-  // **只按头部算**。合集一份源稿装 N 套，`# ` 分隔；它的头部没有职业与分支两行，
-  // 全文扫会静默抓到第一套成员的，调换前两套的顺序再投指纹就变了、顶不掉旧的，
-  // 站上于是多出一份重复的合集，点赞数跟着甩掉。单套只有一个 `# `，切了等于没切。
-  const head = md.split(/\n# /)[0]
-  const parts = SAME.map((re, i) => {
-    const got = ((re.exec(head) || ['', ''])[1] || '').replace(/\s+/g, ' ').trim()
-    // 五项里只有职业写成「名字#主键」，主键不进指纹：带上它的话，站内换一枚主键
-    // 就让审过一轮的稿子认不出自己那一份。**别的四项不切**：推荐人常带 Bungie
-    // 的 #1234，配装名里也可能有 #，切了会让同名不同人撞成一套。
-    return i === CLASS_AT ? got.split('#')[0].trim() : got
-  })
-  // \u0001 当分隔符：正文里不会出现，拼接因此不会把两项混成一项
-  return crypto.createHash('sha1').update(parts.join('\u0001')).digest('hex')
+  return crypto.createHash('sha1').update(same(md).join('\u0001')).digest('hex')
 }
 
 function admin(body) {
@@ -441,7 +424,7 @@ async function editorRoute(a, body, event, me) {
       // 留着。不收窄到 was === 1 的话，对已上站那一套的更新被驳回之后就再也退不回
       // 待审，而它从来没落过盘。
       if (was === 1 && cur.season && cur.slug &&
-          (await docs.doc('builds/' + cur.season + '/' + cur.slug).get()).data.length) {
+          (await docs.doc(buildId(cur.season, cur.slug)).get()).data.length) {
         throw new Error('已上站，请走申请移除')
       }
       // 退回待审要守住「同一 key 的待审只留一条」——sub 那一侧靠一次 find-one-and-
@@ -484,7 +467,7 @@ async function editorRoute(a, body, event, me) {
         if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) throw new Error('bad slug')
         const dup = await subs.where({ season, slug, ok: 1 }).limit(1).get()
         if (dup.data.length && dup.data[0]._id !== String(body.id)) throw new Error('slug 重了')
-        if ((await docs.doc('builds/' + season + '/' + slug).get()).data.length) {
+        if ((await docs.doc(buildId(season, slug)).get()).data.length) {
           throw new Error('slug 重了')
         }
       }
@@ -497,7 +480,7 @@ async function editorRoute(a, body, event, me) {
       // 已经在站上的那一份它不碰。写进 docs 之后走的是与资料页同一条对账路——
       // 库变了、盘没变，下一次 sync 自然拉下来。
       if (cur.updates) {
-        const id = 'builds/' + season + '/' + slug
+        const id = buildId(season, slug)
         // by 写通过的那个人。**不写「投稿更新」这类词**：铭牌拿 docs.by 当「谁改的」，
         // 一个状态词摆在人名的位置上读起来像有个人叫这个名字；这一版是不是投稿更新
         // 来的，由 sub.updates 答，铭牌第一行已经写着。
@@ -948,7 +931,7 @@ async function route(a, body, event) {
     return { ok: 1 }
   }
 
-  // 重算全部投稿的指纹。**换了 SAME 那一组字段之后要跑一次**——旧记录的 key 是按
+  // 重算全部投稿的指纹。**改了 source.js 里 same() 的取法之后要跑一次**——旧记录的 key 是按
   // 旧算法存的，对不上就认不出「这一套已经上站了」，重投会另开一个 slug。
   // 与 sync.py --seed 同一类：平时不用，改了判据才用。
   if (a === 'rekey') {

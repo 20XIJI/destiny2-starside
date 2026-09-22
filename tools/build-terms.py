@@ -25,10 +25,12 @@ import shell
 
 OUT = os.path.join(shell.SITE, 'admin', 'terms.js')
 TREE = os.path.join(shell.SITE, 'admin', 'pages.js')
-# 切格那一份的定义在 admin/，云函数只 require 得到自己目录下的东西，所以复制一份
-# 过去。两份逐字相同由 npm test 钉住；改规则改 admin/dialect.js。
-DIALECT = os.path.join(shell.SITE, 'admin', 'dialect.js')
-DIALECT_FN = os.path.join(shell.ROOT, 'functions', 'api', 'dialect.js')
+# 源稿方言与配装源稿形状的定义在站点里，云函数只 require 得到自己目录下的东西，所以
+# 各复制一份过去。两份逐字相同由 npm test 钉住；改规则改站点里那一份。
+COPIES = [(os.path.join(shell.SITE, 'admin', 'dialect.js'),
+           os.path.join(shell.ROOT, 'functions', 'api', 'dialect.js')),
+          (os.path.join(shell.SITE, 'builds', 'source.js'),
+           os.path.join(shell.ROOT, 'functions', 'api', 'source.js'))]
 
 
 def j(v):
@@ -147,16 +149,21 @@ def tree():
     rows.sort(key=lambda r: (r[3], r[4], r[0]))
     # 配装那几张表跟着一起导：编辑台的场景与职业筛选、行左缘的分支色都读它，
     # 而 DOM 那边只认得 b-prismatic 这种 slug。**照 markup.py 那一份导**，
-    # 不在 admin.js 里另抄一遍——多一个分支时只改那一处。
+    # 不在 admin.js 里另抄一遍——多一个分支时只改那一处。season 是当前赛季的源稿
+    # 目录（shell.SEASON 那一季），审核台通过投稿时落在它下面。
+    season = [n for n in sorted(os.listdir(os.path.join(shell.ROOT, 'references', 'builds')))
+              if n.startswith(shell.SEASON + '-')]
+    if len(season) != 1:
+        sys.exit('references/builds/ 下 %s 那一季的目录要恰好一个，现在是 %r' % (shell.SEASON, season))
     return ('// 由 tools/build-terms.py 生成，不手改。编辑台的资料页清单，'
-            '以及配装的职业、场景、强度、标签与分支五张表。\n'
+            '以及配装的职业、场景、强度、标签与分支五张表与当前赛季。\n'
             'window.starsidePages = [\n'
             + '\n'.join('  %s,' % j(r) for r in rows) + '\n]\n'
             + 'window.starsideBuilds = %s\n'
             % j({'classes': list(markup.CLASSES), 'scenes': list(markup.SCENES),
                  'tiers': list(markup.TIERS),
                  'sceneTags': {k: list(v) for k, v in markup.SCENE_TAGS.items()},
-                 'branch': markup.BRANCH}))
+                 'branch': markup.BRANCH, 'season': season[0]}))
 
 
 def docs_where(docs, pid):
@@ -183,12 +190,13 @@ def main():
     with open(OUT, 'w', encoding='utf-8') as f:
         f.write(out)
     print('admin/terms.js  %.1f KB' % (len(out.encode()) / 1024))
-    with open(DIALECT, encoding='utf-8') as f:
-        dialect = f.read()
-    with open(DIALECT_FN, 'w', encoding='utf-8') as f:
-        f.write(dialect)
-    print('functions/api/dialect.js  %.1f KB（admin/dialect.js 的副本）'
-          % (len(dialect.encode()) / 1024))
+    for src, dst in COPIES:
+        with open(src, encoding='utf-8') as f:
+            text = f.read()
+        with open(dst, 'w', encoding='utf-8') as f:
+            f.write(text)
+        print('%s  %.1f KB（%s 的副本）' % (os.path.relpath(dst, shell.ROOT), len(text.encode()) / 1024,
+                                        os.path.relpath(src, shell.SITE)))
     pages = tree()
     with open(TREE, 'w', encoding='utf-8') as f:
         f.write(pages)

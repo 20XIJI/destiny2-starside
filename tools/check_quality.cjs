@@ -178,8 +178,9 @@ function harness(seed = {}, hooks = {}) {
     require(name) {
       if (name === 'crypto') return crypto
       if (name === 'zlib') return zlib
-      // 切格那一份与线上是同一个文件，不在这里另造替身。
+      // 源稿方言与配装源稿形状两份与线上是同一个文件，不在这里另造替身。
       if (name === './dialect.js') return require(path.join(root, 'functions/api/dialect.js'))
+      if (name === './source.js') return require(path.join(root, 'functions/api/source.js'))
       assert.equal(name, '@cloudbase/node-sdk', 'unexpected module')
       return { init: () => ({ database: () => db }) }
     }
@@ -804,13 +805,16 @@ function tableRows() {
   return out
 }
 
-test('the dialect module is byte-identical in both places it has to live', () => {
-  // 切格在 JS 这一侧只有 admin/dialect.js 一份定义。云函数只 require 得到自己
-  // 目录下的东西，所以 build-terms.py 复制一份到 functions/api/。复制走样就是
-  // 站上与库里对同一行切出不同的格——那一格改下去会落到别处。
-  const one = fs.readFileSync(path.join(site, 'admin/dialect.js'), 'utf8')
-  const two = fs.readFileSync(path.join(root, 'functions/api/dialect.js'), 'utf8')
-  assert.equal(two, one, 'functions/api/dialect.js 与 admin/dialect.js 不一样了——跑 npm run build 重新复制')
+test('the shared modules are byte-identical in both places they have to live', () => {
+  // 源稿方言（admin/dialect.js）与配装源稿形状（builds/source.js）在 JS 这一侧各只有
+  // 一份定义。云函数只 require 得到自己目录下的东西，所以 build-terms.py 各复制一份到
+  // functions/api/。复制走样就是站上与库里对同一行切出不同的格、对同一套配装算出不同
+  // 的指纹。
+  for (const [rel, fn] of [['admin/dialect.js', 'dialect.js'], ['builds/source.js', 'source.js']]) {
+    const one = fs.readFileSync(path.join(site, rel), 'utf8')
+    const two = fs.readFileSync(path.join(root, 'functions/api', fn), 'utf8')
+    assert.equal(two, one, `functions/api/${fn} 与 ${rel} 不一样了——跑 npm run build 重新复制`)
+  }
 })
 
 test('no consumer keeps a private copy of the splitter', () => {
@@ -847,20 +851,21 @@ test('app.js and the page-specific modules it lazy-loads stay in step', () => {
     'app.js 要按自己的 src 算模块路径：classic script 里 import() 的相对路径按文档基址解')
 })
 
-test('both entry points load the dialect before the console that uses it', () => {
-  // admin.js 的 cells()/titleEnd() 现读 window.starsideDialect。少这一句，
-  // /admin/ 一开就是 undefined.cells，而闸门、构建、npm test 全都看不见——
-  // 那一屏是手写的 HTML，没有任何生成器管它。
+test('both entry points load the shared modules before the console that uses them', () => {
+  // admin.js 现读 window.starsideDialect 与 window.starsideSource。少一句，/admin/
+  // 一开就是 undefined.cells，而闸门、构建、npm test 全都看不见——那一屏是手写的
+  // HTML，没有任何生成器管它。
   const html = fs.readFileSync(path.join(site, 'admin/index.html'), 'utf8')
   const at = (src) => html.indexOf(`<script src="${src}"`)
-  assert.notEqual(at('dialect.js'), -1, 'admin/index.html 没有引 dialect.js')
-  assert.ok(at('dialect.js') < at('admin.js'),
-    'admin/index.html 里 dialect.js 要排在 admin.js 前面')
+  for (const src of ['dialect.js', '../builds/source.js']) {
+    assert.notEqual(at(src), -1, `admin/index.html 没有引 ${src}`)
+    assert.ok(at(src) < at('admin.js'), `admin/index.html 里 ${src} 要排在 admin.js 前面`)
+  }
 
-  // 资料页上开编辑态走的是 edit.js 自己那条注入链，同样要先注入 dialect。
+  // 资料页上开编辑态走的是 edit.js 自己那条注入链，同样要先注入这两份。
   const edit = fs.readFileSync(path.join(site, 'admin/edit.js'), 'utf8')
-  const chain = /script\('admin\/dialect\.js'\)[\s\S]{0,120}script\('admin\/admin\.js'\)/
-  assert.match(edit, chain, 'edit.js 注入 admin.js 之前没有先注入 dialect.js')
+  const chain = /script\('admin\/dialect\.js'\)[\s\S]{0,120}script\('builds\/source\.js'\)[\s\S]{0,120}script\('admin\/admin\.js'\)/
+  assert.match(edit, chain, 'edit.js 注入 admin.js 之前没有先注入 dialect.js 与 source.js')
 })
 
 test('the dialect splits every real table row into cells that agree with its own count', () => {
@@ -929,7 +934,7 @@ test('an editor cannot mint someone at or above their own level', async () => {
 function adminApi(extra) {
   const sandbox = { console, module: { exports: {} }, window: { addEventListener() {} }, ...extra }
   vm.createContext(sandbox)
-  for (const rel of ['admin/dialect.js', 'admin/terms.js', 'admin/admin.js']) {
+  for (const rel of ['admin/dialect.js', 'builds/source.js', 'admin/terms.js', 'admin/admin.js']) {
     vm.runInContext(fs.readFileSync(path.join(site, rel), 'utf8'), sandbox, { filename: rel })
   }
   return { api: sandbox.module.exports, terms: sandbox.window.starsideTerms }
@@ -1050,8 +1055,8 @@ test('a live build whose body did not come back never falls back to the submissi
 })
 
 
-// 审核台那句「缺 …」与生成器的必填项是两份实现，跨不过去的那条缝由这一条钉住：
-// 构建过得去的源稿，审核台一条都不该报。
+// builds/source.js 的必填项与生成器的必填项是两份实现（JS 与 Python），跨不过去的
+// 那条缝由下面这一条钉住：构建过得去的源稿，lacking() 一条都不该报。
 //
 // 踩过一次：合集的 PER 无条件要求每一套写「标签：」，而 tags_of() 的规矩是
 // 「宗师/终极、日常、功能性这三个场景整行必须不写，其余场景可写可不写」。7 份
@@ -1088,48 +1093,16 @@ function unescapeHtml(text) {
     .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&')
 }
 
-test('a source the build accepts is never reported as incomplete by the console', () => {
-  const { api } = adminApi()
+/* 填表页非空即不许投，审核台照着列「缺 …」，两处读的都是 builds/source.js 的
+   lacking()。构建得过的源稿，这里必须一条都不报。 */
+test('a source the build accepts is complete by the shared source module', () => {
+  const B = require(path.join(site, 'builds/source.js'))
   const bad = []
   for (const [file, md] of buildSources()) {
-    const miss = api.missing(md)
-    if (miss.length) bad.push(`${file} → 缺 ${miss.join('、')}`)
+    const lack = B.lacking(md)
+    if (lack.length) bad.push(`${file}（${B.isSet(md) ? '合集' : '单套'}）→ ${lack.join('、')}`)
   }
-  assert.deepEqual(bad, [], `审核台对这些构建得过的源稿报了缺失：\n  ${bad.join('\n  ')}`)
-})
-
-
-/* 上一条钉的是审核台那张表，**这一条钉硬拦的那一半**。填表页的 lacking() 非空即
-   `return`，投稿的人一个字都发不出去；审核台那一侧只是多显示一行假的「缺 …」。
-   上次事故落在这里，而测试当时只覆盖了不流血的那一半。
-
-   两张表是同一条规则的两种编码（这里按正则，那里按键名），已经漂过：admin.js 的
-   强度认「强度」与「类别」两个键，form.js 只认「强度」。 */
-test('a source the build accepts can always be submitted from the form page', () => {
-  const form = require(path.join(site, 'builds/new/form.js'))
-  const bad = []
-  for (const [file, md] of buildSources()) {
-    // 合集走 set 那一页（每一套还要过 PER），单套走另一页。判据与 convert-build.py
-    // 的 split_set() 同源：第二个 `# ` 起就是合集。
-    const sets = /\n# /.test(md)
-    const lack = form.lacking(md, sets)
-    if (lack.length) bad.push(`${file}（${sets ? '合集' : '单套'}）→ ${lack.join('、')}`)
-  }
-  assert.deepEqual(bad, [], `填表页会拦下这些构建得过的源稿：\n  ${bad.join('\n  ')}`)
-})
-
-
-// 两张表答的是同一个问题，答案必须一致：一边说缺、一边说齐，就是又一次事故的形状。
-test('the console and the form page agree on which sources are complete', () => {
-  const { api } = adminApi()
-  const form = require(path.join(site, 'builds/new/form.js'))
-  const split = []
-  for (const [file, md] of buildSources()) {
-    const console_ = api.missing(md).length > 0
-    const page = form.lacking(md, /\n# /.test(md)).length > 0
-    if (console_ !== page) split.push(`${file}：审核台${console_ ? '报缺' : '说齐'}，填表页${page ? '报缺' : '说齐'}`)
-  }
-  assert.deepEqual(split, [], `两张必填项表对不上：\n  ${split.join('\n  ')}`)
+  assert.deepEqual(bad, [], `这些构建得过的源稿会被填表页拦下、被审核台报缺：\n  ${bad.join('\n  ')}`)
 })
 
 

@@ -494,90 +494,12 @@
   // **这一台管所有配装，不只是待审投稿。**已上线那些的在线入口只有这里：配装页
   // 没有 data-b，资料页那套逐处编辑在它们身上无从落脚，改法本来就是填表页整篇替换。
 
-  // 头部那几个「键：值」一趟扫完，按源稿字符串记住。首个匹配为准，与原先
-  // ^键：(.*)$ 带 m 标志的行为一致。
-  var HEAD = /^([一-鿿]{1,6})：(.*)$/
-  var headOf = new Map()
-  function head (md) {
-    if (!md) return {}
-    var got = headOf.get(md)
-    if (got) return got
-    var out = {}
-    md.split('\n').forEach(function (l) {
-      if (l.charAt(0) === '#') {
-        if (out['#'] === undefined && /^#\s/.test(l)) out['#'] = l.replace(/^#\s+/, '').trim()
-        return
-      }
-      var m = HEAD.exec(l)
-      if (m && out[m[1]] === undefined) out[m[1]] = m[2].trim()
-    })
-    if (headOf.size > 300) headOf.clear()     // 只是缓存，涨到头就整片丢掉重来
-    headOf.set(md, out)
-    return out
-  }
-  function line (md, key) { return head(md)[key] || '' }
-  function nameOf (md) { return head(md)['#'] || '' }
-
-  // 合集：一份源稿装 N 套，`# ` 分隔，头部戴着「合集：是」。判据与
-  // convert-build.py 的 split_set() 同一条，切法也是。
-  // **只看头部那一块**：注解里引用一句「合集：是」讲解写法的单套稿，
-  // 全文扫会把它判成合集，载进合集填表页后切不出成员，保存回去就是一份被搅坏
-  // 的源稿。Python 那侧的 split_set() 读的也是 parts[0]，两边判据要一致。
-  function isSet (md) { return /^合集：是$/m.test((md || '').split(/\n# /)[0]) }
-  function setsOf (md) { return (md || '').trim().split(/\n(?=# )/).slice(1) }
+  // 源稿的形状（头部怎么读、合集怎么切、缺了哪几项、_id 怎么拼）只有 builds/source.js
+  // 一份定义，与填表页、云函数同一份。现读，不在模块顶层捕获，理由同 D()。
+  function B () { return window.starsideSource }
+  function line (md, key) { return B().head(md)[key] || '' }
+  function nameOf (md) { return B().head(md)['#'] || '' }
   var MIXED = '多职业'
-
-  // **必需的这七项**，与 builds/new/form.js 的 NEED 同一组：缺了不许投。装备与
-  // 描述可以后补，这七项不行。**比后端算指纹的 SAME 多一个场景与一个强度**：
-  // 那两样是站上的目录分法，缺了 convert-build.py 当场中止，但改它们不该让审过
-  // 一轮的稿子认不出自己那一份，所以它们挡投稿、不进指纹。
-  // 更深的结构（套装件数、六维六格）由构建时的 Python 闸门管，不在这里抄第二遍。
-  // **强度那一项认两个键。**换轴之前投的稿子写的是「类别」，是同一件事；只认新键
-  // 的话历史投稿会永远挂着「缺 强度」。
-  var NEED = [['推荐人', '推荐人'], ['职业', '职业'], ['属性', '分支'],
-              ['场景', '场景'], ['强度', ['强度', '类别']], ['核心', '核心']]
-  /* 合集里每一套要凑齐的那几样。**推荐人不在内**：它写在合集头部，整份一个。
-     **标签也不在内**，判据是 convert-build.py 的 tags_of()：宗师/终极、日常、
-     功能性这三个场景没有标签集，「标签：」整行必须不写；其余场景可写可不写
-     ——标签说的是这套在队伍里干什么，说不出分工的那些不该被逼着挑一个凑数。 */
-  var PER = [['职业', '职业'], ['属性', '分支'], ['核心', '核心'],
-             ['使用场景', '描述']]
-
-  // **不能用对象字面量**：名字是投稿人填的，叫 constructor 或 toString 时
-  // HOLD[名字] 会取到原型链上的函数、读成真值，那一条就永远列着「缺名字」。
-  var HOLD = Object.create(null)
-  ;['配装名', '配装名称', '合集名', '合集名称', '这一套叫什么'].forEach(function (k) {
-    HOLD[k] = 1
-  })
-
-  function short (md, keys) {
-    // 第二项可以是一个键，也可以是一组同义键——任一个写了就算齐（强度／类别）。
-    var out = keys.filter(function (k) {
-      var want = [].concat(k[1])
-      return !want.some(function (one) { return line(md, one) })
-    }).map(function (k) { return k[0] })
-    if (!nameOf(md) || HOLD[nameOf(md)]) out.unshift('名字')
-    return out
-  }
-
-  function missing (md) {
-    var out = short(md, NEED)
-    if (!isSet(md)) return out
-    // **套数也要报**：它不在 NEED 里，通过之后落盘，convert-build.py 的
-    // split_set() 会中止——卡住的是整次 npm run build，不只是这一篇。
-    var many = setsOf(md)
-    if (many.length > 12) out.push('套数超过 12')
-    // 逐套报，报到是第几套——不然审的人不知道该回哪一套去看。
-    var full = 0
-    many.forEach(function (one, i) {
-      var miss = short(one, PER)
-      if (miss.length) out.push('第 ' + (i + 1) + ' 套的' + miss.join('、'))
-      else full += 1
-    })
-    // **至少两套凑齐才算一份合集**：只有一套填得完整时它就是一份单套配装。
-    if (full < 2) out.unshift('两套填齐的配装（现在 ' + full + ' 套）')
-    return out
-  }
 
   /* 线上改过、还没落盘：库里这一版的 hash 与 sync.py 记下的「上次落盘那一版」不等。
      那一套因此落进「通过」档而不是「完成」——那一档答的就是「这一轮要发什么」。
@@ -614,7 +536,7 @@
     var going = {}
     subs.forEach(function (s) {
       if (s.drop && Number(s.ok) !== -1 && s.season && s.slug) {
-        var k = 'builds/' + s.season + '/' + s.slug
+        var k = B().id(s.season, s.slug)
         going[k] = Math.max(going[k] || 0, Number(s.ok))
       }
     })
@@ -624,14 +546,14 @@
     var last = {}
     subs.forEach(function (s) {
       if (s.drop || Number(s.ok) !== 1 || !s.season || !s.slug) return
-      var id = 'builds/' + s.season + '/' + s.slug
+      var id = B().id(s.season, s.slug)
       if (!last[id] || (s.at || '') > (last[id].at || '')) last[id] = s
     })
     var seen = {}
     var out = []
     subs.forEach(function (s) {
       var ok = Number(s.ok)
-      var id = s.season && s.slug ? 'builds/' + s.season + '/' + s.slug : ''
+      var id = s.season && s.slug ? B().id(s.season, s.slug) : ''
       // **删除申请自成一行**，不认领那一套：站上那一篇还在（要等本机 sync 才真的删）。
       if (s.drop) {
         out.push({ sub: s, id: id, md: s.md, at: s.at,
@@ -690,20 +612,21 @@
   }
 
   // 职业、场景、强度、标签与分支五张表由 admin/pages.js 给（build-terms.py 照
-  // markup.py 那一份导），不在这里另抄一遍。**逐键兑，不是整份兑**：拿着旧 pages.js
-  // 缓存的人不该因为少一个键整个视图画不出来。
+  // markup.py 那一份导），不在这里另抄一遍；season 是当前赛季的源稿目录名（照
+  // shell.SEASON 现找），通过的投稿落在它下面。**逐键兑，不是整份兑**：拿着旧
+  // pages.js 缓存的人不该因为少一个键整个视图画不出来。
   var VOCAB = Object.assign(
-    { classes: [], scenes: [], tiers: [], sceneTags: {}, branch: {} },
+    { classes: [], scenes: [], tiers: [], sceneTags: {}, branch: {}, season: '' },
     window.starsideBuilds || {})
 
   // 职业那一行写成「猎人#主键」，分组只按职业名。
   function clsName (md) { return (line(md, '职业') || '').split('#')[0].trim() }
   function clsOf (b) {
-    if (!isSet(b.md)) return clsName(b.md)
+    if (!B().isSet(b.md)) return clsName(b.md)
     // 合集的职业由成员现算：一个角色的一组配装职业都一样，一队人各穿一套的
     // 那种自成一格，与站上索引页那条规矩同源。
     var all = []
-    setsOf(b.md).forEach(function (m) {
+    B().sets(b.md).forEach(function (m) {
       var c = clsName(m)
       if (c && all.indexOf(c) < 0) all.push(c)
     })
@@ -981,7 +904,7 @@
     return [
       b.sub && b.sub.drop && h('span', { class: 'x-flag warn', text: '移除申请' }),
       b.dirty && h('span', { class: 'x-flag', text: '线上已修改' }),
-      isSet(md) && h('span', { class: 'x-flag', text: '合集，' + setsOf(md).length + ' 套' }),
+      B().isSet(md) && h('span', { class: 'x-flag', text: '合集，' + B().sets(md).length + ' 套' }),
       b.sub && b.sub.updates && h('span', { class: 'x-flag', text: '更新已上线配装' }),
       /\n## 审核意见[ \t]*\n\s*\S/.test(md) && h('span', { class: 'x-flag', text: '含审核意见' })
     ].filter(Boolean)
@@ -1032,7 +955,7 @@
         bs.map(function (b) {
           var md = b.md || ''
           var slug = VOCAB.branch[line(md, '分支')]
-          var miss = md ? missing(md) : []
+          var miss = md ? B().lacking(md) : []
           var who = handOf(b)
           return h('button', { type: 'button', class: 'tr' + (slug ? ' br-' + slug : ''),
             title: who ? '最后由 ' + who + ' 修改' : null, onclick: function () { open('b:' + idOf(b)) } },
@@ -1040,7 +963,7 @@
           h('span', { text: clsOf(b) || '未填写' }),
           h('span', { class: 'x-dim', text: line(md, '分支') }),
           h('span', { class: 'x-dim', text: line(md, '场景') || '未填写' }),
-          h('span', { class: 'x-dim', text: line(md, '强度') || line(md, '类别') }),
+          h('span', { class: 'x-dim', text: line(md, '强度') }),
           h('span', { class: 'x-dim', text: byOf(md) || '未填写' }),
           h('span', { class: 'at', text: V.status === 'wait' ? waited(b.at) : when(b.at).slice(5, 10) }),
           miss.length ? h('span', { class: 'sub', text: '缺少：' + miss.join('、') }) : null)
@@ -1138,7 +1061,7 @@
         var md = b.md || ''
         var slug = VOCAB.branch[line(md, '分支')]
         var sel = 'b:' + idOf(b)
-        var miss = md ? missing(md) : []
+        var miss = md ? B().lacking(md) : []
         list.appendChild(h('button', { type: 'button', class: 'item' + (slug ? ' br-' + slug : '') + (V.sel === sel ? ' on' : ''),
           onclick: function () { open(sel) } },
         h('span', { class: 'l1' }, h('b', { text: titleOf(b) }),
@@ -1186,11 +1109,11 @@
     $('stage').hidden = false
     var st = bucket(b)
     var facts = [['职业', clsOf(b)], ['分支', line(md, '分支')], ['场景', line(md, '场景')],
-      ['标签', line(md, '标签') || line(md, '定位')], ['强度', line(md, '强度') || line(md, '类别')],
+      ['标签', line(md, '标签') || line(md, '定位')], ['强度', line(md, '强度')],
       ['核心', line(md, '核心')], ['推荐人', byOf(md) || '未填写']].filter(function (f) { return f[1] })
     var edBy = handOf(b)
     var okBy = (b.sub && b.sub.okBy) || ''
-    var miss = md ? missing(md) : []
+    var miss = md ? B().lacking(md) : []
     var ops = detailHead([
       h('p', { class: 'crumb' }, h('span', { class: 'x-st ' + st, text: b.sub && b.sub.drop ? '移除申请' : STATE[st] }),
         b.state === 'wait' ? '，已等待 ' + waited(b.at) : ''),
@@ -1270,7 +1193,7 @@
         if (ok === 1) {
           body.md = current(b)
           // 更新已上线那一套时后端沿用原来的 slug，这里给的会被忽略
-          body.season = seasons()[0] || ''
+          body.season = VOCAB.season
           body.slug = defaultSlug(body.md)
         }
         var order = queueIds()
@@ -1497,7 +1420,7 @@
 
   // 一份正文该落在哪一页填表页上。**由正文现算，不另存一个字段**：合集标记只有
   // 填表页的 setHead() 发得出，读回来与灌进去永远同属一档，存第二份只会有漂的风险。
-  function slotOf (md) { return isSet(md) ? 'set' : 'one' }
+  function slotOf (md) { return B().isSet(md) ? 'set' : 'one' }
 
   // 地址只给尾巴，前缀由调用方拼：编辑台在 admin/ 下写 ../，配装页按 site.css
   // 那个 <link> 现算相对前缀。
@@ -1749,15 +1672,6 @@
       })
       return box
     })
-  }
-
-  function seasons () {
-    var out = []
-    S.docs.forEach(function (d) {
-      var m = /^builds\/([^/]+)\//.exec(d._id)
-      if (m && out.indexOf(m[1]) < 0) out.push(m[1])
-    })
-    return out.sort().reverse()
   }
 
   var LATIN = { 猎人: 'hunter', 泰坦: 'titan', 术士: 'warlock' }
@@ -2088,9 +2002,7 @@
 
   // 纯函数单独导出：块拆分、着色与闸门不碰 DOM，离线断言直接拿这一份跑，
   // 不复制副本。页面不在时（Node 里）只导出、不接线。
-  // missing 与 builds 是给离线断言的：前者答「审核台会不会对这一篇报缺失」，判据要与
-  // convert-build.py 那几道（NEED、split_set、tags_of）对得上——拿库里每一篇真源稿
-  // 过一遍，构建得过的稿子这里必须一条都不报；后者是两张表并成清单那一步。
+  // builds 是给离线断言的：两张表并成清单那一步。
   // when 也是给离线断言的：库里存 UTC，显示要换成北京时间。refresh 同理：什么时候算登录
   // 失效、并发时换几次令牌，由它一处决定。nextWait 与 changed 也是：审完摊开哪一条、
   // 对照加亮哪一段。
@@ -2099,7 +2011,7 @@
   // 怎么分、填表页怎么载、怎么读、错误码怎么翻，两条路各抄一份就会漂。slotOf 那条
   // 判据还要与 convert-build.py 的 split_set() 逐字一致。
   var api = { lint: lint,
-              missing: missing, builds: builds, when: when, refresh: refresh, start: start,
+              builds: builds, when: when, refresh: refresh, start: start,
               nextWait: nextWait, changed: changed,
               slotOf: slotOf, formSrc: formSrc, readForm: readForm,
               mountForm: mountForm, say: say }

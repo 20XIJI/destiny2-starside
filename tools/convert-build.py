@@ -2038,11 +2038,11 @@ def render_new(stamp, name_cn, sets=False):
           shell.foot(stamp, '，选项与站内资料页同一份词表，列得出来的名字生成器就查得到。')]
     o = [x for x in o if x != '']
     # vocab.js 与 tip.js 在 builds/ 下，form.js 在 builds/new/ 下——
-    # 两处深浅差一层，前缀因此各算各的。form.js 判读着色标记走 admin/dialect.js，
-    # 排在它前面。
+    # 两处深浅差一层，前缀因此各算各的。form.js 读源稿形状走 builds/source.js、
+    # 判读着色标记走 admin/dialect.js，两份都排在它前面。
     back = '../' * (up - 1)
-    out = finish(o, [back + 'vocab.js', back + 'tip.js', '../' * up + 'admin/dialect.js',
-                     '../' * (up - 2) + 'form.js'])
+    out = finish(o, [back + 'vocab.js', back + 'tip.js', back + 'source.js',
+                     '../' * up + 'admin/dialect.js', '../' * (up - 2) + 'form.js'])
     outdir = os.path.join(shell.SITE, OUT_DIR, 'new', 'set') if sets \
         else os.path.join(shell.SITE, OUT_DIR, 'new')
     os.makedirs(outdir, exist_ok=True)
