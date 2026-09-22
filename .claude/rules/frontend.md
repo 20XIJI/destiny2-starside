@@ -132,12 +132,13 @@ manifest 蒸馏来的，18840/19356 条本来就带着英文，4282 个条目里
 另有一个可选的 `data-chip-break`：值等于哪枚 chip 的文字，就在那枚之前插一个占满整行的空项，chip 从那里另起一行。源稿写「跳转分行：」，护甲模组页用它把五个部位与十一个副本分成两行。
 
 切一屏内容的 chip 一律 `history.replaceState`，只有钻进详情才压栈。跳转 chip
-（`assets/app.js`）、合集目录（`builds/set.js`）与编辑台那四枚标签（`admin/admin.js`）
+（`assets/app.js`）、合集目录（`builds/set.js`）与编辑台那三枚标签（`admin/admin.js`）
 都是在同一屏里换个位置，走原生的片段导航点一枚攒一格，点五枚就得按五下返回键才出得去
 这一页。跳转 chip 拦下默认行为自己滚，`href` 原样留着供右键复制与中键新开。
 `file://` 下 `replaceState` 抛 `SecurityError`，所以 hash 即状态的那一处（合集目录）
 先试再拦，抛了就放行、退回原生导航；跳转 chip 的地址栏不同步不影响滚动，不必回退。
-编辑台里配装详情那一格照旧 `pushState`：那才是钻进去一层，返回键该回到列表。
+编辑台从列表点开一条（换成收件箱版面）照旧 `pushState`：那才是钻进去一层，返回键
+该回到列表；收件箱里换条、审完跳下一条就地 `replaceState`。
 
 搜索按条目的 `textContent` 过滤，整行不命中隐藏行，整节不命中隐藏分节与其 chip。隐藏靠 `hidden` 属性，`site.css` 里一条 `[hidden] { display: none !important }` 兜住：条目本身是 grid / flex，组件规则又排在 `site.css` 之后，不加 `!important` 就得每个组件页重述一遍。神器模组页检索期间三档并排对照关系失效，清空即恢复。
 

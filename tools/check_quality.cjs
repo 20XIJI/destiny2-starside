@@ -672,6 +672,28 @@ async function change(after, before = '旧文', blk = 6, cell = 1) {
   return { h, result, queued: [...h.store.edits.values()] }
 }
 
+test('a table cell change carries its row, and the queue reads the row as it is now', async () => {
+  // 审核台与改动记录靠 ctx 写「甲本 首领二 · 生命值」。首格留空即向上合并，身份是
+  // 合并到的首格加第二格；提交时记一份，取待审时按当前正文重取，定位不到的沿用提交那份。
+  const md = '# 标题\n\n| 副本 | 首领 | 生命值 |\n|---|---|---|\n| 甲本 | 首领一 | 100 |\n|  | 首领二 | 200 |\n\n正文一段\n'
+  const h = harness({ docs: [{ _id: 'docs/example', md, hash: digest(md), by: 'o' }] })
+  assert.equal((await h.request({ a: 'chg', doc: 'docs/example', before: '200', after: '250', blk: 5, cell: 2 })).ok, 1)
+  assert.equal((await h.request({ a: 'chg', doc: 'docs/example', before: '正文一段', after: '正文两段', blk: 7, cell: -1 })).ok, 1)
+  const [cellEdit, blockEdit] = [...h.store.edits.values()]
+  assert.deepEqual(cellEdit.ctx, { head: ['副本', '首领', '生命值'], cells: ['', '首领二', '200'], id: ['甲本', '首领二'] })
+  assert.equal(blockEdit.ctx, undefined, '整块改动不在表格里，没有行的上下文')
+
+  h.store.docs.get('docs/example').md = md.replace('首领二', '首领二改')
+  const fresh = (await h.request({ a: 'pend', doc: 'docs/example', judge: 1 })).pend.find((e) => e.cell === 2)
+  assert.equal(fresh.stale, false)
+  assert.deepEqual(fresh.ctx.id, ['甲本', '首领二改'], '同一行别的格改过之后，审的人看到的是此刻的整行')
+
+  h.store.docs.get('docs/example').md = md.replace('| 200 |', '| 210 |')
+  const stale = (await h.request({ a: 'pend', doc: 'docs/example', judge: 1 })).pend.find((e) => e.cell === 2)
+  assert.equal(stale.stale, true)
+  assert.deepEqual(stale.ctx.id, ['甲本', '首领二'], '定位不到时沿用提交时记下的那一行')
+})
+
 test('a bare pipe in a table cell is refused before it reaches the queue', async () => {
   const { result, queued } = await change('新|文')
   assert.equal(result.status, 400)

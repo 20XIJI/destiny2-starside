@@ -10,66 +10,66 @@
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../assets/site.css">
 <link rel="stylesheet" href="style.css">
-<!-- 有令牌就先把登录框藏起来。**必须在 <head> 里同步跑**：admin.js 是 defer，
-     等它执行完再藏，登录框已经画出来闪过一下了。认不出令牌或过期，由 admin.js
-     把这个类摘掉，登录框照常出现。 -->
+<!-- 有令牌就先把登录页藏起来。**必须在 <head> 里同步跑**：admin.js 是 defer，
+     等它执行完再藏，登录页已经画出来闪过一下了。认不出令牌或过期，由 admin.js
+     把这个类摘掉，登录页照常出现。 -->
 <script>try{if(localStorage.sa_at)document.documentElement.classList.add('signed')}catch(_){}</script>
 </head>
 <body>
 
-<div class="site-head">
-<nav class="site-nav">
-<span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>
-<a class="home" href="../index.html">Starside</a>
-<span class="sep">/</span>
-<span aria-current="page">编辑台</span>
-<p class="who" id="me" hidden><span id="me-name"></span><span class="sep">·</span><span id="me-lv"></span><button type="button" class="op" id="out">退出</button></p>
-</nav>
-<div class="toolbar" id="tabs" hidden>
-<div class="tool-chips">
-<button type="button" class="toggle" data-view="builds" aria-current="true">配装 <span id="n-sub"></span></button>
-<button type="button" class="toggle" data-view="review">文档 <span id="n-doc"></span></button>
-<button type="button" class="toggle" data-view="hist">记录</button>
-<button type="button" class="toggle" data-view="eds" hidden>编辑者</button>
+<!-- 登录与未授权共用一个版面：左边一面墙，右边表单。墙上的图由 admin.js 在这一屏
+     真要出现时才铺，已登录的人一张都不下载。 -->
+<div class="gate" id="gate">
+<div class="wall" id="wall" aria-hidden="true">
+<div class="sign"><span class="mark"><i></i><i></i><i></i></span><b>STARSIDE</b><p>Destiny 2 中文资料台 · 编辑台</p></div>
+</div>
+<div class="gate-side">
+<div class="gate-form" id="login">
+<h1>登录编辑台</h1>
+<p>审核配装投稿与资料页改动。</p>
+<form id="f-pw">
+<label class="x-field"><span>用户名</span><input class="x-in" name="username" autocomplete="username" required></label>
+<label class="x-field"><span>密码</span><input class="x-in" name="password" type="password" autocomplete="current-password" required></label>
+<p class="x-tip" id="gate-tip" role="status"></p>
+<button type="submit" class="x-btn fill lg">登录</button>
+</form>
+<p class="foot">不开放注册，账号由超级管理员开通。<br><a href="../index.html">返回 Starside</a></p>
+</div>
+<div class="gate-form" id="stranger" hidden>
+<h1>账号未获授权</h1>
+<p>登录已成功，但该账号不在编辑者名单中。请将下方 UID 发送给超级管理员，加入名单后刷新本页。</p>
+<div class="uid"><code id="my-uid"></code><button type="button" class="x-btn sm" id="copy-uid">复制</button></div>
+<p class="x-tip" id="uid-tip" role="status"></p>
+<div class="x-acts"><button type="button" class="x-btn fill" id="reload">刷新</button><button type="button" class="x-btn quiet" id="switch">切换账号</button></div>
 </div>
 </div>
 </div>
 
-<header class="page-head">
-<h1>编辑台</h1>
+<header class="top" id="top" hidden>
+<a class="x-brand" href="../index.html"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span><b>STARSIDE</b><span>编辑台</span></a>
+<nav class="tabs" id="tabs">
+<button type="button" class="tab" data-view="queue" aria-current="true">审核<span class="x-n hot" id="n-wait"></span></button>
+<button type="button" class="tab" data-view="hist">记录</button>
+<button type="button" class="tab" data-view="eds" hidden>编辑者</button>
+</nav>
+<div class="me"><b id="me-name"></b><span id="me-lv"></span><button type="button" class="x-btn quiet sm" id="out">退出</button></div>
 </header>
 
-<main>
+<!-- 列表版面：审核、记录与编辑者三屏的正文，整块重画。 -->
+<main class="list" id="views" hidden></main>
 
-<section class="block" id="gate">
-<h2 class="sect-label">登录</h2>
-<p class="lede">账号由管理员创建，没有自助注册。</p>
-<form id="f-pw" class="login">
-<label>用户名<input class="tool-search" name="username" autocomplete="username" required></label>
-<label>密码<input class="tool-search" name="password" type="password" autocomplete="current-password" required></label>
-<button type="submit" class="op">登录</button>
-</form>
-<p class="tip" id="gate-tip" role="status"></p>
+<!-- 收件箱版面：左边队列，右边详情。**详情那一格的骨架固定在这里**：填表页的 iframe
+     建一次就常驻在 #stage 里，append 进重建过的容器等于重新挂载，浏览器会把整页再载
+     一遍。队列、页头、#pane 与页脚清空重建；配装详情用 #stage，资料页改动与记录用 #pane。 -->
+<div class="ib" id="ib" hidden>
+<aside class="q" id="queue"></aside>
+<section class="d" id="detail">
+<header class="d-head" id="stage-head"></header>
+<div class="d-body" id="stage"></div>
+<div class="d-body d-col" id="pane"></div>
+<div class="d-foot d-col" id="stage-foot"></div>
 </section>
-
-<section class="block" id="stranger" hidden>
-<h2 class="sect-label">还不是编辑者</h2>
-<p class="lede">ID <code id="my-uid"></code>，发给管理员加进白名单后刷新。</p>
-</section>
-
-<div id="views" hidden></div>
-
-<!-- 配装详情摊在列表下面那一格。**骨架固定，iframe 建一次就不再动**：把它 append
-     进一个重建过的容器等于重新挂载，浏览器会照规范把整页再载一遍，而填表页要
-     site.css、builds/style.css、vocab.js 与 form.js —— 换一条配装就重付一次解析
-     与布局。所以只有头与脚两块清空重建，中间那一枚原地留着。
-     头分左右两列：左边收起与铭牌，右边保存／通过／驳回。脚只装《原文》。 -->
-<div id="stage" hidden>
-<div id="stage-head"></div>
-<div id="stage-foot"></div>
 </div>
-
-</main>
 
 <!-- 词表不在这里引：lint() 全仓只有 admin/edit.js 一个调用点，编辑台自己
      这一屏从不跑闸门，而 terms.js 是 104 KB。资料页上开编辑态时由 edit.js

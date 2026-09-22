@@ -93,5 +93,36 @@
     return brk >= 0 && brk < end ? brk : end
   }
 
-  return { cellSpans: cellSpans, cells: cells, titleEnd: titleEnd }
+  /* 表格里第 i 行的上下文：表头各格、这一行各格，以及这一行叫什么。第 i 行不是
+     表格的数据行（表头、分隔行、表格外）返回 null。
+
+     「叫什么」按源稿的合并写法取：整张表有首格留空的行，身份就是向上合并到的
+     那个首格加这一行的第二格（副本 + 首领）；没有的话身份就是首格。审核台拿它把
+     「第 18 行第 3 格」写成「最后一愿 千语魅痕 · 生命值」。 */
+  var RULE = /^\|[-:| ]*-[-:| ]*\|$/
+  function rowOf (lines, i) {
+    var own = cellSpans(lines[i] || '')
+    if (!own || RULE.test(lines[i].trim())) return null
+    var first = function (k) {
+      var sp = cellSpans(lines[k])
+      return sp && sp.length ? lines[k].slice(sp[0][0], sp[0][1]) : ''
+    }
+    var h = i
+    while (h > 0 && lines[h].charAt(0) === '|' && !RULE.test(lines[h].trim())) h--
+    if (h < 1 || !RULE.test(lines[h].trim())) return null
+    var head = cellSpans(lines[h - 1])
+    if (!head) return null
+    var end = h + 1
+    while (end < lines.length && lines[end].charAt(0) === '|') end++
+    var merged = false
+    for (var k = h + 1; k < end && !merged; k++) merged = !first(k).trim()
+    var up = i
+    while (up > h + 1 && !first(up).trim()) up--
+    var id = [first(up)]
+    if (merged && own.length > 1) id.push(lines[i].slice(own[1][0], own[1][1]))
+    var text = function (line) { return function (sp) { return line.slice(sp[0], sp[1]) } }
+    return { head: head.map(text(lines[h - 1])), cells: own.map(text(lines[i])), id: id }
+  }
+
+  return { cellSpans: cellSpans, cells: cells, titleEnd: titleEnd, rowOf: rowOf }
 })

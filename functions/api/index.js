@@ -7,7 +7,7 @@ const zlib = require('zlib')
 const tcb = require('@cloudbase/node-sdk')
 // 切格是源稿方言，JS 这一侧只有 admin/dialect.js 一份定义；这里这个文件是构建
 // 复制过去的，不手改（云函数只 require 得到自己目录下的东西）。
-const { cellSpans } = require('./dialect.js')
+const { cellSpans, rowOf } = require('./dialect.js')
 const app = tcb.init({ env: tcb.SYMBOL_CURRENT_ENV })
 const db = app.database()
 const _ = db.command
@@ -619,6 +619,11 @@ async function editorRoute(a, body, event, me) {
     const unsafe = cellSafe(text, Boolean(at0.span))
     if (unsafe) throw new Error(unsafe)
     const set = { doc, blk, cell, before, after: text, ok: 0, at, by: me.name, uid: me.uid }
+    // 表格里的一格顺手记下它所在那一行的上下文（表头、整行、行叫什么），审核台与
+    // 改动记录据此写「最后一愿 千语魅痕 · 生命值」，不写第几行第几格。记在提交这一刻：
+    // 结案之后那一行可能被改掉或删掉，记录里的上下文仍对得上当时改的是什么。
+    const ctx = at0.span ? rowOf(cur.md.split('\n'), at0.line) : null
+    if (ctx) set.ctx = ctx
     // 同一个人在同一处只留一条待审，重改即改写，不堆第二份。
     const old = await edits.where({ doc, uid: me.uid, ok: 0, blk, cell }).limit(1).get()
     if (old.data.length) {
@@ -672,9 +677,15 @@ async function editorRoute(a, body, event, me) {
       // 记录那几条的陈旧与否按库里那一格此刻的文字判，与 emark 通过时同一条。
       const ids = [...new Set(pend.filter((e) => e.kind === 'rec').map((e) => e.rec))]
       const now = ids.length ? await recsOf(ids) : {}
-      pend = pend.map((e) => ({ ...e, stale: e.kind === 'rec'
-        ? !now[e.rec] || leaf(flatOf(now[e.rec]), e.path) !== e.before
-        : !locate(md, e) }))
+      // 定位得到的那几格按当前正文重取一次行的上下文：提交之后那一行别的格可能已经
+      // 改过，审的人要看的是此刻的整行。定位不到的（陈旧）沿用提交时记下的那份。
+      const lines = md.split('\n')
+      pend = pend.map((e) => {
+        if (e.kind === 'rec') return { ...e, stale: !now[e.rec] || leaf(flatOf(now[e.rec]), e.path) !== e.before }
+        const at = locate(md, e)
+        const ctx = at && at.span ? rowOf(lines, at.line) : e.ctx
+        return ctx ? { ...e, stale: !at, ctx } : { ...e, stale: !at }
+      })
     }
     const out = { pend }
     if (want) {

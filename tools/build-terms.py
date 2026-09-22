@@ -21,6 +21,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import check_terms
 import items
 import markup
+import resolve
 import shell
 
 OUT = os.path.join(shell.SITE, 'admin', 'terms.js')
@@ -146,15 +147,28 @@ def tree():
     # 配装那三张表跟着一起导：审核台左栏按类别与职业建树、列表按分支上色，
     # 而 DOM 那边只认得 b-prismatic 这种 slug。**照 markup.py 那一份导**，
     # 不在 admin.js 里另抄一遍——多一个分支时只改那一处。
-    return ('// 由 tools/build-terms.py 生成，不手改。审核台左栏的资料页树，'
-            '以及配装的职业、场景、强度、标签与分支五张表。\n'
+    return ('// 由 tools/build-terms.py 生成，不手改。编辑台的资料页树，配装的职业、场景、'
+            '强度、标签与分支五张表，以及登录页那面墙的图。\n'
             'window.starsidePages = [\n'
             + '\n'.join('  %s,' % j(r) for r in rows) + '\n]\n'
             + 'window.starsideBuilds = %s\n'
             % j({'classes': list(markup.CLASSES), 'scenes': list(markup.SCENES),
                  'tiers': list(markup.TIERS),
                  'sceneTags': {k: list(v) for k, v in markup.SCENE_TAGS.items()},
-                 'branch': markup.BRANCH}))
+                 'branch': markup.BRANCH})
+            + 'window.starsideWall = %s\n' % j(wall()))
+
+
+def wall():
+    """登录页左边那面墙：全部异域武器的站内图，按 manifest 的 index 排序。
+
+    图就是站上已经发着的那批（icon_local，文件名即内容哈希、长缓存），登录页只是
+    再引一次，不另存一份。"""
+    facts = resolve.Facts()
+    rows = [v for v in facts.items.values()
+            if v.get('itemType') == 3 and (v.get('inventory') or {}).get('tierType') == 6
+            and v.get('icon_local')]
+    return [v['icon_local'] for v in sorted(rows, key=lambda v: v.get('index', 0))]
 
 
 def docs_where(docs, pid):

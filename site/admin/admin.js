@@ -14,16 +14,7 @@
   function terms () { return window.starsideTerms || FALLBACK }
 
   var $ = function (id) { return document.getElementById(id) }
-  // 第四个参数写进 title。列表里那几列是 nowrap + ellipsis，而这一屏不换行、
-  // 不横向滚，截掉的一段除了 hover 没有别的办法看到。
-  var el = function (tag, cls, text, tip) {
-    var n = document.createElement(tag)
-    if (cls) n.className = cls
-    if (text != null) n.textContent = text
-    if (tip) n.title = tip
-    return n
-  }
-  var LV = { 1: '编辑', 2: '审核员', 3: '管理员', 4: '超管', 5: '本机' }
+  var LV = { 1: '编辑', 2: '审核员', 3: '管理员', 4: '超级管理员', 5: '本机' }
   var S = { me: null, docs: [], edits: [], subs: [], more: false }
 
   // ── 凭据 ───────────────────────────────────────────────────────────
@@ -330,137 +321,68 @@
     return { errs: errs, warns: warns }
   }
 
-  // ── 视图外壳 ───────────────────────────────────────────────────────
-  function show (node) {
-    var view = $('views')
-    view.textContent = ''
-    view.appendChild(node)
-    // 换一屏就把配装详情那一格收起来。**只收 DOM、不动 openBuild**：buildsView
-    // 自己也走这条路，清掉状态它就再也画不开那一格了。
-    hideStage()
-  }
-
-  function hideStage () {
-    $('stage').hidden = true
-    $('stage-head').textContent = ''
-    $('stage-foot').textContent = ''
-  }
-  // ── 浏览器的返回 ───────────────────────────────────────────────────
-  // 编辑台整站一页。**只有配装详情压一格**：人在详情里按返回，想去的是那张列表。
-  // 换标签是同一屏里换一份列表、不是钻进去一层，就地改写那一格即可——每换一屏压
-  // 一格的话，四枚标签点一圈就攒四格，返回键要按四下才出得去编辑台。
-  // state 里写清那一格该画什么。
-  var VIEWS = { review: reviewView, builds: buildsView, hist: histView, eds: edsView }
-
-  // 详情里做完动作回列表。**走 history.back()，不直接画列表**——直接画会把详情
-  // 那一格留在历史里，人再按一次返回又弹回那条已经处理完的记录。
-  function toList () {
-    if (history.state && history.state.b) return history.back()
-    /* 历史那一格里没有详情，也照样要把它收起来——**这条路真会走到**：换标签再换
-       回来时 replaceState 写的是 { v: 'builds' }，而 openBuild 还留着（show() 只收
-       DOM 不动它），详情因此还摊着。不 shut() 的话，动作做完那一条还开在原地。 */
-    shut()
-    buildsView()
-  }
-
-  /* 地址栏那一格。**只带 b，不带筛选与树**：那两样是各人当时的看法，带进链接会把
-     收链接的人的筛选一起改掉；而 b 指的是同一条稿子，两个人看的是同一样东西。
-
-     待审稿在站上还没有详情页，从前审核员之间要讨论一套只能传图（截图那枚按钮
-     就是为此存在的）。带上这一格之后，链接本身就能指到那一条。 */
-  function urlOf (id) {
-    return location.pathname + (id ? '?b=' + encodeURIComponent(id) : '')
-  }
-
-  function draw (state) {
-    var v = (state && state.v) || 'builds'
-    Array.prototype.forEach.call(document.querySelectorAll('[data-view]'), function (n) {
-      if (n.dataset.view === v) n.setAttribute('aria-current', 'true')
-      else n.removeAttribute('aria-current')
+  // ── 零件 ───────────────────────────────────────────────────────────
+  function h (tag, a) {
+    var n = document.createElement(tag)
+    a = a || {}
+    Object.keys(a).forEach(function (k) {
+      var v = a[k]
+      if (v == null || v === false) return
+      if (k === 'class') n.className = v
+      else if (k === 'text') n.textContent = v
+      else if (k === 'html') n.innerHTML = v
+      else if (k === 'style') n.style.cssText = v
+      else if (k.slice(0, 2) === 'on') n[k] = v
+      else n.setAttribute(k, v === true ? '' : v)
     })
-    // 详情摊开的是哪一套由历史那一格说了算：buildsView 画完列表会照它把详情
-    // 摊在下面。从 popstate 回来时因此不必再压一格。
-    openBuild = (state && state.b) || null
-    ;(VIEWS[v] || buildsView)()
+    for (var i = 2; i < arguments.length; i++) put(n, arguments[i])
+    return n
   }
-
-  window.addEventListener('popstate', function (ev) {
-    if (S.me && S.me.lv) draw(ev.state)
-  })
-
-  // 界面上那个「← 配装」与浏览器的返回走同一条，不然按钮退回去了、历史里还多一格。
-  function back (label) {
-    var b = el('button', 'toggle', '← ' + label)
-    b.type = 'button'
-    b.onclick = function () { history.back() }
-    return b
+  function put (n, kid) {
+    if (kid == null || kid === false) return
+    if (Array.isArray(kid)) return kid.forEach(function (k) { put(n, k) })
+    n.appendChild(typeof kid === 'string' ? document.createTextNode(kid) : kid)
   }
-  /* 截图：把 iframe 里那一套配装渲染成图，弹在**父窗口**。
-
-     出图归 iframe（starsideForm.shot()，那边才有配装的 DOM 与样式），弹图归这边
-     ——iframe 那一格 86vh，浮层落在里面只有那么大，看不成。与上面「动作不留在
-     iframe 底下」同一个取向。
-
-     审的是待审稿，站上还没有它的详情页，所以这是审核员之间传图讨论的唯一入口。 */
-  function shotBtn (kindOf) {
-    var b = el('button', 'op', '截图')
-    b.type = 'button'
-    b.onclick = function () {
-      b.disabled = true
-      var was = b.textContent
-      b.textContent = '生成中'
-      var done = function () { b.disabled = false; b.textContent = was }
-      Promise.resolve().then(function () {
-        return stageFrame(kindOf()).contentWindow.starsideForm.shot()
-      }).then(function (blob) {
-        return import('../builds/shot.js').then(function (m) { m.show(blob) })
-      }).then(done, function (e) {
-        done()
-        tip($('stage-head'), '截图失败：' + e.message, 1)
-      })
-    }
-    return b
+  function btn (text, cls, extra) {
+    var a = { type: 'button', class: 'x-btn' + (cls ? ' ' + cls : '') }
+    Object.keys(extra || {}).forEach(function (k) { a[k] = extra[k] })
+    return h('button', a, text)
   }
-
-  /* 不可逆那一档靠位置隔开，不靠颜色：一道发丝线把它推到整条的右端。
-     与填表页底部那条同一套语法（左边看一眼、右端会改东西），读者不学两遍。 */
-  function sep () {
-    var s = el('span', 'op-sep')
-    s.setAttribute('aria-hidden', 'true')
-    return s
-  }
+  // 不可逆的那一枚靠位置隔开，不靠颜色：一道发丝线把它推到整条的右端。
+  function cut () { return h('span', { class: 'x-cut', 'aria-hidden': 'true' }) }
+  function kbd (k) { return h('kbd', { text: k }) }
+  function num (v, hot) { return h('span', { class: 'x-n' + (hot && v ? ' hot' : ''), text: String(v) }) }
 
   /* 后端抛的是英文标识，直接拼进「操作失败：」就是给审核员看 no permission。
-     只翻真会走到配装这条路上的那些；翻不到的原样带出来——瞎猜一句中文比英文
-     更难查，报出原话至少 grep 得到。 */
+     只翻真会走到的那些；翻不到的原样带出来——猜一句中文比英文更难查，报出原话
+     至少 grep 得到。edit.js 那条编辑路也走这一张。 */
   var MSG = {
-    forbidden: '登录已过期，正在退回登录',
-    'no permission': '权限不足，这一步要审核员',
-    'no sub': '这条投稿已经不在了，刷新一下',
-    'no doc': '库里没有这一篇，刷新一下',
-    'bad id': '这一条的编号不合法',
-    'bad md': '正文不合法：要以「# 」开头，且不超过 256 KB',
-    'bad sub type': '这条是删除申请，按普通投稿处理不了',
-    'bad season': '赛季格式不对（形如 s29-…）',
-    'bad slug': 'slug 格式不对（小写字母、数字与连字符）',
-    'already pending': '这一条已经在待审了',
-    conflict: '别人刚动过这一条，请刷新后重看',
+    forbidden: '登录已过期，正在返回登录页',
+    'no permission': '权限不足：此操作需要审核员级别',
+    'no sub': '该投稿已不存在，请刷新',
+    'no doc': '库中没有这一篇，请刷新',
+    'bad id': '编号不合法',
+    'bad md': '正文不合法：需以「# 」开头，且不超过 256 KB',
+    'bad sub type': '这是移除申请，不能按投稿处理',
+    'bad season': '赛季格式不正确（应形如 s29-…）',
+    'bad slug': '标识格式不正确（仅限小写字母、数字与连字符）',
+    'already pending': '该条已在待审中',
+    conflict: '该条刚被他人修改，请刷新后重新审核',
     // 批量那一路才抛得出的三条。写在同一张表里：认不认得出这个码，与这个码
     // 该翻成什么，两件事只该查一处。
-    'bad jobs': '这一批的格式不对',
+    'bad jobs': '本批数据格式不正确',
     'batch too large': '待审过多，请逐处审核',
-    'no edit': '这条改动记录已经不在了，刷新一下',
-    // 主键页上记录那一路。库里没有这条记录说明 sync.py 还没把它推上去。
-    'no rec': '库里还没有这条记录，等本机对账之后再改',
-    'bad rec': '这一格指的记录不合法',
-    'bad path': '这一格指的字段不合法',
-    // docs 那一路翻页取配装正文时的防跑飞闸。撞上它说明库里 builds/ 的记录数量级
-    // 已经不对，不是业务上限。
-    'too many builds': '库里的配装条数异常，联系管理员'
+    'no edit': '该改动记录已不存在，请刷新',
+    // 主键页上记录那一路。库里没有这条记录说明它还没同步进库。
+    'no rec': '库中还没有这条记录，请稍后再改',
+    'bad rec': '该格指向的记录不合法',
+    'bad path': '该格指向的字段不合法',
+    // docs 那一路翻页取配装正文时的防跑飞闸，不是业务上限。
+    'too many builds': '库中配装数量异常，请联系超级管理员'
   }
 
   /* 令牌那一档不只是换句话：call() 已经拿 refresh 换过一张再打仍被拒，说明是
-     真过期了，留在原地点什么都白点。清掉令牌、缓一下让人看清这句再退回登录框。 */
+     真过期了，留在原地点什么都白点。清掉令牌、缓一下让人看清这句再退回登录页。 */
   function say (e) {
     var m = (e && e.message) || ''
     if (m === 'forbidden') {
@@ -470,19 +392,20 @@
     return MSG[m] || m || '未知错误'
   }
 
+  // 回执：落在 node 里那一行 .x-tip 上，没有就补一行。
   function tip (node, msg, bad) {
-    var p = node.querySelector('.tip')
-    if (!p) { p = el('p', 'tip'); node.appendChild(p) }
+    var p = node.querySelector('.x-tip')
+    if (!p) { p = h('p', { class: 'x-tip' }); node.appendChild(p) }
     p.setAttribute('role', 'status')
     p.setAttribute('aria-live', 'polite')
     p.textContent = msg
-    p.style.color = bad ? 'var(--c-enemy)' : ''
+    p.classList.toggle('bad', !!bad)
   }
 
-  // ── 资料页树 ───────────────────────────────────────────────────────
-  // 树由 admin/pages.js 给，那份从首页的六个分组、源稿的「路径：」与「卡片：」
-  // 三处现成数据拼出来。读者看到的是一个个资料页，不是 docs/boss-hp 这样的路径，
-  // 所以列表上一律写标题与分组。
+  // ── 资料页 ─────────────────────────────────────────────────────────
+  // 由 admin/pages.js 给，那份从首页的六个分组、源稿的「路径：」与「卡片：」三处
+  // 现成数据拼出来。读者看到的是一个个资料页，不是 docs/boss-hp 这样的路径，
+  // 所以一律写标题与分组。
   var PAGES = window.starsidePages || []
   var BY_ID = {}
   PAGES.forEach(function (r) {
@@ -497,55 +420,6 @@
   function trail (id) {
     var p = pageOf(id)
     return [p.group].concat(p.up ? [pageOf(p.up).title] : []).concat([p.title]).join(' › ')
-  }
-
-  // 左栏：**只列有东西的那些分支**。count 给出每一页有几条，为 0 的页面连同
-  // 空掉的父页与分组一起不出现——一屏全是零会把真有待审的那几页淹掉。
-  function tree (count, on, pick) {
-    var box = el('nav', 'tree')
-    var live = {}
-    PAGES.forEach(function (r) {
-      if (!count[r[0]]) return
-      live[r[0]] = 1
-      if (r[4]) live[r[4]] = 1                 // 父页跟着立起来，好挂子页
-    })
-    var groups = []
-    PAGES.forEach(function (r) {
-      if (live[r[0]] && groups.indexOf(r[3]) < 0) groups.push(r[3])
-    })
-    if (!groups.length) {
-      box.appendChild(el('p', 'lede', '没有待处理'))
-      return box
-    }
-    groups.forEach(function (g) {
-      box.appendChild(el('div', 'tree-group', g))
-      PAGES.filter(function (r) { return r[3] === g && !r[4] && live[r[0]] })
-        .forEach(function (r) {
-          box.appendChild(row(r, 0))
-          PAGES.filter(function (k) { return k[4] === r[0] && live[k[0]] })
-            .forEach(function (k) { box.appendChild(row(k, 1)) })
-        })
-    })
-    return box
-
-    function row (r, depth) {
-      var b = el('button', 'tree-row' + (depth ? ' sub' : '') + (on === r[0] ? ' on' : ''))
-      b.type = 'button'
-      b.appendChild(el('span', 'id', r[1]))
-      if (count[r[0]]) b.appendChild(el('span', 'n', String(count[r[0]])))
-      b.onclick = function () { pick(r[0]) }
-      return b
-    }
-  }
-
-  // 一栏树 + 一栏正文。两个标签共用这一套版面。
-  function split (side, body) {
-    var wrap = el('section', 'block desk')
-    wrap.appendChild(side)
-    var main = el('div', 'desk-main')
-    main.appendChild(body)
-    wrap.appendChild(main)
-    return wrap
   }
 
   // ── 对照 ───────────────────────────────────────────────────────────
@@ -573,227 +447,113 @@
       if (a < z) hits.push([t, a - at, z - at])
       at += t.data.length
     }
-    hits.forEach(function (h) {
-      if (h[2] < h[0].data.length) h[0].splitText(h[2])
-      var mid = h[1] ? h[0].splitText(h[1]) : h[0]
+    hits.forEach(function (x) {
+      if (x[2] < x[0].data.length) x[0].splitText(x[2])
+      var mid = x[1] ? x[0].splitText(x[1]) : x[0]
       var m = document.createElement('mark')
       mid.parentNode.insertBefore(m, mid)
       m.appendChild(mid)
     })
   }
 
-  // 一处改动的对照：旧值压暗、新值照常着色，与页面上那个遮罩同一套读法。
-  // 改动的那一段在两边各自加亮：一格九十个字里改了四个，不标出来就得逐字对。
-  // 按渲染后的文字比，着色标记不算字；两份毫无共同的头尾时整段都是改动，不加亮。
-  function oneView (e) {
-    var box = el('div', 'diff')
-    var del = el('div', 'del')
-    del.innerHTML = paint(e.before || '')
-    var add = el('div', 'add')
-    add.innerHTML = paint(e.after || '')
-    var was = del.textContent
-    var now = add.textContent
-    var ps = changed(was, now)
-    if (ps[0] || ps[1]) {
-      highlight(del, ps[0], was.length - ps[1])
-      highlight(add, ps[0], now.length - ps[1])
-    }
-    box.appendChild(del)
-    box.appendChild(add)
-    return box
+  // 源稿一格 → 页面上那个样子：着色照画，图不画，格内换行 `\\` 画成真的换行。
+  var IMG = /!\[[^\]]*\]\([^)]*\)/g
+  function paintCell (t) {
+    return paint(String(t || '').replace(IMG, '')).replace(/\\\\/g, '<span class="br"></span>')
+  }
+  // 源稿一格 → 纯文字。表头与行的身份用它：图、换行与着色标记都不算字。
+  function plain (t) {
+    var box = document.createElement('div')
+    box.innerHTML = paint(String(t || '').replace(IMG, '').replace(/\\\\/g, ' '))
+    return box.textContent.replace(/\s+/g, ' ').trim()
   }
 
-  // 一处改动在哪：源稿那一路是行与格，记录那一路是「记录名 · 字段」（主键页上
-  // 来自记录的文字，提交时由页面的出处表给出）。
+  // 一处改动的原文与改后，改动的那一段在两边各自加亮：一格九十个字里改了四个，
+  // 不标出来就得逐字对。按渲染后的文字比，着色标记不算字；两份毫无共同的头尾时
+  // 整段都是改动，不加亮。内容各包一层 span：外层那一格是 grid，文字与 <mark>
+  // 直接放进去会被拆成两个格子。
+  function pair (e, tagA, tagB) {
+    var was = h('span', { html: paintCell(e.before) })
+    var now = h('span', { html: paintCell(e.after) })
+    var ps = changed(was.textContent, now.textContent)
+    if (ps[0] || ps[1]) {
+      highlight(was, ps[0], was.textContent.length - ps[1])
+      highlight(now, ps[0], now.textContent.length - ps[1])
+    }
+    return [h(tagA || 'div', { class: 'del' }, was), h(tagB || 'div', { class: 'add' }, now)]
+  }
+  function oneView (e) { return h('div', { class: 'x-diff' }, pair(e)) }
+
+  // 一处改动在哪。表格里的一格按提交时记下的那一行（云函数 chg 写的 ctx）写成
+  // 「最后一愿 千语魅痕 · 生命值」；记录那一路是页面出处表给的「记录名 · 字段」；
+  // 两样都没有的（整块改动、ctx 上线之前的旧记录）退回行号与格号。
   function spot (e) {
     if (e.kind === 'rec') return e.label || e.rec + ' · ' + e.path
     return '第 ' + (Number(e.blk) + 1) + ' 行'
       + (Number(e.cell) < 0 ? '' : '第 ' + (Number(e.cell) + 1) + ' 格')
+  }
+  function whereOf (e) {
+    if (e.kind === 'rec') {
+      var parts = String(e.label || '').split(' · ')
+      return parts.length > 1 ? { id: [parts[0]], col: parts.slice(1).join(' · ') } : { id: [spot(e)], col: '' }
+    }
+    var c = Number(e.cell)
+    if (e.ctx && c >= 0 && e.ctx.head[c] !== undefined) {
+      return { id: e.ctx.id.map(plain), col: plain(e.ctx.head[c]) }
+    }
+    return { id: [spot(e)], col: '' }
+  }
+  function whereView (e) {
+    var w = whereOf(e)
+    return h('div', { class: 'x-where' },
+      w.id.length > 1 ? h('span', { class: 'x-mute', text: w.id[0] }) : null,
+      h('b', { text: w.id[w.id.length - 1] }),
+      w.col ? h('span', { class: 'col', text: w.col }) : null)
+  }
+  function whereText (e) {
+    var w = whereOf(e)
+    return w.id.join(' › ') + (w.col ? ' · ' + w.col : '')
+  }
+  // 表格里的一格把整行连表头摆出来，改的那一格就地写成原文与改后；别的改动走对照。
+  function rowView (e) {
+    var c = Number(e.cell)
+    var ctx = e.ctx
+    if (e.kind === 'rec' || !ctx || c < 0 || ctx.cells[c] === undefined) return oneView(e)
+    var ab = pair(e, 's', 'ins')
+    var merged = ctx.id.length > 1
+    return h('div', { class: 'x-row' }, h('table', null,
+      h('thead', null, h('tr', null, ctx.head.map(function (t, i) {
+        return h('th', { class: i === c ? 'hit' : null, text: plain(t) })
+      }))),
+      h('tbody', null, h('tr', null, ctx.cells.map(function (t, i) {
+        if (i === c) return h('td', { class: 'hit' }, ab)
+        // 首格留空即向上合并：把合并到的那一格补出来，整行读得出是哪一行。
+        if (i === 0 && merged && !String(t).trim()) return h('td', { class: 'id x-mute', text: plain(ctx.id[0]) })
+        return h('td', { class: i < ctx.id.length ? 'id' : null, html: paintCell(t) })
+      })))))
   }
 
   // 库里的 at 一律是 toISOString() 写的 UTC，显示按北京时间，与云函数 today() 同一个时区。
   function when (t) {
     return t ? new Date(Date.parse(t) + 8 * 3600e3).toISOString().slice(0, 16).replace('T', ' ') : ''
   }
-
-  // ── 文档审核 ───────────────────────────────────────────────────────
-  var openDoc = null                 // 右栏正在看哪一页
-  var reviewBusy = false
-
-  function reviewView () {
-    var count = {}
-    S.edits.filter(function (e) { return e.ok === 0 }).forEach(function (e) {
-      count[e.doc] = (count[e.doc] || 0) + 1
-    })
-    if (openDoc && !count[openDoc]) openDoc = null
-    if (!openDoc) openDoc = Object.keys(count).sort()[0] || null
-    var body = el('div')
-    show(split(tree(count, openDoc, function (id) { openDoc = id; reviewView() }), body))
-    if (!openDoc) {
-      body.appendChild(el('p', 'lede', '没有待审'))
-      return
-    }
-    body.appendChild(el('p', 'crumb', trail(openDoc)))
-    var go = el('a', 'chip', '查看')
-    go.href = '../' + pageOf(openDoc).url
-    body.appendChild(go)
-    body.appendChild(el('p', 'lede', '载入中…'))
-    // judge 让后端顺带判一次每条还定不定位得到（乙类冲突），那个判断只有 locate
-    // 做得准，前端不再抄一份切格与匹配。
-    return call('pend', { doc: openDoc, judge: 1 }).then(function (r) {
-      if (openDoc) drawPend(body, r.pend.map(function (e) { e.ok = Number(e.ok); return e }))
-    }, function (err) { tip(body, err.message, 1) })
+  // 等了多久。一律按小时计，不换算成天；不满一小时单写。
+  function waited (t) {
+    var hr = Math.floor((Date.now() - Date.parse(t)) / 36e5)
+    return !t ? '' : hr < 1 ? '不足 1 小时' : hr + ' 小时'
   }
-
-  function drawPend (body, pend) {
-    body.setAttribute('data-review', '')
-    body.querySelectorAll('.lede, .pane, .acts, .tip').forEach(function (n) { n.remove() })
-    // 同一处的几份收成一组：**它们互斥**，通过一份就得在其余里择一驳回。
-    var groups = []
-    var at = {}
-    // 记录那一路按「记录 + 字段」归堆：同一格在几页上都有，从哪一页提的都是同一处。
-    pend.forEach(function (e) {
-      var k = e.kind === 'rec' ? e.rec + '|' + e.path : e.blk + ':' + e.cell
-      if (!at[k]) { at[k] = { key: k, list: [] }; groups.push(at[k]) }
-      at[k].list.push(e)
-    })
-    // 源稿那几处按行号排在前，记录那几格按标签排在后。
-    groups.sort(function (a, b) {
-      var x = a.list[0]
-      var y = b.list[0]
-      if ((x.kind === 'rec') !== (y.kind === 'rec')) return x.kind === 'rec' ? 1 : -1
-      return x.kind === 'rec' ? spot(x).localeCompare(spot(y)) : x.blk - y.blk
-    })
-    var bad = groups.filter(function (g) {
-      return g.list.length > 1 || g.list.some(function (e) { return e.stale })
-    })
-
-    var acts = el('div', 'acts')
-    var all = el('button', 'op go', '全部通过（' + pend.length + '）')
-    all.type = 'button'
-    all.disabled = !!bad.length || !pend.length || pend.length > 48
-    all.onclick = function () { passAll(acts, pend) }
-    acts.appendChild(all)
-    if (pend.length > 48) acts.appendChild(el('span', 'warn', '待审过多，请逐处审核'))
-    if (bad.length) {
-      acts.appendChild(el('span', 'warn', bad.length + ' 处冲突，请逐处审核；陈旧提案不能通过'))
-    }
-    body.appendChild(acts)
-
-    groups.forEach(function (g) {
-      var pane = el('div', 'pane' + (g.list.length > 1 || g.list[0].stale ? ' bad' : ''))
-      pane.appendChild(el('h3', null, spot(g.list[0])
-        + (g.list.length > 1 ? '　·　' + g.list.length + ' 份冲突' : '')
-        + (g.list.some(function (e) { return e.stale }) ? '　·　底稿已变' : '')))
-      g.list.forEach(function (e) {
-        var one = el('div', 'cand')
-        one.appendChild(el('p', 'by', (e.by || '?') + ' · ' + when(e.at)
-          + (e.stale ? ' · 基于旧文' : '')))
-        one.appendChild(oneView(e))
-        var row = el('div', 'acts')
-        var yes = el('button', 'op go', g.list.length > 1 ? '用这份' : '通过')
-        var no = el('button', 'op', '驳回')
-        yes.type = no.type = 'button'
-        yes.disabled = !!e.stale
-        yes.onclick = function () { pick(row, g, e) }
-        no.onclick = function () { mark([[e._id, -1]], row) }
-        row.appendChild(yes)
-        row.appendChild(no)
-        if (e.stale) row.appendChild(el('span', 'warn', '底稿已变，请回资料页重新提交'))
-        one.appendChild(row)
-        pane.appendChild(one)
-      })
-      // 底稿动过了：多给一个「什么都不改」的候选，选它就是把这几份一并驳回。
-      if (g.list.some(function (e) { return e.stale })) {
-        var keepActs = el('div', 'acts')
-        var keep = el('button', 'op', '保持现状')
-        keep.type = 'button'
-        keep.onclick = function () {
-          mark(g.list.map(function (e) { return [e._id, -1] }), keepActs)
-        }
-        keepActs.appendChild(keep)
-        pane.appendChild(keepActs)
-      }
-      body.appendChild(pane)
-    })
-  }
-
-  // 挑一份通过与驳回其余候选同批提交；陈旧提案原样保留，不按旧坐标猜新底稿。
-  function pick (body, g, e) {
-    if (e.stale) return tip(body, '底稿已变，请回资料页重新提交', 1)
-    var rest = g.list.filter(function (x) { return x._id !== e._id })
-      .map(function (x) { return [x._id, -1] })
-    return mark([[e._id, 1]].concat(rest), body)
-  }
-
-  function passAll (body, pend) {
-    return mark(pend.map(function (e) { return [e._id, 1] }), body)
-  }
-
-  // 一发就是一个原子批次。整批确认成功才改本地状态；结果不明只刷新，绝不重发。
-  function mark (jobs, body) {
-    if (reviewBusy) return Promise.resolve()
-    reviewBusy = true
-    var region = body.closest('[data-review]') || body
-    var buttons = Array.prototype.map.call(region.querySelectorAll('button'), function (b) {
-      var was = b.disabled
-      b.disabled = true
-      return [b, was]
-    })
-    region.setAttribute('aria-busy', 'true')
-    tip(body, '正在审核，本批提交中…')
-    return call('emark', { jobs: jobs.map(function (j) { return { id: j[0], ok: j[1] } }) })
-      .then(function (r) {
-        if (!r || r.ok !== 1) throw new Error('unconfirmed')
-        var done = {}
-        jobs.forEach(function (j) { done[j[0]] = j[1] })
-        S.edits.forEach(function (e) {
-          if (done[e._id] === undefined) return
-          e.ok = done[e._id]
-          e.okBy = S.me && S.me.name
-        })
-        badges()
-        return Promise.resolve(reviewView()).then(function () {
-          tip($('views').querySelector('[data-review] > .acts') || $('views'), '本批已应用')
-        })
-      }, function (e) {
-        /* 认得出的码才敢说「本批未应用」——说不出所以然的那些，请求可能已经落地了，
-           只能说「未确认」再刷一次队列。**认哪些码由 MSG 一处答**：另立一张名单
-           的话，加一个码要改两处，漏掉的那次就被当成未知错误。
-           conflict 单挑出来：这一档在批量里要说的是「重新审核」，与逐条那句不同。 */
-        var msg = e.message === 'conflict'
-          ? '本批未应用，底稿或状态已变，请重新审核'
-          : MSG[e.message]
-            ? '本批未应用：' + MSG[e.message]
-            : '结果未确认，正在刷新队列'
-        tip(body, msg, 1)
-        return load().then(function () {
-          return Promise.resolve(reviewView()).then(function () {
-            tip($('views').querySelector('[data-review] > .acts') || $('views'), msg, 1)
-          })
-        }, function (err) { tip(body, msg + '；刷新失败：' + err.message, 1) })
-      }).catch(function (e) {
-        tip(body, '结果未确认，正在刷新队列', 1)
-        return load().then(function () {
-          return Promise.resolve(reviewView()).then(function () {
-            tip($('views').querySelector('[data-review] > .acts') || $('views'), '队列已刷新，请核实本批状态', 1)
-          })
-        }, function (err) { tip(body, '结果未确认；刷新失败：' + err.message, 1) })
-      }).finally(function () {
-        reviewBusy = false
-        region.removeAttribute('aria-busy')
-        buttons.forEach(function (b) { b[0].disabled = b[1] })
-      })
+  function dayOf (t) {
+    var d = when(t)
+    return d ? Number(d.slice(5, 7)) + ' 月 ' + Number(d.slice(8, 10)) + ' 日' : ''
   }
 
   // ── 配装 ───────────────────────────────────────────────────────────
-  // **这一页管所有配装，不只是待审投稿。**已上站那些的在线入口只有这里：配装页
+  // **这一台管所有配装，不只是待审投稿。**已上线那些的在线入口只有这里：配装页
   // 没有 data-b，资料页那套逐处编辑在它们身上无从落脚，改法本来就是填表页整篇替换。
 
-  // 头部那几个「键：值」一趟扫完，按源稿字符串记住。画一行要读名字加四个键、
-  // 缺失项再读六个，每个都现编一个正则再把整份 md 扫一遍——点一下筛选 chip
-  // 整张列表重来一遍。首个匹配为准，与原先 ^键：(.*)$ 带 m 标志的行为一致。
-  var HEAD = /^([\u4e00-\u9fff]{1,6})：(.*)$/
+  // 头部那几个「键：值」一趟扫完，按源稿字符串记住。首个匹配为准，与原先
+  // ^键：(.*)$ 带 m 标志的行为一致。
+  var HEAD = /^([一-鿿]{1,6})：(.*)$/
   var headOf = new Map()
   function head (md) {
     if (!md) return {}
@@ -830,16 +590,13 @@
   // 一轮的稿子认不出自己那一份，所以它们挡投稿、不进指纹。
   // 更深的结构（套装件数、六维六格）由构建时的 Python 闸门管，不在这里抄第二遍。
   // **强度那一项认两个键。**换轴之前投的稿子写的是「类别」，是同一件事；只认新键
-  // 的话历史投稿会永远挂着「缺 强度」——一来是假的，二来每行多一枚标签，行的
-  // min-content 跟着变宽，整页被顶出横向滚动条（body 是 width: fit-content）。
+  // 的话历史投稿会永远挂着「缺 强度」。
   var NEED = [['推荐人', '推荐人'], ['职业', '职业'], ['属性', '分支'],
               ['场景', '场景'], ['强度', ['强度', '类别']], ['核心', '核心']]
   /* 合集里每一套要凑齐的那几样。**推荐人不在内**：它写在合集头部，整份一个。
      **标签也不在内**，判据是 convert-build.py 的 tags_of()：宗师/终极、日常、
      功能性这三个场景没有标签集，「标签：」整行必须不写；其余场景可写可不写
-     ——标签说的是这套在队伍里干什么，说不出分工的那些不该被逼着挑一个凑数。
-     要求它的话，一份「场景：日常」的三套合集会报出「两套填齐的配装（现在 0 套）
-     · 第 1 套的标签 · 第 2 套的标签 · 第 3 套的标签」，而那份稿子毫无问题。 */
+     ——标签说的是这套在队伍里干什么，说不出分工的那些不该被逼着挑一个凑数。 */
   var PER = [['职业', '职业'], ['属性', '分支'], ['核心', '核心'],
              ['使用场景', '描述']]
 
@@ -880,7 +637,7 @@
   }
 
   /* 线上改过、还没落盘：库里这一版的 hash 与 sync.py 记下的「上次落盘那一版」不等。
-     那一套因此落进「通过」档而不是「完成」——那一档答的就是「这一轮 sync 要发什么」。
+     那一套因此落进「通过」档而不是「完成」——那一档答的就是「这一轮要发什么」。
 
      **landed 为空即视为已落盘**：判不出来的时候报成「全都改过」比不报更没用。 */
   function dirtyOf (d) { return !!(d && d.landed && d.hash !== d.landed) }
@@ -890,8 +647,7 @@
      此时交空串，让它在列表上退成一个 slug、按保存被后端的 bad md 挡下。
 
      **不退回 s.md。**投稿那份是投稿当时冻住的，与库里现在这份可能差着好几轮线上
-     编辑；拿它当底稿灌进填表页，按一下保存就把陈稿盖回库里，而界面上一切正常。
-     这正是 limit(200) 那一版第 201 套起会发生的事。 */
+     编辑；拿它当底稿灌进填表页，按一下保存就把陈稿盖回库里，而界面上一切正常。 */
   function bodyOf (d) {
     return Object.prototype.hasOwnProperty.call(d, 'md') ? (d.md || '') : ''
   }
@@ -900,7 +656,7 @@
   // _id 就是 builds/<season>/<slug>——两边靠它认成同一套，不重复出现。
   // 两张表进来，一张行的清单出去，中间不碰 DOM。**收成参数是为了能离线断言**：
   // 「上了站以库里那份为准」与「批准移除的只留一行」两条都在这里，两条都出过错，
-  // 而它们在页面上要靠肉眼隔着一层 iframe 看。缺省仍读 S，调用点一处不改。
+  // 而它们在页面上要靠肉眼隔着一层 iframe 看。缺省仍读 S。
   function builds (docs, subs) {
     docs = docs || S.docs
     subs = subs || S.subs
@@ -954,9 +710,8 @@
         dirty: dirtyOf(d),
         state: ok === 0 ? 'wait' : ok === -1 ? 'no' : d ? 'live' : 'pass' })
     })
-    // 本机直接写的源稿没有对应投稿，照样要管。35 套里有 20 套是这一支——
-    // docs 那个动作给 builds/ 前缀的记录带上了 md，所以它们在列表上也有名字、
-    // 职业与强度，不再只剩一个 slug。
+    // 本机直接写的源稿没有对应投稿，照样要管。docs 那个动作给 builds/ 前缀的记录
+    // 带上了 md，所以它们在列表上也有名字、职业与强度，不再只剩一个 slug。
     Object.keys(live).forEach(function (id) {
       if (!seen[id] && !(id in going)) {
         out.push({ sub: null, id: id, doc: live[id], md: bodyOf(live[id]), at: live[id].at,
@@ -966,97 +721,42 @@
     return out
   }
 
-  // 状态词一档一个词，不写解释。「通过」是审过了还没落盘，「完成」是站上已经有了。
-  var STATE = { wait: '待审', pass: '通过', live: '完成', dropping: '待移除', no: '驳回' }
-  /* 「通过」那一档答的是「这一轮 sync 要发什么」：审过还没落盘的，与已上站又被改过的，
-     两种来源同属一档。**只并在筛选与计数上，state 本身不动**——subDetail() 的保存、
+  /* 五档，一档一个词。说明写在状态条上每一档的数字下面，悬停再给一句完整的。
+     界面的读者是编辑与审核员：只说这一档对站上意味着什么，不提本机那一侧怎么发。 */
+  var STAGES = [
+    ['wait', '待审', '等待审核', '投稿与改动提交后尚未审核'],
+    ['pass', '通过', '待上线', '已通过，下次站点更新时上线'],
+    ['live', '完成', '已上线', '已在站上'],
+    ['dropping', '待移除', '待下线', '移除申请已批准，下次站点更新时下线'],
+    ['no', '驳回', '可撤回', '已驳回的投稿，可撤回；删除后不可恢复']
+  ]
+  var STATE = {}
+  STAGES.forEach(function (s) { STATE[s[0]] = s[1] })
+  /* 「通过」那一档答的是「这一轮要发什么」：审过还没落盘的，与已上线又被改过的，
+     两种来源同属一档。**只并在筛选与计数上，state 本身不动**——详情里的保存、
      申请移除、撤回三枚按钮都按 state 分路，把 live 换成 pass 会让保存写去 subs
      （改动落不了盘）、申请移除整个消失、撤回换成一枚后端必拒的死按钮。 */
   function bucket (b) { return b.dirty ? 'pass' : b.state }
 
-  /* 五个词一档一个，界面上别处没有解释。「通过」与「完成」的差别尤其要说：前者
-     审过了还躺在库里，后者站上已经有了。挂在 chip 的 title 上，不占版面。 */
-  var STATE_TIP = {
-    wait: '投稿进来了，还没人审',
-    pass: '审过了，等本机跑 sync 落盘、构建再部署才上站',
-    live: '站上已经有了',
-    dropping: '删除申请已通过，等本机跑 sync 把源稿删掉',
-    no: '驳回的废稿。留着不影响去重，去重从不查这一档'
-  }
-
-  // 默认只看待审：一进来就该是待办清单，另外三档按需打开。
-  var buildFilter = { wait: 1 }
-
-  /* 一页 25 行，约一屏。**详情那一格 #stage 在 index.html 里是 main 的直接子元素，
-     永远排在 #views 后面**——列表有多长，点开一条就要往下滚多远，七十多行时是两千
-     多像素。分页把详情压回列表顶端一屏之内。
-
-     切的只是渲染多少行：数据本来就整批在内存里（S.subs / S.docs），树上与 chip 上
-     那几个计数照旧按整批算，不跟着翻页走。**后端那三处 limit 是另一件事**，
-     拉不回来的照旧不出现，这里分不出来。 */
-  var PAGE = 25
-  var buildPage = 0
-  var buildQ = ''           // 搜索框里那几个字
-  /* 动作做完那句回执。**不能当场 tip**：收起详情走的是 history.back()，popstate
-     下一拍才到，那时列表才重画，当场贴上去的会被这次重画抹掉。所以先记下来，
-     由 buildsView() 画完自己贴到筛选行上，贴完即清。 */
-  var pendTip = ''
-
-  /* 重画前光标在第几个字，重画之后放回原处；-1 是「这一次重画不是打字触发的」。
-     **用 -1 不用 null**：selectionStart 在少数实现上就会给 null。 */
-  var findAt = -1
-  var findIME = false       // 输入法正在组字：这期间一律不重画
-
-  /* 「改」取哪一份看这一套在哪一段：改过还没落盘时 docs.by 就是线上动它的那个人；
+  /* 「修改」取哪一份看这一套在哪一段：改过还没落盘时 docs.by 就是线上动它的那个人；
      没改过时 docs.by 是 sync.py 推上去写的「本机」，写出来没有信息，退回投稿那一侧
-     ——sub.edBy 是它待审时被谁改的。两处共用：铭牌第二行，与列表那一行的 title。
-     配装侧没有改动记录（edits 只收资料页那条路），这个名字是唯一的线索。 */
+     ——sub.edBy 是它待审时被谁改的。配装侧没有改动记录（edits 只收资料页那条路），
+     这个名字是唯一的线索。 */
   function handOf (b) {
     return (b.dirty && b.doc ? b.doc.by : '') || (b.sub && b.sub.edBy) || ''
   }
 
-  /* 名字、推荐人、核心三样够用：找一条多半是「某某推荐的那套」或「用某某异域的
-     那套」。**不搜正文**——整份 md 里什么都有，搜出来全是命中。核心按行取而不走
-     line()：合集的核心写在每一套里，头部那一块没有。 */
-  // **trim 在这里，不在输入框那一侧**：那边 trim 的话，打「阿 强」打到空格时
-  // buildQ 已经把它吃掉，重画又把 value 写回去，空格永远打不出来。
-  // 归一化一次就够，不必每一行现算一遍。
-  function findQ () { return buildQ.trim().toLowerCase() }
-
-  function inFind (b, q) {
-    if (!q) return true
-    var md = b.md || ''
-    var hay = [nameOf(md), line(md, '推荐人'), b.id]
-      .concat(md.match(/^核心：.*$/gm) || []).join('\n').toLowerCase()
-    return hay.indexOf(q) >= 0
-  }
-
   // 职业、场景、强度、标签与分支五张表由 admin/pages.js 给（build-terms.py 照
-  // markup.py 那一份导），不在这里另抄一遍。
-  // **逐键兑，不是整份兑**：只在 starsideBuilds 整个不存在时兜底的话，改了键名之后
-  // 那五分钟里拿着旧 pages.js 缓存的人会栽在 VOCAB.scenes.filter 上——不是少一列，
-  // 是整个配装视图画不出来。
+  // markup.py 那一份导），不在这里另抄一遍。**逐键兑，不是整份兑**：拿着旧 pages.js
+  // 缓存的人不该因为少一个键整个视图画不出来。
   var VOCAB = Object.assign(
     { classes: [], scenes: [], tiers: [], sceneTags: {}, branch: {} },
     window.starsideBuilds || {})
 
-  // 树上按第一个场景归格。raid + 地牢 那批（唯一放行的多场景组合）因此挂在 raid
-  // 底下，不另开一格「raid、地牢」：左栏是审稿的工作队列，一条只该出现一次，
-  // 树上的计数才对得上上面那排状态 chip。
-  function kindOf (b) { return (line(b.md, '场景') || '').split('、')[0] || '没写场景' }
-  // 这一套的场景有没有标签集。宗师/终极、日常、功能性没有（markup.SCENE_TAGS），
-  // 标签整行必须不写；词表里没有的场景值按有算，照旧出那一格。
-  function tagged (md) {
-    return (line(md, '场景') || '').split('、').some(function (sc) {
-      var tags = VOCAB.sceneTags[sc]
-      return tags === undefined || tags.length > 0
-    })
-  }
   // 职业那一行写成「猎人#主键」，分组只按职业名。
   function clsName (md) { return (line(md, '职业') || '').split('#')[0].trim() }
-
   function clsOf (b) {
-    if (!isSet(b.md)) return clsName(b.md) || '没写职业'
+    if (!isSet(b.md)) return clsName(b.md)
     // 合集的职业由成员现算：一个角色的一组配装职业都一样，一队人各穿一套的
     // 那种自成一格，与站上索引页那条规矩同源。
     var all = []
@@ -1064,95 +764,14 @@
       var c = clsName(m)
       if (c && all.indexOf(c) < 0) all.push(c)
     })
-    return all.length === 1 ? all[0] : all.length ? MIXED : '没写职业'
+    return all.length === 1 ? all[0] : all.length ? MIXED : ''
   }
+  function scenesOf (b) { return (line(b.md, '场景') || '').split('、').filter(Boolean) }
+  function byOf (md) { return line(md, '推荐人').split('|')[0].trim() }
   function idOf (b) { return b.sub ? b.sub._id : b.id }
 
-  // 左栏那两级键之间的分隔符。取制表符是因为场景、职业里都不可能出现它，
-  // 而 `/` 会与「宗师/终极」撞车。
-  var SEP = '\t'
-  var buildPick = ''          // 左栏选中的那一格：'' 全部、'突袭'、'突袭\t猎人'
-  var openBuild = null        // 详情摊开的是哪一套
-
-  // 左栏：场景 → 职业两级。**只列有东西的那些分支**，与资料页树同一条规矩：
-  // 为 0 的职业连同空掉的场景一起不出现，一屏全是零会把真有东西的那几格淹掉。
-  // 站上的索引页不再分节（一张网格 + 工具条），这里仍分两级：审稿是按批过的，
-  // 一次只看一个场景比在八十条里滚要快。
-  // 计数跟着上面那排状态 chip 走——只看待审时，树上数的就是待审。
-  function buildTree (list, on, pick) {
-    var box = el('nav', 'tree')
-    if (!list.length) {
-      box.appendChild(el('p', 'lede', '没有配装'))
-      return box
-    }
-    // **复合键用制表符，不用 `/`**：场景里有「宗师/终极」，拿 `/` 当分隔符会让
-    // 它自己被当成一个「场景/职业」的键——树上那一格因此排不出来，按第一个斜杠
-    // 切出来的还是「宗师」这个不存在的场景。
-    var n = {}
-    list.forEach(function (b) {
-      var c = kindOf(b)
-      n[c] = (n[c] || 0) + 1
-      n[c + SEP + clsOf(b)] = (n[c + SEP + clsOf(b)] || 0) + 1
-    })
-    // 词表里那几个排在前面，源稿写了别的值照样出得来——不然那几条在树上点不到。
-    var cats = VOCAB.scenes.filter(function (c) { return n[c] })
-    Object.keys(n).forEach(function (k) {
-      if (k.indexOf(SEP) < 0 && cats.indexOf(k) < 0) cats.push(k)
-    })
-    box.appendChild(row('全部', '', list.length, 0))
-    cats.forEach(function (c) {
-      box.appendChild(row(c, c, n[c], 0))
-      var ks = VOCAB.classes.filter(function (k) { return n[c + SEP + k] })
-      Object.keys(n).forEach(function (k) {
-        var at = k.indexOf(SEP)
-        if (at > 0 && k.slice(0, at) === c && ks.indexOf(k.slice(at + 1)) < 0) {
-          ks.push(k.slice(at + 1))
-        }
-      })
-      ks.forEach(function (k) { box.appendChild(row(k, c + SEP + k, n[c + SEP + k], 1)) })
-    })
-    return box
-
-    function row (label, key, count, depth) {
-      var b = el('button', 'tree-row' + (depth ? ' sub' : '') + (on === key ? ' on' : ''))
-      b.type = 'button'
-      b.appendChild(el('span', 'id', label))
-      b.appendChild(el('span', 'n', String(count)))
-      b.onclick = function () { pick(key) }
-      return b
-    }
-  }
-
-  function inPick (b) {
-    if (!buildPick) return true
-    return buildPick === kindOf(b) || buildPick === kindOf(b) + SEP + clsOf(b)
-  }
-
-  // 状态 chip 放进来的那几档。
-  function shownOf (all) {
-    return all.filter(function (b) { return buildFilter[bucket(b)] })
-  }
-
-  /* 列表此刻按什么次序摆着哪几条：树上那一格、搜索框与排序都在这里。列表与
-     「审完摊开下一条」读同一份，所以「下一条」就是列表上紧挨着的那一条。 */
-  function listOf (shown) {
-    /* **只开着待审这一档时先来先审**：那是一条队列，倒序排会让等最久的那份永远沉在
-       最后一页。别的档答的是「最近发生了什么」，照旧新的在前；同时开了几档时两种序
-       混在一起没有意义，一律按新的在前。 */
-    var fifo = buildFilter.wait && Object.keys(STATE).every(function (k) {
-      return k === 'wait' || !buildFilter[k]
-    })
-    var q = findQ()
-    return shown.filter(function (b) { return inPick(b) && inFind(b, q) })
-      .sort(function (a, b) {
-        var x = a.at || ''
-        var y = b.at || ''
-        return (x === y ? 0 : x < y ? 1 : -1) * (fifo ? -1 : 1)
-      })
-  }
-
-  /* 审完一条之后摊开哪一条：按审之前那份列表的次序，从这一条往后找第一条仍待审
-     的，到底了从头找。waiting 是审完重拉之后、当前筛选下仍待审的那几条的 id。
+  /* 审完一条之后摊开哪一条：按审之前那份队列的次序，从这一条往后找第一条仍待审
+     的，到底了从头找。waiting 是审完重拉之后、当前筛选下仍待审的那几条。
      一条都没有返回 null，调用方回列表。 */
   function nextWait (order, id, waiting) {
     var at = order.indexOf(id)
@@ -1163,215 +782,781 @@
     return null
   }
 
-  function buildsView () {
-    var all = builds()
-    var body = el('div')
+  // ── 列表与收件箱的状态 ─────────────────────────────────────────────
+  /* 一屏在画什么全在这里。view 是顶栏那三个标签；sel 或 hsel 有值即收件箱版面
+     （左边队列、右边详情），否则是列表。筛选是各人当时的看法，不进地址栏；
+     sel 进：指的是同一条稿子，两个人看的是同一样东西。 */
+  var V = { view: 'queue', status: 'wait', kind: 'all', scene: '', cls: '', q: '', sel: null,
+            hok: 0, hdoc: '', hwho: '', hq: '', hsel: null, add: false }
+  var PEND = {}             // 资料页 → 带 judge 取回的那一份待审，load() 时清空
+  var pendTip = ''          // 回到列表之后要贴在筛选行上的那句回执
 
-    // **筛选行另挂 .filters**：它与详情动作区同为 .acts，而「一排多枚退回素字」
-    // 那条规则只该落在这一行上，判据得分得开。
-    var bar = el('div', 'acts filters')
-    Object.keys(STATE).forEach(function (k) {
-      var n = all.filter(function (b) { return bucket(b) === k }).length
-      var c = el('button', 'toggle', STATE[k] + ' ' + n, STATE_TIP[k])
-      c.type = 'button'
-      if (buildFilter[k]) c.setAttribute('aria-current', 'true')
-      c.onclick = function () {
-        buildFilter[k] = !buildFilter[k]
-        buildPage = 0
-        buildsView()
-      }
-      bar.appendChild(c)
+  // 待审的资料页，一页一条。冲突数在取回 judge 之前只数得出同一格多份的那一类。
+  function pendPages () {
+    var at = {}
+    var out = []
+    S.edits.forEach(function (e) {
+      if (e.ok !== 0) return
+      if (!at[e.doc]) { at[e.doc] = { doc: e.doc, page: pageOf(e.doc), list: [] }; out.push(at[e.doc]) }
+      at[e.doc].list.push(e)
     })
-    /* 搜一下比翻页快。**只在已经拉进内存的那一批上过一遍**，不发请求：后端零搜索
-       接口，而这一批本来就在手里。
+    out.forEach(function (p) {
+      var judged = PEND[p.doc]
+      p.groups = groupsOf(judged || p.list)
+      p.bad = judged ? badOf(p.groups) : p.groups.filter(function (g) { return g.list.length > 1 }).length
+      p.people = p.list.map(function (e) { return e.by || '?' }).filter(function (x, i, a) { return a.indexOf(x) === i })
+      p.oldest = p.list.map(function (e) { return e.at || '' }).sort()[0]
+    })
+    return out.sort(function (a, b) { return a.oldest < b.oldest ? -1 : 1 })
+  }
+  // 同一处的几份收成一组：**它们互斥**，通过一份就得在其余里择一驳回。
+  // 记录那一路按「记录 + 字段」归堆：同一格在几页上都有，从哪一页提的都是同一处。
+  function groupsOf (pend) {
+    var groups = []
+    var at = {}
+    pend.forEach(function (e) {
+      var k = e.kind === 'rec' ? e.rec + '|' + e.path : e.blk + ':' + e.cell
+      if (!at[k]) { at[k] = { key: k, list: [] }; groups.push(at[k]) }
+      at[k].list.push(e)
+    })
+    // 源稿那几处按行号排在前，记录那几格按标签排在后。
+    return groups.sort(function (a, b) {
+      var x = a.list[0]
+      var y = b.list[0]
+      if ((x.kind === 'rec') !== (y.kind === 'rec')) return x.kind === 'rec' ? 1 : -1
+      return x.kind === 'rec' ? spot(x).localeCompare(spot(y)) : x.blk - y.blk
+    })
+  }
+  function badOf (groups) {
+    return groups.filter(function (g) {
+      return g.list.length > 1 || g.list.some(function (e) { return e.stale })
+    }).length
+  }
 
-       打字会整屏重画，输入框是新建的那一个，所以记下位置与光标、重画之后放回去。
-       **组字期间一律不重画**：oninput 在输入法逐个候选字上屏的过程中也会触发，
-       而重画一次就把正在组字的那个输入框换掉，候选框当场消失、这个词打不完。
-       compositionend 之后字已上屏，那时再过一遍。isComposing 与自己那一位都查：
-       前者在 iOS 上不总有，后者由 compositionstart/end 兜着。 */
-    var find = el('input', 'tool-search')
-    find.type = 'search'
-    find.placeholder = '搜名字 / 推荐人 / 核心'
-    find.value = buildQ
-    // 新建的这一个必然没在组字。**这一位要在这里清**：组字途中被别的事情重画一屏
-    // （点了筛选 chip），compositionend 就落在换掉的那个节点上，不清就永远为真，
-    // 搜索框从此一个字也不响应。
-    findIME = false
+  /* 名字、推荐人、核心三样够用：找一条多半是「某某推荐的那套」或「用某某异域的
+     那套」。**不搜正文**——整份 md 里什么都有，搜出来全是命中。核心按行取而不走
+     line()：合集的核心写在每一套里，头部那一块没有。
+     **trim 在这里，不在输入框那一侧**：那边 trim 的话，打「阿 强」打到空格时
+     空格被吃掉，重画又把 value 写回去，空格永远打不出来。 */
+  function findQ () { return V.q.trim().toLowerCase() }
+  function inFind (b, q) {
+    if (!q) return true
+    var md = b.md || ''
+    var hay = [nameOf(md), line(md, '推荐人'), b.id]
+      .concat(md.match(/^核心：.*$/gm) || []).join('\n').toLowerCase()
+    return hay.indexOf(q) >= 0
+  }
+
+  // 某一档里、筛选之后的配装。**待审一档先来先审**：那是一条队列，倒序排会让等
+  // 最久的那份永远沉在最后。别的档答的是「最近发生了什么」，新的在前。
+  function buildsIn (st, all) {
+    var q = findQ()
+    return (all || builds()).filter(function (b) {
+      return bucket(b) === st && (!V.scene || scenesOf(b).indexOf(V.scene) >= 0)
+        && (!V.cls || clsOf(b) === V.cls) && inFind(b, q)
+    }).sort(function (a, b) {
+      var x = a.at || ''
+      var y = b.at || ''
+      return (x === y ? 0 : x < y ? -1 : 1) * (st === 'wait' ? 1 : -1)
+    })
+  }
+  // 资料页只在待审一档里出现；按场景或职业筛的时候问的是配装，资料页不列。
+  function pagesIn (st, pages) {
+    if (st !== 'wait' || V.scene || V.cls) return []
+    var q = findQ()
+    return (pages || pendPages()).filter(function (p) {
+      return !q || (p.page.title + '\n' + p.people.join('\n')).toLowerCase().indexOf(q) >= 0
+    })
+  }
+  // 五档各有几条，不跟着类型、场景、职业与搜索走：状态条答的是全台的进度。
+  function stageCount (st, all, pages) {
+    return all.filter(function (b) { return bucket(b) === st }).length
+      + (st === 'wait' ? pages.length : 0)
+  }
+  // 队列的次序：配装在前、资料页在后，与两种版面里各节的次序一致。J / K 与
+  // 「通过并继续」都按它走。
+  function queueIds () {
+    var out = []
+    if (V.kind !== 'page') buildsIn(V.status).forEach(function (b) { out.push('b:' + idOf(b)) })
+    if (V.kind !== 'build') pagesIn(V.status).forEach(function (p) { out.push('p:' + p.doc) })
+    return out
+  }
+  function lookup (sel) {
+    if (!sel) return null
+    var id = sel.slice(2)
+    if (sel.charAt(0) === 'b') {
+      var b = builds().filter(function (x) { return idOf(x) === id })[0]
+      return b ? { b: b } : null
+    }
+    var p = pendPages().filter(function (x) { return x.doc === id })[0]
+    return p ? { p: p } : null
+  }
+
+  // ── 换屏与浏览器的返回 ─────────────────────────────────────────────
+  /* 列表点开一条压一格历史，收件箱里换条就地改写：审完一条按返回回到的是列表，
+     不是上一条已经处理完的详情。换标签也是就地改写。 */
+  function urlOf () {
+    if (V.view !== 'queue' || !V.sel) return location.pathname
+    return location.pathname + '?' + (V.sel.charAt(0) === 'b' ? 'b=' : 'p=') + encodeURIComponent(V.sel.slice(2))
+  }
+  function stateOf () { return { v: V.view, sel: V.sel, hsel: V.hsel } }
+  function inbox () { return !!((V.view === 'queue' && V.sel) || (V.view === 'hist' && V.hsel)) }
+
+  // 列表与收件箱之间换版面走 View Transitions：状态条与选中那一条在两种版面里是
+  // 同一个东西。系统设了减少动效就直接换。
+  var calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches
+  // 把 patch 写进 V 再重画；how 是这一步怎么记进历史（pushState / replaceState / 不记）。
+  // **历史当场写，不等过渡**：过渡的回调是异步的，放在里面写的话，点开之后马上按
+  // 返回，退掉的是这一格之前的那一格。
+  function morph (patch, how) {
+    var was = inbox()
+    var old = {}
+    Object.keys(patch).forEach(function (k) { old[k] = V[k]; V[k] = patch[k] })
+    var will = inbox()
+    if (how) history[how](stateOf(), '', urlOf())
+    Object.keys(old).forEach(function (k) { V[k] = old[k] })
+    var go = function () {
+      Object.keys(patch).forEach(function (k) { V[k] = patch[k] })
+      render()
+      if (inbox() && (patch.sel || patch.hsel)) $('detail').scrollTop = 0
+    }
+    // 只有版面真的换了才过渡，同一版面里换条就地重画。
+    if (was !== will && !calm && document.startViewTransition) document.startViewTransition(go)
+    else go()
+  }
+
+  /* 改了没保存就切到另一套：这是全台唯一会把另一份正文灌进填表页的入口。判据与
+     feed() 那道早退逐字对偶：要灌的正文与填表页里现装的那一份不同，才会真的覆盖。
+     去列表、去资料页、去记录都不重灌，改的字原样留在那一页上。 */
+  function mayLeave (sel) {
+    if (!sel || sel.charAt(0) !== 'b' || !formDirty()) return true
+    var it = lookup(sel)
+    if (!it || it.b.md === formFed) return true
+    return window.confirm('当前配装有未保存的修改，切换后将丢失。仍要继续？')
+  }
+  function open (sel) {
+    if (!mayLeave(sel)) return
+    morph({ sel: sel }, history.state && history.state.sel ? 'replaceState' : 'pushState')
+  }
+  function openHist (id) {
+    morph({ hsel: id }, history.state && history.state.hsel ? 'replaceState' : 'pushState')
+  }
+  // 回列表。**走 history.back()**：直接画列表会把详情那一格留在历史里，人再按一次
+  // 返回又弹回那条已经处理完的记录。
+  function toList (msg) {
+    if (msg) pendTip = msg
+    if (history.state && (history.state.sel || history.state.hsel)) return history.back()
+    morph({ sel: null, hsel: null }, 'replaceState')
+  }
+  function tab (v) {
+    // 编辑者名单每次进这一屏都重取：别的超级管理员可能刚改过。
+    if (v === 'eds') edsCache = null
+    morph({ view: v, sel: null, hsel: null }, 'replaceState')
+  }
+
+  // ── 画 ─────────────────────────────────────────────────────────────
+  function render () {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-view]'), function (n) {
+      if (n.dataset.view === V.view) n.setAttribute('aria-current', 'true')
+      else n.removeAttribute('aria-current')
+    })
+    var ib = inbox()
+    $('views').hidden = ib
+    $('ib').hidden = !ib
+    if (V.view === 'eds') return edsView()
+    if (V.view === 'hist') return ib ? histInbox() : histView()
+    if (ib) return queueInbox()
+    queueView()
+  }
+
+  /* 搜索框。打字会整块重画，输入框是新建的那一个，所以记下光标、重画之后放回去。
+     **组字期间一律不重画**：oninput 在输入法逐个候选字上屏的过程中也会触发，
+     而重画一次就把正在组字的那个输入框换掉，候选框当场消失、这个词打不完。
+     compositionend 之后字已上屏，那时再过一遍。redraw 是这一框该重画的那一块：
+     收件箱里只重画队列，不动右边的详情。 */
+  var typing = null
+  function searchBox (key, holder, redraw) {
+    var box = h('input', { class: 'x-in', type: 'search', placeholder: holder, 'aria-label': holder })
+    box.value = V[key]
+    var ime = false
     var apply = function () {
-      // compositionend 与紧随其后那次 input 会撞车，值没变就别白重画一屏。
-      if (buildQ === find.value) return
-      buildQ = find.value
-      buildPage = 0
-      findAt = find.selectionStart
-      buildsView()
+      if (V[key] === box.value) return
+      V[key] = box.value
+      typing = { key: key, at: box.selectionStart }
+      redraw()
     }
-    find.oninput = function (ev) {
-      if (findIME || (ev && ev.isComposing)) return
-      apply()
+    box.oninput = function (ev) { if (!ime && !(ev && ev.isComposing)) apply() }
+    box.addEventListener('compositionstart', function () { ime = true })
+    box.addEventListener('compositionend', function () { ime = false; apply() })
+    return box
+  }
+  // 重画之后把光标放回原处，不一律推到末尾：在中间插字时推到末尾，下一个字就打到别处去了。
+  function refocus (root) {
+    if (!typing) return
+    var box = root.querySelector('input[type="search"]')
+    if (box) {
+      box.focus()
+      var at = Math.min(typing.at, box.value.length)
+      box.setSelectionRange(at, at)
     }
-    find.addEventListener('compositionstart', function () { findIME = true })
-    find.addEventListener('compositionend', function () { findIME = false; apply() })
-    bar.appendChild(find)
-    // 拉不回来的那些这里分不出来，只能说一句。翻页翻不到它们。
-    if (S.more) {
-      bar.appendChild(el('span', 'warn', '已达单次拉取上限，部分配装未列出',
-        'docs 500 条 / builds 200 条 / subs 500 条，超出的不在这一批里。'))
-    }
+    typing = null
+  }
+
+  function select (label, value, options, on) {
+    var s = h('select', { class: 'x-in', 'aria-label': label })
+    options.forEach(function (o) { s.appendChild(new Option(o[1], o[0], false, o[0] === value)) })
+    s.onchange = function () { on(s.value) }
+    return s
+  }
+  function kinds (small, b, p) {
+    return h('div', { class: 'x-seg', role: 'group', 'aria-label': '类型' },
+      [['all', '全部', b + p], ['build', '配装', b], ['page', '资料页', p]].map(function (k) {
+        return h('button', { type: 'button', 'aria-pressed': V.kind === k[0] ? 'true' : 'false',
+          onclick: function () { V.kind = k[0]; inbox() ? drawQueue() : render() } },
+        k[1], small ? null : num(k[2]))
+      }))
+  }
+
+  // ── 审核：列表版面 ─────────────────────────────────────────────────
+  function flow (all, pages) {
+    var out = []
+    STAGES.forEach(function (s, i) {
+      var c = stageCount(s[0], all, pages)
+      out.push(h('button', { type: 'button', title: s[3],
+        class: 'stage' + (s[0] === 'wait' && c ? ' hot' : '') + (c ? '' : ' zero'),
+        'aria-pressed': V.status === s[0] ? 'true' : 'false',
+        onclick: function () { V.status = s[0]; V.kind = 'all'; render() } },
+      h('b', { text: String(c) }), h('span', { text: s[1] }), h('small', { text: s[2] })))
+      if (i < 2) out.push(h('span', { class: 'arrow', 'aria-hidden': 'true', text: '→' }))
+      if (i === 2) out.push(h('span', { class: 'gap', 'aria-hidden': 'true' }))
+    })
+    return h('nav', { class: 'flow', 'aria-label': '状态' }, out)
+  }
+
+  function flagsOf (b) {
+    var md = b.md || ''
+    return [
+      b.sub && b.sub.drop && h('span', { class: 'x-flag warn', text: '移除申请' }),
+      b.dirty && h('span', { class: 'x-flag', text: '线上已修改' }),
+      isSet(md) && h('span', { class: 'x-flag', text: '合集，' + setsOf(md).length + ' 套' }),
+      b.sub && b.sub.updates && h('span', { class: 'x-flag', text: '更新已上线配装' }),
+      /\n## 审核意见[ \t]*\n\s*\S/.test(md) && h('span', { class: 'x-flag', text: '含审核意见' })
+    ].filter(Boolean)
+  }
+  function titleOf (b) { return (b.md && nameOf(b.md)) || (b.id ? b.id.split('/').pop() : '未命名') }
+
+  function queueView () {
+    var box = $('views')
+    box.textContent = ''
+    var all = builds()
+    var pages = pendPages()
+    var bs = V.kind === 'page' ? [] : buildsIn(V.status, all)
+    var ps = V.kind === 'build' ? [] : pagesIn(V.status, pages)
+    var nb = buildsIn(V.status, all).length
+    var np = pagesIn(V.status, pages).length
+    var scenes = VOCAB.scenes.slice()
+    var classes = VOCAB.classes.concat([MIXED])
+    var bar = h('div', { class: 'bar' }, kinds(false, nb, np),
+      select('场景', V.scene, [['', '全部场景']].concat(scenes.map(function (s) { return [s, s] })),
+        function (v) { V.scene = v; render() }),
+      select('职业', V.cls, [['', '全部职业']].concat(classes.map(function (s) { return [s, s] })),
+        function (v) { V.cls = v; render() }),
+      searchBox('q', '搜索名称、推荐人、核心或页面', render))
     // 废稿逐条点不现实，给一枚一次清干净的。**只删已驳回的**——去重从不查那一档。
-    // **只给超管**：一次抹掉几十条，手滑的代价与逐条不是一个量级。
-    var junk = all.filter(function (b) { return b.state === 'no' }).length
-    if (junk && S.me.lv >= 4) {
-      var wipe = el('button', 'op', '清空废稿（' + junk + '）')
-      wipe.type = 'button'
+    // **只给超级管理员**：一次抹掉几十条，手滑的代价与逐条不是一个量级。
+    var junk = all.filter(function (b) { return b.state === 'no' && !(b.sub && b.sub.drop) }).length
+    if (V.status === 'no' && junk && S.me.lv >= 4) {
+      var wipe = btn('清空全部驳回（' + junk + '）', 'quiet', { title: '删除后不可恢复' })
       wipe.onclick = function () {
-        if (!window.confirm('删除 ' + junk + ' 条废稿？不可撤销。')) return
+        if (!window.confirm('删除全部 ' + junk + ' 条驳回稿？删除后不可恢复。')) return
         wipe.disabled = true
-        call('sdrop', {}).then(load).then(toList, function (e) {
+        call('sdrop', {}).then(load).then(function () { render(); tip(box.querySelector('.bar'), '已清空驳回稿') }, function (e) {
           wipe.disabled = false
-          tip(body, '删除失败：' + say(e), 1)
+          tip(box, '删除失败：' + say(e), 1)
         })
       }
-      bar.appendChild(sep())
-      bar.appendChild(wipe)
+      bar.appendChild(h('span', { class: 'end x-acts' }, cut(), wipe))
     }
+    put(box, [flow(all, pages), bar])
+    // 后端几条查询触到上限就静默截断，它报一位，这里显形。
+    if (S.more) box.appendChild(h('p', { class: 'more', text: '已达单次读取上限，部分记录未列出。' }))
 
-    var inState = shownOf(all)
-    if (buildPick && !inState.some(inPick)) buildPick = ''
-    show(split(buildTree(inState, buildPick, function (k) {
-      buildPick = buildPick === k ? '' : k       // 再点一次就取消筛选
-      buildPage = 0
-      buildsView()
-    }), body))
-    body.appendChild(bar)
-    if (findAt >= 0) {
-      find.focus()
-      // 放回原处，不一律推到末尾：在中间插字时推到末尾，下一个字就打到别处去了。
-      var at = Math.min(findAt, find.value.length)
-      find.setSelectionRange(at, at)
-      findAt = -1
+    if (bs.length) {
+      box.appendChild(h('div', { class: 'sect' }, h('h2', { text: '配装' }), num(bs.length)))
+      box.appendChild(h('div', { class: 'grid builds' },
+        h('div', { class: 'th' }, ['名称', '职业', '分支', '场景', '强度', '推荐人',
+          V.status === 'wait' ? '等待时长' : '更新日期'].map(function (t) { return h('span', { text: t }) })),
+        bs.map(function (b) {
+          var md = b.md || ''
+          var slug = VOCAB.branch[line(md, '分支')]
+          var miss = md ? missing(md) : []
+          var who = handOf(b)
+          return h('button', { type: 'button', class: 'tr' + (slug ? ' br-' + slug : ''),
+            title: who ? '最后由 ' + who + ' 修改' : null, onclick: function () { open('b:' + idOf(b)) } },
+          h('span', { class: 'name' }, h('b', { text: titleOf(b) }), flagsOf(b)),
+          h('span', { text: clsOf(b) || '未填写' }),
+          h('span', { class: 'x-dim', text: line(md, '分支') }),
+          h('span', { class: 'x-dim', text: line(md, '场景') || '未填写' }),
+          h('span', { class: 'x-dim', text: line(md, '强度') || line(md, '类别') }),
+          h('span', { class: 'x-dim', text: byOf(md) || '未填写' }),
+          h('span', { class: 'at', text: V.status === 'wait' ? waited(b.at) : when(b.at).slice(5, 10) }),
+          miss.length ? h('span', { class: 'sub', text: '缺少：' + miss.join('、') }) : null)
+        })))
     }
-
-    var q = findQ()
-    var list = listOf(inState)
-    if (!list.length) {
-      body.appendChild(el('p', 'lede', q ? '没有搜到' : '没有配装'))
+    if (ps.length) {
+      box.appendChild(h('div', { class: 'sect' }, h('h2', { text: '资料页' }), num(ps.length)))
+      box.appendChild(h('div', { class: 'grid pages' },
+        h('div', { class: 'th' }, ['页面', '分组', '待审', '提交人', '冲突', '等待时长']
+          .map(function (t) { return h('span', { text: t }) })),
+        ps.map(function (p) {
+          return h('button', { type: 'button', class: 'tr', onclick: function () { open('p:' + p.doc) } },
+            h('span', { class: 'name' }, h('b', { text: p.page.title })),
+            h('span', { class: 'x-dim', text: p.page.group }),
+            h('span', null, num(p.list.length, true), h('span', { class: 'x-dim', text: ' 处' })),
+            h('span', { class: 'x-dim', text: p.people.join('、') }),
+            judgeErr[p.doc] ? h('span', { class: 'x-note', text: '读取失败', title: judgeErr[p.doc] })
+              : PEND[p.doc] || p.bad ? h('span', { class: p.bad ? 'x-note' : 'x-mute', text: p.bad ? p.bad + ' 处' : '无' })
+                : h('i', { class: 'sk', style: 'width:28px;height:9px', 'aria-label': '读取中' }),
+            h('span', { class: 'at', text: waited(p.oldest) }))
+        })))
+      judgeAll(ps)
     }
-
-    /* **摊开哪一条决定翻到第几页，不另存一个变量**：从详情按返回、刷新页面、
-       或者别人发来一条 ?b= 链接，三条路都自动落在那一条所在的页上。 */
-    var pages = Math.max(1, Math.ceil(list.length / PAGE))
-    if (openBuild) {
-      var at = list.map(idOf).indexOf(openBuild)
-      if (at >= 0) buildPage = Math.floor(at / PAGE)
+    if (!bs.length && !ps.length) {
+      var idle = V.status === 'wait' && !findQ() && !V.scene && !V.cls
+      var st = STAGES.filter(function (s) { return s[0] === V.status })[0]
+      box.appendChild(h('div', { class: 'x-empty' },
+        h('h3', { text: idle ? '暂无待审内容' : findQ() || V.scene || V.cls ? '没有符合条件的条目' : '「' + st[1] + '」暂无内容' }),
+        h('p', { text: idle ? '配装投稿与资料页改动提交后显示在此，按等待时长排序。'
+          + (stageCount('pass', all, pages) ? '已通过的 ' + stageCount('pass', all, pages) + ' 套将在下次站点更新时上线。' : '')
+          : findQ() || V.scene || V.cls ? '可调整筛选条件或清空搜索。' : '可在上方切换其他状态。' }),
+        idle ? h('div', { class: 'x-acts' },
+          stageCount('pass', all, pages) ? btn('查看已通过（' + stageCount('pass', all, pages) + '）', '', { onclick: function () { V.status = 'pass'; render() } }) : null,
+          btn('查看审核记录', 'quiet', { onclick: function () { tab('hist') } })) : null))
     }
-    buildPage = Math.min(Math.max(buildPage, 0), pages - 1)
+    if (pendTip) { tip(bar, pendTip); pendTip = '' }
+    refocus(box)
+  }
 
-    var rows = el('div', 'rows bl')
-    list.slice(buildPage * PAGE, (buildPage + 1) * PAGE).forEach(function (b) {
-      var md = b.md
-      // 左缘那条 2px 亮边跟着这一套的分支色走，与站上索引页每张卡的左缘同一条
-      // 规则（.b-* 六行在 assets/site.css，一处定义三处生效）。
-      var slug = VOCAB.branch[line(md, '分支')]
-      var r = el('button', slug ? 'b-' + slug : '')
-      r.type = 'button'
-      var drop = b.sub && b.sub.drop
-      // **改过的标「已改」，档不动**：它与「通过」同属一档（筛选与树上的计数都跟着
-      // 走），只是那个词得分得开——「这一轮要发什么」里混着两种来源。
-      r.appendChild(el('span', 'flag ' + (drop ? 'no' : b.state === 'wait' ? 'pend'
-        : b.state === 'no' ? 'no' : 'pass'),
-        drop ? (b.state === 'wait' ? '待删' : STATE[b.state])
-          : b.dirty ? '已改' : STATE[b.state]))
-      /* 名字这一格是全行唯一可收缩的（其余七个都是 flex: none），右边那串「缺 …」
-         一长就把它压成一个省略号，而这一屏不换行也不横向滚。全文进 title——
-         hover 是取回它的唯一出路。顺带写上最后动过它的人：配装侧没有改动记录，
-         这个名字是「该去问谁」的唯一线索。 */
-      var who = handOf(b)
-      var name = (drop ? '申请删除　' : '')
-        + (md ? (nameOf(md) || '（没名字）') : b.id.split('/').pop())
-      r.appendChild(el('span', 'id ' + (openBuild === idOf(b) ? 'on' : ''), name,
-        name + (who ? '\n最后由 ' + who + ' 改过' : '')))
-      // 每一格的类名就是它在哪一列（admin/style.css 的 .rows.bl），缺的格子空着那一列。
-      if (md) {
-        r.appendChild(el('span', 'meta c-cls', clsOf(b) || '—'))
-        r.appendChild(el('span', 'meta c-branch', line(md, '分支') || '—'))
-        // 场景与标签跟站上索引页那两级分类对齐：那一页按场景分大节、标签做筛选，
-        // 审核的人扫这一列就知道这一篇会落到哪儿去。旧稿的键名一并认下。
-        r.appendChild(el('span', 'meta c-scene', line(md, '场景') || '—'))
-        // 宗师/终极、日常、功能性没有标签集，那几行的标签一格只会是「—」，不出这一格。
-        if (tagged(md)) {
-          r.appendChild(el('span', 'meta c-tag', line(md, '标签') || line(md, '定位') || '—'))
-        }
-        // 强度与标签是两回事：标签说这套在队伍里干什么，强度说它凭什么被推荐
-        r.appendChild(el('span', 'kind', line(md, '强度') || line(md, '类别') || '—'))
-        // 推荐人那一列有上限，截掉的一段放进 title
-        var by = line(md, '推荐人').split('|')[0].trim()
-        r.appendChild(el('span', 'by', by || '—', by))
-        // 合集与单套在列表上长得一样，不标出来点进去才知道这一行是三套。
-        if (isSet(md)) r.appendChild(el('span', 'n-sets', setsOf(md).length + ' 套'))
-        var miss = missing(md)
-        if (miss.length) {
-          var lack = '缺 ' + miss.join('、')
-          r.appendChild(el('span', 'lack', lack, lack))
-        }
-      } else {
-        r.appendChild(el('span', 'meta c-cls', STATE.live))
-      }
-      r.appendChild(el('span', 'meta c-at', when(b.at)))
-      r.onclick = function () { buildDetail(b) }
-      rows.appendChild(r)
+  /* 列表上「冲突」那一列要拿 judge 跑一遍才数得全：同一格多份前端看得出来，底稿
+     被人先改掉了只有云函数拿当前正文跑 locate 才知道。每页取一次，load() 清空重来。 */
+  var judging = {}
+  var judgeErr = {}         // 资料页 → 取 judge 失败的原因，load() 时清空
+  function judgeAll (ps) {
+    var want = ps.filter(function (p) { return !PEND[p.doc] && !judging[p.doc] && !judgeErr[p.doc] })
+    if (!want.length) return
+    Promise.all(want.map(function (p) {
+      judging[p.doc] = 1
+      return call('pend', { doc: p.doc, judge: 1 }).then(function (r) {
+        PEND[p.doc] = r.pend.map(function (e) { e.ok = Number(e.ok); return e })
+      }, function (e) { judgeErr[p.doc] = MSG[e.message] || e.message }).then(function () { delete judging[p.doc] })
+    })).then(function () {
+      if (V.view === 'queue') inbox() ? drawQueue() : render()
     })
-    body.appendChild(rows)
+  }
 
-    /* 只有一页就不出页码条——一条队列见底了本来就该看得出来，摆一排灰按钮
-       只是噪声。翻页要把详情收起来：不收的话上面那条「按摊开的那条算页码」
-       会立刻把人弹回原页。收的时候连历史那一格一起改回列表，不然按返回
-       又弹回一条已经翻走的详情。 */
-    if (pages > 1) {
-      var pager = el('div', 'acts pager')
-      var turn = function (label, to, off) {
-        var t = el('button', 'op', label)
-        t.type = 'button'
-        t.disabled = off
-        t.onclick = function () {
-          buildPage = to
-          if (openBuild) history.replaceState({ v: 'builds' }, '', urlOf(''))
-          openBuild = null
-          buildsView()
-        }
-        return t
+  // ── 审核：收件箱版面 ───────────────────────────────────────────────
+  function queueInbox () {
+    var it = lookup(V.sel)
+    if (!it) {
+      // 那一条已经不在了（审完、被删、或链接过期）：回列表，不报错。
+      V.sel = null
+      history.replaceState(stateOf(), '', urlOf())
+      return render()
+    }
+    // 详情先画：资料页那一格取待审时记下 judging，队列那一栏的冲突数就不再另发一次。
+    if (it.b) buildDetail(it.b)
+    else pageDetail(it.p)
+    drawQueue()
+  }
+
+  function drawQueue () {
+    var q = $('queue')
+    q.textContent = ''
+    var all = builds()
+    var pages = pendPages()
+    var bs = V.kind === 'page' ? [] : buildsIn(V.status, all)
+    var ps = V.kind === 'build' ? [] : pagesIn(V.status, pages)
+    q.appendChild(h('div', { class: 'q-top' },
+      h('div', { class: 'q-back' }, btn('← 列表', 'quiet sm', { onclick: function () { toList() } }), kbd('Esc'),
+        h('span', { class: 'keys' }, kbd('J'), ' ', kbd('K'), ' 上下切换')),
+      h('div', { class: 'q-flow', role: 'group', 'aria-label': '状态' }, STAGES.map(function (s) {
+        var c = stageCount(s[0], all, pages)
+        return h('button', { type: 'button', title: s[3],
+          class: (s[0] === 'wait' && c ? 'hot' : '') + (c ? '' : ' zero'),
+          'aria-pressed': V.status === s[0] ? 'true' : 'false',
+          onclick: function () { V.status = s[0]; V.kind = 'all'; drawQueue() } },
+        h('b', { text: String(c) }), s[1])
+      })),
+      h('div', { class: 'q-kinds' }, kinds(true), searchBox('q', '搜索', drawQueue))))
+    var list = h('div', { class: 'q-list' })
+    if (bs.length) {
+      list.appendChild(h('p', { class: 'q-sec' }, h('span', { text: '配装' }), h('span', { text: String(bs.length) })))
+      bs.forEach(function (b) {
+        var md = b.md || ''
+        var slug = VOCAB.branch[line(md, '分支')]
+        var sel = 'b:' + idOf(b)
+        var miss = md ? missing(md) : []
+        list.appendChild(h('button', { type: 'button', class: 'item' + (slug ? ' br-' + slug : '') + (V.sel === sel ? ' on' : ''),
+          onclick: function () { open(sel) } },
+        h('span', { class: 'l1' }, h('b', { text: titleOf(b) }),
+          h('span', { text: V.status === 'wait' ? waited(b.at) : when(b.at).slice(5, 10) })),
+        h('span', { class: 'l2' }, b.sub && b.sub.drop ? h('i', { text: '移除申请' }) : null,
+          h('span', { text: clsOf(b) }), h('span', { text: line(md, '分支') }), h('span', { text: byOf(md) || '推荐人未填写' })),
+        miss.length ? h('span', { class: 'l3', text: '缺少 ' + miss.length + ' 项' }) : null))
+      })
+    }
+    if (ps.length) {
+      list.appendChild(h('p', { class: 'q-sec' }, h('span', { text: '资料页' }), h('span', { text: String(ps.length) })))
+      ps.forEach(function (p) {
+        var sel = 'p:' + p.doc
+        list.appendChild(h('button', { type: 'button', class: 'item' + (V.sel === sel ? ' on' : ''), onclick: function () { open(sel) } },
+          h('span', { class: 'l1' }, h('b', { text: p.page.title }), num(p.list.length + ' 处', true), h('span', { text: waited(p.oldest) })),
+          h('span', { class: 'l2' }, h('span', { text: p.page.group }), h('span', { text: p.people.join('、') })),
+          p.bad ? h('span', { class: 'l3', text: p.bad + ' 处冲突' }) : null))
+      })
+      judgeAll(ps)
+    }
+    if (!bs.length && !ps.length) list.appendChild(h('p', { class: 'q-none', text: '这一档没有条目。' }))
+    q.appendChild(list)
+    refocus(q)
+    var on = list.querySelector('.item.on')
+    if (on && on.scrollIntoViewIfNeeded) on.scrollIntoViewIfNeeded(false)
+  }
+
+  // 详情的页头：左边是这一条是什么，右边是动作与回执。**动作不留在填表页底下**：
+  // 页头吸顶，滚到哪儿按钮都在手边，回执也报在看得见的地方。
+  function detailHead (left, ops) {
+    var head = $('stage-head')
+    head.textContent = ''
+    head.appendChild(h('div', { class: 'd-col' }, h('div', null, left),
+      h('div', { class: 'ops' }, h('div', { class: 'x-acts' }, ops), h('p', { class: 'x-tip' }))))
+    return head.querySelector('.ops')
+  }
+
+  // ── 配装详情 ───────────────────────────────────────────────────────
+  function buildDetail (b) {
+    var s = b.sub || { _id: b.id, md: b.md }
+    var md = b.md || ''
+    $('detail').style.setProperty('--dw', FORM_WRAP[slotOf(md)] + 'px')
+    $('pane').hidden = true
+    $('pane').textContent = ''
+    $('stage').hidden = false
+    var st = bucket(b)
+    var facts = [['职业', clsOf(b)], ['分支', line(md, '分支')], ['场景', line(md, '场景')],
+      ['标签', line(md, '标签') || line(md, '定位')], ['强度', line(md, '强度') || line(md, '类别')],
+      ['核心', line(md, '核心')], ['推荐人', byOf(md) || '未填写']].filter(function (f) { return f[1] })
+    var edBy = handOf(b)
+    var okBy = (b.sub && b.sub.okBy) || ''
+    var miss = md ? missing(md) : []
+    var ops = detailHead([
+      h('p', { class: 'crumb' }, h('span', { class: 'x-st ' + st, text: b.sub && b.sub.drop ? '移除申请' : STATE[st] }),
+        b.state === 'wait' ? '，已等待 ' + waited(b.at) : ''),
+      h('h2', { text: titleOf(b) }),
+      h('p', { class: 'facts' }, facts.map(function (f) { return h('span', null, h('i', { text: f[0] }), f[1]) })),
+      h('p', { class: 'meta' }, h('span', { text: [edBy ? edBy + ' 修改过' : '', okBy ? okBy + ' 审核' : '',
+        b.at ? '最后更新于 ' + when(b.at).slice(5) : ''].filter(Boolean).join('，') || '无经手记录' }), flagsOf(b)),
+      miss.length ? h('p', { class: 'x-note', style: 'margin-top:6px', text: '缺少：' + miss.join('、') }) : null
+    ], buildActs(b, s))
+    // 载进来的是**可以改的填表页**，不是一张只读的图。装备写错、描述要润色，
+    // 审的人改完再通过比打回去让人重投快得多。**不替他按预览**——预览态下
+    // #sheet.preview 把输入框与格子全设成 pointer-events: none，整页点不动；
+    // 那一页右下角自己带着「预览配装」，想看成品点它即可。
+    feed(md, function (err) { tip(ops, '载入失败：' + err.message, 1) })
+    var foot = $('stage-foot')
+    foot.textContent = ''
+    foot.appendChild(h('details', null, h('summary', { text: '原文' }), h('pre', { text: md })))
+  }
+
+  // 改后的那一份从填表页现读；读不出来（脚本没载好）就退回原文，不交空的。
+  function current (b) {
+    var md = formOf(slotOf(b.md))
+    return md === null ? b.md : md
+  }
+
+  /* 动作按这一套所在的档给。通过与驳回都退得回待审：两档的状态都只活在库里，
+     源稿要等 sync.py 拉下来才落盘；上线之后要撤只有「申请移除」，后端也照这条挡。 */
+  function buildActs (b, s) {
+    var out = []
+    var shot = shotBtn(function () { return slotOf(b.md) })
+    if (S.me.lv < 2) {
+      /* lv 1 照样载得进可编辑的填表页，而投稿按钮又被 feed() 摘掉了——不说这一句，
+         人在表里改半天，找不到任何按钮，也不知道为什么。 */
+      return [shot, h('span', { class: 'x-dim', style: 'font-size:12px', text: '只读：保存、通过与驳回需要审核员级别。' })]
+    }
+    var busy = function (on) { out.forEach(function (x) { if (x.tagName === 'BUTTON') x.disabled = on }) }
+    var fail = function (what) { return function (e) { busy(false); tip(opsOf(), what + '失败：' + say(e), 1) } }
+    // 删除申请不该改正文——它要的是「删不删」，改了也落不到任何地方。
+    if (b.sub && b.sub.drop) {
+      if (b.state !== 'wait') return out
+      var dmark = function (ok) {
+        busy(true)
+        var order = queueIds()
+        call('smark', { id: s._id, ok: ok }).then(load).then(function () { advance('b:' + idOf(b), order) }, fail('操作'))
       }
-      pager.appendChild(turn('← 上一页', buildPage - 1, buildPage === 0))
-      pager.appendChild(el('span', 'meta', '第 ' + (buildPage + 1) + ' / ' + pages
-        + ' 页　·　共 ' + list.length + ' 条'))
-      pager.appendChild(turn('下一页 →', buildPage + 1, buildPage >= pages - 1))
-      body.appendChild(pager)
+      // **批准移除不挂实底绿**：绿是「通过」那一档的词汇，而这一枚是把页面从站上
+      // 真删掉，全台最不可逆的一个动作。它归不可逆那一档，靠发丝线推到右端。
+      out.push(btn('驳回申请', '', { onclick: function () { dmark(-1) } }), cut(),
+        btn('批准移除', '', { onclick: function () { if (window.confirm('批准移除《' + titleOf(b) + '》？下次站点更新时下线。')) dmark(1) } }))
+      return out
     }
-
-    // **详情摊在列表下面，不跳走**：跳到单独一屏会把左栏那棵树与滚到哪儿一起
-    // 丢掉，与「改动记录点一条就地展开」同一条约定。
-    var hit = openBuild && all.filter(function (x) { return idOf(x) === openBuild })[0]
-    if (hit) subDetail(hit)
-    else shut()
-
-    // 上一个动作的回执。落在筛选行上——那是这一屏最靠上、且必然存在的一块。
-    if (pendTip) {
-      tip(bar, pendTip)
-      pendTip = ''
+    out.push(shot)
+    var keep = btn('保存', '')
+    keep.onclick = function () {
+      busy(true)
+      var md = current(b)
+      // 已上线的写回库里那份源稿，待审的写回投稿记录——两条路的落点不同，
+      // 但对填表页来说都只是「存一版」。
+      var act = b.state === 'live' ? 'bsave' : 'ssave'
+      /* **两件事分开报**：存失败要让人再存一遍，存下了只是没刷新则不必——混成
+         一句「保存失败」会让人把已经进库的那一份再存一次。 */
+      call(act, { id: b.state === 'live' ? b.id : s._id, md: md }).then(function () {
+        return load().then(function () {
+          /* **基线要对。**不对的话，接下来那次重画拿着新正文再走一遍 feed()，它既与
+             fed 不等、又算脏，会弹一个莫名其妙的确认。 */
+          formSynced(md)
+          render()
+          tip(opsOf(), b.state === 'live' ? '已保存，下次站点更新时上线' : '已保存')
+        }, function (e) { busy(false); tip(opsOf(), '已保存，但列表未刷新：' + say(e), 1) })
+      }, fail('保存'))
     }
+    out.push(keep)
+    if (b.state === 'wait') {
+      var mark = function (ok, retry) {
+        busy(true)
+        var body = { id: s._id, ok: ok }
+        if (ok === 1) {
+          body.md = current(b)
+          // 更新已上线那一套时后端沿用原来的 slug，这里给的会被忽略
+          body.season = seasons()[0] || ''
+          body.slug = defaultSlug(body.md)
+        }
+        var order = queueIds()
+        call('smark', body).then(load).then(function () {
+          // 这一条改过的字已经随通过带走、或随驳回作废，切走不必再问「改了没保存」。
+          formBase = null
+          advance('b:' + idOf(b), order)
+        }, function (e) {
+          busy(false)
+          // 八位 36 进制撞上的概率约两万八千亿分之一，真撞了换一个再来
+          if (e.message === 'slug 重了' && !retry) return mark(ok, 1)
+          tip(opsOf(), '操作失败：' + say(e), 1)
+        })
+      }
+      out.push(btn('驳回', '', { onclick: function () { mark(-1) } }),
+        btn('通过并继续', 'go', { title: '通过后打开队列中的下一条', onclick: function () { mark(1) } }))
+    }
+    // 通过与驳回都退得回待审：只把这条记录退回待审，再点一次就回去了，所以不问一声。
+    if (b.state === 'pass' || b.state === 'no') {
+      out.push(btn(b.state === 'pass' ? '退回待审' : '撤回驳回', '', { onclick: function () {
+        busy(true)
+        call('smark', { id: s._id, ok: 0 }).then(load).then(function () {
+          render()
+          tip(opsOf(), '已退回待审')
+        }, fail('撤回'))
+      } }))
+    }
+    // 删一套已上线的配装不可逆——站上少一页、点赞数也跟着没了。**走审核，不当场删**：
+    // 落成一条待审记录，与投稿走同一条队列。
+    if (b.state === 'live') {
+      out.push(cut(), btn('申请移除', '', { onclick: function () {
+        if (!window.confirm('申请移除《' + titleOf(b) + '》？审核通过后，下次站点更新时下线。')) return
+        busy(true)
+        call('bdrop', { id: b.id }).then(load).then(function () { toList('已提交移除申请') }, fail('提交'))
+      } }))
+    }
+    if (b.state === 'no') {
+      out.push(cut(), btn('删除', '', { onclick: function () {
+        if (!window.confirm('删除这条驳回稿？删除后不可恢复。')) return
+        busy(true)
+        var order = queueIds()
+        call('sdrop', { id: s._id }).then(load).then(function () { advance('b:' + idOf(b), order) }, fail('删除'))
+      } }))
+    }
+    return out
+  }
+  function opsOf () { return $('stage-head').querySelector('.ops') || $('stage-head') }
+
+  /* 审完一条直接摊开队列里的下一条，不退回列表：连着过稿时每一条都要「回列表 →
+     找下一行 → 点开」三步。order 是审之前队列的次序，下一条只认此刻仍在队列里的；
+     一条都没有才回列表。 */
+  function advance (sel, order) {
+    var next = nextWait(order, sel, queueIds())
+    if (!next) return toList(V.status === 'wait' ? '待审已全部处理' : '')
+    morph({ sel: next }, 'replaceState')
+  }
+
+  /* 截图：把 iframe 里那一套配装渲染成图，弹在**父窗口**。出图归 iframe
+     （starsideForm.shot()，那边才有配装的 DOM 与样式），弹图归这边。
+     待审稿在站上还没有详情页，这是审核员之间传图讨论的入口。 */
+  function shotBtn (kindOf) {
+    var b = btn('截图', 'quiet')
+    b.onclick = function () {
+      b.disabled = true
+      var was = b.textContent
+      b.textContent = '生成中'
+      var done = function () { b.disabled = false; b.textContent = was }
+      Promise.resolve().then(function () {
+        return stageFrame(kindOf()).contentWindow.starsideForm.shot()
+      }).then(function (blob) {
+        return import('../builds/shot.js').then(function (m) { m.show(blob) })
+      }).then(done, function (e) {
+        done()
+        tip(opsOf(), '截图失败：' + e.message, 1)
+      })
+    }
+    return b
+  }
+
+  // ── 资料页改动 ─────────────────────────────────────────────────────
+  var reviewBusy = false
+  var pageTurn = 0          // 防串台：取回来时已经换到别的条目就丢掉
+
+  function pageDetail (p) {
+    $('detail').style.removeProperty('--dw')
+    $('stage').hidden = true
+    $('stage-foot').textContent = ''
+    var pane = $('pane')
+    pane.hidden = false
+    pane.textContent = ''
+    var all = btn('全部通过（' + p.list.length + '）', 'go', { disabled: true })
+    var ops = detailHead([
+      h('p', { class: 'crumb', text: '资料页 · ' + trail(p.doc) }),
+      h('h2', { text: p.page.title }),
+      h('p', { class: 'meta', text: summaryOf(p) })
+    ], [p.page.url ? h('a', { class: 'x-btn quiet', href: '../' + p.page.url, target: '_blank', rel: 'noopener' }, '打开页面') : null, all])
+    pane.appendChild(h('div', { style: 'display:grid;gap:10px' },
+      h('i', { class: 'sk', style: 'height:14px;width:280px' }), h('i', { class: 'sk', style: 'height:90px' }), h('i', { class: 'sk', style: 'height:90px' })))
+    var turn = ++pageTurn
+    // judge 让后端顺带判一次每条还定不定位得到（乙类冲突），并按当前正文带回那一行。
+    // 取的时候记在 judging 里：队列那一栏的冲突数读同一份，不再为这一页另发一次。
+    judging[p.doc] = 1
+    return call('pend', { doc: p.doc, judge: 1 }).then(function (r) {
+      delete judging[p.doc]
+      PEND[p.doc] = r.pend.map(function (e) { e.ok = Number(e.ok); return e })
+      if (turn !== pageTurn) return
+      drawPend(p, PEND[p.doc], all, ops)
+      drawQueue()
+    }, function (err) {
+      delete judging[p.doc]
+      if (turn !== pageTurn) return
+      pane.textContent = ''
+      pane.appendChild(h('div', { class: 'x-alert', role: 'alert' },
+        h('p', null, h('b', { text: '读取待审改动失败：' }), say(err)),
+        btn('重试', '', { onclick: function () { pageDetail(p) } })))
+    })
+  }
+  function summaryOf (p) {
+    return [p.list.length + ' 处待审', p.bad ? '其中 ' + p.bad + ' 处冲突' : '', '提交人：' + p.people.join('、')]
+      .filter(Boolean).join('，')
+  }
+
+  function drawPend (p, pend, all, ops) {
+    var pane = $('pane')
+    pane.textContent = ''
+    if (!pend.length) {
+      pane.appendChild(h('div', { class: 'x-empty' }, h('h3', { text: '这一页没有待审改动' }),
+        h('p', { text: '可能刚被他人审完。' })))
+      return
+    }
+    var groups = groupsOf(pend)
+    var bad = badOf(groups)
+    p.bad = bad
+    ops.parentNode.querySelector('.meta').textContent = summaryOf(p)
+    all.textContent = '全部通过（' + pend.length + '）'
+    all.disabled = !!bad || pend.length > 48
+    all.title = bad ? '存在 ' + bad + ' 处冲突，需逐处处理' : pend.length > 48 ? '一批最多 48 处，请逐处审核' : ''
+    all.onclick = function () { mark(p, pend.map(function (e) { return [e._id, 1] })) }
+    groups.forEach(function (g) {
+      var many = g.list.length > 1
+      var stale = g.list.some(function (e) { return e.stale })
+      pane.appendChild(h('section', { class: 'x-change' }, whereView(g.list[0]),
+        many ? h('p', { class: 'x-note', style: 'margin-top:6px', text: '同一格有 ' + g.list.length + ' 份改动：采用其中一份，其余自动驳回。' }) : null,
+        g.list.map(function (e) {
+          return h('div', { class: 'x-cand' },
+            h('p', { class: 'by' }, h('b', { text: e.by || '?' }), when(e.at).slice(5)),
+            rowView(e),
+            h('div', { class: 'x-acts' },
+              btn(many ? '采用此版' : '通过', 'go sm', { disabled: e.stale, onclick: function () {
+                // 挑一份通过与驳回其余候选同批提交；陈旧提案原样保留，不按旧坐标猜新底稿。
+                mark(p, [[e._id, 1]].concat(g.list.filter(function (x) { return x._id !== e._id })
+                  .map(function (x) { return [x._id, -1] })))
+              } }),
+              btn('驳回', 'sm', { onclick: function () { mark(p, [[e._id, -1]]) } })))
+        }),
+        // 底稿动过了：多给一个「什么都不改」的选项，选它就是把这几份一并驳回。
+        stale ? h('div', { class: 'x-stale' },
+          h('span', { text: '原文已变更：提交之后，这一格已被其他改动修改，此改动不能通过。请在资料页按最新内容重新提交。' }),
+          btn('保持现状', 'sm', { title: '驳回这一格的全部改动', onclick: function () {
+            mark(p, g.list.map(function (e) { return [e._id, -1] }))
+          } })) : null))
+    })
+  }
+
+  // 一发就是一个原子批次。整批确认成功才改本地状态；结果不明只刷新，绝不重发。
+  function mark (p, jobs) {
+    if (reviewBusy) return Promise.resolve()
+    reviewBusy = true
+    var region = $('detail')
+    var buttons = Array.prototype.map.call(region.querySelectorAll('button'), function (b) {
+      var was = b.disabled
+      b.disabled = true
+      return [b, was]
+    })
+    region.setAttribute('aria-busy', 'true')
+    tip(opsOf(), '正在提交本批审核…')
+    var order = queueIds()
+    var sel = 'p:' + p.doc
+    var after = function (msg, bad) {
+      delete PEND[p.doc]
+      var it = lookup(sel)
+      if (!it) return advance(sel, order)
+      render()
+      if (msg) tip(opsOf(), msg, bad)
+    }
+    return call('emark', { jobs: jobs.map(function (j) { return { id: j[0], ok: j[1] } }) })
+      .then(function (r) {
+        if (!r || r.ok !== 1) throw new Error('unconfirmed')
+        var done = {}
+        jobs.forEach(function (j) { done[j[0]] = j[1] })
+        S.edits.forEach(function (e) {
+          if (done[e._id] === undefined) return
+          e.ok = done[e._id]
+          e.okBy = S.me && S.me.name
+        })
+        badges()
+        after('本批已生效')
+      }, function (e) {
+        /* 认得出的码才敢说「本批未生效」——说不出所以然的那些，请求可能已经落地了，
+           只能说「结果未确认」再刷一次队列。**认哪些码由 MSG 一处答**。
+           conflict 单挑出来：这一档在批量里要说的是「重新审核」，与逐条那句不同。 */
+        var msg = e.message === 'conflict'
+          ? '本次操作未生效：有改动在本页打开后已被他人修改，这一批改动均未保存。请重新审核。'
+          : MSG[e.message]
+            ? '本次操作未生效：' + MSG[e.message]
+            : '结果未确认，正在刷新队列'
+        return load().then(function () { after(msg, 1) }, function (err) {
+          tip(opsOf(), msg + '；刷新失败：' + err.message, 1)
+        })
+      }).catch(function () {
+        return load().then(function () { after('结果未确认，队列已刷新，请核实本批状态', 1) }, function (err) {
+          tip(opsOf(), '结果未确认；刷新失败：' + err.message, 1)
+        })
+      }).finally(function () {
+        reviewBusy = false
+        region.removeAttribute('aria-busy')
+        buttons.forEach(function (b) { if (b[0].isConnected) b[0].disabled = b[1] })
+      })
   }
 
   // ── 填表页那一格：两条编辑路共用的三件 ─────────────────────────────
-  /* 审核台的 #stage 与配装详情页的遮罩（admin/edit.js）载的是同一对填表页，
-     规矩也是同一套。**写在这里、由 api 导出去**，不在 edit.js 里抄第二份：
-     下面 mountForm() 那两条（review() 排在 load() 之前、基线取 load() 归一化之后
-     读回来的那一份）都是各踩一次才学到的，抄两遍就是两处各记一遍。 */
+  /* 编辑台的 #stage 与配装详情页的遮罩（admin/edit.js）载的是同一对填表页，
+     规矩也是同一套。**写在这里、由 api 导出去**，不在 edit.js 里抄第二份。 */
 
   // 一份正文该落在哪一页填表页上。**由正文现算，不另存一个字段**：合集标记只有
   // 填表页的 setHead() 发得出，读回来与灌进去永远同属一档，存第二份只会有漂的风险。
   function slotOf (md) { return isSet(md) ? 'set' : 'one' }
 
-  // 地址只给尾巴，前缀由调用方拼：审核台在 admin/ 下写 ../，配装页按 site.css
+  // 地址只给尾巴，前缀由调用方拼：编辑台在 admin/ 下写 ../，配装页按 site.css
   // 那个 <link> 现算相对前缀。
   function formSrc (kind) {
     return kind === 'set' ? 'builds/new/set/index.html' : 'builds/new/index.html'
@@ -1389,9 +1574,7 @@
   // 灌一份进去，返回「没人动过」的基线。抛出去由调用方接：两边报错的落点不同。
   function mountForm (w, md, reviewer) {
     // 审核意见那一栏与只归审核员的那几个场景都在这里立起来：填表页默认收着
-    // 它们，投稿的人因此看不到。lv 1 的编辑者照旧看得见已经写过的审核意见
-    // （有值即显示），只是立不起空框。
-    // 带守卫——读者浏览器里缓存着的旧 form.js 没有这个方法。
+    // 它们，投稿的人因此看不到。带守卫——读者浏览器里缓存着的旧 form.js 没有这个方法。
     // **排在 load() 之前**：load 里的 pressTags() 只按得下没藏起来的按钮，
     // 反过来的话一份「场景：功能性」的稿子会被重算成没有场景。
     if (w.starsideForm.review) w.starsideForm.review(reviewer)
@@ -1404,13 +1587,16 @@
     return readForm(w)
   }
 
-  // ── 详情那一格 ─────────────────────────────────────────────────────
-  // 骨架固定在 index.html 里：头 / iframe / 动作三块，**只有头与动作清空重建**。
-  // iframe 一旦被 append 进重建过的容器就是重新挂载，浏览器照规范把整页再载一遍，
-  // 而填表页要 site.css、builds/style.css、vocab.js 与 form.js —— 换一条配装
-  // 就重付一次解析与布局。
-  // 单套与合集各有一页填表页，**各留一个 iframe、切换时收起另一个**：改 src
-  // 就是整页重载，而那正是这个函数存在的理由。
+  // ── 填表页常驻那一格 ───────────────────────────────────────────────
+  /* 单套与合集各有一页填表页，**各留一个 iframe、切换时收起另一个**：改 src
+     就是整页重载，而那正是这个函数存在的理由。
+
+     载进来之后把它当成右栏的一部分：站头与页脚收掉，高度随内容走、不出第二条滚动条。
+     版心照填表页自己的（单套 1060、合集 1296），右栏更宽时两侧留白居中，页头与它
+     共用同一根左缘；右栏窄过填表页的最小宽度（单套 1104、合集 1340）时整格横向滚，
+     不压扁填表页。 */
+  var FORM_MIN = { one: 1104, set: 1340 }
+  var FORM_WRAP = { one: 1060, set: 1296 }
   function stageFrame (kind) {
     kind = kind || 'one'
     ;[].forEach.call($('stage').querySelectorAll('iframe.prev'), function (f) {
@@ -1418,11 +1604,22 @@
     })
     var fr = $('stage').querySelector('iframe.prev[data-kind="' + kind + '"]')
     if (fr) return fr
-    fr = el('iframe', 'prev')
-    fr.dataset.kind = kind
+    fr = h('iframe', { class: 'prev', 'data-kind': kind, title: kind === 'set' ? '合集填表页' : '配装填表页',
+      scrolling: 'no', style: 'min-width:' + FORM_MIN[kind] + 'px' })
     fr.src = '../' + formSrc(kind)
-    $('stage').insertBefore(fr, $('stage-foot'))
+    $('stage').appendChild(fr)
     return fr
+  }
+  function fitForm (fr) {
+    var d = fr.contentDocument
+    var st = d.createElement('style')
+    st.textContent = '.site-head,.site-foot{display:none!important}'
+      + 'body{min-height:0!important;background:transparent!important}'
+      + 'main{padding-top:4px!important}'
+    d.head.appendChild(st)
+    var fit = function () { if (!fr.hidden) fr.style.height = d.documentElement.scrollHeight + 'px' }
+    new fr.contentWindow.ResizeObserver(fit).observe(d.body)
+    fit()
   }
 
   // #stage 那一格里现在是什么样。还没建过、或者还没载完就返回 null。
@@ -1432,12 +1629,9 @@
     return readForm(fr.contentWindow)
   }
 
-  /* 填表页那一格现在装着谁：fed 是灌进去的那一份，base 是刚灌完时读回来的样子，
-     kind 是单套还是合集。
-
-     **脏判据比的是 base 不是 fed**：load() 会把旧键归一化（换轴之前投的稿子写的
-     是「类别」，读回来是「强度」），拿灌进去那份比，会在没人动过的稿子上误报，
-     每换一条都弹一次确认。 */
+  /* 填表页那一格现在装着谁：fed 是灌进去的那一份，base 是刚灌完时读回来的样子。
+     **脏判据比的是 base 不是 fed**：load() 会把旧键归一化，拿灌进去那份比，
+     会在没人动过的稿子上误报，每换一条都弹一次确认。 */
   var formFed = null
   var formBase = null
 
@@ -1455,13 +1649,11 @@
   }
 
   // 把一份源稿灌进那一页。第一次要等它自己载完，之后直接调。
-  //
   // **同一份就原地不动**：load() 会把 iframe 里滚到哪儿、光标在哪一格全部重置，
-  // 而保存成功要重画列表那一行，换标签、换筛选、换树上那一格也都会再走一遍这里。
-  // 判据是「灌进去的那一份没变」，不是「填表页里没变」——人正改着的那些字要留住。
+  // 而保存成功、换筛选、换标签都会再走一遍这里。判据是「灌进去的那一份没变」，
+  // 不是「填表页里没变」——人正改着的那些字要留住。
   function feed (md, onerr) {
     var kind = slotOf(md)
-    // 同一份正文必然落在同一档，比正文即可。
     if (md === formFed) { stageFrame(kind); return }
     var fr = stageFrame(kind)
     var go = function () {
@@ -1471,349 +1663,146 @@
       } catch (err) { onerr(err) }
     }
     if (fr.dataset.ready) go()
-    else fr.onload = function () { fr.dataset.ready = '1'; go() }
-  }
-
-  function shut () {
-    openBuild = null
-    hideStage()
-  }
-
-  // 点一条：记下开的是哪一套，再画一次列表——详情就摊在它下面那一格里。
-  // 正文不必现取，docs 那个动作已经把 builds/ 那些的 md 一并带回来了。
-  function buildDetail (b) {
-    var id = idOf(b)
-    /* **改了没保存就切走**：这是全台唯一会把另一份正文灌进填表页的入口，判据
-       只此一处。收起、换筛选、换标签、换树上那一格都不重灌（feed() 那道守卫
-       挡着），改的字原样留在那一页上。 */
-    // **判据与 feed() 那道早退逐字对偶**：要灌的正文与填表页里现装的那一份不同，
-    // 才会真的覆盖。按「点的是不是另一行」判会误伤——收起之后再点回同一条，
-    // 什么都不会被覆盖，却照样弹一次确认。
-    if (formDirty() && b.md !== formFed
-        && !window.confirm('当前这一套改过还没保存，切走会丢。仍要继续？')) return
-    /* 从列表点进来压一格，从一条详情跳到另一条就地改写。**不改写的话**：连点三条
-       就攒三格，审完一条 toList() 退回去，落到的是上一条已经处理完的详情，
-       而它多半已经被筛选挡在列表外了（hit 在 all 里找，不在 inState 里找）。 */
-    var how = history.state && history.state.b ? 'replaceState' : 'pushState'
-    history[how]({ v: 'builds', b: id }, '', urlOf(id))
-    openBuild = id
-    buildsView()
-    // 详情摊在整段列表下面，配装攒到几十条就得自己往下滑两千像素。**只滚点击
-    // 这一条路**：subDetail() 每次重画都会跑，筛选与 popstate 回来时不该跟着跳。
-    // **让位量按站头实测，不吃 --stick**：那个变量由 app.js 写回，而编辑台不引
-    // app.js，site.css 里 45px 的缺省值比这一页的站头矮 44px（这里多一条标签栏），
-    // 照它滚过去「← 收起」正好压在站头底下。
-    var st = $('stage')
-    st.style.scrollMarginTop = document.querySelector('.site-head').offsetHeight + 'px'
-    st.scrollIntoView()
-  }
-
-  /* 审完一条直接摊开队列里的下一条待审，不退回列表：连着过稿时每一条都要「收起 →
-     在列表里找下一行 → 点开」三步。order 是审之前列表的次序（listOf 那一份），下一条
-     只认此刻仍待审、且仍在当前筛选里的；一条都没有才回列表。 */
-  function advance (b, order) {
-    var now = listOf(shownOf(builds()))
-    var waiting = now.filter(function (x) { return x.state === 'wait' }).map(idOf)
-    var next = nextWait(order, idOf(b), waiting)
-    if (!next) return toList()
-    // 这一条改过的字已经随通过带走、或随驳回作废，切走不必再问「改了没保存」。
-    formBase = null
-    buildDetail(now.filter(function (x) { return idOf(x) === next })[0])
-  }
-
-  function subDetail (b) {
-    var s = b.sub || { _id: b.id, md: b.md }
-    var wrap = $('stage-head')
-    var foot = $('stage-foot')
-    wrap.textContent = ''
-    foot.textContent = ''
-    $('stage').hidden = false
-    // 头分左右两列：左边收起与铭牌，右边那几枚动作。**动作不留在 iframe 底下**
-    // ——那一格 86vh，按钮落在下面就离刚点的那一行一整屏。tip 跟着按钮走，
-    // 它是这几枚的回执，摆在看不见的地方等于没报。
-    var idcol = el('div')
-    var ops = el('div', 'stage-ops')
-    var bar = el('div', 'acts')
-    bar.appendChild(back('收起'))
-    bar.appendChild(shotBtn(function () { return slotOf(b.md) }))
-    idcol.appendChild(bar)
-    /* 铭牌两行：上一行这份稿子是什么，下一行谁经手的。**缺的那一格留空不占位**
-       ——合集头部没有分支与核心，本机直接落盘的那些没有审核人。 */
-    function join (parts) { return parts.filter(Boolean).join('　·　') }
-    idcol.appendChild(el('p', 'crumb', join([
-      nameOf(b.md) || b.id.split('/').pop(),
-      b.dirty ? '已改' : STATE[b.state],
-      // 落盘只在本机，通过之后站上什么时候变，界面上本来一句都没有。
-      b.dirty || b.state === 'pass' || b.state === 'dropping' ? '等待本机落盘' : '',
-      clsOf(b),
-      line(b.md, '分支'),
-      line(b.md, '强度'),
-      line(b.md, '核心'),
-      line(b.md, '推荐人').split('|')[0].trim(),
-      b.sub && b.sub.updates ? '更新已有配装' : '',
-      missing(b.md).length ? '缺 ' + missing(b.md).join('、') : '',
-      /\n## 审核意见[ \t]*\n\s*\S/.test(b.md || '') ? '有审核意见' : ''
-    ])))
-    /* 「改」取哪一份由 handOf() 一处定，列表那一行的 title 用的是同一份。
-       时间只有一个 at，三次动作互相覆写，所以写「最后动于」而不是各挂各的时间。 */
-    var edBy = handOf(b)
-    var okBy = (b.sub && b.sub.okBy) || ''
-    idcol.appendChild(el('p', 'crumb hands', join([
-      edBy ? '改 ' + edBy : '',
-      okBy ? '审 ' + okBy : '',
-      b.at ? '最后动于 ' + when(b.at) : ''
-    ]) || '没有经手记录'))
-    wrap.appendChild(idcol)
-    wrap.appendChild(ops)
-
-    // 载进来的是**可以改的填表页**，不是一张只读的图。装备写错、描述要润色，
-    // 审的人改完再通过比打回去让人重投快得多。**不替他按预览**——预览态下
-    // #sheet.preview 把输入框与格子全设成 pointer-events: none，整页点不动；
-    // 那一页右下角自己带着「预览配装」，想看成品点它即可。
-    feed(b.md, function (err) { tip(ops, '载入失败：' + err.message, 1) })
-
-    // 改后的那一份从填表页现读；读不出来（脚本没载好）就退回投稿原文，不交空的。
-    // 读那一下走 formOf()：脏判据与这里读的必须是同一份实现，抄两遍就会漂。
-    function current () {
-      var md = formOf(slotOf(b.md))
-      return md === null ? b.md : md
-    }
-
-    var src = el('details')
-    src.appendChild(el('summary', null, '原文'))
-    var pre = el('pre')
-    pre.textContent = b.md
-    src.appendChild(pre)
-    foot.appendChild(src)
-
-    if (S.me.lv >= 2) {
-      var acts = el('div', 'acts')
-      // **赛季与 slug 不再让人填**：赛季就是当前这一季，slug 是「八位随机串-职业」，
-      // 两者这里现算、后端照旧验形状与查重。审的人多数时候不想在这里停下来想名字，
-      // 而这两样从源稿里推得出来。
-      if (b.sub && b.sub.drop) {
-        // 删除申请不该改正文——它要的是「删不删」，改了也落不到任何地方
-        var bar2 = el('div', 'acts')
-        if (b.state === 'wait') {
-          // **不挂 go。**go 是「通过」那一档的绿，与列表上 .flag.pass 同一套词汇；
-          // 而这一枚是把页面从站上真删掉，全台最不可逆的一个动作，从前却长得最像
-          // 「安全的确认」。它归不可逆那一档，靠发丝线推到右端。
-          var dyes = el('button', 'op', '移除')
-          var dno = el('button', 'op', '驳回')
-          dyes.type = dno.type = 'button'
-          var dmark = function (ok) {
-            dyes.disabled = dno.disabled = true
-            var order = listOf(shownOf(builds())).map(idOf)
-            call('smark', { id: s._id, ok: ok }).then(load).then(function () { advance(b, order) }, function (e) {
-              dyes.disabled = dno.disabled = false
-              tip(ops, '操作失败：' + say(e), 1)
-            })
-          }
-          dyes.onclick = function () { dmark(1) }
-          dno.onclick = function () { dmark(-1) }
-          bar2.appendChild(dno)
-          bar2.appendChild(sep())
-          bar2.appendChild(dyes)
-        }
-        ops.appendChild(bar2)
-        return
+    else {
+      fr.onload = function () {
+        fr.dataset.ready = '1'
+        try { fitForm(fr) } catch (err) { onerr(err) }
+        go()
       }
-
-      var keep = el('button', 'op', '保存')
-      var yes = el('button', 'op go', b.state === 'wait' ? '通过' : '')
-      var no = el('button', 'op', '驳回')
-      keep.type = yes.type = no.type = 'button'
-
-      keep.onclick = function () {
-        keep.disabled = true
-        var md = current()
-        // 已上站的写回库里那份源稿，待审的写回投稿记录——两条路的落点不同，
-        // 但对填表页来说都只是「存一版」。
-        var act = b.state === 'live' ? 'bsave' : 'ssave'
-        /* **整装重拉，不能就地改。**已上站那一支的 b.sub 是 null，上面那个 s 是
-           现编的一次性对象，`s.md = md` 写不到任何地方；b 自己也是 builds() 每次
-           从 S.docs 现拼出来的，下一次重画照旧读库里那份旧正文——存完不刷新
-           看不到变化，就是这么来的。而且 dirty 挂在 hash 上，新 hash 只有服务端
-           算得出。三发请求，与通过、驳回、撤回同一条路。 */
-        /* **两件事分开报**：存失败要让人再存一遍，存下了只是没刷新则不必——混成
-           一句「保存失败」会让人把已经进库的那一份再存一次。**把重拉套进成功
-           回调里**，两条失败路各归各的 catch，不必在 Error 上挂标记再认回来。 */
-        call(act, { id: b.state === 'live' ? b.id : s._id, md: md }).then(function () {
-          return load().then(function () {
-            keep.disabled = false
-            /* 已上站那一套存完落进「通过」档（hash != landed），那一档没开着时
-               这一行就从列表上消失。**筛选是审核员自己摆的工作面，不替他动**——
-               存没存下由回执那句答，不由列表的形状答。 */
-            /* **基线要对，哪怕这就收起了。**收起只藏 DOM，填表页那一格原样留着；
-               不对基线的话，等会儿再点开同一套，formDirty() 拿存之前那份基线一比
-               就说「改过还没保存」，而它明明已经存进去了。 */
-            formSynced(md)
-            // 存完就收起，回到上面那张列表。history.back() 顺带把滚动位置还原到
-            // 按下那一行的那一刻，与「收起」走同一条路。
-            pendTip = b.state === 'live' ? '已保存到库，等本机落盘后上站' : '已保存'
-            toList()
-          }, function (e) {
-            keep.disabled = false
-            tip(ops, '已保存，但列表没刷新：' + say(e), 1)
-          })
-        }, function (e) {
-          keep.disabled = false
-          tip(ops, '保存失败：' + say(e), 1)
-        })
-      }
-      acts.appendChild(keep)
-
-      // 删一套已上站的配装不可逆——站上少一页、点赞数也跟着没了。**走审核，
-      // 不当场删**：落成一条待审记录，与投稿走同一条队列。
-      if (b.state === 'live') {
-        var ask = el('button', 'op', '申请移除')
-        ask.type = 'button'
-        ask.onclick = function () {
-          if (!window.confirm('申请移除《' + (nameOf(b.md) || b.id) + '》？')) return
-          ask.disabled = true
-          call('bdrop', { id: b.id }).then(load).then(toList, function (e) {
-            ask.disabled = false
-            tip(ops, '提交失败：' + say(e), 1)
-          })
-        }
-        acts.appendChild(ask)
-      }
-
-      /* 通过与驳回都退得回待审：两档的状态都只活在库里，源稿要等 sync.py 拉下来才
-         落盘。上了站（state 完成）就没有这一枚——那时要撤只有「申请移除」，后端也照
-         这条挡。**不问一声**：它只把这条记录退回待审，通过与驳回再点一次就回去了。 */
-      if (b.state === 'pass' || b.state === 'no') {
-        var undo = el('button', 'op', '撤回')
-        undo.type = 'button'
-        undo.onclick = function () {
-          undo.disabled = true
-          call('smark', { id: s._id, ok: 0 }).then(load).then(toList, function (e) {
-            undo.disabled = false
-            tip(ops, '撤回失败：' + say(e), 1)
-          })
-        }
-        acts.appendChild(undo)
-      }
-
-      if (b.state === 'no') {
-        var del = el('button', 'op', '删除')
-        del.type = 'button'
-        del.onclick = function () {
-          if (!window.confirm('删除这条废稿？不可撤销。')) return
-          del.disabled = true
-          call('sdrop', { id: s._id }).then(load).then(toList, function (e) {
-            del.disabled = false
-            tip(ops, '删除失败：' + say(e), 1)
-          })
-        }
-        acts.appendChild(sep())
-        acts.appendChild(del)
-      }
-
-      if (b.state === 'wait') {
-        var mark = function (ok, retry) {
-          keep.disabled = yes.disabled = no.disabled = true
-          var body = { id: s._id, ok: ok }
-          if (ok === 1) {
-            body.md = current()
-            // 更新已上站那一套时后端沿用原来的 slug，这里给的会被忽略
-            body.season = seasons()[0] || ''
-            body.slug = defaultSlug(body.md)
-          }
-          var order = listOf(shownOf(builds())).map(idOf)
-          call('smark', body).then(load).then(function () { advance(b, order) }, function (e) {
-            keep.disabled = yes.disabled = no.disabled = false
-            // 八位 36 进制撞上的概率约两万八千亿分之一，真撞了换一个再来
-            if (e.message === 'slug 重了' && !retry) return mark(ok, 1)
-            tip(ops, '操作失败：' + say(e), 1)
-          })
-        }
-        yes.onclick = function () { mark(1) }
-        no.onclick = function () { mark(-1) }
-        acts.appendChild(yes)
-        acts.appendChild(no)
-      }
-      ops.appendChild(acts)
-    } else {
-      /* lv 1 照样载得进可编辑的填表页，而投稿按钮又被 feed() 摘掉了——不说这一句，
-         人在表里改半天，找不到任何按钮，也不知道为什么。 */
-      tip(ops, '只读：保存、通过与驳回要审核员（lv 2）权限。')
     }
   }
 
-  // ── 改动记录 ───────────────────────────────────────────────────────
-  // 记录答的是「最近发生了什么」，主轴因此是时间；左栏那棵树在这里当筛选器，
-  // 不点就是全站。**写分组与标题，不写 docs/boss-hp**——读者看到的是一个个资料页。
-  var histDoc = null
+  // ── 记录 ───────────────────────────────────────────────────────────
+  // 记录答的是「最近发生了什么」，主轴因此是时间，按结案的那一刻排（emark 结案时
+  // 把 at 改写成结案时间）。同样是列表，点一条变成收件箱。
+  function closed () {
+    return S.edits.filter(function (e) { return e.ok === 1 || e.ok === -1 })
+      .sort(function (a, b) { return (a.at || '') < (b.at || '') ? 1 : -1 })
+  }
+  function histList () {
+    var q = V.hq.trim().toLowerCase()
+    return closed().filter(function (e) {
+      if (V.hok && e.ok !== V.hok) return false
+      if (V.hdoc && e.doc !== V.hdoc) return false
+      if (V.hwho && e.by !== V.hwho && e.okBy !== V.hwho) return false
+      if (!q) return true
+      return [pageOf(e.doc).title, e.by, e.okBy, e.before, e.after, whereText(e)].join('\n').toLowerCase().indexOf(q) >= 0
+    })
+  }
+  function byDay (list) {
+    var at = {}
+    var out = []
+    list.forEach(function (e) {
+      var d = when(e.at).slice(0, 10)
+      if (!at[d]) { at[d] = { day: dayOf(e.at), list: [] }; out.push(at[d]) }
+      at[d].list.push(e)
+    })
+    return out
+  }
+  function verdict (e) { return h('span', { class: 'x-st ' + (e.ok === 1 ? 'pass' : 'no'), text: e.ok === 1 ? '通过' : '驳回' }) }
 
   function histView () {
-    var done = S.edits.filter(function (e) { return e.ok === 1 || e.ok === -1 })
-    var count = {}
-    done.forEach(function (e) { count[e.doc] = (count[e.doc] || 0) + 1 })
-    if (histDoc && !count[histDoc]) histDoc = null
-
-    var body = el('div')
-    var side = tree(count, histDoc, function (id) {
-      histDoc = histDoc === id ? null : id       // 再点一次就取消筛选
-      histView()
+    var box = $('views')
+    box.textContent = ''
+    var all = closed()
+    var list = histList()
+    var docs = []
+    var who = []
+    all.forEach(function (e) {
+      if (docs.indexOf(e.doc) < 0) docs.push(e.doc)
+      ;[e.by, e.okBy].forEach(function (n) { if (n && who.indexOf(n) < 0) who.push(n) })
     })
-    show(split(side, body))
-
-    var list = histDoc ? done.filter(function (e) { return e.doc === histDoc }) : done
-    list = list.slice().sort(function (a, b) { return (a.at || '') < (b.at || '') ? 1 : -1 })
-    body.appendChild(el('p', 'crumb', histDoc ? trail(histDoc) : '全站 · ' + list.length + ' 条'))
+    var pass = all.filter(function (e) { return e.ok === 1 }).length
+    box.appendChild(h('div', { class: 'sect' }, h('h1', { text: '记录' }),
+      h('span', { class: 'x-dim', text: '已结案 ' + all.length + ' 处：通过 ' + pass + '，驳回 ' + (all.length - pass) })))
+    box.appendChild(h('div', { class: 'bar' },
+      h('div', { class: 'x-seg', role: 'group', 'aria-label': '结果' }, [[0, '全部'], [1, '通过'], [-1, '驳回']].map(function (o) {
+        return h('button', { type: 'button', 'aria-pressed': V.hok === o[0] ? 'true' : 'false', onclick: function () { V.hok = o[0]; render() } }, o[1])
+      })),
+      select('页面', V.hdoc, [['', '全部页面']].concat(docs.map(function (d) { return [d, pageOf(d).title] })),
+        function (v) { V.hdoc = v; render() }),
+      select('人员', V.hwho, [['', '全部人员']].concat(who.map(function (n) { return [n, n] })),
+        function (v) { V.hwho = v; render() }),
+      searchBox('hq', '搜索改动内容', render)))
+    if (S.more) box.appendChild(h('p', { class: 'more', text: '已达单次读取上限，部分记录未列出。' }))
     if (!list.length) {
-      body.appendChild(el('p', 'lede', '没有记录'))
-      return
+      box.appendChild(h('div', { class: 'x-empty' }, h('h3', { text: all.length ? '没有符合条件的记录' : '暂无记录' }),
+        h('p', { text: all.length ? '可调整筛选条件或清空搜索。' : '资料页改动审核后记录在此。' })))
     }
-    var rows = el('div', 'rows')
-    list.forEach(function (e) {
-      var b = el('button')
-      b.type = 'button'
-      b.appendChild(el('span', 'flag ' + (e.ok === 1 ? 'pass' : 'no'),
-        e.ok === 1 ? '通过' : '驳回'))
-      b.appendChild(el('span', 'id', trail(e.doc)
-        + (e.after === undefined ? '' : ' · ' + spot(e))))
-      b.appendChild(el('span', 'meta', (e.by || '?') + ' → ' + (e.okBy || '?')))
-      b.appendChild(el('span', 'meta', when(e.at)))
-      b.onclick = function () { fold(rows, b, e) }
-      rows.appendChild(b)
+    byDay(list).forEach(function (g) {
+      box.appendChild(h('p', { class: 'day', text: g.day }))
+      box.appendChild(h('div', { class: 'grid hist' }, g.list.map(function (e) {
+        return h('button', { type: 'button', class: 'tr', onclick: function () { openHist(e._id) } },
+          verdict(e),
+          h('span', { class: 'name' }, h('b', { text: pageOf(e.doc).title }), h('span', { class: 'x-dim', text: whereText(e) })),
+          h('span', { class: 'x-dim', text: (e.by || '?') + ' 提交，' + (e.okBy || '?') + ' 审核' }),
+          h('span', { class: 'at', text: when(e.at).slice(11) }))
+      })))
     })
-    body.appendChild(rows)
+    refocus(box)
   }
 
-  // **就地展开，不跳走**：跳到单独一屏会把左栏那棵树与滚到哪儿一起丢掉。
-  // 一次只开一条——同时摊开几条 diff，行与行就对不上了。
-  function fold (rows, row, e) {
-    var open = row.nextElementSibling && row.nextElementSibling.classList.contains('fold')
-    Array.prototype.forEach.call(rows.querySelectorAll('.fold'), function (n) { n.remove() })
-    Array.prototype.forEach.call(rows.querySelectorAll('[aria-expanded]'), function (n) {
-      n.removeAttribute('aria-expanded')
-    })
-    if (open) return
-    row.setAttribute('aria-expanded', 'true')
-    var box = el('div', 'fold')
-    box.appendChild(el('p', 'lede', '载入中…'))
-    row.parentNode.insertBefore(box, row.nextSibling)
-    histBody(e).then(function (node) {
-      box.textContent = ''
-      box.appendChild(node)
+  function histInbox () {
+    var e0 = S.edits.filter(function (e) { return e._id === V.hsel })[0]
+    if (!e0) {
+      V.hsel = null
+      history.replaceState(stateOf(), '', urlOf())
+      return render()
+    }
+    drawHistQueue()
+    $('detail').style.removeProperty('--dw')
+    $('stage').hidden = true
+    $('stage-foot').textContent = ''
+    detailHead([
+      h('p', { class: 'crumb', text: trail(e0.doc) }),
+      h('h2', { text: whereText(e0) }),
+      h('p', { class: 'meta' }, verdict(e0), h('span', { text: (e0.by || '?') + ' 提交；' + (e0.okBy || '?') + ' 于 ' + when(e0.at).slice(5)
+        + (e0.ok === 1 ? ' 通过' : ' 驳回') }))
+    ], [pageOf(e0.doc).url ? h('a', { class: 'x-btn quiet', href: '../' + pageOf(e0.doc).url, target: '_blank', rel: 'noopener' }, '打开页面') : null])
+    var pane = $('pane')
+    pane.hidden = false
+    pane.textContent = ''
+    histBody(e0).then(function (node) {
+      if (V.hsel === e0._id) { pane.textContent = ''; pane.appendChild(node) }
     }, function (err) {
-      box.textContent = ''
-      box.appendChild(el('p', 'lede', '取不到：' + err.message))
+      pane.textContent = ''
+      pane.appendChild(h('div', { class: 'x-alert', role: 'alert' }, h('p', null, h('b', { text: '读取失败。' }), ' ' + err.message)))
     })
+  }
+
+  function drawHistQueue () {
+    var q = $('queue')
+    q.textContent = ''
+    q.appendChild(h('div', { class: 'q-top' },
+      h('div', { class: 'q-back' }, btn('← 列表', 'quiet sm', { onclick: function () { toList() } }), kbd('Esc'),
+        h('span', { class: 'keys' }, kbd('J'), ' ', kbd('K'), ' 上下切换')),
+      searchBox('hq', '搜索页面、人员或改动内容', drawHistQueue)))
+    var list = h('div', { class: 'q-list' })
+    var groups = byDay(histList())
+    groups.forEach(function (g) {
+      list.appendChild(h('p', { class: 'q-sec' }, h('span', { text: g.day }), h('span', { text: String(g.list.length) })))
+      g.list.forEach(function (e) {
+        var w = whereOf(e)
+        list.appendChild(h('button', { type: 'button', class: 'item' + (V.hsel === e._id ? ' on' : ''), onclick: function () { openHist(e._id) } },
+          h('span', { class: 'l1' }, h('b', { text: w.id[w.id.length - 1] + (w.col ? ' · ' + w.col : '') }), verdict(e)),
+          h('span', { class: 'l2' }, h('span', { text: pageOf(e.doc).title }), h('span', { text: '审核：' + (e.okBy || '?') }),
+            h('span', { text: when(e.at).slice(11) }))))
+      })
+    })
+    if (!groups.length) list.appendChild(h('p', { class: 'q-none', text: '没有符合条件的记录。' }))
+    q.appendChild(list)
+    refocus(q)
   }
 
   // 一处改动的记录里 before/after 都还在，结案也不清空——历史就是它本身，不必再问。
   // 早先那批整篇快照结案时只留下一段增删字符串，仍要去 hist 取。
   function histBody (e) {
-    if (e.after !== undefined) return Promise.resolve(oneView(e))
+    if (e.after !== undefined) return Promise.resolve(rowView(e))
     return call('hist', { id: e._id }).then(function (r) {
-      var box = el('div', 'diff')
+      var box = h('div', { class: 'x-diff' })
       ;(r.diff || '（无增删）').split('\n').forEach(function (l) {
-        var n = el('div', l.charAt(0) === '-' ? 'del' : l.charAt(0) === '+' ? 'add' : 'ctx')
-        n.innerHTML = paint(l.slice(2))
-        box.appendChild(n)
+        box.appendChild(h('div', { class: l.charAt(0) === '-' ? 'del' : l.charAt(0) === '+' ? 'add' : 'ctx' },
+          h('span', { html: paint(l.slice(2)) })))
       })
       return box
     })
@@ -1843,63 +1832,156 @@
   }
 
   // ── 编辑者 ─────────────────────────────────────────────────────────
-  function edsView () {
-    call('eds', { op: 'list' }).then(function (r) {
-      var wrap = el('section', 'block')
-      var rows = el('div', 'rows')
-      r.eds.forEach(function (u) {
-        // **这一行不可点，得显式说出来。**.rows > * 那条把按钮样式套给每个直接子元素
-        // （手型光标、悬停高亮、左缘点亮），而这一行是 div、没有 onclick——看着可点，
-        // 点下去什么都不会发生。真正的动作是行内那枚「移除」。
-        var row = el('div', 'flat')
-        row.appendChild(el('span', 'id', u.name + '  ' + u._id))
-        row.appendChild(el('span', 'meta', LV[u.lv] || u.lv))
-        if (u.lv < S.me.lv) {
-          // 改名走 op:'set'，级别原样带回去——那个动作一次写整条，不带 lv 会被
-          // 当成「改成 undefined」挡下来。**改的只是这张白名单**：记录里的 by/okBy
-          // 是当时那个名字的副本，改完不回溯，旧记录照旧写着旧名字。
-          var ren = el('button', 'op', '改名')
-          ren.type = 'button'
-          ren.onclick = function () {
-            var name = window.prompt('把「' + u.name + '」改成什么名字？', u.name)
-            if (name === null) return
-            name = name.trim()
-            if (!name || name === u.name) return
-            call('eds', { op: 'set', uid: u._id, name: name, lv: Number(u.lv) })
-              .then(edsView, function (e) { alert(e.message) })
-          }
-          row.appendChild(ren)
-          var del = el('button', 'op', '移除')
-          del.type = 'button'
-          del.onclick = function () {
-            if (!window.confirm('移除 ' + u.name + '？')) return
-            call('eds', { op: 'del', uid: u._id }).then(edsView, function (e) { alert(e.message) })
-          }
-          row.appendChild(del)
-        }
-        rows.appendChild(row)
-      })
-      wrap.appendChild(rows)
+  var LV_CAN = {
+    1: '在资料页提交改动，查看待审内容与审核记录，申请移除已上线的配装。',
+    2: '另可保存、通过或驳回配装投稿与资料页改动，删除单条驳回稿。',
+    3: '权限目前与审核员相同。',
+    4: '另可管理编辑者名单，并一次清空全部驳回稿。'
+  }
+  // eds 那一路的 forbidden 说的是「动了同级或更高的人」，不是令牌过期——这里自己翻，
+  // 不走 say()：那一条会当成登录失效清掉令牌。
+  var ED_MSG = { forbidden: '只能调整级别低于本人的编辑者', 'bad lv': '级别不合法', 'bad uid': 'UID 不能为空' }
+  function edSay (e) { return ED_MSG[e.message] || MSG[e.message] || e.message }
 
-      var f = el('form', 'login')
-      f.innerHTML = '<label>uid<input name="uid" required></label>' +
-        '<label>名字<input name="name" required></label>' +
-        '<label>级别<select name="lv"></select></label>'
-      var sel = f.querySelector('select')
-      for (var i = 1; i < S.me.lv; i++) sel.appendChild(new Option(LV[i] + '（' + i + '）', String(i)))
-      var add = el('button', 'op go', '添加')
-      // go 从前落不到它身上：那条选择器要 .acts 祖先，而这一枚在 form.login 里。
-      // type 也显式写出来——全页另外三十处都写了，这一处不写就得读者自己去想。
-      add.type = 'submit'
-      f.appendChild(add)
-      f.onsubmit = function (ev) {
-        ev.preventDefault()
-        call('eds', { op: 'set', uid: f.uid.value.trim(), name: f.name.value.trim(), lv: Number(sel.value) })
-          .then(edsView, function (e) { tip(wrap, e.message, 1) })
+  /* 每人做过什么，从已经拉进来的改动与投稿里现数，不另发请求。提交按 uid 认（改名
+     不影响）；审核只记了名字，按当前名字认，改名之前审过的不计入。 */
+  function activity (u) {
+    var sub = 0
+    var rev = 0
+    var last = ''
+    S.edits.forEach(function (e) {
+      if (e.uid === u._id) { sub++; if ((e.at || '') > last) last = e.at }
+      if (e.ok !== 0 && e.okBy === u.name) { rev++; if ((e.at || '') > last) last = e.at }
+    })
+    S.subs.forEach(function (s) {
+      if (Number(s.ok) !== 0 && s.okBy === u.name) { rev++; if ((s.at || '') > last) last = s.at }
+    })
+    return ['提交 ' + sub + ' 处', '审核 ' + rev + ' 条', last ? '最近活动 ' + when(last).slice(5, 10) : '尚无活动']
+  }
+
+  var edsCache = null
+  var renaming = ''
+  function edsView (fresh) {
+    var box = $('views')
+    if (!edsCache || fresh) {
+      if (!edsCache) {
+        box.textContent = ''
+        box.appendChild(h('div', { class: 'eds' }, h('main', null, h('i', { class: 'sk', style: 'height:22px;width:120px' }),
+          h('div', { class: 'people' }, [0, 1, 2, 3].map(function () { return h('i', { class: 'sk', style: 'height:40px;margin:16px 0' }) })))))
       }
-      wrap.appendChild(f)
-      show(wrap)
-    }, function (e) { alert(e.message) })
+      return call('eds', { op: 'list' }).then(function (r) {
+        edsCache = r.eds
+        if (V.view === 'eds') edsView()
+      }, function (e) {
+        box.textContent = ''
+        box.appendChild(h('div', { class: 'x-alert', role: 'alert' }, h('p', null, h('b', { text: '读取编辑者名单失败。' }), ' ' + edSay(e)),
+          btn('重试', '', { onclick: function () { edsView(true) } })))
+      })
+    }
+    box.textContent = ''
+    var grantable = [1, 2, 3, 4].filter(function (i) { return i < S.me.lv })
+    var list = edsCache.slice().sort(function (a, b) { return Number(b.lv) - Number(a.lv) || String(a.name).localeCompare(String(b.name)) })
+    var main = h('main', null,
+      h('div', { class: 'eds-head' }, h('h1', { text: '编辑者' }), h('span', { class: 'x-dim', text: list.length + ' 人' }),
+        V.add ? null : btn('添加编辑者', '', { onclick: function () { V.add = true; edsView() } })))
+    if (V.add) main.appendChild(addPanel(grantable))
+    main.appendChild(h('div', { class: 'people' }, list.map(function (u) { return person(u, grantable) })))
+    box.appendChild(h('div', { class: 'eds' }, main,
+      h('aside', { class: 'levels' },
+        h('h3', { text: '级别与权限' }),
+        h('dl', null, [1, 2, 3, 4].map(function (i) { return h('div', null, h('dt', { text: LV[i] }), h('dd', { text: LV_CAN[i] })) })),
+        h('p', { text: '仅可调整级别低于本人的编辑者。改名不追溯历史，已有记录保留当时的名称。移除仅删除名单条目，其提交与审核记录保留。' }))))
+    var focus = box.querySelector('[autofocus]')
+    if (focus) focus.focus()
+  }
+
+  function setEd (row, body, done) {
+    Array.prototype.forEach.call(row.querySelectorAll('button, input'), function (b) { b.disabled = true })
+    return call('eds', body).then(function () {
+      return edsView(true).then(function () { if (done) tip(document.querySelector('.eds-head'), done) })
+    }, function (e) {
+      Array.prototype.forEach.call(row.querySelectorAll('button, input'), function (b) { b.disabled = false })
+      tip(row, edSay(e), 1)
+    })
+  }
+
+  function person (u, grantable) {
+    var lv = Number(u.lv)
+    var mine = lv >= S.me.lv
+    var row = h('div', { class: 'person' })
+    var who = h('div', { class: 'who' })
+    if (renaming === u._id) {
+      var input = h('input', { class: 'x-in', value: u.name, 'aria-label': '新名称', autofocus: true })
+      var save = function () {
+        var name = input.value.trim()
+        if (!name || name === u.name) { renaming = ''; return edsView() }
+        renaming = ''
+        // 改名与加人是同一个动作，级别原样带回去——那个动作一次写整条，不带 lv
+        // 会被当成「改成 undefined」挡下来。
+        setEd(row, { op: 'set', uid: u._id, name: name, lv: lv }, '已改名为「' + name + '」')
+      }
+      input.onkeydown = function (ev) {
+        if (ev.key === 'Enter') save()
+        if (ev.key === 'Escape') { renaming = ''; edsView() }
+      }
+      who.appendChild(h('div', { class: 'x-acts' }, input, btn('保存', 'sm', { onclick: save }),
+        btn('取消', 'quiet sm', { onclick: function () { renaming = ''; edsView() } })))
+    } else {
+      who.appendChild(h('b', null, u.name || '未命名', u._id === S.me.uid ? h('small', { text: '本人' }) : null))
+    }
+    who.appendChild(h('span', { class: 'line' }, h('code', { text: u._id }), activity(u).map(function (t) { return h('span', { text: t }) })))
+    put(row, [h('span', { class: 'mono-mark', 'aria-hidden': 'true', text: String(u.name || '?').charAt(0) }), who])
+    if (mine) {
+      put(row, [h('span', { class: 'fixed', text: LV[lv] || String(lv) }), h('span', { class: 'x-acts' })])
+    } else {
+      put(row, [h('div', { class: 'x-seg', role: 'group', 'aria-label': u.name + ' 的级别' }, grantable.map(function (i) {
+        return h('button', { type: 'button', 'aria-pressed': i === lv ? 'true' : 'false', title: LV_CAN[i],
+          onclick: function () {
+            if (i === lv) return
+            setEd(row, { op: 'set', uid: u._id, name: u.name, lv: i }, u.name + ' 已改为' + LV[i])
+          } }, LV[i])
+      })),
+      h('span', { class: 'x-acts' },
+        btn('改名', 'quiet sm', { onclick: function () { renaming = u._id; edsView() } }), cut(),
+        btn('移除', 'quiet sm', { onclick: function () {
+          if (!window.confirm('从名单中移除「' + u.name + '」？其提交与审核记录保留。')) return
+          setEd(row, { op: 'del', uid: u._id }, '已移除「' + u.name + '」')
+        } }))])
+    }
+    return row
+  }
+
+  function addPanel (grantable) {
+    var level = grantable[0]
+    var uid = h('input', { class: 'x-in mono', name: 'uid', required: true, placeholder: '对方页面上显示的 UID', autofocus: true })
+    var name = h('input', { class: 'x-in', name: 'name', required: true, placeholder: '显示在审核记录中' })
+    var seg = h('div', { class: 'x-seg', role: 'group', 'aria-label': '级别' })
+    var drawSeg = function () {
+      seg.textContent = ''
+      grantable.forEach(function (i) {
+        seg.appendChild(h('button', { type: 'button', 'aria-pressed': i === level ? 'true' : 'false', title: LV_CAN[i],
+          onclick: function () { level = i; drawSeg() } }, LV[i]))
+      })
+    }
+    drawSeg()
+    var form = h('form', { class: 'add-panel' },
+      h('p', { text: '对方需先登录编辑台一次，页面会显示其 UID。' }),
+      h('div', { class: 'row' },
+        h('label', { class: 'x-field' }, h('span', { text: 'UID' }), uid),
+        h('label', { class: 'x-field' }, h('span', { text: '名称' }), name),
+        h('div', { class: 'x-field' }, h('span', { text: '级别' }), seg)),
+      h('div', { class: 'x-acts' }, h('button', { type: 'submit', class: 'x-btn fill' }, '添加'),
+        btn('取消', 'quiet', { onclick: function () { V.add = false; edsView() } })),
+      h('p', { class: 'x-tip' }))
+    form.onsubmit = function (ev) {
+      ev.preventDefault()
+      var n = name.value.trim()
+      call('eds', { op: 'set', uid: uid.value.trim(), name: n, lv: level }).then(function () {
+        V.add = false
+        return edsView(true).then(function () { tip(document.querySelector('.eds-head'), '已添加「' + n + '」') })
+      }, function (e) { tip(form, edSay(e), 1) })
+    }
+    return form
   }
 
   // ── 装载 ───────────────────────────────────────────────────────────
@@ -1910,106 +1992,172 @@
       S.subs = r[2].subs
       // 后端那几条查询没有 orderBy，触到 limit 就静默截断。它报一位，这里显形。
       S.more = !!(r[0].more || r[1].more || r[2].more)
+      PEND = {}
+      judgeErr = {}
       badges()
     })
   }
 
-  // 两枚标签上的待审数。整装一次算一次，就地结案之后也算一次。
+  // 顶栏「审核」旁那个数：待审的配装与有待审改动的资料页，与状态条上「待审」那一档同数。
   function badges () {
-    var nd = S.edits.filter(function (e) { return e.ok === 0 }).length
-    var ns = S.subs.filter(function (s) { return Number(s.ok) === 0 }).length
-    $('n-doc').textContent = nd ? String(nd) : ''
-    $('n-sub').textContent = ns ? String(ns) : ''
+    var n = stageCount('wait', builds(), pendPages())
+    $('n-wait').textContent = n ? String(n) : ''
+  }
+
+  // 载入中那一屏：与列表同形的灰块。
+  function skeleton () {
+    var box = $('views')
+    box.hidden = false
+    box.textContent = ''
+    var rows = []
+    for (var i = 0; i < 9; i++) {
+      rows.push(h('div', { class: 'tr', style: 'cursor:default' }, [0, 1, 2, 3, 4, 5, 6].map(function (j) {
+        return h('i', { class: 'sk', style: 'height:' + (j ? 9 : 12) + 'px;width:' + (j ? 40 + ((i * 7 + j * 13) % 50) : 30 + (i * 11 % 30)) + '%' })
+      })))
+    }
+    put(box, [h('div', { class: 'flow' }, [0, 1, 2, 3, 4].map(function () {
+      return h('div', { class: 'stage', style: 'cursor:default' }, h('i', { class: 'sk', style: 'width:36px;height:28px' }),
+        h('i', { class: 'sk', style: 'width:48px;height:12px;margin-top:6px' }))
+    })), h('div', { class: 'bar' }, h('i', { class: 'sk', style: 'width:220px;height:32px' }), h('i', { class: 'sk', style: 'width:260px;height:32px' })),
+    h('div', { class: 'sect' }, h('i', { class: 'sk', style: 'width:60px;height:14px' })),
+    h('div', { class: 'grid builds' }, rows)])
   }
 
   function boot () {
     return call('me').then(function (me) {
       S.me = me
-      $('gate').hidden = true
-      $('me').hidden = false
-      $('me-name').textContent = me.name || '（未登记）'
-      $('me-lv').textContent = LV[me.lv] || '无权限'
       if (!me.lv) {
+        // 登录了但不在名单里：同一个版面，右边换成 UID。墙照样要铺。
+        document.documentElement.classList.remove('signed')
+        $('login').hidden = true
         $('stranger').hidden = false
         $('my-uid').textContent = me.uid
+        wall()
         return null
       }
-      // 页首整块收起（admin/style.css 的 .editor）：站头上亮着的标签已经说明在哪一屏。
-      document.documentElement.classList.add('editor')
-      $('views').hidden = false
-      show(el('p', 'lede', '载入中…'))
-      // 编辑者那一屏只给超管：加人、改名、改角色、移除都在这里，看得见谁是编辑者
-      // 本身也是这一层的事。云函数的 LEVEL.eds 是同一个门槛，不靠前端藏。
+      $('gate').hidden = true
+      $('top').hidden = false
+      $('me-name').textContent = me.name || '未登记'
+      $('me-lv').textContent = LV[me.lv] || '无权限'
+      // 编辑者那一屏只给超级管理员：云函数的 LEVEL.eds 是同一个门槛，不靠前端藏。
       document.querySelector('[data-view="eds"]').hidden = me.lv < 4
-      // 起手那一格也要有 state，不然从详情返回时拿到的是 null。
-      // **这一格必须是列表**：地址栏带 ?b= 时下面另压一格详情，退回来才有列表接着。
-      // 把它自己写成详情的话，那一条上按「收起」会一路退出编辑台。
-      var want = new URLSearchParams(location.search).get('b')
-      history.replaceState({ v: 'builds' }, '', urlOf(''))
-      // **三张表到齐了才放开标签栏**：docs / edits / subs 还在路上时 S 里是三个
-      // 空数组，这时点哪一枚画出来的都是一张空列表，等 load() 落地又被
-      // buildsView() 顶回落地那一屏——看着就是「第一次进去加载不出来」。
+      skeleton()
+      // 链接指的那一条（?b= 配装、?p= 资料页）还在就直接开在它上面，找不到就退回
+      // 列表，不报错——收到链接的人多半只是晚来了一步。**起手那一格必须是列表**：
+      // 上面另压一格详情，退回来才有列表接着。
+      var qs = new URLSearchParams(location.search)
+      var want = qs.get('b') ? 'b:' + qs.get('b') : qs.get('p') ? 'p:' + qs.get('p') : null
+      history.replaceState(stateOf(), '', urlOf())
       return load().then(function () {
-        $('tabs').hidden = false
-        // 链接指的那一条还在就直接开在它上面，找不到（审完删了、或链接过期）
-        // 就退回列表，不报错——收到链接的人多半只是晚来了一步。
-        var hit = want && builds().filter(function (x) { return idOf(x) === want })[0]
-        if (hit) return buildDetail(hit)
-        buildsView()
+        if (want && lookup(want)) {
+          V.sel = want
+          history.pushState(stateOf(), '', urlOf())
+        }
+        render()
       })
     })
   }
 
-  // ── 登录框 ───────────────────────────────────────────────────────
-  // 只有账号密码一条。**账号由管理员在云开发控制台手工建**（注册用户免费、不限量），
-  // 没有自助注册：网关默认策略对任何自注册的注册用户都放行云函数，少一条注册入口
-  // 就少一整类要挡的东西。
+  // 登录页那面墙：站上已有的异域武器图。铺满这一格要多少张按格子现算。
+  function wall () {
+    var box = $('wall')
+    if (box.querySelector('.tiles')) return
+    var icons = window.starsideWall || []
+    if (!icons.length) return
+    var cols = Math.ceil((box.clientWidth * 1.25 + 48) / 66)
+    var rows = Math.ceil((box.clientHeight * 1.25 + 48) / 66)
+    var tiles = h('div', { class: 'tiles' })
+    for (var i = 0; i < cols * rows; i++) {
+      tiles.appendChild(h('img', { src: '../' + icons[(i * 7) % icons.length], alt: '', decoding: 'async' }))
+    }
+    box.insertBefore(tiles, box.firstChild)
+  }
+
+  // ── 登录页 ─────────────────────────────────────────────────────────
+  // 只有账号密码一条。**账号由管理员在云开发控制台手工建**，没有自助注册：
+  // 网关默认策略对任何自注册的注册用户都放行云函数，少一条注册入口就少一整类要挡的东西。
   function gate () {
     var pw = $('f-pw')
     pw.onsubmit = function (ev) {
       ev.preventDefault()
-      $('gate-tip').textContent = '登录中…'
+      var t = $('gate-tip')
+      t.classList.remove('bad')
+      t.textContent = '登录中…'
+      Array.prototype.forEach.call(pw.querySelectorAll('.x-in'), function (n) { n.classList.remove('bad') })
       auth('/auth/v1/signin', {
         username: pw.username.value.trim(),
         password: pw.password.value
       }).then(function (j) {
         tok(j)
-        $('gate-tip').textContent = ''
+        t.textContent = ''
         return boot()
-      }).catch(function (e) { $('gate-tip').textContent = '登录失败：' + e.message })
+      }).catch(function (e) {
+        t.classList.add('bad')
+        // 认证服务拒了就是账号或密码不对；别的（断网、网关报错）照原话说出来。
+        t.textContent = e.denied ? '用户名或密码错误。' : '登录失败：' + e.message
+        if (e.denied) Array.prototype.forEach.call(pw.querySelectorAll('.x-in'), function (n) { n.classList.add('bad') })
+      })
     }
+    $('copy-uid').onclick = function () {
+      var done = function (ok) { tip($('stranger'), ok ? '已复制' : '复制失败，请手动选中后复制', !ok) }
+      if (navigator.clipboard) navigator.clipboard.writeText($('my-uid').textContent).then(function () { done(true) }, function () { done(false) })
+      else done(false)
+    }
+    $('reload').onclick = function () { location.reload() }
+    $('switch').onclick = function () { tok(null); location.reload() }
   }
 
   function start () {
+    // 这两条只在编辑台上挂：资料页开编辑态时 edit.js 也载本文件，只为借几件纯函数。
+    window.addEventListener('popstate', function (ev) {
+      if (!S.me || !S.me.lv) return
+      var st = ev.state || {}
+      morph({ view: st.v || 'queue', sel: st.sel || null, hsel: st.hsel || null })
+    })
+
+    // 收件箱里的键盘：Esc 回列表，J / K 换上下条。光标在输入框里时不接。
+    // 填表页是 iframe，里面打字的按键到不了这一页，不会误触。
+    document.addEventListener('keydown', function (ev) {
+      var t = ev.target
+      if (!inbox() || ev.metaKey || ev.ctrlKey || ev.altKey) return
+      if (t.closest && t.closest('input, textarea, select, [contenteditable]')) return
+      if (ev.key === 'Escape') return toList()
+      if (ev.key !== 'j' && ev.key !== 'k') return
+      var ids = V.view === 'hist' ? histList().map(function (e) { return e._id }) : queueIds()
+      var cur = V.view === 'hist' ? V.hsel : V.sel
+      var i = ids.indexOf(cur) + (ev.key === 'j' ? 1 : -1)
+      if (i < 0 || i >= ids.length) return
+      if (V.view === 'hist') openHist(ids[i])
+      else open(ids[i])
+    })
     $('out').onclick = function () { tok(null); location.reload() }
     $('tabs').onclick = function (ev) {
       var b = ev.target.closest('[data-view]')
-      if (!b) return
-      // 按属性找，不按 children——标签页外面还包着一层 .tool-chips
-      Array.prototype.forEach.call(this.querySelectorAll('[data-view]'), function (n) {
-        n.removeAttribute('aria-current')
-      })
-      b.setAttribute('aria-current', 'true')
-      // 换标签顺手把 ?b= 抹掉：那一格指的是配装详情，换到别的屏就不成立了。
-      history.replaceState({ v: b.dataset.view }, '', urlOf(''))
-      ;(VIEWS[b.dataset.view] || buildsView)()
+      if (b) tab(b.dataset.view)
     }
     gate()
-    // 有令牌就直接进，登录真的失效（forbidden）才落回登录框。**认证失败要把那个类摘掉**，
-    // 否则登录框被 CSS 藏着，人看到的是一片空白。断网或后端报别的错时令牌留着，把原因
+    // 有令牌就直接进，登录真的失效（forbidden）才落回登录页。**认证失败要把那个类摘掉**，
+    // 否则登录页被 CSS 藏着，人看到的是一片空白。断网或后端报别的错时令牌留着，把原因
     // 摆出来：清掉令牌只会让人为一次网络抖动重新输密码。
     if (tok()) {
       boot().catch(function (e) {
         if (e.message === 'forbidden') {
           tok(null)
           document.documentElement.classList.remove('signed')
+          wall()
           return
         }
-        $('views').hidden = false
-        show(el('p', 'lede', '载入失败：' + say(e) + '。刷新页面重试'))
+        $('gate').hidden = true
+        var box = $('views')
+        box.hidden = false
+        box.textContent = ''
+        box.appendChild(h('div', { class: 'x-alert', role: 'alert' },
+          h('p', null, h('b', { text: '载入失败：' }), say(e) + '。登录状态仍然有效，可稍后重试。'),
+          btn('重试', '', { onclick: function () { location.reload() } })))
       })
     } else {
       document.documentElement.classList.remove('signed')
+      wall()
     }
   }
 
