@@ -6,6 +6,30 @@
 
    共用件（words、hit）由 app.js 传进来，不在这里重抄一份。 */
 
+/* 展开 assets/search.js。那边按页面、分节分组写（格式见 tools/build-search.py）：
+   对象带 u 是页面，不带是分节，数组是条目，归属前面最近的那个页面与分节。
+   条目 [名称, 全文] 的全文里第一个 ¶ 换回名称；[名称] 的全文与前一个同名条目相同。
+   展开成每条带齐 u a l n x 的记录，下面的匹配与渲染只认这个形状。 */
+function unpack(list) {
+  var out = [], page = null, sect = null, last = new Map();
+  list.forEach(function (r) {
+    if (!Array.isArray(r)) {
+      if (r.u) { page = r; out.push(r); }
+      else sect = r;
+      return;
+    }
+    var n = r[0], x;
+    if (r.length === 1) x = last.get(n);
+    else {
+      var at = r[1].indexOf('¶');
+      x = at < 0 ? r[1] : r[1].slice(0, at) + n + r[1].slice(at + 1);
+    }
+    last.set(n, x);
+    out.push({ u: page.u, a: sect.a, l: sect.l, n: n, x: x });
+  });
+  return out;
+}
+
 export default function init(box, deps) {
   var words = deps.words, hit = deps.hit;
 
@@ -89,7 +113,7 @@ export default function init(box, deps) {
       var tag = document.createElement('script');
       tag.src = 'assets/search.js';
       tag.onload = function () {
-        index = window.starsideIndex;
+        index = unpack(window.starsideIndex);
         /* **判据与 draw() 里那一处必须是同一个。**那边按 `!r.n` 分页面与条目，
            这边若改按 `r.d` 分，两个字段都为空的记录就走不到 `_t` 这一支，
            draw() 拿到 undefined 当正文，整只搜索框当场抛错。 */
@@ -184,8 +208,8 @@ export default function init(box, deps) {
     input.addEventListener('focus', load);
     input.addEventListener('input', function () { load(); draw(); });
 
-    /* 索引 287 KB gzip。只在聚焦时拉的话，读者点进搜索框敲第一个字要干等它下完；
-       页面加载完之后趁空闲预取，想搜的时候已经在内存里。排在 load 之后、空闲时段
+    /* 索引约 1.2 MB，站上不压缩传输。只在聚焦时拉的话，读者点进搜索框敲第一个字
+       要干等它下完；页面加载完之后趁空闲预取，想搜的时候已经在内存里。排在 load 之后、空闲时段
        里，首屏不受影响。上面那条 focus 留着兜底——空闲回调可能一直不来。 */
     /* **timeout 必须给。**空闲回调没有「一定会来」的保证——页面持续有活干时它会被
        一直推后，预取就白写了。给 3 秒上限，到点无论闲不闲都拉。 */

@@ -8,10 +8,17 @@
 产出是一个 JS 文件而不是 JSON：**双击打开的站点要能搜**，而 file:// 下 fetch 取
 同目录的文件会被 CORS 挡掉，<script> 不会。文件里就一句 window.starsideIndex = [ … ]，
 一条记录一行——这份文件每改一次源稿就要重生成并入库，按行写让 git 存得下增量。
-两种记录：
+按页面、分节分组写，三种记录（条目有两种写法），按出现顺序归属：
 
-    {"u":页面, "t":标题, "d":描述}                     每页一条
-    {"u":页面, "a":锚点, "l":分节, "n":名称, "x":全文}  每个条目一条
+    {"u":页面, "t":标题, "d":描述}   每页一条，其后是这一页的分节与条目
+    {"a":锚点, "l":分节}             每个分节一条，其后是这一节的条目
+    [名称, 全文]                     条目；全文里第一个 ¶ 写的是名称
+    [名称]                           条目，全文与前一个同名条目相同
+
+站上不压缩传输，字节原样下到读者那里。所以页面与分节不在每个条目上重复，名称不在
+全文里再写一遍，同名条目逐字相同的全文只写一次（异域武器、异域护甲的详解页与刷取
+清单页各有一百多条相同，神器模组页同一个模组挂在两件神器下）。首页 home.js 的
+unpack() 把它展开回每条带齐 u a l n x 的记录，匹配与渲染只认展开后的形状。
 
 索引是页面文本的第二份副本，但它在仓库的另一个文件里、不进任何页面的 HTML，
 各生成器的逐字保真闸门因此照旧成立。
@@ -190,10 +197,37 @@ def line(record):
     return json.dumps(record, ensure_ascii=False, separators=(',', ':'))
 
 
+# 条目全文里代写名称的字符。全文里本来就有它时，展开会把那一处换成名称，所以中止。
+NAME = '¶'
+
+
+def pack(rows, last):
+    """一页的条目写成行：分节变了先写一行 {"a","l"}，条目只写名称与全文。
+
+    last 记着「名称 → 前一个同名条目的全文」，跨页共用，与 home.js 的 unpack()
+    同一套规则：全文与它相同只写名称，否则全文里第一次出现名称的那一处换成 NAME。
+    """
+    out, sect = [], None
+    for r in rows:
+        if (r['a'], r['l']) != sect:
+            sect = (r['a'], r['l'])
+            out.append(line({'a': r['a'], 'l': r['l']}))
+        name, full = r['n'], r['x']
+        if last.get(name) == full:
+            out.append(line([name]))
+        else:
+            if NAME in full:
+                markup.die('%s 的「%s」全文里有 %s，展开时会被换成名称' % (r['u'], name, NAME))
+            out.append(line([name, full.replace(name, NAME, 1) if name else full]))
+        last[name] = full
+    return out
+
+
 def main() -> int:
     argparse.ArgumentParser(description=__doc__, allow_abbrev=False,
                             epilog="产出 assets/search.js；资料产出应先生成；完整链运行 npm run build").parse_args()
     out, total = [], 0
+    last: dict[str, str] = {}
     for url in shell.pages():
         if url == shell.HOME:
             continue          # 首页本身就是搜索框所在的那一页，不必搜出自己
@@ -205,7 +239,7 @@ def main() -> int:
             continue
         page, rows = scan(url)
         out.append(line(page))
-        out += [line(r) for r in rows]
+        out += pack(rows, last)
         total += len(rows)
         print('  %-38s %4d 条' % (url, len(rows)))
     body = 'window.starsideIndex = [\n%s\n];\n' % ',\n'.join(out)

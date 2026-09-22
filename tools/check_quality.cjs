@@ -851,6 +851,38 @@ test('app.js and the page-specific modules it lazy-loads stay in step', () => {
     'app.js 要按自己的 src 算模块路径：classic script 里 import() 的相对路径按文档基址解')
 })
 
+test('the site search index unpacks into full records that carry the English names', () => {
+  // 索引按页面、分节分组写，条目上只有名称与压过的全文，首页由 home.js 的 unpack()
+  // 展开。这里走同一个 unpack()：展开错了（页面或分节没挂上、¶ 没换回名称），
+  // 搜索框照样出结果，只是来处与摘要是错的。
+  //
+  // 搜 One-Two Punch 要搜得到雪上加霜。英文名一直在事实层里，这一条钉住它露在
+  // 展开后的全文末尾。掉了的症状是「搜中文照样能搜到」，没有人会发现。
+  const ctx = {}
+  ctx.window = ctx
+  vm.createContext(ctx)
+  vm.runInContext(fs.readFileSync(path.join(site, 'assets/search.js'), 'utf8'), ctx,
+    { filename: 'assets/search.js' })
+  vm.runInContext(funcSource('assets/home.js', 'unpack') + '\nthis.unpack = unpack', ctx)
+  const rows = ctx.unpack(ctx.starsideIndex)
+  const pages = new Set(rows.filter((r) => !r.n).map((r) => r.u))
+  const entries = rows.filter((r) => r.n)
+  assert.ok(entries.length > 3000, `只读到 ${entries.length} 个条目`)
+  for (const r of entries) {
+    assert.ok(pages.has(r.u), `${r.n} 没挂到页面上：${r.u}`)
+    assert.ok(typeof r.a === 'string' && r.a && typeof r.l === 'string' && r.l,
+      `${r.u} 的 ${r.n} 没挂到分节上`)
+    assert.ok(typeof r.x === 'string' && !r.x.includes('¶'), `${r.u} 的 ${r.n} 全文没展开`)
+  }
+  const got = entries.filter((r) => r.n === '雪上加霜')
+  assert.ok(got.length, '搜索索引里没有雪上加霜')
+  for (const r of got) {
+    assert.ok(r.x.endsWith('One-Two Punch'), `雪上加霜的全文没带上英文名：${r.x.slice(-40)}`)
+  }
+  const withEn = entries.filter((r) => /[A-Za-z][A-Za-z .,'-]{2,}$/.test(r.x)).length
+  assert.ok(withEn > 1500, `只有 ${withEn} 个条目带英文名，英文没接进来`)
+})
+
 test('both entry points load the shared modules before the console that uses them', () => {
   // admin.js 现读 window.starsideDialect 与 window.starsideSource。少一句，/admin/
   // 一开就是 undefined.cells，而闸门、构建、npm test 全都看不见——那一屏是手写的
