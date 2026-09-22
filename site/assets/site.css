@@ -369,8 +369,18 @@ a { color: var(--bone); }
 }
 
 /* 工具条：搜索 + 神器跳转，整块由 assets/app.js 按 DOM 构建。
-   不在 HTML 里重复任何源文本，否则生成器的保真自检会报重复。 */
-.toolbar:empty { display: none; }
+   不在 HTML 里重复任何源文本，否则生成器的保真自检会报重复。
+
+   **建之前先按建好之后的高度占位。**app.js 是 defer 的，慢网下购物清单要等 HTML
+   下完才跑；不占位的话工具条在那一刻撑开，读者正在读的正文整体下移一截。高度是
+   1440 宽下实测的一行：有搜索框的 46.5px（输入框 35.5 + 下内边距 11），只有列组
+   开关（data-cols）或折线图（data-chart）的 40px，写了 data-chip-break 的两行
+   91.3px。窄屏下多折出来的行仍在脚本跑完时撑开。此刻页（data-clock）的工具条不建
+   内容，照旧不占位。改了输入框、chip 的尺寸或工具条的内边距，这几个数跟着量。 */
+.toolbar:empty { min-height: 46.5px; }
+.toolbar[data-cols]:empty, .toolbar[data-chart]:empty { min-height: 40px; }
+.toolbar[data-chip-break]:empty { min-height: 91.3px; }
+.toolbar[data-clock]:empty { display: none; }
 
 .toolbar {
   display: flex;
