@@ -180,6 +180,11 @@ def wanted():
         for group in rows.option_plugs(row):
             for one in group:
                 add(one, 64)
+    # 神器本体：神器模组页每一节的标题栏挂它自己那张图。认法与 facts.py 补进物品
+    # 表的那条相同：带 derived.tiers 的就是神器。
+    for key, row in facts.items.items():
+        if 'tiers' in (row.get('derived') or {}):
+            add(key, 64)
     for path in CHROME.values():
         need.setdefault(path, 96)
     for path in list(CHAMP.values()) + list(ELEM.values()):

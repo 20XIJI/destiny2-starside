@@ -50,7 +50,7 @@
   display: grid;
   grid-template-columns: 250px 1fr;
   gap: 44px;
-  padding: 30px 0 34px;
+  padding: 34px 0 36px;
   border-bottom: 1px solid var(--hair);
 }
 
@@ -68,7 +68,7 @@
   margin: 0;
   color: var(--bone-hi);
   font-family: var(--font-cn);
-  font-size: 19px;
+  font-size: 21px;
   font-weight: 600;
   line-height: 1.4;
   letter-spacing: .04em;
@@ -111,11 +111,11 @@
 
 .set-tags li {
   padding: 3px 8px;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font-family: var(--font-cn);
   font-size: 11.5px;
   line-height: 1.6;
-  border: 1px solid var(--hair);
+  border: 1px solid var(--hair-lit);
 }
 
 /* ── 效果 ── */
@@ -129,7 +129,12 @@
   contain-intrinsic-height: auto 386px;
 }
 
-.bonus + .bonus { margin-top: 26px; }
+/* 2 件与 4 件之间一道淡线：两条效果各自成块，扫读时分得开 */
+.bonus + .bonus {
+  margin-top: 22px;
+  padding-top: 22px;
+  border-top: 1px solid #ffffff0d;
+}
 
 /* 图标、件数、名称一行排开 */
 .bonus-head {
@@ -162,19 +167,26 @@ span.bonus-icon { display: block; }
 .bonus-name {
   color: var(--bone-hi);
   font-family: var(--font-cn);
-  font-size: 15px;
+  font-size: 16.5px;
   font-weight: 600;
   letter-spacing: .03em;
 }
 
-/* 正文与图标左缘对齐：44 图标 + 14 沟 */
+/* 正文与图标左缘对齐：44 图标 + 14 沟。字族与数字排法同神器模组页的说明 */
 .bonus-body {
   padding-left: 58px;
+  font-family: var(--font-read);
   font-size: 14px;
-  line-height: 2;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.75;
 }
 
-.bonus-body p { margin: 0 0 .85em; }
+.bonus-body p { margin: 0 0 .75em; }
+
+/* 素字里的数值（markup.typeset() 包的 <b>）提亮一档；条件行里的跟着条件行暗下来 */
+.bonus-body b { color: var(--bone-hi); font-weight: 600; }
+
+.bonus-body .cond b { color: var(--bone); }
 
 .bonus-body p:last-child { margin-bottom: 0; }
 
@@ -195,7 +207,7 @@ span.bonus-icon { display: block; }
 .bonus-body li::before {
   content: "";
   position: absolute;
-  top: .95em;
+  top: .85em;
   left: 0;
   width: 7px;
   height: 1px;

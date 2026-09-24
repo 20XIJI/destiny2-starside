@@ -113,6 +113,7 @@ Starside 的视觉与排版规范。新增页面、改样式、定颜色之前�
 | `--font-disp` | 显示层、字标、小标签 | Chakra Petch（自托管 latin 子集，600 与 700 两个字重各约 10 KB） |
 | `--font-cn` | 中文标题 | PingFang |
 | `--font-body` | 正文与数字 | 等宽字族 |
+| `--font-read` | 模组说明（神器模组页、护甲模组页） | 系统无衬线，数字 `tabular-nums` |
 
 `--font-disp` 与 `--font-body` 靠浏览器按字符逐族回退：拉丁与数字取前一族字面，中文自动落到 PingFang。不拆标签。
 

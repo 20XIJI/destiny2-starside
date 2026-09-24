@@ -26,7 +26,8 @@ import resolve
 import rows
 import shell
 from markup import (IMG, LINK, REC_ROW, Icons, bmark, die, inline, meta_line, meta_of,
-                    no_nested_span, plain, source_context, src_hash, text_of, whole_marker)
+                    no_nested_span, paragraphs, plain, source_context, src_hash, text_of,
+                    typeset, whole_marker)
 
 
 # 按记录的种类排版的那几页：源稿只写主键，格子与列都由记录决定（见 render.py）。
@@ -44,7 +45,7 @@ SLUG = ''
 # 头部的「键：值」行。键名固定，正文行不会被误认。
 META_KEYS = ('描述', '更新', '页脚', '待测标记', '鸣谢', '数据源', '导航', '路径', '上级',
              '列组', '互斥列组', '默认列组', '首屏图标', '首屏记录', '此刻', '跳转分行',
-             '图表', '标注', '默认曲线')
+             '图表', '标注', '默认曲线', '说明排印')
 META_LINE = meta_line(META_KEYS)
 
 # 分节级声明：「色阶：列名 阈值 …」。同样按整行剥离，不进正文。
@@ -75,6 +76,7 @@ DEX = None
 PAGE = ''
 SECTION = ('', '')
 ICONS: 'Icons | None' = None    # 当前页面的图标登记处，由 build() 装上
+TYPESET = False                 # 「说明排印：是」：每行末格走 markup.typeset()，由 build() 装上
 
 
 CELL_BREAK = '\\\\'     # 表格单元格里的换行标记，见 render_table()
@@ -494,16 +496,46 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=
                 continue
             spot = (ROW_SPOTS.get(at) or [None] * len(cells))[ci]
             row.append(wrap('td', broke(c), ORIGINS.attr(spot) if spot and ORIGINS else ''))
+        # 索引拿排印之前那一份：配装悬停与装备库读它，.cond、<b> 与费用方块只给本页
+        indexed = ''.join(row)
+        if TYPESET:
+            row[-1] = typeset_cell(row[-1])
+        row = [cost_cell(c) for c in row]
         prev = at
         body = ''.join(row)
         if DEX is not None and n:
             # 名字取**渲染后**那一格，不取源稿原文：着色标记要剥掉、格内换行已经
             # 变成 <br>，与 vocab 从产出的 <th> 取文那一份才对得上。
-            index_row(DEX, row[0], stamp, body, lane, ROW_PERKS.get(at))
+            index_row(DEX, row[0], stamp, indexed, lane, ROW_PERKS.get(at))
         o.append('<tr%s%s>%s</tr>'
                  % (mark, ' data-band="%d"' % band if banded else '', body))
     o += ['</tbody>', '</table>']
     return o
+
+
+CELL = re.compile(r'^(<td[^>]*>)(.*)(</td>)$', re.S)
+COST_CELL = re.compile(r'^(<td[^>]*class="cost"[^>]*>)(\d)(</td>)$')
+
+
+def typeset_cell(td):
+    """末格（说明）按空行分段，每段交给 markup.typeset()。整格只有一个标记、class
+    落在 <td> 上的那种不动：拆成段落会把那个 class 管着的文字挪出它的作用范围。"""
+    hit = CELL.match(td)
+    if not hit or 'class=' in hit.group(1):
+        return td
+    # 段与段之间留一个换行：搜索索引剥标签取文，不留的话上一段的句号直接粘着下一段
+    body = '\n'.join('<p>%s</p>' % typeset(p) for p in paragraphs(hit.group(2)))
+    return hit.group(1) + body + hit.group(3)
+
+
+def cost_cell(td):
+    """单个数字的耗费格前面画同样多枚方块，数字照写。几档耗费（「1–2–3」）只写字。"""
+    hit = COST_CELL.match(td)
+    if not hit:
+        return td
+    pips = '<i></i>' * int(hit.group(2))
+    return '%s<span class="pips" aria-hidden="true">%s</span>%s%s' % (
+        hit.group(1), pips, hit.group(2), hit.group(3))
 
 
 def index_row(dex, title, stamp, body, lane, perks=None):
@@ -1092,6 +1124,7 @@ def check(md, out, slug):
 
 def build(slug):
     global ICONS, STAMP, DEX, PAGE, PERK, ROW_KEYS, ROW_PERKS, ROW_SPOTS, ORIGINS, CTX, SLUG
+    global TYPESET
     SLUG = slug
     src = shell.source_path(slug) or os.path.join(shell.DOC_DIR, slug + '.md')
     with source_context(os.path.relpath(os.path.realpath(src), shell.ROOT)):
@@ -1118,6 +1151,7 @@ def build(slug):
         if eager and not eager.isdigit():
             die('「首屏图标：」要写一个整数，源稿写的是 %r' % eager)
         ICONS = Icons(outdir, int(eager) if eager else 0)
+        TYPESET = flag_of(md, '说明排印')
         # 首屏之后的记录另存，见 shell.split_rest
         keep = meta_of(md, '首屏记录', required=False)
         if keep and not (keep.isdigit() and int(keep) > 0):

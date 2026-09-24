@@ -64,11 +64,11 @@
     "desc desc desc";
   min-width: 0;
   border-top: 1px solid var(--hair);
-  border-left: 1px solid var(--hair);
+  border-left: 1px solid #ffffff0d;
   /* 右下两边用阴影画，不画在容器上。阴影不占布局，落点与右邻的 border-left、下邻的
      border-top 是同一像素，仍是一条 1px 线；末排缺卡时线只画到有卡的地方为止。
      也不按 :nth-child(3n) 补边——搜索隐藏的行仍参与计数，一过滤边框就错位。 */
-  box-shadow: 1px 0 0 var(--hair), 0 1px 0 var(--hair);
+  box-shadow: 1px 0 0 #ffffff0d, 0 1px 0 var(--hair);
 }
 
 /* 格线归卡片，格子自己不画边框——site.css 的表格线假设在卡片模式下一条都不成立。
@@ -95,7 +95,7 @@
 .gen td.ico {
   grid-area: icon;
   align-self: center;
-  padding: 13px 0 13px 20px;
+  padding: 20px 0 4px 22px;
 }
 
 .gen td.ico img {
@@ -105,17 +105,19 @@
   object-fit: contain;
 }
 
-/* 模组名：卡片的标题，与图标同一行纵向居中 */
+/* 模组名：卡片的标题，与图标同一行纵向居中。靠左跟着图标：site.css 给行标题的
+   居中是为表格合并块定的，卡片里居中会让名字悬在图标与费用之间的正中 */
 .gen tbody th[scope="row"] {
   grid-area: name;
   align-self: center;
-  padding: 13px 16px;
+  padding: 20px 16px 4px 14px;
   color: var(--bone-hi);
   font-family: var(--font-cn);
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   line-height: 1.6;
   letter-spacing: .03em;
+  text-align: left;
   white-space: normal;
   word-break: normal;
   background: none;
@@ -128,13 +130,28 @@
 .gen td.cost {
   grid-area: cost;
   align-self: center;
-  padding: 13px 20px 13px 0;
+  padding: 20px 22px 4px 0;
   color: var(--c-charge);
   font-family: var(--font-body);
   font-size: 14px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+/* 费用几点就画几枚方块，数字照写在后面（生成器的 cost_cell()）。几档费用
+   （「1–2–3」）没有方块，只写字 */
+.gen td.cost .pips {
+  display: inline-flex;
+  gap: 3px;
+  margin-right: 7px;
+  vertical-align: 1px;
+}
+
+.gen td.cost .pips i {
+  width: 7px;
+  height: 7px;
+  background: currentcolor;
 }
 
 .gen td.cost::after {
@@ -152,11 +169,23 @@
 .gen tbody td:last-child {
   grid-area: desc;
   align-self: start;
-  padding: 15px 20px 20px;
+  padding: 12px 22px 24px;
+  font-family: var(--font-read);
   font-size: 14px;
-  line-height: 1.85;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.75;
   overflow-wrap: anywhere;
 }
+
+/* 格内的空行由生成器还原成段落（「说明排印：是」），段距交给 margin */
+.gen tbody td:last-child p { margin: 0; }
+
+.gen tbody td:last-child p + p { margin-top: .85em; }
+
+/* 素字里的数值（markup.typeset() 包的 <b>）提亮一档；条件行里的跟着条件行暗下来 */
+.gen tbody td:last-child b { color: var(--bone-hi); font-weight: 600; }
+
+.gen tbody td:last-child .cond b { color: var(--bone); }
 
 
 /* 屏外的分节不参与布局与绘制：这一页约 15400px 高，一屏只看得到其中一节。

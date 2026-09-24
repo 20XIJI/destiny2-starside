@@ -30,7 +30,7 @@
 <h1>首领生命值</h1>
 </header>
 
-<main data-src="docs/boss-hp" data-src-hash="f6e78919eb3fd69467e0505e77cd47eefe117ee6">
+<main data-src="docs/boss-hp" data-src-hash="f34400a875f87ec41d0602d7eef62cbdf1f1ba87">
 <section class="block" id="sec-1">
 <h2 class="sect-label" data-b="8">突袭</h2>
 <table class="gen">
@@ -82,7 +82,7 @@
 <tr data-band="1"><td>战争祭祀</td><td data-tier="7"><span class="g">868</span><span class="g">185</span></td><td>中</td><td class="na">未测</td><td class="na">未测</td><td class="na">未测</td><td></td></tr>
 <tr data-band="1"><td>“忧愁承者”加尔兰</td><td data-tier="5"><span class="g">494</span><span class="g">519</span></td><td>中</td><td class="na">未测</td><td class="na">未测</td><td class="na">未测</td><td></td></tr>
 <tr data-band="1"><td>崇圣首脑</td><td data-tier="4"><span class="g">387</span><span class="g">082</span></td><td>中至远</td><td class="na">未测</td><td class="na">未测</td><td class="na">未测</td><td></td></tr>
-<tr data-band="1"><td>卡鲁斯大帝</td><td data-tier="8"><span class="g">13</span><span class="g">122</span><span class="g">129</span></td><td>中</td><td class="na">未测</td><td class="na">未测</td><td class="na">未测</td><td><span class="amp">获得 Buff 可增益巨额伤害</span><span class="note">（0–40 层 50%/10 层；50–70 层 100%/10 层；80–100 层 150%/10 层；100+ 层 200%/10 层）</span></td></tr>
+<tr data-band="1"><td>卡鲁斯大帝</td><td data-tier="8"><span class="g">13</span><span class="g">122</span><span class="g">129</span></td><td>中</td><td class="na">未测</td><td class="na">未测</td><td class="na">未测</td><td>层数加成见下表</td></tr>
 <tr data-band="1"><td>摩格斯</td><td data-tier="7"><span class="g">794</span><span class="g">380</span></td><td>近至中</td><td class="na">未测</td><td class="na">未测</td><td class="na">未测</td><td></td></tr>
 <tr data-band="1"><td>凯尔的祸根·暴动首领</td><td data-tier="6"><span class="g">515</span><span class="g">675</span></td><td>中至远</td><td class="na">未测</td><td class="na">未测</td><td class="na">未测</td><td></td></tr>
 </tbody>
@@ -90,7 +90,45 @@
 <p data-b="39">永恒沙漠与永恒沙漠（史诗）是同一副本的两档难度，<span class="bar-yellow">首领</span>相同、<span class="health">生命值</span>不同，两档分别列出以便对照。</p>
 </section>
 <section class="block" id="sec-2">
-<h2 class="sect-label" data-b="2">地牢</h2>
+<h2 class="sect-label" data-b="2">卡鲁斯大帝的层数加成</h2>
+<table class="gen">
+<thead>
+<tr data-b="2">
+<th scope="col">层数</th>
+<th scope="col">每 10 层加成增量</th>
+<th scope="col">累计总加成</th>
+<th scope="col">总伤害倍率</th>
+<th scope="col">环比倍率（相对前 10 层）</th>
+<th scope="col">档位说明</th>
+</tr>
+</thead>
+<tbody>
+<tr data-b="2"><th scope="row">0</th><td>–</td><td>0%</td><td>1</td><td>–</td><td>伤害基准线</td></tr>
+<tr><th scope="row">10</th><td>120%</td><td>120%</td><td>2.2</td><td>2.20 倍</td><td>0-50 档</td></tr>
+<tr><th scope="row">20</th><td>120%</td><td>240%</td><td>3.4</td><td>1.55 倍</td><td>0-50 档</td></tr>
+<tr><th scope="row">30</th><td>0%</td><td>240%</td><td>3.4</td><td>1.00 倍</td><td>Bug 区间，完全无收益</td></tr>
+<tr><th scope="row">40</th><td>120%</td><td>360%</td><td>4.6</td><td>1.35 倍</td><td>0-50 档（恢复加成）</td></tr>
+<tr><th scope="row">50</th><td>120%</td><td>480%</td><td>5.8</td><td>1.26 倍</td><td>0-50 档结束</td></tr>
+<tr><th scope="row">60</th><td>240%</td><td>720%</td><td>8.2</td><td>1.41 倍</td><td>50-70 档</td></tr>
+<tr><th scope="row">70</th><td>240%</td><td>960%</td><td>10.6</td><td>1.29 倍</td><td>50-70 档结束</td></tr>
+<tr><th scope="row">80</th><td>360%</td><td>1320%</td><td>14.2</td><td>1.34 倍</td><td>70-110 档</td></tr>
+<tr><th scope="row">90</th><td>360%</td><td>1680%</td><td>17.8</td><td>1.25 倍</td><td>70-110 档</td></tr>
+<tr><th scope="row">100</th><td>360%</td><td>2040%</td><td>21.4</td><td>1.20 倍</td><td>70-110 档</td></tr>
+<tr><th scope="row">110</th><td>360%</td><td>2400%</td><td>25</td><td>1.17 倍</td><td>70-110 档结束</td></tr>
+<tr><th scope="row">120</th><td>480%</td><td>2880%</td><td>29.8</td><td>1.19 倍</td><td>110-200 档</td></tr>
+<tr><th scope="row">130</th><td>480%</td><td>3360%</td><td>34.6</td><td>1.16 倍</td><td>110-200 档</td></tr>
+<tr><th scope="row">140</th><td>480%</td><td>3840%</td><td>39.4</td><td>1.14 倍</td><td>110-200 档</td></tr>
+<tr><th scope="row">150</th><td>480%</td><td>4320%</td><td>44.2</td><td>1.12 倍</td><td>110-200 档</td></tr>
+<tr><th scope="row">160</th><td>480%</td><td>4800%</td><td>49</td><td>1.11 倍</td><td>110-200 档</td></tr>
+<tr><th scope="row">170</th><td>480%</td><td>5280%</td><td>53.8</td><td>1.10 倍</td><td>110-200 档</td></tr>
+<tr><th scope="row">180</th><td>480%</td><td>5760%</td><td>58.6</td><td>1.09 倍</td><td>110-200 档</td></tr>
+<tr><th scope="row">190</th><td>480%</td><td>6240%</td><td>63.4</td><td>1.08 倍</td><td>110-200 档</td></tr>
+<tr><th scope="row">200</th><td>480%</td><td>6720%</td><td>68.2</td><td>1.08 倍</td><td>110-200 档结束</td></tr>
+</tbody>
+</table>
+</section>
+<section class="block" id="sec-3">
+<h2 class="sect-label" data-b="22">地牢</h2>
 <table class="gen">
 <thead>
 <tr data-b="4">

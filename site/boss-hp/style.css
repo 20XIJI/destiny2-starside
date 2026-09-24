@@ -32,27 +32,40 @@
 .gen thead th {
   padding-top: 11px;
   padding-bottom: 11px;
+  font-size: 11.5px;
   white-space: nowrap;
+}
+
+/* 列间竖线调淡一档：读这张表是横着读一个首领，合并块之间那道横线才是分组 */
+.gen th,
+.gen td { border-left-color: #ffffff0a; }
+
+.gen tbody th,
+.gen tbody td {
+  padding-top: 12px;
+  padding-bottom: 12px;
 }
 
 /* ── 两张表的列宽写死 ──
    突袭与地牢同一种列形，按内容定宽时各量各的（实测首领名一列差 59px、注解差
    50px），从突袭滚到地牢要重新找列。写死之后两表逐列对齐，注解列吃掉余量。
    前七列都带 nowrap，宽度取各自最长那条的实测值：副本名「战争领主的废墟」、
-   首领名「阿特拉克斯-1·堕落者 EXO」、生命值八位数、两列 DPS 由列名定宽。 */
+   首领名「阿特拉克斯-1·堕落者 EXO」、生命值八位数、两列 DPS 由列名定宽。
+   列宽与下面按列序定的格式都只给这两张八列表（`:has(thead th:nth-child(8))`）：
+   卡鲁斯层数表是六列，按列序套上去会把「累计总加成」排成生命值的样子。 */
 .gen { table-layout: fixed; }
 
-.gen thead th:nth-child(1) { width: 134px; }
-.gen thead th:nth-child(2) { width: 196px; }
-.gen thead th:nth-child(3) { width: 118px; }
-.gen thead th:nth-child(4) { width: 72px; }
-.gen thead th:nth-child(5) { width: 92px; }
-.gen thead th:nth-child(6),
-.gen thead th:nth-child(7) { width: 96px; }
+.gen:has(thead th:nth-child(8)) thead th:nth-child(1) { width: 134px; }
+.gen:has(thead th:nth-child(8)) thead th:nth-child(2) { width: 196px; }
+.gen:has(thead th:nth-child(8)) thead th:nth-child(3) { width: 118px; }
+.gen:has(thead th:nth-child(8)) thead th:nth-child(4) { width: 72px; }
+.gen:has(thead th:nth-child(8)) thead th:nth-child(5) { width: 92px; }
+.gen:has(thead th:nth-child(8)) thead th:nth-child(6),
+.gen:has(thead th:nth-child(8)) thead th:nth-child(7) { width: 96px; }
 
 /* 表头跟着本列的数据走，不各行其是：列名悬在数据上方偏一侧会让人先找一遍对应关系 */
-.gen thead th:nth-child(3),
-.gen thead th:nth-child(8) { text-align: left; }
+.gen:has(thead th:nth-child(8)) thead th:nth-child(3),
+.gen:has(thead th:nth-child(8)) thead th:nth-child(8) { text-align: left; }
 
 /* ── 副本名与首领名居中，生命值与注解左对齐 ──
    副本名、首领名是短标识，居中读作一枚枚标签，纵向也齐。
@@ -66,14 +79,16 @@
 .gen tbody th {
   color: var(--bone-hi);
   font-family: var(--font-cn);
+  font-size: 15px;
   font-weight: 600;
   letter-spacing: .04em;
   white-space: nowrap;
 }
 
 /* 首领名 */
-.gen tbody td:first-of-type {
+.gen:has(thead th:nth-child(8)) tbody td:first-of-type {
   color: var(--bone);
+  font-family: var(--font-read);
   text-align: center;
   white-space: nowrap;
 }
@@ -87,7 +102,7 @@
    差出 11px，一列数字左对齐后高位对齐、低位参差。
    --font-body 每位恒定 9.31px，配 tabular-nums 才真的成立。
    站内约定原本就是「正文与数字走等宽字族」，模组数值也走这条。 */
-.gen tbody td:nth-of-type(2) {
+.gen:has(thead th:nth-child(8)) tbody td:nth-of-type(2) {
   font-family: var(--font-body);
   font-size: 15px;
   font-weight: 600;
@@ -99,8 +114,9 @@
 
 /* ── 距离 ──
    短标识，与首领名同一读法：居中、不折行。降一档字号读作附注，不与生命值抢注意。 */
-.gen tbody td:nth-of-type(3) {
+.gen:has(thead th:nth-child(8)) tbody td:nth-of-type(3) {
   color: var(--bone);
+  font-family: var(--font-read);
   font-size: 12px;
   text-align: center;
   white-space: nowrap;
@@ -114,9 +130,9 @@
    仍低于色阶列一档，主次不乱。
    居中而不右对齐：列名短、值最多六位，居中后与表头对齐，也与距离那一列的读法
    一致。生命值那一列仍左对齐，位数差在那里是量级差。 */
-.gen tbody td:nth-of-type(4),
-.gen tbody td:nth-of-type(5),
-.gen tbody td:nth-of-type(6) {
+.gen:has(thead th:nth-child(8)) tbody td:nth-of-type(4),
+.gen:has(thead th:nth-child(8)) tbody td:nth-of-type(5),
+.gen:has(thead th:nth-child(8)) tbody td:nth-of-type(6) {
   color: var(--bone);
   font-family: var(--font-body);
   font-size: 15px;
@@ -136,5 +152,42 @@
    **默认色靠 tbody 继承下来，不写在这一格上**——理由见 assets/site.css 的 .gen tbody。
    余量约 210px：21 条非空说明的中位长度只有 15 字，一行装得下；那条 86 字的分层
    加成会折成几行，读起来比一条横贯整表的长行更好扫。 */
-.gen tbody td:last-child { text-align: left; }
+.gen tbody td:last-child {
+  font-family: var(--font-read);
+  font-size: 13px;
+  line-height: 1.65;
+  text-align: left;
+}
 
+/* ── 卡鲁斯大帝的层数加成 ──
+   六列：层数与四列数值，末列档位说明。数值同八列表的数字列一样走等宽字族与
+   tabular-nums，居中；档位说明是一句话，左对齐。
+   这张表是一条注解的展开，不是这一页的主表，所以偏离 design.md 四节「表格走满
+   版心」：宽度随内容、字号与行距降一档，不与上下两张首领表争注意。 */
+.gen:not(:has(thead th:nth-child(7))) {
+  width: auto;
+  margin-left: 0;                 /* 与分节标签、正文同一条左缘，不居中 */
+  table-layout: auto;
+}
+
+.gen:not(:has(thead th:nth-child(7))) th,
+.gen:not(:has(thead th:nth-child(7))) td {
+  padding: 5px 18px;
+  font-size: 12.5px;
+}
+
+.gen:not(:has(thead th:nth-child(7))) thead th { font-size: 11px; }
+
+.gen:not(:has(thead th:nth-child(7))) tbody th[scope="row"],
+.gen:not(:has(thead th:nth-child(7))) tbody td:not(:last-child) {
+  color: var(--bone-dim);
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.gen:not(:has(thead th:nth-child(7))) tbody td:last-child { color: var(--bone-dim); }
+
+.gen:not(:has(thead th:nth-child(7))) thead th:last-child { text-align: left; }

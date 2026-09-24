@@ -3,8 +3,9 @@
 
 /* 三档并排：版心走满 1500px（design.md 四节），最小内容宽度 1020px + main
    左右各 22px 内边距。横向溢出交给页面本身：main 上一旦开 overflow-x，它就成了
-   滚动容器，内部的 position: sticky 不再相对视口生效。骨架在 assets/site.css。 */
-:root { --wrap: 1500px; --min: 1064px; }
+   滚动容器，内部的 position: sticky 不再相对视口生效。骨架在 assets/site.css。
+   强调色取神器的青绿：游戏内的神器页面就是这个颜色，档位菱形与焦点环跟着它。 */
+:root { --wrap: 1500px; --min: 1064px; --accent: var(--c-artifact); }
 
 main { padding: 0 22px clamp(40px, calc(5 * var(--vw)), 72px); }
 
@@ -96,6 +97,15 @@ main { padding: 0 22px clamp(40px, calc(5 * var(--vw)), 72px); }
   padding: 14px 20px;
 }
 
+/* 神器本体的官方图在前，表格带来的徽章在后 */
+.art-icon {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border: 1px solid var(--hair-lit);
+}
+
 .art-emblem {
   flex: none;
   width: 42px;
@@ -141,8 +151,8 @@ main { padding: 0 22px clamp(40px, calc(5 * var(--vw)), 72px); }
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 20px;
-  border-left: 1px solid var(--hair);
+  padding: 10px 22px;
+  border-left: 1px solid #ffffff0d;
 }
 
 .tier-head:first-child { border-left: 0; }
@@ -193,46 +203,32 @@ main { padding: 0 22px clamp(40px, calc(5 * var(--vw)), 72px); }
     "icon name"
     "desc desc";
   min-width: 0;
-  border-left: 1px solid var(--hair);
+  /* 列间线比行间线淡一档：一行三档是一组，行与行之间才是分组的边界 */
+  border-left: 1px solid #ffffff0d;
 }
 
 .mod[data-tier="1"] { grid-column: 1; border-left: 0; }
 .mod[data-tier="2"] { grid-column: 2; }
 .mod[data-tier="3"] { grid-column: 3; }
 
-/* 名称带底色：跨列铺满整行，图标与名称浮在其上
-   （<img> 有固有宽高比，拉伸不了，底色不能挂在图标上） */
-.mod::after {
-  content: "";
-  grid-row: 1;
-  grid-column: 1 / -1;
-  background: #ffffff06;
-  border-bottom: 1px solid var(--hair);
-  z-index: 0;
-}
-
 .mod-icon {
   grid-area: icon;
   align-self: center;
-  position: relative;
-  z-index: 1;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   object-fit: contain;
-  padding: 13px 0 13px 20px;
+  padding: 20px 0 4px 22px;
   box-sizing: content-box;
 }
 
 .mod h4 {
   grid-area: name;
   align-self: center;
-  position: relative;
-  z-index: 1;
   margin: 0;
-  padding: 13px 20px;
+  padding: 20px 22px 4px 14px;
   color: var(--bone-hi);
   font-family: var(--font-cn);
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   line-height: 1.6;
   letter-spacing: .03em;
@@ -244,13 +240,20 @@ main { padding: 0 22px clamp(40px, calc(5 * var(--vw)), 72px); }
 .mod-desc {
   grid-area: desc;
   align-self: start;
-  padding: 15px 20px 20px;
+  padding: 12px 22px 24px;
+  font-family: var(--font-read);
   font-size: 14px;
-  line-height: 1.85;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.75;
   overflow-wrap: anywhere;
 }
 
 .mod-desc p { margin: 0; }
 
-.mod-desc p + p { margin-top: .95em; }
+.mod-desc p + p { margin-top: .85em; }
+
+/* 素字里的数值（markup.typeset() 包的 <b>）提亮一档；条件行里的跟着条件行暗下来 */
+.mod-desc b { color: var(--bone-hi); font-weight: 600; }
+
+.mod-desc .cond b { color: var(--bone); }
 

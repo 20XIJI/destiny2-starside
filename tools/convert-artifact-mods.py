@@ -18,7 +18,7 @@ import pagedex
 import resolve
 import shell
 from markup import (OPEN, Icons, blocks_at, bmark, die, eq, inline, meta_line, meta_of, must,
-                    src_hash, text_of)
+                    src_hash, text_of, typeset)
 
 SRC = os.path.join(shell.KEY_DIR, 'artifact-mods.md')
 OUT_DIR = os.path.join(shell.SITE, 'artifact-mods')
@@ -65,21 +65,21 @@ def stamp(name, artifact=''):
 
 N_SECTIONS = 7
 N_MODS = 147
-N_ICON_REFS = 156          # 147 个模组 + 7 枚神器徽章 + 2 枚提示徽章
+N_ICON_REFS = 163          # 147 个模组 + 7 件神器本体 + 7 枚神器徽章 + 2 枚提示徽章
 N_ICON_FILES = 133
 
-# 1440×900 首屏内的图标数（提示徽章 2 + 首个神器徽章 1 + 首行模组 3）
-N_EAGER = 6
+# 1440×900 首屏内的图标数（提示徽章 2 + 首个神器的本体与徽章 2 + 首行模组 3）
+N_EAGER = 7
 
 TIERS = {'一级': 1, '二级': 2, '三级': 3}
 
 # 源稿里的「键：值」行。键名固定，正文行不会被误认。
 META_KEYS = ('副标题', '描述', '更新', '页脚', '待测标记', '数据源', '鸣谢',
-             '小标题', '标题', '徽章', '括注', '图标', '主键', '标签（站点补充）', '标签')
+             '小标题', '标题', '本体图', '徽章', '括注', '图标', '主键', '标签（站点补充）', '标签')
 META_LINE = meta_line(META_KEYS)
 
 
-# 图标引用顺序即文档顺序：parse() 按提示徽章 → 分节徽章 → 模组图标依次取图
+# 图标引用顺序即文档顺序：parse() 按提示徽章 → 神器本体图与徽章 → 模组图标依次取图
 def img(icons, name, cls):
     # 带斜杠的是相对本页的整条路径（记录给的 assets/icons/…），不再往前面贴 icons/
     return icons.html(name if '/' in name else 'icons/' + name, cls)
@@ -96,6 +96,7 @@ TAG_TOKEN = {'虚空': 'el-void', '电弧': 'el-arc', '烈日': 'el-solar',
 def expand(md):
     """主键骨架 → 这一页原来的源稿形状。
 
+    神器本体图取它记录上的 icon_local，与模组图同一条路。
     徽章、括注、标签与每个模组的正文都在记录上（site_emblem／site_season／
     site_elements／site_weaponTypes／realgame_details），源稿只留主键与顺序。
     展开之后交给下面的 parse()，解析与渲染一个字不改。
@@ -121,6 +122,12 @@ def expand(md):
             tags = ' | '.join('{%s|%s}' % (TAG_TOKEN[e], e) if e in TAG_TOKEN else e
                               for e in zh.get('site_elements') or ())
             kinds = ' | '.join(zh.get('site_weaponTypes') or ())
+            # 神器本体那张图挂在它自己的记录上（icon_local），与模组图同一条路取
+            art_icon = rows.icon_file(key)
+            if not art_icon:
+                die('%s（%s）的记录上没有 icon_local：先跑 icons.py --pull 与 facts.py --link'
+                    % (title, key))
+            out.append('本体图：%s' % rows.rel(art_icon, 'artifact-mods'))
             out.append('徽章：%s' % rec['site_emblem'])
             if zh.get('site_season'):
                 out.append('括注：（%s）' % zh['site_season'])
@@ -231,6 +238,7 @@ def parse(md, icons):
             'at': at - part.count('\n'),      # 「## 神器：名称」那一行
             'name': inline(name),
             'paren': inline(meta_opt(head_chunk, '括注')),
+            'icon': img(icons, meta(head_chunk, '本体图', name), 'art-icon'),
             'emblems': [img(icons, meta(head_chunk, '徽章', name), 'art-emblem')],
             'tags': inline(tags) if tags else '',
             'site_tags': inline(site_tags) if site_tags else '',
@@ -312,7 +320,7 @@ def render(page, digest='', dex=None, origins=None):
         # 是同一张图，对称属于表格的排版手段而非内容。
         o += ['<section class="artifact" id="art-%d">' % i,
               '<div class="art-bar">',
-              '<header class="art-head">', s['emblems'][0],
+              '<header class="art-head">', s['icon'], s['emblems'][0],
               '<h2%s>%s%s</h2>' % (bmark(s['at']), s['name'],
                                    ' <small>%s</small>' % s['paren'] if s['paren'] else '')]
         if s['tags']:
@@ -342,8 +350,8 @@ def render(page, digest='', dex=None, origins=None):
                         anchor='art-%d' % i, kind=label, name=name,
                         icon='%s/%s' % (PAGE, icon_src(mod['icon'])),
                         pos='%d,%s' % (ri, mod['tier']),
-                        # 说明照产出那一份逐字存：段落之间的换行来自外层按 \n
-                        # 拼接，前后各留一个，与 <div class="mod-desc"> 包住的完全相同。
+                        # 说明存排印之前那一份：配装悬停与装备库读它，.cond 与 <b>
+                        # 只给本页。段落之间的换行来自外层按 \n 拼接，前后各留一个。
                         desc='\n%s\n' % '\n'.join('<p>%s</p>' % p
                                                   for _, _, p in mod['desc']))
                 where = (origins.attr((mod['key'], 'i18n/zh-CN/realgame_details',
@@ -353,7 +361,7 @@ def render(page, digest='', dex=None, origins=None):
                       mod['icon'],
                       '<h4%s>%s</h4>' % (bmark(mod['at']), mod['name']),
                       '<div class="mod-desc"%s>' % where]
-                o += ['<p%s>%s</p>' % (bmark(n, m), p) for n, m, p in mod['desc']]
+                o += ['<p%s>%s</p>' % (bmark(n, m), typeset(p)) for n, m, p in mod['desc']]
                 o += ['</div>', '</article>']
             o.append('</div>')
         o += ['</div>', '</section>']

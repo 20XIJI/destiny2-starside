@@ -29,7 +29,7 @@ import pagedex
 import resolve
 import shell
 from markup import (bmark, die, eq, loading_attr, meta_of, no_nested_span, plain,
-                    src_hash, text_of)
+                    src_hash, text_of, typeset)
 
 SRC = os.path.join(shell.KEY_DIR, 'armor-sets.md')
 OUT_DIR = os.path.join(shell.SITE, 'armor-sets')
@@ -342,18 +342,21 @@ def inline(text: str) -> str:
 # ── 渲染 ──────────────────────────────────────────────────────────────
 
 
-def render_blocks(blocks: list) -> str:
+def render_blocks(blocks: list, finish=lambda html: html) -> str:
+    """finish 作用在每一段、每一条上：页面传 markup.typeset，索引不传。"""
     out: list[str] = []
     for kind, content in blocks:
         if kind == 'p':
             text = '<br>'.join(inline(line) for _, line in content)
-            # 译注与作者注整段降一级，读作限定语
-            cls = ' class="note"' if content[0][1].startswith(('译注：', '注：')) else ''
+            # 译注与作者注整段降一级，读作限定语；注解整段一个颜色，不走排印
+            note = content[0][1].startswith(('译注：', '注：'))
+            cls = ' class="note"' if note else ''
+            text = text if note else finish(text)
             out.append('<p%s%s>%s</p>'
                        % (cls, bmark(content[0][0], content[-1][0]), text))
         else:
             # 列表项一行一条，逐条戳——整段一个标记会让改一条要连着改整段
-            items = ''.join('<li%s>%s</li>' % (bmark(n), inline(i)) for n, i in content)
+            items = ''.join('<li%s>%s</li>' % (bmark(n), finish(inline(i))) for n, i in content)
             out.append('<ul>%s</ul>' % items)
     return ''.join(out)
 
@@ -440,7 +443,9 @@ def render(cats: list[Category], md: str, digest: str = '',
                 where = (origins.attr((b.key, 'i18n/zh-CN/realgame_details',
                                        '%s · %s' % (st.name, b.name)))
                          if origins is not None and b.key else '')
-                parts.append('<div class="bonus-body"%s>%s</div>\n' % (where, body))
+                # 页面上的正文走说明排印；索引里那一份（desc）不走，配装悬停另有样式
+                parts.append('<div class="bonus-body"%s>%s</div>\n'
+                             % (where, render_blocks(b.blocks, typeset)))
                 parts.append('</section>\n')
             parts.append('</div>\n')
             parts.append('</article>\n')

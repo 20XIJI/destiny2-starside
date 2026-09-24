@@ -64,8 +64,10 @@ LINK = re.compile(r'\[([^\]]+)\]\(([^)]+)\)')
 IMG = re.compile(r'!\[\]\(([^)]+)\)')
 # 标签。属性值里的 > 不当收尾——引号内的内容整体跳过。
 TAG = re.compile(r'<(?:"[^"]*"|\'[^\']*\'|[^>])*>')
-# 着色 span 不得嵌套：嵌套说明整块判定或分支顺序被改坏了。
-NESTED_SPAN = re.compile(r'<span[^>]*>[^<]*<span')
+# 着色 span 不得嵌套：嵌套说明整块判定或分支顺序被改坏了。typeset() 加的 .cond
+# 是排印层，包着着色 span 不算。
+_TINT_SPAN = r'<span(?! class="cond")[^>]*>'
+NESTED_SPAN = re.compile(_TINT_SPAN + r'[^<]*' + _TINT_SPAN)
 # 按主键取的官方图，文件名是 Bungie 的图名。见 Icons。
 ASSET_ICONS = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
                            'site', 'assets', 'icons')
@@ -435,6 +437,50 @@ def inline(md, rich=False):
     out.append(md[pos:])
     if depth:
         die('着色标记未闭合：%r' % md[:120])
+    return ''.join(out)
+
+
+# ── 说明正文的排印：神器模组页与护甲模组页的模组说明 ─────────────────
+# 触发条件那一行降一档（.cond），素字里的数值包进 <b>。只加标签，不增删文字，
+# 逐字保真与搜索照旧成立。数值不用 span：两页四百来处，每处省 18 字节，站上的
+# 文件不压缩。.cond 的样式在 site.css 的「说明排印」一节，<b> 的在两页各自的样式表。
+BLANK_LINE = re.compile(r'\s*<br>\s*<br>\s*')
+LINE_BREAK = re.compile(r'<br>')
+COND_END = re.compile(r'[：:]$')
+NUMBER = re.compile(r'[+\-−×x]?\d+(?:\.\d+)?%?')
+HTML_TOKEN = re.compile(r'(<[^>]+>|&#?\w+;)')
+
+
+def paragraphs(html):
+    """格内以空行（`<br> <br>`）分开的几截 → 段落列表。空行在格子里是唯一的分段手段。"""
+    return [p for p in BLANK_LINE.split(html.strip()) if p]
+
+
+def typeset(html):
+    """一段说明 → 首行是触发条件就包进 .cond，素字数值包进 <b>。
+
+    触发条件的判据是首行（第一个 <br> 之前）以冒号收尾：「击破战斗人员护盾：」。
+    首行里的标签开闭配不上时不包——包了就把着色 span 从中间切开。"""
+    first = LINE_BREAK.split(html, 1)[0]
+    rest = html[len(first):]
+    if (COND_END.search(text_of(first)) and first.count('<span') == first.count('</span>')
+            and first.count('<a ') == first.count('</a>')):
+        html = '<span class="cond">%s</span>%s' % (first, rest)
+    out, stack = [], []
+    for tok in HTML_TOKEN.split(html):
+        if not tok:
+            continue
+        if tok.startswith('<'):
+            if tok.startswith('</'):
+                if stack:
+                    stack.pop()
+            elif not tok.startswith('<br') and not tok.endswith('/>'):
+                stack.append('cond' if tok == '<span class="cond">' else tok)
+            out.append(tok)
+        elif tok.startswith('&') or any(s != 'cond' for s in stack):
+            out.append(tok)          # 着色标记与链接里的数字归标记管，不再加一层
+        else:
+            out.append(NUMBER.sub(r'<b>\g<0></b>', tok))
     return ''.join(out)
 
 

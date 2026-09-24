@@ -184,7 +184,7 @@ sheet-grab.user.js 油猴脚本：在 Google 表格页面上导出「替换后�
 json2xlsx.py       把上面那份 JSON 还原成 xlsx，供核对与二次编辑
 ```
 
-一个目的只留一份实现。剥标签取文本用 `markup.text_of`，保真比对前的归一化用 `markup.plain`，计数比对用 `markup.eq(名目, 实际, 期望)`，中止用 `markup.die`，图片宽高用 `markup.img_size`，图标登记与首屏优先级用 `markup.Icons` / `markup.loading_attr`，判断某处文本落在哪个标记里用 `markup.Markers(正文).at(位置)`，认着色标记的开头用 `markup.OPEN`、整个叶子标记用 `markup.LEAF`，剥着色标记用 `markup.uncolor`（连图标一起剥用 `markup.strip_marks`），只在标记之外切段用 `markup.top_split`。要新加一件，先看 `markup.py` 里有没有。
+一个目的只留一份实现。剥标签取文本用 `markup.text_of`，保真比对前的归一化用 `markup.plain`，计数比对用 `markup.eq(名目, 实际, 期望)`，中止用 `markup.die`，图片宽高用 `markup.img_size`，图标登记与首屏优先级用 `markup.Icons` / `markup.loading_attr`，判断某处文本落在哪个标记里用 `markup.Markers(正文).at(位置)`，认着色标记的开头用 `markup.OPEN`、整个叶子标记用 `markup.LEAF`，剥着色标记用 `markup.uncolor`（连图标一起剥用 `markup.strip_marks`），只在标记之外切段用 `markup.top_split`，模组说明的排印（触发条件行、数值）用 `markup.typeset`。要新加一件，先看 `markup.py` 里有没有。
 
 外壳与源稿方言各只有一处定义。加一条外壳内容（meta、资源提示、页脚段落）只改 `shell.py`，各资料页重跑即生效；手写的首页 `index.html` 要跟着改，`check_shell.py` 会提醒。页脚那句待测值说明走 `shell.unsure_note(标记)`，一句话只有一处定义，标记形状按该页实际用的填。
 

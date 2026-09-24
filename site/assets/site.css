@@ -44,6 +44,11 @@
   --font-body: ui-monospace, "SF Mono", SFMono-Regular, Menlo, "PingFang SC",
     "Noto Sans SC", sans-serif;
   --font-cn: "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  /* 模组说明的正文（见「说明排印」一节）。等宽字族下数字与汉字之间各空出半格，
+     一段「+20 稳定性，+20 操控性」读起来像被拆开的代码；系统无衬线的数字是比例
+     字宽，配 tabular-nums 仍能上下对齐。 */
+  --font-read: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue",
+    "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
 
   /* ── 渲染色：一族一支 ──
      一个语义族一支变量，即使两族此刻共用同一个色号也各写各的——改一族的颜色
@@ -722,6 +727,30 @@ main {
 }
 
 .rhombi i.on { background: currentcolor; }
+
+/* ── 说明排印 ──
+   神器模组页的 .mod-desc、护甲模组页的效果格与护甲套装页的 .bonus-body，
+   span 由 markup.typeset() 加。
+   触发条件那一行（「击破战斗人员护盾：」）降一档，前面一枚空心小菱形，与下面的
+   效果分开。条件行里的着色词照旧着色，只有素字变暗。素字里的数值包在 <b> 里，
+   样式在各页自己的样式表：别的页面表格里也有 <b>。 */
+:is(.mod-desc, .gen td, .bonus-body) .cond {
+  position: relative;
+  padding-left: 14px;
+  color: var(--bone-dim);
+  font-size: 13px;
+}
+
+:is(.mod-desc, .gen td, .bonus-body) .cond::before {
+  content: "";
+  position: absolute;
+  left: 1px;
+  top: .55em;
+  width: 5px;
+  height: 5px;
+  border: 1px solid var(--bone-faint);
+  transform: rotate(45deg);
+}
 
 /* 配色工具类：着色文字全部经由这些 class，不写内联 color。
    统一 600 字重、无阴影——全页着色处逾千，字重与阴影一齐上阵会让语义色失去分级。 */

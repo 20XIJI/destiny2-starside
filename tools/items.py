@@ -746,7 +746,8 @@ def naked_text(frags):
     """
     out = []
     for frag in frags:
-        frag = re.sub(r'<span class="[^"]*">.*?</span>', GAP, frag, flags=re.S)
+        # markup.typeset() 的 .cond 是排印层，包着着色 span，不当着色标记剥
+        frag = re.sub(r'<span class="(?!cond")[^"]*">.*?</span>', GAP, frag, flags=re.S)
         out.append(re.sub(r'<[^>]+>', GAP, frag))
     return markup.text_of(GAP.join(out))
 
