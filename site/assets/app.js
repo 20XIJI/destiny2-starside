@@ -440,7 +440,7 @@
        神器模组页 16700、护甲套装页 28700），一次平滑滚动只是一片模糊，还会把途经
        的每个分节挨个点亮一遍。正文里的锚点链接不受影响，照旧平滑。 */
     sec.scrollIntoView({ behavior: 'instant' });
-    try { history.replaceState(null, '', a.getAttribute('href')); } catch (e) {}
+    try { history.replaceState(history.state, '', a.getAttribute('href')); } catch (e) {}
   });
 
   if (ITEM) {
@@ -692,9 +692,19 @@
     /* 搜了但一个都没命中时给工具条打一位，搜索框与计数据此转红：灰着看
        0 / 147 与 3 / 147 长得一样。清空查询即撤销，没搜过也不算空结果。 */
     slot.toggleAttribute('data-miss', (!!query.trim() || facetOn()) && !hits);
+    remember(query);
     return hits;
   }
   window.starsideFilter = filter;
+
+  /* 搜索词与各维的选中记在这一格历史的 state 上：点进一套配装再按返回，页面若没从
+     bfcache 回来（脚本重跑、控件回到初始态），按它恢复，见文末。只改 state 不改
+     地址，不攒历史。file:// 下 replaceState 抛 SecurityError，那时只是不记。 */
+  function remember(query) {
+    try {
+      history.replaceState(Object.assign({}, history.state, { q: query, facets: picked }), '');
+    } catch (e) {}
+  }
 
   /* 当前分节高亮：把视口顶端裁到 sticky 下沿，落在剩下那块里最靠上的分节即当前。
 
@@ -738,7 +748,20 @@
      **先过滤再滚**——defer 脚本在解析完成后、锚点定位前执行，顺序天然是对的；
      反过来滚完再隐藏行，读者会停在错位的地方。 */
   var came = new URLSearchParams(location.search).get('q');
-  if (came && ITEM) {
+  var kept = history.state;
+  if (ITEM && kept && (kept.q || kept.facets)) {
+    /* 返回键回到这一页：按上次离开时的状态重放。取值不在了的（换过一版产出）丢掉。
+       先于浏览器恢复滚动位置执行，读者落回原来那张卡。 */
+    if (DIMS && kept.facets) DIMS.forEach(function (d, k) {
+      var seen = scan(k);
+      picked[d.name] = (kept.facets[d.name] || [])
+        .filter(function (x) { return seen.indexOf(x) >= 0; });
+      sync(d);
+      if (d.groups && picked[d.name].length === 1) regroup(picked[d.name][0]);
+    });
+    search.value = kept.q || '';
+    filter(search.value);
+  } else if (came && ITEM) {
     search.value = came;
     filter(came);
   }
