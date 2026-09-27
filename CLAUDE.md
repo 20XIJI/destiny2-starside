@@ -39,11 +39,11 @@ Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构�
 
 | 文件 | 定义表 | 条数 | 装什么 |
 |---|---|---|---|
-| `inventory-items.json` | `DestinyInventoryItemDefinition` | 5769 | 武器、护甲与可装配的插件（词条、模组、碎片、星相、技能、神器特性）。收藏条目的来源句并在 `i18n.*.sourceString`，神器档位并在 `derived.tiers` |
+| `inventory-items.json` | `DestinyInventoryItemDefinition` | 5942 | 武器、护甲、18 个子职业与可装配的插件（词条、模组、碎片、星相、技能、神器特性）。收藏条目的来源句并在 `i18n.*.sourceString`，神器档位并在 `derived.tiers`，神器本体经 `derived.socketed` 指向玩家背包里那件带槽的影子条目 |
 | `sandbox-perks.json` | `DestinySandboxPerkDefinition` | 5200 | 效果。`onItems` / `onSets` 指回挂着它的物品与套装 |
 | `traits.json` | `DestinyTraitDefinition` | 46 | 游戏内状态（不稳定、冻结）与分类标签 |
 | `stats.json` | `DestinyStatDefinition` | 79 | 属性 |
-| `equipable-item-sets.json` | `DestinyEquipableItemSetDefinition` | 56 | 护甲套装 |
+| `equipable-item-sets.json` | `DestinyEquipableItemSetDefinition` | 56 | 护甲套装。成员件不收成记录，各件的职业与部位在 `derived.pieces` |
 | `minted.json` | — | 56 | 主键台账，人编辑 |
 
 `data/lookup/` 下的 `plug-sets`、`socket-types`、`stat-groups` 是构建期字典，不是实体：
@@ -55,7 +55,7 @@ Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构�
 | 在哪 | 是什么 |
 |---|---|
 | 根上，manifest 字段 | manifest 上有这个键就原样写下，不按值筛：`classType: 0` 是泰坦，`breakerType: 0` 是不破盾。`icon` 是官方图文件名，`icon_local` 是站上那张 WebP |
-| `derived` | 本项目从 manifest 算出来的：`release`、`season`、`archetype`、`breakerType`、`tierable`、`craftable`、`foundry`、`rate`、`catalyst`、`tiers`，属性表的 `lowerIsBetter`。登记名单由 `check_quality.py` 的 `ManifestLayer` 钉着 |
+| `derived` | 本项目从 manifest 算出来的：`release`、`season`、`archetype`、`breakerType`、`tierable`、`craftable`、`foundry`、`rate`、`catalyst`、`tiers`、`socketed`，属性表的 `lowerIsBetter`，套装表的 `pieces`。登记名单由 `check_quality.py` 的 `ManifestLayer` 钉着 |
 | `i18n.<zh-CN\|en>.<字段>` | 随语言变的。manifest 那一侧：`name`、`itemTypeDisplayName`、`itemTypeAndTierDisplayName`、`flavorText`、`sourceString`、`displaySource`，以及官方描述 `database_details`（即 Bungie 的 `description`）。站内写的：`realgame_details`（实测怎么工作）、`site_authors`（Aegis 与 LGpig 的评级与推荐）、`site_frameStats`（武器框架页的数值）、`site_source`。站内正文只写 `zh-CN`；`en` 不写与 `zh-CN` 逐字相同的字段 |
 | 根上，站内字段 | `sameAs`、`enhanced`、`weaponTypes`，以及 `site_` 前缀的词表字段（`site_artifact`、`site_tier`、`site_cooldownSeconds`、`site_emblem` 等） |
 
@@ -156,6 +156,8 @@ convert-*.py       四个生成器，各自只写自己那种数据形状的结�
 build-weapons.py   实体层 → 装备库（武器与异域护甲，目录 weapons/）：首屏索引 index.js、词条池与属性曲线 pool.js、
                    说明与评语 text.js，外加页壳。只读 resolve.Facts，不写数据；浏览器
                    那一份属性算法与 facts.shown() 由 check_quality.py 逐值比对
+dim.py             配装 → DIM 导入链接：子职业与神器按插槽池落 hash，武器与护甲只给
+                   hash。由 convert-build.py 调用，写法与 DIM 的约束见 builds.md
 build-home.py      各页产出 → 首页每张卡的内容预览。挑哪几项写在 PICK_*，名字、数值、
                    图标从那一页现取；轮换卡的「本周／此刻」由首页一段内联脚本按本机时钟填
 migrate.py         配装源稿 markdown ⇄ 结构化记录，来回逐字节比对；资料页该结构化
@@ -198,7 +200,7 @@ json2xlsx.py       把上面那份 JSON 还原成 xlsx，供核对与二次编�
 | 手册 | 管什么 | 改到这些文件时载入 |
 |---|---|---|
 | `.claude/rules/pages.md` | 三个资料生成器与源稿方言、页脚归属、更新日志的写法、从 Google 表格做一页资料 | `tools/convert-doc.py`、`convert-artifact-mods.py`、`convert-armor-sets.py`、`markup.py`、`shell.py`、`references/**/*.md` |
-| `.claude/rules/builds.md` | 推荐配装页：版面、护甲模组变体、源稿格式、合集、悬停详情、填表页 | `tools/convert-build.py`、`vocab.py`、`mods.py`、`site/builds/**`、`references/builds/**` |
+| `.claude/rules/builds.md` | 推荐配装页：版面、护甲模组变体、源稿格式、合集、悬停详情、填表页、导入 DIM | `tools/convert-build.py`、`vocab.py`、`mods.py`、`dim.py`、`site/builds/**`、`references/builds/**` |
 | `.claude/rules/backend.md` | 云函数与在线编辑台：认证、角色、三张表、就地编辑、审核台、配装投稿 | `functions/**`、`site/admin/**`、`tools/sync.py`、`build-terms.py` |
 | `.claude/rules/frontend.md` | 全站搜索索引与 `assets/app.js` | `site/assets/app.js`、`site/assets/search.js`、`tools/build-search.py` |
 | `.claude/rules/weapons.md` | 装备库：武器与异域护甲、三份载荷、查询语法、属性与大师杰作／T 级、强化配对、作者推荐光圈 | `tools/build-weapons.py`、`site/weapons/**`、`tools/type-icons.json` |

@@ -87,6 +87,16 @@ DIRS = {'zh': 'zh-chs', 'en': 'en'}
 # 站内引用得到的正是这一类。多收 346 条，19010 → 19356。
 KEEP_TYPES = frozenset({2, 3, 19})
 
+# 子职业（itemType 16）。配装导出 DIM 要它的 hash 与插槽：超能、技能、星相、碎片
+# 各插在第几栏、每栏收哪些插件，都只在子职业自己的插槽上。manifest 里 35 条，带插槽
+# 的 18 条是真正装得上的那几个（三职业 × 六分支），另 17 条是旧版的空壳。
+SUBCLASS = 16
+
+
+def IS_SUBCLASS(item):                                       # noqa: N802
+    return (item.get('itemType') == SUBCLASS
+            and bool((item.get('sockets') or {}).get('socketEntries')))
+
 # 物品记录上原样搬运的顶层字段。列在这里即入库，值不做任何判断。
 ITEM_FIELDS = ('index', 'itemType', 'itemSubType', 'classType',
                'defaultDamageType', 'breakerType', 'collectibleHash',
@@ -174,6 +184,8 @@ BREAKER_GLYPH = {'': 1, '': 2, '': 3}
 # 配装页那枚徽章要用的，所以按「artifacts.json 引用到的本体」补进物品表——判据在
 # 引用上，不另列一份七件的名单。
 ARTIFACT_TIER = '传说 神器'
+# 影子条目（itemType 0）的品阶名也是「传说 神器」，认本体要连 itemType 一起判。
+ARTIFACT_BODY = 28
 
 # 插槽的语义标签。manifest 的 categoryIdentifier 有 14 种叫法，说的却是同几件事；
 # 站内每个消费方各归各的，就会各归各的错。这一位把它归一次，写进 socket-types 的
@@ -190,6 +202,17 @@ SOCKET_KIND = {
     'guards': 'stat', 'bowstrings': 'stat', 'arrows': 'stat', 'hafts': 'stat',
     'grips': 'stat',
 }
+# 子职业与神器的插槽，按白名单首项的末段归一。冰影把星相叫 totems、碎片叫 trinkets，
+# 棱镜多出 transcendence 与 prism_grenade 两栏（超越那一对，玩家不选）。
+# 配装导出 DIM 按这一位找「超能插在第几栏」，不按栏号硬写：元素子职业星相在 5–6、
+# 棱镜在 7–8。
+LOADOUT_KIND = {
+    'supers': 'super', 'class_abilities': 'class_ability', 'movement': 'movement',
+    'melee': 'melee', 'grenades': 'grenade', 'aspects': 'aspect', 'totems': 'aspect',
+    'fragments': 'fragment', 'trinkets': 'fragment', 'transcendence': 'transcendence',
+    'prism_grenade': 'transcendence', 'artifact_perks': 'artifact',
+}
+SUBCLASS_OWNERS = ('hunter.', 'titan.', 'warlock.', 'shared.')
 TRACKER_KIND = 'v400.plugs.weapons.masterworks.trackers'
 MOD_KINDS = ('v400.weapon.mod', 'v460.weapon.mod', 'v900.weapon.mod')
 # 大师工作的写法不止一种：v400.plugs.weapons.masterworks 之外还有
@@ -880,9 +903,11 @@ def trim(kept, plugs, sets, root):
 
     - **武器全留。**武器库那一页列的是全部 2208 把，其中一千多把不在任何资料页上有行。
     - **护甲只留异域。**5681 件传说护甲站内没有一页按件列它们；护甲套装那 56 套的
-      成员件也不留，站内只用套装本身与它的两条效果，`setItems` 因此整个字段去掉。
-    - **外观与往季神器模组不留。**前者见 COSMETIC_PLUGS，后者是别的赛季的神器特性，
-      源稿点名的那 147 个之外一律不要。
+      成员件也不留：站内只用套装本身、它的两条效果与各件的职业和部位，后者在
+      套装的 `derived.pieces` 上，`setItems` 因此整个字段去掉。
+    - **外观与往季神器模组不留。**前者见 COSMETIC_PLUGS，后者是别的赛季的神器特性：
+      源稿点名的与七件神器影子条目的槽里插得进的留下，其余不要。后一批是配装导出
+      DIM 要的——配装写的是当季原版，槽里有几枚是重发换过号的同名那一枚。
     - **护甲模组的降费版不留**，见 cheaper()。
 
     裁完把引用一起收干净：指向被裁掉那些的插槽初始值、内联插件、插件池成员、
@@ -893,7 +918,7 @@ def trim(kept, plugs, sets, root):
     cheap = cheaper(kept)
     want = set()
     stack = [s for s in seed if s in kept]
-    stack += [h for h, row in kept.items() if row.get('itemType') == 3]
+    stack += [h for h, row in kept.items() if row.get('itemType') in (3, SUBCLASS)]
     while stack:
         key = stack.pop()
         if key in want or key not in kept:
@@ -917,9 +942,19 @@ def trim(kept, plugs, sets, root):
             stack.append(str(arch))
         for one in (row.get('derived') or {}).get('catalyst') or ():
             stack.append(str(one))
+        if (row.get('derived') or {}).get('socketed'):
+            stack.append(row['derived']['socketed'])
         for tier in (row.get('derived') or {}).get('tiers') or ():
             for m in tier.get('items') or ():
                 stack.append(str(m['itemHash']))
+    # 神器槽里插得进的每一枚都留：配装写的是那件神器当季的原版（own_copy()），而槽里
+    # 有几枚是重发时换过号的同名那一枚，导出 DIM 要插的是槽里那一枚。
+    slotted = {str(p['plugItemHash'])
+               for row in kept.values() if (row.get('derived') or {}).get('socketed')
+               for e in (kept[row['derived']['socketed']].get('sockets') or {})
+               .get('socketEntries') or ()
+               for p in (plugs.get(str(e.get('reusablePlugSetHash'))) or {})
+               .get('reusablePlugItems') or ()}
     for key, row in list(kept.items()):
         cat = (row.get('plug') or {}).get('plugCategoryIdentifier') or ''
         if row.get('itemType') == 3:
@@ -930,7 +965,7 @@ def trim(kept, plugs, sets, root):
             continue
         if (key not in want
                 or any(x in cat for x in COSMETIC_PLUGS)
-                or ('artifact_perks' in cat and key not in seed)
+                or ('artifact_perks' in cat and key not in seed and key not in slotted)
                 or key in cheap):
             del kept[key]
     gone = {int(k) for k in want | set(kept) if k not in kept} | set()
@@ -1172,7 +1207,7 @@ def own_copy(x, own, items):
 
 
 def artifacts_of(items, plug_sets, socket_types):
-    """七件神器，每件按档位列出它自己那批模组。
+    """七件神器，每件按档位列出它自己那批模组：`{本体 hash: (档位, 影子 hash)}`。
 
     带槽的那一条是 itemType 0 的影子条目（真正的 itemType 28 那条没有 socket），
     槽按档位分组。槽里的池是**累积**的：二档那一池包含一档全部，相邻作差才是这一档
@@ -1225,15 +1260,17 @@ def artifacts_of(items, plug_sets, socket_types):
         if tiers:
             # 影子条目的 hash 不是神器本体的。先按名字聚，下面认到本体那一条时
             # 再换成本体的 hash 当键。
-            arts[item['displayProperties']['name']] = {'tiers': tiers}
+            arts[item['displayProperties']['name']] = {'tiers': tiers,
+                                                       'shadow': str(item['hash'])}
     out = {}
     for item in items.values():
-        if item.get('itemTypeAndTierDisplayName') != ARTIFACT_TIER:
+        if (item.get('itemType') != ARTIFACT_BODY
+                or item.get('itemTypeAndTierDisplayName') != ARTIFACT_TIER):
             continue
         got = arts.get(item['displayProperties']['name'])
         if got is not None and 'hash' not in got:
             got['hash'] = item['hash']
-            out[str(item['hash'])] = got['tiers']
+            out[str(item['hash'])] = (got['tiers'], got['shadow'])
     missing = sorted(k for k, v in arts.items() if 'hash' not in v)
     if missing:
         die('这几件神器找不到本体那一条（itemTypeAndTierDisplayName 为「%s」），'
@@ -1253,7 +1290,8 @@ def distill(src):
     for h, item in items.items():
         if item.get('redacted') or item.get('blacklisted'):
             continue
-        if item.get('itemType') not in KEEP_TYPES and not item.get('plug'):
+        if (item.get('itemType') not in KEEP_TYPES and not item.get('plug')
+                and not IS_SUBCLASS(item)):
             continue
         if item.get('itemSubType') == ORNAMENT:
             # 皮肤：站内没有一页列它们，3688 条只占位置。指向它们的引用一律不写，
@@ -1270,7 +1308,8 @@ def distill(src):
     gc.collect()
 
     for h, row in kept.items():
-        got = stats_of(items[h])
+        # 子职业的属性组没有读者：配装导出 DIM 只读它的插槽。
+        got = None if IS_SUBCLASS(items[h]) else stats_of(items[h])
         if got:
             row['stats'] = got
 
@@ -1292,7 +1331,8 @@ def distill(src):
         # 于是异域护甲的固有 Perk 没处查——站内「异域 PERK」那一列的名字落不到主键上，
         # 只能按名字全库猜，而那些名字大面积撞号。传说护甲不收：站内没有一页按件列它们，
         # 而 5700 件的插槽要多占 7 MB。
-        if item.get('itemType') == 3 or (item.get('itemType') == 2 and EXOTIC(item)):
+        if (item.get('itemType') == 3 or (item.get('itemType') == 2 and EXOTIC(item))
+                or IS_SUBCLASS(item)):
             got = sockets_of(item, socket_types, gone)
             if got:
                 row['sockets'] = got
@@ -1340,13 +1380,29 @@ def distill(src):
             del row['derived']
 
     arts = artifacts_of(items, plug_sets, socket_types)
-    for key, tiers in arts.items():
+    for key, (tiers, shadow) in arts.items():
         if key not in kept:
             kept[key] = project(key, items[key], art_en[key])
         # 档位是**我们从影子条目的插槽推出来的**，不是 Bungie 给神器本体写的字段，
         # 所以进 derived。它的键就是本体的 itemHash——单出一张表等于同一个实体
         # 在两处各有一条记录。
         kept[key].setdefault('derived', {})['tiers'] = tiers
+        # 玩家背包里那件神器是影子条目，不是本体：DIM 按这枚 hash 认神器、往它的
+        # 七个槽里插模组（DIM 8.138.0 起）。影子自己一条记录，带原样的插槽；本体
+        # 指过去，读者从配装写的神器名走到本体，再走到这里。
+        kept[key]['derived']['socketed'] = shadow
+        kept[shadow] = project(shadow, items[shadow], art_en[shadow])
+        got = sockets_of(items[shadow], socket_types, gone)
+        if not got:
+            die('神器 %s 的影子条目 %s 没有插槽' % (key, shadow))
+        kept[shadow]['sockets'] = got
+        entries: list = list(got['socketEntries'])  # type: ignore[arg-type]
+        for e in entries:
+            if 'socketTypeHash' in e:
+                want_types.add(str(e['socketTypeHash']))
+            for field in ('reusablePlugSetHash', 'randomizedPlugSetHash'):
+                if e.get(field):
+                    want_sets.add(str(e[field]))
 
     plugs = {}
     for h in want_sets:
@@ -1387,6 +1443,9 @@ def distill(src):
             kind = 'mod'
         elif any(m in ident for m in COSMETIC_MARKS):
             kind = 'cosmetic'
+        elif ident == 'artifact_perks' or (ident.startswith(SUBCLASS_OWNERS)
+                                           and ident.count('.') == 2):
+            kind = LOADOUT_KIND.get(ident.rsplit('.', 1)[-1], 'other')
         else:
             kind = SOCKET_KIND.get(ident, 'other')
         one['derived'] = {'kind': kind}
@@ -1461,9 +1520,19 @@ def distill(src):
             # 而实体层那一侧的语言闸门看不见嵌在这里的 zh-CN。
             bonuses.append({'requiredSetCount': p['requiredSetCount'],
                             'perk': ['sandbox-perks', ph]})
-        # **成员件不存。**站内只用套装本身与它那两条效果；15 件成员（5 个部位 ×
-        # 3 个职业）一条都没人查，而收下它们就要把 840 件传说护甲一起留在库里。
+        # **成员件不收成记录**：收下它们就要把 840 件传说护甲一起留在库里，而站内
+        # 只有配装导出 DIM 读它们，读的也只是「哪个职业、哪个部位是哪一件」三个数。
+        # 那三个数从成员件上现取，存在套装这一侧。
         one = {'setPerks': bonuses}
+        pieces = []
+        for ih in s.get('setItems') or ():
+            it = items.get(str(ih))
+            if it is None:
+                die('套装 %s 的成员件 %s 不在物品表里' % (h, ih))
+            pieces.append({'itemHash': ih, 'classType': it['classType'],
+                           'bucketTypeHash': it['inventory']['bucketTypeHash']})
+        if pieces:
+            one['derived'] = {'pieces': pieces}
         text = i18n_of(('name', (s.get('displayProperties') or {}).get('name'),
                         (sets_en[h].get('displayProperties') or {}).get('name')))
         if text:

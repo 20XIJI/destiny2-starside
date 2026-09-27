@@ -359,6 +359,90 @@ class CellSplitting(unittest.TestCase):
 
 
 
+class DimExport(unittest.TestCase):
+    """配装 → DIM 导入链接（tools/dim.py）。
+
+    DIM 导入与应用时都不校验插件属不属于那一栏：插错了编辑器里照样显示，应用时才被
+    Bungie 拒掉，读者看到的是「应用失败」。所以这里钉的是「每一枚都落在那一栏自己的
+    池子里」，以及一套已知配装逐栏落对了哪一枚。
+    """
+
+    def setUp(self):
+        import dim
+        self.dim = dim
+
+    def test_every_build_exports(self):
+        """全部配装（合集逐套）都导得出来；导不出来会在构建时中止整次 npm run build。"""
+        n = 0
+        for path in sorted(Path(shell.BUILD_DIR).glob('*/*.json')):
+            rec = migrate.load(str(path))
+            for one in rec.get('成员') or [rec]:
+                with self.subTest(build=path.name, title=one['标题']):
+                    got = self.dim.loadout(one, 'https://starside.work/x')
+                    self.assertIn(got['classType'], (0, 1, 2))
+                    n += 1
+        self.assertGreater(n, 200, '只导出了 %d 套' % n)
+
+    def test_the_subclasses_and_set_pieces_are_in_the_library(self):
+        """18 个子职业带插槽；56 套护甲每套 15 件（3 职业 × 5 部位）。"""
+        f = rows.facts()
+        subs = [h for h, r in f.items.items() if r.get('itemType') == 16]
+        self.assertEqual(len(subs), 18)
+        for h in subs:
+            kinds = [k for _, k, _ in self.dim.sockets(h)]
+            with self.subTest(subclass=h):
+                for want in ('super', 'grenade', 'melee', 'class_ability', 'movement',
+                             'aspect', 'fragment'):
+                    self.assertIn(want, kinds)
+        for h, one in f.sets.items():
+            got = {(p['classType'], p['bucketTypeHash']) for p in one['derived']['pieces']}
+            self.assertEqual(len(got), 15, '套装 %s 的成员件不是 15 件' % h)
+
+    def test_a_prismatic_hunter_lands_on_its_own_sockets(self):
+        """棱镜猎人：配装戳的是元素页那一枚（抓钩 2470512752 是缚丝的），插进子职业的
+        是棱镜那一枚（1225978592）；星相从第 7 栏、碎片从第 9 栏起连着填。
+        神器插的是影子条目 1770364095，七枚模组按档位落槽。"""
+        rec = migrate.load(str(Path(shell.BUILD_DIR) / 's29-凯旋纪念碑' / '00vivy2a-hunter.json'))
+        got = self.dim.loadout(rec, 'https://starside.work/x')
+        sub, art = got['equipped'][0], got['equipped'][1]
+        self.assertEqual(sub['hash'], 4282591831)
+        self.assertEqual(sub['socketOverrides'], {
+            '0': 2711519340, '2': 2370269389, '3': 2657901002, '4': 1225978592,
+            '7': 2835214901, '8': 2835214897, '9': 2626922126, '10': 2626922122,
+            '11': 2626922120, '12': 124726498, '13': 74393640})
+        self.assertEqual(art['hash'], 1770364095)
+        self.assertEqual(sorted(art['socketOverrides']), [str(i) for i in range(7)])
+        # 异域在腿部，套装 4 件填其余四个部位里的前四个：头盔、护臂、胸甲、职业物品。
+        self.assertEqual([e['hash'] for e in got['equipped'][5:]],
+                         [1793346751, 656307180, 4105572261, 2245093627, 601809810])
+        self.assertEqual(got['parameters']['setBonuses'], {'741162535': 4})
+
+    def record(self, **sec):
+        """一套最小的配装记录：术士、烈日，节里只放要测的那几格。"""
+        return {'标题': '测试', '分支': '烈日',
+                '节': {'职业': {'职业': {'名字': '术士'}}, **sec}}
+
+    def test_a_build_without_skills_exports_no_subclass(self):
+        """一栏技能都没写（多职业配装）就不导出子职业：`socketOverrides` 只要在，
+        哪怕是 {}，DIM 应用时都会切到这个分支、把五栏技能重置成默认。"""
+        got = self.dim.loadout(self.record(), 'u')
+        self.assertEqual(got['equipped'], [])
+
+    def test_a_second_weapon_in_the_same_slot_is_a_spare(self):
+        """龙息与拜龙教镰刀都是威能：第二把进 unequipped，不然 DIM 应用时后一把
+        顶掉前一把。毫不迟疑是能量，照常装备。"""
+        got = self.dim.loadout(self.record(武器={
+            '异域武器': {'主键': '17096506'},
+            '传说武器': [{'主键': '1801007332'}, {'主键': '2525261820'}]}), 'u')
+        self.assertEqual([e['hash'] for e in got['equipped']], [17096506, 1801007332])
+        self.assertEqual(got['unequipped'], [{'hash': 2525261820}])
+
+    def test_an_artifact_without_perks_is_still_equipped(self):
+        """只写神器不写模组：给影子条目的 hash、不给 socketOverrides，DIM 照样换上它。"""
+        got = self.dim.loadout(self.record(神器={'神器': '废墟石板'}), 'u')
+        self.assertEqual(got['equipped'], [{'hash': 3821685388}])
+
+
 class WeaponsExtras(unittest.TestCase):
     """装备库多出来的两块：护甲套装效果，与「用过它的配装」。
 
@@ -1011,7 +1095,8 @@ class ManifestLayer(unittest.TestCase):
         边界一模糊就没人再分得清某个字段能不能跟着 manifest 重生成。
         """
         ours = {'release', 'season', 'breakerType', 'craftable', 'tierable', 'tiers',
-                'archetype', 'catalyst', 'foundry', 'rate', 'kind', 'lowerIsBetter'}
+                'archetype', 'catalyst', 'foundry', 'rate', 'kind', 'lowerIsBetter',
+                'socketed'}
         # breakerType 是唯一两头都有的：根上那一位是 manifest 自己的字段，照原样留着。
         only_ours = ours - {'breakerType'}
         items = self.table('inventory-items.json')
@@ -1019,6 +1104,14 @@ class ManifestLayer(unittest.TestCase):
         self.assertEqual(stray, [], '这些是本项目算的，不该出现在根上：%s' % stray)
         seen = {k for v in items.values() for k in v.get('derived') or {}}
         self.assertTrue(seen <= ours, 'derived 里冒出没登记的字段：%s' % sorted(seen - ours))
+        # 套装表同一条：各件的职业与部位是从成员件上算出来的，只在 derived 里。
+        set_ours = {'pieces'}
+        sets = self.table('equipable-item-sets.json')
+        stray = sorted({k for v in sets.values() for k in v} & set_ours)
+        self.assertEqual(stray, [], '套装表根上出现本项目算的字段：%s' % stray)
+        seen = {k for v in sets.values() for k in v.get('derived') or {}}
+        self.assertTrue(seen <= set_ours, '套装表 derived 里冒出没登记的字段：%s'
+                        % sorted(seen - set_ours))
         # breakerType 两头都有：根上那一位是 manifest 写的（写不写只看键在不在，
         # 所以每条都有，绝大多数是 0），derived 那一位是按固有框架的 SandboxPerk
         # 推出来的，消费方读的是它，覆盖 2208 把武器。
@@ -2171,6 +2264,9 @@ class Generation(Isolated):
             idx.setdefault(name, []).append(dict(name=name, kind=kind, page=page,
                 icon='fixture.webp', token='', anchor='sec-1', q='', desc='示例说明'))
         self.replace(build.vocab, 'build', lambda: copy.deepcopy(idx))
+        # DIM 链接读真实的实体层，夹具里的「测试超能」在那里查不到；导出本身由
+        # DimExport 按真实配装断言。
+        self.replace(build.dim, 'link', lambda rec, url: 'https://dim.test/')
         # 词表夹具声明没有页内搜索；落地校验、渲染、结构闸门与 emit 均走真实实现。
         self.replace(build.vocab, 'SEARCHABLE',
                      {page: False for page in build.vocab.sources()})
@@ -2186,6 +2282,16 @@ class Generation(Isolated):
             for href, label in links) + '</ul>'
         self.file('site/index.html', text)
 
+
+    def test_an_exotic_class_item_takes_one_or_two_spirits(self):
+        """异域职业物品后面跟一到两条之灵；只写一条是另一栏随意，填表页与审核都放行，
+        构建也得放行，不然一条过了审的投稿卡住整次构建。第二项不是之灵照旧中止。"""
+        def rec(*names):
+            return {'节': {'护甲': {'异域护甲': [{'名字': n, '主键': '1'} for n in names]}}}
+        self.assertEqual(len(build.exotic_armor(rec('坚忍克己', '噬星者之灵'))), 2)
+        self.assertEqual(len(build.exotic_armor(rec('坚忍克己', '噬星者之灵', '复兴之灵'))), 3)
+        error = self.exits(lambda: build.exotic_armor(rec('坚忍克己', '星界夜鹰')))
+        self.assertIn('之灵', error)
 
     def test_query_keeps_han_raw_and_quotes_ascii_delimiters(self):
         """?q= 里汉字原样写，浏览器导航时自己转成百分号；ASCII 照 quote() 转。

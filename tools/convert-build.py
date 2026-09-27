@@ -18,6 +18,7 @@ import re
 import sys
 from urllib.parse import quote
 
+import dim
 import items
 import migrate
 import rows
@@ -457,19 +458,17 @@ def ex_perk_slot(name):
 
 
 def exotic_armor(md):
-    """异域护甲：一件，或者异域职业物品加它那两条之灵。
+    """异域护甲：一件，或者异域职业物品加它的一到两条之灵。
 
     异域职业物品一件装备带两条异域词条，两条各从它自己的一栏里开（一栏 8 条），
-    所以源稿写三项：职业物品本身，再两条「…之灵」。别的异域护甲一次只能穿一件。
+    所以源稿写职业物品本身，再跟「…之灵」。只写一条的是另一栏随意：填表页与审核
+    都放行这种写法（「坚忍克己、噬星者之灵」）。别的异域护甲一次只能穿一件。
     """
     got = names(md, '异域护甲', required=False)
-    if len(got) == 2:
-        die('「异域护甲：」写两件说不清是哪一件职业物品，写成「职业物品、之灵、之灵」'
-            '三项，源稿写的是 %r' % '、'.join(got))
     if len(got) > 3:
         die('「异域护甲：」最多三项，源稿写的是 %r' % '、'.join(got))
-    if len(got) == 3 and not all(vocab.bare(n).endswith(SPIRIT) for n in got[1:]):
-        die('「异域护甲：」写三项只有异域职业物品那一种，后两项都得是「…%s」，'
+    if len(got) > 1 and not all(vocab.bare(n).endswith(SPIRIT) for n in got[1:]):
+        die('「异域护甲：」写两三项只有异域职业物品那一种，第一项之后都得是「…%s」，'
             '源稿写的是 %r' % (SPIRIT, '、'.join(got)))
     return got
 
@@ -936,10 +935,10 @@ def render_solo(idx, mv, arts, md, slug, season, name_cn, doc_id):
          # 配装的操作，与标题同级；挂在推荐者下面时读者会以为赞的是那个人。
          # 开关的按下状态由 tip.js 从 localStorage 现读，写不进产出，所以这里
          # 只出一个空位——与点赞那个数同一条约定。
-         '<div class="id-row"><h1>%s</h1><div class="head-acts">%s%s%s%s</div></div>'
+         '<div class="id-row"><h1>%s</h1><div class="head-acts">%s%s%s%s%s</div></div>'
          % (title, like_box(season, slug, button=True),
             '<button class="op copy" type="button">复制配装</button>',
-            SHOT % 'main', TIP_SW),
+            dim_button(md, page_url(season, slug)), SHOT % 'main', TIP_SW),
          # 铭牌一行读完这套配装的身份：职业 · 元素 · 强度。强度接在这里而不是另起
          # 一栏标签——它只有一个值，占一整栏显得空。
          '<p class="cls">%s%s · %s · %s<span class="season">%s · %s</span></p>'
@@ -966,7 +965,18 @@ def render_solo(idx, mv, arts, md, slug, season, name_cn, doc_id):
     return finish(o, [TIP_JS]), title
 
 
-def one_of(idx, mv, arts, head, scenes, md, n):
+def page_url(season, slug):
+    return '%s/%s/%s/%s/index.html' % (shell.SITE_URL, OUT_DIR, season, slug)
+
+
+def dim_button(md, url):
+    """导入 DIM：链接在构建时算好，整套配装序列化进查询串，点开即是 DIM 的配装
+    编辑器。本站什么都不改，是一条外链，按 design.md 五之二走 .chip。"""
+    return ('<a class="chip dim" href="%s" target="_blank" rel="noopener">导入 DIM</a>'
+            % escape(dim.link(md, url)))
+
+
+def one_of(idx, mv, arts, head, scenes, md, n, url):
     """合集里的一套：页头 + 五个分节，整块包在 <section class="set-one"> 里。
 
     页头不给 96px 核心图与推荐人——那两样属于整份合集、写在页顶，每套重复一遍会
@@ -980,8 +990,8 @@ def one_of(idx, mv, arts, head, scenes, md, n):
     o = ['<section class="set-one b-%s" id="set-%d">' % (BRANCH[branch], n),
          '<header class="one-head">',
          '<div class="id-row"><h2>%s</h2><div class="head-acts">'
-         '<button class="op copy" type="button">复制配装</button>%s</div></div>'
-         % (title, SHOT % '.set-one'),
+         '<button class="op copy" type="button">复制配装</button>%s%s</div></div>'
+         % (title, dim_button(md, '%s#set-%d' % (url, n)), SHOT % '.set-one'),
          '<p class="cls">%s%s · <span class="%s">%s</span>%s</p>'
          % (icon_of(vocab.pick(idx, who, '职业', kind='分节'), 32), who,
             ELEMENT_TOKEN[branch], branch, ' · ' + role if role else '')]
@@ -1065,7 +1075,7 @@ def render_set(idx, mv, arts, head, members, slug, season, name_cn, doc_id):
                  '、'.join(tags_of(m, scenes)))]
     o += ['</ol>', '</nav>', '<div class="set-body">']
     for n, m in enumerate(members, 1):
-        o += one_of(idx, mv, arts, head, scenes, m, n)
+        o += one_of(idx, mv, arts, head, scenes, m, n, page_url(season, slug))
     o += ['</div>', '</div>', '']
 
     o += ['</main>', '', LIKE_JS, COPY_JS,
