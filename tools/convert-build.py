@@ -971,8 +971,8 @@ def page_url(season, slug):
 
 def dim_button(md, url):
     """导入 DIM：链接在构建时算好，整套配装序列化进查询串，点开即是 DIM 的配装
-    编辑器。本站什么都不改，是一条外链，按 design.md 五之二走 .chip。"""
-    return ('<a class="chip dim" href="%s" target="_blank" rel="noopener">导入 DIM</a>'
+    编辑器。与复制、截图并排，同为带框的 .op。"""
+    return ('<a class="op dim" href="%s" target="_blank" rel="noopener">导入 DIM</a>'
             % escape(dim.link(md, url)))
 
 
