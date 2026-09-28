@@ -1,10 +1,10 @@
 window.starsideDesc = {
 "armor-mods\t强力吸引\t职业物品":"<p>使用职业技能时：<br> 吸取 12.5 ｜ 18.5 米内的<span class=\"orb\">能量球</span>。<br> <br> <span class=\"note\">对微粒与纹章同样生效。</span></p>",
-"armor-mods\t抗性\t胸甲":"<p>对<span class=\"enemy\">战斗人员</span>获得 15% ｜ 25% ｜ 30% 伤害抗性。<br> <br> <span class=\"note\">元素抗性模组只减免与该元素匹配的伤害。</span><br> <span class=\"note\">狙击伤害抗性减免 30 米以外的伤害。</span><br> <span class=\"note\">近战伤害抗性减免 5 米以内的伤害。</span><br> <span class=\"note\">震荡阻尼器减免范围、冲击与爆炸伤害。</span><br> <br> <span class=\"note\">不同的抗性模组之间、抗性与其他减伤来源之间，一律乘算叠加。</span></p>",
 "armor-mods\t时间膨胀\t职业物品":"<p><span class=\"armor-charge\">护甲充能</span>每 15 ｜ 18 ｜ 20 秒衰减一层。<br> <br> <span class=\"note\">默认情况下，装备被动模组时每 10 秒移除一层护甲充能。</span></p>",
 "armor-mods\t灵巧\t护臂":"<p>对与模组元素相同的武器：<br> <br> 取出／收起时长 ×0.8 ｜ ×0.75 ｜ ×0.7。<br> <br> <span class=\"note\">收起动画时长不会超过 100 操控性对应的值。</span></p>",
 "armor-mods\t烈日武器激涌\t腿部":"<p><span class=\"armor-charge\">护甲充能</span>生效期间：<br> 提高与模组元素相同的武器伤害。<br> <br> 伤害提高：<br> 10%<span class=\"pvp\">[3%]</span> ｜ 17%<span class=\"pvp\">[4.5%]</span> ｜ 22%<span class=\"pvp\">[5.5%]</span> ｜ 25%<span class=\"pvp\">[6%]</span><br> <br> <span class=\"note\">x4 只能靠神器或异域护甲拿到。</span></p>",
 "armor-mods\t装弹装置\t护臂":"<p>对与模组元素相同的武器，取出约 0.5 秒后：<br> <br> +10 ｜ +15 ｜ +18 填装速度<br> 填装时长 ×0.85</p>",
+"armor-mods\t谐振抗性\t胸甲":"<p>对<span class=\"enemy\">战斗人员</span>获得 15% ｜ 25% ｜ 30% 伤害抗性。<br> <br> <span class=\"note\">元素抗性模组只减免与该元素匹配的伤害。</span><br> <span class=\"note\">狙击伤害抗性减免 30 米以外的伤害。</span><br> <span class=\"note\">近战伤害抗性减免 5 米以内的伤害。</span><br> <span class=\"note\">震荡阻尼器减免范围、冲击与爆炸伤害。</span><br> <br> <span class=\"note\">不同的抗性模组之间、抗性与其他减伤来源之间，一律乘算叠加。</span></p>",
 "armor-mods\t超能洗礼\t头盔":"<p><span class=\"armor-charge\">护甲充能</span>生效期间：<br> +20 ｜ +40 ｜ +50 超能属性。</p>",
 "armor-mods\t近战洗礼\t护臂":"<p><span class=\"armor-charge\">护甲充能</span>生效期间：<br> +20 ｜ +40 ｜ +50 近战属性。</p>",
 "armor-mods\t震荡阻尼器\t胸甲":"<p>对<span class=\"enemy\">战斗人员</span>获得 15% ｜ 25% ｜ 30% 伤害抗性。<br> <br> <span class=\"note\">元素抗性模组只减免与该元素匹配的伤害。</span><br> <span class=\"note\">狙击伤害抗性减免 30 米以外的伤害。</span><br> <span class=\"note\">近战伤害抗性减免 5 米以内的伤害。</span><br> <span class=\"note\">震荡阻尼器减免范围、冲击与爆炸伤害。</span><br> <br> <span class=\"note\">不同的抗性模组之间、抗性与其他减伤来源之间，一律乘算叠加。</span></p>",
