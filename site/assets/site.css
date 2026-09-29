@@ -219,11 +219,9 @@ body {
      下面各处的 Nvw 一律写成 N × var(--vw)。 */
   --vw: max(1vw, calc(var(--min) / 100));
   margin: 0;
-  /* **给 body 定位，好让绝对定位的子元素按版面而不是按视口算宽。**body 静态时，
-     abspos 子元素的包含块是初始包含块（视口那么宽）；窄视口下版面被 --min 撑到
-     1176px，而 .grid-flow 只有视口那么宽，光点整片被 overflow 裁掉、横向的那几道
-     也只跑视口宽就停。position: relative 不建层叠上下文（无 z-index），
-     .grid-flow 的 z-index: -1 照旧落在根层叠上下文的负层里。 */
+  /* **给 body 定位，好让绝对定位的后代按版面而不是按视口算宽。**body 静态时，
+     没有更近定位祖先的 abspos 元素以初始包含块（视口那么宽）为准；版面被 --min
+     撑宽之后两者不同。position: relative 不建层叠上下文（无 z-index）。 */
   position: relative;
   /* 页脚贴底：内容不足一屏时不让页脚悬在页面中间 */
   display: flex;
@@ -1093,101 +1091,70 @@ body:has(.hero) {
   background-size: 352px 100%, auto, 88px 100%, auto, 100% 640px, auto;
 }
 
-/* 光点沿刻线穿梭：七道竖向、五道横向，四个方向都有。
+/* 首页星图：画布由 assets/sky.js 画，只有首页有。
 
-   **落点写成中轴 ± 88 的整数倍**：刻线本身就排在中轴 ± 88k 上（见上），这么写
-   就一定压在线上。原先写的是从左缘起算的绝对像素，七道全部落在 1144px 以内，
-   视口一宽右半边一道竖光都没有，整层读作往左堆。偏移取 −7 / −4 / −3 / −1 /
-   +2 / +5 / +8 个模数，两侧都有、且不等距——等距的落点扫一眼就露馅。
-   跑细刻线而不是只跑 352px 的主刻线：主刻线一屏只有四道，光点全挤在那四道上
-   同样看得出是排好的。
-
-   **CSS 没有随机数，所谓随机是手挑出来的不规则。**十二个周期取半秒的错位值
-   （6.5 / 7 / 8.5 / 9.5 / 10.5 / 11 / 12 / 12.5 / 13.5 / 15 / 16 / 18 秒），
-   化成整数是 13 / 14 / 17 / 19 / 21 / 22 / 24 / 25 / 27 / 30 / 32 / 36 的半秒，
-   最小公倍数长到没人等得到整组复位；负的 delay 让它们从各自周期的中途起步，
-   加载瞬间不会排成一列同时出发。间距也不取等差——等差的落点扫一眼就露馅。
-
-   **只动 transform 与 opacity**，十二个光点各自在合成器上跑完，不触发布局与重绘。
-   这一层只在手写首页上，二十来层合成对一张静态页面无所谓；资料页不引。
-   **色取 --accent 而不是白**：光点是 1px 宽的一道，面小到改不了整页的色彩身份，
-   而首页的 --accent 本来就在每张卡片的左缘上，两者认得出是同一种光。
-
-   容器上的 overflow 只裁自己这些空 <i>，链上没有 sticky（design.md 五节）。 */
-.grid-flow {
-  position: absolute;
-  inset: 0 0 auto;
-  z-index: -1;                     /* 压在正文之下、网格之上 */
-  height: 1408px;                  /* 4 × 352，盖住首页可视的那一段 */
-  overflow: hidden;
+   **画布是 body 的第一个子元素。**.hero-mark::after 那块刻线橡皮（见「首屏那枚标记」）
+   排在它后面，同在根层叠上下文的负层，按文档序盖在画布上：徽记周围洗出一块空地，
+   星点不落在徽记上。
+   fixed 而不是 absolute：页面约 4600px 高，画布只需视口大小；恒星的视差由脚本按
+   scrollY 算，不给 body 加 background-attachment: fixed（长页固定背景会让滚动逐帧重绘）。
+   星与线只用骨白，沿边走的光点用 --accent，与卡片左缘是同一种光；不发光、不投影
+   （design.md 总原则）。 */
+.starfield {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
 }
 
-/* **base 状态 opacity 为 0，亮度全由关键帧给。**prefers-reduced-motion 下
-   animation 被上面那条 !important 关掉，光点退回 base——写成 1 就会在页面上
-   钉住五道不动的亮线。 */
-.grid-flow i {
+/* 分组标题右侧的分隔线画成刻度尺：细刻度每 8px，长刻度每 88px。
+   **长刻度的相位由 sky.js 写进 --rx，对到版心中轴**：背景竖线排在中轴 ± 88k 上，
+   分隔线从标题文字之后起、起点随字数变，不对相位时长刻度与背景刻线会错开一截。
+   transform-origin 给 sky.js 的自左展开用。 */
+body:has(.hero) .group-label::after {
+  height: 11px;
+  transform-origin: left;
+  background:
+    linear-gradient(var(--hair), var(--hair)) 0 5px / 100% 1px no-repeat,
+    linear-gradient(90deg, var(--hair-lit) 0 1px, transparent 1px) var(--rx, 0) 1px / 8px 4px repeat-x,
+    linear-gradient(90deg, var(--bone-faint) 0 1px, transparent 1px) var(--rx, 0) 0 / 88px 6px repeat-x;
+}
+
+/* 卡片左上与右下两角外侧各一枚套准标记（制图里的十字）。切角在右上，所以不放那一角 */
+body:has(.hero) .entries > li { position: relative; }
+
+body:has(.hero) .entries > li::before,
+body:has(.hero) .entries > li::after {
+  content: "";
   position: absolute;
-  width: 1px;
-  height: 88px;
-  background: linear-gradient(180deg, transparent, var(--accent));
-  opacity: 0;
-  animation: flow-y 7s linear infinite;
+  z-index: 1;
+  width: 11px;
+  height: 11px;
+  opacity: .5;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--bone-faint), var(--bone-faint)) 50% 50% / 11px 1px no-repeat,
+    linear-gradient(var(--bone-faint), var(--bone-faint)) 50% 50% / 1px 11px no-repeat;
 }
 
-/* 七道竖向 */
-.grid-flow i:nth-child(1) { left: calc(50% - 616px); animation-duration: 8.5s; animation-delay: -2.3s; }
-.grid-flow i:nth-child(2) { left: calc(50% - 352px); animation-duration: 11s; animation-delay: -6.1s; }
-.grid-flow i:nth-child(3) { left: calc(50% - 88px); animation-duration: 7s; animation-delay: -1.4s; }
-.grid-flow i:nth-child(4) { left: calc(50% + 176px); animation-duration: 13.5s; animation-delay: -9.2s; }
-.grid-flow i:nth-child(5) { left: calc(50% + 440px); animation-duration: 9.5s; animation-delay: -4.7s; }
-.grid-flow i:nth-child(6) { left: calc(50% + 704px); animation-duration: 6.5s; animation-delay: -3.8s; }
-.grid-flow i:nth-child(7) { left: calc(50% - 264px); animation-duration: 12s; animation-delay: -7.5s; }
+body:has(.hero) .entries > li::before { left: -6px; top: -6px; }
 
-/* 五道横向：同一套光点转 90°。竖向单独跑读作「下落」，与横向交错才读作穿梭 */
-/* **横向的这几道占满整幅，亮的只有末尾 88px。**竖向的容器高度写死 1408px，位移
-   跟着写死即可；横向的容器宽度随版面走（窄视口 1176px，宽视口跟着视口），位移
-   没有一个能写死的数——transform 里的百分比又只认元素自己的尺寸。占满整幅之后
-   ±100% 恰好是一幅宽，亮段因此总能从左缘外走到右缘外，不必知道版面多宽。 */
-.grid-flow i:nth-child(n + 8) {
-  width: 100%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent calc(100% - 88px), var(--accent));
-  animation-name: flow-x;
+body:has(.hero) .entries > li::after { right: -6px; bottom: -6px; }
+
+/* 字标扫光：sky.js 加上 .sheen，一道亮带掠过一次，动画结束即撤掉。
+   底色两端与中段同为 --bone-hi，位置停在 0 时整个字仍是普通填充。 */
+.wordmark.sheen {
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  background: linear-gradient(104deg, var(--bone-hi) 0 43%, #fff 50%, var(--bone-hi) 57% 100%) 100% 0 / 260% 100% no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: sheen 2.4s cubic-bezier(.3, .1, .2, 1) .5s 1 both;
 }
 
-.grid-flow i:nth-child(8) { top: 264px; animation-duration: 15s; animation-delay: -3.1s; }
-.grid-flow i:nth-child(9) { top: 440px; animation-duration: 10.5s; animation-delay: -8.4s; }
-.grid-flow i:nth-child(10) { top: 616px; animation-duration: 18s; animation-delay: -11.3s; }
-.grid-flow i:nth-child(11) { top: 792px; animation-duration: 12.5s; animation-delay: -1.9s; }
-.grid-flow i:nth-child(12) { top: 1056px; animation-duration: 16s; animation-delay: -5.6s; }
-
-/* 逆行的五道：竖向朝上、横向朝左。方向靠 animation-direction 翻，不另写关键帧。
-   **拖尾要跟着一起翻**——不翻的话光点拖着头跑，一眼看出是倒放的。 */
-.grid-flow i:nth-child(3),
-.grid-flow i:nth-child(5),
-.grid-flow i:nth-child(7),
-.grid-flow i:nth-child(9),
-.grid-flow i:nth-child(11) { animation-direction: reverse; }
-
-.grid-flow i:nth-child(3),
-.grid-flow i:nth-child(5),
-.grid-flow i:nth-child(7) { background: linear-gradient(0deg, transparent, var(--accent)); }
-
-.grid-flow i:nth-child(9),
-.grid-flow i:nth-child(11) { background: linear-gradient(270deg, transparent calc(100% - 88px), var(--accent)); }
-
-@keyframes flow-y {
-  0% { transform: translateY(-88px); opacity: 0; }
-  6%, 82% { opacity: 1; }
-  100% { transform: translateY(1408px); opacity: 0; }
-}
-
-@keyframes flow-x {
-  0% { transform: translateX(-100%); opacity: 0; }
-  6%, 82% { opacity: 1; }
-  100% { transform: translateX(100%); opacity: 0; }
-}
+@keyframes sheen { to { background-position: 0 0; } }
 
 /* ── 首屏三条带 ──
    **首页的留白只取 8 / 16 / 24 / 44 / 88 五个数。**44 与 88 是背景刻线的半个与一个
@@ -2022,7 +1989,7 @@ body:has(.hero) {
   border: 1px solid currentcolor;
 }
 
-/* 三层反向自转，周期互质到没人等得到整组复位（同 .grid-flow 那十二个光点） */
+/* 三层反向自转，周期互质到没人等得到整组复位 */
 .pl-art .r1 { width: 50px; height: 50px; margin: -25px; animation: pl-spin 44s linear infinite; }
 .pl-art .r2 { width: 36px; height: 36px; margin: -18px; animation: pl-spin 32s linear infinite reverse; }
 .pl-art .r3 { width: 22px; height: 22px; margin: -11px; animation: pl-spin 24s linear infinite; }
@@ -2363,6 +2330,70 @@ body:has(.hero) {
 
 .entry:hover::after,
 .entry:focus-visible::after { opacity: 1; }
+
+/* 首页卡片的左缘亮边：静置时只有卡高的一半、居中，悬停与键盘聚焦时向两端伸到全长；
+   scaleY 以卡中线为原点，只动合成层。 */
+body:has(.hero) .entry::after {
+  transform: scaleY(.5);
+  transition: opacity .18s ease, transform .32s cubic-bezier(.2, .7, .2, 1);
+}
+
+body:has(.hero) .entry:hover::after,
+body:has(.hero) .entry:focus-visible::after { transform: none; }
+
+/* 星轨：sky.js 在 main.index 里铺一层，同列相邻卡片的节点之间连一条虚线。
+   层压在卡片之上，线只经过节点下方那一列——卡内文字从节点右侧起，线碰不到。
+   光点用 transform 动，走在合成器上；系统要求减少动效时它停在透明的起点，线与菱形照旧。 */
+body:has(.hero) main.index { position: relative; }
+
+.routes {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.route {
+  position: absolute;
+  width: 1px;
+  background: repeating-linear-gradient(180deg, var(--bone-faint) 0 2px, transparent 2px 7px);
+}
+
+.route::before,
+.route::after {
+  content: "";
+  position: absolute;
+  left: -3px;
+  width: 7px;
+  height: 7px;
+  background: var(--bone-dim);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+.route::before { top: -3px; }
+
+.route::after { bottom: -3px; }
+
+.route b {
+  position: absolute;
+  left: -1px;
+  top: 0;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0;
+  animation: route-hop 9s linear infinite var(--d, 0s);
+}
+
+/* 九秒一轮，前 23% 走完整条线，其余时间隐去；各条线的相位错开 */
+@keyframes route-hop {
+  0% { transform: translateY(0); opacity: 0; }
+  3% { opacity: 1; }
+  19% { opacity: 1; }
+  23% { transform: translateY(var(--len)); opacity: 0; }
+  100% { transform: translateY(var(--len)); opacity: 0; }
+}
 
 /* 各页的编码归属。依据全部取自游戏自身：异域装备即金黄、战斗人员即红、
    特殊弹药即绿、神器模组即青绿。查不到依据的页面不给色。 */

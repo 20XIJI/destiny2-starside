@@ -4,6 +4,7 @@ paths:
   - "site/assets/chart.js"
   - "site/assets/rota.js"
   - "site/assets/home.js"
+  - "site/assets/sky.js"
   - "site/assets/search.js"
   - "tools/build-search.py"
 ---
@@ -14,11 +15,15 @@ paths:
 分节高亮与列组开关。
 改 `assets/app.js` 或 `tools/build-search.py` 之前读这一份。
 
-页面专属的三段拆成同目录下的 ES 模块，由 `app.js` 认出该页的 `data-*` 时动态
+页面专属的几段拆成同目录下的 ES 模块，由 `app.js` 认出该页的 `data-*` 时动态
 `import()`：`chart.js`（折线图，只有压光伤害页）、`rota.js`（轮盘，只有轮换速查表）、
-`home.js`（首页那只全站搜索框）。三段合起来是从前 `app.js` 8.9 KB gzip 里的
+`home.js`（首页那只全站搜索框）。这三段合起来是从前 `app.js` 8.9 KB gzip 里的
 6.9 KB，而 34 个引 app.js 的页面里只有 3 个跑得到，其余 31 页白下；拆开之后
 `app.js` 3.9 KB，外壳三件从 27.1K 降到 22.0K。
+
+`sky.js` 同样只有首页用：`.starfield` 画布上的星图、首屏之外卡片的浮起、字标扫光、
+分组标题刻度尺的相位、卡片节点之间的星轨。颜色从 `:root` 的 `--bone`、`--bone-hi`、`--accent` 现取，
+不写色号；系统要求减少动效时只画一帧静态星图，其余三项不跑。
 
 共用件（`tuck`、`onResize`、`words`、`hit`、`slot`）由 `app.js` 传进去，模块里
 不重抄一份。路径按 `document.currentScript.src` 现算：这是个 classic script，

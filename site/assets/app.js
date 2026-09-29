@@ -277,6 +277,7 @@
   var hero = document.querySelector('.hero-search');
   if (hero) {
     lazy('home.js').then(function (m) { m.default(hero, { words: words, hit: hit }); });
+    lazy('sky.js').then(function (m) { m.default(); });
     measure();
     return;
   }
