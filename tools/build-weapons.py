@@ -1198,23 +1198,22 @@ def scope_row():
 
 
 def toolbar():
-    """查询条：计数、查询框、视图与语法，药丸在下一行。写在页壳里，首次绘制时就是真实高度；
-    app.js 只接事件、填语法表（它的 SYNTAX）。它是 body 的直接子元素：sticky 的活动范围是
-    父元素，放进别的容器吸顶就只吸到那个容器的底。"""
+    """查询条：计数、查询框、视图与语法。写在页壳里，首次绘制时就是真实高度；app.js 只接事件、
+    填语法卡片。已选条件（药丸）不在这里，在快速检索下面那条常驻的条件条里，查询条的高度因此
+    不随条件变。它是 body 的直接子元素：sticky 的活动范围是父元素，放进别的容器吸顶就只吸到
+    那个容器的底。"""
     return (
         '<div class="wpn-bar"><div class="wpn-q">'
         '<p class="wpn-count" aria-live="polite"></p>'
         '<div class="wpn-field"><input class="wpn-input" type="search" autocomplete="off" spellcheck="false" '
         'role="combobox" aria-expanded="false" aria-controls="wpn-ac" aria-label="搜索装备" '
-        'placeholder="名字、词条，或 is:手炮 perk:萤火虫 season:&gt;=26">'
+        'placeholder="名字、perk，或 is:手炮 perk:萤火虫 breaker:反屏障 stat:射程:&gt;=60">'
         '<ul class="wpn-suggest" id="wpn-ac" role="listbox" hidden></ul></div>'
         '<div class="wpn-views">'
         '<button type="button" class="toggle" data-act="view" data-v="grid">卡片</button>'
         '<button type="button" class="toggle" data-act="view" data-v="list">列表</button>'
-        '<button type="button" class="toggle" data-act="syntax" aria-expanded="false">语法</button>'
-        '<div class="wpn-syntax" role="dialog" aria-label="查询语法" hidden><table></table>'
-        '<p>关键字照 DIM 的写法，值用中文；DIM 里抄来的查询多数能直接用。</p></div></div>'
-        '<div class="wpn-pills" hidden></div></div></div>')
+        '<button type="button" class="toggle" data-act="syntax" aria-expanded="false">语法</button></div>'
+        '<div class="wpn-syntax" role="dialog" aria-label="查询语法" hidden></div></div></div>')
 
 
 def catalog(stats):
@@ -1231,12 +1230,13 @@ FILL = '\u3000'
 
 
 def skeleton():
-    """首屏骨架：快速检索那一行的位置与一屏卡片。类与真卡片同一套，高度由同一份样式算出，
-    换上真内容时版面不动；词条池没到时 app.js 也拿这块卡片墙占位。"""
+    """首屏骨架：快速检索那一行与条件条的位置，加一屏卡片。类与真卡片同一套，高度由同一份样式
+    算出，换上真内容时版面不动；词条池没到时 app.js 也拿这块卡片墙占位。"""
     card = ('<li><div class="wpn-card"><span class="gun"></span><div><p class="nm">%s</p>'
             '<div class="wpn-meta">%s</div><div class="wpn-frame">%s</div>'
             '<div class="wpn-grades">%s</div></div></div></li>' % ((FILL,) * 4))
     return ('<div class="wpn-presets skel" aria-hidden="true"><div class="wpn-quick"></div></div>'
+            '<div class="wpn-conds skel" aria-hidden="true"></div>'
             '<div class="wpn-body"><ol class="wpn-grid skel" aria-hidden="true">%s</ol></div>'
             % (card * N_SKEL))
 

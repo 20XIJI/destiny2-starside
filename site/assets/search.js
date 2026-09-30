@@ -4645,6 +4645,7 @@ window.starsideIndex = [
 {"u":"builds/s29/ap0epa2e-hunter/index.html","t":"日常割草电猎 · 配装推荐","d":""},
 {"u":"builds/s29/atntraru-hunter/index.html","t":"VOG套松身裤棱镜猎 · 配装推荐","d":""},
 {"u":"builds/s29/bcndfero-hunter/index.html","t":"猎人日志solo见证者配装 · 配装合集","d":""},
+{"u":"builds/s29/bjokie7g-hunter/index.html","t":"棱镜虚空·意外涡流故我在 · 配装推荐","d":""},
 {"u":"builds/s29/clama-he-titan/index.html","t":"刮刮乐泰坦 · 配装推荐","d":""},
 {"u":"builds/s29/cub5k5v5-warlock/index.html","t":"闪电激涌电术 · 配装推荐","d":""},
 {"u":"builds/s29/cw92ebx7-warlock/index.html","t":"冰术阿格尔 · 配装推荐","d":""},

@@ -76,8 +76,9 @@
   border-bottom-color: var(--hair-lit);
 }
 
-/* 计数在框左、视图在框右，框居中；药丸在框下一行 */
+/* 计数在框左、视图在框右，框居中；语法卡片挂在它下面 */
 .wpn-q {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 704px) minmax(0, 1fr);
   align-items: center;
@@ -160,34 +161,140 @@
   margin-left: -12px;
 }
 
+/* 语法卡片：三列速查卡（组合｜关键字｜is: 的值），在查询框正下方。点一条填进查询框；
+   值的按钮与快速检索同组互斥，按下去的亮着。 */
 .wpn-syntax {
   position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
+  top: calc(100% + 10px);
+  left: 50%;
   z-index: 30;
-  width: 640px;
-  padding: 10px 14px 12px;
-  font: 400 12.5px/1.7 var(--font-cn);
+  width: min(1120px, calc(100vw - 44px));
+  max-height: calc(100vh - var(--stick, 140px) - 20px);
+  overflow: auto;
+  font: 400 12.5px/1.6 var(--font-cn);
   background: var(--ink-lift);
+  border: 1px solid var(--hair-lit);
+  box-shadow: 0 28px 64px #000000a6;
+  transform: translateX(-50%);
+  animation: sx-in .18s cubic-bezier(.2, .8, .3, 1) both;
+}
+
+@keyframes sx-in {
+  from { opacity: 0; transform: translate(-50%, -4px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.sx-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 14px 22px 12px;
+  border-bottom: 1px solid var(--hair);
+}
+
+.sx-head h2 { margin: 0; color: var(--bone-hi); font: 600 14px/1.4 var(--font-cn); letter-spacing: .08em; }
+.sx-head span { color: var(--bone-faint); font-size: 12px; }
+
+.sx-body { display: grid; grid-template-columns: 330px minmax(0, 1fr) 290px; }
+.sx-body > section { padding: 16px 22px 18px; }
+.sx-body > section + section { border-left: 1px solid var(--hair); }
+
+.sx-body h3 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 12px;
+  color: var(--bone-dim);
+  font: 600 11px/1 var(--font-disp);
+  letter-spacing: .16em;
+}
+
+.sx-body h3::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  background: var(--bone-faint);
+  transform: rotate(45deg);
+}
+
+.sx-body h3 code { font: inherit; letter-spacing: .04em; text-transform: none; }
+
+.sx-q {
+  padding: 5px 9px;
+  color: var(--bone-dim);
+  font: 400 12px/1.4 var(--font-body);
+  text-align: left;
+  white-space: nowrap;
+  background: var(--tint-2);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: color .15s ease, border-color .15s ease, background-color .15s ease;
+}
+
+.sx-q b { color: var(--bone-hi); font-weight: 400; }
+.sx-q:hover { color: var(--bone-hi); background: var(--tint-3); border-color: var(--hair-lit); }
+
+.sx-op {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 0 12px;
+  align-items: start;
+  margin-bottom: 14px;
+}
+
+.sx-ch {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  color: var(--bone-hi);
+  font: 600 14px/1 var(--font-cn);
   border: 1px solid var(--hair-lit);
 }
 
-.wpn-syntax table { width: 100%; border-collapse: collapse; }
-.wpn-syntax td { padding: 3px 0; vertical-align: middle; color: var(--bone-dim); }
-.wpn-syntax td:first-child { width: 1%; padding-right: 14px; white-space: nowrap; }
-.wpn-syntax .toggle { padding: 1px 8px; }
-.wpn-syntax code { color: var(--bone-hi); font: 400 12px/1.6 var(--font-body); }
-.wpn-syntax p { margin: 8px 0 0; padding-top: 8px; color: var(--bone-faint); border-top: 1px solid var(--hair); }
+.sx-op p { margin: 5px 0 0; color: var(--bone-faint); font-size: 12px; line-height: 1.5; }
+.sx-op code { color: var(--bone-dim); font: 400 11.5px/1 var(--font-body); }
 
-/* 药丸：已经写完的条件。点 × 去掉那一段，查询框里的原文同步删。 */
-.wpn-pills {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  grid-column: 2;
-  gap: 6px;
+.sx-row {
+  display: grid;
+  grid-template-columns: 178px minmax(0, 1fr);
+  gap: 0 14px;
+  align-items: center;
+  min-height: 34px;
 }
 
+.sx-row > span { color: var(--bone-dim); }
+
+.sx-vg { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 0 6px; margin-bottom: 9px; }
+.sx-vl { padding-top: 4px; color: var(--bone-faint); font-size: 12px; }
+.sx-vg > div { display: flex; flex-wrap: wrap; gap: 4px; }
+
+.sx-t {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  color: var(--bone-dim);
+  font: 400 12px/1.6 var(--font-cn);
+  background: none;
+  border: 1px solid var(--hair);
+  cursor: pointer;
+  transition: color .15s ease, border-color .15s ease, background-color .15s ease;
+}
+
+.sx-t img { width: 14px; height: 14px; }
+.sx-t:hover { color: var(--bone-hi); border-color: var(--hair-lit); }
+.sx-t[aria-pressed="true"] { color: var(--bone-hi); background: var(--tint-3); border-color: var(--bone-faint); }
+
+.sx-note { margin: 4px 0 0; padding-top: 10px; color: var(--bone-faint); font-size: 12px; border-top: 1px solid var(--hair); }
+.sx-note code { color: var(--bone-dim); font: 400 11.5px/1 var(--font-body); }
+
+@media (max-width: 1140px) {
+  .sx-body { grid-template-columns: 1fr; }
+  .sx-body > section + section { border-left: 0; border-top: 1px solid var(--hair); }
+}
+
+/* 药丸：已经写完的条件。点 × 去掉那一段，查询框里的原文同步删。 */
 .wpn-pill {
   display: inline-flex;
   align-items: center;
@@ -279,8 +386,9 @@
 }
 
 /* ── 快速检索：一行图标 ─────────────────────────────────────────
-   槽位（文字）、枪型、元素、勇士克制各一组，点一下加进或去掉那一条查询，与查询框、药丸
-   同步。静置素色，悬停提亮，选中的下面一枚小菱形。只有武器范围有这一行。 */
+   槽位（文字）、枪型、元素、勇士克制各一组；护甲范围只有职业，套装范围没有这一行。点一下加进
+   或去掉那一条查询，与查询框、药丸同步。一组里只留一个：点了一枚，同组其余退后一档，再点它取消。
+   静置素色，悬停提亮，选中的下面一枚小菱形。 */
 .wpn-quick {
   display: flex;
   flex-wrap: wrap;
@@ -289,6 +397,8 @@
   min-height: 46px;
   padding: 6px 0 4px;
 }
+
+.wpn-quick .qg { display: flex; align-items: center; }
 
 .wpn-quick .sep {
   width: 1px;
@@ -309,12 +419,13 @@
   background: none;
   border: 0;
   cursor: pointer;
+  transition: opacity .18s ease, color .15s ease;
 }
 
 .wpn-quick button:hover,
 .wpn-quick button[aria-pressed="true"] { color: var(--bone-hi); }
 
-.wpn-quick button[aria-pressed="true"]::after {
+.wpn-quick button::after {
   content: "";
   position: absolute;
   left: 50%;
@@ -323,23 +434,167 @@
   height: 4px;
   margin-left: -2px;
   background: var(--bone-hi);
-  transform: rotate(45deg);
+  transform: rotate(45deg) scale(0);
+  transition: transform .2s cubic-bezier(.3, 1.7, .5, 1);
 }
+
+.wpn-quick button[aria-pressed="true"]::after { transform: rotate(45deg) scale(1); }
+
+.wpn-quick .qg[data-on] button[aria-pressed="false"] { opacity: .4; }
+.wpn-quick .qg[data-on] button[aria-pressed="false"]:hover { opacity: 1; }
 
 .wpn-quick svg { width: 34px; height: 18px; fill: currentcolor; }
 .wpn-quick img { width: 18px; height: 18px; opacity: .72; transition: opacity .15s ease; }
 .wpn-quick button:hover img,
 .wpn-quick button[aria-pressed="true"] img { opacity: 1; }
 
-/* ── 细分：一行。短的直接列，框架与来源各折进一个下拉 ─────────── */
+/* ── 条件条：46px 起，不出现也不消失，只换内容 ─────────────────
+   左边是已选条件（没有时是提示），右边是细分。细分靠右对齐：药丸从左边长出来，细分的位置不动。
+   药丸一行放不下时折到下一行，条随之变高，不裁掉后面的药丸与「清除」。 */
+.wpn-conds {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 24px;
+  min-height: 46px;
+  margin: 0 0 14px;
+  border-bottom: 1px solid var(--hair);
+}
+
+.cs-left {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 46px;
+  padding: 9px 0;
+  box-sizing: border-box;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.cs-pills { display: contents; }
+
+.cs-hint {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  margin: 0;
+  color: var(--bone-faint);
+  font: 400 12.5px/1 var(--font-cn);
+  letter-spacing: .04em;
+  transform: translateY(-50%);
+  transition: opacity .22s ease;
+  pointer-events: none;
+}
+
+.cs-hint code { color: var(--bone-dim); font: 400 12px/1 var(--font-body); }
+
+.cs-hint::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  margin-right: 10px;
+  vertical-align: 2px;
+  background: var(--bone-faint);
+  transform: rotate(45deg);
+}
+
+.wpn-conds:not([data-n="0"]) .cs-hint { opacity: 0; }
+
+.cs-left .wpn-pill { height: 28px; padding: 0 4px 0 9px; }
+.wpn-pill.is-new { animation: cs-in .22s cubic-bezier(.2, .8, .3, 1) both; }
+
+@keyframes cs-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+.cs-clear {
+  margin-left: 4px;
+  padding: 4px 8px;
+  color: var(--bone-faint);
+  font: 400 12px/1.4 var(--font-cn);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.cs-clear:hover { color: var(--bone-hi); }
+
+.cs-right { display: flex; align-items: center; justify-content: flex-end; }
+.cs-facets { display: flex; align-items: center; }
+
+.fc {
+  position: relative;
+  padding: 5px 10px 5px 16px;
+  color: var(--bone-dim);
+  font: 400 12.5px/1.5 var(--font-cn);
+  white-space: nowrap;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transition: color .15s ease, opacity .15s ease;
+}
+
+.fc::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  margin-top: -2px;
+  background: var(--bone-hi);
+  transform: rotate(45deg) scale(0);
+  transition: transform .2s cubic-bezier(.3, 1.7, .5, 1);
+}
+
+.fc[aria-pressed="true"] { color: var(--bone-hi); }
+.fc[aria-pressed="true"]::before { transform: rotate(45deg) scale(1); }
+.fc:hover:not(:disabled) { color: var(--bone-hi); }
+.fc:disabled { opacity: .32; cursor: default; }
+
+.fc .n {
+  margin-left: 7px;
+  color: var(--bone-faint);
+  font: 400 11.5px/1 var(--font-body);
+}
+
+/* 弹药与两个标志只有图标或名字：内容与条的中线对齐（与框架、来源同一条水平线），
+   菱形挂在内容下方固定偏移处。 */
+.fc-solo { display: inline-flex; align-items: center; height: 38px; padding: 0 12px; }
+.fc-solo::before { left: 50%; top: calc(50% + 12px); margin: 0 0 0 -2px; }
+.fc-ammo .am { display: block; }
+.fc-ammo .g { display: block; width: auto; height: 15px; fill: currentcolor; }
+.fc-ammo .ammo-2 { color: var(--ammo-special); }
+.fc-ammo .ammo-3 { color: var(--ammo-heavy); }
+.fc-ammo:not([aria-pressed="true"]):not(:hover):not(:disabled) .am { opacity: .72; }
+
+.cs-facets .div { width: 1px; height: 14px; margin: 0 10px; background: var(--hair-lit); }
+
+/* 框架与来源各折进一个下拉，点空白或 Esc 收起 */
 .wpn-refine {
   position: relative;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 0 2px;
-  margin: 8px 0 0;
+}
+
+.cs-facets + .cs-drops { margin-left: 10px; }
+
+.cs-facets + .cs-drops::before {
+  content: "";
+  width: 1px;
+  height: 14px;
+  margin-right: 6px;
+  background: var(--hair-lit);
 }
 
 .wpn-refine button {
@@ -376,10 +631,23 @@
 
 .wpn-refine .drop[aria-expanded="true"]::after { transform: translateY(1px) rotate(225deg); }
 
+.wpn-refine .drop[data-on]::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  margin-right: 8px;
+  vertical-align: 2px;
+  background: var(--bone-hi);
+  transform: rotate(45deg);
+}
+
+.wpn-refine .drop:disabled { opacity: .32; cursor: default; }
+
 .wpn-refine .pop {
   position: absolute;
   top: calc(100% + 6px);
-  left: 50%;
+  right: 0;
   z-index: 25;
   display: grid;
   grid-template-columns: repeat(var(--cols, 3), minmax(190px, 1fr));
@@ -391,7 +659,6 @@
   overflow: auto;
   background: var(--ink-lift);
   border: 1px solid var(--hair-lit);
-  transform: translateX(-50%);
 }
 
 .wpn-refine .pop button {
@@ -404,6 +671,8 @@
   padding: 4px 8px;
   text-align: left;
 }
+
+.wpn-refine .pop button[aria-pressed="true"] { color: var(--bone-hi); font-weight: 600; }
 
 .wpn-refine .pop button > span:first-child {
   overflow: hidden;
@@ -420,12 +689,6 @@
   align-items: center;
   gap: 6px;
   margin: 18px 0 14px;
-}
-
-.wpn-row > .lbl {
-  margin-right: 8px;
-  color: var(--bone-faint);
-  font: 400 12.5px/1.6 var(--font-cn);
 }
 
 /* 护甲的职业行与空状态里的「去掉这一条」都是「按下去改变看得见什么」，走 .toggle；一排多枚，
@@ -1610,7 +1873,6 @@
    盒子沿用真卡片与开关的类，只把字换成色块；不加动画。 */
 .skel { pointer-events: none; }
 .skel .gun,
-.skel .lbl,
 .skel .toggle { color: transparent; background: var(--tint-3); }
 .skel .toggle { border-color: transparent; }
 /* 卡片里的几行只在行高正中涂一条 12px 的色带：元素那一行的行高来自继承的正文行高，
@@ -1629,6 +1891,10 @@
 /* 骨架比视口矮时页脚先出现在屏内，真卡片铺上后又被推出屏外，记一次版面位移。
    align-content 要写 start：网格有多余高度时缺省把它分给各行，卡片会被拉高。 */
 .wpn-grid.skel { min-height: 100vh; align-content: start; }
+
+/* 结果换了一批时卡片墙淡入：只动不透明度，不动版面 */
+.wpn-grid.swap { animation: wpn-swap .16s ease both; }
+@keyframes wpn-swap { from { opacity: .45; } to { opacity: 1; } }
 
 /* 选中的词条按栏序连成一条虚线，光点沿线走：app.js 的 perkLinks() 画。线在图标下面 */
 .matrix { position: relative; }

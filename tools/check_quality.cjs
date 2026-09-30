@@ -1761,7 +1761,7 @@ test('weapons: the query parser keeps DIM precedence and token positions', () =>
       { op: 'kw', k: 'perk', v: '狂乱' }] }] }, '括号分组')
   assert.deepEqual(q('-is:专家'), { op: 'not', x: { op: 'kw', k: 'is', v: '专家' } })
   assert.deepEqual(q('not is:专家'), { op: 'not', x: { op: 'kw', k: 'is', v: '专家' } })
-  assert.deepEqual(q('perk:"强力首发"'), { op: 'kw', k: 'perk', v: '强力首发' }, '引号值')
+  assert.deepEqual(q('perk:"强力首发"'), { op: 'kw', k: 'perk', v: '强力首发', q: true }, '引号值')
   assert.deepEqual(q('stat:射程:>=60'), { op: 'kw', k: 'stat', v: '射程:>=60' })
   assert.deepEqual(q('is：手炮 （perk：萤火虫）'),
     { op: 'and', xs: [{ op: 'kw', k: 'is', v: '手炮' }, { op: 'kw', k: 'perk', v: '萤火虫' }] }, '全角标点按半角认')
@@ -1789,6 +1789,54 @@ test('weapons: is: reads Chinese as written and English ignoring case, spaces an
   for (const name of ['isTable', 'enTable']) {
     assert.match(funcSource('weapons/app.js', name), /var t = Object\.create\(null\);/, name)
   }
+})
+
+test('weapons: clicking a condition swaps it inside its exclusive group and leaves the query well-formed', () => {
+  const deps = 'function has(list, x) { return list.indexOf(x) !== -1; }\n' +
+    'var S = { scope: "wpn" };\n' +
+    'var GROUPS = { wpn: { slot: ["is:主手", "is:副手", "is:威能"], ty: ["is:手炮", "is:脉冲步枪"] } };\n' +
+    'function isKey(scope, v) { return v; }\n' +
+    'function bareIs(scope, v, quoted) { return !quoted && /^(主手|副手|威能|手炮|脉冲步枪)$/.test(v); }\n'
+  const { toggled, cutQuery } = weaponFns(['normQ', 'tokenize', 'tokKey', 'inGroup', 'cutQuery', 'toggled'], deps)
+  assert.equal(toggled('', 'is:主手', 'slot'), 'is:主手')
+  assert.equal(toggled('is:主手', 'is:副手', 'slot'), 'is:副手', '同组换掉')
+  assert.equal(toggled('is:副手 is:手炮', 'is:脉冲步枪', 'ty'), 'is:副手 is:脉冲步枪', '别的组不动')
+  assert.equal(toggled('is:副手', 'is:副手', 'slot'), '', '再点一次取消')
+  assert.equal(toggled('主手 perk:萤火虫', 'is:副手', 'slot'), 'perk:萤火虫 is:副手', '按 is: 算的裸词也属于这一组')
+  assert.equal(toggled('is:主手', 'is:手炮', null), 'is:主手 is:手炮', '没有组就只加')
+  assert.equal(toggled('-is:主手', 'is:副手', 'slot'), '-is:主手 is:副手', '排除的不算这一组的值')
+  assert.equal(toggled('-is:手炮 perk:萤火虫', 'is:手炮', 'ty'), 'perk:萤火虫 is:手炮', '点被排除的值是把排除换成它')
+  assert.equal(toggled('is:主手 or is:副手', 'is:威能', 'slot'), 'is:威能', '同组的 or 一起换掉，不留悬空的 or')
+  assert.equal(toggled('is：主手 perk:萤火虫', 'is:威能', 'slot'), 'perk:萤火虫 is:威能', '全角冒号照样认')
+  assert.equal(cutQuery('(is:主手 or is:副手) perk:a', tokenizeAll('(is:主手 or is:副手) perk:a', 0, 1)), 'perk:a', '括号里的都去掉，空括号一起去')
+  assert.equal(cutQuery('(perk:a or is:副手)', tokenizeAll('(perk:a or is:副手)', 1)), '(perk:a)', '括号里剩一个，or 与括号内侧的空白收干净')
+  assert.equal(cutQuery('is:主手 perk:a', []), 'is:主手 perk:a')
+  function tokenizeAll(q, ...at) {
+    const { tokenize } = weaponFns(['normQ', 'tokenize'])
+    const kws = tokenize(q).filter((t) => t.t === 'kw')
+    return at.map((k) => kws[k])
+  }
+})
+
+test('weapons: quoted frame: and source: match the whole name, unquoted ones match a part', () => {
+  const { named } = weaponFns(['named'], '')
+  assert.equal(named(false, '熔炉竞技场行动', '熔炉竞技场'), true, '不加引号：包含')
+  assert.equal(named(true, '熔炉竞技场行动', '熔炉竞技场'), false, '加引号：整名')
+  assert.equal(named(true, '熔炉竞技场', '熔炉竞技场'), true)
+  const deps = 'function has(list, x) { return list.indexOf(x) !== -1; }\n'
+  const { tokenize, tokKey } = weaponFns(['normQ', 'tokenize', 'tokKey'], deps +
+    'var S = { scope: "wpn" };\nfunction isKey() { return ""; }\nfunction bareIs() { return null; }\n')
+  assert.equal(tokKey(tokenize('source:"仄"')[0]), 'source:"仄"')
+  assert.equal(tokKey(tokenize('source:仄')[0]), 'source:仄')
+})
+
+test('weapons: source: ignores quotes, parentheses and spaces on both sides', () => {
+  const deps = 'function fold(s) { return String(s).toLowerCase().replace(/\\s+/g, ""); }\n'
+  const { srcFold } = weaponFns(['srcFold'], deps)
+  assert.equal(srcFold('“飞狼再临”任务'), srcFold('飞狼再临任务'))
+  assert.equal(srcFold('永恒沙漠（史诗）'), srcFold('永恒沙漠史诗'))
+  assert.equal(srcFold('3v3 多人竞技'), srcFold('3v3多人竞技'))
+  assert.notEqual(srcFold('永恒沙漠（史诗）'), srcFold('永恒沙漠'))
 })
 
 test('weapons: no two functions in app.js share a name', () => {
@@ -1823,7 +1871,7 @@ test('weapons: every syntax row parses into known keywords', () => {
   const keys = grab('KEYS_WPN').concat(grab('KEYS_ARMOR'))
   const deps = 'function has(list, x) { return list.indexOf(x) !== -1; }\n'
   const { tokenize } = weaponFns(['normQ', 'tokenize'], deps)
-  const samples = grab('SYNTAX').map((r) => r[0])
+  const samples = grab('SYNTAX_OPS').map((r) => r[3]).concat(grab('SYNTAX_KEYS').map((r) => r[0]))
   for (const s of samples) {
     for (const t of tokenize(s)) {
       if (t.t === 'kw') { assert.ok(keys.includes(t.k), s + ' 里的 ' + t.k + ': 不是关键字') }
