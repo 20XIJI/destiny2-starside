@@ -85,8 +85,11 @@ function build() {
 
   colR = main.getBoundingClientRect().right + scrollX;
   /* 窗从站头下沿到标题下的规线：星与流星都止于规线。规线是 h1 的下边框，
-     标题右边挂了东西的页面（.head-row）则是那一行的下边框 */
-  const rule = ph.querySelector('.head-row') || ph.querySelector('h1');
+     标题右边挂了东西的页面（.head-row）则是那一行的下边框。页首上写了 data-sky-end 的，
+     窗改到那个元素的下沿止（装备库：搜索框要留在窗里）；那个元素不能是 sticky 的，
+     滚过一段之后量到的就不是它排版时的位置了 */
+  const end = ph.dataset.skyEnd ? document.querySelector(ph.dataset.skyEnd) : null;
+  const rule = end || ph.querySelector('.head-row') || ph.querySelector('h1');
   bandTop = head.offsetHeight;
   bandBot = rule.getBoundingClientRect().bottom + scrollY;
   stars = field();

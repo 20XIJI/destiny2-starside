@@ -1798,7 +1798,22 @@ test('weapons: no two functions in app.js share a name', () => {
   assert.deepEqual(dup, [], '同名函数后写的会整个盖掉前一个')
 })
 
-test('weapons: every example and syntax row parses into known keywords', () => {
+test('weapons: card grades step in three brightnesses and only the grade itself is marked', () => {
+  const deps = 'function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;"); }\n'
+  const { gradeStep, gradeMarks } = weaponFns(['gradeStep', 'gradeMarks'], deps)
+  for (const [tok, step] of [['S', 1], ['A', 1], ['B', 2], ['C', 2], ['D', 3], ['F', 3],
+    ['T0', 1], ['T0.5', 1], ['T1', 2], ['T1.5', 2], ['T2', 3], ['T3', 3]]) {
+    assert.equal(gradeStep(tok), step, tok)
+  }
+  assert.equal(gradeMarks('清怪T0 输出T1.5 高难T3', false),
+    '清怪<b class="tg tg-1">T0</b> 输出<b class="tg tg-2">T1.5</b> 高难<b class="tg tg-3">T3</b>')
+  assert.equal(gradeMarks('S', true), '<b class="tg tg-1">S</b>', 'Aegis 只有一个字母')
+  assert.equal(gradeMarks('PVP', false), 'PVP', '不是档位的字不动')
+  assert.equal(gradeMarks('特殊用途', false), '特殊用途')
+  assert.equal(gradeMarks('T0（旧）', false), '<b class="tg tg-1">T0</b>（旧）', '括号里的备注不动')
+})
+
+test('weapons: every syntax row parses into known keywords', () => {
   const text = fs.readFileSync(path.join(site, 'weapons/app.js'), 'utf8')
   const grab = (name) => {
     const m = new RegExp('var ' + name + ' = (\\[[\\s\\S]*?\\]);').exec(text)
@@ -1808,7 +1823,7 @@ test('weapons: every example and syntax row parses into known keywords', () => {
   const keys = grab('KEYS_WPN').concat(grab('KEYS_ARMOR'))
   const deps = 'function has(list, x) { return list.indexOf(x) !== -1; }\n'
   const { tokenize } = weaponFns(['normQ', 'tokenize'], deps)
-  const samples = grab('EXAMPLES').concat(grab('SYNTAX').map((r) => r[0]))
+  const samples = grab('SYNTAX').map((r) => r[0])
   for (const s of samples) {
     for (const t of tokenize(s)) {
       if (t.t === 'kw') { assert.ok(keys.includes(t.k), s + ' 里的 ' + t.k + ': 不是关键字') }

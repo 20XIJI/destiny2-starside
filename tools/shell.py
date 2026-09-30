@@ -332,13 +332,14 @@ def nav(current, toolbar=None, up=1, parent=None, parent_href='../index.html'):
     return '\n'.join(o)
 
 
-def page_head(h1, note=None, aside=''):
+def page_head(h1, note=None, aside='', attrs=''):
     """页首：标题，可选的一句说明，可选的一段挂在标题右边的东西。
 
     aside 落在与 h1 同一行上（配装推荐的索引页拿它放投稿入口），标题下那道规线
-    因此改由 .head-row 画——留在 h1 上时线只有标题那么长。
+    因此改由 .head-row 画——留在 h1 上时线只有标题那么长。attrs 是页首标签上的额外属性
+    （装备库写 data-sky-end，见 assets/sky-page.js）。
     """
-    o = ['<header class="page-head">']
+    o = ['<header class="page-head"%s>' % attrs]
     o += (['<div class="head-row">', '<h1>%s</h1>' % h1, aside, '</div>'] if aside
           else ['<h1>%s</h1>' % h1])
     if note:

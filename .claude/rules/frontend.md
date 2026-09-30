@@ -36,6 +36,9 @@ paths:
 挂在 `app.js` 上这几页就没有星空。它自己建一张 `.starfield[data-page]` 画布，`site.css` 让它淡入。
 窗滚出去之后动画循环停掉，滚回来再起；系统要求减少动效时只画静态一帧，滚动时重画。
 星座的种子取 `main[data-src]`（没有就取 `<h1>` 文字），节点数是分节数 + 3。
+窗的下沿缺省是标题下的规线；页首上写了 `data-sky-end="<选择器>"` 的，取那个元素的下沿
+（装备库写 `.wpn-scope`，让搜索框留在窗的尾巴里）。那个元素**不能是 sticky 的**：滚过一段之后
+量到的不是它排版时的位置，窗的下沿会随滚动位置漂。
 `check_shell.py` 钉着：带 `.page-head` 的页面必须引 `assets/sky-page.js`。
 
 共用件（`tuck`、`onResize`、`words`、`hit`、`slot`）由 `app.js` 传进去，模块里

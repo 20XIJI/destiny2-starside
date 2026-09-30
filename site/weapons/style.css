@@ -1,5 +1,7 @@
 /* 装备库。版心走 1500 那一档：开屏是卡片目录，挑中一把之后是结果栏 + 详情的
-   并排对照，两种都是 design.md 四节里「走满 1500px」的页面类型。 */
+   并排对照，两种都是 design.md 四节里「走满 1500px」的页面类型。
+   自上而下：页首（标题与库里有多少，背后是 assets/sky-page.js 画的一道星光）、范围开关、
+   粘性的查询条、快速检索、卡片墙或结果栏 + 详情。 */
 :root {
   --wrap: 1500px;
   /* 这一页满是元素编码：卡片、结果行、词条说明里到处是电弧青与烈日橙。站点缺省的
@@ -16,29 +18,87 @@
   --rail: 240px;
 }
 
-/* ── 顶栏里的查询框 ──────────────────────────────────────────── */
-.wpn-q {
+/* ── 页首：标题紧贴页眉，下面不画线，靠留白隔开 ─────────────────
+   页首上的 data-sky-end 把星空窗收在范围开关的下沿：往下是站上通用的底。 */
+.page-head { padding: 22px 22px 14px; }
+.page-head h1 { padding-bottom: 0; border-bottom: 0; }
+
+.page-note {
+  margin: 12px 0 0;
+  color: var(--bone-dim);
+  font: 400 13px/1.6 var(--font-cn);
+  letter-spacing: .04em;
+}
+
+.page-note b {
+  margin-right: 5px;
+  color: var(--bone-hi);
+  font: 600 16px/1 var(--font-disp);
+  letter-spacing: .06em;
+}
+
+.page-note i {
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  margin: 0 16px;
+  vertical-align: 2px;
+  background: var(--bone-faint);
+  transform: rotate(45deg);
+}
+
+/* ── 范围开关与查询条 ───────────────────────────────────────────
+   范围开关是一行素字，选中的提亮、下面一道发丝线，不是 sticky 的：吸顶之后它随页面滚走，
+   只留查询条贴在页眉下面。查询条是 body 的直接子元素——sticky 的活动范围是父元素，
+   放进别的容器就只吸到那个容器的底。--nav-h 由 app.js 量页眉高，缺省 47px。 */
+.wpn-scope {
   display: flex;
-  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  max-width: var(--wrap);
+  margin: 0 auto;
+  padding: 8px 22px 2px;
+}
+
+.wpn-sentinel { height: 1px; margin-top: -1px; pointer-events: none; }
+
+.wpn-bar {
+  position: sticky;
+  top: var(--nav-h, 47px);
+  z-index: 15;
+  padding: 10px 22px 6px;
+  border-bottom: 1px solid transparent;
+  transition: background-color .2s ease, border-color .2s ease;
+}
+
+.wpn-bar.is-stuck {
+  background: var(--ink-lift);
+  border-bottom-color: var(--hair-lit);
+}
+
+/* 计数在框左、视图在框右，框居中；药丸在框下一行 */
+.wpn-q {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 704px) minmax(0, 1fr);
   align-items: center;
-  gap: 8px 14px;
-  width: 100%;
+  gap: 12px 24px;
+  max-width: var(--wrap);
+  margin: 0 auto;
 }
 
-.wpn-field {
-  position: relative;
-  flex: 0 1 760px;
-}
+.wpn-field { position: relative; grid-column: 2; }
 
+/* 输入框与首页那只搜索框同形：胶囊、聚焦时一圈淡环 */
 .wpn-input {
   display: block;
   width: 100%;
-  padding: 8px 12px;
+  padding: 13px 22px;
   color: var(--bone-hi);
-  font: 400 14px/1.5 var(--font-body);
-  background: #ffffff08;
+  font: 400 14.5px/1.5 var(--font-body);
+  background: var(--panel-b);
   border: 1px solid var(--hair-lit);
-  border-radius: 0;
+  border-radius: 999px;
+  transition: border-color .24s ease, background-color .24s ease, box-shadow .24s ease;
 }
 
 .wpn-input::placeholder { color: var(--bone-faint); }
@@ -48,12 +108,15 @@
 
 .wpn-input:focus,
 .wpn-input.is-focus {
-  background: var(--field-fill);
+  background: var(--panel-a);
   border-color: var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent) 16%, transparent);
   outline: none;
 }
 
 .wpn-count {
+  grid-column: 1;
+  justify-self: end;
   margin: 0;
   color: var(--bone-dim);
   font-family: var(--font-disp);
@@ -64,16 +127,37 @@
 
 .wpn-count b { color: var(--bone-hi); font-weight: 600; }
 
-.wpn-scope {
-  display: flex;
-  gap: 4px;
+/* 范围与视图：素字，选中的提亮，下面一道发丝线。一种写法用到底。视图第一枚按钮自带
+   12px 内边距，往回收，字与输入框的间距才与左边的计数一样。 */
+.wpn-scope .toggle,
+.wpn-views > .toggle {
+  padding: 5px 12px;
+  color: var(--bone-faint);
+  font: 600 13px/1.4 var(--font-cn);
+  letter-spacing: .06em;
+  background: none;
+  border-color: transparent;
+}
+
+.wpn-scope .toggle { padding: 6px 14px; font-size: 14px; }
+
+.wpn-scope .toggle:hover,
+.wpn-views > .toggle:hover { color: var(--bone-hi); }
+
+.wpn-scope .toggle[aria-pressed="true"],
+.wpn-views > .toggle[aria-pressed="true"] {
+  color: var(--bone-hi);
+  background: none;
+  border-color: transparent transparent var(--bone-hi);
 }
 
 .wpn-views {
   position: relative;
   display: flex;
+  grid-column: 3;
+  justify-self: start;
   gap: 4px;
-  margin-left: auto;
+  margin-left: -12px;
 }
 
 .wpn-syntax {
@@ -99,8 +183,9 @@
 .wpn-pills {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
+  grid-column: 2;
   gap: 6px;
-  flex-basis: 100%;
 }
 
 .wpn-pill {
@@ -142,10 +227,10 @@
 /* 补全列表 */
 .wpn-suggest {
   position: absolute;
-  top: calc(100% + 4px);
+  top: calc(100% + 8px);
   left: 0;
   z-index: 30;
-  width: 420px;
+  width: 100%;
   margin: 0;
   padding: 6px 0;
   list-style: none;
@@ -193,6 +278,141 @@
   border-top: 1px solid var(--hair);
 }
 
+/* ── 快速检索：一行图标 ─────────────────────────────────────────
+   槽位（文字）、枪型、元素、勇士克制各一组，点一下加进或去掉那一条查询，与查询框、药丸
+   同步。静置素色，悬停提亮，选中的下面一枚小菱形。只有武器范围有这一行。 */
+.wpn-quick {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 6px 0 4px;
+}
+
+.wpn-quick .sep {
+  width: 1px;
+  height: 18px;
+  margin: 0 16px;
+  background: var(--hair-lit);
+}
+
+.wpn-quick button {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 40px;
+  height: 36px;
+  padding: 0 6px;
+  color: var(--bone-dim);
+  font: 400 12.5px/1 var(--font-cn);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.wpn-quick button:hover,
+.wpn-quick button[aria-pressed="true"] { color: var(--bone-hi); }
+
+.wpn-quick button[aria-pressed="true"]::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 3px;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  background: var(--bone-hi);
+  transform: rotate(45deg);
+}
+
+.wpn-quick svg { width: 34px; height: 18px; fill: currentcolor; }
+.wpn-quick img { width: 18px; height: 18px; opacity: .72; transition: opacity .15s ease; }
+.wpn-quick button:hover img,
+.wpn-quick button[aria-pressed="true"] img { opacity: 1; }
+
+/* ── 细分：一行。短的直接列，框架与来源各折进一个下拉 ─────────── */
+.wpn-refine {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0 2px;
+  margin: 8px 0 0;
+}
+
+.wpn-refine button {
+  padding: 5px 10px;
+  color: var(--bone-dim);
+  font: 400 12.5px/1.5 var(--font-cn);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.wpn-refine button:hover,
+.wpn-refine .drop[aria-expanded="true"] { color: var(--bone-hi); }
+
+.wpn-refine .n {
+  margin-left: 7px;
+  color: var(--bone-faint);
+  font: 400 11.5px/1 var(--font-body);
+}
+
+.wpn-refine .grp { position: relative; }
+
+.wpn-refine .drop::after {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-left: 9px;
+  border-right: 1px solid currentcolor;
+  border-bottom: 1px solid currentcolor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform .2s ease;
+}
+
+.wpn-refine .drop[aria-expanded="true"]::after { transform: translateY(1px) rotate(225deg); }
+
+.wpn-refine .pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  z-index: 25;
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 3), minmax(190px, 1fr));
+  gap: 0 16px;
+  width: max-content;
+  max-width: min(760px, 92vw);
+  max-height: 320px;
+  padding: 10px 12px;
+  overflow: auto;
+  background: var(--ink-lift);
+  border: 1px solid var(--hair-lit);
+  transform: translateX(-50%);
+}
+
+.wpn-refine .pop button {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  padding: 4px 8px;
+  text-align: left;
+}
+
+.wpn-refine .pop button > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wpn-refine .pop .n { margin-left: 0; flex: none; }
+
 /* ── 浏览区 ─────────────────────────────────────────────────── */
 .wpn-row {
   display: flex;
@@ -208,14 +428,20 @@
   font: 400 12.5px/1.6 var(--font-cn);
 }
 
-/* 示例与细分都是「按下去改变看得见什么」，走 .toggle；一排多枚，退回素字
-   （design.md 五之二）。计数压暗，读作附注。 */
+/* 护甲的职业行与空状态里的「去掉这一条」都是「按下去改变看得见什么」，走 .toggle；一排多枚，
+   退回素字（design.md 五之二）。计数压暗，读作附注。 */
 .wpn-row .toggle {
   padding: 4px 10px;
+  color: var(--bone-dim);
   font-family: var(--font-cn);
   font-size: 12.5px;
   letter-spacing: normal;
+  background: none;
+  border-color: transparent;
 }
+
+.wpn-row .toggle:hover,
+.wpn-row .toggle[aria-pressed="true"] { color: var(--bone-hi); }
 
 .wpn-row .toggle code {
   font: 400 12px/1.5 var(--font-body);
@@ -231,11 +457,14 @@
 
 .wpn-row .toggle .k { color: var(--bone-faint); font-size: 12px; }
 
-/* 卡片墙 */
+/* 卡片墙：每张一个结构、一个高度。
+   五列。左边是图，右边固定四行：名字、元素弹药枪型与赛季、框架、评价。每行一行、超出截断，
+   评价长短不再改变卡高；完整评价在悬停提示与详情里。护甲套装的卡是另一种结构（两条效果
+   各占一行），照旧按内容定高。 */
 .wpn-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(224px, 1fr));
-  gap: 6px;
+  grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
+  gap: 10px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -259,6 +488,27 @@
   border-color: var(--hair-lit);
 }
 
+.wpn-card:not(.set-card) {
+  height: 108px;
+  padding: 14px;
+  gap: 0 14px;
+  align-items: start;
+  background: rgba(14, 17, 25, .82);
+  border-color: var(--hair);
+}
+
+.wpn-card:not(.set-card):hover,
+.wpn-card:not(.set-card).is-hover {
+  background: #151a26;
+  border-color: var(--hair-lit);
+}
+
+.wpn-card:not(.set-card) > div {
+  display: grid;
+  grid-template-rows: 24px 20px 20px 20px;
+  min-width: 0;
+}
+
 .wpn-card .nm {
   display: -webkit-box;
   overflow: hidden;
@@ -267,6 +517,14 @@
   font: 600 14px/1.4 var(--font-cn);
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+}
+
+.wpn-card:not(.set-card) .nm {
+  display: block;
+  font-size: 15px;
+  line-height: 24px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 /* 异域名字走异域金：卡片、结果栏与详情页头各有一条更具体的名字颜色规则，
@@ -294,9 +552,28 @@
 .wpn-meta .cls { font: 400 12px/1 var(--font-cn); }
 
 .wpn-meta .ssn {
+  margin-left: auto;
+  color: var(--bone-faint);
   font: 600 11px/1 var(--font-disp);
   letter-spacing: .06em;
 }
+
+.wpn-card:not(.set-card) .wpn-meta { height: 20px; margin: 0; }
+
+/* 武器卡那一行的四个小图标各占固定的一列：元素、弹药、枪型、反勇士，紧挨着排。枪型图标
+   宽窄不一，统一装进 34×13 的框里（等比缩放、居中），后面的反勇士与赛季才在每张卡上落在
+   同一根竖线上；没有反勇士的卡这一格留空。 */
+.wpn-meta.w {
+  display: grid;
+  grid-template-columns: 16px 20px 34px 16px minmax(0, 1fr);
+  column-gap: 5px;
+}
+
+.wpn-meta.w > .el { grid-column: 1; }
+.wpn-meta.w > [class^="ammo-"] { grid-column: 2; display: grid; place-items: center; }
+.wpn-meta.w > svg { grid-column: 3; width: 34px; height: 13px; }
+.wpn-meta.w > .br { grid-column: 4; }
+.wpn-meta.w > .ssn { grid-column: 5; justify-self: end; margin-left: 0; }
 
 .wpn-frame {
   margin-top: 3px;
@@ -306,6 +583,8 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+
+.wpn-card:not(.set-card) .wpn-frame { margin: 0; line-height: 20px; }
 
 .wpn-grades {
   display: flex;
@@ -322,6 +601,46 @@
   font: 600 10px/1 var(--font-disp);
   letter-spacing: .1em;
 }
+
+/* 评价：一行，没有文字标签。前面一枚菱形认作者（Aegis 天蓝、小棒猪耳朵粉，与详情页图例
+   里的光圈同一支；套装的标签不是哪位作者的评级，菱形是素色），档位分三档提亮。 */
+.wpn-card:not(.set-card) .wpn-grades {
+  flex-wrap: nowrap;
+  gap: 0 12px;
+  margin: 0;
+  overflow: hidden;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.wpn-card .wpn-grades > span { flex: none; }
+
+.wpn-card .wpn-grades > span:last-child {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wpn-card .wpn-grades .by { display: none; }
+
+.wpn-card .wpn-grades > span::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 7px;
+  vertical-align: 2px;
+  background: var(--bone-faint);
+  transform: rotate(45deg);
+}
+
+.wpn-card .wpn-grades > .au-a::before { background: var(--au-aegis); }
+.wpn-card .wpn-grades > .au-l::before { background: var(--au-lgpig); }
+.wpn-grades .tg { font-weight: 600; }
+.wpn-grades .tg-1 { color: var(--bone-hi); }
+.wpn-grades .tg-2,
+.wpn-grades .tg-3 { color: var(--bone); font-weight: 400; }
 
 /* 叠层图标：底图、水印、阶级角标、锻造层，最上面是底部打光。每张都是整幅图，图案画在自己那一侧
    的透明区上，叠满即可。锻造两层整体镜像，与阶级角标分居两边。 */
@@ -441,29 +760,53 @@
 }
 
 .rail-list {
+  position: relative;
   margin: 0 0 12px;
   padding: 0;
   list-style: none;
 }
 
+/* 结果栏是一条星链：一根发丝线串着每一行前面的菱形，当前那一行的菱形点亮 */
+.rail-list::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 14px;
+  bottom: 14px;
+  width: 1px;
+  background: var(--hair-lit);
+}
+
 .rail-list a {
+  position: relative;
   display: grid;
   grid-template-columns: 32px minmax(0, 1fr);
   align-items: center;
   gap: 0 10px;
-  padding: 5px 10px 5px 6px;
+  padding: 5px 10px 5px 18px;
   color: inherit;
   text-decoration: none;
-  border-left: 2px solid transparent;
 }
+
+.rail-list a::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  background: var(--ink-lift);
+  border: 1px solid var(--bone-faint);
+  transform: rotate(45deg);
+}
+
+.rail-list a[aria-current="page"]::before { background: var(--bone-hi); border-color: var(--bone-hi); }
 
 .rail-list a:hover,
 .rail-list a.is-hover { background: var(--row-hover); }
 
-.rail-list a[aria-current="page"] {
-  background: var(--tint-3);
-  border-left-color: var(--accent);
-}
+.rail-list a[aria-current="page"] { background: var(--tint-3); }
 
 .rail-list .nm {
   overflow: hidden;
@@ -510,38 +853,37 @@
   align-items: start;
 }
 
+/* 页眉下面不画线，靠留白隔开 */
 .one-head {
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: 96px minmax(0, 1fr) auto;
-  gap: 0 20px;
+  gap: 0 24px;
   align-items: start;
-  padding-bottom: 18px;
-  margin-bottom: 22px;
-  border-bottom: 1px solid var(--hair-lit);
+  margin-bottom: 44px;
 }
 
 .one-head h2 {
-  margin: 2px 0 0;
+  margin: 0;
   color: var(--bone-hi);
-  font: 600 28px/1.2 var(--font-cn);
-  letter-spacing: .02em;
+  font: 600 36px/1.15 var(--font-cn);
+  letter-spacing: .04em;
 }
 
 .one-head h2.exo { color: var(--exotic); }
 
 .one-head .en {
-  margin: 2px 0 10px;
+  margin: 8px 0 12px;
   color: var(--bone-faint);
   font: 600 12px/1.4 var(--font-disp);
-  letter-spacing: .1em;
+  letter-spacing: .24em;
 }
 
 .one-head .lore {
-  max-width: 60ch;
+  max-width: 58ch;
   margin: 0;
   color: var(--bone-dim);
-  font: 400 13.5px/1.8 var(--font-cn);
+  font: 400 14px/1.8 var(--font-cn);
 }
 
 .one-acts {
@@ -554,15 +896,23 @@
 .facts {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 0 18px;
 }
 
 .facts .toggle {
-  padding: 3px 9px;
-  color: var(--bone);
-  font-family: var(--font-cn);
-  font-size: 13px;
-  letter-spacing: normal;
+  padding: 4px 0;
+  color: var(--bone-dim);
+  font: 400 13px/1.5 var(--font-cn);
+  letter-spacing: 0;
+  background: none;
+  border: 0;
+}
+
+.facts .toggle:hover {
+  color: var(--bone-hi);
+  text-decoration: underline;
+  text-decoration-color: var(--bone-faint);
+  text-underline-offset: 4px;
 }
 
 .facts .toggle img { width: 16px; height: 16px; }
@@ -572,7 +922,7 @@
 .facts .toggle .k { color: var(--bone-faint); font-size: 12px; }
 
 .one-main > section,
-.one-side > section { margin-bottom: 26px; }
+.one-side > section { margin-bottom: 40px; }
 
 /* 框架数值：评级与两个分数打头，其余一项一行，与属性那一块同一档字号 */
 .fr-top {
@@ -610,13 +960,25 @@
 .fr-more { float: right; color: var(--bone-faint); font-weight: 400; letter-spacing: 0; }
 .fr-more:hover { color: var(--accent); }
 
+/* 分节标题：骨白加粗，比栏内的字高一档，前面一枚菱形（与站标同一枚） */
 .sub-label {
   display: flex;
   align-items: baseline;
   gap: 12px;
-  margin: 0 0 10px;
-  color: var(--bone-dim);
-  font: 400 12.5px/1.6 var(--font-cn);
+  margin: 0 0 18px;
+  color: var(--bone-hi);
+  font: 600 13.5px/1.6 var(--font-cn);
+  letter-spacing: .1em;
+}
+
+.sub-label::before {
+  content: "";
+  align-self: center;
+  flex: none;
+  width: 5px;
+  height: 5px;
+  background: var(--bone-hi);
+  transform: rotate(45deg);
 }
 
 .sub-label::after {
@@ -630,6 +992,8 @@
   order: 1;
   color: var(--bone-faint);
   font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
 }
 
 .sub-label .op {
@@ -645,26 +1009,27 @@
 .matrix {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 0 6px;
+  gap: 0 10px;
 }
 
 .matrix .col h4 {
-  margin: 0 0 6px;
-  padding-bottom: 4px;
+  margin: 0 0 10px;
+  padding-bottom: 8px;
   color: var(--bone-faint);
   font: 400 12px/1.6 var(--font-cn);
+  letter-spacing: .1em;
   border-bottom: 1px solid var(--hair);
 }
 
 .plug {
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr);
+  grid-template-columns: 36px minmax(0, 1fr);
   align-items: center;
-  gap: 0 8px;
+  gap: 0 10px;
   width: 100%;
-  padding: 3px 4px;
+  padding: 4px 6px 4px 2px;
   color: var(--bone-dim);
-  font: 400 12.5px/1.35 var(--font-cn);
+  font: 400 13px/1.35 var(--font-cn);
   text-align: left;
   background: none;
   border: 0;
@@ -676,8 +1041,8 @@
 
 .plug .ico {
   position: relative;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border: 1px solid var(--hair-lit);
   border-radius: 50%;
   background: #1c2230;
@@ -691,7 +1056,10 @@
   border-radius: 50%;
 }
 
-.plug[aria-pressed="true"] { color: var(--bone-hi); background: var(--tint-3); }
+.plug[aria-pressed="true"] { color: var(--bone-hi); font-weight: 600; background: none; }
+
+/* 没选中的图标压暗一档：选中的与作者推荐的（光圈）才亮 */
+.plug:not([aria-pressed="true"]):not(:hover):not(.is-hover) .ico img { opacity: .72; }
 .plug[aria-pressed="true"] .ico { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 
 .plug .nm { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
@@ -776,13 +1144,14 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  color: var(--bone);
+  color: var(--bone-dim);
   font: 400 13px/28px var(--font-cn);
   text-decoration: none;
 }
 
-.amod img { width: 24px; height: 24px; border-radius: 4px; }
-.amod:hover { color: var(--accent); }
+.amod img { width: 24px; height: 24px; border-radius: 4px; opacity: .8; }
+.amod:hover { color: var(--bone-hi); }
+.amod:hover img { opacity: 1; }
 
 /* 大师杰作与模组：两个方形插槽，与游戏里武器页那一排同形。空着画虚线框。
    推荐的那一格同样画光圈，只是随插槽画成方的。 */
@@ -956,17 +1325,17 @@
 /* 框架块 */
 .frame {
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr);
-  gap: 0 12px;
-  font: 400 13px/1.7 var(--font-cn);
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 0 16px;
+  font: 400 13.5px/1.85 var(--font-cn);
 }
 
-.frame img { width: 40px; height: 40px; }
+.frame img { width: 44px; height: 44px; }
 .frame b { color: var(--bone-hi); font-weight: 600; }
 .frame .rate { margin-left: 10px; color: var(--bone-dim); font-family: var(--font-body); font-size: 12.5px; }
 .frame p { margin: 0; color: var(--bone-dim); }
 /* 固有随机的那把在这一块里排 8 条，条与条之间留一行 */
-.frame + .frame { margin-top: 12px; }
+.frame + .frame { margin-top: 18px; }
 
 
 .src {
@@ -977,27 +1346,39 @@
 
 /* 作者评语：一位作者一块，左缘用他那一支光圈色，读者从词条上的光圈就能对回
    评语是谁写的。评级放大，正文用正文最亮的一档。 */
-.says {
-  display: grid;
-  gap: 10px;
-}
+/* 作者评语：不上底色，不画左缘粗线；作者之间一道发丝线。作者名前一枚菱形取光圈色，
+   与索引卡片上的评价是同一套记号。评级放大，正文用正文色。 */
+.says { display: grid; }
 
 .say {
   --c-author: var(--au-aegis);
   display: grid;
   grid-template-columns: 92px minmax(0, 1fr);
-  gap: 0 18px;
-  padding: 14px 18px;
-  background: var(--tint-3);
-  border-left: 3px solid var(--c-author);
+  gap: 0 22px;
+  padding: 18px 0;
+  border-top: 1px solid var(--hair);
 }
+
+.say:first-child { padding-top: 2px; border-top: 0; }
+.say:last-child { padding-bottom: 0; }
 
 .say.by-lgpig { --c-author: var(--au-lgpig); }
 
 .say .who {
-  color: var(--c-author);
+  color: var(--bone-dim);
   font: 600 11px/1.6 var(--font-disp);
-  letter-spacing: .1em;
+  letter-spacing: .16em;
+}
+
+.say .who::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 9px;
+  vertical-align: 2px;
+  background: var(--c-author);
+  transform: rotate(45deg);
 }
 
 /* 一个维度一行：维度小字在前，档位大字在后，中间不断行 */
@@ -1006,9 +1387,9 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: 2px 6px;
-  margin-top: 2px;
+  margin-top: 4px;
   color: var(--bone-hi);
-  font: 700 22px/1.25 var(--font-disp);
+  font: 700 24px/1.25 var(--font-disp);
   letter-spacing: .02em;
 }
 
@@ -1018,10 +1399,17 @@
   letter-spacing: .1em;
 }
 
+/* 评级后面括着的备注（「T0（旧）」）是小字，不与大号的档位挤在一格里折行 */
+.say .who .aft {
+  color: var(--bone-faint);
+  font: 400 12px/1 var(--font-cn);
+  letter-spacing: 0;
+}
+
 .say p {
   margin: 0;
-  color: var(--bone-hi);
-  font: 400 14.5px/1.85 var(--font-cn);
+  color: var(--bone);
+  font: 400 14px/1.95 var(--font-cn);
 }
 
 .say p + p { margin-top: 6px; }
@@ -1242,6 +1630,21 @@
    align-content 要写 start：网格有多余高度时缺省把它分给各行，卡片会被拉高。 */
 .wpn-grid.skel { min-height: 100vh; align-content: start; }
 
+/* 选中的词条按栏序连成一条虚线，光点沿线走：app.js 的 perkLinks() 画。线在图标下面 */
+.matrix { position: relative; }
+.matrix .col h4,
+.matrix .plug { position: relative; z-index: 1; }
+
+.links {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
 /* 催化剂 */
 .cat {
   display: grid;
@@ -1294,7 +1697,7 @@
 .entries.used-builds .entry .say:has(.verdict) p { -webkit-line-clamp: 1; }
 .entries.used-builds .entry .tags { margin-top: 6px; }
 
-.sub-label > .n { margin-left: 6px; color: var(--bone-faint); font-weight: 400; }
+.sub-label > .n { margin-left: 6px; color: var(--bone-faint); font-weight: 400; letter-spacing: 0; }
 
 /* ── 护甲套装 ─────────────────────────────────────────────────────────
    一套两条效果（2 件与 4 件）。卡片上两条各占一行：图、件数、效果名——一套的主角
@@ -1306,10 +1709,10 @@
                     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .set-lines img { flex: none; width: 20px; height: 20px; border-radius: 4px; }
 .set-lines b { flex: none; font: 600 11px/1.6 var(--font-disp); color: var(--bone-faint); }
-/* 详情页头那两枚图并排，与武器那一枚 56px 的图同一档。 */
+/* 详情页头那两枚图并排：两枚加缝正好 94px，装得进 96px 的图栏，标题不必让位。 */
 .set-fx.lg { display: flex; gap: 6px; align-items: center; }
-.set-fx.lg img { width: 56px; height: 56px; border-radius: 6px; }
+.set-fx.lg img { width: 44px; height: 44px; border-radius: 6px; }
 /* 详情里一条效果一块：图在左，名字、件数与实测在右，与「框架／异域特性」同形。 */
-.wpn-one .frame > img { flex: none; width: 40px; height: 40px; border-radius: 6px; }
+.wpn-one .frame > img { flex: none; width: 44px; height: 44px; border-radius: 6px; }
 .wpn-one .frame .pieces { margin-left: 8px; font: 600 11px/1.6 var(--font-disp);
                           color: var(--bone-faint); }

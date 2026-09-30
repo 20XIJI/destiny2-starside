@@ -4,15 +4,16 @@
      pool.js   window.WPN_POOL   词条池、属性曲线、大师杰作与模组
      text.js   window.WPN_TEXT   描述、说明、站内实测、作者评语
    pool.js 在 load 之后取，text.js 不预取；查询或详情先用到哪一份就立刻取哪一份。
-   查询栏与首屏骨架写在页壳里（build-weapons.py 的 toolbar() 与 skeleton()），这里接上
-   事件、换成真内容。 */
+   范围开关、查询条与首屏骨架写在页壳里（build-weapons.py 的 scope_row()、toolbar() 与
+   skeleton()），这里接上事件、换成真内容。 */
 (function () {
   'use strict';
 
   var D = window.WPN;
   var root = document.getElementById('find');
-  var bar = document.querySelector('.site-head .toolbar');
-  if (!root || !bar) { return; }
+  var bar = document.querySelector('.wpn-bar');
+  var scopeBox = document.querySelector('.wpn-scope');
+  if (!root || !bar || !scopeBox) { return; }
   if (!D) {
     root.innerHTML = '<p class="empty">武器数据没有载入：weapons/index.js 取不到。</p>';
     return;
@@ -40,8 +41,8 @@
 
   var V = D.v;
   var ICONS = '../assets/icons/';
-  /* 首屏的卡片：1440×900 下卡片墙一屏 6 列 6 行。这些图不懒载，前 12 张再提优先级。 */
-  var N_EAGER = 36, N_HIGH = 12;
+  /* 首屏的卡片：1440×900 下卡片墙一屏 5 列 5 行多一点，取 6 行。这些图不懒载，前 10 张再提优先级。 */
+  var N_EAGER = 30, N_HIGH = 10;
   /* 卡片墙与列表一批铺多少：两千张一次铺完首屏要等好几秒，滚到底再添一批。 */
   var BATCH = 120;
   /* 细分行只列能再切一刀的值：多于 10 把、又不是全部。与 destiny.report 同一条。 */
@@ -773,8 +774,6 @@
   }
 
   /* ── 外壳：顶栏里的范围开关、查询框、计数与视图 ─────────────────── */
-  var EXAMPLES = ['is:手炮', 'perk:萤火虫', 'is:可锻造', 'season:>=27', 'stat:射程:>=60', 'breaker:反屏障',
-                  'frame:精密框架', 'is:专家'];
   var SYNTAX = [
     ['萤火虫 自填', '裸词：名字、类型、框架、词条名与描述里都含这些字'],
     ['虚空 轻质 即兴弹药', '裸词恰好是一个 is: 的值（元素、类型、槽位、弹药、稀有度、勇士、标志）时按 is: 算，加引号照字面搜'],
@@ -815,12 +814,26 @@
   tip.hidden = true;
   document.body.appendChild(tip);
 
-  /* sticky 的结果栏要知道顶栏多高。顶栏高度随药丸行与窗口宽度变；ResizeObserver 在
-     布局之后、绘制之前回调，量高度不额外触发一次重排。 */
+  /* 粘性的查询条、它下面的结果栏与详情右栏要知道上面有多高：--nav-h 是页眉（查询条吸在它
+     下面），--stick 是页眉加查询条（结果栏与右栏吸在两者下面）。查询条随药丸行与窗口宽度变；
+     ResizeObserver 在布局之后、绘制之前回调，量高度不额外触发一次重排。
+     吸住的那一刻查询条垫上底：靠查询条前面一枚 1px 的哨兵，它滚到页眉之下就是吸住了。 */
   var head = document.querySelector('.site-head');
-  new ResizeObserver(function () {
-    document.documentElement.style.setProperty('--stick', head.getBoundingClientRect().height + 'px');
-  }).observe(head);
+  var sentinel = document.querySelector('.wpn-sentinel');
+  var stuckObs = null;
+  function measureTop() {
+    var navH = head.getBoundingClientRect().height, style = document.documentElement.style;
+    style.setProperty('--nav-h', navH + 'px');
+    style.setProperty('--stick', (navH + bar.getBoundingClientRect().height) + 'px');
+    if (stuckObs) { stuckObs.disconnect(); }
+    stuckObs = new IntersectionObserver(function (es) {
+      var e = es[es.length - 1];
+      bar.classList.toggle('is-stuck', !e.isIntersecting && e.boundingClientRect.top < navH);
+    }, { rootMargin: '-' + navH + 'px 0px 0px 0px' });
+    stuckObs.observe(sentinel);
+  }
+  new ResizeObserver(measureTop).observe(head);
+  new ResizeObserver(measureTop).observe(bar);
 
   /* ── 渲染：顶栏 ────────────────────────────────────────────────────── */
   /* pending：查询在等哪一份数据才算得出（'pool'、'text'），不等是空串。 */
@@ -853,7 +866,7 @@
     return perkIconCache[name] || '';
   }
   function renderBar() {
-    bar.querySelectorAll('[data-act="scope"]').forEach(function (b) {
+    scopeBox.querySelectorAll('[data-act="scope"]').forEach(function (b) {
       b.setAttribute('aria-pressed', b.getAttribute('data-v') === S.scope ? 'true' : 'false');
     });
     bar.querySelectorAll('[data-act="view"]').forEach(function (b) {
@@ -891,6 +904,27 @@
         (hasToken(tok) ? 'true' : 'false') + '"><code>' + esc(tok) + '</code><span class="n">' + counts[k] + '</span></button>';
     }).join('') + '</div>';
   }
+  /* 快速检索：一行图标，槽位（文字）｜枪型｜元素｜勇士克制。按钮走 preset，与查询框、药丸同步；
+     元素与勇士克制在这里，细分行就不再重复。 */
+  function quickStrip() {
+    function qbtn(tok, inner, label) {
+      return '<button type="button" data-act="preset" data-v="' + esc(tok) + '" aria-pressed="' +
+        (hasToken(tok) ? 'true' : 'false') + '" title="' + esc(label) + '">' + inner + '</button>';
+    }
+    var sep = '<span class="sep"></span>';
+    return '<div class="wpn-quick">' +
+      V.slot.map(function (s) { return qbtn('is:' + s, esc(s), s); }).join('') + sep +
+      Object.keys(V.ty).map(function (k) { return qbtn('is:' + V.ty[k][0], glyph(V.ty[k][1], V.ty[k][0]), V.ty[k][0]); }).join('') + sep +
+      Object.keys(V.el).map(function (k) { return qbtn('is:' + V.el[k][0], imgTag(V.el[k][2], '', V.el[k][0], true), V.el[k][0]); }).join('') + sep +
+      Object.keys(V.br).map(function (k) { return qbtn('is:' + V.br[k][0], imgTag(V.br[k][1], '', V.br[k][0], true), V.br[k][0]); }).join('') +
+      '</div>';
+  }
+  function inQuick(tok) {
+    var k;
+    for (k in V.el) { if (tok === 'is:' + V.el[k][0]) { return true; } }
+    for (k in V.br) { if (tok === 'is:' + V.br[k][0]) { return true; } }
+    return false;
+  }
   function renderPresets() {
     if (S.scope === 'armor') {
       var byCls = [0, 0, 0];
@@ -900,37 +934,58 @@
         order.map(function (c) { return byCls[V.cls.indexOf(c)]; }));
       return;
     }
-    var bySlot = [0, 0, 0];
-    REPS.wpn.forEach(function (i) { bySlot[WR[i][W_SLOT]]++; });
-    presetBox.innerHTML = toggleRow('槽位', V.slot.map(function (s) { return 'is:' + s; }), bySlot);
+    presetBox.innerHTML = S.scope === 'wpn' ? quickStrip() : '';
   }
+  /* 细分：点了条件之后还能再切一刀的值，收成一行。短的直接列，框架与来源各折进一个下拉；
+     武器范围下元素与勇士克制在快速检索那一行里，这里不再列。 */
   function refineRow() {
-    var total = results.length, cnt = {}, lab = {};
-    function add(tok, label) { cnt[tok] = (cnt[tok] || 0) + 1; lab[tok] = label; }
+    var total = results.length, cnt = {};
+    function add(tok) { cnt[tok] = (cnt[tok] || 0) + 1; }
     results.forEach(function (i) {
       if (S.scope === 'armor') {
         var a = AR[i];
-        add('is:' + V.cls[a[A_CLS]], V.cls[a[A_CLS]]);
-        add('is:' + V.part[a[A_PART]], V.part[a[A_PART]]);
-        if (a[A_SRC] >= 0) { add('source:' + V.src[a[A_SRC]], '<span class="k">来源</span>' + esc(V.src[a[A_SRC]])); }
+        add('is:' + V.cls[a[A_CLS]]);
+        add('is:' + V.part[a[A_PART]]);
+        if (a[A_SRC] >= 0) { add('source:' + V.src[a[A_SRC]]); }
         return;
       }
       var r = WR[i];
-      add('is:' + elName(r), imgTag(V.el[r[W_EL]][2], '', '', true) + esc(elName(r)));
-      if (r[W_BR]) { add('is:' + V.br[r[W_BR]][0], imgTag(V.br[r[W_BR]][1], '', '', true) + esc(V.br[r[W_BR]][0])); }
-      add('frame:' + frameOf(r)[0], esc(frameOf(r)[0]));
-      add('is:' + V.am[r[W_AMMO]][0], esc(V.am[r[W_AMMO]][0]));
-      if (r[W_SRC] >= 0) { add('source:' + V.src[r[W_SRC]], '<span class="k">来源</span>' + esc(V.src[r[W_SRC]])); }
-      if (r[W_FLAG] & F_CRAFT) { add('is:可锻造', '可锻造'); }
-      if (r[W_FLAG] & F_TIER) { add('is:可升阶', '可升阶'); }
+      add('is:' + elName(r));
+      if (r[W_BR]) { add('is:' + V.br[r[W_BR]][0]); }
+      add('frame:' + frameOf(r)[0]);
+      add('is:' + V.am[r[W_AMMO]][0]);
+      if (r[W_SRC] >= 0) { add('source:' + V.src[r[W_SRC]]); }
+      if (r[W_FLAG] & F_CRAFT) { add('is:可锻造'); }
+      if (r[W_FLAG] & F_TIER) { add('is:可升阶'); }
     });
     var toks = Object.keys(cnt).filter(function (t) { return cnt[t] > REFINE_MIN && cnt[t] < total && !hasToken(t); });
     if (!toks.length) { return ''; }
     toks.sort(function (a, b) { return cnt[b] - cnt[a]; });
-    return '<div class="wpn-row"><span class="lbl">细分</span>' + toks.map(function (t) {
-      return '<button type="button" class="toggle" data-act="refine" data-v="' + esc(t) + '" title="shift 点击排除">' +
-        lab[t] + '<span class="n">' + cnt[t] + '</span></button>';
-    }).join('') + '</div>';
+    var inline = [], frames = [], sources = [];
+    toks.forEach(function (t) {
+      var k = t.slice(0, t.indexOf(':'));
+      if (k === 'frame') { frames.push(t); }
+      else if (k === 'source') { sources.push(t); }
+      else if (!(S.scope === 'wpn' && inQuick(t))) { inline.push(t); }
+    });
+    /* 来源名有的写成整句，句末的句号只在这里去掉；查询里仍是原文 */
+    function plainOf(t) { return t.slice(t.indexOf(':') + 1).replace(/[。；;]+$/, ''); }
+    function refBtn(t) {
+      return '<button type="button" data-act="refine" data-v="' + esc(t) + '" title="' + esc(plainOf(t)) +
+        '（shift 点击排除）"><span>' + esc(plainOf(t)) + '</span><span class="n">' + cnt[t] + '</span></button>';
+    }
+    function drop(label, list, cols) {
+      return !list.length ? '' : '<span class="grp"><button type="button" class="drop" data-act="drop" aria-expanded="false">' +
+        label + '<span class="n">' + list.length + '</span></button><div class="pop" hidden style="--cols:' + cols + '">' +
+        list.map(refBtn).join('') + '</div></span>';
+    }
+    return '<div class="wpn-refine">' + inline.map(refBtn).join('') + drop('框架', frames, 3) + drop('来源', sources, 2) + '</div>';
+  }
+  function closePops() {
+    root.querySelectorAll('.wpn-refine .drop[aria-expanded="true"]').forEach(function (b) {
+      b.setAttribute('aria-expanded', 'false');
+      b.nextElementSibling.hidden = true;
+    });
   }
   function renderSub() {
     if (pending) {
@@ -938,14 +993,7 @@
         (pending === 'pool' ? '正在载入词条池' : '正在载入说明') + '</span></div>';
       return;
     }
-    if (!S.q) {
-      subBox.innerHTML = S.scope !== 'wpn' ? '' : '<div class="wpn-row"><span class="lbl">试试这些</span>' +
-        EXAMPLES.map(function (e) {
-          return '<button type="button" class="toggle" data-act="setq" data-v="' + esc(e) + '"><code>' + esc(e) + '</code></button>';
-        }).join('') + '</div>';
-      return;
-    }
-    subBox.innerHTML = S.sel == null ? refineRow() : '';
+    subBox.innerHTML = S.q && S.sel == null ? refineRow() : '';
   }
 
   /* ── 渲染：卡片墙与列表 ────────────────────────────────────────────── */
@@ -969,30 +1017,49 @@
     if (S.scope === 'armor') {
       var a = AR[i];
       var first = (a[A_PERKS] || '').split('、')[0];
-      return '<li><a class="wpn-card" href="' + link('armor', i) + '" data-act="open" data-i="' + i + '">' + armorGun(a, '', eager) +
+      return '<li><a class="wpn-card" href="' + link('armor', i) + '" data-act="open" data-i="' + i + '"' +
+        (a[A_ROLE] ? ' title="' + esc('小棒猪 ' + a[A_ROLE]) + '"' : '') + '>' + armorGun(a, '', eager) +
         '<div><p class="nm exo">' + esc(a[A_NAME]) + '</p><div class="wpn-meta"><span class="cls">' + V.cls[a[A_CLS]] +
         '</span><span class="cls">' + V.part[a[A_PART]] + '</span><span class="ssn">S' + a[A_SSN] + '</span></div>' +
         '<div class="wpn-frame">' + esc(first) + '</div>' +
-        (a[A_ROLE] ? '<div class="wpn-grades"><span><span class="by">小棒猪</span>' + esc(a[A_ROLE]) + '</span></div>' : '') +
+        (a[A_ROLE] ? '<div class="wpn-grades"><span class="au-l">' + esc(a[A_ROLE]) + '</span></div>' : '') +
         '</div></a></li>';
     }
     var r = WR[i];
-    return '<li><a class="wpn-card" href="' + link('wpn', i) + '" data-act="open" data-i="' + i + '">' + gun(r, '', eager) +
+    return '<li><a class="wpn-card" href="' + link('wpn', i) + '" data-act="open" data-i="' + i + '"' +
+      (r[W_GRADE] ? ' title="' + esc(gradeTitle(r)) + '"' : '') + '>' + gun(r, '', eager) +
       '<div><p class="nm' + (isExotic(r) ? ' exo' : '') + '">' + esc(r[W_NAME]) + '</p>' + meta(r) +
       '<div class="wpn-frame">' + esc(frameOf(r)[0]) + '</div>' + gradesHtml(r) + '</div></a></li>';
   }
   function meta(r) {
-    return '<div class="wpn-meta">' + imgTag(V.el[r[W_EL]][2], '', elName(r), true) +
+    return '<div class="wpn-meta w">' + imgTag(V.el[r[W_EL]][2], 'el', elName(r), true) +
       '<span class="ammo-' + r[W_AMMO] + '">' + glyph(V.am[r[W_AMMO]][1], V.am[r[W_AMMO]][0]) + '</span>' +
       glyph(V.ty[r[W_SUB]][1], typeName(r)) +
-      (r[W_BR] ? imgTag(V.br[r[W_BR]][1], '', V.br[r[W_BR]][0], true) : '') +
+      (r[W_BR] ? imgTag(V.br[r[W_BR]][1], 'br', V.br[r[W_BR]][0], true) : '') +
       '<span class="ssn">S' + r[W_SSN] + '</span></div>';
+  }
+  /* 卡片上的评价只有一行，前面一枚菱形认作者（样式表按 au-a、au-l 上色），不写「AEGIS」「小棒猪」
+     的字；档位分三档提亮：Aegis 的 S、A 与小棒猪的 T0、T0.5 最亮，B、C 与 T1、T1.5 次之，
+     其余同色。完整的评价放在卡片的悬停提示里。 */
+  function gradeStep(tok) {
+    var m = /^T(\d(?:\.\d)?)$/.exec(tok);
+    if (m) { return +m[1] <= 0.5 ? 1 : +m[1] <= 1.5 ? 2 : 3; }
+    return tok === 'S' || tok === 'A' ? 1 : tok === 'B' || tok === 'C' ? 2 : 3;
+  }
+  function gradeMarks(text, letter) {
+    return esc(text).replace(letter ? /^[SABCDEF]$/ : /T\d(?:\.\d)?/g, function (m) {
+      return '<b class="tg tg-' + gradeStep(m) + '">' + m + '</b>';
+    });
+  }
+  function gradeTitle(r) {
+    var g = r[W_GRADE];
+    return g ? [g[0] ? 'Aegis ' + g[0] : '', g[1] ? '小棒猪 ' + g[1] : ''].filter(Boolean).join('　') : '';
   }
   function gradesHtml(r) {
     var g = r[W_GRADE];
     if (!g) { return ''; }
-    return '<div class="wpn-grades">' + (g[0] ? '<span><span class="by">AEGIS</span>' + esc(g[0]) + '</span>' : '') +
-      (g[1] ? '<span><span class="by">小棒猪</span>' + esc(g[1]) + '</span>' : '') + '</div>';
+    return '<div class="wpn-grades">' + (g[0] ? '<span class="au-a">' + gradeMarks(g[0], true) + '</span>' : '') +
+      (g[1] ? '<span class="au-l">' + gradeMarks(g[1], false) + '</span>' : '') + '</div>';
   }
   function listRow(i, dup) {
     if (S.scope === 'sets') {
@@ -1150,9 +1217,42 @@
   }
 
   /* ── 渲染：详情 ────────────────────────────────────────────────────── */
+  /* 选中的词条按栏序连成一条虚线，光点沿线走。一个 svg 铺满词条矩阵，坐标取各栏选中那一枚
+     图标的中心；线画在图标下面。矩阵宽度变了（窗口、拖结果栏）就重画。 */
+  var linkObs = null;
+  var STILL = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function perkLinks() {
+    if (linkObs) { linkObs.disconnect(); linkObs = null; }
+    var m = body.querySelector('.matrix');
+    if (!m) { return; }
+    function draw() {
+      var old = m.querySelector('.links');
+      if (old) { old.remove(); }
+      var r = m.getBoundingClientRect(), pts = [];
+      m.querySelectorAll('.col').forEach(function (col) {
+        var ico = col.querySelector('.plug[aria-pressed="true"] .ico');
+        if (!ico) { return; }
+        var q = ico.getBoundingClientRect();
+        pts.push([q.left - r.left + q.width / 2, q.top - r.top + q.height / 2]);
+      });
+      if (pts.length < 2) { return; }
+      var d = pts.map(function (p, k) { return (k ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join(' ');
+      var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('class', 'links');
+      svg.setAttribute('aria-hidden', 'true');
+      svg.innerHTML = '<path d="' + d + '" fill="none" style="stroke:var(--bone);stroke-opacity:.38" stroke-dasharray="3 4"/>' +
+        (STILL ? '' : '<circle r="2" style="fill:var(--bone-hi)"><animateMotion dur="' + (pts.length * 1.1).toFixed(1) +
+          's" repeatCount="indefinite" path="' + d + '"/></circle>');
+      m.prepend(svg);
+    }
+    draw();
+    linkObs = new ResizeObserver(draw);
+    linkObs.observe(m);
+  }
   function renderDetail() {
     var box = body.querySelector('.wpn-detail');
     if (!box) { return; }
+    if (linkObs) { linkObs.disconnect(); linkObs = null; }
     var i = S.sel;
     if (S.scope === 'sets') {
       if (!T) { box.innerHTML = '<p class="loading">正在载入说明</p>'; need('text', renderDetail); return; }
@@ -1167,6 +1267,7 @@
     if (!P) { box.innerHTML = '<p class="loading">正在载入词条池</p>'; need('pool', renderDetail); return; }
     if (!T) { need('text', renderDetail); }
     box.innerHTML = weaponDetail(i);
+    perkLinks();
   }
 
   /* 用过这一件的配装。**按主键收**：配装源稿的槽位值写成「名字#主键」，同名不同物
@@ -1286,7 +1387,9 @@
       }).join('') + '</div>' : '';
       /* 评级按维度一行一档：小棒猪给异域分「输出／清怪／高难」三档，拼成一行读不出配对 */
       var tier = b[1].map(function (t) {
-        return '<b>' + (t[0] ? '<span class="dim">' + esc(t[0]) + '</span>' : '') + esc(t[1]) + '</b>';
+        var m = /^(.+?)([（(][^）)]*[）)])$/.exec(t[1]);
+        return '<b>' + (t[0] ? '<span class="dim">' + esc(t[0]) + '</span>' : '') + esc(m ? m[1] : t[1]) +
+          (m ? '<span class="aft">' + esc(m[2]) + '</span>' : '') + '</b>';
       }).join('');
       return '<div class="say by-' + b[0].toLowerCase() + '"><div class="who">' + AUTHOR[b[0]] + tier +
         '</div><div>' + roll + b[2].map(function (p) { return '<p>' + p + '</p>'; }).join('') + '</div></div>';
@@ -1879,9 +1982,20 @@
     if (li) { e.preventDefault(); acceptAc(+li.getAttribute('data-k')); }
   });
 
+  /* 按 / 聚焦查询框（不在输入框里时才拦），Esc 收起细分的下拉 */
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { closePops(); return; }
+    if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) { return; }
+    var a = document.activeElement;
+    if (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA')) { return; }
+    e.preventDefault();
+    input.focus();
+  });
+
   document.addEventListener('click', function (e) {
     var el = e.target.closest('[data-act]');
     if (!el) {
+      closePops();
       if (S.pop && !e.target.closest('.picker')) { S.pop = null; renderDetail(); }
       if (S.syntax && !e.target.closest('.wpn-syntax')) { S.syntax = false; renderBar(); }
       return;
@@ -1889,6 +2003,12 @@
     var act = el.getAttribute('data-act'), v = el.getAttribute('data-v');
     var i = S.sel;
     switch (act) {
+      case 'drop': {
+        var was = el.getAttribute('aria-expanded') === 'true';
+        closePops();
+        if (!was) { el.setAttribute('aria-expanded', 'true'); el.nextElementSibling.hidden = false; }
+        return;
+      }
       case 'scope':
         if (v !== S.scope) { S.scope = v; S.q = ''; S.sel = null; input.value = ''; setQuery('', true); }
         return;
