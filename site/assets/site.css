@@ -632,7 +632,9 @@ main {
   padding: 0 22px clamp(48px, calc(6 * var(--vw)), 84px);
 }
 
-.page-head { padding: clamp(40px, calc(5 * var(--vw)), 68px) 22px clamp(22px, calc(2.6 * var(--vw)), 32px); }
+/* 页首是一片星空窗，assets/sky-page.js 把恒星与本页的星座画在它背后。上沿留出星座与
+   标题同框的高度，标题放大一档；没有脚本时只是一块留白的页首。 */
+.page-head { padding: clamp(96px, calc(8.4 * var(--vw)), 128px) 22px 34px; }
 
 /* 标题右边挂东西的那一行（推荐配装索引页的投稿入口）。规线改由这一行画：
    留在 h1 上时线只有标题那么长，右边挂的东西悬在线外。 */
@@ -655,10 +657,10 @@ main {
   padding-bottom: 12px;
   color: var(--bone-hi);
   font-family: var(--font-cn);
-  font-size: clamp(30px, calc(3.4 * var(--vw)), 42px);
+  font-size: clamp(36px, calc(4 * var(--vw)), 56px);
   font-weight: 600;
   line-height: 1.15;
-  letter-spacing: .04em;
+  letter-spacing: .06em;
   border-bottom: 1px solid var(--hair-lit);
 }
 
@@ -676,17 +678,16 @@ main {
   text-transform: uppercase;
 }
 
-/* 标签前的强调色方块：护甲模组页与六个元素页早就这么写，这里提成站点缺省，
-   分节的起点在全站长一个样。声明照抄那两处（armor-mods/style.css），
-   flex 布局下的表现因此与既有页面完全一致——那两处权重更高，继续生效。 */
+/* 标签前的强调色菱形，与站标同一枚：分节的起点在全站长一个样。 */
 .sect-label::before {
   content: "";
   display: inline-block;
-  width: 6px;
-  height: 6px;
-  margin-right: 10px;
+  width: 5px;
+  height: 5px;
+  margin-right: 12px;
   vertical-align: 1px;
   background: var(--accent);
+  transform: rotate(45deg);
 }
 
 .sect-label::after {
@@ -1091,7 +1092,8 @@ body:has(.hero) {
   background-size: 352px 100%, auto, 88px 100%, auto, 100% 640px, auto;
 }
 
-/* 首页星图：画布由 assets/sky.js 画，只有首页有。
+/* 星空画布：首页整屏（assets/sky.js 画，画布写在 index.html 里），内页只有页首那片窗
+   （assets/sky-page.js 建画布并标 data-page，见下面的淡入）。
 
    **画布是 body 的第一个子元素。**.hero-mark::after 那块刻线橡皮（见「首屏那枚标记」）
    排在它后面，同在根层叠上下文的负层，按文档序盖在画布上：徽记周围洗出一块空地，
@@ -1108,6 +1110,15 @@ body:has(.hero) {
   height: 100%;
   pointer-events: none;
 }
+
+/* 内页的画布由模块脚本在首帧之后建出来，淡入让星空窗不是「啪」地出现。
+   系统要求减少动效时全站的 transition 被关掉，直接就位。 */
+.starfield[data-page] {
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+.starfield[data-page].on { opacity: 1; }
 
 /* 分组标题右侧的分隔线画成刻度尺：细刻度每 8px，长刻度每 88px。
    **长刻度的相位由 sky.js 写进 --rx，对到版心中轴**：背景竖线排在中轴 ± 88k 上，

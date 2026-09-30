@@ -17,17 +17,6 @@
   border-radius: 2px;
 }
 
-/* 分节标签前的小方块：一页十六组卡片，靠它认一组的起点 */
-.block > .sect-label::before {
-  content: "";
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  margin-right: 10px;
-  vertical-align: 1px;
-  background: var(--accent);
-}
-
 /* ── 模组卡片 ──
    源稿是表格（一行一个模组，搜索按行隐藏），这里把它排成神器模组页那样的卡片：
    <tr> 即一张卡，图标与名称占卡片首行，效果占第二行。

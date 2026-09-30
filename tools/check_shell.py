@@ -110,6 +110,10 @@ def main() -> int:
         if not STAMP.search(src):
             bad.append('%s：缺 <span class="stamp">更新 YYYY.M.D</span>' % rel)
 
+        # 页首那片星空窗由 sky-page.js 画：带 .page-head 的页面不引它，窗就是一块空白
+        if 'class="page-head"' in src and 'assets/sky-page.js' not in src:
+            bad.append('%s：带 .page-head 却没引 assets/sky-page.js（shell.head 的 sky 参数）' % rel)
+
         if rel != shell.HOME and '"%s"' % rel not in index:
             bad.append('%s：不在全站搜索索引里，跑一次 tools/build-search.py' % rel)
 

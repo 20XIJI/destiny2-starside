@@ -1,30 +1,12 @@
 /* 首页的星图与入场动效。只有首页用，由 assets/app.js 在认出 .hero-search 时动态 import。
 
    星图是一张视口大小的固定画布（.starfield）：三层视差的恒星、按刻线角度连成的星座、
-   沿星座边走的光点、偶发的流星。星座节点用站标那枚菱形，星等符号取制图惯例。
-   星与线只用骨白，光点用 --accent；颜色从 :root 的 token 现取，不在这里另写色号。
+   沿星座边走的光点、偶发的流星。画法在 sky-core.js，与内页共用。
 
    入场只作用于首屏之外的那批：已经在视口里的元素首次绘制就在，此刻再从透明起步会
    先闪出完整的一屏再淡入。 */
 
-const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const TAU = Math.PI * 2;
-
-const clamp = (x, a, b) => (x < a ? a : x > b ? b : x);
-const lerp = (a, b, t) => a + (b - a) * t;
-const mod = (a, n) => ((a % n) + n) % n;
-const ease = t => 1 - Math.pow(1 - t, 3);
-
-/* 固定种子：星座与恒星的位置不随重绘、缩放变动 */
-const rng = s => () => ((s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296);
-
-/* :root 上的 #rrggbb → 'r,g,b'，供 rgba() 拼接 */
-function token(name) {
-  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  const m = /^#([0-9a-f]{6})$/i.exec(v);
-  if (!m) throw new Error(name + ' 不是 #rrggbb：' + v);
-  return [1, 3, 5].map(i => parseInt(m[1].slice(i - 1, i + 1), 16)).join(',');
-}
+import { reduce, TAU, mod, rng, brush } from './sky-core.js';
 
 /* 首屏那三组星座：节点写成 [占版心宽度的比例, y 像素]，落在字标、铭牌与徽记之间的空地上 */
 const HERO_CONS = [
@@ -40,18 +22,16 @@ const HERO_CONS = [
 const BAND = { y0: .78, y1: .12 };
 
 function sky(canvas) {
-  const BONE = token('--bone'), HI = token('--bone-hi'), ACCENT = token('--accent');
-  const FONT = '600 9px ' + getComputedStyle(document.documentElement).getPropertyValue('--font-disp');
+  const b = brush(canvas), g = b.g;
   const R = rng(20260929);
   const T0 = performance.now();
-  let g, W, H, X0, XW, stars, cons, met = [], nextMet = T0 + 3200;
+  let W, H, X0, XW, stars, cons, met = [], nextMet = T0 + 3200;
   let ox = 0, oy = 0, tx = 0, ty = 0;
 
   function build() {
     const d = Math.min(devicePixelRatio || 1, 2);
     W = canvas.clientWidth; H = canvas.clientHeight;
     canvas.width = Math.round(W * d); canvas.height = Math.round(H * d);
-    g = canvas.getContext('2d');
     g.setTransform(d, 0, 0, d, 0, 0);
     const hr = document.querySelector('.hero').getBoundingClientRect();
     X0 = hr.left; XW = hr.width;
@@ -99,45 +79,17 @@ function sky(canvas) {
     }
   }
 
-  function diamond(x, y, r) {
-    g.beginPath();
-    g.moveTo(x, y - r); g.lineTo(x + r, y); g.lineTo(x, y + r); g.lineTo(x - r, y);
-    g.closePath();
-  }
-
   function frame(t) {
     ox += (tx - ox) * .06; oy += (ty - oy) * .06;
     const sy = scrollY;
     g.clearRect(0, 0, W, H);
 
-    g.save();
-    g.translate(W / 2 - ox * 10, ((BAND.y0 + BAND.y1) / 2) * H - sy * .06 - oy * 6);
-    g.rotate(Math.atan2((BAND.y1 - BAND.y0) * H, W));
-    const haze = g.createLinearGradient(0, -190, 0, 190);
-    haze.addColorStop(0, `rgba(${BONE},0)`); haze.addColorStop(.5, `rgba(${BONE},.05)`); haze.addColorStop(1, `rgba(${BONE},0)`);
-    g.fillStyle = haze; g.fillRect(-W, -190, W * 2, 380);
-    g.restore();
+    b.haze(W / 2 - ox * 10, ((BAND.y0 + BAND.y1) / 2) * H - sy * .06 - oy * 6,
+      Math.atan2((BAND.y1 - BAND.y0) * H, W), 190, .05, W);
 
     /* 远处的星视差小、近处的大；银河带上的星与雾同速，且不回卷，否则带子会与雾错开 */
-    for (const s of stars) {
-      const x = s.x - ox * s.z * 34;
-      const y = s.band ? s.y - sy * .06 - oy * 6 : mod(s.y - sy * s.z * .42 - oy * s.z * 22, H + 40) - 20;
-      const a = s.a * (.72 + .28 * Math.sin(t * .001 * s.sp + s.ph));
-      g.fillStyle = `rgba(${BONE},${a})`;
-      g.beginPath(); g.arc(x, y, s.r, 0, TAU); g.fill();
-      g.lineWidth = 1;
-      if (s.glyph === 'spike') {
-        const len = 4 + s.z * 9;
-        g.strokeStyle = `rgba(${BONE},${a * .55})`;
-        g.beginPath(); g.moveTo(x - len, y); g.lineTo(x + len, y); g.moveTo(x, y - len); g.lineTo(x, y + len); g.stroke();
-      } else if (s.glyph === 'ring') {
-        g.strokeStyle = `rgba(${BONE},${a * .6})`;
-        g.beginPath(); g.arc(x, y, 3.6, 0, TAU); g.stroke();
-      } else if (s.glyph === 'plus') {
-        g.strokeStyle = `rgba(${BONE},${a * .7})`;
-        g.beginPath(); g.moveTo(x - 2.5, y); g.lineTo(x + 2.5, y); g.moveTo(x, y - 2.5); g.lineTo(x, y + 2.5); g.stroke();
-      }
-    }
+    b.stars(stars, t, ox,
+      s => s.band ? s.y - sy * .06 - oy * 6 : mod(s.y - sy * s.z * .42 - oy * s.z * 22, H + 40) - 20, H);
 
     for (const k of cons) {
       const off = sy * k.par - oy * 10;
@@ -145,48 +97,7 @@ function sky(canvas) {
         const yy = k.p[0][1] - off;
         if (yy > -80 && yy < H + 80) k.born = t; else continue;
       }
-      if (t < k.born) continue;
-      const p = reduce ? 1 : clamp((t - k.born) / 2800, 0, 1), q = ease(p), n = k.e.length;
-      const pt = i => [k.p[i][0] - ox * 12, k.p[i][1] - off];
-
-      g.lineWidth = 1;
-      g.strokeStyle = `rgba(${BONE},.17)`;
-      g.beginPath();
-      k.e.forEach(([a, b], i) => {
-        const f = clamp(q * n - i, 0, 1);
-        if (f <= 0) return;
-        const A = pt(a), B = pt(b);
-        g.moveTo(A[0], A[1]); g.lineTo(lerp(A[0], B[0], f), lerp(A[1], B[1], f));
-      });
-      g.stroke();
-
-      k.p.forEach((_, i) => {
-        if (q * n < i - .15) return;
-        const [x, y] = pt(i);
-        g.fillStyle = `rgba(${BONE},${.8 * (.75 + .25 * Math.sin(t * .0014 + i * 1.7))})`;
-        diamond(x, y, i === 0 ? 3.8 : 2.8); g.fill();
-        if (i === 0) { g.strokeStyle = `rgba(${BONE},.32)`; diamond(x, y, 7.5); g.stroke(); }
-      });
-
-      if (p < 1) continue;
-      const [x0, y0] = pt(0);
-      g.font = FONT;
-      g.fillStyle = `rgba(${BONE},.3)`;
-      g.fillText(k.lab, x0 - 4, y0 + 22 + Math.max(...k.p.map(v => v[1] - k.p[0][1])));
-
-      /* 光点每 3 秒换一条边，走 1.5 秒 */
-      if (reduce) continue;
-      const ei = Math.floor(t / 3000) % n, f = (t % 3000) / 1500;
-      if (f >= 1) continue;
-      const [a, b] = k.e[ei], A = pt(a), B = pt(b), e = ease(f);
-      const hx = lerp(A[0], B[0], e), hy = lerp(A[1], B[1], e);
-      const x1 = lerp(A[0], B[0], Math.max(0, e - .35)), y1 = lerp(A[1], B[1], Math.max(0, e - .35));
-      const tail = g.createLinearGradient(x1, y1, hx, hy);
-      tail.addColorStop(0, `rgba(${ACCENT},0)`); tail.addColorStop(1, `rgba(${ACCENT},.85)`);
-      g.strokeStyle = tail; g.lineWidth = 1.4;
-      g.beginPath(); g.moveTo(x1, y1); g.lineTo(hx, hy); g.stroke();
-      g.fillStyle = `rgba(${HI},${.9 * (1 - f * f)})`;
-      g.beginPath(); g.arc(hx, hy, 1.7, 0, TAU); g.fill();
+      b.con(k, i => [k.p[i][0] - ox * 12, k.p[i][1] - off], t);
     }
 
     if (!reduce && t > nextMet) {
@@ -195,17 +106,7 @@ function sky(canvas) {
       met.push({ x: W * (.04 + R() * .78), y: H * R() * .42, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp, t0: t, life: .7 + R() * .45, len: 120 + R() * 100 });
     }
     met = met.filter(m => t - m.t0 < m.life * 1000);
-    for (const m of met) {
-      const age = (t - m.t0) / 1000, f = age / m.life, sp = Math.hypot(m.vx, m.vy);
-      const hx = m.x + m.vx * age, hy = m.y + m.vy * age, len = m.len * (1 - f * .5), al = .85 * (1 - f * f);
-      const x1 = hx - m.vx / sp * len, y1 = hy - m.vy / sp * len;
-      const trail = g.createLinearGradient(x1, y1, hx, hy);
-      trail.addColorStop(0, `rgba(${BONE},0)`); trail.addColorStop(1, `rgba(${BONE},${al})`);
-      g.strokeStyle = trail; g.lineWidth = 1.3;
-      g.beginPath(); g.moveTo(x1, y1); g.lineTo(hx, hy); g.stroke();
-      g.fillStyle = `rgba(${HI},${al})`;
-      g.beginPath(); g.arc(hx, hy, 1.5, 0, TAU); g.fill();
-    }
+    for (const m of met) b.meteor(m, t);
   }
 
   build();

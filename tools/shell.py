@@ -257,7 +257,7 @@ NOTICE = ('<script>(function(){'
 MARK = '<span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>'
 
 
-def head(title, desc, app_js=False, up=1, sheets=None):
+def head(title, desc, app_js=False, up=1, sheets=None, sky=False):
     """<!doctype> 到 <body> 为止。title 已含 · Starside 后缀。
 
     字体在 CSS 解析完才会被发现，preload 让它与样式表并行下载；只预载首屏用到的
@@ -271,6 +271,9 @@ def head(title, desc, app_js=False, up=1, sheets=None):
     sheets 显式给出要引的样式表，给了就不按 up 推。配装页深三层却共用一份
     builds/style.css——按 up 推会要求每套配装各有一个 style.css，而它们的版式
     一模一样，那种文件建出来只是为了不 404。
+
+    sky 给带 .page-head 的页面：引内页的星空窗（assets/sky-page.js）。它是 ES 模块，
+    模块脚本默认 defer，不挡渲染；不带页首的页面没有窗可画，不引。
     """
     at = '../' * up
     o = ['<!doctype html>', '<html lang="zh-CN">', '<head>',
@@ -293,6 +296,8 @@ def head(title, desc, app_js=False, up=1, sheets=None):
     o += ['<link rel="stylesheet" href="%s">' % s for s in sheets]
     if app_js:
         o.append('<script src="%sassets/app.js" defer></script>' % at)
+    if sky:
+        o.append('<script type="module" src="%sassets/sky-page.js"></script>' % at)
     o += ['</head>', '<body>']
     return '\n'.join(o)
 

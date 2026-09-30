@@ -5,6 +5,8 @@ paths:
   - "site/assets/rota.js"
   - "site/assets/home.js"
   - "site/assets/sky.js"
+  - "site/assets/sky-core.js"
+  - "site/assets/sky-page.js"
   - "site/assets/search.js"
   - "tools/build-search.py"
 ---
@@ -21,9 +23,20 @@ paths:
 6.9 KB，而 34 个引 app.js 的页面里只有 3 个跑得到，其余 31 页白下；拆开之后
 `app.js` 3.9 KB，外壳三件从 27.1K 降到 22.0K。
 
-`sky.js` 同样只有首页用：`.starfield` 画布上的星图、首屏之外卡片的浮起、字标扫光、
-分组标题刻度尺的相位、卡片节点之间的星轨。颜色从 `:root` 的 `--bone`、`--bone-hi`、`--accent` 现取，
-不写色号；系统要求减少动效时只画一帧静态星图，其余三项不跑。
+星空分三个文件。`sky-core.js` 是公共件：恒星、星座、光点、流星、银河雾的画法，加上
+`rng`、`token` 这类小工具，`sky.js` 与 `sky-page.js` 各自 import；恒星与星座怎么生成由各页自己写。
+颜色从 `:root` 的 `--bone`、`--bone-hi`、`--accent` 现取，不写色号。
+
+`sky.js` 只有首页用：`.starfield` 画布上的星图、首屏之外卡片的浮起、字标扫光、
+分组标题刻度尺的相位、卡片节点之间的星轨。系统要求减少动效时只画一帧静态星图，其余三项不跑。
+
+`sky-page.js` 是内页页首的星空窗，只画 `.page-head` 那一片（恒星、银河雾、本页的星座、流星），
+往下的正文背后不画。它不经 `app.js`，由页面 `<head>` 里的 `<script type="module">` 载入
+（`shell.head(sky=True)`，用 `shell.page_head()` 的页面都要带）：没有工具条的页面不引 `app.js`，
+挂在 `app.js` 上这几页就没有星空。它自己建一张 `.starfield[data-page]` 画布，`site.css` 让它淡入。
+窗滚出去之后动画循环停掉，滚回来再起；系统要求减少动效时只画静态一帧，滚动时重画。
+星座的种子取 `main[data-src]`（没有就取 `<h1>` 文字），节点数是分节数 + 3。
+`check_shell.py` 钉着：带 `.page-head` 的页面必须引 `assets/sky-page.js`。
 
 共用件（`tuck`、`onResize`、`words`、`hit`、`slot`）由 `app.js` 传进去，模块里
 不重抄一份。路径按 `document.currentScript.src` 现算：这是个 classic script，

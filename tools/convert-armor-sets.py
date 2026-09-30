@@ -374,7 +374,7 @@ def render(cats: list[Category], md: str, digest: str = '',
     # 这一页其余部分用 ''.join 拼，外壳几块之间自己补换行
     parts = ['\n'.join([
         shell.head(html.escape('%s · %s' % (title, shell.SITE_NAME)),
-                   html.escape(meta_of(md, '描述')), app_js=True),
+                   html.escape(meta_of(md, '描述')), app_js=True, sky=True),
         shell.nav(title, toolbar={
             'data-section': '.cat', 'data-item': '.set',
             'data-label': '.cat-head span', 'data-noun': '套装',

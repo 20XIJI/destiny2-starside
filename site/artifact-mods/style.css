@@ -9,15 +9,9 @@
 
 main { padding: 0 22px clamp(40px, calc(5 * var(--vw)), 72px); }
 
-/* 这一页是整站的门面，页首比资料页放大一档 */
-.page-head {
-  padding: clamp(40px, calc(5.5 * var(--vw)), 76px) 22px clamp(30px, calc(3.6 * var(--vw)), 46px);
-  /* 标题两侧带一对 ✦，是对称的横幅式排法——居中才立得住，左对齐会让右边那颗
-     装饰停在版心中段。正文与分节仍左对齐。 */
-  text-align: center;
-}
-
-.page-head h1 { font-size: clamp(34px, calc(4.4 * var(--vw)), 56px); }
+/* 标题两侧带一对 ✦，是对称的横幅式排法——居中才立得住，左对齐会让右边那颗
+   装饰停在版心中段。正文与分节仍左对齐。 */
+.page-head { text-align: center; }
 
 /* ── 介绍块 ── */
 .intro { margin-bottom: clamp(28px, calc(3.4 * var(--vw)), 48px); }

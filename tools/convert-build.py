@@ -1343,7 +1343,7 @@ def render_index(made, sets=False):
         aside += ('<p class="new-link"><a href="sets/index.html">配装合集 →</a>'
                   '<span>同一角色的多套配装，按场景切换使用</span></p>')
     o = [shell.head('%s · Starside' % name, SETS_DESC if sets else INDEX_DESC,
-                    app_js=True, up=up,
+                    app_js=True, up=up, sky=True,
                     sheets=['../style.css'] if sets else None),
          # data-facets 是声明式的：`显示名=data 键[:修饰]`，分号隔开。
          #   :single   一次只选一个（场景与强度）

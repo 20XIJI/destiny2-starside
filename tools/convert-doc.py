@@ -957,7 +957,7 @@ def render(md, slug, digest):
     # 层数决定资源前缀与面包屑
     up = where_of(md, slug).count('/') + 1
     full = '%s · Starside' % title
-    o = [shell.head(full, desc, app_js=toolbar is not None, up=up),
+    o = [shell.head(full, desc, app_js=toolbar is not None, up=up, sky=True),
          shell.nav(title, toolbar, up=up,
                    parent=[x.strip() for x in meta('上级', required=False).split('、') if x.strip()]),
          shell.page_head(title),

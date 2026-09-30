@@ -297,7 +297,7 @@ def render(page, digest='', dex=None, origins=None):
     """origins 是本页的出处表（editmap.Origins）：模组正文在记录上，编辑台按它找回。"""
     md = page['md']
     dex = dex if dex is not None else pagedex.Index(PAGE, 'art-perk')
-    o = [shell.head(PAGE_TITLE, meta_of(md, '描述'), app_js=True),
+    o = [shell.head(PAGE_TITLE, meta_of(md, '描述'), app_js=True, sky=True),
          shell.nav('神器模组', toolbar={}),
          shell.page_head(page['sub']),
          # data-src 是这一篇在库里的 _id，就地编辑靠它找回源稿
