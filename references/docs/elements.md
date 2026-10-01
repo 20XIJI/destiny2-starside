@@ -8,7 +8,7 @@
 ## 打开
 
 - [{el-arc|电弧} {el-arc|增幅}提速，{el-arc|电光充能}回能，{deb-arc|致盲}与{deb-arc|震颤}压场](arc/index.html)
-- [{el-solar|烈日} {el-solar|治愈}与恢复回血，{el-solar|焕光}增伤，{deb-solar|灼烧}攒满{deb-solar|点燃}](solar/index.html)
+- [{el-solar|烈日} {el-solar|治愈}与{el-solar|恢复}回血，{el-solar|焕光}增伤，{deb-solar|灼烧}攒满{deb-solar|点燃}](solar/index.html)
 - [{el-void|虚空} {el-void|吞食}与{el-void|隐身}续航，{deb-void|虚弱}增伤，{deb-void|压制}定身](void/index.html)
 - [{el-stasis|冰影} {el-stasis|冰霜护甲}减伤，{deb-stasis|减速}攒满{deb-stasis|冻结}，{deb-stasis|冻结}再{deb-stasis|碎裂}](stasis/index.html)
 - [{el-strand|缚丝} {el-strand|织造铠甲}与{deb-strand|割裂}减伤，{deb-strand|悬停}定身，{deb-strand|瓦解}连锁](strand/index.html)

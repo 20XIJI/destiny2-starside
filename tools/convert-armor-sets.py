@@ -28,8 +28,8 @@ import mods
 import pagedex
 import resolve
 import shell
-from markup import (bmark, die, eq, loading_attr, meta_of, no_nested_span, plain,
-                    src_hash, text_of, typeset)
+from markup import (OPEN, Markers, bmark, die, eq, loading_attr, meta_of,
+                    no_nested_span, plain, src_hash, text_of, typeset, uncolor)
 
 SRC = os.path.join(shell.KEY_DIR, 'armor-sets.md')
 OUT_DIR = os.path.join(shell.SITE, 'armor-sets')
@@ -72,8 +72,7 @@ PAGE_TERMS: list[tuple[str, str]] = [
     # 「超能」在别的页面只以更长的短语出现（{orb|超能能量}、{orb|超能技能}），
     # 单词一级两份全站表都没登记；这一页的效果正文里它单独成词，20 处。
     ('超能', 'orb'),
-    ('火箭发射器', 'ammo-heavy'),
-    ('刀剑', 'ammo-heavy'),
+    # 此处明确指消耗护甲充能的模组族，不是同名武器 Perk。
     ('快速启动', 'armor-charge'),
     ('治疗', 'health'),
     ('濒死', 'health'),
@@ -243,27 +242,12 @@ def parse(md: str) -> list[Category]:
 
 
 # ── 行内着色 ──────────────────────────────────────────────────────────
-# 一趟正则走完，互不嵌套：引号里的 buff 名整体一个颜色，不会被词表再切一刀。
-# 顺序即优先级，改顺序就是改语义。
+# 排版容器不遮住内部术语；显式标记覆盖自动词表，着色 span 保持平铺。
 
 def merge():
-    """全站术语（items.load() 的物品专名与元素机制 + items.TERMS 的通用
-    术语）+ 本页专有词。
-
-    长词在前是匹配的硬要求（「威能弹药」要排在「弹药」之前），所以不靠手写顺序，
-    按长度排一次——手写顺序在合并两份表之后必然出错。
-    LOOSE 里的词不进：那几个同形的普通用法比术语用法还多（「恢复延迟」「恢复
-    140 生命值」），铺开会把动词染成术语。STOP 由 items.load() 自己滤过。
-    物品专名排在通用术语之前：同形时通用术语更该赢（「真相」在这一页是层数
-    增益名，不是那把异域火箭发射器）。
-    """
-    terms, _ = items.load()
-    merged = {w: tok for w, (tok, _cat) in terms.items()}
-    merged.update({t[0]: t[1] for t in items.TERMS if len(t) > 1 and t[1]})
+    """共用正查词表与归属，仅补本页特有的语义；长词在前。"""
+    merged = {w: tok for w, (tok, _cat) in items.forward_terms().items()}
     merged.update(dict(PAGE_TERMS))
-    # LOOSE 最后减：两份表里都有「恢复」，先减再合会被后一份重新加回来，
-    # 38 处动词用法（「恢复 140 生命值」「开火恢复延迟」）会整批染成烈日色。
-    merged = {w: t for w, t in merged.items() if w not in items.LOOSE}
     return sorted(merged.items(), key=lambda kv: -len(kv[0]))
 
 
@@ -277,13 +261,17 @@ GLOSSARY_WORDS = [w for w, _ in GLOSSARY]
 # 补一个。拿键去字面匹配，「SUROS 政权」这类中英混排的名字一个都对不上。
 _TERMS = '|'.join(items.pattern(w) for w, _ in GLOSSARY)
 _TOKEN = {w: t for w, t in GLOSSARY}
+_QUOTED_TOKEN = {w: tok for w, (tok, _cat) in items.load()[0].items()}
+_QUOTED_TOKEN.update(dict(PAGE_TERMS))
+_GUARDS = items.GUARD_RX
 
 # inline() 的分支表自己发的三个 token，词表里没有。check_terms.py 的 G3 与 G7
 # 从这里取，不在那边另抄一份名单。
 INLINE_TOKENS = {'term', 'unsure', 'pvp'}
 
 INLINE = re.compile(
-    r'(?P<strong>\*\*(?P<strong_t>.+?)\*\*)'
+    r'(?P<explicit>' + OPEN.pattern + r')'
+    r'|(?P<strong>\*\*(?P<strong_t>.+?)\*\*)'
     r'|(?P<code>`(?P<code_t>[^`]+)`)'
     r'|(?P<buff>“(?P<buff_t>[^”]+)”)'
     r'|(?P<unsure>\[\?[^\]]*\])'  # [?] [?%]：原作者标的待测值
@@ -291,7 +279,7 @@ INLINE = re.compile(
     r'|(?P<qm>[\d.]*\?%?)'  # +? 5? 0.5? x?：数值位上的待测标记
     # 更长的专名整体屏蔽，里面的短词不再单独命中：正文复述效果名「权利的真相」时
     # 「真相」不该单独染成那把异域火箭发射器的颜色。排在词表之前才拦得住。
-    r'|(?P<guard>' + '|'.join(re.escape(g) for g in items.GUARD) + r')'
+    r'|(?P<guard>' + '|'.join(rx.pattern for rx in _GUARDS) + r')'
     # 「非」与后面的术语构成一个复合术语（非首领战斗人员＝一类敌人，非超能＝一种状态），
     # 留在着色外面会让扫读的人读到反义。「除非」「而非」里的非不构词，用后顾排除。
     r'|(?P<term>(?:(?<![除而])非)?(?:' + _TERMS + r'))'
@@ -303,35 +291,71 @@ hits: dict[str, int] = {}
 
 
 def inline(text: str) -> str:
-    out: list[str] = []
-    pos = 0
-    for m in INLINE.finditer(text):
-        out.append(html.escape(text[pos:m.start()]))
-        pos = m.end()
-        whole = html.escape(m.group(0))
-        if m.group('strong') is not None:
-            out.append('<strong>%s</strong>' % html.escape(m.group('strong_t')))
-        elif m.group('code') is not None:
-            out.append('<code>%s</code>' % html.escape(m.group('code_t')))
-        elif m.group('buff') is not None:
-            out.append('<span class="term">%s</span>' % html.escape(m.group('buff_t')))
-            hits['“”'] = hits.get('“”', 0) + 1
-        elif m.group('unsure') is not None or m.group('qm') is not None:
-            out.append('<span class="unsure">%s</span>' % whole)
-            hits['?'] = hits.get('?', 0) + 1
-        elif m.group('pvp') is not None:
-            out.append('<span class="pvp">%s</span>' % whole)
-            hits['[pvp]'] = hits.get('[pvp]', 0) + 1
-        elif m.group('guard') is not None:
-            out.append(whole)
-        else:
-            word = items.norm(m.group(0).removeprefix('非'))  # 命中数记在词表里的词上
-            out.append('<span class="%s">%s</span>' % (_TOKEN[word], whole))
-            hits[word] = hits.get(word, 0) + 1
-    out.append(html.escape(text[pos:]))
+    markers = Markers(text)
+    closes = {start: (token, end) for token, start, end in markers.frames if token}
+
+    def paint(raw: str, token: str | None) -> str:
+        if not raw:
+            return ''
+        escaped = html.escape(raw)
+        return '<span class="%s">%s</span>' % (token, escaped) if token else escaped
+
+    def fragment(start: int, end: int, token: str | None = None,
+                 literal_quotes: bool = False) -> str:
+        out: list[str] = []
+        pos = start
+        for m in INLINE.finditer(text, start, end):
+            if m.start() < pos:
+                continue                    # 显式标记的正文已递归处理
+            out.append(paint(text[pos:m.start()], token))
+            pos = m.end()
+            if m.group('explicit') is not None:
+                target, close = closes[m.end()]
+                if close >= end or text[close] != '}':
+                    die('着色标记未闭合：%r' % text[m.start():end])
+                out.append(fragment(m.end(), close, target, literal_quotes))
+                pos = close + 1
+            elif m.group('strong') is not None or m.group('code') is not None:
+                group, tag = ('strong_t', 'strong') if m.group('strong') else ('code_t', 'code')
+                out.append('<%s>%s</%s>' %
+                           (tag, fragment(*m.span(group), token,
+                                          literal_quotes or tag == 'code'), tag))
+            elif m.group('buff') is not None:
+                word = items.norm(m.group('buff_t'))
+                target = token or _QUOTED_TOKEN.get(word, 'term')
+                if literal_quotes:
+                    out.append(paint('“', token))
+                out.append(fragment(*m.span('buff_t'), target, literal_quotes))
+                if literal_quotes:
+                    out.append(paint('”', token))
+                hits['“”'] = hits.get('“”', 0) + 1
+                if target:
+                    hits[word] = hits.get(word, 0) + 1
+            elif m.group('unsure') is not None or m.group('qm') is not None:
+                out.append(paint(m.group(0), 'unsure'))
+                hits['?'] = hits.get('?', 0) + 1
+            elif m.group('pvp') is not None:
+                out.append(paint(m.group(0), 'pvp'))
+                hits['[pvp]'] = hits.get('[pvp]', 0) + 1
+            elif m.group('guard') is not None:
+                out.append(paint(m.group(0), token))
+            else:
+                raw = m.group(0)
+                word = items.norm(raw.removeprefix('非'))
+                target = token or _TOKEN[word]
+                # 专名的否定前缀不属于名字，不应染成装备或 Perk 的颜色。
+                if raw.startswith('非') and target in ('exotic', 'perk', 'art-perk'):
+                    out.append(paint('非', token))
+                    raw = raw[1:]
+                out.append(paint(raw, target))
+                if target:
+                    hits[word] = hits.get(word, 0) + 1
+        out.append(paint(text[pos:end], token))
+        return ''.join(out)
+
     # 「战斗人员」紧挨着「战斗人员」会连出两个同 class 的 span，渲染完全一样，并成一个。
     # 一次只能并掉一对，跑到不动点。
-    merged = ''.join(out)
+    merged = fragment(0, len(text))
     while True:
         once = ADJACENT.sub(r'<span class="\1">\2', merged)
         if once == merged:
@@ -494,13 +518,13 @@ def check(cats: list[Category], out: str) -> None:
     naked = items.naked_text(
         re.findall(r'<div class="bonus-body"[^>]*>(.*?)</div>', out, re.S))
     # GUARD 那几段是故意留素的更长专名，它们裹着的短词不算漏着色
-    for g in items.GUARD:
-        naked = naked.replace(g, items.GAP)
-    left = sorted({w for w in GLOSSARY_WORDS if w in naked})
+    for rx in _GUARDS:
+        naked = rx.sub(items.GAP, naked)
+    left = sorted({w for w in GLOSSARY_WORDS if items.rx(w).search(naked)})
     if left:
         die('这些术语在正文里没着色：%s\n'
-            '  词表由 merge() 从 items.load() 与 items.TERMS 并出来；\n'
-            '  同形的普通用法写进 items.py 的 LOOSE，更长的专名写进 GUARD，都带上依据。'
+            '  词表由 merge() 从 items.forward_terms() 并出来；\n'
+            '  同形词写显式标记，更长的专名写进 GUARD，都带上依据。'
             % '、'.join(left))
 
     no_nested_span(out, '护甲套装页（检查 INLINE 的分支顺序）')
@@ -516,8 +540,10 @@ def check(cats: list[Category], out: str) -> None:
     bodies = re.findall(r'<div class="bonus-body"[^>]*>(.*?)</div>\n', out, re.S)
     eq('产出里的正文块数', len(bodies), N_BONUSES)
     for b, got in zip(bonuses, bodies):
-        want = plain('\n'.join('\n'.join(t for _, t in content)
-                               for _, content in b.blocks), marks)
+        if '{' in got or '}' in got:
+            die('效果正文里残留着色标记（%s 件｜%s）' % (b.piece, b.name))
+        want = plain(uncolor('\n'.join('\n'.join(t for _, t in content)
+                                      for _, content in b.blocks)), marks)
         mine = plain(text_of(got), marks)
         if mine != want:
             die('正文与源稿不一致（%s 件｜%s）：\n  源稿 %r\n  产出 %r'

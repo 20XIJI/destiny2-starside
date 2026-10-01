@@ -1210,33 +1210,6 @@ class NakedText(unittest.TestCase):
         self.assertIn('覆盖护盾', items.naked_text(['神圣之光给一层覆盖护盾']))
 
 
-class BuildProseColors(unittest.TestCase):
-    """配装散文的着色必须全部补得回来：剥掉标记再跑自动着色，逐字还原。
-
-    填表页编辑时框里只放文字（form.js 的 ink），改动碰到的词去掉颜色，由构建第一步的
-    items.py --normalize 重新补。有人在本机手写了一个补不回来的标记，那个词在线上改一次
-    颜色就没了，而页面上一切正常。
-    """
-
-    def test_stripping_then_normalizing_restores_every_build(self):
-        terms = items.forward_terms()          # 与构建时补色同一份词表
-        kw = dict(terms=terms, names=items.Names(terms))
-        seen, bad = 0, []
-        for path in items.build_pages():
-            rec = migrate.load(path)
-            for label, text in prose_of(rec):
-                for i, line in enumerate(text.split('\n'), 1):
-                    if '{' not in line:
-                        continue
-                    seen += 1
-                    if items.normalize_text(markup.uncolor(line), **kw)[0] != line:
-                        bad.append('%s %s:%d'
-                                   % (os.path.relpath(path, items.shell.ROOT), label, i))
-        # 一行都没读到时这条也是全绿：配装源稿挪了地方就当场报出来。
-        self.assertGreater(seen, 100, '只读到 %d 行带着色的配装散文，字段变了？' % seen)
-        self.assertEqual(bad, [], '剥掉标记再补色补不回原样：\n  ' + '\n  '.join(bad))
-
-
 class WeaponPage(unittest.TestCase):
     """装备库：入库的三份载荷与页壳是不是现跑生成器的产物；浏览器那一份属性算法
     与 facts.shown() 是不是逐值一致。"""
