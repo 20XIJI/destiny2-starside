@@ -1122,11 +1122,9 @@ body:has(.hero) {
 
 /* 分组标题右侧的分隔线画成刻度尺：细刻度每 8px，长刻度每 88px。
    **长刻度的相位由 sky.js 写进 --rx，对到版心中轴**：背景竖线排在中轴 ± 88k 上，
-   分隔线从标题文字之后起、起点随字数变，不对相位时长刻度与背景刻线会错开一截。
-   transform-origin 给 sky.js 的自左展开用。 */
+   分隔线从标题文字之后起、起点随字数变，不对相位时长刻度与背景刻线会错开一截。 */
 body:has(.hero) .group-label::after {
   height: 11px;
-  transform-origin: left;
   background:
     linear-gradient(var(--hair), var(--hair)) 0 5px / 100% 1px no-repeat,
     linear-gradient(90deg, var(--hair-lit) 0 1px, transparent 1px) var(--rx, 0) 1px / 8px 4px repeat-x,

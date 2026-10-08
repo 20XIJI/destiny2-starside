@@ -1,10 +1,7 @@
-/* 首页的星图与入场动效。只有首页用，由 assets/app.js 在认出 .hero-search 时动态 import。
+/* 首页的星图与装饰动效。只有首页用，由 assets/app.js 在认出 .hero-search 时动态 import。
 
    星图是一张视口大小的固定画布（.starfield）：三层视差的恒星、按刻线角度连成的星座、
-   沿星座边走的光点、偶发的流星。画法在 sky-core.js，与内页共用。
-
-   入场只作用于首屏之外的那批：已经在视口里的元素首次绘制就在，此刻再从透明起步会
-   先闪出完整的一屏再淡入。 */
+   沿星座边走的光点、偶发的流星。画法在 sky-core.js，与内页共用。 */
 
 import { reduce, TAU, mod, rng, brush } from './sky-core.js';
 
@@ -130,32 +127,6 @@ function sky(canvas) {
   addEventListener('resize', () => { clearTimeout(id); id = setTimeout(build, 120); });
 }
 
-/* 首屏之外的卡片与分组标题，第一次滚进视口时自下浮起；分隔线自左展开。
-   用 Web Animations 而不是切类：元素在动画之前与之后都是它本来的样式，脚本没跑起来
-   页面也完整可读。 */
-function rise() {
-  if (reduce) return;
-  const curve = 'cubic-bezier(.2, .7, .2, 1)';
-  const list = [...document.querySelectorAll('.group-label, .entries > li')];
-  const io = new IntersectionObserver(batch => {
-    batch.filter(x => x.isIntersecting)
-      .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top || a.boundingClientRect.left - b.boundingClientRect.left)
-      .forEach((x, i) => {
-        const el = x.target, delay = i * 70;
-        io.unobserve(el);
-        el.animate([{ opacity: 0, transform: 'translateY(16px)' }, { opacity: 1, transform: 'none' }],
-          { duration: 800, delay, easing: curve, fill: 'backwards' });
-        if (el.matches('.group-label')) {
-          el.animate([{ transform: 'scaleX(0)' }, { transform: 'none' }],
-            { duration: 1300, delay: delay + 120, easing: curve, fill: 'backwards', pseudoElement: '::after' });
-        }
-      });
-  }, { threshold: .06 });
-  /* 已在视口里的不登记：它们本来就在 */
-  const h = innerHeight;
-  list.filter(el => el.getBoundingClientRect().top >= h).forEach(el => io.observe(el));
-}
-
 /* 字标扫光：一道亮带掠过一次，随后撤掉 .sheen，字回到普通的填充 */
 function sheen() {
   if (reduce) return;
@@ -180,8 +151,7 @@ function ruler() {
 }
 
 /* 星轨：同一列里相邻两张卡的节点用虚线相连，两端各一枚菱形，偶有光点沿线走。
-   位置只取布局值（offsetLeft / offsetTop）：卡片浮起动画进行时 getBoundingClientRect
-   带着 transform 的位移，据此画出的线会错开最多 16px，而且要等下一次重算才回正。
+   位置只取布局值（offsetLeft / offsetTop）。
    li、.entry 都是定位元素，offsetParent 链一路走到 main.index。 */
 function routes() {
   const main = document.querySelector('main.index');
@@ -227,7 +197,6 @@ export default function init() {
   const canvas = document.querySelector('.starfield');
   if (!canvas) throw new Error('首页缺少 .starfield 画布');
   sky(canvas);
-  rise();
   sheen();
   ruler();
   routes();
