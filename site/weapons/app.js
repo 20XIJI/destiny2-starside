@@ -40,6 +40,10 @@
   var TIER_STEP = { F: 1, E: 2, D: 3, C: 5, B: 6, A: 7, S: 8 };
 
   var V = D.v;
+  var TYPE_FACETS = {};
+  V.qt.forEach(function (entry) {
+    (TYPE_FACETS[entry[2]] || (TYPE_FACETS[entry[2]] = [])).push(entry);
+  });
   var ICONS = '../assets/icons/';
   /* 首屏的卡片：1440×900 下卡片墙一屏 5 列 5 行多一点，取 6 行。这些图不懒载，前 10 张再提优先级。 */
   var N_EAGER = 30, N_HIGH = 10;
@@ -77,6 +81,16 @@
       if (!sym) { console.error('sprite 里没有 g-' + key); }
     }
     return '<svg class="g" viewBox="' + boxes[key] + '" role="img" aria-label="' + esc(label || '') + '"><use href="#g-' + key + '"></use></svg>';
+  }
+  function typeFacet(r) {
+    var entries = TYPE_FACETS[r[W_SUB]];
+    for (var k = 0; k < entries.length; k++) {
+      if (entries[k][4] == null || has(entries[k][4], r[W_SLOT])) { return entries[k]; }
+    }
+  }
+  function typeGlyph(r) {
+    var entry = typeFacet(r);
+    return glyph(entry[1], entry[0]);
   }
   function store(key, value) {
     try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { console.warn('localStorage 写不进 ' + key, e); }
@@ -414,6 +428,9 @@
     Object.keys(V.ty).forEach(function (sub) {
       var n = V.ty[sub][0], s = +sub;
       t[n] = function (i) { return WR[i][W_SUB] === s; };
+    });
+    V.qt.forEach(function (entry) {
+      t[entry[0]] = function (i) { return WR[i][W_SUB] === entry[2] && typeFacet(WR[i]) === entry; };
     });
     Object.keys(V.el).forEach(function (e) {
       var n = V.el[e][0], k = +e;
@@ -836,6 +853,7 @@
       var v = isKey(S.scope, t.v);
       for (var e in V.el) { if (V.el[e][0] === v) { return imgTag(V.el[e][2], '', '', true); } }
       for (var b in V.br) { if (V.br[b][0] === v) { return imgTag(V.br[b][1], '', '', true); } }
+      for (var q = 0; q < V.qt.length; q++) { if (V.qt[q][0] === v) { return glyph(V.qt[q][1]); } }
       for (var s in V.ty) { if (V.ty[s][0] === v) { return glyph(V.ty[s][1]); } }
       for (var a in V.am) { if (V.am[a][0] === v) { return '<span class="ammo-' + a + '">' + glyph(V.am[a][1]) + '</span>'; } }
     }
@@ -883,7 +901,7 @@
     return tokens.some(function (t) { return !t.neg && tokKey(t) === tok; });
   }
 
-  /* 互斥组：一件装备在每一组里只有一个值，同组两个值同时成立必是空集，所以点第二个是换掉第一个。
+  /* 互斥组：点第二个值是换掉第一个；枪型细分与总类也在同组，避免留下多余的总类条件。
      威能既是槽位又是弹药，两组各列一次。组名以 k: 开头的是同一个关键字（一件装备只有一个框架、
      一个来源）。 */
   function isToks(names) { return names.map(function (n) { return 'is:' + n; }); }
@@ -891,7 +909,7 @@
     return Object.keys(table).map(function (k) { return at == null ? table[k] : table[k][at]; });
   }
   var GROUPS = {
-    wpn: { slot: isToks(V.slot), ty: isToks(namesOf(V.ty, 0)), el: isToks(namesOf(V.el, 0)),
+    wpn: { slot: isToks(V.slot), ty: isToks(namesOf(V.ty, 0).concat(V.qt.map(function (entry) { return entry[0]; }))), el: isToks(namesOf(V.el, 0)),
            br: isToks(namesOf(V.br, 0)), ammo: isToks(namesOf(V.am, 0)), rar: isToks(namesOf(V.rar)) },
     armor: { cls: isToks(V.cls), part: isToks(V.part) },
     sets: {}
@@ -950,8 +968,8 @@
     if (S.scope === 'sets') { return []; }
     return [
       ['slot', V.slot.map(function (s) { return ['is:' + s, esc(s), s]; })],
-      ['ty', Object.keys(V.ty).map(function (k) {
-        return ['is:' + V.ty[k][0], glyph(V.ty[k][1], V.ty[k][0]), V.ty[k][0]];
+      ['ty', V.qt.map(function (entry) {
+        return ['is:' + entry[0], glyph(entry[1], entry[0]), entry[0], entry[3]];
       })],
       ['el', Object.keys(V.el).map(function (k) {
         return ['is:' + V.el[k][0], imgTag(V.el[k][2], '', V.el[k][0], true), V.el[k][0]];
@@ -966,8 +984,12 @@
       quickFor = S.scope;
       var groups = quickGroups();
       presetBox.innerHTML = !groups.length ? '' : '<div class="wpn-quick">' + groups.map(function (g) {
+        var ammo = 0;
         return '<div class="qg" data-g="' + g[0] + '">' + g[1].map(function (b) {
-          return '<button type="button" data-act="preset" data-g="' + g[0] + '" data-v="' + esc(b[0]) +
+          var sep = g[0] === 'ty' && ammo && ammo !== b[3] ?
+            '<span class="sep ammo-sep" data-ammo="' + b[3] + '" role="separator" aria-label="' + esc(V.am[b[3]][0] + '武器') + '"></span>' : '';
+          ammo = b[3];
+          return sep + '<button type="button" data-act="preset" data-g="' + g[0] + '" data-v="' + esc(b[0]) +
             '" aria-pressed="false" title="' + esc(b[2]) + '">' + b[1] + '</button>';
         }).join('') + '</div>';
       }).join('<span class="sep"></span>') + '</div>';
@@ -1219,7 +1241,7 @@
   function meta(r) {
     return '<div class="wpn-meta w">' + imgTag(V.el[r[W_EL]][2], 'el', elName(r), true) +
       '<span class="ammo-' + r[W_AMMO] + '">' + glyph(V.am[r[W_AMMO]][1], V.am[r[W_AMMO]][0]) + '</span>' +
-      glyph(V.ty[r[W_SUB]][1], typeName(r)) +
+      typeGlyph(r) +
       (r[W_BR] ? imgTag(V.br[r[W_BR]][1], 'br', V.br[r[W_BR]][0], true) : '') +
       '<span class="ssn">S' + r[W_SSN] + '</span></div>';
   }
@@ -1269,7 +1291,7 @@
       imgTag(V.el[r[W_EL]][2], 'el', elName(r)) + '<span class="ssn' + (dup ? ' dup' : '') + '">S' + r[W_SSN] + '</span>' +
       '<span class="ammo-' + r[W_AMMO] + ' wpn-meta">' + glyph(V.am[r[W_AMMO]][1]) + '</span>' + gun(r, 'sm') +
       '<span class="nm' + (isExotic(r) ? ' exo' : '') + '">' + esc(r[W_NAME]) + '</span><span class="ty">' +
-      glyph(V.ty[r[W_SUB]][1]) + esc(typeName(r)) + '</span>' +
+      typeGlyph(r) + esc(typeName(r)) + '</span>' +
       (r[W_BR] ? imgTag(V.br[r[W_BR]][1], 'br', V.br[r[W_BR]][0]) : '<span></span>') +
       '<span class="fr">' + imgTag(fr[1]) + esc(fr[0]) + '</span><span class="wpn-grades">' +
       (g ? esc([g[0] ? 'AEGIS ' + g[0] : '', g[1] ? '小棒猪 ' + g[1] : ''].filter(Boolean).join('　')) : '') + '</span></a></li>';
@@ -1593,7 +1615,7 @@
     }
     chip('is:' + elName(r), imgTag(V.el[r[W_EL]][2], '', '', true), elName(r));
     if (r[W_BR]) { chip('is:' + V.br[r[W_BR]][0], imgTag(V.br[r[W_BR]][1], '', '', true), V.br[r[W_BR]][0]); }
-    chip('is:' + typeName(r), glyph(V.ty[r[W_SUB]][1]), typeName(r));
+    chip('is:' + typeName(r), typeGlyph(r), typeName(r));
     chip('is:' + V.am[r[W_AMMO]][0], '<span class="ammo-' + r[W_AMMO] + '">' + glyph(V.am[r[W_AMMO]][1]) + '</span>', V.am[r[W_AMMO]][0]);
     /* 固有随机的那把没有单一框架，这一枚 chip 会把其中一枚说成固定的 */
     if (!intrinsicCol(i)) { chip('frame:' + fr[0], imgTag(fr[1], '', '', true), fr[0]); }

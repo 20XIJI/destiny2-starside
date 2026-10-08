@@ -13,10 +13,10 @@ paths:
 
 这一页**不写任何数据**。`tools/build-weapons.py` 只读实体层（`resolve.Facts()`
 与 `rows.py` 的异域取法），产出 `weapons/` 下四个文件；`weapons/app.js` 与
-`weapons/style.css` 是手写的。例外有四处，都是「那边已经有了，抄过来两处会各改各的」：
+`weapons/style.css` 是手写的。例外有五处，都是「那边已经有了，抄过来两处会各改各的」：
 弹药块拾取量现读弹药生成机制页的表（见《框架数值》），护甲套装效果的图现读护甲套装页
 的索引，神器模组的名字、归属与说明现读神器模组页的索引（见《神器模组》），配装卡与它的
-样式现读配装推荐页的产出（见《用过它的配装》）。
+样式现读配装推荐页的产出（见《用过它的配装》），快速检索的枪型顺序现读武器框架页源稿。
 
 ## 产出
 
@@ -317,6 +317,17 @@ design.md 的约束之外，本页定的几条：
 类型与弹药的小图标在 `tools/type-icons.json`，取自 justrealmilk/destiny-icons（CC0），
 `build-weapons.py` 内联成页内 sprite；`app.js` 的 `glyph()` 引用时带上 symbol 的
 viewBox，不带的话外层 svg 按 300px 宽算。
+
+快速检索枪型词表 `v.qt` 由 `build-weapons.py` 的 `quick_types()` 生成，每项是
+`[名字, 图标, itemSubType, 多数弹药, 槽位限定]`。按主武器、特殊、威能分组，组内顺序
+取武器框架页源稿的首列首次出现顺序；同一枪型跨弹药时，按代表卡片的数量取多数，
+不多算专家／全息副本，同数取弹药枚举较小的一组。组界是低透明度的特殊弹药绿与威能弹药紫。
+
+榴弹发射器共用 manifest 的 `itemSubType: 23`，词表拆成两项：威能位用
+`grenade_launcher`（弹鼓），主手／副手用 `grenade_launcher-field_forged`（后膛）。
+卡片、列表、详情与 `is:` 匹配都走 `app.js` 的 `typeFacet()`；快速检索各有一个入口，
+同属枪型互斥组。`is:榴弹发射器` 仍查两类，新增 `is:后膛榴弹发射器` 与
+`is:弹鼓榴弹发射器` 只查各自那一类。
 
 ## 图标
 

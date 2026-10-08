@@ -784,6 +784,8 @@ function funcSource(file, name) {
   const text = fs.readFileSync(path.join(site, file), 'utf8')
   const head = new RegExp('^([ \\t]*)function ' + name + ' ?\\(', 'm').exec(text)
   assert.notEqual(head, null, `${file} 里找不到 ${name}()`)
+  const line = text.slice(head.index).split('\n', 1)[0]
+  if (line.trimEnd().endsWith('}')) return line
   // 按缩进找收尾，不数花括号——cells() 的函数体里有 '{' 与 '}' 两个字符串字面量，
   // 数括号会在那里提前收口。同一层缩进上孤零零的一个 } 就是这个函数的末尾。
   const close = new RegExp('^' + (head[1] || '') + '\\}$', 'm')
@@ -1770,6 +1772,25 @@ test('weapons: the query parser keeps DIM precedence and token positions', () =>
   assert.deepEqual(q('(is:手炮'), { op: 'kw', k: 'is', v: '手炮' }, '不配对的括号忽略')
   const t = tokenize('is:手炮  perk:萤火虫')
   assert.deepEqual(JSON.parse(JSON.stringify(t.map((x) => [x.a, x.b]))), [[0, 5], [7, 15]], 'token 记着它在原文里的位置')
+})
+
+test('weapons: launcher subtypes partition the catalog by slot without narrowing the generic type', () => {
+  const catalog = {}
+  vm.runInNewContext(fs.readFileSync(path.join(site, 'weapons/index.js'), 'utf8'), { window: catalog })
+  const { v, w } = catalog.WPN
+  const deps = 'var V=' + JSON.stringify(v) + ',WR=' + JSON.stringify(w) +
+    ',TYPE_FACETS={};V.qt.forEach(function(e){(TYPE_FACETS[e[2]]||=[]).push(e)});\n' +
+    'var W_H=0,W_SUB=2,W_EL=3,W_AMMO=4,W_SLOT=5,W_BR=6,W_TIER=8,W_FLAG=9;\n' +
+    'var F_CRAFT=4,F_ENH=32,F_TIER=8,F_ADEPT=1,F_HOLO=2,F_REISSUE=64;\n'
+  const { isTable } = weaponFns(['has', 'typeFacet', 'isTable'], deps)
+  const table = isTable('wpn')
+  for (let i = 0; i < w.length; i++) {
+    const launcher = w[i][2] === 23
+    const heavy = v.slot[w[i][5]] === '威能'
+    assert.equal(table['榴弹发射器'](i), launcher)
+    assert.equal(table['后膛榴弹发射器'](i), launcher && !heavy, w[i][1])
+    assert.equal(table['弹鼓榴弹发射器'](i), launcher && heavy, w[i][1])
+  }
 })
 
 test('weapons: is: reads Chinese as written and English ignoring case, spaces and hyphens', () => {

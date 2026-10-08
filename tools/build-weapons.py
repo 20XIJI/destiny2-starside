@@ -439,8 +439,7 @@ def brick_table():
     """`(枪型, 弹药) → [常规, 常规+回收利用, 强化, 强化+回收利用]`。
 
     数值现读弹药生成机制那一页的「弹药块拾取量」表，不在这里抄第二份：那张表是
-    实测结果，会随版本改，抄过来就会各改各的。这一页因此是装备库唯一读源稿的地方,
-    读的也只是别人写好的一张表。行名对应表见 BRICK_ROWS，对不上的行当场中止。
+    实测结果，会随版本改。行名对应表见 BRICK_ROWS，对不上的行当场中止。
     """
     with open(BRICK_PAGE, encoding='utf-8') as fh:
         body = fh.read().split('## 弹药块拾取量', 1)
@@ -833,6 +832,66 @@ def exotic_block(b, h):
     return [chips, b.site_html(text)] if text else [chips, '']
 
 
+def quick_types(wrows, types):
+    """快速检索枪型：[名字, 图标, itemSubType, 多数弹药, 槽位限定]。
+
+    组内顺序现读武器框架页；弹药按代表卡片计数，不让专家／全息副本多算。
+    榴弹按槽位拆成两项，其他跨弹药枪型仍只占一项。
+    """
+    facets = {}
+    by_sub = {}
+    for sub, (name, icon) in types.items():
+        if sub == 23:
+            entries = [
+                ['后膛榴弹发射器', 'grenade_launcher-field_forged', sub, 0, [0, 1]],
+                ['弹鼓榴弹发射器', 'grenade_launcher', sub, 0, [2]],
+            ]
+        else:
+            entries = [[name, icon, sub, 0, None]]
+        by_sub[sub] = entries
+        for entry in entries:
+            facets[entry[0]] = entry
+
+    counts = {name: collections.Counter() for name in facets}
+    for i, row in enumerate(wrows):
+        if row[15] != i:
+            continue
+        for entry in by_sub[row[2]]:
+            if entry[4] is None or row[5] in entry[4]:
+                counts[entry[0]][row[4]] += 1
+    for name, entry in facets.items():
+        entry[3] = max(AMMO, key=lambda a: (counts[name][a], -a))
+
+    path = shell.source_path('weapon-frames')
+    if path is None:
+        markup.die('找不到武器框架页源稿')
+    with open(path, encoding='utf-8') as fh:
+        body = fh.read().split('## 全部框架', 1)
+    if len(body) != 2:
+        markup.die('武器框架页里找不到「全部框架」一节')
+    aliases = {'冲锋枪': '微型冲锋枪', '弓箭': '战斗弓箭',
+               '后膛榴弹': '后膛榴弹发射器', '弹鼓榴弹': '弹鼓榴弹发射器'}
+    order = {}
+    for line in body[1].splitlines():
+        if line.startswith('##'):
+            break
+        spans = markup.cells(line)
+        if spans is None or len(spans) < 2:
+            continue
+        a, b = spans[0]
+        name = line[a:b].strip()
+        if not name or name == '武器' or set(name) <= {'-'}:
+            continue
+        name = aliases.get(name, name)
+        if name not in facets:
+            markup.die('武器框架页枪型「%s」没有对应的快速检索项' % name)
+        order.setdefault(name, len(order))
+    missing = facets.keys() - order.keys()
+    if missing:
+        markup.die('武器框架页缺少快速检索枪型：%s' % '、'.join(sorted(missing)))
+    return sorted(facets.values(), key=lambda entry: (entry[3], order[entry[0]]))
+
+
 def build(facts):
     """{相对路径: 文本}。纯函数：测试与 main() 共用。"""
     b = Build(facts)
@@ -1046,6 +1105,7 @@ def build(facts):
         'br': {k: [v, stem(icons.CHAMP[k])] for k, v in icons.BREAKER.items()},
         'am': {k: list(v) for k, v in AMMO.items()},
         'ty': types,
+        'qt': quick_types(wrows, types),
         'slot': list(SLOT.values()),
         'rar': RARITY,
         'fr': frames,

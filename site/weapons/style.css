@@ -407,6 +407,11 @@
   background: var(--hair-lit);
 }
 
+/* 枪型按多数弹药归组，组界沿用游戏的弹药色，压低亮度不抢图标。 */
+.wpn-quick .ammo-sep { margin: 0 8px; opacity: .35; }
+.wpn-quick .ammo-sep[data-ammo="2"] { background: var(--ammo-special); }
+.wpn-quick .ammo-sep[data-ammo="3"] { background: var(--ammo-heavy); }
+
 .wpn-quick button {
   position: relative;
   display: grid;
