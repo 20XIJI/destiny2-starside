@@ -10,7 +10,7 @@ window.starsidePages = [
   ["docs/elements","职业分支详解","elements/index.html","档案","","2026.10.8"],
   ["docs/weapon-frames","武器框架","weapon-frames/index.html","档案","","2026.8.22"],
   ["keys/armor-mods","护甲模组","armor-mods/index.html","档案","","2026.10.8"],
-  ["keys/armor-sets","护甲套装效果","armor-sets/index.html","档案","","2026.10.8"],
+  ["keys/armor-sets","护甲套装效果","armor-sets/index.html","档案","","2026.10.9"],
   ["keys/artifact-mods","神器模组","artifact-mods/index.html","档案","","2026.10.8"],
   ["keys/exotic-armor","异域护甲详解","exotic-armor/index.html","档案","","2026.10.9"],
   ["keys/exotic-weapon","异域武器详解","exotic-weapon/index.html","档案","","2026.10.9"],
