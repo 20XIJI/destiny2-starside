@@ -100,8 +100,12 @@ def listing(out: str) -> list[str]:
 def tcb(*args: str, env: str, confirm: bool = False) -> None:
     # --prune 会弹一句 y/N。脚本这一侧替你按 y——闸门是命令行上那个显式的 --prune，
     # 不是这一问；stdin 交给 tcb 时它在非交互场景下读到 EOF 当 N，静默不清理。
-    r = subprocess.run(["tcb", *args, "-e", env], cwd=ROOT, input="y\n" if confirm else None, text=True)
+    r = subprocess.run(["tcb", *args, "-e", env], cwd=ROOT,
+                       input="y\n" if confirm else None, text=True,
+                       capture_output=True)
     if r.returncode:
+        sys.stderr.write(getattr(r, "stdout", None) or "")
+        sys.stderr.write(getattr(r, "stderr", None) or "")
         sys.exit("tcb 失败，refs/deploy 不动，改完重跑即可")
 
 

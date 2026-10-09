@@ -188,9 +188,14 @@ def main() -> int:
     if page_dirty:
         cdoc = load_tool('convert-doc.py')
         t = time.perf_counter()
-        for slug in page_dirty:
-            cdoc.build(slug)
-        cdoc.unbuilt()
+        if len(page_dirty) > 3:
+            shell.hush_emit(True)
+        try:
+            for slug in page_dirty:
+                cdoc.build(slug)
+            cdoc.unbuilt()
+        finally:
+            shell.hush_emit(False)
         print('  tools/convert-doc.py  %.1fs  %d pages' % (
             time.perf_counter() - t, len(page_dirty)), flush=True)
         ran = True

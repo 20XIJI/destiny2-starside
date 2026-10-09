@@ -38,7 +38,8 @@ def j(v):
 
 
 def build():
-    css = open(os.path.join(shell.SITE, 'assets', 'site.css'), encoding='utf-8').read()
+    with open(os.path.join(shell.SITE, 'assets', 'site.css'), encoding='utf-8') as f:
+        css = f.read()
     # {类名: (它引的 --c-* 变量, 规则体是否只有 color)}。芯片按变量分组，
     # --c-orb 与 --c-stack 渲染色相同、名字不同，这一层让人靠名字分辨。
     tint = check_terms.tint_classes(css)
@@ -111,7 +112,8 @@ def tree():
 
     一行六列：[_id, 标题, 页面路径, 分组, 父页 _id, 更新时间]。
     """
-    home = open(os.path.join(shell.SITE, 'index.html'), encoding='utf-8').read()
+    with open(os.path.join(shell.SITE, 'index.html'), encoding='utf-8') as f:
+        home = f.read()
     group = {}
     for m in re.finditer(r'<h2 class="group-label">([^<]*)<span>.*?</h2>(.*?)</ul>', home, re.S):
         for href in re.findall(r'<a class="entry"[^>]*href="([^"]+)"', m.group(2)):
@@ -119,7 +121,8 @@ def tree():
 
     docs = {}
     for slug, path in shell.sources():
-        md = open(path, encoding='utf-8').read()
+        with open(path, encoding='utf-8') as f:
+            md = f.read()
         name = os.path.basename(path)
         where = re.search(r'^路径：(.*)$', md, re.M)
         stamp = re.search(r'^更新：(.*)$', md, re.M)

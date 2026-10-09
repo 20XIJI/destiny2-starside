@@ -1182,11 +1182,12 @@ def build(slug):
 
         shell.emit(outdir, ORIGINS.seal(out), title, int(keep) if keep else 0)
         n = ORIGINS.write(outdir)
-        if n:
+        if n and not shell._EMIT_HUSH:
             print('  %s/%s  %d 处出处' % (where, editmap.FILE, n))
         if DEX is not None:
             _, n = DEX.write()  # noqa
-            print('  data/index/%s.json  %d 条' % (where, n))
+            if not shell._EMIT_HUSH:
+                print('  data/index/%s.json  %d 条' % (where, n))
 
 
 def main():
@@ -1201,9 +1202,14 @@ def main():
              if '%s/index.html' % slug not in shell.FIXED]
     if not slugs:
         die('references/docs/ 与 references/keys/ 下没有 .md 源稿')
+    if len(slugs) > 3:
+        shell.hush_emit(True)
     for slug in slugs:
         build(slug)
     unbuilt()
+    if len(slugs) > 3:
+        print('%d 页' % len(slugs))
+    shell.hush_emit(False)
 
 
 def unbuilt():

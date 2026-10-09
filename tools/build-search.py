@@ -257,7 +257,6 @@ def main() -> int:
             # 只读标题，不跑整趟 scan()：合集页里一套一个 <section id>，那些分节
             # 没有标题也不该出条目，扫它们除了报错什么也换不来。
             out.append(line({'u': url, 't': title_of(url, read(url)), 'd': ''}))
-            print('  %-38s    1 条（配装名）' % url)
             continue
         page, rows = scan(url)
         if url in ddc:
@@ -265,7 +264,6 @@ def main() -> int:
         out.append(line(page))
         out += pack(rows, last)
         total += len(rows)
-        print('  %-38s %4d 条' % (url, len(rows)))
     body = 'window.starsideIndex = [\n%s\n];\n' % ',\n'.join(out)
     with open(OUT, 'w', encoding='utf-8') as f:
         f.write(body)

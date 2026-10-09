@@ -379,6 +379,15 @@ def sync_card(home, href, count=None):
     return home[:card.start()] + fixed + home[card.end():]
 
 
+# 一次写出超过三页时关掉逐页那一行。单跑一篇生成器保持原样。
+_EMIT_HUSH = False
+
+
+def hush_emit(on=True):
+    global _EMIT_HUSH
+    _EMIT_HUSH = on
+
+
 def emit(outdir, out, detail='', rest=0):
     """写出 index.html 并报一行。detail 是该页特有的结构计数。
 
@@ -411,12 +420,13 @@ def emit(outdir, out, detail='', rest=0):
             f.write(frag)
         with open(os.path.join(outdir, REST_GZ), 'wb') as f:
             f.write(gzip.compress(frag.encode(), compresslevel=9, mtime=0))
-    print('%s —— %.1f KB%s%s' % (os.path.relpath(path, SITE), len(page.encode()) / 1024,
-                                 '，其余 %d 段另存 %s %.1f KB（%s %.1f KB）'
-                                 % (frag.count('<template data-rest='), REST_GZ,
-                                    os.path.getsize(os.path.join(outdir, REST_GZ)) / 1024,
-                                    REST, len(frag.encode()) / 1024) if frag else '',
-                                 '，' + detail if detail else ''))
+    if not _EMIT_HUSH:
+        print('%s —— %.1f KB%s%s' % (os.path.relpath(path, SITE), len(page.encode()) / 1024,
+                                     '，其余 %d 段另存 %s %.1f KB（%s %.1f KB）'
+                                     % (frag.count('<template data-rest='), REST_GZ,
+                                        os.path.getsize(os.path.join(outdir, REST_GZ)) / 1024,
+                                        REST, len(frag.encode()) / 1024) if frag else '',
+                                     '，' + detail if detail else ''))
 
 
 # ── 首屏之后的记录另存一份 ─────────────────────────────────────────────

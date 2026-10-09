@@ -2230,6 +2230,8 @@ def main():
     if len(sys.argv) > 2:
         die(__doc__)
     only = sys.argv[1] if len(sys.argv) == 2 else None
+    if not only:
+        shell.hush_emit(True)
     if only:
         print('配装词表读取已生成的资料页；资料源稿也有修改时先运行 npm run build')
     idx = vocab.build()
@@ -2282,6 +2284,7 @@ def main():
             print('  …另 %d 处' % (len(drift) - 12))
     if only:
         print('仅更新匹配的配装详情；未更新目录、首页、搜索与关联词表。发布前运行 npm run build')
+    shell.hush_emit(False)
 
 
 if __name__ == '__main__':

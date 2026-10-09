@@ -2064,7 +2064,7 @@ test('weapons: every syntax row parses into known keywords', () => {
 async function main() {
   let failures = 0
   for (const [name, fn] of tests) {
-    try { await fn(); console.log('ok - ' + name) }
+    try { await fn() }
     catch (error) { failures++; console.error('FAIL - ' + name); console.error(error.stack || error) }
   }
   console.log(`${tests.length - failures}/${tests.length} quality regressions passed (offline adapter; cloud integration not exercised)`)
