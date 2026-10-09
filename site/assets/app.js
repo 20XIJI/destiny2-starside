@@ -282,7 +282,7 @@
     return;
   }
 
-  var rows, mods, lanes, groups, subs, text;
+  var rows, mods, lanes, groups, subs, text, names;
   function all(sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); }
   /* 条目与跟着条目走的那几样，收一遍。首屏之后另存的页面（shell.split_rest）在
      starside:rest 时再收一遍：那批记录在这段脚本跑完之后才插回来。 */
@@ -302,6 +302,15 @@
     /* 上百个条目，每次按键都取 textContent 会重复遍历整棵子树，先缓存。
        直接存小写：`hit()` 要的就是它，每次按键再转一遍是几十万字符的临时垃圾。 */
     text = mods.map(function (mod) { return mod.textContent.toLowerCase(); });
+    /* 拼音只打在条目名上。合并行没有自己的行标题，沿用上一行的名字，
+       换一个父节点就断开，避免跨表把名字带到下一张去。 */
+    var carry = '', parent = null;
+    names = mods.map(function (mod) {
+      if (mod.parentNode !== parent) { parent = mod.parentNode; carry = ''; }
+      var t = mod.querySelector('th[scope="row"], .r-nm, h4, h3');
+      if (t) carry = t.textContent;
+      return carry;
+    });
   }
   collect();
 
@@ -649,7 +658,8 @@
     seen.forEach(function (x) { d.host.appendChild(chipFor(d, k, x, x)); });
   }
 
-  /* 命中即显示；整行三档皆不命中则整行隐藏，整节不命中则整节与其 chip 一同隐藏。
+  /* 命中即显示；整行原文不命中时再拿资料库物品名走拼音与英文。介绍不走这两条。
+     整行三档皆不命中则整行隐藏，整节不命中则整节与其 chip 一同隐藏。
      检索期间三档并排对照关系失效，清空即恢复。 */
   function filter(query) {
     var terms = words(query);
@@ -657,7 +667,9 @@
     /* **值没变就不写。**`hidden` 对应 display:none，写一次就要重排整张表；
        weapon-perks 有 413 行，删掉一个字往往只有几行的可见状态真的变了。 */
     mods.forEach(function (mod, i) {
-      var on = hit(text[i], terms) && facetPass(i);
+      var on = (hit(text[i], terms)
+        || (window.starsidePy && names[i] && window.starsidePy.hit(names[i], terms)))
+        && facetPass(i);
       if (mod.hidden === on) mod.hidden = !on;
       if (on) hits++;
     });

@@ -295,6 +295,8 @@ def head(title, desc, app_js=False, up=1, sheets=None, sky=False):
         sheets = (['../style.css'] if up > 1 else []) + ['style.css']
     o += ['<link rel="stylesheet" href="%s">' % s for s in sheets]
     if app_js:
+        # 拼音表要排在 app.js 前面：工具条在加载时就按 ?q= 过滤，那一刻表必须已经在。
+        o.append('<script src="%sassets/pinyin.js" defer></script>' % at)
         o.append('<script src="%sassets/app.js" defer></script>' % at)
     if sky:
         o.append('<script type="module" src="%sassets/sky-page.js"></script>' % at)

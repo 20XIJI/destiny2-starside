@@ -1310,7 +1310,8 @@ def page(stats, glyphs):
               '<a href="../exotic-weapon/index.html">异域武器</a>与'
               '<a href="../exotic-armor/index.html">异域护甲</a>两页' % (AEGIS_SRC, LGPIG_SRC))
     body = [
-        head.replace('</head>', '<script src="index.js" defer></script>\n'
+        head.replace('</head>', '<script src="../assets/pinyin.js" defer></script>\n'
+                     '<script src="index.js" defer></script>\n'
                      '<script src="app.js" defer></script>\n'
                      # 配装卡那一族的样式内联进来，不抄第二份：详情里「用过它的配装」
                      # 摆的就是配装推荐页那张卡，强度光环、审核意见、合集马赛克与

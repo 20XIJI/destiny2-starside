@@ -114,6 +114,11 @@ def main() -> int:
         if 'class="page-head"' in src and 'assets/sky-page.js' not in src:
             bad.append('%s：带 .page-head 却没引 assets/sky-page.js（shell.head 的 sky 参数）' % rel)
 
+        if 'assets/app.js' in src and 'assets/pinyin.js' not in src:
+            bad.append('%s：引了 app.js 却没引 pinyin.js，条目名的拼音检索会失效' % rel)
+        if 'weapons/app.js' in src and 'assets/pinyin.js' not in src:
+            bad.append('%s：装备库没引 pinyin.js，武器名的拼音检索会失效' % rel)
+
         if rel != shell.HOME and '"%s"' % rel not in index:
             bad.append('%s：不在全站搜索索引里，跑一次 tools/build-search.py' % rel)
 

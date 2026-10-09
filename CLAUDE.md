@@ -167,6 +167,8 @@ icons.py           按主键把官方图拉回来转 WebP，落 assets/icons/，
 check_icons.py     换图之前逐行比「现在显示的图」与「主键的官方图」，
                    两边同一套编码参数、文件名即内容 md5，名字相同即像素相同
 build-search.py    各页产出 → assets/search.js，首页那只搜索框搜的就是它
+pinyin.py          data/ 物品名 → assets/pinyin.js。全表 tools/pinyin.json，
+                   构建时按物品、套装、护甲模组族的中文名裁词典与英文名；介绍不进表。换拼音数据才 --distill
 build-terms.py     两道闸门的词表 → admin/terms.js（前端提示），
                    资料页清单与配装的五张词表 → admin/pages.js，
                    并把 admin/dialect.js 复制一份到 functions/api/（云函数只
@@ -202,7 +204,7 @@ json2xlsx.py       把上面那份 JSON 还原成 xlsx，供核对与二次编�
 | `.claude/rules/pages.md` | 三个资料生成器与源稿方言、页脚归属、更新日志的写法、从 Google 表格做一页资料 | `tools/convert-doc.py`、`convert-artifact-mods.py`、`convert-armor-sets.py`、`markup.py`、`shell.py`、`references/**/*.md` |
 | `.claude/rules/builds.md` | 推荐配装页：版面、护甲模组变体、源稿格式、合集、悬停详情、填表页、导入 DIM | `tools/convert-build.py`、`vocab.py`、`mods.py`、`dim.py`、`site/builds/**`、`references/builds/**` |
 | `.claude/rules/backend.md` | 云函数与在线编辑台：认证、角色、三张表、就地编辑、审核台、配装投稿 | `functions/**`、`site/admin/**`、`tools/sync.py`、`build-terms.py` |
-| `.claude/rules/frontend.md` | 全站搜索索引与 `assets/app.js` | `site/assets/app.js`、`site/assets/search.js`、`tools/build-search.py` |
+| `.claude/rules/frontend.md` | 全站搜索索引与 `assets/app.js` | `site/assets/app.js`、`site/assets/search.js`、`site/assets/pinyin.js`、`tools/build-search.py`、`tools/pinyin.py` |
 | `.claude/rules/weapons.md` | 装备库：武器与异域护甲、三份载荷、查询语法、属性与大师杰作／T 级、强化配对、作者推荐光圈 | `tools/build-weapons.py`、`site/weapons/**`、`tools/type-icons.json` |
 
 加一条子系统约定就改对应那一份，不搬回本文件。本文件只收每次都用得上的东西；
@@ -221,7 +223,8 @@ python3 tools/convert-doc.py [slug]           # 源稿 references/{docs,keys}/*.
 python3 tools/convert-build.py                # 源稿 references/builds/<赛季>/*.md
 python3 tools/build-weapons.py                # 装备库：实体层 → weapons/ 三份载荷与页壳
 python3 tools/build-home.py                   # 首页卡片的内容预览，从各页产出现取
-python3 tools/build-search.py                 # 全站搜索索引 assets/search.js
+python3 tools/build-search.py                 # 全站搜索索引 assets/search.js（顺手裁 pinyin.js）
+python3 tools/pinyin.py --distill             # pinyin-data → tools/pinyin.json，换表才跑
 python3 tools/check_shell.py                  # 各页外壳逐字一致
 python3 tools/check_terms.py                  # 术语正名、着色 token、更新时间
 python3 tools/check_type.py                   # 字距与中文、CSS 简写有效性、产出结构

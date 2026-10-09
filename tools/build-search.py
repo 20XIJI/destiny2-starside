@@ -5,6 +5,9 @@
 （section[id]、.gen tbody tr、.mod、.set），一份实现覆盖全部页面；源稿那边要按
 生成器分三种方言处理，且没有分节 id，链过去落不到位置。
 
+顺手按 data/ 物品名裁一份 assets/pinyin.js（词典 + 中文白名单 + 英文名 + 匹配函数），
+首页、资料页工具条与装备库的拼音与英文检索都读它。介绍不进表。
+
 产出是一个 JS 文件而不是 JSON：**双击打开的站点要能搜**，而 file:// 下 fetch 取
 同目录的文件会被 CORS 挡掉，<script> 不会。文件里就一句 window.starsideIndex = [ … ]，
 一条记录一行——这份文件每改一次源稿就要重生成并入库，按行写让 git 存得下增量。
@@ -35,6 +38,7 @@ import re
 
 import markup
 import pagedex
+import pinyin
 import rows as rows_mod
 import shell
 
@@ -265,8 +269,13 @@ def main() -> int:
     body = 'window.starsideIndex = [\n%s\n];\n' % ',\n'.join(out)
     with open(OUT, 'w', encoding='utf-8') as f:
         f.write(body)
+    py = pinyin.emit()
+    names, ens = pinyin.item_catalog()
     print('assets/search.js —— %.1f KB，%d 个页面 %d 个条目'
           % (len(body.encode()) / 1024, len(shell.pages()) - 1, total))
+    print('assets/pinyin.js —— %.1f KB，%d 个物品名 %d 个汉字 %d 个英文名'
+          % (len(py.encode()) / 1024, len(names), len(pinyin.used_chars(names)),
+             sum(1 for e in ens if e)))
     return 0
 
 

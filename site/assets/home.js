@@ -47,13 +47,19 @@ function libJump(q, rows) {
 }
 
 /* 三档仍是页面、条目名、正文；每一档里 Compendium 页（c:1）排在前面。
+   资料库物品名额外走拼音（全拼／简拼／混输）与英文名，页面标题与正文只走原文子串。
    武器名命中时在 DDC 条目名之后插一条跳到装备库；没有条目名、只命中了
    异域武器这类页标题时，插在 DDC 页面命中之后。 */
 function ranked(index, pages, terms, hit, q) {
   var top = [], named = [], rest = [];
+  function nameOk(r) {
+    var py = typeof window !== 'undefined' && window.starsidePy;
+    if (py) return py.hit(r.n, terms);
+    return hit(r._n, terms);
+  }
   index.forEach(function (r) {
     if (!r.n) { if (hit(r._t, terms)) top.push(r); }
-    else if (hit(r._n, terms)) named.push(r);
+    else if (nameOk(r)) named.push(r);
     else if (hit(r._x, terms)) rest.push(r);
   });
   function cmp(a, b) {

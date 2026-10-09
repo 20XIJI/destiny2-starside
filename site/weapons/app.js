@@ -496,6 +496,14 @@
   /* 裸词搜的那一串：名字、英文名、类型、框架、词条名、描述。有什么数据就先搜什么，
      词条池与说明到了之后缓存作废、重搜一遍。 */
   var hayCache = {};
+  function itemName(scope, i) {
+    if (scope === 'sets') return SR[i][T_NAME];
+    if (scope === 'armor') return AR[i][A_NAME];
+    return WR[i][W_NAME];
+  }
+  function pyName(scope, i, v) {
+    return window.starsidePy && v && window.starsidePy.match(itemName(scope, i), fold(v));
+  }
   function hay(scope, i) {
     var key = scope + i;
     if (hayCache[key] != null) { return hayCache[key]; }
@@ -561,7 +569,9 @@
          会把名字、词条名与描述里带这两个字的非虚空武器也搜进来。 */
       case 'w': {
         var hit = bareIs(scope, node.v, node.tok.q);
-        return hit ? hit(i) : hay(scope, i).indexOf(fold(node.v)) !== -1;
+        if (hit) { return hit(i); }
+        if (hay(scope, i).indexOf(fold(node.v)) !== -1) { return true; }
+        return pyName(scope, i, node.v);
       }
       default: return kw(scope, node.k, node.v, i, node.q);
     }
@@ -572,7 +582,7 @@
       var t = SR[i];
       switch (k) {
         case 'is': return isIn('sets', v, i);
-        case 'name': return fold(t[T_NAME] + ' ' + t[T_EN]).indexOf(f) !== -1;
+        case 'name': return fold(t[T_NAME] + ' ' + t[T_EN]).indexOf(f) !== -1 || pyName('sets', i, v);
         case 'perk': return fold(t[T_FX].map(function (x) { return x[0]; }).join(' ')).indexOf(f) !== -1;
         case 'season': return fold(t[T_SSN]).indexOf(f) !== -1;
         case 'source':
@@ -584,7 +594,7 @@
       r = AR[i];
       switch (k) {
         case 'is': return isIn('armor', v, i);
-        case 'name': return fold(r[A_NAME] + enOf('armor', i)).indexOf(f) !== -1;
+        case 'name': return fold(r[A_NAME] + enOf('armor', i)).indexOf(f) !== -1 || pyName('armor', i, v);
         case 'perk': return fold(r[A_PERKS]).indexOf(f) !== -1;
         case 'season': return cmp(v, r[A_SSN]);
         case 'source': return named(q, srcFold(srcOf(r, A_SRC)), srcFold(v));
@@ -594,7 +604,7 @@
     r = WR[i];
     switch (k) {
       case 'is': return isIn('wpn', v, i);
-      case 'name': return fold(r[W_NAME] + ' ' + enOf('wpn', i)).indexOf(f) !== -1;
+      case 'name': return fold(r[W_NAME] + ' ' + enOf('wpn', i)).indexOf(f) !== -1 || pyName('wpn', i, v);
       case 'frame': return named(q, fold(frameOf(r)[0]), f);
       case 'season': return cmp(v, r[W_SSN]);
       case 'source': return named(q, srcFold(srcOf(r, W_SRC)), srcFold(v));

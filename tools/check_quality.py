@@ -1076,6 +1076,23 @@ class Generated(unittest.TestCase):
                     for k in sorted(keys & set(own)) if own[k] != full.get(k)]
         self.assertEqual(bad[:6], [], '%d 处对不上，跑一次 npm run build' % len(bad))
 
+    def test_pinyin_table_matches_item_names(self):
+        """拼音表按 data/ 物品名现裁。记录改名加了新字、表没重蒸，
+        那个名字的拼音或英文检索会静默失效，页面照常渲染。"""
+        pinyin = load('quality_pinyin', 'pinyin.py')
+        names, ens = pinyin.item_catalog()
+        by = dict(zip(names, ens))
+        self.assertIn('故我在', names)
+        self.assertIn('虹吸', names)
+        self.assertIn('埃希恩记忆', names)
+        self.assertNotIn('卡鲁斯大帝', names)
+        self.assertNotIn('最后一愿', names)
+        self.assertEqual(by['枯萎囤积'], 'Witherhoard')
+        self.assertEqual(by['故我在'], 'Ergo Sum')
+        self.assertEqual(by['虹吸'], '')
+        self.assertEqual(pinyin.build(), self.read('assets/pinyin.js'),
+                         'assets/pinyin.js 过期了，跑 python3 tools/build-search.py')
+
     def test_the_cloud_function_carries_the_same_dialect(self):
         # 云函数只 require 得到自己目录下的东西，所以那一份是复制过去的。
         fn = (TOOLS.parent / 'functions' / 'api' / 'dialect.js').read_text(encoding='utf-8')

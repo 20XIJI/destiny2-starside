@@ -964,6 +964,93 @@ test('homepage search ranks Compendium pages first and jumps to the weapons libr
   assert.ok(!run('卡鲁斯大帝').some((r) => r.jump), '搜首领不该跳出装备库')
 })
 
+test('item names match full pinyin, initials, and mixed input, descriptions do not', () => {
+  // 拼音与英文只打在资料库物品名上：故我在能用 guwozai / gwz / ergo sum 搜到；
+  // 介绍、首领名、副本名用拼音或英文搜不到。匹配函数与首页 ranked() 走同一份。
+  const ctx = {}
+  ctx.window = ctx
+  vm.createContext(ctx)
+  vm.runInContext(fs.readFileSync(path.join(site, 'assets/pinyin.js'), 'utf8'), ctx,
+    { filename: 'assets/pinyin.js' })
+  const py = ctx.starsidePy
+  assert.ok(py && typeof py.match === 'function', 'pinyin.js 没挂上 starsidePy')
+  assert.equal(py.isItem('故我在'), true)
+  assert.equal(py.isItem('故我在（电弧元素）'), true, '站内消歧括注剥掉后仍是物品名')
+  assert.equal(py.isItem('虹吸'), true)
+  assert.equal(py.isItem('埃希恩记忆'), true)
+  assert.equal(py.isItem('卡鲁斯大帝'), false)
+  assert.equal(py.isItem('最后一愿'), false)
+  assert.equal(py.enOf('枯萎囤积'), 'Witherhoard')
+  assert.equal(py.enOf('故我在'), 'Ergo Sum')
+  assert.equal(py.enOf('故我在（电弧元素）'), 'Ergo Sum')
+  assert.equal(py.enOf('虹吸'), '')
+  assert.equal(py.hit('故我在', ['gwz']), true)
+  assert.equal(py.hit('虹吸', ['hx']), true)
+  assert.equal(py.hit('枯萎囤积', ['witherhoard']), true)
+  assert.equal(py.hit('雪上加霜', ['one-two']), true)
+  assert.equal(py.hit('雪上加霜', ['onetwopunch']), true)
+  assert.equal(py.hit('旅行者的选择', ['travelers']), true)
+  assert.equal(py.hit('卡鲁斯大帝', ['kalusidadi']), false)
+  assert.equal(py.hit('卡鲁斯大帝', ['calus']), false)
+  assert.equal(py.match('故我在', 'guwozai'), true)
+  assert.equal(py.match('故我在', 'gwz'), true)
+  assert.equal(py.match('故我在', '故wo'), true)
+  assert.equal(py.match('故我在', 'gwozai'), true)
+  assert.equal(py.match('雪上加霜', 'xsjs'), true)
+  assert.equal(py.match('雪上加霜', 'xueshangjiashuang'), true)
+  assert.equal(py.match('行者', 'xingzhe'), true)
+  assert.equal(py.match('行者', 'hangzhe'), true)
+  assert.equal(py.match('侏罗纪绿', 'lv'), true)
+  assert.equal(py.match('侏罗纪绿', 'lu'), true)
+  assert.equal(py.match('旅行者的选择', 'lvxingzhe'), true)
+  assert.equal(py.match('旅行者的选择', 'luxingzhe'), true)
+  assert.equal(py.match('故我在', 'wz'), true, '从名字中间连着匹配（我在）')
+  assert.equal(py.match('故我在', 'gz'), false, '简拼不能跳过中间的字')
+  assert.equal(py.match('故我在', 'daojian'), false, '介绍里的字不该靠拼音命中名字')
+
+  vm.runInContext(fs.readFileSync(path.join(site, 'assets/search.js'), 'utf8'), ctx,
+    { filename: 'assets/search.js' })
+  vm.runInContext(
+    ['unpack', 'isDdc', 'libJump', 'ranked'].map((n) => funcSource('assets/home.js', n)).join('\n')
+    + '\nthis.unpack=unpack;this.ranked=ranked',
+    ctx)
+  const index = ctx.unpack(ctx.starsideIndex)
+  const pages = {}
+  index.forEach((r) => {
+    if (!r.n) r._t = ((r.t || '') + ' ' + (r.d || '')).toLowerCase()
+    else { r._n = r.n.toLowerCase(); r._x = (r.x || '').toLowerCase() }
+    if (r.d) pages[r.u] = r
+  })
+  function hit(hay, terms) {
+    for (let i = 0; i < terms.length; i++) if (hay.indexOf(terms[i]) === -1) return false
+    return true
+  }
+  function run(q) {
+    return ctx.ranked(index, pages, q.toLowerCase().split(/\s+/).filter(Boolean), hit, q)
+  }
+  const named = (q) => run(q).filter((r) => r.n && !r.jump)
+  const gwz = named('gwz')
+  assert.ok(gwz.some((r) => r.n === '故我在' || r.n.startsWith('故我在')),
+    'gwz 该命中故我在')
+  for (const r of gwz) {
+    assert.ok(py.match(r.n, 'gwz'), `${r.n} 不该仅因介绍被 gwz 命中`)
+  }
+  const full = named('guwozai')
+  assert.ok(full.some((r) => r.n === '故我在' || r.n.startsWith('故我在')),
+    'guwozai 该命中故我在')
+  const rest = run('guwozai').filter((r) => r.n && !r.jump && !py.match(r.n, 'guwozai'))
+  assert.equal(rest.length, 0, '介绍里写到故我在的条目不该靠拼音进名字档')
+  assert.equal(named('kalusidadi').length, 0, '首领名不是物品，不该被拼音搜到')
+  assert.equal(named('zuihouyiyuan').length, 0, '副本名不是物品，不该被拼音搜到')
+  assert.ok(named('hx').some((r) => r.n === '虹吸'), 'hx 该命中护甲模组族虹吸')
+  assert.ok(named('witherhoard').some((r) => r.n === '枯萎囤积'),
+    'witherhoard 该作为条目名命中枯萎囤积')
+  assert.ok(named('ergosum').some((r) => r.n === '故我在' || r.n.startsWith('故我在')),
+    'ergosum 该命中故我在')
+  assert.equal(named('calus').filter((r) => r.n === '卡鲁斯大帝').length, 0,
+    '首领英文名不在物品表里')
+})
+
 test('both entry points load the shared modules before the console that uses them', () => {
   // admin.js 现读 window.starsideDialect 与 window.starsideSource。少一句，/admin/
   // 一开就是 undefined.cells，而闸门、构建、npm test 全都看不见——那一屏是手写的

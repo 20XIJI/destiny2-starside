@@ -8,7 +8,10 @@ paths:
   - "site/assets/sky-core.js"
   - "site/assets/sky-page.js"
   - "site/assets/search.js"
+  - "site/assets/pinyin.js"
   - "tools/build-search.py"
+  - "tools/pinyin.py"
+  - "tools/pinyin-match.js"
 ---
 
 # 全站搜索与 app.js
@@ -45,6 +48,15 @@ paths:
 不重抄一份。路径按 `document.currentScript.src` 现算：这是个 classic script，
 `import()` 里写相对路径按文档基址解，而资料页嵌在各自的目录里，深浅不一。
 载入失败要 `console.error` 炸出来，不静默吞掉——吞掉的话页面上只是少一张图。
+
+资料库物品名的拼音与英文检索走 `assets/pinyin.js`（构建时由 `tools/pinyin.py` 按
+`data/` 里物品、套装、护甲模组族的中文名现裁词典，并带中文白名单与英文名，接上
+`tools/pinyin-match.js`）。只打在这些名字上：首页 `ranked()` 的条目名档、
+资料页工具条从行标题／`.r-nm`／`h4`／`h3` 取出且落在白名单里的那一截、装备库
+的武器／护甲／套装名。页面标题、介绍、首领名、副本名与词条说明仍是原文子串。
+全拼、简拼、中英混与多音字；英文名大小写、连字符与撇号不计。
+`shell.head(app_js=True)` 与首页、装备库在 `app.js` 之前 `defer` 载入。
+`file://` 下同样可用。
 
 `assets/search.js` 由 `tools/build-search.py` 生成，**不手改**。
 站点全局的机制与闸门在 `CLAUDE.md`，视觉规范在 `design.md`。
