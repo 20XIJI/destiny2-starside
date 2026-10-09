@@ -2,6 +2,7 @@
 window.starsideTerms = {
 terms: [
   ["填装",null,["装填"]],
+  ["星界之火",null,["天界之火"]],
   ["传说",null,["传奇"]],
   ["回复倍率",null,["技能块"]],
   ["疲惫",null,["力竭"]],

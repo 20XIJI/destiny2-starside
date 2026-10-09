@@ -78,6 +78,10 @@ diff 里，临时图片 URL 也不存；完整带图导出仍用 `tools/sheet-gr
 这条线不进 `npm run build` 或 `npm test` 的联网流程，不自动改本站 JSON、源稿或产出，
 也不自动提交、推送或部署。看到 diff 后仍要区分模式、版本与强化条件，再决定本站如何同步。
 
+本轮核对中无法确定的差异与批准例外记在 `data/ddc-ignore.json`：按稳定编号列出主键、
+字段、原表 gid、证据、保留口径与复核条件，不写进站内疑点注释。搜寻者按本站规则，
+灵魂虹吸按 manifest 保留 3 槽；这些选择不改原表快照，也不让 `ddc.py --check` 跳过上游变化。
+
 ## 部署与缓存
 
 托管在腾讯云 CloudBase 静态网站托管，发布走 `python3 tools/deploy.py`。

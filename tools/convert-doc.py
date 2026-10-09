@@ -714,13 +714,14 @@ def record_region(lines):
                             icon=pagedex.site_path(PAGE, rows.rel(ico, PAGE)) if ico else '',
                             desc=layout.panel_of(ctx, ik))
                 for e in (rows.facts().at(key) or {}).get('enhanced') or ():
+                    desc = ctx.prose(e['realgame_details'])
                     for by in e['by']:
                         dex.add(keys=[key], anchor=anchor, kind=lane or label,
                                 name='%s（%s）' % (ctx.name(key), ctx.name(str(by))),
                                 icon=pagedex.site_path(PAGE, rows.rel(rows.icon_file(str(by)),
                                                                      PAGE))
                                 if rows.icon_file(str(by)) else '',
-                                q=ctx.name(key))
+                                q=ctx.name(key), desc=desc)
                 # 画成子行的组合（故我在的四条元素行）照旧各进一条：配装源稿按它们
                 # 的名字选异域武器，落点是宿主那一行的锚点。
                 for sub in rows.subs_of(SLUG, key):

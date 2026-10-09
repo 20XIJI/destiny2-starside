@@ -1251,7 +1251,7 @@ class EntitySource(unittest.TestCase):
                          '源稿的行数或主键引用数变了：%d 行、%d 个引用' % (nrows, refs))
 
     def test_an_enhancement_names_the_aspects_that_cause_it(self):
-        """技能记录上的 `enhanced`：装上 `by` 里任一枚星相之后，这项技能多出来的效果。
+        """技能记录上的 `enhanced`：与 `by` 里任一枚星相关联的额外效果，生效条件在正文。
 
         页面在技能那一行下面画一行强化版，名字与图取 `by` 那几条记录，所以 `by`
         里每一枚都必须是星相；冰影分支的星相类目以 `.totems` 结尾。碎片对各项技能
@@ -2328,6 +2328,95 @@ class RecordSync(Isolated):
         self.db[self.RID] = json.dumps({self.TIER: 'T1'}, ensure_ascii=False, indent=1)
         with self.assertRaisesRegex(RuntimeError, '不是规范写法'):
             sync.sync()
+
+
+class RecordPresentation(Isolated):
+    """星相增强子行的独立正文不会丢失或与基础正文混用。"""
+
+    def setUp(self):
+        super().setUp()
+        import resolve
+        self.items = {
+            '101': {
+                'plug': {'plugCategoryIdentifier': 'shared.fragments', 'energyCost': 2},
+                'icon_local': 'assets/icons/fixture.png',
+                'i18n': {'zh-CN': {
+                    'name': '条件碎片',
+                    'realgame_details': '基础效果',
+                }},
+            },
+            '102': {
+                'plug': {'plugCategoryIdentifier': 'solar.aspects'},
+                'icon_local': 'assets/icons/fixture.png',
+                'i18n': {'zh-CN': {'name': '第一星相'}},
+            },
+            '103': {
+                'plug': {'plugCategoryIdentifier': 'solar.aspects'},
+                'icon_local': 'assets/icons/fixture.png',
+                'i18n': {'zh-CN': {'name': '第二星相'}},
+            },
+            '104': {
+                'plug': {'plugCategoryIdentifier': 'solar.aspects'},
+                'icon_local': 'assets/icons/fixture.png',
+                'i18n': {'zh-CN': {'name': '第三星相'}},
+            },
+        }
+        for name, table in (
+            ('inventory-items', self.items), ('stats', {}),
+            ('equipable-item-sets', {}), ('sandbox-perks', {}), ('traits', {}),
+            ('lookup/stat-groups', {}), ('lookup/plug-sets', {}), ('lookup/socket-types', {}),
+            ('minted', {}),
+        ):
+            self.file('data/' + name + '.json', json.dumps(table, ensure_ascii=False))
+        self.replace(resolve, 'MINTED', str(self.root / 'data/minted.json'))
+        self.facts = resolve.Facts(str(self.root / 'data'))
+        self.replace(rows, '_FACTS', self.facts)
+        self.replace(resolve, '_SHARED', (self.facts, None))
+        self.replace(rows, '_SUBS', {})
+        self.replace(rows, '_MATRIX', {})
+        self.replace(rows, 'PROBLEMS', [])
+        self.replace(rows, '_TYPES', None)
+        self.replace(rows, '_CLAIMED', None)
+        self.replace(shell, 'ROOT', str(self.root))
+        self.file('references/keys/fixture.md', '# 测试页\n\n列：名称 | 说明\n101  条件碎片\n')
+        site = self.root / 'site'
+        self.replace(shell, 'SITE', str(site))
+        icon = site / 'assets/icons/fixture.png'
+        icon.parent.mkdir(parents=True)
+        icon.write_bytes(base64.b64decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j8ioAAAAASUVORK5CYII='))
+        self.replace(markup, 'ASSET_ICONS', os.path.realpath(icon.parent))
+        self.origins = doc.editmap.Origins()
+        self.page = doc.layout.Page('fixture', 'fixture',
+                                    markup.Icons(str(site / 'fixture'), 0).html,
+                                    origins=self.origins)
+
+    def test_each_aspect_enhancement_keeps_its_own_detail_in_the_page_index(self):
+        self.facts.items['101']['enhanced'] = [
+            {'by': [102], 'realgame_details': '第一状态激活时：弹药数量增加'},
+            {'by': [103, 104], 'realgame_details': '第二状态激活时：持续时间延长'},
+        ]
+        dex = doc.pagedex.Index('fixture', searchable=True)
+        self.replace(doc, 'CTX', self.page)
+        self.replace(doc, 'DEX', dex)
+        self.replace(doc, 'PAGE', 'fixture')
+        self.replace(doc, 'SLUG', 'fixture')
+        self.replace(doc, 'SECTION', ('sec-1', '技能'))
+        self.replace(doc.pagedex, 'OUT_DIR', str(self.root / 'index'))
+        shown = ''.join(doc.record_region(['101  条件碎片']))
+        path, _ = dex.write()
+        entries = {e['name']: e for e in json.loads(Path(path).read_text())['entries']}
+        for aspect, detail, other in (
+            ('第一星相', '第一状态激活时：弹药数量增加', '持续时间延长'),
+            ('第二星相', '第二状态激活时：持续时间延长', '弹药数量增加'),
+            ('第三星相', '第二状态激活时：持续时间延长', '弹药数量增加'),
+        ):
+            entry = entries['条件碎片（%s）' % aspect]
+            self.assertIn(detail, markup.text_of(entry['desc']))
+            self.assertNotIn('基础效果', entry['desc'])
+            self.assertNotIn(other, entry['desc'])
+            self.assertIn(detail, markup.text_of(shown))
+        self.assertIn('基础效果', entries['条件碎片']['desc'])
 
 
 class EditOrigins(unittest.TestCase):

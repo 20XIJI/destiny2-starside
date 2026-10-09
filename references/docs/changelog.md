@@ -9,18 +9,26 @@
 - {act|订正}[游戏机制](../game-mechanics/index.html)：护盾回复加成改为 50%，补上猎人冲刺与勇士眩晕规则
 - {act|订正}[护甲模组](../armor-mods/index.html)：补上模组版本，费用列改为显示全部档位
 - {act|订正}[护甲模组](../armor-mods/index.html)：连续触发改为按相邻事件间隔判定，补上版本说明
-- {act|订正}[护甲模组](../armor-mods/index.html)：补上火力无限与回天掌法的槽位顺序共触发规则
+- {act|订正}[护甲模组](../armor-mods/index.html)：移除火力无限与回天掌法的槽位顺序与共触发说明
 - {act|订正}[护甲模组](../armor-mods/index.html) · 梦魇模组：普通、强化、至高的费用与数值改为逐档对应
 - {act|订正}[护甲模组](../armor-mods/index.html) · 弹药斥候：删去原表未声明的限制
 - {act|订正}[护甲套装效果](../armor-sets/index.html)：主动治疗改为每脉冲回血，订正钢铁信念与诅咒铁拳
 - {act|订正}[神器模组](../artifact-mods/index.html)：补上触发条件、目标范围、伤害上限与相邻事件间隔
 - {act|订正}[神器模组](../artifact-mods/index.html)：废墟石板电介质改为只给电光充能，弱化波范围改为 20 米
-- {act|订正}[神器模组](../artifact-mods/index.html)：补上手持武器限定、乘算规则与原表待确认值
+- {act|订正}[神器模组](../artifact-mods/index.html)：补上手持武器限定与乘算规则
 - {act|订正}[职业分支详解](../elements/index.html) · [电弧](../elements/arc/index.html)：连锁闪电直击与连锁伤害改为 390 与 265
-- {act|订正}[职业分支详解](../elements/index.html) · [烈日](../elements/solar/index.html)：灼烧 PvE 系数改为 0.175，分清 PvP 伤害与衰减数据，撤销错误冲突提示，补上焕光对勇士的覆盖规则
+- {act|订正}[职业分支详解](../elements/index.html) · [烈日](../elements/solar/index.html)：灼烧 PvE 系数改为 0.175，分清 PvP 伤害与衰减数据，补上焕光对勇士的覆盖规则
 - {act|订正}[职业分支详解](../elements/index.html) · [虚空](../elements/void/index.html)：补上黎明护罩 25% 增伤与灵魂虹吸刷新边界
 - {act|订正}[职业分支详解](../elements/index.html) · [缚丝](../elements/strand/index.html)：抓钩冷却改为 107.9 秒，补上线虫与切线手雷例外
 - {act|订正}[职业分支详解](../elements/index.html) · [棱镜](../elements/prismatic/index.html)：线织幽灵伤害改为 479，订正孤独琢面的触发说明
+- {act|订正}[职业分支详解](../elements/index.html) · [电弧](../elements/arc/index.html)：专注火花改为按职业列出属性惩罚，补全增幅下的闪身抗性、风暴手雷的 PvP 命中限制与相邻事件计时
+- {act|订正}[职业分支详解](../elements/index.html) · [烈日](../elements/solar/index.html)：订正烈焰之歌的火苗、星界之火与焚烧响指伤害，分清烈日手雷与点燃的 PvE/PvP 规则，凤凰俯冲保留治愈并注明恢复的激活条件
+- {act|订正}[职业分支详解](../elements/index.html) · [虚空](../elements/void/index.html)：坚韧回声改为按职业列出属性惩罚，订正涡流手雷的衰减跳数与星相条件，补全护罩重新部署步骤与灵魂虹吸每跳伤害
+- {act|订正}[职业分支详解](../elements/index.html) · [冰影](../elements/stasis/index.html)：碎片改为场上存在 20 秒，冻结的 PvP 碎裂阈值明确为累计受到 200 伤害，订正落地条件、直击伤害与重复效果正文
+- {act|订正}[职业分支详解](../elements/index.html) · [缚丝](../elements/strand/index.html)：抓钩最大距离改为 22 米，束缚手雷改为接触爆炸，补全心纺按住输入、战争旗帜计数分支与相邻事件计时
+- {act|订正}[职业分支详解](../elements/index.html) · [棱镜](../elements/prismatic/index.html)：超凡能量按 T3 级目标区分，分清共享技能的原分支碎片增量，订正星相副本与相邻事件计时
+- {act|订正}[职业分支详解](../elements/index.html) · [职业技能](../elements/class-abilities/index.html)：补上赌徒闪身的回复上限、凤凰俯冲的激活条件与 PvP 数值的模式标识
+- {act|订正}[职业分支详解](../elements/index.html)：基础值与碎片条件增量改为明确说明，区分敌方目标与仅战斗人员的效果，星相增强索引补上各自正文
 - {act|订正}[异域武器详解](../exotic-weapon/index.html)：补上遗漏效果与催化限定，催化正文移到基础效果之后
 - {act|订正}[异域武器详解](../exotic-weapon/index.html)：烈日效果不再限于灼烧，补上普通催化词条与框架说明
 - {act|订正}[异域武器详解](../exotic-weapon/index.html)：英勇利刃归入刀剑，牵引器火炮备弹改为 15→18
@@ -29,7 +37,7 @@
 - {act|订正}[异域武器详解](../exotic-weapon/index.html) · 双尾狐：补上两枚火箭与第三尾的独立数值
 - {act|订正}[异域武器详解](../exotic-weapon/index.html) · 三度迭代、弑后者：补上回补、泄压与瞄具分支
 - {act|订正}[异域护甲详解](../exotic-armor/index.html)：补上模式、目标范围、叠加与触发边界
-- {act|订正}[异域护甲详解](../exotic-armor/index.html)：删去无出处的附加断言，标出凤凰法则等原表疑点
+- {act|订正}[异域护甲详解](../exotic-armor/index.html)：删去无出处的附加断言
 - {act|订正}[异域护甲详解](../exotic-armor/index.html)：职业金之灵正文归入各自主键，噬星者之灵的烈焰之歌例外改为全部烈日效果
 - {act|订正}[异域护甲详解](../exotic-armor/index.html) · 职业金：补上仅棱镜生效、固定属性与左右栏规则
 

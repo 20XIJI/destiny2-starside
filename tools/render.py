@@ -220,8 +220,10 @@ def colhead(cls, labels):
 
 # ── 数值、子行、成员 ────────────────────────────────────────────────
 def stats_of(p, key, mark=False):
-    """数值格。武器 PERK 那几类（词条、模组、框架、起源）不画：它们的数值
-    说明里已经写了一遍。mark 为真时给站内写的那一格标出处（悬停面板不标）。"""
+    """数值格。属性变化优先取站内的条件说明，其余数值仍取记录字段。
+
+    武器 PERK 那几类（词条、模组、框架、起源）不画：它们的数值说明里已经写了一遍。
+    mark 为真时给站内写的那一格标出处（悬停面板不标）。"""
     rec = rows.facts().at(key) or {}
     if kind(key) == 'plug':
         return ''
@@ -247,26 +249,30 @@ def stats_of(p, key, mark=False):
                       ' <span class="pvp">[%s]</span>' % pvp if pvp is not None else ''))
     if rec.get('site_recoveryMultiplier') is not None:
         out.append('<div>回复倍率 <b>%s×</b></div>' % rec['site_recoveryMultiplier'])
+    attributes = p.zh(key).get('属性变化')
+    if attributes:
+        out.append(p.prose(attributes, p.mark(p.spot(
+            key, 'i18n/zh-CN/属性变化', '属性变化')) if mark else ''))
     for s in rec.get('investmentStats') or ():
         name = rows.zh(rows.facts().stats.get(str(s['statTypeHash'])) or {}).get('name', '')
         if name == '星相能量容量':
             out.append('<div class="r-slots">碎片槽 %s</div>'
                        % ''.join('<i></i>' for _ in range(s['value'])))
-        elif name and '消耗' not in name and s['value']:
+        elif not attributes and name and '消耗' not in name and s['value']:
             out.append('<div>%s <b>%+d</b></div>' % (html.escape(name), s['value']))
     return ''.join(out)
 
 
 def enhanced(p, key):
-    """星相带来的强化：子行紧跟本行之后。"""
+    """关联星相的强化：子行紧跟本行，实际生效条件由正文说明。"""
     out = []
     for i, e in enumerate((rows.facts().at(key) or {}).get('enhanced') or []):
-        who = ''.join('%s<span class="%s">%s</span>'
+        who = ' 或 '.join('%s<span class="%s">%s</span>'
                       % (p.icon(str(b)), elem_token(str(b)), p.name_html(str(b)))
                       for b in e['by'])
         # data-name 是这一行在站内的叫法，搜索索引与页面索引按它收条目
         out.append('<div class="r-sub-row" data-name="%s">'
-                   '<div class="r-sub-h">装上 %s 之后</div>%s</div>'
+                   '<div class="r-sub-h">关联星相：%s</div>%s</div>'
                    % (html.escape('%s（%s）' % (p.name(key),
                                                '、'.join(p.name(str(b)) for b in e['by']))),
                       who, p.prose(e['realgame_details'], p.mark(p.spot(

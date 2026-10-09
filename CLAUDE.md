@@ -64,8 +64,8 @@ Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构�
 - **`sameAs: <行首 hash>`**：同一件东西的几枚 hash（普通版与强化版、一族元素变体）。
   成员只写这一位，站内正文只在行首那条上；行首一律是基础版，自己不带 `sameAs`，
   只跳一层。
-- **`enhanced: [{by: [星相 hash…], realgame_details}]`**：装上 `by` 里的星相之后这项
-  技能多出来的效果。碎片不算。
+- **`enhanced: [{by: [星相 hash…], realgame_details}]`**：与 `by` 中任一星相关联的额外
+  效果，实际生效条件由正文说明。碎片不算。
 - **`weaponTypes: [{itemSubType: [...], realgame_details}]`**：框架在某几种枪型上的说明。
 
 以 Compendium 中文列名作键的字段：`sandbox-perks.json` 与 `minted.json` 的

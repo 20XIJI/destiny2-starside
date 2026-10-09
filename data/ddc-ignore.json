@@ -1,0 +1,1635 @@
+{
+  "format": 1,
+  "spreadsheet": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit",
+  "policy": {
+    "purpose": "仅记录本轮无法确认的来源差异、移出的审计注释与用户明确批准的例外；不渲染到站内。",
+    "snapshots": "不改写或过滤data/ddc快照；ddc.py --check仍报告全部上游变化。",
+    "unknown_values": "保留原表正常?值及PvP身份，不反推未知数，不增加待作者确认的网页解释。",
+    "review": "按稳定id、namespace/hash和原文定位；上游插行后不依赖旧行号。"
+  },
+  "entries": [
+    {
+      "id": "approved-ammo-finder",
+      "status": "approved-site-rule",
+      "targets": [
+        {
+          "table": "minted",
+          "hash": "4294967296",
+          "field": "*"
+        },
+        {
+          "table": "inventory-items",
+          "hash": "554409585",
+          "field": "*"
+        },
+        {
+          "table": "inventory-items",
+          "hash": "2595839237",
+          "field": "*"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1934379638",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1934379638",
+          "evidence": "Power Ammo Finder: 1.33 / 1.66 / 2; 本站为1.25 / 1.4 / 1.5。"
+        },
+        {
+          "gid": "1934379638",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1934379638",
+          "evidence": "用户明确搜寻模组继续本站规则整条不动"
+        }
+      ],
+      "reason": "用户明确批准继续使用本站搜寻模组规则。",
+      "decision": "整条记录原样保留，不将此差异作为待修错误。",
+      "review_when": "用户明确修改本站口径时。",
+      "audit_ids": [
+        "approved-finder-554409585",
+        "approved-finder-2595839237"
+      ],
+      "record_actions": [
+        {
+          "table": "inventory-items",
+          "hash": "554409585",
+          "action": "整条未修改"
+        },
+        {
+          "table": "inventory-items",
+          "hash": "2595839237",
+          "action": "整条未修改"
+        }
+      ]
+    },
+    {
+      "id": "arc-enhanced-storm-duplicates",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "2481624867",
+          "field": "enhanced/0/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "618967225",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=618967225",
+          "evidence": "Storm Grenade:4+1.5s、4m/s after1.3s、158[30]；Touch of Thunder:4.5+1.5s、5.5m/s after1.6s、164[30]。"
+        },
+        {
+          "gid": "618967225",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=618967225",
+          "evidence": "R38:4+1.5s,2[1.5]→4[3]m/s after1.3s,158[30] damage; R66:4.5+1.5s,2[1.5]→5.5[3] after1.6s,164[30]."
+        }
+      ],
+      "reason": "重复条目四项PvE值不一致，PvP值相同，不是模式区别。",
+      "decision": "保留当前星相段口径，不混合两套值；明确量级条件，但不把争议注释写到网页。",
+      "review_when": "原表明确修订该句、给出适用条件，或作者确认后重新核对。",
+      "audit_ids": [
+        "ARC-04"
+      ],
+      "record_actions": [
+        {
+          "table": "inventory-items",
+          "hash": "2481624867",
+          "action": "保留原R66参数，仅明确量级火花额外1.5秒/4次，不站内写冲突注释"
+        }
+      ]
+    },
+    {
+      "id": "arc-pulse-total-initial-hit",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "1713935764",
+          "field": "i18n/zh-CN/realgame_details"
+        },
+        {
+          "table": "inventory-items",
+          "hash": "1727069374",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "618967225",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=618967225",
+          "evidence": "On impact156[50]；additional5+2times249[80]；total1245[1743][530[690]]。"
+        },
+        {
+          "gid": "618967225",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=618967225",
+          "evidence": "R34 on impact156[50]; later5+2 pulses249[80]; source total1245[1743][530[690]]."
+        }
+      ],
+      "reason": "原表PvE和PvP所列total是否包含初始爆炸不一致。",
+      "decision": "保留原表所列总值，不用算术改成1401/1899或反推PvP。",
+      "review_when": "原表明确修订该句、给出适用条件，或作者确认后重新核对。",
+      "audit_ids": [
+        "ARC-16a"
+      ],
+      "record_actions": [
+        {
+          "table": "inventory-items",
+          "hash": "1713935764",
+          "action": "保留来源列明的总伤害，不计算1401/1899或修改PvP"
+        }
+      ]
+    },
+    {
+      "id": "arc-stormtrance-growth",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "1081893460",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "618967225",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=618967225",
+          "evidence": "5% every0.33seconds;65% after3.33seconds。"
+        },
+        {
+          "gid": "618967225",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=618967225",
+          "evidence": "R73:5% every0.33 seconds,65% after3.33 seconds."
+        }
+      ],
+      "reason": "分段增幅与到顶时点无法从原句独立确定。",
+      "decision": "保留来源原值，不推算替代增长曲线。",
+      "review_when": "原表明确修订该句、给出适用条件，或作者确认后重新核对。",
+      "audit_ids": [
+        "ARC-16c"
+      ],
+      "record_actions": [
+        {
+          "table": "inventory-items",
+          "hash": "1081893460",
+          "action": "保留来源时点与增幅，不重算"
+        }
+      ]
+    },
+    {
+      "id": "armor-emergency-reinforcement-duration",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "1024379611",
+          "field": "i18n/zh-CN/realgame_details"
+        },
+        {
+          "table": "sandbox-perks",
+          "hash": "4102174635",
+          "field": "i18n/zh-CN/realgame_details"
+        },
+        {
+          "table": "sandbox-perks",
+          "hash": "4102174635",
+          "field": "i18n/zh-CN/效果"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1934379638",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1934379638",
+          "evidence": "Buff Duration atx3,x4,x5 Charges:6|9|12|15 seconds"
+        },
+        {
+          "gid": "1934379638",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1934379638",
+          "evidence": "DDC 原表列出 4 档持续时间，但档位标签仅写 3、4、5 层，第四档对应层数{unsure|待确认}：\\\\ 6 ｜ 9 ｜ 12 ｜ 15 秒。"
+        }
+      ],
+      "reason": "此前在线作者确认/来源疑点注释按用户要求转移ignore；不假定疑点已解",
+      "decision": "删除不匹配四档表及来源解释，保留持续随消耗层数变化",
+      "review_when": "原表修订、作者澄清或获得可追溯证据后重新核对。",
+      "audit_ids": [
+        "prior-source-1024379611",
+        "AM-EmergencyDuration"
+      ],
+      "removed_site_notes": [
+        {
+          "table": "sandbox-perks",
+          "hash": "4102174635",
+          "text": "DDC 原表列出 4 档持续时间，但档位标签仅写 3、4、5 层，第四档对应层数{unsure|待确认}：\\\\ 6 ｜ 9 ｜ 12 ｜ 15 秒。"
+        },
+        {
+          "table": "sandbox-perks",
+          "hash": "4102174635",
+          "text": "持有 3 层及以上{armor-charge|护甲充能}时进入重伤：\\\\ \\\\ 提供 10% 伤害抗性。\\\\ 持续时间按消耗掉的{armor-charge|护甲充能}层数而定。\\\\ \\\\ 3、4、5、6 层时的{buff|增益}持续：\\\\ 6 ｜ 9 ｜ 12 ｜ 15 秒。"
+        }
+      ],
+      "record_actions": [
+        {
+          "table": "sandbox-perks",
+          "hash": "4102174635",
+          "action": "保留10%伤害抗性及消耗层数影响时长；未配对的四档时长移出正文，并同步效果字段。"
+        }
+      ]
+    },
+    {
+      "id": "armor-glyphkeeper-percent-unit",
+      "status": "pending-source-notation",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "2851458940",
+          "field": "i18n/zh-CN/realgame_details"
+        },
+        {
+          "table": "sandbox-perks",
+          "hash": "927885306",
+          "field": "i18n/zh-CN/realgame_details"
+        },
+        {
+          "table": "sandbox-perks",
+          "hash": "927885306",
+          "field": "i18n/zh-CN/效果"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1934379638",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1934379638",
+          "evidence": "R23 Smoldering Glyphkeeper:20%|25%|35|40%|40% for15 seconds;Hand Cannons/Shotguns/Grenade Launchers/Rocket Launchers."
+        },
+        {
+          "gid": "1934379638",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1934379638",
+          "evidence": "\\\\ DDC 原表第三档仅写「35」，未写百分号；这里按同列语义补为 35%，单位{unsure|待原表作者确认}。"
+        }
+      ],
+      "reason": "此前在线作者确认/来源疑点注释按用户要求转移ignore；不假定疑点已解",
+      "decision": "原表第三档写35而缺百分号；本站按同列百分比语义维持35%，不写作者疑点说明，也不宣称游戏实测。",
+      "review_when": "原表修订、作者澄清或获得可追溯证据后重新核对。",
+      "audit_ids": [
+        "prior-source-2851458940",
+        "AM-GlyphUnit"
+      ],
+      "removed_site_notes": [
+        {
+          "table": "sandbox-perks",
+          "hash": "927885306",
+          "text": "\\\\ DDC 原表第三档仅写「35」，未写百分号；这里按同列语义补为 35%，单位{unsure|待原表作者确认}。"
+        },
+        {
+          "table": "sandbox-perks",
+          "hash": "927885306",
+          "text": "对雕文{bar-orange|守护者}造成手雷伤害后：\\\\ 15 秒内伤害提高 20% ｜ 25% ｜ 35% ｜ 40% ｜ 40%。\\\\ \\\\ 适用武器：\\\\ 手炮、霰弹枪、榴弹发射器、火箭发射器。"
+        }
+      ],
+      "record_actions": [
+        {
+          "table": "sandbox-perks",
+          "hash": "927885306",
+          "action": "删除来源疑点注解；保留已确认主体规则。"
+        },
+        {
+          "table": "sandbox-perks",
+          "hash": "927885306",
+          "action": "保留第三档35%的原有规范化呈现为批准差异；原表缺单位登记ignore，不在效果字段添加来源注解。"
+        }
+      ]
+    },
+    {
+      "id": "artifact-kinetic-synthesis-base-stat-scope",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "3834273540",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "715236319",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=715236319",
+          "evidence": "Actual Damage vs Base Damage powerdelta wording"
+        }
+      ],
+      "reason": "此前在线作者确认/来源疑点注释按用户要求转移ignore；不假定疑点已解",
+      "decision": "删除actual/base归属未明段落，保留确定计数/阈值数值",
+      "review_when": "原表修订、作者澄清或获得可追溯证据后重新核对。",
+      "audit_ids": [
+        "prior-source-3834273540"
+      ]
+    },
+    {
+      "id": "artifact-particle-reconstruction-threshold",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "1319563991",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "715236319",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=715236319",
+          "evidence": "Fusion rifle normallyeverybolt inmagazine;threshold omitted"
+        }
+      ],
+      "reason": "此前在线作者确认/来源疑点注释按用户要求转移ignore；不假定疑点已解",
+      "decision": "删除省略阈值关系及作者澄清注释，保留攻击融合每两次点射例外与其它明确阈值",
+      "review_when": "原表修订、作者澄清或获得可追溯证据后重新核对。",
+      "audit_ids": [
+        "prior-source-1319563991"
+      ]
+    },
+    {
+      "id": "class-rally-boss-category",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "489583097",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "527596209",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=527596209",
+          "evidence": "90%against Combatants,and?%against Boss Combatants；Towering另明确Non-Boss。"
+        }
+      ],
+      "reason": "集结条目Combatants范围文字包含Boss，但另给Boss未知值。",
+      "decision": "保留对应来源的分类/未知，不凭巍峨条目给集结新增确定非首领限定。",
+      "review_when": "原表明确修订该句、给出适用条件，或作者确认后重新核对。"
+    },
+    {
+      "id": "exotic-abeyant-miniboss-duration",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "sandbox-perks",
+          "hash": "2718875662",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1500097863",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1500097863",
+          "evidence": "原表另列对{bar-yellow|初级首领}的{deb-strand|悬停}延长 2 秒。{note|DDC 未说明这 2 秒是替代普通目标的 3 秒还是另行累加，待确认；不按 5 秒宣称。}"
+        }
+      ],
+      "reason": "源未明确初级首领2秒替代还是额外增加。",
+      "decision": "保留普通目标+3秒；初级首领+2秒及其叠加解释移出正文。",
+      "review_when": "原表修订、作者澄清或获得可追溯证据后重新核对。",
+      "audit_ids": [
+        "EA-AbeyantDuration"
+      ],
+      "removed_site_notes": [
+        {
+          "table": "sandbox-perks",
+          "hash": "2718875662",
+          "text": "原表另列对{bar-yellow|初级首领}的{deb-strand|悬停}延长 2 秒。{note|DDC 未说明这 2 秒是替代普通目标的 3 秒还是另行累加，待确认；不按 5 秒宣称。}"
+        }
+      ]
+    },
+    {
+      "id": "exotic-assembler-member-count",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "sandbox-perks",
+          "hash": "3511207275",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1500097863",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1500097863",
+          "evidence": "\\\\ {note|DDC 的生成速率按小队成员标注、能量档位按盟友标注，未明确两处是否都含穿戴者；不自行等同。}"
+        }
+      ],
+      "reason": "源没有统一两种计数口径，不能自行等同。",
+      "decision": "删除两处计数是否包含穿戴者的来源注解，保留原表分别的小队成员与盟友标签。",
+      "review_when": "原表修订、作者澄清或获得可追溯证据后重新核对。",
+      "audit_ids": [
+        "EA-AssemblerMemberCount"
+      ],
+      "removed_site_notes": [
+        {
+          "table": "sandbox-perks",
+          "hash": "3511207275",
+          "text": "\\\\ {note|DDC 的生成速率按小队成员标注、能量档位按盟友标注，未明确两处是否都含穿戴者；不自行等同。}"
+        }
+      ]
+    },
+    {
+      "id": "exotic-ergo-sum-randomness",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "1327961177",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "441434520",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=441434520",
+          "evidence": "Damage israndom?68 OR117[83]"
+        }
+      ],
+      "reason": "此前在线作者确认/来源疑点注释按用户要求转移ignore；不假定疑点已解",
+      "decision": "删除随机性待作者确认问句，保留来源明示两种伤害",
+      "review_when": "原表修订、作者澄清或获得可追溯证据后重新核对。",
+      "audit_ids": [
+        "prior-source-1327961177"
+      ]
+    },
+    {
+      "id": "exotic-galanor-super-testing",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "3751917998",
+          "field": "i18n/zh-CN/realgame_details"
+        },
+        {
+          "table": "sandbox-perks",
+          "hash": "2644022226",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "20898389",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=20898389",
+          "evidence": "Spirit of Galanor: Needs testing across all 5 Super Abilities :("
+        }
+      ],
+      "reason": "原表作者尚未逐一验证五种超能，这一测试说明不作为站内机制正文。",
+      "decision": "保留原表列出的返还上限与丝线打击、黄金枪例外；移出作者待测说明，不宣称已做游戏实测。",
+      "removed_site_notes": [
+        {
+          "text": "{unsure|五种超能技能尚未逐一实测。}"
+        }
+      ],
+      "review_when": "原表补全各超能的验证结果或修订数值后重新核对。"
+    },
+    {
+      "id": "exotic-heir-apparent-shield-recovery",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "1185273366",
+          "field": "i18n/zh-CN/realgame_details"
+        },
+        {
+          "table": "sandbox-perks",
+          "hash": "2916123542",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "441434520",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=441434520",
+          "evidence": "Shield recharge while atfullHP;2s delay/1s restore"
+        },
+        {
+          "gid": "441434520",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=441434520",
+          "evidence": "DDC 原表写作「护盾生命值全满时，2 秒未受伤害后可在 1 秒内恢复耐久」；其中“全满时恢复”的条件存在疑点，{unsure|待原表作者确认}，不是已实测的充能条件。"
+        }
+      ],
+      "reason": "此前在线作者确认/来源疑点注释按用户要求转移ignore；不假定疑点已解",
+      "decision": "删除恢复条件疑点整句，仅保留已确认护盾属性与生成条件",
+      "review_when": "原表修订、作者澄清或获得可追溯证据后重新核对。",
+      "audit_ids": [
+        "prior-source-1185273366",
+        "B12"
+      ],
+      "removed_site_notes": [
+        {
+          "table": "sandbox-perks",
+          "hash": "2916123542",
+          "text": "DDC 原表写作「护盾生命值全满时，2 秒未受伤害后可在 1 秒内恢复耐久」；其中“全满时恢复”的条件存在疑点，{unsure|待原表作者确认}，不是已实测的充能条件。"
+        }
+      ],
+      "record_actions": [
+        {
+          "table": "sandbox-perks",
+          "hash": "2916123542",
+          "action": "保留80HP、伤害抗性与破盾爆炸；耐久回复条件移出正文。"
+        }
+      ]
+    },
+    {
+      "id": "exotic-osteo-striga-overflow-cap",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "229096166",
+          "field": "i18n/zh-CN/realgame_details"
+        },
+        {
+          "table": "inventory-items",
+          "hash": "2132353550",
+          "field": "i18n/zh-CN/realgame_details"
+        },
+        {
+          "table": "sandbox-perks",
+          "hash": "2936496976",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "441434520",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=441434520",
+          "evidence": "300% Increased Magazine Capacity"
+        },
+        {
+          "gid": "441434520",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=441434520",
+          "evidence": "DDC 原表将溢出上限写作「弹匣容量提高 300%」（300% Increased Magazine Capacity），但实际意图是增加量还是总容量{unsure|待原表作者确认}；不将任一推算视为已实测上限。"
+        }
+      ],
+      "reason": "此前在线作者确认/来源疑点注释按用户要求转移ignore；不假定疑点已解",
+      "decision": "删除增加量/总容量的冲突说明和具体上限，保留溢出填装",
+      "review_when": "原表修订、作者澄清或获得可追溯证据后重新核对。",
+      "audit_ids": [
+        "prior-source-229096166",
+        "prior-source-2132353550",
+        "B26"
+      ],
+      "record_actions": [
+        {
+          "table": "inventory-items",
+          "hash": "2132353550",
+          "action": "同文副本同处理"
+        },
+        {
+          "table": "sandbox-perks",
+          "hash": "2936496976",
+          "action": "保留腐化击杀补满弹匣与0.5秒冷却；溢出上限断言移出正文。"
+        }
+      ],
+      "removed_site_notes": [
+        {
+          "table": "sandbox-perks",
+          "hash": "2936496976",
+          "text": "DDC 原表将溢出上限写作「弹匣容量提高 300%」（300% Increased Magazine Capacity），但实际意图是增加量还是总容量{unsure|待原表作者确认}；不将任一推算视为已实测上限。"
+        }
+      ]
+    },
+    {
+      "id": "exotic-phoenix-protocol-example",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "sandbox-perks",
+          "hash": "649172689",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1500097863",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1500097863",
+          "evidence": "\\\\ {note|DDC 的示例为 10% → 8.5% → 7% → 5% → 4.5% → 4% → 4%……，与其“每次递减 1.5%、最低 4%”的规则不一致。以上保留原表规则；示例与实际递减序列待原作者确认，本站未实测。}"
+        }
+      ],
+      "reason": "用户要求疑点只进ignore，不进站内正文。",
+      "decision": "删除来源疑点注解；保留已确认主体规则。",
+      "review_when": "原表修订、作者澄清或获得可追溯证据后重新核对。",
+      "audit_ids": [
+        "EA-PhoenixExample"
+      ],
+      "removed_site_notes": [
+        {
+          "table": "sandbox-perks",
+          "hash": "649172689",
+          "text": "\\\\ {note|DDC 的示例为 10% → 8.5% → 7% → 5% → 4.5% → 4% → 4%……，与其“每次递减 1.5%、最低 4%”的规则不一致。以上保留原表规则；示例与实际递减序列待原作者确认，本站未实测。}"
+        }
+      ]
+    },
+    {
+      "id": "exotic-solar-effects-subsets",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "sandbox-perks",
+          "hash": "581849924",
+          "field": "i18n/zh-CN/realgame_details"
+        },
+        {
+          "table": "sandbox-perks",
+          "hash": "2208422697",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "441434520",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=441434520",
+          "evidence": "\\\\ {note|原表使用 Solar Effects（烈日效果）这一范围，未将其限定为仅灼烧；各具体效果的适用边界未在本轮实测。}"
+        }
+      ],
+      "reason": "用户要求疑点只进ignore，不进站内正文。",
+      "decision": "删除来源疑点注解；保留已确认主体规则。",
+      "review_when": "原表修订、作者澄清或获得可追溯证据后重新核对。",
+      "audit_ids": [
+        "B-SolarEffects"
+      ],
+      "removed_site_notes": [
+        {
+          "table": "sandbox-perks",
+          "hash": "581849924",
+          "text": "\\\\ {note|原表使用 Solar Effects（烈日效果）这一范围，未将其限定为仅灼烧；各具体效果的适用边界未在本轮实测。}"
+        },
+        {
+          "table": "sandbox-perks",
+          "hash": "2208422697",
+          "text": "\\\\ {note|原表使用 Solar Effects（烈日效果）这一范围，未将其限定为仅灼烧；各具体效果的适用边界未在本轮实测。}"
+        }
+      ]
+    },
+    {
+      "id": "phoenix-dive-landing-radius",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "2979486801",
+          "field": "enhanced/0/realgame_details"
+        },
+        {
+          "table": "inventory-items",
+          "hash": "1444664836",
+          "field": "enhanced/0/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1186062409",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1186062409",
+          "evidence": "Phoenix Dive:enemies within6.5metres upon landing。"
+        },
+        {
+          "gid": "527596209",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=527596209",
+          "evidence": "Phoenix Dive:enemies within5metres upon landing。"
+        },
+        {
+          "gid": "['1186062409', '527596209']",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=['1186062409', '527596209']",
+          "evidence": "SolarR73 landing6.5m; ClassR16 landing5m."
+        }
+      ],
+      "reason": "两份原表同名普通技能范围不一致，没有PvE/PvP或版本标签。",
+      "decision": "各记录保留本来源6.5m/5m；均修正Heat Rises active及附加Restoration，不把范围差异猜成模式差异。",
+      "review_when": "原表明确修订该句、给出适用条件，或作者确认后重新核对。",
+      "audit_ids": [
+        "SOL-19-2979486801",
+        "SOL-19-1444664836"
+      ],
+      "record_actions": [
+        {
+          "table": "inventory-items",
+          "hash": "2979486801",
+          "action": "各记录保留原基线6.5米；仅明确Heat Rises active，不写来源冲突"
+        },
+        {
+          "table": "inventory-items",
+          "hash": "1444664836",
+          "action": "各记录保留原基线5米；仅明确Heat Rises active，不写来源冲突"
+        }
+      ]
+    },
+    {
+      "id": "pickup-allies-delivery",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "traits",
+          "hash": "3328352616",
+          "field": "i18n/zh-CN/realgame_details"
+        },
+        {
+          "table": "traits",
+          "hash": "37177486",
+          "field": "i18n/zh-CN/realgame_details"
+        },
+        {
+          "table": "traits",
+          "hash": "3824458961",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1907852650",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1907852650",
+          "evidence": "Allies do not receive Void Breaches created by the user。"
+        },
+        {
+          "gid": "1186062409",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1186062409",
+          "evidence": "Allies do not receive Firesprites created by the user。"
+        },
+        {
+          "gid": "618967225",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=618967225",
+          "evidence": "Allies do not receive Ionic Traces created by the user。"
+        }
+      ],
+      "reason": "原句没有进一步区分生成、可见、可拾取与能量生效条件。",
+      "decision": "正文仅写盟友不会获得使用者生成的拾取物，不添加可见性、拾取权限或已实测断言。",
+      "review_when": "原表明确修订该句、给出适用条件，或作者确认后重新核对。"
+    },
+    {
+      "id": "prismatic-gunpowder-damage-stacking",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "3066103996",
+          "field": "i18n/zh-CN/realgame_details"
+        },
+        {
+          "table": "inventory-items",
+          "hash": "2835214903",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1186062409",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1186062409",
+          "evidence": "Gunpowder Gamble两处50%增伤，基础与射击额外层级未给公式。"
+        },
+        {
+          "gid": "1918152785",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1918152785",
+          "evidence": "对应共享Gunpowder Gamble说明。"
+        }
+      ],
+      "reason": "不能凭两句各50%建立新的乘法/加法公式。",
+      "decision": "保持已确认的各自触发条件，不添加叠加公式。",
+      "review_when": "原表明确修订该句、给出适用条件，或作者确认后重新核对。"
+    },
+    {
+      "id": "prismatic-thermite-pvp-total",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "3969294337",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1186062409",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1186062409",
+          "evidence": "每波80+50PvP，四波总360。"
+        },
+        {
+          "gid": "1186062409",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1186062409",
+          "evidence": "R39 eachwave246+206[80+50];4waves total1808[360]."
+        }
+      ],
+      "reason": "普通伤害两部分之和和源合计不完全对应。",
+      "decision": "保留源合计，80+50是伤害组成，不误认成碎片条件增量。",
+      "review_when": "原表明确修订该句、给出适用条件，或作者确认后重新核对。",
+      "audit_ids": [
+        "P22-Thermite"
+      ],
+      "record_actions": [
+        {
+          "table": "inventory-items",
+          "hash": "3969294337",
+          "action": "保留每波与总量，不从PvP算术改成520"
+        }
+      ]
+    },
+    {
+      "id": "resolved-scorch-mode-distinction",
+      "status": "resolved-mode-distinction",
+      "targets": [
+        {
+          "table": "traits",
+          "hash": "1096356879",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1186062409",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1186062409",
+          "evidence": "PvE: 2.7 + 0.175 * Scorch Stacks；其后x1=3/x30=5/x50=6.5/x60=7.21/x80=8.64为PvP颜色。"
+        }
+      ],
+      "reason": "PvE公式与PvP每跳数据不同，不是同一公式内部矛盾。",
+      "decision": "保留PvE公式及独立PvP数据，不反推、更换数值或加来源冲突注解。",
+      "review_when": "原表明确修订该句、给出适用条件，或作者确认后重新核对。"
+    },
+    {
+      "id": "resolved-soul-siphon-slots",
+      "status": "manifest-authoritative",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "2321824286",
+          "field": "investmentStats"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1907852650",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1907852650",
+          "evidence": "Soul Siphon 原表图形列曾核对为2槽；本站manifest为3槽。"
+        },
+        {
+          "gid": "['1907852650']",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=['1907852650']",
+          "evidence": "DDC slots2;manifest3;用户明确确认manifest正确"
+        }
+      ],
+      "reason": "用户确认manifest正确，灵魂虹吸为3槽。",
+      "decision": "保留manifest的3个碎片槽，不改成2，不列为待作者确认。",
+      "review_when": "Bungie manifest明确更新槽位，或用户改变口径时。",
+      "audit_ids": [
+        "META-01"
+      ],
+      "record_actions": [
+        {
+          "table": "inventory-items",
+          "hash": "2321824286",
+          "action": "保留manifest3槽不改"
+        }
+      ]
+    },
+    {
+      "id": "solar-blade-barrage-totals",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "375052471",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1186062409",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1186062409",
+          "evidence": "Blade Barrage源列总量8512/12160与单枚数值。"
+        }
+      ],
+      "reason": "不能由单枚显示值推定总量应精确等于乘积。",
+      "decision": "不自行重算总量或宣称原表游戏机制错误。",
+      "review_when": "原表明确修订该句、给出适用条件，或作者确认后重新核对。"
+    },
+    {
+      "id": "solar-firebolt-relative-radius",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "2202441959",
+          "field": "enhanced/0/realgame_details"
+        },
+        {
+          "table": "inventory-items",
+          "hash": "83039193",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1186062409",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1186062409",
+          "evidence": "基础8.5m；增强12m；Touch of Flame另写increased by50%to12meters。"
+        },
+        {
+          "gid": "1186062409",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1186062409",
+          "evidence": "R29 baseline8.5m; R30 enhanced12m; R85 +50% to12m."
+        }
+      ],
+      "reason": "来源相对比例和绝对值不完全对应。",
+      "decision": "保留明确增强半径12m，不据50%重算，不新增争议比例断言。",
+      "review_when": "原表明确修订该句、给出适用条件，或作者确认后重新核对。",
+      "audit_ids": [
+        "SOL-TouchFirebolt"
+      ],
+      "record_actions": [
+        {
+          "table": "inventory-items",
+          "hash": "2202441959",
+          "action": "保留来源50%与12m，不算术改成12.75m"
+        }
+      ]
+    },
+    {
+      "id": "solar-incendiary-scalar",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "2581086849",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1186062409",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1186062409",
+          "evidence": "Incendiary Grenade同时列814、31.5%、1202。"
+        }
+      ],
+      "reason": "源列值关系本轮没有游戏实测证据。",
+      "decision": "保留原句数值，不自行算术订正。",
+      "review_when": "原表明确修订该句、给出适用条件，或作者确认后重新核对。"
+    },
+    {
+      "id": "solar-loreley-duration",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "2747500761",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1186062409",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1186062409",
+          "evidence": "Reduces Passive Drain by40%,increasing duration to35seconds,or3.63%Super Drain per second。"
+        },
+        {
+          "gid": "1186062409",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1186062409",
+          "evidence": "R64:Loreley reduces passive drain40%,duration35s,3.63% per second."
+        }
+      ],
+      "reason": "持续时间和每秒消耗组合有源表疑点，强化段27.5秒是另一个条目。",
+      "decision": "保持对应段原值，不合并强化与基础段，不自行用除法修正。",
+      "review_when": "原表明确修订该句、给出适用条件，或作者确认后重新核对。",
+      "audit_ids": [
+        "SOL-18"
+      ],
+      "record_actions": [
+        {
+          "table": "inventory-items",
+          "hash": "2747500761",
+          "action": "保留35秒与3.63%，不自行换算"
+        }
+      ]
+    },
+    {
+      "id": "solar-on-your-mark-scope",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "3066103999",
+          "field": "i18n/zh-CN/realgame_details"
+        },
+        {
+          "table": "sandbox-perks",
+          "hash": "146926598",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1186062409",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1186062409",
+          "evidence": "On Your Mark首段user+allies within15m；另句Class Ability Usage grants a stack to the user。"
+        },
+        {
+          "gid": "1186062409",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1186062409",
+          "evidence": "R57:user+allies within15m; Class Ability Usage grants a stack to the user."
+        }
+      ],
+      "reason": "职业技能触发的盟友范围在两句中不一致。",
+      "decision": "不推断职业技能是否给盟友；不添加站内作者确认备注。",
+      "review_when": "原表明确修订该句、给出适用条件，或作者确认后重新核对。",
+      "audit_ids": [
+        "SOL-07"
+      ],
+      "record_actions": [
+        {
+          "table": "inventory-items",
+          "hash": "3066103999",
+          "action": "保留当前整体自己/盟友段，未把职业技能范围额外收窄为仅自身"
+        }
+      ]
+    },
+    {
+      "id": "stasis-large-shard-health",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "traits",
+          "hash": "4043161234",
+          "field": "enhanced/0/realgame_details"
+        },
+        {
+          "table": "inventory-items",
+          "hash": "1920417385",
+          "field": "i18n/zh-CN/realgame_details"
+        },
+        {
+          "table": "inventory-items",
+          "hash": "2031919264",
+          "field": "i18n/zh-CN/realgame_details"
+        },
+        {
+          "table": "inventory-items",
+          "hash": "2651551055",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1088259962",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1088259962",
+          "evidence": "Stasis Shard概要Large restores20HP；三个Harvest详细条目Large restores?HP。"
+        },
+        {
+          "gid": "1088259962",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1088259962",
+          "evidence": "R4 large shard20HP; R42/R55/R64 large shard?HP."
+        }
+      ],
+      "reason": "源概要已知20，详细仍未知?，不是两个已知值可选。",
+      "decision": "分别保留对应原值，不把详细?填成实测20。",
+      "review_when": "原表明确修订该句、给出适用条件，或作者确认后重新核对。",
+      "audit_ids": [
+        "ST-C01-1920417385",
+        "ST-C01-2031919264",
+        "ST-C01-2651551055"
+      ],
+      "record_actions": [
+        {
+          "table": "inventory-items",
+          "hash": "1920417385",
+          "action": "保留Harvest各正文?HP；不从概要复制20"
+        },
+        {
+          "table": "inventory-items",
+          "hash": "2031919264",
+          "action": "保留Harvest各正文?HP；不从概要复制20"
+        },
+        {
+          "table": "inventory-items",
+          "hash": "2651551055",
+          "action": "保留Harvest各正文?HP；不从概要复制20"
+        }
+      ]
+    },
+    {
+      "id": "stasis-rime-pvp-resistance",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "traits",
+          "hash": "106947924",
+          "field": "i18n/zh-CN/realgame_details"
+        },
+        {
+          "table": "inventory-items",
+          "hash": "2483898430",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1088259962",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1088259962",
+          "evidence": "Frost Armor概要7层50%[16%]；Rime详细50%[16?%]。"
+        },
+        {
+          "gid": "1088259962",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1088259962",
+          "evidence": "R6 FrostArmor7 stacks50%[16%]; R24 Rime50%[16?%]."
+        }
+      ],
+      "reason": "原表待测标记不一致，叠层规则不能当简单乘法推值。",
+      "decision": "保留原有未知标记并补PvP身份，不据概述强行删掉疑问或重算。",
+      "review_when": "原表明确修订该句、给出适用条件，或作者确认后重新核对。",
+      "audit_ids": [
+        "ST-C02"
+      ],
+      "record_actions": [
+        {
+          "table": "inventory-items",
+          "hash": "2483898430",
+          "action": "保留碎片PvP16?%"
+        }
+      ]
+    },
+    {
+      "id": "stasis-sandbox-identity",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "sandbox-perks",
+          "hash": "1603488897",
+          "field": "i18n"
+        },
+        {
+          "table": "sandbox-perks",
+          "hash": "1603488897",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1088259962",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1088259962",
+          "evidence": "Iceflare Bolts行与本站该效果正文对应；manifest记录name却为Cryoclasm/寒冰断破。"
+        },
+        {
+          "gid": "1088259962",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1088259962",
+          "evidence": "S en.name Cryoclasm but onItems=[668903196], official description and realgame_details describe Iceflare Bolts; DDC R65 is Iceflare Bolts."
+        }
+      ],
+      "reason": "Bungie效果名称与description身份异常，不能凭语义猜另一个hash。",
+      "decision": "不改官方manifest字段或造同义映射，异常留在审计记录。",
+      "review_when": "原表明确修订该句、给出适用条件，或作者确认后重新核对。",
+      "audit_ids": [
+        "ST-B04"
+      ],
+      "removed_site_notes": [
+        {
+          "table": "sandbox-perks",
+          "hash": "1603488897",
+          "text": ""
+        }
+      ],
+      "record_actions": [
+        {
+          "table": "sandbox-perks",
+          "hash": "1603488897",
+          "action": "仅同步冰焰飞弹站内正文；保留官方名称、官方描述与关联字段，不在站内加入来源异常注解。"
+        }
+      ]
+    },
+    {
+      "id": "stasis-squall-six-second-referent",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "2625980631",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1088259962",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1088259962",
+          "evidence": "Lasts14+2seconds...every0.1[0.17]...for6seconds。"
+        },
+        {
+          "gid": "1088259962",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1088259962",
+          "evidence": "R40:lasts14+2s;damage every0.1[0.17]s for6seconds."
+        }
+      ],
+      "reason": "6秒所修饰的机制对象不明确。",
+      "decision": "保留明确的风暴14秒及耐久额外2秒，删除本站将6秒归属为风暴本身覆盖时间的断言；不写作者待确认注释。",
+      "review_when": "原表明确修订该句、给出适用条件，或作者确认后重新核对。",
+      "audit_ids": [
+        "ST-C05"
+      ],
+      "record_actions": [
+        {
+          "table": "inventory-items",
+          "hash": "2625980631",
+          "action": "保留明确风暴14秒及耐久额外2秒，删除本站风暴本身覆盖6秒的无依据归属"
+        }
+      ]
+    },
+    {
+      "id": "stasis-winter-old-shape",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "1399217",
+          "field": "enhanced/0/realgame_details"
+        },
+        {
+          "table": "inventory-items",
+          "hash": "4184589900",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1088259962",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1088259962",
+          "evidence": "手雷行7个晶体/heptagon；星相行heptagon hexagon中hexagon为灰色#999999，另明确新增2块Large。"
+        },
+        {
+          "gid": "1088259962",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1088259962",
+          "evidence": "R33 creates7 crystals in heptagon; R44 heptagon hexagon with hexagon grey/#999999; additional2 Large."
+        }
+      ],
+      "reason": "并列旧词不能去色后当作现行六边形规则。",
+      "decision": "保留明确的7边形/7块，补确认新增两块Large；不据灰色词改成6块。",
+      "review_when": "原表明确修订该句、给出适用条件，或作者确认后重新核对。",
+      "audit_ids": [
+        "ST-C03"
+      ],
+      "record_actions": [
+        {
+          "table": "inventory-items",
+          "hash": "1399217",
+          "action": "保留七边形7块并补新增两块Large；灰色旧六边形不作现行机制"
+        }
+      ]
+    },
+    {
+      "id": "strand-banner-duration-extension",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "988980154",
+          "field": "i18n/zh-CN/realgame_details"
+        },
+        {
+          "table": "sandbox-perks",
+          "hash": "3707350985",
+          "field": "i18n/zh-CN/realgame_details"
+        },
+        {
+          "table": "sandbox-perks",
+          "hash": "1183440962",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1870531554",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1870531554",
+          "evidence": "Banner同时出现30秒/24秒，延长说明+5与x1表+6；PvP层表未知。"
+        },
+        {
+          "gid": "1870531554",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1870531554",
+          "evidence": "R52:max30s vs subsequentmax24s; proseextend5s decreasingafterx2 tomin3;tablex1+6/x2+5/x3+4/x4+3."
+        },
+        {
+          "gid": "1870531554",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1870531554",
+          "evidence": "R52: maximum 30 seconds; maximum 24 seconds; Kills increase duration +5s, each stack after second -1 down to +3; table x1 +6, x2 +5, x3 +4, x4 +3."
+        }
+      ],
+      "reason": "源时长/延长量句子不一致。",
+      "decision": "保留基础15秒及确认的OR升层条件、脉冲和增伤；相互冲突的24/30秒上限与具体延长量移出正文，不选猜5/6。",
+      "review_when": "原表明确修订该句、给出适用条件，或作者确认后重新核对。",
+      "audit_ids": [
+        "STR-15"
+      ],
+      "record_actions": [
+        {
+          "table": "inventory-items",
+          "hash": "988980154",
+          "action": "删除冲突最长24/30及具体延长量，仅保留基础15秒、4层、OR升层条件、脉冲/伤害/PvP未知档位"
+        },
+        {
+          "table": "sandbox-perks",
+          "hash": "3707350985",
+          "action": "移走相互冲突的最大时长及具体增时量；保留基础15秒、最多4层和确认的升级/回血/伤害规则。"
+        },
+        {
+          "table": "sandbox-perks",
+          "hash": "1183440962",
+          "action": "移走相互冲突的最大时长及具体增时量；保留基础15秒、最多4层和确认的升级/回血/伤害规则。"
+        }
+      ],
+      "removed_site_notes": [
+        {
+          "table": "sandbox-perks",
+          "hash": "3707350985",
+          "text": "最长24秒；最多4层、30秒；层数/时间延长 1层+6秒/2层+5秒/3层+4秒/4层+3秒"
+        },
+        {
+          "table": "sandbox-perks",
+          "hash": "1183440962",
+          "text": "最长24秒；最多4层、30秒；层数/时间延长 1层+6秒/2层+5秒/3层+4秒/4层+3秒"
+        }
+      ]
+    },
+    {
+      "id": "unbreakable-energy-decay-variable",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "1602994571",
+          "field": "i18n/zh-CN/realgame_details"
+        },
+        {
+          "table": "inventory-items",
+          "hash": "1262901521",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "['1907852650', '1918152785']",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=['1907852650', '1918152785']",
+          "evidence": "source energy gain decays over time or blocked damage? maxblocked threshold?"
+        }
+      ],
+      "reason": "衰减轴原有疑问，不作为确定机制",
+      "decision": "删除随时间或随格挡伤害的二选一推测，保留回能逐渐降低、未知终值/历时；补最高伤害所需格挡量?",
+      "review_when": "原表修订、作者澄清或获得可追溯证据后重新核对。",
+      "audit_ids": [
+        "P22-Unbreakable-1602994571",
+        "P22-Unbreakable-1262901521"
+      ]
+    },
+    {
+      "id": "void-chaos-relative-summary",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "2321824285",
+          "field": "i18n/zh-CN/realgame_details"
+        },
+        {
+          "table": "inventory-items",
+          "hash": "1016030582",
+          "field": "enhanced/0/realgame_details"
+        },
+        {
+          "table": "minted",
+          "hash": "4294967323",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1907852650",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1907852650",
+          "evidence": "Chaos汇总Vortex:+7.5%duration、+70%radius、damage0.275s sooner、pull0.2s earlier；详表4→4.3、4→7、1.45→1.2、.833→.617；HHS1.15 vs1.154。"
+        },
+        {
+          "gid": "1907852650",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1907852650",
+          "evidence": "R75:Vortex duration+7.5%,radius+70%,damage0.275s sooner,pulls0.2s earlier; R39/R40:absolute4→4.3s,4→7m,1.45→1.2s,0.833→0.617s; HHS R32=1.154 vs R75=1.15."
+        }
+      ],
+      "reason": "摘要与详细值存在精度/定义差异；不能把所有摘要换算成准确绝对值。",
+      "decision": "保留所选详表口径，不擅自用相对比例重算或加公开冲突注释。",
+      "review_when": "原表明确修订该句、给出适用条件，或作者确认后重新核对。",
+      "audit_ids": [
+        "V14-U03"
+      ],
+      "record_actions": [
+        {
+          "table": "inventory-items",
+          "hash": "2321824285",
+          "action": "保留详细手雷记录的绝对数及HHS1.154，不把源内不等价汇总加进确定正文"
+        }
+      ]
+    },
+    {
+      "id": "void-magnetic-total",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "1547656727",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1907852650",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1907852650",
+          "evidence": "每次472[75]；两次总946[150]。"
+        },
+        {
+          "gid": "1907852650",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1907852650",
+          "evidence": "Magnetic each472,source total946."
+        }
+      ],
+      "reason": "原文单次与合计显示值不完全算术对应。",
+      "decision": "保留原表总量946，不自行改944。",
+      "review_when": "原表明确修订该句、给出适用条件，或作者确认后重新核对。",
+      "audit_ids": [
+        "V-U02-P22"
+      ],
+      "record_actions": [
+        {
+          "table": "inventory-items",
+          "hash": "1547656727",
+          "action": "保留472及946不重算944"
+        }
+      ]
+    },
+    {
+      "id": "void-prowl-timing",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "1139822081",
+          "field": "i18n/zh-CN/realgame_details"
+        },
+        {
+          "table": "inventory-items",
+          "hash": "187655375",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1907852650",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1907852650",
+          "evidence": "Snare/Prowl烟幕时长、起跳、0.6tick、第9跳与多档未知数。"
+        }
+      ],
+      "reason": "时序定义不足，未知档位也不能当成线性每层关系。",
+      "decision": "修正确定的逐档/模式表述；其余不依据总跳数计算替代时长或未知属性。",
+      "review_when": "原表明确修订该句、给出适用条件，或作者确认后重新核对。"
+    },
+    {
+      "id": "void-soul-siphon-pull-timing",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "2321824286",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1907852650",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1907852650",
+          "evidence": "pulling over3.2seconds；final pull(after.6seconds from first tick)。"
+        },
+        {
+          "gid": "1907852650",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1907852650",
+          "evidence": "R78 pulling over3.2s;final pull after0.6 seconds fromfirsttick;average~1320,randomized ticks."
+        }
+      ],
+      "reason": "可能有不同阶段，源未给足时序解释。",
+      "decision": "修正每跳伤害/跳数文字，但不据0.2秒tick改拉扯时间或~1320平均值。",
+      "review_when": "原表明确修订该句、给出适用条件，或作者确认后重新核对。",
+      "audit_ids": [
+        "V-U06"
+      ],
+      "record_actions": [
+        {
+          "table": "inventory-items",
+          "hash": "2321824286",
+          "action": "保留原时序、平均值与随机限定，只订正逐跳伤害；槽位3不改"
+        }
+      ]
+    },
+    {
+      "id": "void-vortex-startup-expression",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "1016030582",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1907852650",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1907852650",
+          "evidence": "原文1.45-0.13seconds。"
+        },
+        {
+          "gid": "1907852650",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1907852650",
+          "evidence": "R39:1.45-0.13 seconds of being created; Remnants elsewhere explicitly0.13 sooner."
+        }
+      ],
+      "reason": "减号表达的计时含义未被源文解释。",
+      "decision": "不将它当确定条件增量或强行计算新起始时间。",
+      "review_when": "原表明确修订该句、给出适用条件，或作者确认后重新核对。",
+      "audit_ids": [
+        "V-U03-P22"
+      ],
+      "record_actions": [
+        {
+          "table": "inventory-items",
+          "hash": "1016030582",
+          "action": "保留来源计时表达1.45−0.13，不写额外时间轴解释"
+        }
+      ]
+    },
+    {
+      "id": "void-ward-redeploy-formula",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "4260353953",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1907852650",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1907852650",
+          "evidence": "75??% NEEDS TESTING；77÷remaining Armor of Light duration on pickup。"
+        }
+      ],
+      "reason": "抗性原本待测，重新部署公式未详解remaining时长来源/单位。",
+      "decision": "不简化成77除护罩剩余秒数；不宣称新的实测结果。",
+      "review_when": "原表明确修订该句、给出适用条件，或作者确认后重新核对。"
+    },
+    {
+      "id": "voidwall-perpendicular-reference",
+      "status": "pending-upstream",
+      "targets": [
+        {
+          "table": "inventory-items",
+          "hash": "2809141585",
+          "field": "i18n/zh-CN/realgame_details"
+        }
+      ],
+      "sources": [
+        {
+          "gid": "1907852650",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1907852650",
+          "evidence": "creating a perpendicular wall of Void Light。"
+        },
+        {
+          "gid": "1907852650",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1907852650",
+          "evidence": "R38:a perpendicular wall of Void Light."
+        }
+      ],
+      "reason": "该gid未给出perpendicular参照物。",
+      "decision": "只译为呈直角展开，不推断相对投掷方向或竖直高度；参照问题仅记此文件。",
+      "review_when": "原表明确修订该句、给出适用条件，或作者确认后重新核对。",
+      "audit_ids": [
+        "V09"
+      ],
+      "record_actions": [
+        {
+          "table": "inventory-items",
+          "hash": "2809141585",
+          "action": "写呈直角展开，不猜相对投掷方向"
+        }
+      ]
+    },
+    {
+      "id": "armor-orb-mod-coactivation",
+      "status": "pending-upstream",
+      "targets": [
+        {"table": "inventory-items", "hash": "2485657760", "field": "i18n/zh-CN/realgame_details"},
+        {"table": "inventory-items", "hash": "2447449706", "field": "i18n/zh-CN/realgame_details"},
+        {"table": "sandbox-perks", "hash": "858652730", "field": "i18n/zh-CN/realgame_details"},
+        {"table": "sandbox-perks", "hash": "858652730", "field": "i18n/zh-CN/效果"},
+        {"table": "sandbox-perks", "hash": "1418341804", "field": "i18n/zh-CN/realgame_details"},
+        {"table": "sandbox-perks", "hash": "1418341804", "field": "i18n/zh-CN/效果"}
+      ],
+      "sources": [
+        {
+          "kind": "user-observation",
+          "date": "2026-10-08",
+          "evidence": "用户实际测试后指出，按槽位顺序共触发及抓钩近战双判定可同时触发火力无限与回天掌法的两段说明仍不准确，要求移除。"
+        }
+      ],
+      "reason": "用户实测否定现有说明的准确性；没有获准以另一套顺序、互斥或共触发规则替代。",
+      "decision": "从两枚模组及全部效果副本撤回两段说明，只保留各自击杀产球、能量与冷却规则；不在站内添加疑点解释。",
+      "review_when": "获得用户确认的准确实测条件或上游明确修订后，再评估是否补回说明。"
+    }
+  ]
+}
