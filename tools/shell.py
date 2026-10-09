@@ -390,13 +390,18 @@ def emit(outdir, out, detail='', rest=0):
     之后：data-b 的增量按整页的文档顺序算，插回原位之后 edit.js 照常解码。
     """
     out = markup.delta_bmarks(out)
+
     path = os.path.join(outdir, 'index.html')
+    rel = os.path.relpath(path, SITE)
+    import check_type
+    check_type.assert_shape(out, rel)
     page, frag = split_rest(out, rest) if rest else (out, '')
     if frag and merge_rest(page, frag) != out:
         markup.die('%s：拆出去的记录插不回原样，split_rest 与 merge_rest 对不上'
-                   % os.path.relpath(path, SITE))
+                   % rel)
     with open(path, 'w', encoding='utf-8') as f:
         f.write(page)
+
     for name in (REST, REST_GZ):
         stale = os.path.join(outdir, name)
         if not frag and os.path.exists(stale):

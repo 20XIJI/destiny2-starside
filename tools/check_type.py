@@ -1,26 +1,16 @@
 #!/usr/bin/env python3
 """排版、CSS 有效性与产出结构的闸门。
 
-这个仓库的纪律分布得很不均匀：颜色有 G1–G7 七道闸门，43 份样式表里 39 份一个裸色值
-都没有；而字距、CSS 是否有效、产出的 HTML 结构一道闸门都没有，于是各自漂了很久。
-三条检查各对应一个真发生过、且现有闸门一声不吭的缺陷：
+T1／T2 只看样式表。T3 在 shell.emit() 落盘前验刚写出的那一份 HTML；
+本脚本只补手写页（首页、编辑台）——生成器是唯一作者，不必事后全站回溯。
 
-  T1 中文不吃拉丁字距  `.block > .sect-label` 把基类的 .2em 封顶顶到 .24em，而资料页
-                       502 个分节标题里 477 个是纯中文，12px 下每两字撑开 2.88px。
-                       同病还有三处（神器模组的「使用限制」.28em、护甲套装常驻视口的
-                       分类行 .24em、首页卡片字段名 .22em）。design.md 写着这条规矩，
-                       但它是一句散文，不是断言，所以四处一起活了下来。
-  T2 background 简写    `.src-tools` 写着 `background: var(--tint-3), var(--ink-lift)`。
-                       简写里只有末层允许颜色，非末层写颜色整条声明作废，回落
-                       transparent——而那条规则的注释正在论证这一层底为什么必要。
-                       浏览器不报错，页面看着只是「淡了点」。
-  T3 产出的结构        一次改动把 27 个 `<a class="entry">` 各复制了一份，形如
-                       `href="x"<a class="entry" href="x">`。浏览器容错渲染正常，
-                       check_shell.py 管外壳片段与更新时间、不看结构，一声不吭。
+  T1 中文不吃拉丁字距  字距超过 .2em 的规则，主语 class 必须是拉丁专名（现只放行 .en）。
+                       从前要扫全站 HTML 看「这个 class 有没有装中文」；那是把产物当源稿。
+  T2 background 简写    非末层不许写颜色，整条声明否则作废。
+  T3 产出的结构        开闭配对、开标签被复制一份时冒出的坏属性。生成页走 emit()。
 
 用法：python3 tools/check_type.py    改样式或改首页之后跑一次，已接进 npm run build。
 """
-
 import os
 import re
 import sys
@@ -28,9 +18,10 @@ from html.parser import HTMLParser
 
 import shell
 
-CJK = re.compile(r'[㐀-鿿]')
 # 站内自己的判据：design.md 二节「可能是纯中文的位置用 .2em 封顶」
 CAP_EM = 0.2
+# 超过封顶仍合法的主语 class：英文专名，字距按拉丁排。
+LATIN = frozenset({'en'})
 # 跟踪这些标签的开闭配对。行内排版标签（em、strong、b、i、s）不跟——
 # 它们在正文里由生成器成对出，出错会被逐字保真闸门先抓到。
 PAIRED = ('a', 'li', 'ul', 'ol', 'dl', 'table', 'thead', 'tbody', 'tr',
@@ -53,14 +44,14 @@ def css_files() -> list[str]:
     return sorted(out)
 
 
-def pages() -> list[str]:
-    """全站产出的 HTML。首页手写、其余由生成器出，两种都要验。"""
-    out = []
-    for base, dirs, names in os.walk(shell.SITE):
-        dirs[:] = [d for d in dirs if not d.startswith(('.', 'icons'))]
-        for n in names:
+def handwritten() -> list[str]:
+    """不经 emit() 的 HTML：首页手写，编辑台手写。"""
+    out = ['index.html']
+    admin = os.path.join(shell.SITE, 'admin')
+    if os.path.isdir(admin):
+        for n in os.listdir(admin):
             if n.endswith('.html'):
-                out.append(os.path.relpath(os.path.join(base, n), shell.SITE))
+                out.append(os.path.join('admin', n).replace('\\', '/'))
     return sorted(out)
 
 
@@ -69,16 +60,11 @@ def strip_comments(css: str) -> str:
 
 
 class Page(HTMLParser):
-    """一页产出解析一趟，T1 与 T3 各取所需。
-
-    T1：「每个 class 底下出现过哪些文字」。只取直接文字，不含后代——字距施加在
-    这个元素上，判据就该是它自己那一行字。
-    T3：PAIRED 那几种标签的开闭配对，以及开标签被复制一份时冒出来的坏属性。"""
+    """T3：PAIRED 标签开闭配对，以及开标签被复制一份时冒出来的坏属性。"""
 
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
-        self.by_class: dict[str, set[str]] = {}
-        self.stack: list[tuple[str, list[str]]] = []
+        self.stack: list[str] = []
         self.open: list[tuple[str, tuple[int, int]]] = []
         self.bad: list[str] = []
 
@@ -92,14 +78,11 @@ class Page(HTMLParser):
             self.open.append((tag, self.getpos()))
         if tag in ('br', 'img', 'meta', 'link', 'input', 'hr'):
             return
-        cls = dict(attrs).get('class') or ''
-        self.stack.append((tag, cls.split()))
+        self.stack.append(tag)
 
     def handle_endtag(self, tag: str) -> None:
-        # **按标签名配对弹**：空元素在 handle_starttag 里没入栈，无条件弹会让栈
-        # 与文档错位，文字就记到上一层的 class 上去了。
         for i in range(len(self.stack) - 1, -1, -1):
-            if self.stack[i][0] == tag:
+            if self.stack[i] == tag:
                 del self.stack[i:]
                 break
         if tag not in PAIRED:
@@ -111,22 +94,20 @@ class Page(HTMLParser):
             self.bad.append('第 %d 行 </%s> 配不上，最近的未闭合是 %s'
                             % (self.getpos()[0], tag, near))
 
-    def handle_data(self, data: str) -> None:
-        text = data.strip()
-        if not text or not self.stack:
-            return
-        for cls in self.stack[-1][1]:
-            self.by_class.setdefault(cls, set()).add(text)
+
+def check_html(html: str, rel: str) -> list[str]:
+    """一份 HTML 的 T3 报错行，不含文件名前缀。"""
+    p = Page()
+    p.feed(html)
+    p.close()
+    return p.bad + ['第 %d 行 <%s> 没有闭合' % (pos[0], tag) for tag, pos in p.open]
 
 
-def parse_pages() -> dict[str, Page]:
-    out = {}
-    for rel in pages():
-        p = Page()
-        p.feed(read(rel))
-        p.close()
-        out[rel] = p
-    return out
+def assert_shape(html: str, rel: str) -> None:
+    """emit() 落盘前调用。坏了当场中止，不写出半成品。"""
+    bad = check_html(html, rel)
+    if bad:
+        sys.exit('T3 %s：%s' % (rel, bad[0]))
 
 
 # ── T1 ───────────────────────────────────────────────────────────────────────
@@ -152,21 +133,15 @@ def wide_tracking(css: str) -> list[tuple[str, str, float]]:
     return out
 
 
-def check_tracking(bad: list[str], parsed: dict[str, Page]) -> int:
-    seen: dict[str, set[str]] = {}
-    for p in parsed.values():
-        for cls, texts in p.by_class.items():
-            seen.setdefault(cls, set()).update(texts)
+def check_tracking(bad: list[str]) -> int:
     n = 0
     for rel in css_files():
         for sel, cls, em in wide_tracking(read(rel)):
-            cjk = sorted(t for t in seen.get(cls, ()) if CJK.search(t))
-            if not cjk:
+            if cls in LATIN:
                 continue
             n += 1
-            bad.append('T1 %s:%s 字距 %.2fem 超过 %.2fem 封顶，而它装的是中文：%s'
-                       % (rel, sel, em, CAP_EM,
-                          '、'.join(cjk[:3]) + ('…' if len(cjk) > 3 else '')))
+            bad.append('T1 %s:%s 字距 %.2fem 超过 %.2fem 封顶'
+                       % (rel, sel, em, CAP_EM))
     return n
 
 
@@ -228,13 +203,13 @@ def check_background(bad: list[str], colors: set[str]) -> int:
     return n
 
 
-# ── T3 ───────────────────────────────────────────────────────────────────────
+# ── T3 手写页 ────────────────────────────────────────────────────────────────
 
-def check_shape(bad: list[str], parsed: dict[str, Page]) -> int:
+
+def check_shape(bad: list[str]) -> int:
     n = 0
-    for rel, p in parsed.items():
-        for line in p.bad + ['第 %d 行 <%s> 没有闭合' % (pos[0], tag)
-                             for tag, pos in p.open]:
+    for rel in handwritten():
+        for line in check_html(read(rel), rel):
             n += 1
             bad.append('T3 %s：%s' % (rel, line))
     return n
@@ -242,17 +217,16 @@ def check_shape(bad: list[str], parsed: dict[str, Page]) -> int:
 
 def main() -> int:
     bad: list[str] = []
-    parsed = parse_pages()
-    n1 = check_tracking(bad, parsed)
+    n1 = check_tracking(bad)
     n2 = check_background(bad, root_colors(read('assets/site.css')))
-    n3 = check_shape(bad, parsed)
+    n3 = check_shape(bad)
     if bad:
         print('排版与结构不一致：', file=sys.stderr)
         for line in bad:
             print('  ' + line, file=sys.stderr)
         return 1
-    print('排版与结构一致：%d 份样式表，%d 个页面（字距 %d、简写 %d、结构 %d）'
-          % (len(css_files()), len(pages()), n1, n2, n3))
+    print('排版与结构一致：%d 份样式表，手写 %d 页（字距 %d、简写 %d、结构 %d）'
+          % (len(css_files()), len(handwritten()), n1, n2, n3))
     return 0
 
 

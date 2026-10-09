@@ -3010,5 +3010,51 @@ class Normalization(Isolated):
         self.exits(lambda: doc.wrap('p', '{orb|能量球'))
 
 
+class IncrementalBuild(Isolated):
+    """构建图的缓存键是内容哈希：同一字节稳定，改一字节或改路径集合即变。"""
+
+    def setUp(self):
+        super().setUp()
+        self.bld = load('quality_build_orch', 'build.py')
+        self.replace(self.bld, 'ROOT', self.root)
+
+    def test_digest_is_stable_for_the_same_bytes(self):
+        path = self.file('a.md', 'hello\n')
+        self.assertEqual(self.bld.digest_files([path]), self.bld.digest_files([path]))
+
+    def test_digest_changes_when_bytes_change(self):
+        path = self.file('a.md', 'hello\n')
+        before = self.bld.digest_files([path])
+        path.write_text('hello!\n', encoding='utf-8')
+        self.assertNotEqual(before, self.bld.digest_files([path]))
+
+    def test_digest_changes_when_the_path_set_changes(self):
+        a = self.file('a.md', 'x\n')
+        b = self.file('b.md', 'x\n')
+        self.assertNotEqual(self.bld.digest_files([a]), self.bld.digest_files([a, b]))
+
+
+class TypeGate(unittest.TestCase):
+    """T3 认的是一份 HTML 字符串，不爬整站。"""
+
+    def test_a_duplicated_open_tag_is_reported(self):
+        import check_type
+        html = '<main><a href="x"<a class="entry" href="x">x</a></main>'
+        bad = check_type.check_html(html, 'index.html')
+        self.assertTrue(any('属性' in line for line in bad), bad)
+
+    def test_an_unclosed_section_is_reported(self):
+        import check_type
+        html = '<main><section id="a">x</main>'
+        bad = check_type.check_html(html, 'x.html')
+        self.assertTrue(any('没有闭合' in line or '配不上' in line for line in bad), bad)
+
+    def test_a_balanced_page_is_clean(self):
+        import check_type
+        html = '<main><section id="a"><p>x</p></section></main>'
+        self.assertEqual(check_type.check_html(html, 'x.html'), [])
+
+
 if __name__ == '__main__':
+
     unittest.main(verbosity=2)
