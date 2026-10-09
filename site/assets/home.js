@@ -30,6 +30,49 @@ function unpack(list) {
   return out;
 }
 
+function isDdc(pages, r) {
+  return !!(r.c || (pages[r.u] && pages[r.u].c));
+}
+
+/* 名字命中落在这些页上时，补一条跳到装备库的检索。护甲详解、首领、配装不在此列。
+   exotic-weapon 同时盖住详解与刷取清单；shopping-other 是杂项，不算武器。 */
+function libJump(q, rows) {
+  var WPN_HIT = /^(exotic-weapon|shopping-(primary|special|heavy)|weapon-|legendary-)/;
+  for (var i = 0; i < rows.length; i++) {
+    if (WPN_HIT.test(rows[i].u)) {
+      return { u: 'weapons/index.html', n: q, x: '按名字、词条、属性查找', jump: 1 };
+    }
+  }
+  return null;
+}
+
+/* 三档仍是页面、条目名、正文；每一档里 Compendium 页（c:1）排在前面。
+   武器名命中时在 DDC 条目名之后插一条跳到装备库；没有条目名、只命中了
+   异域武器这类页标题时，插在 DDC 页面命中之后。 */
+function ranked(index, pages, terms, hit, q) {
+  var top = [], named = [], rest = [];
+  index.forEach(function (r) {
+    if (!r.n) { if (hit(r._t, terms)) top.push(r); }
+    else if (hit(r._n, terms)) named.push(r);
+    else if (hit(r._x, terms)) rest.push(r);
+  });
+  function cmp(a, b) {
+    return (isDdc(pages, a) ? 0 : 1) - (isDdc(pages, b) ? 0 : 1);
+  }
+  top.sort(cmp);
+  named.sort(cmp);
+  rest.sort(cmp);
+  var jump = libJump(q, named) || libJump(q, top);
+  if (!jump) return top.concat(named, rest);
+  var lane = named.length ? named : top;
+  var at = 0;
+  while (at < lane.length && isDdc(pages, lane[at])) at++;
+  if (named.length) {
+    return top.concat(named.slice(0, at), [jump], named.slice(at), rest);
+  }
+  return top.slice(0, at).concat([jump], top.slice(at), rest);
+}
+
 export default function init(box, deps) {
   var words = deps.words, hit = deps.hit;
 
@@ -139,15 +182,21 @@ export default function init(box, deps) {
       var li = document.createElement('li');
       var a = document.createElement('a');
       a.className = 'hit';
-      /* 条目带上 ?q= 与分节锚点；页面本身直接进去，不必预填 */
-      a.href = r.n ? r.u + '?q=' + encodeURIComponent(q) + '#' + r.a : r.u;
+      /* 条目带上 ?q= 与分节锚点；页面本身直接进去，不必预填。
+         装备库那一条没有分节，只带查询词。 */
+      a.href = r.jump
+        ? r.u + '?q=' + encodeURIComponent(q)
+        : r.n ? r.u + '?q=' + encodeURIComponent(q) + '#' + r.a
+        : r.u;
 
       var name = document.createElement('b');
       light(name, r.n || r.t, terms);
 
       var at = document.createElement('span');
       at.className = 'hit-at';
-      at.textContent = r.n ? (pages[r.u] ? pages[r.u].t : r.u) + ' · ' + r.l : '整页';
+      at.textContent = r.jump ? '装备库'
+        : r.n ? (pages[r.u] ? pages[r.u].t : r.u) + ' · ' + r.l
+        : '整页';
 
       var body = document.createElement('span');
       body.className = 'hit-x';
@@ -177,7 +226,8 @@ export default function init(box, deps) {
     });
 
     /* 三档排序：页面、条目名命中、正文命中。名字命中的排在正文命中前面——
-       搜「棱镜」时那一页本身与叫这个名字的条目，比正文里顺带提到的有用。 */
+       搜「棱镜」时那一页本身与叫这个名字的条目，比正文里顺带提到的有用。
+       同档内 Compendium 页优先；武器名命中再插一条跳到装备库。 */
     function draw() {
       var q = input.value.trim();
       var had = list.childElementCount;
@@ -188,21 +238,17 @@ export default function init(box, deps) {
       if (!index) { count.textContent = '正在载入索引…'; return; }
 
       var terms = words(q);
-      var top = [], named = [], rest = [];
-      index.forEach(function (r) {
-        if (!r.n) { if (hit(r._t, terms)) top.push(r); }
-        else if (hit(r._n, terms)) named.push(r);
-        else if (hit(r._x, terms)) rest.push(r);
-      });
-      var all = top.concat(named, rest);
+      var all = ranked(index, pages, terms, hit, q);
+      var n = 0, i;
+      for (i = 0; i < all.length; i++) if (!all[i].jump) n++;
       show(all.slice(0, CAP), q, terms);
       queued = { rows: all.slice(CAP), q: q, terms: terms };
       more.hidden = !queued.rows.length;
       more.textContent = '展开其余 ' + queued.rows.length + ' 条';
-      count.textContent = all.length ? all.length + ' 条命中' : '没有命中';
-      box.toggleAttribute('data-miss', !all.length);
+      count.textContent = n ? n + ' 条命中' : '没有命中';
+      box.toggleAttribute('data-miss', !n);
       /* 淡入只在结果从无到有时放一次：每敲一个字重放一遍会闪。 */
-      list.classList.toggle('is-in', !had && !!all.length);
+      list.classList.toggle('is-in', !had && !!n);
     }
 
     input.addEventListener('focus', load);

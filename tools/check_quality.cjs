@@ -901,6 +901,69 @@ test('the site search index unpacks into full records that carry the English nam
   assert.ok(withEn > 1500, `只有 ${withEn} 个条目带英文名，英文没接进来`)
 })
 
+test('homepage search ranks Compendium pages first and jumps to the weapons library', () => {
+  // 重合条目（故我在既在详解也在刷取清单）要把 Destiny Data Compendium 那一页
+  // 排到同档最前；武器名再补一条跳到装备库。掉了的症状是搜得到、只是顺序错，
+  // 闸门看不见。
+  const ctx = {}
+  ctx.window = ctx
+  vm.createContext(ctx)
+  vm.runInContext(fs.readFileSync(path.join(site, 'assets/search.js'), 'utf8'), ctx,
+    { filename: 'assets/search.js' })
+  vm.runInContext(
+    ['unpack', 'isDdc', 'libJump', 'ranked'].map((n) => funcSource('assets/home.js', n)).join('\n')
+    + '\nthis.unpack=unpack;this.isDdc=isDdc;this.libJump=libJump;this.ranked=ranked',
+    ctx)
+  const packed = ctx.starsideIndex
+  const flag = (url) => packed.some((r) => r && r.u === url && r.c === 1)
+  assert.equal(flag('exotic-weapon/index.html'), true, '异域武器详解该标 c:1')
+  assert.equal(flag('exotic-armor/index.html'), true, '异域护甲详解该标 c:1')
+  assert.equal(flag('weapon-perks/index.html'), true, '武器 PERK 该标 c:1')
+  assert.equal(flag('exotic-weapons/index.html'), false, '刷取清单-异域武器不该标 c')
+  assert.equal(flag('shopping-primary/index.html'), false, '购物清单不该标 c')
+
+  const index = ctx.unpack(packed)
+  const pages = {}
+  index.forEach((r) => {
+    if (!r.n) r._t = ((r.t || '') + ' ' + (r.d || '')).toLowerCase()
+    else { r._n = r.n.toLowerCase(); r._x = (r.x || '').toLowerCase() }
+    if (r.d) pages[r.u] = r
+  })
+  function hit(hay, terms) {
+    for (let i = 0; i < terms.length; i++) if (hay.indexOf(terms[i]) === -1) return false
+    return true
+  }
+  function run(q) {
+    return ctx.ranked(index, pages, [q.toLowerCase()], hit, q)
+  }
+
+  const gun = run('枯萎囤积')
+  const same = gun.filter((r) => r.n === '枯萎囤积' && !r.jump)
+  assert.ok(same.length >= 2, `枯萎囤积该同时命中详解与刷取清单，实际 ${same.length} 条`)
+  assert.equal(same[0].u, 'exotic-weapon/index.html',
+    `枯萎囤积第一条该是异域武器详解，实际是 ${same[0].u}`)
+  const jumpAt = gun.findIndex((r) => r.jump)
+  assert.ok(jumpAt > 0, '枯萎囤积该有一条跳到装备库')
+  assert.equal(gun[jumpAt].u, 'weapons/index.html')
+  assert.equal(gun[jumpAt].n, '枯萎囤积')
+  const farm = gun.findIndex((r) => r.n === '枯萎囤积' && r.u === 'exotic-weapons/index.html')
+  assert.ok(farm > jumpAt, '装备库跳转该夹在详解与刷取清单之间')
+
+  const pagesHit = run('异域武器').filter((r) => !r.n && !r.jump)
+  assert.ok(pagesHit.length, '搜异域武器该命中页面')
+  assert.equal(pagesHit[0].u, 'exotic-weapon/index.html',
+    `异域武器第一条页面该是详解，实际是 ${pagesHit[0].u}`)
+  assert.ok(run('异域武器').some((r) => r.jump), '搜异域武器该有装备库跳转')
+
+  const armorPages = run('异域护甲').filter((r) => !r.n && !r.jump)
+  assert.ok(armorPages.length, '搜异域护甲该命中页面')
+  assert.equal(armorPages[0].u, 'exotic-armor/index.html',
+    `异域护甲第一条页面该是详解，实际是 ${armorPages[0].u}`)
+  assert.ok(!run('异域护甲').some((r) => r.jump), '搜异域护甲不该跳出装备库')
+
+  assert.ok(!run('卡鲁斯大帝').some((r) => r.jump), '搜首领不该跳出装备库')
+})
+
 test('both entry points load the shared modules before the console that uses them', () => {
   // admin.js 现读 window.starsideDialect 与 window.starsideSource。少一句，/admin/
   // 一开就是 undefined.cells，而闸门、构建、npm test 全都看不见——那一屏是手写的

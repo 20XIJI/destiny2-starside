@@ -11,6 +11,7 @@
 按页面、分节分组写，三种记录（条目有两种写法），按出现顺序归属：
 
     {"u":页面, "t":标题, "d":描述}   每页一条，其后是这一页的分节与条目
+    源稿写「数据源：是」的页再带 "c":1，首页搜索把它们排到同档最前
     {"a":锚点, "l":分节}             每个分节一条，其后是这一节的条目
     [名称, 全文]                     条目；全文里第一个 ¶ 写的是名称
     [名称]                           条目，全文与前一个同名条目相同
@@ -223,11 +224,28 @@ def pack(rows, last):
     return out
 
 
+def compendium_urls():
+    """源稿写「数据源：是」的页面 URL。首页搜索把这些页的命中排到同档最前。
+
+    路径算法与 shell.pages() 同一条：有「路径：」用它，没有就用 slug。
+    """
+    out = set()
+    for slug, path in shell.sources():
+        with open(path, encoding='utf-8') as f:
+            md = f.read()
+        if not re.search(r'^数据源：是\s*$', md, re.M):
+            continue
+        where = re.search(r'^路径：(.*)$', md, re.M)
+        out.add('%s/index.html' % (where.group(1).strip() if where else slug))
+    return out
+
+
 def main() -> int:
     argparse.ArgumentParser(description=__doc__, allow_abbrev=False,
                             epilog="产出 assets/search.js；资料产出应先生成；完整链运行 npm run build").parse_args()
     out, total = [], 0
     last: dict[str, str] = {}
+    ddc = compendium_urls()
     for url in shell.pages():
         if url == shell.HOME:
             continue          # 首页本身就是搜索框所在的那一页，不必搜出自己
@@ -238,6 +256,8 @@ def main() -> int:
             print('  %-38s    1 条（配装名）' % url)
             continue
         page, rows = scan(url)
+        if url in ddc:
+            page['c'] = 1
         out.append(line(page))
         out += pack(rows, last)
         total += len(rows)
