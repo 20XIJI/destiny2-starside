@@ -14,7 +14,7 @@ window.starsidePages = [
   ["keys/artifact-mods","神器模组","artifact-mods/index.html","档案","","2026.10.8"],
   ["keys/exotic-armor","异域护甲详解","exotic-armor/index.html","档案","","2026.10.9"],
   ["keys/exotic-weapon","异域武器详解","exotic-weapon/index.html","档案","","2026.10.9"],
-  ["keys/weapon-perks","武器 PERK 详解","weapon-perks/index.html","档案","","2026.8.30"],
+  ["keys/weapon-perks","武器 PERK 详解","weapon-perks/index.html","档案","","2026.10.9"],
   ["keys/arc","电弧","elements/arc/index.html","档案","docs/elements","2026.10.8"],
   ["keys/class-abilities","职业技能","elements/class-abilities/index.html","档案","docs/elements","2026.10.8"],
   ["keys/prismatic","棱镜","elements/prismatic/index.html","档案","docs/elements","2026.10.8"],
