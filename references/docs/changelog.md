@@ -11,6 +11,8 @@
 - {act|订正}[异域武器详解](../exotic-weapon/index.html)：倍镜改为变焦值，滑翔与悬停分开，长说明拆成触发、效果与例外
 - {act|订正}[异域护甲详解](../exotic-armor/index.html)：缠结改为绳结，混沌交易按官方名，长说明拆成触发、叠层与例外
 - {act|订正}[护甲套装效果](../armor-sets/index.html)：电介质漂移改为前方锥形 10 米，补上共振转向 25% 与待测值
+- {act|订正}[武器 PERK 详解](../weapon-perks/index.html) · 黑暗乙太收割者：红血计数改为 25% ↑34?%
+- {act|订正}[武器 PERK 详解](../weapon-perks/index.html) · 热血上头：补上收枪后保留
 
 ## 2026.10.8
 
