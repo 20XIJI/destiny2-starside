@@ -170,6 +170,253 @@
     return interp(Math.min(v, row[1]), row[2]);
   }
 
+  /* 射程米数、填装秒数、PvP 击杀：系数取自 godroll.tv 现网计算块（Bygones 射程 48 →
+     腰射 19.60m / 瞄准 33.32m，填装 46 → 2.05s 对过）。操控抽出／收起／开镜取
+     D2Foundry `weapon_formulas.json` 各枪型 default.handling（线性秒）。枪型用中文名，框架名翻成英文键。 */
+  var FRAME_EN = {
+    '适配框架': 'Adaptive', '适配点射': 'Adaptive Burst', '适配偃月': 'Adaptive',
+    '轻质框架': 'Lightweight', '精密框架': 'Precision', '精准弹头': 'Pinpoint Slug',
+    '速射框架': 'Rapid Fire', '速射重弹': 'Rapid Fire Slug', '速射偃月': 'Rapid Fire',
+    '高冲击力框架': 'High Impact', '高冲击力长弓': 'High Impact Longbow',
+    '攻击型框架': 'Aggressive', '攻击型偃月': 'Aggressive',
+    '重型点射': 'Heavy Burst', '动态热量武器': 'Dynamic Heat', '平衡热量武器': 'Balanced Heat',
+    '微型导弹框架': 'Micro Missile', '支援框架': 'Support', '传承PR-55框架': 'Legacy PR 55',
+    '区域拒止框架': 'Area Denial', '压缩波形框架': 'Compressed Wave', '波形框架': 'Wave'
+  };
+  var RANGE = {
+    '自动步枪': { _: { s: [10.75, .125], e: [40, 0], z: 1.6 } },
+    '脉冲步枪': { _: { s: [16, .075], e: [40, 0], z: 1.7 } },
+    '斥候步枪': { _: { s: [30.25, .1568], e: [60.75, 0], z: 2 } },
+    '手炮': {
+      _: { s: [16, .09], e: [29, .03], z: 1.5 },
+      Aggressive: { s: [18, .09], e: [32, .02], z: 1.5 },
+      'Spread Shot': { s: [6, .04], e: [10, 0], z: 1.2 }
+    },
+    '手枪': { _: { s: [11, .04], e: [22, .03], z: 1.2 } },
+    '微型冲锋枪': { _: { s: [10.3, .065], e: [23, 0], z: 1.4 } },
+    '追踪步枪': { _: { s: [14.756, .1017], e: [35.9, 0], z: 1.6 } },
+    '融合步枪': {
+      _: { s: [10.73, .0404], e: [14.705, .318], z: 1.3 },
+      Aggressive: { s: [14.73, .0404], e: [17.705, .318], z: 1.3 }
+    },
+    '霰弹枪': {
+      _: { s: [3.77, .0294], e: [14.5, 0], z: 1 },
+      'Heavy Burst': { s: [5.77, .0295], e: [12.75, 0], z: 1.2 },
+      'Pinpoint Slug': { s: [5.77, .0295], e: [12.75, 0], z: 1.2 },
+      'Rapid Fire Slug': { s: [5.77, .0295], e: [12.75, 0], z: 1.2 }
+    },
+    '狙击步枪': {
+      Adaptive: { hip: [45, 70], z: 4 }, Aggressive: { hip: [48, 75], z: 4.5 },
+      'Dynamic Heat': { hip: [43, 68], z: 3.5 }, 'Rapid Fire': { hip: [40, 62], z: 3.5 },
+      Disruption: { hip: [50, 80], z: 4.5 }
+    },
+    '线性融合步枪': {
+      'Adaptive Burst': { hip: [35, 65], z: 3.5 }, Precision: { hip: [38, 70], z: 3.5 }
+    },
+    '机枪': { _: { s: [28.5, .0223], e: [38.2, 0], z: 1.6 } },
+    '偃月': { _: { s: [15.013, .054356], e: [15.013, .054356], z: 1 } }
+  };
+  var RELOAD = {
+    '自动步枪': [.00316922, -.870122, 92.5862, .867],
+    '手炮': [.00477848, -1.30872, 138.482, 1.467],
+    '脉冲步枪': [.0034304, -.924866, 96.6938, .9],
+    '斥候步枪': [.00381167, -.999196, 103.15, .933],
+    '手枪': [882635e-9, -.432829, 68.6402, .733],
+    '微型冲锋枪': [.00225423, -.6829, 85.4344, .967],
+    '融合步枪': [.00227882, -.705757, 91.6868, 1.067],
+    '霰弹枪': [.00237208, -.519846, 42.4795, .167],
+    '狙击步枪': [.00249814, -.821771, 123.12, 1.733],
+    '榴弹发射器_特殊': [.00268222, -.775084, 104.714, 1.5],
+    '榴弹发射器_威能': [.00279716, -.885767, 132.442, 1.967],
+    '线性融合步枪': [.00217949, -.709871, 93.0427, 1.133],
+    '机枪': [.00335315, -1.08646, 194.189, 1.4],
+    '火箭发射器': [.00385034, -.917237, 131.542, 2.1],
+    '追踪步枪': [.00227882, -.705757, 91.6868, 1.067],
+    '战斗弓箭': [.0024, -.372, 32.4, .6],
+    '偃月': [0, -.525, 105, 1.75]
+  };
+  var HANDLING = {
+    '自动步枪': { r: [-0.00279338, 0.51985381], s: [-0.00268436, 0.48414822], a: [-0.001875, 0.38975] },
+    '脉冲步枪': { r: [-0.00312085, 0.54370932], s: [-0.0035545, 0.55005845], a: [-0.00196208, 0.4574687] },
+    '斥候步枪': { r: [-0.00285336856, 0.540561867], s: [-0.002941215324, 0.527217745], a: [-0.001693527081, 0.4114236019] },
+    '手炮': { r: [-0.002942857143, 0.4782571429], s: [-0.002952380952, 0.5133809524], a: [-0.001666666667, 0.3316666667] },
+    '手枪': { r: [-0.00264010989, 0.4232582418], s: [-0.00197527473, 0.4298956044], a: [-0.0022293956, 0.3435796703] },
+    '微型冲锋枪': { r: [-0.002376970528, 0.4710178204], s: [-0.002547978067, 0.4481295408], a: [-0.001873200822, 0.3581576422] },
+    '追踪步枪': { r: [-0.00279338, 0.51985381], s: [-0.00268436, 0.48414822], a: [-0.001875, 0.38975] },
+    '融合步枪': { r: [-0.001448069241, 0.4990612517], s: [-0.002863515313, 0.4445712383], a: [-0.001693741678, 0.4112330226] },
+    '霰弹枪': { r: [-0.003271255061, 0.5388744939], s: [-0.003388663968, 0.5711336032], a: [-0.00233805668, 0.451194332] },
+    '狙击步枪': { r: [-0.002623944983, 0.5079465458], s: [-0.002083932479, 0.4392525789], a: [-0.00194998437, 0.5021325414] },
+    '线性融合步枪': { r: [-0.001448069241, 0.4990612517], s: [-0.002863515313, 0.4445712383], a: [-0.001693741678, 0.4112330226] },
+    '机枪': { r: [-0.002391721353, 0.4950499748], s: [-0.002041393236, 0.4547501262], a: [-0.001234477537, 0.4574687027] },
+    '偃月': { r: [-0.002139219, 0.42369], s: [-0.002827674, 0.5147], a: [0, 0] },
+    '战斗弓箭': { r: [-0.002909930716, 0.7364549654], s: [-0.00179330254, 0.5396466513], a: [-0.001855658199, 0.5293778291] },
+    '榴弹发射器': { r: [-0.00272791, 0.55133684], s: [-0.00232786, 0.48726765], a: [-0.00187072, 0.50019128] },
+    '火箭发射器': { r: [-0.003998740554, 0.6635944584], s: [-0.003296509536, 0.5463332134], a: [-0.002139258726, 0.528984167] }
+  };
+  var PVP_DMG = {
+    '自动步枪': { Adaptive: [15.5, 27.21, 1], 'Balanced Heat': [20.01, 33.93, 1], 'High Impact': [22, 39.48, 1], Lightweight: [13.61, 23.09, 1], Precision: [20.01, 33.93, 1], 'Rapid Fire': [13.61, 23.08, 1], Support: [18.85, 26.42, 1] },
+    '脉冲步枪': { Adaptive: [22, 36.45, 3], 'Aggressive Burst': [15.5, 30.55, 4], 'Balanced Heat': [15.5, 28.73, 3], 'Dynamic Heat': [15.89, 29.45, 3], 'Heavy Burst': [23.02, 42.66, 2], 'High Impact': [21.5, 38.58, 3], 'Legacy PR 55': [19.71, 31.5, 3], Lightweight: [18.82, 30.07, 3], 'Rapid Fire': [15.5, 28.73, 3], 'Micro Missile': [30.23, 30.23, 1] },
+    '斥候步枪': { Aggressive: [54.03, 91.63, 1], 'Balanced Heat': [27.32, 53.31, 1], 'High Impact': [42.01, 84.43, 1], Lightweight: [38.02, 64.49, 1], Precision: [38.53, 69.13, 1], 'Rapid Fire': [27.32, 53.31, 1] },
+    '手炮': { Adaptive: [44.53, 79.88, 1], Aggressive: [48.73, 90.3, 1], 'Dynamic Heat': [46.45, 72.41, 1], 'Heavy Burst': [24.01, 52.84, 1], Lightweight: [44.52, 80.1, 1], Precision: [45.32, 70.64, 1], 'Spread Shot': [120.02, 144.72, 1] },
+    '手枪': { Adaptive: [36.02, 57.56, 1], 'Adaptive Burst': [20.01, 37.07, 3], 'Dynamic Heat': [31.8, 50.81, 1], 'Heavy Burst': [31.02, 49.57, 2], Lightweight: [31.02, 49.57, 1], 'Micro Missile': [158.37, 158.37, 1], Precision: [40.01, 63.94, 1], 'Rapid Fire': [25.02, 39.98, 1] },
+    '微型冲锋枪': { Adaptive: [11.5, 19.06, 1], Aggressive: [13.61, 23.88, 1], 'Aggressive Burst': [15.02, 26.35, 1], 'Balanced Heat': [10.6, 20.06, 1], Lightweight: [10.6, 20.06, 1], Precision: [16.71, 26.71, 1] },
+    '战斗弓箭': { 'High Impact Longbow': [120.94, 157.7, 1], Lightweight: [77.6, 124.01, 1], Precision: [100.79, 131.43, 1], 'High Impact': [196.52, 263.95, 1] },
+    '追踪步枪': { Adaptive: [15.01, 20.16, 1] },
+    '融合步枪': { Adaptive: [46.3, 46.3, 1], Aggressive: [28.82, 28.82, 1], 'High Impact': [79.22, 79.22, 1], Precision: [48, 48, 1], 'Rapid Fire': [33.97, 33.97, 1] },
+    '霰弹枪': { Aggressive: [28, 31.02, 1], 'Heavy Burst': [107.06, 187.87, 1], Lightweight: [23.01, 25.49, 1], 'Pinpoint Slug': [170.1, 298.51, 1], Precision: [23.01, 25.49, 1], 'Rapid Fire': [20, 22.15, 1], 'Rapid Fire Slug': [160.11, 280.97, 1] },
+    '狙击步枪': { Adaptive: [125.03, 405.74, 1], Aggressive: [141.89, 496.63, 1], 'High Impact': [155.09, 427.25, 1], 'Dynamic Heat': [113.11, 389.22, 1], 'Rapid Fire': [85.03, 292.62, 1], Disruption: [253.46, 698.26, 1] },
+    '偃月': { Adaptive: [136.56, 136.56, 1], Aggressive: [147.52, 147.52, 1], 'Rapid Fire': [120.85, 120.85, 1] },
+    '线性融合步枪': { 'Adaptive Burst': [78.4, 269.79, 1], Precision: [165.09, 568.09, 1] },
+    '机枪': { Adaptive: [41.5, 58.18, 1], Aggressive: [36.03, 46.98, 1], 'Balanced Heat': [25.53, 33.29, 1], 'High Impact': [47.49, 68.44, 1], 'Rapid Fire': [25.53, 33.29, 1] },
+    '火箭发射器': { Adaptive: [306, 306, 1], Aggressive: [306, 306, 1], 'High Impact': [312, 312, 1], Precision: [277, 277, 1] },
+    '榴弹发射器': { Adaptive: [295, 295, 1], 'Rapid Fire': [295, 295, 1], 'Area Denial': [20.01, 20.01, 1], 'Micro Missile': [143.83, 143.83, 1], Wave: [139, 139, 1], 'Compressed Wave': [159, 159, 1] }
+  };
+  var PVP_HP = 186;
+  var FX_GROUPS = [
+    { id: 'armor', name: '护甲模组', items: [
+      { id: '2899505723', name: '空中补偿器', stats: { '空中效率': 30 } },
+      { id: '2586562813', name: '动能装弹装置', el: '动能', stats: { '填装速度': 18 } },
+      { id: '2467203039', name: '动能瞄准性能', el: '动能', stats: { '辅助瞄准': 10 } },
+      { id: '14520248', name: '动能武器激涌', el: '动能', dmg: 1.06 },
+      { id: '531057500', name: '光明利刃', sword: 1, stats: { '充能效率': 60 } }
+    ] },
+    { id: 'buff', name: '增益', items: [
+      { id: 'ability_amplified', name: '增幅', stats: { '操控性': 40 } },
+      { id: 'ability_radiant', name: '焕光', dmg: 1.1 },
+      { id: '1190101211', name: '超凡', dmg: 1.05 }
+    ] },
+    { id: 'super', name: '超能', items: [
+      { id: '2722573683', name: '暗影箭矢：狩猎陷阱', dmg: 1.35 },
+      { id: '2722573681', name: '暗影箭矢：莫比乌斯箭袋', dmg: 1.3 },
+      { id: '4260353953', name: '黎明护罩', stats: { '操控性': 50, '填装速度': 50 } },
+      { id: '2274196887', name: '光焰之井', dmg: 1.25 }
+    ] },
+    { id: 'aspect', name: '星相', items: [
+      { id: '4194622036', name: '流动状态', stats: { '填装速度': 50 } },
+      { id: '83039194', name: '炙热升腾', stats: { '空中效率': 70 } },
+      { id: '3066103999', name: '各就各位', stats: { '填装速度': 50 } }
+    ] },
+    { id: 'frag', name: '碎片', items: [
+      { id: '2272984657', name: '霸道回声', stats: { '稳定性': 30 } },
+      { id: '362132290', name: '回火余烬', stats: { '空中效率': 20 } },
+      { id: '124726497', name: '指挥琢面', stats: { '稳定性': 20, '空中效率': 40 } },
+      { id: '2626922126', name: '黎明琢面', dmg: 1.1 },
+      { id: '1727069361', name: '频率火花', stats: { '稳定性': 15, '填装速度': 50 } },
+      { id: '4208512216', name: '上升丝线', stats: { '操控性': 40, '空中效率': 30, '填装速度': 40 } },
+      { id: '3469412970', name: '晶石之吟', stats: { '操控性': 40 } }
+    ] },
+    { id: 'class', name: '职业技能', items: [
+      { id: '2711519343', name: '特技闪身', dmg: 1.1 },
+      { id: '25156514', name: '强能裂痕', dmg: 1.15 },
+      { id: '489583097', name: '集结屏障', stats: { '稳定性': 30, '填装速度': 100 } }
+    ] },
+    { id: 'exotic', name: '异域护甲', items: [
+      { id: '1667892711', name: '亚克兴角战役钻机', stats: { '空中效率': 30 } },
+      { id: '3295796664', name: '星云之歌', stats: { '操控性': 100, '空中效率': 30 } },
+      { id: '902934539', name: '汇编器战靴', stats: { '空中效率': 30 }, dmg: 1.15 },
+      { id: '3927963100', name: '异界之眸', stats: { '空中效率': 15 } },
+      { id: '2341747657', name: '命运眷顾', stats: { '稳定性': 25, '操控性': 25 } },
+      { id: '2663272111', name: '傻瓜雷达', stats: { '空中效率': 20 } },
+      { id: '3241194940', name: '猖獗雄狮', stats: { '稳定性': 30, '射程': 5, '空中效率': 50 } },
+      { id: '1694242448', name: '幸运裤', stats: { '空中效率': 20 } },
+      { id: '3347978672', name: '月之阵营靴', stats: { '稳定性': 30, '射程': 5, '填装速度': 100 } },
+      { id: '481860151', name: '机工诡诈臂袖', stats: { '操控性': 100, '空中效率': 50, '填装速度': 100 }, dmg: 1.1 },
+      { id: '3824622015', name: '亡灵之握', stats: { '空中效率': 30 } },
+      { id: '569260333', name: '没有B计划', stats: { '空中效率': 30 }, dmg: 1.1 },
+      { id: '1449897496', name: '守誓者', stats: { '空中效率': 40 } },
+      { id: '1147638875', name: '毒蛇面貌', stats: { '操控性': 35, '空中效率': 10, '填装速度': 35 } },
+      { id: '3241194941', name: '和平守护者', stats: { '操控性': 50, '空中效率': 40 } },
+      { id: '235075862', name: '游隼胫甲', stats: { '空中效率': 20 } },
+      { id: '117669763', name: '光辉跳舞机', stats: { '稳定性': 30, '射程': 5, '空中效率': 20 } },
+      { id: '4222205045', name: '火焰润雨', stats: { '空中效率': 30 } },
+      { id: '2805134531', name: '封印阿罕卡拉护手', stats: { '空中效率': 50 }, dmg: 1.2 },
+      { id: '3268255645', name: '力量学派', stats: { '操控性': 40, '填装速度': 30 } },
+      { id: '858592012', name: '快速装弹松身裤', stats: { '操控性': 55, '填装速度': 55 } },
+      { id: '1731450287', name: '据点', stats: { '防御抗性': 100, '防御持久': 100 } },
+      { id: '1155472384', name: '合成感受器', stats: { '操控性': 35, '填装速度': 35 } },
+      { id: '593361144', name: '巨龙之影', stats: { '稳定性': 10 } },
+      { id: '926349160', name: '晨星圣典', stats: { '空中效率': 50 } },
+      { id: '187957397', name: '特里同之罪', stats: { '填装速度': 50 } }
+    ] }
+  ];
+  function fxHint(e) {
+    var h = [];
+    if (e.stats) { Object.keys(e.stats).forEach(function (k) { h.push('+' + e.stats[k] + ' ' + k); }); }
+    if (e.dmg) { h.push('伤害 +' + Math.round((e.dmg - 1) * 100) + '%'); }
+    return h.join(' · ');
+  }
+  function fxApplies(i, e) {
+    if (e.el && elName(WR[i]) !== e.el) { return false; }
+    if (e.sword && typeName(WR[i]) !== '刀剑') { return false; }
+    return true;
+  }
+  function fxAll() {
+    var out = [];
+    FX_GROUPS.forEach(function (g) {
+      g.items.forEach(function (e) { if (fxOn(e.id)) { out.push(e); } });
+    });
+    return out;
+  }
+
+  function frameKey(zh) { return FRAME_EN[zh] || zh.replace(/框架$/, ''); }
+  function rangeCurve(typeZh, frameZh) {
+    var t = RANGE[typeZh];
+    if (!t) { return null; }
+    var k = frameKey(frameZh);
+    return t[k] || t._ || null;
+  }
+  function rangeMeters(typeZh, frameZh, stat, zoomStat) {
+    var i = rangeCurve(typeZh, frameZh);
+    if (!i) { return null; }
+    var l = Math.max(0, Math.min(100, stat)), hip;
+    if (i.s) { hip = i.s[0] + i.s[1] * l; } else { hip = i.hip[0] + (i.hip[1] - i.hip[0]) * (l / 100); }
+    var z = zoomStat > 0 ? zoomStat / 10 : i.z;
+    return { hip: hip, ads: hip * z, zoom: z };
+  }
+  function reloadSeconds(typeZh, ammoZh, stat) {
+    var key = typeZh;
+    if (typeZh === '榴弹发射器') { key = ammoZh === '威能' ? '榴弹发射器_威能' : '榴弹发射器_特殊'; }
+    var c = RELOAD[key];
+    if (!c) { return null; }
+    var g = typeZh === '战斗弓箭' ? Math.min(stat, 80) : stat;
+    return Math.max((c[0] * g * g + c[1] * g + c[2]) / 30, c[3]);
+  }
+  function handlingTimes(typeZh, stat) {
+    var c = HANDLING[typeZh];
+    if (!c) { return null; }
+    var x = Math.max(0, Math.min(100, stat));
+    function t(p) { return p[0] * x + p[1]; }
+    return { ready: t(c.r), stow: t(c.s), ads: t(c.a) };
+  }
+
+  function pvpDmg(typeZh, frameZh) {
+    var t = PVP_DMG[typeZh];
+    if (!t) { return null; }
+    var k = frameKey(frameZh);
+    return t[k] || t.Adaptive || t.Precision || t.Lightweight || null;
+  }
+  function pvpTtk(body, crit, burst, rpm, hp, acc, dmgScale) {
+    if (!body || !crit || !rpm) { return null; }
+    body *= dmgScale; crit *= dmgScale;
+    var n, crits, bodies, dmg;
+    for (n = 1; n <= 24; n++) {
+      crits = Math.round(n * acc / 100);
+      if (crits > n) { crits = n; }
+      bodies = n - crits;
+      dmg = crits * crit + bodies * body;
+      if (dmg + 1e-9 >= hp) {
+        var bursts = Math.ceil(n / burst);
+        var ttk = bursts <= 1 ? 0 : Math.round(1e3 * (bursts - 1) * burst * 60 / rpm) / 1e3;
+        return { shots: n, crits: crits, bodies: bodies, ttk: ttk, body: body, crit: crit, rpm: rpm };
+      }
+    }
+    return null;
+  }
+  function fmtM(n) { return n.toFixed(2) + 'm'; }
+  function fmtS(n) { return n.toFixed(2) + 's'; }
+  function fxOn(id) { return S.fx.indexOf(id) !== -1; }
+
+
   /* 后坐方向扇形：DIM 的公式，参数照 destiny.report（竖向 0.8、最大张角 180°）。 */
   function recoilSvg(v) {
     var dir = Math.sin((v + 5) * (Math.PI / 10)) * (100 - v);
@@ -646,7 +893,8 @@
   var S = {
     scope: 'wpn', q: '', view: recall('wpn.view') || 'grid', sel: null,
     rail: recall('wpn.rail') || 240, railOff: !!recall('wpn.railOff'), rolls: recall('wpn.rolls') || {},
-    syntax: false, pop: null, tip: null, hoverPlug: null, hoverRow: null, slotHover: false
+    syntax: false, pop: null, tip: null, hoverPlug: null, hoverRow: null, slotHover: false,
+    statsMode: 'pve', pvpAcc: 86, pvpStat: 100, fx: [], fxOpen: false, fxg: ''
   };
   function readUrl() {
     var u = new URLSearchParams(location.search);
@@ -787,6 +1035,15 @@
     var stages = [['s-part', sum(parts)], ['s-perk', sum(perks)]];
     var mw = mwParts(i, roll);
     stages.push(['s-mw', mw.mw], ['s-tier', mw.tier]);
+    var extra = {};
+    fxAll().forEach(function (f) {
+      if (!f.stats) { return; }
+      Object.keys(f.stats).forEach(function (name) {
+        var si = SIDX[name];
+        if (si != null) { extra[si] = (extra[si] || 0) + f.stats[name]; }
+      });
+    });
+    if (Object.keys(extra).length) { stages.push(['s-perk', extra]); }
     var rows = [], byStat = {};
     for (var g = 0; g < group.length; g++) {
       if (base[g] == null) { continue; }
@@ -1397,7 +1654,7 @@
       (pinned ? '<div class="rail-head"><b>钉选</b>' + pins.length + '<span class="op-sep"></span>' +
         '<button type="button" class="op" data-act="unpinall">清空</button></div><ol class="rail-list">' + pinned + '</ol>' : '') +
       '<div class="rail-head"><b>结果</b>' + results.length + '<span class="op-sep"></span>' +
-      '<button type="button" class="op" data-act="rail">收起</button></div><ol class="rail-list rail-hits"></ol></nav>';
+      '<button type="button" class="op" data-act="close">返回</button></div><ol class="rail-list rail-hits"></ol></nav>';
   }
   /* 结果栏整个重画：点一行、钉选、前进后退都会走到这里。结果没变就留住栏里的滚动
      位置，先把上次已经画出来的行数画够，否则 scrollTop 落在还没画的地方会被截回去。 */
@@ -1560,7 +1817,6 @@
     var say = T && T.au[rep] ? T.au[rep] : null;
     if (say) { parts.push('<section><h3 class="sub-label">作者评语</h3><div class="says">' + saysHtml(say) + '</div></section>'); }
     parts.push(artifactSection(i));
-    parts.push(gearSection(i, roll, res));
     if (pr[8].length) { parts.push(catalystSection(i, roll)); }
     var fr = frameOf(r), fp = PIDX[fr[3]], icol = intrinsicCol(i);
     var frames = icol ? cellsOf(icol).map(function (cell) {
@@ -1574,7 +1830,7 @@
     parts.push(usedByHtml(r[W_H]));
     parts.push('</div>');
     parts.push('<aside class="one-side"><section><div class="facts">' + factsHtml(i) + '</div></section>' +
-      '<section><h3 class="sub-label">属性</h3>' + statsPanel(res, ghost) + statsLegend() + '</section>' +
+      statsBlock(i, res, ghost) +
       frameStatsHtml(i) + versionsHtml('wpn', i) + '</aside>');
     return '<article class="wpn-one">' + parts.join('') + '</article>';
   }
@@ -1788,52 +2044,217 @@
       (roll.cat ? 'true' : 'false') + '">' + (roll.cat ? '已装上' : '装上') + '</button><div>' + effs + '</div></div></section>';
   }
 
-  function statsPanel(res, ghost) {
+  function statConv(i, res, x) {
+    if (!SIDX) { return null; }
+    var r = WR[i], ty = typeName(r), fr = frameOf(r)[0];
+    if (x.name === '射程') {
+      var z = res.byStat[SIDX['变焦']];
+      var m = rangeMeters(ty, fr, x.value, z ? z.value : 0);
+      return m ? { text: fmtM(m.hip) + ' / ' + fmtM(m.ads) } : null;
+    }
+    if (x.name === '填装速度') {
+      var s = reloadSeconds(ty, V.am[r[W_AMMO]][0], x.value);
+      return s != null ? { text: fmtS(s) } : null;
+    }
+    if (x.name === '操控性') {
+      var h = handlingTimes(ty, x.value);
+      if (!h) { return null; }
+      var ads = h.ads > 0.001;
+      return {
+        text: fmtS(ads ? h.ads : h.ready),
+        title: '抽出 ' + fmtS(h.ready) + ' · 收起 ' + fmtS(h.stow) + (ads ? ' · 开镜 ' + fmtS(h.ads) : '')
+      };
+    }
+    return null;
+  }
+  function statValueHtml(i, res, x) {
+    var conv = statConv(i, res, x);
+    return (conv ? '<span class="conv"' + (conv.title ? ' title="' + esc(conv.title) + '"' : '') + '>' +
+      conv.text + '</span><span class="sep">/</span>' : '') + x.value;
+  }
+  function statsPanel(i, res, ghost) {
     var bars = res.rows.filter(function (x) { return !x.numeric; });
     var nums = res.rows.filter(function (x) { return x.numeric; });
-    var o = ['<dl class="stats">'];
+    var o = ['<div class="stats-list">'];
     bars.forEach(function (x) {
-      var segs = '<i class="s-base" style="width:' + (x.base - x.neg) + '%"></i>' + x.segs.map(function (s) {
-        return '<i class="' + s[0] + '" style="width:' + s[1] + '%"></i>';
-      }).join('') + (x.cond ? '<i class="s-cond" style="width:' + x.cond + '%"></i>' : '') +
-        (x.neg ? '<i class="s-neg" style="width:' + x.neg + '%"></i>' : '');
-      var d = '';
+      var fill = Math.max(0, Math.min(100, x.value));
+      var extra = '', d = '';
       if (ghost && ghost.byStat[x.s]) {
-        var diff = ghost.byStat[x.s].value - x.value;
-        if (diff > 0) { segs += '<i class="s-ghost" style="width:' + diff + '%"></i>'; }
-        if (diff < 0) { segs += '<i class="g-neg" style="left:' + ghost.byStat[x.s].value + '%;width:' + (-diff) + '%"></i>'; }
+        var gv = ghost.byStat[x.s].value, diff = gv - x.value;
+        if (diff > 0) { extra = '<i class="s-ghost" style="width:' + Math.min(100, gv) + '%"></i>'; }
+        if (diff < 0) { extra = '<i class="g-neg" style="left:' + gv + '%;width:' + (-diff) + '%"></i>'; }
         if (diff) { d = '<span class="d' + (diff > 0 ? '' : ' dn') + '">' + (diff > 0 ? '+' : '−') + Math.abs(diff) + '</span>'; }
       }
-      o.push('<dt' + (S.hoverRow === x.s ? ' class="is-hover"' : '') + ' data-act="statrow" data-s="' + x.s + '">' + esc(x.name) +
-        '</dt><dd data-act="statrow" data-s="' + x.s + '"><div class="bar">' + segs + '</div></dd><dd class="v">' + x.value + '</dd><dd>' + d + '</dd>');
+      o.push('<div class="stat-item' + (S.hoverRow === x.s ? ' is-hover' : '') + '" data-act="statrow" data-s="' + x.s + '">' +
+        '<div class="stat-label"><span>' + esc(x.name) + '</span><span class="stat-value">' + statValueHtml(i, res, x) + d +
+        '</span></div><div class="bar"><i class="stat-fill" style="width:' + fill + '%"></i>' + extra + '</div></div>');
     });
-    o.push('<div class="gap"></div>');
-    nums.forEach(function (x) {
-      var d = '';
-      if (ghost && ghost.byStat[x.s]) {
-        var diff = ghost.byStat[x.s].value - x.value;
-        if (diff) { d = '<span class="d' + (diff > 0 ? '' : ' dn') + '">' + (diff > 0 ? '+' : '−') + Math.abs(diff) + '</span>'; }
-      }
-      o.push('<dt data-act="statrow" data-s="' + x.s + '">' + esc(x.name) + '</dt><dd class="rc">' + (x.name === '后坐方向' ? recoilSvg(x.value) : '') +
-        '</dd><dd class="v">' + x.value + '</dd><dd>' + d + '</dd>');
-    });
-    o.push('</dl>');
+    o.push('</div>');
+    if (nums.length) {
+      o.push('<div class="special-stats">');
+      nums.forEach(function (x) {
+        var d = '';
+        if (ghost && ghost.byStat[x.s]) {
+          var diff = ghost.byStat[x.s].value - x.value;
+          if (diff) { d = '<span class="d' + (diff > 0 ? '' : ' dn') + '">' + (diff > 0 ? '+' : '−') + Math.abs(diff) + '</span>'; }
+        }
+        o.push('<div class="special-stat-item" data-act="statrow" data-s="' + x.s + '"><span class="special-stat-label">' +
+          esc(x.name) + '</span><span class="special-stat-value">' + (x.name === '后坐方向' ? recoilSvg(x.value) : '') +
+          x.value + d + '</span></div>');
+      });
+      o.push('</div>');
+    }
     return o.join('');
   }
-  function statsLegend() {
-    return '<div class="legend">' + [
-      ['background:var(--seg-base)', '基础'], ['background:var(--seg-part)', '枪管与弹匣'], ['background:var(--seg-perk)', 'Perk'],
-      ['background:var(--c-enh)', '大师杰作'],
-      ['background-image:repeating-linear-gradient(90deg,var(--c-enh) 0 2px,transparent 2px 3px)', 'T 级'],
-      ['box-shadow:inset 0 0 0 1px var(--seg-perk)', '条件生效'],
-      ['background-image:repeating-linear-gradient(135deg,var(--bone-dim) 0 1px,transparent 1px 4px)', '扣除']
-    ].map(function (x) { return '<span><i style="' + x[0] + '"></i>' + x[1] + '</span>'; }).join('') + '</div>';
+  function statsModeBtns() {
+    return '<div class="stats-mode-toggle">' +
+      '<button type="button" class="stats-mode-btn" data-act="statsmode" data-v="pve" aria-pressed="' + (S.statsMode === 'pve' ? 'true' : 'false') + '">PvE</button>' +
+      '<button type="button" class="stats-mode-btn" data-act="statsmode" data-v="pvp" aria-pressed="' + (S.statsMode === 'pvp' ? 'true' : 'false') + '">PvP</button>' +
+      '</div>';
+  }
+  function sideMods(i, roll) {
+    var mods = modsOf(i);
+    if (!mods.length) { return ''; }
+    var m = roll.mod >= 0 ? P.p[roll.mod] : null;
+    return '<div class="mods-side"><button type="button" class="slot' + (m ? '' : ' is-empty') +
+      '" data-act="modslot" aria-haspopup="dialog" aria-label="模组">' +
+      (m ? imgTag(m[P_ICON], '', '', true) : '+') + '</button><div class="slot-now"><h3>模组</h3><span>' +
+      (m ? esc(m[P_NAME]) : '未装') + '</span></div></div>';
+  }
+  function sideMw(i, roll) {
+    var opts = optsOf(i), rec = poolRow(i)[5] || [], opt = null;
+    if (!opts.length) { return ''; }
+    opts.forEach(function (o) { if (o[0] === roll.mw) { opt = o; } });
+    return '<div class="mw-side"><button type="button" class="slot' + (opt ? '' : ' is-empty') +
+      (opt && has(rec, roll.mw) ? ' by-a' : '') + '" data-act="mwslot" aria-haspopup="dialog" aria-label="大师杰作">' +
+      (opt ? imgTag(P.p[opt[2]][P_ICON], '', '', true) : '+') + '</button><div class="slot-now"><h3>大师杰作</h3><span>' +
+      esc(mwLabel(i, roll)) + '</span></div></div>';
+  }
+  function sideTiers(i, roll, res) {
+    var pr = poolRow(i);
+    if (pr[4]) {
+      var btns = '';
+      for (var t = 1; t <= 5; t++) {
+        btns += '<button type="button" class="toggle" data-act="tier" data-v="' + t + '" aria-pressed="' +
+          (roll.t === t ? 'true' : 'false') + '">T' + t + '</button>';
+      }
+      return '<div class="mw-tier">' + btns + '</div>';
+    }
+    if (!roll.mw) { return ''; }
+    var b = '';
+    for (var k = 1; k <= 10; k++) {
+      b += '<button type="button" class="' + (k <= roll.lv ? 'on' : '') + '" data-act="level" data-v="' + k + '" aria-label="' + k + ' 级"></button>';
+    }
+    return '<div class="pk-lv"><div class="lv">' + b + '<span class="v">Lv' + roll.lv + '</span></div></div>';
+  }
+  function sideFx(i) {
+    var cards = '';
+    fxAll().forEach(function (e) {
+      if (!fxApplies(i, e)) { return; }
+      cards += '<button type="button" class="fx-item selected" data-act="fx" data-v="' + e.id + '">' +
+        '<span class="fx-name">' + esc(e.name) + '</span><span class="fx-hint">' + esc(fxHint(e)) + '</span></button>';
+    });
+    var drop = '';
+    if (S.fxOpen) {
+      drop = '<div class="fx-drop">' + FX_GROUPS.map(function (g) {
+        var items = g.items.filter(function (e) { return fxApplies(i, e); });
+        if (!items.length) { return ''; }
+        var body = '';
+        if (S.fxg === g.id) {
+          body = '<div class="fx-gi">' + items.map(function (e) {
+            return '<button type="button" class="fx-pick' + (fxOn(e.id) ? ' on' : '') + '" data-act="fx" data-v="' + e.id + '">' +
+              '<span class="fx-pick-name">' + esc(e.name) + '</span>' +
+              '<span class="fx-pick-stats">' + esc(fxHint(e)) + '</span></button>';
+          }).join('') + '</div>';
+        }
+        return '<div class="fx-g"><button type="button" class="fx-gh" data-act="fxg" data-v="' + g.id + '">' +
+          esc(g.name) + '<span>' + items.length + '</span></button>' + body + '</div>';
+      }).join('') + '</div>';
+    }
+    return '<div class="fx-side"><h3>主动效果</h3>' +
+      (cards ? '<div class="fx-list">' + cards + '</div>' : '') +
+      '<button type="button" class="fx-add" data-act="fxopen" aria-expanded="' + (S.fxOpen ? 'true' : 'false') + '">添加</button>' +
+      drop + '</div>';
+  }
+  function pvpView(i, res) {
+    var r = WR[i], ty = typeName(r), fr = frameOf(r)[0];
+    var dmg = pvpDmg(ty, fr);
+    var rpm = res.byStat[SIDX['射速']];
+    var range = res.byStat[SIDX['射程']];
+    var reload = res.byStat[SIDX['填装速度']];
+    var zoom = res.byStat[SIDX['变焦']];
+    var scale = S.pvpStat > 100 ? 1 + 5e-4 * (S.pvpStat - 100) : 1;
+    fxAll().forEach(function (f) {
+      if (f.dmg) { scale *= f.dmg; }
+    });
+    var ttk = dmg && rpm ? pvpTtk(dmg[0], dmg[1], dmg[2], rpm.value, PVP_HP, S.pvpAcc, scale) : null;
+    var rm = range ? rangeMeters(ty, fr, range.value, zoom ? zoom.value : 0) : null;
+    var rs = reload ? reloadSeconds(ty, V.am[r[W_AMMO]][0], reload.value) : null;
+    var kill = !ttk ? '—' : (ttk.bodies ? ttk.crits + ' 精准，' + ttk.bodies + ' 直击' : ttk.crits + ' 精准');
+    return { ttk: ttk, kill: kill, rm: rm, rs: rs, scale: scale, rpm: rpm, range: range, reload: reload };
+  }
+  function pvpSet(pane, key, text) {
+    var n = pane.querySelector('[data-pvp="' + key + '"]');
+    if (n) { n.textContent = text; }
+  }
+  function refreshPvpNumbers() {
+    var pane = body.querySelector('.pvp-stats');
+    if (!pane || S.sel == null || !P || !SIDX) { return; }
+    var v = pvpView(S.sel, compute(S.sel, rollOf(S.sel))), ttk = v.ttk;
+    pvpSet(pane, 'ttk', ttk ? fmtS(ttk.ttk) : '—');
+    pvpSet(pane, 'kill', v.kill);
+    pvpSet(pane, 'acc', S.pvpAcc + '%');
+    if (ttk) {
+      pvpSet(pane, 'body', ttk.body.toFixed(2));
+      pvpSet(pane, 'crit', ttk.crit.toFixed(2));
+    }
+    pvpSet(pane, 'wstat', String(S.pvpStat));
+    pvpSet(pane, 'wnote', S.pvpStat <= 100 ? '不超过 100 无效果' : '伤害 ×' + v.scale.toFixed(3));
+  }
+  function pvpPanel(i, res) {
+    if (!SIDX) { return '<p class="src">词条池还没到，PvP 数值算不出。</p>'; }
+    var v = pvpView(i, res), ttk = v.ttk, rm = v.rm, rs = v.rs;
+    function pvpItem(k, val, extra, key) {
+      return '<div class="pvp-stat-item"><span class="pvp-stat-label">' + k + '</span><span class="pvp-stat-value"' +
+        (key ? ' data-pvp="' + key + '"' : '') + '>' + val + '</span></div>' + (extra || '');
+    }
+    return '<div class="pvp-stats">' +
+      '<div class="pvp-stat-hero"><span class="pvp-stat-label">击杀时间</span>' +
+      '<span class="pvp-stat-hero-value" data-pvp="ttk">' + (ttk ? fmtS(ttk.ttk) : '—') + '</span></div>' +
+      pvpItem('最优击杀', v.kill, '', 'kill') +
+      pvpItem('精准率<button type="button" class="pvp-crit-reset" data-act="pvpreset" title="重置为 100%">↺</button>', S.pvpAcc + '%',
+        '<div class="pvp-slat"><input class="pvp-crit-range" type="range" min="0" max="100" value="' + S.pvpAcc + '" data-act="pvpacc"></div>', 'acc') +
+      (ttk ? pvpItem('直击伤害', ttk.body.toFixed(2), '', 'body') + pvpItem('精准伤害', ttk.crit.toFixed(2), '', 'crit') : '') +
+      (v.rpm ? pvpItem('射速', String(v.rpm.value)) : '') +
+      (rm ? '<div class="pvp-stat-item pvp-range-row"><span class="pvp-stat-label">射程 <span class="pvp-sub">(' +
+        v.range.value + ')</span></span><span class="pvp-stat-value"><span class="pvp-range-hip">' + fmtM(rm.hip) +
+        '</span><span class="pvp-range-sep">/</span><span class="pvp-range-ads">' + fmtM(rm.ads) + '</span></span></div>' : '') +
+      (rs != null ? '<div class="pvp-stat-item"><span class="pvp-stat-label">填装 <span class="pvp-sub">(' +
+        v.reload.value + ')</span></span><span class="pvp-stat-value">' + fmtS(rs) + '</span></div>' : '') +
+      '<div class="pvp-weapon-stat"><div class="pvp-weapon-stat-header"><span class="pvp-weapon-stat-title">武器属性</span></div>' +
+      '<div class="pvp-weapon-stat-badge"><div class="pvp-weapon-stat-info"><div class="pvp-weapon-stat-row">' +
+      '<span class="pvp-weapon-stat-value" data-pvp="wstat">' + S.pvpStat + '</span>' +
+      '<span class="pvp-weapon-stat-note" data-pvp="wnote">' +
+      (S.pvpStat <= 100 ? '不超过 100 无效果' : '伤害 ×' + v.scale.toFixed(3)) + '</span>' +
+      '</div><div class="pvp-slat"><input class="pvp-weapon-stat-range" type="range" min="50" max="200" value="' + S.pvpStat +
+      '" data-act="pvpstat"></div></div></div></div></div>';
+  }
+  function statsBlock(i, res, ghost) {
+    var roll = rollOf(i);
+    var inner = S.statsMode === 'pvp' ? pvpPanel(i, res) : statsPanel(i, res, ghost);
+    return '<section class="stats-sec">' +
+      '<div class="stats-header"><h3>属性<button type="button" class="stats-help" title="PvP 相关为实验版功能，不保证准确。" aria-label="PvP 相关为实验版功能，不保证准确。">?</button></h3>' + statsModeBtns() + '</div>' +
+      '<div class="stats-box">' + inner + '</div>' +
+      '<div class="side-aux"><div class="side-slots">' + sideMods(i, roll) + sideMw(i, roll) + '</div>' +
+      sideTiers(i, roll, res) +
+      (S.pop === 'mw' ? mwPicker(i, roll) : S.pop === 'mod' ? modPicker(i, roll) : '') +
+      sideFx(i) + '</div></section>';
   }
   /* 悬停词条只改两处：那枚按钮的 is-hover 与属性表的预览。详情有 400–750 个元素，
      整张重画时指针扫过词条栏每换一枚就重排一次。 */
   function renderHover() {
-    var box = body.querySelector('.wpn-detail'), dl = box && box.querySelector('dl.stats');
-    if (!dl) { renderDetail(); return; }
+    var box = body.querySelector('.wpn-detail'), pane = box && box.querySelector('.stats-box');
+    if (!pane) { renderDetail(); return; }
     var i = S.sel, roll = rollOf(i), h = S.hoverPlug;
     var on = box.querySelectorAll('.plug.is-hover');
     for (var k = 0; k < on.length; k++) { on[k].classList.remove('is-hover'); }
@@ -1841,7 +2262,8 @@
       var b = box.querySelector('[data-act="perk"][data-col="' + h.col + '"][data-plug="' + h.plug + '"]');
       if (b) { b.classList.add('is-hover'); }
     }
-    dl.outerHTML = statsPanel(compute(i, roll), h ? compute(i, roll, { col: h.col, plug: h.plug }) : null);
+    var res = compute(i, roll), ghost = h ? compute(i, roll, { col: h.col, plug: h.plug }) : null;
+    pane.innerHTML = S.statsMode === 'pvp' ? pvpPanel(i, res) : statsPanel(i, res, ghost);
   }
 
   /* 护甲套装：一套两条效果（2 件与 4 件），实测与作者评语写在效果身上。
@@ -1898,6 +2320,7 @@
 
   /* ── 浮层 ──────────────────────────────────────────────────────────── */
   function showTip(html, anchor, side, narrow) {
+    if (!html || !anchor) { hideTip(); return; }
     tip.className = 'tip' + (narrow ? ' narrow' : '');
     tip.innerHTML = html;
     tip.hidden = false;
@@ -1909,10 +2332,8 @@
     tip.style.left = (x + window.scrollX) + 'px';
     tip.style.top = (Math.max(8, y) + window.scrollY) + 'px';
   }
-  /* 浮层现在属于哪一种 data-act，悬停着的是哪一枚词条（栏:插件）。 */
-  var hoverAct = '', hoverKey = '';
-  function hideTip() { tip.hidden = true; hoverAct = ''; hoverKey = ''; }
-  /* 关掉浮层与预览。 */
+  var hoverAct = '', hoverKey = '', tipTimer = 0;
+  function hideTip() { clearTimeout(tipTimer); tipTimer = 0; tip.hidden = true; hoverAct = ''; hoverKey = ''; }
   function leaveHover() {
     hideTip();
     S.hoverRow = null;
@@ -1970,6 +2391,14 @@
     });
     out.push('<tr class="sum"><td>合计</td><td class="n">' + prev + '</td></tr>');
     if (x.withCond !== prev) { out.push('<tr class="cond"><td>条件生效时</td><td class="n">' + x.withCond + '</td></tr>'); }
+    if (x.name === '射程') {
+      var m = rangeMeters(typeName(WR[i]), frameOf(WR[i])[0], prev, (res.byStat[SIDX['变焦']] || {}).value || 0);
+      if (m) { out.push('<tr class="sum"><td>腰射 / 瞄准</td><td class="n">' + fmtM(m.hip) + ' / ' + fmtM(m.ads) + '</td></tr>'); }
+    }
+    if (x.name === '填装速度') {
+      var rs = reloadSeconds(typeName(WR[i]), V.am[WR[i][W_AMMO]][0], prev);
+      if (rs != null) { out.push('<tr class="sum"><td>填装时间</td><td class="n">' + fmtS(rs) + '</td></tr>'); }
+    }
     return '<h5>' + esc(x.name) + '</h5><p class="lab">显示值逐项累计</p><table>' + out.join('') + '</table>';
   }
   function mwTip(i) {
@@ -2209,6 +2638,7 @@
     if (e.key === 'Escape') {
       closePops();
       if (S.syntax) { S.syntax = false; renderBar(); }
+      if (S.fxOpen) { S.fxOpen = false; S.fxg = ''; renderDetail(); }
       return;
     }
     if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) { return; }
@@ -2224,10 +2654,12 @@
       closePops();
       if (S.pop && !e.target.closest('.picker')) { S.pop = null; renderDetail(); }
       if (S.syntax && !e.target.closest('.wpn-syntax')) { S.syntax = false; renderBar(); }
+      if (S.fxOpen && !e.target.closest('.fx-side')) { S.fxOpen = false; S.fxg = ''; renderDetail(); }
       return;
     }
     var act = el.getAttribute('data-act'), v = el.getAttribute('data-v');
     var i = S.sel;
+    if (S.fxOpen && !e.target.closest('.fx-side')) { S.fxOpen = false; S.fxg = ''; }
     if (act !== 'drop' && !el.closest('.grp')) { closePops(); }
     switch (act) {
       case 'drop': {
@@ -2241,6 +2673,8 @@
         return;
       case 'view':
         S.view = v; store('wpn.view', v); S.sel = null; writeUrl(true); render(); return;
+      case 'close':
+        S.sel = null; writeUrl(true); render(); window.scrollTo(0, 0); return;
       case 'syntax':
         e.stopPropagation(); S.syntax = !S.syntax; renderBar(); return;
       case 'setq':
@@ -2302,8 +2736,49 @@
       case 'cat': {
         var r5 = rollOf(i); r5.cat = r5.cat ? 0 : 1; saveRoll(i); renderDetail(); return;
       }
+      case 'statsmode':
+        S.statsMode = v; renderDetail(); return;
+      case 'pvpreset': {
+        S.pvpAcc = 100;
+        var sl = body.querySelector('.pvp-crit-range');
+        if (sl) { sl.value = 100; }
+        refreshPvpNumbers();
+        return;
+      }
+      case 'fx': {
+        var ix = S.fx.indexOf(v);
+        if (ix >= 0) { S.fx.splice(ix, 1); } else { S.fx.push(v); }
+        renderDetail(); return;
+      }
+      case 'fxopen':
+        e.stopPropagation();
+        S.fxOpen = !S.fxOpen;
+        if (!S.fxOpen) { S.fxg = ''; }
+        renderDetail(); return;
+      case 'fxg':
+        S.fxg = S.fxg === v ? '' : v;
+        renderDetail(); return;
+
     }
   });
+  document.addEventListener('input', function (e) {
+    var el = e.target.closest('[data-act]');
+    if (!el) { return; }
+    var act = el.getAttribute('data-act');
+    if (act === 'pvpacc') { S.pvpAcc = +el.value; refreshPvpNumbers(); }
+    if (act === 'pvpstat') { S.pvpStat = +el.value; refreshPvpNumbers(); }
+  });
+  document.addEventListener('wheel', function (e) {
+    var el = e.target;
+    if (!el.classList || (!el.classList.contains('pvp-crit-range') && !el.classList.contains('pvp-weapon-stat-range'))) { return; }
+    e.preventDefault();
+    var min = +el.min, max = +el.max, n = Math.max(min, Math.min(max, +el.value + (e.deltaY > 0 ? -1 : 1)));
+    if (n === +el.value) { return; }
+    el.value = n;
+    if (el.classList.contains('pvp-crit-range')) { S.pvpAcc = n; } else { S.pvpStat = n; }
+    refreshPvpNumbers();
+  }, { passive: false, capture: true });
+
 
   /* 悬停：词条出说明并在属性条上预览；属性行出分解；结果栏的行在详情区预览。
 
@@ -2336,9 +2811,13 @@
       var s = +el.getAttribute('data-s');
       if (hoverKey !== 's' + s) {
         S.hoverRow = s;
-        showTip(statTip(i, s), body.querySelector('dt[data-s="' + s + '"]'), 'left', true);
         hoverAct = act;
         hoverKey = 's' + s;
+        clearTimeout(tipTimer);
+        tipTimer = setTimeout(function () {
+          if (hoverKey !== 's' + s || !el.isConnected) { return; }
+          showTip(statTip(i, s), el, 'left', true);
+        }, 180);
       }
     } else if (act === 'mwslot' && !S.pop) {
       showTip(mwTip(i), el);

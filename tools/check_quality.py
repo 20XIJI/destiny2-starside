@@ -1644,6 +1644,24 @@ class WeaponPage(unittest.TestCase):
         self.assertEqual(int(count), 0, '浏览器与 facts.shown 算得不一样（投资值, 上限, 曲线点数, 期望, 实得）：%s' % sample)
         print('\n  装备库属性：%d 格与 facts.shown 逐值一致' % len(rows_), file=sys.stderr)
 
+    def test_range_and_reload_match_godroll_bygones(self):
+        """Bygones 基础射程 48 / 填装 46 的换算与 godroll.tv 现网一致。"""
+        text = (TOOLS.parent / 'site' / 'weapons' / 'app.js').read_text(encoding='utf-8')
+        start = text.index('  var FRAME_EN = {')
+        end = text.index('  function pvpDmg')
+        prog = text[start:end] + (
+            "var m = rangeMeters('脉冲步枪', '适配框架', 48, 17);"
+            "var s = reloadSeconds('脉冲步枪', '主武器', 46);"
+            "var bad = [];"
+            "if (!m || Math.abs(m.hip - 19.6) > 1e-9) bad.push(['hip', m && m.hip]);"
+            "if (!m || Math.abs(m.ads - 33.32) > 1e-9) bad.push(['ads', m && m.ads]);"
+            "if (s == null || s.toFixed(2) !== '2.05') bad.push(['reload', s]);"
+            "process.stdout.write(JSON.stringify(bad));")
+        done = subprocess.run(['node', '-e', prog], capture_output=True, text=True)
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual(done.stdout, '[]', 'Bygones 换算对不上 godroll：%s' % done.stdout)
+
+
 
 class DeploySelection(unittest.TestCase):
     """发什么、剥不剥注释、清单怎么读——四个纯函数各自的判据。
