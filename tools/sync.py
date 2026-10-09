@@ -47,6 +47,7 @@ import sys
 import time
 import urllib.error
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import facts
@@ -55,6 +56,7 @@ import shell
 
 ROOT = shell.ROOT
 REFS = os.path.join(ROOT, 'references')
+
 # 基线与 refs/deploy 同一个道理：它记的是这台机器对到哪儿了，不入库、不跨机器。
 BASE = os.path.join(ROOT, '.git', 'starside-sync.json')
 
@@ -251,23 +253,30 @@ def recs_on_disk():
     return out
 
 
-def recs_in_db():
-    """库里的全部记录：({_id: 规范文本}, {_id: landed})。按 _id 翻页取到底。
+def recs_in_db(heads=False):
+    """库里的全部记录：({_id: 规范文本或 hash}, {_id: landed})。按 _id 翻页取到底。
 
-    库里那份必须已经是规范写法：云函数的 canon() 与 facts.canon() 逐字节相同，
-    不同就是两边的写法分了岔，hash 从此对不上，审核台会把每条都标成「已改」。"""
+    heads=True 时请云函数不要带 json。旧函数不理这个旗、页里仍有 json：整次按
+    正文处理（canon 检查照做），调用方不必再拉一遍。新函数返回 hash，无正文。"""
     out, landed, skip = {}, {}, 0
+    as_bodies = not heads
     while True:
-        got = api('rpull', skip=skip)
-        for row in got['recs']:
-            text = row.get('json') or ''
-            if facts.canon(json.loads(text)) != text:
-                raise RuntimeError('库里 %s 那一份不是规范写法，两边的 canon() 分岔了' % row['_id'])
-            out[row['_id']] = text
+        got = api('rpull', skip=skip, **({'heads': 1} if heads else {}))
+        rows = got['recs']
+        if heads and not as_bodies and any('json' in row for row in rows):
+            as_bodies = True
+        for row in rows:
             landed[row['_id']] = row.get('landed') or ''
+            if as_bodies:
+                text = row.get('json') or ''
+                if facts.canon(json.loads(text)) != text:
+                    raise RuntimeError('库里 %s 那一份不是规范写法，两边的 canon() 分岔了' % row['_id'])
+                out[row['_id']] = text
+            else:
+                out[row['_id']] = row.get('hash') or ''
         if not got.get('more'):
             return out, landed
-        skip += len(got['recs'])
+        skip += len(rows)
 
 
 def rsend(items):
@@ -318,7 +327,29 @@ def rdiff(rid, d, r):
 def sync_recs(base):
     """记录那一路的三方比。回撞车的那几条 _id。"""
     disk = recs_on_disk()
-    db, landed = recs_in_db()
+    db, landed = recs_in_db(heads=True)
+    if not any(v.startswith('{') for v in db.values()):
+        need_bodies = False
+        for rid in set(disk) | set(db):
+            act = plan(sha1(disk[rid]) if rid in disk else None,
+                       db.get(rid) if rid in db else None, base.get(rid))
+            if act in ('pull', 'stuck'):
+                need_bodies = True
+                break
+        if need_bodies:
+            db, landed = recs_in_db(heads=False)
+        else:
+            push, pull, drop, stuck, done = [], [], [], [], {}
+            for rid in sorted(set(disk) | set(db)):
+                d = disk.get(rid)
+                dh = sha1(d) if d is not None else None
+                act = plan(dh, db.get(rid) if rid in db else None, base.get(rid))
+                if act == 'push':
+                    push.append((rid, d))
+                elif act == 'drop':
+                    drop.append(rid)
+                done[rid] = dh
+            return _recs_commit(disk, db, landed, base, push, pull, drop, stuck, done)
     push, pull, drop, stuck, done = [], [], [], [], {}
     for rid in sorted(set(disk) | set(db)):
         d, r = disk.get(rid), db.get(rid)
@@ -335,6 +366,10 @@ def sync_recs(base):
         elif act == 'drop':
             drop.append(rid)
         done[rid] = dh
+    return _recs_commit(disk, db, landed, base, push, pull, drop, stuck, done)
+
+
+def _recs_commit(disk, db, landed, base, push, pull, drop, stuck, done):
     if pull:
         rfetch(pull)
     if push:
@@ -371,6 +406,7 @@ def land(subs, dropped=()):
     两条记录都标着 ok=1 且指着同一个 season/slug：sweep() 刚删掉，land() 转头
     又按那条投稿写回来，每跑一次 sync 都重演一遍，那一篇永远删不掉。
     """
+
     wrote = []
     for sub in subs:
         if int(sub.get('ok') or 0) != 1 or sub.get('drop'):
@@ -453,16 +489,24 @@ def sweep(subs, disk, base, force=()):
 
 
 def sync():
-    disk, db, base = on_disk(), in_db(), baseline()
-    subs = api('list')['subs']
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        pulled = pool.submit(api, 'pull')
+        listed = pool.submit(api, 'list')
+        raw = pulled.result()['docs']
+        subs = listed.result()['subs']
+    disk, db, base = on_disk(), in_db(raw), baseline()
     gone, conflicts = sweep(subs, disk, base)
     # 冲突目标也不能由旧投稿恢复，更不能在后面的三方比中反手推回库。
     land(subs, dropped=set(gone) | set(conflicts))
+    disk = on_disk()
+    for doc_id in gone:
+        db.pop(doc_id, None)
     # landed 与正文出自同一次 pull：审核台判 hash != landed 即「线上改过、还没落盘」，
-    # 这一轮对完账之后每篇都该相等。
-    raw = api('pull')['docs']
-    disk, db = on_disk(), in_db(raw)
+    # 这一轮对完账之后每篇都该相等。sweep 删掉的从内存拿掉，不再拉第二次。
     landed = {d['_id']: (d.get('landed') or '') for d in raw}
+    for doc_id in gone:
+        landed.pop(doc_id, None)
+
     pushed, pulled, dropped, stuck = [], [], [], list(conflicts)
 
     for doc_id in sorted(set(disk) | set(db)):

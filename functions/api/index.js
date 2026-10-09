@@ -868,7 +868,9 @@ async function route(a, body, event) {
   // 整库四千多条，一次取不回来，按 _id 排序翻页；判据是「这一页没满」。
   if (a === 'rpull') {
     const skip = Number(body.skip) || 0
-    const r = await recs.orderBy('_id', 'asc').skip(skip).limit(1000).get()
+    let q = recs.orderBy('_id', 'asc').skip(skip).limit(1000)
+    if (body.heads) q = q.field({ json: false })
+    const r = await q.get()
     return { recs: r.data, more: r.data.length >= 1000 ? 1 : 0 }
   }
 

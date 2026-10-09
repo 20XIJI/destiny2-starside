@@ -2232,9 +2232,16 @@ class Deletion(Isolated):
         sync.take([self.ID], False)
         self.assertEqual([kw for action, kw in self.calls if action == 'landed'], [])
 
+    def test_docs_are_pulled_once_per_sync(self):
+        self.subs = []
+        self.assertEqual(sync.sync(), 0)
+        self.assertEqual(sum(a == 'pull' for a, _ in self.calls), 1)
+        self.assertEqual(sum(a == 'list' for a, _ in self.calls), 1)
+
 
 class RecordSync(Isolated):
     """记录上的站内文字：盘上 data/ 那几张表与库里 recs 集合的三方比。
+
 
     主键页的就地编辑改的是它，线上通过之后由 sync.py 写回 data/，与 docs 那一路
     同一套规矩：两边都动过就报出来、一个字不动；稳态下一次写请求都不发。
@@ -2272,6 +2279,9 @@ class RecordSync(Isolated):
         if action == 'list':
             return {'subs': []}
         if action == 'rpull':
+            if kw.get('heads'):
+                return {'recs': [{'_id': k, 'hash': sync.sha1(v), 'landed': self.landed.get(k, '')}
+                                 for k, v in sorted(self.db.items())], 'more': 0}
             return {'recs': [{'_id': k, 'json': v, 'landed': self.landed.get(k, '')}
                              for k, v in sorted(self.db.items())], 'more': 0}
         if action == 'rpush':
@@ -2279,6 +2289,7 @@ class RecordSync(Isolated):
                 self.db[rid] = text
                 self.landed[rid] = sync.sha1(text)
             return {'ok': 1}
+
         if action == 'rlanded':
             for rid, h in kw['items']:
                 self.landed[rid] = h
@@ -2301,6 +2312,18 @@ class RecordSync(Isolated):
         self.calls.clear()
         self.assertEqual(sync.sync(), 0)
         self.assertEqual(self.writes(), [], '稳态下不该有写请求')
+
+    def test_a_clean_second_pass_does_not_download_record_bodies(self):
+        self.assertEqual(sync.sync(), 0)
+        self.calls.clear()
+        self.assertEqual(sync.sync(), 0)
+        rpulls = [kw for action, kw in self.calls if action == 'rpull']
+        self.assertTrue(rpulls)
+        for kw in rpulls:
+            self.assertTrue(kw.get('heads'))
+        self.assertFalse(any(not kw.get('heads') for action, kw in self.calls
+                             if action == 'rpull'))
+
 
     def test_an_approved_change_lands_in_the_table_and_moves_landed(self):
         sync.sync()

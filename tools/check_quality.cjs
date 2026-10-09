@@ -660,6 +660,17 @@ test('sync pushes records in validated batches and pages through them in a stabl
   const page = await h.request({ a: 'rpull', k: KEY, skip: 0 })
   assert.deepEqual(page.recs.map((r) => r._id), [REC, 'minted/4294967316'])
   assert.equal(page.more, 0)
+  const minted = h.canon({ 'i18n/zh-CN/效果': '甲' })
+  const heads = await h.request({ a: 'rpull', k: KEY, skip: 0, heads: 1 })
+  assert.equal(heads.more, 0)
+  assert.deepEqual(heads.recs.map((r) => r._id), [REC, 'minted/4294967316'])
+  const bodies = { [REC]: good, 'minted/4294967316': minted }
+  for (const row of heads.recs) {
+    assert.equal('json' in row, false)
+    assert.equal(row.hash, digest(bodies[row._id]))
+    assert.equal(row.landed, digest(bodies[row._id]))
+  }
+
   assert.equal((await h.request({ a: 'rlanded', k: KEY, items: [['inventory-items/404', digest('x')]] })).error, 'no rec')
   assert.equal((await h.request({ a: 'rdrop', k: KEY, ids: [REC] })).ok, 1)
   assert.equal(h.store.recs.has(REC), false)

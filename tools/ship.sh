@@ -5,10 +5,19 @@
 set -e
 cd "$(dirname "$0")/.."
 
+t=$(date +%s)
 python3 tools/sync.py
-npm run build
-npm test
+echo "sync $(($(date +%s) - t))s"
 
+t=$(date +%s)
+npm run build
+echo "build $(($(date +%s) - t))s"
+
+t=$(date +%s)
+npm test
+echo "test $(($(date +%s) - t))s"
+
+t=$(date +%s)
 if [ -n "$(git status --porcelain)" ]; then
   if [ -z "$1" ]; then
     echo "工作区有改动，要一句提交信息：tools/ship.sh \"…\"" >&2
@@ -17,9 +26,15 @@ if [ -n "$(git status --porcelain)" ]; then
   git add -A
   git commit -q -m "$1"
 fi
+echo "commit $(($(date +%s) - t))s"
 
+t=$(date +%s)
 python3 tools/deploy.py
+echo "deploy $(($(date +%s) - t))s"
+
+t=$(date +%s)
 git push
+echo "push $(($(date +%s) - t))s"
 
 # deploy.py 末尾会再对一次账，那一趟可能从库里拉回新的源稿。拉回来的东西没进
 # 这次的 commit，也没上站，所以要说出来，不能让工作区悄悄脏着。
