@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""离线回归：部署闸门、审核删除三方比、配装生成生命周期、装备库。
+"""离线回归：部署闸门、审核删除三方比、配装生成生命周期、装备库与 DDC 上游快照。
 
 python3 tools/check_quality.py
 只用标准库；真实入口搭配内存 API/命令替身，全部写入独占 TemporaryDirectory。
@@ -31,6 +31,7 @@ import urllib.error
 import urllib.request
 
 import check_terms
+import ddc
 import facts
 import items
 import markup
@@ -152,6 +153,266 @@ class ExcelSafety(Isolated):
                                               *(['--force'] if force else [])]))
                 self.assertEqual(src.read_text(), '{"rows":[]}')
                 self.assertEqual(out.read_text(), 'human work')
+
+
+class DDCSnapshots(Isolated):
+    """直接解析小型上游 HTML；对账只走注入的传输与独占目录，不访问 Google。"""
+
+    CATALOGUE = '''<script>
+      items.push({name: "Solar", pageUrl: "/htmlview/sheet?gid=10", gid: "10"});
+      items.push({name: "OLD Solar", pageUrl: "/htmlview/sheet?gid=20", gid: "20"});
+      items.push({name: "Landing", pageUrl: "/htmlview/sheet?gid=2", gid: "2"});
+    </script>'''
+    NEXT_CATALOGUE = '''<script>
+      items.push({name: "Arc", pageUrl: "/htmlview/sheet?gid=30", gid: "30"});
+      items.push({name: "Solar", pageUrl: "/htmlview/sheet?gid=10", gid: "10"});
+      items.push({name: "Landing", pageUrl: "/htmlview/sheet?gid=2", gid: "2"});
+    </script>'''
+    LANDING = '<table class="waffle"><tr><th>1</th><td>DDC</td></tr></table>'
+    SOLAR = '<table class="waffle"><tr><th>1</th><td>Scorch 40</td></tr></table>'
+    OLD = '<table class="waffle"><tr><th>1</th><td>Old rule 12</td></tr></table>'
+    ARC = '<table class="waffle"><tr><th>1</th><td>Jolt 25</td></tr></table>'
+
+    def transport(self, *, newer=False, broken=None):
+        pages = {
+            ddc.BOOK + '/htmlview': self.NEXT_CATALOGUE if newer else self.CATALOGUE,
+            ddc.BOOK + '/htmlview/sheet?headers=true&gid=2': self.LANDING,
+            ddc.BOOK + '/htmlview/sheet?headers=true&gid=10':
+                self.SOLAR.replace('40', '45') if newer else self.SOLAR,
+            ddc.BOOK + '/htmlview/sheet?headers=true&gid=20':
+                self.OLD if broken is None else broken,
+            ddc.BOOK + '/htmlview/sheet?headers=true&gid=30': self.ARC,
+        }
+
+        def fetch(url):
+            page = pages[url]
+            if isinstance(page, Exception):
+                raise page
+            return page
+
+        return fetch
+
+    def baseline(self):
+        # 非标准缩进也是合法基线；check 必须保留原字节，不趁机重排或初始化。
+        self.file('index.json', json.dumps({
+            'format': 1,
+            'spreadsheet': ddc.BOOK,
+            'sheets': [
+                {'gid': '2', 'name': 'Landing'},
+                {'gid': '10', 'name': 'Solar'},
+                {'gid': '20', 'name': 'OLD Solar'},
+            ],
+        }, ensure_ascii=False) + '\n')
+        self.file('2.json', '[[["DDC"]]]\n')
+        self.file('10.json', '[[["Scorch 40"]]]\n')
+        self.file('20.json', '[[["Old rule 12"]]]\n')
+        self.file('999.json', '{"human": "not catalog-owned"}\n')
+        self.file('notes.txt', 'Keep my notes.\n')
+
+    def baseline_bytes(self):
+        return {p.relative_to(self.root): p.read_bytes()
+                for p in self.root.rglob('*') if p.is_file()}
+
+    def test_catalogue_discovers_landing_old_and_numeric_order(self):
+        self.assertEqual(ddc.catalog(self.CATALOGUE), [
+            {'gid': '2', 'name': 'Landing'},
+            {'gid': '10', 'name': 'Solar'},
+            {'gid': '20', 'name': 'OLD Solar'},
+        ])
+        escaped = r'''<script>items.push({name: "OLD \"Solar\" \u706b",
+          pageUrl: "/htmlview/sheet?gid=7", gid: "7"});</script>'''
+        self.assertEqual(ddc.catalog(escaped), [{'gid': '7', 'name': 'OLD "Solar" 火'}])
+
+    def test_invalid_catalogues_are_not_empty_successes(self):
+        for source in ('<html>Sign in</html>',
+                       '<script>items.push({name: "Solar", pageUrl: "/", gid: "bad"});</script>',
+                       self.CATALOGUE + self.CATALOGUE):
+            with self.subTest(source=source), self.assertRaises(Exception):
+                ddc.catalog(source)
+
+    def test_outer_sheet_wrapper_preserves_catalyst_and_mode_styles(self):
+        source = '''<html><head><style>
+          .ritz .waffle .s13 {font-weight:bold;color:#ffd966;font-size:10pt;}
+          .ritz .waffle .s2 {color:#ea9999;font-size:10pt;}
+          </style></head><body><div class="ritz"><table class="waffle"><tr>
+          <td class="s13"><span style="font-weight:normal;font-style:italic">↑Funeral Pyre</span></td>
+          <td class="s2">[PVP-Specific]</td>
+          <td class="s13">Catalyst</td>
+          </tr></table></div></body></html>'''
+        self.assertEqual(ddc.sheet(source), [[
+            ['<span style="color:#ffd966"><i>↑Funeral Pyre</i></span>'],
+            ['<span style="color:#ea9999">[PVP-Specific]</span>'],
+            ['<span style="color:#ffd966"><b>Catalyst</b></span>'],
+        ]])
+        outside = '''<style>.ritz .waffle td {color:#ea9999}</style>
+          <div class="ritz"></div><table class="waffle"><tr><td>Shared rule</td></tr></table>'''
+        self.assertEqual(ddc.sheet(outside), [[['Shared rule']]])
+
+    def test_eight_digit_foreground_colour_keeps_alpha(self):
+        source = '''<table class="waffle"><tr>
+          <td><span style="color:#ffd5a6bd">Legacy perk 20%</span></td>
+          </tr></table>'''
+        self.assertEqual(ddc.sheet(source), [[
+            ['<span style="color:#ffd5a6bd">Legacy perk 20%</span>'],
+        ]])
+
+    def test_pve_cell_color_and_pvp_inline_override_survive(self):
+        source = '''<style>.waffle .s17 {color:#a4c2f4;font-size:10pt;}
+          .waffle .s18 {color:#ea9999;font-size:10pt;}</style>
+          <table class="waffle"><tr><th>105</th>
+          <td class="s17">PvE 40%<br><span style="color:#ea9999">PvP 20%</span></td>
+          <td class="s18">Decay 5</td></tr></table>'''
+        self.assertEqual(ddc.sheet(source), [[
+            ['<span style="color:#a4c2f4">PvE 40%</span>',
+             '<span style="color:#ea9999">PvP 20%</span>'],
+            ['<span style="color:#ea9999">Decay 5</span>'],
+        ]])
+
+    def test_annotations_semantic_markup_and_source_links_survive(self):
+        source = '''<style>.waffle .s1 {font-size:10pt;}</style>
+          <table class="waffle"><tr><th>1</th>
+          <td class="s1">Scorch <span style="font-size:7pt;color:#89cdd1">per stack</span></td>
+          <td class="s1">x<sup style="font-size:7pt">2</sup></td><td>H<sub>2</sub>O</td>
+          <td><strong>40</strong></td><td><em>tested</em></td>
+          <td><span style="text-decoration:underline">source</span></td>
+          <td><strike>old</strike></td>
+          <td><a href="https://www.google.com/url?q=https%3A%2F%2Fexample.org%2Frule%3Fa%3D1%26b%3D2&amp;sa=D">
+          测试来源</a></td></tr></table>'''
+        self.assertEqual(ddc.sheet(source), [[
+            ['Scorch <span style="color:#89cdd1"><small>per stack</small></span>'],
+            ['x<sup>2</sup>'], ['H<sub>2</sub>O'],
+            ['<b>40</b>'], ['<i>tested</i>'], ['<u>source</u>'], ['<s>old</s>'],
+            ['<a href="https://example.org/rule?a=1&amp;b=2">测试来源</a>'],
+        ]])
+
+    def test_effective_styles_have_one_wrapper_order_and_merge_adjacent_runs(self):
+        original = '''<style>.waffle .s1 {color:#f6b26b;font-weight:bold;font-style:italic;}</style>
+          <table class="waffle"><tr><td class="s1">Rule 40</td></tr></table>'''
+        equivalent = '''<table class="waffle"><tr><td>
+          <em><strong><span style="color:#f6b26b">Rule </span></strong></em><span
+          style="color:#f6b26b"><i><b>40</b></i></span></td></tr></table>'''
+        expected = [[['<span style="color:#f6b26b"><b><i>Rule 40</i></b></span>']]]
+        self.assertEqual(ddc.sheet(original), expected)
+        self.assertEqual(ddc.sheet(equivalent), expected)
+
+    def test_script_style_and_image_content_never_become_rules(self):
+        source = '''<table class="waffle"><tr><td>Rule<script>wrong()</script><style>
+          .volatile {color:red}</style> 40<img src="https://example.org/img?token=one"></td>
+          <td><img src="https://example.org/img?token=two"></td></tr></table>'''
+        self.assertEqual(ddc.sheet(source), [[['Rule 40']]])
+
+    def test_line_boundaries_spaces_and_unicode_do_not_glue_terms(self):
+        source = '''<table class="waffle"><tr><th>1</th>
+          <td>Scorch<br>Ignition
+Jolt<br>中文 &amp; Δ</td><td><span>Damage</span> <span>per stack</span></td>
+          </tr></table>'''
+        self.assertEqual(ddc.sheet(source), [[
+            ['Scorch', 'Ignition', 'Jolt', '中文 &amp; Δ'], ['Damage per stack'],
+        ]])
+
+    def test_layout_wrapper_and_class_changes_are_not_rule_changes(self):
+        original = '''<style>.waffle .s1 {color:#a4c2f4;font-size:10pt;}</style>
+          <table class="waffle"><tr><th id="sheetR104">105</th>
+          <td class="s1" style="width:100px">PvE 40</td></tr></table>'''
+        rearranged = '''<style>body {color:red} .waffle .s99 {
+          font-family:Arial; background:#000000; text-align:right;
+          height:500px; width:300px; color:rgb(164,194,244); font-size:10pt;}</style>
+          <script>items.push("not cell text")</script>
+          <table><tr><td>unrelated table</td></tr></table>
+          <table class="waffle" id="volatile"><tr style="height:600px">
+          <th id="newR999">1000</th><td class="s99">
+          <span>PvE </span><span><span>40</span></span>
+          <img src="https://example.org/image?token=volatile"></td></tr></table>'''
+        expected = [[['<span style="color:#a4c2f4">PvE 40</span>']]]
+        self.assertEqual(ddc.sheet(original), expected)
+        self.assertEqual(ddc.sheet(rearranged), expected)
+
+    def test_spans_keep_column_positions_across_discarded_blank_rows(self):
+        source = '''<table class="waffle">
+          <tr><th>A</th><th>B</th><th>C</th><th>D</th></tr>
+          <tr><th>1</th><td rowspan="3">A</td><td colspan="2">B</td><td>C</td></tr>
+          <tr><th>2</th><td colspan="3"></td></tr>
+          <tr><th>3</th><td>D</td><td>E</td><td>F</td><td></td></tr>
+          <tr><th>4</th><td>G</td><td></td><td>H</td><td></td></tr>
+          </table>'''
+        self.assertEqual(ddc.sheet(source), [
+            [['A'], ['B'], [], ['C']],
+            [[], ['D'], ['E'], ['F']],
+            [['G'], [], ['H']],
+        ])
+
+    def test_login_empty_and_truncated_tables_are_rejected(self):
+        for source in ('<html>Sign in to Google</html>',
+                       '<table><tr><td>not a sheet</td></tr></table>',
+                       '<table class="waffle"><tr><td></td></tr></table>',
+                       '<table class="waffle"><tr><td>Scorch 40</td></tr>'):
+            with self.subTest(source=source), self.assertRaises(Exception):
+                ddc.sheet(source)
+
+    def test_check_reports_rule_added_and_removed_tabs_without_writing(self):
+        self.baseline()
+        before = self.baseline_bytes()
+        self.assertTrue(ddc.refresh(self.root, fetch=self.transport(newer=True)))
+        self.assertEqual(self.baseline_bytes(), before)
+        report = self.output.getvalue()
+        for text in ('Solar', 'Scorch 40', 'Scorch 45', 'Arc', 'Jolt 25',
+                     'OLD Solar', 'Old rule 12', '---', '+++'):
+            self.assertIn(text, report)
+
+    def test_failed_or_truncated_later_page_preserves_entire_baseline(self):
+        for broken in (urllib.error.URLError('connection closed'),
+                       '<table class="waffle"><tr><td>Old rule changed</td></tr>'):
+            with self.subTest(broken=str(broken)):
+                self.baseline()
+                before = self.baseline_bytes()
+                with self.assertRaises(Exception) as caught:
+                    ddc.refresh(self.root, update=True, fetch=self.transport(broken=broken))
+                self.assertIn('OLD Solar', str(caught.exception))
+                self.assertEqual(self.baseline_bytes(), before)
+
+    def test_update_prunes_only_owned_gids_and_writes_canonical_json(self):
+        self.baseline()
+        unrelated = {name: (self.root / name).read_bytes()
+                     for name in ('999.json', 'notes.txt')}
+        self.assertTrue(ddc.refresh(self.root, update=True, fetch=self.transport(newer=True)))
+        self.assertFalse((self.root / '20.json').exists())
+        self.assertEqual(json.loads((self.root / '10.json').read_text()), [[['Scorch 45']]])
+        self.assertEqual(json.loads((self.root / '30.json').read_text()), [[['Jolt 25']]])
+        self.assertEqual(json.loads((self.root / 'index.json').read_text()), {
+            'format': 1, 'spreadsheet': ddc.BOOK,
+            'sheets': [{'gid': '2', 'name': 'Landing'}, {'gid': '10', 'name': 'Solar'},
+                       {'gid': '30', 'name': 'Arc'}],
+        })
+        for name, content in unrelated.items():
+            self.assertEqual((self.root / name).read_bytes(), content)
+        before = self.baseline_bytes()
+        mtimes = {p: (self.root / p).stat().st_mtime_ns for p in before}
+        self.assertFalse(ddc.refresh(self.root, update=True, fetch=self.transport(newer=True)))
+        self.assertEqual(self.baseline_bytes(), before)
+        self.assertEqual({p: (self.root / p).stat().st_mtime_ns for p in before}, mtimes)
+        self.assertFalse(ddc.refresh(self.root, fetch=self.transport(newer=True)))
+
+    def test_new_tab_cannot_overwrite_an_unowned_file(self):
+        self.baseline()
+        self.file('30.json', 'human work\n')
+        before = self.baseline_bytes()
+        with self.assertRaises(ValueError) as caught:
+            ddc.refresh(self.root, update=True, fetch=self.transport(newer=True))
+        self.assertIn('30.json', str(caught.exception))
+        self.assertEqual(self.baseline_bytes(), before)
+
+    def test_missing_or_unsupported_baseline_never_initializes_in_check(self):
+        with self.assertRaises(Exception) as caught:
+            ddc.refresh(self.root, fetch=self.transport())
+        self.assertIn('--update', str(caught.exception))
+        self.assertEqual(self.baseline_bytes(), {})
+        self.file('index.json', '{"format":999,"sheets":[]}\n')
+        before = self.baseline_bytes()
+        for update in (False, True):
+            with self.subTest(update=update), self.assertRaises(Exception) as caught:
+                ddc.refresh(self.root, update=update, fetch=self.transport())
+            self.assertIn('format', str(caught.exception).lower())
+            self.assertEqual(self.baseline_bytes(), before)
 
 
 class EditAnchors(unittest.TestCase):
@@ -820,6 +1081,47 @@ class Generated(unittest.TestCase):
         fn = (TOOLS.parent / 'functions' / 'api' / 'dialect.js').read_text(encoding='utf-8')
         self.assertEqual(fn, self.read('admin/dialect.js'),
                          'functions/api/dialect.js 与 admin/dialect.js 分家了，跑一次构建')
+
+
+class EntityPresentation(unittest.TestCase):
+    """实体组合不能丢版本费用，也不能把触发条件拆到宿主效果之后。"""
+
+    def test_cost_includes_all_versions_and_zero_without_duplicates(self):
+        records = {
+            '1000': {'members': [103, 101, 106]},
+            '101': {'plug': {'energyCost': 0}},
+            '103': {'plug': {'energyCost': 3}},
+            '104': {'plug': {'energyCost': 4}},
+            '106': {'plug': {}},
+        }
+        table = SimpleNamespace(keys=['1000', '104', '103'])
+        with patch.object(rows, 'facts', return_value=SimpleNamespace(at=records.get)):
+            self.assertEqual(rows._cost(table, '1000'), '{cost|0–3–4}')
+
+    def test_conditions_precede_hosts_and_catalysts_follow_base_effects(self):
+        def body(text):
+            return {'i18n': {'zh-CN': {'realgame_details': text}}}
+
+        records = {
+            '1': {'derived': {'catalyst': [7]}},
+            '4': body('base host'),
+            '5': body('second base host'),
+            '7': dict(body('catalyst item'), perks=[{'perkHash': 8}]),
+            'perk:8': body('catalyst perk'),
+        }
+        base = (' %s ' % rows.PARA).join(['base effect ↑ detail', 'precision trigger:'])
+        catalyst = (' %s ' % rows.PARA).join(['{exotic|↑Catalyst}', 'catalyst condition'])
+        own = (' %s ' % rows.PARA).join([base, catalyst])
+        with (patch.object(rows, 'facts', return_value=SimpleNamespace(at=records.get)),
+              patch.object(rows, 'own_hosts', return_value=['4', '7', 'perk:8', '5', '4'])):
+            self.assertEqual(rows.exotic_parts('1', own), [
+                ('1', base),
+                ('4', 'base host'),
+                ('5', 'second base host'),
+                ('1', catalyst),
+                ('7', 'catalyst item'),
+                ('perk:8', 'catalyst perk'),
+            ])
 
 
 class EntitySource(unittest.TestCase):

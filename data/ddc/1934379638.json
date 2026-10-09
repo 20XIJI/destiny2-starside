@@ -1,0 +1,2038 @@
+[
+  [
+    [
+      "<span style=\"color:#cccccc\"><b>w</b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>Helmet</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Effect</b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>Arms</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Effect</b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>Chest</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Effect</b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>Legs</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Effect</b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>Class Item</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Effect</b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>LEGACY</b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>Raid-Specific</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Effect</b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>Raid Specific</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Effect</b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>Activity or Destination Specific</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Effect</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Ammo Finder</b></span>",
+      "<span style=\"color:#cccccc\"><b>[3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Special Ammo Finders:</b></span>",
+      "<span style=\"color:#cccccc\"><b>1.25x | 1.4x | 1.5x Ammo Progress Multiplier.</b></span>",
+      "",
+      "<span style=\"color:#a481e1\"><b>Heavy Ammo Finders:</b></span>",
+      "<span style=\"color:#cccccc\"><b>1.33x | 1.66x | 2x Ammo Progress Multiplier.</b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>Bolstering Detonation</b></span>",
+      "<span style=\"color:#cccccc\"><b>[2 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon dealing</i></span> <span style=\"color:#e0a261\"><b><i>Grenade Damage:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#bba5f3\"><b>Class Ability Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#bba5f3\"><b>Ability Energy Gain:</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>12% | 17% | 20%</b></span>",
+      "<span style=\"color:#ea9999\"><b>6% | 8.5% | 10%</b></span>",
+      "",
+      "<span style=\"color:#e06666\"><b><i>Incurs a 7 second cooldown after activation.</i></b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>Ammo Generation</b></span>",
+      "<span style=\"color:#cccccc\"><b>[</b></span><span style=\"color:#d5a6bd\"><b>1</b></span><span style=\"color:#cccccc\"><b>–2 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>To</i></span> <span style=\"color:#d5a6bd\"><b><i>Mod-Element Matching Weapons</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>+20 | +40 | +50 Ammo Generation stat.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Swords receive +20 | +30 | +35 Ammo Capacity Stat.</b></span>",
+      "<span style=\"color:#cccccc\"><i><small>Equivalent to Hungry Edge, Backup Mag, and Enduring Blade respectively.</small></i></span>"
+    ],
+    [
+      "<span style=\"color:#ffd966\"><b>Absolution</b></span>",
+      "<span style=\"color:#ffd966\"><b>[3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#ffd966\"><b><i>Orb of Power</i></b></span> <span style=\"color:#cccccc\"><b><i>Pickup:</i></b></span>",
+      "",
+      "<span style=\"color:#e0a261\"><b>5% | 7.5% | 10% Grenade Ability Energy</b></span>",
+      "<span style=\"color:#89cdd1\"><b>5% | 7.5% | 10% Melee Ability Energy</b></span>",
+      "<span style=\"color:#bba5f3\"><b>5% | 7.5% | 10% Class Ability Energy</b></span>"
+    ],
+    [
+      "<span style=\"color:#ccae3b\"><b>Benevolent Finisher</b></span>",
+      "<span style=\"color:#ccae3b\"><b>[1 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Finisher</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#ccae3b\"><b>Consumes</b></span> <span style=\"color:#a4c2f4\"><b>x3 Armor Charge</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#a4c2f4\"><b>Allies</b></span> <span style=\"color:#cccccc\"><b>are spawned an</b></span> <span style=\"color:#ffd966\"><b>Orb of Power</b></span> <span style=\"color:#cccccc\"><b>that grants</b></span> <span style=\"color:#ffd966\"><b>7.15% Super Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [
+      "<span style=\"color:#000000\"><b>-</b></span>"
+    ],
+    [
+      "<span style=\"color:#e8cc94\"><b>Salvation's Edge</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#6cc093\"><b>Crota's End</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#bc3942\"><b>Nightmare Hunts</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Ammo Scout</b></span>",
+      "<span style=\"color:#cccccc\"><b>[1 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Upon spawning a</b></span> <span style=\"color:#d5a6bd\"><b>Mod-Matching</b></span> <span style=\"color:#63d275\"><b>Ammo</b></span> <span style=\"color:#a481e1\"><b>Brick</b></span><span style=\"color:#cccccc\"><b>:</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Allies</b></span> <span style=\"color:#cccccc\"><b>receive a copy of the</b></span> <span style=\"color:#63d275\"><b>Ammo</b></span> <span style=\"color:#a481e1\"><b>Brick</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Ammo Scout Brick Pickup Amounts:</b></span>",
+      "<span style=\"color:#cccccc\"><b>37% | 67% | 100% of a regular</b></span> <span style=\"color:#63d275\"><b>Ammo</b></span> <span style=\"color:#a481e1\"><b>Brick's</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#ffd966\"><b>Enhanced Brick Chance</b></span> <span style=\"color:#cccccc\"><b>is determined by the</b></span> <span style=\"color:#a4c2f4\"><b>ally's</b></span> <span style=\"color:#6d9eeb\"><b>Weapons Stat</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>Dexterity</b></span>",
+      "<span style=\"color:#cccccc\"><b>[</b></span><span style=\"color:#d5a6bd\"><b>2</b></span><span style=\"color:#cccccc\"><b>–3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>To</i></span> <span style=\"color:#d5a6bd\"><b><i>Mod-Element Matching Weapon</i></b><i>:</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>0.8x | 0.75x | 0.7x Ready/Stow Duration Multiplier.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>Cannot exceed 100 Handling Stow Animation Duration.</i></span>"
+    ],
+    [
+      "<span style=\"color:#7abf75\"><b>Charged up</b></span>",
+      "<span style=\"color:#7abf75\"><b>[3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Increases the</b></span> <span style=\"color:#a4c2f4\"><b>Maximum Armor Charge Stacks</b></span><span style=\"color:#a7a7a7\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#a4c2f4\"><b>Maximum Armor Charge Stacks:</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>4 | 5 | 6</b></span>"
+    ],
+    [
+      "<span style=\"color:#dd7e6b\"><b>Better Already</b></span>",
+      "<span style=\"color:#dd7e6b\"><b>[1 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#ffd966\"><b><i>Orb of Power</i></b></span> <span style=\"color:#cccccc\"><b><i>Pickup:</i></b></span>",
+      "",
+      "<span style=\"color:#dd7e6b\"><b>Begins Health Regeneration</b></span><span style=\"color:#e06666\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#e06666\"><i>Mod does not stack, despite the in-game tooltip.</i></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>Bomber</b></span>",
+      "<span style=\"color:#cccccc\"><b>[1 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#bba5f3\"><b><i>Class Ability Usage</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#e0a261\"><b>Grenade Ability Energy.</b></span>",
+      "",
+      "<span style=\"color:#e0a261\"><b>Grenade Energy Gains:</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>12% | 17% | 20%</b></span>",
+      "<span style=\"color:#ea9999\"><b>6% | 8.5% | 10%</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#e8cc94\"><b>Arm's Reach</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#e8cc94\"><i>Upon</i> <b><i>killing</i></b> <i>an</i> <b><i>enemy</i></b> <i>within</i> <b><i>? meters</i></b> <i>of a</i> <b><i>limb</i></b><i>:</i></span>",
+      "",
+      "<span style=\"color:#e8cc94\"><b>Grants</b></span> <span style=\"color:#ffd966\"><b>?% Super Energy</b></span><span style=\"color:#e8cc94\"><b>.</b></span>"
+    ],
+    [
+      "<span style=\"color:#6cc093\"><b>Benevolent Overflow</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#94b4a3\"><i>While</i></span> <span style=\"color:#d9d9d9\"><b><i>Engulfed in Light</i></b></span><span style=\"color:#94b4a3\"><i>, and by having the</i></span> <span style=\"color:#d9d9d9\"><b><i>Chalice of Light</i></b></span> <span style=\"color:#94b4a3\"><i>taken, or upon</i> <b><i>dying</i></b><i>:</i></span>",
+      "",
+      "<span style=\"color:#94b4a3\"><b>Releases a</b></span> <span style=\"color:#dd7e6b\"><b>healing burst</b></span> <span style=\"color:#94b4a3\"><b>around the user.</b></span>",
+      "",
+      "<span style=\"color:#dd7e6b\"><b>? | ? | ? | ? | ? HP</b></span>",
+      "<span style=\"color:#94b4a3\"><b>? | ? | ? | ? | ? Radius</b></span>"
+    ],
+    [
+      "<span style=\"color:#bc3942\"><b>Dreambane Mod</b></span>",
+      "<span style=\"color:#bc3942\"><b>[1 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>5% Damage Resist per Stack against</b></span> <span style=\"color:#cc4125\"><b>Nightmare Bosses.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Maxes out at 25% Damage Resist with 5 Mods.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Ashes to Assets</b></span>",
+      "<span style=\"color:#cccccc\"><b>[3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#e0a261\"><b><i>Grenade Kill</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#ffd966\"><b>additional Super Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#a4c2f4\"><b>Tier 1: 1%? | ?% | ?%</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Tier 2: ?% | ?% | ?%</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Tier 3: ?% | ?% | ?%</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Tier 4: 5?% | ?% | ?%</b></span>",
+      "<span style=\"color:#ea9999\"><b>Guardians: ?% | ?% | ?%</b></span>",
+      "",
+      "<span style=\"color:#e06666\"><i>Cannot simultaneously benefit with</i></span> <span style=\"color:#89cdd1\"><i>Hands-On</i></span><span style=\"color:#e06666\"><b><i>.</i></b></span>",
+      "<span style=\"color:#e06666\"><i>Grapple Melee Kills reduce the Super Energy by 50%.</i></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>Fastball</b></span>",
+      "<span style=\"color:#cccccc\"><b>[1 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Grenades travel ~25% faster and farther.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Strength of the effect varies between grenades.</i></span>"
+    ],
+    [
+      "<span style=\"color:#ccae3b\"><b>Emergency Reinforcement</b></span>",
+      "<span style=\"color:#ccae3b\"><b>[3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon reaching</i></span> <span style=\"color:#dd7e6b\"><b><i>Critical Health</i></b></span> <span style=\"color:#cccccc\"><i>while at</i></span> <span style=\"color:#a4c2f4\"><b><i>x3 or more Armor Charges</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Grants 10% Damage Resist.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Duration is based on the amount of</i></span> <span style=\"color:#a4c2f4\"><i>Armor Charges</i></span> <span style=\"color:#cccccc\"><i>consumed.</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>Buff Duration at</i></span> <span style=\"color:#a4c2f4\"><i>x3, x4, and x5 Charges.</i></span>",
+      "<span style=\"color:#cccccc\"><b>6 | 9 | 12 | 15 seconds.</b></span>"
+    ],
+    [
+      "<span style=\"color:#7abf75\"><b>Elemental Charge</b></span>",
+      "<span style=\"color:#7abf75\"><b>[3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Picking up</b></span> <span style=\"color:#d5a6bd\"><b>Elemental Pickups</b></span><span style=\"color:#cccccc\"><b>, or destroying</b></span> <span style=\"color:#93c47d\"><b>Tangles</b></span> <span style=\"color:#cccccc\"><b>progresses a counter.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#a4c2f4\"><b>x1 Armor Charge</b></span> <span style=\"color:#cccccc\"><b>upon reaching 100% Counter Progress.</b></span>",
+      "",
+      "<span style=\"color:#d5a6bd\"><b><i>Elemental Pickup Counter Progress:</i></b></span>",
+      "<span style=\"color:#b4a7d6\"><b>Void Breaches</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#f6b26b\"><b>Firesprites</b></span><span style=\"color:#cccccc\"><b>, and</b></span> <span style=\"color:#93c47d\"><b>Tangles:</b></span> <span style=\"color:#d5a6bd\"><b>50% | 50% | 100%</b></span>",
+      "<span style=\"color:#a2c4c9\"><b>Ionic Traces:</b></span> <span style=\"color:#d5a6bd\"><b>34% | 50% | 50%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#9fc5e8\"><b>Shards:</b></span> <span style=\"color:#d5a6bd\"><b>25% | 34% | 50%</b></span>"
+    ],
+    [
+      "<span style=\"color:#ccae3b\"><b>Bulwark Finisher</b></span>",
+      "<span style=\"color:#ccae3b\"><b>[1 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Finisher</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#ccae3b\"><b>Consumes</b></span> <span style=\"color:#a4c2f4\"><b>x3 or more Armor Charges</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#d5a6bd\"><b>Void Overshield</b></span> <span style=\"color:#cccccc\"><b>for a varying duration.</b></span>",
+      "",
+      "<span style=\"color:#d5a6bd\"><b>Overshield Duration</b></span> <span style=\"color:#cccccc\"><b>at</b></span> <span style=\"color:#a4c2f4\"><b>x3, x4, x5, and x6 Charges</b></span><span style=\"color:#cccccc\"><b>:</b></span>",
+      "<span style=\"color:#cccccc\"><b>8 | 10 | 12 | 14 seconds.</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#e8cc94\"><b>Electrified Conductor</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#e8cc94\"><i>Upon</i></span> <span style=\"color:#f1c232\"><b><i>charging</i></b></span> <span style=\"color:#e8cc94\"><i>a</i></span> <span style=\"color:#f1c232\"><b><i>conductor</i></b></span><span style=\"color:#e8cc94\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#e8cc94\"><b>Grants</b></span> <span style=\"color:#93c47d\"><b>20% Special Ammo Reserves</b></span><span style=\"color:#e8cc94\"><b>.</b></span>"
+    ],
+    [
+      "<span style=\"color:#6cc093\"><b>Brimming with Exhaustion</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#b45f06\"><b>Drained of Light</b></span> <span style=\"color:#94b4a3\"><b>lasts for a shorter amount of time.</b></span>",
+      "",
+      "<span style=\"color:#b45f06\"><b>-2 | -4 | -6 | -8 | -10 Buff Duration.</b></span>"
+    ],
+    [
+      "<span style=\"color:#bc3942\"><b>Nightmare Banisher</b></span>",
+      "<span style=\"color:#bc3942\"><b>[1 | 2 | 3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Grants 66% [133%] {200%} Increased</b></span> <span style=\"color:#ffd966\"><b>Super Ability Damage</b></span> <span style=\"color:#cccccc\"><b>against</b></span> <span style=\"color:#cc4125\"><b>Nightmare Bosses.</b></span>",
+      "",
+      "<span style=\"color:#cc4125\"><b><i>Nightmare Bosses have an innate 50% Damage Reduction against Super Damage.</i></b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Dynamo</b></span>",
+      "<span style=\"color:#cccccc\"><b>[3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i><small>On</small></i></b></span> <span style=\"color:#bba5f3\"><b><i><small>Class Ability Usage</small></i></b></span> <span style=\"color:#cccccc\"><b><i><small>while within 15 metres of an enemy:</small></i></b></span>",
+      "<span style=\"color:#cccccc\"><b><small>Grants</small></b></span> <span style=\"color:#ffd966\"><b><small>Super Ability Energy</small></b></span><span style=\"color:#cccccc\"><b><small>.</small></b></span>",
+      "",
+      "<span style=\"color:#ffd966\"><b>Super Energy Gains:</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>2.5% | 4%</b></span>",
+      "<span style=\"color:#ea9999\"><b>1.25% | 2.4%</b></span>",
+      "",
+      "<span style=\"color:#ffd966\"><b>Super Energy Multipliers</b></span> <span style=\"color:#cccccc\"><b>based on Class:</b></span>",
+      "<span style=\"color:#6d9eeb\"><b>Hunters: x1</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#e06666\"><b>Titans: x1.2</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#ffd966\"><b>Warlocks: x2</b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>Firepower</b></span>",
+      "<span style=\"color:#cccccc\"><b>[3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#e0a261\"><b><i>Grenade Kill</i></b><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Spawns a</b></span> <span style=\"color:#ffd966\"><b>Orb of Power.</b></span>",
+      "",
+      "<span style=\"color:#ffd966\"><b>Orb of Power:</b></span>",
+      "<span style=\"color:#ffd966\"><b>0.8% | 1.1% | 1.25% | 1.5% Super Energy.</b></span>",
+      "",
+      "<span style=\"color:#e06666\"><b><i>Incurs a 10 | 5 | 1 second cooldown between Orbs.</i></b></span>",
+      "<span style=\"color:#cccccc\"><i><small>Can trigger alongside</small></i></span> <span style=\"color:#89cdd1\"><i><small>Heavy Handed</small></i></span> <span style=\"color:#cccccc\"><i><small>if equipped before it.</small></i></span>",
+      "<span style=\"color:#cccccc\"><i><small>From left to right order.</small></i></span>"
+    ],
+    [
+      "<span style=\"color:#dd7e6b\"><b>Health Font</b></span>",
+      "<span style=\"color:#dd7e6b\"><b>[3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#a4c2f4\"><b><i>Armor Charge</i></b></span> <span style=\"color:#cccccc\"><i>is active:</i></span>",
+      "",
+      "<span style=\"color:#dd7e6b\"><b>+20 | +40 | +50 Health</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>Enhanced Athletics</b></span>",
+      "<span style=\"color:#cccccc\"><b>[1 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>+30 | +50 | +60 Mobility.</b></span>",
+      "",
+      "<span style=\"color:#a4c2f4\"><i>Hunters reach maximum Mobility with 1 Mod in PVE.</i></span>"
+    ],
+    [
+      "<span style=\"color:#bba5f3\"><b>Class Font</b></span>",
+      "<span style=\"color:#bba5f3\"><b>[3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#a4c2f4\"><b><i>Armor Charge</i></b></span> <span style=\"color:#cccccc\"><i>is active:</i></span>",
+      "",
+      "<span style=\"color:#bba5f3\"><b>+20 | +40 | +50 Class</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#e8cc94\"><b>High-Tier Elimination</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#e8cc94\"><i>Upon</i> <b><i>killing</i></b> <i>an</i> <b><i>Elite</i></b><i>,</i> <b><i>Miniboss</i></b><i>,</i> <b><i>Champion</i></b><i>, or</i> <b><i>Boss</i></b><i>:</i></span>",
+      "",
+      "<span style=\"color:#e8cc94\"><b>Grants ?%</b></span> <span style=\"color:#e0a261\"><b>Grenade</b></span><span style=\"color:#e8cc94\"><b>,</b></span> <span style=\"color:#89cdd1\"><b>Melee</b></span><span style=\"color:#e8cc94\"><b>, and</b></span> <span style=\"color:#bba5f3\"><b>Class</b></span> <span style=\"color:#e8cc94\"><b>Ability Energy.</b></span>"
+    ],
+    [
+      "<span style=\"color:#6cc093\"><b>Chomping at the Stem</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#94b4a3\"><i>Upon</i> <b><i>losing</i></b></span> <span style=\"color:#b45f06\"><b><i>Drained of Light</i></b></span><span style=\"color:#94b4a3\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#94b4a3\"><b>+? | +? | +? | +? | +? Mobility.</b></span>",
+      "<span style=\"color:#94b4a3\"><b>+? | +? | +? | +? | +? Handling.</b></span>",
+      "<span style=\"color:#94b4a3\"><b>+? | +? | +? | +? | +? Reload Speed.</b></span>"
+    ],
+    [
+      "<span style=\"color:#bc3942\"><b>Nightmare Breaker</b></span>",
+      "<span style=\"color:#bc3942\"><b>[1 | 2 | 3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Grants 66% [133%] {200%} increased Weapon and Ability Damage to</b></span> <span style=\"color:#f6b26b\"><b>Solar Combatant Shields</b></span> <span style=\"color:#cccccc\"><b>granted by</b></span> <span style=\"color:#cc4125\"><b>Nightmare Bosses</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Hands-On</b></span>",
+      "<span style=\"color:#cccccc\"><b>[3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#89cdd1\"><b><i>Powered Melee Kill</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#ffd966\"><b>additional Super Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#a4c2f4\"><b>Tier 1: %? | ?% | ?%</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Tier 2: 1.33?% | ?% | ?%</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Tier 3: ?% | ?% | ?%</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Tier 4: 5?% | ?% | ?%</b></span>",
+      "<span style=\"color:#ea9999\"><b>Guardians: ?% | ?% | ?%</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>Cannot simultaneously benefit with</i></span> <span style=\"color:#e0a261\"><b><i>Ashes to Assets.</i></b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>Focusing Strike</b></span>",
+      "<span style=\"color:#cccccc\"><b>[2 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon dealing</i></span> <span style=\"color:#89cdd1\"><b><i>Powered Melee Damage:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#bba5f3\"><b>Class Ability Energy.</b></span>",
+      "",
+      "<span style=\"color:#bba5f3\"><b>Ability Energy Gain:</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>12% | 17% | 20%</b></span>",
+      "<span style=\"color:#ea9999\"><b>6% | 8.5% | 10%</b></span>",
+      "",
+      "<span style=\"color:#e06666\"><b><i>Incurs a 7 second cooldown after activation.</i></b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>Lucent Blades</b></span>",
+      "<span style=\"color:#cccccc\"><b>[2 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Swords are granted +30 | +50 | +60 Charge Rate.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Glaive Projectile Hits grant 20% | 30% | 35% Increased Weapon Energy.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Stacks additively with Immovable Object.</i></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>Holster</b></span>",
+      "<span style=\"color:#cccccc\"><b>[</b></span><span style=\"color:#d5a6bd\"><b>1</b></span><span style=\"color:#cccccc\"><b>-2 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Stowed Weapons begin refilling after a period of time.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>10% | 10% | 15% Magazine Refill per activation.</b></span>",
+      "<span style=\"color:#cccccc\"><b>2.5 | 2 | 2 seconds between activations.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>Does not work with</i></span> <span style=\"color:#b6d7a8\"><i>Breech-Loaded Grenades Launchers</i></span><span style=\"color:#cccccc\"><i>,</i></span> <span style=\"color:#a481e1\"><i>Crossbows</i></span><span style=\"color:#cccccc\"><i>, and</i></span> <span style=\"color:#a481e1\"><i>Rocket Launchers</i></span><span style=\"color:#cccccc\"><i>.</i></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>Distribution</b></span>",
+      "<span style=\"color:#cccccc\"><b>[3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i><small>On</small></i></b></span> <span style=\"color:#bba5f3\"><b><i><small>Class Ability Usage</small></i></b></span> <span style=\"color:#cccccc\"><b><i><small>while within 15 metres of an enemy:</small></i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#e0a261\"><b>Grenade</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#89cdd1\"><b>Melee</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#bba5f3\"><b>Class</b></span><span style=\"color:#cccccc\"><b>, and</b></span> <span style=\"color:#ffd966\"><b>Super</b></span> <span style=\"color:#cccccc\"><b>Energy.</b></span>",
+      "",
+      "<span style=\"color:#a4c2f4\"><b>4% | 6% | 7%</b></span> <span style=\"color:#e0a261\"><b>Grenade</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#89cdd1\"><b>Melee</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#bba5f3\"><b>Class</b></span> <span style=\"color:#cccccc\"><b>Energy</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>2% | 3% | 4%</b></span> <span style=\"color:#ffd966\"><b>Super Energy</b></span>",
+      "",
+      "<span style=\"color:#ea9999\"><b>2% | 3% | 3.5%</b></span> <span style=\"color:#e0a261\"><b>Grenade</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#89cdd1\"><b>Melee</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#bba5f3\"><b>Class</b></span> <span style=\"color:#cccccc\"><b>Energy</b></span>",
+      "<span style=\"color:#ea9999\"><b>1% | 1.5% | 2%</b></span> <span style=\"color:#ffd966\"><b>Super Energy</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#e8cc94\"><b>Persistent Resonance</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#e8cc94\"><i>Upon</i> <b><i>depositing</i></b></span> <span style=\"color:#b45f06\"><b><i>Resonance</i></b></span> <span style=\"color:#e8cc94\"><i>on the</i></span> <span style=\"color:#b45f06\"><b><i>Resonance Chest</i></b></span><span style=\"color:#e8cc94\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#e8cc94\"><b>Generates</b></span> <span style=\"color:#ffd966\"><b>? Orbs of Power</b></span><span style=\"color:#e8cc94\"><b>.</b></span>",
+      "<span style=\"color:#e8cc94\"><b>Each</b></span> <span style=\"color:#ffd966\"><b>orb</b></span> <span style=\"color:#e8cc94\"><b>grants</b></span> <span style=\"color:#ffd966\"><b>?% Super Energy</b></span><span style=\"color:#e8cc94\"><b>.</b></span>"
+    ],
+    [
+      "<span style=\"color:#6cc093\"><b>Refreshing Thirst</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#94b4a3\"><i>Upon</i> <b><i>gaining</i></b></span> <span style=\"color:#b45f06\"><b><i>Drained of Light</i></b></span><span style=\"color:#94b4a3\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#94b4a3\">Grants</span> <span style=\"color:#a4c2f4\"><b>x1 | x2 | x3 | x4 | x5 Armor Charges</b></span><span style=\"color:#94b4a3\">.</span>"
+    ],
+    [
+      "<span style=\"color:#bc3942\"><b>Nightmare Crusher</b></span>",
+      "<span style=\"color:#bc3942\"><b>[1 | 2 | 3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Grants 50% [100%] {150%} increased</b></span> <span style=\"color:#f6b26b\"><b>Grenade</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#79bec3\"><b>Melee</b></span> <span style=\"color:#cccccc\"><b>Damage against</b></span> <span style=\"color:#cc4125\"><b>Nightmare Bosses.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>In-Flight Compensator</b></span>",
+      "<span style=\"color:#cccccc\"><b>[3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>+15 | +25 | +30 Airborne Effectiveness.</b></span>"
+    ],
+    [
+      "<span style=\"color:#e0a261\"><b>Grenade Font</b></span>",
+      "<span style=\"color:#e0a261\"><b>[3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#a4c2f4\"><b><i>Armor Charge</i></b></span> <span style=\"color:#cccccc\"><i>is active:</i></span>",
+      "",
+      "<span style=\"color:#e0a261\"><b>+20 | +40 | +50 Grenade</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [
+      "<span style=\"color:#a4c2f4\"><b>Resistance</b></span>",
+      "<span style=\"color:#cccccc\"><b>[</b></span><span style=\"color:#d5a6bd\"><b>1</b></span><span style=\"color:#cccccc\"><b>–3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#a4c2f4\"><b>15% | 25% | 30% Damage Resist against Combatants.</b></span>",
+      "",
+      "<span style=\"color:#d5a6bd\"><b>Elemental Mods reduce Mod-Matching Elemental damage.</b></span>",
+      "<span style=\"color:#e06666\"><b>Sniper reduces damage from &gt;30 metres.</b></span>",
+      "<span style=\"color:#89cdd1\"><b>Melee reduces damage from &lt;5 metres.</b></span>",
+      "<span style=\"color:#f9cb9c\"><b>Concussive Dampener reduces AoE/Blast/Explosive Damage.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b><i>Different Resist Mods, as well as other sources of Resist all stack multiplicatively with each other.</i></b></span>"
+    ],
+    [
+      "<span style=\"color:#e0a261\"><b>Innervation</b></span>",
+      "<span style=\"color:#e0a261\"><b>[1 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#ffd966\"><b><i>Orb of Power</i></b></span> <span style=\"color:#cccccc\"><b><i>Pickup:</i></b></span>",
+      "",
+      "<span style=\"color:#e0a261\"><b>10% | 13% | 15% Grenade Ability Energy.</b></span>"
+    ],
+    [
+      "<span style=\"color:#7abf75\"><b>Empowered Finish</b></span>",
+      "<span style=\"color:#7abf75\"><b>[1 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Finisher</i></b></span><span style=\"color:#cccccc\"><b><i>, while at</i></b></span> <span style=\"color:#a4c2f4\"><b><i>x0 Armor Charge</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#a4c2f4\"><b>x1 Armor Charge.</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#e8cc94\"><b>Stacked</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#e8cc94\"><i>While in possession of</i></span> <span style=\"color:#b45f06\"><b><i>Resonance</i></b></span><span style=\"color:#e8cc94\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#e8cc94\"><b>Kills have an increased chance of spawning</b></span> <span style=\"color:#a481e1\"><b>Heavy Ammo</b></span><span style=\"color:#e8cc94\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#e8cc94\"><i><small>Not testing that, nuh uh.</small></i></span>"
+    ],
+    [
+      "<span style=\"color:#6cc093\"><b>Stoic when Panicked</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#94b4a3\"><i>While on a</i> <b><i>plate</i></b><i>, near a</i> <b><i>plate</i></b> <i>or</i> <b><i>totem</i></b><i>, or carrying the</i></span> <span style=\"color:#7adaa6\"><b><i>Relic Sword</i></b></span><span style=\"color:#94b4a3\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#94b4a3\"><b>?% | ?% | ?% | ?% | ?% Damage Resist.</b></span>"
+    ],
+    [
+      "<span style=\"color:#868bcd\"><b>Dreaming City</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Power Preservation</b></span>",
+      "<span style=\"color:#cccccc\"><b>[3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#ffd966\"><b><i>Super Kill</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Spawns a</b></span> <span style=\"color:#ffd966\"><b>Orb of Power</b></span> <span style=\"color:#cccccc\"><b>for</b></span> <span style=\"color:#a4c2f4\"><b>Allies</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#ffd966\"><b>Orb of Power:</b></span>",
+      "<span style=\"color:#ffd966\"><b>2.5% | 3.75% | 4.4% Super Energy.</b></span>",
+      "",
+      "<span style=\"color:#e06666\"><b><i>Incurs a 2 seconds cooldown between Orbs.</i></b></span>"
+    ],
+    [
+      "<span style=\"color:#ccae3b\"><b>Grenade Kickstart</b></span>",
+      "<span style=\"color:#ccae3b\"><b>[3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#e0a261\"><b><i>Grenade Ability Usage</i></b></span> <span style=\"color:#cccccc\"><b><i>while having</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Armor Charges</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "",
+      "<span style=\"color:#ccae3b\"><b>Consumes all Armor Charges</b></span> <span style=\"color:#cccccc\"><b>to grant</b></span> <span style=\"color:#e0a261\"><b>Grenade Ability Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#e0a261\"><b>Ability Energy Gains</b></span> <span style=\"color:#cccccc\"><b>are based on the sum of number of</b></span> <span style=\"color:#a4c2f4\"><b>Armor Charges</b></span> <span style=\"color:#ccae3b\"><b>consumed</b></span> <span style=\"color:#cccccc\"><b>and Mod copies equipped.</b></span>",
+      "",
+      "<span style=\"color:#e0a261\"><b>Grenade Ability Energy:</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>16.2% | 21.7% | 28.4% | 34.4% | 38.4% | 41.3% | 43.4% | 45%</b></span>",
+      "<span style=\"color:#ea9999\"><b>12.5% | 14.2% | 16.2% | 18.7% | 21.7% | 25% | 28.4% | 31.6%</b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>Unflinching Aim</b></span>",
+      "<span style=\"color:#cccccc\"><b>[</b></span><span style=\"color:#d5a6bd\"><b>2</b></span><span style=\"color:#cccccc\"><b>–3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>To</i></b></span> <span style=\"color:#d5a6bd\"><b><i>Mod-Element Matching Weapons</i></b></span><span style=\"color:#cccccc\"><b><i>, while ADS:</i></b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>25% | 30% | 35% Flinch Resistance.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Flinch Resistances are multiplicative with each other.</b></span>"
+    ],
+    [
+      "<span style=\"color:#bba5f3\"><b>Insulation</b></span>",
+      "<span style=\"color:#bba5f3\"><b>[1 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#ffd966\"><b><i>Orb of Power</i></b></span> <span style=\"color:#cccccc\"><b><i>Pickup:</i></b></span>",
+      "",
+      "<span style=\"color:#bba5f3\"><b>4% | 5% | 6% Class Ability Energy.</b></span>"
+    ],
+    [
+      "<span style=\"color:#ccae3b\"><b>Explosive Finisher</b></span>",
+      "<span style=\"color:#ccae3b\"><b>[1 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Finisher</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#ccae3b\"><b>Consumes</b></span> <span style=\"color:#a4c2f4\"><b>x3 or more Armor Charge.</b></span>",
+      "",
+      "<span style=\"color:#e0a261\"><b>Grants Grenade Ability Energy.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>x3</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#e0a261\"><b>70%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>x4</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#e0a261\"><b>80%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>x5</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#e0a261\"><b>90%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>x6</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#e0a261\"><b>100%</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#c06fd6\"><b>Root of Nightmares</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#6cc093\"><b>Violent Pour</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#94b4a3\"><b>Weapon Kills against</b></span> <span style=\"color:#a4c2f4\"><b>Elite, Miniboss</b></span><span style=\"color:#94b4a3\"><b>, and</b></span> <span style=\"color:#a4c2f4\"><b>Champion Combatants</b></span> <span style=\"color:#94b4a3\"><b>spawn an</b></span> <span style=\"color:#ffd966\"><b>Orb of Power</b></span><span style=\"color:#94b4a3\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#ffd966\"><b>Orb of Power Super Gains:</b></span>",
+      "<span style=\"color:#ffd966\"><b>?% | ?% | ?% | ?% | ?%</b></span>"
+    ],
+    [
+      "<span style=\"color:#868bcd\"><b>Transcendent Blessing</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#adb0e0\"><i>Consumable Mod</i></span>",
+      "<span style=\"color:#adb0e0\"><i>Replacing it removes it, dismantling gear with it grants one copy.</i></span>",
+      "",
+      "<span style=\"color:#adb0e0\"><b>Grants Increased Ability and Weapon Damage.</b></span>",
+      "",
+      "<span style=\"color:#adb0e0\"><b>5% | 10% | 15% | 20% | 25%</b></span>",
+      "",
+      "<span style=\"color:#adb0e0\"><b>Multiplicative to Riven's Curse.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#7abf75\"><b>Powerful Friends</b></span>",
+      "<span style=\"color:#7abf75\"><b>[1 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#ffd966\"><b><i>Orb of Power</i></b></span> <span style=\"color:#cccccc\"><i>Pickup:</i></span>",
+      "",
+      "<span style=\"color:#a4c2f4\"><b>Allies</b></span> <span style=\"color:#cccccc\"><b>within 18 metres receive</b></span> <span style=\"color:#a4c2f4\"><b>x1 Armor Charge.</b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>Heavy Handed</b></span>",
+      "<span style=\"color:#cccccc\"><b>[3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#79bec3\"><b><i>Powered Melee Kill</i></b><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Spawns an</b></span> <span style=\"color:#ffd966\"><b>Orb of Power.</b></span>",
+      "",
+      "<span style=\"color:#ffd966\"><b>Orb of Power:</b></span>",
+      "<span style=\"color:#ffd966\"><b>0.8% | 1.1% | 1.25% | 1.5% Super Energy.</b></span>",
+      "",
+      "<span style=\"color:#e06666\"><b><i>Incurs a 10 | 5 | 1 second cooldown between Orbs.</i></b></span>",
+      "<span style=\"color:#cccccc\"><i><small>Can trigger alongside</small></i></span> <span style=\"color:#e0a261\"><i><small>Firepower</small></i></span> <span style=\"color:#cccccc\"><i><small>if equipped after it.</small></i></span>",
+      "<span style=\"color:#cccccc\"><i><small>From left to right order.</small></i></span>"
+    ],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Invigoration</b></span>",
+      "<span style=\"color:#89cdd1\"><b>[1 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#ffd966\"><b><i>Orb of Power</i></b></span> <span style=\"color:#cccccc\"><b><i>Pickup:</i></b></span>",
+      "",
+      "<span style=\"color:#89cdd1\"><b>10% | 13% | 15% Melee Ability Energy.</b></span>"
+    ],
+    [
+      "<span style=\"color:#ccae3b\"><b>Healthy Finisher</b></span>",
+      "<span style=\"color:#ccae3b\"><b>[1 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Finisher</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#ccae3b\"><b>Consumes</b></span> <span style=\"color:#a4c2f4\"><b>x1 Armor Charge.</b></span>",
+      "",
+      "<span style=\"color:#dd7e6b\"><b>Instantly fully restores Health and Shields</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#dd7e6b\"><b>Cabal Extinguisher</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#bbb1d7\"><b><i>When an</i></b></span> <span style=\"color:#a4c2f4\"><b><i>ally</i></b></span> <span style=\"color:#bbb1d7\"><b><i>gains</i></b></span> <span style=\"color:#999999\"><b><i>Flux of Darkess</i></b></span> <span style=\"color:#bbb1d7\"><b><i>or</i></b></span> <span style=\"color:#d9d9d9\"><b><i>Field of Light</i></b></span><span style=\"color:#bbb1d7\"><b><i>:</i></b></span>",
+      "",
+      "<span style=\"color:#bbb1d7\"><b>6% | 12% | 18% | 24% | 30% increased Weapon Damage towards</b></span> <span style=\"color:#a4c2f4\"><b>Cabal Combatants</b></span> <span style=\"color:#bbb1d7\"><b>for 20 seconds.</b></span>",
+      "",
+      "<span style=\"color:#bbb1d7\"><i>Buff is lost upon acquiring either</i></span> <span style=\"color:#999999\"><i>Flux of Darkness</i></span> <span style=\"color:#bbb1d7\"><i>or</i></span> <span style=\"color:#d9d9d9\"><i>Field of Light</i></span><span style=\"color:#bbb1d7\"><i>.</i></span>"
+    ],
+    [
+      "<span style=\"color:#cc4360\"><b>King's Fall</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#868bcd\"><b>Riven's Curse</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#adb0e0\"><i>Innate to Dreaming City Armor, removed permanently if replaced.</i></span>",
+      "",
+      "<span style=\"color:#adb0e0\"><b>Grants increased Ability and Weapon Damage, but also increases Damage Taken</b></span>",
+      "",
+      "<span style=\"color:#adb0e0\"><b>5% | 10% | 15% | 20% | 25% Increased Damage Dealt</b></span>",
+      "<span style=\"color:#adb0e0\"><b>3% | 6% | 9% | 12% | 15% Increased Damage Taken</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#7abf75\"><b>Radiant Light</b></span>",
+      "<span style=\"color:#7abf75\"><b>[1 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#ffd966\"><b><i>Super Cast</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#a4c2f4\"><b>x1 Armor Charge</b></span> <span style=\"color:#cccccc\"><b>to</b></span> <span style=\"color:#a4c2f4\"><b>Allies</b></span> <span style=\"color:#cccccc\"><b>within 21 metres.</b></span>",
+      "<span style=\"color:#ffd966\"><b>Caster</b></span> <span style=\"color:#cccccc\"><b>receives</b></span> <span style=\"color:#a4c2f4\"><b>x1 Armor Charge</b></span> <span style=\"color:#cccccc\"><b>if already</b></span> <span style=\"color:#a4c2f4\"><b>Charged</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#a4c2f4\"><b>Allies</b></span> <span style=\"color:#cccccc\"><b>on different</b></span> <span style=\"color:#d5a6bd\"><b>Subclasses</b></span> <span style=\"color:#cccccc\"><b>are granted</b></span> <span style=\"color:#a4c2f4\"><b>x2 Armor Charge</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>Impact Induction</b></span>",
+      "<span style=\"color:#cccccc\"><b>[2 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon dealing</i></span> <span style=\"color:#79bec3\"><b><i>Powered Melee Damage:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#e0a261\"><b>Grenade Ability Energy.</b></span>",
+      "",
+      "<span style=\"color:#e0a261\"><b>Ability Energy Gain:</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>12% | 17% | 20%</b></span>",
+      "<span style=\"color:#ea9999\"><b>6% | 8.5% | 10%</b></span>",
+      "",
+      "<span style=\"color:#e06666\"><b><i>Incurs a 7 second cooldown after activation.</i></b></span>"
+    ],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#d5a6bd\"><b>Orbs of Restoration</b></span>",
+      "<span style=\"color:#d5a6bd\"><b>[2 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#ffd966\"><b><i>Orb of Power</i></b></span> <span style=\"color:#cccccc\"><i>Pickup:</i></span>",
+      "",
+      "<span style=\"color:#d5a6bd\"><b>10% | 13% | 15% Ability Energy</b></span> <span style=\"color:#cccccc\"><b>to the least-charged Ability.</b></span>",
+      "<span style=\"color:#e06666\"><i>Does not grant any Ability Energy to abilities with multiple charges if they have at least 1 charge readied.</i></span>"
+    ],
+    [
+      "<span style=\"color:#ccae3b\"><b>One-Two Finisher</b></span>",
+      "<span style=\"color:#ccae3b\"><b>[1 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Finisher</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#ccae3b\"><b>Consumes</b></span> <span style=\"color:#a4c2f4\"><b>x3 or more Armor Charge.</b></span>",
+      "",
+      "<span style=\"color:#89cdd1\"><b>Grants Melee Ability Energy.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>x3</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#89cdd1\"><b>70%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>x4</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#89cdd1\"><b>80%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>x5</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#89cdd1\"><b>90%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>x6</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#89cdd1\"><b>100%</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Chill Out</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b><i>While on a Stasis Subclass:</i></b></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><b>Stasis Weapon Kills</b></span> <span style=\"color:#bbb1d7\"><b>spawn a</b></span> <span style=\"color:#6fa8dc\"><b>Small Stasis Crystal</b></span> <span style=\"color:#bbb1d7\"><b>on</b></span> <span style=\"color:#e6b8af\"><b>Enemy Death Location</b></span><span style=\"color:#bbb1d7\"><b>.</b></span>",
+      "<span style=\"color:#dd7e6b\"><b><i>Incurs a 3 second cooldown between Crystal spawns.</i></b></span>"
+    ],
+    [
+      "<span style=\"color:#cc4360\"><b>Mortal Medicine</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cc4360\"><i>While carrying a</i> <b><i>Brand or while inside a Pool of Reclaimed Light:</i></b></span>",
+      "",
+      "<span style=\"color:#b4c8ad\"><b>+20 | +40 | +60 | +80 | +100 Recovery</b></span>",
+      "<span style=\"color:#b4c8ad\"><b>+12 | +24 | +36 | +48 | +60 Reload Speed</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Siphon</b></span>",
+      "<span style=\"color:#cccccc\"><b>[</b></span><span style=\"color:#d5a6bd\"><b>1</b></span><span style=\"color:#cccccc\"><b>–</b></span><span style=\"color:#999999\"><b>2</b></span><span style=\"color:#cccccc\"><b>–3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon scoring</i> <b><i>2</i></b></span> <span style=\"color:#d5a6bd\"><b><i>Mod-Element Matching Weapon Kills</i></b></span> <span style=\"color:#cccccc\"><i>within</i> <b><i>3 seconds</i></b> <i>of each:</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Spawns an</b></span> <span style=\"color:#ffd966\"><b>Orb of Power</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#e06666\"><i>Incurs a 1 second cooldown upon spawning an Orbs of Power before additional kills count.</i></span>",
+      "",
+      "<span style=\"color:#ffd966\"><b>Orb of Power:</b></span>",
+      "<span style=\"color:#ffd966\"><b>2.5% | 3.75% | 4.4% Super Energy.</b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>Loader</b></span>",
+      "<span style=\"color:#cccccc\"><b>[</b></span><span style=\"color:#d5a6bd\"><b>2</b></span><span style=\"color:#cccccc\"><b>–3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>To</i></b></span> <span style=\"color:#d5a6bd\"><b><i>Mod-Element Matching Weapon, after ~0.5 second of readying the weapon:</i></b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>+10 | +15 | +18 Reload Speed</b></span>",
+      "<span style=\"color:#cccccc\"><b>0.85x Reload Duration Multiplier</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#dd7e6b\"><b>Recuperation</b></span>",
+      "<span style=\"color:#dd7e6b\"><b>[1 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#ffd966\"><b><i>Orb of Power</i></b></span> <span style=\"color:#cccccc\"><b><i>Pickup:</i></b></span>",
+      "",
+      "<span style=\"color:#dd7e6b\"><b>Restores 16 | 21 | 21 Health.</b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>Outreach</b></span>",
+      "<span style=\"color:#cccccc\"><b>[1 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#bba5f3\"><b><i>Class Ability Usage</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#89cdd1\"><b>Melee Ability Energy.</b></span>",
+      "",
+      "<span style=\"color:#89cdd1\"><b>Melee Energy Gains:</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>12% | 17% | 20%</b></span>",
+      "<span style=\"color:#ea9999\"><b>6% | 8.5% | 10%</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#b45f06\"><b>Focused Darkness</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#bbb1d7\"><b><i>Upon obtaining</i></b></span> <span style=\"color:#b45f06\"><b><i>Flux of Darkness</i></b></span><span style=\"color:#bbb1d7\"><b><i>:</i></b></span>",
+      "",
+      "<span style=\"color:#bbb1d7\"><b>5% | 10% | 15% | 20% | 25% increased Ability Damage and +30 Mobility for 20 seconds.</b></span>",
+      "<span style=\"color:#bbb1d7\"><i>Buff is not lost if</i></span> <span style=\"color:#b45f06\"><b><i>Flux of Darkness</i></b></span> <span style=\"color:#bbb1d7\"><i>expires.</i></span>",
+      "<span style=\"color:#bbb1d7\"><i>Can be refreshed.</i></span>",
+      "",
+      "<span style=\"color:#bbb1d7\"><i>Does not apply to Well of Radiance's Caster.</i></span>"
+    ],
+    [
+      "<span style=\"color:#cc4360\"><b>Old Gods' Boon</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cc4360\"><i>While</i> <b><i>carrying the Relic:</i></b></span>",
+      "",
+      "<span style=\"color:#b4c8ad\"><b>10% | 20% | 30% | 40% Damage Resist</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#ffd966\"><b>Super Font</b></span>",
+      "<span style=\"color:#ffd966\"><b>[3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#a4c2f4\"><b><i>Armor Charge</i></b></span> <span style=\"color:#cccccc\"><i>is active:</i></span>",
+      "",
+      "<span style=\"color:#ffd966\"><b>+20 | +40 | +50 Super</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [
+      "<span style=\"color:#89cdd1\"><b>Melee Font</b></span>",
+      "<span style=\"color:#89cdd1\"><b>[3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#a4c2f4\"><b><i>Armor Charge</i></b></span> <span style=\"color:#cccccc\"><i>is active:</i></span>",
+      "",
+      "<span style=\"color:#89cdd1\"><b>+20 | +40 | +50 Melee</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Scavenger</b></span>",
+      "<span style=\"color:#cccccc\"><b>[</b></span><span style=\"color:#d5a6bd\"><b>2</b></span><span style=\"color:#cccccc\"><b>–3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>On</i> <b><i>Ammo Brick Pickup</i></b> <i>to</i></span> <span style=\"color:#d5a6bd\"><b><i>Mod-Element Matching Weapons</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Generally grants an additional +1 Ammo.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Machine Guns receive +7 Ammo.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Traces receive +10% Max Reserves.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>By default, Ammo Bricks grant 25% to 33% of Reserves.</i></span>",
+      "<span style=\"color:#cccccc\"><i>Works with Ammo Finder Bricks in full effect.</i></span>",
+      "",
+      "<span style=\"color:#ea9999\"><b>Does not function in PvP Game Modes.</b></span>"
+    ],
+    [
+      "<span style=\"color:#7abf75\"><b>Powerful Attraction</b></span>",
+      "<span style=\"color:#7abf75\"><b>[2 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#bba5f3\"><b><i>Class Ability Usage</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Collects</b></span> <span style=\"color:#ffd966\"><b>Orbs of Power</b></span> <span style=\"color:#cccccc\"><b>within 12.5 | 18.5 metres.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b><i>Will also pick up</i></b></span> <span style=\"color:#93c47d\"><b><i>Motes</i></b></span> <span style=\"color:#cccccc\"><b><i>and</i></b></span> <span style=\"color:#ea9999\"><b><i>Crests</i></b></span><span style=\"color:#cccccc\"><b><i>.</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#c9daf8\"><b>Focused Light</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#bbb1d7\"><b><i>Upon obtaining</i></b></span> <span style=\"color:#c9daf8\"><b><i>Field of Light</i></b></span> <span style=\"color:#bbb1d7\"><b><i>:</i></b></span>",
+      "",
+      "<span style=\"color:#bbb1d7\"><b>4% | 8% | 12% | 16% | 20% increased Weapon Damage and +30 Resilience for 20 seconds.</b></span>",
+      "<span style=\"color:#bbb1d7\"><i>Buff is not lost if</i></span> <span style=\"color:#c9daf8\"><b><i>Field of Light</i></b></span> <span style=\"color:#bbb1d7\"><i>expires.</i></span>",
+      "<span style=\"color:#bbb1d7\"><i>Can be refreshed.</i></span>",
+      "",
+      "<span style=\"color:#bbb1d7\"><i>Stacks with everything</i> <b><i>except</i></b> <i>for the Well of Radiance Caster.</i></span>"
+    ],
+    [
+      "<span style=\"color:#cc4360\"><b>Run for Your Life</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cc4360\"><i>While</i> <b><i>Torn Between Dimensions</i></b><i>:</i></span>",
+      "",
+      "<span style=\"color:#b4c8ad\"><b>+20 | +40 | +60 | +80 | +100 Mobility and Resilience</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Targeting</b></span>",
+      "<span style=\"color:#cccccc\"><b>[</b></span><span style=\"color:#d5a6bd\"><b>2</b></span><span style=\"color:#cccccc\"><b>–3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>To</i></b></span> <span style=\"color:#d5a6bd\"><b><i>Mod-Element Matching Weapons, after 1 second of readying the weapon:</i></b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>+5 | +8 | +10 Aim Assist</b></span>",
+      "<span style=\"color:#cccccc\"><b>0.9x | 0.85x | 0.8x Accuracy Cone Size</b></span>",
+      "<span style=\"color:#cccccc\"><b>0.85x | 0.75x | 0.7x ADS Duration Multiplier</b></span>"
+    ],
+    [
+      "<span style=\"color:#ccae3b\"><b>Melee</b></span>",
+      "<span style=\"color:#ccae3b\"><b>Kickstart</b></span>",
+      "<span style=\"color:#ccae3b\"><b>[3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#89cdd1\"><b><i>Melee Ability Charge Usage</i></b></span> <span style=\"color:#cccccc\"><b><i>while having</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Armor Charges</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "",
+      "<span style=\"color:#ccae3b\"><b>Consumes all Armor Charges</b></span> <span style=\"color:#cccccc\"><b>to grant</b></span> <span style=\"color:#89cdd1\"><b>Melee Ability Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#89cdd1\"><b>Ability Energy Gains</b></span> <span style=\"color:#cccccc\"><b>are based on the sum of number of</b></span> <span style=\"color:#a4c2f4\"><b>Armor Charges</b></span> <span style=\"color:#ccae3b\"><b>consumed</b></span> <span style=\"color:#cccccc\"><b>and Mod copies equipped.</b></span>",
+      "",
+      "<span style=\"color:#89cdd1\"><b>Melee Ability Energy:</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>16.2% | 21.7% | 28.4% | 34.4% | 38.4% | 41.3% | 43.4% | 45%</b></span>",
+      "<span style=\"color:#ea9999\"><b>12.5% | 14.2% | 16.2% | 18.7% | 21.7% | 25% | 28.4% | 31.6%</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#7abf75\"><b>Stacks on Stacks</b></span>",
+      "<span style=\"color:#7abf75\"><b>[4 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>All sources of</b></span> <span style=\"color:#a4c2f4\"><b>Armor Charge</b></span> <span style=\"color:#cccccc\"><b>now grant an</b></span> <span style=\"color:#a4c2f4\"><b>additional stack</b></span> <span style=\"color:#cccccc\"><b>unless</b></span> <span style=\"color:#e06666\"><b>explicitly stated not to</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>Proximity Ward</b></span>",
+      "<span style=\"color:#cccccc\"><b>[2 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>During a</i></span> <span style=\"color:#a4c2f4\"><b><i>Finisher</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Grants a</b></span> <span style=\"color:#d5a6bd\"><b>200 HP Overshield</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Precise Jolt</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b><i>While on an Arc Subclass:</i></b></span>",
+      "",
+      "<span style=\"color:#bbb1d7\"><b>Scoring</b></span> <span style=\"color:#f1c232\"><b>3 Precision Hits</b></span> <span style=\"color:#bbb1d7\"><b>within 3 seconds of each inflicts</b></span> <span style=\"color:#76a5af\"><b>Jolt.</b></span>",
+      "<span style=\"color:#76a5af\"><i>Jolt's Damage is unaffected by buffs or modifiers.</i></span>",
+      "",
+      "<span style=\"color:#dd7e6b\"><b><i>Incurs a 10 second cooldown upon triggering.</i></b></span>"
+    ],
+    [
+      "<span style=\"color:#cc4360\"><b>Will of Light</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#d9ead3\"><b>Grants increased Weapon Damage to Non-Boss</b></span> <span style=\"color:#76a5af\"><b>Taken</b></span> <span style=\"color:#a4c2f4\"><b>Combatants.</b></span>",
+      "",
+      "<span style=\"color:#d9ead3\"><b>10% | 20% | 30% | 40% | 50% Increased Damage for</b></span> <span style=\"color:#d5a6bd\"><b>Weapons that Match the Mod Element</b></span><span style=\"color:#d9ead3\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Momentum Transfer</b></span>",
+      "<span style=\"color:#cccccc\"><b>[2 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon dealing</i></span> <span style=\"color:#e0a261\"><b><i>Grenade Damage:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#79bec3\"><b>Melee Ability Energy.</b></span>",
+      "",
+      "<span style=\"color:#79bec3\"><b>Ability Energy Gain:</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>12% | 17% | 20%</b></span>",
+      "<span style=\"color:#ea9999\"><b>6% | 8.5% | 10%</b></span>",
+      "",
+      "<span style=\"color:#e06666\"><b><i>Incurs a 7 second cooldown after activation.</i></b></span>",
+      "<span style=\"color:#cccccc\"><i>Does not work with Grapple.</i></span>"
+    ],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#6d9eeb\"><b>Weapons Font</b></span>",
+      "<span style=\"color:#6d9eeb\"><b>[3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#a4c2f4\"><b><i>Armor Charge</i></b></span> <span style=\"color:#cccccc\"><i>is active:</i></span>",
+      "",
+      "<span style=\"color:#6d9eeb\"><b>+20 | +40 | +50 Weapons</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>Reaper</b></span>",
+      "<span style=\"color:#cccccc\"><b>[3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#bba5f3\"><b><i>Class Ability Usage</i></b></span><span style=\"color:#b4a7d6\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>The next Weapon Kill within 10 seconds spawns an</b></span> <span style=\"color:#ffd966\"><b>Orb of Power.</b></span>",
+      "",
+      "<span style=\"color:#ffd966\"><b>Orb of Power:</b></span>",
+      "<span style=\"color:#ffd966\"><b>0.8% | 1.1% | 1.25% | 1.5% Super Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#e06666\"><b><i>Incurs a 10 | 5 | 1 second cooldown between Orbs.</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#f6b26b\"><b>Radiant Heat</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#f6b26b\"><b><i>While on a Solar Subclass:</i></b></span>",
+      "",
+      "<span style=\"color:#bbb1d7\"><i>Upon scoring a</i></span> <span style=\"color:#f6b26b\"><b><i>Solar Weapon Kill</i></b></span> <span style=\"color:#bbb1d7\"><i>against an</i></span> <span style=\"color:#a4c2f4\"><b><i>Elite, Miniboss, or Champion</i></b></span><span style=\"color:#bbb1d7\"><b><i>:</i></b></span>",
+      "",
+      "<span style=\"color:#ffd966\"><b>Radiant</b></span> <span style=\"color:#bbb1d7\"><b>for</b></span> <span style=\"color:#ffd966\"><b>10</b></span><span style=\"color:#f6b26b\"><b><small>+5</small></b></span> <span style=\"color:#bbb1d7\"><b>seconds.</b></span>",
+      "",
+      "<span style=\"color:#dd7e6b\"><b><i>Incurs a 10 second cooldown upon triggering.</i></b></span>"
+    ],
+    [
+      "<span style=\"color:#85b7b9\"><b>Vault of Glass</b></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#7abf75\"><b>Shield Break Charge</b></span>",
+      "<span style=\"color:#7abf75\"><b>[4 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon breaking a</i></span> <span style=\"color:#d5a6bd\"><b><i>Combatant Shield</i></b></span> <span style=\"color:#cccccc\"><i>with</i></span> <span style=\"color:#d5a6bd\"><b><i>Matching Damage</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#a4c2f4\"><b>x1 | x2 Armor Charge</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#6d9eeb\"><b>Weapon Surge</b></span>",
+      "<span style=\"color:#6d9eeb\"><b>[3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#a4c2f4\"><b><i>Armor Charge</i></b></span> <span style=\"color:#cccccc\"><i>is active:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Increases</b></span> <span style=\"color:#d5a6bd\"><b>Mod-Element Matching Weapon Damage</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Damage Increase:</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>10% | 17% | 22% | 25%</b></span>",
+      "<span style=\"color:#ea9999\"><b>3% | 4.5% | 5.5% | 6%</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>x4 is only obtainable through</b></span> <span style=\"color:#96d5de\"><b>Artifact</b></span> <span style=\"color:#cccccc\"><b>or</b></span> <span style=\"color:#ffd966\"><b>Exotic Armor</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [
+      "<span style=\"color:#ccae3b\"><b>Restorative Finisher</b></span>",
+      "<span style=\"color:#ccae3b\"><b>[1 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Finisher</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#ccae3b\"><b>Consumes</b></span> <span style=\"color:#a4c2f4\"><b>x2 Armor Charge.</b></span>",
+      "",
+      "<span style=\"color:#d5a6bd\"><b>50% Ability Energy</b></span> <span style=\"color:#cccccc\"><b>to the least-charged Ability.</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#dd7e6b\"><b>Release Recover</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#bbb1d7\"><b><i>Upon losing</i></b></span> <span style=\"color:#999999\"><b><i>Flux of Darkness</i></b></span> <span style=\"color:#bbb1d7\"><b><i>or</i></b></span> <span style=\"color:#d9d9d9\"><b><i>Field of Light</i></b></span><span style=\"color:#bbb1d7\"><b><i>:</i></b></span>",
+      "",
+      "<span style=\"color:#dd7e6b\"><b>Cure x1</b></span> <span style=\"color:#bbb1d7\"><b>and</b></span> <span style=\"color:#dd7e6b\"><b>Restoration</b></span> <span style=\"color:#bbb1d7\"><b>with a varying duration.</b></span>",
+      "<span style=\"color:#f6b26b\"><b>Ember of Solace increases the duration by 50%.</b></span>",
+      "",
+      "<span style=\"color:#dd7e6b\"><b>x1 | x1 | x1 | x2 | x2 Restoration</b></span>",
+      "<span style=\"color:#dd7e6b\"><b>2.5s | 3s | 3.5s | 3.5s | ?s Duration</b></span>"
+    ],
+    [
+      "<span style=\"color:#85b7b9\"><b>Aggressive Oracle Disruptor</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#ccbe98\"><b>10% | 20% | 30% | 40% | 50% Increased damage to</b></span> <span style=\"color:#a4c2f4\"><b>Oracles</b></span><span style=\"color:#ccbe98\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#ccbe98\"><i>Applicable Weapons:</i></span>",
+      "<span style=\"color:#ccbe98\"><i>Auto Rifles, Fusion Rifles, Grenade Launchers, Trace Rifles, and Rocket Launchers</i></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#ccae3b\"><b>Snapload Finisher</b></span>",
+      "<span style=\"color:#ccae3b\"><b>[1 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Finisher</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#ccae3b\"><b>Consumes</b></span> <span style=\"color:#a4c2f4\"><b>x1 Armor Charge.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Refills all weapons.</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#93c47d\"><b>Tangled Up</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#63d275\"><b><i>While on a Strand Subclass:</i></b></span>",
+      "",
+      "<span style=\"color:#63d275\"><b>Strand Weapon Kills</b></span> <span style=\"color:#bbb1d7\"><b>spawn a</b></span> <span style=\"color:#93c47d\"><b>Tangle</b></span> <span style=\"color:#bbb1d7\"><b>on</b></span> <span style=\"color:#e6b8af\"><b>Enemy Death Location</b></span><span style=\"color:#bbb1d7\"><b>.</b></span>",
+      "<span style=\"color:#dd7e6b\"><b><i>Triggers the global Tangle cooldown.</i></b></span>"
+    ],
+    [
+      "<span style=\"color:#85b7b9\"><b>Anti-Oracle</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#ccbe98\">Defeating an <b>Oracle</b> grants</span> <span style=\"color:#fdd24d\"><b>Super Energy</b>.</span>",
+      "",
+      "<span style=\"color:#fdd24d\"><b>X% per Copy.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#ccae3b\"><b>Special Finisher</b></span>",
+      "<span style=\"color:#ccae3b\"><b>[1 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Finisher</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#ccae3b\"><b>Consumes</b></span> <span style=\"color:#a4c2f4\"><b>x3 Armor Charge.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Generates a</b></span> <span style=\"color:#93c47d\"><b>Special Ammo Brick</b></span> <span style=\"color:#cccccc\"><b>for the user and</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#d5a6bd\"><b>Volatile Volleys</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#bba5f3\"><b><i>While on a Void Subclass:</i></b></span>",
+      "<span style=\"color:#bbb1d7\"><i>Upon scoring a</i></span> <span style=\"color:#bba5f3\"><b><i>Void Weapon Kill</i></b></span> <span style=\"color:#bbb1d7\"><i>against an</i></span> <span style=\"color:#a4c2f4\"><b><i>Elite, Miniboss, or Champion</i></b></span><span style=\"color:#bbb1d7\"><b><i>:</i></b></span>",
+      "",
+      "<span style=\"color:#d5a6bd\"><b>Volatile Rounds</b></span> <span style=\"color:#bbb1d7\"><b>for</b></span> <span style=\"color:#d5a6bd\"><b>10.5 seconds.</b></span>",
+      "",
+      "<span style=\"color:#dd7e6b\"><b><i>Incurs a 10 second cooldown upon triggering.</i></b></span>"
+    ],
+    [
+      "<span style=\"color:#85b7b9\"><b>Anti-Praetorian</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#ccbe98\">Defeating an <b>Praetorian</b> grants</span> <span style=\"color:#fdd24d\"><b>X% Super Energy</b>.</span>",
+      "",
+      "<span style=\"color:#fdd24d\"><b>X% per Copy.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#7abf75\"><b>Time Dilation</b></span>",
+      "<span style=\"color:#7abf75\"><b>[3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#9fc5e8\"><b>Armor Charges</b></span> <span style=\"color:#cccccc\"><b>decay every 15 | 18 | 20 seconds.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>By default, an</i></span> <span style=\"color:#a4c2f4\"><b><i>Armor Charge stack</i></b></span> <span style=\"color:#cccccc\"><i>is removed every 10 seconds if a</i></span> <span style=\"color:#6d9eeb\"><b><i>Passive Mod</i></b></span> <span style=\"color:#cccccc\"><i>is equipped.</i></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#b79888\"><b>Vow of the Disciple</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#85b7b9\"><b>Precise Oracle Disruptor</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#ccbe98\"><b>10% | 20% | 30% | 40% | 50% Increased damage to</b></span> <span style=\"color:#a4c2f4\"><b>Oracles</b></span><span style=\"color:#ccbe98\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#ccbe98\"><i>Applicable Weapons:</i></span>",
+      "<span style=\"color:#ccbe98\"><i>Bows, Hand Cannons, Linear Fusion Rifles, Scout Rifles, and Sniper Rifles.</i></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#ccae3b\"><b>Utility Finisher</b></span>",
+      "<span style=\"color:#ccae3b\"><b>[1 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Finisher</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#ccae3b\"><b>Consumes</b></span> <span style=\"color:#a4c2f4\"><b>x3 or more Armor Charge.</b></span>",
+      "",
+      "<span style=\"color:#bba5f3\"><b>Grants Class Ability Energy.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>x3</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#bba5f3\"><b>70%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>x4</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#bba5f3\"><b>80%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>x5</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#bba5f3\"><b>90%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>x6</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#bba5f3\"><b>100%</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#b79888\"><b>Distorted Glyphkeeper</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#bebab6\"><b><i>Upon dealing</i></b></span> <span style=\"color:#e0a261\"><b><i>Grenade Damage</i></b></span> <span style=\"color:#bebab6\"><b><i>to a</i></b></span> <span style=\"color:#d5a6bd\"><b><i>Glyphkeeper</i></b></span><span style=\"color:#bebab6\"><b>:</b></span>",
+      "",
+      "<span style=\"color:#bebab6\"><b>20% | 25% | 35% | 40% | 40% increased damage for 15 seconds.</b></span>",
+      "",
+      "<span style=\"color:#bebab6\"><b><i>Applicable Weapons:</i></b></span>",
+      "<span style=\"color:#bebab6\"><b><i>Auto Rifles, Linear Fusions, Scout Rifles, Sniper Rifles.</i></b></span>"
+    ],
+    [
+      "<span style=\"color:#85b7b9\"><b>Rapid Oracle Disruptor</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#ccbe98\"><b>10% | 20% | 30% | 40% | 50% Increased damage to</b></span> <span style=\"color:#a4c2f4\"><b>Oracles</b></span><span style=\"color:#ccbe98\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#ccbe98\"><i>Applicable Weapons:</i></span>",
+      "<span style=\"color:#ccbe98\"><i>Pulse Rifles, Shotguns, Sidearms, SMGs, and Swords.</i></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#ccae3b\"><b>Utility Kickstart</b></span>",
+      "<span style=\"color:#ccae3b\"><b>[3 Energy]</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#bba5f3\"><b><i>Class Ability Usage</i></b></span> <span style=\"color:#cccccc\"><b><i>while having</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Armor Charges</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "",
+      "<span style=\"color:#ccae3b\"><b>Consumes all Armor Charges</b></span> <span style=\"color:#cccccc\"><b>to grant</b></span> <span style=\"color:#bba5f3\"><b>Class Ability Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#bba5f3\"><b>Ability Energy Gains</b></span> <span style=\"color:#cccccc\"><b>are based on the sum of number of</b></span> <span style=\"color:#a4c2f4\"><b>Armor Charges</b></span> <span style=\"color:#ccae3b\"><b>consumed</b></span> <span style=\"color:#cccccc\"><b>and Mod copies equipped.</b></span>",
+      "",
+      "<span style=\"color:#bba5f3\"><b>Class Ability Energy:</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>16.2% | 21.7% | 28.4% | 34.4% | 38.4% | 41.3% | 43.4% | 45%</b></span>",
+      "<span style=\"color:#ea9999\"><b>12.5% | 14.2% | 16.2% | 18.7% | 21.7% | 25% | 28.4% | 31.6%</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#b79888\"><b>Into the Light</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#bebab6\"><b><i>While unaffected by</i></b></span> <span style=\"color:#dd7e6b\"><b><i>Pervading Darkness</i></b></span><span style=\"color:#bebab6\"><b><i>:</i></b></span>",
+      "",
+      "<span style=\"color:#f6b26b\"><b><small>25% | 50% | 75% | 125% | 150% Increased Grenade Ability Damage</small></b></span>",
+      "<span style=\"color:#f6b26b\"><b><small>50% | 100% | 150% | 200% | 250% Additional Base Grenade Regeneration Rate.</small></b></span>",
+      "",
+      "<span style=\"color:#bebab6\"><b>Effects increase per copy, up to 5 copies.</b></span>"
+    ],
+    [
+      "<span style=\"color:#85b7b9\"><b>Superstructure Defender</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#ccbe98\"><i>While on a</i></span> <span style=\"color:#a2c4c9\"><b><i>sync plate</i></b></span> <span style=\"color:#ccbe98\"><i>or near a</i></span> <span style=\"color:#a2c4c9\"><b><i>conflux</i></b></span><span style=\"color:#ccbe98\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#ccbe98\"><b>Weapon Hits against Powerful Vex Combatants have a high chance to</b></span> <span style=\"color:#a64d79\"><b>weaken</b></span> <span style=\"color:#ccbe98\"><b>combatants,</b></span> <span style=\"color:#a64d79\"><b>increasing damage taken by 30%.</b></span>",
+      "",
+      "<span style=\"color:#ccbe98\"><i>Stacks with other debuffs.</i></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#b79888\"><b>Shocked Glyphkeeper</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#bebab6\"><b><i>Upon dealing</i></b></span> <span style=\"color:#e0a261\"><b><i>Grenade Damage</i></b></span> <span style=\"color:#bebab6\"><b><i>to a</i></b></span> <span style=\"color:#d5a6bd\"><b><i>Glyphkeeper</i></b></span><span style=\"color:#bebab6\"><b><i>:</i></b></span>",
+      "",
+      "<span style=\"color:#bebab6\"><b>20% | 25% | 35% | 40% | 40% increased damage for 15 seconds.</b></span>",
+      "",
+      "<span style=\"color:#bebab6\"><b><i>Applicable Weapons:</i></b></span>",
+      "<span style=\"color:#bebab6\"><b><i>Pulse Rifles, Sidearms, Machine Guns, Submachine Guns.</i></b></span>"
+    ],
+    [
+      "<span style=\"color:#85b7b9\"><b>Superstructure Medic</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#ccbe98\"><i>While on a sync plate or near a conflux:</i></span>",
+      "",
+      "<span style=\"color:#ccbe98\"><b>Weapon Hits against Powerful Vex combatants have a high chance to create a</b></span> <span style=\"color:#dd7e6b\"><b>burst of healing</b></span> <span style=\"color:#ccbe98\"><b>for the user and</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#ccbe98\"><b>near them.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#b79888\"><b>Siphoned Glyphkeeper</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#bebab6\"><b><i>Upon killing a</i></b></span> <span style=\"color:#d5a6bd\"><b><i>Glyphkeeper</i></b></span><span style=\"color:#bebab6\"><b>:</b></span>",
+      "",
+      "<span style=\"color:#bebab6\"><b>?% | ?% | ?% | ?% | ?%</b></span>",
+      "<span style=\"color:#e0a261\"><b>Grenade</b></span><span style=\"color:#bebab6\"><b>,</b></span> <span style=\"color:#b4a7d6\"><b>Class</b></span><span style=\"color:#bebab6\"><b>, and</b></span> <span style=\"color:#ffd966\"><b>Super</b></span> <span style=\"color:#bebab6\"><b>Ability Energy.</b></span>"
+    ],
+    [
+      "<span style=\"color:#85b7b9\"><b>Superstructure Striker</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#ccbe98\"><i>While on a sync plate or near a conflux:</i></span>",
+      "",
+      "<span style=\"color:#ccbe98\"><b>Weapon Hits against Powerful Vex combatants have a high chance to stun those combatants.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#b79888\"><b>Smoldering Glyphkeeper</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#bebab6\"><b><i>Upon dealing</i></b></span> <span style=\"color:#e0a261\"><b><i>Grenade Damage</i></b></span> <span style=\"color:#bebab6\"><b><i>to a</i></b></span> <span style=\"color:#d5a6bd\"><b><i>Glyphkeeper</i></b></span><span style=\"color:#bebab6\"><b><i>:</i></b></span>",
+      "",
+      "<span style=\"color:#bebab6\"><b>20% | 25% | 35 | 40% | 40% increased damage for 15 seconds.</b></span>",
+      "",
+      "<span style=\"color:#bebab6\"><b><i>Applicable Weapons:</i></b></span>",
+      "<span style=\"color:#bebab6\"><b><i>Hand Cannons, Shotguns, Grenade Launchers, Rocket Launchers.</i></b></span>"
+    ],
+    [
+      "<span style=\"color:#85b7b9\"><b>Vex Breaker</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#79bec3\"><b>Melee Kills</b></span> <span style=\"color:#ccbe98\">have a chance to spawn an</span> <span style=\"color:#fdd24d\"><b>Orb of Power</b></span>",
+      "",
+      "<span style=\"color:#fdd24d\"><b>Each Copy grants an additional X% Super per Orb.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#b79888\"><b>Stagnant Glyphkeeper</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#bebab6\"><b><i>Upon dealing</i></b></span> <span style=\"color:#e0a261\"><b><i>Grenade Damage</i></b></span> <span style=\"color:#bebab6\"><b><i>to a</i></b></span> <span style=\"color:#d5a6bd\"><b><i>Glyphkeeper</i></b></span><span style=\"color:#bebab6\"><b><i>:</i></b></span>",
+      "",
+      "<span style=\"color:#bebab6\"><b>20% | 25% | 35% | 40% | 40% increased damage for 15 seconds.</b></span>",
+      "",
+      "<span style=\"color:#bebab6\"><b><i>Applicable Weapons:</i></b></span>",
+      "<span style=\"color:#bebab6\"><b><i>Bows, Fusion Rifles, Swords, and Trace Rifles.</i></b></span>"
+    ],
+    [
+      "<span style=\"color:#85b7b9\"><b>Vex Destroyer</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#f6b26b\"><b>Grenade Kills</b></span> <span style=\"color:#ccbe98\">have a chance to spawn an</span> <span style=\"color:#fdd24d\"><b>Orb of Power</b></span>",
+      "",
+      "<span style=\"color:#fdd24d\"><b>Each Copy grants an additional X% Super per Orb.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#b79888\"><b>Umbral Hastening</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#bebab6\"><i>While at or above 4 stacks of</i></span> <span style=\"color:#dd7e6b\"><b>Pervading Darkness</b></span><span style=\"color:#bebab6\"><b>:</b></span>",
+      "",
+      "<span style=\"color:#bebab6\"><b>+? | +? | +? | +? | +? Mobility.</b></span>"
+    ],
+    [
+      "<span style=\"color:#85b7b9\"><b>Vex Striker</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#f1c232\"><b>Precision Kills</b></span> <span style=\"color:#ccbe98\">have a chance to spawn an</span> <span style=\"color:#fdd24d\"><b>Orb of Power</b></span>",
+      "",
+      "<span style=\"color:#fdd24d\"><b>Each Copy grants an additional X% Super per Orb.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#b79888\"><b>Umbral Recharge</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#bebab6\"><b><i>While at or above 4 stacks of</i></b></span> <span style=\"color:#dd7e6b\"><b><i>Pervading Darkness</i></b></span><span style=\"color:#bebab6\"><b><i>:</i></b></span>",
+      "",
+      "<span style=\"color:#b4a7d6\"><b>?%| ?% | ?% | ?% | ?% Additional Base Class Regeneration Rate.</b></span>"
+    ],
+    [
+      "<span style=\"color:#8dc0b3\"><b>Garden of Salvation</b></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#b79888\"><b>Umbral Sharpening</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#bebab6\"><b><i>While at or above 4 stacks of</i></b></span> <span style=\"color:#dd7e6b\"><b><i>Pervading Darkness</i></b></span><span style=\"color:#bebab6\"><b><i>:</i></b></span>",
+      "",
+      "<span style=\"color:#bebab6\"><b>20% | 25% | 35% | 40% | 40% increased weapon damage.</b></span>",
+      "",
+      "<span style=\"color:#cc4125\"><b>Counts as a Empowering buff.</b></span>"
+    ],
+    [
+      "<span style=\"color:#8dc0b3\"><b>Relay Defender</b></span>",
+      "",
+      "<span style=\"color:#8dc0b3\"><b>Enhanced Relay Defender</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>While within 5 metres of a</i></b></span> <span style=\"color:#a2c4c9\"><b><i>Vex Relay</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>5% [10%] Increased Weapon Damage per Mod.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Maxes out at 25% [50%] with 5 Mods.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>Enhanced with regular mod copies do not stack.</i></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#c75a52\"><b>Deep Stone Crypt</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#8dc0b3\"><b>Resistant Tether</b></span>",
+      "",
+      "<span style=\"color:#8dc0b3\"><b>Enhanced Resistant Tether</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>While tethered to a</i></b></span> <span style=\"color:#a2c4c9\"><b><i>Vex Cube</i></b></span><span style=\"color:#cccccc\"><b><i>.</i></b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>5% [10%] Damage Resist per Mod.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Maxes out at 25% [50%] with 5 Mods.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>Enhanced with regular mod copies do not stack.</i></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#b7b7b7\"><b>Herd Thinner</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#c3bec0\"><i>While</i></span> <span style=\"color:#999999\"><b><i>Unaugmented</i></b></span><span style=\"color:#c3bec0\"><i>:</i></span>",
+      "<span style=\"color:#c3bec0\"><b>Grants Increased Weapon Damage to Rank-and-File and Elite Combatants.</b></span>",
+      "",
+      "<span style=\"color:#c3bec0\"><b>Increased Weapon Damage:</b></span>",
+      "<span style=\"color:#c3bec0\"><b>5% | 10% | 15% | 20% | 25%</b></span>"
+    ],
+    [
+      "<span style=\"color:#8dc0b3\"><b>Voltaic Ammo Collector</b></span>",
+      "",
+      "<span style=\"color:#8dc0b3\"><b>Enhanced Voltaic Ammo Collector</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>NOPE :)</b></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#ea9999\"><b>Enhanced Operator Augment</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#c3bec0\"><i>While carrying</i></span> <span style=\"color:#e06666\"><b><i>Operator Augment</i></b></span><span style=\"color:#c3bec0\"><i>:</i></span>",
+      "<span style=\"color:#c3bec0\"><b><i>While at</i></b></span> <span style=\"color:#dd7e6b\"><b><i>Critical Health</i></b></span><span style=\"color:#c3bec0\"><b><i>:</i></b></span>",
+      "<span style=\"color:#dd7e6b\"><b>Begins Health Regeneration</b></span> <span style=\"color:#c3bec0\"><b>every 2 seconds.</b></span>",
+      "<span style=\"color:#c3bec0\"><i>Only recovers</i></span> <span style=\"color:#dd7e6b\"><i>Health</i></span><span style=\"color:#c3bec0\"><i>. Shields do not regenerate.</i></span>",
+      "",
+      "<span style=\"color:#c3bec0\"><i>While</i></span> <span style=\"color:#999999\"><b><i>Unaugmented</i></b></span><span style=\"color:#c3bec0\"><i>:</i></span>",
+      "<span style=\"color:#c3bec0\"><b>Grants</b></span> <span style=\"color:#a481e1\"><b>Power Ammo</b></span> <span style=\"color:#c3bec0\"><b>upon picking up</b></span> <span style=\"color:#ffd966\"><b>10 Orbs of Power</b></span><span style=\"color:#c3bec0\"><b>.</b></span>",
+      "<span style=\"color:#c3bec0\"><b>Ammo Gains are equivalent to Ammo Finders?</b></span>"
+    ],
+    [
+      "<span style=\"color:#8dc0b3\"><b>Voltaic Mote Collector</b></span>",
+      "",
+      "<span style=\"color:#8dc0b3\"><b>Enhanced Voltaic Mote Collector</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon</i> <b><i>picking up 10 [5] Motes</i></b> <i>within</i> <b><i>3 seconds</i></b> <i>of each:</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Grants a</b></span> <span style=\"color:#d5a6bd\"><b>90 HP Overshield</b></span> <span style=\"color:#cccccc\"><b>for 7.5 seconds.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#ffe599\"><b>Enhanced Scanner Augment</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#c3bec0\"><i>While carrying</i></span> <span style=\"color:#ffd966\"><b><i>Scanner Augment</i></b></span><span style=\"color:#c3bec0\"><i>:</i></span>",
+      "<span style=\"color:#c3bec0\"><b><i>Scoring</i></b></span> <span style=\"color:#f1c232\"><b><i>4? Precision Hits</i></b></span> <span style=\"color:#c3bec0\"><b><i>on a</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Miniboss</i></b></span> <span style=\"color:#c3bec0\"><b><i>or</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Boss Combatant</i></b></span> <span style=\"color:#c27ba0\"><b><i>weakens</i></b></span> <span style=\"color:#c3bec0\"><b><i>the target, making them receive ?% increased damage for ? seconds.</i></b></span>",
+      "",
+      "<span style=\"color:#c3bec0\"><i>While</i></span> <span style=\"color:#999999\"><b><i>Unaugmented</i></b></span><span style=\"color:#c3bec0\"><i>:</i></span>",
+      "<span style=\"color:#c3bec0\"><b>Grants +? Resilience and +? Recovery.</b></span>",
+      "<span style=\"color:#c3bec0\"><b>Grants</b></span> <span style=\"color:#b4a7d6\"><b>?% Additional Base Class Regeneration Rate</b></span><span style=\"color:#c3bec0\"><b>.</b></span>"
+    ],
+    [
+      "<span style=\"color:#86bdbb\"><b>Last Wish</b></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#b4a7d6\"><b>Enhanced Suppressor Augment</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#c3bec0\"><i>While carrying</i></span> <span style=\"color:#6d9eeb\"><b><i>Suppressor Augment</i></b></span><span style=\"color:#c3bec0\"><i>:</i></span>",
+      "<span style=\"color:#c3bec0\"><b>Grants ?% Damage Resist against</b></span> <span style=\"color:#a4c2f4\"><b>non-Rank-and-File Combatants</b></span><span style=\"color:#c3bec0\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#c3bec0\"><i>While</i></span> <span style=\"color:#999999\"><b><i>Unaugmented</i></b></span><span style=\"color:#c3bec0\"><i>:</i></span>",
+      "<span style=\"color:#e0a261\"><b>Grenades</b></span> <span style=\"color:#c3bec0\"><b>disorient</b></span> <span style=\"color:#a4c2f4\"><b>Combatants</b></span> <span style=\"color:#c3bec0\"><b>for ? seconds.</b></span>"
+    ],
+    [
+      "<span style=\"color:#86bdbb\"><b>Taken Armaments</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cabcb5\"><i>Upon</i> <b><i>scoring a</i></b></span> <span style=\"color:#e0a261\"><b><i>Grenade Kill</i></b></span> <span style=\"color:#cabcb5\"><i>on a</i></span> <span style=\"color:#a4c2f4\"><b><i>Taken Combatant</i></b></span><span style=\"color:#cabcb5\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#cabcb5\"><b>Grants</b></span> <span style=\"color:#a481e1\"><b>Power Ammo</b></span> <span style=\"color:#cabcb5\"><b>to reserves.</b></span>",
+      "<span style=\"color:#cabcb5\"><b>Amount is equivalent to that of a</b></span> <span style=\"color:#a481e1\"><b>Power Ammo Brick</b></span><span style=\"color:#d9d2e9\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#86bdbb\"><b>Taken Barrier</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cabcb5\"><b><i>Upon receiving damage from a</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Taken Combatant</i></b></span><span style=\"color:#cabcb5\"><b><i>:</i></b></span>",
+      "",
+      "<span style=\"color:#cabcb5\"><b>Grants 20% Damage Resist for 10 seconds.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#86bdbb\"><b>Taken Invigoration</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cabcb5\"><i>Upon</i> <b><i>killing</i></b> <i>an</i></span> <span style=\"color:#a4c2f4\"><b><i>Elite, Miniboss, or Boss Taken Combatant</i></b></span><span style=\"color:#cabcb5\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#cabcb5\"><b>Grants</b></span> <span style=\"color:#b4a7d6\"><b>100% Class Ability Energy</b></span><span style=\"color:#cabcb5\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#86bdbb\"><b>Taken Repurposing</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cabcb5\"><i>Upon</i> <b><i>breaking</i></b> <i>a</i></span> <span style=\"color:#a4c2f4\"><b><i>Taken Combatant's Shield:</i></b></span>",
+      "",
+      "<span style=\"color:#cabcb5\"><b>Grants</b></span> <span style=\"color:#e0a261\"><b>100% Grenade Ability Energy.</b></span>"
+    ]
+  ]
+]

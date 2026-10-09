@@ -1,0 +1,1651 @@
+[
+  [
+    [
+      "<a href=\"#rangeid=984939131\"><span style=\"color:#89cdd1\"><b><i><u>Go back to the top!</u></i></b></span></a>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Arc Subclasses</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<a href=\"https://www.patreon.com/DataCompendium\"><span style=\"color:#9fc5e8\"><b><i><u>Support the Data Compendium</u></i></b></span></a>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<a href=\"#rangeid=2063680218\"><span style=\"color:#cccccc\"><b><u>Hunter</u></b></span></a>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<a href=\"#rangeid=546414595\"><span style=\"color:#cccccc\"><b><u>Titan</u></b></span></a>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<a href=\"#rangeid=1678010845\"><span style=\"color:#cccccc\"><b><u>Warlock</u></b></span></a>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Glossary</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Amplified</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Intrinsic Arc Subclass Buff</b></span>",
+      "<span style=\"color:#cccccc\"><b>Obtained by reaching 100% Counter Progress through</b></span> <span style=\"color:#89cdd1\"><b>Arc Kills</b></span> <span style=\"color:#cccccc\"><b>within 6 seconds of each, or through</b></span> <span style=\"color:#89cdd1\"><b>Aspects</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Rank-And-File</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#89cdd1\"><b>25%</b></span> <span style=\"color:#a4c2f4\"><b>| Elite</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#89cdd1\"><b>50%</b></span> <span style=\"color:#a4c2f4\"><b>| Miniboss+</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#89cdd1\"><b>100%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#ea9999\"><b>Guardians</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#89cdd1\"><b>50%</b></span>",
+      "",
+      "<span style=\"color:#79bec3\"><b>Amplified:</b></span>",
+      "<span style=\"color:#cccccc\"><b>+50 Mobility, increases Slide Distance to 8.5 meters, +40 Handling, and 0.95x Handling Duration Multiplier for 15 seconds.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Combatants are less accurate at targeting the wearer and grants 15% Damage Resist against Combatants while active.</b></span>",
+      "<span style=\"color:#cccccc\"><b>While</b></span> <span style=\"color:#89cdd1\"><b>Amplified</b></span><span style=\"color:#cccccc\"><b>, sprinting for 2.5 seconds grants</b></span> <span style=\"color:#89cdd1\"><b>Speed Booster</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#89cdd1\"><b>Speed Booster:</b></span>",
+      "<span style=\"color:#cccccc\"><b>Maximizes Movement Speed, increased Slide Distance to 11 meters, 25% Increased Jump Height, and</b></span> <span style=\"color:#a4c2f4\"><b>15% Damage Resist against Combatants</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#89cdd1\"><b>Speed Booster</b></span> <span style=\"color:#cccccc\"><b>lingers for 2 seconds until no longer sprinting, even after</b></span> <span style=\"color:#89cdd1\"><b>Amplified</b></span> <span style=\"color:#cccccc\"><b>runs out.</b></span>",
+      "<span style=\"color:#89cdd1\"><b>Performing a Speed Booster Slide permanently increases base Slide Distance from 6.5 meters to 8.5 meters until death.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Bolt Charge</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon scoring a</i> <b><i>Magazine-Based amount</i></b> <i>of</i> <b><i>Weapon Damage Instances</i></b> <i>within</i> <b><i>5 seconds</i></b> <i>of</i> <b><i>each</i></b> <i>while</i></span> <span style=\"color:#89cdd1\"><b><i>Bolt Charge</i></b></span> <span style=\"color:#cccccc\"><i>is</i> <b><i>active</i></b><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>The next damage instance from any source will grant a</b></span> <span style=\"color:#89cdd1\"><b>stack</b></span> <span style=\"color:#cccccc\"><b>of</b></span> <span style=\"color:#89cdd1\"><b>Bolt Charge</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Swapping weapons resets the counter.</i></span> <span style=\"color:#e06666\"><i>Can only gain up to 1 stack per simultaneous damage instance</i></span><span style=\"color:#cccccc\"><i>.</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Damage instances needed to gain a</b></span> <span style=\"color:#89cdd1\"><b>stack</b></span><span style=\"color:#cccccc\"><b>:</b></span>",
+      "<span style=\"color:#89cdd1\"><b>(15% of Magazine, rounded down) + 1</b></span>",
+      "<span style=\"color:#cccccc\"><b>Swords and GLs:</b></span> <span style=\"color:#89cdd1\"><b>2</b></span>",
+      "<span style=\"color:#cccccc\"><b>3-Ammo Snipers:</b></span> <span style=\"color:#89cdd1\"><b>1</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Gaining a Bolt Charge stack grants</b></span> <span style=\"color:#89cdd1\"><b>2.5% Melee Ability Energy</b></span> <span style=\"color:#cccccc\"><b>per</b></span> <span style=\"color:#89cdd1\"><b>Bolt Charge stack</b></span> <span style=\"color:#cccccc\"><b>obtained, generally granting</b></span> <span style=\"color:#89cdd1\"><b>25% Melee Ability Energy</b></span> <span style=\"color:#cccccc\"><b>over the</b></span> <span style=\"color:#89cdd1\"><b>10 stacks</b></span> <span style=\"color:#cccccc\"><b>needed to</b></span> <span style=\"color:#89cdd1\"><b>discharge</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Acquiring over</i></span> <span style=\"color:#89cdd1\"><i>x10 stacks</i></span> <span style=\"color:#cccccc\"><i>through abilities will still grant the corresponding</i></span> <span style=\"color:#89cdd1\"><i>Ability Gains</i></span> <span style=\"color:#cccccc\"><i><small>(For example, being at</small></i></span> <span style=\"color:#89cdd1\"><i><small>x9</small></i></span> <span style=\"color:#cccccc\"><i><small>and acquiring</small></i></span> <span style=\"color:#89cdd1\"><i><small>x4</small></i></span> <span style=\"color:#cccccc\"><i><small>will still grant</small></i></span> <span style=\"color:#89cdd1\"><i><small>10% Melee Energy</small></i></span><span style=\"color:#cccccc\"><i><small>)</small></i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>After</i> <b><i>0.5 seconds</i></b> <i>of scoring an</i></span> <span style=\"color:#d5a6bd\"><b><i>Ability Hit</i></b></span> <span style=\"color:#cccccc\"><i>or dealing</i></span> <span style=\"color:#89cdd1\"><b><i>Unpowered Melee Damage</i></b></span> <span style=\"color:#cccccc\"><i>while at</i></span> <span style=\"color:#89cdd1\"><b><i>x10 Bolt Charge stacks</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#89cdd1\"><b>Discharges</b></span> <span style=\"color:#cccccc\"><b>an</b></span> <span style=\"color:#89cdd1\"><b>Arc Bolt</b></span> <span style=\"color:#cccccc\"><b>over the damaged enemy, dealing up to</b></span> <span style=\"color:#a4c2f4\"><b>405 Bolt Splash + 270 Ground Splash = 675 Total</b></span> <span style=\"color:#ea9999\"><b>[36 Bolt Splash + 30 Ground Splash]</b></span> <span style=\"color:#89cdd1\"><b>Arc Damage</b></span> <span style=\"color:#cccccc\"><b>over ? meters.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Does not count as</i></span> <span style=\"color:#89cdd1\"><i>Ability Damage</i></span><span style=\"color:#cccccc\"><i>, only as</i></span> <span style=\"color:#89cdd1\"><i>Generic Arc Damage</i></span><span style=\"color:#cccccc\"><i>.</i></span>",
+      "",
+      "<span style=\"color:#89cdd1\"><b>Triggers Discharge</b></span><span style=\"color:#cccccc\"><b>:</b></span>",
+      "<span style=\"color:#d5a6bd\"><b>Volatile Explosions</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#3c78d8\"><b>Freeze Shatter</b></span> <span style=\"color:#cccccc\"><i><small>(Not</small></i></span> <span style=\"color:#3d85c6\"><i><small>auto-shatter</small></i></span> <span style=\"color:#cccccc\"><i><small>on Bosses)</small></i> <b>|</b></span> <span style=\"color:#63d275\"><b>Tangle Explosions</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#b6d7a8\"><b>Threadlings</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#6aa84f\"><b>Unraveling Threads</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#6aa84f\"><b>Suspend Snap</b></span> <span style=\"color:#cccccc\"><b>on</b></span> <span style=\"color:#a4c2f4\"><b>Bosses</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#ffd966\"><b>Forerunner's The Rock</b></span>",
+      "",
+      "<span style=\"color:#e06666\"><b>Do NOT trigger Discharge</b></span><span style=\"color:#cccccc\"><b>:</b></span>",
+      "<span style=\"color:#76a5af\"><b>Jolt's Chain Lightning</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#f6b26b\"><b>Scorch</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#ff9900\"><b>Ignitions</b></span> <span style=\"color:#cccccc\"><i><small>(from Non-Abilities)</small></i> <b>|</b></span> <span style=\"color:#6fa8dc\"><b>Crystal Shatter</b></span> <span style=\"color:#cccccc\"><i><small>(from Non-Abilities)</small></i> <b>|</b></span> <span style=\"color:#ffd966\"><b>Gifted Conviction's Explosives</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#a2c4c9\"><b>Ionic Trace</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Arc Elemental Pickup.</b></span>",
+      "",
+      "<span style=\"color:#a2c4c9\"><b>Energizing Seekers</b></span> <span style=\"color:#cccccc\"><b>that home in towards the user at a speed of 6m/s.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants 11.25%</b></span> <span style=\"color:#e0a261\"><b>Grenade</b></span><span style=\"color:#cccccc\"><b>, and</b></span> <span style=\"color:#79bec3\"><b>Melee</b></span> <span style=\"color:#cccccc\"><b>Ability Energy, and</b></span> <span style=\"color:#b4a7d6\"><b>13.5% Class Ability Energy</b></span> <span style=\"color:#cccccc\"><b>on pickup.</b></span> <span style=\"color:#a4c2f4\"><i>Allies</i></span> <span style=\"color:#cccccc\"><i>do not receive</i></span> <span style=\"color:#a2c4c9\"><i>Ionic Traces</i></span> <span style=\"color:#cccccc\"><i>created by the user.</i></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#999999\"><b>Blind</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#999999\"><b>Blinded</b></span> <span style=\"color:#a4c2f4\"><b>Combatants</b></span> <span style=\"color:#cccccc\"><b>are</b></span> <span style=\"color:#999999\"><b>disoriented</b></span><span style=\"color:#cccccc\"><b>, rendering them unable to attack or use abilities for 10 seconds.</b></span>",
+      "",
+      "<span style=\"color:#999999\"><b>Blinded</b></span> <span style=\"color:#ea9999\"><b>Guardians</b></span> <span style=\"color:#cccccc\"><b>have their HUD removed, screen whitened, and audio distorted for 3 seconds.</b></span>",
+      "",
+      "<span style=\"color:#c67676\"><b>Unstoppable Champions</b></span> <span style=\"color:#cccccc\"><b>become</b></span> <span style=\"color:#a4c2f4\"><b>Stunned</b></span> <span style=\"color:#cccccc\"><b>upon being</b></span> <span style=\"color:#999999\"><b>Blinded</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#76a5af\"><b>Jolted</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#76a5af\"><b>Jolted Enemies</b></span> <span style=\"color:#cccccc\"><b>will release</b></span> <span style=\"color:#76a5af\"><b>chain lightning</b></span> <span style=\"color:#cccccc\"><b>for</b></span> <span style=\"color:#a4c2f4\"><b>10</b></span> <span style=\"color:#ea9999\"><b>[5]</b></span> <span style=\"color:#cccccc\"><b>seconds, dealing</b></span> <span style=\"color:#a4c2f4\"><b>119</b></span> <span style=\"color:#ea9999\"><b>[51]</b></span> <span style=\"color:#89cdd1\"><b>Arc Damage</b></span> <span style=\"color:#cccccc\"><b>to all enemies within 12 meters upon taking</b></span> <span style=\"color:#a4c2f4\"><b>115</b></span> <span style=\"color:#ea9999\"><b>[45]</b></span> <span style=\"color:#cccccc\"><b>damage.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Duration can be</i> <b><i>refreshed</i></b> <i>by reinflicting</i></span> <span style=\"color:#76a5af\"><b><i>Jolt</i></b><i>.</i></span>",
+      "<span style=\"color:#cccccc\"><i>The damage from the hit that applies</i></span> <span style=\"color:#76a5af\"><i>Jolt</i></span> <span style=\"color:#cccccc\"><i>counts towards the damage threshold.</i></span> <span style=\"color:#76a5af\"><i>Jolt</i></span> <span style=\"color:#cccccc\"><i>has a</i></span> <span style=\"color:#dd7e6b\"><b><i>0.8 second cooldown</i></b></span> <span style=\"color:#cccccc\"><i>between</i></span> <span style=\"color:#76a5af\"><i>chain lightning</i></span> <span style=\"color:#cccccc\"><i>activations.</i></span>",
+      "",
+      "<span style=\"color:#ea9999\"><b><i>Guardians that release Chain Lightning do not receive chain damage unless it deals damage to other Guardians.</i></b></span>",
+      "",
+      "<span style=\"color:#b4a7d6\"><b>Overload Champions</b></span> <span style=\"color:#cccccc\"><b>become</b></span> <span style=\"color:#a4c2f4\"><b>Stunned</b></span> <span style=\"color:#cccccc\"><b>upon receiving</b></span> <span style=\"color:#76a5af\"><b>Jolt damage</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Fragments</b></span>"
+    ],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Icon</b></span>"
+    ],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Information</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Stat Changes</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Amplitude</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#79bec3\"><b><i>Amplified</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Scoring 2 kills within 4 seconds of each creates an</b></span> <span style=\"color:#ffd966\"><b>Orb of Power</b></span> <span style=\"color:#cccccc\"><b>that grants</b></span> <span style=\"color:#ffd966\"><b>2.5% Super Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Triggering</b></span> <span style=\"color:#89cdd1\"><b>Amplified</b></span> <span style=\"color:#cccccc\"><b>through an</b></span> <span style=\"color:#89cdd1\"><b>Arc Kill</b></span> <span style=\"color:#93c47d\"><b>will</b></span> <span style=\"color:#cccccc\"><b>count the kill towards the 2-kill counter.</b></span>",
+      "<span style=\"color:#e06666\"><b><i>Incurs a 10 second cooldown upon creating an</i></b></span> <span style=\"color:#ffd966\"><b><i>Orb of Power</i></b></span><span style=\"color:#e06666\"><b><i>. Kills during the cooldown do not count.</i></b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#f3f3f3\"><b>-</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Beacons</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#93c47d\"><b>Special</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#a481e1\"><b>Heavy</b></span> <span style=\"color:#cccccc\"><b>Ammo</b></span> <span style=\"color:#a2c4c9\"><b>Arc Weapon</b></span> <span style=\"color:#cccccc\"><b>Kills while</b></span> <span style=\"color:#79bec3\"><b>Amplified</b></span> <span style=\"color:#cccccc\"><b>create a</b></span> <span style=\"color:#999999\"><b>blinding blast</b></span><span style=\"color:#cccccc\"><b>, inflicting</b></span> <span style=\"color:#999999\"><b>Blind</b></span> <span style=\"color:#cccccc\"><b>to enemies within 7.5 metres.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#f3f3f3\"><b>-</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Brilliance</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#f1c232\"><b>Precision Kills</b></span> <span style=\"color:#cccccc\"><b>against</b></span> <span style=\"color:#999999\"><b>Blinded Enemies</b></span> <span style=\"color:#cccccc\"><b>trigger a</b></span> <span style=\"color:#999999\"><b>Blinding blast,</b></span> <span style=\"color:#cccccc\"><b>inflicting</b></span> <span style=\"color:#999999\"><b>Blind</b></span> <span style=\"color:#cccccc\"><b>to enemies within 7.5 metres.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#91c88e\"><b>+10 Super</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Discharge</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Arc Weapon Kills</b></span> <span style=\"color:#cccccc\"><b>progress a counter that spawns an</b></span> <span style=\"color:#d0e0e3\"><b>Ionic Trace</b></span> <span style=\"color:#cccccc\"><b>upon reaching 100%.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Rank-And-File = 34% | Elite = 67% | Miniboss+ = 100%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#ea9999\"><b>Guardians = 67%</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Picking up</b></span> <span style=\"color:#d0e0e3\"><b>Ionic Traces</b></span> <span style=\"color:#cccccc\"><b>grants</b></span> <span style=\"color:#89cdd1\"><b>x1 Bolt Charge</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#c88e8e\"><b>-10 Melee</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Feedback</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon being</i> <b><i>physically struck</i></b> <i>by a</i></span> <span style=\"color:#89cdd1\"><b><i>Melee Attack</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#a4c2f4\"><b>100%</b></span> <span style=\"color:#ea9999\"><b>[50% | 15% while Knockout is active]</b></span> <span style=\"color:#79bec3\"><b>Increased Melee Damage</b></span> <span style=\"color:#cccccc\"><b>for the next</b></span> <span style=\"color:#89cdd1\"><b>Melee Hit</b></span> <span style=\"color:#cccccc\"><b>within 5 seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Buff is not refreshable.</i></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#91c88e\"><b>+10 Health</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Focus</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>After</i> <b><i>1.25 seconds</i></b> <i>of sprinting, while maintaining both sprint and a movement speed of at</i> <b><i>least 5m/s</i></b><i>:</i></span>",
+      "<span style=\"color:#a4c2f4\"><b>150%</b></span> <span style=\"color:#ea9999\"><b>[75%]</b></span> <span style=\"color:#b4a7d6\"><b>Additional Base Class Ability Regeneration Rate.</b></span>",
+      "<span style=\"color:#e06666\"><i>Deactivates</i></span> <span style=\"color:#cccccc\"><i>once</i></span> <span style=\"color:#b4a7d6\"><i>Class Ability</i></span> <span style=\"color:#cccccc\"><i>has at least</i></span> <span style=\"color:#b4a7d6\"><i>1 charge</i></span> <span style=\"color:#cccccc\"><i>readied.</i></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#c88e8e\"><b>-10 Weapons</b></span> <span style=\"color:#6d9eeb\"><i>(Hunter)</i></span>",
+      "<span style=\"color:#c88e8e\"><b>-10 Health</b></span> <span style=\"color:#e06666\"><i>(Titan)</i></span>",
+      "<span style=\"color:#c88e8e\"><b>-10 Class</b></span> <span style=\"color:#ffd966\"><i>(Warlock)</i></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Frequency</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon scoring a</i></span> <span style=\"color:#79bec3\"><b><i>Melee Hit</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>+15 Stability, +50 Reload Speed, and 0.8x Reload Duration Multiplier for 5.25 seconds.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#89cdd1\"><b><i>Amplified</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><i><small>(almost)</small></i> <b>All sources of</b></span> <span style=\"color:#89cdd1\"><b>Bolt Charge</b></span> <span style=\"color:#cccccc\"><b>now grant an additional</b></span> <span style=\"color:#89cdd1\"><b>stack</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#e06666\"><i>In-game tooltip mentions increasing the fragment's effects, which is not true, at least for the Reload Speed bonuses.</i></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#f3f3f3\"><b>-</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Haste</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>After</i> <b><i>1.25 seconds</i></b> <i>of sprinting, while maintaining both sprint and a movement speed of at</i> <b><i>least 5m/s</i></b><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#dd7e6b\"><b>+50 Health Stat</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#f3f3f3\"><b>-</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Instinct</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>While at</i></span> <span style=\"color:#dd7e6b\"><b><i>Critical Health</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Being damaged releases a burst of</b></span> <span style=\"color:#76a5af\"><b>Arc Energy</b></span><span style=\"color:#cccccc\"><b>, dealing up to</b></span> <span style=\"color:#a4c2f4\"><b>46</b></span> <span style=\"color:#ea9999\"><b>[20]</b></span> <span style=\"color:#cccccc\"><b>damage and inflicting</b></span> <span style=\"color:#76a5af\"><b>Jolt</b></span> <span style=\"color:#cccccc\"><b>to enemies within ? metres.</b></span>",
+      "<span style=\"color:#e06666\"><i>Incurs a 15? second cooldown between activations.</i></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#f3f3f3\"><b>-</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Ions</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Killing</b></span> <span style=\"color:#76a5af\"><b>Jolted Enemies</b></span><span style=\"color:#cccccc\"><b>, or scoring a</b></span> <span style=\"color:#89cdd1\"><b>Bolt Charge Kill</b></span> <span style=\"color:#cccccc\"><b>creates an</b></span> <span style=\"color:#d0e0e3\"><b>Ionic Trace.</b></span>",
+      "<span style=\"color:#e06666\"><i>Incurs a 10 second cooldown between Ionic Traces spawns.</i></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#f3f3f3\"><b>-</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Magnitude</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#76a5af\"><b>Lightning Grenade</b></span> <span style=\"color:#cccccc\"><b>fire an additional</b></span> <span style=\"color:#a2c4c9\"><b>lightning bolt</b></span><span style=\"color:#cccccc\"><b>, increasing to a maximum of</b></span> <span style=\"color:#a2c4c9\"><b>5 bolts</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#76a5af\"><b>Pulse Grenade</b></span> <span style=\"color:#cccccc\"><b>release an additional</b></span> <span style=\"color:#a2c4c9\"><b>2 pulses</b></span><span style=\"color:#cccccc\"><b>, increasing to a maximum of</b></span> <span style=\"color:#a2c4c9\"><b>8 pulses</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#76a5af\"><b>Storm Grenade</b></span> <span style=\"color:#cccccc\"><b>release an additional barrage.</b></span> <span style=\"color:#a2c4c9\"><b>Enhanced Storm's Roaming Storm</b></span> <span style=\"color:#cccccc\"><b>lasts 1.5 seconds longer.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#f3f3f3\"><b>-</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Momentum</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon</i> <b><i>sliding</i></b> <i>over</i></span> <span style=\"color:#63d275\"><b><i>Ammo</i></b></span> <span style=\"color:#a481e1\"><b><i>Bricks</i></b></span> <span style=\"color:#cccccc\"><i>while not on</i> <b><i>Full Ammo</i></b> <i>of the respective type:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Refills the equipped weapon and grants</b></span> <span style=\"color:#89cdd1\"><b>x3 Bolt Charge</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#f3f3f3\"><b>-</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Recharge</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon reaching</i></span> <span style=\"color:#dd7e6b\"><b><i>Critical Health</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#a4c2f4\"><b>400%</b></span> <span style=\"color:#ea9999\"><b>[200%]</b></span> <span style=\"color:#cccccc\"><b>Additional Base</b></span> <span style=\"color:#e0a261\"><b>Grenade</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#79bec3\"><b>Melee</b></span> <span style=\"color:#cccccc\"><b>Ability Regeneration Rate.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Buff lasts until</b></span> <span style=\"color:#7cadff\"><b>Shields</b></span> <span style=\"color:#cccccc\"><b>are</b></span> <span style=\"color:#dd7e6b\"><b>fully restored</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#f3f3f3\"><b>-</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Resistance</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>While within</i> <b><i>15 metres</i></b> <i>of at least</i> <b><i>3 enemies</i></b><i>:</i></span>",
+      "<span style=\"color:#a4c2f4\"><b>25%</b></span> <span style=\"color:#ea9999\"><b>[10%]</b></span> <span style=\"color:#cccccc\"><b>Damage Resist.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Lingers for 2 seconds.</i></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#91c88e\"><b>+10 Melee</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Shock</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Arc Grenades</b></span> <span style=\"color:#cccccc\"><b>inflict</b></span> <span style=\"color:#76a5af\"><b>Jolt</b></span> <span style=\"color:#cccccc\"><b>on hit.</b></span>",
+      "",
+      "<span style=\"color:#e06666\"><b>Arc Soul and Ionic Sentries have a 4 second cooldown before being able to inflict Jolt again.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#c88e8e\"><b>-10 Grenade</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Volts</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Finishers grant</b></span> <span style=\"color:#89cdd1\"><b>Amplified</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#89cdd1\"><b>x1 Bolt Charge</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#91c88e\"><b>+10 Class</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Grenade Abilities</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b><i>Numbers in [Smaller Parenthesis] are with Spark of Magnitude equipped!</i></b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Arcbolt Grenade</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Heavy Trajectory | Scan</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Scans and targets the closest enemy in Line of Sight within 12 meters upon impact, releasing</b></span> <span style=\"color:#89cdd1\"><b>Arc Lightning</b></span> <span style=\"color:#cccccc\"><b>towards them after 1 second.</b></span>",
+      "<span style=\"color:#cccccc\"><b>After dealing damage, it chains to the closest enemy within 10 meters that hasn't been hit by</b></span> <span style=\"color:#89cdd1\"><b>Arc Lightning</b></span><span style=\"color:#cccccc\"><b>, repeating until it has damaged a maximum of 4 enemies.</b></span>",
+      "",
+      "<span style=\"color:#89cdd1\"><b>Arc Lightning</b></span> <span style=\"color:#cccccc\"><b>deals</b></span> <span style=\"color:#a4c2f4\"><b>521</b></span> <span style=\"color:#ea9999\"><b>[85]</b></span> <span style=\"color:#cccccc\"><b>damage.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 151.5 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.75x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Flashbang Grenade</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Medium Trajectory</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Explodes after its speed is sufficiently reduced. Has a brief delay before it can explode.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Explosion deals up to</b></span> <span style=\"color:#a4c2f4\"><b>684</b></span> <span style=\"color:#ea9999\"><b>[120]</b></span> <span style=\"color:#89cdd1\"><b>damage</b></span><span style=\"color:#cccccc\"><b>, down to 0% damage over a 7.5 meter radius, and inflicts</b></span> <span style=\"color:#999999\"><b>blind</b></span> <span style=\"color:#cccccc\"><b>to enemies within 10 meters for up to</b></span> <span style=\"color:#a4c2f4\"><b>5</b></span> <span style=\"color:#ea9999\"><b>[3]</b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><i>The user is immune to</i></span> <span style=\"color:#999999\"><i>self-blind</i></span><span style=\"color:#cccccc\"><i>.</i></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 131.7 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.875x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b><i>Touch of Thunder</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Explodes an additional time on impact, dealing up to</b></span> <span style=\"color:#a4c2f4\"><b>684</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#89cdd1\"><b>damage</b></span> <span style=\"color:#cccccc\"><b>over 7.5 meters and inflicting</b></span> <span style=\"color:#999999\"><b>blind</b></span> <span style=\"color:#cccccc\"><b>to enemies within 5 meters.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Flux Grenade</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Almost Straight Trajectory | Slight Projectile Tracking | Sticky</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Attaches to enemies or surfaces, exploding after 1.7 seconds.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Explosion deals up to</b></span> <span style=\"color:#a4c2f4\"><b>901</b></span> <span style=\"color:#ea9999\"><b>[150]</b></span> <span style=\"color:#89cdd1\"><b>damage</b></span><span style=\"color:#cccccc\"><b>, down to 0% damage over a 6 meter radius on detonation.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Sticking an enemy increases explosion damage by 66.7% to</b></span> <span style=\"color:#a4c2f4\"><b>1,500</b></span> <span style=\"color:#ea9999\"><b>[250]</b></span> <span style=\"color:#89cdd1\"><b>damage</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 105.4 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.875x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Lightning Grenade</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Medium Trajectory | Wall-Mounted</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Attaches to surfaces and enemies, projecting a laser for 1 second before triggering.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Emits a</b></span> <span style=\"color:#a2c4c9\"><b>Lightning Bolt</b></span> <span style=\"color:#cccccc\"><b>every 1.67 seconds, up to a maximum of 4</b></span><span style=\"color:#89cdd1\"><b><small>+1</small></b></span> <span style=\"color:#cccccc\"><b>times.</b></span>",
+      "<span style=\"color:#a2c4c9\"><b>Lightning Bolts</b></span> <span style=\"color:#cccccc\"><b>deal</b></span> <span style=\"color:#a4c2f4\"><b>373</b></span> <span style=\"color:#ea9999\"><b>[120]</b></span> <span style=\"color:#cccccc\"><b>damage, up to a total of</b></span> <span style=\"color:#a4c2f4\"><b>1492</b></span> <span style=\"color:#89cdd1\"><b><small>[1865]</small></b></span> <span style=\"color:#ea9999\"><b>[480</b></span> <span style=\"color:#89cdd1\"><b><small>[600]</small></b></span><span style=\"color:#ea9999\"><b>]</b></span> <span style=\"color:#cccccc\"><b>damage.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 219.5 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.5x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b><i>Touch of Thunder</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Grants an additional</b></span> <span style=\"color:#e0a261\"><b>Grenade Ability Charge</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#a2c4c9\"><b>Lightning Bolts</b></span> <span style=\"color:#cccccc\"><b>after the first inflict</b></span> <span style=\"color:#76a5af\"><b>Jolt</b></span> <span style=\"color:#cccccc\"><b>on hit.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#89cdd1\"><b>x5 Bolt Charge</b></span> <span style=\"color:#cccccc\"><b>upon dealing damage, up to once per</b></span> <span style=\"color:#a2c4c9\"><b>lightning bolt</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Pulse Grenade</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Medium Trajectory</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Detonates on impact, dealing up to</b></span> <span style=\"color:#a4c2f4\"><b>156</b></span> <span style=\"color:#ea9999\"><b>[50]</b></span> <span style=\"color:#cccccc\"><b>damage in a 6 meter radius.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Periodically</b></span> <span style=\"color:#a2c4c9\"><b>pulses</b></span> <span style=\"color:#cccccc\"><b>every 0.7 seconds, dealing up to</b></span> <span style=\"color:#a4c2f4\"><b>249</b></span> <span style=\"color:#ea9999\"><b>[80]</b></span> <span style=\"color:#cccccc\"><b>damage in a 6 meter radius an additional 5</b></span><span style=\"color:#89cdd1\"><b><small>+2</small></b></span> <span style=\"color:#cccccc\"><b>times.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Can deal up to a total of</b></span> <span style=\"color:#a4c2f4\"><b>1,245</b></span> <span style=\"color:#89cdd1\"><b><small>[1,743]</small></b></span> <span style=\"color:#ea9999\"><b>[530</b></span> <span style=\"color:#89cdd1\"><b><small>[690]</small></b></span><span style=\"color:#ea9999\"><b>]</b></span> <span style=\"color:#cccccc\"><b>damage.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 175.6 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.625x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b><i>Touch of Thunder</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#a2c4c9\"><b>Pulse Grenade</b></span> <span style=\"color:#cccccc\"><b>hits spawn an</b></span> <span style=\"color:#d0e0e3\"><b>Ionic Trace</b></span> <span style=\"color:#cccccc\"><b>and deal increased damage.</b></span> <span style=\"color:#e06666\"><i>Incurs a 1 second cooldown between Ionic Trace spawns.</i></span>",
+      "",
+      "<span style=\"color:#a2c4c9\"><b>Pulse Damage</b></span> <span style=\"color:#cccccc\"><b>Increases: 1st = 2% | 2nd = 9% | 3rd = 18.5% | 4th = 24% | 5th onwards = 25%</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Skip Grenade</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Medium Trajectory | Seekers</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Splits on impact, releasing 4</b></span> <span style=\"color:#89cdd1\"><b>seekers</b></span> <span style=\"color:#cccccc\"><b>that chase after enemies.</b></span>",
+      "",
+      "<span style=\"color:#89cdd1\"><b>Seekers</b></span> <span style=\"color:#cccccc\"><b>begin chasing enemies that come within 6 metres of them, exploding after dealing damage, or self-destructing after ~2 seconds if their velocity is low.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Each</b></span> <span style=\"color:#89cdd1\"><b>projectile</b></span> <span style=\"color:#cccccc\"><b>deals</b></span> <span style=\"color:#a4c2f4\"><b>24</b></span> <span style=\"color:#ea9999\"><b>[4]</b></span> <span style=\"color:#cccccc\"><b>impact damage twice, then explodes for up to</b></span> <span style=\"color:#a4c2f4\"><b>90</b></span> <span style=\"color:#ea9999\"><b>[15]</b></span> <span style=\"color:#cccccc\"><b>damage.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Deals up to</b></span> <span style=\"color:#a4c2f4\"><b>552</b></span> <span style=\"color:#ea9999\"><b>[92]</b></span> <span style=\"color:#cccccc\"><b>damage with all 4</b></span> <span style=\"color:#89cdd1\"><b>seekers</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 151.5 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.75x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Storm Grenade</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Medium Trajectory</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Calls down a</b></span> <span style=\"color:#a2c4c9\"><b>focused strike</b></span> <span style=\"color:#cccccc\"><b>on impact which hits after 0.85 seconds, dealing up to</b></span> <span style=\"color:#a4c2f4\"><b>440</b></span> <span style=\"color:#ea9999\"><b>[70]</b></span> <span style=\"color:#cccccc\"><b>damage in a 7 meter radius.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>After 0.6 seconds of the initial strike:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Calls down a</b></span> <span style=\"color:#a2c4c9\"><b>barrage of bolts</b></span> <span style=\"color:#cccccc\"><b>in a X pattern over 7 meters, dealing up to</b></span> <span style=\"color:#a4c2f4\"><b>311</b></span> <span style=\"color:#ea9999\"><b>[50]</b></span> <span style=\"color:#cccccc\"><b>damage.</b></span>",
+      "<span style=\"color:#a2c4c9\"><b>Spark of Magnitude:</b></span> <span style=\"color:#cccccc\"><b>Calls down a</b></span> <span style=\"color:#a2c4c9\"><b>second barrage of bolts</b></span> <span style=\"color:#cccccc\"><b>in an + pattern over 7 meters, dealing up to</b></span> <span style=\"color:#a4c2f4\"><b>311</b></span> <span style=\"color:#ea9999\"><b>[50]</b></span> <span style=\"color:#cccccc\"><b>damage.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b><i>Combatants</i></b></span> <span style=\"color:#cccccc\"><i>can only be damaged</i></span> <span style=\"color:#e06666\"><b><i>once per barrage</i></b></span><span style=\"color:#cccccc\"><i>, up to a maximum of</i></span> <span style=\"color:#a4c2f4\"><i>751</i></span> <span style=\"color:#89cdd1\"><b><i><small>[1062]</small></i></b></span> <span style=\"color:#cccccc\"><b><i>damage</i></b><i>.</i></span>",
+      "<span style=\"color:#ea9999\"><i>Guardians can only be hurt once by the barrage of bolts, regardless of pattern, for a maximum of 120 damage.</i></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 175.6 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.625x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b><i>Touch of Thunder</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Creates a</b></span> <span style=\"color:#a2c4c9\"><b>roaming storm</b></span> <span style=\"color:#cccccc\"><b>for 4+1.5 seconds after detonating, chasing after enemies at an initial speed of</b></span> <span style=\"color:#a4c2f4\"><b>2</b></span> <span style=\"color:#ea9999\"><b>[1.5]</b></span> <span style=\"color:#cccccc\"><b>m/s, increasing to</b></span> <span style=\"color:#a4c2f4\"><b>4</b></span> <span style=\"color:#ea9999\"><b>[3]</b></span> <span style=\"color:#cccccc\"><b>m/s after 1.3 seconds.</b></span>",
+      "<span style=\"color:#a2c4c9\"><b>Roaming Storm</b></span> <span style=\"color:#cccccc\"><b>fires</b></span> <span style=\"color:#a2c4c9\"><b>lightning bolts</b></span> <span style=\"color:#cccccc\"><b>underneath it that deal</b></span> <span style=\"color:#a4c2f4\"><b>158</b></span> <span style=\"color:#ea9999\"><b>[30]</b></span> <span style=\"color:#cccccc\"><b>damage up to 11</b></span><span style=\"color:#a2c4c9\"><b>+4</b></span> <span style=\"color:#cccccc\"><b>times.</b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#2d3b49\"><b>Hunter</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#f3f3f3\"><b>Hunters</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Melee Abilities</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Combination Blow</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon scoring a</i></span> <span style=\"color:#89cdd1\"><b><i>Melee Kill</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#b4a7d6\"><b>100% Class Ability</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#dd7e6b\"><b>restores 100 Health</b></span><span style=\"color:#cccccc\"><b>, and grants a</b></span> <span style=\"color:#89cdd1\"><b>stack</b></span> <span style=\"color:#cccccc\"><b>of</b></span> <span style=\"color:#89cdd1\"><b>Combination Blow</b></span> <span style=\"color:#cccccc\"><b>for 20 seconds, up to</b></span> <span style=\"color:#89cdd1\"><b>3 stacks</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#89cdd1\"><b>Basic Melee Attacks</b></span> <span style=\"color:#cccccc\"><b>count as</b></span> <span style=\"color:#89cdd1\"><b>Arc-Infused Melee Damage</b></span> <span style=\"color:#cccccc\"><b>while</b></span> <span style=\"color:#89cdd1\"><b>Combination Blow</b></span> <span style=\"color:#cccccc\"><b>is active.</b></span>",
+      "<span style=\"color:#b4a7d6\"><i>70 Class Stat is required for a full Gambler's Dodge refund.</i></span>",
+      "",
+      "<span style=\"color:#a2c4c9\"><b>Combination Blow x1</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>133%</b></span> <span style=\"color:#ea9999\"><b>[23%]</b></span> <span style=\"color:#89cdd1\"><b>Increased Melee Damage. Melee Kills</b></span> <span style=\"color:#dd7e6b\"><b>restore 80 HP.</b></span>",
+      "<span style=\"color:#76a5af\"><b>Combination Blow x2</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>266%</b></span> <span style=\"color:#ea9999\"><b>[51.3%]</b></span> <span style=\"color:#89cdd1\"><b>Increased Melee Damage. Melee Kills</b></span> <span style=\"color:#dd7e6b\"><b>restore 60 HP.</b></span>",
+      "<span style=\"color:#89cdd1\"><b>Combination Blow x3</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>400%</b></span> <span style=\"color:#ea9999\"><b>[86%]</b></span> <span style=\"color:#89cdd1\"><b>Increased Melee Damage. Melee Kills</b></span> <span style=\"color:#dd7e6b\"><b>restore 40 HP.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 58.1 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 1x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Disorienting Blow</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Deals</b></span> <span style=\"color:#a4c2f4\"><b>162</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#89cdd1\"><b>Impact Damage</b></span> <span style=\"color:#cccccc\"><b>and up to</b></span> <span style=\"color:#a4c2f4\"><b>976</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#89cdd1\"><b>Splash Damage</b></span><span style=\"color:#cccccc\"><b>, down to ?% damage over 7 meters.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Inflicts</b></span> <span style=\"color:#999999\"><b>Blind</b></span> <span style=\"color:#cccccc\"><b>for 8.5 seconds to enemies within 9.6 meters on hit.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#79bec3\"><b>Amplified</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#79bec3\"><b>x2 Bolt Charge</b></span> <span style=\"color:#cccccc\"><b>on hit.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 118.8 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.9x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Super Abilities</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Arc Staff</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#ffd966\"><b>General Super Information</b></span>",
+      "<span style=\"color:#cccccc\"><b>Damage Resistance:</b></span> <span style=\"color:#a4c2f4\"><b>90%</b></span> <span style=\"color:#ea9999\"><b>[53%]</b></span>",
+      "<span style=\"color:#cccccc\"><b>Base Duration: 20 seconds, or</b></span> <span style=\"color:#ffd966\"><b>5% Super Drain per Second</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Kills grant</b></span> <span style=\"color:#89cdd1\"><b>x1 Bolt Charge</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#89cdd1\"><b>Aerial and Grounded Light Attack</b></span> <span style=\"color:#a2c4c9\"><b>|</b></span> <span style=\"color:#ffd966\"><b>Drains 2.5% Super Energy.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Hits deal</b></span> <span style=\"color:#a4c2f4\"><b>864</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damag up to 8 meters away.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Grounded Attacks can be chained up to 3 hits.</b></span>",
+      "",
+      "<span style=\"color:#76a5af\"><b>Grounded Heavy Attack |</b></span> <span style=\"color:#ffd966\"><b>Drains 8% Super Energy</b></span>",
+      "<span style=\"color:#cccccc\"><b>Deals</b></span> <span style=\"color:#a4c2f4\"><b>1,264</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage in a ~45° angle up to 8 meters away.</b></span>",
+      "",
+      "<span style=\"color:#76a5af\"><b>Airborne Heavy Attack</b></span> <span style=\"color:#89cdd1\"><b>|</b></span> <span style=\"color:#ffd966\"><b>Drains 8%? Super Energy</b></span>",
+      "<span style=\"color:#cccccc\"><b>Deals</b></span> <span style=\"color:#a4c2f4\"><b>1,264</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage and inflicts</b></span> <span style=\"color:#999999\"><b>blind</b></span> <span style=\"color:#cccccc\"><b>over 7 meters away</b></span>",
+      "",
+      "<span style=\"color:#ffd966\"><b>Palm Strike</b></span> <span style=\"color:#76a5af\"><b>|</b></span> <span style=\"color:#89cdd1\"><b>Light-Light</b></span><span style=\"color:#cccccc\"><b>-</b></span><span style=\"color:#76a5af\"><b>Heavy</b></span> <span style=\"color:#cccccc\"><b>Combo.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Deals</b></span> <span style=\"color:#a4c2f4\"><b>2,950</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage and inflicts</b></span> <span style=\"color:#999999\"><b>blind</b></span> <span style=\"color:#cccccc\"><b>in a ~45° angle up to 8 meters away.</b></span>",
+      "",
+      "<span style=\"color:#ffd966\"><b>Guarding | Drains an additional ?% Super Energy per second.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Fully blocks and reflects all attacks in a 180?° Angle, granting</b></span> <span style=\"color:#89cdd1\"><b>x1 Bolt Charge</b></span> <span style=\"color:#cccccc\"><b>per attack reflected.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Reflected Projectiles are redirected to the reticle</b></span> <span style=\"color:#a4c2f4\"><b>and deal 100% increased damage against Combatants.</b></span>",
+      "",
+      "<span style=\"color:#b4a7d6\"><b>Class Ability |</b></span> <span style=\"color:#ffd966\"><b>Does not drain Super Energy.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Perfoms an evasive dodge. Grants</b></span> <span style=\"color:#a4c2f4\"><b>?%</b></span> <span style=\"color:#ea9999\"><b>[?%]</b></span> <span style=\"color:#cccccc\"><b>Damage Resist while dodging.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Allows the repeated usage of</b></span> <span style=\"color:#89cdd1\"><b>Ascension</b></span> <span style=\"color:#cccccc\"><b>while the</b></span> <span style=\"color:#89cdd1\"><b>Aspect</b></span> <span style=\"color:#cccccc\"><b>is equipped at the cost of</b></span> <span style=\"color:#ffd966\"><b>?% Super Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Tier 2 Super</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>556 seconds.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Gathering Storm</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#ffd966\"><b>General Super Information</b></span>",
+      "<span style=\"color:#cccccc\"><b>Damage Resistance:</b></span> <span style=\"color:#a4c2f4\"><b>90%</b></span> <span style=\"color:#ea9999\"><b>[49%]</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Hurls forward an</b></span> <span style=\"color:#ffd966\"><b>Arc Staff</b></span> <span style=\"color:#cccccc\"><b>that explodes and embeds itself on whatever it hits on impact.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Deals</b></span> <span style=\"color:#a4c2f4\"><b>544</b></span> <span style=\"color:#ea9999\"><b>[300]</b></span> <span style=\"color:#cccccc\"><b>damage and inflicts</b></span> <span style=\"color:#76a5af\"><b>jolt</b></span> <span style=\"color:#cccccc\"><b>on impact. Explosion deals up to</b></span> <span style=\"color:#a4c2f4\"><b>608</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage in a 10 meter radius.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>After 2 seconds, the</b></span> <span style=\"color:#ffd966\"><b>Arc Staff</b></span> <span style=\"color:#cccccc\"><b>gets struck by a</b></span> <span style=\"color:#a2c4c9\"><b>lightning strike</b></span><span style=\"color:#cccccc\"><b>, dealing up to</b></span> <span style=\"color:#a4c2f4\"><b>1350</b></span> <span style=\"color:#ea9999\"><b>[500]</b></span> <span style=\"color:#cccccc\"><b>damage in a 10 meter radius.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>After 1.2 seconds of being</b></span> <span style=\"color:#a2c4c9\"><b>struck by lightning</b></span><span style=\"color:#cccccc\"><b>, the</b></span> <span style=\"color:#ffd966\"><b>Staff</b></span> <span style=\"color:#cccccc\"><b>emits a damaging field, dealing</b></span> <span style=\"color:#a4c2f4\"><b>446</b></span> <span style=\"color:#ea9999\"><b>[60]</b></span> <span style=\"color:#cccccc\"><b>damage every 0.7 seconds in a 10 meter radius for 8 seconds.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Tier 3 Super</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>500 seconds.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Storm's Edge</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#ffd966\"><b>General Super Information</b></span>",
+      "<span style=\"color:#cccccc\"><b>Damage Resistance:</b></span> <span style=\"color:#a4c2f4\"><b>90%</b></span> <span style=\"color:#ea9999\"><b>[45%]</b></span>",
+      "<span style=\"color:#cccccc\"><b>Base Duration: ? seconds, or</b></span> <span style=\"color:#ffd966\"><b>?% Super Drain per Second</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Throws out a homing knife, dealing</b></span> <span style=\"color:#a4c2f4\"><b>90</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>impact damage and up to</b></span> <span style=\"color:#a4c2f4\"><b>171</b></span> <span style=\"color:#ea9999\"><b>[45?]</b></span> <span style=\"color:#cccccc\"><b>radial damage to enemies within 3 meters on impact, teleporting to it afterwards.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Performs a wide whirling strike after teleporting, dealing</b></span> <span style=\"color:#a4c2f4\"><b>1,440 x 2</b></span> <span style=\"color:#ea9999\"><b>[300?]</b></span> <span style=\"color:#cccccc\"><b>damage to enemies within 6 metres.</b></span>",
+      "<span style=\"color:#ffd966\"><b>Consumes ?% Super Energy per knife thrown, up to 3 times per Super activation.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Tier 1 Super</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>625 seconds.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Aspect</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Information</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Fragment Slots</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Ascension</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>While</i> <b><i>Airborne</i></b> <i>and having a</i></span> <span style=\"color:#b4a7d6\"><b><i>Class Ability Charge</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>[Air Move] consumes a</b></span> <span style=\"color:#b4a7d6\"><b>Class Ability Charge</b></span> <span style=\"color:#cccccc\"><b>to perform an upwards</b></span> <span style=\"color:#a2c4c9\"><b>Arc Staff Twirl</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Triggers the effects of the</i></span> <span style=\"color:#b4a7d6\"><i>equipped Class Ability</i></span> <span style=\"color:#cccccc\"><i>on usage.</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#79bec3\"><b>Amplified</b></span> <span style=\"color:#cccccc\"><b>to the user and</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>within 10 meters.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Deals up to</b></span> <span style=\"color:#a4c2f4\"><b>181</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage, as well as</b></span> <span style=\"color:#76a5af\"><b>Jolting</b></span> <span style=\"color:#cccccc\"><b>enemies within 10 metres.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Aspect's Damage scales with</i></span> <span style=\"color:#b4a7d6\"><i>Class Stat</i></span> <span style=\"color:#cccccc\"><i>above 100, up to</i></span> <span style=\"color:#a4c2f4\"><b><i>65%</i></b></span> <span style=\"color:#ea9999\"><b><i>[?%]</i></b></span> <span style=\"color:#cccccc\"><i>at</i></span> <span style=\"color:#b4a7d6\"><b><i>200 Stat</i></b></span><span style=\"color:#cccccc\"><i>.</i></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Flow State</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Scoring a</b></span> <span style=\"color:#76a5af\"><b>Jolted Enemy Kill</b></span> <span style=\"color:#cccccc\"><b>grants</b></span> <span style=\"color:#79bec3\"><b>Amplified</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#79bec3\"><b><i>Amplified</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#b4a7d6\"><b>200% Additional Base Class Ability Regeneration Rate</b></span><span style=\"color:#cccccc\"><b>, +50 Reload Speed, and 0.8x Reload Duration Multiplier.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>66%</b></span> <span style=\"color:#ea9999\"><b>[32%]</b></span> <span style=\"color:#cccccc\"><b>Damage Resist during</b></span> <span style=\"color:#b4a7d6\"><b>Dodge Animation</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Lethal Current</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#79bec3\"><b>Direct Melee Hits</b></span> <span style=\"color:#cccccc\"><b>on</b></span> <span style=\"color:#76a5af\"><b>Jolted Enemies</b></span> <span style=\"color:#cccccc\"><b>inflict</b></span> <span style=\"color:#999999\"><b>Blind</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#b4a7d6\"><b><i>Class Ability Usage</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#79bec3\"><b>Melee Lunge Distance</b></span> <span style=\"color:#cccccc\"><b>is increased to 7 metres.</b></span>",
+      "<span style=\"color:#cccccc\"><b>The next</b></span> <span style=\"color:#79bec3\"><b>Melee/Tempest Strike Hit</b></span> <span style=\"color:#cccccc\"><b>within 10 seconds inflicts</b></span> <span style=\"color:#76a5af\"><b>Jolt</b></span> <span style=\"color:#cccccc\"><b>and triggers a</b></span> <span style=\"color:#a2c4c9\"><b>damaging aftershock</b></span><span style=\"color:#cccccc\"><b>, dealing</b></span> <span style=\"color:#a4c2f4\"><b>195</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage to enemies within 6 metres.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Tempest Strike</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Scoring a</b></span> <span style=\"color:#76a5af\"><b>Jolted Enemy Kill</b></span> <span style=\"color:#cccccc\"><b>grants</b></span> <span style=\"color:#89cdd1\"><b>x1 Bolt Charge</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#e06666\"><i>Does not stack alongside Dielectric's x1 Bolt Charge.</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>While</i> <b><i>Sliding:</i></b></span>",
+      "<span style=\"color:#79bec3\"><b>[Melee Ability]</b></span> <span style=\"color:#cccccc\"><b>performs an uppercut, launching an</b></span> <span style=\"color:#a2c4c9\"><b>Arc Wave</b></span> <span style=\"color:#cccccc\"><b>along the ground up to 22 metres away, dealing</b></span> <span style=\"color:#a4c2f4\"><b>739</b></span> <span style=\"color:#ea9999\"><b>[125]</b></span> <span style=\"color:#cccccc\"><b>damage and inflicting</b></span> <span style=\"color:#76a5af\"><b>Jolt.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b><i>Grants 75% Damage Resist against Combatants for 4? seconds after usage.</i></b></span> <span style=\"color:#e06666\"><b><i>Unable to use during slide if user shoots.</i></b></span>",
+      "<span style=\"color:#cccccc\"><i>Can trigger</i></span> <span style=\"color:#89cdd1\"><i>Combination Blow</i></span> <span style=\"color:#cccccc\"><i>effects, and benefits from its damage increase.</i></span> <span style=\"color:#e06666\"><i>Does not interact with Disorienting Blow.</i></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#492b2b\"><b>Titan</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#f3f3f3\"><b>Titans</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Class Abilities</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Thruster</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Performs an evasive first-person dash that removes</b></span> <span style=\"color:#a4c2f4\"><b>Combatant Projectile Tracking?</b></span><span style=\"color:#cccccc\"><b>, as well as</b></span> <span style=\"color:#ea9999\"><b>Aim Assist against Guardians</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Quickly dashes 8 metres towards the currently held movement direction. Not inputting a movement direction will result in a 4 metre backwards dash.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 52.1 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 1x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Melee Abilities</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Ballistic Slam</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>While</i> <b><i>Airborne,</i></b> <i>after sprinting for</i> <b><i>0.03 seconds</i></b><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Quickly descends and strikes the ground, dealing a minimum of</b></span> <span style=\"color:#a4c2f4\"><b>210</b></span> <span style=\"color:#ea9999\"><b>[65]</b></span> <span style=\"color:#cccccc\"><b>damage with no falloff to enemies within 8 metres.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#ffd966\"><b>3% Super Energy</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#89cdd1\"><b>x3 Bolt Charge</b></span> <span style=\"color:#cccccc\"><b>per enemy hit.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Damage scales with time spent falling. A maximum jump height diagonal slam deals ~1,000 damage</b></span>",
+      "<span style=\"color:#cccccc\"><i>Cannot perform a</i></span> <span style=\"color:#79bec3\"><i>Melee Attack</i></span> <span style=\"color:#cccccc\"><i>within 0.9 seconds of landing.</i></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 164.6 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.7x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Seismic Strike</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>Shared with other</i></b></span> <span style=\"color:#79bec3\"><b><i>Shoulder Charge</i></b></span> <span style=\"color:#cccccc\"><i>Abilities:</i></span>",
+      "<span style=\"color:#cccccc\"><i>Requires sprinting for 1.25 seconds. Drains</i></span> <span style=\"color:#79bec3\"><i>15% Melee Ability Energy</i></span> <span style=\"color:#cccccc\"><i>if no enemy is hit.</i></span> <span style=\"color:#e06666\"><i>Unable to use during slide if user shoots</i></span><span style=\"color:#cccccc\"><i>.</i></span>",
+      "<span style=\"color:#ea9999\"><i>Guardians directly hit by Shoulder Charge have their Melee Lunge disabled for 0.5 seconds</i></span>",
+      "<span style=\"color:#cccccc\"><i>Lunges forward 6.8 meters, automatically targeting enemies in range.</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Hitting an enemy deals</b></span> <span style=\"color:#a4c2f4\"><b>1,073</b></span> <span style=\"color:#ea9999\"><b>[110]</b></span> <span style=\"color:#cccccc\"><b>impact damage, as well as dealing</b></span> <span style=\"color:#a4c2f4\"><b>391</b></span> <span style=\"color:#ea9999\"><b>[40]</b></span> <span style=\"color:#cccccc\"><b>radial damage and inflicting</b></span> <span style=\"color:#999999\"><b>Blind</b></span> <span style=\"color:#cccccc\"><b>for</b></span> <span style=\"color:#a4c2f4\"><b>8</b></span> <span style=\"color:#ea9999\"><b>[1.6]</b></span> <span style=\"color:#cccccc\"><b>seconds to enemies within 6 meters.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b><i>While</i></b></span> <span style=\"color:#79bec3\"><b><i>Amplified</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#999999\"><b>Blind Radius</b></span> <span style=\"color:#cccccc\"><b>is increased to 10 metres, and the</b></span> <span style=\"color:#999999\"><b>Blind Duration</b></span> <span style=\"color:#cccccc\"><b>is increased to</b></span> <span style=\"color:#a4c2f4\"><b>10</b></span> <span style=\"color:#ea9999\"><b>[3]</b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 131.7 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.8x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Thunderclap</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#79bec3\"><b>Chargeable Melee Attack</b></span>",
+      "<span style=\"color:#cccccc\"><b>Deals</b></span> <span style=\"color:#a4c2f4\"><b>703</b></span> <span style=\"color:#ea9999\"><b>[120]</b></span> <span style=\"color:#cccccc\"><b>damage in a 7.5 metre wide cone up to 16 metres away, gradually dealing up to 100% increased damage after charging for 2 seconds.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Grants 80% Damage Resist against Combatants during the animation, and for ? seconds after usage.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 131.7 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.9x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Super Abilities</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Fists of Havoc</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#ffd966\"><b>General Super Information</b></span>",
+      "<span style=\"color:#cccccc\"><b>Damage Resistance:</b></span> <span style=\"color:#a4c2f4\"><b>90%</b></span> <span style=\"color:#ea9999\"><b>[58%]</b></span>",
+      "<span style=\"color:#cccccc\"><b>Base Duration: 25 seconds, or</b></span> <span style=\"color:#ffd966\"><b>4% Super Drain</b></span> <span style=\"color:#cccccc\"><b>per Second</b></span>",
+      "",
+      "<span style=\"color:#a2c4c9\"><b>Light Attack |</b></span> <span style=\"color:#ffd966\"><b>Drains 6% Super Energy.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Hits deal</b></span> <span style=\"color:#a4c2f4\"><b>499</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage and heavily knock enemies back.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Scoring a</b></span> <span style=\"color:#a2c4c9\"><b>Light Attack</b></span> <span style=\"color:#cccccc\"><b>grants the next</b></span> <span style=\"color:#76a5af\"><b>heavy attack hit</b></span> <span style=\"color:#cccccc\"><b>4 additional damage instances of</b></span> <span style=\"color:#a4c2f4\"><b>273</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#89cdd1\"><b>damage</b></span> <span style=\"color:#cccccc\"><b>each.</b></span>",
+      "",
+      "<span style=\"color:#76a5af\"><b>Heavy Attack |</b></span> <span style=\"color:#ffd966\"><b>Drains 12% Super Energy.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Slams downwards, dealing</b></span> <span style=\"color:#a4c2f4\"><b>1619</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#89cdd1\"><b>damage</b></span> <span style=\"color:#cccccc\"><b>and inflicting</b></span> <span style=\"color:#999999\"><b>blind</b></span> <span style=\"color:#cccccc\"><b>in a 11 metre radius.</b></span> <span style=\"color:#ffd966\"><i>Super Cast</i></span> <span style=\"color:#cccccc\"><i>also slams, without the aftershocks</i></span>",
+      "<span style=\"color:#cccccc\"><b>Slam deals 4 additional damage instances of</b></span> <span style=\"color:#a4c2f4\"><b>273</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#89cdd1\"><b>damage</b></span> <span style=\"color:#cccccc\"><b>each if the user is in the animation for at least 1 second.</b> <i>Requires inputting a directional key.</i></span>",
+      "<span style=\"color:#cccccc\"><b>Creates up to</b></span> <span style=\"color:#89cdd1\"><b>4 aftershocks</b></span><span style=\"color:#cccccc\"><b>, each dealing up to</b></span> <span style=\"color:#a4c2f4\"><b>292</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#89cdd1\"><b>damage</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Tier 2 Super</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>556 seconds.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Thundercrash</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#ffd966\"><b>General Super Information</b></span>",
+      "<span style=\"color:#cccccc\"><b>Damage Resistance:</b></span> <span style=\"color:#a4c2f4\"><b>90%</b></span> <span style=\"color:#ea9999\"><b>[25%]</b></span>",
+      "<span style=\"color:#cccccc\"><b>Base Duration: Up to 4.5 seconds, or</b></span> <span style=\"color:#ffd966\"><b>22.2% Super Drain</b></span> <span style=\"color:#cccccc\"><b>per Second</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Enemies that are very close when flying receive</b></span> <span style=\"color:#a4c2f4\"><b>150</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>Collision Damage.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Detonates on impact with a surface or enemy, dealing</b></span> <span style=\"color:#a4c2f4\"><b>180</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>impact damage, as well as up to</b></span> <span style=\"color:#a4c2f4\"><b>8,260</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>explosive damage over 10 meters.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Explosion releases aftershocks 0.75 seconds after impact, dealing up to</b></span> <span style=\"color:#a4c2f4\"><b>108</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage every second for 4 seconds.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Tier 2 Super</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>556 seconds.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Aspect</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Information</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Fragment Slots</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Juggernaut</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>While</i> <b><i>sprinting</i></b><i>, while</i> <b><i>Movement Speed is above ~4m/s</i></b> <i>and with</i> <b><i>full</i></b></span> <span style=\"color:#b4a7d6\"><b><i>Class Ability Energy</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Grants a</b></span> <span style=\"color:#7cadff\"><b>Frontal Overshield</b></span> <span style=\"color:#cccccc\"><b>with</b></span> <span style=\"color:#dd7e6b\"><b>50 HP</b></span> <span style=\"color:#cccccc\"><b>that absorbs damage, granting</b></span> <span style=\"color:#89cdd1\"><b>x1 Bolt Charge</b></span> <span style=\"color:#cccccc\"><b>per attack blocked.</b></span>",
+      "<span style=\"color:#7cadff\"><b>Overshield</b></span> <span style=\"color:#cccccc\"><b>receives 33% Damage Resist while</b></span> <span style=\"color:#89cdd1\"><b>Amplified</b></span><span style=\"color:#cccccc\"><b>, increasing its</b></span> <span style=\"color:#dd7e6b\"><b>effective health</b></span> <span style=\"color:#cccccc\"><b>to</b></span> <span style=\"color:#dd7e6b\"><b>75eHP.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>60%</b></span> <span style=\"color:#ea9999\"><b>[10%]</b></span> <span style=\"color:#cccccc\"><b>Splash Damage Resist, and</b></span> <span style=\"color:#a4c2f4\"><b>10% Damage Resist against Combatants</b></span> <span style=\"color:#cccccc\"><b>while active.</b></span>",
+      "",
+      "<span style=\"color:#7cadff\"><b>Overshield</b></span> <span style=\"color:#cccccc\"><b>is able to fully absorb the last hit before being destroyed, depleting all</b></span> <span style=\"color:#b4a7d6\"><b>Class Ability Energy.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b><i>Stacks with other</i></b></span> <span style=\"color:#d5a6bd\"><b><i>Overshields</i></b></span><span style=\"color:#cccccc\"><b><i>.</i></b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Knockout</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#79bec3\"><b><i>Melee Kill:</i></b></span>",
+      "<span style=\"color:#dd7e6b\"><b>Quickly restores a varying amount of Health over 0.1 seconds</b></span><span style=\"color:#cccccc\"><b>, begins</b></span> <span style=\"color:#dd7e6b\"><b>Health Regeneration</b></span> <span style=\"color:#cccccc\"><b>and grants</b></span> <span style=\"color:#79bec3\"><b>Amplified</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Rank-and-File</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#dd7e6b\"><b>50 HP</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>Elite</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#dd7e6b\"><b>75 HP</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>Miniboss+</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#dd7e6b\"><b>100 HP</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#ea9999\"><b>Guardian</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#dd7e6b\"><b>30 HP</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>Upon breaking an</i></span> <span style=\"color:#d5a6bd\"><b><i>Enemy Shield</i></b></span><span style=\"color:#cccccc\"><b><i>,</i></b> <i>or</i> <b><i>dealing damage</i></b> <i>to an enemy</i> <b><i>below</i></b></span> <span style=\"color:#dd7e6b\"><b><i>30% HP</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#89cdd1\"><b>Knockout</b></span> <span style=\"color:#cccccc\"><b>for 6 seconds.</b></span>",
+      "",
+      "<span style=\"color:#89cdd1\"><b>Knockout</b></span><span style=\"color:#cccccc\"><b>:</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>160%</b></span> <span style=\"color:#ea9999\"><b>[30%]</b></span> <span style=\"color:#79bec3\"><b>increased Basic/Glaive Melee Damage</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>160%</b></span> <span style=\"color:#ea9999\"><b>[20%]</b></span> <span style=\"color:#79bec3\"><b>increased Charged Melee Damage</b></span>",
+      "<span style=\"color:#79bec3\"><b>Basic Melee Attacks</b></span> <span style=\"color:#cccccc\"><b>count as</b></span> <span style=\"color:#79bec3\"><b>Arc Powered Melee Hits</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Increases Melee Lunge Distance against Combatants to 6 metres</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Storm's Keep</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#b4a7d6\"><b><i>Class Ability Usage</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#89cdd1\"><b>x4 Bolt Charge</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#89cdd1\"><b>Thruster</b></span> <span style=\"color:#cccccc\"><b>grants</b></span> <span style=\"color:#89cdd1\"><b>x6 Bolt Charge</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>While behind the</i></span> <span style=\"color:#b4a7d6\"><b><i>Barricade</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Grants a stack of</b></span> <span style=\"color:#89cdd1\"><b>Bolt Charge</b></span> <span style=\"color:#cccccc\"><b>every 0.6 seconds.</b></span>",
+      "<span style=\"color:#89cdd1\"><b>Bolt Charge</b></span> <span style=\"color:#cccccc\"><b>can now trigger with Weapon Damage.</b></span>",
+      "<span style=\"color:#e06666\"><i>Spark of Frequency does not increase the number of Bolt Charge stacks gained. Does not stack with multiple barricades.</i></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Touch of Thunder</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#a2c4c9\"><b>Enhances certain Grenade types:</b></span>",
+      "",
+      "<span style=\"color:#a2c4c9\"><b>Flashbang:</b></span> <span style=\"color:#cccccc\"><b>Explodes an additional time on impact, dealing up to</b></span> <span style=\"color:#a4c2f4\"><b>684</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#89cdd1\"><b>damage</b></span><span style=\"color:#cccccc\"><b>, down to 0% damage over 7.5 meters, and inflicting</b></span> <span style=\"color:#999999\"><b>blind</b></span> <span style=\"color:#cccccc\"><b>to enemies within 5 meters.</b></span>",
+      "",
+      "<span style=\"color:#a2c4c9\"><b>Lightning:</b></span> <span style=\"color:#cccccc\"><b>Grants an additional</b></span> <span style=\"color:#e0a261\"><b>Grenade Charge</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#a2c4c9\"><b>lightning strikes</b></span> <span style=\"color:#cccccc\"><b>after the first inflict</b></span> <span style=\"color:#76a5af\"><b>jolt</b></span><span style=\"color:#cccccc\"><b>, and hits grant</b></span> <span style=\"color:#89cdd1\"><b>x5 Bolt Charge</b></span> <span style=\"color:#cccccc\"><b>up to once per</b></span> <span style=\"color:#a2c4c9\"><b>lightning bolt</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#a2c4c9\"><b>Pulse:</b></span> <span style=\"color:#cccccc\"><b>Damaging an enemy creates an</b></span> <span style=\"color:#a2c4c9\"><b>Ionic Trace</b></span> <span style=\"color:#cccccc\"><b>with a 1 second cooldown. Deals up to 25% increased damage as it lingers.</b></span>",
+      "<span style=\"color:#cccccc\"><b>1st = 2% | 2nd = 9% | 3rd = 18.5% | 4th = 24% | 5th onwards = 25%</b></span>",
+      "",
+      "<span style=\"color:#a2c4c9\"><b>Storm:</b></span> <span style=\"color:#cccccc\"><b>Creates a</b></span> <span style=\"color:#a2c4c9\"><b>roaming storm</b></span> <span style=\"color:#cccccc\"><b>for 4.5</b></span><span style=\"color:#89cdd1\"><b><small>+1.5</small></b></span> <span style=\"color:#cccccc\"><b>seconds after detonating, chasing after enemies at an initial speed of</b></span> <span style=\"color:#a4c2f4\"><b>2</b></span> <span style=\"color:#ea9999\"><b>[1.5]</b></span> <span style=\"color:#cccccc\"><b>m/s, increasing to</b></span> <span style=\"color:#a4c2f4\"><b>5.5</b></span> <span style=\"color:#ea9999\"><b>[3]</b></span> <span style=\"color:#cccccc\"><b>m/s after 1.6 seconds.</b></span>",
+      "<span style=\"color:#a2c4c9\"><b>Roaming Storm</b></span> <span style=\"color:#cccccc\"><b>fires</b></span> <span style=\"color:#a2c4c9\"><b>lightning bolts</b></span> <span style=\"color:#cccccc\"><b>underneath it that deal</b></span> <span style=\"color:#a4c2f4\"><b>164</b></span> <span style=\"color:#ea9999\"><b>[30]</b></span> <span style=\"color:#cccccc\"><b>damage up to 11</b></span><span style=\"color:#89cdd1\"><b><small>+4</small></b></span> <span style=\"color:#cccccc\"><b>times.</b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#49422b\"><b>Warlocks</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#f3f3f3\"><b>Warlocks</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Melee Abilities</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Ball Lightning</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Fires a</b></span> <span style=\"color:#a2c4c9\"><b>Ball Lightning</b></span> <span style=\"color:#cccccc\"><b>forward up to 35 meters away, releasing a</b></span> <span style=\"color:#a2c4c9\"><b>lightning strike</b></span> <span style=\"color:#cccccc\"><b>if an enemy is up to 4? meters under it, after reaching its maximum distance, or on impact.</b></span>",
+      "",
+      "<span style=\"color:#a2c4c9\"><b>Lightning strike</b></span> <span style=\"color:#cccccc\"><b>deals</b></span> <span style=\"color:#a4c2f4\"><b>271</b></span> <span style=\"color:#ea9999\"><b>[70]</b></span> <span style=\"color:#cccccc\"><b>damage over 2? meters.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Directly impacting an enemy will deal an additional</b></span> <span style=\"color:#a4c2f4\"><b>117</b></span> <span style=\"color:#ea9999\"><b>[30]</b></span> <span style=\"color:#cccccc\"><b>damage.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#79bec3\"><b><i>Amplified</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Creates 2 additional</b></span> <span style=\"color:#a2c4c9\"><b>lightning strikes</b></span><span style=\"color:#cccccc\"><b>, each dealing</b></span> <span style=\"color:#a4c2f4\"><b>163</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Deals up to</b></span> <span style=\"color:#a4c2f4\"><b>714</b></span> <span style=\"color:#ea9999\"><b>[240]</b></span> <span style=\"color:#cccccc\"><b>damage upon scoring a direct hit alongside all 3</b></span> <span style=\"color:#a2c4c9\"><b>lightning strikes</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 164.6 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.7x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Chain Lightning</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#a2c4c9\"><b>Melee Attack</b></span> <span style=\"color:#cccccc\"><b>with an extended lunge distance of 6 meters.</b></span>",
+      "<span style=\"color:#89cdd1\"><b>Arc Subclass Exclusive</b></span><span style=\"color:#cccccc\"><b>: Has</b></span> <span style=\"color:#89cdd1\"><b>2 Ability Charges</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Directly strikes an enemy, dealing</b></span> <span style=\"color:#a4c2f4\"><b>390</b></span> <span style=\"color:#ea9999\"><b>[100]</b></span> <span style=\"color:#cccccc\"><b>damage, inflicting</b></span> <span style=\"color:#76a5af\"><b>Jolt</b></span><span style=\"color:#cccccc\"><b>, and causing them to release</b></span> <span style=\"color:#a2c4c9\"><b>chain lightning</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#a2c4c9\"><b>Chain lightning</b></span> <span style=\"color:#cccccc\"><b>deals</b></span> <span style=\"color:#a4c2f4\"><b>265</b></span> <span style=\"color:#ea9999\"><b>[54]</b></span> <span style=\"color:#cccccc\"><b>damage to enemies within 9 metres, chaining towards enemies up to a maximum of 5 times.</b> <i>Cannot chain to the most recently targeted enemy.</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#79bec3\"><b><i>Amplified</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Releases two sets of</b></span> <span style=\"color:#a2c4c9\"><b>chain lightning</b></span><span style=\"color:#cccccc\"><b>, each targeting a different enemy, doubling the maximum amount of enemies hit.</b> <i>Enemies can still only be hit</i></span> <span style=\"color:#dd7e6b\"><b><i>once</i></b></span> <span style=\"color:#cccccc\"><i>by</i></span> <span style=\"color:#a2c4c9\"><b><i>chain lightning</i></b></span><span style=\"color:#cccccc\"><i>.</i></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 131.7 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.9x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Super Abilities</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Chaos Reach</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#ffd966\"><b>General Super Information</b></span>",
+      "<span style=\"color:#cccccc\"><b>Damage Resistance:</b></span> <span style=\"color:#a4c2f4\"><b>90%</b></span> <span style=\"color:#ea9999\"><b>[55%]</b></span>",
+      "<span style=\"color:#cccccc\"><b>Base Duration: 4 seconds</b>, or</span> <span style=\"color:#ffd966\"><b>25% Super Drain per Second</b></span>",
+      "<span style=\"color:#cccccc\"><b>Movement Speed: 4.5 meters per second.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Channels a long range beam towards the reticle, dealing</b></span> <span style=\"color:#a4c2f4\"><b>378</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage every 0.13 seconds.</b> <i>Does not deal damage for the first 0.67 seconds of the animation.</i></span>",
+      "<span style=\"color:#cccccc\"><b>Scoring 7 hits on an enemy summons a</b></span> <span style=\"color:#76a5af\"><b>jolting lightning strike</b></span> <span style=\"color:#cccccc\"><b>on the enemy's location, dealing</b></span> <span style=\"color:#a4c2f4\"><b>202</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Partially refunds</b></span> <span style=\"color:#ffd966\"><b>Super Energy</b></span> <span style=\"color:#cccccc\"><b>on early deactivation, up to a maximum of</b></span> <span style=\"color:#ffd966\"><b>30% Super Energy</b></span> <span style=\"color:#cccccc\"><b>if immediately cancelled.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Tier 4 Super</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Base Cooldown:</b></span>",
+      "<span style=\"color:#cccccc\"><b>455 seconds</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Stormtrance</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#ffd966\"><b>General Super Information</b></span>",
+      "<span style=\"color:#cccccc\"><b>Damage Resistance:</b></span> <span style=\"color:#a4c2f4\"><b>90%</b></span> <span style=\"color:#ea9999\"><b>[58%]</b></span>",
+      "<span style=\"color:#cccccc\"><b>Base Duration: 16 seconds, or</b></span> <span style=\"color:#ffd966\"><b>6.25% Super Drain per Second</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#ffd966\"><b><i>Super Cast</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Deals up to</b></span> <span style=\"color:#a4c2f4\"><b>690</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage in a 6 meter radius, knocking enemies back, and releases</b></span> <span style=\"color:#a2c4c9\"><b>5 Lightning Seekers</b></span> <span style=\"color:#cccccc\"><b>around the caster.</b></span>",
+      "<span style=\"color:#a2c4c9\"><b>Lightning Seekers</b></span> <span style=\"color:#cccccc\"><b>deal</b></span> <span style=\"color:#a4c2f4\"><b>440</b></span> <span style=\"color:#ea9999\"><b>[150]</b></span> <span style=\"color:#cccccc\"><b>damage and inflict</b></span> <span style=\"color:#76a5af\"><b>jolt</b></span> <span style=\"color:#cccccc\"><b>for 16 seconds.</b></span>",
+      "",
+      "<span style=\"color:#a2c4c9\"><b>Light Attack |</b></span> <span style=\"color:#ffd966\"><b>Drains ?% Super Energy.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Targets enemies within 12 meters, releasing chain lighting that deals</b></span> <span style=\"color:#a4c2f4\"><b>178</b></span> <span style=\"color:#ea9999\"><b>[90]</b></span> <span style=\"color:#cccccc\"><b>damage every 0.34 seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Damage ramps up over time, increasing by 5% every 0.33 seconds, up to 65% increased damage after 3.33 seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Damage Increase decays after 2 seconds of not dealing damage.</i></span>",
+      "",
+      "<span style=\"color:#76a5af\"><b>Heavy Attack | Sprint</b></span>",
+      "<span style=\"color:#cccccc\"><b>Performs an</b></span> <span style=\"color:#a2c4c9\"><b>Ionic Blink</b></span><span style=\"color:#cccccc\"><b>, consuming</b></span> <span style=\"color:#ffd966\"><b>6.25% Super Energy</b></span> <span style=\"color:#cccccc\"><b>and teleporting up to 7 meters away towards the currently input movement direction.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Tier 2 Super</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Base Cooldown:</b></span>",
+      "<span style=\"color:#cccccc\"><b>556 seconds</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Aspect</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Information</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Fragment Slots</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Arc Soul</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#b4a7d6\"><b>Rifts</b></span> <span style=\"color:#cccccc\"><b>created by the user grant an</b></span> <span style=\"color:#a2c4c9\"><b>Arc Soul</b></span> <span style=\"color:#cccccc\"><b>to the user and</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>that pass through it.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Duration can be refreshed by stepping back into the Rift.</i></span>",
+      "",
+      "<span style=\"color:#a2c4c9\"><b>Arc Buddy</b></span> <span style=\"color:#cccccc\"><b>lasts 15 seconds and fires</b></span> <span style=\"color:#a2c4c9\"><b>homing projectiles</b></span> <span style=\"color:#cccccc\"><b>that deal</b></span> <span style=\"color:#a4c2f4\"><b>69</b></span> <span style=\"color:#ea9999\"><b>[11]</b></span> <span style=\"color:#89cdd1\"><b>Arc Grenade Damage</b></span> <span style=\"color:#cccccc\"><b>in 3-round bursts at a rate of 100RPM towards enemies within 24 meters.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Can trigger</i></span> <span style=\"color:#e0a261\"><i>Grenade Ability</i></span> <span style=\"color:#cccccc\"><i>interactions.</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#b4a7d6\"><b>Additional Base Class Ability Regeneration Rate</b></span> <span style=\"color:#cccccc\"><b>while within 15? metres of</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>x1 =</b></span> <span style=\"color:#a4c2f4\"><b>40%</b></span> <span style=\"color:#ea9999\"><b>[20%]</b></span> <span style=\"color:#cccccc\"><b>| x2 =</b></span> <span style=\"color:#a4c2f4\"><b>80%</b></span> <span style=\"color:#ea9999\"><b>[40%]</b></span> <span style=\"color:#cccccc\"><b>| x3 =</b></span> <span style=\"color:#a4c2f4\"><b>120%</b></span> <span style=\"color:#ea9999\"><b>[60%]</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#79bec3\"><b><i>Amplified</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#a2c4c9\"><b>Arc Boi</b></span> <span style=\"color:#cccccc\"><b>shoots bursts of 5 shots, increasing its overall RPM to 225RPM.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Electrostatic Mind</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Arc Ability Kills</b></span> <span style=\"color:#cccccc\"><b>and kills against enemies affected by</b></span> <span style=\"color:#76a5af\"><b>Arc Elemental Debuffs</b></span> <span style=\"color:#cccccc\"><b>create an</b></span> <span style=\"color:#a2c4c9\"><b>Ionic Trace.</b></span>",
+      "<span style=\"color:#e06666\"><i>Incurs a 1? second cooldown between Ionic Trace spawns.</i></span>",
+      "",
+      "<span style=\"color:#a2c4c9\"><b>Ionic Traces</b></span> <span style=\"color:#cccccc\"><b>grant</b></span> <span style=\"color:#89cdd1\"><b>Amplified</b></span> <span style=\"color:#cccccc\"><b>on pickup.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Ionic Sentry</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Arc Kills</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#999999\"><b>Kinetic Kills</b></span> <span style=\"color:#cccccc\"><b>charge up an</b></span> <span style=\"color:#89cdd1\"><b>Ionic Sentry</b></span><span style=\"color:#cccccc\"><b>. Readies at</b></span> <span style=\"color:#89cdd1\"><b>6 Charges</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Weapon =</b></span> <span style=\"color:#a4c2f4\"><b>1</b></span> <span style=\"color:#ea9999\"><b>[2]</b></span> <span style=\"color:#cccccc\"><b>| Abilities =</b></span> <span style=\"color:#a4c2f4\"><b>2</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Replaces</b></span> <span style=\"color:#e0a261\"><b>Grenade</b></span> <span style=\"color:#cccccc\"><b>with an</b></span> <span style=\"color:#89cdd1\"><b>Ionic Sentry</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Counts as an</i></span> <span style=\"color:#89cdd1\"><b><i>Arc Grenade Ability Damage</i></b></span><span style=\"color:#cccccc\"><i>, and will trigger</i></span> <span style=\"color:#e0a261\"><i>Grenade Ability</i></span> <span style=\"color:#cccccc\"><i>interactions.</i></span>",
+      "",
+      "<span style=\"color:#89cdd1\"><b>Ionic Sentry</b></span><span style=\"color:#cccccc\"><b>:</b></span>",
+      "<span style=\"color:#cccccc\"><b>Inflicts</b></span> <span style=\"color:#999999\"><b>Blind</b></span> <span style=\"color:#cccccc\"><b>for</b></span> <span style=\"color:#a4c2f4\"><b>10?</b></span> <span style=\"color:#ea9999\"><b>[3?]</b></span> <span style=\"color:#cccccc\"><b>seconds to enemies within 5 meters upon landing</b></span>",
+      "<span style=\"color:#cccccc\"><b>Automatically shoots a</b></span> <span style=\"color:#a2c4c9\"><b>chaining bolt of lightning</b></span> <span style=\"color:#cccccc\"><b>every second at enemies within 16 metres, dealing</b></span> <span style=\"color:#a4c2f4\"><b>202</b></span> <span style=\"color:#ea9999\"><b>[50]</b></span> <span style=\"color:#89cdd1\"><b>Arc Damage.</b></span>",
+      "<span style=\"color:#a2c4c9\"><b>Chains</b></span> <span style=\"color:#cccccc\"><b>towards an additional enemy within 6 meters of the initially struck target.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#89cdd1\"><b>x1 Bolt Charge</b></span> <span style=\"color:#cccccc\"><b>on hit.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Lasts for 15 seconds and has</b></span> <span style=\"color:#dd7e6b\"><b>? Construct HP</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><i>User is immune to</i></span> <span style=\"color:#999999\"><i>self-blind</i></span><span style=\"color:#cccccc\"><i>.</i></span>",
+      "",
+      "<span style=\"color:#e06666\"><i>Incurs a 6 second cooldown after activating. Kills while on cooldown don't give charges.</i></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Lightning Surge</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>While</i> <b><i>Sliding</i></b><i>:</i></span>",
+      "<span style=\"color:#89cdd1\"><b>[Melee Ability]</b></span> <span style=\"color:#cccccc\"><b>warps the user forward 10 meters, calling down</b></span> <span style=\"color:#a2c4c9\"><b>5 lightning bolts</b></span> <span style=\"color:#cccccc\"><b>in a ⬠-shape 7 meters away from the exit point, and granting</b></span> <span style=\"color:#89cdd1\"><b>x1 Bolt Charge</b></span> <span style=\"color:#cccccc\"><b>per enemy hit.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#89cdd1\"><b>Amplified</b></span> <span style=\"color:#cccccc\"><b>on usage.</b></span> <span style=\"color:#e06666\"><i>Does not grant any Bolt Charge past x1 unless hits are scored.</i></span>",
+      "<span style=\"color:#a4c2f4\"><b><i>Grants ?% Damage Resist against Combatants for ? seconds after usage.</i></b></span> <span style=\"color:#e06666\"><b><i>Unable to use during slide if user shoots.</i></b></span>",
+      "",
+      "<span style=\"color:#a2c4c9\"><b>Lightning bolts</b></span> <span style=\"color:#cccccc\"><b>deal</b></span> <span style=\"color:#a4c2f4\"><b>634 + 127 = 761</b></span> <span style=\"color:#ea9999\"><b>[105 + 47 = 152]</b></span> <span style=\"color:#cccccc\"><b>damage simultaneously and inflict</b></span> <span style=\"color:#76a5af\"><b>Jolt</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ]
+  ]
+]

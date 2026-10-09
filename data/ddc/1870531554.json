@@ -1,0 +1,1287 @@
+[
+  [
+    [
+      "<span style=\"color:#000000\"><b><i>s</i></b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Strand Subclasses</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<a href=\"https://www.patreon.com/DataCompendium\"><span style=\"color:#9fc5e8\"><b><i><u>Support the Data Compendium</u></i></b></span></a>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<a href=\"#rangeid=2037078107\"><span style=\"color:#cccccc\"><b><u>Hunter</u></b></span></a>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<a href=\"#rangeid=75195928\"><span style=\"color:#cccccc\"><b><u>Titan</u></b></span></a>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<a href=\"#rangeid=603241277\"><span style=\"color:#cccccc\"><b><u>Warlock</u></b></span></a>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Glossary</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#93c47d\"><b>Tangle</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#63d275\"><b><i>While a Strand Ability is equipped:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Killing an enemy affected by a</b></span> <span style=\"color:#6aa84f\"><b>Strand Debuff</b> <i><small>(Sever, Suspend, Unravel)</small></i></span> <span style=\"color:#cccccc\"><b>spawns a</b></span> <span style=\"color:#93c47d\"><b>Tangle</b></span><span style=\"color:#cccccc\"><b>, adhering to the</b></span> <span style=\"color:#e06666\"><b>standard cooldown</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#63d275\"><b>Strand Elemental Pickup:</b></span>",
+      "<span style=\"color:#cccccc\"><b>Construct with ? HP that can exist for up to 20 seconds before dissipating.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Can be picked up while within 5 meters, and can be held for up to 20 seconds.</b></span>",
+      "<span style=\"color:#dd7e6b\"><b>Incurs a 12 second cooldown upon creating a Tangle before additional ones can be created, barring exceptions.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Detonating a</b></span> <span style=\"color:#93c47d\"><b>Tangle</b></span> <span style=\"color:#cccccc\"><b>through damaging it or throwing it creates an</b></span> <span style=\"color:#63d275\"><b>explosion</b></span><span style=\"color:#cccccc\"><b>, dealing</b></span> <span style=\"color:#a4c2f4\"><b>346</b></span> <span style=\"color:#ea9999\"><b>[100]</b></span> <span style=\"color:#cccccc\"><b>damage over a 8 metre radius.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Either method counts as an</i></span> <span style=\"color:#d5a6bd\"><i>Elemental Interaction</i></span> <span style=\"color:#cccccc\"><i>for the purposes of perks and effects.</i></span>",
+      "",
+      "<span style=\"color:#93c47d\"><b>Grappling</b></span> <span style=\"color:#cccccc\"><b>a</b></span> <span style=\"color:#93c47d\"><b>Tangle</b></span> <span style=\"color:#cccccc\"><b>fully refunds</b></span> <span style=\"color:#e0a261\"><b>Grenade Energy</b></span> <span style=\"color:#cccccc\"><b>and pulls the user towards it.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#b6d7a8\"><b>Grapple Tangle</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#b6d7a8\"><b><i>Tangle Equivalent that exclusively interacts with Grapple, behaving identically to a Tangle for Grappling.</i></b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Lasts for up to 20 seconds. Duration is refreshed by 5 seconds upon using</b></span> <span style=\"color:#e0a261\"><b>Grapple</b></span> <span style=\"color:#cccccc\"><b>on it. Cannot be destroyed, nor picked up.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Targeting a</b></span> <span style=\"color:#b6d7a8\"><b>Grapple Tangle</b></span> <span style=\"color:#cccccc\"><b>within 27 meters</b></span> <span style=\"color:#63d275\"><b><i><small>(32m with Grapple Grenade equipped)</small></i></b></span> <span style=\"color:#cccccc\"><b>for 0.3 seconds overrides</b></span> <span style=\"color:#e0a261\"><b>Grenade Ability</b></span> <span style=\"color:#cccccc\"><b>to a</b></span> <span style=\"color:#63d275\"><b>Non-Offensive Grapple</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#63d275\"><b>Strand</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#d183bf\"><b>Prismatic</b></span> <span style=\"color:#cccccc\"><b>Subclasses allow using</b></span> <span style=\"color:#63d275\"><b>Grapple Melee</b></span><span style=\"color:#cccccc\"><b>.</b></span> <span style=\"color:#fbbdec\"><i>Prismatic Warlocks</i></span> <span style=\"color:#cccccc\"><i>need to equip</i></span> <span style=\"color:#63d275\"><i>Arcane Needle</i></span> <span style=\"color:#cccccc\"><i>to receive</i></span> <span style=\"color:#63d275\"><i>Grapple Melee</i></span><span style=\"color:#cccccc\"><i>.</i></span>",
+      "",
+      "<span style=\"color:#e06666\"><b><i>Grappling a Grapple Tangle 5 consecutive times reduces the duration refresh to 1 second.</i></b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#b6d7a8\"><b>Threadling</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#b6d7a8\"><b>Strand minions</b></span> <span style=\"color:#cccccc\"><b>that chase enemies within 20? metres, leaping towards the targeted enemy upon being within ? metres.</b></span>",
+      "",
+      "<span style=\"color:#b6d7a8\"><b>Threadlings</b></span> <span style=\"color:#cccccc\"><b>explode on contact or after leaping, dealing up to</b></span> <span style=\"color:#a4c2f4\"><b>366</b></span> <span style=\"color:#ea9999\"><b>[35]</b></span> <span style=\"color:#cccccc\"><b>damage in a small radius.</b></span>",
+      "<span style=\"color:#b6d7a8\"><b>Threadlings</b></span> <span style=\"color:#cccccc\"><b>that lose their target before impact will land and look for another combatant instead of exploding.</b></span>",
+      "<span style=\"color:#b6d7a8\"><i>Threadlings</i></span> <span style=\"color:#cccccc\"><i>count as damage from the source they were spawned, but will</i></span> <span style=\"color:#e06666\"><i>lose that inheritance</i></span> <span style=\"color:#cccccc\"><i>if they</i></span> <span style=\"color:#f1c232\"><i>perch</i></span><span style=\"color:#cccccc\"><i>.</i></span>",
+      "",
+      "<span style=\"color:#f1c232\"><b>Warlock Interaction:</b></span>",
+      "<span style=\"color:#b6d7a8\"><b>Threadlings</b></span> <span style=\"color:#cccccc\"><b>return after travelling 14 metres if they do not start chasing an enemy, remaining perched on the</b></span> <span style=\"color:#f1c232\"><b>Warlock</b></span><span style=\"color:#cccccc\"><b>, up to a maximum of</b></span> <span style=\"color:#b6d7a8\"><b>5 Threadlings</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Releases a</b></span> <span style=\"color:#b6d7a8\"><b>Threadling</b></span> <span style=\"color:#cccccc\"><b>upon dealing weapon damage or scoring a</b></span> <span style=\"color:#79bec3\"><b>Powered Melee Hit</b></span><span style=\"color:#cccccc\"><b>, with a</b></span> <span style=\"color:#e06666\"><b>0.5 second cooldown between releases</b></span><span style=\"color:#cccccc\"><b>.</b> <i>Instantly killing an enemy won't release</i></span> <span style=\"color:#b6d7a8\"><i>Threadlings</i></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#b6d7a8\"><b>Threadlings</b></span> <span style=\"color:#cccccc\"><b>released this way will track at any range.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#93c47d\"><b>Woven Mail</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#a4c2f4\"><b>45%</b></span> <span style=\"color:#ea9999\"><b>[25%]</b></span> <span style=\"color:#cccccc\"><b>Damage Resist for 10 seconds.</b></span>",
+      "<span style=\"color:#f1c232\"><b><i>Precision Hits</i></b></span> <span style=\"color:#ea9999\"><b><i>and</i></b></span> <span style=\"color:#79bec3\"><b><i>Melee Attacks</i></b></span> <span style=\"color:#ea9999\"><b><i>from Guardians bypass the Damage Resist</i></b></span><span style=\"color:#cccccc\"><b><i>.</i></b></span>",
+      "",
+      "<span style=\"color:#93c47d\"><b>Woven Mail</b></span> <span style=\"color:#cccccc\"><b>is</b></span> <span style=\"color:#e06666\"><b>removed</b></span> <span style=\"color:#cccccc\"><b>upon</b></span> <span style=\"color:#ffd966\"><b>casting any Super Ability</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6aa84f\"><b>Sever</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Decreases the enemy's outgoing damage dealt by</b></span> <span style=\"color:#a4c2f4\"><b>40%</b></span> <span style=\"color:#ea9999\"><b>[15%]</b></span> <span style=\"color:#cccccc\"><b>for</b></span> <span style=\"color:#a4c2f4\"><b>10</b></span><span style=\"color:#93c47d\"><b><small>+5</small></b></span> <span style=\"color:#ea9999\"><b>[5</b></span><span style=\"color:#93c47d\"><b><small>+2.5</small></b></span><span style=\"color:#ea9999\"><b>]</b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6aa84f\"><b>Suspend</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#6aa84f\"><b>Suspended</b></span> <span style=\"color:#a4c2f4\"><b>Combatants</b></span> <span style=\"color:#cccccc\"><b>are unable to move, shoot, or use abilities.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Rank-and-File and Elite Combatants</b></span> <span style=\"color:#cccccc\"><b>are</b></span> <span style=\"color:#6aa84f\"><b>suspended</b></span> <span style=\"color:#cccccc\"><b>for up to</b></span> <span style=\"color:#a4c2f4\"><b>6</b></span><span style=\"color:#93c47d\"><b><small>+2</small></b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span> <span style=\"color:#a4c2f4\"><b>Minibosses</b></span> <span style=\"color:#cccccc\"><b>are only</b></span> <span style=\"color:#6aa84f\"><b>suspended</b></span> <span style=\"color:#cccccc\"><b>for up to</b></span> <span style=\"color:#a4c2f4\"><b>3</b></span><span style=\"color:#93c47d\"><b><small>+1</small></b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>",
+      "<span style=\"color:#9fc5e8\"><b>Boss Combatants</b></span> <span style=\"color:#cccccc\"><b>are unimpeded by</b></span> <span style=\"color:#6aa84f\"><b>suspension's effects</b></span><span style=\"color:#cccccc\"><b>, snapping out of them after 1 second, receiving instead</b></span> <span style=\"color:#a4c2f4\"><b>300</b></span> <span style=\"color:#63d275\"><b>Strand Damage</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#a4c2f4\"><i>Boss Combatants still count as being afflicted by the Suspend debuff during its brief duration despite not receiving its effects.</i></span>",
+      "",
+      "<span style=\"color:#6aa84f\"><b>Suspended</b></span> <span style=\"color:#ea9999\"><b>Guardians</b></span> <span style=\"color:#cccccc\"><b>are lifted midair, being able to slowly hover horizontally and hipfire their weapons for</b></span> <span style=\"color:#ea9999\"><b>2</b></span><span style=\"color:#93c47d\"><b><small>+1</small></b></span> <span style=\"color:#cccccc\"><b>seconds in a third-person perspective.</b></span>",
+      "",
+      "<span style=\"color:#c67676\"><b>Unstoppable Champions</b></span> <span style=\"color:#cccccc\"><b>are</b></span> <span style=\"color:#a4c2f4\"><b>stunned</b></span> <span style=\"color:#cccccc\"><b>upon being</b></span> <span style=\"color:#6aa84f\"><b>Suspended</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6aa84f\"><b>Unravel</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#6aa84f\"><b>Unraveled Enemies</b></span> <span style=\"color:#cccccc\"><b>release</b></span> <span style=\"color:#93c47d\"><b>3 seeking threads</b></span> <span style=\"color:#cccccc\"><b>towards enemies within ? metres 0.25 seconds after receiving 40 damage.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Each</b></span> <span style=\"color:#93c47d\"><b>Thread</b></span> <span style=\"color:#cccccc\"><b>deals</b></span> <span style=\"color:#a4c2f4\"><b>26</b></span> <span style=\"color:#ea9999\"><b>[4]</b></span> <span style=\"color:#cccccc\"><b>damage and applies</b></span> <span style=\"color:#6aa84f\"><b>Unravel</b></span> <span style=\"color:#cccccc\"><b>on hit.</b></span>",
+      "<span style=\"color:#6aa84f\"><b>Unravel</b></span> <span style=\"color:#cccccc\"><b>has a</b></span> <span style=\"color:#dd7e6b\"><b>1.2 second cooldown</b></span> <span style=\"color:#cccccc\"><b>between</b></span> <span style=\"color:#93c47d\"><b>thread</b></span> <span style=\"color:#cccccc\"><b>releases.</b></span>",
+      "",
+      "<span style=\"color:#93c47d\"><b>Thread</b></span> <span style=\"color:#cccccc\"><b>hits refresh the duration of</b></span> <span style=\"color:#6aa84f\"><b>Unravel</b></span><span style=\"color:#cccccc\"><b>, up to its original duration.</b></span>",
+      "<span style=\"color:#cccccc\"><i>(If the</i></span> <span style=\"color:#6aa84f\"><i>Unravel</i></span> <span style=\"color:#cccccc\"><i>source applied a 9 second debuff,</i></span> <span style=\"color:#93c47d\"><i>thread</i></span> <span style=\"color:#cccccc\"><i>hits will reapply it to 9 seconds)</i></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6aa84f\"><b>Unraveling Rounds</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Strand Weapons</b></span> <span style=\"color:#cccccc\"><b>inflict</b></span> <span style=\"color:#6aa84f\"><b>Unravel</b></span> <span style=\"color:#cccccc\"><b>upon dealing damage.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Fragments</b></span>"
+    ],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Icon</b></span>"
+    ],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Information</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Stat Changes</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Ascent</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#e0a261\"><b><i>Grenade Ability Usage:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Refills readied weapon.</b></span>",
+      "<span style=\"color:#cccccc\"><b>+40? Handling, +40 Reload Speed, 0.925x Reload Duration Multiplier and +30 Airborne Effectiveness for 15 seconds.</b></span>",
+      "<span style=\"color:#e06666\"><i>Incurs a 4 second cooldown between Ammo Refills upon activation.</i></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#91c88e\"><b>+10 Weapons</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Binding</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#ffd966\"><b>Super Kills</b></span> <span style=\"color:#cccccc\"><b>cause the enemy to trigger a damaging</b></span> <span style=\"color:#6aa84f\"><b>Suspending Burst.</b></span>",
+      "<span style=\"color:#6aa84f\"><b>Suspending Burst</b></span> <span style=\"color:#cccccc\"><b>deals</b></span> <span style=\"color:#a4c2f4\"><b>108</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#63d275\"><b>Damage</b></span> <span style=\"color:#cccccc\"><b>and inflicts</b></span> <span style=\"color:#6aa84f\"><b>Suspension</b></span> <span style=\"color:#cccccc\"><b>to enemies within 6 meters.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#91c88e\"><b>+10 Health</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Continuity</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#6aa84f\"><b>Strand Debuffs</b></span> <span style=\"color:#cccccc\"><b><small>normally</small> last 50% longer.</b></span>",
+      "<span style=\"color:#6aa84f\"><b>Debuff</b></span> <span style=\"color:#cccccc\"><b>sources will have their value with</b></span> <span style=\"color:#93c47d\"><b>Continuity</b></span> <span style=\"color:#cccccc\"><b>shown in</b></span> <span style=\"color:#93c47d\"><b>smaller text</b></span> <span style=\"color:#cccccc\"><b>next to the regular duration.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#f3f3f3\"><b>-</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Evolution</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#b6d7a8\"><b>Threadling</b></span> <span style=\"color:#cccccc\"><b>move 30?% faster, travel further, and deal increased damage.</b></span>",
+      "",
+      "<span style=\"color:#b6d7a8\"><b>Threadling Damage Increase:</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>33% against Combatants</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#ea9999\"><b>12.5% against Guardians</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#91c88e\"><b>+10 Super</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Finality</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#a4c2f4\"><b>Finishers</b></span> <span style=\"color:#cccccc\"><b>create</b></span> <span style=\"color:#b6d7a8\"><b>Threadlings</b></span><span style=\"color:#cccccc\"><b>, with the amount scaling with</b></span> <span style=\"color:#a4c2f4\"><b>Enemy Rank</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Rank-And-File</b></span> <span style=\"color:#cccccc\">=</span> <span style=\"color:#63d275\"><b>1</b></span> <span style=\"color:#cccccc\">|</span> <span style=\"color:#a4c2f4\"><b>Elite</b></span> <span style=\"color:#cccccc\">=</span> <span style=\"color:#63d275\"><b>2</b></span> <span style=\"color:#cccccc\">|</span> <span style=\"color:#a4c2f4\"><b>Miniboss</b></span> <span style=\"color:#cccccc\">=</span> <span style=\"color:#63d275\"><b>3</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#91c88e\"><b>+10 Class</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Fury</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon</i> <b><i>dealing damage</i></b> <i>with</i></span> <span style=\"color:#93c47d\"><b><i>Tangles</i></b><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Grants a varying amount of</b></span> <span style=\"color:#89cdd1\"><b>Melee Energy</b></span> <span style=\"color:#cccccc\"><b>per damage instance.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Tier 1 Combatant</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#89cdd1\"><b>10%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>T2</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#89cdd1\"><b>18% |</b></span> <span style=\"color:#a4c2f4\"><b>T3</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#79bec3\"><b>20%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>T4</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#79bec3\"><b>30%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#ea9999\"><b>Guardians</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#79bec3\"><b>25%</b></span>",
+      "<span style=\"color:#e06666\"><i>Incurs a 1? second cooldown between triggers.</i></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#c88e8e\"><b>-10 Melee</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Generation</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon</i> <b><i>dealing damage:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants a variable amount of</b></span> <span style=\"color:#e0a261\"><b>Grenade Ability Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#e06666\"><i>Does not grant Slicewire Grenade Energy.</i></span>",
+      "",
+      "<span style=\"color:#e0a261\"><b>Grenade Ability Energy Gains vary depending on the source, as well as the amount of damage.</b></span>",
+      "<span style=\"color:#cccccc\"><b><i>Generally, the more damage something deals, the more</i></b></span> <span style=\"color:#f6b26b\"><b><i>Ability Energy</i></b></span> <span style=\"color:#cccccc\"><b><i>it will grant.</i></b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#c88e8e\"><b>-10 Grenade</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Isolation</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon scoring</i></span> <span style=\"color:#f1c232\"><b><i>multiple Precision Hits</i></b></span> <span style=\"color:#cccccc\"><i>within</i> <b><i>2 seconds</i></b> <i>of each:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Emits a</b></span> <span style=\"color:#6aa84f\"><b>Severing Burst</b></span><span style=\"color:#cccccc\"><b>, inflicting</b></span> <span style=\"color:#6aa84f\"><b>Sever</b></span> <span style=\"color:#cccccc\"><b>to enemies within ? metres.</b></span>",
+      "<span style=\"color:#e06666\"><i>Incurs a 4 second cooldown upon</i></span> <span style=\"color:#6aa84f\"><i>Severing</i></span><span style=\"color:#cccccc\"><i>.</i></span> <span style=\"color:#f1c232\"><i>Precision Hits</i></span> <span style=\"color:#e06666\"><i>during the cooldown will not be counted.</i></span>",
+      "",
+      "<span style=\"color:#f1c232\"><b>Precision Hits</b></span> <span style=\"color:#cccccc\"><b>work on a Counter System, triggering the</b></span> <span style=\"color:#6aa84f\"><b>Severing Burst</b></span> <span style=\"color:#cccccc\"><b>upon reaching 100%.</b></span>",
+      "<span style=\"color:#cccccc\"><b><i>Counter System</i></b> <i>is exclusively Weapon Archetype based.</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b><small>Counter Progress per</small></b></span> <span style=\"color:#ffd966\"><b><small>Precision Hit</small></b></span><span style=\"color:#cccccc\"><b><small>:</small></b></span>",
+      "<span style=\"color:#cccccc\"><b><small>50% Counter:</small></b></span> <span style=\"color:#93c47d\"><small>Slug Shotguns</small></span>",
+      "<span style=\"color:#cccccc\"><b><small>34% Counter:</small></b> <small>Bows and</small></span> <span style=\"color:#93c47d\"><small>Sniper Rifles</small></span>",
+      "<span style=\"color:#cccccc\"><b><small>25% Counter</small></b><small>: Hand Cannons and Scout Rifles</small></span>",
+      "<span style=\"color:#cccccc\"><b><small>20% Counter</small></b><small>: Sidearms</small></span>",
+      "<span style=\"color:#cccccc\"><b><small>15% Counter</small></b><small>: Auto Rifles</small></span>",
+      "<span style=\"color:#cccccc\"><b><small>12% Counter</small></b><small>:</small></span> <span style=\"color:#a481e1\"><small>Machine Guns</small></span> <span style=\"color:#cccccc\"><small>and Pulse Rifles</small></span>",
+      "<span style=\"color:#cccccc\"><b><small>10% Counter</small></b><small>:</small></span> <span style=\"color:#93c47d\"><small>Trace Rifles</small></span> <span style=\"color:#cccccc\"><small>and Submachine Guns</small></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#f3f3f3\"><b>-</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Mind</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Killing</b></span> <span style=\"color:#6aa84f\"><b>Suspended Enemies</b></span> <span style=\"color:#cccccc\"><b>grants</b></span> <span style=\"color:#b4a7d6\"><b>Class Ability Energy</b></span> <span style=\"color:#cccccc\"><b>based on</b></span> <span style=\"color:#a4c2f4\"><b>Enemy Rank</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#e06666\"><b><i>Incurs a 1? second cooldown upon scoring a kill.</i></b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Tier 1 Combatant =</b></span> <span style=\"color:#b4a7d6\"><b>10%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>T2</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#b4a7d6\"><b>12%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>T3</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#b4a7d6\"><b>15%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>T4</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#b4a7d6\"><b>30%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#ea9999\"><b>Guardians</b></span> <span style=\"color:#a4c2f4\"><b>=</b></span> <span style=\"color:#b4a7d6\"><b>15%</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#f3f3f3\"><b>-</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Propagation</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#79bec3\"><b><i>Powered Melee Ability Kill</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#6aa84f\"><b>Unraveling Rounds</b></span> <span style=\"color:#cccccc\"><b>to</b></span> <span style=\"color:#63d275\"><b>Strand Weapons</b></span> <span style=\"color:#cccccc\"><b>for</b></span> <span style=\"color:#a4c2f4\"><b>8</b></span> <span style=\"color:#ea9999\"><b>[5]</b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#91c88e\"><b>+10 Melee</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Rebirth</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Strand Weapon Kills</b></span> <span style=\"color:#cccccc\"><b>progress a counter that spawns a variable number of</b></span> <span style=\"color:#b6d7a8\"><b>Threadlings</b></span> <span style=\"color:#cccccc\"><b>upon reaching 100%.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b><i>Counter Progress</i></b></span> <span style=\"color:#b6d7a8\"><b><i>(Threadling Amount)</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Rank-And-File = 34%</b></span> <span style=\"color:#b6d7a8\"><b>(1)</b></span> <span style=\"color:#a4c2f4\"><b>| Elite = 67%</b></span> <span style=\"color:#b6d7a8\"><b>(2)</b></span> <span style=\"color:#a4c2f4\"><b>| Miniboss and Boss = 100%</b></span> <span style=\"color:#b6d7a8\"><b>(3)</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#ea9999\"><b>Guardians = 67%</b></span> <span style=\"color:#b6d7a8\"><b>(2)</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#f3f3f3\"><b>-</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Transmutation</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#93c47d\"><b><i>Woven Mail</i></b></span> <span style=\"color:#cccccc\"><b><i>is active:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Weapon Kills spawn a</b></span> <span style=\"color:#93c47d\"><b>Tangle</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#91c88e\"><b>+10 Melee</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Warding</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#ffd966\"><b><i>Orb of Power</i></b></span> <span style=\"color:#cccccc\"><b><i>Pickup:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#93c47d\"><b>Woven Mail</b></span> <span style=\"color:#cccccc\"><b>for 5 seconds.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#c88e8e\"><b>-10 Health</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Wisdom</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Killing</b></span> <span style=\"color:#6aa84f\"><b>Suspended Enemies</b></span> <span style=\"color:#cccccc\"><b>creates an</b></span> <span style=\"color:#ffd966\"><b>Orb of Power</b></span> <span style=\"color:#cccccc\"><b>that grants</b></span> <span style=\"color:#ffd966\"><b>2.5% Super Energy.</b></span>",
+      "<span style=\"color:#e06666\"><i>Incurs a 10 second cooldown after creating an</i></span> <span style=\"color:#ffd966\"><i>Orb of Power</i></span><span style=\"color:#e06666\"><i>.</i></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#f3f3f3\"><b>-</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Grenade Abilities</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Grapple</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Hooks up to 22 metres away, dealing</b></span> <span style=\"color:#a4c2f4\"><b>38</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#63d275\"><b>damage</b></span> <span style=\"color:#cccccc\"><b>and staggering enemies on impact, as well as attaching to enemies or objects.</b></span>",
+      "<span style=\"color:#cccccc\"><b><i>Cancelling a</i></b></span> <span style=\"color:#e0a261\"><b><i>Grapple</i></b></span> <span style=\"color:#cccccc\"><b><i>within 1 second of activation refunds</i></b></span> <span style=\"color:#e0a261\"><b><i>50% Grenade Energy.</i></b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b><i>Upon</i></b></span> <span style=\"color:#e0a261\"><b><i>Grappling</i></b></span> <span style=\"color:#cccccc\"><b><i>a</i></b></span> <span style=\"color:#93c47d\"><b><i>Tangle</i></b></span> <span style=\"color:#cccccc\"><b><i>or</i></b></span> <span style=\"color:#93c47d\"><b><i>Grapple Tangle</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Fully refunds a</b></span> <span style=\"color:#e0a261\"><b>Grapple Ability Charge</b></span> <span style=\"color:#cccccc\"><b>and grants</b></span> <span style=\"color:#93c47d\"><b>Grapple Returned</b></span> <span style=\"color:#cccccc\"><b>for 4 seconds, allowing immediate reactivation if</b></span> <span style=\"color:#e0a261\"><b>Grappling</b></span> <span style=\"color:#cccccc\"><b>ends while the buff is active.</b></span>",
+      "<span style=\"color:#e06666\"><i>Grenade Kickstart does not activate when grappling a Tangle or Grapple Tangle.</i></span>",
+      "",
+      "<span style=\"color:#79bec3\"><b>Grapple Melee:</b></span>",
+      "<span style=\"color:#cccccc\"><b>Performed by pressing</b></span> <span style=\"color:#89cdd1\"><b>[Melee Attack]</b></span> <span style=\"color:#cccccc\"><b>while</b></span> <span style=\"color:#e0a261\"><b>grappling</b></span><span style=\"color:#cccccc\"><b>, or for up to ? seconds after, while at a sufficiently fast speed.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Deals</b></span> <span style=\"color:#a4c2f4\"><b>432</b></span> <span style=\"color:#ea9999\"><b>[61]</b></span> <span style=\"color:#63d275\"><b>impact damage</b></span><span style=\"color:#cccccc\"><b>, and up to</b></span> <span style=\"color:#a4c2f4\"><b>432</b></span> <span style=\"color:#ea9999\"><b>[61]</b></span> <span style=\"color:#63d275\"><b>radial damage</b></span> <span style=\"color:#cccccc\"><b>over a 4? metre radius,</b></span> <span style=\"color:#6aa84f\"><b>unraveling</b></span> <span style=\"color:#cccccc\"><b>and pushing enemies back.</b></span>",
+      "<span style=\"color:#ea9999\"><b>Guardians directly hit by Grapple Melee have their Melee Lunge disabled for 0.5 seconds</b></span>",
+      "",
+      "<span style=\"color:#79bec3\"><b><i>Grapple Melee</i></b></span> <span style=\"color:#cccccc\"><b><i>counts as both a</i></b></span> <span style=\"color:#e0a261\"><b><i>Grenade</i></b></span> <span style=\"color:#cccccc\"><b><i>and</i></b></span> <span style=\"color:#79bec3\"><b><i>Melee</i></b></span> <span style=\"color:#cccccc\"><b><i>Ability.</i></b></span>",
+      "<span style=\"color:#e0a261\"><b><i>Ashes to Assets</i></b></span> <span style=\"color:#cccccc\"><b><i>grants</i></b></span> <span style=\"color:#ffd966\"><b><i>50% less Super Energy</i></b></span> <span style=\"color:#cccccc\"><b><i>when a</i></b></span> <span style=\"color:#79bec3\"><b><i>Grapple Melee</i></b></span> <span style=\"color:#cccccc\"><b><i>is used with a</i></b></span> <span style=\"color:#b6d7a8\"><b><i>Grapple Tangle</i></b></span><span style=\"color:#cccccc\"><b><i>.</i></b></span>",
+      "",
+      "<span style=\"color:#e06666\"><b><i>Grapple Passive Ability Regeneration is disabled until no longer airborne. Also applies to Silkstrike.</i></b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 107.9 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.875x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b><i>Mindspun Invocation</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#79bec3\"><b>Grapple Melee</b></span> <span style=\"color:#cccccc\"><b>creates 3</b></span> <span style=\"color:#93c47d\"><b>Threadlings</b></span> <span style=\"color:#cccccc\"><b>on hit.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Shackle Grenade</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Bola Trajectory</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Throws a</b></span> <span style=\"color:#63d275\"><b>bola</b></span><span style=\"color:#cccccc\"><b>, releasing an explosion on impact that deals</b></span> <span style=\"color:#a4c2f4\"><b>190</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#63d275\"><b>damage</b></span> <span style=\"color:#cccccc\"><b>and inflict</b></span> <span style=\"color:#6aa84f\"><b>Suspension</b></span> <span style=\"color:#cccccc\"><b>in a ? metre radius to enemies hit, then releases</b></span> <span style=\"color:#63d275\"><b>smaller bolas</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#63d275\"><b>2 Small Bolas</b></span> <span style=\"color:#cccccc\"><b>are released on direct hit.</b></span> <span style=\"color:#63d275\"><b>3 Smaller Bolas</b></span> <span style=\"color:#cccccc\"><b>are released if they instead impact a surface.</b></span>",
+      "",
+      "<span style=\"color:#63d275\"><b>Smaller Bolas</b></span> <span style=\"color:#cccccc\"><b>are released towards nearby enemies, each dealing</b></span> <span style=\"color:#a4c2f4\"><b>81</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#63d275\"><b>damage</b></span> <span style=\"color:#cccccc\"><b>and inflicting</b></span> <span style=\"color:#6aa84f\"><b>Suspension</b></span> <span style=\"color:#cccccc\"><b>on hit.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 219.5 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.5x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b><i>Mindspun Invocation</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#93c47d\"><b>Weaver's Trance</b></span> <span style=\"color:#cccccc\"><b>for 25 seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Kills while</b></span> <span style=\"color:#93c47d\"><b>Weaver's Trance</b></span> <span style=\"color:#cccccc\"><b>is active cause the enemy to trigger a</b></span> <span style=\"color:#6aa84f\"><b>Suspending explosion</b></span> <span style=\"color:#cccccc\"><b>on death.</b></span>",
+      "<span style=\"color:#6aa84f\"><b>Suspending Explosion</b></span> <span style=\"color:#cccccc\"><b>deals</b></span> <span style=\"color:#a4c2f4\"><b>108</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#63d275\"><b>Strand</b></span> <span style=\"color:#e0a261\"><b>Grenade Ability Damage</b></span> <span style=\"color:#cccccc\"><b>to enemies within 6 meters.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Slicewire</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Medium? Trajectory</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Throws a</b></span> <span style=\"color:#63d275\"><b>bouncing grenade</b></span> <span style=\"color:#cccccc\"><b>that explodes soon after impact, dealing</b></span> <span style=\"color:#63d275\"><b>splash damage</b></span> <span style=\"color:#cccccc\"><b>over 4 hits and inflicting</b></span> <span style=\"color:#6aa84f\"><b>Sever</b></span> <span style=\"color:#cccccc\"><b>for 10</b></span><span style=\"color:#63d275\"><b><small>+5</small></b></span> <span style=\"color:#cccccc\"><b>seconds over 6 meters.</b></span>",
+      "",
+      "<span style=\"color:#63d275\"><b>Slicewire Maximum Damage:</b></span>",
+      "<span style=\"color:#63d275\"><b>1st</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#a4c2f4\"><b>178</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#63d275\"><b>2nd</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#a4c2f4\"><b>178</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#63d275\"><b>3rd</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#a4c2f4\"><b>222</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#63d275\"><b>4th</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#a4c2f4\"><b>267</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#63d275\"><b>damage</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>The first hit against any enemy deals an</b></span> <span style=\"color:#63d275\"><b>additional instance</b></span> <span style=\"color:#cccccc\"><b>of</b></span> <span style=\"color:#a4c2f4\"><b>307</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#63d275\"><b>damage</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 219.5 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.5x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b><i>Mindspun Invocation</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>The fourth explosion will release</b></span> <span style=\"color:#63d275\"><b>4 submunition</b></span> <span style=\"color:#cccccc\"><b>in a X formation, each dealing up to</b></span> <span style=\"color:#a4c2f4\"><b>64</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#63d275\"><b>damage</b></span> <span style=\"color:#cccccc\"><b>and spawning a</b></span> <span style=\"color:#63d275\"><b>Tangle</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Ignores</b></span> <span style=\"color:#e06666\"><b>Tangle Creation Cooldown</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Threadling Grenade</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Medium Trajectory</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Splits into 3 projectiles while midair, each creating a</b></span> <span style=\"color:#b6d7a8\"><b>Threadling</b></span> <span style=\"color:#cccccc\"><b>on impact.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 175.6 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.625x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b><i>Mindspun Invocation</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Hold</b></span> <span style=\"color:#e0a261\"><b>[Grenade]</b></span> <span style=\"color:#cccccc\"><b>to prepare a</b></span> <span style=\"color:#63d275\"><b>Nest Grenade</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#63d275\"><b>Nest Grenade</b></span> <span style=\"color:#cccccc\"><b>creates a</b></span> <span style=\"color:#63d275\"><b>Teeming Nest</b></span> <span style=\"color:#cccccc\"><b>on impact.</b></span>",
+      "",
+      "<span style=\"color:#63d275\"><b>Teeming Nest</b></span><span style=\"color:#cccccc\"><b>:</b></span> <span style=\"color:#dd7e6b\"><b>300 Construct HP</b></span><span style=\"color:#cccccc\"><b>. Lasts for 17.5 seconds, constantly draining</b></span> <span style=\"color:#dd7e6b\"><b>6.7% (-20) HP per second</b></span> <span style=\"color:#cccccc\"><b>1.5 seconds after reaching</b></span> <span style=\"color:#dd7e6b\"><b>Full Health</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Gives birth to</b></span> <span style=\"color:#63d275\"><b>3 Threadlings</b></span> <span style=\"color:#cccccc\"><b>on deployment, followed by a</b></span> <span style=\"color:#63d275\"><b>Threadling</b></span> <span style=\"color:#cccccc\"><b>every 5 seconds.</b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#2d3b49\"><b>Hunter</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#f3f3f3\"><b>Hunters</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Melee Abilities</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Threaded Spike</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Bounces on hits or upon striking surfaces, heading towards up to 9 enemies within ? metres of each, dealing</b></span> <span style=\"color:#a4c2f4\"><b>427</b></span> <span style=\"color:#ea9999\"><b>[82]</b></span> <span style=\"color:#cccccc\"><b>damage and</b></span> <span style=\"color:#6aa84f\"><b>severing</b></span> <span style=\"color:#cccccc\"><b>for ?</b></span><span style=\"color:#93c47d\"><b><small>+?</small></b></span> <span style=\"color:#cccccc\"><b>seconds on hit.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Deals 18% decreased damage on the first bounce, and 42.5% decreased damage on every bounce afterwards.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#79bec3\"><b>Melee Energy</b></span> <span style=\"color:#cccccc\"><b>based on the amount of hits scored upon returning.</b></span>",
+      "<span style=\"color:#79bec3\"><b>[Melee Attack]</b></span> <span style=\"color:#cccccc\"><b>while the projectile is nearby to catch it.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Catching the</b></span> <span style=\"color:#63d275\"><b>Threaded Spike</b></span> <span style=\"color:#cccccc\"><b>increases the</b></span> <span style=\"color:#79bec3\"><b>amount of Melee Energy</b></span> <span style=\"color:#cccccc\"><b>gained.</b></span>",
+      "<span style=\"color:#63d275\"><b>Strand Subclass Exclusive</b></span><span style=\"color:#cccccc\"><b>: Catching the</b></span> <span style=\"color:#63d275\"><b>Threaded Spike</b></span> <span style=\"color:#cccccc\"><b>grants</b></span> <span style=\"color:#93c47d\"><b>Woven Mail</b></span> <span style=\"color:#cccccc\"><b>for 2 seconds for each kill it scores, up to a maximum of 10 seconds.</b></span>",
+      "",
+      "<span style=\"color:#79bec3\"><b>Hits | Melee % | Caught %</b></span>",
+      "<span style=\"color:#79bec3\"><b>0 | 5% | 20%</b></span>",
+      "<span style=\"color:#79bec3\"><b>1 | 10% | 30%</b></span>",
+      "<span style=\"color:#79bec3\"><b>2 | 20% | 50%</b></span>",
+      "<span style=\"color:#79bec3\"><b>3 | 30% | 70%</b></span>",
+      "<span style=\"color:#79bec3\"><b>4 | 35% | 85%</b></span>",
+      "<span style=\"color:#79bec3\"><b>5+ | 40% | 100%</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 145.2 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.8x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Super Abilities</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Silkstrike</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#ffd966\"><b>General Super Information</b></span>",
+      "<span style=\"color:#cccccc\"><b>Damage Resistance:</b></span> <span style=\"color:#a4c2f4\"><b>90%</b></span> <span style=\"color:#ea9999\"><b>[45%]</b></span>",
+      "<span style=\"color:#cccccc\"><b>Base Duration: 24.5 seconds, or</b></span> <span style=\"color:#ffd966\"><b>4% Super Drain</b></span> <span style=\"color:#cccccc\"><b>per Second</b></span>",
+      "",
+      "<span style=\"color:#b6d7a8\"><b>Light Attack</b></span>",
+      "<span style=\"color:#ffd966\"><b>Drains 4% Super Energy.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Hits deal</b></span> <span style=\"color:#a4c2f4\"><b>1638</b></span> <span style=\"color:#ea9999\"><b>[260]</b></span> <span style=\"color:#cccccc\"><b>damage.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Kills cause the enemy to explode, dealing up to</b></span> <span style=\"color:#a4c2f4\"><b>1293</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage to enemies within ? metres.</b></span>",
+      "",
+      "<span style=\"color:#93c47d\"><b>Heavy Attack</b></span>",
+      "<span style=\"color:#ffd966\"><b>Drains 9% Super Energy.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Swings the rope dart in a 360-degree arc, dealing</b></span> <span style=\"color:#a4c2f4\"><b>[504]</b></span> <span style=\"color:#ea9999\"><b>[80]</b></span> <span style=\"color:#cccccc\"><b>damage in a ? metre radius. Hits twice per usage.</b></span>",
+      "",
+      "<span style=\"color:#e0a261\"><b>Grenade</b></span>",
+      "<span style=\"color:#cccccc\"><b>Does not drain</b></span> <span style=\"color:#ffd966\"><b>Super Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Functionally identical to a</b></span> <span style=\"color:#e0a261\"><b>Grapple Grenade</b></span> <span style=\"color:#cccccc\"><b>that instantly recharges once grounded.</b></span>",
+      "",
+      "<span style=\"color:#b4a7d6\"><b>Class Ability</b></span>",
+      "<span style=\"color:#ffd966\"><b>Drains 4.5% Super Energy.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Performs the</b></span> <span style=\"color:#a2c4c9\"><b>Arc Staff</b></span> <span style=\"color:#b4a7d6\"><b>Dodge</b></span> <span style=\"color:#cccccc\"><b>Animation, evading attacks.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Allows the repeated usage of</b></span> <span style=\"color:#63d275\"><b>Ensnaring Slam</b></span> <span style=\"color:#cccccc\"><b>while the</b></span> <span style=\"color:#63d275\"><b>Aspect</b></span> <span style=\"color:#cccccc\"><b>is equipped at the cost of</b></span> <span style=\"color:#ffd966\"><b>4.5% Super Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Tier 2 Super</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>556 seconds.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Aspect</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Information</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Fragment Slots</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Ensnaring Slam</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>[Air Move] expends</b></span> <span style=\"color:#b4a7d6\"><b>Class Ability Energy</b></span> <span style=\"color:#cccccc\"><b>to dive downwards, dealing</b></span> <span style=\"color:#a4c2f4\"><b>61</b></span> <span style=\"color:#ea9999\"><b>[11]</b></span> <span style=\"color:#cccccc\"><b>damage and inflicting</b></span> <span style=\"color:#6aa84f\"><b>Suspension</b></span> <span style=\"color:#cccccc\"><b>to enemies within</b></span> <span style=\"color:#a4c2f4\"><b>8</b></span> <span style=\"color:#ea9999\"><b>[6.5]</b></span> <span style=\"color:#cccccc\"><b>metres.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Triggers the effects of the</i></span> <span style=\"color:#b4a7d6\"><i>equipped Class Ability</i></span><span style=\"color:#cccccc\"><i>, as well as</i></span> <span style=\"color:#63d275\"><i>Threaded Specter</i></span> <span style=\"color:#cccccc\"><i>if equipped.</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#93c47d\"><b>Woven Mail</b></span> <span style=\"color:#cccccc\"><b>for 4 seconds for each enemy</b></span> <span style=\"color:#6aa84f\"><b>suspended</b></span> <span style=\"color:#cccccc\"><b>with the</b></span> <span style=\"color:#63d275\"><b>Ensnaring Slam</b></span><span style=\"color:#cccccc\"><b>, up to a maximum of 20 seconds.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Threaded Specter</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#b4a7d6\"><b><i>Class Ability Usage</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\">Spawns a</span> <span style=\"color:#93c47d\"><b>Strand Decoy.</b></span>",
+      "",
+      "<span style=\"color:#93c47d\"><b>Decoy</b></span> <span style=\"color:#cccccc\"><b>has</b></span> <span style=\"color:#dd7e6b\"><b>175 Construct HP</b></span> <span style=\"color:#cccccc\"><b>and lasts for up to 12 seconds.</b></span> <span style=\"color:#a4c2f4\"><b>Combatants are lured to attack it, and has 70% Damage Resist against Combatants</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Allies</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#93c47d\"><b>Caster</b></span> <span style=\"color:#cccccc\"><b>deal 150% increased Ability and Weapon Damage towards it.</b></span>",
+      "<span style=\"color:#93c47d\"><b><i>Decoy</i></b></span> <span style=\"color:#cccccc\"><i>always counts as</i></span> <span style=\"color:#ea9999\"><b><i>hostile</i></b></span> <span style=\"color:#cccccc\"><i>and can be damaged by</i></span> <span style=\"color:#a4c2f4\"><b><i>allies</i></b></span><span style=\"color:#cccccc\"><i>,</i> <b><i>enemies</i></b><i>, and the</i></span> <span style=\"color:#93c47d\"><b><i>caster</i></b></span><span style=\"color:#cccccc\"><i>. Does not activate any On-Kill effect.</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>Upon losing</i></span> <span style=\"color:#dd7e6b\"><b><i>all HP</i></b></span> <span style=\"color:#cccccc\"><i>or when an enemy is within ? metres:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Deals up to</b></span> <span style=\"color:#a4c2f4\"><b>600</b></span> <span style=\"color:#ea9999\"><b>[60 Guardians | 121 Objects]</b></span> <span style=\"color:#cccccc\"><b>damage in a ? metre radius.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Explosions triggered by enemies being near it spawn</b></span> <span style=\"color:#b6d7a8\"><b>2 Threadlings.</b></span>",
+      "",
+      "<span style=\"color:#b4a7d6\"><b>Passively applies 0.6x Class Ability Regeneration Speed while equipped.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Whirling Maelstrom</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon</i> <b><i>destroying</i></b> <i>a regular, boring</i></span> <span style=\"color:#93c47d\"><b><i>Tangle:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Summons a</b></span> <span style=\"color:#93c47d\"><b>Spinny Tangle</b></span><span style=\"color:#cccccc\"><b>, which seeks enemies within ? metres, accelerating as it gets closer, up to a maximum of 6m/s.</b></span>",
+      "<span style=\"color:#93c47d\"><i>Beyblade Tangles</i></span> <span style=\"color:#cccccc\"><i>counts as a</i></span> <span style=\"color:#93c47d\"><b><i>Grapple Tangle</i></b></span><span style=\"color:#cccccc\"><i>.</i></span>",
+      "",
+      "<span style=\"color:#93c47d\"><b>Whirling Tangles</b></span> <span style=\"color:#cccccc\"><b>have</b></span> <span style=\"color:#dd7e6b\"><b>? Construct HP</b></span><span style=\"color:#cccccc\"><b>, and last for 12 seconds.</b></span>",
+      "<span style=\"color:#93c47d\"><b>🛸UFO Tangles</b></span> <span style=\"color:#cccccc\"><b>deal</b></span> <span style=\"color:#a4c2f4\"><b>29</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#63d275\"><b>Strand damage</b></span> <span style=\"color:#cccccc\"><b>every 0.1 seconds in a 2? meter radius, and release</b></span> <span style=\"color:#6aa84f\"><b>Unraveling Projectiles</b></span> <span style=\"color:#cccccc\"><b>on kill.</b></span>",
+      "<span style=\"color:#93c47d\"><i>Stabby Tangles</i></span> <span style=\"color:#cccccc\"><i>kills count as</i></span> <span style=\"color:#93c47d\"><i>Tangle Kills</i></span><span style=\"color:#cccccc\"><i>.</i></span> <span style=\"color:#93c47d\"><i>Rotating Tangles</i></span> <span style=\"color:#cccccc\"><i>Hits</i></span> <span style=\"color:#e06666\"><i>do not count</i></span> <span style=\"color:#cccccc\"><i>as</i></span> <span style=\"color:#93c47d\"><i>Tangle hits</i></span> <span style=\"color:#cccccc\"><i>nor as</i></span> <span style=\"color:#d5a6bd\"><i>Ability Damage</i></span><span style=\"color:#cccccc\"><i>.</i></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Widow's Silk</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Grants an additional</b></span> <span style=\"color:#e0a261\"><b>Grenade Ability Charge.</b></span>",
+      "",
+      "<span style=\"color:#e0a261\"><b>Grapple</b></span> <span style=\"color:#cccccc\"><b>creates a</b></span> <span style=\"color:#b6d7a8\"><b>Grapple Tangle</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#b6d7a8\"><b><i>Grapple Tangle</i></b></span> <span style=\"color:#cccccc\"><i>won't be created if</i></span> <span style=\"color:#e0a261\"><b><i>Grapple</i></b></span> <span style=\"color:#cccccc\"><i>attaches to an enemy or</i></span> <span style=\"color:#a4c2f4\"><b><i>ally</i></b></span><span style=\"color:#cccccc\"><b><i>.</i></b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Scoring a</b></span> <span style=\"color:#89cdd1\"><b>Grapple Melee hit</b></span> <span style=\"color:#cccccc\"><b>creates a</b></span> <span style=\"color:#b6d7a8\"><b>Grapple Tangle</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#e06666\"><i>Only creates one if the Grapple wasn't free by initially targeting a Tangle or Grapple Tangle.</i></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#492b2b\"><b>Titan</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#f3f3f3\"><b>Titans</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Melee Abilities</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Frenzied Blade</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>Innately has</i></b></span> <span style=\"color:#79bec3\"><b><i>3 Melee Ability Charges.</i></b></span>",
+      "<span style=\"color:#79bec3\"><b>0 Charges = 1.15x Regeneration Speed | 1 Charge = 1.55x Regeneration Speed | 2 Charges = 1.95x Regeneration Speed.</b></span>",
+      "<span style=\"color:#fbbdec\"><b>On Prismatic:</b></span> <span style=\"color:#e06666\"><b>Penalized</b></span> <span style=\"color:#fbbdec\"><b>with an additional 0.7x Regeneration Speed</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Performs a dash, moving forward ? metres and slashing towards enemies, dealing</b></span> <span style=\"color:#a4c2f4\"><b>569</b></span> <span style=\"color:#ea9999\"><b>[105]</b></span> <span style=\"color:#cccccc\"><b>damage and inflicting</b></span> <span style=\"color:#6aa84f\"><b>severed</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 159.6 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.7x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Super Abilities</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Bladefury</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#ffd966\"><b>General Super Information</b></span>",
+      "<span style=\"color:#cccccc\"><b>Damage Resistance:</b></span> <span style=\"color:#a4c2f4\"><b>90%</b></span> <span style=\"color:#ea9999\"><b>[50%]</b></span>",
+      "<span style=\"color:#cccccc\"><b>Base Duration: 24 seconds, or</b></span> <span style=\"color:#ffd966\"><b>4.167% Super Drain per Second</b></span>",
+      "<span style=\"color:#cccccc\"><i>Grants</i></span> <span style=\"color:#79bec3\"><i>3 Melee Ability Charges</i></span> <span style=\"color:#cccccc\"><i>on</i></span> <span style=\"color:#ffd966\"><i>Super End</i></span><span style=\"color:#cccccc\"><i>.</i></span>",
+      "",
+      "<span style=\"color:#b6d7a8\"><b>Light Attack</b></span>",
+      "<span style=\"color:#ffd966\"><b>Drains 3% Super Energy.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Performs a strengthened</b></span> <span style=\"color:#79bec3\"><b>Frenzied Blade Melee</b></span> <span style=\"color:#cccccc\"><b>that deals</b></span> <span style=\"color:#a4c2f4\"><b>851</b></span> <span style=\"color:#ea9999\"><b>[210]</b></span> <span style=\"color:#cccccc\"><b>damage and can be infinitely chained.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Deals 25% increased damage against</b></span> <span style=\"color:#6aa84f\"><b>Suspended</b></span> <span style=\"color:#cccccc\"><b>enemies.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Attacks 3 times per second. Increases Attack Speed by 100% after chaining 3 sustained light attacks.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Performing a Heavy Attack, or failing to maintain a Light Attack chain will remove the Attack Speed Increase.</i></span>",
+      "",
+      "<span style=\"color:#93c47d\"><b>Heavy Attack</b></span>",
+      "<span style=\"color:#ffd966\"><b>Drains 10.5% Super Energy.</b></span> <span style=\"color:#dd7e6b\"><b><i>Incurs a 3 second cooldown after usage.</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Hurls a pair of</b></span> <span style=\"color:#6aa84f\"><b>Suspending</b></span> <span style=\"color:#cccccc\"><b>projectiles forward that home in towards enemies, dealing</b></span> <span style=\"color:#a4c2f4\"><b>143 x 2</b></span> <span style=\"color:#ea9999\"><b>[61]</b></span> <span style=\"color:#cccccc\"><b>impact damage, and up to</b></span> <span style=\"color:#a4c2f4\"><b>608 x 2</b></span> <span style=\"color:#ea9999\"><b>[36]</b></span> <span style=\"color:#cccccc\"><b>splash damage over ? meters.</b></span>",
+      "<span style=\"color:#e06666\"><b><i>Light Attack Hits reduce the cooldown by 1 second. Receiving any damage reduces the cooldown by 1 second.</i></b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Tier 2 Super</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Base Cooldown:</b></span>",
+      "<span style=\"color:#cccccc\"><b>556 seconds</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Aspect</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Information</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Fragment Slots</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Banner of War</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon scoring a</i></span> <span style=\"color:#a481e1\"><b><i>Sword Kill</i></b></span><span style=\"color:#cccccc\"><i>,</i></span> <span style=\"color:#79bec3\"><b><i>Melee Kill</i></b></span><span style=\"color:#cccccc\"><i>,</i></span> <span style=\"color:#79bec3\"><b><i>Glaive Melee Kill</i></b></span><span style=\"color:#cccccc\"><i>,</i></span> <span style=\"color:#ffd966\"><b><i>Super Light Attack Kill</i></b></span><span style=\"color:#cccccc\"><i>, or</i></span> <span style=\"color:#a4c2f4\"><b><i>Finisher</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Raises a</b></span> <span style=\"color:#93c47d\"><b>Banner of War</b></span> <span style=\"color:#cccccc\"><b>for 15 seconds, buffing the user and</b></span> <span style=\"color:#a4c2f4\"><b>nearby allies</b></span> <span style=\"color:#cccccc\"><b>within 10 metres.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Kills scored by the user or</b></span> <span style=\"color:#a4c2f4\"><b>nearby allies</b></span> <span style=\"color:#cccccc\"><b>empower and extend the duration of</b></span> <span style=\"color:#93c47d\"><b>Banner of War</b></span><span style=\"color:#cccccc\"><b>, up to a maximum of</b></span> <span style=\"color:#93c47d\"><b>x4 Banner of War</b></span> <span style=\"color:#cccccc\"><b>and 30 seconds.</b></span>",
+      "",
+      "<span style=\"color:#93c47d\"><b>Banner of War:</b></span>",
+      "<span style=\"color:#cccccc\"><b>Lasts for 15 seconds, up to a maximum of 24 seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#93c47d\"><b>x1 stacks</b></span> <span style=\"color:#cccccc\"><b>for every</b></span> <span style=\"color:#a4c2f4\"><b>7</b></span> <span style=\"color:#ea9999\"><b>[2]</b></span> <span style=\"color:#cccccc\"><b>enemies that either die within 20 meters, are killed by the user, or by</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>within 20 metres.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Kills increase the duration by +5 seconds. Each</b></span> <span style=\"color:#93c47d\"><b>stack after the second</b></span> <span style=\"color:#cccccc\"><b>decreases the duration extension by -1, down to +3 seconds per kill at</b></span> <span style=\"color:#93c47d\"><b>x4 stacks</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Periodically</b></span> <span style=\"color:#dd7e6b\"><b>restores 20 HP</b></span> <span style=\"color:#cccccc\"><b>every</b></span> <span style=\"color:#dd7e6b\"><b>2.5 seconds</b></span><span style=\"color:#cccccc\"><b>. Each</b></span> <span style=\"color:#93c47d\"><b>stack after the first</b></span> <span style=\"color:#cccccc\"><b>decreases the</b></span> <span style=\"color:#dd7e6b\"><b>delay between pulses</b></span> <span style=\"color:#cccccc\"><b>by</b></span> <span style=\"color:#dd7e6b\"><b>0.5 second</b></span><span style=\"color:#cccccc\"><b>, down to</b></span> <span style=\"color:#dd7e6b\"><b>1 second</b></span> <span style=\"color:#cccccc\"><b>at</b></span> <span style=\"color:#93c47d\"><b>x4 stacks</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#79bec3\"><b>100%</b></span> <span style=\"color:#ea9999\"><b>[Varies]</b></span> <span style=\"color:#79bec3\"><b>Increased Melee Damage</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#ffd966\"><b>40% Increased Bladefury Damage</b></span><span style=\"color:#cccccc\"><b>, and</b></span> <span style=\"color:#a481e1\"><b>20% Increased Sword Damage</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#ea9999\"><b>[x1 = ?% Inc. Melee DMG | x2 = ?% | x3 = ?% | x4 = ?%]</b></span>",
+      "",
+      "<span style=\"color:#93c47d\"><b>Stacks</b></span> <span style=\"color:#cccccc\"><b>| Time Extension | Kills for next stack |</b></span> <span style=\"color:#dd7e6b\"><b>Pulse Delay</b></span>",
+      "<span style=\"color:#93c47d\"><b>x1</b></span> <span style=\"color:#cccccc\"><b>| +6 seconds |</b></span> <span style=\"color:#a4c2f4\"><b>7</b></span> <span style=\"color:#ea9999\"><b>[2]</b></span> <span style=\"color:#cccccc\"><b>Kills |</b></span> <span style=\"color:#dd7e6b\"><b>2.5 seconds</b></span>",
+      "<span style=\"color:#93c47d\"><b>x2</b></span> <span style=\"color:#cccccc\"><b>| +5 seconds |</b></span> <span style=\"color:#a4c2f4\"><b>7</b></span> <span style=\"color:#ea9999\"><b>[2]</b></span> <span style=\"color:#cccccc\"><b>Kills |</b></span> <span style=\"color:#dd7e6b\"><b>2 seconds</b></span>",
+      "<span style=\"color:#93c47d\"><b>x3</b></span> <span style=\"color:#cccccc\"><b>| +4 seconds |</b></span> <span style=\"color:#a4c2f4\"><b>7</b></span> <span style=\"color:#ea9999\"><b>[2]</b></span> <span style=\"color:#cccccc\"><b>Kills |</b></span> <span style=\"color:#dd7e6b\"><b>1.5 seconds</b></span>",
+      "<span style=\"color:#93c47d\"><b>x4</b></span> <span style=\"color:#cccccc\"><b>| +3 seconds | - |</b></span> <span style=\"color:#dd7e6b\"><b>1 second</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Drengr's Lash</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Killing</b></span> <span style=\"color:#c27ba0\"><b>Elementally-Debuffed Enemies</b></span> <span style=\"color:#cccccc\"><b>grants</b></span> <span style=\"color:#b4a7d6\"><b>?% Class Ability Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#b4a7d6\"><b><i>Class Ability Usage:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Unleashes a</b></span> <span style=\"color:#63d275\"><b>Strand Lash</b></span> <span style=\"color:#cccccc\"><b>forward that travels up to 30 metres away.</b></span>",
+      "<span style=\"color:#63d275\"><b>Strand Lash</b></span> <span style=\"color:#cccccc\"><b>tracks enemies in its path, dealing</b></span> <span style=\"color:#a4c2f4\"><b>61</b></span> <span style=\"color:#ea9999\"><b>[31]</b></span> <span style=\"color:#cccccc\"><b>damage and applying</b></span> <span style=\"color:#6aa84f\"><b>Suspension</b></span> <span style=\"color:#cccccc\"><b>on hit.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Flechette Storm</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>While sliding:</i></b></span>",
+      "<span style=\"color:#79bec3\"><b>[Melee Ability]</b></span> <span style=\"color:#cccccc\"><b>leaps into the air, draining</b></span> <span style=\"color:#79bec3\"><b>50% Melee Energy</b></span><span style=\"color:#cccccc\"><b>, knocking enemies within ? metres back, and dealing</b></span> <span style=\"color:#a4c2f4\"><b>135</b></span> <span style=\"color:#ea9999\"><b>[66]</b></span> <span style=\"color:#cccccc\"><b>damage.</b></span>",
+      "<span style=\"color:#e06666\"><b><i>Unable to use during slide if user shoots.</i></b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b><i>While Airborne after using</i></b></span> <span style=\"color:#79bec3\"><b><i>Melee Ability</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#79bec3\"><b>[Melee Ability]</b></span> <span style=\"color:#cccccc\"><b>drains</b></span> <span style=\"color:#79bec3\"><b>50% Melee Energy</b></span> <span style=\"color:#cccccc\"><b>to launch a cluster of</b></span> <span style=\"color:#6aa84f\"><b>4 Unraveling Projectiles</b></span><span style=\"color:#cccccc\"><b>, each dealing</b></span> <span style=\"color:#a4c2f4\"><b>171</b></span> <span style=\"color:#ea9999\"><b>[25.2]</b></span> <span style=\"color:#cccccc\"><b>damage to enemies within ? metres.</b></span>",
+      "<span style=\"color:#79bec3\"><b>[Melee Ability]</b></span> <span style=\"color:#cccccc\"><b>while airborne to chain additional throws.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Grants 25% Damage Resist against</b></span> <span style=\"color:#79bec3\"><b>Non-Melee</b></span> <span style=\"color:#cccccc\"><b>while in the</b></span> <span style=\"color:#79bec3\"><b>Melee Animation</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Into The Fray</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon destroying a</i></span> <span style=\"color:#93c47d\"><b><i>Tangle</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Releases</b></span> <span style=\"color:#b6d7a8\"><b>3 pulses</b></span> <span style=\"color:#cccccc\"><b>from where the</b></span> <span style=\"color:#93c47d\"><b>Tangle</b></span> <span style=\"color:#cccccc\"><b>was destroyed,</b></span> <span style=\"color:#dd7e6b\"><b>restoring 15 HP</b></span> <span style=\"color:#cccccc\"><b>and granting</b></span> <span style=\"color:#93c47d\"><b>Woven Mail</b></span> <span style=\"color:#cccccc\"><b>to the user and</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>within 10? metres every 2 seconds.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#ffd966\"><b><i>Super Cast</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>within ? metres</b></span> <span style=\"color:#93c47d\"><b>Woven Mail</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#93c47d\"><b><i>Woven Mail</i></b></span> <span style=\"color:#cccccc\"><i>is</i> <b><i>active:</i></b></span>",
+      "<span style=\"color:#a4c2f4\"><b>300%</b></span> <span style=\"color:#ea9999\"><b>[200%]</b></span> <span style=\"color:#79bec3\"><b>Additional Base Melee Regeneration Rate.</b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#49422b\"><b>Warlocks</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#f3f3f3\"><b>Warlocks</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Melee Abilities</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Arcane Needle</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>Innately has</i></b></span> <span style=\"color:#79bec3\"><b><i>3 Melee Ability Charges.</i></b></span>",
+      "<span style=\"color:#79bec3\"><b>0 Charges = 1.16x Regeneration Speed | 1 Charge = 1.64x Regeneration Speed | 2 Charges = 2.6x Regeneration Speed</b></span>",
+      "<span style=\"color:#fbbdec\"><b>On Prismatic:</b></span> <span style=\"color:#e06666\"><b>Penalized</b></span> <span style=\"color:#fbbdec\"><b>with an additional 0.7x Regeneration Speed</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Throws a seeking</b></span> <span style=\"color:#63d275\"><b>Strand Needle</b></span><span style=\"color:#cccccc\"><b>, homing towards the targeted enemy, dealing</b></span> <span style=\"color:#a4c2f4\"><b>505</b></span> <span style=\"color:#ea9999\"><b>[68]</b></span> <span style=\"color:#cccccc\"><b>damage and inflicting</b></span> <span style=\"color:#6aa84f\"><b>unravel</b></span> <span style=\"color:#cccccc\"><b>for</b></span> <span style=\"color:#a4c2f4\"><b>?</b></span><span style=\"color:#93c47d\"><b><small>+?</small></b></span> <span style=\"color:#ea9999\"><b>[7</b></span><span style=\"color:#93c47d\"><b><small>+2.5]</small></b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 146 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.8x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Super Abilities</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Needlestorm</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#ffd966\"><b>General Super Information</b></span>",
+      "<span style=\"color:#cccccc\"><b>Damage Resistance:</b></span> <span style=\"color:#a4c2f4\"><b>?%</b></span> <span style=\"color:#ea9999\"><b>[53%]</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Releases</b></span> <span style=\"color:#93c47d\"><b>9 homing projecties</b></span><span style=\"color:#cccccc\"><b>, each dealing</b></span> <span style=\"color:#a4c2f4\"><b>783</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage and embedding on hit, exploding after ? seconds into</b></span> <span style=\"color:#b6d7a8\"><b>threadlings</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#b6d7a8\"><b>Threadlings</b></span> <span style=\"color:#cccccc\"><b>spawned from</b></span> <span style=\"color:#ffd966\"><b>Needlestorm</b></span> <span style=\"color:#cccccc\"><b>deal</b></span> <span style=\"color:#a4c2f4\"><b>368</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Tier 3 Super</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Base Cooldown:</b></span>",
+      "<span style=\"color:#cccccc\"><b>500 seconds</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Aspect</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Information</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Fragment Slots</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Mindspun Invocation</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#93c47d\"><b>Enhances Strand Grenades:</b></span>",
+      "",
+      "<span style=\"color:#93c47d\"><b>Grapple |</b></span> <span style=\"color:#79bec3\"><b>Grapple Melees</b></span> <span style=\"color:#cccccc\"><b>create</b></span> <span style=\"color:#b6d7a8\"><b>3 Threadlings</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#93c47d\"><b>Threadling Grenade |</b></span> <span style=\"color:#cccccc\"><b>Hold</b></span> <span style=\"color:#e0a261\"><b>[Grenade]</b></span> <span style=\"color:#cccccc\"><b>to throw a</b></span> <span style=\"color:#b6d7a8\"><b>Threadling nest</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#93c47d\"><b>Shackle Grenade</b></span> <span style=\"color:#cccccc\"><b>| Hold</b></span> <span style=\"color:#e0a261\"><b>[Grenade]</b></span> <span style=\"color:#cccccc\"><b>to consume a</b></span> <span style=\"color:#e0a261\"><b>Grenade Charge</b></span><span style=\"color:#cccccc\"><b>, granting</b></span> <span style=\"color:#93c47d\"><b>Weaver's Trance</b></span> <span style=\"color:#cccccc\"><b>for 25 seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Kills create a</b></span> <span style=\"color:#6aa84f\"><b>Suspending Explosion</b></span> <span style=\"color:#cccccc\"><b>while</b></span> <span style=\"color:#93c47d\"><b>Weaver's Trance</b></span> <span style=\"color:#cccccc\"><b>is active that deals</b></span> <span style=\"color:#a4c2f4\"><b>108</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#63d275\"><b>Strand</b></span> <span style=\"color:#e0a261\"><b>Grenade Ability Damage</b></span> <span style=\"color:#cccccc\"><b>to enemies within 6 meters.</b></span>",
+      "",
+      "<span style=\"color:#93c47d\"><b>Slicewire Grenade</b></span><span style=\"color:#cccccc\"><b>: Hold</b></span> <span style=\"color:#e0a261\"><b>[Grenade]</b></span> <span style=\"color:#cccccc\"><b>to overcharge it.</b></span>",
+      "<span style=\"color:#cccccc\"><b>The fourth explosion will release</b></span> <span style=\"color:#63d275\"><b>4 submunition</b></span> <span style=\"color:#cccccc\"><b>in a X formation, each dealing up to</b></span> <span style=\"color:#a4c2f4\"><b>64</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#63d275\"><b>damage</b></span> <span style=\"color:#cccccc\"><b>and spawning a</b></span> <span style=\"color:#63d275\"><b>Tangle</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Ignores</b></span> <span style=\"color:#e06666\"><b>Tangle Creation Cooldown</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>The Wanderer</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#93c47d\"><b>Tangles</b></span> <span style=\"color:#cccccc\"><b>trigger a</b></span> <span style=\"color:#6aa84f\"><b>Suspending Explosion</b></span> <span style=\"color:#cccccc\"><b>after 1 second of exploding, dealing</b></span> <span style=\"color:#a4c2f4\"><b>324</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#63d275\"><b>Damage</b></span> <span style=\"color:#cccccc\"><b>and inflicting</b></span> <span style=\"color:#6aa84f\"><b>Suspension</b></span> <span style=\"color:#cccccc\"><b>to enemies within 6 metres.</b></span>",
+      "",
+      "<span style=\"color:#93c47d\"><b>Thrown Tangles</b></span> <span style=\"color:#cccccc\"><b>now seek and attach to enemies and are unaffected by Gravity.</b></span>",
+      "",
+      "<span style=\"color:#b6d7a8\"><b>Threadling Kills</b></span> <span style=\"color:#cccccc\"><b>spawn a</b></span> <span style=\"color:#93c47d\"><b>Tangle</b></span> <span style=\"color:#cccccc\"><b>and decrease the</b></span> <span style=\"color:#e06666\"><b>Tangle Cooldown</b></span> <span style=\"color:#cccccc\"><b>by</b></span> <span style=\"color:#b6d7a8\"><b>1 second</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Weaver's Call</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#b6d7a8\"><b>Threadling damage instances</b></span> <span style=\"color:#cccccc\"><b>grant</b></span> <span style=\"color:#b4a7d6\"><b>10% Class Ability Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Dealing an accumulated total of</b></span> <span style=\"color:#a4c2f4\"><b>700</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage grants a</b></span> <span style=\"color:#b6d7a8\"><b>Perched Threadling</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#e06666\"><i>Incurs a 2 second cooldown before additional threadlings can be generated. Cannot generate more than 1 Threadling at a time.</i></span>",
+      "<span style=\"color:#e06666\"><b><i>Damage requirement is based on the displayed damage numbers, and is penalized by Power Level Delta.</i></b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#b4a7d6\"><b><i>Class Ability Usage</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Creates 3</b></span> <span style=\"color:#b6d7a8\"><b>Threadlings</b></span><span style=\"color:#cccccc\"><b>, and deploys all</b></span> <span style=\"color:#b6d7a8\"><b>Perched Threadlings</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Kills progress a counter that grants a</b></span> <span style=\"color:#b6d7a8\"><b>Perched Threadling</b></span> <span style=\"color:#cccccc\"><b>upon reaching 100%.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Miniboss and below</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#b6d7a8\"><b>34%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>Boss</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#b6d7a8\"><b>100%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#ea9999\"><b>Guardians</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#b6d7a8\"><b>67%</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Weavewalk</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>While</i> <b><i>airborne and while having at least</i></b></span> <span style=\"color:#79bec3\"><b><i>1 Melee Ability Charge</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>[Air Move]</b> grants</span> <span style=\"color:#b6d7a8\"><b>Weavewalk</b></span> <span style=\"color:#cccccc\">and <b>instantly consumes</b></span> <span style=\"color:#79bec3\"><b>20% Melee Ability Energy</b></span><span style=\"color:#cccccc\">.</span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#b6d7a8\"><b><i>Weavewalk</i></b></span> <span style=\"color:#cccccc\"><i>is</i> <b><i>active</i></b><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Generates a</b></span> <span style=\"color:#b6d7a8\"><b>Perched Threadlings</b></span> <span style=\"color:#cccccc\"><b>every 0.5 seconds. Grants</b></span> <span style=\"color:#a4c2f4\"><b>90%</b></span> <span style=\"color:#ea9999\"><b>[90%, 60% while carrying Spark]</b></span> <span style=\"color:#cccccc\"><b>Damage Resist.</b></span>",
+      "<span style=\"color:#79bec3\"><b>Drains 25% Melee Ability Energy per second.</b></span>",
+      "<span style=\"color:#cccccc\"><b><i>Functionally identical to</i></b></span> <span style=\"color:#b4a7d6\"><b><i>Void Invisibility</i></b></span><span style=\"color:#cccccc\"><b><i>.</i></b></span>",
+      "<span style=\"color:#79bec3\"><b><i>Arc Souls</i></b></span><span style=\"color:#cccccc\"><b><i>,</i></b></span> <span style=\"color:#ffd966\"><b><i>No Time To Explain's Time-slip Portal</i></b></span><span style=\"color:#cccccc\"><b><i>, and</i></b></span> <span style=\"color:#b6d7a8\"><b><i>Threadlings</i></b></span> <span style=\"color:#cccccc\"><b><i>deal 50% Decreased Damage.</i></b></span>",
+      "<span style=\"color:#e06666\"><i>Unable to use Weapon, Abilities, or perform revives. Cannot pick up ammo or Orbs of Power.</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>Upon exiting</i></span> <span style=\"color:#b6d7a8\"><b><i>Weavewalk</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#93c47d\"><b>Woven Mail</b></span> <span style=\"color:#cccccc\"><b>to the user and</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>within ? meters.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Duration scales from 2 seconds, up to a maximum of 20 seconds after being in</b></span> <span style=\"color:#b6d7a8\"><b>Weavewalk</b></span> <span style=\"color:#cccccc\"><b>for ? seconds.</b></span>"
+    ]
+  ]
+]

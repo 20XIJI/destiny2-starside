@@ -1,0 +1,1730 @@
+[
+  [
+    [
+      "<span style=\"color:#76a5af\"><b>Archive of Artifact Mods/Perks, released during Season 19 to 23.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#868bcd\"><b>Season of the Wish (S23)</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#f9cb9c\"><b>Anti-Barrier Sidearm</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#f6b26b\"><b>Flame</b></span><span style=\"color:#b2d6d7\"><b>,</b></span> <span style=\"color:#93c47d\"><b>Fiber</b></span><span style=\"color:#b2d6d7\"><b>, and</b></span> <span style=\"color:#6fa8dc\"><b>Freeze</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#ffd966\"><b>Flint Striker</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#6aa84f\"><b>Unravelling Orbs</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b6d7a8\"><b>Horde Shuttle</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>For Sidearms without an</i> <b><i>intrinsic</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Breaker Type</i></b></span><span style=\"color:#a5b5b5\"><b><i>:</i></b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Grants</b></span> <span style=\"color:#f9cb9c\"><b>Shield-Piercing Rounds</b></span> <span style=\"color:#a5b5b5\"><b>and</b></span> <span style=\"color:#a4c2f4\"><b>Overcharge</b></span> <span style=\"color:#a5b5b5\"><b>when said modifier is active.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Grants the ability to equip</b></span> <span style=\"color:#f6b26b\"><b>Solar</b></span><span style=\"color:#a5b5b5\"><b>+</b></span><span style=\"color:#63d275\"><b>Strand</b></span> <span style=\"color:#a5b5b5\"><b>and</b></span> <span style=\"color:#f6b26b\"><b>Solar</b></span><span style=\"color:#a5b5b5\"><b>+</b></span><span style=\"color:#6fa8dc\"><b>Stasis</b></span> <span style=\"color:#a5b5b5\"><b>Siphon mods that cost 3 Energy.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>Upon scoring</i></span> <span style=\"color:#f1c232\"><b><i>multiple Precision Hits</i></b></span> <span style=\"color:#a5b5b5\"><i>within</i> <b><i>3 seconds</i></b> <i>of each, or upon scoring</i> <b><i>3</i></b> <i>kills</i> <b><i>within 1 second</i></b> <i>of each with</i></span> <span style=\"color:#f6b26b\"><b><i>Solar Weapons</i></b></span><span style=\"color:#a5b5b5\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Grants</b></span> <span style=\"color:#ffd966\"><b>Radiant</b></span> <span style=\"color:#a5b5b5\"><b>for 10</b></span><span style=\"color:#f6b26b\"><b><small>+5</small></b></span> <span style=\"color:#a5b5b5\"><b>seconds.</b></span>",
+      "",
+      "<span style=\"color:#f1c232\"><b>Precision Hits trigger for Radiant:</b></span>",
+      "<span style=\"color:#f1c232\"><b>(25% of Magazine Size) + 1, rounded down</b></span>",
+      "",
+      "<span style=\"color:#f1c232\"><b>Mag to Crits Requirement:</b></span>",
+      "<span style=\"color:#f1c232\"><b>1 Mag = 2 Crits | 3 Mag = 1 Crit</b></span>",
+      "<span style=\"color:#f1c232\"><b>4–7 Mag = 2 Crits | 8–11 Mag = 3 Crits</b></span>",
+      "<span style=\"color:#f1c232\"><b>12–15 Mag = 4 Crits | 16–19 Mag = 5 Crits</b></span>",
+      "<span style=\"color:#f1c232\"><b>20–23 Mag = 6 Crits | 24-27 Mag = 7 Crits</b></span>",
+      "<span style=\"color:#f1c232\"><b>28–31 Mag = 8 Crits | 32–35 Mag = 9 Crits</b></span>",
+      "<span style=\"color:#f1c232\"><b>36–39 Mag = 10 Crits | 40–43 Mag = 11 Crits</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>Upon picking up an</i></span> <span style=\"color:#ffd966\"><b><i>Orb of Power</i></b></span><span style=\"color:#a5b5b5\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Grants</b></span> <span style=\"color:#93c47d\"><b>Unraveling Rounds</b></span> <span style=\"color:#a5b5b5\"><b>for</b></span> <span style=\"color:#a4c2f4\"><b>7</b></span> <span style=\"color:#ea9999\"><b>[5]</b></span> <span style=\"color:#a5b5b5\"><b>seconds.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Dealing enough damage to an</b></span> <span style=\"color:#6aa84f\"><b>Unraveled Enemy</b></span> <span style=\"color:#a5b5b5\"><b>spawns a</b></span> <span style=\"color:#b6d7a8\"><b>Threadling</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#a4c2f4\"><b>Rank-and-File: 80 damage.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Elite: 180 damage.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Minibosses: 200 damage.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Bosses: 420 damage.</b></span>",
+      "<span style=\"color:#ea9999\"><b>Guardians: 100 damage.</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b><i><small>Only Weapon Damage count towards damage.</small></i></b></span>",
+      "<span style=\"color:#dd7e6b\"><b><i><small>Incurs a 0.5 second cooldown between Threadlings</small></i></b></span>",
+      "<span style=\"color:#6aa84f\"><b><i><small>Unraveling Thread</small></i></b></span> <span style=\"color:#a5b5b5\"><b><i><small>Kills sometimes spawn a</small></i></b></span> <span style=\"color:#b6d7a8\"><b><i><small>Threadling</small></i></b></span><span style=\"color:#a5b5b5\"><b><i><small>.</small></i></b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#c67676\"><b>Unstoppable Hand Cannon</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#f6b26b\"><b>Kindling Trigger</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#ffd966\"><b>Torch</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Pillar of Ice</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Hail The Storm</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>For Hand Cannons without an</i> <b><i>intrinsic</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Breaker Type</i></b></span><span style=\"color:#a5b5b5\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>ADS without shooting for 1 second grants</b></span> <span style=\"color:#c67676\"><b>Unstoppable Shots.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Overcharge</b></span> <span style=\"color:#a5b5b5\"><b>when said modifier is active.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>While</i></span> <span style=\"color:#ffd966\"><b><i>Radiant</i></b></span><span style=\"color:#a5b5b5\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#f6b26b\"><b>Solar Weapon Damage</b></span> <span style=\"color:#a5b5b5\"><b>applies</b></span> <span style=\"color:#f6b26b\"><b>x30<small>+15</small> Scorch</b></span> <span style=\"color:#a5b5b5\"><b>to</b></span> <span style=\"color:#a4c2f4\"><b>Combatants</b></span> <span style=\"color:#a5b5b5\"><b>without</b></span> <span style=\"color:#f6b26b\"><b>Scorch stacks</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#f6b26b\"><b><i>Solar Effects</i></b></span> <span style=\"color:#a5b5b5\"><i>initially triggered by</i></span> <span style=\"color:#f6b26b\"><b><i>Kindling Trigger</i></b></span> <span style=\"color:#a5b5b5\"><i>do not benefit from Weapon nor Ability Damage increases.</i></span>",
+      "",
+      "<span style=\"color:#dd7e6b\"><b><i>Does not work while within a Well of Radiance.</i></b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>While</i></span> <span style=\"color:#ffd966\"><b><i>Radiant</i></b></span><span style=\"color:#a5b5b5\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Grants 5% Increased Weapon Damage against enemies that are affected by</b></span> <span style=\"color:#93c47d\"><b>Strand</b></span> <span style=\"color:#a5b5b5\"><b>or</b></span> <span style=\"color:#6fa8dc\"><b>Stasis</b></span> <span style=\"color:#a5b5b5\"><b>debuffs.</b></span>",
+      "",
+      "<span style=\"color:#63d275\"><b>Strand Debuffs</b></span><span style=\"color:#a5b5b5\"><b>:</b></span> <span style=\"color:#6aa84f\"><b>Unraveled, Severed, Suspended</b></span>",
+      "<span style=\"color:#6fa8dc\"><b>Stasis Debuffs: Slowed</b></span><span style=\"color:#a5b5b5\"><b>, or</b></span> <span style=\"color:#3d85c6\"><b>Frozen</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>Upon killing a</i></span> <span style=\"color:#3d85c6\"><b><i>Frozen Enemy</i></b></span><span style=\"color:#a5b5b5\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Spawns</b></span> <span style=\"color:#6fa8dc\"><b>1 Stasis Crystals</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Bosses</b></span> <span style=\"color:#a5b5b5\"><b>spawn</b></span> <span style=\"color:#6fa8dc\"><b>2 Stasis Crystals</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><i><small>Crystals</small></i></span> <span style=\"color:#a5b5b5\"><i><small>are spawned close to where the enemy dies.</small></i></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#3c78d8\"><b>Enemy Shatters</b></span> <span style=\"color:#a5b5b5\"><b>deal</b></span> <span style=\"color:#a4c2f4\"><b>12.5%</b></span> <span style=\"color:#ea9999\"><b>[5%]</b></span> <span style=\"color:#a5b5b5\"><b>increased damage.</b></span>",
+      "<span style=\"color:#6fa8dc\"><b>Crystal Shatters</b></span> <span style=\"color:#a5b5b5\"><b>deal 28.6% increased damage</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><i>Upon</i></span> <span style=\"color:#3c78d8\"><b><i>shattering</i></b></span> <span style=\"color:#a5b5b5\"><i>a</i></span> <span style=\"color:#6fa8dc\"><b><i>Stasis Crystal</i></b></span><span style=\"color:#a5b5b5\"><i>:</i></span>",
+      "<span style=\"color:#a5b5b5\"><b>Releases</b></span> <span style=\"color:#6fa8dc\"><b>5 Homing Ice Shards</b></span> <span style=\"color:#a5b5b5\"><b>in a * pattern.</b></span>",
+      "<span style=\"color:#a5b5b5\"><b>Shards are spread uniformally, with one shard going towards the closest enemy and the others spreading.</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Each</b></span> <span style=\"color:#6fa8dc\"><b>Ice Shard</b></span> <span style=\"color:#a5b5b5\"><b>deals 50 damage and apply</b></span> <span style=\"color:#a4c2f4\"><b>x?</b></span> <span style=\"color:#ea9999\"><b>[x10]</b></span> <span style=\"color:#6fa8dc\"><b>Slow</b></span> <span style=\"color:#a5b5b5\"><b>for ? seconds.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#c67676\"><b>Unstoppable Bow</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a4c2f4\"><b>Blast Radius</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#ffd966\"><b>Heart of the Flame</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a4c2f4\"><b>Revitalizing Blast</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#ff9900\"><b>Rays of Precision</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>For Bows without an</i> <b><i>intrinsic</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Breaker Type</i></b></span><span style=\"color:#a5b5b5\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Holding a Full-Draw for 1 second grants an</b></span> <span style=\"color:#c67676\"><b>Unstoppable Shot.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Overcharge</b></span> <span style=\"color:#a5b5b5\"><b>when said modifier is active.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>Upon scoring</i> <b><i>2 Kills within ? seconds of each</i></b> <i>with</i> <b><i>Grenade Launchers</i></b> <i>or</i> <b><i>Rocket Launchers:</i></b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Grants</b></span> <span style=\"color:#a4c2f4\"><b>x1 Armor Charge</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>On</b></span> <span style=\"color:#f6b26b\"><b><i>Solar</i></b></span> <span style=\"color:#ffd966\"><b><i>Super</i></b></span> <span style=\"color:#f6b26b\"><b><i>Cast</i></b></span><span style=\"color:#a5b5b5\"><b>:</b></span>",
+      "<span style=\"color:#ffd966\"><b>Caster</b></span> <span style=\"color:#a5b5b5\"><b>and</b></span> <span style=\"color:#a4c2f4\"><b>Allies</b></span> <span style=\"color:#a5b5b5\"><b>within 15 meters are granted</b></span> <span style=\"color:#ffd966\"><b>Radiant</b></span> <span style=\"color:#a5b5b5\"><b>for 10 seconds.</b></span>",
+      "<span style=\"color:#a5b5b5\"><b>Grants</b></span> <span style=\"color:#ffd966\"><b>Increased Super Damage</b></span> <span style=\"color:#a5b5b5\"><b>based on the amount of</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#a5b5b5\"><b>within ? meters.</b></span>",
+      "<span style=\"color:#ffd966\"><i>Caster</i></span> <span style=\"color:#a5b5b5\"><i>counts as an</i></span> <span style=\"color:#a4c2f4\"><i>ally.</i></span>",
+      "",
+      "<span style=\"color:#ffd966\"><b>Increased Super Damage:</b></span>",
+      "<span style=\"color:#ffd966\"><b>6% | 9.57% | 13.14% | 16.71% | 18.14% | 19.57%</b></span>",
+      "<span style=\"color:#ffd966\"><i>Well of Radiance Caster</i></span> <span style=\"color:#a5b5b5\"><i>benefits for 5 seconds.</i></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>Upon dealing</i></span> <span style=\"color:#f6b26b\"><b><i>Solar Ability Damage</i></b></span><span style=\"color:#a5b5b5\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#a4c2f4\"><b>Bosses</b></span> <span style=\"color:#a5b5b5\"><b>and</b></span> <span style=\"color:#a4c2f4\"><b>Champions</b></span> <span style=\"color:#a5b5b5\"><b>become</b></span> <span style=\"color:#c27ba0\"><b>Weakened</b></span> <span style=\"color:#a5b5b5\"><b>for 6 seconds.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>While</i></span> <span style=\"color:#ffd966\"><b><i>Radiant</i></b></span><span style=\"color:#a5b5b5\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#f6b26b\"><b>Solar</b></span> <span style=\"color:#f1c232\"><b>Precision Kills</b></span> <span style=\"color:#a5b5b5\"><b>on</b></span> <span style=\"color:#a4c2f4\"><b>Combatants</b></span> <span style=\"color:#a5b5b5\"><b>cause an</b></span> <span style=\"color:#ff9900\"><b>Ignition</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#b4a7d6\"><b>Overload Auto Rifle</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Origin Perk Specialization I</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Origin Perk Specialization II</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b4a7d6\"><b>Overload Rocket Launchers</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Solo Operative</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>For Auto Rifles without an</i> <b><i>intrinsic</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Breaker Type</i></b></span><span style=\"color:#a5b5b5\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Sustained Fire for 0.6 seconds grants</b></span> <span style=\"color:#b4a7d6\"><b>Overloading Shots</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Overcharge</b></span> <span style=\"color:#a5b5b5\"><b>when said modifier is active.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Improves the following Origin Traits.</b></span>",
+      "<span style=\"color:#a5b5b5\"><b>Guns with said Origin Traits are</b></span> <span style=\"color:#a4c2f4\"><b>overcharged</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#8dc0b3\"><b>Nano-Munitions</b></span>",
+      "<span style=\"color:#d5a6bd\"><b>Nanotech Tracer Rockets</b></span>",
+      "<span style=\"color:#5bb661\"><b>Sundering</b></span>",
+      "",
+      "<a href=\"#rangeid=1948232030\"><span style=\"color:#a2c4c9\"><b><u>Click Here to see their improved effects</u></b></span></a><span style=\"color:#a2c4c9\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#cc4125\"><i>Does not affect</i></span> <span style=\"color:#ffd966\"><i>Quicksilver Storm's Micro-Rockets</i></span><span style=\"color:#cc4125\"><i>, despite what</i> <b><i>some</i></b> <i>may say.</i></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Improves the following Origin Traits.</b></span>",
+      "<span style=\"color:#a5b5b5\"><b>Guns with said Origin Traits are</b></span> <span style=\"color:#a4c2f4\"><b>overcharged</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#86bdbb\"><b>Dragon's Vengeance</b></span>",
+      "<span style=\"color:#93c47d\"><b>Head Rush</b></span>",
+      "<span style=\"color:#c2a037\"><b>Noble Deeds</b></span>",
+      "<span style=\"color:#67c9cf\"><b>Unsated Hunger</b></span>",
+      "",
+      "<a href=\"#rangeid=1948232030\"><span style=\"color:#a2c4c9\"><b><u>Click Here to see their improved effects</u></b></span></a><span style=\"color:#a2c4c9\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>For Rocket Launchers without an</i> <b><i>intrinsic</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Breaker Type</i></b></span><span style=\"color:#a5b5b5\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Passively grants</b></span> <span style=\"color:#b4a7d6\"><b>Overloading Shots</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Overcharge</b></span> <span style=\"color:#a5b5b5\"><b>when said modifier is active.</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Rocket Launchers are granted 80% Increased Damage against</b></span> <span style=\"color:#b4a7d6\"><b>Overload Champions</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>While</i> <b><i>Solo:</i></b></span>",
+      "",
+      "<span style=\"color:#a4c2f4\"><b>15% Increased Ability and Weapon Damage against Combatants.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#b4a7d6\"><b>Overload Pulse Rifle</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a4c2f4\"><b>From Whence You Came</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#ffd966\"><b>Wished Into Being</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#d5a6bd\"><b>Dragon's Bite</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#ccae3b\"><b>Argent Ordnance</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>For Pulse Rifles without an</i> <b><i>intrinsic</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Breaker Type</i></b></span><span style=\"color:#a5b5b5\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><i>Upon scoring</i> <b><i>2 hits</i></b><i>:</i></span>",
+      "<span style=\"color:#a5b5b5\"><b>Grants</b></span> <span style=\"color:#b4a7d6\"><b>Overloading Shots</b></span> <span style=\"color:#a5b5b5\"><b>for 6 seconds</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Overcharge</b></span> <span style=\"color:#a5b5b5\"><b>when said modifier is active.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a4c2f4\"><b><i>Against Scorn and Taken Combatants:</i></b></span>",
+      "",
+      "<span style=\"color:#d5a6bd\"><b>5% Increased Ability Damage.</b></span>",
+      "<span style=\"color:#a5b5b5\"><i>Includes</i></span> <span style=\"color:#ffd966\"><i>Well of Radiance's Caster's Weapons</i></span><span style=\"color:#a5b5b5\"><i>.</i></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b><i>While</i></b></span> <span style=\"color:#ffd966\"><b><i>Super Energy</i></b></span> <span style=\"color:#a5b5b5\"><b><i>is above 80% but</i></b></span> <span style=\"color:#e06666\"><b><i><u>not</u></i></b></span> <span style=\"color:#ffd966\"><b><i>fully charged</i></b></span><span style=\"color:#a5b5b5\"><b><i>:</i></b></span>",
+      "",
+      "<span style=\"color:#d5a6bd\"><b>Ability Kills</b></span> <span style=\"color:#a5b5b5\"><b>spawn</b></span> <span style=\"color:#ffd966\"><b>3 Orbs of Power</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
+      "<span style=\"color:#ffd966\"><b>Orbs of Power</b></span> <span style=\"color:#a5b5b5\"><b>grant</b></span> <span style=\"color:#ffd966\"><b>7.14% Super Energy</b></span> <span style=\"color:#a5b5b5\"><b>each.</b></span>",
+      "<span style=\"color:#dd7e6b\"><b><small>Incurs a LONG COOLDOWN between spawning orbs.</small></b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b><i>Seasonal Armor</i></b> <i>reduces the</i></span> <span style=\"color:#ffd966\"><b><i>Super Energy Threshold</i></b></span><span style=\"color:#a5b5b5\"><i>.</i></span>",
+      "<span style=\"color:#a5b5b5\"><b>x0 and x1 =</b></span> <span style=\"color:#ffd966\"><b>80%</b></span> <span style=\"color:#a5b5b5\"><b>| x2 =</b></span> <span style=\"color:#ffd966\"><b>70%</b></span>",
+      "<span style=\"color:#a5b5b5\"><b>x3 =</b></span> <span style=\"color:#ffd966\"><b>60%</b></span> <span style=\"color:#a5b5b5\"><b>| x4+ =</b></span> <span style=\"color:#ffd966\"><b>50%</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b><i>Upon breaking a</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Combatant's Shield</i></b></span> <span style=\"color:#a5b5b5\"><b><i>with a</i></b></span> <span style=\"color:#63d275\"><b><i>Strand</i></b></span> <span style=\"color:#a5b5b5\"><b><i>or</i></b></span> <span style=\"color:#6fa8dc\"><b><i>Stasis</i></b></span> <span style=\"color:#a5b5b5\"><b><i>Weapon:</i></b></span>",
+      "",
+      "<span style=\"color:#63d275\"><b>Strand</b></span> <span style=\"color:#a5b5b5\"><b>has a ?% chance to apply</b></span> <span style=\"color:#6aa84f\"><b>Suspend</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
+      "<span style=\"color:#6fa8dc\"><b>Stasis</b></span> <span style=\"color:#a5b5b5\"><b>has a ?% chance to apply</b></span> <span style=\"color:#3d85c6\"><b>Freeze</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b><i>Seasonal Armor</i></b> <i>increases the activation chance by</i> <b><i>?% per piece</i></b><i>.</i></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Firing a Rocket Launcher</b></span> <span style=\"color:#ccae3b\"><b>consumes x1 Armor Charge</b></span> <span style=\"color:#a5b5b5\"><b>to grant</b></span> <span style=\"color:#f1c232\"><b>Godslayer Warheads</b></span> <span style=\"color:#a5b5b5\"><b>for 4.5 seconds:</b></span>",
+      "",
+      "<span style=\"color:#f1c232\"><b>Godslayer Warheads</b></span><span style=\"color:#a5b5b5\"><b>:</b></span>",
+      "<span style=\"color:#a5b5b5\"><b>15% Stacking Increased Damage.</b></span>",
+      "<span style=\"color:#a5b5b5\"><b>+? Reload Speed</b></span>",
+      "<span style=\"color:#a5b5b5\"><b>0.?x Reload Duration Multiplier.</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b><i>Does not</i></b></span> <span style=\"color:#ccae3b\"><b><i>consume</i></b></span> <span style=\"color:#a5b5b5\"><b><i>additional</i></b></span> <span style=\"color:#ccae3b\"><b><i>Armor Charges</i></b></span> <span style=\"color:#a5b5b5\"><b><i>while the buff is active.</i></b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#93c47d\"><b>Season of The Witch (S22)</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#f9cb9c\"><b>Anti-Barrier Auto Rifles</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#76a5af\"><b>Arc</b></span><span style=\"color:#d5a6bd\"><b>/</b></span><span style=\"color:#93c47d\"><b>Strand</b></span> <span style=\"color:#d5a6bd\"><b>Siphon</b></span>",
+      "<span style=\"color:#d5a6bd\"><b>Combo</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#93c47d\"><b>Thanatotic Tangles</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b4a7d6\"><b>Overload Machine Guns</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#d5a6bd\"><b>Monochromatic Maestro</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Auto Rifles without an intrinsic</b></span> <span style=\"color:#a4c2f4\"><b>Breaker-Type</b></span> <span style=\"color:#a5b5b5\"><b>are granted</b></span> <span style=\"color:#f9cb9c\"><b>Shield Piercing Rounds.</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Auto Rifles are always</b></span> <span style=\"color:#a4c2f4\"><b>Overcharged</b></span> <span style=\"color:#a5b5b5\"><b>when the modifier is active.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a2c4c9\"><b>Arc</b></span> <span style=\"color:#a5b5b5\"><b>+</b></span> <span style=\"color:#93c47d\"><b>Strand</b></span> <span style=\"color:#a5b5b5\"><b>Siphon that costs 3 Armor Energy.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Scoring</b></span> <span style=\"color:#a4c2f4\"><b>2-4</b></span> <span style=\"color:#ea9999\"><b>[2]</b></span> <span style=\"color:#93c47d\"><b>Strand Weapon Kills</b></span> <span style=\"color:#a5b5b5\"><b>within 15 seconds of each spawns a</b></span> <span style=\"color:#93c47d\"><b>Tangle</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Sustained Fire for 0.6? seconds grants</b></span> <span style=\"color:#b4a7d6\"><b>Overloading Shots</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#a481e1\"><b>Machine Guns</b></span> <span style=\"color:#a5b5b5\"><b>without an intrinsic</b></span> <span style=\"color:#a4c2f4\"><b>Breaker-Type</b></span> <span style=\"color:#a5b5b5\"><b>are granted</b></span> <span style=\"color:#a4c2f4\"><b>Overcharge</b></span> <span style=\"color:#a5b5b5\"><b>when the</b></span> <span style=\"color:#a4c2f4\"><b>Overcharged Weapons</b></span> <span style=\"color:#a5b5b5\"><b>modifier is active.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>Upon dealing</i></span> <span style=\"color:#d5a6bd\"><b><i>Matching Weapon Damage</i></b></span><span style=\"color:#a5b5b5\"><i>:</i></span>",
+      "<span style=\"color:#a5b5b5\"><b>Grants 10% Increased Ability Damage for 5 seconds.</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><i>Upon dealing</i> <b><i>Ability Damage:</i></b></span>",
+      "<span style=\"color:#a5b5b5\"><b>Grants 10%</b></span> <span style=\"color:#d5a6bd\"><b>Increased Matching Weapon Damage</b></span> <span style=\"color:#a5b5b5\"><b>for 5 seconds.</b></span>",
+      "",
+      "<span style=\"color:#ea9999\"><b>Does not function in PvP Gamemodes.</b></span>",
+      "<span style=\"color:#93c47d\"><b>Does not work with Strand.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#f9cb9c\"><b>Piercing Bowstring</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#f6b26b\"><b>Solar</b></span><span style=\"color:#d5a6bd\"><b>/</b></span><span style=\"color:#93c47d\"><b>Strand</b></span> <span style=\"color:#d5a6bd\"><b>Siphon</b></span>",
+      "<span style=\"color:#d5a6bd\"><b>Combo</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#d5a6bd\"><b>Origin Perk Specialization II</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#ffd5a6bd\"><b>Elemental Fury</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#c27ba0\"><b>Rapid-Fire Ranger</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Bows without an intrinsic</b></span> <span style=\"color:#a4c2f4\"><b>Breaker-Type</b></span> <span style=\"color:#a5b5b5\"><b>are granted</b></span> <span style=\"color:#f9cb9c\"><b>Shield Piercing Rounds</b></span> <span style=\"color:#a5b5b5\"><b>and</b></span> <span style=\"color:#a4c2f4\"><b>Overcharge</b></span> <span style=\"color:#a5b5b5\"><b>when the</b></span> <span style=\"color:#a4c2f4\"><b>Overcharged Weapons</b></span> <span style=\"color:#a5b5b5\"><b>modifier is active.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#f6b26b\"><b>Solar</b></span> <span style=\"color:#a5b5b5\"><b>+</b></span> <span style=\"color:#93c47d\"><b>Strand</b></span> <span style=\"color:#a5b5b5\"><b>Siphon that costs 3 Armor Energy.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Guns with the following Origin Traits are</b></span> <span style=\"color:#a4c2f4\"><b>Overcharged</b></span> <span style=\"color:#a5b5b5\"><b>if possible.</b></span>",
+      "",
+      "<span style=\"color:#6aa84f\"><b>Cursed Thrall</b></span>",
+      "<span style=\"color:#93c47d\"><b>Head Rush</b></span>",
+      "<span style=\"color:#d5a6bd\"><b>Nanotech Tracer Rockets</b></span>",
+      "<span style=\"color:#67c9cf\"><b>Unsated Hunger</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a4c2f4\"><b>Stunned Champions</b></span> <span style=\"color:#a5b5b5\"><b>receive increased</b></span> <span style=\"color:#d5a6bd\"><b>Ability</b></span> <span style=\"color:#a5b5b5\"><b>and</b></span> <span style=\"color:#d5a6bd\"><b>Elemental Orb Damage</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#d5a6bd\"><b>35% Increased Ability Damage</b></span>",
+      "<span style=\"color:#d5a6bd\"><b>70% Increased Elemental Orb Damage.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Scoring</b></span> <span style=\"color:#ffd966\"><b>multiple Precision Hits</b></span> <span style=\"color:#a5b5b5\"><b>within 2 seconds of each against enemies &gt;25? metres away applies</b></span> <span style=\"color:#c27ba0\"><b>Weaken</b></span> <span style=\"color:#a5b5b5\"><b>for</b></span> <span style=\"color:#a4c2f4\"><b>24</b></span> <span style=\"color:#ea9999\"><b>[11]</b></span> <span style=\"color:#a5b5b5\"><b>seconds.</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b><small>Counter System per</small></b></span> <span style=\"color:#ffd966\"><b><small>Precision Hit</small></b></span><span style=\"color:#a5b5b5\"><b><small>:</small></b></span>",
+      "<span style=\"color:#ffd966\"><b><small>50% Counter</small></b></span><span style=\"color:#a5b5b5\"><b><small>: Bows and Sniper Rifles</small></b></span>",
+      "<span style=\"color:#ffd966\"><b><small>25% Counter</small></b></span><span style=\"color:#a5b5b5\"><b><small>: Hand Cannons and Scout Rifles</small></b></span>",
+      "<span style=\"color:#ffd966\"><b><small>15% Counter</small></b></span><span style=\"color:#a5b5b5\"><b><small>: Everything Else including Slug Shotguns</small></b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#c67676\"><b>Unstoppable Scout Rifle</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b4a7d6\"><b>Void</b></span><span style=\"color:#d5a6bd\"><b>/</b></span><span style=\"color:#93c47d\"><b>Strand</b></span> <span style=\"color:#d5a6bd\"><b>Siphon</b></span>",
+      "<span style=\"color:#d5a6bd\"><b>Combo</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b4a7d6\"><b>Elemental Orbs:</b></span>",
+      "<span style=\"color:#b4a7d6\"><b>Void</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#d5a6bd\"><b>Communal Pickups</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#d5a6bd\"><b>Elemental Embrace</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>ADS with a Scout Rifle without shooting for 1 second grants</b></span> <span style=\"color:#c67676\"><b>Unstoppable Shots.</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Scout Rifles without an intrinsic</b></span> <span style=\"color:#a4c2f4\"><b>Breaker-Type</b></span> <span style=\"color:#a5b5b5\"><b>are granted</b></span> <span style=\"color:#a4c2f4\"><b>Overcharge</b></span> <span style=\"color:#a5b5b5\"><b>when the</b></span> <span style=\"color:#a4c2f4\"><b>Overcharged Weapons</b></span> <span style=\"color:#a5b5b5\"><b>modifier is active.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b4a7d6\"><b>Void</b></span> <span style=\"color:#a5b5b5\"><b>+</b></span> <span style=\"color:#93c47d\"><b>Strand</b></span> <span style=\"color:#a5b5b5\"><b>Siphon that costs 3 Armor Energy.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b><i>While on a</i></b></span> <span style=\"color:#b4a7d6\"><b><i>Void Subclass</i></b></span><span style=\"color:#a5b5b5\"><b><i>:</i></b></span>",
+      "",
+      "<span style=\"color:#b4a7d6\"><b>Void Weapon Kills</b></span> <span style=\"color:#a5b5b5\"><b>progress a counter, spawning a</b></span> <span style=\"color:#b4a7d6\"><b>Void Elemental Orb</b></span> <span style=\"color:#a5b5b5\"><b>upon reaching 100%.</b></span>",
+      "",
+      "<span style=\"color:#b4a7d6\"><b><i>Void Elemental Orb:</i></b></span>",
+      "<span style=\"color:#a5b5b5\"><b>Can be picked up and thrown.</b></span>",
+      "<span style=\"color:#a5b5b5\"><b>Deal</b></span> <span style=\"color:#a4c2f4\"><b>450</b></span> <span style=\"color:#ea9999\"><b>[101]</b></span> <span style=\"color:#a5b5b5\"><b>damage and apply</b></span> <span style=\"color:#d5a6bd\"><b>Volatile</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
+      "",
+      "<a href=\"#rangeid=1302500297\"><span style=\"color:#a4c2f4\"><b><i><u>For more information, head to Game Mechanics.</u></i></b></span></a>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b><i>On</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Ally</i></b></span> <span style=\"color:#a5b5b5\"><b><i>Interaction with</i></b></span> <span style=\"color:#93c47d\"><b><i>Tangle</i></b></span> <span style=\"color:#a5b5b5\"><b><i>or</i></b></span> <span style=\"color:#d5a6bd\"><b><i>Elemental Orb</i></b></span><span style=\"color:#a5b5b5\"><b><i>:</i></b></span>",
+      "",
+      "<span style=\"color:#93c47d\"><b>Tangle</b></span> <span style=\"color:#dd7e6b\"><b>Cooldown</b></span> <span style=\"color:#a5b5b5\"><b>is reduced by 5 seconds.</b></span>",
+      "<span style=\"color:#a5b5b5\"><b>Grants</b></span> <span style=\"color:#d5a6bd\"><b>x3 Subclass-Matching Weapon Surge</b></span> <span style=\"color:#a5b5b5\"><b>for</b></span> <span style=\"color:#a4c2f4\"><b>11</b></span> <span style=\"color:#ea9999\"><b>[6]</b></span> <span style=\"color:#a5b5b5\"><b>seconds.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#d5a6bd\"><b>While having an active Subclass Buff:</b></span>",
+      "<span style=\"color:#a5b5b5\"><b>Grants +50 Recovery and 50%</b></span> <span style=\"color:#d5a6bd\"><b>Subclass Matching Damage Resist</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
+      "<span style=\"color:#d5a6bd\"><i><small>Subclass Buff</small></i> <b><i><u><small>must match</small></u></i></b> <i><small>Subclass.</small></i></span>",
+      "",
+      "<span style=\"color:#79bec3\"><b>Amplified</b></span> <span style=\"color:#a5b5b5\"><b>-&gt;</b></span> <span style=\"color:#76a5af\"><b>Arc Damage Resist</b></span>",
+      "<span style=\"color:#ffd966\"><b>Radiant</b></span> <span style=\"color:#a5b5b5\"><b>-&gt;</b></span> <span style=\"color:#f6b26b\"><b>Solar Damage Resist</b></span>",
+      "<span style=\"color:#8e7cc3\"><b>Devour</b></span> <span style=\"color:#a5b5b5\"><b>-&gt;</b></span> <span style=\"color:#8e7cc3\"><b>Void Damage Resist</b></span>",
+      "<span style=\"color:#93c47d\"><b>Woven Mail</b></span> <span style=\"color:#a5b5b5\"><b>-&gt;</b></span> <span style=\"color:#93c47d\"><b>Strand Damage Resist</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><i><small>Reactivating</small></i></span> <span style=\"color:#ffd966\"><i><small>Radiant</small></i></span><span style=\"color:#a5b5b5\"><i><small>, or refreshing the duration of</small></i></span> <span style=\"color:#8e7cc3\"><i><small>Devour</small></i></span> <span style=\"color:#a5b5b5\"><i><small>prevents the perk from working until the buff expires.</small></i></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#b4a7d6\"><b>Overload Hand Cannon</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#d5a6bd\"><b>Origin Perk Specialization I</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a2c4c9\"><b>Elemental Orbs:</b></span>",
+      "<span style=\"color:#a2c4c9\"><b>Arc</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#ffa4c2f4\"><b>Refreshing Pickups</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#ffd5a6bd\"><b>Elemental Munitions</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Scoring 2 Hits within 2 seconds of each grants</b></span> <span style=\"color:#b4a7d6\"><b>Overloading Shots</b></span> <span style=\"color:#a5b5b5\"><b>for 6 seconds.</b></span>",
+      "<span style=\"color:#a5b5b5\"><i><small>Reloading removes the buff and resets Hit Counter.</small></i></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Hand Cannons without an intrinsic</b></span> <span style=\"color:#a4c2f4\"><b>Breaker-Type</b></span> <span style=\"color:#a5b5b5\"><b>are granted</b></span> <span style=\"color:#a4c2f4\"><b>Overcharge</b></span> <span style=\"color:#a5b5b5\"><b>when the</b></span> <span style=\"color:#a4c2f4\"><b>Overcharged Weapons</b></span> <span style=\"color:#a5b5b5\"><b>modifier is active.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Improves the following Origin Traits.</b></span>",
+      "",
+      "<span style=\"color:#6aa84f\"><b>Cursed Thrall</b></span>",
+      "<span style=\"color:#b6d7a8\"><b>Head Rush</b></span>",
+      "<span style=\"color:#d5a6bd\"><b>Nanotech Tracer Rockets</b></span>",
+      "<span style=\"color:#67c9cf\"><b>Unsated Hunger</b></span>",
+      "",
+      "<a href=\"#rangeid=1948232030\"><span style=\"color:#a2c4c9\"><b><u>Click Here to see their improved effects</u></b></span></a><span style=\"color:#a2c4c9\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b><i>While on an</i></b></span> <span style=\"color:#76a5af\"><b><i>Arc Subclass</i></b></span><span style=\"color:#a5b5b5\"><b><i>:</i></b></span>",
+      "",
+      "<span style=\"color:#76a5af\"><b>Arc Weapon Kills</b></span> <span style=\"color:#a5b5b5\"><b>progress a counter, spawning an</b></span> <span style=\"color:#76a5af\"><b>Arc Elemental Orb</b></span> <span style=\"color:#a5b5b5\"><b>upon reaching 100%.</b></span>",
+      "",
+      "<span style=\"color:#76a5af\"><b><i>Arc Elemental Orb:</i></b></span>",
+      "<span style=\"color:#a5b5b5\"><b>Can be picked up and thrown.</b></span>",
+      "<span style=\"color:#a5b5b5\"><b>Deal</b></span> <span style=\"color:#a4c2f4\"><b>450</b></span> <span style=\"color:#ea9999\"><b>[101]</b></span> <span style=\"color:#a5b5b5\"><b>damage and apply</b></span> <span style=\"color:#76a5af\"><b>Jolt</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
+      "",
+      "<a href=\"#rangeid=1302500297\"><span style=\"color:#a4c2f4\"><b><i><u>For more information, head to Game Mechanics.</u></i></b></span></a>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b><i>On</i></b></span> <span style=\"color:#93c47d\"><b><i>Tangle</i></b></span> <span style=\"color:#a5b5b5\"><b><i>or</i></b></span> <span style=\"color:#d5a6bd\"><b><i>Elemental Orb</i></b></span> <span style=\"color:#a5b5b5\"><b><i>Pickup:</i></b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Grants 33% Ability Energy to the least-charged Ability.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>On</i></span> <span style=\"color:#a4c2f4\"><b><i>Combatant Kill</i></b></span> <span style=\"color:#a5b5b5\"><i>with</i></span> <span style=\"color:#93c47d\"><b><i>Tangles</i></b></span> <span style=\"color:#a5b5b5\"><i>or</i></span> <span style=\"color:#d5a6bd\"><b><i>Elemental Orbs</i></b><i>:</i></span>",
+      "<span style=\"color:#a5b5b5\"><b>20%-33% chance to spawn a</b></span> <span style=\"color:#93c47d\"><b>Special</b></span> <span style=\"color:#a5b5b5\"><b>or</b></span> <span style=\"color:#a481e1\"><b>Heavy</b></span> <span style=\"color:#a5b5b5\"><b>Ammo Finder Brick.</b></span>",
+      "<span style=\"color:#a5b5b5\"><i><small>Chances are independent. Both bricks can spawn at once.</small></i></span>",
+      "",
+      "<span style=\"color:#93c47d\"><b><i><small>Whirling Maelstrom</small></i></b></span> <span style=\"color:#a5b5b5\"><i><small>has a</small></i></span> <span style=\"color:#cc4125\"><b><i><small>reduced chance</small></i></b></span> <span style=\"color:#a5b5b5\"><i><small>to spawn ammo bricks.</small></i></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#c67676\"><b>Unstoppable Fusion</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#d5a6bd\"><b>Diviner's Discount</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#f6b26b\"><b>Elemental Orbs:</b></span>",
+      "<span style=\"color:#f6b26b\"><b>Solar</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a4c2f4\"><b>Semi-Auto Striker</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#d5a6bd\"><b>Frenzied Stacks</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>ADS with a Fusion Rifle for 1 second grants</b></span> <span style=\"color:#c67676\"><b>Unstoppable Shots.</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Fusion Rifles without an intrinsic</b></span> <span style=\"color:#a4c2f4\"><b>Breaker-Type</b></span> <span style=\"color:#a5b5b5\"><b>are granted</b></span> <span style=\"color:#a4c2f4\"><b>Overcharge</b></span> <span style=\"color:#a5b5b5\"><b>when the</b></span> <span style=\"color:#a4c2f4\"><b>Overcharged Weapons</b></span> <span style=\"color:#a5b5b5\"><b>modifier is active.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#d5a6bd\"><b>Scavenger Mods</b></span> <span style=\"color:#a5b5b5\"><b>cost 1 Armor Energy</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b><i>While on a</i></b></span> <span style=\"color:#f6b26b\"><b><i>Solar Subclass</i></b></span><span style=\"color:#a5b5b5\"><b><i>:</i></b></span>",
+      "",
+      "<span style=\"color:#f6b26b\"><b>Solar Weapon Kills</b></span> <span style=\"color:#a5b5b5\"><b>progress a counter, spawning a</b></span> <span style=\"color:#f6b26b\"><b>Solar Elemental Orb</b></span> <span style=\"color:#a5b5b5\"><b>upon reaching 100%.</b></span>",
+      "",
+      "<span style=\"color:#f6b26b\"><b><i>Solar Elemental Orb:</i></b></span>",
+      "<span style=\"color:#a5b5b5\"><b>Can be picked up and thrown.</b></span>",
+      "<span style=\"color:#a5b5b5\"><b>Deals</b></span> <span style=\"color:#a4c2f4\"><b>450</b></span> <span style=\"color:#ea9999\"><b>[101]</b></span> <span style=\"color:#a5b5b5\"><b>damage and</b></span> <span style=\"color:#f6b26b\"><b>x40<small>+20</small> Scorch</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
+      "",
+      "<a href=\"#rangeid=1302500297\"><span style=\"color:#a4c2f4\"><b><i><u>For more information, head to Game Mechanics.</u></i></b></span></a>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>While</b></span> <span style=\"color:#a4c2f4\"><b>Armor Charges</b></span> <span style=\"color:#a5b5b5\"><b>&lt;</b></span> <span style=\"color:#a4c2f4\"><b>2</b></span><span style=\"color:#a5b5b5\"><b>:</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Scoring</b></span> <span style=\"color:#f1c232\"><b>multiple Precision Hits</b></span> <span style=\"color:#a5b5b5\"><b>within 2 seconds of each with Bows, Snipers, or Scout Rifles generates</b></span> <span style=\"color:#a4c2f4\"><b>x1 Armor Charge.</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b><i>Counter System:</i></b></span>",
+      "<span style=\"color:#a5b5b5\"><b>Snipers = 50%</b></span>",
+      "<span style=\"color:#a5b5b5\"><b>Bows = 33%</b></span>",
+      "<span style=\"color:#a5b5b5\"><b>Scout Rifles = 20%</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>While</i></span> <span style=\"color:#a4c2f4\"><b><i>Armor Charge</i></b></span> <span style=\"color:#a5b5b5\"><i>is active:</i></span>",
+      "<span style=\"color:#a5b5b5\"><b>Thrown</b></span> <span style=\"color:#93c47d\"><b>Tangles</b></span> <span style=\"color:#a5b5b5\"><b>and</b></span> <span style=\"color:#d5a6bd\"><b>Elemental Orbs</b></span> <span style=\"color:#a5b5b5\"><b>deal increased damage per</b></span> <span style=\"color:#a4c2f4\"><b>Armor Charge</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
+      "<span style=\"color:#a5b5b5\"><i>Does not consume</i></span> <span style=\"color:#a4c2f4\"><i>Armor Charges</i></span> <span style=\"color:#a5b5b5\"><i>on throw.</i></span>",
+      "",
+      "<span style=\"color:#a4c2f4\"><b>Armor Charges</b></span> <span style=\"color:#a5b5b5\"><b>now</b></span> <span style=\"color:#6d9eeb\"><b>passively decay</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#93c47d\"><b>Tangle</b></span><span style=\"color:#a5b5b5\"><b>|</b></span> <span style=\"color:#d5a6bd\"><b>Elemental Orb</b></span> <span style=\"color:#a5b5b5\"><b>Damage Increase:</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>30% | 60% | 90% | 120% | 150% | 180%</b></span>",
+      "<span style=\"color:#ea9999\"><b>13% | 26% | 39% | 52% | 65% | 78%</b></span>",
+      "<span style=\"color:#f6b26b\"><b>Affects Scorch damage from Solar Orbs.</b></span>",
+      "",
+      "<span style=\"color:#93c47d\"><b>Whirling Maelstrom</b></span> <span style=\"color:#a5b5b5\"><b>Damage Increase:</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>0.6% | ?% | 18.8% | 40% | 50% | 60%</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9ead3\"><b>Season of The Deep (S21)</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#f9cb9c\"><b>Anti-Barrier Auto Rifles</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#76a5af\"><b>Authorized Mods: Arc</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#ff93c47d\"><b>Improved Unraveling</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#ff93c47d\"><b>Strand Soldier</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#93c47d\"><b>Conductive Cosmic Needle</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Auto Rifles without an intrinsic</b></span> <span style=\"color:#a4c2f4\"><b>Breaker-Type</b></span> <span style=\"color:#a5b5b5\"><b>are granted</b></span> <span style=\"color:#f9cb9c\"><b>Shield Piercing Rounds.</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Auto Rifles are always</b></span> <span style=\"color:#a4c2f4\"><b>Overcharged</b></span> <span style=\"color:#a5b5b5\"><b>when the modifier is active.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a2c4c9\"><b>Arc Weapon Mods</b></span> <span style=\"color:#a5b5b5\"><b>cost 1 Armor Energy</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#6aa84f\"><b>Unraveling Threads</b></span> <span style=\"color:#a5b5b5\"><b>deal 10% increased damage.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b><i>Upon obtaining</i></b></span> <span style=\"color:#93c47d\"><b><i>Woven Mail</i></b></span><span style=\"color:#a5b5b5\"><b><i>, while on a</i></b></span> <span style=\"color:#93c47d\"><b><i>Strand Subclass</i></b></span><span style=\"color:#a5b5b5\"><b><i>:</i></b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Grants</b></span> <span style=\"color:#6aa84f\"><b>Unraveling Rounds</b></span> <span style=\"color:#a5b5b5\"><b>for 8 seconds.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>Against</i></span> <span style=\"color:#6aa84f\"><b><i>Strand Debuffed Enemies</i></b></span><span style=\"color:#a5b5b5\"><b><i>:</i></b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>5% Increased</b></span> <span style=\"color:#a2c4c9\"><b>Arc</b></span> <span style=\"color:#a5b5b5\"><b>and</b></span> <span style=\"color:#b4a7d6\"><b>Void</b></span> <span style=\"color:#a5b5b5\"><b>Ability Damage.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#c67676\"><b>Unstoppable Hand Cannon</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b4a7d6\"><b>Authorized Mods: Void</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#d5a6bd\"><b>Deeper Origins</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#ffd5a6bd\"><b>Overcharged Armory</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#ff79bec3\"><b>Shock and Awe</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>ADS without shooting for 1 second grants</b></span> <span style=\"color:#c67676\"><b>Unstoppable Shots.</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Hand Cannons are always</b></span> <span style=\"color:#a4c2f4\"><b>Overcharged</b></span> <span style=\"color:#a5b5b5\"><b>when the modifier is active.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b4a7d6\"><b>Void Weapon Mods</b></span> <span style=\"color:#a5b5b5\"><b>cost 1 Armor Energy.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Improves the following Origin Traits.</b></span>",
+      "",
+      "<span style=\"color:#a577c0\"><b>Harmonic Resonance</b></span>",
+      "<span style=\"color:#d5a6bd\"><b>Nanotech Tracer Rockets</b></span>",
+      "<span style=\"color:#c2a037\"><b>Noble Deeds</b></span>",
+      "<span style=\"color:#67c9cf\"><b>Unsated Hunger</b></span>",
+      "",
+      "<a href=\"#rangeid=1948232030\"><span style=\"color:#a2c4c9\"><b><u>Click Here to see their improved effects</u></b></span></a><span style=\"color:#a2c4c9\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Guns with the following Origin Traits are</b></span> <span style=\"color:#a4c2f4\"><b>Overcharged</b></span> <span style=\"color:#a5b5b5\"><b>if possible.</b></span>",
+      "",
+      "<span style=\"color:#a577c0\"><b>Harmonic Resonance</b></span> <span style=\"color:#cc4125\"><b>[NOT WORKING]</b></span>",
+      "<span style=\"color:#d5a6bd\"><b>Nanotech Tracer Rockets</b></span> <span style=\"color:#cc4125\"><b>[NOT WORKING]</b></span>",
+      "<span style=\"color:#c2a037\"><b>Noble Deeds</b></span>",
+      "<span style=\"color:#67c9cf\"><b>Unsated Hunger</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>While</i></span> <span style=\"color:#79bec3\"><b><i>Amplified</i></b></span><span style=\"color:#a5b5b5\"><b>:</b></span>",
+      "",
+      "<span style=\"color:#a2c4c9\"><b>Arc Kills</b></span> <span style=\"color:#a5b5b5\"><b>summon a</b></span> <span style=\"color:#a2c4c9\"><b>burst of lightning</b></span><span style=\"color:#a5b5b5\"><b>, dealing up to</b></span> <span style=\"color:#a4c2f4\"><b>141</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#a5b5b5\"><b>damage and</b></span> <span style=\"color:#76a5af\"><b>jolting</b></span> <span style=\"color:#a5b5b5\"><b>in a ? metre radius.</b></span>",
+      "",
+      "<span style=\"color:#dd7e6b\"><b><i>Incurs a 5? second cooldown between activations.</i></b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#b4a7d6\"><b>Overload Scout Rifle</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#93c47d\"><b>Authorized Mods: Strand</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#8e7cc3\"><b>Unto the Breach</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#d5a6bd\"><b>Protective Breach</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b4a7d6\"><b>Supernova</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Scoring 3 Hits within 2 seconds of each grants</b></span> <span style=\"color:#b4a7d6\"><b>Overloading Shots</b></span> <span style=\"color:#a5b5b5\"><b>for 6 seconds.</b></span>",
+      "<span style=\"color:#a5b5b5\"><i><small>Reloading removes the buff and resets Hit Counter.</small></i></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Scout Rifles are always</b></span> <span style=\"color:#a4c2f4\"><b>Overcharged</b></span> <span style=\"color:#a5b5b5\"><b>when the modifier is active.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#93c47d\"><b>Strand Weapon Mods</b></span> <span style=\"color:#a5b5b5\"><b>cost 1 Armor Energy.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>On</i></span> <span style=\"color:#8e7cc3\"><b><i>Void Debuffed Enemy</i></b></span> <span style=\"color:#a5b5b5\"><b><i>Kill</i></b> <i>while on a</i></span> <span style=\"color:#b4a7d6\"><b><i>Void Subclass</i></b></span><span style=\"color:#a5b5b5\"><b><i>:</i></b></span>",
+      "<span style=\"color:#a5b5b5\"><b>Spawns a</b></span> <span style=\"color:#b4a7d6\"><b>Void Breach.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>On</i></span> <span style=\"color:#b4a7d6\"><b><i>Void Breach</i></b></span> <span style=\"color:#a5b5b5\"><b><i>Pickup</i></b> <i>while on a</i></span> <span style=\"color:#b4a7d6\"><b><i>Void Subclass</i></b></span><span style=\"color:#a5b5b5\"><b><i>:</i></b></span>",
+      "<span style=\"color:#a5b5b5\"><b>Grants a</b></span> <span style=\"color:#d5a6bd\"><b>Void Overshield</b></span> <span style=\"color:#a5b5b5\"><b>for 10 seconds.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>On</i></span> <span style=\"color:#b4a7d6\"><b><i>Void Breach</i></b></span> <span style=\"color:#a5b5b5\"><b>Pickup:</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>The next</b></span> <span style=\"color:#b4a7d6\"><b>Void Damage Instance</b></span> <span style=\"color:#a5b5b5\"><b>within 10 seconds releases a</b></span> <span style=\"color:#c27ba0\"><b>weakening burst</b></span><span style=\"color:#a5b5b5\"><b>, applying</b></span> <span style=\"color:#c27ba0\"><b>Weaken</b></span> <span style=\"color:#a5b5b5\"><b>to enemies within 5? metres.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#b4a7d6\"><b>Overload Trace Rifle</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#79bec3\"><b>Authorized Mods: Melee</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#79bec3\"><b>Amped Up</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#ffa4c2f4\"><b>Counter Charge</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#ffd5a6bd\"><b>Squad Goals</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Sustained Fire for 0.6? seconds grants</b></span> <span style=\"color:#b4a7d6\"><b>Overloading Shots</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Trace Rifles are always</b></span> <span style=\"color:#a4c2f4\"><b>Overcharged</b></span> <span style=\"color:#a5b5b5\"><b>when the modifier is active.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#79bec3\"><b>Melee Mods</b></span> <span style=\"color:#a5b5b5\"><b>cost 1 Armor Energy.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b><i>While on an</i></b></span> <span style=\"color:#a2c4c9\"><b><i>Arc Subclass</i></b></span><span style=\"color:#a5b5b5\"><b>:</b></span>",
+      "<span style=\"color:#79bec3\"><b>Amplified</b></span> <span style=\"color:#a5b5b5\"><b>duration is increased to 20 seconds.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>On</i></span> <span style=\"color:#a4c2f4\"><b><i>Champion Stun</i></b></span><span style=\"color:#a5b5b5\"><b>:</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Grants</b></span> <span style=\"color:#a4c2f4\"><b>x1 Armor Charge</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>On Finisher, while affected by the</b></span> <span style=\"color:#d5a6bd\"><b>Subclass-Specific Buff</b></span><span style=\"color:#a5b5b5\"><b>:</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Grants allies within ? metres the</b></span> <span style=\"color:#d5a6bd\"><b>Subclass-Specific Buff</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
+      "<span style=\"color:#a5b5b5\"><b><small>Requires</small></b></span> <span style=\"color:#d5a6bd\"><b><small>Matching Subclass</small></b></span> <span style=\"color:#a5b5b5\"><b><small>to grant the buff to allies.</small></b></span>",
+      "",
+      "<span style=\"color:#d5a6bd\"><b><i>Subclass Specific Buff:</i></b></span>",
+      "<span style=\"color:#79bec3\"><b>Amplified</b></span>",
+      "<span style=\"color:#8e7cc3\"><b>Devour</b></span>",
+      "<span style=\"color:#93c47d\"><b>Woven Mail</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#c67676\"><b>Unstoppable Glaive</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#d5a6bd\"><b>Technicolor Siphon</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#ff79bec3\"><b>Thunderous Retort</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#ff79bec3\"><b>Electric Armor</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a2c4c9\"><b>Lightning Strikes Twice</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Glaives are passively granted</b></span> <span style=\"color:#c67676\"><b>Unstoppable Shots</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Glaives are always</b></span> <span style=\"color:#a4c2f4\"><b>Overcharged</b></span> <span style=\"color:#a5b5b5\"><b>when the modifier is active.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#93c47d\"><b>Strand</b></span> <span style=\"color:#a5b5b5\"><b>+</b></span> <span style=\"color:#a2c4c9\"><b>Arc</b></span> <span style=\"color:#a5b5b5\"><b>Siphon that costs 3 Armor Energy.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b><i>While at</i></b></span> <span style=\"color:#dd7e6b\"><b><i>Critical Health</i></b></span> <span style=\"color:#a5b5b5\"><b><i>or</i></b></span> <span style=\"color:#67c9cf\"><b><i>Amplified</i></b></span><span style=\"color:#a5b5b5\"><b><i>:</i></b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>30% increased</b></span> <span style=\"color:#76a5af\"><b>Arc</b></span> <span style=\"color:#ffd966\"><b>Super</b></span> <span style=\"color:#a5b5b5\"><b>Damage.</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><i>Only affects damage</i> <b><i>while</i></b> <i>in</i></span> <span style=\"color:#ffd966\"><i>Super</i></span><span style=\"color:#a5b5b5\"><i>, resulting in lowered bonuses for</i></span> <span style=\"color:#ffd966\"><i>Thundercrash</i></span> <span style=\"color:#a5b5b5\"><i>and</i></span> <span style=\"color:#ffd966\"><i>Gathering Storm.</i></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>While</i></span> <span style=\"color:#79bec3\"><b><i>Amplified</i></b></span><span style=\"color:#a5b5b5\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#a4c2f4\"><b>30%</b></span> <span style=\"color:#ea9999\"><b>[10%]</b></span> <span style=\"color:#a5b5b5\"><b>Damage Resist</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b><i>On</i></b></span> <span style=\"color:#e0a261\"><b><i>Grenade Ability Usage</i></b></span> <span style=\"color:#a5b5b5\"><b><i>while on an</i></b></span> <span style=\"color:#76a5af\"><b><i>Arc Subclass</i></b></span><span style=\"color:#a5b5b5\"><b><i>:</i></b></span>",
+      "",
+      "<span style=\"color:#e0a261\"><b>130% Additional Grenade Base Recharge Rate</b></span> <span style=\"color:#a5b5b5\"><b>for 5? seconds.</b></span>",
+      "",
+      "<span style=\"color:#76a5af\"><b>Arc Kills</b></span> <span style=\"color:#a5b5b5\"><b>increase the buff duration by +3? seconds, up to 20?seconds.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#c2a037\"><b>Season of Defiance (S20)</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#f9cb9c\"><b>Anti-Barrier Sidearms</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#f6b26b\"><b>Authorized Mods: Solar</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#ffd966\"><b>Shatter Orbs</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b4a7d6\"><b>Bricks from Beyond</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#93c47d\"><b>Threaded Blast</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Sidearms without an intrinsic</b></span> <span style=\"color:#a4c2f4\"><b>Breaker-Type</b></span> <span style=\"color:#a5b5b5\"><b>are granted</b></span> <span style=\"color:#f9cb9c\"><b>Shield Piercing Rounds</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Sidearms are always</b></span> <span style=\"color:#a4c2f4\"><b>Overcharged</b></span> <span style=\"color:#a5b5b5\"><b>when the modifier is active.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#f6b26b\"><b>Solar Mods</b></span> <span style=\"color:#a5b5b5\"><b>cost 1 Armor Energy.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>Upon breaking a</i></span> <span style=\"color:#a4c2f4\"><b><i>Combatant Shield</i></b></span> <span style=\"color:#a5b5b5\"><i>with a</i></span> <span style=\"color:#d5a6bd\"><b><i>Matching Damage Type</i></b><i>:</i></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Creates a</b></span> <span style=\"color:#ffd966\"><b>Large Orb of Power</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><i>Only works once per enemy.</i></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Scoring a random amount between</b></span> <span style=\"color:#b4a7d6\"><b>1 to 4 Void Weapon Kills</b></span> <span style=\"color:#a5b5b5\"><b>against</b></span> <span style=\"color:#a4c2f4\"><b>Elites, Minibosses, or Bosses</b></span> <span style=\"color:#a5b5b5\"><b>spawn a</b></span> <span style=\"color:#8e7cc3\"><b>Heavy Ammo Brick</b></span> <span style=\"color:#a5b5b5\"><b>for you and allies.</b></span>",
+      "",
+      "<span style=\"color:#8e7cc3\"><b>Heavy Ammo Brick</b></span> <span style=\"color:#a5b5b5\"><b>grants the same amount of ammo as a regular</b></span> <span style=\"color:#8e7cc3\"><b>brick</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>Upon destroying a</i></span> <span style=\"color:#93c47d\"><b><i>Tangle</i></b></span> <span style=\"color:#a5b5b5\"><i>with a</i></span> <span style=\"color:#93c47d\"><b><i>Strand Weapon</i></b><i>:</i></span>",
+      "",
+      "<span style=\"color:#93c47d\"><b>Explosion</b></span> <span style=\"color:#a5b5b5\"><b>has an additional damage instance, dealing 224 damage in a [12?] metre radius.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#f9cb9c\"><b>Anti-Barrier Pulse Rifles</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#93c47d\"><b>Authorized Mods: Strand</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#d5a6bd\"><b>Defiant Armory</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#f6b26b\"><b>Flare Up</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#f6b26b\"><b>Rain of Firebolts</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Pulse Rifles without an intrinsic</b></span> <span style=\"color:#a4c2f4\"><b>Breaker-Type</b></span> <span style=\"color:#a5b5b5\"><b>are granted</b></span> <span style=\"color:#f9cb9c\"><b>Shield Piercing Rounds</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Pulse Rifles are always</b></span> <span style=\"color:#a4c2f4\"><b>Overcharged</b></span> <span style=\"color:#a5b5b5\"><b>when the modifier is active.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#93c47d\"><b>Strand Mods</b></span> <span style=\"color:#a5b5b5\"><b>cost 1 Armor Energy.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Improves Origin Traits.</b></span>",
+      "",
+      "<span style=\"color:#c8614c\"><b><small>Ambush</small></b></span> <span style=\"color:#a5b5b5\"><b><small>grants +40 Range and +40 Handling. Bows receive 0.7x Draw Time Multiplier.</small></b></span>",
+      "",
+      "<span style=\"color:#d5a6bd\"><b><small>Nanotech Tracer Rockets</small></b></span> <span style=\"color:#a5b5b5\"><b><small>deals 20% increased damage.</small></b></span>",
+      "",
+      "<span style=\"color:#c2a037\"><b><small>Noble Deeds</small></b></span> <span style=\"color:#a5b5b5\"><b><small>grants +[?] Handing and +[?] Reload Speed.</small></b></span>",
+      "",
+      "<span style=\"color:#ffe599\"><b><small>Tex Balanced Stock</small></b></span> <span style=\"color:#a5b5b5\"><b><small>grants +[?] Handling, +[60?] Reload Speed, 0.9x Reload Duration Multiplier, and -[5?]% Reduced Aiming-Down-Sights Movement Penalty for 4 seconds.</small></b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b><i>On</i></b></span> <span style=\"color:#f6b26b\"><b><i>Firebolt Grenade</i></b></span> <span style=\"color:#a5b5b5\"><b><i>Hit:</i></b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Applies an additional</b></span> <span style=\"color:#a4c2f4\"><b>30</b></span> <span style=\"color:#ea9999\"><b>[15]</b></span> <span style=\"color:#f6b26b\"><b>Scorch</b></span> <span style=\"color:#a5b5b5\"><b>and spawns a</b></span> <span style=\"color:#f9cb9c\"><b>Fire Sprite</b></span><span style=\"color:#a5b5b5\"><i>.</i></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><i>Direct Hits also count as a hit.</i></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Grants an additional</b></span> <span style=\"color:#f6b26b\"><b>Firebolt Grenade</b></span> <span style=\"color:#e0a261\"><b>Ability Charge</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#b4a7d6\"><b>Overload Bows</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b4a7d6\"><b>Authorized Mods: Void</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#93c47d\"><b>Untangler</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#d5a6bd\"><b>Origin Hones</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b4a7d6\"><b>Void Weapon Channeling</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Bows without an intrinsic</b></span> <span style=\"color:#a4c2f4\"><b>Breaker-Type</b></span> <span style=\"color:#a5b5b5\"><b>are granted</b></span> <span style=\"color:#b4a7d6\"><b>Overloading Shots.</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Bows are always</b></span> <span style=\"color:#a4c2f4\"><b>Overcharged</b></span> <span style=\"color:#a5b5b5\"><b>when the modifier is active.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b4a7d6\"><b>Void Mods</b></span> <span style=\"color:#a5b5b5\"><b>cost 1 Armor Energy.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Upon destroying a</b></span> <span style=\"color:#93c47d\"><b>Tangle</b></span> <span style=\"color:#a5b5b5\"><b>with a</b></span> <span style=\"color:#93c47d\"><b>Strand Weapon:</b></span>",
+      "<span style=\"color:#6aa84f\"><b>Suspends</b></span> <span style=\"color:#a5b5b5\"><b>enemies damaged by the explosion.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Guns with the following Origin Traits are</b></span> <span style=\"color:#a4c2f4\"><b>Overcharged</b></span> <span style=\"color:#a5b5b5\"><b>if possible.</b></span>",
+      "",
+      "<span style=\"color:#c8614c\"><b>Ambush</b></span>",
+      "<span style=\"color:#d5a6bd\"><b>Nanotech Tracer Rockets</b></span>",
+      "<span style=\"color:#c2a037\"><b>Noble Deeds</b></span>",
+      "<span style=\"color:#ffe599\"><b>Tex Balanced Stock</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>Upon scoring a</i></span> <span style=\"color:#b4a7d6\"><b><i>Void Weapon Kill</i></b></span> <span style=\"color:#a5b5b5\"><i>while having at least</i> <b><i>1</i></b> <i>charged</i></span> <span style=\"color:#b4a7d6\"><b><i>Void Ability</i></b></span><span style=\"color:#a5b5b5\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Grants increased</b></span> <span style=\"color:#b4a7d6\"><b>Void Weapon Damage</b></span> <span style=\"color:#a5b5b5\"><b>for [?] seconds.</b></span>",
+      "<span style=\"color:#a5b5b5\"><i>Damage Increase is based on the amount of charged</i></span> <span style=\"color:#b4a7d6\"><i>Void Abilities.</i></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Increased</b></span> <span style=\"color:#b4a7d6\"><b>Void Weapon Damage:</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>10% | 17% | | 22% | 25%</b></span>",
+      "<span style=\"color:#ea9999\"><b>3% | 4.5% | 5.5% | 6%</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Does not stack with</b></span> <span style=\"color:#a4c2f4\"><b>Weapon Surge</b></span> <span style=\"color:#a5b5b5\"><b>Mods.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#c67676\"><b>Unstoppable Scout Rifles</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#f6b26b\"><b>Authorized Mods: Grenades</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#f6b26b\"><b>Solar Surge</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#93c47d\"><b>Allied Unraveling</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a4c2f4\"><b>Medieval Champion</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Aiming-Down-Sights with a Scout Rifle without shooting for 1 second grants</b></span> <span style=\"color:#c67676\"><b>Unstoppable Shots.</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Scout Rifles are always</b></span> <span style=\"color:#a4c2f4\"><b>Overcharged</b></span> <span style=\"color:#a5b5b5\"><b>when the modifier is active.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#e0a261\"><b>Grenade Mods</b></span> <span style=\"color:#a5b5b5\"><b>cost 1 Armor Energy.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>Upon picking up a</i></span> <span style=\"color:#f9cb9c\"><b><i>Fire Sprite</i></b></span><span style=\"color:#a5b5b5\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Grants</b></span> <span style=\"color:#a4c2f4\"><b>x2 Armor Charge</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>Upon scoring 3 kills within [4?] seconds of each with a</i></span> <span style=\"color:#93c47d\"><i>Strand Weapon:</i></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Grants</b></span> <span style=\"color:#6aa84f\"><b>Unraveling Rounds</b></span> <span style=\"color:#a5b5b5\"><b>for 12 seconds.</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Duration can be increased depending on the amount of allies within ~15? metres.</b></span>",
+      "<span style=\"color:#a5b5b5\"><b>x1 = 50% | x2 = 75%</b></span>",
+      "",
+      "<span style=\"color:#6aa84f\"><b>Unraveling Rounds</b></span> <span style=\"color:#a5b5b5\"><b>makes any hit with a</b></span> <span style=\"color:#93c47d\"><b>Strand Weapon</b></span> <span style=\"color:#a5b5b5\"><b>apply</b></span> <span style=\"color:#6aa84f\"><b>Unraveling</b></span> <span style=\"color:#a5b5b5\"><b>on hit.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Glaives are passively granted</b></span> <span style=\"color:#c67676\"><b>Unstoppable Shots</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Swords are granted</b></span> <span style=\"color:#b4a7d6\"><b>Overloading Hits</b></span> <span style=\"color:#a5b5b5\"><b>upon scoring [3?] hits within [?] seconds of each.</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Glaives and Swords are always</b></span> <span style=\"color:#a4c2f4\"><b>Overcharged</b></span> <span style=\"color:#a5b5b5\"><b>when the modifier is active.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#b4a7d6\"><b>Automatics Overload</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#d5a6bd\"><b>Multi-Siphon Mods</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b4a7d6\"><b>Volatile Flow</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#93c47d\"><b>Counterweave</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#d5a6bd\"><b>Prismatic Transfer</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Sustained Fire for 0.6 seconds grants</b></span> <span style=\"color:#b4a7d6\"><b>Overload Rounds</b></span> <span style=\"color:#a5b5b5\"><b>to Auto Rifles and Submachine Guns.</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Auto Rifles and Submachine Guns are always</b></span> <span style=\"color:#a4c2f4\"><b>Overcharged</b></span> <span style=\"color:#a5b5b5\"><b>when the modifier is active.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Grants Multi-Element Helmet Siphon Mods.</b></span>",
+      "",
+      "<span style=\"color:#f6b26b\"><b>Solar</b></span> <span style=\"color:#a5b5b5\"><b>+</b></span> <span style=\"color:#93c47d\"><b>Strand</b></span>",
+      "<span style=\"color:#8e7cc3\"><b>Void</b></span> <span style=\"color:#a5b5b5\"><b>+</b></span> <span style=\"color:#93c47d\"><b>Strand</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><b>Picking up an</b></span> <span style=\"color:#ffd966\"><b>Orb of Power</b></span> <span style=\"color:#a5b5b5\"><b>grants</b></span> <span style=\"color:#d5a6bd\"><b>Volatile Rounds</b></span> <span style=\"color:#a5b5b5\"><b>for</b></span> <span style=\"color:#a4c2f4\"><b>13</b></span> <span style=\"color:#ea9999\"><b>[10]</b></span> <span style=\"color:#a5b5b5\"><b>seconds.</b></span>",
+      "",
+      "<span style=\"color:#b4a7d6\"><b>Volatile Rounds</b></span> <span style=\"color:#a5b5b5\"><b>makes any hit with a</b></span> <span style=\"color:#b4a7d6\"><b>Void Weapon</b></span> <span style=\"color:#a5b5b5\"><b>apply</b></span> <span style=\"color:#d5a6bd\"><b>Volatile</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>Upon</i></span> <span style=\"color:#a4c2f4\"><b><i>stunning</i></b></span> <span style=\"color:#a5b5b5\"><i>or defeating a</i></span> <span style=\"color:#a4c2f4\"><b><i>Champion</i></b></span><span style=\"color:#a5b5b5\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Grants [?]% Ability Energy to your least-charged</b></span> <span style=\"color:#93c47d\"><b>Strand Ability</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#a5b5b5\"><i>Upon casting</i></span> <span style=\"color:#ffd966\"><b><i>Super Ability</i></b></span><span style=\"color:#a5b5b5\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><b>Allies with a different</b></span> <span style=\"color:#d5a6bd\"><b>Subclass Element</b></span> <span style=\"color:#a5b5b5\"><b>from yours receive 20% increased Weapon Damage for 10 seconds.</b></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><i>Buff is not refreshable.</i></span>",
+      "",
+      "<span style=\"color:#a5b5b5\"><i>Does not stack with Empowering Buffs, like</i></span> <span style=\"color:#ffd966\"><i>Weapons of Light</i></span> <span style=\"color:#a5b5b5\"><i>or</i></span> <span style=\"color:#ffd966\"><i>Radiant</i></span><span style=\"color:#a5b5b5\"><i>.</i></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#ea9999\"><b>Season of the Seraph (S19)</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Unstoppable Hand Cannon</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Grenade Launcher Holster</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Hand Cannon Targeting</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Unstoppable Grenade Launcher</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Passive Aggressive Guard</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>ADS a Hand Cannon without shooting for 1 second grants</b></span> <span style=\"color:#c67676\"><b>Unstoppable Shots.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Refills 10% of</b></span> <span style=\"color:#8e7cc3\"><b>Power Grenade Launcher's</b></span> <span style=\"color:#b2d6d7\"><b>Magazine every 4 [3] seconds.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>+10 [15] Aim Assist, 0.85x Accuracy Cone Size, and 0.75x ADS Animation Duration Multiplier.</b></span>",
+      "",
+      "<span style=\"color:#b2d6d7\"><b>ADS Animation Duration Multiplier stacks with Handling, and other Multipliers.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Readying or Reloading a Grenade Launcher grants</b></span> <span style=\"color:#c67676\"><b>Unstoppable Shots</b></span> <span style=\"color:#b2d6d7\"><b>for 4 seconds.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><i>While wielding a Glaive:</i></span>",
+      "",
+      "<span style=\"color:#a4c2f4\"><b>Combatants</b></span> <span style=\"color:#b2d6d7\"><b>within [?] metres deal 50% decreased damage to you.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Overload</b></span>",
+      "<span style=\"color:#b2d6d7\"><b>Scout Rifle</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Legacy Ambush</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Pulse Rifle Loader</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Counter Charge</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Weakened Clear</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Scoring 2 Hits within 3? seconds of each grants</b></span> <span style=\"color:#b4a7d6\"><b>Overload Shots</b></span> <span style=\"color:#b2d6d7\"><b>for 6 seconds.</b></span>",
+      "<span style=\"color:#b2d6d7\"><i>Reloading removes the buff and resets Hit Counter.</i></span>",
+      "",
+      "<span style=\"color:#b2d6d7\">Stunning an</span> <span style=\"color:#b4a7d6\">Overload Champion</span> <span style=\"color:#b2d6d7\">grants all Overload Scout Rifle users 35% increased damage with Scout Rifles against Champions for 10 seconds.</span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Ambush grants +[?] Range, and +[?] Handling.</b></span>",
+      "",
+      "<span style=\"color:#b2d6d7\"><b>Bray Inheritance grants increased Ability Energy</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>+10 [15] Reload Speed and 0.85x Reload Duration Multiplier to Pulse Rifles.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#93c47d\"><b>Become Charged With Light</b></span> <span style=\"color:#b2d6d7\"><b>whenever a</b></span> <span style=\"color:#a4c2f4\"><b>Champion</b></span> <span style=\"color:#b2d6d7\"><b>is</b></span> <span style=\"color:#a4c2f4\"><b>stunned</b></span><span style=\"color:#b2d6d7\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><i>After damaging a Boss, Champion, or breaking a Combatant's Shield with a Grenade Launcher:</i></span>",
+      "",
+      "<span style=\"color:#b2d6d7\"><b>Refills Stowed Weapons and applies</b></span> <span style=\"color:#c27ba0\"><b>Weaken</b></span><span style=\"color:#b2d6d7\"><b>,</b></span> <span style=\"color:#c27ba0\"><b>increasing damage dealt to the Combatant by 15% for 10 seconds.</b></span>",
+      "",
+      "<span style=\"color:#b2d6d7\"><i>Buff appears as</i></span> <span style=\"color:#ffd966\"><i>Damage Boost</i></span><span style=\"color:#b2d6d7\"><i>, and the duration serves as a</i></span> <span style=\"color:#dd7e6b\"><i>cooldown</i></span> <span style=\"color:#b2d6d7\"><i>for reapplying</i></span> <span style=\"color:#c27ba0\"><i>weaken</i></span> <span style=\"color:#b2d6d7\"><i>and refill.</i></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Piercing Bowstring</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>In-Flight Compensator</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Energy Diffusion Substrate</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Advance Scout</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Monochromatic Maestro</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Bows without an intrinsic</b></span> <span style=\"color:#a4c2f4\"><b>Breaker-Type</b></span> <span style=\"color:#b2d6d7\"><b>are granted</b></span> <span style=\"color:#f9cb9c\"><b>Shield Piercing Rounds</b></span><span style=\"color:#b2d6d7\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Passively grants +15 Airborne Effectiveness to all equipped weapons.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Reduces all incoming damage from</b></span> <span style=\"color:#a4c2f4\"><b>Combatants</b></span><span style=\"color:#b2d6d7\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#a4c2f4\"><b>5% Damage Resist per Copy, up to 15%</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><i>Upon</i></span> <span style=\"color:#a4c2f4\"><i>stunning</i></span> <span style=\"color:#b2d6d7\"><i>a</i></span> <span style=\"color:#a4c2f4\"><i>Champion</i></span><span style=\"color:#b2d6d7\"><i>:</i></span>",
+      "",
+      "<span style=\"color:#b2d6d7\"><b>Teammates deal 10% increased damage to the</b></span> <span style=\"color:#a4c2f4\"><b>stunned Champion</b></span> <span style=\"color:#b2d6d7\"><b>for 10 seconds.</b></span>",
+      "",
+      "<span style=\"color:#b2d6d7\"><i>Affected</i></span> <span style=\"color:#a4c2f4\"><i>Champions</i></span> <span style=\"color:#b2d6d7\"><i>are</i></span> <span style=\"color:#cc4125\"><i>marked</i></span><span style=\"color:#b2d6d7\"><i>.</i></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Dealing</b></span> <span style=\"color:#d5a6bd\"><b>Matching Elemental Weapon Damage</b></span> <span style=\"color:#b2d6d7\"><b>increases</b></span> <span style=\"color:#d5a6bd\"><b>Matching Elemental Ability Damage</b></span> <span style=\"color:#b2d6d7\"><b>by 10% for 6 seconds.</b></span>",
+      "",
+      "<span style=\"color:#b2d6d7\"><b>Dealing</b></span> <span style=\"color:#d5a6bd\"><b>Matching Elemental Ability Damage</b></span> <span style=\"color:#b2d6d7\"><b>increases</b></span> <span style=\"color:#d5a6bd\"><b>Matching Elemental Weapon Damage</b></span> <span style=\"color:#b2d6d7\"><b>by 10% for 6 seconds.</b></span>",
+      "",
+      "<span style=\"color:#ea9999\"><b>Does not function in PvP Gamemodes.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Anti-Barrier Pulse Rifle</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Bow Dexterity</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Sharp Shooting</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Lord Kelvin's Basilisk</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Solo Operative</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Bows without an intrinsic</b></span> <span style=\"color:#a4c2f4\"><b>Breaker-Type</b></span> <span style=\"color:#b2d6d7\"><b>are granted</b></span> <span style=\"color:#f9cb9c\"><b>Shield Piercing Rounds</b></span><span style=\"color:#b2d6d7\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>0.8x Ready/Stow Animation Duration Multiplier for Bows.</b></span>",
+      "",
+      "<span style=\"color:#b2d6d7\"><b><i>Stow Speed can't exceed the equivalent of 100 Handling.</i></b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Tex Balanced Stock's effects are increased, granting +[?] Reload Speed, 0.85x Reload Duration Multiplier, [?] Handling, and -[?]% decreased ADS Movement Penalty.</b></span>",
+      "",
+      "<span style=\"color:#b2d6d7\"><b>Veist Stinger's Activation Chance is doubled.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b4a7d6\"><b>Void</b></span> <span style=\"color:#b2d6d7\"><b>and</b></span> <span style=\"color:#6fa8dc\"><b>Stasis</b></span> <span style=\"color:#b2d6d7\"><b>Grenades apply</b></span> <span style=\"color:#b4a7d6\"><b>Disruption</b></span> <span style=\"color:#b2d6d7\"><b>on hit.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><i>While Solo:</i></span>",
+      "<span style=\"color:#b2d6d7\"><b>15% increased Weapon and Ability Damage.</b></span>",
+      "",
+      "<span style=\"color:#b2d6d7\"><i>Stacks with everything.</i></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Overload Rounds</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Mobile Retrofit</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Resilient Retrofit</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Low Entropy Superconductor</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Lucent Finisher</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Sustained Fire for 0.6 seconds grants</b></span> <span style=\"color:#b4a7d6\"><b>Overload Rounds</b></span> <span style=\"color:#b2d6d7\"><b>to Auto Rifles and Submachine Guns.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Grants +5 Mobility.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Grants +5 Resilience.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#76a5af\"><b>Arc</b></span> <span style=\"color:#b2d6d7\"><b>and</b></span> <span style=\"color:#6fa8dc\"><b>Stasis</b></span> <span style=\"color:#b2d6d7\"><b>Powered Melee Hits apply</b></span> <span style=\"color:#c67676\"><b>Stagger</b></span><span style=\"color:#b2d6d7\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b>Finishers against</b></span> <span style=\"color:#a4c2f4\"><b>Lucent Hive Lightbearers</b></span> <span style=\"color:#b2d6d7\"><b>or</b></span> <span style=\"color:#a4c2f4\"><b>Champions</b></span> <span style=\"color:#b2d6d7\"><b>spawn a</b></span> <span style=\"color:#b4a7d6\"><b>Heavy Ammo Brick</b></span> <span style=\"color:#b2d6d7\"><b>for you and allies</b></span><span style=\"color:#674ea7\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#b2d6d7\"><b><i>For older Artifact Mods between Season 16 and Season 19:</i></b></span>",
+      "<span style=\"color:#b2d6d7\">Go to the</span> <a href=\"#gid=1925335732\"><span style=\"color:#d5a6bd\"><u>Old Armor Mods tab</u></span></a> <span style=\"color:#b2d6d7\">and scroll down.</span>"
+    ]
+  ]
+]

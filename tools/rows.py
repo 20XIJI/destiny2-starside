@@ -19,7 +19,8 @@ render_table，渲染链不必知道格子从哪来。
   `authors.<作者>`。字段名按 fields_of()：首列 name、「图标」icon、「说明」
   realgame_details，其余即列名，同一张表里重名的第二列加 `#2`。同一枚主键在一页里
   第 k 次出现取第 k 段：本页标了 `page` 的变体排最前，然后是本体，再是其余变体。
-- 从主键现取：DERIVED 那几列，见各自的函数。
+- 从主键现取：DERIVED 那几列，见各自的函数。派生费用汇总同一行全部 hash 及模组族成员
+  的实际 energyCost，保留不同费用档；不只看行首，也不把费用当叠加效果档位。
 - 一行底下的子行：技能记录的 `enhanced`（星相带来的强化）、框架记录的 `weaponTypes`
   （按枪型的说明），紧跟在本行之后画，源稿里没有这几行。
 - 异域两页的「异域 PERK」与「说明」：装备、固有 perk、催化剂各是一条记录，行上把
@@ -405,19 +406,28 @@ def own_hosts(key):
 
 
 def exotic_parts(key, own):
-    """装备本体的第一段，接着各宿主的正文，再接本体其余段落：`[(主键, 文字)]`。
+    """基础正文、普通宿主、催化正文、催化宿主：`[(主键, 文字)]`。
 
-    主键是那一段文字写在哪条记录上。本体的首段与其余段落是同一个字段，拆在宿主
-    两侧，所以本体那一枚可能出现两次。"""
+    不拆开基础正文的段落；末尾的触发句必须紧接宿主效果。段首 ↑ 是本页的
+    催化标题，连同后续正文留在催化宿主之前。每块保留自己的记录出处。"""
     paras = [p.strip() for p in own.split(PARA) if p.strip()]
-    hosts, seen = [], set()
+    split = next((i for i, p in enumerate(paras)
+                  if markup.text_of(markup.strip_marks(p)).strip().startswith('↑')), len(paras))
+    base = (' %s ' % PARA).join(paras[:split])
+    catalyst = (' %s ' % PARA).join(paras[split:])
+    cats = (weapon_of(key).get('derived') or {}).get('catalyst') or ()
+    catalyst_hosts = {str(c) for c in cats}
+    for c in cats:
+        catalyst_hosts.update('perk:%s' % p['perkHash']
+                              for p in (facts().at(str(c)) or {}).get('perks') or ())
+    hosts, cat_hosts, seen = [], [], set()
     for h in own_hosts(key):
         t = zh(facts().at(h)).get('realgame_details', '').strip()
         if t and t not in seen:
             seen.add(t)
-            hosts.append((h, t))
-    rest = (' %s ' % PARA).join(paras[1:])
-    return ([(key, paras[0])] if paras else []) + hosts + ([(key, rest)] if rest else [])
+            (cat_hosts if h in catalyst_hosts else hosts).append((h, t))
+    return (([(key, base)] if base else []) + hosts
+            + ([(key, catalyst)] if catalyst else []) + cat_hosts)
 
 
 def exotic_text(key, own):
@@ -671,6 +681,7 @@ class Table:
         self.rank = 0
         self.lane = ''
         self.perks = None           # 本行「异域 PERK」格里的 {名字: 主键}
+        self.keys: tuple[str, ...] = ()  # 本行全部版本；费用不能只看行首
 
     def problem(self, title, col, why):
         PROBLEMS.append((self.page, markup.text_of(markup.strip_marks(title), collapse=True), col, why))
@@ -720,6 +731,7 @@ class Table:
         keys = spec.split()
         title = title.strip()
         key = keys[0]
+        self.keys = tuple(keys)
         rec = facts().at(key)
         if rec is None:
             markup.die('%s：主键 %s 落不到记录上（%s）' % (self.page, key, title))
@@ -881,13 +893,14 @@ def _stat(stat):
 
 
 def _cost(t, key):
-    rec = facts().at(key) or {}
-    if rec.get('members'):
-        costs = sorted({(facts().at(str(m)) or {}).get('plug', {}).get('energyCost')
-                        for m in rec['members']} - {None})
-    else:
-        one = (rec.get('plug') or {}).get('energyCost')
-        costs = [] if one is None else [one]
+    values = set()
+    for h in t.keys or (key,):
+        rec = facts().at(h) or {}
+        for member in rec.get('members') or (h,):
+            cost = ((facts().at(str(member)) or {}).get('plug') or {}).get('energyCost')
+            if cost is not None:
+                values.add(cost)
+    costs = sorted(values)
     return '{cost|%s}' % '–'.join(map(str, costs)) if costs else None
 
 

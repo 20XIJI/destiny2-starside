@@ -1,0 +1,423 @@
+[
+  [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>Hey, you shouldn't be seeing this!</i></b></span>",
+      "<span style=\"color:#cc4125\"><b><i>This isn't the ideal viewing experience.</i></b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b><i>If you can see this, then you're being affected by the fabled</i></b></span> <span style=\"color:#cc4125\"><b><i>HTMLView.</i></b></span>",
+      "<a href=\"https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4\"><span style=\"color:#6d9eeb\"><b><i><u>Please, click here</u></i></b></span></a> <span style=\"color:#cccccc\"><b><i>to fix it.</i></b></span>",
+      "",
+      "<span style=\"color:#cc4125\"><b><i>HTMLView Downsides:</i></b></span>",
+      "<span style=\"color:#cc4125\"><b><i>Image Resolution will be drastically reduced.</i></b></span>",
+      "<span style=\"color:#cc4125\"><b><i>Font will be overwritten to Arial.</i></b></span>",
+      "<span style=\"color:#cc4125\"><b><i>Cells with text may be poorly formatted.</i></b></span>",
+      "<span style=\"color:#cc4125\"><b><i>Frozen rows will not be frozen.</i></b></span>",
+      "<span style=\"color:#cc4125\"><b><i>Links will not redirect within the sheet.</i></b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b><i>Why was I loaded into</i></b></span> <span style=\"color:#cc4125\"><b><i>HTMLview</i></b></span><span style=\"color:#cccccc\"><b><i>?</i></b></span>",
+      "<span style=\"color:#34a853\"><b><i>Sheets</i></b></span> <span style=\"color:#cccccc\"><i>will load into</i></span> <span style=\"color:#cc4125\"><b><i>HTMLView</i></b></span> <span style=\"color:#cccccc\"><i>if there are &gt;99 viewers.</i></span>",
+      "<span style=\"color:#cccccc\"><i>Alternatively, you might have opened a link that was shared in</i></span> <span style=\"color:#cc4125\"><b><i>htmlview</i></b></span><span style=\"color:#cccccc\"><i>.</i></span>",
+      "<span style=\"color:#cccccc\"><i>Otherwise you're on mobile without the</i></span> <span style=\"color:#34a853\"><b><i>Sheets app</i></b></span><span style=\"color:#cccccc\"><i>.</i></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<a href=\"https://www.patreon.com/DataCompendium\"><span style=\"color:#fbbdec\"><b><u>Support the Data Compendium through Patreon donations.</u></b></span></a>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#f0c96c\"><b>Destiny Data Compendium</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#d5a6bd\"><b>Wall of Notable Mentions</b></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#a4c2f4\"><b>Breaker Effects</b></span> <span style=\"color:#cccccc\"><b>have altered their passive effects since MoT.</b></span>",
+      "",
+      "<span style=\"color:#f9cb9c\"><b>Shield-Piercing</b></span> <span style=\"color:#cccccc\"><b>can go through PHYSICAL BARRIERS.</b></span>",
+      "<span style=\"color:#cccccc\"><i>(Bucklers, Hydra Barriers, etc)</i></span>",
+      "<span style=\"color:#ea9999\"><b>Still deals more damage to Barricades.</b></span>",
+      "<span style=\"color:#e06666\"><b>No longer overpenetrates enemies.</b></span>",
+      "",
+      "<span style=\"color:#b4a7d6\"><b>Overload's Disruption</b></span> <span style=\"color:#cccccc\"><b>counts as</b></span> <span style=\"color:#dd7e6b\"><b>Exhaust</b></span> <span style=\"color:#cccccc\"><b>only for the purpose of</b></span> <span style=\"color:#89cdd1\"><b>Photonic Flare</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#d5a6bd\"><b>Elemental</b></span> <span style=\"color:#ffd966\"><b>Supercharger</b></span> <span style=\"color:#63d275\"><i>(Tablet Artifact)</i></span>",
+      "<span style=\"color:#cccccc\"><b>It still lowers</b></span> <span style=\"color:#ea9999\"><b>Guardian</b></span> <span style=\"color:#d5a6bd\"><b>Energy Regen</b></span> <span style=\"color:#cccccc\"><b>to 0.4x.</b></span>",
+      "",
+      "<span style=\"color:#dd7e6b\"><b>Exhaust-specific effects</b></span> <span style=\"color:#cccccc\"><i><small>(Psychohack, Problem Solver, etc)</small></i></span>",
+      "<span style=\"color:#a4c2f4\"><b>Decrease Combatant Damage by 25%</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#dd7e6b\"><b>Unstoppable</b></span> <span style=\"color:#cccccc\"><b>has increased stagger.</b></span>",
+      "<span style=\"color:#cc0000\"><b>Galvanized 2</b></span> <span style=\"color:#cccccc\"><b>= ONLY Unstoppables can stagger.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#f0c96c\"><b>A compilation of in-game values, explained as precisely as possible.</b></span>",
+      "",
+      "<span style=\"color:#f0c96c\"><b><i><small>SEE YOU STARSIDE, GUARDIANS.</small></i></b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d2bb6b\"><b><i>All donations are appreciated</i></b></span> <span style=\"color:#fbbdec\"><b><i>&lt;3</i></b></span>",
+      "<span style=\"color:#d2bb6b\"><b><i>They all go towards</i></b></span> <span style=\"color:#dd7e6b\"><b><i>Medical Expenses</i></b></span><span style=\"color:#d2bb6b\"><b><i>.</i></b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<a href=\"https://docs.google.com/spreadsheets/d/1b57Hb8m1L3daFfUckQQqvvN6VOpD03KEssvQLMFpC5I/edit#gid=1386975095\"><span style=\"color:#93c47d\"><b><u>Damage Scaling</u></b></span></a>"
+    ],
+    [],
+    [
+      "<a href=\"https://docs.google.com/spreadsheets/d/1l3xBHFa6ZMe86e13segg8f-RB8vLNerYEgNC_Aq3kLc\"><span style=\"color:#93c47d\"><b><u>Ammo Database</u></b></span></a>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#b6d7a8\"><i>MossyMax</i></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#a4c2f4\"><b>Incoming/Outgoing Damage Scalars vs Normal Difficulty</b></span>",
+      "<span style=\"color:#dd7e6b\"><b>-30 Delta</b></span><span style=\"color:#cccccc\"><b>: +85% Incoming and 0.446x Outgoing.</b></span>",
+      "<span style=\"color:#df4545\"><b>-50 Delta</b></span><span style=\"color:#cccccc\"><b>: +150% Incoming and 0.144x Outgoing.</b></span>",
+      "<span style=\"color:#f93551\"><b>Distorted Combatants deal 1.3x Damage.</b></span>",
+      "",
+      "<span style=\"color:#df4545\"><b>-50 (Grandmaster Alert)</b></span> <span style=\"color:#cccccc\"><b>vs</b></span> <span style=\"color:#dd7e6b\"><b>-30 (Ultimate)</b></span>",
+      "<span style=\"color:#cccccc\"><b>1.35x Incoming and 0.32x Outgoing Damage.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<a href=\"https://docs.google.com/spreadsheets/d/1_5wtBjRYHHxuF4oJKDb_iOGZs-wTkzB6RYbnyNLbuz4\"><span style=\"color:#72b84e\"><b><u>Boss Damage</u></b></span></a>"
+    ],
+    [],
+    [
+      "<a href=\"https://docs.google.com/spreadsheets/d/1JM-0SlxVDAi-C6rGVlLxa-J1WGewEeL8Qvq4htWZHhY\"><span style=\"color:#72b84e\"><b><u>Endgame Analysis</u></b></span></a>"
+    ],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#f0c96c\"><b>For contributions, suggestions, or questions, contact on</b></span> <span style=\"color:#8f97f4\"><b>Discord.</b></span>",
+      "<span style=\"color:#8f97f4\"><b>username: destinydatacompendium</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#72b84e\"><i>TheAegisRelic</i></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>omg hi io titan mercury mars tangled shore</b></span>",
+      "<span style=\"color:#cccccc\"><b>(eventually)</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<a href=\"https://docs.google.com/spreadsheets/d/1FWMC-Vd_bGEoRkkrn3drWIORCFYyWQVMNlMasa4OE6I\"><span style=\"color:#bba5f3\"><b><u>PVP Weapon Stat Breakpoints</u></b></span></a>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Click over the title of the cell to be redirected into the corresponding sheet.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Alternatively, use the Sheet Tabs at the bottom of the page.</b></span>",
+      "<span style=\"color:#e06666\"><b>HTMLView disables cell redirects. Blame Google.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#b4a7d6\"><i>Hugo</i></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#ea9999\"><b>This text formatting applies to:</b></span>",
+      "<span style=\"color:#ea9999\"><b>Guardians, their Constructs, and other PVP Activities.</b></span>",
+      "",
+      "<span style=\"color:#ea9999\"><b>Damage Values will use the default Crucible setting.</b></span>",
+      "",
+      "<span style=\"color:#ea9999\"><b>\"Constructs\" refer to objects created in the field.</b></span>",
+      "<span style=\"color:#ea9999\"><b>These include Well of Radiance, Barricades, Stasis Crystals, and other objects.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#a4c2f4\"><b>This text formatting applies to:</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Combatants, their Constructs, and other PVE Activities.</b></span>",
+      "",
+      "<span style=\"color:#a4c2f4\"><b>Damage Values are scaled to Elite Combatants in the Shooting Range.</b></span>",
+      "<span style=\"color:#3d85c6\"><b>0 Weapons</b></span><span style=\"color:#a4c2f4\"><b>, and Normal Difficulty Delta (0).</b></span>",
+      "",
+      "<span style=\"color:#a4c2f4\"><b><i>For non-Elite Scaling, refer to</i></b></span> <a href=\"https://docs.google.com/spreadsheets/d/1b57Hb8m1L3daFfUckQQqvvN6VOpD03KEssvQLMFpC5I/edit#gid=1386975095\"><span style=\"color:#93c47d\"><b><i><u>MossyMax's Spreadsheet</u></i></b></span></a><span style=\"color:#a4c2f4\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [
+      "<a href=\"#gid=1662574278\"><span style=\"color:#6fa8dc\"><b><u>Weapon Perks</u></b></span></a>",
+      "",
+      "<span style=\"color:#6fa8dc\"><i><small>Weapon Traits, Intrinsic Frames, and Origin Traits.</small></i></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<a href=\"#gid=1287885342\"><span style=\"color:#d5a6bd\"><b><u>Armor Perks</u></b></span></a>",
+      "",
+      "<span style=\"color:#d5a6bd\"><i><small>Everything about each</small></i> <b><i><small>Armor Set bonus</small></i></b><i><small>!</small></i></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<a href=\"#gid=1934379638\"><span style=\"color:#cccccc\"><b><u>Armor Mods</u></b></span></a>",
+      "",
+      "<span style=\"color:#cccccc\"><i><small>A wide list of all the Armor Mods.</small></i></span>"
+    ],
+    [],
+    [],
+    [
+      "<a href=\"#gid=473308249\"><span style=\"color:#96d5de\"><b><u>Artifacts Perks</u></b></span></a>",
+      "",
+      "<span style=\"color:#96d5de\"><i><small>A tall list of all 7 Artifacts.</small></i></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [
+      "<a href=\"#gid=618967225\"><span style=\"color:#89cdd1\"><b><u>Arc Subclasses</u></b></span></a>",
+      "",
+      "<span style=\"color:#89cdd1\"><b><i><small>Become a current of Light, moving with blinding speed and amplifying your capabilities.</small></i></b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<a href=\"#gid=1186062409\"><span style=\"color:#e0a261\"><b><u>Solar Subclasses</u></b></span></a>",
+      "",
+      "<span style=\"color:#e0a261\"><b><i><small>Feel the blessed heat, scorching foes and rising above the fray.</small></i></b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<a href=\"#gid=1907852650\"><span style=\"color:#bba5f3\"><b><u>Void Subclasses</u></b></span></a>",
+      "",
+      "<span style=\"color:#bba5f3\"><b><i><small>Embrace the space between, opening doors to distort time and gravity.</small></i></b></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [
+      "<a href=\"#gid=1088259962\"><span style=\"color:#6796f4\"><b><u>Stasis Subclasses</u></b></span></a>",
+      "",
+      "<span style=\"color:#6796f4\"><b><i><small>Embrace the darkness.</small></i></b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<a href=\"#gid=1870531554\"><span style=\"color:#63d275\"><b><u>Strand Subclasses</u></b></span></a>",
+      "",
+      "<span style=\"color:#63d275\"><b><i><small>Discover hidden connections.</small></i></b></span>",
+      "<span style=\"color:#63d275\"><b><i><small>Fashion them into whatever you desire.</small></i></b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<a href=\"#gid=527596209\"><span style=\"color:#b4a7d6\"><b><u>Class Abilities</u></b></span></a>",
+      "",
+      "<span style=\"color:#b4a7d6\"><b><i><small>Class Abilities, and their Stat Cooldown Scaling.</small></i></b></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [
+      "<a href=\"#gid=1918152785\"><span style=\"color:#fbbdec\"><b><u>Prismatic Subclasses</u></b></span></a>",
+      "",
+      "<span style=\"color:#fbbdec\"><b><i><small>Transcend</small></i></b></span> <span style=\"color:#d5a6bd\"><b><i><small>the limitations of</small></i></b></span> <span style=\"color:#d0e0e3\"><b><i><small>Light</small></i></b></span> <span style=\"color:#d5a6bd\"><b><i><small>and</small></i></b></span> <span style=\"color:#b45f06\"><b><i><small>Darkness</small></i></b></span><span style=\"color:#d5a6bd\"><b><i><small>.</small></i></b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<a href=\"#gid=20898389\"><span style=\"color:#c27ba0\"><b><u>Exotic Class Perks</u></b></span></a>",
+      "",
+      "<span style=\"color:#c27ba0\"><b><i><small>Exclusive Exotic Perks to Prismatic Subclasses.</small></i></b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<a href=\"#gid=1800463143\"><span style=\"color:#cccccc\"><b><u>Game Mechanics</u></b></span></a>",
+      "",
+      "<span style=\"color:#cccccc\"><b><i>Game Mechanics, such as</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Activity Modifiers</i></b></span><span style=\"color:#cccccc\"><b><i>,</i></b></span> <span style=\"color:#efefef\"><b><i>Character Attributes</i></b></span><span style=\"color:#cccccc\"><b><i>,</i></b></span> <span style=\"color:#dd7e6b\"><b><i>Champions</i></b></span><span style=\"color:#cccccc\"><b><i>, and</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Combatant Ranks.</i></b></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#e06666\">A heartfelt thanks to everyone for such an amazing journey.</span>",
+      "",
+      "<span style=\"color:#e06666\">Thank you for using the Compendium through all these years &lt;3</span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [],
+    [
+      "<a href=\"#gid=441434520\"><span style=\"color:#ffd966\"><b><u>Exotic Weapons</u></b></span></a>",
+      "",
+      "<span style=\"color:#ffd966\"><i><small>Exotic</small></i> <b><i><small>Primary Weapons</small></i></b> <i><small>and</small></i> <b><i><small>Trace Rifles</small></i></b> <i><small>deal</small></i> <b><i><small>40% increased damage</small></i></b> <i><small>to</small></i></span> <span style=\"color:#a4c2f4\"><b><i><small>Rank-And-File Combatants</small></i></b></span><span style=\"color:#ffd966\"><i><small>.</small></i></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<a href=\"#gid=1500097863\"><span style=\"color:#ffd966\"><b><u>Exotic Armors</u></b></span></a>",
+      "",
+      "<span style=\"color:#ffd966\"><i><u><small>For</small></u></i> <b><i><u><small>Ability Regeneration</small></u></i></b><i><u><small>,</small></u></i> <b><i><u><small>100 Stat</small></u></i></b> <i><u><small>is considered the</small></u></i> <b><i><u><small>Base Regeneration Speed.</small></u></i></b></span>"
+    ]
+  ]
+]

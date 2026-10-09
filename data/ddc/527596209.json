@@ -1,0 +1,416 @@
+[
+  [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#b4a7d6\"><b>Class Abilities and Passive Traits</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<a href=\"https://www.patreon.com/DataCompendium\"><span style=\"color:#9fc5e8\"><b><i><u>Support the Data Compendium</u></i></b></span></a>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#2b3b49\"><b>Hunter</b></span>"
+    ],
+    [
+      "<span style=\"color:#2b3b49\"><b>-</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#2b3b49\"><b>-</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Hunters</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#2b3b49\"><b>-</b></span>"
+    ],
+    [
+      "<span style=\"color:#2b3b49\">-</span>"
+    ],
+    [
+      "<span style=\"color:#2b3b49\"><b>-</b></span>"
+    ],
+    [
+      "<span style=\"color:#2b3b49\"><b>-</b></span>"
+    ],
+    [
+      "<span style=\"color:#2b3b49\"><b>-</b></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#6d9eeb\"><b>Hunters</b></span> <span style=\"color:#cccccc\"><b>intrinsically possess the following traits over</b></span> <span style=\"color:#e06666\"><b>Titans</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#ffd966\"><b>Warlocks</b></span><span style=\"color:#cccccc\"><b>:</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Base Sprint Speed is 8.5 meters per second, compared to their baseline of 8m/s.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Baseline</b></span> <span style=\"color:#a4c2f4\"><b>100</b></span> <span style=\"color:#ea9999\"><b>[70]</b></span> <span style=\"color:#cccccc\"><b>Mobility and</b></span> <span style=\"color:#a4c2f4\"><b>0.9x</b></span> <span style=\"color:#ea9999\"><b>[0.95x]</b></span> <span style=\"color:#cccccc\"><b>Ready/Stow Animation Duration.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Sprint Speed Increase is equivalent to that of an</i></span> <span style=\"color:#ffd966\"><i>Exotic Armor-based Sprint Boost</i></span><span style=\"color:#cccccc\"><i>, only being able to stack with a Lightweight Weapon.</i></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#f6b26b\"><b>Acrobat's Dodge</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Performs an acrobatic leap, that, upon landing, grants the user and their</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>within 10 meters</b></span> <span style=\"color:#ffd966\"><b>Radiant</b></span> <span style=\"color:#cccccc\"><b>for 10</b></span><span style=\"color:#f6b26b\"><b><small>+5</small></b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Enemies within 6.5 meters are dealt up to</b></span> <span style=\"color:#a4c2f4\"><b>40</b></span> <span style=\"color:#ea9999\"><b>[20]</b></span> <span style=\"color:#f6b26b\"><b>Solar Damage</b></span> <span style=\"color:#cccccc\"><b>upon landing.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown:</b></span> <span style=\"color:#a4c2f4\"><b>56</b></span> <span style=\"color:#ea9999\"><b>[148.4]</b></span><span style=\"color:#cccccc\"><b>s</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.5x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Gambler's Dodge</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Performs a deft tumble that grants</b></span> <span style=\"color:#a4c2f4\"><b>1%</b></span> <span style=\"color:#ea9999\"><b>[0.35%]</b></span> <span style=\"color:#89cdd1\"><b>Melee Ability Energy</b></span> <span style=\"color:#cccccc\"><b>per</b></span> <span style=\"color:#89cdd1\"><b>Melee Stat</b></span><span style=\"color:#cccccc\"><b>, up to</b></span> <span style=\"color:#a4c2f4\"><b>100%</b></span> <span style=\"color:#ea9999\"><b>[35%]</b></span> <span style=\"color:#89cdd1\"><b>Melee Ability Energy</b></span> <span style=\"color:#cccccc\"><b>at</b></span> <span style=\"color:#89cdd1\"><b>100 Melee Stat</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Dodging</b></span> <span style=\"color:#cccccc\"><b>within 15 meters of an enemy doubles the</b></span> <span style=\"color:#89cdd1\"><b>Ability Energy</b></span> <span style=\"color:#cccccc\"><b>gained. No Chunk or Stat Scalar.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Removes</b></span> <span style=\"color:#a4c2f4\"><b>Combatant Projectile Tracking</b></span><span style=\"color:#cccccc\"><b>, as well as</b></span> <span style=\"color:#ea9999\"><b>Aim Assist against Guardians</b></span> <span style=\"color:#cccccc\"><b>during the</b></span> <span style=\"color:#b4a7d6\"><b>Dodge Animation</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 56 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.8x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Marksman's Dodge</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Performs an evasive maneuver that reloads all weapons and picks up Ammo Bricks within 15 meters.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Removes</b></span> <span style=\"color:#a4c2f4\"><b>Combatant Projectile Tracking</b></span><span style=\"color:#cccccc\"><b>, as well as</b></span> <span style=\"color:#ea9999\"><b>Aim Assist against Guardians</b></span> <span style=\"color:#cccccc\"><b>during the</b></span> <span style=\"color:#b4a7d6\"><b>Dodge Animation</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 42 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 1x</b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#492b2b\"><b>Titans</b></span>"
+    ],
+    [
+      "<span style=\"color:#492b2b\"><b>-</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#492b2b\"><b>-</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Titans</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#492b2b\"><b>-</b></span>"
+    ],
+    [
+      "<span style=\"color:#492b2b\">-</span>"
+    ],
+    [
+      "<span style=\"color:#492b2b\"><b>-</b></span>"
+    ],
+    [
+      "<span style=\"color:#492b2b\"><b>-</b></span>"
+    ],
+    [
+      "<span style=\"color:#492b2b\"><b>-</b></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#e06666\"><b>Titans</b></span> <span style=\"color:#cccccc\"><b>intrinsically possess the following traits over</b></span> <span style=\"color:#6d9eeb\"><b>Hunters</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#ffd966\"><b>Warlocks</b></span><span style=\"color:#cccccc\"><b>:</b></span>",
+      "",
+      "<span style=\"color:#a4c2f4\"><b>20%</b></span> <span style=\"color:#ea9999\"><b>[5%]</b></span> <span style=\"color:#89cdd1\"><b>Increased Basic Melee Damage</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Increased damage is multiplicative.</i></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Rally Barricade</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Creates a short, curved barricade construct in front of the caster that blocks all damage dealt to it.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#a4c2f4\"><b>20%</b></span> <span style=\"color:#ea9999\"><b>[20%]</b></span> <span style=\"color:#cccccc\"><b>Damage Resist while in the</b></span> <span style=\"color:#b4a7d6\"><b>Barricade Placement</b></span> <span style=\"color:#cccccc\"><b>animation.</b></span>",
+      "",
+      "<span style=\"color:#b4a7d6\"><b>Barricade</b></span> <span style=\"color:#cccccc\"><b>lasts for 20 seconds, and has</b></span> <span style=\"color:#dd7e6b\"><b>500 Construct HP.</b></span> <span style=\"color:#a4c2f4\"><b>Barricades have 90% Damage Resist against Combatants, and ?% against Boss Combatants.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Enemies that pass through the</b></span> <span style=\"color:#b4a7d6\"><b>barricade</b></span> <span style=\"color:#cccccc\"><b>rapidly receive</b></span> <span style=\"color:#a4c2f4\"><b>?</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#e06666\"><b>non-lethal</b></span> <span style=\"color:#cccccc\"><b>damage every ? seconds.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>While within ? meters behind the</i></span> <span style=\"color:#b4a7d6\"><b><i>Rally Barricade</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#a4c2f4\"><b>80% Damage Resist against Splash Damage from Combatants.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Combatants up to ? meters in front of the barricade are taunted.</b></span>",
+      "<span style=\"color:#cccccc\"><b>+30 Stability, +100 Reload Speed, 0.9x Reload Duration Multiplier, 10% Increased Damage Falloff Distance, and 50% Flinch Resist.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 55.1 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 1x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#89cdd1\"><b>Thruster</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Performs an evasive first-person dash that removes</b></span> <span style=\"color:#a4c2f4\"><b>Combatant Projectile Tracking?</b></span><span style=\"color:#cccccc\"><b>, as well as</b></span> <span style=\"color:#ea9999\"><b>Aim Assist against Guardians</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Quickly dashes 8 metres towards the currently held movement direction. Not inputting a movement direction will result in a 4 metre backwards dash.</b></span>",
+      "<span style=\"color:#cccccc\"><b><i>Only usable while on the ground.</i></b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 52.1 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 1x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Towering Barricade</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Creates a tall, slightly curved barricade construct in front of the caster that blocks all damage dealt to it.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#a4c2f4\"><b>20%</b></span> <span style=\"color:#ea9999\"><b>[20%]</b></span> <span style=\"color:#cccccc\"><b>Damage Resist while in the</b></span> <span style=\"color:#b4a7d6\"><b>Barricade Placement</b></span> <span style=\"color:#cccccc\"><b>animation.</b></span>",
+      "",
+      "<span style=\"color:#b4a7d6\"><b>Barricade</b></span> <span style=\"color:#cccccc\"><b>lasts for 20 seconds, and has</b></span> <span style=\"color:#dd7e6b\"><b>500 Construct HP.</b></span> <span style=\"color:#a4c2f4\"><b>Barricades have 90% Damage Resist against Non-Boss Combatants, and ?% against Boss Combatants.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Enemies that pass through the</b></span> <span style=\"color:#b4a7d6\"><b>barricade</b></span> <span style=\"color:#cccccc\"><b>rapidly receive</b></span> <span style=\"color:#a4c2f4\"><b>?</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#e06666\"><b>non-lethal</b></span> <span style=\"color:#cccccc\"><b>damage every ? seconds.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>While within ? meters behind the</i></span> <span style=\"color:#b4a7d6\"><b><i>Towering Barricade</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#a4c2f4\"><b>80% Damage Resist against Splash Damage from Combatants</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Combatants up to ? meters in front of the barricade are taunted.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 101.3 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.5x</b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#49422b\"><b>Warlocks</b></span>"
+    ],
+    [
+      "<span style=\"color:#49422b\"><b>-</b></span>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#49422b\"><b>-</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Warlocks</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#49422b\"><b>-</b></span>"
+    ],
+    [
+      "<span style=\"color:#49422b\">-</span>"
+    ],
+    [
+      "<span style=\"color:#49422b\"><b>-</b></span>"
+    ],
+    [
+      "<span style=\"color:#49422b\"><b>-</b></span>"
+    ],
+    [
+      "<span style=\"color:#49422b\"><b>-</b></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#ffd966\"><b>Warlocks</b></span> <span style=\"color:#cccccc\"><b>intrinsically possess the following traits over</b></span> <span style=\"color:#e06666\"><b>Titans</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#6d9eeb\"><b>Hunters</b></span><span style=\"color:#cccccc\"><b>:</b></span>",
+      "",
+      "<span style=\"color:#e0a261\"><b>1.1x Grenade Regeneration Speed.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>5%</b></span> <span style=\"color:#ea9999\"><b>[2.5%]</b></span> <span style=\"color:#e0a261\"><b>Increased Grenade Ability Damage</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#a4c2f4\"><b>Empowering Rift</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Conjures an</b></span> <span style=\"color:#9fc5e8\"><b>Empowering Rift</b></span> <span style=\"color:#cccccc\"><b>beneath the caster for 15 seconds.</b></span>",
+      "",
+      "<span style=\"color:#a4c2f4\"><b>Rift</b></span> <span style=\"color:#cccccc\"><b>grants</b></span> <span style=\"color:#a4c2f4\"><b>20%</b></span> <span style=\"color:#ea9999\"><b>[15%]</b></span> <span style=\"color:#cccccc\"><b>increased damage,</b></span> <span style=\"color:#a4c2f4\"><b>260%</b></span> <span style=\"color:#ea9999\"><b>[104%]</b></span> <span style=\"color:#cccccc\"><b>Additional Base</b></span> <span style=\"color:#e0a261\"><b>Grenade</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#89cdd1\"><b>Melee</b></span><span style=\"color:#cccccc\"><b>, and</b></span> <span style=\"color:#a4c2f4\"><b>230%</b></span> <span style=\"color:#ea9999\"><b>[92%]</b></span> <span style=\"color:#bba5f3\"><b>Additional Base Class</b></span> <span style=\"color:#cccccc\"><b>Regeneration Rate in a 5 meter radius.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Kills while in the</b></span> <span style=\"color:#9fc5e8\"><b>Rift</b></span> <span style=\"color:#cccccc\"><b>grant 1.15x Ammo Generation Multiplier.</b> <i>Ammo Generation Multiplier is additive to Ammo Finder Multipliers.</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Grants 20% Damage Resist and allows movement at a speed of ?m/s while in the</b></span> <span style=\"color:#b4a7d6\"><b>Rift Placement</b></span> <span style=\"color:#cccccc\"><b>animation.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 118.7 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.5x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#dd7e6b\"><b>Healing Rift</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Conjures a</b></span> <span style=\"color:#dd7e6b\"><b>Healing Rift</b></span> <span style=\"color:#cccccc\"><b>beneath the caster that continuously</b></span> <span style=\"color:#dd7e6b\"><b>restores</b></span> <span style=\"color:#a4c2f4\"><b>40</b></span> <span style=\"color:#ea9999\"><b>[35]</b></span> <span style=\"color:#dd7e6b\"><b>HP per second</b></span> <span style=\"color:#cccccc\"><b>in a 5 meter radius for 15 seconds.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>While at</b></span> <span style=\"color:#dd7e6b\"><b>Full Health</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#dd7e6b\"><b>Healing Rift</b></span> <span style=\"color:#cccccc\"><b>generates</b></span> <span style=\"color:#7cadff\"><b>3 Overshield HP per second</b></span><span style=\"color:#cccccc\"><b>, up to</b></span> <span style=\"color:#7cadff\"><b>15 Overshield HP</b></span><span style=\"color:#cccccc\"><b>.</b></span> <span style=\"color:#e06666\"><i>Having Void Overshield prevents this from happening.</i></span>",
+      "<span style=\"color:#7cadff\"><i>Overshield can stack with other overshields, such as Turnabout's OS and Class Stat OS. Overshield layers are determined by \"First In, First Out\".</i></span>",
+      "<span style=\"color:#dd7e6b\"><i>Healing Rifts</i></span> <span style=\"color:#cccccc\"><i>cause the users to count as having</i></span> <span style=\"color:#7cadff\"><i>Overshields</i></span> <span style=\"color:#cccccc\"><i>for the purpose of</i> <b><i>perk interactions</i></b><i>.</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Grants 20% Damage Resist and allows movement at a speed of ?m/s while in the</b></span> <span style=\"color:#b4a7d6\"><b>Rift Placement</b></span> <span style=\"color:#cccccc\"><b>animation.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 118.7 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.5x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#f6b26b\"><b>Phoenix Dive</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Dive that applies</b></span> <span style=\"color:#dd7e6b\"><b>Cure x2</b></span> <span style=\"color:#cccccc\"><b>to the user and their</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>within 9 meters.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#f6b26b\"><b><i>Heat Rises</i></b></span> <span style=\"color:#cccccc\"><i>is active:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Applies</b></span> <span style=\"color:#dd7e6b\"><b>Restoration x2</b></span> <span style=\"color:#cccccc\"><b>for 3</b></span><span style=\"color:#f6b26b\"><b><small>+1.5</small></b></span> <span style=\"color:#cccccc\"><b>seconds upon diving.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Deals 100 damage and</b></span> <span style=\"color:#f6b26b\"><b>x40<small>+20</small> Scorch</b></span> <span style=\"color:#cccccc\"><b>to enemies within 5 metres upon landing.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 79.6 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.8x</b></span>"
+    ]
+  ]
+]

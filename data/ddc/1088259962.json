@@ -1,0 +1,1305 @@
+[
+  [
+    [
+      "<a href=\"#rangeid=46845318\"><span style=\"color:#6bb1f6\"><b><i><u>Go back to the top!</u></i></b></span></a>"
+    ],
+    [],
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Stasis Subclasses</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<a href=\"https://www.patreon.com/DataCompendium\"><span style=\"color:#9fc5e8\"><b><i><u>Support the Data Compendium</u></i></b></span></a>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<a href=\"#rangeid=102200323\"><span style=\"color:#d9d9d9\"><b><u>Hunter</u></b></span></a>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<a href=\"#rangeid=543230783\"><span style=\"color:#d9d9d9\"><b><u>Titan</u></b></span></a>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<a href=\"#rangeid=1553550532\"><span style=\"color:#d9d9d9\"><b><u>Warlock</u></b></span></a>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Glossary</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#9fc5e8\"><b>Stasis Shard</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Stasis Subclass Intrinsic:</b></span>",
+      "<span style=\"color:#3c78d8\"><b>Shattering</b></span> <span style=\"color:#cccccc\"><b>a</b></span> <span style=\"color:#6fa8dc\"><b>Stasis Crystal</b></span> <span style=\"color:#d9d9d9\"><b>or</b></span> <span style=\"color:#3d85c6\"><b>Frozen Enemy</b></span><span style=\"color:#cccccc\"><b>, or killing an enemy affected by a</b></span> <span style=\"color:#6fa8dc\"><b>Stasis Debuff</b></span> <span style=\"color:#cccccc\"><i><small>(</small></i></span><span style=\"color:#6fa8dc\"><i><small>Slow</small></i></span><span style=\"color:#cccccc\"><i><small>,</small></i></span> <span style=\"color:#3d85c6\"><i><small>Freeze</small></i></span><span style=\"color:#cccccc\"><i><small>)</small></i> <b>spawns a Stasis Shard.</b></span>",
+      "<span style=\"color:#9fc5e8\"><b>Small Stasis Shard</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#a4c2f4\"><b>Rank-And-File</b></span>",
+      "<span style=\"color:#6fa8dc\"><b>Large Stasis Shard</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#a4c2f4\"><b>Elites, Minibosses, Bosses</b></span><span style=\"color:#cccccc\"><b>, and</b></span> <span style=\"color:#ea9999\"><b>Guardians</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><b>Stasis Elemental Pickup:</b></span>",
+      "<span style=\"color:#9fc5e8\"><b>Stasis Shards</b></span> <span style=\"color:#cccccc\"><b>grant</b></span> <span style=\"color:#79bec3\"><b>Melee Ability Energy</b></span> <span style=\"color:#cccccc\"><b>on pickup.</b></span>",
+      "<span style=\"color:#9fc5e8\"><b>Shards</b></span> <span style=\"color:#cccccc\"><b>last for 20 seconds.</b></span> <span style=\"color:#a4c2f4\"><i>Allies</i></span> <span style=\"color:#cccccc\"><i>receive a copy of all</i></span> <span style=\"color:#9fc5e8\"><i>Shards</i></span> <span style=\"color:#cccccc\"><i>created by the user.</i></span>",
+      "<span style=\"color:#9fc5e8\"><b>Small Stasis Shards</b></span> <span style=\"color:#cccccc\"><b>grant</b></span> <span style=\"color:#79bec3\"><b>10% Melee Energy</b></span><span style=\"color:#cccccc\"><b>, and</b></span> <span style=\"color:#9fc5e8\"><b>Large Stasis Shards</b></span> <span style=\"color:#cccccc\"><b>grant</b></span> <span style=\"color:#79bec3\"><b>50% Melee Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b><i>While</i></b></span> <span style=\"color:#6fa8dc\"><b><i>Glacial</i></b></span><span style=\"color:#cccccc\"><b><i>,</i></b></span> <span style=\"color:#6fa8dc\"><b><i>Grim</i></b></span> <span style=\"color:#cccccc\"><b><i>or</i></b></span> <span style=\"color:#6fa8dc\"><b><i>Tectonic Harvest</i></b></span> <span style=\"color:#cccccc\"><b><i>is equipped:</i></b></span>",
+      "<span style=\"color:#9fc5e8\"><b>Small Stasis Shards</b></span> <span style=\"color:#dd7e6b\"><b>restore 10 HP</b></span> <span style=\"color:#cccccc\"><b>and grant</b></span> <span style=\"color:#6fa8dc\"><b>x1 Frost Armor</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#9fc5e8\"><b>Large Stasis Shards</b></span> <span style=\"color:#dd7e6b\"><b>restore 20 HP</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#6fa8dc\"><b>x3 Frost Armor</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Stasis Crystal</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Solid Pillars</b></span> <span style=\"color:#cccccc\"><b>that can be spawned on surfaces, possessing a varying amounts of</b></span> <span style=\"color:#dd7e6b\"><b>health</b></span> <span style=\"color:#cccccc\"><b>depending on their size, lasting up to 15 seconds.</b></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><b>Crystals</b></span><span style=\"color:#cccccc\"><b>, upon being created, inflict</b></span> <span style=\"color:#3d85c6\"><b>freeze</b></span> <span style=\"color:#ea9999\"><b>[x15 Slow Stacks for 1.5</b></span><span style=\"color:#6fa8dc\"><b><small>+0.5</small></b></span> <span style=\"color:#ea9999\"><b>seconds]</b></span> <span style=\"color:#cccccc\"><b>to enemies within 2.6 metres.</b></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><b>Stasis Crystals</b></span> <span style=\"color:#cccccc\"><b>can be destroyed by depleting their</b></span> <span style=\"color:#dd7e6b\"><b>health</b></span><span style=\"color:#cccccc\"><b>, dealing up to</b></span> <span style=\"color:#9fc5e8\"><b>generally 158</b></span> <span style=\"color:#ea9999\"><b>[25]</b></span> <span style=\"color:#6fa8dc\"><b>damage</b></span> <span style=\"color:#cccccc\"><b>over a 8 metre radius.</b></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><b>Small Crystals:</b></span> <span style=\"color:#dd7e6b\"><b>? HP</b></span> <span style=\"color:#6fa8dc\"><b>| Medium Crystal:</b></span> <span style=\"color:#dd7e6b\"><b>? HP</b></span> <span style=\"color:#6fa8dc\"><b>| Large Crystal:</b></span> <span style=\"color:#dd7e6b\"><b>? HP</b></span>",
+      "<span style=\"color:#cccccc\"><b><i>User deals double damage to their own</i></b></span> <span style=\"color:#6fa8dc\"><b><i>Crystals</i></b></span><span style=\"color:#cccccc\"><b><i>.</i></b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Frost Armor</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#a4c2f4\"><b>7%</b></span> <span style=\"color:#ea9999\"><b>[2%]</b></span> <span style=\"color:#cccccc\"><b>Damage Resist per</b></span> <span style=\"color:#6fa8dc\"><b>stack</b></span><span style=\"color:#cccccc\"><b>, up to</b></span> <span style=\"color:#a4c2f4\"><b>31.25%</b></span> <span style=\"color:#ea9999\"><b>[10%]</b></span> <span style=\"color:#cccccc\"><b>Damage Resist at</b></span> <span style=\"color:#6fa8dc\"><b>x5 stacks</b></span>",
+      "<span style=\"color:#6fa8dc\"><b>Frost Armor</b></span> <span style=\"color:#cccccc\"><b>decays 1 stack at a time every 5 seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Damage Resist per</i></span> <span style=\"color:#6fa8dc\"><i>stack</i></span> <span style=\"color:#cccccc\"><i>is decreased to</i></span> <span style=\"color:#a4c2f4\"><i>?%</i></span> <span style=\"color:#ea9999\"><i>[?%]</i></span> <span style=\"color:#cccccc\"><i>while in</i></span> <span style=\"color:#ffd966\"><i>Super</i></span><span style=\"color:#cccccc\"><i>.</i></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><b><i>Whisper of Rime:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Increases the</b></span> <span style=\"color:#6fa8dc\"><b>maximum stack amount</b></span> <span style=\"color:#cccccc\"><b>to</b></span> <span style=\"color:#6fa8dc\"><b>x7</b></span><span style=\"color:#cccccc\"><b>, increasing the maximum Damage Resist to</b></span> <span style=\"color:#a4c2f4\"><b>50%</b></span> <span style=\"color:#ea9999\"><b>[16%]</b></span>",
+      "<span style=\"color:#cccccc\"><b>Increases the</b></span> <span style=\"color:#6fa8dc\"><b>Frost Armor</b></span> <span style=\"color:#cccccc\"><b>stack duration to 6 seconds.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Slow</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Slowed Enemies</b></span> <span style=\"color:#cccccc\"><b>receive multiple penalties related to movement or weapon performance.</b></span>",
+      "<span style=\"color:#3d85c6\"><b>Freeze</b></span> <span style=\"color:#cccccc\"><b>occurs upon reaching</b></span> <span style=\"color:#6fa8dc\"><b>x100 Slow</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><b>Slowed</b></span> <span style=\"color:#9fc5e8\"><b>Combatants</b></span> <span style=\"color:#cccccc\"><b>have 50% Decreased Movement Speed and are less accurate.</b></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><b>Slowed</b></span> <span style=\"color:#ea9999\"><b>Guardians</b></span> <span style=\"color:#cccccc\"><b>have 50% Reduced Movement Speed, 50% Decreased Jump Height, are unable to use</b></span> <span style=\"color:#d5a6bd\"><b>Movement Abilities</b></span><span style=\"color:#cccccc\"><b>, receive ?% increased Flinch, and have a penalty to their Weapon Stats.</b></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><b>Slowed Weapon Stat Penalties:</b></span>",
+      "<span style=\"color:#cccccc\"><b>Stability, Handling, Reload Speed and Recoil Direction are decreased by 75%.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Stat Reduction takes place</i> <b><i><u>after</u></i></b> <i>Weapon Perks. Weapon Stats are considered uncapped before</i></span> <span style=\"color:#6fa8dc\"><b><i>slow's reduction</i></b></span> <span style=\"color:#cccccc\"><i>is applied.</i></span>",
+      "<span style=\"color:#cccccc\"><i>Eg: 160 Reload Speed will be reduced be 40 Reload Speed. 80 Handling would be reduced to 20 Handling.</i></span>",
+      "",
+      "<span style=\"color:#b4a7d6\"><b>Overload Champions</b></span> <span style=\"color:#cccccc\"><b>become</b></span> <span style=\"color:#a4c2f4\"><b>Stunned</b></span> <span style=\"color:#cccccc\"><b>upon receiving any amount of</b></span> <span style=\"color:#6fa8dc\"><b>Slow Stacks</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#3d85c6\"><b>Freeze</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#3d85c6\"><b>Frozen Enemies</b></span> <span style=\"color:#cccccc\"><b>are completely immobilized, rendering them unable to shoot, use abilities, or move.</b></span>",
+      "<span style=\"color:#3d85c6\"><b>Frozen Enemies</b></span> <span style=\"color:#cccccc\"><b>receive 10% increased damage from</b></span> <span style=\"color:#93c47d\"><b>Special</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#a481e1\"><b>Power</b></span> <span style=\"color:#cccccc\"><b>Weapons, 5% increased damage from</b></span> <span style=\"color:#89cdd1\"><b>Arc</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#f6b26b\"><b>Solar</b></span><span style=\"color:#cccccc\"><b>, and</b></span> <span style=\"color:#bba5f3\"><b>Void</b></span> <span style=\"color:#cccccc\"><b>Abilities, and</b></span> <span style=\"color:#a4c2f4\"><b>5%</b></span> <span style=\"color:#ea9999\"><b>[60%]</b></span> <span style=\"color:#cccccc\"><b>decreased damage from</b></span> <span style=\"color:#999999\"><b>Primary Weapons</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#3d85c6\"><b>Frozen</b></span> <span style=\"color:#a4c2f4\"><b>Rank-and-File and Elite Combatants</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#ea9999\"><b>Guardians</b></span> <span style=\"color:#cccccc\"><b>receive</b></span> <span style=\"color:#89cdd1\"><b>120% increased Basic Melee and Glaive Melee Attack Damage</b></span><span style=\"color:#cccccc\"><b>, on top of the aforementioned effects.</b></span>",
+      "",
+      "<span style=\"color:#3d85c6\"><b>Frozen Enemies</b></span> <span style=\"color:#3c78d8\"><b>shatter</b></span> <span style=\"color:#cccccc\"><b>after receiving</b></span> <span style=\"color:#a4c2f4\"><b>varying</b></span> <span style=\"color:#ea9999\"><b>[200]</b></span> <span style=\"color:#cccccc\"><b>damage.</b></span>",
+      "",
+      "<span style=\"color:#3d85c6\"><b>Frozen Enemies</b></span> <span style=\"color:#cccccc\"><b>are immobilized for</b></span> <span style=\"color:#a4c2f4\"><b>6</b></span> <span style=\"color:#ea9999\"><b>[1.35 to 4.75]</b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b><i>Boss Combatants</i></b></span> <span style=\"color:#cccccc\"><b><i>are unhindered by</i></b></span> <span style=\"color:#3d85c6\"><b><i>freeze</i></b></span> <span style=\"color:#cccccc\"><b><i>and</i></b></span> <span style=\"color:#3c78d8\"><b><i>automatically shatter</i></b></span> <span style=\"color:#cccccc\"><b><i>after 3 seconds.</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Grounded Guardians can cast their</b></span> <span style=\"color:#ffd966\"><b>Super Ability</b></span> <span style=\"color:#cccccc\"><b>to instantly break out.</b></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><b>Brief Freeze:</b></span>",
+      "<span style=\"color:#ea9999\"><b>Guardians</b></span> <span style=\"color:#3d85c6\"><b>frozen</b></span> <span style=\"color:#cccccc\"><b>by other</b></span> <span style=\"color:#ea9999\"><b>Guardians</b></span> <span style=\"color:#cccccc\"><b>are</b></span> <span style=\"color:#3d85c6\"><b>frozen</b></span> <span style=\"color:#cccccc\"><b>for 1.35 seconds</b></span>",
+      "",
+      "<span style=\"color:#3d85c6\"><b>Prolonged Freeze:</b></span>",
+      "<span style=\"color:#cccccc\"><b>Guardians that become</b></span> <span style=\"color:#3d85c6\"><b>frozen</b></span> <span style=\"color:#cccccc\"><b>by</b></span> <span style=\"color:#9fc5e8\"><b>Combatants</b></span><span style=\"color:#cccccc\"><b>, or by</b></span> <span style=\"color:#6fa8dc\"><b>Stasis</b></span> <span style=\"color:#ffd966\"><b>Super Abilities</b></span><span style=\"color:#cccccc\"><b>, are</b></span> <span style=\"color:#3c78d8\"><b>frozen</b></span> <span style=\"color:#cccccc\"><b>for 4.75 seconds.</b></span>",
+      "<span style=\"color:#3d85c6\"><b>Frozen Guardians</b></span> <span style=\"color:#cccccc\"><b>have their</b></span> <span style=\"color:#b4a7d6\"><b>Class Ability</b></span> <span style=\"color:#cccccc\"><b>replaced with</b></span> <span style=\"color:#6fa8dc\"><b>Breakout</b></span><span style=\"color:#cccccc\"><b>, which allows breaking out of the</b></span> <span style=\"color:#3d85c6\"><b>long-lasting freeze</b></span><span style=\"color:#cccccc\"><b>, in exchange for</b></span> <span style=\"color:#dd7e6b\"><b>? Health</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Guardians that are</b></span> <span style=\"color:#3d85c6\"><b>frozen</b></span> <span style=\"color:#cccccc\"><b>during a</b></span> <span style=\"color:#ffd966\"><b>Roaming Super</b></span> <span style=\"color:#cccccc\"><b>automatically break out after a second, while</b></span> <span style=\"color:#ffd966\"><b>One-off Supers</b></span> <span style=\"color:#cccccc\"><b>get deactivated if</b></span> <span style=\"color:#3d85c6\"><b>frozen</b></span> <span style=\"color:#cccccc\"><b>during the cast animation.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#3c78d8\"><b>Shatter</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#3d85c6\"><b>Frozen Enemies</b></span> <span style=\"color:#cccccc\"><b>can be</b></span> <span style=\"color:#3c78d8\"><b>shattered</b></span> <span style=\"color:#cccccc\"><b>through damage or directly through specific</b></span> <span style=\"color:#6fa8dc\"><b>Stasis Aspects</b></span><span style=\"color:#cccccc\"><b>, dealing up to</b></span> <span style=\"color:#a4c2f4\"><b>361</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage to enemies within ? metres.</b></span>",
+      "",
+      "<span style=\"color:#c67676\"><b>Unstoppable Champions</b></span> <span style=\"color:#cccccc\"><b>become</b></span> <span style=\"color:#a4c2f4\"><b>Stunned</b></span> <span style=\"color:#cccccc\"><b>upon receiving</b></span> <span style=\"color:#3c78d8\"><b>shatter damage</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Fragments</b></span>"
+    ],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Icon</b></span>"
+    ],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Information</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Stat Changes</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Bonds</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Killing</b></span> <span style=\"color:#3c78d8\"><b>Frozen Enemies</b></span> <span style=\"color:#cccccc\"><b>creates an</b></span> <span style=\"color:#ffd966\"><b>Orb of Power</b></span> <span style=\"color:#cccccc\"><b>that grants</b></span> <span style=\"color:#ffd966\"><b>2.5% Super Energy.</b></span>",
+      "<span style=\"color:#e06666\"><i>Incurs a 10 second cooldown after creating an</i></span> <span style=\"color:#ffd966\"><i>Orb of Power</i></span><span style=\"color:#e06666\"><i>.</i></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#c88e8e\"><b>-10 Super</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Chains</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Kills while</b></span> <span style=\"color:#6fa8dc\"><b>Frost Armor</b></span> <span style=\"color:#cccccc\"><b>is active progress a counter that spawns a</b></span> <span style=\"color:#9fc5e8\"><b>Small Stasis Shard</b></span> <span style=\"color:#cccccc\"><b>upon reaching 100%.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Rank-And-File = 34% | Elite = 67% | Miniboss+ = 100%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#ea9999\"><b>Guardians = ?%</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#91c88e\"><b>+10 Class</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Chill</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Stasis Weapon Kills</b></span> <span style=\"color:#cccccc\"><b>progress a counter that spawns a</b></span> <span style=\"color:#9fc5e8\"><b>Small Stasis Shard</b></span> <span style=\"color:#cccccc\"><b>upon reaching 100%.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Rank-And-File = 34% | Elite = 67% | Miniboss+ = 100%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#ea9999\"><b>Guardians = 67%</b></span>",
+      "<span style=\"color:#e06666\"><i>Incurs a 5? second cooldown after creating a Stasis Shard, before additional kills progress the counter.</i></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>-</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Conduction</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#9fc5e8\"><b>Stasis Shards</b></span> <span style=\"color:#cccccc\"><b>within 15 metres are pulled towards the user after a 1 second delay.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#91c88e\"><b>+10 Health</b></span>",
+      "<span style=\"color:#91c88e\"><b>+10 Super</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Durance</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Slow Debuff Duration</b></span> <span style=\"color:#cccccc\"><b>and certain abilities last longer.</b></span>",
+      "<span style=\"color:#cccccc\"><i>All affected</i></span> <span style=\"color:#6fa8dc\"><i>Slow</i></span> <span style=\"color:#cccccc\"><i>sources and abilities will have their value with</i></span> <span style=\"color:#6fa8dc\"><i>Durance</i></span> <span style=\"color:#cccccc\"><i>shown in smaller text next to the regular duration or stack amount.</i></span>",
+      "<span style=\"color:#cccccc\"><b><i>Eg: 25 seconds -&gt; 25</i></b></span><span style=\"color:#6fa8dc\"><b><i><small>+5</small></i></b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#91c88e\"><b>+10 Melee</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Fissures</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#3d85c6\"><b>Shattering</b></span> <span style=\"color:#cccccc\"><b>enemies or destroying</b></span> <span style=\"color:#6fa8dc\"><b>Crystals</b></span> <span style=\"color:#cccccc\"><b>deals an additional damage instance, dealing up to</b></span> <span style=\"color:#9fc5e8\"><b>25</b></span> <span style=\"color:#ea9999\"><b>[9]</b></span> <span style=\"color:#cccccc\"><b>damage in a</b></span> <span style=\"color:#a4c2f4\"><b>10</b></span> <span style=\"color:#ea9999\"><b>[8]</b></span> <span style=\"color:#cccccc\"><b>metre radius.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Falloff decreases damage dealt down to a minimum of</b></span> <span style=\"color:#a4c2f4\"><b>15</b></span> <span style=\"color:#ea9999\"><b>[4]</b></span> <span style=\"color:#cccccc\"><b>damage at</b></span> <span style=\"color:#a4c2f4\"><b>10</b></span> <span style=\"color:#ea9999\"><b>[8]</b></span> <span style=\"color:#cccccc\"><b>meters.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>-</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Fractures</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#9fc5e8\"><b>x1 Frost Armor</b></span> <span style=\"color:#cccccc\"><b>upon</b></span> <span style=\"color:#3c78d8\"><b>shattering</b></span> <span style=\"color:#cccccc\"><b>an enemy with</b></span> <span style=\"color:#79bec3\"><b>Melee Damage</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>-</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Hedrons</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#3d85c6\"><b>Freezing</b></span> <span style=\"color:#cccccc\"><b>an enemy grants +? Handling, and</b></span> <span style=\"color:#dd7e6b\"><b>+30 Health</b></span> <span style=\"color:#cccccc\"><b>for 11 seconds.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>-</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Hunger</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#9fc5e8\"><b>Stasis Shards</b></span> <span style=\"color:#cccccc\"><b>grant 60% increased</b></span> <span style=\"color:#79bec3\"><b>Melee Energy.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Additive to other sources such as</i></span> <span style=\"color:#bf9000\"><i>Yearning Echo's Overflowing Coffers's 260% increase</i></span><span style=\"color:#cccccc\"><i>.</i></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#c88e8e\"><b>-20 Melee</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Impetus</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon dealing</i></span> <span style=\"color:#79bec3\"><b><i>Powered Melee Damage</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Refills all weapons and grants +40 Handling for 5 seconds.</b></span>",
+      "<span style=\"color:#e06666\"><i>Buff duration serves as cooldown.</i></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#91c88e\"><b>+10 Health</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Refraction</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Kills against enemies affected by</b></span> <span style=\"color:#6fa8dc\"><b>Stasis effects</b></span> <span style=\"color:#cccccc\"><b>grants</b></span> <span style=\"color:#b4a7d6\"><b>Class Ability Energy</b></span> <span style=\"color:#cccccc\"><b>based on Enemy Rank.</b></span>",
+      "<span style=\"color:#b4a7d6\"><b>9%</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#a4c2f4\"><b>Tier 1 Combatant</b></span>",
+      "<span style=\"color:#b4a7d6\"><b>13%</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#a4c2f4\"><b>Tier 2 Combatant</b></span>",
+      "<span style=\"color:#b4a7d6\"><b>15%</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#ea9999\"><b>Guardian</b></span>",
+      "<span style=\"color:#b4a7d6\"><b>20%</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#a4c2f4\"><b>Tier 3 Combatant</b></span>",
+      "<span style=\"color:#b4a7d6\"><b>30%</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#a4c2f4\"><b>Tier 4 Combatant</b></span>",
+      "<span style=\"color:#b4a7d6\"><b>40%</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#a4c2f4\"><b>Miniboss</b></span>",
+      "<span style=\"color:#b4a7d6\"><b>50%</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#a4c2f4\"><b>Boss</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>-</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Rending</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#999999\"><b>Primary Ammo Weapons</b></span> <span style=\"color:#cccccc\"><b>deal 100% increased damage against</b></span> <span style=\"color:#9fc5e8\"><b>Stasis Crystals</b></span> <span style=\"color:#cccccc\"><b>and 50% increased damage against</b></span> <span style=\"color:#3d85c6\"><b>Frozen Enemies.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Includes</i></span> <span style=\"color:#ffd966\"><i>Fighting Lion, Revision Zero</i></span><span style=\"color:#cccccc\"><i>,</i></span> <span style=\"color:#ffd966\"><i>Vex Mythoclast</i></span><span style=\"color:#cccccc\"><i>, and their respective alternate fire modes.</i></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>-</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Reversal</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#6fa8dc\"><b><i>Frost Armor</i></b></span> <span style=\"color:#cccccc\"><i>is</i> <b><i>active:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Dealing or receiving</b></span> <span style=\"color:#79bec3\"><b>Physical Melee Damage</b></span> <span style=\"color:#cccccc\"><b>applies</b></span> <span style=\"color:#6fa8dc\"><b>x10? Slow</b></span> <span style=\"color:#cccccc\"><b>for</b></span> <span style=\"color:#a4c2f4\"><b>?</b></span><span style=\"color:#6fa8dc\"><b><small>+?</small></b></span> <span style=\"color:#ea9999\"><b>[?</b></span><span style=\"color:#6fa8dc\"><b><small>+?</small></b></span><span style=\"color:#ea9999\"><b>]</b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Also applies to</i></span> <span style=\"color:#89cdd1\"><i>Glaive Melee</i></span><span style=\"color:#cccccc\"><i>.</i></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>-</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Rime</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Enhances</b></span> <span style=\"color:#6fa8dc\"><b>Frost Armor</b></span><span style=\"color:#cccccc\"><b>, increasing the</b></span> <span style=\"color:#6fa8dc\"><b>maximum stack amount</b></span> <span style=\"color:#cccccc\"><b>to</b></span> <span style=\"color:#6fa8dc\"><b>x7</b> <i><small>(</small></i></span><span style=\"color:#a4c2f4\"><i><small>50%</small></i></span> <span style=\"color:#ea9999\"><i><small>[16?%]</small></i></span> <span style=\"color:#6fa8dc\"><i><small>DR)</small></i></span><span style=\"color:#cccccc\"><b>, and the duration to 6 seconds.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>-</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Shards</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon destroying</i> <b><i>a</i></b></span> <span style=\"color:#6fa8dc\"><b><i>Stasis Crystal</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#a4c2f4\"><b>500%</b></span> <span style=\"color:#ea9999\"><b>[150%]</b></span> <span style=\"color:#f6b26b\"><b>Additional Base Grenade Regeneration Rate</b></span> <span style=\"color:#cccccc\"><b>for 6 seconds, up to a maximum of 11 seconds.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>-</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Torment</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon</i> <b><i>receiving damage</i></b><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#e0a261\"><b>7% Grenade Ability Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Increased to</b></span> <span style=\"color:#e0a261\"><b>12% Grenade Ability Energy</b></span> <span style=\"color:#cccccc\"><b>while</b></span> <span style=\"color:#6fa8dc\"><b>Frost Armor</b></span> <span style=\"color:#cccccc\"><b>is active.</b></span>",
+      "<span style=\"color:#e06666\"><i>Incurs a 1 second cooldown between Grenade Energy gains.</i></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#c88e8e\"><b>-10 Grenade</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Grenade Abilities</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Coldsnap Grenade</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Medium Trajectory | Seeker</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Directly hitting an enemy inflicts</b></span> <span style=\"color:#a4c2f4\"><b>x50</b></span> <span style=\"color:#ea9999\"><b>[x?]</b></span> <span style=\"color:#6fa8dc\"><b>Slow Stacks</b></span> <span style=\"color:#cccccc\"><b>for 4</b></span><span style=\"color:#6fa8dc\"><b><small>+2</small></b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Direct Hits count as</i></span> <span style=\"color:#6fa8dc\"><i>Stasis Grenade Ability Damage</i></span><span style=\"color:#cccccc\"><i>.</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Spawns a</b></span> <span style=\"color:#6fa8dc\"><b>seeker</b></span> <span style=\"color:#cccccc\"><b>after 0.8 seconds of impacting the ground, tracking the closest enemy within 20 meters at a speed of 17m/s for 1 second.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Tracking strength gets weaker over the seeker's lifespan.</i></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><b>Seeker</b></span> <span style=\"color:#cccccc\"><b>detonates upon reaching an enemy or expiring, dealing</b></span> <span style=\"color:#a4c2f4\"><b>20</b></span> <span style=\"color:#ea9999\"><b>[20]</b></span> <span style=\"color:#cccccc\"><b>damage and</b></span> <span style=\"color:#3d85c6\"><b>freezing</b></span> <span style=\"color:#cccccc\"><b>enemies within</b></span> <span style=\"color:#a4c2f4\"><b>3</b></span> <span style=\"color:#ea9999\"><b>[1.75]</b></span> <span style=\"color:#cccccc\"><b>meters.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>If the</b></span> <span style=\"color:#6fa8dc\"><b>seeker</b></span> <span style=\"color:#3d85c6\"><b>freezes</b></span> <span style=\"color:#cccccc\"><b>an enemy, another</b></span> <span style=\"color:#6fa8dc\"><b>seeker</b></span> <span style=\"color:#cccccc\"><b>is spawned, targeting a different enemy, chaining up to 2 times.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 175.6 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.625x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b><i>Touch of Winter</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Seekers</b></span> <span style=\"color:#cccccc\"><b>duplicate upon</b></span> <span style=\"color:#3d85c6\"><b>freezing</b></span> <span style=\"color:#cccccc\"><b>an enemy.</b></span>",
+      "<span style=\"color:#6fa8dc\"><b>Seekers</b></span> <span style=\"color:#cccccc\"><b>now spawn a</b></span> <span style=\"color:#6fa8dc\"><b>Small, Medium, and Large Stasis Crystal</b></span> <span style=\"color:#cccccc\"><b>on detonation upon chaining 1, 2, and 3 times respectively.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Duskfield Grenade</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Medium Trajectory | DoT Field</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Detonates on impact, dealing up to</b></span> <span style=\"color:#a4c2f4\"><b>20</b></span> <span style=\"color:#ea9999\"><b>[20]</b></span> <span style=\"color:#cccccc\"><b>damage and inflicting</b></span> <span style=\"color:#a4c2f4\"><b>x20</b></span> <span style=\"color:#ea9999\"><b>[x10]</b></span> <span style=\"color:#6fa8dc\"><b>Slow Stacks for 2<small>+2</small> seconds</b></span> <span style=\"color:#cccccc\"><b>in a ? meter radius, as well as creating a</b></span> <span style=\"color:#6fa8dc\"><b>Slowing Field</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><b>Slowing Field:</b></span>",
+      "<span style=\"color:#cccccc\"><b>Deals 1 damage and applies</b></span> <span style=\"color:#a4c2f4\"><b>x10</b></span> <span style=\"color:#ea9999\"><b>[x5]</b></span> <span style=\"color:#6fa8dc\"><b>Slow Stacks</b></span> <span style=\"color:#cccccc\"><b>for 2</b></span><span style=\"color:#6fa8dc\"><b><small>+2</small></b></span> <span style=\"color:#cccccc\"><b>seconds every</b></span> <span style=\"color:#a4c2f4\"><b>0.35</b></span> <span style=\"color:#ea9999\"><b>[0.3]</b></span> <span style=\"color:#cccccc\"><b>seconds for 7</b></span><span style=\"color:#6fa8dc\"><b><small>+2</small></b></span> <span style=\"color:#cccccc\"><b>seconds in a 4 meter radius.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 131.7 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.875x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b><i>Touch of Winter</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Duskfield</b></span> <span style=\"color:#cccccc\"><b>Radius is increased by 50% to</b></span> <span style=\"color:#6fa8dc\"><b>↑6</b></span> <span style=\"color:#cccccc\"><b>meters.</b></span>",
+      "<span style=\"color:#6fa8dc\"><b>Duskfield</b></span> <span style=\"color:#cccccc\"><b>now creates a</b></span> <span style=\"color:#9fc5e8\"><b>Small Stasis Crystal</b></span> <span style=\"color:#cccccc\"><b>on impact.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Glacier Grenade</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Medium Trajectory</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Creates</b></span> <span style=\"color:#6fa8dc\"><b>5 Stasis Crystals</b></span> <span style=\"color:#cccccc\"><b>in a straight line on impact, perpendicularly from where it was thrown.</b></span>",
+      "<span style=\"color:#6fa8dc\"><b>Glacier Grenades' Stasis Crystals</b></span> <span style=\"color:#cccccc\"><b>deal up to</b></span> <span style=\"color:#a4c2f4\"><b>158</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#6fa8dc\"><b>Stasis</b></span> <span style=\"color:#e0a261\"><b>Grenade</b></span> <span style=\"color:#6fa8dc\"><b>Damage</b></span> <span style=\"color:#cccccc\"><b>upon being</b></span> <span style=\"color:#3c78d8\"><b>shattered</b></span><span style=\"color:#cccccc\"><b>, down to 66% damage over 8 meters.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 175.6 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.625x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b><i>Touch of Winter</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Creates</b></span> <span style=\"color:#6fa8dc\"><b>↑7 Stasis Crystals</b></span> <span style=\"color:#cccccc\"><b>in a heptagon shape on impact.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Shatter Grenade</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Medium Trajectory | Sticky</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Attaches to enemies, inflicting</b></span> <span style=\"color:#3d85c6\"><b>Freeze</b></span> <span style=\"color:#ea9999\"><b>[x? Slow]</b></span> <span style=\"color:#cccccc\"><b>on direct hits.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Explodes after ? seconds, dealing up to</b></span> <span style=\"color:#a4c2f4\"><b>325?</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#6fa8dc\"><b>damage</b></span> <span style=\"color:#cccccc\"><b>over ? meters and releasing</b></span> <span style=\"color:#6fa8dc\"><b>9 Tracking Stasis Shrapnel</b></span> <span style=\"color:#cccccc\"><b>in 3 groups of 3, forming a Y shape.</b></span>",
+      "<span style=\"color:#6fa8dc\"><b>Stasis Shrapnel</b></span> <span style=\"color:#cccccc\"><b>deals</b></span> <span style=\"color:#a4c2f4\"><b>216</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#6fa8dc\"><b>damage</b></span> <span style=\"color:#cccccc\"><b>and bounces up to ? times.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Sticking a</b></span> <span style=\"color:#3d85c6\"><b>Frozen Enemy</b></span> <span style=\"color:#cccccc\"><b>causes an</b></span> <span style=\"color:#6fa8dc\"><b>instantaneous explosion</b></span> <span style=\"color:#cccccc\"><b>and increases the</b></span> <span style=\"color:#6fa8dc\"><b>explosion damage</b></span> <span style=\"color:#cccccc\"><b>by 100%.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 105 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.?x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b><i>Touch of Winter</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Creates</b></span> <span style=\"color:#6fa8dc\"><b>9 additional Shrapnel</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Hitting</b></span> <span style=\"color:#3d85c6\"><b>Frozen Enemies</b></span> <span style=\"color:#cccccc\"><b>grants</b></span> <span style=\"color:#e0a261\"><b>FPS-based Grenade Ability Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#e0a261\"><b>42%</b></span> <span style=\"color:#cccccc\"><b>at 30 FPS |</b></span> <span style=\"color:#e0a261\"><b>30%</b></span> <span style=\"color:#cccccc\"><b>at 60FPS |</b></span> <span style=\"color:#e0a261\"><b>28%</b></span> <span style=\"color:#cccccc\"><b>at 120+FPS</b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#2d3b49\"><b>Hunter</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#f3f3f3\"><b>Hunters</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Melee Abilities</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Withering Blade</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Innately has</i></span> <span style=\"color:#79bec3\"><i>2 Melee Ability Charges.</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Quickly tosses a</b></span> <span style=\"color:#6fa8dc\"><b>Stasis Shuriken</b></span> <span style=\"color:#cccccc\"><b>towards enemies.</b></span>",
+      "<span style=\"color:#6fa8dc\"><b>Shurikens</b></span> <span style=\"color:#cccccc\"><b>are able to ricochet up to 3 times off of surfaces or towards up to 4 enemies, tracking towards enemies within</b></span> <span style=\"color:#a4c2f4\"><b>12</b></span> <span style=\"color:#ea9999\"><b>[8]</b></span> <span style=\"color:#cccccc\"><b>meters.</b></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><b>Withering Blades</b></span> <span style=\"color:#cccccc\"><b>deal</b></span> <span style=\"color:#a4c2f4\"><b>296</b></span> <span style=\"color:#ea9999\"><b>[72]</b></span> <span style=\"color:#cccccc\"><b>damage and inflict</b></span> <span style=\"color:#a4c2f4\"><b>x60</b></span> <span style=\"color:#ea9999\"><b>[x40]</b></span> <span style=\"color:#6fa8dc\"><b>Slow</b></span> <span style=\"color:#cccccc\"><b>for</b></span> <span style=\"color:#9fc5e8\"><b>3.5</b></span><span style=\"color:#6fa8dc\"><b><small>+3.5</small></b></span> <span style=\"color:#ea9999\"><b>[1.5</b></span><span style=\"color:#6fa8dc\"><b><small>+0.5</small></b></span><span style=\"color:#ea9999\"><b>]</b></span> <span style=\"color:#cccccc\"><b>seconds on hit.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 145.2 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.8x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Super Abilities</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Silence &amp; Squall</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#ffd966\"><b>General Super Information</b></span>",
+      "<span style=\"color:#cccccc\"><b>Damage Resistance:</b></span> <span style=\"color:#a4c2f4\"><b>90%</b></span> <span style=\"color:#ea9999\"><b>[53%]</b></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><b>Silence</b></span>",
+      "<span style=\"color:#cccccc\"><b>Deals</b></span> <span style=\"color:#a4c2f4\"><b>338</b></span> <span style=\"color:#ea9999\"><b>[847]</b></span> <span style=\"color:#cccccc\"><b>impact damage and</b></span> <span style=\"color:#3d85c6\"><b>freezes</b></span> <span style=\"color:#cccccc\"><b>enemies within 8.5 metres.</b></span>",
+      "",
+      "<span style=\"color:#3d85c6\"><b>Squall</b></span>",
+      "<span style=\"color:#cccccc\"><b>Deals</b></span> <span style=\"color:#a4c2f4\"><b>338</b></span> <span style=\"color:#ea9999\"><b>[847]</b></span> <span style=\"color:#cccccc\"><b>impact damage, and creates a</b></span> <span style=\"color:#3c78d8\"><b>Stasis Storm</b></span> <span style=\"color:#cccccc\"><b>on detonation.</b></span>",
+      "",
+      "<span style=\"color:#3c78d8\"><b>Stasis Storm</b></span>",
+      "<span style=\"color:#cccccc\"><b>Lasts 14</b></span><span style=\"color:#6fa8dc\"><b><small>+2</small></b></span> <span style=\"color:#cccccc\"><b>seconds, dealing</b></span> <span style=\"color:#a4c2f4\"><b>28</b></span> <span style=\"color:#ea9999\"><b>[14]</b></span> <span style=\"color:#cccccc\"><b>damage and inflicting</b></span> <span style=\"color:#6fa8dc\"><b>x20 Slow Stacks</b></span> <span style=\"color:#cccccc\"><b>for 1 second every</b></span> <span style=\"color:#a4c2f4\"><b>0.1</b></span> <span style=\"color:#ea9999\"><b>[0.17]</b></span> <span style=\"color:#cccccc\"><b>seconds for 6 seconds in a 5.5 meter radius.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Deals 300% increased damage against Non-Boss</b></span> <span style=\"color:#3d85c6\"><b>Frozen Enemies.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Tier 4 Super</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Base Cooldown:</b></span>",
+      "<span style=\"color:#cccccc\"><b>455 seconds</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Aspect</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Information</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Fragment Slots</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Grim Harvest</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Picking up</b></span> <span style=\"color:#a4c2f4\"><b>Small Stasis Shards</b></span> <span style=\"color:#dd7e6b\"><b>restores 10 HP</b></span> <span style=\"color:#cccccc\"><b>and grants</b></span> <span style=\"color:#6fa8dc\"><b>x1 Frost Armor</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Picking up</b></span> <span style=\"color:#6fa8dc\"><b>Large Stasis Shards</b></span> <span style=\"color:#dd7e6b\"><b>restore ? HP</b></span> <span style=\"color:#cccccc\"><b>and grant</b></span> <span style=\"color:#6fa8dc\"><b>x3 Frost Armor</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#6fa8dc\"><b><i>Frost Armor</i></b></span> <span style=\"color:#cccccc\"><i>is active:</i></span>",
+      "<span style=\"color:#999999\"><b>Kinetic</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#6fa8dc\"><b>Stasis</b></span> <span style=\"color:#cccccc\"><b>Weapon Kills progress a counter that, upon reaching 100%, cause the kill to trigger a</b></span> <span style=\"color:#3d85c6\"><b>Stasis Shatter</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Each Frost Armor stack increases the amount of progress gained per kill.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Taking damage grants</b></span> <span style=\"color:#b4a7d6\"><b>?% Class Ability Energy</b></span><span style=\"color:#cccccc\"><b>, up to</b></span> <span style=\"color:#e06666\"><b>once a second?</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#ea9999\"><b>Crucible-Only:</b></span>",
+      "<span style=\"color:#e06666\"><b>Incurs a 10 second cooldown upon creating</b></span> <span style=\"color:#a4c2f4\"><b>6 Shards</b></span> <span style=\"color:#e06666\"><b>within ? seconds of the</b></span> <span style=\"color:#a4c2f4\"><b>first shard</b></span><span style=\"color:#e06666\"><b>?, preventing additional</b></span> <span style=\"color:#a4c2f4\"><b>Stasis Shard creation</b></span> <span style=\"color:#e06666\"><b>from</b></span> <span style=\"color:#6fa8dc\"><b>Harvest Aspects</b></span> <span style=\"color:#e06666\"><b>for 10 seconds.</b></span>",
+      "<span style=\"color:#9fc5e8\"><b>Shard</b></span> <span style=\"color:#e06666\"><b>creation count and cooldown is shared for the entire fireteam.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Shatterdive</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>[Air Move] activates</b></span> <span style=\"color:#6fa8dc\"><b>Shatterdive</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#e06666\"><b><i>Incurs a 4 second cooldown between Shatterdive activations.</i></b></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><b>Shatterdive</b></span> <span style=\"color:#cccccc\"><b>performs a dive, dealing up to</b></span> <span style=\"color:#6fa8dc\"><b>50 damage</b></span><span style=\"color:#cccccc\"><b>, and</b></span> <span style=\"color:#3c78d8\"><b>shattering</b></span> <span style=\"color:#3d85c6\"><b>frozen enemies</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#6fa8dc\"><b>Stasis Crystals</b></span> <span style=\"color:#cccccc\"><b>within 8.5 metres radius.</b></span>",
+      "<span style=\"color:#6fa8dc\"><b>Shatterdive</b></span> <span style=\"color:#cccccc\"><b>damage is increased to 180 against</b></span> <span style=\"color:#3d85c6\"><b>Frozen Enemies</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#3c78d8\"><b>Shattering</b></span> <span style=\"color:#cccccc\"><b>a</b></span> <span style=\"color:#3d85c6\"><b>Frozen Enemy</b></span> <span style=\"color:#cccccc\"><b>deals an additional</b></span> <span style=\"color:#6fa8dc\"><b>250 Shatter Damage</b></span><span style=\"color:#cccccc\"><b>.</b> <i>Displayed in</i></span> <span style=\"color:#f1c232\"><i>Yellow Numbers</i></span><span style=\"color:#cccccc\"><i>.</i></span>",
+      "",
+      "<span style=\"color:#3c78d8\"><b>Shattering</b></span> <span style=\"color:#6fa8dc\"><b>Stasis Crystals</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#3d85c6\"><b>Frozen Enemies</b></span> <span style=\"color:#cccccc\"><b>grants</b></span> <span style=\"color:#6fa8dc\"><b>maximum Frost Armor stacks</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#d9d9d9\"><b>Grants</b></span> <span style=\"color:#3c78d8\"><b>?% Stasis Shatter Damage Resist</b></span> <span style=\"color:#d9d9d9\"><b>and Fall Damage Immunity while diving.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Touch of Winter</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b><i>Enhances Stasis Grenades.</i></b></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><b>Coldsnap Grenade Seekers</b></span> <span style=\"color:#cccccc\"><b>duplicate upon</b></span> <span style=\"color:#3d85c6\"><b>freezing</b></span> <span style=\"color:#cccccc\"><b>an enemy.</b></span>",
+      "<span style=\"color:#6fa8dc\"><b>Seekers</b></span> <span style=\"color:#cccccc\"><b>now spawn a</b></span> <span style=\"color:#6fa8dc\"><b>Small, Medium, and Large Stasis Crystal</b></span> <span style=\"color:#cccccc\"><b>on detonation upon chaining 1, 2, and 3 times respectively.</b></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><b>Duskfield Grenade</b></span> <span style=\"color:#cccccc\"><b>create a</b></span> <span style=\"color:#6fa8dc\"><b>Small Stasis Crystal</b></span> <span style=\"color:#cccccc\"><b>on impact, and their</b></span> <span style=\"color:#6fa8dc\"><b>Slowing Field</b></span> <span style=\"color:#cccccc\"><b>has 50% Increased Radius.</b></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><b>Glacier Grenades</b></span> <span style=\"color:#cccccc\"><b>form a heptagon</b></span> <span style=\"color:#999999\"><b>hexagon</b></span><span style=\"color:#cccccc\"><b>, and creates an additional</b></span> <span style=\"color:#6fa8dc\"><b>2 Large Stasis Crystal.</b></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><b>Shatter Grenades</b></span> <span style=\"color:#cccccc\"><b>release</b></span> <span style=\"color:#6fa8dc\"><b>9 additional Shrapnel</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#e0a261\"><b>refund ~30% Grenade Ability Energy</b></span> <span style=\"color:#cccccc\"><b>upon directly hitting a</b></span> <span style=\"color:#3d85c6\"><b>Frozen Enemy</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Winter's Shroud</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon inflicting</i></span> <span style=\"color:#6fa8dc\"><b><i>Slow</i></b></span> <span style=\"color:#cccccc\"><i>to an enemy:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#a4c2f4\"><b>300%</b></span> <span style=\"color:#ea9999\"><b>[150%]</b></span> <span style=\"color:#b4a7d6\"><b>Additional Base Class Ability Regeneration Rate</b></span> <span style=\"color:#cccccc\"><b>for 3 seconds.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#b4a7d6\"><b><i>Class Ability Usage:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Inflicts</b></span> <span style=\"color:#a4c2f4\"><b>x60</b></span> <span style=\"color:#ea9999\"><b>[x40]</b></span> <span style=\"color:#6fa8dc\"><b>Slow</b></span> <span style=\"color:#cccccc\"><b>for</b></span> <span style=\"color:#a4c2f4\"><b>8</b></span><span style=\"color:#6fa8dc\"><b><small>+4?</small></b></span> <span style=\"color:#ea9999\"><b>[1.5</b></span><span style=\"color:#6fa8dc\"><b><small>+0.5</small></b></span><span style=\"color:#ea9999\"><b>]</b></span> <span style=\"color:#cccccc\"><b>seconds to enemies within</b></span> <span style=\"color:#9fc5e8\"><b>9</b></span> <span style=\"color:#ea9999\"><b>[8]</b></span> <span style=\"color:#cccccc\"><b>metres.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Grants 50% Damage Resist against Combatants for 4? seconds.</b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#492b2b\"><b>Titan</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#f3f3f3\"><b>Titans</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Melee Abilities</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Shiver Strike</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Leaps through the air, performing an extended lunge distance melee upon releasing</b></span> <span style=\"color:#89cdd1\"><b>[Melee Attack]</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#6fa8dc\"><b>Shiver Strike</b></span> <span style=\"color:#3c78d8\"><b>shatters</b></span> <span style=\"color:#6fa8dc\"><b>Stasis Crystals</b></span> <span style=\"color:#cccccc\"><b>on contact.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Failing to score a hit will refund</b></span> <span style=\"color:#a4c2f4\"><b>80%</b></span> <span style=\"color:#ea9999\"><b>[40%]</b></span> <span style=\"color:#89cdd1\"><b>Melee Ability Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Deals</b></span> <span style=\"color:#a4c2f4\"><b>511</b></span> <span style=\"color:#ea9999\"><b>[105]</b></span> <span style=\"color:#6fa8dc\"><b>impact damage</b></span> <span style=\"color:#cccccc\"><b>on hit,</b></span> <span style=\"color:#a4c2f4\"><b>heavily</b></span> <span style=\"color:#ea9999\"><b>[moderately]</b></span> <span style=\"color:#cccccc\"><b>knocking enemies back and inflicting</b></span> <span style=\"color:#a4c2f4\"><b>x50</b></span> <span style=\"color:#ea9999\"><b>[x40]</b></span> <span style=\"color:#6fa8dc\"><b>Slow</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Hits attach a</b></span> <span style=\"color:#6fa8dc\"><b>delayed Stasis Explosive</b></span> <span style=\"color:#cccccc\"><b>that deals up to</b></span> <span style=\"color:#a4c2f4\"><b>219</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#6fa8dc\"><b>explosive damage</b></span> <span style=\"color:#cccccc\"><b>and inflicting</b></span> <span style=\"color:#a4c2f4\"><b>x100</b></span> <span style=\"color:#ea9999\"><b>[x40]</b></span> <span style=\"color:#6fa8dc\"><b>Slow</b></span> <span style=\"color:#cccccc\"><b>after 1 second to enemies, down to 20% damage over 8 meters.</b></span>",
+      "<span style=\"color:#89cdd1\"><i>Both the Impact and Explosion benefit from Melee Damage Increases.</i></span> <span style=\"color:#e06666\"><i>Impact damage is non-lethal.</i></span>",
+      "<span style=\"color:#ea9999\"><b><i>Guardians directly hit by Shiver Strike have their Melee Lunge disabled for 0.5 seconds.</i></b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 146.3 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.7x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Super Abilities</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Glacial Quake</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#ffd966\"><b>General Super Information</b></span>",
+      "<span style=\"color:#cccccc\"><b>Damage Resistance:</b></span> <span style=\"color:#a4c2f4\"><b>90%</b></span> <span style=\"color:#ea9999\"><b>[47%]</b></span>",
+      "<span style=\"color:#cccccc\"><b>Base Duration: 25 seconds, or</b></span> <span style=\"color:#ffd966\"><b>4% Super Drain per Second</b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants increased Jump Height and</b></span> <span style=\"color:#6fa8dc\"><b>Cryoclasm</b></span> <span style=\"color:#cccccc\"><b>has no cooldown while in Super.</b></span>",
+      "<span style=\"color:#ffd966\"><b>On Super Cast:</b></span> <span style=\"color:#3d85c6\"><b>Freezes</b></span> <span style=\"color:#cccccc\"><b>enemies within</b></span> <span style=\"color:#a4c2f4\"><b>8</b></span> <span style=\"color:#ea9999\"><b>[6]</b></span> <span style=\"color:#cccccc\"><b>meters.</b></span>",
+      "<span style=\"color:#ffd966\"><b>On Super End:</b></span> <span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#89cdd1\"><b>3 Melee Ability Charges.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Scoring a kill through any means while</b></span> <span style=\"color:#ffd966\"><b>Glacial Quake</b></span> <span style=\"color:#cccccc\"><b>is active spawn an</b></span> <span style=\"color:#ffd966\"><b>Orbs of Power</b></span><span style=\"color:#cccccc\"><b>, each granting</b></span> <span style=\"color:#ffd966\"><b>7.15% Ability Energy</b></span> <span style=\"color:#cccccc\"><b>up to</b></span> <span style=\"color:#ffd966\"><b>7 times per Super Cast</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#3d85c6\"><b>Frozen Enemies</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#6fa8dc\"><b>Stasis Crystals</b></span> <span style=\"color:#cccccc\"><b>are dealt</b></span> <span style=\"color:#ffd966\"><b>300</b></span> <span style=\"color:#6fa8dc\"><b>Stasis</b></span> <span style=\"color:#ffd966\"><b>Super Damage</b></span> <span style=\"color:#cccccc\"><b>every 0.15 seconds on contact, almost instantly shattering them.</b></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><b>ALL STASIS DAMAGE</b></span> <span style=\"color:#e06666\"><i><small>(except for Light Attacks and Contact Damage)</small></i></span> <span style=\"color:#cccccc\"><b>against</b></span> <span style=\"color:#3d85c6\"><b>Frozen Enemies</b></span> <span style=\"color:#cccccc\"><b>is increased by</b></span> <span style=\"color:#ffd966\"><b>310%</b></span><span style=\"color:#cccccc\"><b>, count as</b></span> <span style=\"color:#ffd966\"><b>Super Damage</b></span><span style=\"color:#cccccc\"><b>, and is displayed in</b></span> <span style=\"color:#ffd966\"><b>Yellow Numbers</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><b>Light Attack |</b></span> <span style=\"color:#ffd966\"><b>Drains 7.45% Super Energy.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Leaps through the air forward, dealing</b></span> <span style=\"color:#a4c2f4\"><b>1,838</b></span> <span style=\"color:#ea9999\"><b>[210]</b></span> <span style=\"color:#6fa8dc\"><b>impact damage</b></span> <span style=\"color:#cccccc\"><b>and heavily knocking enemies back.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Hits attach a</b></span> <span style=\"color:#6fa8dc\"><b>delayed Stasis Explosive</b></span> <span style=\"color:#cccccc\"><b>that deals up to</b></span> <span style=\"color:#a4c2f4\"><b>897</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>explosive damage, and inflicts</b></span> <span style=\"color:#a4c2f4\"><b>x100?</b></span> <span style=\"color:#ea9999\"><b>[x?]</b></span> <span style=\"color:#6fa8dc\"><b>Slow</b></span> <span style=\"color:#cccccc\"><b>after 1 second to enemies, down to 20% damage over 8 meters.</b></span>",
+      "<span style=\"color:#e06666\"><i>Impact Damage is non-lethal.</i></span>",
+      "",
+      "<span style=\"color:#3c78d8\"><b>Heavy Attack |</b></span> <span style=\"color:#ffd966\"><b>Drains 7.45% Super Energy.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Slams the ground, dealing</b></span> <span style=\"color:#a4c2f4\"><b>73</b></span> <span style=\"color:#ea9999\"><b>[50]</b></span> <span style=\"color:#cccccc\"><b>damage and</b></span> <span style=\"color:#3d85c6\"><b>freezes</b></span> <span style=\"color:#cccccc\"><b>over 9 meters, as well as creating 3 waves of</b></span> <span style=\"color:#6fa8dc\"><b>Stasis Crystals</b></span><span style=\"color:#cccccc\"><b>, each composed of a</b></span> <span style=\"color:#6fa8dc\"><b>Small</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#6fa8dc\"><b>Medium</b></span> <span style=\"color:#cccccc\"><b>and a</b></span> <span style=\"color:#6fa8dc\"><b>Large Crystal</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Enemies within a ~45 cone ahead of the</b></span> <span style=\"color:#ffd966\"><b>caster</b></span> <span style=\"color:#cccccc\"><b>are dealt up to</b></span> <span style=\"color:#a4c2f4\"><b>579</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#6fa8dc\"><b>Damage</b></span><span style=\"color:#cccccc\"><b>, down to 0% damage over 8 meters.</b></span>",
+      "<span style=\"color:#ffd966\"><b>Glacial Quake</b></span> <span style=\"color:#6fa8dc\"><b>Stasis Crystals</b></span> <span style=\"color:#cccccc\"><b>deal up to</b></span> <span style=\"color:#a4c2f4\"><b>158</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#ffd966\"><b>Stasis Super Damage</b></span> <span style=\"color:#cccccc\"><b>and can be scaled with</b></span> <span style=\"color:#ffd966\"><b>100+ Super Stat</b></span> <span style=\"color:#cccccc\"><b>and other</b></span> <span style=\"color:#ffd966\"><b>Super Damage Increases</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><b>Howl of The Storm</b></span> <span style=\"color:#ffd966\"><b>(Glacial Howl)</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#ffd966\"><b>Drains 15% Super Energy (Up to x5 per Cast)</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#6fa8dc\"><b>Behaves and deals the same base damage as the regular Aspect and is considered \"</b></span><span style=\"color:#ffd966\"><b>Super Melee Damage</b></span><span style=\"color:#6fa8dc\"><b>\".</b></span>",
+      "<span style=\"color:#ffd966\"><b>Glacial Howl</b></span> <span style=\"color:#cccccc\"><b>stacks</b></span> <span style=\"color:#ffd966\"><b>Glacial Quake's</b></span> <span style=\"color:#3d85c6\"><b>310% Frozen Enemy Damage Increase</b></span> <span style=\"color:#cccccc\"><b>multiplicatively with</b></span> <span style=\"color:#3d85c6\"><b>Howl's intrinsic 1.5x Damage against Frozen Non-Boss Combatants</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#ffd966\"><b>Glacial Howl damage</b></span> <span style=\"color:#cccccc\"><b>can be further scaled by</b></span> <span style=\"color:#ffd966\"><b>100+ Super Stat</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#ffd966\"><b>Super Melee Damage Buffs</b></span> <span style=\"color:#cccccc\"><i><small>(</small></i></span><span style=\"color:#a4c2f4\"><i><small>Armorsmith</small></i></span><span style=\"color:#cccccc\"><i><small>,</small></i></span> <span style=\"color:#89cdd1\"><i><small>Shieldcrush</small></i></span><span style=\"color:#cccccc\"><i><small>,</small></i></span> <span style=\"color:#ffd966\"><i><small>No Backup Plans</small></i></span><span style=\"color:#cccccc\"><i><small>)</small></i><b>, and</b></span> <span style=\"color:#ffd966\"><b>Super Damage Buffs</b> <i><small>(Synthoceps).</small></i></span>",
+      "<span style=\"color:#ffd966\"><b>All those damage buffs stack multiplicatively with each other.</b> <i>No Backup Plans</i></span> <span style=\"color:#cccccc\"><i>is</i> <b><i>additive</i></b> <i>to</i></span> <span style=\"color:#a4c2f4\"><i>Armorsmith/</i></span><span style=\"color:#89cdd1\"><i>Shieldcrush.</i></span>",
+      "",
+      "<span style=\"color:#e06666\"><b>Glacial Howl against Frozen Enemies while Synthoceps' buff is active removes Titan's intrinsic 1.2x Melee Damage, only granting +25% Damage instead of the expected 50%</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Tier 2 Super</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Base Cooldown:</b></span>",
+      "<span style=\"color:#cccccc\"><b>556 seconds</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Aspect</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Information</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Fragment Slots</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Cryoclasm</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Sliding into</b></span> <span style=\"color:#6fa8dc\"><b>Stasis Crystals</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#3d85c6\"><b>Frozen Enemies</b></span> <span style=\"color:#3c78d8\"><b>shatters</b></span> <span style=\"color:#cccccc\"><b>on contact.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Passively increases Slide Distance from 6.5 meters to 11 meters.</b></span>",
+      "<span style=\"color:#e06666\"><b><i>Incurs a 2 second cooldown after an extended slide.</i></b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Sliding launches a</b></span> <span style=\"color:#6fa8dc\"><b>Stasis wave</b></span> <span style=\"color:#cccccc\"><b>that deals</b></span> <span style=\"color:#a4c2f4\"><b>18</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#6fa8dc\"><b>Damage</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#3c78d8\"><b>shatters</b></span> <span style=\"color:#6fa8dc\"><b>Stasis Crystals</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#3d85c6\"><b>Frozen Enemies</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Diamond Lance</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Creates a</b></span> <span style=\"color:#6fa8dc\"><b>Stasis Lance</b></span> <span style=\"color:#cccccc\"><b>upon scoring</b></span> <span style=\"color:#a4c2f4\"><b>1</b></span> <span style=\"color:#ea9999\"><b>[3]</b></span> <span style=\"color:#6fa8dc\"><b>Stasis Weapon Kills</b></span><span style=\"color:#cccccc\"><b>, a</b></span> <span style=\"color:#6fa8dc\"><b>Stasis Ability Kill</b></span><span style=\"color:#cccccc\"><b>, or a</b></span> <span style=\"color:#3c78d8\"><b>Shatter Kill</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><b>Stasis Lance</b></span> <span style=\"color:#cccccc\"><b>is a single-use weapon that can be picked up while it is within 3 meters and can held for up to 10 seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Remains for up to 25 seconds on the ground.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>[Fire] throws the</b></span> <span style=\"color:#6fa8dc\"><b>Stasis Lance</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#3d85c6\"><b>freezing</b></span> <span style=\"color:#cccccc\"><b>enemies within 5 metres of the impact,</b></span> <span style=\"color:#3c78d8\"><b>shattering</b></span> <span style=\"color:#6fa8dc\"><b>crystals</b></span> <span style=\"color:#cccccc\"><b>on direct impact, and dealing</b></span> <span style=\"color:#a4c2f4\"><b>136</b></span> <span style=\"color:#ea9999\"><b>[45]</b></span> <span style=\"color:#cccccc\"><b>damage.</b></span>",
+      "<span style=\"color:#cccccc\"><b>[Melee] slams the</b></span> <span style=\"color:#6fa8dc\"><b>Stasis Lance</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#3d85c6\"><b>freezing</b></span> <span style=\"color:#cccccc\"><b>enemies within</b></span> <span style=\"color:#a4c2f4\"><b>8</b></span> <span style=\"color:#ea9999\"><b>[6.75?]</b></span> <span style=\"color:#cccccc\"><b>metres, dealing up to</b></span> <span style=\"color:#a4c2f4\"><b>180</b></span> <span style=\"color:#ea9999\"><b>[90]</b></span> <span style=\"color:#cccccc\"><b>damage, and bestowing the user and their</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>within ? meters</b></span> <span style=\"color:#6fa8dc\"><b>x2 Frost Armor</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#6fa8dc\"><b>Diamond Lances</b></span> <span style=\"color:#cccccc\"><b>instantly</b></span> <span style=\"color:#3c78d8\"><b>shatter</b></span> <span style=\"color:#6fa8dc\"><b>Stasis Crystals</b></span> <span style=\"color:#cccccc\"><b>upon damaging them.</b></span>",
+      "<span style=\"color:#6fa8dc\"><b>Diamond Lance Damage is considered Generic Stasis Ability Damage</b></span><span style=\"color:#cccccc\"><b>.</b></span> <span style=\"color:#e06666\"><b>Not Grenade nor Melee Damage.</b></span>",
+      "",
+      "<span style=\"color:#e06666\"><b><i>Incurs a</i></b></span> <span style=\"color:#a4c2f4\"><b><i>7</i></b></span> <span style=\"color:#ea9999\"><b><i>[17]</i></b></span> <span style=\"color:#e06666\"><b><i>second cooldown after spawning a</i></b></span> <span style=\"color:#6fa8dc\"><b><i>Stasis Lance</i></b></span> <span style=\"color:#e06666\"><b><i>before another can be spawned.</i></b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Howl of the Storm</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Grants an additional</b></span> <span style=\"color:#89cdd1\"><b>Melee Ability Charge</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#6fa8dc\"><b>Howl of the Storm</b></span> <span style=\"color:#cccccc\"><b>deals 1.5x Damage against</b></span> <span style=\"color:#3d85c6\"><b>Frozen Non-Boss Enemies</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#e06666\"><b><i>Does not apply the 1.5x if Wormgod's Burning Fists is active.</i></b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>While</i> <b><i>Sliding</i></b><i>:</i></span>",
+      "<span style=\"color:#79bec3\"><b>[Melee Ability]</b></span> <span style=\"color:#cccccc\"><b>performs an</b></span> <span style=\"color:#89cdd1\"><b>uppercut</b></span><span style=\"color:#cccccc\"><b>, dealing</b></span> <span style=\"color:#a4c2f4\"><b>146</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#6fa8dc\"><b>Melee Damage</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#a4c2f4\"><b>freezing</b></span> <span style=\"color:#ea9999\"><b>[Slow x? for ? seconds]</b></span> <span style=\"color:#cccccc\"><b>enemies within ? meters, and creating</b></span> <span style=\"color:#6fa8dc\"><b>multiple Stasis Crystals</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Creates</b></span> <span style=\"color:#6fa8dc\"><b>2 Small</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#6fa8dc\"><b>4 Medium</b></span><span style=\"color:#cccccc\"><b>, and</b></span> <span style=\"color:#6fa8dc\"><b>2 Large Crystal</b></span> <span style=\"color:#cccccc\"><b>in a V formation ahead of the user.</b></span> <span style=\"color:#89cdd1\"><i>Uppercut damage scales with Melee Stat and Melee Damage Buffs.</i></span>",
+      "<span style=\"color:#e06666\"><b><i>Unable to use during slide if user shoots.</i></b></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><b>Howl of the Storm's Stasis Crystals</b></span> <span style=\"color:#cccccc\"><b>deal</b></span> <span style=\"color:#a4c2f4\"><b>158</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#89cdd1\"><b>Powered</b></span> <span style=\"color:#6fa8dc\"><b>Stasis Melee</b></span> <span style=\"color:#89cdd1\"><b>Damage</b></span><span style=\"color:#cccccc\"><b>, down to 45% damage over 8 meters.</b></span>",
+      "<span style=\"color:#6fa8dc\"><b>Howl's Crystal Damage</b></span> <span style=\"color:#cccccc\"><b>counts as</b></span> <span style=\"color:#89cdd1\"><b>Powered</b></span> <span style=\"color:#6fa8dc\"><b>Stasis Melee</b></span> <span style=\"color:#89cdd1\"><b>Damage</b></span> <span style=\"color:#cccccc\"><b>and scale normally with</b></span> <span style=\"color:#89cdd1\"><b>Melee Damage Buffs</b></span><span style=\"color:#cccccc\"><b>.</b></span> <span style=\"color:#e06666\"><b>DOES NOT SCALE WITH 100+ MELEE STAT.</b></span>",
+      "",
+      "<span style=\"color:#ffd966\"><b>Howl of the Storm during Glacial Quake is complicated and is explained thoroughly in the Glacial Quake Super section.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Tectonic Harvest</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Picking up</b></span> <span style=\"color:#a4c2f4\"><b>Small Stasis Shards</b></span> <span style=\"color:#dd7e6b\"><b>restores 10 HP</b></span> <span style=\"color:#cccccc\"><b>and grants</b></span> <span style=\"color:#6fa8dc\"><b>x1 Frost Armor</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Picking up</b></span> <span style=\"color:#6fa8dc\"><b>Large Stasis Shards</b></span> <span style=\"color:#dd7e6b\"><b>restore ? HP</b></span> <span style=\"color:#cccccc\"><b>and grant</b></span> <span style=\"color:#6fa8dc\"><b>x3 Frost Armor</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#6fa8dc\"><b><i>Frost Armor</i></b></span> <span style=\"color:#cccccc\"><i>is active:</i></span>",
+      "<span style=\"color:#999999\"><b>Kinetic</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#6fa8dc\"><b>Stasis</b></span> <span style=\"color:#cccccc\"><b>Weapon Kills progress a counter that, upon reaching 100%, cause the kill to trigger a</b></span> <span style=\"color:#3d85c6\"><b>Stasis Shatter</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Each Frost Armor stack increases the amount of progress gained per kill.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Taking damage grants</b></span> <span style=\"color:#89cdd1\"><b>?% Melee Ability Energy</b></span><span style=\"color:#cccccc\"><b>, up to</b></span> <span style=\"color:#e06666\"><b>once a second?</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#ea9999\"><b>Crucible-Only:</b></span>",
+      "<span style=\"color:#e06666\"><b>Incurs a 10 second cooldown upon creating</b></span> <span style=\"color:#a4c2f4\"><b>6 Shards</b></span> <span style=\"color:#e06666\"><b>within ? seconds of the</b></span> <span style=\"color:#a4c2f4\"><b>first shard</b></span><span style=\"color:#e06666\"><b>?, preventing additional</b></span> <span style=\"color:#a4c2f4\"><b>Stasis Shard creation</b></span> <span style=\"color:#e06666\"><b>from</b></span> <span style=\"color:#6fa8dc\"><b>Harvest Aspects</b></span> <span style=\"color:#e06666\"><b>for 10 seconds.</b></span>",
+      "<span style=\"color:#9fc5e8\"><b>Shard</b></span> <span style=\"color:#e06666\"><b>creation count and cooldown is shared for the entire fireteam.</b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#49422b\"><b>Warlocks</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#f3f3f3\"><b>Warlocks</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Melee Abilities</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Penumbral Blast</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Sends forth a</b></span> <span style=\"color:#3d85c6\"><b>freezing</b></span> <span style=\"color:#cccccc\"><b>projectile that automatically detonates after traveling 22 metres.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Projectile detonates on impact, dealing up</b></span> <span style=\"color:#a4c2f4\"><b>240</b></span> <span style=\"color:#ea9999\"><b>[30]</b></span> <span style=\"color:#cccccc\"><b>damage and</b></span> <span style=\"color:#3d85c6\"><b>freezing</b></span> <span style=\"color:#cccccc\"><b>enemies within</b></span> <span style=\"color:#a4c2f4\"><b>2.7</b></span> <span style=\"color:#ea9999\"><b>[2]</b></span> <span style=\"color:#cccccc\"><b>metres on detonation.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Base Cooldown: 146.3 seconds</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.8x</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Super Abilities</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Winter's Wrath</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#ffd966\"><b>General Super Information</b></span>",
+      "<span style=\"color:#cccccc\"><b>Damage Resistance:</b></span> <span style=\"color:#a4c2f4\"><b>90%</b></span> <span style=\"color:#ea9999\"><b>[51%]</b></span>",
+      "<span style=\"color:#cccccc\"><b>Base Duration: 24.5 seconds, or</b></span> <span style=\"color:#ffd966\"><b>4.08% Super Drain per Second</b></span>",
+      "<span style=\"color:#cccccc\"><b>Glide becomes a variant of Strafe Glide with unlimited duration.</b></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><b>Light Attack |</b></span> <span style=\"color:#ffd966\"><b>Drains 4.5% Super Energy per twin-shards.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Casts two</b></span> <span style=\"color:#3c78d8\"><b>freezing</b></span> <span style=\"color:#cccccc\"><b>homing twin-shards, one after another. Each projectile deals 11 impact damage and up to</b></span> <span style=\"color:#a4c2f4\"><b>50</b></span> <span style=\"color:#ea9999\"><b>[33]</b></span> <span style=\"color:#cccccc\"><b>splash damage over ? meters to unfrozen enemies.</b></span>",
+      "<span style=\"color:#3d85c6\"><b><i>Frozen enemies</i></b></span> <span style=\"color:#cccccc\"><i>receive 90% decreased damage.</i></span>",
+      "",
+      "<span style=\"color:#3c78d8\"><b>Heavy Attack |</b></span> <span style=\"color:#ffd966\"><b>Does not drain Super Energy.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Casts a shockwave that deals</b></span> <span style=\"color:#a4c2f4\"><b>45</b></span> <span style=\"color:#ea9999\"><b>[? and Non-Lethal]</b></span> <span style=\"color:#cccccc\"><b>damage and heavily staggers enemies within 30 metres.</b> <i>Shockwave travels 45 meters per second.</i></span>",
+      "<span style=\"color:#6fa8dc\"><b>Stasis Crystals</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#3d85c6\"><b>Frozen Enemies</b></span> <span style=\"color:#cccccc\"><b>hit by the shockwave are</b></span> <span style=\"color:#3c78d8\"><b>shattered</b></span><span style=\"color:#cccccc\"><b>, dealing</b></span> <span style=\"color:#a4c2f4\"><b>3,453</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#3c78d8\"><b>Shatter Damage</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Combatants are dealt an additional damage instance of 361 damage, totalling</b></span> <span style=\"color:#6fa8dc\"><b>3814 Damage</b></span><span style=\"color:#a4c2f4\"><b>.</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Tier 2 Super</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Base Cooldown:</b></span>",
+      "<span style=\"color:#cccccc\"><b>556 seconds</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Aspect</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Information</b></span>"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "<span style=\"color:#d9d9d9\"><b>Fragment Slots</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Bleak Watcher</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#e0a261\"><b><i>Grenade Base Cooldown and Chunk Scalar</i></b></span> <span style=\"color:#cccccc\"><b><i>is set to</i></b></span> <span style=\"color:#6fa8dc\"><b><i>Glacier Grenade's</i></b></span> <span style=\"color:#cccccc\"><b><i>while this</i></b></span> <span style=\"color:#6fa8dc\"><b><i>Aspect</i></b></span> <span style=\"color:#cccccc\"><b><i>is equipped.</i></b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Hold</b></span> <span style=\"color:#f6b26b\"><b>[Grenade]</b></span> <span style=\"color:#cccccc\"><b>to convert the</b></span> <span style=\"color:#f6b26b\"><b>Grenade Ability</b></span> <span style=\"color:#cccccc\"><b>into a</b></span> <span style=\"color:#6fa8dc\"><b>Stasis Turret.</b></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><b>Stasis Turret:</b></span>",
+      "<span style=\"color:#cccccc\"><b>Automatically shoots a burst of 5</b></span> <span style=\"color:#6fa8dc\"><b>seeking projectiles</b></span> <span style=\"color:#cccccc\"><b>over 0.7 seconds every 2 seconds at enemies within 35 metres, inflicting</b></span> <span style=\"color:#a4c2f4\"><b>x20</b></span> <span style=\"color:#ea9999\"><b>[x10]</b></span> <span style=\"color:#6fa8dc\"><b>Slow</b></span> <span style=\"color:#cccccc\"><b>for</b></span> <span style=\"color:#a4c2f4\"><b>4.5</b></span><span style=\"color:#6fa8dc\"><b><small>+4.5</small></b></span> <span style=\"color:#ea9999\"><b>[2</b></span><span style=\"color:#6fa8dc\"><b><small>+1.75</small></b></span><span style=\"color:#ea9999\"><b>]</b></span> <span style=\"color:#cccccc\"><b>seconds per hit.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Lasts for 25</b></span><span style=\"color:#6fa8dc\"><b><small>+5</small></b></span> <span style=\"color:#cccccc\"><b>seconds, has</b></span> <span style=\"color:#dd7e6b\"><b>150 Construct HP</b></span><span style=\"color:#cccccc\"><b>, and 67% Damage Resist until it has fired.</b></span>",
+      "<span style=\"color:#6fa8dc\"><i>Bleak Watcher</i></span> <span style=\"color:#cccccc\"><i>damage counts as</i></span> <span style=\"color:#6fa8dc\"><i>Stasis</i></span> <span style=\"color:#e0a261\"><i>Grenade Ability</i></span> <span style=\"color:#cccccc\"><i>Damage.</i></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Frostpulse</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#b4a7d6\"><b>11% Class Ability Energy</b></span> <span style=\"color:#cccccc\"><b>upon</b></span> <span style=\"color:#3d85c6\"><b>freezing</b></span> <span style=\"color:#cccccc\"><b>an enemy.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#b4a7d6\"><b><i>Class Ability Cast:</i></b></span>",
+      "<span style=\"color:#3d85c6\"><b>Freezes</b></span> <span style=\"color:#cccccc\"><b>enemies within</b></span> <span style=\"color:#a4c2f4\"><b>8.5</b></span> <span style=\"color:#ea9999\"><b>[5]</b></span> <span style=\"color:#cccccc\"><b>metres. Grants</b></span> <span style=\"color:#79bec3\"><b>+2.5 Meters Melee Lunge Distance</b></span> <span style=\"color:#cccccc\"><b>for 1.2 seconds.</b></span>",
+      "<span style=\"color:#3d85c6\"><b>Freezing</b></span> <span style=\"color:#cccccc\"><b>an enemy with</b></span> <span style=\"color:#6fa8dc\"><b>Frostpulse</b></span> <span style=\"color:#cccccc\"><b>grants</b></span> <span style=\"color:#6fa8dc\"><b>x5 Frost Armor</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#ea9999\"><b>[Guardians within 5-8 meters are inflicted with x50 Slow for ?<small>+?</small> seconds instead.]</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Glacial Harvest</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Picking up</b></span> <span style=\"color:#a4c2f4\"><b>Small Stasis Shards</b></span> <span style=\"color:#dd7e6b\"><b>restores 10 HP</b></span> <span style=\"color:#cccccc\"><b>and grants</b></span> <span style=\"color:#6fa8dc\"><b>x1 Frost Armor</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Picking up</b></span> <span style=\"color:#6fa8dc\"><b>Large Stasis Shards</b></span> <span style=\"color:#dd7e6b\"><b>restore ? HP</b></span> <span style=\"color:#cccccc\"><b>and grant</b></span> <span style=\"color:#6fa8dc\"><b>x3 Frost Armor</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#6fa8dc\"><b><i>Frost Armor</i></b></span> <span style=\"color:#cccccc\"><i>is active:</i></span>",
+      "<span style=\"color:#999999\"><b>Kinetic</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#6fa8dc\"><b>Stasis</b></span> <span style=\"color:#cccccc\"><b>Weapon Kills has a chance to cause the kill to trigger a</b></span> <span style=\"color:#3d85c6\"><b>Stasis Shatter</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Each</b></span> <span style=\"color:#6fa8dc\"><b>Frost Armor stack</b></span> <span style=\"color:#cccccc\"><b>increases the odds of it triggering.</b></span>",
+      "<span style=\"color:#6fa8dc\"><b>x1</b></span> <span style=\"color:#cccccc\"><b>= 10?% |</b></span> <span style=\"color:#6fa8dc\"><b>x2</b></span> <span style=\"color:#cccccc\"><b>= 15?% |</b></span> <span style=\"color:#6fa8dc\"><b>x3</b></span> <span style=\"color:#cccccc\"><b>= ?% |</b></span> <span style=\"color:#6fa8dc\"><b>x4</b></span> <span style=\"color:#cccccc\"><b>= ?% |</b></span> <span style=\"color:#6fa8dc\"><b>x5</b></span> <span style=\"color:#cccccc\"><b>= 50?% |</b></span> <span style=\"color:#6fa8dc\"><b>x6</b></span> <span style=\"color:#cccccc\"><b>= 85?% |</b></span> <span style=\"color:#6fa8dc\"><b>x7</b></span> <span style=\"color:#cccccc\"><b>= 100%</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Taking damage grants</b></span> <span style=\"color:#e0a261\"><b>?% Grenade Ability Energy</b></span><span style=\"color:#cccccc\"><b>, up to</b></span> <span style=\"color:#e06666\"><b>once a second?</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#ea9999\"><b>Crucible-Only:</b></span>",
+      "<span style=\"color:#e06666\"><b>Incurs a 10 second cooldown upon creating</b></span> <span style=\"color:#a4c2f4\"><b>6 Shards</b></span> <span style=\"color:#e06666\"><b>within ? seconds of the</b></span> <span style=\"color:#a4c2f4\"><b>first shard</b></span><span style=\"color:#e06666\"><b>?, preventing additional</b></span> <span style=\"color:#a4c2f4\"><b>Stasis Shard creation</b></span> <span style=\"color:#e06666\"><b>from</b></span> <span style=\"color:#6fa8dc\"><b>Harvest Aspects</b></span> <span style=\"color:#e06666\"><b>for 10 seconds.</b></span>",
+      "<span style=\"color:#9fc5e8\"><b>Shard</b></span> <span style=\"color:#e06666\"><b>creation count and cooldown is shared for the entire fireteam.</b></span>"
+    ]
+  ],
+  [
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Iceflare Bolts</b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#3c78d8\"><b>Shattering</b></span> <span style=\"color:#cccccc\"><b>a</b></span> <span style=\"color:#3d85c6\"><b>Frozen Enemy</b></span> <span style=\"color:#cccccc\"><b>creates a</b></span> <span style=\"color:#6fa8dc\"><b>seeker</b></span><span style=\"color:#cccccc\"><b>, targeting the closest enemy up to 12 metres away.</b></span>",
+      "<span style=\"color:#6fa8dc\"><b>Seeker</b></span> <span style=\"color:#cccccc\"><b>detonates upon reaching an enemy or expiring,</b></span> <span style=\"color:#3c78d8\"><b>freezing</b></span> <span style=\"color:#cccccc\"><b>enemies within</b></span> <span style=\"color:#a4c2f4\"><b>3</b></span> <span style=\"color:#ea9999\"><b>[1.75]</b></span> <span style=\"color:#cccccc\"><b>meters.</b></span>",
+      "",
+      "<span style=\"color:#e06666\"><b><i>Incurs an 8 second cooldown</i></b></span> <span style=\"color:#cccccc\"><b><i>after creating</i></b></span> <span style=\"color:#a4c2f4\"><b><i>7</i></b></span> <span style=\"color:#ea9999\"><b><i>[1]</i></b></span> <span style=\"color:#6fa8dc\"><b><i>seekers</i></b></span><span style=\"color:#cccccc\"><b><i>.</i></b></span>"
+    ]
+  ]
+]

@@ -1,0 +1,474 @@
+[
+  [
+    [
+      "<span style=\"color:#ffc4f0\"><b>Exotic Class Perks</b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#cccccc\"><b>The</b></span> <span style=\"color:#ffd966\"><b>Exotic Class Armor Stat Distribution</b></span> <span style=\"color:#cccccc\"><b>is fixed, with the</b></span> <span style=\"color:#d5a6bd\"><b>Left Column</b></span> <span style=\"color:#cccccc\"><b>determining the</b></span> <span style=\"color:#6d9eeb\"><b>Armor Archetype</b></span><span style=\"color:#cccccc\"><b>, and the</b></span> <span style=\"color:#d5a6bd\"><b>Right Column</b></span> <span style=\"color:#cccccc\"><b>granting the tertiary stats.</b></span>",
+      "<span style=\"color:#cccccc\"><i>In the case of an overlapping stat, the</i></span> <span style=\"color:#d5a6bd\"><i>Right Column</i></span> <span style=\"color:#cccccc\"><i>shows, from Highest &gt; Lowest priority, the order for tertiary stats.</i></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#ffc4f0\"><b><i>Class-agnostic Perks</i></b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#d5a6bd\"><b><i>Spirit of the Assassin</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#79bec3\"><b><i>Powered Melee Kill</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#b4a7d6\"><b>Void Invisibility</b></span> <span style=\"color:#cccccc\"><b>for 7 seconds.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#a4c2f4\"><b><i>Finisher</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#b4a7d6\"><b>Void Invisibility</b></span> <span style=\"color:#cccccc\"><b>for 10 seconds</b></span>"
+    ],
+    [
+      "<span style=\"color:#d5a6bd\"><b><i>Spirit of the Star-Eater</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Picking up an</b></span> <span style=\"color:#ffd966\"><b>Orb of Power</b></span> <span style=\"color:#cccccc\"><b>while</b></span> <span style=\"color:#ffd966\"><b>Super</b></span> <span style=\"color:#cccccc\"><b>is charged grants a stack of</b></span> <span style=\"color:#ffd966\"><b>Feast of Light</b></span><span style=\"color:#cccccc\"><b>, up to a maximum of</b></span> <span style=\"color:#ffd966\"><b>x6 stacks</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Swapping to another</i></span> <span style=\"color:#ffd966\"><i>Exotic Class Item</i></span> <span style=\"color:#cccccc\"><i>with</i></span> <span style=\"color:#ffd966\"><i>Star-Eaters</i></span> <span style=\"color:#cccccc\"><i>will maintain the current</i></span> <span style=\"color:#ffd966\"><i>Feast of Light stacks</i></span><span style=\"color:#cccccc\"><i>.</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#ffd966\"><b><i>Super Cast</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Consumes all</b></span> <span style=\"color:#ffd966\"><b>Feast of Light stacks</b></span><span style=\"color:#cccccc\"><b>, increasing</b></span> <span style=\"color:#ffd966\"><b>Super Damage</b></span> <span style=\"color:#cccccc\"><b>for 14 seconds.</b></span>",
+      "<span style=\"color:#ffd966\"><b>18.2% | 36.4% | 54.6% | 59.7% | 64.8% | 70% increased Super Damage.</b></span>",
+      "",
+      "<span style=\"color:#ffd966\"><b>Reduced effectiveness with certain Super Abilities.</b></span>",
+      "<span style=\"color:#f6b26b\"><b>Song of Flame</b></span> <span style=\"color:#e06666\"><b>does not</b></span> <span style=\"color:#cccccc\"><b>receive increased</b></span> <span style=\"color:#f6b26b\"><b>Solar Effect Damage</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#bba5f3\"><b>Nova Bomb</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#89cdd1\"><b>Thundercrash</b></span><span style=\"color:#cccccc\"><b>, and</b></span> <span style=\"color:#bba5f3\"><b>Twilight Arsenal</b></span> <span style=\"color:#cccccc\"><b>receive up to</b></span> <span style=\"color:#ffd966\"><b>50% Increased Super Damage</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#63d275\"><b>Needlestorm</b></span> <span style=\"color:#cccccc\"><b>receives up to 35% Increased Super Damage.</b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#d5a6bd\"><b><i>Spirit of the Inmost Light</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#e0a261\"><b><i>Grenade</i></b></span> <span style=\"color:#cccccc\"><i>or</i></span> <span style=\"color:#b4a7d6\"><b><i>Class</i></b></span> <span style=\"color:#cccccc\"><b><i>Ability Usage</i></b><i>, or upon</i> <b><i>dealing</i></b></span> <span style=\"color:#89cdd1\"><b><i>Powered Melee Damage</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Grants a</b></span> <span style=\"color:#ffd966\"><b>stack</b></span> <span style=\"color:#cccccc\"><b>of</b></span> <span style=\"color:#ffd966\"><b>Empowered Abilities</b></span> <span style=\"color:#cccccc\"><b>for the other two abilities for 5 seconds, up to</b></span> <span style=\"color:#ffd966\"><b>2 stacks</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>e.g.: Dealing</b></span> <span style=\"color:#89cdd1\"><b>Combination Blow damage</b></span> <span style=\"color:#cccccc\"><b>-&gt; Increased</b></span> <span style=\"color:#e0a261\"><b>Grenade</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#b4a7d6\"><b>Class</b></span> <span style=\"color:#cccccc\"><b>Ability Regeneration.</b></span>",
+      "",
+      "<span style=\"color:#ffd966\"><b>Empowered Abilities:</b></span>",
+      "<span style=\"color:#ffd966\"><b>x1</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#a4c2f4\"><b>400%</b></span> <span style=\"color:#ea9999\"><b>[100%]</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#ffd966\"><b>x2</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#a4c2f4\"><b>800%</b></span> <span style=\"color:#ea9999\"><b>[200%]</b></span> <span style=\"color:#cccccc\"><b>Additional Base</b></span> <span style=\"color:#e0a261\"><b>Grenade</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#89cdd1\"><b>Melee</b></span> <span style=\"color:#cccccc\"><b>Regeneration Rate.</b></span>",
+      "<span style=\"color:#ffd966\"><b>x1</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#b4a7d6\"><b>25%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#ffd966\"><b>x2</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#b4a7d6\"><b>50% Additional Base Class Ability Regeneration Rate</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#ffd966\"><b>Buff display</b></span> <span style=\"color:#cccccc\"><b>is</b></span> <span style=\"color:#e06666\"><b>NOT</b></span> <span style=\"color:#cccccc\"><b>accurate to the active ability regen.</b></span>",
+      "<span style=\"color:#cccccc\"><i>With the example in mind,</i></span> <span style=\"color:#b4a7d6\"><b><i>Class Ability Usage</i></b></span> <span style=\"color:#cccccc\"><i>before</i></span> <span style=\"color:#ffd966\"><b><i>Empowered x1</i></b></span> <span style=\"color:#cccccc\"><i>from</i></span> <span style=\"color:#89cdd1\"><b><i>Melee</i></b></span> <span style=\"color:#cccccc\"><i>runs out will do the following:</i></span>",
+      "<span style=\"color:#e0a261\"><b><i>Grenade</i></b></span> <span style=\"color:#ffd966\"><b><i>Empower</i></b></span> <span style=\"color:#cccccc\"><i>will go to</i></span> <span style=\"color:#ffd966\"><b><i>x2</i></b></span> <span style=\"color:#cccccc\"><i>and will have its duration refreshed.</i></span> <span style=\"color:#89cdd1\"><b><i>Melee</i></b></span> <span style=\"color:#cccccc\"><i>will receive</i></span> <span style=\"color:#ffd966\"><b><i>Empower x1</i></b></span> <span style=\"color:#cccccc\"><i>for 5 seconds, and</i></span> <span style=\"color:#b4a7d6\"><b><i>Class</i></b></span> <span style=\"color:#ffd966\"><b><i>Empower x1</i></b></span> <span style=\"color:#e06666\"><b><i>won't be refreshed</i></b></span><span style=\"color:#cccccc\"><b><i>,</i></b></span> <span style=\"color:#e06666\"><b><i>despite the UI saying Empowered x2</i></b></span>"
+    ],
+    [
+      "<span style=\"color:#d5a6bd\"><b><i>Spirit of the Synthoceps</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>While within</i> <b><i>15 metres</i></b> <i>of</i> <b><i>3 enemies</i></b>:</span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#ffd966\"><b>Biotic Enhancements</b></span> <span style=\"color:#cccccc\"><b>for 5 seconds.</b></span>",
+      "",
+      "<span style=\"color:#ffd966\"><b>Biotic Enhancements:</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>165%</b></span> <span style=\"color:#ea9999\"><b>[100%]</b></span> <span style=\"color:#79bec3\"><b>Increased Melee Damage.</b></span>",
+      "<span style=\"color:#79bec3\"><b>100% Increased Glaive Melee Damage.</b></span>",
+      "",
+      "<span style=\"color:#e06666\"><b><i>Decreased effectiveness with Lightning Surge against Guardians.</i></b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#d5a6bd\"><b><i>Spirit of the Ophidian</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Passively grants +35 Handling.</b></span>"
+    ],
+    [
+      "<span style=\"color:#d5a6bd\"><b><i>Spirit of Verity</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon</i> <b><i>scoring a</i></b></span> <span style=\"color:#e0a261\"><b><i>Grenade-Element</i></b></span> <span style=\"color:#d5a6bd\"><b><i>Matching Weapon Kill</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants a</b></span> <span style=\"color:#ffd966\"><b>stack</b></span> <span style=\"color:#cccccc\"><b>of</b></span> <span style=\"color:#ffd966\"><b>Death Throes</b></span><span style=\"color:#f3f3f3\"><b>,</b></span> <span style=\"color:#cccccc\"><b>up to</b></span> <span style=\"color:#ffd966\"><b>5 stacks</b></span><span style=\"color:#cccccc\"><b>, increasing</b></span> <span style=\"color:#e0a261\"><b>Grenade Ability Damage</b></span> <span style=\"color:#cccccc\"><b>and granting</b></span> <span style=\"color:#e0a261\"><b>Bonus Grenade Ability Energy</b></span> <span style=\"color:#cccccc\"><b>per second per</b></span> <span style=\"color:#ffd966\"><b>stack</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Loses</b></span> <span style=\"color:#ffd966\"><b>1 Death Throes stack</b></span> <span style=\"color:#cccccc\"><b>upon expiring, rather than all of them.</b></span>",
+      "<span style=\"color:#ffd966\"><b>Death Throes stack timer</b></span> <span style=\"color:#cccccc\"><b>begins decaying after 2 seconds of gaining a</b></span> <span style=\"color:#ffd966\"><b>stack</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#ffd966\"><b>Death Throes</b></span><span style=\"color:#cccccc\"><b>:</b></span>",
+      "<span style=\"color:#ffd966\"><b>x1</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#a4c2f4\"><b>40%</b></span> <span style=\"color:#ea9999\"><b>[20%]</b></span> <span style=\"color:#e0a261\"><b>increased Grenade Damage</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#e0a261\"><b>+0.5% Bonus Grenade Energy/s</b></span> <span style=\"color:#cccccc\"><b>for 8 seconds.</b></span>",
+      "<span style=\"color:#ffd966\"><b>x2</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#a4c2f4\"><b>55%</b></span> <span style=\"color:#ea9999\"><b>[40%]</b></span> <span style=\"color:#e0a261\"><b>increased Grenade Damage</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#e0a261\"><b>+1% Bonus Grenade Energy/s</b></span> <span style=\"color:#cccccc\"><b>for 7 seconds.</b></span>",
+      "<span style=\"color:#ffd966\"><b>x3</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#a4c2f4\"><b>70%</b></span> <span style=\"color:#ea9999\"><b>[60%]</b></span> <span style=\"color:#e0a261\"><b>increased Grenade Damage</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#e0a261\"><b>+1.5% Bonus Grenade Energy/s</b></span> <span style=\"color:#cccccc\"><b>for 6 seconds.</b></span>",
+      "<span style=\"color:#ffd966\"><b>x4</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#a4c2f4\"><b>85%</b></span> <span style=\"color:#ea9999\"><b>[80%]</b></span> <span style=\"color:#e0a261\"><b>increased Grenade Damage</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#e0a261\"><b>+2% Bonus Grenade Energy/s</b></span> <span style=\"color:#cccccc\"><b>for 5 seconds.</b></span>",
+      "<span style=\"color:#ffd966\"><b>x5</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#e0a261\"><b>100% increased Grenade Damage</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#e0a261\"><b>+2.5% Bonus Grenade Energy/s</b></span> <span style=\"color:#cccccc\"><b>for 4 seconds.</b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#6d9eeb\"><b><i>Hunter-exclusive Perks</i></b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#6d9eeb\"><b><i>Spirit of Caliban</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#79bec3\"><b>Powered Melee Kills</b></span> <span style=\"color:#cccccc\"><b>trigger an</b></span> <span style=\"color:#ff9900\"><b>Ignition</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#e06666\"><b><i>Ignition does not benefit from Melee Damage Increases.</i></b></span>"
+    ],
+    [
+      "<span style=\"color:#6d9eeb\"><b><i>Spirit of the Coyote</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Grants an extra</b></span> <span style=\"color:#b4a7d6\"><b>Class Ability Charge.</b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#6d9eeb\"><b><i>Spirit of Galanor</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#ffd966\"><b>Super</b></span> <span style=\"color:#cccccc\"><b>Hits and Kills refund</b></span> <span style=\"color:#ffd966\"><b>Super Energy.</b></span>",
+      "<span style=\"color:#ffd966\"><b><i>Refunds up to 50% Super Energy.</i></b></span>",
+      "<span style=\"color:#ffd966\"><b><i>Silkstrike and Golden Gun can only refund up to</i></b></span> <span style=\"color:#e06666\"><b><i>30%.</i></b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>Needs testing across all 5 Super Abilities :(</i></span>"
+    ],
+    [
+      "<span style=\"color:#6d9eeb\"><b><i>Spirit of the Cyrtarachne</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#f6b26b\"><b><i>Grenade Ability Usage</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#93c47d\"><b>Woven Mail</b></span> <span style=\"color:#cccccc\"><b>for 10 seconds.</b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#6d9eeb\"><b><i>Spirit of Renewal</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>While inside a</i></span> <span style=\"color:#6fa8dc\"><b><i>Duskfield Grenade's Slowing Field</i></b><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Enemies deal</b></span> <span style=\"color:#a4c2f4\"><b>50%</b></span> <span style=\"color:#ea9999\"><b>[20%]</b></span> <span style=\"color:#cccccc\"><b>decreased damage.</b></span>",
+      "<span style=\"color:#ffd966\"><b>User</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>are immediately granted</b></span> <span style=\"color:#6fa8dc\"><b>x1 Frost Armor</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants an</b></span> <span style=\"color:#6fa8dc\"><b>additional Frost Armor stack</b></span> <span style=\"color:#cccccc\"><b>every 0.5 seconds.</b></span>"
+    ],
+    [
+      "<span style=\"color:#6d9eeb\"><b><i>Spirit of the Gyrfalcon</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon leaving</i></span> <span style=\"color:#b4a7d6\"><b><i>Void Invisibility</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#d5a6bd\"><b>Volatile Rounds</b></span> <span style=\"color:#cccccc\"><b>for</b></span> <span style=\"color:#a4c2f4\"><b>9</b></span> <span style=\"color:#ea9999\"><b>[3]</b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#6d9eeb\"><b><i>Spirit of the Dragon</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Passively grants +10 Stability and 0.?x Ready Duration Multiplier.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#b4a7d6\"><b><i>Class Ability Usage</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#ffd966\"><b>Wraithmetal Mail</b></span> <span style=\"color:#cccccc\"><b>for 9 seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Reloads all weapons and picks up</b></span> <span style=\"color:#63d275\"><b>Ammo</b></span> <span style=\"color:#a481e1\"><b>Bricks</b></span> <span style=\"color:#cccccc\"><b>within 15 meters. Activates On-Reload Perks.</b></span>",
+      "",
+      "<span style=\"color:#ffd966\"><b>Wraithmetal Mail</b></span><span style=\"color:#cccccc\"><b>:</b></span>",
+      "<span style=\"color:#cccccc\"><b>+35 Stability and +? Handling.</b></span>"
+    ],
+    [
+      "<span style=\"color:#6d9eeb\"><b><i>Spirit of the Liar</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Receiving</b></span> <span style=\"color:#89cdd1\"><b>Melee Damage</b></span><span style=\"color:#cccccc\"><b>, or scoring a</b></span> <span style=\"color:#89cdd1\"><b>Powered Melee Hit</b></span> <span style=\"color:#cccccc\"><b>grants</b></span> <span style=\"color:#ffd966\"><b>Cross Counter</b></span> <span style=\"color:#cccccc\"><b>for the next</b></span> <span style=\"color:#89cdd1\"><b>Melee Hit</b></span> <span style=\"color:#cccccc\"><b>within 3 seconds.</b></span>",
+      "",
+      "<span style=\"color:#ffd966\"><b>Cross Counter</b></span> <span style=\"color:#cccccc\"><b>grants</b></span> <span style=\"color:#89cdd1\"><b>400% increased Basic and Arc Melee Damage</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#ffd966\"><b>Cross Counter's</b></span> <span style=\"color:#89cdd1\"><b>Melee Attack</b></span> <span style=\"color:#cccccc\"><b>deals</b></span> <span style=\"color:#89cdd1\"><b>Arc Damage</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#6d9eeb\"><b><i>Spirit of the Foetracer</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon dealing</i></span> <span style=\"color:#d5a6bd\"><b><i>Ability Damage</i></b></span> <span style=\"color:#cccccc\"><i>to an</i></span> <span style=\"color:#a4c2f4\"><b><i>Elite</i></b><i>,</i> <b><i>Miniboss</i></b><i>,</i> <b><i>Champion</i></b><i>,</i> <b><i>Boss</i></b></span><span style=\"color:#cccccc\"><i>, or</i></span> <span style=\"color:#ea9999\"><b><i>Guardian</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#d5a6bd\"><b>x4 Ability Element-Matching Weapon Surge</b></span> <span style=\"color:#cccccc\"><b>for</b></span> <span style=\"color:#a4c2f4\"><b>16</b></span> <span style=\"color:#ea9999\"><b>[11]</b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>",
+      "<span style=\"color:#e06666\"><i>Buff is not refreshable.</i></span>"
+    ],
+    [
+      "<span style=\"color:#6d9eeb\"><b><i>Spirit of the Wormhusk</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#b4a7d6\"><b><i>Class Ability Usage</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#dd7e6b\"><b>x2 Cure.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>Upon reaching</i> <b><i>100% Counter Progress</i></b> <i>by scoring</i> <b><i>multiple Kills</i></b> <i>within</i> <b><i>3 seconds</i></b> <i>of</i> <b><i>each</i></b><i>:</i></span>",
+      "<span style=\"color:#a4c2f4\"><b>Rank-And-File</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#ffd966\"><b>34%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>Elite+</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#ea9999\"><b>Guardians</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#ffd966\"><b>50%</b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants a</b></span> <span style=\"color:#f6b26b\"><b>stack</b></span> <span style=\"color:#cccccc\"><b>of</b></span> <span style=\"color:#ffd966\"><b>Burning Souls</b></span> <span style=\"color:#cccccc\"><b>for 10 seconds, up to a maximum of</b></span> <span style=\"color:#f6b26b\"><b>3 stacks</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#e06666\"><b>All stacks expire at once. Retriggering Burning Souls refreshes the buff duration.</b></span>",
+      "",
+      "<span style=\"color:#ffd966\"><b>Burning Souls</b></span><span style=\"color:#cccccc\"><b>:</b></span> <span style=\"color:#b4a7d6\"><b>Class Ability Usage</b></span> <span style=\"color:#dd7e6b\"><b>healing</b></span> <span style=\"color:#cccccc\"><b>is</b></span> <span style=\"color:#ffd966\"><b>enhanced</b></span> <span style=\"color:#cccccc\"><b>and spreads to</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>within 15? meters:</b></span>",
+      "<span style=\"color:#ffd966\"><b>x1</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#dd7e6b\"><b>x3 Cure</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#ffd966\"><b>x2</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#dd7e6b\"><b>x1 Cure</b></span> <span style=\"color:#cccccc\"><b>+</b></span> <span style=\"color:#dd7e6b\"><b>Restoration x1</b></span> <span style=\"color:#cccccc\"><b>for 3 seconds.</b></span>",
+      "<span style=\"color:#ffd966\"><b>x3</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#dd7e6b\"><b>x2 Cure</b></span> <span style=\"color:#cccccc\"><b>+</b></span> <span style=\"color:#dd7e6b\"><b>Restoration x1</b></span> <span style=\"color:#cccccc\"><b>for 5 seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><b>If</b></span> <span style=\"color:#dd7e6b\"><b>Restoration</b></span> <span style=\"color:#cccccc\"><b>is active, then it will extend its duration by the corresponding duration.</b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#e06666\"><b><i>Titan-exclusive Perks</i></b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#e06666\"><b><i>Spirit of Hoarfrost</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#b4a7d6\"><b><i>Barricade Placement</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Creates a</b></span> <span style=\"color:#6fa8dc\"><b>Stasis Wall</b></span> <span style=\"color:#cccccc\"><b>that is 5 medium crystals wide.</b> <i>The middle crystal is a small crystal.</i></span>",
+      "<span style=\"color:#b4a7d6\"><i>Overrides Barricade Cooldown with Towering Barricade's?.</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#89cdd1\"><b><i>Thruster Usage</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Spawns</b></span> <span style=\"color:#6fa8dc\"><b>2 Stasis Crystals</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#e06666\"><b><i>Does not provide Rally Barricade Bonuses, unlike the Exotic Armor version.</i></b></span>"
+    ],
+    [
+      "<span style=\"color:#e06666\"><b><i>Spirit of Alpha Lupi</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#b4a7d6\"><b><i>Barricade Placement</i></b></span> <span style=\"color:#cccccc\"><i>or</i></span> <span style=\"color:#89cdd1\"><b><i>Thruster Usage</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Instantly</b></span> <span style=\"color:#dd7e6b\"><b>restores Health</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#7cadff\"><b>Shields</b></span> <span style=\"color:#cccccc\"><b>to the</b></span> <span style=\"color:#ffd966\"><b>wielder</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#a4c2f4\"><b>allies in Line of Sight</b></span> <span style=\"color:#cccccc\"><b>within 12 metres.</b></span>",
+      "<span style=\"color:#b4a7d6\"><b>Barricade</b></span> <span style=\"color:#dd7e6b\"><b>restores 160 Health</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#7cadff\"><b>110 Shields</b></span><span style=\"color:#cccccc\"><b>.</b></span> <span style=\"color:#89cdd1\"><b>Thruster</b></span> <span style=\"color:#dd7e6b\"><b>restores 30 Health</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#e06666\"><i>Incurs a 5 second cooldown between healing pulses.</i></span>",
+      "",
+      "<span style=\"color:#dd7e6b\"><b>Healing</b></span> <span style=\"color:#a4c2f4\"><b>Allies</b></span> <span style=\"color:#cccccc\"><b>grants</b></span> <span style=\"color:#b4a7d6\"><b>?% Class Ability Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#e06666\"><b><i>Spirit of Severance</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#79bec3\"><b><i>Powered Melee Kill</i></b></span> <span style=\"color:#cccccc\"><b><i>or</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Finisher:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Enemy triggers a</b></span> <span style=\"color:#999999\"><b>Kinetic Explosion</b></span><span style=\"color:#cccccc\"><b>, dealing up to</b></span> <span style=\"color:#a4c2f4\"><b>400</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage over ? meters</b></span>",
+      "<span style=\"color:#e06666\"><b><i>Incurs a 1 second cooldown between non-chaining explosions.</i></b></span>",
+      "",
+      "<span style=\"color:#ffd966\"><b>Severance Explosions</b></span> <span style=\"color:#cccccc\"><b>from</b></span> <span style=\"color:#79bec3\"><b>Powered Melee Kills</b></span> <span style=\"color:#cccccc\"><b>can chain, creating weaker explosions that only deal up to</b></span> <span style=\"color:#a4c2f4\"><b>268</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage in a ? meter radius.</b></span>",
+      "<span style=\"color:#e06666\"><b><i>Chaining Explosions do not have a cooldown.</i></b></span>"
+    ],
+    [
+      "<span style=\"color:#e06666\"><b><i>Spirit of Contact</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon scoring a</i></span> <span style=\"color:#79bec3\"><b><i>Powered Melee Hit</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Enemies within 15 meters of the struck enemy are hit by</b></span> <span style=\"color:#ffd966\"><b>lightning</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#ffd966\"><b>Lightning</b></span> <span style=\"color:#cccccc\"><b>deals</b></span> <span style=\"color:#a4c2f4\"><b>181</b></span> <span style=\"color:#ea9999\"><b>[50]</b></span> <span style=\"color:#89cdd1\"><b>Arc Damage</b></span> <span style=\"color:#cccccc\"><b>and inflicts</b></span> <span style=\"color:#76a5af\"><b>Jolt</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#e06666\"><b><i>Spirit of the Abeyant</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#63d275\"><b>Enhances Drengr's Lash</b></span>",
+      "",
+      "<span style=\"color:#b4a7d6\"><b>Barricade:</b></span>",
+      "<span style=\"color:#cccccc\"><b>Creates 2 additional</b></span> <span style=\"color:#63d275\"><b>Lashes</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#63d275\"><b>Lashes</b></span> <span style=\"color:#cccccc\"><b>now seek enemies more aggressively and travel ?% farther.</b></span>",
+      "",
+      "<span style=\"color:#89cdd1\"><b>Thruster</b></span><span style=\"color:#cccccc\"><b>:</b></span>",
+      "<span style=\"color:#63d275\"><b>Knot</b></span> <span style=\"color:#cccccc\"><b>lasts up to ? seconds, lobbing itself towards enemies within ? meters, and detonates on contact.</b></span>"
+    ],
+    [
+      "<span style=\"color:#e06666\"><b><i>Spirit of Scars</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>Upon scoring a</i></b></span> <span style=\"color:#ffd966\"><b><i>Super-Element</i></b></span> <span style=\"color:#d5a6bd\"><b><i>Matching Weapon Kill</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#dd7e6b\"><b>x1 Restoration</b></span> <span style=\"color:#cccccc\"><b>for 3</b></span><span style=\"color:#f6b26b\"><b><small>+1.5</small></b></span> <span style=\"color:#cccccc\"><b>seconds to the</b></span> <span style=\"color:#ffd966\"><b>wearer</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>within 15? metres.</b></span>",
+      "<span style=\"color:#e06666\"><b><i>Incurs a 3 second cooldown between activations.</i></b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#e06666\"><b><i>Spirit of the Bear</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#bba5f3\"><b><i>guarding</i></b></span> <span style=\"color:#cccccc\"><i>with</i></span> <span style=\"color:#bba5f3\"><b><i>Unbreakable</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>15% Increased Movement Speed.</b></span>",
+      "",
+      "<span style=\"color:#bba5f3\"><b>Unbreakable</b></span> <span style=\"color:#cccccc\"><b>grants up to</b></span> <span style=\"color:#e0a261\"><b>60% Grenade Ability Energy</b></span> <span style=\"color:#cccccc\"><b>once it ends.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Scales from</b></span> <span style=\"color:#e0a261\"><b>15% Grenade Energy</b></span><span style=\"color:#cccccc\"><b>, up to</b></span> <span style=\"color:#e0a261\"><b>60% Grenade Energy</b></span> <span style=\"color:#cccccc\"><b>after maxing out</b></span> <span style=\"color:#bba5f3\"><b>Unbreakable</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [
+      "<span style=\"color:#e06666\"><b><i>Spirit of the Armamentarium</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Grants an extra</b></span> <span style=\"color:#e0a261\"><b>Grenade Ability Charge</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#e06666\"><b><i>Spirit of the Eternal Warrior</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#ffd966\"><b><i>Super End</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#d5a6bd\"><b>x4</b></span> <span style=\"color:#ffd966\"><b>Super-Element</b></span> <span style=\"color:#d5a6bd\"><b>Matching Weapon Surge</b></span> <span style=\"color:#cccccc\"><b>for</b></span> <span style=\"color:#a4c2f4\"><b>30</b></span> <span style=\"color:#ea9999\"><b>[6?]</b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>"
+    ],
+    [
+      "<span style=\"color:#e06666\"><b><i>Spirit of the Horn</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#b4a7d6\"><b><i>Barricade Placement</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Unleashes</b></span> <span style=\"color:#f6b26b\"><b>3 Tracking Solar Wave</b></span> <span style=\"color:#cccccc\"><b>that travel up to 18.5 metres away.</b></span>",
+      "<span style=\"color:#f6b26b\"><b>Solar Waves</b></span> <span style=\"color:#cccccc\"><b>deal</b></span> <span style=\"color:#a4c2f4\"><b>480</b></span> <span style=\"color:#ea9999\"><b>[100]</b></span> <span style=\"color:#cccccc\"><b>damage and applies</b></span> <span style=\"color:#a4c2f4\"><b>x60</b></span> <span style=\"color:#ea9999\"><b>[x30]</b></span> <span style=\"color:#f6b26b\"><b>Scorch</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#f6b26b\"><b>Solar Waves</b></span> <span style=\"color:#cccccc\"><b>spawn a</b></span> <span style=\"color:#f6b26b\"><b>Sunspot</b></span> <span style=\"color:#cccccc\"><b>under the enemies on</b></span> <span style=\"color:#a4c2f4\"><b>hit</b></span> <span style=\"color:#ea9999\"><b>[kill]</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#89cdd1\"><b><i>Thruster Usage</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Releases a</b></span> <span style=\"color:#f6b26b\"><b>Solar Ball</b></span> <span style=\"color:#cccccc\"><b>that explodes after ? seconds, releasing</b></span> <span style=\"color:#f6b26b\"><b>4 Solar Waves</b></span> <span style=\"color:#cccccc\"><b>in an X-pattern, using the aforementioned info.</b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#ffd966\"><b><i>Warlock-exclusive Perks</i></b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#ffd966\"><b><i>Spirit of Apotheosis</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#ffd966\"><b><i>Super Cast</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Fully restores</b></span> <span style=\"color:#dd7e6b\"><b>Health</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#e0a261\"><b>Grenade</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#a2c4c9\"><b>Melee</b></span><span style=\"color:#cccccc\"><b>, and</b></span> <span style=\"color:#b4a7d6\"><b>Class</b></span> <span style=\"color:#cccccc\"><b>Ability Energy.</b></span>",
+      "<span style=\"color:#ffd966\"><b>Caster</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#9fc5e8\"><b>Allies</b></span> <span style=\"color:#cccccc\"><b>within ? meters are granted</b></span> <span style=\"color:#dd7e6b\"><b>Cure x3</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#ffd966\"><b><i>Super End</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>66% Fixed Bonus</b></span> <span style=\"color:#e0a261\"><b>Grenade</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#79bec3\"><b>Melee</b></span> <span style=\"color:#cccccc\"><b>Ability Energy per second for 8 seconds.</b></span>"
+    ],
+    [
+      "<span style=\"color:#ffd966\"><b><i>Spirit of Harmony</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon</i> <b><i>scoring</i></b> <i>a</i></span> <span style=\"color:#ffd966\"><b><i>Super-Element</i></b></span> <span style=\"color:#d5a6bd\"><b><i>Matching Weapon Kill</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Grants additional</b></span> <span style=\"color:#ffd966\"><b>Super Energy</b></span> <span style=\"color:#cccccc\"><b>based on the</b></span> <span style=\"color:#a4c2f4\"><b>Enemy Tier</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Tier 1 Combatant</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#ffd966\"><b>1.5%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>T2</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#ffd966\"><b>2%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>T3</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#ffd966\"><b>?%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>T4</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#ffd966\"><b>2.5%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#ea9999\"><b>Guardian</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#ffd966\"><b>?%</b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#ffd966\"><b><i>Spirit of Osmiomancy</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#6fa8dc\"><b>Coldsnap Grenades</b></span> <span style=\"color:#cccccc\"><b>have better tracking, and travel 17.5% further and faster.</b></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><b>Coldsnap</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#89cdd1\"><b>Storm</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#63d275\"><b>Threadling</b></span><span style=\"color:#cccccc\"><b>, and</b></span> <span style=\"color:#bba5f3\"><b>Vortex</b></span> <span style=\"color:#cccccc\"><b>Grenades grant</b></span> <span style=\"color:#e0a261\"><b>Grenade Energy</b></span> <span style=\"color:#cccccc\"><b>upon dealing damage.</b></span>",
+      "<span style=\"color:#f6b26b\"><b>Healing Grenades</b></span> <span style=\"color:#cccccc\"><b>grant</b></span> <span style=\"color:#e0a261\"><b>Fixed Grenade Energy</b></span> <span style=\"color:#cccccc\"><b>upon</b></span> <span style=\"color:#dd7e6b\"><b>healing</b></span> <span style=\"color:#cccccc\"><b>the user or an</b></span> <span style=\"color:#a4c2f4\"><b>ally</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#bba5f3\"><b><i>Vortex Grenades</i></b></span> <span style=\"color:#cccccc\"><b><i>have a</i></b></span> <span style=\"color:#e06666\"><b><i>~0.8s cooldown</i></b></span> <span style=\"color:#cccccc\"><b><i>between</i></b></span> <span style=\"color:#e0a261\"><b><i>energy gains</i></b></span> <span style=\"color:#cccccc\"><b><i>on a single target.</i></b></span>",
+      "",
+      "<span style=\"color:#6fa8dc\"><b>Coldsnap</b></span> <span style=\"color:#e0a261\"><b>Grenade Ability Energy</b></span><span style=\"color:#cccccc\"><b>:</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>T1 Combatant</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#e0a261\"><b>10%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>T2</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#e0a261\"><b>22%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>T3</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#e0a261\"><b>34%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>T4</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#e0a261\"><b>50%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#ea9999\"><b>Guardian</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#e0a261\"><b>7%</b></span>",
+      "",
+      "<span style=\"color:#89cdd1\"><b>Storm</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#f6b26b\"><b>Healing</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#63d275\"><b>Threadling</b></span><span style=\"color:#cccccc\"><b>, and</b></span> <span style=\"color:#bba5f3\"><b>Vortex</b></span> <span style=\"color:#e0a261\"><b>Grenade Ability Energy</b></span><span style=\"color:#cccccc\"><b>:</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>T1 Combatant</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#e0a261\"><b>3%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>T2</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#e0a261\"><b>5.7%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>T3</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#e0a261\"><b>8.4%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>T4</b></span> <span style=\"color:#cccccc\"><b>&amp;</b></span> <span style=\"color:#dd7e6b\"><b>Healing</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#e0a261\"><b>12%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#ea9999\"><b>Guardian</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#e0a261\"><b>5%</b></span>"
+    ],
+    [
+      "<span style=\"color:#ffd966\"><b><i>Spirit of Starfire</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#ffd966\"><b><i>Radiant</i></b></span><span style=\"color:#cccccc\"><i>, in a</i></span> <span style=\"color:#ffd966\"><b><i>Well of Radiance</i></b></span> <span style=\"color:#cccccc\"><i>or</i></span> <span style=\"color:#a4c2f4\"><b><i>Empowering Rift</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#f6b26b\"><b>5% Fixed Grenade Energy</b></span> <span style=\"color:#cccccc\"><b>per Weapon Hit.</b></span>",
+      "<span style=\"color:#e06666\"><b><i>Incurs a 0.4 seconds cooldown between Grenade Energy Gains.</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#f6b26b\"><b>15% Fixed Grenade Energy</b></span> <span style=\"color:#cccccc\"><b>on Weapon Kill.</b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#ffd966\"><b><i>Spirit of the Stag</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#a4c2f4\"><b>25%</b></span> <span style=\"color:#ea9999\"><b>[5%]</b></span> <span style=\"color:#cccccc\"><b>Damage Resist to</b></span> <span style=\"color:#a4c2f4\"><b>Guardians</b></span> <span style=\"color:#cccccc\"><b>inside</b></span> <span style=\"color:#b4a7d6\"><b>Rifts</b></span> <span style=\"color:#cccccc\"><b>created by the</b></span> <span style=\"color:#ffd966\"><b>wielder</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Standing in a</i></span> <span style=\"color:#b4a7d6\"><i>Rift</i></span> <span style=\"color:#cccccc\"><i>that overlaps or is inside a</i></span> <span style=\"color:#ffd966\"><i>Well of Radiance</i></span> <span style=\"color:#cccccc\"><i>allow the Damage Resist to work in it.</i></span>"
+    ],
+    [
+      "<span style=\"color:#ffd966\"><b><i>Spirit of the Claw</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Grants an extra</b></span> <span style=\"color:#79bec3\"><b>Melee Ability Charge.</b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#ffd966\"><b><i>Spirit of the Filaments</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Standing on</b></span> <span style=\"color:#a4c2f4\"><b>Empowering Rifts</b></span> <span style=\"color:#cccccc\"><b>created by the user grants</b></span> <span style=\"color:#8e7cc3\"><b>Devour</b></span> <span style=\"color:#cccccc\"><b>for 11 seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Exiting, and then re-entering the same</b></span> <span style=\"color:#a4c2f4\"><b>Empowering Rift</b></span> <span style=\"color:#cccccc\"><b>refreshes the duration of</b></span> <span style=\"color:#8e7cc3\"><b>Devour</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#ffd966\"><b><i>Secant Filaments</i></b></span><span style=\"color:#d9d9d9\"><i>'</i></span> <span style=\"color:#8e7cc3\"><b><i>Devour</i></b></span> <span style=\"color:#d9d9d9\"><i>can be refreshed to 11 seconds.</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#8e7cc3\"><b><i>Devour</i></b></span> <span style=\"color:#cccccc\"><i>is active:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Kills grant</b></span> <span style=\"color:#b4a7d6\"><b>10% Class Ability Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ],
+    [
+      "<span style=\"color:#ffd966\"><b><i>Spirit of the Swarm</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>Upon destroying a</i></span> <span style=\"color:#93c47d\"><i>Tangle</i></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Spawns 2</b></span> <span style=\"color:#b6d7a8\"><b>Threadlings</b></span><span style=\"color:#93c47d\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#ffd966\"><b><i>Spirit of the Necrotic</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#79bec3\"><b>Melee Hits</b></span> <span style=\"color:#cccccc\"><b>inflict</b></span> <span style=\"color:#6aa84f\"><b>Potent Corruption.</b></span>",
+      "<span style=\"color:#6aa84f\"><b>Corrupted enemies spread Potent Corruption on death in a 5 metre radius.</b></span>",
+      "",
+      "<span style=\"color:#6aa84f\"><b>Potent Corrupted Damage</b></span> <span style=\"color:#cccccc\"><b>ticks every</b></span> <span style=\"color:#a4c2f4\"><b>0.52</b></span> <span style=\"color:#ea9999\"><b>[0.7]</b></span> <span style=\"color:#cccccc\"><b>seconds up to</b></span> <span style=\"color:#a4c2f4\"><b>19</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>times over</b></span> <span style=\"color:#a4c2f4\"><b>10</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>seconds, dealing</b></span> <span style=\"color:#a4c2f4\"><b>32</b></span> <span style=\"color:#ea9999\"><b>[5?]</b></span> <span style=\"color:#999999\"><b>Kinetic Damage</b></span> <span style=\"color:#cccccc\"><b>every tick, totalling</b></span> <span style=\"color:#a4c2f4\"><b>640</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#999999\"><b>damage</b></span> <span style=\"color:#cccccc\"><b>over its duration.</b></span>"
+    ],
+    [
+      "<span style=\"color:#ffd966\"><b><i>Spirit of Vesper</i></b></span>"
+    ],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><i>After</i> <b><i>1 second</i></b> <i>of placing a</i></span> <span style=\"color:#b4a7d6\"><b><i>Rift</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Triggers an</b></span> <span style=\"color:#89cdd1\"><b>Arc Shockwave</b></span> <span style=\"color:#cccccc\"><b>that deals</b></span> <span style=\"color:#a4c2f4\"><b>400</b></span> <span style=\"color:#ea9999\"><b>[100]</b></span> <span style=\"color:#89cdd1\"><b>Arc Damage</b></span> <span style=\"color:#cccccc\"><b>and staggers in a 7.5 metres radius.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Additional</b></span> <span style=\"color:#89cdd1\"><b>shockwaves</b></span> <span style=\"color:#cccccc\"><b>occur every 5 seconds, until the</b></span> <span style=\"color:#b4a7d6\"><b>Rift</b></span> <span style=\"color:#cccccc\"><b>expires.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>While an</b></span> <span style=\"color:#89cdd1\"><b>Arc</b></span> <span style=\"color:#ffd966\"><b>Super Ability</b></span> <span style=\"color:#cccccc\"><b>is equipped,</b></span> <span style=\"color:#89cdd1\"><b>shockwaves</b></span> <span style=\"color:#999999\"><b>blind</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+    ]
+  ],
+  [
+    [
+      "<span style=\"color:#fbbdec\"><b><i>Exotic Class Items will only apply their perks while the Prismatic subclass is equipped!</i></b></span>"
+    ]
+  ]
+]
