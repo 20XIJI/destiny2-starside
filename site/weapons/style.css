@@ -1857,6 +1857,8 @@
   color: var(--bone-hi);
   font: 700 20px/1 var(--font-disp);
 }
+.pvp-stat-hero-value.up, .pvp-stat-value.up { color: var(--buff); }
+.pvp-stat-hero-value.down, .pvp-stat-value.down { color: var(--debuff); }
 .pvp-stat-item {
   display: flex;
   align-items: center;
@@ -2070,28 +2072,29 @@
   background: var(--tint-3);
   border-color: var(--hair);
 }
-.fx-side { position: relative; display: flex; flex-direction: column; align-items: stretch; gap: 5px; }
+.fx-side { position: relative; display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
 .fx-list { display: flex; flex-direction: column; gap: 6px; width: 100%; }
-
 .fx-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  height: 32px;
+  height: 56px;
   padding: 0;
   border: 1px dashed var(--hair-lit);
-  background: none;
+  background: var(--tint-1);
   color: var(--bone-faint);
-  font: 400 12px/32px var(--font-cn);
   cursor: pointer;
 }
 .fx-add:hover,
-.fx-add[aria-expanded="true"] { color: var(--bone); border-color: var(--bone-dim); }
+.fx-add[aria-expanded="true"] { color: var(--bone); border-color: var(--bone-dim); background: var(--tint-2); }
 .fx-item {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
+  align-items: center;
+  gap: 10px;
   width: 100%;
-  padding: 6px 8px;
+  min-height: 56px;
+  padding: 8px 12px;
   border: 1px solid var(--hair);
   background: var(--tint-1);
   color: var(--bone);
@@ -2099,9 +2102,19 @@
   text-align: left;
 }
 .fx-item:hover { background: var(--tint-3); }
-.fx-item.selected { border-color: var(--accent); color: var(--bone-hi); }
-.fx-name { font: 500 12px/1.3 var(--font-cn); }
-.fx-hint { color: var(--bone-faint); font: 400 11px/1.4 var(--font-cn); }
+.fx-item.selected { border-color: var(--hair-lit); }
+.fx-ico {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  padding: 3px;
+  border: 1px solid var(--hair);
+  background: var(--tint-2);
+}
+.fx-item-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fx-name { font: 500 13px/1.3 var(--font-cn); color: var(--bone-hi); }
+.fx-step { margin-left: 4px; color: var(--bone-faint); font: 500 12px/1 var(--font-body); }
+.fx-hint { color: var(--buff); font: 400 12px/1.4 var(--font-cn); }
 .fx-drop {
   position: absolute;
   z-index: 20;
@@ -2128,10 +2141,11 @@
 .fx-gh span { color: var(--bone-faint); }
 .fx-pick {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
   width: 100%;
-  padding: 6px 10px 6px 16px;
+  padding: 6px 10px;
   border: 0;
   background: transparent;
   color: var(--bone);
@@ -2140,8 +2154,52 @@
 }
 .fx-pick:hover { background: var(--tint-3); }
 .fx-pick.on { color: var(--bone-hi); }
+.fx-pick-ico { flex: none; width: 24px; height: 24px; }
+.fx-pick-body { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .fx-pick-name { font: 500 12px/1.3 var(--font-cn); }
-.fx-pick-stats { color: var(--bone-faint); font: 400 11px/1.4 var(--font-cn); }
+.fx-pick-stats { color: var(--buff); font: 400 11px/1.4 var(--font-cn); }
+.pvp-damage-perks {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+.pvp-damage-perks-title {
+  color: var(--buff);
+  font: 600 12px/1.3 var(--font-cn);
+  letter-spacing: .08em;
+}
+.pvp-perk-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--hair);
+  background: var(--tint-1);
+  color: var(--bone);
+  cursor: default;
+  text-align: left;
+}
+.pvp-perk-badge[data-act] { cursor: pointer; }
+.pvp-perk-badge[data-act]:hover { background: var(--tint-3); }
+.pvp-perk-icon {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  padding: 4px;
+  border: 1px solid var(--hair);
+  border-radius: 50%;
+  background: var(--tint-2);
+}
+.pvp-perk-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pvp-perk-name { font: 500 13px/1.3 var(--font-cn); color: var(--bone-hi); }
+.pvp-perk-step { margin-left: 4px; color: var(--bone-faint); font: 500 12px/1 var(--font-body); }
+.pvp-perk-effect { color: var(--buff); font: 400 12px/1.3 var(--font-cn); }
+.pvp-perk-effect.negative { color: var(--debuff); }
+@media (prefers-reduced-motion: reduce) {
+  .pvp-stat-hero-value, .pvp-stat-value { transition: none; }
+}
 
 
 /* ── 浮层 ───────────────────────────────────────────────────── */

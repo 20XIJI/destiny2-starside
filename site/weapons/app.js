@@ -133,12 +133,14 @@
     if (cb) { job.cbs.push(cb); }
     return false;
   }
-  var P = null, T = null, PIDX = {}, SIDX = null;
+  var P = null, T = null, PIDX = {}, SIDX = null, HSTAT = null;
+  var PERK_FX = null, perkFxWait = null;
   function poolReady() {
     P = window.WPN_POOL;
     for (var i = 0; i < P.p.length; i++) { PIDX[P.p[i][P_HASH]] = i; }
     SIDX = {};
-    for (var j = 0; j < P.s.length; j++) { SIDX[P.s[j][1]] = j; }
+    HSTAT = {};
+    for (var j = 0; j < P.s.length; j++) { SIDX[P.s[j][1]] = j; HSTAT[P.s[j][0]] = j; HSTAT[String(P.s[j][0])] = j; }
     hayCache = {};
     perkIndex = null;
   }
@@ -275,9 +277,9 @@
   var FX_GROUPS = [
     { id: 'armor', name: '护甲模组', items: [
       { id: '2899505723', name: '空中补偿器', stats: { '空中效率': 30 } },
-      { id: '2586562813', name: '动能装弹装置', el: '动能', stats: { '填装速度': 18 } },
-      { id: '2467203039', name: '动能瞄准性能', el: '动能', stats: { '辅助瞄准': 10 } },
-      { id: '14520248', name: '动能武器激涌', el: '动能', dmg: 1.06 },
+      { id: '2586562813', name: '装弹装置', stats: { '填装速度': 18 } },
+      { id: '2467203039', name: '瞄准性能', stats: { '辅助瞄准': 10 } },
+      { id: '14520248', name: '武器激涌', dmg: [1.03, 1.045, 1.055, 1.06] },
       { id: '531057500', name: '光明利刃', sword: 1, stats: { '充能效率': 60 } }
     ] },
     { id: 'buff', name: '增益', items: [
@@ -312,6 +314,7 @@
     ] },
     { id: 'exotic', name: '异域护甲', items: [
       { id: '1667892711', name: '亚克兴角战役钻机', stats: { '空中效率': 30 } },
+      { id: '508515818', name: '巴克里斯面具', dmg: [1.1, 1.21, 1.33] },
       { id: '3295796664', name: '星云之歌', stats: { '操控性': 100, '空中效率': 30 } },
       { id: '902934539', name: '汇编器战靴', stats: { '空中效率': 30 }, dmg: 1.15 },
       { id: '3927963100', name: '异界之眸', stats: { '空中效率': 15 } },
@@ -339,10 +342,87 @@
       { id: '187957397', name: '特里同之罪', stats: { '填装速度': 50 } }
     ] }
   ];
+  var FX_ICON = {
+    '2899505723': 'e0f1db219961a0ae101c648ba3fa7cba',
+    '2586562813': '../armor-mods/icons/6def7c9c80.webp',
+    '2467203039': '../armor-mods/icons/e1c888760c.webp',
+    '14520248': '../armor-mods/icons/4fc3a01c77.webp',
+    '531057500': '7ced3173fb475d8ad0a02390b0823be1',
+    'ability_amplified': 'cc6ce294e996af1310981de31b45fcdd',
+    'ability_radiant': 'a548069d59fa0bbf671da9e8ce31728e',
+    '508515818': 'd2fdd193c4536cbc9cdaa82e24b7125a',
+    '1190101211': 'cecb681426570c4cdde540284e6407c4',
+    '2722573683': '61feac4f1271ba6cecc29cc50e20ab5a',
+    '2722573681': '986e8f2dd0699371d605a331bb63742a',
+    '4260353953': '1caf1eccf1072969ab93bd35fde62599',
+    '2274196887': '2f3615ddcd86ab7c50653d2d1847c3bf',
+    '4194622036': '83c6b789cfbe88a92f1d247ebf4ff62f',
+    '83039194': 'd647fd2019707f044ce97b52f802e465',
+    '3066103999': '6b1ce964c0d1dc6beba3083353efc3f6',
+    '2272984657': '958ff340ae4ce16d7cf71c5268a13919',
+    '362132290': 'cddc93648f0917dc8bd6663d38d7c379',
+    '124726497': '24e6282bf3ee1c2a53717ed085cec441',
+    '2626922126': '684547ed1f97efdca37df4f1a5c5e699',
+    '1727069361': '4979f2f84c3da353c19815106267beb9',
+    '4208512216': '25e7ef19cf989641771175e05bcfb3c2',
+    '3469412970': '70b60b70634c6e539a531d47e58e1b9f',
+    '2711519343': '7b7917cbb4697af66a810def2b558328',
+    '25156514': '9b08ff451b1b63c88096bc32698c62a0',
+    '489583097': '095be27fd5f742a241fe77176e80cfdf',
+    '1667892711': 'da340d0b0754087bb15d64a8897f5e3b',
+    '3295796664': '3e0c0449da436384126e4cf4d3410086',
+    '902934539': 'dcda11796b3ea21561068b723e5bbc93',
+    '3927963100': '3e642a717efb7bdb36f0f5dcb4cb9d71',
+    '2341747657': '28e26c9a7e6bca0ac431baae14f9fa16',
+    '2663272111': '6fd9aecd4c810d6dafd2517ebd50cbe0',
+    '3241194940': '7b334c8fca87e908ccea8fbe4c6af68f',
+    '1694242448': 'efbc5e963de684734f9761785b51a375',
+    '3347978672': 'c6e1c87f613c0eaabd4420dfc93de88a',
+    '481860151': 'cbea782469054e260fd336b5222adc23',
+    '3824622015': '4c1a349c2723d3aa84598da98c7a8805',
+    '569260333': '1008decd8282aaf6c9e20461722e4a92',
+    '1449897496': '23bd5476f6002f913fd511bc62d37826',
+    '1147638875': '3945ff76d8e7ec70991cb0f6601c6797',
+    '3241194941': 'fc5f93fd49cdea67bf72d139c5a2c227',
+    '235075862': '7713596356b90eec06db4b7c50523685',
+    '117669763': 'd1bc9350b3c6a8333936a1fd3ce8922b',
+    '4222205045': '1018b32e9bed692b4766d1a870457eed',
+    '2805134531': 'eabdd8dd9c1abcdbcaf4b0cbe8e97248',
+    '3268255645': 'b8a55863e8d952535d306476df20cf3c',
+    '858592012': 'c1afa2683c4762598af01b9b21a9ff7a',
+    '1731450287': 'c10f29eba7f5e4eda1be088c46a4dc14',
+    '1155472384': '640d76fb6ab52e290116455379194b07',
+    '593361144': '100cd6b35af5fb3f979807d68ad57380',
+    '926349160': 'bca803e50002410309460be0966fabe9',
+    '187957397': '4f6f7f7ed33e3c274165705bba5aebc5'
+  };
+  function fxIco(e, cls) {
+    var st = FX_ICON[e.id];
+    if (!st) { return ''; }
+    var src = st.indexOf('/') === -1 ? ICONS + st + '.webp' : st;
+    return '<img' + (cls ? ' class="' + cls + '"' : '') + ' src="' + esc(src) + '" alt="">';
+  }
+  function fxSteps(e) { return Array.isArray(e.dmg) ? e.dmg.length : 1; }
+  function fxStepOf(e) {
+    var n = fxSteps(e), s = S.fxStep[e.id] || 0;
+    return s < 0 ? 0 : s >= n ? n - 1 : s;
+  }
+  function fxDmgOf(e) {
+    if (e.dmg == null) { return 1; }
+    return Array.isArray(e.dmg) ? e.dmg[fxStepOf(e)] : e.dmg;
+  }
   function fxHint(e) {
     var h = [];
     if (e.stats) { Object.keys(e.stats).forEach(function (k) { h.push('+' + e.stats[k] + ' ' + k); }); }
-    if (e.dmg) { h.push('伤害 +' + Math.round((e.dmg - 1) * 100) + '%'); }
+    if (Array.isArray(e.dmg)) {
+      if (fxOn(e.id)) {
+        h.push('伤害 +' + parseFloat(((fxDmgOf(e) - 1) * 100).toFixed(2)) + '%');
+      } else {
+        h.push(e.dmg.map(function (d) { return '+' + parseFloat(((d - 1) * 100).toFixed(2)) + '%'; }).join(' ｜ '));
+      }
+    } else if (e.dmg) {
+      h.push('伤害 +' + parseFloat(((e.dmg - 1) * 100).toFixed(2)) + '%');
+    }
     return h.join(' · ');
   }
   function fxApplies(i, e) {
@@ -395,9 +475,12 @@
     var k = frameKey(frameZh);
     return t[k] || t.Adaptive || t.Precision || t.Lightweight || null;
   }
-  function pvpTtk(body, crit, burst, rpm, hp, acc, dmgScale) {
+  function pvpTtk(body, crit, burst, rpm, hp, acc, dmgScale, precScale) {
     if (!body || !crit || !rpm) { return null; }
-    body *= dmgScale; crit *= dmgScale;
+    dmgScale = dmgScale == null ? 1 : dmgScale;
+    precScale = precScale == null ? 1 : precScale;
+    body *= dmgScale;
+    crit *= dmgScale * precScale;
     var n, crits, bodies, dmg;
     for (n = 1; n <= 24; n++) {
       crits = Math.round(n * acc / 100);
@@ -415,6 +498,139 @@
   function fmtM(n) { return n.toFixed(2) + 'm'; }
   function fmtS(n) { return n.toFixed(2) + 's'; }
   function fxOn(id) { return S.fx.indexOf(id) !== -1; }
+  var TYPE_EN = {
+    '自动步枪': 'Auto Rifle', '脉冲步枪': 'Pulse Rifle', '斥候步枪': 'Scout Rifle',
+    '手炮': 'Hand Cannon', '手枪': 'Sidearm', '微型冲锋枪': 'Submachine Gun',
+    '战斗弓箭': 'Combat Bow', '追踪步枪': 'Trace Rifle', '融合步枪': 'Fusion Rifle',
+    '霰弹枪': 'Shotgun', '狙击步枪': 'Sniper Rifle', '偃月': 'Glaive',
+    '线性融合步枪': 'Linear Fusion Rifle', '机枪': 'Machine Gun',
+    '火箭发射器': 'Rocket Launcher', '榴弹发射器': 'Grenade Launcher', '刀剑': 'Sword'
+  };
+  function ammoEn(zh) {
+    return zh === '威能' ? 'Heavy' : zh === '特殊' ? 'Special' : 'Primary';
+  }
+  function ensurePerkFx(cb) {
+    if (PERK_FX) { if (cb) { cb(); } return; }
+    if (perkFxWait) { if (cb) { perkFxWait.push(cb); } return; }
+    perkFxWait = cb ? [cb] : [];
+    fetch(new URL('perk-fx.json', HERE).href).then(function (r) { return r.json(); }).then(function (j) {
+      PERK_FX = j;
+      var w = perkFxWait; perkFxWait = null;
+      for (var i = 0; i < w.length; i++) { w[i](); }
+    }).catch(function () {
+      PERK_FX = {};
+      var w = perkFxWait; perkFxWait = null;
+      if (w) { for (var i = 0; i < w.length; i++) { w[i](); } }
+    });
+  }
+  function perkSpec(p) {
+    return PERK_FX ? PERK_FX[String(P.p[p][P_HASH])] || null : null;
+  }
+  function isAmmoTriple(v) {
+    return Array.isArray(v) && v.length === 3 && v[0] > v[1] && v[1] === v[2];
+  }
+  function pickStep(v, step, ammo) {
+    if (v == null) { return null; }
+    if (!Array.isArray(v)) { return v; }
+    if (isAmmoTriple(v)) { return v[ammo === 'Heavy' ? 2 : ammo === '特殊' || ammo === 'Special' ? 1 : 0]; }
+    return v[Math.max(0, Math.min(step, v.length - 1))];
+  }
+  function perkSteps(s) {
+    var n = 1, k, v;
+    if (!s) { return 1; }
+    ['dmg', 'pvpDmg', 'precDmg', 'rpmMod', 'reloadDurationMod', 'chargeTimeMod'].forEach(function (key) {
+      v = s[key];
+      if (Array.isArray(v) && !isAmmoTriple(v)) { n = Math.max(n, v.length); }
+    });
+    for (k in s) {
+      if (!Object.prototype.hasOwnProperty.call(s, k) || !/^\d+$/.test(k)) { continue; }
+      v = s[k];
+      if (Array.isArray(v)) { n = Math.max(n, v.length); }
+    }
+    return n;
+  }
+  function perkStepOf(p) {
+    return S.perkStep[String(P.p[p][P_HASH])] || 0;
+  }
+  function perkModOf(s, step, ammo, typeEn, frameEn) {
+    var dmg = pickStep(s.pvpDmg != null ? s.pvpDmg : s.dmg, step, ammo);
+    var prec = pickStep(s.precDmg, step, ammo);
+    var rpm = pickStep(s.rpmMod, step, ammo);
+    var reload = pickStep(s.reloadDurationMod, step, ammo);
+    var charge = pickStep(s.chargeTimeMod, step, ammo);
+    var fp;
+    if (s.pvpDmgByAmmo && s.pvpDmgByAmmo[ammo] != null) { dmg = s.pvpDmgByAmmo[ammo]; }
+    else if (s.dmgByAmmo && s.pvpDmg == null && s.dmgByAmmo[ammo] != null) { dmg = s.dmgByAmmo[ammo]; }
+    if (s.dmgByType && typeEn && s.dmgByType[typeEn] != null) { dmg = s.dmgByType[typeEn]; }
+    if (s.framePrecDmg && frameEn) {
+      fp = s.framePrecDmg[frameEn] || s.framePrecDmg[frameEn.replace(/-/g, ' ')] || s.framePrecDmg[frameEn.replace(/ /g, '-')];
+      if (fp) { prec = fp; }
+    }
+    if (s.precDmgByType && typeEn && s.precDmgByType[typeEn] != null) { prec = s.precDmgByType[typeEn]; }
+    if (ammo === 'Heavy' && s.heavyPrecDmgByType && typeEn && s.heavyPrecDmgByType[typeEn] != null) {
+      prec = s.heavyPrecDmgByType[typeEn];
+    }
+    return {
+      dmg: dmg == null ? 1 : dmg, prec: prec == null ? 1 : prec,
+      rpm: rpm == null ? 1 : rpm, reload: reload == null ? 1 : reload,
+      charge: charge == null ? 1 : charge
+    };
+  }
+  function perkPctText(mod) {
+    var lines = [];
+    if (mod.dmg !== 1) {
+      lines.push(mod.dmg >= 1
+        ? '伤害 +' + parseFloat(((mod.dmg - 1) * 100).toFixed(2)) + '%'
+        : '伤害 −' + parseFloat(((1 - mod.dmg) * 100).toFixed(2)) + '%');
+    }
+    if (mod.prec !== 1) {
+      lines.push('精准伤害 +' + parseFloat(((mod.prec - 1) * 100).toFixed(2)) + '%');
+    }
+    if (mod.rpm !== 1) {
+      lines.push(mod.rpm < 1
+        ? '射速 +' + parseFloat(((1 - mod.rpm) * 100).toFixed(2)) + '%'
+        : '射速 −' + parseFloat(((mod.rpm - 1) * 100).toFixed(2)) + '%');
+    }
+    return lines;
+  }
+  function activePerkRows(i, res) {
+    var r = WR[i], ty = typeName(r), fr = frameOf(r)[0];
+    var ammo = ammoEn(V.am[r[W_AMMO]][0]);
+    var typeEn = TYPE_EN[ty] || ty;
+    var frEn = (frameKey(fr) || '').replace(/ /g, '-');
+    var out = [];
+    if (!res || !res.perks) { return out; }
+    res.perks.forEach(function (p) {
+      var s = perkSpec(p);
+      if (!s) { return; }
+      var steps = perkSteps(s), step = perkStepOf(p);
+      var mod = perkModOf(s, step, ammo, typeEn, frEn);
+      if (mod.dmg === 1 && mod.prec === 1 && mod.rpm === 1 && mod.reload === 1) { return; }
+      out.push({
+        p: p, hash: String(P.p[p][P_HASH]), name: plugName(p), icon: P.p[p][P_ICON],
+        step: step, steps: steps, mod: mod, s: s
+      });
+    });
+    return out;
+  }
+  var PVP_ANIM_MS = 666, pvpTween = null, pvpShown = { body: null, crit: null }, pvpSel = null;
+  function easePvp(e) {
+    if (e <= 0) { return 0; }
+    if (e >= 1) { return 1; }
+    function bez(a, b, r) { var n = 1 - r; return 3 * n * n * r * a + 3 * n * r * r * b + r * r * r; }
+    var lo = 0, hi = 1, n = e, i, x;
+    for (i = 0; i < 14; i++) {
+      x = bez(0.4, 0.2, n);
+      if (Math.abs(x - e) < 1e-5) { break; }
+      if (x < e) { lo = n; } else { hi = n; }
+      n = (lo + hi) / 2;
+    }
+    return bez(0, 1, n);
+  }
+  function reduceMotion() {
+    return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
 
 
   /* 后坐方向扇形：DIM 的公式，参数照 destiny.report（竖向 0.8、最大张角 180°）。 */
@@ -894,7 +1110,7 @@
     scope: 'wpn', q: '', view: recall('wpn.view') || 'grid', sel: null,
     rail: recall('wpn.rail') || 240, railOff: !!recall('wpn.railOff'), rolls: recall('wpn.rolls') || {},
     syntax: false, pop: null, tip: null, hoverPlug: null, hoverRow: null, slotHover: false,
-    statsMode: 'pve', pvpAcc: 86, pvpStat: 100, fx: [], fxOpen: false, fxg: ''
+    statsMode: 'pve', pvpAcc: 86, pvpStat: 100, fx: [], fxOpen: false, fxg: '', perkStep: {}, fxStep: {}
   };
   function readUrl() {
     var u = new URLSearchParams(location.search);
@@ -1042,6 +1258,18 @@
         var si = SIDX[name];
         if (si != null) { extra[si] = (extra[si] || 0) + f.stats[name]; }
       });
+    });
+    perks.forEach(function (p) {
+      var spec = perkSpec(p);
+      if (!spec || !HSTAT) { return; }
+      var step = perkStepOf(p), key, val, si;
+      for (key in spec) {
+        if (!Object.prototype.hasOwnProperty.call(spec, key) || !/^\d+$/.test(key)) { continue; }
+        si = HSTAT[key];
+        if (si == null) { continue; }
+        val = pickStep(spec[key], step, 'Primary');
+        if (typeof val === 'number') { extra[si] = (extra[si] || 0) + val; }
+      }
     });
     if (Object.keys(extra).length) { stages.push(['s-perk', extra]); }
     var rows = [], byStat = {};
@@ -1747,6 +1975,7 @@
     if (!T) { need('text', renderDetail); }
     box.innerHTML = weaponDetail(i);
     perkLinks();
+    if (S.statsMode === 'pvp') { kickPvpAnim(); }
   }
 
   /* 用过这一件的配装。**按主键收**：配装源稿的槽位值写成「名字#主键」，同名不同物
@@ -2151,8 +2380,13 @@
     var cards = '';
     fxAll().forEach(function (e) {
       if (!fxApplies(i, e)) { return; }
-      cards += '<button type="button" class="fx-item selected" data-act="fx" data-v="' + e.id + '">' +
-        '<span class="fx-name">' + esc(e.name) + '</span><span class="fx-hint">' + esc(fxHint(e)) + '</span></button>';
+      var n = fxSteps(e);
+      cards += '<button type="button" class="fx-item selected" data-act="' + (n > 1 ? 'fxstep' : 'fx') + '" data-v="' + e.id + '"' +
+        (n > 1 ? ' data-n="' + n + '"' : '') + '>' +
+        fxIco(e, 'fx-ico') +
+        '<span class="fx-item-body"><span class="fx-name">' + esc(e.name) +
+        (n > 1 ? '<span class="fx-step"> ×' + (fxStepOf(e) + 1) + '</span>' : '') +
+        '</span><span class="fx-hint">' + esc(fxHint(e)) + '</span></span></button>';
     });
     var drop = '';
     if (S.fxOpen) {
@@ -2163,8 +2397,9 @@
         if (S.fxg === g.id) {
           body = '<div class="fx-gi">' + items.map(function (e) {
             return '<button type="button" class="fx-pick' + (fxOn(e.id) ? ' on' : '') + '" data-act="fx" data-v="' + e.id + '">' +
-              '<span class="fx-pick-name">' + esc(e.name) + '</span>' +
-              '<span class="fx-pick-stats">' + esc(fxHint(e)) + '</span></button>';
+              fxIco(e, 'fx-pick-ico') +
+              '<span class="fx-pick-body"><span class="fx-pick-name">' + esc(e.name) + '</span>' +
+              '<span class="fx-pick-stats">' + esc(fxHint(e)) + '</span></span></button>';
           }).join('') + '</div>';
         }
         return '<div class="fx-g"><button type="button" class="fx-gh" data-act="fxg" data-v="' + g.id + '">' +
@@ -2173,7 +2408,9 @@
     }
     return '<div class="fx-side"><h3>主动效果</h3>' +
       (cards ? '<div class="fx-list">' + cards + '</div>' : '') +
-      '<button type="button" class="fx-add" data-act="fxopen" aria-expanded="' + (S.fxOpen ? 'true' : 'false') + '">添加</button>' +
+      '<button type="button" class="fx-add" data-act="fxopen" aria-expanded="' + (S.fxOpen ? 'true' : 'false') + '" aria-label="添加主动效果">' +
+      '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">' +
+      '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>' +
       drop + '</div>';
   }
   function pvpView(i, res) {
@@ -2184,36 +2421,126 @@
     var reload = res.byStat[SIDX['填装速度']];
     var zoom = res.byStat[SIDX['变焦']];
     var scale = S.pvpStat > 100 ? 1 + 5e-4 * (S.pvpStat - 100) : 1;
+    var precScale = 1, rpmMul = 1, reloadMul = 1;
     fxAll().forEach(function (f) {
-      if (f.dmg) { scale *= f.dmg; }
+      var d = fxDmgOf(f);
+      if (d !== 1) { scale *= d; }
     });
-    var ttk = dmg && rpm ? pvpTtk(dmg[0], dmg[1], dmg[2], rpm.value, PVP_HP, S.pvpAcc, scale) : null;
+    var perks = activePerkRows(i, res);
+    perks.forEach(function (row) {
+      scale *= row.mod.dmg;
+      precScale *= row.mod.prec;
+      rpmMul *= row.mod.rpm;
+      reloadMul *= row.mod.reload;
+    });
+    var rpmEff = rpm ? rpm.value / (rpmMul || 1) : 0;
+    var ttk = dmg && rpm ? pvpTtk(dmg[0], dmg[1], dmg[2], rpmEff, PVP_HP, S.pvpAcc, scale, precScale) : null;
     var rm = range ? rangeMeters(ty, fr, range.value, zoom ? zoom.value : 0) : null;
     var rs = reload ? reloadSeconds(ty, V.am[r[W_AMMO]][0], reload.value) : null;
+    if (rs != null) { rs *= reloadMul; }
     var kill = !ttk ? '—' : (ttk.bodies ? ttk.crits + ' 精准，' + ttk.bodies + ' 直击' : ttk.crits + ' 精准');
-    return { ttk: ttk, kill: kill, rm: rm, rs: rs, scale: scale, rpm: rpm, range: range, reload: reload };
+    return {
+      ttk: ttk, kill: kill, rm: rm, rs: rs, scale: scale, precScale: precScale,
+      rpm: rpm, rpmEff: rpmEff, burst: dmg ? dmg[2] : 1, range: range, reload: reload, perks: perks
+    };
   }
   function pvpSet(pane, key, text) {
     var n = pane.querySelector('[data-pvp="' + key + '"]');
     if (n) { n.textContent = text; }
   }
+  function pvpCls(pane, key, cls) {
+    var n = pane.querySelector('[data-pvp="' + key + '"]');
+    if (!n) { return; }
+    n.classList.remove('up', 'down');
+    if (cls) { n.classList.add(cls); }
+  }
+  function paintPvpLive(pane, v, body, crit, cls) {
+    var live = v.burst && v.rpmEff
+      ? pvpTtk(body, crit, v.burst, v.rpmEff, PVP_HP, S.pvpAcc, 1, 1) : null;
+    pvpSet(pane, 'body', body.toFixed(2));
+    pvpSet(pane, 'crit', crit.toFixed(2));
+    pvpSet(pane, 'ttk', live ? fmtS(live.ttk) : '—');
+    pvpSet(pane, 'kill', !live ? '—' : (live.bodies ? live.crits + ' 精准，' + live.bodies + ' 直击' : live.crits + ' 精准'));
+    pvpCls(pane, 'body', cls);
+    pvpCls(pane, 'crit', cls);
+    pvpCls(pane, 'ttk', cls);
+  }
   function refreshPvpNumbers() {
     var pane = body.querySelector('.pvp-stats');
     if (!pane || S.sel == null || !P || !SIDX) { return; }
+    if (pvpTween) { cancelAnimationFrame(pvpTween); pvpTween = null; }
     var v = pvpView(S.sel, compute(S.sel, rollOf(S.sel))), ttk = v.ttk;
-    pvpSet(pane, 'ttk', ttk ? fmtS(ttk.ttk) : '—');
-    pvpSet(pane, 'kill', v.kill);
     pvpSet(pane, 'acc', S.pvpAcc + '%');
-    if (ttk) {
-      pvpSet(pane, 'body', ttk.body.toFixed(2));
-      pvpSet(pane, 'crit', ttk.crit.toFixed(2));
-    }
     pvpSet(pane, 'wstat', String(S.pvpStat));
     pvpSet(pane, 'wnote', S.pvpStat <= 100 ? '不超过 100 无效果' : '伤害 ×' + v.scale.toFixed(3));
+    if (ttk) {
+      pvpShown.body = ttk.body;
+      pvpShown.crit = ttk.crit;
+      paintPvpLive(pane, v, ttk.body, ttk.crit, '');
+    } else {
+      pvpSet(pane, 'ttk', '—');
+      pvpSet(pane, 'kill', '—');
+    }
+  }
+  function kickPvpAnim() {
+    var pane = body.querySelector('.pvp-stats');
+    if (!pane || S.sel == null || !P || !SIDX) { return; }
+    if (pvpSel !== S.sel) { pvpShown.body = pvpShown.crit = null; pvpSel = S.sel; }
+    var v = pvpView(S.sel, compute(S.sel, rollOf(S.sel))), ttk = v.ttk;
+    pvpSet(pane, 'acc', S.pvpAcc + '%');
+    pvpSet(pane, 'wstat', String(S.pvpStat));
+    pvpSet(pane, 'wnote', S.pvpStat <= 100 ? '不超过 100 无效果' : '伤害 ×' + v.scale.toFixed(3));
+    if (!ttk) {
+      pvpShown.body = pvpShown.crit = null;
+      pvpSet(pane, 'ttk', '—');
+      pvpSet(pane, 'kill', '—');
+      return;
+    }
+    var toB = ttk.body, toC = ttk.crit, fromB = pvpShown.body, fromC = pvpShown.crit;
+    if (pvpTween) { cancelAnimationFrame(pvpTween); pvpTween = null; }
+    if (reduceMotion() || fromB == null || (fromB === toB && fromC === toC)) {
+      pvpShown.body = toB;
+      pvpShown.crit = toC;
+      paintPvpLive(pane, v, toB, toC, '');
+      return;
+    }
+    var cls = (toB > fromB || toC > fromC) ? 'up' : (toB < fromB || toC < fromC) ? 'down' : '';
+    var t0 = null;
+    function frame(now) {
+      if (t0 == null) { t0 = now; }
+      var u = Math.min((now - t0) / PVP_ANIM_MS, 1), e = easePvp(u);
+      paintPvpLive(pane, v, fromB + (toB - fromB) * e, fromC + (toC - fromC) * e, u < 1 ? cls : '');
+      if (u < 1) { pvpTween = requestAnimationFrame(frame); }
+      else { pvpShown.body = toB; pvpShown.crit = toC; pvpTween = null; }
+    }
+    paintPvpLive(pane, v, fromB, fromC, cls);
+    pvpTween = requestAnimationFrame(frame);
+  }
+  function pvpPerkBadges(perks) {
+    if (!perks.length) { return ''; }
+    return '<div class="pvp-damage-perks"><span class="pvp-damage-perks-title">主动词条</span>' +
+      perks.map(function (row) {
+        var lines = perkPctText(row.mod);
+        var neg = row.mod.dmg < 1 && row.mod.prec === 1;
+        return '<button type="button" class="pvp-perk-badge"' +
+          (row.steps > 1 ? ' data-act="perkstep" data-v="' + row.hash + '" data-n="' + row.steps + '"' : '') + '>' +
+          imgTag(row.icon, 'pvp-perk-icon', '', true) +
+          '<span class="pvp-perk-info"><span class="pvp-perk-name">' + esc(row.name) +
+          (row.steps > 1 ? '<span class="pvp-perk-step"> ×' + (row.step + 1) + '</span>' : '') +
+          '</span>' + lines.map(function (t) {
+            return '<span class="pvp-perk-effect' + (neg ? ' negative' : '') + '">' + esc(t) + '</span>';
+          }).join('') + '</span></button>';
+      }).join('') + '</div>';
   }
   function pvpPanel(i, res) {
     if (!SIDX) { return '<p class="src">词条池还没到，PvP 数值算不出。</p>'; }
+    if (!PERK_FX) {
+      ensurePerkFx(function () { if (S.statsMode === 'pvp' && S.sel === i) { renderDetail(); } });
+    }
     var v = pvpView(i, res), ttk = v.ttk, rm = v.rm, rs = v.rs;
+    var live = ttk && pvpSel === i && pvpShown.body != null;
+    var bodyN = live ? pvpShown.body : (ttk ? ttk.body : 0);
+    var critN = live ? pvpShown.crit : (ttk ? ttk.crit : 0);
     function pvpItem(k, val, extra, key) {
       return '<div class="pvp-stat-item"><span class="pvp-stat-label">' + k + '</span><span class="pvp-stat-value"' +
         (key ? ' data-pvp="' + key + '"' : '') + '>' + val + '</span></div>' + (extra || '');
@@ -2224,8 +2551,8 @@
       pvpItem('最优击杀', v.kill, '', 'kill') +
       pvpItem('精准率<button type="button" class="pvp-crit-reset" data-act="pvpreset" title="重置为 100%">↺</button>', S.pvpAcc + '%',
         '<div class="pvp-slat"><input class="pvp-crit-range" type="range" min="0" max="100" value="' + S.pvpAcc + '" data-act="pvpacc"></div>', 'acc') +
-      (ttk ? pvpItem('直击伤害', ttk.body.toFixed(2), '', 'body') + pvpItem('精准伤害', ttk.crit.toFixed(2), '', 'crit') : '') +
-      (v.rpm ? pvpItem('射速', String(v.rpm.value)) : '') +
+      (ttk ? pvpItem('直击伤害', bodyN.toFixed(2), '', 'body') + pvpItem('精准伤害', critN.toFixed(2), '', 'crit') : '') +
+      (v.rpm ? pvpItem('射速', String(Math.round(v.rpmEff))) : '') +
       (rm ? '<div class="pvp-stat-item pvp-range-row"><span class="pvp-stat-label">射程 <span class="pvp-sub">(' +
         v.range.value + ')</span></span><span class="pvp-stat-value"><span class="pvp-range-hip">' + fmtM(rm.hip) +
         '</span><span class="pvp-range-sep">/</span><span class="pvp-range-ads">' + fmtM(rm.ads) + '</span></span></div>' : '') +
@@ -2237,7 +2564,7 @@
       '<span class="pvp-weapon-stat-note" data-pvp="wnote">' +
       (S.pvpStat <= 100 ? '不超过 100 无效果' : '伤害 ×' + v.scale.toFixed(3)) + '</span>' +
       '</div><div class="pvp-slat"><input class="pvp-weapon-stat-range" type="range" min="50" max="200" value="' + S.pvpStat +
-      '" data-act="pvpstat"></div></div></div></div></div>';
+      '" data-act="pvpstat"></div></div></div></div>' + pvpPerkBadges(v.perks) + '</div>';
   }
   function statsBlock(i, res, ghost) {
     var roll = rollOf(i);
@@ -2747,7 +3074,18 @@
       }
       case 'fx': {
         var ix = S.fx.indexOf(v);
-        if (ix >= 0) { S.fx.splice(ix, 1); } else { S.fx.push(v); }
+        if (ix >= 0) { S.fx.splice(ix, 1); delete S.fxStep[v]; }
+        else { S.fx.push(v); S.fxStep[v] = 0; }
+        renderDetail(); return;
+      }
+      case 'fxstep': {
+        var ns = +el.getAttribute('data-n') || 1;
+        S.fxStep[v] = ((S.fxStep[v] || 0) + 1) % ns;
+        renderDetail(); return;
+      }
+      case 'perkstep': {
+        var n = +el.getAttribute('data-n') || 1;
+        S.perkStep[v] = ((S.perkStep[v] || 0) + 1) % n;
         renderDetail(); return;
       }
       case 'fxopen':
