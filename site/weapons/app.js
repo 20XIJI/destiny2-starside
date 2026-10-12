@@ -2336,10 +2336,14 @@
     return o.join('');
   }
   function statsModeBtns() {
-    return '<div class="stats-mode-toggle">' +
-      '<button type="button" class="stats-mode-btn" data-act="statsmode" data-v="pve" aria-pressed="' + (S.statsMode === 'pve' ? 'true' : 'false') + '">PvE</button>' +
-      '<button type="button" class="stats-mode-btn" data-act="statsmode" data-v="pvp" aria-pressed="' + (S.statsMode === 'pvp' ? 'true' : 'false') + '">PvP</button>' +
-      '</div>';
+    var note = 'PvP 相关为实验版功能，不保证准确。';
+    return '<div class="stats-mode-wrap">' +
+      '<div class="stats-mode-toggle">' +
+      '<button type="button" class="stats-mode-btn" data-act="statsmode" data-v="pve" aria-pressed="' +
+      (S.statsMode === 'pve' ? 'true' : 'false') + '">PvE</button>' +
+      '<button type="button" class="stats-mode-btn" data-act="statsmode" data-v="pvp" aria-pressed="' +
+      (S.statsMode === 'pvp' ? 'true' : 'false') + '" aria-describedby="stats-pvp-note">PvP<span class="stats-pvp-tag">实验</span></button>' +
+      '</div><p class="stats-pvp-note" id="stats-pvp-note">' + note + '</p></div>';
   }
   function sideMods(i, roll) {
     var mods = modsOf(i);
@@ -2570,7 +2574,7 @@
     var roll = rollOf(i);
     var inner = S.statsMode === 'pvp' ? pvpPanel(i, res) : statsPanel(i, res, ghost);
     return '<section class="stats-sec">' +
-      '<div class="stats-header"><h3>属性<button type="button" class="stats-help" title="PvP 相关为实验版功能，不保证准确。" aria-label="PvP 相关为实验版功能，不保证准确。">?</button></h3>' + statsModeBtns() + '</div>' +
+      '<div class="stats-header"><h3>属性</h3>' + statsModeBtns() + '</div>' +
       '<div class="stats-box">' + inner + '</div>' +
       '<div class="side-aux"><div class="side-slots">' + sideMods(i, roll) + sideMw(i, roll) + '</div>' +
       sideTiers(i, roll, res) +
