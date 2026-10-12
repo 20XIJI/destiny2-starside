@@ -275,7 +275,7 @@ class Facts:
 
         事实层的键一律是裸 hash、文件即命名空间，所以前缀只活在**站内的键**上，
         用来说这个数字该去哪张表查——裸 hash 不唯一，`inventory-items` 与
-        `sandbox-perks` 撞了 52 个号。**解前缀只在这里做一次**：从前 key_name()
+        `sandbox-perks` 撞了 6 个号，且是同名插件与效果。**解前缀只在这里做一次**：从前 key_name()
         与 icons.icon_of() 各写一份，改一处漏一处。
         """
         key = str(key)
@@ -300,8 +300,8 @@ class Facts:
     def ref(self, pair):
         """按 `[表名, 主键]` 二元组取那条记录。**跨表引用只有这一种写法。**
 
-        裸 hash 不唯一：`inventory-items` 与 `sandbox-perks` 撞了 52 个号，
-        `1350878542` 既是物品「改良汇编器」又是 SandboxPerk「快速冷却」。
+        裸 hash 不唯一：`inventory-items` 与 `sandbox-perks` 撞了 6 个号，
+        且是同名插件与效果。
         """
         table, key = pair
         got = self.tables.get(table)

@@ -119,8 +119,8 @@ def collect(facts):
             used.add(k)
             for b in blocks:
                 used.update(b.get('covers') or [])
-    items = [{'label': '%s · %s' % (v['kind'], v['name']),
-              'members': [{'title': v['name'], 'icon': icon(h),
+    items = [{'label': '%s · %s' % (v['kind'], resolve.text(v)),
+              'members': [{'title': resolve.text(v), 'icon': icon(h),
                            'lines': ['主键 %s' % h, v['from'],
                                      '站内没有一行直接指它']}],
               'options': [{'value': 'keep', 'title': '留着',

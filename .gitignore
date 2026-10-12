@@ -177,3 +177,4 @@ __pycache__/
 # 改版原型：放在被改页面旁边，选定方案、落进真实文件之后删。不入库，也就不会被
 # ship.sh 的 git add -A 带进 main、发上线。
 site/admin/prototype/
+site/weapons/prototype/

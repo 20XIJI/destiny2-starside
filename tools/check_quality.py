@@ -1342,6 +1342,79 @@ class EntitySource(unittest.TestCase):
                                 '组合 %s 的成员 %s 不是库里的物品' % (key, m))
         self.assertEqual(len(combos), 11, '组合的条数变了：%d' % len(combos))
 
+    def test_minted_names_live_in_i18n_not_on_the_root(self):
+        """minted 没有 manifest，名字与正文一样住 i18n。根上再留一份就是双源。"""
+        import resolve
+        minted = resolve.Facts().minted
+        for key, row in minted.items():
+            self.assertNotIn('name', row, 'minted %s 根上还有 name' % key)
+            self.assertTrue(((row.get('i18n') or {}).get('zh-CN') or {}).get('name'),
+                            'minted %s 没有 i18n 名' % key)
+
+    def test_a_mod_family_lists_members_that_exist(self):
+        """模组族与组合同一条：members 都要落到物品表，不能再套一层 minted。"""
+        import resolve
+        facts = resolve.Facts()
+        families = {k: r for k, r in facts.minted.items() if r.get('kind') == '模组族'}
+        self.assertTrue(families, 'minted 里没有模组族')
+        for key, row in families.items():
+            members = row.get('members') or ()
+            self.assertGreaterEqual(len(members), 2, '模组族 %s 的成员不到两个' % key)
+            for m in members:
+                self.assertTrue(str(m) in facts.items,
+                                '模组族 %s 的成员 %s 不是库里的物品' % (key, m))
+
+
+class CarrySite(Isolated):
+    """carry_site 的中止与合并用同一套结构判据，不另列名单。"""
+
+    def old(self, rows):
+        return str(self.file('old.json', json.dumps(rows, ensure_ascii=False)))
+
+    def test_a_dropped_record_with_only_icon_local_is_ignored(self):
+        payload = {'2': {'index': 1}}
+        facts.carry_site(self.old({'1': {'icon_local': 'assets/icons/a.webp'}}), payload)
+        self.assertEqual(payload, {'2': {'index': 1}})
+
+    def test_a_dropped_record_with_sameAs_stops_distill(self):
+        payload = {'2': {'index': 1}}
+        said = self.exits(lambda: facts.carry_site(
+            self.old({'1': {'sameAs': 2}}), payload))
+        self.assertIn('1', said)
+        self.assertIn('站内写的东西', said)
+
+    def test_a_dropped_record_with_site_authors_stops_distill(self):
+        payload = {'2': {'i18n': {'zh-CN': {'name': '乙'}}}}
+        said = self.exits(lambda: facts.carry_site(self.old({
+            '1': {'i18n': {'zh-CN': {'name': '甲', 'site_authors': {'Aegis': {'tier': 'T0'}}}}},
+        }), payload))
+        self.assertIn('1', said)
+
+    def test_a_dropped_record_with_root_cooldown_stops_distill(self):
+        payload = {'2': {'index': 1}}
+        said = self.exits(lambda: facts.carry_site(
+            self.old({'1': {'site_cooldownSeconds': 52.1}}), payload))
+        self.assertIn('1', said)
+
+    def test_sameAs_on_a_kept_record_is_merged(self):
+        payload = {'1': {'icon': 'a.png'}}
+        facts.carry_site(self.old({'1': {'icon': 'a.png', 'sameAs': 2}}), payload)
+        self.assertEqual(payload['1']['sameAs'], 2)
+
+    def test_link_does_not_copy_site_text_across_covers(self):
+        tabs = {
+            'inventory-items': {
+                '1': {'covers': [2], 'icon': 'a.png',
+                      'i18n': {'zh-CN': {'name': '一', 'realgame_details': '甲'}}},
+                '2': {'icon': 'b.png', 'i18n': {'zh-CN': {'name': '二'}}},
+            },
+            'sandbox-perks': {},
+            'equipable-item-sets': {},
+        }
+        facts.link(tabs, str(self.root / 'missing-icons'))
+        self.assertNotIn('realgame_details', tabs['inventory-items']['2']['i18n']['zh-CN'])
+        self.assertNotIn('icon_from', tabs['inventory-items']['1'])
+
 
 class ManifestLayer(unittest.TestCase):
     """事实层自身对得上：主键即记录里的 hash，双语键是那两个，前缀不混。
@@ -1507,6 +1580,14 @@ class ManifestLayer(unittest.TestCase):
                         '%d 条有收藏条目却没接上来源' % (len(want) - len(got)))
         self.assertFalse((self.ROOT / 'collectibles.json').exists(),
                          'collectibles.json 又出现了——它是物品记录的一部分')
+
+    def test_numeric_site_fields_do_not_live_in_i18n(self):
+        """冷却秒数与回复倍率在根上。写进 i18n 编辑台改不到、页面也不读。"""
+        items = self.table('inventory-items.json')
+        stray = sorted(k for k, v in items.items()
+                       if set(((v.get('i18n') or {}).get('zh-CN') or {}))
+                       & {'site_cooldownSeconds', 'site_recoveryMultiplier'})
+        self.assertEqual(stray, [], '这些记录把数值 site_ 写进了 i18n：%s' % stray)
 
 
 class NakedText(unittest.TestCase):

@@ -1,26 +1,31 @@
 #!/usr/bin/env python3
-"""事实层：从 Bungie manifest 蒸馏出十份以 hash 为主键的定义表。
+"""事实层：从 Bungie manifest 蒸馏出五张实体表与 data/lookup/ 三份构建期字典。
 
 manifest 是冻结快照——不会再有新赛季，所以这里跑一次、产物提交进仓库，不留自动
 抓取代码。原始 component 文件不入库，手工下载到 SRC 指的目录，缺哪个当场报出。
 
 用法：
-    python3 tools/facts.py --distill              # 十份全出
+    python3 tools/facts.py --distill              # 五张实体 + 三份字典
     python3 tools/facts.py --distill --src <目录>  # manifest_raw 在别处
+    python3 tools/facts.py --link                  # 只跑由记录推记录那一步
 
-产出十份，落 `data/manifest/`。**一张 Bungie 定义表一个文件，文件名照定义表命名**：
+产出落 `data/`。实体表键是裸十进制 hash 串，文件即命名空间：
 
     inventory-items.json      DestinyInventoryItemDefinition
     sandbox-perks.json        DestinySandboxPerkDefinition
     traits.json               DestinyTraitDefinition
     stats.json                DestinyStatDefinition
     equipable-item-sets.json  DestinyEquipableItemSetDefinition
-    collectibles.json         DestinyCollectibleDefinition
+
+构建期字典落 `data/lookup/`，不是实体：没有页面或配装指向它们，而且 hash 空间
+与实体撞号（plug-sets 最小号是 1，socket-types 里有 0）：
+
     plug-sets.json            DestinyPlugSetDefinition
     socket-types.json         DestinySocketTypeDefinition
     stat-groups.json          DestinyStatGroupDefinition
-    artifacts.json            派生分组，非 Bungie 表（官方那张只有当前一件，
-                              覆盖不了站内文档的七件）
+
+minted.json 手写，不走蒸馏：Bungie 表里没有的机制、来源、模组族、组合、枪型、
+职业。18 条借别的定义表的号，其余从 2^32 起。
 
 ## 取哪些字段、怎么写
 
@@ -42,7 +47,7 @@ manifest 是冻结快照——不会再有新赛季，所以这里跑一次、�
    `en` 省略与 `zh-CN` 逐字相同的字段。语言边界因此只有一处形状，闸门是一句话：
    事实那一侧任何深度出现键 `zh-CN`／`en` 而外层不叫 `i18n`，即不合法。
 3. **跨表引用写成 `[表名, 主键]` 二元组**。裸 hash 不唯一：`inventory-items` 与
-   `sandbox-perks` 撞了 52 个号。
+   `sandbox-perks` 撞了 6 个号，且是同名插件与效果。
 
 键是裸十进制 hash 串，文件即命名空间——不写 `perk:` `trait:` `stat:` `set:` 前缀，
 剥出来的东西只会落回这张表，那一位不携带信息。
@@ -726,28 +731,25 @@ def breaker_of(item, socket_types, perk_breaker, items):
 
 
 # 站内写的那些字段。**这是一份名单，不是判据**——判据在 carry_site 那里，是结构上的
-# 「这一轮没蒸出来的键」；这份名单只给 link() 用，它要知道该把哪些字段互相补齐。
+# 「这一轮没蒸出来的键」；这份名单只给 link() 用，它要知道该把哪些字段抄到效果表。
 SITE_FIELDS = ('realgame_details', 'realgame_details#2', '效果', '异域 PERK', '右栏',
                '冷却与槽位', '基础冷却', '冷却', '属性变化', '碎片槽位', '来源')
+# link() 拥有、下一轮能重算或已经作废的键。盘上有、payload 无时不中止。
+LINK_FIELDS = frozenset({'icon_local', 'onItems', 'onSets', 'icon_from', 'covers'})
 
 
 def link(tabs, icon_dir):
-    """由记录推记录，跑几遍结果相同。三件事：
+    """由记录推记录，跑几遍结果相同。两件事：
 
     **一、本地图。**`icon` 是 Bungie 原图的文件名（拉图要用它的扩展名），`icon_local`
     是站上发的那一张。两个都存：读图的不必换扩展名，拉图的不必重蒸 manifest。
 
-    **二、同一件东西的几枚 hash 互相补齐。**一个站内的行常常盖住好几枚 hash——普通版
-    与强化版、一族元素变体，`covers` 记着。从前说明只落在行首那一枚上，另外 821 枚是
-    空的，查强化版查得到、查普通版查不到。现在同组每一枚都拿到同一份说明。
-
-    `covers` 本身**不改方向**：它是源稿那一行写下来的「这一行还盖住谁」，反向写回去
-    会让第二遍跑时组与组连成一片传递合并（实测一条记录的 covers 从 8 枚涨成一串）。
-
-    **三、SandboxPerk 那一侧。**站内的实测说明写在**插件**上（「雪上加霜」写在
+    **二、SandboxPerk 那一侧。**站内的实测说明写在**插件**上（「雪上加霜」写在
     788178929 上），而 374284927 才是那枚效果本身。一枚效果名下的插件对同一个字段
     只有一种说法时抄过来；有好几种说法的（`3486450016` 有 41 种）那段文字属于各个
     插件、不属于这枚效果，不抄，靠 `onItems` 指回去。
+
+    正文只在 `sameAs` 行首，成员用指针。不再按 `covers` 把说明抄到组员上。
     """
     items, perks, sets = tabs['inventory-items'], tabs['sandbox-perks'], tabs[
         'equipable-item-sets']
@@ -766,27 +768,6 @@ def link(tabs, icon_dir):
     def site_of(row):
         zh = (row.get('i18n') or {}).get('zh-CN') or {}
         return {f: zh[f] for f in SITE_FIELDS if zh.get(f)}
-
-    for table in tabs.values():
-        groups = []
-        for key, row in table.items():
-            if row.get('covers'):
-                groups.append([key] + [str(c) for c in row['covers']])
-        for group in groups:
-            rows = [table[k] for k in group if k in table]
-            said = {}
-            for row in rows:
-                said.update(site_of(row))
-            for row in rows:
-                row.setdefault('i18n', {}).setdefault('zh-CN', {}).update(said)
-            # 图取**基础版**那一枚。同一行常常盖着普通版与强化版，强化版的图上多一道
-            # 金条与金箭头，站内一律显示素的那张。判据是品阶名里带不带「强化」——
-            # tierType 分不出来：武器模组那一批两版都是 5。
-            base = [k for k, row in zip(group, rows)
-                    if '强化' not in ((row.get('i18n') or {}).get('zh-CN') or {})
-                    .get('itemTypeAndTierDisplayName', '')]
-            if base and base[0] != group[0] and 'icon' in table[base[0]]:
-                rows[0]['icon_from'] = int(base[0])
 
     for row in perks.values():
         row.pop('onItems', None)
@@ -1008,19 +989,10 @@ def carry_site(path, payload):
 
     站内写的与 manifest 字段住在同一条记录里（一个 hash 一条记录，关于它的一切
     挂在它名下），所以这里必须显式接住，否则 `--distill` 一跑就全冲掉。判据是
-    结构上的、不靠列名单：**这一轮没蒸出来的键就是站内的**——
+    结构上的、不靠列名单：**这一轮没蒸出来的键就是站内的**。
 
-    - 根上：`Aegis`、`LGpig`（两位作者的评级与推荐）、`variants`（同一来源对同一
-      枚 hash 说了不止一段时的第二段起）、`enhanced`（装上 `by` 里的星相之后这项
-      技能多出来的效果）、`weaponTypes`（框架在某几种枪型上的说明）、
-      `covers`（同一件东西的别的 hash）、
-      以及 Bungie 压根没给图时站内自己配的 `icon`。
-    - `i18n.<语言>` 里：`realgame_details`、`异域 PERK`、`冷却与槽位` 这些
-      Compendium 那一档的正文。它是站内的根本数据，不是谁的判断，所以与
-      `name`、`database_details` 并排，不缩进一层。
-
-    盘上有、这次没蒸出来的记录当场报出：那说明白名单收窄了，而那条记录名下还挂着
-    站内的东西，静默丢掉就是丢数据。
+    盘上有、这次没蒸出来的记录：名下还挂着站内写的东西就当场报出。`LINK_FIELDS`
+    那几个是 link() 推的，丢了下一轮照样能推回来，不中止。
     """
     if not os.path.exists(path):
         return
@@ -1047,12 +1019,7 @@ def carry_site(path, payload):
         if not mine and not extra:
             continue
         if key not in payload:
-            # 报不报警看**人写的**东西在不在：`authors`、`variants`、`enhanced`、
-            # `weaponTypes`，以及 i18n 里 SITE_FIELDS 那些正文。`icon_local`／`onItems`／
-            # `covers` 是 link() 推出来的，丢了下一轮照样能推回来，不值得中止。
-            if (row.keys() & {'authors', 'variants', 'enhanced', 'weaponTypes'}
-                    or any(f in SITE_FIELDS for v in (row.get('i18n') or {}).values()
-                           for f in v)):
+            if (mine.keys() - LINK_FIELDS) or extra:
                 lost.append(key)
             continue
         payload[key].update(mine)
@@ -1629,9 +1596,9 @@ def relink():
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument('--distill', action='store_true', help='从 manifest 重蒸八份定义表')
+    ap.add_argument('--distill', action='store_true', help='从 manifest 重蒸五张实体表与三份字典')
     ap.add_argument('--link', action='store_true',
-                    help='只跑由记录推记录那一步：本地图、同物的几枚 hash 互补、效果补齐')
+                    help='只跑由记录推记录那一步：本地图、效果补齐')
     ap.add_argument('--src', default=SRC, help='manifest_raw 目录')
     a = ap.parse_args()
     if a.distill:
