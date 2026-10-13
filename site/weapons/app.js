@@ -1727,10 +1727,10 @@
         (a[A_ROLE] ? '<div class="wpn-grades"><span class="au-l">' + esc(a[A_ROLE]) + '</span></div>' : '') +
         '</div></a></li>';
     }
-    var r = WR[i];
-    return '<li><a class="wpn-card" href="' + link('wpn', i) + '" data-act="open" data-i="' + i + '"' +
+    var r = WR[i], exo = isExotic(r);
+    return '<li><a class="wpn-card' + (exo ? ' is-exo' : '') + '" href="' + link('wpn', i) + '" data-act="open" data-i="' + i + '"' +
       (r[W_GRADE] ? ' title="' + esc(gradeTitle(r)) + '"' : '') + '>' + gun(r, '', eager) +
-      '<div><p class="nm' + (isExotic(r) ? ' exo' : '') + '">' + esc(r[W_NAME]) + '</p>' + meta(r) +
+      '<div><p class="nm' + (exo ? ' exo' : '') + '">' + esc(r[W_NAME]) + '</p>' + meta(r) +
       '<div class="wpn-frame">' + esc(frameOf(r)[0]) + '</div>' + gradesHtml(r) + '</div></a></li>';
   }
   function meta(r) {

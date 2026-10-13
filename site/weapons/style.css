@@ -772,6 +772,18 @@
   border-color: var(--hair-lit);
 }
 
+/* 异域卡片：左缘一道异域金亮边，底色带一抹极淡的金黄渐变，不夺目但与普通卡片一眼可分。 */
+.wpn-card.is-exo {
+  border-left-color: color-mix(in oklab, var(--exotic) 70%, transparent);
+  background: linear-gradient(90deg, rgb(252 183 10 / .07) 0%, rgba(14, 17, 25, .82) 42px);
+}
+
+.wpn-card.is-exo:hover,
+.wpn-card.is-exo.is-hover {
+  border-left-color: var(--exotic);
+  background: linear-gradient(90deg, rgb(252 183 10 / .12) 0%, #151a26 56px);
+}
+
 .wpn-card:not(.set-card) > div {
   display: grid;
   grid-template-rows: 24px 20px 20px 20px;
