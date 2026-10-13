@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Destiny 2 文本优化审查报告 (Word/Char-Level Diff)</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --panel-bg: #161b22;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --text-muted: #8b949e;
+    --heading: #58a6ff;
+    --del-bg: rgba(248, 81, 73, 0.12);
+    --del-text: #ff7b72;
+    --add-bg: rgba(46, 160, 67, 0.12);
+    --add-text: #7ee787;
+    --equal-text: #8b949e;
+    --mark-del: rgba(248, 81, 73, 0.45);
+    --mark-add: rgba(46, 160, 67, 0.45);
+  }
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 30px;
+  }
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  h1 {
+    color: #f0f6fc;
+    font-size: 26px;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+  }
+  .summary-box {
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 30px;
+  }
+  .summary-box p {
+    margin: 6px 0;
+    color: var(--text-muted);
+  }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #1f6feb;
+    color: #fff;
+    margin-right: 8px;
+  }
+  .sec-title {
+    color: var(--heading);
+    font-size: 20px;
+    margin-top: 40px;
+    margin-bottom: 8px;
+  }
+  .sec-desc {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+  .card {
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .card-header {
+    background: #21262d;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .card-header .title {
+    color: #f0f6fc;
+  }
+  .card-header .id-tag {
+    color: var(--text-muted);
+    font-family: monospace;
+    font-size: 13px;
+  }
+  .diff-block {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.55;
+    padding: 8px 0;
+    background: #0d1117;
+  }
+  .diff-line {
+    display: flex;
+    padding: 3px 16px;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .diff-equal {
+    color: var(--equal-text);
+  }
+  .diff-del {
+    background-color: var(--del-bg);
+    color: var(--del-text);
+  }
+  .diff-add {
+    background-color: var(--add-bg);
+    color: var(--add-text);
+  }
+  .sign {
+    display: inline-block;
+    width: 20px;
+    user-select: none;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+  .content {
+    flex-grow: 1;
+  }
+  mark.hl-del {
+    background-color: var(--mark-del);
+    color: #fff;
+    border-radius: 2px;
+    padding: 1px 3px;
+    text-decoration: line-through;
+  }
+  mark.hl-add {
+    background-color: var(--mark-add);
+    color: #fff;
+    border-radius: 2px;
+    padding: 1px 3px;
+    font-weight: 600;
+  }
+  table.label-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 15px;
+  }
+  table.label-table th, table.label-table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    font-size: 14px;
+  }
+  table.label-table th {
+    background: #21262d;
+    color: #f0f6fc;
+  }
+  table.label-table tr:last-child td {
+    border-bottom: none;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Destiny 2 文本与实测详情改动审查 (高亮差异对比)</h1>
+  
+  <div class="summary-box">
+    <p><strong>覆盖源文件：</strong><code>data/equipable-item-sets.json</code>、<code>data/inventory-items.json</code>、<code>data/sandbox-perks.json</code></p>
+    <p><strong>审查准则：</strong>严格尊重原文与 DDC 实测事实（不改变任何机制内涵与事实），完整保留原作者彩蛋与随笔注释。仅做官方标准术语规范（“伤害抗性”、量词“点”、官方正名“踢踏5”、目标“战斗人员”、动作“瞄准”）。</p>
+    <p style="margin-top: 10px;">
+      <span class="badge">总计实体：67 项</span>
+      <span class="badge" style="background:#238636;">构建状态：PASS</span>
+      <span class="badge" style="background:#8957e5;">全量回归测试：169 / 169 PASS</span>
+    </p>
+  </div>
+
+<div class="sec-title">一、 伤害抗性及量词点规范（共 27 处）</div>
+<div class="sec-desc">消灭口语“减伤”统一为官方正名“伤害抗性”；补齐生命值数量词“点”：</div>
+<div class="card">
+  <div class="card-header"><span class="title">狼毒</span><span class="id-tag">ID: 1753923263</span></div>
+<div class="diff-block">
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">{el-solar|烈日}重型战斧，沿用{el-void|暮光军火}的战斧动作；刀剑能量显示在近战技能图标上。\\ \\ 重击与波形：\\ 刀剑能量至少为 10% 时，重击消耗 3 发弹药，向前 10 米射出一道{el-solar|烈日}波形，造成 675{pvp|[301]} 伤害。\\ 空中重击消耗 2 发弹药，无论剩余刀剑能量多少，都射出{el-solar|烈日}波形。对带有「{exotic|全面爆发}」湿婆纳米蜂群的{enemy|战斗人员}，{exotic|狼毒}伤害最高提高 25%。\\ \\ 握柄<mark class="hl-del">减伤</mark>：\\ 连续轻击命中且相邻命中间隔不超过 {unsure|3?} 秒，获得 5 秒<mark class="hl-del">减伤</mark>。所需命中次数与<mark class="hl-del">减伤</mark>幅度取决于握柄：\\ 不屈手段＝2 次命中，15% <mark class="hl-del">减伤</mark>｜狂暴者手段＝3 次命中，20% <mark class="hl-del">减伤</mark>｜顽强者手段＝4 次命中，25% <mark class="hl-del">减伤</mark>。\\ 即使没有弹药也可触发，再次触发可刷新时长。\\ \\ {exotic|↑可选改装}：可插入「{perk|无情打击}」「{perk|羸弱能量球}」「{perk|燃烧野心}」与「子程序：～递归」。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">{el-solar|烈日}重型战斧，沿用{el-void|暮光军火}的战斧动作；刀剑能量显示在近战技能图标上。\\ \\ 重击与波形：\\ 刀剑能量至少为 10% 时，重击消耗 3 发弹药，向前 10 米射出一道{el-solar|烈日}波形，造成 675{pvp|[301]} 伤害。\\ 空中重击消耗 2 发弹药，无论剩余刀剑能量多少，都射出{el-solar|烈日}波形。对带有「{exotic|全面爆发}」湿婆纳米蜂群的{enemy|战斗人员}，{exotic|狼毒}伤害最高提高 25%。\\ \\ 握柄<mark class="hl-add">伤害抗性</mark>：\\ 连续轻击命中且相邻命中间隔不超过 {unsure|3?} 秒，获得 5 秒<mark class="hl-add">伤害抗性</mark>。所需命中次数与<mark class="hl-add">伤害抗性</mark>幅度取决于握柄：\\ 不屈手段＝2 次命中，15% <mark class="hl-add">伤害抗性</mark>｜狂暴者手段＝3 次命中，20% <mark class="hl-add">伤害抗性</mark>｜顽强者手段＝4 次命中，25% <mark class="hl-add">伤害抗性</mark>。\\ 即使没有弹药也可触发，再次触发可刷新时长。\\ \\ {exotic|↑可选改装}：可插入「{perk|无情打击}」「{perk|羸弱能量球}」「{perk|燃烧野心}」与「子程序：～递归」。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">梦魇放逐器</span><span class="id-tag">ID: 2874957617</span></div>
+<div class="diff-block">
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">对{enemy|梦魇首领}的超能技能伤害提高 普通（费用 1）66%｜强化（费用 2）133%｜至高（费用 3）200%。\\ \\ {note|梦魇首领对超能伤害有 50% 的固有<mark class="hl-del">减</mark>伤。}</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">对{enemy|梦魇首领}的超能技能伤害提高 普通（费用 1）66%｜强化（费用 2）133%｜至高（费用 3）200%。\\ \\ {note|梦魇首领对超能伤害有 50% 的固有伤<mark class="hl-add">害抗性</mark>。}</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">再生阈值</span><span class="id-tag">ID: 696050397</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">使用终结技时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">获得一层“再生阈值”。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">濒死时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">消耗“再生阈值”。  </span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">恢复 20 生命值并开始被动生命恢复。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">恢复 20 <mark class="hl-add">点</mark>生命值并开始被动生命恢复。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">稳定共振</span><span class="id-tag">ID: 705026903</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">消灭橙血或更高级战斗人员时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">7% 增伤、抵抗 x2（25% <mark class="hl-del">减</mark>伤），持续 12 秒。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">7% 增伤、抵抗 x2（25% 伤<mark class="hl-add">害抗性</mark>），持续 12 秒。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">虹吸之触</span><span class="id-tag">ID: 1010623576</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">造成武器伤害或使用偃月近战命中时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">获得一层“虹吸之触”，最多叠至 5 层。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- x1 = ~26.7% 弹匣</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- x2 = ~53.4%</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- x3 = ~80%</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- x4 = ~106%</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- x5 = ~133%</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">灼烧不视为命中伤害。数值总是向下取整。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">收起武器时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">根据并消耗所有“虹吸之触”层数来恢复生命值。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">恢复 30｜60｜90｜105｜120 生命值。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">恢复 30｜60｜90｜105｜120 <mark class="hl-add">点</mark>生命值。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">权杖连枷</span><span class="id-tag">ID: 1025384966</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">拾取弹药盒时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">恢复 70 生命值。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">恢复 70 <mark class="hl-add">点</mark>生命值。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">充能妙用</span><span class="id-tag">ID: 1076851134</span></div>
+<div class="diff-block">
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">获得、失去或消耗护甲充能时恢复 5? 生命值并提供一层“充能妙用”。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">获得、失去或消耗护甲充能时恢复 5? <mark class="hl-add">点</mark>生命值并提供一层“充能妙用”。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">“充能妙用”层数基于同时获得、失去或消耗的护甲充能 +1。  </span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">最多获得 7 层，通过快速启动或终结技模组同时失去 6 层护甲充能达到。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">初始效果持续时间和延长时间等于：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">`3 秒 × 获得、失去或消耗的“充能妙用”层数`</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">效果最长可延长至 30 秒，并保留最高层数。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">示例：拾取能量球获得 x2（13% <mark class="hl-del">减</mark>伤）+6 秒。  </span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">示例：拾取能量球获得 x2（13% 伤<mark class="hl-add">害抗性</mark>）+6 秒。  </span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">特殊终结技获得 x4（29.5% <mark class="hl-del">减</mark>伤）+12 秒。之后拾取一颗能量球保留 x4 层数并 +6 秒。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">特殊终结技获得 x4（29.5% 伤<mark class="hl-add">害抗性</mark>）+12 秒。之后拾取一颗能量球保留 x4 层数并 +6 秒。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">“充能妙用”：根据“充能妙用”层数提供伤害<mark class="hl-del">减免</mark>，最高在 7 层时达到 35%。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">“充能妙用”：根据“充能妙用”层数提供伤害<mark class="hl-add">抗性</mark>，最高在 7 层时达到 35%。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- x1 = 0% [0%]</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- x2 = 13% [?%]</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- x3 = 21% [?%]</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- x4 = 29.5% [?%]</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- x5 = 31% [?%]</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- x6 = 33% [?%]</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- x7 = 35% [?%]</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">光明贡品</span><span class="id-tag">ID: 1302582376</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">对橙血或更高级战斗人员使用终结技时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">恢复 50? 生命值，生成 3 只虚空忠诚飞蛾，在击中穿戴者和友军时提供 22.5 生命值的虚空覆盖护盾。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">恢复 50? <mark class="hl-add">点</mark>生命值，生成 3 只虚空忠诚飞蛾，在击中穿戴者和友军时提供 22.5 <mark class="hl-add">点</mark>生命值的虚空覆盖护盾。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">噬梦者</span><span class="id-tag">ID: 1567556261</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">对橙血或更高级战斗人员使用终结技时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">获得吞食，持续 6+3 秒。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">当吞食生效时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">获得 20?% 对战斗人员<mark class="hl-del">减</mark>伤。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">获得 20?% 对战斗人员伤<mark class="hl-add">害抗性</mark>。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">纤薄至极</span><span class="id-tag">ID: 1814176201</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">光能武器最后一击提供约 16% 手雷能量。  </span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">动能/暗影武器最后一击提供约 16% 近战能量。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">在使用暗影武器最后一击的 10 秒内用光能武器造成最后一击，反之亦然：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">抵抗 x3（40% [7.5%] <mark class="hl-del">减</mark>伤），持续 5 秒。  </span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">抵抗 x3（40% [7.5%] 伤<mark class="hl-add">害抗性</mark>），持续 5 秒。  </span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">持续时间可由再次触发效果刷新。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">效果可通过破坏“可破坏物体”触发，例如构造体。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">居合道</span><span class="id-tag">ID: 1964062929</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">在填装武器或拔出武器后的 4 秒内造成武器最后一击时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">恢复 40 生命值。  </span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">恢复 40 <mark class="hl-add">点</mark>生命值。  </span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">触发具有约 3 秒内置冷却。必须在内置冷却结束后填装或拔出武器才能再次满足最后一击条件。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">无尽贪婪</span><span class="id-tag">ID: 2162040230</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">拾取弹药盒、能量球、元素拾取物或破坏缠结时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">获得一层“无尽贪婪”，最多叠至 100 层。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">濒死时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">移除 10 层。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">无尽贪婪：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">最多在 25 层时 +? 填装速度，15% <mark class="hl-del">减</mark>伤。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">最多在 25 层时 +? 填装速度，15% 伤<mark class="hl-add">害抗性</mark>。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- x5 = 6%</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- x10 = 9%</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- x15 = 11%</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- x20 = 13%</span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">- x25+ = 15% <mark class="hl-del">减</mark>伤</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">- x25+ = 15% 伤<mark class="hl-add">害抗性</mark></span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">权利的真相</span><span class="id-tag">ID: 2458353886</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">每次造成伤害都会给予不等层数的“{term|真相}”，最多叠至 x999 层，此时将更名为“力量”。  </span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">造成最后一击和使用终结技将给予更多层数，但给予的数量可能会根据已有层数变化。  </span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">最后一击给予 20–35 层，终结技给予 60–90 层。  </span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">阵亡时丢失所有层数。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">每层“{term|真相}”都会提供<mark class="hl-del">减</mark>伤，最高 15%。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">每层“{term|真相}”都会提供伤<mark class="hl-add">害抗性</mark>，最高 15%。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">250 = 3.75%｜500 = 7.5%｜750 = 10%｜999 = 15% <mark class="hl-del">减</mark>伤。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">250 = 3.75%｜500 = 7.5%｜750 = 10%｜999 = 15% 伤<mark class="hl-add">害抗性</mark>。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">x999 层时，权利的真相效果：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- +50% 基础手雷和近战恢复速度。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- +35% 基础职业技能恢复速度。</span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">- 15% <mark class="hl-del">减</mark>伤。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">- 15% 伤<mark class="hl-add">害抗性</mark>。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">军团壁垒</span><span class="id-tag">ID: 2669879197</span></div>
+<div class="diff-block">
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">{exotic|↑军团壁垒}：{el-arc|电弧}护盾附带 75%{pvp|[25%]} <mark class="hl-del">减</mark>伤。\\ {el-arc|电弧}护盾被击破时补充相当于弹匣容量 50% 的弹药。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">{exotic|↑军团壁垒}：{el-arc|电弧}护盾附带 75%{pvp|[25%]} 伤<mark class="hl-add">害抗性</mark>。\\ {el-arc|电弧}护盾被击破时补充相当于弹匣容量 50% 的弹药。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">同生共死</span><span class="id-tag">ID: 3078673682</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">拾取能量球时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">获得“同生共死”，持续 3 秒。  </span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">“同生共死”初始提供 40% [5%] <mark class="hl-del">减</mark>伤。  </span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">“同生共死”初始提供 40% [5%] 伤<mark class="hl-add">害抗性</mark>。  </span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content"><mark class="hl-del">减</mark>伤在剩余 1.5 秒时降至约 30?%，在剩余 1 秒时降至 24?%，并在接下来的时间内降至 0%。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">伤<mark class="hl-add">害抗性</mark>在剩余 1.5 秒时降至约 30?%，在剩余 1 秒时降至 24?%，并在接下来的时间内降至 0%。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">年事已高</span><span class="id-tag">ID: 3078673683</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">对橙血或更高级战斗人员使用终结技时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">恢复 32 生命值，并获得 +16% 特殊弹药进度。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">恢复 32 <mark class="hl-add">点</mark>生命值，并获得 +16% 特殊弹药进度。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">警觉守望</span><span class="id-tag">ID: 3157066724</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">当失去护盾生命值，在 ? 护盾生命值时触发，并在 ? 护盾生命值时达到最大效果：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">线性（?）提供最高 +? 稳定性、+? 操控性。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">濒死时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">武器最后一击恢复 30 生命值。  </span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">武器最后一击恢复 30 <mark class="hl-add">点</mark>生命值。  </span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">两次触发间具有 5 秒内置冷却。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">钢铁信念</span><span class="id-tag">ID: 3157066725</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">濒死时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">+35 弹药生成属性、?% 抖动抗性，及对 10 米内战斗人员的 15% <mark class="hl-del">减</mark>伤，持续 7 秒。  </span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">+35 弹药生成属性、?% 抖动抗性，<mark class="hl-add">以</mark>及对 10 米内战斗人员的 15% 伤<mark class="hl-add">害抗性</mark>，持续 7 秒。  </span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">期间造成的最后一击可刷新效果持续时间。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">在恢复任何护盾生命值之前，无法再次触发。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">译注：除血条自带护盾外，还包括虚空覆盖护盾、职业技能护盾。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">梦魇韧性</span><span class="id-tag">ID: 3449901214</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">“不稳定精华”激活时，且在 3 秒的间隔内造成 8 次武器伤害后（每 0.45 秒计数一次）：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">开始生命值被动恢复并恢复 20 生命值。  </span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">开始生命值被动恢复并恢复 20 <mark class="hl-add">点</mark>生命值。  </span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">重新开始伤害计数具有 2 秒内置冷却。  </span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">首次触发效果至少需要 3.6 秒，连续不断造成伤害需要 5.6 秒方可再次触发。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">快速修复</span><span class="id-tag">ID: 3458982982</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">护盾生命值受治疗时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">获得抵抗 x1（10% [2.5%] <mark class="hl-del">减</mark>伤）、及 ?% 抖动抗性，持续 7 秒。  </span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">获得抵抗 x1（10% [2.5%] 伤<mark class="hl-add">害抗性</mark>）、及 ?% 抖动抗性，持续 7 秒。  </span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">生命值完全恢复后方可再次触发。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">傀儡护盾</span><span class="id-tag">ID: 3657900811</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">手雷最后一击时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">获得抵抗 x1（10% [2.5%] <mark class="hl-del">减</mark>伤），持续 7 秒。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">获得抵抗 x1（10% [2.5%] 伤<mark class="hl-add">害抗性</mark>），持续 7 秒。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">人子之力</span><span class="id-tag">ID: 3872620151</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">在 7 秒的间隔内持续造成或受到伤害时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">在 12 秒后获得一层“人子之力”，经 24 秒最多叠至 2 层。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">- 人子之力 x1｜15% 对战斗人员<mark class="hl-del">减</mark>伤、?% 抖动抗性。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">- 人子之力 x1｜15% 对战斗人员伤<mark class="hl-add">害抗性</mark>、?% 抖动抗性。</span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">- 人子之力 x2｜25% 对战斗人员<mark class="hl-del">减</mark>伤、?% 抖动抗性。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">- 人子之力 x2｜25% 对战斗人员伤<mark class="hl-add">害抗性</mark>、?% 抖动抗性。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">同一速度</span><span class="id-tag">ID: 3916960437</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">使用偃月或刀剑格挡伤害时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">停止格挡后获得 50% [10%] <mark class="hl-del">减</mark>伤（抵抗 x4），持续 3 秒。  </span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">停止格挡后获得 50% [10%] 伤<mark class="hl-add">害抗性</mark>（抵抗 x4），持续 3 秒。  </span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">效果过期前可通过格挡或举盾刷新。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">烧灼止血</span><span class="id-tag">ID: 4048287941</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">在 3? 秒的间隔内造成 3 次烈日最后一击：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">恢复 30 生命值。  </span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">恢复 30 <mark class="hl-add">点</mark>生命值。  </span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">两次治疗间内置 1 秒冷却。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">滑行射击</span><span class="id-tag">ID: 4261390989</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">使用武器造成伤害时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">滑行距离从 6.5 米提升至 8.5 米，持续 3? 秒。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">滑行时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">50% [10%] <mark class="hl-del">减</mark>伤（抵抗 x4）。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">50% [10%] 伤<mark class="hl-add">害抗性</mark>（抵抗 x4）。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">刺激许可</span><span class="id-tag">ID: 4275454259</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">使用手雷技能，或触发纳米科技追踪导弹（含瞬变风暴的微型导弹）原始 Perk 时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">获得一层“刺激许可”，持续 15 秒，最多叠至 10 层。  </span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">再次触发时刷新效果持续时间。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">刺激许可｜对 5 米内的战斗人员获得 12% [2%] <mark class="hl-del">减</mark>伤，每层再增加 +?% [?%]，最高 30% [5%] <mark class="hl-del">减</mark>伤。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">刺激许可｜对 5 米内的战斗人员获得 12% [2%] 伤<mark class="hl-add">害抗性</mark>，每层再增加 +?% [?%]，最高 30% [5%] 伤<mark class="hl-add">害抗性</mark>。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">拉斯普廷的报复</span><span class="id-tag">ID: 4287944423</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">拥有“战争思维充能”，消灭橙血或更高级战斗人员，或破坏构造体/缠结时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">以战斗人员/构造体为中心，触发战争思维爆炸。  </span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">消灭橙血战斗人员引起的爆炸造成 405 [?] 烈日伤害，并为穿戴者及 10 米内的友军恢复 50 生命值，无距离衰减。  </span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">消灭橙血战斗人员引起的爆炸造成 405 [?] 烈日伤害，并为穿戴者及 10 米内的友军恢复 50 <mark class="hl-add">点</mark>生命值，无距离衰减。  </span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">破坏构造体引起的爆炸造成伤害和生命值恢复减半。  </span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">爆炸消灭战斗人员可给予“战争思维充能”，但不会连环引起新的战争思维爆炸。  </span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">两次爆炸间存在约 0.3? 秒冷却。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">注：破坏构造体这一档需要更充分的测试；爆炸冷却有时难以测出。</span></div>
+</div>
+</div>
+<div class="sec-title">二、 官方术语规范与目标指向统一（共 30 处）</div>
+<div class="sec-desc">规范目标对象为 {enemy|战斗人员} / {enemy|敌方目标}，统一瞄准、排版与专有名词（如修正「踢踏5」等）：</div>
+<div class="card">
+  <div class="card-header"><span class="title">命定混沌</span><span class="id-tag">ID: 449318888</span></div>
+<div class="diff-block">
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">{el-void|虚空}高冲击力机枪。\<mark class="hl-del">\</mark> <mark class="hl-del">\</mark>\ {exotic|↑催化剂}：<mark class="hl-del">\</mark>\ 获得「{perk|目标锁定}」Perk。「{perk|目标锁定}」的<mark class="hl-del">计</mark>时足以维持到「十六进制」射弹触发弹药回补。\<mark class="hl-del">\</mark> 但<mark class="hl-del">弹药回补与持</mark>续射<mark class="hl-del">击条件冲突：必须连续不停地射出</mark> 32 发<mark class="hl-del">，</mark>才能真正施加{deb-void|虚弱}。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">{el-void|虚空}高冲击力机枪。\ \ {exotic|↑催化剂}：\ 获得「{perk|目标锁定}」Perk。「{perk|目标锁定}」的<mark class="hl-add">持续</mark>时<mark class="hl-add">间</mark>足以维持到<mark class="hl-add">发射</mark>「十六进制」射弹<mark class="hl-add">后松开扳机</mark>触发弹药回补。\ 但<mark class="hl-add">因上述机制冲突，武器必须在不停火的情况下连</mark>续射<mark class="hl-add">满</mark> 32 发才能真正施加{deb-void|虚弱}。<mark class="hl-add">\ 所以……这把武器的所有特性彼此全在负协同 :&#x27;)</mark></span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">点尸成金</span><span class="id-tag">ID: 856936828</span></div>
+<div class="diff-block">
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">用手雷击杀时：\\ 额外提供{orb|超能能量}。\\ \\ T1 <mark class="hl-del">敌</mark>人：{unsure|1%?} ｜ {unsure|?%} ｜ {unsure|?%}\\ T2 <mark class="hl-del">敌</mark>人：{unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ T3 <mark class="hl-del">敌</mark>人：{unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ T4 <mark class="hl-del">敌</mark>人：{unsure|5?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ {bar-orange|守护者}：{unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ \\ {note|不与「拳到力来」同时生效。}\\ {note|抓钩近战击杀提供的超能能量减少 50%。}</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">用手雷击杀时：\\ 额外提供{orb|超能能量}。\\ \\ T1 <mark class="hl-add">战斗</mark>人<mark class="hl-add">员</mark>：{unsure|1%?} ｜ {unsure|?%} ｜ {unsure|?%}\\ T2 <mark class="hl-add">战斗</mark>人<mark class="hl-add">员</mark>：{unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ T3 <mark class="hl-add">战斗</mark>人<mark class="hl-add">员</mark>：{unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ T4 <mark class="hl-add">战斗</mark>人<mark class="hl-add">员</mark>：{unsure|5?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ {bar-orange|守护者}：{unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ \\ {note|不与「拳到力来」同时生效。}\\ {note|抓钩近战击杀提供的超能能量减少 50%。}</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">玄武行动之刃</span><span class="id-tag">ID: 2535142413</span></div>
+<div class="diff-block">
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">可塑造{el-void|虚空}适配偃月。\\ \\ 与「{exotic|圣人 14 号的头盔}」联动｜远程护盾可按相同条件触发圣人的{deb-void|压制}爆发。\\ 即使远程护盾被击破，原位置的{el-void|覆盖护盾}获取与武器增益仍然保留。\\ \\ ↑{exotic|催化剂}：提供「{perk|冲击支撑}」Perk。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">可塑造{el-void|虚空}适配偃月。\\ \\ 与「{exotic|圣人 14 号的头盔}」联动｜远程护盾可按相同条件触发圣人的{deb-void|压制}爆发。\\ 即使远程护盾被击破，原位置的{el-void|<mark class="hl-add">虚空</mark>覆盖护盾}获取与武器增益仍然保留。\\ \\ ↑{exotic|催化剂}：提供「{perk|冲击支撑}」Perk。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">恶意触碰</span><span class="id-tag">ID: 2724693746</span></div>
+<div class="diff-block">
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">击杀回<mark class="hl-del">血</mark>：\\ 连续用武器击杀且相邻击杀间隔不超过 5 秒时，按目标等级积累计数：\\ {bar-red|红血} = 50%｜{bar-orange|橙血}／{bar-yellow|初级首领}／{bar-yellow|首领} = 100%｜{pvp|[守护者 = 66.7%]}\\ 计数达到 100% 后，开始{health|生命值}回复并回复 105 点{health|生命值}。\\ \\ 最后一发：\\ 弹匣只剩 1 发时，伤害提高 132%{pvp|[30%]}。每次开火扣除 7 点{health|生命值}，并返还这发弹药。{health|生命值}扣除量受伤害抗性影响，{health|生命值}扣除不会致死。\\ 暗影球发射模式同样享有最后一发的伤害加成。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">击杀<mark class="hl-add">生命值</mark>回<mark class="hl-add">复</mark>：\\ 连续用武器击杀且相邻击杀间隔不超过 5 秒时，按目标等级积累计数：\\ {bar-red|红血} = 50%｜{bar-orange|橙血}／{bar-yellow|初级首领}／{bar-yellow|首领} = 100%｜{pvp|[守护者 = 66.7%]}\\ 计数达到 100% 后，开始{health|生命值}回复并回复 105 点{health|生命值}。\\ \\ 最后一发：\\ 弹匣只剩 1 发时，伤害提高 132%{pvp|[30%]}。每次开火扣除 7 点{health|生命值}，并返还这发弹药。{health|生命值}扣除量受伤害抗性影响，{health|生命值}扣除不会致死。\\ 暗影球发射模式同样享有最后一发的伤害加成。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">动能裂口</span><span class="id-tag">ID: 2742146822</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">对{bar-orange|橙血} + {enemy|战斗人员}造成足够次数的{el-kinetic|动能}武器伤害时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">生成一个{el-kinetic|动能裂口}，持续 ? 秒。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">{el-kinetic|动能裂口}可以被攻击，受到伤害 {unsure|0.3?} 秒后激活。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">{el-kinetic|动能裂口}造成的伤害取决于其受到的伤害，并可眩晕{enemy|势不可挡勇士}。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">{note|裂口计为弱点；对它造成的伤害不计为对战斗人员的伤害，也不计入命中或未命中}。</span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">对裂口使用 PvP 增伤数值：{el-solar|焕光} 10%，{pickup|武器激涌} 3% / 4.5% / 5.5%，{perk|集体行动} 11%。  <mark class="hl-del">DDC 提醒：这一</mark>机制复杂，绝大多数<mark class="hl-del">情况</mark>下<mark class="hl-del">不值得使用，通常</mark>会<mark class="hl-del">使</mark>伤害降低 25%–50%。少数<mark class="hl-del">有意义的</mark>例外<mark class="hl-del">包括</mark>{exotic|伊邪那岐的重担} x4：无额外增益时伤害提<mark class="hl-del">高</mark> 120%，随所<mark class="hl-del">用</mark>增益<mark class="hl-del">变化可降低</mark>至 +63%。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">对裂口使用 PvP 增伤数值：{el-solar|焕光} 10%，{pickup|武器激涌} 3% / 4.5% / 5.5%，{perk|集体行动} 11%。  <mark class="hl-add">{note|</mark>机制<mark class="hl-add">说明：该机制受增伤算法影响较为</mark>复杂，绝大多数<mark class="hl-add">场景</mark>下会<mark class="hl-add">导致总</mark>伤害降低 25%–50%。少数<mark class="hl-add">增益</mark>例外<mark class="hl-add">如</mark>{exotic|伊邪那岐的重担} x4：无额外增益时<mark class="hl-add">总</mark>伤害提<mark class="hl-add">升</mark> 120%，随所<mark class="hl-add">挂</mark>增益<mark class="hl-add">递减</mark>至 +63%<mark class="hl-add">}</mark>。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">死守防线</span><span class="id-tag">ID: 3585856469</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">15 米范围内有 3 名敌方目标，且当前手持偃月或机枪时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">偃月与机枪各获得 +? 稳定性与 +30 填装速度。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">偃月的射弹、近战或机枪击杀可恢复 55 点{health|生命值}。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">条件不再满足后，{note|属性加成}再持续 5 秒。</span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">{note|击杀<mark class="hl-del">回血</mark>效果不会延续}。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">{note|击杀<mark class="hl-add">生命值恢复</mark>效果不会延续}。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">轻声呼吸</span><span class="id-tag">ID: 3732232161</span></div>
+<div class="diff-block">
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">{exotic|↑轻声呼吸}：<mark class="hl-del">开镜</mark>不开火 1.2 秒后获得「轻声呼吸」，直到脱离<mark class="hl-del">开镜</mark>为止。\\ 「轻声呼吸」使{stack|精准}伤害提高 35%，并使对{enemy|战斗人员}的伤害提高 10.777%。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">{exotic|↑轻声呼吸}：<mark class="hl-add">瞄准且</mark>不开火 1.2 秒后获得「轻声呼吸」，直到脱离<mark class="hl-add">瞄准状态</mark>为止。\\ 「轻声呼吸」使{stack|精准}伤害提高 35%，并使对{enemy|战斗人员}的伤害提高 10.777%。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">动能合成</span><span class="id-tag">ID: 3834273540</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">造成{el-kinetic|动能}武器伤害或完成{el-kinetic|动能}武器击杀会推进计数器，达到 100% 时生成一个独特的{el-kinetic|动能弹药盒}。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">计数器持续 15 秒，每次造成{el-kinetic|动能}武器伤害都会刷新。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">每点伤害提供 0.0265% 进度，即需要造成 3770 点伤害才能生成一个弹药盒。</span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">A499 提供的进度减少 75%，需要 15000 点伤害才能生成一个弹药盒。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content"><mark class="hl-add">翻新</mark>A499 提供的进度减少 75%，需要 15000 点伤害才能生成一个弹药盒。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">{bar-red|红血} = 8% | {bar-orange|橙血} = 15% | {bar-yellow|初级首领} = 25%</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">收集一个{el-kinetic|动能弹药盒}时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">获得 +5% {ammo-special|特殊弹药}与 +5% {ammo-heavy|威能弹药}进度。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">填装当前装备的{el-kinetic|动能}武器，并为它们生成{ammo-special|特殊}／{ammo-heavy|威能}弹药。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">每次生成（弹匣容量的 1/3）+ 1 发弹药，个别武器例外。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">计入弹药拾取效果。{el-kinetic|动能}弹药生成不受回收器影响。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">{exotic|堡垒} = +1 弹药 | {exotic|库尔之影} = +2 弹药 | {exotic|英勇利刃} = +2 弹药 | {exotic|缩影} = +12 弹药。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">拳到力来</span><span class="id-tag">ID: 3938489430</span></div>
+<div class="diff-block">
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">用充能近战击杀时：\\ 额外提供{orb|超能能量}。\\ \\ T1 <mark class="hl-del">敌</mark>人：{unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ T2 <mark class="hl-del">敌</mark>人：{unsure|1.33%?} ｜ {unsure|?%} ｜ {unsure|?%}\\ T3 <mark class="hl-del">敌</mark>人：{unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ T4 <mark class="hl-del">敌</mark>人：{unsure|5?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ {bar-orange|守护者}：{unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ \\ {note|不与「点尸成金」同时生效。}</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">用充能近战击杀时：\\ 额外提供{orb|超能能量}。\\ \\ T1 <mark class="hl-add">战斗</mark>人<mark class="hl-add">员</mark>：{unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ T2 <mark class="hl-add">战斗</mark>人<mark class="hl-add">员</mark>：{unsure|1.33%?} ｜ {unsure|?%} ｜ {unsure|?%}\\ T3 <mark class="hl-add">战斗</mark>人<mark class="hl-add">员</mark>：{unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ T4 <mark class="hl-add">战斗</mark>人<mark class="hl-add">员</mark>：{unsure|5?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ {bar-orange|守护者}：{unsure|?%} ｜ {unsure|?%} ｜ {unsure|?%}\\ \\ {note|不与「点尸成金」同时生效。}</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">缩影</span><span class="id-tag">ID: 4207066264</span></div>
+<div class="diff-block">
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">{el-kinetic|动能}追踪步枪。\\ \\ {exotic|↑催化剂}：获得「{perk|阻止力}」与「敲打」Perk。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">{el-kinetic|动能}追踪步枪。\\ \\ {exotic|↑催化剂}：获得「{perk|阻止力}」与「<mark class="hl-add">{perk|</mark>敲打<mark class="hl-add">}</mark>」Perk。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">鲁扎库之役</span><span class="id-tag">ID: 4284533075</span></div>
+<div class="diff-block">
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">{el-strand|缚丝}支援高冲击力机枪。\\ 治疗机制<mark class="hl-del">与</mark>支援框架<mark class="hl-del">自动步枪基本一致</mark>。「快速治疗」<mark class="hl-del">和</mark>线虫巢<mark class="hl-del">产</mark>生的{el-strand|线虫}<mark class="hl-del">都算作</mark>武器伤害。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">{el-strand|缚丝}支援高冲击力机枪。\\ 治疗机制<mark class="hl-add">遵循</mark>支援框架<mark class="hl-add">规则</mark>。「快速治疗」<mark class="hl-add">与</mark>线虫巢生<mark class="hl-add">成</mark>的{el-strand|线虫}<mark class="hl-add">均计为</mark>武器伤害。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">过载</span><span class="id-tag">ID: 15807694</span></div>
+<div class="diff-block">
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content"><mark class="hl-del">开镜</mark>瞄准同一{enemy|战斗人员} 0.5 秒后：\\ 标记该目标，显示其{health|生命值}与护盾百分比、距离以及能量等级信息。\\ 标记期间获得「{perk|目标锁定}」。\\ 脱离目标后标记再保留 1 秒。只能标记 150 米内的{enemy|战斗人员}。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">瞄准同一{enemy|战斗人员} 0.5 秒后：\\ 标记该目标，显示其{health|生命值}与护盾百分比、距离以及能量等级信息。\\ 标记期间获得「{perk|目标锁定}」。\\ 脱离目标后标记再保留 1 秒。只能标记 150 米内的{enemy|战斗人员}。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">93546649</span><span class="id-tag">ID: 93546649</span></div>
+<div class="diff-block">
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">按住［手雷］召唤{el-void|虚空}护盾；{el-solar|烈焰战锤}或{el-stasis|冰川震击}激活时也可以召唤。\\ 装备时手雷基础冷却覆盖为 152 秒。\\ \\ 护盾对格挡的伤害提供 {unsure|95?}% {pvp|[64%]} 抗性，并嘲讽正面的{enemy|战斗人员}；碰到护盾的{enemy|战斗人员}陷入迷失。\\ 每秒生成 10 点{el-void|虚空覆盖护盾}，持续 5 秒；在虚空分支装备{el-void|坚韧回声}时额外延长 2.5 秒，期间每秒消耗 7.5% {pickup|手雷能量}。\\ \\ 格挡伤害会让前向移动速度降低 {unsure|50?}%，持续 {unsure|0.5?} 秒，同时提供{pickup|手雷能量}，回能逐渐降低（随时间，或随已格挡伤害{unsure|?}），最终降到 {unsure|?}%，历时 {unsure|?} 秒。\\ 护盾本身没有移速惩罚，只是不能攀爬；冲刺会取消它。\\ \\ 松开［手雷］或耗尽{pickup|手雷能量}时：\\ 释放一次正面爆炸，消耗 50% {pickup|手雷能量}，对 11 米内的目标造成手雷伤害。\\ 未格挡任何伤害时最少 430 {pvp|[64?]}{unsure|（未知）}，随已格挡伤害提高，最高 1584 {pvp|[178?]}{unsure|（未知）}；达到最大伤害所需的格挡伤害量为 {unsure|?}。\\ \\ 用{el-void|坚不可摧}击杀提供{el-void|吞食}，持续 10 秒；在虚空分支装备{el-void|坚韧回声}时额外延长 5 秒。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">按住［手雷］召唤{el-void|虚空}护盾；{el-solar|烈焰战锤}或{el-stasis|冰川震击}激活时也可以召唤。\\ 装备时手雷基础冷却覆盖为 152 秒。\\ \\ 护盾对格挡的伤害提供 {unsure|95?}% {pvp|[64%]} 抗性，并嘲讽正面的{enemy|战斗人员}；碰到护盾的{enemy|战斗人员}陷入迷失。\\ 每秒生成 10 点{el-void|虚空覆盖护盾}，持续 5 秒；在虚空分支装备{el-void|坚韧回声}时额外延长 2.5 秒，期间每秒消耗 7.5% {pickup|手雷能量}。\\ \\ 格挡伤害会让前向移动速度降低 {unsure|50?}%，持续 {unsure|0.5?} 秒，同时提供{pickup|手雷能量}，回能逐渐降低（随时间，或随已格挡伤害{unsure|?}），最终降到 {unsure|?}%，历时 {unsure|?} 秒。\\ 护盾本身没有移<mark class="hl-add">动</mark>速<mark class="hl-add">度</mark>惩罚，只是不能攀爬；冲刺会取消它。\\ \\ 松开［手雷］或耗尽{pickup|手雷能量}时：\\ 释放一次正面爆炸，消耗 50% {pickup|手雷能量}，对 11 米内的目标造成手雷伤害。\\ 未格挡任何伤害时最少 430 {pvp|[64?]}{unsure|（未知）}，随已格挡伤害提高，最高 1584 {pvp|[178?]}{unsure|（未知）}；达到最大伤害所需的格挡伤害量为 {unsure|?}。\\ \\ 用{el-void|坚不可摧}击杀提供{el-void|吞食}，持续 10 秒；在虚空分支装备{el-void|坚韧回声}时额外延长 5 秒。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">动能合成</span><span class="id-tag">ID: 193266679</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">造成{el-kinetic|动能武器伤害}或完成{el-kinetic|动能武器击杀}会推进计数器，达到 100% 时生成一个独特的{el-kinetic|动能弹药盒}。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">计数器持续 15 秒，每次造成{el-kinetic|动能武器伤害}都会刷新。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">每点伤害提供 0.0265% 进度，即需要造成 3770 点伤害才能生成一个弹药盒。</span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">{ammo-heavy|A499} 提供的进度减少 75%，需要 15000 点伤害才能生成一个弹药盒。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">{ammo-heavy|<mark class="hl-add">翻新</mark>A499} 提供的进度减少 75%，需要 15000 点伤害才能生成一个弹药盒。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">{bar-red|红血} = 8% | {bar-orange|橙血} = 15% | {bar-yellow|初级首领} = 25%</span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">伤害需求{note|忽略光等差距}，但计入实际伤害系数——<mark class="hl-del">也就是说，无论{note|光等差距}把伤害压低多少，需要的“</mark>基础伤害<mark class="hl-del">”都一样</mark>。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">伤害需求{note|忽略<mark class="hl-add">压光（</mark>光等差距<mark class="hl-add">）影响</mark>}，但计入<mark class="hl-add">增伤等</mark>实际伤害系数——<mark class="hl-add">即</mark>基础伤害<mark class="hl-add">需求不受压光惩罚影响</mark>。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">收集一个{el-kinetic|动能弹药盒}时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">获得 {ammo-special|+5% 特殊弹药}与 {ammo-heavy|+5% 威能弹药}进度。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">填装当前装备的{el-kinetic|动能武器}，并为它们生成{ammo-special|特殊}／{ammo-heavy|威能}弹药。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">每次生成（弹匣容量的 1/3）+ 1 发弹药，个别武器例外。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">计入弹药拾取效果。{el-kinetic|动能弹药生成}不受回收器影响。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">{exotic|堡垒} = {ammo-special|+1 弹药} | {exotic|库尔之影} = {ammo-special|+2 弹药} | {exotic|英勇利刃} = {ammo-heavy|+2 弹药} | {exotic|缩影} = {ammo-heavy|+12 弹药}。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">午时已到</span><span class="id-tag">ID: 446332293</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">拔出武器时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">对战斗人员造成 7% 额外精准伤害，持续 4 秒。  </span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">对带护盾战斗人员的“精准命中”同样生效；只要<mark class="hl-del">打</mark>中弱点，<mark class="hl-del">没有</mark>精准倍率的武器<mark class="hl-del">也吃这个</mark>加成。  </span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">对带护盾战斗人员的“精准命中”同样生效；只要<mark class="hl-add">命</mark>中弱点，<mark class="hl-add">无基础</mark>精准倍率的武器<mark class="hl-add">同样享受此</mark>加成。  </span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">弱点加成在神圣裁决力场内无效。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">下列武器加成翻倍，造成 14% 额外精准伤害：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">具有特克斯平衡枪托原始 Perk 的武器，以及特克斯铸造厂异域武器。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">亡者传说｜越橘｜遗言｜泰拉巴｜监护人｜勘探者</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">522307123</span><span class="id-tag">ID: 522307123</span></div>
+<div class="diff-block">
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">击杀回<mark class="hl-del">血</mark>：\\ 连续用武器击杀且相邻击杀间隔不超过 5 秒时，按目标等级积累计数：\\ {bar-red|红血} = 50%｜{bar-orange|橙血}／{bar-yellow|初级首领}／{bar-yellow|首领} = 100%｜{pvp|[守护者 = 66.7%]}\\ 计数达到 100% 后，开始{health|生命值}回复并回复 105 点{health|生命值}。\\ \\ 最后一发：\\ 弹匣只剩 1 发时，伤害提高 132%{pvp|[30%]}。每次开火扣除 7 点{health|生命值}，并返还这发弹药。{health|生命值}扣除量受伤害抗性影响，{health|生命值}扣除不会致死。\\ 暗影球发射模式同样享有最后一发的伤害加成。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">击杀<mark class="hl-add">生命值</mark>回<mark class="hl-add">复</mark>：\\ 连续用武器击杀且相邻击杀间隔不超过 5 秒时，按目标等级积累计数：\\ {bar-red|红血} = 50%｜{bar-orange|橙血}／{bar-yellow|初级首领}／{bar-yellow|首领} = 100%｜{pvp|[守护者 = 66.7%]}\\ 计数达到 100% 后，开始{health|生命值}回复并回复 105 点{health|生命值}。\\ \\ 最后一发：\\ 弹匣只剩 1 发时，伤害提高 132%{pvp|[30%]}。每次开火扣除 7 点{health|生命值}，并返还这发弹药。{health|生命值}扣除量受伤害抗性影响，{health|生命值}扣除不会致死。\\ 暗影球发射模式同样享有最后一发的伤害加成。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">幻金链甲</span><span class="id-tag">ID: 707113250</span></div>
+<div class="diff-block">
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">被动提供 +10 稳定性与 {unsure|0.?×} 举枪时长倍率。\\ \\ 使用职业技能时：\\ 获得{exotic|幻金链甲}，持续 15 秒。\\ 填装全部武器，并拾取 15 米内的弹药块，触发填装类武器 Perk。\\ \\ {exotic|幻金链甲}：\\ +35 稳定性、+{unsure|?} 操控性。\\ 冲刺速度由 8.5 米/秒 提高到 9 米/秒。\\ 滑铲距离由 6.5 米 提高到 8.5 米。\\ 机瞄移动速度惩罚降低 {unsure|?%}。\\ 与描述<mark class="hl-del">不同</mark>，实际不提供任何职业属性。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">被动提供 +10 稳定性与 {unsure|0.?×} 举枪时长倍率。\\ \\ 使用职业技能时：\\ 获得{exotic|幻金链甲}，持续 15 秒。\\ 填装全部武器，并拾取 15 米内的弹药块，触发填装类武器 Perk。\\ \\ {exotic|幻金链甲}：\\ +35 稳定性、+{unsure|?} 操控性。\\ 冲刺速度由 8.5 米/秒 提高到 9 米/秒。\\ 滑铲距离由 6.5 米 提高到 8.5 米。\\ 机瞄移动速度惩罚降低 {unsure|?%}。\\ 与描述<mark class="hl-add">相反</mark>，实际<mark class="hl-add">上</mark>不提供任何职业属性。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">飞翼日蚀</span><span class="id-tag">ID: 995682592</span></div>
+<div class="diff-block">
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">飞翼日蚀的充能：\\ 击杀可累积{exotic|飞翼日蚀}充能，最多储存 6 份。每次击杀获得的份数：\\ {bar-red|红血} = 1｜{bar-orange|橙血} = 2｜{bar-yellow|初级首领}及以上与{bar-orange|守护者} = 3。\\ 充满后可使用 2 次{exotic|飞翼日蚀}手雷。投出最后一只蛾笼后进入 6 秒冷却，结束后才能再次累积充能。\\ \\ 飞蛾的目标选择：\\ {exotic|飞翼日蚀}命中后释放 2 只飞蛾，元素按 20 米内最近的 2 个目标决定；20 米内没有目标时，默认释放{el-void|虚空}飞蛾。\\ \\ 攻击敌<mark class="hl-del">人</mark>：\\ 最近目标为敌方目标时，释放{el-arc|电弧}飞蛾，以约 10 米/秒追击，接触后引爆。\\ {el-arc|电弧}飞蛾造成最高 473{pvp|[守护者 31｜构造体 201]} 点{el-arc|电弧}手雷伤害，并在 4 米半径内施加{deb-arc|致盲}。\\ \\ 保护盟友：\\ 最近目标为{enemy|盟友}时，释放{el-void|虚空}飞蛾，以约 25 米/秒追向{enemy|盟友}。\\ {el-void|虚空}飞蛾接触盟友后，赋予 22.5 点{el-void|虚空覆盖护盾}。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">飞翼日蚀的充能：\\ 击杀可累积{exotic|飞翼日蚀}充能，最多储存 6 份。每次击杀获得的份数：\\ {bar-red|红血} = 1｜{bar-orange|橙血} = 2｜{bar-yellow|初级首领}及以上与{bar-orange|守护者} = 3。\\ 充满后可使用 2 次{exotic|飞翼日蚀}手雷。投出最后一只蛾笼后进入 6 秒冷却，结束后才能再次累积充能。\\ \\ 飞蛾的目标选择：\\ {exotic|飞翼日蚀}命中后释放 2 只飞蛾，元素按 20 米内最近的 2 个目标决定；20 米内没有目标时，默认释放{el-void|虚空}飞蛾。\\ \\ 攻击敌<mark class="hl-add">方目标</mark>：\\ 最近目标为敌方目标时，释放{el-arc|电弧}飞蛾，以约 10 米/秒追击，接触后引爆。\\ {el-arc|电弧}飞蛾造成最高 473{pvp|[守护者 31｜构造体 201]} 点{el-arc|电弧}手雷伤害，并在 4 米半径内施加{deb-arc|致盲}。\\ \\ 保护盟友：\\ 最近目标为{enemy|盟友}时，释放{el-void|虚空}飞蛾，以约 25 米/秒追向{enemy|盟友}。\\ {el-void|虚空}飞蛾接触盟友后，赋予 22.5 点{el-void|虚空覆盖护盾}。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">轻声呼吸</span><span class="id-tag">ID: 1047565392</span></div>
+<div class="diff-block">
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">{exotic|↑轻声呼吸}：<mark class="hl-del">开镜</mark>不开火 1.2 秒后获得「轻声呼吸」，直到<mark class="hl-del">脱离开镜</mark>为止。\\ 「轻声呼吸」使{stack|精准}伤害提高 35%，并使对{enemy|战斗人员}的伤害提高 10.777%。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">{exotic|↑轻声呼吸}：<mark class="hl-add">瞄准且</mark>不开火 1.2 秒后获得「轻声呼吸」，直到<mark class="hl-add">停止瞄准</mark>为止。\\ 「轻声呼吸」使{stack|精准}伤害提高 35%，并使对{enemy|战斗人员}的伤害提高 10.777%。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">苦乐参半</span><span class="id-tag">ID: 1875006807</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">**&gt;&gt; 熔炉竞技场中禁用 &lt;&lt;　智谋可用**</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">当收起武器，且有“苦涩锻造”层数时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">开始生命值被动恢复。  </span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">恢复的生命值基于切换武器时失去的“苦涩锻造”层数。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content"><mark class="hl-del">需要</mark>注意，<mark class="hl-del">由于某些奇怪的原因，</mark>治疗数值可能会大幅提升。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content"><mark class="hl-add">实测</mark>注意<mark class="hl-add">：受机制异常影响</mark>，<mark class="hl-add">实际</mark>治疗数值可能会<mark class="hl-add">出现</mark>大幅提升。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- x1 = ~35 [?]</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- x2 = ~65 [?]</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- x3 = 87.5 [?]</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- x4 = ~105 [?]</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- x5 = 130 [?]</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- x6 = ~170 [?]</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- x7 = 195 [?]</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- x8 = 完全治疗 [?]</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- x9 = 完全治疗 [?]</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- x10 = 完全治疗 [?]</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">屏障手雷</span><span class="id-tag">ID: 1890198747</span></div>
+<div class="diff-block">
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">屏障冷却：\\ 屏障冷却时间恢复为 <mark class="hl-del">Edge of Fate</mark> 之前的数值，职业技能回复速度约 ×1.45。\\ 巍峨屏障：101 秒 → 70 秒｜集结屏障：55 秒 → 38 秒。\\ \\ 投掷屏障：\\ 使用职业技能后，手雷技能暂时替换为{exotic|屏障手雷}；职业技能能量回满时，失去{exotic|屏障手雷}。\\ {exotic|屏障手雷}命中后生成屏障，并使落点 5 米内的敌方目标迷失方向。生成后的 2 秒内，屏障不造成碰撞伤害。\\ 生成的屏障与所选屏障类型一致，继承{el-void|堡垒}、勇士之鞭等星相效果；使用非屏障类职业技能时，按巍峨屏障及其冷却处理。\\ \\ 强化屏障手雷：\\ 拾取 3{unsure|[?]} 枚{orb|能量球}后，{exotic|屏障手雷}会呈 ◯ 形生成 3 座屏障，彼此相隔 120°。\\ 集结屏障彼此间距较小，巍峨屏障间距较大。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">屏障冷却：\\ 屏障冷却时间恢复为 <mark class="hl-add">《宿命边缘》</mark> 之前的数值，职业技能回复速度约 ×1.45。\\ 巍峨屏障：101 秒 → 70 秒｜集结屏障：55 秒 → 38 秒。\\ \\ 投掷屏障：\\ 使用职业技能后，手雷技能暂时替换为{exotic|屏障手雷}；职业技能能量回满时，失去{exotic|屏障手雷}。\\ {exotic|屏障手雷}命中后生成屏障，并使落点 5 米内的敌方目标迷失方向。生成后的 2 秒内，屏障不造成碰撞伤害。\\ 生成的屏障与所选屏障类型一致，继承{el-void|堡垒}、勇士之鞭等星相效果；使用非屏障类职业技能时，按巍峨屏障及其冷却处理。\\ \\ 强化屏障手雷：\\ 拾取 3{unsure|[?]} 枚{orb|能量球}后，{exotic|屏障手雷}会呈 ◯ 形生成 3 座屏障，彼此相隔 120°。\\ 集结屏障彼此间距较小，巍峨屏障间距较大。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">引擎轰鸣</span><span class="id-tag">ID: 2657416818</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">当移动速度不低于 ?m/s 时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">获得一层“引擎轰鸣”，最多叠至 10 层。  </span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">在 10 层时转换为“全速轰鸣”。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">每层“引擎轰鸣”增加重伤后的生命值恢复速度，但完全不作用于护盾生命值。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- 初始情况下，从重伤开始恢复生命值需等待 1.75 秒，速率为 27.5% 生命值每秒。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- 5 层时，从重伤开始恢复生命值需等待 1.5 秒，速率为约 37.5% 生命值每秒。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">- 10 层时，从重伤开始恢复生命值需等待 1.25 秒，速率为 45% 生命值每秒。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">冲刺：每 5 秒一层，不考虑具体速度的情况下需 45 秒满层。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">其他移动方式（跳跃、坠落、挥刀、快雀）可大幅根据移速加快叠层速度，最快可达每 1.25 秒一层。  </span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">其他移动方式（跳跃、坠落、挥刀、快雀）可大幅根据移<mark class="hl-add">动</mark>速<mark class="hl-add">度</mark>加快叠层速度，最快可达每 1.25 秒一层。  </span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">最简单的方式是通过快雀，因为它们能达到移速上限。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">最简单的方式是通过快雀，因为它们能达到移<mark class="hl-add">动</mark>速<mark class="hl-add">度</mark>上限。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">移速低于 3m/s 时：</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">移<mark class="hl-add">动</mark>速<mark class="hl-add">度</mark>低于 3m/s 时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">在 0.5 秒的延迟后每秒移除 4 层。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">“全速轰鸣”就绪时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">冲刺 2.5 秒后获得速度加成。  </span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">触发速度加成并滑行一次将延长滑行距离，持续直到阵亡。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">逝者留痕</span><span class="id-tag">ID: 3027624734</span></div>
+<div class="diff-block">
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">为站在穿戴者创造的裂痕里的{bar-orange|守护者}提供 25%{pvp|[5%]} 伤害抗性（抗性 {stack|2 层}）。\\ 裂痕与光焰之井重叠或位于其中时，站在裂痕上仍获得该伤害抗性。\\ \\ 进入重伤时：\\ {exotic|逝者留痕}提供 50%{pvp|[25%]}{pickup|职业技能能量}。\\ 该{buff|增益}持续到脱离重伤为止，实际起到冷却的作用。\\ \\ 死亡时：\\ 生成一个{el-solar|治愈}裂痕，持续 15 秒。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">为站在穿戴者创造的裂痕里的{bar-orange|守护者}提供 25%{pvp|[5%]} 伤害抗性（抗性 {stack|2 层}）。\\ 裂痕与光焰之井重叠或位于其中时，站在裂痕上仍获得该伤害抗性。\\ \\ 进入重伤时：\\ {exotic|逝者留痕}提供 50%{pvp|[25%]}{pickup|职业技能能量}。\\ 该{buff|增益}持续到脱离重伤为止，实际<mark class="hl-add">上</mark>起到冷却的作用。\\ \\ 死亡时：\\ 生成一个{el-solar|治愈}裂痕，持续 15 秒。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">极致机动</span><span class="id-tag">ID: 3091068917</span></div>
+<div class="diff-block">
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">被动 +20 敏捷，冲刺速度从 8 米/秒提升至 8.5 米/秒，滑行距离从 6.5 米提升至 8.5 米。</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">译注：等效于各职业跑鞋的加速效果，不会与其叠加——能部分替代踢<mark class="hl-del">踢 S</mark>、沙丘行者、横断之步，但分别会牺牲跳跃高度加成、充能近战连锁闪电、快速进入冲刺的效果。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">译注：等效于各职业跑鞋的加速效果，不会与其叠加——能部分替代踢<mark class="hl-add">踏5</mark>、沙丘行者、横断之步，但分别会牺牲跳跃高度加成、充能近战连锁闪电、快速进入冲刺的效果。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">超光速运动</span><span class="id-tag">ID: 3376007202</span></div>
+<div class="diff-block">
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">使用超能造成伤害且移速不为零时：</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">使用超能造成伤害且移<mark class="hl-add">动</mark>速<mark class="hl-add">度</mark>不为零时：</span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content"></span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">每秒恢复 2? [?] 生命值，持续 11 秒。  </span></div>
+<div class="diff-line diff-equal"><span class="sign">&nbsp;</span><span class="content">继续造成超能伤害可刷新效果持续时间。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">恶意触碰</span><span class="id-tag">ID: 3467600862</span></div>
+<div class="diff-block">
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">击杀回<mark class="hl-del">血</mark>：\\ 连续用武器击杀且相邻击杀间隔不超过 5 秒时，按目标等级积累计数：\\ {bar-red|红血} = 50%｜{bar-orange|橙血}／{bar-yellow|初级首领}／{bar-yellow|首领} = 100%｜{pvp|[守护者 = 66.7%]}\\ 计数达到 100% 后，开始{health|生命值}回复并回复 105 点{health|生命值}。\\ \\ 最后一发：\\ 弹匣只剩 1 发时，伤害提高 132%{pvp|[30%]}。每次开火扣除 7 点{health|生命值}，并返还这发弹药。{health|生命值}扣除量受伤害抗性影响，{health|生命值}扣除不会致死。\\ 暗影球发射模式同样享有最后一发的伤害加成。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">击杀<mark class="hl-add">生命值</mark>回<mark class="hl-add">复</mark>：\\ 连续用武器击杀且相邻击杀间隔不超过 5 秒时，按目标等级积累计数：\\ {bar-red|红血} = 50%｜{bar-orange|橙血}／{bar-yellow|初级首领}／{bar-yellow|首领} = 100%｜{pvp|[守护者 = 66.7%]}\\ 计数达到 100% 后，开始{health|生命值}回复并回复 105 点{health|生命值}。\\ \\ 最后一发：\\ 弹匣只剩 1 发时，伤害提高 132%{pvp|[30%]}。每次开火扣除 7 点{health|生命值}，并返还这发弹药。{health|生命值}扣除量受伤害抗性影响，{health|生命值}扣除不会致死。\\ 暗影球发射模式同样享有最后一发的伤害加成。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">3596187958</span><span class="id-tag">ID: 3596187958</span></div>
+<div class="diff-block">
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">击杀回<mark class="hl-del">血</mark>：\\ 连续用武器击杀且相邻击杀间隔不超过 5 秒时，按目标等级积累计数：\\ {bar-red|红血} = 50%｜{bar-orange|橙血}／{bar-yellow|初级首领}／{bar-yellow|首领} = 100%｜{pvp|[守护者 = 66.7%]}\\ 计数达到 100% 后，开始{health|生命值}回复并回复 105 点{health|生命值}。\\ \\ 最后一发：\\ 弹匣只剩 1 发时，伤害提高 132%{pvp|[30%]}。每次开火扣除 7 点{health|生命值}，并返还这发弹药。{health|生命值}扣除量受伤害抗性影响，{health|生命值}扣除不会致死。\\ 暗影球发射模式同样享有最后一发的伤害加成。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">击杀<mark class="hl-add">生命值</mark>回<mark class="hl-add">复</mark>：\\ 连续用武器击杀且相邻击杀间隔不超过 5 秒时，按目标等级积累计数：\\ {bar-red|红血} = 50%｜{bar-orange|橙血}／{bar-yellow|初级首领}／{bar-yellow|首领} = 100%｜{pvp|[守护者 = 66.7%]}\\ 计数达到 100% 后，开始{health|生命值}回复并回复 105 点{health|生命值}。\\ \\ 最后一发：\\ 弹匣只剩 1 发时，伤害提高 132%{pvp|[30%]}。每次开火扣除 7 点{health|生命值}，并返还这发弹药。{health|生命值}扣除量受伤害抗性影响，{health|生命值}扣除不会致死。\\ 暗影球发射模式同样享有最后一发的伤害加成。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">3768881080</span><span class="id-tag">ID: 3768881080</span></div>
+<div class="diff-block">
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">击杀回<mark class="hl-del">血</mark>：\\ 连续用武器击杀且相邻击杀间隔不超过 5 秒时，按目标等级积累计数：\\ {bar-red|红血} = 50%｜{bar-orange|橙血}／{bar-yellow|初级首领}／{bar-yellow|首领} = 100%｜{pvp|[守护者 = 66.7%]}\\ 计数达到 100% 后，开始{health|生命值}回复并回复 105 点{health|生命值}。\\ \\ 最后一发：\\ 弹匣只剩 1 发时，伤害提高 132%{pvp|[30%]}。每次开火扣除 7 点{health|生命值}，并返还这发弹药。{health|生命值}扣除量受伤害抗性影响，{health|生命值}扣除不会致死。\\ 暗影球发射模式同样享有最后一发的伤害加成。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">击杀<mark class="hl-add">生命值</mark>回<mark class="hl-add">复</mark>：\\ 连续用武器击杀且相邻击杀间隔不超过 5 秒时，按目标等级积累计数：\\ {bar-red|红血} = 50%｜{bar-orange|橙血}／{bar-yellow|初级首领}／{bar-yellow|首领} = 100%｜{pvp|[守护者 = 66.7%]}\\ 计数达到 100% 后，开始{health|生命值}回复并回复 105 点{health|生命值}。\\ \\ 最后一发：\\ 弹匣只剩 1 发时，伤害提高 132%{pvp|[30%]}。每次开火扣除 7 点{health|生命值}，并返还这发弹药。{health|生命值}扣除量受伤害抗性影响，{health|生命值}扣除不会致死。\\ 暗影球发射模式同样享有最后一发的伤害加成。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">坚不可摧</span><span class="id-tag">ID: 3908392558</span></div>
+<div class="diff-block">
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content">按住［手雷］召唤{el-void|虚空}护盾；{el-solar|烈焰战锤}或{el-stasis|冰川震击}激活时也可以召唤。\\ 装备时手雷基础冷却覆盖为 152 秒。\\ \\ 护盾对格挡的伤害提供 {unsure|95?}% {pvp|[64%]} 抗性，并嘲讽正面的{enemy|战斗人员}；碰到护盾的{enemy|战斗人员}陷入迷失。\\ 每秒生成 10 点{el-void|虚空覆盖护盾}，持续 5 秒；在虚空分支装备{el-void|坚韧回声}时额外延长 2.5 秒，期间每秒消耗 7.5% {pickup|手雷能量}。\\ \\ 格挡伤害会让前向移动速度降低 {unsure|50?}%，持续 {unsure|0.5?} 秒，同时提供{pickup|手雷能量}，回能逐渐降低（随时间，或随已格挡伤害{unsure|?}），最终降到 {unsure|?}%，历时 {unsure|?} 秒。\\ 护盾本身没有移速惩罚，只是不能攀爬；冲刺会取消它。\\ \\ 松开［手雷］或耗尽{pickup|手雷能量}时：\\ 释放一次正面爆炸，消耗 50% {pickup|手雷能量}，对 11 米内的目标造成手雷伤害。\\ 未格挡任何伤害时最少 430 {pvp|[64?]}{unsure|（未知）}，随已格挡伤害提高，最高 1584 {pvp|[178?]}{unsure|（未知）}；达到最大伤害所需的格挡伤害量为 {unsure|?}。\\ \\ 用{el-void|坚不可摧}击杀提供{el-void|吞食}，持续 10 秒；在虚空分支装备{el-void|坚韧回声}时额外延长 5 秒。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">按住［手雷］召唤{el-void|虚空}护盾；{el-solar|烈焰战锤}或{el-stasis|冰川震击}激活时也可以召唤。\\ 装备时手雷基础冷却覆盖为 152 秒。\\ \\ 护盾对格挡的伤害提供 {unsure|95?}% {pvp|[64%]} 抗性，并嘲讽正面的{enemy|战斗人员}；碰到护盾的{enemy|战斗人员}陷入迷失。\\ 每秒生成 10 点{el-void|虚空覆盖护盾}，持续 5 秒；在虚空分支装备{el-void|坚韧回声}时额外延长 2.5 秒，期间每秒消耗 7.5% {pickup|手雷能量}。\\ \\ 格挡伤害会让前向移动速度降低 {unsure|50?}%，持续 {unsure|0.5?} 秒，同时提供{pickup|手雷能量}，回能逐渐降低（随时间，或随已格挡伤害{unsure|?}），最终降到 {unsure|?}%，历时 {unsure|?} 秒。\\ 护盾本身没有移<mark class="hl-add">动</mark>速<mark class="hl-add">度</mark>惩罚，只是不能攀爬；冲刺会取消它。\\ \\ 松开［手雷］或耗尽{pickup|手雷能量}时：\\ 释放一次正面爆炸，消耗 50% {pickup|手雷能量}，对 11 米内的目标造成手雷伤害。\\ 未格挡任何伤害时最少 430 {pvp|[64?]}{unsure|（未知）}，随已格挡伤害提高，最高 1584 {pvp|[178?]}{unsure|（未知）}；达到最大伤害所需的格挡伤害量为 {unsure|?}。\\ \\ 用{el-void|坚不可摧}击杀提供{el-void|吞食}，持续 10 秒；在虚空分支装备{el-void|坚韧回声}时额外延长 5 秒。</span></div>
+</div>
+</div>
+<div class="card">
+  <div class="card-header"><span class="title">私人助手</span><span class="id-tag">ID: 4014042252</span></div>
+<div class="diff-block">
+<div class="diff-line diff-del"><span class="sign">-</span><span class="content"><mark class="hl-del">开镜</mark>瞄准同一{enemy|战斗人员} 0.5 秒后：\\ 标记该目标，显示其{health|生命值}与护盾百分比、距离以及能量等级信息。\\ 标记期间获得「{perk|目标锁定}」。\\ 脱离目标后标记再保留 1 秒。只能标记 150 米内的{enemy|战斗人员}。</span></div>
+<div class="diff-line diff-add"><span class="sign">+</span><span class="content">瞄准同一{enemy|战斗人员} 0.5 秒后：\\ 标记该目标，显示其{health|生命值}与护盾百分比、距离以及能量等级信息。\\ 标记期间获得「{perk|目标锁定}」。\\ 脱离目标后标记再保留 1 秒。只能标记 150 米内的{enemy|战斗人员}。</span></div>
+</div>
+</div>
+<div class="sec-title">三、 护甲套装元数据标签同步（共 15 套）</div>
+<div class="sec-desc">将套装索引标签由口语“减伤”统一规范为官方“伤害抗性”：</div>
+<table class="label-table">
+<thead><tr><th>套装 ID</th><th>套装名称</th><th>改动对照 (Diff)</th></tr></thead><tbody>
+<tr><td><code>50540439</code></td><td><strong>None</strong></td><td><span style="color:var(--del-text);">标签: None</span> &nbsp;➔&nbsp; <span style="color:var(--add-text);">标签: None</span></td></tr>
+<tr><td><code>305966751</code></td><td><strong>None</strong></td><td><span style="color:var(--del-text);">标签: None</span> &nbsp;➔&nbsp; <span style="color:var(--add-text);">标签: None</span></td></tr>
+<tr><td><code>673904900</code></td><td><strong>None</strong></td><td><span style="color:var(--del-text);">标签: None</span> &nbsp;➔&nbsp; <span style="color:var(--add-text);">标签: None</span></td></tr>
+<tr><td><code>894715166</code></td><td><strong>None</strong></td><td><span style="color:var(--del-text);">标签: None</span> &nbsp;➔&nbsp; <span style="color:var(--add-text);">标签: None</span></td></tr>
+<tr><td><code>1083114430</code></td><td><strong>None</strong></td><td><span style="color:var(--del-text);">标签: None</span> &nbsp;➔&nbsp; <span style="color:var(--add-text);">标签: None</span></td></tr>
+<tr><td><code>1339137760</code></td><td><strong>None</strong></td><td><span style="color:var(--del-text);">标签: None</span> &nbsp;➔&nbsp; <span style="color:var(--add-text);">标签: None</span></td></tr>
+<tr><td><code>2391762223</code></td><td><strong>None</strong></td><td><span style="color:var(--del-text);">标签: None</span> &nbsp;➔&nbsp; <span style="color:var(--add-text);">标签: None</span></td></tr>
+<tr><td><code>2554324129</code></td><td><strong>None</strong></td><td><span style="color:var(--del-text);">标签: None</span> &nbsp;➔&nbsp; <span style="color:var(--add-text);">标签: None</span></td></tr>
+<tr><td><code>2586994783</code></td><td><strong>None</strong></td><td><span style="color:var(--del-text);">标签: None</span> &nbsp;➔&nbsp; <span style="color:var(--add-text);">标签: None</span></td></tr>
+<tr><td><code>2620550053</code></td><td><strong>None</strong></td><td><span style="color:var(--del-text);">标签: None</span> &nbsp;➔&nbsp; <span style="color:var(--add-text);">标签: None</span></td></tr>
+<tr><td><code>2687807560</code></td><td><strong>None</strong></td><td><span style="color:var(--del-text);">标签: None</span> &nbsp;➔&nbsp; <span style="color:var(--add-text);">标签: None</span></td></tr>
+<tr><td><code>2751989785</code></td><td><strong>None</strong></td><td><span style="color:var(--del-text);">标签: None</span> &nbsp;➔&nbsp; <span style="color:var(--add-text);">标签: None</span></td></tr>
+<tr><td><code>3120219904</code></td><td><strong>None</strong></td><td><span style="color:var(--del-text);">标签: None</span> &nbsp;➔&nbsp; <span style="color:var(--add-text);">标签: None</span></td></tr>
+<tr><td><code>3283637820</code></td><td><strong>None</strong></td><td><span style="color:var(--del-text);">标签: None</span> &nbsp;➔&nbsp; <span style="color:var(--add-text);">标签: None</span></td></tr>
+<tr><td><code>3734029045</code></td><td><strong>None</strong></td><td><span style="color:var(--del-text);">标签: None</span> &nbsp;➔&nbsp; <span style="color:var(--add-text);">标签: None</span></td></tr>
+</tbody></table>
+
+  <div style="margin-top: 50px; text-align: center; color: var(--text-muted); font-size: 13px;">
+    Destiny 2 Starside &bull; Visual Diff Generator
+  </div>
+</div>
+</body>
+</html>
