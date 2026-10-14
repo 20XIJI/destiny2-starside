@@ -1502,9 +1502,9 @@
 
   /* 条件条左边：已选条件的药丸。点 × 去掉那一段，查询框里的原文同步删。 */
   var HINT = {
-    wpn: '没有条件 · 点上面的图标，或在框里写 <code>is:手炮</code>',
-    armor: '没有条件 · 点上面的职业，或在框里写 <code>is:泰坦</code>',
-    sets: '没有条件 · 在框里写，如 <code>source:发射基地</code>'
+    wpn: '未设筛选条件 · 点击上方图标，或输入如 <code>is:手炮</code>',
+    armor: '未设筛选条件 · 点击上方职业，或输入如 <code>is:泰坦</code>',
+    sets: '未设筛选条件 · 输入来源或名称，如 <code>source:发射基地</code>'
   };
   function pillKey(t) { return (t.neg ? '-' : '') + (t.t === 'kw' ? t.k + ':' + t.v : 'w:' + t.v); }
   function pillHtml(t, fresh) {
@@ -1605,7 +1605,7 @@
       seen[k] = true;
       return pillHtml(t, animate && !prevPills[k]);
     }).join('') +
-      (pending ? '<span class="loading">' + (pending === 'pool' ? '正在载入词条池' : '正在载入说明') + '</span>' : '') +
+      (pending ? '<span class="loading">' + (pending === 'pool' ? '词条池载入中…' : '说明载入中…') + '</span>' : '') +
       (pills.length > 1 ? '<button type="button" class="cs-clear" data-act="clear">清除</button>' : '');
     prevPills = seen;
     condsBox.setAttribute('data-n', pills.length);
@@ -1827,7 +1827,7 @@
   function emptyState() {
     var top = tree && tree.op === 'and' ? tree.xs : tree ? [tree] : [];
     var noun = S.scope === 'armor' ? '异域护甲' : '武器';
-    if (top.length < 2) { return '<div class="empty"><h3>没有符合条件的' + noun + '</h3><p>换一个词，或看看「语法」。</p></div>'; }
+    if (top.length < 2) { return '<div class="empty"><h3>无匹配的' + noun + '</h3><p>请尝试其他关键词，或点击右上角「语法」查看查询规则。</p></div>'; }
     var btns = top.map(function (node, k) {
       var rest = top.filter(function (_, j) { return j !== k; });
       var n = run(S.scope, rest.length === 1 ? rest[0] : { op: 'and', xs: rest }).length;
@@ -1836,7 +1836,7 @@
       return t ? '<button type="button" class="toggle" data-act="unpill" data-a="' + t.a + '" data-b="' + t.b + '">去掉 <code>' +
         esc(raw) + '</code><span class="n">' + n + '</span></button>' : '';
     }).join('');
-    return '<div class="empty"><h3>没有符合全部条件的' + noun + '</h3><p>去掉其中一条之后还剩：</p><div class="wpn-row">' + btns + '</div></div>';
+    return '<div class="empty"><h3>无同时满足全部条件的' + noun + '</h3><p>移除单个条件后的匹配数量：</p><div class="wpn-row">' + btns + '</div></div>';
   }
   var wallList = null;
   function renderBrowse() {
@@ -1962,16 +1962,16 @@
     if (linkObs) { linkObs.disconnect(); linkObs = null; }
     var i = S.sel;
     if (S.scope === 'sets') {
-      if (!T) { box.innerHTML = '<p class="loading">正在载入说明</p>'; need('text', renderDetail); return; }
+      if (!T) { box.innerHTML = '<p class="loading">说明载入中…</p>'; need('text', renderDetail); return; }
       box.innerHTML = setDetail(i);
       return;
     }
     if (S.scope === 'armor') {
-      if (!T) { box.innerHTML = '<p class="loading">正在载入说明</p>'; need('text', renderDetail); return; }
+      if (!T) { box.innerHTML = '<p class="loading">说明载入中…</p>'; need('text', renderDetail); return; }
       box.innerHTML = armorDetail(i);
       return;
     }
-    if (!P) { box.innerHTML = '<p class="loading">正在载入词条池</p>'; need('pool', renderDetail); return; }
+    if (!P) { box.innerHTML = '<p class="loading">词条池载入中…</p>'; need('pool', renderDetail); return; }
     if (!T) { need('text', renderDetail); }
     box.innerHTML = weaponDetail(i);
     perkLinks();
@@ -1998,7 +1998,7 @@
 
   /* 作者在页面上的写法。数据里的键是 Aegis 与 LGpig。 */
   var AUTHOR = { Aegis: 'AEGIS', LGpig: '小棒猪' };
-  var HALO = { 1: ['by-a', 'Aegis 推荐'], 2: ['by-l', '小棒猪推荐'], 3: ['by-al', '两位作者都推荐'] };
+  var HALO = { 1: ['by-a', 'Aegis 推荐'], 2: ['by-l', '小棒猪推荐'], 3: ['by-al', '双方共同推荐'] };
   function plugButton(c, cell, marks, pressed, fixed) {
     var p = shownPlug(cell), bits = marks[cell[0]] || 0;
     var cls = 'plug' + (cell[1] >= 0 ? ' is-enh' : '') + (bits ? ' ' + HALO[bits][0] : '') +
@@ -2009,7 +2009,7 @@
   }
   function haloLegend() {
     return '<span class="aside halo-key"><i class="by-a"></i>Aegis 推荐<i class="by-l"></i>小棒猪推荐' +
-      '<i class="by-al"></i>两位都推荐</span>';
+      '<i class="by-al"></i>双方共同推荐</span>';
   }
   function tierText(i, roll, mw) {
     if (!roll.mw) { return 'T' + roll.t + ' 加成在装上大师杰作之后生效'; }
@@ -2155,7 +2155,7 @@
     /* 这一块讲的是框架，不是这一把：同框架的枪在这里的数值一模一样，
        差别在词条、属性与大师杰作上，那几样画在上面的「属性」与「词条」里 */
     return '<section><h3 class="sub-label">框架数值<a class="fr-more" href="../weapon-frames/index.html">全部 →</a></h3>' +
-      '<p class="fr-note fr-top-note">数值是这一类框架的水平，不是这把枪自己的表现</p>' + out + '</section>';
+      '<p class="fr-note fr-top-note">以下为该框架的基准测试数据，不代表单把武器的词条表现</p>' + out + '</section>';
   }
   function versionsHtml(scope, i) {
     var rows = scope === 'armor' ? AR : WR, fam = (scope === 'armor' ? V.afam : V.fam)[rows[i][scope === 'armor' ? A_FAM : W_FAM]];
@@ -2537,7 +2537,7 @@
       }).join('') + '</div>';
   }
   function pvpPanel(i, res) {
-    if (!SIDX) { return '<p class="src">词条池还没到，PvP 数值算不出。</p>'; }
+    if (!SIDX) { return '<p class="src">词条池载入中，暂无法计算 PvP 数值。</p>'; }
     if (!PERK_FX) {
       ensurePerkFx(function () { if (S.statsMode === 'pvp' && S.sel === i) { renderDetail(); } });
     }
@@ -2734,7 +2734,7 @@
   }
   function mwTip(i) {
     var roll = rollOf(i), res = compute(i, roll), opt = res.mw.opt, pr = poolRow(i);
-    if (!opt) { return '<h5>大师杰作</h5><p class="lab">未装。点开选一项属性。</p>'; }
+    if (!opt) { return '<h5>大师杰作</h5><p class="lab">未装配 · 点击选择大师杰作属性</p>'; }
     var plug = P.p[opt[2]];
     var main = res.mw.mw[opt[1]] || 0;
     return '<header>' + imgTag(plug[P_ICON], '', '', true) + '<div><h5>' + esc(plug[P_NAME]) + '</h5><span class="ty">' +

@@ -116,7 +116,7 @@ COMPENDIUM_URL = ('https://docs.google.com/spreadsheets/u/0/d/'
 
 # 数据源那一段：出处 + 二次加工声明。**声明只有这一处定义**——同一个数据源在
 # 不同页面换着说法写，读者会以为是不同来源。各页只给出处，句子由这里拼。
-SOURCE_TAIL = '。本页在其基础上统一了术语、标点与排版。'
+SOURCE_TAIL = '。本站统一了简体中文译名、术语着色与版式。'
 
 
 def source_note(html):
@@ -176,7 +176,7 @@ HIT = ('<script>(function(){'
        'r.then(function(x){return x.json()})'
        '.then(function(s){if(o){var t="今日 "+s.today+" 位访客 · 累计 "+s.total;'
        'o.textContent=t;try{localStorage.setItem("svt",Date.now()+"|"+t)}catch(_){}}},'
-       'function(x){if(o)o.textContent="访问统计取不到："+x})})()</script>' % (API, API))
+       'function(x){if(o)o.textContent="访客统计暂不可用："+x})})()</script>' % (API, API))
 
 
 # 就地编辑的引子：**有令牌、且这一页反查得回源稿，才把编辑台那份脚本拉进来**。
@@ -230,26 +230,26 @@ NOTICE = ('<script>(function(){'
           'justify-content:center;padding:.55em 1em;'
           'background-color:var(--ink-lift);border-top:1px solid var(--hair-lit);'
           'color:var(--bone);font:13px/1.7 var(--font-cn)";'
-          'bar.append("这是测试地址，站点已经搬到 starside.work ",link("立即换过去"));'
+          'bar.append("当前为测试域名，正式站点位于 starside.work ",link("前往正式站"));'
           'var box=document.createElement("div");'
           'box.style.cssText="position:fixed;inset:0;z-index:999;display:flex;'
           'flex-direction:column;gap:1.4em;align-items:center;justify-content:center;'
           'padding:2em;text-align:center;background-color:var(--ink);'
           'color:var(--bone);font:15px/1.9 var(--font-cn)";'
           'var say=document.createElement("p");'
-          'say.textContent="你打开的是测试地址。站点的正式地址是 starside.work，'
-          '请改用它并更新收藏。";'
+          'say.textContent="当前访问的是测试域名。请前往正式地址 starside.work '
+          '并更新书签。";'
           'say.style.cssText="margin:0;max-width:32em";'
           'var stay=document.createElement("button");'
           'stay.type="button";stay.disabled=true;'
           'stay.style.cssText="background:none;border:0;color:var(--bone-faint);'
           'font:13px/1.7 var(--font-cn);cursor:pointer";'
-          'var n=5;stay.textContent="仍要留在测试地址（"+n+"）";'
+          'var n=5;stay.textContent="继续访问测试域名（"+n+"）";'
           'var t=setInterval(function(){n--;'
-          'stay.textContent="仍要留在测试地址"+(n?"（"+n+"）":"");'
+          'stay.textContent="继续访问测试域名"+(n?"（"+n+"）":"");'
           'if(!n){clearInterval(t);stay.disabled=false}},1000);'
           'stay.onclick=function(){box.remove();document.body.appendChild(bar)};'
-          'box.append(say,link("去 starside.work",1),stay);'
+          'box.append(say,link("前往 starside.work",1),stay);'
           'document.body.appendChild(box)})()</script>' % SITE_URL)
 
 

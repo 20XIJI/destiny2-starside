@@ -1331,14 +1331,14 @@ def render_index(made, sets=False):
     # 合集页在 builds/sets/ 下，卡片要多退一层才回得到 builds/<赛季>/。
     href = '../%s/%s/index.html' if sets else '%s/%s/index.html'
     aside = ('<p class="new-link"><a href="../new/set/index.html">投稿一组合集 →</a>'
-             '<span>逐套选择装备，页面直接生成标准格式的合集文本</span></p>'
+             '<span>逐套配置装备与切换场景，在线提交或导出合集文本</span></p>'
              '<p class="new-link"><a href="../index.html">单套配装推荐 →</a>'
              '<span>一套一页的配装，按场景、职业、强度与标签筛选</span></p>' if sets else
              # 投稿入口挂在标题右边。这是填表页在站内唯一的入口（别处没有理由指向
              # 它，而没有入口的页面等于不存在），单独占一段会在卡片上面多出一整块
              # 空白。页首那句说明只留给 <meta>，正文里它把首屏推下去半屏。
              '<p class="new-link"><a href="new/index.html">投稿一套配装 →</a>'
-             '<span>选完技能、武器、护甲与神器模组，页面直接生成标准配装文本</span></p>')
+             '<span>选定技能、武器、护甲与神器模组，在线提交或导出标准配装文本</span></p>')
     if not sets and any(m['set'] for m in made if m['season'] == SEASON):
         aside += ('<p class="new-link"><a href="sets/index.html">配装合集 →</a>'
                   '<span>同一角色的多套配装，按场景切换使用</span></p>')
@@ -2057,7 +2057,7 @@ def render_new(stamp, name_cn, sets=False):
     name = SET_FORM_NAME if sets else FORM_NAME
     desc = ('填写配装合集：逐套选择技能、武器、护甲与神器模组，'
             '页面直接生成标准格式的合集文本。' if sets else
-            '填一份配装推荐：选完技能、武器、护甲与神器模组，页面直接生成标准配装文本，复制发给站长即可挂上站。')
+            '在线编写配装方案：选定技能、武器、护甲与神器模组，实时生成配装长图与标准文本，支持直接投稿上站。')
     # 外壳两页共用，页头各写各的。**不切片**：按下标取前几项时，将来在
     # shell.nav() 与 <main> 之间插一行就会静默丢掉 <main>，而填表页不跑 check()，
     # 没有闸门接得住。
@@ -2111,7 +2111,7 @@ def render_new(stamp, name_cn, sets=False):
     if sets:
         o += ['</div>', '']             # 收 .set-wrap
     o += ['</main>', '',
-          shell.foot(stamp, '，选项与站内资料页同一份词表，列得出来的名字生成器就查得到。')]
+          shell.foot(stamp, '，候选条目与站内资料页共用同一份词表。')]
     o = [x for x in o if x != '']
     # vocab.js 与 tip.js 在 builds/ 下，form.js 在 builds/new/ 下——
     # 两处深浅差一层，前缀因此各算各的。form.js 读源稿形状走 builds/source.js、

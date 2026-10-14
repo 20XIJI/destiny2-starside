@@ -1996,7 +1996,7 @@
     document.getElementById('src').open = true;
     tip.textContent = skip.length
       ? '导入完成，跳过 ' + skip.length + ' 条：' + skip.join('，')
-      : '导入完成，全部认得出';
+      : '导入完成，全部条目已识别';
   });
 
   /* 填过东西之后再离开或刷新要先问一句：这一页的内容只在这一个标签页里活着，

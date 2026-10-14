@@ -1219,8 +1219,8 @@ def js(name, payload):
 
 
 # ── 页壳 ─────────────────────────────────────────────────────────────
-DESC = ('Destiny 2 全部武器与异域护甲：按名字、词条、属性查一件，配词条实时算属性，'
-        '附两位作者的评级、推荐词条与评语。')
+DESC = ('Destiny 2 武器、异域护甲与护甲套装检索库：支持按名称、词条、属性与条件表达式筛选，'
+        '自选词条实时计算属性与 PvP 击杀时间，附 Aegis 与小棒猪评级及推荐词条。')
 AEGIS_SRC = ('<a href="https://docs.google.com/spreadsheets/d/'
              '1JM-0SlxVDAi-C6rGVlLxa-J1WGewEeL8Qvq4htWZHhY" target="_blank" rel="noopener">'
              'Destiny 2: Endgame Analysis</a>')
@@ -1304,7 +1304,7 @@ def skeleton():
 def page(stats, glyphs):
     head = shell.head('装备库 · Starside', DESC, sky=True)
     nav = shell.nav('装备库')
-    first = ('武器数据取自 Bungie manifest，属性按词条实时算。方括号内是 PvP 数值。'
+    first = ('装备基础数据取自 Bungie manifest，面板属性随所选词条、大师杰作与阶级实时计算。方括号内为 PvP 数值。'
              + shell.unsure_note())
     source = ('Bungie manifest、%s（Aegis）与 %s（小棒猪）；异域的站内详情同'
               '<a href="../exotic-weapon/index.html">异域武器</a>与'
@@ -1326,8 +1326,8 @@ def page(stats, glyphs):
         '<div class="wpn-sentinel" aria-hidden="true"></div>',
         toolbar(),
         '<main class="wpn">',
-        '<section id="find" aria-label="装备库"><noscript><p class="empty">装备库要开着 '
-        'JavaScript 才能查：共 %d 把武器、%d 件异域护甲。</p></noscript>%s</section>'
+        '<section id="find" aria-label="装备库"><noscript><p class="empty">装备库需启用 '
+        'JavaScript 运行（共收录 %d 把武器、%d 件异域护甲）。</p></noscript>%s</section>'
         % (stats['weapons'], stats['armor'], skeleton()),
         '</main>',
         sprite(glyphs),

@@ -60,7 +60,7 @@
      都不出，读者分不清是没有说明还是还在路上。说明表到了而里面没有这一条，才不弹。 */
   function show(el) {
     var key = el.dataset.d, t = window.starsideDesc;
-    var html = !t ? '<p>' + (failed ? '说明载入失败，指针移开再指回来会重试' : '说明载入中…') + '</p>'
+    var html = !t ? '<p>' + (failed ? '说明载入失败，移开指针后重新悬停可重试' : '说明载入中…') + '</p>'
       : key ? t[key] : '';
     if (!html) {
       if (box) box.remove();

@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>轮换速查表 · Starside</title>
-<meta name="description" content="突袭与地牢每周轮换，扭曲星球每小时轮换。一页查完两条轮换轴。">
+<meta name="description" content="突袭与地牢每周轮换顺序、扭曲星球每小时轮换时刻表，实时高亮当前周次与当前时段。">
 <meta name="theme-color" content="#0b0d14">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="Starside">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:title" content="轮换速查表 · Starside">
-<meta property="og:description" content="突袭与地牢每周轮换，扭曲星球每小时轮换。一页查完两条轮换轴。">
+<meta property="og:description" content="突袭与地牢每周轮换顺序、扭曲星球每小时轮换时刻表，实时高亮当前周次与当前时段。">
 <link rel="preload" href="../assets/fonts/chakra-petch-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../assets/site.css">
@@ -34,7 +34,7 @@
 <h1>轮换速查表</h1>
 </header>
 
-<main data-src="docs/rotation" data-src-hash="bc00efb7074f51138371d44f948cdc0fb1a2a8a9">
+<main data-src="docs/rotation" data-src-hash="ec2f44ad90a8977f7cd1f02fea5633dfe02194a0">
 <section class="block" id="sec-1">
 <h2 class="sect-label" data-b="7">RAID&地牢轮换</h2>
 <table class="gen" data-rota="2026.6.10 1:00">
@@ -107,14 +107,14 @@
 </main>
 
 <footer class="site-foot">
-<p><span class="stamp">更新 2026.8.30</span>扭曲星球的轮换周期 7 小时，一周 168 小时正好走完 24 轮，因此每周的表相同。</p>
+<p><span class="stamp">更新 2026.8.30</span>扭曲星球共 7 站，每小时轮换一次，一周 168 小时恰好循环 24 轮，因此每周时刻表固定不变。</p>
 <p>© 2026 日栎w · <a href="https://space.bilibili.com/26117485" target="_blank" rel="noopener">哔哩哔哩</a></p>
 <p class="legal">Starside 为非官方资料站，与 Bungie, Inc. 无从属关系。Destiny 2 及相关名称、标识为 Bungie, Inc. 的商标。</p>
 <p class="legal">ICP备案/许可证号：<a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">鲁ICP备2026052166号-1</a> <a class="beian" href="https://beian.mps.gov.cn/#/query/webSearch?code=37010202700801" target="_blank" rel="noreferrer">鲁公网安备37010202700801号</a></p>
 </footer>
 <script type="speculationrules">{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}</script>
-<script>(function(){var d=new Date(Date.now()+288e5).toISOString().slice(0,10);var o=document.getElementById("sv"),f=1;try{f=localStorage.getItem("svd")===d?0:1;if(f)localStorage.setItem("svd",d)}catch(_){}if(!f){if(!o)return;try{var c=localStorage.getItem("svt")||"",i=c.indexOf("|"),a=Date.now()-c.slice(0,i);if(i>0&&a>=0&&a<6e5){o.textContent=c.slice(i+1);return}}catch(_){}}var r=f?fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api",{method:"POST",body:JSON.stringify({a:"hit",s:o?1:0})}):fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api?a=stats");r.then(function(x){return x.json()}).then(function(s){if(o){var t="今日 "+s.today+" 位访客 · 累计 "+s.total;o.textContent=t;try{localStorage.setItem("svt",Date.now()+"|"+t)}catch(_){}}},function(x){if(o)o.textContent="访问统计取不到："+x})})()</script>
+<script>(function(){var d=new Date(Date.now()+288e5).toISOString().slice(0,10);var o=document.getElementById("sv"),f=1;try{f=localStorage.getItem("svd")===d?0:1;if(f)localStorage.setItem("svd",d)}catch(_){}if(!f){if(!o)return;try{var c=localStorage.getItem("svt")||"",i=c.indexOf("|"),a=Date.now()-c.slice(0,i);if(i>0&&a>=0&&a<6e5){o.textContent=c.slice(i+1);return}}catch(_){}}var r=f?fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api",{method:"POST",body:JSON.stringify({a:"hit",s:o?1:0})}):fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api?a=stats");r.then(function(x){return x.json()}).then(function(s){if(o){var t="今日 "+s.today+" 位访客 · 累计 "+s.total;o.textContent=t;try{localStorage.setItem("svt",Date.now()+"|"+t)}catch(_){}}},function(x){if(o)o.textContent="访客统计暂不可用："+x})})()</script>
 <script>try{if(localStorage.sa_at&&document.querySelector("main[data-src]")){var l=document.querySelector('link[href$="assets/site.css"]');if(l)import(l.href.replace("assets/site.css","admin/edit.js"))}}catch(_){}</script>
-<script>(function(){if(!/\.tcloudbase(app)?\.com$/.test(location.hostname))return;var u="https://starside.work"+location.pathname+location.search+location.hash;document.title="【测试地址】"+document.title;function link(t,big){var a=document.createElement("a");a.href=u;a.textContent=t;a.style.cssText=big?"padding:.7em 1.6em;border:1px solid var(--accent);border-radius:2px;color:var(--accent);text-decoration:none;font-size:16px":"color:var(--accent);white-space:nowrap";return a}var bar=document.createElement("div");bar.style.cssText="position:fixed;left:0;right:0;bottom:0;z-index:99;display:flex;flex-wrap:wrap;gap:.2em 1em;align-items:center;justify-content:center;padding:.55em 1em;background-color:var(--ink-lift);border-top:1px solid var(--hair-lit);color:var(--bone);font:13px/1.7 var(--font-cn)";bar.append("这是测试地址，站点已经搬到 starside.work ",link("立即换过去"));var box=document.createElement("div");box.style.cssText="position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;gap:1.4em;align-items:center;justify-content:center;padding:2em;text-align:center;background-color:var(--ink);color:var(--bone);font:15px/1.9 var(--font-cn)";var say=document.createElement("p");say.textContent="你打开的是测试地址。站点的正式地址是 starside.work，请改用它并更新收藏。";say.style.cssText="margin:0;max-width:32em";var stay=document.createElement("button");stay.type="button";stay.disabled=true;stay.style.cssText="background:none;border:0;color:var(--bone-faint);font:13px/1.7 var(--font-cn);cursor:pointer";var n=5;stay.textContent="仍要留在测试地址（"+n+"）";var t=setInterval(function(){n--;stay.textContent="仍要留在测试地址"+(n?"（"+n+"）":"");if(!n){clearInterval(t);stay.disabled=false}},1000);stay.onclick=function(){box.remove();document.body.appendChild(bar)};box.append(say,link("去 starside.work",1),stay);document.body.appendChild(box)})()</script>
+<script>(function(){if(!/\.tcloudbase(app)?\.com$/.test(location.hostname))return;var u="https://starside.work"+location.pathname+location.search+location.hash;document.title="【测试地址】"+document.title;function link(t,big){var a=document.createElement("a");a.href=u;a.textContent=t;a.style.cssText=big?"padding:.7em 1.6em;border:1px solid var(--accent);border-radius:2px;color:var(--accent);text-decoration:none;font-size:16px":"color:var(--accent);white-space:nowrap";return a}var bar=document.createElement("div");bar.style.cssText="position:fixed;left:0;right:0;bottom:0;z-index:99;display:flex;flex-wrap:wrap;gap:.2em 1em;align-items:center;justify-content:center;padding:.55em 1em;background-color:var(--ink-lift);border-top:1px solid var(--hair-lit);color:var(--bone);font:13px/1.7 var(--font-cn)";bar.append("当前为测试域名，正式站点位于 starside.work ",link("前往正式站"));var box=document.createElement("div");box.style.cssText="position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;gap:1.4em;align-items:center;justify-content:center;padding:2em;text-align:center;background-color:var(--ink);color:var(--bone);font:15px/1.9 var(--font-cn)";var say=document.createElement("p");say.textContent="当前访问的是测试域名。请前往正式地址 starside.work 并更新书签。";say.style.cssText="margin:0;max-width:32em";var stay=document.createElement("button");stay.type="button";stay.disabled=true;stay.style.cssText="background:none;border:0;color:var(--bone-faint);font:13px/1.7 var(--font-cn);cursor:pointer";var n=5;stay.textContent="继续访问测试域名（"+n+"）";var t=setInterval(function(){n--;stay.textContent="继续访问测试域名"+(n?"（"+n+"）":"");if(!n){clearInterval(t);stay.disabled=false}},1000);stay.onclick=function(){box.remove();document.body.appendChild(bar)};box.append(say,link("前往 starside.work",1),stay);document.body.appendChild(box)})()</script>
 </body>
 </html>

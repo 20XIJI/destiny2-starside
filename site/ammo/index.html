@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>弹药生成机制 · Starside</title>
-<meta name="description" content="击杀、技能与终结技给多少弹药进度，弹药生成属性与生成系数的叠加方式，以及每块弹药拾起来给多少发。">
+<meta name="description" content="武器击杀、技能与终结技的弹药进度数值，弹药生成属性与模组系数的叠加公式，以及各武器每块弹药的拾取发数。">
 <meta name="theme-color" content="#0b0d14">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="Starside">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:title" content="弹药生成机制 · Starside">
-<meta property="og:description" content="击杀、技能与终结技给多少弹药进度，弹药生成属性与生成系数的叠加方式，以及每块弹药拾起来给多少发。">
+<meta property="og:description" content="武器击杀、技能与终结技的弹药进度数值，弹药生成属性与模组系数的叠加公式，以及各武器每块弹药的拾取发数。">
 <link rel="preload" href="../assets/fonts/chakra-petch-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../assets/site.css">
@@ -34,7 +34,7 @@
 <h1>弹药生成机制</h1>
 </header>
 
-<main data-src="docs/ammo" data-src-hash="f27895d04c3af2386e6167a69cf4ffe0f6110857">
+<main data-src="docs/ammo" data-src-hash="60ab85e8aa808bd1ba2c1b00749e1f2b879aa463">
 <section class="block" id="sec-1">
 <h2 class="sect-label" data-b="8">武器弹药生成</h2>
 <p data-b="2">击杀<span class="enemy">战斗人员</span>按一个基础百分比生成弹药。这个百分比由四项决定：击杀所用的弹药类型、生成的弹药类型、<span class="enemy">战斗人员</span>等级，以及武器的弹药生成属性。</p>
@@ -65,8 +65,8 @@
 </tbody>
 </table>
 <p data-b="7">表中的区间随武器的弹药生成属性线性变化。弹药生成属性 100 的特殊武器击杀一名<span class="bar-orange">橙血</span><span class="enemy">战斗人员</span>，生成 18% 的<span class="ammo-special">特殊弹药</span>与 16% 的<span class="ammo-heavy">威能弹药</span>，两者都落在各自区间的上限。</p>
-<p data-b="2">三档<span class="enemy">战斗人员</span>之间大致成倍数关系：<span class="bar-orange">橙血</span>约为<span class="bar-red">红血</span>的两倍，<span class="bar-yellow">初级首领</span>约为四倍。记住<span class="bar-red">红血</span>一列，其余两列可以推算。</p>
-<p data-b="2"><span class="ammo-heavy">重弹</span>打<span class="ammo-heavy">重弹</span>只有 3%–4%，是全表最低的一档。一号位与二号位各放一把弹药生成属性高的武器，是弹药经济的基础。</p>
+<p data-b="2">三档<span class="enemy">战斗人员</span>的进度近似呈倍数关系：<span class="bar-orange">橙血</span>约为<span class="bar-red">红血</span>的 2 倍，<span class="bar-yellow">初级首领</span>约为 4 倍。</p>
+<p data-b="2"><span class="ammo-heavy">重弹</span>击杀生成的<span class="ammo-heavy">重弹</span>进度仅为 3%–4%，为全表最低；依靠一、二号位的高弹药生成属性武器击杀产弹，是维持弹药经济的基础。</p>
 <p data-b="2">刀剑没有弹药生成属性，也无法被弹药生成模组改变。刀剑击杀固定生成 3% <span class="ammo-special">特殊弹药</span>与 3% <span class="ammo-heavy">威能弹药</span>进度。</p>
 </section>
 <section class="block" id="sec-2">
@@ -210,15 +210,15 @@
 
 <footer class="site-foot">
 <p><span class="stamp">更新 2026.9.10</span></p>
-<p>数据源：<a href="https://discord.com/channels/591927598255439873/1453807417430245518" target="_blank" rel="noopener">DIM 社区</a>的弹药生成实测<span class="note">（链接指向 Discord 频道内页，需登录并已加入该服务器）</span>。本页在其基础上统一了术语、标点与排版。</p>
+<p>数据源：<a href="https://discord.com/channels/591927598255439873/1453807417430245518" target="_blank" rel="noopener">DIM 社区</a>的弹药生成实测<span class="note">（链接指向 Discord 频道内页，需登录并已加入该服务器）</span>。本站统一了简体中文译名、术语着色与版式。</p>
 <p>特别鸣谢：<a href="https://space.bilibili.com/169548478" target="_blank" rel="noopener">小棒猪-LGpig</a> 整理弹药拾取量与终结技的全部实测。</p>
 <p>© 2026 日栎w · <a href="https://space.bilibili.com/26117485" target="_blank" rel="noopener">哔哩哔哩</a></p>
 <p class="legal">Starside 为非官方资料站，与 Bungie, Inc. 无从属关系。Destiny 2 及相关名称、标识为 Bungie, Inc. 的商标。</p>
 <p class="legal">ICP备案/许可证号：<a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">鲁ICP备2026052166号-1</a> <a class="beian" href="https://beian.mps.gov.cn/#/query/webSearch?code=37010202700801" target="_blank" rel="noreferrer">鲁公网安备37010202700801号</a></p>
 </footer>
 <script type="speculationrules">{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}</script>
-<script>(function(){var d=new Date(Date.now()+288e5).toISOString().slice(0,10);var o=document.getElementById("sv"),f=1;try{f=localStorage.getItem("svd")===d?0:1;if(f)localStorage.setItem("svd",d)}catch(_){}if(!f){if(!o)return;try{var c=localStorage.getItem("svt")||"",i=c.indexOf("|"),a=Date.now()-c.slice(0,i);if(i>0&&a>=0&&a<6e5){o.textContent=c.slice(i+1);return}}catch(_){}}var r=f?fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api",{method:"POST",body:JSON.stringify({a:"hit",s:o?1:0})}):fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api?a=stats");r.then(function(x){return x.json()}).then(function(s){if(o){var t="今日 "+s.today+" 位访客 · 累计 "+s.total;o.textContent=t;try{localStorage.setItem("svt",Date.now()+"|"+t)}catch(_){}}},function(x){if(o)o.textContent="访问统计取不到："+x})})()</script>
+<script>(function(){var d=new Date(Date.now()+288e5).toISOString().slice(0,10);var o=document.getElementById("sv"),f=1;try{f=localStorage.getItem("svd")===d?0:1;if(f)localStorage.setItem("svd",d)}catch(_){}if(!f){if(!o)return;try{var c=localStorage.getItem("svt")||"",i=c.indexOf("|"),a=Date.now()-c.slice(0,i);if(i>0&&a>=0&&a<6e5){o.textContent=c.slice(i+1);return}}catch(_){}}var r=f?fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api",{method:"POST",body:JSON.stringify({a:"hit",s:o?1:0})}):fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api?a=stats");r.then(function(x){return x.json()}).then(function(s){if(o){var t="今日 "+s.today+" 位访客 · 累计 "+s.total;o.textContent=t;try{localStorage.setItem("svt",Date.now()+"|"+t)}catch(_){}}},function(x){if(o)o.textContent="访客统计暂不可用："+x})})()</script>
 <script>try{if(localStorage.sa_at&&document.querySelector("main[data-src]")){var l=document.querySelector('link[href$="assets/site.css"]');if(l)import(l.href.replace("assets/site.css","admin/edit.js"))}}catch(_){}</script>
-<script>(function(){if(!/\.tcloudbase(app)?\.com$/.test(location.hostname))return;var u="https://starside.work"+location.pathname+location.search+location.hash;document.title="【测试地址】"+document.title;function link(t,big){var a=document.createElement("a");a.href=u;a.textContent=t;a.style.cssText=big?"padding:.7em 1.6em;border:1px solid var(--accent);border-radius:2px;color:var(--accent);text-decoration:none;font-size:16px":"color:var(--accent);white-space:nowrap";return a}var bar=document.createElement("div");bar.style.cssText="position:fixed;left:0;right:0;bottom:0;z-index:99;display:flex;flex-wrap:wrap;gap:.2em 1em;align-items:center;justify-content:center;padding:.55em 1em;background-color:var(--ink-lift);border-top:1px solid var(--hair-lit);color:var(--bone);font:13px/1.7 var(--font-cn)";bar.append("这是测试地址，站点已经搬到 starside.work ",link("立即换过去"));var box=document.createElement("div");box.style.cssText="position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;gap:1.4em;align-items:center;justify-content:center;padding:2em;text-align:center;background-color:var(--ink);color:var(--bone);font:15px/1.9 var(--font-cn)";var say=document.createElement("p");say.textContent="你打开的是测试地址。站点的正式地址是 starside.work，请改用它并更新收藏。";say.style.cssText="margin:0;max-width:32em";var stay=document.createElement("button");stay.type="button";stay.disabled=true;stay.style.cssText="background:none;border:0;color:var(--bone-faint);font:13px/1.7 var(--font-cn);cursor:pointer";var n=5;stay.textContent="仍要留在测试地址（"+n+"）";var t=setInterval(function(){n--;stay.textContent="仍要留在测试地址"+(n?"（"+n+"）":"");if(!n){clearInterval(t);stay.disabled=false}},1000);stay.onclick=function(){box.remove();document.body.appendChild(bar)};box.append(say,link("去 starside.work",1),stay);document.body.appendChild(box)})()</script>
+<script>(function(){if(!/\.tcloudbase(app)?\.com$/.test(location.hostname))return;var u="https://starside.work"+location.pathname+location.search+location.hash;document.title="【测试地址】"+document.title;function link(t,big){var a=document.createElement("a");a.href=u;a.textContent=t;a.style.cssText=big?"padding:.7em 1.6em;border:1px solid var(--accent);border-radius:2px;color:var(--accent);text-decoration:none;font-size:16px":"color:var(--accent);white-space:nowrap";return a}var bar=document.createElement("div");bar.style.cssText="position:fixed;left:0;right:0;bottom:0;z-index:99;display:flex;flex-wrap:wrap;gap:.2em 1em;align-items:center;justify-content:center;padding:.55em 1em;background-color:var(--ink-lift);border-top:1px solid var(--hair-lit);color:var(--bone);font:13px/1.7 var(--font-cn)";bar.append("当前为测试域名，正式站点位于 starside.work ",link("前往正式站"));var box=document.createElement("div");box.style.cssText="position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;gap:1.4em;align-items:center;justify-content:center;padding:2em;text-align:center;background-color:var(--ink);color:var(--bone);font:15px/1.9 var(--font-cn)";var say=document.createElement("p");say.textContent="当前访问的是测试域名。请前往正式地址 starside.work 并更新书签。";say.style.cssText="margin:0;max-width:32em";var stay=document.createElement("button");stay.type="button";stay.disabled=true;stay.style.cssText="background:none;border:0;color:var(--bone-faint);font:13px/1.7 var(--font-cn);cursor:pointer";var n=5;stay.textContent="继续访问测试域名（"+n+"）";var t=setInterval(function(){n--;stay.textContent="继续访问测试域名"+(n?"（"+n+"）":"");if(!n){clearInterval(t);stay.disabled=false}},1000);stay.onclick=function(){box.remove();document.body.appendChild(bar)};box.append(say,link("前往 starside.work",1),stay);document.body.appendChild(box)})()</script>
 </body>
 </html>

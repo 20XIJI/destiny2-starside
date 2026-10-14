@@ -40,7 +40,7 @@ function libJump(q, rows) {
   var WPN_HIT = /^(exotic-weapon|shopping-(primary|special|heavy)|weapon-|legendary-)/;
   for (var i = 0; i < rows.length; i++) {
     if (WPN_HIT.test(rows[i].u)) {
-      return { u: 'weapons/index.html', n: q, x: '按名字、词条、属性查找', jump: 1 };
+      return { u: 'weapons/index.html', n: q, x: '按名称、词条、属性检索与模拟', jump: 1 };
     }
   }
   return null;
@@ -241,7 +241,7 @@ export default function init(box, deps) {
       more.hidden = true;
       box.toggleAttribute('data-miss', false);
       if (!q) { count.textContent = ''; return; }
-      if (!index) { count.textContent = '正在载入索引…'; return; }
+      if (!index) { count.textContent = '索引载入中…'; return; }
 
       var terms = words(q);
       var all = ranked(index, pages, terms, hit, q);
