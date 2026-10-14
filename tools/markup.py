@@ -484,6 +484,36 @@ def typeset(html):
     return ''.join(out)
 
 
+def format_prose_para(lines, line_fn, attr='', block=True):
+    """一段说明的多行源稿 → HTML：支持首行 .cond 与分点 .bul。"""
+    pieces, inlines = [], []
+    has_block = False
+
+    def flush_inlines():
+        if inlines:
+            pieces.append('<br>'.join(inlines))
+            inlines.clear()
+
+    for idx, ln in enumerate(lines):
+        if ln.startswith(('・', '- ', '— ')):
+            flush_inlines()
+            has_block = True
+            pieces.append('<div class="bul">%s</div>' % line_fn(ln))
+        else:
+            r = line_fn(ln)
+            if (idx == 0 and len(lines) > 1 and COND_END.search(text_of(r))
+                    and r.count('<span') == r.count('</span>')
+                    and r.count('<a ') == r.count('</a>')):
+                r = '<span class="cond">%s</span>' % r
+            inlines.append(r)
+    flush_inlines()
+    inner = ''.join(pieces)
+    if not block:
+        return inner, has_block
+    return ('<div class="p"%s>%s</div>' if has_block else '<p%s>%s</p>') % (attr, inner)
+
+
+
 class Icons:
     """页面目录下的图标：尺寸从文件头现读，文件名即内容的 md5 前 10 位。
 

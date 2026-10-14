@@ -728,19 +728,21 @@ main {
 .rhombi i.on { background: currentcolor; }
 
 /* ── 说明排印 ──
-   神器模组页的 .mod-desc、护甲模组页的效果格与护甲套装页的 .bonus-body，
-   span 由 markup.typeset() 加。
+   神器模组页的 .mod-desc、护甲模组页的效果格、护甲套装页的 .bonus-body、
+   按记录排版页的 .r-cell 与装备库的 .prose，span 由 markup.typeset() 或
+   format_prose_para() 加。
    触发条件那一行（「击破战斗人员护盾：」）降一档，前面一枚空心小菱形，与下面的
    效果分开。条件行里的着色词照旧着色，只有素字变暗。素字里的数值包在 <b> 里，
    样式在各页自己的样式表：别的页面表格里也有 <b>。 */
-:is(.mod-desc, .gen td, .bonus-body) .cond {
+:is(.mod-desc, .gen td, .bonus-body, .r-cell, .prose) .cond {
   position: relative;
+  display: inline-block;
   padding-left: 14px;
   color: var(--bone-dim);
   font-size: 13px;
 }
 
-:is(.mod-desc, .gen td, .bonus-body) .cond::before {
+:is(.mod-desc, .gen td, .bonus-body, .r-cell, .prose) .cond::before {
   content: "";
   position: absolute;
   left: 1px;
@@ -749,6 +751,23 @@ main {
   height: 5px;
   border: 1px solid var(--bone-faint);
   transform: rotate(45deg);
+}
+
+/* 站内说明里的强化值标记（源稿方言 {enh|…}）：强调靠亮度，不占色相。 */
+.enh { color: var(--bone-hi); font-weight: 600; }
+
+/* 分点行：首字圆点悬挂缩进，折行对齐正文起点；加粗标签提亮至骨白。 */
+.bul {
+  padding-left: 1.05em;
+  text-indent: -1.05em;
+  margin-top: 3px;
+}
+
+.bul + .bul { margin-top: 4px; }
+
+:is(.r-cell, .mod-desc, .prose) strong {
+  color: var(--bone-hi);
+  font-weight: 600;
 }
 
 /* 配色工具类：着色文字全部经由这些 class，不写内联 color。
@@ -2907,8 +2926,8 @@ body:has(.hero) main.index { position: relative; }
         justify-content: center; }
 .r-cell.r-id { align-items: center; text-align: center; gap: 4px; background: var(--tint-1); }
 .r-cell.r-mid { align-items: center; text-align: center; }
-.r-cell p { margin: 0 0 5px; font-size: 13.5px; line-height: 1.65; }
-.r-cell p:last-child { margin-bottom: 0; }
+.r-cell p, .r-cell .p { margin: 0 0 7px; font-size: 13.5px; line-height: 1.65; }
+.r-cell :is(p, .p):last-child { margin-bottom: 0; }
 .r-id .r-nm { font: 600 14.5px/1.35 var(--font-cn); color: var(--bone-hi); }
 .r-id .r-nm.exo, .rec .exo { color: var(--exotic); }
 .r-id .r-sub { display: flex; flex-direction: column; align-items: center; font-size: 12.5px;

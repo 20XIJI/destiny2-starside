@@ -17,8 +17,8 @@ import editmap
 import pagedex
 import resolve
 import shell
-from markup import (OPEN, Icons, blocks_at, bmark, die, eq, inline, meta_line, meta_of, must,
-                    src_hash, text_of, typeset)
+from markup import (OPEN, Icons, blocks_at, bmark, die, eq, format_prose_para, inline, meta_line,
+                    meta_of, must, src_hash, text_of, typeset)
 
 SRC = os.path.join(shell.KEY_DIR, 'artifact-mods.md')
 OUT_DIR = os.path.join(shell.SITE, 'artifact-mods')
@@ -148,7 +148,8 @@ def expand(md):
         #（「乘胜追击」既是神器模组，也是冷酷无情的固有 Perk）。源稿写着它，用它。
         out.append('主键：%s' % key)
         out.append('')
-        out.append((zh.get('realgame_details') or '').strip())
+        raw_desc = (zh.get('realgame_details') or '').strip()
+        out.append(raw_desc.replace('\\\\ \\\\', '\n\n').replace('\\\\', '\n'))
         out.append('')
     return '\n'.join(out)
 
@@ -361,7 +362,12 @@ def render(page, digest='', dex=None, origins=None):
                       mod['icon'],
                       '<h4%s>%s</h4>' % (bmark(mod['at']), mod['name']),
                       '<div class="mod-desc"%s>' % where]
-                o += ['<p%s>%s</p>' % (bmark(n, m), typeset(p)) for n, m, p in mod['desc']]
+                for n, m, p in mod['desc']:
+                    p_lines = [x.strip() for x in p.split('<br>') if x.strip()]
+                    if any(x.startswith(('・', '- ', '— ')) for x in p_lines):
+                        o.append(format_prose_para(p_lines, typeset, bmark(n, m)))
+                    else:
+                        o.append('<p%s>%s</p>' % (bmark(n, m), typeset(p)))
                 o += ['</div>', '</article>']
             o.append('</div>')
         o += ['</div>', '</section>']

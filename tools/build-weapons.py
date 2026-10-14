@@ -176,10 +176,19 @@ class Build:
 
     def site_html(self, t):
         """站内正文（源稿方言）→ HTML：格内换行两次分段，一次换行。"""
-        paras = [p.strip() for p in t.split(rows.PARA) if p.strip()]
-        return ''.join('<p>%s</p>' % markup.inline(
-            '<br>'.join(x.strip() for x in p.split(markup.CELL_BREAK) if x.strip()), rich=True)
-            for p in paras)
+        out = []
+        for para in markup.top_split(t.replace(rows.PARA, '\n\n'), '\n\n'):
+            lines = [x.strip() for x in markup.top_split(para.replace(markup.CELL_BREAK, '\n'), '\n')
+                     if x.strip()]
+            if not lines:
+                continue
+            if all(x.startswith('- ') for x in lines):
+                out.append('<ul>%s</ul>' % ''.join(
+                    '<li>%s</li>' % markup.inline(x[2:], rich=True) for x in lines))
+            else:
+                out.append(markup.format_prose_para(
+                    lines, lambda s: markup.inline(s, rich=True)))
+        return ''.join(out)
 
     def kind(self, entry):
         st = self.f.socket_types.get(str(entry.get('socketTypeHash'))) or {}

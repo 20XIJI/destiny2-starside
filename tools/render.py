@@ -156,7 +156,7 @@ class Page:
                 out.append('<ul%s>%s</ul>'
                            % (attr, ''.join('<li>%s</li>' % self.line(x[2:]) for x in lines)))
             else:
-                out.append('<p%s>%s</p>' % (attr, '<br>'.join(self.line(x) for x in lines)))
+                out.append(markup.format_prose_para(lines, self.line, attr))
         return ''.join(out)
 
 

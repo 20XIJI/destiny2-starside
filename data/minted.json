@@ -1,58 +1,882 @@
 {
-  "10": {"from": "DestinyItemCategoryDefinition", "i18n": {"zh-CN": {"name": "狙击步枪", "site_aliases": [{"name": "狙击枪"}]}}, "kind": "枪型"},
-  "153950757": {"from": "DestinyItemCategoryDefinition", "i18n": {"zh-CN": {"name": "榴弹发射器", "site_aliases": [{"ammoType": 2, "name": "后膛榴弹"}, {"ammoType": 2, "name": "后膛榴弹发射器"}, {"ammoType": 3, "name": "弹鼓榴弹"}, {"ammoType": 3, "name": "弹鼓榴弹发射器"}]}}, "kind": "枪型"},
-  "292102995": {"from": "DestinyMilestoneDefinition", "i18n": {"zh-CN": {"name": "国王的陨落"}}, "kind": "来源"},
-  "332181804": {"from": "DestinyActivityModeDefinition", "i18n": {"zh-CN": {"name": "梦魇狩猎"}}, "kind": "来源"},
-  "540415767": {"from": "DestinyMilestoneDefinition", "i18n": {"zh-CN": {"name": "克洛塔的末日"}}, "kind": "来源"},
-  "541780856": {"from": "DestinyMilestoneDefinition", "i18n": {"zh-CN": {"name": "深岩墓室"}}, "kind": "来源"},
-  "671679327": {"from": "DestinyClassDefinition", "i18n": {"zh-CN": {"name": "猎人"}}, "kind": "职业"},
-  "1416096592": {"from": "DestinyDestinationDefinition", "i18n": {"zh-CN": {"name": "幽梦之城"}}, "kind": "来源"},
-  "1888320892": {"from": "DestinyMilestoneDefinition", "i18n": {"zh-CN": {"name": "玻璃拱顶"}}, "kind": "来源"},
-  "2136320298": {"from": "DestinyMilestoneDefinition", "i18n": {"zh-CN": {"name": "门徒誓约"}}, "kind": "来源"},
-  "2271682572": {"from": "DestinyClassDefinition", "i18n": {"zh-CN": {"name": "术士"}}, "kind": "职业"},
-  "2712317338": {"from": "DestinyMilestoneDefinition", "i18n": {"zh-CN": {"name": "救赎花园"}}, "kind": "来源"},
-  "3181387331": {"from": "DestinyMilestoneDefinition", "i18n": {"zh-CN": {"name": "最后一愿"}}, "kind": "来源"},
-  "3317538576": {"from": "DestinyItemCategoryDefinition", "i18n": {"zh-CN": {"name": "弓箭", "site_aliases": [{"ammoType": 3, "name": "弩"}]}}, "kind": "枪型"},
-  "3655393761": {"from": "DestinyClassDefinition", "i18n": {"zh-CN": {"name": "泰坦"}}, "kind": "职业"},
-  "3699252268": {"from": "DestinyMilestoneDefinition", "i18n": {"zh-CN": {"name": "梦魇根源"}}, "kind": "来源"},
-  "3954685534": {"from": "DestinyItemCategoryDefinition", "i18n": {"zh-CN": {"name": "微型冲锋枪", "site_aliases": [{"name": "冲锋枪"}]}}, "kind": "枪型"},
-  "4196566271": {"from": "DestinyMilestoneDefinition", "i18n": {"zh-CN": {"name": "救赎的边缘"}}, "kind": "来源"},
-  "4294967296": {"from": "站内自发", "i18n": {"zh-CN": {"name": "弹药搜寻者", "效果": "{ammo-special|特殊弹药}搜寻者：\\\\ 1.25× ｜ 1.4× ｜ 1.5× 弹药进度倍率。\\\\ \\\\ {ammo-heavy|威能弹药}搜寻者：\\\\ 1.25× ｜ 1.4× ｜ 1.5× 弹药进度倍率。", "费用": "{cost|3}"}}, "icon_local": "armor-mods/icons/fc4ae31f8f.webp", "kind": "模组族", "members": [554409585, 2595839237], "page": "armor-mods"},
-  "4294967297": {"from": "站内自发", "i18n": {"zh-CN": {"name": "弹药斥候", "效果": "生成与模组匹配的弹药块时：\\\\ {enemy|盟友}获得一份相同的弹药块。\\\\ \\\\ 弹药斥候弹药块的拾取量：\\\\ 常规弹药块的 37% ｜ 67% ｜ 100%。\\\\ \\\\ 强化弹药块的出现概率由{enemy|盟友}的武器属性决定。", "费用": "{cost|1}"}}, "icon_local": "armor-mods/icons/71a7b2fb1c.webp", "kind": "模组族", "members": [25154119, 1274140735], "page": "armor-mods"},
-  "4294967298": {"from": "站内自发", "i18n": {"zh-CN": {"name": "虹吸", "效果": "3 秒内用与模组元素相同的武器连续击杀 2 名{enemy|战斗人员}或敌方{bar-orange|守护者}：\\\\ 生成一枚{orb|能量球}。\\\\ \\\\ {orb|能量球}：\\\\ 2.5% ｜ 3.75% ｜ 4.4% {orb|超能能量}。\\\\ \\\\ {note|生成能量球后有 1 秒冷却，冷却期间的击杀不计数。}", "费用": "{cost|1–2–3}"}}, "icon_local": "armor-mods/icons/e9bc3eb2af.webp", "kind": "模组族", "members": [521530777, 1388734897, 2773358872, 837201397, 3832366019, 2724068510, 3926119246, 4255093903], "page": "armor-mods"},
-  "4294967299": {"from": "站内自发", "i18n": {"zh-CN": {"name": "瞄准性能", "效果": "对与模组元素相同的武器，取出 1 秒后：\\\\ \\\\ +5 ｜ +8 ｜ +10 瞄准辅助\\\\ 精度锥体大小 ×0.9 ｜ ×0.85 ｜ ×0.8\\\\ 开镜时长 ×0.85 ｜ ×0.75 ｜ ×0.7", "费用": "{cost|2–3}"}}, "icon_local": "armor-mods/icons/e1c888760c.webp", "kind": "模组族", "members": [967052942, 721001747, 1305536863, 2467203039, 2719698929, 1589556860, 3000428062], "page": "armor-mods"},
-  "4294967300": {"from": "站内自发", "i18n": {"zh-CN": {"name": "灵巧", "效果": "对与模组元素相同的武器：\\\\ \\\\ 取出／收起时长 ×0.8 ｜ ×0.75 ｜ ×0.7。\\\\ \\\\ {note|收起动画时长不会超过 100 操控性对应的值。}", "费用": "{cost|2–3}"}}, "icon_local": "armor-mods/icons/1ca08d7545.webp", "kind": "模组族", "members": [467550918, 2076329105, 193878019, 1677180919, 2059068466, 3067648983, 3323910164], "page": "armor-mods"},
-  "4294967301": {"from": "站内自发", "i18n": {"zh-CN": {"name": "装弹装置", "效果": "对与模组元素相同的武器，取出约 0.5 秒后：\\\\ \\\\ +10 ｜ +15 ｜ +18 填装速度\\\\ 填装时长 ×0.85", "费用": "{cost|2–3}"}}, "icon_local": "armor-mods/icons/6def7c9c80.webp", "kind": "模组族", "members": [1079896271, 2586562813, 2657604783, 2793548555, 1125523126, 3980769162, 4244246940], "page": "armor-mods"},
-  "4294967302": {"from": "站内自发", "i18n": {"zh-CN": {"name": "抗性", "效果": "对{enemy|战斗人员}获得 15% ｜ 25% ｜ 30% 伤害抗性。\\\\ \\\\ {note|元素抗性模组只减免与该元素匹配的伤害。}\\\\ {note|狙击伤害抗性减免 30 米以外的伤害。}\\\\ {note|近战伤害抗性减免 5 米以内的伤害。}\\\\ {note|震荡阻尼器减免范围、冲击与爆炸伤害。}\\\\ \\\\ {note|不同的抗性模组之间、抗性与其他减伤来源之间，一律乘算叠加。}", "费用": "{cost|1–3}"}}, "icon_local": "armor-mods/icons/5704e0690e.webp", "kind": "模组族", "members": [707237917, 1293710444, 1763668984, 2959732323, 3410844187, 638704972, 953234331, 3719981603, 3194530172], "page": "armor-mods"},
-  "4294967303": {"from": "站内自发", "i18n": {"zh-CN": {"name": "稳定瞄准", "效果": "对与模组元素相同的武器，开镜期间：\\\\ \\\\ 25% ｜ 30% ｜ 35% 受击抖动抗性。\\\\ \\\\ {note|各种受击抖动抗性之间乘算叠加。}", "费用": "{cost|2–3}"}}, "icon_local": "armor-mods/icons/40f9f7cd61.webp", "kind": "模组族", "members": [319908131, 1553790504, 1262438062, 2959504464, 3094620656, 3437323171, 3979621113], "page": "armor-mods"},
-  "4294967304": {"from": "站内自发", "i18n": {"zh-CN": {"name": "枪套", "效果": "收起的武器在一段时间后开始自动填装。\\\\ \\\\ 每次触发填装弹匣的 10% ｜ 10% ｜ 15%。\\\\ 两次触发之间间隔 2.5 ｜ 2 ｜ 2 秒。\\\\ \\\\ {note|对后膛填装的榴弹发射器、弩与火箭发射器无效。}", "费用": "{cost|1-2}"}}, "icon_local": "armor-mods/icons/cc9c7065bd.webp", "kind": "模组族", "members": [2452545487, 335129856, 3573031954, 3581696649, 3775916472, 3969361392, 4294909663], "page": "armor-mods"},
-  "4294967305": {"from": "站内自发", "i18n": {"zh-CN": {"name": "回收利用", "效果": "用与模组元素相同的武器拾取弹药块时：\\\\ 通常额外提供 +1 发弹药。\\\\ \\\\ 机枪额外提供 +7 发。\\\\ 追踪步枪改为提高 +10% 储备上限。\\\\ \\\\ {note|弹药块默认提供 25% 到 33% 的储备。}\\\\ {note|对弹药搜寻者生成的弹药块完全生效。}\\\\ {note|在 PvP 模式中不生效。}", "费用": "{cost|2–3}"}}, "icon_local": "armor-mods/icons/9c12b507c5.webp", "kind": "模组族", "members": [688956976, 1097608874, 1301391064, 2257238439, 534479613, 802695661, 2734674728], "page": "armor-mods"},
-  "4294967306": {"from": "站内自发", "i18n": {"zh-CN": {"name": "武器激涌", "效果": "{armor-charge|护甲充能}生效期间：\\\\ 提高与模组元素相同的武器伤害。\\\\ \\\\ 伤害提高：\\\\ 10%{pvp|[3%]} ｜ 17%{pvp|[4.5%]} ｜ 22%{pvp|[5.5%]} ｜ 25%{pvp|[6%]}\\\\ \\\\ {note|x4 只能靠神器或异域护甲拿到。}", "费用": "{cost|3}"}}, "icon_local": "armor-mods/icons/4fc3a01c77.webp", "kind": "模组族", "members": [1834163303, 14520248, 2319885414, 2921714558, 3112965625, 3467460423], "page": "armor-mods"},
-  "4294967307": {"from": "站内自发", "i18n": {"zh-CN": {"name": "固有 Perk", "realgame_details": "相对泰坦与术士的固有优势：\\\\ \\\\ 基础疾跑速度 8.5 米每秒，另两个职业是 8 米每秒。\\\\ 基准敏捷 100 {pvp|[70]}，取出与收起动画时长 0.9× {pvp|[0.95×]}。\\\\ {note|这份疾跑加速等同于异域护甲提供的那一份，只与轻质框架武器叠加。}", "冷却": ""}}, "icon_local": "elements/class-abilities/icons/0ebd16171b.webp", "kind": "机制", "page": "elements/class-abilities"},
-  "4294967308": {"from": "站内自发", "i18n": {"zh-CN": {"name": "固有 Perk", "realgame_details": "相对猎人与术士的固有优势：\\\\ \\\\ 基础近战伤害提高 20% {pvp|[5%]}。{note|该提升为乘算。}", "冷却": ""}}, "icon_local": "elements/class-abilities/icons/2b9f780c57.webp", "kind": "机制", "page": "elements/class-abilities"},
-  "4294967309": {"from": "站内自发", "i18n": {"zh-CN": {"name": "固有 Perk", "realgame_details": "相对泰坦与猎人的固有优势：\\\\ \\\\ 手雷回复速度 1.1×。\\\\ 手雷技能伤害提高 5% {pvp|[2.5%]}。", "冷却": ""}}, "icon_local": "elements/class-abilities/icons/4ec68715cd.webp", "kind": "机制", "page": "elements/class-abilities"},
-  "4294967310": {"from": "站内自发", "i18n": {"zh-CN": {"name": "元素效果", "realgame_details": "元素效果指各分支职业能施加的全部动词，对目标可以是正面（{buff|增益}）也可以是负面（{debuff|减益}）。\\\\ \\\\ 装备任意{el-arc|电弧}技能或星相即可通过多次{el-arc|电弧}击杀获得{el-arc|增幅}（{note|推进器不计为电弧技能}）。\\\\ 装备任意{el-strand|缚丝}技能或星相即可生成{el-strand|缠结}，术士还能拥有停栖的{el-strand|线虫}。\\\\ \\\\ 光能动词：\\\\ {el-arc|电弧} ｜ {buff|增益} {el-arc|增幅}、{el-arc|电光充能}；{debuff|减益} {deb-arc|致盲}、{deb-arc|震颤}；拾取物 {el-arc|离子轨迹}。\\\\ {el-solar|烈日} ｜ {buff|增益} {el-solar|治愈}、{el-solar|焕光}、{el-solar|恢复}；{debuff|减益} {deb-solar|灼烧}、{deb-solar|点燃}；拾取物 {el-solar|焰灵}。\\\\ {el-void|虚空} ｜ {buff|增益} {el-void|吞食}、{el-void|隐身}、{el-void|虚空覆盖护盾}；{debuff|减益} {deb-void|压制}、{deb-void|不稳定}、{deb-void|虚弱}；拾取物 {el-void|虚空裂口}。\\\\ \\\\ 暗影动词：\\\\ {el-stasis|冰影} ｜ {buff|增益} {el-stasis|冰霜护甲}；{debuff|减益} {deb-stasis|减速}、{deb-stasis|冻结}、{deb-stasis|碎裂}；拾取物 {el-stasis|冰影碎片}。\\\\ {el-strand|缚丝} ｜ {buff|增益} {el-strand|织造铠甲}；{debuff|减益} {deb-strand|割裂}、{deb-strand|悬停}、{deb-strand|瓦解}；拾取物 {el-strand|缠结}。"}}, "icon_local": "elements/prismatic/icons/dd3a0a4404.webp", "kind": "机制", "page": "elements/prismatic"},
-  "4294967311": {"from": "站内自发", "i18n": {"zh-CN": {"name": "移动与职业技能", "realgame_details": "通常受分支职业限制的移动技能与职业技能，在{el-prismatic|棱镜}上可以自由选择。\\\\ 猎人可以使用瞬移与特技闪身。\\\\ 泰坦拥有推进器。\\\\ 术士可以装备瞬移与凤凰俯冲。"}}, "icon_local": "elements/prismatic/icons/65da718e9d.webp", "kind": "机制", "page": "elements/prismatic"},
-  "4294967312": {"from": "站内自发", "i18n": {"zh-CN": {"name": "熔炉竞技场调整", "realgame_details": "手雷、近战与职业技能 ｜ 充能速度降为 0.85 倍，回复倍率获取降为 0.8 倍。\\\\ 该惩罚与熔炉竞技场基准的 0.8 倍充能速度叠加，实际为基准之上的 0.68 倍。\\\\ \\\\ 超能技能 ｜ 充能速度降为 0.95 倍。\\\\ 与基准的 0.75 倍叠加，实际 0.71 倍。"}}, "icon_local": "elements/prismatic/icons/42fa7a8bb7.webp", "kind": "机制", "page": "elements/prismatic"},
-  "4294967313": {"from": "站内自发", "i18n": {"zh-CN": {"name": "冰冻奇点", "realgame_details": "接触时最多造成 70 {pvp|[26]} {el-void|虚空伤害}，把 12 米内的{enemy|敌方目标}拉向它，并生成一颗被{deb-stasis|减速}冰环环绕的微型黑洞。\\\\ \\\\ {deb-stasis|减速}场域每 0.25 秒对 6 米内的{enemy|敌方目标}造成 18 {pvp|[4]} {el-stasis|冰影伤害}并施加 {unsure|13?} 层{deb-stasis|减速}，持续 3.65 秒。\\\\ \\\\ 命中 5 秒后黑洞内爆，施加{deb-void|压制}并对 7 米内的{enemy|敌方目标}最多造成 570 {pvp|[150]} {el-void|虚空伤害}。"}}, "icon_local": "elements/prismatic/icons/11b1145e21.webp", "kind": "机制", "page": "elements/prismatic"},
-  "4294967314": {"from": "站内自发", "i18n": {"zh-CN": {"name": "灼烧与点燃效果伤害缩放", "realgame_details": "{deb-solar|灼烧}与{deb-solar|点燃}的伤害能被 Perk 和{exotic|异域}装备提高，但**最初对其施加{deb-solar|灼烧}的来源**决定它算哪一类伤害。\\\\ \\\\ 用武器施加（{perk|辉耀炽热}、{perk|燃烧野心}，或{exotic|汤米的火柴盒}、{exotic|条件终局}这类{exotic|异域}武器）：\\\\ 算武器伤害，吃武器{buff|增益}与只加武器的活动修正——其它伤害 Perk、武器属性、{el-solar|焕光}、{el-solar|烈日}武器激涌。\\\\ 新装备加成对所有武器永久生效，所以在战斗人员等级伤害倍率的基础上，对{enemy|战斗人员}的{deb-solar|灼烧}与{deb-solar|点燃}伤害始终比预期高 5%。\\\\ \\\\ 用技能施加（{el-solar|融合手雷}、光焰之井）：\\\\ 算{el-solar|烈日}技能伤害，只吃手雷（{exotic|真理之容}）与超能（{art-perk|烈焰之心}）各自的伤害提升。\\\\ 近战伤害{buff|增益}与 100 以上的近战属性都不提高它。\\\\ \\\\ 提高全部技能伤害的效果，对所有由{el-solar|烈日}技能施加的{deb-solar|灼烧}与{deb-solar|点燃}效果都生效。\\\\ 提高全部{el-solar|烈日}伤害的活动修正（如{el-solar|烈日}激涌）对{deb-solar|灼烧}与{deb-solar|点燃}效果一律生效，不分来源。"}}, "icon_local": "elements/solar/icons/d30325aad9.webp", "kind": "机制", "page": "elements/solar"},
-  "4294967315": {"from": "站内自发", "i18n": {"zh-CN": {"name": "弩弹", "realgame_details": "弩弹造成 1192 {unsure|[?]} 伤害，精准倍率 1.34×。\\\\ 弩弹命中时嵌入目标，持续时间取决于坚韧属性，可拾回以回复 1 发弹药。\\\\ 拾取一枚弩弹时会同时拾取{bar-orange|守护者} {unsure|2?} 米内的其余所有弩弹。\\\\ \\\\ 弩弹可拾取时长 = 20 + (属性 × 0.3) 秒"}}, "icon_local": "weapon-perks/icons/ef1d11ab53.webp", "kind": "机制", "page": "weapon-perks"},
-  "4294967316": {"from": "站内自发", "i18n": {"zh-CN": {"name": "近战 攻击", "realgame_details": "手持偃月时按 [近战] 会向 7 米内的{enemy|战斗人员}突进，造成 227 {pvp|[97.04]} 伤害。\\\\ 可连成 3 段连击，每段间隔 0.467 秒。连击结束后的动作延迟可用 [机瞄] 跳过\\\\ 连击的最后一击伤害提高 78.5% {pvp|[88.8%]}。\\\\ \\\\ 偃月近战攻击视为{el-kinetic|动能}伤害的非超能近战攻击。\\\\ 武器伤害{buff|增益}不增强近战攻击。不受泰坦近战伤害固有加成影响。", "site_frameStats": [{"1mag_bdps": 267, "1mag_mdps": 532, "add_score": 1230, "ammoType": 2, "base_damage": 429.627, "base_interval": 1.611, "body_mdps": 532, "boss_score": 493, "boss_total": "INF", "elite_scalar": 2.0, "itemSubType": 33, "luna_bdps": 267, "luna_mdps": 532, "max_bdps": 300, "max_mdps": 598, "minor_scalar": 2.0, "minor_total": "INF", "notes": "不适用 / 无数据。", "optimized_interval": 1.433, "site_example": 3118061005, "true_rpm": 37.2, "typical_bdps": 267, "typical_edps": 532, "typical_mdps": 532}]}}, "icon_local": "weapon-perks/icons/9adaf5ba95.webp", "kind": "机制", "page": "weapon-perks"},
-  "4294967317": {"from": "站内自发", "i18n": {"zh-CN": {"name": "射弹攻击", "realgame_details": "偃月的弹丸攻击视为武器伤害，可受任何通用或武器专属的伤害提升影响。\\\\ \\\\ 射击后 0.2 秒内无法进行近战攻击。"}}, "icon_local": "weapon-perks/icons/b128ef414b.webp", "kind": "机制", "page": "weapon-perks"},
-  "4294967318": {"from": "站内自发", "i18n": {"zh-CN": {"name": "武器能量与护盾", "realgame_details": "远程弹丸命中默认提供 25% 武器能量。\\\\ 手持偃月时每秒被动产生 1% 武器能量。\\\\ \\\\ 手持偃月按 [机瞄] 会在身前展开护盾，对击中护盾的攻击提供伤害抗性，代价是消耗武器能量并降低移动速度。\\\\ 基础偃月格挡移动速度在没有武器能量时为 0.85×，有武器能量时为 0.66×。\\\\ 举盾所需时间取决于操控性与机瞄速度数值。\\\\ \\\\ 偃月护盾：\\\\ 对{enemy|战斗人员}提供 97.5% 伤害抗性。\\\\ 对{bar-orange|守护者}提供 50% 伤害抗性。主要弹药武器与近战攻击只获得 30% 伤害抗性。\\\\ {exotic|维王者之剑}特有地对{bar-orange|守护者}造成的全部伤害提供 50% 伤害抗性。\\\\ \\\\ 武器能量消耗速率：\\\\ 护盾持续 0 = 6.5 秒｜护盾持续 50 = 12 秒｜护盾持续 100 = {unsure|18?} 秒\\\\ 消耗速率 = 6.5 + (护盾持续时间 × ~0.1)"}}, "icon_local": "weapon-perks/icons/fc968b0393.webp", "kind": "机制", "page": "weapon-perks"},
-  "4294967319": {"from": "站内自发", "i18n": {"zh-CN": {"name": "刀剑格挡", "realgame_details": "按 [格挡] 在身前展开能量护盾，护盾随时间持续消耗，速率由防御持久决定。\\\\ 格挡期间移动速度倍率 0.85×。\\\\ \\\\ 击中护盾的攻击伤害降低，伤害抗性由防御抗性决定。\\\\ 按防御抗性属性从 82.5% {pvp|[52.5%]} 提升至 95% {pvp|[65%]} 伤害抗性。"}}, "icon_local": "weapon-perks/icons/ccc9d845cd.webp", "kind": "机制", "page": "weapon-perks"},
-  "4294967320": {"from": "站内自发", "i18n": {"zh-CN": {"name": "抓钩缠结", "realgame_details": "只与{el-strand|抓钩}交互的{el-strand|缠结}等价物，{el-strand|抓钩}时表现与普通{el-strand|缠结}一致。\\\\ \\\\ 最长持续 20 秒，每次{el-strand|抓钩}刷新 5 秒；无法被摧毁，也无法拾取。\\\\ 瞄准 27 米（装备{el-strand|抓钩}手雷时 32 米）内的{el-strand|抓钩缠结}，会在 0.3 秒内把手雷技能覆盖为非攻势{el-strand|抓钩}。\\\\ {el-strand|缚丝}与{el-prismatic|棱镜}分支职业允许使用{el-strand|抓钩}近战；{el-prismatic|棱镜}术士需要装备{el-strand|神秘织针}才能用。\\\\ {note|连续 5 次抓取同一枚抓钩缠结后，刷新量降到 1 秒。}"}}, "icon_local": "elements/strand/icons/22406e20bf.webp", "kind": "机制", "page": "elements/strand"},
-  "4294967321": {"from": "站内自发", "i18n": {"zh-CN": {"name": "瓦解弹药", "realgame_details": "{el-strand|缚丝}武器造成伤害时施加{deb-strand|瓦解}。"}}, "icon_local": "elements/strand/icons/a2e8c19bf6.webp", "kind": "机制", "page": "elements/strand"},
-  "4294967322": {"from": "站内自发", "i18n": {"zh-CN": {"name": "不稳定弹药", "realgame_details": "{el-void|虚空}武器造成伤害时施加{deb-void|不稳定}。\\\\ {deb-void|不稳定}子弹激活期间，对{enemy|勇士}的武器伤害提高 10%。"}}, "icon_local": "elements/void/icons/6236b2edc3.webp", "kind": "机制", "page": "elements/void"},
-  "4294967323": {"from": "站内自发", "i18n": {"zh-CN": {"name": "手持超新星", "realgame_details": "{note|装备磁性、虚空尖刺、抑制或虚空墙壁手雷、并带星相「混沌加速」时的形态}\\\\ \\\\ 被动提供 1.154 倍手雷充能速度。\\\\ 按住［手雷］蓄力 {unsure|?} 秒后准备就绪，最多维持 4.5 秒。\\\\ \\\\ 松开［手雷］：\\\\ 向前发出一道短射程{el-void|虚空}爆炸，造成 150 {pvp|[50]} 伤害并强力击退 12.5 米扇形内的{enemy|敌方目标}。\\\\ 爆炸同时释放 9 发{el-void|虚空}矢弹，最远 12.5 米，每发在 3 米半径内造成 375 {pvp|[15]} 溅射伤害并施加{deb-void|不稳定}。\\\\ 9 发矢弹加初始爆炸全中时最多合计 3525 {pvp|[185]} 伤害。\\\\ {note|对自身伤害降低 75%，也不会给自己施加不稳定。}", "基础冷却": ""}}, "icon_local": "elements/void/icons/824cbafc99.webp", "kind": "组合", "members": [2321824285, 1547656727, 1255073825, 2265076177, 2809141585], "page": "elements/void"},
-  "4294967324": {"from": "站内自发", "i18n": {"zh-CN": {"name": "英勇利刃 2：冲击核心", "realgame_details": "核心按所装备的超能技能元素提供对应的元素效果。\\\\ 由{exotic|英勇利刃}首次施加的{el-solar|烈日}效果伤害提高 5%，且其伤害可被武器{buff|增益}提高。", "site_when": "当装上"}}, "kind": "组合", "members": [3049715579, 3268768926], "page": "exotic-weapon"},
-  "4294967325": {"from": "站内自发", "i18n": {"zh-CN": {"name": "故我在（任意元素）", "site_when": "当任意元素"}}, "kind": "组合", "members": [1681583613, 3551049142, 1959135343], "page": "exotic-weapon"},
-  "4294967326": {"from": "站内自发", "i18n": {"zh-CN": {"name": "故我在（电弧元素）", "realgame_details": "只列{el-arc|电弧}元素版本才有的 Perk。", "site_when": "当{el-arc|电弧}元素"}}, "kind": "组合", "members": [1681583613, 3949068808, 461437088], "page": "exotic-weapon"},
-  "4294967327": {"from": "站内自发", "i18n": {"zh-CN": {"name": "故我在（烈日元素）", "realgame_details": "只列{el-solar|烈日}元素版本才有的 Perk。", "site_when": "当{el-solar|烈日}元素"}}, "kind": "组合", "members": [1681583613, 1522566605, 3034060702], "page": "exotic-weapon"},
-  "4294967328": {"from": "站内自发", "i18n": {"zh-CN": {"name": "故我在（虚空元素）", "realgame_details": "只列{el-void|虚空}元素版本才有的 Perk。", "site_when": "当{el-void|虚空}元素"}}, "kind": "组合", "members": [1681583613, 1327961177, 3325420353], "page": "exotic-weapon"},
-  "4294967329": {"authors": {"LGpig": {"DPS": "5147", "总伤": "108087", "理由一": "伤害非常高，保证{el-prismatic|超凡}回转就等于无限弹药，涡流增强的受益者", "理由三": "", "理由二": "仅限于{el-prismatic|超凡}持续时间内伤害高，适合 20 秒的短轴猎人日志 vog 套输出手法：一直右键，不打左键", "评级": "高难：T0.5\\\\输出：T1"}}, "from": "站内自发", "i18n": {"zh-CN": {"name": "故我在\\\\（意外缓刑）\\\\涡流"}}, "kind": "组合", "members": [1681583613, 1327961177, 2557881346], "page": "exotic-weapons"},
-  "4294967330": {"authors": {"LGpig": {"DPS": "5264", "总伤": "92644", "理由一": "伤害不错，配合{exotic|黎明副歌}伤害很高，更重要的是反屏障", "理由三": "", "理由二": "仅限于{el-prismatic|超凡}持续时间内伤害高，适合 20 秒的短轴绑定{exotic|黎明副歌}，猎人日志 vog 套输出手法：一重+二轻，带火炮台一重一轻", "评级": "高难：T0.5\\\\输出：T1.5"}}, "from": "站内自发", "i18n": {"zh-CN": {"name": "故我在\\\\（纯五度）\\\\铸造"}}, "kind": "组合", "members": [1681583613, 1522566605, 519046634], "page": "exotic-weapons"},
-  "4294967331": {"authors": {"LGpig": {"DPS": "", "总伤": "", "理由一": "有减伤且高效的清怪武器，过载也能配合{art-perk|元素超充器}转电大触发{art-perk|光子耀斑}频繁{el-arc|电弧}{deb-arc|致盲}", "理由三": "", "理由二": "{el-prismatic|棱镜}分支的专属武器，适合清理{bar-red|红血}与{bar-yellow|初级首领}", "评级": "清怪：T1\\\\高难：T2"}}, "from": "站内自发", "i18n": {"zh-CN": {"name": "故我在\\\\（{el-arc|电弧}导体）\\\\波形"}}, "kind": "组合", "members": [1681583613, 3949068808, 289811733], "page": "exotic-weapons"},
-  "4294967332": {"authors": {"LGpig": {"DPS": "4842", "总伤": "98852", "理由一": "伤害比涡流略低但更容易吃满土味子弹猎人日志 vog 套输出手法：一重+二轻", "理由三": "", "理由二": "", "评级": "输出：T1"}}, "from": "站内自发", "i18n": {"zh-CN": {"name": "故我在\\\\（意外缓刑）\\\\轻质"}}, "kind": "组合", "members": [1681583613, 1327961177, 2753228730], "page": "exotic-weapons"},
-  "4294967333": {"authors": {"LGpig": {"DPS": "", "总伤": "", "理由一": "紫刀剑和{exotic|故我在}的辅助武器。", "理由三": "", "理由二": "", "评级": "特殊用途"}}, "from": "站内自发", "i18n": {"zh-CN": {"name": "故我在\\\\（狼群弹药）\\\\任意"}}, "kind": "组合", "members": [1681583613, 1959135343], "page": "exotic-weapons"}
+  "10": {
+    "from": "DestinyItemCategoryDefinition",
+    "i18n": {
+      "zh-CN": {
+        "name": "狙击步枪",
+        "site_aliases": [
+          {
+            "name": "狙击枪"
+          }
+        ]
+      }
+    },
+    "kind": "枪型"
+  },
+  "153950757": {
+    "from": "DestinyItemCategoryDefinition",
+    "i18n": {
+      "zh-CN": {
+        "name": "榴弹发射器",
+        "site_aliases": [
+          {
+            "ammoType": 2,
+            "name": "后膛榴弹"
+          },
+          {
+            "ammoType": 2,
+            "name": "后膛榴弹发射器"
+          },
+          {
+            "ammoType": 3,
+            "name": "弹鼓榴弹"
+          },
+          {
+            "ammoType": 3,
+            "name": "弹鼓榴弹发射器"
+          }
+        ]
+      }
+    },
+    "kind": "枪型"
+  },
+  "292102995": {
+    "from": "DestinyMilestoneDefinition",
+    "i18n": {
+      "zh-CN": {
+        "name": "国王的陨落"
+      }
+    },
+    "kind": "来源"
+  },
+  "332181804": {
+    "from": "DestinyActivityModeDefinition",
+    "i18n": {
+      "zh-CN": {
+        "name": "梦魇狩猎"
+      }
+    },
+    "kind": "来源"
+  },
+  "540415767": {
+    "from": "DestinyMilestoneDefinition",
+    "i18n": {
+      "zh-CN": {
+        "name": "克洛塔的末日"
+      }
+    },
+    "kind": "来源"
+  },
+  "541780856": {
+    "from": "DestinyMilestoneDefinition",
+    "i18n": {
+      "zh-CN": {
+        "name": "深岩墓室"
+      }
+    },
+    "kind": "来源"
+  },
+  "671679327": {
+    "from": "DestinyClassDefinition",
+    "i18n": {
+      "zh-CN": {
+        "name": "猎人"
+      }
+    },
+    "kind": "职业"
+  },
+  "1416096592": {
+    "from": "DestinyDestinationDefinition",
+    "i18n": {
+      "zh-CN": {
+        "name": "幽梦之城"
+      }
+    },
+    "kind": "来源"
+  },
+  "1888320892": {
+    "from": "DestinyMilestoneDefinition",
+    "i18n": {
+      "zh-CN": {
+        "name": "玻璃拱顶"
+      }
+    },
+    "kind": "来源"
+  },
+  "2136320298": {
+    "from": "DestinyMilestoneDefinition",
+    "i18n": {
+      "zh-CN": {
+        "name": "门徒誓约"
+      }
+    },
+    "kind": "来源"
+  },
+  "2271682572": {
+    "from": "DestinyClassDefinition",
+    "i18n": {
+      "zh-CN": {
+        "name": "术士"
+      }
+    },
+    "kind": "职业"
+  },
+  "2712317338": {
+    "from": "DestinyMilestoneDefinition",
+    "i18n": {
+      "zh-CN": {
+        "name": "救赎花园"
+      }
+    },
+    "kind": "来源"
+  },
+  "3181387331": {
+    "from": "DestinyMilestoneDefinition",
+    "i18n": {
+      "zh-CN": {
+        "name": "最后一愿"
+      }
+    },
+    "kind": "来源"
+  },
+  "3317538576": {
+    "from": "DestinyItemCategoryDefinition",
+    "i18n": {
+      "zh-CN": {
+        "name": "弓箭",
+        "site_aliases": [
+          {
+            "ammoType": 3,
+            "name": "弩"
+          }
+        ]
+      }
+    },
+    "kind": "枪型"
+  },
+  "3655393761": {
+    "from": "DestinyClassDefinition",
+    "i18n": {
+      "zh-CN": {
+        "name": "泰坦"
+      }
+    },
+    "kind": "职业"
+  },
+  "3699252268": {
+    "from": "DestinyMilestoneDefinition",
+    "i18n": {
+      "zh-CN": {
+        "name": "梦魇根源"
+      }
+    },
+    "kind": "来源"
+  },
+  "3954685534": {
+    "from": "DestinyItemCategoryDefinition",
+    "i18n": {
+      "zh-CN": {
+        "name": "微型冲锋枪",
+        "site_aliases": [
+          {
+            "name": "冲锋枪"
+          }
+        ]
+      }
+    },
+    "kind": "枪型"
+  },
+  "4196566271": {
+    "from": "DestinyMilestoneDefinition",
+    "i18n": {
+      "zh-CN": {
+        "name": "救赎的边缘"
+      }
+    },
+    "kind": "来源"
+  },
+  "4294967296": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "弹药搜寻者",
+        "效果": "{ammo-special|特殊弹药}搜寻者：\\\\ 弹药进度倍率为 1.25× ｜ 1.4× ｜ 1.5×。\\\\ \\\\ {ammo-heavy|威能弹药}搜寻者：\\\\ 弹药进度倍率为 1.25× ｜ 1.4× ｜ 1.5×。",
+        "费用": "{cost|3}"
+      }
+    },
+    "icon_local": "armor-mods/icons/fc4ae31f8f.webp",
+    "kind": "模组族",
+    "members": [
+      554409585,
+      2595839237
+    ],
+    "page": "armor-mods"
+  },
+  "4294967297": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "弹药斥候",
+        "效果": "生成与模组匹配的弹药块时：\\\\ 为{enemy|盟友}生成一份相同的弹药块。\\\\ \\\\ 拾取弹药斥候生成的弹药块时：\\\\ 拾取量为常规弹药块的 37% ｜ 67% ｜ 100%。\\\\ \\\\ 强化弹药块的出现概率由{enemy|盟友}的武器属性决定。",
+        "费用": "{cost|1}"
+      }
+    },
+    "icon_local": "armor-mods/icons/71a7b2fb1c.webp",
+    "kind": "模组族",
+    "members": [
+      25154119,
+      1274140735
+    ],
+    "page": "armor-mods"
+  },
+  "4294967298": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "虹吸",
+        "效果": "3 秒内用与模组元素匹配的武器连续击杀 2 名{enemy|战斗人员}或敌方{bar-orange|守护者}：\\\\ 生成一枚提供 {orb|超能能量} 的{orb|能量球}：\\\\ 2.5% ｜ 3.75% ｜ 4.4%。\\\\ \\\\ {note|生成能量球后有 1 秒冷却，冷却期间的击杀不计数。}",
+        "费用": "{cost|1–2–3}"
+      }
+    },
+    "icon_local": "armor-mods/icons/e9bc3eb2af.webp",
+    "kind": "模组族",
+    "members": [
+      521530777,
+      1388734897,
+      2773358872,
+      837201397,
+      3832366019,
+      2724068510,
+      3926119246,
+      4255093903
+    ],
+    "page": "armor-mods"
+  },
+  "4294967299": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "瞄准性能",
+        "效果": "装备与模组元素匹配的武器，取出 1 秒后：\\\\ 瞄准辅助 +5 ｜ +8 ｜ +10\\\\ 精度锥体大小 ×0.9 ｜ ×0.85 ｜ ×0.8\\\\ 开镜时长 ×0.85 ｜ ×0.75 ｜ ×0.7",
+        "费用": "{cost|2–3}"
+      }
+    },
+    "icon_local": "armor-mods/icons/e1c888760c.webp",
+    "kind": "模组族",
+    "members": [
+      967052942,
+      721001747,
+      1305536863,
+      2467203039,
+      2719698929,
+      1589556860,
+      3000428062
+    ],
+    "page": "armor-mods"
+  },
+  "4294967300": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "灵巧",
+        "效果": "装备与模组元素匹配的武器时：\\\\ 取出与收起动画时长 ×0.8 ｜ ×0.75 ｜ ×0.7。\\\\ \\\\ {note|收起动画时长不会超过 100 操控性对应的值。}",
+        "费用": "{cost|2–3}"
+      }
+    },
+    "icon_local": "armor-mods/icons/1ca08d7545.webp",
+    "kind": "模组族",
+    "members": [
+      467550918,
+      2076329105,
+      193878019,
+      1677180919,
+      2059068466,
+      3067648983,
+      3323910164
+    ],
+    "page": "armor-mods"
+  },
+  "4294967301": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "装弹装置",
+        "效果": "装备与模组元素匹配的武器，取出约 0.5 秒后：\\\\ 填装速度 +10 ｜ +15 ｜ +18\\\\ 填装动画时长 ×0.85。",
+        "费用": "{cost|2–3}"
+      }
+    },
+    "icon_local": "armor-mods/icons/6def7c9c80.webp",
+    "kind": "模组族",
+    "members": [
+      1079896271,
+      2586562813,
+      2657604783,
+      2793548555,
+      1125523126,
+      3980769162,
+      4244246940
+    ],
+    "page": "armor-mods"
+  },
+  "4294967302": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "抗性",
+        "效果": "对{enemy|战斗人员}获得 15% ｜ 25% ｜ 30% 伤害抗性。\\\\ \\\\ {note|元素抗性模组只减免与该元素匹配的伤害。}\\\\ {note|狙击抗性模组减免 30 米以外的伤害。}\\\\ {note|近战抗性模组减免 5 米以内的伤害。}\\\\ {note|模组「震荡阻尼器」减免范围、冲击与爆炸伤害。}\\\\ \\\\ {note|不同抗性模组之间、抗性与其他减伤来源之间一律乘算叠加。}",
+        "费用": "{cost|1–3}"
+      }
+    },
+    "icon_local": "armor-mods/icons/5704e0690e.webp",
+    "kind": "模组族",
+    "members": [
+      707237917,
+      1293710444,
+      1763668984,
+      2959732323,
+      3410844187,
+      638704972,
+      953234331,
+      3719981603,
+      3194530172
+    ],
+    "page": "armor-mods"
+  },
+  "4294967303": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "稳定瞄准",
+        "效果": "装备与模组元素匹配的武器，开镜瞄准期间：\\\\ 获得 25% ｜ 30% ｜ 35% 受击抖动抗性。\\\\ \\\\ {note|各种受击抖动抗性来源之间乘算叠加。}",
+        "费用": "{cost|2–3}"
+      }
+    },
+    "icon_local": "armor-mods/icons/40f9f7cd61.webp",
+    "kind": "模组族",
+    "members": [
+      319908131,
+      1553790504,
+      1262438062,
+      2959504464,
+      3094620656,
+      3437323171,
+      3979621113
+    ],
+    "page": "armor-mods"
+  },
+  "4294967304": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "枪套",
+        "效果": "收起武器一段时间后开始周期性自动填装：\\\\ 每次填装弹匣容量的 10% ｜ 10% ｜ 15%\\\\ 触发间隔为 2.5 ｜ 2 ｜ 2 秒。\\\\ \\\\ {note|对单发后膛填装榴弹发射器、弩与火箭发射器无效。}",
+        "费用": "{cost|1-2}"
+      }
+    },
+    "icon_local": "armor-mods/icons/cc9c7065bd.webp",
+    "kind": "模组族",
+    "members": [
+      2452545487,
+      335129856,
+      3573031954,
+      3581696649,
+      3775916472,
+      3969361392,
+      4294909663
+    ],
+    "page": "armor-mods"
+  },
+  "4294967305": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "回收利用",
+        "效果": "手持与模组元素匹配的武器拾取弹药块时：\\\\ 通常额外提供 +1 发弹药。\\\\ \\\\ 特殊武器规则：\\\\ 机枪额外提供 +7 发\\\\ 追踪步枪改为提高 +10% 弹药储备上限。\\\\ \\\\ {note|弹药块默认提供 25% 至 33% 弹药储备。}\\\\ {note|对护甲模组「弹药搜寻者」生成的弹药块完全生效。}\\\\ {note|在 PvP 模式中不生效。}",
+        "费用": "{cost|2–3}"
+      }
+    },
+    "icon_local": "armor-mods/icons/9c12b507c5.webp",
+    "kind": "模组族",
+    "members": [
+      688956976,
+      1097608874,
+      1301391064,
+      2257238439,
+      534479613,
+      802695661,
+      2734674728
+    ],
+    "page": "armor-mods"
+  },
+  "4294967306": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "武器激涌",
+        "效果": "{armor-charge|护甲充能}生效期间：\\\\ 与模组元素匹配的武器伤害提高：\\\\ 10%{pvp|[3%]} ｜ 17%{pvp|[4.5%]} ｜ 22%{pvp|[5.5%]} ｜ 25%{pvp|[6%]}。\\\\ \\\\ {note|×4 只能靠神器或异域护甲拿到。}",
+        "费用": "{cost|3}"
+      }
+    },
+    "icon_local": "armor-mods/icons/4fc3a01c77.webp",
+    "kind": "模组族",
+    "members": [
+      1834163303,
+      14520248,
+      2319885414,
+      2921714558,
+      3112965625,
+      3467460423
+    ],
+    "page": "armor-mods"
+  },
+  "4294967307": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "固有 Perk",
+        "realgame_details": "相对泰坦与术士的猎人固有职业特性：\\\\ \\\\ 移动与属性基准：\\\\ ・基础疾跑速度：8.5 米/秒（其他职业为 8.0 米/秒）\\\\ ・基准敏捷属性：100 {pvp|[70]}\\\\ ・收放武器时长倍率：0.9× {pvp|[0.95×]}\\\\ \\\\ {note|此疾跑加速等同于异域护甲提供的移速加成，仅可与轻质框架武器叠加。}",
+        "冷却": ""
+      }
+    },
+    "icon_local": "elements/class-abilities/icons/0ebd16171b.webp",
+    "kind": "机制",
+    "page": "elements/class-abilities"
+  },
+  "4294967308": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "固有 Perk",
+        "realgame_details": "相对猎人与术士的泰坦固有职业特性：\\\\ \\\\ 基础近战伤害提高 20% {pvp|[5%]}。\\\\ \\\\ {note|此伤害提升为乘算叠加。}",
+        "冷却": ""
+      }
+    },
+    "icon_local": "elements/class-abilities/icons/2b9f780c57.webp",
+    "kind": "机制",
+    "page": "elements/class-abilities"
+  },
+  "4294967309": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "固有 Perk",
+        "realgame_details": "相对泰坦与猎人的术士固有职业特性：\\\\ \\\\ 手雷基础回复速度倍率提升至 1.1×。\\\\ 手雷技能伤害提高 5% {pvp|[2.5%]}。",
+        "冷却": ""
+      }
+    },
+    "icon_local": "elements/class-abilities/icons/4ec68715cd.webp",
+    "kind": "机制",
+    "page": "elements/class-abilities"
+  },
+  "4294967310": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "元素效果",
+        "realgame_details": "各分支职业施加的动词集合，涵盖正面{buff|增益}、负面{debuff|减益}与{pickup|元素拾取物}。\\\\ \\\\ 分支基础机制：\\\\ 装备任意{el-arc|电弧}技能或星相时，多次{el-arc|电弧}击杀可获得{el-arc|增幅}。\\\\ 装备任意{el-strand|缚丝}技能或星相时击杀可生成{el-strand|缠结}，术士可拥有停栖的{el-strand|线虫}。\\\\ \\\\ 光能元素动词：\\\\ ・{el-arc|电弧}：{buff|增益} {el-arc|增幅}、{el-arc|电光充能} ｜ {debuff|减益} {deb-arc|致盲}、{deb-arc|震颤} ｜ 拾取物 {el-arc|离子轨迹}\\\\ ・{el-solar|烈日}：{buff|增益} {el-solar|治愈}、{el-solar|焕光}、{el-solar|恢复} ｜ {debuff|减益} {deb-solar|灼烧}、{deb-solar|点燃} ｜ 拾取物 {el-solar|焰灵}\\\\ ・{el-void|虚空}：{buff|增益} {el-void|吞食}、{el-void|隐身}、{el-void|虚空覆盖护盾} ｜ {debuff|减益} {deb-void|压制}、{deb-void|不稳定}、{deb-void|虚弱} ｜ 拾取物 {el-void|虚空裂口}\\\\ \\\\ 暗影元素动词：\\\\ ・{el-stasis|冰影}：{buff|增益} {el-stasis|冰霜护甲} ｜ {debuff|减益} {deb-stasis|减速}、{deb-stasis|冻结}、{deb-stasis|碎裂} ｜ 拾取物 {el-stasis|冰影碎片}\\\\ ・{el-strand|缚丝}：{buff|增益} {el-strand|织造铠甲} ｜ {debuff|减益} {deb-strand|割裂}、{deb-strand|悬停}、{deb-strand|瓦解} ｜ 拾取物 {el-strand|缠结}\\\\ \\\\ {note|推进器不计为电弧技能。}"
+      }
+    },
+    "icon_local": "elements/prismatic/icons/dd3a0a4404.webp",
+    "kind": "机制",
+    "page": "elements/prismatic"
+  },
+  "4294967311": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "移动与职业技能",
+        "realgame_details": "原受单一分支职业限制的移动与职业技能，在{el-prismatic|棱镜}分支下可跨属性装配：\\\\ ・猎人：可选用移动技能「瞬移」与职业技能「特技闪身」\\\\ ・泰坦：可选用职业技能「推进器」\\\\ ・术士：可选用移动技能「瞬移」与职业技能「凤凰俯冲」"
+      }
+    },
+    "icon_local": "elements/prismatic/icons/65da718e9d.webp",
+    "kind": "机制",
+    "page": "elements/prismatic"
+  },
+  "4294967312": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "熔炉竞技场调整",
+        "realgame_details": "在熔炉竞技场中，棱镜分支具有专属的技能充能惩罚：\\\\ \\\\ 手雷、近战与职业技能：\\\\ 基础充能速度降为 0.85 倍，回复倍率获取降为 0.8 倍。\\\\ 与熔炉竞技场常规 0.8 倍充能速度乘算叠加，实际为常规充能的 0.68 倍。\\\\ \\\\ 超能技能：\\\\ 基础充能速度降为 0.95 倍。\\\\ 与熔炉竞技场常规 0.75 倍充能速度乘算叠加，实际为常规充能的 0.71 倍。"
+      }
+    },
+    "icon_local": "elements/prismatic/icons/42fa7a8bb7.webp",
+    "kind": "机制",
+    "page": "elements/prismatic"
+  },
+  "4294967313": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "冰冻奇点",
+        "realgame_details": "接触表面或目标时最高造成 70 {pvp|[26]} {el-void|虚空伤害}，将 12 米内的{enemy|敌方目标}牵引至中心，并生成环绕{deb-stasis|减速}光环的微型黑洞。\\\\ \\\\ {deb-stasis|减速}场域持续 3.65 秒：\\\\ 每 0.25 秒对 6 米内的{enemy|敌方目标}造成 18 {pvp|[4]} {el-stasis|冰影伤害}并施加 {unsure|13?} 层{deb-stasis|减速}。\\\\ \\\\ 附着 5 秒后黑洞内爆：\\\\ 对 7 米内的{enemy|敌方目标}最高造成 570 {pvp|[150]} {el-void|虚空伤害}并施加{deb-void|压制}。"
+      }
+    },
+    "icon_local": "elements/prismatic/icons/11b1145e21.webp",
+    "kind": "机制",
+    "page": "elements/prismatic"
+  },
+  "4294967314": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "灼烧与点燃效果伤害缩放",
+        "realgame_details": "{deb-solar|灼烧}与{deb-solar|点燃}的伤害可受武器 Perk 与{exotic|异域}防具加成，其伤害属性**由最初施加{deb-solar|灼烧}的伤害源决定**：\\\\ \\\\ 由武器施加（Perk「{perk|辉耀炽热}」、Perk「{perk|燃烧野心}」，或「{exotic|汤米的火柴盒}」、「{exotic|条件终局}」等{exotic|异域武器}）：\\\\ 计为武器伤害，享受武器伤害{buff|增益}与仅针对武器的活动修正加成（例如其他增伤 Perk、{el-solar|焕光}、防具模组「{el-solar|烈日武器激涌}」）。\\\\ 由于新装备系统常驻加成，对{enemy|战斗人员}造成的{deb-solar|灼烧}与{deb-solar|点燃}伤害在战斗人员阶级倍率基础上始终额外高 5%。\\\\ \\\\ 由技能施加（手雷「{el-solar|融合手雷}」、超能「{el-solar|光焰之井}」等）：\\\\ 计为{el-solar|烈日}技能伤害，仅分别享受手雷（如异域防具「{exotic|真理之容}」）与超能加成。\\\\ 近战伤害{buff|增益}及超过 100 点的近战属性均不提升其伤害。\\\\ \\\\ 全局效果生效规则：\\\\ ・全技能增伤效果：对所有由{el-solar|烈日}技能施加的{deb-solar|灼烧}与{deb-solar|点燃}均生效\\\\ ・烈日元素增伤修正：活动修正（如烈日激涌）对任意来源的{deb-solar|灼烧}与{deb-solar|点燃}一律生效"
+      }
+    },
+    "icon_local": "elements/solar/icons/d30325aad9.webp",
+    "kind": "机制",
+    "page": "elements/solar"
+  },
+  "4294967315": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "弩弹",
+        "realgame_details": "弩弹造成 1192 {unsure|[?]} 点伤害，精准倍率 1.34×。\\\\ 命中时嵌入目标，拾回回复 1 发弹药（拾取时同时吸纳 {unsure|2?} 米内的全部弩弹）。\\\\ \\\\ 嵌入留存时长（秒）：20 + (坚韧属性 × 0.3)。"
+      }
+    },
+    "icon_local": "weapon-perks/icons/ef1d11ab53.webp",
+    "kind": "机制",
+    "page": "weapon-perks"
+  },
+  "4294967316": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "近战 攻击",
+        "realgame_details": "手持偃月时近战攻击向 7 米内的目标突进，造成 227 {pvp|[97.04]} 点伤害：\\\\ 可进行 3 段连击（每段间隔 0.467 秒，第 3 击伤害提高 78.5% {pvp|[88.8%]}），收尾动作延迟可用开镜瞄准跳过。\\\\ \\\\ 机制属性：\\\\ 视为造成{el-kinetic|动能}伤害的非超能近战攻击；常规武器伤害增益不增强该攻击，不受泰坦近战固有加成影响。",
+        "site_frameStats": [
+          {
+            "1mag_bdps": 267,
+            "1mag_mdps": 532,
+            "add_score": 1230,
+            "ammoType": 2,
+            "base_damage": 429.627,
+            "base_interval": 1.611,
+            "body_mdps": 532,
+            "boss_score": 493,
+            "boss_total": "INF",
+            "elite_scalar": 2.0,
+            "itemSubType": 33,
+            "luna_bdps": 267,
+            "luna_mdps": 532,
+            "max_bdps": 300,
+            "max_mdps": 598,
+            "minor_scalar": 2.0,
+            "minor_total": "INF",
+            "notes": "不适用 / 无数据。",
+            "optimized_interval": 1.433,
+            "site_example": 3118061005,
+            "true_rpm": 37.2,
+            "typical_bdps": 267,
+            "typical_edps": 532,
+            "typical_mdps": 532
+          }
+        ]
+      }
+    },
+    "icon_local": "weapon-perks/icons/9adaf5ba95.webp",
+    "kind": "机制",
+    "page": "weapon-perks"
+  },
+  "4294967317": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "射弹攻击",
+        "realgame_details": "偃月弹丸攻击计为武器伤害，受通用与武器专属伤害增益加成；射击后 0.2 秒内不可进行近战攻击。"
+      }
+    },
+    "icon_local": "weapon-perks/icons/b128ef414b.webp",
+    "kind": "机制",
+    "page": "weapon-perks"
+  },
+  "4294967318": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "武器能量与护盾",
+        "realgame_details": "远程弹丸命中默认提供 25% 武器能量；手持偃月时每秒被动恢复 1% 武器能量。\\\\ \\\\ 展开护盾：\\\\ 手持偃月开镜在身前展开护盾，消耗能量提供高额伤害抗性（移速倍率无能量 0.85×、有能量 0.66×；展开耗时由操控性与开镜速度决定）：\\\\ ・对{enemy|战斗人员}：97.5% 伤害抗性\\\\ ・对{bar-orange|守护者}：50% 伤害抗性（主要弹药武器与近战攻击为 30%；异域武器「{exotic|维王者之剑}」对所有来源均提供 50%）\\\\ \\\\ 满能量护盾维持时间（秒）：6.5 + (护盾持续时间属性 × ~0.1)：\\\\ ・护盾持续 0：6.5 秒\\\\ ・护盾持续 50：12 秒\\\\ ・护盾持续 100：{unsure|18?} 秒"
+      }
+    },
+    "icon_local": "weapon-perks/icons/fc968b0393.webp",
+    "kind": "机制",
+    "page": "weapon-perks"
+  },
+  "4294967319": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "刀剑格挡",
+        "realgame_details": "格挡在身前展开能量护盾（移速倍率 0.85×），能量随时间被动消耗（速率由防御持久决定）。\\\\ \\\\ 被挡下攻击的伤害抗性由防御抗性决定：\\\\ 按防御抗性属性从 82.5% {pvp|[52.5%]} 提升至 95% {pvp|[65%]} 伤害抗性。"
+      }
+    },
+    "icon_local": "weapon-perks/icons/ccc9d845cd.webp",
+    "kind": "机制",
+    "page": "weapon-perks"
+  },
+  "4294967320": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "抓钩缠结",
+        "realgame_details": "与普通{el-strand|缠结}具有相同的{el-strand|抓钩}交互表现，但仅能与{el-strand|抓钩}交互。\\\\ \\\\ 持续 20 秒，每次{el-strand|抓钩}刷新 5 秒；无法被摧毁或拾取。\\\\ 瞄准 27 米（装备手雷「{el-strand|抓钩}」时 32 米）内的{el-strand|抓钩缠结}时，在 0.3 秒内将手雷技能覆盖为非攻势「{el-strand|抓钩}」。\\\\ {el-strand|缚丝}与{el-prismatic|棱镜}分支可使用{el-strand|抓钩}近战；{el-prismatic|棱镜}术士需装备近战「{el-strand|神秘织针}」。\\\\ \\\\ {note|连续 5 次抓取同一枚抓钩缠结后，单次持续时间刷新量降至 1 秒。}"
+      }
+    },
+    "icon_local": "elements/strand/icons/22406e20bf.webp",
+    "kind": "机制",
+    "page": "elements/strand"
+  },
+  "4294967321": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "瓦解弹药",
+        "realgame_details": "{el-strand|缚丝}武器造成伤害时：\\\\ 施加{deb-strand|瓦解}。"
+      }
+    },
+    "icon_local": "elements/strand/icons/a2e8c19bf6.webp",
+    "kind": "机制",
+    "page": "elements/strand"
+  },
+  "4294967322": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "不稳定弹药",
+        "realgame_details": "{el-void|虚空}武器造成伤害时施加{deb-void|不稳定}。\\\\ 激活期间，对{enemy|勇士}的武器伤害提高 10%。"
+      }
+    },
+    "icon_local": "elements/void/icons/6236b2edc3.webp",
+    "kind": "机制",
+    "page": "elements/void"
+  },
+  "4294967323": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "手持超新星",
+        "realgame_details": "{note|装备磁性、虚空尖刺、抑制或虚空墙壁手雷并激活星相「混沌加速」时的形态}\\\\ \\\\ 常驻提供 1.154 倍手雷充能速度。\\\\ 按住［手雷］蓄力 {unsure|?} 秒后就绪，最多维持 4.5 秒。\\\\ \\\\ 松开［手雷］：\\\\ 向前释放一道近程{el-void|虚空}爆炸，造成 150 {pvp|[50]} 伤害并击退 12.5 米扇形内的{enemy|敌方目标}。\\\\ 同时释放 9 枚{el-void|虚空}矢弹（最远 12.5 米），每枚在 3 米内造成 375 {pvp|[15]} 溅射伤害并施加{deb-void|不稳定}。\\\\ 矢弹与初始爆炸全中时最高造成 3525 {pvp|[185]} 伤害。\\\\ \\\\ {note|对手持超新星自身爆炸承受的伤害降低 75%，且不会对}{enemy|自己}{note|施加不稳定。}",
+        "基础冷却": ""
+      }
+    },
+    "icon_local": "elements/void/icons/824cbafc99.webp",
+    "kind": "组合",
+    "members": [
+      2321824285,
+      1547656727,
+      1255073825,
+      2265076177,
+      2809141585
+    ],
+    "page": "elements/void"
+  },
+  "4294967324": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "英勇利刃 2：冲击核心",
+        "realgame_details": "核心按所装配的超能技能元素赋予对应元素联动效果。\\\\ \\\\ {note|由异域武器「}{exotic|英勇利刃}{note|」首次施加的}{el-solar|烈日}{note|效果伤害提高 5%，且可享有武器增益加成。}",
+        "site_when": "当装上"
+      }
+    },
+    "kind": "组合",
+    "members": [
+      3049715579,
+      3268768926
+    ],
+    "page": "exotic-weapon"
+  },
+  "4294967325": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "故我在（任意元素）",
+        "site_when": "当任意元素"
+      }
+    },
+    "kind": "组合",
+    "members": [
+      1681583613,
+      3551049142,
+      1959135343
+    ],
+    "page": "exotic-weapon"
+  },
+  "4294967326": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "故我在（电弧元素）",
+        "realgame_details": "只列{el-arc|电弧}元素版本才有的 Perk。",
+        "site_when": "当{el-arc|电弧}元素"
+      }
+    },
+    "kind": "组合",
+    "members": [
+      1681583613,
+      3949068808,
+      461437088
+    ],
+    "page": "exotic-weapon"
+  },
+  "4294967327": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "故我在（烈日元素）",
+        "realgame_details": "只列{el-solar|烈日}元素版本才有的 Perk。",
+        "site_when": "当{el-solar|烈日}元素"
+      }
+    },
+    "kind": "组合",
+    "members": [
+      1681583613,
+      1522566605,
+      3034060702
+    ],
+    "page": "exotic-weapon"
+  },
+  "4294967328": {
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "故我在（虚空元素）",
+        "realgame_details": "只列{el-void|虚空}元素版本才有的 Perk。",
+        "site_when": "当{el-void|虚空}元素"
+      }
+    },
+    "kind": "组合",
+    "members": [
+      1681583613,
+      1327961177,
+      3325420353
+    ],
+    "page": "exotic-weapon"
+  },
+  "4294967329": {
+    "authors": {
+      "LGpig": {
+        "DPS": "5147",
+        "总伤": "108087",
+        "理由一": "伤害非常高，保证{el-prismatic|超凡}回转就等于无限弹药，涡流增强的受益者",
+        "理由三": "",
+        "理由二": "仅限于{el-prismatic|超凡}持续时间内伤害高，适合 20 秒的短轴猎人日志 vog 套输出手法：一直右键，不打左键",
+        "评级": "高难：T0.5\\\\输出：T1"
+      }
+    },
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "故我在\\\\（意外缓刑）\\\\涡流"
+      }
+    },
+    "kind": "组合",
+    "members": [
+      1681583613,
+      1327961177,
+      2557881346
+    ],
+    "page": "exotic-weapons"
+  },
+  "4294967330": {
+    "authors": {
+      "LGpig": {
+        "DPS": "5264",
+        "总伤": "92644",
+        "理由一": "伤害不错，配合{exotic|黎明副歌}伤害很高，更重要的是反屏障",
+        "理由三": "",
+        "理由二": "仅限于{el-prismatic|超凡}持续时间内伤害高，适合 20 秒的短轴绑定{exotic|黎明副歌}，猎人日志 vog 套输出手法：一重+二轻，带火炮台一重一轻",
+        "评级": "高难：T0.5\\\\输出：T1.5"
+      }
+    },
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "故我在\\\\（纯五度）\\\\铸造"
+      }
+    },
+    "kind": "组合",
+    "members": [
+      1681583613,
+      1522566605,
+      519046634
+    ],
+    "page": "exotic-weapons"
+  },
+  "4294967331": {
+    "authors": {
+      "LGpig": {
+        "DPS": "",
+        "总伤": "",
+        "理由一": "有减伤且高效的清怪武器，过载也能配合{art-perk|元素超充器}转电大触发{art-perk|光子耀斑}频繁{el-arc|电弧}{deb-arc|致盲}",
+        "理由三": "",
+        "理由二": "{el-prismatic|棱镜}分支的专属武器，适合清理{bar-red|红血}与{bar-yellow|初级首领}",
+        "评级": "清怪：T1\\\\高难：T2"
+      }
+    },
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "故我在\\\\（{el-arc|电弧}导体）\\\\波形"
+      }
+    },
+    "kind": "组合",
+    "members": [
+      1681583613,
+      3949068808,
+      289811733
+    ],
+    "page": "exotic-weapons"
+  },
+  "4294967332": {
+    "authors": {
+      "LGpig": {
+        "DPS": "4842",
+        "总伤": "98852",
+        "理由一": "伤害比涡流略低但更容易吃满土味子弹猎人日志 vog 套输出手法：一重+二轻",
+        "理由三": "",
+        "理由二": "",
+        "评级": "输出：T1"
+      }
+    },
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "故我在\\\\（意外缓刑）\\\\轻质"
+      }
+    },
+    "kind": "组合",
+    "members": [
+      1681583613,
+      1327961177,
+      2753228730
+    ],
+    "page": "exotic-weapons"
+  },
+  "4294967333": {
+    "authors": {
+      "LGpig": {
+        "DPS": "",
+        "总伤": "",
+        "理由一": "紫刀剑和{exotic|故我在}的辅助武器。",
+        "理由三": "",
+        "理由二": "",
+        "评级": "特殊用途"
+      }
+    },
+    "from": "站内自发",
+    "i18n": {
+      "zh-CN": {
+        "name": "故我在\\\\（狼群弹药）\\\\任意"
+      }
+    },
+    "kind": "组合",
+    "members": [
+      1681583613,
+      1959135343
+    ],
+    "page": "exotic-weapons"
+  }
 }

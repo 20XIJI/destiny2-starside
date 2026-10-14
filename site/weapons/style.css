@@ -2369,7 +2369,7 @@
 .wpn-xp { display: inline-flex; align-items: center; gap: 8px; color: var(--bone-hi); font: 600 13.5px/1.6 var(--font-cn); }
 .wpn-xp img { width: 28px; height: 28px; border-radius: 50%; }
 .prose { font: 400 13.5px/1.9 var(--font-cn); color: var(--bone); }
-.prose p { margin: 0 0 10px; }
+.prose p, .prose .p { margin: 0 0 10px; }
 .one-side .src { font-size: 12.5px; }
 
 /* 用过它的配装：摆的就是配装推荐页那张卡，样式由 build-weapons.py 从那一页的
