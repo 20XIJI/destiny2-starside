@@ -752,6 +752,14 @@ class WeaponsExtras(unittest.TestCase):
         self.assertIn('.entries .entry {', sheet,
                       '页壳里没有内联配装卡的样式，那张卡会散架')
 
+    def test_weapon_sources_clean_and_valid(self):
+        index = self.load('index.js', 'WPN')
+        srcs = index['v']['src']
+        self.assertNotIn('随机特性：此物品无法从收藏品再次获取。', srcs, '来源中包含 manifest 占位符')
+        for s in srcs:
+            self.assertNotIn('{src|', s, '来源未脱出标记：%s' % s)
+            self.assertNotIn('\\', s, '来源中包含换行反斜杠：%s' % s)
+
 
 class BuildKeys(unittest.TestCase):
     """配装源稿的槽位值写成 `名字#主键`，**主键是唯一真相**。

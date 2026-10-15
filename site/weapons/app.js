@@ -671,7 +671,12 @@
 
   function typeName(r) { return V.ty[r[W_SUB]][0]; }
   function frameOf(r) { return V.fr[r[W_FR]]; }
-  function srcOf(r, at) { var k = r[at]; return k >= 0 ? V.src[k] : ''; }
+  function srcsOf(r, at) {
+    var v = r[at];
+    if (Array.isArray(v)) { return v.map(function (k) { return V.src[k]; }).filter(Boolean); }
+    return v >= 0 && V.src[v] ? [V.src[v]] : [];
+  }
+  function srcOf(r, at) { return srcsOf(r, at).join(' · '); }
   function elName(r) { return V.el[r[W_EL]][0]; }
   function rarity(r) { return V.rar[r[W_TIER]] || ''; }
   function isExotic(r) { return r[W_TIER] === 6; }
@@ -1060,7 +1065,7 @@
         case 'name': return fold(r[A_NAME] + enOf('armor', i)).indexOf(f) !== -1 || pyName('armor', i, v);
         case 'perk': return fold(r[A_PERKS]).indexOf(f) !== -1;
         case 'season': return cmp(v, r[A_SSN]);
-        case 'source': return named(q, srcFold(srcOf(r, A_SRC)), srcFold(v));
+        case 'source': return srcsOf(r, A_SRC).some(function (s) { return named(q, srcFold(s), srcFold(v)); });
       }
       return false;
     }
@@ -1070,7 +1075,7 @@
       case 'name': return fold(r[W_NAME] + ' ' + enOf('wpn', i)).indexOf(f) !== -1 || pyName('wpn', i, v);
       case 'frame': return named(q, fold(frameOf(r)[0]), f);
       case 'season': return cmp(v, r[W_SSN]);
-      case 'source': return named(q, srcFold(srcOf(r, W_SRC)), srcFold(v));
+      case 'source': return srcsOf(r, W_SRC).some(function (s) { return named(q, srcFold(s), srcFold(v)); });
       case 'breaker': return r[W_BR] > 0 && fold(V.br[r[W_BR]][0]).indexOf(f) !== -1;
     }
     if (!P) { return false; }
@@ -1533,19 +1538,22 @@
      3v3 多人竞技、永恒沙漠（史诗））。token 里去掉这几个字符，比对时 srcFold() 也去掉，标签仍写原名。
      来源名有的写成整句，句末的句号只在标签里去掉。 */
   var TOKEN_DROP = /[\s“”"()（）]/g;
-  function valueOf(key, i) {
-    if (key === 'frame') { return frameOf(WR[i])[0]; }
-    if (S.scope === 'sets') { return setSrc(SR[i]); }
-    return S.scope === 'armor' ? srcOf(AR[i], A_SRC) : srcOf(WR[i], W_SRC);
+  function valuesOf(key, i) {
+    if (key === 'frame') { return [frameOf(WR[i])[0]]; }
+    if (S.scope === 'sets') { return [setSrc(SR[i])]; }
+    return S.scope === 'armor' ? srcsOf(AR[i], A_SRC) : srcsOf(WR[i], W_SRC);
   }
   function valueList(key) {
     var g = 'k:' + key, n = {}, label = {}, base = resultsWithout(g), inBase = {};
     base.forEach(function (i) {
       inBase[i] = true;
-      var v = valueOf(key, i), tok = key + ':"' + v.replace(TOKEN_DROP, '') + '"';
-      if (!v) { return; }
-      n[tok] = (n[tok] || 0) + 1;
-      label[tok] = v.replace(/[。；;]+$/, '');
+      var vs = valuesOf(key, i);
+      vs.forEach(function (v) {
+        if (!v) { return; }
+        var tok = key + ':"' + v.replace(TOKEN_DROP, '') + '"';
+        n[tok] = (n[tok] || 0) + 1;
+        label[tok] = v.replace(/[。；;]+$/, '');
+      });
     });
     tokens.forEach(function (t) {
       var tok = tokKey(t);
@@ -2116,7 +2124,7 @@
     if (!intrinsicCol(i)) { chip('frame:' + fr[0], imgTag(fr[1], '', '', true), fr[0]); }
     chip('is:' + rarity(r), '', rarity(r));
     chip('season:' + r[W_SSN], '', 'S' + r[W_SSN]);
-    if (r[W_SRC] >= 0) { chip('source:' + V.src[r[W_SRC]], '', V.src[r[W_SRC]]); }
+    srcsOf(r, W_SRC).forEach(function (s) { chip('source:' + s, '', s); });
     if (r[W_FLAG] & F_CRAFT) { chip('is:可锻造', '', '可锻造'); }
     if (r[W_FLAG] & F_TIER) { chip('is:可升阶', '', '可升阶'); }
     return out.join('');
@@ -2630,7 +2638,7 @@
     var a = AR[i], rep = a[A_REP];
     var facts = [V.cls[a[A_CLS]], V.part[a[A_PART]], '异域', 'S' + a[A_SSN]];
     var qs = ['is:' + V.cls[a[A_CLS]], 'is:' + V.part[a[A_PART]], 'is:异域', 'season:' + a[A_SSN]];
-    if (a[A_SRC] >= 0) { facts.push(V.src[a[A_SRC]]); qs.push('source:' + V.src[a[A_SRC]]); }
+    srcsOf(a, A_SRC).forEach(function (s) { facts.push(s); qs.push('source:' + s); });
     var perks = (T.ap[rep] || []).map(function (p) {
       return '<div class="frame">' + (p[1] ? imgTag(p[1], '', '', true) : '<span></span>') + '<div><b>' + esc(p[0]) + '</b><p>' + esc(p[2]) + '</p></div></div>';
     }).join('');
@@ -2800,7 +2808,10 @@
       } else if (t.k === 'source') {
         V.src.forEach(function (s, k) {
           if (fold(s).indexOf(f) !== -1) {
-            vals.push([s, count(function (i) { return (S.scope === 'armor' ? AR[i][A_SRC] : WR[i][W_SRC]) === k; })]);
+            vals.push([s, count(function (i) {
+              var v = (S.scope === 'armor' ? AR[i][A_SRC] : WR[i][W_SRC]);
+              return Array.isArray(v) ? v.indexOf(k) !== -1 : v === k;
+            })]);
           }
         });
       } else if (t.k === 'breaker') {

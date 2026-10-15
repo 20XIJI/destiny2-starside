@@ -417,14 +417,29 @@ def rank_of(authors):
     return best
 
 
-def source_of(b, h, authors):
-    """来源：Aegis 写的 > LGpig 写的 > manifest 收藏条目那一句。"""
+def sources_of(f_or_b, h, authors):
+    """来源列表：Aegis 写的 > LGpig 写的 > manifest 收藏条目那一句。"""
     for who, k in (('Aegis', 'aegis_source'), ('LGpig', 'lgpig_source')):
-        got = plain((authors.get(who) or {}).get(k) or '').strip()
-        if got:
-            return got
-    got = plain(b.f.source(h) or '')
-    return got[3:] if got.startswith('来源：') else ''
+        val = (authors.get(who) or {}).get(k) or ''
+        if val:
+            tags = re.findall(r'\{src\|([^}]*)\}', val)
+            res = []
+            for t in tags:
+                for p in t.split('\\\\'):
+                    p = plain(p).strip()
+                    if p and p not in res:
+                        res.append(p)
+            if res:
+                return res
+            p = plain(val).strip()
+            if p and not p.startswith('{'):
+                return [p]
+    f = getattr(f_or_b, 'f', f_or_b)
+    got = plain(f.source(h) or '').strip()
+    if got.startswith('来源：'):
+        got = got[3:].strip()
+        return [got] if got else []
+    return []
 
 
 # 弹药块拾取量那张表的行名 → (itemSubType, ammoType)。表里按「读者怎么叫」分行，
@@ -983,10 +998,14 @@ def build(facts):
             frames.append([b.text(fr), stem(fr.get('icon')), (fr.get('derived') or {}).get('rate') or {},
                            int(b.plug(fr_h))])
         authors = x.get('group_authors') or x['authors']
-        src = source_of(b, h, authors)
-        if src and src not in source_idx:
-            source_idx[src] = len(sources)
-            sources.append(src)
+        srcs = sources_of(b, h, authors)
+        src_ids = []
+        for s in srcs:
+            if s not in source_idx:
+                source_idx[s] = len(sources)
+                sources.append(s)
+            src_ids.append(source_idx[s])
+        src_val = src_ids[0] if len(src_ids) == 1 else (src_ids if len(src_ids) > 1 else -1)
         b.stat_group(r['stats']['statGroupHash'])
         have = {str(s[0]) for s in b.groups[str(r['stats']['statGroupHash'])]}
         opts = b.masterwork(h, have)
@@ -1002,7 +1021,7 @@ def build(facts):
             h, x['name'], r['itemSubType'], r['defaultDamageType'], r['equippingBlock']['ammoType'],
             list(SLOT).index(r['inventory']['bucketTypeHash']), d.get('breakerType') or 0,
             x['season'], r['inventory']['tierType'], flags, stem(r.get('icon')),
-            stem(r.get('iconWatermark')), frame_idx[fr_h], source_idx.get(src, -1),
+            stem(r.get('iconWatermark')), frame_idx[fr_h], src_val,
             grades(x['rated']) if rep_of[h] == h else 0, row_of[rep_of[h]], fam_of[h],
             resolve.text(r, lang='en') or ''])
         base = collections.Counter()
@@ -1066,13 +1085,14 @@ def build(facts):
         zh = r['i18n'][resolve.ZH]
         authors = aauth.get(arep_of[h]) or {}
         lg = authors.get('LGpig') or {}
-        src = plain(lg.get('lgpig_source') or '').strip()
-        if not src:
-            got = plain(F.source(h) or '')
-            src = got[3:] if got.startswith('来源：') else ''
-        if src and src not in source_idx:
-            source_idx[src] = len(sources)
-            sources.append(src)
+        srcs = sources_of(F, h, authors)
+        src_ids = []
+        for s in srcs:
+            if s not in source_idx:
+                source_idx[s] = len(sources)
+                sources.append(s)
+            src_ids.append(source_idx[s])
+        src_val = src_ids[0] if len(src_ids) == 1 else (src_ids if len(src_ids) > 1 else -1)
         names = rows.exotic_perks(h).names
         perks = []
         for n, k in names.items():
@@ -1084,7 +1104,7 @@ def build(facts):
         arows.append([h, zh['name'], list(PART).index(r['itemSubType']), r['classType'],
                       (r.get('derived') or {}).get('season') or 0, stem(r.get('icon')),
                       stem(r.get('iconWatermark')), '、'.join(p[0] for p in perks),
-                      role if arep_of[h] == h else '', source_idx.get(src, -1), arow_of[arep_of[h]],
+                      role if arep_of[h] == h else '', src_val, arow_of[arep_of[h]],
                       afam_of[h], resolve.text(r, lang='en') or ''])
         flavor = b.text(r, 'flavorText')
         if flavor:

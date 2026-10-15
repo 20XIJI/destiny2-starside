@@ -2021,6 +2021,47 @@ test('weapons: source: ignores quotes, parentheses and spaces on both sides', ()
   assert.notEqual(srcFold('永恒沙漠（史诗）'), srcFold('永恒沙漠'))
 })
 
+test('weapons: multi-source items match each source independently and format cleanly', () => {
+  const deps = 'var V = { src: ["忠诚纪念碑", "萨瓦拉", "枪匠"] };\n' +
+    'function fold(s) { return String(s).toLowerCase().replace(/\\s+/g, ""); }\n'
+  const { srcsOf, srcOf, named, srcFold } = weaponFns(['srcsOf', 'srcOf', 'named', 'srcFold'], deps)
+  const single = [0, '', 0, 0, 0, 0, 0, 0, 0, 0, '', '', 0, 0]
+  const multi = [0, '', 0, 0, 0, 0, 0, 0, 0, 0, '', '', 0, [0, 1]]
+  const none = [0, '', 0, 0, 0, 0, 0, 0, 0, 0, '', '', 0, -1]
+
+  assert.deepEqual([...srcsOf(single, 13)], ['忠诚纪念碑'])
+  assert.equal(srcOf(single, 13), '忠诚纪念碑')
+
+  assert.deepEqual([...srcsOf(multi, 13)], ['忠诚纪念碑', '萨瓦拉'])
+  assert.equal(srcOf(multi, 13), '忠诚纪念碑 · 萨瓦拉')
+
+  assert.deepEqual([...srcsOf(none, 13)], [])
+  assert.equal(srcOf(none, 13), '')
+
+  const matchSource = (r, at, q, v) => srcsOf(r, at).some((s) => named(q, srcFold(s), srcFold(v)))
+  assert.equal(matchSource(multi, 13, true, '忠诚纪念碑'), true, '多来源武器全等匹配首个来源')
+  assert.equal(matchSource(multi, 13, true, '萨瓦拉'), true, '多来源武器全等匹配第二个来源')
+  assert.equal(matchSource(multi, 13, true, '枪匠'), false, '多来源武器不匹配未包含的来源')
+  assert.equal(matchSource(multi, 13, false, '忠诚'), true, '多来源武器模糊匹配')
+
+  const { valuesOf } = weaponFns(['valuesOf', 'srcsOf'], deps +
+    'var S = { scope: "wpn" };\nvar WR = [' + JSON.stringify(multi) + '];\nvar W_SRC = 13, A_SRC = 9;\nfunction frameOf() { return [""]; }\nfunction setSrc() { return ""; }\n')
+  assert.deepEqual([...valuesOf('source', 0)], ['忠诚纪念碑', '萨瓦拉'], '筛选栏 valuesOf 返回全部独立来源')
+})
+
+test('weapons: index.js sources list contains no boilerplate or unparsed tags', () => {
+  const text = fs.readFileSync(path.join(site, 'weapons/index.js'), 'utf8')
+  const ctx = { window: {} }
+  vm.createContext(ctx)
+  vm.runInContext(text, ctx)
+  const srcs = ctx.window.WPN.v.src
+  assert.equal(srcs.includes('随机特性：此物品无法从收藏品再次获取。'), false, 'V.src 包含 manifest 占位符')
+  for (const s of srcs) {
+    assert.equal(s.includes('{src|'), false, 'V.src 未脱出标记: ' + s)
+    assert.equal(s.includes('\\'), false, 'V.src 包含反斜杠: ' + s)
+  }
+})
+
 test('weapons: no two functions in app.js share a name', () => {
   const text = fs.readFileSync(path.join(site, 'weapons/app.js'), 'utf8')
   const names = [...text.matchAll(/function (\w+)\s*\(/g)].map((m) => m[1])
