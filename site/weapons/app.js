@@ -2591,18 +2591,23 @@
   }
   /* 悬停词条只改两处：那枚按钮的 is-hover 与属性表的预览。详情有 400–750 个元素，
      整张重画时指针扫过词条栏每换一枚就重排一次。 */
+  var hoverRaf = 0;
   function renderHover() {
-    var box = body.querySelector('.wpn-detail'), pane = box && box.querySelector('.stats-box');
-    if (!pane) { renderDetail(); return; }
-    var i = S.sel, roll = rollOf(i), h = S.hoverPlug;
-    var on = box.querySelectorAll('.plug.is-hover');
-    for (var k = 0; k < on.length; k++) { on[k].classList.remove('is-hover'); }
-    if (h) {
-      var b = box.querySelector('[data-act="perk"][data-col="' + h.col + '"][data-plug="' + h.plug + '"]');
-      if (b) { b.classList.add('is-hover'); }
-    }
-    var res = compute(i, roll), ghost = h ? compute(i, roll, { col: h.col, plug: h.plug }) : null;
-    pane.innerHTML = S.statsMode === 'pvp' ? pvpPanel(i, res) : statsPanel(i, res, ghost);
+    if (hoverRaf) cancelAnimationFrame(hoverRaf);
+    hoverRaf = requestAnimationFrame(function () {
+      hoverRaf = 0;
+      var box = body.querySelector('.wpn-detail'), pane = box && box.querySelector('.stats-box');
+      if (!pane) { renderDetail(); return; }
+      var i = S.sel, roll = rollOf(i), h = S.hoverPlug;
+      var on = box.querySelectorAll('.plug.is-hover');
+      for (var k = 0; k < on.length; k++) { on[k].classList.remove('is-hover'); }
+      if (h) {
+        var b = box.querySelector('[data-act="perk"][data-col="' + h.col + '"][data-plug="' + h.plug + '"]');
+        if (b) { b.classList.add('is-hover'); }
+      }
+      var res = compute(i, roll), ghost = h ? compute(i, roll, { col: h.col, plug: h.plug }) : null;
+      pane.innerHTML = S.statsMode === 'pvp' ? pvpPanel(i, res) : statsPanel(i, res, ghost);
+    });
   }
 
   /* 护甲套装：一套两条效果（2 件与 4 件），实测与作者评语写在效果身上。
@@ -2940,6 +2945,8 @@
     input.value = S.q;
   }
   function open(scope, i) {
+    var wasBrowse = (S.sel == null);
+    if (wasBrowse) { S.savedScrollY = window.scrollY; }
     if (scope !== S.scope) { S.scope = scope; S.q = ''; input.value = ''; evaluate(); }
     S.sel = i;
     S.pop = null;
@@ -2949,7 +2956,7 @@
     }
     writeUrl(true);
     render();
-    window.scrollTo(0, 0);
+    if (wasBrowse) { window.scrollTo(0, 0); }
   }
 
   /* ── 事件 ──────────────────────────────────────────────────────────── */
@@ -2980,6 +2987,13 @@
     if (e.key === 'Escape') {
       closePops();
       if (S.syntax) { S.syntax = false; renderBar(); }
+      if (S.pop) {
+        var prev = S.pop;
+        S.pop = null;
+        renderDetail();
+        var btn = body.querySelector('[data-act="pop"][data-v="' + prev + '"]');
+        if (btn) { btn.focus(); }
+      }
       if (S.fxOpen) { S.fxOpen = false; S.fxg = ''; renderDetail(); }
       return;
     }
@@ -3011,16 +3025,16 @@
         return;
       }
       case 'scope':
-        if (v !== S.scope) { S.scope = v; S.q = ''; S.sel = null; input.value = ''; setQuery('', true); }
+        if (v !== S.scope) { S.scope = v; S.q = ''; S.sel = null; S.savedScrollY = 0; input.value = ''; setQuery('', true); }
         return;
       case 'view':
         S.view = v; store('wpn.view', v); S.sel = null; writeUrl(true); render(); return;
       case 'close':
-        S.sel = null; writeUrl(true); render(); window.scrollTo(0, 0); return;
+        S.sel = null; writeUrl(true); render(); window.scrollTo(0, S.savedScrollY || 0); return;
       case 'syntax':
         e.stopPropagation(); S.syntax = !S.syntax; renderBar(); return;
       case 'setq':
-        S.syntax = false; S.sel = null; input.value = v; setQuery(v, true); return;
+        S.syntax = false; S.sel = null; S.savedScrollY = 0; input.value = v; setQuery(v, true); return;
       case 'preset':
       case 'facet':
       case 'sxval':
@@ -3030,9 +3044,9 @@
         setQuery(input.value, false);
         return;
       case 'clear':
-        input.value = ''; setQuery('', false); return;
+        S.savedScrollY = 0; input.value = ''; setQuery('', false); return;
       case 'addq':
-        S.sel = null; addToken(v); writeUrl(true); render(); return;
+        S.sel = null; S.savedScrollY = 0; addToken(v); writeUrl(true); render(); window.scrollTo(0, 0); return;
       case 'unpill': {
         var a = +el.getAttribute('data-a'), b = +el.getAttribute('data-b');
         var nq = (S.q.slice(0, a) + S.q.slice(b)).replace(/\s+/g, ' ').trim();
@@ -3207,6 +3221,7 @@
   });
 
   window.addEventListener('popstate', function () {
+    var wasSel = (S.sel != null);
     readUrl();
     input.value = S.q;
     evaluate();
@@ -3214,6 +3229,7 @@
       need('pool', function () { if (S.urlRoll) { S.rolls[WR[S.sel][W_H]] = decodeRoll(S.sel, S.urlRoll); S.urlRoll = null; } render(); });
     }
     render();
+    if (wasSel && S.sel == null) { window.scrollTo(0, S.savedScrollY || 0); }
   });
 
   /* ── 开屏 ──────────────────────────────────────────────────────────── */

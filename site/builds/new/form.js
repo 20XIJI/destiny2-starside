@@ -942,13 +942,22 @@
      **这张表只在这里定义一次**——生成器只出空格子，写法是纯 UI。 */
   var STAT_MODES = [['~', '不限'], ['+', '至少'], ['=', '指定'], ['-', '区间']];
 
+  function clampStat(raw) {
+    var s = (raw || '').trim();
+    if (!s) return '';
+    var n = parseInt(s, 10);
+    return isNaN(n) ? '' : String(Math.max(0, Math.min(200, n)));
+  }
+
   function statText(btn) {
     var mode = btn.dataset.mode || '~';
-    var a = (btn.dataset.a || '').trim(), b = (btn.dataset.b || '').trim();
+    var a = clampStat(btn.dataset.a), b = clampStat(btn.dataset.b);
     if (mode === '~' || !a) return '~';
     if (mode === '+') return a + '+';
     if (mode === '=') return a;
-    return b ? a + '～' + b : '~';       // 只填了下限就还不成一个区间
+    if (!b) return '~';                  // 只填了下限就还不成一个区间
+    var na = +a, nb = +b;
+    return (na <= nb ? a + '～' + b : b + '～' + a);
   }
 
   function paintStat(btn) {
@@ -1008,6 +1017,12 @@
       n.setAttribute('aria-label', btn.dataset.stat + (i ? ' 上限' : ' 数值'));
       n.addEventListener('input', function () {
         btn.dataset[key] = n.value;
+        sync();
+      });
+      n.addEventListener('change', function () {
+        var c = clampStat(n.value);
+        n.value = c;
+        btn.dataset[key] = c;
         sync();
       });
       nums.push(n);
@@ -1386,12 +1401,12 @@
         if (!cell) { skip.push('六维：' + seg); return; }
         var v = (m[2] || '~').trim(), hit;
         if (v === '~' || v === '') cell.dataset.mode = '~';
-        else if ((hit = /^(\d+)\+$/.exec(v))) { cell.dataset.mode = '+'; cell.dataset.a = hit[1]; }
+        else if ((hit = /^(\d+)\+$/.exec(v))) { cell.dataset.mode = '+'; cell.dataset.a = clampStat(hit[1]); }
         else if ((hit = /^(\d+)\s*[～~-]\s*(\d+)$/.exec(v))) {
           cell.dataset.mode = '-';
-          cell.dataset.a = hit[1];
-          cell.dataset.b = hit[2];
-        } else if ((hit = /^(\d+)$/.exec(v))) { cell.dataset.mode = '='; cell.dataset.a = hit[1]; }
+          cell.dataset.a = clampStat(hit[1]);
+          cell.dataset.b = clampStat(hit[2]);
+        } else if ((hit = /^(\d+)$/.exec(v))) { cell.dataset.mode = '='; cell.dataset.a = clampStat(hit[1]); }
         else { skip.push('六维：' + seg); return; }
         paintStat(cell);
       });

@@ -1299,6 +1299,7 @@ button.item { width: 100%; }
 
 #sheet input { padding: 6px 10px; }
 #sheet textarea { display: block; width: 100%; padding: 10px 12px; line-height: 1.8; }
+#sheet textarea[data-key] { field-sizing: content; min-block-size: 3lh; }
 #sheet :focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 
 /* 散文格的着色镜像（form.js 的 ink）：框里的字透明、只留光标，颜色画在叠上去的
@@ -1398,6 +1399,7 @@ button.item { width: 100%; }
   text-align: center;
   appearance: textfield;
 }
+.stat-picker .stat-num:user-invalid { border-color: var(--debuff); }
 
 .stat-picker .stat-num::-webkit-outer-spin-button,
 .stat-picker .stat-num::-webkit-inner-spin-button {

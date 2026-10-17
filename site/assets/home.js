@@ -224,6 +224,7 @@ export default function init(box, deps) {
     }
 
     var queued = { rows: [], q: '', terms: [] };
+    var active = -1;
 
     more.addEventListener('click', function () {
       show(queued.rows, queued.q, queued.terms);
@@ -238,6 +239,7 @@ export default function init(box, deps) {
       var q = input.value.trim();
       var had = list.childElementCount;
       list.textContent = '';
+      active = -1;
       more.hidden = true;
       box.toggleAttribute('data-miss', false);
       if (!q) { count.textContent = ''; return; }
@@ -259,6 +261,26 @@ export default function init(box, deps) {
 
     input.addEventListener('focus', load);
     input.addEventListener('input', function () { load(); draw(); });
+    input.addEventListener('keydown', function (e) {
+      if (e.isComposing || e.keyCode === 229) return;
+      var hits = list.querySelectorAll('a.hit');
+      if (e.key === 'Escape') {
+        if (input.value) { e.preventDefault(); input.value = ''; draw(); }
+        return;
+      }
+      if (!hits.length) return;
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        active = e.key === 'ArrowDown'
+          ? (active + 1) % hits.length
+          : (active <= 0 ? hits.length - 1 : active - 1);
+        for (var i = 0; i < hits.length; i++) hits[i].setAttribute('aria-selected', i === active ? 'true' : 'false');
+        hits[active].scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        location.href = hits[active >= 0 ? active : 0].href;
+      }
+    });
 
     /* 索引约 1.2 MB，站上不压缩传输。只在聚焦时拉的话，读者点进搜索框敲第一个字
        要干等它下完；页面加载完之后趁空闲预取，想搜的时候已经在内存里。排在 load 之后、空闲时段

@@ -102,8 +102,10 @@ export async function shot(root, opts = {}) {
   const typed = root.querySelectorAll('input, textarea');
   const blank = clone.querySelectorAll('input, textarea');
   for (let i = 0; i < typed.length; i++) {
-    if (blank[i].tagName === 'TEXTAREA') blank[i].textContent = typed[i].value;
-    else blank[i].setAttribute('value', typed[i].value);
+    if (blank[i].tagName === 'TEXTAREA') {
+      blank[i].textContent = typed[i].value;
+      blank[i].style.height = typed[i].scrollHeight + 'px';
+    } else blank[i].setAttribute('value', typed[i].value);
   }
 
   if (opts.preview) clone.classList.add('preview');
