@@ -1920,7 +1920,7 @@ body:has(.hero) .entries > li::after { right: -6px; bottom: -6px; }
   position: relative;              /* 发电能量核绝对定位在带的右端 */
   max-width: 1500px;
   margin: 0 auto;
-  padding: 24px 22px;
+  padding: 24px 22px 14px;
   border-top: 1px solid var(--hair-lit);
   border-bottom: 1px solid var(--hair-lit);
 }
@@ -2209,6 +2209,95 @@ body:has(.hero) .entries > li::after { right: -6px; bottom: -6px; }
   }
 
   .hits.is-in { animation: none; }
+}
+
+/* ── 搜索带底栏：当前轮换素字徽记行 ──
+   收在 .hero-band 下沿，上方一道 1px --hair 分隔线。不画内层小方框（design.md
+   「一排多枚退回素字」），靠 21px 官方纯白徽记与粗体字成组，悬停时显示 L 形角标。 */
+.hero-rota {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 32px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--hair);
+  color: var(--bone);
+  text-decoration: none;
+}
+
+.hero-rota .hr-group {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 10px;
+}
+
+.hero-rota .hr-group::before,
+.hero-rota .hr-group::after {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border: 1px solid var(--accent);
+  opacity: 0;
+  transition: opacity .15s ease;
+}
+
+.hero-rota .hr-group::before { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+.hero-rota .hr-group::after { right: 0; bottom: 0; border-left: 0; border-top: 0; }
+
+.hero-rota:hover .hr-group::before,
+.hero-rota:hover .hr-group::after { opacity: 1; }
+
+.hero-rota .hr-tag {
+  color: var(--bone-faint);
+  font: 600 11px/1 var(--font-disp);
+  letter-spacing: .12em;
+}
+
+.hero-rota .hr-items {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hero-rota .hr-unit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--bone-hi);
+  font: 600 13px/1.4 var(--font-cn);
+}
+
+.hero-rota .ri {
+  display: block;
+  flex: none;
+  width: 21px;
+  height: 21px;
+  object-fit: contain;
+  opacity: .92;
+}
+
+.hero-rota .hr-unit.is-next {
+  color: var(--bone-dim);
+  font-weight: 400;
+}
+
+.hero-rota .hr-unit.is-next .ri { opacity: .5; }
+
+.hero-rota .hr-sep {
+  color: var(--bone-faint);
+  font-style: normal;
+}
+
+.hero-rota .hr-div {
+  width: 4px;
+  height: 4px;
+  background: var(--hair-lit);
+  transform: rotate(45deg);
 }
 
 .index {

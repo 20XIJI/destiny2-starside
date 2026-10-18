@@ -43,11 +43,25 @@ PALETTE = ('c-arc', 'c-solar', 'c-void', 'c-stasis', 'c-strand', 'c-prism',
            'c-exotic', 'c-enemy', 'c-ammo', 'c-artifact')
 ELEMENTS = (('电弧', 'el-arc'), ('烈日', 'el-solar'), ('虚空', 'el-void'),
             ('冰影', 'el-stasis'), ('缚丝', 'el-strand'), ('棱镜', 'el-prismatic'))
+# 搜索带底栏的轮换徽记（9 突袭 + 10 地牢 + 7 目的地 → rotation/icons/<md5>.webp）
+ROTA_ICONS = {
+    '最后一愿': '98c8ef41c9', '救赎花园': 'd287b3dc33', '深岩墓室': '068796ce27',
+    '玻璃拱顶': '32e9ee0e2f', '门徒誓约': '189d589701', '国王的陨落': '5d2addda27',
+    '梦魇根源': '810e9c5f15', '克洛塔的末日': 'c8f1bde352', '救赎的边缘': '0c0db34c1c',
+    '破碎王座': '00ab7fe800', '异端深渊': '9214e0910b', '预言': '5ee82307b3',
+    '贪婪之握': 'c4510de46d', '二象性': 'db9150ea76', '守望者尖塔': '8bb6caa792',
+    '深渊机灵': '0089811166', '战争领主的废墟': '919cba410f', '晚星之主': '62e7578741',
+    '分离教义': '51caec5e35',
+    '欧洲无人区': 'e1585cefcb', '幽梦之城': 'd0cb509d79', '王座世界': '9dc57beeac',
+    '月球': '8b98ce6055', '木卫二': '74caaa1a48', '涅索斯': '71667cc86a',
+    '发射基地': '8cb59c6413',
+}
 
 # 1440×900 下首屏装得下装备库那一排与两张配装卡：20 + 3 + 3
 N_EAGER = 26
 
 MARK = re.compile(r'<!--pv-->.*?<!--/pv-->', re.S)
+ROTA_MARK = re.compile(r'<!--rota-->.*?<!--/rota-->', re.S)
 
 
 def read(rel):
@@ -390,9 +404,7 @@ def ranking(slug, col):
     return make
 
 
-def rotation(_img):
-    """周常轮换的三行。页面上先写顺序的前三站，由首页那段内联脚本按本机时钟换成
-    当前那一格；算法与 assets/rota.js 同一套，数据取自轮换页，不在首页另存一份。"""
+def rota_data():
     page = read('rotation/index.html')
     t0 = search(r'data-rota="([^"]+)"', page, '轮换页').group(1)
     body = rows('rotation', tables('rotation')[0])
@@ -400,13 +412,50 @@ def rotation(_img):
     dungeons = [r[2][0] for r in body if r[2][0]]
     chain = [x.strip() for x in text(search(r'<p[^>]*class="chain"[^>]*>(.*?)</p>', page, '轮换页').group(1)).split('→')
              if x.strip() != '回到开头']
+    all_names = raids_ + dungeons + chain
+    for n in all_names:
+        h = find('轮换图标', ROTA_ICONS, n)
+        path = 'rotation/icons/%s.webp' % h
+        need(os.path.exists(os.path.join(shell.SITE, path)), '首页预览：图不存在 %s' % path)
+    need(set(ROTA_ICONS) == set(all_names), '首页预览：ROTA_ICONS 与轮换页条目不一致')
+    return t0, raids_, dungeons, chain
+
+
+def hero_rota():
+    """搜索带底栏的当前轮换。先写第 0 周与第 0 时段的那一组，由首页内联脚本按本机时钟更新。"""
+    _, raids_, dungeons, chain = rota_data()
+
+    def unit(n, cls=''):
+        return ('<span class="hr-unit%s"><img class="ri" src="rotation/icons/%s.webp" alt="" width="21" height="21">'
+                '<span>%s</span></span>' % (' ' + cls if cls else '', ROTA_ICONS[n], esc(n)))
+
+    def group(tag, k, a, sep, b, b_cls='', tag_k=''):
+        tk = ' data-k="%s"' % tag_k if tag_k else ''
+        return ('<span class="hr-group"><span class="hr-tag"%s>%s</span>'
+                '<span class="hr-items" data-k="%s">%s<i class="hr-sep">%s</i>%s</span></span>'
+                % (tk, esc(tag), k, unit(a), sep, unit(b, b_cls)))
+
+    div = '<span class="hr-div" aria-hidden="true"></span>'
+    return ('%s%s%s%s%s'
+            % (group('本周突袭', 'raid', raids_[0], '·', raids_[4]),
+               div,
+               group('本周地牢', 'dungeon', dungeons[0], '·', dungeons[4]),
+               div,
+               group('每小时 扭曲', 'chain', chain[0], '→', chain[1], 'is-next', 'chain-n')))
+
+
+def rotation(_img):
+    """周常轮换的三行。页面上先写顺序的前三站，由首页那段内联脚本按本机时钟换成
+    当前那一格；算法与 assets/rota.js 同一套，数据取自轮换页，不在首页另存一份。"""
+    t0, raids_, dungeons, chain = rota_data()
+    icons = '|'.join(ROTA_ICONS[n] for n in raids_ + dungeons + chain)
 
     def line(k, label, names, note):
         return ('<small>%s</small><span class="pv-rv" data-k="%s">%s</span><em data-k="%s-n">%s</em>'
                 % (label, k, '<i>→</i>'.join('<span class="pv-chip">%s</span>' % esc(n) for n in names), k, note))
 
-    return ('<span class="pv pv-rota" data-t0="%s" data-raids="%s" data-dungeons="%s" data-chain="%s">%s%s%s</span>'
-            % (esc(t0), esc('|'.join(raids_)), esc('|'.join(dungeons)), esc('|'.join(chain)),
+    return ('<span class="pv pv-rota" data-t0="%s" data-raids="%s" data-dungeons="%s" data-chain="%s" data-icons="%s">%s%s%s</span>'
+            % (esc(t0), esc('|'.join(raids_)), esc('|'.join(dungeons)), esc('|'.join(chain)), esc(icons),
                line('raid', '突袭', raids_[:3], '每周'), line('dungeon', '地牢', dungeons[:3], '每周'),
                line('chain', '扭曲', chain[:3], '每小时')))
 
@@ -546,6 +595,8 @@ def render(home):
     """把首页每张卡的预览换成现取的那一份，返回新的首页。纯函数：测试与 main() 共用。"""
     img = Imgs()
     seen = []
+    need(len(ROTA_MARK.findall(home)) == 1, '首页要有且只有一对 <!--rota--><!--/rota-->')
+    out = ROTA_MARK.sub(lambda _: '<!--rota-->%s<!--/rota-->' % hero_rota(), home)
 
     def fill(m):
         href = m.group(1)
@@ -555,7 +606,7 @@ def render(home):
         seen.append(href)
         return MARK.sub(lambda _: '<!--pv-->%s<!--/pv-->' % PREVIEW[href](img), card)
 
-    out = re.sub(r'<a class="entry" href="([^"]+)">.*?</a>', fill, home, flags=re.S)
+    out = re.sub(r'<a class="entry" href="([^"]+)">.*?</a>', fill, out, flags=re.S)
     extra = sorted(set(PREVIEW) - set(seen))
     need(not extra, '首页已经没有这些卡，从 build-home.py 的 PREVIEW 里删掉：%s' % '、'.join(extra))
     return out
