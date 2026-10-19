@@ -173,14 +173,28 @@ function harness(seed = {}, hooks = {}) {
   }
   const sandbox = {
     exports: {}, Buffer, console,
-    process: { env: { ADMIN_TOKEN: 'isolated-quality-token' } },
-    fetch() { throw new Error('network prohibited') },
+    process: { env: { ADMIN_TOKEN: 'isolated-quality-token', BUNGIE_API_KEY: 'test-bungie-key' } },
+    fetch(...args) {
+      if (hooks.fetch) return hooks.fetch(...args)
+      throw new Error('network prohibited')
+    },
     require(name) {
       if (name === 'crypto') return crypto
       if (name === 'zlib') return zlib
-      // 源稿方言与配装源稿形状两份与线上是同一个文件，不在这里另造替身。
+      if (name === 'fs') return fs
+      if (name === 'path') return path
+      // 源稿方言、配装源稿形状与永恒之诗抓取模块与线上是同一个文件，不在这里另造替身。
       if (name === './dialect.js') return require(path.join(root, 'functions/api/dialect.js'))
       if (name === './source.js') return require(path.join(root, 'functions/api/source.js'))
+      if (name === './eververse.js') {
+        const evCode = fs.readFileSync(path.join(root, 'functions/api/eververse.js'), 'utf8')
+        const evBox = {
+          module: { exports: {} }, exports: {}, require: sandbox.require,
+          fetch: (...a) => sandbox.fetch(...a), process: sandbox.process, console, __dirname: path.join(root, 'functions/api')
+        }
+        vm.runInNewContext(evCode, evBox, { filename: 'functions/api/eververse.js' })
+        return evBox.module.exports
+      }
       assert.equal(name, '@cloudbase/node-sdk', 'unexpected module')
       return { init: () => ({ database: () => db }) }
     }
@@ -835,12 +849,11 @@ function tableRows() {
 }
 
 test('the shared modules are byte-identical in both places they have to live', () => {
-  // 源稿方言（admin/dialect.js）与配装源稿形状（builds/source.js）在 JS 这一侧各只有
-  // 一份定义。云函数只 require 得到自己目录下的东西，所以 build-terms.py 各复制一份到
-  // functions/api/。复制走样就是站上与库里对同一行切出不同的格、对同一套配装算出不同
-  // 的指纹。
-  for (const [rel, fn] of [['admin/dialect.js', 'dialect.js'], ['builds/source.js', 'source.js']]) {
-    const one = fs.readFileSync(path.join(site, rel), 'utf8')
+  // 源稿方言（admin/dialect.js）、配装源稿形状（builds/source.js）与永恒之诗抓取模块（tools/sync-eververse.js）
+  // 在 JS 这一侧各只有一份定义。云函数只 require 得到自己目录下的东西，所以 build-terms.py 各复制一份到
+  // functions/api/。复制走样就是站上与库里对同一行切出不同的格、对同一套配装算出不同的指纹。
+  for (const [rel, fn] of [['site/admin/dialect.js', 'dialect.js'], ['site/builds/source.js', 'source.js'], ['tools/sync-eververse.js', 'eververse.js']]) {
+    const one = fs.readFileSync(path.join(root, rel), 'utf8')
     const two = fs.readFileSync(path.join(root, 'functions/api', fn), 'utf8')
     assert.equal(two, one, `functions/api/${fn} 与 ${rel} 不一样了——跑 npm run build 重新复制`)
   }
@@ -2100,6 +2113,88 @@ test('weapons: every syntax row parses into known keywords', () => {
       if (t.t === 'kw') { assert.ok(keys.includes(t.k), s + ' 里的 ' + t.k + ': 不是关键字') }
     }
   }
+})
+
+test('eververse: timer trigger syncs 26 validated items into counters/rotation and serves cached GET ?a=rotation', async () => {
+  const { ROTATION_SLOTS } = require(path.join(root, 'tools/sync-eververse.js'))
+  const byHash = new Map(ROTATION_SLOTS.map((s, i) => [String(s.hash), { s, i }]))
+  const h = harness({}, {
+    async fetch(url) {
+      const m = /DestinyInventoryItemDefinition\/(\d+)\//.exec(url)
+      assert.ok(m, 'unexpected url: ' + url)
+      const entry = byHash.get(m[1])
+      assert.ok(entry, 'unknown hash: ' + m[1])
+      const { s, i } = entry
+      const tierTypeName = s.expectedTier === 'exotic' ? '异域' : (s.expectedTier === 'rare' ? '稀有' : '传说')
+      return {
+        ok: true,
+        status: 200,
+        async json() {
+          return {
+            Response: {
+              itemType: s.expectedType === '着色器' ? 29 : 19,
+              itemTypeDisplayName: s.expectedType,
+              displayProperties: {
+                name: '测试商品' + (i + 1),
+                icon: '/common/destiny2_content/icons/test_' + (i + 1) + '.jpg'
+              },
+              inventory: { tierTypeName },
+              screenshot: s.isWide ? '/common/destiny2_content/screenshots/' + s.hash + '.jpg' : undefined
+            }
+          }
+        }
+      }
+    }
+  })
+
+  const timerRes = await h.main({ Type: 'Timer', TriggerName: 'eververse-daily-0130' })
+  assert.equal(timerRes.ok, 1)
+  assert.equal(timerRes.total, 26)
+
+  const getRes = await h.main({ httpMethod: 'GET', queryStringParameters: { a: 'rotation' } })
+  assert.equal(getRes.statusCode, 200)
+  assert.equal(getRes.headers['cache-control'], 'public, max-age=600')
+  const body = JSON.parse(getRes.body)
+  assert.equal(body.total, 26)
+  assert.equal(body.items.length, 26)
+  assert.equal(body.items[0].name, '测试商品 1')
+  assert.equal(body.items[0].icon, 'https://www.bungie.net/common/destiny2_content/icons/test_1.jpg')
+})
+
+test('eververse: Bungie 503 maintenance or subclass mismatch aborts sync without overwriting existing rotation doc', async () => {
+  const existing = { _id: 'rotation', updatedAt: '2026-10-19T01:30:00Z', total: 26, items: [{ name: '旧有效数据' }] }
+  const h503 = harness({ counters: [existing] }, {
+    async fetch() {
+      return { ok: false, status: 503, async json() { return {} } }
+    }
+  })
+  const res503 = await h503.main({ Type: 'Timer', TriggerName: 'eververse-daily-0130' })
+  assert.equal(res503.ok, 0)
+  assert.match(res503.error, /HTTP 503/)
+  assert.deepEqual(h503.store.counters.get('rotation'), existing, '503 维护时不得覆盖已有有效数据')
+
+  const hSub = harness({ counters: [existing] }, {
+    async fetch() {
+      return {
+        ok: true,
+        status: 200,
+        async json() {
+          return {
+            Response: {
+              itemType: 20,
+              itemTypeDisplayName: '术士分支职业',
+              displayProperties: { name: '破晓', icon: '/common/destiny2_content/icons/sub.jpg' },
+              inventory: { tierTypeName: '传说' }
+            }
+          }
+        }
+      }
+    }
+  })
+  const resSub = await hSub.main({ Type: 'Timer', TriggerName: 'eververse-daily-0130' })
+  assert.equal(resSub.ok, 0)
+  assert.match(resSub.error, /分支职业/)
+  assert.deepEqual(hSub.store.counters.get('rotation'), existing, '命中子职业时必须熔断，不得覆盖数据')
 })
 
 async function main() {

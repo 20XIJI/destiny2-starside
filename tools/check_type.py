@@ -45,8 +45,8 @@ def css_files() -> list[str]:
 
 
 def handwritten() -> list[str]:
-    """不经 emit() 的 HTML：首页手写，编辑台手写。"""
-    out = ['index.html']
+    """不经 emit() 的 HTML：首页、光尘商店与编辑台手写。"""
+    out = ['index.html', 'eververse/index.html']
     admin = os.path.join(shell.SITE, 'admin')
     if os.path.isdir(admin):
         for n in os.listdir(admin):

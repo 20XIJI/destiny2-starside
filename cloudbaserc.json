@@ -4,12 +4,28 @@
   "functions": [
     {
       "name": "api",
-      "timeout": 10,
+      "timeout": 30,
       "runtime": "Nodejs20.19",
       "memorySize": 256,
       "installDependency": true,
       "handler": "index.main",
-      "envVariables": { "ADMIN_TOKEN": "{{env.ADMIN_TOKEN}}" }
+      "envVariables": {
+        "ADMIN_TOKEN": "{{env.ADMIN_TOKEN}}",
+        "BUNGIE_API_KEY": "{{env.BUNGIE_API_KEY}}"
+      },
+      "triggers": [
+        {
+          "name": "eververse-daily-0130",
+          "type": "timer",
+          "config": "0 30 1 * * * *"
+        },
+        {
+          "name": "eververse-wed-0430",
+          "type": "timer",
+          "config": "0 30 4 * * 3 *"
+        }
+      ]
     }
   ]
 }
+

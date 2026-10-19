@@ -227,20 +227,20 @@ def main() -> int:
     else:
         print('  skip  build-weapons.py', flush=True)
 
-    home_dirty = dirty('home', under('tools/build-home.py') + [
+    home_inputs = under('tools/build-home.py') + [
         ROOT / 'site' / 'index.html',
-    ]) or art_dirty or sets_dirty or bool(page_dirty) or builds_dirty or weapons_dirty
+        ROOT / 'site' / 'rotation' / 'eververse.json',
+    ]
+    home_dirty = dirty('home', home_inputs) or art_dirty or sets_dirty or bool(page_dirty) or builds_dirty or weapons_dirty
     if home_dirty:
         invoke(load_tool('build-home.py'))
         ran = True
-        next_stamp['home'] = digest_files(under('tools/build-home.py') + [
-            ROOT / 'site' / 'index.html',
-        ])
+        next_stamp['home'] = digest_files(home_inputs)
     else:
         print('  skip  build-home.py', flush=True)
 
     search_dirty = dirty('search', under(
-        'tools/build-search.py', 'tools/pinyin.py',
+        'tools/build-search.py', 'tools/pinyin.py', 'site/eververse/index.html',
     )) or art_dirty or sets_dirty or bool(page_dirty) or builds_dirty or weapons_dirty
     if search_dirty:
         invoke(load_tool('build-search.py'))

@@ -30,7 +30,9 @@ TREE = os.path.join(shell.SITE, 'admin', 'pages.js')
 COPIES = [(os.path.join(shell.SITE, 'admin', 'dialect.js'),
            os.path.join(shell.ROOT, 'functions', 'api', 'dialect.js')),
           (os.path.join(shell.SITE, 'builds', 'source.js'),
-           os.path.join(shell.ROOT, 'functions', 'api', 'source.js'))]
+           os.path.join(shell.ROOT, 'functions', 'api', 'source.js')),
+          (os.path.join(shell.ROOT, 'tools', 'sync-eververse.js'),
+           os.path.join(shell.ROOT, 'functions', 'api', 'eververse.js'))]
 
 
 def j(v):

@@ -2219,12 +2219,11 @@ body:has(.hero) .entries > li::after { right: -6px; bottom: -6px; }
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 10px 32px;
+  gap: 10px 24px;
   margin-top: 19px;
   padding: 9px 0;
   border-top: 1px solid var(--hair);
   color: var(--bone);
-  text-decoration: none;
 }
 
 .hero-rota .hr-group {
@@ -2233,6 +2232,8 @@ body:has(.hero) .entries > li::after { right: -6px; bottom: -6px; }
   align-items: center;
   gap: 10px;
   padding: 2px 10px;
+  color: var(--bone);
+  text-decoration: none;
 }
 
 .hero-rota .hr-group::before,
@@ -2249,8 +2250,8 @@ body:has(.hero) .entries > li::after { right: -6px; bottom: -6px; }
 .hero-rota .hr-group::before { top: 0; left: 0; border-right: 0; border-bottom: 0; }
 .hero-rota .hr-group::after { right: 0; bottom: 0; border-left: 0; border-top: 0; }
 
-.hero-rota:hover .hr-group::before,
-.hero-rota:hover .hr-group::after { opacity: 1; }
+.hero-rota .hr-group:hover::before,
+.hero-rota .hr-group:hover::after { opacity: 1; }
 
 .hero-rota .hr-tag {
   color: var(--bone-faint);
@@ -2280,6 +2281,8 @@ body:has(.hero) .entries > li::after { right: -6px; bottom: -6px; }
   object-fit: contain;
   opacity: .92;
 }
+
+.hero-rota .ev-ri { border-radius: 3px; }
 
 .hero-rota .hr-unit.is-next {
   color: var(--bone-dim);

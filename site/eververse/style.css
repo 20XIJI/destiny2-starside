@@ -1,0 +1,432 @@
+/* 光尘商店 · Eververse 样式表
+   遵循 design.md：外壳去饱和为骨白与石墨发丝线，色彩归游戏内稀有度与货币编码，
+   页首保留星空窗与标题底规线，分节复用全站 .block > .sect-label。 */
+
+:root {
+  --wrap: 1060px;
+  --min: 1104px;
+  /* 复用全站既有色板（assets/site.css :root）：光尘取暖金 --c-orb，银币取冷白 --c-kinetic，稀有取 --c-charge */
+  --c-dust: var(--c-orb);
+  --c-silver: var(--c-kinetic);
+  --c-rare: var(--c-charge);
+}
+
+/* ── 轮换状态信息条 ── */
+.ev-status-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 24px;
+  margin-bottom: 36px;
+  padding: 11px 18px;
+  font-family: var(--font-cn);
+  font-size: 12.5px;
+  color: var(--bone-dim);
+  background: linear-gradient(90deg, #ffffff06, transparent 68%), var(--panel-b);
+  border: 1px solid var(--hair);
+  border-left: 2px solid var(--c-dust);
+}
+
+.ev-status-left {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 0;
+}
+
+.ev-bar-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 18px;
+}
+
+.ev-bar-item + .ev-bar-item {
+  padding-left: 18px;
+  border-left: 1px solid var(--hair);
+}
+
+.ev-bar-k {
+  color: var(--bone-faint);
+  letter-spacing: .04em;
+}
+
+.ev-bar-item b {
+  color: var(--bone);
+  font-family: var(--font-disp);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .03em;
+}
+
+.ev-bar-accent b {
+  color: var(--c-dust);
+}
+
+/* 菱形状态点：与站标、分节标记同一母题 */
+.ev-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 2px;
+  background-color: var(--c-dust);
+  transform: rotate(45deg);
+}
+
+.ev-bar-right {
+  color: var(--bone-faint);
+  font-family: var(--font-cn);
+  font-size: 12px;
+  letter-spacing: .06em;
+}
+
+/* ── 分节标题右端计数：主标题与发丝线直接走 site.css 的 .block > .sect-label ── */
+.ev-section-count {
+  order: 1;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--bone-dim);
+  font-family: var(--font-cn);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: .04em;
+}
+
+.ev-section-count b {
+  color: var(--bone-hi);
+  font-family: var(--font-disp);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ev-sect-ico {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+  opacity: .9;
+}
+
+/* ── 网格系统：双列对齐 ── */
+.ev-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+/* ── 卡片底层规范（对齐装备库 .wpn-card 的硬朗几何与稀有度左缘） ── */
+.ev-card {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--panel-a), var(--panel-b));
+  border: 1px solid var(--hair);
+  border-radius: 2px;
+  translate: 0 0;
+  transition: translate .2s cubic-bezier(.2, .8, .2, 1),
+              border-color .18s ease,
+              background-color .18s ease;
+}
+
+.ev-card:hover {
+  translate: 0 -2px;
+  border-color: var(--hair-lit);
+}
+
+/* 稀有度左缘亮线与极淡底色过渡 */
+.ev-card.exotic {
+  border-left: 2px solid color-mix(in oklab, var(--exotic) 78%, transparent);
+  background:
+    linear-gradient(90deg, rgb(252 183 10 / .075) 0%, transparent 42%),
+    linear-gradient(180deg, var(--panel-a), var(--panel-b));
+}
+
+.ev-card.exotic:hover {
+  border-left-color: var(--exotic);
+  background:
+    linear-gradient(90deg, rgb(252 183 10 / .115) 0%, transparent 48%),
+    linear-gradient(180deg, #191f2e, #141824);
+}
+
+.ev-card.legendary {
+  border-left: 2px solid color-mix(in oklab, var(--c-legend) 72%, transparent);
+  background:
+    linear-gradient(90deg, rgb(207 74 156 / .055) 0%, transparent 38%),
+    linear-gradient(180deg, var(--panel-a), var(--panel-b));
+}
+
+.ev-card.legendary:hover {
+  border-left-color: var(--c-legend);
+  background:
+    linear-gradient(90deg, rgb(207 74 156 / .09) 0%, transparent 44%),
+    linear-gradient(180deg, #191f2e, #141824);
+}
+
+.ev-card.rare {
+  border-left: 2px solid color-mix(in oklab, var(--c-rare) 72%, transparent);
+  background:
+    linear-gradient(90deg, rgb(47 159 214 / .055) 0%, transparent 38%),
+    linear-gradient(180deg, var(--panel-a), var(--panel-b));
+}
+
+.ev-card.rare:hover {
+  border-left-color: var(--c-rare);
+  background:
+    linear-gradient(90deg, rgb(47 159 214 / .09) 0%, transparent 44%),
+    linear-gradient(180deg, #191f2e, #141824);
+}
+
+/* ── 图标与文字身份层 ── */
+.ev-card-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+}
+
+/* Bungie 图标自身已带稀有度底与内框，外框只留 1px 锐利边线，不叠发光与大圆角 */
+.ev-thumb {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  overflow: hidden;
+  background-color: var(--ink);
+  border: 1px solid var(--hair-lit);
+  border-radius: 2px;
+}
+
+.ev-card-wide .ev-thumb {
+  width: 48px;
+  height: 48px;
+}
+
+.ev-thumb.exotic {
+  border-color: color-mix(in oklab, var(--exotic) 52%, var(--hair-lit));
+}
+
+.ev-thumb.legendary {
+  border-color: color-mix(in oklab, var(--c-legend) 42%, var(--hair-lit));
+}
+
+.ev-thumb.rare {
+  border-color: color-mix(in oklab, var(--c-rare) 42%, var(--hair-lit));
+}
+
+.ev-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  scale: 1;
+  transition: scale .24s cubic-bezier(.2, .8, .2, 1);
+}
+
+.ev-card:hover .ev-thumb img {
+  scale: 1.05;
+}
+
+.ev-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ev-name {
+  color: var(--bone-hi);
+  font-family: var(--font-cn);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: .02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ev-card-wide .ev-name {
+  font-size: 15.5px;
+}
+
+.ev-meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-cn);
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--bone-dim);
+}
+
+.ev-tag {
+  font-weight: 600;
+  letter-spacing: .03em;
+}
+
+.ev-tag.exotic { color: var(--exotic); font-weight: 600; }
+.ev-tag.legendary { color: var(--c-legend); font-weight: 600; }
+.ev-tag.rare { color: var(--c-rare); font-weight: 600; }
+
+.ev-sep {
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  background-color: var(--bone-faint);
+  transform: rotate(45deg);
+}
+
+.ev-type {
+  color: var(--bone-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── 精选大卡片（Wide Card）：screenshot 直接作为卡片背景铺满右侧，无暗角遮挡 ── */
+.ev-card-wide {
+  height: 168px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: stretch;
+}
+
+.ev-wide-info {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  max-width: 46%;
+  min-width: 0;
+  pointer-events: none;
+}
+
+/* screenshot 作为卡片背景：仅在左侧与文字区交界处做短距离过渡，右侧主体 100% 不遮挡 */
+.ev-card-wide .ev-wide-bg {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 78%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, .55) 14%, #000 30%);
+  mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, .55) 14%, #000 30%);
+}
+
+.ev-card-wide .ev-wide-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 58% center;
+  scale: 1;
+  filter: contrast(1.05) saturate(1.06);
+  transition: scale .32s cubic-bezier(.2, .8, .2, 1);
+}
+
+.ev-card:hover .ev-wide-img {
+  scale: 1.045;
+}
+
+/* ── 紧凑水平卡片（Compact Card：机灵、动作、着色器、投影、传送、终结技） ── */
+.ev-card-compact {
+  height: 74px;
+  padding: 13px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.ev-card-compact .ev-card-content {
+  flex: 1;
+}
+
+/* ── 价格标签（退居次要视觉层级，无外框） ── */
+.ev-price {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 0;
+  color: var(--c-dust);
+  font-family: var(--font-disp);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  opacity: .82;
+  transition: opacity .18s ease;
+}
+
+.ev-card:hover .ev-price {
+  opacity: 1;
+}
+
+.ev-price.silver-price {
+  color: var(--c-silver);
+}
+
+.ev-price-ico {
+  width: 13px;
+  height: 13px;
+  object-fit: contain;
+  opacity: .9;
+}
+
+.ev-price-val {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .03em;
+}
+
+/* ── 错误提示 ── */
+.ev-error {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 18px 20px;
+  color: var(--c-enemy);
+  font-family: var(--font-cn);
+  font-size: 13.5px;
+  background-color: var(--panel-b);
+  border: 1px solid var(--hair);
+  border-left: 2px solid var(--c-enemy);
+}
+
+/* ── 底部统计条 ── */
+.ev-summary-bar {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--hair);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--bone-faint);
+  font-family: var(--font-cn);
+  font-size: 12px;
+  letter-spacing: .04em;
+}
+
+.ev-summary-bar b {
+  color: var(--bone-dim);
+  font-family: var(--font-disp);
+  font-weight: 600;
+}
+
+/* ── 骨架屏 ── */
+.ev-skeleton {
+  background: linear-gradient(90deg, var(--panel-b) 25%, var(--panel-a) 50%, var(--panel-b) 75%);
+  background-size: 200% 100%;
+  animation: ev-shimmer 1.6s infinite ease-in-out;
+}
+
+@keyframes ev-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

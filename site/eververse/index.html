@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>光尘商店 · Starside</title>
+<meta name="description" content="永恒之诗每周与每日光尘在售商品、售价与倒计时轮换速查。">
+<meta name="theme-color" content="#0b0d14">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Starside">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:title" content="光尘商店 · Starside">
+<meta property="og:description" content="永恒之诗每周与每日光尘在售商品、售价与倒计时轮换速查。">
+<link rel="preload" href="../assets/fonts/chakra-petch-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="style.css">
+<script type="module" src="../assets/sky-page.js"></script>
+<script src="app.js" defer></script>
+</head>
+<body>
+<div class="site-head">
+<nav class="site-nav">
+<span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>
+<a class="home" href="../index.html">Starside</a>
+<span class="sep">/</span>
+<span aria-current="page">光尘商店</span>
+</nav>
+</div>
+
+<header class="page-head">
+<h1>光尘商店</h1>
+</header>
+
+<main>
+<div class="ev-status-bar" role="region" aria-label="轮换状态">
+<div class="ev-status-left">
+<span class="ev-bar-item ev-bar-accent"><i class="ev-dot" aria-hidden="true"></i><span class="ev-bar-k">本轮刷新</span><b id="ev-cur-cycle">10 月 19 日 01:00 · 周一</b></span>
+<span class="ev-bar-item"><span class="ev-bar-k">下次刷新</span><b id="ev-next-reset">10 月 20 日 01:00 · 周二</b></span>
+<span class="ev-bar-item"><span class="ev-bar-k">最近同步</span><b id="ev-last-fetch">10 月 19 日 13:41</b></span>
+</div>
+<span class="ev-bar-right" id="ev-cycle-rule">每天 01:00 刷新</span>
+</div>
+
+<section class="block" id="ev-sec-primary">
+<h2 class="sect-label"><span>主要光尘优惠</span><span class="ev-section-count"><img class="ev-sect-ico" src="../assets/icons/dust.webp" alt="" width="14" height="14"><b id="ev-cnt-primary">8</b> 件 · 光尘</span></h2>
+<div class="ev-grid" id="ev-primary">
+<div class="ev-card ev-card-wide ev-skeleton"></div>
+<div class="ev-card ev-card-wide ev-skeleton"></div>
+<div class="ev-card ev-card-wide ev-skeleton"></div>
+<div class="ev-card ev-card-wide ev-skeleton"></div>
+<div class="ev-card ev-card-wide ev-skeleton"></div>
+<div class="ev-card ev-card-wide ev-skeleton"></div>
+<div class="ev-card ev-card-compact ev-skeleton"></div>
+<div class="ev-card ev-card-compact ev-skeleton"></div>
+</div>
+</section>
+
+<section class="block" id="ev-sec-secondary">
+<h2 class="sect-label"><span>其他光尘优惠</span><span class="ev-section-count"><img class="ev-sect-ico" src="../assets/icons/dust.webp" alt="" width="14" height="14"><b id="ev-cnt-secondary">10</b> 件 · 光尘</span></h2>
+<div class="ev-grid" id="ev-secondary">
+<div class="ev-card ev-card-compact ev-skeleton"></div>
+<div class="ev-card ev-card-compact ev-skeleton"></div>
+<div class="ev-card ev-card-compact ev-skeleton"></div>
+<div class="ev-card ev-card-compact ev-skeleton"></div>
+<div class="ev-card ev-card-compact ev-skeleton"></div>
+<div class="ev-card ev-card-compact ev-skeleton"></div>
+<div class="ev-card ev-card-compact ev-skeleton"></div>
+<div class="ev-card ev-card-compact ev-skeleton"></div>
+<div class="ev-card ev-card-compact ev-skeleton"></div>
+<div class="ev-card ev-card-compact ev-skeleton"></div>
+</div>
+</section>
+
+<section class="block" id="ev-sec-silver">
+<h2 class="sect-label"><span>银币新品</span><span class="ev-section-count"><img class="ev-sect-ico" src="../assets/icons/silver.webp" alt="" width="14" height="14"><b id="ev-cnt-silver">8</b> 件 · 银币</span></h2>
+<div class="ev-grid" id="ev-silver">
+<div class="ev-card ev-card-wide ev-skeleton"></div>
+<div class="ev-card ev-card-wide ev-skeleton"></div>
+<div class="ev-card ev-card-compact ev-skeleton"></div>
+<div class="ev-card ev-card-compact ev-skeleton"></div>
+<div class="ev-card ev-card-compact ev-skeleton"></div>
+<div class="ev-card ev-card-compact ev-skeleton"></div>
+<div class="ev-card ev-card-compact ev-skeleton"></div>
+<div class="ev-card ev-card-compact ev-skeleton"></div>
+</div>
+</section>
+
+<div class="ev-summary-bar">
+<span>共 <b id="ev-cnt-total">26</b> 件 · 当日上架</span>
+<span>永恒之诗 · Tess Everis</span>
+</div>
+</main>
+
+<footer class="site-foot">
+<p><span class="stamp">更新 2026.10.19</span>数据来源于 Bungie 官方 API，每日/每周重置时间为北京时间凌晨 01:00。</p>
+<p>© 2026 日栎w · <a href="https://space.bilibili.com/26117485" target="_blank" rel="noopener">哔哩哔哩</a></p>
+<p class="legal">Starside 为非官方资料站，与 Bungie, Inc. 无从属关系。Destiny 2 及相关名称、标识为 Bungie, Inc. 的商标。</p>
+<p class="legal">ICP备案/许可证号：<a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">鲁ICP备2026052166号-1</a> <a class="beian" href="https://beian.mps.gov.cn/#/query/webSearch?code=37010202700801" target="_blank" rel="noreferrer">鲁公网安备37010202700801号</a></p>
+</footer>
+<script type="speculationrules">{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}</script>
+<script>(function(){var d=new Date(Date.now()+288e5).toISOString().slice(0,10);var o=document.getElementById("sv"),f=1;try{f=localStorage.getItem("svd")===d?0:1;if(f)localStorage.setItem("svd",d)}catch(_){}if(!f){if(!o)return;try{var c=localStorage.getItem("svt")||"",i=c.indexOf("|"),a=Date.now()-c.slice(0,i);if(i>0&&a>=0&&a<6e5){o.textContent=c.slice(i+1);return}}catch(_){}}var r=f?fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api",{method:"POST",body:JSON.stringify({a:"hit",s:o?1:0})}):fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api?a=stats");r.then(function(x){return x.json()}).then(function(s){if(o){var t="今日 "+s.today+" 位访客 · 累计 "+s.total;o.textContent=t;try{localStorage.setItem("svt",Date.now()+"|"+t)}catch(_){}}},function(x){if(o)o.textContent="访客统计暂不可用："+x})})()</script>
+<script>try{if(localStorage.sa_at&&document.querySelector("main[data-src]")){var l=document.querySelector('link[href$="assets/site.css"]');if(l)import(l.href.replace("assets/site.css","admin/edit.js"))}}catch(_){}</script>
+<script>(function(){if(!/\.tcloudbase(app)?\.com$/.test(location.hostname))return;var u="https://starside.work"+location.pathname+location.search+location.hash;document.title="【测试地址】"+document.title;function link(t,big){var a=document.createElement("a");a.href=u;a.textContent=t;a.style.cssText=big?"padding:.7em 1.6em;border:1px solid var(--accent);border-radius:2px;color:var(--accent);text-decoration:none;font-size:16px":"color:var(--accent);white-space:nowrap";return a}var bar=document.createElement("div");bar.style.cssText="position:fixed;left:0;right:0;bottom:0;z-index:99;display:flex;flex-wrap:wrap;gap:.2em 1em;align-items:center;justify-content:center;padding:.55em 1em;background-color:var(--ink-lift);border-top:1px solid var(--hair-lit);color:var(--bone);font:13px/1.7 var(--font-cn)";bar.append("当前为测试域名，正式站点位于 starside.work ",link("前往正式站"));var box=document.createElement("div");box.style.cssText="position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;gap:1.4em;align-items:center;justify-content:center;padding:2em;text-align:center;background-color:var(--ink);color:var(--bone);font:15px/1.9 var(--font-cn)";var say=document.createElement("p");say.textContent="当前访问的是测试域名。请前往正式地址 starside.work 并更新书签。";say.style.cssText="margin:0;max-width:32em";var stay=document.createElement("button");stay.type="button";stay.disabled=true;stay.style.cssText="background:none;border:0;color:var(--bone-faint);font:13px/1.7 var(--font-cn);cursor:pointer";var n=5;stay.textContent="继续访问测试域名（"+n+"）";var t=setInterval(function(){n--;stay.textContent="继续访问测试域名"+(n?"（"+n+"）":"");if(!n){clearInterval(t);stay.disabled=false}},1000);stay.onclick=function(){box.remove();document.body.appendChild(bar)};box.append(say,link("前往 starside.work",1),stay);document.body.appendChild(box)})()</script>
+</body>
+</html>

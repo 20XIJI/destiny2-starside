@@ -12,10 +12,13 @@ const { cellSpans, rowOf, cellSafe, barePipe } = require('./dialect.js')
 // 配装源稿的形状（指纹取哪几项、库里的 _id 怎么拼）只有 builds/source.js 一份，
 // 这里是构建复制过去的那一份，不手改。
 const { same, id: buildId } = require('./source.js')
+// 永恒之诗 26 槽位定义与官方 API 强校验抓取逻辑，由 build-terms.py 从 tools/sync-eververse.js 复制。
+const { syncEververse } = require('./eververse.js')
 const app = tcb.init({ env: tcb.SYMBOL_CURRENT_ENV })
 const db = app.database()
 const _ = db.command
 const stat = db.collection('counters').doc('stat')
+const rot = db.collection('counters').doc('rotation')
 const likes = db.collection('likes')
 const subs = db.collection('subs')
 // 在线编辑台的四张表。docs 是源稿的工作副本，recs 是记录上站内文字的工作副本，
@@ -28,6 +31,7 @@ const eds = db.collection('editors')
 // 审核台那几个动作要凭据。**没配 ADMIN_TOKEN 就一概拒**，不给「没设就放行」
 // 那条路——那等于把待审队列与状态位开给所有人。
 const ADMIN = process.env.ADMIN_TOKEN || ''
+const BUNGIE_KEY = process.env.BUNGIE_API_KEY || ''
 
 // exotic-weapon.md 是 159 KB，40 KB 的旧上限直接卡死资料页那一档。
 const MAX_MD = 256 * 1024
@@ -106,6 +110,26 @@ async function stats() {
   const c = (await stat.get()).data[0] || {}
   sc = { t: Date.now(), d, v: { today: (c.d || {})[d] || 0, total: c.pv || 0 } }
   return sc.v
+}
+
+// 光尘商店轮换数据缓存在 counters/rotation 单条 doc 里，实例内存缓存 5 分钟：
+// 定时器每天凌晨 01:30（及周三 04:30）写入一次，前端拉取走内存缓存，数据库读近乎 0。
+let rc = { t: 0, v: null }
+async function rotation() {
+  if (rc.v && Date.now() - rc.t < 3e5) return rc.v
+  const d = (await rot.get()).data[0] || null
+  if (!d || !Array.isArray(d.items) || !d.items.length) return null
+  const { _id, ...clean } = d
+  rc = { t: Date.now(), v: clean }
+  return clean
+}
+
+async function syncRotation(customSlots) {
+  const payload = await syncEververse(BUNGIE_KEY, Array.isArray(customSlots) && customSlots.length ? customSlots : undefined)
+  const r = await rot.update(payload)
+  if (!r.updated) await rot.set(payload)
+  rc = { t: Date.now(), v: payload }
+  return { ok: 1, total: payload.total, updatedAt: payload.updatedAt, resetAt: payload.resetAt }
 }
 
 // 同一套配装的指纹：取哪五项、怎么归一由 source.js 的 same() 定，与填表页、审核台
@@ -260,9 +284,10 @@ const LEVEL = {
   docs: 1, subs: 1, hist: 1, bdrop: 1, edits: 1, chg: 1, pend: 1,
   ssave: 2, bsave: 2, smark: 2, emark: 2, sdrop: 2,
   eds: 4,
-  stats: null, hit: null, likes: null, like: null, sub: null,
+  stats: null, hit: null, likes: null, like: null, sub: null, rotation: null,
   list: 'admin', mark: 'admin', pull: 'admin', push: 'admin', rekey: 'admin', drop: 'admin',
   landed: 'admin', rpull: 'admin', rpush: 'admin', rdrop: 'admin', rlanded: 'admin',
+  sync_rotation: 'admin',
 }
 
 // 进分支之前判一次。返回值是 me，分支要用名字或 uid 时直接拿，不再各自 await 一遍。
@@ -782,6 +807,8 @@ async function editorRoute(a, body, event, me) {
 async function route(a, body, event) {
   const me = await guard(a, body, event)
   if (a === 'stats') return stats()
+  if (a === 'rotation') return rotation()
+  if (a === 'sync_rotation') return syncRotation(body.slots)
 
   const ed = await editorRoute(a, body, event, me)
   if (ed) return ed
@@ -977,7 +1004,14 @@ async function route(a, body, event) {
   throw new Error('bad action')
 }
 
-exports.main = async (event) => {
+exports.main = async (event = {}) => {
+  if (event.Type === 'Timer' || (event.TriggerName && !event.httpMethod)) {
+    try {
+      return await syncRotation()
+    } catch (e) {
+      return { ok: 0, error: String(e.message || e) }
+    }
+  }
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers: HEAD, body: '' }
   const q = event.queryStringParameters || {}
   let body = {}
@@ -989,9 +1023,13 @@ exports.main = async (event) => {
   } catch {
     body = {}
   }
+  const a = q.a || body.a
   try {
-    const out = await route(q.a || body.a, body, event)
-    return { statusCode: 200, headers: HEAD, body: JSON.stringify(out) }
+    const out = await route(a, body, event)
+    const headers = a === 'rotation' && out
+      ? { ...HEAD, 'cache-control': 'public, max-age=600' }
+      : HEAD
+    return { statusCode: 200, headers, body: JSON.stringify(out) }
   } catch (e) {
     return { statusCode: 400, headers: HEAD, body: JSON.stringify({ error: String(e.message || e) }) }
   }

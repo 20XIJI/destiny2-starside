@@ -23,7 +23,7 @@ SITE = os.path.join(ROOT, 'site')
 HOME = 'index.html'
 # 两个专属生成器各出一页，其余的从源稿现扫——新增一篇资料就不必记得回来改这张表了。
 FIXED = [HOME, 'armor-sets/index.html', 'artifact-mods/index.html',
-         'weapons/index.html']
+         'weapons/index.html', 'eververse/index.html']
 # 源稿分两处，判据是这一页的行写不写主键：`keys/` 是主键骨架，行的内容在 data/ 的
 # 记录上，源稿只写主键、顺序与分节；`docs/` 是散文与表，内容就在源稿里。两处同构
 # ——一篇 .md 一个页面，库里的 `_id` 就是它在 `references/` 下的相对路径去掉 `.md`，

@@ -422,26 +422,37 @@ def rota_data():
 
 
 def hero_rota():
-    """搜索带底栏的当前轮换。先写第 0 周与第 0 时段的那一组，由首页内联脚本按本机时钟更新。"""
+    """搜索带底栏的当前轮换与光尘商店快跳。轮换先写第 0 周与第 0 时段的那一组，由首页内联脚本按本机时钟更新。"""
     _, raids_, dungeons, chain = rota_data()
+    ev_path = os.path.join(shell.SITE, 'rotation', 'eververse.json')
+    need(os.path.exists(ev_path), '首页预览：光尘商店数据不存在 %s' % ev_path)
+    with open(ev_path, encoding='utf-8') as f:
+        ev_items = (json.load(f).get('items') or [])[:2]
+    need(len(ev_items) == 2, '首页预览：光尘商店取不到 2 件商品')
 
     def unit(n, cls=''):
         return ('<span class="hr-unit%s"><img class="ri" src="rotation/icons/%s.webp" alt="" width="21" height="21">'
                 '<span>%s</span></span>' % (' ' + cls if cls else '', ROTA_ICONS[n], esc(n)))
 
-    def group(tag, k, a, sep, b, b_cls='', tag_k=''):
+    def ev_unit(it):
+        return ('<span class="hr-unit"><img class="ri ev-ri" src="%s" alt="" width="21" height="21">'
+                '<span>%s</span></span>' % (esc(it['icon']), esc(it['name'])))
+
+    def group(href, tag, k, a, sep, b, b_cls='', tag_k=''):
         tk = ' data-k="%s"' % tag_k if tag_k else ''
-        return ('<span class="hr-group"><span class="hr-tag"%s>%s</span>'
-                '<span class="hr-items" data-k="%s">%s<i class="hr-sep">%s</i>%s</span></span>'
-                % (tk, esc(tag), k, unit(a), sep, unit(b, b_cls)))
+        return ('<a class="hr-group" href="%s"><span class="hr-tag"%s>%s</span>'
+                '<span class="hr-items" data-k="%s">%s<i class="hr-sep">%s</i>%s</span></a>'
+                % (href, tk, esc(tag), k, a, sep, b))
 
     div = '<span class="hr-div" aria-hidden="true"></span>'
-    return ('%s%s%s%s%s'
-            % (group('本周突袭', 'raid', raids_[0], '·', raids_[4]),
+    return ('%s%s%s%s%s%s%s'
+            % (group('rotation/index.html', '本周突袭', 'raid', unit(raids_[0]), '·', unit(raids_[4])),
                div,
-               group('本周地牢', 'dungeon', dungeons[0], '·', dungeons[4]),
+               group('rotation/index.html', '本周地牢', 'dungeon', unit(dungeons[0]), '·', unit(dungeons[4])),
                div,
-               group('每小时 扭曲', 'chain', chain[0], '→', chain[1], 'is-next', 'chain-n')))
+               group('rotation/index.html', '每小时 扭曲', 'chain', unit(chain[0]), '→', unit(chain[1], 'is-next'), 'chain-n'),
+               div,
+               group('eververse/index.html', '光尘商店', 'eververse', ev_unit(ev_items[0]), '·', ev_unit(ev_items[1]))))
 
 
 def rotation(_img):
@@ -558,6 +569,23 @@ def steps(names):
     return make
 
 
+def eververse(_img):
+    path = os.path.join(shell.SITE, 'rotation', 'eververse.json')
+    need(os.path.exists(path), '首页预览：光尘商店数据不存在 %s' % path)
+    with open(path, encoding='utf-8') as f:
+        data = json.load(f)
+    items = (data.get('items') or [])[:4]
+    need(len(items) == 4, '首页预览：光尘商店取不到 4 件商品')
+    out = []
+    for it in items:
+        out.append('<span class="pv-it"><span class="pv-ic">'
+                   '<img src="%s" alt="" width="28" height="28" loading="lazy">'
+                   '</span><span class="pv-tx"><span class="pv-nm">%s</span></span></span>'
+                   % (esc(it['icon']), esc(it['name'])))
+    return ('<span class="pv pv-items" style="grid-template-columns: repeat(2, max-content)">%s</span>'
+            % ''.join(out))
+
+
 PREVIEW = {
     'weapons/index.html': weapons,
     'builds/index.html': builds,
@@ -580,6 +608,7 @@ PREVIEW = {
     'swap-dps/index.html': ranking('swap-dps', '切枪 DPS'),
     'skill-damage/index.html': ranking('skill-damage', '200 属性'),
     'rotation/index.html': rotation,
+    'eververse/index.html': eververse,
     'buff-debuffs/index.html': buffs,
     'game-mechanics/index.html': mechanics,
     'ammo/index.html': ammo,
