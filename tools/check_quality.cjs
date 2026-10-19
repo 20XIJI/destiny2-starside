@@ -186,14 +186,15 @@ function harness(seed = {}, hooks = {}) {
       // 源稿方言、配装源稿形状与永恒之诗抓取模块与线上是同一个文件，不在这里另造替身。
       if (name === './dialect.js') return require(path.join(root, 'functions/api/dialect.js'))
       if (name === './source.js') return require(path.join(root, 'functions/api/source.js'))
-      if (name === './eververse.js') {
-        const evCode = fs.readFileSync(path.join(root, 'functions/api/eververse.js'), 'utf8')
-        const evBox = {
+      if (name === './eververse.js' || name === './xur.js') {
+        const modPath = path.join(root, 'functions/api', name.slice(2))
+        const modCode = fs.readFileSync(modPath, 'utf8')
+        const modBox = {
           module: { exports: {} }, exports: {}, require: sandbox.require,
           fetch: (...a) => sandbox.fetch(...a), process: sandbox.process, console, __dirname: path.join(root, 'functions/api')
         }
-        vm.runInNewContext(evCode, evBox, { filename: 'functions/api/eververse.js' })
-        return evBox.module.exports
+        vm.runInNewContext(modCode, modBox, { filename: 'functions/api/' + name.slice(2) })
+        return modBox.module.exports
       }
       assert.equal(name, '@cloudbase/node-sdk', 'unexpected module')
       return { init: () => ({ database: () => db }) }
@@ -2195,6 +2196,114 @@ test('eververse: Bungie 503 maintenance or subclass mismatch aborts sync without
   assert.equal(resSub.ok, 0)
   assert.match(resSub.error, /分支职业/)
   assert.deepEqual(hSub.store.counters.get('rotation'), existing, '命中子职业时必须熔断，不得覆盖数据')
+})
+
+test('xur: timer trigger xur-sat-0130 syncs weekly inventory via Bungie official API with recommended perks and serves cached GET ?a=xur', async () => {
+  const h = harness({}, {
+    async fetch(url) {
+      if (url.includes('/Destiny2/Vendors/')) {
+        return {
+          ok: true,
+          status: 200,
+          async json() {
+            return {
+              Response: {
+                vendors: { data: { '2190858386': { vendorHash: 2190858386, enabled: true } } },
+                sales: {
+                  data: {
+                    '2190858386': {
+                      saleItems: {
+                        '8': { vendorItemIndex: 8, itemHash: 2405271937, costs: [{ itemHash: 800069450, quantity: 41 }] }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      const m = /DestinyInventoryItemDefinition\/(\d+)\//.exec(url)
+      assert.ok(m, 'unexpected url: ' + url)
+      const hash = Number(m[1])
+      if (hash === 800069450) {
+        return {
+          ok: true, status: 200,
+          async json() {
+            return {
+              Response: {
+                itemTypeDisplayName: '货币',
+                displayProperties: { name: '奇异硬币', icon: '/icons/coin.jpg' },
+                inventory: { tierTypeName: '奇异' },
+                classType: 3
+              }
+            }
+          }
+        }
+      }
+      if (hash === 2779821308) {
+        return {
+          ok: true, status: 200,
+          async json() {
+            return {
+              Response: {
+                itemTypeDisplayName: '斥候步枪',
+                displayProperties: { name: '布瑞亚之爱', icon: '/icons/wpn.jpg' },
+                inventory: { tierTypeName: '传说' },
+                classType: 3
+              }
+            }
+          }
+        }
+      }
+      if (hash === 2272927194) {
+        return {
+          ok: true, status: 200,
+          async json() {
+            return {
+              Response: {
+                itemTypeDisplayName: '特性',
+                displayProperties: { name: '顺畅换弹', icon: '/icons/perk.jpg' },
+                inventory: { tierTypeName: '普通' },
+                classType: 3
+              }
+            }
+          }
+        }
+      }
+      return {
+        ok: true, status: 200,
+        async json() {
+          return {
+            Response: {
+              itemTypeDisplayName: '头盔',
+              displayProperties: { name: '测试物品' + hash, icon: '/icons/armor.jpg' },
+              inventory: { tierTypeName: '异域' },
+              classType: 0
+            }
+          }
+        }
+      }
+    }
+  })
+
+  const timerRes = await h.main({ Type: 'Timer', TriggerName: 'xur-sat-0130' })
+  assert.equal(timerRes.ok, 1)
+  assert.equal(timerRes.total, 47)
+
+  const getRes = await h.main({ httpMethod: 'GET', queryStringParameters: { a: 'xur' } })
+  assert.equal(getRes.statusCode, 200)
+  assert.equal(getRes.headers['cache-control'], 'public, max-age=600')
+  const body = JSON.parse(getRes.body)
+  assert.equal(body.total, 47)
+  assert.equal(body.location, '高塔 · 集市')
+  const wpn = body.items.find((x) => x.hash === 2779821308)
+  assert.ok(wpn, 'legendary weapon present')
+  const perkCol = wpn.cols.find((c) => c.lb === '特性1')
+  assert.ok(perkCol, '特性1 column present')
+  const recPerk = perkCol.ops.find((o) => o.h === 2272927194)
+  assert.equal(recPerk.name, '顺畅换弹')
+  assert.equal(recPerk.rec, 1, 'recommended perk carries rec=1 from xur-recs.json')
 })
 
 async function main() {

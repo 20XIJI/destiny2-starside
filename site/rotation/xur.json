@@ -1,0 +1,1958 @@
+{
+  "updatedAt": "2026-10-19T08:28:15Z",
+  "arrival": "2026-10-16T17:00:00Z",
+  "departure": "2026-10-20T17:00:00Z",
+  "location": "高塔 · 集市",
+  "cycleNote": "每周六 01:00 抵达 · 周三 01:00 离开",
+  "armorSetName": "剑圣套装",
+  "total": 47,
+  "items": [
+    {
+      "hash": 4255001288,
+      "vendorHash": 2190858386,
+      "idx": 0,
+      "n": "全知之眼",
+      "ty": "胸部护甲",
+      "tier": "异域",
+      "cls": "猎人",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/9b5e31b72b4c2b7061a7857eba7f8863.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/4255001288.jpg",
+      "cost": {
+        "n": 41,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "异域护甲"
+    },
+    {
+      "hash": 2405271937,
+      "vendorHash": 2190858386,
+      "idx": 1,
+      "n": "踢踏 5",
+      "ty": "腿部护甲",
+      "tier": "异域",
+      "cls": "猎人",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/24e61da37158d8c105650edb74ae2bac.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/2405271937.jpg",
+      "cost": {
+        "n": 41,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "异域护甲"
+    },
+    {
+      "hash": 2809120022,
+      "vendorHash": 2190858386,
+      "idx": 2,
+      "n": "相对主义",
+      "ty": "猎人披风",
+      "tier": "异域",
+      "cls": "猎人",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/58ae63b773059e5bd7a4d43298f73a50.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/2809120022.jpg",
+      "cost": {
+        "n": 41,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "职业金"
+    },
+    {
+      "hash": 53126580,
+      "vendorHash": 2190858386,
+      "idx": 3,
+      "n": "和平守护者",
+      "ty": "腿部护甲",
+      "tier": "异域",
+      "cls": "泰坦",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/98491ae0d08dc78211ff10f34e42c923.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/53126580.jpg",
+      "cost": {
+        "n": 41,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "异域护甲"
+    },
+    {
+      "hash": 4157369212,
+      "vendorHash": 2190858386,
+      "idx": 4,
+      "n": "无知希冀",
+      "ty": "臂铠",
+      "tier": "异域",
+      "cls": "泰坦",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/e276ddbfe120ed49c38f24a5390143e1.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/4157369212.jpg",
+      "cost": {
+        "n": 41,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "异域护甲"
+    },
+    {
+      "hash": 266021826,
+      "vendorHash": 2190858386,
+      "idx": 5,
+      "n": "坚忍克己",
+      "ty": "泰坦印记",
+      "tier": "异域",
+      "cls": "泰坦",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/9db95c112130c018f823f394668cfb5a.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/266021826.jpg",
+      "cost": {
+        "n": 41,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "职业金"
+    },
+    {
+      "hash": 1003391927,
+      "vendorHash": 2190858386,
+      "idx": 6,
+      "n": "虚荣自负",
+      "ty": "胸部护甲",
+      "tier": "异域",
+      "cls": "术士",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/86e7918a1c286c31ded3093069ddb7b5.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/1003391927.jpg",
+      "cost": {
+        "n": 41,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "异域护甲"
+    },
+    {
+      "hash": 3864952146,
+      "vendorHash": 2190858386,
+      "idx": 7,
+      "n": "冥火之刺",
+      "ty": "腿部护甲",
+      "tier": "异域",
+      "cls": "术士",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/1a1beec59bf0bfb0475956d19adbb9da.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/3864952146.jpg",
+      "cost": {
+        "n": 41,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "异域护甲"
+    },
+    {
+      "hash": 2273643087,
+      "vendorHash": 2190858386,
+      "idx": 8,
+      "n": "唯我主义",
+      "ty": "术士臂环",
+      "tier": "异域",
+      "cls": "术士",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/7b57cd041db1987c3f566b96535daf9f.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/2273643087.jpg",
+      "cost": {
+        "n": 41,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "职业金"
+    },
+    {
+      "hash": 3856705927,
+      "vendorHash": 3751514131,
+      "idx": 9,
+      "n": "隼月",
+      "ty": "手炮",
+      "tier": "异域",
+      "cls": "通用",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/cef1290d58a2d94d1437e1e569fa7996.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/3856705927.jpg",
+      "cost": {
+        "n": 23,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "异域武器",
+      "grades": [
+        "",
+        "PVP"
+      ],
+      "intr": {
+        "h": 213689231,
+        "name": "超因果射击",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/243f5529bbd845871803181958599473.png"
+      },
+      "plugs": [
+        {
+          "h": 3661387068,
+          "name": "枪膛修正钮",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/0b451cbccc7f11f6aec9c153e59474cb.png"
+        },
+        {
+          "h": 1431678320,
+          "name": "合金弹匣",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/069170916c98748b7b3e33b80bd7d689.png"
+        },
+        {
+          "h": 2846385770,
+          "name": "测距仪",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/74270d52bec24f1f5f4c987f5f37fce9.png"
+        },
+        {
+          "h": 3438534621,
+          "name": "战斗握把",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/02a60561b11d9abee82741981af12a3f.png"
+        }
+      ],
+      "rolled": true
+    },
+    {
+      "hash": 3437746471,
+      "vendorHash": 3751514131,
+      "idx": 10,
+      "n": "血色浪漫",
+      "ty": "手炮",
+      "tier": "异域",
+      "cls": "通用",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/5a7cb122bf2e8968a68cee59ef93b23d.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/3437746471.jpg",
+      "cost": {
+        "n": 23,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "异域武器",
+      "grades": [
+        "",
+        "清怪T1"
+      ],
+      "intr": {
+        "h": 1030990989,
+        "name": "禁用武器",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/b091bd256d8ff0881f12bb87e4d7db52.png"
+      },
+      "plugs": [
+        {
+          "h": 1482024992,
+          "name": "小口径枪膛",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/7d1bb6a623f14959a47156ee71acfc3a.png"
+        },
+        {
+          "h": 3142289711,
+          "name": "精确弹药",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/d85024478504205359c7fb52dbc4f6b6.png"
+        },
+        {
+          "h": 2383960413,
+          "name": "残忍疗法",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/06c295c5e4f7604c1f2ae3914d9a3ba5.png"
+        },
+        {
+          "h": 1012699414,
+          "name": "重型握把",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/02a60561b11d9abee82741981af12a3f.png"
+        }
+      ],
+      "rolled": true
+    },
+    {
+      "hash": 4190156464,
+      "vendorHash": 3751514131,
+      "idx": 11,
+      "n": "冷酷无情",
+      "ty": "融合步枪",
+      "tier": "异域",
+      "cls": "通用",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/f3714197408d2c8935a2ce7be69a210c.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/4190156464.jpg",
+      "cost": {
+        "n": 23,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "异域武器",
+      "grades": [
+        "",
+        "输出T0.5"
+      ],
+      "intr": {
+        "h": 656200654,
+        "name": "守恒动量",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/9517548e73ff619a2e19f5432ee3c32b.png"
+      },
+      "plugs": [
+        {
+          "h": 3661387068,
+          "name": "枪膛修正钮",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/0b451cbccc7f11f6aec9c153e59474cb.png"
+        },
+        {
+          "h": 2420895100,
+          "name": "加大弹匣",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/66cfea124e24e73cca1ce6370b44ca7e.png"
+        },
+        {
+          "h": 2333607307,
+          "name": "乘胜追击",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/534cb3d60aae6e5d3e5fc067e0fa58cb.png"
+        },
+        {
+          "h": 4259401308,
+          "name": "适配枪托",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/a23363ab49857b303f2cfa238fe5045c.png"
+        }
+      ],
+      "rolled": false
+    },
+    {
+      "hash": 1508896098,
+      "vendorHash": 3751514131,
+      "idx": 12,
+      "n": "沃德克里夫线圈",
+      "ty": "火箭发射器",
+      "tier": "异域",
+      "cls": "通用",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/06d12929d1866159aca5cdb60282f908.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/1508896098.jpg",
+      "cost": {
+        "n": 23,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "异域武器",
+      "intr": {
+        "h": 2473404935,
+        "name": "疯狂科学家",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/37b8b2948487e3cd7b912e07ebaa1059.png"
+      },
+      "plugs": [
+        {
+          "h": 1478423395,
+          "name": "高爆弹药",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/d255c9140cf640cfc820f995d1c1e96a.png"
+        },
+        {
+          "h": 2420895100,
+          "name": "加大弹匣",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/66cfea124e24e73cca1ce6370b44ca7e.png"
+        },
+        {
+          "h": 1178686995,
+          "name": "机械自动填装",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/fc20c5992b1467f23e34d7350be8305a.png"
+        },
+        {
+          "h": 3465198467,
+          "name": "复合枪托",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/7c616b3d2d0e97bf8948b1371b3007bb.png"
+        }
+      ],
+      "rolled": false
+    },
+    {
+      "hash": 2088466608,
+      "vendorHash": 3751514131,
+      "idx": 13,
+      "n": "青龙协同之刃催化",
+      "ty": "",
+      "tier": "异域",
+      "cls": "通用",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/90968c1cbb71c41274a4cdcd04950579.jpg",
+      "shot": null,
+      "cost": {
+        "n": 71,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "异域武器催化"
+    },
+    {
+      "hash": 924149235,
+      "vendorHash": 3751514131,
+      "idx": 14,
+      "n": "勘探者催化",
+      "ty": "",
+      "tier": "异域",
+      "cls": "通用",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/e68a5dba35f4b96f7230e88666e416e6.jpg",
+      "shot": null,
+      "cost": {
+        "n": 71,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "异域武器催化"
+    },
+    {
+      "hash": 2779821308,
+      "vendorHash": 3751514131,
+      "idx": 15,
+      "n": "布瑞亚之爱",
+      "ty": "斥候步枪",
+      "tier": "传说",
+      "cls": "通用",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/64f9487a8ecfa5fe1362718152954457.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/2779821308.jpg",
+      "cost": {
+        "n": 17,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "传说武器",
+      "grades": [
+        "B",
+        ""
+      ],
+      "intr": {
+        "h": 1636108362,
+        "name": "精密框架",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/e9dd736124e8ef94048901a279a5bb18.png"
+      },
+      "plugs": [
+        {
+          "h": 4090651448,
+          "name": "螺旋膛线",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/7730e1732ed7ef91afce50277639c493.png"
+        },
+        {
+          "h": 1087426260,
+          "name": "附加弹匣",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/d9f468cce26fe35d9db413e2f8451127.png"
+        },
+        {
+          "h": 2272927194,
+          "name": "完美浮空",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/4b84679efdbd9bf21d23c5e8e6516e5f.png"
+        },
+        {
+          "h": 4104185692,
+          "name": "狂乱",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/23e06f4ced1b3e6476f342978ff5bb37.png"
+        }
+      ],
+      "rolled": false,
+      "cols": [
+        {
+          "lb": "固有特性",
+          "act": 1636108362,
+          "ops": [
+            {
+              "h": 1636108362,
+              "name": "精密框架",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/e9dd736124e8ef94048901a279a5bb18.png"
+            }
+          ]
+        },
+        {
+          "lb": "枪管",
+          "act": 4090651448,
+          "ops": [
+            {
+              "h": 4090651448,
+              "name": "螺旋膛线",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/7730e1732ed7ef91afce50277639c493.png"
+            },
+            {
+              "h": 3250034553,
+              "name": "锻造膛线",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/2b9eb6d4489cffc18c10223279198bcc.png"
+            }
+          ]
+        },
+        {
+          "lb": "弹匣",
+          "act": 1087426260,
+          "ops": [
+            {
+              "h": 1087426260,
+              "name": "附加弹匣",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/d9f468cce26fe35d9db413e2f8451127.png"
+            },
+            {
+              "h": 1431678320,
+              "name": "合金弹匣",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/069170916c98748b7b3e33b80bd7d689.png",
+              "rec": 1
+            }
+          ]
+        },
+        {
+          "lb": "特性1",
+          "act": 2272927194,
+          "ops": [
+            {
+              "h": 2272927194,
+              "name": "完美浮空",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/4b84679efdbd9bf21d23c5e8e6516e5f.png"
+            }
+          ]
+        },
+        {
+          "lb": "特性2",
+          "act": 4104185692,
+          "ops": [
+            {
+              "h": 4104185692,
+              "name": "狂乱",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/23e06f4ced1b3e6476f342978ff5bb37.png"
+            }
+          ]
+        },
+        {
+          "lb": "原始特性",
+          "act": 2565067140,
+          "ops": [
+            {
+              "h": 2565067140,
+              "name": "热血上头",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/40accf12b29e92be924794a3509fa587.png",
+              "rec": 1
+            }
+          ]
+        }
+      ],
+      "mw": {
+        "stat": "射程",
+        "tier": 1,
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/95af3923bdbdf11438504ddeb498afe8.jpg",
+        "rec": 0
+      }
+    },
+    {
+      "hash": 1886840007,
+      "vendorHash": 3751514131,
+      "idx": 16,
+      "n": "时间食者",
+      "ty": "追踪步枪",
+      "tier": "传说",
+      "cls": "通用",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/1bb5775c5b0730ef47e027b0f4885348.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/1886840007.jpg",
+      "cost": {
+        "n": 17,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "传说武器",
+      "grades": [
+        "S",
+        "T1.5"
+      ],
+      "intr": {
+        "h": 1294026524,
+        "name": "适配框架",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/967fb4abc6ab98f74639d6c08e5f56ee.png"
+      },
+      "plugs": [
+        {
+          "h": 839105230,
+          "name": "箭头制退器",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/8f7fb54687aa52a9c2595d90ce9c9417.png"
+        },
+        {
+          "h": 776531651,
+          "name": "冲击支撑",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/cfcbde3872d34c5258fd8227640a020e.png",
+          "rec": 3
+        },
+        {
+          "h": 2319119708,
+          "name": "高地",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/5ee6f65d7af0a9acf6f22e3254e85283.png"
+        }
+      ],
+      "rolled": false,
+      "cols": [
+        {
+          "lb": "固有特性",
+          "act": 1294026524,
+          "ops": [
+            {
+              "h": 1294026524,
+              "name": "适配框架",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/967fb4abc6ab98f74639d6c08e5f56ee.png"
+            }
+          ]
+        },
+        {
+          "lb": "枪管",
+          "act": 839105230,
+          "ops": [
+            {
+              "h": 839105230,
+              "name": "箭头制退器",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/8f7fb54687aa52a9c2595d90ce9c9417.png"
+            },
+            {
+              "h": 3661387068,
+              "name": "枪膛修正钮",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/0b451cbccc7f11f6aec9c153e59474cb.png"
+            }
+          ]
+        },
+        {
+          "lb": "电池",
+          "act": 2749775325,
+          "ops": [
+            {
+              "h": 2749775325,
+              "name": "光能炮台",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/006ff9fe30b0ef0309b499f364803b6b.png",
+              "rec": 1
+            },
+            {
+              "h": 732557052,
+              "name": "战术炮台",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/ae0d075c978d54c9fcda3cad72e58f62.png"
+            }
+          ]
+        },
+        {
+          "lb": "特性1",
+          "act": 776531651,
+          "ops": [
+            {
+              "h": 776531651,
+              "name": "冲击支撑",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/cfcbde3872d34c5258fd8227640a020e.png",
+              "rec": 3
+            }
+          ]
+        },
+        {
+          "lb": "特性2",
+          "act": 2319119708,
+          "ops": [
+            {
+              "h": 2319119708,
+              "name": "高地",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/5ee6f65d7af0a9acf6f22e3254e85283.png"
+            }
+          ]
+        },
+        {
+          "lb": "原始特性",
+          "act": 253121539,
+          "ops": [
+            {
+              "h": 253121539,
+              "name": "活性放射体液转换器",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/a15855dc978ad7ed9f79e64359ffbef0.png",
+              "rec": 1
+            }
+          ]
+        }
+      ],
+      "mw": {
+        "stat": "稳定性",
+        "tier": 1,
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/c345c1b985997a4e2730ea3919b45359.jpg",
+        "rec": 0
+      }
+    },
+    {
+      "hash": 577528837,
+      "vendorHash": 3751514131,
+      "idx": 17,
+      "n": "应急方案",
+      "ty": "斥候步枪",
+      "tier": "传说",
+      "cls": "通用",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/6f1aff9967ea5ae6d952fff7abf313f4.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/577528837.jpg",
+      "cost": {
+        "n": 17,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "传说武器",
+      "grades": [
+        "E",
+        ""
+      ],
+      "intr": {
+        "h": 3364911712,
+        "name": "速射框架",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/801d62d1f9783bee81d5700c54c24fda.png"
+      },
+      "plugs": [
+        {
+          "h": 839105230,
+          "name": "箭头制退器",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/8f7fb54687aa52a9c2595d90ce9c9417.png"
+        },
+        {
+          "h": 1087426260,
+          "name": "附加弹匣",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/d9f468cce26fe35d9db413e2f8451127.png"
+        },
+        {
+          "h": 1820235745,
+          "name": "维持生计",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/eaa8f4295a71bf47df7ffd8599f7af4d.png"
+        },
+        {
+          "h": 2726471870,
+          "name": "敲打",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/7f9dcf3bd4a8a4e0d2d0922827f038c9.png"
+        }
+      ],
+      "rolled": false,
+      "cols": [
+        {
+          "lb": "固有特性",
+          "act": 3364911712,
+          "ops": [
+            {
+              "h": 3364911712,
+              "name": "速射框架",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/801d62d1f9783bee81d5700c54c24fda.png"
+            }
+          ]
+        },
+        {
+          "lb": "枪管",
+          "act": 839105230,
+          "ops": [
+            {
+              "h": 839105230,
+              "name": "箭头制退器",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/8f7fb54687aa52a9c2595d90ce9c9417.png"
+            },
+            {
+              "h": 3250034553,
+              "name": "锻造膛线",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/2b9eb6d4489cffc18c10223279198bcc.png"
+            }
+          ]
+        },
+        {
+          "lb": "弹匣",
+          "act": 1087426260,
+          "ops": [
+            {
+              "h": 1087426260,
+              "name": "附加弹匣",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/d9f468cce26fe35d9db413e2f8451127.png"
+            },
+            {
+              "h": 3230963543,
+              "name": "广口弹匣",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/f95e67e4ff37466505d66d3fa1030782.png"
+            }
+          ]
+        },
+        {
+          "lb": "特性1",
+          "act": 1820235745,
+          "ops": [
+            {
+              "h": 1820235745,
+              "name": "维持生计",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/eaa8f4295a71bf47df7ffd8599f7af4d.png"
+            }
+          ]
+        },
+        {
+          "lb": "特性2",
+          "act": 2726471870,
+          "ops": [
+            {
+              "h": 2726471870,
+              "name": "敲打",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/7f9dcf3bd4a8a4e0d2d0922827f038c9.png"
+            }
+          ]
+        }
+      ],
+      "mw": {
+        "stat": "射程",
+        "tier": 1,
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/95af3923bdbdf11438504ddeb498afe8.jpg",
+        "rec": 0
+      }
+    },
+    {
+      "hash": 3371413056,
+      "vendorHash": 3751514131,
+      "idx": 18,
+      "n": "死神剃刀",
+      "ty": "刀剑",
+      "tier": "传说",
+      "cls": "通用",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/8b97dae4f5ae0e71b6271adfd478b8d7.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/3371413056.jpg",
+      "cost": {
+        "n": 17,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "传说武器",
+      "grades": [
+        "D",
+        ""
+      ],
+      "intr": {
+        "h": 263649945,
+        "name": "涡流框架",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/23e50e126159f0f22983f73d6a246f0d.png"
+      },
+      "plugs": [
+        {
+          "h": 1261178282,
+          "name": "坚韧利刃",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/1478f8a31179ca5306f1316e4018f9bd.png"
+        },
+        {
+          "h": 2363751990,
+          "name": "无尽刀剑格挡",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/6aef1709498dad9c61e2d85874f34c8b.png",
+          "rec": 1
+        },
+        {
+          "h": 2590710093,
+          "name": "无倦利刃",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/d597ced6ce0812d168ce86b31eaaeb03.png"
+        },
+        {
+          "h": 3523296417,
+          "name": "爆破专家",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/da009697110e06b65d6f827b3b6d5f70.png"
+        }
+      ],
+      "rolled": false,
+      "cols": [
+        {
+          "lb": "固有特性",
+          "act": 263649945,
+          "ops": [
+            {
+              "h": 263649945,
+              "name": "涡流框架",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/23e50e126159f0f22983f73d6a246f0d.png"
+            }
+          ]
+        },
+        {
+          "lb": "刀刃",
+          "act": 1261178282,
+          "ops": [
+            {
+              "h": 1261178282,
+              "name": "坚韧利刃",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/1478f8a31179ca5306f1316e4018f9bd.png"
+            },
+            {
+              "h": 938542991,
+              "name": "回火刀锋",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/694a093ed0c7718b05cdf1ebaa3dd648.png"
+            }
+          ]
+        },
+        {
+          "lb": "护手",
+          "act": 2363751990,
+          "ops": [
+            {
+              "h": 2363751990,
+              "name": "无尽刀剑格挡",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/6aef1709498dad9c61e2d85874f34c8b.png",
+              "rec": 1
+            }
+          ]
+        },
+        {
+          "lb": "特性1",
+          "act": 2590710093,
+          "ops": [
+            {
+              "h": 2590710093,
+              "name": "无倦利刃",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/d597ced6ce0812d168ce86b31eaaeb03.png"
+            }
+          ]
+        },
+        {
+          "lb": "特性2",
+          "act": 3523296417,
+          "ops": [
+            {
+              "h": 3523296417,
+              "name": "爆破专家",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/da009697110e06b65d6f827b3b6d5f70.png"
+            }
+          ]
+        },
+        {
+          "lb": "原始特性",
+          "act": 1905044254,
+          "ops": [
+            {
+              "h": 1905044254,
+              "name": "过量",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/b35084a1bd62b75098f489a6c689ad08.png",
+              "rec": 1
+            }
+          ]
+        }
+      ],
+      "mw": {
+        "stat": "冲击",
+        "tier": 1,
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/f2354558ad75fb2527155f0f58c2dcc3.jpg",
+        "rec": 0
+      }
+    },
+    {
+      "hash": 1097616550,
+      "vendorHash": 3751514131,
+      "idx": 19,
+      "n": "非常演奏",
+      "ty": "微型冲锋枪",
+      "tier": "传说",
+      "cls": "通用",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/fa530f3e219d27e40f203c11dccc1a8d.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/1097616550.jpg",
+      "cost": {
+        "n": 17,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "传说武器",
+      "grades": [
+        "D",
+        ""
+      ],
+      "intr": {
+        "h": 1525239159,
+        "name": "攻击型框架",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/64209c4fd20513b33109c374179d0958.png"
+      },
+      "plugs": [
+        {
+          "h": 1840239774,
+          "name": "槽化枪管",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/260eba9dd149dbb94b1306c9ed4dd8db.png",
+          "rec": 1
+        },
+        {
+          "h": 2420895100,
+          "name": "加大弹匣",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/66cfea124e24e73cca1ce6370b44ca7e.png"
+        },
+        {
+          "h": 3643424744,
+          "name": "丰盈满溢",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/3165fec56b59363fa974a11f5730f4ec.png"
+        },
+        {
+          "h": 2458213969,
+          "name": "多杀弹匣",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/3749921a74a378259228d5e989459311.png"
+        }
+      ],
+      "rolled": false,
+      "cols": [
+        {
+          "lb": "固有特性",
+          "act": 1525239159,
+          "ops": [
+            {
+              "h": 1525239159,
+              "name": "攻击型框架",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/64209c4fd20513b33109c374179d0958.png"
+            }
+          ]
+        },
+        {
+          "lb": "枪管",
+          "act": 1840239774,
+          "ops": [
+            {
+              "h": 1840239774,
+              "name": "槽化枪管",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/260eba9dd149dbb94b1306c9ed4dd8db.png",
+              "rec": 1
+            },
+            {
+              "h": 1392496348,
+              "name": "多边形膛线",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/7d7aaccee29cf450d4057a9de871cdc8.png"
+            }
+          ]
+        },
+        {
+          "lb": "弹匣",
+          "act": 2420895100,
+          "ops": [
+            {
+              "h": 2420895100,
+              "name": "加大弹匣",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/66cfea124e24e73cca1ce6370b44ca7e.png"
+            },
+            {
+              "h": 1431678320,
+              "name": "合金弹匣",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/069170916c98748b7b3e33b80bd7d689.png",
+              "rec": 1
+            }
+          ]
+        },
+        {
+          "lb": "特性1",
+          "act": 3643424744,
+          "ops": [
+            {
+              "h": 3643424744,
+              "name": "丰盈满溢",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/3165fec56b59363fa974a11f5730f4ec.png"
+            }
+          ]
+        },
+        {
+          "lb": "特性2",
+          "act": 2458213969,
+          "ops": [
+            {
+              "h": 2458213969,
+              "name": "多杀弹匣",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/3749921a74a378259228d5e989459311.png"
+            }
+          ]
+        }
+      ],
+      "mw": {
+        "stat": "稳定性",
+        "tier": 1,
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/c345c1b985997a4e2730ea3919b45359.jpg",
+        "rec": 0
+      }
+    },
+    {
+      "hash": 4195186942,
+      "vendorHash": 3751514131,
+      "idx": 20,
+      "n": "守信者",
+      "ty": "火箭发射器",
+      "tier": "传说",
+      "cls": "通用",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/724fc2a4e71066f97bafb0cde4cca88d.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/4195186942.jpg",
+      "cost": {
+        "n": 17,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "传说武器",
+      "grades": [
+        "C",
+        ""
+      ],
+      "intr": {
+        "h": 3419274965,
+        "name": "精密框架",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/e9dd736124e8ef94048901a279a5bb18.png"
+      },
+      "plugs": [
+        {
+          "h": 1478423395,
+          "name": "高爆弹药",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/d255c9140cf640cfc820f995d1c1e96a.png"
+        },
+        {
+          "h": 2985827016,
+          "name": "合金外壳",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/e02a542e5162c002112c21b6fdf2e86b.png"
+        },
+        {
+          "h": 951095735,
+          "name": "脉冲增幅器",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/85269cc90d2005ccd6a41b5d830e223d.png"
+        },
+        {
+          "h": 4104185692,
+          "name": "狂乱",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/23e06f4ced1b3e6476f342978ff5bb37.png"
+        }
+      ],
+      "rolled": false,
+      "cols": [
+        {
+          "lb": "固有特性",
+          "act": 3419274965,
+          "ops": [
+            {
+              "h": 3419274965,
+              "name": "精密框架",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/e9dd736124e8ef94048901a279a5bb18.png"
+            }
+          ]
+        },
+        {
+          "lb": "发射管",
+          "act": 1478423395,
+          "ops": [
+            {
+              "h": 1478423395,
+              "name": "高爆弹药",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/d255c9140cf640cfc820f995d1c1e96a.png"
+            },
+            {
+              "h": 981914802,
+              "name": "热发发射管",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/8bedf618841b334417b8f95c2aa35d57.png"
+            }
+          ]
+        },
+        {
+          "lb": "弹匣",
+          "act": 2985827016,
+          "ops": [
+            {
+              "h": 2985827016,
+              "name": "合金外壳",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/e02a542e5162c002112c21b6fdf2e86b.png"
+            },
+            {
+              "h": 1996142143,
+              "name": "黑色火药",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/19deadeab109c6a2907900d6fe0d6142.png"
+            }
+          ]
+        },
+        {
+          "lb": "特性1",
+          "act": 951095735,
+          "ops": [
+            {
+              "h": 951095735,
+              "name": "脉冲增幅器",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/85269cc90d2005ccd6a41b5d830e223d.png"
+            }
+          ]
+        },
+        {
+          "lb": "特性2",
+          "act": 4104185692,
+          "ops": [
+            {
+              "h": 4104185692,
+              "name": "狂乱",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/23e06f4ced1b3e6476f342978ff5bb37.png"
+            }
+          ]
+        },
+        {
+          "lb": "原始特性",
+          "act": 253121539,
+          "ops": [
+            {
+              "h": 253121539,
+              "name": "活性放射体液转换器",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/a15855dc978ad7ed9f79e64359ffbef0.png",
+              "rec": 1
+            }
+          ]
+        }
+      ],
+      "mw": {
+        "stat": "射程",
+        "tier": 1,
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/95af3923bdbdf11438504ddeb498afe8.jpg",
+        "rec": 0
+      }
+    },
+    {
+      "hash": 4224667951,
+      "vendorHash": 3751514131,
+      "idx": 21,
+      "n": "异教徒的炽热",
+      "ty": "火箭发射器",
+      "tier": "传说",
+      "cls": "通用",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/b633583bd03873de316570708a64ab04.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/4224667951.jpg",
+      "cost": {
+        "n": 17,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "传说武器",
+      "grades": [
+        "C",
+        ""
+      ],
+      "intr": {
+        "h": 3468089894,
+        "name": "攻击型框架",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/64209c4fd20513b33109c374179d0958.png"
+      },
+      "plugs": [
+        {
+          "h": 1844523823,
+          "name": "密闭发射",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/0a783b44bf9fc49b4bed0a93dfa21d5d.png"
+        },
+        {
+          "h": 3492396210,
+          "name": "内爆弹药",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/3ec484f0a65df7da9bbc5582c708574b.png"
+        },
+        {
+          "h": 3977735242,
+          "name": "追踪模块",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/e9a84062da4eecc07c85c55e70dd11fb.png"
+        },
+        {
+          "h": 4104185692,
+          "name": "狂乱",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/23e06f4ced1b3e6476f342978ff5bb37.png"
+        }
+      ],
+      "rolled": false,
+      "cols": [
+        {
+          "lb": "固有特性",
+          "act": 3468089894,
+          "ops": [
+            {
+              "h": 3468089894,
+              "name": "攻击型框架",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/64209c4fd20513b33109c374179d0958.png"
+            }
+          ]
+        },
+        {
+          "lb": "发射管",
+          "act": 1844523823,
+          "ops": [
+            {
+              "h": 1844523823,
+              "name": "密闭发射",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/0a783b44bf9fc49b4bed0a93dfa21d5d.png"
+            },
+            {
+              "h": 3798852852,
+              "name": "智能浮动控制",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/5c9fe3f49086b4d6cecc3431751edc02.png"
+            }
+          ]
+        },
+        {
+          "lb": "弹匣",
+          "act": 3492396210,
+          "ops": [
+            {
+              "h": 3492396210,
+              "name": "内爆弹药",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/3ec484f0a65df7da9bbc5582c708574b.png"
+            },
+            {
+              "h": 3796465595,
+              "name": "冲击弹壳",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/8eff94634227ae7261579b31c4ad6024.png",
+              "rec": 1
+            }
+          ]
+        },
+        {
+          "lb": "特性1",
+          "act": 3977735242,
+          "ops": [
+            {
+              "h": 3977735242,
+              "name": "追踪模块",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/e9a84062da4eecc07c85c55e70dd11fb.png"
+            }
+          ]
+        },
+        {
+          "lb": "特性2",
+          "act": 4104185692,
+          "ops": [
+            {
+              "h": 4104185692,
+              "name": "狂乱",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/23e06f4ced1b3e6476f342978ff5bb37.png"
+            }
+          ]
+        },
+        {
+          "lb": "原始特性",
+          "act": 2041432007,
+          "ops": [
+            {
+              "h": 2041432007,
+              "name": "黑暗乙太收割者",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/9fbac5c6d3550f059c20d09f06d06bb2.png",
+              "rec": 1
+            }
+          ]
+        }
+      ],
+      "mw": {
+        "stat": "射程",
+        "tier": 1,
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/95af3923bdbdf11438504ddeb498afe8.jpg",
+        "rec": 0
+      }
+    },
+    {
+      "hash": 1197771438,
+      "vendorHash": 3751514131,
+      "idx": 22,
+      "n": "迷失信号",
+      "ty": "榴弹发射器",
+      "tier": "传说",
+      "cls": "通用",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/58577a92574f2f57eb2b806ae39de598.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/1197771438.jpg",
+      "cost": {
+        "n": 17,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "传说武器",
+      "grades": [
+        "A",
+        "T0"
+      ],
+      "intr": {
+        "h": 385138649,
+        "name": "区域拒止框架",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/d1c2cea4a7325962a493283c5615d260.png"
+      },
+      "plugs": [
+        {
+          "h": 1478423395,
+          "name": "高爆弹药",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/d255c9140cf640cfc820f995d1c1e96a.png"
+        },
+        {
+          "h": 2822142346,
+          "name": "高速弹药",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/2a2b757cd73305126990cd19ad011a2c.png",
+          "rec": 1
+        },
+        {
+          "h": 1556840489,
+          "name": "金中藏弹",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/87f6cac4799cbae4e11ba74d3dc77504.png",
+          "rec": 3
+        },
+        {
+          "h": 3523296417,
+          "name": "爆破专家",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/da009697110e06b65d6f827b3b6d5f70.png",
+          "rec": 3
+        }
+      ],
+      "rolled": false,
+      "cols": [
+        {
+          "lb": "固有特性",
+          "act": 385138649,
+          "ops": [
+            {
+              "h": 385138649,
+              "name": "区域拒止框架",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/d1c2cea4a7325962a493283c5615d260.png"
+            }
+          ]
+        },
+        {
+          "lb": "发射管",
+          "act": 1478423395,
+          "ops": [
+            {
+              "h": 1478423395,
+              "name": "高爆弹药",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/d255c9140cf640cfc820f995d1c1e96a.png"
+            },
+            {
+              "h": 3525010810,
+              "name": "高速发射",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/dfad5d8b00b79c4393943b791a624874.png",
+              "rec": 1
+            }
+          ]
+        },
+        {
+          "lb": "弹匣",
+          "act": 2822142346,
+          "ops": [
+            {
+              "h": 2822142346,
+              "name": "高速弹药",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/2a2b757cd73305126990cd19ad011a2c.png",
+              "rec": 1
+            },
+            {
+              "h": 3492396210,
+              "name": "内爆弹药",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/3ec484f0a65df7da9bbc5582c708574b.png"
+            }
+          ]
+        },
+        {
+          "lb": "特性1",
+          "act": 1556840489,
+          "ops": [
+            {
+              "h": 1556840489,
+              "name": "金中藏弹",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/87f6cac4799cbae4e11ba74d3dc77504.png",
+              "rec": 3
+            }
+          ]
+        },
+        {
+          "lb": "特性2",
+          "act": 3523296417,
+          "ops": [
+            {
+              "h": 3523296417,
+              "name": "爆破专家",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/da009697110e06b65d6f827b3b6d5f70.png",
+              "rec": 3
+            }
+          ]
+        },
+        {
+          "lb": "原始特性",
+          "act": 253121539,
+          "ops": [
+            {
+              "h": 253121539,
+              "name": "活性放射体液转换器",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/a15855dc978ad7ed9f79e64359ffbef0.png",
+              "rec": 1
+            }
+          ]
+        }
+      ],
+      "mw": {
+        "stat": "射程",
+        "tier": 1,
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/95af3923bdbdf11438504ddeb498afe8.jpg",
+        "rec": 0
+      }
+    },
+    {
+      "hash": 1835747805,
+      "vendorHash": 3751514131,
+      "idx": 23,
+      "n": "野兽天性",
+      "ty": "手炮",
+      "tier": "传说",
+      "cls": "通用",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/b1eb3c2695e3dfc07f224bc3de468cc7.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/1835747805.jpg",
+      "cost": {
+        "n": 17,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "传说武器",
+      "grades": [
+        "E",
+        ""
+      ],
+      "intr": {
+        "h": 1322370662,
+        "name": "精密框架",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/e9dd736124e8ef94048901a279a5bb18.png"
+      },
+      "plugs": [
+        {
+          "h": 1926090095,
+          "name": "稳手 HCS",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/388a2235cfe0a6d9449aec30f8e962cd.png"
+        },
+        {
+          "h": 1087426260,
+          "name": "附加弹匣",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/d9f468cce26fe35d9db413e2f8451127.png"
+        },
+        {
+          "h": 706527188,
+          "name": "光速拔枪",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/6893bb2c7ec7d13cb0d91ec9dd8b6500.png"
+        },
+        {
+          "h": 3523296417,
+          "name": "爆破专家",
+          "icon": "https://www.bungie.net/common/destiny2_content/icons/da009697110e06b65d6f827b3b6d5f70.png"
+        }
+      ],
+      "rolled": false,
+      "cols": [
+        {
+          "lb": "固有特性",
+          "act": 1322370662,
+          "ops": [
+            {
+              "h": 1322370662,
+              "name": "精密框架",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/e9dd736124e8ef94048901a279a5bb18.png"
+            }
+          ]
+        },
+        {
+          "lb": "瞄具",
+          "act": 1926090095,
+          "ops": [
+            {
+              "h": 1926090095,
+              "name": "稳手 HCS",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/388a2235cfe0a6d9449aec30f8e962cd.png"
+            },
+            {
+              "h": 1926090093,
+              "name": "标记 HCS",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/388a2235cfe0a6d9449aec30f8e962cd.png"
+            }
+          ]
+        },
+        {
+          "lb": "弹匣",
+          "act": 1087426260,
+          "ops": [
+            {
+              "h": 1087426260,
+              "name": "附加弹匣",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/d9f468cce26fe35d9db413e2f8451127.png"
+            },
+            {
+              "h": 106909392,
+              "name": "战术弹匣",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/f0e309a267b25279a871d182f8910bcc.png"
+            }
+          ]
+        },
+        {
+          "lb": "特性1",
+          "act": 706527188,
+          "ops": [
+            {
+              "h": 706527188,
+              "name": "光速拔枪",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/6893bb2c7ec7d13cb0d91ec9dd8b6500.png"
+            }
+          ]
+        },
+        {
+          "lb": "特性2",
+          "act": 3523296417,
+          "ops": [
+            {
+              "h": 3523296417,
+              "name": "爆破专家",
+              "icon": "https://www.bungie.net/common/destiny2_content/icons/da009697110e06b65d6f827b3b6d5f70.png"
+            }
+          ]
+        }
+      ],
+      "mw": {
+        "stat": "操控性",
+        "tier": 1,
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/d2e1ab2542f585d025fb4cc1a3885164.jpg",
+        "rec": 0
+      }
+    },
+    {
+      "hash": 1604556427,
+      "vendorHash": 3751514131,
+      "idx": 24,
+      "n": "剑圣胸甲",
+      "ty": "胸部护甲",
+      "tier": "传说",
+      "cls": "猎人",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/5ab076e5e367dcf23ff593c7fb2ac7b5.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/1604556427.jpg",
+      "cost": {
+        "n": 29,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "传说护甲"
+    },
+    {
+      "hash": 2697887125,
+      "vendorHash": 3751514131,
+      "idx": 25,
+      "n": "剑圣护臂",
+      "ty": "臂铠",
+      "tier": "传说",
+      "cls": "猎人",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/ae09c4846cbe3ac18ad296888cf1e1f0.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/2697887125.jpg",
+      "cost": {
+        "n": 29,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "传说护甲"
+    },
+    {
+      "hash": 1343009820,
+      "vendorHash": 3751514131,
+      "idx": 26,
+      "n": "剑圣面具",
+      "ty": "头盔",
+      "tier": "传说",
+      "cls": "猎人",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/b6ef6b931428dbd87c8cfcbcfedf4598.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/1343009820.jpg",
+      "cost": {
+        "n": 29,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "传说护甲"
+    },
+    {
+      "hash": 385833378,
+      "vendorHash": 3751514131,
+      "idx": 27,
+      "n": "剑圣披风",
+      "ty": "猎人披风",
+      "tier": "传说",
+      "cls": "猎人",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/2c0a6053d13269f1363fae60d9b38973.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/385833378.jpg",
+      "cost": {
+        "n": 29,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "传说护甲"
+    },
+    {
+      "hash": 445076215,
+      "vendorHash": 3751514131,
+      "idx": 28,
+      "n": "剑圣腿铠",
+      "ty": "腿部护甲",
+      "tier": "传说",
+      "cls": "猎人",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/3a668633c1fc9ab4edfd77daaa5801c7.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/445076215.jpg",
+      "cost": {
+        "n": 29,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "传说护甲"
+    },
+    {
+      "hash": 262826703,
+      "vendorHash": 3751514131,
+      "idx": 29,
+      "n": "剑圣战甲",
+      "ty": "胸部护甲",
+      "tier": "传说",
+      "cls": "泰坦",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/e50a1d9d83a5ed7873950c15d5c9ff7e.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/262826703.jpg",
+      "cost": {
+        "n": 29,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "传说护甲"
+    },
+    {
+      "hash": 2347181257,
+      "vendorHash": 3751514131,
+      "idx": 30,
+      "n": "剑圣臂铠",
+      "ty": "臂铠",
+      "tier": "传说",
+      "cls": "泰坦",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/7ee1635208792756e7998c35a2a49005.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/2347181257.jpg",
+      "cost": {
+        "n": 29,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "传说护甲"
+    },
+    {
+      "hash": 1883377784,
+      "vendorHash": 3751514131,
+      "idx": 31,
+      "n": "剑圣头盔",
+      "ty": "头盔",
+      "tier": "传说",
+      "cls": "泰坦",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/90919c6ecf55c4bbddac904c8392b22c.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/1883377784.jpg",
+      "cost": {
+        "n": 29,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "传说护甲"
+    },
+    {
+      "hash": 2639123099,
+      "vendorHash": 3751514131,
+      "idx": 32,
+      "n": "剑圣胫甲",
+      "ty": "腿部护甲",
+      "tier": "传说",
+      "cls": "泰坦",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/78db46d4be6f2210b355b2cdd3e54017.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/2639123099.jpg",
+      "cost": {
+        "n": 29,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "传说护甲"
+    },
+    {
+      "hash": 1934339678,
+      "vendorHash": 3751514131,
+      "idx": 33,
+      "n": "剑圣印记",
+      "ty": "泰坦印记",
+      "tier": "传说",
+      "cls": "泰坦",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/f9cbd21881a6815a9afc1e0eebc12298.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/1934339678.jpg",
+      "cost": {
+        "n": 29,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "传说护甲"
+    },
+    {
+      "hash": 1504698788,
+      "vendorHash": 3751514131,
+      "idx": 34,
+      "n": "剑圣法袍",
+      "ty": "胸部护甲",
+      "tier": "传说",
+      "cls": "术士",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/6e43d0848c2fe12c2d83af335dfb5e5d.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/1504698788.jpg",
+      "cost": {
+        "n": 29,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "传说护甲"
+    },
+    {
+      "hash": 4172973116,
+      "vendorHash": 3751514131,
+      "idx": 35,
+      "n": "剑圣手套",
+      "ty": "臂铠",
+      "tier": "传说",
+      "cls": "术士",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/b5b69e7a48e9aa956923bccb93247b1b.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/4172973116.jpg",
+      "cost": {
+        "n": 29,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "传说护甲"
+    },
+    {
+      "hash": 3520307277,
+      "vendorHash": 3751514131,
+      "idx": 36,
+      "n": "剑圣面罩",
+      "ty": "头盔",
+      "tier": "传说",
+      "cls": "术士",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/97c53f7d497cbd9df50d347f90e50772.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/3520307277.jpg",
+      "cost": {
+        "n": 29,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "传说护甲"
+    },
+    {
+      "hash": 3558781766,
+      "vendorHash": 3751514131,
+      "idx": 37,
+      "n": "剑圣战靴",
+      "ty": "腿部护甲",
+      "tier": "传说",
+      "cls": "术士",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/ac51157276f5a4ecc0a2accfe04eb033.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/3558781766.jpg",
+      "cost": {
+        "n": 29,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "传说护甲"
+    },
+    {
+      "hash": 2248528889,
+      "vendorHash": 3751514131,
+      "idx": 38,
+      "n": "剑圣臂环",
+      "ty": "术士臂环",
+      "tier": "传说",
+      "cls": "术士",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/d88cc04ab71b380f3422ca6ead305926.jpg",
+      "shot": "https://www.bungie.net/common/destiny2_content/screenshots/2248528889.jpg",
+      "cost": {
+        "n": 29,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "传说护甲"
+    },
+    {
+      "hash": 3853748946,
+      "vendorHash": 537912098,
+      "idx": 39,
+      "n": "强化核心",
+      "ty": "材料",
+      "tier": "传说",
+      "cls": "通用",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/0a4eb695ed55b4e720ddc401460cc0f9.jpg",
+      "shot": null,
+      "cost": {
+        "n": 5,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "材料"
+    },
+    {
+      "hash": 3853748946,
+      "vendorHash": 537912098,
+      "idx": 40,
+      "n": "强化核心",
+      "ty": "材料",
+      "tier": "传说",
+      "cls": "通用",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/0a4eb695ed55b4e720ddc401460cc0f9.jpg",
+      "shot": null,
+      "cost": {
+        "n": 11,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "材料"
+    },
+    {
+      "hash": 4257549984,
+      "vendorHash": 537912098,
+      "idx": 41,
+      "n": "增强棱镜",
+      "ty": "材料",
+      "tier": "传说",
+      "cls": "通用",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/dea2a35badf7466d4c2c2697ce6e8d87.jpg",
+      "shot": null,
+      "cost": {
+        "n": 31,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "材料"
+    },
+    {
+      "hash": 903043774,
+      "vendorHash": 537912098,
+      "idx": 42,
+      "n": "异域记忆水晶",
+      "ty": "记忆水晶",
+      "tier": "异域",
+      "cls": "通用",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/3e6a698e1a8a5fb446fdcbf1e63c5269.png",
+      "shot": null,
+      "cost": {
+        "n": 23,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "材料"
+    },
+    {
+      "hash": 3159615086,
+      "vendorHash": 537912098,
+      "idx": 43,
+      "n": "微光",
+      "ty": "货币",
+      "tier": "基础",
+      "cls": "通用",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/88993eaeedad32f42072df6f77f47311.png",
+      "shot": null,
+      "cost": {
+        "n": 7,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "材料"
+    },
+    {
+      "hash": 3282419336,
+      "vendorHash": 537912098,
+      "idx": 44,
+      "n": "突袭旗帜",
+      "ty": "消耗品",
+      "tier": "传说",
+      "cls": "通用",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/c3e315408bb063aac2133c0c52167d95.jpg",
+      "shot": null,
+      "cost": {
+        "n": 17,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "材料"
+    },
+    {
+      "hash": 4049195331,
+      "vendorHash": 537912098,
+      "idx": 45,
+      "n": "奇异护甲记忆水晶",
+      "ty": "护甲记忆水晶",
+      "tier": "传说",
+      "cls": "通用",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/72f81678b877631635c66822f199601b.png",
+      "shot": null,
+      "cost": {
+        "n": 17,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "材料"
+    },
+    {
+      "hash": 3691823069,
+      "vendorHash": 537912098,
+      "idx": 46,
+      "n": "奇异武器记忆水晶",
+      "ty": "武器记忆水晶",
+      "tier": "传说",
+      "cls": "通用",
+      "icon": "https://www.bungie.net/common/destiny2_content/icons/6515a012a64659cda9cf9f5f9ac966e9.png",
+      "shot": null,
+      "cost": {
+        "n": 7,
+        "cur": "奇异硬币",
+        "icon": "https://www.bungie.net/common/destiny2_content/icons/1fa5806bb6ec16b5f8cdeb4b36d4bb01.jpg"
+      },
+      "sec": "材料"
+    }
+  ]
+}

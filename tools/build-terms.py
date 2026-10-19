@@ -32,7 +32,11 @@ COPIES = [(os.path.join(shell.SITE, 'admin', 'dialect.js'),
           (os.path.join(shell.SITE, 'builds', 'source.js'),
            os.path.join(shell.ROOT, 'functions', 'api', 'source.js')),
           (os.path.join(shell.ROOT, 'tools', 'sync-eververse.js'),
-           os.path.join(shell.ROOT, 'functions', 'api', 'eververse.js'))]
+           os.path.join(shell.ROOT, 'functions', 'api', 'eververse.js')),
+          (os.path.join(shell.ROOT, 'tools', 'sync-xur.js'),
+           os.path.join(shell.ROOT, 'functions', 'api', 'xur.js')),
+          (os.path.join(shell.ROOT, 'tools', 'xur-recs.json'),
+           os.path.join(shell.ROOT, 'functions', 'api', 'xur-recs.json'))]
 
 
 def j(v):

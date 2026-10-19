@@ -14,11 +14,14 @@ const { cellSpans, rowOf, cellSafe, barePipe } = require('./dialect.js')
 const { same, id: buildId } = require('./source.js')
 // 永恒之诗 26 槽位定义与官方 API 强校验抓取逻辑，由 build-terms.py 从 tools/sync-eververse.js 复制。
 const { syncEververse } = require('./eververse.js')
+// 老九（Xûr）周货抓取与装备库推荐标注逻辑，由 build-terms.py 从 tools/sync-xur.js 复制。
+const { syncXur } = require('./xur.js')
 const app = tcb.init({ env: tcb.SYMBOL_CURRENT_ENV })
 const db = app.database()
 const _ = db.command
 const stat = db.collection('counters').doc('stat')
 const rot = db.collection('counters').doc('rotation')
+const xurDoc = db.collection('counters').doc('xur')
 const likes = db.collection('likes')
 const subs = db.collection('subs')
 // 在线编辑台的四张表。docs 是源稿的工作副本，recs 是记录上站内文字的工作副本，
@@ -130,6 +133,26 @@ async function syncRotation(customSlots) {
   if (!r.updated) await rot.set(payload)
   rc = { t: Date.now(), v: payload }
   return { ok: 1, total: payload.total, updatedAt: payload.updatedAt, resetAt: payload.resetAt }
+}
+
+// 老九（Xûr）周货数据缓存在 counters/xur 单条 doc 里，实例内存缓存 5 分钟：
+// 定时器周六凌晨 01:30（及每日巡检）写入一次，前端拉取走内存缓存。
+let xc = { t: 0, v: null }
+async function xur() {
+  if (xc.v && Date.now() - xc.t < 3e5) return xc.v
+  const d = (await xurDoc.get()).data[0] || null
+  if (!d || !Array.isArray(d.items) || !d.items.length) return null
+  const { _id, ...clean } = d
+  xc = { t: Date.now(), v: clean }
+  return clean
+}
+
+async function syncXurInventory(rawKyberData) {
+  const payload = await syncXur(BUNGIE_KEY, rawKyberData && typeof rawKyberData === 'object' ? rawKyberData : null)
+  const r = await xurDoc.update(payload)
+  if (!r.updated) await xurDoc.set(payload)
+  xc = { t: Date.now(), v: payload }
+  return { ok: 1, total: payload.total, updatedAt: payload.updatedAt, arrival: payload.arrival, departure: payload.departure }
 }
 
 // 同一套配装的指纹：取哪五项、怎么归一由 source.js 的 same() 定，与填表页、审核台
@@ -284,10 +307,10 @@ const LEVEL = {
   docs: 1, subs: 1, hist: 1, bdrop: 1, edits: 1, chg: 1, pend: 1,
   ssave: 2, bsave: 2, smark: 2, emark: 2, sdrop: 2,
   eds: 4,
-  stats: null, hit: null, likes: null, like: null, sub: null, rotation: null,
+  stats: null, hit: null, likes: null, like: null, sub: null, rotation: null, xur: null,
   list: 'admin', mark: 'admin', pull: 'admin', push: 'admin', rekey: 'admin', drop: 'admin',
   landed: 'admin', rpull: 'admin', rpush: 'admin', rdrop: 'admin', rlanded: 'admin',
-  sync_rotation: 'admin',
+  sync_rotation: 'admin', sync_xur: 'admin',
 }
 
 // 进分支之前判一次。返回值是 me，分支要用名字或 uid 时直接拿，不再各自 await 一遍。
@@ -809,6 +832,8 @@ async function route(a, body, event) {
   if (a === 'stats') return stats()
   if (a === 'rotation') return rotation()
   if (a === 'sync_rotation') return syncRotation(body.slots)
+  if (a === 'xur') return xur()
+  if (a === 'sync_xur') return syncXurInventory(body.kyber)
 
   const ed = await editorRoute(a, body, event, me)
   if (ed) return ed
@@ -1006,7 +1031,9 @@ async function route(a, body, event) {
 
 exports.main = async (event = {}) => {
   if (event.Type === 'Timer' || (event.TriggerName && !event.httpMethod)) {
+    const trig = String(event.TriggerName || '')
     try {
+      if (trig.includes('xur')) return await syncXurInventory()
       return await syncRotation()
     } catch (e) {
       return { ok: 0, error: String(e.message || e) }
@@ -1026,7 +1053,7 @@ exports.main = async (event = {}) => {
   const a = q.a || body.a
   try {
     const out = await route(a, body, event)
-    const headers = a === 'rotation' && out
+    const headers = (a === 'rotation' || a === 'xur') && out
       ? { ...HEAD, 'cache-control': 'public, max-age=600' }
       : HEAD
     return { statusCode: 200, headers, body: JSON.stringify(out) }

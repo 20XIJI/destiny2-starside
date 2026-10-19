@@ -4,7 +4,7 @@
   "functions": [
     {
       "name": "api",
-      "timeout": 30,
+      "timeout": 60,
       "runtime": "Nodejs20.19",
       "memorySize": 256,
       "installDependency": true,
@@ -23,6 +23,11 @@
           "name": "eververse-wed-0430",
           "type": "timer",
           "config": "0 30 4 * * 3 *"
+        },
+        {
+          "name": "xur-sat-0130",
+          "type": "timer",
+          "config": "0 30 1 * * 6 *"
         }
       ]
     }

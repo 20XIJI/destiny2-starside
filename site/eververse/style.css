@@ -11,6 +11,53 @@
   --c-rare: var(--c-charge);
 }
 
+/* ── 页首与商人切换栏（对齐 weapons/style.css 的 .wpn-scope） ── */
+.page-head { padding-bottom: 18px; }
+.page-head h1 { padding-bottom: 0; border-bottom: 0; }
+
+.ev-scope {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  border-bottom: 1px solid var(--hair-lit);
+}
+
+.ev-scope .toggle {
+  padding: 8px 14px 10px;
+  margin-bottom: -1px;
+  color: var(--bone-faint);
+  font: 600 14px/1.4 var(--font-cn);
+  letter-spacing: .04em;
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  transition: color .15s ease, border-color .15s ease;
+}
+
+.ev-scope .toggle:hover {
+  color: var(--bone-hi);
+}
+
+.ev-scope .toggle[aria-pressed="true"] {
+  color: var(--bone-hi);
+  background: none;
+  border-color: transparent transparent var(--bone-hi);
+}
+
+.ev-tab-ico {
+  width: 15px;
+  height: 15px;
+  object-fit: contain;
+  opacity: .72;
+  transition: opacity .15s ease;
+}
+
+.ev-scope .toggle:hover .ev-tab-ico,
+.ev-scope .toggle[aria-pressed="true"] .ev-tab-ico {
+  opacity: 1;
+}
+
 /* ── 轮换状态信息条 ── */
 .ev-status-bar {
   display: flex;
@@ -26,6 +73,10 @@
   background: linear-gradient(90deg, #ffffff06, transparent 68%), var(--panel-b);
   border: 1px solid var(--hair);
   border-left: 2px solid var(--c-dust);
+}
+
+body[data-vendor="xur"] .ev-status-bar {
+  border-left-color: var(--bone-faint);
 }
 
 .ev-status-left {
@@ -65,6 +116,10 @@
   color: var(--c-dust);
 }
 
+body[data-vendor="xur"] .ev-bar-accent b {
+  color: var(--bone-hi);
+}
+
 /* 菱形状态点：与站标、分节标记同一母题 */
 .ev-dot {
   display: inline-block;
@@ -73,6 +128,10 @@
   margin-right: 2px;
   background-color: var(--c-dust);
   transform: rotate(45deg);
+}
+
+body[data-vendor="xur"] .ev-dot {
+  background-color: var(--bone-hi);
 }
 
 .ev-bar-right {
@@ -94,6 +153,7 @@
   font-size: 12px;
   font-weight: 400;
   letter-spacing: .04em;
+  text-transform: none;
 }
 
 .ev-section-count b {
@@ -178,6 +238,15 @@
     linear-gradient(180deg, #191f2e, #141824);
 }
 
+.ev-card.basic {
+  border-left: 2px solid var(--bone-faint);
+}
+
+.ev-card.basic:hover {
+  border-left-color: var(--bone-dim);
+  background: linear-gradient(180deg, #191f2e, #141824);
+}
+
 /* ── 图标与文字身份层 ── */
 .ev-card-content {
   position: relative;
@@ -216,6 +285,10 @@
   border-color: color-mix(in oklab, var(--c-rare) 42%, var(--hair-lit));
 }
 
+.ev-thumb.basic {
+  border-color: var(--hair-lit);
+}
+
 .ev-thumb img {
   display: block;
   width: 100%;
@@ -249,6 +322,11 @@
   text-overflow: ellipsis;
 }
 
+/* 异域名称走异域金（对齐 weapons/style.css 的 .nm.exo） */
+.ev-name.exo {
+  color: var(--exotic);
+}
+
 .ev-card-wide .ev-name {
   font-size: 15.5px;
 }
@@ -271,6 +349,7 @@
 .ev-tag.exotic { color: var(--exotic); font-weight: 600; }
 .ev-tag.legendary { color: var(--c-legend); font-weight: 600; }
 .ev-tag.rare { color: var(--c-rare); font-weight: 600; }
+.ev-tag.basic { color: var(--bone-dim); font-weight: 600; }
 
 .ev-sep {
   display: inline-block;
@@ -374,6 +453,12 @@
   color: var(--c-silver);
 }
 
+/* 奇异硬币价格：不借用 --c-strand（缚丝绿，违反 design.md 色相归元素所有），
+   由硬币图标自身表达货币编码，数值用 --bone-hi */
+.ev-price.coin-price {
+  color: var(--bone-hi);
+}
+
 .ev-price-ico {
   width: 13px;
   height: 13px;
@@ -430,3 +515,213 @@
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* ── 老九：职业金三列网格 ── */
+.ev-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+/* ── 老九：异域武器卡片（统一在 2 列网格中自撑高，不写死固定 height 裁断芯片与价格） ── */
+.ev-card-exo-wpn {
+  height: auto;
+  min-height: 184px;
+}
+
+.ev-card-exo-wpn .ev-wide-info {
+  max-width: 64%;
+  gap: 12px;
+}
+
+/* Bungie 武器原图（1920×1080）枪体分布在画面横向 38%–97% 区间：
+   若沿用普通宽卡的 object-position: 58% center 与窄容器，枪托/握把会被右边缘截断。
+   将背景容器放宽至 82% 并对齐右边缘（100% center），保证整把枪从枪口到枪托完整入画。 */
+.ev-card-exo-wpn .ev-wide-bg {
+  width: 82%;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, .22) 22%, rgba(0, 0, 0, .75) 38%, #000 50%);
+  mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, .22) 22%, rgba(0, 0, 0, .75) 38%, #000 50%);
+}
+
+.ev-card-exo-wpn .ev-wide-img {
+  object-position: 100% center;
+}
+
+.xur-perk-strip {
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  gap: 5px 14px;
+  pointer-events: auto;
+}
+
+/* 异域武器宽卡内的 Perk 条：复用全站 .r-plug（site.css:3186），
+   只补异域固有特性的金色高亮与单行省略。 */
+.xur-exo-plug {
+  min-width: 0;
+}
+
+.xur-exo-plug .ico {
+  margin: 2px;
+}
+
+.xur-exo-plug.is-intr {
+  color: var(--exotic);
+  font-weight: 600;
+}
+
+.xur-exo-plug .nm {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 作者评级菱形标记（对齐装备库 .wpn-grades） */
+.xur-grades {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0 12px;
+  margin-top: 2px;
+  font: 400 12px/1.4 var(--font-cn);
+  color: var(--bone);
+  white-space: nowrap;
+}
+
+.xur-grades > span::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 6px;
+  vertical-align: 1.5px;
+  background-color: var(--bone-faint);
+  transform: rotate(45deg);
+}
+
+.xur-grades > .au-a::before { background-color: var(--au-aegis); }
+.xur-grades > .au-l::before { background-color: var(--au-lgpig); }
+.xur-grades .tg { font-weight: 600; }
+.xur-grades .tg-1 { color: var(--bone-hi); }
+.xur-grades .tg-2,
+.xur-grades .tg-3 { color: var(--bone); font-weight: 400; }
+
+/* 分节标题右端的光圈图例（对齐装备库 .halo-key） */
+.xur-halo-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--bone-dim);
+}
+
+.halo-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.halo-key i {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--halo);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
+}
+
+.halo-key i.by-a { --halo: var(--au-aegis); }
+.halo-key i.by-l { --halo: var(--au-lgpig); }
+.halo-key i.by-al { --halo: var(--halo-both); }
+
+/* ── 老九：传说武器整卷表（复用 site.css 的 .r-head / .rec / .r-slot / .r-plug，与购物清单完全同构） ── */
+.xur-r-weapon {
+  grid-template-columns: 11.5em repeat(4, minmax(0, 1fr)) 11.5em 6.5em;
+}
+
+.xur-r-weapon .r-id > img {
+  width: 48px;
+  height: 48px;
+}
+
+.xur-r-weapon .xur-grades {
+  justify-content: center;
+}
+
+.rec.xur-r-weapon:last-child {
+  border-bottom: 1px solid var(--hair);
+}
+
+/* ── 老九：传说护甲套装矩阵（三职业 × 五部位） ── */
+.xur-armor-box {
+  padding: 14px 18px;
+  background: linear-gradient(180deg, var(--panel-a), var(--panel-b));
+  border: 1px solid var(--hair);
+  border-left: 2px solid color-mix(in oklab, var(--c-legend) 72%, transparent);
+  border-radius: 2px;
+}
+
+.xur-armor-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.xur-armor-row {
+  display: grid;
+  grid-template-columns: 44px repeat(5, minmax(0, 1fr));
+  align-items: center;
+  gap: 10px;
+}
+
+.xur-armor-cls {
+  font-family: var(--font-cn);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--bone-dim);
+}
+
+.xur-armor-piece {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background-color: var(--tint-2);
+  border: 1px solid var(--hair);
+  border-radius: 2px;
+  min-width: 0;
+  transition: border-color .16s ease, background-color .16s ease;
+}
+
+.xur-armor-piece:hover {
+  background-color: var(--row-hover);
+  border-color: var(--hair-lit);
+}
+
+.xur-armor-piece .ev-thumb {
+  width: 36px;
+  height: 36px;
+}
+
+.xur-armor-piece-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.xur-armor-piece-name {
+  font-family: var(--font-cn);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bone-hi);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.xur-armor-piece-ty {
+  font-family: var(--font-cn);
+  font-size: 11.5px;
+  color: var(--bone-dim);
+}
+

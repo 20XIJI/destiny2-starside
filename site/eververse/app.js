@@ -2,9 +2,12 @@
   'use strict';
 
   var CACHE_KEY = 'd2_ev_cache_v8';
+  var XUR_CACHE_KEY = 'd2_xur_cache_v1';
   var JSON_URL = '../rotation/eververse.json';
+  var XUR_JSON_URL = '../rotation/xur.json';
+  var API_URL = 'https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api?a=rotation';
+  var XUR_API_URL = 'https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api?a=xur';
 
-  // 立即主动清理旧版本的坏缓存
   try {
     localStorage.removeItem('d2_eververse_cache');
     localStorage.removeItem('d2_ev_cache_v1');
@@ -23,11 +26,26 @@
   var cntSecondaryEl = document.getElementById('ev-cnt-secondary');
   var cntSilverEl = document.getElementById('ev-cnt-silver');
   var cntTotalEl = document.getElementById('ev-cnt-total');
+
+  var lblCurEl = document.getElementById('ev-lbl-cur');
+  var lblNextEl = document.getElementById('ev-lbl-next');
   var curCycleEl = document.getElementById('ev-cur-cycle');
   var nextResetEl = document.getElementById('ev-next-reset');
   var lastFetchEl = document.getElementById('ev-last-fetch');
   var cycleRuleEl = document.getElementById('ev-cycle-rule');
-  var hasRendered = false;
+
+  var paneEv = document.getElementById('ev-pane-eververse');
+  var paneXur = document.getElementById('ev-pane-xur');
+  var xurContentEl = document.getElementById('xur-content');
+  var xurCntTotalEl = document.getElementById('xur-cnt-total');
+  var xurVendorEl = document.getElementById('xur-summary-vendor');
+  var tabBtns = document.querySelectorAll('.ev-scope .toggle');
+
+  var activeTab = 'eververse';
+  var evData = null;
+  var xurData = null;
+  var hasRenderedEv = false;
+  var hasRenderedXur = false;
 
   var WEEKS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 
@@ -61,6 +79,55 @@
     return m + ' 月 ' + day + ' 日 ' + h + ':' + min + ' · ' + w;
   }
 
+  function formatShortTime(isoStr) {
+    if (!isoStr) return '--';
+    var d = new Date(isoStr);
+    if (isNaN(d.getTime())) return '--';
+    return (d.getMonth() + 1) + ' 月 ' + d.getDate() + ' 日 ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+
+  function updateStatusBar() {
+    if (activeTab === 'xur') {
+      if (lblCurEl) lblCurEl.textContent = '抵达时间';
+      if (lblNextEl) lblNextEl.textContent = '离开时间';
+      if (xurData) {
+        if (curCycleEl) curCycleEl.textContent = formatTime(xurData.arrival || xurData.updatedAt);
+        if (nextResetEl) nextResetEl.textContent = formatTime(xurData.departure);
+        if (lastFetchEl) lastFetchEl.textContent = formatShortTime(xurData.updatedAt || xurData.generatedAt);
+        var loc = xurData.location ? xurData.location + ' · ' : '';
+        if (cycleRuleEl) cycleRuleEl.textContent = loc + (xurData.cycleNote || '每周六 01:00 抵达 · 周三 01:00 离开');
+      }
+      return;
+    }
+
+    if (lblCurEl) lblCurEl.textContent = '本轮刷新';
+    if (lblNextEl) lblNextEl.textContent = '下次刷新';
+    if (evData) {
+      if (curCycleEl) curCycleEl.textContent = formatTime(evData.cycleStart || evData.updatedAt);
+      if (nextResetEl) nextResetEl.textContent = formatTime(evData.resetAt);
+      if (lastFetchEl) lastFetchEl.textContent = formatShortTime(evData.updatedAt);
+      if (cycleRuleEl) cycleRuleEl.textContent = evData.cycleNote || '每天 01:00 刷新';
+    }
+  }
+
+  function switchTab(tab, pushHash) {
+    activeTab = tab === 'xur' ? 'xur' : 'eververse';
+    document.body.setAttribute('data-vendor', activeTab);
+    for (var i = 0; i < tabBtns.length; i++) {
+      var btn = tabBtns[i];
+      var isOn = btn.getAttribute('data-tab') === activeTab;
+      btn.setAttribute('aria-pressed', isOn ? 'true' : 'false');
+    }
+    if (paneEv) paneEv.hidden = activeTab !== 'eververse';
+    if (paneXur) paneXur.hidden = activeTab !== 'xur';
+    updateStatusBar();
+    if (pushHash) {
+      try {
+        history.replaceState(null, '', activeTab === 'xur' ? '#xur' : location.pathname);
+      } catch (_) {}
+    }
+  }
+
   function shouldShowScreenshot(item) {
     if (!item || !item.screenshot) return false;
     var t = item.type || '';
@@ -70,17 +137,19 @@
 
   function renderCard(item, isWide, idx) {
     var rawTier = item.tier;
-    var tier = (rawTier === 'exotic' || rawTier === 'rare') ? rawTier : 'legendary';
-    var tierText = tier === 'exotic' ? '异域' : (tier === 'rare' ? '稀有' : '传说');
+    var tier = (rawTier === 'exotic' || rawTier === 'rare' || rawTier === 'basic') ? rawTier : 'legendary';
+    var tierText = tier === 'exotic' ? '异域' : (tier === 'rare' ? '稀有' : (tier === 'basic' ? '基础' : '传说'));
     var isSilver = item.currency === 'silver';
-    var icoSrc = isSilver ? '../assets/icons/silver.webp' : '../assets/icons/dust.webp';
-    var icoAlt = isSilver ? '银币' : '光尘';
-    var priceClass = isSilver ? 'ev-price silver-price' : 'ev-price';
+    var isCoin = item.currency === 'coin';
+    var icoSrc = isCoin ? '../assets/icons/coin.webp' : (isSilver ? '../assets/icons/silver.webp' : '../assets/icons/dust.webp');
+    var icoAlt = isCoin ? '奇异硬币' : (isSilver ? '银币' : '光尘');
+    var priceClass = isCoin ? 'ev-price coin-price' : (isSilver ? 'ev-price silver-price' : 'ev-price');
     var dispName = esc(formatName(item.name));
     var dispType = esc(item.type || '');
     var iconUrl = esc(item.icon || '');
     var shotUrl = esc(item.screenshot || '');
     var imgLoad = idx < 4 ? 'fetchpriority="high"' : (idx < 8 ? '' : 'loading="lazy"');
+    var nameCls = tier === 'exotic' ? 'ev-name exo' : 'ev-name';
 
     var priceText = '-';
     if (item.cost !== null && item.cost !== undefined) {
@@ -106,7 +175,7 @@
                 '<img src="' + iconUrl + '" alt="' + dispName + '" width="48" height="48"' + (imgLoad ? ' ' + imgLoad : '') + ' decoding="async">' +
               '</div>' +
               '<div class="ev-body">' +
-                '<span class="ev-name" title="' + dispName + '">' + dispName + '</span>' +
+                '<span class="' + nameCls + '" title="' + dispName + '">' + dispName + '</span>' +
                 '<span class="ev-meta">' +
                   '<span class="ev-tag ' + tier + '">' + tierText + '</span>' +
                   '<i class="ev-sep" aria-hidden="true"></i>' +
@@ -127,7 +196,7 @@
             '<img src="' + iconUrl + '" alt="' + dispName + '" width="46" height="46"' + (imgLoad ? ' ' + imgLoad : '') + ' decoding="async">' +
           '</div>' +
           '<div class="ev-body">' +
-            '<span class="ev-name" title="' + dispName + '">' + dispName + '</span>' +
+            '<span class="' + nameCls + '" title="' + dispName + '">' + dispName + '</span>' +
             '<span class="ev-meta">' +
               '<span class="ev-tag ' + tier + '">' + tierText + '</span>' +
               '<i class="ev-sep" aria-hidden="true"></i>' +
@@ -152,6 +221,7 @@
 
   function renderData(data) {
     if (!data || !Array.isArray(data.items) || !data.items.length) return;
+    evData = data;
 
     var primary = [];
     var secondary = [];
@@ -189,25 +259,391 @@
     if (cntSecondaryEl) cntSecondaryEl.textContent = String(secondary.length);
     if (cntSilverEl) cntSilverEl.textContent = String(silver.length);
     if (cntTotalEl) cntTotalEl.textContent = String(data.items.length);
-    if (cycleRuleEl && data.cycleNote) cycleRuleEl.textContent = data.cycleNote;
 
-    if (curCycleEl && (data.cycleStart || data.updatedAt)) {
-      curCycleEl.textContent = formatTime(data.cycleStart || data.updatedAt);
+    updateStatusBar();
+    hasRenderedEv = true;
+  }
+
+  /* ── 老九 · 仄 (Xûr) 渲染逻辑（对齐装备库 .plug 光圈与 .wpn-grades 评级语言） ── */
+
+  function gradeStep(tok) {
+    var m = /^T(\d(?:\.\d)?)$/.exec(tok);
+    if (m) return +m[1] <= 0.5 ? 1 : (+m[1] <= 1.5 ? 2 : 3);
+    return (tok === 'S' || tok === 'A') ? 1 : ((tok === 'B' || tok === 'C') ? 2 : 3);
+  }
+
+  function gradeMarks(text, letter) {
+    return esc(text).replace(letter ? /^[SABCDEF]$/ : /T\d(?:\.\d)?/g, function (m) {
+      return '<b class="tg tg-' + gradeStep(m) + '">' + m + '</b>';
+    });
+  }
+
+  function renderGradesHtml(grades) {
+    if (!Array.isArray(grades) || (!grades[0] && !grades[1])) return '';
+    var titleStr = [grades[0] ? 'Aegis ' + grades[0] : '', grades[1] ? '小棒猪 ' + grades[1] : ''].filter(Boolean).join('　');
+    return (
+      '<div class="xur-grades" title="' + esc(titleStr) + '">' +
+        (grades[0] ? '<span class="au-a">' + gradeMarks(grades[0], true) + '</span>' : '') +
+        (grades[1] ? '<span class="au-l">' + gradeMarks(grades[1], false) + '</span>' : '') +
+      '</div>'
+    );
+  }
+
+  function plugTitleTip(p, isIntr) {
+    if (!p) return '';
+    var rec = Number(p.rec || 0);
+    var tip = p.name || '';
+    if (rec === 3) tip += ' · Aegis + 小棒猪共同推荐';
+    else if (rec === 1) tip += ' · Aegis 推荐';
+    else if (rec === 2) tip += ' · 小棒猪推荐';
+    else if (isIntr) tip += ' · 固有特性';
+    return tip;
+  }
+
+  function plugHaloCls(rec) {
+    var r = Number(rec || 0);
+    return r === 3 ? ' by-al' : (r === 1 ? ' by-a' : (r === 2 ? ' by-l' : ''));
+  }
+
+  function renderPlugNode(p, isIntr) {
+    if (!p) return '';
+    var byCls = plugHaloCls(p.rec);
+    var intrCls = isIntr ? ' is-intr' : '';
+    var icoHtml = p.icon
+      ? '<span class="ico"><img src="' + esc(p.icon) + '" alt="" decoding="async"></span>'
+      : '';
+    return (
+      '<span class="r-plug xur-exo-plug' + intrCls + byCls + '" title="' + esc(plugTitleTip(p, isIntr)) + '">' +
+        icoHtml +
+        '<span class="nm">' + esc(p.name) + '</span>' +
+      '</span>'
+    );
+  }
+
+  function renderSlotPlug(p) {
+    if (!p) return '';
+    var byCls = plugHaloCls(p.rec);
+    var icoHtml = p.icon
+      ? '<span class="ico"><img src="' + esc(p.icon) + '" alt="" decoding="async"></span>'
+      : '';
+    return (
+      '<div class="r-plug' + byCls + '" title="' + esc(plugTitleTip(p, false)) + '">' +
+        icoHtml +
+        esc(p.name) +
+      '</div>'
+    );
+  }
+
+  function renderXurExoticWeapon(it) {
+    var dispName = esc(formatName(it.n));
+    var dispType = esc(it.ty || '异域武器');
+    var rollTag = it.rolled ? '异域 · 本周随机卷' : '异域';
+    var costVal = it.cost && it.cost.n ? esc(it.cost.n) : '-';
+    var chips = [];
+    if (it.intr) chips.push(renderPlugNode(it.intr, true));
+    (it.plugs || []).forEach(function (p) {
+      chips.push(renderPlugNode(p, false));
+    });
+    var shotHtml = it.shot
+      ? '<div class="ev-wide-bg"><img class="ev-wide-img" src="' + esc(it.shot) + '" alt="" decoding="async"></div>'
+      : '';
+    var gradesHtml = renderGradesHtml(it.grades);
+
+    return (
+      '<article class="ev-card ev-card-wide ev-card-exo-wpn exotic">' +
+        shotHtml +
+        '<div class="ev-wide-info">' +
+          '<div class="ev-card-content">' +
+            '<div class="ev-thumb exotic">' +
+              '<img src="' + esc(it.icon) + '" alt="' + dispName + '" width="48" height="48" decoding="async">' +
+            '</div>' +
+            '<div class="ev-body">' +
+              '<span class="ev-name exo" title="' + dispName + '">' + dispName + '</span>' +
+              '<span class="ev-meta">' +
+                '<span class="ev-tag exotic">' + rollTag + '</span>' +
+                '<i class="ev-sep" aria-hidden="true"></i>' +
+                '<span class="ev-type">' + dispType + '</span>' +
+              '</span>' +
+              gradesHtml +
+            '</div>' +
+          '</div>' +
+          (chips.length ? '<div class="xur-perk-strip">' + chips.join('') + '</div>' : '') +
+          '<span class="ev-price coin-price">' +
+            '<img class="ev-price-ico" src="../assets/icons/coin.webp" alt="奇异硬币" width="13" height="13">' +
+            '<span class="ev-price-val">' + costVal + '</span>' +
+          '</span>' +
+        '</div>' +
+      '</article>'
+    );
+  }
+
+  function findColOps(cols, names) {
+    if (!Array.isArray(cols)) return [];
+    for (var i = 0; i < cols.length; i++) {
+      if (names.indexOf(cols[i].lb) !== -1) return cols[i].ops || [];
     }
-    if (nextResetEl && data.resetAt) {
-      nextResetEl.textContent = formatTime(data.resetAt);
+    return [];
+  }
+
+  function renderSlotCell(ops) {
+    if (!ops || !ops.length) {
+      return '<div class="r-cell r-mid r-slot"><div class="r-plug-none">无</div></div>';
     }
-    if (lastFetchEl && data.updatedAt) {
-      var d = new Date(data.updatedAt);
-      if (!isNaN(d.getTime())) {
-        var m = d.getMonth() + 1;
-        var day = d.getDate();
-        var h = pad(d.getHours());
-        var min = pad(d.getMinutes());
-        lastFetchEl.textContent = m + ' 月 ' + day + ' 日 ' + h + ':' + min;
+    return (
+      '<div class="r-cell r-mid r-slot">' +
+        ops.map(renderSlotPlug).join('') +
+      '</div>'
+    );
+  }
+
+  function renderXurLegendaryWeapons(weapons) {
+    if (!weapons.length) return '';
+    var rowsHtml = weapons.map(function (w) {
+      var dispName = esc(formatName(w.n));
+      var shortFrame = (w.intr && w.intr.name) ? w.intr.name.replace(/框架$/, '') : '';
+      var subLabel = esc(w.ty || '武器') + (shortFrame ? ' · ' + esc(shortFrame) : '');
+      var gradesHtml = renderGradesHtml(w.grades);
+
+      var cBarrel = findColOps(w.cols, ['枪管', '刀刃', '发射管', '弓臂', '瞄具']);
+      var cMag = findColOps(w.cols, ['弹匣', '电池', '护手']);
+      var cPerk1 = findColOps(w.cols, ['特性1']);
+      var cPerk2 = findColOps(w.cols, ['特性2']);
+      var cOrigin = findColOps(w.cols, ['原始特性']);
+
+      var mwInner = '<div class="r-plug-none">无</div>';
+      if (w.mw && w.mw.stat) {
+        var mwRec = w.mw.rec ? ' by-a' : '';
+        var mwTip = w.mw.stat + (w.mw.rec ? ' · Aegis 推荐大师杰作' : '');
+        var mwIco = w.mw.icon
+          ? '<span class="ico"><img src="' + esc(w.mw.icon) + '" alt="" decoding="async"></span>'
+          : '';
+        mwInner = '<div class="r-plug r-mwp' + mwRec + '" title="' + esc(mwTip) + '">' + mwIco + esc(w.mw.stat) + '</div>';
       }
+
+      return (
+        '<article class="rec xur-r-weapon">' +
+          '<div class="r-cell r-id xur-r-id">' +
+            '<img src="' + esc(w.icon) + '" alt="' + dispName + '" decoding="async">' +
+            '<div class="r-nm">' + dispName + '</div>' +
+            '<div class="x-mini">' +
+              '<div>' + subLabel + '</div>' +
+            '</div>' +
+            gradesHtml +
+          '</div>' +
+          renderSlotCell(cBarrel) +
+          renderSlotCell(cMag) +
+          renderSlotCell(cPerk1) +
+          renderSlotCell(cPerk2) +
+          renderSlotCell(cOrigin) +
+          '<div class="r-cell r-mid r-slot">' + mwInner + '</div>' +
+        '</article>'
+      );
+    }).join('');
+
+    var costVal = (weapons[0] && weapons[0].cost && weapons[0].cost.n) ? esc(weapons[0].cost.n) : '17';
+
+    return (
+      '<section class="block" id="xur-sec-leg-wpn">' +
+        '<h2 class="sect-label"><span>传说武器</span><span class="ev-section-count">' +
+          '<span class="xur-halo-legend">' +
+            '<span class="halo-key"><i class="by-a"></i>Aegis</span>' +
+            '<span class="halo-key"><i class="by-l"></i>小棒猪</span>' +
+            '<span class="halo-key"><i class="by-al"></i>双推</span>' +
+          '</span>' +
+          '<i class="ev-sep" aria-hidden="true"></i>' +
+          '每把 <img class="ev-sect-ico" src="../assets/icons/coin.webp" alt="" width="14" height="14"><b>' + costVal + '</b> · 共 <b>' + weapons.length + '</b> 把' +
+        '</span></h2>' +
+        '<div class="r-head xur-r-weapon">' +
+          '<div class="c">武器</div>' +
+          '<div class="c">枪管</div>' +
+          '<div class="c">弹匣</div>' +
+          '<div class="c">Perk 1</div>' +
+          '<div class="c">Perk 2</div>' +
+          '<div class="c">起源特性</div>' +
+          '<div class="c">大师杰作</div>' +
+        '</div>' +
+        rowsHtml +
+      '</section>'
+    );
+  }
+
+  function renderXurLegendaryArmor(armors, setName) {
+    if (!armors.length) return '';
+    var slotOrder = ['头盔', '臂铠', '胸部护甲', '腿部护甲', '泰坦印记', '猎人披风', '术士臂环'];
+    var classes = ['泰坦', '猎人', '术士'];
+    var costVal = armors[0].cost && armors[0].cost.n ? esc(armors[0].cost.n) : '29';
+
+    var rowsHtml = classes.map(function (cls) {
+      var pieces = armors.filter(function (a) { return a.cls === cls; });
+      pieces.sort(function (a, b) {
+        return slotOrder.indexOf(a.ty) - slotOrder.indexOf(b.ty);
+      });
+      var cells = pieces.map(function (p) {
+        var shortTy = p.ty.replace(/泰坦|猎人|术士/, '');
+        return (
+          '<div class="xur-armor-piece">' +
+            '<div class="ev-thumb legendary">' +
+              '<img src="' + esc(p.icon) + '" alt="' + esc(p.n) + '" width="36" height="36" decoding="async">' +
+            '</div>' +
+            '<div class="xur-armor-piece-info">' +
+              '<span class="xur-armor-piece-name" title="' + esc(p.n) + '">' + esc(p.n) + '</span>' +
+              '<span class="xur-armor-piece-ty">' + esc(shortTy) + '</span>' +
+            '</div>' +
+          '</div>'
+        );
+      }).join('');
+      return (
+        '<div class="xur-armor-row">' +
+          '<span class="xur-armor-cls">' + cls + '</span>' +
+          cells +
+        '</div>'
+      );
+    }).join('');
+
+    return (
+      '<section class="block" id="xur-sec-leg-armor">' +
+        '<h2 class="sect-label"><span>传说护甲 · ' + esc(setName || '套装') + '</span><span class="ev-section-count">每件 <img class="ev-sect-ico" src="../assets/icons/coin.webp" alt="" width="14" height="14"><b>' + costVal + '</b> · 共 <b>' + armors.length + '</b> 件</span></h2>' +
+        '<div class="xur-armor-box">' +
+          '<div class="xur-armor-rows">' + rowsHtml + '</div>' +
+        '</div>' +
+      '</section>'
+    );
+  }
+
+  function toEvItem(it, useWide) {
+    var tier = it.tier === '异域' ? 'exotic' : (it.tier === '稀有' ? 'rare' : (it.tier === '基础' ? 'basic' : 'legendary'));
+    var tyLabel = (it.cls && it.cls !== '通用' ? it.cls + ' · ' : '') + (it.ty || '物品');
+    return {
+      name: it.n,
+      type: tyLabel,
+      tier: tier,
+      cost: it.cost ? it.cost.n : null,
+      currency: 'coin',
+      icon: it.icon,
+      screenshot: useWide ? it.shot : null
+    };
+  }
+
+  function renderXurData(data) {
+    if (!data || !Array.isArray(data.items) || !data.items.length || !xurContentEl) return;
+    xurData = data;
+
+    var titanArmor = [];
+    var hunterArmor = [];
+    var warlockArmor = [];
+    var classExotics = [];
+    var exoticWpns = [];
+    var catalysts = [];
+    var legWpns = [];
+    var legArmors = [];
+    var materials = [];
+
+    data.items.forEach(function (it) {
+      if (it.sec === '异域护甲') {
+        if (it.cls === '泰坦') titanArmor.push(it);
+        else if (it.cls === '猎人') hunterArmor.push(it);
+        else if (it.cls === '术士') warlockArmor.push(it);
+      } else if (it.sec === '职业金') {
+        classExotics.push(it);
+      } else if (it.sec === '异域武器') {
+        exoticWpns.push(it);
+      } else if (it.sec === '异域武器催化') {
+        catalysts.push(it);
+      } else if (it.sec === '传说武器') {
+        legWpns.push(it);
+      } else if (it.sec === '传说护甲') {
+        legArmors.push(it);
+      } else if (it.sec === '材料') {
+        materials.push(it);
+      }
+    });
+
+    var blocks = [];
+
+    function pushArmorSection(id, title, list) {
+      if (!list.length) return;
+      blocks.push(
+        '<section class="block" id="' + id + '">' +
+          '<h2 class="sect-label"><span>' + title + '</span><span class="ev-section-count"><img class="ev-sect-ico" src="../assets/icons/coin.webp" alt="" width="14" height="14"><b>' + list.length + '</b> 件 · 奇异硬币</span></h2>' +
+          '<div class="ev-grid">' +
+            list.map(function (it) {
+              var mapped = toEvItem(it, Boolean(it.shot));
+              return renderCard(mapped, Boolean(mapped.screenshot), 10);
+            }).join('') +
+          '</div>' +
+        '</section>'
+      );
     }
-    hasRendered = true;
+
+    pushArmorSection('xur-sec-titan', '泰坦 · 异域护甲', titanArmor);
+    pushArmorSection('xur-sec-hunter', '猎人 · 异域护甲', hunterArmor);
+    pushArmorSection('xur-sec-warlock', '术士 · 异域护甲', warlockArmor);
+
+    if (classExotics.length) {
+      blocks.push(
+        '<section class="block" id="xur-sec-class-exo">' +
+          '<h2 class="sect-label"><span>异域职业物品</span><span class="ev-section-count"><img class="ev-sect-ico" src="../assets/icons/coin.webp" alt="" width="14" height="14"><b>' + classExotics.length + '</b> 件 · 奇异硬币</span></h2>' +
+          '<div class="ev-grid-3">' +
+            classExotics.map(function (it) {
+              return renderCard(toEvItem(it, false), false, 10);
+            }).join('') +
+          '</div>' +
+        '</section>'
+      );
+    }
+
+    if (exoticWpns.length) {
+      blocks.push(
+        '<section class="block" id="xur-sec-exo-wpn">' +
+          '<h2 class="sect-label"><span>异域武器</span><span class="ev-section-count"><img class="ev-sect-ico" src="../assets/icons/coin.webp" alt="" width="14" height="14"><b>' + exoticWpns.length + '</b> 把 · 奇异硬币</span></h2>' +
+          '<div class="ev-grid">' + exoticWpns.map(renderXurExoticWeapon).join('') + '</div>' +
+        '</section>'
+      );
+    }
+
+    if (catalysts.length) {
+      blocks.push(
+        '<section class="block" id="xur-sec-cat">' +
+          '<h2 class="sect-label"><span>异域武器催化</span><span class="ev-section-count"><img class="ev-sect-ico" src="../assets/icons/coin.webp" alt="" width="14" height="14"><b>' + catalysts.length + '</b> 件 · 奇异硬币</span></h2>' +
+          '<div class="ev-grid">' +
+            catalysts.map(function (it) {
+              var mapped = toEvItem(it, false);
+              mapped.type = '异域催化';
+              return renderCard(mapped, false, 10);
+            }).join('') +
+          '</div>' +
+        '</section>'
+      );
+    }
+
+    if (legWpns.length) {
+      blocks.push(renderXurLegendaryWeapons(legWpns));
+    }
+
+    if (legArmors.length) {
+      blocks.push(renderXurLegendaryArmor(legArmors, data.armorSetName));
+    }
+
+    if (materials.length) {
+      blocks.push(
+        '<section class="block" id="xur-sec-mat">' +
+          '<h2 class="sect-label"><span>奇异材料与记忆水晶</span><span class="ev-section-count"><img class="ev-sect-ico" src="../assets/icons/coin.webp" alt="" width="14" height="14"><b>' + materials.length + '</b> 项 · 奇异硬币</span></h2>' +
+          '<div class="ev-grid">' +
+            materials.map(function (it) {
+              return renderCard(toEvItem(it, false), false, 0);
+            }).join('') +
+          '</div>' +
+        '</section>'
+      );
+    }
+
+    xurContentEl.innerHTML = blocks.join('');
+    if (xurCntTotalEl) xurCntTotalEl.textContent = String(data.items.length);
+    if (xurVendorEl && data.location) {
+      xurVendorEl.textContent = '九之使者 · 仄 (Xûr) · ' + data.location;
+    }
+    updateStatusBar();
+    hasRenderedXur = true;
   }
 
   function renderError(msg) {
@@ -217,32 +653,14 @@
     if (silverEl) silverEl.innerHTML = '';
   }
 
-  var API_URL = 'https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api?a=rotation';
+  function renderXurError(msg) {
+    if (xurContentEl) {
+      xurContentEl.innerHTML = '<p class="ev-error">老九（Xûr）周货数据加载失败：' + esc(msg) + '</p>';
+    }
+  }
 
   function isValidPayload(data) {
     return Boolean(data && Array.isArray(data.items) && data.items.length > 0);
-  }
-
-  function saveAndRender(data) {
-    try {
-      localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-    } catch (_) {}
-    renderData(data);
-  }
-
-  function fetchStatic() {
-    var t = Date.now();
-    return fetch(JSON_URL + '?t=' + t).then(function (res) {
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return res.json();
-    });
-  }
-
-  function fetchCloud() {
-    return fetch(API_URL).then(function (res) {
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return res.json();
-    });
   }
 
   function pickNewer(a, b) {
@@ -253,38 +671,54 @@
     return tb > ta ? b : a;
   }
 
-  function fetchLatest(cached) {
+  function fetchJsonPair(staticUrl, cloudUrl, cacheKey, onRender, cached, onErr) {
     var isLocal = !location.hostname || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-    var primaryPromise = fetchStatic();
-    var cloudPromise = isLocal ? Promise.resolve(null) : fetchCloud().catch(function () { return null; });
+    var pStatic = fetch(staticUrl + '?t=' + Date.now()).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }).catch(function () { return null; });
+    var pCloud = isLocal ? Promise.resolve(null) : fetch(cloudUrl).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }).catch(function () { return null; });
 
-    Promise.all([primaryPromise.catch(function () { return null; }), cloudPromise])
-      .then(function (results) {
-        var best = pickNewer(results[0], results[1]);
-        if (!isValidPayload(best)) {
-          throw new Error('返回的条目为空');
-        }
-        saveAndRender(best);
-      })
-      .catch(function (err) {
-        console.error('获取光尘商店轮换数据失败:', err);
-        if (!hasRendered && !isValidPayload(cached)) {
-          renderError(err && err.message ? err.message : String(err));
-        }
-      });
+    Promise.all([pStatic, pCloud]).then(function (res) {
+      var best = pickNewer(res[0], res[1]);
+      if (!isValidPayload(best)) throw new Error('返回的条目为空');
+      try { localStorage.setItem(cacheKey, JSON.stringify(best)); } catch (_) {}
+      onRender(best);
+    }).catch(function (err) {
+      if (onErr && !isValidPayload(cached)) onErr(err);
+    });
   }
 
   function init() {
-    var cached = null;
-    try {
-      cached = JSON.parse(localStorage.getItem(CACHE_KEY));
-    } catch (_) {}
-
-    if (isValidPayload(cached)) {
-      renderData(cached);
+    for (var i = 0; i < tabBtns.length; i++) {
+      tabBtns[i].addEventListener('click', function () {
+        switchTab(this.getAttribute('data-tab'), true);
+      });
     }
 
-    fetchLatest(cached);
+    if (location.hash === '#xur' || /[?&]tab=xur/.test(location.search)) {
+      switchTab('xur', false);
+    } else {
+      document.body.setAttribute('data-vendor', 'eververse');
+    }
+
+    var cachedEv = null;
+    var cachedXur = null;
+    try { cachedEv = JSON.parse(localStorage.getItem(CACHE_KEY)); } catch (_) {}
+    try { cachedXur = JSON.parse(localStorage.getItem(XUR_CACHE_KEY)); } catch (_) {}
+
+    if (isValidPayload(cachedEv)) renderData(cachedEv);
+    if (isValidPayload(cachedXur)) renderXurData(cachedXur);
+
+    fetchJsonPair(JSON_URL, API_URL, CACHE_KEY, renderData, cachedEv, function (err) {
+      if (!hasRenderedEv) renderError(err && err.message ? err.message : String(err));
+    });
+    fetchJsonPair(XUR_JSON_URL, XUR_API_URL, XUR_CACHE_KEY, renderXurData, cachedXur, function (err) {
+      if (!hasRenderedXur) renderXurError(err && err.message ? err.message : String(err));
+    });
   }
 
   if (document.readyState === 'loading') {
