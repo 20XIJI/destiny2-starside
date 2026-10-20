@@ -26,7 +26,6 @@ const db = app.database()
 const _ = db.command
 const stat = db.collection('counters').doc('stat')
 const rot = db.collection('counters').doc('rotation')
-const xurDoc = db.collection('counters').doc('xur')
 const likes = db.collection('likes')
 const subs = db.collection('subs')
 // 在线编辑台的四张表。docs 是源稿的工作副本，recs 是记录上站内文字的工作副本，
@@ -159,12 +158,9 @@ async function syncRotation(customSlots, customAdaSlots) {
   return res
 }
 
-// 老九（Xûr）周货数据写在 counters/xur 单条 doc 里：定时器按 UTC+8 周六凌晨 01:03
-// 写入一次，并发布 rotation/xur.json。
+// 老九（Xûr）周货数据：定时器按 UTC+8 周六 01:03 / 02:03 / 03:03 抓取并发布 rotation/xur.json。
 async function syncXurInventory(rawKyberData) {
   const payload = await syncXur(BUNGIE_KEY, rawKyberData && typeof rawKyberData === 'object' ? rawKyberData : null)
-  const r = await xurDoc.update(payload)
-  if (!r.updated) await xurDoc.set(payload)
   await publish('xur.json', payload)
   return { ok: 1, total: payload.total, updatedAt: payload.updatedAt, arrival: payload.arrival, departure: payload.departure }
 }

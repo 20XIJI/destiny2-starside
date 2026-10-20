@@ -2462,6 +2462,20 @@ test('xur: timer trigger xur-sat-0103 syncs weekly inventory via Bungie official
   const recPerk = perkCol.ops.find((o) => o.h === 2272927194)
   assert.equal(recPerk.name, '顺畅换弹')
   assert.equal(recPerk.rec, 1, 'recommended perk carries rec=1 from xur-recs.json')
+
+  // 上游仍返回上一周的 arrival 时直接抛错拒绝覆盖
+  const staleHtml = `<script id="kyber-xur-inline-data">\nwindow.KYBER_XUR_DATA = ${JSON.stringify({ slots: XUR_SLOTS, location: 'Bazaar, Tower', arrival: '2020-01-03T17:00:00Z' })};\n</script>`
+  const hStale = harness({}, {
+    async fetch(url) {
+      if (url === XUR_FEED_URL) {
+        return { ok: true, status: 200, async json() { return { content: { rendered: staleHtml } } } }
+      }
+      throw new Error('unexpected url: ' + url)
+    }
+  })
+  const staleRes = await hStale.main({ Type: 'Timer', TriggerName: 'xur-sat-0103' })
+  assert.equal(staleRes.ok, 0)
+  assert.match(staleRes.error, /尚未刷新至本周周期/)
 })
 
 async function main() {

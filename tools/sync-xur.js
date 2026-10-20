@@ -74,12 +74,10 @@ function loadRecs() {
   ]
   for (const p of candidates) {
     if (fs.existsSync(p)) {
-      try {
-        return JSON.parse(fs.readFileSync(p, "utf8"))
-      } catch (_) {}
+      return JSON.parse(fs.readFileSync(p, "utf8"))
     }
   }
-  return {}
+  throw new Error("未找到老九词条推荐表 xur-recs.json")
 }
 
 function absUrl(p) {
@@ -179,6 +177,13 @@ async function fetchLiveXurInput() {
   const norm = normalizeInput(parsed)
   if (!norm.slots || norm.slots.length < 10) {
     throw new Error(`老九轮换源解析条目不足：仅解析出 ${norm.slots ? norm.slots.length : 0} 件`)
+  }
+  if (norm.arrival) {
+    const feedArrivalMs = Date.parse(norm.arrival)
+    const expectedArrivalMs = Date.parse(currentXurWindow().arrival)
+    if (Number.isFinite(feedArrivalMs) && Number.isFinite(expectedArrivalMs) && feedArrivalMs < expectedArrivalMs) {
+      throw new Error(`老九轮换源尚未刷新至本周周期（源 arrival=${norm.arrival}，期望 >= ${currentXurWindow().arrival}）`)
+    }
   }
   return parsed
 }

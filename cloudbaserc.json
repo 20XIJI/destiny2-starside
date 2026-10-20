@@ -28,6 +28,11 @@
           "name": "xur-sat-0103",
           "type": "timer",
           "config": "0 3 1 * * 6 *"
+        },
+        {
+          "name": "xur-sat-retry",
+          "type": "timer",
+          "config": "0 3 2,3 * * 6 *"
         }
       ]
     }

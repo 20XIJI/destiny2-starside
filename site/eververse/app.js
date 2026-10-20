@@ -730,16 +730,10 @@
   }
 
   // 命运 2 每日重置为北京时间（UTC+8）凌晨 01:00（17:00 UTC）。
-  // 定时器按 UTC+8 在每天 01:03、周三 01:03 / 02:03 / 03:03、周六 01:03 更新。
-  // 将时间戳平移 -(17h03m) = UTC+8 的日期再减 1h03m，得到当前刷新周期日标识（YYYY-MM-DD）。
-  function currentCycleDay() {
-    return new Date(Date.now() - (17 * 3600e3 + 180e3)).toISOString().slice(0, 10);
-  }
-
-  // 计算当前时刻（按 UTC+8）应经过的最新一档定时同步时间点：
-  // 每天 01:03 (UTC+8) = 前一 UTC 自然日 17:03 UTC；
-  // 若当前为 UTC+8 周三且已过 02:03 / 03:03，则对应 18:03 / 19:03 UTC。
-  function latestExpectedSyncMs() {
+  // 云函数定时器按 UTC+8 在每天 01:03、周三 01:03 / 02:03 / 03:03、周六 01:03 / 02:03 / 03:03 启动，
+  // 抓取并上传静态托管耗时约 15～30 秒，因此前端在 01:04（重试日 02:04 / 03:04）切换期望版本，
+  // 避免 01:03 同步尚未完成时提前用新 ?v= 请求把旧文件缓进浏览器或 CDN。
+  function latestExpectedSyncMs(kind) {
     var now = Date.now();
     var bjt = new Date(now + 8 * 3600e3);
     var y = bjt.getUTCFullYear();
@@ -747,38 +741,39 @@
     var d = bjt.getUTCDate();
     var w = bjt.getUTCDay();
     var mins = bjt.getUTCHours() * 60 + bjt.getUTCMinutes();
-    if (mins < 63) {
+    if (kind === 'xur') {
+      var daysBack = (w - 6 + 7) % 7;
+      if (daysBack === 0 && mins < 64) daysBack = 7;
+      if (daysBack === 0) {
+        if (mins >= 184) return Date.UTC(y, m, d, 3, 3, 0) - 8 * 3600e3;
+        if (mins >= 124) return Date.UTC(y, m, d, 2, 3, 0) - 8 * 3600e3;
+      }
+      return Date.UTC(y, m, d - daysBack, 1, 3, 0) - 8 * 3600e3;
+    }
+    if (mins < 64) {
       return Date.UTC(y, m, d - 1, 1, 3, 0) - 8 * 3600e3;
     }
     if (w === 3) {
-      if (mins >= 183) return Date.UTC(y, m, d, 3, 3, 0) - 8 * 3600e3;
-      if (mins >= 123) return Date.UTC(y, m, d, 2, 3, 0) - 8 * 3600e3;
+      if (mins >= 184) return Date.UTC(y, m, d, 3, 3, 0) - 8 * 3600e3;
+      if (mins >= 124) return Date.UTC(y, m, d, 2, 3, 0) - 8 * 3600e3;
     }
     return Date.UTC(y, m, d, 1, 3, 0) - 8 * 3600e3;
   }
 
-  function isFreshForToday(data, resetField) {
-    if (!isValidPayload(data)) return false;
-    var resetTime = Date.parse(data[resetField] || '');
-    if (resetTime && Date.now() >= resetTime) return false;
-    if (data._cycleDay !== currentCycleDay()) return false;
-    if (resetField === 'resetAt') {
-      var updatedMs = Date.parse(data.updatedAt || '') || 0;
-      if (updatedMs < latestExpectedSyncMs()) return false;
-    }
-    return true;
-  }
-
-  function fetchCloudJson(cloudUrl, cacheKey, onRender, cached, onErr) {
-    // 查询串按最近一档定时同步取值：过了同步点就换一个 URL，不吃到同步前那份浏览器缓存。
-    fetch(cloudUrl + '?v=' + latestExpectedSyncMs()).then(function (r) {
+  function fetchCloudJson(cloudUrl, kind, cacheKey, onRender, cached, onErr) {
+    // 查询串按最近一档已完成同步的时刻取值：过了 01:04 才换新 URL，不吃到同步完成前那份缓存。
+    // 静态托管自带 Cache-Control: public, max-age=300, s-maxage=600，5 分钟内由浏览器 HTTP 缓存兜底，
+    // 5 分钟后自动向 CDN 校验，兼顾重试触发器与管理台手动「同步商店」后的及时更新。
+    fetch(cloudUrl + '?v=' + latestExpectedSyncMs(kind)).then(function (r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.json();
     }).then(function (data) {
       if (!isValidPayload(data)) throw new Error('返回的条目为空');
-      data._cycleDay = currentCycleDay();
       try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch (_) {}
-      onRender(data);
+      var needRender = !isValidPayload(cached) ||
+        data.updatedAt !== cached.updatedAt ||
+        (kind === 'eververse' && (!cached.ada || !Array.isArray(cached.ada.items)));
+      if (needRender) onRender(data);
     }).catch(function (err) {
       if (onErr && !isValidPayload(cached)) onErr(err);
     });
@@ -807,16 +802,12 @@
     if (isValidPayload(cachedEv)) renderData(cachedEv);
     if (isValidPayload(cachedXur)) renderXurData(cachedXur);
 
-    if (!isFreshForToday(cachedEv, 'resetAt')) {
-      fetchCloudJson(API_URL, CACHE_KEY, renderData, cachedEv, function (err) {
-        if (!hasRenderedEv) renderError(err && err.message ? err.message : String(err));
-      });
-    }
-    if (!isFreshForToday(cachedXur, 'departure')) {
-      fetchCloudJson(XUR_API_URL, XUR_CACHE_KEY, renderXurData, cachedXur, function (err) {
-        if (!hasRenderedXur) renderXurError(err && err.message ? err.message : String(err));
-      });
-    }
+    fetchCloudJson(API_URL, 'eververse', CACHE_KEY, renderData, cachedEv, function (err) {
+      if (!hasRenderedEv) renderError(err && err.message ? err.message : String(err));
+    });
+    fetchCloudJson(XUR_API_URL, 'xur', XUR_CACHE_KEY, renderXurData, cachedXur, function (err) {
+      if (!hasRenderedXur) renderXurError(err && err.message ? err.message : String(err));
+    });
     setInterval(renderProgress, 30000);
   }
 

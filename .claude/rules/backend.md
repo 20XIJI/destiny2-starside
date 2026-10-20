@@ -129,8 +129,8 @@ envId 不进环境变量：它写在 `shell.API` 里、要落进每个页面的�
 
 | 触发 | 写什么 |
 |---|---|
-| `eververse-daily-0103`、`eververse-wed-retry` | `counters/rotation` + `rotation/eververse.json` |
-| `xur-sat-0103` | `counters/xur` + `rotation/xur.json` |
+| `eververse-daily-0103`、`eververse-wed-retry` | `counters/rotation`（供艾达源故障时同周期保底）+ `rotation/eververse.json` |
+| `xur-sat-0103`、`xur-sat-retry` | `rotation/xur.json` |
 | 编辑台「同步商店」（`sync_rotation`、`sync_xur`，`lv >= 2`） | 同上，手动补一次 |
 
 上传凭证取运行时注入的 `TENCENTCLOUD_SECRETID` / `SECRETKEY` / `SESSIONTOKEN`。函数的执行
