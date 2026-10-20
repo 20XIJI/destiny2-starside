@@ -120,6 +120,29 @@ envId 不进环境变量：它写在 `shell.API` 里、要落进每个页面的�
 
 限流走 HTTP 网关的 `qpsPolicy`，不在函数里自己写：单 IP 5 QPS、总量 50。
 
+### 轮换商店：定时写静态托管
+
+光尘商店（含艾达-1 每周着色器）与老九的数据，**访客打开页面不调云函数**。云函数的
+定时器抓完写库，再用 `@cloudbase/manager-node` 把同一份 payload 上传到静态托管的
+`destiny2-starside/rotation/eververse.json` 与 `rotation/xur.json`，`eververse/app.js`
+同源读这两份。新加一类轮换数据照这条走，不给页面开云函数读接口。
+
+| 触发 | 写什么 |
+|---|---|
+| `eververse-daily-0103`、`eververse-wed-retry` | `counters/rotation` + `rotation/eververse.json` |
+| `xur-sat-0103` | `counters/xur` + `rotation/xur.json` |
+| 编辑台「同步商店」（`sync_rotation`、`sync_xur`，`lv >= 2`） | 同上，手动补一次 |
+
+上传凭证取运行时注入的 `TENCENTCLOUD_SECRETID` / `SECRETKEY` / `SESSIONTOKEN`。函数的执行
+角色没有托管桶写权限时上传报错，定时器回执 `ok: 0`，库已写入、托管上仍是旧文件。
+
+这两份 JSON 不在 `site/` 的发布清单里（`deploy.py` 的 `SKIP`，`.gitignore` 同列）：本机
+`node tools/sync-*.js` 写出的是本地快照，发上去会盖掉线上较新的。`deploy.py --all --prune`
+会把它们当远端多余文件删掉，所以 prune 之后脚本当场调一次 `sync_rotation` 与 `sync_xur`
+重新发布。
+
+页面请求带 `?v=<最近一档定时同步的时刻>`：过了同步点 URL 就变，浏览器不会拿同步前那份缓存。
+
 ### 在线编辑台
 
 `/admin/` 是站内一个不链不收录的页面（`noindex`，不进 `shell.pages()`、不进搜索、

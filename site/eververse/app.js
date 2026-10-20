@@ -3,8 +3,9 @@
 
   var CACHE_KEY = 'd2_ev_cache_v10';
   var XUR_CACHE_KEY = 'd2_xur_cache_v1';
-  var API_URL = 'https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api?a=rotation';
-  var XUR_API_URL = 'https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api?a=xur';
+  // 云函数定时器把产物写到静态托管 rotation/ 下，这里同源读，访客打开不调云函数。
+  var API_URL = '../rotation/eververse.json';
+  var XUR_API_URL = '../rotation/xur.json';
 
   try {
     localStorage.removeItem('d2_eververse_cache');
@@ -33,6 +34,9 @@
   var nextResetEl = document.getElementById('ev-next-reset');
   var lastFetchEl = document.getElementById('ev-last-fetch');
   var cycleRuleEl = document.getElementById('ev-cycle-rule');
+  var progEl = document.getElementById('ev-prog');
+  var progFillEl = document.getElementById('ev-prog-fill');
+  var progSpan = null;
 
   var paneEv = document.getElementById('ev-pane-eververse');
   var paneXur = document.getElementById('ev-pane-xur');
@@ -95,10 +99,30 @@
     return (d.getUTCMonth() + 1) + ' 月 ' + d.getUTCDate() + ' 日 ' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes());
   }
 
+  /* 本轮进度条：起点是本轮刷新（仄为抵达），终点是下次刷新（仄为离开）。
+     数据还没到时整条收起；过了终点停在满格，等下一次同步换成新一轮。 */
+  function setProgress(startIso, endIso) {
+    var s = Date.parse(startIso), e = Date.parse(endIso);
+    progSpan = (isNaN(s) || isNaN(e) || e <= s) ? null : [s, e];
+    renderProgress();
+  }
+
+  function renderProgress() {
+    if (!progEl || !progFillEl) return;
+    progEl.hidden = !progSpan;
+    if (!progSpan) return;
+    var p = Math.max(0, Math.min(1, (Date.now() - progSpan[0]) / (progSpan[1] - progSpan[0])));
+    var pct = Math.round(p * 100);
+    progFillEl.style.width = (p * 100).toFixed(2) + '%';
+    progEl.setAttribute('aria-valuenow', String(pct));
+    progEl.setAttribute('aria-valuetext', '本轮已过 ' + pct + '%');
+  }
+
   function updateStatusBar() {
     if (activeTab === 'xur') {
       if (lblCurEl) lblCurEl.textContent = '抵达时间';
       if (lblNextEl) lblNextEl.textContent = '离开时间';
+      setProgress(xurData && xurData.arrival, xurData && xurData.departure);
       if (xurData) {
         if (curCycleEl) curCycleEl.textContent = formatTime(xurData.arrival || xurData.updatedAt);
         if (nextResetEl) nextResetEl.textContent = formatTime(xurData.departure);
@@ -112,6 +136,7 @@
     if (activeTab === 'ada') {
       if (lblCurEl) lblCurEl.textContent = '本轮刷新';
       if (lblNextEl) lblNextEl.textContent = '下次刷新';
+      setProgress(evData && evData.ada && evData.ada.cycleStart, evData && evData.ada && evData.ada.resetAt);
       if (evData) {
         var adaMeta = evData.ada || {};
         if (curCycleEl) curCycleEl.textContent = formatTime(adaMeta.cycleStart || evData.cycleStart || evData.updatedAt);
@@ -124,6 +149,7 @@
 
     if (lblCurEl) lblCurEl.textContent = '本轮刷新';
     if (lblNextEl) lblNextEl.textContent = '下次刷新';
+    setProgress(evData && evData.cycleStart, evData && evData.resetAt);
     if (evData) {
       if (curCycleEl) curCycleEl.textContent = formatTime(evData.cycleStart || evData.updatedAt);
       if (nextResetEl) nextResetEl.textContent = formatTime(evData.resetAt);
@@ -744,7 +770,8 @@
   }
 
   function fetchCloudJson(cloudUrl, cacheKey, onRender, cached, onErr) {
-    fetch(cloudUrl).then(function (r) {
+    // 查询串按最近一档定时同步取值：过了同步点就换一个 URL，不吃到同步前那份浏览器缓存。
+    fetch(cloudUrl + '?v=' + latestExpectedSyncMs()).then(function (r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.json();
     }).then(function (data) {
@@ -790,6 +817,7 @@
         if (!hasRenderedXur) renderXurError(err && err.message ? err.message : String(err));
       });
     }
+    setInterval(renderProgress, 30000);
   }
 
   if (document.readyState === 'loading') {

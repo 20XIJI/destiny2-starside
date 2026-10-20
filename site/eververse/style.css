@@ -144,6 +144,51 @@ body[data-vendor="ada"] .ev-dot {
   letter-spacing: .06em;
 }
 
+/* 本轮进度条：独占信息条的第二行。发丝线是整轮，实线是已过去的部分，菱形头标出此刻，
+   与站标、分节标记同一母题。颜色跟信息条左缘走：永恒之诗取光尘金，另两位取骨白。 */
+.ev-prog {
+  position: relative;
+  flex: 0 0 100%;
+  height: 9px;
+  margin-top: 2px;
+}
+
+.ev-prog[hidden] { display: none; }
+
+.ev-prog::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 4px;
+  height: 1px;
+  background: var(--hair-lit);
+}
+
+.ev-prog i {
+  position: absolute;
+  left: 0;
+  top: 3px;
+  height: 3px;
+  background: var(--c-dust);
+}
+
+.ev-prog i::after {
+  content: "";
+  position: absolute;
+  right: -4px;
+  top: -2.5px;
+  width: 8px;
+  height: 8px;
+  background: inherit;
+  transform: rotate(45deg);
+}
+
+body[data-vendor="xur"] .ev-prog i,
+body[data-vendor="ada"] .ev-prog i {
+  background: var(--bone-hi);
+}
+
 /* ── 分节标题右端计数：主标题与发丝线直接走 site.css 的 .block > .sect-label ── */
 .ev-section-count {
   order: 1;

@@ -2039,11 +2039,17 @@ class Deployment(Isolated):
     def test_full_prune_preserves_explicit_safe_confirm(self):
         self.base = ''
         self.replace(sys, 'argv', ['deploy.py', '--all', '--prune'])
+        republished = []
+        # deploy.py 里是 `import sync`，按模块名取，不是这里加载的 quality_sync。
+        self.stack.enter_context(patch.dict(sys.modules, {'sync': sync}))
+        self.replace(sync, 'api', lambda action, **kw: republished.append(action) or {'ok': 1})
         deploy.main()
         self.assertEqual(len(self.remote()), 1)
         self.assertIn('--prune', self.remote()[0])
         self.assertIn('--safe', self.remote()[0])
         self.assertEqual(self.refs(), [('update-ref', deploy.REF, self.TARGET)])
+        # prune 删掉了云函数写在托管上的 rotation/*.json，要当场让云函数重新发布。
+        self.assertEqual(republished, ['sync_rotation', 'sync_xur'])
 
 
     def test_full_prune_preview_identifies_unqueried_deletions(self):

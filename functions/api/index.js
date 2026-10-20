@@ -4,7 +4,12 @@
 // likes 管配装点赞，一条一套：_id 即「赛季_slug」，字段只有 n。
 const crypto = require('crypto')
 const zlib = require('zlib')
+const fs = require('fs')
+const path = require('path')
 const tcb = require('@cloudbase/node-sdk')
+// 写静态托管用。凭证取运行时注入的 TENCENTCLOUD_SECRETID/SECRETKEY/SESSIONTOKEN，
+// 函数没绑执行角色、或角色没有托管桶的写权限时，上传当场报错。
+const Manager = require('@cloudbase/manager-node')
 // 源稿方言（切格、着色标记、一段文字能不能原样写进一格）JS 这一侧只有
 // admin/dialect.js 一份定义；这里这个文件是构建复制过去的，不手改（云函数只
 // require 得到自己目录下的东西）。
@@ -115,18 +120,19 @@ async function stats() {
   return sc.v
 }
 
-// 光尘商店轮换数据缓存在 counters/rotation 单条 doc 里，实例内存缓存 1 小时：
-// 定时器按 UTC+8 每天 01:03（周三 01:03 / 02:03 / 03:03 三次）写入，前端按周期缓存 + 内存缓存。
-let rc = { t: 0, v: null }
-async function rotation() {
-  if (rc.v && Date.now() - rc.t < 36e5) return rc.v
-  const d = (await rot.get()).data[0] || null
-  if (!d || !Array.isArray(d.items) || !d.items.length) return null
-  const { _id, ...clean } = d
-  rc = { t: Date.now(), v: clean }
-  return clean
+// 轮换商店的产物写到静态托管 rotation/ 下，页面同源读这份 JSON，访客打开不调云函数。
+// HOSTING_ROOT 与 tools/deploy.py 的 CLOUD 是同一个挂载路径。
+const HOSTING_ROOT = 'destiny2-starside'
+let mgr = null
+async function publish(name, payload) {
+  if (!mgr) mgr = new Manager({ envId: ENV })
+  const local = path.join('/tmp', name)
+  fs.writeFileSync(local, JSON.stringify(payload))
+  await mgr.hosting.uploadFiles({ files: [{ localPath: local, cloudPath: HOSTING_ROOT + '/rotation/' + name }] })
 }
 
+// 光尘商店轮换数据写在 counters/rotation 单条 doc 里：定时器按 UTC+8 每天 01:03
+// （周三 01:03 / 02:03 / 03:03 三次）写入，并发布 rotation/eververse.json。
 async function syncRotation(customSlots, customAdaSlots) {
   const payload = await syncEververse(
     BUNGIE_KEY,
@@ -141,7 +147,7 @@ async function syncRotation(customSlots, customAdaSlots) {
   }
   const r = await rot.update(payload)
   if (!r.updated) await rot.set(payload)
-  rc = { t: Date.now(), v: payload }
+  await publish('eververse.json', payload)
   const res = {
     ok: 1,
     total: payload.total,
@@ -153,23 +159,13 @@ async function syncRotation(customSlots, customAdaSlots) {
   return res
 }
 
-// 老九（Xûr）周货数据缓存在 counters/xur 单条 doc 里，实例内存缓存 1 小时：
-// 定时器按 UTC+8 周六凌晨 01:03 写入一次，前端按周期缓存 + 内存缓存。
-let xc = { t: 0, v: null }
-async function xur() {
-  if (xc.v && Date.now() - xc.t < 36e5) return xc.v
-  const d = (await xurDoc.get()).data[0] || null
-  if (!d || !Array.isArray(d.items) || !d.items.length) return null
-  const { _id, ...clean } = d
-  xc = { t: Date.now(), v: clean }
-  return clean
-}
-
+// 老九（Xûr）周货数据写在 counters/xur 单条 doc 里：定时器按 UTC+8 周六凌晨 01:03
+// 写入一次，并发布 rotation/xur.json。
 async function syncXurInventory(rawKyberData) {
   const payload = await syncXur(BUNGIE_KEY, rawKyberData && typeof rawKyberData === 'object' ? rawKyberData : null)
   const r = await xurDoc.update(payload)
   if (!r.updated) await xurDoc.set(payload)
-  xc = { t: Date.now(), v: payload }
+  await publish('xur.json', payload)
   return { ok: 1, total: payload.total, updatedAt: payload.updatedAt, arrival: payload.arrival, departure: payload.departure }
 }
 
@@ -325,7 +321,7 @@ const LEVEL = {
   docs: 1, subs: 1, hist: 1, bdrop: 1, edits: 1, chg: 1, pend: 1,
   ssave: 2, bsave: 2, smark: 2, emark: 2, sdrop: 2, sync_rotation: 2, sync_xur: 2,
   eds: 4,
-  stats: null, hit: null, likes: null, like: null, sub: null, rotation: null, xur: null,
+  stats: null, hit: null, likes: null, like: null, sub: null,
   list: 'admin', mark: 'admin', pull: 'admin', push: 'admin', rekey: 'admin', drop: 'admin',
   landed: 'admin', rpull: 'admin', rpush: 'admin', rdrop: 'admin', rlanded: 'admin',
 }
@@ -848,9 +844,7 @@ async function editorRoute(a, body, event, me) {
 async function route(a, body, event) {
   const me = await guard(a, body, event)
   if (a === 'stats') return stats()
-  if (a === 'rotation') return rotation()
   if (a === 'sync_rotation') return syncRotation(body.slots, body.adaSlots)
-  if (a === 'xur') return xur()
   if (a === 'sync_xur') return syncXurInventory(body.kyber)
 
   const ed = await editorRoute(a, body, event, me)
@@ -1071,10 +1065,7 @@ exports.main = async (event = {}) => {
   const a = q.a || body.a
   try {
     const out = await route(a, body, event)
-    const headers = (a === 'rotation' || a === 'xur') && out
-      ? { ...HEAD, 'cache-control': 'public, max-age=600' }
-      : HEAD
-    return { statusCode: 200, headers, body: JSON.stringify(out) }
+    return { statusCode: 200, headers: HEAD, body: JSON.stringify(out) }
   } catch (e) {
     return { statusCode: 400, headers: HEAD, body: JSON.stringify({ error: String(e.message || e) }) }
   }

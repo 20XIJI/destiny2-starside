@@ -27,6 +27,7 @@ CLOUD = "destiny2-starside"  # 静态托管上的挂载路径，与 tcb app depl
 # 只发 site/ 下的文件，上传时去掉这一层：仓库里的 site/index.html 在站上是
 # destiny2-starside/index.html。源稿、工具、data/ 与云函数都在 site/ 之外。
 PREFIX = "site/"
+# 这两份由云函数定时写到托管上，本机那份是 tools/sync-*.js 的本地快照，发上去会盖掉线上较新的。
 SKIP = {"site/rotation/eververse.json", "site/rotation/xur.json"}
 
 
@@ -220,6 +221,12 @@ def main() -> None:
             tcb("hosting", "deploy", str(stage), CLOUD, *extra, env=env, confirm=prune)
         finally:
             shutil.rmtree(stage, ignore_errors=True)
+    if prune:
+        # rotation/ 下那两份 JSON 由云函数定时写入，不在 site/ 里，--prune 会把它们当多余文件删掉。
+        # 当场让云函数重新发布一次。
+        import sync
+        for action in ("sync_rotation", "sync_xur"):
+            print(f"重新发布 {action}：{sync.api(action)}")
     for p in gone:
         unchanged(target)
         tcb("hosting", "delete", f"{CLOUD}/{p}", env=env)

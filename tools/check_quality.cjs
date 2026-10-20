@@ -20,6 +20,7 @@ const tests = []
 function test(name, fn) { tests.push([name, fn]) }
 
 function harness(seed = {}, hooks = {}) {
+  const published = {}
   const store = Object.fromEntries(['counters', 'likes', 'subs', 'docs', 'recs', 'edits', 'editors']
     .map((name) => [name, new Map((seed[name] || []).map((r) => [r._id, copy(r)]))]))
   const calls = []
@@ -196,13 +197,24 @@ function harness(seed = {}, hooks = {}) {
         vm.runInNewContext(modCode, modBox, { filename: 'functions/api/' + name.slice(2) })
         return modBox.module.exports
       }
+      // 静态托管上传：记下发到哪个路径、内容是什么，不碰网络。
+      if (name === '@cloudbase/manager-node') {
+        return function Manager() {
+          this.hosting = {
+            async uploadFiles({ files }) {
+              if (hooks.upload) await hooks.upload(files)
+              for (const f of files) published[f.cloudPath] = JSON.parse(fs.readFileSync(f.localPath, 'utf8'))
+            }
+          }
+        }
+      }
       assert.equal(name, '@cloudbase/node-sdk', 'unexpected module')
       return { init: () => ({ database: () => db }) }
     }
   }
   vm.runInNewContext(source + '\nexports.quality = { fingerprint, wc, LEVEL, canon };', sandbox, { filename: 'functions/api/index.js' })
   return {
-    store, calls,
+    store, calls, published,
     fingerprint: sandbox.exports.quality.fingerprint,
     canon: sandbox.exports.quality.canon,
     // 令牌缓存：种一个身份进去，who() 就不必 fetch，真正那条门跑得到。
@@ -2121,7 +2133,7 @@ test('weapons: every syntax row parses into known keywords', () => {
   }
 })
 
-test('eververse: timer trigger syncs 26 validated items into counters/rotation and serves cached GET ?a=rotation', async () => {
+test('eververse: timer trigger syncs 26 validated items into counters/rotation and publishes rotation/eververse.json to static hosting', async () => {
   const { ROTATION_SLOTS, ADA_SLOTS, EVERVERSE_FEED_URL, ADA_FEED_URL } = require(path.join(root, 'tools/sync-eververse.js'))
   const allSlots = [...ROTATION_SLOTS, ...ADA_SLOTS]
   const byHash = new Map(allSlots.map((s, i) => [String(s.hash), { s, i }]))
@@ -2208,10 +2220,10 @@ test('eververse: timer trigger syncs 26 validated items into counters/rotation a
   h.signIn('lv1', 1)
   assert.equal((await h.as('lv1', { a: 'sync_rotation' })).error, 'no permission')
 
-  const getRes = await h.main({ httpMethod: 'GET', queryStringParameters: { a: 'rotation' } })
-  assert.equal(getRes.statusCode, 200)
-  assert.equal(getRes.headers['cache-control'], 'public, max-age=600')
-  const body = JSON.parse(getRes.body)
+  // 页面读的是发布到静态托管的那份，云函数不再开公开读接口。
+  assert.equal((await h.main({ httpMethod: 'GET', queryStringParameters: { a: 'rotation' } })).statusCode, 400)
+  const body = h.published['destiny2-starside/rotation/eververse.json']
+  assert.ok(body, '同步后发布到静态托管 rotation/eververse.json')
   assert.equal(body.total, 26)
   assert.equal(body.items.length, 26)
   assert.equal(body.items[0].name, '测试商品 1')
@@ -2220,6 +2232,7 @@ test('eververse: timer trigger syncs 26 validated items into counters/rotation a
   assert.equal(body.ada.items.length, 6)
   assert.equal(body.ada.items[0].currency, 'glimmer')
   assert.equal(body.ada.items[0].cost, 10000)
+  assert.equal(body._id, undefined)
 })
 
 test('eververse: Bungie 503 maintenance or subclass mismatch aborts sync without overwriting existing rotation doc', async () => {
@@ -2285,8 +2298,7 @@ test('eververse: Bungie 503 maintenance or subclass mismatch aborts sync without
 
   const { ADA_FEED_URL } = require(path.join(root, 'tools/sync-eververse.js'))
   const byHash = new Map(ROTATION_SLOTS.map((s, i) => [String(s.hash), { s, i }]))
-  const hAdaFail = harness({}, {
-    async fetch(url) {
+  async function hAdaFailFetch(url) {
       if (url === EVERVERSE_FEED_URL) {
         return { ok: true, status: 200, async json() { return { content: { rendered: feedHtml } } } }
       }
@@ -2311,16 +2323,25 @@ test('eververse: Bungie 503 maintenance or subclass mismatch aborts sync without
           }
         }
       }
-    }
-  })
+  }
+  const hAdaFail = harness({}, { fetch: hAdaFailFetch })
   const resAdaFail = await hAdaFail.main({ Type: 'Timer', TriggerName: 'eververse-daily-0103' })
   assert.equal(resAdaFail.ok, 1, 'Ada feed 故障不阻断每日光尘商店更新')
   assert.equal(resAdaFail.total, 26)
   assert.equal(resAdaFail.adaTotal, 0)
   assert.match(resAdaFail.adaError, /HTTP 503/)
+
+  // 托管写失败（执行角色没权限）要报出来，不能当成同步成功。
+  const hDeny = harness({}, {
+    fetch: hAdaFailFetch,
+    async upload() { throw new Error('AccessDenied') }
+  })
+  const resDeny = await hDeny.main({ Type: 'Timer', TriggerName: 'eververse-daily-0103' })
+  assert.equal(resDeny.ok, 0)
+  assert.match(resDeny.error, /AccessDenied/)
 })
 
-test('xur: timer trigger xur-sat-0103 syncs weekly inventory via Bungie official API with recommended perks and serves cached GET ?a=xur', async () => {
+test('xur: timer trigger xur-sat-0103 syncs weekly inventory via Bungie official API with recommended perks and publishes rotation/xur.json to static hosting', async () => {
   const { XUR_SLOTS, XUR_FEED_URL } = require(path.join(root, 'tools/sync-xur.js'))
   const xurHtml = `<script id="kyber-xur-inline-data">\nwindow.KYBER_XUR_DATA = ${JSON.stringify({ slots: XUR_SLOTS, location: 'Bazaar, Tower' })};\n</script>`
   const h = harness({}, {
@@ -2429,10 +2450,9 @@ test('xur: timer trigger xur-sat-0103 syncs weekly inventory via Bungie official
   assert.equal(adminSync.ok, 1)
   assert.equal(adminSync.total, 47)
 
-  const getRes = await h.main({ httpMethod: 'GET', queryStringParameters: { a: 'xur' } })
-  assert.equal(getRes.statusCode, 200)
-  assert.equal(getRes.headers['cache-control'], 'public, max-age=600')
-  const body = JSON.parse(getRes.body)
+  assert.equal((await h.main({ httpMethod: 'GET', queryStringParameters: { a: 'xur' } })).statusCode, 400)
+  const body = h.published['destiny2-starside/rotation/xur.json']
+  assert.ok(body, '同步后发布到静态托管 rotation/xur.json')
   assert.equal(body.total, 47)
   assert.equal(body.location, '高塔 · 集市')
   const wpn = body.items.find((x) => x.hash === 2779821308)
