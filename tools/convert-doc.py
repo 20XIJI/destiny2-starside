@@ -56,6 +56,9 @@ GUIDE_LINE = re.compile(r'^攻略：(.*)$', re.M)
 # 「轮换：YYYY.M.D」是分节级声明：这一节的表是一条按周走的轮换轴，起始日写在这里。
 # 与「色阶：」同一种做法——按整行剥离，落成表上的 data-rota，由 assets/app.js 读。
 ROTA_LINE = re.compile(r'^轮换：(.*)$', re.M)
+# 「周期：YYYY.M.D H:MM 周|日」是表格级声明：紧跟其后的表按固定周数或天数循环，
+# 落成表上的 data-cycle，由 assets/rota.js 按本机时钟高亮当前行。
+CYCLE_LINE = re.compile(r'^周期：(.*)$', re.M)
 
 # 行标题 → 主键的戳号器，按页装配；没有范围定义的页是 None。
 STAMP = None
@@ -325,7 +328,7 @@ def tier_of(text, bounds):
 
 
 def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=None,
-                 base=0):
+                 base=0, cycle=None):
     """markdown 表格 → <table class="gen">。
 
     第一行是表头，第二行是 |---| 分隔。正文里再出现一行 --- 就另起一个 <tbody>，
@@ -430,6 +433,8 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=
         # 轮换轴的起始日：app.js 据此算「本周是第几轮」。表本身仍是页面本体，
         # 无 JS 时轮换顺序完整可读，与图表页同一条约定。
         attr += ' data-rota="%s"' % rota
+    if cycle:
+        attr += ' data-cycle="%s"' % cycle
 
     # 表头行也戳：它同样是源稿的一行（改列名走这里），而且它一戳，每张表的第一个
     # <tr> 必然带号，「没有 data-b 就是上一行 +1」那条不会跨表接到上一张去。
@@ -744,9 +749,17 @@ def render_blocks(chunk, scales=None, groups=None, marks=None, curves=None, up=0
     """
     o, i = [], 0
     lines = chunk.split('\n')
+    cycle = None
     while i < len(lines):
         line = lines[i].rstrip()
         if not line.strip():
+            i += 1
+            continue
+
+        if line.startswith('周期：'):
+            cycle = line[len('周期：'):].strip()
+            if not re.fullmatch(r'\d{4}\.\d{1,2}\.\d{1,2}( \d{1,2}:\d{2})? [周日]', cycle):
+                die('「周期：」要写成 YYYY.M.D H:MM 周|日，源稿写的是 %r' % cycle)
             i += 1
             continue
 
@@ -778,7 +791,8 @@ def render_blocks(chunk, scales=None, groups=None, marks=None, curves=None, up=0
             while i < len(lines) and lines[i].lstrip().startswith('|'):
                 i += 1
             o += render_table([ln.strip() for ln in lines[start:i]], scales, groups,
-                              marks, curves, rota, base + start)
+                              marks, curves, rota, base + start, cycle=cycle)
+            cycle = None
             continue
 
         # 定义列表：术语一行，紧跟以「: 」开头的定义行。
@@ -921,9 +935,9 @@ def render(md, slug, digest):
     if curves and not flag_of(md, '图表'):
         die('「默认曲线：」要配合「图表：是」用，没有图就没有曲线可选')
 
-    # 「轮换：」出现在任一分节里 → 工具条槽位带 data-rota，页面因此引上 app.js。
-    # 起始日写在表上（一节一条轴），这里只是个开关。
-    if ROTA_LINE.search(md):
+    # 「轮换：」或「周期：」出现在任一分节里 → 工具条槽位带 data-rota，页面因此引上 app.js。
+    # 起始日写在表上（一张表一条轴），这里只是个开关。
+    if ROTA_LINE.search(md) or CYCLE_LINE.search(md):
         toolbar = dict(toolbar or {}, **{'data-rota': ''})
 
     # 「导航：是」→ 顶部工具条：搜索框 + 每个分节一枚跳转 chip，与神器模组页同一套。
@@ -932,9 +946,10 @@ def render(md, slug, digest):
     if flag_of(md, '导航'):
         # 搜索按表格行工作，data-item 认的就是 .gen 的行。没有表格的页面给了搜索框
         # 也永远零命中，所以只给跳转 chip——app.js 见 data-item 缺席即走那一档。
+        # 轮换页的表由轮盘与时刻表接管，不按行过滤，同样只出分节跳转 chip。
         # 两处 if 分开写是为了保住属性顺序：既有页面的产出因此零 diff。
         # 按记录排版的那几页没有 markdown 表格，条目是 article.rec
-        has_items = bool(re.search(r'^\|[-\s|]+\|$', md, re.M)) or slug in NEW
+        has_items = (bool(re.search(r'^\|[-\s|]+\|$', md, re.M)) or slug in NEW) and not ROTA_LINE.search(md)
         nav = {'data-section': '.block'}
         if has_items:
             nav['data-item'] = '.rec' if slug in NEW else '.gen tbody tr:not(.lane)'
@@ -1080,8 +1095,8 @@ def check(md, out, slug):
     真正的闸门是「一个字都没多、没少」。
     """
     lines = []
-    src = GUIDE_LINE.sub('', CARD_LINE.sub('', ROTA_LINE.sub('', SCALE_LINE.sub(
-        '', META_LINE.sub('', md[md.index('\n'):])))))
+    src = CYCLE_LINE.sub('', GUIDE_LINE.sub('', CARD_LINE.sub('', ROTA_LINE.sub('', SCALE_LINE.sub(
+        '', META_LINE.sub('', md[md.index('\n'):]))))))
     for raw in src.split('\n'):
         line = raw.strip()
         if line.startswith('|'):                      # 表格：只去分隔符与分隔行

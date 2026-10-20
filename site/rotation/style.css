@@ -136,8 +136,8 @@
    **:not([data-now-row]) 不能省。**这条选择器带两个 :nth-child，权重压过下面
    那条 [data-now-row]；当前行落进 06–12 或 18–24 时，行高亮会被这条底色顶掉、
    悄悄退回分段那一档——一天里有一半时间如此。显式让位比去调权重清楚。 */
-.gen tbody tr:nth-child(n + 7):nth-child(-n + 12):not([data-now-row]),
-.gen tbody tr:nth-child(n + 19):nth-child(-n + 24):not([data-now-row]) { background: var(--tint-1); }
+.gen:not([data-cycle]) tbody tr:nth-child(n + 7):nth-child(-n + 12):not([data-now-row]),
+.gen:not([data-cycle]) tbody tr:nth-child(n + 19):nth-child(-n + 24):not([data-now-row]) { background: var(--tint-1); }
 
 /* ── 此刻：一行 + 一列 + 交点 ──
    两条高亮各答一个问题：竖着那条是「今天一天怎么转」，横着那条是「这个钟点各天
@@ -351,4 +351,177 @@
 .rota-btns .chip {
   padding: 9px 18px;
   font-size: 12px;
+}
+
+/* ── 目的地与活动周期轮换表（.gen[data-cycle]） ─────────────────────────────
+   去掉无意义的「第 N 周／第 N 天」序号列，首列直接放本行主角（首领、区域、套装），
+   表头与各列整体居中对齐，与上方扭曲星球表保持同一套视觉重心。只给当前行由
+   assets/rota.js 按北京时间 01:00 重置打上 data-now-row 与首格的本周／今日标签，
+   徽标绝对定位在首格右端，不挤偏居中文字；单列顺序表横排成居中步骤条。 */
+.gen[data-cycle] + .gen[data-cycle] { margin-top: 24px; }
+
+.gen[data-cycle]:has(tbody td) {
+  table-layout: fixed;
+}
+
+.gen[data-cycle] th,
+.gen[data-cycle] td {
+  padding: 13px 20px;
+  text-align: center;
+  white-space: normal;
+  vertical-align: middle;
+  line-height: 1.85;
+}
+
+.gen[data-cycle] thead th {
+  position: static;
+  background: var(--head-fill);
+}
+
+.gen[data-cycle]:has(tbody td) thead th:first-child,
+.gen[data-cycle]:has(tbody td) tbody th[scope="row"] {
+  width: 320px;
+}
+
+.gen[data-cycle] tbody {
+  color: var(--bone-dim);
+}
+
+.gen[data-cycle] tbody th[scope="row"] {
+  position: relative;
+  padding-right: 56px;
+  padding-left: 56px;
+  color: var(--bone);
+  font-family: var(--font-cn);
+  font-size: 13.5px;
+  font-weight: 500;
+  letter-spacing: .05em;
+  text-align: center;
+}
+
+.gen[data-cycle] tbody tr[data-now-row] {
+  color: var(--bone-hi);
+}
+
+.gen[data-cycle] tbody tr[data-now-row] > th[scope="row"] {
+  color: var(--bone-hi);
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.gen[data-cycle] tbody th[data-now-tag]::after {
+  content: attr(data-now-tag);
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 1px 6px;
+  color: var(--accent);
+  font-family: var(--font-cn);
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: .08em;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border: 1px solid var(--accent);
+  border-radius: 2px;
+}
+
+.gen[data-cycle] th img,
+.gen[data-cycle] td img {
+  width: 24px;
+  height: 24px;
+  margin-right: 7px;
+  border-radius: 3px;
+  border: 1px solid var(--hair-lit);
+  vertical-align: -6px;
+  flex-shrink: 0;
+  opacity: .8;
+}
+
+.gen[data-cycle] tbody tr[data-now-row] img {
+  opacity: 1;
+  border-color: var(--bone-faint);
+}
+
+/* 多件带图条目：2–3 件纵排成组居中（永恒挑战护甲套装），4 件以上排成四列矩阵居中（传说武器池） */
+.gen[data-cycle] .cyc-stack {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 172px;
+  gap: 6px;
+  vertical-align: middle;
+}
+
+.gen[data-cycle] .cyc-single {
+  min-width: 96px;
+  vertical-align: middle;
+}
+
+.gen[data-cycle] .cyc-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(140px, max-content));
+  justify-content: center;
+  gap: 8px 22px;
+  text-align: left;
+}
+
+.gen[data-cycle] .cyc-item {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.45;
+}
+
+.gen[data-cycle] .cyc-item img {
+  vertical-align: 0;
+  margin-right: 7px;
+}
+
+/* 单列轮换表（每周战役任务、颠覆匹配区域）：横排成等宽居中步骤条 */
+.gen[data-cycle]:not(:has(tbody td)) {
+  display: block;
+  border: 1px solid var(--hair);
+}
+
+.gen[data-cycle]:not(:has(tbody td)) thead,
+.gen[data-cycle]:not(:has(tbody td)) thead tr,
+.gen[data-cycle]:not(:has(tbody td)) thead th {
+  display: block;
+  width: auto;
+}
+
+.gen[data-cycle]:not(:has(tbody td)) thead th {
+  border-bottom: 1px solid var(--hair-lit);
+  box-shadow: none;
+}
+
+.gen[data-cycle]:not(:has(tbody td)) tbody {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.gen[data-cycle]:not(:has(tbody td)) tbody tr {
+  display: flex;
+}
+
+.gen[data-cycle]:not(:has(tbody td)) tbody tr + tr {
+  border-left: 1px solid var(--hair);
+}
+
+.gen[data-cycle]:not(:has(tbody td)) tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+.gen[data-cycle]:not(:has(tbody td)) tbody th[scope="row"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  border-top: 0;
+  border-bottom: 0;
+}
+
+.gen[data-cycle]:not(:has(tbody td)) tbody tr[data-now-row] > th[scope="row"] {
+  box-shadow: inset 0 2px 0 var(--accent);
 }

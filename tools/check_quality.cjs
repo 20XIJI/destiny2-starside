@@ -2122,8 +2122,9 @@ test('weapons: every syntax row parses into known keywords', () => {
 })
 
 test('eververse: timer trigger syncs 26 validated items into counters/rotation and serves cached GET ?a=rotation', async () => {
-  const { ROTATION_SLOTS, EVERVERSE_FEED_URL } = require(path.join(root, 'tools/sync-eververse.js'))
-  const byHash = new Map(ROTATION_SLOTS.map((s, i) => [String(s.hash), { s, i }]))
+  const { ROTATION_SLOTS, ADA_SLOTS, EVERVERSE_FEED_URL, ADA_FEED_URL } = require(path.join(root, 'tools/sync-eververse.js'))
+  const allSlots = [...ROTATION_SLOTS, ...ADA_SLOTS]
+  const byHash = new Map(allSlots.map((s, i) => [String(s.hash), { s, i }]))
   const feedHtml = ROTATION_SLOTS.map((s) => {
     const item = {
       name: 'Item ' + s.hash,
@@ -2146,6 +2147,7 @@ test('eververse: timer trigger syncs 26 validated items into counters/rotation a
     }
     return `<div data-ke-item="${JSON.stringify(item).replace(/"/g, '&quot;')}"></div>`
   }).join('')
+  const adaHtml = `<section id="kwr-ada">${ADA_SLOTS.map((s) => `<article class="kwr-shader" data-item-hash="${s.hash}"></article>`).join('')}</section>`
   const h = harness({}, {
     async fetch(url) {
       if (url === EVERVERSE_FEED_URL) {
@@ -2154,6 +2156,15 @@ test('eververse: timer trigger syncs 26 validated items into counters/rotation a
           status: 200,
           async json() {
             return { content: { rendered: feedHtml } }
+          }
+        }
+      }
+      if (url === ADA_FEED_URL) {
+        return {
+          ok: true,
+          status: 200,
+          async json() {
+            return { content: { rendered: adaHtml } }
           }
         }
       }
@@ -2187,11 +2198,13 @@ test('eververse: timer trigger syncs 26 validated items into counters/rotation a
   const timerRes = await h.main({ Type: 'Timer', TriggerName: 'eververse-daily-0103' })
   assert.equal(timerRes.ok, 1)
   assert.equal(timerRes.total, 26)
+  assert.equal(timerRes.adaTotal, 6)
 
   h.signIn('lv2', 2)
-  const adminSync = await h.as('lv2', { a: 'sync_rotation' })
+  const adminSync = await h.as('lv2', { a: 'sync_rotation', slots: ROTATION_SLOTS })
   assert.equal(adminSync.ok, 1)
   assert.equal(adminSync.total, 26)
+  assert.equal(adminSync.adaTotal, 6)
   h.signIn('lv1', 1)
   assert.equal((await h.as('lv1', { a: 'sync_rotation' })).error, 'no permission')
 
@@ -2203,6 +2216,10 @@ test('eververse: timer trigger syncs 26 validated items into counters/rotation a
   assert.equal(body.items.length, 26)
   assert.equal(body.items[0].name, '测试商品 1')
   assert.equal(body.items[0].icon, 'https://www.bungie.net/common/destiny2_content/icons/test_1.jpg')
+  assert.equal(body.ada.total, 6)
+  assert.equal(body.ada.items.length, 6)
+  assert.equal(body.ada.items[0].currency, 'glimmer')
+  assert.equal(body.ada.items[0].cost, 10000)
 })
 
 test('eververse: Bungie 503 maintenance or subclass mismatch aborts sync without overwriting existing rotation doc', async () => {
@@ -2210,8 +2227,19 @@ test('eververse: Bungie 503 maintenance or subclass mismatch aborts sync without
   const feedHtml = ROTATION_SLOTS.map((s) => {
     const item = {
       name: 'Item ' + s.hash,
-      itemType: 'Emote',
-      tier: s.expectedTier === 'exotic' ? 'Exotic' : 'Legendary',
+      itemType: s.expectedType === '武器皮肤' ? 'Weapon Ornament'
+        : s.expectedType === '泰坦皮肤' ? 'Titan Ornament'
+        : s.expectedType === '猎人皮肤' ? 'Hunter Ornament'
+        : s.expectedType === '术士皮肤' ? 'Warlock Ornament'
+        : s.expectedType === '飞船' ? 'Ship'
+        : s.expectedType === '载具' ? 'Vehicle'
+        : s.expectedType === '机灵外壳' ? 'Ghost Shell'
+        : s.expectedType === '机灵投影' ? 'Ghost Projection'
+        : s.expectedType === '终结技' ? 'Finisher'
+        : s.expectedType === '着色器' ? 'Shader'
+        : s.expectedType === '传送效果' ? 'Transmat Effect'
+        : 'Emote',
+      tier: s.expectedTier === 'exotic' ? 'Exotic' : (s.expectedTier === 'rare' ? 'Rare' : 'Legendary'),
       cost: String(s.cost),
       market: s.currency,
       link: 'https://www.light.gg/db/items/' + s.hash + '/'
@@ -2254,6 +2282,42 @@ test('eververse: Bungie 503 maintenance or subclass mismatch aborts sync without
   assert.equal(resSub.ok, 0)
   assert.match(resSub.error, /分支职业/)
   assert.deepEqual(hSub.store.counters.get('rotation'), existing, '命中子职业时必须熔断，不得覆盖数据')
+
+  const { ADA_FEED_URL } = require(path.join(root, 'tools/sync-eververse.js'))
+  const byHash = new Map(ROTATION_SLOTS.map((s, i) => [String(s.hash), { s, i }]))
+  const hAdaFail = harness({}, {
+    async fetch(url) {
+      if (url === EVERVERSE_FEED_URL) {
+        return { ok: true, status: 200, async json() { return { content: { rendered: feedHtml } } } }
+      }
+      if (url === ADA_FEED_URL) {
+        return { ok: false, status: 503, async json() { return {} } }
+      }
+      const m = /DestinyInventoryItemDefinition\/(\d+)\//.exec(url)
+      const entry = byHash.get(m[1])
+      const { s, i } = entry
+      const tierTypeName = s.expectedTier === 'exotic' ? '异域' : (s.expectedTier === 'rare' ? '稀有' : '传说')
+      return {
+        ok: true,
+        status: 200,
+        async json() {
+          return {
+            Response: {
+              itemType: 19,
+              itemTypeDisplayName: s.expectedType,
+              displayProperties: { name: '商品' + (i + 1), icon: '/icons/t.jpg' },
+              inventory: { tierTypeName }
+            }
+          }
+        }
+      }
+    }
+  })
+  const resAdaFail = await hAdaFail.main({ Type: 'Timer', TriggerName: 'eververse-daily-0103' })
+  assert.equal(resAdaFail.ok, 1, 'Ada feed 故障不阻断每日光尘商店更新')
+  assert.equal(resAdaFail.total, 26)
+  assert.equal(resAdaFail.adaTotal, 0)
+  assert.match(resAdaFail.adaError, /HTTP 503/)
 })
 
 test('xur: timer trigger xur-sat-0103 syncs weekly inventory via Bungie official API with recommended perks and serves cached GET ?a=xur', async () => {

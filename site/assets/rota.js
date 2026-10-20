@@ -19,7 +19,7 @@ export default function init(table, deps) {
      按分数距离摆——转起来是一根滚轴匀速滚过去，中途的虚化、明暗、缩放都在插值。
      按整步跳、靠 CSS transition 补间那一版会在跨两周时露出「两段各自缓动」的接缝，
      新进场的卡片也只能凭空出现。 */
-  var MS_WEEK = 604800000;
+  var MS_WEEK = 604800000, MS_DAY = 86400000;
   /* 圆柱：每张之间 27°，半径 330px。相邻两张的纵向间距是 sin27°×330 ≈ 150px，
      压过卡片自身的高度（140px），卡片因此不叠在一起。 */
   var STEP = 27, R = 330, WIN = 3;
@@ -174,5 +174,55 @@ export default function init(table, deps) {
      命中项的链接带 ?q=，落到那一页之后由那一页自己的搜索框接手过滤，
      所以这里不必知道条目在页面里的哪一行。 */
 
-  return rota(table);
+  /* 固定周期轮换表（.gen 带 data-cycle 的表）：按北京时间 01:00 重置算当前落在第几行，
+     给当前行打 data-now-row、首格打 data-now-tag（本周／今日），跨过重置点自动切行。
+     多件带图条目拆成独立单元。 */
+  function cycles() {
+    [].slice.call(document.querySelectorAll('.gen[data-cycle]')).forEach(function (t) {
+      var rows = [].slice.call(t.querySelectorAll('tbody tr:not(.lane)'));
+      if (!rows.length) return;
+      [].slice.call(t.querySelectorAll('tbody th, tbody td')).forEach(function (cell) {
+        if (!cell.querySelector('img')) return;
+        if (cell.innerHTML.indexOf('<br>') < 0) {
+          cell.innerHTML = '<span class="cyc-item cyc-single">' + cell.innerHTML.trim() + '</span>';
+          return;
+        }
+        var parts = cell.innerHTML.split(/<br\s*\/?>/).map(function (s) { return s.trim(); }).filter(Boolean);
+        if (parts.length < 2) return;
+        var cls = parts.length >= 4 ? 'cyc-grid' : 'cyc-stack';
+        cell.innerHTML = '<span class="' + cls + '">'
+          + parts.map(function (p) { return '<span class="cyc-item">' + p + '</span>'; }).join('')
+          + '</span>';
+      });
+      var spec = t.dataset.cycle.trim().split(/\s+/);
+      var d0 = spec[0].split('.').map(Number);
+      var hasTime = spec.length > 2;
+      var hm = (hasTime ? spec[1] : '1:00').split(':').map(Number);
+      var kind = spec[spec.length - 1];
+      var unit = kind === '日' ? MS_DAY : MS_WEEK;
+      var tag = kind === '日' ? '今日' : '本周';
+      var t0 = Date.UTC(d0[0], d0[1] - 1, d0[2], hm[0] - 8, hm[1]);
+
+      function paint() {
+        var elapsed = Date.now() - t0;
+        var idx = ((Math.floor(elapsed / unit) % rows.length) + rows.length) % rows.length;
+        rows.forEach(function (tr, i) {
+          var th = tr.firstElementChild;
+          if (i === idx) {
+            tr.setAttribute('data-now-row', '');
+            if (th) th.setAttribute('data-now-tag', tag);
+          } else {
+            tr.removeAttribute('data-now-row');
+            if (th) th.removeAttribute('data-now-tag');
+          }
+        });
+        var nextIn = unit - ((elapsed % unit) + unit) % unit + 1000;
+        setTimeout(paint, Math.min(nextIn, MS_DAY));
+      }
+      paint();
+    });
+  }
+
+  if (table) rota(table);
+  cycles();
 }

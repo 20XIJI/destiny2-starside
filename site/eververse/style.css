@@ -75,7 +75,8 @@
   border-left: 2px solid var(--c-dust);
 }
 
-body[data-vendor="xur"] .ev-status-bar {
+body[data-vendor="xur"] .ev-status-bar,
+body[data-vendor="ada"] .ev-status-bar {
   border-left-color: var(--bone-faint);
 }
 
@@ -116,7 +117,8 @@ body[data-vendor="xur"] .ev-status-bar {
   color: var(--c-dust);
 }
 
-body[data-vendor="xur"] .ev-bar-accent b {
+body[data-vendor="xur"] .ev-bar-accent b,
+body[data-vendor="ada"] .ev-bar-accent b {
   color: var(--bone-hi);
 }
 
@@ -130,7 +132,8 @@ body[data-vendor="xur"] .ev-bar-accent b {
   transform: rotate(45deg);
 }
 
-body[data-vendor="xur"] .ev-dot {
+body[data-vendor="xur"] .ev-dot,
+body[data-vendor="ada"] .ev-dot {
   background-color: var(--bone-hi);
 }
 
@@ -453,9 +456,10 @@ body[data-vendor="xur"] .ev-dot {
   color: var(--c-silver);
 }
 
-/* 奇异硬币价格：不借用 --c-strand（缚丝绿，违反 design.md 色相归元素所有），
-   由硬币图标自身表达货币编码，数值用 --bone-hi */
-.ev-price.coin-price {
+/* 奇异硬币与微光价格：不借用元素色相（违反 design.md 色相归元素所有），
+   由货币图标自身表达编码，数值用 --bone-hi */
+.ev-price.coin-price,
+.ev-price.glimmer-price {
   color: var(--bone-hi);
 }
 

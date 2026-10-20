@@ -1981,7 +1981,7 @@
       t.classList.remove('bad')
       t.textContent = ''
       Promise.all([call('sync_rotation'), call('sync_xur')]).then(function (r) {
-        t.textContent = '已同步光尘 ' + r[0].total + ' · 老九 ' + r[1].total
+        t.textContent = '已同步光尘 ' + r[0].total + ' · 艾达 ' + (r[0].adaTotal || 0) + ' · 老九 ' + r[1].total
       }, function (e) {
         t.classList.add('bad')
         t.textContent = '同步失败：' + say(e)

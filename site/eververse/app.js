@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var CACHE_KEY = 'd2_ev_cache_v8';
+  var CACHE_KEY = 'd2_ev_cache_v10';
   var XUR_CACHE_KEY = 'd2_xur_cache_v1';
   var API_URL = 'https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api?a=rotation';
   var XUR_API_URL = 'https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api?a=xur';
@@ -15,6 +15,8 @@
     localStorage.removeItem('d2_ev_cache_v5');
     localStorage.removeItem('d2_ev_cache_v6');
     localStorage.removeItem('d2_ev_cache_v7');
+    localStorage.removeItem('d2_ev_cache_v8');
+    localStorage.removeItem('d2_ev_cache_v9');
   } catch (_) {}
 
   var primaryEl = document.getElementById('ev-primary');
@@ -34,9 +36,13 @@
 
   var paneEv = document.getElementById('ev-pane-eververse');
   var paneXur = document.getElementById('ev-pane-xur');
+  var paneAda = document.getElementById('ev-pane-ada');
   var xurContentEl = document.getElementById('xur-content');
   var xurCntTotalEl = document.getElementById('xur-cnt-total');
   var xurVendorEl = document.getElementById('xur-summary-vendor');
+  var adaEl = document.getElementById('ev-ada');
+  var cntAdaEl = document.getElementById('ada-cnt-shaders');
+  var cntAdaTotalEl = document.getElementById('ada-cnt-total');
   var tabBtns = document.querySelectorAll('.ev-scope .toggle');
 
   var activeTab = 'eververse';
@@ -103,6 +109,19 @@
       return;
     }
 
+    if (activeTab === 'ada') {
+      if (lblCurEl) lblCurEl.textContent = '本轮刷新';
+      if (lblNextEl) lblNextEl.textContent = '下次刷新';
+      if (evData) {
+        var adaMeta = evData.ada || {};
+        if (curCycleEl) curCycleEl.textContent = formatTime(adaMeta.cycleStart || evData.cycleStart || evData.updatedAt);
+        if (nextResetEl) nextResetEl.textContent = formatTime(adaMeta.resetAt || evData.resetAt);
+        if (lastFetchEl) lastFetchEl.textContent = formatShortTime(evData.updatedAt);
+        if (cycleRuleEl) cycleRuleEl.textContent = '高塔附属建筑 · ' + (adaMeta.cycleNote || '每周三 01:00 刷新');
+      }
+      return;
+    }
+
     if (lblCurEl) lblCurEl.textContent = '本轮刷新';
     if (lblNextEl) lblNextEl.textContent = '下次刷新';
     if (evData) {
@@ -114,7 +133,7 @@
   }
 
   function switchTab(tab, pushHash) {
-    activeTab = tab === 'xur' ? 'xur' : 'eververse';
+    activeTab = (tab === 'xur' || tab === 'ada') ? tab : 'eververse';
     document.body.setAttribute('data-vendor', activeTab);
     for (var i = 0; i < tabBtns.length; i++) {
       var btn = tabBtns[i];
@@ -123,10 +142,12 @@
     }
     if (paneEv) paneEv.hidden = activeTab !== 'eververse';
     if (paneXur) paneXur.hidden = activeTab !== 'xur';
+    if (paneAda) paneAda.hidden = activeTab !== 'ada';
     updateStatusBar();
     if (pushHash) {
       try {
-        history.replaceState(null, '', activeTab === 'xur' ? '#xur' : location.pathname);
+        var nextUrl = activeTab === 'eververse' ? location.pathname : ('#' + activeTab);
+        history.replaceState(null, '', nextUrl);
       } catch (_) {}
     }
   }
@@ -144,9 +165,10 @@
     var tierText = tier === 'exotic' ? '异域' : (tier === 'rare' ? '稀有' : (tier === 'basic' ? '基础' : '传说'));
     var isSilver = item.currency === 'silver';
     var isCoin = item.currency === 'coin';
-    var icoSrc = isCoin ? '../assets/icons/coin.webp' : (isSilver ? '../assets/icons/silver.webp' : '../assets/icons/dust.webp');
-    var icoAlt = isCoin ? '奇异硬币' : (isSilver ? '银币' : '光尘');
-    var priceClass = isCoin ? 'ev-price coin-price' : (isSilver ? 'ev-price silver-price' : 'ev-price');
+    var isGlimmer = item.currency === 'glimmer';
+    var icoSrc = isCoin ? '../assets/icons/coin.webp' : (isGlimmer ? '../assets/icons/glimmer.webp' : (isSilver ? '../assets/icons/silver.webp' : '../assets/icons/dust.webp'));
+    var icoAlt = isCoin ? '奇异硬币' : (isGlimmer ? '微光' : (isSilver ? '银币' : '光尘'));
+    var priceClass = isCoin ? 'ev-price coin-price' : (isGlimmer ? 'ev-price glimmer-price' : (isSilver ? 'ev-price silver-price' : 'ev-price'));
     var dispName = esc(formatName(item.name));
     var dispType = esc(item.type || '');
     var iconUrl = esc(item.icon || '');
@@ -262,6 +284,20 @@
     if (cntSecondaryEl) cntSecondaryEl.textContent = String(secondary.length);
     if (cntSilverEl) cntSilverEl.textContent = String(silver.length);
     if (cntTotalEl) cntTotalEl.textContent = String(data.items.length);
+
+    var adaItems = (data.ada && Array.isArray(data.ada.items)) ? data.ada.items : [];
+    if (adaEl) {
+      if (adaItems.length) {
+        adaEl.innerHTML = adaItems.map(function (it, i) {
+          return renderCard(it, false, i);
+        }).join('');
+      } else {
+        var adaErr = (data.ada && data.ada.error) ? ('：' + esc(data.ada.error)) : '，待云函数刷新后展示。';
+        adaEl.innerHTML = '<p class="ev-error">艾达-1（Ada-1）每周着色器数据暂未同步' + adaErr + '</p>';
+      }
+    }
+    if (cntAdaEl) cntAdaEl.textContent = String(adaItems.length);
+    if (cntAdaTotalEl) cntAdaTotalEl.textContent = String(adaItems.length);
 
     updateStatusBar();
     hasRenderedEv = true;
@@ -654,6 +690,7 @@
     if (primaryEl) primaryEl.innerHTML = html;
     if (secondaryEl) secondaryEl.innerHTML = '';
     if (silverEl) silverEl.innerHTML = '';
+    if (adaEl) adaEl.innerHTML = '<p class="ev-error">艾达-1（Ada-1）每周着色器数据加载失败：' + esc(msg) + '</p>';
   }
 
   function renderXurError(msg) {
@@ -729,6 +766,8 @@
 
     if (location.hash === '#xur' || /[?&]tab=xur/.test(location.search)) {
       switchTab('xur', false);
+    } else if (location.hash === '#ada' || /[?&]tab=ada/.test(location.search)) {
+      switchTab('ada', false);
     } else {
       document.body.setAttribute('data-vendor', 'eververse');
     }

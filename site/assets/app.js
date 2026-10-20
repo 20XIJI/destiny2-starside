@@ -173,9 +173,9 @@
   var WEEKDAYS = ['周天', '周一', '周二', '周三', '周四', '周五', '周六'];
 
   function nowCell() {
-    /* 这一页还有一张轮换轴的表（data-rota），时钟高亮不认它——不排除的话表头与
-       行会被两张表的格子混在一起，找到的列压根不在这张表上。 */
-    var table = document.querySelector('.gen:not([data-rota])');
+    /* 这一页还有轮换轴与周期表（data-rota／data-cycle），时钟高亮不认它们——
+       不排除的话表头与行会被别的表的格子混在一起，找到的列压根不在这张表上。 */
+    var table = document.querySelector('.gen:not([data-rota]):not([data-cycle])');
     if (!table) return;
     var heads = [].slice.call(table.querySelectorAll('thead th'));
     var rows = [].slice.call(table.querySelectorAll('tbody tr'));
@@ -214,7 +214,9 @@
 
   if (slot && slot.dataset.rota !== undefined) {
     var rt = document.querySelector('.gen[data-rota]');
-    if (rt) lazy('rota.js').then(function (m) { m.default(rt, { tuck: tuck }); });
+    if (rt || document.querySelector('.gen[data-cycle]')) {
+      lazy('rota.js').then(function (m) { m.default(rt, { tuck: tuck }); });
+    }
   }
 
   if (slot && slot.dataset.chart !== undefined) {
@@ -560,7 +562,8 @@
      原位置记在卡自己身上，回到「全部」时放回去。判据取自分节的 data-scene，
      这里不再写一份场景表。 */
   /* 加载时就有条目的那些分节。见 filter() 里那段：判据必须取这一刻。 */
-  var hadItems = sections.map(function (sec) { return !!sec.querySelector(ROW || ITEM); });
+  var hadItems = (ROW || ITEM)
+    ? sections.map(function (sec) { return !!sec.querySelector(ROW || ITEM); }) : [];
 
   // 与上面取 sections 那一处同一道守卫：SEC 是空串时拼出来的 ' .entries' 不抛，
   // 直接命中全文档，regroup() 会去搬不属于任何分节的卡。
@@ -790,7 +793,8 @@
     document.addEventListener('starside:rest', function () {
       collect();
       if (DIMS) vals = valsOf();
-      hadItems = sections.map(function (sec) { return !!sec.querySelector(ROW || ITEM); });
+      hadItems = (ROW || ITEM)
+        ? sections.map(function (sec) { return !!sec.querySelector(ROW || ITEM); }) : [];
       search.placeholder = '搜索 ' + mods.length + ' 个' + NOUN;
       trimSubs();
       if (search.value.trim() || facetOn()) filter(search.value);

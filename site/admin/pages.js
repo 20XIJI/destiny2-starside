@@ -3,7 +3,7 @@ window.starsidePages = [
   ["docs/dps","单武器 DPS 排行","dps/index.html","刷取与攻略","","2026.8.25"],
   ["docs/pve-farming","PVE 终局刷取指南","pve-farming/index.html","刷取与攻略","","2026.9.10"],
   ["docs/raid-guides","Raid 攻略","raid-guides/index.html","刷取与攻略","","2026.8.30"],
-  ["docs/rotation","轮换速查表","rotation/index.html","刷取与攻略","","2026.8.30"],
+  ["docs/rotation","轮换速查表","rotation/index.html","刷取与攻略","","2026.10.20"],
   ["docs/skill-damage","技能伤害排行","skill-damage/index.html","刷取与攻略","","2026.8.30"],
   ["docs/swap-dps","切枪 DPS 排行","swap-dps/index.html","刷取与攻略","","2026.8.30"],
   ["docs/crafting","锻造武器来源","crafting/index.html","刷取与攻略","docs/pve-farming","2026.8.30"],

@@ -10,6 +10,7 @@ const path = require('path')
 const BUNGIE_API_ROOT = 'https://www.bungie.net/Platform'
 const BUNGIE_CDN_ROOT = 'https://www.bungie.net'
 const EVERVERSE_FEED_URL = 'https://public-api.wordpress.com/wp/v2/sites/kyberscorner.com/pages/47643?_fields=modified,content'
+const ADA_FEED_URL = 'https://public-api.wordpress.com/wp/v2/sites/kyberscorner.com/pages/235055?_fields=modified,content'
 
 function getApiKey() {
   if (process.env.BUNGIE_API_KEY) return process.env.BUNGIE_API_KEY
@@ -56,6 +57,16 @@ const ROTATION_SLOTS = [
   { hash: 588138826, vendorHash: 4228941413, group: '银币新品', currency: 'silver', cost: 500, isWide: false, expectedTier: 'legendary', expectedType: '动作' },
   { hash: 3771412616, vendorHash: 3445703438, group: '银币新品', currency: 'silver', cost: 1200, isWide: false, expectedTier: 'exotic', expectedType: '动作' },
   { hash: 3431752854, vendorHash: 249262409, group: '银币新品', currency: 'silver', cost: 800, isWide: false, expectedTier: 'legendary', expectedType: '终结技' }
+]
+
+// 艾达-1 每周 6 件着色器轮换槽位
+const ADA_SLOTS = [
+  { hash: 235397502, vendorHash: 350061650, group: '艾达-1 · 每周着色器', currency: 'glimmer', cost: 10000, isWide: false, expectedTier: null, expectedType: '着色器' },
+  { hash: 3366113619, vendorHash: 350061650, group: '艾达-1 · 每周着色器', currency: 'glimmer', cost: 10000, isWide: false, expectedTier: null, expectedType: '着色器' },
+  { hash: 1284563767, vendorHash: 350061650, group: '艾达-1 · 每周着色器', currency: 'glimmer', cost: 10000, isWide: false, expectedTier: null, expectedType: '着色器' },
+  { hash: 1284563764, vendorHash: 350061650, group: '艾达-1 · 每周着色器', currency: 'glimmer', cost: 10000, isWide: false, expectedTier: null, expectedType: '着色器' },
+  { hash: 3205869478, vendorHash: 350061650, group: '艾达-1 · 每周着色器', currency: 'glimmer', cost: 10000, isWide: false, expectedTier: null, expectedType: '着色器' },
+  { hash: 1017491637, vendorHash: 350061650, group: '艾达-1 · 每周着色器', currency: 'glimmer', cost: 10000, isWide: false, expectedTier: null, expectedType: '着色器' }
 ]
 
 async function sleep(ms) {
@@ -163,6 +174,52 @@ async function fetchLiveSlots() {
   return [...mainDust, ...otherDust, ...silverNew]
 }
 
+async function fetchAdaSlots() {
+  const res = await fetchWithRetry(ADA_FEED_URL, {
+    headers: { 'User-Agent': 'StarsideCloudEververse/1.0' }
+  })
+  if (!res.ok) throw new Error(`艾达-1 轮换源 HTTP ${res.status}`)
+  const data = await res.json()
+  const html = data?.content?.rendered || ''
+  const secMatch = /<section[^>]+id=["']kwr-ada["'][\s\S]*?<\/section>/i.exec(html)
+  if (!secMatch) throw new Error('艾达-1 轮换源未找到 #kwr-ada 区块')
+  const re = /data-item-hash=["'](\d+)["']/g
+  const hashes = []
+  let m
+  while ((m = re.exec(secMatch[0])) !== null) {
+    const h = Number(m[1])
+    if (h && !hashes.includes(h)) hashes.push(h)
+  }
+  if (hashes.length < 3) {
+    throw new Error(`艾达-1 轮换源解析着色器不足：仅解析出 ${hashes.length} 件`)
+  }
+  return hashes.map((hash) => ({
+    hash,
+    vendorHash: 350061650,
+    group: '艾达-1 · 每周着色器',
+    currency: 'glimmer',
+    cost: 10000,
+    isWide: false,
+    expectedTier: null,
+    expectedType: '着色器'
+  }))
+}
+
+function weeklyCycleRange(now = new Date()) {
+  const cur = new Date(now)
+  const day = cur.getUTCDay()
+  const diff = (day - 2 + 7) % 7
+  const start = new Date(Date.UTC(cur.getUTCFullYear(), cur.getUTCMonth(), cur.getUTCDate() - diff, 17, 0, 0, 0))
+  if (start > cur) {
+    start.setUTCDate(start.getUTCDate() - 7)
+  }
+  const end = new Date(start.getTime() + 7 * 86400e3)
+  return {
+    cycleStart: start.toISOString().replace(/\.\d{3}Z$/, 'Z'),
+    resetAt: end.toISOString().replace(/\.\d{3}Z$/, 'Z')
+  }
+}
+
 function nextDailyReset() {
   const now = new Date()
   const candidate = new Date(now)
@@ -229,9 +286,9 @@ async function fetchItem(slot, idx, apiKey) {
   }
 }
 
-async function syncEververse(apiKey, customSlots = null) {
+async function syncEververse(apiKey, customSlots = null, customAdaSlots = null) {
   if (!apiKey) throw new Error('missing BUNGIE_API_KEY')
-  const slots = customSlots || await fetchLiveSlots()
+  const slots = Array.isArray(customSlots) && customSlots.length ? customSlots : await fetchLiveSlots()
   if (!Array.isArray(slots) || !slots.length) {
     throw new Error('永恒之诗轮换槽位为空')
   }
@@ -242,6 +299,18 @@ async function syncEververse(apiKey, customSlots = null) {
     const part = await Promise.all(chunk.map((s, j) => fetchItem(s, i + j, apiKey)))
     validItems.push(...part)
   }
+  const adaItems = []
+  let adaError = null
+  try {
+    const adaSlots = Array.isArray(customAdaSlots) ? customAdaSlots : await fetchAdaSlots()
+    for (let i = 0; i < adaSlots.length; i += BATCH) {
+      const chunk = adaSlots.slice(i, i + BATCH)
+      const part = await Promise.all(chunk.map((s, j) => fetchItem(s, slots.length + i + j, apiKey)))
+      adaItems.push(...part)
+    }
+  } catch (err) {
+    adaError = String(err && err.message ? err.message : err)
+  }
   const now = new Date()
   const lastReset = new Date(now)
   lastReset.setUTCHours(17, 0, 0, 0)
@@ -249,6 +318,7 @@ async function syncEververse(apiKey, customSlots = null) {
     lastReset.setUTCDate(lastReset.getUTCDate() - 1)
   }
   const cycleStart = lastReset.toISOString().replace(/\.\d{3}Z$/, 'Z')
+  const wk = weeklyCycleRange(now)
 
   return {
     updatedAt: now.toISOString().replace(/\.\d{3}Z$/, 'Z'),
@@ -256,7 +326,15 @@ async function syncEververse(apiKey, customSlots = null) {
     resetAt: nextDailyReset(),
     cycleNote: '每天 01:00 刷新',
     total: validItems.length,
-    items: validItems
+    items: validItems,
+    ada: {
+      cycleStart: wk.cycleStart,
+      resetAt: wk.resetAt,
+      cycleNote: '每周三 01:00 刷新',
+      total: adaItems.length,
+      items: adaItems,
+      ...(adaError ? { error: adaError } : {})
+    }
   }
 }
 
@@ -267,16 +345,16 @@ async function run() {
     process.exit(1)
   }
 
-  console.log('1. 正在通过官方 Bungie API 并发获取 26 个槽位条目的官方中文定义与图标...')
+  console.log('1. 正在通过官方 Bungie API 并发获取光尘商店与艾达-1 着色器的官方中文定义与图标...')
   const payload = await syncEververse(apiKey)
-  console.log(`2. 成功获取并通过槽位特征强校验 ${payload.items.length} 件官方数据，正在落盘 payload...`)
+  console.log(`2. 成功获取并通过槽位特征强校验：光尘商店 ${payload.items.length} 件、艾达-1 ${payload.ada.total} 件，正在落盘 payload...`)
 
   const dest = path.resolve(__dirname, '../site/rotation/eververse.json')
   fs.mkdirSync(path.dirname(dest), { recursive: true })
   fs.writeFileSync(dest, JSON.stringify(payload, null, 2), 'utf8')
 
   console.log(`3. ✓ 官方模式更新完成！JSON 已落盘: ${dest}`)
-  console.table(payload.items.map((it, idx) => ({
+  console.table([...payload.items, ...(payload.ada ? payload.ada.items : [])].map((it, idx) => ({
     '#': idx + 1,
     '分组': it.group,
     '官方名称': it.name,
@@ -288,7 +366,7 @@ async function run() {
   })))
 }
 
-module.exports = { EVERVERSE_FEED_URL, ROTATION_SLOTS, fetchLiveSlots, fetchItem, syncEververse }
+module.exports = { EVERVERSE_FEED_URL, ADA_FEED_URL, ROTATION_SLOTS, ADA_SLOTS, fetchLiveSlots, fetchAdaSlots, fetchItem, syncEververse }
 
 if (require.main === module) {
   run()

@@ -127,12 +127,30 @@ async function rotation() {
   return clean
 }
 
-async function syncRotation(customSlots) {
-  const payload = await syncEververse(BUNGIE_KEY, Array.isArray(customSlots) && customSlots.length ? customSlots : undefined)
+async function syncRotation(customSlots, customAdaSlots) {
+  const payload = await syncEververse(
+    BUNGIE_KEY,
+    Array.isArray(customSlots) && customSlots.length ? customSlots : null,
+    Array.isArray(customAdaSlots) ? customAdaSlots : null
+  )
+  if (!payload.ada.items.length && payload.ada.error) {
+    const prev = (await rot.get()).data[0] || null
+    if (prev && prev.ada && prev.ada.resetAt === payload.ada.resetAt && Array.isArray(prev.ada.items) && prev.ada.items.length) {
+      payload.ada = { ...prev.ada, error: payload.ada.error }
+    }
+  }
   const r = await rot.update(payload)
   if (!r.updated) await rot.set(payload)
   rc = { t: Date.now(), v: payload }
-  return { ok: 1, total: payload.total, updatedAt: payload.updatedAt, resetAt: payload.resetAt }
+  const res = {
+    ok: 1,
+    total: payload.total,
+    adaTotal: payload.ada.total,
+    updatedAt: payload.updatedAt,
+    resetAt: payload.resetAt
+  }
+  if (payload.ada.error) res.adaError = payload.ada.error
+  return res
 }
 
 // 老九（Xûr）周货数据缓存在 counters/xur 单条 doc 里，实例内存缓存 1 小时：
@@ -831,7 +849,7 @@ async function route(a, body, event) {
   const me = await guard(a, body, event)
   if (a === 'stats') return stats()
   if (a === 'rotation') return rotation()
-  if (a === 'sync_rotation') return syncRotation(body.slots)
+  if (a === 'sync_rotation') return syncRotation(body.slots, body.adaSlots)
   if (a === 'xur') return xur()
   if (a === 'sync_xur') return syncXurInventory(body.kyber)
 

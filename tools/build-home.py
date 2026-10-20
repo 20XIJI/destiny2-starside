@@ -424,9 +424,9 @@ def rota_data():
 # 光尘商店固定展示本地货币图标，不请求云函数，避免轮换或维护时显示过期商品。
 EVERVERSE_ITEMS = (
     ('主要光尘优惠', 'assets/icons/dust.webp'),
-    ('其他光尘优惠', 'assets/icons/dust.webp'),
     ('银币新品', 'assets/icons/silver.webp'),
     ('老九 · 奇异硬币', 'assets/icons/coin.webp'),
+    ('艾达-1 · 着色器', 'assets/icons/glimmer.webp'),
 )
 
 def hero_rota():
