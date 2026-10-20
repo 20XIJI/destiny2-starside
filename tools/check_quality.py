@@ -1148,6 +1148,18 @@ class EntityPresentation(unittest.TestCase):
                 ('perk:8', 'catalyst perk'),
             ])
 
+    def test_exotic_parts_has_no_duplicates_in_real_data(self):
+        """异域武器与异域护甲的实测说明不出现同名特性或 item-perk 亲子重复。"""
+        facts = rows.facts()
+        for page in rows.EXOTIC:
+            for head in rows.heads(page):
+                rec = facts.at(head)
+                own = rows.zh(rec).get('realgame_details', '')
+                parts = rows.exotic_parts(head, own)
+                names = [rows.name_of(h) for h, _ in parts if rows.name_of(h) and h != head]
+                dups = [name for name, count in collections.Counter(names).items() if count > 1]
+                self.assertFalse(dups, f'{page} 中的 {head} ({rows.name_of(head)}) 存在重复特性说明: {dups}')
+
 
 class EntitySource(unittest.TestCase):
     """源稿与记录对得上：每一行的主键都落得到记录，那条记录名下有站内写的东西。

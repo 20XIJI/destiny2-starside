@@ -420,10 +420,29 @@ def exotic_parts(key, own):
     for c in cats:
         catalyst_hosts.update('perk:%s' % p['perkHash']
                               for p in (facts().at(str(c)) or {}).get('perks') or ())
-    hosts, cat_hosts, seen = [], [], set()
+    item_hosts = set()
+    seen_names = set()
+    raw_hosts = []
     for h in own_hosts(key):
         t = zh(facts().at(h)).get('realgame_details', '').strip()
-        if t and t not in seen:
+        if not t:
+            continue
+        if not h.startswith('perk:'):
+            nm = name_of(h)
+            if nm and nm in seen_names:
+                continue
+            if nm:
+                seen_names.add(nm)
+            item_hosts.add(h)
+        raw_hosts.append((h, t))
+
+    hosts, cat_hosts, seen = [], [], set()
+    for h, t in raw_hosts:
+        if h.startswith('perk:'):
+            on_items = {str(i) for i in (facts().at(h) or {}).get('onItems') or ()}
+            if on_items & item_hosts:
+                continue
+        if t not in seen:
             seen.add(t)
             (cat_hosts if h in catalyst_hosts else hosts).append((h, t))
     return (([(key, base)] if base else []) + hosts
