@@ -91,7 +91,7 @@ Starside 是《命运 2》（Destiny 2）的简体中文资料与配装站点，
 
 ## 交流与反馈
 
-- **站点维护**：[日栎w](https://space.bilibili.com/8406871)
+- **站点维护**：[日栎w](https://space.bilibili.com/26117485)
 - **玩家交流与勘误反馈**：QQ 群 `1095954157`
 - **支持站点**：[爱发电 @eliver](https://ifdian.net/a/eliver)
 
