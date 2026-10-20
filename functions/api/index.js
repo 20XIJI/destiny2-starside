@@ -115,11 +115,11 @@ async function stats() {
   return sc.v
 }
 
-// 光尘商店轮换数据缓存在 counters/rotation 单条 doc 里，实例内存缓存 5 分钟：
-// 定时器每天凌晨 01:30（及周三 04:30）写入一次，前端拉取走内存缓存，数据库读近乎 0。
+// 光尘商店轮换数据缓存在 counters/rotation 单条 doc 里，实例内存缓存 1 小时：
+// 定时器按 UTC+8 每天 01:03（周三 01:03 / 02:03 / 03:03 三次）写入，前端按周期缓存 + 内存缓存。
 let rc = { t: 0, v: null }
 async function rotation() {
-  if (rc.v && Date.now() - rc.t < 3e5) return rc.v
+  if (rc.v && Date.now() - rc.t < 36e5) return rc.v
   const d = (await rot.get()).data[0] || null
   if (!d || !Array.isArray(d.items) || !d.items.length) return null
   const { _id, ...clean } = d
@@ -135,11 +135,11 @@ async function syncRotation(customSlots) {
   return { ok: 1, total: payload.total, updatedAt: payload.updatedAt, resetAt: payload.resetAt }
 }
 
-// 老九（Xûr）周货数据缓存在 counters/xur 单条 doc 里，实例内存缓存 5 分钟：
-// 定时器周六凌晨 01:30（及每日巡检）写入一次，前端拉取走内存缓存。
+// 老九（Xûr）周货数据缓存在 counters/xur 单条 doc 里，实例内存缓存 1 小时：
+// 定时器按 UTC+8 周六凌晨 01:03 写入一次，前端按周期缓存 + 内存缓存。
 let xc = { t: 0, v: null }
 async function xur() {
-  if (xc.v && Date.now() - xc.t < 3e5) return xc.v
+  if (xc.v && Date.now() - xc.t < 36e5) return xc.v
   const d = (await xurDoc.get()).data[0] || null
   if (!d || !Array.isArray(d.items) || !d.items.length) return null
   const { _id, ...clean } = d
@@ -305,12 +305,11 @@ async function who(event, need) {
 const LEVEL = {
   me: 0,
   docs: 1, subs: 1, hist: 1, bdrop: 1, edits: 1, chg: 1, pend: 1,
-  ssave: 2, bsave: 2, smark: 2, emark: 2, sdrop: 2,
+  ssave: 2, bsave: 2, smark: 2, emark: 2, sdrop: 2, sync_rotation: 2, sync_xur: 2,
   eds: 4,
   stats: null, hit: null, likes: null, like: null, sub: null, rotation: null, xur: null,
   list: 'admin', mark: 'admin', pull: 'admin', push: 'admin', rekey: 'admin', drop: 'admin',
   landed: 'admin', rpull: 'admin', rpush: 'admin', rdrop: 'admin', rlanded: 'admin',
-  sync_rotation: 'admin', sync_xur: 'admin',
 }
 
 // 进分支之前判一次。返回值是 me，分支要用名字或 uid 时直接拿，不再各自 await 一遍。
@@ -319,6 +318,7 @@ async function guard(a, body, event) {
   const need = LEVEL[a]
   if (need === null) return null
   if (need === 'admin') { admin(body); return null }
+  if (ADMIN && body && body.k === ADMIN) return { uid: 'root', name: '本机', lv: 5 }
   return who(event, need)
 }
 

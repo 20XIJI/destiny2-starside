@@ -12,6 +12,7 @@ const path = require("path")
 const BUNGIE_API_ROOT = "https://www.bungie.net/Platform"
 const BUNGIE_CDN_ROOT = "https://www.bungie.net"
 const XUR_VENDOR_HASH = 2190858386
+const XUR_FEED_URL = "https://public-api.wordpress.com/wp/v2/sites/kyberscorner.com/pages/6261?_fields=modified,content"
 
 const CLASS_ZH = { "-1": "通用", 0: "泰坦", 1: "猎人", 2: "术士", 3: "通用" }
 const TIER_ZH = {
@@ -136,9 +137,55 @@ function currentXurWindow() {
   }
 }
 
+async function sleep(ms) {
+  if (typeof setTimeout === "function") {
+    await new Promise((r) => setTimeout(r, ms))
+  }
+}
+
+async function fetchWithRetry(url, options, retries = 3) {
+  let lastErr = null
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url, options)
+      if (res.status >= 500 && attempt < retries) {
+        lastErr = new Error(`HTTP ${res.status} (${url})`)
+        await sleep(400 * attempt)
+        continue
+      }
+      return res
+    } catch (err) {
+      const detail = err?.cause ? `${err.message} (${err.cause.code || err.cause.message || err.cause})` : (err?.message || String(err))
+      lastErr = new Error(`网络请求失败 [${attempt}/${retries}] ${url}: ${detail}`)
+      if (attempt < retries) {
+        await sleep(500 * attempt)
+      }
+    }
+  }
+  throw lastErr
+}
+
+async function fetchLiveXurInput() {
+  const res = await fetchWithRetry(XUR_FEED_URL, {
+    headers: { "User-Agent": "StarsideCloudXur/1.0" }
+  })
+  if (!res.ok) throw new Error(`老九轮换源 HTTP ${res.status}`)
+  const data = await res.json()
+  const html = data?.content?.rendered || ""
+  if (!html) throw new Error("老九轮换源 content.rendered 为空")
+  const m = /window\.KYBER_XUR_DATA\s*=\s*(\{[\s\S]*?\})\s*;?\s*<\/script>/i.exec(html)
+  if (!m) throw new Error("老九轮换源未找到 KYBER_XUR_DATA 脚本块")
+  const parsed = JSON.parse(m[1])
+  const norm = normalizeInput(parsed)
+  if (!norm.slots || norm.slots.length < 10) {
+    throw new Error(`老九轮换源解析条目不足：仅解析出 ${norm.slots ? norm.slots.length : 0} 件`)
+  }
+  return parsed
+}
+
 async function fetchBungieVendorState(apiKey) {
   const url = `${BUNGIE_API_ROOT}/Destiny2/Vendors/?components=400,402`
-  const res = await fetch(url, {
+  const res = await fetchWithRetry(url, {
     headers: {
       "X-API-Key": apiKey,
       "User-Agent": "StarsideCloudXur/1.0"
@@ -163,13 +210,13 @@ async function fetchBungieVendorState(apiKey) {
 async function fetchDefMap(hashes, apiKey) {
   const unique = [...new Set(hashes.map(String).filter((h) => h && h !== "0"))]
   const map = new Map()
-  const BATCH = 16
+  const BATCH = 4
   for (let i = 0; i < unique.length; i += BATCH) {
     const slice = unique.slice(i, i + BATCH)
     await Promise.all(
       slice.map(async (h) => {
         const url = `${BUNGIE_API_ROOT}/Destiny2/Manifest/DestinyInventoryItemDefinition/${h}/?lc=zh-chs`
-        const res = await fetch(url, {
+        const res = await fetchWithRetry(url, {
           headers: {
             "X-API-Key": apiKey,
             "User-Agent": "StarsideCloudXur/1.0"
@@ -232,7 +279,7 @@ function normalizeInput(input) {
       location: (input.location && input.location.name) || input.location || null
     }
   }
-  return { slots: XUR_SLOTS, arrival: null, departure: null, location: null }
+  return { slots: [], arrival: null, departure: null, location: null }
 }
 
 function collectHashes(input) {
@@ -429,7 +476,7 @@ function cleanXur(input, defMap, recs, liveCostByHash = null) {
 
 async function syncXur(apiKey, customData = null) {
   if (!apiKey) throw new Error("missing BUNGIE_API_KEY")
-  const input = customData || { slots: XUR_SLOTS }
+  const input = customData || await fetchLiveXurInput()
   const { liveCostByHash } = await fetchBungieVendorState(apiKey)
   const hashes = collectHashes(input)
   if (!hashes.length) throw new Error("老九周货槽位为空")
@@ -464,7 +511,7 @@ async function run() {
   console.log(`3. 已落盘: ${dest}`)
 }
 
-module.exports = { XUR_SLOTS, syncXur, cleanXur, collectHashes }
+module.exports = { XUR_SLOTS, XUR_FEED_URL, fetchLiveXurInput, syncXur, cleanXur, collectHashes }
 
 if (require.main === module) {
   run()

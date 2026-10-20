@@ -42,22 +42,11 @@
 
   function paint() {
     var i = at();
-    ones.forEach(function (o, j) {
-      if (!stack && j !== i) o.setAttribute('hidden', 'until-found');
-      else o.removeAttribute('hidden');
-    });
+    ones.forEach(function (o, j) { o.hidden = !stack && j !== i; });
     links.forEach(function (a, j) {
       a.setAttribute('aria-current', j === i ? 'true' : 'false');
     });
   }
-
-  ones.forEach(function (o, j) {
-    o.addEventListener('beforematch', function () {
-      try { history.replaceState(null, '', '#' + o.id); } catch (e) {}
-      paint();
-      if (links[j]) links[j].scrollIntoView({ block: 'nearest' });
-    });
-  });
 
   /* **点目录就地改写 hash，不压历史**：一份合集最多十二套，原生的片段导航点一套
      攒一格，返回键要按十几下才出得去这一页。

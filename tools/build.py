@@ -229,7 +229,6 @@ def main() -> int:
 
     home_inputs = under('tools/build-home.py') + [
         ROOT / 'site' / 'index.html',
-        ROOT / 'site' / 'rotation' / 'eververse.json',
     ]
     home_dirty = dirty('home', home_inputs) or art_dirty or sets_dirty or bool(page_dirty) or builds_dirty or weapons_dirty
     if home_dirty:
@@ -251,6 +250,7 @@ def main() -> int:
     terms_dirty = dirty('terms', under(
         'tools/build-terms.py', 'tools/items.py',
         'site/admin/dialect.js', 'site/builds/source.js',
+        'tools/sync-eververse.js', 'tools/sync-xur.js', 'tools/xur-recs.json',
     ) + sources)
     if terms_dirty:
         invoke(load_tool('build-terms.py'))

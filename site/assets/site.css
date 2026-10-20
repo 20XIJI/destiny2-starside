@@ -286,7 +286,7 @@ a { color: var(--bone); }
 
 /* app.js 靠 hidden 属性做检索过滤。条目本身是 grid / flex，组件规则又排在
    本文件之后，所以这里必须 !important——否则每个组件页都要重述一遍。 */
-[hidden]:not([hidden="until-found"]) { display: none !important; }
+[hidden] { display: none !important; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

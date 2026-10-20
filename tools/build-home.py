@@ -421,22 +421,25 @@ def rota_data():
     return t0, raids_, dungeons, chain
 
 
+# 光尘商店固定展示本地货币图标，不请求云函数，避免轮换或维护时显示过期商品。
+EVERVERSE_ITEMS = (
+    ('主要光尘优惠', 'assets/icons/dust.webp'),
+    ('其他光尘优惠', 'assets/icons/dust.webp'),
+    ('银币新品', 'assets/icons/silver.webp'),
+    ('老九 · 奇异硬币', 'assets/icons/coin.webp'),
+)
+
 def hero_rota():
     """搜索带底栏的当前轮换与光尘商店快跳。轮换先写第 0 周与第 0 时段的那一组，由首页内联脚本按本机时钟更新。"""
     _, raids_, dungeons, chain = rota_data()
-    ev_path = os.path.join(shell.SITE, 'rotation', 'eververse.json')
-    need(os.path.exists(ev_path), '首页预览：光尘商店数据不存在 %s' % ev_path)
-    with open(ev_path, encoding='utf-8') as f:
-        ev_items = (json.load(f).get('items') or [])[:2]
-    need(len(ev_items) == 2, '首页预览：光尘商店取不到 2 件商品')
 
     def unit(n, cls=''):
         return ('<span class="hr-unit%s"><img class="ri" src="rotation/icons/%s.webp" alt="" width="21" height="21">'
                 '<span>%s</span></span>' % (' ' + cls if cls else '', ROTA_ICONS[n], esc(n)))
 
-    def ev_unit(it):
+    def ev_unit(name, icon):
         return ('<span class="hr-unit"><img class="ri ev-ri" src="%s" alt="" width="21" height="21">'
-                '<span>%s</span></span>' % (esc(it['icon']), esc(it['name'])))
+                '<span>%s</span></span>' % (esc(icon), esc(name)))
 
     def group(href, tag, k, a, sep, b, b_cls='', tag_k=''):
         tk = ' data-k="%s"' % tag_k if tag_k else ''
@@ -452,7 +455,9 @@ def hero_rota():
                div,
                group('rotation/index.html', '每小时 扭曲', 'chain', unit(chain[0]), '→', unit(chain[1], 'is-next'), 'chain-n'),
                div,
-               group('eververse/index.html', '光尘商店', 'eververse', ev_unit(ev_items[0]), '·', ev_unit(ev_items[1]))))
+               group('eververse/index.html', '光尘商店', 'eververse',
+                     ev_unit('光尘优惠', 'assets/icons/dust.webp'), '·',
+                     ev_unit('老九周货', 'assets/icons/coin.webp'))))
 
 
 def rotation(_img):
@@ -570,18 +575,12 @@ def steps(names):
 
 
 def eververse(_img):
-    path = os.path.join(shell.SITE, 'rotation', 'eververse.json')
-    need(os.path.exists(path), '首页预览：光尘商店数据不存在 %s' % path)
-    with open(path, encoding='utf-8') as f:
-        data = json.load(f)
-    items = (data.get('items') or [])[:4]
-    need(len(items) == 4, '首页预览：光尘商店取不到 4 件商品')
     out = []
-    for it in items:
+    for name, icon in EVERVERSE_ITEMS:
         out.append('<span class="pv-it"><span class="pv-ic">'
                    '<img src="%s" alt="" width="28" height="28" loading="lazy">'
                    '</span><span class="pv-tx"><span class="pv-nm">%s</span></span></span>'
-                   % (esc(it['icon']), esc(it['name'])))
+                   % (esc(icon), esc(name)))
     return ('<span class="pv pv-items" style="grid-template-columns: repeat(2, max-content)">%s</span>'
             % ''.join(out))
 

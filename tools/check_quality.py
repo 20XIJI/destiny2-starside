@@ -1779,6 +1779,7 @@ class DeploySelection(unittest.TestCase):
         self.assertTrue(deploy.keep('site/admin/index.html') and deploy.keep('site/admin/terms.js'))
         # 详情页自己那份悬停说明与页面同目录，跟着页面发。
         self.assertTrue(deploy.keep('site/builds/s29/0cqrj1m0-hunter/desc.js'))
+        self.assertFalse(deploy.keep('site/rotation/eververse.json') or deploy.keep('site/rotation/xur.json'))
         self.assertFalse(deploy.keep('index.html') or deploy.keep('functions/api/index.js'))
         self.assertFalse(deploy.keep('tools/deploy.py'))
         self.assertFalse(deploy.keep('references/docs/changelog.md'))

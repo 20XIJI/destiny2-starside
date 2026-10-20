@@ -853,7 +853,12 @@ test('the shared modules are byte-identical in both places they have to live', (
   // 源稿方言（admin/dialect.js）、配装源稿形状（builds/source.js）与永恒之诗抓取模块（tools/sync-eververse.js）
   // 在 JS 这一侧各只有一份定义。云函数只 require 得到自己目录下的东西，所以 build-terms.py 各复制一份到
   // functions/api/。复制走样就是站上与库里对同一行切出不同的格、对同一套配装算出不同的指纹。
-  for (const [rel, fn] of [['site/admin/dialect.js', 'dialect.js'], ['site/builds/source.js', 'source.js'], ['tools/sync-eververse.js', 'eververse.js']]) {
+  for (const [rel, fn] of [
+    ['site/admin/dialect.js', 'dialect.js'],
+    ['site/builds/source.js', 'source.js'],
+    ['tools/sync-eververse.js', 'eververse.js'],
+    ['tools/sync-xur.js', 'xur.js']
+  ]) {
     const one = fs.readFileSync(path.join(root, rel), 'utf8')
     const two = fs.readFileSync(path.join(root, 'functions/api', fn), 'utf8')
     assert.equal(two, one, `functions/api/${fn} 与 ${rel} 不一样了——跑 npm run build 重新复制`)
@@ -2117,10 +2122,41 @@ test('weapons: every syntax row parses into known keywords', () => {
 })
 
 test('eververse: timer trigger syncs 26 validated items into counters/rotation and serves cached GET ?a=rotation', async () => {
-  const { ROTATION_SLOTS } = require(path.join(root, 'tools/sync-eververse.js'))
+  const { ROTATION_SLOTS, EVERVERSE_FEED_URL } = require(path.join(root, 'tools/sync-eververse.js'))
   const byHash = new Map(ROTATION_SLOTS.map((s, i) => [String(s.hash), { s, i }]))
+  const feedHtml = ROTATION_SLOTS.map((s) => {
+    const item = {
+      name: 'Item ' + s.hash,
+      itemType: s.expectedType === '武器皮肤' ? 'Weapon Ornament'
+        : s.expectedType === '泰坦皮肤' ? 'Titan Ornament'
+        : s.expectedType === '猎人皮肤' ? 'Hunter Ornament'
+        : s.expectedType === '术士皮肤' ? 'Warlock Ornament'
+        : s.expectedType === '飞船' ? 'Ship'
+        : s.expectedType === '载具' ? 'Vehicle'
+        : s.expectedType === '机灵外壳' ? 'Ghost Shell'
+        : s.expectedType === '机灵投影' ? 'Ghost Projection'
+        : s.expectedType === '终结技' ? 'Finisher'
+        : s.expectedType === '着色器' ? 'Shader'
+        : s.expectedType === '传送效果' ? 'Transmat Effect'
+        : 'Emote',
+      tier: s.expectedTier === 'exotic' ? 'Exotic' : (s.expectedTier === 'rare' ? 'Rare' : 'Legendary'),
+      cost: s.cost + (s.currency === 'silver' ? ' Silver' : ' Bright Dust'),
+      market: s.currency,
+      link: 'https://www.light.gg/db/items/' + s.hash + '/'
+    }
+    return `<div data-ke-item="${JSON.stringify(item).replace(/"/g, '&quot;')}"></div>`
+  }).join('')
   const h = harness({}, {
     async fetch(url) {
+      if (url === EVERVERSE_FEED_URL) {
+        return {
+          ok: true,
+          status: 200,
+          async json() {
+            return { content: { rendered: feedHtml } }
+          }
+        }
+      }
       const m = /DestinyInventoryItemDefinition\/(\d+)\//.exec(url)
       assert.ok(m, 'unexpected url: ' + url)
       const entry = byHash.get(m[1])
@@ -2148,9 +2184,16 @@ test('eververse: timer trigger syncs 26 validated items into counters/rotation a
     }
   })
 
-  const timerRes = await h.main({ Type: 'Timer', TriggerName: 'eververse-daily-0130' })
+  const timerRes = await h.main({ Type: 'Timer', TriggerName: 'eververse-daily-0103' })
   assert.equal(timerRes.ok, 1)
   assert.equal(timerRes.total, 26)
+
+  h.signIn('lv2', 2)
+  const adminSync = await h.as('lv2', { a: 'sync_rotation' })
+  assert.equal(adminSync.ok, 1)
+  assert.equal(adminSync.total, 26)
+  h.signIn('lv1', 1)
+  assert.equal((await h.as('lv1', { a: 'sync_rotation' })).error, 'no permission')
 
   const getRes = await h.main({ httpMethod: 'GET', queryStringParameters: { a: 'rotation' } })
   assert.equal(getRes.statusCode, 200)
@@ -2163,6 +2206,18 @@ test('eververse: timer trigger syncs 26 validated items into counters/rotation a
 })
 
 test('eververse: Bungie 503 maintenance or subclass mismatch aborts sync without overwriting existing rotation doc', async () => {
+  const { ROTATION_SLOTS, EVERVERSE_FEED_URL } = require(path.join(root, 'tools/sync-eververse.js'))
+  const feedHtml = ROTATION_SLOTS.map((s) => {
+    const item = {
+      name: 'Item ' + s.hash,
+      itemType: 'Emote',
+      tier: s.expectedTier === 'exotic' ? 'Exotic' : 'Legendary',
+      cost: String(s.cost),
+      market: s.currency,
+      link: 'https://www.light.gg/db/items/' + s.hash + '/'
+    }
+    return `<div data-ke-item="${JSON.stringify(item).replace(/"/g, '&quot;')}"></div>`
+  }).join('')
   const existing = { _id: 'rotation', updatedAt: '2026-10-19T01:30:00Z', total: 26, items: [{ name: '旧有效数据' }] }
   const h503 = harness({ counters: [existing] }, {
     async fetch() {
@@ -2175,7 +2230,10 @@ test('eververse: Bungie 503 maintenance or subclass mismatch aborts sync without
   assert.deepEqual(h503.store.counters.get('rotation'), existing, '503 维护时不得覆盖已有有效数据')
 
   const hSub = harness({ counters: [existing] }, {
-    async fetch() {
+    async fetch(url) {
+      if (url === EVERVERSE_FEED_URL) {
+        return { ok: true, status: 200, async json() { return { content: { rendered: feedHtml } } } }
+      }
       return {
         ok: true,
         status: 200,
@@ -2198,9 +2256,20 @@ test('eververse: Bungie 503 maintenance or subclass mismatch aborts sync without
   assert.deepEqual(hSub.store.counters.get('rotation'), existing, '命中子职业时必须熔断，不得覆盖数据')
 })
 
-test('xur: timer trigger xur-sat-0130 syncs weekly inventory via Bungie official API with recommended perks and serves cached GET ?a=xur', async () => {
+test('xur: timer trigger xur-sat-0103 syncs weekly inventory via Bungie official API with recommended perks and serves cached GET ?a=xur', async () => {
+  const { XUR_SLOTS, XUR_FEED_URL } = require(path.join(root, 'tools/sync-xur.js'))
+  const xurHtml = `<script id="kyber-xur-inline-data">\nwindow.KYBER_XUR_DATA = ${JSON.stringify({ slots: XUR_SLOTS, location: 'Bazaar, Tower' })};\n</script>`
   const h = harness({}, {
     async fetch(url) {
+      if (url === XUR_FEED_URL) {
+        return {
+          ok: true,
+          status: 200,
+          async json() {
+            return { content: { rendered: xurHtml } }
+          }
+        }
+      }
       if (url.includes('/Destiny2/Vendors/')) {
         return {
           ok: true,
@@ -2287,9 +2356,14 @@ test('xur: timer trigger xur-sat-0130 syncs weekly inventory via Bungie official
     }
   })
 
-  const timerRes = await h.main({ Type: 'Timer', TriggerName: 'xur-sat-0130' })
+  const timerRes = await h.main({ Type: 'Timer', TriggerName: 'xur-sat-0103' })
   assert.equal(timerRes.ok, 1)
   assert.equal(timerRes.total, 47)
+
+  h.signIn('lv2', 2)
+  const adminSync = await h.as('lv2', { a: 'sync_xur' })
+  assert.equal(adminSync.ok, 1)
+  assert.equal(adminSync.total, 47)
 
   const getRes = await h.main({ httpMethod: 'GET', queryStringParameters: { a: 'xur' } })
   assert.equal(getRes.statusCode, 200)

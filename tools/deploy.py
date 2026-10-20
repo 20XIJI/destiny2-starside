@@ -27,11 +27,12 @@ CLOUD = "destiny2-starside"  # 静态托管上的挂载路径，与 tcb app depl
 # 只发 site/ 下的文件，上传时去掉这一层：仓库里的 site/index.html 在站上是
 # destiny2-starside/index.html。源稿、工具、data/ 与云函数都在 site/ 之外。
 PREFIX = "site/"
+SKIP = {"site/rotation/eververse.json", "site/rotation/xur.json"}
 
 
 def keep(path: str) -> bool:
     """git 给的仓库相对路径发不发。"""
-    return path.startswith(PREFIX)
+    return path.startswith(PREFIX) and path not in SKIP
 
 
 # 字符串字面量里的 /* 与 */。剥注释前先拿它探一遍：命中就整个文件原样发。

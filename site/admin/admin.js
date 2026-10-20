@@ -1895,6 +1895,7 @@
       $('top').hidden = false
       $('me-name').textContent = me.name || '未登记'
       $('me-lv').textContent = LV[me.lv] || '无权限'
+      $('sync-shop').hidden = me.lv < 2
       // 编辑者那一屏只给超级管理员：云函数的 LEVEL.eds 是同一个门槛，不靠前端藏。
       document.querySelector('[data-view="eds"]').hidden = me.lv < 4
       skeleton()
@@ -1972,6 +1973,23 @@
       else open(ids[i])
     })
     $('out').onclick = function () { tok(null); location.reload() }
+    $('sync-shop').onclick = function () {
+      var b = $('sync-shop')
+      var t = $('sync-tip')
+      b.disabled = true
+      b.textContent = '同步中…'
+      t.classList.remove('bad')
+      t.textContent = ''
+      Promise.all([call('sync_rotation'), call('sync_xur')]).then(function (r) {
+        t.textContent = '已同步光尘 ' + r[0].total + ' · 老九 ' + r[1].total
+      }, function (e) {
+        t.classList.add('bad')
+        t.textContent = '同步失败：' + say(e)
+      }).finally(function () {
+        b.disabled = false
+        b.textContent = '同步商店'
+      })
+    }
     $('tabs').onclick = function (ev) {
       var b = ev.target.closest('[data-view]')
       if (b) tab(b.dataset.view)
