@@ -34,21 +34,26 @@
 <h1>护甲 3.0 商人属性机制与推算</h1>
 </header>
 
-<main data-src="docs/armor-rng" data-src-hash="49a384d3ef1b00d3bda73bc1195860e68d0f1cc9">
+<main data-src="docs/armor-rng" data-src-hash="efcc8d27a89e22ec22c81fe5e342685be4a409e4">
 <section class="block" id="sec-1">
 <h2 class="sect-label" data-b="9">底层随机种子机制</h2>
-<p data-b="2">在线推算器已内嵌于光尘商店页面，点击可直接跳转使用：<a href="../eververse/index.html#xur">前往光尘商店 · 仄（Xûr）周货页使用仄护甲属性推算器 →</a></p>
-<p data-b="2">护甲 3.0 的每件商人护甲由两个独立抽取的随机插槽决定属性分布（未命中的其余 3 项属性固定为 +5）：</p>
-<ul>
-<li data-b="2"><strong>原型插槽（Archetype，插槽池 1315181101）</strong>：从 12 种护甲原型中抽取 1 种，决定 <strong>+30 主属性</strong>与 <strong>+25 副属性</strong>。</li>
-<li data-b="1"><strong>第三属性插槽（Tertiary Stat，插槽池 445741600）</strong>：剔除主、副属性后，从剩余 4 项属性中抽取 1 项作为 <strong>+20 第三属性</strong>。</li>
-</ul>
+<p data-b="2" class="formula">在线推算器已内嵌于光尘商店页面，点击可直接跳转使用：<a href="../eververse/index.html#xur">前往光尘商店 · 仄（Xûr）周货页使用仄护甲属性推算器 →</a></p>
+<p data-b="2">护甲 3.0 的每件商人护甲由两个独立抽取的随机插槽决定属性分布，未命中的其余 3 项属性固定为 +5：</p>
+<dl class="rules">
+<dt data-b="2">原型插槽<span class="from">Archetype · 插槽池 1315181101</span></dt>
+<dd data-b="1">从 12 种护甲原型中抽取 1 种，决定 <strong>+30 主属性</strong>与 <strong>+25 副属性</strong>。</dd>
+<dt data-b="1">第三属性插槽<span class="from">Tertiary Stat · 插槽池 445741600</span></dt>
+<dd data-b="1">剔除主、副属性后，从剩余 4 项属性中抽取 1 项作为 <strong>+20 第三属性</strong>。</dd>
+</dl>
 <p data-b="2">游戏服务端在生成商人周货护甲时，为两个插槽各生成一个固定的均匀随机数 t ∈ [0, 1)，再按玩家查看商人时装备的机灵护甲模组（Ghost Armorer Mod）权重表将 t 映射为具体词条。由此产生三条推算规则：</p>
-<ul>
-<li data-b="2"><strong>第三属性序号 t.map 恒定不变</strong>：机灵护甲模组只改变「原型插槽」的权重，不介入「第三属性插槽」。因此同一件商人护甲无论切换哪一种机灵模组，它的第三属性始终落在剩余 4 项属性池的同一位置序号 <strong>t.map（取值 1 至 4）</strong>上。只需在任意状态下看一眼 +20 属性，就能 100% 确定这件护甲在全部 12 种主副组合下的 +20 属性。</li>
-<li data-b="1"><strong>无模组（Y）与带模组（X）共用同一随机数 t</strong>：不装机灵模组时，12 种原型等权平分 [0, 1)，记为 <strong>Y = 1 + ⌊12t⌋</strong>（共 12 列）；装备任一机灵模组时，目标原型的权重变为非目标原型的 12 倍（总权重 12 + 11×1 = 23），记为 <strong>X = 1 + ⌊23t⌋</strong>（共 23 列）。由于两者由同一个 t 算出，已知无模组状态下的属性组合 Y，即可将 X 收窄至相邻的 2 至 3 列，直接排出 8 至 10 种可洗出的属性组合。</li>
-<li data-b="1"><strong>双读楷模典范（主超能·副近战）与装甲兵（主超能·副生命）可唯一锁定 X</strong>：在 23 列权重矩阵中，1 号模组「楷模典范」覆盖右侧 11 列（X = 13…23 依次产出原型 2…12），12 号模组「装甲兵」覆盖左侧 11 列（X = 1…11 依次产出原型 1…11），中间 X = 11、12、13 三列由两者的 2 列补偿带交叉唯一区分。只需切换这两枚机灵模组各看一次，即可在全部 23 列中唯一锁定 X。</li>
-</ul>
+<dl class="rules">
+<dt data-b="2">第三属性序号 t.map 恒定不变<span class="from">取值 1 至 4</span></dt>
+<dd data-b="1+1">机灵护甲模组只改变「原型插槽」的权重，不介入「第三属性插槽」。同一件商人护甲无论切换哪一种机灵模组，它的第三属性始终落在剩余 4 项属性池的同一位置序号 <strong>t.map（取值 1 至 4）</strong>上。<br>实操结论：只需在任意状态下看一眼 <strong>+20 属性</strong>，就能 100% 确定这件护甲在全部 12 种主副组合下的 +20 属性。</dd>
+<dt data-b="1">无模组（Y）与带模组（X）共用同一随机数 t<span class="from">12 列 → 23 列</span></dt>
+<dd data-b="1+1">不装机灵模组时，12 种原型等权平分 [0, 1)，记为 <strong>Y = 1 + ⌊12t⌋</strong>（共 12 列）；装备任一机灵模组时，目标原型的权重变为非目标原型的 12 倍（总权重 12 + 11×1 = 23），记为 <strong>X = 1 + ⌊23t⌋</strong>（共 23 列）。<br>实操结论：两者由同一个 t 算出，已知无模组状态下的属性组合 <strong>Y</strong>，即可将 <strong>X</strong> 收窄至相邻的 2 至 3 列，直接排出 8 至 10 种可洗出的属性组合。</dd>
+<dt data-b="1">双读楷模典范与装甲兵可唯一锁定 X<span class="from">1 号模组 + 12 号模组</span></dt>
+<dd data-b="1+1">在 23 列权重矩阵中，1 号模组 <strong>楷模典范</strong>（主超能 · 副近战）覆盖右侧 11 列（X = 13…23 依次产出原型 2…12），12 号模组 <strong>装甲兵</strong>（主超能 · 副生命）覆盖左侧 11 列（X = 1…11 依次产出原型 1…11），中间 X = 11、12、13 三列由两者的 2 列补偿带交叉唯一区分。<br>实操结论：只需切换这两枚机灵模组各看一次，即可在全部 23 列中唯一锁定 <strong>X</strong>。</dd>
+</dl>
 </section>
 <section class="block" id="sec-2">
 <h2 class="sect-label" data-b="2">12 种护甲原型与第三属性映射表</h2>
@@ -79,19 +84,22 @@
 <tr><th scope="row">9</th><td>爆破专家</td><td>Demolitionist</td><td>手雷</td><td>职业</td><td>武器</td><td>生命</td><td>超能</td><td>近战</td></tr>
 <tr><th scope="row">10</th><td>突击手</td><td>Skirmisher</td><td>近战</td><td>武器</td><td>生命</td><td>手雷</td><td>超能</td><td>职业</td></tr>
 <tr><th scope="row">11</th><td>高能者</td><td>Powerhouse</td><td>武器</td><td>超能</td><td>生命</td><td>手雷</td><td>职业</td><td>近战</td></tr>
-<tr><th scope="row">12</th><td>装甲兵</td><td>Colossus</td><td>超能</td><td>生命</td><td>武器</td><td>手雷</td><td>职业</td><td>近战</td></tr>
+<tr><th scope="row">12</th><td>装甲兵</td><td>Colossus</td><td>超能</td><td>生命</td><td>武器</td><td>手雷</td><td>超能</td><td>近战</td></tr>
 </tbody>
 </table>
 <p data-b="13">实测推算示例（以仄出售的<span class="exotic">陨星胸甲</span>为例）：</p>
-<ul>
-<li data-b="2">机灵装备 <strong>1. 楷模典范</strong> 模组查看护甲，显示 <strong>4. 搏击手（+30 近战 / +25 生命）</strong>，第三属性为 <strong>+20 手雷</strong>。查上表第 4 行「搏击手」可知：手雷位于 <strong>t.map = 2</strong>。</li>
-<li data-b="1">机灵改插 <strong>12. 装甲兵</strong> 模组查看护甲，显示 <strong>12. 装甲兵（+30 超能 / +25 生命）</strong>。由楷模读数 4、装甲兵读数 12，查下方双读表得 <strong>X = 15</strong>（对应无模组 <strong>Y = 8 突围者</strong>）。</li>
-<li data-b="1">锁定 <strong>X = 15、t.map = 2</strong> 后，若想刷取 <strong>5. 枪手（+30 武器 / +25 手雷）</strong>，查 X = 15 列可知装备「枪手」机灵模组必出枪手原型，且第三属性为第 5 行 t.map = 2 对应的 <strong>+20 超能</strong>。</li>
-</ul>
+<dl class="rules">
+<dt data-b="2">第一步：装备楷模典范模组，定位 t.map<span class="from">1. 楷模典范</span></dt>
+<dd data-b="1+1">机灵装备 <strong>1. 楷模典范</strong> 模组查看护甲，显示 <strong>4. 搏击手（+30 近战 / +25 生命）</strong>，第三属性为 <strong>+20 手雷</strong>。<br>查上表第 4 行「搏击手」可知：手雷位于 <strong>t.map = 2</strong>。</dd>
+<dt data-b="1">第二步：改插装甲兵模组，双读锁定列号 X<span class="from">12. 装甲兵</span></dt>
+<dd data-b="1+1">机灵改插 <strong>12. 装甲兵</strong> 模组查看护甲，显示 <strong>12. 装甲兵（+30 超能 / +25 生命）</strong>。<br>由楷模读数 4、装甲兵读数 12，查下方双读表得 <strong>X = 15</strong>（对应无模组 <strong>Y = 8 突围者</strong>）。</dd>
+<dt data-b="1">第三步：按 X 与 t.map 推算目标配装<span class="from">X = 15 · t.map = 2</span></dt>
+<dd data-b="1">锁定 <strong>X = 15、t.map = 2</strong> 后，若想刷取 <strong>5. 枪手（+30 武器 / +25 手雷）</strong>，查 X = 15 列可知装备「枪手」机灵模组必出枪手原型，且第三属性为第 5 行 t.map = 2 对应的 <strong>+20 超能</strong>。</dd>
+</dl>
 </section>
 <section class="block" id="sec-3">
 <h2 class="sect-label" data-b="2">双读快速反查表（楷模典范 + 装甲兵 → X 与 Y）</h2>
-<p data-b="2">依次记录机灵装备「1. 楷模典范」与「12. 装甲兵」时护甲显示的原型，按下表直接定位底层列号 X（1 至 23）及无模组原型 Y（1 至 12）：</p>
+<p data-b="2">依次记录机灵装备 <strong>1. 楷模典范</strong> 与 <strong>12. 装甲兵</strong> 时护甲显示的原型，按下表直接定位底层列号 <strong>X</strong>（1 至 23）及无模组原型 <strong>Y</strong>（1 至 12）：</p>
 <table class="gen">
 <thead>
 <tr data-b="2">
@@ -131,7 +139,11 @@
 </section>
 <section class="block" id="sec-4">
 <h2 class="sect-label" data-b="24">23 列机灵模组权重矩阵（XMap 全表）</h2>
-<p data-b="2">下表列出底层随机数落在第 1 至 23 列（X = 1…23）时，12 种机灵护甲模组各自产出的原型编号（1 至 12）。对于第 2 至 11 号机灵模组 g，该模组将自身原型 g 的命中宽度扩充为连续 12 列（X = g 至 g + 11），占总权重 12/23 ≈ 52.2%；首尾的「1. 楷模典范」与「12. 装甲兵」占 11/23 ≈ 47.8%，并在紧邻处给隔壁原型留出 2 列宽的补偿带：</p>
+<p data-b="2">下表列出底层随机数落在第 1 至 23 列（X = 1…23）时，12 种机灵护甲模组各自产出的原型编号（1 至 12）：</p>
+<ul>
+<li data-b="2"><strong>第 2 至 11 号机灵模组 g</strong>：将该模组自身原型 g 的命中宽度扩充为连续 12 列（X = g 至 g + 11），占总权重 <strong>12/23 ≈ 52.2%</strong>，其余 11 种原型各占 1 列。</li>
+<li data-b="1"><strong>首尾的 1. 楷模典范与 12. 装甲兵</strong>：自身原型占连续 11 列（<strong>11/23 ≈ 47.8%</strong>），并在紧邻内侧给隔壁原型留出 <strong>2 列宽的补偿带</strong>。</li>
+</ul>
 <table class="gen">
 <thead>
 <tr data-b="2">

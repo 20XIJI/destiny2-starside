@@ -2,40 +2,138 @@
 
 :root { --wrap: 1060px; --min: 1104px; }
 
+/* ── 资料页正文与规则块（保持 1060px 通栏对齐，靠块间节奏与行内分层拉开呼吸感） ── */
 .block p:not([class]) {
-  margin: 0 0 16px;
+  margin: 0 0 14px;
   color: var(--bone);
   font-size: 14px;
+  line-height: 2;
+  text-wrap: pretty;
+}
+
+:is(.rules, .block ul, .gen) + p:not([class]) {
+  margin-top: 24px;
+}
+
+.formula {
+  margin: 0 0 22px;
+  padding: 11px 16px;
+  color: var(--bone);
+  font-size: 13.5px;
+  line-height: 1.75;
+  background-color: var(--head-fill);
+  border: 1px solid var(--hair);
+  border-left: 2px solid var(--accent);
+}
+
+.rules {
+  margin: 0 0 22px;
+  padding: 0;
+  border-top: 1px solid var(--hair);
+}
+
+.rules dt:not([class]) { color: var(--bone-hi); }
+
+.rules dt {
+  padding: 13px 0 0;
+  font-family: var(--font-cn);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.rules dt .from {
+  margin-left: 10px;
+  color: var(--bone-faint);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.rules dd {
+  margin: 5px 0 0;
+  padding: 0 0 13px;
+  color: var(--bone-dim);
+  font-size: 13.5px;
   line-height: 1.95;
+  border-bottom: 1px solid var(--hair);
 }
 
 .block ul {
-  margin: 0 0 20px;
-  padding-left: 20px;
-  color: var(--bone);
-  font-size: 14px;
+  margin: 0 0 18px;
+  padding-left: 1.4em;
+  color: var(--bone-dim);
+  font-size: 13.5px;
   line-height: 1.95;
 }
 
-.block li { margin-bottom: 6px; }
+.block li + li { margin-top: 8px; }
+.block li::marker { color: var(--bone-faint); }
 
+/* ── 生成表格：常规宽表（表 1 原型表 9 列、表 2 双读表 5 列） ── */
 .gen {
-  margin: 18px 0 26px;
-  font-size: 12px;
-  line-height: 1.5;
+  margin: 16px 0 26px;
+  font-size: 13px;
+  line-height: 1.6;
+  font-variant-numeric: tabular-nums;
 }
 
 .gen th,
 .gen td {
-  padding: 6px 5px;
+  padding: 8px 10px;
   text-align: center;
   white-space: nowrap;
 }
 
-.gen tbody th {
+.gen tbody th[scope="row"] {
   color: var(--bone-hi);
   font-weight: 600;
   text-align: center;
+}
+
+.gen tbody tr:hover > th,
+.gen tbody tr:hover > td {
+  background-color: var(--row-hover);
+}
+
+.gen:has(thead th:nth-child(9)):not(:has(thead th:nth-child(10))) tbody td:nth-child(2):not([class]) {
+  color: var(--bone-hi);
+  font-weight: 600;
+}
+
+.gen:has(thead th:nth-child(9)):not(:has(thead th:nth-child(10))) tbody td:nth-child(3):not([class]) {
+  color: var(--bone-faint);
+  font-size: 12px;
+}
+
+.gen:has(thead th:nth-child(9)):not(:has(thead th:nth-child(10))) tbody :is(td:nth-child(4), td:nth-child(5)):not([class]) {
+  color: var(--bone);
+}
+
+.gen:has(thead th:nth-child(9)):not(:has(thead th:nth-child(10))) :is(th, td):is(:nth-child(4), :nth-child(6)) {
+  border-left-color: var(--hair-lit);
+}
+
+.gen:has(thead th:nth-child(5)):not(:has(thead th:nth-child(6))) tbody :is(td:nth-child(2), td:nth-child(3)):not([class]) {
+  color: var(--bone-hi);
+}
+
+.gen:has(thead th:nth-child(5)):not(:has(thead th:nth-child(6))) tbody td:nth-child(4):not([class]) {
+  color: var(--bone);
+}
+
+.gen:has(thead th:nth-child(24)) {
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.gen:has(thead th:nth-child(24)) th,
+.gen:has(thead th:nth-child(24)) td {
+  padding: 6px 4px;
+}
+
+.gen:has(thead th:nth-child(24)) thead th:first-child,
+.gen:has(thead th:nth-child(24)) tbody th[scope="row"] {
+  padding: 6px 10px;
 }
 
 /* ── 老九页护甲 3.0 推算器 (.armor-calc) ── */
