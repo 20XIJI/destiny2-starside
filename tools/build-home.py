@@ -543,6 +543,12 @@ def scalars(_img):
                      for n in PICK_SCALARS])
 
 
+def armor_rng(_img):
+    t = tables('armor-rng')[0]
+    return pv_table(['原型', '+30', '+25', 't.map=1'],
+                    [[r[1][0], r[3][0], r[4][0], r[5][0]] for r in rows('armor-rng', t)[:2]])
+
+
 def changelog(_img):
     """最新两条：日期、类型、页面、条目名（「：」之前那一截）"""
     out = []
@@ -613,6 +619,7 @@ PREVIEW = {
     'ammo/index.html': ammo,
     'power-delta/index.html': delta,
     'combatant-scalars/index.html': scalars,
+    'armor-rng/index.html': armor_rng,
     'changelog/index.html': changelog,
     'sources/index.html': sources,
     'palette/index.html': palette,

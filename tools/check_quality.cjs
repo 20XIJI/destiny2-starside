@@ -2478,6 +2478,105 @@ test('xur: timer trigger xur-sat-0103 syncs weekly inventory via Bungie official
   assert.match(staleRes.error, /尚未刷新至本周周期/)
 })
 
+test('armor-rng: manifest plugSet alignment, 23-column bijection, and Cuirass empirical case', async () => {
+  const ArmorRng = require(path.join(site, 'assets/armor-rng.js'))
+  const plugSets = JSON.parse(fs.readFileSync(path.join(root, 'data/lookup/plug-sets.json'), 'utf8'))
+  const invItems = JSON.parse(fs.readFileSync(path.join(root, 'data/inventory-items.json'), 'utf8'))
+
+  // 1. 12 archetypes in plugSet 1315181101 must match order, hash, and Chinese/English names
+  const archPlugs = plugSets['1315181101'].reusablePlugItems.map((x) => x.plugItemHash)
+  assert.equal(ArmorRng.ARCHETYPES.length, 12)
+  assert.deepEqual(ArmorRng.ARCHETYPES.map((a) => a.hash), archPlugs)
+  for (const a of ArmorRng.ARCHETYPES) {
+    const item = invItems[String(a.hash)]
+    assert.ok(item, 'missing archetype in inventory-items.json: ' + a.hash)
+    assert.equal(a.name, item.i18n['zh-CN'].name)
+    assert.equal(a.en, item.i18n.en.name)
+    assert.equal(a.tert.length, 4)
+    assert.ok(!a.tert.includes(a.pri) && !a.tert.includes(a.sec))
+  }
+
+  // 2. 6 tertiary stats (+20 tier) in plugSet 445741600 must match order and hashes
+  const tertPlugs = plugSets['445741600'].reusablePlugItems.slice(-6).map((x) => x.plugItemHash)
+  assert.deepEqual(ArmorRng.STATS.map((s) => s.hash), tertPlugs)
+
+  // 3. Bijection across all 23 X columns via Paragon (1) + Colossus (12) dual-read
+  for (let x = 1; x <= 23; x++) {
+    const p = ArmorRng.xOfGhost(1, x)
+    const c = ArmorRng.xOfGhost(12, x)
+    assert.equal(ArmorRng.pcToX(p, c), x, `pcToX bijection failed at X=${x}`)
+    const ys = ArmorRng.xToYList(x)
+    assert.ok(ys.length >= 1 && ys.length <= 2)
+    for (const y of ys) {
+      assert.ok(ArmorRng.yToXList(y).includes(x), `yToXList(${y}) must include X=${x}`)
+    }
+  }
+
+  // 4. Empirical case from odo's paper: Cuirass of the Falling Star (X=15, Y=8 Siegebreaker, t.map=2)
+  assert.equal(ArmorRng.pcToX(4, 12), 15)
+  assert.deepEqual(ArmorRng.xToYList(15), [8])
+  assert.equal(ArmorRng.tMapOf(4, 3), 2) // Brawler + Grenade -> t.map = 2
+  const expectedCuirass = [
+    [1, 'Brawler', 'Grenade'],
+    [2, 'Brawler', 'Grenade'],
+    [3, 'Brawler', 'Grenade'],
+    [4, 'Brawler', 'Grenade'],
+    [5, 'Gunner', 'Super'],
+    [6, 'Specialist', 'Grenade'],
+    [7, 'Reaver', 'Health'],
+    [8, 'Siegebreaker', 'Super'],
+    [9, 'Demolitionist', 'Health'],
+    [10, 'Skirmisher', 'Grenade'],
+    [11, 'Powerhouse', 'Grenade'],
+    [12, 'Colossus', 'Grenade']
+  ]
+  for (const [g, archEn, tertEn] of expectedCuirass) {
+    const outArchId = ArmorRng.xOfGhost(g, 15)
+    const roll = ArmorRng.rollOf(outArchId, 2)
+    assert.equal(roll.arch.en, archEn, `Cuirass ghost=${g} archetype mismatch`)
+    assert.equal(roll.tert.en, tertEn, `Cuirass ghost=${g} tertiary mismatch`)
+  }
+
+  // 5. Scenario 1 priority filter: exact (+30, +25, +20) match vs swapped-slot fallback
+  const exactPrio = ArmorRng.filterCombosByPriority([1, 3, 4]) // 武器(+30) > 手雷(+25) > 超能(+20)
+  assert.equal(exactPrio.filter((c) => c.exactOrder).length, 1)
+  assert.equal(exactPrio[0].exactOrder, true)
+  assert.equal(exactPrio[0].roll.arch.en, 'Gunner')
+  assert.equal(exactPrio[0].roll.tert.en, 'Super')
+
+  const swapPrio = ArmorRng.filterCombosByPriority([4, 1, 3]) // 超能(+30) > 武器(+25) > 手雷(+20)（无超能+武器官方原型）
+  assert.equal(swapPrio.filter((c) => c.exactOrder).length, 0)
+  assert.equal(swapPrio.length, 3)
+  assert.deepEqual(swapPrio.map((c) => c.roll.arch.en), ['Powerhouse', 'Grenadier', 'Gunner'])
+
+  // 6. Deduplicated outcome grouping: X=15 merges mods 1..4 into Brawler (4), giving 9 unique rolls (4..12)
+  const cuirassRes = ArmorRng.solveFromObservations([{ modId: 0, archId: 8, tertStat: 4 }, { modId: 1, archId: 4 }])
+  const groups = ArmorRng.groupOutcomes(cuirassRes.candidates)
+  assert.deepEqual(groups.map((g) => g.archId), [4, 5, 6, 7, 8, 9, 10, 11, 12])
+  assert.ok(groups.every((g) => g.certain === true))
+
+  // 7. DOM mount renders 13 Ghost mod buttons (unmod + 12 pairs) and 6x6x6 stat buttons without archetype names
+  const prevDoc = global.document
+  global.document = {}
+  try {
+    const host = { innerHTML: '', addEventListener() {} }
+    const api = ArmorRng.mount(host, { itemName: '泰坦 · 坠星胸甲' })
+    assert.ok(api && typeof api.setItemName === 'function')
+    assert.match(host.innerHTML, /泰坦 · 坠星胸甲/)
+    assert.equal((host.innerHTML.match(/data-pick-mod="/g) || []).length, 13)
+    assert.deepEqual(
+      [...host.innerHTML.matchAll(/data-pick-pri="(\d)"/g)].map((m) => Number(m[1])),
+      [2, 6, 3, 4, 5, 1]
+    )
+    assert.equal((host.innerHTML.match(/data-pick-sec="/g) || []).length, 6)
+    assert.equal((host.innerHTML.match(/data-pick-tert="/g) || []).length, 6)
+    assert.doesNotMatch(host.innerHTML, /楷模|突围者|高能者|掷雷手|搏击手|掠夺者|爆破专家|装甲兵/)
+  } finally {
+    if (prevDoc === undefined) delete global.document
+    else global.document = prevDoc
+  }
+})
+
 async function main() {
   let failures = 0
   for (const [name, fn] of tests) {

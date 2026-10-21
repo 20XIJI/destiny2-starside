@@ -214,9 +214,11 @@
       '</span>'
     );
 
+    var armAttr = item.xurArmorLabel ? ' data-xur-armor="' + esc(item.xurArmorLabel) + '"' : '';
+
     if (isWide) {
       return (
-        '<article class="ev-card ev-card-wide ' + tier + '">' +
+        '<article class="ev-card ev-card-wide ' + tier + '"' + armAttr + '>' +
           '<div class="ev-wide-bg">' +
             '<img class="ev-wide-img" src="' + shotUrl + '" alt=""' + (imgLoad ? ' ' + imgLoad : '') + ' decoding="async">' +
           '</div>' +
@@ -241,7 +243,7 @@
     }
 
     return (
-      '<article class="ev-card ev-card-compact ' + tier + '">' +
+      '<article class="ev-card ev-card-compact ' + tier + '"' + armAttr + '>' +
         '<div class="ev-card-content">' +
           '<div class="ev-thumb ' + tier + '">' +
             '<img src="' + iconUrl + '" alt="' + dispName + '" width="46" height="46"' + (imgLoad ? ' ' + imgLoad : '') + ' decoding="async">' +
@@ -330,6 +332,8 @@
   }
 
   /* ── 老九 · 仄 (Xûr) 渲染逻辑（对齐装备库 .plug 光圈与 .wpn-grades 评级语言） ── */
+
+  var xurCalcApi = null;
 
   function gradeStep(tok) {
     var m = /^T(\d(?:\.\d)?)$/.exec(tok);
@@ -545,8 +549,9 @@
       });
       var cells = pieces.map(function (p) {
         var shortTy = p.ty.replace(/泰坦|猎人|术士/, '');
+        var armLabel = cls + ' · ' + formatName(p.n) + '（' + shortTy + '）';
         return (
-          '<div class="xur-armor-piece">' +
+          '<div class="xur-armor-piece" data-xur-armor="' + esc(armLabel) + '" title="点击在护甲属性推算器中推算该护甲">' +
             '<div class="ev-thumb legendary">' +
               '<img src="' + esc(p.icon) + '" alt="' + esc(p.n) + '" width="36" height="36" decoding="async">' +
             '</div>' +
@@ -567,7 +572,7 @@
 
     return (
       '<section class="block" id="xur-sec-leg-armor">' +
-        '<h2 class="sect-label"><span>传说护甲 · ' + esc(setName || '套装') + '</span><span class="ev-section-count">每件 <img class="ev-sect-ico" src="../assets/icons/coin.webp" alt="" width="14" height="14"><b>' + costVal + '</b> · 共 <b>' + armors.length + '</b> 件</span></h2>' +
+        '<h2 class="sect-label"><span>传说护甲 · ' + esc(setName || '套装') + '</span><span class="ev-section-count">每件 <img class="ev-sect-ico" src="../assets/icons/coin.webp" alt="" width="14" height="14"><b>' + costVal + '</b> · 共 <b>' + armors.length + '</b> 件 · 点击部位可推算属性</span></h2>' +
         '<div class="xur-armor-box">' +
           '<div class="xur-armor-rows">' + rowsHtml + '</div>' +
         '</div>' +
@@ -629,10 +634,11 @@
       if (!list.length) return;
       blocks.push(
         '<section class="block" id="' + id + '">' +
-          '<h2 class="sect-label"><span>' + title + '</span><span class="ev-section-count"><img class="ev-sect-ico" src="../assets/icons/coin.webp" alt="" width="14" height="14"><b>' + list.length + '</b> 件 · 奇异硬币</span></h2>' +
+          '<h2 class="sect-label"><span>' + title + '</span><span class="ev-section-count"><img class="ev-sect-ico" src="../assets/icons/coin.webp" alt="" width="14" height="14"><b>' + list.length + '</b> 件 · 奇异硬币 · 点击卡片可推算属性</span></h2>' +
           '<div class="ev-grid">' +
             list.map(function (it) {
               var mapped = toEvItem(it, Boolean(it.shot));
+              mapped.xurArmorLabel = (it.cls ? it.cls + ' · ' : '') + formatName(it.n);
               return renderCard(mapped, Boolean(mapped.screenshot), 10);
             }).join('') +
           '</div>' +
@@ -643,6 +649,26 @@
     pushArmorSection('xur-sec-titan', '泰坦 · 异域护甲', titanArmor);
     pushArmorSection('xur-sec-hunter', '猎人 · 异域护甲', hunterArmor);
     pushArmorSection('xur-sec-warlock', '术士 · 异域护甲', warlockArmor);
+
+    var allExoArmors = titanArmor.concat(hunterArmor, warlockArmor);
+    if (allExoArmors.length || legArmors.length) {
+      var pickChips = allExoArmors.map(function (it, idx) {
+        var lbl = (it.cls ? it.cls + ' · ' : '') + formatName(it.n);
+        return (
+          '<button type="button" class="xur-rng-pick' + (idx === 0 ? ' is-on' : '') + '" data-xur-armor="' + esc(lbl) + '">' +
+            '<img src="' + esc(it.icon) + '" alt="" width="20" height="20" decoding="async">' +
+            '<span>' + esc(lbl) + '</span>' +
+          '</button>'
+        );
+      }).join('');
+      blocks.push(
+        '<section class="block" id="xur-sec-rng">' +
+          '<h2 class="sect-label"><span>老九护甲属性推算器（机灵模组聚焦预测）</span><span class="ev-section-count"><a class="xur-rng-doc-link" href="../armor-rng/index.html">查看 23 列权重矩阵与完整原理 →</a></span></h2>' +
+          (pickChips ? '<div class="xur-rng-picks"><span class="xur-rng-picks-lbl">本周在售异域护甲：</span>' + pickChips + '</div>' : '') +
+          '<div class="armor-calc" id="xur-armor-calc"></div>' +
+        '</section>'
+      );
+    }
 
     if (classExotics.length) {
       blocks.push(
@@ -703,6 +729,29 @@
     }
 
     xurContentEl.innerHTML = blocks.join('');
+    var xurCalcHost = document.getElementById('xur-armor-calc');
+    if (xurCalcHost && window.ArmorRng) {
+      var firstArmor = allExoArmors[0];
+      var initLabel = firstArmor ? ((firstArmor.cls ? firstArmor.cls + ' · ' : '') + formatName(firstArmor.n)) : '';
+      xurCalcApi = window.ArmorRng.mount(xurCalcHost, { itemName: initLabel });
+      if (!xurContentEl.dataset.rngBound) {
+        xurContentEl.dataset.rngBound = '1';
+        xurContentEl.addEventListener('click', function (ev) {
+          var target = ev.target.closest && ev.target.closest('[data-xur-armor]');
+          if (!target) return;
+          var label = target.getAttribute('data-xur-armor') || '';
+          var picks = xurContentEl.querySelectorAll('[data-xur-armor]');
+          for (var i = 0; i < picks.length; i++) {
+            picks[i].classList.toggle('is-on', picks[i].getAttribute('data-xur-armor') === label);
+          }
+          if (xurCalcApi && xurCalcApi.setItemName) xurCalcApi.setItemName(label);
+          if (!target.classList.contains('xur-rng-pick')) {
+            var sec = document.getElementById('xur-sec-rng');
+            if (sec && sec.scrollIntoView) sec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        });
+      }
+    }
     if (xurCntTotalEl) xurCntTotalEl.textContent = String(data.items.length);
     if (xurVendorEl && data.location) {
       xurVendorEl.textContent = '九之使者 · 仄 (Xûr) · ' + data.location;

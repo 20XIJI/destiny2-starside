@@ -35,6 +35,7 @@ window.starsidePages = [
   ["keys/strand","缚丝","elements/strand/index.html","图鉴与数据","docs/elements","2026.10.8"],
   ["keys/void","虚空","elements/void/index.html","图鉴与数据","docs/elements","2026.10.8"],
   ["docs/ammo","弹药生成机制","ammo/index.html","机制","","2026.9.10"],
+  ["docs/armor-rng","护甲 3.0 商人属性机制与推算","armor-rng/index.html","机制","","2026.10.20"],
   ["docs/buff-debuffs","增伤 & 易伤","buff-debuffs/index.html","机制","","2026.8.30"],
   ["docs/combatant-scalars","战斗人员倍率","combatant-scalars/index.html","机制","","2026.8.14"],
   ["docs/game-mechanics","游戏机制","game-mechanics/index.html","机制","","2026.10.8"],

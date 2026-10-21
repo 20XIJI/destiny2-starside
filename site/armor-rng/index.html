@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>护甲 3.0 商人属性机制与推算 · Starside</title>
+<meta name="description" content="命运 2 护甲 3.0 商人周货（仄、萨瓦拉、活动聚焦）底层随机种子机制、机灵护甲模组权重矩阵与属性推算器。">
+<meta name="theme-color" content="#0b0d14">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Starside">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:title" content="护甲 3.0 商人属性机制与推算 · Starside">
+<meta property="og:description" content="命运 2 护甲 3.0 商人周货（仄、萨瓦拉、活动聚焦）底层随机种子机制、机灵护甲模组权重矩阵与属性推算器。">
+<link rel="preload" href="../assets/fonts/chakra-petch-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="style.css">
+<script src="../assets/pinyin.js" defer></script>
+<script src="../assets/app.js" defer></script>
+<script type="module" src="../assets/sky-page.js"></script>
+</head>
+<body>
+<div class="site-head">
+<nav class="site-nav">
+<span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>
+<a class="home" href="../index.html">Starside</a>
+<span class="sep">/</span>
+<span aria-current="page">护甲 3.0 商人属性机制与推算</span>
+</nav>
+<div class="toolbar" data-section=".block" data-item=".gen tbody tr:not(.lane)" data-label=".sect-label" data-noun="条目" data-chip-label="分节"></div>
+</div>
+
+<header class="page-head">
+<h1>护甲 3.0 商人属性机制与推算</h1>
+</header>
+
+<main data-src="docs/armor-rng" data-src-hash="49a384d3ef1b00d3bda73bc1195860e68d0f1cc9">
+<section class="block" id="sec-1">
+<h2 class="sect-label" data-b="9">底层随机种子机制</h2>
+<p data-b="2">在线推算器已内嵌于光尘商店页面，点击可直接跳转使用：<a href="../eververse/index.html#xur">前往光尘商店 · 仄（Xûr）周货页使用仄护甲属性推算器 →</a></p>
+<p data-b="2">护甲 3.0 的每件商人护甲由两个独立抽取的随机插槽决定属性分布（未命中的其余 3 项属性固定为 +5）：</p>
+<ul>
+<li data-b="2"><strong>原型插槽（Archetype，插槽池 1315181101）</strong>：从 12 种护甲原型中抽取 1 种，决定 <strong>+30 主属性</strong>与 <strong>+25 副属性</strong>。</li>
+<li data-b="1"><strong>第三属性插槽（Tertiary Stat，插槽池 445741600）</strong>：剔除主、副属性后，从剩余 4 项属性中抽取 1 项作为 <strong>+20 第三属性</strong>。</li>
+</ul>
+<p data-b="2">游戏服务端在生成商人周货护甲时，为两个插槽各生成一个固定的均匀随机数 t ∈ [0, 1)，再按玩家查看商人时装备的机灵护甲模组（Ghost Armorer Mod）权重表将 t 映射为具体词条。由此产生三条推算规则：</p>
+<ul>
+<li data-b="2"><strong>第三属性序号 t.map 恒定不变</strong>：机灵护甲模组只改变「原型插槽」的权重，不介入「第三属性插槽」。因此同一件商人护甲无论切换哪一种机灵模组，它的第三属性始终落在剩余 4 项属性池的同一位置序号 <strong>t.map（取值 1 至 4）</strong>上。只需在任意状态下看一眼 +20 属性，就能 100% 确定这件护甲在全部 12 种主副组合下的 +20 属性。</li>
+<li data-b="1"><strong>无模组（Y）与带模组（X）共用同一随机数 t</strong>：不装机灵模组时，12 种原型等权平分 [0, 1)，记为 <strong>Y = 1 + ⌊12t⌋</strong>（共 12 列）；装备任一机灵模组时，目标原型的权重变为非目标原型的 12 倍（总权重 12 + 11×1 = 23），记为 <strong>X = 1 + ⌊23t⌋</strong>（共 23 列）。由于两者由同一个 t 算出，已知无模组状态下的属性组合 Y，即可将 X 收窄至相邻的 2 至 3 列，直接排出 8 至 10 种可洗出的属性组合。</li>
+<li data-b="1"><strong>双读楷模典范（主超能·副近战）与装甲兵（主超能·副生命）可唯一锁定 X</strong>：在 23 列权重矩阵中，1 号模组「楷模典范」覆盖右侧 11 列（X = 13…23 依次产出原型 2…12），12 号模组「装甲兵」覆盖左侧 11 列（X = 1…11 依次产出原型 1…11），中间 X = 11、12、13 三列由两者的 2 列补偿带交叉唯一区分。只需切换这两枚机灵模组各看一次，即可在全部 23 列中唯一锁定 X。</li>
+</ul>
+</section>
+<section class="block" id="sec-2">
+<h2 class="sect-label" data-b="2">12 种护甲原型与第三属性映射表</h2>
+<p data-b="2">Bungie 官方定义表（plugSet 445741600）中 6 项属性的内部顺序固定为：<strong>1. 武器、2. 生命、3. 手雷、4. 超能、5. 职业、6. 近战</strong>。任一护甲原型剔除自身的主属性（+30）与副属性（+25）后，余下 4 项属性保持原有顺序，依次对应 <strong>t.map = 1、2、3、4</strong>：</p>
+<table class="gen">
+<thead>
+<tr data-b="2">
+<th scope="col">序号</th>
+<th scope="col">护甲原型</th>
+<th scope="col">英文名</th>
+<th scope="col">主属性 (+30)</th>
+<th scope="col">副属性 (+25)</th>
+<th scope="col">t.map = 1 (+20)</th>
+<th scope="col">t.map = 2 (+20)</th>
+<th scope="col">t.map = 3 (+20)</th>
+<th scope="col">t.map = 4 (+20)</th>
+</tr>
+</thead>
+<tbody>
+<tr data-b="2"><th scope="row">1</th><td>楷模典范</td><td>Paragon</td><td>超能</td><td>近战</td><td>武器</td><td>生命</td><td>手雷</td><td>职业</td></tr>
+<tr><th scope="row">2</th><td>堡垒</td><td>Bulwark</td><td>生命</td><td>职业</td><td>武器</td><td>手雷</td><td>超能</td><td>近战</td></tr>
+<tr><th scope="row">3</th><td>掷雷手</td><td>Grenadier</td><td>手雷</td><td>超能</td><td>武器</td><td>生命</td><td>职业</td><td>近战</td></tr>
+<tr><th scope="row">4</th><td>搏击手</td><td>Brawler</td><td>近战</td><td>生命</td><td>武器</td><td>手雷</td><td>超能</td><td>职业</td></tr>
+<tr><th scope="row">5</th><td>枪手</td><td>Gunner</td><td>武器</td><td>手雷</td><td>生命</td><td>超能</td><td>职业</td><td>近战</td></tr>
+<tr><th scope="row">6</th><td>专家</td><td>Specialist</td><td>职业</td><td>武器</td><td>生命</td><td>手雷</td><td>超能</td><td>近战</td></tr>
+<tr><th scope="row">7</th><td>掠夺者</td><td>Reaver</td><td>职业</td><td>近战</td><td>武器</td><td>生命</td><td>手雷</td><td>超能</td></tr>
+<tr><th scope="row">8</th><td>突围者</td><td>Siegebreaker</td><td>生命</td><td>手雷</td><td>武器</td><td>超能</td><td>职业</td><td>近战</td></tr>
+<tr><th scope="row">9</th><td>爆破专家</td><td>Demolitionist</td><td>手雷</td><td>职业</td><td>武器</td><td>生命</td><td>超能</td><td>近战</td></tr>
+<tr><th scope="row">10</th><td>突击手</td><td>Skirmisher</td><td>近战</td><td>武器</td><td>生命</td><td>手雷</td><td>超能</td><td>职业</td></tr>
+<tr><th scope="row">11</th><td>高能者</td><td>Powerhouse</td><td>武器</td><td>超能</td><td>生命</td><td>手雷</td><td>职业</td><td>近战</td></tr>
+<tr><th scope="row">12</th><td>装甲兵</td><td>Colossus</td><td>超能</td><td>生命</td><td>武器</td><td>手雷</td><td>职业</td><td>近战</td></tr>
+</tbody>
+</table>
+<p data-b="13">实测推算示例（以仄出售的<span class="exotic">陨星胸甲</span>为例）：</p>
+<ul>
+<li data-b="2">机灵装备 <strong>1. 楷模典范</strong> 模组查看护甲，显示 <strong>4. 搏击手（+30 近战 / +25 生命）</strong>，第三属性为 <strong>+20 手雷</strong>。查上表第 4 行「搏击手」可知：手雷位于 <strong>t.map = 2</strong>。</li>
+<li data-b="1">机灵改插 <strong>12. 装甲兵</strong> 模组查看护甲，显示 <strong>12. 装甲兵（+30 超能 / +25 生命）</strong>。由楷模读数 4、装甲兵读数 12，查下方双读表得 <strong>X = 15</strong>（对应无模组 <strong>Y = 8 突围者</strong>）。</li>
+<li data-b="1">锁定 <strong>X = 15、t.map = 2</strong> 后，若想刷取 <strong>5. 枪手（+30 武器 / +25 手雷）</strong>，查 X = 15 列可知装备「枪手」机灵模组必出枪手原型，且第三属性为第 5 行 t.map = 2 对应的 <strong>+20 超能</strong>。</li>
+</ul>
+</section>
+<section class="block" id="sec-3">
+<h2 class="sect-label" data-b="2">双读快速反查表（楷模典范 + 装甲兵 → X 与 Y）</h2>
+<p data-b="2">依次记录机灵装备「1. 楷模典范」与「12. 装甲兵」时护甲显示的原型，按下表直接定位底层列号 X（1 至 23）及无模组原型 Y（1 至 12）：</p>
+<table class="gen">
+<thead>
+<tr data-b="2">
+<th scope="col">底层列 X</th>
+<th scope="col">楷模典范模组产出</th>
+<th scope="col">装甲兵模组产出</th>
+<th scope="col">对应无模组原型 Y</th>
+<th scope="col">机灵聚焦命中区间（必出所选模组原型）</th>
+</tr>
+</thead>
+<tbody>
+<tr data-b="2"><th scope="row">X = 1</th><td>1. 楷模典范</td><td>1. 楷模典范</td><td>1. 楷模典范</td><td>仅 1. 楷模典范</td></tr>
+<tr><th scope="row">X = 2</th><td>1. 楷模典范</td><td>2. 堡垒</td><td>1. 楷模典范 / 2. 堡垒</td><td>1. 楷模典范 ～ 2. 堡垒</td></tr>
+<tr><th scope="row">X = 3</th><td>1. 楷模典范</td><td>3. 掷雷手</td><td>2. 堡垒</td><td>1. 楷模典范 ～ 3. 掷雷手</td></tr>
+<tr><th scope="row">X = 4</th><td>1. 楷模典范</td><td>4. 搏击手</td><td>2. 堡垒 / 3. 掷雷手</td><td>1. 楷模典范 ～ 4. 搏击手</td></tr>
+<tr><th scope="row">X = 5</th><td>1. 楷模典范</td><td>5. 枪手</td><td>3. 掷雷手</td><td>1. 楷模典范 ～ 5. 枪手</td></tr>
+<tr><th scope="row">X = 6</th><td>1. 楷模典范</td><td>6. 专家</td><td>3. 掷雷手 / 4. 搏击手</td><td>1. 楷模典范 ～ 6. 专家</td></tr>
+<tr><th scope="row">X = 7</th><td>1. 楷模典范</td><td>7. 掠夺者</td><td>4. 搏击手</td><td>1. 楷模典范 ～ 7. 掠夺者</td></tr>
+<tr><th scope="row">X = 8</th><td>1. 楷模典范</td><td>8. 突围者</td><td>4. 搏击手 / 5. 枪手</td><td>1. 楷模典范 ～ 8. 突围者</td></tr>
+<tr><th scope="row">X = 9</th><td>1. 楷模典范</td><td>9. 爆破专家</td><td>5. 枪手</td><td>1. 楷模典范 ～ 9. 爆破专家</td></tr>
+<tr><th scope="row">X = 10</th><td>1. 楷模典范</td><td>10. 突击手</td><td>5. 枪手 / 6. 专家</td><td>1. 楷模典范 ～ 10. 突击手</td></tr>
+<tr><th scope="row">X = 11</th><td>1. 楷模典范</td><td>11. 高能者</td><td>6. 专家</td><td>1. 楷模典范 ～ 11. 高能者</td></tr>
+<tr><th scope="row">X = 12</th><td>2. 堡垒</td><td>11. 高能者</td><td>6. 专家 / 7. 掠夺者</td><td>2. 堡垒 ～ 11. 高能者</td></tr>
+<tr><th scope="row">X = 13</th><td>2. 堡垒</td><td>12. 装甲兵</td><td>7. 掠夺者</td><td>2. 堡垒 ～ 12. 装甲兵</td></tr>
+<tr><th scope="row">X = 14</th><td>3. 掷雷手</td><td>12. 装甲兵</td><td>7. 掠夺者 / 8. 突围者</td><td>3. 掷雷手 ～ 12. 装甲兵</td></tr>
+<tr><th scope="row">X = 15</th><td>4. 搏击手</td><td>12. 装甲兵</td><td>8. 突围者</td><td>4. 搏击手 ～ 12. 装甲兵</td></tr>
+<tr><th scope="row">X = 16</th><td>5. 枪手</td><td>12. 装甲兵</td><td>8. 突围者 / 9. 爆破专家</td><td>5. 枪手 ～ 12. 装甲兵</td></tr>
+<tr><th scope="row">X = 17</th><td>6. 专家</td><td>12. 装甲兵</td><td>9. 爆破专家</td><td>6. 专家 ～ 12. 装甲兵</td></tr>
+<tr><th scope="row">X = 18</th><td>7. 掠夺者</td><td>12. 装甲兵</td><td>9. 爆破专家 / 10. 突击手</td><td>7. 掠夺者 ～ 12. 装甲兵</td></tr>
+<tr><th scope="row">X = 19</th><td>8. 突围者</td><td>12. 装甲兵</td><td>10. 突击手</td><td>8. 突围者 ～ 12. 装甲兵</td></tr>
+<tr><th scope="row">X = 20</th><td>9. 爆破专家</td><td>12. 装甲兵</td><td>10. 突击手 / 11. 高能者</td><td>9. 爆破专家 ～ 12. 装甲兵</td></tr>
+<tr><th scope="row">X = 21</th><td>10. 突击手</td><td>12. 装甲兵</td><td>11. 高能者</td><td>10. 突击手 ～ 12. 装甲兵</td></tr>
+<tr><th scope="row">X = 22</th><td>11. 高能者</td><td>12. 装甲兵</td><td>11. 高能者 / 12. 装甲兵</td><td>11. 高能者 ～ 12. 装甲兵</td></tr>
+<tr><th scope="row">X = 23</th><td>12. 装甲兵</td><td>12. 装甲兵</td><td>12. 装甲兵</td><td>仅 12. 装甲兵</td></tr>
+</tbody>
+</table>
+</section>
+<section class="block" id="sec-4">
+<h2 class="sect-label" data-b="24">23 列机灵模组权重矩阵（XMap 全表）</h2>
+<p data-b="2">下表列出底层随机数落在第 1 至 23 列（X = 1…23）时，12 种机灵护甲模组各自产出的原型编号（1 至 12）。对于第 2 至 11 号机灵模组 g，该模组将自身原型 g 的命中宽度扩充为连续 12 列（X = g 至 g + 11），占总权重 12/23 ≈ 52.2%；首尾的「1. 楷模典范」与「12. 装甲兵」占 11/23 ≈ 47.8%，并在紧邻处给隔壁原型留出 2 列宽的补偿带：</p>
+<table class="gen">
+<thead>
+<tr data-b="2">
+<th scope="col">机灵模组 ／ 列 X</th>
+<th scope="col">1</th>
+<th scope="col">2</th>
+<th scope="col">3</th>
+<th scope="col">4</th>
+<th scope="col">5</th>
+<th scope="col">6</th>
+<th scope="col">7</th>
+<th scope="col">8</th>
+<th scope="col">9</th>
+<th scope="col">10</th>
+<th scope="col">11</th>
+<th scope="col">12</th>
+<th scope="col">13</th>
+<th scope="col">14</th>
+<th scope="col">15</th>
+<th scope="col">16</th>
+<th scope="col">17</th>
+<th scope="col">18</th>
+<th scope="col">19</th>
+<th scope="col">20</th>
+<th scope="col">21</th>
+<th scope="col">22</th>
+<th scope="col">23</th>
+</tr>
+</thead>
+<tbody>
+<tr data-b="2"><th scope="row">1. 楷模典范</th><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>2</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td><td>11</td><td>12</td></tr>
+<tr><th scope="row">2. 堡垒</th><td>1</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td><td>11</td><td>12</td></tr>
+<tr><th scope="row">3. 掷雷手</th><td>1</td><td>2</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td><td>11</td><td>12</td></tr>
+<tr><th scope="row">4. 搏击手</th><td>1</td><td>2</td><td>3</td><td>4</td><td>4</td><td>4</td><td>4</td><td>4</td><td>4</td><td>4</td><td>4</td><td>4</td><td>4</td><td>4</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td><td>11</td><td>12</td></tr>
+<tr><th scope="row">5. 枪手</th><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>5</td><td>5</td><td>5</td><td>5</td><td>5</td><td>5</td><td>5</td><td>5</td><td>5</td><td>5</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td><td>11</td><td>12</td></tr>
+<tr><th scope="row">6. 专家</th><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>6</td><td>6</td><td>6</td><td>6</td><td>6</td><td>6</td><td>6</td><td>6</td><td>6</td><td>6</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td><td>11</td><td>12</td></tr>
+<tr><th scope="row">7. 掠夺者</th><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>7</td><td>7</td><td>7</td><td>7</td><td>7</td><td>7</td><td>7</td><td>7</td><td>7</td><td>7</td><td>7</td><td>8</td><td>9</td><td>10</td><td>11</td><td>12</td></tr>
+<tr><th scope="row">8. 突围者</th><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>8</td><td>8</td><td>8</td><td>8</td><td>8</td><td>8</td><td>8</td><td>8</td><td>8</td><td>8</td><td>8</td><td>9</td><td>10</td><td>11</td><td>12</td></tr>
+<tr><th scope="row">9. 爆破专家</th><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>9</td><td>9</td><td>9</td><td>9</td><td>9</td><td>9</td><td>9</td><td>9</td><td>9</td><td>9</td><td>9</td><td>10</td><td>11</td><td>12</td></tr>
+<tr><th scope="row">10. 突击手</th><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td><td>10</td><td>10</td><td>10</td><td>10</td><td>10</td><td>10</td><td>10</td><td>10</td><td>10</td><td>10</td><td>10</td><td>11</td><td>12</td></tr>
+<tr><th scope="row">11. 高能者</th><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td><td>11</td><td>11</td><td>11</td><td>11</td><td>11</td><td>11</td><td>11</td><td>11</td><td>11</td><td>11</td><td>11</td><td>11</td><td>12</td></tr>
+<tr><th scope="row">12. 装甲兵</th><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td><td>11</td><td>11</td><td>12</td><td>12</td><td>12</td><td>12</td><td>12</td><td>12</td><td>12</td><td>12</td><td>12</td><td>12</td><td>12</td></tr>
+</tbody>
+</table>
+</section>
+</main>
+
+<footer class="site-foot">
+<p><span class="stamp">更新 2026.10.20</span>本页算法基于 odo 对护甲 3.0 商人随机种子与插槽池（plugSet 1315181101 / 445741600）的逆向验证整理。</p>
+<p>数据源：<a href="https://docs.google.com/document/d/1VEeceUp5gqbFO2E-XfpnFPL8gvhTPom5_8hMFkUI1iI/preview" target="_blank" rel="noopener">Reverse Engineering Armor3 Rolls</a>。本站统一了简体中文译名、术语着色与版式。</p>
+<p>特别鸣谢：odo</p>
+<p>© 2026 日栎w · <a href="https://space.bilibili.com/26117485" target="_blank" rel="noopener">哔哩哔哩</a></p>
+<p class="legal">Starside 为非官方资料站，与 Bungie, Inc. 无从属关系。Destiny 2 及相关名称、标识为 Bungie, Inc. 的商标。</p>
+<p class="legal">ICP备案/许可证号：<a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">鲁ICP备2026052166号-1</a> <a class="beian" href="https://beian.mps.gov.cn/#/query/webSearch?code=37010202700801" target="_blank" rel="noreferrer">鲁公网安备37010202700801号</a></p>
+</footer>
+<script type="speculationrules">{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}</script>
+<script>(function(){var d=new Date(Date.now()+288e5).toISOString().slice(0,10);var o=document.getElementById("sv"),f=1;try{f=localStorage.getItem("svd")===d?0:1;if(f)localStorage.setItem("svd",d)}catch(_){}if(!f){if(!o)return;try{var c=localStorage.getItem("svt")||"",i=c.indexOf("|"),a=Date.now()-c.slice(0,i);if(i>0&&a>=0&&a<6e5){o.textContent=c.slice(i+1);return}}catch(_){}}var r=f?fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api",{method:"POST",body:JSON.stringify({a:"hit",s:o?1:0})}):fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api?a=stats");r.then(function(x){return x.json()}).then(function(s){if(o){var t="今日 "+s.today+" 位访客 · 累计 "+s.total;o.textContent=t;try{localStorage.setItem("svt",Date.now()+"|"+t)}catch(_){}}},function(x){if(o)o.textContent="访客统计暂不可用："+x})})()</script>
+<script>try{if(localStorage.sa_at&&document.querySelector("main[data-src]")){var l=document.querySelector('link[href$="assets/site.css"]');if(l)import(l.href.replace("assets/site.css","admin/edit.js"))}}catch(_){}</script>
+<script>(function(){if(!/\.tcloudbase(app)?\.com$/.test(location.hostname))return;var u="https://starside.work"+location.pathname+location.search+location.hash;document.title="【测试地址】"+document.title;function link(t,big){var a=document.createElement("a");a.href=u;a.textContent=t;a.style.cssText=big?"padding:.7em 1.6em;border:1px solid var(--accent);border-radius:2px;color:var(--accent);text-decoration:none;font-size:16px":"color:var(--accent);white-space:nowrap";return a}var bar=document.createElement("div");bar.style.cssText="position:fixed;left:0;right:0;bottom:0;z-index:99;display:flex;flex-wrap:wrap;gap:.2em 1em;align-items:center;justify-content:center;padding:.55em 1em;background-color:var(--ink-lift);border-top:1px solid var(--hair-lit);color:var(--bone);font:13px/1.7 var(--font-cn)";bar.append("当前为测试域名，正式站点位于 starside.work ",link("前往正式站"));var box=document.createElement("div");box.style.cssText="position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;gap:1.4em;align-items:center;justify-content:center;padding:2em;text-align:center;background-color:var(--ink);color:var(--bone);font:15px/1.9 var(--font-cn)";var say=document.createElement("p");say.textContent="当前访问的是测试域名。请前往正式地址 starside.work 并更新书签。";say.style.cssText="margin:0;max-width:32em";var stay=document.createElement("button");stay.type="button";stay.disabled=true;stay.style.cssText="background:none;border:0;color:var(--bone-faint);font:13px/1.7 var(--font-cn);cursor:pointer";var n=5;stay.textContent="继续访问测试域名（"+n+"）";var t=setInterval(function(){n--;stay.textContent="继续访问测试域名"+(n?"（"+n+"）":"");if(!n){clearInterval(t);stay.disabled=false}},1000);stay.onclick=function(){box.remove();document.body.appendChild(bar)};box.append(say,link("前往 starside.work",1),stay);document.body.appendChild(box)})()</script>
+</body>
+</html>
