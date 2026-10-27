@@ -224,6 +224,15 @@
   position: absolute;
   inset: 0 0 64px;
   transform-style: preserve-3d;
+  cursor: grab;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.rota-stage.is-dragging,
+.rota-stage.is-dragging .rota-card {
+  cursor: grabbing;
 }
 
 .rota-card {
@@ -248,9 +257,9 @@
 /* 行内样式里的 opacity 与 filter 压过一切，所以 hover 的反馈只能落在边框上 */
 .rota-card:hover { border-color: var(--hair-lit); }
 
-/* 中间那张：已经在位，点它没有去处 */
+/* 中间那张：已经在位，按住它可上下拖转滚轴 */
 .rota-card.is-mid {
-  cursor: default;
+  cursor: grab;
   border-color: var(--hair-lit);
   box-shadow: inset 0 1px 0 #ffffff0d;
 }
@@ -337,7 +346,7 @@
 /* 中间那张是正在看的那一周，地牢那组再抬一档到最亮（突袭那组本就是暖亮色） */
 .rota-card.is-mid .rota-group[data-kind="dungeon"] .rota-pill { color: var(--bone-hi); }
 
-/* 三枚切换 chip：这一页只认点击，滚轮与拖拽都不接（理由见 app.js 的 rota()） */
+/* 三枚切换 chip：除按住舞台上下拖与点击卡片外，底部按钮也可一步切周 */
 .rota-btns {
   position: absolute;
   left: 0;

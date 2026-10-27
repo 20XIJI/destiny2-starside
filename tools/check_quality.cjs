@@ -2607,6 +2607,93 @@ test('armor-rng: manifest plugSet alignment, 23-column bijection, and Cuirass em
   }
 })
 
+test('rota: pointer drag tracks continuously and snaps with momentum on release', () => {
+  const src = fs.readFileSync(path.join(site, 'assets/rota.js'), 'utf8')
+    .replace('export default function init', 'function init')
+  let now = 1000
+  const stageListeners = {}
+  const boxListeners = {}
+  const cards = []
+  const stage = {
+    classes: new Set(),
+    classList: {
+      add(c) { stage.classes.add(c) },
+      remove(c) { stage.classes.delete(c) },
+    },
+    appendChild(el) { cards.push(el) },
+    setPointerCapture() {},
+    addEventListener(type, fn) { stageListeners[type] = fn },
+  }
+  const box = {
+    className: '',
+    innerHTML: '',
+    querySelector(sel) { return sel === '.rota-stage' ? stage : null },
+    addEventListener(type, fn) { boxListeners[type] = fn },
+  }
+  const table = {
+    dataset: { rota: '2026.1.7 1:00' },
+    parentNode: { insertBefore() {} },
+    querySelectorAll(sel) {
+      if (sel === 'tbody tr') {
+        return ['玻璃拱顶', '最后一愿', '深石地窖', '门徒誓约', '国王的陨落', '克洛塔的末日', '救赎的边缘', '救赎花园']
+          .map((r, i) => ({ children: [{ textContent: String(i + 1) }, { textContent: r }, { textContent: '地牢' + (i + 1) }] }))
+      }
+      if (sel === 'thead th') {
+        return [{ textContent: '#' }, { textContent: '突袭' }, { textContent: '地牢' }]
+      }
+      return []
+    },
+  }
+  const ctx = {
+    Date,
+    Math,
+    Number,
+    Object,
+    Infinity,
+    performance: { now: () => now },
+    matchMedia: () => ({ matches: true }),
+    requestAnimationFrame() {},
+    document: {
+      querySelectorAll: () => [],
+      createElement(tag) {
+        if (box.className === '') return box
+        const classes = new Set()
+        return {
+          tag,
+          className: '',
+          innerHTML: '',
+          hidden: false,
+          style: {},
+          classList: {
+            toggle(c, on) { if (on) classes.add(c); else classes.delete(c) },
+            has(c) { return classes.has(c) },
+          },
+          getBoundingClientRect() { return { left: 0, right: 720, top: 189, bottom: 329 } },
+          remove() { const idx = cards.indexOf(this); if (idx >= 0) cards.splice(idx, 1) },
+        }
+      },
+    },
+  }
+  vm.runInNewContext(src, ctx)
+  ctx.init(table, { tuck() {} })
+
+  const midCard = () => cards.find((c) => c.classList.has('is-mid'))
+  const initialMid = midCard()
+  assert.ok(initialMid, '初始应有一张居中卡片')
+
+  // 按住向上拖 150px（约 1 周间距 PITCH）：拖过 5px 进入 is-dragging，松手吸附到下一周
+  stageListeners.pointerdown({ button: 0, pointerId: 1, clientX: 360, clientY: 250 })
+  now += 16
+  stageListeners.pointermove({ pointerId: 1, clientX: 360, clientY: 240 })
+  assert.equal(stage.classes.has('is-dragging'), true, '超过 5px 应进入拖拽态')
+  now += 80
+  stageListeners.pointermove({ pointerId: 1, clientX: 360, clientY: 100 })
+  stageListeners.pointerup({ pointerId: 1, clientX: 360, clientY: 100 })
+  assert.equal(stage.classes.has('is-dragging'), false, '松手后应退出拖拽态')
+  const afterDragMid = midCard()
+  assert.notEqual(afterDragMid.innerHTML, initialMid.innerHTML, '向上拖过一周距离后居中卡片应切换到下一周')
+})
+
 async function main() {
   let failures = 0
   for (const [name, fn] of tests) {

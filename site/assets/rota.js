@@ -12,17 +12,18 @@ export default function init(table, deps) {
   /* 周常轮换轴（.gen 带 data-rota 的表）：**顺序只有表里那一份**，轮盘从表里现读，
      画完把表收起，与折线图同一条约定——无 JS 时表就是页面本体。
 
-     滚轮与拖拽都不接，只认点击：这一段嵌在一页可滚动的长文里，接了滚轮就会在读者
-     往下滚页面时把轮盘转走，页面反而不动。五张卡片点哪张，哪张就转到中间。
+     不接鼠标滚轮，接按住拖拽与点击：这一段嵌在一页可滚动的长文里，接了滚轮就会在读者
+     往下滚页面时把轮盘转走，页面反而不动；而在舞台上按住上下拖（鼠标或触屏）是明确的
+     拨轮盘意图，实时跟手，松手后按脱手速度惯性吸附到整周，点任意卡片也转到中间。
 
-     **位置是连续量，不是三档。**每帧把当前位置往目标位置收一段（指数逼近），卡片
+     **位置是连续量，不是三档。**每帧把当前位置往目标位置收一段，卡片
      按分数距离摆——转起来是一根滚轴匀速滚过去，中途的虚化、明暗、缩放都在插值。
      按整步跳、靠 CSS transition 补间那一版会在跨两周时露出「两段各自缓动」的接缝，
      新进场的卡片也只能凭空出现。 */
   var MS_WEEK = 604800000, MS_DAY = 86400000;
   /* 圆柱：每张之间 27°，半径 330px。相邻两张的纵向间距是 sin27°×330 ≈ 150px，
      压过卡片自身的高度（140px），卡片因此不叠在一起。 */
-  var STEP = 27, R = 330, WIN = 3;
+  var STEP = 27, R = 330, WIN = 3, PITCH = Math.sin(STEP * Math.PI / 180) * R;
   /* 一次转动的时长：起步 300ms，每多跨一周加 90ms，最长 520ms。指数逼近那种写法
      （每帧往目标收 16%）尾巴上会拖出一秒多的亚像素爬行，读起来像没停稳。 */
   var SPIN = { base: 300, per: 90, max: 520 };
@@ -119,6 +120,7 @@ export default function init(table, deps) {
     /* 定时长 + 三次缓出：起步快、收尾稳，走完就停。转动中再点一张，从当前位置
        重新起算，不排队也不叠加。 */
     function frame(now) {
+      if (!running) return;
       var p = Math.min(1, (now - t1) / span);
       cur = from + (aim - from) * (1 - Math.pow(1 - p, 3));
       draw();
@@ -129,8 +131,9 @@ export default function init(table, deps) {
     /* 减少动态效果：直接落终态。CSS 那边禁 transition/animation 挡不住这里，
        place() 是逐帧写 inline 的 transform／filter／opacity。 */
     function go(i) {
-      if (i === aim) return;
+      if (i === aim && cur === aim) return;
       if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        running = false;
         from = cur = aim = i;
         draw();
         return;
@@ -146,19 +149,85 @@ export default function init(table, deps) {
        子元素，Chrome 会按未变换的平面判命中，除中间那张外全部落到 .rota-stage 上。
        getBoundingClientRect() 给的是变换后的投影框，按它认反而准。
        几张在投影上重叠时取离中间最近的那张——上面那张压着下面那张的边。 */
-    box.addEventListener('click', function (e) {
-      var btn = e.target.closest('[data-go]');
-      if (btn) { go(btn.dataset.go === '0' ? here : Math.round(aim) + +btn.dataset.go); return; }
+    function hitCard(x, y) {
       var best = null, near = Infinity;
       Object.keys(pool).forEach(function (k) {
         var el = pool[k];
         if (el.hidden) return;
         var r = el.getBoundingClientRect();
-        if (e.clientX < r.left || e.clientX > r.right
-          || e.clientY < r.top || e.clientY > r.bottom) return;
-        var d = Math.abs(+k - aim);
+        if (x < r.left || x > r.right || y < r.top || y > r.bottom) return;
+        var d = Math.abs(+k - cur);
         if (d < near) { near = d; best = +k; }
       });
+      return best;
+    }
+
+    /* 舞台按住上下拖拽：位移 > 5px 进入跟手转动（往下拉看上周、往上推看下周，
+       1 周 ≈ PITCH 150px），松手按最近 100ms 内的脱手速度外推并吸附到整周；
+       位移 ≤ 5px 视为点击卡片。 */
+    var drag = null, suppressClick = false;
+    stage.addEventListener('pointerdown', function (e) {
+      if (e.button && e.button !== 0) return;
+      drag = {
+        id: e.pointerId,
+        y0: e.clientY,
+        cur0: cur,
+        moved: false,
+        pts: [{ y: e.clientY, t: performance.now() }]
+      };
+      if (stage.setPointerCapture) stage.setPointerCapture(e.pointerId);
+    });
+
+    stage.addEventListener('pointermove', function (e) {
+      if (!drag || e.pointerId !== drag.id) return;
+      var dy = e.clientY - drag.y0;
+      if (!drag.moved && Math.abs(dy) > 5) {
+        drag.moved = true;
+        running = false;
+        stage.classList.add('is-dragging');
+      }
+      if (!drag.moved) return;
+      var now = performance.now();
+      drag.pts.push({ y: e.clientY, t: now });
+      while (drag.pts.length > 2 && now - drag.pts[0].t > 100) drag.pts.shift();
+      cur = aim = from = drag.cur0 - dy / PITCH;
+      draw();
+    });
+
+    function endDrag(e, cancel) {
+      if (!drag || e.pointerId !== drag.id) return;
+      var d = drag;
+      drag = null;
+      stage.classList.remove('is-dragging');
+      if (!d.moved) {
+        if (!cancel) {
+          var hit = hitCard(e.clientX, e.clientY);
+          if (hit !== null) {
+            suppressClick = true;
+            go(hit);
+          }
+        }
+        return;
+      }
+      suppressClick = true;
+      var now = performance.now();
+      while (d.pts.length > 1 && now - d.pts[0].t > 120) d.pts.shift();
+      var p0 = d.pts[0], p1 = d.pts[d.pts.length - 1];
+      var dt = p1.t - p0.t;
+      var vy = (!cancel && dt > 8) ? (p1.y - p0.y) / dt : 0;
+      var fling = Math.max(-4, Math.min(4, -(vy * 220) / PITCH));
+      go(Math.round(cur + fling));
+    }
+
+    stage.addEventListener('pointerup', function (e) { endDrag(e, false); });
+    stage.addEventListener('pointercancel', function (e) { endDrag(e, true); });
+    stage.addEventListener('lostpointercapture', function (e) { endDrag(e, false); });
+
+    box.addEventListener('click', function (e) {
+      if (suppressClick) { suppressClick = false; return; }
+      var btn = e.target.closest('[data-go]');
+      if (btn) { go(btn.dataset.go === '0' ? here : Math.round(aim) + +btn.dataset.go); return; }
+      var best = hitCard(e.clientX, e.clientY);
       if (best !== null) go(best);
     });
     draw();
