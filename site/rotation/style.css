@@ -336,8 +336,8 @@
 .rota-card:hover .rota-dial { border-color: var(--hair-lit); }
 
 .rota-card.is-mid .rota-dial {
-  border-color: var(--hair-lit);
-  box-shadow: inset 3px 0 0 var(--bone-faint), inset 0 1px 0 #ffffff0d;
+  border-color: var(--bone-faint);
+  box-shadow: inset 0 1px 0 #ffffff12;
 }
 
 .rota-card.is-mid .rota-dial::after {
@@ -345,8 +345,11 @@
 }
 
 .rota-card.is-now.is-mid .rota-dial {
-  border-color: var(--bone-faint);
-  box-shadow: inset 3px 0 0 var(--accent), inset 0 1px 0 #ffffff0d;
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+  background:
+    radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%),
+    linear-gradient(180deg, var(--panel-a), var(--panel-b));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
 .rota-card.is-now.is-mid .rota-dial::after {
@@ -424,22 +427,20 @@
   border-left: 1px solid var(--hair);
 }
 
-/* 副本宽幅小海报（约 188×80px）：整块展示场景原画，左下角渐变托底放徽章与副本名 */
+/* 副本宽幅小海报（约 206×80px）：无全幅暗黑蒙版，直接呈现原画与左下角徽章+副本名 */
 .rota-pill {
   flex: 1;
   min-width: 0;
   display: flex;
   align-items: flex-end;
-  padding: 9px 11px;
+  padding: 9px 12px;
   border-radius: 8px;
   background-color: #0b0d14;
-  background-image:
-    linear-gradient(180deg, #090b1126 0%, #090b1180 46%, #090b11eb 100%),
-    var(--bg, none);
+  background-image: var(--bg, none);
   background-size: cover;
   background-position: center 28%;
-  border: 1px solid #ffffff14;
-  border-left: 2px solid currentColor;
+  background-repeat: no-repeat;
+  box-shadow: inset 0 0 0 1px #ffffff18;
   color: var(--bone);
   font-family: var(--font-cn);
   font-size: 14.5px;
@@ -450,11 +451,7 @@
 }
 
 .rota-card.is-mid .rota-pill {
-  background-image:
-    linear-gradient(180deg, #090b110d 0%, #090b1166 44%, #090b11e0 100%),
-    var(--bg, none);
-  border-color: #ffffff24;
-  border-left-color: currentColor;
+  box-shadow: inset 0 0 0 1px #ffffff29, inset 0 1px 0 #ffffff1a;
 }
 
 .rota-cap {
@@ -469,8 +466,8 @@
   width: 20px;
   height: 20px;
   object-fit: contain;
-  opacity: .9;
-  filter: drop-shadow(0 1px 2px #000000d9);
+  opacity: .92;
+  filter: drop-shadow(0 1px 3px #000000f2) drop-shadow(0 0 6px #000000cc);
   pointer-events: none;
 }
 
@@ -480,7 +477,7 @@
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  text-shadow: 0 1px 3px #000000f2;
+  text-shadow: 0 1px 3px #000000fc, 0 0 8px #000000d9;
 }
 
 .rota-group[data-kind="raid"] .rota-pill { color: var(--c-term); }

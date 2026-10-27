@@ -40,14 +40,14 @@ export default function init(table, deps) {
     '救赎的边缘': ['0c0db34c1c', '../raid-guides/icons/61c6576365.webp'],
     '破碎王座': ['00ab7fe800', 'icons/f8e267b043.webp'],
     '异端深渊': ['9214e0910b', 'icons/7118a61fdd.webp'],
-    '预言': ['5ee82307b3', 'icons/24e4aed440.webp'],
+    '预言': ['e9dff45136', 'icons/24e4aed440.webp'],
     '贪婪之握': ['c4510de46d', 'icons/34a0554bb7.webp'],
-    '二象性': ['db9150ea76', 'icons/f9d5856d03.webp'],
-    '守望者尖塔': ['8bb6caa792', 'icons/dcfaa7277e.webp'],
-    '深渊机灵': ['0089811166', 'icons/b4f0f143f1.webp'],
-    '战争领主的废墟': ['919cba410f', 'icons/0bf21127d1.webp'],
-    '晚星之主': ['62e7578741', 'icons/e3282bc3b3.webp'],
-    '分离教义': ['51caec5e35', 'icons/4153b19cf3.webp']
+    '二象性': ['3fa872c35b', 'icons/f9d5856d03.webp'],
+    '守望者尖塔': ['1b0cdbee38', 'icons/dcfaa7277e.webp'],
+    '深渊机灵': ['1737ba2584', 'icons/b4f0f143f1.webp'],
+    '战争领主的废墟': ['56ba6f109c', 'icons/0bf21127d1.webp'],
+    '晚星之主': ['9fa7dd1645', 'icons/e3282bc3b3.webp'],
+    '分离教义': ['a1fbe13ded', 'icons/4153b19cf3.webp']
   };
 
   function rota(table) {
