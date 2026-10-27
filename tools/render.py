@@ -34,11 +34,16 @@ AUTHORS = (('Aegis', 'Aegis', 'aegis_tier', 'by-a'),
            ('LGpig', '小棒猪', 'lgpig_tier', 'by-l'))
 
 # 作者自己的字段：源表的英文表头在页面上写中文
-AU_LABEL = {'dps': 'DPS', 'total_damage': '总伤', 'swap_dps': '切换 DPS', 'notes': '备注'}
+AU_LABEL = {'dps': 'DPS', 'total_damage': '总伤', 'swap_dps': '切换 DPS',
+            'switch_dps': '切换 DPS', 'notes': '备注'}
+
+# 理由一二三：物品记录用英文字段名，自发主键沿用源表的中文列名
+AU_PARAS = ('explanation_1', 'explanation_2', 'explanation_3',
+            '理由一', '理由二', '理由三')
 
 # 这些键不是「作者写的一格」：推荐词条各有自己的栏，评级与评语另画
-AU_SKIP = ('role', 'name', 'realgame_details', 'barrel', 'magazine', 'perk1', 'perk2',
-           'origin', 'masterwork')
+AU_SKIP = ('role', '定位', '评级', '评级理由', 'name', 'realgame_details',
+           'barrel', 'magazine', 'perk1', 'perk2', 'origin', 'masterwork')
 
 IMG = re.compile(r'!\[\]\(([^)]+)\)')
 
@@ -371,21 +376,24 @@ def au_spot(p, key, who, k):
 
 def author_fields(p, a, key, who):
     got = [(k, v) for k, v in sorted(a.items())
-           if v and not k.startswith(('explanation_', 'aegis_', 'lgpig_')) and k not in AU_SKIP]
+           if v and not k.startswith(('explanation_', 'aegis_', 'lgpig_'))
+           and k not in AU_PARAS and k not in AU_SKIP]
     return ('<div class="f-row">%s</div>' % ''.join(
-        '<span class="f-k">%s</span><b class="f-v"%s>%s</b>'
+        '<div class="f-item"><span class="f-k">%s</span><b class="f-v"%s>%s</b></div>'
         % (html.escape(str(AU_LABEL.get(k) or k)), p.mark(au_spot(p, key, who, k)),
            p.line(str(v)).replace('<br>', '、').replace('、/', ' / '))
         for k, v in got)) if got else ''
 
 
-def author_paras(p, a, key, who, paired=()):
+def author_paras(p, a, key, who, paired=(), role_k='role'):
     """理由一二三。带定位标签且条数相等时，一条标签配一条理由。"""
-    paras = [(k, a[k]) for k in sorted(a) if k.startswith('explanation_') and str(a[k]).strip()]
-    if who == 'LGpig' and a.get('lgpig_tier_explanation'):
-        paras.insert(0, ('lgpig_tier_explanation', a['lgpig_tier_explanation']))
+    paras = [(k, a[k]) for k in AU_PARAS if a.get(k) and str(a[k]).strip()]
+    if who == 'LGpig':
+        for tk in ('lgpig_tier_explanation', '评级理由'):
+            if a.get(tk) and str(a[tk]).strip():
+                paras.insert(0, (tk, a[tk]))
     if paired and len(paired) == len(paras):
-        role = p.mark(au_spot(p, key, who, 'role'))
+        role = p.mark(au_spot(p, key, who, role_k))
         # 正文包进一件 <b>：.why 是两栏 flex，不包的话正文里每个着色 span
         # 各自成了一个 flex item，一个词挤成一竖列。
         return ''.join('<p class="why"><b class="r-tag"%s>%s</b><b class="why-t"%s>%s</b></p>'
@@ -412,18 +420,21 @@ def author_rows(p, key, first=None):
         a = au.get(who)
         if not a:
             continue
-        tier = a.get(tier_key)
-        role = [x.strip() for x in (a.get('role') or '').split(BR) if x.strip()]
-        body = author_fields(p, a, key, who) + author_paras(p, a, key, who, role)
+        tier_k = tier_key if tier_key in a else ('评级' if '评级' in a else tier_key)
+        role_k = 'role' if 'role' in a else ('定位' if '定位' in a else 'role')
+        tier = a.get(tier_k)
+        role_raw = a.get(role_k)
+        role = [x.strip() for x in (role_raw or '').split(BR) if x.strip()]
+        body = author_fields(p, a, key, who) + author_paras(p, a, key, who, role, role_k)
         badge, tg = '', '' if 'class="why"' in body else tags(
-            p, a.get('role'), p.mark(au_spot(p, key, who, 'role')) if a.get('role') else '')
+            p, role_raw, p.mark(au_spot(p, key, who, role_k)) if role_raw else '')
         if tier and len(tier) <= 4:
             badge = '<span class="r-tier %s"%s>%s</span>' % (
-                cls, p.mark(au_spot(p, key, who, tier_key)), html.escape(tier))
+                cls, p.mark(au_spot(p, key, who, tier_k)), html.escape(tier))
         elif tier:
             # 评级写成一整句的（「T0\\输出：T1\\清怪：T1」）装不进徽标，单独一行
             tg = '<div class="r-tier-long"%s>%s</div>' % (
-                p.mark(au_spot(p, key, who, tier_key)), p.line(tier)) + tg
+                p.mark(au_spot(p, key, who, tier_k)), p.line(tier)) + tg
         if not (badge or tg or body):
             continue
         out.append(cell('r-mid x-au-who',
@@ -452,7 +463,7 @@ def panel_of(p, key):
     return out
 
 
-def rec_plain(p, key, cols, narrow=''):
+def rec_plain(p, key, cols, narrow='', fam='r-plain'):
     """效果、碎片、技能、星相、插件、套装效果：名称 | 说明 (| 数值) (| 来源)。"""
     z = p.zh(key)
     # 页面上显示的是哪一段就改哪一段；只有官方描述时改的是还没写的站内说明
@@ -462,6 +473,11 @@ def rec_plain(p, key, cols, narrow=''):
                       p.mark(p.spot(key, 'i18n/zh-CN/' + field, '说明')))
             + member_text(p, key) + enhanced(p, key) + by_types(p, key)
             + combos(p, key))
+    au = author_rows(p, key, 'LGpig')
+    if fam == 'r-exotic':
+        return ('<article class="rec r-exotic%s">%s%s%s</article>'
+                % (' has-au' if au else '', idcell(p, key, (), 'exo'),
+                   cell('r-txt r-perk', body), au))
     out = [idcell(p, key), cell('r-txt', body)]
     if 'st' in cols:
         out.append(cell('r-mid r-val', stats_of(p, key, mark=True)))
@@ -469,7 +485,6 @@ def rec_plain(p, key, cols, narrow=''):
         src = 'site_source' if z.get('site_source') else '来源'
         out.append(cell('r-mid r-val', p.line(z.get(src) or ''),
                         p.mark(p.spot(key, 'i18n/zh-CN/' + src, '来源')) if z.get(src) else ''))
-    au = author_rows(p, key, 'LGpig')
     return '<article class="rec r-plain r-c%d%s%s">%s%s</article>' % (
         len(cols), narrow, ' has-au' if au else '', ''.join(out), au)
 
@@ -742,11 +757,12 @@ def section_blocks(p, groups, section='', author='Aegis'):
     if rows.matrix(p.page):
         out.append(matrix(p, section))
     kinds = {kind(k) for k in keys}
-    # 一节里以哪种记录为主就用哪种列名：异域排行页每节混着一两条插件，
-    # 按「全等于异域」判会给 136 行异域配上「名称｜说明」那套列名。
+    # 一节里以哪种记录为主就用哪种列名：异域页整页都是异域（哪怕单节全是永劫教派或
+    # 职业物品之灵这类插件），一律按 r-exotic 排，跨节列宽与作者区才对齐。
     main_kind = max(kinds, key=lambda k: sum(1 for x in keys if kind(x) == k))
-    fam = ('r-exotic' if main_kind == 'exotic' else 'r-weapon' if main_kind == 'weapon'
-           else 'r-plain')
+    fam = ('r-exotic' if main_kind == 'exotic'
+           or p.page in ('exotic-weapon', 'exotic-weapons', 'exotic-armor', 'exotic-armors')
+           else 'r-weapon' if main_kind == 'weapon' else 'r-plain')
     cols, narrow = [], ''
     if fam == 'r-plain':
         vals = [markup.text_of(stats_of(p, k)) for k in keys]
@@ -773,5 +789,5 @@ def section_blocks(p, groups, section='', author='Aegis'):
             elif kd == 'weapon':
                 out.append(rec_weapon(p, k, i, author))
             else:
-                out.append(rec_plain(p, k, cols, narrow))
+                out.append(rec_plain(p, k, cols, narrow, fam))
     return ''.join(out)

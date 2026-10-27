@@ -1945,18 +1945,33 @@
       if (old) { old.remove(); }
       var r = m.getBoundingClientRect(), pts = [];
       m.querySelectorAll('.col').forEach(function (col) {
-        var ico = col.querySelector('.plug[aria-pressed="true"] .ico');
+        var btn = col.querySelector('.plug[aria-pressed="true"]');
+        var ico = btn && btn.querySelector('.ico');
         if (!ico) { return; }
         var q = ico.getBoundingClientRect();
-        pts.push([q.left - r.left + q.width / 2, q.top - r.top + q.height / 2]);
+        var bits = btn.classList.contains('by-al') ? 3 : btn.classList.contains('by-a') ? 1 : btn.classList.contains('by-l') ? 2 : 0;
+        pts.push([q.left - r.left + q.width / 2, q.top - r.top + q.height / 2, bits]);
       });
       if (pts.length < 2) { return; }
       var d = pts.map(function (p, k) { return (k ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join(' ');
+      var hi = [], dotBits = 0;
+      for (var k = 0; k < pts.length - 1; k++) {
+        var shared = pts[k][2] & pts[k + 1][2];
+        if (!shared) { continue; }
+        dotBits |= shared;
+        var stroke = shared === 3 ? 'url(#link-al)' : shared === 1 ? 'var(--au-aegis)' : 'var(--au-lgpig)';
+        hi.push('<line x1="' + pts[k][0].toFixed(1) + '" y1="' + pts[k][1].toFixed(1) + '" x2="' +
+          pts[k + 1][0].toFixed(1) + '" y2="' + pts[k + 1][1].toFixed(1) + '" style="stroke:' + stroke + ';stroke-opacity:.82" stroke-width="1.5"/>');
+      }
+      var defs = dotBits === 3 ? '<defs><linearGradient id="link-al" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="' +
+        Math.max(1, r.width).toFixed(1) + '" y2="0"><stop offset="0%" stop-color="var(--au-aegis)"/><stop offset="100%" stop-color="var(--au-lgpig)"/></linearGradient></defs>' : '';
+      var dotFill = dotBits === 3 ? 'url(#link-al)' : dotBits === 1 ? 'var(--au-aegis)' : dotBits === 2 ? 'var(--au-lgpig)' : 'var(--bone-hi)';
       var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
       svg.setAttribute('class', 'links');
       svg.setAttribute('aria-hidden', 'true');
-      svg.innerHTML = '<path d="' + d + '" fill="none" style="stroke:var(--bone);stroke-opacity:.38" stroke-dasharray="3 4"/>' +
-        (STILL ? '' : '<circle r="2" style="fill:var(--bone-hi)"><animateMotion dur="' + (pts.length * 1.1).toFixed(1) +
+      svg.innerHTML = defs + '<path d="' + d + '" fill="none" style="stroke:var(--bone);stroke-opacity:.38" stroke-dasharray="3 4"/>' +
+        hi.join('') +
+        (STILL ? '' : '<circle r="' + (dotBits ? '2.4' : '2') + '" style="fill:' + dotFill + '"><animateMotion dur="' + (pts.length * 1.1).toFixed(1) +
           's" repeatCount="indefinite" path="' + d + '"/></circle>');
       m.prepend(svg);
     }
@@ -2281,13 +2296,27 @@
       (roll.cat ? 'true' : 'false') + '">' + (roll.cat ? '已装上' : '装上') + '</button><div>' + effs + '</div></div></section>';
   }
 
+  function rangeFalloffSvg(m) {
+    if (!m || !m.ads) { return ''; }
+    var maxM = Math.max(45, m.ads * 1.45);
+    var hx = Math.max(4, Math.min(26, (m.hip / maxM) * 36)).toFixed(1);
+    var ax = m.ads > m.hip + 0.05 ? Math.max(+hx + 2.5, Math.min(31, (m.ads / maxM) * 36)).toFixed(1) : hx;
+    return '<svg class="falloff-svg" viewBox="0 0 36 11" aria-hidden="true">' +
+      '<path d="M0,2.5 L' + hx + ',2.5 L' + Math.min(35, +hx + 9).toFixed(1) + ',9.5 L36,9.5" fill="none" stroke="var(--bone-faint)" stroke-width="1" stroke-dasharray="1.5 1.5"/>' +
+      '<path d="M0,2.5 L' + ax + ',2.5 L35,9.5" fill="none" stroke="var(--bone-hi)" stroke-width="1.2"/>' +
+      '<circle cx="' + ax + '" cy="2.5" r="1.5" fill="var(--accent)"/></svg>';
+  }
   function statConv(i, res, x) {
     if (!SIDX) { return null; }
     var r = WR[i], ty = typeName(r), fr = frameOf(r)[0];
     if (x.name === '射程') {
       var z = res.byStat[SIDX['变焦']];
       var m = rangeMeters(ty, fr, x.value, z ? z.value : 0);
-      return m ? { text: fmtM(m.hip) + ' / ' + fmtM(m.ads) } : null;
+      return m ? {
+        text: fmtM(m.hip) + ' / ' + fmtM(m.ads),
+        svg: rangeFalloffSvg(m),
+        title: '腰射衰减 ' + fmtM(m.hip) + ' · 开镜衰减 ' + fmtM(m.ads)
+      } : null;
     }
     if (x.name === '填装速度') {
       var s = reloadSeconds(ty, V.am[r[W_AMMO]][0], x.value);
@@ -2306,7 +2335,7 @@
   }
   function statValueHtml(i, res, x) {
     var conv = statConv(i, res, x);
-    return (conv ? '<span class="conv"' + (conv.title ? ' title="' + esc(conv.title) + '"' : '') + '>' +
+    return (conv ? (conv.svg || '') + '<span class="conv"' + (conv.title ? ' title="' + esc(conv.title) + '"' : '') + '>' +
       conv.text + '</span><span class="sep">/</span>' : '') + x.value;
   }
   function statsPanel(i, res, ghost) {
@@ -2566,7 +2595,7 @@
       (ttk ? pvpItem('直击伤害', bodyN.toFixed(2), '', 'body') + pvpItem('精准伤害', critN.toFixed(2), '', 'crit') : '') +
       (v.rpm ? pvpItem('射速', String(Math.round(v.rpmEff))) : '') +
       (rm ? '<div class="pvp-stat-item pvp-range-row"><span class="pvp-stat-label">射程 <span class="pvp-sub">(' +
-        v.range.value + ')</span></span><span class="pvp-stat-value"><span class="pvp-range-hip">' + fmtM(rm.hip) +
+        v.range.value + ')</span></span><span class="pvp-stat-value">' + rangeFalloffSvg(rm) + '<span class="pvp-range-hip">' + fmtM(rm.hip) +
         '</span><span class="pvp-range-sep">/</span><span class="pvp-range-ads">' + fmtM(rm.ads) + '</span></span></div>' : '') +
       (rs != null ? '<div class="pvp-stat-item"><span class="pvp-stat-label">填装 <span class="pvp-sub">(' +
         v.reload.value + ')</span></span><span class="pvp-stat-value">' + fmtS(rs) + '</span></div>' : '') +
