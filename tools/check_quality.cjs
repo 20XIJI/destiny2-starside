@@ -2680,6 +2680,19 @@ test('rota: pointer drag tracks continuously and snaps with momentum on release'
   const midCard = () => cards.find((c) => c.classList.has('is-mid'))
   const initialMid = midCard()
   assert.ok(initialMid, '初始应有一张居中卡片')
+  assert.match(initialMid.innerHTML, /class="rota-ico"/)
+  assert.match(initialMid.innerHTML, /--bg:url\(/)
+
+  // 校验 ROTA_ART 中全部 9 突袭 + 10 地牢的小图标与场景底图在盘上都存在
+  const artMatch = src.match(/var ROTA_ART = (\{[\s\S]*?\});/)
+  assert.ok(artMatch, 'rota.js 应定义 ROTA_ART')
+  const artMap = vm.runInNewContext('(' + artMatch[1] + ')')
+  for (const [name, [ico, bg]] of Object.entries(artMap)) {
+    const icoPath = path.resolve(site, 'rotation', 'icons', ico + '.webp')
+    const bgPath = path.resolve(site, 'rotation', bg)
+    assert.ok(fs.existsSync(icoPath), `${name} 小图标不存在: ${icoPath}`)
+    assert.ok(fs.existsSync(bgPath), `${name} 场景底图不存在: ${bgPath}`)
+  }
 
   // 按住向上拖 150px（约 1 周间距 PITCH）：拖过 5px 进入 is-dragging，松手吸附到下一周
   stageListeners.pointerdown({ button: 0, pointerId: 1, clientX: 360, clientY: 250 })

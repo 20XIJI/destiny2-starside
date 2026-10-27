@@ -21,12 +21,34 @@ export default function init(table, deps) {
      按整步跳、靠 CSS transition 补间那一版会在跨两周时露出「两段各自缓动」的接缝，
      新进场的卡片也只能凭空出现。 */
   var MS_WEEK = 604800000, MS_DAY = 86400000;
-  /* 圆柱：每张之间 27°，半径 330px。相邻两张的纵向间距是 sin27°×330 ≈ 150px，
-     压过卡片自身的高度（140px），卡片因此不叠在一起。 */
-  var STEP = 27, R = 330, WIN = 3, PITCH = Math.sin(STEP * Math.PI / 180) * R;
+  /* 圆柱：每张之间 24°，半径 300px。相邻两张的纵向间距是 sin24°×300 ≈ 122px，
+     压过卡片自身的高度（104px），卡片因此不叠在一起。 */
+  var STEP = 24, R = 300, WIN = 3, PITCH = Math.sin(STEP * Math.PI / 180) * R;
   /* 一次转动的时长：起步 300ms，每多跨一周加 90ms，最长 520ms。指数逼近那种写法
      （每帧往目标收 16%）尾巴上会拖出一秒多的亚像素爬行，读起来像没停稳。 */
   var SPIN = { base: 300, per: 90, max: 520 };
+  /* 9 突袭 + 10 地牢的徽章小图标（icons/<md5>.webp）与场景底图 */
+  var ROTA_ART = {
+    '最后一愿': ['98c8ef41c9', '../raid-guides/icons/576f5ee84c.webp'],
+    '救赎花园': ['d287b3dc33', '../raid-guides/icons/b0d8e4a22d.webp'],
+    '深岩墓室': ['068796ce27', '../raid-guides/icons/cdfa999a61.webp'],
+    '玻璃拱顶': ['32e9ee0e2f', '../raid-guides/icons/8bd947ebbb.webp'],
+    '门徒誓约': ['189d589701', '../raid-guides/icons/f43ff2553f.webp'],
+    '国王的陨落': ['5d2addda27', '../raid-guides/icons/bb815bae2f.webp'],
+    '梦魇根源': ['810e9c5f15', '../raid-guides/icons/69e0c96eb4.webp'],
+    '克洛塔的末日': ['c8f1bde352', '../raid-guides/icons/a890626de0.webp'],
+    '救赎的边缘': ['0c0db34c1c', '../raid-guides/icons/61c6576365.webp'],
+    '破碎王座': ['00ab7fe800', 'icons/f8e267b043.webp'],
+    '异端深渊': ['9214e0910b', 'icons/7118a61fdd.webp'],
+    '预言': ['5ee82307b3', 'icons/24e4aed440.webp'],
+    '贪婪之握': ['c4510de46d', 'icons/34a0554bb7.webp'],
+    '二象性': ['db9150ea76', 'icons/f9d5856d03.webp'],
+    '守望者尖塔': ['8bb6caa792', 'icons/dcfaa7277e.webp'],
+    '深渊机灵': ['0089811166', 'icons/b4f0f143f1.webp'],
+    '战争领主的废墟': ['919cba410f', 'icons/0bf21127d1.webp'],
+    '晚星之主': ['62e7578741', 'icons/e3282bc3b3.webp'],
+    '分离教义': ['51caec5e35', 'icons/4153b19cf3.webp']
+  };
 
   function rota(table) {
     var raids = [], dungeons = [];
@@ -51,21 +73,31 @@ export default function init(table, deps) {
 
     var box = document.createElement('div');
     box.className = 'rota';
-    box.innerHTML = '<div class="rota-stage"></div>'
-      + '<div class="rota-btns">'
-      + '<button type="button" class="toggle" data-go="-1">上一周</button>'
-      + '<button type="button" class="toggle" data-go="0">本周</button>'
-      + '<button type="button" class="toggle" data-go="1">下一周</button></div>';
+    box.innerHTML = '<div class="rota-head">'
+      + '<span class="rota-head-date">周期</span>'
+      + '<div class="rota-head-main">'
+      + '<span class="rota-head-col" data-kind="raid">' + kinds[0] + '</span>'
+      + '<span class="rota-head-col" data-kind="dungeon">' + kinds[1] + '</span>'
+      + '</div></div>'
+      + '<div class="rota-stage"></div>';
     table.parentNode.insertBefore(box, table);
     tuck(table);
 
     var stage = box.querySelector('.rota-stage');
     var pool = {};
 
-    function group(kind, label, names) {
+    function pill(n) {
+      var art = ROTA_ART[n];
+      if (!art) return '<span class="rota-pill"><span class="rota-cap"><span class="rota-name">' + n + '</span></span></span>';
+      return '<span class="rota-pill" style="--bg:url(\'' + art[1] + '\')">'
+        + '<span class="rota-cap">'
+        + '<img class="rota-ico" src="icons/' + art[0] + '.webp" alt="" width="20" height="20">'
+        + '<span class="rota-name">' + n + '</span></span></span>';
+    }
+
+    function group(kind, names) {
       return '<div class="rota-group" data-kind="' + kind + '">'
-        + '<span class="rota-kind">' + label + '</span>'
-        + names.map(function (n) { return '<span class="rota-pill">' + n + '</span>'; }).join('')
+        + names.map(pill).join('')
         + '</div>';
     }
 
@@ -74,27 +106,28 @@ export default function init(table, deps) {
       var s = new Date(t0 + i * MS_WEEK), e = new Date(t0 + i * MS_WEEK + 6 * 86400000);
       var r = ((i % raids.length) + raids.length) % raids.length;
       var g = ((i % dungeons.length) + dungeons.length) % dungeons.length;
-      /* 右端那一格答的是「这张卡相对现在是什么」：本周那张写「本周」，其余写距今
-         几周。年份不写——日期区间已经给了月日，隔着几周比哪一年更是读者要的那个数。 */
+      /* 左侧独立日期滚轮刻度：本周那张写「本周」，其余写距今几周。
+         右侧主滚筒不再重复渲染顶部日期栏，把全部画幅留给四张副本海报。 */
       var off = i - here;
       var mark = off === 0 ? '本周' : Math.abs(off) + ' 周' + (off > 0 ? '后' : '前');
       var el = document.createElement('div');
       el.className = 'rota-card' + (i === here ? ' is-now' : '');
-      el.innerHTML = '<div class="rota-top"><span class="rota-date">'
-        + (s.getMonth() + 1) + '月' + s.getDate() + '日 — '
-        + (e.getMonth() + 1) + '月' + e.getDate() + '日</span>'
-        + '<span class="rota-badge">' + mark + '</span></div>'
+      el.innerHTML = '<div class="rota-dial">'
+        + '<span class="rota-badge">' + mark + '</span>'
+        + '<span class="rota-date">'
+        + (s.getMonth() + 1) + ' 月 ' + s.getDate() + ' 日 — '
+        + (e.getMonth() + 1) + ' 月 ' + e.getDate() + ' 日</span></div>'
         + '<div class="rota-body">'
-        + group('raid', kinds[0], [raids[r], raids[(r + 4) % raids.length]])
-        + group('dungeon', kinds[1], [dungeons[g], dungeons[(g + 4) % dungeons.length]])
+        + group('raid', [raids[r], raids[(r + 4) % raids.length]])
+        + group('dungeon', [dungeons[g], dungeons[(g + 4) % dungeons.length]])
         + '</div>';
       stage.appendChild(el);
       pool[i] = el;
       return el;
     }
 
-    /* d 是到中间的分数距离。虚化与明暗都写成 d 的连续函数：中间那张清晰，一步之内
-       只虚到名字仍读得出，再往外快速虚掉、淡出，滚动途中不出现档与档之间的跳变。 */
+    /* d 是到中间的分数距离。紧邻上下周（a <= 1）保持清晰不虚化，仅靠明暗与倾角分出主次；
+       再往外（a > 1）渐进虚掉、淡出，滚动途中不出现档与档之间的跳变。 */
     function place(el, d) {
       var a = Math.abs(d);
       el.hidden = a > 2.7;
@@ -102,7 +135,7 @@ export default function init(table, deps) {
       var rad = d * STEP * Math.PI / 180;
       el.style.transform = 'translate3d(0,' + (Math.sin(rad) * R).toFixed(1) + 'px,'
         + ((Math.cos(rad) - 1) * R).toFixed(1) + 'px) rotateX(' + (-d * STEP).toFixed(2) + 'deg)';
-      var blur = a < 0.25 ? 0 : (a < 1 ? (a - 0.25) : 0.75 + (a - 1) * 2.6);
+      var blur = a <= 1 ? 0 : (a - 1) * 2.4;
       el.style.filter = blur ? 'blur(' + blur.toFixed(2) + 'px)' : 'none';
       el.style.opacity = (a <= 1 ? 1 - a * 0.3 : Math.max(0, 0.7 - (a - 1) * 0.42)).toFixed(3);
       el.style.zIndex = 10 - Math.round(a);
@@ -225,8 +258,6 @@ export default function init(table, deps) {
 
     box.addEventListener('click', function (e) {
       if (suppressClick) { suppressClick = false; return; }
-      var btn = e.target.closest('[data-go]');
-      if (btn) { go(btn.dataset.go === '0' ? here : Math.round(aim) + +btn.dataset.go); return; }
       var best = hitCard(e.clientX, e.clientY);
       if (best !== null) go(best);
     });
