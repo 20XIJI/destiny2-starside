@@ -682,17 +682,12 @@
         {
           "gid": "1186062409",
           "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1186062409",
-          "evidence": "Phoenix Dive:enemies within6.5metres upon landing。"
+          "evidence": "Phoenix Dive:enemies within6.5metres upon landing；SolarR73 landing6.5m。"
         },
         {
           "gid": "527596209",
           "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=527596209",
-          "evidence": "Phoenix Dive:enemies within5metres upon landing。"
-        },
-        {
-          "gid": "['1186062409', '527596209']",
-          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=['1186062409', '527596209']",
-          "evidence": "SolarR73 landing6.5m; ClassR16 landing5m."
+          "evidence": "Phoenix Dive:enemies within5metres upon landing；ClassR16 landing5m。"
         }
       ],
       "reason": "两份原表同名普通技能范围不一致，没有PvE/PvP或版本标签。",
@@ -858,12 +853,7 @@
         {
           "gid": "1907852650",
           "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1907852650",
-          "evidence": "Soul Siphon 原表图形列曾核对为2槽；本站manifest为3槽。"
-        },
-        {
-          "gid": "['1907852650']",
-          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=['1907852650']",
-          "evidence": "DDC slots2;manifest3;用户明确确认manifest正确"
+          "evidence": "Soul Siphon 原表图形列曾核对为2槽；本站manifest为3槽（DDC slots2;manifest3;用户明确确认manifest正确）。"
         }
       ],
       "reason": "用户确认manifest正确，灵魂虹吸为3槽。",
@@ -1359,8 +1349,13 @@
       ],
       "sources": [
         {
-          "gid": "['1907852650', '1918152785']",
-          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=['1907852650', '1918152785']",
+          "gid": "1907852650",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1907852650",
+          "evidence": "source energy gain decays over time or blocked damage? maxblocked threshold?"
+        },
+        {
+          "gid": "1918152785",
+          "url": "https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit#gid=1918152785",
           "evidence": "source energy gain decays over time or blocked damage? maxblocked threshold?"
         }
       ],

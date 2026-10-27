@@ -843,6 +843,12 @@
       document.body.setAttribute('data-vendor', 'eververse');
     }
 
+    window.addEventListener('hashchange', function () {
+      if (location.hash === '#xur') switchTab('xur', false);
+      else if (location.hash === '#ada') switchTab('ada', false);
+      else if (location.hash === '#eververse' || !location.hash) switchTab('eververse', false);
+    });
+
     var cachedEv = null;
     var cachedXur = null;
     try { cachedEv = JSON.parse(localStorage.getItem(CACHE_KEY)); } catch (_) {}

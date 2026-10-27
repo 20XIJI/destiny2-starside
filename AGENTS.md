@@ -165,8 +165,6 @@ migrate.py         配装源稿 markdown ⇄ 结构化记录，来回逐字节�
                    还是留 markdown 由 --classify 按行标题能否落到主键上机械判定
 icons.py           按主键把官方图拉回来转 WebP，落 assets/icons/，
                    data/icons.json 记「官方图 → 文件名」。一件东西一张图
-check_icons.py     换图之前逐行比「现在显示的图」与「主键的官方图」，
-                   两边同一套编码参数、文件名即内容 md5，名字相同即像素相同
 build-search.py    各页产出 → assets/search.js，首页那只搜索框搜的就是它
 pinyin.py          data/ 物品名 → assets/pinyin.js。全表 tools/pinyin.json，
                    构建时按物品、套装、护甲模组族的中文名裁词典与英文名；介绍不进表。换拼音数据才 --distill
@@ -252,7 +250,6 @@ python3 tools/migrate.py --classify           # 资料页该结构化还是留 m
 python3 tools/resolve.py --names              # 站内写法与库里的名字逐条比
 python3 tools/icons.py                        # 只报要拉多少、缺什么
 python3 tools/icons.py --pull                 # 拉官方图转 WebP，已在盘上的沿用
-python3 tools/check_icons.py [--list]         # 换图会换掉哪些，逐页计数
 
 tools/ship.sh "提交信息"                       # 一轮发版：对账 → 构建 → 提交 → 部署 → 推送
 python3 tools/sync.py                         # 库与仓库对账，双向都走，部署后自动跑

@@ -293,11 +293,16 @@ async function who(event, need) {
 
   let me = wc.get(t)
   if (!me || Date.now() - me.t > 3e5) {
-    const r = await fetch(AUTH + '/auth/v1/user/me', { headers: { authorization: 'Bearer ' + t } })
+    const sig = typeof AbortSignal !== 'undefined' && AbortSignal.timeout ? AbortSignal.timeout(15000) : undefined
+    const r = await fetch(AUTH + '/auth/v1/user/me', { headers: { authorization: 'Bearer ' + t }, ...(sig ? { signal: sig } : {}) })
     const uid = r.ok ? String((await r.json()).sub || '') : ''
     if (!uid) throw new Error('forbidden')
     const row = (await eds.doc(uid).get()).data[0]
     me = { t: Date.now(), uid, name: row ? row.name : '', lv: row ? Number(row.lv) || 0 : 0 }
+    if (wc.size > 200) {
+      const now = Date.now()
+      for (const [k, v] of wc) if (now - v.t > 3e5) wc.delete(k)
+    }
     wc.set(t, me)
   }
   // **权限不足与令牌失效要分开**：前端收到 forbidden 会去换令牌再打一次，
@@ -496,6 +501,10 @@ async function editorRoute(a, body, event, me) {
       await subs.doc(cur._id).update(set)
       return { ok: 1 }
     }
+    if (!cur.drop && ok === -1 && Number(cur.ok) === 1 && cur.season && cur.slug &&
+        (await docs.doc(buildId(cur.season, cur.slug)).get()).data.length) {
+      throw new Error('已上站，请走申请移除')
+    }
     // 删除申请只标状态。**真正的删除在本机**：sync.py 的 sweep() 按这条记录删掉
     // 那一篇源稿，再把库里那条一并清掉——与落盘同一侧，构建与部署也在那里。
     if (cur.drop) {
@@ -667,10 +676,19 @@ async function editorRoute(a, body, event, me) {
     // 同一格在几页上都有，从别页提的那一条这一页也要涂上。
     const want = body.recs && typeof body.recs === 'object'
       ? Object.keys(body.recs).filter((id) => REC_ID.test(id)) : null
+    async function pendRecsOf(ids) {
+      const parts = []
+      for (let i = 0; i < ids.length; i += 100) parts.push(ids.slice(i, i + 100))
+      const got = await Promise.all(parts.map((part) =>
+        edits.where({ kind: 'rec', ok: 0, rec: _.in(part) }).limit(500).get()))
+      const rows = []
+      for (const x of got) rows.push(...x.data)
+      return rows
+    }
     const [r, one, rp, rs] = await Promise.all([
       edits.where({ doc, ok: 0 }).limit(200).get(),
       (body.judge || body.md) ? docs.doc(doc).get() : Promise.resolve(null),
-      want ? edits.where({ kind: 'rec', ok: 0 }).limit(500).get() : Promise.resolve(null),
+      want ? pendRecsOf(want) : Promise.resolve(null),
       want ? recsOf(want, { json: true, hash: true, by: true, at: true }) : Promise.resolve(null),
     ])
     const cur = one ? one.data[0] : null
@@ -678,7 +696,7 @@ async function editorRoute(a, body, event, me) {
     let pend = r.data
     if (want) {
       const on = new Set(want)
-      pend = pend.filter((e) => e.kind !== 'rec').concat(rp.data.filter((e) => on.has(e.rec)))
+      pend = pend.filter((e) => e.kind !== 'rec').concat(rp.filter((e) => on.has(e.rec)))
     }
     if (body.judge) {
       // 记录那几条的陈旧与否按库里那一格此刻的文字判，与 emark 通过时同一条。
@@ -824,6 +842,7 @@ async function editorRoute(a, body, event, me) {
     if (old && Number(old.lv) >= me.lv) throw new Error('forbidden')
     if (op === 'del') {
       await eds.doc(uid).remove()
+      for (const [k, v] of wc) if (v.uid === uid) wc.delete(k)
       return { ok: 1 }
     }
     const lv = Number(body.lv)
@@ -831,6 +850,7 @@ async function editorRoute(a, body, event, me) {
     const set = { name: String(body.name || ''), lv, at: new Date().toISOString() }
     if (old) await eds.doc(uid).update(set)
     else await eds.doc(uid).set(set)
+    for (const [k, v] of wc) if (v.uid === uid) wc.delete(k)
     return { ok: 1 }
   }
 

@@ -350,6 +350,7 @@ test('both verdicts withdraw back to pending, an approval only before it lands',
   live.store.subs.set('sub', submission(live, 'sub', { ok: 1 }))
   const landed = live.snapshot()
   assert.equal((await live.request({ a: 'smark', id: 'sub', ok: 0 })).error, '已上站，请走申请移除')
+  assert.equal((await live.request({ a: 'smark', id: 'sub', ok: -1 })).error, '已上站，请走申请移除')
   assert.deepEqual(live.snapshot(), landed)
 
   // **那道门只管通过这一档**：被驳回的更新也带着已上站那一套的 season/slug，按在场
@@ -1163,12 +1164,24 @@ test('a signed-in editor below the bar is told it is a permission problem, not a
 
 test('an editor cannot mint someone at or above their own level', async () => {
   // eds 那两行是唯一防止一个超管造出第二个超管的东西，此前零断言。
-  const h = harness({ editors: [{ _id: 'u4', name: '老四', lv: 4 }] })
+  const h = harness({
+    editors: [{ _id: 'u4', name: '老四', lv: 4 }, { _id: 'u3', name: '老三', lv: 3 }]
+  }, {
+    async fetch() {
+      return { ok: true, status: 200, async json() { return { sub: 'u3' } } }
+    }
+  })
   h.signIn('lv4', 4, 'u4')
+  h.signIn('lv3', 3, 'u3')
   assert.equal((await h.as('lv4', { a: 'eds', op: 'set', uid: 'new', lv: 4 })).error, 'bad lv', '不许造出与自己同级的')
   assert.equal((await h.as('lv4', { a: 'eds', op: 'set', uid: 'new', lv: 5 })).error, 'bad lv', '不许造出高于自己的')
   assert.equal((await h.as('lv4', { a: 'eds', op: 'set', uid: 'u4', lv: 1 })).error, 'forbidden', '不许动与自己同级的人')
   assert.equal((await h.as('lv4', { a: 'eds', op: 'set', uid: 'new', lv: 3 })).error, undefined, 'lv 3 该造得出来')
+  // 降权或移除后立即清掉 wc 缓存，不留 5 分钟高权限空窗
+  assert.equal((await h.as('lv4', { a: 'eds', op: 'set', uid: 'u3', lv: 1 })).ok, 1)
+  assert.equal((await h.as('lv3', { a: 'emark', jobs: [] })).error, 'no permission', '降为 lv 1 后旧令牌缓存立即失效')
+  assert.equal((await h.as('lv4', { a: 'eds', op: 'del', uid: 'u3' })).ok, 1)
+  assert.equal((await h.as('lv3', { a: 'edits' })).error, 'no permission', '移除后旧令牌缓存立即失效')
 })
 
 // 编辑台的 lint() 与 terms.js 一起跑：admin.js 在 Node 里只导出纯函数，
@@ -1919,7 +1932,7 @@ test('the visitor count is read from the database once a minute per instance', a
 
 // ── 武器库：weapons/app.js 的纯函数 ─────────────────────────────────────
 function weaponFns(names, deps = '') {
-  const ctx = {}
+  const ctx = { URLSearchParams }
   vm.createContext(ctx)
   vm.runInContext(deps + names.map((n) => funcSource('weapons/app.js', n)).join('\n') +
     '\nthis.f = {' + names.map((n) => n + ':' + n).join(',') + '}', ctx)
@@ -2131,6 +2144,23 @@ test('weapons: every syntax row parses into known keywords', () => {
       if (t.t === 'kw') { assert.ok(keys.includes(t.k), s + ' 里的 ' + t.k + ': 不是关键字') }
     }
   }
+})
+
+test('weapons: armor sets support pinning and split-view rail rendering', () => {
+  const deps = 'function has(list, x) { return list.indexOf(x) !== -1; }\n' +
+    'function esc(s) { return String(s); }\n' +
+    'function pathImg(p) { return "<img src=\\"" + p + "\\">"; }\n' +
+    'var T_H=0,T_NAME=1,T_SRC=3,T_KIND=4,T_SSN=5,T_FX=7;\n' +
+    'var WR=[[10,"枪"]],AR=[[20,"甲"]],SR=[[30,"套装","Set","发射基地","目的地","S29","标签",[["两件",2,"a.webp"]]]];\n' +
+    'var S={scope:"sets",q:""},pins=["t:30"];\n'
+  const { rowsOf, pinKey, isPinned, setSrc, link, railRow } = weaponFns(
+    ['rowsOf', 'pinKey', 'isPinned', 'setSrc', 'link', 'railRow'], deps)
+  assert.equal(pinKey('sets', 0), 't:30')
+  assert.equal(isPinned('sets', 0), true)
+  const html = railRow('sets', 0, 0)
+  assert.match(html, /套装/)
+  assert.match(html, /发射基地 · S29/)
+  assert.match(html, /data-scope="sets"/)
 })
 
 test('eververse: timer trigger syncs 26 validated items into counters/rotation and publishes rotation/eververse.json to static hosting', async () => {

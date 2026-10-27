@@ -1071,11 +1071,19 @@ SET_SOURCE = re.compile(r'^- \*\*来源：\*\* *(.+?) *$', re.M)
 
 def set_sources():
     """护甲套装的来源名。词表给一套登两个键，套装名与来源名，来源那一个不该去
-    物品表里查。名单现扫源稿的「来源：」行——那一页的来源由人写，库里护甲条目的
-    收藏来源与它不是一回事（库里写的是掉落活动，源稿写的是玩家管它叫什么）。"""
-    path = os.path.join(shell.ROOT, 'references', 'armor-sets.md')
-    with open(path, encoding='utf-8') as f:
-        return {norm(m) for m in SET_SOURCE.findall(f.read())}
+    物品表里查。名单现扫源稿的「来源：」行与套装表记录的「来源」字段——那一页的
+    来源由人写，库里护甲条目的收藏来源与它不是一回事（库里写的是掉落活动，源稿写
+    的是玩家管它叫什么）。"""
+    out = set()
+    path = shell.source_path('armor-sets')
+    if path and os.path.exists(path):
+        with open(path, encoding='utf-8') as f:
+            out.update(norm(m) for m in SET_SOURCE.findall(f.read()))
+    for r in Facts().sets.values():
+        src = (r.get('i18n') or {}).get(ZH, {}).get('来源')
+        if src:
+            out.add(norm(markup.strip_marks(src)))
+    return out
 
 
 def source_hints():

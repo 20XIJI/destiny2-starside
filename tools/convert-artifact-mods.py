@@ -365,7 +365,7 @@ def render(page, digest='', dex=None, origins=None):
                 for n, m, p in mod['desc']:
                     p_lines = [x.strip() for x in p.split('<br>') if x.strip()]
                     if any(x.startswith(('・', '- ', '— ')) for x in p_lines):
-                        o.append(format_prose_para(p_lines, typeset, bmark(n, m)))
+                        o.append(str(format_prose_para(p_lines, typeset, bmark(n, m))))
                     else:
                         o.append('<p%s>%s</p>' % (bmark(n, m), typeset(p)))
                 o += ['</div>', '</article>']

@@ -1479,8 +1479,8 @@
      （源稿的约定就是「留空即整行删掉」，不写占位符）。 */
   /* 更新时间不给输入框：填表人写的日期只会是「今天」，那台机器自己知道。 */
   function today() {
-    var d = new Date();
-    return d.getFullYear() + '.' + (d.getMonth() + 1) + '.' + d.getDate();
+    var d = new Date(Date.now() + 8 * 3600e3);
+    return d.getUTCFullYear() + '.' + (d.getUTCMonth() + 1) + '.' + d.getUTCDate();
   }
 
   /* scope 省略即「当前这一套」。合集页的页顶那几个输入位与成员的重名

@@ -108,7 +108,11 @@ export async function shot(root, opts = {}) {
     } else blank[i].setAttribute('value', typed[i].value);
   }
 
-  if (opts.preview) clone.classList.add('preview');
+  if (opts.preview) {
+    clone.classList.add('preview');
+    clone.querySelectorAll('.ink-box > .ink').forEach((el) => { el.style.paddingLeft = '0px'; });
+    clone.querySelectorAll('input, textarea').forEach((el) => { el.removeAttribute('placeholder'); });
+  }
 
   /* 交互控件不进图：点赞、复制配装、详情开关、截图自己，以及藏着整份源稿的那个 pre。
      [hidden] 一并清掉——填表页没展开的可选槽位就挂在上面。 */

@@ -1127,6 +1127,9 @@ body:has(.entries) { --wrap: 1500px; }
   border-color: transparent;
 }
 
+#sheet.preview input::placeholder,
+#sheet.preview textarea::placeholder { color: transparent; }
+
 /* 索引页指向配装工具的那一行。它挂在标题右边，规线由 .head-row 画 */
 .new-link {
   display: flex;

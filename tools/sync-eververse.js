@@ -79,7 +79,9 @@ async function fetchWithRetry(url, options, retries = 3) {
   let lastErr = null
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const res = await fetch(url, options)
+      const sig = (!options || !options.signal) && typeof AbortSignal !== 'undefined' && AbortSignal.timeout
+        ? AbortSignal.timeout(15000) : undefined
+      const res = await fetch(url, sig ? { ...options, signal: sig } : options)
       if (res.status >= 500 && attempt < retries) {
         lastErr = new Error(`HTTP ${res.status} (${url})`)
         await sleep(400 * attempt)

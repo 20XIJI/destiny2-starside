@@ -1256,9 +1256,9 @@
     var stages = [['s-part', sum(parts)], ['s-perk', sum(perks)]];
     var mw = mwParts(i, roll);
     stages.push(['s-mw', mw.mw], ['s-tier', mw.tier]);
-    var extra = {};
+    var extra = {}, ammo = V && V.am && WR[i][W_AMMO] != null ? ammoEn(V.am[WR[i][W_AMMO]][0]) : 'Primary';
     fxAll().forEach(function (f) {
-      if (!f.stats) { return; }
+      if (!f.stats || !fxApplies(i, f)) { return; }
       Object.keys(f.stats).forEach(function (name) {
         var si = SIDX[name];
         if (si != null) { extra[si] = (extra[si] || 0) + f.stats[name]; }
@@ -1272,7 +1272,7 @@
         if (!Object.prototype.hasOwnProperty.call(spec, key) || !/^\d+$/.test(key)) { continue; }
         si = HSTAT[key];
         if (si == null) { continue; }
-        val = pickStep(spec[key], step, 'Primary');
+        val = pickStep(spec[key], step, ammo);
         if (typeof val === 'number') { extra[si] = (extra[si] || 0) + val; }
       }
     });
@@ -1834,7 +1834,7 @@
 
   function emptyState() {
     var top = tree && tree.op === 'and' ? tree.xs : tree ? [tree] : [];
-    var noun = S.scope === 'armor' ? '异域护甲' : '武器';
+    var noun = S.scope === 'armor' ? '异域护甲' : S.scope === 'sets' ? '护甲套装' : '武器';
     if (top.length < 2) { return '<div class="empty"><h3>无匹配的' + noun + '</h3><p>请尝试其他关键词，或点击右上角「语法」查看查询规则。</p></div>'; }
     var btns = top.map(function (node, k) {
       var rest = top.filter(function (_, j) { return j !== k; });
@@ -1852,8 +1852,8 @@
     if (pending) { body.innerHTML = SKELETON; return; }
     if (!results.length) { body.innerHTML = emptyState(); return; }
     if (S.view === 'list') {
-      var names = {};
-      results.forEach(function (i) { var n = S.scope === 'armor' ? AR[i][A_NAME] : WR[i][W_NAME]; names[n] = (names[n] || 0) + 1; });
+      var names = {}, rows = rowsOf(S.scope);
+      results.forEach(function (i) { var n = rows[i][1]; names[n] = (names[n] || 0) + 1; });
       batches(results, function (i) {
         return listRow(i, S.scope === 'wpn' && names[WR[i][W_NAME]] > 1);
       }, body, 'wpn-list');
@@ -1868,7 +1868,14 @@
 
   /* ── 渲染：结果栏 ──────────────────────────────────────────────────── */
   function railRow(scope, i, current) {
-    var rows = scope === 'armor' ? AR : WR, r = rows[i];
+    var rows = rowsOf(scope), r = rows[i];
+    if (scope === 'sets') {
+      var ssub = esc([setSrc(r), r[T_SSN]].filter(Boolean).join(' · '));
+      return '<li><a href="' + link('sets', i) + '" data-act="open" data-i="' + i + '" data-scope="sets"' +
+        (i === current && S.scope === 'sets' ? ' aria-current="page"' : '') + '>' +
+        '<span class="gun sm">' + pathImg(r[T_FX][0] ? r[T_FX][0][2] : '') + '</span>' +
+        '<span><span class="nm">' + esc(r[T_NAME]) + '</span><span class="sub">' + ssub + '</span></span></a></li>';
+    }
     var sub = scope === 'armor' ? V.cls[r[A_CLS]] + ' · ' + V.part[r[A_PART]] + ' · S' + r[A_SSN]
       : imgTag(V.el[r[W_EL]][2]) + 'S' + r[W_SSN] + ' · ' + esc(typeName(r));
     var exo = scope === 'armor' || isExotic(r);
@@ -1883,7 +1890,8 @@
         '<span class="n">' + results.length + '</span></div>';
     }
     var pinned = pins.map(function (p) {
-      var scope = p.slice(0, 1) === 'a' ? 'armor' : 'wpn', i = BY_HASH[scope][p.slice(2)];
+      var pre = p.slice(0, 1), scope = pre === 'a' ? 'armor' : pre === 't' ? 'sets' : 'wpn';
+      var i = BY_HASH[scope][p.slice(2)];
       return i == null ? '' : railRow(scope, i, S.sel);
     }).join('');
     return '<nav class="wpn-rail" aria-label="结果"><span class="grip" data-act="grip"></span>' +
@@ -2125,7 +2133,10 @@
         '</div><div>' + roll + b[2].map(function (p) { return '<p>' + p + '</p>'; }).join('') + '</div></div>';
     }).join('');
   }
-  function isPinned(scope, i) { return has(pins, (scope === 'armor' ? 'a:' : 'w:') + (scope === 'armor' ? AR : WR)[i][0]); }
+  function pinKey(scope, i) {
+    return (scope === 'armor' ? 'a:' : scope === 'sets' ? 't:' : 'w:') + rowsOf(scope)[i][0];
+  }
+  function isPinned(scope, i) { return has(pins, pinKey(scope, i)); }
   function factsHtml(i) {
     var r = WR[i], fr = frameOf(r), out = [];
     function chip(q, icon, text) {
@@ -2228,37 +2239,6 @@
   function mwLabel(i, roll) {
     if (!roll.mw) { return '未装'; }
     return poolRow(i)[4] ? roll.mw : roll.mw + ' Lv' + roll.lv;
-  }
-  function gearSection(i, roll, res) {
-    var pr = poolRow(i), opts = optsOf(i), mods = modsOf(i);
-    if (!opts.length && !mods.length) { return ''; }
-    var opt = res.mw.opt, rec = pr[5] || [];
-    var mwSlot = '';
-    if (opts.length) {
-      var icon = opt ? P.p[opt[2]][P_ICON] : '';
-      mwSlot = '<div class="slot-cell"><button type="button" class="slot' + (opt && has(rec, roll.mw) ? ' by-a' : '') +
-        (opt ? '' : ' is-empty') + (S.slotHover ? ' is-hover' : '') + '" data-act="mwslot" aria-haspopup="dialog" aria-label="大师杰作">' +
-        imgTag(icon, '', '', true) + '</button><div class="slot-lab"><b>大师杰作</b><span>' + esc(mwLabel(i, roll)) + '</span></div></div>';
-    }
-    var tier = '';
-    if (pr[4]) {
-      var btns = '';
-      for (var t = 1; t <= 5; t++) {
-        btns += '<button type="button" class="toggle" data-act="tier" data-v="' + t + '" aria-pressed="' + (roll.t === t ? 'true' : 'false') + '">T' + t + '</button>';
-      }
-      tier = '<div class="slot-cell tier"><div class="slot-lab"><b>T 级</b><div class="tiers">' + btns + '</div>' +
-        '<span class="hint">' + esc(tierText(i, roll, res.mw)) + '</span></div></div>';
-    }
-    var modSlot = '';
-    if (mods.length) {
-      var m = roll.mod >= 0 ? P.p[roll.mod] : null;
-      modSlot = '<div class="slot-cell"><button type="button" class="slot' + (m ? '' : ' is-empty') + '" data-act="modslot" ' +
-        'aria-haspopup="dialog" aria-label="模组">' + (m ? imgTag(m[P_ICON], '', '', true) : '') + '</button><div class="slot-lab"><b>模组</b><span>' +
-        (m ? esc(m[P_NAME]) : '未装 · 可选 ' + mods.length) + '</span></div></div>';
-    }
-    var pop = '';
-    if (S.pop === 'mw') { pop = mwPicker(i, roll); } else if (S.pop === 'mod') { pop = modPicker(i, roll); }
-    return '<section class="gear-sec"><h3 class="sub-label">大师杰作与模组</h3><div class="slots">' + mwSlot + tier + modSlot + '</div>' + pop + '</section>';
   }
   function mwPicker(i, roll) {
     var pr = poolRow(i), rec = pr[5] || [];
@@ -2654,7 +2634,8 @@
         return pathImg(f[2], 2);
       }).join('') + '</span>' +
       '<div><h2>' + esc(t[T_NAME]) + '</h2><p class="en">' + esc(t[T_EN]) +
-      '</p><p class="lore">' + esc(t[T_TAG]) + '</p></div></header>' +
+      '</p><p class="lore">' + esc(t[T_TAG]) + '</p></div><div class="one-acts"><button type="button" class="toggle" data-act="pin" aria-pressed="' +
+      (isPinned('sets', i) ? 'true' : 'false') + '">' + (isPinned('sets', i) ? '已钉选' : '钉选') + '</button></div></header>' +
       '<div class="one-main"><section><h3 class="sub-label">套装效果</h3>' +
       fx.map(function (f) {
         return '<div class="frame">' + pathImg(f[2]) +
@@ -2762,6 +2743,32 @@
       if (v !== prev) { out.push('<tr><td>' + st[0] + '</td><td class="n">' + (v > prev ? '+' : '') + (v - prev) + '</td></tr>'); }
       prev = v;
     });
+    var ammo = V && V.am && WR[i][W_AMMO] != null ? ammoEn(V.am[WR[i][W_AMMO]][0]) : 'Primary';
+    fxAll().forEach(function (f) {
+      if (!fxApplies(i, f)) { return; }
+      var add = f.stats && f.stats[x.name];
+      if (!add) { return; }
+      acc += add;
+      var v = shown(acc, row);
+      if (v !== prev) { out.push('<tr><td>' + esc(f.name) + '</td><td class="n">' + (v > prev ? '+' : '') + (v - prev) + '</td></tr>'); }
+      prev = v;
+    });
+    res.perks.forEach(function (p) {
+      var spec = perkSpec(p);
+      if (!spec || !HSTAT) { return; }
+      var step = perkStepOf(p), add = 0, key;
+      for (key in spec) {
+        if (Object.prototype.hasOwnProperty.call(spec, key) && /^\d+$/.test(key) && HSTAT[key] == s) {
+          var val = pickStep(spec[key], step, ammo);
+          if (typeof val === 'number') { add += val; }
+        }
+      }
+      if (!add) { return; }
+      acc += add;
+      var v = shown(acc, row);
+      if (v !== prev) { out.push('<tr><td>' + esc(plugName(p)) + '</td><td class="n">' + (v > prev ? '+' : '') + (v - prev) + '</td></tr>'); }
+      prev = v;
+    });
     out.push('<tr class="sum"><td>合计</td><td class="n">' + prev + '</td></tr>');
     if (x.withCond !== prev) { out.push('<tr class="cond"><td>条件生效时</td><td class="n">' + x.withCond + '</td></tr>'); }
     if (x.name === '射程') {
@@ -2839,6 +2846,17 @@
             vals.push([fr[0], count(function (i) { return frameOf(WR[i])[0] === fr[0]; })]);
           }
         });
+      } else if (t.k === 'source' && S.scope === 'sets') {
+        var seenSrc = {};
+        SR.forEach(function (row) {
+          [row[T_SRC], row[T_KIND]].forEach(function (s) {
+            if (!s || seenSrc[s] || srcFold(s).indexOf(srcFold(t.v)) === -1) { return; }
+            seenSrc[s] = 1;
+            vals.push([s, count(function (i) {
+              return srcFold(SR[i][T_SRC] + ' ' + SR[i][T_KIND]).indexOf(srcFold(s)) !== -1;
+            })]);
+          });
+        });
       } else if (t.k === 'source') {
         V.src.forEach(function (s, k) {
           if (fold(s).indexOf(f) !== -1) {
@@ -2886,14 +2904,14 @@
       }).filter(function (x) { return x.n; });
       if (isv.length) { groups.push(['IS', isv]); }
     }
-    var html = '', n = 0;
+    var html = '', n = 0, acUnit = S.scope === 'armor' ? '件' : S.scope === 'sets' ? '套' : '把';
     groups.forEach(function (g) {
       html += '<li class="grp" role="presentation">' + esc(g[0]) + '</li>';
       g[1].forEach(function (it) {
         ac.items.push(it);
         html += '<li class="opt" role="option" id="wpn-ac-' + n + '" data-k="' + n + '" aria-selected="false">' +
           (it.icon || '<span></span>') + '<span>' + esc(it.label) + (it.hint ? ' <code>' + esc(it.hint) + '</code>' : '') + '</span>' +
-          '<span class="n">' + (it.n >= 0 ? it.n + ' ' + (S.scope === 'armor' ? '件' : '把') : '') + '</span></li>';
+          '<span class="n">' + (it.n >= 0 ? it.n + ' ' + acUnit : '') + '</span></li>';
         n++;
       });
     });
@@ -3020,7 +3038,7 @@
         var prev = S.pop;
         S.pop = null;
         renderDetail();
-        var btn = body.querySelector('[data-act="pop"][data-v="' + prev + '"]');
+        var btn = body.querySelector('[data-act="' + prev + 'slot"]');
         if (btn) { btn.focus(); }
       }
       if (S.fxOpen) { S.fxOpen = false; S.fxg = ''; renderDetail(); }
@@ -3087,7 +3105,7 @@
         open(el.getAttribute('data-scope') || S.scope, +el.getAttribute('data-i'));
         return;
       case 'pin': {
-        var key = (S.scope === 'armor' ? 'a:' : 'w:') + (S.scope === 'armor' ? AR : WR)[i][0];
+        var key = pinKey(S.scope, i);
         if (has(pins, key)) { pins.splice(pins.indexOf(key), 1); } else { pins.push(key); }
         store('wpn.pins', pins); render(); return;
       }
