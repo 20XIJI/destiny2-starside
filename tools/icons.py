@@ -1,14 +1,8 @@
 #!/usr/bin/env python3
-"""图标按主键取官方图：一件东西一张图，落 assets/icons/，由 data/icons.json 索引。
+"""图标按主键取官方图：一件东西一张图，落 assets/icons/。
 
-从前每一页自己存一份图标，源稿里写死文件名（`![](icons/5f164b2bda.webp)`）。
-两处坏处：**同一件东西的图在页与页之间各存一份、还各是一个像素尺寸**（站内量到
-8 种，47/59/69/70 那几档是从 Google 表格里抠出来的图，不是官方原图）；以及**图标
-与它画的那件东西之间没有联系**，换图要人去每一页的源稿里找。
-
-这里把两件事都交给主键：图由 data/manifest/ 里那件东西的 icon 字段定，官方原图
-96×96 拉回来按版式转一档，文件名仍是内容的 md5 前 10 位（图标目录一年的浏览器
-缓存就建立在「改内容必然换名」上，见 README「换图」）。
+图由 data/ 实体表里那件东西的 icon 字段定，官方原图 96×96 拉回来按版式转 WebP，
+文件名即官方图名换扩展名（Bungie 图名本身是内容哈希，改内容必然换名）。
 
 用法：
     python3 tools/icons.py            # 只报要拉多少、缺什么，不下载
@@ -16,8 +10,6 @@
 """
 
 import argparse
-import json
-import glob
 import os
 import re
 import subprocess
@@ -128,11 +120,7 @@ def icon_of(facts, key):
 def wanted():
     """{官方图路径: 档宽}。范围是**站内寻址得到的一切**：
 
-    人写层那 21 页每一行的主键（含 covers），加事实层里全部武器与它们各栏的插件
-    ——武器库那一页列的是 2208 把，其中一千多把不在任何资料页上有行。
-
-    从前这一圈扫 `data/index/`，那是渲染器交出来的中间产物；现在按主键扫，
-    图与页面位置因此彻底分开。
+    全部武器、异域护甲及它们各栏的插件、催化剂与神器本体的官方图。
     """
     sys.path.insert(0, os.path.join(shell.ROOT, 'tools'))
     import resolve
@@ -145,15 +133,6 @@ def wanted():
         if got:
             need.setdefault(got, wide)
 
-    for path in sorted(glob.glob(os.path.join(shell.ROOT, 'references',
-                                              'research', '*.json'))):
-        with open(path, encoding='utf-8') as fh:
-            got = json.load(fh)
-        for h, blocks in (got.get('said') or {}).items():
-            add(h, 64)
-            for b in blocks:
-                for x in b.get('covers') or ():
-                    add(x, 64)
     # 武器库：每把枪与每件异域护甲自己那张，加武器各栏插件的图（含可选模组与
     # 大师杰作）、催化剂，以及护甲固有与特征栏里的异域 Perk。
     for key, row in facts.items.items():
@@ -194,7 +173,7 @@ def wanted():
 
 def fetch(path):
     # 以 / 打头的是站点绝对路径（装饰层在 /img/ 下，不在图标目录里）；
-    # 其余仍按图标目录相对取，data/icons.json 里已有的两千多条键不受影响。
+    # 其余按图标目录 BASE 相对取。
     req = urllib.request.Request((HOST + path) if path.startswith('/') else BASE + path,
                                  headers={'User-Agent': 'starside-build'})
     with urllib.request.urlopen(req, timeout=30) as r:
@@ -205,8 +184,7 @@ def convert(raw, path, wide):
     """官方原图 → webp。编码参数与站内其余图标一致（mods.icons 同一套）。
 
     **文件名就是官方图的名字**，只换扩展名。Bungie 的图名本身是内容哈希，所以
-    「改内容必然换名」这条照旧成立，而且从主键的 `icon` 字段直接推得出文件名，
-    不需要任何映射表——从前那张 data/icons.json 正是为了认回这件事而存在的。
+    「改内容必然换名」成立，且从主键的 `icon` 字段直接推得出文件名，不需要映射表。
     """
     ext = os.path.splitext(path)[1]
     src = os.path.join(OUT_DIR, '_tmp' + ext)

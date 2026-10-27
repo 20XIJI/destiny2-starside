@@ -39,8 +39,7 @@
    改用左缘一道竖条 + 提亮——底色那一位已经被行标题列的 --tint-1 占着。
 
    **权重要跟 .gen tbody th[scope="row"] 齐平。**那条是三选择器，单写 .named
-   会被它压过去，整列静默退回默认色（见 CLAUDE.md「给整格上色的 CSS 别写在 td 上」
-   记的同一条坑）。 */
+   会被它压过去，整列静默退回默认色（见 .claude/rules/pages.md「给整格上色的 CSS 别写在 td 上」）。 */
 .gen tbody th[scope="row"].named {
   color: var(--bone-hi);
   box-shadow: inset 2px 0 0 var(--c-term);

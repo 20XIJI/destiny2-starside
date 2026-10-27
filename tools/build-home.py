@@ -293,11 +293,7 @@ def build_sets(img):
 
 def perks(img):
     pool = {}
-    for t in tables('weapon-perks'):
-        for r in rows('weapon-perks', t):
-            if r[1][1]:
-                pool.setdefault(r[0][0], r[1][1])
-    # 这一页已按记录排版：一条记录一个 article.rec，名字与图各在格里
+    # 这一页按记录排版：一条记录一个 article.rec，名字与图各在格里
     for _, sec in sections('weapon-perks'):
         for m in REC.finditer(sec):
             name, icon = REC_NAME.search(m.group(1)), REC_ICON.search(m.group(1))

@@ -34,8 +34,7 @@ minted.json 手写，不走蒸馏：Bungie 表里没有的机制、来源、模�
 
 **怎么写只有一条：manifest 上有这个键，就把它的值原样写下来。**不按值筛——
 `classType: 0` 是泰坦、`defaultDamageType: 0` 是无元素、`breakerType: 0` 是不破盾，
-都是值域里的合法成员，丢掉等于让读者把「泰坦专属」读成「无限制」。从前按「零值不写」
-处理，2200 件泰坦装备的职业限制就是这么静默消失的。
+都是值域里的合法成员，丢掉等于让读者把「泰坦专属」读成「无限制」。
 
 形状上只做三种改写，各有理由：
 
@@ -57,9 +56,8 @@ minted.json 手写，不走蒸馏：Bungie 表里没有的机制、来源、模�
 `iconWatermark`、`collectibleHash` 与 `derived.release` 消歧。挑哪个是「当前版本」
 是 resolve.py 的事，蒸馏这一步不猜。
 
-**这一层也不切栏**。从前的 `perk-pools.json` 把「哪几栏算词条、空插槽剔掉、大师工作
-只留大师杰作」写死在这里，那是渲染口径不是 Bungie 事实。现在整份 `sockets` 原样存下，
-切栏归 `resolve.Facts.pool()` 一处，两边（资料页戳主键、武器库画栏）读同一份。
+**这一层也不切栏**。整份 `sockets` 原样存下，切栏归 `resolve.Facts.pool()` 一处，
+两边（资料页戳主键、武器库画栏）读同一份。
 """
 
 import argparse
@@ -429,17 +427,14 @@ def project(key, item, other):
     eq = item.get('equippingBlock') or {}
     if 'ammoType' in eq:
         out['equippingBlock'] = {'ammoType': eq['ammoType']}
-    # 装这枚插件要花几点护甲能量。护甲模组页的「费用」那一列就是它，从前那 70 格
-    # 各存一份，而 manifest 上本来就有。
+    # 装这枚插件要花几点护甲能量（护甲模组页的「费用」列）。
     src = item.get('plug') or {}
     plug = {f: src[f] for f in ('plugCategoryIdentifier',) if f in src}
     if 'energyCost' in src and 'energyCost' in src['energyCost']:
         plug['energyCost'] = src['energyCost']['energyCost']
     if plug:
         out['plug'] = plug
-    # 这件东西挂的 SandboxPerk。它是物品表通向 sandbox-perks.json 的唯一连接键，
-    # 断了就只能靠「图标相同、名字相同」去桥——雪上加霜的 SandboxPerk 是 374284927，
-    # 那条链从前只活在仓库外的原始 manifest 里。
+    # 这件东西挂的 SandboxPerk：物品表通向 sandbox-perks.json 的连接键。
     if 'perks' in item:
         out['perks'] = [{'perkHash': p['perkHash']} for p in item['perks']]
     # 投资属性。这是**插值前**的原始值，与游戏里显示的那个数不是一回事：
@@ -469,8 +464,7 @@ def project(key, item, other):
             derived['season'] = got
     foundry = [t for t in item.get('traitIds') or () if t.startswith('foundry.')]
     if foundry:
-        # 铸造厂（Häkke、Omolon、Veist…），779 把枪有。站内购物清单那一列写的
-        # 就是它，从前靠人写。
+        # 铸造厂（Häkke、Omolon、Veist…），779 把枪有。
         derived['foundry'] = foundry[0][len('foundry.'):]
     if derived:
         out['derived'] = derived
@@ -483,7 +477,6 @@ def stats_of(item):
     Bungie 在 `stats.stats` 上预先算好了每一项的显示值，但它 100% 可以由
     `investmentStats` 过这一组的 `displayInterpolation` 重建——实测 8246 条逐值
     相等，零出入。存下来是把同一条推导链的两端都记一遍，1720 KB。
-    从前 `derived.displayStats` 被删掉正是这个理由，那一份与这一份是同一件事。
 
     公式四个细节缺一不可：不加默认插件；先按 `scaledStats.maximumValue` 截断
     再插值；两端截断不外推；银行家舍入。
@@ -491,7 +484,7 @@ def stats_of(item):
     block = item.get('stats') or {}
     if 'statGroupHash' not in block:
         return None
-    # 从前这一位是字符串，2208 处。值位置上的 hash 一律整数。
+    # 值位置上的 hash 一律整数。
     return {'statGroupHash': block['statGroupHash']}
 
 
@@ -531,9 +524,8 @@ def shown(row, group, stat):
 def rates_of(kept, groups):
     """射速写在框架那枚插件的 `derived.rate` 上，键是枪型。
 
-    从前站内 149 行各存一份，改个数要改 149 处；而这个量由枪型与框架决定，
-    一枚框架插件在一个枪型下只有一个值（210 组里 205 组的标称射速唯一，
-    另 5 组取众数）。取值规矩见 `RATE`。
+    这个量由枪型与框架决定，一枚框架插件在一个枪型下只有一个值（210 组里 205 组的
+    标称射速唯一，另 5 组取众数）。取值规矩见 `RATE`。
     """
     by = collections.defaultdict(collections.Counter)
     for h, row in kept.items():
@@ -1294,10 +1286,8 @@ def distill(src):
             # manifest 自己标了的照搬进 derived——消费方只读 derived 那一位，
             # 只给武器算会漏掉 `3387424189` 过载霰弹枪这一条。
             row.setdefault('derived', {})['breakerType'] = item['breakerType']
-        # **异域护甲的插槽也收。**从前这里只收武器（itemType 3），护甲一条插槽都没有，
-        # 于是异域护甲的固有 Perk 没处查——站内「异域 PERK」那一列的名字落不到主键上，
-        # 只能按名字全库猜，而那些名字大面积撞号。传说护甲不收：站内没有一页按件列它们，
-        # 而 5700 件的插槽要多占 7 MB。
+        # **异域护甲的插槽也收**：用于查固有与特征栏的异域 Perk。传说护甲不收：
+        # 站内没有一页按件列它们，而 5700 件的插槽要多占 7 MB。
         if (item.get('itemType') == 3 or (item.get('itemType') == 2 and EXOTIC(item))
                 or IS_SUBCLASS(item)):
             got = sockets_of(item, socket_types, gone)
@@ -1432,9 +1422,7 @@ def distill(src):
         one['scaledStats'] = [{
             'statHash': s['statHash'],
             'maximumValue': s['maximumValue'],
-            # **这一位必须收。**从前 build-weapons 按「实测最大值 > 100」猜哪些属性
-            # 不是 0–100 量纲，猜出来的 7 个与库里标的 8 个不相等。那条注释写的
-            # 字段名 displayAsNumericalStat 在 manifest 里出现 0 次，真名是这个。
+            # 标记该属性是否为非 0–100 量纲（如射速、弹匣、蓄力时间）。
             'displayAsNumeric': s['displayAsNumeric'],
             'displayInterpolation': [{'value': pt['value'], 'weight': pt['weight']}
                                      for pt in s.get('displayInterpolation') or ()],
@@ -1443,10 +1431,6 @@ def distill(src):
 
     rates_of(kept, groups)
 
-    # 来源要从收藏条目上取：物品自己的 displaySource 在复刻武器上一律是「随机特性：
-    # 此物品无法从收藏品再次获取」，分不出版本；collectible 的 sourceString 才写着
-    # 「来源：众神殿」，那正是站内源稿标版本用的那个词。它本来就是另一张表的字段，
-    # 从前贴在物品表的根上（一张表一个文件，那是越界），现在各归各的表。
     # 来源那一句写在**收藏条目**上：物品自己的 displaySource 在复刻武器上一律是
     # 「随机特性：此物品无法从收藏品再次获取」，分不出版本；collectible 的
     # sourceString 才写着「来源：众神殿」，那正是站内源稿标版本用的那个词。
@@ -1483,8 +1467,7 @@ def distill(src):
                 die('套装 %s 的 %d 件效果 %s 不在 SandboxPerk 表里'
                     % (h, p['requiredSetCount'], ph))
             # 效果的名字、说明与图标**不抄在这里**：指向 sandbox-perks 那一条即可，
-            # 112 条全在库里。从前抄了，于是同一份双语文本在两张表上各有一份，
-            # 而实体层那一侧的语言闸门看不见嵌在这里的 zh-CN。
+            # 112 条全在库里。
             bonuses.append({'requiredSetCount': p['requiredSetCount'],
                             'perk': ['sandbox-perks', ph]})
         # **成员件不收成记录**：收下它们就要把 840 件传说护甲一起留在库里，而站内

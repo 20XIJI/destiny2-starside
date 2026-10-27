@@ -106,8 +106,7 @@ export default function init(table, deps) {
       var s = new Date(t0 + i * MS_WEEK), e = new Date(t0 + i * MS_WEEK + 6 * 86400000);
       var r = ((i % raids.length) + raids.length) % raids.length;
       var g = ((i % dungeons.length) + dungeons.length) % dungeons.length;
-      /* 左侧独立日期滚轮刻度：本周那张写「本周」，其余写距今几周。
-         右侧主滚筒不再重复渲染顶部日期栏，把全部画幅留给四张副本海报。 */
+      /* 左侧日期滚轮刻度：本周那张写「本周」，其余写距今几周。 */
       var off = i - here;
       var mark = off === 0 ? '本周' : Math.abs(off) + ' 周' + (off > 0 ? '后' : '前');
       var el = document.createElement('div');
@@ -196,7 +195,7 @@ export default function init(table, deps) {
     }
 
     /* 舞台按住上下拖拽：位移 > 5px 进入跟手转动（往下拉看上周、往上推看下周，
-       1 周 ≈ PITCH 150px），松手按最近 100ms 内的脱手速度外推并吸附到整周；
+       1 周 ≈ PITCH 122px），松手按最近 100ms 内的脱手速度外推并吸附到整周；
        位移 ≤ 5px 视为点击卡片。 */
     var drag = null, suppressClick = false;
     stage.addEventListener('pointerdown', function (e) {
@@ -263,16 +262,6 @@ export default function init(table, deps) {
     });
     draw();
   }
-
-  /* 首页的全站搜索（.hero-search 容器存在即接管）：资料页的搜索框只搜本页，
-     这里搜全站。索引 assets/search.js 由 tools/build-search.py 从各页产出现扫，
-     一条记录一行——带 d 的是页面，带 n 的是条目。
-
-     **首次聚焦才下载**：它 790 KB，进首屏就把首页拖成全站最重的一页。
-     **用 <script> 取而不是 fetch**：双击打开的站点也要能搜，而 file:// 下 fetch
-     取同目录的文件会被 CORS 挡掉。索引因此是一句 window.starsideIndex = […]。
-     命中项的链接带 ?q=，落到那一页之后由那一页自己的搜索框接手过滤，
-     所以这里不必知道条目在页面里的哪一行。 */
 
   /* 固定周期轮换表（.gen 带 data-cycle 的表）：按北京时间 01:00 重置算当前落在第几行，
      给当前行打 data-now-row、首格打 data-now-tag（本周／今日），跨过重置点自动切行。

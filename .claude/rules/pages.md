@@ -17,10 +17,10 @@ paths:
 以及页脚归属、更新日志的写法、从 Google 表格做一页资料那条流水线。
 改 `tools/convert-doc.py`、`rows.py`、`convert-artifact-mods.py`、`convert-armor-sets.py`、
 `markup.py`、`shell.py`，或写 `references/` 下的源稿之前读这一份。源稿分两处：
-主键骨架在 `references/keys/`，散文与表在 `references/docs/`（见 `CLAUDE.md`）。
+主键骨架在 `references/keys/`，散文与表在 `references/docs/`（见 `AGENTS.md`）。
 
 产出一律不手改：改文案改 markdown，改结构改生成器的 `render()`，两种情况都重跑脚本。
-站点全局的机制与闸门在 `CLAUDE.md`，排版规范在 `design.md`。
+站点全局的机制与闸门在 `AGENTS.md`，排版规范在 `design.md`。
 
 ## 资料文档页
 
@@ -247,8 +247,8 @@ python3 tools/convert-armor-sets.py --icons <英文原表导出.html>   # 从英
 python3 tools/convert-armor-sets.py --fill-icons                # 缺的按 manifest 补
 ```
 
-英文原表有 2 处是空白占位（054、056），`--fill-icons` 从 `data/manifest/armor-sets.json` 取
-那条效果的 `sandboxPerk` 图标补上。库里那批是 96×96 白剪影，与英文原表那批同构，
+英文原表有 2 处是空白占位（054、056），`--fill-icons` 从 `data/equipable-item-sets.json`
+与 `data/sandbox-perks.json` 取那条效果的 `sandboxPerk` 图标补上。库里那批是 96×96 白剪影，与英文原表那批同构，
 所以走同一套处理，补出来的与旁边那些逐像素同规格。缺图不会静默留空：`N_ICONS` 是
 112，少一枚就中止。
 

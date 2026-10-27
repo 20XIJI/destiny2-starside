@@ -5,19 +5,19 @@ paths:
   - "tools/mods.py"
   - "tools/dim.py"
   - "site/builds/**/*"
-  - "references/builds/**/*.md"
+  - "references/builds/**/*.json"
 ---
 
 # 推荐配装页
 
 管 `builds/` 那一族：详情页、合集、索引页、填表页，以及它们查的词表。
 改 `tools/convert-build.py`、`tools/vocab.py`、`tools/mods.py`、`builds/` 下任一文件，
-或写 `references/builds/<赛季>/*.md` 源稿之前读这一份。
+或写 `references/builds/<赛季>/*.json` 源稿之前读这一份。
 
-站点全局的机制与闸门在 `CLAUDE.md`，视觉规范在 `design.md`。
+站点全局的机制与闸门在 `AGENTS.md`，视觉规范在 `design.md`。
 
 
-`builds/` 由 `tools/convert-build.py` 从 `references/builds/<赛季>/<slug>.md` 生成，**不手改**。
+`builds/` 由 `tools/convert-build.py` 从 `references/builds/<赛季>/<slug>.json` 生成，**不手改**。
 
 赛季走目录：`references/builds/s29-凯旋纪念碑/` 里的配装出到 `builds/s29/<slug>/`，
 「凯旋纪念碑」直接落成面包屑与徽章文字，不另建「赛季名 → 拉丁 slug」的对应表。
@@ -26,8 +26,7 @@ paths:
 手里已有链接的人仍打得开。换季改那一个字符串。
 
 源稿只写名字，图标、链接与着色由词表查出来。所以这个生成器排在三个资料生成器
-之后、`build-search.py` 之前。`tools/vocab.py` 扫已生成的产出建表（与 `build-search.py`
-同理：产出结构统一，源稿要分三种方言且没有分节 id），槽位 → 允许的来源页写在
+之后、`build-search.py` 之前。`tools/vocab.py` 读三个资料生成器写出的 `data/index/` 页面索引建表，槽位 → 允许的来源页写在
 `vocab.SLOTS`：「全知之眼」既是异域护甲又是一把传说狙，源稿写在哪个键上就只查哪几页。
 分支页的同名条目由源稿的「分支：」定优先：星相「地狱火」在烈日页与棱镜页各有一条。
 

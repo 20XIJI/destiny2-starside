@@ -106,8 +106,7 @@ ICON_BASE = 'https://www.bungie.net/common/destiny2_content/icons/'
 def library():
     """事实层的物品表，摆成这个脚本原来那份导出的形状，外加主键。
 
-    **不再要人工指一份 49 MB 的导出**：manifest 的蒸馏产物已经在 data/manifest/ 里入库，
-    同一份事实两个副本迟早各走各的。字段名保持原样，转换只在这一处。
+    manifest 的蒸馏产物已经在 data/ 里入库，字段名保持原样，转换只在这一处。
     """
     path = os.path.join(shell.ROOT, 'data', 'inventory-items.json')
     if not os.path.exists(path):

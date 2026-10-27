@@ -152,8 +152,7 @@ def check_terms(files, bad):
 def armor_sets_tokens(bad, site):
     """护甲套装页用到的 token。它走词表着色，源稿里没有 {token|…} 可扫，
     token 全在生成器里：词表那一份由 merge() 并出来，另有三个写在 inline() 的
-    分支表上。从生成器现取，不在这里另存一份名单——从前这里用正则捞元组，
-    只捞得到 PAGE_TERMS 那 7 个，merge() 来的几十个与那三个分支一个都不算数。
+    分支表上。从生成器现取，不在这里另存一份名单。
 
     在函数里 import：convert-armor-sets 自己 import check_terms，模块级会转圈。
     """

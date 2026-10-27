@@ -1,20 +1,8 @@
-// 源稿方言的切格，JS 这一侧的唯一定义。
-//
-// 从前这一条规则在 JS 里有三份（云函数的 cellSpans、edit.js 的 cellSpans、
-// admin.js 的 cells 与 titleEnd），加上 Python 的 markup.cells 与 items 那一份，
-// 一共六份，且**并不等价**：行首空白、缺末尾竖线、全角空格贴格边、`}` 深度可否
-// 为负、`{` 的判据，五处各有分歧。当时它们在语料上碰巧一致，靠的是源稿恰好规整；
-// 踩线的那一行本地照常渲染、三道闸门全绿，只有编辑台静默定位不到——那一格永远
-// 改不了，报的还是「底稿已变，请回资料页重新提交」，而资料页永远是最新的。
-//
-// 现在只剩两份：这一份与 Python 的 markup.cells()。两种语言无法共用源码，那条缝
-// 由 check_quality.py 的 CellSplitting 拿 4500+ 行真表格钉住。
+// 源稿方言的切格与着色标记判读，JS 这一侧的唯一定义（与 Python 的 markup.py 对齐）。
+// 两份实现由 check_quality.py 的 CellSplitting 拿全站表格行钉住。
 //
 // **functions/api/dialect.js 是构建复制过去的，不手改**：云函数只能 require 自己
 // 目录下的东西，而 tcb 只上传 functions/api/。两份逐字相同由 npm test 钉住。
-//
-// 五处分歧各选了一种，判据写在下面。选定的这一种与旧的 split_cells 在全部 4563
-// 行语料上结果逐字相同，换过来不改任何产出。
 ;(function (factory) {
   var api = factory()
   if (typeof module !== 'undefined' && module.exports) module.exports = api

@@ -6,7 +6,7 @@ Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构�
 
 资料页全部由生成器从 `references/` 下的 markdown 源稿产出，产出一律不手改：改文案改 markdown，改结构改生成器的 `render()`，两种情况都重跑脚本。只有首页 `index.html` 是手写的，卡片里的内容预览除外（见 `build-home.py`）。
 
-本文件写每次都用得上的那些：站点骨架、命令、闸门、部署与验证。视觉与排版规范在 `design.md`，四份子系统手册在 `.claude/rules/`，见《子系统手册》。
+本文件写每次都用得上的那些：站点骨架、命令、闸门、部署与验证。视觉与排版规范在 `design.md`，五份子系统手册在 `.claude/rules/`，见《子系统手册》。
 
 ## 目录
 
@@ -163,8 +163,7 @@ build-home.py      各页产出 → 首页每张卡的内容预览。挑哪几�
                    图标从那一页现取；轮换卡的「本周／此刻」由首页一段内联脚本按本机时钟填
 migrate.py         配装源稿 markdown ⇄ 结构化记录，来回逐字节比对；资料页该结构化
                    还是留 markdown 由 --classify 按行标题能否落到主键上机械判定
-icons.py           按主键把官方图拉回来转 WebP，落 assets/icons/，
-                   data/icons.json 记「官方图 → 文件名」。一件东西一张图
+icons.py           按主键把官方图拉回来转 WebP，落 assets/icons/。一件东西一张图
 build-search.py    各页产出 → assets/search.js，首页那只搜索框搜的就是它
 pinyin.py          data/ 物品名 → assets/pinyin.js。全表 tools/pinyin.json，
                    构建时按物品、套装、护甲模组族的中文名裁词典与英文名；介绍不进表。换拼音数据才 --distill
@@ -195,7 +194,7 @@ json2xlsx.py       把上面那份 JSON 还原成 xlsx，供核对与二次编�
 
 ## 子系统手册
 
-四份手册在 `.claude/rules/`，头部各带一段 `paths:`，改到对应文件时由 harness 自动载入；
+五份手册在 `.claude/rules/`，头部各带一段 `paths:`，改到对应文件时由 harness 自动载入；
 做计划、还没碰文件时不会触发，那时按这张表自己去读。
 
 | 手册 | 管什么 | 改到这些文件时载入 |
@@ -219,7 +218,7 @@ npm test                                      # 两份离线回归，约 1 秒�
 python3 tools/convert-artifact-mods.py        # 源稿 references/keys/artifact-mods.md
 python3 tools/convert-armor-sets.py           # 源稿 references/keys/armor-sets.md
 python3 tools/convert-doc.py [slug]           # 源稿 references/{docs,keys}/*.md，省略 slug 即全部
-python3 tools/convert-build.py                # 源稿 references/builds/<赛季>/*.md
+python3 tools/convert-build.py                # 源稿 references/builds/<赛季>/*.json
 python3 tools/build-weapons.py                # 装备库：实体层 → weapons/ 三份载荷与页壳
 python3 tools/build-home.py                   # 首页卡片的内容预览，从各页产出现取
 python3 tools/build-search.py                 # 全站搜索索引 assets/search.js（顺手裁 pinyin.js）
@@ -228,9 +227,9 @@ python3 tools/check_shell.py                  # 各页外壳逐字一致
 python3 tools/check_terms.py                  # 术语正名、着色 token、更新时间
 python3 tools/check_type.py                   # 字距与中文、CSS 简写有效性、产出结构
 
-python3 tools/mods.py --distill <导出.json>   # 护甲模组变体 → tools/mod-variants.json
-python3 tools/mods.py --moves   <导出.json>   # 位移技能 → tools/moves.json
-python3 tools/mods.py --arts    <导出.json>   # 七件神器 → tools/artifacts.json
+python3 tools/mods.py --distill               # 护甲模组变体 → tools/mod-variants.json
+python3 tools/mods.py --moves                 # 位移技能 → tools/moves.json
+python3 tools/mods.py --arts                  # 七件神器 → tools/artifacts.json
 python3 tools/mods.py --icons                # 按两张表下载图标并转 WebP
 
 python3 tools/items.py --distill <导出.json>  # 官方物品表 → tools/items.json，换赛季跑

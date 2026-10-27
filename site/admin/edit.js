@@ -285,8 +285,8 @@
   function shape (node, at) {
     if (at.cell >= 0) return 'cell'
     if (node.closest('tr.lane')) return 'lane'
-    if (DOC === 'artifact-mods' && node.tagName === 'H4') return 'mod'
-    if (DOC === 'artifact-mods' && node.tagName === 'H2') return 'artifact'
+    if (DOC === 'keys/artifact-mods' && node.tagName === 'H4') return 'mod'
+    if (DOC === 'keys/artifact-mods' && node.tagName === 'H2') return 'artifact'
     return /^(H[1-6]|P|LI|DT|DD)$/.test(node.tagName) ? node.tagName : ''
   }
 
@@ -813,8 +813,7 @@
 
   // ── 装载 ───────────────────────────────────────────────────────────
   function reload () {
-    // **一发拿回正文、hash 与待审。**从前是 doc 再 pend 两发串行，而后者串在
-    // 前者后面只为拿 hash 与页面上那份比一次——那一比服务端自己做得了。
+    // **一发拿回正文、hash 与待审。**
     // **页面上那份 hash 与库里相等就没有待上站的改动**，一处都不必比；
     // 不等才把已通过的那些取回来认出「这一格站上还是旧的」，由后端一并判。
     // 主键页另带出处表里每条记录构建时的 hash，库里不同的那几条整条带回来。
@@ -964,9 +963,7 @@
         buildPane(chip, got.md)
       })
       /* **收尾用 .catch，不用 .then 的第二个参数。**那一份只接前一环的失败，
-         接不住成功回调自己抛的——chip 会永远停在「载入中…」，控制台外一声不响。
-         这条路上真抛过：data-src 一度写成产出目录 builds/s29/…，而库里的 _id
-         那一截是源稿目录 builds/s29-凯旋纪念碑/…。 */
+         接不住成功回调自己抛的——chip 会永远停在「载入中…」，控制台外一声不响。 */
       .catch(function (e) {
         chip.textContent = '编辑'
         // 走 say() 要 admin.js 已经在手里；载它那一步自己失败时退回原话。

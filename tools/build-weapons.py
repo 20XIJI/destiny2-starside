@@ -548,7 +548,7 @@ def artifact_mods(F):
     名字、图标、归属与说明现读神器模组页的索引：同一枚模组可以挂在几件神器上（群敌
     飞梭在好奇之器与废墟石板上是同一个 hash），记录上的 site_artifact
     只记得一件；图标由那一页源稿的「图标」行定，可以与记录上的官方图不同（乘胜追击）；
-    说明用那一页渲染好的一份，那一页的方言不开富文本（见 CLAUDE.md），这里再渲染一遍
+    说明用那一页渲染好的一份，那一页的方言不开富文本（见 AGENTS.md），这里再渲染一遍
     会各渲各的。
     """
     import pagedex
@@ -789,7 +789,7 @@ def rolls_of(F, h):
         got = [str(m) for m in rec.get('members') or ()]
         if rec.get('kind') != '组合' or not got or got[0] != h:
             continue
-        # 自发主键的作者块沿用源表的中文列名作键（见 CLAUDE.md），翻成武器记录那一套
+        # 自发主键的作者块沿用源表的中文列名作键（见 AGENTS.md），翻成武器记录那一套
         # 字段名，评级与理由才取得到。
         au = {who: {rows.AUTHOR_FIELDS[who].get(k, k): v for k, v in blk.items()}
               for who, blk in rows.authors_of(rec).items() if who in rows.AUTHOR_FIELDS}

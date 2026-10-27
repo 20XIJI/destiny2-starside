@@ -275,8 +275,7 @@ class Facts:
 
         事实层的键一律是裸 hash、文件即命名空间，所以前缀只活在**站内的键**上，
         用来说这个数字该去哪张表查——裸 hash 不唯一，`inventory-items` 与
-        `sandbox-perks` 撞了 6 个号，且是同名插件与效果。**解前缀只在这里做一次**：从前 key_name()
-        与 icons.icon_of() 各写一份，改一处漏一处。
+        `sandbox-perks` 撞了 6 个号，且是同名插件与效果。**解前缀只在这里做一次**。
         """
         key = str(key)
         for prefix, table in (('perk:', self.perks), ('trait:', self.traits),
@@ -369,9 +368,7 @@ class Facts:
                     # 全库 4416 个 false 都在护甲的池子上。
                     if p.get('currentlyCanRoll', True):
                         plugs.append(p['plugItemHash'])
-                # **插件也可以直接内联在这一栏上，不经 plugSet。**起源特性那一栏
-                # 常常是这样（548 条），从前只读 plugSet，那 2124 枚起源全漏在池外
-                # ——而「词条全覆盖」是主键判定的第一档判据。
+                # **插件也可以直接内联在这一栏上，不经 plugSet**（起源特性栏有 548 条如此）。
                 for p in e.get('reusablePlugItems') or ():
                     if p['plugItemHash'] not in plugs:
                         plugs.append(p['plugItemHash'])
@@ -467,8 +464,7 @@ def pick(facts, hits, version='', perks=()):
     """多个版本里挑一个。返回 (hash 或 None, 依据, 仍未排除的候选)。
 
     **分不出就交出候选，不按序号猜。**复刻的版本之间差的是词条池与来源，序号大小
-    不表示哪个是站内说的那个；曾经拿「序号最大」兜底，把 352 条词条选成了它们的
-    强化孪生条目。"""
+    不表示哪个是站内说的那个。"""
     if len(hits) == 1:
         return hits[0], '唯一', hits
     want = {norm(p) for p in perks if p} - {'无', ''}
@@ -696,9 +692,7 @@ def stamper(page):
     所以一律回列表；武器与护甲那几页每次只有一条。
 
     **交主键，不交 HTML 片段。**主键的去处是 data/index/<页>.json，那一份才是
-    跨页引用读的。从前这里回的是 ` data-hash="…"`，三个生成器各按
-    `len(' data-hash="')` 切回来——属性名一改，切出来的是一串仍然全是数字、
-    看着合法的截断主键，而 HTML 那一侧是对的，两者从此分歧。
+    跨页引用读的。
     """
     if page in SET_PAGES:
         def set_stamp(name, parts=()):     # parts 用不上：套装名不是组合行

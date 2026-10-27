@@ -411,10 +411,7 @@ a.who:hover { color: var(--accent); }
   transition: opacity .18s ease;
 }
 
-/* **cursor 按可点的那两种标签给，不给 .item 本身。**从前只有 .item.empty 写了
-   pointer，而 form.js 填上内容后会摘掉 empty——填好的格子于是变回箭头光标，
-   选择器网格里几百枚候选同病。位移技能那一格是 <span>（站内没有对应资料页），
-   照旧不该有手型。 */
+/* **cursor 按可点的那两种标签给，不给 .item 本身**（位移技能那一格是不可点的 <span>）。 */
 a.item,
 button.item { cursor: pointer; }
 
@@ -1050,8 +1047,7 @@ body:has(.entries) { --wrap: 1500px; }
 }
 
 /* **导入与投稿是这一条上仅有的两枚会改掉东西的**：导入覆盖整页已填的内容，投稿把
-   它发出去。导入原先混在复制、截图中间，与那几枚「看一眼」的同为素 chip，按下去
-   才发现整页被盖掉了。挪到右端与投稿并列，尺寸同重——两枚一眼就看得出是另一类。
+   它发出去，并列在右端且尺寸同重。
 
    同重但不同色：投稿填色，导入描边。两枚都填色会读成一对同义按钮，正是要避免的。 */
 #to-import {
@@ -1345,9 +1341,7 @@ button.item { width: 100%; }
   cursor: pointer;
 }
 
-/* **可点的标签要与纯展示的标签在静置态就分得开。**两者共用上面那条形状规则，
-   从前只有 hover 才有区别——鼠标扫过之前，读者没法知道这一排是能选的。
-   边框提到 --hair-lit 一档：同一个形状，线亮一点即可，不必另造一种框。 */
+/* **可点的标签在静置态把边框提到 --hair-lit**，与纯展示的标签分得开。 */
 .tagset > button { border-color: var(--hair-lit); }
 
 .tagset > button:hover { color: var(--bone-hi); }
@@ -1480,9 +1474,7 @@ button.item { width: 100%; }
 
 /* 视图开关借 .slot-tool 那套素框，不另造一种按钮：它与面板标题右边那些控件
    同一档分量。 */
-/* 展开开关比正常动作按钮小一档：它挂在「N 套」那行小字右边。形状与三态归 .toggle，
-   这里只压尺寸。**按下态从前落空**：set.js 写了 aria-pressed，样式表没接，展开与
-   收起长得一模一样；接进 .toggle 之后自动就有了。 */
+/* 展开开关比正常动作按钮小一档：挂在「N 套」小字右边，形状与三态归 .toggle，这里只压尺寸。 */
 .viewsw {
   padding: 3px 10px;
   font: inherit;

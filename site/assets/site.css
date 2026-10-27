@@ -138,8 +138,7 @@
      无 JS 时取这个默认值（只有导航行的高度）。 */
   --stick: 45px;
 
-  /* 外壳叠色：石墨底上一层白，浓度即层级。原先 34 处散着 9 种透明度，
-     同一个 #ffffff06 兼任表头底、刻线、行 hover 五种语义，改一处得全站翻。
+  /* 外壳叠色：石墨底上一层白，浓度即层级。
      这六个是槽位，不是新色相——白叠白不引入色相，不与元素编码争。 */
   --tint-1: #ffffff04;             /* 最浅：行标题列的底 */
   --tint-2: #ffffff05;             /* 交替行，兼格子的静置底 */
@@ -148,8 +147,6 @@
   --row-hover: #ffffff0b;          /* 悬停：要压过格子自己的 --tint-2 才看得出来 */
   --field-fill: #ffffff0d;         /* 搜索框聚焦底 */
 
-  /* UI 强调色：焦点环、当前 chip、卡片左缘。原先直接写 --c-arc，于是
-     元素页想换个颜色就得整条重抄。子页面覆盖这一个变量即可。 */
   /* 作者推荐的光圈。两位作者各一色，只画在词条图标外圈，不上文字。装备库与
      购物清单共用，所以定义在这里。Aegis 天蓝（与最近的 --c-stasis ΔE 29.0）；
      小棒猪（LGpig）取头像那只小猪的耳朵粉（与最近的 --c-prism ΔE 18.2）。两位都
@@ -160,6 +157,7 @@
   --halo-both: conic-gradient(var(--c-arc), var(--c-solar), var(--c-void), var(--c-stasis),
                               var(--c-strand), var(--c-prism), var(--c-arc));
 
+  /* UI 强调色：焦点环、当前 chip、卡片左缘。子页面覆盖这一个变量即可换色。 */
   --accent: var(--c-arc);
   /* 强调色的暖端，只服务首屏那枚发电能量核的悬停态。一冷一暖是那件东西
      唯一的状态变化，借的是烈日橙的渲染色——外壳上不会出现元素着色，
@@ -475,8 +473,8 @@ a { color: var(--bone); }
    .toggle  开关——改变看得见什么：哪些行、哪几列、哪条曲线、哪一个视图。
    .op      动作——改数据或产生副作用：通过、驳回、保存、删除、投稿、复制、截图。
 
-   三件事曾经挤在 .chip 一套样式里，而它们对「显不显眼」的要求相反：一排十六枚跳转
-   常驻边框读成十六个盒子，两三枚动作不显形就找不着。分开之后各取各的默认。
+   三者对「显不显眼」的要求相反：一排十六枚跳转常驻边框读成十六个盒子，
+   两三枚动作不显形就找不着。
 
    切角管面板（.entry），角标管跳转（.chip），边框管控件（.toggle / .op）——
    同一套形状语言的三个尺度。 */
@@ -489,8 +487,7 @@ a { color: var(--bone); }
   font-family: var(--font-cn);
   font-size: 12.5px;
   text-decoration: none;
-  /* 列组开关是 <button>，UA 默认带一圈 outset 边框。原先靠 1px transparent 边框
-     压住，改成角标之后这里要显式清零，否则武器框架页那排开关会自己长出边框。 */
+  /* 列组开关是 <button>，显式清零 UA 默认边框。 */
   border: 0;
   transition: color .15s ease;
 }
@@ -527,13 +524,12 @@ a { color: var(--bone); }
 }
 
 /* **一排多枚的开关退回素字。**密度由容器判定，一处定义——建这些开关的
-   app.js / rota.js 不必知道自己被摆在哪里。
-   四处：资料页工具条与折线图工具条（.tool-chips）、配装索引页那两条居中的场景与
-   强度开关（.facet-bar）与工具条那块共用面板里的三组（.tuck-row）、轮换的上周本周
-   下周（.rota-btns）。
+   app.js 不必知道自己被摆在哪里。
+   三处：资料页工具条与折线图工具条（.tool-chips）、配装索引页那两条居中的场景与
+   强度开关（.facet-bar）、工具条那块共用面板里的三组（.tuck-row）。
    工具条上那几个下拉框不在内：一排只有三四枚触发器，素字反而找不着，它们留在
    .toggle 的默认档（有框）。 */
-:is(.tool-chips, .facet-bar, .rota-btns, .tuck-row) .toggle {
+:is(.tool-chips, .facet-bar, .tuck-row) .toggle {
   padding: 6px 12px;
   font-family: var(--font-cn);
   font-size: 12.5px;
@@ -546,8 +542,8 @@ a { color: var(--bone); }
    自己的 color，角标自动跟上，三种状态不必各写一遍边框色。 */
 .chip::before,
 .chip::after,
-:is(.tool-chips, .facet-bar, .rota-btns, .tuck-row) .toggle::before,
-:is(.tool-chips, .facet-bar, .rota-btns, .tuck-row) .toggle::after {
+:is(.tool-chips, .facet-bar, .tuck-row) .toggle::before,
+:is(.tool-chips, .facet-bar, .tuck-row) .toggle::after {
   content: "";
   position: absolute;
   width: 7px;
@@ -558,10 +554,10 @@ a { color: var(--bone); }
 }
 
 .chip::before,
-:is(.tool-chips, .facet-bar, .rota-btns, .tuck-row) .toggle::before { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+:is(.tool-chips, .facet-bar, .tuck-row) .toggle::before { top: 0; left: 0; border-right: 0; border-bottom: 0; }
 
 .chip::after,
-:is(.tool-chips, .facet-bar, .rota-btns, .tuck-row) .toggle::after { right: 0; bottom: 0; border-left: 0; border-top: 0; }
+:is(.tool-chips, .facet-bar, .tuck-row) .toggle::after { right: 0; bottom: 0; border-left: 0; border-top: 0; }
 
 .chip:hover { color: var(--bone-hi); }
 
@@ -571,12 +567,12 @@ a { color: var(--bone); }
 .chip:hover::after,
 .chip[aria-current="true"]::before,
 .chip[aria-current="true"]::after,
-:is(.tool-chips, .facet-bar, .rota-btns, .tuck-row) .toggle:hover::before,
-:is(.tool-chips, .facet-bar, .rota-btns, .tuck-row) .toggle:hover::after,
-:is(.tool-chips, .facet-bar, .rota-btns, .tuck-row) .toggle[aria-pressed="true"]::before,
-:is(.tool-chips, .facet-bar, .rota-btns, .tuck-row) .toggle[aria-pressed="true"]::after,
-:is(.tool-chips, .facet-bar, .rota-btns, .tuck-row) .toggle[aria-current="true"]::before,
-:is(.tool-chips, .facet-bar, .rota-btns, .tuck-row) .toggle[aria-current="true"]::after { opacity: 1; }
+:is(.tool-chips, .facet-bar, .tuck-row) .toggle:hover::before,
+:is(.tool-chips, .facet-bar, .tuck-row) .toggle:hover::after,
+:is(.tool-chips, .facet-bar, .tuck-row) .toggle[aria-pressed="true"]::before,
+:is(.tool-chips, .facet-bar, .tuck-row) .toggle[aria-pressed="true"]::after,
+:is(.tool-chips, .facet-bar, .tuck-row) .toggle[aria-current="true"]::before,
+:is(.tool-chips, .facet-bar, .tuck-row) .toggle[aria-current="true"]::after { opacity: 1; }
 
 .toggle:hover,
 .op:hover { color: var(--bone-hi); border-color: var(--accent); }
@@ -586,10 +582,10 @@ a { color: var(--bone); }
 .op[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
 
 /* 素字态的开关没有边框可上色，只换字色——角标跟着 currentcolor 走。 */
-:is(.tool-chips, .facet-bar, .rota-btns, .tuck-row) .toggle:hover { border-color: transparent; }
+:is(.tool-chips, .facet-bar, .tuck-row) .toggle:hover { border-color: transparent; }
 
-:is(.tool-chips, .facet-bar, .rota-btns, .tuck-row) .toggle[aria-pressed="true"],
-:is(.tool-chips, .facet-bar, .rota-btns, .tuck-row) .toggle[aria-current="true"] { border-color: transparent; }
+:is(.tool-chips, .facet-bar, .tuck-row) .toggle[aria-pressed="true"],
+:is(.tool-chips, .facet-bar, .tuck-row) .toggle[aria-current="true"] { border-color: transparent; }
 
 /* **禁用要连 hover 一起掐掉。**只写 opacity 的话，hover 那条同权重、属性不重叠，
    照样会点亮——禁用的按钮在鼠标下亮起来，读者会以为它能点。 */
@@ -831,9 +827,7 @@ main {
 
 /* 注解：作者的话与限制说明，全站只有这一种叫法，也只有这一个类。字重回到正文，
    颜色走自己那支浅玫瑰粉——它不参与任何游戏内编码，所以不与元素色相争。
-   **.note 只给注解。**它曾经兼任四种活：dps 行标题后的武器类别、元素页的空格
-   占位、修改器的强弱箭头，都挂在这一个类上，颜色于是从「这是作者的话」退化成
-   「这不重要」。类别走 .kind，占位走 .na，箭头是内容、不着色。 */
+   **.note 只给注解**：类别走 .kind，占位走 .na，箭头是内容、不着色。 */
 .note { color: var(--note); font-weight: 400; }
 
 /* 行标题后面那一截武器类别（dps 页的「攻击型框架 · 刀剑」）：身份的第二级，不是
@@ -855,7 +849,7 @@ main {
 }
 
 /* ── 资料页骨架：分节与生成表格 ──
-   五个走 tools/convert-doc.py 的页面产出同一套结构（.block / .sect-label /
+   走 tools/convert-doc.py 的页面产出同一套结构（.block / .sect-label /
    .gen），版式因此只写这一份。页面表只留真差异：版心一档、表格是否 separate、
    本页专属的列宽与列对齐。 */
 

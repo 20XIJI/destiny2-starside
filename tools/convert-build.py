@@ -1,4 +1,4 @@
-"""配装推荐：references/builds/<赛季>/<slug>.md → builds/<赛季号>/<slug>/index.html。
+"""配装推荐：references/builds/<赛季>/<slug>.json → builds/<赛季号>/<slug>/index.html。
 
 用法：python3 tools/convert-build.py [slug]，省略 slug 即全部。
 
@@ -185,12 +185,12 @@ GLYPH = {
     '神器': 'M8 1.5 14 5v6l-6 3.5L2 11V5Zm0 4.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z',
     '生命': 'M6.5 2h3v4.5H14v3H9.5V14h-3V9.5H2v-3h4.5Z',
     # 近战是一把短刃：菱形（星相）与三角（碎片）已经占了几何形，刀有握柄与刃尖，
-    # 16px 下仍分得出朝向。旧那枚是个钝五边形，放到 96px 也读不出是什么。
+    # 16px 下仍分得出朝向。
     '近战': 'M2.6 13.4 6.9 9.1M5.7 7.7 9.4 4l3.7 3.7-3.7 3.7Z',
     '手雷': 'M8 5.5a4.2 4.2 0 1 1 0 8.4 4.2 4.2 0 0 1 0-8.4ZM6.5 4h3v1.6h-3ZM10 2.5l2.5 2',
     '超能': 'M8 1.5 9.6 6.4 14.5 8 9.6 9.6 8 14.5 6.4 9.6 1.5 8 6.4 6.4Z',
     '职业': 'M8 2a6 6 0 1 1 0 12A6 6 0 0 1 8 2Zm0 3.2a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6Z',
-    # 武器是一把枪的侧影。旧那枚是右上箭头，读作「外链」或「增长」。
+    # 武器是一把枪的侧影。
     # 不用弹壳：站内「弹药」是另一个概念，有自己的 --ammo-* 与四张购物清单页。
     '武器': 'M1.6 6.2h12.8v2.4h-3.1l-1.3 2.6H7.5L7 8.6H5v3.5H3.2V8.6H1.6Z',
 }
@@ -233,7 +233,7 @@ def extra(kind):
     fname, flag = EXTRAS[kind]
     path = os.path.join(shell.ROOT, 'tools', fname)
     if not os.path.exists(path):
-        die('缺 tools/%s，跑一次 tools/mods.py %s <官方物品表>' % (fname, flag))
+        die('缺 tools/%s，跑一次 python3 tools/mods.py %s' % (fname, flag))
     with open(path, encoding='utf-8') as f:
         table = json.load(f)
     for name, meta in table.items():
@@ -336,9 +336,8 @@ def people(rec, link=True):
 def sets_of(idx, spec):
     """「埃希恩记忆 2 件 × 玻璃拱顶 2 件」或「埃希恩记忆 4 件」。
 
-    **可省。**有些配装本来就不钉死套装（「套装不是 4vog 就行」），填表页与后端
-    也一直允许不写——从前只有这里当它必填，于是一条合法投稿过了审、落了盘，
-    卡住整次构建。省了那一格不出，与「神器：」同一条。 """
+    **可省。**有些配装本来就不钉死套装（「套装不是 4vog 就行」），省了那一格不出，
+    与「神器：」同一条。"""
     if not spec:
         return []
     cells = []
@@ -611,13 +610,10 @@ def stamp_of(md):
 def split_set(rec):
     """记录 → (头部, [每套的记录, …])。`成员` 非空即合集，首个记录是头部。
 
-    单套配装只有一个 `# `，切出来成员为空、头部即整份——两条路因此共用一个入口。
-    **全脚本只有这一处认这个分隔符**：成员块内部就是单套配装的源稿，一字不改，
-    blocks_of() 与填表页的 write()/importMd() 都按块原样复用。
+    单套配装成员为空、头部即整份——两条路因此共用一个入口。
+    成员记录内部就是单套配装的形状，blocks_of() 按条原样复用。
 
-    「合集：是」与第二个 `# ` 互为断言，缺一即中止。只按标记判，写了标记忘了写
-    第二套会出一个空合集；只按 `# ` 判，注解里手滑打出的一个 `# ` 会把半篇正文
-    静默切成第二套。
+    「合集：是」与 `成员` 互为断言，缺一即中止。
     """
     head, members = rec, list(rec.get('成员') or ())
     flag = meta(head, '合集', required=False)
@@ -633,9 +629,6 @@ def split_set(rec):
 
 def scene_of(md):
     """「场景：」。**必填、且只能写一个**，唯一放行的多值组合是 raid + 地牢。
-
-    必填这一条是新的：以前允许整行不写，于是 11 篇源稿一个场景都没有，读者按
-    任何场景筛选时那 11 篇不是「不匹配」而是「不存在」，页面上查不出来。
 
     单选这一条撑着标签那一维：标签的取值随场景变（SCENE_TAGS），一套配装同时
     落在 raid 与 PVP 两个场景里就没有一个确定的标签集。raid 与地牢共用同一套
@@ -763,8 +756,7 @@ def finish(o, scripts):
 def blocks_of(idx, mv, arts, md, ns=''):
     """五个分节：职业、武器、神器模组、护甲、注解。单套与合集里的每一套共用。
 
-    ns 是分节 id 的前缀——一份合集里 N 套各有五节，不加前缀 id 就撞了。单套传
-    空串，产出与从前逐字相同。
+    ns 是分节 id 的前缀——一份合集里 N 套各有五节，不加前缀 id 就撞了。单套传空串。
     """
     branch = branch_of(md)
     prefer = 'elements/%s' % BRANCH[branch]
@@ -823,8 +815,7 @@ def blocks_of(idx, mv, arts, md, ns=''):
     # 「神器：」与「模组：」都可省，缺任一这一节整个不出：合集里的某一套不带神器
     # 模组是常事，而一个空面板读起来是「这套神器一枚模组都不装」，那不是源稿说的
     # 意思。**只写神器不写模组也走这一条**——填表页的 NEED 不管这两项，投稿本来就
-    # 能这么投；从前当场中止，于是审过、落盘之后卡住的是整次 npm run build。
-    # 反过来写了模组却没写神器仍然中止——模组归属正是靠神器定的，猜不得。
+    # 能这么投。反过来写了模组却没写神器仍然中止——模组归属正是靠神器定的，猜不得。
     art = meta(md, '神器', required=False)
     picked = names(md, '模组', required=False)
     if art and picked:
@@ -886,7 +877,7 @@ def blocks_of(idx, mv, arts, md, ns=''):
 # doc_id 是这一篇在库里的 _id，由 build() 一处算好传下来。**不能拿 season 现拼**：
 # 产出目录是 s29，而源稿目录（也就是 _id 那一截）是 s29-凯旋纪念碑，两者不是一回事。
 def render(idx, mv, arts, md, slug, season, name_cn, doc_id):
-    """一份源稿一个页面。有第二个 `# ` 就是合集，走另一条路。"""
+    """一份源稿一个页面。带「成员」即合集，走另一条路。"""
     head, members = split_set(md)
     if members:
         return render_set(idx, mv, arts, head, members, slug, season, name_cn, doc_id)
@@ -1308,9 +1299,8 @@ def render_index(made, sets=False):
     留着但视觉隐藏（.off-screen），不然强度就成了只靠颜色编码的信息，读屏软件
     与色觉差异的读者取不到。
 
-    **五个维度全部写成卡片上的 data 属性。**以前职业读 <ul> 上面那级标题、标签读
-    卡里的 <i>、只有分支写 data-，三个异构的提取器散在 app.js 里。现在一律走
-    data-：app.js 那边因此只剩一个通用提取器，也不再需要认识这一页长什么样。
+    **五个维度全部写成卡片上的 data 属性**：app.js 那边因此只剩一个通用提取器，
+    不需要认识这一页长什么样。
 
     **职业、场景与强度渲染到页面里，各占一排居中的素字开关。**这三维是读者一进来
     就要拿的主意，摊开比收起来更好认。分支、标签是低频检索，收进同一块面板
@@ -1553,10 +1543,7 @@ def render_vocab(idx):
             if slot == 'Perk':
                 perk_at[cols[0]] = i
         rows.append('%s:[%s]' % (json.dumps(slot, ensure_ascii=False), ','.join(cells)))
-    # **分节括注的切分符号是契约，不是 form.js 的私事**：从前它在
-    # vocab.bare_kind 与 form.js 的 bare() 里各写一份，改一处就是七个神器格
-    # 全部列不出候选，而页面照常渲染、三道闸门全绿。测试当时只能拿正则去
-    # form.js 的源码里刮那个字面量。现在从这里发过去，两边同一个来源。
+    # **分节括注的切分符号是契约**：由 vocab.KIND_TAIL 一处定义并发给前端。
     body = ('window.starsideVocab = {\nsep: %s,\nlists: {\n%s\n},\nslots: %s,'
             '\nperks: %s,\nspirits: %s,\nexoticCols: %s,\nbuckets: %s\n};\n'
             % (json.dumps(vocab.KIND_TAIL, ensure_ascii=False),
@@ -1692,8 +1679,7 @@ def exotic_columns(idx):
 def spirit_columns(idx):
     """`{异域职业物品名: [[一栏的名字…], [另一栏的…]]}`。
 
-    一件职业物品两栏各 8 条，掉落时一栏各开一条。从前填表页按词尾「之灵」筛，
-    36 条全列出来，选得出同一栏的两条——那在游戏里开不出来。
+    一件职业物品两栏各 8 条，掉落时一栏各开一条。
     """
     facts = rows.facts()
     out = {}

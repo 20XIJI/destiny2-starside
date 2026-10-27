@@ -13,7 +13,7 @@ paths:
 改 `functions/api/`、`admin/` 下任一文件、`tools/sync.py` 或 `tools/build-terms.py`
 之前读这一份。
 
-改发布链或云函数之前必跑 `npm test`。站点全局的机制与闸门在 `CLAUDE.md`。
+改发布链或云函数之前必跑 `npm test`。站点全局的机制与闸门在 `AGENTS.md`。
 
 
 站点只有一个后端：`functions/api/`，一支 Node 云函数挂在 CloudBase 的 HTTP 访问
@@ -431,29 +431,27 @@ editors  { _id: uid, name, lv, at }
 **索引页与填表页一律不戴 `data-src`**：填表页被编辑台当 iframe 载进来，戴上就是每换
 一条配装白下一次 `edit.js`。
 
-开编辑态只等一发。从前是四个串行往返：`terms.js` → `admin.js` → `doc` → `pend`。
-两头各去掉一段：
+开编辑态只等一发：
 
-1. 词表现读，不在模块顶层捕获。`admin.js` 从前一进来就把 `window.starsideTerms`
-   存进 `T`，`terms.js` 因此必须先执行，两份脚本只能串行注入。改成 `lint()` 里现读之后
-   顺序约束消失：`toggle()` 只注入 `admin.js`，104 KB 的词表进编辑态之后空闲预取，
+1. 词表现读，不在模块顶层捕获。`admin.js` 在 `lint()` 里现读 `window.starsideTerms`：
+   `toggle()` 只注入 `admin.js`，104 KB 的词表进编辑态之后空闲预取，
    点开某一块时若还没到就等它一次，到了再把调色板与闸门提示补上。预览不等它。
    `paint()` 只认花括号、不查词表，所以改完当场就看得见渲染的样子。
-   同一条也让 `/admin/` 那一屏不必再引 `terms.js`：`lint()` 全仓只有 `edit.js` 一个
-   调用点，编辑台自己从不跑闸门，那 20.5 KB gz 是白下的，`.js` 只有 5 分钟浏览器缓存。
+   同一条也让 `/admin/` 那一屏不必引 `terms.js`：`lint()` 全仓只有 `edit.js` 一个
+   调用点，编辑台自己不跑闸门。
 2. `doc` 与 `pend` 合成一发。`pend` 带 `md` 时把这一篇的正文与 hash 一并带回，
    `stale` 由服务端比 `hash` 自己判。它本来就要读一次 `docs`（`judge` 那一路拿正文跑
    `locate`），多带两个字段不多一次查询。
 
 定位标记戳在块级元素上（`<tr>` `<p>` `<li>` `<dt>` `<dd>` `<h2>` `<h4>`），`data-b`
-的值是源稿行号，多行的段落写成区间。`<main data-src="docs/<slug>" data-hash="…">`：
-`data-src` 是这一篇在库里的 `_id`（产出目录 `elements/arc` 与源稿路径 `docs/arc` 不是
-同一个），`data-hash` 是构建时那份源稿的 sha1，与库里 `docs` 那一条的 `hash` 同一个
+的值是源稿行号，多行的段落写成区间。`<main data-src="docs/<slug>" data-src-hash="…">`：
+`data-src` 是这一篇在库里的 `_id`（产出目录 `elements/arc` 与源稿路径 `keys/arc` 不是
+同一个），`data-src-hash` 是构建时那份源稿的 sha1，与库里 `docs` 那一条的 `hash` 同一个
 算法，要在 `land()` 改写链接之前算。
 
 部署空窗现算，不存状态。`edits` 仍只有 0/1/-1 三档，没有「已上站」那一档。通过
 之后那一处就该像没标记过一样，存一位状态会随迭代积出一堆陈旧标记。判法是：
-`data-hash` 与库里的 `hash` 相等就没有待上站的改动，一处都不必比；不等才把该篇
+`data-src-hash` 与库里的 `hash` 相等就没有待上站的改动，一处都不必比；不等才把该篇
 `ok=1` 的记录取回来（`pend` 带 `stale`），判据是页面上这一格显示的正是它的 `before`。
 库里早就是 `after` 了，拿库里比永远相等。
 

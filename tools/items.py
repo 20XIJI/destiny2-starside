@@ -161,7 +161,7 @@ def pattern(word):
 
     表的键是归一化过的（库里就没有空格），源稿按 design.md 三节在汉字与拉丁
     之间补一个空格（半角或不折行空格）。拿键去字面匹配，「Vex 揭秘者」这类
-    中英混排的名字一个都对不上——12 个名字曾经这么整批漏掉。
+    中英混排的名字一个都对不上。
     """
     return BOUND.sub('[ \u00a0]?', re.escape(word))
 
@@ -255,7 +255,7 @@ TERMS = [
     ('最后一愿', None, ['最后遗愿']),
 
     # ── 只管 token，不改中文 ──
-    # 下面这些词的着色曾经分叉，两个 token 渲染色又相同或相近，肉眼查不出来
+    # 下面这些词的相近 token 渲染色相同或相近，肉眼查不出来，由闸门钉死归属
     ('护甲充能', 'armor-charge', []),
     ('焕光', 'el-solar', []),
     ('恢复', 'el-solar', []),
@@ -282,9 +282,7 @@ TERMS = [
     ('减益', 'debuff', []),
 
     # ── 按官方 manifest 校过的正名 ──
-    # 下面这一批出自 2026.8.30 用 Bungie manifest 的 description_zh 逐条对读，
-    # 每条的官方原文写在 ~/Desktop/docs/260830-术语校对清单.html。
-    # 站内曾经写的是社区叫法或旧译，官方文本里一次都不出现。
+    # 出自 Bungie manifest 的 description_zh 逐条对读，禁用写法为社区叫法或旧译。
     ('烈焰火苗', None, ['鬼火', '幽灵手雷']),
     ('束缚', None, ['系缚']),
     ('狂啸', None, ['暴风雪']),
@@ -343,8 +341,6 @@ def banned_pairs():
     """禁用写法 → 正名，摊平成一张对照表。
 
     TERMS 的元组形状（`t[0]` 正名、`t[2]` 禁用写法）只由这一个函数知道。
-    从前 build-weapons、items 与两处回归各自把这句推导抄了一遍，改 TERMS 的
-    结构要同时动四个文件。
     """
     return [(w, t[0]) for t in TERMS for w in t[2]]
 
@@ -826,13 +822,6 @@ def apply(slug=None):
     print('合计 %d 处。跑 npm run build，再看 git diff。' % total)
 
 
-# 配装源稿里的散文：「描述：」那一行的值，以及「## 注解」「## 合集介绍」
-# 「## 审核意见」三节以下的正文。槽位行写的是物品名（「碎片：保护琢面、黎明琢面」），
-# 由词表查表变成带图标的链接，源稿不写颜色——着进去就把名字改了，查表当场中止。
-DESC_LINE = re.compile(r'^(描述：)(.*)$')
-NOTE_HEADS = ('## 注解', '## 合集介绍', '## 审核意见')
-
-
 def build_pages():
     """配装源稿一串。清单现扫，与 check_terms.py 的那一份同形。"""
     root = shell.BUILD_DIR
@@ -845,24 +834,6 @@ def build_pages():
         for name in sorted(os.listdir(d)):
             if name.endswith('.json'):
                 yield os.path.join(d, name)
-
-
-def prose_spans(lines):
-    """{行下标: 从第几个字符起是散文}。描述那一行要跳过「描述：」三个字——
-    hits_in() 见到「键：值」整行不着色，而这一行的值恰恰是要着色的那一段。"""
-    out = {}
-    note = False
-    for i, line in enumerate(lines):
-        stripped = line.strip()
-        if stripped.startswith('# ') or stripped.startswith('## '):
-            note = stripped in NOTE_HEADS
-            continue
-        hit = DESC_LINE.match(line)
-        if hit:
-            out[i] = len(hit.group(1))
-        elif note and not stripped.startswith('#'):
-            out[i] = 0
-    return out
 
 
 def misspelled(text):
@@ -938,14 +909,13 @@ def atomic_write(path, text):
             os.unlink(tmp)
 
 
-# 配装记录里要着色的那几个字段：描述与三个散文分节。与从前 prose_spans() 选中的
-# 那些行一一对应——「描述：」那一行的值，以及注解／审核意见／合集介绍整段。
+# 配装记录里要着色的那几个字段：描述与三个散文分节。
 PROSE_FIELDS = ('描述',)
 PROSE_SECTIONS = ('审核意见', '注解', '合集介绍')
 
 
 def normalize_record(rec, terms, names, path, reports, where=''):
-    """一条配装记录里的散文就地纠正。逐行处理，与它还是 markdown 时同一口径。"""
+    """一条配装记录里的散文就地纠正。逐行处理。"""
     totals = [0, 0, 0]
 
     def fix(text, label):
@@ -995,17 +965,15 @@ def normalize_files(documents, builds):
             atomic_write(path, migrate.dump(rec))
             changed += 1
             print('\n'.join(reports))
-    for path, prose in [(os.path.join(shell.ROOT, p), False) for p in documents]:
+    for p in documents:
+        path = os.path.join(shell.ROOT, p)
         with open(path, encoding='utf-8', newline='') as f:
             original = f.read()
         lines = original.splitlines(keepends=True)
-        if prose:
-            spans = prose_spans(lines)
-        else:
-            skip = head_rows(lines)
-            spans = {i: markup.row_title_end(line) for i, line in enumerate(lines)
-                     if i not in skip and not line.lstrip().startswith('#')
-                     and not KEY_LINE.match(line) and not RULE_LINE.match(line.strip())}
+        skip = head_rows(lines)
+        spans = {i: markup.row_title_end(line) for i, line in enumerate(lines)
+                 if i not in skip and not line.lstrip().startswith('#')
+                 and not KEY_LINE.match(line) and not RULE_LINE.match(line.strip())}
         reports = []
         for i, off in spans.items():
             old = lines[i]

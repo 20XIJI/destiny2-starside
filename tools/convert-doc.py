@@ -54,7 +54,7 @@ CARD_LINE = re.compile(r'^卡片：(.*)$', re.M)
 # 「攻略：标题 | 图 | 链接 | 注解」是站外攻略的一张卡，一行一张。见 guides_of()。
 GUIDE_LINE = re.compile(r'^攻略：(.*)$', re.M)
 # 「轮换：YYYY.M.D」是分节级声明：这一节的表是一条按周走的轮换轴，起始日写在这里。
-# 与「色阶：」同一种做法——按整行剥离，落成表上的 data-rota，由 assets/app.js 读。
+# 与「色阶：」同一种做法——按整行剥离，落成表上的 data-rota，由 assets/rota.js 读。
 ROTA_LINE = re.compile(r'^轮换：(.*)$', re.M)
 # 「周期：YYYY.M.D H:MM 周|日」是表格级声明：紧跟其后的表按固定周数或天数循环，
 # 落成表上的 data-cycle，由 assets/rota.js 按本机时钟高亮当前行。
@@ -709,8 +709,7 @@ def record_region(lines):
                     continue
                 put(key, lane or label)
                 # 异域那两页的「异域特性」格里每个名字各是一件东西（故我在的八条
-                # 固有、英勇利刃的三枚核心），各自带主键。登记它们，配装词表才查得到
-                # ——改走 record_region 之前它们是进索引的，那一版丢在迁移里了。
+                # 固有、英勇利刃的三枚核心），各自带主键。登记它们，配装词表才查得到。
                 # kind 写死「异域词条」：武器行与它的词条同页，槽位靠分节分开。
                 for nm, ik in rows.exotic_pool(key).items():
                     ico = rows.icon_file(ik)
@@ -977,8 +976,7 @@ def render(md, slug, digest):
          shell.nav(title, toolbar, up=up,
                    parent=[x.strip() for x in meta('上级', required=False).split('、') if x.strip()]),
          shell.page_head(title),
-         # data-src 是这一篇在库里的 _id，取法见 doc_id_of()
-         # （docs/arc）不是同一个，就地编辑要靠它才找得回源稿。
+         # data-src 是这一篇在库里的 _id（取法见 doc_id_of()），就地编辑靠它找回源稿。
          '<main data-src="%s" data-src-hash="%s">' % (doc_id_of(slug), digest)]
 
     body = META_LINE.sub('', md[md.index('\n'):])
@@ -1150,7 +1148,7 @@ def build(slug):
             md = f.read()
         where = where_of(md, slug)
         # **盘上那一份的 sha1，在展开之前算**：编辑台拿它与库里 docs 那一条的 hash
-        # 比，而库里存的正是盘上这一份。拿展开后的算，四页骨架会永远被判成过期。
+        # 比，而库里存的正是盘上这一份。拿展开后的算，主键骨架页会永远被判成过期。
         digest = src_hash(md)
         # 主键骨架那种表区（「列：A | B | C」加一行一枚主键）展开成 `| 表头 |` 的表，
         # 格子从记录上取，见 rows.py。这条渲染链只认后一种：骨架原样交进去不报错，

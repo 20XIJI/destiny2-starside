@@ -22,9 +22,7 @@ paths:
 
 页面专属的几段拆成同目录下的 ES 模块，由 `app.js` 认出该页的 `data-*` 时动态
 `import()`：`chart.js`（折线图，只有压光伤害页）、`rota.js`（轮盘，只有轮换速查表）、
-`home.js`（首页那只全站搜索框）。这三段合起来是从前 `app.js` 8.9 KB gzip 里的
-6.9 KB，而 34 个引 app.js 的页面里只有 3 个跑得到，其余 31 页白下；拆开之后
-`app.js` 3.9 KB，外壳三件从 27.1K 降到 22.0K。
+`home.js`（首页那只全站搜索框）。按页按需加载，`app.js` 保持精简。
 
 星空分三个文件。`sky-core.js` 是公共件：恒星、星座、光点、流星、银河雾的画法，加上
 `rng`、`token` 这类小工具，`sky.js` 与 `sky-page.js` 各自 import；恒星与星座怎么生成由各页自己写。
@@ -59,7 +57,7 @@ paths:
 `file://` 下同样可用。
 
 `assets/search.js` 由 `tools/build-search.py` 生成，**不手改**。
-站点全局的机制与闸门在 `CLAUDE.md`，视觉规范在 `design.md`。
+站点全局的机制与闸门在 `AGENTS.md`，视觉规范在 `design.md`。
 
 ## 全站搜索
 
