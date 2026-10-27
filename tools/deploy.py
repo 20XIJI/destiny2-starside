@@ -173,8 +173,9 @@ def main() -> None:
     parser.add_argument("--all", action="store_true", help="整站重发")
     parser.add_argument("--dry-run", action="store_true", help="只列清单，不同步或发送")
     parser.add_argument("--prune", action="store_true", help="配合 --all 删除远端额外文件")
+    parser.add_argument("--no-sync", action="store_true", help="跳过对账（外层 ship.sh 刚对过账时用）")
     args = parser.parse_args()
-    full, dry, prune = args.all, args.dry_run, args.prune
+    full, dry, prune, no_sync = args.all, args.dry_run, args.prune, args.no_sync
     if prune and not full:
         parser.error("--prune 只跟 --all 一起用：增量那份清单不是完整的一版，会把没改的文件全删了")
     env = json.loads((ROOT / "cloudbaserc.json").read_text())["envId"]
@@ -189,7 +190,7 @@ def main() -> None:
     base = subprocess.run(["git", "rev-parse", "--verify", REF], cwd=ROOT, text=True, capture_output=True).stdout.strip()
     if not full and not base:
         sys.exit("没有上次部署的记录，先跑一次：python3 tools/deploy.py --all")
-    if not dry:
+    if not dry and not no_sync:
         # 即使没有静态文件差异也要对账；失败或落盘改稿都不能继续发布旧产出。
         result = subprocess.run([sys.executable, "tools/sync.py"], cwd=ROOT)
         if result.returncode:

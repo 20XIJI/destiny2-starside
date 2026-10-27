@@ -120,6 +120,7 @@ def doc_slugs(shell) -> list[tuple[str, Path]]:
 def main() -> int:
     t0 = time.perf_counter()
     force = '--force' in sys.argv[1:]
+    normalize_only = '--normalize-only' in sys.argv[1:]
     if '--help' in sys.argv[1:]:
         print(__doc__)
         return 0
@@ -153,6 +154,9 @@ def main() -> int:
         next_stamp['normalize'] = digest_files(sources + under('tools/items.py'))
     else:
         print('  skip  items.py --normalize', flush=True)
+    if normalize_only:
+        save_stamp({**stamp, 'orch': next_stamp['orch'], 'normalize': next_stamp['normalize']})
+        return 0
 
     import shell  # noqa: WPS433  — 清单现扫，与生成器同一处
     slugs = doc_slugs(shell)
@@ -258,10 +262,10 @@ def main() -> int:
     else:
         print('  skip  build-terms.py', flush=True)
 
+    css_files = sorted((ROOT / 'site').rglob('*.css'))
     gates_dirty = dirty('gates', under(
         'tools/check_shell.py', 'tools/check_terms.py', 'tools/check_type.py',
-        'site/assets/site.css',
-    ))
+    ) + css_files)
     if ran or gates_dirty:
         for name in ('check_shell.py', 'check_terms.py', 'check_type.py'):
             invoke(load_tool(name))

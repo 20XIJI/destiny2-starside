@@ -1102,10 +1102,12 @@ class Generated(unittest.TestCase):
                          'assets/pinyin.js 过期了，跑 python3 tools/build-search.py')
 
     def test_the_cloud_function_carries_the_same_dialect(self):
-        # 云函数只 require 得到自己目录下的东西，所以那一份是复制过去的。
-        fn = (TOOLS.parent / 'functions' / 'api' / 'dialect.js').read_text(encoding='utf-8')
-        self.assertEqual(fn, self.read('admin/dialect.js'),
-                         'functions/api/dialect.js 与 admin/dialect.js 分家了，跑一次构建')
+        # 云函数只 require 得到自己目录下的东西，所以那几份是复制过去的。
+        for src, dst in build_terms.COPIES:
+            with self.subTest(dst=Path(dst).name):
+                self.assertEqual(Path(dst).read_text(encoding='utf-8'),
+                                 Path(src).read_text(encoding='utf-8'),
+                                 '%s 与 %s 分家了，跑一次构建' % (dst, src))
 
 
 class EntityPresentation(unittest.TestCase):
@@ -1235,14 +1237,11 @@ class EntitySource(unittest.TestCase):
     @classmethod
     def socket_kinds(cls):
         if not hasattr(cls, '_kinds'):
-            with open(cls.ROOT / 'data' / 'lookup' / 'socket-types.json',
-                      encoding='utf-8') as f:
-                cls._kinds = {h: v['derived']['kind'] for h, v in json.load(f).items()}
+            cls._kinds = {h: v['derived']['kind'] for h, v in rows.facts().socket_types.items()}
         return cls._kinds
 
     def test_every_source_row_lands_on_a_record_that_says_something(self):
-        import resolve
-        facts = resolve.Facts()
+        facts = rows.facts()
         inpage = self.page_rows()
         nrows = refs = 0
         for slug in tuple(self.BODY) + tuple(self.AUTHORED):
@@ -1294,8 +1293,7 @@ class EntitySource(unittest.TestCase):
         里每一枚都必须是星相；冰影分支的星相类目以 `.totems` 结尾。碎片对各项技能
         的作用写在碎片自己的说明里，不进这里。
         """
-        import resolve
-        facts = resolve.Facts()
+        facts = rows.facts()
         seen = 0
         for table in (facts.items, facts.perks, facts.traits):
             for key, row in table.items():
@@ -1322,8 +1320,7 @@ class EntitySource(unittest.TestCase):
         3468089894 同时用在七种枪型上），所以按枪型记在页面那一枚上，与
         `derived.rate[itemSubType]` 同一种键法。列出的每个枪型都要真有武器用着同名框架。
         """
-        import resolve
-        facts = resolve.Facts()
+        facts = rows.facts()
         carried = collections.defaultdict(set)
         for row in facts.items.values():
             frame = (row.get('derived') or {}).get('archetype')
@@ -1351,8 +1348,7 @@ class EntitySource(unittest.TestCase):
 
         成员都要落到库里的记录上；成员本身再是站内自发的号，组合就套了第二层。
         """
-        import resolve
-        facts = resolve.Facts()
+        facts = rows.facts()
         combos = {k: r for k, r in facts.minted.items() if r.get('kind') == '组合'}
         for key, row in combos.items():
             members = row.get('members') or ()
@@ -1364,8 +1360,7 @@ class EntitySource(unittest.TestCase):
 
     def test_minted_names_live_in_i18n_not_on_the_root(self):
         """minted 没有 manifest，名字与正文一样住 i18n。根上再留一份就是双源。"""
-        import resolve
-        minted = resolve.Facts().minted
+        minted = rows.facts().minted
         for key, row in minted.items():
             self.assertNotIn('name', row, 'minted %s 根上还有 name' % key)
             self.assertTrue(((row.get('i18n') or {}).get('zh-CN') or {}).get('name'),
@@ -1373,8 +1368,7 @@ class EntitySource(unittest.TestCase):
 
     def test_a_mod_family_lists_members_that_exist(self):
         """模组族与组合同一条：members 都要落到物品表，不能再套一层 minted。"""
-        import resolve
-        facts = resolve.Facts()
+        facts = rows.facts()
         families = {k: r for k, r in facts.minted.items() if r.get('kind') == '模组族'}
         self.assertTrue(families, 'minted 里没有模组族')
         for key, row in families.items():
@@ -1453,9 +1447,18 @@ class ManifestLayer(unittest.TestCase):
     LOOKUPS = ('plug-sets.json', 'socket-types.json', 'stat-groups.json')
 
     def table(self, name):
-        where = self.ROOT / 'lookup' if name in self.LOOKUPS else self.ROOT
-        with open(where / name, encoding='utf-8') as f:
-            return json.load(f)
+        f = rows.facts()
+        by_name = {
+            'inventory-items.json': f.items,
+            'sandbox-perks.json': f.perks,
+            'traits.json': f.traits,
+            'stats.json': f.stats,
+            'equipable-item-sets.json': f.sets,
+            'plug-sets.json': f.plug_sets,
+            'socket-types.json': f.socket_types,
+            'stat-groups.json': f.groups,
+        }
+        return by_name[name]
 
     def test_the_key_is_the_record_s_own_hash(self):
         """记录里不写 `hash`：键就是它。
@@ -2030,6 +2033,13 @@ class Deployment(Isolated):
         self.assertEqual((self.remote(), self.refs()), ([], []))
         self.assertNotIn(('command', (sys.executable, 'tools/sync.py')), self.calls)
 
+    def test_no_sync_skips_sync_and_still_uploads(self):
+        self.replace(sys, 'argv', ['deploy.py', '--no-sync'])
+        deploy.main()
+        self.assertNotIn(('command', (sys.executable, 'tools/sync.py')), self.calls)
+        self.assertEqual(self.uploaded, 'published contents')
+        self.assertEqual(self.refs(), [('update-ref', deploy.REF, self.TARGET)])
+
     def test_missing_deploy_ref_requires_all_even_dry(self):
         self.base = ''
         self.replace(sys, 'argv', ['deploy.py', '--dry-run'])
@@ -2592,8 +2602,7 @@ class EditOrigins(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.pages = sorted((TOOLS.parent / 'site').rglob('edit.json'))
-        cls.tables = {t: json.loads(Path(facts.table_file(t)).read_text(encoding='utf-8'))
-                      for t in facts.TABLES}
+        cls.tables = rows.facts().tables
 
     def test_every_keys_page_ships_an_origin_table(self):
         self.assertGreaterEqual(len(self.pages), 20, '主键页的出处表少得不对：%d' % len(self.pages))

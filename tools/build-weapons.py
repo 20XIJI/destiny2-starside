@@ -920,7 +920,8 @@ def build(facts):
     """{相对路径: 文本}。纯函数：测试与 main() 共用。"""
     b = Build(facts)
     F = facts
-    glyphs = json.load(open(TYPE_ICONS, encoding='utf-8'))
+    with open(TYPE_ICONS, encoding='utf-8') as f:
+        glyphs = json.load(f)
 
     # ── 武器 ────────────────────────────────────────────────────────
     weapons = {h: r for h, r in F.items.items() if r.get('itemType') == 3}
