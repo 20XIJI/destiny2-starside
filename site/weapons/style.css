@@ -11,11 +11,13 @@
      ΔE 10.9，按 design.md 一节读作同一个颜色，不另造一支。依据是 Bungie 给强化
      物品专发的那张金色叠加图（enhanced-item-overlay.png）。只上词条圆圈。 */
   --c-enh: var(--c-stack);
-  /* 属性条按来源分段，只换明度不换色相（design.md 一节）。 */
-  --seg-base: #7d8492;
-  --seg-part: #b3b8c2;
-  --seg-perk: #e6e2d6;
   --rail: 240px;
+  --el-1: var(--el-kinetic);
+  --el-2: var(--el-arc);
+  --el-3: var(--el-solar);
+  --el-4: var(--el-void);
+  --el-6: var(--el-stasis);
+  --el-7: var(--el-strand);
 }
 
 /* ── 页首：标题紧贴页眉，下面不画线，靠留白隔开 ─────────────────
@@ -68,12 +70,13 @@
   z-index: 15;
   padding: 10px 22px 6px;
   border-bottom: 1px solid transparent;
-  transition: background-color .2s ease, border-color .2s ease;
+  transition: background-color .2s ease, border-color .2s ease, box-shadow .2s ease;
 }
 
 .wpn-bar.is-stuck {
   background: var(--ink-lift);
   border-bottom-color: var(--hair-lit);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, .55);
 }
 
 /* 计数在框左、视图在框右，框居中；语法卡片挂在它下面 */
@@ -102,7 +105,7 @@
   transition: border-color .24s ease, background-color .24s ease, box-shadow .24s ease;
 }
 
-.wpn-input::placeholder { color: var(--bone-faint); }
+.wpn-input::placeholder { color: var(--bone-dim); }
 
 /* 浏览器自带的清空钮是一枚蓝叉，不在本站色板里；清掉条件走药丸上的 ×。 */
 .wpn-input::-webkit-search-cancel-button { -webkit-appearance: none; }
@@ -133,7 +136,7 @@
 .wpn-scope .toggle,
 .wpn-views > .toggle {
   padding: 5px 12px;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font: 600 13px/1.4 var(--font-cn);
   letter-spacing: .06em;
   background: none;
@@ -425,8 +428,10 @@
   background: none;
   border: 0;
   cursor: pointer;
-  transition: opacity .18s ease, color .15s ease;
+  transition: opacity .18s ease, color .15s ease, background-color .15s ease;
 }
+
+.wpn-quick button:hover { background: var(--tint-2); }
 
 .wpn-quick button:hover,
 .wpn-quick button[aria-pressed="true"] { color: var(--bone-hi); }
@@ -441,7 +446,7 @@
   margin-left: -2px;
   background: var(--bone-hi);
   transform: rotate(45deg) scale(0);
-  transition: transform .2s cubic-bezier(.3, 1.7, .5, 1);
+  transition: transform .18s cubic-bezier(.22, 1, .36, 1);
 }
 
 .wpn-quick button[aria-pressed="true"]::after { transform: rotate(45deg) scale(1); }
@@ -489,7 +494,7 @@
   left: 0;
   top: 50%;
   margin: 0;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font: 400 12.5px/1 var(--font-cn);
   letter-spacing: .04em;
   transform: translateY(-50%);
@@ -497,7 +502,7 @@
   pointer-events: none;
 }
 
-.cs-hint code { color: var(--bone-dim); font: 400 12px/1 var(--font-body); }
+.cs-hint code { color: var(--bone); font: 400 12px/1 var(--font-body); }
 
 .cs-hint::before {
   content: "";
@@ -523,7 +528,7 @@
 .cs-clear {
   margin-left: 4px;
   padding: 4px 8px;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font: 400 12px/1.4 var(--font-cn);
   background: none;
   border: 0;
@@ -557,7 +562,7 @@
   margin-top: -2px;
   background: var(--bone-hi);
   transform: rotate(45deg) scale(0);
-  transition: transform .2s cubic-bezier(.3, 1.7, .5, 1);
+  transition: transform .18s cubic-bezier(.22, 1, .36, 1);
 }
 
 .fc[aria-pressed="true"] { color: var(--bone-hi); }
@@ -665,6 +670,12 @@
   overflow: auto;
   background: var(--ink-lift);
   border: 1px solid var(--hair-lit);
+  animation: pop-in .15s cubic-bezier(.16, 1, .3, 1) both;
+}
+
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
 }
 
 .wpn-refine .pop button {
@@ -758,30 +769,42 @@
 }
 
 .wpn-card:not(.set-card) {
+  --el-c: var(--el-1);
   height: 108px;
   padding: 14px;
   gap: 0 14px;
   align-items: start;
-  background: rgba(14, 17, 25, .82);
+  background: linear-gradient(180deg, rgba(20, 25, 36, .88) 0%, rgba(13, 16, 24, .92) 100%);
   border-color: var(--hair);
+  border-left: 2px solid color-mix(in oklab, var(--el-c) 38%, var(--hair));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
 }
+
+.wpn-card[data-el="1"] { --el-c: var(--el-1); }
+.wpn-card[data-el="2"] { --el-c: var(--el-2); }
+.wpn-card[data-el="3"] { --el-c: var(--el-3); }
+.wpn-card[data-el="4"] { --el-c: var(--el-4); }
+.wpn-card[data-el="6"] { --el-c: var(--el-6); }
+.wpn-card[data-el="7"] { --el-c: var(--el-7); }
 
 .wpn-card:not(.set-card):hover,
 .wpn-card:not(.set-card).is-hover {
-  background: #151a26;
+  background: linear-gradient(180deg, #181e2c 0%, #131824 100%);
   border-color: var(--hair-lit);
+  border-left-color: color-mix(in oklab, var(--el-c) 76%, var(--bone-hi));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08);
 }
 
 /* 异域卡片：左缘一道异域金亮边，底色带一抹极淡的金黄渐变，不夺目但与普通卡片一眼可分。 */
 .wpn-card.is-exo {
   border-left-color: color-mix(in oklab, var(--exotic) 70%, transparent);
-  background: linear-gradient(90deg, rgb(252 183 10 / .07) 0%, rgba(14, 17, 25, .82) 42px);
+  background: linear-gradient(90deg, rgb(252 183 10 / .08) 0%, rgba(14, 17, 25, .88) 46px);
 }
 
 .wpn-card.is-exo:hover,
 .wpn-card.is-exo.is-hover {
   border-left-color: var(--exotic);
-  background: linear-gradient(90deg, rgb(252 183 10 / .12) 0%, #151a26 56px);
+  background: linear-gradient(90deg, rgb(252 183 10 / .13) 0%, #151b28 58px);
 }
 
 .wpn-card:not(.set-card) > div {
@@ -923,13 +946,23 @@
 .wpn-grades .tg-2,
 .wpn-grades .tg-3 { color: var(--bone); font-weight: 400; }
 
-/* 叠层图标：底图、水印、阶级角标、锻造层，最上面是底部打光。每张都是整幅图，图案画在自己那一侧
+/* 叠层图标：底图、水印、阶级角标、锻造层，最上面是底部打光与 1px 内嵌边框。每张都是整幅图，图案画在自己那一侧
    的透明区上，叠满即可。锻造两层整体镜像，与阶级角标分居两边。 */
 .gun {
   position: relative;
   width: 64px;
   height: 64px;
   flex: none;
+  background: var(--panel-b);
+}
+
+.gun::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08);
+  pointer-events: none;
 }
 
 .gun img {
@@ -950,6 +983,10 @@
   inset: 0;
   background: linear-gradient(to top, rgb(254 215 137 / .22), rgb(254 215 137 / 0) 50%);
   pointer-events: none;
+}
+
+.gun.mw::before {
+  box-shadow: inset 0 0 0 1px rgba(254, 215, 137, .24);
 }
 
 .gun.lg { width: 96px; height: 96px; }
@@ -1013,6 +1050,10 @@
   bottom: 0;
   width: 6px;
   cursor: col-resize;
+}
+
+.wpn-rail:hover .grip {
+  background: linear-gradient(90deg, transparent 2px, rgba(255, 255, 255, .1) 2px 3px, transparent 3px);
 }
 
 .wpn-rail .grip:hover,
@@ -1082,7 +1123,10 @@
   transform: rotate(45deg);
 }
 
-.rail-list a[aria-current="page"]::before { background: var(--bone-hi); border-color: var(--bone-hi); }
+.rail-list a[aria-current="page"]::before {
+  background: var(--bone-hi);
+  border-color: var(--bone-hi);
+}
 
 .rail-list a:hover,
 .rail-list a.is-hover { background: var(--row-hover); }
@@ -1128,13 +1172,30 @@
 
 /* 详情 */
 .wpn-one {
+  --el-c: var(--bone-hi);
   display: grid;
   grid-template-columns: minmax(0, 1fr) 336px;
   gap: 0 36px;
   align-items: start;
 }
 
-/* 页眉下面不画线，靠留白隔开 */
+.wpn-one.swap {
+  animation: wpn-one-in .2s cubic-bezier(.16, 1, .3, 1) both;
+}
+
+.wpn-one[data-el="1"] { --el-c: var(--el-1); }
+.wpn-one[data-el="2"] { --el-c: var(--el-2); }
+.wpn-one[data-el="3"] { --el-c: var(--el-3); }
+.wpn-one[data-el="4"] { --el-c: var(--el-4); }
+.wpn-one[data-el="6"] { --el-c: var(--el-6); }
+.wpn-one[data-el="7"] { --el-c: var(--el-7); }
+
+@keyframes wpn-one-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* 页眉下面不画线，靠留白隔开；左上角图标背后一抹极淡的元素／异域环境光，不加内边距以保持 96px 图栏与下方左栏竖向齐平 */
 .one-head {
   grid-column: 1 / -1;
   display: grid;
@@ -1142,6 +1203,14 @@
   gap: 0 24px;
   align-items: start;
   margin-bottom: 44px;
+}
+
+.wpn-one[data-el] .one-head {
+  background: radial-gradient(380px 150px at 48px 48px, color-mix(in oklab, var(--el-c) 10%, transparent), transparent 72%);
+}
+
+.one-head:has(h2.exo) {
+  background: radial-gradient(420px 150px at 48px 48px, color-mix(in oklab, var(--exotic) 11%, transparent), transparent 75%);
 }
 
 .one-head h2 {
@@ -1172,8 +1241,8 @@
   gap: 6px;
 }
 
-/* 事实 chip：点下去把这一条加进查询，改变的是结果栏里看得见什么，所以是 .toggle。
-   一排十来枚，退回素字、静置不显形。 */
+/* 事实 chip：点下去把这一条加进查询，改变的是结果栏里看得见什么，所以是 .toggle；
+   一排十来枚，退回素字（design.md 五之二），悬停提亮并加下划线。 */
 .facts {
   display: flex;
   flex-wrap: wrap;
@@ -1183,16 +1252,17 @@
 .facts .toggle {
   padding: 4px 0;
   color: var(--bone-dim);
-  font: 400 13px/1.5 var(--font-cn);
+  font: 400 13px/1.6 var(--font-cn);
   letter-spacing: 0;
   background: none;
   border: 0;
+  transition: color .15s ease;
 }
 
 .facts .toggle:hover {
   color: var(--bone-hi);
   text-decoration: underline;
-  text-decoration-color: var(--bone-faint);
+  text-decoration-color: var(--bone-dim);
   text-underline-offset: 4px;
 }
 
@@ -1296,8 +1366,8 @@
 .matrix .col h4 {
   margin: 0 0 10px;
   padding-bottom: 8px;
-  color: var(--bone-faint);
-  font: 400 12px/1.6 var(--font-cn);
+  color: var(--bone-dim);
+  font: 600 12px/1.6 var(--font-cn);
   letter-spacing: .1em;
   border-bottom: 1px solid var(--hair);
 }
@@ -1314,7 +1384,9 @@
   text-align: left;
   background: none;
   border: 0;
+  border-radius: 20px 4px 4px 20px;
   cursor: pointer;
+  transition: color .15s ease, background-color .15s ease;
 }
 
 .plug:hover,
@@ -1327,6 +1399,7 @@
   border: 1px solid var(--hair-lit);
   border-radius: 50%;
   background: #1c2230;
+  transition: border-color .15s ease, box-shadow .15s ease;
 }
 
 .plug .ico img {
@@ -1337,7 +1410,11 @@
   border-radius: 50%;
 }
 
-.plug[aria-pressed="true"] { color: var(--bone-hi); font-weight: 600; background: none; }
+.plug[aria-pressed="true"] {
+  color: var(--bone-hi);
+  font-weight: 600;
+  background: linear-gradient(90deg, var(--tint-3) 0%, transparent 94%);
+}
 
 /* 没选中的图标压暗一档：选中的与作者推荐的（光圈）才亮 */
 .plug:not([aria-pressed="true"]):not(:hover):not(.is-hover) .ico img { opacity: .72; }
@@ -1409,6 +1486,17 @@
 
 /* 固定栏（起源特性只有一枚）：没有可选项，灰掉选择态。 */
 .plug.fixed { cursor: default; }
+.plug.fixed:hover,
+.plug.fixed.is-hover { background: none; }
+.plug.fixed[aria-pressed="true"] {
+  color: var(--bone);
+  font-weight: 400;
+  background: none;
+}
+.plug.fixed[aria-pressed="true"] .ico {
+  border-color: var(--hair-lit);
+  box-shadow: none;
+}
 
 /* 神器模组：一件神器一行，神器名在左、模组在右；末一行是通用的那几枚。 */
 .amods {
@@ -1434,33 +1522,25 @@
 .amod:hover { color: var(--bone-hi); }
 .amod:hover img { opacity: 1; }
 
-/* 大师杰作与模组：两个方形插槽，与游戏里武器页那一排同形。空着画虚线框。
+/* 大师杰作与模组：两个方形插槽，与游戏里武器页那一排同形。空着画虚线框加发丝十字。
    推荐的那一格同样画光圈，只是随插槽画成方的。 */
-.gear-sec { position: relative; }
-
-.slots {
-  display: flex;
-  gap: 28px;
-}
-
-.slot-cell {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
 .slot {
   position: relative;
-  width: 52px;
-  height: 52px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
   padding: 0;
-  background: #1c2230;
+  color: var(--bone-dim);
+  background: var(--tint-2);
   border: 1px solid var(--hair-lit);
   cursor: pointer;
+  transition: border-color .15s ease, color .15s ease;
 }
 
 .slot img { display: block; width: 100%; height: 100%; }
-.slot:hover, .slot.is-hover { border-color: var(--accent); }
+.slot:hover, .slot.is-hover { color: var(--bone-hi); border-color: var(--accent); }
 
 .slot.is-empty {
   background: none;
@@ -1470,42 +1550,25 @@
 .slot.is-empty::after {
   content: "";
   position: absolute;
-  inset: 50% 18px auto;
+  inset: 50% 14px auto;
   height: 1px;
-  background: var(--bone-faint);
+  background: currentcolor;
 }
 
 .slot.is-empty::before {
   content: "";
   position: absolute;
-  inset: 18px auto 18px 50%;
+  inset: 14px auto 14px 50%;
   width: 1px;
-  background: var(--bone-faint);
+  background: currentcolor;
 }
 
 .slot.by-a::before {
   content: "";
   position: absolute;
-  inset: -5px;
-  border: 2px solid var(--au-aegis);
+  inset: -2px;
+  border: 1px solid var(--au-aegis);
 }
-
-.slot-lab {
-  display: flex;
-  flex-direction: column;
-  font: 400 12.5px/1.6 var(--font-cn);
-  color: var(--bone-dim);
-}
-
-.slot-lab b { color: var(--bone-faint); font-weight: 400; font-size: 12px; }
-
-/* T 级：这把枪自己的阶级，与大师杰作分开选。 */
-.slot-cell.tier .slot-lab { gap: 4px; }
-.tiers { display: flex; gap: 3px; }
-.tiers .toggle { padding: 1px 8px; font-size: 12px; letter-spacing: .04em; }
-.slot-lab .hint { color: var(--bone-faint); font-size: 11.5px; }
-
-.gear-sec > .tip { left: 64px; top: 40px; }
 
 .picker {
   position: absolute;
@@ -1668,9 +1731,9 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: 2px 6px;
-  margin-top: 4px;
+  margin-top: 6px;
   color: var(--bone-hi);
-  font: 700 24px/1.25 var(--font-disp);
+  font: 700 21px/1.2 var(--font-disp);
   letter-spacing: .02em;
 }
 
@@ -1767,12 +1830,12 @@
   display: flex;
   overflow: hidden;
   border: 1px solid var(--hair);
-  border-radius: 4px;
+  border-radius: 2px;
   background: var(--tint-1);
 }
 .stats-mode-btn {
   padding: 2px 8px;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   background: none;
   border: 0;
   font: 600 11px/1.4 var(--font-body);
@@ -1780,7 +1843,7 @@
   cursor: pointer;
 }
 .stats-mode-btn + .stats-mode-btn { border-left: 1px solid var(--hair); }
-.stats-mode-btn:hover { color: var(--bone-dim); }
+.stats-mode-btn:hover { color: var(--bone-hi); }
 .stats-mode-btn[aria-pressed="true"] {
   color: var(--bone-hi);
   background: var(--tint-3);
@@ -1816,7 +1879,7 @@
   flex: none;
 }
 .stat-value .sep { color: var(--bone-dim); margin: 0 2px; font: 500 10px/1 var(--font-body); }
-.stat-value .d { font: 400 11px/1 var(--font-body); color: var(--bone-hi); }
+.stat-value .d { font: 600 11px/1 var(--font-body); color: var(--bone-hi); }
 .stat-value .d.dn { color: var(--bone-faint); }
 
 .bar {
@@ -1832,12 +1895,12 @@
 .bar .s-ghost {
   position: absolute; top: 0; bottom: 0; left: 0;
   box-shadow: inset 0 0 0 1px var(--bone-hi);
-  background-image: repeating-linear-gradient(90deg, #ffffff14 0 2px, transparent 2px 4px);
+  background-image: repeating-linear-gradient(90deg, var(--bone-faint) 0 1px, transparent 1px 3px);
 }
 .bar .g-neg {
   position: absolute; top: 0; bottom: 0;
-  background-image: repeating-linear-gradient(135deg, var(--ink) 0 1px, transparent 1px 3px);
-  box-shadow: inset 0 0 0 1px var(--bone-hi);
+  background-image: repeating-linear-gradient(135deg, var(--ink) 0 1px, var(--bone-faint) 1px 3px);
+  box-shadow: inset 0 0 0 1px var(--bone-faint);
 }
 
 .special-stats {
@@ -1863,7 +1926,7 @@
   font: 600 12px/1 var(--font-body);
 }
 .special-stat-value svg { width: 22px; height: 11px; }
-.special-stat-value .d { font: 400 11px/1 var(--font-body); }
+.special-stat-value .d { font: 600 11px/1 var(--font-body); color: var(--bone-hi); }
 .special-stat-value .d.dn { color: var(--bone-faint); }
 
 .pvp-stats { display: flex; flex-direction: column; gap: 6px; }
@@ -1872,9 +1935,9 @@
   flex-direction: column;
   gap: 2px;
   margin-bottom: 2px;
-  padding: 8px;
+  padding: 8px 10px;
   border: 1px solid var(--hair);
-  border-radius: 4px;
+  border-left: 2px solid var(--hair-lit);
   background: var(--tint-1);
 }
 .pvp-stat-hero .pvp-stat-label {
@@ -1988,7 +2051,7 @@
 .pvp-weapon-stat-badge {
   padding: 8px 12px 14px;
   border: 1px solid var(--hair);
-  border-radius: 6px;
+  border-left: 2px solid var(--hair-lit);
   background: var(--tint-2);
 }
 .pvp-weapon-stat-info { display: flex; flex-direction: column; gap: 8px; }
@@ -1998,8 +2061,8 @@
   font: 600 15px/1 var(--font-body);
 }
 .pvp-weapon-stat-note {
-  color: var(--bone-faint);
-  font: italic 400 12px/1.3 var(--font-cn);
+  color: var(--bone-dim);
+  font: 400 11.5px/1.3 var(--font-cn);
 }
 .pvp-weapon-stat-range { height: 6px; border-radius: 3px; }
 
@@ -2043,29 +2106,6 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-/* 右栏插槽收成 40：空着写 +、虚线框。通用 .slot 的十字关掉。推荐光圈缩成 1px。 */
-.side-aux .slot {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 40px;
-  height: 40px;
-  color: var(--bone-faint);
-  font: 400 18px/1 var(--font-body);
-  background: var(--tint-2);
-}
-.side-aux .slot img { width: 100%; height: 100%; }
-.side-aux .slot.is-empty {
-  background: none;
-  border: 1px dashed var(--hair-lit);
-}
-.side-aux .slot.is-empty::before,
-.side-aux .slot.is-empty::after { content: none; }
-.side-aux .slot:hover { color: var(--bone); border-color: var(--bone-dim); }
-.side-aux .slot.by-a::before {
-  inset: -2px;
-  border-width: 1px;
-}
 .side-aux .picker,
 .side-aux .picker.wide {
   width: 100%;
@@ -2084,7 +2124,7 @@
   flex: 1;
   justify-content: center;
   padding: 4px 0;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font: 600 11px/1 var(--font-disp);
   letter-spacing: .04em;
   background: none;
@@ -2102,29 +2142,32 @@
   background: var(--tint-3);
   border-color: var(--hair);
 }
-.fx-side { position: relative; display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
+.fx-side { position: relative; display: flex; flex-direction: column; align-items: stretch; gap: 6px; }
 .fx-list { display: flex; flex-direction: column; gap: 6px; width: 100%; }
 .fx-add {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   width: 100%;
-  height: 56px;
-  padding: 0;
+  height: 36px;
+  padding: 0 10px;
   border: 1px dashed var(--hair-lit);
   background: var(--tint-1);
-  color: var(--bone-faint);
+  color: var(--bone-dim);
+  font: 400 12px/1 var(--font-cn);
   cursor: pointer;
+  transition: color .15s ease, border-color .15s ease, background-color .15s ease;
 }
 .fx-add:hover,
-.fx-add[aria-expanded="true"] { color: var(--bone); border-color: var(--bone-dim); background: var(--tint-2); }
+.fx-add[aria-expanded="true"] { color: var(--bone-hi); border-color: var(--bone-dim); background: var(--tint-2); }
 .fx-item {
   display: flex;
   align-items: center;
   gap: 10px;
   width: 100%;
-  min-height: 56px;
-  padding: 8px 12px;
+  min-height: 44px;
+  padding: 6px 10px;
   border: 1px solid var(--hair);
   background: var(--tint-1);
   color: var(--bone);
@@ -2135,8 +2178,8 @@
 .fx-item.selected { border-color: var(--hair-lit); }
 .fx-ico {
   flex: none;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   padding: 3px;
   border: 1px solid var(--hair);
   background: var(--tint-2);
@@ -2204,7 +2247,8 @@
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 8px 12px;
+  min-height: 44px;
+  padding: 6px 10px;
   border: 1px solid var(--hair);
   background: var(--tint-1);
   color: var(--bone);
@@ -2215,8 +2259,8 @@
 .pvp-perk-badge[data-act]:hover { background: var(--tint-3); }
 .pvp-perk-icon {
   flex: none;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   padding: 4px;
   border: 1px solid var(--hair);
   border-radius: 50%;
@@ -2227,12 +2271,23 @@
 .pvp-perk-step { margin-left: 4px; color: var(--bone-faint); font: 500 12px/1 var(--font-body); }
 .pvp-perk-effect { color: var(--buff); font: 400 12px/1.3 var(--font-cn); }
 .pvp-perk-effect.negative { color: var(--debuff); }
+:is(.picker, .fx-drop, .tip) {
+  animation: pop-in .15s cubic-bezier(.16, 1, .3, 1) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .pvp-stat-hero-value, .pvp-stat-value { transition: none; }
+  .pvp-stat-hero-value, .pvp-stat-value,
+  .wpn-quick button::after, .fc::before { transition: none; }
+  .wpn-syntax, .wpn-pill.is-new, .wpn-grid.swap, .wpn-one.swap,
+  .wpn-refine .pop, .picker, .fx-drop, .tip { animation: none; }
 }
 
 
 /* ── 浮层 ───────────────────────────────────────────────────── */
+:is(.wpn-suggest, .wpn-refine .pop, .picker, .fx-drop, .tip, .stats-pvp-note) {
+  box-shadow: 0 18px 42px rgba(0, 0, 0, .68), inset 0 1px 0 rgba(255, 255, 255, .05);
+}
+
 .tip {
   position: absolute;
   z-index: 40;
@@ -2257,7 +2312,16 @@
 .tip header img { width: 40px; height: 40px; border-radius: 50%; }
 .tip h5 { margin: 0; color: var(--bone-hi); font: 600 15px/1.3 var(--font-cn); }
 .tip .ty { color: var(--bone-faint); font-size: 12px; }
-.tip .lab { margin: 8px 0 2px; color: var(--bone-faint); font-size: 11.5px; }
+.tip .lab {
+  margin: 10px 0 3px;
+  padding-top: 6px;
+  color: var(--bone-dim);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  border-top: 1px solid var(--hair);
+}
+.tip h5 + .lab { margin-top: 4px; padding-top: 0; border-top: 0; }
 .tip p { margin: 0; color: var(--bone); }
 .tip .db { color: var(--bone-dim); }
 
@@ -2313,6 +2377,7 @@
 /* 骨架：页壳里写好的首屏（build-weapons.py 的 skeleton()），词条池没到时也拿它占位。
    盒子沿用真卡片与开关的类，只把字换成色块；不加动画。 */
 .skel { pointer-events: none; }
+.skel .wpn-card { border-left-color: var(--hair); }
 .skel .gun,
 .skel .toggle { color: transparent; background: var(--tint-3); }
 .skel .toggle { border-color: transparent; }

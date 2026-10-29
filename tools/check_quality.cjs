@@ -2722,6 +2722,170 @@ test('rota: pointer drag tracks continuously and snaps with momentum on release'
   assert.notEqual(afterDragMid.innerHTML, initialMid.innerHTML, '向上拖过一周距离后居中卡片应切换到下一周')
 })
 
+test('weapons: card, detail swap, resetroll, hoverRaf cancellation, and focusin/focusout invariants', () => {
+  const appSrc = fs.readFileSync(path.join(site, 'weapons/app.js'), 'utf8')
+    .replace(/\}\(\)\);\s*$/, 'window.__WPN_TEST = { S, card, weaponDetail, armorDetail, setDetail, factsHtml, defaultRoll, sameRoll, rollOf, renderDetail, renderBrowse, poolReady, textReady, getDetailKey: () => detailKey, getHoverRaf: () => hoverRaf, setHoverRaf: (id) => { hoverRaf = id } };\n}());\n')
+  const wpnBox = { window: {} }
+  vm.runInNewContext(fs.readFileSync(path.join(site, 'weapons/index.js'), 'utf8'), wpnBox)
+  vm.runInNewContext(fs.readFileSync(path.join(site, 'weapons/pool.js'), 'utf8'), wpnBox)
+  vm.runInNewContext(fs.readFileSync(path.join(site, 'weapons/text.js'), 'utf8'), wpnBox)
+
+  const docListeners = {}
+  const canceledRafs = []
+  let focusedSel = null
+  const detailBox = {
+    innerHTML: '',
+    contains(el) { return el === activeBtn },
+    querySelector(sel) {
+      if (sel === '.pvp-stats') return null
+      focusedSel = sel
+      return { focus() {} }
+    },
+  }
+  const activeBtn = {
+    closest(sel) {
+      if (sel !== '[data-act]') return null
+      return {
+        getAttribute(attr) {
+          return { 'data-act': 'perk', 'data-col': '2', 'data-plug': '42' }[attr] ?? null
+        },
+      }
+    },
+  }
+  const bodyEl = {
+    innerHTML: '',
+    appendChild() {},
+    querySelector(sel) {
+      if (sel === '.wpn-detail') return detailBox
+      return null
+    },
+  }
+  const fakeEl = () => ({
+    innerHTML: '',
+    outerHTML: '<ol class="wpn-grid skel"></ol>',
+    value: '',
+    hidden: false,
+    lastElementChild: {},
+    style: { setProperty() {} },
+    classList: { add() {}, remove() {}, toggle() {}, contains: () => false },
+    setAttribute() {},
+    removeAttribute() {},
+    getAttribute: () => '',
+    addEventListener() {},
+    appendChild() {},
+    insertAdjacentHTML() {},
+    prepend() {},
+    remove() {},
+    getBoundingClientRect: () => ({ height: 47, top: 0, left: 0, right: 100, bottom: 47, width: 100 }),
+    querySelector: (s) => s === '.wpn-body' ? bodyEl : fakeEl(),
+    querySelectorAll: () => [],
+  })
+  const ctx = {
+    window: {
+      WPN: wpnBox.window.WPN,
+      WPN_POOL: wpnBox.window.WPN_POOL,
+      WPN_TEXT: wpnBox.window.WPN_TEXT,
+      addEventListener() {},
+      matchMedia: () => ({ matches: false }),
+      scrollTo() {},
+      scrollX: 0,
+      scrollY: 0,
+      innerHeight: 900,
+    },
+    location: { href: 'http://localhost/weapons/index.html', pathname: '/weapons/index.html', search: '' },
+    history: { pushState() {}, replaceState() {} },
+    localStorage: { getItem: () => null, setItem() {} },
+    URLSearchParams,
+    URL,
+    ResizeObserver: function () { this.observe = () => {}; this.disconnect = () => {} },
+    IntersectionObserver: function () { this.observe = () => {}; this.disconnect = () => {} },
+    requestAnimationFrame: () => 77,
+    cancelAnimationFrame: (id) => { canceledRafs.push(id) },
+    setTimeout: () => 1,
+    clearTimeout() {},
+    console,
+    document: {
+      currentScript: { src: 'http://localhost/weapons/app.js' },
+      activeElement: null,
+      documentElement: { clientWidth: 1440, style: { setProperty() {} } },
+      body: { appendChild() {} },
+      head: { appendChild() {} },
+      createElement: () => fakeEl(),
+      createElementNS: () => fakeEl(),
+      getElementById: (id) => id === 'find' ? fakeEl() : { getAttribute: () => '0 0 36 18' },
+      querySelector: () => fakeEl(),
+      addEventListener(type, fn) { docListeners[type] = fn },
+    },
+  }
+  vm.runInNewContext(appSrc, ctx)
+  const T = ctx.window.__WPN_TEST
+  T.poolReady()
+  T.textReady()
+
+  // 1. Exotic armor cards include .is-exo class
+  T.S.scope = 'armor'
+  assert.match(T.card(0, 0), /class="wpn-card is-exo"/)
+
+  // 2. .facts chips render plain .toggle buttons without rarity/element border classes for all weapon rarities
+  T.S.scope = 'wpn'
+  const rareIdx = wpnBox.window.WPN.w.findIndex((r) => r[8] === 4)
+  const exoIdx = wpnBox.window.WPN.w.findIndex((r) => r[8] === 6)
+  assert.ok(rareIdx >= 0 && exoIdx >= 0)
+  for (const idx of [0, rareIdx, exoIdx]) {
+    const fh = T.factsHtml(idx)
+    assert.doesNotMatch(fh, /toggle (?:leg|exo)|data-el=/)
+  }
+
+  // 3. weaponDetail only shows 重置配置 when roll differs from defaultRoll
+  const defHtml = T.weaponDetail(0, false)
+  assert.doesNotMatch(defHtml, /data-act="resetroll"/)
+  assert.doesNotMatch(defHtml, /class="wpn-one swap"/)
+  const roll = T.rollOf(0)
+  roll.cat = 1
+  const dirtyHtml = T.weaponDetail(0, true)
+  assert.match(dirtyHtml, /<button type="button" class="op" data-act="resetroll">重置配置<\/button>/)
+  assert.match(dirtyHtml, /class="wpn-one swap"/)
+  delete T.S.rolls[wpnBox.window.WPN.w[0][0]]
+
+  // 4. renderDetail cancels pending hoverRaf, only applies .swap when item changes, and restores focus inside .wpn-detail
+  T.S.scope = 'wpn'
+  T.S.sel = 0
+  T.renderBrowse()
+  assert.equal(T.getDetailKey(), '')
+  T.setHoverRaf(99)
+  ctx.document.activeElement = activeBtn
+  T.renderDetail()
+  assert.ok(canceledRafs.includes(99), 'renderDetail must cancel pending hoverRaf')
+  assert.doesNotMatch(detailBox.innerHTML, /class="wpn-one swap"/, 'first open from browse does not replay swap')
+  assert.equal(focusedSel, '[data-act="perk"][data-col="2"][data-plug="42"]')
+  T.renderDetail()
+  assert.doesNotMatch(detailBox.innerHTML, /class="wpn-one swap"/, 'same-weapon local click must not replay swap')
+  T.S.sel = 1
+  T.renderDetail()
+  assert.match(detailBox.innerHTML, /class="wpn-one swap"/, 'switching weapons in split view plays swap')
+
+  // 5. focusin ignores non-:focus-visible (pointer click) and focusout ignores unrelated blur targets
+  let matchesFocusVisible = false
+  const perkTarget = {
+    matches: (s) => s === ':focus-visible' && matchesFocusVisible,
+    closest(s) { return s === '[data-act]' ? this : null },
+    getAttribute(k) { return { 'data-act': 'perk', 'data-col': '0', 'data-plug': '1' }[k] || null },
+    getBoundingClientRect: () => ({ left: 10, right: 40, top: 10, bottom: 40 }),
+  }
+  T.S.hoverPlug = null
+  docListeners.focusin({ target: perkTarget })
+  assert.equal(T.S.hoverPlug, null, 'pointer mousedown focusin without :focus-visible must not trigger hover preview')
+
+  matchesFocusVisible = true
+  docListeners.focusin({ target: perkTarget })
+  assert.equal(T.S.hoverPlug && T.S.hoverPlug.col, 0, 'keyboard :focus-visible focusin triggers hover preview')
+  assert.equal(T.S.hoverPlug && T.S.hoverPlug.plug, 1, 'keyboard :focus-visible focusin triggers hover preview')
+  docListeners.focusout({ target: {} })
+  assert.equal(T.S.hoverPlug && T.S.hoverPlug.plug, 1, 'unrelated focusout must not clear active hover preview')
+  docListeners.focusout({ target: perkTarget })
+  assert.equal(T.S.hoverPlug, null, 'blurring the focused perk clears hover preview')
+})
+
 async function main() {
   let failures = 0
   for (const [name, fn] of tests) {

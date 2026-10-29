@@ -1727,7 +1727,7 @@
     if (S.scope === 'armor') {
       var a = AR[i];
       var first = (a[A_PERKS] || '').split('、')[0];
-      return '<li><a class="wpn-card" href="' + link('armor', i) + '" data-act="open" data-i="' + i + '"' +
+      return '<li><a class="wpn-card is-exo" href="' + link('armor', i) + '" data-act="open" data-i="' + i + '"' +
         (a[A_ROLE] ? ' title="' + esc('小棒猪 ' + a[A_ROLE]) + '"' : '') + '>' + armorGun(a, '', eager) +
         '<div><p class="nm exo">' + esc(a[A_NAME]) + '</p><div class="wpn-meta"><span class="cls">' + V.cls[a[A_CLS]] +
         '</span><span class="cls">' + V.part[a[A_PART]] + '</span><span class="ssn">S' + a[A_SSN] + '</span></div>' +
@@ -1736,7 +1736,7 @@
         '</div></a></li>';
     }
     var r = WR[i], exo = isExotic(r);
-    return '<li><a class="wpn-card' + (exo ? ' is-exo' : '') + '" href="' + link('wpn', i) + '" data-act="open" data-i="' + i + '"' +
+    return '<li><a class="wpn-card' + (exo ? ' is-exo' : '') + '" data-el="' + r[W_EL] + '" href="' + link('wpn', i) + '" data-act="open" data-i="' + i + '"' +
       (r[W_GRADE] ? ' title="' + esc(gradeTitle(r)) + '"' : '') + '>' + gun(r, '', eager) +
       '<div><p class="nm' + (exo ? ' exo' : '') + '">' + esc(r[W_NAME]) + '</p>' + meta(r) +
       '<div class="wpn-frame">' + esc(frameOf(r)[0]) + '</div>' + gradesHtml(r) + '</div></a></li>';
@@ -1848,6 +1848,7 @@
   }
   var wallList = null;
   function renderBrowse() {
+    detailKey = '';
     body.innerHTML = '';
     if (pending) { body.innerHTML = SKELETON; return; }
     if (!results.length) { body.innerHTML = emptyState(); return; }
@@ -1987,26 +1988,52 @@
     linkObs = new ResizeObserver(draw);
     linkObs.observe(m);
   }
+  var detailKey = '';
+  function restoreDetailFocus(box, f) {
+    if (!f) { return; }
+    var sel = '[data-act="' + f.act + '"]' +
+      (f.col != null ? '[data-col="' + f.col + '"]' : '') +
+      (f.plug != null ? '[data-plug="' + f.plug + '"]' : '') +
+      (f.v != null ? '[data-v="' + f.v + '"]' : '');
+    var next = box.querySelector(sel);
+    if (next && typeof next.focus === 'function') { next.focus({ preventScroll: true }); }
+  }
   function renderDetail() {
     var box = body.querySelector('.wpn-detail');
     if (!box) { return; }
+    if (hoverRaf) { cancelAnimationFrame(hoverRaf); hoverRaf = 0; }
     if (linkObs) { linkObs.disconnect(); linkObs = null; }
-    var i = S.sel;
+    var ae = document.activeElement, f = null;
+    if (ae && box.contains(ae) && ae.closest) {
+      var ctrl = ae.closest('[data-act]');
+      if (ctrl) {
+        f = { act: ctrl.getAttribute('data-act'), col: ctrl.getAttribute('data-col'),
+              plug: ctrl.getAttribute('data-plug'), v: ctrl.getAttribute('data-v') };
+      }
+    }
+    var i = S.sel, nextKey = S.scope + ':' + i;
+    var swap = detailKey !== '' && detailKey !== nextKey;
     if (S.scope === 'sets') {
       if (!T) { box.innerHTML = '<p class="loading">说明载入中…</p>'; need('text', renderDetail); return; }
-      box.innerHTML = setDetail(i);
+      detailKey = nextKey;
+      box.innerHTML = setDetail(i, swap);
+      restoreDetailFocus(box, f);
       return;
     }
     if (S.scope === 'armor') {
       if (!T) { box.innerHTML = '<p class="loading">说明载入中…</p>'; need('text', renderDetail); return; }
-      box.innerHTML = armorDetail(i);
+      detailKey = nextKey;
+      box.innerHTML = armorDetail(i, swap);
+      restoreDetailFocus(box, f);
       return;
     }
     if (!P) { box.innerHTML = '<p class="loading">词条池载入中…</p>'; need('pool', renderDetail); return; }
     if (!T) { need('text', renderDetail); }
-    box.innerHTML = weaponDetail(i);
+    detailKey = nextKey;
+    box.innerHTML = weaponDetail(i, swap);
     perkLinks();
     if (S.statsMode === 'pvp') { kickPvpAnim(); }
+    restoreDetailFocus(box, f);
   }
 
   /* 用过这一件的配装。**按主键收**：配装源稿的槽位值写成「名字#主键」，同名不同物
@@ -2053,7 +2080,7 @@
     }
     return 'T' + roll.t + ' 加成：' + names.join('、') + ' 各 +' + roll.t;
   }
-  function weaponDetail(i) {
+  function weaponDetail(i, anim) {
     var r = WR[i], pr = poolRow(i), roll = rollOf(i), rep = r[W_REP];
     var cols = pr[2], marks = marksOf(i);
     var swap = S.hoverPlug ? { col: S.hoverPlug.col, plug: S.hoverPlug.plug } : null;
@@ -2065,6 +2092,7 @@
       }).join('') + '</div>';
     }).join('');
     var choice = cols.some(function (col) { return cellsOf(col).length > 1; });
+    var dirty = !sameRoll(roll, defaultRoll(i));
     var parts = [];
     parts.push('<header class="one-head">' + gun(r, 'lg', 2) + '<div><h2' + (isExotic(r) ? ' class="exo"' : '') + '>' +
       esc(r[W_NAME]) + '</h2><p class="en">' + esc(enOf('wpn', i)) + '</p><p class="lore">' +
@@ -2073,7 +2101,9 @@
       (isPinned('wpn', i) ? '已钉选' : '钉选') + '</button></div></header>');
     parts.push('<div class="one-main">');
     if (isExotic(r) && T && T.xs[rep]) { parts.push(exoticBlock(T.xs[rep])); }
-    parts.push('<section><h3 class="sub-label">词条' + (choice ? haloLegend() : '') + '</h3><div class="matrix">' + matrix + '</div></section>');
+    parts.push('<section><h3 class="sub-label">词条' + (choice ? haloLegend() : '') +
+      (dirty ? '<button type="button" class="op" data-act="resetroll">重置配置</button>' : '') +
+      '</h3><div class="matrix">' + matrix + '</div></section>');
     var say = T && T.au[rep] ? T.au[rep] : null;
     if (say) { parts.push('<section><h3 class="sub-label">作者评语</h3><div class="says">' + saysHtml(say) + '</div></section>'); }
     parts.push(artifactSection(i));
@@ -2092,7 +2122,7 @@
     parts.push('<aside class="one-side"><section><div class="facts">' + factsHtml(i) + '</div></section>' +
       statsBlock(i, res, ghost) +
       frameStatsHtml(i) + versionsHtml('wpn', i) + '</aside>');
-    return '<article class="wpn-one">' + parts.join('') + '</article>';
+    return '<article class="wpn-one' + (anim ? ' swap' : '') + '" data-el="' + r[W_EL] + '">' + parts.join('') + '</article>';
   }
   function exoticBlock(x) {
     /* c[2] 是选项组号：一个插槽只插得下一枚，同组的框起来并标出几选一，
@@ -2368,7 +2398,7 @@
     var m = roll.mod >= 0 ? P.p[roll.mod] : null;
     return '<div class="mods-side"><button type="button" class="slot' + (m ? '' : ' is-empty') +
       '" data-act="modslot" aria-haspopup="dialog" aria-label="模组">' +
-      (m ? imgTag(m[P_ICON], '', '', true) : '+') + '</button><div class="slot-now"><h3>模组</h3><span>' +
+      (m ? imgTag(m[P_ICON], '', '', true) : '') + '</button><div class="slot-now"><h3>模组</h3><span>' +
       (m ? esc(m[P_NAME]) : '未装') + '</span></div></div>';
   }
   function sideMw(i, roll) {
@@ -2377,7 +2407,7 @@
     opts.forEach(function (o) { if (o[0] === roll.mw) { opt = o; } });
     return '<div class="mw-side"><button type="button" class="slot' + (opt ? '' : ' is-empty') +
       (opt && has(rec, roll.mw) ? ' by-a' : '') + '" data-act="mwslot" aria-haspopup="dialog" aria-label="大师杰作">' +
-      (opt ? imgTag(P.p[opt[2]][P_ICON], '', '', true) : '+') + '</button><div class="slot-now"><h3>大师杰作</h3><span>' +
+      (opt ? imgTag(P.p[opt[2]][P_ICON], '', '', true) : '') + '</button><div class="slot-now"><h3>大师杰作</h3><span>' +
       esc(mwLabel(i, roll)) + '</span></div></div>';
   }
   function sideTiers(i, roll, res) {
@@ -2430,8 +2460,8 @@
     return '<div class="fx-side"><h3>主动效果</h3>' +
       (cards ? '<div class="fx-list">' + cards + '</div>' : '') +
       '<button type="button" class="fx-add" data-act="fxopen" aria-expanded="' + (S.fxOpen ? 'true' : 'false') + '" aria-label="添加主动效果">' +
-      '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">' +
-      '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>' +
+      '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">' +
+      '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>添加效果</span></button>' +
       drop + '</div>';
   }
   function pvpView(i, res) {
@@ -2621,7 +2651,7 @@
 
   /* 护甲套装：一套两条效果（2 件与 4 件），实测与作者评语写在效果身上。
      属性那一块不画——套装效果不改属性。 */
-  function setDetail(i) {
+  function setDetail(i, anim) {
     var t = SR[i], fx = (T.st && T.st[i]) || [];
     var facts = [t[T_SRC], t[T_KIND], t[T_SSN]].filter(Boolean);
     // 值里有空格就加引号（「开普勒 I」「3v3 多人竞技」）：不加的话分词器在空格处
@@ -2629,7 +2659,7 @@
     var qs = facts.map(function (v) {
       return (v === t[T_SSN] ? 'season:' : 'source:') + (/\s/.test(v) ? '"' + v + '"' : v);
     });
-    return '<article class="wpn-one"><header class="one-head">' +
+    return '<article class="wpn-one' + (anim ? ' swap' : '') + '"><header class="one-head">' +
       '<span class="set-fx lg">' + t[T_FX].map(function (f) {
         return pathImg(f[2], 2);
       }).join('') + '</span>' +
@@ -2649,7 +2679,7 @@
       }).join('') + '</div></section></aside></article>';
   }
 
-  function armorDetail(i) {
+  function armorDetail(i, anim) {
     var a = AR[i], rep = a[A_REP];
     var facts = [V.cls[a[A_CLS]], V.part[a[A_PART]], '异域', 'S' + a[A_SSN]];
     var qs = ['is:' + V.cls[a[A_CLS]], 'is:' + V.part[a[A_PART]], 'is:异域', 'season:' + a[A_SSN]];
@@ -2658,7 +2688,7 @@
       return '<div class="frame">' + (p[1] ? imgTag(p[1], '', '', true) : '<span></span>') + '<div><b>' + esc(p[0]) + '</b><p>' + esc(p[2]) + '</p></div></div>';
     }).join('');
     var say = T.aau[rep];
-    return '<article class="wpn-one"><header class="one-head">' + armorGun(a, 'lg', 2) + '<div><h2 class="exo">' + esc(a[A_NAME]) +
+    return '<article class="wpn-one' + (anim ? ' swap' : '') + '"><header class="one-head">' + armorGun(a, 'lg', 2) + '<div><h2 class="exo">' + esc(a[A_NAME]) +
       '</h2><p class="en">' + esc(enOf('armor', i)) + '</p><p class="lore">' + (T.fa[i] >= 0 ? esc(T.FL[T.fa[i]]) : '') +
       '</p></div><div class="one-acts"><button type="button" class="toggle" data-act="pin" aria-pressed="' +
       (isPinned('armor', i) ? 'true' : 'false') + '">' + (isPinned('armor', i) ? '已钉选' : '钉选') + '</button></div></header>' +
@@ -2679,10 +2709,18 @@
     tip.innerHTML = html;
     tip.hidden = false;
     var r = anchor.getBoundingClientRect(), w = tip.offsetWidth, hgt = tip.offsetHeight;
+    var maxRight = document.documentElement.clientWidth - 8;
+    if (anchor.closest('.matrix')) {
+      var sideCol = body.querySelector('.one-side');
+      if (sideCol) { maxRight = Math.min(maxRight, sideCol.getBoundingClientRect().left - 12); }
+    }
     var x = side === 'left' ? r.left - w - 12 : r.right + 12;
-    if (x + w > document.documentElement.clientWidth - 8) { x = r.left - w - 12; }
-    if (x < 8) { x = 8; }
+    if (x + w > maxRight) { x = r.left - w - 12; }
     var y = Math.min(r.top, window.innerHeight - hgt - 8);
+    if (x < 8) {
+      x = Math.max(8, Math.min(r.left, maxRight - w));
+      y = r.bottom + 8 + hgt <= window.innerHeight - 8 ? r.bottom + 8 : Math.max(8, r.top - hgt - 8);
+    }
     tip.style.left = (x + window.scrollX) + 'px';
     tip.style.top = (Math.max(8, y) + window.scrollY) + 'px';
   }
@@ -3119,6 +3157,15 @@
         if (roll.sel[col] === plug) { delete roll.sel[col]; } else { roll.sel[col] = plug; }
         saveRoll(i); S.hoverPlug = null; hideTip(); renderDetail(); return;
       }
+      case 'resetroll':
+        delete S.rolls[WR[i][W_H]];
+        store('wpn.rolls', S.rolls);
+        S.pop = null;
+        S.hoverPlug = null;
+        hideTip();
+        writeUrl(false);
+        renderDetail();
+        return;
       case 'mwslot':
         e.stopPropagation(); S.pop = S.pop === 'mw' ? null : 'mw'; hideTip(); renderDetail(); return;
       case 'modslot':
@@ -3247,6 +3294,39 @@
   /* 指针移出窗口时没有下一个 mouseover，只能在这里关掉。 */
   document.addEventListener('mouseout', function (e) {
     if (!e.relatedTarget && hoverAct) { leaveHover(); }
+  });
+  var focusEl = null;
+  document.addEventListener('focusin', function (e) {
+    var el = e.target.closest && e.target.closest('[data-act]');
+    if (!el || !el.matches || !el.matches(':focus-visible') || S.sel == null || S.scope !== 'wpn' || !P) { return; }
+    var act = el.getAttribute('data-act'), i = S.sel;
+    if (act === 'perk') {
+      var col = +el.getAttribute('data-col'), plug = +el.getAttribute('data-plug');
+      var roll = rollOf(i);
+      S.hoverPlug = roll.sel[col] === plug ? null : { col: col, plug: plug };
+      renderHover();
+      showTip(perkTip(i, col, plug), el);
+      hoverAct = act;
+      hoverKey = col + ':' + plug;
+      focusEl = el;
+    } else if (act === 'mwslot' && !S.pop) {
+      showTip(mwTip(i), el);
+      hoverAct = act;
+      focusEl = el;
+    } else if (act === 'artmod') {
+      showTip(amodTip(+el.getAttribute('data-v')), el);
+      hoverAct = act;
+      focusEl = el;
+    } else if (act === 'modpick') {
+      var p = +el.getAttribute('data-v');
+      if (p >= 0) { showTip(modTip(p), el); hoverAct = act; focusEl = el; }
+    }
+  });
+  document.addEventListener('focusout', function (e) {
+    if (focusEl && e.target === focusEl) {
+      focusEl = null;
+      leaveHover();
+    }
   });
 
   /* 结果栏拖宽：140–280px，记在 localStorage。 */
