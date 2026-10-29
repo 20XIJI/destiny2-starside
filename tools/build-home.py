@@ -18,60 +18,105 @@ import re
 import markup
 import shell
 
-HOME = os.path.join(shell.SITE, 'index.html')
+HOME = os.path.join(shell.SITE, "index.html")
 
 # 人定的挑选。名字按页面上的正名写，页面里找不到即中止。
-PICK_PERKS = ('聚合充能', '元素磨砺', '加速突击', '失时弹匣')
-PICK_ARTIFACT = ('粒子重建', '动能合成', '狙击手冥想', '银白重炮')
-PICK_SETS = (('埃希恩记忆', '2 件'), ('埃希恩记忆', '4 件'), ('溢冰', '2 件'), ('欧里克斯记忆', '2 件'))
-PICK_FARMING = ('购物清单-白弹', '购物清单-绿弹', '购物清单-威能', '刷取清单-异域武器', '刷取清单-护甲套装')
-PICK_SOURCES = ('Destiny Data Compendium', 'Destiny 2: Boss Damage', 'DIM 社区')
+PICK_PERKS = ("聚合充能", "元素磨砺", "加速突击", "失时弹匣")
+PICK_ARTIFACT = ("粒子重建", "动能合成", "狙击手冥想", "银白重炮")
+PICK_SETS = (
+    ("埃希恩记忆", "2 件"),
+    ("埃希恩记忆", "4 件"),
+    ("溢冰", "2 件"),
+    ("欧里克斯记忆", "2 件"),
+)
+PICK_FARMING = (
+    "购物清单-白弹",
+    "购物清单-绿弹",
+    "购物清单-威能",
+    "刷取清单-异域武器",
+    "刷取清单-护甲套装",
+)
+PICK_SOURCES = ("Destiny Data Compendium", "Destiny 2: Boss Damage", "DIM 社区")
 # 增伤：(名称里含, 触发里含, 首页上写的名字, 小字)。小字写 None 取「时长」那一格，
 # 写 '触发' 取触发那一格，其余照写。
-PICK_BUFFS = (('牵引器火炮', '命中', '牵引器火炮', None),
-              ('狩猎陷阱', '陷落锚', '狩猎陷阱', None),
-              ('光焰之井', '站在井内', '光焰之井', '触发'),
-              ('武器属性', '0–100 区间，威能', '武器属性', '威能武器'))
+PICK_BUFFS = (
+    ("牵引器火炮", "命中", "牵引器火炮", None),
+    ("狩猎陷阱", "陷落锚", "狩猎陷阱", None),
+    ("光焰之井", "站在井内", "光焰之井", "触发"),
+    ("武器属性", "0–100 区间，威能", "武器属性", "威能武器"),
+)
 # 游戏机制：护甲属性表里的两行，再加修改器、祸因两张表的首行图标与三类勇士各自的图
-PICK_STATS = ('超能', '武器')
-CHAMPIONS = ('屏障勇士', '过载勇士', '势不可挡勇士')
-PICK_SCALARS = ('自动步枪', '斥候步枪')
-SCALAR_COLS = ('红血', '橙血', '勇士', '首领')
+PICK_STATS = ("超能", "武器")
+CHAMPIONS = ("屏障勇士", "过载勇士", "势不可挡勇士")
+PICK_SCALARS = ("自动步枪", "斥候步枪")
+SCALAR_COLS = ("红血", "橙血", "勇士", "首领")
 DELTA_AT = (-50, -30, -20, -10, -5, 0, 5, 10, 20)
 DELTA_MARK = (-20, 0)
-PALETTE = ('c-arc', 'c-solar', 'c-void', 'c-stasis', 'c-strand', 'c-prism',
-           'c-exotic', 'c-enemy', 'c-ammo', 'c-artifact')
-ELEMENTS = (('电弧', 'el-arc'), ('烈日', 'el-solar'), ('虚空', 'el-void'),
-            ('冰影', 'el-stasis'), ('缚丝', 'el-strand'), ('棱镜', 'el-prismatic'))
+PALETTE = (
+    "c-arc",
+    "c-solar",
+    "c-void",
+    "c-stasis",
+    "c-strand",
+    "c-prism",
+    "c-exotic",
+    "c-enemy",
+    "c-ammo",
+    "c-artifact",
+)
+ELEMENTS = (
+    ("电弧", "el-arc"),
+    ("烈日", "el-solar"),
+    ("虚空", "el-void"),
+    ("冰影", "el-stasis"),
+    ("缚丝", "el-strand"),
+    ("棱镜", "el-prismatic"),
+)
 # 搜索带底栏的轮换徽记（9 突袭 + 10 地牢 + 7 目的地 → rotation/icons/<md5>.webp）
 ROTA_ICONS = {
-    '最后一愿': '98c8ef41c9', '救赎花园': 'd287b3dc33', '深岩墓室': '068796ce27',
-    '玻璃拱顶': '32e9ee0e2f', '门徒誓约': '189d589701', '国王的陨落': '5d2addda27',
-    '梦魇根源': '810e9c5f15', '克洛塔的末日': 'c8f1bde352', '救赎的边缘': '0c0db34c1c',
-    '破碎王座': '00ab7fe800', '异端深渊': '9214e0910b', '预言': 'e9dff45136',
-    '贪婪之握': 'c4510de46d', '二象性': '3fa872c35b', '守望者尖塔': '1b0cdbee38',
-    '深渊机灵': '1737ba2584', '战争领主的废墟': '56ba6f109c', '晚星之主': '9fa7dd1645',
-    '分离教义': 'a1fbe13ded',
-    '欧洲无人区': 'e1585cefcb', '幽梦之城': 'd0cb509d79', '王座世界': '9dc57beeac',
-    '月球': '8b98ce6055', '木卫二': '74caaa1a48', '涅索斯': '71667cc86a',
-    '发射基地': '8cb59c6413',
+    "最后一愿": "98c8ef41c9",
+    "救赎花园": "d287b3dc33",
+    "深岩墓室": "068796ce27",
+    "玻璃拱顶": "32e9ee0e2f",
+    "门徒誓约": "189d589701",
+    "国王的陨落": "5d2addda27",
+    "梦魇根源": "810e9c5f15",
+    "克洛塔的末日": "c8f1bde352",
+    "救赎的边缘": "0c0db34c1c",
+    "破碎王座": "00ab7fe800",
+    "异端深渊": "9214e0910b",
+    "预言": "e9dff45136",
+    "贪婪之握": "c4510de46d",
+    "二象性": "3fa872c35b",
+    "守望者尖塔": "1b0cdbee38",
+    "深渊机灵": "1737ba2584",
+    "战争领主的废墟": "56ba6f109c",
+    "晚星之主": "9fa7dd1645",
+    "分离教义": "a1fbe13ded",
+    "欧洲无人区": "e1585cefcb",
+    "幽梦之城": "d0cb509d79",
+    "王座世界": "9dc57beeac",
+    "月球": "8b98ce6055",
+    "木卫二": "74caaa1a48",
+    "涅索斯": "71667cc86a",
+    "发射基地": "8cb59c6413",
 }
 
 # 1440×900 下首屏装得下装备库那一排与两张配装卡：20 + 3 + 3
 N_EAGER = 26
 
-MARK = re.compile(r'<!--pv-->.*?<!--/pv-->', re.S)
-ROTA_MARK = re.compile(r'<!--rota-->.*?<!--/rota-->', re.S)
+MARK = re.compile(r"<!--pv-->.*?<!--/pv-->", re.S)
+ROTA_MARK = re.compile(r"<!--rota-->.*?<!--/rota-->", re.S)
 
 
 def read(rel):
-    with open(os.path.join(shell.SITE, rel), encoding='utf-8') as f:
+    with open(os.path.join(shell.SITE, rel), encoding="utf-8") as f:
         return f.read()
 
 
 def text(s):
     """一格的纯文本；格内换行记成 ' / '，好按行拆"""
-    return markup.text_of(re.sub(r'<br\s*/?>', ' / ', s), collapse=True).strip()
+    return markup.text_of(re.sub(r"<br\s*/?>", " / ", s), collapse=True).strip()
 
 
 def esc(s):
@@ -84,23 +129,26 @@ def near(slug, src):
 
 
 def tables(slug):
-    return re.findall(r'<table.*?</table>', read(slug + '/index.html'), re.S)
+    return re.findall(r"<table.*?</table>", read(slug + "/index.html"), re.S)
 
 
 def heads(table):
     """表头的格内换行是排版不是分隔（「基础<br>伤害」），直接接上"""
-    return [markup.text_of(x, collapse=True).strip() for x in re.findall(r'<th[^>]*scope="col"[^>]*>(.*?)</th>', table, re.S)]
+    return [
+        markup.text_of(x, collapse=True).strip()
+        for x in re.findall(r'<th[^>]*scope="col"[^>]*>(.*?)</th>', table, re.S)
+    ]
 
 
 def rows(slug, table):
     """表体逐行：[(单元格文本, 单元格里第一张图)]。分组横幅那种单格行跳过。"""
     out = []
-    for body in re.findall(r'<tbody.*?</tbody>', table, re.S):
-        for row in re.findall(r'<tr.*?</tr>', body, re.S):
+    for body in re.findall(r"<tbody.*?</tbody>", table, re.S):
+        for row in re.findall(r"<tr.*?</tr>", body, re.S):
             cells = []
-            for c in re.findall(r'<t[hd][^>]*>(.*?)</t[hd]>', row, re.S):
+            for c in re.findall(r"<t[hd][^>]*>(.*?)</t[hd]>", row, re.S):
                 src = re.findall(r'<img[^>]+src="([^"]+)"', c)
-                cells.append((text(c), near(slug, src[0]) if src else ''))
+                cells.append((text(c), near(slug, src[0]) if src else ""))
             if len(cells) > 1:
                 out.append(cells)
     return out
@@ -108,8 +156,11 @@ def rows(slug, table):
 
 def sections(slug):
     """[(分节标题, 分节 HTML)]"""
-    parts = re.split(r'(?=<section class="block")', read(slug + '/index.html'))[1:]
-    return [(text(search(r'<h2[^>]*>(.*?)</h2>', p, slug + ' 的分节').group(1)), p) for p in parts]
+    parts = re.split(r'(?=<section class="block")', read(slug + "/index.html"))[1:]
+    return [
+        (text(search(r"<h2[^>]*>(.*?)</h2>", p, slug + " 的分节").group(1)), p)
+        for p in parts
+    ]
 
 
 def need(ok, msg):
@@ -119,11 +170,11 @@ def need(ok, msg):
 
 
 def search(pattern, s, what):
-    return markup.must(re.search(pattern, s, re.S), '首页预览：%s的结构对不上' % what)
+    return markup.must(re.search(pattern, s, re.S), "首页预览：%s的结构对不上" % what)
 
 
 def find(what, pool, name):
-    need(name in pool, '首页预览：%s里找不到「%s」' % (what, name))
+    need(name in pool, "首页预览：%s里找不到「%s」" % (what, name))
     return pool[name]
 
 
@@ -133,19 +184,32 @@ class Imgs:
     def __init__(self):
         self.n = 0
 
-    def __call__(self, path, size, title=''):
-        need(os.path.exists(os.path.join(shell.SITE, path)), '首页预览：图不存在 %s' % path)
+    def __call__(self, path, size, title=""):
+        need(
+            os.path.exists(os.path.join(shell.SITE, path)),
+            "首页预览：图不存在 %s" % path,
+        )
         w, h = size if isinstance(size, tuple) else (size, size)
         at = markup.loading_attr(self.n, N_EAGER)
         self.n += 1
-        return '<img src="%s" alt=""%s width="%d" height="%d" %s>' % (
-            path, ' title="%s"' % esc(title) if title else '', w, h, at)
+        return '<img src="%s" alt="%s"%s width="%d" height="%d" %s>' % (
+            path,
+            esc(title) if title else "",
+            ' title="%s"' % esc(title) if title else "",
+            w,
+            h,
+            at,
+        )
 
 
 # ── 预览件 ──
 
-def pv_icons(img, items, size, extra=''):
-    return '<span class="pv pv-icons%s">%s</span>' % (extra, ''.join(img(p, size, n) for n, p in items))
+
+def pv_icons(img, items, size, extra=""):
+    return '<span class="pv pv-icons%s">%s</span>' % (
+        extra,
+        "".join(img(p, size, n) for n, p in items),
+    )
 
 
 def pv_items(img, items):
@@ -153,12 +217,20 @@ def pv_items(img, items):
     out = []
     for icons, name, sub, cls in items:
         size = 28 if len(icons) == 1 else 22
-        out.append('<span class="pv-it%s"><span class="pv-ic">%s</span><span class="pv-tx">'
-                   '<span class="pv-nm">%s</span>%s</span></span>'
-                   % (' ' + cls if cls else '', ''.join(img(p, size) for p in icons), esc(name),
-                      '<span class="pv-sb">%s</span>' % sub if sub else ''))
-    return ('<span class="pv pv-items" style="grid-template-columns: repeat(%d, max-content)">%s</span>'
-            % ((len(items) + 1) // 2, ''.join(out)))
+        out.append(
+            '<span class="pv-it%s"><span class="pv-ic">%s</span><span class="pv-tx">'
+            '<span class="pv-nm">%s</span>%s</span></span>'
+            % (
+                " " + cls if cls else "",
+                "".join(img(p, size) for p in icons),
+                esc(name),
+                '<span class="pv-sb">%s</span>' % sub if sub else "",
+            )
+        )
+    return (
+        '<span class="pv pv-items" style="grid-template-columns: repeat(%d, max-content)">%s</span>'
+        % ((len(items) + 1) // 2, "".join(out))
+    )
 
 
 def pv_rank(img, items):
@@ -166,10 +238,17 @@ def pv_rank(img, items):
     top = max(v for _, v, _ in items)
     out = []
     for i, (name, v, icon) in enumerate(items):
-        out.append('<span class="pv-rn">%d</span>%s<span class="pv-rname">%s<s style="width:%.1f%%"></s></span><b>%s</b>'
-                   % (i + 1, img(icon, 24) if icon else '<i></i>', esc(name), 100 * v / top,
-                      format(v, ',') if isinstance(v, int) else '%.3f' % v))
-    return '<span class="pv pv-rank">%s</span>' % ''.join(out)
+        out.append(
+            '<span class="pv-rn">%d</span>%s<span class="pv-rname">%s<s style="width:%.1f%%"></s></span><b>%s</b>'
+            % (
+                i + 1,
+                img(icon, 24) if icon else "<i></i>",
+                esc(name),
+                100 * v / top,
+                format(v, ",") if isinstance(v, int) else "%.3f" % v,
+            )
+        )
+    return '<span class="pv pv-rank">%s</span>' % "".join(out)
 
 
 def pv_curve(points, xlab, ylab, marks):
@@ -184,27 +263,37 @@ def pv_curve(points, xlab, ylab, marks):
     def fy(y):
         return h - pad - (y - y0) / ((y1 - y0) or 1) * (h - 2 * pad)
 
-    path = 'M' + ' L'.join('%.1f %.1f' % (fx(x), fy(y)) for x, y in points)
-    dots = ''.join('<circle cx="%.1f" cy="%.1f" r="2.6"/><text x="%.1f" y="%.1f">%s</text>'
-                   % (fx(x), fy(y), fx(x), fy(y) - 7 if fy(y) > 20 else fy(y) + 15, esc(lab))
-                   for x, y, lab in marks)
-    return ('<span class="pv pv-curve"><svg viewBox="0 0 %d %d" preserveAspectRatio="none" aria-hidden="true">'
-            '<path d="%s"/>%s</svg><span class="pv-ax"><span>%s</span><span>%s</span></span></span>'
-            % (w, h, path, dots, esc(xlab), esc(ylab)))
+    path = "M" + " L".join("%.1f %.1f" % (fx(x), fy(y)) for x, y in points)
+    dots = "".join(
+        '<circle cx="%.1f" cy="%.1f" r="2.6"/><text x="%.1f" y="%.1f">%s</text>'
+        % (fx(x), fy(y), fx(x), fy(y) - 7 if fy(y) > 20 else fy(y) + 15, esc(lab))
+        for x, y, lab in marks
+    )
+    return (
+        '<span class="pv pv-curve"><svg viewBox="0 0 %d %d" preserveAspectRatio="none" aria-hidden="true">'
+        '<path d="%s"/>%s</svg><span class="pv-ax"><span>%s</span><span>%s</span></span></span>'
+        % (w, h, path, dots, esc(xlab), esc(ylab))
+    )
 
 
-def pv_chips(items, sep=''):
-    joint = '<em>%s</em>' % sep if sep else ''
+def pv_chips(items, sep=""):
+    joint = "<em>%s</em>" % sep if sep else ""
     return '<span class="pv pv-chips">%s</span>' % joint.join(
-        '<span class="pv-chip%s">%s</span>' % (' ' + c if c else '', esc(n)) for n, c in items)
+        '<span class="pv-chip%s">%s</span>' % (" " + c if c else "", esc(n))
+        for n, c in items
+    )
 
 
 def pv_table(head, body):
-    cells = ''.join('<small>%s</small>' % esc(x) for x in head)
+    cells = "".join("<small>%s</small>" % esc(x) for x in head)
     for r in body:
-        cells += '<span class="pv-th">%s</span>' % esc(r[0]) + ''.join('<b>%s</b>' % esc(v) for v in r[1:])
-    return ('<span class="pv pv-table" style="grid-template-columns: auto repeat(%d, auto)">%s</span>'
-            % (len(head) - 1, cells))
+        cells += '<span class="pv-th">%s</span>' % esc(r[0]) + "".join(
+            "<b>%s</b>" % esc(v) for v in r[1:]
+        )
+    return (
+        '<span class="pv pv-table" style="grid-template-columns: auto repeat(%d, auto)">%s</span>'
+        % (len(head) - 1, cells)
+    )
 
 
 # ── 各页取值 ──
@@ -227,7 +316,7 @@ def lg_list(slug):
     out = []
     for _, sec in sections(slug):
         got = []
-        for t in re.findall(r'<table.*?</table>', sec, re.S):
+        for t in re.findall(r"<table.*?</table>", sec, re.S):
             for r in rows(slug, t):
                 if r[1][1]:
                     got.append((r[0][0], r[1][1], r[2][0]))
@@ -236,114 +325,160 @@ def lg_list(slug):
             name, icon = REC_NAME.search(body), REC_ICON.search(body)
             if not (name and icon):
                 continue
-            grade = (REC_TIER.search(body) or REC_TIER_LONG.search(body)
-                     or REC_TAG.search(body))
-            got.append((text(name.group(1)),
-                        re.sub(r'^(\.\./)+', '', icon.group(1)),
-                        text(grade.group(1)) if grade else ''))
+            grade = (
+                REC_TIER.search(body)
+                or REC_TIER_LONG.search(body)
+                or REC_TAG.search(body)
+            )
+            got.append(
+                (
+                    text(name.group(1)),
+                    re.sub(r"^(\.\./)+", "", icon.group(1)),
+                    text(grade.group(1)) if grade else "",
+                )
+            )
         out.append(got)
     return out
 
 
 def weapons_index():
-    s = read('weapons/index.js')
-    return json.loads(s[s.index('{'):s.rstrip().rstrip(';').rindex('}') + 1])
+    s = read("weapons/index.js")
+    return json.loads(s[s.index("{") : s.rstrip().rstrip(";").rindex("}") + 1])
 
 
 def weapons(img):
     """装备库：LGpig 评 T0 的异域武器 8 把、Aegis 评 S 且 LGpig 评 T0 的传说武器
     每类一把共 6 把、三职业异域护甲各前 2 件，三类交替排。"""
-    ew = [(n, p) for n, p, g in lg_list('exotic-weapons')[0] if re.search(r'T0(?!\.)', g)][:8]
+    ew = [
+        (n, p) for n, p, g in lg_list("exotic-weapons")[0] if re.search(r"T0(?!\.)", g)
+    ][:8]
     seen, leg = set(), []
     # 行：[hash, 名字, 枪型, …, tierType(8), …, 图(10), …, 评级(14)=[Aegis, LGpig]]
-    for w in weapons_index()['w']:
-        if w[8] == 5 and w[14] and w[14][0] == 'S' and 'T0' in w[14][1].split() and w[2] not in seen:
+    for w in weapons_index()["w"]:
+        if (
+            w[8] == 5
+            and w[14]
+            and w[14][0] == "S"
+            and "T0" in w[14][1].split()
+            and w[2] not in seen
+        ):
             seen.add(w[2])
-            leg.append((w[1], 'assets/icons/%s.webp' % w[10]))
-    ea = [(n, p) for sec in lg_list('exotic-armors') for n, p, _ in sec[:2]]
-    need(len(ew) == 8 and len(leg) >= 6 and len(ea) == 6,
-                '首页预览：装备库那一排凑不齐（T0 异域 %d、传说 %d、护甲 %d）' % (len(ew), len(leg), len(ea)))
+            leg.append((w[1], "assets/icons/%s.webp" % w[10]))
+    ea = [(n, p) for sec in lg_list("exotic-armors") for n, p, _ in sec[:2]]
+    need(
+        len(ew) == 8 and len(leg) >= 6 and len(ea) == 6,
+        "首页预览：装备库那一排凑不齐（T0 异域 %d、传说 %d、护甲 %d）"
+        % (len(ew), len(leg), len(ea)),
+    )
     shelf = []
     for i in range(6):
         shelf += [ew[i], leg[i], ea[i]]
-    return pv_icons(img, shelf + ew[6:], 48, ' pv-shelf')
+    return pv_icons(img, shelf + ew[6:], 48, " pv-shelf")
 
 
 def builds_top(slug, n):
-    h = read(slug + '/index.html')
+    h = read(slug + "/index.html")
     out = []
-    for m in re.finditer(r'<li class="(b-[a-z]+)"[^>]*>\s*<a class="entry"[^>]*>\s*<span class="node">(.*?)<h3>(.*?)</h3>',
-                         h, re.S):
+    for m in re.finditer(
+        r'<li class="(b-[a-z]+)"[^>]*>\s*<a class="entry"[^>]*>\s*<span class="node">(.*?)<h3>(.*?)</h3>',
+        h,
+        re.S,
+    ):
         sets = re.findall(r'<span class="n-sets">([^<]*)</span>', m.group(2))
-        out.append((text(m.group(3)), m.group(1), near(slug, re.findall(r'src="([^"]+)"', m.group(2))[0]),
-                    sets[0] if sets else ''))
+        out.append(
+            (
+                text(m.group(3)),
+                m.group(1),
+                near(slug, re.findall(r'src="([^"]+)"', m.group(2))[0]),
+                sets[0] if sets else "",
+            )
+        )
         if len(out) == n:
             break
-    need(len(out) == n, '首页预览：%s 取不到 %d 套' % (slug, n))
+    need(len(out) == n, "首页预览：%s 取不到 %d 套" % (slug, n))
     return out
 
 
 def builds(img):
-    return pv_items(img, [([p], n, '', c) for n, c, p, _ in builds_top('builds', 3)])
+    return pv_items(img, [([p], n, "", c) for n, c, p, _ in builds_top("builds", 3)])
 
 
 def build_sets(img):
-    return pv_items(img, [([p], n, esc(k), c) for n, c, p, k in builds_top('builds/sets', 3)])
+    return pv_items(
+        img, [([p], n, esc(k), c) for n, c, p, k in builds_top("builds/sets", 3)]
+    )
 
 
 def perks(img):
     pool = {}
     # 这一页按记录排版：一条记录一个 article.rec，名字与图各在格里
-    for _, sec in sections('weapon-perks'):
+    for _, sec in sections("weapon-perks"):
         for m in REC.finditer(sec):
             name, icon = REC_NAME.search(m.group(1)), REC_ICON.search(m.group(1))
             if name and icon:
-                pool.setdefault(text(name.group(1)),
-                                re.sub(r'^(\.\./)+', '', icon.group(1)))
-    return pv_items(img, [([find('武器 PERK 页', pool, n)], n, '', '') for n in PICK_PERKS])
+                pool.setdefault(
+                    text(name.group(1)), re.sub(r"^(\.\./)+", "", icon.group(1))
+                )
+    return pv_items(
+        img, [([find("武器 PERK 页", pool, n)], n, "", "") for n in PICK_PERKS]
+    )
 
 
 def frames(img):
     """自动步枪的各框架按基础伤害取前三"""
-    t = tables('weapon-frames')[0]
-    col = [h.replace(' ', '') for h in heads(t)].index('基础伤害')
+    t = tables("weapon-frames")[0]
+    col = [h.replace(" ", "") for h in heads(t)].index("基础伤害")
     got = []
-    for r in rows('weapon-frames', t):
-        if r[0][0] == '自动步枪':
+    for r in rows("weapon-frames", t):
+        if r[0][0] == "自动步枪":
             r = r[1:]
         elif got and len(r) == len(heads(t)):
             break
         elif not got:
             continue
         got.append((r[0][0], float(r[col - 1][0]), r[1][1]))
-    need(len(got) >= 3, '首页预览：武器框架页取不到自动步枪的框架')
+    need(len(got) >= 3, "首页预览：武器框架页取不到自动步枪的框架")
     return pv_rank(img, sorted(got, key=lambda x: -x[1])[:3])
 
 
 def armor_mods(img):
-    return pv_items(img, [([r[1][1]], r[0][0], '', '') for r in rows('armor-mods', tables('armor-mods')[0])[:4]])
+    return pv_items(
+        img,
+        [
+            ([r[1][1]], r[0][0], "", "")
+            for r in rows("armor-mods", tables("armor-mods")[0])[:4]
+        ],
+    )
 
 
 def armor_sets(img):
     pool = {}
-    for art in re.findall(r'<article class="set".*?</article>', read('armor-sets/index.html'), re.S):
-        name = text(search(r'<h3>(.*?)</h3>', art, '护甲套装页').group(1))
-        for src, piece, bonus in re.findall(r'<img class="bonus-icon" src="([^"]+)".*?<span class="piece">([^<]*)</span>'
-                                            r'<span class="bonus-name">([^<]*)</span>', art, re.S):
-            pool['%s %s' % (name, piece)] = (near('armor-sets', src), bonus)
+    for art in re.findall(
+        r'<article class="set".*?</article>', read("armor-sets/index.html"), re.S
+    ):
+        name = text(search(r"<h3>(.*?)</h3>", art, "护甲套装页").group(1))
+        for src, piece, bonus in re.findall(
+            r'<img class="bonus-icon" src="([^"]+)".*?<span class="piece">([^<]*)</span>'
+            r'<span class="bonus-name">([^<]*)</span>',
+            art,
+            re.S,
+        ):
+            pool["%s %s" % (name, piece)] = (near("armor-sets", src), bonus)
     items = []
     for name, piece in PICK_SETS:
-        icon, bonus = find('护甲套装页', pool, '%s %s' % (name, piece))
-        items.append(([icon], '%s %s' % (name, piece), esc(bonus), ''))
+        icon, bonus = find("护甲套装页", pool, "%s %s" % (name, piece))
+        items.append(([icon], "%s %s" % (name, piece), esc(bonus), ""))
     return pv_items(img, items)
 
 
 def exotic_weapon(img):
-    return pv_icons(img, [(n, p) for n, p, _ in lg_list('exotic-weapons')[0][:8]], 40)
+    return pv_icons(img, [(n, p) for n, p, _ in lg_list("exotic-weapons")[0][:8]], 40)
 
 
 def exotic_armor(img):
-    return pv_icons(img, [(n, p) for sec in lg_list('exotic-armors') for n, p, _ in sec[:3]], 40)
+    return pv_icons(
+        img, [(n, p) for sec in lg_list("exotic-armors") for n, p, _ in sec[:3]], 40
+    )
 
 
 def elements(_img):
@@ -352,273 +487,449 @@ def elements(_img):
 
 def artifact(img):
     pool = {}
-    for m in re.finditer(r'<img class="mod-icon" src="([^"]+)"[^>]*>\s*<h4[^>]*>(.*?)</h4>', read('artifact-mods/index.html')):
-        pool.setdefault(text(m.group(2)), near('artifact-mods', m.group(1)))
-    return pv_items(img, [([find('神器模组页', pool, n)], n, '', '') for n in PICK_ARTIFACT])
+    for m in re.finditer(
+        r'<img class="mod-icon" src="([^"]+)"[^>]*>\s*<h4[^>]*>(.*?)</h4>',
+        read("artifact-mods/index.html"),
+    ):
+        pool.setdefault(text(m.group(2)), near("artifact-mods", m.group(1)))
+    return pv_items(
+        img, [([find("神器模组页", pool, n)], n, "", "") for n in PICK_ARTIFACT]
+    )
 
 
 def cooldown(_img):
-    t = tables('ability-cooldown')[0]
+    t = tables("ability-cooldown")[0]
     hd = heads(t)
-    row = [r for r in rows('ability-cooldown', t) if r[0][0] == '闪电手雷'][0]
-    at = [(i, re.fullmatch(r'(\d+) ?属性', h)) for i, h in enumerate(hd)]
+    row = [r for r in rows("ability-cooldown", t) if r[0][0] == "闪电手雷"][0]
+    at = [(i, re.fullmatch(r"(\d+) ?属性", h)) for i, h in enumerate(hd)]
     pts = [(int(m.group(1)), float(row[i][0])) for i, m in at if m]
     (a, ya), (b, yb) = pts[0], pts[-1]
-    return pv_curve(pts, '闪电手雷 · %d → %d 属性' % (a, b), '%g → %g 秒' % (ya, yb),
-                    [(a, ya, '%g' % ya), (b, yb, '%g' % yb)])
+    return pv_curve(
+        pts,
+        "闪电手雷 · %d → %d 属性" % (a, b),
+        "%g → %g 秒" % (ya, yb),
+        [(a, ya, "%g" % ya), (b, yb, "%g" % yb)],
+    )
 
 
 def boss_hp(img):
-    t = tables('boss-hp')[0]
+    t = tables("boss-hp")[0]
     got = []
-    for r in rows('boss-hp', t):
+    for r in rows("boss-hp", t):
         c = [x for x, _ in r]
         i = 1 if len(c) == len(heads(t)) else 0
-        got.append((c[i], int(c[i + 1]), ''))
+        got.append((c[i], int(c[i + 1]), ""))
     return pv_rank(img, got[:3])
 
 
 def farming(_img):
-    names = {text(x) for x in re.findall(r'<h3>(.*?)</h3>', read('pve-farming/index.html'), re.S)}
+    names = {
+        text(x)
+        for x in re.findall(r"<h3>(.*?)</h3>", read("pve-farming/index.html"), re.S)
+    }
     for n in PICK_FARMING:
-        need(n in names, '首页预览：刷取指南页里找不到「%s」' % n)
-    return pv_chips([(n, '') for n in PICK_FARMING])
+        need(n in names, "首页预览：刷取指南页里找不到「%s」" % n)
+    return pv_chips([(n, "") for n in PICK_FARMING])
 
 
 def raids(img):
-    got = re.findall(r'<img class="guide-shot" src="([^"]+)"[^>]*>\s*<span class="guide-name">([^<]*)</span>',
-                     read('raid-guides/index.html'))[:2]
-    return '<span class="pv pv-shots">%s</span>' % ''.join(
-        '<span>%s<small>%s</small></span>' % (img(near('raid-guides', s), (128, 72)), esc(n)) for s, n in got)
+    got = re.findall(
+        r'<img class="guide-shot" src="([^"]+)"[^>]*>\s*<span class="guide-name">([^<]*)</span>',
+        read("raid-guides/index.html"),
+    )[:2]
+    return '<span class="pv pv-shots">%s</span>' % "".join(
+        "<span>%s<small>%s</small></span>"
+        % (img(near("raid-guides", s), (128, 72)), esc(n))
+        for s, n in got
+    )
 
 
 def ranking(slug, col):
     def make(img):
         t = tables(slug)[0]
         at = heads(t).index(col)
-        return pv_rank(img, [(r[0][0].split(' / ')[0], int(r[at][0]), r[1][1]) for r in rows(slug, t)[:3]])
+        return pv_rank(
+            img,
+            [
+                (r[0][0].split(" / ")[0], int(r[at][0]), r[1][1])
+                for r in rows(slug, t)[:3]
+            ],
+        )
+
     return make
 
 
 def rota_data():
-    page = read('rotation/index.html')
-    t0 = search(r'data-rota="([^"]+)"', page, '轮换页').group(1)
-    body = rows('rotation', tables('rotation')[0])
+    page = read("rotation/index.html")
+    t0 = search(r'data-rota="([^"]+)"', page, "轮换页").group(1)
+    body = rows("rotation", tables("rotation")[0])
     raids_ = [r[1][0] for r in body if r[1][0]]
     dungeons = [r[2][0] for r in body if r[2][0]]
-    chain = [x.strip() for x in text(search(r'<p[^>]*class="chain"[^>]*>(.*?)</p>', page, '轮换页').group(1)).split('→')
-             if x.strip() != '回到开头']
+    chain = [
+        x.strip()
+        for x in text(
+            search(r'<p[^>]*class="chain"[^>]*>(.*?)</p>', page, "轮换页").group(1)
+        ).split("→")
+        if x.strip() != "回到开头"
+    ]
     all_names = raids_ + dungeons + chain
     for n in all_names:
-        h = find('轮换图标', ROTA_ICONS, n)
-        path = 'rotation/icons/%s.webp' % h
-        need(os.path.exists(os.path.join(shell.SITE, path)), '首页预览：图不存在 %s' % path)
-    need(set(ROTA_ICONS) == set(all_names), '首页预览：ROTA_ICONS 与轮换页条目不一致')
+        h = find("轮换图标", ROTA_ICONS, n)
+        path = "rotation/icons/%s.webp" % h
+        need(
+            os.path.exists(os.path.join(shell.SITE, path)),
+            "首页预览：图不存在 %s" % path,
+        )
+    need(set(ROTA_ICONS) == set(all_names), "首页预览：ROTA_ICONS 与轮换页条目不一致")
     return t0, raids_, dungeons, chain
 
 
 # 光尘商店固定展示本地货币图标，不请求云函数，避免轮换或维护时显示过期商品。
 EVERVERSE_ITEMS = (
-    ('主要光尘优惠', 'assets/icons/dust.webp'),
-    ('银币新品', 'assets/icons/silver.webp'),
-    ('老九 · 奇异硬币', 'assets/icons/coin.webp'),
-    ('艾达-1 · 着色器', 'assets/icons/glimmer.webp'),
+    ("主要光尘优惠", "assets/icons/dust.webp"),
+    ("银币新品", "assets/icons/silver.webp"),
+    ("老九 · 奇异硬币", "assets/icons/coin.webp"),
+    ("艾达-1 · 着色器", "assets/icons/glimmer.webp"),
 )
+
 
 def hero_rota():
     """搜索带底栏的当前轮换与光尘商店快跳。轮换先写第 0 周与第 0 时段的那一组，由首页内联脚本按本机时钟更新。"""
     _, raids_, dungeons, chain = rota_data()
 
-    def unit(n, cls=''):
-        return ('<span class="hr-unit%s"><img class="ri" src="rotation/icons/%s.webp" alt="" width="21" height="21">'
-                '<span>%s</span></span>' % (' ' + cls if cls else '', ROTA_ICONS[n], esc(n)))
+    def unit(n, cls=""):
+        return (
+            '<span class="hr-unit%s"><img class="ri" src="rotation/icons/%s.webp" alt="" width="21" height="21">'
+            "<span>%s</span></span>" % (" " + cls if cls else "", ROTA_ICONS[n], esc(n))
+        )
 
     def ev_unit(name, icon):
-        return ('<span class="hr-unit"><img class="ri ev-ri" src="%s" alt="" width="21" height="21">'
-                '<span>%s</span></span>' % (esc(icon), esc(name)))
+        return (
+            '<span class="hr-unit"><img class="ri ev-ri" src="%s" alt="" width="21" height="21">'
+            "<span>%s</span></span>" % (esc(icon), esc(name))
+        )
 
-    def group(href, tag, k, a, sep, b, b_cls='', tag_k=''):
-        tk = ' data-k="%s"' % tag_k if tag_k else ''
-        return ('<a class="hr-group" href="%s"><span class="hr-tag"%s>%s</span>'
-                '<span class="hr-items" data-k="%s">%s<i class="hr-sep">%s</i>%s</span></a>'
-                % (href, tk, esc(tag), k, a, sep, b))
+    def group(href, tag, k, a, sep, b, tag_k=""):
+        tk = ' data-k="%s"' % tag_k if tag_k else ""
+        return (
+            '<a class="hr-group" href="%s"><span class="hr-tag"%s>%s</span>'
+            '<span class="hr-items" data-k="%s">%s<i class="hr-sep">%s</i>%s</span></a>'
+            % (href, tk, esc(tag), k, a, sep, b)
+        )
 
     div = '<span class="hr-div" aria-hidden="true"></span>'
-    return ('%s%s%s%s%s%s%s'
-            % (group('rotation/index.html', '本周突袭', 'raid', unit(raids_[0]), '·', unit(raids_[4])),
-               div,
-               group('rotation/index.html', '本周地牢', 'dungeon', unit(dungeons[0]), '·', unit(dungeons[4])),
-               div,
-               group('rotation/index.html', '每小时 扭曲', 'chain', unit(chain[0]), '→', unit(chain[1], 'is-next'), 'chain-n'),
-               div,
-               group('eververse/index.html', '光尘商店', 'eververse',
-                     ev_unit('光尘优惠', 'assets/icons/dust.webp'), '·',
-                     ev_unit('老九周货', 'assets/icons/coin.webp'))))
+    return "%s%s%s%s%s%s%s" % (
+        group(
+            "rotation/index.html",
+            "本周突袭",
+            "raid",
+            unit(raids_[0]),
+            "·",
+            unit(raids_[4]),
+        ),
+        div,
+        group(
+            "rotation/index.html",
+            "本周地牢",
+            "dungeon",
+            unit(dungeons[0]),
+            "·",
+            unit(dungeons[4]),
+        ),
+        div,
+        group(
+            "rotation/index.html",
+            "每小时 扭曲",
+            "chain",
+            unit(chain[0]),
+            "→",
+            unit(chain[1], "is-next"),
+            "chain-n",
+        ),
+        div,
+        group(
+            "eververse/index.html",
+            "光尘商店",
+            "eververse",
+            ev_unit("光尘优惠", "assets/icons/dust.webp"),
+            "·",
+            ev_unit("老九周货", "assets/icons/coin.webp"),
+        ),
+    )
 
 
 def rotation(_img):
     """周常轮换的三行。页面上先写顺序的前三站，由首页那段内联脚本按本机时钟换成
     当前那一格；算法与 assets/rota.js 同一套，数据取自轮换页，不在首页另存一份。"""
     t0, raids_, dungeons, chain = rota_data()
-    icons = '|'.join(ROTA_ICONS[n] for n in raids_ + dungeons + chain)
+    icons = "|".join(ROTA_ICONS[n] for n in raids_ + dungeons + chain)
 
     def line(k, label, names, note):
-        return ('<small>%s</small><span class="pv-rv" data-k="%s">%s</span><em data-k="%s-n">%s</em>'
-                % (label, k, '<i>→</i>'.join('<span class="pv-chip">%s</span>' % esc(n) for n in names), k, note))
+        return (
+            '<small>%s</small><span class="pv-rv" data-k="%s">%s</span><em data-k="%s-n">%s</em>'
+            % (
+                label,
+                k,
+                "<i>→</i>".join(
+                    '<span class="pv-chip">%s</span>' % esc(n) for n in names
+                ),
+                k,
+                note,
+            )
+        )
 
-    return ('<span class="pv pv-rota" data-t0="%s" data-raids="%s" data-dungeons="%s" data-chain="%s" data-icons="%s">%s%s%s</span>'
-            % (esc(t0), esc('|'.join(raids_)), esc('|'.join(dungeons)), esc('|'.join(chain)), esc(icons),
-               line('raid', '突袭', raids_[:3], '每周'), line('dungeon', '地牢', dungeons[:3], '每周'),
-               line('chain', '扭曲', chain[:3], '每小时')))
+    return (
+        '<span class="pv pv-rota" data-t0="%s" data-raids="%s" data-dungeons="%s" data-chain="%s" data-icons="%s">%s%s%s</span>'
+        % (
+            esc(t0),
+            esc("|".join(raids_)),
+            esc("|".join(dungeons)),
+            esc("|".join(chain)),
+            esc(icons),
+            line("raid", "突袭", raids_[:3], "每周"),
+            line("dungeon", "地牢", dungeons[:3], "每周"),
+            line("chain", "扭曲", chain[:3], "每小时"),
+        )
+    )
 
 
 def buffs(img):
     pool = []
-    for t in tables('buff-debuffs'):
+    for t in tables("buff-debuffs"):
         hd = heads(t)
-        if '触发' in hd and '增伤' in hd:
-            pool += [(hd, r) for r in rows('buff-debuffs', t)]
+        if "触发" in hd and "增伤" in hd:
+            pool += [(hd, r) for r in rows("buff-debuffs", t)]
     items = []
     for name, trig, label, note in PICK_BUFFS:
-        hit = [(hd, r) for hd, r in pool if name in r[0][0] and trig in r[hd.index('触发')][0]]
-        need(hit, '首页预览：增伤页找不到 %s / %s' % (name, trig))
+        hit = [
+            (hd, r)
+            for hd, r in pool
+            if name in r[0][0] and trig in r[hd.index("触发")][0]
+        ]
+        need(hit, "首页预览：增伤页找不到 %s / %s" % (name, trig))
         hd, r = hit[0]
-        value = re.findall(r'\d+(?:\.\d+)?%', re.sub(r'\[[^\]]*\]', '', r[hd.index('增伤')][0]))[-1]
+        value = re.findall(
+            r"\d+(?:\.\d+)?%", re.sub(r"\[[^\]]*\]", "", r[hd.index("增伤")][0])
+        )[-1]
         if note is None:
-            note = re.sub(r'\[[^\]]*\]', '', r[hd.index('时长')][0]).strip()
-        elif note == '触发':
-            note = r[hd.index('触发')][0]
-        items.append(([r[1][1]], label, '<b>%s</b>%s' % (value, esc(note)), ''))
+            note = re.sub(r"\[[^\]]*\]", "", r[hd.index("时长")][0]).strip()
+        elif note == "触发":
+            note = r[hd.index("触发")][0]
+        items.append(([r[1][1]], label, "<b>%s</b>%s" % (value, esc(note)), ""))
     return pv_items(img, items)
 
 
 def mechanics(img):
-    secs = dict(sections('game-mechanics'))
-    stats = {r[0][0]: r[1][1] for r in rows('game-mechanics', re.findall(r'<table.*?</table>', find('游戏机制页的分节', secs, '护甲属性'), re.S)[0])}
+    secs = dict(sections("game-mechanics"))
+    stats = {
+        r[0][0]: r[1][1]
+        for r in rows(
+            "game-mechanics",
+            re.findall(
+                r"<table.*?</table>", find("游戏机制页的分节", secs, "护甲属性"), re.S
+            )[0],
+        )
+    }
 
     def first(title, row):
         """row 为真取那一节表体里的第一张图，否则取分节开头那张图。两种都要：修改器
         那一节表前的段落里另有一张图，而三类勇士的图就在分节开头、表里是别的图。"""
-        sec = find('游戏机制页的分节', secs, title)
-        body = re.findall(r'<tbody.*?</tbody>', sec, re.S)
-        need(body or not row, '首页预览：游戏机制页「%s」一节没有表' % title)
-        src = re.findall(r'<img[^>]+src="([^"]+)"', ''.join(body) if row else sec)
-        need(src, '首页预览：游戏机制页「%s」一节没有图' % title)
-        return near('game-mechanics', src[0])
+        sec = find("游戏机制页的分节", secs, title)
+        body = re.findall(r"<tbody.*?</tbody>", sec, re.S)
+        need(body or not row, "首页预览：游戏机制页「%s」一节没有表" % title)
+        src = re.findall(r'<img[^>]+src="([^"]+)"', "".join(body) if row else sec)
+        need(src, "首页预览：游戏机制页「%s」一节没有图" % title)
+        return near("game-mechanics", src[0])
 
-    items = [([find('角色属性表', stats, n)], n, '', '') for n in PICK_STATS]
-    items += [([first('活动修改器', True)], '活动修改器', '', ''), ([first('战斗人员祸因', True)], '祸因', '', ''),
-              ([first(c, False) for c in CHAMPIONS], '勇士', '', '')]
+    items = [([find("角色属性表", stats, n)], n, "", "") for n in PICK_STATS]
+    items += [
+        ([first("活动修改器", True)], "活动修改器", "", ""),
+        ([first("战斗人员祸因", True)], "祸因", "", ""),
+        ([first(c, False) for c in CHAMPIONS], "勇士", "", ""),
+    ]
     return pv_items(img, items)
 
 
 def ammo(_img):
-    t = tables('ammo')[0]
-    return pv_table([''] + heads(t)[1:], [[c for c, _ in r[:4]] for r in rows('ammo', t)[:2]])
+    t = tables("ammo")[0]
+    return pv_table(
+        [""] + heads(t)[1:], [[c for c, _ in r[:4]] for r in rows("ammo", t)[:2]]
+    )
 
 
 def delta(_img):
-    t = tables('power-delta')[0]
-    val = {int(r[0][0].replace('−', '-')): float(r[1][0]) for r in rows('power-delta', t)}
-    pts = [(x, find('压光伤害页', val, x)) for x in DELTA_AT]
+    t = tables("power-delta")[0]
+    val = {
+        int(r[0][0].replace("−", "-")): float(r[1][0]) for r in rows("power-delta", t)
+    }
+    pts = [(x, find("压光伤害页", val, x)) for x in DELTA_AT]
 
     def sign(x):
-        return ('−%d' % -x) if x < 0 else ('+%d' % x if x else '0')
+        return ("−%d" % -x) if x < 0 else ("+%d" % x if x else "0")
 
-    return pv_curve(pts, '光等差 %s → %s' % (sign(DELTA_AT[0]), sign(DELTA_AT[-1])),
-                    '×%.3f → ×%.3f' % (pts[0][1], pts[-1][1]),
-                    [(x, val[x], '%s ×%g' % (sign(x), val[x])) for x in DELTA_MARK])
+    return pv_curve(
+        pts,
+        "光等差 %s → %s" % (sign(DELTA_AT[0]), sign(DELTA_AT[-1])),
+        "×%.3f → ×%.3f" % (pts[0][1], pts[-1][1]),
+        [(x, val[x], "%s ×%g" % (sign(x), val[x])) for x in DELTA_MARK],
+    )
 
 
 def scalars(_img):
-    t = tables('combatant-scalars')[0]
+    t = tables("combatant-scalars")[0]
     hd = heads(t)
-    body = {r[0][0]: r for r in rows('combatant-scalars', t)}
-    return pv_table([''] + list(SCALAR_COLS),
-                    [[n] + ['×' + find('战斗人员倍率页', body, n)[hd.index(c)][0] for c in SCALAR_COLS]
-                     for n in PICK_SCALARS])
+    body = {r[0][0]: r for r in rows("combatant-scalars", t)}
+    return pv_table(
+        [""] + list(SCALAR_COLS),
+        [
+            [n]
+            + [
+                "×" + find("战斗人员倍率页", body, n)[hd.index(c)][0]
+                for c in SCALAR_COLS
+            ]
+            for n in PICK_SCALARS
+        ],
+    )
 
 
 def armor_rng(_img):
-    t = tables('armor-rng')[0]
-    return pv_table(['原型', '+30', '+25', 't.map=1'],
-                    [[r[1][0], r[3][0], r[4][0], r[5][0]] for r in rows('armor-rng', t)[:2]])
+    t = tables("armor-rng")[0]
+    return pv_table(
+        ["原型", "+30", "+25", "t.map=1"],
+        [[r[1][0], r[3][0], r[4][0], r[5][0]] for r in rows("armor-rng", t)[:2]],
+    )
 
 
 def changelog(_img):
     """最新两条：日期、类型、页面、条目名（「：」之前那一截）"""
     out = []
-    for date, sec in sections('changelog'):
-        for li in re.findall(r'<li[^>]*>(.*?)</li>', sec, re.S):
-            m = re.match(r'<span class="act[^"]*">([^<]*)</span><a [^>]*>([^<]*)</a>(.*)', li, re.S)
+    for date, sec in sections("changelog"):
+        for li in re.findall(r"<li[^>]*>(.*?)</li>", sec, re.S):
+            m = re.match(
+                r'<span class="act[^"]*">([^<]*)</span><a [^>]*>([^<]*)</a>(.*)',
+                li,
+                re.S,
+            )
             if m:
-                out.append('%s %s %s %s' % (date, m.group(1), m.group(2), text(m.group(3)).split('：')[0]))
+                out.append(
+                    (
+                        "%s %s %s %s"
+                        % (
+                            date,
+                            m.group(1),
+                            m.group(2),
+                            text(m.group(3)).split("：")[0],
+                        )
+                    ).rstrip()
+                )
             if len(out) == 2:
-                return '<span class="pv pv-lines">%s</span>' % ''.join('<span>%s</span>' % esc(x) for x in out)
-    markup.die('首页预览：更新日志取不到两条')
+                return '<span class="pv pv-lines">%s</span>' % "".join(
+                    "<span>%s</span>" % esc(x) for x in out
+                )
+    markup.die("首页预览：更新日志取不到两条")
 
 
 def sources(_img):
-    names = {r[0][0] for r in rows('sources', tables('sources')[0])}
+    names = {r[0][0] for r in rows("sources", tables("sources")[0])}
     for n in PICK_SOURCES:
-        need(n in names, '首页预览：数据源页里找不到「%s」' % n)
-    return pv_chips([(n, '') for n in PICK_SOURCES])
+        need(n in names, "首页预览：数据源页里找不到「%s」" % n)
+    return pv_chips([(n, "") for n in PICK_SOURCES])
 
 
 def palette(_img):
-    return '<span class="pv pv-swatch">%s</span>' % ''.join(
-        '<i style="background:var(--%s)" title="--%s"></i>' % (c, c) for c in PALETTE)
+    return '<span class="pv pv-swatch">%s</span>' % "".join(
+        '<i style="background:var(--%s)" title="--%s"></i>' % (c, c) for c in PALETTE
+    )
 
 
-def steps(names):
-    def make(_img):
-        return pv_chips([(n, 'is-hot' if i == len(names) - 1 else '') for i, n in enumerate(names)], '→')
-    return make
+def build_forge(_img):
+    """配装工具：六枚战术槽位线描印章（超能 · 技能 · 星相 · 武器 · 神器 · 护甲）"""
+    slots = (
+        ("超能", "M8 1.5 9.6 6.4 14.5 8 9.6 9.6 8 14.5 6.4 9.6 1.5 8 6.4 6.4Z"),
+        ("技能", "M4 6.5 8 3l4 3.5M4 10 8 6.5l4 3.5M4 13.5 8 10l4 3.5"),
+        ("星相", "M8 1.5 14.5 8 8 14.5 1.5 8Z"),
+        ("武器", "M1.6 6.2h12.8v2.4h-3.1l-1.3 2.6H7.5L7 8.6H5v3.5H3.2V8.6H1.6Z"),
+        (
+            "神器",
+            "M8 1.5 14 5v6l-6 3.5L2 11V5Zm0 4.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z",
+        ),
+        ("护甲", "M3 3.5h10l-1.5 9h-7Zm5 0v9"),
+    )
+    cells = []
+    for name, path in slots:
+        cells.append(
+            '<span class="pv-slot">'
+            '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="%s"/></svg>'
+            "<b>%s</b></span>" % (path, name)
+        )
+    return '<span class="pv pv-forge">%s</span>' % "".join(cells)
+
+
+def set_forge(_img):
+    """合集工具：三阶遭遇战切装轨道（01 清怪 → 02 机制 → 03 爆发）"""
+    stages = (
+        ("01", "清怪推进", "util"),
+        ("02", "机制破盾", "mech"),
+        ("03", "首领爆发", "dps"),
+    )
+    nodes = []
+    for i, (idx, label, rk) in enumerate(stages):
+        if i:
+            nodes.append('<i class="pv-st-link" aria-hidden="true"></i>')
+        nodes.append(
+            '<span class="pv-st-node" data-rk="%s">'
+            "<b>%s</b><span>%s</span></span>" % (rk, idx, label)
+        )
+    return '<span class="pv pv-stages">%s</span>' % "".join(nodes)
 
 
 def eververse(_img):
     out = []
     for name, icon in EVERVERSE_ITEMS:
-        out.append('<span class="pv-it"><span class="pv-ic">'
-                   '<img src="%s" alt="" width="28" height="28" loading="lazy">'
-                   '</span><span class="pv-tx"><span class="pv-nm">%s</span></span></span>'
-                   % (esc(icon), esc(name)))
-    return ('<span class="pv pv-items" style="grid-template-columns: repeat(2, max-content)">%s</span>'
-            % ''.join(out))
+        out.append(
+            '<span class="pv-it"><span class="pv-ic">'
+            '<img src="%s" alt="" width="28" height="28" loading="lazy">'
+            '</span><span class="pv-tx"><span class="pv-nm">%s</span></span></span>'
+            % (esc(icon), esc(name))
+        )
+    return (
+        '<span class="pv pv-items" style="grid-template-columns: repeat(2, max-content)">%s</span>'
+        % "".join(out)
+    )
 
 
 PREVIEW = {
-    'weapons/index.html': weapons,
-    'builds/index.html': builds,
-    'builds/sets/index.html': build_sets,
-    'builds/new/index.html': steps(('技能', '武器', '护甲', '神器模组', '生成文本')),
-    'builds/new/set/index.html': steps(('逐套选装备', '左侧目录切换', '生成合集文本')),
-    'weapon-perks/index.html': perks,
-    'weapon-frames/index.html': frames,
-    'armor-mods/index.html': armor_mods,
-    'armor-sets/index.html': armor_sets,
-    'exotic-weapon/index.html': exotic_weapon,
-    'exotic-armor/index.html': exotic_armor,
-    'elements/index.html': elements,
-    'artifact-mods/index.html': artifact,
-    'ability-cooldown/index.html': cooldown,
-    'boss-hp/index.html': boss_hp,
-    'pve-farming/index.html': farming,
-    'raid-guides/index.html': raids,
-    'dps/index.html': ranking('dps', 'DPS'),
-    'swap-dps/index.html': ranking('swap-dps', '切枪 DPS'),
-    'skill-damage/index.html': ranking('skill-damage', '200 属性'),
-    'rotation/index.html': rotation,
-    'eververse/index.html': eververse,
-    'buff-debuffs/index.html': buffs,
-    'game-mechanics/index.html': mechanics,
-    'ammo/index.html': ammo,
-    'power-delta/index.html': delta,
-    'combatant-scalars/index.html': scalars,
-    'armor-rng/index.html': armor_rng,
-    'changelog/index.html': changelog,
-    'sources/index.html': sources,
-    'palette/index.html': palette,
+    "weapons/index.html": weapons,
+    "builds/index.html": builds,
+    "builds/sets/index.html": build_sets,
+    "builds/new/index.html": build_forge,
+    "builds/new/set/index.html": set_forge,
+    "weapon-perks/index.html": perks,
+    "weapon-frames/index.html": frames,
+    "armor-mods/index.html": armor_mods,
+    "armor-sets/index.html": armor_sets,
+    "exotic-weapon/index.html": exotic_weapon,
+    "exotic-armor/index.html": exotic_armor,
+    "elements/index.html": elements,
+    "artifact-mods/index.html": artifact,
+    "ability-cooldown/index.html": cooldown,
+    "boss-hp/index.html": boss_hp,
+    "pve-farming/index.html": farming,
+    "raid-guides/index.html": raids,
+    "dps/index.html": ranking("dps", "DPS"),
+    "swap-dps/index.html": ranking("swap-dps", "切枪 DPS"),
+    "skill-damage/index.html": ranking("skill-damage", "200 属性"),
+    "rotation/index.html": rotation,
+    "eververse/index.html": eververse,
+    "buff-debuffs/index.html": buffs,
+    "game-mechanics/index.html": mechanics,
+    "ammo/index.html": ammo,
+    "power-delta/index.html": delta,
+    "combatant-scalars/index.html": scalars,
+    "armor-rng/index.html": armor_rng,
+    "changelog/index.html": changelog,
+    "sources/index.html": sources,
+    "palette/index.html": palette,
 }
 
 
@@ -626,32 +937,46 @@ def render(home):
     """把首页每张卡的预览换成现取的那一份，返回新的首页。纯函数：测试与 main() 共用。"""
     img = Imgs()
     seen = []
-    need(len(ROTA_MARK.findall(home)) == 1, '首页要有且只有一对 <!--rota--><!--/rota-->')
-    out = ROTA_MARK.sub(lambda _: '<!--rota-->%s<!--/rota-->' % hero_rota(), home)
+    need(
+        len(ROTA_MARK.findall(home)) == 1, "首页要有且只有一对 <!--rota--><!--/rota-->"
+    )
+    out = ROTA_MARK.sub(lambda _: "<!--rota-->%s<!--/rota-->" % hero_rota(), home)
 
     def fill(m):
         href = m.group(1)
         card = m.group(0)
-        need(href in PREVIEW, '首页 %s 那张卡没有预览，在 build-home.py 的 PREVIEW 里加一条' % href)
-        need(len(MARK.findall(card)) == 1, '首页 %s 那张卡要有且只有一对 <!--pv--><!--/pv-->' % href)
+        need(
+            href in PREVIEW,
+            "首页 %s 那张卡没有预览，在 build-home.py 的 PREVIEW 里加一条" % href,
+        )
+        need(
+            len(MARK.findall(card)) == 1,
+            "首页 %s 那张卡要有且只有一对 <!--pv--><!--/pv-->" % href,
+        )
         seen.append(href)
-        return MARK.sub(lambda _: '<!--pv-->%s<!--/pv-->' % PREVIEW[href](img), card)
+        return MARK.sub(lambda _: "<!--pv-->%s<!--/pv-->" % PREVIEW[href](img), card)
 
     out = re.sub(r'<a class="entry" href="([^"]+)">.*?</a>', fill, out, flags=re.S)
     extra = sorted(set(PREVIEW) - set(seen))
-    need(not extra, '首页已经没有这些卡，从 build-home.py 的 PREVIEW 里删掉：%s' % '、'.join(extra))
+    need(
+        not extra,
+        "首页已经没有这些卡，从 build-home.py 的 PREVIEW 里删掉：%s" % "、".join(extra),
+    )
     return out
 
 
 def main():
-    with open(HOME, encoding='utf-8') as f:
+    with open(HOME, encoding="utf-8") as f:
         home = f.read()
     new = render(home)
     if new != home:
-        with open(HOME, 'w', encoding='utf-8') as f:
+        with open(HOME, "w", encoding="utf-8") as f:
             f.write(new)
-    print('首页预览：%d 张卡%s' % (len(PREVIEW), '，已改写' if new != home else '，无变化'))
+    print(
+        "首页预览：%d 张卡%s"
+        % (len(PREVIEW), "，已改写" if new != home else "，无变化")
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -11,6 +11,7 @@
 一条记录一行，与 assets/search.js 同理——这份文件每改一次词表就要重生成并入库，
 按行写让 git 存得下增量。
 """
+
 import argparse
 import json
 import os
@@ -23,28 +24,40 @@ import items
 import markup
 import shell
 
-OUT = os.path.join(shell.SITE, 'admin', 'terms.js')
-TREE = os.path.join(shell.SITE, 'admin', 'pages.js')
+OUT = os.path.join(shell.SITE, "admin", "terms.js")
+TREE = os.path.join(shell.SITE, "admin", "pages.js")
 # 源稿方言与配装源稿形状的定义在站点里，云函数只 require 得到自己目录下的东西，所以
 # 各复制一份过去。两份逐字相同由 npm test 钉住；改规则改站点里那一份。
-COPIES = [(os.path.join(shell.SITE, 'admin', 'dialect.js'),
-           os.path.join(shell.ROOT, 'functions', 'api', 'dialect.js')),
-          (os.path.join(shell.SITE, 'builds', 'source.js'),
-           os.path.join(shell.ROOT, 'functions', 'api', 'source.js')),
-          (os.path.join(shell.ROOT, 'tools', 'sync-eververse.js'),
-           os.path.join(shell.ROOT, 'functions', 'api', 'eververse.js')),
-          (os.path.join(shell.ROOT, 'tools', 'sync-xur.js'),
-           os.path.join(shell.ROOT, 'functions', 'api', 'xur.js')),
-          (os.path.join(shell.ROOT, 'tools', 'xur-recs.json'),
-           os.path.join(shell.ROOT, 'functions', 'api', 'xur-recs.json'))]
+COPIES = [
+    (
+        os.path.join(shell.SITE, "admin", "dialect.js"),
+        os.path.join(shell.ROOT, "functions", "api", "dialect.js"),
+    ),
+    (
+        os.path.join(shell.SITE, "builds", "source.js"),
+        os.path.join(shell.ROOT, "functions", "api", "source.js"),
+    ),
+    (
+        os.path.join(shell.ROOT, "tools", "sync-eververse.js"),
+        os.path.join(shell.ROOT, "functions", "api", "eververse.js"),
+    ),
+    (
+        os.path.join(shell.ROOT, "tools", "sync-xur.js"),
+        os.path.join(shell.ROOT, "functions", "api", "xur.js"),
+    ),
+    (
+        os.path.join(shell.ROOT, "tools", "xur-recs.json"),
+        os.path.join(shell.ROOT, "functions", "api", "xur-recs.json"),
+    ),
+]
 
 
 def j(v):
-    return json.dumps(v, ensure_ascii=False, separators=(',', ':'))
+    return json.dumps(v, ensure_ascii=False, separators=(",", ":"))
 
 
 def build():
-    with open(os.path.join(shell.SITE, 'assets', 'site.css'), encoding='utf-8') as f:
+    with open(os.path.join(shell.SITE, "assets", "site.css"), encoding="utf-8") as f:
         css = f.read()
     # {类名: (它引的 --c-* 变量, 规则体是否只有 color)}。芯片按变量分组，
     # --c-orb 与 --c-stack 渲染色相同、名字不同，这一层让人靠名字分辨。
@@ -64,43 +77,50 @@ def build():
     # 允许回来，浏览器那侧按字面比对（1400 条现编译正则会拖垮逐行提示）。
     # 展开由 items.variants() 出，与 pattern() 共用同一条边界判据——规则留在
     # Python，浏览器只认数据。1394 条里 38 条中英混排，展开后多 166 行。
-    words = sorted(((v, tk) for w, tk in table.items() for v in items.variants(w)),
-                   key=lambda kv: (-len(kv[0]), kv[0]))
+    words = sorted(
+        ((v, tk) for w, tk in table.items() for v in items.variants(w)),
+        key=lambda kv: (-len(kv[0]), kv[0]),
+    )
 
-    lines = ['// 由 tools/build-terms.py 生成，不手改。改词表改 items.py 的 TERMS 或 tools/items.json。',
-             'window.starsideTerms = {']
-    lines.append('terms: [')
-    lines += ['  %s,' % j(t) for t in terms]
-    lines.append('],')
-    lines.append('tokens: {')
+    lines = [
+        "// 由 tools/build-terms.py 生成，不手改。改词表改 items.py 的 TERMS 或 tools/items.json。",
+        "window.starsideTerms = {",
+    ]
+    lines.append("terms: [")
+    lines += ["  %s," % j(t) for t in terms]
+    lines.append("],")
+    lines.append("tokens: {")
     # **芯片只列源稿里真写得出的那些**，判据与 G7 的色板页同一条（tint_classes
     # 再用 used 收一道）。不收这一道时 50 枚里有 18 枚是外壳与组件的类——
     # wordmark、site-foot、hero-sub、entry-stamp、tool-search、qq、pledge 这些，
     # 全站 75 份源稿里一次都没出现过，点一下只会生成一个不该有的标记。
-    lines += ['  %s: %s,' % (j(c), j(v))
-              for c, (v, _sole) in sorted(tint.items()) if c in used]
-    lines.append('},')
+    lines += [
+        "  %s: %s," % (j(c), j(v))
+        for c, (v, _sole) in sorted(tint.items())
+        if c in used
+    ]
+    lines.append("},")
     # G3 按页判：站内每页再叠一层自己的样式表（{ico|…} 只在 ability-cooldown 有）。
     # 只存相对 site.css 的增量——75 份各存一份全集就是把类名抄七十五遍。
-    lines.append('classes: %s,' % j(sorted(known)))
+    lines.append("classes: %s," % j(sorted(known)))
     extra = {}
     for rel, ok in check_terms.sources():
         more = sorted(ok - known)
         if more:
             # 键是源稿的 _id：去掉 references/ 前缀与扩展名（配装是 .json，
             # 别处是 .md），与 sync.py 的 id_of() 同一条。
-            extra[rel[len('references/'):].rsplit('.', 1)[0]] = more
-    lines.append('pageClasses: {')
-    lines += ['  %s: %s,' % (j(k), j(v)) for k, v in sorted(extra.items())]
-    lines.append('},')
-    lines.append('guard: %s,' % j(items.GUARD))
+            extra[rel[len("references/") :].rsplit(".", 1)[0]] = more
+    lines.append("pageClasses: {")
+    lines += ["  %s: %s," % (j(k), j(v)) for k, v in sorted(extra.items())]
+    lines.append("},")
+    lines.append("guard: %s," % j(items.GUARD))
     # G1 的白名单与 G6 的正查范围，两处都照 Python 那一侧原样带过去，不在前端另立。
-    lines.append('keep: %s,' % j(items.KEEP))
-    lines.append('g6: %s,' % j(sorted(os.path.basename(p)[:-3] for p in items.pages())))
-    lines.append('items: [')
-    lines += ['  %s,' % j([w, tok, kind]) for w, (tok, kind) in words]
-    lines.append(']}\n')
-    return '\n'.join(lines)
+    lines.append("keep: %s," % j(items.KEEP))
+    lines.append("g6: %s," % j(sorted(os.path.basename(p)[:-3] for p in items.pages())))
+    lines.append("items: [")
+    lines += ["  %s," % j([w, tok, kind]) for w, (tok, kind) in words]
+    lines.append("]}\n")
+    return "\n".join(lines)
 
 
 def tree():
@@ -118,100 +138,140 @@ def tree():
 
     一行六列：[_id, 标题, 页面路径, 分组, 父页 _id, 更新时间]。
     """
-    with open(os.path.join(shell.SITE, 'index.html'), encoding='utf-8') as f:
+    with open(os.path.join(shell.SITE, "index.html"), encoding="utf-8") as f:
         home = f.read()
     group = {}
-    for m in re.finditer(r'<h2 class="group-label">([^<]*)<span>.*?</h2>(.*?)</ul>', home, re.S):
+    for m in re.finditer(
+        r'<h2 class="group-label">([^<]*)(?:<span>.*?)?</h2>(.*?)</ul>', home, re.S
+    ):
         for href in re.findall(r'<a class="entry"[^>]*href="([^"]+)"', m.group(2)):
-            group[href.replace('/index.html', '')] = m.group(1)
+            group[href.replace("/index.html", "")] = m.group(1)
 
     docs = {}
     for slug, path in shell.sources():
-        with open(path, encoding='utf-8') as f:
+        with open(path, encoding="utf-8") as f:
             md = f.read()
         name = os.path.basename(path)
-        where = re.search(r'^路径：(.*)$', md, re.M)
-        stamp = re.search(r'^更新：(.*)$', md, re.M)
+        where = re.search(r"^路径：(.*)$", md, re.M)
+        stamp = re.search(r"^更新：(.*)$", md, re.M)
         docs[slug] = {
-            'id': shell.doc_id(path),
-            'title': markup.must(re.match(r'#\s+(.+)', md),
-                                 '%s 首行不是「# 标题」' % name).group(1).strip(),
-            'where': where.group(1).strip() if where else slug,
-            'at': stamp.group(1).strip() if stamp else '',
-            'cards': [c.strip() for line in md.split('\n') if line.startswith('卡片：')
-                      for c in line[3:].split('、') if c.strip()],
+            "id": shell.doc_id(path),
+            "title": markup.must(
+                re.match(r"#\s+(.+)", md), "%s 首行不是「# 标题」" % name
+            )
+            .group(1)
+            .strip(),
+            "where": where.group(1).strip() if where else slug,
+            "at": stamp.group(1).strip() if stamp else "",
+            "cards": [
+                c.strip()
+                for line in md.split("\n")
+                if line.startswith("卡片：")
+                for c in line[3:].split("、")
+                if c.strip()
+            ],
         }
 
     parent = {}
     for slug, d in docs.items():
-        for kid in d['cards']:
+        for kid in d["cards"]:
             if kid in docs:
-                parent[kid] = d['id']
-        if d['where'].startswith('elements/') and 'elements' in docs:
-            parent[slug] = docs['elements']['id']
+                parent[kid] = d["id"]
+        if d["where"].startswith("elements/") and "elements" in docs:
+            parent[slug] = docs["elements"]["id"]
 
     rows = []
-    for slug, d in sorted(docs.items(), key=lambda kv: kv[1]['where']):
-        up = parent.get(slug, '')
-        g = group.get(d['where']) or (group.get(docs_where(docs, up)) if up else '') or '站务'
-        rows.append([d['id'], d['title'], d['where'] + '/index.html', g, up, d['at']])
+    for slug, d in sorted(docs.items(), key=lambda kv: kv[1]["where"]):
+        up = parent.get(slug, "")
+        g = (
+            group.get(d["where"])
+            or (group.get(docs_where(docs, up)) if up else "")
+            or "站务"
+        )
+        rows.append([d["id"], d["title"], d["where"] + "/index.html", g, up, d["at"]])
     rows.sort(key=lambda r: (r[3], r[4], r[0]))
     # 配装那几张表跟着一起导：编辑台的场景与职业筛选、行左缘的分支色都读它，
     # 而 DOM 那边只认得 b-prismatic 这种 slug。**照 markup.py 那一份导**，
     # 不在 admin.js 里另抄一遍——多一个分支时只改那一处。season 是当前赛季的源稿
     # 目录（shell.SEASON 那一季），审核台通过投稿时落在它下面。
-    season = [n for n in sorted(os.listdir(os.path.join(shell.ROOT, 'references', 'builds')))
-              if n.startswith(shell.SEASON + '-')]
+    season = [
+        n
+        for n in sorted(os.listdir(os.path.join(shell.ROOT, "references", "builds")))
+        if n.startswith(shell.SEASON + "-")
+    ]
     if len(season) != 1:
-        sys.exit('references/builds/ 下 %s 那一季的目录要恰好一个，现在是 %r' % (shell.SEASON, season))
-    return ('// 由 tools/build-terms.py 生成，不手改。编辑台的资料页清单，'
-            '以及配装的职业、场景、强度、标签与分支五张表与当前赛季。\n'
-            'window.starsidePages = [\n'
-            + '\n'.join('  %s,' % j(r) for r in rows) + '\n]\n'
-            + 'window.starsideBuilds = %s\n'
-            % j({'classes': list(markup.CLASSES), 'scenes': list(markup.SCENES),
-                 'tiers': list(markup.TIERS),
-                 'sceneTags': {k: list(v) for k, v in markup.SCENE_TAGS.items()},
-                 'branch': markup.BRANCH, 'season': season[0]}))
+        sys.exit(
+            "references/builds/ 下 %s 那一季的目录要恰好一个，现在是 %r"
+            % (shell.SEASON, season)
+        )
+    return (
+        "// 由 tools/build-terms.py 生成，不手改。编辑台的资料页清单，"
+        "以及配装的职业、场景、强度、标签与分支五张表与当前赛季。\n"
+        "window.starsidePages = [\n"
+        + "\n".join("  %s," % j(r) for r in rows)
+        + "\n]\n"
+        + "window.starsideBuilds = %s\n"
+        % j(
+            {
+                "classes": list(markup.CLASSES),
+                "scenes": list(markup.SCENES),
+                "tiers": list(markup.TIERS),
+                "sceneTags": {k: list(v) for k, v in markup.SCENE_TAGS.items()},
+                "branch": markup.BRANCH,
+                "season": season[0],
+            }
+        )
+    )
 
 
 def docs_where(docs, pid):
     """父页的 _id → 它的产出路径，用来去首页那张表里查它归哪个组。"""
-    slug = pid.split('/', 1)[-1]
-    return docs[slug]['where'] if slug in docs else pid
+    slug = pid.split("/", 1)[-1]
+    return docs[slug]["where"] if slug in docs else pid
 
 
 def check(out):
     """空表与缺档当场报出。词表是现取的，写死条数会让每次改术语都误报。"""
-    if 'terms: [\n]' in out or 'items: [\n]' in out:
-        sys.exit('词表是空的，items.TERMS 或 items.json 没读到')
-    for must in ('el-arc', 'exotic', 'perk', 'art-perk'):
+    if "terms: [\n]" in out or "items: [\n]" in out:
+        sys.exit("词表是空的，items.TERMS 或 items.json 没读到")
+    for must in ("el-arc", "exotic", "perk", "art-perk"):
         if '"%s"' % must not in out:
-            sys.exit('terms.js 里没有 %s，调色板缺了一档' % must)
+            sys.exit("terms.js 里没有 %s，调色板缺了一档" % must)
 
 
 def main():
-    argparse.ArgumentParser(description=__doc__, allow_abbrev=False,
-                            epilog="产出 admin/terms.js 与 admin/pages.js；资料产出应先生成；完整链运行 npm run build").parse_args()
+    argparse.ArgumentParser(
+        description=__doc__,
+        allow_abbrev=False,
+        epilog="产出 admin/terms.js 与 admin/pages.js；资料产出应先生成；完整链运行 npm run build",
+    ).parse_args()
     out = build()
     check(out)
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
-    with open(OUT, 'w', encoding='utf-8') as f:
+    with open(OUT, "w", encoding="utf-8") as f:
         f.write(out)
-    print('admin/terms.js  %.1f KB' % (len(out.encode()) / 1024))
+    print("admin/terms.js  %.1f KB" % (len(out.encode()) / 1024))
     for src, dst in COPIES:
-        with open(src, encoding='utf-8') as f:
+        with open(src, encoding="utf-8") as f:
             text = f.read()
-        with open(dst, 'w', encoding='utf-8') as f:
+        with open(dst, "w", encoding="utf-8") as f:
             f.write(text)
-        print('%s  %.1f KB（%s 的副本）' % (os.path.relpath(dst, shell.ROOT), len(text.encode()) / 1024,
-                                        os.path.relpath(src, shell.SITE)))
+        print(
+            "%s  %.1f KB（%s 的副本）"
+            % (
+                os.path.relpath(dst, shell.ROOT),
+                len(text.encode()) / 1024,
+                os.path.relpath(src, shell.SITE),
+            )
+        )
     pages = tree()
-    with open(TREE, 'w', encoding='utf-8') as f:
+    with open(TREE, "w", encoding="utf-8") as f:
         f.write(pages)
-    print('admin/pages.js  %.1f KB，%d 页' % (len(pages.encode()) / 1024,
-                                            pages.count('\n  [')))
+    print(
+        "admin/pages.js  %.1f KB，%d 页"
+        % (len(pages.encode()) / 1024, pages.count("\n  ["))
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -136,13 +136,19 @@ export default function init(box, deps) {
     input.className = 'tool-search';
     input.placeholder = '搜索全站资料';
     input.setAttribute('aria-label', '搜索全站资料');
+    input.setAttribute('role', 'combobox');
+    input.setAttribute('aria-autocomplete', 'list');
+    input.setAttribute('aria-expanded', 'false');
+    input.setAttribute('aria-controls', 'hero-hits');
 
     var count = document.createElement('p');
     count.className = 'tool-count';
     count.setAttribute('role', 'status');
 
     var list = document.createElement('ul');
+    list.id = 'hero-hits';
     list.className = 'hits';
+    list.setAttribute('role', 'listbox');
 
     var more = document.createElement('button');
     more.type = 'button';
@@ -217,9 +223,17 @@ export default function init(box, deps) {
 
     /* 一次 append 一个 fragment，浏览器只排一次版；逐条 append 会让几百条各
        触发一次布局。 */
+    var seq = 0;
     function show(rows, q, terms) {
       var frag = document.createDocumentFragment();
-      rows.forEach(function (r) { frag.appendChild(row(r, q, terms)); });
+      rows.forEach(function (r) {
+        var li = row(r, q, terms);
+        var a = li.firstChild;
+        a.id = 'hero-hit-' + seq++;
+        a.setAttribute('role', 'option');
+        a.setAttribute('aria-selected', 'false');
+        frag.appendChild(li);
+      });
       list.appendChild(frag);
     }
 
@@ -239,7 +253,10 @@ export default function init(box, deps) {
       var q = input.value.trim();
       var had = list.childElementCount;
       list.textContent = '';
+      seq = 0;
       active = -1;
+      input.removeAttribute('aria-activedescendant');
+      input.setAttribute('aria-expanded', 'false');
       more.hidden = true;
       box.toggleAttribute('data-miss', false);
       if (!q) { count.textContent = ''; return; }
@@ -250,6 +267,7 @@ export default function init(box, deps) {
       var n = 0, i;
       for (i = 0; i < all.length; i++) if (!all[i].jump) n++;
       show(all.slice(0, CAP), q, terms);
+      input.setAttribute('aria-expanded', n ? 'true' : 'false');
       queued = { rows: all.slice(CAP), q: q, terms: terms };
       more.hidden = !queued.rows.length;
       more.textContent = '展开其余 ' + queued.rows.length + ' 条';
@@ -275,6 +293,7 @@ export default function init(box, deps) {
           ? (active + 1) % hits.length
           : (active <= 0 ? hits.length - 1 : active - 1);
         for (var i = 0; i < hits.length; i++) hits[i].setAttribute('aria-selected', i === active ? 'true' : 'false');
+        input.setAttribute('aria-activedescendant', hits[active].id);
         hits[active].scrollIntoView({ block: 'nearest' });
       } else if (e.key === 'Enter') {
         e.preventDefault();

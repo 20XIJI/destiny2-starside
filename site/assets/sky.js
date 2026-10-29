@@ -147,7 +147,12 @@ function ruler() {
   };
   put();
   document.fonts.ready.then(put);
-  addEventListener('resize', put);
+  let queued = false;
+  addEventListener('resize', () => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => { queued = false; put(); });
+  });
 }
 
 /* 星轨：同一列里相邻两张卡的节点用虚线相连，两端各一枚菱形，偶有光点沿线走。

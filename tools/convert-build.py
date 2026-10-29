@@ -1637,19 +1637,6 @@ def card_tags(scenes, tags):
 def card(m, href, up, sets):
     """索引页的一张卡。两页共用。"""
     prefix = "../" * up
-    desc = m["desc"] or (
-        "阶段切装路线：%s" % " → ".join(m["tags"][:5])
-        if sets and m["tags"] and m["class"] != MIXED
-        else (
-            "跨职业 %d 套同武器/机制配装方案" % m["set"]
-            if sets and m["class"] == MIXED
-            else (
-                "同一角色 %d 套遭遇战阶段切换配装方案" % m["set"]
-                if sets
-                else "完整技能、武器词条、护甲模组与神器配置"
-            )
-        )
-    )
     more = (
         '<span class="set-more">+%d 套</span>' % (m["set"] - 3)
         if sets and m["set"] > 3 and m["class"] == MIXED
@@ -1658,6 +1645,12 @@ def card(m, href, up, sets):
             if sets and m["set"] > 3
             else ""
         )
+    )
+    say = ("<p>%s</p>" % m["desc"] if m["desc"] else "") + (
+        '<span class="verdict" title="%s"><b>审核意见</b>%s</span>'
+        % (escape(m["verdict"], quote=True), m["verdict"])
+        if m["verdict"]
+        else ""
     )
     return [
         '<li class="b-%s" data-branch="%s" data-scene="%s" data-cls="%s"'
@@ -1698,13 +1691,7 @@ def card(m, href, up, sets):
             m["tier"],
             card_tags(m["scene"], m["tags"]),
         ),
-        '<div class="say">',
-        "<p%s>%s</p>" % ("" if m["desc"] else ' class="desc-fb"', desc),
-        '<span class="verdict" title="%s"><b>审核意见</b>%s</span>'
-        % (escape(m["verdict"], quote=True), m["verdict"])
-        if m["verdict"]
-        else "",
-        "</div>",
+        '<div class="say">%s</div>' % say if say else "",
         m["preview"].replace(UP, prefix),
         "</div>",
         "</a>",
@@ -1761,23 +1748,45 @@ def render_index(made, sets=False):
     up = 2 if sets else 1
     # 合集页在 builds/sets/ 下，卡片要多退一层才回得到 builds/<赛季>/。
     href = "../%s/%s/index.html" if sets else "%s/%s/index.html"
-    aside = (
-        '<p class="new-link"><a href="../new/set/index.html">投稿一组合集 →</a>'
-        "<span>逐套配置装备与切换场景，在线提交或导出合集文本</span></p>"
-        '<p class="new-link"><a href="../index.html">单套配装推荐 →</a>'
-        "<span>一套一页的配装，按场景、职业、强度与标签筛选</span></p>"
-        if sets
-        # 投稿入口挂在标题右边。这是填表页在站内唯一的入口（别处没有理由指向
-        # 它，而没有入口的页面等于不存在），单独占一段会在卡片上面多出一整块
-        # 空白。页首那句说明只留给 <meta>，正文里它把首屏推下去半屏。
-        else '<p class="new-link"><a href="new/index.html">投稿一套配装 →</a>'
-        "<span>选定技能、武器、护甲与神器模组，在线提交或导出标准配装文本</span></p>"
-    )
-    if not sets and any(m["set"] for m in made if m["season"] == SEASON):
-        aside += (
-            '<p class="new-link"><a href="sets/index.html">配装合集 →</a>'
-            "<span>同一角色的多套配装，按场景切换使用</span></p>"
+    n_solo = sum(1 for m in made if m["season"] == SEASON and not m["set"])
+    n_sets = sum(1 for m in made if m["season"] == SEASON and m["set"])
+    nav_cards = []
+    if sets:
+        nav_cards.append(
+            '<a class="head-portal" href="../index.html">'
+            '<svg class="hp-ico" viewBox="0 0 28 30" aria-hidden="true">'
+            '<path d="M14 1.5 26.5 8.7v12.6L14 28.5 1.5 21.3V8.7Z"/>'
+            '<path d="M8.5 11.5h11M8.5 15h11M8.5 18.5h7"/></svg>'
+            '<span class="hp-txt"><b>单套配装</b><em>%d 套</em></span></a>' % n_solo
         )
+        nav_cards.append(
+            '<a class="head-portal is-forge" href="../new/set/index.html">'
+            '<svg class="hp-ico" viewBox="0 0 28 30" aria-hidden="true">'
+            '<path d="M14 1.5 26.5 8.7v12.6L14 28.5 1.5 21.3V8.7Z"/>'
+            '<path d="M8 10h7.5v7.5H8ZM11.5 13.5H19V21h-7.5Z"/>'
+            '<path d="m17 20.5 4.2-4.2 1.6 1.6-4.2 4.2-2 .4Z"/></svg>'
+            '<span class="hp-txt"><b>投稿合集</b><em>合集工具 →</em></span></a>'
+        )
+    else:
+        if n_sets:
+            nav_cards.append(
+                '<a class="head-portal" href="sets/index.html">'
+                '<svg class="hp-ico" viewBox="0 0 28 30" aria-hidden="true">'
+                '<path d="M14 1.5 26.5 8.7v12.6L14 28.5 1.5 21.3V8.7Z"/>'
+                '<path d="M8.5 10.5h8v8h-8ZM12 14h8v8h-8Z"/></svg>'
+                '<span class="hp-txt"><b>配装合集</b><em>%d 组</em></span></a>' % n_sets
+            )
+        nav_cards.append(
+            '<a class="head-portal is-forge" href="new/index.html">'
+            '<svg class="hp-ico" viewBox="0 0 28 30" aria-hidden="true">'
+            '<path d="M14 1.5 26.5 8.7v12.6L14 28.5 1.5 21.3V8.7Z"/>'
+            '<path d="M9 11h10M9 15h10M9 19h5.5"/>'
+            '<path d="m17 20.5 4.2-4.2 1.6 1.6-4.2 4.2-2 .4Z"/></svg>'
+            '<span class="hp-txt"><b>投稿配装</b><em>配装工具 →</em></span></a>'
+        )
+    aside = '<nav class="head-portals" aria-label="配装导航">%s</nav>' % "".join(
+        nav_cards
+    )
     o = [
         shell.head(
             "%s · Starside" % name,
