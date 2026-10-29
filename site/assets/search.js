@@ -4817,6 +4817,7 @@ window.starsideIndex = [
 {"u":"builds/s29/q01swvbe-titan/index.html","t":"棱镜泰坦pvp meta 配装 · 配装推荐","d":""},
 {"u":"builds/s29/q6ntu61e-hunter/index.html","t":"巴克里斯面具换挡系列 · 配装推荐","d":""},
 {"u":"builds/s29/q9y0mpko-titan/index.html","t":"四码头 高阶暴君 · 配装推荐","d":""},
+{"u":"builds/s29/qiuxou7o-hunter/index.html","t":"剑宗挽歌棱镜猎 · 配装推荐","d":""},
 {"u":"builds/s29/qz9gs029-warlock/index.html","t":"虚无镣铐/反转手虚空术 · 配装推荐","d":""},
 {"u":"builds/s29/rdrctsdn-warlock/index.html","t":"边缘交通 · 配装推荐","d":""},
 {"u":"builds/s29/rme36h0u-warlock/index.html","t":"合集·精准伤害 · 配装合集","d":""},
