@@ -650,6 +650,44 @@
     seen.forEach(function (x) { d.host.appendChild(chipFor(d, k, x, x)); });
   }
 
+  /* 0 命中时的正文空状态与一键重置。只在零命中那一刻惰性建出，平时不占 DOM。 */
+  var emptyBox = null;
+  function resetAll() {
+    search.value = '';
+    if (DIMS) {
+      DIMS.forEach(function (d) {
+        picked[d.name] = [];
+        sync(d);
+        if (d.groups) regroup('');
+      });
+    }
+    filter('');
+  }
+  function syncEmpty(miss) {
+    if (!miss) {
+      if (emptyBox) emptyBox.hidden = true;
+      return;
+    }
+    if (!emptyBox) {
+      var host = (sections[0] && sections[0].parentNode) || document.querySelector('main');
+      if (!host) return;
+      emptyBox = document.createElement('div');
+      emptyBox.className = 'tool-empty';
+      emptyBox.setAttribute('role', 'status');
+      var p = document.createElement('p');
+      p.textContent = '未找到匹配的' + NOUN + '，可放宽筛选或清空搜索词';
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'op';
+      btn.textContent = '重置筛选';
+      btn.onclick = resetAll;
+      emptyBox.appendChild(p);
+      emptyBox.appendChild(btn);
+      host.appendChild(emptyBox);
+    }
+    emptyBox.hidden = false;
+  }
+
   /* 命中即显示；整行原文不命中时再拿资料库物品名走拼音与英文。介绍不走这两条。
      整行三档皆不命中则整行隐藏，整节不命中则整节与其 chip 一同隐藏。
      检索期间三档并排对照关系失效，清空即恢复。 */
@@ -693,10 +731,12 @@
       sec.hidden = empty;
       if (chips[i]) chips[i].hidden = empty;
     });
-    count.textContent = (query.trim() || facetOn()) ? hits + ' / ' + mods.length : '';
+    var active = !!query.trim() || facetOn();
+    count.textContent = active ? hits + ' / ' + mods.length : '';
     /* 搜了但一个都没命中时给工具条打一位，搜索框与计数据此转红：灰着看
        0 / 147 与 3 / 147 长得一样。清空查询即撤销，没搜过也不算空结果。 */
-    slot.toggleAttribute('data-miss', (!!query.trim() || facetOn()) && !hits);
+    slot.toggleAttribute('data-miss', active && !hits);
+    syncEmpty(active && !hits);
     remember(query);
     return hits;
   }

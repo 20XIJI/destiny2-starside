@@ -2380,29 +2380,14 @@
 .one-side .src { font-size: 12.5px; }
 
 /* 用过它的配装：摆的就是配装推荐页那张卡，样式由 build-weapons.py 从那一页的
-   样式表里现取、内联进页壳（CARD_SEL 一处），这里只改这一栏要改的三样。
-
-   **一行三张，行内等高。**卡本身是 flex 竖排，网格的默认 stretch 已经让同一行
-   等高；卡内每一格在那一页定死了高度，所以只压说明那一块与图的尺寸，别的照旧。 */
-/* **要写成 .entries.used-builds**：卡片那一族的样式内联在页壳的 <style> 里，
-   排在这份表之后，同权重时它胜出；单写 .used-builds 会被那边的五列压回去。 */
-.entries.used-builds { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+   样式表里现取、内联进页壳（CARD_SEL 一处），这里只改这一栏的列数与图尺寸。 */
+.entries.used-builds { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
                        gap: 10px; }
-.entries.used-builds .entry { gap: 7px; padding: 12px; }
-/* 核心图压到 52：那一页 64 是主角尺寸，这里它只是「哪一套」的记号。
-   强度光环的框 --fr 跟着改成 52 + 3×2，与那一页 64 + 3×2 同一个算法。 */
-.entries.used-builds .entry .node { --fr: 58px; }
-.entries.used-builds .entry .node img { width: 52px; height: 52px; }
-/* 合集的拼图整块也是 52，一格 25、缝 2px。那一页把尺寸写在元素自己的 style 上
-   （--sz／--tile），样式表改不动那两个变量，只能直接给宽高；写 auto 会按原图
-   尺寸显示、溢出光环。 */
-.entries.used-builds .entry .node .core-mosaic { width: 52px; height: 52px; }
-.entries.used-builds .entry .node .core-mosaic img { width: 25px; height: 25px; }
-/* 说明那一块那一页定高 112px（审核意见两行 + 简介三行）：这一栏窄，压到两行。 */
-.entries.used-builds .entry .say { height: auto; }
-.entries.used-builds .entry .say p { -webkit-line-clamp: 2; }
-.entries.used-builds .entry .say:has(.verdict) p { -webkit-line-clamp: 1; }
-.entries.used-builds .entry .tags { margin-top: 6px; }
+.entries.used-builds .entry { grid-template-columns: 58px minmax(0, 1fr); gap: 10px; padding: 10px 12px; }
+.entries.used-builds .entry .node { width: 52px; height: 52px; --fr: 58px; }
+.entries.used-builds .entry .node > img { width: 52px; height: 52px; }
+.entries.used-builds .entry .node > .core-mosaic { width: 52px; height: 52px; }
+.entries.used-builds .entry .node > .core-mosaic img { width: 23px; height: 23px; }
 
 .sub-label > .n { margin-left: 6px; color: var(--bone-faint); font-weight: 400; letter-spacing: 0; }
 

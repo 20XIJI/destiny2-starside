@@ -360,7 +360,7 @@ a { color: var(--bone); }
 
 /* 面包屑里没有页面的那一层（创作者名）：纯文本，比链接暗一档，读者因此
    不会去点它。层次关系仍在，只是那一层没有独立页面可去。 */
-.site-nav .step { color: var(--bone-faint); }
+.site-nav .step { color: var(--bone-dim); }
 
 .site-nav .sep { color: var(--hair-lit); }
 
@@ -407,7 +407,7 @@ a { color: var(--bone); }
   border-radius: 0;
 }
 
-.tool-search::placeholder { color: var(--bone-faint); }
+.tool-search::placeholder { color: var(--bone-dim); }
 
 /* 只提亮底色与边框，不动 outline——:focus-visible 的描边是键盘可达性底线 */
 .tool-search:focus {
@@ -417,13 +417,13 @@ a { color: var(--bone); }
 
 /* 一个都没搜到：边框与计数一起转红。灰着看 0 / 147 与 3 / 147 长得一样，
    这是搜索栏上唯一带信息的一处状态，所以只留它。
-   借的是 --c-health 的渲染色——工具条上不会出现生命值，两者不同屏。
+   借的是 --c-enemy 的渲染色——工具条上不会出现战斗人员数值，两者不同屏。
    权重 (0,3,0) 压过 .tool-search:focus，聚焦且零命中时红色胜出：那是更急的信号。 */
 .toolbar[data-miss] .tool-search,
-.hero-search[data-miss] .tool-search { border-color: var(--c-health); }
+.hero-search[data-miss] .tool-search { border-color: var(--c-enemy); }
 
 .toolbar[data-miss] .tool-count,
-.hero-search[data-miss] .tool-count { color: var(--c-health); }
+.hero-search[data-miss] .tool-count { color: var(--c-enemy); }
 
 .tool-count {
   flex: none;
@@ -612,6 +612,28 @@ a { color: var(--bone); }
   height: 100%;
   margin: 0 auto;
   background: var(--hair-lit);
+}
+
+
+/* 0 命中空状态（由 app.js 在搜索或维度筛选零结果时建出）：居中提示 + 一键重置。 */
+.tool-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: 48px auto;
+  padding: 28px 24px;
+  max-width: 420px;
+  text-align: center;
+  background: var(--tint-1);
+  border: 1px dashed var(--hair-lit);
+}
+
+.tool-empty p {
+  margin: 0;
+  color: var(--bone-dim);
+  font-family: var(--font-cn);
+  font-size: 14px;
 }
 
 

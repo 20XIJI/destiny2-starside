@@ -1695,6 +1695,7 @@ function toolbar () {
   return {
     slot,
     bar,
+    main,
     // 某个场景那一节此刻装着几张可见的卡。
     inSection: (scene) => {
       const sec = secOf(scene)
@@ -1807,6 +1808,20 @@ test('the main axis carries an 全部 reset that clears the dimension', () => {
   assert.equal(t.live(), 2)
   t.click('场景', '全部')
   assert.equal(t.live(), CARDS.length, '「全部」没把场景清干净')
+})
+
+test('zero hits show an empty state whose reset button clears all filters', () => {
+  const t = toolbar()
+  t.click('场景', '地牢')
+  t.click('职业', '术士')
+  assert.equal(t.live(), 0)
+  const empty = t.main.querySelector('.tool-empty')
+  assert.ok(empty && !empty.hidden, '零命中时没出空状态提示')
+  const reset = empty.querySelector('button')
+  assert.ok(reset, '空状态里没有重置按钮')
+  reset.onclick()
+  assert.equal(t.live(), CARDS.length, '点重置筛选后没把全部卡片恢复回来')
+  assert.equal(empty.hidden, true, '恢复后空状态没收起来')
 })
 
 test('an overlapping build sits in its first scene and moves to whichever is picked', () => {

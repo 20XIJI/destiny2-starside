@@ -26,57 +26,75 @@ import shell
 import vocab
 from html import escape, unescape
 
-from markup import (BRANCH, CLASSES, CO_SCENES, REVIEW_SCENES, SCENE_TAGS, SCENES,
-                    TIERS, die, inline, loading_attr, must,
-                    source_context, text_of, uncolor)
+from markup import (
+    BRANCH,
+    CLASSES,
+    CO_SCENES,
+    REVIEW_SCENES,
+    SCENE_TAGS,
+    SCENES,
+    TIERS,
+    die,
+    inline,
+    loading_attr,
+    must,
+    source_context,
+    text_of,
+    uncolor,
+)
 
 SRC_DIR = shell.BUILD_DIR
-OUT_DIR = 'builds'
+OUT_DIR = "builds"
 # 详情页自己那份悬停说明，与 index.html 同目录；页面在 tip.js 的 <script data-desc>
 # 上写这个名字，prune_details() 清孤儿时连它一起清。
-PAGE_DESC = 'desc.js'
-SEASON = shell.SEASON        # 当前赛季只有一处定义，见 shell.py
+PAGE_DESC = "desc.js"
+SEASON = shell.SEASON  # 当前赛季只有一处定义，见 shell.py
 
 # 六维恒为六格，顺序钉死：游戏内就是这个顺序，配装之间横着比才对得上位置。
-STATS = ('生命', '近战', '手雷', '超能', '职业', '武器')
+STATS = ("生命", "近战", "手雷", "超能", "职业", "武器")
 # 合集：一份源稿装 N 套可切换的配装，`# ` 分隔。头部写整份共有的那几个键
 # （推荐人、描述、更新、场景、强度、核心），每套各写描述、标签、分支、核心与职业
 # ——描述与标签正是它们互相区分的地方，写在头部就成了一排全选，什么也没说。
 # 游戏内能存 20 套，站上收到 12：再多左栏那列比右栏还长，而一个角色常用的就五六套。
 SET_MAX = 12
 # 一队人各穿一套那种合集的职业格。索引页拿它当小节标题，与三个职业并列。
-MIXED = '多职业'
-PARTS = ('头盔', '护臂', '胸甲', '腿部', '职业物品')
+MIXED = "多职业"
+PARTS = ("头盔", "护臂", "胸甲", "腿部", "职业物品")
 # 职业、分支与配装三轴（场景·强度·标签）的表在 markup.py：那三样是源稿的词汇，而 build-terms.py
 # 要把它们导给编辑台（审核台左栏按场景与职业建树、列表按分支上色），本文件的
 # 名字带短横，import 不进去。分支同时决定同名条目查哪一页（星相「地狱火」在
 # 烈日页与棱镜页各有一条，棱镜配装该链到棱镜页）。
 # 元素名走全站那一份编码，徽章上照样着色——素着等于这一页自己开了个例外。
-ELEMENT_TOKEN = {b: 'el-%s' % slug for b, slug in BRANCH.items()}
+ELEMENT_TOKEN = {b: "el-%s" % slug for b, slug in BRANCH.items()}
 # 一格一个名字的槽位：键即槽位名，源稿一行写完，值之间用「、」隔开。
 # 「移动：」不查表——跳跃与瞬移这类移动手段站内还没有资料页，落成纯文本。
 
 
 def must_title(rec, msg):
-    title = (rec or {}).get('标题', '').strip()
+    title = (rec or {}).get("标题", "").strip()
     if not title:
         die(msg)
     return title
 
 
-def guns(rec) -> 'list[dict]':
+def guns(rec) -> "list[dict]":
     """这一套的传说武器：`[{名字, 词条}]`，值都取成「名字#主键」那一段。
 
     记录里本来就是切好的一对；这里只把主键接回名字后面，让下游与别的槽位同形。
     """
-    return [{'名字': migrate.show(g), '词条': [migrate.show(p) for p in g.get('词条') or ()]}
-            for g in migrate.flat(rec).get('传说武器') or []]
+    return [
+        {
+            "名字": migrate.show(g),
+            "词条": [migrate.show(p) for p in g.get("词条") or ()],
+        }
+        for g in migrate.flat(rec).get("传说武器") or []
+    ]
 
 
 def where(rec):
     """报错里的定位：这是哪一套配装。合集一个文件里五套，不说哪一套没法改。"""
-    title = (rec or {}).get('标题', '')
-    return '（配装/合集：%s）' % title if title else ''
+    title = (rec or {}).get("标题", "")
+    return "（配装/合集：%s）" % title if title else ""
 
 
 def meta(rec, key, required=True):
@@ -87,15 +105,18 @@ def meta(rec, key, required=True):
     got = migrate.flat(rec)
     if key not in got:
         if required:
-            die('源稿缺「%s：」一行%s' % (key, where(rec)))
-        return ''
+            die("源稿缺「%s：」一行%s" % (key, where(rec)))
+        return ""
     v = got[key]
     # 值是 `{名字, 主键}` 一对，取成「名字#主键」那一段：查表按主键，显示要名字，
     # 两者在同一段里，取用的人按 vocab.cut() 分开。切法只有 migrate.show() 一处。
     if key == migrate.SETS:
-        return ' × '.join(migrate.show_set(x) for x in v)
-    return ('、'.join(migrate.show(x) for x in v) if isinstance(v, list)
-            else (migrate.show(v) or ''))
+        return " × ".join(migrate.show_set(x) for x in v)
+    return (
+        "、".join(migrate.show(x) for x in v)
+        if isinstance(v, list)
+        else (migrate.show(v) or "")
+    )
 
 
 def names(rec, key, required=True):
@@ -103,18 +124,23 @@ def names(rec, key, required=True):
     got = migrate.flat(rec)
     if key not in got:
         if required:
-            die('源稿缺「%s：」一行%s' % (key, where(rec)))
+            die("源稿缺「%s：」一行%s" % (key, where(rec)))
         return []
     v = got[key]
     if isinstance(v, list):
         return [migrate.show(x) for x in v]
-    return [x.strip() for x in migrate.show(v).split('、') if x.strip()]
+    return [x.strip() for x in migrate.show(v).split("、") if x.strip()]
 
 
 # 格档 → 图标边长。主角格（异域、传说枪、套装）56，配料格 32，rig 里的 Perk 24。
 # 两档的判据见 builds/style.css：主角格图左名右 13px，配料格 32px + 11.5px 不折行。
-CELL_ICON = {'item': 32, 'item gun': 56, 'item gear': 56, 'item set': 56,
-             'item perk-cell': 24}
+CELL_ICON = {
+    "item": 32,
+    "item gun": 56,
+    "item gear": 56,
+    "item set": 56,
+    "item perk-cell": 24,
+}
 
 
 def icon_of(e, size, eager=False):
@@ -126,10 +152,15 @@ def icon_of(e, size, eager=False):
     loading="lazy" 会让它们等布局算完才开始下载，是反模式。格子那一批要不要
     也放开，得按 1440×900 实测数，没量之前不猜。
     """
-    if not e['icon']:
-        return ''
-    return ('<img src="%s%s" alt="" width="%d" height="%d" %s>'
-            % (UP, e['icon'], size, size, loading_attr(0 if eager else 1, 1)))
+    if not e["icon"]:
+        return ""
+    return '<img src="%s%s" alt="" width="%d" height="%d" %s>' % (
+        UP,
+        e["icon"],
+        size,
+        size,
+        loading_attr(0 if eager else 1, 1),
+    )
 
 
 def query(text):
@@ -137,10 +168,10 @@ def query(text):
     目标页 location.search 读到的与 quote() 那一份逐字相同，而一个汉字原样 3 字节、
     百分号写法 9 字节。ASCII 仍走 quote()：空格、&、#、+ 在查询串里各有意思，
     原样写会被读成分隔符（URLSearchParams 把 + 读成空格）。"""
-    return ''.join(c if ord(c) > 127 else quote(c) for c in text)
+    return "".join(c if ord(c) > 127 else quote(c) for c in text)
 
 
-def item(idx, slot, name, prefer, kind=None, cls='item', bare=False, tail='', label=''):
+def item(idx, slot, name, prefer, kind=None, cls="item", bare=False, tail="", label=""):
     """一格：图标 + 名字，整格是指向资料页的链接。着色由词表给，不由源稿写。
 
     bare 只出格子本身，不套 <li>——一把枪与它的两个 Perk 要包在同一个 <li> 里，
@@ -151,22 +182,26 @@ def item(idx, slot, name, prefer, kind=None, cls='item', bare=False, tail='', la
     """
     e = vocab.pick(idx, name, slot, kind=kind, prefer=prefer)
     icon = icon_of(e, CELL_ICON[cls])
-    shown = label or e['name']
-    label = ('<span class="%s">%s</span>' % (e['token'], shown)
-             if e['token'] else shown)
-    sub = ('<span class="sub">%s</span>' % e['sub']) if e.get('sub') else ''
+    shown = label or e["name"]
+    label = '<span class="%s">%s</span>' % (e["token"], shown) if e["token"] else shown
+    sub = ('<span class="sub">%s</span>' % e["sub"]) if e.get("sub") else ""
     # 带页内搜索框的页面加 ?q=：落地先过滤到那一行再滚，不然读者落在一整节里
     # 还得自己找。app.js 的 filter() 接这个参数，与全站搜索的命中链接同一套。
-    q = ('?q=%s' % query(e['q'])) if e['q'] and vocab.searchable(e['page']) else ''
+    q = ("?q=%s" % query(e["q"])) if e["q"] and vocab.searchable(e["page"]) else ""
     # 悬停详情认的是 data-d：「页面\t名字\t分节」，builds/tip.js 拿它去 desc.js 里查。
     # 制表符在属性里写成 &#9;，源码里看得见；查得到说明的格子才写这一位，别的
     # 格子上多一个空属性只会让人以为它该弹而没弹。
-    d = (' data-d="%s"' % escape('%s\t%s\t%s'
-                                 % (e['page'], e['name'], e['kind'])).replace('\t', '&#9;')
-         if e.get('desc') else '')
-    cell = ('<a class="%s"%s href="%s%s/index.html%s#%s">%s<span class="nm">%s%s%s</span></a>'
-            % (cls, d, UP, e['page'], q, e['anchor'], icon, label, sub, tail))
-    return cell if bare else '<li>%s</li>' % cell
+    d = (
+        ' data-d="%s"'
+        % escape("%s\t%s\t%s" % (e["page"], e["name"], e["kind"])).replace("\t", "&#9;")
+        if e.get("desc")
+        else ""
+    )
+    cell = (
+        '<a class="%s"%s href="%s%s/index.html%s#%s">%s<span class="nm">%s%s%s</span></a>'
+        % (cls, d, UP, e["page"], q, e["anchor"], icon, label, sub, tail)
+    )
+    return cell if bare else "<li>%s</li>" % cell
 
 
 # 面板与六维的小图标：站内没有部位与属性的图，这两套自己画。图形语义一律 CSS/SVG
@@ -174,25 +209,25 @@ def item(idx, slot, name, prefer, kind=None, cls='item', bare=False, tail='', la
 # 16×16 视框、1.4 描边、currentColor——颜色跟着标题走，不引入新色相。
 GLYPH = {
     # 技能：三道叠起来的尖角，读作「一组技能」。与近战那把刀、手雷那颗弹都不撞。
-    '技能': 'M4 6.5 8 3l4 3.5M4 10 8 6.5l4 3.5M4 13.5 8 10l4 3.5',
-    '星相': 'M8 1.5 14.5 8 8 14.5 1.5 8Z',
-    '碎片': 'M8 2 14 12.5H2Z',
-    '头盔': 'M3 9a5 5 0 0 1 10 0v4H10v-2H6v2H3Z',
-    '护臂': 'M4.5 2h7l-1 5 1.5 7h-8L5.5 7Z',
-    '胸甲': 'M3 3.5h10l-1.5 9h-7Zm5 0v9',
-    '腿部': 'M6 2h4v7l3 5H6Z',
-    '职业物品': 'M4 2h8l-1.5 12h-5Zm4 0v12',
-    '神器': 'M8 1.5 14 5v6l-6 3.5L2 11V5Zm0 4.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z',
-    '生命': 'M6.5 2h3v4.5H14v3H9.5V14h-3V9.5H2v-3h4.5Z',
+    "技能": "M4 6.5 8 3l4 3.5M4 10 8 6.5l4 3.5M4 13.5 8 10l4 3.5",
+    "星相": "M8 1.5 14.5 8 8 14.5 1.5 8Z",
+    "碎片": "M8 2 14 12.5H2Z",
+    "头盔": "M3 9a5 5 0 0 1 10 0v4H10v-2H6v2H3Z",
+    "护臂": "M4.5 2h7l-1 5 1.5 7h-8L5.5 7Z",
+    "胸甲": "M3 3.5h10l-1.5 9h-7Zm5 0v9",
+    "腿部": "M6 2h4v7l3 5H6Z",
+    "职业物品": "M4 2h8l-1.5 12h-5Zm4 0v12",
+    "神器": "M8 1.5 14 5v6l-6 3.5L2 11V5Zm0 4.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z",
+    "生命": "M6.5 2h3v4.5H14v3H9.5V14h-3V9.5H2v-3h4.5Z",
     # 近战是一把短刃：菱形（星相）与三角（碎片）已经占了几何形，刀有握柄与刃尖，
     # 16px 下仍分得出朝向。
-    '近战': 'M2.6 13.4 6.9 9.1M5.7 7.7 9.4 4l3.7 3.7-3.7 3.7Z',
-    '手雷': 'M8 5.5a4.2 4.2 0 1 1 0 8.4 4.2 4.2 0 0 1 0-8.4ZM6.5 4h3v1.6h-3ZM10 2.5l2.5 2',
-    '超能': 'M8 1.5 9.6 6.4 14.5 8 9.6 9.6 8 14.5 6.4 9.6 1.5 8 6.4 6.4Z',
-    '职业': 'M8 2a6 6 0 1 1 0 12A6 6 0 0 1 8 2Zm0 3.2a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6Z',
+    "近战": "M2.6 13.4 6.9 9.1M5.7 7.7 9.4 4l3.7 3.7-3.7 3.7Z",
+    "手雷": "M8 5.5a4.2 4.2 0 1 1 0 8.4 4.2 4.2 0 0 1 0-8.4ZM6.5 4h3v1.6h-3ZM10 2.5l2.5 2",
+    "超能": "M8 1.5 9.6 6.4 14.5 8 9.6 9.6 8 14.5 6.4 9.6 1.5 8 6.4 6.4Z",
+    "职业": "M8 2a6 6 0 1 1 0 12A6 6 0 0 1 8 2Zm0 3.2a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6Z",
     # 武器是一把枪的侧影。
     # 不用弹壳：站内「弹药」是另一个概念，有自己的 --ammo-* 与四张购物清单页。
-    '武器': 'M1.6 6.2h12.8v2.4h-3.1l-1.3 2.6H7.5L7 8.6H5v3.5H3.2V8.6H1.6Z',
+    "武器": "M1.6 6.2h12.8v2.4h-3.1l-1.3 2.6H7.5L7 8.6H5v3.5H3.2V8.6H1.6Z",
 }
 
 
@@ -202,8 +237,10 @@ def glyph(key):
     这里只出一个 <use>，图形本身由 finish() 收进页首的 sprite、每种一份：合集页一页
     一百多枚，其实只有十四种，逐枚内联一页就多出二三十 KB。"""
     if key not in GLYPH:
-        return ''
-    return '<svg class="gl" aria-hidden="true"><use href="#gl%d"/></svg>' % list(GLYPH).index(key)
+        return ""
+    return '<svg class="gl" aria-hidden="true"><use href="#gl%d"/></svg>' % list(
+        GLYPH
+    ).index(key)
 
 
 USE = re.compile(r'<use href="#gl(\d+)"/>')
@@ -217,42 +254,47 @@ def sprite(out):
     从外层穿过 <use> 继承下来，path 上只留形状：五项描边写在每条 path 上时，十四种
     图形各用一次的单套页比逐枚内联还大 300 字节。"""
     keys = list(GLYPH)
-    return ('<svg aria-hidden="true" style="display:none">%s</svg>'
-            % ''.join('<symbol id="gl%d" viewBox="0 0 16 16"><path d="%s"/></symbol>'
-                      % (i, GLYPH[keys[i]])
-                      for i in sorted({int(n) for n in USE.findall(out)})))
+    return '<svg aria-hidden="true" style="display:none">%s</svg>' % "".join(
+        '<symbol id="gl%d" viewBox="0 0 16 16"><path d="%s"/></symbol>'
+        % (i, GLYPH[keys[i]])
+        for i in sorted({int(n) for n in USE.findall(out)})
+    )
 
 
 # 站内没有图的两类：位移技能连资料页都没有，神器在站内只是分节标题一行字。
 # 两张表都由 tools/mods.py 从官方物品表蒸馏，图标放 builds/icons/。
-EXTRAS = {'移动': ('moves.json', '--moves'), '神器本体': ('artifacts.json', '--arts')}
+EXTRAS = {"移动": ("moves.json", "--moves"), "神器本体": ("artifacts.json", "--arts")}
 
 
 def extra(kind):
     """{名字: 图标路径}。查不到图标就中止——没图的格子在页面上看不出是漏了。"""
     fname, flag = EXTRAS[kind]
-    path = os.path.join(shell.ROOT, 'tools', fname)
+    path = os.path.join(shell.ROOT, "tools", fname)
     if not os.path.exists(path):
-        die('缺 tools/%s，跑一次 python3 tools/mods.py %s' % (fname, flag))
-    with open(path, encoding='utf-8') as f:
+        die("缺 tools/%s，跑一次 python3 tools/mods.py %s" % (fname, flag))
+    with open(path, encoding="utf-8") as f:
         table = json.load(f)
     for name, meta in table.items():
-        if not meta.get('icon'):
-            die('%s 还没有图标，跑一次 tools/mods.py --icons' % name)
-    return {n: 'builds/icons/%s' % m['icon'] for n, m in table.items()}
+        if not meta.get("icon"):
+            die("%s 还没有图标，跑一次 tools/mods.py --icons" % name)
+    return {n: "builds/icons/%s" % m["icon"] for n, m in table.items()}
 
 
 def move_cell(name, table):
     """位移技能的格子：有图有名，但不是链接——站内没有可跳的页面。"""
     if name not in table:
-        die('「移动：%s」不在位移技能表里。官方叫法见 tools/moves.json：%s'
-            % (name, '、'.join(sorted(table))))
-    return ('<li><span class="item move">'
-            '<img src="%s%s" alt="" width="32" height="32" loading="lazy">'
-            '<span class="nm">%s</span></span></li>' % (UP, table[name], name))
+        die(
+            "「移动：%s」不在位移技能表里。官方叫法见 tools/moves.json：%s"
+            % (name, "、".join(sorted(table)))
+        )
+    return (
+        '<li><span class="item move">'
+        '<img src="%s%s" alt="" width="32" height="32" loading="lazy">'
+        '<span class="nm">%s</span></span></li>' % (UP, table[name], name)
+    )
 
 
-def group(title, cells, key=None, cols=None, tool='', icon='', head=''):
+def group(title, cells, key=None, cols=None, tool="", icon="", head=""):
     """一个面板：标题 + 若干格。
 
     --n 同时是两件事：格子网格的列数，以及这个面板在行里占的份额（护甲那五个
@@ -266,29 +308,41 @@ def group(title, cells, key=None, cols=None, tool='', icon='', head=''):
     """
     n = len(cells) if cols is None else cols
     if head:
-        bar = ['<h3>%s</h3>' % head]
+        bar = ["<h3>%s</h3>" % head]
     elif title:
         # 神器那枚图与它统辖的模组图同为 32px：20px 时这一节的身份比节里任何
         # 一枚模组都弱，读者先看见模组才看见它属于哪件神器。
-        mark = ('<img class="gl-img" src="%s%s" alt="" width="32" height="32">' % (UP, icon)
-                if icon else glyph(key or title))
-        bar = ['<h3%s>%s<span>%s</span>%s</h3>'
-               % (' class="art"' if icon else '', mark, title, tool)]
+        mark = (
+            '<img class="gl-img" src="%s%s" alt="" width="32" height="32">' % (UP, icon)
+            if icon
+            else glyph(key or title)
+        )
+        bar = [
+            "<h3%s>%s<span>%s</span>%s</h3>"
+            % (' class="art"' if icon else "", mark, title, tool)
+        ]
     else:
         bar = []
-    return (['<div class="slot" style="--n:%d">' % n] + bar
-            + ['<ul class="cells">'] + cells + ['</ul>', '</div>'])
+    return (
+        ['<div class="slot" style="--n:%d">' % n]
+        + bar
+        + ['<ul class="cells">']
+        + cells
+        + ["</ul>", "</div>"]
+    )
 
 
-def row(panels, cls=''):
+def row(panels, cls=""):
     """一行面板。行宽恒为版心：左右两缘落在同一条垂直线上，那是这一页的脊柱。
 
     cls='lead' 的行不拉满——主角行最多三格，拉满会让一格宽到 500px。
     """
-    return ['<div class="slot-row%s">' % (' ' + cls if cls else '')] + panels + ['</div>']
+    return (
+        ['<div class="slot-row%s">' % (" " + cls if cls else "")] + panels + ["</div>"]
+    )
 
 
-def rig_of(cells, tool=''):
+def rig_of(cells, tool=""):
     """一把枪与它的 Perk 包成一组，换行时不会被拆开——「岁时之巅」跟「聚合充能」
     分处两行时，读者对不上哪个 Perk 属于哪把枪。
 
@@ -304,10 +358,14 @@ def rig_of(cells, tool=''):
     （面板 18px + 格间 8px × (c-1)）。--n 在这里是加权份额、不是格数，
     所以这两个数必须分开给。
     """
-    live = [c for c in cells if ' hidden' not in c]
-    guns = sum(1 for c in live if 'item gun' in c)
-    return ('<div class="rig" style="--n:%d;--c:%d">%s%s</div>'
-            % (guns * 15 + (len(live) - guns) * 10, len(live), ''.join(cells), tool))
+    live = [c for c in cells if " hidden" not in c]
+    guns = sum(1 for c in live if "item gun" in c)
+    return '<div class="rig" style="--n:%d;--c:%d">%s%s</div>' % (
+        guns * 15 + (len(live) - guns) * 10,
+        len(live),
+        "".join(cells),
+        tool,
+    )
 
 
 def people(rec, link=True):
@@ -317,20 +375,144 @@ def people(rec, link=True):
     会被 HTML 解析器在内层处把外层关掉，卡片右半边就不再是通往配装的链接。
     """
     out = []
-    for line in (rec.get('推荐人') or ()):
-        parts = [x.strip() for x in line.split('|')]
-        name, url = parts[0], parts[1] if len(parts) > 1 else ''
+    for line in rec.get("推荐人") or ():
+        parts = [x.strip() for x in line.split("|")]
+        name, url = parts[0], parts[1] if len(parts) > 1 else ""
         if not name:
-            die('「推荐人：」的名字不能空')
+            die("「推荐人：」的名字不能空")
         if len(parts) > 2:
-            die('「推荐人：」最多两段（名字 | 链接），源稿写的是 %r' % line)
+            die("「推荐人：」最多两段（名字 | 链接），源稿写的是 %r" % line)
         body = '<span class="nm">%s</span>' % name
-        out.append('<a class="who" href="%s" target="_blank" rel="noopener">%s</a>'
-                   % (url, body) if url and link
-                   else '<span class="who">%s</span>' % body)
+        out.append(
+            '<a class="who" href="%s" target="_blank" rel="noopener">%s</a>'
+            % (url, body)
+            if url and link
+            else '<span class="who">%s</span>' % body
+        )
     if not out:
-        die('源稿缺「推荐人：」一行')
+        die("源稿缺「推荐人：」一行")
     return out
+
+
+def card_cls(idx, cls):
+    """卡片身份带的职业图：单职业出 16px 图标，多职业叠三枚 13px 图标。"""
+    if cls in CLASSES:
+        return icon_of(vocab.pick(idx, cls, "职业", kind="分节"), 16)
+    return '<span class="cls-tri">%s</span>' % "".join(
+        icon_of(vocab.pick(idx, c, "职业", kind="分节"), 13) for c in CLASSES
+    )
+
+
+def solo_strip(idx, md):
+    """单套卡片底部一行三件：金装 ｜ 金枪 ｜ 超能（24px 图 + 名字，无副名）。"""
+    branch = branch_of(md)
+    prefer = "elements/%s" % BRANCH[branch]
+    ex_armor = exotic_armor(md)
+    ex_gun, _ = exotic_gun(md)
+    leg_guns = guns(md)
+    supers = names(md, "超能", required=False)
+
+    def cell(e, token="", cls=""):
+        ic = '<span class="pv-ic">%s</span>' % icon_of(e, 24) if e["icon"] else ""
+        nm = '<span class="%s">%s</span>' % (token, e["name"]) if token else e["name"]
+        return '<span class="pv-it%s">%s<span class="pv-nm">%s</span></span>' % (
+            " " + cls if cls else "",
+            ic,
+            nm,
+        )
+
+    cells = []
+    if ex_armor:
+        cells.append(
+            cell(vocab.pick(idx, ex_armor[0], "异域护甲", prefer=prefer), "exotic")
+        )
+    if ex_gun:
+        cells.append(cell(vocab.pick(idx, ex_gun, "异域武器", prefer=prefer), "exotic"))
+    elif leg_guns:
+        cells.append(
+            cell(vocab.pick(idx, leg_guns[0]["名字"], "传说武器", prefer=prefer), "leg")
+        )
+    if not ex_armor:
+        rest = leg_guns if ex_gun else leg_guns[1:]
+        if rest:
+            cells.append(
+                cell(vocab.pick(idx, rest[0]["名字"], "传说武器", prefer=prefer), "leg")
+            )
+    if supers:
+        cells.append(
+            cell(
+                vocab.pick(idx, supers[0], "超能", prefer=prefer),
+                cls="b-%s" % BRANCH[branch],
+            )
+        )
+    cells = cells[:3]
+    while len(cells) < 3:
+        cells.append('<span class="pv-it pv-empty" aria-hidden="true"></span>')
+    return '<div class="card-strip">%s</div>' % "".join(cells)
+
+
+def set_stages(idx, scenes, members, mixed=False):
+    """合集卡片底部三行阶段时间轴：序号 + 22px 核心图 + 阶段名 + 定位/职业 + 金装·金枪·超能。"""
+    rows_out = []
+    for n, m in enumerate(members[:3], 1):
+        mb = branch_of(m)
+        prefer = "elements/%s" % BRANCH[mb]
+        mt = must_title(m, "合集里每一套都要有「标题」")
+        roles = tags_of(m, scenes)
+        role_raw = roles[0] if roles else ""
+        if role_raw:
+            rk = (
+                "dps"
+                if "输出" in role_raw
+                else ("mech" if "机制" in role_raw else "util")
+            )
+            r_badge = '<em class="st-role" data-rk="%s">%s</em>' % (rk, role_raw)
+        elif mixed:
+            r_badge = '<em class="st-role">%s</em>' % class_of(m)
+        else:
+            r_badge = '<em class="st-role %s">%s</em>' % (ELEMENT_TOKEN[mb], mb)
+        gear = []
+        ea = exotic_armor(m)
+        if ea:
+            gear.append(
+                '<span class="exotic">%s</span>'
+                % vocab.pick(idx, ea[0], "异域护甲", prefer=prefer)["name"]
+            )
+        eg, _ = exotic_gun(m)
+        lg = guns(m)
+        if eg:
+            gear.append(
+                '<span class="exotic">%s</span>'
+                % vocab.pick(idx, eg, "异域武器", prefer=prefer)["name"]
+            )
+        elif lg:
+            gear.append(
+                '<span class="st-leg">%s</span>'
+                % vocab.pick(idx, lg[0]["名字"], "传说武器", prefer=prefer)["name"]
+            )
+        sp = names(m, "超能", required=False)
+        if sp:
+            gear.append(
+                '<span class="%s">%s</span>'
+                % (
+                    ELEMENT_TOKEN[mb],
+                    vocab.pick(idx, sp[0], "超能", prefer=prefer)["name"],
+                )
+            )
+        gear_html = (
+            (
+                '<span class="st-gear">%s</span>'
+                % '<i class="st-sep">·</i>'.join(gear[:3])
+            )
+            if gear
+            else ""
+        )
+        rows_out.append(
+            '<div class="st-row b-%s"><i class="st-idx">0%d</i>%s'
+            '<span class="st-nm">%s</span>%s%s</div>'
+            % (BRANCH[mb], n, icon_of(core_of(idx, m), 22), mt, r_badge, gear_html)
+        )
+    return '<div class="set-stages">%s</div>' % "".join(rows_out)
 
 
 def sets_of(idx, spec):
@@ -341,28 +523,42 @@ def sets_of(idx, spec):
     if not spec:
         return []
     cells = []
-    for seg in spec.split('×'):
-        m = must(re.match(r'^(.+?)\s*([24])\s*件$', seg.strip()),
-                 '「套装：」要写「套装名 N 件」，N 是 2 或 4，源稿写的是 %r' % seg)
-        cells.append(item(idx, '套装', m.group(1).strip(), '',
-                          kind='%s 件' % m.group(2), cls='item set',
-                          tail='<span class="pc">%s 件</span>' % m.group(2)))
+    for seg in spec.split("×"):
+        m = must(
+            re.match(r"^(.+?)\s*([24])\s*件$", seg.strip()),
+            "「套装：」要写「套装名 N 件」，N 是 2 或 4，源稿写的是 %r" % seg,
+        )
+        cells.append(
+            item(
+                idx,
+                "套装",
+                m.group(1).strip(),
+                "",
+                kind="%s 件" % m.group(2),
+                cls="item set",
+                tail='<span class="pc">%s 件</span>' % m.group(2),
+            )
+        )
     if len(cells) not in (1, 2):
-        die('「套装：」最多两段，源稿写的是 %r' % spec)
+        die("「套装：」最多两段，源稿写的是 %r" % spec)
     return cells
 
 
 def stats_of(spec):
-    parts = [x.strip() for x in spec.split('｜')]
+    parts = [x.strip() for x in spec.split("｜")]
     if len(parts) != len(STATS):
-        die('「六维：」要写六格、用「｜」隔开，源稿写的是 %d 格' % len(parts))
+        die("「六维：」要写六格、用「｜」隔开，源稿写的是 %d 格" % len(parts))
     out = []
     for want, cell in zip(STATS, parts):
         if not cell.startswith(want):
-            die('「六维：」第 %d 格要以「%s」开头，源稿写的是 %r'
-                % (STATS.index(want) + 1, want, cell))
-        out.append('<li>%s<span class="nm">%s</span><span class="val">%s</span></li>'
-                   % (glyph(want), want, cell[len(want):].strip() or '—'))
+            die(
+                "「六维：」第 %d 格要以「%s」开头，源稿写的是 %r"
+                % (STATS.index(want) + 1, want, cell)
+            )
+        out.append(
+            '<li>%s<span class="nm">%s</span><span class="val">%s</span></li>'
+            % (glyph(want), want, cell[len(want) :].strip() or "—")
+        )
     return out
 
 
@@ -371,7 +567,7 @@ def stats_of(spec):
 # 「宗师」「大师终极」「终极难度」三种说法，索引页的筛选就分不出来了。
 #
 # 标签那一维的取值不在这里——它随场景变，见 markup.SCENE_TAGS。
-FACETS = (('场景', '适用环境', SCENES), ('强度', '强度', TIERS))
+FACETS = (("场景", "适用环境", SCENES), ("强度", "强度", TIERS))
 
 
 def facet_picks(key, label, tags, single=False, co=(), review=()):
@@ -388,14 +584,21 @@ def facet_picks(key, label, tags, single=False, co=(), review=()):
     掀开。**出而藏，不是不出**：不出的话 pressTags() 找不到按钮，审核台打开一份
     已经是这个值的稿子再存回去，那一行会被 sumTags() 重算成空。
     """
-    return ('<div><p class="by-label">%s</p><span class="tags tagset"%s%s>%s</span>'
-            '<input type="hidden" data-key="%s"></div>'
-            % (label, ' data-single=""' if single else '',
-               ' data-co="%s"' % TAB.join(co) if co else '',
-               ''.join('<button type="button" aria-pressed="false"%s>%s</button>'
-                       % (' data-review="" hidden' if t in review else '', t)
-                       for t in tags),
-               key))
+    return (
+        '<div><p class="by-label">%s</p><span class="tags tagset"%s%s>%s</span>'
+        '<input type="hidden" data-key="%s"></div>'
+        % (
+            label,
+            ' data-single=""' if single else "",
+            ' data-co="%s"' % TAB.join(co) if co else "",
+            "".join(
+                '<button type="button" aria-pressed="false"%s>%s</button>'
+                % (' data-review="" hidden' if t in review else "", t)
+                for t in tags
+            ),
+            key,
+        )
+    )
 
 
 def tag_picks():
@@ -410,19 +613,23 @@ def tag_picks():
     for scene in SCENES:
         for t in SCENE_TAGS[scene]:
             owners.setdefault(t, []).append(scene)
-    return ('<div><p class="by-label">标签</p><span class="tags tagset" data-scoped="场景">'
-            '%s</span><input type="hidden" data-key="标签"></div>'
-            % ''.join('<button type="button" aria-pressed="false" data-for="%s"'
-                      ' hidden>%s</button>' % (TAB.join(v), t)
-                      for t, v in owners.items()))
+    return (
+        '<div><p class="by-label">标签</p><span class="tags tagset" data-scoped="场景">'
+        '%s</span><input type="hidden" data-key="标签"></div>'
+        % "".join(
+            '<button type="button" aria-pressed="false" data-for="%s"'
+            " hidden>%s</button>" % (TAB.join(v), t)
+            for t, v in owners.items()
+        )
+    )
 
 
 # 卡片上那几个多值 data-* 的分隔符。制表符在属性里写成 &#9;，源码里看得见，
 # 与 data-d 那一处同一条约定；分隔符不能是「、」，标签值本身不含制表符。
-TAB = '&#9;'
+TAB = "&#9;"
 
 
-SPIRIT = '之灵'
+SPIRIT = "之灵"
 
 # 神器盘七个插槽各自的档位上限，顺序即插槽顺序。
 ART_TIERS = (1, 1, 2, 2, 2, 3, 3)
@@ -434,10 +641,10 @@ def exotic_gun(md):
     可 roll 的异域（零号修订、死亡信使这些）两列词条与传说枪一样能挑，源稿因此
     也写 `名字 | 词条、词条`；固定词条的异域仍是一个裸名字。
     """
-    got = migrate.flat(md).get('异域武器')
+    got = migrate.flat(md).get("异域武器")
     if isinstance(got, dict):
-        return migrate.show(got), [migrate.show(p) for p in got.get('词条') or ()]
-    return (got or ''), []
+        return migrate.show(got), [migrate.show(p) for p in got.get("词条") or ()]
+    return (got or ""), []
 
 
 EX_IDX = None
@@ -451,9 +658,9 @@ def ex_perk_slot(name):
     各在各的槽，按名字判会判到先登记的那一条上去。"""
     bare, key = vocab.cut(name)
     if key:
-        return '异域词条' if vocab.by_key(key, '异域词条') else 'Perk'
+        return "异域词条" if vocab.by_key(key, "异域词条") else "Perk"
     got = (EX_IDX or {}).get(vocab.key_of(bare)) or ()
-    return '异域词条' if any(e.get('kind') == '异域词条' for e in got) else 'Perk'
+    return "异域词条" if any(e.get("kind") == "异域词条" for e in got) else "Perk"
 
 
 def exotic_armor(md):
@@ -463,12 +670,14 @@ def exotic_armor(md):
     所以源稿写职业物品本身，再跟「…之灵」。只写一条的是另一栏随意：填表页与审核
     都放行这种写法（「坚忍克己、噬星者之灵」）。别的异域护甲一次只能穿一件。
     """
-    got = names(md, '异域护甲', required=False)
+    got = names(md, "异域护甲", required=False)
     if len(got) > 3:
-        die('「异域护甲：」最多三项，源稿写的是 %r' % '、'.join(got))
+        die("「异域护甲：」最多三项，源稿写的是 %r" % "、".join(got))
     if len(got) > 1 and not all(vocab.bare(n).endswith(SPIRIT) for n in got[1:]):
-        die('「异域护甲：」写两三项只有异域职业物品那一种，第一项之后都得是「…%s」，'
-            '源稿写的是 %r' % (SPIRIT, '、'.join(got)))
+        die(
+            "「异域护甲：」写两三项只有异域职业物品那一种，第一项之后都得是「…%s」，"
+            "源稿写的是 %r" % (SPIRIT, "、".join(got))
+        )
     return got
 
 
@@ -483,34 +692,34 @@ def page_items(md):
     out = []
     got, ex_perks = exotic_gun(md)
     if got:
-        out.append((got, '异域武器', None))
+        out.append((got, "异域武器", None))
     out += [(p, ex_perk_slot(p), None) for p in ex_perks]
-    out += [(n, '异域护甲', None) for n in exotic_armor(md)]
+    out += [(n, "异域护甲", None) for n in exotic_armor(md)]
     for gun in guns(md):
-        out.append((gun['名字'], '传说武器', None))
-        out += [(p, 'Perk', None) for p in gun['词条']]
-    for seg in meta(md, '套装', required=False).split('×'):
-        m = re.match(r'^(.+?)\s*([24])\s*件$', seg.strip())
+        out.append((gun["名字"], "传说武器", None))
+        out += [(p, "Perk", None) for p in gun["词条"]]
+    for seg in meta(md, "套装", required=False).split("×"):
+        m = re.match(r"^(.+?)\s*([24])\s*件$", seg.strip())
         if m:
-            out.append((m.group(1).strip(), '套装', '%s 件' % m.group(2)))
-    for key in ('超能', '手雷', '近战', '职业技能', '星相', '碎片'):
+            out.append((m.group(1).strip(), "套装", "%s 件" % m.group(2)))
+    for key in ("超能", "手雷", "近战", "职业技能", "星相", "碎片"):
         out += [(n, key, None) for n in names(md, key, required=False)]
     for part in PARTS:
-        out += [(n, '护甲模组', part) for n in names(md, part, required=False)]
-    art = meta(md, '神器', required=False)
+        out += [(n, "护甲模组", part) for n in names(md, part, required=False)]
+    art = meta(md, "神器", required=False)
     if art:
-        out += [(n, '神器', art) for n in names(md, '模组', required=False)]
+        out += [(n, "神器", art) for n in names(md, "模组", required=False)]
     return out
 
 
 def core_pick(idx, md, prefer):
     """核心那枚 96px 的图。可以是本页配过的任一件东西，不限异域。"""
-    core = meta(md, '核心')
+    core = meta(md, "核心")
     # **核心不戳主键**：它是一个指回本页某一格的引用，不是独立的一件东西，
     # 所以按名字回查那一格，主键从那一格上拿。
     hit = [x for x in page_items(md) if vocab.bare(x[0]) == core]
     if not hit:
-        die('「核心：」要等于本页配过的某一件东西，源稿写的是 %r' % core)
+        die("「核心：」要等于本页配过的某一件东西，源稿写的是 %r" % core)
     # 交那一格的「名字#主键」，不交光名字：同名的几条（「极高反射」既是手枪也是
     # 火箭手枪）按名字分不出来，而那一格的主键早就钉死了是哪一条。
     return vocab.pick(idx, hit[0][0], hit[0][1], kind=hit[0][2], prefer=prefer)
@@ -523,9 +732,11 @@ def facet(label, tags):
     光杆小标签比不写更难读。场景那一栏不会空——scene_of() 必填。
     """
     if not tags:
-        return ''
-    return ('<div><p class="by-label">%s</p><ul class="tags">%s</ul></div>'
-            % (label, ''.join('<li>%s</li>' % t for t in tags)))
+        return ""
+    return '<div><p class="by-label">%s</p><ul class="tags">%s</ul></div>' % (
+        label,
+        "".join("<li>%s</li>" % t for t in tags),
+    )
 
 
 def facets(scenes, tags):
@@ -535,19 +746,22 @@ def facets(scenes, tags):
     （合集的标签是各套并起来去重的），让这里再解析一遍就得为合集另开一条路，
     于是同一块版面有了两种拼法。
     """
-    rows = facet(FACETS[0][1], scenes) + facet('标签', tags)
-    return '<div class="facets">%s</div>' % rows if rows else ''
+    rows = facet(FACETS[0][1], scenes) + facet("标签", tags)
+    return '<div class="facets">%s</div>' % rows if rows else ""
 
 
 def section_of(rec, name):
     """取一个散文分节的正文。记录里它就是一个字段，不必再切边界。"""
-    return ((rec.get('节') or {}).get(name) or '').strip()
+    return ((rec.get("节") or {}).get(name) or "").strip()
 
 
 def prose(text):
     """空行分段、段内换行落成 <br>。注解、合集介绍与审核意见共用这一份。"""
-    return ['<p>%s</p>' % inline('<br>'.join(b.strip().split('\n')), rich=True)
-            for b in re.split(r'\n\s*\n', text) if b.strip()]
+    return [
+        "<p>%s</p>" % inline("<br>".join(b.strip().split("\n")), rich=True)
+        for b in re.split(r"\n\s*\n", text)
+        if b.strip()
+    ]
 
 
 def verdict(md):
@@ -559,11 +773,13 @@ def verdict(md):
     它不进页头：页头那两列写的是这套配装的身份（谁推荐的、什么职业、什么强度），
     审核意见是另一个人对它的话，混进去读者分不出是谁在说。
     """
-    v = section_of(md, '审核意见')
+    v = section_of(md, "审核意见")
     if not v:
-        return ''
-    return ('<aside class="verdict"><p class="by-label">审核意见</p>\n%s\n</aside>'
-            % '\n'.join(prose(v)))
+        return ""
+    return (
+        '<aside class="verdict"><p class="by-label">审核意见</p>\n%s\n</aside>'
+        % "\n".join(prose(v))
+    )
 
 
 def stats_card(spec):
@@ -575,35 +791,41 @@ def stats_card(spec):
     不给标题：同一行的异域与套装两个面板都没有标题，多出一行「六维」会让这张卡
     的六格整体下沉，与旁边的格子对不齐；每一格里已经写着属性名。
     """
-    return (['<div class="slot stats-card" style="--n:3">',
-             '<ul class="stats">'] + stats_of(spec) + ['</ul>', '</div>'])
+    return (
+        ['<div class="slot stats-card" style="--n:3">', '<ul class="stats">']
+        + stats_of(spec)
+        + ["</ul>", "</div>"]
+    )
 
 
 def branch_of(md):
-    branch = meta(md, '分支')
+    branch = meta(md, "分支")
     if branch not in BRANCH:
-        die('「分支：」要写六个分支之一（%s），源稿写的是 %r' % ('、'.join(BRANCH), branch))
+        die(
+            "「分支：」要写六个分支之一（%s），源稿写的是 %r"
+            % ("、".join(BRANCH), branch)
+        )
     return branch
 
 
 def class_of(md):
-    who = vocab.bare(meta(md, '职业'))
+    who = vocab.bare(meta(md, "职业"))
     if who not in CLASSES:
-        die('「职业：」要写猎人、泰坦、术士之一，源稿写的是 %r' % who)
+        die("「职业：」要写猎人、泰坦、术士之一，源稿写的是 %r" % who)
     return who
 
 
 def tier_of(md):
-    tier = meta(md, '强度')
+    tier = meta(md, "强度")
     if tier not in TIERS:
-        die('「强度：」要写 %s 之一，源稿写的是 %r' % ('、'.join(TIERS), tier))
+        die("「强度：」要写 %s 之一，源稿写的是 %r" % ("、".join(TIERS), tier))
     return tier
 
 
 def stamp_of(md):
-    stamp = meta(md, '更新')
-    if not re.fullmatch(r'\d{4}\.\d{1,2}\.\d{1,2}', stamp):
-        die('「更新：」要写成 YYYY.M.D，源稿写的是 %r' % stamp)
+    stamp = meta(md, "更新")
+    if not re.fullmatch(r"\d{4}\.\d{1,2}\.\d{1,2}", stamp):
+        die("「更新：」要写成 YYYY.M.D，源稿写的是 %r" % stamp)
     return stamp
 
 
@@ -615,15 +837,17 @@ def split_set(rec):
 
     「合集：是」与 `成员` 互为断言，缺一即中止。
     """
-    head, members = rec, list(rec.get('成员') or ())
-    flag = meta(head, '合集', required=False)
-    if flag and flag != '是':
-        die('「合集：」只认「是」；不是合集就把整行删掉，源稿写的是 %r' % flag)
+    head, members = rec, list(rec.get("成员") or ())
+    flag = meta(head, "合集", required=False)
+    if flag and flag != "是":
+        die("「合集：」只认「是」；不是合集就把整行删掉，源稿写的是 %r" % flag)
     if bool(members) != bool(flag):
-        die('「合集：是」与第二个「# 」要么都在要么都不在：现在标记%s、成员 %d 套'
-            % ('在' if flag else '不在', len(members)))
+        die(
+            "「合集：是」与第二个「# 」要么都在要么都不在：现在标记%s、成员 %d 套"
+            % ("在" if flag else "不在", len(members))
+        )
     if members and not 2 <= len(members) <= SET_MAX:
-        die('一个合集要 2 到 %d 套，源稿写了 %d 套' % (SET_MAX, len(members)))
+        die("一个合集要 2 到 %d 套，源稿写了 %d 套" % (SET_MAX, len(members)))
     return head, members
 
 
@@ -634,13 +858,15 @@ def scene_of(md):
     落在 raid 与 PVP 两个场景里就没有一个确定的标签集。raid 与地牢共用同一套
     标签，所以那一个组合放得过去。
     """
-    got = names(md, '场景')
+    got = names(md, "场景")
     for x in got:
         if x not in SCENES:
-            die('「场景：」要写 %s 之中的，源稿写的是 %r' % ('、'.join(SCENES), x))
+            die("「场景：」要写 %s 之中的，源稿写的是 %r" % ("、".join(SCENES), x))
     if len(got) > 1 and set(got) != CO_SCENES:
-        die('「场景：」只能写一个，唯一的例外是「%s」；源稿写的是 %r'
-            % ('、'.join(sorted(CO_SCENES, key=SCENES.index)), '、'.join(got)))
+        die(
+            "「场景：」只能写一个，唯一的例外是「%s」；源稿写的是 %r"
+            % ("、".join(sorted(CO_SCENES, key=SCENES.index)), "、".join(got))
+        )
     # **按 SCENES 归序，不留源稿的书写顺序。**索引页拿 scene[0] 定这张卡落在哪
     # 一节，写「地牢、raid」的稿子会掉进地牢那一节，与「raid、地牢」的同伴分家，
     # 而两种写法都合法、闸门都放行、页面上也看不出。
@@ -655,16 +881,17 @@ def tags_of(md, scenes):
     标签说的是这套在队伍里干什么，说不出分工的那些不该被逼着挑一个凑数。
     """
     vocab = SCENE_TAGS[scenes[0]]
-    got = names(md, '标签', required=False)
+    got = names(md, "标签", required=False)
     if not vocab:
         if got:
-            die('「%s」这个场景没有标签，「标签：」整行删掉；源稿写的是 %r'
-                % (scenes[0], '、'.join(got)))
+            die(
+                "「%s」这个场景没有标签，「标签：」整行删掉；源稿写的是 %r"
+                % (scenes[0], "、".join(got))
+            )
         return []
     for x in got:
         if x not in vocab:
-            die('「%s」的标签只有 %s，源稿写的是 %r'
-                % (scenes[0], '、'.join(vocab), x))
+            die("「%s」的标签只有 %s，源稿写的是 %r" % (scenes[0], "、".join(vocab), x))
     return got
 
 
@@ -675,7 +902,7 @@ SET_TILES = 4
 
 def core_of(idx, md):
     """这一套的核心那一条词表记录。"""
-    return core_pick(idx, md, 'elements/%s' % BRANCH[branch_of(md)])
+    return core_pick(idx, md, "elements/%s" % BRANCH[branch_of(md)])
 
 
 def core_mosaic(cores, size, eager=False):
@@ -684,12 +911,16 @@ def core_mosaic(cores, size, eager=False):
     **一枚时就是那一枚，不套壳**——单套配装的页头是一枚 96px 的图，只有一套
     核心的合集没有理由长得不一样。两枚横排居中成一条带，三枚上二下一，四枚
     二乘二：flex 换行加两向居中就出这三种，不必按数目各写一套规则。
+    外框带 2px 描边（共 4px）与 2px 间隙，所以单块边长是 (size - 6) // 2。
     """
     if len(cores) == 1:
         return icon_of(cores[0], size, eager)
-    tile = (size - 2) // 2
-    return ('<span class="core-mosaic" style="--sz:%dpx;--tile:%dpx">%s</span>'
-            % (size, tile, ''.join(icon_of(c, tile, eager) for c in cores)))
+    tile = (size - 6) // 2
+    return '<span class="core-mosaic" style="--sz:%dpx;--tile:%dpx">%s</span>' % (
+        size,
+        tile,
+        "".join(icon_of(c, tile, eager) for c in cores),
+    )
 
 
 def set_facts(idx, head, members):
@@ -705,8 +936,8 @@ def set_facts(idx, head, members):
     cores, seen = [], set()
     for m in members:
         e = core_of(idx, m)
-        if e['name'] not in seen and len(cores) < SET_TILES:
-            seen.add(e['name'])
+        if e["name"] not in seen and len(cores) < SET_TILES:
+            seen.add(e["name"])
             cores.append(e)
     who = [c for c in CLASSES if c in {class_of(m) for m in members}]
     # 标签每套一个、并起来去重。场景写在合集头部（整份一个），所以每套的标签
@@ -720,7 +951,7 @@ def set_facts(idx, head, members):
     return branch, cores, who, roles
 
 
-INHERITED = ('推荐人', '更新', '场景', '强度')
+INHERITED = ("推荐人", "更新", "场景", "强度")
 
 
 def solo_src(head, rec):
@@ -730,11 +961,11 @@ def solo_src(head, rec):
 
     这一份是**导出格式**，不是源稿：填表页的导入认 markdown，所以在这里写回去。"""
     got = dict(rec)
-    got.pop('成员', None)
+    got.pop("成员", None)
     for key in INHERITED:
         if key not in got and key in head:
             got[key] = head[key]
-    return migrate.write(got).rstrip('\n')
+    return migrate.write(got).rstrip("\n")
 
 
 def finish(o, scripts):
@@ -744,22 +975,28 @@ def finish(o, scripts):
 
     页里有 glyph() 的 <use> 时，sprite 接在 <main> 的开标签后面：放到文末的话，
     大页面还没下完时前面那些 <use> 指着一个还不存在的 symbol，标题前是空的。"""
-    out = '\n'.join(x for x in o if x != '') + '\n'
+    out = "\n".join(x for x in o if x != "") + "\n"
     if USE.search(out):
-        at = must(re.search(r'<main\b[^>]*>', out), '页里有面板图标却没有 <main>，sprite 无处可放').end()
-        out = out[:at] + '\n' + sprite(out) + out[at:]
-    tags = ''.join('<script src="%s"%s defer></script>\n' % (s if isinstance(s, tuple) else (s, ''))
-                   for s in scripts)
-    return out.replace('\n</body>\n', '\n' + tags + '</body>\n')
+        at = must(
+            re.search(r"<main\b[^>]*>", out),
+            "页里有面板图标却没有 <main>，sprite 无处可放",
+        ).end()
+        out = out[:at] + "\n" + sprite(out) + out[at:]
+    tags = "".join(
+        '<script src="%s"%s defer></script>\n'
+        % (s if isinstance(s, tuple) else (s, ""))
+        for s in scripts
+    )
+    return out.replace("\n</body>\n", "\n" + tags + "</body>\n")
 
 
-def blocks_of(idx, mv, arts, md, ns=''):
+def blocks_of(idx, mv, arts, md, ns=""):
     """五个分节：职业、武器、神器模组、护甲、注解。单套与合集里的每一套共用。
 
     ns 是分节 id 的前缀——一份合集里 N 套各有五节，不加前缀 id 就撞了。单套传空串。
     """
     branch = branch_of(md)
-    prefer = 'elements/%s' % BRANCH[branch]
+    prefer = "elements/%s" % BRANCH[branch]
     ex_gun, ex_perks = exotic_gun(md)
     ex_armor = exotic_armor(md)
     o = []
@@ -772,41 +1009,64 @@ def blocks_of(idx, mv, arts, md, ns=''):
     # 碎片独占一行时那五格宽到 193px，与上一行的 130px 差 50%。两行都是 7 份，
     # 格宽因此落在 130 与 133，整节读作一块。
     skills = []
-    for key in ('手雷', '近战'):
+    for key in ("手雷", "近战"):
         for n in names(md, key, required=False):
             skills.append(item(idx, key, n, prefer))
-    if meta(md, '移动', required=False):
-        skills.append(move_cell(meta(md, '移动'), mv))
-    for n in names(md, '职业技能', required=False):
-        skills.append(item(idx, '职业技能', n, prefer))
+    if meta(md, "移动", required=False):
+        skills.append(move_cell(meta(md, "移动"), mv))
+    for n in names(md, "职业技能", required=False):
+        skills.append(item(idx, "职业技能", n, prefer))
     who = class_of(md)
-    ident = [item(idx, '职业', who, prefer, kind='分节'),
-             item(idx, '元素', who, prefer, kind='分节', label=branch)]
-    o += ['<section class="block" id="%ssec-1">' % ns, '<h2 class="sect-label">职业</h2>']
-    o += row(group('职业', ident, key='职业')
-             # 「超能：」后面空着是这一套没有超能（多职业配装），格子空着画，与星相、碎片同一条
-             + group('超能', [item(idx, '超能', n, prefer) for n in names(md, '超能')])
-             + group('技能', skills))
-    o += row(group('星相', [item(idx, '星相', n, prefer) for n in names(md, '星相')])
-             + group('碎片', [item(idx, '碎片', n, prefer) for n in names(md, '碎片')]))
-    o += ['</section>', '']
+    ident = [
+        item(idx, "职业", who, prefer, kind="分节"),
+        item(idx, "元素", who, prefer, kind="分节", label=branch),
+    ]
+    o += [
+        '<section class="block" id="%ssec-1">' % ns,
+        '<h2 class="sect-label">职业</h2>',
+    ]
+    o += row(
+        group("职业", ident, key="职业")
+        # 「超能：」后面空着是这一套没有超能（多职业配装），格子空着画，与星相、碎片同一条
+        + group("超能", [item(idx, "超能", n, prefer) for n in names(md, "超能")])
+        + group("技能", skills)
+    )
+    o += row(
+        group("星相", [item(idx, "星相", n, prefer) for n in names(md, "星相")])
+        + group("碎片", [item(idx, "碎片", n, prefer) for n in names(md, "碎片")])
+    )
+    o += ["</section>", ""]
 
     # 武器：一把枪一组。面板不给标题——上面那行 sect-label 已经写着「武器」，再写一遍
     # 「武器与 Perk」是噪声，格子形状（56px 图的是枪，24px 图的是 Perk）自己说明身份。
     rigs = []
     if ex_gun:
-        rigs.append(rig_of([item(idx, '异域武器', ex_gun, prefer,
-                                 cls='item gun', bare=True)]
-                           + [item(idx, ex_perk_slot(p), p, prefer,
-                                   cls='item perk-cell', bare=True)
-                              for p in ex_perks]))
+        rigs.append(
+            rig_of(
+                [item(idx, "异域武器", ex_gun, prefer, cls="item gun", bare=True)]
+                + [
+                    item(
+                        idx, ex_perk_slot(p), p, prefer, cls="item perk-cell", bare=True
+                    )
+                    for p in ex_perks
+                ]
+            )
+        )
     for gun in guns(md):
-        cells = [item(idx, '传说武器', gun['名字'], prefer, cls='item gun', bare=True)]
-        cells += [item(idx, 'Perk', p, prefer, cls='item perk-cell', bare=True)
-                  for p in gun['词条']]
+        cells = [item(idx, "传说武器", gun["名字"], prefer, cls="item gun", bare=True)]
+        cells += [
+            item(idx, "Perk", p, prefer, cls="item perk-cell", bare=True)
+            for p in gun["词条"]
+        ]
         rigs.append(rig_of(cells))
-    o += ['<section class="block" id="%ssec-2">' % ns,
-          '<h2 class="sect-label">武器</h2>'] + row(rigs) + ['</section>', '']
+    o += (
+        [
+            '<section class="block" id="%ssec-2">' % ns,
+            '<h2 class="sect-label">武器</h2>',
+        ]
+        + row(rigs)
+        + ["</section>", ""]
+    )
 
     # 神器模组页的 7 个分节就是 7 件神器，模组归属写在分节标题上。源稿先写用的是
     # 哪一件，模组按它限定——「电介质」在加密数据盘与废墟石板下各有一条，不限定
@@ -816,22 +1076,26 @@ def blocks_of(idx, mv, arts, md, ns=''):
     # 模组是常事，而一个空面板读起来是「这套神器一枚模组都不装」，那不是源稿说的
     # 意思。**只写神器不写模组也走这一条**——填表页的 NEED 不管这两项，投稿本来就
     # 能这么投。反过来写了模组却没写神器仍然中止——模组归属正是靠神器定的，猜不得。
-    art = meta(md, '神器', required=False)
-    picked = names(md, '模组', required=False)
+    art = meta(md, "神器", required=False)
+    picked = names(md, "模组", required=False)
     if art and picked:
-        mods = [item(idx, '神器', n, prefer, kind=art) for n in picked]
-        o += ['<section class="block" id="%ssec-3">' % ns,
-              '<h2 class="sect-label">神器模组</h2>']
+        mods = [item(idx, "神器", n, prefer, kind=art) for n in picked]
+        o += [
+            '<section class="block" id="%ssec-3">' % ns,
+            '<h2 class="sect-label">神器模组</h2>',
+        ]
         # 源稿按 design.md 三节在汉字与拉丁之间补空格（NPA 斥力调节器），官方物品表
         # 蒸馏出来的神器表没有那个空格，两侧都归一化才对得上。
         table = {items.norm(n): p for n, p in arts.items()}
         if items.norm(art) not in table:
-            die('「神器：%s」不在神器表里。站内那一页的七个分节即是全部：%s'
-                % (art, '、'.join(sorted(arts))))
+            die(
+                "「神器：%s」不在神器表里。站内那一页的七个分节即是全部：%s"
+                % (art, "、".join(sorted(arts)))
+            )
         o += row(group(art, mods, icon=table[items.norm(art)]))
-        o += ['</section>', '']
+        o += ["</section>", ""]
     elif picked:
-        die('写了「模组：」却没写「神器：」，模组归属定不下来%s' % where(md))
+        die("写了「模组：」却没写「神器：」，模组归属定不下来%s" % where(md))
 
     # 护甲：主角行（异域护甲 + 套装）不拉满——它最多三格，拉满会让一格宽到 500px；
     # 格子封顶、左对齐，行末那半截空档给六维那张卡。部位行五个部位并排，每列三枚
@@ -840,37 +1104,61 @@ def blocks_of(idx, mv, arts, md, ns=''):
     # 占一格、两条上下并排——摊成两格会读成穿了两件异域。
     # 异域职业物品：职业物品本身一格，它那两条之灵在下面并排一行——两条各从
     # 自己的一栏里开，摊成三格会读成穿了三件异域。
-    lead = (['<li class="pair">%s%s</li>'
-             % (item(idx, '异域护甲', ex_armor[0], prefer, cls='item gear', bare=True),
-                '<div class="spirits">%s</div>' % ''.join(
-                    item(idx, '异域护甲', n, prefer, cls='item gear', bare=True)
-                    for n in ex_armor[1:]) if len(ex_armor) > 1 else '')]
-            if ex_armor else [])
-    lead += sets_of(idx, meta(md, '套装', required=False))
-    o += ['<section class="block" id="%ssec-4">' % ns, '<h2 class="sect-label">护甲</h2>']
+    lead = (
+        [
+            '<li class="pair">%s%s</li>'
+            % (
+                item(idx, "异域护甲", ex_armor[0], prefer, cls="item gear", bare=True),
+                '<div class="spirits">%s</div>'
+                % "".join(
+                    item(idx, "异域护甲", n, prefer, cls="item gear", bare=True)
+                    for n in ex_armor[1:]
+                )
+                if len(ex_armor) > 1
+                else "",
+            )
+        ]
+        if ex_armor
+        else []
+    )
+    lead += sets_of(idx, meta(md, "套装", required=False))
+    o += [
+        '<section class="block" id="%ssec-4">' % ns,
+        '<h2 class="sect-label">护甲</h2>',
+    ]
     # 六维挂在主角行右端：异域与套装最多占三格，剩下的半行本来是空的。套装可能
     # 是两格（4 件同时给 2 件效果），那时这张卡换行落下去，见 .slot-row.lead 的
     # flex-wrap。
     # 带之灵的那一格横跨两列（职业物品在左、两条之灵在右），所以这一行的列数比
     # 格数多一：不加这一列，套装那一格会被挤到下一行去。
-    o += row(group('', lead, cols=len(lead) + (1 if len(ex_armor) > 1 else 0))
-             + stats_card(meta(md, '六维')), cls='lead')
+    o += row(
+        group("", lead, cols=len(lead) + (1 if len(ex_armor) > 1 else 0))
+        + stats_card(meta(md, "六维")),
+        cls="lead",
+    )
     parts = []
     for part in PARTS:
         got = names(md, part, required=False)
         if got:
-            parts.append(group(part, [item(idx, '护甲模组', n, prefer, kind=part)
-                                      for n in got], cols=1))
+            parts.append(
+                group(
+                    part,
+                    [item(idx, "护甲模组", n, prefer, kind=part) for n in got],
+                    cols=1,
+                )
+            )
     if parts:
         o += row([x for panel in parts for x in panel])
-    o += ['</section>', '']
+    o += ["</section>", ""]
 
-    note = section_of(md, '注解')
+    note = section_of(md, "注解")
     if note:
-        o += ['<section class="block" id="%ssec-5">' % ns,
-              '<h2 class="sect-label">注解</h2>']
+        o += [
+            '<section class="block" id="%ssec-5">' % ns,
+            '<h2 class="sect-label">注解</h2>',
+        ]
         o += prose(note)
-        o += ['</section>', '']
+        o += ["</section>", ""]
     return o
 
 
@@ -885,86 +1173,114 @@ def render(idx, mv, arts, md, slug, season, name_cn, doc_id):
 
 
 def render_solo(idx, mv, arts, md, slug, season, name_cn, doc_id):
-    title = must_title(md, '源稿里必须有「标题」')
-    stamp, desc = stamp_of(md), meta(md, '描述', required=False)
+    title = must_title(md, "源稿里必须有「标题」")
+    stamp, desc = stamp_of(md), meta(md, "描述", required=False)
     # 描述在这一页是正文（首页卡片与 meta 也用它），所以允许写着色标记：
     # 正文走 inline()，meta 与卡片用剥干净的那一份，不然标记会漏进 <meta>。
     desc_text = text_of(inline(desc, rich=True), collapse=True)
     branch, cat, scenes = branch_of(md), tier_of(md), scene_of(md)
-    class_of(md)          # 职业写错时先报那一句，别让下面的 core_pick 先撞上
-    prefer = 'elements/%s' % BRANCH[branch]
+    class_of(md)  # 职业写错时先报那一句，别让下面的 core_pick 先撞上
+    prefer = "elements/%s" % BRANCH[branch]
     core_e = core_pick(idx, md, prefer)
 
-    o = [shell.head('%s · %s · Starside' % (title, SITE_SECTION), desc_text, up=3,
-                    sheets=['../../style.css']),
-         shell.nav(title, up=3, parent=[SITE_SECTION, name_cn],
-                   parent_href='../../index.html'),
-         # 分支色驱动整页的 UI 强调色：区段那枚方块、页头竖线、格子悬停的左缘都跟着
-         # 走。--accent 是 design.md 写明「子页面覆盖这一个即可换色」的槽位，六个元素
-         # 页就是这么做的；这里不新增任何渲染色。
-         # data-tier 给强度框用（builds/style.css），与索引卡上那份同一套样式。
-         # data-src 是这一篇在库里的 _id，data-kind 说它该走哪条编辑路：
-         # shell.EDIT 的判据是「有令牌 + main[data-src]」，两件都成立才拉 edit.js。
-         # 配装页没有 data-b，逐格编辑无从落脚，所以 kind 写 build，走整篇替换那条。
-         # **索引页与填表页一律不加**：填表页被编辑台当 iframe 载进来，带上它就是
-         # 每换一条配装白下一次 edit.js。
-         '<main class="b-%s" data-tier="%s" data-src="%s" data-kind="build">'
-         % (BRANCH[branch], cat, doc_id),
-         # 页头去盒：核心异域在左，一道由 align-items: stretch 撑满高度的竖线，右侧
-         # 是配装名与铭牌。与全站 .page-head 同形（h1 + 一道发丝线），与首页
-         # .wordmark-row 同语言。
-         '<header class="build-head">',
-         # 推荐人跟着核心那枚图走：他是这套配装的出处，与标题、铭牌、描述不是一
-         # 类信息。竖线左边一列因此写成「图 + 谁推荐的」。
-         # 核心图包一层 .node：强度框画在它的 ::before/::after 上，与索引卡同形。
-         # 不包的话框只能挂在 .core 上，而 .core 是竖排的一整列（图 + 推荐人）。
-         '<div class="core"><span class="node">%s</span>'
-         '<p class="by-label">推荐者：</p>%s</div>'
-         % (icon_of(core_e, 96, eager=True), ''.join(people(md))),
-         '<div class="build-id">',
-         # 标题那一行右端挂三枚动作：点赞、复制与详情开关。它们是对整套
-         # 配装的操作，与标题同级；挂在推荐者下面时读者会以为赞的是那个人。
-         # 开关的按下状态由 tip.js 从 localStorage 现读，写不进产出，所以这里
-         # 只出一个空位——与点赞那个数同一条约定。
-         '<div class="id-row"><h1>%s</h1><div class="head-acts">%s%s%s%s%s</div></div>'
-         % (title, like_box(season, slug, button=True),
+    o = [
+        shell.head(
+            "%s · %s · Starside" % (title, SITE_SECTION),
+            desc_text,
+            up=3,
+            sheets=["../../style.css"],
+        ),
+        shell.nav(
+            title, up=3, parent=[SITE_SECTION, name_cn], parent_href="../../index.html"
+        ),
+        # 分支色驱动整页的 UI 强调色：区段那枚方块、页头竖线、格子悬停的左缘都跟着
+        # 走。--accent 是 design.md 写明「子页面覆盖这一个即可换色」的槽位，六个元素
+        # 页就是这么做的；这里不新增任何渲染色。
+        # data-tier 给强度框用（builds/style.css），与索引卡上那份同一套样式。
+        # data-src 是这一篇在库里的 _id，data-kind 说它该走哪条编辑路：
+        # shell.EDIT 的判据是「有令牌 + main[data-src]」，两件都成立才拉 edit.js。
+        # 配装页没有 data-b，逐格编辑无从落脚，所以 kind 写 build，走整篇替换那条。
+        # **索引页与填表页一律不加**：填表页被编辑台当 iframe 载进来，带上它就是
+        # 每换一条配装白下一次 edit.js。
+        '<main class="b-%s" data-tier="%s" data-src="%s" data-kind="build">'
+        % (BRANCH[branch], cat, doc_id),
+        # 页头去盒：核心异域在左，一道由 align-items: stretch 撑满高度的竖线，右侧
+        # 是配装名与铭牌。与全站 .page-head 同形（h1 + 一道发丝线），与首页
+        # .wordmark-row 同语言。
+        '<header class="build-head">',
+        # 推荐人跟着核心那枚图走：他是这套配装的出处，与标题、铭牌、描述不是一
+        # 类信息。竖线左边一列因此写成「图 + 谁推荐的」。
+        # 核心图包一层 .node：强度框画在它的 ::before/::after 上，与索引卡同形。
+        # 不包的话框只能挂在 .core 上，而 .core 是竖排的一整列（图 + 推荐人）。
+        '<div class="core"><span class="node">%s</span>'
+        '<p class="by-label">推荐者：</p>%s</div>'
+        % (icon_of(core_e, 96, eager=True), "".join(people(md))),
+        '<div class="build-id">',
+        # 标题那一行右端挂三枚动作：点赞、复制与详情开关。它们是对整套
+        # 配装的操作，与标题同级；挂在推荐者下面时读者会以为赞的是那个人。
+        # 开关的按下状态由 tip.js 从 localStorage 现读，写不进产出，所以这里
+        # 只出一个空位——与点赞那个数同一条约定。
+        '<div class="id-row"><h1>%s</h1><div class="head-acts">%s%s%s%s%s</div></div>'
+        % (
+            title,
+            like_box(season, slug, button=True),
             '<button class="op copy" type="button">复制配装</button>',
-            dim_button(md, page_url(season, slug)), SHOT % 'main', TIP_SW),
-         # 铭牌一行读完这套配装的身份：职业 · 元素 · 强度。强度接在这里而不是另起
-         # 一栏标签——它只有一个值，占一整栏显得空。
-         '<p class="cls">%s%s · %s · %s<span class="season">%s · %s</span></p>'
-         % (icon_of(vocab.pick(idx, meta(md, '职业'), '职业', kind='分节'), 32),
+            dim_button(md, page_url(season, slug)),
+            SHOT % "main",
+            TIP_SW,
+        ),
+        # 铭牌一行读完这套配装的身份：职业 · 元素 · 强度。强度接在这里而不是另起
+        # 一栏标签——它只有一个值，占一整栏显得空。
+        '<p class="cls">%s%s · %s · %s<span class="season">%s · %s</span></p>'
+        % (
+            icon_of(vocab.pick(idx, meta(md, "职业"), "职业", kind="分节"), 32),
             class_of(md),
             '<span class="%s">%s</span>' % (ELEMENT_TOKEN[branch], branch),
-            cat, season.upper(), name_cn),
-         '<p class="desc">%s</p>' % inline(desc, rich=True) if desc else '',
-         # 场景与标签分两栏各带一行：混在一排里读者分不出「地牢」说的是在哪打、
-         # 「推图」说的是这套配装干什么用的。宗师/终极 那三个场景没有标签，那一栏
-         # 整个不出——空的 .facets 在 .build-id 那道 grid 里照样占一个 gap。
-         facets(scenes, tags_of(md, scenes)),
-         '</div>',
-         # 「复制配装」复制的就是这一份：剥掉着色标记的源稿，粘回配装工具能直接
-         # 导入。站内没有第二处存它，所以它落在页面上而不是另拉一个文件。
-         # 这一格是给填表页「导入」用的导出文本，认 markdown，所以写回去。
-         '<pre id="src" hidden>%s</pre>' % escape(uncolor(migrate.write(md))),
-         '</header>', '',
-         verdict(md)]
+            cat,
+            season.upper(),
+            name_cn,
+        ),
+        '<p class="desc">%s</p>' % inline(desc, rich=True) if desc else "",
+        # 场景与标签分两栏各带一行：混在一排里读者分不出「地牢」说的是在哪打、
+        # 「推图」说的是这套配装干什么用的。宗师/终极 那三个场景没有标签，那一栏
+        # 整个不出——空的 .facets 在 .build-id 那道 grid 里照样占一个 gap。
+        facets(scenes, tags_of(md, scenes)),
+        "</div>",
+        # 「复制配装」复制的就是这一份：剥掉着色标记的源稿，粘回配装工具能直接
+        # 导入。站内没有第二处存它，所以它落在页面上而不是另拉一个文件。
+        # 这一格是给填表页「导入」用的导出文本，认 markdown，所以写回去。
+        '<pre id="src" hidden>%s</pre>' % escape(uncolor(migrate.write(md))),
+        "</header>",
+        "",
+        verdict(md),
+    ]
     o += blocks_of(idx, mv, arts, md)
-    o += ['</main>', '', LIKE_JS, COPY_JS,
-          shell.foot(stamp, '，%s' % meta(md, '页脚', required=False)
-                     if meta(md, '页脚', required=False) else '')]
+    o += [
+        "</main>",
+        "",
+        LIKE_JS,
+        COPY_JS,
+        shell.foot(
+            stamp,
+            "，%s" % meta(md, "页脚", required=False)
+            if meta(md, "页脚", required=False)
+            else "",
+        ),
+    ]
     return finish(o, [TIP_JS]), title
 
 
 def page_url(season, slug):
-    return '%s/%s/%s/%s/index.html' % (shell.SITE_URL, OUT_DIR, season, slug)
+    return "%s/%s/%s/%s/index.html" % (shell.SITE_URL, OUT_DIR, season, slug)
 
 
 def dim_button(md, url):
     """导入 DIM：链接在构建时算好，整套配装序列化进查询串，点开即是 DIM 的配装
     编辑器。与复制、截图并排，同为带框的 .op。"""
-    return ('<a class="op dim" href="%s" target="_blank" rel="noopener">导入 DIM</a>'
-            % escape(dim.link(md, url)))
+    return (
+        '<a class="op dim" href="%s" target="_blank" rel="noopener">导入 DIM</a>'
+        % escape(dim.link(md, url))
+    )
 
 
 def one_of(idx, mv, arts, head, scenes, md, n, url):
@@ -974,27 +1290,36 @@ def one_of(idx, mv, arts, head, scenes, md, n, url):
     与左栏那列图打架。铭牌末位写标签；单套写在那个位置的是强度，而强度对整份
     合集只有一个值，已经写在页顶的铭牌上。
     """
-    title = must_title(md, '合集里每一套都要有「标题」')
+    title = must_title(md, "合集里每一套都要有「标题」")
     branch, who = branch_of(md), class_of(md)
-    desc = meta(md, '描述', required=False)
-    role = '、'.join(tags_of(md, scenes))
-    o = ['<section class="set-one b-%s" id="set-%d">' % (BRANCH[branch], n),
-         '<header class="one-head">',
-         '<div class="id-row"><h2>%s</h2><div class="head-acts">'
-         '<button class="op copy" type="button">复制配装</button>%s%s</div></div>'
-         % (title, dim_button(md, '%s#set-%d' % (url, n)), SHOT % '.set-one'),
-         '<p class="cls">%s%s · <span class="%s">%s</span>%s</p>'
-         % (icon_of(vocab.pick(idx, who, '职业', kind='分节'), 32), who,
-            ELEMENT_TOKEN[branch], branch, ' · ' + role if role else '')]
+    desc = meta(md, "描述", required=False)
+    role = "、".join(tags_of(md, scenes))
+    o = [
+        '<section class="set-one b-%s" id="set-%d">' % (BRANCH[branch], n),
+        '<header class="one-head">',
+        '<div class="id-row"><h2>%s</h2><div class="head-acts">'
+        '<button class="op copy" type="button">复制配装</button>%s%s</div></div>'
+        % (title, dim_button(md, "%s#set-%d" % (url, n)), SHOT % ".set-one"),
+        '<p class="cls">%s%s · <span class="%s">%s</span>%s</p>'
+        % (
+            icon_of(vocab.pick(idx, who, "职业", kind="分节"), 32),
+            who,
+            ELEMENT_TOKEN[branch],
+            branch,
+            " · " + role if role else "",
+        ),
+    ]
     if desc:
         o.append('<p class="desc">%s</p>' % inline(desc, rich=True))
     # 复制按钮取的就是这一份。每套各存一份，按钮按 .set-one 就近找，
     # 与单套页那个 <pre id="src"> 同一条约定。
-    o += ['</header>',
-          '<pre class="src" hidden>%s</pre>' % escape(uncolor(solo_src(head, md))),
-          '']
-    o += blocks_of(idx, mv, arts, md, ns='set%d-' % n)
-    o += ['</section>', '']
+    o += [
+        "</header>",
+        '<pre class="src" hidden>%s</pre>' % escape(uncolor(solo_src(head, md))),
+        "",
+    ]
+    o += blocks_of(idx, mv, arts, md, ns="set%d-" % n)
+    o += ["</section>", ""]
     return o
 
 
@@ -1005,91 +1330,130 @@ def render_set(idx, mv, arts, head, members, slug, season, name_cn, doc_id):
     ——与列组页、折线图页「默认隐藏不写进 HTML」同一条约定。无 JS 时它天然就是
     竖排，全部可读，#set-3 照旧跳得到。
     """
-    title = must_title(head, '合集源稿里必须有「标题」')
-    stamp, desc = stamp_of(head), meta(head, '描述', required=False)
+    title = must_title(head, "合集源稿里必须有「标题」")
+    stamp, desc = stamp_of(head), meta(head, "描述", required=False)
     desc_text = text_of(inline(desc, rich=True), collapse=True)
     cat = tier_of(head)
     scenes = scene_of(head)
     branch, cores, who, roles = set_facts(idx, head, members)
-    badge = ('%s%s' % (icon_of(vocab.pick(idx, who[0], '职业', kind='分节'), 32), who[0])
-             if len(who) == 1 else MIXED)
+    badge = (
+        "%s%s" % (icon_of(vocab.pick(idx, who[0], "职业", kind="分节"), 32), who[0])
+        if len(who) == 1
+        else MIXED
+    )
 
-    o = [shell.head('%s · %s · Starside' % (title, SETS_SECTION), desc_text, up=3,
-                    sheets=['../../style.css']),
-         shell.nav(title, up=3, parent=[SETS_SECTION, name_cn],
-                   parent_href='../../sets/index.html'),
-         # data-src / data-kind 与单套页同一条，见 render_solo() 那一处的说明。
-         '<main class="set b-%s" data-tier="%s" data-src="%s" data-kind="build">'
-         % (BRANCH[branch], cat, doc_id),
-         '<header class="build-head">',
-         # 核心图包一层 .node：强度框画在它的 ::before/::after 上，与索引卡同形。
-         # 不包的话框只能挂在 .core 上，而 .core 是竖排的一整列（图 + 推荐人）。
-         '<div class="core"><span class="node">%s</span>'
-         '<p class="by-label">推荐者：</p>%s</div>'
-         % (core_mosaic(cores, 96, eager=True), ''.join(people(head))),
-         '<div class="build-id">',
-         # 复制不在这一排：游戏里导入是一套一套的，整份合集复制出去粘不回任何
-         # 地方。那枚按钮跟着每一套走，见 one_of()。
-         '<div class="id-row"><h1>%s</h1><div class="head-acts">%s%s</div></div>'
-         % (title, like_box(season, slug, button=True), TIP_SW),
-         '<p class="cls">%s · %d 套 · %s<span class="season">%s · %s</span></p>'
-         % (badge, len(members), cat, season.upper(), name_cn),
-         '<p class="desc">%s</p>' % inline(desc, rich=True) if desc else '',
-         facets(scenes, roles),
-         '</div>', '</header>', '',
-         verdict(head)]
+    o = [
+        shell.head(
+            "%s · %s · Starside" % (title, SETS_SECTION),
+            desc_text,
+            up=3,
+            sheets=["../../style.css"],
+        ),
+        shell.nav(
+            title,
+            up=3,
+            parent=[SETS_SECTION, name_cn],
+            parent_href="../../sets/index.html",
+        ),
+        # data-src / data-kind 与单套页同一条，见 render_solo() 那一处的说明。
+        '<main class="set b-%s" data-tier="%s" data-src="%s" data-kind="build">'
+        % (BRANCH[branch], cat, doc_id),
+        '<header class="build-head">',
+        # 核心图包一层 .node：强度框画在它的 ::before/::after 上，与索引卡同形。
+        # 不包的话框只能挂在 .core 上，而 .core 是竖排的一整列（图 + 推荐人）。
+        '<div class="core"><span class="node">%s</span>'
+        '<p class="by-label">推荐者：</p>%s</div>'
+        % (core_mosaic(cores, 96, eager=True), "".join(people(head))),
+        '<div class="build-id">',
+        # 复制不在这一排：游戏里导入是一套一套的，整份合集复制出去粘不回任何
+        # 地方。那枚按钮跟着每一套走，见 one_of()。
+        '<div class="id-row"><h1>%s</h1><div class="head-acts">%s%s</div></div>'
+        % (title, like_box(season, slug, button=True), TIP_SW),
+        '<p class="cls">%s · %d 套 · %s<span class="season">%s · %s</span></p>'
+        % (badge, len(members), cat, season.upper(), name_cn),
+        '<p class="desc">%s</p>' % inline(desc, rich=True) if desc else "",
+        facets(scenes, roles),
+        "</div>",
+        "</header>",
+        "",
+        verdict(head),
+    ]
 
-    why = section_of(head, '合集介绍')
+    why = section_of(head, "合集介绍")
     if why:
-        o += ['<section class="block" id="why">',
-              '<h2 class="sect-label">合集介绍</h2>']
+        o += [
+            '<section class="block" id="why">',
+            '<h2 class="sect-label">合集介绍</h2>',
+        ]
         o += prose(why)
-        o += ['</section>', '']
+        o += ["</section>", ""]
 
     # 视图开关落在左栏的头上，不做成 .toolbar：那一套由 app.js 建，而配装页不引
     # app.js（引了就为一枚按钮多下 5 KB）。契约只有 data-setview 一条。
-    o += ['<div class="set-wrap">',
-          '<nav class="set-list" aria-label="合集内的配装">',
-          '<p class="by-label">%d 套<button class="toggle viewsw" type="button" '
-          'data-setview aria-pressed="false">展开全部</button></p>' % len(members),
-          '<ol>']
+    o += [
+        '<div class="set-wrap">',
+        '<nav class="set-list" aria-label="合集内的配装">',
+        '<p class="by-label">%d 套<button class="toggle viewsw" type="button" '
+        'data-setview aria-pressed="false">展开全部</button></p>' % len(members),
+        "<ol>",
+    ]
     for n, m in enumerate(members, 1):
-        mt = must_title(m, '合集里每一套都要有「标题」')
+        mt = must_title(m, "合集里每一套都要有「标题」")
         mb = branch_of(m)
         # 一行三列：图 / 职业·元素 / 名字·标签。**职业与元素单占中间那一列**，
         # 挤进副名那一行时 208px 的目录只剩得下一个标签，标签整段被省略号吃掉。
-        o += ['<li class="b-%s"><a href="#set-%d">%s'
-              '<i class="who">%s<em class="%s">%s</em></i>'
-              '<b>%s</b><span>%s</span></a></li>'
-              % (BRANCH[mb], n, icon_of(core_of(idx, m), 32),
-                 class_of(m), ELEMENT_TOKEN[mb], mb, mt,
-                 '、'.join(tags_of(m, scenes)))]
-    o += ['</ol>', '</nav>', '<div class="set-body">']
+        o += [
+            '<li class="b-%s"><a href="#set-%d">%s'
+            '<i class="who">%s<em class="%s">%s</em></i>'
+            "<b>%s</b><span>%s</span></a></li>"
+            % (
+                BRANCH[mb],
+                n,
+                icon_of(core_of(idx, m), 32),
+                class_of(m),
+                ELEMENT_TOKEN[mb],
+                mb,
+                mt,
+                "、".join(tags_of(m, scenes)),
+            )
+        ]
+    o += ["</ol>", "</nav>", '<div class="set-body">']
     for n, m in enumerate(members, 1):
         o += one_of(idx, mv, arts, head, scenes, m, n, page_url(season, slug))
-    o += ['</div>', '</div>', '']
+    o += ["</div>", "</div>", ""]
 
-    o += ['</main>', '', LIKE_JS, COPY_JS,
-          shell.foot(stamp, '，%s' % meta(head, '页脚', required=False)
-                     if meta(head, '页脚', required=False) else '')]
-    return finish(o, [TIP_JS, '../../set.js']), title
-
-
+    o += [
+        "</main>",
+        "",
+        LIKE_JS,
+        COPY_JS,
+        shell.foot(
+            stamp,
+            "，%s" % meta(head, "页脚", required=False)
+            if meta(head, "页脚", required=False)
+            else "",
+        ),
+    ]
+    return finish(o, [TIP_JS, "../../set.js"]), title
 
 
 # 详情开关，缺省开着。**按下状态由 tip.js 现读 localStorage**，生成器只出空位。
 # 两种壳：详情页与点赞、复制同排，用 .head-acts 那套素框；填表页在右下角那一条
 # 里，与另外四枚同为 chip。契约只有 data-tip-sw 一条。
 TIP_SW = '<button class="toggle tipsw" type="button" data-tip-sw>详情开关</button>'
-TIP_SW_CHIP = '<button id="tipsw" class="toggle" type="button" data-tip-sw>详情开关</button>'
+TIP_SW_CHIP = (
+    '<button id="tipsw" class="toggle" type="button" data-tip-sw>详情开关</button>'
+)
 # 详情页引 tip.js 时带上本页那份说明的相对路径；填表页不带，tip.js 取整份 builds/desc.js。
-TIP_JS = ('../../tip.js', ' data-desc="%s"' % PAGE_DESC)
+TIP_JS = ("../../tip.js", ' data-desc="%s"' % PAGE_DESC)
 
 # 截图：把这一块渲染成一张图，弹在页面上。**data-shot 的值就是要截的那一块的选择器**
 # ——tip.js 按它从按钮往上找（合集一页 N 套，往上找才不会拿到第一套）。两种壳与
 # TIP_SW 同理。整份合集不给这一枚：与复制同一个道理，见 render_set() 那处的注释。
 SHOT = '<button class="op shot" type="button" data-shot="%s">截图</button>'
-SHOT_CHIP = '<button id="shot" class="op" type="button" data-shot="#sheet">截图</button>'
+SHOT_CHIP = (
+    '<button id="shot" class="op" type="button" data-shot="#sheet">截图</button>'
+)
 
 
 # 点赞：数只有运行时才知道，写不进产出，所以跟资料页的当前时刻高亮同一条约定
@@ -1100,74 +1464,81 @@ SHOT_CHIP = '<button id="shot" class="op" type="button" data-shot="#sheet">截�
 # 赞数按小时缓存，与访问计数同一个窗口：不缓存时翻十套配装就是十次冷启动，而
 # 这个数不是行情。自己点的那一下就地改缓存，即时可见；别人的赞最多晚一小时，
 # 函数那边还压着一层五分钟的实例内存缓存。
-LIKE_JS = ('<script>(function(){'
-           'var C=[].slice.call(document.querySelectorAll("[data-like]"));if(!C.length)return;'
-           'function show(el,v){(el.querySelector("b")||el).textContent=v}'
-           'function key(id){return "lk"+id}'
-           'var H=new Date(Date.now()+288e5).toISOString().slice(0,13),M=null;'
-           'function save(){try{localStorage.setItem("lkm",JSON.stringify({h:H,m:M}))}catch(_){}}'
-           'function paint(m){M=m;C.forEach(function(el){var id=el.dataset.like;show(el,m[id]||0);'
-           'if(el.tagName=="BUTTON"){var on=false;try{on=!!localStorage.getItem(key(id))}catch(_){}'
-           'el.setAttribute("aria-pressed",on?"true":"false")}})}'
-           'var c=null;try{c=JSON.parse(localStorage.getItem("lkm")||"null")}catch(_){}'
-           'if(c&&c.h===H)paint(c.m);'
-           'else fetch("%s?a=likes").then(function(r){return r.json()}).then(function(m){'
-           'paint(m);save()},'
-           'function(x){C.forEach(function(el){show(el,"取不到："+x)})});'
-           'document.addEventListener("click",function(e){'
-           'var b=e.target.closest&&e.target.closest("button.like");if(!b)return;'
-           'var id=b.dataset.like,on=b.getAttribute("aria-pressed")=="true";'
-           'b.setAttribute("aria-pressed",on?"false":"true");'
-           'try{on?localStorage.removeItem(key(id)):localStorage.setItem(key(id),"1")}catch(_){}'
-           # 新数自己算：那个数就在手边的缓存里，回读一次只为拿它不值一次数据库调用，
-           # 也不必等一个往返才看见自己那一下。
-           'var v=Math.max(0,((M&&M[id])||0)+(on?-1:1));show(b,v);if(M){M[id]=v;save()}'
-           'fetch("%s",{method:"POST",headers:{"content-type":"application/json"},'
-           'body:JSON.stringify({a:"like",id:id,d:on?-1:1})})'
-           '.catch(function(x){show(b,"失败："+x)})})})()</script>'
-           % (shell.API, shell.API))
+LIKE_JS = (
+    "<script>(function(){"
+    'var C=[].slice.call(document.querySelectorAll("[data-like]"));if(!C.length)return;'
+    'function show(el,v){(el.querySelector("b")||el).textContent=v}'
+    'function key(id){return "lk"+id}'
+    "var H=new Date(Date.now()+288e5).toISOString().slice(0,13),M=null;"
+    'function save(){try{localStorage.setItem("lkm",JSON.stringify({h:H,m:M}))}catch(_){}}'
+    "function paint(m){M=m;C.forEach(function(el){var id=el.dataset.like;show(el,m[id]||0);"
+    'if(el.tagName=="BUTTON"){var on=false;try{on=!!localStorage.getItem(key(id))}catch(_){}'
+    'el.setAttribute("aria-pressed",on?"true":"false")}})}'
+    'var c=null;try{c=JSON.parse(localStorage.getItem("lkm")||"null")}catch(_){}'
+    "if(c&&c.h===H)paint(c.m);"
+    'else fetch("%s?a=likes").then(function(r){return r.json()}).then(function(m){'
+    "paint(m);save()},"
+    'function(x){C.forEach(function(el){show(el,"取不到："+x)})});'
+    'document.addEventListener("click",function(e){'
+    'var b=e.target.closest&&e.target.closest("button.like");if(!b)return;'
+    'var id=b.dataset.like,on=b.getAttribute("aria-pressed")=="true";'
+    'b.setAttribute("aria-pressed",on?"false":"true");'
+    'try{on?localStorage.removeItem(key(id)):localStorage.setItem(key(id),"1")}catch(_){}'
+    # 新数自己算：那个数就在手边的缓存里，回读一次只为拿它不值一次数据库调用，
+    # 也不必等一个往返才看见自己那一下。
+    "var v=Math.max(0,((M&&M[id])||0)+(on?-1:1));show(b,v);if(M){M[id]=v;save()}"
+    'fetch("%s",{method:"POST",headers:{"content-type":"application/json"},'
+    'body:JSON.stringify({a:"like",id:id,d:on?-1:1})})'
+    '.catch(function(x){show(b,"失败："+x)})})})()</script>' % (shell.API, shell.API)
+)
 
 
 # 复制配装：把页面上那份剥了着色标记的源稿放进剪贴板，粘回配装工具能直接导入。
 # 非安全上下文（file:// 双击打开）下 navigator.clipboard 是 undefined，那时把源稿
 # 显出来并选中，让人自己按一下——不吞掉，别让人以为复制成功了。
-COPY_JS = ('<script>(function(){'
-           'function tip(b,t){b.dataset.tip=t;setTimeout(function(){delete b.dataset.tip},1600)}'
-           # 合集里一套一份源稿，就近找；单套页只有一份，落回 #src。
-           'document.addEventListener("click",function(e){'
-           'var b=e.target.closest&&e.target.closest("button.copy");if(!b)return;'
-           'var one=b.closest(".set-one"),'
-           's=one?one.querySelector("pre.src"):document.getElementById("src");if(!s)return;'
-           'if(!navigator.clipboard){s.hidden=false;var r=document.createRange();'
-           'r.selectNode(s);getSelection().removeAllRanges();getSelection().addRange(r);'
-           'tip(b,"\u5df2\u9009\u4e2d\uff0c\u6309 \u2318C");return}'
-           'navigator.clipboard.writeText(s.textContent).then('
-           'function(){tip(b,"\u5df2\u590d\u5236")},'
-           'function(x){tip(b,"\u590d\u5236\u5931\u8d25 "+x.name)})})})()</script>')
+COPY_JS = (
+    "<script>(function(){"
+    "function tip(b,t){b.dataset.tip=t;setTimeout(function(){delete b.dataset.tip},1600)}"
+    # 合集里一套一份源稿，就近找；单套页只有一份，落回 #src。
+    'document.addEventListener("click",function(e){'
+    'var b=e.target.closest&&e.target.closest("button.copy");if(!b)return;'
+    'var one=b.closest(".set-one"),'
+    's=one?one.querySelector("pre.src"):document.getElementById("src");if(!s)return;'
+    "if(!navigator.clipboard){s.hidden=false;var r=document.createRange();"
+    "r.selectNode(s);getSelection().removeAllRanges();getSelection().addRange(r);"
+    'tip(b,"\u5df2\u9009\u4e2d\uff0c\u6309 \u2318C");return}'
+    "navigator.clipboard.writeText(s.textContent).then("
+    'function(){tip(b,"\u5df2\u590d\u5236")},'
+    'function(x){tip(b,"\u590d\u5236\u5931\u8d25 "+x.name)})})})()</script>'
+)
 
 
 def like_box(season, slug, button):
     """点赞位。id 是「赛季_slug」，与后端那条 ^[a-z0-9]+_[a-z0-9-]+$ 对上。"""
-    at = '%s_%s' % (season, slug)
+    at = "%s_%s" % (season, slug)
     if not button:
         return '<span class="likes" data-like="%s"></span>' % at
-    return ('<button class="op like" type="button" data-like="%s" aria-pressed="false">'
-            '<span aria-hidden="true">\u2665\ufe0e</span> <b></b></button>' % at)
+    return (
+        '<button class="op like" type="button" data-like="%s" aria-pressed="false">'
+        '<span aria-hidden="true">\u2665\ufe0e</span> <b></b></button>' % at
+    )
 
 
-SITE_SECTION = '配装推荐'
+SITE_SECTION = "配装推荐"
 # 合集索引页在首页「配装」组里就叫这个名字，面包屑与标题跟着它，一处定义。
-SETS_SECTION = '配装合集'
-SETS_DESC = ('Destiny 2 配装合集：同一角色的多套配装按场景切换使用，'
-             '按场景分节、职业分组，逐套列出技能、武器、护甲与神器模组。')
+SETS_SECTION = "配装合集"
+SETS_DESC = (
+    "Destiny 2 配装合集：同一角色的多套配装按场景切换使用，"
+    "按场景分节、职业分组，逐套列出技能、武器、护甲与神器模组。"
+)
 # 填表页在首页「攻略与工具」里就叫这个名字，面包屑与标题跟着它，一处定义。
 # 它不挂在配装推荐下面：首页直接进得来，读者也不必先看过配装才来填一份。
-FORM_NAME = '配装工具'
+FORM_NAME = "配装工具"
 # 合集那一页的名字。它挂在配装工具下面（面包屑 Starside / 配装工具 / 合集工具），
 # 入口在合集索引页标题右边。
-SET_FORM_NAME = '合集工具'
-INDEX_DESC = '按场景分节的 Destiny 2 配装推荐：职业、武器、护甲、神器模组与六维属性，每一格都链回站内资料页。'
-UP = '../../../'
+SET_FORM_NAME = "合集工具"
+INDEX_DESC = "按场景分节的 Destiny 2 配装推荐：职业、武器、护甲、神器模组与六维属性，每一格都链回站内资料页。"
+UP = "../../../"
 
 
 def season_dirs():
@@ -1176,24 +1547,34 @@ def season_dirs():
     for name in sorted(os.listdir(SRC_DIR)):
         if not os.path.isdir(os.path.join(SRC_DIR, name)):
             continue
-        m = must(re.match(r'^(s\d+)-(.+)$', name),
-                 '赛季目录要写成「s29-赛季名」，现在叫 %r' % name)
+        m = must(
+            re.match(r"^(s\d+)-(.+)$", name),
+            "赛季目录要写成「s29-赛季名」，现在叫 %r" % name,
+        )
         out.append((name, m.group(1), m.group(2)))
     if not out:
-        die('references/builds/ 下没有赛季目录')
+        die("references/builds/ 下没有赛季目录")
     return out
 
 
 def build(idx, descs, dirname, season, name_cn, slug):
-    src = os.path.join(SRC_DIR, dirname, slug + '.json')
+    src = os.path.join(SRC_DIR, dirname, slug + ".json")
     with source_context(os.path.relpath(os.path.realpath(src), shell.ROOT)):
         outdir = os.path.join(shell.SITE, OUT_DIR, season, slug)
         os.makedirs(outdir, exist_ok=True)
         md = migrate.load(src)
         # _id 与 sync.py 的 id_of() 同一条：references/ 下的相对路径去掉 .md，
         # 所以那一截是源稿目录名 dirname，不是产出目录用的 season。
-        out, title = render(idx, extra('移动'), extra('神器本体'),
-                            md, slug, season, name_cn, 'builds/%s/%s' % (dirname, slug))
+        out, title = render(
+            idx,
+            extra("移动"),
+            extra("神器本体"),
+            md,
+            slug,
+            season,
+            name_cn,
+            "builds/%s/%s" % (dirname, slug),
+        )
         check(out, slug)
         shell.emit(outdir, out, title)
         page_desc(outdir, out, descs)
@@ -1206,72 +1587,133 @@ def build(idx, descs, dirname, season, name_cn, slug):
             core = core_mosaic(cores, 64)
             # 场景写在合集头部（整份一个），标签每套一个、并起来去重。
             scenes, tags = scene_of(head), roles
+            preview = set_stages(idx, scenes, members, mixed=(cls == MIXED))
         else:
-            branch = meta(md, '分支')
-            core = icon_of(core_pick(idx, md, 'elements/%s' % BRANCH[branch]), 64)
+            branch = meta(md, "分支")
+            core = icon_of(core_pick(idx, md, "elements/%s" % BRANCH[branch]), 64)
             cls = class_of(md)
             scenes = scene_of(md)
             tags = tags_of(md, scenes)
-        return {'u': '%s/%s/%s/index.html' % (OUT_DIR, season, slug), 't': title,
-                'season': season, 'slug': slug, 'stamp': meta(head, '更新'),
-                'desc': text_of(inline(meta(head, '描述', required=False), rich=True),
-                                collapse=True),
-                'class': cls, 'tags': tags, 'scene': scenes, 'tier': tier_of(head),
-                'branch': BRANCH[branch],
-                # 分支的中文名给卡片上的 data-branch 用。DOM 里只有 b-prismatic
-                # 这个 slug，中文名读不出来，而在 app.js 里再写一份 slug→中文
-                # 就是 BRANCH 的第二份定义。
-                'branch_cn': branch,
-                # 审核意见与描述同法剥掉标记：卡片那一段是纯文本，标记漏进去
-                # 就是一串花括号。分段在卡上并成一行——那一格只有两行高。
-                'verdict': text_of(inline(' '.join(section_of(head, '审核意见').split()),
-                                          rich=True), collapse=True),
-                'by': ''.join(people(head, link=False)),
-                # 图标路径按详情页那三层深写的，两个索引页深浅不同，前缀由 core_node()
-                # 现换——存成算好的那一份，另一页就得再存第二份。
-                'core': core,
-                'set': len(members)}
+            preview = solo_strip(idx, md)
+        return {
+            "u": "%s/%s/%s/index.html" % (OUT_DIR, season, slug),
+            "t": title,
+            "season": season,
+            "slug": slug,
+            "stamp": meta(head, "更新"),
+            "desc": text_of(
+                inline(meta(head, "描述", required=False), rich=True), collapse=True
+            ),
+            "class": cls,
+            "cls_ic": card_cls(idx, cls),
+            "tags": tags,
+            "scene": scenes,
+            "tier": tier_of(head),
+            "branch": BRANCH[branch],
+            "branch_cn": branch,
+            "verdict": text_of(
+                inline(" ".join(section_of(head, "审核意见").split()), rich=True),
+                collapse=True,
+            ),
+            "by": "".join(people(head, link=False)),
+            "core": core,
+            "preview": preview,
+            "set": len(members),
+        }
 
 
 def core_node(html, up):
     return '<span class="node">%s</span>' % html.replace(UP, up)
 
 
+def card_tags(scenes, tags):
+    roles, sc = [], ['<i class="sc">%s</i>' % t for t in scenes]
+    for t in tags:
+        rk = "dps" if "输出" in t else ("mech" if "机制" in t else "util")
+        roles.append('<i class="role" data-rk="%s">%s</i>' % (rk, t))
+    return '<span class="tags">%s%s</span>' % ("".join(roles), "".join(sc))
+
+
 def card(m, href, up, sets):
     """索引页的一张卡。两页共用。"""
-    return ['<li class="b-%s" data-branch="%s" data-scene="%s" data-cls="%s"'
-            ' data-tier="%s"%s>'
-            % (m['branch'], m['branch_cn'], TAB.join(m['scene']), m['class'],
-               m['tier'],
-               ' data-tag="%s"' % TAB.join(m['tags']) if m['tags'] else ''),
-            '<a class="entry" href="%s">' % (href % (m['season'], m['slug'])),
-            core_node(m['core'], '../' * up),
-            # 「6 套」贴在卡片右上角：一排卡里合集与单套长得一样，
-            # 不标出来读者点进去才知道这一张是六套。
-            '<span class="n-sets">%d 套</span>' % m['set'] if sets else '',
-            '<h3>%s</h3>' % m['t'],
-            # 强度画在头像框上（样式表按 <li> 的 data-tier 选），文字这一份视觉
-            # 隐藏、留在无障碍树里：只靠颜色编码的信息，读屏软件取不到。
-            '<span class="tier off-screen">%s</span>' % m['tier'],
-            m['by'],
-            # 审核意见与简介**共用一块定高的区域**：有审核意见时它排在上面、简介
-            # 缩到三行，没有时简介自己撑满。两者各自定高的话，带审核意见的卡就比
-            # 别的高出两行，一排里高低不齐。整张卡是一个 <a>，所以审核意见只能是
-            # 纯 <span>，不嵌链接与按钮。
-            '<div class="say">',
-            '<span class="verdict"><b>审核意见</b>%s</span>' % m['verdict']
-            if m['verdict'] else '',
-            '<p>%s</p>' % m['desc'],
-            '</div>',
-            # 卡片上列场景与标签。**强度不出**：它就是这张卡所在那一节的标题，
-            # 卡上再写一遍等于每张卡都占掉一枚标签位，而标签栏只有两行。
-            '<span class="tags">%s%s</span>'
-            % (''.join('<i class="sc">%s</i>' % t for t in m['scene']),
-               ''.join('<i>%s</i>' % t for t in m['tags'])),
-            '<span class="entry-foot">'
-            '<span class="entry-stamp">更新 %s</span>%s</span>'
-            % (m['stamp'], like_box(m['season'], m['slug'], button=False)),
-            '</a>', '</li>']
+    prefix = "../" * up
+    desc = m["desc"] or (
+        "阶段切装路线：%s" % " → ".join(m["tags"][:5])
+        if sets and m["tags"] and m["class"] != MIXED
+        else (
+            "跨职业 %d 套同武器/机制配装方案" % m["set"]
+            if sets and m["class"] == MIXED
+            else (
+                "同一角色 %d 套遭遇战阶段切换配装方案" % m["set"]
+                if sets
+                else "完整技能、武器词条、护甲模组与神器配置"
+            )
+        )
+    )
+    more = (
+        '<span class="set-more">+%d 套</span>' % (m["set"] - 3)
+        if sets and m["set"] > 3 and m["class"] == MIXED
+        else (
+            '<span class="set-more">+%d 套阶段</span>' % (m["set"] - 3)
+            if sets and m["set"] > 3
+            else ""
+        )
+    )
+    return [
+        '<li class="b-%s" data-branch="%s" data-scene="%s" data-cls="%s"'
+        ' data-tier="%s"%s>'
+        % (
+            m["branch"],
+            m["branch_cn"],
+            TAB.join(m["scene"]),
+            m["class"],
+            m["tier"],
+            ' data-tag="%s"' % TAB.join(m["tags"]) if m["tags"] else "",
+        ),
+        '<a class="entry" href="%s">' % (href % (m["season"], m["slug"])),
+        core_node(m["core"], prefix),
+        '<div class="entry-body">',
+        '<div class="card-top">',
+        '<span class="n-sets">%d 套</span>' % m["set"] if sets else "",
+        "<h3>%s</h3>" % m["t"],
+        '<span class="entry-foot">%s'
+        '<span class="entry-stamp">更新 %s</span>%s</span>'
+        % (more, m["stamp"], like_box(m["season"], m["slug"], button=False)),
+        "</div>",
+        '<div class="id-ribbon">'
+        '<span class="id-cls">%s<b>%s</b><span class="id-sep">·</span>'
+        '<em class="%s">%s</em></span>'
+        '<span class="id-dot" aria-hidden="true"></span>'
+        "%s"
+        '<span class="id-dot" aria-hidden="true"></span>'
+        '<span class="id-tier" data-t="%s">%s</span>'
+        "%s</div>"
+        % (
+            m["cls_ic"].replace(UP, prefix),
+            m["class"],
+            ELEMENT_TOKEN[m["branch_cn"]],
+            m["branch_cn"],
+            m["by"],
+            m["tier"],
+            m["tier"],
+            card_tags(m["scene"], m["tags"]),
+        ),
+        '<div class="say">',
+        "<p%s>%s</p>" % ("" if m["desc"] else ' class="desc-fb"', desc),
+        '<span class="verdict" title="%s"><b>审核意见</b>%s</span>'
+        % (escape(m["verdict"], quote=True), m["verdict"])
+        if m["verdict"]
+        else "",
+        "</div>",
+        m["preview"].replace(UP, prefix),
+        "</div>",
+        "</a>",
+        "</li>",
+    ]
+
+
+def stamp_key(s):
+    return tuple(int(x) for x in s.split("."))
 
 
 def render_index(made, sets=False):
@@ -1295,9 +1737,7 @@ def render_index(made, sets=False):
     每个场景节的小节按「这个场景下所有配装」的职业集合出，不只按本节现有的那些
     ——搬过来的卡要有落点。空出来的那张网格不显形，它的小标题由 app.js 收起。
 
-    **强度不写在卡上，画在头像框上**（builds/style.css）：三档三种框。文字那一份
-    留着但视觉隐藏（.off-screen），不然强度就成了只靠颜色编码的信息，读屏软件
-    与色觉差异的读者取不到。
+    # 强度已显示在身份带（.id-tier）与头像框（builds/style.css）上。
 
     **五个维度全部写成卡片上的 data 属性**：app.js 那边因此只剩一个通用提取器，
     不需要认识这一页长什么样。
@@ -1307,77 +1747,101 @@ def render_index(made, sets=False):
     （声明里的 :tuck），一枚触发器钉在主轴的左缘。四个空容器都由这里给，
     app.js 见了就往里填——放哪由页面说了算，app.js 不认识任何一维的名字。
 
-    **卡片是竖式的，一排五张**（形状见 builds/style.css）。图在最上，往下是配装
-    名、推荐人、简介、标签、时间与赞数。每张卡落一个分支类，.entry 左缘那条 2px
-    亮边因此跟着该配装的元素色走。
+    **卡片是横式的，一排两张**（形状见 builds/style.css）。左为核心图，右为标题、
+    身份带、一句话简介／审核意见与底部装备条（合集为三行阶段切装时间轴）。
     """
-    live = [m for m in made if m['season'] == SEASON and bool(m['set']) == sets]
+    live = [m for m in made if m["season"] == SEASON and bool(m["set"]) == sets]
     if not live:
-        die('当前赛季 %s 一%s都没有，索引页会是空的'
-            % (SEASON, '个合集' if sets else '套配装'))
-    stamp = max(m['stamp'] for m in live)
+        die(
+            "当前赛季 %s 一%s都没有，索引页会是空的"
+            % (SEASON, "个合集" if sets else "套配装")
+        )
+    stamp = max((m["stamp"] for m in live), key=stamp_key)
     name = SETS_SECTION if sets else SITE_SECTION
     up = 2 if sets else 1
     # 合集页在 builds/sets/ 下，卡片要多退一层才回得到 builds/<赛季>/。
-    href = '../%s/%s/index.html' if sets else '%s/%s/index.html'
-    aside = ('<p class="new-link"><a href="../new/set/index.html">投稿一组合集 →</a>'
-             '<span>逐套配置装备与切换场景，在线提交或导出合集文本</span></p>'
-             '<p class="new-link"><a href="../index.html">单套配装推荐 →</a>'
-             '<span>一套一页的配装，按场景、职业、强度与标签筛选</span></p>' if sets else
-             # 投稿入口挂在标题右边。这是填表页在站内唯一的入口（别处没有理由指向
-             # 它，而没有入口的页面等于不存在），单独占一段会在卡片上面多出一整块
-             # 空白。页首那句说明只留给 <meta>，正文里它把首屏推下去半屏。
-             '<p class="new-link"><a href="new/index.html">投稿一套配装 →</a>'
-             '<span>选定技能、武器、护甲与神器模组，在线提交或导出标准配装文本</span></p>')
-    if not sets and any(m['set'] for m in made if m['season'] == SEASON):
-        aside += ('<p class="new-link"><a href="sets/index.html">配装合集 →</a>'
-                  '<span>同一角色的多套配装，按场景切换使用</span></p>')
-    o = [shell.head('%s · Starside' % name, SETS_DESC if sets else INDEX_DESC,
-                    app_js=True, up=up, sky=True,
-                    sheets=['../style.css'] if sets else None),
-         # data-facets 是声明式的：`显示名=data 键[:修饰]`，分号隔开。
-         #   :single   一次只选一个（场景与强度）
-         #   :groups   分节按这一维分，选定单一值时重叠的那几节并成一张网格
-         #   :tuck     收进工具条那块共用面板，不给它正文里的常驻一排
-         # 分支、标签走 :tuck：十次里有九次没人碰。**顺序即面板里的顺序**，职业、
-         # 场景与强度排在前面是因为它们有正文容器接着，落不进面板。
-         #
-         # **不出跳转 chip**（data-label 给空串）：那一排跳的是大节，而大节就是场景，
-         # 页面上那条居中的场景开关已经在干这件事，同一排字出现两遍读者分不出
-         # 哪一排管什么。
-         shell.nav(name, up=up, toolbar={
-             'data-section': '.block', 'data-item': '.entries > li',
-             'data-label': '', 'data-noun': '合集' if sets else '配装',
-             'data-facets': '场景=scene:single:groups;强度=tier:single;'
-                            '职业=cls;分支=branch:tuck;标签=tag:tuck'}),
-         shell.page_head(name, aside=aside),
-         # 四个容器都是**空的由页面给、内容由 app.js 填**：值本来就从卡片现扫，
-         # 写进 HTML 就是同一批字的第二个来源。无 JS 时它们是空的、由
-         # .facet-bar:empty 收起，正文照旧可读。
-         '<div class="facet-block">',
-         # 低频那两维收进这里的共用面板。**与主轴同一块**，不放工具条上：
-         # 工具条那一格前面是空着的 .tool-count，触发器停在中段像掉在半路上；
-         # 挨着职业、场景与强度，读者一眼看得出这几样是一类东西。
-         '<div class="facet-tuck" data-facet-tuck></div>',
-         # 职业排在最上：进来先挑自己玩的那个职业，再挑在哪打。
-         '<nav class="facet-bar" data-facet="职业" aria-label="职业"></nav>',
-         '<nav class="facet-bar" data-facet="场景" aria-label="适用场景"></nav>',
-         # 强度与场景并列成第二条：它是「凭什么被推荐」，与「在哪打」一样是读者
-         # 一进来就要拿的主意，收进面板等于把它降到与分支同一档。
-         '<nav class="facet-bar" data-facet="强度" aria-label="强度"></nav>',
-         '</div>',
-         '<main>']
+    href = "../%s/%s/index.html" if sets else "%s/%s/index.html"
+    aside = (
+        '<p class="new-link"><a href="../new/set/index.html">投稿一组合集 →</a>'
+        "<span>逐套配置装备与切换场景，在线提交或导出合集文本</span></p>"
+        '<p class="new-link"><a href="../index.html">单套配装推荐 →</a>'
+        "<span>一套一页的配装，按场景、职业、强度与标签筛选</span></p>"
+        if sets
+        # 投稿入口挂在标题右边。这是填表页在站内唯一的入口（别处没有理由指向
+        # 它，而没有入口的页面等于不存在），单独占一段会在卡片上面多出一整块
+        # 空白。页首那句说明只留给 <meta>，正文里它把首屏推下去半屏。
+        else '<p class="new-link"><a href="new/index.html">投稿一套配装 →</a>'
+        "<span>选定技能、武器、护甲与神器模组，在线提交或导出标准配装文本</span></p>"
+    )
+    if not sets and any(m["set"] for m in made if m["season"] == SEASON):
+        aside += (
+            '<p class="new-link"><a href="sets/index.html">配装合集 →</a>'
+            "<span>同一角色的多套配装，按场景切换使用</span></p>"
+        )
+    o = [
+        shell.head(
+            "%s · Starside" % name,
+            SETS_DESC if sets else INDEX_DESC,
+            app_js=True,
+            up=up,
+            sky=True,
+            sheets=["../style.css"] if sets else None,
+        ),
+        # data-facets 是声明式的：`显示名=data 键[:修饰]`，分号隔开。
+        #   :single   一次只选一个（职业、场景与强度）
+        #   :groups   分节按这一维分，选定单一值时重叠的那几节并成一张网格
+        #   :tuck     收进工具条那块共用面板，不给它正文里的常驻一排
+        # 分支、标签走 :tuck：十次里有九次没人碰。**顺序即面板里的顺序**，职业、
+        # 场景与强度排在前面是因为它们有正文容器接着，落不进面板。
+        #
+        # **不出跳转 chip**（data-label 给空串）：那一排跳的是大节，而大节就是场景，
+        # 页面上那条居中的场景开关已经在干这件事，同一排字出现两遍读者分不出
+        # 哪一排管什么。
+        shell.nav(
+            name,
+            up=up,
+            toolbar={
+                "data-section": ".block",
+                "data-item": ".entries > li",
+                "data-label": "",
+                "data-noun": "合集" if sets else "配装",
+                "data-facets": "场景=scene:single:groups;强度=tier:single;"
+                "职业=cls:single;分支=branch:tuck;标签=tag:tuck",
+            },
+        ),
+        shell.page_head(name, aside=aside),
+        # 四个容器都是**空的由页面给、内容由 app.js 填**：值本来就从卡片现扫，
+        # 写进 HTML 就是同一批字的第二个来源。无 JS 时它们是空的、由
+        # .facet-bar:empty 收起，正文照旧可读。
+        '<div class="facet-block">',
+        # 低频那两维收进这里的共用面板。**与主轴同一块**，不放工具条上：
+        # 工具条那一格前面是空着的 .tool-count，触发器停在中段像掉在半路上；
+        # 挨着职业、场景与强度，读者一眼看得出这几样是一类东西。
+        '<div class="facet-tuck" data-facet-tuck></div>',
+        # 职业排在最上：进来先挑自己玩的那个职业，再挑在哪打。
+        '<nav class="facet-bar" data-facet="职业" aria-label="职业"></nav>',
+        '<nav class="facet-bar" data-facet="场景" aria-label="适用场景"></nav>',
+        # 强度与场景并列成第二条：它是「凭什么被推荐」，与「在哪打」一样是读者
+        # 一进来就要拿的主意，收进面板等于把它降到与分支同一档。
+        '<nav class="facet-bar" data-facet="强度" aria-label="强度"></nav>',
+        "</div>",
+        "<main>",
+    ]
     # 节内先按强度（TIERS 的顺序即 meta、强力、创意），同档再按更新时间降序。
     # stamp 是 YYYY.M.D，段位宽不定，按字符串排会把 2026.9.9 排到 2026.10.1
     # 前面，拆成整数元组再比。
-    live.sort(key=lambda m: (TIERS.index(m['tier']),
-                             tuple(-int(x) for x in m['stamp'].split('.'))))
+    live.sort(
+        key=lambda m: (
+            TIERS.index(m["tier"]),
+            tuple(-int(x) for x in m["stamp"].split(".")),
+        )
+    )
     # 大节即场景的取值组合。顺序按 SCENES，同一个首场景下单值在前、组合在后，
     # 于是 raid 与 raid·地牢 相邻。**不硬编码那个组合**：CO_SCENES 改了自动跟着改。
     n = 0
     for top in SCENES:
         # 多场景的配装归它第一个场景那一节，每张卡只出现一次。
-        pool = [m for m in live if m['scene'][0] == top]
+        pool = [m for m in live if m["scene"][0] == top]
         if not pool:
             continue
         n += 1
@@ -1387,37 +1851,47 @@ def render_index(made, sets=False):
         # 「突袭、地牢通用」两种，只写「突袭」会让读者以为通用的那批不在这儿。
         # 并集现取，不硬编码——CO_SCENES 改了自动跟着改；地牢那一节只有单值的
         # 配装，并集就还是「地牢」。
-        shown = [x for x in SCENES if any(x in m['scene'] for m in pool)]
-        o += ['<section class="block" id="sec-%d" data-scene="%s">' % (n, top),
-              '<h2 class="sect-label">%s</h2>' % ' &amp; '.join(shown)]
+        shown = [x for x in SCENES if any(x in m["scene"] for m in pool)]
+        o += [
+            '<section class="block" id="sec-%d" data-scene="%s">' % (n, top),
+            '<h2 class="sect-label">%s</h2>' % " &amp; ".join(shown),
+        ]
         # 小节按「这个场景下所有配装」的职业集合出，不只按 pool：选定这个场景时
         # app.js 会把别节里也属于它的那批搬进来（raid·地牢 → 地牢），要有落点。
-        kin = [m for m in live if top in m['scene']]
+        kin = [m for m in live if top in m["scene"]]
         for cls in CLASSES + (MIXED,):
-            if not any(m['class'] == cls for m in kin):
+            if not any(m["class"] == cls for m in kin):
                 continue
-            o += ['<h3 class="sub-label">%s</h3>' % cls,
-                  '<ul class="entries" data-cls="%s">' % cls]
+            o += [
+                '<h3 class="sub-label">%s</h3>' % cls,
+                '<ul class="entries" data-cls="%s">' % cls,
+            ]
             for m in pool:
-                if m['class'] == cls:
+                if m["class"] == cls:
                     o += card(m, href, up, sets)
-            o += ['</ul>']
-        o += ['</section>', '']
-    o += ['']
-    o += ['</main>', '', LIKE_JS,
-          shell.foot(stamp, '，配装由各位推荐人提供，随赛季更新。')]
-    out = '\n'.join(x for x in o if x != '') + '\n'
+            o += ["</ul>"]
+        o += ["</section>", ""]
+    o += [""]
+    o += [
+        "</main>",
+        "",
+        LIKE_JS,
+        shell.foot(stamp, "，配装由各位推荐人提供，随赛季更新。"),
+    ]
+    out = "\n".join(x for x in o if x != "") + "\n"
     # **自己建目录**：合集索引页只在有合集时才出，站上从零变一时那个目录还不在，
     # 而 shell.emit() 只管写文件——撞上的是一句 FileNotFoundError。
-    outdir = os.path.join(shell.SITE, OUT_DIR, 'sets') if sets \
+    outdir = (
+        os.path.join(shell.SITE, OUT_DIR, "sets")
+        if sets
         else os.path.join(shell.SITE, OUT_DIR)
+    )
     os.makedirs(outdir, exist_ok=True)
-    shell.emit(outdir, out,
-               '%d %s' % (len(live), '个合集' if sets else '套配装'))
+    shell.emit(outdir, out, "%d %s" % (len(live), "个合集" if sets else "套配装"))
 
 
 # 三个武器槽位的 bucketTypeHash。一把枪只属于一个槽，与装备库的预选行同一份口径。
-BUCKET = {'1498876634': 'k', '2465295065': 'e', '953998645': 'h'}
+BUCKET = {"1498876634": "k", "2465295065": "e", "953998645": "h"}
 
 
 def weapon_buckets(idx):
@@ -1428,16 +1902,16 @@ def weapon_buckets(idx):
     动能与能量两个槽都装得下主武器与特殊武器，按页面判会把半数选项判错。
     """
     facts = rows.facts()
-    pages = set(vocab.SLOTS['传说武器'] + vocab.SLOTS['异域武器'])
+    pages = set(vocab.SLOTS["传说武器"] + vocab.SLOTS["异域武器"])
     out = {}
     for hits in idx.values():
         for e in hits:
-            if e.get('page') not in pages:
+            if e.get("page") not in pages:
                 continue
-            rec = facts.items.get(str((e.get('keys') or [None])[0])) or {}
-            got = BUCKET.get(str((rec.get('inventory') or {}).get('bucketTypeHash')))
+            rec = facts.items.get(str((e.get("keys") or [None])[0])) or {}
+            got = BUCKET.get(str((rec.get("inventory") or {}).get("bucketTypeHash")))
             if got:
-                out[e['name']] = got
+                out[e["name"]] = got
     return out
 
 
@@ -1449,10 +1923,14 @@ def real_weapons(idx):
     就是故我在在清单里出现五遍。选哪一套固有归词条那两格管，见 exotic_columns()。
     """
     facts = rows.facts()
-    return {e['name'] for hits in idx.values() for e in hits
-            if e.get('page') == 'exotic-weapon'
-            and (facts.items.get(str((e.get('keys') or [None])[0])) or {}
-                 ).get('itemType') == 3}
+    return {
+        e["name"]
+        for hits in idx.values()
+        for e in hits
+        if e.get("page") == "exotic-weapon"
+        and (facts.items.get(str((e.get("keys") or [None])[0])) or {}).get("itemType")
+        == 3
+    }
 
 
 def wearable_armor(idx):
@@ -1463,18 +1941,21 @@ def wearable_armor(idx):
     只是三条选了也生成不出源稿的噪声。判据现取，不写名单。
     """
     facts = rows.facts()
-    spirits = {str(h) for rec in facts.items.values()
-               for col in rec.get('site_perkColumns') or ()
-               for h in col}
+    spirits = {
+        str(h)
+        for rec in facts.items.values()
+        for col in rec.get("site_perkColumns") or ()
+        for h in col
+    }
     out = set()
     for hits in idx.values():
         for e in hits:
-            if e.get('page') != 'exotic-armor':
+            if e.get("page") != "exotic-armor":
                 continue
-            key = str((e.get('keys') or [None])[0])
+            key = str((e.get("keys") or [None])[0])
             rec = facts.items.get(key) or {}
-            if rec.get('itemType') == 2 or key in spirits:
-                out.add(e['name'])
+            if rec.get("itemType") == 2 or key in spirits:
+                out.add(e["name"])
     return out
 
 
@@ -1500,22 +1981,30 @@ def render_vocab(idx):
     guns = real_weapons(idx)
     for hits in idx.values():
         for e in hits:
-            bare = vocab.bare_kind(e['kind'])
+            bare = vocab.bare_kind(e["kind"])
             for slot, pages in vocab.SLOTS.items():
-                if slot == '异域护甲' and e['name'] not in wear:
+                if slot == "异域护甲" and e["name"] not in wear:
                     continue
-                if slot == '异域武器' and e['name'] not in guns:
+                if slot == "异域武器" and e["name"] not in guns:
                     continue
                 # 钉了分节的槽位只收那一种，别的槽位反过来不收它们：异域武器详解页上
                 # 武器行与它的词条同页，只按页面分会把 488 条词条并进异域武器那一栏。
                 want = vocab.SLOT_KIND.get(slot)
                 if bare != want if want else bare in pinned:
                     continue
-                if e['page'] in pages:
+                if e["page"] in pages:
                     by_slot.setdefault(slot, set()).add(
-                        (e['name'], e['kind'], e['page'], e['icon'],
-                         e['token'], e.get('sub', ''), e.get('pos', ''),
-                         str((e.get('keys') or [''])[0])))
+                        (
+                            e["name"],
+                            e["kind"],
+                            e["page"],
+                            e["icon"],
+                            e["token"],
+                            e.get("sub", ""),
+                            e.get("pos", ""),
+                            str((e.get("keys") or [""])[0]),
+                        )
+                    )
     # 页面集合相同的槽位共用一份列表，键取头一个用到它的槽位名。
     # 共用一份列表的判据是「页面集合 + 钉死的分节」都相同：异域武器与异域词条同页，
     # 只按页面并会让后者拿到前者那一份。
@@ -1526,10 +2015,11 @@ def render_vocab(idx):
         slots[slot] = owner[key]
     # 位移技能不在 vocab.SLOTS 里——它没有来源页，名字与图标来自官方物品表。
     # 填表页照样要选得到，所以在这里并成一份普通的列表。
-    for kind, tag in (('移动', '位移技能'), ('神器本体', '神器')):
-        by_slot[kind] = {(n, tag, '', icon, '', '', '', '')
-                         for n, icon in extra(kind).items()}
-        owner[('__%s__' % kind,)] = kind
+    for kind, tag in (("移动", "位移技能"), ("神器本体", "神器")):
+        by_slot[kind] = {
+            (n, tag, "", icon, "", "", "", "") for n, icon in extra(kind).items()
+        }
+        owner[("__%s__" % kind,)] = kind
         slots[kind] = kind
     rows = []
     perk_at = {}
@@ -1537,26 +2027,33 @@ def render_vocab(idx):
         cells = []
         for i, cols in enumerate(sorted(by_slot.get(slot, ()))):
             cols = list(cols)
-            while cols and cols[-1] == '':
+            while cols and cols[-1] == "":
                 cols.pop()
             cells.append(json.dumps(cols, ensure_ascii=False))
-            if slot == 'Perk':
+            if slot == "Perk":
                 perk_at[cols[0]] = i
-        rows.append('%s:[%s]' % (json.dumps(slot, ensure_ascii=False), ','.join(cells)))
+        rows.append("%s:[%s]" % (json.dumps(slot, ensure_ascii=False), ",".join(cells)))
     # **分节括注的切分符号是契约**：由 vocab.KIND_TAIL 一处定义并发给前端。
-    body = ('window.starsideVocab = {\nsep: %s,\nlists: {\n%s\n},\nslots: %s,'
-            '\nperks: %s,\nspirits: %s,\nexoticCols: %s,\nbuckets: %s\n};\n'
-            % (json.dumps(vocab.KIND_TAIL, ensure_ascii=False),
-               ',\n'.join(rows), json.dumps(slots, ensure_ascii=False),
-               json.dumps(weapon_perks(idx, perk_at), ensure_ascii=False, sort_keys=True),
-               json.dumps(spirit_columns(idx), ensure_ascii=False, sort_keys=True),
-               json.dumps(exotic_columns(idx), ensure_ascii=False, sort_keys=True),
-               json.dumps(weapon_buckets(idx), ensure_ascii=False, sort_keys=True)))
-    path = os.path.join(shell.SITE, OUT_DIR, 'vocab.js')
-    with open(path, 'w', encoding='utf-8') as f:
+    body = (
+        "window.starsideVocab = {\nsep: %s,\nlists: {\n%s\n},\nslots: %s,"
+        "\nperks: %s,\nspirits: %s,\nexoticCols: %s,\nbuckets: %s\n};\n"
+        % (
+            json.dumps(vocab.KIND_TAIL, ensure_ascii=False),
+            ",\n".join(rows),
+            json.dumps(slots, ensure_ascii=False),
+            json.dumps(weapon_perks(idx, perk_at), ensure_ascii=False, sort_keys=True),
+            json.dumps(spirit_columns(idx), ensure_ascii=False, sort_keys=True),
+            json.dumps(exotic_columns(idx), ensure_ascii=False, sort_keys=True),
+            json.dumps(weapon_buckets(idx), ensure_ascii=False, sort_keys=True),
+        )
+    )
+    path = os.path.join(shell.SITE, OUT_DIR, "vocab.js")
+    with open(path, "w", encoding="utf-8") as f:
         f.write(body)
-    print('builds/vocab.js —— %.1f KB，%d 个槽位共 %d 份列表'
-          % (len(body.encode()) / 1024, len(slots), len(owner)))
+    print(
+        "builds/vocab.js —— %.1f KB，%d 个槽位共 %d 份列表"
+        % (len(body.encode()) / 1024, len(slots), len(owner))
+    )
 
 
 def weapon_perks(idx, perk_at):
@@ -1573,26 +2070,32 @@ def weapon_perks(idx, perk_at):
     列不全好过列不出来。
     """
     facts = rows.facts()
-    pages = set(vocab.SLOTS['传说武器'] + vocab.SLOTS['异域武器'])
+    pages = set(vocab.SLOTS["传说武器"] + vocab.SLOTS["异域武器"])
     out = {}
     for hits in idx.values():
         for e in hits:
-            if e.get('page') not in pages:
+            if e.get("page") not in pages:
                 continue
-            key = (e.get('keys') or [None])[0]
+            key = (e.get("keys") or [None])[0]
             rec = facts.items.get(str(key)) if key else None
-            if not rec or rec.get('itemType') != 3:
+            if not rec or rec.get("itemType") != 3:
                 continue
             traits, origin = [], set()
             for col in facts.pool(str(key)):
-                kind = ((facts.socket_types.get(str(col['type'])) or {})
-                        .get('derived') or {}).get('kind')
-                if col.get('gear') or kind not in ('trait', 'origin'):
+                kind = (
+                    (facts.socket_types.get(str(col["type"])) or {}).get("derived")
+                    or {}
+                ).get("kind")
+                if col.get("gear") or kind not in ("trait", "origin"):
                     continue
-                got = {at for p in list(col.get('plugs') or ())
-                       + ([col['init']] if col.get('init') else [])
-                       for at in [perk_at.get(facts.name(p))] if at is not None}
-                if kind == 'origin':
+                got = {
+                    at
+                    for p in list(col.get("plugs") or ())
+                    + ([col["init"]] if col.get("init") else [])
+                    for at in [perk_at.get(facts.name(p))]
+                    if at is not None
+                }
+                if kind == "origin":
                     origin |= got
                 else:
                     traits.append(got)
@@ -1600,7 +2103,7 @@ def weapon_perks(idx, perk_at):
             if not any(got):
                 continue
             # 同一把枪在几页上各有一条索引，按栏并——不是按整把并。
-            have = out.setdefault(e['name'], [set(), set(), set()])
+            have = out.setdefault(e["name"], [set(), set(), set()])
             for a, b in zip(have, got):
                 a |= b
     return {n: [sorted(c) for c in v] for n, v in out.items()}
@@ -1623,33 +2126,55 @@ def exotic_columns(idx):
     选出来的那一条生成器落不到主键上。剩不到两枚的栏整栏丢掉。
     """
     facts = rows.facts()
-    ok = {e['name'] for hits in idx.values() for e in hits
-          if (e.get('page') == 'exotic-weapon'
-              and vocab.bare_kind(e.get('kind', '')) == '异域词条')
-          or (e.get('page') == 'weapon-perks'
-              and vocab.bare_kind(e.get('kind', '')) == '武器 PERK')}
+    ok = {
+        e["name"]
+        for hits in idx.values()
+        for e in hits
+        if (
+            e.get("page") == "exotic-weapon"
+            and vocab.bare_kind(e.get("kind", "")) == "异域词条"
+        )
+        or (
+            e.get("page") == "weapon-perks"
+            and vocab.bare_kind(e.get("kind", "")) == "武器 PERK"
+        )
+    }
 
     def columns(key):
         rec = facts.at(key) or {}
         trait, intrinsic = [], []
         for col in facts.pool(key):
-            kind = ((facts.socket_types.get(str(col['type'])) or {})
-                    .get('derived') or {}).get('kind')
-            if col.get('gear') or kind not in ('trait', 'intrinsic'):
+            kind = (
+                (facts.socket_types.get(str(col["type"])) or {}).get("derived") or {}
+            ).get("kind")
+            if col.get("gear") or kind not in ("trait", "intrinsic"):
                 continue
-            (trait if kind == 'trait' else intrinsic).append(
-                [(facts.name(p), str(p)) for p in col.get('plugs') or ()])
+            (trait if kind == "trait" else intrinsic).append(
+                [(facts.name(p), str(p)) for p in col.get("plugs") or ()]
+            )
         # 催化那一栏按**催化剂的枚数**判，不按名字条数：一枚催化剂给几条效果
         # （条件终局那枚同时给治疗弹匣与霜华窃取者）不是「几选一」，与
         # rows.exotic_perks() 的 picks 同一条。主键是催化剂那件东西自己的。
-        live = [str(c) for c in (rec.get('derived') or {}).get('catalyst') or ()
-                if rows.live_catalyst(str(c))]
-        cat = [(rows.name_of('perk:%s' % p['perkHash']) or facts.name(c), c)
-               for c in live
-               for p in (facts.at(c) or {}).get('perks') or [{'perkHash': 0}]] \
-            if len(live) > 1 else []
-        got = trait + intrinsic + [cat] + [[(facts.name(h), h) for h in g]
-                                           for g in rows.option_plugs(rec)]
+        live = [
+            str(c)
+            for c in (rec.get("derived") or {}).get("catalyst") or ()
+            if rows.live_catalyst(str(c))
+        ]
+        cat = (
+            [
+                (rows.name_of("perk:%s" % p["perkHash"]) or facts.name(c), c)
+                for c in live
+                for p in (facts.at(c) or {}).get("perks") or [{"perkHash": 0}]
+            ]
+            if len(live) > 1
+            else []
+        )
+        got = (
+            trait
+            + intrinsic
+            + [cat]
+            + [[(facts.name(h), h) for h in g] for g in rows.option_plugs(rec)]
+        )
         out = []
         for one in got:
             seen, col = set(), []
@@ -1664,15 +2189,15 @@ def exotic_columns(idx):
     out = {}
     for hits in idx.values():
         for e in hits:
-            if e.get('page') != 'exotic-weapon' or e.get('kind') == '异域词条':
+            if e.get("page") != "exotic-weapon" or e.get("kind") == "异域词条":
                 continue
-            key = str((e.get('keys') or [None])[0])
+            key = str((e.get("keys") or [None])[0])
             rec = facts.at(key)
-            if not rec or rec.get('itemType') != 3:
+            if not rec or rec.get("itemType") != 3:
                 continue
             got = columns(key)
             if got:
-                out[e['name']] = got
+                out[e["name"]] = got
     return out
 
 
@@ -1685,11 +2210,13 @@ def spirit_columns(idx):
     out = {}
     for hits in idx.values():
         for e in hits:
-            if e.get('page') != 'exotic-armor':
+            if e.get("page") != "exotic-armor":
                 continue
-            cols = (facts.items.get(str((e.get('keys') or [None])[0])) or {}).get('site_perkColumns')
+            cols = (facts.items.get(str((e.get("keys") or [None])[0])) or {}).get(
+                "site_perkColumns"
+            )
             if cols:
-                out[e['name']] = [[facts.name(x) for x in col] for col in cols]
+                out[e["name"]] = [[facts.name(x) for x in col] for col in cols]
     return out
 
 
@@ -1711,28 +2238,31 @@ def desc_table(idx):
     seen = {}
     for hits in idx.values():
         for e in hits:
-            if not e.get('desc'):
+            if not e.get("desc"):
                 continue
-            if not any(e['page'] in pages for pages in vocab.SLOTS.values()):
+            if not any(e["page"] in pages for pages in vocab.SLOTS.values()):
                 continue
-            seen['%s\t%s\t%s' % (e['page'], e['name'], e['kind'])] = e['desc']
+            seen["%s\t%s\t%s" % (e["page"], e["name"], e["kind"])] = e["desc"]
     return seen
 
 
 def desc_js(table):
-    rows = ['%s:%s' % (json.dumps(k, ensure_ascii=False),
-                       json.dumps(v, ensure_ascii=False))
-            for k, v in sorted(table.items())]
-    return 'window.starsideDesc = {\n%s\n};\n' % ',\n'.join(rows)
+    rows = [
+        "%s:%s" % (json.dumps(k, ensure_ascii=False), json.dumps(v, ensure_ascii=False))
+        for k, v in sorted(table.items())
+    ]
+    return "window.starsideDesc = {\n%s\n};\n" % ",\n".join(rows)
 
 
 def render_desc(table):
     """builds/desc.js：填表页的候选可能是词表里的任何一条，所以它拿整张表。"""
     body = desc_js(table)
-    path = os.path.join(shell.SITE, OUT_DIR, 'desc.js')
-    with open(path, 'w', encoding='utf-8') as f:
+    path = os.path.join(shell.SITE, OUT_DIR, "desc.js")
+    with open(path, "w", encoding="utf-8") as f:
         f.write(body)
-    print('builds/desc.js —— %.1f KB，%d 条说明' % (len(body.encode()) / 1024, len(table)))
+    print(
+        "builds/desc.js —— %.1f KB，%d 条说明" % (len(body.encode()) / 1024, len(table))
+    )
 
 
 def page_desc(outdir, out, table):
@@ -1743,16 +2273,27 @@ def page_desc(outdir, out, table):
     键从产出里现取，与 tip.js 读的是同一个属性。查不到的键当场中止：那一格悬停
     会一直停在「载入中」，页面上看不出是漏了。"""
     keys = sorted({unescape(k) for k in re.findall(r' data-d="([^"]*)"', out)})
-    lost = [k.replace('\t', ' / ') for k in keys if k not in table]
+    lost = [k.replace("\t", " / ") for k in keys if k not in table]
     if lost:
-        die('%s 有 %d 格的悬停说明不在说明表里：%s'
-            % (os.path.relpath(outdir, shell.SITE), len(lost), '、'.join(lost[:6])))
-    with open(os.path.join(outdir, PAGE_DESC), 'w', encoding='utf-8') as f:
+        die(
+            "%s 有 %d 格的悬停说明不在说明表里：%s"
+            % (os.path.relpath(outdir, shell.SITE), len(lost), "、".join(lost[:6]))
+        )
+    with open(os.path.join(outdir, PAGE_DESC), "w", encoding="utf-8") as f:
         f.write(desc_js({k: table[k] for k in keys}))
 
 
-def slot_cell(slot, kind='', cls='item', label='', bare=False, hidden=False,
-              addable='', col='', tier=''):
+def slot_cell(
+    slot,
+    kind="",
+    cls="item",
+    label="",
+    bare=False,
+    hidden=False,
+    addable="",
+    col="",
+    tier="",
+):
     """填表页的空槽：点开就地展开图标网格，选中即落成与详情页一模一样的成品格。
 
     版面与候选范围写在这里一处，form.js 从 data-* 现读、不重抄一份——与 app.js
@@ -1766,16 +2307,25 @@ def slot_cell(slot, kind='', cls='item', label='', bare=False, hidden=False,
     """
     # data-addable 是「这一格由某枚按钮叫出来」的记号，按钮上的 data-add 与它对上。
     # 记号落在最外层：不套 <li> 的（rig 里的格子）就落在按钮自己身上。
-    mark = (' data-addable="%s"' % addable if addable else '') + (' hidden' if hidden else '')
+    mark = (' data-addable="%s"' % addable if addable else "") + (
+        " hidden" if hidden else ""
+    )
     # data-col 是栏序：候选只列这一栏开得出来的那几条。异域职业物品的两条之灵、
     # 异域武器的两栏词条、传说枪的 Perk 1 / Perk 2 / 起源特性都按它收窄。
-    cell = ('<button type="button" class="%s empty" data-slot="%s"%s%s%s%s>'
-            '<span class="nm">%s</span></button>'
-            % (cls, slot, ' data-kind="%s"' % kind if kind else '',
-               ' data-col="%s"' % col if col else '',
-               ' data-tier="%s"' % tier if tier else '',
-               mark if bare else '', label or '+'))
-    return cell if bare else '<li%s>%s</li>' % (mark, cell)
+    cell = (
+        '<button type="button" class="%s empty" data-slot="%s"%s%s%s%s>'
+        '<span class="nm">%s</span></button>'
+        % (
+            cls,
+            slot,
+            ' data-kind="%s"' % kind if kind else "",
+            ' data-col="%s"' % col if col else "",
+            ' data-tier="%s"' % tier if tier else "",
+            mark if bare else "",
+            label or "+",
+        )
+    )
+    return cell if bare else "<li%s>%s</li>" % (mark, cell)
 
 
 def new_blocks():
@@ -1788,80 +2338,131 @@ def new_blocks():
     # 身份那两格就是职业与分支的选择器。**它们不走 fill()**：两格的内容由 state
     # 算出来（元素那一格用的是分支页上「那个职业」的分节图，换职业要跟着换），
     # 所以选中只改 state，画由 mirror() 一处负责。
-    ident = ['<li><button type="button" class="item empty" data-mirror="职业" '
-             'data-slot="职业" data-kind="分节" aria-expanded="false">'
-             '<span class="nm">职业</span></button></li>',
-             '<li><button type="button" class="item empty" data-mirror="元素" '
-             'data-slot="元素" data-kind="分节" aria-expanded="false">'
-             '<span class="nm">元素</span></button></li>']
+    ident = [
+        '<li><button type="button" class="item empty" data-mirror="职业" '
+        'data-slot="职业" data-kind="分节" aria-expanded="false">'
+        '<span class="nm">职业</span></button></li>',
+        '<li><button type="button" class="item empty" data-mirror="元素" '
+        'data-slot="元素" data-kind="分节" aria-expanded="false">'
+        '<span class="nm">元素</span></button></li>',
+    ]
     o += ['<section class="block" id="sec-1">', '<h2 class="sect-label">职业</h2>']
-    o += row(group('职业', ident, key='职业')
-             + group('超能', [slot_cell('超能')])
-             + group('技能', [slot_cell('手雷', label='手雷'),
-                             slot_cell('近战', label='近战'),
-                             slot_cell('职业技能', label='职业技能'),
-                             # 移动默认收起：绝大多数配装不指定跳跃方式，
-                             # 常驻一个空格子只是噪声。按钮叫出来才有。
-                             slot_cell('移动', label='移动', hidden=True,
-                                       addable='移动')],
-                     cols=3,
-                     tool='<button type="button" class="op slot-tool" data-add="移动">'
-                          '＋ 移动</button>'))
+    o += row(
+        group("职业", ident, key="职业")
+        + group("超能", [slot_cell("超能")])
+        + group(
+            "技能",
+            [
+                slot_cell("手雷", label="手雷"),
+                slot_cell("近战", label="近战"),
+                slot_cell("职业技能", label="职业技能"),
+                # 移动默认收起：绝大多数配装不指定跳跃方式，
+                # 常驻一个空格子只是噪声。按钮叫出来才有。
+                slot_cell("移动", label="移动", hidden=True, addable="移动"),
+            ],
+            cols=3,
+            tool='<button type="button" class="op slot-tool" data-add="移动">'
+            "＋ 移动</button>",
+        )
+    )
     # 碎片格数按配装变（棱镜五枚，别的分支可能少一枚或多到六枚），所以出满上限
     # 六格、默认显示五格，多的收起来，由标题右边那个计数器加减。
-    o += row(group('星相', [slot_cell('星相')] * 2)
-             + group('碎片', [slot_cell('碎片', hidden=i >= 5) for i in range(6)],
-                     cols=5,
-                     tool='<span class="slot-count" data-count="碎片">'
-                          '<button type="button" class="op" data-step="-1" aria-label="减少一格">−</button>'
-                          '<b>5</b>'
-                          '<button type="button" class="op" data-step="1" aria-label="增加一格">+</button>'
-                          '</span>'))
-    o += ['</section>', '']
+    o += row(
+        group("星相", [slot_cell("星相")] * 2)
+        + group(
+            "碎片",
+            [slot_cell("碎片", hidden=i >= 5) for i in range(6)],
+            cols=5,
+            tool='<span class="slot-count" data-count="碎片">'
+            '<button type="button" class="op" data-step="-1" aria-label="减少一格">−</button>'
+            "<b>5</b>"
+            '<button type="button" class="op" data-step="1" aria-label="增加一格">+</button>'
+            "</span>",
+        )
+    )
+    o += ["</section>", ""]
 
     o += ['<section class="block" id="sec-2">', '<h2 class="sect-label">武器</h2>']
+
     def gun_rig(name):
         # Perk 那两格只列「武器 PERK」：一把枪的两列可选 Perk 就是这一类。起源特性
         # 是另一条线（一把枪固定带一个，随出处走），混在同一份候选里挑不出来，
         # 所以单给一格、默认收起，按 ＋ 才出来。
-        return rig_of([slot_cell(name, cls='item gun', label=name, bare=True),
-                       slot_cell('Perk', kind='武器 PERK', cls='item perk-cell',
-                                 label='Perk 1', bare=True, col='1'),
-                       slot_cell('Perk', kind='武器 PERK', cls='item perk-cell',
-                                 label='Perk 2', bare=True, col='2'),
-                       slot_cell('Perk', kind='起源特性', cls='item perk-cell',
-                                 label='起源特性', bare=True, hidden=True,
-                                 addable='起源特性', col='3')],
-                      tool='<button type="button" class="op slot-tool" data-add="起源特性"'
-                           ' title="加一个起源特性" aria-label="加一个起源特性">'
-                           '＋</button>')
+        return rig_of(
+            [
+                slot_cell(name, cls="item gun", label=name, bare=True),
+                slot_cell(
+                    "Perk",
+                    kind="武器 PERK",
+                    cls="item perk-cell",
+                    label="Perk 1",
+                    bare=True,
+                    col="1",
+                ),
+                slot_cell(
+                    "Perk",
+                    kind="武器 PERK",
+                    cls="item perk-cell",
+                    label="Perk 2",
+                    bare=True,
+                    col="2",
+                ),
+                slot_cell(
+                    "Perk",
+                    kind="起源特性",
+                    cls="item perk-cell",
+                    label="起源特性",
+                    bare=True,
+                    hidden=True,
+                    addable="起源特性",
+                    col="3",
+                ),
+            ],
+            tool='<button type="button" class="op slot-tool" data-add="起源特性"'
+            ' title="加一个起源特性" aria-label="加一个起源特性">'
+            "＋</button>",
+        )
 
     # 异域那一组：枪在左，它选得出来的词条在右边竖排两行——与异域职业物品的两条
     # 之灵同一种读法。一栏一格，候选按 data-col 收到它自己那一栏；选不出词条的
     # 异域（141 把里 56 把）一格都不出。收放由 form.js 按词表判，不给按钮：
     # 那是游戏规则不是版面偏好。--n / --c 由 form.js 的 sizeExRig() 跟着改。
-    ex = ('<div class="rig ex-rig" style="--n:15;--c:1">'
-          + slot_cell('异域武器', cls='item gun', label='异域武器', bare=True)
-          + '<div class="ex-perks" hidden>'
-          + slot_cell('异域词条', cls='item perk-cell', label='词条', bare=True,
-                      hidden=True, col='1')
-          + slot_cell('异域词条', cls='item perk-cell', label='词条', bare=True,
-                      hidden=True, col='2')
-          + '</div></div>')
-    o += row([ex, gun_rig('传说武器'), gun_rig('传说武器')])
-    o += ['</section>', '']
+    ex = (
+        '<div class="rig ex-rig" style="--n:15;--c:1">'
+        + slot_cell("异域武器", cls="item gun", label="异域武器", bare=True)
+        + '<div class="ex-perks" hidden>'
+        + slot_cell(
+            "异域词条",
+            cls="item perk-cell",
+            label="词条",
+            bare=True,
+            hidden=True,
+            col="1",
+        )
+        + slot_cell(
+            "异域词条",
+            cls="item perk-cell",
+            label="词条",
+            bare=True,
+            hidden=True,
+            col="2",
+        )
+        + "</div></div>"
+    )
+    o += row([ex, gun_rig("传说武器"), gun_rig("传说武器")])
+    o += ["</section>", ""]
 
     # 神器先选件，七个模组按它限定——「电介质」在加密数据盘与废墟石板下各有一条。
     # **选择器落在标题位，与详情页同构。**详情页把神器名写在面板标题上，这里就在
     # 同一个位置选它；单独占一行 lead 会让填表页比详情页多一行，且那一行只有一格
     # 宽，右缘上多出一个断口。
-    pick = slot_cell('神器', kind='__art__', cls='item', label='选择神器', bare=True)
+    pick = slot_cell("神器", kind="__art__", cls="item", label="选择神器", bare=True)
     o += ['<section class="block" id="sec-3">', '<h2 class="sect-label">神器模组</h2>']
     # 神器盘上七个插槽的档位上限：前两个只插得下一级，中间三个到二级，
     # 最后两个到三级。**这是游戏规则，不是版面偏好**，所以写在格子上，
     # 由 form.js 按它收候选，不给按钮。
-    o += row(group('', [slot_cell('神器', tier=str(t)) for t in ART_TIERS], head=pick))
-    o += ['</section>', '']
+    o += row(group("", [slot_cell("神器", tier=str(t)) for t in ART_TIERS], head=pick))
+    o += ["</section>", ""]
 
     o += ['<section class="block" id="sec-4">', '<h2 class="sect-label">护甲</h2>']
     # 六维与详情页同一张卡、同一个形状，一格就是「图 + 名 + 值」。**值那一格是
@@ -1869,32 +2470,53 @@ def new_blocks():
     # 里格子就还是详情页那个尺寸——与这一页别处「点空槽 → 就地展开选择器」同一
     # 套动作。
     stats = ['<div class="slot stats-card" style="--n:3">', '<ul class="stats">']
-    stats += ['<li><button type="button" class="stat" data-stat="%s" data-mode="~" '
-              'aria-expanded="false">%s<span class="nm">%s</span>'
-              '<span class="val">~</span></button></li>' % (k, glyph(k), k)
-              for k in STATS]
-    stats += ['</ul>', '</div>']
+    stats += [
+        '<li><button type="button" class="stat" data-stat="%s" data-mode="~" '
+        'aria-expanded="false">%s<span class="nm">%s</span>'
+        '<span class="val">~</span></button></li>' % (k, glyph(k), k)
+        for k in STATS
+    ]
+    stats += ["</ul>", "</div>"]
     # 异域护甲那一格下面备着两个之灵槽：选中异域职业物品时它们自己冒出来，选别的
     # 异域时收回去。候选按 data-col 收到它自己那一栏的 8 条——一件职业物品两栏各
     # 开一条，从 36 条里随便挑两条在游戏里开不出来。收放由 form.js 按词表判，
     # 不给按钮：那是游戏规则不是版面偏好。
-    armor = ('<li class="pair">'
-             + slot_cell('异域护甲', cls='item gear', label='异域护甲', bare=True)
-             + '<div class="spirits" hidden>'
-             + slot_cell('异域护甲', cls='item gear', label='之灵', bare=True, col='1')
-             + slot_cell('异域护甲', cls='item gear', label='之灵', bare=True, col='2')
-             + '</div></li>')
-    o += row(group('', [armor,
-                        slot_cell('套装', cls='item set', label='套装'),
-                        slot_cell('套装', cls='item set', label='套装（可选）')]) + stats,
-             cls='lead')
-    o += row([x for part in PARTS
-              for x in group(part, [slot_cell('护甲模组', kind=part)] * 3, cols=1)])
-    o += ['</section>', '']
-    o += ['<section class="block" id="sec-5">', '<h2 class="sect-label">注解</h2>',
-          '<textarea data-key="注解" rows="4" '
-          'placeholder="备选装备、打法要点等补充说明" aria-label="注解"></textarea>',
-          '</section>', '']
+    armor = (
+        '<li class="pair">'
+        + slot_cell("异域护甲", cls="item gear", label="异域护甲", bare=True)
+        + '<div class="spirits" hidden>'
+        + slot_cell("异域护甲", cls="item gear", label="之灵", bare=True, col="1")
+        + slot_cell("异域护甲", cls="item gear", label="之灵", bare=True, col="2")
+        + "</div></li>"
+    )
+    o += row(
+        group(
+            "",
+            [
+                armor,
+                slot_cell("套装", cls="item set", label="套装"),
+                slot_cell("套装", cls="item set", label="套装（可选）"),
+            ],
+        )
+        + stats,
+        cls="lead",
+    )
+    o += row(
+        [
+            x
+            for part in PARTS
+            for x in group(part, [slot_cell("护甲模组", kind=part)] * 3, cols=1)
+        ]
+    )
+    o += ["</section>", ""]
+    o += [
+        '<section class="block" id="sec-5">',
+        '<h2 class="sect-label">注解</h2>',
+        '<textarea data-key="注解" rows="4" '
+        'placeholder="备选装备、打法要点等补充说明" aria-label="注解"></textarea>',
+        "</section>",
+        "",
+    ]
     return o
 
 
@@ -1905,80 +2527,94 @@ def set_form_head(name_cn):
     套摆在最前面，页顶那枚图就该是它。多一个选择器就要在六套的并集里挑，而那份
     并集只在切到每一套时才在手边。
     """
-    return ['<header class="build-head" id="set-head">',
-            '<div class="core">',
-            # 核心那一格是**只读的镜子**，不是选择器：整份合集的核心取第一套的
-            # （导入时保留源稿写的那一个）。有它这一列才与详情页同形——那一页
-            # 左列就是 96px 的图加推荐者，少了它两列的高度与宽度全对不上。
-            '<span class="item empty" id="f-set-core" aria-hidden="true">'
-            '<span class="nm">核心</span></span>',
-            '<p class="by-label">推荐者：</p>',
-            '<input class="who-in" data-key="推荐人" placeholder="ID" '
-            'aria-label="推荐者">',
-            '</div>',
-            '<div class="build-id">',
-            # h1 包进 .id-row：详情页的标题就在这一层里，不包的话上下间距差一截。
-            '<div class="id-row"><h1><input data-key="合集名" placeholder="合集名称" '
-            'aria-label="合集名称"></h1></div>',
-            # 铭牌照着下面各套显示「职业 · N 套 · 强度」，与详情页逐段同形。
-            '<p class="cls"><span class="cls-id" data-mirror="合集铭牌">'
-            '<span class="hint">职业与元素在各套内选择</span></span>'
-            '<span class="season">%s · %s</span></p>' % (SEASON.upper(), name_cn),
-            '<p class="desc"><input data-key="描述" '
-            'placeholder="一句话介绍这组配装" aria-label="描述"></p>',
-            # 场景与强度是整份合集的；标签每套一个，写在下面那一套的头上。
-            '<div class="facets">%s%s</div>'
-            % (facet_picks(FACETS[0][0], FACETS[0][1], SCENES,
-                           single=True, co=sorted(CO_SCENES, key=SCENES.index),
-                           review=REVIEW_SCENES),
-               facet_picks(*FACETS[1], single=True)),
-            # 整份合集一条审核意见，所以落在合集头部这一层，不进下面的 .set-body
-            # ——那是「一套配装」那一层，form.js 的 resetAll() 切一套就清一次。
-            '</div>', '</header>', '', VERDICT_BOX, '',
-            '<section class="block" id="sec-0">',
-            '<h2 class="sect-label">合集介绍</h2>',
-            '<textarea id="set-why" data-key="合集介绍" rows="3" '
-            'placeholder="介绍这组配装的用途，以及各套的切换时机" '
-            'aria-label="合集介绍"></textarea>',
-            '</section>', '',
-            '<div class="set-wrap">',
-            '<nav class="set-list">',
-            '<p class="by-label"><b id="set-n">1 套</b></p>',
-            # 目录由 form.js 按已填的那几套现建：套数是可变的，写进 HTML 就得
-            # 出满上限再收起来，而这里没有「上限即版面」那个约束。
-            # **移除一套的叉挂在每一行上**，不做成一枚「删掉当前这一套」的按钮：
-            # 要删的多半不是正在编辑的那一套，先切过去再删是多一步。
-            '<ol id="set-tabs"></ol>',
-            # 加一套是一枚占满目录宽度的加号，接在列表下面——它是列表的延长，
-            # 不是标题旁的控件。
-            '<button type="button" class="set-add" data-set-add '
-            'aria-label="新增一套">＋</button>',
-            '</nav>',
-            '<div class="set-body">',
-            '<header class="one-head">',
-            # 「复制这一套」挂在这一行的右端，与详情页 .one-head 的 .head-acts
-            # 同一个位置：它是对这一套的操作，与这一套的名字同级。
-            # 核心排在名字左边，与左栏目录那一行（图 + 名字 + 标签）同形，也与
-            # 页顶那枚 96px 的图同一个读法。每一套各有自己的核心：它决定目录上
-            # 那枚图，源稿里也是每套一行。
-            '<div class="id-row">'
-            '<button type="button" class="item empty one-core" id="f-core-art" '
-            'data-slot="核心" data-size="32" aria-expanded="false">'
-            '<span class="nm">核心</span></button>'
-            '<h2><input data-key="配装名" '
-            'placeholder="配装名称" aria-label="配装名称"></h2>'
-            '<div class="head-acts">'
-            '<button type="button" data-set-copy>创建副本</button></div></div>',
-            '<p class="cls"><span class="cls-id" data-mirror="铭牌">'
-            '<span class="hint">在下方「职业」区域选择职业与元素</span></span></p>',
-            '<p class="desc"><input data-key="描述" placeholder="这套配装的使用场景" '
-            'aria-label="这套配装的描述"></p>',
-            # 每一套各有自己的核心：它决定左栏目录上那枚 32px 的图，源稿里也是
-            # 每套一行。**格子是 32px 不是 96px**——96 的那一枚是整份合集的，
-            # 在页顶；这里再摆一个同样大的，两枚图会打架。
-            # 标签每套一个（整份合集共用页顶那个场景，所以取值也共用一套）。
-            '<div class="facets">%s</div>' % tag_picks(),
-            '</header>', '']
+    return [
+        '<header class="build-head" id="set-head">',
+        '<div class="core">',
+        # 核心那一格是**只读的镜子**，不是选择器：整份合集的核心取第一套的
+        # （导入时保留源稿写的那一个）。有它这一列才与详情页同形——那一页
+        # 左列就是 96px 的图加推荐者，少了它两列的高度与宽度全对不上。
+        '<span class="item empty" id="f-set-core" aria-hidden="true">'
+        '<span class="nm">核心</span></span>',
+        '<p class="by-label">推荐者：</p>',
+        '<input class="who-in" data-key="推荐人" placeholder="ID" aria-label="推荐者">',
+        "</div>",
+        '<div class="build-id">',
+        # h1 包进 .id-row：详情页的标题就在这一层里，不包的话上下间距差一截。
+        '<div class="id-row"><h1><input data-key="合集名" placeholder="合集名称" '
+        'aria-label="合集名称"></h1></div>',
+        # 铭牌照着下面各套显示「职业 · N 套 · 强度」，与详情页逐段同形。
+        '<p class="cls"><span class="cls-id" data-mirror="合集铭牌">'
+        '<span class="hint">职业与元素在各套内选择</span></span>'
+        '<span class="season">%s · %s</span></p>' % (SEASON.upper(), name_cn),
+        '<p class="desc"><input data-key="描述" '
+        'placeholder="一句话介绍这组配装" aria-label="描述"></p>',
+        # 场景与强度是整份合集的；标签每套一个，写在下面那一套的头上。
+        '<div class="facets">%s%s</div>'
+        % (
+            facet_picks(
+                FACETS[0][0],
+                FACETS[0][1],
+                SCENES,
+                single=True,
+                co=sorted(CO_SCENES, key=SCENES.index),
+                review=REVIEW_SCENES,
+            ),
+            facet_picks(*FACETS[1], single=True),
+        ),
+        # 整份合集一条审核意见，所以落在合集头部这一层，不进下面的 .set-body
+        # ——那是「一套配装」那一层，form.js 的 resetAll() 切一套就清一次。
+        "</div>",
+        "</header>",
+        "",
+        VERDICT_BOX,
+        "",
+        '<section class="block" id="sec-0">',
+        '<h2 class="sect-label">合集介绍</h2>',
+        '<textarea id="set-why" data-key="合集介绍" rows="3" '
+        'placeholder="介绍这组配装的用途，以及各套的切换时机" '
+        'aria-label="合集介绍"></textarea>',
+        "</section>",
+        "",
+        '<div class="set-wrap">',
+        '<nav class="set-list">',
+        '<p class="by-label"><b id="set-n">1 套</b></p>',
+        # 目录由 form.js 按已填的那几套现建：套数是可变的，写进 HTML 就得
+        # 出满上限再收起来，而这里没有「上限即版面」那个约束。
+        # **移除一套的叉挂在每一行上**，不做成一枚「删掉当前这一套」的按钮：
+        # 要删的多半不是正在编辑的那一套，先切过去再删是多一步。
+        '<ol id="set-tabs"></ol>',
+        # 加一套是一枚占满目录宽度的加号，接在列表下面——它是列表的延长，
+        # 不是标题旁的控件。
+        '<button type="button" class="set-add" data-set-add '
+        'aria-label="新增一套">＋</button>',
+        "</nav>",
+        '<div class="set-body">',
+        '<header class="one-head">',
+        # 「复制这一套」挂在这一行的右端，与详情页 .one-head 的 .head-acts
+        # 同一个位置：它是对这一套的操作，与这一套的名字同级。
+        # 核心排在名字左边，与左栏目录那一行（图 + 名字 + 标签）同形，也与
+        # 页顶那枚 96px 的图同一个读法。每一套各有自己的核心：它决定目录上
+        # 那枚图，源稿里也是每套一行。
+        '<div class="id-row">'
+        '<button type="button" class="item empty one-core" id="f-core-art" '
+        'data-slot="核心" data-size="32" aria-expanded="false">'
+        '<span class="nm">核心</span></button>'
+        '<h2><input data-key="配装名" '
+        'placeholder="配装名称" aria-label="配装名称"></h2>'
+        '<div class="head-acts">'
+        '<button type="button" data-set-copy>创建副本</button></div></div>',
+        '<p class="cls"><span class="cls-id" data-mirror="铭牌">'
+        '<span class="hint">在下方「职业」区域选择职业与元素</span></span></p>',
+        '<p class="desc"><input data-key="描述" placeholder="这套配装的使用场景" '
+        'aria-label="这套配装的描述"></p>',
+        # 每一套各有自己的核心：它决定左栏目录上那枚 32px 的图，源稿里也是
+        # 每套一行。**格子是 32px 不是 96px**——96 的那一枚是整份合集的，
+        # 在页顶；这里再摆一个同样大的，两枚图会打架。
+        # 标签每套一个（整份合集共用页顶那个场景，所以取值也共用一套）。
+        '<div class="facets">%s</div>' % tag_picks(),
+        "</header>",
+        "",
+    ]
 
 
 def solo_form_head(name_cn):
@@ -1988,41 +2624,55 @@ def solo_form_head(name_cn):
     描述与两栏标签。可填的那几处换成输入位，其余照详情页的类名写，版式因此由
     同一份规则管，不为填表页另写一套。
     """
-    return ['<header class="build-head">',
-            '<div class="core">',
-            '<button type="button" class="item empty" id="f-core-art" data-slot="核心" '
-            'aria-expanded="false"><span class="nm">核心</span></button>',
-            '<p class="by-label">推荐者：</p>',
-            '<input class="who-in" data-key="推荐人" placeholder="ID" '
-            'aria-label="推荐者">',
-            '</div>',
-            '<div class="build-id">',
-            '<h1><input data-key="配装名" placeholder="配装名称" '
-            'aria-label="配装名称"></h1>',
-            # 铭牌照着下面「职业」那两格显示，本身不可点——身份在那两格上选。
-            '<p class="cls"><span class="cls-id" data-mirror="铭牌">'
-            '<span class="hint">在下方「职业」区域选择职业与元素</span></span>'
-            '<span class="season">%s · %s</span></p>' % (SEASON.upper(), name_cn),
-            '<p class="desc"><input data-key="描述" placeholder="一句话介绍这套配装" '
-            'aria-label="描述"></p>',
-            # 场景排在最前：它决定标签那一栏能选什么（tag_picks 的 data-for），
-            # 也是这套配装的第一层身份。「功能性」不在这一排——那一档由审核员
-            # 指定，它与标签「机制」的边界要看正文才判得出。
-            '<div class="facets">%s%s%s</div>'
-            % (facet_picks(FACETS[0][0], FACETS[0][1], SCENES,
-                           single=True, co=sorted(CO_SCENES, key=SCENES.index),
-                           review=REVIEW_SCENES),
-               facet_picks(*FACETS[1], single=True), tag_picks()),
-            # 审核意见落在页头之外，与详情页同一位置。默认收起，审核台按
-            # starsideForm.review() 立起来——投稿的人因此看不到这一栏。
-            '</div>', '</header>', '', VERDICT_BOX, '']
+    return [
+        '<header class="build-head">',
+        '<div class="core">',
+        '<button type="button" class="item empty" id="f-core-art" data-slot="核心" '
+        'aria-expanded="false"><span class="nm">核心</span></button>',
+        '<p class="by-label">推荐者：</p>',
+        '<input class="who-in" data-key="推荐人" placeholder="ID" aria-label="推荐者">',
+        "</div>",
+        '<div class="build-id">',
+        '<h1><input data-key="配装名" placeholder="配装名称" '
+        'aria-label="配装名称"></h1>',
+        # 铭牌照着下面「职业」那两格显示，本身不可点——身份在那两格上选。
+        '<p class="cls"><span class="cls-id" data-mirror="铭牌">'
+        '<span class="hint">在下方「职业」区域选择职业与元素</span></span>'
+        '<span class="season">%s · %s</span></p>' % (SEASON.upper(), name_cn),
+        '<p class="desc"><input data-key="描述" placeholder="一句话介绍这套配装" '
+        'aria-label="描述"></p>',
+        # 场景排在最前：它决定标签那一栏能选什么（tag_picks 的 data-for），
+        # 也是这套配装的第一层身份。「功能性」不在这一排——那一档由审核员
+        # 指定，它与标签「机制」的边界要看正文才判得出。
+        '<div class="facets">%s%s%s</div>'
+        % (
+            facet_picks(
+                FACETS[0][0],
+                FACETS[0][1],
+                SCENES,
+                single=True,
+                co=sorted(CO_SCENES, key=SCENES.index),
+                review=REVIEW_SCENES,
+            ),
+            facet_picks(*FACETS[1], single=True),
+            tag_picks(),
+        ),
+        # 审核意见落在页头之外，与详情页同一位置。默认收起，审核台按
+        # starsideForm.review() 立起来——投稿的人因此看不到这一栏。
+        "</div>",
+        "</header>",
+        "",
+        VERDICT_BOX,
+        "",
+    ]
 
 
 VERDICT_BOX = (
     '<aside class="verdict" id="f-verdict" hidden>'
     '<p class="by-label">审核意见</p>'
     '<textarea data-key="审核意见" rows="4" placeholder="审核者意见" '
-    'aria-label="审核意见"></textarea></aside>')
+    'aria-label="审核意见"></textarea></aside>'
+)
 
 
 def render_new(stamp, name_cn, sets=False):
@@ -2041,72 +2691,95 @@ def render_new(stamp, name_cn, sets=False):
     """
     up = 3 if sets else 2
     name = SET_FORM_NAME if sets else FORM_NAME
-    desc = ('填写配装合集：逐套选择技能、武器、护甲与神器模组，'
-            '页面直接生成标准格式的合集文本。' if sets else
-            '在线编写配装方案：选定技能、武器、护甲与神器模组，实时生成配装长图与标准文本，支持直接投稿上站。')
+    desc = (
+        "填写配装合集：逐套选择技能、武器、护甲与神器模组，"
+        "页面直接生成标准格式的合集文本。"
+        if sets
+        else "在线编写配装方案：选定技能、武器、护甲与神器模组，实时生成配装长图与标准文本，支持直接投稿上站。"
+    )
     # 外壳两页共用，页头各写各的。**不切片**：按下标取前几项时，将来在
     # shell.nav() 与 <main> 之间插一行就会静默丢掉 <main>，而填表页不跑 check()，
     # 没有闸门接得住。
-    o = [shell.head('%s · Starside' % name, desc, up=up,
-                    sheets=['../' * (up - 1) + 'style.css']),
-         shell.nav(name, up=up, **({'parent': [FORM_NAME],
-                                    'parent_href': '../index.html'} if sets else {})),
-         '<main id="sheet"%s>' % (' data-set' if sets else '')]
+    o = [
+        shell.head(
+            "%s · Starside" % name, desc, up=up, sheets=["../" * (up - 1) + "style.css"]
+        ),
+        shell.nav(
+            name,
+            up=up,
+            **({"parent": [FORM_NAME], "parent_href": "../index.html"} if sets else {}),
+        ),
+        '<main id="sheet"%s>' % (" data-set" if sets else ""),
+    ]
     o += set_form_head(name_cn) if sets else solo_form_head(name_cn)
     o += new_blocks()
     if sets:
         # 只收 .set-body。**「配装文本」那一节与底部那条出口留在 .set-wrap 里**、
         # 占右边那一列：它们的宽度要跟着配装那一列走，左边 208px 是目录的地方。
-        o += ['</div>', '']
+        o += ["</div>", ""]
     o += [
-          # 类名给预览用：按 sec-N 认会在增删分节时静默指错一节，
-          # 与 check() 里改掉的那处同一个理由。
-          '<section class="block src-block" id="sec-6">',
-          '<h2 class="sect-label">配装文本</h2>',
-          '<details id="src"><summary>展开配装文本</summary>',
-          '<textarea id="out" readonly rows="28" spellcheck="false"></textarea>',
-          '</details>',
-          '<details id="imp"><summary>从配装文本导入</summary>',
-          '<p class="note">粘贴一份已有的配装文本。可识别的装备会自动填入，'
-          '无法识别的条目会跳过并在下方列出。导入将覆盖当前已填写的内容。</p>',
-          '<textarea id="in" rows="10" spellcheck="false" '
-          'placeholder="将配装文本粘贴至此" aria-label="待导入的配装文本"></textarea>',
-          '<p id="imp-tip" role="status"></p>',
-          '</details>', '</section>', '',
-          # 这一页的出口横排一条，落在正文末尾。**预览不另建一套 DOM**：它给 #sheet
-          # 加一个类，把空槽、控件与源稿那一节收起来，剩下的就是成品；那时这一条
-          # 也得够得着，所以它不在被收起的那一节里。
-          # 按用途分三组：左边看这一页（预览、详情开关），中间把这一套带走（复制、
-          # 截图），右端两枚是会改掉东西的（导入覆盖整页，投稿发出去）。回执跟着
-          # 它报告的那两枚走——导入自己的回执在下面那个面板里（#imp-tip）。
-          '<div class="src-tools">',
-          '<button id="preview" class="toggle" type="button" aria-pressed="false">预览配装</button>',
-          TIP_SW_CHIP,
-          '<span class="tool-sep" aria-hidden="true"></span>',
-          '<button id="copy" class="op" type="button">复制配装</button>',
-          SHOT_CHIP,
-          '<span id="copy-tip" role="status"></span>',
-          # 导入是一个动作不是两个：这一枚永远「导入」，文本框还空着时它带你去粘贴。
-          '<button id="to-import" class="op" type="button">导入配装</button>',
-          # 投稿直接把配装文本发到后端的待审队列。**接口地址由生成器写在
-          # data-api 上**，form.js 现读——与 app.js 从 .toolbar 的 data-* 读配置
-          # 同一条约定，地址仍只有 shell.API 一处定义。
-          '<button id="send" class="op" type="button" data-api="%s">投稿</button>'
-          % shell.API,
-          '</div>', '']
+        # 类名给预览用：按 sec-N 认会在增删分节时静默指错一节，
+        # 与 check() 里改掉的那处同一个理由。
+        '<section class="block src-block" id="sec-6">',
+        '<h2 class="sect-label">配装文本</h2>',
+        '<details id="src"><summary>展开配装文本</summary>',
+        '<textarea id="out" readonly rows="28" spellcheck="false"></textarea>',
+        "</details>",
+        '<details id="imp"><summary>从配装文本导入</summary>',
+        '<p class="note">粘贴一份已有的配装文本。可识别的装备会自动填入，'
+        "无法识别的条目会跳过并在下方列出。导入将覆盖当前已填写的内容。</p>",
+        '<textarea id="in" rows="10" spellcheck="false" '
+        'placeholder="将配装文本粘贴至此" aria-label="待导入的配装文本"></textarea>',
+        '<p id="imp-tip" role="status"></p>',
+        "</details>",
+        "</section>",
+        "",
+        # 这一页的出口横排一条，落在正文末尾。**预览不另建一套 DOM**：它给 #sheet
+        # 加一个类，把空槽、控件与源稿那一节收起来，剩下的就是成品；那时这一条
+        # 也得够得着，所以它不在被收起的那一节里。
+        # 按用途分三组：左边看这一页（预览、详情开关），中间把这一套带走（复制、
+        # 截图），右端两枚是会改掉东西的（导入覆盖整页，投稿发出去）。回执跟着
+        # 它报告的那两枚走——导入自己的回执在下面那个面板里（#imp-tip）。
+        '<div class="src-tools">',
+        '<button id="preview" class="toggle" type="button" aria-pressed="false">预览配装</button>',
+        TIP_SW_CHIP,
+        '<span class="tool-sep" aria-hidden="true"></span>',
+        '<button id="copy" class="op" type="button">复制配装</button>',
+        SHOT_CHIP,
+        '<span id="copy-tip" role="status"></span>',
+        # 导入是一个动作不是两个：这一枚永远「导入」，文本框还空着时它带你去粘贴。
+        '<button id="to-import" class="op" type="button">导入配装</button>',
+        # 投稿直接把配装文本发到后端的待审队列。**接口地址由生成器写在
+        # data-api 上**，form.js 现读——与 app.js 从 .toolbar 的 data-* 读配置
+        # 同一条约定，地址仍只有 shell.API 一处定义。
+        '<button id="send" class="op" type="button" data-api="%s">投稿</button>'
+        % shell.API,
+        "</div>",
+        "",
+    ]
     if sets:
-        o += ['</div>', '']             # 收 .set-wrap
-    o += ['</main>', '',
-          shell.foot(stamp, '，候选条目与站内资料页共用同一份词表。')]
-    o = [x for x in o if x != '']
+        o += ["</div>", ""]  # 收 .set-wrap
+    o += ["</main>", "", shell.foot(stamp, "，候选条目与站内资料页共用同一份词表。")]
+    o = [x for x in o if x != ""]
     # vocab.js 与 tip.js 在 builds/ 下，form.js 在 builds/new/ 下——
     # 两处深浅差一层，前缀因此各算各的。form.js 读源稿形状走 builds/source.js、
     # 判读着色标记走 admin/dialect.js，两份都排在它前面。
-    back = '../' * (up - 1)
-    out = finish(o, [back + 'vocab.js', back + 'tip.js', back + 'source.js',
-                     '../' * up + 'admin/dialect.js', '../' * (up - 2) + 'form.js'])
-    outdir = os.path.join(shell.SITE, OUT_DIR, 'new', 'set') if sets \
-        else os.path.join(shell.SITE, OUT_DIR, 'new')
+    back = "../" * (up - 1)
+    out = finish(
+        o,
+        [
+            back + "vocab.js",
+            back + "tip.js",
+            back + "source.js",
+            "../" * up + "admin/dialect.js",
+            "../" * (up - 2) + "form.js",
+        ],
+    )
+    outdir = (
+        os.path.join(shell.SITE, OUT_DIR, "new", "set")
+        if sets
+        else os.path.join(shell.SITE, OUT_DIR, "new")
+    )
     os.makedirs(outdir, exist_ok=True)
     shell.emit(outdir, out, name)
 
@@ -2118,72 +2791,82 @@ def check(out, slug):
     另加一条着色闸门，只管人写的那几段散文（描述、注解与审核意见）：槽位那些名字由查表
     着色，不归源稿管；散文的元素机制用 items.MECH 减去 items.LOOSE 检查，
     语义有歧义的词由作者写显式标记。"""
-    prose = (re.findall(r'<p class="desc">(.*?)</p>', out, re.S)
-             # 按分节标题认，不按 sec-N：编号跟着分节增减挪位，
-             # 挪错了这一条静默不查任何东西。
-             + re.findall(r'<h2 class="sect-label">注解</h2>(.*?)</section>',
-                          out, re.S)
-             # 合集介绍与注解同为作者写的散文，一样归源稿管。漏了它，
-             # 合集正文里的术语裸着也过得去——配装源稿不进 G6 正查。
-             + re.findall(r'<h2 class="sect-label">合集介绍</h2>(.*?)</section>',
-                          out, re.S)
-             # 审核意见也是人写的散文，与描述、注解同一条：术语裸着就是漏了。
-             + re.findall(r'<aside class="verdict">(.*?)</aside>', out, re.S))
+    prose = (
+        re.findall(r'<p class="desc">(.*?)</p>', out, re.S)
+        # 按分节标题认，不按 sec-N：编号跟着分节增减挪位，
+        # 挪错了这一条静默不查任何东西。
+        + re.findall(r'<h2 class="sect-label">注解</h2>(.*?)</section>', out, re.S)
+        # 合集介绍与注解同为作者写的散文，一样归源稿管。漏了它，
+        # 合集正文里的术语裸着也过得去——配装源稿不进 G6 正查。
+        + re.findall(r'<h2 class="sect-label">合集介绍</h2>(.*?)</section>', out, re.S)
+        # 审核意见也是人写的散文，与描述、注解同一条：术语裸着就是漏了。
+        + re.findall(r'<aside class="verdict">(.*?)</aside>', out, re.S)
+    )
     naked = items.naked_text(prose)
     # 判据走 items.hits_in，与 --builds 那一趟自动着色同一条：裸子串判断认不得
     # GUARD，「治愈裂痕」里的「治愈」自动着色照 GUARD 跳过、这里照子串报错，
     # 撞上的源稿怎么改都过不去。
     names = items.Names(w for w in items.MECH if w not in items.LOOSE)
-    left = sorted({w for _, _, w in items.hits_in(naked, items.MECH, names,
-                                                  keys=False)})
+    left = sorted(
+        {w for _, _, w in items.hits_in(naked, items.MECH, names, keys=False)}
+    )
     if left:
-        die('%s 的描述或注解里这些术语没着色：%s\n'
-            '  写成 {token|词}，token 见 items.py 的 MECH' % (slug, '、'.join(left)))
-    for want in ('<h1>', 'class="build-head"', 'class="stats"'):
+        die(
+            "%s 的描述或注解里这些术语没着色：%s\n"
+            "  写成 {token|词}，token 见 items.py 的 MECH" % (slug, "、".join(left))
+        )
+    for want in ("<h1>", 'class="build-head"', 'class="stats"'):
         if want not in out:
-            die('%s 的产出里缺 %s' % (slug, want))
-    if '{' in out[out.index('<main'):out.index('</main>')]:
-        die('%s 有没转换的着色标记' % slug)
+            die("%s 的产出里缺 %s" % (slug, want))
+    if "{" in out[out.index("<main") : out.index("</main>")]:
+        die("%s 有没转换的着色标记" % slug)
     # 面板的 --n 同时是格子列数与行内份额，缺了它整行会塌成等宽，眼睛查不出来。
     if out.count('<div class="slot"') != out.count('<div class="slot" style="--n:'):
-        die('%s 有面板没写 --n' % slug)
+        die("%s 有面板没写 --n" % slug)
     # 截图按钮一套配装一枚，且 data-shot 指得着自己那一块。合集里 N 套就该有 N 枚：
     # 少一枚是某一套截不了，而页面照常渲染，眼睛查不出来。
     want = out.count('<section class="set-one') or 1
-    got = out.count('data-shot=')
+    got = out.count("data-shot=")
     if got != want:
-        die('%s 有 %d 套配装却有 %d 枚截图按钮' % (slug, want, got))
+        die("%s 有 %d 套配装却有 %d 枚截图按钮" % (slug, want, got))
     for pick in re.findall(r'data-shot="([^"]+)"', out):
-        if pick == 'main' and '<main' not in out:
-            die('%s 的截图按钮指向 main，页面里却没有' % slug)
-        if pick == '.set-one' and 'class="set-one' not in out:
-            die('%s 的截图按钮指向 .set-one，页面里却没有' % slug)
+        if pick == "main" and "<main" not in out:
+            die("%s 的截图按钮指向 main，页面里却没有" % slug)
+        if pick == ".set-one" and 'class="set-one' not in out:
+            die("%s 的截图按钮指向 .set-one，页面里却没有" % slug)
 
 
 def sync_home(counts):
     """首页那三张配装卡的更新时间与套数随投稿漂，构建时按产出改写。
     时间从各自的产出页脚现读——那正是 check_terms.py 的 G4 拿来比对的值。
     counts 是 {href: (小标题, 数)}，一张卡的改写在 shell.sync_card()。"""
-    path = os.path.join(shell.SITE, 'index.html')
-    with open(path, encoding='utf-8') as f:
+    path = os.path.join(shell.SITE, "index.html")
+    with open(path, encoding="utf-8") as f:
         home = f.read()
-    for href in ('builds/index.html', 'builds/sets/index.html',
-                 'builds/new/index.html', 'builds/new/set/index.html'):
+    for href in (
+        "builds/index.html",
+        "builds/sets/index.html",
+        "builds/new/index.html",
+        "builds/new/set/index.html",
+    ):
         # 变量名不能叫 path：外层那个指着 index.html，收尾要写回它。
         src = os.path.join(shell.SITE, href)
         here = os.path.exists(src)
-        card = re.search(r'<a class="entry" href="%s".*?</a>' % re.escape(href),
-                         home, re.S)
+        card = re.search(
+            r'<a class="entry" href="%s".*?</a>' % re.escape(href), home, re.S
+        )
         # 当前赛季一个合集都没有时那一页不出，首页那张卡也该跟着撤掉。**两样都
         # 没有就是一致的**，跳过；只少一样才是错——页在卡没了，读者进不去；
         # 卡在页没了，首页上多一个点开 404 的入口。
         if not here and not card:
             continue
         if not here:
-            die('首页还挂着 %s 那张卡，可那一页没生成：当前赛季没有合集时它不出，'
-                '卡要一并从 index.html 里撤掉' % href)
+            die(
+                "首页还挂着 %s 那张卡，可那一页没生成：当前赛季没有合集时它不出，"
+                "卡要一并从 index.html 里撤掉" % href
+            )
         home = shell.sync_card(home, href, counts.get(href))
-    with open(path, 'w', encoding='utf-8') as f:
+    with open(path, "w", encoding="utf-8") as f:
         f.write(home)
 
 
@@ -2195,21 +2878,29 @@ def prune_details(expected):
         return
     with os.scandir(root) as seasons:
         for season in seasons:
-            if not re.fullmatch(r's[0-9]+', season.name) or not season.is_dir(follow_symlinks=False):
+            if not re.fullmatch(r"s[0-9]+", season.name) or not season.is_dir(
+                follow_symlinks=False
+            ):
                 continue
             with os.scandir(season.path) as details:
                 for detail in details:
-                    if not re.fullmatch(r'[a-z0-9][a-z0-9-]*', detail.name) or not detail.is_dir(follow_symlinks=False):
+                    if not re.fullmatch(
+                        r"[a-z0-9][a-z0-9-]*", detail.name
+                    ) or not detail.is_dir(follow_symlinks=False):
                         continue
-                    rel = '%s/%s/%s/index.html' % (OUT_DIR, season.name, detail.name)
+                    rel = "%s/%s/%s/index.html" % (OUT_DIR, season.name, detail.name)
                     if rel in expected:
                         continue
                     with os.scandir(detail.path) as files:
                         for page in files:
-                            if page.name in ('index.html', PAGE_DESC) and page.is_file(follow_symlinks=False):
+                            if page.name in ("index.html", PAGE_DESC) and page.is_file(
+                                follow_symlinks=False
+                            ):
                                 os.remove(page.path)
-                                print('清除无源稿配装页：%s/%s/%s/%s'
-                                      % (OUT_DIR, season.name, detail.name, page.name))
+                                print(
+                                    "清除无源稿配装页：%s/%s/%s/%s"
+                                    % (OUT_DIR, season.name, detail.name, page.name)
+                                )
 
 
 def main():
@@ -2219,59 +2910,73 @@ def main():
     if not only:
         shell.hush_emit(True)
     if only:
-        print('配装词表读取已生成的资料页；资料源稿也有修改时先运行 npm run build')
+        print("配装词表读取已生成的资料页；资料源稿也有修改时先运行 npm run build")
     idx = vocab.build()
     global EX_IDX
     EX_IDX = idx
-    vocab.check_landing(idx)         # 链接落地不许滤成空页
+    vocab.check_landing(idx)  # 链接落地不许滤成空页
     descs = desc_table(idx)
     made = []
     for dirname, season, name_cn in season_dirs():
         for f in sorted(os.listdir(os.path.join(SRC_DIR, dirname))):
-            if not f.endswith('.json') or (only and f[:-5] != only):
+            if not f.endswith(".json") or (only and f[:-5] != only):
                 continue
             made.append(build(idx, descs, dirname, season, name_cn, f[:-5]))
     if not made:
-        die('没有配装源稿可生成' + ('：找不到 %s.json' % only if only else ''))
+        die("没有配装源稿可生成" + ("：找不到 %s.json" % only if only else ""))
     if not only:
         render_index(made)
         # 没有合集就不出那一页：出一张空索引不如不出。shell.pages() 用同一条
         # 判据，两处因此不会一个出页一个不收。
-        if any(m['set'] for m in made if m['season'] == SEASON):
+        if any(m["set"] for m in made if m["season"] == SEASON):
             render_index(made, sets=True)
         render_vocab(idx)
         render_desc(descs)
         here = [n for _, sn, n in season_dirs() if sn == SEASON]
         if not here:
-            die('references/builds/ 下没有 %s- 开头的赛季目录，填表页写不出赛季名。'
-                '换季时先建目录再改 shell.SEASON' % SEASON)
-        render_new(max(m['stamp'] for m in made), here[0])
-        render_new(max(m['stamp'] for m in made), here[0], sets=True)
-        live = [m for m in made if m['season'] == SEASON]
-        if not any(m['set'] for m in live):
-            old_sets = os.path.join(shell.SITE, OUT_DIR, 'sets', 'index.html')
-            if os.path.isfile(old_sets) and not os.path.islink(old_sets) and not os.path.islink(os.path.dirname(old_sets)):
+            die(
+                "references/builds/ 下没有 %s- 开头的赛季目录，填表页写不出赛季名。"
+                "换季时先建目录再改 shell.SEASON" % SEASON
+            )
+        render_new(max((m["stamp"] for m in made), key=stamp_key), here[0])
+        render_new(max((m["stamp"] for m in made), key=stamp_key), here[0], sets=True)
+        live = [m for m in made if m["season"] == SEASON]
+        if not any(m["set"] for m in live):
+            old_sets = os.path.join(shell.SITE, OUT_DIR, "sets", "index.html")
+            if (
+                os.path.isfile(old_sets)
+                and not os.path.islink(old_sets)
+                and not os.path.islink(os.path.dirname(old_sets))
+            ):
                 os.remove(old_sets)
-        sync_home({'builds/index.html': ('配装', len([m for m in live if not m['set']])),
-                   'builds/sets/index.html': ('合集', len([m for m in live if m['set']]))})
+        sync_home(
+            {
+                "builds/index.html": ("配装", len([m for m in live if not m["set"]])),
+                "builds/sets/index.html": ("合集", len([m for m in live if m["set"]])),
+            }
+        )
         # 全赛季源稿决定保留集合；当前赛季的 shell.pages() 不能拿来删旧赛季页。
-        prune_details({m['u'] for m in made})
-    live = [m for m in made if m['season'] == SEASON]
-    print('配装 %d 套，当前赛季 %s %d 套（其中 %d 个合集）'
-          % (len(made), SEASON, len(live), len([m for m in live if m['set']])))
+        prune_details({m["u"] for m in made})
+    live = [m for m in made if m["season"] == SEASON]
+    print(
+        "配装 %d 套，当前赛季 %s %d 套（其中 %d 个合集）"
+        % (len(made), SEASON, len(live), len([m for m in live if m["set"]]))
+    )
     # 源稿写的名字与主键那一条对不上：按主键那一条画，这里报出来——站内改了名字，
     # 源稿跟着改一次即可。不中止：主键已经把它落到了正确的一条上。
     drift = sorted(set(vocab.NAME_DRIFT))
     if drift:
-        print('源稿的名字与主键那一条对不上 %d 处（按主键那一条画）：' % len(drift))
+        print("源稿的名字与主键那一条对不上 %d 处（按主键那一条画）：" % len(drift))
         for slot, name, got, key in drift[:12]:
-            print('  %s：%s → 库里叫 %s（%s）' % (slot, name, got, key))
+            print("  %s：%s → 库里叫 %s（%s）" % (slot, name, got, key))
         if len(drift) > 12:
-            print('  …另 %d 处' % (len(drift) - 12))
+            print("  …另 %d 处" % (len(drift) - 12))
     if only:
-        print('仅更新匹配的配装详情；未更新目录、首页、搜索与关联词表。发布前运行 npm run build')
+        print(
+            "仅更新匹配的配装详情；未更新目录、首页、搜索与关联词表。发布前运行 npm run build"
+        )
     shell.hush_emit(False)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
