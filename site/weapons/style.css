@@ -753,31 +753,28 @@
 .wpn-card {
   display: grid;
   grid-template-columns: 64px minmax(0, 1fr);
-  gap: 0 12px;
-  padding: 10px;
+  gap: 0 14px;
+  padding: 14px;
   color: inherit;
   text-decoration: none;
-  background: var(--tint-2);
-  border: 1px solid transparent;
-  transition: border-color .15s ease, background-color .15s ease;
+  background: linear-gradient(180deg, rgba(20, 25, 36, .88) 0%, rgba(13, 16, 24, .92) 100%);
+  border: 1px solid var(--hair);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
+  transition: border-color .15s ease, box-shadow .15s ease;
 }
 
 .wpn-card:hover,
 .wpn-card.is-hover {
-  background: var(--row-hover);
+  background: linear-gradient(180deg, #181e2c 0%, #131824 100%);
   border-color: var(--hair-lit);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08);
 }
 
 .wpn-card:not(.set-card) {
   --el-c: var(--el-1);
   height: 108px;
-  padding: 14px;
-  gap: 0 14px;
   align-items: start;
-  background: linear-gradient(180deg, rgba(20, 25, 36, .88) 0%, rgba(13, 16, 24, .92) 100%);
-  border-color: var(--hair);
-  border-left: 2px solid color-mix(in oklab, var(--el-c) 38%, var(--hair));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
+  border-left: 1px solid color-mix(in oklab, var(--el-c) 46%, var(--hair));
 }
 
 .wpn-card[data-el="1"] { --el-c: var(--el-1); }
@@ -789,22 +786,23 @@
 
 .wpn-card:not(.set-card):hover,
 .wpn-card:not(.set-card).is-hover {
-  background: linear-gradient(180deg, #181e2c 0%, #131824 100%);
-  border-color: var(--hair-lit);
-  border-left-color: color-mix(in oklab, var(--el-c) 76%, var(--bone-hi));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08);
+  border-left-color: color-mix(in oklab, var(--el-c) 82%, var(--bone-hi));
 }
 
-/* 异域卡片：左缘一道异域金亮边，底色带一抹极淡的金黄渐变，不夺目但与普通卡片一眼可分。 */
+/* 异域卡片：左缘一道异域金亮边，底色叠一层从左缘漫出的暖金微光，不夺目但与普通卡片一眼可分。 */
 .wpn-card.is-exo {
-  border-left-color: color-mix(in oklab, var(--exotic) 70%, transparent);
-  background: linear-gradient(90deg, rgb(252 183 10 / .08) 0%, rgba(14, 17, 25, .88) 46px);
+  border-left-color: color-mix(in oklab, var(--exotic) 74%, var(--hair));
+  background:
+    radial-gradient(130px 92px at 0% 50%, rgb(252 183 10 / .1), transparent 100%),
+    linear-gradient(180deg, rgba(20, 25, 36, .88) 0%, rgba(13, 16, 24, .92) 100%);
 }
 
 .wpn-card.is-exo:hover,
 .wpn-card.is-exo.is-hover {
   border-left-color: var(--exotic);
-  background: linear-gradient(90deg, rgb(252 183 10 / .13) 0%, #151b28 58px);
+  background:
+    radial-gradient(144px 96px at 0% 50%, rgb(252 183 10 / .15), transparent 100%),
+    linear-gradient(180deg, #181e2c 0%, #131824 100%);
 }
 
 .wpn-card:not(.set-card) > div {
@@ -875,7 +873,7 @@
 
 .wpn-meta.w > .el { grid-column: 1; }
 .wpn-meta.w > [class^="ammo-"] { grid-column: 2; display: grid; place-items: center; }
-.wpn-meta.w > svg { grid-column: 3; width: 34px; height: 13px; }
+.wpn-meta.w > svg { grid-column: 3; width: 34px; height: 13px; opacity: .82; }
 .wpn-meta.w > .br { grid-column: 4; }
 .wpn-meta.w > .ssn { grid-column: 5; justify-self: end; margin-left: 0; }
 
@@ -941,7 +939,7 @@
 
 .wpn-card .wpn-grades > .au-a::before { background: var(--au-aegis); }
 .wpn-card .wpn-grades > .au-l::before { background: var(--au-lgpig); }
-.wpn-grades .tg { font-weight: 600; }
+.wpn-grades .tg { font-family: var(--font-disp); font-weight: 600; letter-spacing: .02em; }
 .wpn-grades .tg-1 { color: var(--bone-hi); }
 .wpn-grades .tg-2,
 .wpn-grades .tg-3 { color: var(--bone); font-weight: 400; }
@@ -956,13 +954,24 @@
   background: var(--panel-b);
 }
 
+.wpn-card .gun {
+  align-self: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .35);
+}
+
 .gun::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: 2;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08);
+  transition: box-shadow .15s ease;
   pointer-events: none;
+}
+
+.wpn-card:hover .gun::before,
+.wpn-card.is-hover .gun::before {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18);
 }
 
 .gun img {
@@ -987,6 +996,11 @@
 
 .gun.mw::before {
   box-shadow: inset 0 0 0 1px rgba(254, 215, 137, .24);
+}
+
+.wpn-card:hover .gun.mw::before,
+.wpn-card.is-hover .gun.mw::before {
+  box-shadow: inset 0 0 0 1px rgba(254, 215, 137, .42);
 }
 
 .gun.lg { width: 96px; height: 96px; }
@@ -2460,11 +2474,12 @@
    一套两条效果（2 件与 4 件）。卡片上两条各占一行：图、件数、效果名——一套的主角
    是这两条效果，把两枚图摞在名字左边会让人读成「一件装备的两枚图标」。 */
 .set-card { grid-template-columns: minmax(0, 1fr); }
-.set-lines { display: grid; gap: 3px; margin-top: 5px; font-size: 12px;
+.set-lines { display: grid; gap: 4px; margin-top: 6px; font-size: 12px;
              color: var(--bone-dim); }
 .set-lines > span { display: flex; align-items: center; gap: 6px; min-width: 0;
                     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.set-lines img { flex: none; width: 20px; height: 20px; border-radius: 4px; }
+.set-lines img { flex: none; width: 20px; height: 20px; border-radius: 4px;
+                 box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1); }
 .set-lines b { flex: none; font: 600 11px/1.6 var(--font-disp); color: var(--bone-faint); }
 /* 详情页头那两枚图并排：两枚加缝正好 94px，装得进 96px 的图栏，标题不必让位。 */
 .set-fx.lg { display: flex; gap: 6px; align-items: center; }
