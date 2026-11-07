@@ -2,6 +2,7 @@
 paths:
   - "tools/convert-doc.py"
   - "tools/rows.py"
+  - "tools/render.py"
   - "tools/convert-artifact-mods.py"
   - "tools/convert-armor-sets.py"
   - "tools/markup.py"
@@ -15,7 +16,7 @@ paths:
 
 管三个资料生成器与它们吃的源稿：通用资料文档、神器模组页、护甲套装页，
 以及页脚归属、更新日志的写法、从 Google 表格做一页资料那条流水线。
-改 `tools/convert-doc.py`、`rows.py`、`convert-artifact-mods.py`、`convert-armor-sets.py`、
+改 `tools/convert-doc.py`、`rows.py`、`render.py`、`convert-artifact-mods.py`、`convert-armor-sets.py`、
 `markup.py`、`shell.py`，或写 `references/` 下的源稿之前读这一份。源稿分两处：
 主键骨架在 `references/keys/`，散文与表在 `references/docs/`（见 `AGENTS.md`）。
 
@@ -120,21 +121,23 @@ app.js 按表头文本找列、按首格开头的两位时刻找行（首列写�
 
 ### 主键骨架
 
-表格只写主键的源稿，行的内容在 `data/` 的记录上：改这些页的文案改记录，不改源稿。`convert-doc.py` 见到「列：」行即交给 `tools/rows.py` 的 `expand()`，展开成 `| 表头 |` 表，其后照常走 `render_table()` 与 `check()`。
+只写主键的源稿（`references/keys/` 下除 `artifact-mods.md`、`armor-sets.md` 外的 21 页），行的内容在 `data/` 的记录上：改这些页的文案改记录，不改源稿。`convert-doc.py` 见到「列：」行时按 `SLUG in NEW` 分两路：
+- **记录块页（`render.py`，17 页）**：异域两页、六个元素页、职业技能与位移、武器 PERK、购物清单四页、传奇武器三页。`record_region()` 调用 `tools/render.py` 的 `Page.entry()`，直接从 `data/` 的记录产出 `<article class="rec">`（含 `.r-rail` 栏、`.r-body` 说明、`.r-subs` 增强或枪型子项、`.r-judge` 作者评语）并写入页面索引。
+- **宽表页（`rows.py`，4 页）**：`armor-mods`、`weapon-frames`、`raid-farming`、`pve-farming`。交给 `tools/rows.py` 的 `expand()` 展开成 `| 表头 |` 表，其后照常走 `render_table()` 与 `check()`。
 
 表区是「列：A | B | C」那一行加紧接着的连续非空行，遇空行或 `##` 结束。一行写 `主键 [主键…]  行标题`：第一枚是行首，其余是它盖住的 hash，两个空格之后是行标题。`== 组名 ==` 是横幅行。
 
 | 格 | 取自 |
 |---|---|
-| 行标题 | 源稿。行首是套装效果（记录带 `onSets`）时画它所属套装的名字 |
+| 行标题 | 源稿。组合行可由 `rows.title_of()` 补全成员名 |
 | 图标 | 记录的 `icon_local`；带 `icon_from` 时取那一枚的；组合没有自己的图时取第一个成员的 |
 | 正文列 | 「数据源：是」那几页取记录本体的 `i18n.zh-CN`，购物清单与刷取清单取 `authors.<作者>`，归属只在 `rows.BODY`／`rows.AUTHORED` 定义。字段名按 `rows.fields_of()`：「说明」是 `realgame_details`，其余即列名，同一张表里重名的第二列加 `#2` |
 | 同一主键在一页里第 k 次出现 | 依次排「本页标了 `page` 的变体、本体、其余变体」，取第 k 段 |
-| 属性、框架、框架\\射速、赛季、排名、勇士、弹药生成、充能效率、伤害、件数、费用 | 从主键现算，见 `rows.DERIVED`；组合行通常看第一个成员，费用遍历本行全部主键及各模组族成员，去重后升序列出各档（含 0）。作者块或本体写了同名字段时取写的 |
+| 属性、框架、框架\\射速、赛季、勇士、弹药生成、充能效率、伤害、费用 | 从主键现算，见 `rows.DERIVED`；组合行通常看第一个成员，费用遍历本行全部主键及各模组族成员，去重后升序列出各档（含 0）。作者块或本体写了同名字段时取写的 |
 | 条件属性 | 非空 `i18n.zh-CN.属性变化` 替代逐项 `investmentStats` 属性并标出处；费用、碎片槽、基础冷却、回复倍率与超能档位照常显示 |
 | 异域两页的「异域 PERK」 | 固有与特征栏插着的插件名，接 `↑` 与催化剂给的效果名。与武器同名的固有框架不列；没有这两栏的物品列它自己的 `perks` |
 | 异域两页的「说明」 | 完整基础正文、普通宿主说明、本体催化正文、催化宿主说明依次拼接；本体以段首 `↑` 分出催化正文，催化宿主按 `derived.catalyst` 及其挂载效果归类，每块保留记录出处。宿主只收只被这一行够得着、且说明不在别页某一行上的那几枚，判据见 `rows.own_hosts()` |
-| 矩阵表的格子 | `references/pages/<页>.json` 的 `matrix`，按分节名（或「分节 · 横幅名」）与行首主键找 |
+| 棱镜页的共享技能矩阵 | `references/pages/prismatic.json` 的 `matrix`，按分节名与行首主键找，由 `render.matrix()` 渲染为 `.mx` 五列矩阵 |
 
 两种子行紧跟在本行之后画，源稿里不写：技能记录的 `enhanced` 一条一行，第一列是关联星相名，多个 `by` 表示任选其一，实际激活与触发条件写在正文；框架记录的 `weaponTypes` 一条一行，第一列是「框架名（枪型、枪型）」。框架记录根上没有说明时只画子行。
 
@@ -191,7 +194,7 @@ app.js 按表头文本找列、按首格开头的两位时刻找行（首列写�
 
 ### `check()` 的闸门
 
-结构计数：分节 7、模组 147、图标引用 163、图标文件 133、span 开闭相等、残留内联样式 0、未转换的着色标记 0。分节没有模组也报错。
+结构计数：分节 7、模组 147、图标引用 163、图标文件 9、span 开闭相等、残留内联样式 0、未转换的着色标记 0。分节没有模组也报错。
 
 改了分节数、模组数一类的结构，同步改文件头的 `N_*` 常量，不要放宽比对。
 

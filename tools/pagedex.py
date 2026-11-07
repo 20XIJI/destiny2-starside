@@ -29,44 +29,57 @@ import re
 import shell
 from markup import die, text_of
 
-OUT_DIR = os.path.join(shell.ROOT, 'data', 'index')
+OUT_DIR = os.path.join(shell.ROOT, "data", "index")
 
 # keys 是主键数组。
-FIELDS = ('keys', 'anchor', 'kind', 'name', 'icon', 'sub', 'q', 'pos', 'desc', 'of')
+FIELDS = ("keys", "anchor", "kind", "name", "icon", "sub", "q", "pos", "desc", "of")
 
 
 # 元素页 → 着色 token。六个分支页上的碎片、星相、超能、手雷、近战都归本元素。
-ELEM_PAGES = ['elements/%s' % e for e in
-              ('arc', 'solar', 'void', 'stasis', 'strand', 'prismatic')]
+ELEM_PAGES = [
+    "elements/%s" % e for e in ("arc", "solar", "void", "stasis", "strand", "prismatic")
+]
 
-ELEMENTS = {'arc': 'el-arc', 'solar': 'el-solar', 'void': 'el-void',
-            'stasis': 'el-stasis', 'strand': 'el-strand', 'prismatic': 'el-prismatic'}
+ELEMENTS = {
+    "arc": "el-arc",
+    "solar": "el-solar",
+    "void": "el-void",
+    "stasis": "el-stasis",
+    "strand": "el-strand",
+    "prismatic": "el-prismatic",
+}
 
 # 每一页给一个 token；空串表示这一页的名字不着色，身份靠链接与图标表达。
 # 传说武器与护甲模组在站内本来就是不着色的行标题，这里不给它们新造颜色。
-TOKENS = dict({'elements/%s' % e: t for e, t in ELEMENTS.items()},
-              **{'elements/class-abilities': '',
-                 'exotic-weapon': 'exotic', 'exotic-armor': 'exotic',
-                 'artifact-mods': 'art-perk', 'weapon-perks': 'perk',
-                 'armor-mods': '', 'armor-sets': '',
-                 'shopping-primary': '', 'shopping-special': '',
-                 'shopping-heavy': '', 'shopping-other': '',
-                 # 刷取清单那四页：同一批东西的定位与评语，身份与详解页那边一致。
-                 'exotic-weapons': 'exotic', 'exotic-armors': 'exotic',
-                 'farming-sets': '',
-                 'legendary-primary': '', 'legendary-special': '',
-                 'legendary-heavy': ''})
+TOKENS = dict(
+    {"elements/%s" % e: t for e, t in ELEMENTS.items()},
+    **{
+        "elements/class-abilities": "",
+        "exotic-weapon": "exotic",
+        "exotic-armor": "exotic",
+        "artifact-mods": "art-perk",
+        "weapon-perks": "perk",
+        "armor-mods": "",
+        "armor-sets": "",
+        "shopping-primary": "",
+        "shopping-special": "",
+        "shopping-heavy": "",
+        "shopping-other": "",
+        # 刷取清单那四页：同一批东西的定位与评语，身份与详解页那边一致。
+        "exotic-weapons": "exotic",
+        "exotic-armors": "exotic",
+        "farming-sets": "",
+        "legendary-primary": "",
+        "legendary-special": "",
+        "legendary-heavy": "",
+    },
+)
 
-TD = re.compile(r'<td([^>]*)>(.*?)</td>', re.S)
+TD = re.compile(r"<td([^>]*)>(.*?)</td>", re.S)
 CLS = re.compile(r'class="([^"]+)"')
 # 图的 src 相对本页目录：资料页自己的图在 icons/ 下，按主键取的官方图在
 # ../assets/icons/ 下。索引里一律记相对站根的路径，见 site_path()。
 IMG = re.compile(r'<img[^>]*src="([^"]+)"')
-# 异域职业物品那张表一行摆两条词条：行标题一条，中间一格再一条（源稿写
-# `{spirit|噬星者之灵}`，整格只有这一个标记，class 因此落在 <td> 上）。
-# 只认行标题会漏掉一半——36 条里只进来 18 条。
-SPIRIT = re.compile(r'<td class="spirit">(.*?)</td>\s*<td class="ico">'
-                    r'<img[^>]*src="([^"]+)"', re.S)
 
 
 def site_path(page, src):
@@ -85,19 +98,21 @@ BMARK = re.compile(r' data-b="[^"]*"')
 
 def tds(body):
     """一行里 <th> 之后那些格：(class, 内部 HTML)。"""
-    return [(hit.group(1) if (hit := CLS.search(a)) else '', inner)
-            for a, inner in TD.findall(body)]
+    return [
+        (hit.group(1) if (hit := CLS.search(a)) else "", inner)
+        for a, inner in TD.findall(body)
+    ]
 
 
 # 说明旁边那一格：冷却与能耗。配装时要算的正是这两样，各自不过十几个字，一并
 # 收进来排在说明上方。属性变化那一列没有 class（有值时是裸格），由 panel() 切在
 # 说明后面一并收进来；写「—」的占位不收。
 # 星相那一列是碎片槽位图，不收：面板里只放读得出来的字。
-VALUE_CLS = ('cd', 'cost')
+VALUE_CLS = ("cd", "cost")
 
 # 购物清单那四页没有说明列——一行是十七格属性（排名、评级、框架、来源、几列
 # Perk），首个裸格取到的是评级那个孤零零的「A」。这四页不出说明。
-NO_DESC = ('shopping-primary', 'shopping-special', 'shopping-heavy', 'shopping-other')
+NO_DESC = ("shopping-primary", "shopping-special", "shopping-heavy", "shopping-other")
 
 
 def panel(cells):
@@ -107,64 +122,31 @@ def panel(cells):
     多一个来源列，护甲模组有 3 列与 4 列两种——按列号取必然取错；而碎片那一列
     「属性变化」有值时也是裸格，按「最后一个裸格」取会取到它。第一个裸格恒是说明。
     """
-    desc, val = '', []
+    desc, val = "", []
     for i, (cls, inner) in enumerate(cells):
         if not cls and not desc:
             desc = inner
             continue
         if not desc or (cls and cls not in VALUE_CLS):
             continue
-        if text_of(inner, collapse=True) in ('', '—'):
+        if text_of(inner, collapse=True) in ("", "—"):
             continue
         val.append(inner)
-    return desc, ' '.join(val)
-
-
-# 异域那两页的 PERK 格：图标打头，后面用 <br> 隔开这一行那件东西自己的几个词条
-# （「阿格尔的召唤／雷加的叠句／↑意志实体」）。判据是格子的形状不是页名——购物
-# 清单那四页的 .perk 格是一格一个裸名字，没有打头那枚图标。
-PERK_CELL = re.compile(r'^<img[^>]*src="([^"]+)"[^>]*>(.+)$', re.S)
-
-
-def exotic_perks(cells):
-    """这一行 PERK 格里的 [(名字, 图标)]，没有这种格就是空。
-    一格里几个名字共用打头那枚图标——那是这件异域的词条图，本来就只有一枚。"""
-    for cls, inner in cells:
-        if cls != 'perk':
-            continue
-        hit = PERK_CELL.match(inner.strip())
-        if not hit:
-            continue
-        out = []
-        for part in hit.group(2).split('<br>'):
-            shown = text_of(part, collapse=True)
-            if shown:
-                out.append((shown, hit.group(1)))
-        return out
-    return []
-
-
-def split_spirit(cells):
-    """异域职业物品那张表一行摆两条词条，左半属行标题，右半属 <td class="spirit">
-    里那一条。不在这里切开，左边那条会把右边整条说明当成自己的数值格。"""
-    for i, (cls, _) in enumerate(cells):
-        if cls == 'spirit':
-            return cells[:i], cells[i + 1:]
-    return cells, []
+    return desc, " ".join(val)
 
 
 def wrap(desc, val):
     """表格行的说明是一段带 <br> 的行内 HTML，套一层 <p> 才与神器模组、护甲套装
     那两处的多段 <p> 同形——面板一套样式管两种。数值排在说明上方一行。"""
     if not desc and not val:
-        return ''
-    return ('<p class="v">%s</p>' % val if val else '') + '<p>%s</p>' % desc
+        return ""
+    return ('<p class="v">%s</p>' % val if val else "") + "<p>%s</p>" % desc
 
 
 class Index:
     """一页的条目登记处。生成器渲染时 add()，收尾 write()。"""
 
-    def __init__(self, page, token='', searchable=False):
+    def __init__(self, page, token="", searchable=False):
         self.page = page
         self.token = token
         # 这一页有没有页内搜索框。**由生成器按源稿的键明说**：convert-doc 看
@@ -174,26 +156,57 @@ class Index:
         self.searchable = searchable
         self.rows = []
 
-    def add(self, *, keys=(), anchor='', kind='', name='', icon='',
-            sub='', q=None, pos='', desc='', of=''):
+    def add(
+        self,
+        *,
+        keys=(),
+        anchor="",
+        kind="",
+        name="",
+        icon="",
+        sub="",
+        q=None,
+        pos="",
+        desc="",
+        of="",
+    ):
         # q 缺省跟着 name 走；显式给空串表示这一条不参与页内过滤（分节标题那一类）。
-        self.rows.append({'keys': list(keys), 'anchor': anchor, 'kind': kind,
-                          'name': name, 'icon': icon, 'sub': sub,
-                          'q': name if q is None else q, 'pos': pos, 'desc': desc,
-                          'of': of})
+        self.rows.append(
+            {
+                "keys": list(keys),
+                "anchor": anchor,
+                "kind": kind,
+                "name": name,
+                "icon": icon,
+                "sub": sub,
+                "q": name if q is None else q,
+                "pos": pos,
+                "desc": desc,
+                "of": of,
+            }
+        )
 
     def write(self):
         os.makedirs(OUT_DIR, exist_ok=True)
-        path = os.path.join(OUT_DIR, self.page.replace('/', '__') + '.json')
-        body = ',\n'.join(
-            '  ' + json.dumps({k: r[k] for k in FIELDS if r[k]},
-                              ensure_ascii=False, sort_keys=True)
-            for r in self.rows)
-        with open(path, 'w', encoding='utf-8') as f:
-            f.write('{\n "page": %s,\n "token": %s,\n "searchable": %s,'
-                    '\n "entries": [\n%s\n ]\n}\n'
-                    % (json.dumps(self.page), json.dumps(self.token),
-                       json.dumps(bool(self.searchable)), body))
+        path = os.path.join(OUT_DIR, self.page.replace("/", "__") + ".json")
+        body = ",\n".join(
+            "  "
+            + json.dumps(
+                {k: r[k] for k in FIELDS if r[k]}, ensure_ascii=False, sort_keys=True
+            )
+            for r in self.rows
+        )
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(
+                '{\n "page": %s,\n "token": %s,\n "searchable": %s,'
+                '\n "entries": [\n%s\n ]\n}\n'
+                % (
+                    json.dumps(self.page),
+                    json.dumps(self.token),
+                    json.dumps(bool(self.searchable)),
+                    body,
+                )
+            )
         return path, len(self.rows)
 
 
@@ -202,17 +215,17 @@ def must_read(page):
     静默回空会让下游拿着半份词表继续跑。"""
     got = read(page)
     if got is None:
-        die('%s 还没有索引：先跑对应的资料生成器' % page)
+        die("%s 还没有索引：先跑对应的资料生成器" % page)
     return got
 
 
 def read(page):
-    path = os.path.join(OUT_DIR, page.replace('/', '__') + '.json')
+    path = os.path.join(OUT_DIR, page.replace("/", "__") + ".json")
     if not os.path.exists(path):
         return None
-    with open(path, encoding='utf-8') as f:
+    with open(path, encoding="utf-8") as f:
         got = json.load(f)
-    for row in got['entries']:
+    for row in got["entries"]:
         for key in FIELDS:
-            row.setdefault(key, '')
+            row.setdefault(key, "")
     return got

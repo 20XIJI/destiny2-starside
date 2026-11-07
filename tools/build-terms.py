@@ -239,6 +239,81 @@ def check(out):
             sys.exit("terms.js 里没有 %s，调色板缺了一档" % must)
 
 
+def xur_recs():
+    """data/inventory-items.json → tools/xur-recs.json（老九云函数的词条推荐与评级表）。"""
+    import resolve
+
+    mark_cols = {
+        "Aegis": ("barrel", "magazine", "perk1", "perk2", "origin"),
+        "LGpig": ("perk1", "perk2"),
+    }
+    mark_bit = {"Aegis": 1, "LGpig": 2}
+    f = resolve.shared()[0]
+    out = {}
+    for h, r in f.items.items():
+        zh = (r.get("i18n") or {}).get(resolve.ZH) or {}
+        authors = zh.get("site_authors") or {}
+        if not authors:
+            continue
+        if r.get("itemType") == 3:
+            bits = {}
+            for who, keys in mark_cols.items():
+                block = authors.get(who) or {}
+                for k in keys:
+                    raw = markup.text_of(
+                        markup.inline(block.get(k) or ""), collapse=True
+                    )
+                    for name in (
+                        x.strip() for x in raw.split(markup.CELL_BREAK) if x.strip()
+                    ):
+                        got = resolve.perk_key(f, [h], name)
+                        if not got:
+                            continue
+                        for p in got:
+                            pr = f.at(str(p)) or {}
+                            base_h = pr.get("sameAs") or p
+                            key = f.name(base_h).replace(" ", "")
+                            if key:
+                                bits[key] = bits.get(key, 0) | mark_bit[who]
+            mw_raw = markup.text_of(
+                markup.inline((authors.get("Aegis") or {}).get("masterwork") or ""),
+                collapse=True,
+            )
+            mw = [x.strip() for x in mw_raw.split(markup.CELL_BREAK) if x.strip()]
+            a_tier = markup.text_of(
+                markup.inline((authors.get("Aegis") or {}).get("aegis_tier") or ""),
+                collapse=True,
+            ).strip()
+            lg_raw = markup.text_of(
+                markup.inline((authors.get("LGpig") or {}).get("lgpig_tier") or ""),
+                collapse=True,
+            )
+            lg_tier = (
+                " ".join(
+                    x.strip() for x in lg_raw.split(markup.CELL_BREAK) if x.strip()
+                ).replace("：", "")
+                if lg_raw
+                else ""
+            )
+            if bits or mw or a_tier or lg_tier:
+                out[h] = [bits, mw, [a_tier, lg_tier]]
+        elif r.get("itemType") == 2:
+            lg_raw = markup.text_of(
+                markup.inline((authors.get("LGpig") or {}).get("role") or ""),
+                collapse=True,
+            )
+            role = (
+                " ".join(
+                    x.strip() for x in lg_raw.split(markup.CELL_BREAK) if x.strip()
+                )
+                if lg_raw
+                else ""
+            )
+            if role:
+                out[h] = [{}, [], ["", role]]
+    return j(out)
+
+
 def main():
     argparse.ArgumentParser(
         description=__doc__,
@@ -251,6 +326,9 @@ def main():
     with open(OUT, "w", encoding="utf-8") as f:
         f.write(out)
     print("admin/terms.js  %.1f KB" % (len(out.encode()) / 1024))
+    recs_path = os.path.join(shell.ROOT, "tools", "xur-recs.json")
+    with open(recs_path, "w", encoding="utf-8") as f:
+        f.write(xur_recs())
     for src, dst in COPIES:
         with open(src, encoding="utf-8") as f:
             text = f.read()

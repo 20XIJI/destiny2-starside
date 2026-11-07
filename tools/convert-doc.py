@@ -21,44 +21,94 @@ from urllib.parse import quote
 import editmap
 import markup
 import pagedex
-import render as layout   # 本文件自己有个 render()，别名避开
+import render as layout  # 本文件自己有个 render()，别名避开
 import resolve
 import rows
 import shell
-from markup import (IMG, LINK, REC_ROW, Icons, bmark, die, inline, meta_line, meta_of,
-                    no_nested_span, paragraphs, plain, source_context, src_hash, text_of,
-                    typeset, whole_marker)
+from markup import (
+    IMG,
+    LINK,
+    REC_ROW,
+    Icons,
+    bmark,
+    die,
+    inline,
+    meta_line,
+    meta_of,
+    no_nested_span,
+    paragraphs,
+    plain,
+    source_context,
+    src_hash,
+    text_of,
+    typeset,
+    whole_marker,
+)
 
 
 # 按记录的种类排版的那几页：源稿只写主键，格子与列都由记录决定（见 render.py）。
 # 其余页面走下面那条表格渲染链，一个字不动。
-NEW = frozenset({
-    'weapon-perks', 'farming-sets',
-    'shopping-primary', 'shopping-special', 'shopping-heavy', 'shopping-other',
-    'exotic-armor', 'exotic-armors', 'exotic-weapon', 'exotic-weapons',
-    'arc', 'solar', 'void', 'stasis', 'strand', 'prismatic', 'class-abilities',
-})
-COLS = re.compile(r'^列：')
-CTX = None          # render.Page，build() 里装上
-SLUG = ''
+NEW = frozenset(
+    {
+        "weapon-perks",
+        "farming-sets",
+        "shopping-primary",
+        "shopping-special",
+        "shopping-heavy",
+        "shopping-other",
+        "exotic-armor",
+        "exotic-armors",
+        "exotic-weapon",
+        "exotic-weapons",
+        "arc",
+        "solar",
+        "void",
+        "stasis",
+        "strand",
+        "prismatic",
+        "class-abilities",
+    }
+)
+COLS = re.compile(r"^列：")
+CTX = None  # render.Page，build() 里装上
+SLUG = ""
 
 # 头部的「键：值」行。键名固定，正文行不会被误认。
-META_KEYS = ('描述', '更新', '页脚', '待测标记', '鸣谢', '数据源', '导航', '路径', '上级',
-             '列组', '互斥列组', '默认列组', '首屏图标', '首屏记录', '此刻', '跳转分行',
-             '图表', '标注', '默认曲线', '说明排印')
+META_KEYS = (
+    "描述",
+    "更新",
+    "页脚",
+    "待测标记",
+    "鸣谢",
+    "数据源",
+    "导航",
+    "路径",
+    "上级",
+    "列组",
+    "互斥列组",
+    "默认列组",
+    "首屏图标",
+    "首屏记录",
+    "此刻",
+    "跳转分行",
+    "图表",
+    "标注",
+    "默认曲线",
+    "说明排印",
+)
 META_LINE = meta_line(META_KEYS)
 
 # 分节级声明：「色阶：列名 阈值 …」。同样按整行剥离，不进正文。
-SCALE_LINE = re.compile(r'^色阶：(.*)$', re.M)
-CARD_LINE = re.compile(r'^卡片：(.*)$', re.M)
+SCALE_LINE = re.compile(r"^色阶：(.*)$", re.M)
+CARD_LINE = re.compile(r"^卡片：(.*)$", re.M)
 # 「攻略：标题 | 图 | 链接 | 注解」是站外攻略的一张卡，一行一张。见 guides_of()。
-GUIDE_LINE = re.compile(r'^攻略：(.*)$', re.M)
+GUIDE_LINE = re.compile(r"^攻略：(.*)$", re.M)
 # 「轮换：YYYY.M.D」是分节级声明：这一节的表是一条按周走的轮换轴，起始日写在这里。
 # 与「色阶：」同一种做法——按整行剥离，落成表上的 data-rota，由 assets/rota.js 读。
-ROTA_LINE = re.compile(r'^轮换：(.*)$', re.M)
+ROTA_LINE = re.compile(r"^轮换：(.*)$", re.M)
 # 「周期：YYYY.M.D H:MM 周|日」是表格级声明：紧跟其后的表按固定周数或天数循环，
 # 落成表上的 data-cycle，由 assets/rota.js 按本机时钟高亮当前行。
-CYCLE_LINE = re.compile(r'^周期：(.*)$', re.M)
+CYCLE_LINE = re.compile(r"^周期：(.*)$", re.M)
 
 # 行标题 → 主键的戳号器，按页装配；没有范围定义的页是 None。
 STAMP = None
@@ -69,24 +119,24 @@ ROW_PERKS: dict[int, dict[str, str]] = {}
 # 同一批行里每一格的出处：站内写的那几格是 (主键, 字段路径, 标签)，别的格是 None。
 ROW_SPOTS: dict[int, list] = {}
 # 本页的出处表（editmap.Origins），由 build() 装上，写页面之后落成 edit.json。
-ORIGINS: 'editmap.Origins | None' = None
+ORIGINS: "editmap.Origins | None" = None
 # 异域那两页 PERK 列里那些名字 → 主键。与 STAMP 不同，它按这一行那件东西自己的
 # socket 池查，所以要连着行标题的主键一起给，全站共用一个。
 PERK = None
 # 本页的索引与当前分节（锚点, 标签）。与 ICONS 同一种写法：渲染要用、又隔着两层
 # 函数，所以由 build() 与 render() 逐层装上，不改中间那两个签名。
 DEX = None
-PAGE = ''
-SECTION = ('', '')
-ICONS: 'Icons | None' = None    # 当前页面的图标登记处，由 build() 装上
-TYPESET = False                 # 「说明排印：是」：每行末格走 markup.typeset()，由 build() 装上
+PAGE = ""
+SECTION = ("", "")
+ICONS: "Icons | None" = None  # 当前页面的图标登记处，由 build() 装上
+TYPESET = False  # 「说明排印：是」：每行末格走 markup.typeset()，由 build() 装上
 
 
-CELL_BREAK = '\\\\'     # 表格单元格里的换行标记，见 render_table()
-BR = re.compile(r'<br\s*/?>')   # 渲染后那一格里的换行，切组合行标题用
+CELL_BREAK = "\\\\"  # 表格单元格里的换行标记，见 render_table()
+BR = re.compile(r"<br\s*/?>")  # 渲染后那一格里的换行，切组合行标题用
 
 
-ROW_LINK = re.compile(r'\[([^\]]+)\]\((?!http)([^)#?]+/index\.html)\)')
+ROW_LINK = re.compile(r"\[([^\]]+)\]\((?!http)([^)#?]+/index\.html)\)")
 
 
 def anchors_of(path):
@@ -98,28 +148,28 @@ def anchors_of(path):
     if path not in _ANCHORS:
         table = {}
         if path and os.path.exists(path):
-            with open(path, encoding='utf-8') as f:
+            with open(path, encoding="utf-8") as f:
                 doc = f.read()
             n, skeleton = 0, False
-            for line in doc.split('\n'):
+            for line in doc.split("\n"):
                 first = None
-                if line.startswith('## '):
+                if line.startswith("## "):
                     n += 1
                     skeleton = False
-                elif line.startswith('列：'):
+                elif line.startswith("列："):
                     skeleton = True
                 elif not line.strip():
                     skeleton = False
-                elif skeleton and n and not line.strip().startswith('=='):
-                    first = line.strip().partition('  ')[2]
-                elif line.startswith('|') and n:
+                elif skeleton and n and not line.strip().startswith("=="):
+                    first = line.strip().partition("  ")[2]
+                elif line.startswith("|") and n:
                     cells = split_cells(line)
                     if cells and not is_rule(cells) and lane_of(cells) is None:
                         first = cells[0]
                 if first:
                     name = text_of(markup.uncolor(first), collapse=True)
                     if name and name not in table:
-                        table[name] = 'sec-%d' % n
+                        table[name] = "sec-%d" % n
         _ANCHORS[path] = table
     return _ANCHORS[path]
 
@@ -141,8 +191,11 @@ def land(md, slug):
         target = os.path.normpath(os.path.join(here, os.path.dirname(url)))
         table = anchors_of(shell.source_path(os.path.basename(target)))
         hold = table.get(text.strip())
-        return ('[%s](%s?q=%s#%s)' % (text, url, quote(text.strip()), hold)
-                if hold else m.group(0))
+        return (
+            "[%s](%s?q=%s#%s)" % (text, url, quote(text.strip()), hold)
+            if hold
+            else m.group(0)
+        )
 
     return ROW_LINK.sub(fix, md)
 
@@ -153,7 +206,7 @@ def icon_sub(md):
     return IMG.sub(lambda m: icons.html(m.group(1)), md) if icons else md
 
 
-def wrap(tag, md, attrs=''):
+def wrap(tag, md, attrs=""):
     """一个块的内容整体只有一个标记时，class 落在块上，不套一层 span。
 
     <th class="t-red">红血</th> 比 <th><span class="t-red">红血</span></th> 干净，
@@ -162,8 +215,14 @@ def wrap(tag, md, attrs=''):
     md = icon_sub(md.strip())
     hit = whole_marker(md)
     if hit:
-        return '<%s%s class="%s">%s</%s>' % (tag, attrs, hit[0], inline(hit[1], rich=True), tag)
-    return '<%s%s>%s</%s>' % (tag, attrs, inline(md, rich=True), tag)
+        return '<%s%s class="%s">%s</%s>' % (
+            tag,
+            attrs,
+            hit[0],
+            inline(hit[1], rich=True),
+            tag,
+        )
+    return "<%s%s>%s</%s>" % (tag, attrs, inline(md, rich=True), tag)
 
 
 # ── 解析 ────────────────────────────────────────────────────────────────
@@ -173,7 +232,7 @@ def broke(cell):
     一行源稿就是一行表格，所以格内换行只能靠标记。选 \\ 是因为中文正文、数值与
     链接里都不会出现它——用 // 会把链接里的 https:// 一并切开。
     """
-    return cell.replace(CELL_BREAK, '<br>')
+    return cell.replace(CELL_BREAK, "<br>")
 
 
 def split_cells(row):
@@ -184,10 +243,10 @@ def split_cells(row):
 
 def is_rule(cells):
     """表头下的 |---|---| 分隔行，以及行组之间的 --- 分隔行。"""
-    return all(re.fullmatch(r':?-{3,}:?', c or '') for c in cells) and any(cells)
+    return all(re.fullmatch(r":?-{3,}:?", c or "") for c in cells) and any(cells)
 
 
-LANE = re.compile(r'^==\s*(.+?)\s*==$')
+LANE = re.compile(r"^==\s*(.+?)\s*==$")
 
 
 def lane_of(cells):
@@ -213,15 +272,15 @@ def colkey(name):
     表头里的图标同理——战斗人员倍率页每个列名上面顶着一枚档位图标，那是这一列的
     标识，不是它的名字。
     """
-    return ''.join(IMG.sub('', name).replace(CELL_BREAK, '').split())
+    return "".join(IMG.sub("", name).replace(CELL_BREAK, "").split())
 
 
-NUM = re.compile(r'\d+(?:\.\d+)?')
+NUM = re.compile(r"\d+(?:\.\d+)?")
 
 
 def num(t):
     """整数写成 int，小数写成 float。生命值是整数、伤害倍率是小数，两种都要分档。"""
-    return float(t) if '.' in t else int(t)
+    return float(t) if "." in t else int(t)
 
 
 def scale_of(spec):
@@ -237,12 +296,12 @@ def scale_of(spec):
     cut = len(parts)
     while cut and NUM.fullmatch(parts[cut - 1]):
         cut -= 1
-    col, nums = ' '.join(parts[:cut]), parts[cut:]
+    col, nums = " ".join(parts[:cut]), parts[cut:]
     if not col or len(nums) < 2:
-        die('「色阶：」要写成「列名 阈值 阈值 …」，至少两个阈值：%r' % spec)
+        die("「色阶：」要写成「列名 阈值 阈值 …」，至少两个阈值：%r" % spec)
     vals = [num(n) for n in nums]
     if vals != sorted(vals) or len(set(vals)) != len(vals):
-        die('「色阶：」的阈值要严格升序：%s' % vals)
+        die("「色阶：」的阈值要严格升序：%s" % vals)
     return col, vals
 
 
@@ -253,14 +312,14 @@ def marks_of(md):
     而不是 app.js 里：标哪几个点是内容判断（哪些光等差值得记住），与阈值同理。
     """
     out = []
-    for spec in re.findall(r'^标注：(.*)$', md, re.M):
+    for spec in re.findall(r"^标注：(.*)$", md, re.M):
         parts = spec.split()
         cut = len(parts)
-        while cut and re.fullmatch(r'-?\d+', parts[cut - 1]):
+        while cut and re.fullmatch(r"-?\d+", parts[cut - 1]):
             cut -= 1
-        col, nums = ' '.join(parts[:cut]), parts[cut:]
+        col, nums = " ".join(parts[:cut]), parts[cut:]
         if not col or not nums:
-            die('「标注：」要写成「列名 值 值 …」：%r' % spec)
+            die("「标注：」要写成「列名 值 值 …」：%r" % spec)
         # 同一个值写两遍不报错，去重即可——列表是手写的，重复只是手滑
         seen = []
         for n in (int(v) for v in nums):
@@ -279,17 +338,17 @@ def columns_of(md):
     没有声明就返回空，其余资料页的产出一个字不变。
     """
     groups, order = {}, []
-    for spec in re.findall(r'^列组：(.*)$', md, re.M):
-        name, sep, cols = (s.strip() for s in spec.partition('='))
+    for spec in re.findall(r"^列组：(.*)$", md, re.M):
+        name, sep, cols = (s.strip() for s in spec.partition("="))
         if not sep or not name or not cols:
-            die('「列组：」要写成「组名 = 列名、列名 …」：%r' % spec)
+            die("「列组：」要写成「组名 = 列名、列名 …」：%r" % spec)
         if name in order:
-            die('「列组：」重复声明了 %r' % name)
+            die("「列组：」重复声明了 %r" % name)
         order.append(name)
-        for col in cols.split('、'):
+        for col in cols.split("、"):
             col = colkey(col)
             if col in groups:
-                die('列 %r 同时属于 %r 与 %r' % (col, groups[col], name))
+                die("列 %r 同时属于 %r 与 %r" % (col, groups[col], name))
             groups[col] = name
     return groups, order
 
@@ -311,12 +370,12 @@ def grouped(n):
         parts.insert(0, t[-3:])
         t = t[:-3]
     parts.insert(0, t)
-    return ''.join('<span class="g">%s</span>' % p for p in parts)
+    return "".join('<span class="g">%s</span>' % p for p in parts)
 
 
 def tier_of(text, bounds):
     """数值落在第几档，1 起。不是纯数值就返回 None，不硬套。"""
-    plain = re.sub(r'<[^>]+>', '', text).strip().replace(',', '')
+    plain = re.sub(r"<[^>]+>", "", text).strip().replace(",", "")
     if not NUM.fullmatch(plain):
         return None
     v = num(plain)
@@ -327,8 +386,16 @@ def tier_of(text, bounds):
     return tier
 
 
-def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=None,
-                 base=0, cycle=None):
+def render_table(
+    lines,
+    scales=None,
+    groups=None,
+    marks=None,
+    curves=None,
+    rota=None,
+    base=0,
+    cycle=None,
+):
     """markdown 表格 → <table class="gen">。
 
     第一行是表头，第二行是 |---| 分隔。正文里再出现一行 --- 就另起一个 <tbody>，
@@ -360,22 +427,31 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=
     """
     head = split_cells(lines[0])
     if len(lines) < 2 or not is_rule(split_cells(lines[1])):
-        die(('第 %d 行：' % (base + 2) if base > 0 else '')
-            + '表格第二行必须是 |---|---| 分隔行：%s' % lines[0][:60])
+        die(
+            ("第 %d 行：" % (base + 2) if base > 0 else "")
+            + "表格第二行必须是 |---|---| 分隔行：%s" % lines[0][:60]
+        )
 
     col_at = {colkey(c): i for i, c in enumerate(head)}
-    head_context = '表头第 %d 行：' % (base + 1) if base > 0 else ''
+    head_context = "表头第 %d 行：" % (base + 1) if base > 0 else ""
     if groups:
         missing = [c for c in head if colkey(c) not in groups]
         if missing:
-            die(head_context + '这些列没写进任何「列组：」，工具条会漏掉它们：%s' % '｜'.join(missing))
+            die(
+                head_context
+                + "这些列没写进任何「列组：」，工具条会漏掉它们：%s"
+                % "｜".join(missing)
+            )
 
     tiers = {}
     for col, bounds in (scales or {}).items():
         if colkey(col) not in col_at:
-            die(head_context + '「色阶：」指的列 %r 不在表头里：%s' % (col, '｜'.join(head)))
+            die(
+                head_context
+                + "「色阶：」指的列 %r 不在表头里：%s" % (col, "｜".join(head))
+            )
         if col_at[colkey(col)] == 0:
-            die(head_context + '「色阶：」不能指首列，那一列是行标题不是数值')
+            die(head_context + "「色阶：」不能指首列，那一列是行标题不是数值")
         tiers[col_at[colkey(col)]] = bounds
 
     # 先摊平成行与行组分界，再算合并跨度：跨度要看后面几行，边扫边输出算不出来。
@@ -391,44 +467,48 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=
             rows.append(lane)
             continue
         if len(cells) != len(head):
-            die(('第 %d 行：表格有' % (base + offset + 1) if base > 0 else '表格某行有')
-                + ' %d 格，表头是 %d 格：%s' % (len(cells), len(head), line[:60]))
+            die(
+                ("第 %d 行：表格有" % (base + offset + 1) if base > 0 else "表格某行有")
+                + " %d 格，表头是 %d 格：%s" % (len(cells), len(head), line[:60])
+            )
         rows.append(cells)
 
-    span = [1] * len(rows)          # 0 表示这一行的首格并入了上一个行标题
+    span = [1] * len(rows)  # 0 表示这一行的首格并入了上一个行标题
     owner = None
     for i, cells in enumerate(rows):
-        if not isinstance(cells, list):     # 行组分界或横幅行，合并不跨组
+        if not isinstance(cells, list):  # 行组分界或横幅行，合并不跨组
             owner = None
             continue
         if cells[0]:
             owner = i
             continue
         if owner is None:
-            die('表格某个行组的第一行首格是空的，没有可合并的行标题：%s'
-                % '｜'.join(cells)[:60])
+            die(
+                "表格某个行组的第一行首格是空的，没有可合并的行标题：%s"
+                % "｜".join(cells)[:60]
+            )
         span[owner] += 1
         span[i] = 0
 
-    attr = ''
+    attr = ""
     if marks:
         keys = {c[0] for c in rows if isinstance(c, list)}
         spec = []
         for col, vals in marks:
             if colkey(col) not in col_at:
-                die('「标注：」指的列 %r 不在表头里：%s' % (col, '｜'.join(head)))
+                die("「标注：」指的列 %r 不在表头里：%s" % (col, "｜".join(head)))
             miss = [v for v in vals if str(v) not in keys]
             if miss:
-                die('「标注：」指的值不在首列里：%s' % '、'.join(str(v) for v in miss))
-            spec.append('%s %s' % (col, ' '.join(str(v) for v in vals)))
-        attr += ' data-marks="%s"' % ';'.join(spec)
+                die("「标注：」指的值不在首列里：%s" % "、".join(str(v) for v in miss))
+            spec.append("%s %s" % (col, " ".join(str(v) for v in vals)))
+        attr += ' data-marks="%s"' % ";".join(spec)
     if curves:
         for col in curves:
             if colkey(col) not in col_at:
-                die('「默认曲线：」指的列 %r 不在表头里：%s' % (col, '｜'.join(head)))
+                die("「默认曲线：」指的列 %r 不在表头里：%s" % (col, "｜".join(head)))
             if col_at[colkey(col)] == 0:
-                die('「默认曲线：」不能指首列，那一列是横坐标不是曲线')
-        attr += ' data-lines="%s"' % '、'.join(curves)
+                die("「默认曲线：」不能指首列，那一列是横坐标不是曲线")
+        attr += ' data-lines="%s"' % "、".join(curves)
     if rota:
         # 轮换轴的起始日：app.js 据此算「本周是第几轮」。表本身仍是页面本体，
         # 无 JS 时轮换顺序完整可读，与图表页同一条约定。
@@ -438,46 +518,58 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=
 
     # 表头行也戳：它同样是源稿的一行（改列名走这里），而且它一戳，每张表的第一个
     # <tr> 必然带号，「没有 data-b 就是上一行 +1」那条不会跨表接到上一张去。
-    o = ['<table class="gen"%s>' % attr, '<thead>', '<tr%s>' % bmark(base)]
-    o += [wrap('th', broke(c),
-               ' scope="col"' + (' data-g="%s"' % groups[colkey(c)] if groups else ''))
-          for c in head]
-    o += ['</tr>', '</thead>', '<tbody>']
+    o = ['<table class="gen"%s>' % attr, "<thead>", "<tr%s>" % bmark(base)]
+    o += [
+        wrap(
+            "th",
+            broke(c),
+            ' scope="col"' + (' data-g="%s"' % groups[colkey(c)] if groups else ""),
+        )
+        for c in head
+    ]
+    o += ["</tr>", "</thead>", "<tbody>"]
     # data-band 让相邻的合并块能上交替底色。CSS 数不了「第几个合并块」——每块行数
     # 不等，:nth-child 对不上，计数器又不能参与着色，所以这一位由生成器打。
     # 只有真用到合并的表才需要它；没有合并的表照旧输出干净的 <tr>。
     banded = any(n > 1 for n in span)
     band = 1
     prev = None
-    lane = ''
+    lane = ""
     for ri, (cells, n) in enumerate(zip(rows, span)):
         # lines[0] 是表头、lines[1] 是分隔行。**连号就不戳**：一张表的行在源稿里
         # 本来连着，逐行戳一遍 413 行的表要多出一千多字节 gzip。省掉的那些由
         # 「没有 data-b 的行 = 上一行 +1」补回来，而生成器只在这条成立时才省。
         # 行组分界行（|---|）占一行却不出 <tr>，所以它后面那行不连号、照旧戳。
         at = base + 2 + ri
-        mark = '' if prev is not None and at == prev + 1 else bmark(at)
+        mark = "" if prev is not None and at == prev + 1 else bmark(at)
         if cells is None:
-            o += ['</tbody>', '<tbody>']
+            o += ["</tbody>", "<tbody>"]
             band = 1
             continue
         # 横幅行自己领一个 <tbody>：组间那道横线照旧由 CSS 的 tbody + tbody 画，
         # 搜索时 app.js 也按这个 tbody 数「这一组还剩几行可见」。
         if isinstance(cells, str):
             lane = text_of(broke(cells), collapse=True)
-            o += ['</tbody>', '<tbody>',
-                  '<tr class="lane"%s>%s</tr>'
-                  % (mark, wrap('th', broke(cells),
-                                ' colspan="%d" scope="colgroup"' % len(head)))]
+            o += [
+                "</tbody>",
+                "<tbody>",
+                '<tr class="lane"%s>%s</tr>'
+                % (
+                    mark,
+                    wrap(
+                        "th", broke(cells), ' colspan="%d" scope="colgroup"' % len(head)
+                    ),
+                ),
+            ]
             prev = at
             band = 1
             continue
         row = []
         stamp = []
         if n:
-            band ^= 1               # 每遇到一个新行标题翻一次
-            attrs = ' scope="row"' + (' rowspan="%d"' % n if n > 1 else '')
-            row.append(wrap('th', broke(cells[0]), attrs))
+            band ^= 1  # 每遇到一个新行标题翻一次
+            attrs = ' scope="row"' + (' rowspan="%d"' % n if n > 1 else "")
+            row.append(wrap("th", broke(cells[0]), attrs))
             # 行标题指向的那件东西的主键。戳在 <tr> 上不戳在 <th> 上：合并块里
             # 只有第一行有 <th>，而整块说的是同一件东西。
             # **取渲染后那一格**，与索引里的名字同一份：源稿原文里格内换行还是
@@ -487,38 +579,43 @@ def render_table(lines, scales=None, groups=None, marks=None, curves=None, rota=
             if STAMP and not stamp:
                 # 整行写的是一个组合（「复兴\\噬星者」「故我在\\（意外缓刑）\\涡流」），
                 # 格内换行把它切成几截。合起来查不到时逐截查，取并集。
-                stamp = STAMP(shown, [text_of(x, collapse=True) for x in BR.split(row[0])])
+                stamp = STAMP(
+                    shown, [text_of(x, collapse=True) for x in BR.split(row[0])]
+                )
         for ci, c in enumerate(cells[1:], start=1):
             if ci in tiers:
                 tier = tier_of(c, tiers[ci])
                 if tier is None:
-                    die('「色阶：」指的列里有非数值格：%r' % c[:40])
+                    die("「色阶：」指的列里有非数值格：%r" % c[:40])
                 # 色阶列是纯数值，直接输出：分组标签由 grouped() 给，
                 # 不走 wrap()——那条路会把 <span> 当文本转义掉。
                 # 小数不分组：三位一组是为了读长整数，1.0110 切开只会更难读。
-                text = grouped(int(c)) if '.' not in c else c
+                text = grouped(int(c)) if "." not in c else c
                 row.append('<td data-tier="%d">%s</td>' % (tier, text))
                 continue
             spot = (ROW_SPOTS.get(at) or [None] * len(cells))[ci]
-            row.append(wrap('td', broke(c), ORIGINS.attr(spot) if spot and ORIGINS else ''))
+            row.append(
+                wrap("td", broke(c), ORIGINS.attr(spot) if spot and ORIGINS else "")
+            )
         # 索引拿排印之前那一份：配装悬停与装备库读它，.cond、<b> 与费用方块只给本页
-        indexed = ''.join(row)
+        indexed = "".join(row)
         if TYPESET:
             row[-1] = typeset_cell(row[-1])
         row = [cost_cell(c) for c in row]
         prev = at
-        body = ''.join(row)
+        body = "".join(row)
         if DEX is not None and n:
             # 名字取**渲染后**那一格，不取源稿原文：着色标记要剥掉、格内换行已经
             # 变成 <br>，与 vocab 从产出的 <th> 取文那一份才对得上。
             index_row(DEX, row[0], stamp, indexed, lane, ROW_PERKS.get(at))
-        o.append('<tr%s%s>%s</tr>'
-                 % (mark, ' data-band="%d"' % band if banded else '', body))
-    o += ['</tbody>', '</table>']
+        o.append(
+            "<tr%s%s>%s</tr>" % (mark, ' data-band="%d"' % band if banded else "", body)
+        )
+    o += ["</tbody>", "</table>"]
     return o
 
 
-CELL = re.compile(r'^(<td[^>]*>)(.*)(</td>)$', re.S)
+CELL = re.compile(r"^(<td[^>]*>)(.*)(</td>)$", re.S)
 COST_CELL = re.compile(r'^(<td[^>]*class="cost"[^>]*>)(\d)(</td>)$')
 
 
@@ -526,10 +623,10 @@ def typeset_cell(td):
     """末格（说明）按空行分段，每段交给 markup.typeset()。整格只有一个标记、class
     落在 <td> 上的那种不动：拆成段落会把那个 class 管着的文字挪出它的作用范围。"""
     hit = CELL.match(td)
-    if not hit or 'class=' in hit.group(1):
+    if not hit or "class=" in hit.group(1):
         return td
     # 段与段之间留一个换行：搜索索引剥标签取文，不留的话上一段的句号直接粘着下一段
-    body = '\n'.join('<p>%s</p>' % typeset(p) for p in paragraphs(hit.group(2)))
+    body = "\n".join("<p>%s</p>" % typeset(p) for p in paragraphs(hit.group(2)))
     return hit.group(1) + body + hit.group(3)
 
 
@@ -538,68 +635,31 @@ def cost_cell(td):
     hit = COST_CELL.match(td)
     if not hit:
         return td
-    pips = '<i></i>' * int(hit.group(2))
+    pips = "<i></i>" * int(hit.group(2))
     return '%s<span class="pips" aria-hidden="true">%s</span>%s%s' % (
-        hit.group(1), pips, hit.group(2), hit.group(3))
+        hit.group(1),
+        pips,
+        hit.group(2),
+        hit.group(3),
+    )
 
 
 def index_row(dex, title, stamp, body, lane, perks=None):
     """一行 → 索引里的条目。说明用 vocab 那三个现成的抽法，不另写一份。"""
     anchor, label = SECTION
-    mine, theirs = ((), ()) if PAGE in pagedex.NO_DESC else pagedex.split_spirit(pagedex.tds(body))
+    mine = () if PAGE in pagedex.NO_DESC else pagedex.tds(body)
     icon = pagedex.IMG.search(body)
     shown = text_of(title, collapse=True)
     # 落不到库里主键上的行合成一个，规则在 rows.minted() 一处定义。
     keys = list(stamp) or ([rows.minted(PAGE, shown)] if shown else [])
-    dex.add(keys=keys, anchor=anchor, kind=lane or label,
-            name=shown,
-            icon=pagedex.site_path(PAGE, icon.group(1)) if icon else '',
-            desc=pagedex.wrap(*pagedex.panel(mine)))
-    index_perks(dex, stamp, mine, anchor, lane or label, dex.rows[-1]['name'], perks)
-    # 异域职业物品那张表一行摆两条词条：行标题一条，中间一格再一条。
-    # **中间那一条也要自己的主键**：它是另一件东西，不是行标题那件的别名。
-    for name, ico in pagedex.SPIRIT.findall(body):
-        shown = text_of(name, collapse=True)
-        dex.add(keys=STAMP(shown) if STAMP else (),
-                anchor=anchor, kind=lane or label, name=shown,
-                icon=pagedex.site_path(PAGE, ico), desc=pagedex.wrap(*pagedex.panel(theirs)))
-
-
-def index_perks(dex, keys, cells, anchor, kind, row_name, perks=None):
-    """异域那两页 PERK 格里的名字 → 挂在行标题主键下的子条目。
-
-    这一列写的是这件异域自己的词条（「阿格尔的召唤」「飞掠尖刺」），站内从前
-    只把行标题记进索引，这些名字一个都查不到。它们是另一件东西，不是武器的别名，
-    所以各自带主键；同时用 of 记下自己挂在哪一行，配装词表照旧只认行标题那一层。
-
-    perks 是主键骨架那种源稿由 rows.py 交来的 {名字: 主键}：名字本来就是从这些
-    主键上取的，直接用，不按名字反查（催化剂给的效果不在武器自己的插件池里，
-    反查必然落空）。没有 perks 时要不要抽这一列由格子的形状定（见
-    pagedex.exotic_perks），不列页名。
-    """
-    if not keys:
-        return
-    shown = pagedex.exotic_perks(cells)
-    if perks is not None:
-        icon = pagedex.site_path(PAGE, shown[0][1]) if shown else ''
-        for name, key in perks.items():
-            dex.add(keys=[key], anchor=anchor, kind=kind, name=name, icon=icon,
-                    q=row_name, of=list(keys))
-        return
-    if PERK is None:
-        return
-    for name, icon in shown:
-        got = PERK(list(keys), name)
-        if got is None:          # 槽位说明词（「可制作 Perk」），不是一件东西
-            continue
-        if not got:
-            die('%s 的 PERK 列里「%s」解析不到主键：改成 manifest 的正名，'
-                '或写进 resolve.PERK_LABELS 说明它不是实体' % (row_name, name))
-        dex.add(keys=got, anchor=anchor, kind=kind,
-                name=name, icon=pagedex.site_path(PAGE, icon),
-                # 落地过滤用行标题那件东西的名字：词条名在页内搜索框里同样搜得到，
-                # 滤出来的正是同一行，但行标题那个词在这一页上一定存在。
-                q=row_name, of=list(keys))
+    dex.add(
+        keys=keys,
+        anchor=anchor,
+        kind=lane or label,
+        name=shown,
+        icon=pagedex.site_path(PAGE, icon.group(1)) if icon else "",
+        desc=pagedex.wrap(*pagedex.panel(mine)),
+    )
 
 
 def cards_of(spec, up):
@@ -610,23 +670,28 @@ def cards_of(spec, up):
     卡片因此没有节点图标与右侧数值：那两样是首页手写的，一张一套，推导不出来。
     """
     o = ['<ul class="entries">']
-    for slug in [x.strip() for x in spec.split('、') if x.strip()]:
+    for slug in [x.strip() for x in spec.split("、") if x.strip()]:
         path = shell.source_path(slug)
         if path is None:
-            die('「卡片：」指的 %r 在 references/ 下没有源稿' % slug)
-        with open(path, encoding='utf-8') as f:
+            die("「卡片：」指的 %r 在 references/ 下没有源稿" % slug)
+        with open(path, encoding="utf-8") as f:
             doc = f.read()
-        hit = re.match(r'^#\s+(.+)$', doc.split('\n')[0])
+        hit = re.match(r"^#\s+(.+)$", doc.split("\n")[0])
         if not hit:
-            die('「卡片：」指的 %r 源稿第一行不是「# 页面标题」' % slug)
-        o += ['<li>',
-              '<a class="entry" href="%s%s/index.html">' % ('../' * up, where_of(doc, slug)),
-              '<span class="entry-body">',
-              '<h3>%s</h3>' % hit.group(1).strip(),
-              '<p>%s</p>' % meta_of(doc, '描述'),
-              '<span class="entry-stamp">更新 %s</span>' % meta_of(doc, '更新'),
-              '</span>', '</a>', '</li>']
-    o.append('</ul>')
+            die("「卡片：」指的 %r 源稿第一行不是「# 页面标题」" % slug)
+        o += [
+            "<li>",
+            '<a class="entry" href="%s%s/index.html">'
+            % ("../" * up, where_of(doc, slug)),
+            '<span class="entry-body">',
+            "<h3>%s</h3>" % hit.group(1).strip(),
+            "<p>%s</p>" % meta_of(doc, "描述"),
+            '<span class="entry-stamp">更新 %s</span>' % meta_of(doc, "更新"),
+            "</span>",
+            "</a>",
+            "</li>",
+        ]
+    o.append("</ul>")
     return o
 
 
@@ -638,20 +703,23 @@ def guides_of(spec):
     整张卡是一个 <a>，所以标题与图不能各写各的——写成一行，由这里拼。
     """
     if ICONS is None:
-        die('图标登记处还没装上，「攻略：」取不到图的尺寸')
-    parts = [x.strip() for x in spec.split('|')]
+        die("图标登记处还没装上，「攻略：」取不到图的尺寸")
+    parts = [x.strip() for x in spec.split("|")]
     if len(parts) not in (3, 4):
-        die('「攻略：」要写「标题 | 图 | 链接」，注解可选，源稿写的是 %r' % spec)
+        die("「攻略：」要写「标题 | 图 | 链接」，注解可选，源稿写的是 %r" % spec)
     name, img, url = parts[:3]
-    tag = parts[3] if len(parts) == 4 else ''
-    if not url.startswith('http'):
-        die('「攻略：」的链接要以 http 开头，源稿写的是 %r' % url)
-    return ['<li>',
-            '<a class="guide" href="%s" target="_blank" rel="noopener">' % url,
-            ICONS.html(img, cls='guide-shot'),
-            '<span class="guide-name">%s%s</span>'
-            % (name, '<span class="guide-tag">%s</span>' % tag if tag else ''),
-            '</a>', '</li>']
+    tag = parts[3] if len(parts) == 4 else ""
+    if not url.startswith("http"):
+        die("「攻略：」的链接要以 http 开头，源稿写的是 %r" % url)
+    return [
+        "<li>",
+        '<a class="guide" href="%s" target="_blank" rel="noopener">' % url,
+        ICONS.html(img, cls="guide-shot"),
+        '<span class="guide-name">%s%s</span>'
+        % (name, '<span class="guide-tag">%s</span>' % tag if tag else ""),
+        "</a>",
+        "</li>",
+    ]
 
 
 def record_region(lines):
@@ -672,38 +740,45 @@ def record_region(lines):
             continue
         hit = REC_ROW.match(line)
         if not hit:
-            die('%s 的主键区里有认不出的行：%r' % (PAGE, line[:60]))
+            die("%s 的主键区里有认不出的行：%r" % (PAGE, line[:60]))
         if cur is None:
             cur = (None, [])
             groups.append(cur)
         key = hit.group(1).split()[0]
         ctx0 = CTX
         if ctx0 is not None:
-            ctx0.titles[key] = hit.group(2).strip()   # 行标题以源稿为准
+            ctx0.titles[key] = hit.group(2).strip()  # 行标题以源稿为准
         cur[1].append(key)
 
     ctx = CTX
     if ctx is None:
-        die('record_region() 在 build() 之前跑了：CTX 还没装上')
+        die("record_region() 在 build() 之前跑了：CTX 还没装上")
     dex = DEX
     if dex is not None:
         anchor, label = SECTION
 
         def put(key, kind, q=None):
             icon = rows.icon_file(key)
-            dex.add(keys=[key], anchor=anchor, kind=kind, name=ctx.name(key),
-                    icon=pagedex.site_path(PAGE, rows.rel(icon, PAGE)) if icon else '',
-                    # 配装填表页的悬停面板读这一段；缺了面板整块不出
-                    desc=layout.panel_of(ctx, key),
-                    **({} if q is None else {'q': q}))
+            dex.add(
+                keys=[key],
+                anchor=anchor,
+                kind=kind,
+                name=ctx.name(key),
+                icon=pagedex.site_path(PAGE, rows.rel(icon, PAGE)) if icon else "",
+                # 配装填表页的悬停面板读这一段；缺了面板整块不出
+                desc=layout.panel_of(ctx, key),
+                **({} if q is None else {"q": q}),
+            )
 
         for lane, keys in groups:
             for key in keys:
                 if layout.is_class_item(key):
                     # 职业物品的名字只在块标题上，页内过滤拿它滤不出任何一行；
                     # 两栏的之灵各自是一行，登记它们。
-                    put(key, lane or label, q='')
-                    for col in (rows.facts().at(key) or {}).get('site_perkColumns') or ():
+                    put(key, lane or label, q="")
+                    for col in (rows.facts().at(key) or {}).get(
+                        "site_perkColumns"
+                    ) or ():
                         for spirit in col:
                             put(str(spirit), lane or label)
                     continue
@@ -713,41 +788,65 @@ def record_region(lines):
                 # kind 写死「异域词条」：武器行与它的词条同页，槽位靠分节分开。
                 for nm, ik in rows.exotic_pool(key).items():
                     ico = rows.icon_file(ik)
-                    dex.add(keys=[ik], anchor=anchor, kind='异域词条',
-                            name=nm, q=ctx.name(key),
-                            icon=pagedex.site_path(PAGE, rows.rel(ico, PAGE)) if ico else '',
-                            desc=layout.panel_of(ctx, ik))
-                for e in (rows.facts().at(key) or {}).get('enhanced') or ():
-                    desc = ctx.prose(e['realgame_details'])
-                    for by in e['by']:
-                        dex.add(keys=[key], anchor=anchor, kind=lane or label,
-                                name='%s（%s）' % (ctx.name(key), ctx.name(str(by))),
-                                icon=pagedex.site_path(PAGE, rows.rel(rows.icon_file(str(by)),
-                                                                     PAGE))
-                                if rows.icon_file(str(by)) else '',
-                                q=ctx.name(key), desc=desc)
+                    dex.add(
+                        keys=[ik],
+                        anchor=anchor,
+                        kind="异域词条",
+                        name=nm,
+                        q=ctx.name(key),
+                        icon=pagedex.site_path(PAGE, rows.rel(ico, PAGE))
+                        if ico
+                        else "",
+                        desc=layout.panel_of(ctx, ik),
+                    )
+                for e in (rows.facts().at(key) or {}).get("enhanced") or ():
+                    desc = ctx.prose(e["realgame_details"])
+                    for by in e["by"]:
+                        dex.add(
+                            keys=[key],
+                            anchor=anchor,
+                            kind=lane or label,
+                            name="%s（%s）" % (ctx.name(key), ctx.name(str(by))),
+                            icon=pagedex.site_path(
+                                PAGE, rows.rel(rows.icon_file(str(by)), PAGE)
+                            )
+                            if rows.icon_file(str(by))
+                            else "",
+                            q=ctx.name(key),
+                            desc=desc,
+                        )
                 # 画成子行的组合（故我在的四条元素行）照旧各进一条：配装源稿按它们
                 # 的名字选异域武器，落点是宿主那一行的锚点。
                 for sub in rows.subs_of(SLUG, key):
                     # 图取组合自己的（没有就是宿主那把枪的）：配装页把它摆在异域
                     # 武器那一格上，画成固有 Perk 的图读者认不出是哪把枪。
                     ico = rows.icon_file(sub)
-                    dex.add(keys=[sub], anchor=anchor, kind=lane or label,
-                            name=ctx.name(sub), q=ctx.name(key),
-                            icon=pagedex.site_path(PAGE, rows.rel(ico, PAGE)) if ico else '',
-                            desc=layout.panel_of(ctx, sub))
-    return [layout.section_blocks(ctx, groups, SECTION[1], rows.AUTHORED.get(SLUG, 'Aegis'))]
+                    dex.add(
+                        keys=[sub],
+                        anchor=anchor,
+                        kind=lane or label,
+                        name=ctx.name(sub),
+                        q=ctx.name(key),
+                        icon=pagedex.site_path(PAGE, rows.rel(ico, PAGE))
+                        if ico
+                        else "",
+                        desc=layout.panel_of(ctx, sub),
+                    )
+    return [
+        layout.section_blocks(ctx, groups, SECTION[1], rows.AUTHORED.get(SLUG, "Aegis"))
+    ]
 
 
-def render_blocks(chunk, scales=None, groups=None, marks=None, curves=None, up=0,
-                  rota=None, base=0):
+def render_blocks(
+    chunk, scales=None, groups=None, marks=None, curves=None, up=0, rota=None, base=0
+):
     """分节正文 → 段落、列表、定义列表、表格、卡片。
 
     base 是 chunk 第一行在源稿里的行号，每个块据此落一个 data-b。
     「卡片：」「攻略：」两种指令行不戳——它们本来就不进保真比对，也不由就地编辑改。
     """
     o, i = [], 0
-    lines = chunk.split('\n')
+    lines = chunk.split("\n")
     cycle = None
     while i < len(lines):
         line = lines[i].rstrip()
@@ -755,113 +854,143 @@ def render_blocks(chunk, scales=None, groups=None, marks=None, curves=None, up=0
             i += 1
             continue
 
-        if line.startswith('周期：'):
-            cycle = line[len('周期：'):].strip()
-            if not re.fullmatch(r'\d{4}\.\d{1,2}\.\d{1,2}( \d{1,2}:\d{2})? [周日]', cycle):
-                die('「周期：」要写成 YYYY.M.D H:MM 周|日，源稿写的是 %r' % cycle)
+        if line.startswith("周期："):
+            cycle = line[len("周期：") :].strip()
+            if not re.fullmatch(
+                r"\d{4}\.\d{1,2}\.\d{1,2}( \d{1,2}:\d{2})? [周日]", cycle
+            ):
+                die("「周期：」要写成 YYYY.M.D H:MM 周|日，源稿写的是 %r" % cycle)
             i += 1
             continue
 
-        if line.startswith('卡片：'):
-            o += cards_of(line[len('卡片：'):], up)
+        if line.startswith("卡片："):
+            o += cards_of(line[len("卡片：") :], up)
             i += 1
             continue
 
-        if line.startswith('攻略：'):                 # 连着的几行合成一个 <ul>
+        if line.startswith("攻略："):  # 连着的几行合成一个 <ul>
             o.append('<ul class="guides">')
-            while i < len(lines) and lines[i].startswith('攻略：'):
-                o += guides_of(lines[i].rstrip()[len('攻略：'):])
+            while i < len(lines) and lines[i].startswith("攻略："):
+                o += guides_of(lines[i].rstrip()[len("攻略：") :])
                 i += 1
-            o.append('</ul>')
+            o.append("</ul>")
             continue
 
-        if SLUG in NEW and (REC_ROW.match(line) or COLS.match(line) or LANE.match(line)):
+        if SLUG in NEW and (
+            REC_ROW.match(line) or COLS.match(line) or LANE.match(line)
+        ):
             start = i
             while i < len(lines):
                 one = lines[i].strip()
-                if one and not (REC_ROW.match(one) or COLS.match(one) or LANE.match(one)):
+                if one and not (
+                    REC_ROW.match(one) or COLS.match(one) or LANE.match(one)
+                ):
                     break
                 i += 1
             o += record_region(lines[start:i])
             continue
 
-        if line.lstrip().startswith('|'):
+        if line.lstrip().startswith("|"):
             start = i
-            while i < len(lines) and lines[i].lstrip().startswith('|'):
+            while i < len(lines) and lines[i].lstrip().startswith("|"):
                 i += 1
-            o += render_table([ln.strip() for ln in lines[start:i]], scales, groups,
-                              marks, curves, rota, base + start, cycle=cycle)
+            o += render_table(
+                [ln.strip() for ln in lines[start:i]],
+                scales,
+                groups,
+                marks,
+                curves,
+                rota,
+                base + start,
+                cycle=cycle,
+            )
             cycle = None
             continue
 
         # 定义列表：术语一行，紧跟以「: 」开头的定义行。
         # 定义可以写多行——一条技能动辄十几行说明，挤成一行没法读也没法改。
         # 连着的「: 」行并成一条 <dd>，行间落 <br>；中间的空行留作段落间隔。
-        if i + 1 < len(lines) and lines[i + 1].startswith(': '):
+        if i + 1 < len(lines) and lines[i + 1].startswith(": "):
             o.append('<dl class="rules">')
-            while i + 1 < len(lines) and lines[i + 1].startswith(': '):
-                o.append(wrap('dt', lines[i], bmark(base + i)))
+            while i + 1 < len(lines) and lines[i + 1].startswith(": "):
+                o.append(wrap("dt", lines[i], bmark(base + i)))
                 i += 1
                 dstart = i
                 defn = []
                 while i < len(lines):
-                    if lines[i].startswith(': '):
+                    if lines[i].startswith(": "):
                         defn.append(lines[i][2:].strip())
                         i += 1
-                    elif not lines[i].strip() and i + 1 < len(lines) \
-                            and lines[i + 1].startswith(': '):
-                        defn.append('')     # 段落间隔，落成一个空行
+                    elif (
+                        not lines[i].strip()
+                        and i + 1 < len(lines)
+                        and lines[i + 1].startswith(": ")
+                    ):
+                        defn.append("")  # 段落间隔，落成一个空行
                         i += 1
                     else:
                         break
-                o.append(wrap('dd', '<br>'.join(defn), bmark(base + dstart, base + i - 1)))
+                o.append(
+                    wrap("dd", "<br>".join(defn), bmark(base + dstart, base + i - 1))
+                )
                 while i < len(lines) and not lines[i].strip():
                     i += 1
-            o.append('</dl>')
+            o.append("</dl>")
             continue
 
-        if line.startswith('- '):
+        if line.startswith("- "):
             # 连着几条的开头标记相同时（更新日志里同一天的同一种改动类型），只让第一条
             # 显形，后面几条的标记加上 is-same 由样式表收掉——**字要留在 DOM 里**，
             # check() 是剥标签后与源稿逐字比对，删掉那两个字当场报错。
-            o.append('<ul>')
+            o.append("<ul>")
             prev = None
-            while i < len(lines) and lines[i].startswith('- '):
+            while i < len(lines) and lines[i].startswith("- "):
                 item = lines[i][2:]
                 hit = markup.LEAF.match(item)
-                html = wrap('li', item, bmark(base + i))
+                html = wrap("li", item, bmark(base + i))
                 if hit and (hit.group(1), hit.group(2)) == prev:
-                    html = html.replace('class="%s"' % hit.group(1),
-                                        'class="%s is-same"' % hit.group(1), 1)
+                    html = html.replace(
+                        'class="%s"' % hit.group(1),
+                        'class="%s is-same"' % hit.group(1),
+                        1,
+                    )
                 prev = (hit.group(1), hit.group(2)) if hit else None
                 o.append(html)
                 i += 1
-            o.append('</ul>')
+            o.append("</ul>")
             continue
 
         # 段落：连续非空行合成一段，段内换行落成 <br>
         start = i
-        while (i < len(lines) and lines[i].strip()
-               and not lines[i].lstrip().startswith('|')
-               and not lines[i].startswith('- ')
-               and not (i + 1 < len(lines) and lines[i + 1].startswith(': '))):
+        while (
+            i < len(lines)
+            and lines[i].strip()
+            and not lines[i].lstrip().startswith("|")
+            and not lines[i].startswith("- ")
+            and not (i + 1 < len(lines) and lines[i + 1].startswith(": "))
+        ):
             i += 1
-        o.append(wrap('p', '<br>'.join(ln.strip() for ln in lines[start:i]),
-                      bmark(base + start, base + i - 1)))
+        o.append(
+            wrap(
+                "p",
+                "<br>".join(ln.strip() for ln in lines[start:i]),
+                bmark(base + start, base + i - 1),
+            )
+        )
     return o
 
 
 def flag_of(md, key):
     """布尔键只认「是」。写「否」当场报错，不静默当真——不需要就整行删掉。"""
     v = meta_of(md, key, required=False)
-    if v and v != '是':
-        die('「%s：」只能写「是」，源稿写的是 %r；不需要就把整行删掉' % (key, v))
+    if v and v != "是":
+        die("「%s：」只能写「是」，源稿写的是 %r；不需要就把整行删掉" % (key, v))
     return bool(v)
 
 
 def where_of(md, slug):
     """「路径：」把页面挂到子目录里（elements/arc）；缺省是 slug 本身、挂在站点根下。"""
-    return meta_of(md, '路径', required=False) or slug
+    return meta_of(md, "路径", required=False) or slug
 
 
 def doc_id_of(slug):
@@ -871,121 +1000,136 @@ def doc_id_of(slug):
     找回源稿；写错了整页永远定位不到。
     """
     path = shell.source_path(slug)
-    return shell.doc_id(path) if path else 'docs/%s' % slug
+    return shell.doc_id(path) if path else "docs/%s" % slug
 
 
 def render(md, slug, digest):
     # digest 由调用方给：它是**盘上那份源稿**的 sha1，而这里的 md 可能已经把骨架
     # 展开成表了。库里存的是盘上那一份，两边要对得上。
     md = land(md, slug)
-    m = re.match(r'^#\s+(.+)$', md.split('\n')[0])
+    m = re.match(r"^#\s+(.+)$", md.split("\n")[0])
     if not m:
-        die('源稿第一行必须是「# 页面标题」')
+        die("源稿第一行必须是「# 页面标题」")
     title = m.group(1).strip()
 
     def meta(key, required=True):
         return meta_of(md, key, required)
 
-    desc, stamp, foot = meta('描述'), meta('更新'), meta('页脚', required=False)
-    thanks = meta('鸣谢', required=False)
-    mark = meta('待测标记', required=False)
-    if not re.fullmatch(r'\d{4}\.\d{1,2}\.\d{1,2}', stamp):
-        die('「更新：」要写成 YYYY.M.D，源稿写的是 %r' % stamp)
+    desc, stamp, foot = meta("描述"), meta("更新"), meta("页脚", required=False)
+    thanks = meta("鸣谢", required=False)
+    mark = meta("待测标记", required=False)
+    if not re.fullmatch(r"\d{4}\.\d{1,2}\.\d{1,2}", stamp):
+        die("「更新：」要写成 YYYY.M.D，源稿写的是 %r" % stamp)
 
     groups, order = columns_of(md)
     toolbar = None
     if groups:
+
         def listed(key, required=True):
-            names = [g.strip() for g in meta(key, required).split('、') if g.strip()]
+            names = [g.strip() for g in meta(key, required).split("、") if g.strip()]
             for g in names:
                 if g not in order:
-                    die('「%s：」里的 %r 没有对应的「列组：」声明' % (key, g))
+                    die("「%s：」里的 %r 没有对应的「列组：」声明" % (key, g))
             return names
 
-        default = listed('默认列组')
+        default = listed("默认列组")
         # 互斥的几组一次只开一组：全开会把行撑得过长，扫读时对不上行
-        solo = listed('互斥列组', required=False)
+        solo = listed("互斥列组", required=False)
         if len([g for g in default if g in solo]) > 1:
-            die('「默认列组：」里有多个互斥组同时打开')
-        toolbar = {'data-cols': '、'.join(default)}
+            die("「默认列组：」里有多个互斥组同时打开")
+        toolbar = {"data-cols": "、".join(default)}
         if solo:
-            toolbar['data-solo'] = '、'.join(solo)
+            toolbar["data-solo"] = "、".join(solo)
 
     # 「此刻：是」→ 工具条槽位带 data-clock，assets/app.js 据此按本机时钟给表里
     # 当前那一格打 data-now。时刻只有运行时才知道，不能写进产出，所以走 JS。
     # 开关叫 data-clock、标记叫 data-now，两者不同名——同名时 [data-now] 会把
     # 工具条自己也选进去，样式与断言都要额外绕开它。
-    if flag_of(md, '此刻'):
-        toolbar = dict(toolbar or {}, **{'data-clock': ''})
+    if flag_of(md, "此刻"):
+        toolbar = dict(toolbar or {}, **{"data-clock": ""})
 
     # 「图表：是」→ 工具条槽位带 data-chart，assets/app.js 据此把表画成折线图并
     # 把表本身收起。**表仍是页面本体**：无 JS 时它完整可读，与列组页默认隐藏由
     # app.js 施加是同一条约定。数据因此只有一份，不在 HTML 里另存一遍。
-    if flag_of(md, '图表'):
-        toolbar = dict(toolbar or {}, **{'data-chart': ''})
+    if flag_of(md, "图表"):
+        toolbar = dict(toolbar or {}, **{"data-chart": ""})
     marks = marks_of(md)
-    if marks and not flag_of(md, '图表'):
-        die('「标注：」要配合「图表：是」用，没有图就没有点可标')
+    if marks and not flag_of(md, "图表"):
+        die("「标注：」要配合「图表：是」用，没有图就没有点可标")
 
     # 「默认曲线：列名、列名」→ 表上的 data-lines，图表加载时只画这几条。哪条是主线
     # 是内容判断（这一页的传说战役与标准几乎重叠，同时画只会互相盖住），与「标注：」
     # 同理写在源稿里，不写进 app.js。
-    curves = [c.strip() for c in meta('默认曲线', required=False).split('、') if c.strip()]
-    if curves and not flag_of(md, '图表'):
-        die('「默认曲线：」要配合「图表：是」用，没有图就没有曲线可选')
+    curves = [
+        c.strip() for c in meta("默认曲线", required=False).split("、") if c.strip()
+    ]
+    if curves and not flag_of(md, "图表"):
+        die("「默认曲线：」要配合「图表：是」用，没有图就没有曲线可选")
 
     # 「轮换：」或「周期：」出现在任一分节里 → 工具条槽位带 data-rota，页面因此引上 app.js。
     # 起始日写在表上（一张表一条轴），这里只是个开关。
     if ROTA_LINE.search(md) or CYCLE_LINE.search(md):
-        toolbar = dict(toolbar or {}, **{'data-rota': ''})
+        toolbar = dict(toolbar or {}, **{"data-rota": ""})
 
     # 「导航：是」→ 顶部工具条：搜索框 + 每个分节一枚跳转 chip，与神器模组页同一套。
     # 条目是表格行，所以带这一档的表**不能用首格留空合并**——按行隐藏会把合并块
     # 豁开，行标题要逐行写全。
-    if flag_of(md, '导航'):
+    if flag_of(md, "导航"):
         # 搜索按表格行工作，data-item 认的就是 .gen 的行。没有表格的页面给了搜索框
         # 也永远零命中，所以只给跳转 chip——app.js 见 data-item 缺席即走那一档。
         # 轮换页的表由轮盘与时刻表接管，不按行过滤，同样只出分节跳转 chip。
         # 两处 if 分开写是为了保住属性顺序：既有页面的产出因此零 diff。
         # 按记录排版的那几页没有 markdown 表格，条目是 article.rec
-        has_items = (bool(re.search(r'^\|[-\s|]+\|$', md, re.M)) or slug in NEW) and not ROTA_LINE.search(md)
-        nav = {'data-section': '.block'}
+        has_items = (
+            bool(re.search(r"^\|[-\s|]+\|$", md, re.M)) or slug in NEW
+        ) and not ROTA_LINE.search(md)
+        nav = {"data-section": ".block"}
         if has_items:
-            nav['data-item'] = '.rec' if slug in NEW else '.gen tbody tr:not(.lane)'
-        nav['data-label'] = '.sect-label'
+            nav["data-item"] = ".rec" if slug in NEW else ".gen tbody tr:not(.lane)"
+        nav["data-label"] = ".sect-label"
         if has_items:
-            nav['data-noun'] = '条目'
-        nav['data-chip-label'] = '分节'
+            nav["data-noun"] = "条目"
+        nav["data-chip-label"] = "分节"
         toolbar = dict(toolbar or {}, **nav)
 
     # 「跳转分行：<分节标题>」→ chip 从这一节起另起一行。分节多到一行放不下时，
     # 按内容分组换行，不交给自动折行随便断在哪。指的分节要真存在，写错即中止。
-    brk = meta('跳转分行', required=False)
+    brk = meta("跳转分行", required=False)
     if brk:
-        if toolbar is None or 'data-section' not in toolbar:
-            die('「跳转分行：」要配合「导航：是」用，没有 chip 就没有行可分')
-        titles = [IMG.sub('', h).strip() for h in re.findall(r'^## (.+)$', md, re.M)]
+        if toolbar is None or "data-section" not in toolbar:
+            die("「跳转分行：」要配合「导航：是」用，没有 chip 就没有行可分")
+        titles = [IMG.sub("", h).strip() for h in re.findall(r"^## (.+)$", md, re.M)]
         if brk not in titles:
-            die('「跳转分行：」指的 %r 不是任何一个分节标题' % brk)
-        toolbar['data-chip-break'] = brk
+            die("「跳转分行：」指的 %r 不是任何一个分节标题" % brk)
+        toolbar["data-chip-break"] = brk
 
     # 层数决定资源前缀与面包屑
-    up = where_of(md, slug).count('/') + 1
-    full = '%s · Starside' % title
-    o = [shell.head(full, desc, app_js=toolbar is not None, up=up, sky=True),
-         shell.nav(title, toolbar, up=up,
-                   parent=[x.strip() for x in meta('上级', required=False).split('、') if x.strip()]),
-         shell.page_head(title),
-         # data-src 是这一篇在库里的 _id（取法见 doc_id_of()），就地编辑靠它找回源稿。
-         '<main data-src="%s" data-src-hash="%s">' % (doc_id_of(slug), digest)]
+    up = where_of(md, slug).count("/") + 1
+    full = "%s · Starside" % title
+    o = [
+        shell.head(full, desc, app_js=toolbar is not None, up=up, sky=True),
+        shell.nav(
+            title,
+            toolbar,
+            up=up,
+            parent=[
+                x.strip() for x in meta("上级", required=False).split("、") if x.strip()
+            ],
+        ),
+        shell.page_head(title),
+        # data-src 是这一篇在库里的 _id（取法见 doc_id_of()），就地编辑靠它找回源稿。
+        '<main data-src="%s" data-src-hash="%s">' % (doc_id_of(slug), digest),
+    ]
 
-    body = META_LINE.sub('', md[md.index('\n'):])
-    parts = re.split(r'^## ', body, flags=re.M)
+    body = META_LINE.sub("", md[md.index("\n") :])
+    parts = re.split(r"^## ", body, flags=re.M)
     if parts[0].strip():
-        die('第一个 ## 之前有正文，资料页的正文一律归在分节里：%r'
-            % parts[0].strip()[:60])
+        die(
+            "第一个 ## 之前有正文，资料页的正文一律归在分节里：%r"
+            % parts[0].strip()[:60]
+        )
     if len(parts) == 1:
-        die('源稿一个 ## 分节都没有')
+        die("源稿一个 ## 分节都没有")
 
     # body 保留标题末尾的换行；这里与 bmark 一样使用 0 起行号。
     # re.split 删掉的 '## ' 不含换行，各 part 的行数守恒，累加即得偏移。
@@ -993,67 +1137,84 @@ def render(md, slug, digest):
     off, offs = 0, []
     for part in parts:
         offs.append(off)
-        off += part.count('\n')
+        off += part.count("\n")
 
     for si, part in enumerate(parts[1:], 1):
-        head, _, chunk = part.partition('\n')
-        at = offs[si]               # 「## 分节」那一行
+        head, _, chunk = part.partition("\n")
+        at = offs[si]  # 「## 分节」那一行
         # 「色阶：」是分节级声明，按整行剥离——留在正文里会进保真比对
         scales = {}
         for hit in SCALE_LINE.finditer(chunk):
             col, bounds = scale_of(hit.group(1).strip())
             if col in scales:
-                die('「色阶：」给同一列 %r 写了两套阈值' % col)
+                die("「色阶：」给同一列 %r 写了两套阈值" % col)
             scales[col] = bounds
-        chunk = SCALE_LINE.sub('', chunk)
+        chunk = SCALE_LINE.sub("", chunk)
         hit = ROTA_LINE.search(chunk)
         rota = hit.group(1).strip() if hit else None
         # 起始日后面可以跟一个时刻：轮换轴的周界就是游戏的每周重置（周三 01:00），
         # 只写到日会让重置前那一小时提前跳到下一周。
-        if rota and not re.fullmatch(r'\d{4}\.\d{1,2}\.\d{1,2}( \d{1,2}:\d{2})?', rota):
-            die('「轮换：」要写成 YYYY.M.D 或 YYYY.M.D H:MM，源稿写的是 %r' % rota)
-        chunk = ROTA_LINE.sub('', chunk)
+        if rota and not re.fullmatch(r"\d{4}\.\d{1,2}\.\d{1,2}( \d{1,2}:\d{2})?", rota):
+            die("「轮换：」要写成 YYYY.M.D 或 YYYY.M.D H:MM，源稿写的是 %r" % rota)
+        chunk = ROTA_LINE.sub("", chunk)
         o.append('<section class="block" id="sec-%d">' % si)
         # 标题末尾的 [文字](链接) 落成标签行右端的 chip（首页「更新日志 →」那一个），
         # 不进标题正文——app.js 取分节名时只认首个文本节点，chip 因此不会混进跳转 chip。
-        label, chip = head.strip(), ''
-        hit = re.search(r'\s*\[([^\]]+)\]\((https?://[^)]+)\)$', label)
+        label, chip = head.strip(), ""
+        hit = re.search(r"\s*\[([^\]]+)\]\((https?://[^)]+)\)$", label)
         if hit:
-            label = label[:hit.start()]
-            chip = ('<a class="chip" href="%s" target="_blank" rel="noopener">%s</a>'
-                    % (hit.group(2), hit.group(1)))
+            label = label[: hit.start()]
+            chip = '<a class="chip" href="%s" target="_blank" rel="noopener">%s</a>' % (
+                hit.group(2),
+                hit.group(1),
+            )
         # 分节标题里也允许放图标：源表每个职业段前有一枚职业徽章，标题是它的位置
         head_html = inline(icon_sub(label), rich=True)
         o.append('<h2 class="sect-label"%s>%s%s</h2>' % (bmark(at), head_html, chip))
         global SECTION
-        SECTION = ('sec-%d' % si, text_of(head_html, collapse=True))
+        SECTION = ("sec-%d" % si, text_of(head_html, collapse=True))
         dex = DEX
         if dex is not None:
             head_icon = pagedex.IMG.search(head_html)
             if head_icon and SECTION[1]:
                 # 分节标题自带的图标也进索引：配装页首要用真的职业图标。
                 # **不带过滤词**：拿分节名去页内过滤会把整页行滤光，落地是一张空页。
-                dex.add(keys=[rows.minted(PAGE, '分节/' + SECTION[1])],
-                        anchor=SECTION[0], kind='分节', name=SECTION[1],
-                        icon=pagedex.site_path(PAGE, head_icon.group(1)), q='')
+                dex.add(
+                    keys=[rows.minted(PAGE, "分节/" + SECTION[1])],
+                    anchor=SECTION[0],
+                    kind="分节",
+                    name=SECTION[1],
+                    icon=pagedex.site_path(PAGE, head_icon.group(1)),
+                    q="",
+                )
         o += render_blocks(chunk, scales, groups, marks, curves, up, rota, at + 1)
-        o.append('</section>')
+        o.append("</section>")
 
     # 「数据源：是」用 shell.py 里那个 Destiny Data Compendium 出处，一字不改；
     # 写别的值就是这一页自己的出处，二次加工那句由 shell.source_note() 接上。
     # 鸣谢只写人，且只写在该贡献者实际参与的页面上，不做全站铺开。
-    src = meta('数据源', required=False)
+    src = meta("数据源", required=False)
     # 待测值那句话全站只有 shell.unsure_note() 一处定义，标记形状按本页写的填。
-    first = inline(foot, rich=True) if foot else ''
+    first = inline(foot, rich=True) if foot else ""
     if mark:
         first += shell.unsure_note(mark)
-    o += ['</main>', '',
-          shell.foot(stamp,
-                     first,
-                     source=(shell.COMPENDIUM_SRC if src == '是'
-                             else inline(src, rich=True) if src else None),
-                     thanks=inline(thanks, rich=True) if thanks else None)]
-    return '\n'.join(o), title
+    o += [
+        "</main>",
+        "",
+        shell.foot(
+            stamp,
+            first,
+            source=(
+                shell.COMPENDIUM_SRC
+                if src == "是"
+                else inline(src, rich=True)
+                if src
+                else None
+            ),
+            thanks=inline(thanks, rich=True) if thanks else None,
+        ),
+    ]
+    return "\n".join(o), title
 
 
 # ── 自检 ────────────────────────────────────────────────────────────────
@@ -1065,24 +1226,30 @@ def check_records(md, out, slug):
     """
     ctx = CTX
     if ctx is None:
-        die('check_records() 在 build() 之前跑了：CTX 还没装上')
+        die("check_records() 在 build() 之前跑了：CTX 还没装上")
     keys = []
-    for raw in md.split('\n'):
+    for raw in md.split("\n"):
         hit = REC_ROW.match(raw.strip())
         if hit:
             keys.append(hit.group(1).split()[0])
-    main = out[out.index('<main '):out.index('</main>')]
+    main = out[out.index("<main ") : out.index("</main>")]
     # 两侧同样归一化：中文与拉丁之间那个排版空格是渲染加的，不算内容（design.md 三节）
     got = plain(text_of(main))
     # 名字本身可能带着色标记与格内换行，两侧都取渲染后的纯文本
     want = {k: plain(text_of(ctx.title_html(k))) for k in keys}
     missing = [k for k in keys if want[k] and want[k] not in got]
     if missing:
-        die('%s 有 %d 枚主键没画出来：%s'
-            % (slug, len(missing), '、'.join('%s（%s）' % (k, want[k]) for k in missing[:5])))
-    if '{' in main or '}' in main:
-        die('%s 有没转换的着色标记' % slug)
-    no_nested_span(main, '%s（检查 wrap() 的整块判定）' % slug)
+        die(
+            "%s 有 %d 枚主键没画出来：%s"
+            % (
+                slug,
+                len(missing),
+                "、".join("%s（%s）" % (k, want[k]) for k in missing[:5]),
+            )
+        )
+    if "{" in main or "}" in main:
+        die("%s 有没转换的着色标记" % slug)
+    no_nested_span(main, "%s（检查 wrap() 的整块判定）" % slug)
 
 
 def check(md, out, slug):
@@ -1093,58 +1260,81 @@ def check(md, out, slug):
     真正的闸门是「一个字都没多、没少」。
     """
     lines = []
-    src = CYCLE_LINE.sub('', GUIDE_LINE.sub('', CARD_LINE.sub('', ROTA_LINE.sub('', SCALE_LINE.sub(
-        '', META_LINE.sub('', md[md.index('\n'):]))))))
-    for raw in src.split('\n'):
+    src = CYCLE_LINE.sub(
+        "",
+        GUIDE_LINE.sub(
+            "",
+            CARD_LINE.sub(
+                "",
+                ROTA_LINE.sub(
+                    "", SCALE_LINE.sub("", META_LINE.sub("", md[md.index("\n") :]))
+                ),
+            ),
+        ),
+    )
+    for raw in src.split("\n"):
         line = raw.strip()
-        if line.startswith('|'):                      # 表格：只去分隔符与分隔行
+        if line.startswith("|"):  # 表格：只去分隔符与分隔行
             cells = split_cells(line)
             lane = lane_of(cells)
-            if lane is not None:                      # 横幅行只留组名，== 是标记
+            if lane is not None:  # 横幅行只留组名，== 是标记
                 lines.append(lane)
             elif not is_rule(cells):
-                lines.append(''.join(cells))
+                lines.append("".join(cells))
             continue
-        for mark in ('## ', '# ', '- ', ': '):         # 块标记只去行首那一个
+        for mark in ("## ", "# ", "- ", ": "):  # 块标记只去行首那一个
             if line.startswith(mark):
-                line = line[len(mark):]
+                line = line[len(mark) :]
                 break
         lines.append(line)
-    body = '\n'.join(lines)
-    body = IMG.sub('', body)                          # 图标不落成字符，两侧都不留
-    body = LINK.sub(r'\1', body)                      # 链接只留文字
-    body = body.replace('~~', '')                 # 划掉的线由 <s> 画，不落成字符
-                                                  # 只去成对的那一种：正文里的单个 ~ 是「约等于」
-    body = markup.OPEN.sub('', body)                  # 着色标记的开括号连分隔符
-    want = plain(body)                                # 字重、着色与格内换行不落成字符
+    body = "\n".join(lines)
+    body = IMG.sub("", body)  # 图标不落成字符，两侧都不留
+    body = LINK.sub(r"\1", body)  # 链接只留文字
+    body = body.replace("~~", "")  # 划掉的线由 <s> 画，不落成字符
+    # 只去成对的那一种：正文里的单个 ~ 是「约等于」
+    body = markup.OPEN.sub("", body)  # 着色标记的开括号连分隔符
+    want = plain(body)  # 字重、着色与格内换行不落成字符
 
-    main = out[out.index('<main '):out.index('</main>')]
+    main = out[out.index("<main ") : out.index("</main>")]
     # 卡片的文字来自被指向的那篇源稿，不是本篇的正文，不进逐字保真
-    main = re.sub(r'<ul class="entries">.*?</ul>', '', main, flags=re.S)
+    main = re.sub(r'<ul class="entries">.*?</ul>', "", main, flags=re.S)
     # 攻略卡同理：标题与配图站内没有第二份，那一行整行剥离，两侧都不留
-    main = re.sub(r'<ul class="guides">.*?</ul>', '', main, flags=re.S)
+    main = re.sub(r'<ul class="guides">.*?</ul>', "", main, flags=re.S)
     got = text_of(main)
     if got != want:
         for i, (a, b) in enumerate(zip(got, want)):
             if a != b:
-                die('%s 正文第 %d 字起对不上：\n  产出 %r\n  源稿 %r'
-                    % (slug, i, got[i:i + 40], want[i:i + 40]))
-        die('%s 正文长度对不上：产出 %d 字，源稿 %d 字' % (slug, len(got), len(want)))
+                die(
+                    "%s 正文第 %d 字起对不上：\n  产出 %r\n  源稿 %r"
+                    % (slug, i, got[i : i + 40], want[i : i + 40])
+                )
+        die("%s 正文长度对不上：产出 %d 字，源稿 %d 字" % (slug, len(got), len(want)))
 
-    no_nested_span(main, '%s（检查 wrap() 的整块判定）' % slug)
-    if '{' in main or '}' in main:
-        die('%s 有没转换的着色标记' % slug)
+    no_nested_span(main, "%s（检查 wrap() 的整块判定）" % slug)
+    if "{" in main or "}" in main:
+        die("%s 有没转换的着色标记" % slug)
 
 
 def build(slug):
-    global ICONS, STAMP, DEX, PAGE, PERK, ROW_KEYS, ROW_PERKS, ROW_SPOTS, ORIGINS, CTX, SLUG
+    global \
+        ICONS, \
+        STAMP, \
+        DEX, \
+        PAGE, \
+        PERK, \
+        ROW_KEYS, \
+        ROW_PERKS, \
+        ROW_SPOTS, \
+        ORIGINS, \
+        CTX, \
+        SLUG
     global TYPESET
     SLUG = slug
-    src = shell.source_path(slug) or os.path.join(shell.DOC_DIR, slug + '.md')
+    src = shell.source_path(slug) or os.path.join(shell.DOC_DIR, slug + ".md")
     with source_context(os.path.relpath(os.path.realpath(src), shell.ROOT)):
         if not os.path.exists(src):
-            die('找不到源稿 %s' % src)
-        with open(src, encoding='utf-8') as f:
+            die("找不到源稿 %s" % src)
+        with open(src, encoding="utf-8") as f:
             md = f.read()
         where = where_of(md, slug)
         # **盘上那一份的 sha1，在展开之前算**：编辑台拿它与库里 docs 那一条的 hash
@@ -1158,18 +1348,18 @@ def build(slug):
         if rows.is_skeleton(md) and slug not in NEW:
             md, ROW_KEYS, ROW_PERKS, ROW_SPOTS = rows.expand(md, slug, where)
 
-        outdir = os.path.join(shell.SITE, *where.split('/'))
+        outdir = os.path.join(shell.SITE, *where.split("/"))
         if not os.path.isdir(outdir):
-            die('输出目录不存在：%s/（新页面要先建目录并写 style.css）' % where)
-        eager = meta_of(md, '首屏图标', required=False)
+            die("输出目录不存在：%s/（新页面要先建目录并写 style.css）" % where)
+        eager = meta_of(md, "首屏图标", required=False)
         if eager and not eager.isdigit():
-            die('「首屏图标：」要写一个整数，源稿写的是 %r' % eager)
+            die("「首屏图标：」要写一个整数，源稿写的是 %r" % eager)
         ICONS = Icons(outdir, int(eager) if eager else 0)
-        TYPESET = flag_of(md, '说明排印')
+        TYPESET = flag_of(md, "说明排印")
         # 首屏之后的记录另存，见 shell.split_rest
-        keep = meta_of(md, '首屏记录', required=False)
+        keep = meta_of(md, "首屏记录", required=False)
         if keep and not (keep.isdigit() and int(keep) > 0):
-            die('「首屏记录：」要写一个正整数，源稿写的是 %r' % keep)
+            die("「首屏记录：」要写一个正整数，源稿写的是 %r" % keep)
         STAMP = resolve.stamper(where)
         # PERK 列只长在有戳号器的那几页上，格子的形状再筛一道，不另列页名。
         PERK = resolve.perk_stamper() if STAMP else None
@@ -1178,11 +1368,16 @@ def build(slug):
         # 只给要被跨页引用的那些页建索引，与戳号同一条判据。
         # 有没有页内搜索框按源稿那三个键定，与 render() 建工具条用的是同一批值：
         # 「导航：是」才建，列组页与折线图页整块不建。
-        searchable = (meta_of(md, '导航', required=False) == '是'
-                      and not re.search(r'^列组：', md, re.M)
-                      and meta_of(md, '图表', required=False) != '是')
-        DEX = (pagedex.Index(where, pagedex.TOKENS[where], searchable)
-               if where in pagedex.TOKENS else None)
+        searchable = (
+            meta_of(md, "导航", required=False) == "是"
+            and not re.search(r"^列组：", md, re.M)
+            and meta_of(md, "图表", required=False) != "是"
+        )
+        DEX = (
+            pagedex.Index(where, pagedex.TOKENS[where], searchable)
+            if where in pagedex.TOKENS
+            else None
+        )
 
         out, title = render(md, slug, digest)
         (check_records if slug in NEW else check)(md, out, slug)
@@ -1190,17 +1385,19 @@ def build(slug):
         # 要等布局算完才开始下载。漏写与「写 0」产出完全一样，页面上看不出区别，
         # 所以这一位必须由源稿明说：新页面的作者要么量过首屏、要么确认首屏没有图。
         if ICONS.refs and not eager:
-            die('%s 有 %d 处图标引用，源稿要写「首屏图标：N」'
-                '（首屏放不下就写 0）' % (slug, ICONS.refs))
+            die(
+                "%s 有 %d 处图标引用，源稿要写「首屏图标：N」"
+                "（首屏放不下就写 0）" % (slug, ICONS.refs)
+            )
 
         shell.emit(outdir, ORIGINS.seal(out), title, int(keep) if keep else 0)
         n = ORIGINS.write(outdir)
         if n and not shell._EMIT_HUSH:
-            print('  %s/%s  %d 处出处' % (where, editmap.FILE, n))
+            print("  %s/%s  %d 处出处" % (where, editmap.FILE, n))
         if DEX is not None:
             _, n = DEX.write()  # noqa
             if not shell._EMIT_HUSH:
-                print('  data/index/%s.json  %d 条' % (where, n))
+                print("  data/index/%s.json  %d 条" % (where, n))
 
 
 def main():
@@ -1209,28 +1406,36 @@ def main():
     if len(sys.argv) == 2:
         build(sys.argv[1])
         unbuilt()
-        print('仅更新本资料页；未更新搜索、配装词表与悬停说明。发布前运行 npm run build')
+        print(
+            "仅更新本资料页；未更新搜索、配装词表与悬停说明。发布前运行 npm run build"
+        )
         return
-    slugs = [slug for slug, _ in shell.sources()
-             if '%s/index.html' % slug not in shell.FIXED]
+    slugs = [
+        slug for slug, _ in shell.sources() if "%s/index.html" % slug not in shell.FIXED
+    ]
     if not slugs:
-        die('references/docs/ 与 references/keys/ 下没有 .md 源稿')
+        die("references/docs/ 与 references/keys/ 下没有 .md 源稿")
     if len(slugs) > 3:
         shell.hush_emit(True)
     for slug in slugs:
         build(slug)
     unbuilt()
     if len(slugs) > 3:
-        print('%d 页' % len(slugs))
+        print("%d 页" % len(slugs))
     shell.hush_emit(False)
 
 
 def unbuilt():
     """记录上取不出来的格子。页面照写（那一格留空），全部写完再一次报出并中止。"""
     if rows.PROBLEMS:
-        die('%d 格从记录上取不出来：\n%s' % (len(rows.PROBLEMS), '\n'.join(
-            '  %s｜%s｜%s：%s' % p for p in rows.PROBLEMS)))
+        die(
+            "%d 格从记录上取不出来：\n%s"
+            % (
+                len(rows.PROBLEMS),
+                "\n".join("  %s｜%s｜%s：%s" % p for p in rows.PROBLEMS),
+            )
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

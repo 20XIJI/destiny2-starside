@@ -119,7 +119,7 @@
    都是图，列名才居中。 */
 .gen thead th:first-child:not(.lead) { text-align: center; }
 
-.gen:has(:is(td.ico, td.ico2, td.ico4)) thead th:nth-child(2) { text-align: center; }
+.gen:has(td.ico) thead th:nth-child(2) { text-align: center; }
 
 .gen:has(td.slot):not(:has(td.cd)) thead th:last-child { text-align: center; }
 
@@ -130,26 +130,22 @@
 
    名称列取最长的那条不折行的宽度（「暗影箭矢：莫比乌斯箭袋」），行标题上的
    nowrap 是这一页既有的决定，宽度得让它过得去。
-   图标列按整格标记认：一格两图与一格四图那两张表要 132px，其余 96px；
-   同一种表内部仍然对齐，跨表形的差别是内容本身的差别。
 
    三列表（效果、棱镜手雷）用同一套前两列宽度，说明列的左边缘因此与四列表对齐。
 
    **判据里必须带上图标格。**只按列数认的话，总览页那张同为四列、却一张图都没有的
    「效果一览」也会被套进来：属性列拿到 175px、增益列被压到 96px 折成三行，减益列
    把剩下的空间全吃掉。这一族表的身份是「名称 + 图标 + 说明」，图标格就是它的标记。 */
-.gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))) { table-layout: fixed; }
+.gen:has(td.ico):has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))) { table-layout: fixed; }
 
-.gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))) thead th:nth-child(1) { width: 175px; }
-.gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))) thead th:nth-child(2) { width: 96px; }
-.gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))):has(:is(td.ico2, td.ico4)) thead th:nth-child(2) { width: 152px; }
+.gen:has(td.ico):has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))) thead th:nth-child(1) { width: 175px; }
+.gen:has(td.ico):has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))) thead th:nth-child(2) { width: 96px; }
 
-.gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) { table-layout: fixed; }
+.gen:has(td.ico):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) { table-layout: fixed; }
 
-.gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(1) { width: 175px; }
-.gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(2) { width: 96px; }
-.gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))):has(:is(td.ico2, td.ico4)) thead th:nth-child(2) { width: 152px; }
-.gen:has(td.ico, td.ico2, td.ico4):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(4) { width: 200px; }
+.gen:has(td.ico):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(1) { width: 175px; }
+.gen:has(td.ico):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(2) { width: 96px; }
+.gen:has(td.ico):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(4) { width: 200px; }
 
 /* 行标题：类别或条目名，这一组的身份。合并后纵向居中，一眼圈出它占几行。
    **颜色只给没有 class 的那些格。**整格只有一个 {标记|…} 时 class 落在 <th> 本身，
@@ -195,26 +191,6 @@
 .gen th[class^="sk-"] { padding: 12px 10px 10px; text-align: center; }
 
 .gen th[class^="sk-"] img { display: block; margin: 0 auto 6px; }
-
-/* 一格放两枚图标：源表在这一格里并排给了技能图与它依赖的星相菱形 */
-.gen td.ico2 {
-  width: 152px;
-  padding: 10px 8px;
-  text-align: center;
-  line-height: 0;
-}
-
-.gen td.ico2 img { display: inline-block; margin: 0 3px; }
-
-/* 源表里元素效果那格并排放着四枚增益／减益标记，照排成两行两列 */
-.gen td.ico4 {
-  width: 152px;
-  padding: 10px 8px;
-  text-align: center;
-  line-height: 0;
-}
-
-.gen td.ico4 img { display: inline-block; margin: 3px; }
 
 /* 共享技能表的左上角：源表把「职业技能和移动技能都与原分支职业完全共享」
    写在这一格里，跟着搬过来，不摊成表外的一句话。

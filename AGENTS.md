@@ -129,6 +129,8 @@ Bungie 的 hash 是 uint32，永不相撞。`模组族` 与 `组合` 用 `member
 ## tools/ 的分层
 
 ```
+build.py           增量构建入口（npm run build）：按输入文件与工具的 sha256 决定每一步跑或跳过，
+                   记录在 .git/starside-build.json；--all 强制全跑
 mods.py            官方物品表 → tools/mod-variants.json（护甲模组变体）
                    与 tools/moves.json（位移技能）、tools/artifacts.json（七件神器），
                    图标一并取回
@@ -139,6 +141,10 @@ facts.py           Bungie manifest → data/ 的五张实体表与 data/lookup/�
 resolve.py         中文名 → itemHash。槽位限定候选，复刻按「源稿标的版本后缀 →
                    源稿列的词条与来源 → 非大师非特殊版 → 有收藏条目」逐条判，
                    分不出就交出候选、不猜；另出给产出戳主键的戳号器
+rows.py            主键骨架的表区展开（armor-mods、weapon-frames、raid-farming、pve-farming）：
+                   从 data/ 的记录取列、算派生值与作者块，顺带提供异域与框架数值取法
+render.py          主键骨架的记录块渲染（其余 17 页，如异域、元素、武器 PERK、购物与传奇清单）：
+                   直接从 data/ 的记录产出 <article class="rec"> 与页面索引
 pagedex.py         页面索引：生成器渲染时登记条目，落成 data/index/<页>.json。
                    页面 → 着色 token、格子切分、说明取法都在这里
 editmap.py         就地编辑的出处表：生成器渲染记录上的文字时登记「记录 + 字段路径」，
@@ -169,18 +175,23 @@ pinyin.py          data/ 物品名 → assets/pinyin.js。全表 tools/pinyin.js
                    构建时按物品、套装、护甲模组族的中文名裁词典与英文名；介绍不进表。换拼音数据才 --distill
 build-terms.py     两道闸门的词表 → admin/terms.js（前端提示），
                    资料页清单与配装的五张词表 → admin/pages.js，
-                   并把 admin/dialect.js 复制一份到 functions/api/（云函数只
-                   require 得到自己目录下的东西）
+                   data/inventory-items.json → tools/xur-recs.json（老九武器推荐词条），
+                   并把共享模块（dialect.js、source.js、sync-*.js、xur-recs.json）复制到 functions/api/
 sync.py            源稿在库与仓库之间对账：记一份基线三方比，撞车就报、不猜方向
+sync-eververse.js  光尘商店与艾达-1 每周着色器抓取模块（本机与云函数共用）
+sync-xur.js        老九商店抓取与推荐词条归并模块（本机与云函数共用）
+ddc.py             上游 Destiny Data Compendium 原表快照检查与更新（data/ddc/）
 deploy.py          增量部署：与 refs/deploy 一 diff 即得清单，只发改过的文件；
                    只发 site/ 下的文件，上传时去掉 site/ 这一层
 check_shell.py     外壳闸门，从 shell.py 现取参照，不另存副本
 check_type.py      排版、CSS 有效性与产出结构：中文不吃拉丁字距、background
                    简写非末层不许写颜色、产出的开闭标签配得上
 check_terms.py     术语与着色闸门，全部以 TERMS 那一张表为准
+check_quality.py   Python 离线回归测试（npm test 前半）
+check_quality.cjs  Node 离线回归测试（npm test 后半，云函数与装备库纯函数）
 items.py           官方物品表 → tools/items.json，Perk 名 → tools/perks.json：
                    物品专名与 Perk 名该着哪个 token 由查表定；
-                   出建议清单、就地落标记，配装源稿的散文构建时自动着色，
+                   出建议清单、就地落标记，配装源稿的描述与注解构建时自动着色，
                    另供 check_terms.py 的 G6 反查
 sheet-grab.user.js 油猴脚本：在 Google 表格页面上导出「替换后的文本 + 内联图片」
 json2xlsx.py       把上面那份 JSON 还原成 xlsx，供核对与二次编辑
@@ -401,7 +412,7 @@ T1 的主语取选择器最后一个 class：`.block > .sect-label` 施加在 `.
 
 公共版式放 `site.css`，不为共用另开文件。`site.css` 每页都要下、且跨页共用一份缓存；页面样式表则是一页一份。共用的东西放前者，首访多几 KB，从第二页起每页省下更多（资料页的样式表因此从 6.6 KB 降到 2.9 KB）。再开一个 `table.css` 只会多一轮请求，省不出东西。
 
-首屏图片不加 `loading="lazy"`。给首屏图片加 lazy 会让它们等布局算完才开始下载，是反模式。排在首屏之内的图标改用 `fetchpriority="high"`，判定只有 `markup.loading_attr()` 一处。数目按 1440×900 实测给：资料页写在源稿的 `首屏图标：` 一行，神器模组页与护甲套装页各是生成器里的 `N_EAGER`（6 与 2）。改版式让首屏塞得下更多图标时，同步改这个数。
+首屏图片不加 `loading="lazy"`。给首屏图片加 lazy 会让它们等布局算完才开始下载，是反模式。排在首屏之内的图标改用 `fetchpriority="high"`，判定只有 `markup.loading_attr()` 一处。数目按 1440×900 实测给：资料页写在源稿的 `首屏图标：` 一行，神器模组页与护甲套装页各是生成器里的 `N_EAGER`（7 与 2）。改版式让首屏塞得下更多图标时，同步改这个数。
 
 长页用 `content-visibility: auto` 跳过屏外渲染。神器模组页约 16700px、护甲套装页约 28700px，屏外内容不必参与布局与绘制。
 

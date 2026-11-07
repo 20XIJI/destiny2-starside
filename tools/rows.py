@@ -25,8 +25,7 @@ render_table，渲染链不必知道格子从哪来。
   （按枪型的说明），紧跟在本行之后画，源稿里没有这几行。
 - 异域两页的「异域 PERK」与「说明」：装备、固有 perk、催化剂各是一条记录，行上把
   它们合回来，见 exotic_perks() 与 exotic_text()。
-- 矩阵表（棱镜页的共享技能、异域护甲页的职业物品之灵）：一行指向别的主键，
-  对应写在 references/pages/<页>.json。
+- 棱镜页的共享技能矩阵：一行指向别的主键，对应写在 references/pages/prismatic.json。
 
 造不出来的格子**不中止当页**：记进 PROBLEMS、那一格留空，所有页面写完之后由
 convert-doc 一次报出并中止。一格一格地中止要重跑二十一遍才看得到全貌。
@@ -34,7 +33,6 @@ convert-doc 一次报出并中止。一格一格地中止要重跑二十一遍�
 
 import collections
 import functools
-import json
 import os
 import re
 
@@ -44,45 +42,99 @@ import resolve
 import shell
 from facts import shown
 
-ZH = 'zh-CN'
+ZH = "zh-CN"
 
 # 一页的正文归谁。「数据源：是」那几页是站内的根本数据，落在记录本体；
 # 购物清单与刷取清单是作者，落在 authors 名下。
-BODY = frozenset({'weapon-perks', 'armor-mods', 'exotic-weapon', 'exotic-armor', 'arc',
-                  'solar', 'void', 'stasis', 'strand', 'prismatic', 'class-abilities'})
-AUTHORED = {**{p: 'Aegis' for p in ('shopping-primary', 'shopping-special',
-                                    'shopping-heavy', 'shopping-other')},
-            **{p: 'LGpig' for p in ('legendary-primary', 'legendary-special',
-                                    'legendary-heavy', 'exotic-weapons',
-                                    'exotic-armors', 'farming-sets')}}
-EXOTIC = frozenset({'exotic-weapon', 'exotic-armor'})
+BODY = frozenset(
+    {
+        "weapon-perks",
+        "armor-mods",
+        "exotic-weapon",
+        "exotic-armor",
+        "arc",
+        "solar",
+        "void",
+        "stasis",
+        "strand",
+        "prismatic",
+        "class-abilities",
+    }
+)
+AUTHORED = {
+    **{
+        p: "Aegis"
+        for p in (
+            "shopping-primary",
+            "shopping-special",
+            "shopping-heavy",
+            "shopping-other",
+        )
+    },
+    **{
+        p: "LGpig"
+        for p in (
+            "legendary-primary",
+            "legendary-special",
+            "legendary-heavy",
+            "exotic-weapons",
+            "exotic-armors",
+            "farming-sets",
+        )
+    },
+}
+EXOTIC = frozenset({"exotic-weapon", "exotic-armor"})
 
 # defaultDamageType 枚举 → (着色 token, 站内写法)。5 是「突袭」，站内用不到。
-ELEMENT = {1: ('el-kinetic', '动能'), 2: ('el-arc', '电弧'), 3: ('el-solar', '烈日'),
-           4: ('el-void', '虚空'), 6: ('el-stasis', '冰影'), 7: ('el-strand', '缚丝')}
+ELEMENT = {
+    1: ("el-kinetic", "动能"),
+    2: ("el-arc", "电弧"),
+    3: ("el-solar", "烈日"),
+    4: ("el-void", "虚空"),
+    6: ("el-stasis", "冰影"),
+    7: ("el-strand", "缚丝"),
+}
 
 # 作者写的那几格：源表的中文列名 → 作者块里的字段名。两位作者的字段名不同
 # （aegis_tier／lgpig_tier），所以按作者分表。键名见 data/ 的 site_authors。
 # 同一段站内正文的几种叫法：物品记录用英文字段名，自发主键沿用源表的中文列名
-TEXT_FIELDS = ('realgame_details', '效果', '说明')
+TEXT_FIELDS = ("realgame_details", "效果", "说明")
 
 AUTHOR_FIELDS = {
-    'Aegis': {'评级': 'aegis_tier', '来源': 'aegis_source', '枪管': 'barrel',
-              '弹匣': 'magazine', '大师': 'masterwork', 'Perk 1': 'perk1',
-              'Perk 2': 'perk2', '起源特性': 'origin', '注解': 'explanation_1'},
-    'LGpig': {'评级': 'lgpig_tier', '获取地点': 'lgpig_source', '定位': 'role',
-              'Perk 三号位': 'perk1', 'Perk 四号位': 'perk2', 'DPS': 'dps',
-              '总伤': 'total_damage', '切换 DPS': 'swap_dps', '备注': 'notes',
-              '评级理由': 'lgpig_tier_explanation',
-              '理由一': 'explanation_1', '理由二': 'explanation_2', '理由三': 'explanation_3'},
+    "Aegis": {
+        "评级": "aegis_tier",
+        "来源": "aegis_source",
+        "枪管": "barrel",
+        "弹匣": "magazine",
+        "大师": "masterwork",
+        "Perk 1": "perk1",
+        "Perk 2": "perk2",
+        "起源特性": "origin",
+        "注解": "explanation_1",
+    },
+    "LGpig": {
+        "评级": "lgpig_tier",
+        "获取地点": "lgpig_source",
+        "定位": "role",
+        "Perk 三号位": "perk1",
+        "Perk 四号位": "perk2",
+        "DPS": "dps",
+        "总伤": "total_damage",
+        "切换 DPS": "swap_dps",
+        "备注": "notes",
+        "评级理由": "lgpig_tier_explanation",
+        "理由一": "explanation_1",
+        "理由二": "explanation_2",
+        "理由三": "explanation_3",
+    },
 }
 
-AMMO_GEN = '1931675084'     # 弹药生成
-CHARGE_RATE = '3022301683'  # 充能效率（刀剑）
-IMPACT = '4043523819'       # 伤害（刀剑）
+AMMO_GEN = "1931675084"  # 弹药生成
+CHARGE_RATE = "3022301683"  # 充能效率（刀剑）
+IMPACT = "4043523819"  # 伤害（刀剑）
 
-PERK_SOCKETS = ('intrinsic', 'trait')
-PARA = '\\\\ \\\\'          # 段落之间：格内换行两次
+PERK_SOCKETS = ("intrinsic", "trait")
+PARA = "\\\\ \\\\"  # 段落之间：格内换行两次
 
 # (页, 行标题, 列, 原因)
 PROBLEMS = []
@@ -101,14 +153,14 @@ def facts():
 
 
 # 列名 → 字段名。只有这三个另起名字，其余用列名本身。
-RENAME = {'图标': 'icon', '说明': 'realgame_details'}
+RENAME = {"图标": "icon", "说明": "realgame_details"}
 
 
 def src_path(page):
     """一页源稿的绝对路径。主键骨架在 references/keys/，散文与表在 docs/。"""
     got = shell.source_path(page)
     if got is None:
-        markup.die('找不到源稿：%s' % page)
+        markup.die("找不到源稿：%s" % page)
     return got
 
 
@@ -122,18 +174,18 @@ def heads(page):
     源稿只剩主键清单，所以这是「这一页有哪些行」的唯一入口。
     """
     out, inside = [], False
-    with open(src_path(page), encoding='utf-8') as fh:
+    with open(src_path(page), encoding="utf-8") as fh:
         for line in fh:
-            line = line.rstrip('\n')
-            if line.startswith('列：'):
+            line = line.rstrip("\n")
+            if line.startswith("列："):
                 inside = True
                 continue
-            if not line.strip() or line.startswith('##'):
+            if not line.strip() or line.startswith("##"):
                 inside = False
                 continue
-            if not inside or line.strip().startswith('=='):
+            if not inside or line.strip().startswith("=="):
                 continue
-            keys = line.strip().partition('  ')[0].split()
+            keys = line.strip().partition("  ")[0].split()
             if keys:
                 out.append(keys[0])
     return out
@@ -147,9 +199,9 @@ def fields_of(head):
     """
     out, seen = [], {}
     for col in head:
-        name = 'name' if col == head[0] else RENAME.get(col, col)
+        name = "name" if col == head[0] else RENAME.get(col, col)
         seen[name] = seen.get(name, 0) + 1
-        out.append(name if seen[name] == 1 else '%s#%d' % (name, seen[name]))
+        out.append(name if seen[name] == 1 else "%s#%d" % (name, seen[name]))
     return out
 
 
@@ -158,8 +210,8 @@ def where_of(page):
 
     与 convert-doc.where_of() 同一条判据；跨页链接按目录拼，取错了整条链接落空。
     """
-    with open(src_path(page), encoding='utf-8') as f:
-        got = re.search(r'^路径：(.*)$', f.read(), re.M)
+    with open(src_path(page), encoding="utf-8") as f:
+        got = re.search(r"^路径：(.*)$", f.read(), re.M)
     return got.group(1).strip() if got else page
 
 
@@ -174,23 +226,23 @@ def minted(page, shown):
     **规则只有这一处**：页面渲染与页面索引两边都调它，合出来的键必须一样，否则
     锚点与渲染结果落不到同一条实体上。名字用渲染后的显示名（格内换行已经收掉）。
     """
-    return 'row:%s/%s' % (page, shown)
+    return "row:%s/%s" % (page, shown)
 
 
 def is_skeleton(md):
-    return re.search(r'^列：', md, re.M) is not None
+    return re.search(r"^列：", md, re.M) is not None
 
 
 def zh(rec):
-    return ((rec or {}).get('i18n') or {}).get(ZH) or {}
+    return ((rec or {}).get("i18n") or {}).get(ZH) or {}
 
 
 def name_of(key):
-    return zh(facts().at(key)).get('name') or ''
+    return zh(facts().at(key)).get("name") or ""
 
 
 def combo(rec):
-    return (rec or {}).get('kind') == '组合'
+    return (rec or {}).get("kind") == "组合"
 
 
 _SUBS = {}
@@ -211,8 +263,8 @@ def subs_of(page, key):
         where = where_of(page)
         got = collections.defaultdict(list)
         for k, rec in facts().minted.items():
-            if combo(rec) and rec.get('page') == where and k not in listed:
-                got[str((rec.get('members') or [''])[0])].append(k)
+            if combo(rec) and rec.get("page") == where and k not in listed:
+                got[str((rec.get("members") or [""])[0])].append(k)
         _SUBS[page] = got
     return _SUBS[page].get(key, [])
 
@@ -225,47 +277,50 @@ def icon_file(key):
     （无敌索尔）」取无敌索尔）；组合没有自己的图时取第一个成员的。
     """
     rec = facts().at(key) or {}
-    if rec.get('icon_from'):
-        return icon_file(str(rec['icon_from']))
-    if rec.get('icon_local'):
-        return rec['icon_local']
-    if combo(rec) and rec.get('members'):
-        return icon_file(str(rec['members'][0]))
+    if rec.get("icon_from"):
+        return icon_file(str(rec["icon_from"]))
+    if rec.get("icon_local"):
+        return rec["icon_local"]
+    if combo(rec) and rec.get("members"):
+        return icon_file(str(rec["members"][0]))
     return None
 
 
 # 一页几万次调用、只有几千种组合；relpath 每次都要 getcwd 两回。
 @functools.lru_cache(maxsize=None)
 def rel(path, where):
-    return os.path.relpath(path, where).replace(os.sep, '/')
+    return os.path.relpath(path, where).replace(os.sep, "/")
 
 
 # ── 从主键现取的列 ────────────────────────────────────────────────────
 def weapon_of(key):
     """派生列看的那件武器：组合看第一个成员。"""
     rec = facts().at(key) or {}
-    if combo(rec) and rec.get('members'):
-        return facts().at(str(rec['members'][0])) or {}
+    if combo(rec) and rec.get("members"):
+        return facts().at(str(rec["members"][0])) or {}
     return rec
 
 
 def stat_of(rec, stat):
-    group = facts().groups.get(str((rec.get('stats') or {}).get('statGroupHash')))
+    group = facts().groups.get(str((rec.get("stats") or {}).get("statGroupHash")))
     return shown(rec, group, stat)
 
 
 def champ_path(breaker):
-    return 'assets/icons/%s.webp' % os.path.splitext(os.path.basename(icons.CHAMP[breaker]))[0]
+    return (
+        "assets/icons/%s.webp"
+        % os.path.splitext(os.path.basename(icons.CHAMP[breaker]))[0]
+    )
 
 
 def set_count(key):
     """套装效果 → 「N 件」。件数是套装 setPerks 里指向这条效果的 requiredSetCount。"""
     rec = facts().at(key) or {}
-    bare = key.partition(':')[2]
-    for s in rec.get('onSets') or ():
-        for p in (facts().sets.get(str(s)) or {}).get('setPerks') or ():
-            if p['perk'][1] == bare:
-                return '%d 件' % p['requiredSetCount']
+    bare = key.partition(":")[2]
+    for s in rec.get("onSets") or ():
+        for p in (facts().sets.get(str(s)) or {}).get("setPerks") or ():
+            if p["perk"][1] == bare:
+                return "%d 件" % p["requiredSetCount"]
     return None
 
 
@@ -275,16 +330,22 @@ def type_names():
     if _TYPES is None:
         seen = collections.defaultdict(collections.Counter)
         for rec in facts().items.values():
-            if rec.get('itemType') == 3:
-                seen[rec.get('itemSubType')][zh(rec).get('itemTypeDisplayName', '')] += 1
+            if rec.get("itemType") == 3:
+                seen[rec.get("itemSubType")][
+                    zh(rec).get("itemTypeDisplayName", "")
+                ] += 1
         _TYPES = {sub: c.most_common(1)[0][0] for sub, c in seen.items()}
     return _TYPES
 
 
 # ── 异域：装备、固有 perk、催化剂合回一行 ───────────────────────────────
 def socket_kind(entry):
-    return ((facts().socket_types.get(str(entry.get('socketTypeHash'))) or {})
-            .get('derived') or {}).get('kind')
+    return (
+        (facts().socket_types.get(str(entry.get("socketTypeHash"))) or {}).get(
+            "derived"
+        )
+        or {}
+    ).get("kind")
 
 
 def perk_plugs(rec, pools=False):
@@ -294,15 +355,21 @@ def perk_plugs(rec, pools=False):
     说明里三枚都讲了。
     """
     out = []
-    for e in (rec.get('sockets') or {}).get('socketEntries') or ():
+    for e in (rec.get("sockets") or {}).get("socketEntries") or ():
         if socket_kind(e) not in PERK_SOCKETS:
             continue
-        got = ([e['singleInitialItemHash']] if e.get('singleInitialItemHash') else []) + \
-            [p['plugItemHash'] for p in e.get('reusablePlugItems') or ()]
+        got = (
+            [e["singleInitialItemHash"]] if e.get("singleInitialItemHash") else []
+        ) + [p["plugItemHash"] for p in e.get("reusablePlugItems") or ()]
         if pools:
-            for f in ('reusablePlugSetHash', 'randomizedPlugSetHash'):
-                got += [p['plugItemHash'] for p in
-                        (facts().plug_sets.get(str(e.get(f))) or {}).get('reusablePlugItems') or ()]
+            for f in ("reusablePlugSetHash", "randomizedPlugSetHash"):
+                got += [
+                    p["plugItemHash"]
+                    for p in (facts().plug_sets.get(str(e.get(f))) or {}).get(
+                        "reusablePlugItems"
+                    )
+                    or ()
+                ]
         for h in got:
             if str(h) not in out:
                 out.append(str(h))
@@ -316,14 +383,18 @@ def reach(key):
     """
     rec = facts().at(key) or {}
     if combo(rec):
-        plugs = [str(m) for m in rec.get('members', [])[1:]]
+        plugs = [str(m) for m in rec.get("members", [])[1:]]
     else:
-        plugs = (perk_plugs(rec, pools=True)
-                 + [h for g in option_plugs(rec) for h in g]
-                 + [str(c) for c in (rec.get('derived') or {}).get('catalyst') or ()])
+        plugs = (
+            perk_plugs(rec, pools=True)
+            + [h for g in option_plugs(rec) for h in g]
+            + [str(c) for c in (rec.get("derived") or {}).get("catalyst") or ()]
+        )
     out = []
     for h in plugs:
-        for one in [h] + ['perk:%s' % p['perkHash'] for p in (facts().at(h) or {}).get('perks') or ()]:
+        for one in [h] + [
+            "perk:%s" % p["perkHash"] for p in (facts().at(h) or {}).get("perks") or ()
+        ]:
             if one not in out:
                 out.append(one)
     return out
@@ -380,7 +451,7 @@ def elsewhere():
         _ELSEWHERE = set()
         for page in BODY - EXOTIC:
             for head in heads(page):
-                got = zh(facts().at(head)).get('realgame_details', '').strip()
+                got = zh(facts().at(head)).get("realgame_details", "").strip()
                 if got:
                     _ELSEWHERE.add(got)
     return _ELSEWHERE
@@ -392,14 +463,17 @@ def own_hosts(key):
     got = reach(key)
     if combo(rec):
         return got
-    mine = {h for h in got if not h.startswith('perk:')} | {key}
+    mine = {h for h in got if not h.startswith("perk:")} | {key}
     out = []
     for h in got:
         if users()[h] != 1:
             continue
-        if h.startswith('perk:') and not {str(i) for i in (facts().at(h) or {}).get('onItems') or ()} <= mine:
+        if (
+            h.startswith("perk:")
+            and not {str(i) for i in (facts().at(h) or {}).get("onItems") or ()} <= mine
+        ):
             continue
-        if zh(facts().at(h)).get('realgame_details', '').strip() in elsewhere():
+        if zh(facts().at(h)).get("realgame_details", "").strip() in elsewhere():
             continue
         out.append(h)
     return out
@@ -411,23 +485,31 @@ def exotic_parts(key, own):
     不拆开基础正文的段落；末尾的触发句必须紧接宿主效果。段首 ↑ 是本页的
     催化标题，连同后续正文留在催化宿主之前。每块保留自己的记录出处。"""
     paras = [p.strip() for p in own.split(PARA) if p.strip()]
-    split = next((i for i, p in enumerate(paras)
-                  if markup.text_of(markup.strip_marks(p)).strip().startswith('↑')), len(paras))
-    base = (' %s ' % PARA).join(paras[:split])
-    catalyst = (' %s ' % PARA).join(paras[split:])
-    cats = (weapon_of(key).get('derived') or {}).get('catalyst') or ()
+    split = next(
+        (
+            i
+            for i, p in enumerate(paras)
+            if markup.text_of(markup.strip_marks(p)).strip().startswith("↑")
+        ),
+        len(paras),
+    )
+    base = (" %s " % PARA).join(paras[:split])
+    catalyst = (" %s " % PARA).join(paras[split:])
+    cats = (weapon_of(key).get("derived") or {}).get("catalyst") or ()
     catalyst_hosts = {str(c) for c in cats}
     for c in cats:
-        catalyst_hosts.update('perk:%s' % p['perkHash']
-                              for p in (facts().at(str(c)) or {}).get('perks') or ())
+        catalyst_hosts.update(
+            "perk:%s" % p["perkHash"]
+            for p in (facts().at(str(c)) or {}).get("perks") or ()
+        )
     item_hosts = set()
     seen_names = set()
     raw_hosts = []
     for h in own_hosts(key):
-        t = zh(facts().at(h)).get('realgame_details', '').strip()
+        t = zh(facts().at(h)).get("realgame_details", "").strip()
         if not t:
             continue
-        if not h.startswith('perk:'):
+        if not h.startswith("perk:"):
             nm = name_of(h)
             if nm and nm in seen_names:
                 continue
@@ -438,57 +520,66 @@ def exotic_parts(key, own):
 
     hosts, cat_hosts, seen = [], [], set()
     for h, t in raw_hosts:
-        if h.startswith('perk:'):
-            on_items = {str(i) for i in (facts().at(h) or {}).get('onItems') or ()}
+        if h.startswith("perk:"):
+            on_items = {str(i) for i in (facts().at(h) or {}).get("onItems") or ()}
             if on_items & item_hosts:
                 continue
         if t not in seen:
             seen.add(t)
             (cat_hosts if h in catalyst_hosts else hosts).append((h, t))
-    return (([(key, base)] if base else []) + hosts
-            + ([(key, catalyst)] if catalyst else []) + cat_hosts)
+    return (
+        ([(key, base)] if base else [])
+        + hosts
+        + ([(key, catalyst)] if catalyst else [])
+        + cat_hosts
+    )
 
 
 def exotic_text(key, own):
     """exotic_parts() 拼成一格。"""
-    return (' %s ' % PARA).join(t for _, t in exotic_parts(key, own))
+    return (" %s " % PARA).join(t for _, t in exotic_parts(key, own))
 
 
 def authors_of(rec):
     """一条记录上的作者块 `{作者: 那一段}`。站内字段随语言走，落在
     `i18n.zh-CN.site_authors`；效果表那 29 条作者评语在根上的 `authors`。
     取法只有这一处，页面、词表与回归共用。"""
-    return zh(rec).get('site_authors') or rec.get('authors') or {}
+    return zh(rec).get("site_authors") or rec.get("authors") or {}
 
 
 def authors_path(rec):
     """作者块在记录上的路径，取法与 authors_of() 同一条。就地编辑按它标出处。"""
-    return 'i18n/zh-CN/site_authors' if zh(rec).get('site_authors') else 'authors'
+    return "i18n/zh-CN/site_authors" if zh(rec).get("site_authors") else "authors"
 
 
 def author_block(rec, who):
     return authors_of(rec).get(who) or {}
 
 
-EMPTY_SOCKET = 'crafting.recipes.empty_socket'
-EMPTY_SLOT = re.compile(r'^空.*插槽$')
+EMPTY_SOCKET = "crafting.recipes.empty_socket"
+EMPTY_SLOT = re.compile(r"^空.*插槽$")
 # 选项槽扫的是「剩下那些」：固有、特征、催化、击杀记录器、外观各有归处。
-OPTION_SKIP = frozenset({'intrinsic', 'trait', 'masterwork', 'tracker', 'cosmetic'})
+OPTION_SKIP = frozenset({"intrinsic", "trait", "masterwork", "tracker", "cosmetic"})
 
 # 「异域 PERK」那一格交出来的四样。picks 是一池多选的那几组，组里的名字都在 names 里。
-Perks = collections.namedtuple('Perks', 'names first icons picks')
+Perks = collections.namedtuple("Perks", "names first icons picks")
 
 
 def socket_pool(e):
     """一个插槽插得进去的全部插件：初始那枚、内联那几枚、插件池里那些。"""
     out = []
-    if e.get('singleInitialItemHash'):
-        out.append(str(e['singleInitialItemHash']))
-    out += [str(p['plugItemHash']) for p in e.get('reusablePlugItems') or ()]
-    for field in ('reusablePlugSetHash', 'randomizedPlugSetHash'):
+    if e.get("singleInitialItemHash"):
+        out.append(str(e["singleInitialItemHash"]))
+    out += [str(p["plugItemHash"]) for p in e.get("reusablePlugItems") or ()]
+    for field in ("reusablePlugSetHash", "randomizedPlugSetHash"):
         if e.get(field):
-            out += [str(p['plugItemHash']) for p in
-                    (facts().plug_sets.get(str(e[field])) or {}).get('reusablePlugItems') or ()]
+            out += [
+                str(p["plugItemHash"])
+                for p in (facts().plug_sets.get(str(e[field])) or {}).get(
+                    "reusablePlugItems"
+                )
+                or ()
+            ]
     return list(dict.fromkeys(out))
 
 
@@ -499,7 +590,7 @@ def option_plugs(rec):
     都是传说及以下，按这一条自然落在外面。两页 494 行里只有英勇利刃命中。
     """
     out = []
-    for e in (rec.get('sockets') or {}).get('socketEntries') or ():
+    for e in (rec.get("sockets") or {}).get("socketEntries") or ():
         if socket_kind(e) in OPTION_SKIP:
             continue
         got = [h for h in socket_pool(e) if exotic_plug(h)]
@@ -511,16 +602,37 @@ def option_plugs(rec):
 # 两页三千多行、每行把每个插槽的整个插件池过一遍，同一枚插件要判几百次。
 @functools.lru_cache(maxsize=None)
 def exotic_plug(h):
-    return (((facts().at(h) or {}).get('inventory') or {}).get('tierType') == 6
-            and bool(name_of(h)) and not EMPTY_SLOT.match(name_of(h)))
+    return (
+        ((facts().at(h) or {}).get("inventory") or {}).get("tierType") == 6
+        and bool(name_of(h))
+        and not EMPTY_SLOT.match(name_of(h))
+    )
 
 
 def live_catalyst(c):
     """任务态那条不算。解锁前的催化剂在库里另有一条，跟着武器叫（SUROS政权那把叫
     「升级大师杰作」）、品阶普通、给的效果没名字，三条合起来只有这一枚。"""
     rec = facts().at(c) or {}
-    return ((rec.get('inventory') or {}).get('tierType') == 6
-            or any(name_of('perk:%s' % p['perkHash']) for p in rec.get('perks') or ()))
+    return (rec.get("inventory") or {}).get("tierType") == 6 or any(
+        name_of("perk:%s" % p["perkHash"]) for p in rec.get("perks") or ()
+    )
+
+
+_MATRIX: dict = {}
+
+
+def matrix(page):
+    """references/pages/<页>.json 的 matrix，没有就回 None。"""
+    if page not in _MATRIX:
+        path = os.path.join(shell.ROOT, "references", "pages", page + ".json")
+        if os.path.exists(path):
+            import json
+
+            with open(path, encoding="utf-8") as f:
+                _MATRIX[page] = json.load(f).get("matrix")
+        else:
+            _MATRIX[page] = None
+    return _MATRIX[page]
 
 
 _FRAMES = None
@@ -538,18 +650,23 @@ def frame_rows():
     if _FRAMES is None:
         _FRAMES = {}
         for h, rec in facts().items.items():
-            for row in zh(rec).get('site_frameStats') or ():
-                _FRAMES[(name_of(h), row.get('itemSubType'), row.get('ammoType'))] = row
+            for row in zh(rec).get("site_frameStats") or ():
+                _FRAMES[(name_of(h), row.get("itemSubType"), row.get("ammoType"))] = row
     return _FRAMES
 
 
 def frame_row(rec):
     """一件武器在武器框架页上的那一行，没有就回 None。异域自己的框架不在表里。"""
-    arch = (rec.get('derived') or {}).get('archetype')
+    arch = (rec.get("derived") or {}).get("archetype")
     if not arch:
         return None
-    return frame_rows().get((name_of(str(arch)), rec.get('itemSubType'),
-                             (rec.get('equippingBlock') or {}).get('ammoType')))
+    return frame_rows().get(
+        (
+            name_of(str(arch)),
+            rec.get("itemSubType"),
+            (rec.get("equippingBlock") or {}).get("ammoType"),
+        )
+    )
 
 
 def exotic_pool(key):
@@ -567,19 +684,20 @@ def exotic_pool(key):
     """
     rec = facts().at(key) or {}
     got = exotic_perks(key)
-    out = {n.lstrip('↑'): k for n, k in got.icons.items()}
+    out = {n.lstrip("↑"): k for n, k in got.icons.items()}
     mine, host = set(), key
     if combo(rec):
-        mine = {name_of(str(m)) for m in rec.get('members') or ()}
-        host = str((rec.get('members') or [''])[0])
+        mine = {name_of(str(m)) for m in rec.get("members") or ()}
+        host = str((rec.get("members") or [""])[0])
         for n, k in exotic_perks(host).icons.items():
-            out.setdefault(n.lstrip('↑'), k)
+            out.setdefault(n.lstrip("↑"), k)
     for col in facts().pool(host):
-        kind = ((facts().socket_types.get(str(col['type'])) or {})
-                .get('derived') or {}).get('kind')
-        if col.get('gear') or kind not in ('intrinsic', 'trait', 'origin'):
+        kind = (
+            (facts().socket_types.get(str(col["type"])) or {}).get("derived") or {}
+        ).get("kind")
+        if col.get("gear") or kind not in ("intrinsic", "trait", "origin"):
             continue
-        for h in col.get('plugs') or ():
+        for h in col.get("plugs") or ():
             n = name_of(str(h))
             if n:
                 out.setdefault(n, str(h))
@@ -595,11 +713,14 @@ def perk_item(pk):
     同名两件是基础版与强化版，取不带 `sameAs` 的那一件。
     """
     n = name_of(pk)
-    got = [str(i) for i in (facts().at(pk) or {}).get('onItems') or ()
-           if name_of(str(i)) == n and icon_file(str(i))]
+    got = [
+        str(i)
+        for i in (facts().at(pk) or {}).get("onItems") or ()
+        if name_of(str(i)) == n and icon_file(str(i))
+    ]
     if not got:
         return None
-    return next((h for h in got if not (facts().at(h) or {}).get('sameAs')), got[0])
+    return next((h for h in got if not (facts().at(h) or {}).get("sameAs")), got[0])
 
 
 def exotic_perks(key):
@@ -622,21 +743,25 @@ def exotic_perks(key):
     rec = facts().at(key) or {}
     frame = None
     if combo(rec):
-        plugs = [str(m) for m in rec.get('members', [])[1:]]
+        plugs = [str(m) for m in rec.get("members", [])[1:]]
         catalysts, options = [], []
     else:
-        plugs = [h for h in perk_plugs(rec) if h not in claimed()] or \
-            ['perk:%s' % p['perkHash'] for p in rec.get('perks') or ()]
-        catalysts = [str(c) for c in (rec.get('derived') or {}).get('catalyst') or ()
-                     if live_catalyst(str(c))]
+        plugs = [h for h in perk_plugs(rec) if h not in claimed()] or [
+            "perk:%s" % p["perkHash"] for p in rec.get("perks") or ()
+        ]
+        catalysts = [
+            str(c)
+            for c in (rec.get("derived") or {}).get("catalyst") or ()
+            if live_catalyst(str(c))
+        ]
         options = option_plugs(rec)
-        arch = (rec.get('derived') or {}).get('archetype')
-        if arch and name_of(str(arch)) == zh(rec).get('name'):
+        arch = (rec.get("derived") or {}).get("archetype")
+        if arch and name_of(str(arch)) == zh(rec).get("name"):
             frame = str(arch)
     names, icons, picks, first = {}, {}, [], None
     for h in plugs:
         n = name_of(h)
-        pci = ((facts().at(h) or {}).get('plug') or {}).get('plugCategoryIdentifier')
+        pci = ((facts().at(h) or {}).get("plug") or {}).get("plugCategoryIdentifier")
         if not n or h == frame or n in names or pci == EMPTY_SOCKET:
             continue
         names[n] = icons[n] = h
@@ -653,14 +778,16 @@ def exotic_perks(key):
             picks.append(group)
     chosen = []
     for c in catalysts:
-        got = [('perk:%s' % p['perkHash'], name_of('perk:%s' % p['perkHash']))
-               for p in (facts().at(c) or {}).get('perks') or ()]
+        got = [
+            ("perk:%s" % p["perkHash"], name_of("perk:%s" % p["perkHash"]))
+            for p in (facts().at(c) or {}).get("perks") or ()
+        ]
         for h, n in [x for x in got if x[1]] or [(c, name_of(c))]:
-            if '↑' + n in names:
+            if "↑" + n in names:
                 continue
-            names['↑' + n] = h
-            icons['↑' + n] = perk_item(h) or c
-            chosen.append('↑' + n)
+            names["↑" + n] = h
+            icons["↑" + n] = perk_item(h) or c
+            chosen.append("↑" + n)
     # 催化槽一池多选的那 11 把（库尔之影四枚魂火、墓园双星四个改装）：装上的只有
     # 一枚。一枚催化剂给几条效果是另一回事（条件终局那枚同时给治疗弹匣与霜华窃取者），
     # 所以按催化剂的枚数判，不按名字条数。
@@ -669,41 +796,25 @@ def exotic_perks(key):
     return Perks(names, first, icons, picks)
 
 
-# ── 矩阵表 ────────────────────────────────────────────────────────────
-_MATRIX = {}
-
-
-def matrix(page):
-    if page not in _MATRIX:
-        path = os.path.join(shell.ROOT, 'references', 'pages', page + '.json')
-        _MATRIX[page] = None
-        if os.path.exists(path):
-            with open(path, encoding='utf-8') as f:
-                _MATRIX[page] = json.load(f).get('matrix') or []
-    return _MATRIX[page]
-
-
-def matrix_row(page, section, lane, key):
-    for sec in matrix(page) or ():
-        if sec['节'] in (section, '%s · %s' % (section, lane)) and key in sec['行']:
-            return sec, sec['行'][key]
-    return None, None
-
-
 # ── 一张表 ────────────────────────────────────────────────────────────
 class Table:
     def __init__(self, page, where, section, head, seen):
         self.page, self.where, self.section = page, where, section
         self.head = head
         self.fields = fields_of(head)
-        self.seen = seen            # 这一页里每枚主键已经出现过几次，跨表累计
-        self.rank = 0
-        self.lane = ''
-        self.perks = None           # 本行「异域 PERK」格里的 {名字: 主键}
+        self.seen = seen  # 这一页里每枚主键已经出现过几次，跨表累计
+        self.lane = ""
         self.keys: tuple[str, ...] = ()  # 本行全部版本；费用不能只看行首
 
     def problem(self, title, col, why):
-        PROBLEMS.append((self.page, markup.text_of(markup.strip_marks(title), collapse=True), col, why))
+        PROBLEMS.append(
+            (
+                self.page,
+                markup.text_of(markup.strip_marks(title), collapse=True),
+                col,
+                why,
+            )
+        )
 
     def block(self, rec, key):
         """这一行的正文从哪一块取：`(那一块, 它在记录上的路径)`。路径给就地编辑标出处。"""
@@ -712,87 +823,55 @@ class Table:
         who = AUTHORED.get(self.page)
         if who:
             base = author_block(rec, who)
-            at = '%s/%s' % (authors_path(rec), who)
-            seq = [(base, at)] + [(v, '%s/variants/%d' % (at, i))
-                                  for i, v in enumerate(base.get('variants') or ())]
+            at = "%s/%s" % (authors_path(rec), who)
+            seq = [(base, at)] + [
+                (v, "%s/variants/%d" % (at, i))
+                for i, v in enumerate(base.get("variants") or ())
+            ]
         else:
-            vs = list(enumerate(rec.get('variants') or ()))
-            seq = ([(v, 'variants/%d' % i) for i, v in vs if v.get('page') == self.page]
-                   + [(zh(rec), 'i18n/zh-CN')]
-                   + [(v, 'variants/%d' % i) for i, v in vs if 'page' not in v])
+            vs = list(enumerate(rec.get("variants") or ()))
+            seq = (
+                [(v, "variants/%d" % i) for i, v in vs if v.get("page") == self.page]
+                + [(zh(rec), "i18n/zh-CN")]
+                + [(v, "variants/%d" % i) for i, v in vs if "page" not in v]
+            )
         return seq[n] if n < len(seq) else (None, None)
 
     def icon_src(self, key, title):
         """这一枚的图相对本页的路径。取不到记一笔、回空串。"""
         got = icon_file(key)
         if not got:
-            self.problem(title, '图标', '%s 没有图' % key)
-            return ''
+            self.problem(title, "图标", "%s 没有图" % key)
+            return ""
         if not os.path.exists(os.path.join(shell.SITE, got)):
-            self.problem(title, '图标', '%s 的图不在盘上：%s' % (key, got))
-            return ''
+            self.problem(title, "图标", "%s 的图不在盘上：%s" % (key, got))
+            return ""
         return rel(got, self.where)
 
     def icon(self, key, title):
         got = self.icon_src(key, title)
-        return '{ico|![](%s)}' % got if got else ''
+        return "{ico|![](%s)}" % got if got else ""
 
     def lines(self, raw):
-        """源稿一行 → [(格子, 主键, {PERK 名: 主键}, 出处)]：本行加它的子行。
-        横幅行与子行的主键是 None。出处与格子一一对应，站内写的那几格是
-        `(主键, 字段路径, 标签)`，别的格是 None。"""
+        """源稿一行 → [(格子, 主键, None, 出处)]。横幅行的主键是 None。"""
         text = raw.strip()
-        self.perks = None
-        if text.startswith('=='):
-            self.lane = text.strip('= ').strip()
+        if text.startswith("=="):
+            self.lane = text.strip("= ").strip()
             return [([text], None, None, None)]
-        spec, _, title = text.partition('  ')
+        spec, _, title = text.partition("  ")
         keys = spec.split()
         title = title.strip()
         key = keys[0]
         self.keys = tuple(keys)
         rec = facts().at(key)
         if rec is None:
-            markup.die('%s：主键 %s 落不到记录上（%s）' % (self.page, key, title))
-        if rec.get('onSets'):
-            # 刷取清单按 2 件与 4 件效果分开评，行首是那条效果；源稿写的名字是效果名
-            # （校验位），这一行在页面上叫它所属的那个套装。
-            title = zh(facts().sets.get(str(rec['onSets'][0]))).get('name') or title
-        sec, pair = matrix_row(self.page, self.section, self.lane, key)
-        if sec is not None:
-            return [(self.matrix_cells(title, sec, pair), keys, None, None)]
+            markup.die("%s：主键 %s 落不到记录上（%s）" % (self.page, key, title))
         block, at = self.block(rec, key)
         if block is None:
-            self.problem(title, '*', '%s 名下没有第 %d 段' % (key, self.seen[key]))
+            self.problem(title, "*", "%s 名下没有第 %d 段" % (key, self.seen[key]))
             block = {}
-        self.rank += 1
-        out = []
-        frames = rec.get('weaponTypes') if self.page == 'weapon-perks' else None
-        if not (frames and not block.get('realgame_details')):
-            cells, spots = self.cells(key, rec, block, at, title)
-            out.append((cells, keys, self.perks, spots))
-        for i, e in enumerate(frames or []):
-            sub = '%s（%s）' % (zh(rec).get('name'), '、'.join(type_names()[t] for t in e['itemSubType']))
-            out.append((self.sub_cells(sub, key, e['realgame_details']), None, None,
-                        self.sub_spots((key, 'weaponTypes/%d/realgame_details' % i, sub))))
-        for i, e in enumerate(rec.get('enhanced') or []):
-            by = [str(b) for b in e['by']]
-            sub = '、'.join(name_of(b) for b in by)
-            out.append((self.sub_cells(sub, by[0], e['realgame_details']), None, None,
-                        self.sub_spots((key, 'enhanced/%d/realgame_details' % i,
-                                        '%s · %s' % (zh(rec).get('name'), sub)))))
-        return out
-
-    def sub_cells(self, title, icon_key, text):
-        cells = [title]
-        for f in self.fields[1:]:
-            cells.append(self.icon(icon_key, title) if f == 'icon'
-                         else text if f == 'realgame_details' else '')
-        return cells
-
-    def sub_spots(self, spot):
-        """子行的出处：只有说明那一格是站内写的。"""
-        return [None] + [spot if f == 'realgame_details' else None for f in self.fields[1:]]
+        cells, spots = self.cells(key, rec, block, at, title)
+        return [(cells, keys, None, spots)]
 
     def cells(self, key, rec, block, at, title):
         cells: list = [title]
@@ -800,41 +879,36 @@ class Table:
         for col, f in zip(self.head[1:], self.fields[1:]):
             text, field = self.cell(key, rec, block, title, col, f)
             cells.append(text)
-            spots.append((key, '%s/%s' % (at, field), '%s · %s' % (
-                markup.text_of(markup.strip_marks(title), collapse=True),
-                col.replace(markup.CELL_BREAK, ''))) if field and at else None)
+            spots.append(
+                (
+                    key,
+                    "%s/%s" % (at, field),
+                    "%s · %s"
+                    % (
+                        markup.text_of(markup.strip_marks(title), collapse=True),
+                        col.replace(markup.CELL_BREAK, ""),
+                    ),
+                )
+                if field and at
+                else None
+            )
         return cells, spots
 
     def cell(self, key, rec, block, title, col, f):
         """一格：`(文字, 取自那一块里的哪个字段)`。不是从那一块原样取来的（图标、
-        派生、异域拼合）字段回 None，就地编辑不标它。"""
-        page = self.page
-        if f == 'icon':
+        派生）字段回 None，就地编辑不标它。"""
+        if f == "icon":
             return self.icon(key, title), None
-        if page in EXOTIC and f == '异域 PERK':
-            names, first = exotic_perks(key)[:2]
-            self.perks = names
-            if not names:
-                self.problem(title, col, '插槽与催化剂里没有叫得出名字的')
-                return '', None
-            src = self.icon_src(first, title) if first else ''
-            return ('{perk|%s}' % markup.CELL_BREAK.join((['![](%s)' % src] if src else [])
-                                                         + list(names)), None)
-        if page in EXOTIC and f == 'realgame_details':
-            got = exotic_text(key, block.get('realgame_details') or '')
-            if not got:
-                self.problem(title, col, '装备与宿主都没有正文')
-            return got, None
         derive = DERIVED.get(col)
         if derive is not None and not block.get(f):
             got = derive(self, key)
             if got is None:
-                self.problem(title, col, '派生不出来')
-            return got or '', None
+                self.problem(title, col, "派生不出来")
+            return got or "", None
         who = AUTHORED.get(self.page)
         if who and not block.get(f):
             # 作者那几格的字段名是英文，列名是中文，对应写在 AUTHOR_FIELDS 一处
-            f = AUTHOR_FIELDS.get(who, {}).get(col.replace(markup.CELL_BREAK, ''), f)
+            f = AUTHOR_FIELDS.get(who, {}).get(col.replace(markup.CELL_BREAK, ""), f)
         if f not in block:
             # 同一段正文在不同记录上叫法不同：物品记录写 realgame_details，
             # 自发主键（模组族、组合）写「效果」。
@@ -842,39 +916,20 @@ class Table:
                 if f in TEXT_FIELDS and alias in block:
                     f = alias
                     break
-        got = block.get(f) or ''
+        got = block.get(f) or ""
         # 取不到就记一笔。作者没写的那一格不算——这一页的作者本来就可以留空。
         if f not in block and not who:
-            self.problem(title, col, '%s 名下没有「%s」' % (key, f))
+            self.problem(title, col, "%s 名下没有「%s」" % (key, f))
         return got, f if isinstance(block.get(f), str) else None
-
-    def matrix_cells(self, title, sec, pair):
-        cols = [c['名'] for c in sec['列']]
-        if cols == ['左栏', '右栏']:
-            right = pair[1]
-            return [title, self.icon(pair[0], title),
-                    zh(facts().at(pair[0])).get('realgame_details', ''),
-                    '{spirit|%s}' % name_of(right), self.icon(right, title),
-                    zh(facts().at(right)).get('realgame_details', '')]
-        cells = [title]
-        for col, target in zip(self.head[1:], pair):
-            tok = re.match(r'\{(sk-(\w+))\|', col)
-            if not tok:
-                markup.die('%s 矩阵表的列头认不出元素：%r' % (self.page, col))
-            src = self.icon_src(target, title)
-            href = rel('%s/index.html' % where_of(tok.group(2)), self.where)
-            cells.append('{%s|%s[%s](%s)}' % (tok.group(1), '![](%s) ' % src if src else '',
-                                             name_of(target), href))
-        return cells
 
 
 def _element(t, key):
-    got = ELEMENT.get(weapon_of(key).get('defaultDamageType') or 0)
-    return '{%s|%s}' % got if got else None
+    got = ELEMENT.get(weapon_of(key).get("defaultDamageType") or 0)
+    return "{%s|%s}" % got if got else None
 
 
 def _frame(t, key):
-    arch = (weapon_of(key).get('derived') or {}).get('archetype')
+    arch = (weapon_of(key).get("derived") or {}).get("archetype")
     return name_of(str(arch)) or None if arch else None
 
 
@@ -883,58 +938,45 @@ def _frame_rate(t, key):
     frame = _frame(t, key)
     if frame is None:
         return None
-    rate = ((facts().at(str(rec['derived']['archetype'])) or {}).get('derived') or {}).get(
-        'rate', {}).get(str(rec.get('itemSubType')))
-    return '%s%s%s' % (frame, markup.CELL_BREAK, rate) if rate else frame
+    rate = (
+        ((facts().at(str(rec["derived"]["archetype"])) or {}).get("derived") or {})
+        .get("rate", {})
+        .get(str(rec.get("itemSubType")))
+    )
+    return "%s%s%s" % (frame, markup.CELL_BREAK, rate) if rate else frame
 
 
 def _season(t, key):
-    got = (weapon_of(key).get('derived') or {}).get('season')
-    return '{num|%d}' % got if got else None
-
-
-def _rank(t, key):
-    return '{num|%d}' % t.rank
+    got = (weapon_of(key).get("derived") or {}).get("season")
+    return "{num|%d}" % got if got else None
 
 
 def _champ(t, key):
-    got = (weapon_of(key).get('derived') or {}).get('breakerType')
+    got = (weapon_of(key).get("derived") or {}).get("breakerType")
     if not got:
-        return ''
-    return '{champ|![](%s)}' % rel(champ_path(got), t.where)
-
-
-def _stat(stat):
-    def derive(t, key):
-        got = stat_of(weapon_of(key), stat)
-        return None if got is None else '{num|%s}' % got
-    return derive
+        return ""
+    return "{champ|![](%s)}" % rel(champ_path(got), t.where)
 
 
 def _cost(t, key):
     values = set()
     for h in t.keys or (key,):
         rec = facts().at(h) or {}
-        for member in rec.get('members') or (h,):
-            cost = ((facts().at(str(member)) or {}).get('plug') or {}).get('energyCost')
+        for member in rec.get("members") or (h,):
+            cost = ((facts().at(str(member)) or {}).get("plug") or {}).get("energyCost")
             if cost is not None:
                 values.add(cost)
     costs = sorted(values)
-    return '{cost|%s}' % '–'.join(map(str, costs)) if costs else None
+    return "{cost|%s}" % "–".join(map(str, costs)) if costs else None
 
 
 DERIVED = {
-    '属性': _element,
-    '框架': _frame,
-    '框架\\\\射速': _frame_rate,
-    '赛季': _season,
-    '排名': _rank,
-    '勇士': _champ,
-    '弹药生成': _stat(AMMO_GEN),
-    '充能效率': _stat(CHARGE_RATE),
-    '伤害': _stat(IMPACT),
-    '件数': lambda t, key: set_count(key),
-    '费用': _cost,
+    "属性": _element,
+    "框架": _frame,
+    "框架\\\\射速": _frame_rate,
+    "赛季": _season,
+    "勇士": _champ,
+    "费用": _cost,
 }
 
 
@@ -944,24 +986,24 @@ def expand(md, page, where):
     回 (新正文, {行号: 主键}, {行号: {PERK 名: 主键}}, {行号: [每格的出处]})，行号 0 起。
     """
     out, keys_at, perks_at, spots_at = [], {}, {}, {}
-    lines = md.split('\n')
+    lines = md.split("\n")
     seen = collections.Counter()
-    section, i = '', 0
+    section, i = "", 0
     while i < len(lines):
         line = lines[i]
-        if line.startswith('## '):
-            section = markup.IMG.sub('', line[3:]).strip()
-        if not line.startswith('列：'):
+        if line.startswith("## "):
+            section = markup.IMG.sub("", line[3:]).strip()
+        if not line.startswith("列："):
             out.append(line)
             i += 1
             continue
-        spec = '| %s |' % line[len('列：'):].strip()
+        spec = "| %s |" % line[len("列：") :].strip()
         head = [spec[a:b] for a, b in markup.cells(spec) or ()]
         table = Table(page, where, section, head, seen)
-        out.append('| %s |' % ' | '.join(head))
-        out.append('|%s|' % '|'.join(['---'] * len(head)))
+        out.append("| %s |" % " | ".join(head))
+        out.append("|%s|" % "|".join(["---"] * len(head)))
         i += 1
-        while i < len(lines) and lines[i].strip() and not lines[i].startswith('##'):
+        while i < len(lines) and lines[i].strip() and not lines[i].startswith("##"):
             for cells, keys, perks, spots in table.lines(lines[i]):
                 if keys:
                     keys_at[len(out)] = keys
@@ -971,7 +1013,9 @@ def expand(md, page, where):
                     spots_at[len(out)] = spots
                 # 神器模组页那一批正文按真换行分行（那一页不走表格），表格一行一条，
                 # 格内换行只能写成 \\。
-                out.append('| %s |' % ' | '.join(c.replace('\n', markup.CELL_BREAK)
-                                                 for c in cells))
+                out.append(
+                    "| %s |"
+                    % " | ".join(c.replace("\n", markup.CELL_BREAK) for c in cells)
+                )
             i += 1
-    return '\n'.join(out), keys_at, perks_at, spots_at
+    return "\n".join(out), keys_at, perks_at, spots_at

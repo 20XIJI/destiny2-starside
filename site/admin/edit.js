@@ -260,7 +260,7 @@
       .replace(/<[^>]*>/g, '')
       .replace(/\{[\w-]+\|/g, '').replace(/\}/g, '')
       .replace(/\\\\/g, '')
-      .replace(/[*`~,“”]/g, '')
+      .replace(/[*\x60~,“”]/g, '')
       .replace(/\s/g, '')
   }
 

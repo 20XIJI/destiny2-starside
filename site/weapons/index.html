@@ -609,6 +609,14 @@ body:has(.entries) { --wrap: 1500px; }
 [data-tier="强力"] .node::after { box-shadow: 0 0 10px 1px #f0a24a99; }
 [data-tier="创意"] .node::before { border: 3px solid #9ec7d8; }
 [data-tier="创意"] .node::after { box-shadow: 0 0 8px #9ec7d866; }
+@keyframes tier-drift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes tier-breathe {
+  0%, 100% { opacity: .6; }
+  50% { opacity: 1; }
+}
 .core-mosaic {
   display: flex;
   flex-wrap: wrap;

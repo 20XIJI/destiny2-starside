@@ -28,87 +28,148 @@ import rows
 import shell
 import vocab
 
-TYPE_ICONS = os.path.join(shell.ROOT, 'tools', 'type-icons.json')
+TYPE_ICONS = os.path.join(shell.ROOT, "tools", "type-icons.json")
 
 # 槽位取物品自己的 bucketTypeHash，站内叫主手／副手／威能。
-SLOT = {1498876634: '主手', 2465295065: '副手', 953998645: '威能'}
-AMMO = {1: ('主武器', 'ammo-primary'), 2: ('特殊', 'ammo-special'), 3: ('威能', 'ammo-heavy')}
+SLOT = {1498876634: "主手", 2465295065: "副手", 953998645: "威能"}
+AMMO = {
+    1: ("主武器", "ammo-primary"),
+    2: ("特殊", "ammo-special"),
+    3: ("威能", "ammo-heavy"),
+}
 # itemSubType → type-icons.json 里那枚小图标（justrealmilk/destiny-icons，CC0）。
-GLYPH = {6: 'auto_rifle', 7: 'shotgun', 8: 'machinegun', 9: 'hand_cannon',
-         10: 'rocket_launcher', 11: 'fusion_rifle', 12: 'sniper_rifle', 13: 'pulse_rifle',
-         14: 'scout_rifle', 17: 'sidearm', 18: 'sword_heavy', 22: 'wire_rifle',
-         23: 'grenade_launcher', 24: 'smg', 25: 'trace_rifle', 31: 'bow', 33: 'glaive'}
-RARITY = {6: '异域', 5: '传说', 4: '稀有', 3: '罕见', 2: '普通'}
-CLASS = {0: '泰坦', 1: '猎人', 2: '术士'}
-PART = {26: '头盔', 27: '臂铠', 28: '胸甲', 29: '腿甲', 30: '职业物品'}
+GLYPH = {
+    6: "auto_rifle",
+    7: "shotgun",
+    8: "machinegun",
+    9: "hand_cannon",
+    10: "rocket_launcher",
+    11: "fusion_rifle",
+    12: "sniper_rifle",
+    13: "pulse_rifle",
+    14: "scout_rifle",
+    17: "sidearm",
+    18: "sword_heavy",
+    22: "wire_rifle",
+    23: "grenade_launcher",
+    24: "smg",
+    25: "trace_rifle",
+    31: "bow",
+    33: "glaive",
+}
+RARITY = {6: "异域", 5: "传说", 4: "稀有", 3: "罕见", 2: "普通"}
+CLASS = {0: "泰坦", 1: "猎人", 2: "术士"}
+PART = {26: "头盔", 27: "臂铠", 28: "胸甲", 29: "腿甲", 30: "职业物品"}
 
 # is: 的英文写法 → 站内那个值。枪型与部位取 manifest 的英文类型名（build() 里现取），
 # 这几组 manifest 里没有英文名可取，用 Bungie 的叫法。槽位不写 kinetic：那是元素。
 IS_EN = {
-    '动能': ('kinetic',), '电弧': ('arc',), '烈日': ('solar',), '虚空': ('void',),
-    '冰影': ('stasis',), '缚丝': ('strand',),
-    '主武器': ('primary',), '特殊': ('special',), '威能': ('heavy', 'power', 'powerslot'),
-    '主手': ('kineticslot',), '副手': ('energy', 'energyslot'),
-    '异域': ('exotic',), '传说': ('legendary',), '稀有': ('rare',), '罕见': ('uncommon',),
-    '普通': ('common',),
-    '反屏障': ('antibarrier',), '反过载': ('overload',), '反势不可挡': ('unstoppable',),
-    '战斗弓箭': ('bow',),
+    "动能": ("kinetic",),
+    "电弧": ("arc",),
+    "烈日": ("solar",),
+    "虚空": ("void",),
+    "冰影": ("stasis",),
+    "缚丝": ("strand",),
+    "主武器": ("primary",),
+    "特殊": ("special",),
+    "威能": ("heavy", "power", "powerslot"),
+    "主手": ("kineticslot",),
+    "副手": ("energy", "energyslot"),
+    "异域": ("exotic",),
+    "传说": ("legendary",),
+    "稀有": ("rare",),
+    "罕见": ("uncommon",),
+    "普通": ("common",),
+    "反屏障": ("antibarrier",),
+    "反过载": ("overload",),
+    "反势不可挡": ("unstoppable",),
+    "战斗弓箭": ("bow",),
 }
-IS_EN_ARMOR = {'泰坦': ('titan',), '猎人': ('hunter',), '术士': ('warlock',),
-               '职业物品': ('classitem',), '异域': ('exotic',)}
+IS_EN_ARMOR = {
+    "泰坦": ("titan",),
+    "猎人": ("hunter",),
+    "术士": ("warlock",),
+    "职业物品": ("classitem",),
+    "异域": ("exotic",),
+}
 
 
 def en_fold(s):
     """英文写法的比较键：不计大小写、空格与连字符。app.js 的 enFold() 同一条。"""
-    return re.sub(r'[\s-]+', '', s).lower()
+    return re.sub(r"[\s-]+", "", s).lower()
 
 
 def is_aliases(weapons, armor, types):
     """`{范围: {英文比较键: 站内的值}}`。枪型按 itemSubType 落到 types 那个名字上，
     与 app.js 的 is: 表同一个键。同一个英文键落到两个值上即中止。"""
-    out = {'wpn': {}, 'armor': {}}
+    out = {"wpn": {}, "armor": {}}
 
     def add(scope, en, zh):
         key = en_fold(en)
         if out[scope].setdefault(key, zh) != zh:
-            markup.die('is: 的英文写法 %s 同时指着 %s 与 %s' % (en, out[scope][key], zh))
+            markup.die(
+                "is: 的英文写法 %s 同时指着 %s 与 %s" % (en, out[scope][key], zh)
+            )
 
-    for scope, table, zh_of in (('wpn', weapons, lambda r: types[r['itemSubType']][0]),
-                                ('armor', armor, lambda r: PART[r['itemSubType']])):
+    for scope, table, zh_of in (
+        ("wpn", weapons, lambda r: types[r["itemSubType"]][0]),
+        ("armor", armor, lambda r: PART[r["itemSubType"]]),
+    ):
         for r in table.values():
-            en = resolve.text(r, 'itemTypeDisplayName', 'en')
+            en = resolve.text(r, "itemTypeDisplayName", "en")
             if not en:
-                markup.die('%s 没有英文类型名，is: 的英文写法落不下' % resolve.text(r))
+                markup.die("%s 没有英文类型名，is: 的英文写法落不下" % resolve.text(r))
             add(scope, en, zh_of(r))
-    for scope, table in (('wpn', IS_EN), ('armor', IS_EN_ARMOR)):
+    for scope, table in (("wpn", IS_EN), ("armor", IS_EN_ARMOR)):
         for zh, ens in table.items():
             for en in ens:
                 add(scope, en, zh)
     return out
 
+
 # 可升阶（T1–T5）的枪：带阶级外观、阶级击杀特效或阶级升级插槽的那些。与
 # destiny.report 的 isTiered 逐把比过，751 把里对上 749，差的两把是「最终恐惧」
 # 及其专家版（manifest 上没有这三种插槽）。derived.tierable 还算进了锻造等级插槽，
 # 是另一件事，这里不用它。
-TIER_KINDS = frozenset({'weapon_tiering_kill_vfx', 'weapon_tiering_tier5_skins',
-                        'weapon_tiering.plugs.mods.enhancers'})
+TIER_KINDS = frozenset(
+    {
+        "weapon_tiering_kill_vfx",
+        "weapon_tiering_tier5_skins",
+        "weapon_tiering.plugs.mods.enhancers",
+    }
+)
 
 # 词条栏的栏名，按插槽类型白名单首项认。特征栏写「Perk 1／Perk 2」，起源栏用站内
 # 的「起源特性」，其余取 Bungie 给这类插件的类型名。认不出的类型当场中止，不猜。
-LABEL = {'intrinsics': '固有', 'barrels': '枪管', 'magazines': '弹匣', 'magazines_gl': '弹匣',
-         'origins': '起源特性', 'scopes': '瞄准镜', 'tubes': '发射器枪管',
-         'batteries': '电池', 'stocks': '枪托', 'blades': '刀片', 'guards': '刀剑格',
-         'bowstrings': '弓弦', 'arrows': '箭矢', 'hafts': '把手', 'grips': '握把',
-         'rails': '导轨', 'bolts': '弩弹', 'v950.new.sword0.blades': '柄芯',
-         'v950.new.sword0.guards': '握把'}
-TRAIT = 'frames'
+LABEL = {
+    "intrinsics": "固有",
+    "barrels": "枪管",
+    "magazines": "弹匣",
+    "magazines_gl": "弹匣",
+    "origins": "起源特性",
+    "scopes": "瞄准镜",
+    "tubes": "发射器枪管",
+    "batteries": "电池",
+    "stocks": "枪托",
+    "blades": "刀片",
+    "guards": "刀剑格",
+    "bowstrings": "弓弦",
+    "arrows": "箭矢",
+    "hafts": "把手",
+    "grips": "握把",
+    "rails": "导轨",
+    "bolts": "弩弹",
+    "v950.new.sword0.blades": "柄芯",
+    "v950.new.sword0.guards": "握把",
+}
+TRAIT = "frames"
 # 异域的催化剂那一栏在池里只挂着一个空壳，催化剂本身取 derived.catalyst。
-CATALYST_KIND = 'v400.empty.exotic.masterwork'
+CATALYST_KIND = "v400.empty.exotic.masterwork"
 
 # 属性表里不上页面的两项：投资值恒为 0 的「攻击」「能量」。
-SKIP_STAT = frozenset({'攻击', '能量'})
+SKIP_STAT = frozenset({"攻击", "能量"})
 # 站内写法。Bungie 叫「每分钟发射数」，读者叫射速。
-STAT_LABEL = {'每分钟发射数': '射速'}
+STAT_LABEL = {"每分钟发射数": "射速"}
 
 # 大师杰作：冲击只给剑（类目 54），弓不给充能时间（类目 3317538576）。
 # 这两条照 destiny.report。
@@ -116,24 +177,26 @@ IMPACT, CHARGE = 4043523819, 2961396640
 SWORD_CAT, BOW_CAT = 54, 3317538576
 
 # 作者推荐写在哪几栏上：Aegis 五栏，LGpig 两栏（刷取清单只给特征栏）。
-MARK_COLS = {'Aegis': ('barrel', 'magazine', 'perk1', 'perk2', 'origin'),
-             'LGpig': ('perk1', 'perk2')}
-MARK_BIT = {'Aegis': 1, 'LGpig': 2}
+MARK_COLS = {
+    "Aegis": ("barrel", "magazine", "perk1", "perk2", "origin"),
+    "LGpig": ("perk1", "perk2"),
+}
+MARK_BIT = {"Aegis": 1, "LGpig": 2}
 # 作者写的词条名落不到这把枪自己池里的次数。只许降不许升：多出来一条就是有人
 # 写了库里查不到的名字，要么改源稿，要么进 resolve.PERK_ALIAS。
 MARK_MISS_BASELINE = 0
 
 # 两位作者的评级折成同一把尺：Aegis S…F，LGpig T0、T0.5、T1…；一格写了几段的
 # 取最好那段。没有评级的沉到最后。
-LETTER = {'S': 0, 'A': 1, 'B': 2, 'C': 3, 'D': 4, 'E': 5, 'F': 6}
+LETTER = {"S": 0, "A": 1, "B": 2, "C": 3, "D": 4, "E": 5, "F": 6}
 UNRATED = 99
 
-ADEPT_TAIL = re.compile(r'（[^（）]*）$')
+ADEPT_TAIL = re.compile(r"（[^（）]*）$")
 
 
 def plain(s):
     """源稿方言剥成纯文字：{token|文字} 只留文字。"""
-    return markup.uncolor(s or '').replace('~~', '')
+    return markup.uncolor(s or "").replace("~~", "")
 
 
 def parts(s):
@@ -144,11 +207,11 @@ def parts(s):
 def stem(path):
     """官方图路径 → 站内图标文件名去掉扩展名。盘上没有就中止：先跑 icons.py --pull。"""
     if not path:
-        return ''
+        return ""
     name = icons.file_of(path)
     if not os.path.exists(os.path.join(icons.OUT_DIR, name)):
-        markup.die('缺图标 %s（%s），先跑 python3 tools/icons.py --pull' % (name, path))
-    return name[:-len('.webp')]
+        markup.die("缺图标 %s（%s），先跑 python3 tools/icons.py --pull" % (name, path))
+    return name[: -len(".webp")]
 
 
 class Build:
@@ -156,18 +219,18 @@ class Build:
 
     def __init__(self, facts):
         self.f = facts
-        self.plugs = {}           # 插件 hash → 字典条目
-        self.plug_text = {}       # 插件 hash → Bungie 说明
-        self.plug_site = {}       # 插件 hash → 站内实测（HTML）
-        self.stats = {}           # 属性 hash → [名字, 纯数值, 越低越好]
-        self.groups = {}          # 属性组 hash → 曲线表
-        self.mw_opts = {}         # (大师杰作插件, 剑, 弓, 属性) → masterwork() 的结果
+        self.plugs = {}  # 插件 hash → 字典条目
+        self.plug_text = {}  # 插件 hash → Bungie 说明
+        self.plug_site = {}  # 插件 hash → 站内实测（HTML）
+        self.stats = {}  # 属性 hash → [名字, 纯数值, 越低越好]
+        self.groups = {}  # 属性组 hash → 曲线表
+        self.mw_opts = {}  # (大师杰作插件, 剑, 弓, 属性) → masterwork() 的结果
         self.mark_miss = []
         self.orphans = []
 
     # ── 通用 ────────────────────────────────────────────────────────
-    def text(self, rec, field='name', lang=resolve.ZH):
-        return resolve.text(rec, field, lang) or ''
+    def text(self, rec, field="name", lang=resolve.ZH):
+        return resolve.text(rec, field, lang) or ""
 
     def say(self, body):
         """Bungie 的说明按站内正名改写：专名与链接不动。"""
@@ -177,26 +240,36 @@ class Build:
     def site_html(self, t):
         """站内正文（源稿方言）→ HTML：格内换行两次分段，一次换行。"""
         out = []
-        for para in markup.top_split(t.replace(rows.PARA, '\n\n'), '\n\n'):
-            lines = [x.strip() for x in markup.top_split(para.replace(markup.CELL_BREAK, '\n'), '\n')
-                     if x.strip()]
+        for para in markup.top_split(t.replace(rows.PARA, "\n\n"), "\n\n"):
+            lines = [
+                x.strip()
+                for x in markup.top_split(para.replace(markup.CELL_BREAK, "\n"), "\n")
+                if x.strip()
+            ]
             if not lines:
                 continue
-            if all(x.startswith('- ') for x in lines):
-                out.append('<ul>%s</ul>' % ''.join(
-                    '<li>%s</li>' % markup.inline(x[2:], rich=True) for x in lines))
+            if all(x.startswith("- ") for x in lines):
+                out.append(
+                    "<ul>%s</ul>"
+                    % "".join(
+                        "<li>%s</li>" % markup.inline(x[2:], rich=True) for x in lines
+                    )
+                )
             else:
-                out.append(markup.format_prose_para(
-                    lines, lambda s: markup.inline(s, rich=True)))
-        return ''.join(out)
+                out.append(
+                    markup.format_prose_para(
+                        lines, lambda s: markup.inline(s, rich=True)
+                    )
+                )
+        return "".join(out)
 
     def kind(self, entry):
-        st = self.f.socket_types.get(str(entry.get('socketTypeHash'))) or {}
-        return (st.get('derived') or {}).get('kind')
+        st = self.f.socket_types.get(str(entry.get("socketTypeHash"))) or {}
+        return (st.get("derived") or {}).get("kind")
 
     def whitelist(self, entry):
-        st = self.f.socket_types.get(str(entry.get('socketTypeHash'))) or {}
-        return {x['categoryIdentifier'] for x in st.get('plugWhitelist') or ()}
+        st = self.f.socket_types.get(str(entry.get("socketTypeHash"))) or {}
+        return {x["categoryIdentifier"] for x in st.get("plugWhitelist") or ()}
 
     # ── 插件字典 ────────────────────────────────────────────────────
     def plug(self, h):
@@ -206,18 +279,29 @@ class Build:
         if h in self.plugs:
             return h
         r = self.f.items[h]
-        st = [[x['statTypeHash'], x['value']] for x in r.get('investmentStats') or ()
-              if not x.get('isConditionallyActive')]
-        cd = [[x['statTypeHash'], x['value']] for x in r.get('investmentStats') or ()
-              if x.get('isConditionallyActive')]
-        self.plugs[h] = [self.text(r), stem(r.get('icon')), self.text(r, 'itemTypeDisplayName'),
-                         st, cd]
-        desc = self.text(r, 'database_details')
+        st = [
+            [x["statTypeHash"], x["value"]]
+            for x in r.get("investmentStats") or ()
+            if not x.get("isConditionallyActive")
+        ]
+        cd = [
+            [x["statTypeHash"], x["value"]]
+            for x in r.get("investmentStats") or ()
+            if x.get("isConditionallyActive")
+        ]
+        self.plugs[h] = [
+            self.text(r),
+            stem(r.get("icon")),
+            self.text(r, "itemTypeDisplayName"),
+            st,
+            cd,
+        ]
+        desc = self.text(r, "database_details")
         if desc:
             self.plug_text[h] = self.say(desc)
         # 站内实测只写在同物组的行首上（sameAs 指向它），强化版自己没有。
-        head = self.f.items.get(str(r['sameAs'])) if r.get('sameAs') else r
-        site = self.text(head, 'realgame_details')
+        head = self.f.items.get(str(r["sameAs"])) if r.get("sameAs") else r
+        site = self.text(head, "realgame_details")
         if site:
             self.plug_site[h] = self.site_html(site)
         return h
@@ -225,12 +309,13 @@ class Build:
     # ── 词条栏 ──────────────────────────────────────────────────────
     def base_name(self, h):
         r = self.f.items[str(h)]
-        return self.f.name(r['sameAs']) if r.get('sameAs') else self.f.name(h)
+        return self.f.name(r["sameAs"]) if r.get("sameAs") else self.f.name(h)
 
     def is_enh(self, h, tiers):
         r = self.f.items[str(h)]
-        return self.text(r, 'itemTypeDisplayName').startswith('强化') or \
-            (r['inventory']['tierType'] == 3 and 2 in tiers)
+        return self.text(r, "itemTypeDisplayName").startswith("强化") or (
+            r["inventory"]["tierType"] == 3 and 2 in tiers
+        )
 
     def cells(self, plugs, where):
         """一栏的插件按「同物」并成格：[基础版, 强化版或 0]。有强化版的格在页面上
@@ -240,13 +325,15 @@ class Build:
             groups.setdefault(self.base_name(p), []).append(p)
         out = []
         for name, ps in groups.items():
-            tiers = {self.f.items[str(p)]['inventory']['tierType'] for p in ps}
+            tiers = {self.f.items[str(p)]["inventory"]["tierType"] for p in ps}
             base = [p for p in ps if not self.is_enh(p, tiers)]
             enh = [p for p in ps if self.is_enh(p, tiers)]
             if enh and not base:
-                self.orphans.append('%s：%s' % (where, name))
+                self.orphans.append("%s：%s" % (where, name))
             head = (base or enh)[0]
-            out.append([int(self.plug(head)), int(self.plug(enh[0])) if enh and base else 0])
+            out.append(
+                [int(self.plug(head)), int(self.plug(enh[0])) if enh and base else 0]
+            )
         return out
 
     def columns(self, h):
@@ -258,22 +345,29 @@ class Build:
         """
         cols, trait = [], 0
         for col in self.f.pool(h):
-            if col.get('gear') or col['kind'] == CATALYST_KIND:
+            if col.get("gear") or col["kind"] == CATALYST_KIND:
                 continue
-            role = ((self.f.socket_types.get(str(col['type'])) or {}).get('derived') or {}).get('kind')
-            if role == 'intrinsic' and not col.get('rand'):
+            role = (
+                (self.f.socket_types.get(str(col["type"])) or {}).get("derived") or {}
+            ).get("kind")
+            if role == "intrinsic" and not col.get("rand"):
                 continue
-            if col['kind'] == TRAIT:
+            if col["kind"] == TRAIT:
                 trait += 1
-                label = 'Perk %d' % trait
-                role = 'trait'
+                label = "Perk %d" % trait
+                role = "trait"
             else:
-                label = LABEL.get(col['kind'])
+                label = LABEL.get(col["kind"])
                 if not label:
-                    markup.die('%s 有一栏认不出：%s，补进 build-weapons.LABEL' % (h, col['kind']))
-                if role not in ('intrinsic', 'origin'):
-                    role = 'stat'
-            plugs = list(col.get('plugs') or ()) or ([col['init']] if col.get('init') else [])
+                    markup.die(
+                        "%s 有一栏认不出：%s，补进 build-weapons.LABEL"
+                        % (h, col["kind"])
+                    )
+                if role not in ("intrinsic", "origin"):
+                    role = "stat"
+            plugs = list(col.get("plugs") or ()) or (
+                [col["init"]] if col.get("init") else []
+            )
             cells = self.cells(plugs, h)
             if cells:
                 cols.append([label, role, cells])
@@ -283,23 +377,30 @@ class Build:
         """(大师杰作那一栏的全部插件, 可选模组的格)。"""
         rec = self.f.items[h]
         mw = []
-        for en in rec['sockets']['socketEntries']:
-            if self.kind(en) == 'masterwork':
-                ps = en.get('reusablePlugSetHash') or en.get('randomizedPlugSetHash')
-                mw = [x['plugItemHash'] for x in
-                      (self.f.plug_sets.get(str(ps)) or {}).get('reusablePlugItems') or ()]
+        for en in rec["sockets"]["socketEntries"]:
+            if self.kind(en) == "masterwork":
+                ps = en.get("reusablePlugSetHash") or en.get("randomizedPlugSetHash")
+                mw = [
+                    x["plugItemHash"]
+                    for x in (self.f.plug_sets.get(str(ps)) or {}).get(
+                        "reusablePlugItems"
+                    )
+                    or ()
+                ]
                 break
         # 模组不走强化配对：「强化稳定性」是一枚独立的模组，不是谁的强化版。
         # 同名的几枚（平衡枪托出现两次）取第一枚。
         mods = {}
         for col in self.f.pool(h):
-            if col.get('gear') and not col['kind'].startswith(resolve.MASTERWORK_KIND):
-                for p in col.get('plugs') or ():
+            if col.get("gear") and not col["kind"].startswith(resolve.MASTERWORK_KIND):
+                for p in col.get("plugs") or ():
                     mods.setdefault(self.f.name(p), int(self.plug(p)))
         return mw, list(mods.values())
 
     def tiered(self, rec):
-        return any(TIER_KINDS & self.whitelist(en) for en in rec['sockets']['socketEntries'])
+        return any(
+            TIER_KINDS & self.whitelist(en) for en in rec["sockets"]["socketEntries"]
+        )
 
     def masterwork(self, h, have):
         """大师杰作的选项：[[属性名, 属性 hash, 满级那枚, 专家那枚或 0, [等级…]], …]。
@@ -309,7 +410,7 @@ class Build:
         那几枚只给选中属性加它自己的数，所以只记数不记插件；数按插件自己的数值认，
         不按名字：「5阶：冲击」实际是 +4。"""
         rec = self.f.items[h]
-        cats = set(rec.get('itemCategoryHashes') or ())
+        cats = set(rec.get("itemCategoryHashes") or ())
         mw, _ = self.gear(h)
         # 两千多把枪只有六十几种组合；结果只读，同组合共用一份。插件在头一次见到时
         # 进字典，字典顺序不受影响。
@@ -319,27 +420,31 @@ class Build:
         opts = collections.OrderedDict()
         for p in mw:
             name = self.f.name(p)
-            if '：' not in name:
+            if "：" not in name:
                 continue
             r = self.f.items[str(p)]
-            st = r.get('investmentStats') or []
-            main = [x for x in st if not x.get('isConditionallyActive') and x['value']]
+            st = r.get("investmentStats") or []
+            main = [x for x in st if not x.get("isConditionallyActive") and x["value"]]
             if not main:
                 continue
-            sh = main[0]['statTypeHash']
-            if (sh == IMPACT and SWORD_CAT not in cats) or (sh == CHARGE and BOW_CAT in cats):
+            sh = main[0]["statTypeHash"]
+            if (sh == IMPACT and SWORD_CAT not in cats) or (
+                sh == CHARGE and BOW_CAT in cats
+            ):
                 continue
             if str(sh) not in have:
                 continue
-            o = opts.setdefault(name.split('：', 1)[1], [name.split('：', 1)[1], sh, 0, 0, []])
-            cond = [x for x in st if x.get('isConditionallyActive')]
-            if name.startswith('大师杰作'):
-                if cond and all(x['value'] == 0 for x in cond):
+            o = opts.setdefault(
+                name.split("：", 1)[1], [name.split("：", 1)[1], sh, 0, 0, []]
+            )
+            cond = [x for x in st if x.get("isConditionallyActive")]
+            if name.startswith("大师杰作"):
+                if cond and all(x["value"] == 0 for x in cond):
                     o[2] = int(self.plug(p))
                 else:
                     o[3] = int(self.plug(p))
-            elif main[0]['value'] not in o[4]:
-                o[4].append(main[0]['value'])
+            elif main[0]["value"] not in o[4]:
+                o[4].append(main[0]["value"])
         for o in opts.values():
             if not o[2]:
                 o[2], o[3] = o[3], 0
@@ -358,7 +463,7 @@ class Build:
                     if got is None:
                         continue
                     if not got:
-                        self.mark_miss.append('%s %s %s：%s' % (h, who, k, name))
+                        self.mark_miss.append("%s %s %s：%s" % (h, who, k, name))
                         continue
                     for p in got:
                         bits[str(p)] |= MARK_BIT[who]
@@ -372,8 +477,8 @@ class Build:
                 cell.append(got)
         # Aegis 那一格可以写几枚：「填装\\操控性」说的是这两枚大师杰作都行。
         # 按格内换行切开，逐枚落到这把枪的选项上，顺序照作者写的。
-        wants = parts((authors.get('Aegis') or {}).get('masterwork') or '')
-        return [o[0] for w in wants for o in opts if o[0].startswith(w)][:len(wants)]
+        wants = parts((authors.get("Aegis") or {}).get("masterwork") or "")
+        return [o[0] for w in wants for o in opts if o[0].startswith(w)][: len(wants)]
 
     # ── 属性 ────────────────────────────────────────────────────────
     def stat_group(self, gh):
@@ -381,62 +486,77 @@ class Build:
         gh = str(gh)
         if gh not in self.groups:
             got = []
-            for s in (self.f.groups[gh].get('scaledStats') or ()):
-                st = self.f.stats.get(str(s['statHash']))
-                name = self.text(st) if st else ''
+            for s in self.f.groups[gh].get("scaledStats") or ():
+                st = self.f.stats.get(str(s["statHash"]))
+                name = self.text(st) if st else ""
                 if not name or name in SKIP_STAT:
                     continue
-                self.stats[str(s['statHash'])] = [
-                    STAT_LABEL.get(name, name), 1 if s['displayAsNumeric'] else 0,
-                    1 if (st.get('derived') or {}).get('lowerIsBetter') else 0]
-                curve = [v for p in s['displayInterpolation'] for v in (p['value'], p['weight'])]
-                got.append([s['statHash'], s['maximumValue'], curve, 1 if s['displayAsNumeric'] else 0])
+                self.stats[str(s["statHash"])] = [
+                    STAT_LABEL.get(name, name),
+                    1 if s["displayAsNumeric"] else 0,
+                    1 if (st.get("derived") or {}).get("lowerIsBetter") else 0,
+                ]
+                curve = [
+                    v
+                    for p in s["displayInterpolation"]
+                    for v in (p["value"], p["weight"])
+                ]
+                got.append(
+                    [
+                        s["statHash"],
+                        s["maximumValue"],
+                        curve,
+                        1 if s["displayAsNumeric"] else 0,
+                    ]
+                )
             self.groups[gh] = got
         return self.groups[gh]
 
 
 def grades(authors):
     out = []
-    a = (authors.get('Aegis') or {}).get('aegis_tier')
+    a = (authors.get("Aegis") or {}).get("aegis_tier")
     if a and plain(a).strip():
         out.append(plain(a).strip())
     else:
-        out.append('')
-    lg = (authors.get('LGpig') or {}).get('lgpig_tier')
-    out.append(' '.join(parts(lg)).replace('：', '') if lg else '')
+        out.append("")
+    lg = (authors.get("LGpig") or {}).get("lgpig_tier")
+    out.append(" ".join(parts(lg)).replace("：", "") if lg else "")
     return out if any(out) else 0
 
 
 def rank_of(authors):
     best = UNRATED
-    a = plain((authors.get('Aegis') or {}).get('aegis_tier') or '').strip()
+    a = plain((authors.get("Aegis") or {}).get("aegis_tier") or "").strip()
     if a[:1] in LETTER:
         best = min(best, LETTER[a[:1]])
-    for m in re.finditer(r'T(\d+(?:\.\d+)?)', plain((authors.get('LGpig') or {}).get('lgpig_tier') or '')):
+    for m in re.finditer(
+        r"T(\d+(?:\.\d+)?)", plain((authors.get("LGpig") or {}).get("lgpig_tier") or "")
+    ):
         best = min(best, float(m.group(1)))
     return best
 
 
 def sources_of(f_or_b, h, authors):
     """来源列表：Aegis 写的 > LGpig 写的 > manifest 收藏条目那一句。"""
-    for who, k in (('Aegis', 'aegis_source'), ('LGpig', 'lgpig_source')):
-        val = (authors.get(who) or {}).get(k) or ''
+    for who, k in (("Aegis", "aegis_source"), ("LGpig", "lgpig_source")):
+        val = (authors.get(who) or {}).get(k) or ""
         if val:
-            tags = re.findall(r'\{src\|([^}]*)\}', val)
+            tags = re.findall(r"\{src\|([^}]*)\}", val)
             res = []
             for t in tags:
-                for p in t.split('\\\\'):
+                for p in t.split("\\\\"):
                     p = plain(p).strip()
                     if p and p not in res:
                         res.append(p)
             if res:
                 return res
             p = plain(val).strip()
-            if p and not p.startswith('{'):
+            if p and not p.startswith("{"):
                 return [p]
-    f = getattr(f_or_b, 'f', f_or_b)
-    got = plain(f.source(h) or '').strip()
-    if got.startswith('来源：'):
+    f = getattr(f_or_b, "f", f_or_b)
+    got = plain(f.source(h) or "").strip()
+    if got.startswith("来源："):
         got = got[3:].strip()
         return [got] if got else []
     return []
@@ -446,17 +566,36 @@ def sources_of(f_or_b, h, authors):
 # 库里按枚举分：火箭手枪是装特殊弹药的手枪，火箭脉冲是装特殊弹药的脉冲步枪，
 # 重型弩箭是装威能弹药的战斗弓箭。数值不在这里，见 brick_table()。
 BRICK_ROWS = {
-    ('绿弹', '霰弹枪'): (7, 2), ('绿弹', '榴弹发射器'): (23, 2), ('绿弹', '融合步枪'): (11, 2),
-    ('绿弹', '狙击枪'): (12, 2), ('绿弹', '追踪步枪'): (25, 2), ('绿弹', '偃月'): (33, 2),
-    ('绿弹', '火箭手枪'): (17, 2), ('绿弹', '火箭脉冲'): (13, 2),
-    ('重弹', '刀剑'): (18, 3), ('重弹', '榴弹发射器'): (23, 3), ('重弹', '火箭发射器'): (10, 3),
-    ('重弹', '线性融合步枪'): (22, 3), ('重弹', '机枪'): (8, 3), ('重弹', '重型弩箭'): (31, 3),
+    ("绿弹", "霰弹枪"): (7, 2),
+    ("绿弹", "榴弹发射器"): (23, 2),
+    ("绿弹", "融合步枪"): (11, 2),
+    ("绿弹", "狙击枪"): (12, 2),
+    ("绿弹", "追踪步枪"): (25, 2),
+    ("绿弹", "偃月"): (33, 2),
+    ("绿弹", "火箭手枪"): (17, 2),
+    ("绿弹", "火箭脉冲"): (13, 2),
+    ("重弹", "刀剑"): (18, 3),
+    ("重弹", "榴弹发射器"): (23, 3),
+    ("重弹", "火箭发射器"): (10, 3),
+    ("重弹", "线性融合步枪"): (22, 3),
+    ("重弹", "机枪"): (8, 3),
+    ("重弹", "重型弩箭"): (31, 3),
 }
-BRICK_PAGE = os.path.join(shell.ROOT, 'references', 'docs', 'ammo.md')
+BRICK_PAGE = os.path.join(shell.ROOT, "references", "docs", "ammo.md")
 # 框架行上页面的那几项，顺序即载荷里的下标；app.js 顶上那几行常量要跟着改。
-FRAME_FIELDS = ('tier', 'add_score', 'boss_score', 'ads_falloff_range',
-                'true_rpm', 'base_reload', 'typical_mdps', 'typical_bdps',
-                'minor_brick', 'boss_brick', 'crit_multi')
+FRAME_FIELDS = (
+    "tier",
+    "add_score",
+    "boss_score",
+    "ads_falloff_range",
+    "true_rpm",
+    "base_reload",
+    "typical_mdps",
+    "typical_bdps",
+    "minor_brick",
+    "boss_brick",
+    "crit_multi",
+)
 
 
 def brick_table():
@@ -465,38 +604,47 @@ def brick_table():
     数值现读弹药生成机制那一页的「弹药块拾取量」表，不在这里抄第二份：那张表是
     实测结果，会随版本改。行名对应表见 BRICK_ROWS，对不上的行当场中止。
     """
-    with open(BRICK_PAGE, encoding='utf-8') as fh:
-        body = fh.read().split('## 弹药块拾取量', 1)
+    with open(BRICK_PAGE, encoding="utf-8") as fh:
+        body = fh.read().split("## 弹药块拾取量", 1)
     if len(body) != 2:
-        markup.die('%s 里找不到「弹药块拾取量」一节' % BRICK_PAGE)
-    out, lane = {}, ''
-    for line in body[1].split('\n'):
-        if not line.startswith('|'):
-            if line.startswith('##'):
+        markup.die("%s 里找不到「弹药块拾取量」一节" % BRICK_PAGE)
+    out, lane = {}, ""
+    for line in body[1].split("\n"):
+        if not line.startswith("|"):
+            if line.startswith("##"):
                 break
             continue
         spans = markup.cells(line)
         if spans is None:
             continue
         cells = [line[a:b].strip() for a, b in spans]
-        head = markup.text_of(markup.inline(cells[0]), collapse=True).strip('= ')
+        head = markup.text_of(markup.inline(cells[0]), collapse=True).strip("= ")
         if len(cells) == 1:
             lane = head or lane
             continue
-        if head in ('武器', '---') or set(head) <= {'-'}:
+        if head in ("武器", "---") or set(head) <= {"-"}:
             continue
         key = BRICK_ROWS.get((lane, head))
         if key is None:
-            markup.die('弹药块拾取量表里「%s · %s」没有对应的枪型，补进 BRICK_ROWS' % (lane, head))
-        out['%d,%d' % key] = [markup.text_of(markup.inline(c), collapse=True).replace(
-            markup.CELL_BREAK, ' ') for c in cells[1:]]
+            markup.die(
+                "弹药块拾取量表里「%s · %s」没有对应的枪型，补进 BRICK_ROWS"
+                % (lane, head)
+            )
+        out["%d,%d" % key] = [
+            markup.text_of(markup.inline(c), collapse=True).replace(
+                markup.CELL_BREAK, " "
+            )
+            for c in cells[1:]
+        ]
     return out
 
 
 # ── 神器模组 ─────────────────────────────────────────────────────────
 # 模组记录上 site_weapons 认得的键。前四个取武器记录上同名的字段（框架取 derived
 # 那一份），precision 按枪型认，见 precise_types()。
-SCOPE_KEYS = frozenset({'itemSubType', 'defaultDamageType', 'tierType', 'archetype', 'precision'})
+SCOPE_KEYS = frozenset(
+    {"itemSubType", "defaultDamageType", "tierType", "archetype", "precision"}
+)
 
 
 def precise_types():
@@ -508,10 +656,10 @@ def precise_types():
     """
     got = collections.defaultdict(set)
     for row in rows.frame_rows().values():
-        got[row['itemSubType']].add(row.get('crit_multi') is not None)
+        got[row["itemSubType"]].add(row.get("crit_multi") is not None)
     mixed = sorted(k for k, v in got.items() if len(v) > 1)
     if mixed:
-        markup.die('武器框架页上枪型 %s 的精准倍率有的行写了、有的行空着' % mixed)
+        markup.die("武器框架页上枪型 %s 的精准倍率有的行写了、有的行空着" % mixed)
     return {k for k, v in got.items() if True in v}, set(got)
 
 
@@ -521,20 +669,26 @@ def traits_of(F, r, precise):
 
     能不能打精准先看武器记录上的 site_precision，没写的按枪型：异星噬菌与牵引器火炮
     打的是爆炸弹，枪型（机枪、霰弹枪）能打精准，它们不能。"""
-    d = r.get('derived') or {}
-    own = r.get('site_precision')
+    d = r.get("derived") or {}
+    own = r.get("site_precision")
     if own is not None and not isinstance(own, bool):
-        markup.die('%s 的 site_precision 只能写 true 或 false，现在是 %r' % (resolve.text(r), own))
-    return {'itemSubType': r['itemSubType'], 'defaultDamageType': r['defaultDamageType'],
-            'tierType': r['inventory']['tierType'],
-            'archetype': F.name(d['archetype']) if d.get('archetype') else '',
-            'precision': r['itemSubType'] in precise if own is None else own}
+        markup.die(
+            "%s 的 site_precision 只能写 true 或 false，现在是 %r"
+            % (resolve.text(r), own)
+        )
+    return {
+        "itemSubType": r["itemSubType"],
+        "defaultDamageType": r["defaultDamageType"],
+        "tierType": r["inventory"]["tierType"],
+        "archetype": F.name(d["archetype"]) if d.get("archetype") else "",
+        "precision": r["itemSubType"] in precise if own is None else own,
+    }
 
 
 def fits(scope, w):
     """site_weapons 上写的每个键都要对上才算能用：极寒凝视写着冰影与精准，冰影刀剑
     不算。一个键写几个值是其一即可（远距填装：狙击枪或弓）。"""
-    return all(w[k] is v if k == 'precision' else w[k] in v for k, v in scope.items())
+    return all(w[k] is v if k == "precision" else w[k] in v for k, v in scope.items())
 
 
 def artifact_mods(F):
@@ -552,40 +706,55 @@ def artifact_mods(F):
     会各渲各的。
     """
     import pagedex
+
     arts, art_at, mods, at = [], {}, [], {}
-    for e in pagedex.must_read('artifact-mods')['entries']:
-        key = str(e['keys'][0])
+    for e in pagedex.must_read("artifact-mods")["entries"]:
+        key = str(e["keys"][0])
         rec = F.at(key) or {}
-        scope = rec.get('site_weapons')
+        scope = rec.get("site_weapons")
         if scope is None:
             continue
-        art = vocab.bare_kind(e['kind'])
+        art = vocab.bare_kind(e["kind"])
         if art not in art_at:
             art_at[art] = len(arts)
-            arts.append([art, e['anchor']])
+            arts.append([art, e["anchor"]])
         if key not in at:
-            icon = os.path.normpath(e['icon'])
-            if not (icon.startswith('assets/icons/') and icon.endswith('.webp')):
-                markup.die('神器模组页上 %s 的图标不在站内图库里：%s' % (key, e['icon']))
+            icon = os.path.normpath(e["icon"])
+            if not (icon.startswith("assets/icons/") and icon.endswith(".webp")):
+                markup.die(
+                    "神器模组页上 %s 的图标不在站内图库里：%s" % (key, e["icon"])
+                )
             names = {}
-            for h in scope.get('archetype') or ():
+            for h in scope.get("archetype") or ():
                 names[h] = F.name(h)
                 if not names[h]:
-                    markup.die('%s 的 site_weapons 写的框架 %s 库里没有名字' % (key, h))
+                    markup.die("%s 的 site_weapons 写的框架 %s 库里没有名字" % (key, h))
             at[key] = len(mods)
-            mods.append([e['name'], os.path.basename(icon)[:-len('.webp')], [],
-                         1 if scope == {} else 0, e['desc'].strip(),
-                         dict(scope, archetype=sorted(set(names.values()))) if names else scope])
-        mods[at[key]][2].append([art_at[art], int(e['pos'].split(',')[1])])
+            mods.append(
+                [
+                    e["name"],
+                    os.path.basename(icon)[: -len(".webp")],
+                    [],
+                    1 if scope == {} else 0,
+                    e["desc"].strip(),
+                    dict(scope, archetype=sorted(set(names.values())))
+                    if names
+                    else scope,
+                ]
+            )
+        mods[at[key]][2].append([art_at[art], int(e["pos"].split(",")[1])])
     for table in (F.items, F.minted):
         for h, rec in table.items():
-            if 'site_weapons' not in rec:
+            if "site_weapons" not in rec:
                 continue
             if h not in at:
-                markup.die('%s 写了 site_weapons，神器模组页上却没有这一枚' % h)
-            bad = set(rec['site_weapons']) - SCOPE_KEYS
+                markup.die("%s 写了 site_weapons，神器模组页上却没有这一枚" % h)
+            bad = set(rec["site_weapons"]) - SCOPE_KEYS
             if bad:
-                markup.die('%s 的 site_weapons 有认不出的键 %s，补进 SCOPE_KEYS' % (h, sorted(bad)))
+                markup.die(
+                    "%s 的 site_weapons 有认不出的键 %s，补进 SCOPE_KEYS"
+                    % (h, sorted(bad))
+                )
     return mods, arts, {key: mods[k][5] for key, k in at.items()}
 
 
@@ -598,11 +767,16 @@ def set_author(authors):
     只取评语本身：获取地点与套装的「类型」是同一件事，已经画在 chip 上。
     """
     out = []
-    for who in ('Aegis', 'LGpig'):
-        got = (authors.get(who) or {}).get('realgame_details')
+    for who in ("Aegis", "LGpig"):
+        got = (authors.get(who) or {}).get("realgame_details")
         if got and got.strip():
-            out.append([who, [], [markup.inline(
-                got.replace(markup.CELL_BREAK, '<br>'), rich=True)]])
+            out.append(
+                [
+                    who,
+                    [],
+                    [markup.inline(got.replace(markup.CELL_BREAK, "<br>"), rich=True)],
+                ]
+            )
     return out
 
 
@@ -618,35 +792,55 @@ def set_rows(b, htmls):
     # 效果的图取护甲套装页那一份（`armor-sets/icons/NNN.png`，序号命名）：官方图
     # 没拉进站内图库，而那一页早就有了。与弹药块拾取量同一类例外，见 weapons.md。
     import pagedex
+
     art = {}
-    for e in pagedex.must_read('armor-sets')['entries']:
-        for key in e['keys']:
-            if e['icon']:
-                art.setdefault((str(key), e['kind']), '../' + e['icon'])
+    for e in pagedex.must_read("armor-sets")["entries"]:
+        for key in e["keys"]:
+            if e["icon"]:
+                art.setdefault((str(key), e["kind"]), "../" + e["icon"])
     # 按类型（来源活动）再按名字排：与护甲套装页同一条读法，开屏就是分好组的。
     rows_, texts = [], []
-    order = sorted(b.f.sets.items(),
-                   key=lambda kv: (rows.zh(kv[1]).get('来源') or rows.zh(kv[1]).get('类型', ''),
-                                   rows.zh(kv[1]).get('name', '')))
+    order = sorted(
+        b.f.sets.items(),
+        key=lambda kv: (
+            rows.zh(kv[1]).get("来源") or rows.zh(kv[1]).get("类型", ""),
+            rows.zh(kv[1]).get("name", ""),
+        ),
+    )
     for h, rec in order:
         z = rows.zh(rec)
         effects, detail = [], []
-        for one in rec.get('setPerks') or ():
-            pk = b.f.perks.get(str(one['perk'][1])) or {}
+        for one in rec.get("setPerks") or ():
+            pk = b.f.perks.get(str(one["perk"][1])) or {}
             pz = rows.zh(pk)
-            icon = art.get(('set:%s' % h, '%d 件' % one['requiredSetCount']), '')
-            effects.append([pz.get('name', ''), one['requiredSetCount'], icon])
-            detail.append([pz.get('name', ''), one['requiredSetCount'], icon,
-                           htmls.of(b.site_html(pz.get('realgame_details', '')))
-                           if pz.get('realgame_details') else -1,
-                           b.say(pz.get('database_details', '')),
-                           set_author(pk.get('authors') or {})])
-        rows_.append(['set:%s' % h, z.get('name', ''),
-                      resolve.text(rec, 'name', 'en') or '',
-                      # 来源与类型是 Compendium 的两列：一列写活动名（发射基地），
-                      # 一列写活动种类（熔炉竞技场行动）。56 套各写其一，两列都发。
-                      z.get('来源', ''), z.get('类型', ''),
-                      z.get('赛季', ''), z.get('标签', ''), effects])
+            icon = art.get(("set:%s" % h, "%d 件" % one["requiredSetCount"]), "")
+            effects.append([pz.get("name", ""), one["requiredSetCount"], icon])
+            detail.append(
+                [
+                    pz.get("name", ""),
+                    one["requiredSetCount"],
+                    icon,
+                    htmls.of(b.site_html(pz.get("realgame_details", "")))
+                    if pz.get("realgame_details")
+                    else -1,
+                    b.say(pz.get("database_details", "")),
+                    set_author(pk.get("authors") or {}),
+                ]
+            )
+        rows_.append(
+            [
+                "set:%s" % h,
+                z.get("name", ""),
+                resolve.text(rec, "name", "en") or "",
+                # 来源与类型是 Compendium 的两列：一列写活动名（发射基地），
+                # 一列写活动种类（熔炉竞技场行动）。56 套各写其一，两列都发。
+                z.get("来源", ""),
+                z.get("类型", ""),
+                z.get("赛季", ""),
+                z.get("标签", ""),
+                effects,
+            ]
+        )
         texts.append(detail)
     return rows_, texts
 
@@ -661,16 +855,17 @@ def builds_by_key():
 
     合集一份源稿装 N 套，每一套各算一次，链接都指向合集那一页。
     """
-    sys.path.insert(0, os.path.join(shell.ROOT, 'tools'))
+    sys.path.insert(0, os.path.join(shell.ROOT, "tools"))
     import migrate
+
     out = collections.defaultdict(list)
     cards = build_cards()
     cards_seen = {k: v[1] for k, v in sorted(cards.items())}
 
     def keys(node, got):
         if isinstance(node, dict):
-            if node.get('主键'):
-                got.add(str(node['主键']))
+            if node.get("主键"):
+                got.add(str(node["主键"]))
             for v in node.values():
                 keys(v, got)
         elif isinstance(node, list):
@@ -680,14 +875,17 @@ def builds_by_key():
 
     for path in migrate.sources():
         dirname = os.path.basename(os.path.dirname(path))
-        hit = re.match(r'^(s\d+)-', dirname)
+        hit = re.match(r"^(s\d+)-", dirname)
         if not hit:
-            markup.die('赛季目录要写成「s29-赛季名」，现在叫 %r' % dirname)
-        slug = os.path.basename(path)[:-len('.json')]
+            markup.die("赛季目录要写成「s29-赛季名」，现在叫 %r" % dirname)
+        slug = os.path.basename(path)[: -len(".json")]
         rec = migrate.load(path)
-        card = cards.get('%s/%s' % (hit.group(1), slug))
+        card = cards.get("%s/%s" % (hit.group(1), slug))
         if card is None:
-            markup.die('配装索引页上找不到 %s/%s，先跑一次 convert-build.py' % (hit.group(1), slug))
+            markup.die(
+                "配装索引页上找不到 %s/%s，先跑一次 convert-build.py"
+                % (hit.group(1), slug)
+            )
         for block in migrate.blocks(rec):
             for key in sorted(keys(block, set())):
                 out[key].append(card)
@@ -705,34 +903,48 @@ def builds_by_key():
             seen.add(r[0])
             got.append(r)
         # 先按强度（meta > 强力 > 创意），同档按更新时间倒序。
-        return [at[x[0]] for x in sorted(got, key=lambda r: (r[2][0], [-int(n) for n in
-                                                                       r[2][1].split('.')]))]
+        return [
+            at[x[0]]
+            for x in sorted(
+                got, key=lambda r: (r[2][0], [-int(n) for n in r[2][1].split(".")])
+            )
+        ]
+
     return {k: once(v) for k, v in out.items()}, cards
 
 
 # 卡片那一族的选择器。**样式不抄第二份**：从 builds/style.css 里现取这几条内联进
 # 页壳，配装推荐页改一处，这一页跟着变。强度光环、合集马赛克、「3 套」角标都在内。
-CARD_SEL = re.compile(r'\.entry\b|\.entry-foot|\.entry-stamp|\.likes\b|'
-                      r'\.core-mosaic|\.n-sets|data-tier|\.entries\b')
+CARD_SEL = re.compile(
+    r"\.entry\b|\.entry-foot|\.entry-stamp|\.likes\b|"
+    r"\.core-mosaic|\.n-sets|data-tier|\.entries\b|"
+    r"@keyframes tier-(?:drift|breathe)"
+)
 
 
 def card_css():
     """配装卡那一族的样式，从配装页的样式表里现取。"""
-    with open(os.path.join(shell.SITE, 'builds', 'style.css'), encoding='utf-8') as f:
+    with open(os.path.join(shell.SITE, "builds", "style.css"), encoding="utf-8") as f:
         sheet = f.read()
-    got = [part for part in re.split(r'(?<=\})\n', sheet)
-           if CARD_SEL.search(part.split('{')[0])]
+    block_rx = re.compile(r"([^{}]+)\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}")
+    got = [
+        m.group(0).strip()
+        for m in block_rx.finditer(sheet)
+        if CARD_SEL.search(m.group(1))
+    ]
     if len(got) < 20:
-        markup.die('从 builds/style.css 里取不到配装卡的样式，只取到 %d 段' % len(got))
-    return '\n'.join(x.strip() for x in got if x.strip())
+        markup.die("从 builds/style.css 里取不到配装卡的样式，只取到 %d 段" % len(got))
+    return "\n".join(got)
 
 
 # 强度的排序：读者先要「现在最强的那一套」。三档之外（没写强度的）沉底。
-TIER_AT = {'meta': 0, '强力': 1, '创意': 2}
+TIER_AT = {"meta": 0, "强力": 1, "创意": 2}
 
 CARD = re.compile(
     r'<li class="b-[a-z]+"[^>]*data-branch="([^"]*)"[^>]*data-cls="([^"]*)"[^>]*>\s*'
-    r'<a class="entry" href="([^"]+)">.*?</a>\s*</li>', re.S)
+    r'<a class="entry" href="([^"]+)">.*?</a>\s*</li>',
+    re.S,
+)
 
 
 def build_cards():
@@ -744,13 +956,15 @@ def build_cards():
     """
     out = {}
     # 两页都读：合集那 10 套只在 builds/sets/index.html 上，它深一层，图的前缀也深一层。
-    for where, up in ((('builds', 'index.html'), '../'),
-                      (('builds', 'sets', 'index.html'), '../../')):
-        with open(os.path.join(shell.SITE, *where), encoding='utf-8') as f:
+    for where, up in (
+        (("builds", "index.html"), "../"),
+        (("builds", "sets", "index.html"), "../../"),
+    ):
+        with open(os.path.join(shell.SITE, *where), encoding="utf-8") as f:
             page_html = f.read()
         out.update(cards_in(page_html, up))
     if not out:
-        markup.die('配装索引页上一张卡都没有，先跑一次 convert-build.py')
+        markup.die("配装索引页上一张卡都没有，先跑一次 convert-build.py")
     return out
 
 
@@ -763,17 +977,23 @@ def cards_in(page_html, up):
     """
     out = {}
     for one in CARD.finditer(page_html):
-        href = one.group(3).lstrip('./')
-        key = href[:-len('/index.html')]
+        href = one.group(3).lstrip("./")
+        key = href[: -len("/index.html")]
         html = one.group(0)
-        if not html.rstrip().endswith('</li>'):
-            html = html.rstrip() + '</li>'
+        if not html.rstrip().endswith("</li>"):
+            html = html.rstrip() + "</li>"
         html = html.replace('href="%s"' % one.group(3), 'href="../builds/%s"' % href)
         html = html.replace('src="%s' % up, 'src="../')
         stamp_ = re.search(r'<span class="entry-stamp">更新 ([\d.]+)</span>', html)
         tier = re.search(r'data-tier="([^"]*)"', html)
-        out[key] = (key, html, (TIER_AT.get(tier.group(1) if tier else '', 9),
-                                stamp_.group(1) if stamp_ else ''))
+        out[key] = (
+            key,
+            html,
+            (
+                TIER_AT.get(tier.group(1) if tier else "", 9),
+                stamp_.group(1) if stamp_ else "",
+            ),
+        )
     return out
 
 
@@ -786,16 +1006,19 @@ def rolls_of(F, h):
     """
     out = []
     for rec in F.minted.values():
-        got = [str(m) for m in rec.get('members') or ()]
-        if rec.get('kind') != '组合' or not got or got[0] != h:
+        got = [str(m) for m in rec.get("members") or ()]
+        if rec.get("kind") != "组合" or not got or got[0] != h:
             continue
         # 自发主键的作者块沿用源表的中文列名作键（见 AGENTS.md），翻成武器记录那一套
         # 字段名，评级与理由才取得到。
-        au = {who: {rows.AUTHOR_FIELDS[who].get(k, k): v for k, v in blk.items()}
-              for who, blk in rows.authors_of(rec).items() if who in rows.AUTHOR_FIELDS}
+        au = {
+            who: {rows.AUTHOR_FIELDS[who].get(k, k): v for k, v in blk.items()}
+            for who, blk in rows.authors_of(rec).items()
+            if who in rows.AUTHOR_FIELDS
+        }
         if any(au.values()):
-            out.append({'parts': got[1:], 'au': au})
-    out.sort(key=lambda r: rank_of(r['au']))
+            out.append({"parts": got[1:], "au": au})
+    out.sort(key=lambda r: rank_of(r["au"]))
     return out
 
 
@@ -808,37 +1031,57 @@ def tier_pairs(raw):
     """
     out = []
     for seg in parts(raw):
-        dim, sep, tier = seg.partition('：')
-        out.append([dim, tier] if sep else ['', dim])
+        dim, sep, tier = seg.partition("：")
+        out.append([dim, tier] if sep else ["", dim])
     return out
 
 
 def one_author_block(b, who, au, parts_=None):
     """一位作者一块：[作者, [[维度, 档位]…], [段落 HTML…]]，组合的那几块多一位成员图标。"""
-    if who == 'Aegis':
-        texts = [au.get('explanation_1')]
-        grade = tier_pairs(au.get('aegis_tier') or '')
+    if who == "Aegis":
+        texts = [au.get("explanation_1")]
+        grade = tier_pairs(au.get("aegis_tier") or "")
     else:
-        texts = [au.get(k) for k in ('lgpig_tier_explanation', 'notes', 'explanation_1',
-                                     'explanation_2', 'explanation_3')]
-        grade = tier_pairs(au.get('lgpig_tier') or au.get('role') or '')
-    paras = [markup.inline(t.replace(markup.CELL_BREAK, '<br>'), rich=True)
-             for t in texts if t and t.strip()]
+        texts = [
+            au.get(k)
+            for k in (
+                "lgpig_tier_explanation",
+                "notes",
+                "explanation_1",
+                "explanation_2",
+                "explanation_3",
+            )
+        ]
+        grade = tier_pairs(au.get("lgpig_tier") or au.get("role") or "")
+    paras = [
+        markup.inline(t.replace(markup.CELL_BREAK, "<br>"), rich=True)
+        for t in texts
+        if t and t.strip()
+    ]
     if not (grade or paras):
         return None
     block = [who, grade, paras]
     if parts_:
-        block.append([[b.f.name(m), stem((b.f.at(m) or {}).get('icon'))] for m in parts_])
+        block.append(
+            [[b.f.name(m), stem((b.f.at(m) or {}).get("icon"))] for m in parts_]
+        )
     return block
 
 
 def author_blocks(b, authors, rolls=()):
     """作者评语：[[作者, [[维度, 档位]…], [段落 HTML…], [[成员名, 图标]…]], …]。
     末一位只有组合有。"""
-    out = [one_author_block(b, who, authors[who]) for who in ('Aegis', 'LGpig') if authors.get(who)]
+    out = [
+        one_author_block(b, who, authors[who])
+        for who in ("Aegis", "LGpig")
+        if authors.get(who)
+    ]
     for roll in rolls:
-        out += [one_author_block(b, who, roll['au'][who], roll['parts'])
-                for who in ('Aegis', 'LGpig') if roll['au'].get(who)]
+        out += [
+            one_author_block(b, who, roll["au"][who], roll["parts"])
+            for who in ("Aegis", "LGpig")
+            if roll["au"].get(who)
+        ]
     return [x for x in out if x]
 
 
@@ -850,10 +1093,13 @@ def exotic_block(b, h):
     # 图与名字分两份取：催化剂那几条的名字是它给的效果，图在催化剂或那枚 Perk 上。
     # 末一位是选项组号：一个插槽只插得下一枚，页面按组号把它们框起来。
     of = {n: i for i, group in enumerate(got.picks) for n in group}
-    chips = [[n, stem((b.f.at(got.icons[n]) or {}).get('icon'))] + ([of[n]] if n in of else [])
-             for n in got.names]
-    text = rows.exotic_text(h, rec['i18n'][resolve.ZH].get('realgame_details', ''))
-    return [chips, b.site_html(text)] if text else [chips, '']
+    chips = [
+        [n, stem((b.f.at(got.icons[n]) or {}).get("icon"))]
+        + ([of[n]] if n in of else [])
+        for n in got.names
+    ]
+    text = rows.exotic_text(h, rec["i18n"][resolve.ZH].get("realgame_details", ""))
+    return [chips, b.site_html(text)] if text else [chips, ""]
 
 
 def quick_types(wrows, types):
@@ -867,8 +1113,8 @@ def quick_types(wrows, types):
     for sub, (name, icon) in types.items():
         if sub == 23:
             entries = [
-                ['后膛榴弹发射器', 'grenade_launcher-field_forged', sub, 0, [0, 1]],
-                ['弹鼓榴弹发射器', 'grenade_launcher', sub, 0, [2]],
+                ["后膛榴弹发射器", "grenade_launcher-field_forged", sub, 0, [0, 1]],
+                ["弹鼓榴弹发射器", "grenade_launcher", sub, 0, [2]],
             ]
         else:
             entries = [[name, icon, sub, 0, None]]
@@ -886,33 +1132,37 @@ def quick_types(wrows, types):
     for name, entry in facets.items():
         entry[3] = max(AMMO, key=lambda a: (counts[name][a], -a))
 
-    path = shell.source_path('weapon-frames')
+    path = shell.source_path("weapon-frames")
     if path is None:
-        markup.die('找不到武器框架页源稿')
-    with open(path, encoding='utf-8') as fh:
-        body = fh.read().split('## 全部框架', 1)
+        markup.die("找不到武器框架页源稿")
+    with open(path, encoding="utf-8") as fh:
+        body = fh.read().split("## 全部框架", 1)
     if len(body) != 2:
-        markup.die('武器框架页里找不到「全部框架」一节')
-    aliases = {'冲锋枪': '微型冲锋枪', '弓箭': '战斗弓箭',
-               '后膛榴弹': '后膛榴弹发射器', '弹鼓榴弹': '弹鼓榴弹发射器'}
+        markup.die("武器框架页里找不到「全部框架」一节")
+    aliases = {
+        "冲锋枪": "微型冲锋枪",
+        "弓箭": "战斗弓箭",
+        "后膛榴弹": "后膛榴弹发射器",
+        "弹鼓榴弹": "弹鼓榴弹发射器",
+    }
     order = {}
     for line in body[1].splitlines():
-        if line.startswith('##'):
+        if line.startswith("##"):
             break
         spans = markup.cells(line)
         if spans is None or len(spans) < 2:
             continue
         a, b = spans[0]
         name = line[a:b].strip()
-        if not name or name == '武器' or set(name) <= {'-'}:
+        if not name or name == "武器" or set(name) <= {"-"}:
             continue
         name = aliases.get(name, name)
         if name not in facets:
-            markup.die('武器框架页枪型「%s」没有对应的快速检索项' % name)
+            markup.die("武器框架页枪型「%s」没有对应的快速检索项" % name)
         order.setdefault(name, len(order))
     missing = facets.keys() - order.keys()
     if missing:
-        markup.die('武器框架页缺少快速检索枪型：%s' % '、'.join(sorted(missing)))
+        markup.die("武器框架页缺少快速检索枪型：%s" % "、".join(sorted(missing)))
     return sorted(facets.values(), key=lambda entry: (entry[3], order[entry[0]]))
 
 
@@ -920,58 +1170,89 @@ def build(facts):
     """{相对路径: 文本}。纯函数：测试与 main() 共用。"""
     b = Build(facts)
     F = facts
-    with open(TYPE_ICONS, encoding='utf-8') as f:
+    with open(TYPE_ICONS, encoding="utf-8") as f:
         glyphs = json.load(f)
 
     # ── 武器 ────────────────────────────────────────────────────────
-    weapons = {h: r for h, r in F.items.items() if r.get('itemType') == 3}
+    weapons = {h: r for h, r in F.items.items() if r.get("itemType") == 3}
     info = {}
     for h, r in weapons.items():
-        zh = r['i18n'][resolve.ZH]
-        name = zh['name']
-        adept = bool(r.get('isAdept'))
-        d = r.get('derived') or {}
+        zh = r["i18n"][resolve.ZH]
+        name = zh["name"]
+        adept = bool(r.get("isAdept"))
+        d = r.get("derived") or {}
         cols = b.columns(h)
-        info[h] = {'name': name, 'stripped': ADEPT_TAIL.sub('', name) if adept else name,
-                   'season': d.get('season') or 0, 'adept': adept, 'holo': bool(r.get('isHolofoil')),
-                   'cols': cols, 'authors': zh.get('site_authors') or {},
-                   'rolls': rolls_of(F, h), 'cells': sum(len(c[2]) for c in cols)}
+        info[h] = {
+            "name": name,
+            "stripped": ADEPT_TAIL.sub("", name) if adept else name,
+            "season": d.get("season") or 0,
+            "adept": adept,
+            "holo": bool(r.get("isHolofoil")),
+            "cols": cols,
+            "authors": zh.get("site_authors") or {},
+            "rolls": rolls_of(F, h),
+            "cells": sum(len(c[2]) for c in cols),
+        }
 
     groups = collections.defaultdict(list)
     for h, x in info.items():
-        groups[(x['stripped'], x['season'])].append(h)
+        groups[(x["stripped"], x["season"])].append(h)
     rep_of = {}
     reps = []
     for members in groups.values():
-        plain_m = [h for h in members if not info[h]['adept'] and not info[h]['holo']] or members
-        rep = max(plain_m, key=lambda h: (info[h]['cells'], bool(weapons[h].get('collectibleHash')),
-                                          weapons[h]['index']))
+        plain_m = [
+            h for h in members if not info[h]["adept"] and not info[h]["holo"]
+        ] or members
+        rep = max(
+            plain_m,
+            key=lambda h: (
+                info[h]["cells"],
+                bool(weapons[h].get("collectibleHash")),
+                weapons[h]["index"],
+            ),
+        )
         merged = {}
         for h in members:
-            for k, v in info[h]['authors'].items():
+            for k, v in info[h]["authors"].items():
                 merged.setdefault(k, v)
-        info[rep]['group_authors'] = merged
+        info[rep]["group_authors"] = merged
         # 评级写在组合上时（故我在），卡片徽标与开屏排序取最好的那一条
-        info[rep]['rated'] = merged or (info[rep]['rolls'][0]['au']
-                                        if info[rep]['rolls'] else {})
+        info[rep]["rated"] = merged or (
+            info[rep]["rolls"][0]["au"] if info[rep]["rolls"] else {}
+        )
         for h in members:
             rep_of[h] = rep
         reps.append(rep)
-    reps.sort(key=lambda h: (rank_of(info[h]['rated']), weapons[h]['inventory']['tierType'] != 6,
-                             -len(info[h]['rated']), weapons[h]['itemSubType'], -info[h]['season'],
-                             info[h]['name']))
-    others = sorted((h for h in weapons if rep_of[h] != h),
-                    key=lambda h: (reps.index(rep_of[h]), info[h]['adept'], info[h]['holo']))
+    reps.sort(
+        key=lambda h: (
+            rank_of(info[h]["rated"]),
+            weapons[h]["inventory"]["tierType"] != 6,
+            -len(info[h]["rated"]),
+            weapons[h]["itemSubType"],
+            -info[h]["season"],
+            info[h]["name"],
+        )
+    )
+    others = sorted(
+        (h for h in weapons if rep_of[h] != h),
+        key=lambda h: (reps.index(rep_of[h]), info[h]["adept"], info[h]["holo"]),
+    )
     order = reps + others
     row_of = {h: i for i, h in enumerate(order)}
 
     fams = collections.defaultdict(list)
     for h in order:
-        fams[info[h]['stripped']].append(h)
+        fams[info[h]["stripped"]].append(h)
     fam_list, fam_of = [], {}
     for name, members in fams.items():
-        members.sort(key=lambda h: (-info[h]['season'], info[h]['adept'], info[h]['holo'],
-                                    -weapons[h]['index']))
+        members.sort(
+            key=lambda h: (
+                -info[h]["season"],
+                info[h]["adept"],
+                info[h]["holo"],
+                -weapons[h]["index"],
+            )
+        )
         for h in members:
             fam_of[h] = len(fam_list)
         fam_list.append([row_of[h] for h in members])
@@ -985,20 +1266,28 @@ def build(facts):
     for h in order:
         r = weapons[h]
         x = info[h]
-        d = r.get('derived') or {}
-        if r['itemSubType'] not in typed:
-            markup.die('%s 的枪型 %d 在武器框架页上一行都没有，认不出它能不能打精准'
-                       % (h, r['itemSubType']))
+        d = r.get("derived") or {}
+        if r["itemSubType"] not in typed:
+            markup.die(
+                "%s 的枪型 %d 在武器框架页上一行都没有，认不出它能不能打精准"
+                % (h, r["itemSubType"])
+            )
         traits = traits_of(F, r, precise)
         # 通用的那几枚每把枪都一样，页面上从模组表里取，不逐把记。
         own = [k for k, m in enumerate(amods) if not m[3] and fits(m[5], traits)]
-        fr_h = str(d['archetype'])
+        fr_h = str(d["archetype"])
         if fr_h not in frame_idx:
             fr = F.items[fr_h]
             frame_idx[fr_h] = len(frames)
-            frames.append([b.text(fr), stem(fr.get('icon')), (fr.get('derived') or {}).get('rate') or {},
-                           int(b.plug(fr_h))])
-        authors = x.get('group_authors') or x['authors']
+            frames.append(
+                [
+                    b.text(fr),
+                    stem(fr.get("icon")),
+                    (fr.get("derived") or {}).get("rate") or {},
+                    int(b.plug(fr_h)),
+                ]
+            )
+        authors = x.get("group_authors") or x["authors"]
         srcs = sources_of(b, h, authors)
         src_ids = []
         for s in srcs:
@@ -1006,86 +1295,141 @@ def build(facts):
                 source_idx[s] = len(sources)
                 sources.append(s)
             src_ids.append(source_idx[s])
-        src_val = src_ids[0] if len(src_ids) == 1 else (src_ids if len(src_ids) > 1 else -1)
-        b.stat_group(r['stats']['statGroupHash'])
-        have = {str(s[0]) for s in b.groups[str(r['stats']['statGroupHash'])]}
+        src_val = (
+            src_ids[0] if len(src_ids) == 1 else (src_ids if len(src_ids) > 1 else -1)
+        )
+        b.stat_group(r["stats"]["statGroupHash"])
+        have = {str(s[0]) for s in b.groups[str(r["stats"]["statGroupHash"])]}
         opts = b.masterwork(h, have)
-        rec_mw = b.marks(h, authors, x['cols'], opts)
+        rec_mw = b.marks(h, authors, x["cols"], opts)
         _, mods = b.gear(h)
         tiered = b.tiered(r)
-        enhanceable = any(c[1] for col in x['cols'] for c in col[2])
-        seasons = {info[m]['season'] for m in fams[x['stripped']]}
-        flags = (1 * x['adept'] | 2 * x['holo'] | 4 * bool(d.get('craftable')) | 8 * tiered
-                 | 16 * bool(opts) | 32 * enhanceable | 64 * (len(seasons) > 1))
-        elements.add(r['defaultDamageType'])
-        wrows.append([
-            h, x['name'], r['itemSubType'], r['defaultDamageType'], r['equippingBlock']['ammoType'],
-            list(SLOT).index(r['inventory']['bucketTypeHash']), d.get('breakerType') or 0,
-            x['season'], r['inventory']['tierType'], flags, stem(r.get('icon')),
-            stem(r.get('iconWatermark')), frame_idx[fr_h], src_val,
-            grades(x['rated']) if rep_of[h] == h else 0, row_of[rep_of[h]], fam_of[h],
-            resolve.text(r, lang='en') or ''])
+        enhanceable = any(c[1] for col in x["cols"] for c in col[2])
+        seasons = {info[m]["season"] for m in fams[x["stripped"]]}
+        flags = (
+            1 * x["adept"]
+            | 2 * x["holo"]
+            | 4 * bool(d.get("craftable"))
+            | 8 * tiered
+            | 16 * bool(opts)
+            | 32 * enhanceable
+            | 64 * (len(seasons) > 1)
+        )
+        elements.add(r["defaultDamageType"])
+        wrows.append(
+            [
+                h,
+                x["name"],
+                r["itemSubType"],
+                r["defaultDamageType"],
+                r["equippingBlock"]["ammoType"],
+                list(SLOT).index(r["inventory"]["bucketTypeHash"]),
+                d.get("breakerType") or 0,
+                x["season"],
+                r["inventory"]["tierType"],
+                flags,
+                stem(r.get("icon")),
+                stem(r.get("iconWatermark")),
+                frame_idx[fr_h],
+                src_val,
+                grades(x["rated"]) if rep_of[h] == h else 0,
+                row_of[rep_of[h]],
+                fam_of[h],
+                resolve.text(r, lang="en") or "",
+            ]
+        )
         base = collections.Counter()
         present = []
-        for s in r.get('investmentStats') or ():
-            if s['statTypeHash'] not in present:
-                present.append(s['statTypeHash'])
-            if not s.get('isConditionallyActive'):
-                base[s['statTypeHash']] += s['value']
-        catalysts = [int(b.plug(c)) for c in d.get('catalyst') or ()]
-        for c in d.get('catalyst') or ():
-            effs = [F.perks[str(p['perkHash'])] for p in F.items[str(c)].get('perks') or ()
-                    if (F.perks.get(str(p['perkHash'])) or {}).get('isDisplayable')]
-            cats_text[str(c)] = [[b.text(e), b.say(b.text(e, 'database_details'))] for e in effs]
-        wpool[h] = [str(r['stats']['statGroupHash']), [[k, base[k]] for k in present],
-                    x['cols'], [1 if tiered else 0, rec_mw, opts], [int(m) for m in mods], catalysts,
-                    rows.frame_row(r), own]
-        flavor = b.text(r, 'flavorText')
+        for s in r.get("investmentStats") or ():
+            if s["statTypeHash"] not in present:
+                present.append(s["statTypeHash"])
+            if not s.get("isConditionallyActive"):
+                base[s["statTypeHash"]] += s["value"]
+        catalysts = [int(b.plug(c)) for c in d.get("catalyst") or ()]
+        for c in d.get("catalyst") or ():
+            effs = [
+                F.perks[str(p["perkHash"])]
+                for p in F.items[str(c)].get("perks") or ()
+                if (F.perks.get(str(p["perkHash"])) or {}).get("isDisplayable")
+            ]
+            cats_text[str(c)] = [
+                [b.text(e), b.say(b.text(e, "database_details"))] for e in effs
+            ]
+        wpool[h] = [
+            str(r["stats"]["statGroupHash"]),
+            [[k, base[k]] for k in present],
+            x["cols"],
+            [1 if tiered else 0, rec_mw, opts],
+            [int(m) for m in mods],
+            catalysts,
+            rows.frame_row(r),
+            own,
+        ]
+        flavor = b.text(r, "flavorText")
         if flavor:
             wtext_fl[h] = flavor
         if rep_of[h] == h:
-            blocks = author_blocks(b, authors, x['rolls'])
+            blocks = author_blocks(b, authors, x["rolls"])
             if blocks:
                 wauthors[h] = blocks
-        if r['inventory']['tierType'] == 6:
+        if r["inventory"]["tierType"] == 6:
             xs[h] = exotic_block(b, h)
 
     # ── 异域护甲 ────────────────────────────────────────────────────
-    armor = {h: r for h, r in F.items.items() if r.get('itemType') == 2}
+    armor = {h: r for h, r in F.items.items() if r.get("itemType") == 2}
     agroups = collections.defaultdict(list)
     for h, r in armor.items():
-        agroups[(r['i18n'][resolve.ZH]['name'], (r.get('derived') or {}).get('season') or 0)].append(h)
+        agroups[
+            (r["i18n"][resolve.ZH]["name"], (r.get("derived") or {}).get("season") or 0)
+        ].append(h)
     arep_of, areps, aauth = {}, [], {}
     for members in agroups.values():
-        rep = max(members, key=lambda h: (bool(armor[h].get('collectibleHash')), armor[h]['index']))
+        rep = max(
+            members,
+            key=lambda h: (bool(armor[h].get("collectibleHash")), armor[h]["index"]),
+        )
         merged = {}
         for h in members:
-            for k, v in (armor[h]['i18n'][resolve.ZH].get('site_authors') or {}).items():
+            for k, v in (
+                armor[h]["i18n"][resolve.ZH].get("site_authors") or {}
+            ).items():
                 merged.setdefault(k, v)
         aauth[rep] = merged
         for h in members:
             arep_of[h] = rep
         areps.append(rep)
-    areps.sort(key=lambda h: (armor[h]['classType'], list(PART).index(armor[h]['itemSubType']),
-                              -((armor[h].get('derived') or {}).get('season') or 0),
-                              armor[h]['i18n'][resolve.ZH]['name']))
-    aorder = areps + sorted((h for h in armor if arep_of[h] != h), key=lambda h: areps.index(arep_of[h]))
+    areps.sort(
+        key=lambda h: (
+            armor[h]["classType"],
+            list(PART).index(armor[h]["itemSubType"]),
+            -((armor[h].get("derived") or {}).get("season") or 0),
+            armor[h]["i18n"][resolve.ZH]["name"],
+        )
+    )
+    aorder = areps + sorted(
+        (h for h in armor if arep_of[h] != h), key=lambda h: areps.index(arep_of[h])
+    )
     arow_of = {h: i for i, h in enumerate(aorder)}
     afams = collections.defaultdict(list)
     for h in aorder:
-        afams[armor[h]['i18n'][resolve.ZH]['name']].append(h)
+        afams[armor[h]["i18n"][resolve.ZH]["name"]].append(h)
     afam_list, afam_of = [], {}
     for members in afams.values():
-        members.sort(key=lambda h: (-((armor[h].get('derived') or {}).get('season') or 0), -armor[h]['index']))
+        members.sort(
+            key=lambda h: (
+                -((armor[h].get("derived") or {}).get("season") or 0),
+                -armor[h]["index"],
+            )
+        )
         for h in members:
             afam_of[h] = len(afam_list)
         afam_list.append([arow_of[h] for h in members])
     arows, aperks, atext_fl, aauthors = [], {}, {}, {}
     for h in aorder:
         r = armor[h]
-        zh = r['i18n'][resolve.ZH]
+        zh = r["i18n"][resolve.ZH]
         authors = aauth.get(arep_of[h]) or {}
-        lg = authors.get('LGpig') or {}
+        lg = authors.get("LGpig") or {}
         srcs = sources_of(F, h, authors)
         src_ids = []
         for s in srcs:
@@ -1093,21 +1437,40 @@ def build(facts):
                 source_idx[s] = len(sources)
                 sources.append(s)
             src_ids.append(source_idx[s])
-        src_val = src_ids[0] if len(src_ids) == 1 else (src_ids if len(src_ids) > 1 else -1)
+        src_val = (
+            src_ids[0] if len(src_ids) == 1 else (src_ids if len(src_ids) > 1 else -1)
+        )
         names = rows.exotic_perks(h).names
         perks = []
         for n, k in names.items():
             pr = F.at(k) or {}
-            perks.append([n.lstrip('↑'), stem(pr.get('icon')) if not k.startswith('perk:') else '',
-                          b.say(b.text(pr, 'database_details'))])
+            perks.append(
+                [
+                    n.lstrip("↑"),
+                    stem(pr.get("icon")) if not k.startswith("perk:") else "",
+                    b.say(b.text(pr, "database_details")),
+                ]
+            )
         aperks[h] = perks
-        role = ' '.join(parts(lg.get('role'))) if lg.get('role') else ''
-        arows.append([h, zh['name'], list(PART).index(r['itemSubType']), r['classType'],
-                      (r.get('derived') or {}).get('season') or 0, stem(r.get('icon')),
-                      stem(r.get('iconWatermark')), '、'.join(p[0] for p in perks),
-                      role if arep_of[h] == h else '', src_val, arow_of[arep_of[h]],
-                      afam_of[h], resolve.text(r, lang='en') or ''])
-        flavor = b.text(r, 'flavorText')
+        role = " ".join(parts(lg.get("role"))) if lg.get("role") else ""
+        arows.append(
+            [
+                h,
+                zh["name"],
+                list(PART).index(r["itemSubType"]),
+                r["classType"],
+                (r.get("derived") or {}).get("season") or 0,
+                stem(r.get("icon")),
+                stem(r.get("iconWatermark")),
+                "、".join(p[0] for p in perks),
+                role if arep_of[h] == h else "",
+                src_val,
+                arow_of[arep_of[h]],
+                afam_of[h],
+                resolve.text(r, lang="en") or "",
+            ]
+        )
+        flavor = b.text(r, "flavorText")
         if flavor:
             atext_fl[h] = flavor
         if arep_of[h] == h:
@@ -1119,34 +1482,44 @@ def build(facts):
     # ── 词表 ────────────────────────────────────────────────────────
     types = {}
     for h, r in weapons.items():
-        types.setdefault(r['itemSubType'], [b.text(r, 'itemTypeDisplayName'), GLYPH[r['itemSubType']]])
+        types.setdefault(
+            r["itemSubType"],
+            [b.text(r, "itemTypeDisplayName"), GLYPH[r["itemSubType"]]],
+        )
     watermarks = Table()
     en_w, en_a = [], []
     for row in wrows:
         row[11] = watermarks.of(row[11]) if row[11] else -1
         en = row.pop()
-        en_w.append('' if en == row[1] else en)
+        en_w.append("" if en == row[1] else en)
     for row in arows:
         row[6] = watermarks.of(row[6]) if row[6] else -1
         en = row.pop()
-        en_a.append('' if en == row[1] else en)
+        en_a.append("" if en == row[1] else en)
     vocab = {
-        'el': {e: [rows.ELEMENT[e][1], rows.ELEMENT[e][0], stem(icons.ELEM[e])] for e in sorted(elements)},
-        'br': {k: [v, stem(icons.CHAMP[k])] for k, v in icons.BREAKER.items()},
-        'am': {k: list(v) for k, v in AMMO.items()},
-        'ty': types,
-        'qt': quick_types(wrows, types),
-        'slot': list(SLOT.values()),
-        'rar': RARITY,
-        'fr': frames,
-        'src': sources,
-        'wm': watermarks.items,
-        'cls': [CLASS[k] for k in sorted(CLASS)],
-        'part': list(PART.values()),
-        'o': {k: stem(v) for k, v in icons.CHROME.items() if k in ('tier', 'craft', 'craft-bg')},
-        'fam': fam_list,
-        'afam': afam_list,
-        'isen': is_aliases(weapons, armor, types),
+        "el": {
+            e: [rows.ELEMENT[e][1], rows.ELEMENT[e][0], stem(icons.ELEM[e])]
+            for e in sorted(elements)
+        },
+        "br": {k: [v, stem(icons.CHAMP[k])] for k, v in icons.BREAKER.items()},
+        "am": {k: list(v) for k, v in AMMO.items()},
+        "ty": types,
+        "qt": quick_types(wrows, types),
+        "slot": list(SLOT.values()),
+        "rar": RARITY,
+        "fr": frames,
+        "src": sources,
+        "wm": watermarks.items,
+        "cls": [CLASS[k] for k in sorted(CLASS)],
+        "part": list(PART.values()),
+        "o": {
+            k: stem(v)
+            for k, v in icons.CHROME.items()
+            if k in ("tier", "craft", "craft-bg")
+        },
+        "fam": fam_list,
+        "afam": afam_list,
+        "isen": is_aliases(weapons, armor, types),
     }
 
     # ── 编码：插件与词条栏用下标，重复的表只存一份 ────────────────────
@@ -1159,12 +1532,16 @@ def build(facts):
         return [[sidx[str(k)], v] for k, v in pairs if str(k) in sidx]
 
     ptypes, labels = Table(), Table()
-    plist = [[int(h), v[0], v[1], ptypes.of(v[2]), stat_pairs(v[3]), stat_pairs(v[4])]
-             for h, v in b.plugs.items()]
-    groups = {gh: [[sidx[str(x[0])]] + x[1:] for x in rows_] for gh, rows_ in b.groups.items()}
+    plist = [
+        [int(h), v[0], v[1], ptypes.of(v[2]), stat_pairs(v[3]), stat_pairs(v[4])]
+        for h, v in b.plugs.items()
+    ]
+    groups = {
+        gh: [[sidx[str(x[0])]] + x[1:] for x in rows_] for gh, rows_ in b.groups.items()
+    }
     cell_lists, mw_lists, mod_lists = Table(), Table(), Table()
     # 固有单列一档：它不进枪管弹匣那一截属性，也不算 Perk 1／Perk 2。
-    role_code = {'stat': 0, 'trait': 1, 'origin': 2, 'intrinsic': 3}
+    role_code = {"stat": 0, "trait": 1, "origin": 2, "intrinsic": 3}
     wp = []
     frame_rows, art_lists = Table(), Table()
     for h in order:
@@ -1174,58 +1551,96 @@ def build(facts):
             lst = [[pidx[str(c[0])], pidx[str(c[1])] if c[1] else -1] for c in cells]
             enc_cols.append([labels.of(label), role_code[role], cell_lists.of(lst)])
             bits += [[pidx[str(c[0])], c[2]] for c in cells if c[2]]
-        enc_opts = [[o[0], sidx[str(o[1])], pidx[str(o[2])], pidx[str(o[3])] if o[3] else -1, o[4]]
-                    for o in opts]
+        enc_opts = [
+            [
+                o[0],
+                sidx[str(o[1])],
+                pidx[str(o[2])],
+                pidx[str(o[3])] if o[3] else -1,
+                o[4],
+            ]
+            for o in opts
+        ]
         # 基础投资值按属性组的行排：没有这一项的写 null（那一行不上页面）。
         have = dict(base)
         base = [have.get(x[0]) for x in b.groups[group]]
-        wp.append([group, base, enc_cols, bits, tiered, rec, mw_lists.of(enc_opts) if opts else -1,
-                   mod_lists.of([pidx[str(m)] for m in mods]) if mods else -1,
-                   [pidx[str(c)] for c in cats],
-                   frame_rows.of([frame.get(k) for k in FRAME_FIELDS]) if frame else -1,
-                   art_lists.of(own) if own else -1])
-    pool = {'s': [[int(h)] + v for h, v in b.stats.items()], 'g': groups, 'p': plist, 'pt': ptypes.items, 'lb': labels.items,
-            'L': cell_lists.items, 'M': mw_lists.items, 'D': mod_lists.items, 'w': wp,
-            'fr2': frame_rows.items, 'brick': brick_table(),
-            'am': [m[:4] for m in amods], 'an': arts, 'AM': art_lists.items,
-            'en': en_w, 'aen': en_a}
+        wp.append(
+            [
+                group,
+                base,
+                enc_cols,
+                bits,
+                tiered,
+                rec,
+                mw_lists.of(enc_opts) if opts else -1,
+                mod_lists.of([pidx[str(m)] for m in mods]) if mods else -1,
+                [pidx[str(c)] for c in cats],
+                frame_rows.of([frame.get(k) for k in FRAME_FIELDS]) if frame else -1,
+                art_lists.of(own) if own else -1,
+            ]
+        )
+    pool = {
+        "s": [[int(h)] + v for h, v in b.stats.items()],
+        "g": groups,
+        "p": plist,
+        "pt": ptypes.items,
+        "lb": labels.items,
+        "L": cell_lists.items,
+        "M": mw_lists.items,
+        "D": mod_lists.items,
+        "w": wp,
+        "fr2": frame_rows.items,
+        "brick": brick_table(),
+        "am": [m[:4] for m in amods],
+        "an": arts,
+        "AM": art_lists.items,
+        "en": en_w,
+        "aen": en_a,
+    }
 
     htmls, flavors = Table(), Table()
     wrow = {h: i for i, h in enumerate(order)}
     arow = {h: i for i, h in enumerate(aorder)}
     text = {
-        'pd': [b.plug_text.get(h, '') for h in b.plugs],
-        'ps': [htmls.of(b.plug_site[h]) if h in b.plug_site else -1 for h in b.plugs],
-        'fw': [flavors.of(wtext_fl[h]) if h in wtext_fl else -1 for h in order],
-        'fa': [flavors.of(atext_fl[h]) if h in atext_fl else -1 for h in aorder],
-        'au': {wrow[h]: v for h, v in wauthors.items()},
-        'aau': {arow[h]: v for h, v in aauthors.items()},
-        'xs': {wrow[h]: v for h, v in xs.items() if h in wrow and rep_of[h] == h},
-        'axs': {arow[h]: v for h, v in xs.items() if h in arow and arep_of[h] == h},
-        'cp': {pidx[h]: v for h, v in cats_text.items()},
-        'ap': {arow[h]: v for h, v in aperks.items() if arep_of[h] == h},
-        'amd': [htmls.of(m[4]) if m[4] else -1 for m in amods],
+        "pd": [b.plug_text.get(h, "") for h in b.plugs],
+        "ps": [htmls.of(b.plug_site[h]) if h in b.plug_site else -1 for h in b.plugs],
+        "fw": [flavors.of(wtext_fl[h]) if h in wtext_fl else -1 for h in order],
+        "fa": [flavors.of(atext_fl[h]) if h in atext_fl else -1 for h in aorder],
+        "au": {wrow[h]: v for h, v in wauthors.items()},
+        "aau": {arow[h]: v for h, v in aauthors.items()},
+        "xs": {wrow[h]: v for h, v in xs.items() if h in wrow and rep_of[h] == h},
+        "axs": {arow[h]: v for h, v in xs.items() if h in arow and arep_of[h] == h},
+        "cp": {pidx[h]: v for h, v in cats_text.items()},
+        "ap": {arow[h]: v for h, v in aperks.items() if arep_of[h] == h},
+        "amd": [htmls.of(m[4]) if m[4] else -1 for m in amods],
     }
     srows, stexts = set_rows(b, htmls)
-    text['st'] = stexts
-    text['H'] = htmls.items
-    text['FL'] = flavors.items
+    text["st"] = stexts
+    text["H"] = htmls.items
+    text["FL"] = flavors.items
     # 用过这一件的配装：按主键收，详情里画在最底下。**只收站上真有的那几页**，
     # 配装源稿里别的主键（碎片、模组、技能）这一页上没有对应的一件东西。
     live = set(order) | set(aorder) | {r[0] for r in srows}
     # 卡片整段只存一份，主键那一侧记下标：819 枚主键平均各指着 4 张卡，
     # 直接存就是把同一张卡存了三千多遍（text.js gzip 因此多 33 KB）。
     by_key, cards = builds_by_key()
-    text['bd'] = {h: v for h, v in by_key.items() if h in live}
-    text['bdc'] = cards
-    index = {'v': vocab, 'w': wrows, 'a': arows, 't': srows}
-    stats = {'weapons': len(wrows), 'cards': len(reps), 'armor': len(arows), 'armor_cards': len(areps),
-             'sets': len(srows), 'mark_miss': b.mark_miss, 'orphans': b.orphans}
+    text["bd"] = {h: v for h, v in by_key.items() if h in live}
+    text["bdc"] = cards
+    index = {"v": vocab, "w": wrows, "a": arows, "t": srows}
+    stats = {
+        "weapons": len(wrows),
+        "cards": len(reps),
+        "armor": len(arows),
+        "armor_cards": len(areps),
+        "sets": len(srows),
+        "mark_miss": b.mark_miss,
+        "orphans": b.orphans,
+    }
     out = {
-        'weapons/index.js': js('WPN', index),
-        'weapons/pool.js': js('WPN_POOL', pool),
-        'weapons/text.js': js('WPN_TEXT', text),
-        'weapons/index.html': page(stats, glyphs),
+        "weapons/index.js": js("WPN", index),
+        "weapons/pool.js": js("WPN_POOL", pool),
+        "weapons/text.js": js("WPN_TEXT", text),
+        "weapons/index.html": page(stats, glyphs),
     }
     return out, stats
 
@@ -1245,37 +1660,52 @@ class Table:
 
 
 def js(name, payload):
-    return 'window.%s = %s;\n' % (name, json.dumps(payload, ensure_ascii=False, separators=(',', ':')))
+    return "window.%s = %s;\n" % (
+        name,
+        json.dumps(payload, ensure_ascii=False, separators=(",", ":")),
+    )
 
 
 # ── 页壳 ─────────────────────────────────────────────────────────────
-DESC = ('Destiny 2 武器、异域护甲与护甲套装检索库：支持按名称、词条、属性与条件表达式筛选，'
-        '自选词条实时计算属性与 PvP 击杀时间，附 Aegis 与小棒猪评级及推荐词条。')
-AEGIS_SRC = ('<a href="https://docs.google.com/spreadsheets/d/'
-             '1JM-0SlxVDAi-C6rGVlLxa-J1WGewEeL8Qvq4htWZHhY" target="_blank" rel="noopener">'
-             'Destiny 2: Endgame Analysis</a>')
-LGPIG_SRC = ('<a href="https://docs.google.com/spreadsheets/d/'
-             '1qsKGrRzCePGaIM5gNtAQNh949d3OsMJ6qV6Fqtpj22k/htmlview" target="_blank" '
-             'rel="noopener">刷取清单</a>')
-LGPIG = ('<a href="https://space.bilibili.com/169548478" target="_blank" rel="noopener">'
-         '小棒猪</a>')
+DESC = (
+    "Destiny 2 武器、异域护甲与护甲套装检索库：支持按名称、词条、属性与条件表达式筛选，"
+    "自选词条实时计算属性与 PvP 击杀时间，附 Aegis 与小棒猪评级及推荐词条。"
+)
+AEGIS_SRC = (
+    '<a href="https://docs.google.com/spreadsheets/d/'
+    '1JM-0SlxVDAi-C6rGVlLxa-J1WGewEeL8Qvq4htWZHhY" target="_blank" rel="noopener">'
+    "Destiny 2: Endgame Analysis</a>"
+)
+LGPIG_SRC = (
+    '<a href="https://docs.google.com/spreadsheets/d/'
+    '1qsKGrRzCePGaIM5gNtAQNh949d3OsMJ6qV6Fqtpj22k/htmlview" target="_blank" '
+    'rel="noopener">刷取清单</a>'
+)
+LGPIG = (
+    '<a href="https://space.bilibili.com/169548478" target="_blank" rel="noopener">'
+    "小棒猪</a>"
+)
 
 
 def stamp():
     """页脚的更新时间：评级、站内正文与神器模组说明来自的那几页里最晚的一天。"""
     dates = []
-    for page in sorted(set(rows.AUTHORED) | rows.EXOTIC | {'artifact-mods'}):
-        with open(rows.src_path(page), encoding='utf-8') as f:
-            got = markup.meta_of(f.read(), '更新')
-        dates.append((tuple(int(x) for x in got.split('.')), got))
+    for page in sorted(set(rows.AUTHORED) | rows.EXOTIC | {"artifact-mods"}):
+        with open(rows.src_path(page), encoding="utf-8") as f:
+            got = markup.meta_of(f.read(), "更新")
+        dates.append((tuple(int(x) for x in got.split(".")), got))
     return max(dates)[1]
 
 
 def sprite(glyphs):
     """类型与弹药的小图标，内联成一张 sprite：<use href="#g-…"> 跟着文字变色。"""
-    return ('<svg class="sprite" aria-hidden="true" style="display:none">%s</svg>'
-            % ''.join('<symbol id="g-%s" viewBox="%s">%s</symbol>' % (k, box, body)
-                      for k, (box, body) in sorted(glyphs.items())))
+    return (
+        '<svg class="sprite" aria-hidden="true" style="display:none">%s</svg>'
+        % "".join(
+            '<symbol id="g-%s" viewBox="%s">%s</symbol>' % (k, box, body)
+            for k, (box, body) in sorted(glyphs.items())
+        )
+    )
 
 
 def scope_row():
@@ -1284,7 +1714,8 @@ def scope_row():
         '<div class="wpn-scope" role="group" aria-label="范围">'
         '<button type="button" class="toggle" data-act="scope" data-v="wpn">武器</button>'
         '<button type="button" class="toggle" data-act="scope" data-v="armor">异域护甲</button>'
-        '<button type="button" class="toggle" data-act="scope" data-v="sets">护甲套装</button></div>')
+        '<button type="button" class="toggle" data-act="scope" data-v="sets">护甲套装</button></div>'
+    )
 
 
 def toolbar():
@@ -1303,102 +1734,138 @@ def toolbar():
         '<button type="button" class="toggle" data-act="view" data-v="grid">卡片</button>'
         '<button type="button" class="toggle" data-act="view" data-v="list">列表</button>'
         '<button type="button" class="toggle" data-act="syntax" aria-expanded="false">语法</button></div>'
-        '<div class="wpn-syntax" role="dialog" aria-label="查询语法" hidden></div></div></div>')
+        '<div class="wpn-syntax" role="dialog" aria-label="查询语法" hidden></div></div></div>'
+    )
 
 
 def catalog(stats):
     """标题下面一行：库里有多少。数从生成时的实体层取，不手写。"""
-    return ('<b>%d</b>把武器<i></i><b>%d</b>件异域护甲<i></i><b>%d</b>套护甲套装'
-            % (stats['weapons'], stats['armor'], stats['sets']))
+    return "<b>%d</b>把武器<i></i><b>%d</b>件异域护甲<i></i><b>%d</b>套护甲套装" % (
+        stats["weapons"],
+        stats["armor"],
+        stats["sets"],
+    )
 
 
 # 骨架的卡片数：1440×900 下卡片墙一屏 5 列 5 行多一点，取 6 行，与 app.js 的 N_EAGER 同一个数。
 N_SKEL = 30
 # 骨架里占字的全角空格：它不是可折叠的空白，撑出与真文字同高的一行，行高仍由真卡片
 # 那几条字体规则给。
-FILL = '\u3000'
+FILL = "\u3000"
 
 
 def skeleton():
     """首屏骨架：快速检索那一行与条件条的位置，加一屏卡片。类与真卡片同一套，高度由同一份样式
     算出，换上真内容时版面不动；词条池没到时 app.js 也拿这块卡片墙占位。"""
-    card = ('<li><div class="wpn-card"><span class="gun"></span><div><p class="nm">%s</p>'
-            '<div class="wpn-meta">%s</div><div class="wpn-frame">%s</div>'
-            '<div class="wpn-grades">%s</div></div></div></li>' % ((FILL,) * 4))
-    return ('<div class="wpn-presets skel" aria-hidden="true"><div class="wpn-quick"></div></div>'
-            '<div class="wpn-conds skel" aria-hidden="true"></div>'
-            '<div class="wpn-body"><ol class="wpn-grid skel" aria-hidden="true">%s</ol></div>'
-            % (card * N_SKEL))
+    card = (
+        '<li><div class="wpn-card"><span class="gun"></span><div><p class="nm">%s</p>'
+        '<div class="wpn-meta">%s</div><div class="wpn-frame">%s</div>'
+        '<div class="wpn-grades">%s</div></div></div></li>' % ((FILL,) * 4)
+    )
+    return (
+        '<div class="wpn-presets skel" aria-hidden="true"><div class="wpn-quick"></div></div>'
+        '<div class="wpn-conds skel" aria-hidden="true"></div>'
+        '<div class="wpn-body"><ol class="wpn-grid skel" aria-hidden="true">%s</ol></div>'
+        % (card * N_SKEL)
+    )
 
 
 def page(stats, glyphs):
-    head = shell.head('装备库 · Starside', DESC, sky=True)
-    nav = shell.nav('装备库')
-    first = ('装备基础数据取自 Bungie manifest，面板属性随所选词条、大师杰作与阶级实时计算。方括号内为 PvP 数值。'
-             + shell.unsure_note())
-    source = ('Bungie manifest、%s（Aegis）与 %s（小棒猪）；异域的站内详情同'
-              '<a href="../exotic-weapon/index.html">异域武器</a>与'
-              '<a href="../exotic-armor/index.html">异域护甲</a>两页' % (AEGIS_SRC, LGPIG_SRC))
+    head = shell.head("装备库 · Starside", DESC, sky=True)
+    nav = shell.nav("装备库")
+    first = (
+        "装备基础数据取自 Bungie manifest，面板属性随所选词条、大师杰作与阶级实时计算。方括号内为 PvP 数值。"
+        + shell.unsure_note()
+    )
+    source = (
+        "Bungie manifest、%s（Aegis）与 %s（小棒猪）；异域的站内详情同"
+        '<a href="../exotic-weapon/index.html">异域武器</a>与'
+        '<a href="../exotic-armor/index.html">异域护甲</a>两页' % (AEGIS_SRC, LGPIG_SRC)
+    )
     body = [
-        head.replace('</head>', '<script src="../assets/pinyin.js" defer></script>\n'
-                     '<script src="index.js" defer></script>\n'
-                     '<script src="app.js" defer></script>\n'
-                     # 配装卡那一族的样式内联进来，不抄第二份：详情里「用过它的配装」
-                     # 摆的就是配装推荐页那张卡，强度光环、审核意见、合集马赛克与
-                     # 「3 套」角标都长在那份结构上。
-                     '<style>%s</style>\n</head>' % card_css()),
+        head.replace(
+            "</head>",
+            '<script src="../assets/pinyin.js" defer></script>\n'
+            '<script src="index.js" defer></script>\n'
+            '<script src="app.js" defer></script>\n'
+            # 配装卡那一族的样式内联进来，不抄第二份：详情里「用过它的配装」
+            # 摆的就是配装推荐页那张卡，强度光环、审核意见、合集马赛克与
+            # 「3 套」角标都长在那份结构上。
+            "<style>%s</style>\n</head>" % card_css(),
+        ),
         nav,
         # 星空窗从页眉画到范围开关的下沿，搜索框留在窗的尾巴里；范围开关不是 sticky 的，
         # 量得到它排版时的位置
-        shell.page_head('装备库', note=catalog(stats), attrs=' data-sky-end=".wpn-scope"'),
+        shell.page_head(
+            "装备库", note=catalog(stats), attrs=' data-sky-end=".wpn-scope"'
+        ),
         scope_row(),
         # 哨兵：查询条前面 1px 高、上缘往回收 1px，净高为 0。它滚到页眉之下，app.js 就给查询条垫底
         '<div class="wpn-sentinel" aria-hidden="true"></div>',
         toolbar(),
         '<main class="wpn">',
         '<section id="find" aria-label="装备库"><noscript><p class="empty">装备库需启用 '
-        'JavaScript 运行（共收录 %d 把武器、%d 件异域护甲）。</p></noscript>%s</section>'
-        % (stats['weapons'], stats['armor'], skeleton()),
-        '</main>',
+        "JavaScript 运行（共收录 %d 把武器、%d 件异域护甲）。</p></noscript>%s</section>"
+        % (stats["weapons"], stats["armor"], skeleton()),
+        "</main>",
         sprite(glyphs),
-        shell.foot(stamp(), first, source=source,
-                   thanks='Aegis 整理评级与推荐词条；%s 整理评级与评语' % LGPIG),
+        shell.foot(
+            stamp(),
+            first,
+            source=source,
+            thanks="Aegis 整理评级与推荐词条；%s 整理评级与评语" % LGPIG,
+        ),
     ]
-    return '\n'.join(body)
+    return "\n".join(body)
 
 
 def self_check(stats):
-    if stats['orphans']:
-        markup.die('强化版找不到基础版：%s' % '；'.join(stats['orphans'][:8]))
-    miss = len(stats['mark_miss'])
+    if stats["orphans"]:
+        markup.die("强化版找不到基础版：%s" % "；".join(stats["orphans"][:8]))
+    miss = len(stats["mark_miss"])
     if miss > MARK_MISS_BASELINE:
-        markup.die('作者推荐里 %d 个词条名落不到池里（基线 %d）：\n  %s'
-                   % (miss, MARK_MISS_BASELINE, '\n  '.join(stats['mark_miss'])))
+        markup.die(
+            "作者推荐里 %d 个词条名落不到池里（基线 %d）：\n  %s"
+            % (miss, MARK_MISS_BASELINE, "\n  ".join(stats["mark_miss"]))
+        )
 
 
 def main() -> int:
-    argparse.ArgumentParser(description=__doc__, allow_abbrev=False,
-                            formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
+    argparse.ArgumentParser(
+        description=__doc__,
+        allow_abbrev=False,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    ).parse_args()
     out, stats = build(rows.facts())
     self_check(stats)
     for rel, body in out.items():
         path = os.path.join(shell.SITE, rel)
-        if rel.endswith('index.html'):
-            shell.emit(os.path.dirname(path), body, '%d 把武器（%d 张卡）、%d 件异域护甲'
-                       % (stats['weapons'], stats['cards'], stats['armor']))
+        if rel.endswith("index.html"):
+            shell.emit(
+                os.path.dirname(path),
+                body,
+                "%d 把武器（%d 张卡）、%d 件异域护甲"
+                % (stats["weapons"], stats["cards"], stats["armor"]),
+            )
             continue
-        with open(path, 'w', encoding='utf-8') as f:
+        with open(path, "w", encoding="utf-8") as f:
             f.write(body)
         raw = body.encode()
-        print('%s —— %.0f KB，gzip %.0f KB' % (rel, len(raw) / 1024, len(gzip.compress(raw, 9)) / 1024))
-    print('作者推荐落不到池里的词条名 %d 个（基线 %d）' % (len(stats['mark_miss']), MARK_MISS_BASELINE))
+        print(
+            "%s —— %.0f KB，gzip %.0f KB"
+            % (rel, len(raw) / 1024, len(gzip.compress(raw, 9)) / 1024)
+        )
+    print(
+        "作者推荐落不到池里的词条名 %d 个（基线 %d）"
+        % (len(stats["mark_miss"]), MARK_MISS_BASELINE)
+    )
     home = os.path.join(shell.SITE, shell.HOME)
-    with open(home, encoding='utf-8') as f:
+    with open(home, encoding="utf-8") as f:
         src = f.read()
-    with open(home, 'w', encoding='utf-8') as f:
-        f.write(shell.sync_card(src, 'weapons/index.html', ('武器', stats['cards'])))
+    with open(home, "w", encoding="utf-8") as f:
+        f.write(shell.sync_card(src, "weapons/index.html", ("武器", stats["cards"])))
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

@@ -17,14 +17,28 @@ import editmap
 import pagedex
 import resolve
 import shell
-from markup import (OPEN, Icons, blocks_at, bmark, die, eq, format_prose_para, inline, meta_line,
-                    meta_of, must, src_hash, text_of, typeset)
+from markup import (
+    OPEN,
+    Icons,
+    blocks_at,
+    bmark,
+    die,
+    eq,
+    format_prose_para,
+    inline,
+    meta_line,
+    meta_of,
+    must,
+    src_hash,
+    text_of,
+    typeset,
+)
 
-SRC = os.path.join(shell.KEY_DIR, 'artifact-mods.md')
-OUT_DIR = os.path.join(shell.SITE, 'artifact-mods')
-ICON_DIR = os.path.join(OUT_DIR, 'icons')
+SRC = os.path.join(shell.KEY_DIR, "artifact-mods.md")
+OUT_DIR = os.path.join(shell.SITE, "artifact-mods")
+ICON_DIR = os.path.join(OUT_DIR, "icons")
 
-PAGE_TITLE = '神器模组 · Starside'
+PAGE_TITLE = "神器模组 · Starside"
 
 _STAMP = None
 _ARTS = None
@@ -39,21 +53,26 @@ def art_pool(artifact):
     global _ARTS
     if _ARTS is None:
         facts = resolve.shared()[0]
-        _ARTS = {resolve.norm(resolve.text(v)):
-                 {str(m['itemHash'])
-                  for tier in v['derived']['tiers'] for m in tier['items']}
-                 for v in facts.items.values() if 'tiers' in (v.get('derived') or {})}
+        _ARTS = {
+            resolve.norm(resolve.text(v)): {
+                str(m["itemHash"])
+                for tier in v["derived"]["tiers"]
+                for m in tier["items"]
+            }
+            for v in facts.items.values()
+            if "tiers" in (v.get("derived") or {})
+        }
     return _ARTS.get(resolve.norm(artifact), set())
 
 
-def stamp(name, artifact=''):
+def stamp(name, artifact=""):
     """模组的主键。这一页的单位是模组，不是表格行。
 
     惰性装配：check_terms.py 会 importlib 载这个模块取着色词表，import 时就读
     12 MB 事实层等于让闸门白等。"""
     global _STAMP
     if _STAMP is None:
-        _STAMP = resolve.stamper('artifact-mods') or (lambda _: [])
+        _STAMP = resolve.stamper("artifact-mods") or (lambda _: [])
     keys = list(_STAMP(name))
     if len(keys) > 1 and artifact:
         mine = [k for k in keys if k in art_pool(artifact)]
@@ -63,34 +82,57 @@ def stamp(name, artifact=''):
             keys = mine
     return keys
 
+
 N_SECTIONS = 7
 N_MODS = 147
-N_ICON_REFS = 163          # 147 个模组 + 7 件神器本体 + 7 枚神器徽章 + 2 枚提示徽章
-N_ICON_FILES = 133
+N_ICON_REFS = 163  # 147 个模组 + 7 件神器本体 + 7 枚神器徽章 + 2 枚提示徽章
+N_ICON_FILES = 9
 
 # 1440×900 首屏内的图标数（提示徽章 2 + 首个神器的本体与徽章 2 + 首行模组 3）
 N_EAGER = 7
 
-TIERS = {'一级': 1, '二级': 2, '三级': 3}
+TIERS = {"一级": 1, "二级": 2, "三级": 3}
 
 # 源稿里的「键：值」行。键名固定，正文行不会被误认。
-META_KEYS = ('副标题', '描述', '更新', '页脚', '待测标记', '数据源', '鸣谢',
-             '小标题', '标题', '本体图', '徽章', '括注', '图标', '主键', '标签（站点补充）', '标签')
+META_KEYS = (
+    "副标题",
+    "描述",
+    "更新",
+    "页脚",
+    "待测标记",
+    "数据源",
+    "鸣谢",
+    "小标题",
+    "标题",
+    "本体图",
+    "徽章",
+    "括注",
+    "图标",
+    "主键",
+    "标签（站点补充）",
+    "标签",
+)
 META_LINE = meta_line(META_KEYS)
 
 
 # 图标引用顺序即文档顺序：parse() 按提示徽章 → 神器本体图与徽章 → 模组图标依次取图
 def img(icons, name, cls):
     # 带斜杠的是相对本页的整条路径（记录给的 assets/icons/…），不再往前面贴 icons/
-    return icons.html(name if '/' in name else 'icons/' + name, cls)
+    return icons.html(name if "/" in name else "icons/" + name, cls)
 
 
 # 主键骨架的一行：神器不缩进，它的模组缩进两格。
-SKEL_ROW = re.compile(r'^(\s*)(\d+)  (.+)$')
+SKEL_ROW = re.compile(r"^(\s*)(\d+)  (.+)$")
 
 # 标签里的元素名着色。动能在游戏内即是白，这一页不给它上色，与原来的源稿一致。
-TAG_TOKEN = {'虚空': 'el-void', '电弧': 'el-arc', '烈日': 'el-solar',
-             '冰影': 'el-stasis', '缚丝': 'el-strand', '棱镜': 'el-prismatic'}
+TAG_TOKEN = {
+    "虚空": "el-void",
+    "电弧": "el-arc",
+    "烈日": "el-solar",
+    "冰影": "el-stasis",
+    "缚丝": "el-strand",
+    "棱镜": "el-prismatic",
+}
 
 
 def expand(md):
@@ -102,9 +144,10 @@ def expand(md):
     展开之后交给下面的 parse()，解析与渲染一个字不改。
     """
     import rows
+
     out = []
-    slots = set()                            # 当前这件神器插槽里的模组主键
-    for line in md.split('\n'):
+    slots = set()  # 当前这件神器插槽里的模组主键
+    for line in md.split("\n"):
         hit = SKEL_ROW.match(line)
         if not hit:
             out.append(line)
@@ -112,64 +155,81 @@ def expand(md):
         indent, key, title = hit.group(1), hit.group(2), hit.group(3).strip()
         rec = rows.facts().at(key)
         if rec is None:
-            die('%s：主键 %s 落不到记录上（%s）' % ('artifact-mods', key, title))
+            die("%s：主键 %s 落不到记录上（%s）" % ("artifact-mods", key, title))
         zh = rows.zh(rec)
-        if not indent:                      # 神器那一行
-            slots = {str(m['itemHash']) for tier in (rec.get('derived') or {}).get('tiers') or ()
-                     for m in tier['items']}
+        if not indent:  # 神器那一行
+            slots = {
+                str(m["itemHash"])
+                for tier in (rec.get("derived") or {}).get("tiers") or ()
+                for m in tier["items"]
+            }
             if not slots:
-                die('%s：%s 的记录上没有 derived.tiers' % ('artifact-mods', title))
-            tags = ' | '.join('{%s|%s}' % (TAG_TOKEN[e], e) if e in TAG_TOKEN else e
-                              for e in zh.get('site_elements') or ())
-            kinds = ' | '.join(zh.get('site_weaponTypes') or ())
+                die("%s：%s 的记录上没有 derived.tiers" % ("artifact-mods", title))
+            tags = " | ".join(
+                "{%s|%s}" % (TAG_TOKEN[e], e) if e in TAG_TOKEN else e
+                for e in zh.get("site_elements") or ()
+            )
+            kinds = " | ".join(zh.get("site_weaponTypes") or ())
             # 神器本体那张图挂在它自己的记录上（icon_local），与模组图同一条路取
             art_icon = rows.icon_file(key)
             if not art_icon:
-                die('%s（%s）的记录上没有 icon_local：先跑 icons.py --pull 与 facts.py --link'
-                    % (title, key))
-            out.append('本体图：%s' % rows.rel(art_icon, 'artifact-mods'))
-            out.append('徽章：%s' % rec['site_emblem'])
-            if zh.get('site_season'):
-                out.append('括注：（%s）' % zh['site_season'])
+                die(
+                    "%s（%s）的记录上没有 icon_local：先跑 icons.py --pull 与 facts.py --link"
+                    % (title, key)
+                )
+            out.append("本体图：%s" % rows.rel(art_icon, "artifact-mods"))
+            out.append("徽章：%s" % rec["site_emblem"])
+            if zh.get("site_season"):
+                out.append("括注：（%s）" % zh["site_season"])
             if tags or kinds:
-                out.append('标签（站点补充）：%s' % '<br>'.join(x for x in (tags, kinds) if x))
+                out.append(
+                    "标签（站点补充）：%s" % "<br>".join(x for x in (tags, kinds) if x)
+                )
             continue
         # 同名模组在几件神器上多半各是一枚 hash，图也不同；写成别件神器的那一枚，
         # 这一节显示的就是别件神器的图与正文
         if key not in slots:
-            die('%s：%s（%s）不在这件神器的插槽里，按 derived.tiers 换成它自己那一枚'
-                % ('artifact-mods', key, title))
-        icon = rows.icon_file(key)           # 模组图走站内那一份，记录上写着
+            die(
+                "%s：%s（%s）不在这件神器的插槽里，按 derived.tiers 换成它自己那一枚"
+                % ("artifact-mods", key, title)
+            )
+        icon = rows.icon_file(key)  # 模组图走站内那一份，记录上写着
         if not icon:
-            die('%s 没有图标' % title)
-        out.append('### %s' % title)
-        out.append('图标：%s' % rows.rel(icon, 'artifact-mods'))
+            die("%s 没有图标" % title)
+        out.append("### %s" % title)
+        out.append("图标：%s" % rows.rel(icon, "artifact-mods"))
         # 主键顺手带下去：索引按它登记，不按名字回查——同名的三条里挑不出这一枚
-        #（「乘胜追击」既是神器模组，也是冷酷无情的固有 Perk）。源稿写着它，用它。
-        out.append('主键：%s' % key)
-        out.append('')
-        raw_desc = (zh.get('realgame_details') or '').strip()
-        out.append(raw_desc.replace('\\\\ \\\\', '\n\n').replace('\\\\', '\n'))
-        out.append('')
-    return '\n'.join(out)
+        # （「乘胜追击」既是神器模组，也是冷酷无情的固有 Perk）。源稿写着它，用它。
+        out.append("主键：%s" % key)
+        out.append("")
+        raw_desc = (zh.get("realgame_details") or "").strip()
+        out.append(raw_desc.replace("\\\\ \\\\", "\n\n").replace("\\\\", "\n"))
+        out.append("")
+    return "\n".join(out)
 
 
 # ── 解析源稿 ────────────────────────────────────────────────────────────
 def is_skeleton(md):
-    return any(SKEL_ROW.match(ln) for ln in md.split('\n'))
+    return any(SKEL_ROW.match(ln) for ln in md.split("\n"))
 
 
 def parse(md, icons):
     """源稿 → page 字典。字典的形状就是 render() 的契约。"""
-    page = {'sub': '', 'lede': [], 'notice': {}, 'sections': []}
+    page = {"sub": "", "lede": [], "notice": {}, "sections": []}
 
     def meta(chunk, key, where):
-        return must(re.search(r'^%s：(.*)$' % key, chunk, re.M),
-                    '%s 缺「%s：」一行' % (where, key)).group(1).strip()
+        return (
+            must(
+                re.search(r"^%s：(.*)$" % key, chunk, re.M),
+                "%s 缺「%s：」一行" % (where, key),
+            )
+            .group(1)
+            .strip()
+        )
 
     def meta_opt(chunk, key):
-        m = re.search(r'^%s：(.*)$' % key, chunk, re.M)
-        return m.group(1).strip() if m else ''
+        m = re.search(r"^%s：(.*)$" % key, chunk, re.M)
+        return m.group(1).strip() if m else ""
 
     def keys_in(chunk, want, where):
         """「键：值」行的条数必须与预期相符。
@@ -179,7 +239,7 @@ def parse(md, icons):
         """
         got = len(META_LINE.findall(chunk))
         if got != want:
-            die('%s 的「键：值」行有 %d 条，期望 %d 条' % (where, got, want))
+            die("%s 的「键：值」行有 %d 条，期望 %d 条" % (where, got, want))
 
     def body(chunk):
         """剥掉「键：值」行，剩下的就是正文。
@@ -187,85 +247,101 @@ def parse(md, icons):
         键名是固定的一小撮，不按「短前缀 + 冒号」猜——正文里「伤害：2.8% | …」
         「单人游玩时：」这类行长得一模一样，猜就会把正文吃掉。
         """
-        return META_LINE.sub('', chunk)
+        return META_LINE.sub("", chunk)
 
-    parts = re.split(r'^## ', md, flags=re.M)
+    parts = re.split(r"^## ", md, flags=re.M)
     head = parts[0]
-    page['sub'] = inline(must(re.search(r'^副标题：(.*)$', head, re.M),
-                              '源稿开头缺「副标题：」').group(1).strip())
-    page['md'] = md          # 页面元信息在源稿头部，render() 现取
+    page["sub"] = inline(
+        must(re.search(r"^副标题：(.*)$", head, re.M), "源稿开头缺「副标题：」")
+        .group(1)
+        .strip()
+    )
+    page["md"] = md  # 页面元信息在源稿头部，render() 现取
 
     # 行号一路带下去，供就地编辑反查源稿。re.split 删掉的 '## ' 不含换行、
     # '\n### ' 含一个，所以行数守恒，累加换行数即得下一处的行号；
     # body() 走 META_LINE.sub，剥的是行内容、换行留着，行号同样不变。
-    at = parts[0].count('\n')          # 第一个 ## 所在的行
+    at = parts[0].count("\n")  # 第一个 ## 所在的行
 
     for part in parts[1:]:
-        title, _, chunk = part.partition('\n')
+        title, _, chunk = part.partition("\n")
         title = title.strip()
-        base = at + 1                  # chunk 第一行
-        at += part.count('\n')         # 下一个 ## 所在的行
+        base = at + 1  # chunk 第一行
+        at += part.count("\n")  # 下一个 ## 所在的行
 
-        if title == '导语':
-            keys_in(chunk, 1, '导语')
-            page['lede'].append((None, None, inline(meta(chunk, '小标题', '导语'))))
-            page['lede'] += [(n, m, inline(b)) for n, m, b in blocks_at(body(chunk), base)]
+        if title == "导语":
+            keys_in(chunk, 1, "导语")
+            page["lede"].append((None, None, inline(meta(chunk, "小标题", "导语"))))
+            page["lede"] += [
+                (n, m, inline(b)) for n, m, b in blocks_at(body(chunk), base)
+            ]
             continue
 
-        if title == '提示':
-            keys_in(chunk, 2, '提示')
-            embs = meta(chunk, '徽章', '提示').split()
+        if title == "提示":
+            keys_in(chunk, 2, "提示")
+            embs = meta(chunk, "徽章", "提示").split()
             if len(embs) != 2:
-                die('提示需要两枚徽章，源稿给了 %d 枚' % len(embs))
+                die("提示需要两枚徽章，源稿给了 %d 枚" % len(embs))
             hits = blocks_at(body(chunk), base)
-            page['notice'] = {
-                'emblems': [img(icons, n, 'emblem') for n in embs],
-                'title': inline(meta(chunk, '标题', '提示')),
-                'at': (hits[0][0], hits[-1][1]) if hits else None,
-                'body': inline('\n'.join(b for _, _, b in hits)),
+            page["notice"] = {
+                "emblems": [img(icons, n, "emblem") for n in embs],
+                "title": inline(meta(chunk, "标题", "提示")),
+                "at": (hits[0][0], hits[-1][1]) if hits else None,
+                "body": inline("\n".join(b for _, _, b in hits)),
             }
             continue
 
-        if not title.startswith('神器：'):
-            die('认不出的分节标题：## %s' % title)
+        if not title.startswith("神器："):
+            die("认不出的分节标题：## %s" % title)
 
-        name = title.removeprefix('神器：').strip()
-        head_chunk, _, mods_chunk = chunk.partition('\n### ')
-        tags = meta_opt(head_chunk, '标签')
-        site_tags = meta_opt(head_chunk, '标签（站点补充）')
+        name = title.removeprefix("神器：").strip()
+        head_chunk, _, mods_chunk = chunk.partition("\n### ")
+        tags = meta_opt(head_chunk, "标签")
+        site_tags = meta_opt(head_chunk, "标签（站点补充）")
         if tags and site_tags:
-            die('分节「%s」同时写了标签与标签（站点补充），二选一' % name)
+            die("分节「%s」同时写了标签与标签（站点补充），二选一" % name)
         sec = {
-            'at': at - part.count('\n'),      # 「## 神器：名称」那一行
-            'name': inline(name),
-            'paren': inline(meta_opt(head_chunk, '括注')),
-            'icon': img(icons, meta(head_chunk, '本体图', name), 'art-icon'),
-            'emblems': [img(icons, meta(head_chunk, '徽章', name), 'art-emblem')],
-            'tags': inline(tags) if tags else '',
-            'site_tags': inline(site_tags) if site_tags else '',
-            'mods': [],
+            "at": at - part.count("\n"),  # 「## 神器：名称」那一行
+            "name": inline(name),
+            "paren": inline(meta_opt(head_chunk, "括注")),
+            "icon": img(icons, meta(head_chunk, "本体图", name), "art-icon"),
+            "emblems": [img(icons, meta(head_chunk, "徽章", name), "art-emblem")],
+            "tags": inline(tags) if tags else "",
+            "site_tags": inline(site_tags) if site_tags else "",
+            "mods": [],
         }
         if body(head_chunk).strip():
-            die('分节「%s」的头部有认不出的正文：%r' % (name, body(head_chunk).strip()[:80]))
-        page['sections'].append(sec)
+            die(
+                "分节「%s」的头部有认不出的正文：%r"
+                % (name, body(head_chunk).strip()[:80])
+            )
+        page["sections"].append(sec)
 
-        mbase = base + head_chunk.count('\n') + 1   # 第一个 ### 所在的行
-        for mod_chunk in ('\n### ' + mods_chunk).split('\n### ')[1:]:
-            mod_title, _, mod_body = mod_chunk.partition('\n')
-            keys_in(mod_body, 2, '模组「%s」' % mod_title.strip())
-            tier_cn, sep, mod_name = mod_title.strip().partition(' · ')
+        mbase = base + head_chunk.count("\n") + 1  # 第一个 ### 所在的行
+        for mod_chunk in ("\n### " + mods_chunk).split("\n### ")[1:]:
+            mod_title, _, mod_body = mod_chunk.partition("\n")
+            keys_in(mod_body, 2, "模组「%s」" % mod_title.strip())
+            tier_cn, sep, mod_name = mod_title.strip().partition(" · ")
             if not sep or tier_cn not in TIERS:
-                die('模组标题要写成「### 一级 · 名称」，源稿写的是：%s' % mod_title.strip())
-            sec['mods'].append({
-                'tier': TIERS[tier_cn],
-                'at': mbase,                       # 「### 一级 · 名称」那一行
-                'icon': img(icons, meta(mod_body, '图标', mod_name), 'mod-icon'),
-                'key': meta_opt(mod_body, '主键'),
-                'name': inline(mod_name),
-                # 段落保持成 list：拍平成一串 <br><br> 再切回来会多一趟自造往返
-                'desc': [(n, m, inline(b)) for n, m, b in blocks_at(body(mod_body), mbase + 1)],
-            })
-            mbase += mod_chunk.count('\n') + 1     # 分隔符 '\n### ' 那一个换行
+                die(
+                    "模组标题要写成「### 一级 · 名称」，源稿写的是：%s"
+                    % mod_title.strip()
+                )
+            sec["mods"].append(
+                {
+                    "tier": TIERS[tier_cn],
+                    "at": mbase,  # 「### 一级 · 名称」那一行
+                    "icon": img(icons, meta(mod_body, "图标", mod_name), "mod-icon"),
+                    "key": meta_opt(mod_body, "主键"),
+                    "name": inline(mod_name),
+                    # 段落保持成 list：拍平成一串 <br><br> 再切回来会多一趟自造往返
+                    "desc": [
+                        (n, m, inline(b))
+                        for n, m, b in blocks_at(body(mod_body), mbase + 1)
+                    ],
+                }
+            )
+            mbase += mod_chunk.count("\n") + 1  # 分隔符 '\n### ' 那一个换行
     return page
 
 
@@ -277,108 +353,145 @@ def rows_of(mods):
     行分组错位会让搜索隐藏模组时列位串档，宁可中止也不静默错组。
     """
     for i in range(0, len(mods), 3):
-        row = mods[i:i + 3]
-        tiers = [m['tier'] for m in row]
+        row = mods[i : i + 3]
+        tiers = [m["tier"] for m in row]
         if tiers != [1, 2, 3]:
-            die('第 %d 行不是完整的一/二/三级三档：%s' % (i // 3 + 1, tiers))
+            die("第 %d 行不是完整的一/二/三级三档：%s" % (i // 3 + 1, tiers))
         yield row
 
 
-PAGE = 'artifact-mods'
+PAGE = "artifact-mods"
 ICON_SRC = re.compile(r'src="([^"]+)"')
 
 
 def icon_src(img):
     """<img …> → 它的 src。索引里存路径，不存整个标签。"""
-    hit = ICON_SRC.search(img or '')
-    return hit.group(1) if hit else ''
+    hit = ICON_SRC.search(img or "")
+    return hit.group(1) if hit else ""
 
 
-def render(page, digest='', dex=None, origins=None):
+def render(page, digest="", dex=None, origins=None):
     """origins 是本页的出处表（editmap.Origins）：模组正文在记录上，编辑台按它找回。"""
-    md = page['md']
-    dex = dex if dex is not None else pagedex.Index(PAGE, 'art-perk')
-    o = [shell.head(PAGE_TITLE, meta_of(md, '描述'), app_js=True, sky=True),
-         shell.nav('神器模组', toolbar={}),
-         shell.page_head(page['sub']),
-         # data-src 是这一篇在库里的 _id，就地编辑靠它找回源稿
-         '<main data-src="keys/artifact-mods" data-src-hash="%s">' % digest,
-         '<section class="intro">']
+    md = page["md"]
+    dex = dex if dex is not None else pagedex.Index(PAGE, "art-perk")
+    o = [
+        shell.head(PAGE_TITLE, meta_of(md, "描述"), app_js=True, sky=True),
+        shell.nav("神器模组", toolbar={}),
+        shell.page_head(page["sub"]),
+        # data-src 是这一篇在库里的 _id，就地编辑靠它找回源稿
+        '<main data-src="keys/artifact-mods" data-src-hash="%s">' % digest,
+        '<section class="intro">',
+    ]
 
-    o.append('<h2 class="sect-label">%s</h2>' % page['lede'][0][2])
-    for n, m, p in page['lede'][1:]:
+    o.append('<h2 class="sect-label">%s</h2>' % page["lede"][0][2])
+    for n, m, p in page["lede"][1:]:
         o.append('<p class="lede"%s>%s</p>' % (bmark(n, m), p))
 
-    n = page['notice']
-    o += ['<aside class="notice">', n['emblems'][0],
-          '<div class="notice-body">',
-          '<h3>%s</h3>' % n['title'],
-          '<p%s>%s</p>' % (bmark(*n['at']) if n['at'] else '', n['body']),
-          '</div>', n['emblems'][1], '</aside>', '</section>']
+    n = page["notice"]
+    o += [
+        '<aside class="notice">',
+        n["emblems"][0],
+        '<div class="notice-body">',
+        "<h3>%s</h3>" % n["title"],
+        "<p%s>%s</p>" % (bmark(*n["at"]) if n["at"] else "", n["body"]),
+        "</div>",
+        n["emblems"][1],
+        "</aside>",
+        "</section>",
+    ]
 
-    for i, s in enumerate(page['sections'], 1):
+    for i, s in enumerate(page["sections"], 1):
         # 神器名与档位轨合为一个 sticky 单元。徽章只输出一枚——源表格左右两侧
         # 是同一张图，对称属于表格的排版手段而非内容。
-        o += ['<section class="artifact" id="art-%d">' % i,
-              '<div class="art-bar">',
-              '<header class="art-head">', s['icon'], s['emblems'][0],
-              '<h2%s>%s%s</h2>' % (bmark(s['at']), s['name'],
-                                   ' <small>%s</small>' % s['paren'] if s['paren'] else '')]
-        if s['tags']:
-            o.append('<p class="art-tags">%s</p>' % s['tags'])
-        elif s['site_tags']:
+        o += [
+            '<section class="artifact" id="art-%d">' % i,
+            '<div class="art-bar">',
+            '<header class="art-head">',
+            s["icon"],
+            s["emblems"][0],
+            "<h2%s>%s%s</h2>"
+            % (
+                bmark(s["at"]),
+                s["name"],
+                " <small>%s</small>" % s["paren"] if s["paren"] else "",
+            ),
+        ]
+        if s["tags"]:
+            o.append('<p class="art-tags">%s</p>' % s["tags"])
+        elif s["site_tags"]:
             # 源表格没有、由站点补上的分节标签，来源在产出里留痕
-            o.append('<p class="art-tags" data-source="site">%s</p>' % s['site_tags'])
-        o.append('</header>')
+            o.append('<p class="art-tags" data-source="site">%s</p>' % s["site_tags"])
+        o.append("</header>")
         # 档位轨：三枚 CSS 绘制的菱形，点亮枚数 = 档位。档位文字由 CSS content 生成。
         o.append('<div class="tier-rail">')
         for tier in (1, 2, 3):
-            pips = ''.join('<i class="on"></i>' if t <= tier else '<i></i>'
-                           for t in (1, 2, 3))
-            o.append('<div class="tier-head" data-tier="%d">'
-                     '<span class="rhombi" aria-hidden="true">%s</span></div>' % (tier, pips))
-        o += ['</div>', '</div>', '<div class="tiers">']
+            pips = "".join(
+                '<i class="on"></i>' if t <= tier else "<i></i>" for t in (1, 2, 3)
+            )
+            o.append(
+                '<div class="tier-head" data-tier="%d">'
+                '<span class="rhombi" aria-hidden="true">%s</span></div>' % (tier, pips)
+            )
+        o += ["</div>", "</div>", '<div class="tiers">']
         # 分节名带括注，与 vocab 从 <h2> 取文那一份逐字相同。
-        label = text_of(s['name'] + (' <small>%s</small>' % s['paren']
-                                     if s['paren'] else ''), collapse=True)
+        label = text_of(
+            s["name"] + (" <small>%s</small>" % s["paren"] if s["paren"] else ""),
+            collapse=True,
+        )
         # 行是结构：搜索隐藏任一模组时，其后模组的列位不受影响
-        for ri, row in enumerate(rows_of(s['mods'])):
+        for ri, row in enumerate(rows_of(s["mods"])):
             o.append('<div class="mod-row">')
             for mod in row:
-                name = text_of(mod['name'], collapse=True)
-                dex.add(keys=[mod['key']] if mod['key']
-                        else stamp(text_of(mod['name']), s['name']),
-                        anchor='art-%d' % i, kind=label, name=name,
-                        icon='%s/%s' % (PAGE, icon_src(mod['icon'])),
-                        pos='%d,%s' % (ri, mod['tier']),
-                        # 说明存排印之前那一份：配装悬停与装备库读它，.cond 与 <b>
-                        # 只给本页。段落之间的换行来自外层按 \n 拼接，前后各留一个。
-                        desc='\n%s\n' % '\n'.join('<p>%s</p>' % p
-                                                  for _, _, p in mod['desc']))
-                where = (origins.attr((mod['key'], 'i18n/zh-CN/realgame_details',
-                                       '%s · 说明' % name))
-                         if origins is not None and mod['key'] else '')
-                o += ['<article class="mod" data-tier="%d">' % mod['tier'],
-                      mod['icon'],
-                      '<h4%s>%s</h4>' % (bmark(mod['at']), mod['name']),
-                      '<div class="mod-desc"%s>' % where]
-                for n, m, p in mod['desc']:
-                    p_lines = [x.strip() for x in p.split('<br>') if x.strip()]
-                    if any(x.startswith(('・', '- ', '— ')) for x in p_lines):
+                name = text_of(mod["name"], collapse=True)
+                dex.add(
+                    keys=[mod["key"]]
+                    if mod["key"]
+                    else stamp(text_of(mod["name"]), s["name"]),
+                    anchor="art-%d" % i,
+                    kind=label,
+                    name=name,
+                    icon="%s/%s" % (PAGE, icon_src(mod["icon"])),
+                    pos="%d,%s" % (ri, mod["tier"]),
+                    # 说明存排印之前那一份：配装悬停与装备库读它，.cond 与 <b>
+                    # 只给本页。段落之间的换行来自外层按 \n 拼接，前后各留一个。
+                    desc="\n%s\n"
+                    % "\n".join("<p>%s</p>" % p for _, _, p in mod["desc"]),
+                )
+                where = (
+                    origins.attr(
+                        (mod["key"], "i18n/zh-CN/realgame_details", "%s · 说明" % name)
+                    )
+                    if origins is not None and mod["key"]
+                    else ""
+                )
+                o += [
+                    '<article class="mod" data-tier="%d">' % mod["tier"],
+                    mod["icon"],
+                    "<h4%s>%s</h4>" % (bmark(mod["at"]), mod["name"]),
+                    '<div class="mod-desc"%s>' % where,
+                ]
+                for n, m, p in mod["desc"]:
+                    p_lines = [x.strip() for x in p.split("<br>") if x.strip()]
+                    if any(x.startswith(("・", "- ", "— ")) for x in p_lines):
                         o.append(str(format_prose_para(p_lines, typeset, bmark(n, m))))
                     else:
-                        o.append('<p%s>%s</p>' % (bmark(n, m), typeset(p)))
-                o += ['</div>', '</article>']
-            o.append('</div>')
-        o += ['</div>', '</section>']
+                        o.append("<p%s>%s</p>" % (bmark(n, m), typeset(p)))
+                o += ["</div>", "</article>"]
+            o.append("</div>")
+        o += ["</div>", "</section>"]
 
-    src = meta_of(md, '数据源')
-    o += ['</main>', '', shell.foot(
-        meta_of(md, '更新'),
-        meta_of(md, '页脚') + shell.unsure_note(meta_of(md, '待测标记')),
-        source=shell.COMPENDIUM_SRC if src == '是' else src,
-        thanks=meta_of(md, '鸣谢', required=False) or None)]
-    return '\n'.join(o)
+    src = meta_of(md, "数据源")
+    o += [
+        "</main>",
+        "",
+        shell.foot(
+            meta_of(md, "更新"),
+            meta_of(md, "页脚") + shell.unsure_note(meta_of(md, "待测标记")),
+            source=shell.COMPENDIUM_SRC if src == "是" else src,
+            thanks=meta_of(md, "鸣谢", required=False) or None,
+        ),
+    ]
+    return "\n".join(o)
 
 
 # ── 自检 ────────────────────────────────────────────────────────────────
@@ -389,42 +502,49 @@ def check(page, out, icons):
     改文案就是改源稿，git diff 即变更记录。这里只钉住结构性的数目：
     源稿被误删一段、模组档位串位、图标引丢，都会在这里当场露出来。
     """
-    eq('分节数', len(page['sections']), N_SECTIONS)
-    eq('模组数', sum(len(s['mods']) for s in page['sections']), N_MODS)
-    eq('图标引用', icons.refs, N_ICON_REFS)
-    eq('图标文件', len(os.listdir(ICON_DIR)), N_ICON_FILES)
-    eq('span 闭合', out.count('<span'), out.count('</span>'))
-    eq('残留内联样式', len(re.findall(r'style=', out)), 0)
-    eq('未转换的着色标记', len(OPEN.findall(out)), 0)
+    eq("分节数", len(page["sections"]), N_SECTIONS)
+    eq("模组数", sum(len(s["mods"]) for s in page["sections"]), N_MODS)
+    eq("图标引用", icons.refs, N_ICON_REFS)
+    eq("图标文件", len(os.listdir(ICON_DIR)), N_ICON_FILES)
+    eq("span 闭合", out.count("<span"), out.count("</span>"))
+    eq("残留内联样式", len(re.findall(r"style=", out)), 0)
+    eq("未转换的着色标记", len(OPEN.findall(out)), 0)
 
-    for s in page['sections']:
-        if not s['mods']:
-            die('分节「%s」一个模组都没有' % text_of(s['name'], collapse=True))
+    for s in page["sections"]:
+        if not s["mods"]:
+            die("分节「%s」一个模组都没有" % text_of(s["name"], collapse=True))
 
 
 def main():
     if len(sys.argv) != 1:
         die(__doc__)
-    with open(SRC, encoding='utf-8') as f:
+    with open(SRC, encoding="utf-8") as f:
         md = f.read()
 
     # 源稿是主键骨架时先展开成这一页原来的形状，解析与渲染因此不必知道这件事。
     src = expand(md) if is_skeleton(md) else md
     icons = Icons(OUT_DIR, N_EAGER)
     page = parse(src, icons)
-    dex = pagedex.Index(PAGE, 'art-perk', searchable=True)
+    dex = pagedex.Index(PAGE, "art-perk", searchable=True)
     origins = editmap.Origins()
     out = render(page, src_hash(md), dex, origins)
     check(page, out, icons)
 
-    shell.emit(OUT_DIR, origins.seal(out), '分节 %d、模组 %d、图标引用 %d，着色 %d 处'
-               % (len(page['sections']),
-                  sum(len(s['mods']) for s in page['sections']), icons.refs,
-                  out.count('<span class="')))
-    print('%s/%s  %d 处出处' % (PAGE, editmap.FILE, origins.write(OUT_DIR)))
+    shell.emit(
+        OUT_DIR,
+        origins.seal(out),
+        "分节 %d、模组 %d、图标引用 %d，着色 %d 处"
+        % (
+            len(page["sections"]),
+            sum(len(s["mods"]) for s in page["sections"]),
+            icons.refs,
+            out.count('<span class="'),
+        ),
+    )
+    print("%s/%s  %d 处出处" % (PAGE, editmap.FILE, origins.write(OUT_DIR)))
     _, n = dex.write()
-    print('data/index/%s.json  %d 条' % (PAGE, n))
+    print("data/index/%s.json  %d 条" % (PAGE, n))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -69,26 +69,19 @@
   word-break: keep-all;
 }
 
-.gen td.ico,
-.gen td.champ { padding: 8px 4px; }
+.gen td.ico { padding: 8px 4px; }
 
 .gen td img {
   display: block;
   margin: 0 auto;
 }
 
-/* 图标原图 96px（勇士 250px），最宽显示 56 与 42：**跟着格子缩，不写死像素**——
+/* 图标原图 96px，最宽显示 56：**跟着格子缩，不写死像素**——
    列宽按百分比给，窄视口下格子比 56px 还窄，写死时 `margin: 0 auto` 是超约束的，
    浏览器把右边距解成负值，整枚图往右挪半个内边距，看着就是「向右上错位」。 */
 .gen td.ico img {
   width: 100%;
   max-width: 56px;
-  height: auto;
-}
-
-.gen td.champ img {
-  width: 100%;
-  max-width: 42px;
   height: auto;
 }
 

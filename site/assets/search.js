@@ -4832,6 +4832,7 @@ window.starsideIndex = [
 {"u":"builds/s29/tc0nc7u2-hunter/index.html","t":"合集·裁决定论 · 配装合集","d":""},
 {"u":"builds/s29/tniihk60-warlock/index.html","t":"虚式·茈 五条悟虚空术士 · 配装推荐","d":""},
 {"u":"builds/s29/trdpr8rf-warlock/index.html","t":"光焰之井Raid用全配装 · 配装合集","d":""},
+{"u":"builds/s29/ttrgi6gx-hunter/index.html","t":"剑宗故我在棱镜猎 · 配装推荐","d":""},
 {"u":"builds/s29/tz4vvv6j-warlock/index.html","t":"牢大术士 · 配装推荐","d":""},
 {"u":"builds/s29/u9vdp8t0-titan/index.html","t":"不祥之兆永恒战士电泰坦 · 配装推荐","d":""},
 {"u":"builds/s29/uglrzreu-hunter/index.html","t":"合集·级联点全明星威胁等级 · 配装合集","d":""},

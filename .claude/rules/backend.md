@@ -206,11 +206,12 @@ markdown → 记录 → markdown 走一趟，规范出来与库里不同时 `fet
 `facts.dump()` 落盘。撞车的记录不写旁置文件，逐格把两边的文字打在终端里，
 `--mine` / `--theirs` 同样认记录的 `_id`。
 
-日常一轮就是 `tools/ship.sh "提交信息"`，它按序跑这五步，任一步失败即停：
+日常一轮就是 `tools/ship.sh "提交信息"`，它按序跑这六步，任一步失败即停：
 
 ```
 python3 tools/sync.py
 npm run build
+npm test
 git add -A && git commit           # 工作区干净时跳过，也就不必给信息
 python3 tools/deploy.py            # 末尾自动再对一次账
 git push
