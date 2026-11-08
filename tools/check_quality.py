@@ -913,6 +913,15 @@ class DimExport(unittest.TestCase):
         got = self.dim.loadout(self.record(神器={"神器": "废墟石板"}), "u")
         self.assertEqual(got["equipped"], [{"hash": 3821685388}])
 
+    def test_generic_mod_families_are_reported_in_skipped_mods(self):
+        rec = migrate.load(
+            str(Path(shell.BUILD_DIR) / "s29-凯旋纪念碑" / "sjjyumm5-warlock.json")
+        )
+        skipped = self.dim.skipped_mods(rec)
+        self.assertIn("武器激涌", skipped)
+        btn = build.dim_button(rec, "https://starside.work/x")
+        self.assertIn("通用模组（武器激涌）", btn)
+
 
 class WeaponsExtras(unittest.TestCase):
     """装备库多出来的两块：护甲套装效果，与「用过它的配装」。
@@ -1342,6 +1351,53 @@ class Generated(unittest.TestCase):
             build_terms.tree(),
             self.read("admin/pages.js"),
             "admin/pages.js 过期了，跑 python3 tools/build-terms.py",
+        )
+
+    def test_exotic_weapon_perks_and_form_scripts_match_preview_dom(self):
+        detail = self.read("builds/s29/bjokie7g-hunter/index.html")
+        self.assertIn('<div class="rig ex-rig" style="--n:25;--c:2">', detail)
+        self.assertIn('<div class="ex-perks">', detail)
+        for rel in ("builds/new/index.html", "builds/new/set/index.html"):
+            html = self.read(rel)
+            self.assertIn("assets/pinyin.js", html)
+            self.assertIn('id="do-import"', html)
+        self.assertIn(
+            '<button type="button" class="op" data-set-copy>创建副本</button>',
+            self.read("builds/new/set/index.html"),
+        )
+        for rel in (
+            "builds/s29/gef8w7a4-warlock/index.html",
+            "builds/s29/9bioso19-warlock/index.html",
+        ):
+            self.assertNotIn(
+                '<div class="slot" style="--n:0"><ul class="cells"></ul></div>',
+                self.read(rel),
+            )
+        self.assertNotIn(
+            "<span></span></a></li>",
+            self.read("builds/s29/uglrzreu-hunter/index.html"),
+        )
+
+    def test_hover_descriptions_format_stats_exotics_and_omit_raw_weapon_stats(self):
+        text = self.read("builds/desc.js")
+        full = json.loads(text[len("window.starsideDesc = ") : -2])
+        for v in full.values():
+            self.assertNotIn("每分钟发射数 +", v)
+            self.assertNotIn('<p class="v">碎片槽</p>', v)
+        self.assertIn(
+            "每第 7 发弹药转化为跳弹", full["exotic-weapon\t赫沃斯托夫7G-0X\t动能武器"]
+        )
+        self.assertIn(
+            "电弧导体",
+            markup.text_of(full["exotic-weapon\t故我在（电弧元素）\t能量武器"]),
+        )
+        self.assertTrue(
+            any('<p class="v">碎片槽 2' in v for v in full.values()),
+            "星相悬停说明应包含具体碎片槽数量",
+        )
+        self.assertTrue(
+            any("秒 · 回复倍率" in v for v in full.values()),
+            "技能悬停说明多段数值应以 · 分隔",
         )
 
     def test_home_previews_match_the_pages(self):
@@ -4112,6 +4168,18 @@ class TypeGate(unittest.TestCase):
 
         html = '<main><section id="a"><p>x</p></section></main>'
         self.assertEqual(check_type.check_html(html, "x.html"), [])
+
+    def test_a_nested_has_selector_is_reported(self):
+        import check_type
+
+        self.assertEqual(
+            check_type.nested_has(".a:has(.b):not(:has(.c)) { display: none; }"),
+            [],
+        )
+        self.assertEqual(
+            check_type.nested_has(".a:has(.b:not(:has(.c))) { display: none; }"),
+            [".a:has(.b:not(:has(.c)))"],
+        )
 
 
 if __name__ == "__main__":

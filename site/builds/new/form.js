@@ -140,9 +140,59 @@
     return out;
   }
 
+  function copyTitle (md) {
+    return String(md).replace(/^#[ \t]+(.+)$/m, function (_, t) {
+      var m = /^(.+?) 副本(?: (\d+))?$/.exec(t.trim());
+      return '# ' + (m ? m[1] + ' 副本 ' + (m[2] ? Number(m[2]) + 1 : 2) : t.trim() + ' 副本');
+    });
+  }
+
+  var PREVIEW_SLOT_SEL = '.slot:not(.stats-card):not([id$="sec-4"] .slot-row:not(.lead) > .slot)';
+
+  function syncPreviewRoot (root, on) {
+    [].forEach.call(root.querySelectorAll(PREVIEW_SLOT_SEL), function (slot) {
+      if (!on) {
+        if (slot.dataset.editN) {
+          slot.style.setProperty('--n', slot.dataset.editN);
+          delete slot.dataset.editN;
+        }
+        return;
+      }
+      slot.dataset.editN = slot.style.getPropertyValue('--n');
+      var n = slot.querySelectorAll('.cells > li:has(.item:not(.empty))').length;
+      if (slot.querySelector('.pair > .spirits .item:not(.empty)')) n += 1;
+      slot.style.setProperty('--n', String(n));
+    });
+    [].forEach.call(root.querySelectorAll('.rig'), function (rig) {
+      if (!on) {
+        if (rig.dataset.editN) {
+          rig.style.setProperty('--n', rig.dataset.editN);
+          rig.style.setProperty('--c', rig.dataset.editC);
+          delete rig.dataset.editN;
+          delete rig.dataset.editC;
+        }
+        return;
+      }
+      rig.dataset.editN = rig.style.getPropertyValue('--n');
+      rig.dataset.editC = rig.style.getPropertyValue('--c');
+      if (rig.classList.contains('ex-rig')) {
+        var hasExPerk = !!rig.querySelector('.ex-perks .item:not(.empty)');
+        rig.style.setProperty('--n', hasExPerk ? '25' : '15');
+        rig.style.setProperty('--c', hasExPerk ? '2' : '1');
+      } else {
+        var perks = rig.querySelectorAll('.item.perk-cell:not(.empty)').length;
+        rig.style.setProperty('--n', String(15 + 10 * perks));
+        rig.style.setProperty('--c', String(1 + perks));
+      }
+    });
+  }
+
   // 页面那一半到此为止。**Node 里只导出规则，不接线**——下面整页都要 DOM。
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { tidy: tidy, unmark: unmark, remark: remark, shiftSpans: shiftSpans };
+    module.exports = {
+      tidy: tidy, unmark: unmark, remark: remark, shiftSpans: shiftSpans, copyTitle: copyTitle,
+      syncPreviewRoot: syncPreviewRoot, PREVIEW_SLOT_SEL: PREVIEW_SLOT_SEL
+    };
   }
   if (typeof document === 'undefined') return;
 
@@ -380,6 +430,27 @@
     });
     box.hidden = !ex;
     sizeExRig(gun.closest('.rig'));
+  }
+
+  function syncGunPerks(gun) {
+    var rig = gun && gun.closest('.rig');
+    if (!rig) return;
+    var own = gun.row ? (V.perks || {})[gun.row[0]] : null;
+    var all = V.lists[V.slots['Perk']] || [];
+    [].forEach.call(rig.querySelectorAll('[data-slot="Perk"]'), function (c) {
+      if (!c.row) return;
+      var col = Number(c.dataset.col || 0);
+      var keep = own && col ? (own[col - 1] || []) : [];
+      var ok = gun.row && (!own || !keep.length || keep.some(function (i) {
+        return all[i] && all[i][0] === c.row[0];
+      }));
+      if (!ok) fill(c, null);
+    });
+    if (!gun.row) {
+      var add = rig.querySelector('[data-add="起源特性"]');
+      var cell = rig.querySelector('[data-addable="起源特性"]');
+      if (add && cell && !cell.hidden) toggleAdd(add);
+    }
   }
 
   /* 一把枪占哪个槽：k 动能、e 能量、h 威能。词表里查不到就回空串，那一把不参与
@@ -722,14 +793,25 @@
     // 轮换轮盘）只服务另外五个页面，为一个匹配函数多下 20 KB 不值。
     function draw(q) {
       var terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+      var py = window.starsidePy;
       var hits = list.filter(function (r) {
         if (!terms.length) return true;
         var hay = (r[0] + ' ' + r[1]).toLowerCase();
         for (var i = 0; i < terms.length; i++) {
-          if (hay.indexOf(terms[i]) === -1) return false;
+          if (hay.indexOf(terms[i]) === -1
+              && !(py && (py.hit(r[0], [terms[i]]) || (r[5] && py.hit(r[5], [terms[i]]))))) {
+            return false;
+          }
         }
         return true;
       });
+      var legBuckets = {};
+      if (slot === '异域武器') {
+        [].forEach.call(pen.querySelectorAll('[data-slot="传说武器"]'), function (c) {
+          if (c.row) legBuckets[bucketOf(c.row)] = 1;
+        });
+        delete legBuckets[''];
+      }
       // 神器模组照神器盘摆：列是神器那七行，纵向是一/二/三级，位置由词表的 pos 给。
       // **搜出来的结果不摆**——一次只剩两三条时，21 格里空 18 格比排成一行更难看。
       // 位置在一件神器之内才唯一，所以还要求这一批全是同一件神器的，不然会叠格。
@@ -757,8 +839,9 @@
         // 元素那一格的行是「某职业在某元素页上的分节」，名字要显示成分支名；
         // 那时右下角再标一遍元素就成了同一个词说两遍。
         var el = slot === '元素' ? tag(r) : '';
+        var kd = tag(r) + (legBuckets[bucketOf(r)] ? ' · 顶替同槽传说' : '');
         b.innerHTML = body(r, slot, iconSize(btn), el)
-          + (el ? '' : '<span class="kd">' + esc(tag(r)) + '</span>');
+          + (el ? '' : '<span class="kd">' + esc(kd) + '</span>');
         b.row = r;
         mark(b, r);          // 悬停详情认的是 data-d，与成品格同形
         b.addEventListener('click', function () { pickOne(btn, r); });
@@ -858,9 +941,19 @@
       var took = bucketOf(row);
       if (took) {
         [].forEach.call(pen.querySelectorAll('[data-slot="传说武器"]'), function (c) {
-          if (c.row && bucketOf(c.row) === took) fill(c, null);
+          if (c.row && bucketOf(c.row) === took) {
+            fill(c, null);
+            syncGunPerks(c);
+          }
         });
       }
+    }
+    if (slot === '传说武器') {
+      syncGunPerks(btn);
+    }
+    if (!state.核心 && row && row[3] && btn.dataset.kind !== '__art__'
+        && (slot === '异域护甲' || slot === '异域武器' || slot === '超能' || slot === '传说武器')) {
+      state.核心 = row[0];
     }
     // 4 件套在游戏里同时给 2 件效果，所以选了 4 件就把同一套的 2 件补进另一格。
     // 另一格里配不出来的先清掉：两套各 2 件、同一套 2 件 + 4 件，只有这两种成立。
@@ -987,8 +1080,12 @@
       [].forEach.call(bar.querySelectorAll('.toggle'), function (c) {
         c.setAttribute('aria-pressed', String(c.dataset.mode === btn.dataset.mode));
       });
+      var range = btn.dataset.mode === '-';
       nums[0].hidden = btn.dataset.mode === '~';
-      nums[1].hidden = btn.dataset.mode !== '-';
+      nums[0].placeholder = range ? '下限' : '0–200';
+      nums[0].setAttribute('aria-label', btn.dataset.stat + (range ? ' 下限' : ' 数值'));
+      nums[1].hidden = !range;
+      nums[1].placeholder = '上限';
       paintStat(btn);
       write();
     }
@@ -1113,8 +1210,7 @@
     var hit = coreList().filter(function (r) { return r[0] === state.核心; })[0];
     if (!hit) state.核心 = '';
     if (SETS) coreOf[cur] = hit ? [hit[0], hit[3]] : null;
-    // 合集那一页没有这一格：整份合集的核心自动取第一套的，页顶那枚 96px 图
-    // 因此不给选择器。**state.核心 照旧要对**——它写进每一套的源稿里。
+    // 合集页顶那枚 96px 图由各套核心拼成阶梯拼贴（coreMosaic），单套的核心仍在 .one-head 里。
     if (!coreArt) return;
     var px = coreArt.dataset.size || '96';
     coreArt.innerHTML = hit
@@ -1568,9 +1664,7 @@
     return md;
   }
 
-  /* 合集头部。**核心取第一套的**：作者把主力那一套摆在最前面，页顶那枚 96px
-     的图就该是它，所以这一页不另给一个核心选择器——那要在全体成员的并集里挑，
-     而那份并集只在切到每一套时才在手边。 */
+  /* 合集头部。页顶那枚 96px 的图由各套核心拼成阶梯拼贴，不另给合集级核心选择器。 */
   function setHead() {
     var md = '# ' + (val('合集名', hd) || '合集名称') + '\n\n';
     md += '合集：是\n';
@@ -1669,8 +1763,8 @@
     if (box) {
       box.innerHTML = !tiles.length ? '<span class="nm">核心</span>'
         : tiles.length === 1 ? img(tiles[0], 96)
-          : '<span class="core-mosaic" style="--sz:96px;--tile:47px">'
-            + tiles.map(function (t) { return img(t, 47); }).join('') + '</span>';
+          : '<span class="core-mosaic" style="--sz:96px;--tile:45px">'
+            + tiles.map(function (t) { return img(t, 45); }).join('') + '</span>';
       box.classList.toggle('empty', !tiles.length);
     }
     var id = document.querySelector('[data-mirror="合集铭牌"]');
@@ -1726,7 +1820,7 @@
       var nm = document.createElement('b');
       nm.textContent = nameOf(md) || '未命名';     // 序号由 CSS 的计数器给
       var sub = document.createElement('span');
-      sub.textContent = keyOf(md, '标签') || '未填写';
+      sub.textContent = keyOf(md, '标签');
       if (i === cur) b.setAttribute('aria-current', 'true');
       if (sets.length > 1) b.title = '拖动改顺序，或 Alt+↑／↓';
       b.appendChild(nm);
@@ -1752,11 +1846,17 @@
 
   /* 把一套源稿灌进页面。认不出的整条跳过并报出来，与单套那一页同一条约定。 */
   function loadOne(md) {
-    if (md) return importMd(md);
-    resetAll();
-    write();
-    grow();
-    return [];
+    var inPrev = sheet.classList.contains('preview');
+    if (inPrev) syncPreviewCols(false);
+    var res = [];
+    if (md) res = importMd(md);
+    else {
+      resetAll();
+      write();
+      grow();
+    }
+    if (inPrev) syncPreviewCols(true);
+    return res;
   }
 
   function goTo(j) {
@@ -1769,8 +1869,7 @@
   function addSet(copy) {
     if (sets.length >= B.SET_MAX) return;
     sets[cur] = oneMd();
-    // 复制出来的那一套改个名：目录上两行长得一样时，点错了看不出来。
-    var md = copy ? sets[cur].replace(/^#[ \t]+(.+)$/m, '# $1 副本') : '';
+    var md = copy ? copyTitle(sets[cur]) : '';
     sets.splice(cur + 1, 0, md);
     coreOf.splice(cur + 1, 0, copy ? coreOf[cur] : null);
     cur += 1;
@@ -1934,6 +2033,33 @@
      那一套要是已经上站，这一次就当成更新，审的人同意后覆盖过去。
      发不出去就把原因写在提示位上，不留一个「投稿中…」挂着。 */
 
+  function focusMissing(lack) {
+    if (sheet.classList.contains('preview')) preview.click();
+    var item = lack.filter(function (x) { return !/^两套填齐的配装/.test(x); })[0] || lack[0];
+    var m = /^第 (\d+) 套的(.+)$/.exec(item);
+    if (m) {
+      var idx = Number(m[1]) - 1;
+      if (SETS && idx !== cur && idx >= 0 && idx < sets.length) goTo(idx);
+      item = m[2].split('、')[0];
+    }
+    var map = {
+      名字: SETS ? '[data-key="合集名"]' : '[data-key="配装名"]',
+      名称: '[data-key="配装名"]',
+      使用场景: '.set-body [data-key="描述"]',
+      推荐人: '[data-key="推荐人"]',
+      场景: '.tagset:has(+ input[data-key="场景"]) > button',
+      强度: '.tagset:has(+ input[data-key="强度"]) > button',
+      职业: '[data-slot="职业"]',
+      属性: '[data-slot="元素"]',
+      核心: '#f-core-art',
+    };
+    var sel = /^两套填齐的配装/.test(item) ? '[data-set-add]' : map[item];
+    var el = sel && document.querySelector(sel);
+    if (!el) return;
+    if (el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (el.focus) el.focus({ preventScroll: true });
+  }
+
   var send = document.getElementById('send');
   send.addEventListener('click', function () {
     var tip = document.getElementById('copy-tip');
@@ -1941,6 +2067,7 @@
     var lack = B.lacking(md);
     if (lack.length) {
       tip.textContent = '尚未填写：' + lack.join('、') + '，补齐后再投稿';
+      focusMissing(lack);
       return;
     }
     send.disabled = true;
@@ -1979,10 +2106,13 @@
   notes.addEventListener('input', grow);
   if (vin) vin.addEventListener('input', grow);
 
+  function syncPreviewCols(on) { syncPreviewRoot(sheet, on); }
+
   var preview = document.getElementById('preview');
   preview.addEventListener('click', function () {
     close();
     var on = sheet.classList.toggle('preview');
+    syncPreviewCols(on);
     inked.forEach(inkSync);          // 预览态把框的左内边距收成 0，镜像跟着换
     preview.textContent = on ? '退出预览' : '预览配装';
     preview.setAttribute('aria-pressed', String(on));
@@ -1992,7 +2122,7 @@
   /* 导入是一个动作，不是两个按钮：这一枚永远「导入」，文本框还空着时它带你去
      粘贴。**两条路都要把那一节放出来并滚过去**——结果与跳过的条目写在那里，
      按完看不见等于没报。预览态下那一节是收起来的，先退出预览。 */
-  document.getElementById('to-import').addEventListener('click', function () {
+  function runImport() {
     if (sheet.classList.contains('preview')) preview.click();
     var panel = document.getElementById('imp');
     var area = document.getElementById('in');
@@ -2002,7 +2132,7 @@
     var text = area.value.trim();
     if (!text) {
       area.focus();
-      tip.textContent = '请先将配装文本粘贴到下方文本框，再次点击「导入配装」';
+      tip.textContent = '请先将配装文本粘贴到上方文本框，再点击「执行导入」';
       return;
     }
     // **合集页走 importSet**：importMd 在第一个 `## 注解` 处切文本，第二套起的
@@ -2012,7 +2142,10 @@
     tip.textContent = skip.length
       ? '导入完成，跳过 ' + skip.length + ' 条：' + skip.join('，')
       : '导入完成，全部条目已识别';
-  });
+  }
+  document.getElementById('to-import').addEventListener('click', runImport);
+  var doImp = document.getElementById('do-import');
+  if (doImp) doImp.addEventListener('click', runImport);
 
   /* 填过东西之后再离开或刷新要先问一句：这一页的内容只在这一个标签页里活着，
      刷掉就没了。判据是「生成的源稿与刚打开时那一份不同」，不另记一份脏标记。 */
@@ -2028,6 +2161,7 @@
      刚打开、什么都没改的时候就弹。 */
   window.starsideForm = {
     load: function (md) {
+      if (sheet.classList.contains('preview')) preview.click();
       var skip = SETS ? importSet(md) : importMd(md);
       blank = out.value;
       return skip;

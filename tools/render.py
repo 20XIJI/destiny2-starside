@@ -278,10 +278,11 @@ def colhead(cls, labels):
 def stats_of(p, key, mark=False):
     """数值格。属性变化优先取站内的条件说明，其余数值仍取记录字段。
 
-    武器 PERK 那几类（词条、模组、框架、起源）不画：它们的数值说明里已经写了一遍。
+    武器、护甲与武器 PERK 那几类（词条、模组、框架、起源）不画：武器与护甲的原始
+    investmentStats 不是面板数值，PERK 的数值说明里已经写了一遍。
     mark 为真时给站内写的那一格标出处（悬停面板不标）。"""
     rec = rows.facts().at(key) or {}
-    if kind(key) == "plug":
+    if kind(key) in ("plug", "exotic", "weapon", "armor"):
         return ""
     out = []
     cost = (rec.get("plug") or {}).get("energyCost")
@@ -402,7 +403,7 @@ def members(p, key):
     )
 
 
-def member_text(p, key):
+def member_text(p, key, mark=False):
     """组合行的正文：各成员的实测挨着画。「故我在（电弧元素）」那一行讲的就是电弧
     导体与风暴使者这两条固有。
 
@@ -424,7 +425,10 @@ def member_text(p, key):
             seen.add(got)
             out.append(
                 p.prose(
-                    got, p.mark(p.spot(str(m), "i18n/zh-CN/realgame_details", "说明"))
+                    got,
+                    p.mark(p.spot(str(m), "i18n/zh-CN/realgame_details", "说明"))
+                    if mark
+                    else "",
                 )
             )
     return "".join(out)
@@ -457,7 +461,7 @@ def combos(p, key):
                     z.get("realgame_details", ""),
                     p.mark(p.spot(k, "i18n/zh-CN/realgame_details", "说明")),
                 ),
-                member_text(p, k),
+                member_text(p, k, mark=True),
             )
         )
     return "".join(out)
@@ -611,11 +615,26 @@ def panel_of(p, key):
     if key in p.panels:
         return p.panels[key]
     z = p.zh(key)
-    body = p.prose(
-        z.get("realgame_details") or z.get("效果") or z.get("database_details", "")
+    raw = (
+        rows.exotic_text(key, z.get("realgame_details", ""))
+        if kind(key) == "exotic"
+        else (
+            z.get("realgame_details") or z.get("效果") or z.get("database_details", "")
+        )
     )
-    val = markup.text_of(stats_of(p, key), collapse=True)
-    out = ('<p class="v">%s</p>' % val if val else "") + body
+    body = p.prose(raw) + member_text(p, key)
+    st = re.sub(
+        r'<div class="r-slots">碎片槽 (?:<i></i>)*</div>',
+        lambda m: "<div>碎片槽 %d</div>" % m.group(0).count("<i></i>"),
+        stats_of(p, key),
+    )
+    parts = [
+        markup.text_of(x, collapse=True)
+        for x in re.split(r"</(?:div|p)>|<br>", st)
+        if markup.text_of(x, collapse=True)
+    ]
+    val = " · ".join(parts)
+    out = ('<p class="v">%s</p>' % html.escape(val) if val else "") + body
     if "<img" not in out:
         p.panels[key] = out
     return out
@@ -634,7 +653,7 @@ def rec_plain(p, key, cols, narrow="", fam="r-plain"):
             z.get("realgame_details") or z.get("效果") or z.get("database_details", ""),
             p.mark(p.spot(key, "i18n/zh-CN/" + field, "说明")),
         )
-        + member_text(p, key)
+        + member_text(p, key, mark=True)
         + enhanced(p, key)
         + by_types(p, key)
         + combos(p, key)

@@ -13,10 +13,39 @@
   var links = [].slice.call(wrap.querySelectorAll('.set-list a'));
   var sw = wrap.querySelector('[data-setview]');
   var stack = false;
+  var stickH = 60;
+  var onScreen = [];
+  var io = null;
+
+  function setCurrent(idx) {
+    links.forEach(function (a, j) {
+      a.setAttribute('aria-current', j === idx ? 'true' : 'false');
+    });
+  }
+
+  function watch() {
+    if (io) { io.disconnect(); io = null; }
+    if (!stack || typeof IntersectionObserver === 'undefined') return;
+    onScreen = [];
+    io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        var idx = onScreen.indexOf(e.target);
+        if (e.isIntersecting && idx < 0) onScreen.push(e.target);
+        else if (!e.isIntersecting && idx >= 0) onScreen.splice(idx, 1);
+      });
+      var curIdx = ones.findIndex(function (o) { return onScreen.indexOf(o) >= 0; });
+      if (curIdx >= 0) setCurrent(curIdx);
+    }, { rootMargin: -(stickH + 24) + 'px 0px -55% 0px' });
+    ones.forEach(function (o) { io.observe(o); });
+  }
 
   function stick() {
     var h = document.querySelector('.site-head');
-    if (h) document.documentElement.style.setProperty('--stick', h.offsetHeight + 'px');
+    if (h) {
+      stickH = h.offsetHeight;
+      document.documentElement.style.setProperty('--stick', stickH + 'px');
+    }
+    if (stack) watch();
   }
 
   /* resize 一帧只量一次。offsetHeight 要求浏览器把布局算到当前，而 resize 一次
@@ -43,9 +72,7 @@
   function paint() {
     var i = at();
     ones.forEach(function (o, j) { o.hidden = !stack && j !== i; });
-    links.forEach(function (a, j) {
-      a.setAttribute('aria-current', j === i ? 'true' : 'false');
-    });
+    setCurrent(i);
   }
 
   /* **点目录就地改写 hash，不压历史**：一份合集最多十二套，原生的片段导航点一套
@@ -53,15 +80,19 @@
      **先试 replaceState，成功了才拦截**：file:// 下它抛 SecurityError，那时放行，
      退回浏览器自己的 hash 导航——这一页的 hash 是状态不是锚点，拦了又改不成
      就再也切不动了。replaceState 不发 hashchange，重画自己调。
-     竖排态下原生导航本来会滚到那一套，补一句；主从态下目标是 display: none，
-     浏览器本来就找不到锚点、不滚，照旧不滚。 */
+     竖排态下原生导航本来会滚到那一套，补一句；主从态下若页面已滚过合集顶缘，
+     切套时顺手滚回新一套的页头，避免停在上一套的页底。 */
   wrap.querySelector('.set-list').addEventListener('click', function (ev) {
     var a = ev.target.closest && ev.target.closest('a');
     if (!a) return;
     try { history.replaceState(null, '', a.getAttribute('href')); } catch (e) { return; }
     ev.preventDefault();
     paint();
-    if (stack) ones[at()].scrollIntoView();
+    if (stack) {
+      ones[at()].scrollIntoView();
+    } else if (wrap.getBoundingClientRect().top < stickH + 16) {
+      ones[at()].scrollIntoView({ block: 'start' });
+    }
   });
 
   if (sw) {
@@ -70,6 +101,7 @@
       sw.setAttribute('aria-pressed', stack ? 'true' : 'false');
       sw.textContent = stack ? '逐套查看' : '展开全部';
       paint();
+      watch();
       /* 切到竖排时把刚看的那一套滚到眼前：不滚的话视线落在页面顶上，
          读者得自己找回刚才那一套。 */
       if (stack) ones[at()].scrollIntoView();

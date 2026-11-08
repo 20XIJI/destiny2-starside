@@ -337,18 +337,17 @@
   /* 维度筛选（.toolbar 带 data-facets 的页面：配装索引页）。声明式：
      `显示名=data 键[:修饰]`，分号隔开，例如
 
-         场景=scene:single:groups;强度=tier:single;职业=cls:tuck;分支=branch:tuck;标签=tag:tuck
+         职业=cls:single;场景=scene:single:groups;强度=tier:single;分支=branch:tuck;标签=tag:tuck
 
      取值一律从卡片的 data-* 上读，多值用制表符隔开（生成器写 &#9;）。**这里不
      认识任何一页的词表**：加一维、改一维的取值都只改生成器，这段不动。
 
      三个修饰：
-       :single  一次只选一个。数据侧本来就近似单选的那两维（场景、强度）用它。
+       :single  一次只选一个（职业、场景、强度）。
        :groups  分节就是按这一维分的。选定单一值时，重叠的那几节并成一张网格
-                （场景重叠：raid、地牢 那批自成一节，点 raid 时并进 raid）。
-       :tuck    收进工具条那块共用面板，不给它正文里的常驻一排。低频检索的那几维
-                （职业、分支、标签）用它：常驻一排一维一行，四行顶掉首屏，而这
-                几维十次里有九次没人碰。
+                （场景重叠：raid、地牢 那批归在第一场景节，选地牢时并进地牢）。
+       :tuck    收进那块共用面板，不给它正文里的常驻一排。低频检索的那几维
+                （分支、标签）用它：常驻一排一维一行，五维全摊开会顶掉首屏。
 
      **控件放哪由页面说了算**：页面给了 [data-facet="维度名"] 的空容器就填在那里，
      没给且带 :tuck 的收进共用面板。取值一律扫全部卡片，不随别的维收窄——控件因此
@@ -469,6 +468,8 @@
   /* 收起来的那几维共用一枚触发器与一块面板：展开时三组全在眼前，收起来只占一枚控件的宽度。 */
   var tuckBox = null;
   var tuckTally = null;
+  var tuckFoot = null;
+  var tuckText = null;
   function tuckHost() {
     if (!tuckBox) {
       /* 面板坐哪也由页面说了算，与 [data-facet="维度名"] 同一条：页面给了
@@ -479,8 +480,7 @@
       var sum = document.createElement('summary');
       sum.className = 'toggle';
       sum.textContent = '筛选';
-      /* 选了几项写在触发器上：面板收起来之后，不标出来就看不见还筛着。
-         三维合一枚触发器，所以这个数是三维之和。 */
+      /* 选了几项写在触发器上：面板收起来之后，不标出来就看不见还筛着。 */
       tuckTally = sum.appendChild(document.createElement('b'));
       tuckBox.appendChild(sum);
       var menu = tuckBox.appendChild(document.createElement('div'));
@@ -489,18 +489,24 @@
     return tuckBox.querySelector('.menu');
   }
 
-  /* 触发器上的计数，以及面板自己的存亡：三维的取值都少于两个时（合集页那七张卡
-     就可能这样），留一枚点开是空的触发器不如整个不出。 */
+  /* 触发器上的计数，以及面板自己的存亡：各维的取值都少于两个时，
+     留一枚点开是空的触发器不如整个不出。 */
   function syncTuck() {
     if (!tuckBox) return;
-    var n = 0;
+    var names = [];
     var live = false;
     DIMS.forEach(function (d) {
       if (d.bar) return;
-      n += picked[d.name].length;
+      names = names.concat(picked[d.name]);
       if (!d.host.hidden) live = true;
     });
-    tuckTally.textContent = n ? String(n) : '';
+    tuckTally.textContent = names.length ? String(names.length) : '';
+    tuckBox.querySelector('summary').setAttribute('title',
+      names.length ? '已选：' + names.join('、') : '');
+    if (tuckFoot) {
+      tuckFoot.hidden = !names.length;
+      tuckText.textContent = names.length ? '已选：' + names.join('、') : '';
+    }
     tuckBox.hidden = !live;
   }
 
@@ -515,6 +521,21 @@
       if (!page) d.host.className = 'tuck-row';
     });
     DIMS.forEach(function (d, k) { paint(k); });
+    if (tuckBox) {
+      tuckFoot = tuckBox.querySelector('.menu').appendChild(document.createElement('div'));
+      tuckFoot.className = 'tuck-foot';
+      tuckFoot.hidden = true;
+      tuckText = tuckFoot.appendChild(document.createElement('span'));
+      var clr = tuckFoot.appendChild(document.createElement('button'));
+      clr.type = 'button';
+      clr.className = 'op';
+      clr.textContent = '清空已选';
+      clr.onclick = function () {
+        DIMS.forEach(function (d) { if (!d.bar) { picked[d.name] = []; sync(d); } });
+        filter(search.value);
+      };
+      syncTuck();
+    }
     /* 点面板以外的地方关掉下拉框。<details> 唯一不白送的一件。 */
     document.addEventListener('click', function (ev) {
       if (tuckBox && tuckBox.open && !tuckBox.contains(ev.target)) tuckBox.open = false;
@@ -570,8 +591,36 @@
     });
   });
 
+  var shareBtns = [];
+  if (lists.length && DIMS) {
+    var gIdx = DIMS.findIndex(function (d) { return d.groups; });
+    if (gIdx >= 0) {
+      sections.forEach(function (sec) {
+        var sc = sec.dataset.scene;
+        if (!sc) return;
+        var shared = mods.filter(function (li) {
+          return li.from && li.from.parentNode !== sec
+            && (li.dataset.scene || '').split('\t').indexOf(sc) >= 0;
+        });
+        if (!shared.length) return;
+        var h2 = sec.querySelector('.sect-label');
+        if (!h2) return;
+        var fromSc = (shared[0].from && shared[0].from.parentNode
+          && shared[0].from.parentNode.dataset.scene) || '突袭';
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'scene-share';
+        btn.textContent = '另有 ' + shared.length + ' 套' + NOUN + '与' + fromSc + '通用 · 点此并入本节查看';
+        btn.onclick = function () { pick(DIMS[gIdx], gIdx, sc); };
+        sec.insertBefore(btn, h2.nextElementSibling);
+        shareBtns.push({ btn: btn, sc: sc });
+      });
+    }
+  }
+
   function regroup(want) {
     if (!lists.length) return;
+    shareBtns.forEach(function (s) { s.btn.hidden = want === s.sc; });
     /* 落点按「同一节、同一个职业小节」找：合并发生在小节这一层，点 raid 之后
        仍只有一组「猎人/泰坦/术士」。生成器保证落点存在——每个场景节的小节按
        这个场景下所有配装的职业集合出，不只按本节现有的那些。 */
@@ -636,7 +685,7 @@
     return c;
   }
 
-  /* 正文那两排与面板里那三组同一个画法：维度名 + 一排素字开关。两处只差「全部」
+  /* 正文那三排与面板里那两组同一个画法：维度名 + 一排素字开关。两处只差「全部」
      那一枚与容器给的密度，不为面板另开一套控件——读者也就不必学两种。 */
   function paintBar(d, k, seen) {
     var name = document.createElement('span');

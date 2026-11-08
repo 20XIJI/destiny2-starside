@@ -118,6 +118,8 @@ def main() -> int:
             bad.append('%s：引了 app.js 却没引 pinyin.js，条目名的拼音检索会失效' % rel)
         if 'weapons/app.js' in src and 'assets/pinyin.js' not in src:
             bad.append('%s：装备库没引 pinyin.js，武器名的拼音检索会失效' % rel)
+        if 'form.js' in src and 'assets/pinyin.js' not in src:
+            bad.append('%s：配装工具没引 pinyin.js，候选的拼音检索会失效' % rel)
 
         if rel != shell.HOME and '"%s"' % rel not in index:
             bad.append('%s：不在全站搜索索引里，跑一次 tools/build-search.py' % rel)

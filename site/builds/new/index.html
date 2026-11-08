@@ -190,7 +190,7 @@
 <details id="imp"><summary>从配装文本导入</summary>
 <p class="note">粘贴一份已有的配装文本。可识别的装备会自动填入，无法识别的条目会跳过并在下方列出。导入将覆盖当前已填写的内容。</p>
 <textarea id="in" rows="10" spellcheck="false" placeholder="将配装文本粘贴至此" aria-label="待导入的配装文本"></textarea>
-<p id="imp-tip" role="status"></p>
+<div class="imp-bar"><button id="do-import" class="op" type="button">执行导入</button><p id="imp-tip" role="status"></p></div>
 </details>
 </section>
 <div class="src-tools">
@@ -218,6 +218,7 @@
 <script src="../tip.js" defer></script>
 <script src="../source.js" defer></script>
 <script src="../../admin/dialect.js" defer></script>
+<script src="../../assets/pinyin.js" defer></script>
 <script src="form.js" defer></script>
 </body>
 </html>

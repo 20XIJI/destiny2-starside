@@ -1423,6 +1423,108 @@ test('prose markers split into text and spans, shift with edits and weave back v
   assert.deepEqual(bad, [], `这些源稿的散文拆开再拼回对不上：\n  ${bad.join('\n  ')}`)
 })
 
+test('copyTitle increments duplicate suffixes without stacking 副本 副本', () => {
+  const { copyTitle } = require(path.join(site, 'builds/new/form.js'))
+  assert.equal(copyTitle('# 清怪\n\n职业：猎人'), '# 清怪 副本\n\n职业：猎人')
+  assert.equal(copyTitle('# 清怪 副本\n\n职业：猎人'), '# 清怪 副本 2\n\n职业：猎人')
+  assert.equal(copyTitle('# 清怪 副本 2\n\n职业：猎人'), '# 清怪 副本 3\n\n职业：猎人')
+})
+
+test('form pages contain every focusMissing target and starsidePy.hit matches item strings', () => {
+  const soloHtml = fs.readFileSync(path.join(site, 'builds/new/index.html'), 'utf8')
+  const setHtml = fs.readFileSync(path.join(site, 'builds/new/set/index.html'), 'utf8')
+  for (const html of [soloHtml, setHtml]) {
+    assert.match(html, /class="tags tagset"[^>]*>[\s\S]*?<\/span><input type="hidden" data-key="场景"/)
+    assert.match(html, /class="tags tagset"[^>]*>[\s\S]*?<\/span><input type="hidden" data-key="强度"/)
+    assert.match(html, /data-key="推荐人"/)
+    assert.match(html, /data-key="配装名"/)
+    assert.match(html, /id="f-core-art"/)
+  }
+  assert.match(setHtml, /data-key="合集名"/)
+  assert.match(setHtml, /data-set-add/)
+  assert.match(setHtml, /<button type="button" class="op" data-set-copy>创建副本<\/button>/)
+
+  const styleCss = fs.readFileSync(path.join(site, 'builds/style.css'), 'utf8')
+  assert.match(styleCss, /\[id\$="sec-1"\] \.slot-row > \.slot:nth-child\(2\) \{ flex: 1 1 0; \}/)
+  assert.match(styleCss, /\[id\$="sec-1"\] \.slot-row \+ \.slot-row > \.slot:nth-child\(2\) \.cells \{ grid-template-columns: repeat\(max\(var\(--n\), 4\), minmax\(0, 1fr\)\); \}/)
+  assert.match(styleCss, /\[id\$="sec-3"\] \.cells \{ grid-template-columns: repeat\(max\(var\(--n\), 4\), minmax\(0, 1fr\)\); \}/)
+  assert.match(styleCss, /\[id\$="sec-2"\] \.slot-row > \.rig \{ max-width: calc\(\(100% - 10px\) \/ 2\); \}/)
+  assert.match(styleCss, /\[id\$="sec-4"\] \.slot-row:not\(\.lead\) > \.slot \{ max-width: calc\(\(100% - 20px\) \/ 3\); \}/)
+  assert.match(styleCss, /\.slot-row\.lead > \.slot:not\(\.stats-card\) \{ max-width: calc\(282px \+ \(var\(--n\) - 1\) \* 400px\); \}/)
+  assert.match(styleCss, /\.set-list ol b::before \{ content: counter\(seat\) "　";/)
+  assert.match(styleCss, /\.ex-perks > \.item\.perk-cell \{ padding: 5px 6px; \}/)
+  assert.match(styleCss, /\.build-head \.core \.node \{ margin: 3px; --fr: 102px; \}/)
+  assert.match(styleCss, /\.one-head \.id-row \{ align-items: center; gap: 12px; \}/)
+  assert.match(styleCss, /\.set-list span:empty \{ display: none; \}/)
+  assert.match(styleCss, /#sheet\.preview \.rig:not\(:has\(\.item:not\(\.empty\)\)\)/)
+
+  const { syncPreviewRoot, PREVIEW_SLOT_SEL } = require(path.join(site, 'builds/new/form.js'))
+  assert.equal(PREVIEW_SLOT_SEL, '.slot:not(.stats-card):not([id$="sec-4"] .slot-row:not(.lead) > .slot)')
+  const shotSrc = fs.readFileSync(path.join(site, 'builds/shot.js'), 'utf8')
+  const formSrc = fs.readFileSync(path.join(site, 'builds/new/form.js'), 'utf8')
+  assert.ok(shotSrc.includes(PREVIEW_SLOT_SEL), 'shot.js 与 form.js 的预览面板选择器必须一致，跳过护甲部位列')
+  assert.match(formSrc, /--sz:96px;--tile:45px/, '合集编辑台核心拼图尺寸与生成器 45px 对齐')
+
+  const makeSlot = (editN, filledLiCount, hasSpirit) => {
+    const vars = { '--n': editN }
+    return {
+      dataset: {},
+      style: {
+        getPropertyValue: (k) => vars[k] || '',
+        setProperty: (k, v) => { vars[k] = String(v) },
+      },
+      querySelectorAll: (sel) => sel === '.cells > li:has(.item:not(.empty))' ? new Array(filledLiCount) : [],
+      querySelector: (sel) => sel === '.pair > .spirits .item:not(.empty)' && hasSpirit ? {} : null,
+      getN: () => vars['--n'],
+    }
+  }
+  const makeRig = (isEx, editN, editC, hasGun, perkCount) => {
+    const vars = { '--n': editN, '--c': editC }
+    return {
+      dataset: {},
+      classList: { contains: (c) => c === 'ex-rig' && isEx },
+      style: {
+        getPropertyValue: (k) => vars[k] || '',
+        setProperty: (k, v) => { vars[k] = String(v) },
+      },
+      querySelector: (sel) => {
+        if (sel === '.item:not(.empty)') return hasGun ? {} : null
+        if (sel === '.ex-perks .item:not(.empty)') return perkCount > 0 ? {} : null
+        return null
+      },
+      querySelectorAll: (sel) => sel === '.item.perk-cell:not(.empty)' ? new Array(perkCount) : [],
+      getVars: () => ({ n: vars['--n'], c: vars['--c'] }),
+    }
+  }
+  const artSlot = makeSlot('7', 2, false)
+  const leadSlot = makeSlot('3', 1, true)
+  const exRig = makeRig(true, '25', '2', true, 0)
+  const legRig = makeRig(false, '35', '3', true, 2)
+  const fakeRoot = {
+    querySelectorAll: (sel) => {
+      if (sel === PREVIEW_SLOT_SEL) return [artSlot, leadSlot]
+      if (sel === '.rig') return [exRig, legRig]
+      return []
+    },
+  }
+  syncPreviewRoot(fakeRoot, true)
+  assert.equal(artSlot.getN(), '2', '预览态将神器槽 --n 收紧为已填模组数')
+  assert.equal(leadSlot.getN(), '2', '预览态异域职业物品含之灵时占 2 列')
+  assert.deepEqual(exRig.getVars(), { n: '15', c: '1' }, '预览态无词条异域武器收紧为 15/1')
+  assert.deepEqual(legRig.getVars(), { n: '35', c: '3' }, '预览态双词条传说武器保持 35/3')
+  syncPreviewRoot(fakeRoot, false)
+  assert.equal(artSlot.getN(), '7', '退出预览态恢复编辑态 --n')
+  assert.equal(leadSlot.getN(), '3', '退出预览态恢复主角行编辑态 --n')
+  assert.deepEqual(exRig.getVars(), { n: '25', c: '2' }, '退出预览态恢复武器编辑态 --n/--c')
+  assert.deepEqual(legRig.getVars(), { n: '35', c: '3' }, '退出预览态恢复传说武器编辑态 --n/--c')
+
+  const pyBox = { window: {} }
+  pyBox.window = pyBox
+  vm.runInNewContext(fs.readFileSync(path.join(site, 'assets/pinyin.js'), 'utf8'), pyBox)
+  assert.ok(pyBox.starsidePy.hit('加拉尔号角', ['jlehj']), '拼音首字母应当命中加拉尔号角')
+  assert.ok(pyBox.starsidePy.hit('加拉尔号角', ['gjallarhorn']), '英文名应当命中加拉尔号角')
+})
+
 
 // builds() 把 docs 与 subs 两张表并成审核台那张清单。两条规矩都出过错，且都是
 // 「看着有一行、内容却不对」那一类，页面上隔着一层 iframe 用肉眼查不出来。
@@ -1852,6 +1954,27 @@ test('an overlapping build sits in its first scene and moves to whichever is pic
   const raidTiers = t.tiersIn('raid')
   assert.deepEqual(raidTiers, ['meta', '强力', '创意', '强力'].slice(0, raidTiers.length),
     '搬回来之后节内顺序乱了')
+})
+
+test('tucked filter footer shows picked names and clears them, and scene-share banner merges overlapping builds', () => {
+  const t = toolbar()
+  const box = t.slot.children.find((c) => c.className === 'drop')
+  const foot = box.querySelector('.tuck-foot')
+  assert.ok(foot && foot.hidden, '未选任何折叠维度时 .tuck-foot 应当隐藏')
+  t.click('职业', '猎人')
+  t.click('标签', '输出')
+  assert.equal(foot.hidden, false, '选中折叠维度后 .tuck-foot 应当显示')
+  assert.equal(box.querySelector('summary').getAttribute('title'), '已选：猎人、输出')
+  foot.querySelector('button').onclick()
+  assert.equal(t.tally(), '', '点清空已选后应当清空折叠维度计数')
+  assert.equal(foot.hidden, true, '点清空已选后 .tuck-foot 应当收起')
+
+  const dungeonSec = t.main.children.find((c) => c.dataset.scene === '地牢')
+  const shareBtn = dungeonSec.querySelector('.scene-share')
+  assert.ok(shareBtn && !shareBtn.hidden, '地牢分节默认应当显示跨场景通用配装并入提示')
+  shareBtn.onclick()
+  assert.equal(t.inSection('地牢'), 3, '点击并入提示后应当将 raid·地牢 通用卡并入地牢分节')
+  assert.equal(shareBtn.hidden, true, '并入地牢后提示按钮自身应当收起')
 })
 
 // 页脚访客数那段脚本从手写首页里现取：check_shell.py 钉着它与 shell.HIT 逐字一致，

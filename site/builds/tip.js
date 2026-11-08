@@ -83,7 +83,8 @@
       // 展开的选择器挂在同一个锚点的 afterend 上，所以那一行开着选择器时要跟在
       // 它后面插——照着锚点插会把面板挤进格子与选择器之间，点开一格、鼠标滑开再
       // 滑回来就看到说明压在选择器上面。次序恒为格子、选择器、说明。
-      var host = el.closest('.slot-row') || el.closest('.block') || el.closest('.build-head');
+      var host = el.closest('.slot-row') || el.closest('.block')
+        || el.closest('.one-head') || el.closest('.build-head');
       var next = host.nextElementSibling;
       if (next && next.classList.contains('picker')) host = next;
       host.insertAdjacentElement('afterend', box);

@@ -111,6 +111,26 @@ export async function shot(root, opts = {}) {
   if (opts.preview) {
     clone.classList.add('preview');
     clone.querySelectorAll('.ink-box > .ink').forEach((el) => { el.style.paddingLeft = '0px'; });
+    clone.querySelectorAll('.desc, [id$="sec-5"], #sec-0, .verdict').forEach((el) => {
+      const f = el.querySelector('input, textarea');
+      if (f && !(f.getAttribute('value') || f.textContent || '').trim()) el.remove();
+    });
+    clone.querySelectorAll('.slot:not(.stats-card):not([id$="sec-4"] .slot-row:not(.lead) > .slot)').forEach((slot) => {
+      let n = slot.querySelectorAll('.cells > li:has(.item:not(.empty))').length;
+      if (slot.querySelector('.pair > .spirits .item:not(.empty)')) n += 1;
+      slot.style.setProperty('--n', String(n));
+    });
+    clone.querySelectorAll('.rig').forEach((rig) => {
+      if (rig.classList.contains('ex-rig')) {
+        const hasExPerk = !!rig.querySelector('.ex-perks .item:not(.empty)');
+        rig.style.setProperty('--n', hasExPerk ? '25' : '15');
+        rig.style.setProperty('--c', hasExPerk ? '2' : '1');
+      } else {
+        const perks = rig.querySelectorAll('.item.perk-cell:not(.empty)').length;
+        rig.style.setProperty('--n', String(15 + 10 * perks));
+        rig.style.setProperty('--c', String(1 + perks));
+      }
+    });
     clone.querySelectorAll('input, textarea').forEach((el) => { el.removeAttribute('placeholder'); });
   }
 

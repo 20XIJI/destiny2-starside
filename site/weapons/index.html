@@ -128,27 +128,14 @@ body:has(.entries) { --wrap: 1500px; }
   height: 64px;
   border: 2px solid var(--ink);
 }
-.entry .node > .core-mosaic {
-  position: relative;
-  overflow: hidden;
-  width: 64px;
-  height: 64px;
-  border: 2px solid var(--ink);
-  border-radius: 6px;
-  background: radial-gradient(circle at 50% 35%, #202636 0%, #0b0d14 100%);
-  --tile: 29px;
-}
-.entry .node > .core-mosaic img {
-  width: 29px;
-  height: 29px;
-  border: 0;
-  border-radius: 3px;
-}
 .entry .entry-body {
   display: flex;
   flex-direction: column;
   min-width: 0;
   gap: 0;
+}
+.entry .entry-body:not(:has(> .say)) .id-ribbon {
+  margin-bottom: 28px;
 }
 .entry .card-top {
   display: flex;
@@ -618,18 +605,25 @@ body:has(.entries) { --wrap: 1500px; }
   50% { opacity: 1; }
 }
 .core-mosaic {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-content: center;
   justify-content: center;
   gap: 2px;
+  overflow: hidden;
   width: var(--sz);
   height: var(--sz);
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  background: radial-gradient(circle at 50% 35%, #202636 0%, #0b0d14 100%);
 }
 .build-head .core .core-mosaic img,
 .entry .node .core-mosaic img {
   width: var(--tile);
   height: var(--tile);
+  border: 0;
+  border-radius: 3px;
 }</style>
 </head>
 <body>

@@ -1041,17 +1041,18 @@ def blocks_of(idx, mv, arts, md, ns=""):
     # 「武器与 Perk」是噪声，格子形状（56px 图的是枪，24px 图的是 Perk）自己说明身份。
     rigs = []
     if ex_gun:
-        rigs.append(
-            rig_of(
-                [item(idx, "异域武器", ex_gun, prefer, cls="item gun", bare=True)]
-                + [
-                    item(
-                        idx, ex_perk_slot(p), p, prefer, cls="item perk-cell", bare=True
-                    )
-                    for p in ex_perks
-                ]
+        gun_cell = item(idx, "异域武器", ex_gun, prefer, cls="item gun", bare=True)
+        if ex_perks:
+            p_cells = "".join(
+                item(idx, ex_perk_slot(p), p, prefer, cls="item perk-cell", bare=True)
+                for p in ex_perks
             )
-        )
+            rigs.append(
+                '<div class="rig ex-rig" style="--n:25;--c:2">%s<div class="ex-perks">%s</div></div>'
+                % (gun_cell, p_cells)
+            )
+        else:
+            rigs.append(rig_of([gun_cell]))
     for gun in guns(md):
         cells = [item(idx, "传说武器", gun["名字"], prefer, cls="item gun", bare=True)]
         cells += [
@@ -1132,7 +1133,11 @@ def blocks_of(idx, mv, arts, md, ns=""):
     # 带之灵的那一格横跨两列（职业物品在左、两条之灵在右），所以这一行的列数比
     # 格数多一：不加这一列，套装那一格会被挤到下一行去。
     o += row(
-        group("", lead, cols=len(lead) + (1 if len(ex_armor) > 1 else 0))
+        (
+            group("", lead, cols=len(lead) + (1 if len(ex_armor) > 1 else 0))
+            if lead
+            else []
+        )
         + stats_card(meta(md, "六维")),
         cls="lead",
     )
@@ -1277,9 +1282,16 @@ def page_url(season, slug):
 def dim_button(md, url):
     """导入 DIM：链接在构建时算好，整套配装序列化进查询串，点开即是 DIM 的配装
     编辑器。与复制、截图并排，同为带框的 .op。"""
+    skipped = dim.skipped_mods(md)
+    tip = (
+        ' title="通用模组（%s）未指定属性变体，导入后需在 DIM 内手动选择"'
+        % escape("、".join(skipped), quote=True)
+        if skipped
+        else ""
+    )
     return (
-        '<a class="op dim" href="%s" target="_blank" rel="noopener">导入 DIM</a>'
-        % escape(dim.link(md, url))
+        '<a class="op dim" href="%s"%s target="_blank" rel="noopener">导入 DIM</a>'
+        % (escape(dim.link(md, url)), tip)
     )
 
 
@@ -1400,12 +1412,13 @@ def render_set(idx, mv, arts, head, members, slug, season, name_cn, doc_id):
     for n, m in enumerate(members, 1):
         mt = must_title(m, "合集里每一套都要有「标题」")
         mb = branch_of(m)
+        mtags = "、".join(tags_of(m, scenes))
         # 一行三列：图 / 职业·元素 / 名字·标签。**职业与元素单占中间那一列**，
         # 挤进副名那一行时 208px 的目录只剩得下一个标签，标签整段被省略号吃掉。
         o += [
             '<li class="b-%s"><a href="#set-%d">%s'
             '<i class="who">%s<em class="%s">%s</em></i>'
-            "<b>%s</b><span>%s</span></a></li>"
+            "<b>%s</b>%s</a></li>"
             % (
                 BRANCH[mb],
                 n,
@@ -1414,7 +1427,7 @@ def render_set(idx, mv, arts, head, members, slug, season, name_cn, doc_id):
                 ELEMENT_TOKEN[mb],
                 mb,
                 mt,
-                "、".join(tags_of(m, scenes)),
+                "<span>%s</span>" % mtags if mtags else "",
             )
         ]
     o += ["</ol>", "</nav>", '<div class="set-body">']
@@ -1646,7 +1659,11 @@ def card(m, href, up, sets):
             else ""
         )
     )
-    say = ("<p>%s</p>" % m["desc"] if m["desc"] else "") + (
+    say = (
+        '<p title="%s">%s</p>' % (escape(m["desc"], quote=True), m["desc"])
+        if m["desc"]
+        else ""
+    ) + (
         '<span class="verdict" title="%s"><b>审核意见</b>%s</span>'
         % (escape(m["verdict"], quote=True), m["verdict"])
         if m["verdict"]
@@ -2611,7 +2628,7 @@ def set_form_head(name_cn):
         '<h2><input data-key="配装名" '
         'placeholder="配装名称" aria-label="配装名称"></h2>'
         '<div class="head-acts">'
-        '<button type="button" data-set-copy>创建副本</button></div></div>',
+        '<button type="button" class="op" data-set-copy>创建副本</button></div></div>',
         '<p class="cls"><span class="cls-id" data-mirror="铭牌">'
         '<span class="hint">在下方「职业」区域选择职业与元素</span></span></p>',
         '<p class="desc"><input data-key="描述" placeholder="这套配装的使用场景" '
@@ -2724,7 +2741,7 @@ def render_new(stamp, name_cn, sets=False):
     o += new_blocks()
     if sets:
         # 只收 .set-body。**「配装文本」那一节与底部那条出口留在 .set-wrap 里**、
-        # 占右边那一列：它们的宽度要跟着配装那一列走，左边 208px 是目录的地方。
+        # 占右边那一列：它们的宽度要跟着配装那一列走，左边 268px 是目录的地方。
         o += ["</div>", ""]
     o += [
         # 类名给预览用：按 sec-N 认会在增删分节时静默指错一节，
@@ -2739,7 +2756,8 @@ def render_new(stamp, name_cn, sets=False):
         "无法识别的条目会跳过并在下方列出。导入将覆盖当前已填写的内容。</p>",
         '<textarea id="in" rows="10" spellcheck="false" '
         'placeholder="将配装文本粘贴至此" aria-label="待导入的配装文本"></textarea>',
-        '<p id="imp-tip" role="status"></p>',
+        '<div class="imp-bar"><button id="do-import" class="op" type="button">执行导入</button>'
+        '<p id="imp-tip" role="status"></p></div>',
         "</details>",
         "</section>",
         "",
@@ -2781,6 +2799,7 @@ def render_new(stamp, name_cn, sets=False):
             back + "tip.js",
             back + "source.js",
             "../" * up + "admin/dialect.js",
+            "../" * up + "assets/pinyin.js",
             "../" * (up - 2) + "form.js",
         ],
     )

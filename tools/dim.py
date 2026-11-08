@@ -181,6 +181,18 @@ def armor(sec, cls):
     return out, exotic, perks, bonuses
 
 
+def skipped_mods(rec):
+    f = rows.facts()
+    sec = migrate.flat(rec)
+    out = []
+    for part in BUCKETS:
+        for key, name in stamped(sec.get(part) or [], part):
+            minted = f.minted.get(str(key))
+            if minted and minted.get('kind') == MINTED_FAMILY and name not in out:
+                out.append(name)
+    return out
+
+
 def mods(sec):
     """五个部位的护甲模组，按部位顺序拼成一串。只写了模组族的格子（「抗性」）
     没有具体那一枚，跳过。"""

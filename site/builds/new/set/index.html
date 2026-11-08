@@ -56,7 +56,7 @@
 </nav>
 <div class="set-body">
 <header class="one-head">
-<div class="id-row"><button type="button" class="item empty one-core" id="f-core-art" data-slot="核心" data-size="32" aria-expanded="false"><span class="nm">核心</span></button><h2><input data-key="配装名" placeholder="配装名称" aria-label="配装名称"></h2><div class="head-acts"><button type="button" data-set-copy>创建副本</button></div></div>
+<div class="id-row"><button type="button" class="item empty one-core" id="f-core-art" data-slot="核心" data-size="32" aria-expanded="false"><span class="nm">核心</span></button><h2><input data-key="配装名" placeholder="配装名称" aria-label="配装名称"></h2><div class="head-acts"><button type="button" class="op" data-set-copy>创建副本</button></div></div>
 <p class="cls"><span class="cls-id" data-mirror="铭牌"><span class="hint">在下方「职业」区域选择职业与元素</span></span></p>
 <p class="desc"><input data-key="描述" placeholder="这套配装的使用场景" aria-label="这套配装的描述"></p>
 <div class="facets"><div><p class="by-label">标签</p><span class="tags tagset" data-scoped="场景"><button type="button" aria-pressed="false" data-for="突袭&#9;地牢" hidden>输出</button><button type="button" aria-pressed="false" data-for="突袭&#9;地牢" hidden>机制</button><button type="button" aria-pressed="false" data-for="突袭&#9;地牢" hidden>五壮举</button><button type="button" aria-pressed="false" data-for="PVP" hidden>3V3</button><button type="button" aria-pressed="false" data-for="PVP" hidden>6V6</button></span><input type="hidden" data-key="标签"></div></div>
@@ -210,7 +210,7 @@
 <details id="imp"><summary>从配装文本导入</summary>
 <p class="note">粘贴一份已有的配装文本。可识别的装备会自动填入，无法识别的条目会跳过并在下方列出。导入将覆盖当前已填写的内容。</p>
 <textarea id="in" rows="10" spellcheck="false" placeholder="将配装文本粘贴至此" aria-label="待导入的配装文本"></textarea>
-<p id="imp-tip" role="status"></p>
+<div class="imp-bar"><button id="do-import" class="op" type="button">执行导入</button><p id="imp-tip" role="status"></p></div>
 </details>
 </section>
 <div class="src-tools">
@@ -239,6 +239,7 @@
 <script src="../../tip.js" defer></script>
 <script src="../../source.js" defer></script>
 <script src="../../../admin/dialect.js" defer></script>
+<script src="../../../assets/pinyin.js" defer></script>
 <script src="../form.js" defer></script>
 </body>
 </html>
