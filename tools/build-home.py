@@ -380,16 +380,18 @@ def builds_top(slug, n):
     h = read(slug + "/index.html")
     out = []
     for m in re.finditer(
-        r'<li class="(b-[a-z]+)"[^>]*>\s*<a class="entry"[^>]*>\s*<span class="node">(.*?)<h3>(.*?)</h3>',
+        r'<li class="(b-[a-z]+)"([^>]*)>\s*<a class="entry"[^>]*>\s*<span class="node">(.*?)<h3>(.*?)</h3>',
         h,
         re.S,
     ):
-        sets = re.findall(r'<span class="n-sets">([^<]*)</span>', m.group(2))
+        if 'data-by="Aegis"' in m.group(2):
+            continue
+        sets = re.findall(r'<span class="n-sets">([^<]*)</span>', m.group(3))
         out.append(
             (
-                text(m.group(3)),
+                text(m.group(4)),
                 m.group(1),
-                near(slug, re.findall(r'src="([^"]+)"', m.group(2))[0]),
+                near(slug, re.findall(r'src="([^"]+)"', m.group(3))[0]),
                 sets[0] if sets else "",
             )
         )
@@ -551,7 +553,11 @@ def ranking(slug, col):
         return pv_rank(
             img,
             [
-                (r[0][0].split(" / ")[0], int(r[at][0]), r[1][1])
+                (
+                    r[0][0].split(" / ")[0],
+                    int(r[at][0]),
+                    r[1][1] or next((c[1] for c in r if c[1]), ""),
+                )
                 for r in rows(slug, t)[:3]
             ],
         )
@@ -916,6 +922,7 @@ PREVIEW = {
     "boss-hp/index.html": boss_hp,
     "pve-farming/index.html": farming,
     "raid-guides/index.html": raids,
+    "dps-ranking/index.html": ranking("dps-ranking", "核心 DPS"),
     "dps/index.html": ranking("dps", "DPS"),
     "swap-dps/index.html": ranking("swap-dps", "切枪 DPS"),
     "skill-damage/index.html": ranking("skill-damage", "200 属性"),

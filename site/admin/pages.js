@@ -1,11 +1,12 @@
 // 由 tools/build-terms.py 生成，不手改。编辑台的资料页清单，以及配装的职业、场景、强度、标签与分支五张表与当前赛季。
 window.starsidePages = [
   ["docs/dps","单武器 DPS 排行","dps/index.html","刷取与攻略","","2026.8.25"],
+  ["docs/dps-ranking","输出手法 DPS 排行","dps-ranking/index.html","刷取与攻略","","2026.11.8"],
   ["docs/pve-farming","PVE 终局刷取指南","pve-farming/index.html","刷取与攻略","","2026.9.10"],
   ["docs/raid-guides","Raid 攻略","raid-guides/index.html","刷取与攻略","","2026.8.30"],
   ["docs/rotation","轮换速查表","rotation/index.html","刷取与攻略","","2026.10.20"],
   ["docs/skill-damage","技能伤害排行","skill-damage/index.html","刷取与攻略","","2026.8.30"],
-  ["docs/swap-dps","切枪 DPS 排行","swap-dps/index.html","刷取与攻略","","2026.8.30"],
+  ["docs/swap-dps","脱手 DPS 排行","swap-dps/index.html","刷取与攻略","","2026.8.30"],
   ["docs/crafting","锻造武器来源","crafting/index.html","刷取与攻略","docs/pve-farming","2026.8.30"],
   ["keys/exotic-armors","刷取清单-异域护甲","exotic-armors/index.html","刷取与攻略","docs/pve-farming","2026.9.10"],
   ["keys/exotic-weapons","刷取清单-异域武器","exotic-weapons/index.html","刷取与攻略","docs/pve-farming","2026.9.10"],
@@ -40,8 +41,8 @@ window.starsidePages = [
   ["docs/combatant-scalars","战斗人员倍率","combatant-scalars/index.html","机制","","2026.8.14"],
   ["docs/game-mechanics","游戏机制","game-mechanics/index.html","机制","","2026.10.8"],
   ["docs/power-delta","压光伤害","power-delta/index.html","机制","","2026.8.14"],
-  ["docs/changelog","更新日志","changelog/index.html","站务","","2026.10.20"],
+  ["docs/changelog","更新日志","changelog/index.html","站务","","2026.11.8"],
   ["docs/palette","配色总览","palette/index.html","站务","","2026.8.24"],
-  ["docs/sources","数据源与鸣谢","sources/index.html","站务","","2026.9.10"],
+  ["docs/sources","数据源与鸣谢","sources/index.html","站务","","2026.11.8"],
 ]
 window.starsideBuilds = {"classes":["猎人","泰坦","术士"],"scenes":["突袭","地牢","宗师/终极","日常","功能性","PVP"],"tiers":["meta","强力","创意"],"sceneTags":{"突袭":["输出","机制","五壮举"],"地牢":["输出","机制","五壮举"],"PVP":["3V3","6V6"],"宗师/终极":[],"日常":[],"功能性":[]},"branch":{"电弧":"arc","烈日":"solar","虚空":"void","冰影":"stasis","缚丝":"strand","棱镜":"prismatic"},"season":"s29-凯旋纪念碑"}

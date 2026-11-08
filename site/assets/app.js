@@ -391,10 +391,23 @@
     });
   }
 
+  var hideBtn = ITEM ? document.querySelector('[data-hide-by]') : null;
+  var hideBy = hideBtn ? hideBtn.dataset.hideBy : '';
+  var hideOn = !!hideBtn && hideBtn.getAttribute('aria-pressed') === 'true';
+  function byPass(mod) {
+    if (!hideOn || !hideBy) return true;
+    return (mod.dataset.by || '').split('\t').indexOf(hideBy) < 0;
+  }
+  function poolSize() {
+    var n = 0;
+    mods.forEach(function (m) { if (byPass(m)) n++; });
+    return n;
+  }
+
   var search = document.createElement('input');
   search.type = 'search';
   search.className = 'tool-search';
-  search.placeholder = '搜索 ' + mods.length + ' 个' + NOUN;
+  search.placeholder = '搜索 ' + poolSize() + ' 个' + NOUN;
   search.setAttribute('aria-label', '搜索' + NOUN);
 
   var count = document.createElement('p');
@@ -610,17 +623,24 @@
         var btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'scene-share';
-        btn.textContent = '另有 ' + shared.length + ' 套' + NOUN + '与' + fromSc + '通用 · 点此并入本节查看';
         btn.onclick = function () { pick(DIMS[gIdx], gIdx, sc); };
         sec.insertBefore(btn, h2.nextElementSibling);
-        shareBtns.push({ btn: btn, sc: sc });
+        shareBtns.push({ btn: btn, sc: sc, shared: shared, fromSc: fromSc });
       });
     }
   }
+  function syncShare(want) {
+    shareBtns.forEach(function (s) {
+      var n = s.shared.filter(byPass).length;
+      s.btn.textContent = '另有 ' + n + ' 套' + NOUN + '与' + s.fromSc + '通用 · 点此并入本节查看';
+      s.btn.hidden = !n || want === s.sc;
+    });
+  }
+  syncShare('');
 
   function regroup(want) {
     if (!lists.length) return;
-    shareBtns.forEach(function (s) { s.btn.hidden = want === s.sc; });
+    syncShare(want);
     /* 落点按「同一节、同一个职业小节」找：合并发生在小节这一层，点 raid 之后
        仍只有一组「猎人/泰坦/术士」。生成器保证落点存在——每个场景节的小节按
        这个场景下所有配装的职业集合出，不只按本节现有的那些。 */
@@ -748,7 +768,7 @@
     mods.forEach(function (mod, i) {
       var on = (hit(text[i], terms)
         || (window.starsidePy && names[i] && window.starsidePy.hit(names[i], terms)))
-        && facetPass(i);
+        && facetPass(i) && byPass(mod);
       if (mod.hidden === on) mod.hidden = !on;
       if (on) hits++;
     });
@@ -781,7 +801,7 @@
       if (chips[i]) chips[i].hidden = empty;
     });
     var active = !!query.trim() || facetOn();
-    count.textContent = active ? hits + ' / ' + mods.length : '';
+    count.textContent = active ? hits + ' / ' + poolSize() : '';
     /* 搜了但一个都没命中时给工具条打一位，搜索框与计数据此转红：灰着看
        0 / 147 与 3 / 147 长得一样。清空查询即撤销，没搜过也不算空结果。 */
     slot.toggleAttribute('data-miss', active && !hits);
@@ -796,7 +816,9 @@
      地址，不攒历史。file:// 下 replaceState 抛 SecurityError，那时只是不记。 */
   function remember(query) {
     try {
-      history.replaceState(Object.assign({}, history.state, { q: query, facets: picked }), '');
+      var st = { q: query, facets: picked };
+      if (hideBtn) st.hideBy = hideOn;
+      history.replaceState(Object.assign({}, history.state, st), '');
     } catch (e) {}
   }
 
@@ -838,11 +860,29 @@
 
   search.addEventListener('input', function () { filter(search.value); });
 
+  if (hideBtn) {
+    hideBtn.onclick = function () {
+      hideOn = !hideOn;
+      hideBtn.setAttribute('aria-pressed', hideOn ? 'true' : 'false');
+      search.placeholder = '搜索 ' + poolSize() + ' 个' + NOUN;
+      var gDim = DIMS && DIMS.find(function (d) { return d.groups; });
+      var want = gDim && picked[gDim.name] && picked[gDim.name].length === 1 ? picked[gDim.name][0] : '';
+      syncShare(want);
+      filter(search.value);
+    };
+  }
+
   /* 从首页的全站搜索点进来时带着 ?q=：预填并过滤一次，落点交给浏览器按 # 锚点滚。
      **先过滤再滚**——defer 脚本在解析完成后、锚点定位前执行，顺序天然是对的；
      反过来滚完再隐藏行，读者会停在错位的地方。 */
   var came = new URLSearchParams(location.search).get('q');
   var kept = history.state;
+  if (hideBtn && kept && typeof kept.hideBy === 'boolean') {
+    hideOn = kept.hideBy;
+    hideBtn.setAttribute('aria-pressed', hideOn ? 'true' : 'false');
+    search.placeholder = '搜索 ' + poolSize() + ' 个' + NOUN;
+    syncShare('');
+  }
   if (ITEM && kept && (kept.q || kept.facets)) {
     /* 返回键回到这一页：按上次离开时的状态重放。取值不在了的（换过一版产出）丢掉。
        先于浏览器恢复滚动位置执行，读者落回原来那张卡。 */
@@ -858,6 +898,8 @@
   } else if (came && ITEM) {
     search.value = came;
     filter(came);
+  } else if (hideOn && ITEM) {
+    filter('');
   }
 
   /* 首屏之后另存的记录插回来了：重收条目，按搜索框里现有的查询再过一遍。
@@ -873,9 +915,9 @@
       if (DIMS) vals = valsOf();
       hadItems = (ROW || ITEM)
         ? sections.map(function (sec) { return !!sec.querySelector(ROW || ITEM); }) : [];
-      search.placeholder = '搜索 ' + mods.length + ' 个' + NOUN;
+      search.placeholder = '搜索 ' + poolSize() + ' 个' + NOUN;
       trimSubs();
-      if (search.value.trim() || facetOn()) filter(search.value);
+      if (search.value.trim() || facetOn() || hideOn) filter(search.value);
       var at = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)));
       if (at && !moved) at.scrollIntoView();
     });

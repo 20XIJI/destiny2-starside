@@ -1629,6 +1629,7 @@ def build(idx, descs, dirname, season, name_cn, slug):
                 collapse=True,
             ),
             "by": "".join(people(head, link=False)),
+            "authors": [x.split("|")[0].strip() for x in head.get("推荐人") or ()],
             "core": core,
             "preview": preview,
             "set": len(members),
@@ -1671,13 +1672,14 @@ def card(m, href, up, sets):
     )
     return [
         '<li class="b-%s" data-branch="%s" data-scene="%s" data-cls="%s"'
-        ' data-tier="%s"%s>'
+        ' data-tier="%s" data-by="%s"%s>'
         % (
             m["branch"],
             m["branch_cn"],
             TAB.join(m["scene"]),
             m["class"],
             m["tier"],
+            TAB.join(m["authors"]),
             ' data-tag="%s"' % TAB.join(m["tags"]) if m["tags"] else "",
         ),
         '<a class="entry" href="%s">' % (href % (m["season"], m["slug"])),
@@ -1843,7 +1845,13 @@ def render_index(made, sets=False):
         # 低频那两维收进这里的共用面板。**与主轴同一块**，不放工具条上：
         # 工具条那一格前面是空着的 .tool-count，触发器停在中段像掉在半路上；
         # 挨着职业、场景与强度，读者一眼看得出这几样是一类东西。
-        '<div class="facet-tuck" data-facet-tuck></div>',
+        '<div class="facet-tuck" data-facet-tuck>%s</div>'
+        % (
+            '<button type="button" class="toggle" data-hide-by="Aegis"'
+            ' aria-pressed="true">隐藏 Aegis 配装</button>'
+            if any("Aegis" in m["authors"] for m in live)
+            else ""
+        ),
         # 职业排在最上：进来先挑自己玩的那个职业，再挑在哪打。
         '<nav class="facet-bar" data-facet="职业" aria-label="职业"></nav>',
         '<nav class="facet-bar" data-facet="场景" aria-label="适用场景"></nav>',

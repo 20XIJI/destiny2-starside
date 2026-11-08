@@ -1681,11 +1681,11 @@ function domStub () {
     const not = /^(.*?):not\(\[hidden\]\)$/.exec(sel)
     if (not) return this.matches(not[1]) && !this.hidden
     if (sel[0] === '.') return (' ' + this.className + ' ').includes(' ' + sel.slice(1) + ' ')
-    // [data-x="v"] → dataset.x：app.js 按维度名找页面给的那个容器。
-    const attr = /^\[data-([\w-]+)="(.*)"\]$/.exec(sel)
+    // [data-x="v"] 或 [data-x] → dataset.x：app.js 按维度名或属性名找页面容器。
+    const attr = /^\[data-([\w-]+)(?:="(.*)")?\]$/.exec(sel)
     if (attr) {
       const key = attr[1].replace(/-([a-z])/g, (_, c) => c.toUpperCase())
-      return this.dataset[key] === attr[2]
+      return attr[2] === undefined ? key in this.dataset : this.dataset[key] === attr[2]
     }
     return this.tagName === sel.toUpperCase()
   }
@@ -1716,12 +1716,18 @@ const CARDS = [
   { scene: 'PVP', cls: '术士', tier: '创意', branch: '虚空', tag: '3V3' }
 ]
 
-function toolbar () {
+function toolbar (opts = {}) {
   const El = domStub()
   const body = new El('body')
   const slot = body.appendChild(new El('div', 'site-head')).appendChild(new El('div', 'toolbar'))
   slot.dataset = { section: '.block', item: '.entries > li', label: '', noun: '配装',
     facets: '场景=scene:single:groups;强度=tier:single;职业=cls:tuck;分支=branch:tuck;标签=tag:tuck' }
+  let hideBtn = null
+  if (opts.hideBy) {
+    hideBtn = body.appendChild(new El('button', 'toggle'))
+    hideBtn.dataset = { hideBy: opts.hideBy }
+    hideBtn.setAttribute('aria-pressed', 'true')
+  }
   // 场景与强度是两条主轴，各填进页面给的一个空容器，不进工具条。
   const bar = body.appendChild(new El('nav', 'facet-bar'))
   bar.dataset = { facet: '场景' }
@@ -1730,8 +1736,9 @@ function toolbar () {
   // 一节一个场景；多场景的配装落在它第一个场景那一节——与产出同形。
   const main = body.appendChild(new El('main'))
   const lis = []
+  const cards = opts.cards || CARDS
   for (const [scene, group] of Object.entries(
-    CARDS.reduce((by, c) => {
+    cards.reduce((by, c) => {
       const first = c.scene.split('\t')[0]
       ;(by[first] = by[first] || []).push(c)
       return by
@@ -1743,7 +1750,7 @@ function toolbar () {
     // 小节按「这个场景下所有配装」的职业集合出——搬过来的卡要有落点，空的那张
     // 网格照样在 DOM 里。与生成器同形。
     const mine = new Set(group.map((c) => c.cls))
-    const kin = CARDS.filter((c) => c.scene.split('\t').includes(scene))
+    const kin = cards.filter((c) => c.scene.split('\t').includes(scene))
     for (const cls of ['猎人', '泰坦', '术士']) {
       if (!kin.some((c) => c.cls === cls)) continue
       sec.appendChild(new El('h3', 'sub-label')).textContent = cls
@@ -1798,6 +1805,7 @@ function toolbar () {
     slot,
     bar,
     main,
+    hideBtn,
     // 某个场景那一节此刻装着几张可见的卡。
     inSection: (scene) => {
       const sec = secOf(scene)
@@ -1975,6 +1983,28 @@ test('tucked filter footer shows picked names and clears them, and scene-share b
   shareBtn.onclick()
   assert.equal(t.inSection('地牢'), 3, '点击并入提示后应当将 raid·地牢 通用卡并入地牢分节')
   assert.equal(shareBtn.hidden, true, '并入地牢后提示按钮自身应当收起')
+})
+
+test('data-hide-by hides matching author cards by default and toggles them on click', () => {
+  const cards = CARDS.concat([
+    { scene: 'raid\t地牢', cls: '猎人', tier: 'meta', branch: '烈日', tag: '输出', by: 'Aegis' },
+    { scene: 'raid\t地牢', cls: '术士', tier: '强力', branch: '虚空', tag: '输出', by: 'Aegis' }
+  ])
+  const t = toolbar({ hideBy: 'Aegis', cards })
+  assert.equal(t.live(), CARDS.length, '加载时应当默认隐藏 Aegis 配装')
+  assert.equal(t.slot.querySelector('.tool-search').placeholder, `搜索 ${CARDS.length} 个配装`)
+  assert.equal(t.slot.querySelector('.tool-count').textContent, '', '默认隐藏不计入筛选计数状态')
+  const dungeonSec = t.main.children.find((c) => c.dataset.scene === '地牢')
+  const shareBtn = dungeonSec.querySelector('.scene-share')
+  assert.ok(shareBtn.textContent.includes('2 套'), '默认隐藏时跨节通用提示不应计入 Aegis 配装')
+  t.hideBtn.onclick()
+  assert.equal(t.hideBtn.getAttribute('aria-pressed'), 'false')
+  assert.equal(t.live(), cards.length, '取消隐藏后应当显示全部配装（含 Aegis）')
+  assert.equal(t.slot.querySelector('.tool-search').placeholder, `搜索 ${cards.length} 个配装`)
+  assert.ok(shareBtn.textContent.includes('4 套'), '显示 Aegis 配装后跨节通用提示应当更新套数')
+  t.hideBtn.onclick()
+  assert.equal(t.hideBtn.getAttribute('aria-pressed'), 'true')
+  assert.equal(t.live(), CARDS.length, '再次点击应当恢复隐藏 Aegis 配装')
 })
 
 // 页脚访客数那段脚本从手写首页里现取：check_shell.py 钉着它与 shell.HIT 逐字一致，

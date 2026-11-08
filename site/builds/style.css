@@ -649,6 +649,7 @@ body:has(.entries) { --wrap: 1500px; }
   order: 2;
   display: flex;
   align-items: center;
+  gap: 8px;
   margin-left: auto;
   padding-left: 16px;
   border-left: 1px solid var(--hair-lit);
@@ -657,15 +658,25 @@ body:has(.entries) { --wrap: 1500px; }
 .drop > summary { list-style: none; }
 .drop > summary::-webkit-details-marker { display: none; }
 
+.facet-tuck > .toggle,
 .facet-tuck .drop > summary.toggle {
   display: inline-flex;
   align-items: center;
   gap: 7px;
   padding: 5px 12px;
   color: var(--bone);
+  font-family: var(--font-cn);
   font-size: 12.5px;
+  letter-spacing: normal;
   background: var(--tint-2);
   border: 1px solid var(--hair-lit);
+  cursor: pointer;
+}
+
+.facet-tuck > .toggle[aria-pressed="true"] {
+  color: var(--bone-hi);
+  background: var(--tint-3);
+  border-color: var(--accent);
 }
 
 .facet-tuck .drop > summary.toggle::after {
