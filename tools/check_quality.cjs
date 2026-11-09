@@ -406,6 +406,42 @@ test('same table row applies right-to-left and normalizes legacy newlines', asyn
   assert.equal(h.store.docs.get('docs/example').md, '| 甲长\\\\换行 | 乙新 | 邻格 |')
 })
 
+test('line breaks normalize across prose docs, record cells, and editor helpers', async () => {
+  const PROSE = 'i18n/zh-CN/realgame_details'
+  const h = recHarness({ [TIER]: '重建\\\\{perk|嫉妒军械库}', [PROSE]: '第一段' }, [],
+    { docs: [{ _id: 'docs/example', md: '# 标题\n\n旧段', hash: digest('# 标题\n\n旧段') }] })
+  const r1 = await h.request({
+    a: 'chg', doc: 'keys/legendary-special', rec: REC, path: TIER,
+    before: '重建\\\\{perk|嫉妒军械库}', after: '重建\\\\{perk|嫉妒军械库}\n{perk|金中藏弹}'
+  })
+  assert.equal(r1.ok, 1)
+  assert.equal(h.store.edits.get(r1.id).after, '重建\\\\{perk|嫉妒军械库}\\\\{perk|金中藏弹}')
+  const r2 = await h.request({
+    a: 'chg', doc: 'keys/exotic-weapon', rec: REC, path: PROSE,
+    before: '第一段', after: '第一段\n\n第二段'
+  })
+  assert.equal(r2.ok, 1)
+  assert.equal(h.store.edits.get(r2.id).after, '第一段\n\n第二段')
+  const r3 = await h.request({
+    a: 'chg', doc: 'docs/example', blk: 2, cell: -1,
+    before: '旧段', after: '一段\n\\\\\n二段\\\\三行'
+  })
+  assert.equal(r3.ok, 1)
+  assert.equal(h.store.edits.get(r3.id).after, '一段\n\n二段\n三行')
+
+  const ctx = {}
+  vm.createContext(ctx)
+  vm.runInContext(
+    "var PROSE_REC = /\\/(realgame_details(#\\d+)?|效果|说明)$/;\n"
+    + ['toEdit', 'fromEdit'].map((n) => funcSource('admin/edit.js', n)).join('\n')
+    + '\nthis.toEdit=toEdit;this.fromEdit=fromEdit', ctx)
+  assert.equal(ctx.toEdit('甲\\\\乙', true), '甲\n乙')
+  assert.equal(ctx.toEdit('一段\\\\ \\\\二段\\\\三行', true), '一段\n\n二段\n三行')
+  assert.equal(ctx.fromEdit('甲\n乙\n\n丙', 'cell'), '甲\\\\乙\\\\丙')
+  assert.equal(ctx.fromEdit('一段\n\n二段\\\\三行', 'recPara'), '一段\n\n二段\n三行')
+  assert.equal(ctx.fromEdit('一段\n\\\\\n二段\\\\三行', 'prose'), '一段\n\n二段\n三行')
+})
+
 test('all documents and edit states roll back on any invalid member', async () => {
   const first = edit('a', 0, '甲', '甲新')
   for (const second of [edit('b', 1, '不存在', '乙新'), edit('b', 1, '乙', '乙新', { ok: 1 })]) {

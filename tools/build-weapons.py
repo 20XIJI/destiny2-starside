@@ -200,8 +200,12 @@ def plain(s):
 
 
 def parts(s):
-    """一格里用格内换行隔开的几段。"""
-    return [x.strip() for x in plain(s).split(markup.CELL_BREAK) if x.strip()]
+    """一格里用格内换行或真换行隔开的几段。"""
+    return [
+        x.strip()
+        for x in plain(s).replace("\n", markup.CELL_BREAK).split(markup.CELL_BREAK)
+        if x.strip()
+    ]
 
 
 def stem(path):

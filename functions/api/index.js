@@ -240,8 +240,21 @@ const REC_PATH = /^(i18n\/zh-CN|enhanced|weaponTypes|authors|variants)(\/[^/]+)+
 // facts.NEW_LEAF 同一条。别的路径必须已经在记录上：新添 i18n.zh-CN 下别的键会写进
 // manifest 字段，或把 site_authors 这种对象换成字符串，sync.py 写回时当场中止。
 const NEW_LEAF = /^i18n\/zh-CN\/realgame_details$/
+const PROSE_REC = /\/(realgame_details(#\d+)?|效果|说明)$/
 // 一次对账推几条记录由 sync.py 定（按请求体大小切批），这里只挡跑飞。
 const REC_BATCH = 500
+
+function normDocAfter(after, isTable) {
+  const s = String(after ?? '').replace(/\r\n/g, '\n')
+  return isTable
+    ? s.replace(/\n+/g, '\\\\')
+    : s.replace(/^[ \t]*\\\\[ \t]*$/gm, '').replace(/\\\\/g, '\n')
+}
+
+function normRecAfter(after, path) {
+  const s = String(after ?? '').replace(/\r\n/g, '\n')
+  return PROSE_REC.test(path) ? s : s.replace(/\n+/g, '\\\\')
+}
 
 // 与 facts.canon() 逐字节相同：键按码位排序、紧凑分隔、值只有字符串。hash 算它，
 // 所以两边写出来的同一份表 hash 相同，编辑台拿页面上那份与库里比才比得准。
@@ -578,7 +591,7 @@ async function editorRoute(a, body, event, me) {
     if (!REC_ID.test(rec)) throw new Error('bad rec')
     if (!REC_PATH.test(path)) throw new Error('bad path')
     const before = String(body.before ?? '')
-    const after = String(body.after ?? '')
+    const after = normRecAfter(body.after, path)
     if (after === before) throw new Error('没改动')
     if (after.length > MAX_ONE || before.length > MAX_ONE) throw new Error('bad text')
     const cur = (await recs.doc(rec).get()).data[0]
@@ -619,12 +632,10 @@ async function editorRoute(a, body, event, me) {
     const at0 = locate(cur.md, { blk, cell, before })
     if (!at0) throw new Error('stale')
     const at = new Date().toISOString()
-    // **表格那一行的改动就地并回一行。**一行源稿就是一行表格，格内换行只能写
-    // 两个反斜杠；混进一个真换行，那一行写回正文时裂成两行、格数少一半，
-    // npm run build 当场中止，卡住的是整次部署。**不拒收，直接改对**——这条
-    // 规则只写在源稿语法里，编辑的人没有理由知道，报一句错只会让人卡在那里。
+    // **表格那一行的改动就地并回一行，散文块清掉误敲的 `\\`。**
     const line0 = cur.md.split('\n')[at0.line] || ''
-    const text = line0.startsWith('|') ? after.replace(/\n+/g, '\\\\') : after
+    const text = normDocAfter(after, line0.startsWith('|'))
+    if (text === before) throw new Error('没改动')
     const unsafe = cellSafe(text, Boolean(at0.span))
     if (unsafe) throw new Error(unsafe)
     const set = { doc, blk, cell, before, after: text, ok: 0, at, by: me.name, uid: me.uid }
@@ -766,9 +777,10 @@ async function editorRoute(a, body, event, me) {
           for (const e of proposals) {
             if (seen.has(e.path) || leaf(flat, e.path) !== e.before) throw new Error('conflict')
             seen.add(e.path)
-            const unsafe = cellSafe(String(e.after), !barePipe(e.before))
+            const text = normRecAfter(e.after, e.path)
+            const unsafe = cellSafe(text, !barePipe(e.before))
             if (unsafe) throw new Error(unsafe)
-            flat[e.path] = String(e.after)
+            flat[e.path] = text
           }
           recChanges.push({ id, json: canon(flat), by: proposals[proposals.length - 1].by })
         }
@@ -787,8 +799,7 @@ async function editorRoute(a, body, event, me) {
             const start = offsets[hit.line] + (hit.span ? hit.span[0] : 0)
             const last = hit.line + (hit.len || 1) - 1
             const end = hit.span ? offsets[hit.line] + hit.span[1] : offsets[last] + lines[last].length
-            const text = lines[hit.line].startsWith('|')
-              ? String(e.after).replace(/\n+/g, '\\\\') : e.after
+            const text = normDocAfter(e.after, lines[hit.line].startsWith('|'))
             // 队列里可能躺着这条闸门上线之前存下的记录，通过时再判一次。
             const unsafe = cellSafe(text, Boolean(hit.span))
             if (unsafe) throw new Error(unsafe)

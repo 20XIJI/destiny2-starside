@@ -393,15 +393,15 @@
     })
   }
 
-  // 源稿一格 → 页面上那个样子：着色照画，图不画，格内换行 `\\` 画成真的换行。
+  // 源稿一格 → 页面上那个样子：着色照画，图不画，换行（`\\` 与真换行）画成真的换行。
   var IMG = /!\[[^\]]*\]\([^)]*\)/g
   function paintCell (t) {
-    return D().paint(String(t || '').replace(IMG, '')).replace(/\\\\/g, '<span class="br"></span>')
+    return D().paint(String(t || '').replace(IMG, '')).replace(/\\\\|\r?\n/g, '<span class="br"></span>')
   }
   // 源稿一格 → 纯文字。表头与行的身份用它：图、换行与着色标记都不算字。paint() 只产出
   // <span> 与 &lt; &amp; 两种转义，剥掉标签、还原转义即得 textContent，不必交给 DOM 解析。
   function plain (t) {
-    return D().paint(String(t || '').replace(IMG, '').replace(/\\\\/g, ' '))
+    return D().paint(String(t || '').replace(IMG, '').replace(/\\\\|\r?\n/g, ' '))
       .replace(/<[^>]*>/g, '').replace(/&lt;/g, '<').replace(/&amp;/g, '&')
       .replace(/\s+/g, ' ').trim()
   }

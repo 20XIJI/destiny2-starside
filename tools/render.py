@@ -750,7 +750,7 @@ SLOTS = (
 
 def picks(raw):
     out = []
-    for part in (raw or "").split(BR):
+    for part in (raw or "").replace("\n", BR).split(BR):
         struck = "~~" in part
         name = markup.text_of(markup.inline(part.replace("~~", ""))).strip()
         if name:
@@ -891,7 +891,11 @@ def rec_weapon(p, key, rank, author):
         )
     # 大师杰作一格可以写几枚：「填装\\操控性」说的是这两枚都行，不是一枚叫这个名字
     # 的插件。与别的几栏同形，一枚一个格子。
-    mws = [x.strip() for x in (A.get("masterwork") or "").split(BR) if x.strip()]
+    mws = [
+        x.strip()
+        for x in (A.get("masterwork") or "").replace("\n", BR).split(BR)
+        if x.strip()
+    ]
     slots.append(
         cell(
             "r-mid r-slot",

@@ -211,11 +211,6 @@
     return null
   }
 
-  // 记录里的段落有真换行，页面上是 <br>；源稿方言里格内换行是 \\。
-  function showRec (t) {
-    return show(String(t).replace(/\r?\n/g, '\\\\'))
-  }
-
   // 一个块占源稿的哪几行。**多行段落是区间**，只取首行会让人改了一段却只落下第一行。
   // **没有 data-b 的 <tr> 就是上一行 +1**——生成器只在这条成立时才省掉标记，
   // 行组分界行（|---|）占一行却不出 <tr>，它后面那行照旧带号。
@@ -403,14 +398,30 @@
 
   // 把一段源稿渲染成页面上那个样子。**这是近似**：真正的渲染在
   // convert-doc.py 的 inline(rich=True) 里，浏览器里搬不动全套，只补格子里真会
-  // 出现的那四样——格内换行 \\、图标、链接、粗体。着色走 dialect.js 的 paint()，
+  // 出现的那四样——换行（\\ 与 \n）、图标、链接、粗体。着色走 dialect.js 的 paint()，
   // 与 markup.inline() 同一条规则。
   function show (t) {
-    return window.starsideDialect.paint(t)
-      .replace(/\\\\/g, '<br>')
+    return window.starsideDialect.paint(String(t))
+      .replace(/\\\\|\r?\n/g, '<br>')
       .replace(/!\[\]\(([^)]+)\)/g, '<img src="$1" alt="">')
       .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
       .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+  }
+
+  // 源稿与编辑框之间的换行互转：编辑框里一律用真换行（回车即换行、空行即分段），
+  // 导出时按目标落回源稿语法（表格与记录单格回 \\，记录段落保留 \n，散文清掉误敲的 \\）。
+  var PROSE_REC = /\/(realgame_details(#\d+)?|效果|说明)$/
+  function toEdit (s, cellBr) {
+    s = String(s || '')
+    return cellBr
+      ? s.replace(/\\\\ ?\\\\/g, '\n\n').replace(/\\\\/g, '\n')
+      : s
+  }
+  function fromEdit (s, mode) {
+    s = String(s || '').replace(/\r\n/g, '\n')
+    if (mode === 'cell') return s.replace(/\n+/g, '\\\\')
+    if (mode === 'recPara') return s.replace(/\\\\ ?\\\\/g, '\n\n').replace(/\\\\/g, '\n')
+    return s.replace(/^[ \t]*\\\\[ \t]*$/gm, '').replace(/\\\\/g, '\n')
   }
 
   // ── 编辑态 ─────────────────────────────────────────────────────────
@@ -513,16 +524,16 @@
         var was = el('span', 'se-was')
         var old = el('s')
         // 旧值：同一个字段的每一段都要拼进来，不然划掉的只是第一段
-        old.innerHTML = showRec(S.map.e[ids[0]][2])
+        old.innerHTML = show(S.map.e[ids[0]][2])
         was.appendChild(old)
         was.appendChild(el('span', 'se-by', (p.by || '?') + (p.ok === 1 ? ' · 待上线' : '')))
-        node.innerHTML = showRec(p.after)
+        node.innerHTML = show(p.after)
         node.appendChild(was)
         return
       }
       hits.forEach(function (x) {
         var add = el('span', 'se-was se-add')
-        add.innerHTML = showRec(x[1].after)
+        add.innerHTML = show(x[1].after)
         add.appendChild(el('span', 'se-by', S.map.e[x[0]][3] + ' · ' + (x[1].by || '?')
           + (x[1].ok === 1 ? ' · 待上线' : '')))
         node.appendChild(add)
@@ -567,37 +578,12 @@
       + (at.cell < 0 ? '' : ' · 第 ' + (at.cell + 1) + ' 格')
       + (mine ? ' · 你的待审'
         : here ? ' · ' + here.by + (here.ok === 1 ? ' 已通过' : ' 待审') : '')))
+    var inTable = !!node.closest('table')
+    var mode = inTable ? 'cell' : 'prose'
     var ta = el('textarea')
-    ta.value = mine ? mine.after : before
+    ta.value = toEdit(mine ? mine.after : before, inTable)
     ta.rows = Math.min(12, ta.value.split('\n').length + Math.ceil(ta.value.length / 60))
     box.appendChild(ta)
-
-    /* **表格那一档里不许出现真换行。**一行源稿就是一行表格，格内换行只能写 `\\`
-       （见 convert-doc.py 的块语法）。敲一个回车下去，那一行会在写回正文时裂成
-       两行，整行的格数跟着少一半——npm run build 当场中止，卡住的是整次部署，
-       而编辑的人这边一点异样都看不到。
-
-       所以回车直接插 `\\`，粘进来的多行也就地并成 `\\`：文本框里始终是将要
-       写进源稿的那一份，不在提交时偷偷改一道。 */
-    var inTable = !!node.closest('table')
-    if (inTable) {
-      ta.addEventListener('keydown', function (ev) {
-        if (ev.isComposing || ev.keyCode === 229) return
-        if (ev.key !== 'Enter' || ev.ctrlKey || ev.metaKey || ev.altKey) return
-        ev.preventDefault()
-        var a = ta.selectionStart
-        ta.value = ta.value.slice(0, a) + '\\\\' + ta.value.slice(ta.selectionEnd)
-        ta.setSelectionRange(a + 2, a + 2)
-        ta.dispatchEvent(new Event('input'))
-      })
-      ta.addEventListener('input', function () {
-        if (ta.value.indexOf('\n') < 0) return
-        var a = ta.selectionStart
-        var before2 = ta.value.slice(0, a).split('\n').length - 1
-        ta.value = ta.value.replace(/\n+/g, '\\\\')
-        ta.setSelectionRange(a + before2, a + before2)
-      })
-    }
 
     // **改完先看渲染出来的样子再提交。**{res|90% 减伤} 少一个花括号、token 写错一个
     // 字母，在源稿里眼睛查不出来，渲染一遍当场就露。
@@ -636,19 +622,20 @@
       var T = terms()
       var g6 = DOC.indexOf('docs/') === 0 && T.g6.indexOf(DOC.slice(5)) >= 0
         && !head && at.cell !== 0
-      prev.innerHTML = show(ta.value) || '（空）'
+      var raw = fromEdit(ta.value, mode)
+      prev.innerHTML = show(raw) || '（空）'
       notes.textContent = ''
       var ok = T.classes.concat(T.pageClasses[DOC] || [])
-      var r = window.starsideAdmin.lint(ta.value, { cols: 0, head: head }, g6, ok)
+      var r = window.starsideAdmin.lint(raw, { cols: 0, head: head }, g6, ok)
       r.errs.forEach(function (x) { notes.appendChild(el('li', null, x)) })
       // 「该着色」是提示不是错，压暗一档排在错误后面
       r.warns.forEach(function (x) { notes.appendChild(el('li', 'warn', x)) })
       // 闸门是提示不是拦截（真闸门是本机那套 Python），但有错时把按钮上的字换掉，
       // 别让人一路点过去。
-      send.textContent = ta.value === before ? '无改动'
+      send.textContent = raw === before ? '无改动'
         : r.errs.length ? '仍要提交（' + r.errs.length + ' 处问题）'
           : '提交'
-      send.disabled = ta.value === before
+      send.disabled = raw === before
     }
     // **去抖 150 ms**：一轮 redraw 要重画预览再跑一遍闸门，而中文输入法逐字上屏时
     // 每个候选字都触发一次 input。
@@ -658,9 +645,10 @@
     redraw()
     wantTerms().then(function () { palette(); redraw() }, function () {})
     send.onclick = function () {
-      if (ta.value === before) { shut(); return }
+      var raw = fromEdit(ta.value, mode)
+      if (raw === before) { shut(); return }
       send.disabled = true
-      call('chg', { doc: DOC, blk: at.blk, cell: at.cell, before: before, after: ta.value })
+      call('chg', { doc: DOC, blk: at.blk, cell: at.cell, before: before, after: raw })
         .then(function () { return reload() })
         .then(function () { shut(); shade() }, function (e) {
           send.disabled = false
@@ -685,8 +673,7 @@
 
   /* 记录上的一格（或几格）。底稿是那一格此刻的文字：库里比页面新就取库里的。
      一处拼了几个字段（异域说明、两位作者同一栏）时一个字段一个框，各自提交。
-     **不接表格那一档的回车规则**：记录里的段落本来就有真换行，展开成表的那几页
-     由生成器换成格内换行。竖线由云函数按那一格的原文挡，与在哪一页提交无关。 */
+     竖线由云函数按那一格的原文挡，与在哪一页提交无关。 */
   function openRec (node) {
     shut()
     var ids = ORIGIN.get(node)
@@ -703,8 +690,9 @@
       box.appendChild(el('div', 'se-where', e[3]
         + (mine ? ' · 你的待审' : other ? ' · ' + other.by + ' 待审' : '')
         + (S.recNow[e[0]] && before !== e[2] ? ' · 已有修改通过，页面尚未更新' : '')))
+      var mode = PROSE_REC.test(e[1]) ? 'recPara' : 'cell'
       var ta = el('textarea')
-      ta.value = mine ? mine.after : before
+      ta.value = toEdit(mine ? mine.after : before, true)
       // 页面上显示的是官方描述、记录上还没有站内说明的那一格
       if (!before) ta.placeholder = '本站尚未撰写这一格；填写后将替代页面上显示的官方描述'
       ta.rows = Math.min(12, ta.value.split('\n').length + Math.ceil(ta.value.length / 60))
@@ -713,7 +701,7 @@
       box.appendChild(prev)
       var notes = el('ul', 'se-notes')
       box.appendChild(notes)
-      return { e: e, before: before, ta: ta, prev: prev, notes: notes }
+      return { e: e, before: before, mode: mode, ta: ta, prev: prev, notes: notes }
     })
 
     var pal = el('div', 'se-pal')
@@ -742,13 +730,14 @@
       var errs = 0
       var dirty = 0
       fields.forEach(function (f) {
-        f.prev.innerHTML = showRec(f.ta.value) || '（空）'
+        var raw = fromEdit(f.ta.value, f.mode)
+        f.prev.innerHTML = show(raw) || '（空）'
         f.notes.textContent = ''
-        var r = window.starsideAdmin.lint(f.ta.value, { cols: 0, head: false }, false,
+        var r = window.starsideAdmin.lint(raw, { cols: 0, head: false }, false,
           T.classes.concat(T.pageClasses[DOC] || []))
         r.errs.forEach(function (x) { f.notes.appendChild(el('li', null, x)) })
         errs += r.errs.length
-        if (f.ta.value !== f.before) dirty++
+        if (raw !== f.before) dirty++
       })
       send.textContent = !dirty ? '无改动' : errs ? '仍要提交（' + errs + ' 处问题）' : '提交'
       send.disabled = !dirty
@@ -761,7 +750,7 @@
     redraw()
     wantTerms().then(function () { palette(); redraw() }, function () {})
     send.onclick = function () {
-      var todo = fields.filter(function (f) { return f.ta.value !== f.before })
+      var todo = fields.filter(function (f) { return fromEdit(f.ta.value, f.mode) !== f.before })
       if (!todo.length) { shut(); return }
       send.disabled = true
       // 一格一条待审，逐个提交：一条失败时前面几条已经进了队列，照实说出来。
@@ -769,7 +758,7 @@
       todo.reduce(function (chain, f) {
         return chain.then(function () {
           return call('chg', { doc: DOC, rec: f.e[0], path: f.e[1], label: f.e[3],
-                               before: f.before, after: f.ta.value })
+                               before: f.before, after: fromEdit(f.ta.value, f.mode) })
             .then(function () { sent++ })
         })
       }, Promise.resolve())
