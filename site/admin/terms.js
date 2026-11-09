@@ -395,6 +395,7 @@ pageClasses: {
   "docs/changelog": ["act","is-same"],
   "docs/combatant-scalars": ["named"],
   "docs/dps": ["sim"],
+  "docs/dps-ranking": ["rng","spk","spk-area","spk-base","spk-cur","spk-dot","spk-end","spk-focus","spk-line","spk-stem","spk-tick","spk-tip"],
   "docs/elements": ["cd","ico2","ico4","sk-arc","sk-solar","sk-stasis","sk-strand","sk-void","slot"],
   "docs/palette": ["amp","c-ammo","c-ammo-special","c-arc","c-artifact","c-bar-orange","c-bar-red","c-bar-yellow","c-buff","c-charge","c-debuff","c-enemy","c-exotic","c-health","c-kinetic","c-legend","c-note","c-orb","c-perk","c-prism","c-pvp","c-solar","c-stack","c-stasis","c-strand","c-term","c-unsure","c-void","cost","res","sim","sk-arc","sk-solar","sk-stasis","sk-strand","sk-void","term"],
   "docs/power-delta": ["axis","base","cap","chart","chart-legend","cursor","dot","grid","k","s0","tag","tick","ty"],

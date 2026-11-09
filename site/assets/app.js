@@ -111,6 +111,11 @@
 
     var sheet = document.createElement('style');
     document.head.appendChild(sheet);
+    var spk = heads.reduce(function (a, th, i) {
+      if (/^\d+s$/.test(th.textContent.trim())) a.push(i);
+      return a;
+    }, []);
+    if (spk.length > 1) lazy('spark.js').then(function (m) { m.default(heads, spk); });
 
     function apply() {
       var sel = [];
