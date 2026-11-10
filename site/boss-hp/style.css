@@ -26,19 +26,19 @@
 .res { color: var(--c-buff); }
 .buff { color: var(--c-buff); }
 
-.amp, .res, .buff { font-weight: 600; }
+.amp, .res, .buff { font-weight: 500; }
 
 /* ── 首领表 ── */
 .gen thead th {
   padding-top: 11px;
   padding-bottom: 11px;
-  font-size: 11.5px;
+  font-size: 12px;
   white-space: nowrap;
 }
 
-/* 列间竖线调淡一档：读这张表是横着读一个首领，合并块之间那道横线才是分组 */
+/* 移除列间竖线：横着读一个首领，合并块之间靠底色阶与横线分组 */
 .gen th,
-.gen td { border-left-color: #ffffff0a; }
+.gen td { border-left: 0; }
 
 .gen tbody th,
 .gen tbody td {
@@ -88,20 +88,13 @@
 /* 首领名 */
 .gen:has(thead th:nth-child(8)) tbody td:first-of-type {
   color: var(--bone);
-  font-family: var(--font-read);
+  font-family: var(--font-body);
   text-align: center;
   white-space: nowrap;
 }
 
-/* 生命值：这一页的主数值。等宽字面 + tabular-nums 让位数纵向对齐，
+/* 生命值：这一页的主数值。tabular-nums 让位数纵向对齐，
    放大一档，扫读时先落到它上面。颜色由下面的色阶给，这里不定 color。 */
-/* 字族必须是 --font-body（等宽栈），不能用 --font-disp。
-   **Chakra Petch 不带 tnum 特性**：它的数字是比例宽度设计，1 只有 0 的 60% 宽
-   （实测每位 5.92–9.97px），加 font-variant-numeric: tabular-nums 也纹丝不动——
-   请求一个字体没有的特性，浏览器只能忽略，那行 CSS 是空转。同位数的格子因此
-   差出 11px，一列数字左对齐后高位对齐、低位参差。
-   --font-body 每位恒定 9.31px，配 tabular-nums 才真的成立。
-   站内约定原本就是「正文与数字走等宽字族」，模组数值也走这条。 */
 .gen:has(thead th:nth-child(8)) tbody td:nth-of-type(2) {
   font-family: var(--font-body);
   font-size: 15px;
@@ -116,15 +109,15 @@
    短标识，与首领名同一读法：居中、不折行。降一档字号读作附注，不与生命值抢注意。 */
 .gen:has(thead th:nth-child(8)) tbody td:nth-of-type(3) {
   color: var(--bone);
-  font-family: var(--font-read);
+  font-family: var(--font-body);
   font-size: 12px;
   text-align: center;
   white-space: nowrap;
 }
 
 /* ── 时间与两列 DPS ──
-   数字样式跟生命值那一列一致：等宽字族 + tabular-nums + 600，同一种数在页面上
-   只有一种字面。区别交给颜色——生命值有色阶，这三列走正文骨白。
+   数字样式跟生命值那一列一致：tabular-nums + 600，同一种数在页面上
+   只有一种字面。区别交给颜色：生命值有色阶，这三列走正文骨白。
    **这几列不能落在 tbody 继承的 --bone-dim 上**：那一档是给注解那种说明句用的，
    数值挤在一起时读起来发灰，与旁边的色阶列差得太远。抬到 --bone 与首领名同档，
    仍低于色阶列一档，主次不乱。
@@ -147,20 +140,20 @@
    分隔线上，还会被当成一个数值参与比较。共用的压暗与字族在 assets/site.css。 */
 .gen tbody td.na { text-align: center; }
 
-/* 注解：说明句。宽度由上面那组写死的列宽剩下的余量给，这一格不再自己定宽——
+/* 注解：说明句。宽度由上面那组写死的列宽剩下的余量给，这一格不再自己定宽：
    table-layout: fixed 之下格子上的 max-width 是空转的。
-   **默认色靠 tbody 继承下来，不写在这一格上**——理由见 assets/site.css 的 .gen tbody。
+   **默认色靠 tbody 继承下来，不写在这一格上**，理由见 assets/site.css 的 .gen tbody。
    余量约 210px：21 条非空说明的中位长度只有 15 字，一行装得下；那条 86 字的分层
    加成会折成几行，读起来比一条横贯整表的长行更好扫。 */
 .gen tbody td:last-child {
-  font-family: var(--font-read);
+  font-family: var(--font-body);
   font-size: 13px;
   line-height: 1.65;
   text-align: left;
 }
 
 /* ── 卡鲁斯大帝的层数加成 ──
-   六列：层数与四列数值，末列档位说明。数值同八列表的数字列一样走等宽字族与
+   六列：层数与四列数值，末列档位说明。数值同八列表的数字列一样走
    tabular-nums，居中；档位说明是一句话，左对齐。
    这张表是一条注解的展开，不是这一页的主表，所以偏离 design.md 四节「表格走满
    版心」：宽度随内容、字号与行距降一档，不与上下两张首领表争注意。 */
@@ -173,7 +166,7 @@
 .gen:not(:has(thead th:nth-child(7))) th,
 .gen:not(:has(thead th:nth-child(7))) td {
   padding: 5px 18px;
-  font-size: 12.5px;
+  font-size: 12px;
 }
 
 .gen:not(:has(thead th:nth-child(7))) thead th { font-size: 11px; }

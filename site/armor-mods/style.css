@@ -30,7 +30,10 @@
   /* 四条边全归卡片自己画（上左走 border，右下走 box-shadow，见 .gen tr）。
      容器一条都不画：十六节里十一节的模组数不是 3 的倍数，末排缺一两张时容器的
      border-bottom 照样拉满整行宽、border-right 照样到底，在空位那块围出半个空盒子。 */
+  background: none;
   border: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 /* 说明的基色给 tbody，不写在格子上：整格只有一个 {标记|…} 时 class 落在 <td> 本身，
@@ -52,26 +55,24 @@
     "icon name cost"
     "desc desc desc";
   min-width: 0;
-  border-top: 1px solid var(--hair);
-  border-left: 1px solid #ffffff0d;
+  background: var(--surf-1);
+  border-top: 1px solid var(--bd-row);
+  border-left: 1px solid var(--bd-col);
   /* 右下两边用阴影画，不画在容器上。阴影不占布局，落点与右邻的 border-left、下邻的
      border-top 是同一像素，仍是一条 1px 线；末排缺卡时线只画到有卡的地方为止。
      也不按 :nth-child(3n) 补边——搜索隐藏的行仍参与计数，一过滤边框就错位。 */
-  box-shadow: 1px 0 0 #ffffff0d, 0 1px 0 var(--hair);
+  box-shadow: 1px 0 0 var(--bd-col), 0 1px 0 var(--bd-row);
 }
 
-/* 格线归卡片，格子自己不画边框——site.css 的表格线假设在卡片模式下一条都不成立。
-
-   **要逐条按同样的选择器写掉，权重打平才压得住。**只写 .gen th / .gen td（一类
-   一型）压不过 site.css 的「合并块分界」那条 .gen tbody tr:has(> th) > td（两类
-   三型）：这一页每行都带 <th>，那道亮线于是落在每张卡的效果格顶上，把卡片从中间
-   切开，看着就是表格线与卡片对不齐。
-   只写掉 border，padding 留给下面各格自己给——这几条权重更高，写进来会把它们
-   一并压成 0。 */
 .gen th,
-.gen td {
+.gen td,
+.gen tbody tr:first-child > td:first-child,
+.gen tbody tr:first-child > td:last-child,
+.gen tbody tr:last-child > td:first-child,
+.gen tbody tr:last-child > td:last-child {
   padding: 0;
   border: 0;
+  border-radius: 0;
 }
 
 .gen tbody tr:has(> th) > th,
@@ -159,7 +160,7 @@
   grid-area: desc;
   align-self: start;
   padding: 12px 22px 24px;
-  font-family: var(--font-read);
+  font-family: var(--font-body);
   font-size: 14px;
   font-variant-numeric: tabular-nums;
   line-height: 1.75;

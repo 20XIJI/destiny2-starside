@@ -68,11 +68,12 @@
   margin-bottom: 36px;
   padding: 11px 18px;
   font-family: var(--font-cn);
-  font-size: 12.5px;
+  font-size: 12px;
   color: var(--bone-dim);
   background: linear-gradient(90deg, #ffffff06, transparent 68%), var(--panel-b);
-  border: 1px solid var(--hair);
+  border: 1px solid var(--bd-outer);
   border-left: 2px solid var(--c-dust);
+  border-radius: var(--r-md);
 }
 
 body[data-vendor="xur"] .ev-status-bar,
@@ -230,8 +231,8 @@ body[data-vendor="ada"] .ev-prog i {
   position: relative;
   overflow: hidden;
   background: linear-gradient(180deg, var(--panel-a), var(--panel-b));
-  border: 1px solid var(--hair);
-  border-radius: 2px;
+  border: 1px solid var(--bd-outer);
+  border-radius: var(--r-md);
   translate: 0 0;
   transition: translate .2s cubic-bezier(.2, .8, .2, 1),
               border-color .18s ease,
@@ -376,7 +377,7 @@ body[data-vendor="ada"] .ev-prog i {
 }
 
 .ev-card-wide .ev-name {
-  font-size: 15.5px;
+  font-size: 16px;
 }
 
 .ev-meta {
@@ -527,10 +528,11 @@ body[data-vendor="ada"] .ev-prog i {
   padding: 18px 20px;
   color: var(--c-enemy);
   font-family: var(--font-cn);
-  font-size: 13.5px;
+  font-size: 14px;
   background-color: var(--panel-b);
-  border: 1px solid var(--hair);
+  border: 1px solid var(--bd-outer);
   border-left: 2px solid var(--c-enemy);
+  border-radius: var(--r-md);
 }
 
 /* ── 底部统计条 ── */
@@ -704,9 +706,9 @@ body[data-vendor="ada"] .ev-prog i {
 .xur-armor-box {
   padding: 14px 18px;
   background: linear-gradient(180deg, var(--panel-a), var(--panel-b));
-  border: 1px solid var(--hair);
+  border: 1px solid var(--bd-outer);
   border-left: 2px solid color-mix(in oklab, var(--c-legend) 72%, transparent);
-  border-radius: 2px;
+  border-radius: var(--r-md);
 }
 
 .xur-armor-rows {
@@ -724,7 +726,7 @@ body[data-vendor="ada"] .ev-prog i {
 
 .xur-armor-cls {
   font-family: var(--font-cn);
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--bone-dim);
 }
@@ -735,8 +737,8 @@ body[data-vendor="ada"] .ev-prog i {
   gap: 10px;
   padding: 8px 10px;
   background-color: var(--tint-2);
-  border: 1px solid var(--hair);
-  border-radius: 2px;
+  border: 1px solid var(--bd-tile);
+  border-radius: var(--r-sm);
   min-width: 0;
   transition: border-color .16s ease, background-color .16s ease;
 }
@@ -770,7 +772,7 @@ body[data-vendor="ada"] .ev-prog i {
 
 .xur-armor-piece-ty {
   font-family: var(--font-cn);
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--bone-dim);
 }
 
@@ -807,11 +809,11 @@ body[data-vendor="ada"] .ev-prog i {
   gap: 6px;
   padding: 4px 10px;
   font-family: var(--font-cn);
-  font-size: 12.5px;
+  font-size: 12px;
   color: var(--bone);
   background: var(--ink-lift);
   border: 1px solid var(--hair);
-  border-radius: 3px;
+  border-radius: var(--r-sm);
   cursor: pointer;
 }
 

@@ -54,8 +54,10 @@
   font-size: 13px;
   line-height: 1.75;
   text-decoration: none;
-  background: var(--tint-2);
-  border: 1px solid var(--hair);
+  background: var(--surf-1);
+  border: 1px solid var(--bd-outer);
+  border-radius: var(--r-md);
+  box-shadow: var(--sh-block);
   transition: border-color .15s ease, background .15s ease;
 }
 
@@ -85,72 +87,27 @@
 
 .block li a:hover > span:first-child::after { color: var(--accent); }
 
-/* ── 数据表 ──
-   说明列很长，本来就会顶到版心；表宽走满版心是全站缺省（assets/site.css）。 */
+/* ── 总览页的「效果一览」数据表 ──
+   六个元素子页与职业技能页均已走 .rec 网格（样式在 assets/site.css），
+   这里只管总览页那张四列对照表。 */
 .gen {
   max-width: 100%;
   line-height: 1.85;
+  table-layout: fixed;
 }
 
-/* 一行里效果格十几行、名称与冷却各两三行，格子一律纵向居中 */
 .gen th,
-.gen td { padding: 10px 14px; }
+.gen td {
+  padding: 10px 14px;
+  text-align: center;
+}
 
-/* 表头的默认色不写在这里：基色由 site.css 的 .gen thead 继承下来，格子上的
-   {标记|…} 才压得住（共享技能那排属性名靠 .gen th.sk-arc 上色）。 */
 .gen thead th {
   letter-spacing: .08em;
-  text-align: left;
   white-space: nowrap;
 }
 
-/* ── 列名跟着本列的正文走（design.md 四节）──
-   上面那条把列名整片拉成左对齐，因为这一页的主体是左对齐的说明与冷却文字；
-   居中的那几列要各自把列名捞回来。
-
-   **首列除外 .lead。**共享技能表的左上角装的是整句说明而不是列名（见下面的
-   .gen th.lead），跟着正文左对齐。
-
-   **图标列按整格标记认，不按列序认，也不按「格里有没有 img」猜**（同 :134 那条）：
-   一格两图与一格四图写的是 {ico2|…} / {ico4|…}，漏掉就有两张表的列名对不上。
-
-   **槽位列要求整列都是槽位图。**元素页的「冷却与槽位」一列里既有左对齐的冷却
-   文字又有居中的槽位图，列名跟多数那一种（冷却）；只有棱镜页的「碎片槽位」整列
-   都是图，列名才居中。 */
-.gen thead th:first-child:not(.lead) { text-align: center; }
-
-.gen:has(td.ico) thead th:nth-child(2) { text-align: center; }
-
-.gen:has(td.slot):not(:has(td.cd)) thead th:last-child { text-align: center; }
-
-/* ── 四列表的列宽写死 ──
-   一页里 碎片／手雷／猎人／泰坦／术士 五张表同一种列形，按内容定宽时每张各量各的
-   （实测同一列在三张职业表之间差到 91px），扫到下一节要重新找列。写死之后左边缘
-   逐节对齐，说明列吃掉余量。
-
-   名称列取最长的那条不折行的宽度（「暗影箭矢：莫比乌斯箭袋」），行标题上的
-   nowrap 是这一页既有的决定，宽度得让它过得去。
-
-   三列表（效果、棱镜手雷）用同一套前两列宽度，说明列的左边缘因此与四列表对齐。
-
-   **判据里必须带上图标格。**只按列数认的话，总览页那张同为四列、却一张图都没有的
-   「效果一览」也会被套进来：属性列拿到 175px、增益列被压到 96px 折成三行，减益列
-   把剩下的空间全吃掉。这一族表的身份是「名称 + 图标 + 说明」，图标格就是它的标记。 */
-.gen:has(td.ico):has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))) { table-layout: fixed; }
-
-.gen:has(td.ico):has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))) thead th:nth-child(1) { width: 175px; }
-.gen:has(td.ico):has(thead th:nth-child(3)):not(:has(thead th:nth-child(4))) thead th:nth-child(2) { width: 96px; }
-
-.gen:has(td.ico):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) { table-layout: fixed; }
-
-.gen:has(td.ico):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(1) { width: 175px; }
-.gen:has(td.ico):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(2) { width: 96px; }
-.gen:has(td.ico):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(4) { width: 200px; }
-
-/* 行标题：类别或条目名，这一组的身份。合并后纵向居中，一眼圈出它占几行。
-   **颜色只给没有 class 的那些格。**整格只有一个 {标记|…} 时 class 落在 <th> 本身，
-   这条（两类两元素）会压过单类的 .el-arc，总览页六个元素名就退成骨白。排版声明
-   留在外面——带 class 的格子仍要同一套排版。 */
+/* 行标题：颜色只给没有 class 的那些格，避免压过单类的 .el-arc。 */
 .gen tbody th[scope="row"] {
   font-family: var(--font-cn);
   font-weight: 600;
@@ -160,111 +117,9 @@
 
 .gen tbody th[scope="row"]:not([class]) { color: var(--bone-hi); }
 
-/* 这一页的正文基色比默认亮一档：整页都是要逐条读的说明，不是数值表的注解 */
 .gen tbody { color: var(--bone); }
 
-/* 图标格 / 槽位格 / 共享技能格都由源稿的整格标记认，class 落在 <td> 上。
-   **不要按「格里有没有 img」猜**：说明格后面挨着的正是槽位格，按 :has(+ td img)
-   认名称格会把整列说明判成名称、吃到 nowrap，整张表横着溢出去。 */
-.gen td.ico {
-  width: 72px;
-  padding: 10px 8px;
-  text-align: center;
-}
-
-.gen td img {
-  display: block;
-  margin: 0 auto;
-}
-
-/* 碎片槽位：源表用一张槽位图表示 2 槽或 3 槽，照搬，不换算成数字 */
-.gen td.slot {
-  width: 116px;
-  padding: 10px 8px;
-  text-align: center;
-}
-
-.gen td.slot img { width: 88px; height: auto; border-radius: 0; opacity: .9; }
-
-/* 共享技能网格：一列一个属性，格里图标压着名字，底色取该属性的色相，
-   跟源表一样一眼看出这一列是哪个属性。 */
-.gen th[class^="sk-"] { padding: 12px 10px 10px; text-align: center; }
-
-.gen th[class^="sk-"] img { display: block; margin: 0 auto 6px; }
-
-/* 共享技能表的左上角：源表把「职业技能和移动技能都与原分支职业完全共享」
-   写在这一格里，跟着搬过来，不摊成表外的一句话。
-
-   **这一格要把 keep-all 解开。**site.css 给 .gen thead th 上 keep-all 是为了让
-   列名只在源稿写好的空格处断行；但这一格装的是整句说明、句中没有空格，keep-all
-   会把它钉成不可断的一整行，首列被撑到近三倍宽。列名与说明句不是一回事。 */
-.gen th.lead {
-  width: 190px;
-  color: var(--bone);          /* 它是整句说明，比列名亮一档 */
-  white-space: normal;
-  word-break: normal;
-  line-height: 1.7;
-}
-
-.gen th.lead .note { font-weight: 400; }
-
-.gen td[class^="sk-"] {
-  width: 152px;
-  padding: 14px 10px 12px;
-  font-family: var(--font-cn);
-  font-weight: 600;
-  text-align: center;
-}
-
-.gen td[class^="sk-"] img { margin-bottom: 8px; }
-
-.gen td[class^="sk-"] a {
-  color: inherit;
-  text-decoration-color: color-mix(in srgb, currentcolor 45%, transparent);
-  text-underline-offset: 3px;
-}
-
-.gen th.sk-arc, .gen td.sk-arc { color: var(--el-arc); background: color-mix(in srgb, var(--el-arc) 9%, transparent); }
-.gen th.sk-solar, .gen td.sk-solar { color: var(--el-solar); background: color-mix(in srgb, var(--el-solar) 9%, transparent); }
-.gen th.sk-void, .gen td.sk-void { color: var(--el-void); background: color-mix(in srgb, var(--el-void) 9%, transparent); }
-.gen th.sk-stasis, .gen td.sk-stasis { color: var(--el-stasis); background: color-mix(in srgb, var(--el-stasis) 9%, transparent); }
-.gen th.sk-strand, .gen td.sk-strand { color: var(--el-strand); background: color-mix(in srgb, var(--el-strand) 9%, transparent); }
-
-/* 名称格：紧挨在图标格前面的那一格。按 .ico 认，不按「有没有图」猜 */
-.gen td:has(+ td:is(.ico, .ico2, .ico4)) {
-  color: var(--bone-hi);
-  font-family: var(--font-cn);
-  font-weight: 600;
-  white-space: nowrap;
-  word-break: keep-all;
-}
-
-/* 冷却与档位：源稿用 {cd|…} 整格标记，class 落在 td 上。
-   数值前面把名目写全（基础冷却／回复倍率），不靠列头去猜哪个数是哪个。 */
-.gen td.cd { white-space: nowrap; }
-
-/* 类别列退一档：它是分组标签、逐行重复，不该跟条目名争。
-   按关系认那一列——类别格后面跟的是名称格（没有图），条目名格后面直接跟图标格。
-   同样只给没有 class 的格：总览页的元素行标题也是「后面跟着非图标格」，不放行的话
-   六个元素名会被压成最暗一档。 */
-.gen tbody th[scope="row"]:not([class]):has(+ td:not(:is(.ico, .ico2, .ico4))) { color: var(--bone-faint); }
-
-/* 着色 token、批注样式、表格骨架与交替底色全部来自 assets/site.css。
-   本页不重复定义，也不新增渲染色。真要单独设计一种颜色时才写在这里。 */
-
-/* ── 总览页的「效果一览」 ─────────────────────────────────────────
-   这一页只有它一张数据表，四列全是短词组，居中读作一张对照表。上面那一族按图标格
-   认，认不到它，所以宽度在这里单独给：增益与减益是两列并列的枚举，等宽才对得起
-   「同一类东西」这个读法；属性列只放元素名，元素拾取物列最长四个字。 */
-.gen:not(:has(td.ico, td.ico2, td.ico4)):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) {
-  table-layout: fixed;
-}
-
-.gen:not(:has(td.ico, td.ico2, td.ico4)):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) :is(th, td) {
-  text-align: center;
-}
-
-.gen:not(:has(td.ico, td.ico2, td.ico4)):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(1) { width: 108px; }
-.gen:not(:has(td.ico, td.ico2, td.ico4)):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(2),
-.gen:not(:has(td.ico, td.ico2, td.ico4)):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(3) { width: auto; }
-.gen:not(:has(td.ico, td.ico2, td.ico4)):has(thead th:nth-child(4)):not(:has(thead th:nth-child(5))) thead th:nth-child(4) { width: 152px; }
+.gen thead th:nth-child(1) { width: 108px; }
+.gen thead th:nth-child(2),
+.gen thead th:nth-child(3) { width: auto; }
+.gen thead th:nth-child(4) { width: 152px; }

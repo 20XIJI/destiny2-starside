@@ -4181,6 +4181,22 @@ class TypeGate(unittest.TestCase):
             [".a:has(.b:not(:has(.c)))"],
         )
 
+    def test_fractional_font_sizes_are_reported(self):
+        import check_type
+
+        self.assertEqual(
+            check_type.fractional_font_sizes(
+                ".a { font-size: 13px; margin-top: 1.5px; } /* font-size: 12.5px; */"
+            ),
+            [],
+        )
+        self.assertEqual(
+            check_type.fractional_font_sizes(
+                ".a { font-size: 12.5px; } .b { font: 400 13.5px/1.6 var(--font-cn); }"
+            ),
+            ["12.5px", "13.5px"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=0)

@@ -12,7 +12,7 @@
    行高与字号照原表的密度收紧，整表占约 300px 高。 */
 .gen {
   margin: 1.6em auto 1.8em;
-  font-size: 12.5px;
+  font-size: 12px;
   line-height: 1.5;
 }
 

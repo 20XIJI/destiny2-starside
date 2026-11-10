@@ -19,9 +19,13 @@
   color-scheme: dark;
   /* ── 外壳 ── */
   --ink: #0b0d14;
-  --ink-lift: #0e1119;             /* sticky 层底色，须不透明 */
-  --panel-a: #161b28;
-  --panel-b: #12151f;
+  --ink-lift: #0e121c;             /* sticky 层底色，须不透明 */
+  --panel-a: #161c2b;
+  --panel-b: #111622;
+  --surf-1: #0f131d;               /* 整组表格、记录块与面板底 */
+  --surf-2: #131825;               /* 身份首列与交替行底 */
+  --surf-3: #161c2b;               /* 表头与内嵌装备格静置底 */
+  --surf-4: #1e2638;               /* 悬停与激活态底 */
   --bone-hi: #f4f1e8;
   --bone: #e6e2d6;
   --bone-dim: #9aa0ac;
@@ -38,18 +42,42 @@
   --g-7: #b2e16e;
   --g-8: #85e589;
   --hair-lit: #3c4457;
+  --bd-outer: #262e42;
+  --bd-row: rgba(255, 255, 255, 0.065);
+  --bd-col: rgba(255, 255, 255, 0.055);
+  --bd-tile: rgba(255, 255, 255, 0.07);
+  --sh-block: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 
-  /* 字体三分工。Chakra Petch 与 SF Mono 均不含中文，浏览器按字符逐族回退：
-     拉丁与数字取前者的字面，中文落到 PingFang，无需拆标签。 */
+  /* 克制同心圆角尺：整表外框 8px、面板与图标 6px、内格与标签 4px */
+  --r-lg: 8px;
+  --r-md: 6px;
+  --r-sm: 4px;
+
+  /* 六档整数字阶（禁止半像素字号） */
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-md: 13px;
+  --fs-lg: 14px;
+  --fs-xl: 16px;
+  --fs-2xl: 20px;
+
+  /* 间距尺（微观 4px 密排阶与宏观 22/44/88 星图模数） */
+  --sp-1: 4px;
+  --sp-2: 6px;
+  --sp-3: 8px;
+  --sp-4: 12px;
+  --sp-5: 16px;
+  --sp-6: 24px;
+  --sp-7: 44px;
+  --sp-8: 88px;
+
+  /* 字体四分工：显示层、中文标题、比例无衬线正文（配 tabular-nums 对齐数值）、代码与语法等宽。 */
   --font-disp: "Chakra Petch", "PingFang SC", "Noto Sans SC", sans-serif;
-  --font-body: ui-monospace, "SF Mono", SFMono-Regular, Menlo, "PingFang SC",
-    "Noto Sans SC", sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter",
+    "Helvetica Neue", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
   --font-cn: "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
-  /* 模组说明的正文（见「说明排印」一节）。等宽字族下数字与汉字之间各空出半格，
-     一段「+20 稳定性，+20 操控性」读起来像被拆开的代码；系统无衬线的数字是比例
-     字宽，配 tabular-nums 仍能上下对齐。 */
-  --font-read: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue",
-    "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, "PingFang SC",
+    "Noto Sans SC", sans-serif;
 
   /* ── 渲染色：一族一支 ──
      一个语义族一支变量，即使两族此刻共用同一个色号也各写各的——改一族的颜色
@@ -139,13 +167,13 @@
   --stick: 45px;
 
   /* 外壳叠色：石墨底上一层白，浓度即层级。
-     这六个是槽位，不是新色相——白叠白不引入色相，不与元素编码争。 */
-  --tint-1: #ffffff04;             /* 最浅：行标题列的底 */
-  --tint-2: #ffffff05;             /* 交替行，兼格子的静置底 */
-  --tint-3: #ffffff09;             /* 交替行上的行标题格 */
-  --head-fill: #ffffff06;          /* 表头底 */
-  --row-hover: #ffffff0b;          /* 悬停：要压过格子自己的 --tint-2 才看得出来 */
-  --field-fill: #ffffff0d;         /* 搜索框聚焦底 */
+     这六个是槽位，不是新色相：白叠白不引入色相，不与元素编码争。 */
+  --tint-1: #ffffff06;             /* 最浅：行标题列的底 */
+  --tint-2: #ffffff08;             /* 交替行，兼格子的静置底 */
+  --tint-3: #ffffff0d;             /* 交替行上的行标题格 */
+  --head-fill: var(--surf-3);      /* 表头底 */
+  --row-hover: var(--surf-4);      /* 悬停底 */
+  --field-fill: #ffffff12;         /* 搜索框聚焦底 */
 
   /* 作者推荐的光圈。两位作者各一色，只画在词条图标外圈，不上文字。装备库与
      购物清单共用，所以定义在这里。Aegis 天蓝（与最近的 --c-stasis ΔE 29.0）；
@@ -404,7 +432,7 @@ a { color: var(--bone); }
   font: 400 13px/1.5 var(--font-body);
   background: #ffffff08;
   border: 1px solid var(--hair-lit);
-  border-radius: 0;
+  border-radius: var(--r-sm);
 }
 
 .tool-search::placeholder { color: var(--bone-dim); }
@@ -485,14 +513,14 @@ a { color: var(--bone); }
   padding: 6px 12px;
   color: var(--bone-dim);
   font-family: var(--font-cn);
-  font-size: 12.5px;
+  font-size: 12px;
   text-decoration: none;
   /* 列组开关是 <button>，显式清零 UA 默认边框。 */
   border: 0;
   transition: color .15s ease;
 }
 
-/* 开关与动作同形：静置就有边框，一眼看得出是个控件。两者只差按下态的语义——
+/* 开关与动作同形：静置就有边框，一眼看得出是个控件。两者只差按下态的语义：
    开关按下去停在那儿（aria-pressed / aria-current），动作按下去就回弹。
    形状取自详情页页头那一排（点赞、复制、截图、详情开关），全站 269 处已经跑着。 */
 .toggle,
@@ -514,16 +542,17 @@ a { color: var(--bone); }
   text-decoration: none;
   background: var(--tint-2);
   border: 1px solid var(--hair);
+  border-radius: var(--r-sm);
   cursor: pointer;
   /* **点快一点会选中文字。**双击落在按钮上时浏览器按「选词」处理，一排开关被
-     连点两下就泛蓝一块；「筛选」那枚尤其明显——它是 <summary>，连点本来就是
+     连点两下就泛蓝一块；「筛选」那枚尤其明显，它是 <summary>，连点本来就是
      开了又关，选中的字还留在那儿。这几个控件的字不是拿来读的，选它没有用处。
      不碰 .chip：那一排是跳转，与本条无关。 */
   user-select: none;
   transition: color .15s ease, border-color .15s ease;
 }
 
-/* **一排多枚的开关退回素字。**密度由容器判定，一处定义——建这些开关的
+/* **一排多枚的开关退回素字。**密度由容器判定，一处定义，建这些开关的
    app.js 不必知道自己被摆在哪里。
    三处：资料页工具条与折线图工具条（.tool-chips）、配装索引页那两条居中的场景与
    强度开关（.facet-bar）、工具条那块共用面板里的三组（.tuck-row）。
@@ -532,10 +561,11 @@ a { color: var(--bone); }
 :is(.tool-chips, .facet-bar, .tuck-row) .toggle {
   padding: 6px 12px;
   font-family: var(--font-cn);
-  font-size: 12.5px;
+  font-size: 12px;
   letter-spacing: normal;
   background: none;
   border: 0;
+  border-radius: 0;
 }
 
 /* 左上与右下两枚 L 形角标。**用 currentcolor 取色**：hover 与当前态只改
@@ -795,13 +825,13 @@ main {
 }
 
 /* 配色工具类：着色文字全部经由这些 class，不写内联 color。
-   统一 600 字重、无阴影——全页着色处逾千，字重与阴影一齐上阵会让语义色失去分级。 */
+   统一 500 字重、无阴影：全页着色处逾千，500 在深底上既抵消细笔划下陷，又不与 600 粗体标题争抢。 */
 .el-arc, .deb-arc, .el-stasis, .deb-stasis, .enemy, .el-void, .ammo-heavy,
 .el-strand, .deb-strand, .ammo-special, .el-solar, .deb-solar, .el-kinetic, .el-prismatic,
 .deb-void, .pickup, .orb, .stack, .armor-charge, .health,
 .exotic, .buff, .debuff,
 .bar-red, .bar-orange, .bar-yellow {
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .el-arc { color: var(--el-arc); }
@@ -930,14 +960,20 @@ main {
    **宽度一律走满版心。**表格是 min-content 约束的，内容超过版心时照旧自己撑开，
    所以这条读作「统一到预设宽度，除非装不下」。按内容定宽试过，问题出在跨页与
    跨表的比较上：同一页里几张同构的表各自按内容定宽会差出几十像素，读者会以为
-   它们不是一回事；页与页之间同样对不齐。宽度统一之后，差异只剩内容本身。 */
+   它们不是一回事；页与页之间同样对不齐。宽度统一之后，差异只剩内容本身。
+   采用 separate + border-spacing: 0 配合四角单元格圆角，不在 .gen 上加 overflow: hidden，
+   以保持视口级 position: sticky 表头与固定列生效。 */
 .gen {
   width: 100%;
   margin: 0 auto;
-  border: 1px solid var(--hair);
-  border-collapse: collapse;
+  background: var(--surf-1);
+  border: 1px solid var(--bd-outer);
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-block);
   font-size: 13px;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
 /* 相邻两张表之间留出停顿，否则读作一张表的两半 */
@@ -945,11 +981,16 @@ main {
 
 .gen th,
 .gen td {
-  padding: 9px 16px;
-  border-top: 1px solid var(--hair);
-  border-left: 1px solid var(--hair);
+  padding: 12px 16px;
+  border-top: 1px solid var(--bd-row);
+  border-left: 1px solid var(--bd-col);
   vertical-align: middle;
 }
+
+.gen thead tr:first-child > :first-child { border-top-left-radius: calc(var(--r-lg) - 1px); }
+.gen thead tr:first-child > :last-child { border-top-right-radius: calc(var(--r-lg) - 1px); }
+.gen tbody:last-of-type tr:last-child > :first-child { border-bottom-left-radius: calc(var(--r-lg) - 1px); }
+.gen tbody:last-of-type tr:last-child > :last-child { border-bottom-right-radius: calc(var(--r-lg) - 1px); }
 
 /* **基色给 thead，别写在 th 上。**整格只有一个 {标记|…} 时生成器把 class 落在 <th>
    本身，此时 .gen thead th 这类两选择器会以权重压过单类的 .bar-red，弹药页那三个
@@ -1018,9 +1059,11 @@ main {
 .gen tbody tr:where([data-band]):has(> th) > th,
 .gen tbody tr:where([data-band]):has(> th) > td { border-top: 1px solid var(--bone-faint); }
 
-/* 表格自己有外框，首行不必再画一道 */
-.gen tbody tr:first-child > th,
-.gen tbody tr:first-child > td { border-top: 0; }
+/* 表格自己有外框，首行只画与 thead 之间的分隔线；无 thead 时首行不画上边 */
+.gen:not(:has(> thead)) tbody:first-of-type tr:first-child > th,
+.gen:not(:has(> thead)) tbody:first-of-type tr:first-child > td { border-top: 0; }
+.gen:not(:has(> thead)) tbody:first-of-type tr:first-child > :first-child { border-top-left-radius: calc(var(--r-lg) - 1px); }
+.gen:not(:has(> thead)) tbody:first-of-type tr:first-child > :last-child { border-top-right-radius: calc(var(--r-lg) - 1px); }
 
 /* 交替底色：横线只标出边界，一整块的归属还得靠面。
    :nth-child 数不了合并块（每块行数不等），CSS 计数器又不能参与着色，
@@ -1034,19 +1077,19 @@ main {
    不成文的时候，二十多个页面里只有三个想起来写，别的页面照抄谁全凭运气。
    这一列的列名跟着它一起居中，见 design.md「表头跟着本列的数据走」。 */
 .gen tbody th[scope="row"] {
-  background: var(--tint-1);
+  background: var(--surf-2);
   text-align: center;
 }
 
-.gen tbody tr[data-band="1"] > th[scope="row"] { background: var(--tint-3); }
+.gen tbody tr[data-band="1"] > th[scope="row"] { background: var(--surf-3); }
 
-/* 表格里的图标一律 6px 圆角。**一处定义**：这条曾散在 11 份页面样式表里，
-   还分成 2px 与 3px 两个值——同一样东西在不同页面圆得不一样，读者认得出来。
+/* 表格里的图标一律 --r-md 圆角。**一处定义**：这条曾散在 11 份页面样式表里，
+   还分成 2px 与 3px 两个值，同一样东西在不同页面圆得不一样，读者认得出来。
    **`th` 与 `td` 一起写。**表头与行标题里也有图标（三页共 40 枚），只写 `td`
    会让同一张表里表头方角、正文圆角。方形的槽位图在 elements/style.css 里
    覆盖回 0，那是有意的例外。 */
 .gen td img,
-.gen th img { border-radius: 6px; }
+.gen th img { border-radius: var(--r-md); }
 
 /* 空格子不留空白：空白读作「这里漏了」，一道发丝短横读作「确认没有」。
    inline-block 让短横跟着本列的 text-align 走。用 ::after 生成，不进 HTML 文本，
@@ -1728,7 +1771,7 @@ body:has(.hero) .entries > li::after { right: -6px; bottom: -6px; }
   margin: 0;
   color: var(--bone-dim);
   font-family: var(--font-disp);
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
   line-height: 1.3;
   letter-spacing: .12em;
@@ -1755,8 +1798,8 @@ body:has(.hero) .entries > li::after { right: -6px; bottom: -6px; }
   background: none;
   border: 0;
   color: var(--bone-dim);
-  font-family: var(--font-body);
-  font-size: 12.5px;
+  font-family: var(--font-mono);
+  font-size: 12px;
   letter-spacing: .08em;
   cursor: pointer;
 }
@@ -1868,7 +1911,7 @@ body:has(.hero) .entries > li::after { right: -6px; bottom: -6px; }
   gap: 7px;
   color: var(--bone-dim);
   font-family: var(--font-cn);
-  font-size: 12.5px;
+  font-size: 12px;
   letter-spacing: .12em;
   text-decoration: none;
   transition: color .18s ease;
@@ -1926,7 +1969,7 @@ body:has(.hero) .entries > li::after { right: -6px; bottom: -6px; }
   max-width: 60em;
   margin: 8px 0 0;
   color: var(--bone-dim);
-  font-size: 12.5px;
+  font-size: 13px;
   line-height: 1.76;
 }
 
@@ -1995,10 +2038,10 @@ body:has(.hero) .entries > li::after { right: -6px; bottom: -6px; }
   width: min(100%, 704px);
   margin-inline: auto;
   padding: 14px 22px 14px 44px;
-  font-size: 14.5px;
+  font-size: 14px;
   border-radius: 999px;
   /* **底色必须不透明。**工具条那只用的是 #ffffff08，摞在首页那张 352px 主刻线
-     （#ffffff1c）上就成了半透明——一竖一横两道亮线正好在框内交叉，首屏唯一的
+     （#ffffff1c）上就成了半透明，一竖一横两道亮线正好在框内交叉，首屏唯一的
      控件被划成四块。资料页不画主刻线，所以只有首页这只要换。 */
   background-color: var(--panel-b);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3%2eorg/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%239aa0ac' stroke-width='1.35'%3E%3Ccircle cx='7' cy='7' r='5'/%3E%3Cpath d='M10.5 10.5 14 14' stroke-linecap='round'/%3E%3C/svg%3E");
@@ -2007,7 +2050,7 @@ body:has(.hero) .entries > li::after { right: -6px; bottom: -6px; }
   background-size: 15px 15px;
   border: 0;
   box-shadow: 0 0 0 1px var(--hair-lit);
-  /* 展宽走 width 而不是 transform: scale——缩放会把字一起拉变形 */
+  /* 展宽走 width 而不是 transform: scale，缩放会把字一起拉变形 */
   transition: width .34s cubic-bezier(.22, .68, .3, 1), background-color .24s ease,
     box-shadow .24s ease;
 }
@@ -2256,7 +2299,7 @@ body:has(.hero) .entries > li::after { right: -6px; bottom: -6px; }
 .hits .hit-x {
   overflow: hidden;
   color: var(--bone-dim);
-  font-size: 12.5px;
+  font-size: 12px;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -2274,7 +2317,7 @@ body:has(.hero) .entries > li::after { right: -6px; bottom: -6px; }
   display: block;
   margin: 16px auto 0;
   padding: 9px 20px;
-  font-size: 12.5px;
+  font-size: 12px;
 }
 
 /* 淡入只在结果从无到有时放一次，由 app.js 挂类；每敲一个字重放一遍会闪 */
@@ -2788,7 +2831,7 @@ body:has(.hero) main.index { position: relative; }
 
 .pv-nm {
   color: var(--bone);
-  font: 12.5px/1.45 var(--font-cn);
+  font: 13px/1.45 var(--font-cn);
   white-space: nowrap;
 }
 
@@ -2800,7 +2843,7 @@ body:has(.hero) main.index { position: relative; }
 
 .pv-sb {
   color: var(--bone-dim);
-  font: 11.5px/1.4 var(--font-cn);
+  font: 12px/1.4 var(--font-cn);
   white-space: nowrap;
 }
 
@@ -2910,7 +2953,8 @@ body:has(.hero) main.index { position: relative; }
 .pv-chip {
   padding: 2px 9px;
   border: 1px solid var(--hair-lit);
-  font: 12.5px/1.6 var(--font-cn);
+  border-radius: var(--r-sm);
+  font: 12px/1.6 var(--font-cn);
 }
 
 .pv-chip.is-now {
@@ -3044,7 +3088,7 @@ body:has(.hero) main.index { position: relative; }
   display: flex;
   flex-direction: column;
   color: var(--bone-dim);
-  font: 12.5px/1.8 var(--font-cn);
+  font: 12px/1.8 var(--font-cn);
 }
 
 /* 小表：首行列名，行名在左，数值右对齐成列 */
@@ -3056,7 +3100,7 @@ body:has(.hero) main.index { position: relative; }
 
 .pv-table small {
   color: var(--bone-dim);
-  font: 11.5px/1.4 var(--font-cn);
+  font: 11px/1.4 var(--font-cn);
   text-align: right;
 }
 
@@ -3064,7 +3108,7 @@ body:has(.hero) main.index { position: relative; }
 
 .pv-th {
   color: var(--bone-dim);
-  font: 12.5px/1.5 var(--font-cn);
+  font: 12px/1.5 var(--font-cn);
 }
 
 .pv-table b {
@@ -3117,7 +3161,7 @@ body:has(.hero) main.index { position: relative; }
   margin: 0 auto;
   padding: 44px 22px 88px;
   color: var(--bone-dim);
-  font-size: 12.5px;
+  font-size: 12px;
   line-height: 1.9;
   border-top: 1px solid var(--hair);
 }
@@ -3135,6 +3179,7 @@ body:has(.hero) main.index { position: relative; }
   font-weight: 600;
   letter-spacing: .14em;
   border: 1px solid var(--hair);
+  border-radius: var(--r-sm);
 }
 
 .site-foot p:last-child { margin-bottom: 0; }
@@ -3143,7 +3188,7 @@ body:has(.hero) main.index { position: relative; }
 .site-foot .legal {
   max-width: 100ch;                 /* 桌面宽度下单行放得下，不在句中折行 */
   color: var(--bone-dim);
-  font-size: 11.5px;
+  font-size: 11px;
   line-height: 1.85;
 }
 
@@ -3174,23 +3219,36 @@ body:has(.hero) main.index { position: relative; }
    轨道由种类给：某条记录没有这个字段，那一格空着；整节都没有的轨道整节不画，
    所以同一种记录有几种列数（.r-c0/.r-c1/.r-c2）。 */
 .rec, .r-head { display: grid; }
-.rec { border: 1px solid var(--hair); }
+.rec { background: var(--surf-1); border: 1px solid var(--bd-outer); border-top-color: var(--bd-row);
+       border-bottom-color: var(--bd-row); }
 .rec:not(.sp-row):nth-of-type(even) { background: var(--tint-2); }
-.r-head { margin-top: 12px; background: var(--head-fill); border: 1px solid var(--hair);
-          border-bottom-color: var(--hair-lit); }
-.r-head > div { padding: 8px 10px; white-space: nowrap; font: 600 12.5px var(--font-cn);
-                 color: var(--bone-dim); }
+.r-head { margin-top: 12px; background: var(--head-fill); border: 1px solid var(--bd-outer);
+          border-bottom-color: var(--bd-row); border-radius: var(--r-lg) var(--r-lg) 0 0;
+          box-shadow: var(--sh-block); overflow: hidden; }
+.r-head > div { padding: 10px 14px; white-space: nowrap; font: 600 12px var(--font-cn);
+                 color: var(--bone-dim); letter-spacing: .04em; }
 .r-head > .c { text-align: center; }
 .r-head > .l { text-align: left; }
 .r-head.r-exotic > .l { grid-column: 2 / -1; }
-.r-head > div + div, .rec > .r-cell + .r-cell { border-left: 1px solid var(--hair); }
+.r-head > div + div, .rec > .r-cell + .r-cell { border-left: 1px solid var(--bd-col); }
 .r-head:not([hidden]) ~ .rec:not([hidden]),
 .r-grp:not([hidden]) ~ .rec:not([hidden]),
 .sp-head:not([hidden]) ~ .sp-row:not([hidden]),
 .mx-head:not([hidden]) ~ .mx-row:not([hidden]),
 .rec:not([hidden]) ~ .rec:not([hidden]) { border-top: 0; }
+.r-head:not(:has(~ .rec:not([hidden]))),
+.sp-head:not(:has(~ .sp-row:not([hidden]))),
+.mx-head:not(:has(~ .mx-row:not([hidden]))) { border-radius: var(--r-lg); border-bottom-color: var(--bd-outer); }
+.rec:not(.sp-row):not(.mx-row):nth-last-child(1 of .rec:not([hidden])),
+.sp-row:nth-last-child(1 of .sp-row:not([hidden])),
+.mx-row:nth-last-child(1 of .mx-row:not([hidden])) {
+  border-bottom-color: var(--bd-outer);
+  border-radius: 0 0 var(--r-lg) var(--r-lg);
+  overflow: hidden;
+}
 .r-grp { padding: 16px 16px 8px; font: 600 13px var(--font-cn); color: var(--bone-dim);
-       border: 1px solid var(--hair); border-top: 0; }
+       background: var(--surf-2); border: 1px solid var(--bd-outer); border-top: 0;
+       border-bottom-color: var(--bd-row); }
 .rec:not(.sp-row) > .r-cell.r-mid:empty::after {
   content: "";
   display: inline-block;
@@ -3200,15 +3258,17 @@ body:has(.hero) main.index { position: relative; }
   background: var(--hair-lit);
 }
 
-.r-cell { min-width: 0; padding: 9px 14px; display: flex; flex-direction: column;
+.r-cell { min-width: 0; padding: 14px 18px; display: flex; flex-direction: column;
         justify-content: center; }
-.r-cell.r-id { align-items: center; text-align: center; gap: 4px; background: var(--tint-1); }
+.r-cell.r-id { align-items: center; text-align: center; gap: 6px; background: var(--surf-2); }
+.rec:not(.sp-row):nth-of-type(even) > .r-cell.r-id { background: var(--surf-3); }
 .r-cell.r-mid { align-items: center; text-align: center; }
-.r-cell p, .r-cell .p { margin: 0 0 7px; font-size: 13.5px; line-height: 1.65; }
+.r-cell p, .r-cell .p { margin: 0 0 8px; font-size: 14px; line-height: 1.72; }
 .r-cell :is(p, .p):last-child { margin-bottom: 0; }
-.r-id .r-nm { font: 600 14.5px/1.35 var(--font-cn); color: var(--bone-hi); }
+.r-id > img { border-radius: var(--r-md); }
+.r-id .r-nm { font: 600 14px/1.35 var(--font-cn); color: var(--bone-hi); }
 .r-id .r-nm.exo, .rec .exo { color: var(--exotic); }
-.r-id .r-sub { display: flex; flex-direction: column; align-items: center; font-size: 12.5px;
+.r-id .r-sub { display: flex; flex-direction: column; align-items: center; font-size: 12px;
             line-height: 1.6; color: var(--bone-dim); }
 .r-id .r-sub b, .rec .dim b { color: var(--bone-hi); font-weight: 600; }
 .rec .dim, .ci-grp .dim { color: var(--bone-dim); }
@@ -3221,19 +3281,20 @@ body:has(.hero) main.index { position: relative; }
 .r-plain .r-id > img { width: 48px; height: 48px; }
 .r-plain > .x-au-who { grid-column: 1; }
 .r-plain > .x-au-body { grid-column: 2 / -1; }
-.r-val { font-size: 12.5px; line-height: 1.75; color: var(--bone-dim); }
+.r-val { font-size: 13px; line-height: 1.75; color: var(--bone-dim); }
 .r-val > div { white-space: nowrap; }
 .r-val b { color: var(--bone-hi); font-weight: 600; }
 .r-slots { display: flex; justify-content: center; align-items: center; gap: 6px; }
 .r-slots i { width: 9px; height: 9px; transform: rotate(45deg); border: 1px solid var(--bone-dim); }
 
 /* 子行：星相带来的强化、框架在某几种枪型上的说明 */
-.r-sub-row { margin-top: 9px; padding: 8px 12px; background: var(--tint-2);
-           border-left: 2px solid var(--hair-lit); }
+.r-sub-row { margin-top: 10px; padding: 10px 14px; background: var(--surf-2);
+           border: 1px solid var(--bd-tile); border-left: 2px solid var(--hair-lit);
+           border-radius: var(--r-sm); }
 .r-sub-h { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-bottom: 6px;
-         font-size: 12.5px; color: var(--bone-dim); }
+         font-size: 12px; color: var(--bone-dim); }
 .r-sub-h > b { font-weight: 600; color: var(--bone); }
-.r-sub-h > img { width: 20px; height: 20px; }
+.r-sub-h > img { width: 20px; height: 20px; border-radius: var(--r-sm); }
 .r-sub-h span[class^="el-"] { font-weight: 600; }
 
 /* 异域：异域 | 异域特性，作者区在特性下面 */
@@ -3257,29 +3318,29 @@ body:has(.hero) main.index { position: relative; }
   border-radius: 999px;
 }
 
-.xp-of { color: var(--bone-dim); font: 400 11.5px var(--font-body); letter-spacing: .06em; }
+.xp-of { color: var(--bone-dim); font: 400 12px var(--font-mono); letter-spacing: .06em; }
 .xp-1 > img { width: 28px; height: 28px; border-radius: 50%; }
-.xp-n { font: 600 14.5px var(--font-cn); color: var(--exotic); }
+.xp-n { font: 600 14px var(--font-cn); color: var(--exotic); }
 
 /* 定位标签：不可点，所以不带边框（边框是 .toggle 与 .op 的静置长相，
    design.md 五之二），只铺一层白叠色。放在 <b> 里：里面常有着色 span，
    外层再是 span 会触发 no_nested_span。 */
 .r-tags { display: flex; flex-wrap: wrap; gap: 5px; }
 .r-tag { display: inline-block; padding: 1px 8px; font: 600 12px/1.7 var(--font-cn);
-       color: var(--bone-hi); background: #ffffff12; }
+       color: var(--bone-hi); background: #ffffff12; border-radius: var(--r-sm); }
 .why { display: flex; align-items: baseline; gap: 9px; }
 .why > .r-tag { flex: none; }
 /* 正文这一件要允许收窄到内容宽度以下，否则标签挤走它、整段折成一竖列 */
 .why > .why-t { min-width: 0; font-weight: 400; }
 
 /* 作者区：一位作者两格，与记录用同一套列。加作者只多一行，不加列 */
-.x-au-who, .x-au-body { padding: 5px 14px; border-top: 1px dashed var(--hair);
-                        background: #ffffff03; }
+.x-au-who, .x-au-body { padding: 8px 18px; border-top: 1px dashed var(--bd-outer);
+                        background: #ffffff04; }
 .rec > .x-au-body { border-left: 0; }
 .rec > .x-au-who { border-left: 0; }
 .x-au-who { gap: 6px; }
 .x-au-name { display: flex; justify-content: center; align-items: center; gap: 8px;
-             font: 600 12.5px/1.5 var(--font-cn); }
+             font: 600 12px/1.5 var(--font-cn); }
 .x-au-who .r-tags { justify-content: center; }
 .x-au-body p { color: var(--note); font-size: 13px; line-height: 1.65; }
 /* 作者名的颜色跟着光圈走。写成后代选择器：它们是作者区的组件，
@@ -3287,14 +3348,15 @@ body:has(.hero) main.index { position: relative; }
 .x-au-name .w-aegis { color: var(--au-aegis); }
 .x-au-name .w-lgpig { color: var(--au-lgpig); }
 .r-tier { flex: none; min-width: 28px; padding: 1px 5px; text-align: center;
-        font: 700 12.5px/1.3 var(--font-disp); color: var(--bone-hi); border: 1px solid; }
+        font: 700 12px/1.3 var(--font-disp); color: var(--bone-hi); border: 1px solid;
+        border-radius: var(--r-sm); }
 .r-tier.by-a { border-color: var(--au-aegis); }
 .r-tier.by-l { border-color: var(--au-lgpig); }
 .r-tier-long { font-size: 12px; line-height: 1.6; color: var(--bone); }
 
 /* 作者自己的字段：应用场景、获取地点、DPS、总伤。值里有着色 span，所以用 <b> */
 .f-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 3px 18px;
-         margin-bottom: 6px; font-size: 12.5px; }
+         margin-bottom: 6px; font-size: 12px; }
 .f-item { display: inline-flex; align-items: baseline; }
 .f-k { color: var(--bone-faint); margin-right: 4px; }
 .f-k::after { content: "："; }
@@ -3302,39 +3364,41 @@ body:has(.hero) main.index { position: relative; }
 
 /* 模组族与组合：成员图标排一行，成员不单独占行 */
 .mem { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-bottom: 9px;
-       font-size: 12.5px; color: var(--bone-dim); }
+       font-size: 12px; color: var(--bone-dim); }
 .mem-1 { display: flex; align-items: center; gap: 6px; }
-.mem-1 > img { width: 20px; height: 20px; }
+.mem-1 > img { width: 20px; height: 20px; border-radius: var(--r-sm); }
 
 /* 职业物品：两栏按行对齐，中间一道亮一档的发丝线分开两份清单 */
 .ci-grp { padding: 18px 0 6px; }
 .ci-grp + .ci-grp { border-top: 1px solid var(--hair-lit); margin-top: 10px; }
 .ci-h { display: flex; align-items: center; gap: 10px; margin: 0 0 12px;
-        font: 600 15px var(--font-cn); color: var(--bone-hi); }
-.ci-h > img { width: 28px; height: 28px; }
+        font: 600 16px var(--font-cn); color: var(--bone-hi); }
+.ci-h > img { width: 28px; height: 28px; border-radius: var(--r-sm); }
 .ci-h > img + img { margin-left: -4px; }
-.ci-h .dim { font-size: 12.5px; font-weight: 400; }
+.ci-h .dim { font-size: 12px; font-weight: 400; }
 .sp-head, .sp-row { display: grid;
                     grid-template-columns: 9.5em minmax(0, 1fr) 9.5em minmax(0, 1fr); }
-.sp-head { border: 1px solid var(--hair); border-bottom-color: var(--hair-lit); }
-.sp-head h4 { grid-column: span 2; margin: 0; padding: 8px 0; text-align: center;
-              font: 600 12.5px var(--font-cn); color: var(--bone-dim);
+.sp-head { border: 1px solid var(--bd-outer); border-bottom-color: var(--bd-row);
+           border-radius: var(--r-lg) var(--r-lg) 0 0; box-shadow: var(--sh-block); overflow: hidden; }
+.sp-head h4 { grid-column: span 2; margin: 0; padding: 10px 0; text-align: center;
+              font: 600 12px var(--font-cn); color: var(--bone-dim);
               background: var(--head-fill); }
-.sp-head h4 + h4, .sp-row > .r-cell:nth-child(3) { border-left: 1px solid var(--hair-lit); }
-.sp-row > .r-cell:nth-child(2), .sp-row > .r-cell:nth-child(4) { border-left: 1px solid var(--hair); }
+.sp-head h4 + h4, .sp-row > .r-cell:nth-child(3) { border-left: 1px solid var(--bd-outer); }
+.sp-row > .r-cell:nth-child(2), .sp-row > .r-cell:nth-child(4) { border-left: 1px solid var(--bd-col); }
 .sp-row .r-id > img { width: 40px; height: 40px; }
 .sp-row .r-id .r-nm { font-size: 14px; }
 .sp-row p { font-size: 13px; line-height: 1.7; }
 
 /* 矩阵：行是技能位，列是五个分支 */
 .mx-head, .mx-row { display: grid; grid-template-columns: 9em repeat(5, minmax(0, 1fr)); }
-.mx-head { border: 1px solid var(--hair); border-bottom-color: var(--hair-lit); }
+.mx-head { border: 1px solid var(--bd-outer); border-bottom-color: var(--bd-row);
+           border-radius: var(--r-lg) var(--r-lg) 0 0; box-shadow: var(--sh-block); overflow: hidden; }
 .mx-head > div { display: flex; align-items: center; justify-content: center; gap: 6px;
-                 padding: 8px 10px; font: 600 12.5px var(--font-cn); color: var(--bone-dim);
+                 padding: 10px; font: 600 12px var(--font-cn); color: var(--bone-dim);
                  background: var(--head-fill); }
-.mx-head > div + div, .mx-row > .r-cell + .r-cell { border-left: 1px solid var(--hair); }
-.mx-row > .r-cell { padding: 8px; gap: 5px; font-size: 12.5px; }
-.mx-row img { width: 28px; height: 28px; }
+.mx-head > div + div, .mx-row > .r-cell + .r-cell { border-left: 1px solid var(--bd-col); }
+.mx-row > .r-cell { padding: 10px 8px; gap: 5px; font-size: 12px; }
+.mx-row img { width: 28px; height: 28px; border-radius: var(--r-sm); }
 .mx-head img { width: 20px; height: 20px; }
 .mx-row > .r-id .r-nm { font-size: 14px; }
 
@@ -3352,7 +3416,7 @@ body:has(.hero) main.index { position: relative; }
 .x-mini [class^="el-"] { font-weight: 600; }
 .x-facts { align-items: flex-start; }
 .x-facts dl { display: grid; grid-template-columns: auto auto; column-gap: 10px; row-gap: 5px;
-              margin: 0; font-size: 12.5px; line-height: 1.5; }
+              margin: 0; font-size: 12px; line-height: 1.5; }
 .x-facts dt { color: var(--bone-faint); white-space: nowrap; }
 .x-facts dt::after { content: "："; }
 .x-facts dd { margin: 0; display: flex; align-items: center; gap: 5px; color: var(--bone);
@@ -3365,7 +3429,7 @@ body:has(.hero) main.index { position: relative; }
 /* 一栏几枚词条：整组在格子里居中，组内左对齐。单列网格一层做完，不另套包层。 */
 .r-cell.r-slot { display: grid; justify-content: center; justify-items: start; align-content: center;
                  gap: 7px; }
-.r-plug { display: flex; align-items: center; gap: 7px; font-size: 12.5px; line-height: 1.35;
+.r-plug { display: flex; align-items: center; gap: 7px; font-size: 12px; line-height: 1.35;
         color: var(--c-perk); text-align: left; }
 .r-plug .ico { position: relative; display: inline-block; flex: none; margin: 4px; }
 .r-plug .ico > img { display: block; width: 22px; height: 22px; border-radius: 50%; }
@@ -3384,5 +3448,5 @@ body:has(.hero) main.index { position: relative; }
   mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
 }
 .r-plug s { color: var(--bone-faint); }
-.r-plug-none { font-size: 12.5px; color: var(--bone-faint); }
+.r-plug-none { font-size: 12px; color: var(--bone-faint); }
 .r-plug.r-mwp { color: var(--bone); }

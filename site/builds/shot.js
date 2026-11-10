@@ -248,7 +248,7 @@ function injectCss() {
 .shot-dlg::backdrop { background: #000000c4; }
 .shot-dlg img { display: block; width: 100%; height: auto; }
 .shot-dlg .shot-bar { position: sticky; left: 0; display: flex; align-items: center;
-  gap: 12px; padding: 8px 12px; font: 400 12.5px/1.6 ui-monospace, "SF Mono", Menlo,
+  gap: 12px; padding: 8px 12px; font: 400 12px/1.6 ui-monospace, "SF Mono", Menlo,
   "PingFang SC", sans-serif; color: #9aa0ac; background: #0e1119;
   border-bottom: 1px solid #2a3040; }
 .shot-dlg .shot-bar button { margin-left: auto; padding: 3px 10px; color: inherit;

@@ -1,75 +1,7 @@
 /* 武器特性页组件：406 条特性、模组、框架固有与起源特性，按七个分节排。
-   通用主题、字体与配色 token 在 /assets/site.css。
-   这一页由 tools/convert-doc.py 从 references/docs/weapon-perks.md 生成，
-   改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
-
-/* 与异域武器页同形：前几列钉住特性身份，末列是收在阅读宽度上的说明。
-   宽表复用 1060px 那一档。版心固定，不做窄屏适配（design.md 五节）。 */
+   记录网格版式在 /assets/site.css。 */
 :root { --wrap: 1060px; --min: 1104px; }
 
-/* 说明的基色给 tbody，不写在格子上：整格只有一个 {标记|…} 时 class 落在 <td> 本身，
-   .gen tbody td:last-child 这类多选择器会压过单类的着色，整格颜色静默退回默认。 */
-.gen tbody { color: var(--bone); }
-
-.gen thead th { padding-top: 11px; padding-bottom: 11px; white-space: nowrap; }
-
-/* 特性名：这一行的身份，不折行 */
-.gen tbody th[scope="row"] {
-  color: var(--bone-hi);
-  font-family: var(--font-cn);
-  font-weight: 600;
-  letter-spacing: .04em;
-  white-space: nowrap;
-}
-
-/* 特性图标。源图 70×70 与 59×59 两种，统一显示成 44px */
-.gen td.ico { padding: 10px 14px; text-align: center; }
-
-/* margin 必须给 auto：图是块级，父格的 text-align 对它不生效，
-   列宽比图宽时它会贴在内容盒左缘、整列往左偏几个像素。 */
-.gen td.ico img {
-  display: block;
-  margin: 0 auto;
-  width: 44px;
-  height: 44px;
-}
-
-/* 强化版数值（源表用 ↑ 标记）。按 design.md 二节，强调靠亮度与字重，不占色相——
-   本页 686 处 ↑，给它一个元素色相会把仅有的 80 处橙血／烈日／灼烧淹没掉。 */
-.enh {
-  color: var(--bone-hi);
-  font-weight: 600;
-}
-
-/* 起源特性的来源：出处与类别两行，比正文低一档——它是检索线索，不是要读的内容 */
-.gen td.src {
-  padding: 10px 14px;
-  color: var(--bone-dim);
-  font-size: 12.5px;
-  line-height: 1.7;
-  text-align: left;
-  vertical-align: top;
-  white-space: nowrap;
-}
-
-/* 说明：这一页真正要读的一列，顶对齐——各行长短差十倍，居中会让长行把短行推到中间 */
-.gen tbody td:last-child {
-  padding: 12px 18px 14px;
-  font-size: 13.5px;
-  line-height: 1.9;
-  text-align: left;
-  vertical-align: top;
-}
-
-/* 列名跟着本列的正文走（design.md 四节）：第三列起是来源与说明，正文左对齐，
-   列名也左对齐。前两列（PERK 名、图标）照旧居中。 */
-.gen thead th:nth-child(n + 3) { text-align: left; }
-
-/* 屏外的分节不参与布局与绘制：这一页约 70600px 高，一屏只看得到其中一节。
-   套在 .block 上而不是 .gen tr 上——content-visibility 对表格内部元素不生效。
-   这一页没有 sticky 后代，paint containment 不会裁到谁。
-   contain-intrinsic-size 的 auto 让浏览器渲染过一次后改用真实高度，那个数只是
-   从没渲染过时的初始估值，不必跟着内容维护；现值取 1600px 宽下各节高度的中位数。 */
 .block {
   content-visibility: auto;
   contain-intrinsic-height: auto 2800px;

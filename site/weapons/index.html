@@ -27,7 +27,7 @@
 .build-id .cls img,
 .entry .node img,
 .item img,
-.gl-img { border-radius: 6px; }
+.gl-img { border-radius: var(--r-md); }
 /* ── 格子 ─────────────────────────────────────────────────────────────
    图左名右，中文横排不折行。名字的颜色由词表给（碎片走本分支的元素色、异域走
    异域金、神器模组走神器青、Perk 走 Perk 色），与全站一致。
@@ -41,8 +41,10 @@
   padding: 8px;
   color: inherit;
   text-decoration: none;
-  background: var(--tint-2);
-  border: 1px solid var(--hair);
+  background: var(--surf-3);
+  border: 1px solid var(--bd-tile);
+  border-radius: var(--r-sm);
+  overflow: hidden;
   transition: background .18s ease;
 }
 /* ── 索引页 ───────────────────────────────────────────────────────────
@@ -153,7 +155,7 @@ body:has(.entries) { --wrap: 1500px; }
   height: 21px;
   margin: 0;
   color: var(--bone-hi);
-  font-size: 15.5px;
+  font-size: 16px;
   font-weight: 600;
   line-height: 21px;
   letter-spacing: .02em;
@@ -282,7 +284,7 @@ body:has(.entries) { --wrap: 1500px; }
   display: inline-flex;
   align-items: center;
   font-family: var(--font-disp);
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: .06em;
@@ -389,7 +391,7 @@ body:has(.entries) { --wrap: 1500px; }
   border: 0;
   border-left: 2px solid var(--c-note);
   color: var(--c-note);
-  font-size: 11.5px;
+  font-size: 12px;
   line-height: 18px;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -485,7 +487,7 @@ body:has(.entries) { --wrap: 1500px; }
   overflow: hidden;
   color: var(--accent, var(--bone-hi));
   font-family: var(--font-cn);
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
   line-height: 1.25;
   white-space: nowrap;

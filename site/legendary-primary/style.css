@@ -11,7 +11,7 @@
 .block p {
   margin: 0 0 18px;
   color: var(--bone-dim);
-  font-size: 13.5px;
+  font-size: 14px;
   line-height: 1.95;
 }
 
@@ -68,7 +68,7 @@
 .gen tbody th[scope="row"] {
   color: var(--bone-hi);
   font-family: var(--font-cn);
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 600;
   word-break: keep-all;
 }
@@ -128,7 +128,7 @@
    活动名与异域武器名大量同形（「二象性」既是地牢也是异域霰弹枪），整格包进标记
    之后不参与 check_terms.py 的 G6 正查，不会被染成武器名。 */
 .gen td.src {
-  font-size: 12.5px;
+  font-size: 12px;
   line-height: 1.8;
   text-align: center;
 }
@@ -145,7 +145,7 @@
 
 /* 评级理由：这一页的正文，末列，吃掉剩下的宽度。不给 color，理由同上。 */
 .gen tbody td:last-child {
-  font-size: 13.5px;
+  font-size: 14px;
   line-height: 1.95;
   text-align: left;
 }

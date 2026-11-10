@@ -46,7 +46,7 @@
 列：棱镜手雷 | 图标 | 说明
 1005476557  雹火尖刺
 
-列：{lead|共享技能\\ {note|职业技能和移动技能都与原分支职业完全共享。}} | {sk-arc|![](icons/205bfcb812.webp) 电弧} | {sk-solar|![](icons/8fff5c49b3.webp) 烈日} | {sk-void|![](icons/70caf4a733.webp) 虚空} | {sk-stasis|![](icons/357ddde8cc.webp) 冰影} | {sk-strand|![](icons/120c0fddfd.webp) 缚丝}
+列：共享技能 | 电弧 | 烈日 | 虚空 | 冰影 | 缚丝
 stat:1735777505  手雷
 stat:3493869314  近战
 
@@ -62,7 +62,7 @@ stat:3493869314  近战
 列：棱镜手雷 | 图标 | 说明
 275534325  电击陷阱
 
-列：{lead|共享技能\\ {note|职业技能和移动技能都与原分支职业完全共享。}} | {sk-arc|![](icons/d70650ed73.webp) 电弧} | {sk-solar|![](icons/90ca587869.webp) 烈日} | {sk-void|![](icons/d3a5c298cf.webp) 虚空} | {sk-stasis|![](icons/6b8643428f.webp) 冰影} | {sk-strand|![](icons/f479be4b19.webp) 缚丝}
+列：共享技能 | 电弧 | 烈日 | 虚空 | 冰影 | 缚丝
 stat:1735777505  手雷
 stat:3493869314  近战
 
@@ -78,7 +78,7 @@ stat:3493869314  近战
 列：棱镜手雷 | 图标 | 说明
 4294967313  冰冻奇点
 
-列：{lead|共享技能\\ {note|职业技能和移动技能都与原分支职业完全共享。}} | {sk-arc|![](icons/11ca92f0ac.webp) 电弧} | {sk-solar|![](icons/ddc8bb152d.webp) 烈日} | {sk-void|![](icons/9e43e17795.webp) 虚空} | {sk-stasis|![](icons/f8e47a3c1f.webp) 冰影} | {sk-strand|![](icons/8e7f92abd0.webp) 缚丝}
+列：共享技能 | 电弧 | 烈日 | 虚空 | 冰影 | 缚丝
 stat:1735777505  手雷
 stat:3493869314  近战
 

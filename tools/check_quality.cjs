@@ -1481,7 +1481,9 @@ test('form pages contain every focusMissing target and starsidePy.hit matches it
   assert.match(setHtml, /<button type="button" class="op" data-set-copy>创建副本<\/button>/)
 
   const styleCss = fs.readFileSync(path.join(site, 'builds/style.css'), 'utf8')
-  assert.match(styleCss, /\[id\$="sec-1"\] \.slot-row > \.slot:nth-child\(2\) \{ flex: 1 1 0; \}/)
+  assert.match(styleCss, /\[id\$="sec-1"\] \.slot-row:first-of-type > \.slot:nth-child\(2\) \{ flex: 1\.35 1 224px; \}/)
+  assert.match(styleCss, /\[id\$="sec-1"\] \.slot-row:first-of-type > \.slot:nth-child\(3\) \{ flex: var\(--n\) 1 calc\(22px \+ var\(--n\) \* 116px\); \}/)
+  assert.match(styleCss, /\[id\$="sec-1"\] \.slot-row \+ \.slot-row > \.slot:nth-child\(2\) \{ flex: 1 1 0; \}/)
   assert.match(styleCss, /\[id\$="sec-1"\] \.slot-row \+ \.slot-row > \.slot:nth-child\(2\) \.cells \{ grid-template-columns: repeat\(max\(var\(--n\), 4\), minmax\(0, 1fr\)\); \}/)
   assert.match(styleCss, /\[id\$="sec-3"\] \.cells \{ grid-template-columns: repeat\(max\(var\(--n\), 4\), minmax\(0, 1fr\)\); \}/)
   assert.match(styleCss, /\[id\$="sec-2"\] \.slot-row > \.rig \{ max-width: calc\(\(100% - 10px\) \/ 2\); \}/)

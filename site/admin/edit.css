@@ -75,7 +75,7 @@ th > .se-was { display: block; margin: 2px 0 0; }
   margin-bottom: 6px;
   color: var(--bone-faint);
   font-family: var(--font-disp);
-  font-size: 10.5px;
+  font-size: 11px;
   letter-spacing: .12em;
 }
 
@@ -106,7 +106,7 @@ th > .se-was { display: block; margin: 2px 0 0; }
 }
 .se-pal button:hover { border-color: var(--hair-lit); }
 
-.se-notes { margin: 6px 0 0; padding: 0; list-style: none; font-size: 11.5px; line-height: 1.6; }
+.se-notes { margin: 6px 0 0; padding: 0; list-style: none; font-size: 12px; line-height: 1.6; }
 .se-notes li { color: var(--c-enemy); }
 .se-notes li.warn { color: var(--bone-faint); }
 
