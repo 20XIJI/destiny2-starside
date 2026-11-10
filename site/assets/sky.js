@@ -135,26 +135,6 @@ function sheen() {
   w.addEventListener('animationend', () => w.classList.remove('sheen'), { once: true });
 }
 
-/* 分隔线刻度尺的相位：让每 88px 的长刻度落在背景的竖刻线上（中轴 ± 88k）。
-   起点是标题文字之后，随字数与字体变，所以字体就位与视口变动后都要重算。 */
-function ruler() {
-  const put = () => {
-    const half = document.documentElement.clientWidth / 2;
-    document.querySelectorAll('.group-label').forEach(l => {
-      const w = parseFloat(getComputedStyle(l, '::after').width) || 0;
-      l.style.setProperty('--rx', mod(half - (l.getBoundingClientRect().right - w), 88).toFixed(2) + 'px');
-    });
-  };
-  put();
-  document.fonts.ready.then(put);
-  let queued = false;
-  addEventListener('resize', () => {
-    if (queued) return;
-    queued = true;
-    requestAnimationFrame(() => { queued = false; put(); });
-  });
-}
-
 /* 星轨：同一列里相邻两张卡的节点用虚线相连，两端各一枚菱形，偶有光点沿线走。
    位置只取布局值（offsetLeft / offsetTop）。
    li、.entry 都是定位元素，offsetParent 链一路走到 main.index。 */
@@ -203,6 +183,5 @@ export default function init() {
   if (!canvas) throw new Error('首页缺少 .starfield 画布');
   sky(canvas);
   sheen();
-  ruler();
   routes();
 }

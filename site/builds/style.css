@@ -865,10 +865,6 @@ body:has(.entries) { --wrap: 1500px; }
   border-color: color-mix(in oklab, var(--accent) 32%, var(--hair-lit));
 }
 
-.entries .entry:hover::before {
-  background: linear-gradient(225deg, color-mix(in oklab, var(--accent) 38%, var(--hair-lit)) 0 1px, transparent 1px);
-}
-
 .entries .entry:has(.set-stages) {
   align-items: stretch;
   padding: 13px 16px;

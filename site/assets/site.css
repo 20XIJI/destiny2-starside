@@ -1136,52 +1136,24 @@ main {
 .gen tbody td[data-tier="8"], .gen tbody td.g-s { color: var(--g-8); }
 
 /* ── 首页 ──
-   首页把网格调到看得见的一档，并让一道光扫过它。资料页不跟——那些页面背后是
-   密排的表格，背景越安静越好；`.hero` 只出现在手写的首页上，`:has()` 因此够用，
-   不必给 body 加类名。不支持 :has() 的浏览器退回站点缺省的网格，不缺东西。
-
-   **网格分两级，不是一味调亮。**现值 #ffffff06 与底色的 ΔE 只有 2.51，按
-   design.md 的判据「视作同一个颜色」——所以它读作没有。细刻线提到 #ffffff0d
-   （ΔE 5.30，仍是耳语），另叠一层 352px（4×88）的主刻线 #ffffff1c（ΔE 12.44，
-   过「一眼可分」的线）。**1px 细线要比色块更高的 ΔE 才读得出**，视觉系统对高
-   空间频率的对比敏感度本来就低，所以主刻线取到 12 这一档而不是停在 9。
-
-   **竖线以版心中轴为原点，不从视口左缘起算。**从左缘起算时网格与居中的内容是
-   两套无关的坐标系：左边永远从一条完整的线开始，右边永远停在一个残格上，残格
-   宽度随视口每变 1px 就变一次——整页因此读作往左歪了一点，指不出是哪里歪。
-   对到中轴之后左右两侧的残格等宽，正中一条主刻线，卡片那道沟正好骑在上面。
-
-   **要定位就得给显式的 background-size。**渐变在 size: auto 下正好铺满定位区，
-   background-position 无从生效，所以竖线那两层改用非 repeating 的渐变 + 88／352
-   的瓦片宽；50% 让瓦片居中，再加半个瓦片宽把线本身推到中轴上。
-   横向的两层没有对称问题（页面从顶端起算），照旧 repeating。
-
-   **定位区是根元素的盒子，即视口宽。**版面被 --min 撑得比视口宽时（窄于 1188px
-   的那一档）中轴会与内容中轴差开——那一档本来就交给横向滚动，不为它加断点。 */
+   首页收掉背景网格线，只留顶部大气层与深空底色，让整屏的星空画布（.starfield）与
+   星座连线完整透出。`.hero` 只出现在手写的首页上，`:has()` 因此够用，不必给 body 加类名。 */
 body:has(.hero) {
-  --grid: #ffffff0d;
   /* 最小内容宽度：两列 560 + 24 沟 + .index 两侧 22 = 1188。窄于此横向滚动，
      不塌成单列——同 armor-sets / boss-hp 那几页写 1104 的道理（design.md 五节）。 */
   --min: 1188px;
 
   background:
-    linear-gradient(90deg, #ffffff1c 0 1px, transparent 1px),
-    repeating-linear-gradient(180deg, #ffffff1c 0 1px, transparent 1px 352px),
-    linear-gradient(90deg, var(--grid) 0 1px, transparent 1px),
-    repeating-linear-gradient(180deg, var(--grid) 0 1px, transparent 1px 88px),
     var(--atmo),
     var(--ink);
-  background-position: calc(50% + 176px) 0, 0 0, calc(50% + 44px) 0, 0 0, 0 0, 0 0;
-  background-repeat: repeat, repeat, repeat, repeat, repeat-x, repeat;
-  background-size: 352px 100%, auto, 88px 100%, auto, 100% 640px, auto;
+  background-position: 0 0, 0 0;
+  background-repeat: repeat-x, repeat;
+  background-size: 100% 640px, auto;
 }
 
 /* 星空画布：首页整屏（assets/sky.js 画，画布写在 index.html 里），内页只有页首那片窗
    （assets/sky-page.js 建画布并标 data-page，见下面的淡入）。
 
-   **画布是 body 的第一个子元素。**.hero-mark::after 那块刻线橡皮（见「首屏那枚标记」）
-   排在它后面，同在根层叠上下文的负层，按文档序盖在画布上：徽记周围洗出一块空地，
-   星点不落在徽记上。
    fixed 而不是 absolute：页面约 4600px 高，画布只需视口大小；恒星的视差由脚本按
    scrollY 算，不给 body 加 background-attachment: fixed（长页固定背景会让滚动逐帧重绘）。
    星与线只用骨白，沿边走的光点用 --accent，与卡片左缘是同一种光；不发光、不投影
@@ -1204,37 +1176,13 @@ body:has(.hero) {
 
 .starfield[data-page].on { opacity: 1; }
 
-/* 分组标题右侧的分隔线画成刻度尺：细刻度每 8px，长刻度每 88px。
-   **长刻度的相位由 sky.js 写进 --rx，对到版心中轴**：背景竖线排在中轴 ± 88k 上，
-   分隔线从标题文字之后起、起点随字数变，不对相位时长刻度与背景刻线会错开一截。 */
+/* 分组标题右侧的分隔线：由左向右自然渐隐入深空背景 */
 body:has(.hero) .group-label::after {
-  height: 11px;
-  background:
-    linear-gradient(var(--hair), var(--hair)) 0 5px / 100% 1px no-repeat,
-    linear-gradient(90deg, var(--hair-lit) 0 1px, transparent 1px) var(--rx, 0) 1px / 8px 4px repeat-x,
-    linear-gradient(90deg, var(--bone-faint) 0 1px, transparent 1px) var(--rx, 0) 0 / 88px 6px repeat-x;
+  height: 1px;
+  background: linear-gradient(90deg, var(--bd-outer), rgba(255, 255, 255, .03));
 }
 
-/* 卡片左上与右下两角外侧各一枚套准标记（制图里的十字）。切角在右上，所以不放那一角 */
 body:has(.hero) .entries > li { position: relative; }
-
-body:has(.hero) .entries > li::before,
-body:has(.hero) .entries > li::after {
-  content: "";
-  position: absolute;
-  z-index: 1;
-  width: 11px;
-  height: 11px;
-  opacity: .5;
-  pointer-events: none;
-  background:
-    linear-gradient(var(--bone-faint), var(--bone-faint)) 50% 50% / 11px 1px no-repeat,
-    linear-gradient(var(--bone-faint), var(--bone-faint)) 50% 50% / 1px 11px no-repeat;
-}
-
-body:has(.hero) .entries > li::before { left: -6px; top: -6px; }
-
-body:has(.hero) .entries > li::after { right: -6px; bottom: -6px; }
 
 /* 字标扫光：sky.js 加上 .sheen，一道亮带掠过一次，动画结束即撤掉。
    底色两端与中段同为 --bone-hi，位置停在 0 时整个字仍是普通填充。 */
@@ -1391,27 +1339,9 @@ body:has(.hero) .entries > li::after { right: -6px; bottom: -6px; }
   transition: height var(--morph) ease-in-out;
 }
 
-/* 背景那张 88px 刻线网格与这枚标记自己的横竖线各成一套，两套近似平行、又对不齐，
-   凑在一起像没对准的网格。这一层把标记周围的刻线洗掉，让它自占一块空地。
-   洗的是 --ink：它与大气层顶色的 ΔE 11.30，按 design.md 那条线算同一个颜色，
-   所以只有刻线消失，底色不变暗。末端写 #0b0d1400 而不是 transparent——后者在
-   过渡段串进透明黑，中途发灰。 */
-.hero-mark::after {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  top: 50%;
-  left: 50%;
-  width: 24em;
-  height: 24em;
-  transform: translate(-50%, -50%);
-  background: radial-gradient(closest-side, var(--ink) 42%, #0b0d1400);
-}
-
 /* 圆内那圈刻纹。GIF 里它一直在，对比度只有背景亮度的 2.5%（L 差 4–8 级）——凑近
    才看得见，却是整枚标记「刻在金属板上」而不是「画在网页上」的来源。
-   **不给 z-index**：::after 是 -1，::before 走正常序就压在它上面、又在四个圆之下，
-   与 GIF 的层次一致。四态共用一圈，静止不参与过渡——GIF 里它也不动。 */
+   四态共用一圈，静止不参与过渡——GIF 里它也不动。 */
 .hero-mark::before {
   content: "";
   position: absolute;
@@ -1976,17 +1906,15 @@ body:has(.hero) .entries > li::after { right: -6px; bottom: -6px; }
 /* 举例里的方括号照正文的 .pvp 样子给，读者才认得出说的是哪一处 */
 .hero-sub .pvp-eg { color: var(--pvp); }
 
-/* 搜索带：上下各一道通栏发丝线，中间一道分隔线把带分成「搜索框」与「当前轮换」两层。
-   上半层高 88px（边框 1 + 上内边距 18 + 搜索框 50 + 下间距 19 = 88），
-   顶边压在 264px（3×88）细刻线上、分隔线压在 352px（4×88）主刻线上；
-   下半层高 44px（半个刻线模数），搜索框与轮换各自在上下框线之间垂直居中。 */
+/* 搜索带：上下各一道通栏细线，中间一道分隔线把带分成「搜索框」与「当前轮换」两层。 */
 .hero-band {
   position: relative;              /* 发电能量核绝对定位在带的右端 */
   max-width: 1500px;
   margin: 0 auto;
   padding: 18px 22px 0;
-  border-top: 1px solid var(--hair-lit);
-  border-bottom: 1px solid var(--hair-lit);
+  border-top: 1px solid rgba(255, 255, 255, .08);
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
+  background: linear-gradient(90deg, transparent, rgba(15, 19, 29, .42) 20%, rgba(15, 19, 29, .42) 80%, transparent);
 }
 
 /* 首页的全站搜索。工具条上那只保持素矩形（形状归 chip 的角标担着），首页这只不同：
@@ -2040,29 +1968,26 @@ body:has(.hero) .entries > li::after { right: -6px; bottom: -6px; }
   padding: 14px 22px 14px 44px;
   font-size: 14px;
   border-radius: 999px;
-  /* **底色必须不透明。**工具条那只用的是 #ffffff08，摞在首页那张 352px 主刻线
-     （#ffffff1c）上就成了半透明，一竖一横两道亮线正好在框内交叉，首屏唯一的
-     控件被划成四块。资料页不画主刻线，所以只有首页这只要换。 */
-  background-color: var(--panel-b);
+  background-color: rgba(19, 24, 37, .86);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3%2eorg/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%239aa0ac' stroke-width='1.35'%3E%3Ccircle cx='7' cy='7' r='5'/%3E%3Cpath d='M10.5 10.5 14 14' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: 18px 50%;
   background-size: 15px 15px;
   border: 0;
-  box-shadow: 0 0 0 1px var(--hair-lit);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .10), inset 0 1px 0 rgba(255, 255, 255, .04);
   /* 展宽走 width 而不是 transform: scale，缩放会把字一起拉变形 */
   transition: width .34s cubic-bezier(.22, .68, .3, 1), background-color .24s ease,
     box-shadow .24s ease;
 }
 
 .hero-search .tool-search:hover {
-  box-shadow: 0 0 0 1px var(--bone-faint);
+  box-shadow: 0 0 0 1px var(--bone-faint), inset 0 1px 0 rgba(255, 255, 255, .04);
 }
 
 .hero-search .tool-search:focus {
   width: min(100%, 792px);
   outline: none;
-  background-color: var(--panel-a);
+  background-color: var(--surf-3);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3%2eorg/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%235fd8e0' stroke-width='1.4'%3E%3Ccircle cx='7' cy='7' r='5'/%3E%3Cpath d='M10.5 10.5 14 14' stroke-linecap='round'/%3E%3C/svg%3E");
   box-shadow: 0 0 0 1px color-mix(in oklab, var(--accent) 72%, var(--hair-lit)),
     0 0 0 4px color-mix(in oklab, var(--accent) 14%, transparent);
@@ -2275,7 +2200,7 @@ body:has(.hero) .entries > li::after { right: -6px; bottom: -6px; }
   gap: 18px;
   align-items: baseline;
   padding: 11px 14px;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   text-decoration: none;
   transition: background-color .18s ease;
 }
@@ -2340,10 +2265,7 @@ body:has(.hero) .entries > li::after { right: -6px; bottom: -6px; }
   .hits.is-in { animation: none; }
 }
 
-/* ── 搜索带底栏：当前轮换素字徽记行 ──
-   收在 .hero-band 下沿，上方一道 1px --hair 分隔线与 352px 背景主刻线重合。
-   不画内层小方框（design.md「一排多枚退回素字」），靠 21px 官方纯白徽记与粗体字成组，
-   上下内边距等距，让徽记与文字在上下两条框线正中对齐，悬停时显示 L 形角标。 */
+/* ── 搜索带底栏：当前轮换素字徽记行 ── */
 .hero-rota {
   display: flex;
   flex-wrap: wrap;
@@ -2361,29 +2283,15 @@ body:has(.hero) .entries > li::after { right: -6px; bottom: -6px; }
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 2px 10px;
+  padding: 4px 10px;
   color: var(--bone);
+  border-radius: var(--r-sm);
   text-decoration: none;
+  transition: background-color .15s ease;
 }
 
-.hero-rota .hr-group::before,
-.hero-rota .hr-group::after {
-  content: "";
-  position: absolute;
-  width: 6px;
-  height: 6px;
-  border: 1px solid var(--accent);
-  opacity: 0;
-  transition: opacity .15s ease;
-}
-
-.hero-rota .hr-group::before { top: 0; left: 0; border-right: 0; border-bottom: 0; }
-.hero-rota .hr-group::after { right: 0; bottom: 0; border-left: 0; border-top: 0; }
-
-.hero-rota .hr-group:hover::before,
-.hero-rota .hr-group:hover::after,
-.hero-rota .hr-group:focus-visible::before,
-.hero-rota .hr-group:focus-visible::after { opacity: 1; }
+.hero-rota .hr-group:hover,
+.hero-rota .hr-group:focus-visible { background: var(--tint-2); }
 
 .hero-rota .hr-tag {
   color: var(--bone-dim);
@@ -2510,9 +2418,8 @@ body:has(.hero) .entries > li::after { right: -6px; bottom: -6px; }
 /* 一组之首那张统领全组的卡横跨两列，读作组的入口而不是并列的第 n 项 */
 .entries > li.wide { grid-column: 1 / -1; }
 
-/* 条目按游戏内物品框来读：左侧节点图标 + 名称与类型行 + 右侧数值。
-   右上切角与左缘亮边是框的形状语言，切角靠 ::before 单独画——
-   clip-path 会把 border 一起裁掉。 */
+/* 条目卡片：左侧节点图标 + 名称与预览区 + 右侧数值。
+   走 --r-lg 圆角面板，底色从左（带 2.5% 本页极淡色晕）向右半透消融进深空背景。 */
 .entry {
   position: relative;
   display: grid;
@@ -2522,54 +2429,36 @@ body:has(.hero) .entries > li::after { right: -6px; bottom: -6px; }
   padding: 24px;
   color: inherit;
   text-decoration: none;
-  background: linear-gradient(100deg, #171c29, #12151f 64%);
-  border: 1px solid var(--hair);
-  /* **只切右上一个角。**左下也切过，双列排布下相邻两张卡的切角正好分踞列间那道沟
-     的两端、且同向，整条沟读成错开的 Z 形，看着像两列没对齐。单列时不显，双列时
-     一眼就是毛病。 */
-  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
-  transition: background .18s ease, box-shadow .18s ease;
+  background:
+    radial-gradient(260px 150px at 0% 50%, color-mix(in srgb, var(--edge, var(--accent)) 2.5%, transparent), transparent 72%),
+    linear-gradient(102deg, rgba(19, 24, 37, .80) 0%, rgba(14, 18, 28, .50) 66%, rgba(11, 13, 20, .34) 100%);
+  border: 1px solid rgba(255, 255, 255, .07);
+  border-radius: var(--r-lg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
+  overflow: hidden;
+  transition: background .18s ease, border-color .18s ease, box-shadow .18s ease;
 }
 
-/* 左缘亮边：**那一页所讲的东西在游戏里的颜色**。异域金、战斗人员红、神器青绿……
-   讲的东西没有游戏内编码时（配装、排行、攻略、站务）留骨白，「有色 / 无色」
-   因此是两档而不是「有 / 缺」。铺满 27 种色就成了彩虹装饰，正好否掉
-   design.md 第一条那个命题。取色在下面的 .k-* 一处。 */
+/* 左缘亮边：那一页所讲的东西在游戏里的颜色。 */
 .entry::after {
   content: "";
   position: absolute;
   inset: 0 auto 0 0;
   width: 2px;
-  /* **缺省是 UI 构件，不是「没有颜色」那个状态。**左缘默认走 --accent，
-     即 design.md 里「子页面覆盖这一个即可换色」的那个槽位；那一页讲的东西
-     带游戏内编码时，由下面的 .k-* 把游戏的色接管过去。
-     骨白试过：成组时读作发灰，整排卡有色无色两批分量不等。 */
+  border-radius: 2px 0 0 2px;
   background: var(--edge, var(--accent));
   opacity: .38;
   transition: opacity .18s ease;
 }
 
-/* 补一道斜线，接上被 clip-path 截断的框线。**盒子尺寸必须等于切口距离**——
-   写 22 而切口在 15 时，斜线比缺口长出一截，两端都接不上。
-
-   **角度决定渐变从哪个角起算**：色带垂直于渐变轴，接缝沿 (1,1) 方向，
-   所以从右上角起算，用 225deg。 */
-.entry::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 16px;
-  height: 16px;
-  background: linear-gradient(225deg, var(--hair) 0 1px, transparent 1px);
-}
-
 .entry:hover {
-  background: linear-gradient(100deg, #1d2432, #14182333 64%);
-  box-shadow: inset 0 0 0 1px var(--hair-lit);
+  background:
+    radial-gradient(320px 170px at 0% 50%, color-mix(in srgb, var(--edge, var(--accent)) 6%, transparent), transparent 75%),
+    linear-gradient(102deg, rgba(24, 31, 46, .88) 0%, rgba(17, 22, 34, .64) 68%, rgba(13, 17, 26, .46) 100%);
+  border-color: color-mix(in srgb, var(--edge, var(--accent)) 22%, rgba(255, 255, 255, .12));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06);
 }
 
-/* clip-path 把 outline 连带裁掉（实测完全不可见），焦点环改用内嵌环 */
 .entry:focus-visible {
   outline: none;
   box-shadow: inset 0 0 0 2px var(--accent);
@@ -2660,10 +2549,11 @@ body:has(.hero) main.index { position: relative; }
   place-items: center;
   width: 56px;
   height: 56px;
-  color: var(--bone-faint);
-  background: #ffffff05;
-  border: 1px solid var(--hair);
-  transition: color .18s ease, background .18s ease;
+  color: color-mix(in srgb, var(--edge, var(--accent)) 22%, var(--bone-faint));
+  background: rgba(11, 13, 20, .58);
+  border: 1px solid rgba(255, 255, 255, .07);
+  border-radius: var(--r-md);
+  transition: color .18s ease, background .18s ease, border-color .18s ease;
 }
 
 .entry-node svg {
@@ -2674,19 +2564,18 @@ body:has(.hero) main.index { position: relative; }
 .entry:hover .entry-node,
 .entry:focus-visible .entry-node {
   color: var(--edge, var(--accent));
-  background: color-mix(in srgb, var(--edge, var(--accent)) 9%, transparent);
+  background: color-mix(in srgb, var(--edge, var(--accent)) 10%, rgba(15, 19, 29, .78));
+  border-color: color-mix(in srgb, var(--edge, var(--accent)) 30%, rgba(255, 255, 255, .08));
 }
 
-/* **卡内最重的是标题。**原先 27px/700 的数值压过 22px/600 的标题，扫读一屏
-   先读到「406」再回头找「武器 PERK」——名字才是选哪一篇的依据，数值只答
-   「这一篇有多大」。标题升一档、数值降两档，次序就正过来了。 */
+/* **卡内最重的是标题。**名字才是选哪一篇的依据，数值只答「这一篇有多大」。 */
 .entry h3 {
   margin: 0 0 8px;
   color: var(--bone-hi);
   font-family: var(--font-cn);
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 600;
-  letter-spacing: .05em;
+  letter-spacing: .03em;
 }
 
 .entry p {
@@ -2700,15 +2589,15 @@ body:has(.hero) main.index { position: relative; }
 .entry-stamp {
   display: block;
   margin-top: 16px;
-  color: var(--bone-dim);
+  color: var(--bone-faint);
   font-family: var(--font-disp);
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: .2em;
+  letter-spacing: .08em;
 }
 
 /* 内容提供者：接在更新时间后面，一张卡一位。创作者会持续增加，归属因此落在
-   卡片上而不是组名的副题里——副题只说这一组是什么，加一位创作者只多一张卡。
+   卡片上而不是组名的副题里：副题只说这一组是什么，加一位创作者只多一张卡。
    主页链接不写在这里：卡片整体已经是一个 <a>，链接不能再套一层，各位创作者的
    主页统一收在「数据源与鸣谢」页的鸣谢表里。 */
 .entry-by {
@@ -2733,7 +2622,7 @@ body:has(.hero) main.index { position: relative; }
 .entry-meta div {
   flex: none;
   padding-left: 24px;
-  border-left: 1px solid var(--hair);
+  border-left: 1px solid var(--bd-col);
 }
 
 .entry-meta div:first-child { border-left: 0; padding-left: 0; }
@@ -2792,7 +2681,8 @@ body:has(.hero) main.index { position: relative; }
 
 .pv-icons img {
   display: block;
-  border: 1px solid var(--hair);
+  border: 1px solid var(--bd-tile);
+  border-radius: var(--r-md);
 }
 
 .pv-shelf { gap: 8px; }
@@ -2820,7 +2710,8 @@ body:has(.hero) main.index { position: relative; }
 
 .pv-ic img {
   display: block;
-  border: 1px solid var(--hair);
+  border: 1px solid var(--bd-tile);
+  border-radius: var(--r-sm);
 }
 
 .pv-tx {
@@ -2870,7 +2761,8 @@ body:has(.hero) main.index { position: relative; }
 
 .pv-rank img {
   display: block;
-  border: 1px solid var(--hair);
+  border: 1px solid var(--bd-tile);
+  border-radius: var(--r-sm);
 }
 
 /* 没有图标的那一格（首领）：占位不占宽 */
@@ -2952,7 +2844,8 @@ body:has(.hero) main.index { position: relative; }
 
 .pv-chip {
   padding: 2px 9px;
-  border: 1px solid var(--hair-lit);
+  background: rgba(255, 255, 255, .025);
+  border: 1px solid var(--bd-tile);
   border-radius: var(--r-sm);
   font: 12px/1.6 var(--font-cn);
 }
@@ -2976,9 +2869,9 @@ body:has(.hero) main.index { position: relative; }
   gap: 6px;
   padding: 4px 10px 4px 8px;
   color: var(--bone);
-  background: var(--tint-1);
-  border: 1px solid var(--hair-lit);
-  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%);
+  background: rgba(19, 24, 37, .72);
+  border: 1px solid var(--bd-tile);
+  border-radius: var(--r-sm);
   transition: color .18s ease, border-color .18s ease;
 }
 
@@ -3003,7 +2896,7 @@ body:has(.hero) main.index { position: relative; }
   border-color: color-mix(in oklab, var(--accent) 32%, var(--hair-lit));
 }
 
-/* 合集工具：三阶遭遇战切装轨道（01 清怪推进 ── 02 机制破盾 ── 03 首领爆发） */
+/* 合集工具：三阶遭遇战切装轨道（01 清怪推进 · 02 机制破盾 · 03 首领爆发） */
 .pv-stages {
   display: flex;
   flex-wrap: wrap;
@@ -3016,9 +2909,10 @@ body:has(.hero) main.index { position: relative; }
   align-items: center;
   gap: 7px;
   padding: 4px 11px 4px 9px;
-  background: var(--tint-1);
-  border: 1px solid var(--hair-lit);
+  background: rgba(19, 24, 37, .72);
+  border: 1px solid var(--bd-tile);
   border-left: 2px solid var(--st-c, var(--accent));
+  border-radius: var(--r-sm);
 }
 
 .pv-st-node[data-rk="util"] { --st-c: var(--c-strand); }
@@ -3063,6 +2957,8 @@ body:has(.hero) main.index { position: relative; }
 .pv-swatch i {
   width: 26px;
   height: 26px;
+  border-radius: var(--r-sm);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12);
 }
 
 .pv-shots {
@@ -3080,7 +2976,8 @@ body:has(.hero) main.index { position: relative; }
 
 .pv-shots img {
   display: block;
-  border: 1px solid var(--hair);
+  border: 1px solid var(--bd-outer);
+  border-radius: var(--r-md);
   object-fit: cover;
 }
 
