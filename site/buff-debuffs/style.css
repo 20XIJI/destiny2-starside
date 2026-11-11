@@ -15,7 +15,6 @@
    只给没有 class 的段：整段只有一个 {标记|…} 时 class 落在 <p> 本身，
    这条会压过单类的 .note，整段批注就退回说明色。 */
 .block p:not([class]) {
-  max-width: 62em;
   color: var(--bone-dim);
   font-size: 14px;
 }
@@ -90,11 +89,8 @@
 
 /* ── 读表说明的术语表 ──
    「世界与活动」整节是六条规则，走 `术语` + `: 定义` 块。
-   `.rules` 不在 site.css 里，是逐页定义的（ammo 与 weapon-frames 各有一份，且两份不同：
-   前者带上下分隔线，后者是纯留白）。这一页照 weapon-frames 那份写——同为 1500px 版心，
-   62em 的上限与上面 `.block p` 那条同宽，定义句因此不会跟着版心通栏排。 */
+   `.rules` 不在 site.css 里，是逐页定义的（ammo 带上下分隔线，这里与 weapon-frames 是纯留白）。 */
 .rules {
-  max-width: 62em;
   margin: 0;
 }
 

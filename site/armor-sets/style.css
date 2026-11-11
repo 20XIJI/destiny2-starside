@@ -8,7 +8,6 @@
 :root { --wrap: 1060px; --min: 1104px; }
 
 .page-note {
-  max-width: 60em;
   margin: 20px 0 0;
   color: var(--bone-dim);
   font-size: 14px;

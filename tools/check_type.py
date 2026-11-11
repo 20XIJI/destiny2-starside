@@ -8,6 +8,7 @@ T1／T2 只看样式表。T3 在 shell.emit() 落盘前验刚写出的那一份 
   T2 background 简写    非末层不许写颜色，整条声明否则作废。
   T3 产出的结构        开闭配对、开标签被复制一份时冒出的坏属性。生成页走 emit()。
   T4 整数阶梯与残留    禁小数像素字号、已退役的 --font-read，以及页面无 .gen 表时残留的 .gen 选择器。
+  T5 资料页正文通栏    资料页正文块不许加窄 max-width，行宽统一跟 --wrap 走。
 
 用法：python3 tools/check_type.py    改样式或改首页之后跑一次，已接进 npm run build。
 """
@@ -308,20 +309,83 @@ def check_tokens(bad: list[str]) -> int:
     return n
 
 
+# ── T5 资料页正文通栏 ────────────────────────────────────────────────────────
+
+PROSE_TARGET = re.compile(
+    r"(?:^|[\s>+~])(?:"
+    r"\.block\b[^,]*?(?:[\s>+~](?:p|ul|ol|dl|\.note)\b)"
+    r"|(?:dl)?\.rules(?:\s+dd)?"
+    r"|\.page-note"
+    r"|\.lede"
+    r"|(?:p)?\.formula"
+    r")(?=$|[\s>+~:.\[])"
+)
+
+
+def split_selectors(header: str) -> list[str]:
+    """按括号外的顶层逗号切选择器组（:is(a, b) 里的逗号不切）。"""
+    out, depth, cur = [], 0, ""
+    for ch in header:
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth = max(0, depth - 1)
+        if ch == "," and depth == 0:
+            if cur.strip():
+                out.append(cur.strip())
+            cur = ""
+        else:
+            cur += ch
+    if cur.strip():
+        out.append(cur.strip())
+    return out
+
+
+def narrow_prose_widths(css: str) -> list[tuple[str, str]]:
+    """返回对资料页正文块施加窄 max-width 的 (选择器, 取值)。"""
+    out = []
+    for m in re.finditer(r"([^{}]+)\{([^{}]*)\}", strip_comments(css)):
+        hits = re.findall(r"(?<![\w-])max-width\s*:\s*([^;{}]+)", m.group(2))
+        if not hits:
+            continue
+        val = hits[-1].strip()
+        if val in ("none", "100%") or "--wrap" in val:
+            continue
+        for sel in split_selectors(m.group(1)):
+            if PROSE_TARGET.search(sel):
+                out.append((sel, val))
+    return out
+
+
+def check_prose_width(bad: list[str]) -> int:
+    n = 0
+    for rel in css_files():
+        if rel.startswith(("assets/", "admin/", "builds/", "weapons/", "eververse/")):
+            continue
+        for sel, val in narrow_prose_widths(read(rel)):
+            n += 1
+            bad.append(
+                "T5 %s：%s 写了 max-width: %s，资料页正文应跟 --wrap 通栏对齐"
+                % (rel, sel, val)
+            )
+    return n
+
+
 def main() -> int:
     bad: list[str] = []
     n1 = check_tracking(bad)
     n2 = check_background(bad, root_colors(read("assets/site.css")))
     n3 = check_shape(bad)
     n4 = check_tokens(bad)
+    n5 = check_prose_width(bad)
     if bad:
         print("排版与结构不一致：", file=sys.stderr)
         for line in bad:
             print("  " + line, file=sys.stderr)
         return 1
     print(
-        "排版与结构一致：%d 份样式表，手写 %d 页（字距 %d、简写 %d、结构 %d、阶梯 %d）"
-        % (len(css_files()), len(handwritten()), n1, n2, n3, n4)
+        "排版与结构一致：%d 份样式表，手写 %d 页（字距 %d、简写 %d、结构 %d、阶梯 %d、版心 %d）"
+        % (len(css_files()), len(handwritten()), n1, n2, n3, n4, n5)
     )
     return 0
 

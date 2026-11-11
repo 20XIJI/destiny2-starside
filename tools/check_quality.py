@@ -4197,6 +4197,31 @@ class TypeGate(unittest.TestCase):
             ["12.5px", "13.5px"],
         )
 
+    def test_narrow_prose_widths_are_reported(self):
+        import check_type
+
+        self.assertEqual(
+            check_type.narrow_prose_widths(
+                ".block > p { max-width: calc(var(--wrap) - 44px); } "
+                ".gen tbody td:last-child { max-width: 26em; } "
+                ".set-bonuses { max-width: 760px; }"
+            ),
+            [],
+        )
+        self.assertEqual(
+            check_type.narrow_prose_widths(
+                ".block p, .block ul { max-width: 46em; } "
+                ".rules { max-width: 62em; } "
+                ".intro .lede { max-width: 60em; }"
+            ),
+            [
+                (".block p", "46em"),
+                (".block ul", "46em"),
+                (".rules", "62em"),
+                (".intro .lede", "60em"),
+            ],
+        )
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=0)
