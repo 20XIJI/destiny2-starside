@@ -2964,6 +2964,7 @@ test('weapons: card, detail swap, resetroll, hoverRaf cancellation, and focusin/
     getAttribute: () => '',
     addEventListener() {},
     appendChild() {},
+    insertBefore() {},
     insertAdjacentHTML() {},
     prepend() {},
     remove() {},
@@ -3075,6 +3076,100 @@ test('weapons: card, detail swap, resetroll, hoverRaf cancellation, and focusin/
   assert.equal(T.S.hoverPlug && T.S.hoverPlug.plug, 1, 'unrelated focusout must not clear active hover preview')
   docListeners.focusout({ target: perkTarget })
   assert.equal(T.S.hoverPlug, null, 'blurring the focused perk clears hover preview')
+})
+
+test('build editing warns before discarding changes made during save', async () => {
+  let current = '甲'
+  let submitted
+  let complete
+  let warnings = 0
+  const pending = new Promise((resolve) => { complete = resolve })
+  function element(tag, cls, text) {
+    return {
+      tag, cls, textContent: text, children: [],
+      appendChild(child) { this.children.push(child) },
+      remove() {},
+      querySelector() { return this.children.find((child) => child.tag === 'iframe') },
+      setAttribute() {},
+      removeAttribute() {}
+    }
+  }
+  const ctx = {
+    el: element,
+    document: { querySelector: () => ({ textContent: '配装' }), body: { appendChild() {} } },
+    window: {
+      confirm() { warnings++; return false },
+      starsideAdmin: { slotOf: () => 'single', formSrc: () => 'form', readForm: () => current }
+    },
+    S: { me: { lv: 2 }, buildBase: '甲' },
+    DOC: 'builds/example',
+    HERE: '/',
+    call(action, body) { submitted = body.md; return pending }
+  }
+  vm.createContext(ctx)
+  vm.runInContext('var pane = null;\n'
+    + ['buildRead', 'buildShut', 'buildPane'].map((n) => funcSource('admin/edit.js', n)).join('\n'), ctx)
+  ctx.buildPane(element('button'), '甲')
+  const bar = ctx.pane.children[0]
+  bar.children[1].onclick()
+  current = '乙'
+  complete()
+  await pending
+  await Promise.resolve()
+  bar.children[2].onclick()
+  assert.equal(submitted, '甲')
+  assert.equal(warnings, 1, 'editing during save must not be silently discarded')
+  assert.ok(ctx.pane, 'canceling the warning keeps the editor open')
+})
+
+test('build like waits for the existing count before allowing a cancellation', async () => {
+  const html = fs.readFileSync(path.join(site, 'builds/s29/00vivy2a-hunter/index.html'), 'utf8')
+  const code = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)]
+    .map((m) => m[1]).find((s) => s.includes('document.querySelectorAll("[data-like]")'))
+  assert.ok(code)
+  const id = 's29_00vivy2a-hunter'
+  const storage = { ['lk' + id]: '1' }
+  const number = { textContent: '' }
+  const button = {
+    tagName: 'BUTTON', dataset: { like: id }, disabled: false, attrs: { 'aria-pressed': 'false' },
+    querySelector: () => number,
+    getAttribute(key) { return this.attrs[key] },
+    setAttribute(key, value) { this.attrs[key] = value },
+    closest() { return this }
+  }
+  let click
+  let finishLoad
+  let finishWrite
+  const requests = []
+  const ctx = {
+    document: {
+      querySelectorAll: () => [button],
+      addEventListener(type, fn) { if (type === 'click') click = fn }
+    },
+    localStorage: {
+      getItem: (key) => storage[key] || null,
+      setItem(key, value) { storage[key] = value },
+      removeItem(key) { delete storage[key] }
+    },
+    fetch(url, options) {
+      requests.push({ url, options })
+      return new Promise((resolve) => { if (options) finishWrite = resolve; else finishLoad = resolve })
+    }
+  }
+  vm.runInNewContext(code, ctx)
+  assert.equal(button.attrs['aria-pressed'], 'true')
+  assert.equal(button.disabled, true)
+  click({ target: button })
+  assert.equal(requests.length, 1)
+  finishLoad({ ok: true, json: () => Promise.resolve({ [id]: 10 }) })
+  await new Promise((resolve) => setImmediate(resolve))
+  click({ target: button })
+  assert.equal(JSON.parse(requests[1].options.body).d, -1)
+  finishWrite({ ok: true, json: () => Promise.resolve({ ok: 1 }) })
+  await new Promise((resolve) => setImmediate(resolve))
+  assert.equal(number.textContent, 9)
+  assert.equal(button.attrs['aria-pressed'], 'false')
+  assert.equal(button.disabled, false)
 })
 
 async function main() {

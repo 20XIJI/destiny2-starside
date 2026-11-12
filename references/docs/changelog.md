@@ -7,6 +7,10 @@
 ## 2026.11.12
 
 - {act|改动}[输出手法 DPS 排行](../dps-ranking/index.html)：新增 107 条点评、手法徽章与职业筛选，调整分段 DPS 列组
+- {act|改动}[装备库](../weapons/index.html)：稳定搜索与筛选时序，数据载入失败可重试
+- {act|改动}[压光伤害](../power-delta/index.html)：稳定图表载入时的页面布局
+- {act|改动}[购物清单](../shopping-primary/index.html)：未加载完整时标明搜索结果状态
+- {act|改动}[配装推荐](../builds/index.html)：稳定点赞与在线编辑保存状态
 - {act|订正}[输出手法 DPS 排行](../dps-ranking/index.html) · 第 89 名：名称改为回旋喝彩
 
 ## 2026.11.8

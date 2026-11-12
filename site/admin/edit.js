@@ -899,13 +899,17 @@
       keep.onclick = function () {
         var now = buildRead()
         if (now === null) { msg.textContent = '配装工具尚未载入完成，请稍后再保存。'; return }
+        var savingPane = pane
         keep.disabled = true
         call('bsave', { id: DOC, md: now }).then(function () {
+          if (pane !== savingPane) return
           keep.disabled = false
-          S.buildBase = buildRead()
-          // **这一页是构建产物，存完一个字都不会变**，不说清就等于什么都没发生。
-          msg.textContent = '已保存，下次站点更新时上线。'
+          S.buildBase = now
+          msg.textContent = buildRead() === now
+            ? '已保存，下次站点更新时上线。'
+            : '已保存提交时的内容；后续修改尚未保存。'
         }, function (e) {
+          if (pane !== savingPane) return
           keep.disabled = false
           // 与审核台同一张 MSG：同一个 bsave，两条路不该一边中文一边 no permission。
           msg.textContent = '保存失败：' + window.starsideAdmin.say(e)

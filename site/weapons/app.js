@@ -106,12 +106,13 @@
   /* ── 载入：pool.js / text.js ───────────────────────────────────────── */
   var HERE = (document.currentScript && document.currentScript.src) || location.href;
   var loads = {};
-  function need(name, cb) {
+  function need(name, cb, retry) {
     var ready = name === 'pool' ? window.WPN_POOL : window.WPN_TEXT;
     if (ready) { if (cb) { cb(); } return true; }
     var job = loads[name];
-    if (!job) {
-      job = loads[name] = { cbs: [], failed: false };
+    if (job && job.failed && !retry) { return false; }
+    if (!job || job.failed) {
+      job = loads[name] = { cbs: job ? job.cbs : [], failed: false };
       var s = document.createElement('script');
       /* 详情或查询在等词条池时提到高优先级：动态插入的脚本缺省是低优先级，会排在首屏
          那一百多张卡片图后面，等它们下完才开始下。load 之后的预取不带回调，照缺省。
@@ -119,14 +120,17 @@
       if (cb && name === 'pool') { s.fetchPriority = 'high'; }
       s.src = new URL(name + '.js', HERE).href;
       s.onload = function () {
+        if (!(name === 'pool' ? window.WPN_POOL : window.WPN_TEXT)) { s.onerror(); return; }
         if (name === 'pool') { poolReady(); } else { textReady(); }
         var cbs = job.cbs; job.cbs = [];
         for (var i = 0; i < cbs.length; i++) { cbs[i](); }
+        render();
       };
       s.onerror = function () {
         job.failed = true;
         console.error('载不动 weapons/' + name + '.js');
-        root.insertAdjacentHTML('afterbegin', '<p class="empty">weapons/' + name + '.js 取不到，词条与说明画不出来。</p>');
+        evaluate();
+        render();
       };
       document.head.appendChild(s);
     }
@@ -1315,6 +1319,8 @@
   var hintBox = root.querySelector('.cs-hint');
   var pillBox = root.querySelector('.cs-pills');
   var rightBox = root.querySelector('.cs-right');
+  var loadErrors = document.createElement('div');
+  root.insertBefore(loadErrors, root.firstChild);
   var body = root.querySelector('.wpn-body');
   var tip = document.createElement('div');
   tip.className = 'tip';
@@ -1387,7 +1393,7 @@
     var total = REPS[S.scope].length;
     var unit = S.scope === 'armor' ? '件' : S.scope === 'sets' ? '套' : '把';
     countBox.innerHTML = !S.q ? '<b>' + total + '</b> ' + unit
-      : '<b>' + (pending ? '…' : results.length) + '</b> / ' + total + ' ' + unit;
+      : '<b>' + (pending ? (loads[pending] && loads[pending].failed ? '—' : '…') : results.length) + '</b> / ' + total + ' ' + unit;
     if (S.syntax) { renderSyntax(); }
   }
 
@@ -1613,7 +1619,7 @@
       seen[k] = true;
       return pillHtml(t, animate && !prevPills[k]);
     }).join('') +
-      (pending ? '<span class="loading">' + (pending === 'pool' ? '词条池载入中…' : '说明载入中…') + '</span>' : '') +
+      (pending && !(loads[pending] && loads[pending].failed) ? '<span class="loading">' + (pending === 'pool' ? '词条池载入中…' : '说明载入中…') + '</span>' : '') +
       (pills.length > 1 ? '<button type="button" class="cs-clear" data-act="clear">清除</button>' : '');
     prevPills = seen;
     condsBox.setAttribute('data-n', pills.length);
@@ -1850,7 +1856,10 @@
   function renderBrowse() {
     detailKey = '';
     body.innerHTML = '';
-    if (pending) { body.innerHTML = SKELETON; return; }
+    if (pending) {
+      body.innerHTML = loads[pending] && loads[pending].failed ? '<p class="empty">查询所需数据载入失败，无法显示结果。</p>' : SKELETON;
+      return;
+    }
     if (!results.length) { body.innerHTML = emptyState(); return; }
     if (S.view === 'list') {
       var names = {}, rows = rowsOf(S.scope);
@@ -2014,20 +2023,20 @@
     var i = S.sel, nextKey = S.scope + ':' + i;
     var swap = detailKey !== '' && detailKey !== nextKey;
     if (S.scope === 'sets') {
-      if (!T) { box.innerHTML = '<p class="loading">说明载入中…</p>'; need('text', renderDetail); return; }
+      if (!T) { box.innerHTML = loads.text && loads.text.failed ? '<p class="empty">说明载入失败。</p>' : '<p class="loading">说明载入中…</p>'; need('text', renderDetail); return; }
       detailKey = nextKey;
       box.innerHTML = setDetail(i, swap);
       restoreDetailFocus(box, f);
       return;
     }
     if (S.scope === 'armor') {
-      if (!T) { box.innerHTML = '<p class="loading">说明载入中…</p>'; need('text', renderDetail); return; }
+      if (!T) { box.innerHTML = loads.text && loads.text.failed ? '<p class="empty">说明载入失败。</p>' : '<p class="loading">说明载入中…</p>'; need('text', renderDetail); return; }
       detailKey = nextKey;
       box.innerHTML = armorDetail(i, swap);
       restoreDetailFocus(box, f);
       return;
     }
-    if (!P) { box.innerHTML = '<p class="loading">词条池载入中…</p>'; need('pool', renderDetail); return; }
+    if (!P) { box.innerHTML = loads.pool && loads.pool.failed ? '<p class="empty">词条池载入失败。</p>' : '<p class="loading">词条池载入中…</p>'; need('pool', renderDetail); return; }
     if (!T) { need('text', renderDetail); }
     detailKey = nextKey;
     box.innerHTML = weaponDetail(i, swap);
@@ -2997,9 +3006,9 @@
     pending = '';
     ['pool', 'text'].forEach(function (name) {
       if (!want[name] || have[name]) { return; }
-      if (want[name] === NEED && !pending) { pending = name; }
+      if ((want[name] === NEED || (loads[name] && loads[name].failed)) && !pending) { pending = name; }
       /* 两份都要时先取 pool，到了重算时再取 text：两份分一条带宽，一起取会让 pool 晚到。 */
-      if (waiting[name] || (name === 'text' && want.pool && !P)) { return; }
+      if (waiting[name] || (loads[name] && loads[name].failed) || (name === 'text' && want.pool && !P)) { return; }
       waiting[name] = true;
       need(name, function () {
         waiting[name] = false;
@@ -3011,6 +3020,11 @@
     results = pending ? [] : run(S.scope, tree);
   }
   function render() {
+    loadErrors.innerHTML = ['pool', 'text'].filter(function (name) {
+      return loads[name] && loads[name].failed;
+    }).map(function (name) {
+      return '<p class="empty" role="alert">weapons/' + name + '.js 载入失败，相关查询和详情可能不完整。 <button type="button" data-act="retry-load" data-v="' + name + '">重试</button></p>';
+    }).join('');
     renderBar();
     renderPresets();
     renderConds();
@@ -3018,6 +3032,8 @@
   }
   var typing = 0, waiting = {};
   function setQuery(q, push) {
+    clearTimeout(typing);
+    typing = 0;
     S.q = q;
     evaluate();
     writeUrl(push);
@@ -3030,6 +3046,7 @@
     input.value = S.q;
   }
   function open(scope, i) {
+    if (typing) { setQuery(input.value, false); }
     var wasBrowse = (S.sel == null);
     if (wasBrowse) { S.savedScrollY = window.scrollY; }
     if (scope !== S.scope) { S.scope = scope; S.q = ''; input.value = ''; evaluate(); }
@@ -3048,7 +3065,7 @@
   input.addEventListener('input', function () {
     clearTimeout(typing);
     var q = input.value;
-    typing = setTimeout(function () { setQuery(q, false); suggest(); }, 120);
+    typing = setTimeout(function () { typing = 0; setQuery(q, false); suggest(); }, 120);
   });
   input.addEventListener('click', suggest);
   input.addEventListener('keydown', function (e) {
@@ -3102,7 +3119,19 @@
     var i = S.sel;
     if (S.fxOpen && !e.target.closest('.fx-side')) { S.fxOpen = false; S.fxg = ''; }
     if (act !== 'drop' && !el.closest('.grp')) { closePops(); }
+    if (typing && (act === 'preset' || act === 'facet' || act === 'sxval' || act === 'refine' || act === 'addq')) {
+      setQuery(input.value, false);
+    }
     switch (act) {
+      case 'retry-load':
+        need(v, function () {
+          if (v === 'pool' && S.scope === 'wpn' && S.sel != null && S.urlRoll) {
+            S.rolls[WR[S.sel][W_H]] = decodeRoll(S.sel, S.urlRoll);
+            S.urlRoll = null;
+          }
+          evaluate(); render();
+        }, true);
+        evaluate(); render(); return;
       case 'drop': {
         var was = el.getAttribute('aria-expanded') === 'true';
         closePops();
@@ -3348,12 +3377,15 @@
   });
 
   window.addEventListener('popstate', function () {
+    clearTimeout(typing);
+    typing = 0;
+    closeAc();
     var wasSel = (S.sel != null);
     readUrl();
     input.value = S.q;
     evaluate();
     if (S.sel != null && S.scope === 'wpn' && S.urlRoll) {
-      need('pool', function () { if (S.urlRoll) { S.rolls[WR[S.sel][W_H]] = decodeRoll(S.sel, S.urlRoll); S.urlRoll = null; } render(); });
+      need('pool', function () { if (S.scope === 'wpn' && S.sel != null && S.urlRoll) { S.rolls[WR[S.sel][W_H]] = decodeRoll(S.sel, S.urlRoll); S.urlRoll = null; } render(); });
     }
     render();
     if (wasSel && S.sel == null) { window.scrollTo(0, S.savedScrollY || 0); }
@@ -3367,7 +3399,7 @@
   evaluate();
   if (S.sel != null && S.scope === 'wpn' && S.urlRoll) {
     need('pool', function () {
-      if (S.urlRoll) { S.rolls[WR[S.sel][W_H]] = decodeRoll(S.sel, S.urlRoll); S.urlRoll = null; }
+      if (S.scope === 'wpn' && S.sel != null && S.urlRoll) { S.rolls[WR[S.sel][W_H]] = decodeRoll(S.sel, S.urlRoll); S.urlRoll = null; }
       render();
     });
   }

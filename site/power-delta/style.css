@@ -10,6 +10,13 @@
    不做窄屏适配（design.md 五节），骨架在 assets/site.css。 */
 :root { --wrap: 1060px; --min: 1104px; }
 
+.chart-loading .gen { display: none; }
+.chart-loading .block:has(.gen)::after {
+  display: block;
+  content: "";
+  aspect-ratio: 1000 / 580;
+}
+
 /* ── 图 ── */
 .chart { margin: 0; }
 

@@ -229,7 +229,24 @@
   if (slot && slot.dataset.chart !== undefined) {
     lazy('chart.js').then(function (m) {
       m.default({ tuck: tuck, onResize: onResize, slot: slot });
-      measure();          // 图建好、源表收起之后版面变了，再量一次
+      document.documentElement.classList.remove('chart-loading');
+      measure();
+    }).catch(function (e) {
+      var table = document.querySelector('.gen');
+      var box = table && table.parentNode;
+      if (box && box.classList.contains('off-screen')) {
+        box.parentNode.insertBefore(table, box);
+        box.remove();
+      }
+      var fig = document.querySelector('.chart');
+      if (fig) fig.remove();
+      document.documentElement.classList.remove('chart-loading');
+      var error = document.createElement('p');
+      error.setAttribute('role', 'alert');
+      error.textContent = '图表载入失败，请查看下方数据表或刷新重试。';
+      slot.appendChild(error);
+      console.error('图表初始化失败', e);
+      measure();
     });
     measure();
     onResize(measure);
@@ -292,6 +309,7 @@
   }
 
   var rows, mods, lanes, groups, subs, text, names;
+  var restState = window.starsideRest ? 'loading' : 'ready';
   function all(sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); }
   /* 条目与跟着条目走的那几样，收一遍。首屏之后另存的页面（shell.split_rest）在
      starside:rest 时再收一遍：那批记录在这段脚本跑完之后才插回来。 */
@@ -416,7 +434,7 @@
   var search = document.createElement('input');
   search.type = 'search';
   search.className = 'tool-search';
-  search.placeholder = '搜索 ' + poolSize() + ' 个' + NOUN;
+  search.placeholder = restState === 'loading' ? '搜索' + NOUN + '（其余条目载入中）' : '搜索 ' + poolSize() + ' 个' + NOUN;
   search.setAttribute('aria-label', '搜索' + NOUN);
 
   var count = document.createElement('p');
@@ -810,11 +828,11 @@
       if (chips[i]) chips[i].hidden = empty;
     });
     var active = !!query.trim() || facetOn();
-    count.textContent = active ? hits + ' / ' + poolSize() : '';
-    /* 搜了但一个都没命中时给工具条打一位，搜索框与计数据此转红：灰着看
-       0 / 147 与 3 / 147 长得一样。清空查询即撤销，没搜过也不算空结果。 */
-    slot.toggleAttribute('data-miss', active && !hits);
-    syncEmpty(active && !hits);
+    count.textContent = restState === 'loading' ? '其余条目载入中，搜索结果尚不完整'
+      : restState === 'failed' ? '其余条目载入失败，搜索结果不完整；请刷新重试'
+      : active ? hits + ' / ' + poolSize() : '';
+    slot.toggleAttribute('data-miss', restState === 'ready' && active && !hits);
+    syncEmpty(restState === 'ready' && active && !hits);
     remember(query);
     return hits;
   }
@@ -910,6 +928,7 @@
   } else if (hideOn && ITEM) {
     filter('');
   }
+  if (restState === 'loading') filter(search.value);
 
   /* 首屏之后另存的记录插回来了：重收条目，按搜索框里现有的查询再过一遍。
      带 # 进来、读者还没动过页面的，再跳一次：跳转那一刻目标前面的记录还没插回来，
@@ -919,16 +938,21 @@
     ['wheel', 'touchstart', 'keydown'].forEach(function (type) {
       addEventListener(type, function () { moved = true; }, { once: true, passive: true });
     });
-    document.addEventListener('starside:rest', function () {
+    window.starsideRest.then(function () {
+      restState = 'ready';
       collect();
       if (DIMS) vals = valsOf();
       hadItems = (ROW || ITEM)
         ? sections.map(function (sec) { return !!sec.querySelector(ROW || ITEM); }) : [];
       search.placeholder = '搜索 ' + poolSize() + ' 个' + NOUN;
       trimSubs();
-      if (search.value.trim() || facetOn() || hideOn) filter(search.value);
+      filter(search.value);
       var at = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)));
       if (at && !moved) at.scrollIntoView();
+    }, function () {
+      restState = 'failed';
+      search.placeholder = '搜索' + NOUN + '（其余条目载入失败）';
+      filter(search.value);
     });
   }
 

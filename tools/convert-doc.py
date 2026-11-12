@@ -1230,6 +1230,15 @@ def render(md, slug, digest):
             thanks=inline(thanks, rich=True) if thanks else None,
         ),
     ]
+    if flag_of(md, "图表"):
+        app_script = '<script src="%sassets/app.js" defer></script>' % ("../" * up)
+        o[0] = o[0].replace(
+            app_script,
+            '<script>document.documentElement.classList.add("chart-loading")</script>\n'
+            '<script src="%sassets/app.js" defer '
+            'onerror="document.documentElement.classList.remove(\'chart-loading\')"></script>'
+            % ("../" * up),
+        )
     if initial_rules:
         o[0] = o[0].replace(
             "</head>",
