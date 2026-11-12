@@ -8,7 +8,7 @@ export default function init(heads, spk) {
   var names = heads.map(function (th) { return th.textContent.trim(); });
   var iEndDps = names.indexOf('结束 DPS');
   var iEndT = names.indexOf('结束时间');
-  var iTot = names.indexOf('结束总伤');
+  var iTot = names.indexOf('总伤');
   var iCore = names.indexOf('核心 DPS');
   var iCont = names.indexOf('可续');
   var iRange = names.indexOf('区间');

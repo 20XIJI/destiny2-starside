@@ -395,6 +395,8 @@ def render_table(
     rota=None,
     base=0,
     cycle=None,
+    default=None,
+    initial_rules=None,
 ):
     """markdown 表格 → <table class="gen">。
 
@@ -417,8 +419,7 @@ def render_table(
     在表里真实存在，写错即中止——静默少标一个点，眼睛查不出来。
 
     curves 是 [列名]：落成表上的 data-lines，图表加载时只画这几条，其余由图例
-    开关打开。与「默认列组：」同一条约定——**默认隐藏由 app.js 在加载时施加，
-    不写进 HTML**，无 JS 时表里所有列照常可读。
+    开关打开。无 JS 时表里所有列照常可读。
 
     base 是 lines[0] 在源稿里的行号：每行落一个 data-b 给在线编辑台反查。
     **格号不落进 HTML**，DOM 的 cellIndex 白送——4339 行表格约三万五千格，
@@ -518,6 +519,16 @@ def render_table(
 
     # 表头行也戳：它同样是源稿的一行（改列名走这里），而且它一戳，每张表的第一个
     # <tr> 必然带号，「没有 data-b 就是上一行 +1」那条不会跨表接到上一张去。
+    if groups and initial_rules is not None:
+        fixed = groups[colkey(head[0])]
+        for i, col in enumerate(head, 1):
+            if groups[colkey(col)] == fixed or groups[colkey(col)] in default:
+                continue
+            initial_rules.extend((
+                ".cols-loading .gen thead th:nth-child(%d)" % i,
+                ".cols-loading .gen tbody tr:has(> th) > :nth-child(%d)" % i,
+                ".cols-loading .gen tbody tr:not(:has(> th)) > :nth-child(%d)" % (i - 1),
+            ))
     o = ['<table class="gen"%s>' % attr, "<thead>", "<tr%s>" % bmark(base)]
     o += [
         wrap(
@@ -838,7 +849,8 @@ def record_region(lines):
 
 
 def render_blocks(
-    chunk, scales=None, groups=None, marks=None, curves=None, up=0, rota=None, base=0
+    chunk, scales=None, groups=None, marks=None, curves=None, up=0, rota=None, base=0,
+    default=None, initial_rules=None,
 ):
     """分节正文 → 段落、列表、定义列表、表格、卡片。
 
@@ -903,6 +915,8 @@ def render_blocks(
                 rota,
                 base + start,
                 cycle=cycle,
+                default=default,
+                initial_rules=initial_rules,
             )
             cycle = None
             continue
@@ -1022,7 +1036,7 @@ def render(md, slug, digest):
         die("「更新：」要写成 YYYY.M.D，源稿写的是 %r" % stamp)
 
     groups, order = columns_of(md)
-    toolbar = None
+    toolbar, default, initial_rules = None, [], []
     if groups:
 
         def listed(key, required=True):
@@ -1049,8 +1063,7 @@ def render(md, slug, digest):
         toolbar = dict(toolbar or {}, **{"data-clock": ""})
 
     # 「图表：是」→ 工具条槽位带 data-chart，assets/app.js 据此把表画成折线图并
-    # 把表本身收起。**表仍是页面本体**：无 JS 时它完整可读，与列组页默认隐藏由
-    # app.js 施加是同一条约定。数据因此只有一份，不在 HTML 里另存一遍。
+    # 把表本身收起。无 JS 时表完整可读。
     if flag_of(md, "图表"):
         toolbar = dict(toolbar or {}, **{"data-chart": ""})
     marks = marks_of(md)
@@ -1187,7 +1200,10 @@ def render(md, slug, digest):
                     icon=pagedex.site_path(PAGE, head_icon.group(1)),
                     q="",
                 )
-        o += render_blocks(chunk, scales, groups, marks, curves, up, rota, at + 1)
+        o += render_blocks(
+            chunk, scales, groups, marks, curves, up, rota, at + 1,
+            default=default, initial_rules=initial_rules,
+        )
         o.append("</section>")
 
     # 「数据源：是」用 shell.py 里那个 Destiny Data Compendium 出处，一字不改；
@@ -1214,6 +1230,12 @@ def render(md, slug, digest):
             thanks=inline(thanks, rich=True) if thanks else None,
         ),
     ]
+    if initial_rules:
+        o[0] = o[0].replace(
+            "</head>",
+            '<script>document.documentElement.classList.add("cols-loading")</script>\n'
+            '<style>%s{display:none}</style>\n</head>' % ",".join(initial_rules),
+        )
     return "\n".join(o), title
 
 

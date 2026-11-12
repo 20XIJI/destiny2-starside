@@ -158,6 +158,7 @@
     slot.appendChild(nav);
     press();
     apply();
+    document.documentElement.classList.remove('cols-loading');
   }
 
   /* 当前时刻高亮（.toolbar 带 data-clock 的页面）：表里哪一行哪一列是「现在」只有

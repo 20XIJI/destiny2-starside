@@ -1,7 +1,7 @@
 // 由 tools/build-terms.py 生成，不手改。编辑台的资料页清单，以及配装的职业、场景、强度、标签与分支五张表与当前赛季。
 window.starsidePages = [
   ["docs/dps","单武器 DPS 排行","dps/index.html","刷取与攻略","","2026.8.25"],
-  ["docs/dps-ranking","输出手法 DPS 排行","dps-ranking/index.html","刷取与攻略","","2026.11.8"],
+  ["docs/dps-ranking","输出手法 DPS 排行","dps-ranking/index.html","刷取与攻略","","2026.11.12"],
   ["docs/pve-farming","PVE 终局刷取指南","pve-farming/index.html","刷取与攻略","","2026.9.10"],
   ["docs/raid-guides","Raid 攻略","raid-guides/index.html","刷取与攻略","","2026.8.30"],
   ["docs/rotation","轮换速查表","rotation/index.html","刷取与攻略","","2026.10.20"],
@@ -41,7 +41,7 @@ window.starsidePages = [
   ["docs/combatant-scalars","战斗人员倍率","combatant-scalars/index.html","机制","","2026.8.14"],
   ["docs/game-mechanics","游戏机制","game-mechanics/index.html","机制","","2026.10.8"],
   ["docs/power-delta","压光伤害","power-delta/index.html","机制","","2026.8.14"],
-  ["docs/changelog","更新日志","changelog/index.html","站务","","2026.11.8"],
+  ["docs/changelog","更新日志","changelog/index.html","站务","","2026.11.12"],
   ["docs/palette","配色总览","palette/index.html","站务","","2026.8.24"],
   ["docs/sources","数据源与鸣谢","sources/index.html","站务","","2026.11.8"],
 ]
