@@ -122,6 +122,13 @@ function harness(seed = {}, hooks = {}) {
             if (tx) tx.writes.add(name + '\0' + id)
             return { updated: 1 }
           },
+          async create(fields) {
+            calls.push({ op: 'create', name, id, tx: !!tx, fields: copy(fields) })
+            if (state[name].has(id)) return { code: 'DUPLICATE_KEY', message: 'duplicate key' }
+            state[name].set(id, Object.assign({ _id: id }, copy(fields)))
+            if (tx) tx.writes.add(name + '\0' + id)
+            return { inserted: 1, ok: 1, id }
+          },
           // set 整条替换，update 是合并——eds 建新编辑者走的是 set。
           async set(fields) {
             calls.push({ op: 'set', name, id, tx: !!tx, fields: copy(fields) })
@@ -257,6 +264,99 @@ async function rejectedBatch(seed, body, error = 'conflict', hooks = {}) {
   assert.equal(h.calls.some((c) => c.op === 'commit'), false)
   return h
 }
+
+test('likes: lost acknowledgements, replay, and legacy unlikes preserve counts', async () => {
+  const id = 's29_example'
+  const actor = 'a'.repeat(32)
+  const h = harness({ likes: [{ _id: id, n: 10 }] })
+  const like = { a: 'like', id, actor, seq: 1, before: false, on: true }
+  assert.equal((await h.request(like, false)).ok, 1)
+  assert.equal((await h.request(like, false)).ok, 1)
+  assert.equal(h.store.likes.get(id).n, 11)
+  const unlike = { ...like, seq: 2, before: true, on: false }
+  assert.equal((await h.request(unlike, false)).ok, 1)
+  assert.equal((await h.request(unlike, false)).ok, 1)
+  assert.equal((await h.request(like, false)).status, 400)
+  assert.equal(h.store.likes.get(id).n, 10)
+  assert.equal((await h.request({ ...unlike, actor: 'b'.repeat(32), seq: 1 }, false)).ok, 1)
+  assert.equal(h.store.likes.get(id).n, 9)
+})
+
+function likeIndexedDB() {
+  const db = {
+    createObjectStore() {}, close() {},
+    transaction() {
+      const tx = {
+        objectStore() {
+          return { get() {
+            const req = {}
+            queueMicrotask(() => { req.onsuccess(); queueMicrotask(() => tx.oncomplete()) })
+            return req
+          } }
+        }
+      }
+      return tx
+    }
+  }
+  return { open() {
+    const req = { result: db }
+    queueMicrotask(() => req.onsuccess())
+    return req
+  } }
+}
+
+test('likes: refresh retries an unacknowledged write without counting twice', async () => {
+  const html = fs.readFileSync(path.join(site, 'builds/s29/zqqoqjsb-warlock/index.html'), 'utf8')
+  const script = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)]
+    .map((m) => m[1]).find((s) => s.includes('starside-likes'))
+  assert.ok(script, 'generated build page must contain the like client')
+  const id = 's29_example'
+  const h = harness({ likes: [{ _id: id, n: 10 }] })
+  const data = new Map()
+  const storage = {
+    getItem: (k) => data.get(k) ?? null,
+    setItem: (k, v) => data.set(k, String(v)),
+    removeItem: (k) => data.delete(k)
+  }
+  const indexedDB = likeIndexedDB()
+  let lose = true
+  const fetch = async (url, options) => {
+    if (!options) return { ok: true, json: async () => ({ [id]: h.store.likes.get(id).n }) }
+    const response = await h.request(JSON.parse(options.body), false)
+    if (lose) { lose = false; throw new Error('connection lost') }
+    return { ok: response.status === 200, status: response.status, json: async () => response }
+  }
+  function page() {
+    let click
+    const b = {
+      tagName: 'BUTTON', dataset: { like: id }, disabled: false,
+      querySelector: () => null, setAttribute(k, v) { this[k] = v },
+      closest: () => b
+    }
+    const ctx = {
+      document: { querySelectorAll: () => [b], addEventListener(k, fn) { if (k === 'click') click = fn } },
+      window: { indexedDB, crypto: crypto.webcrypto, addEventListener() {} },
+      indexedDB, crypto: crypto.webcrypto, localStorage: storage, fetch
+    }
+    vm.runInNewContext(script, ctx)
+    return { b, click: () => click({ target: b }) }
+  }
+  const flush = () => new Promise((resolve) => setImmediate(resolve))
+  let p = page()
+  await flush()
+  p.click()
+  await flush()
+  assert.equal(h.store.likes.get(id).n, 11)
+  assert.match(p.b.textContent, /结果未知/)
+  p = page()
+  await flush()
+  assert.match(p.b.textContent, /结果未知/)
+  p.click()
+  await flush()
+  assert.equal(h.store.likes.get(id).n, 11)
+  assert.equal(p.b['aria-pressed'], 'true')
+  assert.equal(p.b.textContent, 11)
+})
 
 test('ordinary submission cannot overwrite a pending deletion snapshot', async () => {
   const h = harness()
@@ -3078,6 +3178,60 @@ test('weapons: card, detail swap, resetroll, hoverRaf cancellation, and focusin/
   assert.equal(T.S.hoverPlug, null, 'blurring the focused perk clears hover preview')
 })
 
+test('weapons: completing an unused prefetch preserves loaded browse results', () => {
+  let script
+  const cards = Array.from({ length: 240 }, (_, i) => i)
+  const ctx = {
+    URL, HERE: 'https://example.test/weapons/app.js', loads: {}, window: {},
+    document: { createElement: () => ({}), head: { appendChild(el) { script = el } } },
+    poolReady() {}, textReady() {},
+    render() { cards.length = 120 }
+  }
+  vm.createContext(ctx)
+  vm.runInContext(funcSource('weapons/app.js', 'need'), ctx)
+  ctx.need('pool')
+  ctx.window.WPN_POOL = {}
+  script.onload()
+  assert.equal(cards.length, 240)
+})
+
+test('weapons: removing a filter preserves an uncommitted search', () => {
+  const src = fs.readFileSync(path.join(site, 'weapons/app.js'), 'utf8')
+  const query = src.slice(src.indexOf('  function setQuery(q, push)'), src.indexOf('  function addToken(tok)'))
+  const events = src.slice(src.indexOf("  input.addEventListener('beforeinput',"), src.indexOf("  input.addEventListener('click', suggest)"))
+  const remove = src.slice(src.indexOf("      case 'unpill':"), src.indexOf("      case 'open':", src.indexOf("      case 'unpill':")))
+  function edit(old, next, start, end, tokens, a, b) {
+    const listeners = {}
+    const timers = new Map()
+    let timer = 0
+    const ctx = {
+      S: { q: old },
+      input: { value: old, selectionStart: start, selectionEnd: end, addEventListener(k, fn) { listeners[k] = fn } },
+      tokens, typing: 0, draft: null, inputEdit: null,
+      el: { getAttribute(k) { return { 'data-a': String(a), 'data-b': String(b) }[k] } },
+      clearTimeout(id) { timers.delete(id) },
+      setTimeout(fn) { timers.set(++timer, fn); return timer },
+      evaluate() {}, writeUrl() {}, render() {}, closeAc() {}, suggest() {}
+    }
+    vm.createContext(ctx)
+    vm.runInContext(query + events, ctx)
+    listeners.beforeinput({ inputType: 'insertText' })
+    ctx.input.value = next
+    listeners.input()
+    vm.runInContext('(function(){switch("unpill"){' + remove + '}})()', ctx)
+    for (const fn of timers.values()) fn()
+    return ctx.S.q
+  }
+  const filter = 'perk:火'
+  const token = [{ a: 0, b: filter.length }]
+  assert.equal(edit(filter, filter + ' 冰', filter.length, filter.length, token, 0, filter.length).trim(), '冰')
+  assert.equal(edit(filter, '冰 ' + filter, 0, 0, token, 0, filter.length).trim(), '冰')
+  assert.equal(edit(filter, 'perk:水', 5, 6, token, 0, filter.length), 'perk:水')
+  const repeated = filter + ' ' + filter
+  const tokens = [{ a: 0, b: filter.length }, { a: filter.length + 1, b: repeated.length }]
+  assert.equal(edit(repeated, repeated + ' 冰', repeated.length, repeated.length, tokens, filter.length + 1, repeated.length).trim().replace(/\s+/g, ' '), filter + ' 冰')
+})
+
 test('build editing warns before discarding changes made during save', async () => {
   let current = '甲'
   let submitted
@@ -3141,7 +3295,10 @@ test('build like waits for the existing count before allowing a cancellation', a
   let finishLoad
   let finishWrite
   const requests = []
+  const indexedDB = likeIndexedDB()
   const ctx = {
+    window: { indexedDB, crypto: crypto.webcrypto, addEventListener() {} },
+    indexedDB, crypto: crypto.webcrypto,
     document: {
       querySelectorAll: () => [button],
       addEventListener(type, fn) { if (type === 'click') click = fn }
@@ -3164,8 +3321,12 @@ test('build like waits for the existing count before allowing a cancellation', a
   finishLoad({ ok: true, json: () => Promise.resolve({ [id]: 10 }) })
   await new Promise((resolve) => setImmediate(resolve))
   click({ target: button })
-  assert.equal(JSON.parse(requests[1].options.body).d, -1)
+  await new Promise((resolve) => setImmediate(resolve))
+  assert.equal(JSON.parse(requests[1].options.body).before, true)
+  assert.equal(JSON.parse(requests[1].options.body).on, false)
   finishWrite({ ok: true, json: () => Promise.resolve({ ok: 1 }) })
+  await new Promise((resolve) => setImmediate(resolve))
+  finishLoad({ ok: true, json: () => Promise.resolve({ [id]: 9 }) })
   await new Promise((resolve) => setImmediate(resolve))
   assert.equal(number.textContent, 9)
   assert.equal(button.attrs['aria-pressed'], 'false')

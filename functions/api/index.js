@@ -1,7 +1,7 @@
 // 站点唯一的后端：访问计数、点赞、配装投稿。
 // 访问计数全部装在 counters/stat 这一条 doc 里：计费按数据库调用次数算，不按记录
 // 条数，一条 doc 一次调用。页面级热度看 CDN 控制台的 URL 排行，不自己存。
-// likes 管配装点赞，一条一套：_id 即「赛季_slug」，字段只有 n。
+// likes 管配装点赞；counters 内按浏览器与配装保存最近一次点赞状态及序号。
 const crypto = require('crypto')
 const zlib = require('zlib')
 const fs = require('fs')
@@ -78,11 +78,37 @@ async function allBuildBodies() {
   throw new Error('too many builds')
 }
 
-// ponytail: 先 update 再 set，doc 不存在时才多一次往返。
-// 同一个键当天首次并发写会互相覆盖成 1，掉几个数不值得上事务。
-async function bump(col, id, by) {
-  const r = await col.doc(id).update({ n: _.inc(by) })
-  if (!r.updated && by > 0) await col.doc(id).set({ n: by })
+// 同一浏览器对同一配装的状态与聚合数一起提交；序号使重发和乱序请求安全。
+async function applyLike(id, actor, seq, before, on) {
+  const checked = (r) => {
+    if (r.code) throw Object.assign(new Error(r.message || r.code), { code: r.code })
+    return r
+  }
+  return db.runTransaction(async (tx) => {
+    const receiptId = crypto.createHash('sha256').update(id + ':' + actor).digest('hex')
+    const receipt = tx.collection('counters').doc('like-' + receiptId)
+    const prior = checked(await receipt.get()).data
+    if (prior && seq === prior.seq) {
+      if (prior.on !== on) throw new Error('operation mismatch')
+      return
+    }
+    if (seq !== (prior ? prior.seq + 1 : 1) || (prior && prior.on !== before)) {
+      throw new Error('stale operation')
+    }
+    const doc = tx.collection('likes').doc(id)
+    const current = checked(await doc.get()).data
+    const n = Math.max(0, (current ? current.n : 0) + (on ? 1 : -1))
+    if (current) {
+      if (checked(await doc.set({ n })).updated !== 1) throw new Error('conflict')
+    } else {
+      checked(await doc.create({ n }))
+    }
+    if (prior) {
+      if (checked(await receipt.set({ seq, on })).updated !== 1) throw new Error('conflict')
+    } else {
+      checked(await receipt.create({ seq, on }))
+    }
+  }, 0)
 }
 
 // 一次访问一次调用：累计与当日两个数写在同一条 doc 的两个字段上，inc 是原子的、
@@ -896,11 +922,14 @@ async function route(a, body, event) {
   if (a === 'like') {
     const id = String(body.id || '')
     if (!/^[a-z0-9]+_[a-z0-9-]+$/.test(id)) throw new Error('bad id')
-    const d = body.d === -1 ? -1 : 1
-    await bump(likes, id, d)
-    // 回读一次只为拿新数值，而前端手里就有那个数。缓存里那一项跟着走，
-    // 五分钟窗口内别的访客拿到的也是新数。
-    if (lk.m) lk.m[id] = Math.max(0, (lk.m[id] || 0) + d)
+    const { actor, seq, before, on } = body
+    if (typeof actor !== 'string' || !/^[a-f0-9]{32}$/.test(actor)
+        || !Number.isSafeInteger(seq) || seq < 1
+        || typeof before !== 'boolean' || typeof on !== 'boolean' || before === on) {
+      throw new Error('bad operation')
+    }
+    await applyLike(id, actor, seq, before, on)
+    lk = { t: 0, m: null }
     return { ok: 1 }
   }
 

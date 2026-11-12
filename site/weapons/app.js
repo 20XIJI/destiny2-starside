@@ -124,13 +124,17 @@
         if (name === 'pool') { poolReady(); } else { textReady(); }
         var cbs = job.cbs; job.cbs = [];
         for (var i = 0; i < cbs.length; i++) { cbs[i](); }
-        render();
       };
       s.onerror = function () {
+        var was = pending, before = results;
         job.failed = true;
         console.error('载不动 weapons/' + name + '.js');
         evaluate();
-        render();
+        if (was !== pending || pending === name || !sameList(before, results)) { render(); }
+        else {
+          renderLoadErrors();
+          if (S.sel != null) { renderDetail(); }
+        }
       };
       document.head.appendChild(s);
     }
@@ -1389,7 +1393,7 @@
     });
     bar.querySelector('[data-act="syntax"]').setAttribute('aria-expanded', S.syntax ? 'true' : 'false');
     syntaxBox.hidden = !S.syntax;
-    if (input.value !== S.q && document.activeElement !== input) { input.value = S.q; }
+    if (!typing && input.value !== S.q && document.activeElement !== input) { input.value = S.q; }
     var total = REPS[S.scope].length;
     var unit = S.scope === 'armor' ? '件' : S.scope === 'sets' ? '套' : '把';
     countBox.innerHTML = !S.q ? '<b>' + total + '</b> ' + unit
@@ -2872,6 +2876,7 @@
     return perkIndex;
   }
   function suggest() {
+    if (document.activeElement !== input) { closeAc(); return; }
     var t = currentToken();
     ac.tok = t;
     ac.items = [];
@@ -3014,26 +3019,31 @@
         waiting[name] = false;
         var was = pending, before = results;
         evaluate();
-        if (was || pending || !sameList(before, results)) { render(); }
+        if (was !== pending || !sameList(before, results)) { render(); }
       });
     });
     results = pending ? [] : run(S.scope, tree);
   }
-  function render() {
+  function renderLoadErrors() {
     loadErrors.innerHTML = ['pool', 'text'].filter(function (name) {
       return loads[name] && loads[name].failed;
     }).map(function (name) {
       return '<p class="empty" role="alert">weapons/' + name + '.js 载入失败，相关查询和详情可能不完整。 <button type="button" data-act="retry-load" data-v="' + name + '">重试</button></p>';
     }).join('');
+  }
+  function render() {
+    renderLoadErrors();
     renderBar();
     renderPresets();
     renderConds();
     if (S.sel != null) { renderSplit(); } else { renderBrowse(); }
   }
-  var typing = 0, waiting = {};
+  var typing = 0, waiting = {}, draft = null, inputEdit = null;
   function setQuery(q, push) {
     clearTimeout(typing);
     typing = 0;
+    draft = null;
+    inputEdit = null;
     S.q = q;
     evaluate();
     writeUrl(push);
@@ -3062,10 +3072,40 @@
   }
 
   /* ── 事件 ──────────────────────────────────────────────────────────── */
+  input.addEventListener('beforeinput', function (e) {
+    inputEdit = { value: input.value, a: input.selectionStart, b: input.selectionEnd, type: e.inputType || '' };
+  });
   input.addEventListener('input', function () {
+    var prev = draft ? draft.value : S.q, next = input.value;
+    if (!draft) {
+      draft = { value: prev, spans: tokens.map(function (t) { return { a: t.a, b: t.b, oldA: t.a, oldB: t.b }; }) };
+    }
+    var start = 0, end = prev.length, nextEnd = next.length;
+    var maxStart = prev.length, maxSuffix = prev.length;
+    if (inputEdit && inputEdit.value === prev && inputEdit.a != null && inputEdit.b != null) {
+      var a = inputEdit.a, b = inputEdit.b, removed = Math.max(0, prev.length - next.length);
+      if (a === b && inputEdit.type.indexOf('delete') === 0) {
+        if (inputEdit.type.indexOf('Backward') !== -1) { a = Math.max(0, a - removed); }
+        else { b = Math.min(prev.length, b + removed); }
+      }
+      maxStart = a;
+      maxSuffix = prev.length - b;
+    }
+    while (start < maxStart && start < next.length && prev[start] === next[start]) { start++; }
+    while (end > start && nextEnd > start && prev.length - end < maxSuffix && prev[end - 1] === next[nextEnd - 1]) {
+      end--; nextEnd--;
+    }
+    var shift = nextEnd - end;
+    draft.spans.forEach(function (span) {
+      if (span.a == null) { return; }
+      if (end <= span.a) { span.a += shift; span.b += shift; }
+      else if (start < span.b) { span.a = null; span.b = null; }
+    });
+    draft.value = next;
+    inputEdit = null;
+    closeAc();
     clearTimeout(typing);
-    var q = input.value;
-    typing = setTimeout(function () { typing = 0; setQuery(q, false); suggest(); }, 120);
+    typing = setTimeout(function () { typing = 0; setQuery(input.value, false); suggest(); }, 120);
   });
   input.addEventListener('click', suggest);
   input.addEventListener('keydown', function (e) {
@@ -3124,14 +3164,27 @@
     }
     switch (act) {
       case 'retry-load':
+        var wasPending = pending, beforeRetry = results;
         need(v, function () {
           if (v === 'pool' && S.scope === 'wpn' && S.sel != null && S.urlRoll) {
             S.rolls[WR[S.sel][W_H]] = decodeRoll(S.sel, S.urlRoll);
             S.urlRoll = null;
           }
-          evaluate(); render();
+          var was = pending, before = results;
+          evaluate();
+          if (was !== pending || !sameList(before, results)) { render(); }
+          else {
+            renderLoadErrors();
+            if (S.sel != null) { renderDetail(); }
+          }
         }, true);
-        evaluate(); render(); return;
+        evaluate();
+        if (wasPending !== pending || wasPending === v || !sameList(beforeRetry, results)) { render(); }
+        else {
+          renderLoadErrors();
+          if (S.sel != null) { renderDetail(); }
+        }
+        return;
       case 'drop': {
         var was = el.getAttribute('aria-expanded') === 'true';
         closePops();
@@ -3163,7 +3216,10 @@
         S.sel = null; S.savedScrollY = 0; addToken(v); writeUrl(true); render(); window.scrollTo(0, 0); return;
       case 'unpill': {
         var a = +el.getAttribute('data-a'), b = +el.getAttribute('data-b');
-        var nq = (S.q.slice(0, a) + S.q.slice(b)).replace(/\s+/g, ' ').trim();
+        var span = draft && draft.spans.filter(function (s) { return s.oldA === a && s.oldB === b; })[0];
+        var q = draft ? draft.value : S.q;
+        var nq = span ? (span.a == null ? q : q.slice(0, span.a) + q.slice(span.b)) : (draft ? q : q.slice(0, a) + q.slice(b));
+        if (!draft) { nq = nq.replace(/\s+/g, ' ').trim(); }
         input.value = nq; setQuery(nq, false); return;
       }
       case 'open':
@@ -3379,13 +3435,21 @@
   window.addEventListener('popstate', function () {
     clearTimeout(typing);
     typing = 0;
+    draft = null;
+    inputEdit = null;
     closeAc();
     var wasSel = (S.sel != null);
     readUrl();
     input.value = S.q;
     evaluate();
     if (S.sel != null && S.scope === 'wpn' && S.urlRoll) {
-      need('pool', function () { if (S.scope === 'wpn' && S.sel != null && S.urlRoll) { S.rolls[WR[S.sel][W_H]] = decodeRoll(S.sel, S.urlRoll); S.urlRoll = null; } render(); });
+      need('pool', function () {
+        if (S.scope === 'wpn' && S.sel != null && S.urlRoll) {
+          S.rolls[WR[S.sel][W_H]] = decodeRoll(S.sel, S.urlRoll);
+          S.urlRoll = null;
+          renderDetail();
+        }
+      });
     }
     render();
     if (wasSel && S.sel == null) { window.scrollTo(0, S.savedScrollY || 0); }
@@ -3399,8 +3463,11 @@
   evaluate();
   if (S.sel != null && S.scope === 'wpn' && S.urlRoll) {
     need('pool', function () {
-      if (S.scope === 'wpn' && S.sel != null && S.urlRoll) { S.rolls[WR[S.sel][W_H]] = decodeRoll(S.sel, S.urlRoll); S.urlRoll = null; }
-      render();
+      if (S.scope === 'wpn' && S.sel != null && S.urlRoll) {
+        S.rolls[WR[S.sel][W_H]] = decodeRoll(S.sel, S.urlRoll);
+        S.urlRoll = null;
+        renderDetail();
+      }
     });
   }
   render();

@@ -1473,54 +1473,75 @@ SHOT_CHIP = (
 # ——生成器只出一个带 data-like 的空位，数由这段脚本填。详情页给按钮，索引页
 # 只给数字（卡片整张是 <a>，里面套 <button> 不成立）。
 # 一次取回全站的赞数：配装几十套，分页请求反而更慢。
-# ponytail: 防重复只认 localStorage，换浏览器能再点一次。
-# 赞数按小时缓存，与访问计数同一个窗口：不缓存时翻十套配装就是十次冷启动，而
-# 这个数不是行情。自己点的那一下就地改缓存，即时可见；别人的赞最多晚一小时，
-# 函数那边还压着一层五分钟的实例内存缓存。
+# 本地状态与待确认操作存同一键；IndexedDB 事务协调跨标签页的序号。
+# 赞数按小时缓存；写入确认后清掉本地缓存并重读，不猜测一次未知写入是否已计入。
 LIKE_JS = (
     "<script>(function(){"
     'var C=[].slice.call(document.querySelectorAll("[data-like]"));if(!C.length)return;'
     'function show(el,v){(el.querySelector("b")||el).textContent=v}'
     'function key(id){return "lk"+id}'
-    "var H=new Date(Date.now()+288e5).toISOString().slice(0,13),M=null;"
+    "var H=new Date(Date.now()+288e5).toISOString().slice(0,13),M=null,loadError=null;"
     'function save(){try{localStorage.setItem("lkm",JSON.stringify({h:H,m:M}))}catch(_){}}'
-    'C.forEach(function(el){if(el.tagName!="BUTTON")return;'
-    'try{el.setAttribute("aria-pressed",localStorage.getItem(key(el.dataset.like))?"true":"false")}'
-    'catch(x){el.dataset.likeError="1";show(el,"本地存储不可用："+x)}});'
+    'function state(id){var s=localStorage.getItem(key(id));'
+    'if(!s)return {on:false};if(s=="1")return {on:true};'
+    'var v=JSON.parse(s);if(!v||typeof v.on!="boolean"||'
+    '!/^[a-f0-9]{32}$/.test(v.actor)||!Number.isSafeInteger(v.seq)||v.seq<0||'
+    '(v.pending!==undefined&&v.pending!==true))'
+    'throw Error("点赞状态损坏");return v}'
+    'function render(el){if(el.dataset.likeError)return;'
+    'try{var s=state(el.dataset.like);if(el.tagName=="BUTTON"){'
+    'el.setAttribute("aria-pressed",s.on?"true":"false");'
+    'if(!window.indexedDB||!window.crypto||!crypto.getRandomValues){el.disabled=true;'
+    'show(el,"浏览器不支持安全点赞");return}}'
+    'show(el,s.pending?(el.tagName=="BUTTON"?"结果未知（点击重试确认）":"结果未知"):M?(M[el.dataset.like]||0):loadError?"取不到："+loadError+(el.tagName=="BUTTON"?"（点击重试）":""):"载入中")}'
+    'catch(x){el.dataset.likeError="1";if(el.tagName=="BUTTON")el.disabled=true;'
+    'show(el,"本地状态不可用："+x)}}'
+    'function paint(){C.forEach(render)}'
     'function buttons(disabled){C.forEach(function(el){if(el.tagName=="BUTTON"'
-    '&&!el.dataset.likeError)el.disabled=disabled})}'
-    "function paint(){C.forEach(function(el){if(!el.dataset.likeError)"
-    "show(el,M[el.dataset.like]||0)})}"
+    '&&!el.dataset.likeError&&window.indexedDB&&window.crypto&&crypto.getRandomValues)el.disabled=disabled})}'
     'function json(r){if(!r.ok)throw Error("HTTP "+r.status);return r.json()}'
+    'function sync(fn){return new Promise(function(resolve,reject){'
+    'var cancelled=false,open=indexedDB.open("starside-likes",1);'
+    'open.onupgradeneeded=function(){open.result.createObjectStore("lock")};'
+    'open.onblocked=function(){cancelled=true;reject(Error("本地数据库被阻塞"))};'
+    'open.onerror=function(){reject(open.error)};'
+    'open.onsuccess=function(){var db=open.result,tx;if(cancelled){db.close();return}'
+    'try{tx=db.transaction("lock","readwrite")}'
+    'catch(x){db.close();reject(x);return}var value,err;'
+    'tx.objectStore("lock").get("lock").onsuccess=function(){try{value=fn()}'
+    'catch(x){err=x;tx.abort()}};'
+    'tx.oncomplete=function(){db.close();resolve(value)};'
+    'tx.onabort=tx.onerror=function(){db.close();reject(err||tx.error||Error("本地事务失败"))}'
+    '}})}'
     'function load(){buttons(true);fetch("%s?a=likes").then(json).then(function(m){'
     'if(!m||typeof m!="object"||Array.isArray(m)||m.error)throw Error(m&&m.error||"赞数格式错误");'
-    "M=m;paint();save();buttons(false)}).catch(function(x){"
-    'C.forEach(function(el){if(!el.dataset.likeError)show(el,"取不到："+x'
-    '+(el.tagName=="BUTTON"?"（点击重试）":""))});buttons(false)})}'
+    'M=m;loadError=null;save();paint();buttons(false)}).catch(function(x){M=null;loadError=x;paint();buttons(false)})}'
     'var c=null;try{c=JSON.parse(localStorage.getItem("lkm")||"null")}catch(_){}'
-    "if(c&&c.h===H&&c.m&&typeof c.m==\"object\"&&!Array.isArray(c.m)){"
-    "M=c.m;paint();buttons(false)}else load();"
+    'if(c&&c.h===H&&c.m&&typeof c.m=="object"&&!Array.isArray(c.m)){'
+    'M=c.m;paint();buttons(false)}else{paint();load()}'
+    'window.addEventListener("storage",function(e){if(e.key&&e.key.slice(0,2)=="lk")paint()});'
     'document.addEventListener("click",function(e){'
     'var b=e.target.closest&&e.target.closest("button.like");if(!b||b.disabled)return;'
-    "if(!M){load();return}"
-    'var id=b.dataset.like,on=b.getAttribute("aria-pressed")=="true",old=M[id]||0,'
-    'same=C.filter(function(el){return el.dataset.like==id}),'
+    'var id=b.dataset.like,same=C.filter(function(el){return el.dataset.like==id}),'
     'bs=same.filter(function(el){return el.tagName=="BUTTON"});'
-    'try{on?localStorage.removeItem(key(id)):localStorage.setItem(key(id),"1")}'
-    'catch(x){same.forEach(function(el){show(el,"本地存储失败："+x)});return}'
-    'var v=Math.max(0,old+(on?-1:1));same.forEach(function(el){show(el,v)});'
-    'bs.forEach(function(el){el.disabled=true;el.setAttribute("aria-pressed",on?"false":"true")});'
-    'fetch("%s",{method:"POST",headers:{"content-type":"application/json"},'
-    'body:JSON.stringify({a:"like",id:id,d:on?-1:1})}).then(json).then(function(r){'
-    'if(!r||r.ok!==1)throw Error(r&&r.error||"点赞响应错误");M[id]=v;save();'
-    'bs.forEach(function(el){el.disabled=false})}).catch(function(x){'
-    'var storageError=null;'
-    'try{on?localStorage.setItem(key(id),"1"):localStorage.removeItem(key(id))}'
-    'catch(e){storageError=e}'
-    'same.forEach(function(el){show(el,"请求失败，结果可能未同步："+x'
-    '+(storageError?"；本地恢复失败："+storageError:""))});'
-    'bs.forEach(function(el){el.setAttribute("aria-pressed",on?"true":"false");'
-    'if(storageError)el.dataset.likeError="1";else el.disabled=false})})})})()</script>'
+    'bs.forEach(function(el){el.disabled=true});'
+    'var s;sync(function(){var v=state(id);if(!v.pending){if(!M)return null;'
+    'if(!v.actor){var bytes=new Uint8Array(16);crypto.getRandomValues(bytes);'
+    'v.actor=Array.from(bytes,function(x){return x.toString(16).padStart(2,"0")}).join("");v.seq=0}'
+    'if(!Number.isSafeInteger(v.seq+1))throw Error("点赞序号已用尽");'
+    'v.pending=true;localStorage.setItem(key(id),JSON.stringify(v))}return v'
+    '}).then(function(v){s=v;if(!s){load();return null}same.forEach(render);'
+    'return fetch("%s",{method:"POST",headers:{"content-type":"application/json"},'
+    'body:JSON.stringify({a:"like",id:id,actor:s.actor,seq:s.seq+1,before:s.on,on:!s.on})}).then(json)'
+    '}).then(function(r){if(!s)return;if(!r||r.ok!==1)throw Error(r&&r.error||"点赞响应错误");'
+    'return sync(function(){var v=state(id);'
+    'if(!v.pending||v.actor!==s.actor||v.seq!==s.seq)return false;'
+    'localStorage.removeItem("lkm");'
+    'localStorage.setItem(key(id),JSON.stringify({on:!s.on,actor:s.actor,seq:s.seq+1}));return true'
+    '}).then(function(changed){if(changed){M=null;load()}else same.forEach(render)})'
+    '}).catch(function(x){same.forEach(function(el){show(el,s?"结果未知，点击重试确认："+x:'
+    '"本地事务失败，请刷新检查待确认状态："+x)})})'
+    '.finally(function(){bs.forEach(function(el){if(!el.dataset.likeError)el.disabled=false})})})})()</script>'
     % (shell.API, shell.API)
 )
 
