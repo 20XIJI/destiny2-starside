@@ -203,6 +203,62 @@ main {
 }
 .gen thead th:nth-last-child(-n + 2) { text-align: left; }
 
+.gen thead th:has(.class-filter[open]) { z-index: 4; }
+.class-filter {
+  position: relative;
+  display: inline-block;
+  margin-left: 3px;
+  vertical-align: middle;
+}
+.class-filter summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  color: var(--bone-dim);
+  cursor: pointer;
+  list-style: none;
+}
+.class-filter summary::-webkit-details-marker { display: none; }
+.class-filter summary:hover,
+.class-filter summary[data-active="true"] { color: var(--accent); }
+.class-filter svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+.class-filter-menu {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  min-width: 76px;
+  padding: 4px;
+  transform: translateX(-50%);
+  border: 1px solid var(--bd-outer);
+  border-radius: var(--r-sm);
+  background: var(--surf-4);
+}
+.class-filter-menu button {
+  display: block;
+  width: 100%;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: var(--r-sm);
+  color: var(--bone);
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+.class-filter-menu button:hover,
+.class-filter-menu button[aria-pressed="true"] {
+  color: var(--bone-hi);
+  background: var(--tint-3);
+}
+
 /* ── 分段 DPS 迷你走势图（spark.js 挂载 data-spk 后将 10s–60s 六列收成单列走势图） ── */
 .gen[data-spk] thead th:nth-child(n + 8):nth-child(-n + 12),
 .gen[data-spk] tbody td:nth-of-type(n + 7):nth-of-type(-n + 11) {

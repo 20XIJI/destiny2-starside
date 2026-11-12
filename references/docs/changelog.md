@@ -6,7 +6,7 @@
 
 ## 2026.11.12
 
-- {act|改动}[输出手法 DPS 排行](../dps-ranking/index.html)：新增 107 条点评与手法徽章，调整分段 DPS 列组
+- {act|改动}[输出手法 DPS 排行](../dps-ranking/index.html)：新增 107 条点评、手法徽章与职业筛选，调整分段 DPS 列组
 - {act|订正}[输出手法 DPS 排行](../dps-ranking/index.html) · 第 89 名：名称改为回旋喝彩
 
 ## 2026.11.8

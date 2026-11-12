@@ -158,6 +158,9 @@
     slot.appendChild(nav);
     press();
     apply();
+    if (document.querySelector('main[data-src="docs/dps-ranking"]')) {
+      lazy('../dps-ranking/filter.js').then(function (m) { m.default(heads); });
+    }
     document.documentElement.classList.remove('cols-loading');
   }
 
