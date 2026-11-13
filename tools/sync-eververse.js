@@ -103,15 +103,19 @@ function mapExpectedType(enType = '', category = '') {
   const t = enType.toLowerCase()
   const c = category.toLowerCase()
   if (t.includes('weapon ornament') || c.includes('weapon ornament')) return { expectedType: '武器皮肤', vendorHash: 2168194999, isWide: true, order: 1 }
-  if (t.includes('titan') || c.includes('titan')) return { expectedType: '泰坦皮肤', vendorHash: 2031393824, isWide: true, order: 2 }
-  if (t.includes('hunter') || c.includes('hunter')) return { expectedType: '猎人皮肤', vendorHash: 2031393824, isWide: true, order: 3 }
-  if (t.includes('warlock') || c.includes('warlock')) return { expectedType: '术士皮肤', vendorHash: 2031393824, isWide: true, order: 4 }
+  if (t.includes('finisher') || c === 'finishers') return { expectedType: '终结技', vendorHash: 2184482416, isWide: false, order: 10 }
+  if (t.includes('emote') || c === 'emotes') return { expectedType: '动作', vendorHash: 3118972542, isWide: false, order: 7 }
+  if (t.includes('ornament') || c.includes('ornament')) {
+    const universal = t.includes('universal')
+    if (t.includes('titan') || c.includes('titan')) return { expectedType: universal ? '泰坦通用皮肤' : '泰坦皮肤', vendorHash: 2031393824, isWide: true, isArmorOrnament: true, order: 2 }
+    if (t.includes('hunter') || c.includes('hunter')) return { expectedType: universal ? '猎人通用皮肤' : '猎人皮肤', vendorHash: 2031393824, isWide: true, isArmorOrnament: true, order: 3 }
+    if (t.includes('warlock') || c.includes('warlock')) return { expectedType: universal ? '术士通用皮肤' : '术士皮肤', vendorHash: 2031393824, isWide: true, isArmorOrnament: true, order: 4 }
+    return { expectedType: '皮肤', vendorHash: 2031393824, isWide: true, isArmorOrnament: true, order: 4 }
+  }
   if (t.includes('ship') || c === 'ships') return { expectedType: '飞船', vendorHash: 4020265966, isWide: true, order: 5 }
   if (t.includes('vehicle') || c === 'sparrows') return { expectedType: '载具', vendorHash: 1105106638, isWide: true, order: 6 }
   if (t.includes('ghost shell') || c === 'ghost shells') return { expectedType: '机灵外壳', vendorHash: 3702989297, isWide: false, order: 8 }
   if (t.includes('ghost projection') || c === 'ghost projections') return { expectedType: '机灵投影', vendorHash: 1446296883, isWide: false, order: 9 }
-  if (t.includes('finisher') || c === 'finishers') return { expectedType: '终结技', vendorHash: 2184482416, isWide: false, order: 10 }
-  if (t.includes('emote') || c === 'emotes') return { expectedType: '动作', vendorHash: 3118972542, isWide: false, order: 7 }
   if (t.includes('shader') || c === 'shaders') return { expectedType: '着色器', vendorHash: 2041776156, isWide: false, order: 11 }
   if (t.includes('transmat') || c.includes('transmat')) return { expectedType: '传送效果', vendorHash: 213864513, isWide: false, order: 12 }
   return { expectedType: '', vendorHash: 3361454721, isWide: false, order: 99 }
@@ -152,7 +156,8 @@ async function fetchLiveSlots() {
       isWide: meta.isWide || Boolean(parsed.screenshot),
       expectedTier,
       expectedType: meta.expectedType,
-      _order: meta.order
+      _order: meta.order,
+      _isArmorOrnament: Boolean(meta.isArmorOrnament)
     })
   }
 
@@ -160,18 +165,21 @@ async function fetchLiveSlots() {
     throw new Error(`永恒之诗轮换源解析条目不足：仅解析出 ${rawItems.length} 件`)
   }
 
+  const isMainDust = (it) => it.currency === 'dust' && (it.expectedTier === 'exotic' || it._isArmorOrnament)
+  const stripMeta = ({ _order, _isArmorOrnament, ...rest }) => rest
+
   const mainDust = rawItems
-    .filter((it) => it.currency === 'dust' && it.expectedTier === 'exotic')
+    .filter(isMainDust)
     .sort((a, b) => a._order - b._order)
-    .map(({ _order, ...rest }) => ({ ...rest, group: '主要光尘优惠' }))
+    .map((it) => ({ ...stripMeta(it), group: '主要光尘优惠' }))
 
   const otherDust = rawItems
-    .filter((it) => it.currency === 'dust' && it.expectedTier !== 'exotic')
-    .map(({ _order, ...rest }) => ({ ...rest, group: '其他光尘优惠' }))
+    .filter((it) => it.currency === 'dust' && !isMainDust(it))
+    .map((it) => ({ ...stripMeta(it), group: '其他光尘优惠' }))
 
   const silverNew = rawItems
     .filter((it) => it.currency === 'silver')
-    .map(({ _order, ...rest }) => ({ ...rest, group: '银币新品' }))
+    .map((it) => ({ ...stripMeta(it), group: '银币新品' }))
 
   return [...mainDust, ...otherDust, ...silverNew]
 }
@@ -185,12 +193,25 @@ async function fetchAdaSlots() {
   const html = data?.content?.rendered || ''
   const secMatch = /<section[^>]+id=["']kwr-ada["'][\s\S]*?<\/section>/i.exec(html)
   if (!secMatch) throw new Error('艾达-1 轮换源未找到 #kwr-ada 区块')
-  const re = /data-item-hash=["'](\d+)["']/g
+  const secHtml = secMatch[0]
   const hashes = []
-  let m
-  while ((m = re.exec(secMatch[0])) !== null) {
-    const h = Number(m[1])
+  const pushHash = (rawHash) => {
+    const h = Number(rawHash)
     if (h && !hashes.includes(h)) hashes.push(h)
+  }
+  const previewRe = /data-kdh-preview=(?:"([^"]+)"|'([^']+)')/g
+  let m
+  while ((m = previewRe.exec(secHtml)) !== null) {
+    const raw = (m[1] || m[2])
+      .replace(/&#039;/g, "'")
+      .replace(/&quot;/g, '"')
+      .replace(/&amp;/g, '&')
+    const parsed = JSON.parse(raw)
+    if (parsed && parsed.hash) pushHash(parsed.hash)
+  }
+  const legacyRe = /data-item-hash=["'](\d+)["']/g
+  while ((m = legacyRe.exec(secHtml)) !== null) {
+    pushHash(m[1])
   }
   if (hashes.length < 3) {
     throw new Error(`艾达-1 轮换源解析着色器不足：仅解析出 ${hashes.length} 件`)

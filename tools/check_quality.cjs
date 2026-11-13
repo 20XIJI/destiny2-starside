@@ -2677,6 +2677,82 @@ test('eververse: Bungie 503 maintenance or subclass mismatch aborts sync without
   assert.match(resDeny.error, /AccessDenied/)
 })
 
+test('eververse: universal armor ornaments, class finishers, and data-kdh-preview Ada-1 HTML sync cleanly', async () => {
+  const { ROTATION_SLOTS, ADA_SLOTS, EVERVERSE_FEED_URL, ADA_FEED_URL } = require(path.join(root, 'tools/sync-eververse.js'))
+  const customFeed = ROTATION_SLOTS.map((s, idx) => {
+    let itemType = s.expectedType === '武器皮肤' ? 'Weapon Ornament'
+      : s.expectedType === '泰坦皮肤' ? 'Titan Universal Ornament'
+      : s.expectedType === '猎人皮肤' ? 'Hunter Universal Ornament'
+      : s.expectedType === '术士皮肤' ? 'Warlock Universal Ornament'
+      : s.expectedType === '飞船' ? 'Ship'
+      : s.expectedType === '载具' ? 'Vehicle'
+      : s.expectedType === '机灵外壳' ? 'Ghost Shell'
+      : s.expectedType === '机灵投影' ? 'Ghost Projection'
+      : s.expectedType === '终结技' ? 'Titan Finisher'
+      : s.expectedType === '着色器' ? 'Shader'
+      : s.expectedType === '传送效果' ? 'Transmat Effect'
+      : 'Emote'
+    let tier = s.expectedTier === 'exotic' ? 'Exotic' : (s.expectedTier === 'rare' ? 'Rare' : 'Legendary')
+    if (idx >= 1 && idx <= 3) tier = 'Legendary'
+    const item = {
+      name: 'Item ' + s.hash,
+      itemType,
+      category: idx >= 1 && idx <= 3 ? 'armor ornaments' : '',
+      tier,
+      cost: s.cost + (s.currency === 'silver' ? ' Silver' : ' Bright Dust'),
+      market: s.currency,
+      link: 'https://www.light.gg/db/items/' + s.hash + '/'
+    }
+    return `<div data-ke-item="${JSON.stringify(item).replace(/"/g, '&quot;')}"></div>`
+  }).join('')
+  const adaHtml = `<section class="kwr-section" id="kwr-ada"><div class="kwr-shader-grid">${ADA_SLOTS.map((s) => {
+    const preview = JSON.stringify({ hash: s.hash, name: 'Shader ' + s.hash, type: 'Shader', tier: 'Legendary' }).replace(/"/g, '&quot;')
+    return `<article class="kwr-shader"><a class="kdh-preview-target" data-kdh-preview="${preview}" href="#kwr-ada"></a><a class="kdh-preview-target" data-kdh-preview="${preview}" href="#kwr-ada"></a></article>`
+  }).join('')}</div></section>`
+  const allSlots = [...ROTATION_SLOTS, ...ADA_SLOTS]
+  const byHash = new Map(allSlots.map((s, i) => [String(s.hash), { s, i }]))
+  const h = harness({}, {
+    async fetch(url) {
+      if (url === EVERVERSE_FEED_URL) {
+        return { ok: true, status: 200, async json() { return { content: { rendered: customFeed } } } }
+      }
+      if (url === ADA_FEED_URL) {
+        return { ok: true, status: 200, async json() { return { content: { rendered: adaHtml } } } }
+      }
+      const m = /DestinyInventoryItemDefinition\/(\d+)\//.exec(url)
+      const { s, i } = byHash.get(m[1])
+      const isUniv = i >= 1 && i <= 3
+      const actualType = isUniv ? s.expectedType.replace('皮肤', '通用皮肤')
+        : (s.expectedType === '终结技' ? '泰坦终结技' : s.expectedType)
+      const tierTypeName = isUniv ? '传说' : (s.expectedTier === 'exotic' ? '异域' : (s.expectedTier === 'rare' ? '稀有' : '传说'))
+      return {
+        ok: true,
+        status: 200,
+        async json() {
+          return {
+            Response: {
+              itemType: s.expectedType === '着色器' ? 29 : 19,
+              itemTypeDisplayName: actualType,
+              displayProperties: { name: '测试商品' + (i + 1), icon: '/common/destiny2_content/icons/test_' + (i + 1) + '.jpg' },
+              inventory: { tierTypeName }
+            }
+          }
+        }
+      }
+    }
+  })
+  const res = await h.main({ Type: 'Timer', TriggerName: 'eververse-daily-0103' })
+  assert.equal(res.ok, 1)
+  assert.equal(res.total, 26)
+  assert.equal(res.adaTotal, 6)
+  const published = h.published['destiny2-starside/rotation/eververse.json']
+  const mainItems = published.items.filter((it) => it.group === '主要光尘优惠')
+  assert.equal(mainItems.length, 8)
+  assert.deepEqual(mainItems.slice(0, 4).map((it) => it.type), ['武器皮肤', '泰坦通用皮肤', '猎人通用皮肤', '术士通用皮肤'])
+  assert.equal(published.items.filter((it) => it.group === '其他光尘优惠').length, 10)
+  assert.equal(published.ada.items.length, 6)
+})
+
 test('xur: timer trigger xur-sat-0103 syncs weekly inventory via Bungie official API with recommended perks and publishes rotation/xur.json to static hosting', async () => {
   const { XUR_SLOTS, XUR_FEED_URL } = require(path.join(root, 'tools/sync-xur.js'))
   const xurHtml = `<script id="kyber-xur-inline-data">\nwindow.KYBER_XUR_DATA = ${JSON.stringify({ slots: XUR_SLOTS, location: 'Bazaar, Tower' })};\n</script>`
