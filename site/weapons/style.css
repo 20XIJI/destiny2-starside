@@ -1518,6 +1518,53 @@
   box-shadow: none;
 }
 
+.plug-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.plug-wrap .plug { padding-right: 44px; }
+.perk-stack-badge {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-width: 24px;
+  height: 22px;
+  padding: 0 5px;
+  border: 1px solid var(--hair-lit);
+  border-radius: 4px;
+  background-color: var(--ink-lift);
+  color: var(--bone-hi);
+  font: 600 11px/1 var(--font-body);
+  cursor: pointer;
+  transition: border-color .15s ease, color .15s ease, background-color .15s ease;
+}
+.perk-stack-badge:hover { border-color: var(--accent); color: #fff; }
+.perk-stack-badge.deactivated {
+  color: var(--bone-faint);
+  border-color: var(--hair);
+  background-color: var(--tint-1);
+}
+.perk-stack-badge.element-badge {
+  width: 24px;
+  height: 24px;
+  padding: 2px;
+  border-radius: 50%;
+}
+.perk-stack-badge .element-icon {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+.perk-stack-badge .stack-current { color: var(--bone-hi); }
+.perk-stack-badge .stack-max { color: var(--bone-faint); font-weight: 400; }
+
 /* 神器模组：一件神器一行，神器名在左、模组在右；末一行是通用的那几枚。 */
 .amods {
   display: grid;
@@ -1971,8 +2018,15 @@
   color: var(--bone-hi);
   font: 700 20px/1 var(--font-disp);
 }
-.pvp-stat-hero-value.up, .pvp-stat-value.up { color: var(--buff); }
-.pvp-stat-hero-value.down, .pvp-stat-value.down { color: var(--debuff); }
+.pvp-stat-hero-sub {
+  margin-left: 2px;
+  color: var(--bone-dim);
+  font: 500 12px/1 var(--font-cn);
+}
+.pvp-stat-hero-value.up, .pvp-stat-value.up,
+.pvp-stat-hero-value.better, .pvp-stat-value.better { color: var(--buff); }
+.pvp-stat-hero-value.down, .pvp-stat-value.down,
+.pvp-stat-hero-value.worse, .pvp-stat-value.worse { color: var(--debuff); }
 .pvp-stat-item {
   display: flex;
   align-items: center;
@@ -1992,7 +2046,12 @@
   font: 400 11px/1 var(--font-body);
   vertical-align: bottom;
 }
-.pvp-crit-reset {
+.pvp-handling-sep {
+  margin: 0 2px;
+  color: var(--bone-faint);
+  font-weight: 400;
+}
+.pvp-crit-reset, .pvp-weapon-stat-reset {
   margin-left: 4px;
   padding: 0;
   color: var(--bone-faint);
@@ -2001,7 +2060,42 @@
   font: 600 12px/1 var(--font-body);
   cursor: pointer;
 }
-.pvp-crit-reset:hover { color: var(--bone-hi); }
+.pvp-crit-reset[hidden] { display: none; }
+.pvp-crit-reset:hover, .pvp-weapon-stat-reset:not(:disabled):hover { color: var(--bone-hi); }
+.pvp-weapon-stat-reset:disabled { opacity: .35; cursor: default; }
+.pvp-magazine-label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.pvp-numeric-input {
+  -moz-appearance: textfield;
+  appearance: textfield;
+  background-color: var(--tint-1);
+  border: 1px solid var(--hair);
+  border-radius: 4px;
+  color: var(--bone-hi);
+  outline: none;
+  transition: border-color .15s ease, background-color .15s ease;
+}
+.pvp-numeric-input::-webkit-inner-spin-button,
+.pvp-numeric-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.pvp-numeric-input:focus {
+  border-color: var(--accent);
+  background-color: var(--tint-2);
+}
+.pvp-magazine-input {
+  min-width: 24px;
+  box-sizing: content-box;
+  padding: 2px 5px;
+  font: 600 12px/1 var(--font-body);
+  text-align: center;
+}
 .pvp-slat {
   display: flex;
   align-items: center;
@@ -2054,6 +2148,14 @@
 .pvp-range-hip { color: var(--bone-dim); }
 .pvp-range-sep { color: var(--bone-dim); margin: 0 4px; font-size: 11px; }
 .pvp-range-ads { color: var(--bone-hi); font-weight: 600; }
+.pvp-stat-notes {
+  margin-top: 2px;
+  padding: 6px 8px;
+  border-left: 2px solid var(--hair-lit);
+  background-color: var(--tint-1);
+  color: var(--bone-dim);
+  font: 400 12px/1.5 var(--font-cn);
+}
 .pvp-weapon-stat {
   display: flex;
   flex-direction: column;
@@ -2062,7 +2164,7 @@
   padding-top: 12px;
   border-top: 1px solid var(--hair);
 }
-.pvp-weapon-stat-header { display: flex; justify-content: space-between; }
+.pvp-weapon-stat-header { display: flex; justify-content: space-between; align-items: center; }
 .pvp-weapon-stat-title {
   color: var(--bone-dim);
   font: 600 12px/1.3 var(--font-body);
@@ -2070,7 +2172,7 @@
   text-transform: uppercase;
 }
 .pvp-weapon-stat-badge {
-  padding: 8px 12px 14px;
+  padding: 8px 12px 12px;
   border: 1px solid var(--hair);
   border-left: 2px solid var(--hair-lit);
   background: var(--tint-2);
@@ -2078,12 +2180,26 @@
 .pvp-weapon-stat-info { display: flex; flex-direction: column; gap: 8px; }
 .pvp-weapon-stat-row { display: flex; align-items: center; gap: 8px; }
 .pvp-weapon-stat-value {
+  flex: none;
+  width: 44px;
+  padding: 3px 5px;
   color: var(--bone-hi);
-  font: 600 15px/1 var(--font-body);
+  font: 600 14px/1.1 var(--font-body);
+  text-align: right;
+}
+.pvp-weapon-stat-description {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-height: 16px;
 }
 .pvp-weapon-stat-note {
   color: var(--bone-dim);
   font: 400 12px/1.3 var(--font-cn);
+}
+.pvp-weapon-stat-effect {
+  color: var(--buff);
+  font: 500 12px/1.3 var(--font-cn);
 }
 .pvp-weapon-stat-range { height: 6px; border-radius: 3px; }
 
@@ -2258,6 +2374,7 @@
   gap: 6px;
   margin-top: 4px;
 }
+.pvp-damage-perks[hidden] { display: none; }
 .pvp-damage-perks-title {
   color: var(--buff);
   font: 600 12px/1.3 var(--font-cn);

@@ -3254,6 +3254,245 @@ test('weapons: card, detail swap, resetroll, hoverRaf cancellation, and focusin/
   assert.equal(T.S.hoverPlug, null, 'blurring the focused perk clears hover preview')
 })
 
+test('weapons: PvP simulator, perk-fx, exotic overrides, and FX align with godroll.tv', () => {
+  const perkFx = JSON.parse(fs.readFileSync(path.join(site, 'weapons/perk-fx.json'), 'utf8'))
+  const wpnBox = { window: {} }
+  vm.runInNewContext(fs.readFileSync(path.join(site, 'weapons/index.js'), 'utf8'), wpnBox)
+  vm.runInNewContext(fs.readFileSync(path.join(site, 'weapons/pool.js'), 'utf8'), wpnBox)
+  vm.runInNewContext(fs.readFileSync(path.join(site, 'weapons/text.js'), 'utf8'), wpnBox)
+  const appSrc = fs.readFileSync(path.join(site, 'weapons/app.js'), 'utf8')
+    .replace(/\}\(\)\);\s*$/, 'PERK_FX = __PFX; poolReady(); textReady(); window.__PVP_TEST = { S, WR, BY_HASH, V, P, HSTAT, SIDX, PIDX, rollOf, defaultRoll, compute, pvpView, pvpPanel, plugButton, plugName, cellsOf, shownPlug, poolRow, fxDmgOf, fxAll, getPerkDamageModifier, resolvedPerkSpec, basePlugFor, PVP_DISABLED, PVP_STRIP_DMG };\n}());\n')
+  const fakeEl = () => ({
+    innerHTML: '', outerHTML: '', value: '', hidden: false,
+    style: { setProperty() {} },
+    classList: { add() {}, remove() {}, toggle() {}, contains: () => false },
+    setAttribute() {}, removeAttribute() {}, getAttribute: () => '',
+    addEventListener() {}, appendChild() {}, insertBefore() {}, insertAdjacentHTML() {}, prepend() {}, remove() {},
+    getBoundingClientRect: () => ({ height: 47, top: 0, left: 0, right: 100, bottom: 47, width: 100 }),
+    querySelector: () => fakeEl(), querySelectorAll: () => [],
+  })
+  const ctx = {
+    __PFX: perkFx,
+    window: { WPN: wpnBox.window.WPN, WPN_POOL: wpnBox.window.WPN_POOL, WPN_TEXT: wpnBox.window.WPN_TEXT, addEventListener() {}, matchMedia: () => ({ matches: false }), scrollTo() {}, scrollX: 0, scrollY: 0, innerHeight: 900 },
+    location: { href: 'http://localhost/weapons/index.html', pathname: '/weapons/index.html', search: '' },
+    history: { pushState() {}, replaceState() {} },
+    localStorage: { getItem: () => null, setItem() {} },
+    URLSearchParams, URL,
+    ResizeObserver: function () { this.observe = () => {}; this.disconnect = () => {} },
+    IntersectionObserver: function () { this.observe = () => {}; this.disconnect = () => {} },
+    requestAnimationFrame: () => 1, cancelAnimationFrame() {}, setTimeout: () => 1, clearTimeout() {},
+    console,
+    document: {
+      currentScript: { src: 'http://localhost/weapons/app.js' }, activeElement: null,
+      documentElement: { clientWidth: 1440, style: { setProperty() {} } },
+      body: { appendChild() {} }, head: { appendChild() {} },
+      createElement: () => fakeEl(), createElementNS: () => fakeEl(),
+      getElementById: () => fakeEl(), querySelector: () => fakeEl(), addEventListener() {},
+    },
+  }
+  vm.runInNewContext(appSrc, ctx)
+  const T = ctx.window.__PVP_TEST
+  const pickByName = (i, ci, pat) => {
+    for (const c of T.cellsOf(T.poolRow(i)[2][ci])) {
+      const p = T.shownPlug(c)
+      if (T.plugName(p).includes(pat)) return p
+    }
+    throw new Error(`Missing perk matching ${pat} in col ${ci}`)
+  }
+  const cleanRoll = (i) => {
+    const roll = T.rollOf(i)
+    roll.mw = ''; roll.mod = -1; roll.cat = 0; roll.t = 1
+    T.poolRow(i)[2].forEach((col, ci) => { roll.sel[ci] = T.shownPlug(T.cellsOf(col)[0]) })
+    return roll
+  }
+
+  // 1. Last Thursday (3813721211): clean, default, and Weapons Stat sweep
+  const iLt = T.BY_HASH.wpn['3813721211']
+  const ltClean = T.pvpView(iLt, T.compute(iLt, cleanRoll(iLt)))
+  assert.equal(ltClean.ttk.toFixed(2), '0.92')
+  assert.equal(ltClean.kill, '6 精准，1 直击')
+  assert.equal(ltClean.acc, 86)
+  assert.equal(ltClean.dispRpm, 390)
+  assert.equal(ltClean.bodyDmg.toFixed(2), '22.00')
+  assert.equal(ltClean.headDmg.toFixed(2), '36.45')
+  assert.equal(ltClean.rm.hip.toFixed(2), '19.30')
+  assert.equal(ltClean.rm.ads.toFixed(2), '32.81')
+  assert.equal(ltClean.rs.toFixed(2), '2.65')
+  assert.equal(ltClean.handCur.ready.toFixed(2), '0.38')
+  assert.equal(ltClean.handCur.stow.toFixed(2), '0.36')
+  assert.equal(ltClean.handCur.ads.toFixed(2), '0.35')
+
+  T.S.pvpStat = 50
+  const ltWs50 = T.pvpView(iLt, T.compute(iLt, cleanRoll(iLt)))
+  assert.equal(ltWs50.bodyDmg.toFixed(2), '22.00')
+  assert.ok(Math.abs(ltWs50.rs - ltClean.rs * 0.95) < 1e-6)
+  T.S.pvpStat = 150
+  const ltWs150 = T.pvpView(iLt, T.compute(iLt, cleanRoll(iLt)))
+  assert.equal(ltWs150.kill, '5 精准，2 直击')
+  assert.equal(ltWs150.acc, 71)
+  assert.equal(ltWs150.bodyDmg.toFixed(2), '22.55')
+  assert.equal(ltWs150.headDmg.toFixed(2), '37.36')
+  T.S.pvpStat = 200
+  const ltWs200 = T.pvpView(iLt, T.compute(iLt, cleanRoll(iLt)))
+  assert.equal(ltWs200.bodyDmg.toFixed(2), '23.10')
+  assert.equal(ltWs200.headDmg.toFixed(2), '38.27')
+  T.S.pvpStat = 0
+
+  // 2. Elemental Capacitor (711234314 on Timeworn Wayfarer 1886840007)
+  const iEc = T.BY_HASH.wpn['1886840007']
+  const rollEc = T.rollOf(iEc)
+  rollEc.sel[2] = pickByName(iEc, 2, '元素电容')
+  const ecHash = String(T.P.p[rollEc.sel[2]][0])
+  const ecBaseRes = T.compute(iEc, rollEc)
+  const ecCell = T.cellsOf(T.poolRow(iEc)[2][2]).find((c) => T.shownPlug(c) === rollEc.sel[2])
+  assert.match(T.plugButton(2, ecCell, {}, true, false, 'Primary', ecBaseRes), /class="perk-stack-badge deactivated"/)
+  T.S.perkStep[ecHash] = 0 // Solar -> Reload
+  const ecSolar = T.compute(iEc, rollEc)
+  assert.ok(ecSolar.byStat[T.HSTAT[4188031367]].value > ecBaseRes.byStat[T.HSTAT[4188031367]].value)
+  assert.match(T.plugButton(2, ecCell, {}, true, false, 'Primary', ecSolar), /element-badge.*element-icon/)
+  T.S.perkStep[ecHash] = 1 // Arc -> Handling
+  const ecArc = T.compute(iEc, rollEc)
+  assert.ok(ecArc.byStat[T.HSTAT[943549884]].value > ecBaseRes.byStat[T.HSTAT[943549884]].value)
+  delete T.S.perkStep[ecHash]
+
+  // 3. Gnawing Hunger (214545213): default + Rampage step + Kill Clip + Target Lock
+  const iGh = T.BY_HASH.wpn['214545213']
+  const ghDef = T.pvpView(iGh, T.compute(iGh, T.rollOf(iGh)))
+  assert.equal(ghDef.ttk.toFixed(2), '0.80')
+  assert.equal(ghDef.kill, '8 精准，1 直击')
+  assert.equal(ghDef.acc, 89)
+  assert.equal(ghDef.bodyDmg.toFixed(2), '15.50')
+  assert.equal(ghDef.headDmg.toFixed(2), '27.21')
+  assert.equal(ghDef.dispRpm, 600)
+  const rollGh = T.rollOf(iGh)
+  rollGh.sel[3] = pickByName(iGh, 3, '狂暴')
+  const rampHash = String(T.P.p[rollGh.sel[3]][0])
+  assert.equal(T.pvpView(iGh, T.compute(iGh, rollGh)).showPerks.length, 0)
+  T.S.perkStep[rampHash] = 2
+  const ghRamp = T.pvpView(iGh, T.compute(iGh, rollGh))
+  assert.equal(ghRamp.ttk.toFixed(2), '0.60')
+  assert.equal(ghRamp.kill, '6 精准，1 直击')
+  assert.equal(ghRamp.bodyDmg.toFixed(2), '20.63')
+  delete T.S.perkStep[rampHash]
+  const iKc = T.BY_HASH.wpn['3332538050']
+  const rollKc = T.rollOf(iKc)
+  rollKc.sel[3] = pickByName(iKc, 3, '杀戮弹匣')
+  const ghKc = T.pvpView(iKc, T.compute(iKc, rollKc))
+  assert.equal(ghKc.ttk.toFixed(2), '0.60')
+  assert.equal(ghKc.bodyDmg.toFixed(2), '19.38')
+  assert.equal(ghKc.showPerks[0].name, '杀戮弹匣')
+  rollGh.sel[3] = pickByName(iGh, 3, '目标锁定')
+  const ghTl = T.pvpView(iGh, T.compute(iGh, rollGh))
+  assert.equal(ghTl.showPerks[0].name, '目标锁定')
+
+  // 4. The Wizened Rebuke (2290416): Accelerated Coils & Liquid Coils (enhanced battery -> basePlugFor)
+  const iFus = T.BY_HASH.wpn['2290416']
+  const rollFus = cleanRoll(iFus)
+  rollFus.sel[1] = pickByName(iFus, 1, '加速线圈')
+  rollFus.sel[3] = pickByName(iFus, 3, '脆弱专注')
+  const fusAcc = T.pvpView(iFus, T.compute(iFus, rollFus))
+  assert.equal(fusAcc.ttk.toFixed(2), '1.13')
+  assert.equal(fusAcc.kill, '4 发弹丸')
+  assert.equal(fusAcc.bodyDmg.toFixed(2), '76.08')
+  assert.equal(fusAcc.dispRpm, 967)
+  assert.equal(fusAcc.flatBadges[0].dmgIncrease, false)
+  rollFus.sel[1] = pickByName(iFus, 1, '液态线圈')
+  const fusLiq = T.pvpView(iFus, T.compute(iFus, rollFus))
+  assert.equal(fusLiq.ttk.toFixed(2), '1.14')
+  assert.equal(fusLiq.kill, '3 发弹丸')
+  assert.equal(fusLiq.bodyDmg.toFixed(2), '80.80')
+  assert.equal(fusLiq.flatBadges[0].dmgIncrease, true)
+
+  // 5. Exotics & Area Denial
+  const byEn = (en) => T.P.en.indexOf(en)
+  assert.equal(T.pvpView(byEn('Graviton Lance'), T.compute(byEn('Graviton Lance'), T.rollOf(byEn('Graviton Lance')))).ttk.toFixed(2), '0.90')
+  assert.equal(T.pvpView(byEn('Crimson'), T.compute(byEn('Crimson'), T.rollOf(byEn('Crimson')))).ttk.toFixed(3), '0.867')
+  assert.equal(T.pvpView(byEn('Vex Mythoclast'), T.compute(byEn('Vex Mythoclast'), T.rollOf(byEn('Vex Mythoclast')))).ttk.toFixed(2), '0.75')
+  assert.equal(T.pvpView(byEn('The Chaperone'), T.compute(byEn('The Chaperone'), T.rollOf(byEn('The Chaperone')))).kill, '1 精准')
+  assert.equal(T.pvpView(byEn('Forerunner'), T.compute(byEn('Forerunner'), T.rollOf(byEn('Forerunner')))).ttk.toFixed(2), '0.60')
+  const heirloomV = T.pvpView(byEn('Heirloom'), T.compute(byEn('Heirloom'), T.rollOf(byEn('Heirloom'))))
+  assert.equal(heirloomV.ttk, null)
+  assert.equal(heirloomV.kill, '2 直击')
+  const lsV = T.pvpView(byEn('Lost Signal'), T.compute(byEn('Lost Signal'), T.rollOf(byEn('Lost Signal'))))
+  assert.equal(lsV.ttk.toFixed(2), '2.75')
+  assert.equal(lsV.kill, '1 次发射 + 领域')
+
+  // 6. Bow + Archer's Tempo, Heavy GL Impact+Blast split, and Stateful Chrono Perks
+  const iBow = T.BY_HASH.wpn['2485400469']
+  const rollBow = T.rollOf(iBow)
+  rollBow.sel[2] = pickByName(iBow, 2, '弓手节奏')
+  const bowV = T.pvpView(iBow, T.compute(iBow, rollBow))
+  assert.equal(bowV.ttk.toFixed(2), '0.50')
+  assert.equal(bowV.dispRpm, 667)
+
+  const iHgl = T.BY_HASH.wpn['2452936817']
+  const hglV = T.pvpView(iHgl, T.compute(iHgl, T.rollOf(iHgl)))
+  assert.equal(hglV.ttk, 0)
+  assert.ok(hglV.blastInfo && hglV.bodyDmg > 290)
+
+  const iPi = T.BY_HASH.wpn['120706239']
+  const rollPi = T.rollOf(iPi)
+  rollPi.sel[3] = pickByName(iPi, 3, '精准工具')
+  const piHash = String(T.P.p[rollPi.sel[3]][0])
+  assert.equal(T.pvpView(iPi, T.compute(iPi, rollPi)).kill, '2 精准，2 直击')
+  T.S.perkStep[piHash] = 0
+  const piAct = T.pvpView(iPi, T.compute(iPi, rollPi))
+  assert.equal(piAct.kill, '3 精准')
+  assert.equal(piAct.ttk.toFixed(3), '0.667')
+  delete T.S.perkStep[piHash]
+
+  const iRb = T.BY_HASH.wpn['852069910']
+  const rollRb = T.rollOf(iRb)
+  rollRb.sel[3] = pickByName(iRb, 3, '洪涝')
+  T.S.pvpMag = null
+  assert.equal(T.pvpView(iRb, T.compute(iRb, rollRb)).bodyDmg.toFixed(2), '105.36')
+  T.S.pvpMag = 2
+  assert.equal(T.pvpView(iRb, T.compute(iRb, rollRb)).bodyDmg.toFixed(2), '79.22')
+  T.S.pvpMag = null
+
+  const iHir = T.BY_HASH.wpn['3654744298']
+  const rollHir = T.rollOf(iHir)
+  rollHir.sel[3] = pickByName(iHir, 3, '高强度型弹药储备')
+  const hirFull = T.pvpView(iHir, T.compute(iHir, rollHir))
+  T.S.pvpMag = 1
+  const hirLow = T.pvpView(iHir, T.compute(iHir, rollHir))
+  assert.ok(hirLow.bodyDmg > hirFull.bodyDmg)
+  T.S.pvpMag = null
+
+  const iBb = T.BY_HASH.wpn['3215649176']
+  const rollBb = T.rollOf(iBb)
+  rollBb.sel[3] = pickByName(iBb, 3, '盒式呼吸法')
+  assert.equal(T.pvpView(iBb, T.compute(iBb, rollBb)).headDmg.toFixed(2), '598.15')
+
+  // 7. PVP_DISABLED, PVP_STRIP_DMG, and FX_GROUPS (Bakris PvE-only, Oathkeeper -33ms drawTime, Loader 0.85)
+  assert.equal(T.getPerkDamageModifier({ dmg: 1.5 }, 0, true, '1545231802', 'Pulse Rifle', 'Primary'), null)
+  assert.equal(T.getPerkDamageModifier(perkFx['1954620775'], 0, true, '1954620775', 'Hand Cannon', 'Primary'), null)
+  assert.equal(T.getPerkDamageModifier(perkFx['1954620775'], 0, false, '1954620775', 'Hand Cannon', 'Primary').dmg, 1.3)
+
+  T.S.fx = ['508515818'] // Mask of Bakris (pveDmg only)
+  const bakrisFx = T.fxAll().find((f) => f.id === '508515818')
+  assert.equal(T.fxDmgOf(bakrisFx, true), 1)
+  assert.ok(T.fxDmgOf(bakrisFx, false) > 1)
+  T.S.fx = ['1449897496'] // Oathkeeper (+10 draw time stat -> -33ms on Bow)
+  assert.equal(T.pvpView(iBow, T.compute(iBow, rollBow)).dispRpm, 634)
+  T.S.fx = ['2586562813'] // Loader (0.85 reload duration)
+  const ghLoader = T.pvpView(iGh, T.compute(iGh, T.rollOf(iGh)))
+  assert.ok(ghLoader.rs < ghDef.rs * 0.86)
+  T.S.fx = []
+
+  // 8. Fixed single-cell conditional traits start deactivated and toggle via badge
+  const iVex = T.BY_HASH.wpn['4289226715']
+  const vexResOff = T.compute(iVex, T.rollOf(iVex))
+  assert.equal(T.pvpView(iVex, vexResOff).activeKill.ttk.toFixed(2), '0.75')
+  const vexPerkCell = T.cellsOf(T.poolRow(iVex)[2][2])[0]
+  assert.match(T.plugButton(2, vexPerkCell, {}, true, true, 'Primary', vexResOff), /class="perk-stack-badge deactivated"[^>]*data-fixed="1"/)
+  T.S.perkStep['806917387'] = 0
+  const vexResOn = T.compute(iVex, T.rollOf(iVex))
+  assert.equal(T.pvpView(iVex, vexResOn).activeKill.ttk.toFixed(2), '0.15')
+  assert.match(T.plugButton(2, vexPerkCell, {}, true, true, 'Primary', vexResOn), /class="perk-stack-badge"[^>]*data-fixed="1"[^>]*>.*✓/)
+  T.S.perkStep = {}
+})
+
 test('weapons: completing an unused prefetch preserves loaded browse results', () => {
   let script
   const cards = Array.from({ length: 240 }, (_, i) => i)
