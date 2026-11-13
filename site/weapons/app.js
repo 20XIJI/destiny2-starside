@@ -937,19 +937,18 @@
     return (scope === 'armor' ? P.aen : P.en)[i] || '';
   }
 
-  /* 叠层图标：底图、水印、阶级角标、锻造层，底部打光由样式表画。 */
+  /* 叠层图标：底图、水印、阶级角标，可锻造画矢量徽章，暖金框由样式表画。 */
+  var CRAFT_SVG = '<span class="craft" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M0 0H7V1.4L5.8 2.4V4.5L4.2 6.8H0ZM16 0H9V1.4L10.2 2.4V4.5L11.8 6.8H16ZM0 16H7V14.6L5.8 13.6V11.5L4.2 9.2H0ZM16 16H9V14.6L10.2 13.6V11.5L11.8 9.2H16Z"/></svg></span>';
   function gun(r, size, eager) {
     var layers = imgTag(r[W_ICON], '', '', eager);
-    if (r[W_WM] >= 0) { layers += imgTag(V.wm[r[W_WM]], '', '', eager); }
-    if (r[W_FLAG] & F_TIER) { layers += imgTag(V.o.tier, '', '', eager); }
-    if (r[W_FLAG] & F_CRAFT) {
-      layers += imgTag(V.o['craft-bg'], 'flip', '', eager) + imgTag(V.o.craft, 'flip', '', eager);
-    }
+    if (r[W_WM] >= 0) { layers += imgTag(V.wm[r[W_WM]], 'wm', '', eager); }
+    if (r[W_FLAG] & F_TIER) { layers += imgTag(V.o.tier, 'tier', '', eager); }
+    if (r[W_FLAG] & F_CRAFT) { layers += CRAFT_SVG; }
     return '<span class="gun' + (r[W_FLAG] & F_MW ? ' mw' : '') + (size ? ' ' + size : '') + '">' + layers + '</span>';
   }
   function armorGun(r, size, eager) {
     var layers = imgTag(r[A_ICON], '', '', eager);
-    if (r[A_WM] >= 0) { layers += imgTag(V.wm[r[A_WM]], '', '', eager); }
+    if (r[A_WM] >= 0) { layers += imgTag(V.wm[r[A_WM]], 'wm', '', eager); }
     return '<span class="gun' + (size ? ' ' + size : '') + '">' + layers + '</span>';
   }
 

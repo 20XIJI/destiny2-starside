@@ -1830,6 +1830,14 @@ body:has(.hero) .entries > li { position: relative; }
   text-transform: none;
 }
 
+.wordmark-meta .by > a:not(.support) {
+  color: inherit;
+  text-decoration: none;
+  transition: color .18s ease;
+}
+
+.wordmark-meta .by > a:not(.support):hover { color: var(--accent); }
+
 /* 站外的资助入口接在署名后面，隔一道竖发丝线——「谁做的、去哪儿资助他」是同一件事，
    跟站务块里那两个入口不是一类。
 

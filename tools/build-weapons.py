@@ -1516,11 +1516,7 @@ def build(facts):
         "wm": watermarks.items,
         "cls": [CLASS[k] for k in sorted(CLASS)],
         "part": list(PART.values()),
-        "o": {
-            k: stem(v)
-            for k, v in icons.CHROME.items()
-            if k in ("tier", "craft", "craft-bg")
-        },
+        "o": {"tier": stem(icons.CHROME["tier"])},
         "fam": fam_list,
         "afam": afam_list,
         "isen": is_aliases(weapons, armor, types),
