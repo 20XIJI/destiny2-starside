@@ -188,7 +188,7 @@ check_type.py      排版、CSS 有效性与产出结构：中文不吃拉丁字
                    简写非末层不许写颜色、产出的开闭标签配得上
 check_terms.py     术语与着色闸门，全部以 TERMS 那一张表为准
 check_quality.py   Python 离线回归测试（npm test 前半）
-check_quality.cjs  Node 离线回归测试（npm test 后半，云函数与装备库纯函数）
+check_quality.cjs  Node 离线回归测试入口（npm test 后半，装配 tools/quality/{harness,api,admin,frontend,weapons,rotation}.cjs）
 items.py           官方物品表 → tools/items.json，Perk 名 → tools/perks.json：
                    物品专名与 Perk 名该着哪个 token 由查表定；
                    出建议清单、就地落标记，配装源稿的描述与注解构建时自动着色，

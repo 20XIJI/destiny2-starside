@@ -11,8 +11,8 @@ paths:
 卡片墙与列表、结果栏 + 详情。详情里配词条实时算属性，两位作者的推荐画成词条图标
 外圈的光圈。交互对齐 destiny.report。
 
-这一页**不写任何数据**。`tools/build-weapons.py` 只读实体层（`resolve.Facts()`
-与 `rows.py` 的异域取法），产出 `weapons/` 下四个文件；`weapons/app.js` 与
+这一页**不写任何数据**。`tools/build-weapons.py` 只读实体层（`resolve.Facts()` 与 `rows.py` 的异域取法），产出
+`weapons/` 下四个文件；`weapons/app.js`、`weapons/pvp.js`（切换 PvP 属性模式时按需载入）与
 `weapons/style.css` 是手写的。例外有五处，都是「那边已经有了，抄过来两处会各改各的」：
 弹药块拾取量现读弹药生成机制页的表（见《框架数值》），护甲套装效果的图现读护甲套装页
 的索引，神器模组的名字、归属与说明现读神器模组页的索引（见《神器模组》），配装卡与它的
@@ -24,6 +24,7 @@ paths:
 |---|---|---|---|
 | `index.js` → `window.WPN` | 首屏 `defer` | 词表 `v` + 武器行 `w` + 护甲行 `a` | 134 KB |
 | `pool.js` → `window.WPN_POOL` | load 之后取；详情或查询先用到就立刻取，按高优先级 | 属性表、属性组曲线、插件字典、词条栏、大师杰作、模组、神器模组 | 175 KB |
+| `pvp.js` → `window.WPN_PVP` | 切到 PvP 属性模式时按需载入（高优先级） | PvP 伤害表、TTK 模拟器、PvP 面板与动画 | — |
 | `text.js` → `window.WPN_TEXT` | 不预取；打开详情，或查询要搜说明与描述时才取，同时要 pool 的排在 pool 之后 | 描述、Bungie 说明、站内实测、作者评语、异域站内详情、神器模组说明 | 342 KB |
 | `index.html` | — | 外壳（`shell.head/nav/foot`）+ 页首 + 范围开关 + 查询条 + 首屏骨架 + 类型小图标 sprite | — |
 
@@ -349,5 +350,5 @@ viewBox，不带的话外层 svg 按 300px 宽算。
   `facts.shown()` 逐值一致。
 - `check_quality.cjs`：属性纯函数的边界；查询解析的优先级、引号、全角、未知键、
   token 位置；同组点选是换而不是加，换完的查询仍然合法（`toggled()`、`cutQuery()`）；来源比对
-  不计引号、括号与空格（`srcFold()`）；`app.js` 里没有同名函数（后写的会整个盖掉前一个，内层函数也算）；
+  不计引号、括号与空格（`srcFold()`）；`app.js` 与 `pvp.js` 各自内部都没有同名函数（后写的会整个盖掉前一个，内层函数也算）；
   语法卡片里的每一条（`SYNTAX_OPS`、`SYNTAX_KEYS`）都解析成已知关键字；卡片评价的档位分级（`gradeStep()`、`gradeMarks()`）。

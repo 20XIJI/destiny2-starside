@@ -2349,7 +2349,7 @@ class WeaponPage(unittest.TestCase):
             encoding="utf-8"
         )
         start = text.index("  var FRAME_EN = {")
-        end = text.index("  function pvpDmg")
+        end = text.index("  function fmtM")
         prog = text[start:end] + (
             "var m = rangeMeters('脉冲步枪', '适配框架', 48, 17);"
             "var s = reloadSeconds('脉冲步枪', '主武器', 46);"
@@ -2447,6 +2447,7 @@ class DeploySelection(unittest.TestCase):
                 "assets/site.css",
                 "assets/app.js",
                 "assets/search.js",
+                "admin/shared.js",
                 "admin/admin.js",
                 "admin/dialect.js",
                 "builds/new/form.js",
@@ -2454,6 +2455,7 @@ class DeploySelection(unittest.TestCase):
                 "assets/rota.js",
                 "assets/home.js",
                 "weapons/app.js",
+                "weapons/pvp.js",
                 "weapons/style.css",
             )
             if not deploy.strippable(

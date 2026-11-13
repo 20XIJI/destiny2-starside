@@ -151,7 +151,7 @@ envId 不进环境变量：它写在 `shell.API` 里、要落进每个页面的�
 首页不给卡片）。编辑与审核都在线上做，落盘、构建与部署仍在本机：闸门是 Python，
 搬不上云函数。
 
-三个文件手写，不进生成器：`admin/index.html`、`admin/admin.js`、`admin/style.css`；
+四个文件手写，不进生成器：`admin/index.html`、`admin/shared.js`、`admin/admin.js`、`admin/style.css`；
 另有生成物 `admin/terms.js` 与 `admin/pages.js`。颜色、字体只引 `assets/site.css` 的
 token，按钮、列表、收件箱与登录页都写在 `admin/style.css`，不借资料页的 `.op` /
 `.toggle`（理由见 design.md 五之二）。
@@ -423,7 +423,7 @@ editors  { _id: uid, name, lv, at }
 `doc` 逐格改，配装页 `build` 整篇替换。配装页没有 `data-b`，逐字保真闸门也不覆盖它，
 逐格无从落脚也无从校验，所以那一枚「编辑」开的是一层铺满视口的遮罩，里面按
 `isSet()` 载单套或合集填表页，保存走 `bsave`——与审核台详情格里那一套是同一个动作、
-同一个落点，不新开状态流。单套还是合集由 `admin.js` 导出的 `slotOf()` 答，它读的是
+同一个落点，不新开状态流。单套还是合集由 `shared.js` 导出的 `slotOf()` 答，它读的是
 `builds/source.js` 的 `isSet()`，不在 `edit.js` 里抄第二份：它与 `convert-build.py` 的
 `split_set()` 必须一致。
 
@@ -436,8 +436,8 @@ editors  { _id: uid, name, lv, at }
 
 开编辑态只等一发：
 
-1. 词表现读，不在模块顶层捕获。`admin.js` 在 `lint()` 里现读 `window.starsideTerms`：
-   `toggle()` 只注入 `admin.js`，104 KB 的词表进编辑态之后空闲预取，
+1. 词表现读，不在模块顶层捕获。`shared.js` 在 `lint()` 里现读 `window.starsideTerms`：
+   `toggle()` 只注入 `dialect.js`、`source.js` 与 `shared.js`（不再拉完整审核台 `admin.js`），104 KB 的词表进编辑态之后空闲预取，
    点开某一块时若还没到就等它一次，到了再把调色板与闸门提示补上。预览不等它。
    `paint()` 只认花括号、不查词表，所以改完当场就看得见渲染的样子。
    同一条也让 `/admin/` 那一屏不必引 `terms.js`：`lint()` 全仓只有 `edit.js` 一个
@@ -481,7 +481,7 @@ gzip。省掉的那些由「没有 `data-b` 的 `<tr>` 就是上一行 +1」补�
 源稿方言（切格、着色标记的判读、一段文字能不能原样写进一格）只有两份实现：Python 的
 `markup.py`（`OPEN`、`cells()`、`inline()`），JS 的 `admin/dialect.js`（`scan()`，
 切格、`paint()`、配对与 `cellSafe()` 都从它算）。跨语言没法共用源码，两份是下限。
-JS 那一侧由 `admin.js`、`edit.js`、填表页的 `form.js` 与云函数共用同一个文件；
+JS 那一侧由 `shared.js`、`admin.js`、`edit.js`、填表页的 `form.js` 与云函数共用同一个文件；
 云函数只 `require` 得到自己目录下的东西，所以 `functions/api/dialect.js` 是构建复制
 过去的，**不手改**，两份逐字相同由 `npm test` 钉住。
 
@@ -739,9 +739,9 @@ season 与 slug、而盘上还没有的那些解析成记录，写成 `reference
 
 #### 离线断言
 
-着色与切格（`paint`、`cells`）在 `dialect.js`，`lint` 在 `admin.js`，都不碰 DOM：
-`dialect.js` 导出为 `window.starsideDialect`，`admin.js` 末尾按 `module.exports` 与
-`window.starsideAdmin` 各导一份，`edit.js` 直接用这两份，**不复制副本**。
+着色与切格（`paint`、`cells`）在 `dialect.js`，`lint` 与公共凭据／填表桥接在 `shared.js`，都不碰 DOM：
+`dialect.js` 导出为 `window.starsideDialect`，`shared.js` 按 `module.exports` 与
+`window.starsideShared` 各导一份，`edit.js` 与 `admin.js` 直接用这两份，**不复制副本**。
 
 四条断言从仓库里那几份现取，写在 scratchpad：
 

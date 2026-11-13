@@ -103,20 +103,20 @@
     })
   }
 
-  /* 两条编辑路都要先把编辑台那一份拉进来：资料页的闸门走 lint()，
+  /* 两条编辑路都要先把共用模块（admin/shared.js）拉进来：资料页的闸门走 lint()，
      配装页的填表页怎么载、怎么读、错误码怎么翻走 slotOf()/formSrc()/readForm()/
-     mountForm()/say()。
+     mountForm()/say()，不再把完整审核台 admin.js 整份拉过来。
 
-     **dialect 与 source 先落地。**admin.js 在函数体里现读 window.starsideDialect 与
+     **dialect 与 source 先落地。**shared.js 在函数体里现读 window.starsideDialect 与
      window.starsideSource，不在模块顶层捕获，所以先后不影响求值，影响的是调用：
      资料页那条路进去就切格、着色，配装页那条路进去就判单套还是合集。串着载是最省事的
      保证，代价是开编辑态时多两次往返。
      关掉再开时不重载：脚本已经在页面上了，再插一遍只是白执行一次。
      **词表不在这条链上**：lint() 同样现读 window.starsideTerms，挪到进去之后空闲补。 */
-  function needAdmin () {
-    if (window.starsideAdmin) return Promise.resolve()
+  function needShared () {
+    if (window.starsideShared) return Promise.resolve()
     return script('admin/dialect.js').then(function () { return script('builds/source.js') })
-      .then(function () { return script('admin/admin.js') })
+      .then(function () { return script('admin/shared.js') })
   }
 
   // **词表不进「开编辑态」这条关键路径。**它 104 KB，只有闸门提示与调色板用得上；
@@ -626,7 +626,7 @@
       prev.innerHTML = show(raw) || '（空）'
       notes.textContent = ''
       var ok = T.classes.concat(T.pageClasses[DOC] || [])
-      var r = window.starsideAdmin.lint(raw, { cols: 0, head: head }, g6, ok)
+      var r = window.starsideShared.lint(raw, { cols: 0, head: head }, g6, ok)
       r.errs.forEach(function (x) { notes.appendChild(el('li', null, x)) })
       // 「该着色」是提示不是错，压暗一档排在错误后面
       r.warns.forEach(function (x) { notes.appendChild(el('li', 'warn', x)) })
@@ -733,7 +733,7 @@
         var raw = fromEdit(f.ta.value, f.mode)
         f.prev.innerHTML = show(raw) || '（空）'
         f.notes.textContent = ''
-        var r = window.starsideAdmin.lint(raw, { cols: 0, head: false }, false,
+        var r = window.starsideShared.lint(raw, { cols: 0, head: false }, false,
           T.classes.concat(T.pageClasses[DOC] || []))
         r.errs.forEach(function (x) { f.notes.appendChild(el('li', null, x)) })
         errs += r.errs.length
@@ -770,7 +770,7 @@
           n.appendChild(el('li', null, (sent ? '已提交 ' + sent + ' 格；' : '')
             + (e.message === 'stale'
               ? '这一格已被他人修改，请刷新页面后重新提交'
-              : '提交失败：' + (window.starsideAdmin ? window.starsideAdmin.say(e) : e.message))))
+              : '提交失败：' + (window.starsideShared ? window.starsideShared.say(e) : e.message))))
         })
     }
     acts.appendChild(send)
@@ -835,7 +835,7 @@
     chip.textContent = '载入中…'
     // 首屏之后另存的记录（shell.split_rest）插回来之前，data-b 的增量解不全：
     // 按文档顺序累加，缺一段就整页错位。先等它。
-    return Promise.all([needAdmin().then(reload), window.starsideRest]).then(function () {
+    return Promise.all([needShared().then(reload), window.starsideRest]).then(function () {
       decode()
       S.on = true
       mark(true)
@@ -864,11 +864,11 @@
      与 hash 一并带回，代价只是顺带跑一次对配装恒为空的待审查询。 */
   var pane = null
 
-  // 读法与审核台那条共用 admin.js 的 readForm()：脏判据两边比的必须是同一种读回来
+  // 读法与审核台那条共用 shared.js 的 readForm()：脏判据两边比的必须是同一种读回来
   // 的样子，抄第二份就会漂。
   function buildRead () {
     var fr = pane && pane.querySelector('iframe')
-    return fr ? window.starsideAdmin.readForm(fr.contentWindow) : null
+    return fr ? window.starsideShared.readForm(fr.contentWindow) : null
   }
 
   function buildShut (chip) {
@@ -883,7 +883,7 @@
   }
 
   function buildPane (chip, md) {
-    var kind = window.starsideAdmin.slotOf(md)
+    var kind = window.starsideShared.slotOf(md)
     pane = el('div', 'se-build')
     var bar = el('div', 'se-build-bar')
     // 名字直接取页面上那个 h1，不另写一份解析：屏幕上写着什么，这里就写什么。
@@ -912,7 +912,7 @@
           if (pane !== savingPane) return
           keep.disabled = false
           // 与审核台同一张 MSG：同一个 bsave，两条路不该一边中文一边 no permission。
-          msg.textContent = '保存失败：' + window.starsideAdmin.say(e)
+          msg.textContent = '保存失败：' + window.starsideShared.say(e)
         })
       }
       bar.appendChild(keep)
@@ -928,12 +928,12 @@
     pane.appendChild(bar)
 
     var fr = el('iframe')
-    // 地址与灌入都走 admin.js 那一份：review() 排在 load() 之前、基线取归一化之后
+    // 地址与灌入都走 shared.js 那一份：review() 排在 load() 之前、基线取归一化之后
     // 读回来的那一份，两条规矩写在那里一处。
-    fr.src = HERE + window.starsideAdmin.formSrc(kind)
+    fr.src = HERE + window.starsideShared.formSrc(kind)
     fr.onload = function () {
       try {
-        S.buildBase = window.starsideAdmin.mountForm(fr.contentWindow, md, S.me.lv >= 2)
+        S.buildBase = window.starsideShared.mountForm(fr.contentWindow, md, S.me.lv >= 2)
       } catch (err) { msg.textContent = '载入失败：' + err.message }
     }
     pane.appendChild(fr)
@@ -949,7 +949,7 @@
     // **两件一起等**：底稿那一发不依赖编辑台那两份脚本，串起来就是白等一段——
     // 90 KB 的脚本与一次云函数往返里较短的那一段，冷启时是几百毫秒，而 iframe
     // 要等两边都落地才开载。
-    return Promise.all([needAdmin(), call('pend', { doc: DOC, md: 1 })])
+    return Promise.all([needShared(), call('pend', { doc: DOC, md: 1 })])
       .then(function (r) {
         var got = r[1]
         if (!got.md) throw new Error('这一页暂时无法在线编辑（' + DOC + ' 尚未收录），请联系超级管理员。')
@@ -959,9 +959,9 @@
          接不住成功回调自己抛的——chip 会永远停在「载入中…」，控制台外一声不响。 */
       .catch(function (e) {
         chip.textContent = '编辑'
-        // 走 say() 要 admin.js 已经在手里；载它那一步自己失败时退回原话。
+        // 走 say() 要 shared.js 已经在手里；载它那一步自己失败时退回原话。
         alert('进入编辑失败：'
-          + (window.starsideAdmin ? window.starsideAdmin.say(e) : e.message))
+          + (window.starsideShared ? window.starsideShared.say(e) : e.message))
       })
   }
 

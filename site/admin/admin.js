@@ -7,30 +7,20 @@
 
   var API = 'https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api'
   var AUTH = 'https://dea-mods-d1g0j2rile2323f73.api.tcloudbasegateway.com'
-  // **词表现读，不在模块顶层捕获。**捕获会逼着 terms.js 必须先于本文件执行，
-  // 而它 104 KB、全仓只有 lint() 用得上；现读之后 edit.js 那条串行注入就拆得开，
-  // 编辑态先起来、词表空闲时再补。
-  var FALLBACK = { terms: [], tokens: {}, classes: [], pageClasses: {}, guard: [], items: [], keep: [], g6: [] }
-  function terms () { return window.starsideTerms || FALLBACK }
+
+  // 共用逻辑在 admin/shared.js；现读 window.starsideShared，Node 里退回 require。
+  function SH () { return (typeof window !== 'undefined' && window.starsideShared) || require('./shared.js') }
+  function tok (v) { return SH().tok(v) }
+  function say (e) { return SH().say(e) }
+  function lint (text, at, g6, ok) { return SH().lint(text, at, g6, ok) }
+  function slotOf (md) { return SH().slotOf(md) }
+  function formSrc (kind) { return SH().formSrc(kind) }
+  function readForm (w) { return SH().readForm(w) }
+  function mountForm (w, md, reviewer) { return SH().mountForm(w, md, reviewer) }
 
   var $ = function (id) { return document.getElementById(id) }
   var LV = { 1: '编辑', 2: '审核员', 3: '管理员', 4: '超级管理员', 5: '本机' }
   var S = { me: null, docs: [], edits: [], subs: [], more: false }
-
-  // ── 凭据 ───────────────────────────────────────────────────────────
-  // access_token 2 小时、refresh_token 30 天，都存 localStorage。401 拿 refresh
-  // 换一次，再 401 才落回登录框。
-  function tok (v) {
-    if (v === undefined) return localStorage.getItem('sa_at') || ''
-    if (v === null) {
-      localStorage.removeItem('sa_at')
-      localStorage.removeItem('sa_rt')
-      return ''
-    }
-    localStorage.setItem('sa_at', v.access_token || '')
-    if (v.refresh_token) localStorage.setItem('sa_rt', v.refresh_token)
-    return ''
-  }
 
   function auth (path, body) {
     return fetch(AUTH + path, {
@@ -88,176 +78,6 @@
   // 在函数体里现读 window.starsideDialect，不在模块顶层捕获：见 edit.js 里注入次序那一段。
   function D () { return window.starsideDialect }
 
-  function inside (span, a, b) {
-    return span.some(function (s) { return a >= s[0] && b <= s[1] })
-  }
-
-  // ── 前端闸门 ───────────────────────────────────────────────────────
-  // 这些是提示不是拦截：逐字保真与结构断言要 Python，留在本地 npm run build。
-  // **六处跳过照 items.hits_in() 原样搬**：键行与标题行、表格里行标题那一格、
-  // 链接目标、GUARD 里更长的专名、已经在某个标记里的、表头行。少一条就满屏误报。
-
-  var KEY_LINE = /^[\u4e00-\u9fff]{1,6}(（[^）]*）)?：/
-  var RULE_LINE = /^\|[-| ]+\|$/
-
-  function ranges (text, res) {
-    var out = []
-    res.forEach(function (re) {
-      var m
-      re.lastIndex = 0
-      while ((m = re.exec(text))) {
-        out.push(m[1] === undefined ? [m.index, m.index + m[0].length]
-                                    : [m.index + m[0].indexOf(m[1]), m.index + m[0].indexOf(m[1]) + m[1].length])
-        if (!m[0].length) re.lastIndex++
-      }
-    })
-    return out
-  }
-  function within (rs, a, b) {
-    return rs.some(function (r) { return a >= r[0] && b <= r[1] })
-  }
-
-  // 下面三份都随词表走，按词表对象缓存：terms.js 是编辑态起来之后空闲补上的，
-  // 换了对象就重建。不缓存的话每次击键都要重来一遍。
-
-  // G2 那几十个正则。
-  var g2Src = null
-  var g2Of = null
-  function g2res (rows) {
-    if (g2Src === rows) return g2Of
-    var out = []
-    rows.forEach(function (row) {
-      if (!row[1]) return
-      out.push([row, new RegExp('\\{([\\w-]+)\\|'
-        + row[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\}', 'g')])
-    })
-    g2Src = rows
-    g2Of = out
-    return out
-  }
-
-  // G6 正查的词表按首字分桶，一行只扫它真出现过的那几桶。全扫是每次击键
-  // 1402 次子串搜索起步，中文输入法逐字上屏时每个候选字都要跑一轮。
-  var bkSrc = null
-  var bkOf = null
-  function buckets (items) {
-    if (bkSrc === items) return bkOf
-    var b = {}
-    items.forEach(function (row, i) {
-      var c = row[0].charAt(0)
-      if (!b[c]) b[c] = []
-      b[c].push([i, row])
-    })
-    bkSrc = items
-    bkOf = b
-    return b
-  }
-
-  // errors 一直显示，warns 只在编辑那一块时显示——不然一屏全是「该着色」。
-  function lint (text, at, g6, ok) {
-    var T = terms()
-    at = at || { cols: 0, head: false }
-    ok = ok || T.classes
-    var okSet = new Set(ok)
-    var errs = []
-    var warns = []
-    var m
-
-    var d = D().unclosed(text)
-    if (d) errs.push('花括号没闭合，少 ' + d + ' 个右括号')
-
-    // **着色 span 不得嵌套**，与 markup.no_nested_span 同一条。整块只有一个标记时
-    // 那一层 class 落在块上、不出 span，所以先剥掉它再看里面。
-    // `对{res|{orb|X}Y}` 就栽在这里：加一个字到标记外面，整块判定不再成立，
-    // res 只能套一层 span，于是与里面的 orb 嵌套，构建当场中止。
-    var inner = D().whole(text.trim())
-    if (/<span[^>]*>[^<]*<span/.test(D().paint(inner === null ? text : inner))) {
-      errs.push('着色标记套了两层。整格只有一个标记时那一层不出 span，'
-        + '所以把外面的字挪进最外层标记里就好')
-    }
-
-    // G3：token 必须在 site.css 里有对应的类
-    var t2 = /\{([\w-]+)\|/g
-    while ((m = t2.exec(text))) {
-      if (!okSet.has(m[1])) errs.push('token「' + m[1] + '」在这一页的样式表里没有定义')
-    }
-
-    // G1：整篇比一次。链接目标不是正文，KEEP 里那几条是官方专名，两者都放行。
-    var keep = ranges(text, [/\]\(([^)]*)\)/g])
-    T.keep.forEach(function (k) {
-      var at = 0
-      while ((at = text.indexOf(k, at)) >= 0) { keep.push([at, at + k.length]); at += k.length }
-    })
-    T.terms.forEach(function (row) {
-      row[2].forEach(function (bad) {
-        var at = 0
-        while ((at = text.indexOf(bad, at)) >= 0) {
-          if (!within(keep, at, at + bad.length)) {
-            errs.push('用了「' + bad + '」，正名是「' + row[0] + '」')
-            break
-          }
-          at += bad.length
-        }
-      })
-    })
-
-    // G2：只查「整个标记就是这个词」的那种。词嵌在更长的短语里时着色属于短语，
-    // 按词强判会把整句的颜色拆碎。
-    g2res(T.terms).forEach(function (e) {
-      var row = e[0]
-      var one = e[1]
-      var k
-      one.lastIndex = 0                      // 正则是缓存下来复用的，g 标志会记住上次位置
-      while ((k = one.exec(text))) {
-        if (k[1] !== row[1]) errs.push('「' + row[0] + '」该着 ' + row[1] + '，写成了 ' + k[1])
-      }
-    })
-
-    var lines = text.split('\n')
-    lines.forEach(function (line, n) {
-      // 表头行不是正文，列名与标题同属「标签」，已有结构身份。
-      var isHead = at.head || RULE_LINE.test((lines[n + 1] || '').trim())
-      if (at.cols && line.charAt(0) === '|' && !RULE_LINE.test(line.trim()) && !/^\|\s*==/.test(line)) {
-        var c = D().cells(line)
-        if (c !== at.cols) errs.push('这一行 ' + c + ' 格，表头是 ' + at.cols + ' 格')
-      }
-      if (!g6 || isHead || !line || line.charAt(0) === '#' || KEY_LINE.test(line)) return
-      var end = D().titleEnd(line)
-      var taken = ranges(line, [/\]\([^)]*\)/g])
-      T.guard.forEach(function (g) {
-        var at = 0
-        while ((at = line.indexOf(g, at)) >= 0) { taken.push([at, at + g.length]); at += g.length }
-      })
-      var span = D().marked(line)
-      // **只认每个词在这一行的第一次出现**，与原先那句 indexOf 逐字等价：首次
-      // 出现落在行标题里或已经着过色，这个词就整条跳过，不去看后面还有没有。
-      var bk = buckets(T.items)
-      var seen = {}
-      var hit = []
-      for (var i = 0; i < line.length; i++) {
-        var bag = bk[line.charAt(i)]
-        if (!bag) continue
-        for (var j = 0; j < bag.length; j++) {
-          var k = bag[j][0]
-          if (seen[k] !== undefined || line.slice(i, i + bag[j][1][0].length) !== bag[j][1][0]) continue
-          seen[k] = i
-          hit.push(bag[j])
-        }
-      }
-      hit.sort(function (a, b) { return a[0] - b[0] })   // 报错顺序仍按词表顺序
-      hit.forEach(function (e) {
-        var row = e[1]
-        var at = seen[e[0]]
-        if (at < end) return
-        var to = at + row[0].length
-        if (within(taken, at, to) || inside(span, at, to - 1)) return
-        warns.push('「' + row[0] + '」该着 ' + row[1] + '（' + row[2] + '）')
-      })
-    })
-
-    return { errs: errs, warns: warns }
-  }
-
   // ── 零件 ───────────────────────────────────────────────────────────
   function h (tag, a) {
     var n = document.createElement(tag)
@@ -289,45 +109,6 @@
   function cut () { return h('span', { class: 'x-cut', 'aria-hidden': 'true' }) }
   function kbd (k) { return h('kbd', { text: k }) }
   function num (v, hot) { return h('span', { class: 'x-n' + (hot && v ? ' hot' : ''), text: String(v) }) }
-
-  /* 后端抛的是英文标识，直接拼进「操作失败：」就是给审核员看 no permission。
-     只翻真会走到的那些；翻不到的原样带出来——猜一句中文比英文更难查，报出原话
-     至少 grep 得到。edit.js 那条编辑路也走这一张。 */
-  var MSG = {
-    forbidden: '登录已过期，正在返回登录页',
-    'no permission': '权限不足：此操作需要审核员级别',
-    'no sub': '该投稿已不存在，请刷新',
-    'no doc': '库中没有这一篇，请刷新',
-    'bad id': '编号不合法',
-    'bad md': '正文不合法：需以「# 」开头，且不超过 256 KB',
-    'bad sub type': '这是移除申请，不能按投稿处理',
-    'bad season': '赛季格式不正确（应形如 s29-…）',
-    'bad slug': '标识格式不正确（仅限小写字母、数字与连字符）',
-    'already pending': '该条已在待审中',
-    conflict: '该条刚被他人修改，请刷新后重新审核',
-    // 批量那一路才抛得出的三条。写在同一张表里：认不认得出这个码，与这个码
-    // 该翻成什么，两件事只该查一处。
-    'bad jobs': '本批数据格式不正确',
-    'batch too large': '待审过多，请逐处审核',
-    'no edit': '该改动记录已不存在，请刷新',
-    // 主键页上记录那一路。库里没有这条记录说明它还没同步进库。
-    'no rec': '库中还没有这条记录，请稍后再改',
-    'bad rec': '该格指向的记录不合法',
-    'bad path': '该格指向的字段不合法',
-    // docs 那一路翻页取配装正文时的防跑飞闸，不是业务上限。
-    'too many builds': '库中配装数量异常，请联系超级管理员'
-  }
-
-  /* 令牌那一档不只是换句话：call() 已经拿 refresh 换过一张再打仍被拒，说明是
-     真过期了，留在原地点什么都白点。清掉令牌、缓一下让人看清这句再退回登录页。 */
-  function say (e) {
-    var m = (e && e.message) || ''
-    if (m === 'forbidden') {
-      tok(null)
-      setTimeout(function () { location.reload() }, 1500)
-    }
-    return MSG[m] || m || '未知错误'
-  }
 
   // 回执：落在 node 里那一行 .x-tip 上，没有就补一行。
   function tip (node, msg, bad) {
@@ -1014,7 +795,7 @@
       judging[p.doc] = 1
       return call('pend', { doc: p.doc, judge: 1 }).then(function (r) {
         PEND[p.doc] = r.pend.map(function (e) { e.ok = Number(e.ok); return e })
-      }, function (e) { judgeErr[p.doc] = MSG[e.message] || e.message }).then(function () { delete judging[p.doc] })
+      }, function (e) { judgeErr[p.doc] = SH().MSG[e.message] || e.message }).then(function () { delete judging[p.doc] })
     })).then(function () {
       if (V.view === 'queue') inbox() ? drawQueue() : render()
     })
@@ -1397,8 +1178,8 @@
            conflict 单挑出来：这一档在批量里要说的是「重新审核」，与逐条那句不同。 */
         var msg = e.message === 'conflict'
           ? '本次操作未生效：有改动在本页打开后已被他人修改，这一批改动均未保存。请重新审核。'
-          : MSG[e.message]
-            ? '本次操作未生效：' + MSG[e.message]
+          : SH().MSG[e.message]
+            ? '本次操作未生效：' + SH().MSG[e.message]
             : '结果未确认，正在刷新队列'
         return load().then(function () { after(msg, 1) }, function (err) {
           tip(opsOf(), msg + '；刷新失败：' + err.message, 1)
@@ -1417,41 +1198,6 @@
   // ── 填表页那一格：两条编辑路共用的三件 ─────────────────────────────
   /* 编辑台的 #stage 与配装详情页的遮罩（admin/edit.js）载的是同一对填表页，
      规矩也是同一套。**写在这里、由 api 导出去**，不在 edit.js 里抄第二份。 */
-
-  // 一份正文该落在哪一页填表页上。**由正文现算，不另存一个字段**：合集标记只有
-  // 填表页的 setHead() 发得出，读回来与灌进去永远同属一档，存第二份只会有漂的风险。
-  function slotOf (md) { return B().isSet(md) ? 'set' : 'one' }
-
-  // 地址只给尾巴，前缀由调用方拼：编辑台在 admin/ 下写 ../，配装页按 site.css
-  // 那个 <link> 现算相对前缀。
-  function formSrc (kind) {
-    return kind === 'set' ? 'builds/new/set/index.html' : 'builds/new/index.html'
-  }
-
-  /* 填表页里现在是什么样。读不出来（脚本没载好、那一格还没建过）返回 null——
-     **不返回空串**：空串与「读到一份空稿」分不开，而后者要当脏处理。 */
-  function readForm (w) {
-    try {
-      var md = w.starsideForm.read()
-      return /^#\s+\S/.test(md) ? md : null
-    } catch (e) { return null }
-  }
-
-  // 灌一份进去，返回「没人动过」的基线。抛出去由调用方接：两边报错的落点不同。
-  function mountForm (w, md, reviewer) {
-    // 审核意见那一栏与只归审核员的那几个场景都在这里立起来：填表页默认收着
-    // 它们，投稿的人因此看不到。带守卫——读者浏览器里缓存着的旧 form.js 没有这个方法。
-    // **排在 load() 之前**：load 里的 pressTags() 只按得下没藏起来的按钮，
-    // 反过来的话一份「场景：功能性」的稿子会被重算成没有场景。
-    if (w.starsideForm.review) w.starsideForm.review(reviewer)
-    w.starsideForm.load(md)
-    // **把那一页自己的「投稿」摘掉**：它在审核页里按一下就是再投一份。
-    var send = w.document.getElementById('send')
-    if (send) send.remove()
-    // 基线取 load() 归一化之后那一份，不取灌进去的：换轴之前那批写的是「类别」，
-    // 读回来是「强度」，拿灌进去那份比会在没人动过的稿子上误报脏。
-    return readForm(w)
-  }
 
   // ── 填表页常驻那一格 ───────────────────────────────────────────────
   /* 单套与合集各有一页填表页，**各留一个 iframe、切换时收起另一个**：改 src
@@ -1698,7 +1444,7 @@
   // eds 那一路的 forbidden 说的是「动了同级或更高的人」，不是令牌过期——这里自己翻，
   // 不走 say()：那一条会当成登录失效清掉令牌。
   var ED_MSG = { forbidden: '只能调整级别低于本人的编辑者', 'bad lv': '级别不合法', 'bad uid': 'UID 不能为空' }
-  function edSay (e) { return ED_MSG[e.message] || MSG[e.message] || e.message }
+  function edSay (e) { return ED_MSG[e.message] || SH().MSG[e.message] || e.message }
 
   /* 每人做过什么，从已经拉进来的改动与投稿里现数，不另发请求。提交按 uid 认（改名
      不影响）；审核只记了名字，按当前名字认，改名之前审过的不计入。 */
@@ -1950,7 +1696,7 @@
   }
 
   function start () {
-    // 这两条只在编辑台上挂：资料页开编辑态时 edit.js 也载本文件，只为借几件纯函数。
+    // 这两条只在 /admin/ 审核台上挂。
     window.addEventListener('popstate', function (ev) {
       if (!S.me || !S.me.lv) return
       var st = ev.state || {}
@@ -2025,14 +1771,11 @@
   // 失效、并发时换几次令牌，由它一处决定。nextWait 与 changed 也是：审完摊开哪一条、
   // 对照加亮哪一段。
   //
-  // 后五件是给 admin/edit.js 那条配装编辑路的：它在配装页上现载这一份，单套与合集
-  // 怎么分、填表页怎么载、怎么读、错误码怎么翻，两条路各抄一份就会漂。slotOf 那条
-  // 判据还要与 convert-build.py 的 split_set() 逐字一致。
+  // 下面这组是给离线断言的；与 edit.js 共用的八个函数已抽去 admin/shared.js，
+  // 并继续通过 starsideShared 导出。
   var api = { lint: lint,
               builds: builds, when: when, refresh: refresh, start: start,
-              nextWait: nextWait, changed: changed,
-              slotOf: slotOf, formSrc: formSrc, readForm: readForm,
-              mountForm: mountForm, say: say }
+              nextWait: nextWait, changed: changed }
   if (typeof module !== 'undefined' && module.exports) module.exports = api
   if (typeof document !== 'undefined') {
     window.starsideAdmin = api
