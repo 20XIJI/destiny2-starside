@@ -347,12 +347,21 @@ test('eververse: 7-day history, 4-week ada history, stale upstream detection, an
     total: 26,
     updatedAt: '2026-01-01T17:03:00Z',
   }))
-  const preAdaHistory = Array.from({ length: 4 }, (_, i) => ({
-    cycleStart: `2026-01-0${i + 1}T17:00:00Z`,
-    sig: 'old-ada-' + i,
-    total: 6,
-    updatedAt: '2026-01-01T17:03:00Z',
-  }))
+  const preAdaHistory = [
+    ...Array.from({ length: 3 }, (_, i) => ({
+      cycleStart: `2026-01-0${i + 1}T17:00:00Z`,
+      sig: 'old-ada-' + i,
+      total: 6,
+      updatedAt: '2026-01-01T17:03:00Z',
+    })),
+    {
+      cycleStart: wk.cycleStart,
+      resetAt: wk.resetAt,
+      sig: curAdaSig,
+      items: ADA_SLOTS.map((s) => ({ hash: s.hash, name: '本周艾达着色器' })),
+      updatedAt: '2026-11-12T17:03:00Z',
+    },
+  ]
   const h = harness({
     counters: [{
       _id: 'rotation',
@@ -362,7 +371,7 @@ test('eververse: 7-day history, 4-week ada history, stale upstream detection, an
       updatedAt: '2026-11-13T17:03:00Z',
       total: 26,
       items: [{ name: '昨日有效商品', hash: 1 }],
-      ada: { cycleStart: wk.cycleStart, resetAt: wk.resetAt, total: 6, items: ADA_SLOTS.map((s) => ({ hash: s.hash, name: '本周艾达着色器' })) },
+      ada: { cycleStart: wk.cycleStart, resetAt: wk.resetAt, total: 6, error: '旧周期艾达抓取超时', items: ADA_SLOTS.map((s) => ({ hash: s.hash, name: '本周艾达着色器' })) },
       history: preHistory,
       adaHistory: preAdaHistory,
     }]
@@ -437,6 +446,7 @@ test('eververse: 7-day history, 4-week ada history, stale upstream detection, an
   const docAfterOk = h.store.counters.get('rotation')
   assert.equal(docAfterOk.fresh, true)
   assert.equal(docAfterOk.stale, null)
+  assert.equal(docAfterOk.ada.error, undefined)
   assert.equal(docAfterOk.sig, curSig)
   assert.equal(docAfterOk.history.length, 7)
   assert.equal(docAfterOk.history[0].sig, curSig)

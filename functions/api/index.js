@@ -193,8 +193,7 @@ function publicXur(doc) {
 }
 
 async function saveDoc(ref, data) {
-  const r = await ref.update(data)
-  if (!r.updated) await ref.set(data)
+  await ref.set(data)
 }
 
 // 光尘商店轮换数据写在 counters/rotation 单条 doc 里（含近 7 日光尘与近 4 周艾达历史）：
