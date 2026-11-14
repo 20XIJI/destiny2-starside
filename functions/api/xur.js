@@ -6,6 +6,7 @@
  * 同时结合站内装备库推荐表 (xur-recs.json) 自动标注传说武器的推荐 Perk (1=Aegis, 2=小棒猪, 3=双推) 与大师杰作。
  */
 
+const crypto = require("crypto")
 const fs = require("fs")
 const path = require("path")
 
@@ -518,7 +519,14 @@ async function run() {
   console.log(`3. 已落盘: ${dest}`)
 }
 
-module.exports = { XUR_SLOTS, XUR_FEED_URL, fetchLiveXurInput, syncXur, cleanXur, collectHashes }
+function xurSignature(input) {
+  const norm = normalizeInput(input)
+  const parts = (norm.slots || []).map((s) => `${s.hash}:${s.section || s.sec || ""}:${s.cost || ""}`).sort()
+  const raw = `${norm.location || ""}|${parts.join("|")}`
+  return crypto.createHash("sha1").update(raw).digest("hex")
+}
+
+module.exports = { XUR_SLOTS, XUR_FEED_URL, currentXurWindow, xurSignature, fetchLiveXurInput, syncXur, cleanXur, collectHashes }
 
 if (require.main === module) {
   run()

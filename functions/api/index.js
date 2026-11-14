@@ -18,14 +18,15 @@ const { cellSpans, rowOf, cellSafe, barePipe } = require('./dialect.js')
 // 这里是构建复制过去的那一份，不手改。
 const { same, id: buildId } = require('./source.js')
 // 永恒之诗 26 槽位定义与官方 API 强校验抓取逻辑，由 build-terms.py 从 tools/sync-eververse.js 复制。
-const { syncEververse } = require('./eververse.js')
+const { syncEververse, fetchLiveFeed, fetchAdaSlots, eververseWindow, weeklyCycleRange, slotsSignature, adaSignature } = require('./eververse.js')
 // 老九（Xûr）周货抓取与装备库推荐标注逻辑，由 build-terms.py 从 tools/sync-xur.js 复制。
-const { syncXur } = require('./xur.js')
+const { syncXur, fetchLiveXurInput, currentXurWindow, xurSignature } = require('./xur.js')
 const app = tcb.init({ env: tcb.SYMBOL_CURRENT_ENV })
 const db = app.database()
 const _ = db.command
 const stat = db.collection('counters').doc('stat')
 const rot = db.collection('counters').doc('rotation')
+const xurDoc = db.collection('counters').doc('xur')
 const likes = db.collection('likes')
 const subs = db.collection('subs')
 // 在线编辑台的四张表。docs 是源稿的工作副本，recs 是记录上站内文字的工作副本，
@@ -156,23 +157,184 @@ async function publish(name, payload) {
   await mgr.hosting.uploadFiles({ files: [{ localPath: local, cloudPath: HOSTING_ROOT + '/rotation/' + name }] })
 }
 
-// 光尘商店轮换数据写在 counters/rotation 单条 doc 里：定时器按 UTC+8 每天 01:03
-// （周三 01:03 / 02:03 / 03:03 三次）写入，并发布 rotation/eververse.json。
-async function syncRotation(customSlots, customAdaSlots) {
-  const payload = await syncEververse(
-    BUNGIE_KEY,
-    Array.isArray(customSlots) && customSlots.length ? customSlots : null,
-    Array.isArray(customAdaSlots) ? customAdaSlots : null
-  )
-  if (!payload.ada.items.length && payload.ada.error) {
-    const prev = (await rot.get()).data[0] || null
-    if (prev && prev.ada && prev.ada.resetAt === payload.ada.resetAt && Array.isArray(prev.ada.items) && prev.ada.items.length) {
-      payload.ada = { ...prev.ada, error: payload.ada.error }
+const normIsoSec = (s) => (s ? new Date(s).toISOString().replace(/\.\d{3}Z$/, 'Z') : '')
+
+function keepHistory(list, entry, key, limit) {
+  const k = entry[key]
+  const rest = (Array.isArray(list) ? list : []).filter((it) => it && it[key] !== k)
+  return [entry, ...rest].sort((a, b) => String(b[key] || '').localeCompare(String(a[key] || ''))).slice(0, limit)
+}
+
+function publicEververse(doc) {
+  return {
+    updatedAt: doc.updatedAt,
+    cycleStart: doc.cycleStart,
+    resetAt: doc.resetAt,
+    cycleNote: doc.cycleNote,
+    total: doc.total,
+    items: doc.items,
+    ada: doc.ada,
+    ...(doc.stale ? { stale: doc.stale } : {})
+  }
+}
+
+function publicXur(doc) {
+  return {
+    updatedAt: doc.updatedAt,
+    arrival: doc.arrival,
+    departure: doc.departure,
+    location: doc.location,
+    cycleNote: doc.cycleNote,
+    armorSetName: doc.armorSetName,
+    total: doc.total,
+    items: doc.items,
+    ...(doc.stale ? { stale: doc.stale } : {})
+  }
+}
+
+async function saveDoc(ref, data) {
+  const r = await ref.update(data)
+  if (!r.updated) await ref.set(data)
+}
+
+// 光尘商店轮换数据写在 counters/rotation 单条 doc 里（含近 7 日光尘与近 4 周艾达历史）：
+// 定时器按 UTC+8 每天 01:03 / 01:10 / 02:03 触发，对比历史有更新才拉 Bungie API 并发布 rotation/eververse.json。
+async function syncRotation(customSlots, customAdaSlots, opts = {}) {
+  const force = Boolean(opts && opts.force)
+  const hasCustom = Array.isArray(customSlots) && customSlots.length > 0
+  const hasCustomAda = Array.isArray(customAdaSlots)
+  const now = new Date()
+  const win = eververseWindow(now)
+  const wk = weeklyCycleRange(now)
+  const prev = (await rot.get()).data[0] || null
+
+  const history = Array.isArray(prev && prev.history)
+    ? prev.history
+    : (prev && Array.isArray(prev.items) && prev.items.length && prev.cycleStart
+        ? [{ cycleStart: prev.cycleStart, inventoryDate: prev.inventoryDate || null, sig: slotsSignature(prev.items), total: prev.total || prev.items.length, updatedAt: prev.updatedAt || '' }]
+        : [])
+  const adaHistory = Array.isArray(prev && prev.adaHistory)
+    ? prev.adaHistory
+    : (prev && prev.ada && Array.isArray(prev.ada.items) && prev.ada.items.length && prev.ada.cycleStart
+        ? [{ cycleStart: prev.ada.cycleStart, resetAt: prev.ada.resetAt, sig: adaSignature(prev.ada.items), items: prev.ada.items, updatedAt: prev.updatedAt || '' }]
+        : [])
+
+  if (!force && !hasCustom && !hasCustomAda && prev && prev.fresh === true && !prev.stale
+      && prev.cycleStart === win.cycleStart && prev.ada && prev.ada.cycleStart === wk.cycleStart
+      && !prev.ada.error && Array.isArray(prev.ada.items) && prev.ada.items.length) {
+    return {
+      ok: 1,
+      skipped: 1,
+      total: prev.total,
+      adaTotal: prev.ada.total,
+      updatedAt: prev.updatedAt,
+      resetAt: prev.resetAt
     }
   }
-  const r = await rot.update(payload)
-  if (!r.updated) await rot.set(payload)
-  await publish('eververse.json', payload)
+
+  let slots = null
+  let inventoryDate = null
+  if (hasCustom) {
+    slots = customSlots
+  } else {
+    const feed = await fetchLiveFeed()
+    slots = feed.slots
+    inventoryDate = feed.inventoryDate
+  }
+  const sig = slotsSignature(slots)
+
+  if (!force && !hasCustom) {
+    const curEntry = history.find((h) => h.cycleStart === win.cycleStart)
+    const dateStale = Boolean(inventoryDate && inventoryDate < win.cycleDate)
+    const dupPrevDay = !curEntry && history.some((h) => h.sig === sig)
+    if (dateStale || dupPrevDay) {
+      const reason = dateStale
+        ? `光尘轮换源尚未刷新至今日周期（页面日期=${inventoryDate}，期望=${win.cycleDate}）`
+        : '光尘轮换源与近 7 日历史重复，疑似尚未刷新'
+      if (prev && Array.isArray(prev.items) && prev.items.length && prev.cycleStart) {
+        const stale = {
+          cycleStart: win.cycleStart,
+          reason,
+          at: now.toISOString().replace(/\.\d{3}Z$/, 'Z'),
+          attempts: ((prev.stale && prev.stale.cycleStart === win.cycleStart ? prev.stale.attempts : 0) || 0) + 1
+        }
+        await rot.update({ stale })
+        await publish('eververse.json', publicEververse({ ...prev, stale }))
+      }
+      throw new Error(reason)
+    }
+  }
+
+  let prefetchedAdaSlots = null
+  let cachedAda = null
+  let adaError = null
+  if (!hasCustomAda) {
+    try {
+      const liveAda = await fetchAdaSlots()
+      const aSig = adaSignature(liveAda)
+      const curAda = adaHistory.find((h) => h.cycleStart === wk.cycleStart)
+        || (prev && prev.ada && prev.ada.cycleStart === wk.cycleStart && !prev.ada.error
+            && Array.isArray(prev.ada.items) && prev.ada.items.length
+            ? { ...prev.ada, sig: adaSignature(prev.ada.items) }
+            : null)
+      if (!force && curAda && curAda.sig === aSig && Array.isArray(curAda.items) && curAda.items.length) {
+        cachedAda = curAda
+      } else if (!force && !curAda && adaHistory.some((h) => h.sig === aSig)) {
+        adaError = '艾达-1 轮换源与前几周重复，疑似尚未刷新'
+      } else {
+        prefetchedAdaSlots = liveAda
+      }
+    } catch (err) {
+      adaError = String(err && err.message ? err.message : err)
+    }
+  }
+
+  const payload = await syncEververse(
+    BUNGIE_KEY,
+    hasCustom ? customSlots : null,
+    hasCustomAda ? customAdaSlots : null,
+    {
+      now,
+      prefetchedSlots: hasCustom ? null : slots,
+      prefetchedAdaSlots,
+      cachedAda,
+      adaError
+    }
+  )
+
+  if (!payload.ada.items.length && payload.ada.error && prev && prev.ada
+      && prev.ada.resetAt === payload.ada.resetAt && Array.isArray(prev.ada.items) && prev.ada.items.length) {
+    payload.ada = { ...prev.ada, error: payload.ada.error }
+  }
+
+  const nextHistory = keepHistory(history, {
+    cycleStart: payload.cycleStart,
+    inventoryDate,
+    sig,
+    total: payload.total,
+    updatedAt: payload.updatedAt
+  }, 'cycleStart', 7)
+
+  const nextAdaHistory = (!payload.ada.error && Array.isArray(payload.ada.items) && payload.ada.items.length)
+    ? keepHistory(adaHistory, {
+        cycleStart: payload.ada.cycleStart,
+        resetAt: payload.ada.resetAt,
+        sig: adaSignature(payload.ada.items),
+        items: payload.ada.items,
+        updatedAt: payload.updatedAt
+      }, 'cycleStart', 4)
+    : adaHistory
+
+  await saveDoc(rot, {
+    ...payload,
+    fresh: true,
+    stale: null,
+    inventoryDate,
+    sig,
+    history: nextHistory,
+    adaHistory: nextAdaHistory
+  })
+  await publish('eververse.json', publicEververse(payload))
   const res = {
     ok: 1,
     total: payload.total,
@@ -184,10 +346,76 @@ async function syncRotation(customSlots, customAdaSlots) {
   return res
 }
 
-// 老九（Xûr）周货数据：定时器按 UTC+8 周六 01:03 / 02:03 / 03:03 抓取并发布 rotation/xur.json。
-async function syncXurInventory(rawKyberData) {
-  const payload = await syncXur(BUNGIE_KEY, rawKyberData && typeof rawKyberData === 'object' ? rawKyberData : null)
-  await publish('xur.json', payload)
+// 老九（Xûr）周货数据写在 counters/xur 单条 doc 里（含近 4 周历史）：
+// 定时器按 UTC+8 周六 01:03 / 02:03 / 03:03 触发，对比历史有更新才拉 Bungie API 并发布 rotation/xur.json。
+async function syncXurInventory(rawKyberData, opts = {}) {
+  const force = Boolean(opts && opts.force)
+  const hasCustom = Boolean(rawKyberData && typeof rawKyberData === 'object')
+  const now = new Date()
+  const win = currentXurWindow()
+  const prev = (await xurDoc.get()).data[0] || null
+  const history = Array.isArray(prev && prev.history) ? prev.history : []
+
+  if (!force && !hasCustom && prev && prev.fresh === true && !prev.stale && normIsoSec(prev.arrival) === win.arrival) {
+    return {
+      ok: 1,
+      skipped: 1,
+      total: prev.total,
+      updatedAt: prev.updatedAt,
+      arrival: prev.arrival,
+      departure: prev.departure
+    }
+  }
+
+  const input = hasCustom ? rawKyberData : await fetchLiveXurInput()
+  const sig = xurSignature(input)
+  const inArrival = normIsoSec(input.arrival || win.arrival)
+
+  if (!force && !hasCustom) {
+    const curEntry = history.find((h) => normIsoSec(h.arrival) === inArrival)
+    if (curEntry && curEntry.sig === sig && prev && prev.fresh === true && !prev.stale) {
+      return {
+        ok: 1,
+        skipped: 1,
+        total: prev.total,
+        updatedAt: prev.updatedAt,
+        arrival: prev.arrival,
+        departure: prev.departure
+      }
+    }
+    if (!curEntry && history.some((h) => h.sig === sig)) {
+      const reason = '老九轮换源与前几周重复，疑似尚未刷新'
+      if (prev && Array.isArray(prev.items) && prev.items.length && prev.arrival) {
+        const stale = {
+          arrival: win.arrival,
+          reason,
+          at: now.toISOString().replace(/\.\d{3}Z$/, 'Z'),
+          attempts: ((prev.stale && prev.stale.arrival === win.arrival ? prev.stale.attempts : 0) || 0) + 1
+        }
+        await xurDoc.update({ stale })
+        await publish('xur.json', publicXur({ ...prev, stale }))
+      }
+      throw new Error(reason)
+    }
+  }
+
+  const payload = await syncXur(BUNGIE_KEY, input)
+  const nextHistory = keepHistory(history, {
+    arrival: normIsoSec(payload.arrival),
+    departure: normIsoSec(payload.departure),
+    sig,
+    total: payload.total,
+    updatedAt: payload.updatedAt
+  }, 'arrival', 4)
+
+  await saveDoc(xurDoc, {
+    ...payload,
+    fresh: true,
+    stale: null,
+    sig,
+    history: nextHistory
+  })
+  await publish('xur.json', publicXur(payload))
   return { ok: 1, total: payload.total, updatedAt: payload.updatedAt, arrival: payload.arrival, departure: payload.departure }
 }
 
@@ -377,7 +605,16 @@ async function guard(a, body, event) {
 async function editorRoute(a, body, event, me) {
   // lv 0 也放行：没进白名单的人要看得见自己的 uid，才知道让管理员加谁。
   if (a === 'me') {
-    return { uid: me.uid, name: me.name, lv: me.lv }
+    const out = { uid: me.uid, name: me.name, lv: me.lv }
+    if (me.lv >= 2) {
+      const [rSnap, xSnap] = await Promise.all([rot.get(), xurDoc.get()])
+      const rDoc = rSnap.data[0]
+      const xDoc = xSnap.data[0]
+      const evStale = rDoc && rDoc.stale && rDoc.stale.cycleStart === eververseWindow().cycleStart ? rDoc.stale : null
+      const xurStale = xDoc && xDoc.stale && normIsoSec(xDoc.stale.arrival) === currentXurWindow().arrival ? xDoc.stale : null
+      if (evStale || xurStale) out.stale = { ...(evStale ? { eververse: evStale } : {}), ...(xurStale ? { xur: xurStale } : {}) }
+    }
+    return out
   }
 
   if (a === 'docs') {
@@ -890,8 +1127,8 @@ async function editorRoute(a, body, event, me) {
 async function route(a, body, event) {
   const me = await guard(a, body, event)
   if (a === 'stats') return stats()
-  if (a === 'sync_rotation') return syncRotation(body.slots, body.adaSlots)
-  if (a === 'sync_xur') return syncXurInventory(body.kyber)
+  if (a === 'sync_rotation') return syncRotation(body.slots, body.adaSlots, { force: Boolean(body.force) })
+  if (a === 'sync_xur') return syncXurInventory(body.kyber, { force: Boolean(body.force) })
 
   const ed = await editorRoute(a, body, event, me)
   if (ed) return ed

@@ -4,6 +4,7 @@
  * 纯官方 API 直连：通过 Bungie API DestinyInventoryItemDefinition 接口并发拉取官方中文字段、类型、品质与 CDN 图标。
  */
 
+const crypto = require('crypto')
 const fs = require('fs')
 const path = require('path')
 
@@ -121,15 +122,31 @@ function mapExpectedType(enType = '', category = '') {
   return { expectedType: '', vendorHash: 3361454721, isWide: false, order: 99 }
 }
 
-async function fetchLiveSlots() {
-  const res = await fetchWithRetry(EVERVERSE_FEED_URL, {
-    headers: { 'User-Agent': 'StarsideCloudEververse/1.0' }
-  })
-  if (!res.ok) throw new Error(`永恒之诗轮换源 HTTP ${res.status}`)
-  const data = await res.json()
-  const html = data?.content?.rendered || ''
-  if (!html) throw new Error('永恒之诗轮换源 content.rendered 为空')
+const MONTHS = {
+  january: '01', february: '02', march: '03', april: '04',
+  may: '05', june: '06', july: '07', august: '08',
+  september: '09', october: '10', november: '11', december: '12'
+}
 
+function parseInventoryDate(html) {
+  const m = /CURRENT INVENTORY[\s\S]{0,160}?(?:<strong>\s*)?([A-Za-z]+)\s+(\d{1,2}),\s*(\d{4})(?:\s*<\/strong>)?/i.exec(html || '')
+  if (!m) return null
+  const mon = MONTHS[m[1].toLowerCase()]
+  if (!mon) return null
+  return `${m[3]}-${mon}-${String(Number(m[2])).padStart(2, '0')}`
+}
+
+function slotsSignature(slots) {
+  const parts = (slots || []).map((s) => `${s.hash}:${s.currency || ''}:${s.cost ?? ''}`).sort()
+  return crypto.createHash('sha1').update(parts.join('|')).digest('hex')
+}
+
+function adaSignature(slots) {
+  const hashes = (slots || []).map((s) => Number(s.hash)).filter(Boolean).sort((a, b) => a - b)
+  return crypto.createHash('sha1').update(hashes.join(',')).digest('hex')
+}
+
+function parseEververseHtml(html) {
   const re = /data-ke-item=(?:"([^"]+)"|'([^']+)')/g
   let m
   const rawItems = []
@@ -181,7 +198,26 @@ async function fetchLiveSlots() {
     .filter((it) => it.currency === 'silver')
     .map((it) => ({ ...stripMeta(it), group: '银币新品' }))
 
-  return [...mainDust, ...otherDust, ...silverNew]
+  return {
+    slots: [...mainDust, ...otherDust, ...silverNew],
+    inventoryDate: parseInventoryDate(html)
+  }
+}
+
+async function fetchLiveFeed() {
+  const res = await fetchWithRetry(EVERVERSE_FEED_URL, {
+    headers: { 'User-Agent': 'StarsideCloudEververse/1.0' }
+  })
+  if (!res.ok) throw new Error(`永恒之诗轮换源 HTTP ${res.status}`)
+  const data = await res.json()
+  const html = data?.content?.rendered || ''
+  if (!html) throw new Error('永恒之诗轮换源 content.rendered 为空')
+  return parseEververseHtml(html)
+}
+
+async function fetchLiveSlots() {
+  const { slots } = await fetchLiveFeed()
+  return slots
 }
 
 async function fetchAdaSlots() {
@@ -243,14 +279,23 @@ function weeklyCycleRange(now = new Date()) {
   }
 }
 
-function nextDailyReset() {
-  const now = new Date()
-  const candidate = new Date(now)
-  candidate.setUTCHours(17, 0, 0, 0)
-  if (candidate <= now) {
-    candidate.setUTCDate(candidate.getUTCDate() + 1)
+function eververseWindow(now = new Date()) {
+  const lastReset = new Date(now)
+  lastReset.setUTCHours(17, 0, 0, 0)
+  if (lastReset > now) {
+    lastReset.setUTCDate(lastReset.getUTCDate() - 1)
   }
-  return candidate.toISOString().replace(/\.\d{3}Z$/, 'Z')
+  const reset = new Date(lastReset.getTime() + 86400e3)
+  const cycleStart = lastReset.toISOString().replace(/\.\d{3}Z$/, 'Z')
+  return {
+    cycleStart,
+    resetAt: reset.toISOString().replace(/\.\d{3}Z$/, 'Z'),
+    cycleDate: cycleStart.slice(0, 10)
+  }
+}
+
+function nextDailyReset() {
+  return eververseWindow().resetAt
 }
 
 async function fetchItem(slot, idx, apiKey) {
@@ -309,9 +354,11 @@ async function fetchItem(slot, idx, apiKey) {
   }
 }
 
-async function syncEververse(apiKey, customSlots = null, customAdaSlots = null) {
+async function syncEververse(apiKey, customSlots = null, customAdaSlots = null, options = {}) {
   if (!apiKey) throw new Error('missing BUNGIE_API_KEY')
-  const slots = Array.isArray(customSlots) && customSlots.length ? customSlots : await fetchLiveSlots()
+  const slots = Array.isArray(options.prefetchedSlots) && options.prefetchedSlots.length
+    ? options.prefetchedSlots
+    : (Array.isArray(customSlots) && customSlots.length ? customSlots : await fetchLiveSlots())
   if (!Array.isArray(slots) || !slots.length) {
     throw new Error('永恒之诗轮换槽位为空')
   }
@@ -322,35 +369,39 @@ async function syncEververse(apiKey, customSlots = null, customAdaSlots = null) 
     const part = await Promise.all(chunk.map((s, j) => fetchItem(s, i + j, apiKey)))
     validItems.push(...part)
   }
-  const adaItems = []
-  let adaError = null
-  try {
-    const adaSlots = Array.isArray(customAdaSlots) ? customAdaSlots : await fetchAdaSlots()
-    for (let i = 0; i < adaSlots.length; i += BATCH) {
-      const chunk = adaSlots.slice(i, i + BATCH)
-      const part = await Promise.all(chunk.map((s, j) => fetchItem(s, slots.length + i + j, apiKey)))
-      adaItems.push(...part)
-    }
-  } catch (err) {
-    adaError = String(err && err.message ? err.message : err)
-  }
-  const now = new Date()
-  const lastReset = new Date(now)
-  lastReset.setUTCHours(17, 0, 0, 0)
-  if (lastReset > now) {
-    lastReset.setUTCDate(lastReset.getUTCDate() - 1)
-  }
-  const cycleStart = lastReset.toISOString().replace(/\.\d{3}Z$/, 'Z')
+  const now = options.now ? new Date(options.now) : new Date()
+  const win = eververseWindow(now)
   const wk = weeklyCycleRange(now)
 
-  return {
-    updatedAt: now.toISOString().replace(/\.\d{3}Z$/, 'Z'),
-    cycleStart,
-    resetAt: nextDailyReset(),
-    cycleNote: '每天 01:00 刷新',
-    total: validItems.length,
-    items: validItems,
-    ada: {
+  let adaBlock = null
+  if (options.cachedAda && Array.isArray(options.cachedAda.items) && options.cachedAda.items.length) {
+    adaBlock = {
+      cycleStart: wk.cycleStart,
+      resetAt: wk.resetAt,
+      cycleNote: '每周三 01:00 刷新',
+      total: options.cachedAda.items.length,
+      items: options.cachedAda.items
+    }
+  } else {
+    const adaItems = []
+    let adaError = null
+    try {
+      const adaSlots = Array.isArray(options.prefetchedAdaSlots)
+        ? options.prefetchedAdaSlots
+        : (Array.isArray(customAdaSlots) ? customAdaSlots : await fetchAdaSlots())
+      if (options.adaError) {
+        adaError = options.adaError
+      } else {
+        for (let i = 0; i < adaSlots.length; i += BATCH) {
+          const chunk = adaSlots.slice(i, i + BATCH)
+          const part = await Promise.all(chunk.map((s, j) => fetchItem(s, slots.length + i + j, apiKey)))
+          adaItems.push(...part)
+        }
+      }
+    } catch (err) {
+      adaError = String(err && err.message ? err.message : err)
+    }
+    adaBlock = {
       cycleStart: wk.cycleStart,
       resetAt: wk.resetAt,
       cycleNote: '每周三 01:00 刷新',
@@ -358,6 +409,16 @@ async function syncEververse(apiKey, customSlots = null, customAdaSlots = null) 
       items: adaItems,
       ...(adaError ? { error: adaError } : {})
     }
+  }
+
+  return {
+    updatedAt: now.toISOString().replace(/\.\d{3}Z$/, 'Z'),
+    cycleStart: win.cycleStart,
+    resetAt: win.resetAt,
+    cycleNote: '每天 01:00 刷新',
+    total: validItems.length,
+    items: validItems,
+    ada: adaBlock
   }
 }
 
@@ -389,7 +450,11 @@ async function run() {
   })))
 }
 
-module.exports = { EVERVERSE_FEED_URL, ADA_FEED_URL, ROTATION_SLOTS, ADA_SLOTS, fetchLiveSlots, fetchAdaSlots, fetchItem, syncEververse }
+module.exports = {
+  EVERVERSE_FEED_URL, ADA_FEED_URL, ROTATION_SLOTS, ADA_SLOTS,
+  eververseWindow, weeklyCycleRange, parseInventoryDate, parseEververseHtml,
+  slotsSignature, adaSignature, fetchLiveFeed, fetchLiveSlots, fetchAdaSlots, fetchItem, syncEververse
+}
 
 if (require.main === module) {
   run()

@@ -17,12 +17,12 @@
         {
           "name": "eververse-daily-0103",
           "type": "timer",
-          "config": "0 3 1 * * * *"
+          "config": "0 3 1,2 * * * *"
         },
         {
-          "name": "eververse-wed-retry",
+          "name": "eververse-daily-0110",
           "type": "timer",
-          "config": "0 3 2,3 * * 3 *"
+          "config": "0 10 1 * * * *"
         },
         {
           "name": "xur-sat-0103",

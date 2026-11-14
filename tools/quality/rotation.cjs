@@ -289,6 +289,178 @@ test('eververse: universal armor ornaments, class finishers, and data-kdh-previe
   assert.equal(published.ada.items.length, 6)
 })
 
+test('eververse: 7-day history, 4-week ada history, stale upstream detection, and idempotent retry', async () => {
+  const {
+    ROTATION_SLOTS, ADA_SLOTS, EVERVERSE_FEED_URL, ADA_FEED_URL,
+    eververseWindow, weeklyCycleRange, slotsSignature, adaSignature,
+  } = require(path.join(root, 'tools/sync-eververse.js'))
+  const allSlots = [...ROTATION_SLOTS, ...ADA_SLOTS]
+  const byHash = new Map(allSlots.map((s, i) => [String(s.hash), { s, i }]))
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+  const fmtKyberDate = (ymd) => {
+    const [y, m, d] = ymd.split('-').map(Number)
+    return `${months[m - 1]} ${d}, ${y}`
+  }
+  const makeFeed = (slots, dateStr) => {
+    const cards = slots.map((s) => {
+      const item = {
+        name: 'Item ' + s.hash,
+        itemType: s.expectedType === '武器皮肤' ? 'Weapon Ornament'
+          : s.expectedType === '泰坦皮肤' ? 'Titan Ornament'
+          : s.expectedType === '猎人皮肤' ? 'Hunter Ornament'
+          : s.expectedType === '术士皮肤' ? 'Warlock Ornament'
+          : s.expectedType === '飞船' ? 'Ship'
+          : s.expectedType === '载具' ? 'Vehicle'
+          : s.expectedType === '机灵外壳' ? 'Ghost Shell'
+          : s.expectedType === '机灵投影' ? 'Ghost Projection'
+          : s.expectedType === '终结技' ? 'Finisher'
+          : s.expectedType === '着色器' ? 'Shader'
+          : s.expectedType === '传送效果' ? 'Transmat Effect'
+          : 'Emote',
+        tier: s.expectedTier === 'exotic' ? 'Exotic' : (s.expectedTier === 'rare' ? 'Rare' : 'Legendary'),
+        cost: s.cost + (s.currency === 'silver' ? ' Silver' : ' Bright Dust'),
+        market: s.currency,
+        link: 'https://www.light.gg/db/items/' + s.hash + '/'
+      }
+      return `<div data-ke-item="${JSON.stringify(item).replace(/"/g, '&quot;')}"></div>`
+    }).join('')
+    return (dateStr ? `<div class="ke-current-inv">CURRENT INVENTORY: <strong>${fmtKyberDate(dateStr)}</strong></div>` : '') + cards
+  }
+  const makeAdaHtml = (slots) => `<section id="kwr-ada">${slots.map((s) => `<article class="kwr-shader" data-item-hash="${s.hash}"></article>`).join('')}</section>`
+
+  const win = eververseWindow()
+  const wk = weeklyCycleRange()
+  const prevCycleStart = new Date(Date.parse(win.cycleStart) - 86400e3).toISOString().replace(/\.\d{3}Z$/, 'Z')
+  const prevCycleDate = new Date(Date.parse(win.cycleStart) - 86400e3).toISOString().slice(0, 10)
+  const altSlots = ROTATION_SLOTS.map((s, i) => (i === 0 ? { ...s, cost: s.cost + 100 } : s))
+  const curSig = slotsSignature(ROTATION_SLOTS)
+  const altSig = slotsSignature(altSlots)
+  const curAdaSig = adaSignature(ADA_SLOTS)
+
+  let feedMode = 'current'
+  let bungieCalls = 0
+  let adaCalls = 0
+  const preHistory = Array.from({ length: 7 }, (_, i) => ({
+    cycleStart: new Date(Date.parse(win.cycleStart) - (7 - i) * 86400e3).toISOString().replace(/\.\d{3}Z$/, 'Z'),
+    cycleDate: '2026-01-0' + (i + 1),
+    sig: i === 6 ? altSig : ('old-sig-' + i),
+    total: 26,
+    updatedAt: '2026-01-01T17:03:00Z',
+  }))
+  const preAdaHistory = Array.from({ length: 4 }, (_, i) => ({
+    cycleStart: `2026-01-0${i + 1}T17:00:00Z`,
+    sig: 'old-ada-' + i,
+    total: 6,
+    updatedAt: '2026-01-01T17:03:00Z',
+  }))
+  const h = harness({
+    counters: [{
+      _id: 'rotation',
+      cycleStart: prevCycleStart,
+      cycleDate: prevCycleDate,
+      resetAt: win.cycleStart,
+      updatedAt: '2026-11-13T17:03:00Z',
+      total: 26,
+      items: [{ name: '昨日有效商品', hash: 1 }],
+      ada: { cycleStart: wk.cycleStart, resetAt: wk.resetAt, total: 6, items: ADA_SLOTS.map((s) => ({ hash: s.hash, name: '本周艾达着色器' })) },
+      history: preHistory,
+      adaHistory: preAdaHistory,
+    }]
+  }, {
+    async fetch(url) {
+      if (url === EVERVERSE_FEED_URL) {
+        const html = feedMode === 'oldDate'
+          ? makeFeed(ROTATION_SLOTS, prevCycleDate)
+          : feedMode === 'dupSig'
+            ? makeFeed(altSlots, win.cycleDate)
+            : makeFeed(ROTATION_SLOTS, win.cycleDate)
+        return { ok: true, status: 200, async json() { return { content: { rendered: html } } } }
+      }
+      if (url === ADA_FEED_URL) {
+        adaCalls++
+        return { ok: true, status: 200, async json() { return { content: { rendered: makeAdaHtml(ADA_SLOTS) } } } }
+      }
+      bungieCalls++
+      const m = /DestinyInventoryItemDefinition\/(\d+)\//.exec(url)
+      const { s, i } = byHash.get(m[1])
+      const tierTypeName = s.expectedTier === 'exotic' ? '异域' : (s.expectedTier === 'rare' ? '稀有' : '传说')
+      return {
+        ok: true,
+        status: 200,
+        async json() {
+          return {
+            Response: {
+              itemType: s.expectedType === '着色器' ? 29 : 19,
+              itemTypeDisplayName: s.expectedType,
+              displayProperties: { name: '测试商品' + (i + 1), icon: '/common/destiny2_content/icons/test_' + (i + 1) + '.jpg' },
+              inventory: { tierTypeName },
+            }
+          }
+        }
+      }
+    }
+  })
+
+  // 1) 上游页面日期停留在昨日：不调 Bungie、保留昨日有效商品并标记 stale，admin me 可见
+  feedMode = 'oldDate'
+  const oldDateRes = await h.main({ Type: 'Timer', TriggerName: 'eververse-daily-0103' })
+  assert.equal(oldDateRes.ok, 0)
+  assert.match(oldDateRes.error, /尚未刷新/)
+  assert.equal(bungieCalls, 0)
+  assert.equal(adaCalls, 0)
+  const docAfterOld = h.store.counters.get('rotation')
+  assert.equal(docAfterOld.items[0].name, '昨日有效商品')
+  assert.equal(docAfterOld.stale.cycleStart, win.cycleStart)
+  const pubAfterOld = h.published['destiny2-starside/rotation/eververse.json']
+  assert.equal(pubAfterOld.items[0].name, '昨日有效商品')
+  assert.equal(pubAfterOld.stale.cycleStart, win.cycleStart)
+  assert.equal(pubAfterOld.history, undefined)
+  assert.equal(pubAfterOld.adaHistory, undefined)
+  h.signIn('lv2', 2)
+  const meStale = await h.as('lv2', { a: 'me' })
+  assert.equal(meStale.stale.eververse.cycleStart, win.cycleStart)
+
+  // 2) 页面日期看似今天但商品签名命中近7天历史：同样拒绝并保留旧数据
+  feedMode = 'dupSig'
+  const dupRes = await h.main({ Type: 'Timer', TriggerName: 'eververse-daily-0110' })
+  assert.equal(dupRes.ok, 0)
+  assert.match(dupRes.error, /重复/)
+  assert.equal(bungieCalls, 0)
+
+  // 3) 02:03 重试上游已更新：同步成功、裁剪历史到 7 天 / 4 周、复用本周艾达（零 Bungie 艾达请求）、清除 stale
+  feedMode = 'current'
+  const okRes = await h.main({ Type: 'Timer', TriggerName: 'eververse-daily-0103' })
+  assert.equal(okRes.ok, 1)
+  assert.equal(okRes.skipped, undefined)
+  assert.equal(adaCalls, 1)
+  assert.equal(bungieCalls, ROTATION_SLOTS.length, '本周艾达复用缓存，仅拉取光尘/银币槽位的 Bungie API')
+  const docAfterOk = h.store.counters.get('rotation')
+  assert.equal(docAfterOk.fresh, true)
+  assert.equal(docAfterOk.stale, null)
+  assert.equal(docAfterOk.sig, curSig)
+  assert.equal(docAfterOk.history.length, 7)
+  assert.equal(docAfterOk.history[0].sig, curSig)
+  assert.equal(docAfterOk.adaHistory.length, 4)
+  assert.equal(h.published['destiny2-starside/rotation/eververse.json'].history, undefined)
+  assert.equal(h.published['destiny2-starside/rotation/eververse.json'].adaHistory, undefined)
+  assert.equal(h.published['destiny2-starside/rotation/eververse.json'].stale, undefined)
+  const meClean = await h.as('lv2', { a: 'me' })
+  assert.equal(meClean.stale, undefined)
+
+  // 4) 同周期再次定时触发：快速幂等跳过，零 Bungie 请求
+  const callsBeforeSkip = bungieCalls
+  const skipRes = await h.main({ Type: 'Timer', TriggerName: 'eververse-daily-0110' })
+  assert.equal(skipRes.ok, 1)
+  assert.equal(skipRes.skipped, 1)
+  assert.equal(bungieCalls, callsBeforeSkip)
+
+  // 5) 管理员强制刷新 (force=true) 可绕过跳过逻辑重拉
+  const forceRes = await h.as('lv2', { a: 'sync_rotation', force: true })
+  assert.equal(forceRes.ok, 1)
+  assert.equal(forceRes.skipped, undefined)
+  assert.ok(bungieCalls > callsBeforeSkip)
+})
+
 test('xur: timer trigger xur-sat-0103 syncs weekly inventory via Bungie official API with recommended perks and publishes rotation/xur.json to static hosting', async () => {
   const { XUR_SLOTS, XUR_FEED_URL } = require(path.join(root, 'tools/sync-xur.js'))
   const xurHtml = `<script id="kyber-xur-inline-data">\nwindow.KYBER_XUR_DATA = ${JSON.stringify({ slots: XUR_SLOTS, location: 'Bazaar, Tower' })};\n</script>`
@@ -424,6 +596,117 @@ test('xur: timer trigger xur-sat-0103 syncs weekly inventory via Bungie official
   const staleRes = await hStale.main({ Type: 'Timer', TriggerName: 'xur-sat-0103' })
   assert.equal(staleRes.ok, 0)
   assert.match(staleRes.error, /尚未刷新至本周周期/)
+})
+
+test('xur: 4-week history in counters/xur, idempotent retry, and duplicate signature rejection', async () => {
+  const { XUR_SLOTS, XUR_FEED_URL, currentXurWindow, xurSignature } = require(path.join(root, 'tools/sync-xur.js'))
+  const wk = currentXurWindow()
+  const altSlots = XUR_SLOTS.map((s, i) => (i === 0 ? { ...s, cost: '999 Strange Coins' } : s))
+  const preHistory = Array.from({ length: 4 }, (_, i) => ({
+    arrival: `2026-01-0${i + 1}T17:00:00Z`,
+    sig: i === 3 ? xurSignature({ slots: altSlots, location: 'Bazaar, Tower' }) : ('old-xur-' + i),
+    total: 47,
+    updatedAt: '2026-01-01T17:03:00Z',
+  }))
+
+  let mode = 'dupSig'
+  let bungieCalls = 0
+  const h = harness({
+    counters: [{
+      _id: 'xur',
+      arrival: '2026-01-04T17:00:00Z',
+      departure: '2026-01-07T17:00:00Z',
+      location: '高塔 · 集市',
+      updatedAt: '2026-01-04T17:03:00Z',
+      total: 47,
+      items: [{ name: '上周有效物品', hash: 1 }],
+      history: preHistory,
+    }]
+  }, {
+    async fetch(url) {
+      if (url === XUR_FEED_URL) {
+        const payload = mode === 'dupSig'
+          ? { slots: altSlots, location: 'Bazaar, Tower', arrival: wk.arrival }
+          : { slots: XUR_SLOTS, location: 'Bazaar, Tower', arrival: wk.arrival }
+        const html = `<script id="kyber-xur-inline-data">\nwindow.KYBER_XUR_DATA = ${JSON.stringify(payload)};\n</script>`
+        return { ok: true, status: 200, async json() { return { content: { rendered: html } } } }
+      }
+      bungieCalls++
+      if (url.includes('/Destiny2/Vendors/')) {
+        return {
+          ok: true, status: 200,
+          async json() {
+            return {
+              Response: {
+                vendors: { data: { '2190858386': { vendorHash: 2190858386, enabled: true } } },
+                sales: { data: { '2190858386': { saleItems: {} } } }
+              }
+            }
+          }
+        }
+      }
+      const m = /DestinyInventoryItemDefinition\/(\d+)\//.exec(url)
+      assert.ok(m, 'unexpected url: ' + url)
+      const hsh = Number(m[1])
+      if (hsh === 2779821308) {
+        return {
+          ok: true, status: 200,
+          async json() {
+            return {
+              Response: {
+                itemTypeDisplayName: '斥候步枪',
+                displayProperties: { name: '测验步枪', icon: '/icons/ar.jpg' },
+                inventory: { tierTypeName: '传说' },
+                classType: 3
+              }
+            }
+          }
+        }
+      }
+      return {
+        ok: true, status: 200,
+        async json() {
+          return {
+            Response: {
+              itemTypeDisplayName: '物品',
+              displayProperties: { name: 'Xur物品_' + hsh, icon: '/icons/xur_' + hsh + '.jpg' },
+              inventory: { tierTypeName: '异域' },
+              classType: 3
+            }
+          }
+        }
+      }
+    }
+  })
+
+  // 1) 上游本周 arrival 已变但商品签名撞进近 4 周历史：不调 Bungie、保留旧物并记 stale
+  const dupRes = await h.main({ Type: 'Timer', TriggerName: 'xur-sat-0103' })
+  assert.equal(dupRes.ok, 0)
+  assert.match(dupRes.error, /重复/)
+  assert.equal(bungieCalls, 0)
+  const docAfterDup = h.store.counters.get('xur')
+  assert.equal(docAfterDup.items[0].name, '上周有效物品')
+  assert.equal(docAfterDup.stale.arrival, wk.arrival)
+
+  // 2) 重试拉到新本周数据：成功、保留 4 周 history、清除 stale、公开 JSON 不含 history
+  mode = 'fresh'
+  const okRes = await h.main({ Type: 'Timer', TriggerName: 'xur-sat-retry' })
+  assert.equal(okRes.ok, 1)
+  assert.equal(okRes.skipped, undefined)
+  assert.ok(bungieCalls > 0)
+  const docAfterOk = h.store.counters.get('xur')
+  assert.equal(docAfterOk.fresh, true)
+  assert.equal(docAfterOk.stale, null)
+  assert.equal(docAfterOk.history.length, 4)
+  assert.equal(h.published['destiny2-starside/rotation/xur.json'].history, undefined)
+  assert.equal(h.published['destiny2-starside/rotation/xur.json'].stale, undefined)
+
+  // 3) 同周再次触发：幂等跳过
+  const callsBeforeSkip = bungieCalls
+  const skipRes = await h.main({ Type: 'Timer', TriggerName: 'xur-sat-retry' })
+  assert.equal(skipRes.ok, 1)
+  assert.equal(skipRes.skipped, 1)
+  assert.equal(bungieCalls, callsBeforeSkip)
 })
 
 test('armor-rng: manifest plugSet alignment, 23-column bijection, and Cuirass empirical case', async () => {

@@ -190,6 +190,20 @@ body[data-vendor="ada"] .ev-prog i {
   background: var(--bone-hi);
 }
 
+.ev-status-bar.is-stale {
+  border-left-color: var(--c-enemy) !important;
+}
+
+.ev-status-bar.is-stale .ev-dot,
+.ev-status-bar.is-stale .ev-prog i {
+  background-color: var(--c-enemy) !important;
+}
+
+.ev-status-bar.is-stale .ev-bar-accent b,
+.ev-status-bar.is-stale .ev-bar-right {
+  color: var(--c-enemy) !important;
+}
+
 /* ── 分节标题右端计数：主标题与发丝线直接走 site.css 的 .block > .sect-label ── */
 .ev-section-count {
   order: 1;

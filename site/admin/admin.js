@@ -1642,6 +1642,15 @@
       $('me-name').textContent = me.name || '未登记'
       $('me-lv').textContent = LV[me.lv] || '无权限'
       $('sync-shop').hidden = me.lv < 2
+      if (me.lv >= 2 && me.stale) {
+        var st = []
+        if (me.stale.eververse) st.push('光尘未更新(' + (me.stale.eververse.attempts || 1) + ')')
+        if (me.stale.xur) st.push('老九未更新(' + (me.stale.xur.attempts || 1) + ')')
+        if (st.length) {
+          $('sync-tip').classList.add('bad')
+          $('sync-tip').textContent = st.join(' · ')
+        }
+      }
       // 编辑者那一屏只给超级管理员：云函数的 LEVEL.eds 是同一个门槛，不靠前端藏。
       document.querySelector('[data-view="eds"]').hidden = me.lv < 4
       skeleton()
@@ -1727,7 +1736,9 @@
       t.classList.remove('bad')
       t.textContent = ''
       Promise.all([call('sync_rotation'), call('sync_xur')]).then(function (r) {
-        t.textContent = '已同步光尘 ' + r[0].total + ' · 艾达 ' + (r[0].adaTotal || 0) + ' · 老九 ' + r[1].total
+        var evTag = r[0].skipped ? '光尘已是最新 ' : '已同步光尘 '
+        var xurTag = r[1].skipped ? '老九已是最新 ' : '老九 '
+        t.textContent = evTag + r[0].total + ' · 艾达 ' + (r[0].adaTotal || 0) + ' · ' + xurTag + r[1].total
       }, function (e) {
         t.classList.add('bad')
         t.textContent = '同步失败：' + say(e)

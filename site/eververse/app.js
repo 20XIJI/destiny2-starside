@@ -28,6 +28,7 @@
   var cntSilverEl = document.getElementById('ev-cnt-silver');
   var cntTotalEl = document.getElementById('ev-cnt-total');
 
+  var statusBarEl = document.querySelector('.ev-status-bar');
   var lblCurEl = document.getElementById('ev-lbl-cur');
   var lblNextEl = document.getElementById('ev-lbl-next');
   var curCycleEl = document.getElementById('ev-cur-cycle');
@@ -37,6 +38,9 @@
   var progEl = document.getElementById('ev-prog');
   var progFillEl = document.getElementById('ev-prog-fill');
   var progSpan = null;
+  var progStaleMsg = '';
+  var evLoadErr = '';
+  var xurLoadErr = '';
 
   var paneEv = document.getElementById('ev-pane-eververse');
   var paneXur = document.getElementById('ev-pane-xur');
@@ -100,15 +104,25 @@
   }
 
   /* 本轮进度条：起点是本轮刷新（仄为抵达），终点是下次刷新（仄为离开）。
-     数据还没到时整条收起；过了终点停在满格，等下一次同步换成新一轮。 */
-  function setProgress(startIso, endIso) {
+     数据还没到时整条收起；过点未刷新或上游报更新失败时转警示态并标出「更新失败」。 */
+  function setProgress(startIso, endIso, staleMsg) {
     var s = Date.parse(startIso), e = Date.parse(endIso);
     progSpan = (isNaN(s) || isNaN(e) || e <= s) ? null : [s, e];
+    progStaleMsg = staleMsg || '';
     renderProgress();
   }
 
   function renderProgress() {
     if (!progEl || !progFillEl) return;
+    if (statusBarEl) statusBarEl.classList.toggle('is-stale', Boolean(progStaleMsg));
+    if (progStaleMsg) {
+      progEl.hidden = false;
+      var failPct = progSpan ? Math.round(Math.max(0, Math.min(1, (Date.now() - progSpan[0]) / (progSpan[1] - progSpan[0]))) * 100) : 100;
+      progFillEl.style.width = failPct + '%';
+      progEl.setAttribute('aria-valuenow', String(failPct));
+      progEl.setAttribute('aria-valuetext', progStaleMsg);
+      return;
+    }
     progEl.hidden = !progSpan;
     if (!progSpan) return;
     var p = Math.max(0, Math.min(1, (Date.now() - progSpan[0]) / (progSpan[1] - progSpan[0])));
@@ -118,17 +132,55 @@
     progEl.setAttribute('aria-valuetext', '本轮已过 ' + pct + '%');
   }
 
+  function currentEvCycleStartMs(nowMs) {
+    var d = new Date(nowMs);
+    d.setUTCHours(17, 0, 0, 0);
+    if (d.getTime() > nowMs) d.setUTCDate(d.getUTCDate() - 1);
+    return d.getTime();
+  }
+
+  function currentXurWindowMs(nowMs) {
+    var d = new Date(nowMs);
+    var day = d.getUTCDay();
+    var hr = d.getUTCHours();
+    d.setUTCHours(17, 0, 0, 0);
+    var diff = (day - 5 + 7) % 7;
+    if (diff === 0 && hr < 17) diff = 7;
+    d.setUTCDate(d.getUTCDate() - diff);
+    var start = d.getTime();
+    return { start: start, end: start + 4 * 86400e3 };
+  }
+
   function updateStatusBar() {
+    var nowMs = Date.now();
     if (activeTab === 'xur') {
       if (lblCurEl) lblCurEl.textContent = '抵达时间';
       if (lblNextEl) lblNextEl.textContent = '离开时间';
-      setProgress(xurData && xurData.arrival, xurData && xurData.departure);
+      if (xurLoadErr && !xurData) {
+        if (curCycleEl) curCycleEl.textContent = '更新失败';
+        if (nextResetEl) nextResetEl.textContent = '--';
+        if (lastFetchEl) lastFetchEl.textContent = '--';
+        if (cycleRuleEl) {
+          cycleRuleEl.textContent = '更新失败 · ' + xurLoadErr;
+          cycleRuleEl.title = xurLoadErr;
+        }
+        setProgress(null, null, '老九周货更新失败');
+        return;
+      }
+      var xWin = currentXurWindowMs(nowMs);
+      var xStale = xurData && xurData.stale && Date.parse(xurData.stale.arrival || '') === xWin.start ? xurData.stale : null;
+      var xActiveMissed = xurData && nowMs >= xWin.start + 4 * 60e3 && nowMs < xWin.end && Date.parse(xurData.departure || '') <= xWin.start;
+      var xMsg = xStale ? ('更新失败 · 暂展示上一轮') : (xActiveMissed ? '更新失败 · 暂展示上一轮（本周数据未到）' : '');
+      setProgress(xurData && xurData.arrival, xurData && xurData.departure, xMsg);
       if (xurData) {
         if (curCycleEl) curCycleEl.textContent = formatTime(xurData.arrival || xurData.updatedAt);
         if (nextResetEl) nextResetEl.textContent = formatTime(xurData.departure);
         if (lastFetchEl) lastFetchEl.textContent = formatShortTime(xurData.updatedAt || xurData.generatedAt);
         var loc = xurData.location ? xurData.location + ' · ' : '';
-        if (cycleRuleEl) cycleRuleEl.textContent = loc + (xurData.cycleNote || '每周六 01:00 抵达 · 周三 01:00 离开');
+        if (cycleRuleEl) {
+          cycleRuleEl.textContent = xMsg || (loc + (xurData.cycleNote || '每周六 01:00 抵达 · 周三 01:00 离开'));
+          cycleRuleEl.title = (xStale && xStale.reason) || '';
+        }
       }
       return;
     }
@@ -136,25 +188,63 @@
     if (activeTab === 'ada') {
       if (lblCurEl) lblCurEl.textContent = '本轮刷新';
       if (lblNextEl) lblNextEl.textContent = '下次刷新';
-      setProgress(evData && evData.ada && evData.ada.cycleStart, evData && evData.ada && evData.ada.resetAt);
+      if (evLoadErr && !evData) {
+        if (curCycleEl) curCycleEl.textContent = '更新失败';
+        if (nextResetEl) nextResetEl.textContent = '--';
+        if (lastFetchEl) lastFetchEl.textContent = '--';
+        if (cycleRuleEl) {
+          cycleRuleEl.textContent = '更新失败 · ' + evLoadErr;
+          cycleRuleEl.title = evLoadErr;
+        }
+        setProgress(null, null, '艾达-1 数据更新失败');
+        return;
+      }
+      var adaMeta = (evData && evData.ada) || {};
+      var adaResetMs = Date.parse(adaMeta.resetAt || (evData && evData.resetAt) || '');
+      var adaExpired = !isNaN(adaResetMs) && nowMs >= adaResetMs + 4 * 60e3;
+      var adaMsg = adaMeta.error
+        ? ('更新失败 · ' + (adaMeta.items && adaMeta.items.length ? '暂展示本轮缓存' : '暂未获取本周着色器'))
+        : (adaExpired ? '更新失败 · 暂展示上一轮' : '');
+      setProgress(adaMeta.cycleStart || (evData && evData.cycleStart), adaMeta.resetAt || (evData && evData.resetAt), adaMsg);
       if (evData) {
-        var adaMeta = evData.ada || {};
         if (curCycleEl) curCycleEl.textContent = formatTime(adaMeta.cycleStart || evData.cycleStart || evData.updatedAt);
         if (nextResetEl) nextResetEl.textContent = formatTime(adaMeta.resetAt || evData.resetAt);
         if (lastFetchEl) lastFetchEl.textContent = formatShortTime(evData.updatedAt);
-        if (cycleRuleEl) cycleRuleEl.textContent = '高塔附属建筑 · ' + (adaMeta.cycleNote || '每周三 01:00 刷新');
+        if (cycleRuleEl) {
+          cycleRuleEl.textContent = adaMsg || ('高塔附属建筑 · ' + (adaMeta.cycleNote || '每周三 01:00 刷新'));
+          cycleRuleEl.title = adaMeta.error || '';
+        }
       }
       return;
     }
 
     if (lblCurEl) lblCurEl.textContent = '本轮刷新';
     if (lblNextEl) lblNextEl.textContent = '下次刷新';
-    setProgress(evData && evData.cycleStart, evData && evData.resetAt);
+    if (evLoadErr && !evData) {
+      if (curCycleEl) curCycleEl.textContent = '更新失败';
+      if (nextResetEl) nextResetEl.textContent = '--';
+      if (lastFetchEl) lastFetchEl.textContent = '--';
+      if (cycleRuleEl) {
+        cycleRuleEl.textContent = '更新失败 · ' + evLoadErr;
+        cycleRuleEl.title = evLoadErr;
+      }
+      setProgress(null, null, '光尘商店数据更新失败');
+      return;
+    }
+    var evCycleStart = currentEvCycleStartMs(nowMs);
+    var evStale = evData && evData.stale && Date.parse(evData.stale.cycleStart || '') === evCycleStart ? evData.stale : null;
+    var evResetMs = Date.parse((evData && evData.resetAt) || '');
+    var evExpired = !isNaN(evResetMs) && nowMs >= evResetMs + 4 * 60e3;
+    var evMsg = evStale ? '更新失败 · 暂展示上一轮（上游尚未刷新）' : (evExpired ? '更新失败 · 暂展示上一轮' : '');
+    setProgress(evData && evData.cycleStart, evData && evData.resetAt, evMsg);
     if (evData) {
       if (curCycleEl) curCycleEl.textContent = formatTime(evData.cycleStart || evData.updatedAt);
       if (nextResetEl) nextResetEl.textContent = formatTime(evData.resetAt);
       if (lastFetchEl) lastFetchEl.textContent = formatShortTime(evData.updatedAt);
-      if (cycleRuleEl) cycleRuleEl.textContent = evData.cycleNote || '每天 01:00 刷新';
+      if (cycleRuleEl) {
+        cycleRuleEl.textContent = evMsg || (evData.cycleNote || '每天 01:00 刷新');
+        cycleRuleEl.title = (evStale && evStale.reason) || '';
+      }
     }
   }
 
@@ -761,6 +851,8 @@
   }
 
   function renderError(msg) {
+    evLoadErr = msg || '加载失败';
+    updateStatusBar();
     var html = '<p class="ev-error">光尘商店轮换数据加载失败：' + esc(msg) + '</p>';
     if (primaryEl) primaryEl.innerHTML = html;
     if (secondaryEl) secondaryEl.innerHTML = '';
@@ -769,6 +861,8 @@
   }
 
   function renderXurError(msg) {
+    xurLoadErr = msg || '加载失败';
+    updateStatusBar();
     if (xurContentEl) {
       xurContentEl.innerHTML = '<p class="ev-error">老九（Xûr）周货数据加载失败：' + esc(msg) + '</p>';
     }
@@ -779,9 +873,9 @@
   }
 
   // 命运 2 每日重置为北京时间（UTC+8）凌晨 01:00（17:00 UTC）。
-  // 云函数定时器按 UTC+8 在每天 01:03、周三 01:03 / 02:03 / 03:03、周六 01:03 / 02:03 / 03:03 启动，
-  // 抓取并上传静态托管耗时约 15～30 秒，因此前端在 01:04（重试日 02:04 / 03:04）切换期望版本，
-  // 避免 01:03 同步尚未完成时提前用新 ?v= 请求把旧文件缓进浏览器或 CDN。
+  // 云函数定时器按 UTC+8 在每天 01:03 / 01:10 / 02:03、老九周六 01:03 / 02:03 / 03:03 启动，
+  // 抓取并上传静态托管耗时约 15～30 秒，因此前端在 01:04 / 01:11 / 02:04（老九 02:04 / 03:04）切换期望版本，
+  // 避免同步尚未完成时提前用新 ?v= 请求把旧文件缓进浏览器或 CDN。
   function latestExpectedSyncMs(kind) {
     var now = Date.now();
     var bjt = new Date(now + 8 * 3600e3);
@@ -800,17 +894,15 @@
       return Date.UTC(y, m, d - daysBack, 1, 3, 0) - 8 * 3600e3;
     }
     if (mins < 64) {
-      return Date.UTC(y, m, d - 1, 1, 3, 0) - 8 * 3600e3;
+      return Date.UTC(y, m, d - 1, 2, 3, 0) - 8 * 3600e3;
     }
-    if (w === 3) {
-      if (mins >= 184) return Date.UTC(y, m, d, 3, 3, 0) - 8 * 3600e3;
-      if (mins >= 124) return Date.UTC(y, m, d, 2, 3, 0) - 8 * 3600e3;
-    }
+    if (mins >= 124) return Date.UTC(y, m, d, 2, 3, 0) - 8 * 3600e3;
+    if (mins >= 71) return Date.UTC(y, m, d, 1, 10, 0) - 8 * 3600e3;
     return Date.UTC(y, m, d, 1, 3, 0) - 8 * 3600e3;
   }
 
   function fetchCloudJson(cloudUrl, kind, cacheKey, onRender, cached, onErr) {
-    // 查询串按最近一档已完成同步的时刻取值：过了 01:04 才换新 URL，不吃到同步完成前那份缓存。
+    // 查询串按最近一档已完成同步的时刻取值：过了 01:04 / 01:11 / 02:04 才换新 URL，不吃到同步完成前那份缓存。
     // 静态托管自带 Cache-Control: public, max-age=300, s-maxage=600，5 分钟内由浏览器 HTTP 缓存兜底，
     // 5 分钟后自动向 CDN 校验，兼顾重试触发器与管理台手动「同步商店」后的及时更新。
     fetch(cloudUrl + '?v=' + latestExpectedSyncMs(kind)).then(function (r) {
@@ -818,10 +910,14 @@
       return r.json();
     }).then(function (data) {
       if (!isValidPayload(data)) throw new Error('返回的条目为空');
+      if (kind === 'eververse') evLoadErr = '';
+      else xurLoadErr = '';
       try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch (_) {}
       var needRender = !isValidPayload(cached) ||
         data.updatedAt !== cached.updatedAt ||
-        (kind === 'eververse' && (!cached.ada || !Array.isArray(cached.ada.items)));
+        Boolean(data.stale) !== Boolean(cached.stale) ||
+        (data.stale && cached.stale && data.stale.at !== cached.stale.at) ||
+        (kind === 'eververse' && (!cached.ada || !Array.isArray(cached.ada.items) || Boolean(data.ada && data.ada.error) !== Boolean(cached.ada && cached.ada.error)));
       if (needRender) onRender(data);
     }).catch(function (err) {
       if (onErr && !isValidPayload(cached)) onErr(err);
@@ -863,7 +959,7 @@
     fetchCloudJson(XUR_API_URL, 'xur', XUR_CACHE_KEY, renderXurData, cachedXur, function (err) {
       if (!hasRenderedXur) renderXurError(err && err.message ? err.message : String(err));
     });
-    setInterval(renderProgress, 30000);
+    setInterval(updateStatusBar, 30000);
   }
 
   if (document.readyState === 'loading') {
