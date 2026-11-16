@@ -21,6 +21,7 @@ from urllib.parse import quote
 import editmap
 import markup
 import pagedex
+import raid
 import render as layout  # 本文件自己有个 render()，别名避开
 import resolve
 import rows
@@ -95,6 +96,7 @@ META_KEYS = (
     "标注",
     "默认曲线",
     "说明排印",
+    "版式",
 )
 META_LINE = meta_line(META_KEYS)
 
@@ -524,11 +526,14 @@ def render_table(
         for i, col in enumerate(head, 1):
             if groups[colkey(col)] == fixed or groups[colkey(col)] in default:
                 continue
-            initial_rules.extend((
-                ".cols-loading .gen thead th:nth-child(%d)" % i,
-                ".cols-loading .gen tbody tr:has(> th) > :nth-child(%d)" % i,
-                ".cols-loading .gen tbody tr:not(:has(> th)) > :nth-child(%d)" % (i - 1),
-            ))
+            initial_rules.extend(
+                (
+                    ".cols-loading .gen thead th:nth-child(%d)" % i,
+                    ".cols-loading .gen tbody tr:has(> th) > :nth-child(%d)" % i,
+                    ".cols-loading .gen tbody tr:not(:has(> th)) > :nth-child(%d)"
+                    % (i - 1),
+                )
+            )
     o = ['<table class="gen"%s>' % attr, "<thead>", "<tr%s>" % bmark(base)]
     o += [
         wrap(
@@ -707,11 +712,11 @@ def cards_of(spec, up):
 
 
 def guides_of(spec):
-    """「攻略：标题 | icons/x.jpg | 链接 | 注解」→ 一张指向站外攻略的图卡。
+    """「攻略：标题 | icons/x.jpg | 链接 | 注解」→ 一张攻略图卡。
 
-    与「卡片：」的分工：那一条指向站内的资料页、文字从对方源稿现读；这一条指向
-    站外文档，标题与配图站内没有第二份，只能写在这一行上。注解可省。
-    整张卡是一个 <a>，所以标题与图不能各写各的——写成一行，由这里拼。
+    与「卡片：」的分工：那一条指向站内的资料页、文字从对方源稿现读；这一条的标题
+    与配图站内没有第二份，只能写在这一行上。注解可省。链接以 http(s):// 开头时
+    作为站外文档新开标签页；站内相对路径（*.html）同窗跳转。
     """
     if ICONS is None:
         die("图标登记处还没装上，「攻略：」取不到图的尺寸")
@@ -720,11 +725,13 @@ def guides_of(spec):
         die("「攻略：」要写「标题 | 图 | 链接」，注解可选，源稿写的是 %r" % spec)
     name, img, url = parts[:3]
     tag = parts[3] if len(parts) == 4 else ""
-    if not url.startswith("http"):
-        die("「攻略：」的链接要以 http 开头，源稿写的是 %r" % url)
+    external = url.startswith(("http://", "https://"))
+    if not external and not url.endswith(".html"):
+        die("「攻略：」的链接要以 http(s):// 开头或指向站内 .html，源稿写的是 %r" % url)
+    attrs = ' target="_blank" rel="noopener"' if external else ""
     return [
         "<li>",
-        '<a class="guide" href="%s" target="_blank" rel="noopener">' % url,
+        '<a class="guide" href="%s"%s>' % (url, attrs),
         ICONS.html(img, cls="guide-shot"),
         '<span class="guide-name">%s%s</span>'
         % (name, '<span class="guide-tag">%s</span>' % tag if tag else ""),
@@ -849,8 +856,16 @@ def record_region(lines):
 
 
 def render_blocks(
-    chunk, scales=None, groups=None, marks=None, curves=None, up=0, rota=None, base=0,
-    default=None, initial_rules=None,
+    chunk,
+    scales=None,
+    groups=None,
+    marks=None,
+    curves=None,
+    up=0,
+    rota=None,
+    base=0,
+    default=None,
+    initial_rules=None,
 ):
     """分节正文 → 段落、列表、定义列表、表格、卡片。
 
@@ -1201,8 +1216,16 @@ def render(md, slug, digest):
                     q="",
                 )
         o += render_blocks(
-            chunk, scales, groups, marks, curves, up, rota, at + 1,
-            default=default, initial_rules=initial_rules,
+            chunk,
+            scales,
+            groups,
+            marks,
+            curves,
+            up,
+            rota,
+            at + 1,
+            default=default,
+            initial_rules=initial_rules,
         )
         o.append("</section>")
 
@@ -1236,14 +1259,14 @@ def render(md, slug, digest):
             app_script,
             '<script>document.documentElement.classList.add("chart-loading")</script>\n'
             '<script src="%sassets/app.js" defer '
-            'onerror="document.documentElement.classList.remove(\'chart-loading\')"></script>'
+            "onerror=\"document.documentElement.classList.remove('chart-loading')\"></script>"
             % ("../" * up),
         )
     if initial_rules:
         o[0] = o[0].replace(
             "</head>",
             '<script>document.documentElement.classList.add("cols-loading")</script>\n'
-            '<style>%s{display:none}</style>\n</head>' % ",".join(initial_rules),
+            "<style>%s{display:none}</style>\n</head>" % ",".join(initial_rules),
         )
     return "\n".join(o), title
 
@@ -1410,8 +1433,36 @@ def build(slug):
             else None
         )
 
-        out, title = render(md, slug, digest)
-        (check_records if slug in NEW else check)(md, out, slug)
+        layout_mode = meta_of(md, "版式", required=False)
+        if layout_mode == "副本":
+            out, title = raid.render(
+                md,
+                slug,
+                digest,
+                icons=ICONS,
+                scale_of=scale_of,
+                tier_of=tier_of,
+                grouped=grouped,
+                split_cells=split_cells,
+                is_rule=is_rule,
+                render_blocks=render_blocks,
+                where_of=where_of,
+                doc_id_of=doc_id_of,
+                scale_line=SCALE_LINE,
+                meta_line=META_LINE,
+            )
+            raid.check(
+                md,
+                out,
+                slug,
+                split_cells=split_cells,
+                is_rule=is_rule,
+                scale_line=SCALE_LINE,
+                meta_line=META_LINE,
+            )
+        else:
+            out, title = render(md, slug, digest)
+            (check_records if slug in NEW else check)(md, out, slug)
         # 有图却没写「首屏图标：」时静默退回 0，首屏那几张就全带上 loading="lazy"，
         # 要等布局算完才开始下载。漏写与「写 0」产出完全一样，页面上看不出区别，
         # 所以这一位必须由源稿明说：新页面的作者要么量过首屏、要么确认首屏没有图。

@@ -19,6 +19,7 @@
 | Aegis 的 [Destiny 2: Boss Damage](https://docs.google.com/spreadsheets/u/0/d/1_5wtBjRYHHxuF4oJKDb_iOGZs-wTkzB6RYbnyNLbuz4/htmlview) 技能分页 | 手雷、近战、超能与杂项技能的单次伤害实测 | [技能伤害排行](../skill-damage/index.html) |
 | [Ability Cooldowns & Scalers](https://docs.google.com/spreadsheets/d/1lEOY_Z0v5ZZVZJ1SVLJyleMBEG2a7KLq4aLIQA9zk0A) | 各技能的基础冷却、基础回复单位与属性倍率 | [技能冷却](../ability-cooldown/index.html) |
 | Clarity 的 [Chunk Energy Scalars](https://www.d2clarity.com/blog/destiny-science-6/chunk-energy-scalars-breakdown-12) | 整块系数的分档规则、职业物品模组的第二层系数与例外 | [技能冷却](../ability-cooldown/index.html) |
+| LFCarry 的 [Raid Loot Tables](https://lfcarry.com/guides/destiny-2-raid-loot-tables) 与 [Dungeon Loot Tables](https://lfcarry.com/guides/destiny-2-dungeon-loot-tables) | 全突袭与地牢按关卡区分的武器、{exotic|异域}装备与护甲部位掉落 | [Raid & 地牢](../raid-guides/index.html) |
 
 来自 Destiny Data Compendium 的页面统一了简体中文译名、术语着色与版式。{note|DIM 社区那个链接指向 Discord 频道内页，需登录并已加入该服务器才能打开。}
 
@@ -29,7 +30,7 @@
 | [小棒猪-LGpig](https://space.bilibili.com/169548478) | 整理全部评级、数值、排序、场景与评语，实测弹药拾取量与{enemy|终结技} | [刷取清单-{exotic|异域}武器](../exotic-weapons/index.html)、[刷取清单-白弹紫枪](../legendary-primary/index.html)、[刷取清单-绿弹紫枪](../legendary-special/index.html)、[刷取清单-威能紫枪](../legendary-heavy/index.html)、[刷取清单-护甲套装](../farming-sets/index.html)、[弹药生成机制](../ammo/index.html) |
 | [両儀式織](https://space.bilibili.com/2135345999) | 排行三页整理注解并校对数值，购物四页校对注解 | [单武器 DPS 排行](../dps/index.html)、[脱手 DPS 排行](../swap-dps/index.html)、[技能伤害排行](../skill-damage/index.html)、[购物清单-白弹](../shopping-primary/index.html)、[购物清单-绿弹](../shopping-special/index.html)、[购物清单-威能](../shopping-heavy/index.html)、[购物清单-其他](../shopping-other/index.html) |
 | [MossyMax](https://docs.google.com/spreadsheets/d/1b57Hb8m1L3daFfUckQQqvvN6VOpD03KEssvQLMFpC5I/edit) | 实测并整理全部压光数值 | [压光伤害](../power-delta/index.html) |
-| [遗忘Melt](https://space.bilibili.com/3706960595650983) | 编写并维护全部图文攻略 | [Raid 攻略](../raid-guides/index.html) |
+| [遗忘Melt](https://space.bilibili.com/3706960595650983) | 编写并维护全部图文攻略 | [Raid & 地牢](../raid-guides/index.html) |
 | 蜃零#7456 | 整理全部来源与掉落 | [锻造武器来源](../crafting/index.html) |
 | Flamia#5238 | 部分翻译和排版 | [护甲套装效果](../armor-sets/index.html) |
 | 小黑盒用户{buff|“压力一直天满光”} | 校对{bar-yellow|首领}名称 | [{bar-yellow|首领}{health|生命值}](../boss-hp/index.html) |

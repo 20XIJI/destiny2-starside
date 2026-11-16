@@ -1,0 +1,37 @@
+# 永恒沙漠
+
+描述：永恒沙漠副本信息集合——图文攻略、首领生命值、DPS 门槛与关卡武器护甲掉落。
+更新：2026.11.16
+路径：raid-guides/desert-perpetual
+上级：Raid & 地牢
+页脚：首领数值为固定难度下的实测值，不随光等浮动。
+数据源：[Destiny 2: Boss Damage](https://docs.google.com/spreadsheets/u/0/d/1_5wtBjRYHHxuF4oJKDb_iOGZs-wTkzB6RYbnyNLbuz4/htmlview#gid=1346678363) 与 LFCarry 的 [Raid Loot Tables](https://lfcarry.com/guides/destiny-2-raid-loot-tables)
+鸣谢：[遗忘Melt](https://space.bilibili.com/3706960595650983) 编写并维护图文攻略，小黑盒用户{buff|“压力一直天满光”}校对首领名称，蜃零#7456 整理{exotic|异域}武器获取。
+版式：副本
+首屏图标：5
+
+## 相关攻略
+
+- [在腾讯文档查看「永恒沙漠」图文攻略](https://docs.qq.com/doc/DQ21BU3pZd1B5Qmp6) | 图文攻略 · 腾讯文档 | 遗忘Melt 编写并维护
+
+## 首领数值
+
+色阶：生命值 170000 250155 290000 400000 500000 550000 868186
+
+| 首领名称 | 生命值 | 距离 | 时间 | 击杀 DPS | 一波 DPS | 注解 |
+|---|---|---|---|---|---|---|
+| ![](../icons/a75bbd3091.webp) 固有者阿格莱奥斯 | 530451 | 不定 | 91.5 | 358 | 1074 |  |
+| ![](../icons/9434c3d6b5.webp) 量子之主埃波普特斯 | 537446 | 近至中 | 90.9 | 365 | 1096 |  |
+| ![](../icons/63d1c0a2fb.webp) 内转者伊亚特罗斯 | 250154 | 近至中 | 45.65 | 338 | 1015 | {res|对{orb|非超能}伤害 35% 减伤} |
+| ![](../icons/9ffb9f4d50.webp) 世界线科雷戈斯 | 756068 | 近 | 80 | 649 | 1946 | {enemy|不属于构造体}，跳跃可触发{buff|生物强化}与{buff|腹背受敌} |
+
+## 关卡掉落
+
+护甲套装：集体心灵；{exotic|异域}武器：{exotic|回旋喝彩}（尾王掉落，催化剂由任务同调获取）；无红框武器。
+
+| 关卡 | 武器掉落 | 护甲部位 |
+|---|---|---|
+| 固有者阿格莱奥斯 | ![](../../assets/icons/2ab789069deeb4032b8ad2ee108b9a3b.webp) {el-arc|电弧} · 超前（微型冲锋枪）\\![](../../assets/icons/5170b2f63a5513ccca64e08283e55581.webp) {el-strand|缚丝} · 转瞬长矛（狙击步枪）\\![](../../assets/icons/cde5d2f3e66b5aba3deb0d49def6cfa5.webp) {el-stasis|冰影} · 闰蚀（自动步枪） | ![](../../assets/icons/a9e018626027a983489784576d83090a.webp) ![](../../assets/icons/5699d12f27dbcbd2d74322ce7fa33e27.webp) ![](../../assets/icons/c0821c700e1490edbd1c49ba6f2aab1e.webp) 腿部 |
+| 内转者伊亚特罗斯 | ![](../../assets/icons/eccf5db0879acd1368922f84e1538b74.webp) {el-solar|烈日} · 有限未知（融合步枪）\\![](../../assets/icons/5e88ee0539b499089a0bc4c2caf4f4f3.webp) {el-stasis|冰影} · 何时何地（火箭发射器） | ![](../../assets/icons/df0210e8c47af92cfcc10cde395663b2.webp) ![](../../assets/icons/9aa352f1b4fd2a5b048f747e1cbf280e.webp) ![](../../assets/icons/a96253e4a3f28b388cccb79332840aa4.webp) 胸部\\![](../../assets/icons/75d2b1b707dc3eeba293c143b235a464.webp) ![](../../assets/icons/04fb8637f82f72da8dfdb9b8ca3e7339.webp) ![](../../assets/icons/f32fcbe2c97296a246f7f32d976f4927.webp) 头部 |
+| 量子之主埃波普特斯 | ![](../../assets/icons/493661e8d5c3a58cd9afbc33a88bc02b.webp) {el-arc|电弧} · 隐晦沙漏（战斗弓箭） | ![](../../assets/icons/bdcc595dfe3be37c64e880aa5532fa69.webp) ![](../../assets/icons/408d0fd1de8b6c2d3b8558709d15ccdf.webp) ![](../../assets/icons/66a3ae8e127737f17f0af8a0871aa439.webp) 职业物品\\![](../../assets/icons/a9e018626027a983489784576d83090a.webp) ![](../../assets/icons/5699d12f27dbcbd2d74322ce7fa33e27.webp) ![](../../assets/icons/c0821c700e1490edbd1c49ba6f2aab1e.webp) 腿部\\![](../../assets/icons/4998ffdcf965e9f9207c9d425c66ec29.webp) ![](../../assets/icons/f5cdbdfb22f0f78b7acd318ddb2ad035.webp) ![](../../assets/icons/168a8e46548fcd4c58bf789589034dcd.webp) 手臂 |
+| 世界线科雷戈斯 | ![](../../assets/icons/b91ed8db52e1a3c52e0f9bd69b290b9f.webp) {exotic|回旋喝彩}（{el-strand|缚丝} 火箭发射器）\\其余任意突袭武器 | ![](../../assets/icons/75d2b1b707dc3eeba293c143b235a464.webp) ![](../../assets/icons/4998ffdcf965e9f9207c9d425c66ec29.webp) ![](../../assets/icons/df0210e8c47af92cfcc10cde395663b2.webp) ![](../../assets/icons/a9e018626027a983489784576d83090a.webp) ![](../../assets/icons/bdcc595dfe3be37c64e880aa5532fa69.webp) 任意部位 |

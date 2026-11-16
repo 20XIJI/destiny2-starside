@@ -29,25 +29,25 @@ export default function init(table, deps) {
   var SPIN = { base: 300, per: 90, max: 520 };
   /* 9 突袭 + 10 地牢的徽章小图标（icons/<md5>.webp）与场景底图 */
   var ROTA_ART = {
-    '最后一愿': ['98c8ef41c9', '../raid-guides/icons/576f5ee84c.webp'],
-    '救赎花园': ['d287b3dc33', '../raid-guides/icons/b0d8e4a22d.webp'],
-    '深岩墓室': ['068796ce27', '../raid-guides/icons/cdfa999a61.webp'],
-    '玻璃拱顶': ['32e9ee0e2f', '../raid-guides/icons/8bd947ebbb.webp'],
-    '门徒誓约': ['189d589701', '../raid-guides/icons/f43ff2553f.webp'],
-    '国王的陨落': ['5d2addda27', '../raid-guides/icons/bb815bae2f.webp'],
-    '梦魇根源': ['810e9c5f15', '../raid-guides/icons/69e0c96eb4.webp'],
-    '克洛塔的末日': ['c8f1bde352', '../raid-guides/icons/a890626de0.webp'],
-    '救赎的边缘': ['0c0db34c1c', '../raid-guides/icons/61c6576365.webp'],
-    '破碎王座': ['00ab7fe800', 'icons/f8e267b043.webp'],
-    '异端深渊': ['9214e0910b', 'icons/7118a61fdd.webp'],
-    '预言': ['e9dff45136', 'icons/24e4aed440.webp'],
-    '贪婪之握': ['c4510de46d', 'icons/34a0554bb7.webp'],
-    '二象性': ['3fa872c35b', 'icons/f9d5856d03.webp'],
-    '守望者尖塔': ['1b0cdbee38', 'icons/dcfaa7277e.webp'],
-    '深渊机灵': ['1737ba2584', 'icons/b4f0f143f1.webp'],
-    '战争领主的废墟': ['56ba6f109c', 'icons/0bf21127d1.webp'],
-    '晚星之主': ['9fa7dd1645', 'icons/e3282bc3b3.webp'],
-    '分离教义': ['a1fbe13ded', 'icons/4153b19cf3.webp']
+    '最后一愿': ['98c8ef41c9', '../raid-guides/icons/bd21cb7bf4.webp'],
+    '救赎花园': ['d287b3dc33', '../raid-guides/icons/c7ac1dd567.webp'],
+    '深岩墓室': ['068796ce27', '../raid-guides/icons/254fbbb12b.webp'],
+    '玻璃拱顶': ['32e9ee0e2f', '../raid-guides/icons/a126647b23.webp'],
+    '门徒誓约': ['189d589701', '../raid-guides/icons/a813f73253.webp'],
+    '国王的陨落': ['5d2addda27', '../raid-guides/icons/9063ea74eb.webp'],
+    '梦魇根源': ['810e9c5f15', '../raid-guides/icons/cb6b36bc1c.webp'],
+    '克洛塔的末日': ['c8f1bde352', '../raid-guides/icons/061f9f9f3d.webp'],
+    '救赎的边缘': ['0c0db34c1c', '../raid-guides/icons/c2a06239c6.webp'],
+    '破碎王座': ['00ab7fe800', 'icons/f6ec993719.webp'],
+    '异端深渊': ['9214e0910b', 'icons/648e066e1e.webp'],
+    '预言': ['e9dff45136', 'icons/c7b4341f70.webp'],
+    '贪婪之握': ['c4510de46d', 'icons/75be6ccaf7.webp'],
+    '二象性': ['3fa872c35b', 'icons/370a5eb7c6.webp'],
+    '守望者尖塔': ['1b0cdbee38', 'icons/793704412c.webp'],
+    '深渊机灵': ['1737ba2584', 'icons/05c4d4bffd.webp'],
+    '战争领主的废墟': ['56ba6f109c', 'icons/3d8b580607.webp'],
+    '晚星之主': ['9fa7dd1645', 'icons/9360fad4d1.webp'],
+    '分离教义': ['a1fbe13ded', 'icons/219ba4a3da.webp']
   };
 
   function rota(table) {

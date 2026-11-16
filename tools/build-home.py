@@ -835,6 +835,20 @@ def changelog(_img):
     markup.die("首页预览：更新日志取不到两条")
 
 
+def notices(_img):
+    """最新公告标题；只有一期时顺带取第一条要点，满两期以上展示最新两条标题。"""
+    secs = sections("notices")
+    need(bool(secs), "首页预览：站内公告里找不到分节")
+    lines = [head for head, _ in secs[:2]]
+    if len(lines) == 1:
+        li = re.search(r"<li[^>]*>(.*?)</li>", secs[0][1], re.S)
+        if li:
+            lines.append(text(li.group(1)).split("：")[0])
+    return '<span class="pv pv-lines">%s</span>' % "".join(
+        "<span>%s</span>" % esc(x) for x in lines[:2]
+    )
+
+
 def sources(_img):
     names = {r[0][0] for r in rows("sources", tables("sources")[0])}
     for n in PICK_SOURCES:
@@ -935,6 +949,7 @@ PREVIEW = {
     "combatant-scalars/index.html": scalars,
     "armor-rng/index.html": armor_rng,
     "changelog/index.html": changelog,
+    "notices/index.html": notices,
     "sources/index.html": sources,
     "palette/index.html": palette,
 }

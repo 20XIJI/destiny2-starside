@@ -18,11 +18,18 @@ import sys
 import shell
 
 # head 里与页面无关的那几行。标题与描述是变量，用哨兵值生成后按前缀挑出不变量。
-HEAD_KEEP = ('<meta name="theme-color"', '<meta property="og:site_name"',
-             '<meta property="og:locale"', '<link rel="preload"',
-             '<link rel="icon"', '<link rel="stylesheet" href="../assets/site.css">')
+HEAD_KEEP = (
+    '<meta name="theme-color"',
+    '<meta property="og:site_name"',
+    '<meta property="og:locale"',
+    '<link rel="preload"',
+    '<link rel="icon"',
+    '<link rel="stylesheet" href="../assets/site.css">',
+)
 
-STAMP = re.compile(r'<span class="(?:entry-)?stamp">更新 \d{4}\.\d{1,2}\.\d{1,2}</span>')
+STAMP = re.compile(
+    r'<span class="(?:entry-)?stamp">更新 \d{4}\.\d{1,2}\.\d{1,2}</span>'
+)
 
 # 外壳三件的首屏预算，gzip 字节。这三样每一页都要下，所以它们涨一 KB 就是全站涨一 KB。
 # 量的是 deploy.py 剥掉块注释之后的样子——线上发的就是那一份。
@@ -32,19 +39,24 @@ STAMP = re.compile(r'<span class="(?:entry-)?stamp">更新 \d{4}\.\d{1,2}\.\d{1,
 # 回来改这个数字，像 convert-armor-sets.py 的 N_* 一样——那是「改了要人确认一次」，
 # 不是「放宽比对」。
 SHELL_BUDGET = 32 * 1024
-SHELL_PARTS = ('assets/site.css', 'assets/app.js', 'assets/fonts/chakra-petch-600.woff2')
-BLOCK_COMMENT = re.compile(r'/\*.*?\*/', re.S)
+SHELL_PARTS = (
+    "assets/site.css",
+    "assets/app.js",
+    "assets/fonts/chakra-petch-600.woff2",
+)
+BLOCK_COMMENT = re.compile(r"/\*.*?\*/", re.S)
 
 
 def shipped_size(rel):
     """这个文件发上去有多大。CSS 与 JS 按 deploy.py 剥完注释的样子算。"""
     raw = os.path.join(shell.SITE, rel)
-    with open(raw, 'rb') as f:
+    with open(raw, "rb") as f:
         blob = f.read()
-    if rel.endswith(('.css', '.js')):
-        text = blob.decode('utf-8')
-        blob = BLOCK_COMMENT.sub(
-            lambda m: '\n' * m.group(0).count('\n'), text).encode('utf-8')
+    if rel.endswith((".css", ".js")):
+        text = blob.decode("utf-8")
+        blob = BLOCK_COMMENT.sub(lambda m: "\n" * m.group(0).count("\n"), text).encode(
+            "utf-8"
+        )
     return len(gzip.compress(blob, 9))
 
 
@@ -54,9 +66,17 @@ def check_weight():
     total = sum(sizes.values())
     if total <= SHELL_BUDGET:
         return [], total, sizes
-    detail = '，'.join('%s %.1fK' % (os.path.basename(r), n / 1024) for r, n in sizes.items())
-    return ['外壳三件 %.1fK gzip，超出预算 %.1fK（%s）。撑不下就改 check_shell.SHELL_BUDGET'
-            % (total / 1024, SHELL_BUDGET / 1024, detail)], total, sizes
+    detail = "，".join(
+        "%s %.1fK" % (os.path.basename(r), n / 1024) for r, n in sizes.items()
+    )
+    return (
+        [
+            "外壳三件 %.1fK gzip，超出预算 %.1fK（%s）。撑不下就改 check_shell.SHELL_BUDGET"
+            % (total / 1024, SHELL_BUDGET / 1024, detail)
+        ],
+        total,
+        sizes,
+    )
 
 
 def invariants(home=False):
@@ -66,15 +86,24 @@ def invariants(home=False):
     同一件事说两遍；回首页的入口在首页上也没有意义。站头的三条因此只钉资料页，
     head 元信息与页脚仍然全站一致。
     """
-    head = shell.head('__T__', '__D__')
-    frags = [ln for ln in head.split('\n') if ln.startswith(HEAD_KEEP)]
-    foot = [shell.CREDIT, shell.LEGAL, shell.ICP, shell.SPEC, shell.HIT, shell.EDIT,
-            shell.NOTICE]
+    head = shell.head("__T__", "__D__")
+    frags = [ln for ln in head.split("\n") if ln.startswith(HEAD_KEEP)]
+    foot = [
+        shell.CREDIT,
+        shell.LEGAL,
+        shell.ICP,
+        shell.SPEC,
+        shell.HIT,
+        shell.EDIT,
+        shell.NOTICE,
+        shell.ANNOUNCE,
+    ]
     if home:
         return frags + foot
     # 站头的包裹结构：各资料页要用同一套骨架，只查 MARK 查不出包裹漂移
-    return frags + ['<div class="site-head">', '<nav class="site-nav">',
-                    shell.MARK] + foot
+    return (
+        frags + ['<div class="site-head">', '<nav class="site-nav">', shell.MARK] + foot
+    )
 
 
 def main() -> int:
@@ -82,63 +111,78 @@ def main() -> int:
     bad: list[str] = []
     # 全站搜索的索引也按这份清单建。新增一页却没重跑 build-search.py 时，那一页
     # 在首页搜不出来——这里当场报出，不等读者搜不到才发现。
-    with open(os.path.join(shell.SITE, 'assets', 'search.js'), encoding='utf-8') as f:
+    with open(os.path.join(shell.SITE, "assets", "search.js"), encoding="utf-8") as f:
         index = f.read()
     for rel in listed:
         want = invariants(rel == shell.HOME)
         path = os.path.join(shell.SITE, rel)
         if not os.path.exists(path):
-            bad.append('%s：文件不存在' % rel)
+            bad.append("%s：文件不存在" % rel)
             continue
-        with open(path, encoding='utf-8') as f:
+        with open(path, encoding="utf-8") as f:
             src = f.read()
 
         for frag in want:
             # 资源前缀按页面所在层数改写：首页在站点根，子目录页深一层
-            at = '../' * rel.count('/')
-            probe = frag.replace('../assets/', at + 'assets/')
+            at = "../" * rel.count("/")
+            probe = frag.replace("../assets/", at + "assets/")
             if probe not in src:
-                bad.append('%s：与 shell.py 对不上 —— %s' % (rel, probe[:64]))
+                bad.append("%s：与 shell.py 对不上 —— %s" % (rel, probe[:64]))
 
         # 提了 Compendium 就得用 shell.py 里那一句原文；没提则不管（弹药页是别的来源）。
         # sources/ 是全站出处的汇总表，整页就是各来源的清单，逐页归属那一句在这里不成立；
         # 首页「数据源与鸣谢」那张卡预览的正是那张表里的来源名，同理。
-        if ('Destiny Data Compendium' in src and shell.COMPENDIUM not in src
-                and rel not in ('sources/index.html', shell.HOME)):
-            bad.append('%s：Destiny Data Compendium 归属句被改写了' % rel)
+        if (
+            "Destiny Data Compendium" in src
+            and shell.COMPENDIUM not in src
+            and rel not in ("sources/index.html", shell.HOME)
+        ):
+            bad.append("%s：Destiny Data Compendium 归属句被改写了" % rel)
 
         if not STAMP.search(src):
             bad.append('%s：缺 <span class="stamp">更新 YYYY.M.D</span>' % rel)
 
         # 页首那片星空窗由 sky-page.js 画：带 .page-head 的页面不引它，窗就是一块空白
-        if 'class="page-head"' in src and 'assets/sky-page.js' not in src:
-            bad.append('%s：带 .page-head 却没引 assets/sky-page.js（shell.head 的 sky 参数）' % rel)
+        if 'class="page-head"' in src and "assets/sky-page.js" not in src:
+            bad.append(
+                "%s：带 .page-head 却没引 assets/sky-page.js（shell.head 的 sky 参数）"
+                % rel
+            )
 
-        if 'assets/app.js' in src and 'assets/pinyin.js' not in src:
-            bad.append('%s：引了 app.js 却没引 pinyin.js，条目名的拼音检索会失效' % rel)
-        if 'weapons/app.js' in src and 'assets/pinyin.js' not in src:
-            bad.append('%s：装备库没引 pinyin.js，武器名的拼音检索会失效' % rel)
-        if 'form.js' in src and 'assets/pinyin.js' not in src:
-            bad.append('%s：配装工具没引 pinyin.js，候选的拼音检索会失效' % rel)
+        if "assets/app.js" in src and "assets/pinyin.js" not in src:
+            bad.append("%s：引了 app.js 却没引 pinyin.js，条目名的拼音检索会失效" % rel)
+        if "weapons/app.js" in src and "assets/pinyin.js" not in src:
+            bad.append("%s：装备库没引 pinyin.js，武器名的拼音检索会失效" % rel)
+        if "form.js" in src and "assets/pinyin.js" not in src:
+            bad.append("%s：配装工具没引 pinyin.js，候选的拼音检索会失效" % rel)
 
         if rel != shell.HOME and '"%s"' % rel not in index:
-            bad.append('%s：不在全站搜索索引里，跑一次 tools/build-search.py' % rel)
+            bad.append("%s：不在全站搜索索引里，跑一次 tools/build-search.py" % rel)
 
     weight, total, sizes = check_weight()
     bad += weight
 
     if bad:
-        print('外壳不一致：', file=sys.stderr)
+        print("外壳不一致：", file=sys.stderr)
         for line in bad:
-            print('  ' + line, file=sys.stderr)
+            print("  " + line, file=sys.stderr)
         return 1
-    print('外壳一致：%d 个页面，%d 条不变片段（首页免去站头那三条），全部在搜索索引里'
-          % (len(listed), len(invariants())))
-    print('外壳三件 %.1fK / %.0fK gzip（%s）'
-          % (total / 1024, SHELL_BUDGET / 1024,
-             '，'.join('%s %.1fK' % (os.path.basename(r), n / 1024) for r, n in sizes.items())))
+    print(
+        "外壳一致：%d 个页面，%d 条不变片段（首页免去站头那三条），全部在搜索索引里"
+        % (len(listed), len(invariants()))
+    )
+    print(
+        "外壳三件 %.1fK / %.0fK gzip（%s）"
+        % (
+            total / 1024,
+            SHELL_BUDGET / 1024,
+            "，".join(
+                "%s %.1fK" % (os.path.basename(r), n / 1024) for r, n in sizes.items()
+            ),
+        )
+    )
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

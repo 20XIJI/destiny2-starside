@@ -147,7 +147,8 @@ def tree():
         for href in re.findall(r'<a class="entry"[^>]*href="([^"]+)"', m.group(2)):
             group[href.replace("/index.html", "")] = m.group(1)
 
-    docs = {}
+    docs: dict[str, dict[str, str]] = {}
+    cards: dict[str, list[str]] = {}
     for slug, path in shell.sources():
         with open(path, encoding="utf-8") as f:
             md = f.read()
@@ -163,22 +164,25 @@ def tree():
             .strip(),
             "where": where.group(1).strip() if where else slug,
             "at": stamp.group(1).strip() if stamp else "",
-            "cards": [
-                c.strip()
-                for line in md.split("\n")
-                if line.startswith("卡片：")
-                for c in line[3:].split("、")
-                if c.strip()
-            ],
         }
+        cards[slug] = [
+            c.strip()
+            for line in md.split("\n")
+            if line.startswith("卡片：")
+            for c in line[3:].split("、")
+            if c.strip()
+        ]
 
+    where_to_id = {d["where"]: d["id"] for d in docs.values()}
     parent = {}
     for slug, d in docs.items():
-        for kid in d["cards"]:
+        for kid in cards[slug]:
             if kid in docs:
                 parent[kid] = d["id"]
-        if d["where"].startswith("elements/") and "elements" in docs:
-            parent[slug] = docs["elements"]["id"]
+        if "/" in d["where"]:
+            top = d["where"].split("/", 1)[0]
+            if top in where_to_id:
+                parent[slug] = where_to_id[top]
 
     rows = []
     for slug, d in sorted(docs.items(), key=lambda kv: kv[1]["where"]):

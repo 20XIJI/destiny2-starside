@@ -25,6 +25,7 @@ def stamp_path() -> Path:
 SHARED = (
     "tools/markup.py",
     "tools/shell.py",
+    "tools/raid.py",
     "tools/rows.py",
     "tools/resolve.py",
     "tools/render.py",
@@ -236,6 +237,21 @@ def main() -> int:
         ran = True
     else:
         print("  skip  convert-doc.py  %d pages" % len(slugs), flush=True)
+
+    notices_dirty = dirty(
+        "notices",
+        under(
+            "tools/build-notices.py",
+            "references/docs/notices.md",
+            "tools/markup.py",
+            "tools/shell.py",
+        ),
+    )
+    if notices_dirty:
+        invoke(load_tool("build-notices.py"))
+        ran = True
+    else:
+        print("  skip  build-notices.py", flush=True)
 
     index_files = sorted((ROOT / "data" / "index").glob("*.json"))
     index_files += sorted((ROOT / "data" / "index").glob("*/*.json"))

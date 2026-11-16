@@ -1,0 +1,165 @@
+/* 站内公告：按日期分节的站点重要改版与功能发布公告存档。
+   通用主题、字体与配色 token 在 /assets/site.css。
+   这一页由 tools/convert-doc.py 从 references/docs/notices.md 生成，
+   改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
+
+/* 连续阅读版心（design.md 四节）。骨架在 assets/site.css。 */
+:root { --wrap: 760px; --min: 804px; }
+
+/* 每一期公告收进实色战术通报面板（--surf-1 + 1px 外框 + 顶缘高光），不裸排在背景网格上。 */
+.block {
+  margin-bottom: var(--sp-6);
+  background-color: var(--surf-1);
+  border: 1px solid var(--bd-outer);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-block);
+  overflow: hidden;
+}
+
+.block:last-child { margin-bottom: 0; }
+
+#sec-1 {
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--bd-outer));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--accent) 24%, transparent), var(--sh-block);
+}
+
+/* 公告标题是整句中文，覆写基类 11px/.2em 拉丁小标签样式，改作面板顶栏。 */
+.block > .sect-label {
+  gap: 12px;
+  margin: 0;
+  padding: 15px 22px;
+  color: var(--bone-hi);
+  font-family: var(--font-cn);
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  line-height: 1.45;
+  letter-spacing: .02em;
+  text-transform: none;
+  font-variant-numeric: tabular-nums;
+  background-color: var(--surf-2);
+  border-bottom: 1px solid var(--bd-row);
+}
+
+.block > .sect-label::before {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  margin-right: 0;
+  vertical-align: 0;
+  background: var(--bone-faint);
+}
+
+#sec-1 > .sect-label::before { background: var(--accent); }
+
+.block > .sect-label::after { display: none; }
+
+.block > p {
+  margin: 0;
+  padding: 14px 22px;
+  color: var(--bone-dim);
+  font-size: var(--fs-md);
+  line-height: 1.7;
+}
+
+.block > p:has(+ ul) {
+  background-color: var(--tint-1);
+  border-bottom: 1px solid var(--bd-row);
+}
+
+.block > p + p { padding-top: 0; }
+
+.block ul {
+  margin: 0;
+  padding: 18px 22px 22px;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+
+.block li {
+  position: relative;
+  padding: 15px 20px 15px 38px;
+  color: var(--bone-dim);
+  font-size: var(--fs-md);
+  line-height: 1.7;
+  background-color: var(--surf-2);
+  border: 1px solid var(--bd-outer);
+  border-radius: var(--r-md);
+  box-shadow: var(--sh-block);
+  transition: background-color .15s ease, border-color .15s ease, transform .15s ease;
+}
+
+.block li:has(a:only-of-type) {
+  padding-right: 88px;
+  cursor: pointer;
+}
+
+.block li:hover { background-color: var(--surf-3); }
+
+.block li:has(a:only-of-type):hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--hair-lit));
+  transform: translateY(-1px);
+}
+
+.block li::before {
+  content: "";
+  position: absolute;
+  left: 18px;
+  top: 23px;
+  width: 5px;
+  height: 5px;
+  transform: rotate(45deg);
+  background: var(--hair-lit);
+}
+
+#sec-1 li::before { background: var(--accent); }
+
+.block li:has(a:only-of-type)::after {
+  content: "查看 →";
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--bone-dim);
+  font-family: var(--font-cn);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: .04em;
+  transition: color .15s ease, transform .15s ease;
+}
+
+.block li:has(a:only-of-type):hover::after {
+  color: var(--accent);
+  transform: translate(3px, -50%);
+}
+
+.block li strong {
+  color: var(--bone-hi);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.block li a,
+.block p a {
+  color: var(--bone-hi);
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--bone-faint) 65%, transparent);
+  transition: color .15s ease, border-color .15s ease;
+}
+
+.block li:has(a:only-of-type) a { border-bottom: 0; }
+
+.block li:has(a:only-of-type) a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.block li:has(a:only-of-type):hover strong a { color: var(--accent); }
+
+.block li:not(:has(a:only-of-type)) a:hover,
+.block p a:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}

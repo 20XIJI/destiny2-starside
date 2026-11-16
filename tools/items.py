@@ -101,6 +101,8 @@ STOP = {
     # 异域头盔的 Perk 名，也是神器模组施加的那个状态（刀剑那条）。两处各按
     # 上下文着色：exotic-armor 页写 {exotic|…}，神器模组页跟着刀剑走动能。
     "迷惑",
+    # 异域 Perk，也是预言地牢的传说手炮「审判」。
+    "审判",
 }
 
 # 元素机制名：增益、减益与拾取物。它们不在 Bungie 的物品表里（那张表只有装备与
@@ -774,7 +776,7 @@ def pages(slug=None):
         # 配色总览是站务页，正文里的术语是在讲颜色不是在讲机制。
         # 护甲套装页不在内：它走词表着色，源稿是纯中文，落标记等于换掉那一页的
         # 着色路径（design.md「两条着色路径」）。
-        if name in ("changelog", "palette", "armor-sets"):
+        if name in ("changelog", "notices", "palette", "armor-sets"):
             continue
         if slug is not None and name != slug:
             continue
