@@ -7,7 +7,7 @@
     weapons/index.html 外壳 + 查询栏 + 首屏骨架 + 类型小图标 sprite，内容由 weapons/app.js 画
 
 只读实体层（resolve.Facts），不写任何数据。插件在载荷里存 hash 不存下标：地址栏里的
-配置因此跨构建有效。三份载荷的字段表写在 .claude/rules/weapons.md。
+配置因此跨构建有效。三份载荷的字段表写在 .agents/rules/weapons.md。
 
 用法：python3 tools/build-weapons.py
 """
@@ -854,7 +854,7 @@ def set_rows(b, htmls):
 def builds_by_key():
     """`({主键: [卡片下标…]}, [卡片 HTML…])`：站上每一套配装用过的每一枚主键。
 
-    配装源稿的槽位值写成「名字#主键」（见 .claude/rules/builds.md），所以这里按
+    配装源稿的槽位值写成「名字#主键」（见 .agents/rules/builds.md），所以这里按
     主键收，不按名字——同名不同物（故我在的狼群弹药与加拉尔号角的那一条）按名字
     收会把两把枪的配装混成一堆。
 

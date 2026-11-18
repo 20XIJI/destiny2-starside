@@ -167,9 +167,6 @@ data/index/
 __pycache__/
 *.pyc
 
-# Claude Code 的运行时锁文件。.claude/rules/ 是子系统手册，照常入库。
-.claude/scheduled_tasks.lock
-
 # playwright-cli 把快照与日志写进当前目录。在仓库根下跑过一次，ship.sh 的
 # git add -A 就会把它们提交进 main。
 .playwright-cli/

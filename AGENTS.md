@@ -1,569 +1,84 @@
 # AGENTS.md
 
-This file provides guidance when working with code in this repository.
+Destiny 2 中文资料台（Starside）。零依赖纯静态站点（`site/`）+ 腾讯云 CloudBase 云函数（`functions/api/`），回归测试走标准库 `npm test`。
 
-Destiny 2 中文资料台（Starside）。纯静态站点，零依赖、零构建步骤，托管在腾讯云 CloudBase。仓库无打包器；回归测试走标准库，入口 `npm test`。
+> 生成产物一律不手改：资料页改 `references/` 或 `data/`，结构改生成器的 `render()`，均通过重跑构建脚本生效。视觉与排版细则在 `design.md`，子系统详规在 `.agents/rules/`。
 
-资料页全部由生成器从 `references/` 下的 markdown 源稿产出，产出一律不手改：改文案改 markdown，改结构改生成器的 `render()`，两种情况都重跑脚本。只有首页 `index.html` 是手写的，卡片里的内容预览除外（见 `build-home.py`）。
+## 仓库骨架
 
-本文件写每次都用得上的那些：站点骨架、命令、闸门、部署与验证。视觉与排版规范在 `design.md`，五份子系统手册在 `.claude/rules/`，见《子系统手册》。
-
-## 目录
-
-| 节 | 答什么 |
+| 目录 / 文件 | 职责与改法 |
 |---|---|
-| 站点骨架 | 页面与样式怎么组织，源稿放哪 |
-| tools/ 的分层 | 二十个脚本各管一段 |
-| 子系统手册 | 改配装页、后端、资料页、搜索之前读哪一份 |
-| 命令 | 构建、测试、部署、蒸馏词表 |
-| 上游 DDC 快照 | DDC 原表快照的检查、刷新与例外登记 |
-| 闸门 | 术语与着色七条、排版与结构五条、外壳一条 |
-| 前端性能约定 | 首屏预算、注释与缩进剥离、`content-visibility` |
-| 部署 | 增量发布、缓存策略、换图与三条红线 |
-| 验证 | 四样验证手段，起浏览器的两条红线 |
-| 工作流 | solo 项目，直接提交 main |
+| `site/` | 唯一部署目录。仅 `index.html`、`404.html`、`assets/`、`admin/`、`eververse/` 与 `weapons/{app,pvp}.js` 等脚本样式手写；其余 HTML 与索引由生成器产出 |
+| `references/docs/` | 散文与表资料页源稿（45 篇），改文案直接改 `.md` |
+| `references/keys/` | 主键骨架源稿（23 篇，含 `artifact-mods.md`、`armor-sets.md`），改行文案改 `data/` 记录 |
+| `references/builds/` | 按赛季存放配装源稿 JSON；`references/pages/` 存矩阵映射 |
+| `data/` | 构建输入层（不上线）：五张实体 JSON + `minted.json` + `lookup/` + `index/`（每次构建重写，不入库）+ `ddc/`。读取统一走 `resolve.Facts`、`resolve.text()`、`resolve.icon_path()` |
+| `tools/` | 生成器、数据工具、离线测试与三道构建闸门 |
+| `functions/api/` | CloudBase 云函数；`dialect.js`、`source.js`、`eververse.js`、`xur.js`、`xur-recs.json` 由 `tools/build-terms.py` 从主源码复制，**不手改** |
 
-## 站点骨架
+`.gitignore` 对 `references/` 采用「全忽略 + 白名单」，仅放行 `docs/`、`keys/`、`builds/` 与 `pages/`；新增源稿须落入对应子目录。
 
-上线的文件全在 `site/` 下：首页、各资料页目录、`assets/`、`admin/`、`builds/`、`weapons/`。本文件与 `.claude/rules/` 里写的页面与资源路径（`index.html`、`assets/site.css`、`<页目录>/`）都相对 `site/`；源稿、工具、数据与云函数（`references/`、`tools/`、`data/`、`functions/`）在仓库根。脚本里站点根是 `shell.SITE`，仓库根是 `shell.ROOT`。
+### 子系统手册（`.agents/rules/`）
 
-首页 `index.html` 手写，每个资料页在首页有一张 `.entry` 卡片（更新时间写卡片上的 `.entry-stamp`）。新增资料页要同时加卡片，否则页面没有入口。三张配装卡（配装推荐、配装合集、配装工具）的更新时间与套数由 `convert-build.py` 的 `sync_home()` 在构建时按产出改写，这几处不手改。卡片不写概括句，放那一页的真实内容（图标、名字、前三名、曲线）：每张卡里 `<!--pv-->` 与 `<!--/pv-->` 之间那一段由 `build-home.py` 从那一页的产出现写，不手改；挑哪几项写在它的 `PICK_*` 里。新增一张卡要同时在它的 `PREVIEW` 里加一条，缺了构建即中止。
-
-页面清单不在这里维护：源稿即清单（`shell.sources()` 扫 `references/docs/` 与 `references/keys/`），`check_shell.py` 也从那里现扫。只有 `armor-sets/` 与 `artifact-mods/` 有专属生成器，其余全部走 `convert-doc.py`。
-
-样式按层引，顺序即优先级：`assets/site.css`（全站 token、外壳、字体、资料页骨架）在前，本页 `<页目录>/style.css` 在后。深一层的页面自动多引一层父目录的 `style.css`（`shell.py` 的 `head()` 按 `up` 判断）：六个元素页共用 `elements/style.css` 的版式，各自的 `style.css` 只留一行 `--accent`。`assets/app.js` 只有带 `.toolbar` 的页面需要引。
-
-`serve.json` 放在仓库根，`npm start` 用 `-c ../serve.json` 指过去；它关掉了 `cleanUrls`，站内链接一律写全 `xxx/index.html`。
-
-`data/` 是站内的数据层。**一个 hash 一条记录，站内关于它的一切都挂在它名下。**
-实体表按 Bungie 定义表分文件，键是裸十进制 hash 串，文件即命名空间：
-
-| 文件 | 定义表 | 条数 | 装什么 |
-|---|---|---|---|
-| `inventory-items.json` | `DestinyInventoryItemDefinition` | 5942 | 武器、护甲、18 个子职业与可装配的插件（词条、模组、碎片、星相、技能、神器特性）。收藏条目的来源句并在 `i18n.*.sourceString`，神器档位并在 `derived.tiers`，神器本体经 `derived.socketed` 指向玩家背包里那件带槽的影子条目 |
-| `sandbox-perks.json` | `DestinySandboxPerkDefinition` | 5200 | 效果。`onItems` / `onSets` 指回挂着它的物品与套装 |
-| `traits.json` | `DestinyTraitDefinition` | 46 | 游戏内状态（不稳定、冻结）与分类标签 |
-| `stats.json` | `DestinyStatDefinition` | 79 | 属性 |
-| `equipable-item-sets.json` | `DestinyEquipableItemSetDefinition` | 56 | 护甲套装。成员件不收成记录，各件的职业与部位在 `derived.pieces` |
-| `minted.json` | — | 56 | 主键台账，人编辑 |
-
-`data/lookup/` 下的 `plug-sets`、`socket-types`、`stat-groups` 是构建期字典，不是实体：
-没有页面或配装指向它们，而且号与实体表相撞（`plug-sets` 最小号是 1，`socket-types`
-里有 0）。
-
-一条记录上的字段分四处：
-
-| 在哪 | 是什么 |
+| 手册 | 覆盖范围 |
 |---|---|
-| 根上，manifest 字段 | manifest 上有这个键就原样写下，不按值筛：`classType: 0` 是泰坦，`breakerType: 0` 是不破盾。`icon` 是官方图文件名，`icon_local` 是站上那张 WebP |
-| `derived` | 本项目从 manifest 算出来的：`release`、`season`、`archetype`、`breakerType`、`tierable`、`craftable`、`foundry`、`rate`、`catalyst`、`tiers`、`socketed`，属性表的 `lowerIsBetter`，套装表的 `pieces`。登记名单由 `check_quality.py` 的 `ManifestLayer` 钉着 |
-| `i18n.<zh-CN\|en>.<字段>` | 随语言变的。manifest 那一侧：`name`、`itemTypeDisplayName`、`itemTypeAndTierDisplayName`、`flavorText`、`sourceString`、`displaySource`，以及官方描述 `database_details`（即 Bungie 的 `description`）。站内写的：`realgame_details`（实测怎么工作）、`site_authors`（Aegis 与 LGpig 的评级与推荐）、`site_frameStats`（武器框架页的数值）、`site_source`。站内正文只写 `zh-CN`；`en` 不写与 `zh-CN` 逐字相同的字段 |
-| 根上，站内字段 | `sameAs`、`enhanced`、`weaponTypes`，以及 `site_` 前缀的词表字段（`site_artifact`、`site_tier`、`site_cooldownSeconds`、`site_emblem` 等） |
+| `.agents/rules/pages.md` | 资料生成器、源稿方言（`META_KEYS`）、页脚归属、更新日志写法 |
+| `.agents/rules/builds.md` | 推荐配装页、合集、填表页（`builds/new/`）、`vocab.SLOTS`、DIM 导出与 `shot.js` 截图 |
+| `.agents/rules/backend.md` | CloudBase 认证、`LEVEL` 权限、四张集合表、`sync.py` 三方对账、在线编辑与审核台 |
+| `.agents/rules/frontend.md` | `assets/app.js`、星空模块 `sky*.js`、条件注入 `pinyin.js` 与 `assets/search.js` 全站搜索 |
+| `.agents/rules/weapons.md` | `weapons/` 三份载荷、DIM 查询语法、属性与 T 级算法、框架数值与作者光圈 |
 
-站内的三种结构字段：
+### 站点与数据约定
 
-- **`sameAs: <行首 hash>`**：同一件东西的几枚 hash（普通版与强化版、一族元素变体）。
-  成员只写这一位，站内正文只在行首那条上；行首一律是基础版，自己不带 `sameAs`，
-  只跳一层。
-- **`enhanced: [{by: [星相 hash…], realgame_details}]`**：与 `by` 中任一星相关联的额外
-  效果，实际生效条件由正文说明。碎片不算。
-- **`weaponTypes: [{itemSubType: [...], realgame_details}]`**：框架在某几种枪型上的说明。
+- **静态路由**：`serve.json` 禁用 `cleanUrls`，站内链接写全 `xxx/index.html`；新增资料页须同步在首页 `site/index.html` 加 `.entry` 卡片及 `tools/build-home.py` 的 `PREVIEW` 登记。
+- **样式层**：先引 `assets/site.css`（全部语义配色、版心 `--wrap`/`--min`、外壳叠色与 UI 强调色 `--accent` 只在此定义），再引页面 `style.css`。
+- **数据层读写**：换 manifest 跑 `python3 tools/facts.py --distill`；改完 `data/*.json` 站内字段跑 `python3 tools/facts.py --link`；`sameAs` 只跳一层且正文只在行首记录上；`minted.json` 自发主键从 `2^32`（`4294967296`）起。
+- **公共辅助一处定义**：文本剥离、归一化、计数断言、标记解析与图标登记统一调用 `tools/markup.py`（`inline()` 默认关闭 `rich=True` 富文本，按需开启）；外壳与弹窗检查标签唯一定义在 `tools/shell.py`。
 
-以 Compendium 中文列名作键的字段：`sandbox-perks.json` 与 `minted.json` 的
-`i18n.zh-CN` 里的 `效果`、`来源`、`冷却与槽位`、`属性变化`、`碎片槽位`、`异域 PERK`、
-`右栏`、`费用` 等，`equipable-item-sets.json` 的 `标签`、`来源`、`类型`、`赛季`、`更新`。
-`sandbox-perks.json` 有 29 条作者评语在根上的 `authors` 里，不在 `site_authors`。
-
-`minted.json` 收 Bungie 实体表里没有的东西，`kind` 六种：机制、来源、模组族、组合、
-枪型、职业。18 条借 Bungie 别的定义表的号（`from` 写表名：Milestone 9、ItemCategory 4、
-Class 3、ActivityMode 1、Destination 1），38 条站内自发，号从 2^32（4294967296）起：
-Bungie 的 hash 是 uint32，永不相撞。`模组族` 与 `组合` 用 `members` 列成员。
-资料页源稿按号引用它，号发出去不改。说「库里没有」之前先扫全部 99 张定义表。
-
-谁写哪一份：
-
-- `python3 tools/facts.py --distill` 从 manifest 原始导出（默认路径见 `facts.SRC`）重蒸
-  五张实体表与 `lookup/`。manifest 是冻结快照，产物入库。这一轮没蒸出来的键即站内写的，
-  由 `carry_site()` 原样带回；盘上有、这一轮没蒸出来的记录名下挂着站内字段时中止。
-- 站内字段直接改 JSON，改完跑 `python3 tools/facts.py --link`：它重算 `icon_local` 与
-  效果表的 `onItems` / `onSets`。
-- 站内写的文字也在线上改：主键页的就地编辑改库里 `recs` 集合那一份，`tools/sync.py`
-  按三方比写回这几张表（见 `.claude/rules/backend.md`）。本机改过的记录同一轮推上去。
-- `minted.json` 手写。
-
-读取走 `resolve.Facts`；取名字走 `resolve.text()`，取官方图路径走 `resolve.icon_path()`，
-各只有一处实现。
-
-资料页与记录的对应：`references/keys/` 下那 23 页只写主键，行的内容在记录上，
-改这些页的文案改记录，不改源稿；表区格式见 `.claude/rules/pages.md`。
-`references/docs/` 下那 45 页是散文与表，内容就在源稿里，改文案改 markdown。
-
-`data/index/` 是页面索引：三个资料生成器渲染时由 `pagedex.py` 写出，`vocab.py` 从这里
-查「名字 → 图标、页面、锚点」，每次构建重写，不入库。
-
-`data/` 不上传：它是构建的输入不是站点的资源，不在 `site/` 下。`deploy.py` 的 `keep()`
-只发 `site/`，`npm test` 的 `DeploySelection` 反查产出里没有引用 `data/` 的。
-
-`references/` 入库的是源稿，**按「这一页的行写不写主键」分两处**：
-
-| 目录 | 篇数 | 装什么 | 改文案改哪 |
-|---|---|---|---|
-| `references/keys/` | 23 | 主键骨架：分节、表头与一行一枚主键（`artifact-mods.md`、`armor-sets.md` 也在这里） | 改 `data/` 的记录 |
-| `references/docs/` | 45 | 散文与表：正文与每一格都写在源稿里 | 改这一篇 markdown |
-
-两处同构：一篇 `.md` 一个页面，`_id` 就是它在 `references/` 下的相对路径去掉 `.md`
-（`keys/arc`、`docs/boss-hp`），落在哪一边由 `shell.source_path()` 现找，别处不拼路径。
-一篇从骨架化还是散文，`tools/migrate.py --classify` 按行标题能否落到主键上机械判定。
-转写中间产物 `armor_transcription.*` 在 `.archived/`，整个目录已 gitignore，不当源稿用。
-
-`.gitignore` 对 `references/` 是「全忽略 + 白名单」：只放行 `docs/`、`keys/`、`builds/`
-与 `pages/`。新增源稿按上表挑一处放进去，丢在 `references/` 根下会被静默忽略，
-`git status` 干净但源稿没入库。放进去之后 `git check-ignore -v <路径>` 应无输出。
-
-规范在 `design.md`，改样式、定颜色、加页面之前先读。那里写死了色相归属、ΔE 判据、中文空格规矩、版心与外壳的分工。
-
-配色只有一处定义：`assets/site.css` 的 `:root`。源稿里的着色 token 直接引用这些语义名，改渲染色只改 `:root` 的右值，生成器不必重跑。同一处还放着三样东西，改它们同样不必重跑生成器：外壳叠色 `--tint-1/2/3`、`--head-fill`、`--row-hover`、`--field-fill`；UI 强调色 `--accent`（焦点环、当前 chip、卡片左缘，子页面覆盖这一个变量即可换色）；版心一档 `--wrap` 与最小内容宽度 `--min`。
-
-资料页的骨架也在 `assets/site.css`：版心、`.block` 分节、`.gen` 表格、八档色阶、sticky 让位。页面样式表只写真差异：`--wrap` / `--min` 两个右值，表格是否 `border-collapse: separate`，以及本页专属的列宽与列对齐。
-
-## tools/ 的分层
-
-```
-build.py           增量构建入口（npm run build）：按输入文件与工具的 sha256 决定每一步跑或跳过，
-                   记录在 .git/starside-build.json；--force / --all 强制全跑
-mods.py            官方物品表 → tools/mod-variants.json（护甲模组变体）
-                   与 tools/moves.json（位移技能）、tools/artifacts.json（七件神器），
-                   图标一并取回
-facts.py           Bungie manifest → data/ 的五张实体表与 data/lookup/。manifest 是冻结
-                   快照，跑一次、产物入库，不留抓取代码。算出来的进 derived；--link
-                   由记录推记录（icon_local、onItems／onSets）。勇士克制
-                   按固有框架挂的 SandboxPerk 推，manifest 自带那一位全表只有 18 条
-resolve.py         中文名 → itemHash。槽位限定候选，复刻按「源稿标的版本后缀 →
-                   源稿列的词条与来源 → 非大师非特殊版 → 有收藏条目」逐条判，
-                   分不出就交出候选、不猜；另出给产出戳主键的戳号器
-rows.py            主键骨架的表区展开（armor-mods、weapon-frames、raid-farming、pve-farming）：
-                   从 data/ 的记录取列、算派生值与作者块，顺带提供异域与框架数值取法
-render.py          主键骨架的记录块渲染（其余 17 页，如异域、元素、武器 PERK、购物与传奇清单）：
-                   直接从 data/ 的记录产出 <article class="rec"> 与页面索引
-pagedex.py         页面索引：生成器渲染时登记条目，落成 data/index/<页>.json。
-                   页面 → 着色 token、格子切分、说明取法都在这里
-editmap.py         就地编辑的出处表：生成器渲染记录上的文字时登记「记录 + 字段路径」，
-                   元素戴 data-e，表落成 <页目录>/edit.json，编辑态才加载
-vocab.py           配装词表：读 data/index/ 那批索引，槽位 → 来源页的对应在这里一处定义
-markup.py          源稿方言与公共件：职业／分支／配装三轴（场景·强度·标签）词表、
-                   着色标记的判读与表格切格（Python 这一侧唯一定义，JS 那一侧是
-                   admin/dialect.js）、
-                   「键：值」行、空行分段、
-                   剥标签取文本、保真前的归一化、计数比对、图片尺寸、图标登记
-shell.py           站点外壳与落盘：head 元信息、导航条、页脚、ROOT、页面清单、emit()、
-                   首页卡片随页面改写的 sync_card()
-convert-*.py       四个生成器，各自只写自己那种数据形状的结构层；三个资料生成器
-                   顺手写 data/index/ 的索引：行、模组与套装的主键只进那一份，
-                   不写进 HTML——产出里没有读者，而索引才是跨页引用读的那一份
-build-weapons.py   实体层 → 装备库（武器与异域护甲，目录 weapons/）：首屏索引 index.js、词条池与属性曲线 pool.js、
-                   说明与评语 text.js，外加页壳。只读 resolve.Facts，不写数据；浏览器
-                   那一份属性算法与 facts.shown() 由 check_quality.py 逐值比对
-dim.py             配装 → DIM 导入链接：子职业与神器按插槽池落 hash，武器与护甲只给
-                   hash。由 convert-build.py 调用，写法与 DIM 的约束见 builds.md
-build-home.py      各页产出 → 首页每张卡的内容预览。挑哪几项写在 PICK_*，名字、数值、
-                   图标从那一页现取；轮换卡的「本周／此刻」由首页一段内联脚本按本机时钟填，
-                   raid-guides 攻略路径同步至 assets/rota.js
-build-notices.py   notices.md 最新一则公告 → assets/notice-data.js，并同步手写页的公告内联检查脚本
-migrate.py         配装源稿 markdown ⇄ 结构化记录，来回逐字节比对；资料页该结构化
-                   还是留 markdown 由 --classify 按行标题能否落到主键上机械判定
-icons.py           按主键把官方图拉回来转 WebP，落 assets/icons/。一件东西一张图
-build-search.py    各页产出 → assets/search.js，首页那只搜索框搜的就是它
-pinyin.py          data/ 物品名 → assets/pinyin.js。全表 tools/pinyin.json，
-                   构建时按物品、套装、护甲模组族的中文名裁词典与英文名；介绍不进表。换拼音数据才 --distill
-build-terms.py     两道闸门的词表 → admin/terms.js（前端提示），
-                   资料页清单与配装的五张词表 → admin/pages.js，
-                   data/inventory-items.json → tools/xur-recs.json（老九武器推荐词条），
-                   并把共享模块（dialect.js、source.js、sync-*.js、xur-recs.json）复制到 functions/api/
-sync.py            源稿在库与仓库之间对账：记一份基线三方比，撞车就报、不猜方向
-sync-eververse.js  光尘商店与艾达-1 每周着色器抓取模块（本机与云函数共用）
-sync-xur.js        老九商店抓取与推荐词条归并模块（本机与云函数共用）
-ddc.py             上游 Destiny Data Compendium 原表快照检查与更新（data/ddc/）
-deploy.py          增量部署：与 refs/deploy 一 diff 即得清单，只发改过的文件；
-                   只发 site/ 下的文件，上传时去掉 site/ 这一层
-check_shell.py     外壳闸门，从 shell.py 现取参照，不另存副本
-check_type.py      排版、CSS 有效性与产出结构：中文不吃拉丁字距、background
-                   简写非末层不许写颜色、产出的开闭标签配得上
-check_terms.py     术语与着色闸门：源稿七道（G1–G7）、data/*.json 站内文本四道（G1/G2/G3/G6 反查）及手写页/脚本 G1
-check_quality.py   Python 离线回归测试（npm test 前半）
-check_quality.cjs  Node 离线回归测试入口（npm test 后半，装配 tools/quality/{harness,api,admin,frontend,weapons,rotation}.cjs）
-items.py           官方物品表 → tools/items.json，Perk 名 → tools/perks.json：
-                   物品专名与 Perk 名该着哪个 token 由查表定；
-                   出建议清单、就地落标记，配装源稿的描述与注解构建时自动着色，
-                   另供 check_terms.py 的 G6 反查
-sheet-grab.user.js 油猴脚本：在 Google 表格页面上导出「替换后的文本 + 内联图片」
-json2xlsx.py       把上面那份 JSON 还原成 xlsx，供核对与二次编辑
-```
-
-一个目的只留一份实现。剥标签取文本用 `markup.text_of`，保真比对前的归一化用 `markup.plain`，计数比对用 `markup.eq(名目, 实际, 期望)`，中止用 `markup.die`，图片宽高用 `markup.img_size`，图标登记与首屏优先级用 `markup.Icons` / `markup.loading_attr`，判断某处文本落在哪个标记里用 `markup.Markers(正文).at(位置)`，认着色标记的开头用 `markup.OPEN`、整个叶子标记用 `markup.LEAF`，剥着色标记用 `markup.uncolor`（连图标一起剥用 `markup.strip_marks`），只在标记之外切段用 `markup.top_split`，模组说明的排印（触发条件行、数值）用 `markup.typeset`。要新加一件，先看 `markup.py` 里有没有。
-
-外壳与源稿方言各只有一处定义。加一条外壳内容（meta、资源提示、页脚段落）只改 `shell.py`，各资料页重跑即生效；手写的首页 `index.html` 要跟着改，`check_shell.py` 会提醒。页脚那句待测值说明走 `shell.unsure_note(标记)`，一句话只有一处定义，标记形状按该页实际用的填。
-
-`markup.py` 的 `inline()` 默认只处理着色，富文本标记（`**粗体**`、`*强调*`、`[文字](链接)`）由调用方传 `rich=True` 开启。神器模组页不开：它的源稿里有孤立的 `*`（「呈 * 形释放」），开着会在有人再加一个星号时静默变成 `<em>`。
-
-## 子系统手册
-
-五份手册在 `.claude/rules/`，头部各带一段 `paths:`，改到对应文件时由 harness 自动载入；
-做计划、还没碰文件时不会触发，那时按这张表自己去读。
-
-| 手册 | 管什么 | 改到这些文件时载入 |
-|---|---|---|
-| `.claude/rules/pages.md` | 三个资料生成器与源稿方言、页脚归属、更新日志的写法、从 Google 表格做一页资料 | `tools/convert-doc.py`、`convert-artifact-mods.py`、`convert-armor-sets.py`、`markup.py`、`shell.py`、`references/**/*.md` |
-| `.claude/rules/builds.md` | 推荐配装页：版面、护甲模组变体、源稿格式、合集、悬停详情、填表页、导入 DIM | `tools/convert-build.py`、`vocab.py`、`mods.py`、`dim.py`、`site/builds/**`、`references/builds/**` |
-| `.claude/rules/backend.md` | 云函数与在线编辑台：认证、角色、三张表、就地编辑、审核台、配装投稿 | `functions/**`、`site/admin/**`、`tools/sync.py`、`build-terms.py` |
-| `.claude/rules/frontend.md` | 全站搜索索引与 `assets/app.js` | `site/assets/app.js`、`site/assets/search.js`、`site/assets/pinyin.js`、`tools/build-search.py`、`tools/pinyin.py` |
-| `.claude/rules/weapons.md` | 装备库：武器与异域护甲、三份载荷、查询语法、属性与大师杰作／T 级、强化配对、作者推荐光圈 | `tools/build-weapons.py`、`site/weapons/**`、`tools/type-icons.json` |
-
-加一条子系统约定就改对应那一份，不搬回本文件。本文件只收每次都用得上的东西；
-搬回来等于让每个 session 都为一次都不会读的内容付 context。
-
-## 命令
+## 常用命令
 
 ```bash
-npm start                                     # npx serve site -l 3000 -c ../serve.json
-npm run build                                 # 四个生成器 + 装备库 + 首页预览 + 源稿自动纠正 + 搜索索引 + 编辑台词表 + 三道闸门
-npm test                                      # 两份离线回归，约 1 秒；改发布链或云函数前必跑
+npm start                                     # 本地静态预览（serve site -l 3000 -c ../serve.json）
+npm run build                                 # 增量构建（--force / --all 全量重建；--normalize-only 仅纠正源稿）
+npm test                                      # Python unittest + Node offline 回归（发版/改云函数必跑）
 
-python3 tools/convert-artifact-mods.py        # 源稿 references/keys/artifact-mods.md
-python3 tools/convert-armor-sets.py           # 源稿 references/keys/armor-sets.md
-python3 tools/convert-doc.py [slug]           # 源稿 references/{docs,keys}/*.md，省略 slug 即全部
-python3 tools/convert-build.py                # 源稿 references/builds/<赛季>/*.json
-python3 tools/build-weapons.py                # 装备库：实体层 → weapons/ 三份载荷与页壳
-python3 tools/build-home.py                   # 首页卡片的内容预览，从各页产出现取
-python3 tools/build-search.py                 # 全站搜索索引 assets/search.js（顺手裁 pinyin.js）
-python3 tools/pinyin.py --distill             # pinyin-data → tools/pinyin.json，换表才跑
-python3 tools/check_shell.py                  # 各页外壳逐字一致
-python3 tools/check_terms.py                  # 术语正名、着色 token、更新时间
-python3 tools/check_type.py                   # 字距与中文、CSS 简写有效性、产出结构
+python3 tools/convert-doc.py [slug]           # 通用资料页（省略 slug 即全部）
+python3 tools/convert-artifact-mods.py        # 神器模组页
+python3 tools/convert-armor-sets.py           # 护甲套装页
+python3 tools/convert-build.py                # 推荐配装页、合集与词表
+python3 tools/build-weapons.py                # 装备库载荷与页壳
+python3 tools/build-home.py                   # 首页预览与 rota.js 攻略映射
+python3 tools/build-search.py                 # 全站搜索索引 search.js 与裁切版 pinyin.js
+python3 tools/build-terms.py                  # 编辑台词表、页面树与复制共享模块到 functions/api/
 
-python3 tools/mods.py --distill               # 护甲模组变体 → tools/mod-variants.json
-python3 tools/mods.py --moves                 # 位移技能 → tools/moves.json
-python3 tools/mods.py --arts                  # 七件神器 → tools/artifacts.json
-python3 tools/mods.py --icons                # 按两张表下载图标并转 WebP
+python3 tools/facts.py --link                 # 修改 data/*.json 站内字段后重算关联与图标
+python3 tools/resolve.py --audit              # 校验站内全部引用名可落到主键
+python3 tools/migrate.py --check              # 配装源稿 markdown ⇄ JSON 往返一致性
+python3 tools/icons.py --pull                 # 拉取缺失官方图转 WebP
+python3 tools/ddc.py --check                  # 检查上游 Destiny Data Compendium 差异（--update 刷新；例外记 data/ddc-ignore.json）
 
-python3 tools/items.py --distill <导出.json>  # 官方物品表 → tools/items.json，换赛季跑
-python3 tools/items.py --perks               # 武器 PERK 页 + 购物清单列 → tools/perks.json
-python3 tools/items.py --suggest [slug]      # 列出还没着色的物品专名与建议标记
-python3 tools/items.py --apply   [slug]      # 就地落进源稿，可重复跑
-python3 tools/items.py --builds              # 只给配装源稿的描述与注解着色
-python3 tools/items.py --normalize [slug]    # 按词表纠正全部源稿，构建时自动跑
+tools/ship.sh "提交信息"                       # 完整发版：--normalize-only → sync → build → test → commit → deploy --no-sync → push
+python3 tools/sync.py                         # 与线上编辑台三方对账（--mine / --theirs 解冲突）
+python3 tools/deploy.py --dry-run             # 预演增量上传清单（--all 全量；--all --prune 清理远端孤儿）
+tcb fn deploy api --force                     # 修改 functions/api/ 后单独部署云函数
 
-python3 tools/json2xlsx.py <抓取的.json>      # 还原成 xlsx，供核对与手改
-
-python3 tools/facts.py --distill              # manifest → data/ 与 data/lookup/（换 manifest 才跑）
-python3 tools/facts.py --link                 # 改完记录上的站内字段后跑
-python3 tools/resolve.py --audit              # 站内每个名字都落得到主键上
-python3 tools/migrate.py --check              # 配装源稿来回逐字节比对
-python3 tools/migrate.py --classify           # 资料页该结构化还是留 markdown
-python3 tools/resolve.py --names              # 站内写法与库里的名字逐条比
-python3 tools/icons.py                        # 只报要拉多少、缺什么
-python3 tools/icons.py --pull                 # 拉官方图转 WebP，已在盘上的沿用
-
-tools/ship.sh "提交信息"                       # 一轮发版：对账 → 构建 → 提交 → 部署 → 推送
-python3 tools/sync.py                         # 库与仓库对账，双向都走，部署后自动跑
-python3 tools/sync.py --seed                  # 盘整个覆盖库，首次灌库或对不上账时用
-python3 tools/sync.py --mine   <_id>…         # 撞车了，这几篇以盘上的为准
-python3 tools/sync.py --theirs <_id>…         # 撞车了，这几篇以库里的为准
-python3 tools/build-terms.py                  # 闸门词表 → admin/terms.js，资料页树 → admin/pages.js
-python3 tools/deploy.py                       # 增量部署站点，只发改过的文件
-python3 tools/deploy.py --dry-run             # 只列这次要发什么
-python3 tools/deploy.py --all                 # 整站重发
-python3 tools/deploy.py --all --prune         # 整站重发，并删掉远端多出来的文件
-tcb fn deploy api --force                     # 改完 functions/api/ 部署后端
-
-ruff check tools/*.py                         # 改完 Python 跑这两条
-pyright tools/*.py
+ruff check tools/*.py && pyright tools/*.py   # Python 静态检查
+oxlint --type-aware --type-check site/ functions/ tools/
 ```
 
-## 上游 DDC 快照
+## 构建闸门（`npm run build` 自动执行）
 
-```bash
-python3 tools/ddc.py --check     # 联网读取原表，只显示与本地快照的差异，不改文件
-python3 tools/ddc.py --update    # 联网刷新快照；首次建立基线也用这条
-git diff -- data/ddc            # 查看本轮更新，审核后随代码提交
-```
+1. **`check_terms.py`（G1–G7）**：以 `tools/items.py`、`tools/items.json`、`tools/perks.json` 为唯一术语真相。覆盖全部源稿（G1–G7）、`data/*.json` `facts.site_text`（G1/G2/G3/G6 反查）及手写页面/脚本（`index.html`、`eververse/{index.html,app.js}`、`assets/armor-rng.js` 的 G1）；任何禁用词、错色 token、未定义 class、页脚/首页时间戳或色板不一致直接中止。
+2. **`check_type.py`（T1–T5）**：禁止中文吃进宽字距（`>.2em`）、禁用非法 `background` 简写颜色层、检查 HTML 开闭标签、禁止小数像素字号与无 `.gen` 表残留规则、禁止资料页正文块加窄 `max-width`。
+3. **`check_shell.py`**：校验 `shell.py` 外壳在全站逐字一致及所有资料页进入搜索索引。改 `shell.HIT`/`shell.EDIT` 或公告内联检查需同步手写页面。
 
-快照从 [Destiny Data Compendium](https://docs.google.com/spreadsheets/d/1WaxvbLx7UoSZaBqdFr1u32F2uWVLo-CJunJB4nlGUE4/edit)
-的分页清单现取，包括 Landing、当前分页与 `OLD` 归档页，不维护另一份手写清单。
-`data/ddc/index.json` 记录分页名与 gid；每个 `<gid>.json` 保存该页的「行 → 列 → 文本行」。
-文件名用稳定的 gid，改分页名不搬文件。快照入 Git，历史交给 Git；没有抓取时间，
-同一内容重抓不会制造 diff。
+## 前端性能与部署红线
 
-读取原始富文本，不用 CSV。文本中的 PvE／PvP 前景色、加粗、斜体、小字／上下标与
-链接保留为最小内联 HTML；去掉行号、空白行、尺寸、对齐、底色、字体与 Google 临时
-class 名。合并单元格先按实际列位展开，避免后续格子错列。图片像素不在这套文字／规则
-diff 里，临时图片 URL 也不存；完整带图导出仍用 `tools/sheet-grab.user.js`。
-样式先解析表格外层祖先与单元格的继承，再保存有效前景色和强调；不靠临时 class 名保留语义。
+- **首屏与按需加载**：`markup.loading_attr()` 统一判定 `fetchpriority="high"` 与 `loading="lazy"`；`assets/pinyin.js` 仅在带搜索框页面加载；长页 `content-visibility: auto` 不可套在含 `sticky` 后代的容器上，且只写 `contain-intrinsic-height`（禁写含宽度的 `contain-intrinsic-size`）。
+- **静态资源与缓存**：`deploy.py` 上传时自动剥离非数据 JS/CSS 的块注释与缩进并做 `node --check`。除 `armor-sets/icons/*.png`（7 天缓存）外，图标均按内容 md5 前 10 位命名 `.webp`（1 年缓存），**严禁原地覆盖 `.webp`**。`.css`/`.js` 缓存 300s，`.html` 0s；不引入构建哈希文件名。
+- **发布纪律**：部署前工作区必须干净；`--prune` 禁止与增量部署混用；严禁使用 CloudBase 控制台「更新服务」（仅用于紧急回滚）。
 
-`--check` 退出码：0 没变化，1 有变化，2 抓取、解析或基线错误；省略参数等同 `--check`。
-它不覆盖基线。`--update` 在全部分页抓取和解析成功后才写入，只更新内容变了的文件；
-失败不把缺页或登录页面写成空快照。上游删页时只清理上一份清单登记的快照；新增页若与
-目录中未登记的文件重名，会报错而不是覆盖，不碰其他文件。
-`--dir <目录>` 可指定另一份基线，例如在临时目录试抓。
+## 验证与工作流
 
-这条线不进 `npm run build` 或 `npm test` 的联网流程，不自动改本站 JSON、源稿或产出，
-也不自动提交、推送或部署。看到 diff 后仍要区分模式、版本与强化条件，再决定本站如何同步。
-
-本轮核对中无法确定的差异与批准例外记在 `data/ddc-ignore.json`：按稳定编号列出主键、
-字段、原表 gid、证据、保留口径与复核条件，不写进站内疑点注释。搜寻者按本站规则，
-灵魂虹吸按 manifest 保留 3 槽；这些选择不改原表快照，也不让 `ddc.py --check` 跳过上游变化。
-
-## 闸门
-
-`npm run build` 末尾跑三道，任一条不过即中止、卡住整次构建。报错自己改，
-散文按正名改源稿，物品专名进 `KEEP`。
-
-| 闸门 | 管什么 |
-|---|---|
-| `check_terms.py` | 术语正名、着色 token、更新时间、更新日志类型、色板齐全，七条，编号 G1–G7 |
-| `check_type.py` | 字距与中文、CSS 简写有效性、产出结构、整数字号阶梯与死规则清理、资料页正文通栏，五条，编号 T1–T5 |
-| `check_shell.py` | 各页 head 元信息、站标、署名、免责声明逐字一致，更新时间格式合规，页面清单里每一页都进了搜索索引 |
-
-`check_shell.py` 的页面清单从两处源稿现扫，新增一篇资料不必回去登记；
-不变片段表里有 `shell.HIT` 与 `shell.EDIT`，改这两处要连手写的首页 `index.html` 一起改。
-
-### 术语与着色的一处定义
-
-`tools/items.py` 的 `TERMS` 是全站术语的唯一真相。一行钉两件事：中文怎么写，以及着色落到哪个 token 上。加一条术语就往表里加一行，不在源稿里逐处约定。
-
-从 `items.py` 读取着色词表与规则：`TERMS`、`KEEP`、`MECH`、`LOOSE`、`STOP`、`GUARD` 与 `tools/items.json`。归属用 `expected_token()`，保护区段用 `protected_spans()`，正名检查用 `misspelled()`，漏色检查用 `hits_in()`，纠正用 `normalize_text()`。`check_terms.py` 负责逐篇检查与报错；构建和编辑台共用这些规则。
-
-七条闸门，编号即 `check_terms.py` 报错行的前缀（G6 排在末位，与脚本一致）：
-
-1. G1 中文正名：源稿、`data/*.json` 的 `facts.site_text` 与手写页/脚本（`index.html`、`eververse/{index.html,app.js}`、`assets/armor-rng.js`）不许出现禁用写法。「装填」曾被统一成「填装」，六天后新增的页面又带回 17 处；这一条就是为此存在的。
-2. G2 token 唯一：同一个术语只能落到同一个着色 token 上（源稿与 `data/*.json` 同查）。只查「整个标记就是这个词」的那种（`{enemy|护甲充能}`）；词嵌在更长的短语里时着色属于短语（`{el-arc|电弧元素能量球}`），按词强判会把整句的颜色拆碎。这一条眼睛查不出来：`--el-solar` 与 `--deb-solar` 渲染色相同，灼烧着成哪个都看不出。
-3. G3 token 有定义：源稿与 `data/*.json` 里每个 `{token|文字}` 都要在 `site.css` 或页面样式表里有对应类；反过来，`site.css` 的着色类一次都没被用到即死配置，当场报出。
-4. G4 更新时间一致：资料页页脚的「更新 YYYY.M.D」与首页卡片上那个必须相等。首页那三张配装卡的更新时间与套数由构建改写（`convert-build.py` 的 `sync_home()`），这一条兜住手改；别的卡片写的是页面结构，由各生成器的 `N_*` 钉着。
-5. G5 更新日志的类型：只有新增、改动、订正三种，同一天里每种连成一段。写法见 `.claude/rules/pages.md` 的《更新日志的写法》。
-6. G7 色板齐全：配色总览页 `references/docs/palette.md`（散文那一处）列的渲染色与着色类，必须与 `site.css` 现有的逐条相等，两个方向都管：改了 `:root` 的色号忘了改源稿、加了新 token 忘了上页，都当场报出。认哪些类算着色类只有 `tint_classes()` 一处（G3 与 G7 共用）：源稿里写得出 `{name|…}` 的才算，外壳与组件的类照样引强调色，但它们写不进源稿，不进色板页。那一页「## 页面专属」以下的一节比对到此为止：页面专属的类定义在各页样式表里，不归 `site.css` 管。
-7. G6 该着色的都着了：正查仅扫资料页源稿（不扫 `data/*.json`），使用 `items.forward_terms()`，归属来自 `tools/items.json`、`MECH` 与 `TERMS`。将同形词的具体含义写成显式标记：烈日增益写 `{el-solar|恢复}`，虚空星相写 `{el-void|堡垒}`，异域武器写 `{exotic|堡垒}`；动作与属性保留普通文字。将不强制自动补色的术语登记在 `LOOSE`。编辑台读取生成的 `terms.js` 词表。漏色运行 `python3 tools/items.py --apply` 补上。反查同时覆盖源稿与 `data/*.json`，核对完整叶标记的元素、异域与 `orb` 归属；神器名称没有元素归属时保留按效果语义写的标记，`named`、`stack` 等排版标记不按物品名纠色。
-
-Perk 名整条包在 `{perk|…}` 里，走 `--c-perk`。`.perk` 定义在 `assets/site.css`，全站一处。
-Perk 名不属于任何元素，颜色只标「这是一个名字」；必须整名包起来。不包时
-G6 正查会把「动能震颤」「不稳定弹药」从中间切开，各染各的色，一个名字看着像两个词。
-同名撞车的那几个（动能震颤、震颤反馈、不稳定弹药、势不可挡射击）写进 `items.py` 的
-`GUARD`，两头都撞的（诅咒怨魂既是起源特性也是邪魔族战斗人员名）写进 `STOP`。
-
-着色按术语铺，不按列。词表 `tools/perks.json` 由 `items.py --perks` 从两处现扫：
-武器 PERK 详解页四个分节的行标题（武器 PERK、武器模组、重型弩机制、起源特性），
-以及购物清单四页 Perk 列里的 `{perk|…}`。两字的名字一律不入表：转向、战术、
-切割、瓦解在正文里绝大多数是普通词或元素机制名，按词铺开会把动词染成 Perk 名。
-固有 PERK 那一节不收：它列的是框架（重型点射、支援框架），不是 Perk。
-
-#### 物品专名的着色查表，不靠人记
-
-`tools/items.json` 是物品专名与 token 的对应表，由 `tools/items.py --distill` 从 Bungie 的 manifest 导出蒸馏。三桶共 704 条，判据全部现取，不硬编码名单：
-
-| 桶 | 判据 | 条数 | token |
-|---|---|---|---|
-| 元素 | `typeName_zh` 以六个元素名之一开头，且含碎片／星相／手雷／近战／超能 | 228 | `el-arc` … `el-prismatic` |
-| 异域 | `tierName_zh` 为「异域」且 `categories_zh` 含武器或护甲 | 280 | `exotic` |
-| 神器模组 | `typeName_zh` 为「传说 神器特性」 | 196 | `art-perk` |
-
-建表时归一化：去汉字与拉丁之间的排版空格（源稿按 design.md 三节写「Vex 揭秘者」，库里没有那个空格），去站内自加的消歧后缀（「故我在（电弧元素）」）。匹配那一侧要把空格允许回来：`pattern()` 在中英交界处插 `[ \u00a0]?`，拿归一化过的键去字面匹配会让 12 个中英混排的名字整批漏掉；落标记时包的是源稿原文，不是表的键，否则那个排版空格会被吃掉。原始导出 49 MB，不入库；换赛季重跑 `--distill`。
-
-范围是两处源稿去掉 changelog、palette 与 armor-sets，`pages()` 一处定义，`--suggest`、`--apply` 与 G6 共用。神器模组页走显式 `{token|文字}`，标题行不参与铺色。护甲套装页按词表生成，歧义词在记录上写显式标记。
-
-新词先 `--suggest` 看一眼再 `--apply`。库里 6738 个模组名与中文常用词大量同形（充能 618 次、爆炸 413 次、霰弹枪 65 次都是物品名），按词表铺开会把正文里的普通动词染成专名。`--suggest` 只打印，确认无误再 `--apply` 就地落进源稿。跳过四处：行标题那一格（已有结构身份，但只算到格内换行 `\\` 为止，首格留空即向上合并，身份在第二格）、链接目标与图片路径、`GUARD` 里那些更长的专名、已经在某个 `{token|…}` 里面的。
-
-按普通用法与专名范围处理同形词，具体语义使用显式标记：
-
-| 情形 | 办法 | 例 |
-|---|---|---|
-| 整个词大多数时候是普通词 | 写进 `STOP`，整词不入表 | 「重击」6 处是电弧星相，68 处是刀剑重击；「爆炸范围」27 处全是武器属性 |
-| 只在某个更长的名字里撞车 | 写进 `GUARD`，那一段整体屏蔽 | 「千语魅痕」是首领名，屏蔽后「千语」照常着色 |
-
-同名撞两个桶的（「堡垒」既是虚空星相又是异域融合步枪）由蒸馏时自动剔出，逐处判断。两条表各带一行判定依据，不写「同形词」了事。
-
-`--apply` 只改源稿不碰产出，git diff 即变更记录；着色标记在保真比对时被剥掉，逐字保真闸门照旧成立。全站 1159 处着色让 span 从 12462 涨到 13600 上下，最大的页面 gzip +558 字节（1.5%）。
-
-**不进禁用表的两类词**：一是同形不同义（「优雅处决」是星相里的机制名，不是终结技；「敌方」是形容词，不是战斗人员的同义词）；二是游戏内的效果名各自独立（「治愈」与「治疗」、「恢复」与「治疗」不是同义词，别合并）。
-
-类名按语义命名，不按颜色命名。敌人分档写 `.bar-red` / `.bar-orange` / `.bar-yellow`：游戏内的血条本来就是这三色，读者能反推出颜色为什么是这个颜色。同一个颜色不给两个名字。
-
-### 排版与结构
-
-`tools/check_type.py` 五条，各对应一个真发生过、且别的闸门一声不吭的缺陷。
-颜色有七道闸门，所以 43 份样式表里 39 份零裸色值；字距、CSS 是否有效、产出的结构、字号阶梯与段落行宽
-以前没有闸门，容易各自漂移。
-
-| | 管什么 | 它抓过的那一次 |
-|---|---|---|
-| **T1** | 字距超过 `.2em` 封顶的规则，反查它选中的产出里有没有中文 | `.block > .sect-label` 把基类的 `.2em` 顶到 `.24em`，而 502 个分节标题里 477 个是纯中文。同病另有三处 |
-| **T2** | `background` 简写的非末层不许写颜色 | `.src-tools` 写着 `background: var(--tint-3), var(--ink-lift)`，整条声明作废回落 transparent，而注释正在论证那一层底为什么必要 |
-| **T3** | 产出的开闭标签配得上，属性名里不许有 `<` | 一次改动把 27 个 `<a class="entry">` 各复制了一份，浏览器容错渲染正常，`check_shell.py` 只管外壳片段与更新时间 |
-| **T4** | 禁止小数像素字号、已退役的 `--font-read`，以及无 `<table class="gen">` 页面的残留 `.gen` 规则 | 全站曾散落 18 种小数像素字号与 12 份 `.rec` 页面里未清理的 `.gen` 旧表规则 |
-| **T5** | 资料页正文块不许加窄 `max-width`（只放行 `none`、`100%` 与含 `--wrap` 的表达式） | 12 份资料页样式表把 `.block p`、`.rules`、`.page-note`、`.lede` 封在 `46em`–`62em` 或 `760px`，文字半屏换行、与通栏表格右缘脱节 |
-
-判据全部现取：样式表与页面清单走 `os.walk`，颜色变量从 `:root` 的右值形状认，
-封顶值取 design.md 二节那一个。加一页、加一份样式表都不必回来登记。
-
-T1 的主语取选择器最后一个 class：`.block > .sect-label` 施加在 `.sect-label` 上，
-前面那些是限定条件。取文按标签名配对弹栈：空元素不入栈，无条件弹会让文字记到上一层
-的 class 上去。
-
-## 前端性能约定
-
-站点是纯静态、零依赖。以神器模组页为例，首屏约 43 KB gzip（HTML 20K + site.css 8K + 本页样式表 1K + app.js 4K + 首个字重字体 10K）。别引框架或打包器，任何 runtime 都比整站资源还大。以下几条是已经落地的约定，改页面时保持住。
-
-注释与缩进不上线，剥在部署那一步。站上的 `.css`/`.js` 不压缩，浏览器缓存只有 5 分钟，`site.css` 有 38% 的字符在 `/* */` 里，`app.js` 也差不多，那些设计依据与缩进每次访问都按原始字节重发一遍。`deploy.py` 的 `stage_one()` 在复制进暂存目录时先把块注释换成等量换行，再去掉每行的行首缩进与行尾空白（`dedent()`，只认空格与制表符），换行一个不删：行号不移，devtools 报的位置照旧落在源稿同一行，只是列号左移缩进那么多。行内的空格不动：`a :hover` 与 `calc()` 里的空格有语义。源稿一个字不动，本地 `npm start` 服务的仍是带注释的那一份。整站 `.css`/`.js` 的原始字节因此从 7686 KB 降到 7327 KB（剥注释省 332 KB，去缩进再省 26 KB）；资料页首屏的 `site.css`、本页样式表与 `app.js` 合计从 158–171 KB 降到 68–74 KB，其中去缩进省 5.0–5.3 KB。
-
-`//` 行注释一概不剥：`app.js` 里有 `'http://www.w3.org/2000/svg'`。两类文件跳过。字符串字面量里冒出 `/*` 或 `*/` 的整个原样发（`strippable()`）：`search.js` 与 `desc.js` 是从源稿生成的，正文里写一句「伤害 100/\*不含\*加成」那对括号就进了数据，正则会一路吃到下一个 `*/`，而吃完往往仍是合法 JS，语法闸门与页面都看不出来，只是搜不到东西。行首空白是内容的只剥注释、不去缩进（`dedentable()`，判的是剥完块注释的那一份）：含反引号的 `.js`（模板字符串可以跨行），以及有一行去掉行尾空白后以反斜杠结尾的 `.css`/`.js`（续行的字符串）。反引号判得宽，`//` 注释里的也算：编辑台与配装的六份脚本因此只剥注释，约 23 KB 缩进照发。跳过而不是中止：剥是优化，不该有能力挡住发版。反过来，内容改过的 `.js` 落盘后过一遍 `node --check`，不过就中止部署并报出文件名：跳不跳过在动手之前判定，动手之后语法坏了是剥的规则有漏洞，原样发出去会把它藏起来。
-
-公共版式放 `site.css`，不为共用另开文件。`site.css` 每页都要下、且跨页共用一份缓存；页面样式表则是一页一份。共用的东西放前者，首访多几 KB，从第二页起每页省下更多（资料页的样式表因此从 6.6 KB 降到 2.9 KB）。再开一个 `table.css` 只会多一轮请求，省不出东西。
-
-首屏图片不加 `loading="lazy"`。给首屏图片加 lazy 会让它们等布局算完才开始下载，是反模式。排在首屏之内的图标改用 `fetchpriority="high"`，判定只有 `markup.loading_attr()` 一处。数目按 1440×900 实测给：资料页写在源稿的 `首屏图标：` 一行，神器模组页与护甲套装页各是生成器里的 `N_EAGER`（7 与 2）。改版式让首屏塞得下更多图标时，同步改这个数。
-
-长页用 `content-visibility: auto` 跳过屏外渲染。神器模组页约 16700px、护甲套装页约 28700px，屏外内容不必参与布局与绘制。
-
-套的位置有讲究：只能套在不含 sticky 后代的元素上。`content-visibility` 带 paint containment，会把内部的 sticky 裁在自己的盒子里。所以神器模组页套 `.mod-row`（不是 `.artifact`，它含 sticky 的 `.art-bar`），护甲套装页套 `.set-bonuses`（不是 `.set`，它含 sticky 的 `.set-id`）。
-
-**只给高度，走 `contain-intrinsic-height`。**`contain-intrinsic-size` 写一个值是把它同时当成宽和高：屏外的每一节于是各自声称自己有那么宽（购物清单是 2400px），整页被顶到比视口还宽，最后一列滚出屏外看不见。
-
-`contain-intrinsic-height: auto <值>` 里的 `auto` 让浏览器渲染过一次后改用真实高度，那个值只是从没渲染过时的初始估值，不需要跟着内容维护。它唯一影响首屏滚动条长度与锚点跳转的过冲量，估错不会渲染错。现值取 1440px 宽下的实测中位数（`.mod-row` 278px、`.set-bonuses` 386px），实测总高偏差 5%–7%。
-
-量真实高度时必须让页面自己的 `style.css` 也加载：断言页用 `<base href>` 指回真实目录，只重写 `../assets/` 的路径会漏掉页内相对引用，量出来能差 3 倍。量之前先把 `content-visibility` 临时置成 `visible`，否则量到的是估值本身。
-
-当前分节高亮走 `IntersectionObserver`，不在滚动事件里读 `getBoundingClientRect()`。rootMargin 把视口顶端裁掉 `--stick + 8` 像素，落在剩下那块里最靠上的分节即当前分节。`--stick` 变了要重建观察者（`watch()`），resize 时已经这么做。搜索隐藏分节走 `display: none`，观察者自动报离开，不必手动同步。
-
-外壳里的两条资源提示由 `check_shell.py` 钉住：字体 `preload`（只预载首屏用到的 600 字重）与 `speculationrules` 导航预取。整站公告内联脚本由 `shell.announce_tag()` 生成（`build-notices.py` 同步首页与 `eververse`）并内嵌最新公告 ID，`localStorage`／`sessionStorage` 的 `sn` 已匹配时跳过加载 `assets/notice.js`。
-
-缓存策略见下文《部署》的「缓存策略」。长缓存只给文件名带内容标识的资源；不要为了 CSS/JS 引入文件名哈希，它们与 HTML 的重新验证走同一轮往返，省不出可测量的时间。
-
-除 `armor-sets/icons/`（序号命名）外，各页图标目录的文件名都是内容的 md5 前 10 位，`markup.Icons.html()` 每次转换都复核。**不要原地覆盖图标**：那一年的浏览器缓存就建立在「改内容必然换名」上，覆盖了读者会看一年旧图。换图按下文「换图」那三步走。
-
-## 部署
-
-站点由 `tools/deploy.py` 发，只发改过的文件。站上 3982 个文件里 3770 个是图标，
-文件名即内容哈希、改内容必然换名，整目录重发就是把不会变的那批又传一遍。上次发到
-哪个 commit 记在 `.git` 的 `refs/deploy` 上，与 HEAD 一 diff 即得清单：改过的复制进
-临时目录，一次 `tcb hosting deploy <临时目录> destiny2-starside` 发上去；删掉的按
-diff 发 `tcb hosting delete`。全部成功才动 `refs/deploy`，中途失败重跑即可，不会漏。
-挂载路径与缓存规则见下文「缓存策略」。
-
-部署时自动跑一次 `sync.py` 对账：编辑台读的是库里那一份，本地修的闸门错误
-要这样才回得去。它排在发文件之前，且不受「这次没文件要发」影响：源稿在库里那一份
-与站上发了什么无关，只改了 `tools/` 一样要对一次账。
-
-发之前工作区必须干净：产出与源稿对不上时先 `npm run build` 再 commit。
-`refs/deploy` 记的是 commit，与一份没提交的产出对不上账。
-同步失败即停止，零文件差异也不例外；同步拉回或删掉源稿后，工作区不再干净，也必须
-先构建、提交再部署。清单在同步之后按固定的 `target` commit 计算，复制前和每次发送前
-复核 HEAD 与工作区；成功只把 `refs/deploy` 推到那个 target。`--dry-run` 不同步、不发送。
-
-`--all` 整站重发，首次部署与换机器时用：`refs/deploy` 只活在本机的 `.git` 里，
-新 clone 上没有，脚本会拒发并叫你先跑一次。`--all` 只补不删，远端多出来的文件
-要 `--all --prune` 才清；prune 的范围限于挂载路径这一层，桶里别的东西不受影响。
-`--prune` 不许跟增量一起用，脚本挡着：增量那份清单不是完整的一版，带上 prune 会把
-没改的文件全删了。
-
-**别用控制台那颗「更新服务」**，除非要回滚。它按 GitHub 上的代码整站重发，本地
-发了还没 push 的改动会被它抹掉；反过来，站上发坏了要退回，按它就是最快的一条路。
-它走 docker runner，日志与版本记录都是那条线产出的。脚本这条路直接写存储桶，
-控制台看不到日志，也没有版本可回滚。
-
-只上传 `site/` 下的文件，判定只在 `keep()` 一处，`--all` 与增量共用它。上传时去掉
-`site/` 这一层：仓库里的 `site/ammo/index.html` 在站上是 `destiny2-starside/ammo/index.html`。
-
-### 缓存策略
-
-缓存在控制台按文件后缀 / 文件夹路径 / 具体文件三种方式匹配，输出的就是
-`Cache-Control: max-age=<秒>`，分浏览器缓存与节点缓存两层。
-
-长缓存只给文件名带内容标识的资源。控制台上传会自动刷新节点缓存，但已经发到
-读者浏览器里的缓存收不回来：同名文件换了内容，读者就得等缓存过期才看得到新的。
-
-图片按后缀匹配，不逐个目录列。三十来个 `icons/` 目录合计十几 MB，逐个列会让每加
-一页就得回来登记一次，漏登记的那些回访时重下。按后缀一条盖住全部，新增页面自动生效。
-
-两条后缀规则不重叠，所以不依赖控制台的规则顺序。哈希命名的那批全是 `.webp`，
-序号命名的那批全是 `.png`，各归各的后缀。写成「`.png` 也给一年、再拿文件夹规则盖回
-7 天」就要赌控制台按什么顺序匹配：那是列表优先级，不是选择器特异性。
-
-控制台在「静态网站托管 → 缓存配置」，一条规则填一行，多个值用**分号**分隔，
-时间填秒（上限 365 天）。照着填：
-
-| 类型 | 内容 | 秒 | 换内容时会怎样 |
-|---|---|---|---|
-| 文件后缀 | `.webp` | `31536000` | 文件名是内容哈希，改内容必然换名，读者立刻拿到新图 |
-| 文件后缀 | `.png` | `604800` | 只有 `armor-sets/icons` 是 PNG，序号命名，同名替换后最多 7 天全员生效 |
-| 文件夹 | `/assets/fonts` | `31536000` | 同名替换会让读者看一年的旧字体，换字体必须连带改文件名 |
-| 文件后缀 | `.css;.js` | `300` | 5 分钟内生效 |
-| 文件后缀 | `.html` | `0` | 立刻生效 |
-
-错误文档指向 `404.html`。控制台「静态网站托管 → 基础配置」里，索引文档填
-`index.html`，错误文档填 `404.html`；不填时挪走的页面返回 COS 的 `NoSuchKey` XML。
-
-**不要为了 CSS/JS 引入文件名哈希。**两者与 HTML 的重新验证走同一个连接、同一轮往返，
-改成长缓存省不出可测量的时间，却要给生成器加一层重写引用的机制。上传时由 `deploy.py`
-的 `stage_one()` 把块注释换成等量换行、去掉每行的行首缩进与行尾空白，源稿不动、行号不移。
-
-### 换图
-
-除 `armor-sets/icons/` 外，各页图标目录都不要原地覆盖。文件名是内容的 md5 前 10 位，
-`markup.Icons.html()` 每次转换都复核一遍，对不上就中止并报出正确的名字。换图三步：
-
-1. 把新图按新哈希存进 `icons/`（跑一次生成器，报错信息里就有该用的文件名）
-2. 改源稿里引用它的那一处（神器模组页的「图标：」一行，其余页表格里的 `![](icons/…)`）
-3. 删掉旧文件，重跑生成器确认退出码 0
-
-这条纪律不是洁癖：它是那一年缓存成立的前提。原地覆盖会让读者看一年的旧图，
-而控制台刷新只清得掉节点缓存。
-
-`armor-sets/icons/`：原地覆盖即可，序号命名，最多 7 天全员生效。这一批只在换了
-英文原表、重跑 `--icons` 时整体重抽，不单张替换。
-
-## 验证
-
-不引第三方测试框架，pytest、vitest 一概不装。验证靠四样：
-
-1. 生成器自检 + `check_shell.py` + `check_terms.py` + `check_type.py`：结构、外壳、术语、
-   着色与排版的主闸门，见上。跑 `npm run build` 即全部执行。
-2. **`npm test`**：两份标准库写的离线回归，约 1 秒，排在 `ship.sh` 的构建之后、提交之前。
-   `tools/check_quality.py` 用 `unittest`，管部署闸门、同步删除的三方比、配装生成生命周期、
-   源稿自动纠正的幂等、切格与入库生成物是否过期，以及装备库载荷是否过期、浏览器属性算法与
-   `facts.shown()` 是否逐值一致（这一条起一次 node）；`tools/check_quality.cjs` 用 `node:assert` 加一份内存版
-   database 适配器，管云函数的事务原子边界，另管装备库的查询解析与属性纯函数。
-   两份都不联网、不读令牌、只写独占临时目录。
-   改 `deploy.py`、`sync.py` 或 `functions/api/` 之前先跑它，那 18 条 `Deployment`
-   测试是动发布链时唯一的安全网。
-3. 截图用 `playwright-cli`，不用 chrome-devtools MCP。它拦 `file://`，页面走本地 http 服务；
-   命令在 scratchpad 里跑，快照与日志落在当前目录的 `.playwright-cli/` 下。端口现取空闲的：
-   占用中的端口 `goto` 照样成功，拿到的是别的服务的 404。
-   ```bash
-   cd <scratchpad>
-   PORT=$(python3 -c 'import socket;s=socket.socket();s.bind(("127.0.0.1",0));print(s.getsockname()[1])')
-   python3 -m http.server $PORT -b 127.0.0.1 -d <仓库>/site >/dev/null 2>&1 &
-   playwright-cli -s=<会话名> open
-   playwright-cli -s=<会话名> resize 1440 900
-   playwright-cli -s=<会话名> goto http://127.0.0.1:$PORT/artifact-mods/index.html
-   playwright-cli -s=<会话名> eval "window.scrollTo({top: 8000, behavior: 'instant'})"
-   playwright-cli -s=<会话名> screenshot --filename=<scratchpad>/out.png
-   ```
-   看哪一段就滚到那里截视口。`--full-page` 与高过视口的元素截图都不可信：屏外的 `.mod-row`
-   带 `content-visibility: auto`，整页截图里是空框；元素截图会把 sticky 的站头与 `.art-bar`
-   叠进画面中段。`site.css` 给 `html` 设了 `scroll-behavior: smooth`，`scrollTo` 不带
-   `behavior: 'instant'` 时是动画，紧接着读 `scrollY` 还是 0。
-4. JS 行为断言：同一个会话里对真实页面跑 `playwright-cli -s=<会话名> --raw eval "<表达式>"`，
-   返回值即结果。要赶在页面脚本之前桩掉 `fetch`、`localStorage`、`confirm`，先跑
-   `run-code "async page => { await page.addInitScript(() => { … }); }"` 再 `goto`。
-   一次性的断言不进仓库；要反复跑的写进 `check_quality.py`：scratchpad 随 session 清掉，
-   而它承诺的东西还写在这份文档里。
-
-第 3、4 条起浏览器，两条红线：
-
-- 用户明确授权才起。默认只跑第 1、2 条闸门，把改动说清楚；需要看渲染效果就先问，得到「跑」再起进程。
-- 拿到产物立刻关：`playwright-cli -s=<会话名> close`，再停掉那个 http 服务。`close` 连 daemon
-  带 Chrome 一并退出，关完 `playwright-cli list` 应为 `(no browsers)`。会话名每次独占，不用
-  `close-all` / `kill-all`：它们会关掉别处开着的会话。
-
-滚动类行为（sticky 让位、当前分节高亮、锚点落点）滚到位置后直接截视口，或用 `eval` 读
-`getBoundingClientRect()`。
-
-## 工作流
-
-solo 项目。直接提交到 `main`，非指定不开分支。提交前跑 `npm run build`（生成器加三道闸门）与 `npm test`；改过 Python 再跑 `ruff check tools/*.py` 与 `pyright tools/*.py`。push 只在明确要求时做。
+- **验证层次**：`npm run build`（三道闸门）→ `npm test`（离线单元测试与一致性回归）→ 隔离 HTTP 端口 + `playwright-cli`（禁止在含 `content-visibility: auto` 长页用 `--full-page` 截图；用完立即 `close` 并清理会话）→ `ruff` / `pyright` / `oxlint`。
+- **提交规则**：Solo 项目直接提交 `main`；仅在用户明确要求时执行 `sync.py`、`deploy.py`、`tcb fn deploy` 或 `git push`。

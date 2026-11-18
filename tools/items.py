@@ -557,7 +557,7 @@ def distill(src):
 # perk 属于 sandbox 条目，typeName 分不出「异域装备自带」与别的特性。真相在
 # exotic-armor / exotic-weapon 两页的 PERK 列上，顺着那两页的行主键取。
 # 着 exotic 而不是 perk：site.css 的 --c-exotic 注释写着「专属 Perk 名同族」，
-# 两者渲染色相同，而 {perk|…} 按 .claude/rules/pages.md 是整格排版标记，不是行内着色 token。
+# 两者渲染色相同，而 {perk|…} 按 .agents/rules/pages.md 是整格排版标记，不是行内着色 token。
 PERK_DOCS = ("exotic-armor.md", "exotic-weapon.md")
 
 
@@ -772,7 +772,7 @@ def pages(slug=None):
     matched = False
     for name, path in shell.sources():
         # 更新日志是日志不是资料：它的条目名指向别的页面，句式与字数另有约定
-        # （.claude/rules/pages.md「文案七条」），不跟着全站铺色。
+        # （.agents/rules/pages.md「文案七条」），不跟着全站铺色。
         # 配色总览是站务页，正文里的术语是在讲颜色不是在讲机制。
         # 护甲套装页不在内：它走词表着色，源稿是纯中文，落标记等于换掉那一页的
         # 着色路径（design.md「两条着色路径」）。

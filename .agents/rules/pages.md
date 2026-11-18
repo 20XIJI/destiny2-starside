@@ -146,7 +146,7 @@ app.js 按表头文本找列、按首格开头的两位时刻找行（首列写�
 
 记录上的文字画到页面上时要标出处：生成器经 `editmap.Origins` 登记「主键 + 字段路径」，
 那个元素戴上 `data-e`，出处表写成 `<页目录>/edit.json`，就地编辑靠它找回那一格
-（见 `.claude/rules/backend.md`《主键页：改记录上的一格》）。四处在标：`rows.expand()`
+（见 `.agents/rules/backend.md`《主键页：改记录上的一格》）。四处在标：`rows.expand()`
 交出每格的出处、`convert-doc` 戴在 `<td>` 上；`render.py` 的 `Page.mark()`；神器模组页的
 `.mod-desc`；护甲套装页的来源、标签与 `.bonus-body`。只标站内写的字段，标到 manifest
 字段上当场中止。新加一处从记录取文字的渲染要一起标，不标的那一格线上改不了。
