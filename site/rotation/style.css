@@ -473,6 +473,16 @@
   text-shadow: 0 1px 3px #000000fc, 0 0 8px #000000d9;
 }
 
+.rota-guide {
+  color: inherit;
+  text-decoration: none;
+}
+
+.rota-guide:hover,
+.rota-guide:focus-visible {
+  text-decoration: underline;
+}
+
 .rota-group[data-kind="raid"] .rota-pill { color: var(--c-term); }
 
 /* 中间那张是正在看的那一周，地牢那组再抬一档到最亮（突袭那组本就是暖亮色） */

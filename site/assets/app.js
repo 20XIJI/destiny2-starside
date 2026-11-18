@@ -20,7 +20,6 @@
     }
     return true;
   }
-  function matches(text, query) { return hit(text.toLowerCase(), words(query)); }
 
   /* 页面专属的三段（折线图、轮盘、首页搜索）拆成了同目录下的模块，认出该页的
      data-* 时才拉。**路径按自己的 src 现算**：这是个 classic script，import() 里
@@ -194,9 +193,9 @@
         el.removeAttribute('data-now-col');
       });
       lit = [];
-      var d = new Date();
-      var want = WEEKDAYS[d.getDay()];
-      var hh = ('0' + d.getHours()).slice(-2);
+      var d = new Date(Date.now() + 288e5);
+      var want = WEEKDAYS[d.getUTCDay()];
+      var hh = ('0' + d.getUTCHours()).slice(-2);
       var col = heads.findIndex(function (th) { return th.textContent.trim() === want; });
       var row = rows.find(function (tr) {
         return tr.firstElementChild.textContent.trim().slice(0, 2) === hh;
@@ -211,7 +210,7 @@
       [heads[col]].concat(rows.map(function (tr) { return tr.children[col]; }))
         .forEach(function (el) { el.setAttribute('data-now-col', ''); lit.push(el); });
       /* 多给 1 秒，免得在整点前几毫秒醒来、算出同一格又排一次零延时 */
-      setTimeout(paint, 3600000 - (d.getMinutes() * 60 + d.getSeconds()) * 1000 + 1000);
+      setTimeout(paint, 3600000 - (d.getUTCMinutes() * 60 + d.getUTCSeconds()) * 1000 + 1000);
     }
     paint();
   }
@@ -748,6 +747,7 @@
 
   /* 0 命中时的正文空状态与一键重置。只在零命中那一刻惰性建出，平时不占 DOM。 */
   var emptyBox = null;
+  var emptyMsg = null;
   function resetAll() {
     search.value = '';
     if (DIMS) {
@@ -757,9 +757,15 @@
         if (d.groups) regroup('');
       });
     }
+    if (hideBtn && hideOn) {
+      hideOn = false;
+      hideBtn.setAttribute('aria-pressed', 'false');
+      search.placeholder = '搜索 ' + poolSize() + ' 个' + NOUN;
+      syncShare('');
+    }
     filter('');
   }
-  function syncEmpty(miss) {
+  function syncEmpty(miss, hiddenHits) {
     if (!miss) {
       if (emptyBox) emptyBox.hidden = true;
       return;
@@ -770,17 +776,19 @@
       emptyBox = document.createElement('div');
       emptyBox.className = 'tool-empty';
       emptyBox.setAttribute('role', 'status');
-      var p = document.createElement('p');
-      p.textContent = '未找到匹配的' + NOUN + '，可放宽筛选或清空搜索词';
+      emptyMsg = document.createElement('p');
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'op';
       btn.textContent = '重置筛选';
       btn.onclick = resetAll;
-      emptyBox.appendChild(p);
+      emptyBox.appendChild(emptyMsg);
       emptyBox.appendChild(btn);
       host.appendChild(emptyBox);
     }
+    emptyMsg.textContent = hiddenHits > 0 && hideBtn
+      ? '未找到匹配的' + NOUN + '（另有 ' + hiddenHits + ' 个因「' + hideBtn.textContent.trim() + '」被隐藏），可放宽筛选或重置'
+      : '未找到匹配的' + NOUN + '，可放宽筛选或清空搜索词';
     emptyBox.hidden = false;
   }
 
@@ -790,14 +798,18 @@
   function filter(query) {
     var terms = words(query);
     var hits = 0;
+    var hiddenHits = 0;
     /* **值没变就不写。**`hidden` 对应 display:none，写一次就要重排整张表；
        weapon-perks 有 413 行，删掉一个字往往只有几行的可见状态真的变了。 */
     mods.forEach(function (mod, i) {
-      var on = (hit(text[i], terms)
+      var matched = (hit(text[i], terms)
         || (window.starsidePy && names[i] && window.starsidePy.hit(names[i], terms)))
-        && facetPass(i) && byPass(mod);
+        && facetPass(i);
+      var byOk = byPass(mod);
+      var on = matched && byOk;
       if (mod.hidden === on) mod.hidden = !on;
       if (on) hits++;
+      else if (matched && !byOk) hiddenHits++;
     });
     rows.forEach(function (row) {
       row.hidden = !row.querySelector(ITEM + ':not([hidden])');
@@ -830,9 +842,10 @@
     var active = !!query.trim() || facetOn();
     count.textContent = restState === 'loading' ? '其余条目载入中，搜索结果尚不完整'
       : restState === 'failed' ? '其余条目载入失败，搜索结果不完整；请刷新重试'
-      : active ? hits + ' / ' + poolSize() : '';
+      : active ? hits + ' / ' + poolSize() + (hiddenHits > 0 ? '（另有 ' + hiddenHits + ' 个已隐藏）' : '')
+      : '';
     slot.toggleAttribute('data-miss', restState === 'ready' && active && !hits);
-    syncEmpty(restState === 'ready' && active && !hits);
+    syncEmpty(restState === 'ready' && active && !hits, hiddenHits);
     remember(query);
     return hits;
   }

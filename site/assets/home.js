@@ -173,9 +173,8 @@ export default function init(box, deps) {
            这边若改按 `r.d` 分，两个字段都为空的记录就走不到 `_t` 这一支，
            draw() 拿到 undefined 当正文，整只搜索框当场抛错。 */
         index.forEach(function (r) {
-          if (!r.n) { r._t = ((r.t || '') + ' ' + (r.d || '')).toLowerCase(); }
+          if (!r.n) { r._t = ((r.t || '') + ' ' + (r.d || '')).toLowerCase(); pages[r.u] = r; }
           else { r._n = r.n.toLowerCase(); r._x = (r.x || '').toLowerCase(); }
-          if (r.d) pages[r.u] = r;
         });
         draw();
       };
@@ -192,13 +191,17 @@ export default function init(box, deps) {
        扫读时不必自己在一段话里找那个词。 */
     function row(r, q, terms) {
       var li = document.createElement('li');
+      li.setAttribute('role', 'presentation');
       var a = document.createElement('a');
       a.className = 'hit';
-      /* 条目带上 ?q= 与分节锚点；页面本身直接进去，不必预填。
+      /* 条目带上 ?q= 与分节锚点；无页内搜索的页面不拼 ?q=，别名命中改填条目名。
          装备库那一条没有分节，只带查询词。 */
+      var noSearch = r.ns || (pages[r.u] && pages[r.u].ns);
+      var py = typeof window !== 'undefined' && window.starsidePy;
+      var qStr = r.n && !r.jump && py && py.hit(r.n, terms) && !hit(r._n, terms) ? r.n : q;
       a.href = r.jump
         ? r.u + '?q=' + encodeURIComponent(q)
-        : r.n ? r.u + '?q=' + encodeURIComponent(q) + '#' + r.a
+        : r.n ? r.u + (noSearch ? '' : '?q=' + encodeURIComponent(qStr)) + '#' + r.a
         : r.u;
 
       var name = document.createElement('b');
@@ -277,6 +280,7 @@ export default function init(box, deps) {
       list.classList.toggle('is-in', !had && !!n);
     }
 
+    input.addEventListener('pointerdown', load);
     input.addEventListener('focus', load);
     input.addEventListener('input', function () { load(); draw(); });
     input.addEventListener('keydown', function (e) {
@@ -301,17 +305,7 @@ export default function init(box, deps) {
       }
     });
 
-    /* 索引约 1.2 MB，站上不压缩传输。只在聚焦时拉的话，读者点进搜索框敲第一个字
-       要干等它下完；页面加载完之后趁空闲预取，想搜的时候已经在内存里。排在 load 之后、空闲时段
-       里，首屏不受影响。上面那条 focus 留着兜底——空闲回调可能一直不来。 */
-    /* **timeout 必须给。**空闲回调没有「一定会来」的保证——页面持续有活干时它会被
-       一直推后，预取就白写了。给 3 秒上限，到点无论闲不闲都拉。 */
-    function idle(fn) {
-      if (window.requestIdleCallback) requestIdleCallback(fn, { timeout: 3000 });
-      else setTimeout(fn, 1200);
-    }
-    if (document.readyState === 'complete') idle(load);
-    else addEventListener('load', function () { idle(load); });
+    if (input.value.trim()) load();
   }
 
   return home(box);

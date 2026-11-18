@@ -432,10 +432,15 @@
     sizeExRig(gun.closest('.rig'));
   }
 
+  function byGun(map, row) {
+    if (!map || !row) return null;
+    return (row[7] && map[row[7]]) || map[row[0]] || null;
+  }
+
   function syncGunPerks(gun) {
     var rig = gun && gun.closest('.rig');
     if (!rig) return;
-    var own = gun.row ? (V.perks || {})[gun.row[0]] : null;
+    var own = gun.row ? byGun(V.perks, gun.row) : null;
     var all = V.lists[V.slots['Perk']] || [];
     [].forEach.call(rig.querySelectorAll('[data-slot="Perk"]'), function (c) {
       if (!c.row) return;
@@ -456,7 +461,7 @@
   /* 一把枪占哪个槽：k 动能、e 能量、h 威能。词表里查不到就回空串，那一把不参与
      挡槽——挡不住好过挡错。 */
   function bucketOf(row) {
-    return (row && (V.buckets || {})[row[0]]) || '';
+    return byGun(V.buckets, row) || '';
   }
 
   /* 36 条之灵的名字。之灵与职业物品同在「职业金」那一节里，靠这一份分开。 */
@@ -539,7 +544,7 @@
         return same.filter(function (r) { return r[7] === one[1]; })[0] || same[0];
       }).filter(Boolean);
     } else {
-      var own = (V.perks || {})[gun.row[0]];
+      var own = byGun(V.perks, gun.row);
       if (!own) return list;
       var all = V.lists[V.slots['Perk']] || [];
       (own[col - 1] || []).forEach(function (i) { if (all[i]) keep[all[i][0]] = 1; });

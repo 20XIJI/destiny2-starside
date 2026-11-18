@@ -71,7 +71,7 @@ function injectStyle() {
     ".ss-notice-card::before{content:\"\";position:absolute;left:16px;top:22px;width:5px;height:5px;" +
     "transform:rotate(45deg);background:var(--accent)}" +
     ".ss-notice-card-main{display:flex;flex-direction:column;gap:4px;min-width:0}" +
-    ".ss-notice-card-title{color:var(--bone-hi);font-family:var(--font-cn);font-size:15px;font-weight:600;" +
+    ".ss-notice-card-title{color:var(--bone-hi);font-family:var(--font-cn);font-size:var(--fs-md);font-weight:600;" +
     "line-height:1.4;transition:color .15s ease}" +
     ".ss-notice-card:hover .ss-notice-card-title{color:var(--accent)}" +
     ".ss-notice-card-desc{color:var(--bone-dim);font-size:var(--fs-md);line-height:1.65}" +
@@ -234,7 +234,7 @@ function show() {
 
   document.body.appendChild(dlg);
   dlg.showModal();
-  dlg.focus({ preventScroll: true });
+  btnOk.focus({ preventScroll: true });
 }
 
 if (/(?:^|\/)notices\/(?:index\.html)?$/.test(location.pathname)) {

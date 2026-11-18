@@ -164,7 +164,7 @@
           cycleRuleEl.textContent = '更新失败 · ' + xurLoadErr;
           cycleRuleEl.title = xurLoadErr;
         }
-        setProgress(null, null, '老九周货更新失败');
+        setProgress(null, null, '仄周货更新失败');
         return;
       }
       var xWin = currentXurWindowMs(nowMs);
@@ -259,6 +259,7 @@
     if (paneEv) paneEv.hidden = activeTab !== 'eververse';
     if (paneXur) paneXur.hidden = activeTab !== 'xur';
     if (paneAda) paneAda.hidden = activeTab !== 'ada';
+    if (activeTab === 'xur') ensureXur();
     updateStatusBar();
     if (pushHash) {
       try {
@@ -305,6 +306,9 @@
     );
 
     var armAttr = item.xurArmorLabel ? ' data-xur-armor="' + esc(item.xurArmorLabel) + '"' : '';
+    var titleHtml = item.armoryHref
+      ? '<a class="' + nameCls + ' ev-wpn-link" href="' + esc(item.armoryHref) + '" title="' + dispName + '">' + dispName + '</a>'
+      : '<span class="' + nameCls + '" title="' + dispName + '">' + dispName + '</span>';
 
     if (isWide) {
       return (
@@ -318,7 +322,7 @@
                 '<img src="' + iconUrl + '" alt="' + dispName + '" width="48" height="48"' + (imgLoad ? ' ' + imgLoad : '') + ' decoding="async">' +
               '</div>' +
               '<div class="ev-body">' +
-                '<span class="' + nameCls + '" title="' + dispName + '">' + dispName + '</span>' +
+                titleHtml +
                 '<span class="ev-meta">' +
                   '<span class="ev-tag ' + tier + '">' + tierText + '</span>' +
                   '<i class="ev-sep" aria-hidden="true"></i>' +
@@ -339,7 +343,7 @@
             '<img src="' + iconUrl + '" alt="' + dispName + '" width="46" height="46"' + (imgLoad ? ' ' + imgLoad : '') + ' decoding="async">' +
           '</div>' +
           '<div class="ev-body">' +
-            '<span class="' + nameCls + '" title="' + dispName + '">' + dispName + '</span>' +
+            titleHtml +
             '<span class="ev-meta">' +
               '<span class="ev-tag ' + tier + '">' + tierText + '</span>' +
               '<i class="ev-sep" aria-hidden="true"></i>' +
@@ -421,7 +425,7 @@
     hasRenderedEv = true;
   }
 
-  /* ── 老九 · 仄 (Xûr) 渲染逻辑（对齐装备库 .plug 光圈与 .wpn-grades 评级语言） ── */
+  /* ── 仄 (Xûr) 渲染逻辑（对齐装备库 .plug 光圈与 .wpn-grades 评级语言） ── */
 
   var xurCalcApi = null;
 
@@ -456,6 +460,7 @@
     else if (rec === 1) tip += ' · Aegis 推荐';
     else if (rec === 2) tip += ' · 小棒猪推荐';
     else if (isIntr) tip += ' · 固有特性';
+    if (p.desc) tip += '\n' + p.desc;
     return tip;
   }
 
@@ -469,7 +474,7 @@
     var byCls = plugHaloCls(p.rec);
     var intrCls = isIntr ? ' is-intr' : '';
     var icoHtml = p.icon
-      ? '<span class="ico"><img src="' + esc(p.icon) + '" alt="" decoding="async"></span>'
+      ? '<span class="ico"><img src="' + esc(p.icon) + '" alt="" width="22" height="22" loading="lazy" decoding="async"></span>'
       : '';
     return (
       '<span class="r-plug xur-exo-plug' + intrCls + byCls + '" title="' + esc(plugTitleTip(p, isIntr)) + '">' +
@@ -483,7 +488,7 @@
     if (!p) return '';
     var byCls = plugHaloCls(p.rec);
     var icoHtml = p.icon
-      ? '<span class="ico"><img src="' + esc(p.icon) + '" alt="" decoding="async"></span>'
+      ? '<span class="ico"><img src="' + esc(p.icon) + '" alt="" width="22" height="22" loading="lazy" decoding="async"></span>'
       : '';
     return (
       '<div class="r-plug' + byCls + '" title="' + esc(plugTitleTip(p, false)) + '">' +
@@ -504,7 +509,7 @@
       chips.push(renderPlugNode(p, false));
     });
     var shotHtml = it.shot
-      ? '<div class="ev-wide-bg"><img class="ev-wide-img" src="' + esc(it.shot) + '" alt="" decoding="async"></div>'
+      ? '<div class="ev-wide-bg"><img class="ev-wide-img" src="' + esc(it.shot) + '" alt="" loading="lazy" decoding="async"></div>'
       : '';
     var gradesHtml = renderGradesHtml(it.grades);
 
@@ -514,10 +519,12 @@
         '<div class="ev-wide-info">' +
           '<div class="ev-card-content">' +
             '<div class="ev-thumb exotic">' +
-              '<img src="' + esc(it.icon) + '" alt="' + dispName + '" width="48" height="48" decoding="async">' +
+              '<img src="' + esc(it.icon) + '" alt="' + dispName + '" width="48" height="48" loading="lazy" decoding="async">' +
             '</div>' +
             '<div class="ev-body">' +
-              '<span class="ev-name exo" title="' + dispName + '">' + dispName + '</span>' +
+              (it.hash
+                ? '<a class="ev-name exo ev-wpn-link" href="../weapons/index.html?w=' + encodeURIComponent(it.hash) + '" title="' + dispName + '">' + dispName + '</a>'
+                : '<span class="ev-name exo" title="' + dispName + '">' + dispName + '</span>') +
               '<span class="ev-meta">' +
                 '<span class="ev-tag exotic">' + rollTag + '</span>' +
                 '<i class="ev-sep" aria-hidden="true"></i>' +
@@ -574,7 +581,7 @@
         var mwRec = w.mw.rec ? ' by-a' : '';
         var mwTip = w.mw.stat + (w.mw.rec ? ' · Aegis 推荐大师杰作' : '');
         var mwIco = w.mw.icon
-          ? '<span class="ico"><img src="' + esc(w.mw.icon) + '" alt="" decoding="async"></span>'
+          ? '<span class="ico"><img src="' + esc(w.mw.icon) + '" alt="" width="22" height="22" loading="lazy" decoding="async"></span>'
           : '';
         mwInner = '<div class="r-plug r-mwp' + mwRec + '" title="' + esc(mwTip) + '">' + mwIco + esc(w.mw.stat) + '</div>';
       }
@@ -582,8 +589,12 @@
       return (
         '<article class="rec xur-r-weapon">' +
           '<div class="r-cell r-id xur-r-id">' +
-            '<img src="' + esc(w.icon) + '" alt="' + dispName + '" decoding="async">' +
-            '<div class="r-nm">' + dispName + '</div>' +
+            '<img src="' + esc(w.icon) + '" alt="' + dispName + '" width="48" height="48" loading="lazy" decoding="async">' +
+            '<div class="r-nm">' +
+              (w.hash
+                ? '<a class="ev-wpn-link" href="../weapons/index.html?w=' + encodeURIComponent(w.hash) + '">' + dispName + '</a>'
+                : dispName) +
+            '</div>' +
             '<div class="x-mini">' +
               '<div>' + subLabel + '</div>' +
             '</div>' +
@@ -680,7 +691,8 @@
       cost: it.cost ? it.cost.n : null,
       currency: 'coin',
       icon: it.icon,
-      screenshot: useWide ? it.shot : null
+      screenshot: useWide ? it.shot : null,
+      armoryHref: (it.hash && it.sec === '异域护甲') ? ('../weapons/index.html?s=armor&w=' + encodeURIComponent(it.hash)) : ''
     };
   }
 
@@ -726,10 +738,10 @@
         '<section class="block" id="' + id + '">' +
           '<h2 class="sect-label"><span>' + title + '</span><span class="ev-section-count"><img class="ev-sect-ico" src="../assets/icons/coin.webp" alt="" width="14" height="14"><b>' + list.length + '</b> 件 · 奇异硬币 · 点击卡片可推算属性</span></h2>' +
           '<div class="ev-grid">' +
-            list.map(function (it) {
+            list.map(function (it, i) {
               var mapped = toEvItem(it, Boolean(it.shot));
               mapped.xurArmorLabel = (it.cls ? it.cls + ' · ' : '') + formatName(it.n);
-              return renderCard(mapped, Boolean(mapped.screenshot), 10);
+              return renderCard(mapped, Boolean(mapped.screenshot), i);
             }).join('') +
           '</div>' +
         '</section>'
@@ -753,7 +765,7 @@
       }).join('');
       blocks.push(
         '<section class="block" id="xur-sec-rng">' +
-          '<h2 class="sect-label"><span>老九护甲属性推算器（机灵模组聚焦预测）</span><span class="ev-section-count"><a class="xur-rng-doc-link" href="../armor-rng/index.html">查看 23 列权重矩阵与完整原理 →</a></span></h2>' +
+          '<h2 class="sect-label"><span>仄护甲属性推算器（机灵模组聚焦预测）</span><span class="ev-section-count"><a class="xur-rng-doc-link" href="../armor-rng/index.html">查看 23 列权重矩阵与完整原理 →</a></span></h2>' +
           (pickChips ? '<div class="xur-rng-picks"><span class="xur-rng-picks-lbl">本周在售异域护甲：</span>' + pickChips + '</div>' : '') +
           '<div class="armor-calc" id="xur-armor-calc"></div>' +
         '</section>'
@@ -765,8 +777,8 @@
         '<section class="block" id="xur-sec-class-exo">' +
           '<h2 class="sect-label"><span>异域职业物品</span><span class="ev-section-count"><img class="ev-sect-ico" src="../assets/icons/coin.webp" alt="" width="14" height="14"><b>' + classExotics.length + '</b> 件 · 奇异硬币</span></h2>' +
           '<div class="ev-grid-3">' +
-            classExotics.map(function (it) {
-              return renderCard(toEvItem(it, false), false, 10);
+            classExotics.map(function (it, i) {
+              return renderCard(toEvItem(it, false), false, i);
             }).join('') +
           '</div>' +
         '</section>'
@@ -787,10 +799,10 @@
         '<section class="block" id="xur-sec-cat">' +
           '<h2 class="sect-label"><span>异域武器催化</span><span class="ev-section-count"><img class="ev-sect-ico" src="../assets/icons/coin.webp" alt="" width="14" height="14"><b>' + catalysts.length + '</b> 件 · 奇异硬币</span></h2>' +
           '<div class="ev-grid">' +
-            catalysts.map(function (it) {
+            catalysts.map(function (it, i) {
               var mapped = toEvItem(it, false);
               mapped.type = '异域催化';
-              return renderCard(mapped, false, 10);
+              return renderCard(mapped, false, i);
             }).join('') +
           '</div>' +
         '</section>'
@@ -810,8 +822,8 @@
         '<section class="block" id="xur-sec-mat">' +
           '<h2 class="sect-label"><span>奇异材料与记忆水晶</span><span class="ev-section-count"><img class="ev-sect-ico" src="../assets/icons/coin.webp" alt="" width="14" height="14"><b>' + materials.length + '</b> 项 · 奇异硬币</span></h2>' +
           '<div class="ev-grid">' +
-            materials.map(function (it) {
-              return renderCard(toEvItem(it, false), false, 0);
+            materials.map(function (it, i) {
+              return renderCard(toEvItem(it, false), false, i);
             }).join('') +
           '</div>' +
         '</section>'
@@ -819,35 +831,42 @@
     }
 
     xurContentEl.innerHTML = blocks.join('');
-    var xurCalcHost = document.getElementById('xur-armor-calc');
-    if (xurCalcHost && window.ArmorRng) {
-      var firstArmor = allExoArmors[0];
-      var initLabel = firstArmor ? ((firstArmor.cls ? firstArmor.cls + ' · ' : '') + formatName(firstArmor.n)) : '';
-      xurCalcApi = window.ArmorRng.mount(xurCalcHost, { itemName: initLabel });
-      if (!xurContentEl.dataset.rngBound) {
-        xurContentEl.dataset.rngBound = '1';
-        xurContentEl.addEventListener('click', function (ev) {
-          var target = ev.target.closest && ev.target.closest('[data-xur-armor]');
-          if (!target) return;
-          var label = target.getAttribute('data-xur-armor') || '';
-          var picks = xurContentEl.querySelectorAll('[data-xur-armor]');
-          for (var i = 0; i < picks.length; i++) {
-            picks[i].classList.toggle('is-on', picks[i].getAttribute('data-xur-armor') === label);
-          }
-          if (xurCalcApi && xurCalcApi.setItemName) xurCalcApi.setItemName(label);
-          if (!target.classList.contains('xur-rng-pick')) {
-            var sec = document.getElementById('xur-sec-rng');
-            if (sec && sec.scrollIntoView) sec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          }
-        });
-      }
-    }
+    mountXurCalc(data);
     if (xurCntTotalEl) xurCntTotalEl.textContent = String(data.items.length);
     if (xurVendorEl && data.location) {
       xurVendorEl.textContent = '九之使者 · 仄 (Xûr) · ' + data.location;
     }
     updateStatusBar();
     hasRenderedXur = true;
+  }
+
+  function mountXurCalc(data) {
+    var xurCalcHost = document.getElementById('xur-armor-calc');
+    if (!xurCalcHost || !window.ArmorRng || !data || !Array.isArray(data.items)) return;
+    var allExoArmors = data.items.filter(function (it) { return it.sec === '异域护甲'; });
+    var hasLegArmor = data.items.some(function (it) { return it.sec === '传说护甲'; });
+    if (!allExoArmors.length && !hasLegArmor) return;
+    var firstArmor = allExoArmors[0];
+    var initLabel = firstArmor ? ((firstArmor.cls ? firstArmor.cls + ' · ' : '') + formatName(firstArmor.n)) : '';
+    xurCalcApi = window.ArmorRng.mount(xurCalcHost, { itemName: initLabel });
+    if (!xurContentEl.dataset.rngBound) {
+      xurContentEl.dataset.rngBound = '1';
+      xurContentEl.addEventListener('click', function (ev) {
+        if (ev.target.closest && ev.target.closest('a')) return;
+        var target = ev.target.closest && ev.target.closest('[data-xur-armor]');
+        if (!target) return;
+        var label = target.getAttribute('data-xur-armor') || '';
+        var picks = xurContentEl.querySelectorAll('[data-xur-armor]');
+        for (var i = 0; i < picks.length; i++) {
+          picks[i].classList.toggle('is-on', picks[i].getAttribute('data-xur-armor') === label);
+        }
+        if (xurCalcApi && xurCalcApi.setItemName) xurCalcApi.setItemName(label);
+        if (!target.classList.contains('xur-rng-pick')) {
+          var sec = document.getElementById('xur-sec-rng');
+          if (sec && sec.scrollIntoView) sec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      });
+    }
   }
 
   function renderError(msg) {
@@ -864,7 +883,7 @@
     xurLoadErr = msg || '加载失败';
     updateStatusBar();
     if (xurContentEl) {
-      xurContentEl.innerHTML = '<p class="ev-error">老九（Xûr）周货数据加载失败：' + esc(msg) + '</p>';
+      xurContentEl.innerHTML = '<p class="ev-error">仄（Xûr）周货数据加载失败：' + esc(msg) + '</p>';
     }
   }
 
@@ -873,8 +892,8 @@
   }
 
   // 命运 2 每日重置为北京时间（UTC+8）凌晨 01:00（17:00 UTC）。
-  // 云函数定时器按 UTC+8 在每天 01:03 / 01:10 / 02:03、老九周六 01:03 / 02:03 / 03:03 启动，
-  // 抓取并上传静态托管耗时约 15～30 秒，因此前端在 01:04 / 01:11 / 02:04（老九 02:04 / 03:04）切换期望版本，
+  // 云函数定时器按 UTC+8 在每天 01:03 / 01:10 / 02:03、仄周六 01:03 / 02:03 / 03:03 启动，
+  // 抓取并上传静态托管耗时约 15～30 秒，因此前端在 01:04 / 01:11 / 02:04（仄 02:04 / 03:04）切换期望版本，
   // 避免同步尚未完成时提前用新 ?v= 请求把旧文件缓进浏览器或 CDN。
   function latestExpectedSyncMs(kind) {
     var now = Date.now();
@@ -924,6 +943,54 @@
     });
   }
 
+  var xurRequested = false;
+  var xurAssetsPromise = null;
+
+  function ensureStyle(href) {
+    if (document.querySelector('link[href="' + href + '"]')) return Promise.resolve();
+    return new Promise(function (resolve, reject) {
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = href;
+      link.onload = function () { resolve(); };
+      link.onerror = function () { reject(new Error('样式载入失败：' + href)); };
+      document.head.appendChild(link);
+    });
+  }
+
+  function ensureScript(src) {
+    if (window.ArmorRng) return Promise.resolve();
+    return new Promise(function (resolve, reject) {
+      var script = document.createElement('script');
+      script.src = src;
+      script.onload = function () { resolve(); };
+      script.onerror = function () { reject(new Error('脚本载入失败：' + src)); };
+      document.head.appendChild(script);
+    });
+  }
+
+  function ensureXur() {
+    if (xurRequested) return;
+    xurRequested = true;
+    var cachedXur = null;
+    try { cachedXur = JSON.parse(localStorage.getItem(XUR_CACHE_KEY)); } catch (_) {}
+    if (isValidPayload(cachedXur)) renderXurData(cachedXur);
+    if (!xurAssetsPromise) {
+      xurAssetsPromise = Promise.all([
+        ensureStyle('../armor-rng/style.css'),
+        ensureScript('../assets/armor-rng.js')
+      ]);
+    }
+    xurAssetsPromise.then(function () {
+      if (xurData && !xurCalcApi) mountXurCalc(xurData);
+    }).catch(function (err) {
+      console.error(err);
+    });
+    fetchCloudJson(XUR_API_URL, 'xur', XUR_CACHE_KEY, renderXurData, cachedXur, function (err) {
+      if (!hasRenderedXur) renderXurError(err && err.message ? err.message : String(err));
+    });
+  }
+
   function init() {
     for (var i = 0; i < tabBtns.length; i++) {
       tabBtns[i].addEventListener('click', function () {
@@ -946,18 +1013,12 @@
     });
 
     var cachedEv = null;
-    var cachedXur = null;
     try { cachedEv = JSON.parse(localStorage.getItem(CACHE_KEY)); } catch (_) {}
-    try { cachedXur = JSON.parse(localStorage.getItem(XUR_CACHE_KEY)); } catch (_) {}
 
     if (isValidPayload(cachedEv)) renderData(cachedEv);
-    if (isValidPayload(cachedXur)) renderXurData(cachedXur);
 
     fetchCloudJson(API_URL, 'eververse', CACHE_KEY, renderData, cachedEv, function (err) {
       if (!hasRenderedEv) renderError(err && err.message ? err.message : String(err));
-    });
-    fetchCloudJson(XUR_API_URL, 'xur', XUR_CACHE_KEY, renderXurData, cachedXur, function (err) {
-      if (!hasRenderedXur) renderXurError(err && err.message ? err.message : String(err));
     });
     setInterval(updateStatusBar, 30000);
   }

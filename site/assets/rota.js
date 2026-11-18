@@ -27,6 +27,7 @@ export default function init(table, deps) {
   /* 一次转动的时长：起步 300ms，每多跨一周加 90ms，最长 520ms。指数逼近那种写法
      （每帧往目标收 16%）尾巴上会拖出一秒多的亚像素爬行，读起来像没停稳。 */
   var SPIN = { base: 300, per: 90, max: 520 };
+  var ROTA_GUIDES = {"众神殿":"raid-guides/pantheon/index.html","永恒沙漠（史诗）":"raid-guides/desert-perpetual-epic/index.html","永恒沙漠":"raid-guides/desert-perpetual/index.html","救赎的边缘":"raid-guides/salvations-edge/index.html","克洛塔的末日":"raid-guides/crotas-end/index.html","梦魇根源":"raid-guides/root-of-nightmares/index.html","国王的陨落":"raid-guides/kings-fall/index.html","门徒誓约":"raid-guides/vow-of-the-disciple/index.html","玻璃拱顶":"raid-guides/vault-of-glass/index.html","深岩墓室":"raid-guides/deep-stone-crypt/index.html","救赎花园":"raid-guides/garden-of-salvation/index.html","最后一愿":"raid-guides/last-wish/index.html","平衡":"raid-guides/equilibrium/index.html","分离教义":"raid-guides/sundered-doctrine/index.html","晚星之主":"raid-guides/vespers-host/index.html","战争领主的废墟":"raid-guides/warlords-ruin/index.html","深渊机灵":"raid-guides/ghosts-of-the-deep/index.html","守望者尖塔":"raid-guides/spire-of-the-watcher/index.html","二象性":"raid-guides/duality/index.html","贪婪之握":"raid-guides/grasp-of-avarice/index.html","预言":"raid-guides/prophecy/index.html","异端深渊":"raid-guides/pit-of-heresy/index.html","破碎王座":"raid-guides/shattered-throne/index.html"};
   /* 9 突袭 + 10 地牢的徽章小图标（icons/<md5>.webp）与场景底图 */
   var ROTA_ART = {
     '最后一愿': ['98c8ef41c9', '../raid-guides/icons/bd21cb7bf4.webp'],
@@ -67,7 +68,7 @@ export default function init(table, deps) {
     var spec = table.dataset.rota.split(' ');
     var d0 = spec[0].split('.').map(Number);
     var hm = (spec[1] || '0:00').split(':').map(Number);
-    var t0 = new Date(d0[0], d0[1] - 1, d0[2], hm[0], hm[1]).getTime();
+    var t0 = Date.UTC(d0[0], d0[1] - 1, d0[2], hm[0] - 8, hm[1]);
     var here = Math.floor((Date.now() - t0) / MS_WEEK);
     var cur = here, from = here, aim = here, t1 = 0, span = 0, running = false;
 
@@ -88,11 +89,15 @@ export default function init(table, deps) {
 
     function pill(n) {
       var art = ROTA_ART[n];
-      if (!art) return '<span class="rota-pill"><span class="rota-cap"><span class="rota-name">' + n + '</span></span></span>';
+      var guide = ROTA_GUIDES[n];
+      var label = guide
+        ? '<a class="rota-guide" href="../' + guide + '">' + n + '</a>'
+        : n;
+      if (!art) return '<span class="rota-pill"><span class="rota-cap"><span class="rota-name">' + label + '</span></span></span>';
       return '<span class="rota-pill" style="--bg:url(\'' + art[1] + '\')">'
         + '<span class="rota-cap">'
         + '<img class="rota-ico" src="icons/' + art[0] + '.webp" alt="" width="20" height="20">'
-        + '<span class="rota-name">' + n + '</span></span></span>';
+        + '<span class="rota-name">' + label + '</span></span></span>';
     }
 
     function group(kind, names) {
@@ -103,7 +108,7 @@ export default function init(table, deps) {
 
     function card(i) {
       if (pool[i]) return pool[i];
-      var s = new Date(t0 + i * MS_WEEK), e = new Date(t0 + i * MS_WEEK + 6 * 86400000);
+      var s = new Date(t0 + i * MS_WEEK + 288e5), e = new Date(t0 + i * MS_WEEK + 6 * 86400000 + 288e5);
       var r = ((i % raids.length) + raids.length) % raids.length;
       var g = ((i % dungeons.length) + dungeons.length) % dungeons.length;
       /* 左侧日期滚轮刻度：本周那张写「本周」，其余写距今几周。 */
@@ -114,8 +119,8 @@ export default function init(table, deps) {
       el.innerHTML = '<div class="rota-dial">'
         + '<span class="rota-badge">' + mark + '</span>'
         + '<span class="rota-date">'
-        + (s.getMonth() + 1) + ' 月 ' + s.getDate() + ' 日 — '
-        + (e.getMonth() + 1) + ' 月 ' + e.getDate() + ' 日</span></div>'
+        + (s.getUTCMonth() + 1) + ' 月 ' + s.getUTCDate() + ' 日 — '
+        + (e.getUTCMonth() + 1) + ' 月 ' + e.getUTCDate() + ' 日</span></div>'
         + '<div class="rota-body">'
         + group('raid', [raids[r], raids[(r + 4) % raids.length]])
         + group('dungeon', [dungeons[g], dungeons[(g + 4) % dungeons.length]])
@@ -205,9 +210,9 @@ export default function init(table, deps) {
         y0: e.clientY,
         cur0: cur,
         moved: false,
+        onGuide: !!(e.target && e.target.closest && e.target.closest('a.rota-guide')),
         pts: [{ y: e.clientY, t: performance.now() }]
       };
-      if (stage.setPointerCapture) stage.setPointerCapture(e.pointerId);
     });
 
     stage.addEventListener('pointermove', function (e) {
@@ -217,6 +222,7 @@ export default function init(table, deps) {
         drag.moved = true;
         running = false;
         stage.classList.add('is-dragging');
+        if (stage.setPointerCapture) stage.setPointerCapture(drag.id);
       }
       if (!drag.moved) return;
       var now = performance.now();
@@ -232,7 +238,7 @@ export default function init(table, deps) {
       drag = null;
       stage.classList.remove('is-dragging');
       if (!d.moved) {
-        if (!cancel) {
+        if (!cancel && !d.onGuide) {
           var hit = hitCard(e.clientX, e.clientY);
           if (hit !== null) {
             suppressClick = true;
@@ -256,7 +262,8 @@ export default function init(table, deps) {
     stage.addEventListener('lostpointercapture', function (e) { endDrag(e, false); });
 
     box.addEventListener('click', function (e) {
-      if (suppressClick) { suppressClick = false; return; }
+      if (suppressClick) { e.preventDefault(); suppressClick = false; return; }
+      if (e.target && e.target.closest && e.target.closest('a.rota-guide')) return;
       var best = hitCard(e.clientX, e.clientY);
       if (best !== null) go(best);
     });

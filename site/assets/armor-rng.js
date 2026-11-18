@@ -1,4 +1,4 @@
-/* 护甲 3.0 商人属性机制与机灵聚焦推算器（老九页精简版）
+/* 护甲 3.0 商人属性机制与机灵聚焦推算器（仄页精简版）
    数据依据：odo《Reverse Engineering Armor3 Rolls》与 Bungie DestinyPlugSetDefinition
    - 原型插槽池（1315181101）：12 种护甲原型，决定 +30 与 +25 属性
    - 第三属性插槽池（445741600）：6 项属性固定顺序，剔除前两项后余下 4 项对应 t.map = 1..4（+20）
@@ -453,9 +453,9 @@
     var options = opts || {};
     var state = {
       itemName: options.itemName || '',
-      // ① 看老九时我机灵插着的模组（0 = 未装护甲模组）
+      // ① 看仄时我机灵插着的模组（0 = 未装护甲模组）
       mod1: 0,
-      // ② 老九当前护甲的三档属性（默认：+30 生命 / +25 手雷 / +20 超能）
+      // ② 仄当前护甲的三档属性（默认：+30 生命 / +25 手雷 / +20 超能）
       pri1: 2,
       sec1: 3,
       tert1: 4,
@@ -476,7 +476,28 @@
       return a;
     }
 
+    var FOCUS_ATTRS = [
+      'data-pick-mod',
+      'data-pick-pri',
+      'data-pick-sec',
+      'data-pick-tert',
+      'data-prio-stat',
+      'data-prio-clear'
+    ];
+
     function render() {
+      var focusSel = '';
+      var ae = typeof document !== 'undefined' ? document.activeElement : null;
+      if (ae && host.contains(ae)) {
+        for (var fi = 0; fi < FOCUS_ATTRS.length; fi++) {
+          var attr = FOCUS_ATTRS[fi];
+          var val = ae.getAttribute(attr);
+          if (val !== null) {
+            focusSel = '[' + attr + '="' + val + '"]';
+            break;
+          }
+        }
+      }
       var arch1 = currentArch();
       var tMap1 = tMapOf(arch1.id, state.tert1);
       var baseRoll = rollOf(arch1.id, tMap1);
@@ -484,7 +505,7 @@
       var groups = groupOutcomes(res.candidates);
       var isSameModHit = state.mod1 > 0 && state.mod1 === arch1.id;
 
-      // ① 看老九时我机灵插着什么模组？（左脊：未装护甲模组；右六列 × 二行：按六项主属性对齐的 12 种 主XX·副YY）
+      // ① 看仄时我机灵插着什么模组？（左脊：未装护甲模组；右六列 × 二行：按六项主属性对齐的 12 种 主XX·副YY）
       var modPairCells = '';
       for (var rIdx = 0; rIdx < 2; rIdx++) {
         for (var cIdx = 0; cIdx < UI_STATS.length; cIdx++) {
@@ -502,12 +523,12 @@
       var mod1MatrixHtml = (
         '<button type="button" class="ar-mod-btn ar-mod-unmod' + (state.mod1 === 0 ? ' is-on' : '') + '" data-pick-mod="0">' +
           '<span class="ar-unmod-main">未装护甲模组</span>' +
-          '<span class="ar-unmod-sub">裸看老九 · 推荐</span>' +
+          '<span class="ar-unmod-sub">裸看仄 · 推荐</span>' +
         '</button>' +
         modPairCells
       );
 
-      // ② 老九这件护甲当前的 +30 / +25 / +20 三行点选（6 × 6 × 6 固定六列对齐）
+      // ② 仄这件护甲当前的 +30 / +25 / +20 三行点选（6 × 6 × 6 固定六列对齐）
       var priBtns = UI_STATS.map(function (st) {
         var isOn = st.id === state.pri1;
         return (
@@ -548,7 +569,7 @@
       if (isSameModHit) {
         sameModHtml = (
           '<div class="ar-same-mod-banner">' +
-            '<span><b>当前机灵模组已命中这件护甲的主副属性</b>——直接购买即为 <b>+30 ' + esc(baseRoll.primary.name) + ' · +25 ' + esc(baseRoll.secondary.name) + ' · +20 ' + esc(baseRoll.tert.name) + '</b>。若需推算其余可洗组合，请先摘下机灵护甲模组再查看老九。</span>' +
+            '<span><b>当前机灵模组已命中这件护甲的主副属性</b>——直接购买即为 <b>+30 ' + esc(baseRoll.primary.name) + ' · +25 ' + esc(baseRoll.secondary.name) + ' · +20 ' + esc(baseRoll.tert.name) + '</b>。若需推算其余可洗组合，请先摘下机灵护甲模组再查看仄。</span>' +
           '</div>'
         );
       }
@@ -645,15 +666,15 @@
         '<div class="ar-panel">' +
           '<div class="ar-step-block">' +
             '<div class="ar-head">' +
-              '<div class="ar-title"><span class="ar-step-num">01</span><span>看老九时我机灵插着什么模组？</span></div>' +
-              '<span class="ar-head-note">未装模组裸看老九可一次锁定 8～9 种必出组合</span>' +
+              '<div class="ar-title"><span class="ar-step-num">01</span><span>看仄时我机灵插着什么模组？</span></div>' +
+              '<span class="ar-head-note">未装模组裸看仄可一次锁定 8～9 种必出组合</span>' +
             '</div>' +
             '<div class="ar-mod-matrix">' + mod1MatrixHtml + '</div>' +
           '</div>' +
 
           '<div class="ar-step-block">' +
             '<div class="ar-head">' +
-              '<div class="ar-title"><span class="ar-step-num">02</span><span>老九这件护甲当前的属性</span>' + (state.itemName ? '<span class="ar-item-tag">' + esc(state.itemName) + '</span>' : '') + '</div>' +
+              '<div class="ar-title"><span class="ar-step-num">02</span><span>仄这件护甲当前的属性</span>' + (state.itemName ? '<span class="ar-item-tag">' + esc(state.itemName) + '</span>' : '') + '</div>' +
               '<span class="ar-head-note">三档固定 +30 / +25 / +20 · 其余三项固定 +5</span>' +
             '</div>' +
             '<div class="ar-pick-rows">' +
@@ -689,12 +710,21 @@
           '<div class="ar-out-sec">' +
             '<div class="ar-sub-head">' +
               '<span>可洗出的 <b>' + sortedGroups.length + '</b> 种属性组合（必出 <b>' + certCount + '</b> 种' + (ambCount ? ' · 边界可出 ' + ambCount + ' 种' : '') + '）</span>' +
-              '<span class="ar-sub-note">按卡片底部提示切换机灵模组后再向老九购买</span>' +
+              '<span class="ar-sub-note">按卡片底部提示切换机灵模组后再向仄购买</span>' +
             '</div>' +
             '<div class="ar-out-grid">' + cardsHtml + '</div>' +
           '</div>' +
         '</div>'
       );
+      if (focusSel) {
+        var nextBtn = host.querySelector(focusSel);
+        if (!nextBtn && focusSel.indexOf('[data-prio-clear=') === 0) {
+          nextBtn = host.querySelector('[data-prio-stat]');
+        }
+        if (nextBtn && typeof nextBtn.focus === 'function') {
+          nextBtn.focus({ preventScroll: true });
+        }
+      }
     }
 
     host.addEventListener('click', function (ev) {
@@ -784,6 +814,14 @@
         nodes[i].dataset.mounted = '1';
         mount(nodes[i]);
       }
+    }
+  }
+
+  if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', mountAll);
+    } else {
+      mountAll();
     }
   }
 

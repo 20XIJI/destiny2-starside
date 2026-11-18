@@ -96,7 +96,7 @@ Bungie 的 hash 是 uint32，永不相撞。`模组族` 与 `组合` 用 `member
 
 资料页与记录的对应：`references/keys/` 下那 23 页只写主键，行的内容在记录上，
 改这些页的文案改记录，不改源稿；表区格式见 `.claude/rules/pages.md`。
-`references/docs/` 下那 19 页是散文与表，内容就在源稿里，改文案改 markdown。
+`references/docs/` 下那 45 页是散文与表，内容就在源稿里，改文案改 markdown。
 
 `data/index/` 是页面索引：三个资料生成器渲染时由 `pagedex.py` 写出，`vocab.py` 从这里
 查「名字 → 图标、页面、锚点」，每次构建重写，不入库。
@@ -109,7 +109,7 @@ Bungie 的 hash 是 uint32，永不相撞。`模组族` 与 `组合` 用 `member
 | 目录 | 篇数 | 装什么 | 改文案改哪 |
 |---|---|---|---|
 | `references/keys/` | 23 | 主键骨架：分节、表头与一行一枚主键（`artifact-mods.md`、`armor-sets.md` 也在这里） | 改 `data/` 的记录 |
-| `references/docs/` | 19 | 散文与表：正文与每一格都写在源稿里 | 改这一篇 markdown |
+| `references/docs/` | 45 | 散文与表：正文与每一格都写在源稿里 | 改这一篇 markdown |
 
 两处同构：一篇 `.md` 一个页面，`_id` 就是它在 `references/` 下的相对路径去掉 `.md`
 （`keys/arc`、`docs/boss-hp`），落在哪一边由 `shell.source_path()` 现找，别处不拼路径。
@@ -130,7 +130,7 @@ Bungie 的 hash 是 uint32，永不相撞。`模组族` 与 `组合` 用 `member
 
 ```
 build.py           增量构建入口（npm run build）：按输入文件与工具的 sha256 决定每一步跑或跳过，
-                   记录在 .git/starside-build.json；--all 强制全跑
+                   记录在 .git/starside-build.json；--force / --all 强制全跑
 mods.py            官方物品表 → tools/mod-variants.json（护甲模组变体）
                    与 tools/moves.json（位移技能）、tools/artifacts.json（七件神器），
                    图标一并取回
@@ -166,7 +166,9 @@ build-weapons.py   实体层 → 装备库（武器与异域护甲，目录 weap
 dim.py             配装 → DIM 导入链接：子职业与神器按插槽池落 hash，武器与护甲只给
                    hash。由 convert-build.py 调用，写法与 DIM 的约束见 builds.md
 build-home.py      各页产出 → 首页每张卡的内容预览。挑哪几项写在 PICK_*，名字、数值、
-                   图标从那一页现取；轮换卡的「本周／此刻」由首页一段内联脚本按本机时钟填
+                   图标从那一页现取；轮换卡的「本周／此刻」由首页一段内联脚本按本机时钟填，
+                   raid-guides 攻略路径同步至 assets/rota.js
+build-notices.py   notices.md 最新一则公告 → assets/notice-data.js，并同步手写页的公告内联检查脚本
 migrate.py         配装源稿 markdown ⇄ 结构化记录，来回逐字节比对；资料页该结构化
                    还是留 markdown 由 --classify 按行标题能否落到主键上机械判定
 icons.py           按主键把官方图拉回来转 WebP，落 assets/icons/。一件东西一张图
@@ -186,7 +188,7 @@ deploy.py          增量部署：与 refs/deploy 一 diff 即得清单，只发
 check_shell.py     外壳闸门，从 shell.py 现取参照，不另存副本
 check_type.py      排版、CSS 有效性与产出结构：中文不吃拉丁字距、background
                    简写非末层不许写颜色、产出的开闭标签配得上
-check_terms.py     术语与着色闸门，全部以 TERMS 那一张表为准
+check_terms.py     术语与着色闸门：源稿七道（G1–G7）、data/*.json 站内文本四道（G1/G2/G3/G6 反查）及手写页/脚本 G1
 check_quality.py   Python 离线回归测试（npm test 前半）
 check_quality.cjs  Node 离线回归测试入口（npm test 后半，装配 tools/quality/{harness,api,admin,frontend,weapons,rotation}.cjs）
 items.py           官方物品表 → tools/items.json，Perk 名 → tools/perks.json：
@@ -332,13 +334,13 @@ diff 里，临时图片 URL 也不存；完整带图导出仍用 `tools/sheet-gr
 
 七条闸门，编号即 `check_terms.py` 报错行的前缀（G6 排在末位，与脚本一致）：
 
-1. G1 中文正名：源稿不许出现禁用写法。「装填」曾被统一成「填装」，六天后新增的页面又带回 17 处；这一条就是为此存在的。
-2. G2 token 唯一：同一个术语只能落到同一个着色 token 上。只查「整个标记就是这个词」的那种（`{enemy|护甲充能}`）；词嵌在更长的短语里时着色属于短语（`{el-arc|电弧元素能量球}`），按词强判会把整句的颜色拆碎。这一条眼睛查不出来：`--el-solar` 与 `--deb-solar` 渲染色相同，灼烧着成哪个都看不出。
-3. G3 token 有定义：源稿里每个 `{token|文字}` 都要在 `site.css` 或该页样式表里有对应类；反过来，`site.css` 的着色类一次都没被用到即死配置，当场报出。
+1. G1 中文正名：源稿、`data/*.json` 的 `facts.site_text` 与手写页/脚本（`index.html`、`eververse/{index.html,app.js}`、`assets/armor-rng.js`）不许出现禁用写法。「装填」曾被统一成「填装」，六天后新增的页面又带回 17 处；这一条就是为此存在的。
+2. G2 token 唯一：同一个术语只能落到同一个着色 token 上（源稿与 `data/*.json` 同查）。只查「整个标记就是这个词」的那种（`{enemy|护甲充能}`）；词嵌在更长的短语里时着色属于短语（`{el-arc|电弧元素能量球}`），按词强判会把整句的颜色拆碎。这一条眼睛查不出来：`--el-solar` 与 `--deb-solar` 渲染色相同，灼烧着成哪个都看不出。
+3. G3 token 有定义：源稿与 `data/*.json` 里每个 `{token|文字}` 都要在 `site.css` 或页面样式表里有对应类；反过来，`site.css` 的着色类一次都没被用到即死配置，当场报出。
 4. G4 更新时间一致：资料页页脚的「更新 YYYY.M.D」与首页卡片上那个必须相等。首页那三张配装卡的更新时间与套数由构建改写（`convert-build.py` 的 `sync_home()`），这一条兜住手改；别的卡片写的是页面结构，由各生成器的 `N_*` 钉着。
 5. G5 更新日志的类型：只有新增、改动、订正三种，同一天里每种连成一段。写法见 `.claude/rules/pages.md` 的《更新日志的写法》。
 6. G7 色板齐全：配色总览页 `references/docs/palette.md`（散文那一处）列的渲染色与着色类，必须与 `site.css` 现有的逐条相等，两个方向都管：改了 `:root` 的色号忘了改源稿、加了新 token 忘了上页，都当场报出。认哪些类算着色类只有 `tint_classes()` 一处（G3 与 G7 共用）：源稿里写得出 `{name|…}` 的才算，外壳与组件的类照样引强调色，但它们写不进源稿，不进色板页。那一页「## 页面专属」以下的一节比对到此为止：页面专属的类定义在各页样式表里，不归 `site.css` 管。
-7. G6 该着色的都着了：正查使用 `items.forward_terms()`，归属来自 `tools/items.json`、`MECH` 与 `TERMS`。将同形词的具体含义写成显式标记：烈日增益写 `{el-solar|恢复}`，虚空星相写 `{el-void|堡垒}`，异域武器写 `{exotic|堡垒}`；动作与属性保留普通文字。将不强制自动补色的术语登记在 `LOOSE`。编辑台读取生成的 `terms.js` 词表。漏色运行 `python3 tools/items.py --apply` 补上。反查核对完整叶标记的归属，范围为元素、异域与 `orb`；神器名称没有元素归属时保留按效果语义写的标记，`named`、`stack` 等排版标记不按物品名纠色。
+7. G6 该着色的都着了：正查仅扫资料页源稿（不扫 `data/*.json`），使用 `items.forward_terms()`，归属来自 `tools/items.json`、`MECH` 与 `TERMS`。将同形词的具体含义写成显式标记：烈日增益写 `{el-solar|恢复}`，虚空星相写 `{el-void|堡垒}`，异域武器写 `{exotic|堡垒}`；动作与属性保留普通文字。将不强制自动补色的术语登记在 `LOOSE`。编辑台读取生成的 `terms.js` 词表。漏色运行 `python3 tools/items.py --apply` 补上。反查同时覆盖源稿与 `data/*.json`，核对完整叶标记的元素、异域与 `orb` 归属；神器名称没有元素归属时保留按效果语义写的标记，`named`、`stack` 等排版标记不按物品名纠色。
 
 Perk 名整条包在 `{perk|…}` 里，走 `--c-perk`。`.perk` 定义在 `assets/site.css`，全站一处。
 Perk 名不属于任何元素，颜色只标「这是一个名字」；必须整名包起来。不包时
@@ -428,7 +430,7 @@ T1 的主语取选择器最后一个 class：`.block > .sect-label` 施加在 `.
 
 当前分节高亮走 `IntersectionObserver`，不在滚动事件里读 `getBoundingClientRect()`。rootMargin 把视口顶端裁掉 `--stick + 8` 像素，落在剩下那块里最靠上的分节即当前分节。`--stick` 变了要重建观察者（`watch()`），resize 时已经这么做。搜索隐藏分节走 `display: none`，观察者自动报离开，不必手动同步。
 
-外壳里的两条资源提示由 `check_shell.py` 钉住：字体 `preload`（只预载首屏用到的 600 字重）与 `speculationrules` 导航预取。
+外壳里的两条资源提示由 `check_shell.py` 钉住：字体 `preload`（只预载首屏用到的 600 字重）与 `speculationrules` 导航预取。整站公告内联脚本由 `shell.announce_tag()` 生成（`build-notices.py` 同步首页与 `eververse`）并内嵌最新公告 ID，`localStorage`／`sessionStorage` 的 `sn` 已匹配时跳过加载 `assets/notice.js`。
 
 缓存策略见下文《部署》的「缓存策略」。长缓存只给文件名带内容标识的资源；不要为了 CSS/JS 引入文件名哈希，它们与 HTML 的重新验证走同一轮往返，省不出可测量的时间。
 

@@ -6,8 +6,8 @@
    格子写上它（item()），form.js 给填表页的格子写上它（fill()）。这一份脚本因此
    不必认识行、槽位与词表。
 
-   说明另存文件，不进页面也不进词表。照 assets/search.js 那条约定，页面 load 之后
-   空闲预取、第一次悬停再兜一次；还没到时面板写「载入中」，到了就地补上。
+   说明另存文件，不进页面也不进词表。照 assets/search.js 那条约定，不提前预取，
+   仅在首次悬停或聚焦到格子时按需加载；还没到时面板写「载入中」，到了就地补上。
 
    取哪一份由引这份脚本的 <script> 声明：详情页写 data-desc，指向与页面同目录的
    那份（只含本页格子用到的几十条，二十来 KB）；填表页不写，候选可能是词表里任何
@@ -119,12 +119,18 @@
     off = setTimeout(hide, 120);
   });
 
-  /* 两个分支分开调：写成 (requestIdleCallback || setTimeout)(load, 1) 时，第二个参数
-     1 在 Chrome 里不是 IdleRequestOptions，当场抛 TypeError，预取一次都不跑。 */
-  window.addEventListener('load', function () {
-    if (shut()) return;
-    if (window.requestIdleCallback) requestIdleCallback(load);
-    else setTimeout(load, 1);
+  document.addEventListener('focusin', function (e) {
+    var hit = e.target.closest && e.target.closest('[data-d]');
+    if (!hit) return;
+    clearTimeout(off);
+    if (hit !== now) draw(hit);
+  });
+
+  document.addEventListener('focusout', function (e) {
+    if (e.relatedTarget && box && box.contains(e.relatedTarget)) return;
+    if (e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('[data-d]')) return;
+    clearTimeout(off);
+    off = setTimeout(hide, 120);
   });
 
   /* 开关的契约与格子那条同形：**页面出一枚带 data-tip-sw 的按钮**，这一份脚本

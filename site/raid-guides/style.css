@@ -58,13 +58,6 @@
   letter-spacing: .04em;
 }
 
-/* 注解是副本名的注脚，不是第二个名字：压一档字号，退到暗档 */
-.guide-tag {
-  color: var(--bone-dim);
-  font-size: 11px;
-  letter-spacing: .08em;
-}
-
 /* ── 子页首领机制配色（与 boss-hp/style.css 保持一致） ── */
 .amp {
   color: var(--c-void);
@@ -93,81 +86,6 @@ body:has(.site-nav a.home ~ a.home) main table tbody th,
 body:has(.site-nav a.home ~ a.home) main table tbody td {
   padding-top: 12px;
   padding-bottom: 12px;
-}
-
-/* 7 列首领数值表（首领名称 | 生命值 | 距离 | 时间 | 击杀 DPS | 一波 DPS | 注解） */
-body:has(.site-nav a.home ~ a.home) main table:has(thead th:nth-child(7)) {
-  table-layout: fixed;
-}
-
-body:has(.site-nav a.home ~ a.home) main table:has(thead th:nth-child(7)) thead th:nth-child(1) { width: 246px; text-align: left; }
-body:has(.site-nav a.home ~ a.home) main table:has(thead th:nth-child(7)) thead th:nth-child(2) { width: 118px; text-align: left; }
-body:has(.site-nav a.home ~ a.home) main table:has(thead th:nth-child(7)) thead th:nth-child(3) { width: 72px; }
-body:has(.site-nav a.home ~ a.home) main table:has(thead th:nth-child(7)) thead th:nth-child(4) { width: 92px; }
-body:has(.site-nav a.home ~ a.home) main table:has(thead th:nth-child(7)) thead th:nth-child(5),
-body:has(.site-nav a.home ~ a.home) main table:has(thead th:nth-child(7)) thead th:nth-child(6) { width: 96px; }
-body:has(.site-nav a.home ~ a.home) main table:has(thead th:nth-child(7)) thead th:nth-child(7) { text-align: left; }
-
-body:has(.site-nav a.home ~ a.home) main table:has(thead th:nth-child(7)) tbody th {
-  color: var(--bone-hi);
-  font-family: var(--font-cn);
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: .04em;
-  text-align: left;
-  white-space: nowrap;
-}
-
-body:has(.site-nav a.home ~ a.home) main table:has(thead th:nth-child(7)) tbody th img {
-  width: 32px;
-  height: 32px;
-  margin-right: 10px;
-  border-radius: var(--r-sm);
-  border: 1px solid var(--hair-lit);
-  object-fit: cover;
-  vertical-align: middle;
-}
-
-body:has(.site-nav a.home ~ a.home) main table:has(thead th:nth-child(7)) tbody td:nth-of-type(1) {
-  font-family: var(--font-body);
-  font-size: 15px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: .02em;
-  text-align: left;
-  white-space: nowrap;
-}
-
-body:has(.site-nav a.home ~ a.home) main table:has(thead th:nth-child(7)) tbody td:nth-of-type(2) {
-  color: var(--bone);
-  font-family: var(--font-body);
-  font-size: 12px;
-  text-align: center;
-  white-space: nowrap;
-}
-
-body:has(.site-nav a.home ~ a.home) main table:has(thead th:nth-child(7)) tbody td:nth-of-type(3):not(.na),
-body:has(.site-nav a.home ~ a.home) main table:has(thead th:nth-child(7)) tbody td:nth-of-type(4):not(.na),
-body:has(.site-nav a.home ~ a.home) main table:has(thead th:nth-child(7)) tbody td:nth-of-type(5):not(.na) {
-  color: var(--bone);
-  font-family: var(--font-body);
-  font-size: 15px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: .02em;
-  text-align: center;
-  white-space: nowrap;
-}
-
-body:has(.site-nav a.home ~ a.home) main table:has(thead th:nth-child(7)) tbody td.na {
-  text-align: center;
-}
-
-body:has(.site-nav a.home ~ a.home) main table:has(thead th:nth-child(7)) tbody td:last-child {
-  font-family: var(--font-body);
-  font-size: 13px;
-  line-height: 1.65;
-  text-align: left;
 }
 
 /* 6 列层数加成表（众神殿卡鲁斯大帝） */
@@ -201,40 +119,6 @@ body:has(.site-nav a.home ~ a.home) main table:has(thead th:nth-child(6)):not(:h
 body:has(.site-nav a.home ~ a.home) main table:has(thead th:nth-child(6)):not(:has(thead th:nth-child(7))) tbody td:last-child {
   color: var(--bone-dim);
   text-align: left;
-}
-
-/* 2~3 列关卡掉落表（关卡 | 武器掉落 | 护甲部位） */
-body:has(.site-nav a.home ~ a.home) main table:not(:has(thead th:nth-child(4))) thead th:not(:first-child) {
-  text-align: left;
-}
-
-body:has(.site-nav a.home ~ a.home) main table:not(:has(thead th:nth-child(4))) tbody th[scope="row"] {
-  color: var(--bone-hi);
-  font-family: var(--font-cn);
-  font-size: 14px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-body:has(.site-nav a.home ~ a.home) main table:not(:has(thead th:nth-child(4))) tbody td:nth-of-type(1) {
-  white-space: nowrap;
-  line-height: 2.1;
-  text-align: left;
-}
-
-body:has(.site-nav a.home ~ a.home) main table:not(:has(thead th:nth-child(4))) tbody td:last-child {
-  white-space: nowrap;
-  line-height: 2.1;
-  text-align: left;
-}
-
-body:has(.site-nav a.home ~ a.home) main table:not(:has(thead th:nth-child(4))) tbody td img {
-  width: 24px;
-  height: 24px;
-  margin-right: 4px;
-  border-radius: var(--r-sm);
-  border: 1px solid var(--hair-lit);
-  vertical-align: -6px;
 }
 
 /* ── 副本详情页新版式（版式：副本） ─────────────────────────────────────────

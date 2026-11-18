@@ -808,7 +808,7 @@ def set_rows(b, htmls):
         b.f.sets.items(),
         key=lambda kv: (
             rows.zh(kv[1]).get("来源") or rows.zh(kv[1]).get("类型", ""),
-            rows.zh(kv[1]).get("name", ""),
+            b.text(kv[1]),
         ),
     )
     for h, rec in order:
@@ -818,23 +818,24 @@ def set_rows(b, htmls):
             pk = b.f.perks.get(str(one["perk"][1])) or {}
             pz = rows.zh(pk)
             icon = art.get(("set:%s" % h, "%d 件" % one["requiredSetCount"]), "")
-            effects.append([pz.get("name", ""), one["requiredSetCount"], icon])
+            pname = b.text(pk)
+            effects.append([pname, one["requiredSetCount"], icon])
             detail.append(
                 [
-                    pz.get("name", ""),
+                    pname,
                     one["requiredSetCount"],
                     icon,
                     htmls.of(b.site_html(pz.get("realgame_details", "")))
                     if pz.get("realgame_details")
                     else -1,
-                    b.say(pz.get("database_details", "")),
+                    b.say(b.text(pk, "database_details")),
                     set_author(pk.get("authors") or {}),
                 ]
             )
         rows_.append(
             [
                 "set:%s" % h,
-                z.get("name", ""),
+                b.text(rec),
                 resolve.text(rec, "name", "en") or "",
                 # 来源与类型是 Compendium 的两列：一列写活动名（发射基地），
                 # 一列写活动种类（熔炉竞技场行动）。56 套各写其一，两列都发。
@@ -1102,7 +1103,7 @@ def exotic_block(b, h):
         + ([of[n]] if n in of else [])
         for n in got.names
     ]
-    text = rows.exotic_text(h, rec["i18n"][resolve.ZH].get("realgame_details", ""))
+    text = rows.exotic_text(h, b.text(rec, "realgame_details"))
     return [chips, b.site_html(text)] if text else [chips, ""]
 
 
@@ -1182,7 +1183,7 @@ def build(facts):
     info = {}
     for h, r in weapons.items():
         zh = r["i18n"][resolve.ZH]
-        name = zh["name"]
+        name = b.text(r)
         adept = bool(r.get("isAdept"))
         d = r.get("derived") or {}
         cols = b.columns(h)
@@ -1384,7 +1385,7 @@ def build(facts):
     agroups = collections.defaultdict(list)
     for h, r in armor.items():
         agroups[
-            (r["i18n"][resolve.ZH]["name"], (r.get("derived") or {}).get("season") or 0)
+            (b.text(r), (r.get("derived") or {}).get("season") or 0)
         ].append(h)
     arep_of, areps, aauth = {}, [], {}
     for members in agroups.values():
@@ -1407,7 +1408,7 @@ def build(facts):
             armor[h]["classType"],
             list(PART).index(armor[h]["itemSubType"]),
             -((armor[h].get("derived") or {}).get("season") or 0),
-            armor[h]["i18n"][resolve.ZH]["name"],
+            b.text(armor[h]),
         )
     )
     aorder = areps + sorted(
@@ -1416,7 +1417,7 @@ def build(facts):
     arow_of = {h: i for i, h in enumerate(aorder)}
     afams = collections.defaultdict(list)
     for h in aorder:
-        afams[armor[h]["i18n"][resolve.ZH]["name"]].append(h)
+        afams[b.text(armor[h])].append(h)
     afam_list, afam_of = [], {}
     for members in afams.values():
         members.sort(
@@ -1460,7 +1461,7 @@ def build(facts):
         arows.append(
             [
                 h,
-                zh["name"],
+                b.text(r),
                 list(PART).index(r["itemSubType"]),
                 r["classType"],
                 (r.get("derived") or {}).get("season") or 0,

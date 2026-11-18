@@ -25,7 +25,7 @@ paths:
 | `index.js` → `window.WPN` | 首屏 `defer` | 词表 `v` + 武器行 `w` + 护甲行 `a` | 134 KB |
 | `pool.js` → `window.WPN_POOL` | load 之后取；详情或查询先用到就立刻取，按高优先级 | 属性表、属性组曲线、插件字典、词条栏、大师杰作、模组、神器模组 | 175 KB |
 | `pvp.js` → `window.WPN_PVP` | 切到 PvP 属性模式时按需载入（高优先级） | PvP 伤害表、TTK 模拟器、PvP 面板与动画 | — |
-| `text.js` → `window.WPN_TEXT` | 不预取；打开详情，或查询要搜说明与描述时才取，同时要 pool 的排在 pool 之后 | 描述、Bungie 说明、站内实测、作者评语、异域站内详情、神器模组说明 | 342 KB |
+| `text.js` → `window.WPN_TEXT` | 不预取；默认列表/未选中且无需词条说明搜索时不请求，仅在打开详情，或查询要搜说明与描述时才取，同时要 pool 的排在 pool 之后 | 描述、Bungie 说明、站内实测、作者评语、异域站内详情、神器模组说明 | 342 KB |
 | `index.html` | — | 外壳（`shell.head/nav/foot`）+ 页首 + 范围开关 + 查询条 + 首屏骨架 + 类型小图标 sprite | — |
 
 页首、范围开关、查询条与首屏骨架写在页壳里（`shell.page_head()`、`scope_row()`、`toolbar()`、
@@ -256,7 +256,7 @@ manifest 收藏条目那一句。
 `replaceState`。
 
 localStorage（全部 try/catch）：`wpn.view` 卡片／列表、`wpn.rail` 结果栏宽（140–280）、
-`wpn.railOff` 收起、`wpn.pins` 钉选、`wpn.rolls` 每把枪的配置（与缺省相同的不存）。
+`wpn.railOff` 收起、`wpn.pins` 钉选、`wpn.hideAegis` 详情「配装引用」折叠 Aegis 列、`wpn.rolls` 每把枪的配置（与缺省相同的不存）。
 优先级：地址栏 > 本地 > 缺省。
 
 结果栏自带滚动条，点一行、钉选、前进后退都会把它整个重画（`renderSplit()`）。结果列表

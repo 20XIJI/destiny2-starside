@@ -20,12 +20,13 @@ const BAND = { y0: .78, y1: .12 };
 
 function sky(canvas) {
   const b = brush(canvas), g = b.g;
-  const R = rng(20260929);
+  const Rm = rng(20260929);
   const T0 = performance.now();
   let W, H, X0, XW, stars, cons, met = [], nextMet = T0 + 3200;
   let ox = 0, oy = 0, tx = 0, ty = 0;
 
   function build() {
+    const R = rng(20260929);
     const d = Math.min(devicePixelRatio || 1, 2);
     W = canvas.clientWidth; H = canvas.clientHeight;
     canvas.width = Math.round(W * d); canvas.height = Math.round(H * d);
@@ -98,9 +99,9 @@ function sky(canvas) {
     }
 
     if (!reduce && t > nextMet) {
-      nextMet = t + 4500 + R() * 7500;
-      const ang = (22 + R() * 16) * Math.PI / 180, sp = 820 + R() * 400;
-      met.push({ x: W * (.04 + R() * .78), y: H * R() * .42, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp, t0: t, life: .7 + R() * .45, len: 120 + R() * 100 });
+      nextMet = t + 4500 + Rm() * 7500;
+      const ang = (22 + Rm() * 16) * Math.PI / 180, sp = 820 + Rm() * 400;
+      met.push({ x: W * (.04 + Rm() * .78), y: H * Rm() * .42, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp, t0: t, life: .7 + Rm() * .45, len: 120 + Rm() * 100 });
     }
     met = met.filter(m => t - m.t0 < m.life * 1000);
     for (const m of met) b.meteor(m, t);

@@ -531,7 +531,12 @@ def sync():
             dropped.append(doc_id)
             completed = '已删除库稿'
         elif act == 'pull':
-            dh = sha1(fetch(doc_id, r))
+            try:
+                dh = sha1(fetch(doc_id, r))
+            except SystemExit as why:
+                print('  ? %s 拉取后解析失败，留在冲突列表：%s' % (doc_id, why))
+                stuck.append(doc_id)
+                continue
             landed[doc_id] = dh if dh != sha1(r) else landed.get(doc_id)
             pulled.append(doc_id)
             completed = '已拉取'
@@ -607,7 +612,14 @@ def take_recs(ids, mine):
                 base.pop(rid, None)
         else:
             if rid not in db:
-                sys.exit('%s 库里没有，谈不上以库里的为准' % rid)
+                if rid not in disk and rid not in base:
+                    sys.exit('%s 库里没有，谈不上以库里的为准' % rid)
+                if rid in disk:
+                    rfetch([(rid, '{}')])
+                base.pop(rid, None)
+                baseline(base)
+                print('%s ← 库里那份（已清空）' % rid, flush=True)
+                continue
             rfetch([(rid, db[rid])])
             base[rid] = sha1(db[rid])
             if landed.get(rid) != base[rid]:
@@ -645,7 +657,18 @@ def take_docs(ids, mine):
                 base[doc_id] = sha1(disk[doc_id])
         else:
             if doc_id not in db:
-                sys.exit('%s 库里没有，谈不上以库里的为准' % doc_id)
+                if doc_id not in disk and doc_id not in base:
+                    sys.exit('%s 库里没有，谈不上以库里的为准' % doc_id)
+                p = path_of(doc_id)
+                if os.path.exists(p):
+                    os.remove(p)
+                base.pop(doc_id, None)
+                leftover = p + '.remote'
+                if os.path.exists(leftover):
+                    os.remove(leftover)
+                baseline(base)
+                print('%s ← 库里那份（接受删除）' % doc_id, flush=True)
+                continue
             now = fetch(doc_id, db[doc_id])
             base[doc_id] = sha1(now)
             if now != db[doc_id]:

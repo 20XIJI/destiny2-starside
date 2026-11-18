@@ -149,8 +149,18 @@ def main() -> int:
                 % rel
             )
 
-        if "assets/app.js" in src and "assets/pinyin.js" not in src:
-            bad.append("%s：引了 app.js 却没引 pinyin.js，条目名的拼音检索会失效" % rel)
+        tb = re.search(r'<div class="toolbar"([^>]*)>', src)
+        has_search = "hero-search" in src or (
+            bool(tb)
+            and "data-chart=" not in tb.group(1)
+            and "data-cols=" not in tb.group(1)
+            and ("data-item=" in tb.group(1) or "data-section=" not in tb.group(1))
+        )
+        if "assets/app.js" in src:
+            if has_search and "assets/pinyin.js" not in src:
+                bad.append("%s：引了 app.js 却没引 pinyin.js，条目名的拼音检索会失效" % rel)
+            if not has_search and "assets/pinyin.js" in src:
+                bad.append("%s：页面不带检索框却多余引入 assets/pinyin.js" % rel)
         if "weapons/app.js" in src and "assets/pinyin.js" not in src:
             bad.append("%s：装备库没引 pinyin.js，武器名的拼音检索会失效" % rel)
         if "form.js" in src and "assets/pinyin.js" not in src:

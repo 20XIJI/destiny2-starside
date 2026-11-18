@@ -60,6 +60,7 @@ build = load("quality_build", "convert-build.py")
 doc = load("quality_doc", "convert-doc.py")
 weapons = load("quality_weapons", "build-weapons.py")
 build_home = load("quality_build_home", "build-home.py")
+build_notices = load("quality_build_notices", "build-notices.py")
 
 
 def forbidden(*args, **kwargs):
@@ -1408,6 +1409,32 @@ class Generated(unittest.TestCase):
             build_home.render(home),
             home,
             "index.html 的卡片预览过期了，跑 python3 tools/build-home.py",
+        )
+
+    def test_notice_data_matches_latest_notice(self):
+        """首页与各页读的是 assets/notice-data.js，必须与 notices.md 最新一条保持一致。"""
+        md = (TOOLS.parent / "references" / "docs" / "notices.md").read_text(
+            encoding="utf-8"
+        )
+        want = "export default %s;\n" % json.dumps(
+            build_notices.parse_latest(md), ensure_ascii=False
+        )
+        self.assertEqual(
+            self.read("assets/notice-data.js"),
+            want,
+            "assets/notice-data.js 与 notices.md 不一致，跑 python3 tools/build-notices.py",
+        )
+
+    def test_rota_guides_match_raid_guides_source(self):
+        """轮换脚本里的副本攻略映射须与 raid-guides.md 同步。"""
+        src = self.read("assets/rota.js")
+        hit = re.search(r"var ROTA_GUIDES = (\{[^;]*\});", src)
+        self.assertIsNotNone(hit, "assets/rota.js 里找不到 ROTA_GUIDES")
+        assert hit is not None
+        self.assertEqual(
+            json.loads(hit.group(1)),
+            build_home.guide_hrefs(),
+            "assets/rota.js 的 ROTA_GUIDES 过期了，跑 python3 tools/build-home.py",
         )
 
     def test_each_build_page_carries_the_hover_text_of_its_own_cells(self):

@@ -216,10 +216,17 @@ function domStub () {
     this.tagName = (tag || 'div').toUpperCase()
     this.className = cls || ''; this.children = []; this.parentNode = null
     this.dataset = {}; this.attrs = {}; this._text = ''; this.hidden = false
+    this.classList = { toggle () {}, add () {}, remove () {}, contains () { return false } }
     this.value = ''          // 搜索框：filter() 每次都读它
     this.style = { setProperty () {} }
   }
-  El.prototype.appendChild = function (c) { this.insertBefore(c, null); return c }
+  El.prototype.appendChild = function (c) {
+    if (c && c.tagName === 'FRAG') {
+      c.children.slice().forEach((x) => this.insertBefore(x, null))
+      return c
+    }
+    this.insertBefore(c, null); return c
+  }
   El.prototype.insertBefore = function (c, ref) {
     // 真 DOM 在参照节点不是自己的孩子时抛 NotFoundError。**壳必须照抛**：
     // 静默 append 会让「搬走再搬回来」那条路在测试里一路绿，而线上第一次点就崩。
@@ -232,6 +239,9 @@ function domStub () {
     if (at < 0) this.children.push(c); else this.children.splice(at, 0, c)
     return c
   }
+  Object.defineProperty(El.prototype, 'firstChild', {
+    get () { return this.children[0] || null }
+  })
   Object.defineProperty(El.prototype, 'nextElementSibling', {
     get () {
       if (!this.parentNode) return null
@@ -239,6 +249,7 @@ function domStub () {
     }
   })
   El.prototype.setAttribute = function (k, v) { this.attrs[k] = String(v) }
+  El.prototype.removeAttribute = function (k) { delete this.attrs[k] }
   El.prototype.getAttribute = function (k) { return k in this.attrs ? this.attrs[k] : null }
   El.prototype.hasAttribute = function (k) { return k in this.attrs }
   El.prototype.toggleAttribute = function (k, on) { if (on) this.attrs[k] = ''; else delete this.attrs[k] }
@@ -663,4 +674,113 @@ test('a footer count cached as bare text is read again, not shown', async () => 
   f.answer(1288, 17092)
   assert.equal(await f.open(true), '今日 1288 位访客 · 累计 17092')
   assert.deepEqual(f.sent, ['?a=stats'])
+})
+
+test('pinyin-match accepts literal separators as well as skipping them', () => {
+  const ctx = {}
+  ctx.window = ctx
+  vm.createContext(ctx)
+  vm.runInContext(fs.readFileSync(path.join(site, 'assets/pinyin.js'), 'utf8'), ctx,
+    { filename: 'assets/pinyin.js' })
+  const py = ctx.starsidePy
+  assert.equal(py.hit('雪上加霜', ['one-two']), true, '英文别名命中支持连字符')
+  assert.equal(py.hit('雪上加霜', ['onetwo']), true, '英文别名命中可跳过连字符')
+  assert.equal(py.match('故我在（电弧）', 'gwz（dh'), true, '中文非字母分隔符亦可字面匹配')
+  assert.equal(py.match('故我在（电弧）', 'gwzdh'), true, '中文分隔符亦可跳过匹配')
+  assert.equal(py.match('A-B', 'a-b'), true, 'ASCII 分隔符字面匹配')
+  assert.equal(py.match('A-B', 'ab'), true, 'ASCII 分隔符跳过匹配')
+})
+
+test('data-hide-by reports hidden-hit count on active filter and resetAll clears hide state', () => {
+  const cards = CARDS.concat([
+    { scene: '宗师/终极', cls: '猎人', tier: 'meta', branch: '烈日', tag: '输出', by: 'Aegis' }
+  ])
+  const t = toolbar({ hideBy: 'Aegis', cards })
+  t.click('场景', '宗师/终极')
+  t.click('职业', '猎人')
+  assert.equal(t.live(), 0, 'Aegis 隐藏开启时不显示匹配的 Aegis 卡片')
+  assert.match(t.slot.querySelector('.tool-count').textContent, /另有 1 个已隐藏/,
+    '激活筛选但结果被隐藏时，计数应当提示另有隐藏命中')
+  const emptyBox = t.main.querySelector('.tool-empty')
+  assert.ok(emptyBox && !emptyBox.hidden, '隐藏导致空态后提示框应当显示')
+  assert.match(emptyBox.textContent, /1 个/)
+  const reset = emptyBox.querySelector('button')
+  assert.ok(reset, '隐藏导致空态后重置按钮应当可用')
+  reset.onclick()
+  assert.equal(t.hideBtn.getAttribute('aria-pressed'), 'false', 'resetAll 应当一并取消默认隐藏作者')
+  assert.equal(t.live(), cards.length, '重置后应当展示含 Aegis 的全部卡片')
+})
+
+test('home search defers index load until interaction, sets role=presentation, and rewrites alias ?q= targets', () => {
+  const homeCode = fs.readFileSync(path.join(site, 'assets/home.js'), 'utf8')
+    .replace('export default function init', 'function initHome')
+  const El = domStub()
+  const appendedHead = []
+  const inputListeners = {}
+  const body = new El('body')
+  const box = body.appendChild(new El('div', 'hero-search'))
+  const ctx = {
+    window: {
+      starsideIndex: [
+        { u: 'power-delta/index.html', t: '压光伤害', d: '压光对照表', ns: 1 },
+        { a: 'sec-1', l: '总览' },
+        ['枯萎囤积', '¶ 详情'],
+        { u: 'exotic-weapon/index.html', t: '异域武器详解', d: '全部异域', c: 1 },
+        { a: 'sec-2', l: '动能' },
+        ['枯萎囤积', '¶ 榴弹']
+      ],
+      starsidePy: {
+        hit(name, terms) {
+          return terms.every((t) => name.includes(t) || (name === '枯萎囤积' && t === 'witherhoard'))
+        }
+      },
+      addEventListener() {}
+    },
+    document: {
+      readyState: 'complete',
+      head: {
+        appendChild(el) {
+          appendedHead.push(el)
+          if (el.onload) el.onload()
+        }
+      },
+      createElement(tag) {
+        const el = new El(tag)
+        if (tag === 'input') {
+          el.addEventListener = (k, fn) => { inputListeners[k] = fn }
+        }
+        return el
+      },
+      createDocumentFragment() { return new El('frag') },
+      createTextNode(t) { return Object.assign(new El('#text'), { _text: t }) },
+    },
+    encodeURIComponent,
+    console
+  }
+  vm.createContext(ctx)
+  vm.runInContext(homeCode + '\nthis.initHome=initHome', ctx)
+  const hit = (hay, terms) => terms.every((t) => hay.includes(t))
+  const words = (q) => q.toLowerCase().trim().split(/\s+/).filter(Boolean)
+  ctx.initHome(box, { words, hit })
+  assert.equal(appendedHead.length, 0, '首屏加载完成不应提前请求 assets/search.js')
+
+  const input = box.querySelector('.tool-search')
+  input.value = 'witherhoard'
+  inputListeners.input()
+  assert.equal(appendedHead.length, 1, '首次输入时才触发加载 assets/search.js')
+  assert.equal(appendedHead[0].src, 'assets/search.js')
+
+  const lis = box.querySelector('.hits').children
+  assert.ok(lis.length >= 2)
+  for (const li of lis) {
+    assert.equal(li.getAttribute('role'), 'presentation', 'listbox 下的 li 应当带 role=presentation')
+  }
+  const nsAnchor = lis.find((li) => li.children[0].href.startsWith('power-delta/index.html')).children[0]
+  assert.equal(nsAnchor.href, 'power-delta/index.html#sec-1', 'ns 页面不应当附加 ?q=')
+  const docAnchor = lis.find((li) => li.children[0].href.startsWith('exotic-weapon/index.html')).children[0]
+  assert.equal(
+    docAnchor.href,
+    'exotic-weapon/index.html?q=' + encodeURIComponent('枯萎囤积') + '#sec-2',
+    '英文/拼音别名命中非装备库页面时 ?q= 应当改传中文条目名'
+  )
 })

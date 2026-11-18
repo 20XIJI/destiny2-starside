@@ -37,6 +37,7 @@
 }
 .se-was s { text-decoration-color: var(--bone-faint); }
 .se-was img { height: 1em; width: auto; }
+li.se-was { list-style: none; margin-left: 0; width: 100%; }
 
 /* 改动者：一枚小标签，不写成正文。字族与字距跟站内别的小标签一路，扫读时跳得过去。 */
 .se-by {

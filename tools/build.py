@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """资料页、装备库、首页、搜索、词表与三道闸门。
 
+用法：python3 tools/build.py [--force | --all | --normalize-only]
 产物图：源稿 + 生成器 + facts 的内容哈希变了才渲染；Facts 只构造一次。
 无改动时只哈希、不拉起生成器。闸门只在有产物写出之后跑。
 """
@@ -33,6 +34,7 @@ SHARED = (
     "tools/editmap.py",
     "tools/facts.py",
     "tools/icons.py",
+    "references/docs/notices.md",
 )
 ORCH = "tools/build.py"
 
@@ -131,7 +133,7 @@ def doc_slugs(shell) -> list[tuple[str, Path]]:
 
 def main() -> int:
     t0 = time.perf_counter()
-    force = "--force" in sys.argv[1:]
+    force = "--force" in sys.argv[1:] or "--all" in sys.argv[1:]
     normalize_only = "--normalize-only" in sys.argv[1:]
     if "--help" in sys.argv[1:]:
         print(__doc__)
@@ -286,6 +288,7 @@ def main() -> int:
         "weapons",
         facts
         + index_files
+        + build_json
         + under(
             "tools/build-weapons.py",
             "tools/type-icons.json",
@@ -306,8 +309,9 @@ def main() -> int:
     else:
         print("  skip  build-weapons.py", flush=True)
 
-    home_inputs = under("tools/build-home.py") + [
+    home_inputs = under("tools/build-home.py", "site/assets/rota.js") + [
         ROOT / "site" / "index.html",
+        ROOT / "references" / "docs" / "raid-guides.md",
     ]
     home_dirty = (
         dirty("home", home_inputs)
@@ -383,9 +387,13 @@ def main() -> int:
             "tools/items.json",
             "tools/perks.json",
             "site/index.html",
+            "site/eververse/index.html",
+            "site/eververse/app.js",
+            "site/assets/armor-rng.js",
             "design.md",
         )
         + shared
+        + facts
         + sources
         + css_files,
     )

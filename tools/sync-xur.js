@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * 老九（Xûr / 仄）周货官方模式更新脚本。
- * 纯 Bungie 官方 API 直连：通过 Destiny2/Vendors/?components=400,402 核验老九主商人 (2190858386) 实时销售状态，
+ * 仄（Xûr）周货官方模式更新脚本。
+ * 纯 Bungie 官方 API 直连：通过 Destiny2/Vendors/?components=400,402 核验仄主商人 (2190858386) 实时销售状态，
  * 并通过 DestinyInventoryItemDefinition/<hash>/?lc=zh-chs 并发拉取全部商品与武器随机 Perk 插槽的官方简体中文名称、分类、品质与 CDN 图标，
  * 同时结合站内装备库推荐表 (xur-recs.json) 自动标注传说武器的推荐 Perk (1=Aegis, 2=小棒猪, 3=双推) 与大师杰作。
  */
@@ -54,7 +54,7 @@ const LOCATION_ZH = {
   Tower: "高塔"
 }
 
-// 本周老九 47 个周货槽位与武器随机 Perk 矩阵（主商人 2190858386、奇异装备子商人 3751514131、更多奇异优惠子商人 537912098）
+// 本周仄 47 个周货槽位与武器随机 Perk 矩阵（主商人 2190858386、奇异装备子商人 3751514131、更多奇异优惠子商人 537912098）
 const XUR_SLOTS = [{"hash":4255001288,"vendorHash":2190858386,"classType":"Hunter","costs":[{"hash":800069450,"quantity":41}],"sockets":[{"plugHash":553093017,"plugCategoryIdentifier":"intrinsics","reusablePlugs":[{"hash":553093017}]}]},{"hash":2405271937,"vendorHash":2190858386,"classType":"Hunter","costs":[{"hash":800069450,"quantity":41}],"sockets":[{"plugHash":1694242450,"plugCategoryIdentifier":"intrinsics","reusablePlugs":[{"hash":1694242450}]}]},{"hash":2809120022,"vendorHash":2190858386,"classType":"Hunter","costs":[{"hash":800069450,"quantity":41}]},{"hash":53126580,"vendorHash":2190858386,"classType":"Titan","costs":[{"hash":800069450,"quantity":41}],"sockets":[{"plugHash":3241194941,"plugCategoryIdentifier":"intrinsics","reusablePlugs":[{"hash":3241194941}]}]},{"hash":4157369212,"vendorHash":2190858386,"classType":"Titan","costs":[{"hash":800069450,"quantity":41}],"sockets":[{"plugHash":1358612221,"plugCategoryIdentifier":"intrinsics","reusablePlugs":[{"hash":1358612221}]}]},{"hash":266021826,"vendorHash":2190858386,"classType":"Titan","costs":[{"hash":800069450,"quantity":41}]},{"hash":1003391927,"vendorHash":2190858386,"classType":"Warlock","costs":[{"hash":800069450,"quantity":41}],"sockets":[{"plugHash":1149655156,"plugCategoryIdentifier":"intrinsics","reusablePlugs":[{"hash":1149655156}]}]},{"hash":3864952146,"vendorHash":2190858386,"classType":"Warlock","costs":[{"hash":800069450,"quantity":41}],"sockets":[{"plugHash":1095471953,"plugCategoryIdentifier":"intrinsics","reusablePlugs":[{"hash":1095471953}]}]},{"hash":2273643087,"vendorHash":2190858386,"classType":"Warlock","costs":[{"hash":800069450,"quantity":41}]},{"hash":3856705927,"vendorHash":3751514131,"classType":"Any","costs":[{"hash":800069450,"quantity":23}],"sockets":[{"plugHash":213689231,"plugCategoryIdentifier":"intrinsics","reusablePlugs":[{"hash":213689231}]},{"plugHash":3661387068,"plugCategoryIdentifier":"barrels","reusablePlugs":[{"hash":3661387068}]},{"plugHash":1431678320,"plugCategoryIdentifier":"magazines","reusablePlugs":[{"hash":1431678320}]},{"plugHash":2846385770,"plugCategoryIdentifier":"frames","reusablePlugs":[{"hash":2846385770}]},{"plugHash":3438534621,"plugCategoryIdentifier":"grips","reusablePlugs":[{"hash":3438534621}]}]},{"hash":3437746471,"vendorHash":3751514131,"classType":"Any","costs":[{"hash":800069450,"quantity":23}],"sockets":[{"plugHash":1030990989,"plugCategoryIdentifier":"intrinsics","reusablePlugs":[{"hash":1030990989}]},{"plugHash":1482024992,"plugCategoryIdentifier":"barrels","reusablePlugs":[{"hash":1482024992}]},{"plugHash":3142289711,"plugCategoryIdentifier":"magazines","reusablePlugs":[{"hash":3142289711}]},{"plugHash":2383960413,"plugCategoryIdentifier":"frames","reusablePlugs":[{"hash":2383960413}]},{"plugHash":1012699414,"plugCategoryIdentifier":"grips","reusablePlugs":[{"hash":1012699414}]}]},{"hash":4190156464,"vendorHash":3751514131,"classType":"Any","costs":[{"hash":800069450,"quantity":23}],"sockets":[{"plugHash":656200654,"plugCategoryIdentifier":"intrinsics","reusablePlugs":[{"hash":656200654}]},{"plugHash":3661387068,"plugCategoryIdentifier":"barrels","reusablePlugs":[{"hash":3661387068}]},{"plugHash":2420895100,"plugCategoryIdentifier":"magazines","reusablePlugs":[{"hash":2420895100}]},{"plugHash":2333607307,"plugCategoryIdentifier":"frames","reusablePlugs":[{"hash":2333607307}]},{"plugHash":4259401308,"plugCategoryIdentifier":"stocks","reusablePlugs":[{"hash":4259401308}]}]},{"hash":1508896098,"vendorHash":3751514131,"classType":"Any","costs":[{"hash":800069450,"quantity":23}],"sockets":[{"plugHash":2473404935,"plugCategoryIdentifier":"intrinsics","reusablePlugs":[{"hash":2473404935}]},{"plugHash":1478423395,"plugCategoryIdentifier":"tubes","reusablePlugs":[{"hash":1478423395}]},{"plugHash":2420895100,"plugCategoryIdentifier":"magazines","reusablePlugs":[{"hash":2420895100}]},{"plugHash":1178686995,"plugCategoryIdentifier":"frames","reusablePlugs":[{"hash":1178686995}]},{"plugHash":3465198467,"plugCategoryIdentifier":"stocks","reusablePlugs":[{"hash":3465198467}]}]},{"hash":2088466608,"vendorHash":3751514131,"classType":"Any","costs":[{"hash":800069450,"quantity":71}]},{"hash":924149235,"vendorHash":3751514131,"classType":"Any","costs":[{"hash":800069450,"quantity":71}]},{"hash":2779821308,"vendorHash":3751514131,"classType":"Any","costs":[{"hash":800069450,"quantity":17}],"sockets":[{"plugHash":1636108362,"plugCategoryIdentifier":"intrinsics","reusablePlugs":[{"hash":1636108362}]},{"plugHash":4090651448,"plugCategoryIdentifier":"barrels","reusablePlugs":[{"hash":4090651448},{"hash":3250034553}]},{"plugHash":1087426260,"plugCategoryIdentifier":"magazines","reusablePlugs":[{"hash":1087426260},{"hash":1431678320}]},{"plugHash":2272927194,"plugCategoryIdentifier":"frames","reusablePlugs":[{"hash":2272927194}]},{"plugHash":4104185692,"plugCategoryIdentifier":"frames","reusablePlugs":[{"hash":4104185692}]},{"plugHash":150943607,"plugCategoryIdentifier":"v400.plugs.weapons.masterworks.stat.range","reusablePlugs":[{"hash":150943607},{"hash":150943604}]},{"plugHash":2565067140,"plugCategoryIdentifier":"origins","reusablePlugs":[{"hash":2565067140}]}]},{"hash":1886840007,"vendorHash":3751514131,"classType":"Any","costs":[{"hash":800069450,"quantity":17}],"sockets":[{"plugHash":1294026524,"plugCategoryIdentifier":"intrinsics","reusablePlugs":[{"hash":1294026524}]},{"plugHash":839105230,"plugCategoryIdentifier":"barrels","reusablePlugs":[{"hash":839105230},{"hash":3661387068}]},{"plugHash":2749775325,"plugCategoryIdentifier":"batteries","reusablePlugs":[{"hash":2749775325},{"hash":732557052}]},{"plugHash":776531651,"plugCategoryIdentifier":"frames","reusablePlugs":[{"hash":776531651}]},{"plugHash":2319119708,"plugCategoryIdentifier":"frames","reusablePlugs":[{"hash":2319119708}]},{"plugHash":1590375901,"plugCategoryIdentifier":"v400.plugs.weapons.masterworks.stat.stability","reusablePlugs":[{"hash":1590375901},{"hash":1590375902}]},{"plugHash":253121539,"plugCategoryIdentifier":"origins","reusablePlugs":[{"hash":253121539}]}]},{"hash":577528837,"vendorHash":3751514131,"classType":"Any","costs":[{"hash":800069450,"quantity":17}],"sockets":[{"plugHash":3364911712,"plugCategoryIdentifier":"intrinsics","reusablePlugs":[{"hash":3364911712}]},{"plugHash":839105230,"plugCategoryIdentifier":"barrels","reusablePlugs":[{"hash":839105230},{"hash":3250034553}]},{"plugHash":1087426260,"plugCategoryIdentifier":"magazines","reusablePlugs":[{"hash":1087426260},{"hash":3230963543}]},{"plugHash":1820235745,"plugCategoryIdentifier":"frames","reusablePlugs":[{"hash":1820235745}]},{"plugHash":2726471870,"plugCategoryIdentifier":"frames","reusablePlugs":[{"hash":2726471870}]},{"plugHash":150943607,"plugCategoryIdentifier":"v400.plugs.weapons.masterworks.stat.range","reusablePlugs":[{"hash":150943607},{"hash":150943604}]}]},{"hash":3371413056,"vendorHash":3751514131,"classType":"Any","costs":[{"hash":800069450,"quantity":17}],"sockets":[{"plugHash":263649945,"plugCategoryIdentifier":"intrinsics","reusablePlugs":[{"hash":263649945}]},{"plugHash":1261178282,"plugCategoryIdentifier":"blades","reusablePlugs":[{"hash":1261178282},{"hash":938542991}]},{"plugHash":2363751990,"plugCategoryIdentifier":"guards","reusablePlugs":[{"hash":2363751990}]},{"plugHash":2590710093,"plugCategoryIdentifier":"frames","reusablePlugs":[{"hash":2590710093}]},{"plugHash":3523296417,"plugCategoryIdentifier":"frames","reusablePlugs":[{"hash":3523296417}]},{"plugHash":1486919755,"plugCategoryIdentifier":"v400.plugs.weapons.masterworks.stat.damage","reusablePlugs":[{"hash":1486919755},{"hash":1486919752}]},{"plugHash":1905044254,"plugCategoryIdentifier":"origins","reusablePlugs":[{"hash":1905044254}]}]},{"hash":1097616550,"vendorHash":3751514131,"classType":"Any","costs":[{"hash":800069450,"quantity":17}],"sockets":[{"plugHash":1525239159,"plugCategoryIdentifier":"intrinsics","reusablePlugs":[{"hash":1525239159}]},{"plugHash":1840239774,"plugCategoryIdentifier":"barrels","reusablePlugs":[{"hash":1840239774},{"hash":1392496348}]},{"plugHash":2420895100,"plugCategoryIdentifier":"magazines","reusablePlugs":[{"hash":2420895100},{"hash":1431678320}]},{"plugHash":3643424744,"plugCategoryIdentifier":"frames","reusablePlugs":[{"hash":3643424744}]},{"plugHash":2458213969,"plugCategoryIdentifier":"frames","reusablePlugs":[{"hash":2458213969}]},{"plugHash":1590375901,"plugCategoryIdentifier":"v400.plugs.weapons.masterworks.stat.stability","reusablePlugs":[{"hash":1590375901},{"hash":1590375902}]}]},{"hash":4195186942,"vendorHash":3751514131,"classType":"Any","costs":[{"hash":800069450,"quantity":17}],"sockets":[{"plugHash":3419274965,"plugCategoryIdentifier":"intrinsics","reusablePlugs":[{"hash":3419274965}]},{"plugHash":1478423395,"plugCategoryIdentifier":"tubes","reusablePlugs":[{"hash":1478423395},{"hash":981914802}]},{"plugHash":2985827016,"plugCategoryIdentifier":"magazines_gl","reusablePlugs":[{"hash":2985827016},{"hash":1996142143}]},{"plugHash":951095735,"plugCategoryIdentifier":"frames","reusablePlugs":[{"hash":951095735}]},{"plugHash":4104185692,"plugCategoryIdentifier":"frames","reusablePlugs":[{"hash":4104185692}]},{"plugHash":150943607,"plugCategoryIdentifier":"v400.plugs.weapons.masterworks.stat.range","reusablePlugs":[{"hash":150943607},{"hash":150943604}]},{"plugHash":253121539,"plugCategoryIdentifier":"origins","reusablePlugs":[{"hash":253121539}]}]},{"hash":4224667951,"vendorHash":3751514131,"classType":"Any","costs":[{"hash":800069450,"quantity":17}],"sockets":[{"plugHash":3468089894,"plugCategoryIdentifier":"intrinsics","reusablePlugs":[{"hash":3468089894}]},{"plugHash":1844523823,"plugCategoryIdentifier":"tubes","reusablePlugs":[{"hash":1844523823},{"hash":3798852852}]},{"plugHash":3492396210,"plugCategoryIdentifier":"magazines_gl","reusablePlugs":[{"hash":3492396210},{"hash":3796465595}]},{"plugHash":3977735242,"plugCategoryIdentifier":"frames","reusablePlugs":[{"hash":3977735242}]},{"plugHash":4104185692,"plugCategoryIdentifier":"frames","reusablePlugs":[{"hash":4104185692}]},{"plugHash":150943607,"plugCategoryIdentifier":"v400.plugs.weapons.masterworks.stat.range","reusablePlugs":[{"hash":150943607},{"hash":150943604}]},{"plugHash":2041432007,"plugCategoryIdentifier":"origins","reusablePlugs":[{"hash":2041432007}]}]},{"hash":1197771438,"vendorHash":3751514131,"classType":"Any","costs":[{"hash":800069450,"quantity":17}],"sockets":[{"plugHash":385138649,"plugCategoryIdentifier":"intrinsics","reusablePlugs":[{"hash":385138649}]},{"plugHash":1478423395,"plugCategoryIdentifier":"tubes","reusablePlugs":[{"hash":1478423395},{"hash":3525010810}]},{"plugHash":2822142346,"plugCategoryIdentifier":"magazines_gl","reusablePlugs":[{"hash":2822142346},{"hash":3492396210}]},{"plugHash":1556840489,"plugCategoryIdentifier":"frames","reusablePlugs":[{"hash":1556840489}]},{"plugHash":3523296417,"plugCategoryIdentifier":"frames","reusablePlugs":[{"hash":3523296417}]},{"plugHash":150943607,"plugCategoryIdentifier":"v400.plugs.weapons.masterworks.stat.range","reusablePlugs":[{"hash":150943607},{"hash":150943604}]},{"plugHash":253121539,"plugCategoryIdentifier":"origins","reusablePlugs":[{"hash":253121539}]}]},{"hash":1835747805,"vendorHash":3751514131,"classType":"Any","costs":[{"hash":800069450,"quantity":17}],"sockets":[{"plugHash":1322370662,"plugCategoryIdentifier":"intrinsics","reusablePlugs":[{"hash":1322370662}]},{"plugHash":1926090095,"plugCategoryIdentifier":"scopes","reusablePlugs":[{"hash":1926090095},{"hash":1926090093}]},{"plugHash":1087426260,"plugCategoryIdentifier":"magazines","reusablePlugs":[{"hash":1087426260},{"hash":106909392}]},{"plugHash":706527188,"plugCategoryIdentifier":"frames","reusablePlugs":[{"hash":706527188}]},{"plugHash":3523296417,"plugCategoryIdentifier":"frames","reusablePlugs":[{"hash":3523296417}]},{"plugHash":518224747,"plugCategoryIdentifier":"v400.plugs.weapons.masterworks.stat.handling","reusablePlugs":[{"hash":518224747},{"hash":518224744}]}]},{"hash":1604556427,"vendorHash":3751514131,"classType":"Hunter","costs":[{"hash":800069450,"quantity":29}]},{"hash":2697887125,"vendorHash":3751514131,"classType":"Hunter","costs":[{"hash":800069450,"quantity":29}]},{"hash":1343009820,"vendorHash":3751514131,"classType":"Hunter","costs":[{"hash":800069450,"quantity":29}]},{"hash":385833378,"vendorHash":3751514131,"classType":"Hunter","costs":[{"hash":800069450,"quantity":29}]},{"hash":445076215,"vendorHash":3751514131,"classType":"Hunter","costs":[{"hash":800069450,"quantity":29}]},{"hash":262826703,"vendorHash":3751514131,"classType":"Titan","costs":[{"hash":800069450,"quantity":29}]},{"hash":2347181257,"vendorHash":3751514131,"classType":"Titan","costs":[{"hash":800069450,"quantity":29}]},{"hash":1883377784,"vendorHash":3751514131,"classType":"Titan","costs":[{"hash":800069450,"quantity":29}]},{"hash":2639123099,"vendorHash":3751514131,"classType":"Titan","costs":[{"hash":800069450,"quantity":29}]},{"hash":1934339678,"vendorHash":3751514131,"classType":"Titan","costs":[{"hash":800069450,"quantity":29}]},{"hash":1504698788,"vendorHash":3751514131,"classType":"Warlock","costs":[{"hash":800069450,"quantity":29}]},{"hash":4172973116,"vendorHash":3751514131,"classType":"Warlock","costs":[{"hash":800069450,"quantity":29}]},{"hash":3520307277,"vendorHash":3751514131,"classType":"Warlock","costs":[{"hash":800069450,"quantity":29}]},{"hash":3558781766,"vendorHash":3751514131,"classType":"Warlock","costs":[{"hash":800069450,"quantity":29}]},{"hash":2248528889,"vendorHash":3751514131,"classType":"Warlock","costs":[{"hash":800069450,"quantity":29}]},{"hash":3853748946,"vendorHash":537912098,"classType":"Any","costs":[{"hash":800069450,"quantity":5}],"forceSec":"材料"},{"hash":3853748946,"vendorHash":537912098,"classType":"Any","costs":[{"hash":800069450,"quantity":11}],"forceSec":"材料"},{"hash":4257549984,"vendorHash":537912098,"classType":"Any","costs":[{"hash":800069450,"quantity":31}],"forceSec":"材料"},{"hash":903043774,"vendorHash":537912098,"classType":"Any","costs":[{"hash":800069450,"quantity":23}],"forceSec":"材料"},{"hash":3159615086,"vendorHash":537912098,"classType":"Any","costs":[{"hash":800069450,"quantity":7}],"forceSec":"材料"},{"hash":3282419336,"vendorHash":537912098,"classType":"Any","costs":[{"hash":800069450,"quantity":17}],"forceSec":"材料"},{"hash":4049195331,"vendorHash":537912098,"classType":"Any","costs":[{"hash":800069450,"quantity":17}],"forceSec":"材料"},{"hash":3691823069,"vendorHash":537912098,"classType":"Any","costs":[{"hash":800069450,"quantity":7}],"forceSec":"材料"}]
 
 function getApiKey() {
@@ -78,7 +78,7 @@ function loadRecs() {
       return JSON.parse(fs.readFileSync(p, "utf8"))
     }
   }
-  throw new Error("未找到老九词条推荐表 xur-recs.json")
+  throw new Error("未找到仄词条推荐表 xur-recs.json")
 }
 
 function absUrl(p) {
@@ -120,7 +120,7 @@ function xurSec(tier, ty, name) {
 
 function currentXurWindow() {
   const now = new Date()
-  // 老九每周五 17:00 UTC（北京时间周六 01:00）抵达，周二 17:00 UTC（北京时间周三 01:00）离开
+  // 仄每周五 17:00 UTC（北京时间周六 01:00）抵达，周二 17:00 UTC（北京时间周三 01:00）离开
   const day = now.getUTCDay()
   const hour = now.getUTCHours()
   const arrival = new Date(now)
@@ -166,27 +166,35 @@ async function fetchWithRetry(url, options, retries = 3) {
   throw lastErr
 }
 
-async function fetchLiveXurInput() {
+function arrivalStaleReason(input) {
+  const norm = normalizeInput(input)
+  if (!norm.arrival) return null
+  const feedArrivalMs = Date.parse(norm.arrival)
+  const expectedArrivalMs = Date.parse(currentXurWindow().arrival)
+  if (Number.isFinite(feedArrivalMs) && Number.isFinite(expectedArrivalMs) && feedArrivalMs < expectedArrivalMs) {
+    return `仄轮换源尚未刷新至本周周期（源 arrival=${norm.arrival}，期望 >= ${currentXurWindow().arrival}）`
+  }
+  return null
+}
+
+async function fetchLiveXurInput(opts = {}) {
   const res = await fetchWithRetry(XUR_FEED_URL, {
     headers: { "User-Agent": "StarsideCloudXur/1.0" }
   })
-  if (!res.ok) throw new Error(`老九轮换源 HTTP ${res.status}`)
+  if (!res.ok) throw new Error(`仄轮换源 HTTP ${res.status}`)
   const data = await res.json()
   const html = data?.content?.rendered || ""
-  if (!html) throw new Error("老九轮换源 content.rendered 为空")
+  if (!html) throw new Error("仄轮换源 content.rendered 为空")
   const m = /window\.KYBER_XUR_DATA\s*=\s*(\{[\s\S]*?\})\s*;?\s*<\/script>/i.exec(html)
-  if (!m) throw new Error("老九轮换源未找到 KYBER_XUR_DATA 脚本块")
+  if (!m) throw new Error("仄轮换源未找到 KYBER_XUR_DATA 脚本块")
   const parsed = JSON.parse(m[1])
   const norm = normalizeInput(parsed)
   if (!norm.slots || norm.slots.length < 10) {
-    throw new Error(`老九轮换源解析条目不足：仅解析出 ${norm.slots ? norm.slots.length : 0} 件`)
+    throw new Error(`仄轮换源解析条目不足：仅解析出 ${norm.slots ? norm.slots.length : 0} 件`)
   }
-  if (norm.arrival) {
-    const feedArrivalMs = Date.parse(norm.arrival)
-    const expectedArrivalMs = Date.parse(currentXurWindow().arrival)
-    if (Number.isFinite(feedArrivalMs) && Number.isFinite(expectedArrivalMs) && feedArrivalMs < expectedArrivalMs) {
-      throw new Error(`老九轮换源尚未刷新至本周周期（源 arrival=${norm.arrival}，期望 >= ${currentXurWindow().arrival}）`)
-    }
+  if (!opts.allowStale) {
+    const staleReason = arrivalStaleReason(parsed)
+    if (staleReason) throw new Error(staleReason)
   }
   return parsed
 }
@@ -206,7 +214,9 @@ async function fetchBungieVendorState(apiKey) {
   const liveCostByHash = new Map()
   for (const s of Object.values(sales)) {
     if (s.itemHash && Array.isArray(s.costs) && s.costs.length) {
-      liveCostByHash.set(Number(s.itemHash), {
+      const itemH = Number(s.itemHash)
+      if (!liveCostByHash.has(itemH)) liveCostByHash.set(itemH, [])
+      liveCostByHash.get(itemH).push({
         hash: s.costs[0].itemHash,
         quantity: s.costs[0].quantity
       })
@@ -407,7 +417,15 @@ function cleanXur(input, defMap, recs, liveCostByHash = null) {
     const shot = (d && d.screenshot) || absUrl(src.screenshot || "")
 
     let cost = null
-    const liveCost = liveCostByHash && liveCostByHash.get(Number(h))
+    const rawQueue = liveCostByHash && liveCostByHash.get(Number(h))
+    let liveCost = null
+    if (Array.isArray(rawQueue) && rawQueue.length) {
+      const hintQty = src.costs && src.costs[0] ? Number(src.costs[0].quantity) : null
+      const hitIdx = hintQty != null ? rawQueue.findIndex((c) => Number(c.quantity) === hintQty) : 0
+      liveCost = rawQueue.splice(hitIdx >= 0 ? hitIdx : 0, 1)[0]
+    } else if (rawQueue && !Array.isArray(rawQueue)) {
+      liveCost = rawQueue
+    }
     const rawCosts = liveCost ? [liveCost] : (src.costs || [])
     for (const cc of rawCosts) {
       const cd = defMap.get(String(cc.hash || "800069450"))
@@ -462,8 +480,11 @@ function cleanXur(input, defMap, recs, liveCostByHash = null) {
 
   let armorSetName = "传说护甲套装"
   const firstLegArmor = items.find((x) => x.sec === "传说护甲")
-  if (firstLegArmor && firstLegArmor.n.length >= 2) {
-    armorSetName = firstLegArmor.n.slice(0, 2) + "套装"
+  if (firstLegArmor && firstLegArmor.n) {
+    const stem = firstLegArmor.n
+      .replace(/(?:头盔|面具|面罩|头罩|头饰|护额|兜帽|臂铠|护手|手套|护臂|胸甲|长袍|罩袍|胸铠|背心|外衣|腿甲|护腿|长靴|战靴|绑腿|披风|斗篷|印记|腰带|战痕|臂环|羁绊)$/, "")
+      .replace(/[·\s]+$/, "")
+    armorSetName = (stem.length >= 2 ? stem : firstLegArmor.n.slice(0, 2)) + "套装"
   }
 
   const win = currentXurWindow()
@@ -487,12 +508,12 @@ async function syncXur(apiKey, customData = null) {
   const input = customData || await fetchLiveXurInput()
   const { liveCostByHash } = await fetchBungieVendorState(apiKey)
   const hashes = collectHashes(input)
-  if (!hashes.length) throw new Error("老九周货槽位为空")
+  if (!hashes.length) throw new Error("仄周货槽位为空")
   const defMap = await fetchDefMap(hashes, apiKey)
   const recs = loadRecs()
   const payload = cleanXur(input, defMap, recs, liveCostByHash)
   if (!payload.items || payload.items.length < 10) {
-    throw new Error(`清洗后的老九商品数量异常 (${payload.items ? payload.items.length : 0})`)
+    throw new Error(`清洗后的仄商品数量异常 (${payload.items ? payload.items.length : 0})`)
   }
   return payload
 }
@@ -506,7 +527,7 @@ async function run() {
   const argFile = process.argv[2] && fs.existsSync(process.argv[2]) ? process.argv[2] : null
   const customData = argFile ? JSON.parse(fs.readFileSync(argFile, "utf8")) : null
 
-  console.log("1. 正在通过官方 Bungie API (Destiny2/Vendors & DestinyInventoryItemDefinition) 拉取老九（Xûr）全部中文定义与图标...")
+  console.log("1. 正在通过官方 Bungie API (Destiny2/Vendors & DestinyInventoryItemDefinition) 拉取仄（Xûr）全部中文定义与图标...")
   const payload = await syncXur(apiKey, customData)
 
   const dest = path.resolve(__dirname, "../site/rotation/xur.json")
@@ -515,18 +536,28 @@ async function run() {
 
   const stat = {}
   for (const it of payload.items) stat[it.sec] = (stat[it.sec] || 0) + 1
-  console.log(`2. ✓ 老九周货官方 API 更新完成！共 ${payload.total} 件 (${Object.entries(stat).map(([k, v]) => `${k} ${v}`).join("、")})`)
+  console.log(`2. ✓ 仄周货官方 API 更新完成！共 ${payload.total} 件 (${Object.entries(stat).map(([k, v]) => `${k} ${v}`).join("、")})`)
   console.log(`3. 已落盘: ${dest}`)
 }
 
 function xurSignature(input) {
   const norm = normalizeInput(input)
-  const parts = (norm.slots || []).map((s) => `${s.hash}:${s.section || s.sec || ""}:${s.cost || ""}`).sort()
+  const parts = (norm.slots || []).map((s) => {
+    const sec = s.forceSec || s.section || s.sec || ""
+    const costs = Array.isArray(s.costs)
+      ? s.costs.map((c) => `${c.hash || ""}:${c.quantity ?? ""}`).join(",")
+      : (s.cost ?? "")
+    const socks = (s.sockets || []).map((sk) => {
+      const plugs = (sk.reusablePlugs || []).map((r) => r.hash || "").filter(Boolean).join(",")
+      return `${sk.plugHash || ""}[${plugs}]`
+    }).join(";")
+    return `${s.hash}:${sec}:${costs}:${socks}`
+  }).sort()
   const raw = `${norm.location || ""}|${parts.join("|")}`
   return crypto.createHash("sha1").update(raw).digest("hex")
 }
 
-module.exports = { XUR_SLOTS, XUR_FEED_URL, currentXurWindow, xurSignature, fetchLiveXurInput, syncXur, cleanXur, collectHashes }
+module.exports = { XUR_SLOTS, XUR_FEED_URL, currentXurWindow, xurSignature, arrivalStaleReason, fetchLiveXurInput, syncXur, cleanXur, collectHashes }
 
 if (require.main === module) {
   run()

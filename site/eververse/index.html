@@ -14,10 +14,8 @@
 <link rel="preload" href="../assets/fonts/chakra-petch-600.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../assets/site.css">
-<link rel="stylesheet" href="../armor-rng/style.css">
 <link rel="stylesheet" href="style.css">
 <script type="module" src="../assets/sky-page.js"></script>
-<script src="../assets/armor-rng.js" defer></script>
 <script src="app.js" defer></script>
 </head>
 <body>
@@ -34,7 +32,7 @@
 <h1>光尘商店</h1>
 <div class="ev-scope" role="group" aria-label="商人切换">
 <button type="button" class="toggle" id="eververse" aria-pressed="true" data-tab="eververse"><img class="ev-tab-ico" src="../assets/icons/dust.webp" alt="" width="14" height="14">永恒之诗 · 光尘与银币</button>
-<button type="button" class="toggle" id="xur" aria-pressed="false" data-tab="xur"><img class="ev-tab-ico" src="../assets/icons/coin.webp" alt="" width="14" height="14">老九 · 仄 (Xûr)</button>
+<button type="button" class="toggle" id="xur" aria-pressed="false" data-tab="xur"><img class="ev-tab-ico" src="../assets/icons/coin.webp" alt="" width="14" height="14">仄 (Xûr)</button>
 <button type="button" class="toggle" id="ada" aria-pressed="false" data-tab="ada"><img class="ev-tab-ico" src="../assets/icons/glimmer.webp" alt="" width="14" height="14">装甲合成 · 艾达-1 (Ada-1)</button>
 </div>
 </header>
@@ -42,9 +40,9 @@
 <main>
 <div class="ev-status-bar" role="region" aria-label="轮换状态">
 <div class="ev-status-left">
-<span class="ev-bar-item ev-bar-accent"><i class="ev-dot" aria-hidden="true"></i><span class="ev-bar-k" id="ev-lbl-cur">本轮刷新</span><b id="ev-cur-cycle">10 月 19 日 01:00 · 周一</b></span>
-<span class="ev-bar-item"><span class="ev-bar-k" id="ev-lbl-next">下次刷新</span><b id="ev-next-reset">10 月 20 日 01:00 · 周二</b></span>
-<span class="ev-bar-item"><span class="ev-bar-k">最近同步</span><b id="ev-last-fetch">10 月 19 日 13:41</b></span>
+<span class="ev-bar-item ev-bar-accent"><i class="ev-dot" aria-hidden="true"></i><span class="ev-bar-k" id="ev-lbl-cur">本轮刷新</span><b id="ev-cur-cycle">--</b></span>
+<span class="ev-bar-item"><span class="ev-bar-k" id="ev-lbl-next">下次刷新</span><b id="ev-next-reset">--</b></span>
+<span class="ev-bar-item"><span class="ev-bar-k">最近同步</span><b id="ev-last-fetch">--</b></span>
 </div>
 <span class="ev-bar-right" id="ev-cycle-rule">每天 01:00 刷新</span>
 <div class="ev-prog" id="ev-prog" role="progressbar" aria-label="本轮进度" aria-valuemin="0" aria-valuemax="100" hidden><i id="ev-prog-fill"></i></div>
@@ -138,6 +136,6 @@
 <script>(function(){var d=new Date(Date.now()+288e5).toISOString().slice(0,10);var o=document.getElementById("sv"),f=1;try{f=localStorage.getItem("svd")===d?0:1;if(f)localStorage.setItem("svd",d)}catch(_){}if(!f){if(!o)return;try{var c=localStorage.getItem("svt")||"",i=c.indexOf("|"),a=Date.now()-c.slice(0,i);if(i>0&&a>=0&&a<6e5){o.textContent=c.slice(i+1);return}}catch(_){}}var r=f?fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api",{method:"POST",body:JSON.stringify({a:"hit",s:o?1:0})}):fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api?a=stats");r.then(function(x){return x.json()}).then(function(s){if(o){var t="今日 "+s.today+" 位访客 · 累计 "+s.total;o.textContent=t;try{localStorage.setItem("svt",Date.now()+"|"+t)}catch(_){}}},function(x){if(o)o.textContent="访客统计暂不可用："+x})})()</script>
 <script>try{if(localStorage.sa_at&&document.querySelector("main[data-src]")){var l=document.querySelector('link[href$="assets/site.css"]');if(l)import(l.href.replace("assets/site.css","admin/edit.js"))}}catch(_){}</script>
 <script>(function(){if(!/\.tcloudbase(app)?\.com$/.test(location.hostname))return;var u="https://starside.work"+location.pathname+location.search+location.hash;document.title="【测试地址】"+document.title;function link(t,big){var a=document.createElement("a");a.href=u;a.textContent=t;a.style.cssText=big?"padding:.7em 1.6em;border:1px solid var(--accent);border-radius:2px;color:var(--accent);text-decoration:none;font-size:16px":"color:var(--accent);white-space:nowrap";return a}var bar=document.createElement("div");bar.style.cssText="position:fixed;left:0;right:0;bottom:0;z-index:99;display:flex;flex-wrap:wrap;gap:.2em 1em;align-items:center;justify-content:center;padding:.55em 1em;background-color:var(--ink-lift);border-top:1px solid var(--hair-lit);color:var(--bone);font:13px/1.7 var(--font-cn)";bar.append("当前为测试域名，正式站点位于 starside.work ",link("前往正式站"));var box=document.createElement("div");box.style.cssText="position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;gap:1.4em;align-items:center;justify-content:center;padding:2em;text-align:center;background-color:var(--ink);color:var(--bone);font:15px/1.9 var(--font-cn)";var say=document.createElement("p");say.textContent="当前访问的是测试域名。请前往正式地址 starside.work 并更新书签。";say.style.cssText="margin:0;max-width:32em";var stay=document.createElement("button");stay.type="button";stay.disabled=true;stay.style.cssText="background:none;border:0;color:var(--bone-faint);font:13px/1.7 var(--font-cn);cursor:pointer";var n=5;stay.textContent="继续访问测试域名（"+n+"）";var t=setInterval(function(){n--;stay.textContent="继续访问测试域名"+(n?"（"+n+"）":"");if(!n){clearInterval(t);stay.disabled=false}},1000);stay.onclick=function(){box.remove();document.body.appendChild(bar)};box.append(say,link("前往 starside.work",1),stay);document.body.appendChild(box)})()</script>
-<script>try{if(window===top){var l=document.querySelector('link[href$="assets/site.css"]');if(l)import(l.href.replace("assets/site.css","assets/notice.js"))}}catch(_){}</script>
+<script>try{if(window===top){var _s=0;try{_s=localStorage.getItem("sn")==="2026.11.16-d22645d0"||sessionStorage.getItem("sn")==="2026.11.16-d22645d0"}catch(_){}if(!_s){var l=document.querySelector('link[href$="assets/site.css"]');if(l)import(l.href.replace("assets/site.css","assets/notice.js"))}}}catch(_){}</script>
 </body>
 </html>

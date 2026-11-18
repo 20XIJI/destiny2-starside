@@ -470,12 +470,12 @@ def render(page, digest="", dex=None, origins=None):
                     "<h4%s>%s</h4>" % (bmark(mod["at"]), mod["name"]),
                     '<div class="mod-desc"%s>' % where,
                 ]
-                for n, m, p in mod["desc"]:
+                for _, _, p in mod["desc"]:
                     p_lines = [x.strip() for x in p.split("<br>") if x.strip()]
                     if any(x.startswith(("・", "- ", "— ")) for x in p_lines):
-                        o.append(str(format_prose_para(p_lines, typeset, bmark(n, m))))
+                        o.append(str(format_prose_para(p_lines, typeset)))
                     else:
-                        o.append("<p%s>%s</p>" % (bmark(n, m), typeset(p)))
+                        o.append("<p>%s</p>" % typeset(p))
                 o += ["</div>", "</article>"]
             o.append("</div>")
         o += ["</div>", "</section>"]

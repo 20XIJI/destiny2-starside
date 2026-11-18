@@ -433,7 +433,7 @@
   /* 一屏在画什么全在这里。view 是顶栏那三个标签；sel 或 hsel 有值即收件箱版面
      （左边队列、右边详情），否则是列表。筛选是各人当时的看法，不进地址栏；
      sel 进：指的是同一条稿子，两个人看的是同一样东西。 */
-  var V = { view: 'queue', status: 'wait', kind: 'all', scene: '', cls: '', q: '', sel: null,
+  var V = { view: 'queue', status: 'wait', kind: 'all', scene: '', cls: '', q: '', hideAegis: false, sel: null,
             hok: 0, hdoc: '', hwho: '', hq: '', hsel: null, add: false }
   var PEND = {}             // 资料页 → 带 judge 取回的那一份待审，load() 时清空
   var pendTip = ''          // 回到列表之后要贴在筛选行上的那句回执
@@ -501,6 +501,7 @@
     return (all || builds()).filter(function (b) {
       return bucket(b) === st && (!V.scene || scenesOf(b).indexOf(V.scene) >= 0)
         && (!V.cls || clsOf(b) === V.cls) && inFind(b, q)
+        && (!V.hideAegis || st !== 'live' || !/^Aegis\b/i.test(byOf(b.md)))
     }).sort(function (a, b) {
       var x = a.at || ''
       var y = b.at || ''
@@ -708,6 +709,10 @@
         function (v) { V.scene = v; render() }),
       select('职业', V.cls, [['', '全部职业']].concat(classes.map(function (s) { return [s, s] })),
         function (v) { V.cls = v; render() }),
+      V.status === 'live' && V.kind !== 'page'
+        ? h('button', { type: 'button', class: 'x-btn quiet', 'aria-pressed': V.hideAegis ? 'true' : 'false',
+            onclick: function () { V.hideAegis = !V.hideAegis; render() } }, '隐藏 Aegis')
+        : null,
       searchBox('q', '搜索名称、推荐人、核心或页面', render))
     // 废稿逐条点不现实，给一枚一次清干净的。**只删已驳回的**——去重从不查那一档。
     // **只给超级管理员**：一次抹掉几十条，手滑的代价与逐条不是一个量级。
@@ -954,9 +959,24 @@
       // 已上线的写回库里那份源稿，待审的写回投稿记录——两条路的落点不同，
       // 但对填表页来说都只是「存一版」。
       var act = b.state === 'live' ? 'bsave' : 'ssave'
+      var payload = { id: b.state === 'live' ? b.id : s._id, md: md }
       /* **两件事分开报**：存失败要让人再存一遍，存下了只是没刷新则不必——混成
          一句「保存失败」会让人把已经进库的那一份再存一次。 */
-      call(act, { id: b.state === 'live' ? b.id : s._id, md: md }).then(function () {
+      Promise.resolve().then(function () {
+        if (b.state === 'live') {
+          if (b.doc && b.doc.hash) payload.baseHash = b.doc.hash
+          return
+        }
+        if (typeof crypto !== 'undefined' && crypto.subtle && typeof TextEncoder !== 'undefined') {
+          return crypto.subtle.digest('SHA-1', new TextEncoder().encode(String(s.md || ''))).then(function (buf) {
+            payload.baseHash = Array.prototype.map.call(new Uint8Array(buf), function (x) {
+              return (x < 16 ? '0' : '') + x.toString(16)
+            }).join('')
+          })
+        }
+      }).then(function () {
+        return call(act, payload)
+      }).then(function () {
         return load().then(function () {
           /* **基线要对。**不对的话，接下来那次重画拿着新正文再走一遍 feed()，它既与
              fed 不等、又算脏，会弹一个莫名其妙的确认。 */
@@ -1109,9 +1129,15 @@
     var bad = badOf(groups)
     p.bad = bad
     ops.parentNode.querySelector('.meta').textContent = summaryOf(p)
+    var txDocs = new Set(), txRecs = new Set()
+    pend.forEach(function (e) {
+      if (e.kind === 'rec') txRecs.add(e.rec)
+      else txDocs.add(e.doc)
+    })
+    var tooMany = 2 * pend.length + 2 * (txDocs.size + txRecs.size) + 2 > 100
     all.textContent = '全部通过（' + pend.length + '）'
-    all.disabled = !!bad || pend.length > 48
-    all.title = bad ? '存在 ' + bad + ' 处冲突，需逐处处理' : pend.length > 48 ? '一批最多 48 处，请逐处审核' : ''
+    all.disabled = !!bad || tooMany
+    all.title = bad ? '存在 ' + bad + ' 处冲突，需逐处处理' : tooMany ? '本批事务操作超过 100 次，请逐处审核' : ''
     all.onclick = function () { mark(p, pend.map(function (e) { return [e._id, 1] })) }
     groups.forEach(function (g) {
       var many = g.list.length > 1
@@ -1426,9 +1452,9 @@
   // 「八位随机串-职业」。八位 36 进制约 2.8 万亿种，重名几乎不会发生；
   // 真重了后端当场拒——slug 即文件名，重了会把上一份源稿盖掉。
   function defaultSlug (md) {
-    // 职业那一行写成「猎人#主键」：主键跟在 # 后面，slug 只要职业名。
+    // 职业那一行写成「猎人#主键」：主键跟在 # 后面，slug 只要职业名；合集统一写 set。
     var m = /^职业：\s*([^#\s]+)/m.exec(md)
-    var tail = (m && LATIN[m[1]]) || 'build'
+    var tail = B().isSet(md) ? 'set' : ((m && LATIN[m[1]]) || 'build')
     var head = ''
     for (var i = 0; i < 8; i++) head += RAND.charAt(Math.floor(Math.random() * RAND.length))
     return head + '-' + tail
@@ -1645,7 +1671,8 @@
       if (me.lv >= 2 && me.stale) {
         var st = []
         if (me.stale.eververse) st.push('光尘未更新(' + (me.stale.eververse.attempts || 1) + ')')
-        if (me.stale.xur) st.push('老九未更新(' + (me.stale.xur.attempts || 1) + ')')
+        if (me.stale.ada) st.push('艾达异常：' + me.stale.ada.reason)
+        if (me.stale.xur) st.push('仄未更新(' + (me.stale.xur.attempts || 1) + ')')
         if (st.length) {
           $('sync-tip').classList.add('bad')
           $('sync-tip').textContent = st.join(' · ')
@@ -1735,10 +1762,12 @@
       b.textContent = '同步中…'
       t.classList.remove('bad')
       t.textContent = ''
-      Promise.all([call('sync_rotation'), call('sync_xur')]).then(function (r) {
+      Promise.all([call('sync_rotation', { force: true }), call('sync_xur', { force: true })]).then(function (r) {
         var evTag = r[0].skipped ? '光尘已是最新 ' : '已同步光尘 '
-        var xurTag = r[1].skipped ? '老九已是最新 ' : '老九 '
-        t.textContent = evTag + r[0].total + ' · 艾达 ' + (r[0].adaTotal || 0) + ' · ' + xurTag + r[1].total
+        var xurTag = r[1].skipped ? '仄已是最新 ' : '仄 '
+        var adaNote = r[0].adaError ? (' · 艾达失败：' + r[0].adaError) : (' · 艾达 ' + (r[0].adaTotal || 0))
+        t.classList.toggle('bad', Boolean(r[0].adaError))
+        t.textContent = evTag + r[0].total + adaNote + ' · ' + xurTag + r[1].total
       }, function (e) {
         t.classList.add('bad')
         t.textContent = '同步失败：' + say(e)

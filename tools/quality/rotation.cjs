@@ -593,7 +593,7 @@ test('xur: timer trigger xur-sat-0103 syncs weekly inventory via Bungie official
   assert.equal(recPerk.name, '顺畅换弹')
   assert.equal(recPerk.rec, 1, 'recommended perk carries rec=1 from xur-recs.json')
 
-  // 上游仍返回上一周的 arrival 时直接抛错拒绝覆盖
+  // 上游仍返回上一周的 arrival 时直接抛错拒绝覆盖；若库里已有上期记录则持久化和发布 stale，force:true 可强刷
   const staleHtml = `<script id="kyber-xur-inline-data">\nwindow.KYBER_XUR_DATA = ${JSON.stringify({ slots: XUR_SLOTS, location: 'Bazaar, Tower', arrival: '2020-01-03T17:00:00Z' })};\n</script>`
   const hStale = harness({}, {
     async fetch(url) {
@@ -606,12 +606,77 @@ test('xur: timer trigger xur-sat-0103 syncs weekly inventory via Bungie official
   const staleRes = await hStale.main({ Type: 'Timer', TriggerName: 'xur-sat-0103' })
   assert.equal(staleRes.ok, 0)
   assert.match(staleRes.error, /尚未刷新至本周周期/)
+
+  const prevXur = JSON.parse(JSON.stringify(h.store.counters.get('xur')))
+  prevXur.arrival = '2026-01-03T17:00:00Z'
+  const hStalePrev = harness({ counters: [prevXur] }, {
+    async fetch(url) {
+      if (url === XUR_FEED_URL) {
+        return { ok: true, status: 200, async json() { return { content: { rendered: staleHtml } } } }
+      }
+      if (url.includes('/Destiny2/Vendors/')) {
+        return {
+          ok: true, status: 200,
+          async json() {
+            return {
+              Response: {
+                vendors: { data: { '2190858386': { vendorHash: 2190858386, enabled: true } } },
+                sales: { data: { '2190858386': { saleItems: { '8': { vendorItemIndex: 8, itemHash: 2405271937, costs: [{ itemHash: 800069450, quantity: 41 }] } } } } }
+              }
+            }
+          }
+        }
+      }
+      const m = /DestinyInventoryItemDefinition\/(\d+)\//.exec(url)
+      assert.ok(m, 'unexpected url: ' + url)
+      return {
+        ok: true, status: 200,
+        async json() {
+          return {
+            Response: {
+              itemTypeDisplayName: '物品',
+              displayProperties: { name: '测试' + m[1], icon: '/icons/x.jpg' },
+              inventory: { tierTypeName: '传说' },
+              classType: 3
+            }
+          }
+        }
+      }
+    }
+  })
+  const stalePrevRes = await hStalePrev.main({ Type: 'Timer', TriggerName: 'xur-sat-0103' })
+  assert.equal(stalePrevRes.ok, 0)
+  assert.match(stalePrevRes.error, /尚未刷新至本周周期/)
+  assert.equal(hStalePrev.store.counters.get('xur').stale.attempts, 1)
+  assert.match(hStalePrev.store.counters.get('xur').stale.reason, /尚未刷新至本周周期/)
+  assert.match(hStalePrev.published['destiny2-starside/rotation/xur.json'].stale.reason, /尚未刷新至本周周期/)
+
+  hStalePrev.signIn('lv2', 2)
+  const forcedStaleRes = await hStalePrev.as('lv2', { a: 'sync_xur', force: true })
+  assert.equal(forcedStaleRes.ok, 1)
+  assert.equal(hStalePrev.store.counters.get('xur').stale, null)
+  assert.equal(hStalePrev.published['destiny2-starside/rotation/xur.json'].stale, undefined)
 })
 
 test('xur: 4-week history in counters/xur, idempotent retry, and duplicate signature rejection', async () => {
   const { XUR_SLOTS, XUR_FEED_URL, currentXurWindow, xurSignature } = require(path.join(root, 'tools/sync-xur.js'))
   const wk = currentXurWindow()
-  const altSlots = XUR_SLOTS.map((s, i) => (i === 0 ? { ...s, cost: '999 Strange Coins' } : s))
+  const altSlots = XUR_SLOTS.map((s, i) => (i === 0 ? { ...s, costs: [{ hash: 800069450, quantity: 999 }] } : s))
+  assert.notEqual(
+    xurSignature({ slots: altSlots, location: 'Bazaar, Tower' }),
+    xurSignature({ slots: XUR_SLOTS, location: 'Bazaar, Tower' }),
+    'xurSignature 必须感知 costs 变化'
+  )
+  const altPerkSlots = XUR_SLOTS.map((s) => (
+    s.hash === 2779821308
+      ? { ...s, sockets: [{ plugHash: 999999, reusablePlugs: [{ hash: 999999 }] }] }
+      : s
+  ))
+  assert.notEqual(
+    xurSignature({ slots: altPerkSlots, location: 'Bazaar, Tower' }),
+    xurSignature({ slots: XUR_SLOTS, location: 'Bazaar, Tower' }),
+    'xurSignature 必须感知 sockets Perk 变化'
+  )
   const preHistory = Array.from({ length: 4 }, (_, i) => ({
     arrival: `2026-01-0${i + 1}T17:00:00Z`,
     sig: i === 3 ? xurSignature({ slots: altSlots, location: 'Bazaar, Tower' }) : ('old-xur-' + i),
@@ -916,4 +981,111 @@ test('rota: pointer drag tracks continuously and snaps with momentum on release'
   assert.equal(stage.classes.has('is-dragging'), false, '松手后应退出拖拽态')
   const afterDragMid = midCard()
   assert.notEqual(afterDragMid.innerHTML, initialMid.innerHTML, '向上拖过一周距离后居中卡片应切换到下一周')
+})
+
+test('rota: week boundary and card dates stay UTC+8 regardless of local timezone', () => {
+  const src = fs.readFileSync(path.join(site, 'assets/rota.js'), 'utf8')
+    .replace('export default function init', 'function init')
+  const cards = []
+  const stage = {
+    classList: { add() {}, remove() {} },
+    appendChild(el) { cards.push(el) },
+    setPointerCapture() {},
+    addEventListener() {},
+  }
+  const box = { className: '', innerHTML: '', querySelector: () => stage, addEventListener() {} }
+  const table = {
+    dataset: { rota: '2026.1.7 1:00' },
+    parentNode: { insertBefore() {} },
+    querySelectorAll(sel) {
+      if (sel === 'tbody tr') {
+        return ['玻璃拱顶', '最后一愿', '深石地窖', '门徒誓约', '国王的陨落', '克洛塔的末日', '救赎的边缘', '救赎花园']
+          .map((r, i) => ({ children: [{ textContent: String(i + 1) }, { textContent: r }, { textContent: '地牢' + (i + 1) }] }))
+      }
+      return sel === 'thead th' ? [{ textContent: '#' }, { textContent: '突袭' }, { textContent: '地牢' }] : []
+    },
+  }
+  const FIXED_NOW = Date.UTC(2026, 0, 13, 17, 5) // 北京时间 2026-01-14 01:05，刚进第 1 周
+  function TzDate(ms) {
+    const inner = new Date(ms)
+    return {
+      getUTCMonth: () => inner.getUTCMonth(),
+      getUTCDate: () => inner.getUTCDate(),
+      getMonth: () => new Date(ms - 5 * 3600e3).getUTCMonth(),
+      getDate: () => new Date(ms - 5 * 3600e3).getUTCDate(),
+    }
+  }
+  TzDate.UTC = Date.UTC
+  TzDate.now = () => FIXED_NOW
+  const ctx = {
+    Date: TzDate, Math, Number, Object, Infinity,
+    performance: { now: () => 0 }, matchMedia: () => ({ matches: true }),
+    requestAnimationFrame() {},
+    document: {
+      querySelectorAll: () => [],
+      createElement(tag) {
+        if (box.className === '') return box
+        const classes = new Set()
+        return {
+          tag, className: '', innerHTML: '', hidden: false, style: {},
+          classList: { toggle(c, on) { if (on) classes.add(c); else classes.delete(c) }, has: (c) => classes.has(c) },
+          getBoundingClientRect: () => ({ left: 0, right: 720, top: 189, bottom: 329 }),
+          remove() { const i = cards.indexOf(this); if (i >= 0) cards.splice(i, 1) },
+        }
+      },
+    },
+  }
+  vm.runInNewContext(src, ctx)
+  ctx.init(table, { tuck() {} })
+  const nowCard = cards.find((c) => c.className.includes('is-now'))
+  assert.ok(nowCard)
+  assert.match(nowCard.innerHTML, /1 月 14 日 — 1 月 20 日/)
+})
+
+test('eververse & xur: adaError short-circuits Ada fetch, entities decode, and who surfaces auth errors', async () => {
+  const { syncEververse, parseEververseHtml } = require(path.join(root, 'tools/sync-eververse.js'))
+  const html = `<div data-ke-item='{"link":"/items/1","market":"dust","cost":"1,500","tier":"Exotic","itemType":"Emote","name":"Test&#x27;s"}'></div>`.repeat(18)
+  assert.equal(parseEververseHtml(html).slots.length, 18)
+
+  let adaFetched = 0
+  const evRes = await syncEververse('k', [{ hash: 10, vendorHash: 1, group: 'g', currency: 'dust', cost: 100, isWide: false, expectedTier: 'exotic', expectedType: '动作' }], null, {
+    adaError: 'upstream down',
+    now: '2026-04-10T18:00:00Z',
+    async prefetchedAdaSlots() { adaFetched++ }
+  }).catch((e) => e)
+  // Using real fetch stub: ensure global.fetch is not hit for ADA_FEED_URL when adaError is supplied
+  const prevFetch = global.fetch
+  global.fetch = async (url) => {
+    if (String(url).includes('235055')) { adaFetched++; throw new Error('must not fetch Ada') }
+    return {
+      ok: true, status: 200,
+      async json() {
+        return {
+          Response: {
+            itemType: 19, itemTypeDisplayName: '动作',
+            displayProperties: { name: '测验动作', icon: '/icons/a.jpg' },
+            inventory: { tierTypeName: '异域' }
+          }
+        }
+      }
+    }
+  }
+  try {
+    const res = await syncEververse('k', [{ hash: 10, vendorHash: 1, group: 'g', currency: 'dust', cost: 100, isWide: false, expectedTier: 'exotic', expectedType: '动作' }], null, {
+      adaError: 'upstream blocked',
+      now: '2026-04-10T18:00:00Z'
+    })
+    assert.equal(adaFetched, 0)
+    assert.equal(res.ada.error, 'upstream blocked')
+    assert.equal(res.ada.items.length, 0)
+  } finally {
+    global.fetch = prevFetch
+  }
+  void evRes
+
+  const h = harness({}, {
+    async fetch() { return { ok: false, status: 503, async json() { return {} } } }
+  })
+  const authErr = await h.main({ body: JSON.stringify({ a: 'me' }), headers: { authorization: 'Bearer tok-503' } })
+  assert.equal(JSON.parse(authErr.body).error, 'auth unavailable')
 })

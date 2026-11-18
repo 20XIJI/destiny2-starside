@@ -4,6 +4,8 @@
 更新：2026.9.10
 鸣谢：[小棒猪-LGpig](https://space.bilibili.com/169548478) 整理全部评级、数值与评语。
 数据源：[刷取清单](https://docs.google.com/spreadsheets/d/1qsKGrRzCePGaIM5gNtAQNh949d3OsMJ6qV6Fqtpj22k/htmlview)
+导航：是
+首屏记录：6
 首屏图标：6
 
 ## 评级

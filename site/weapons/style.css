@@ -2173,6 +2173,11 @@
   outline: none;
   cursor: ew-resize;
 }
+.pvp-crit-range:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
 .pvp-crit-range::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 2px;

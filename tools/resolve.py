@@ -76,7 +76,7 @@ def text(rec, field='name', lang=ZH):
     got = (block.get(lang) or {}).get(field)
     if got is None and lang != ZH:
         got = (block.get(ZH) or {}).get(field)
-    return got or ''
+    return markup.strip_pua(got or '')
 
 
 def icon_path(rec):

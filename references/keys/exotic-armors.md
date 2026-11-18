@@ -3,6 +3,7 @@
 描述：144 件异域护甲按猎人、术士、泰坦分三节，含每一件的定位与评语。
 更新：2026.9.10
 鸣谢：[小棒猪-LGpig](https://space.bilibili.com/169548478) 整理全部定位与评语。
+首屏记录：6
 数据源：[刷取清单](https://docs.google.com/spreadsheets/d/1qsKGrRzCePGaIM5gNtAQNh949d3OsMJ6qV6Fqtpj22k/htmlview)
 导航：是
 首屏图标：3

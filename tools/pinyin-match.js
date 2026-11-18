@@ -57,7 +57,7 @@
   }
 
   function foldEn(s) {
-    return String(s || '').toLowerCase().replace(/[\s.'’\-]/g, '');
+    return String(s || '').toLowerCase().replace(/[\s.'’-]/g, '');
   }
 
   function match(text, q) {
@@ -73,7 +73,7 @@
       var ch = text.charAt(ti);
       var code = ch.charCodeAt(0);
       if (code < 48 || (code > 57 && code < 97) || (code > 122 && (code < 0x4e00 || code > 0x9fff))) {
-        return (memo[key] = walk(ti + 1, qi));
+        return (memo[key] = walk(ti + 1, qi) || (ch === q.charAt(qi) && walk(ti + 1, qi + 1)));
       }
       if (ch === q.charAt(qi) && walk(ti + 1, qi + 1)) return (memo[key] = true);
       var pack = D[ch];

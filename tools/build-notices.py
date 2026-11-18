@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import hashlib
 import html as htmllib
 import json
 import os
@@ -14,8 +13,8 @@ import shell
 
 SRC = os.path.join(shell.ROOT, "references", "docs", "notices.md")
 OUT = os.path.join(shell.SITE, "assets", "notice-data.js")
-DATE_HEAD = re.compile(r"^(\d{4}\.\d{1,2}\.\d{1,2})\s*[·|:\-—]?\s*(.*)$")
 HREF_REL = re.compile(r'href="\.\./([^"]+)"')
+NOTICE_TAG = re.compile(r"<script>[^<]*assets/notice\.js[^<]*</script>")
 
 
 def _rewrite_links(fragment: str) -> str:
@@ -52,33 +51,36 @@ def _render_chunk(chunk: str) -> str:
 
 def parse_latest(md: str) -> dict[str, str]:
     """解析公告源稿最新一期分节，返回 {id, date, title, html}。"""
-    parts = re.split(r"^## ", md, flags=re.M)
-    if len(parts) < 2:
+    got = shell.parse_notice(md)
+    if got is None:
         markup.die("notices.md 至少需要一条「## 标题」公告分节")
-    first = parts[1]
-    raw_head, _, chunk = first.partition("\n")
-    head = raw_head.strip()
-    hit = DATE_HEAD.match(head)
-    if hit:
-        date = hit.group(1)
-        title = markup.text_of(hit.group(2).strip()) or head
-    else:
-        date = markup.meta_of(md, "更新", required=False) or ""
-        title = markup.text_of(head)
-    digest = hashlib.sha1((head + "\n" + chunk.strip()).encode("utf-8")).hexdigest()[:8]
-    nid = "%s-%s" % (date, digest) if date else digest
     return {
-        "id": nid,
-        "date": date,
-        "title": htmllib.unescape(title),
-        "html": _render_chunk(chunk),
+        "id": got["id"],
+        "date": got["date"],
+        "title": htmllib.unescape(got["title"]),
+        "html": _render_chunk(got["chunk"]),
     }
+
+
+def _sync_handwritten(tag: str) -> None:
+    """手写页面的内联公告脚本与 shell.announce_tag 保持同步，确保已读跳过与闸门一致。"""
+    for rel in (shell.HOME, os.path.join("eververse", "index.html")):
+        path = os.path.join(shell.SITE, rel)
+        with open(path, encoding="utf-8") as f:
+            src = f.read()
+        new, n = NOTICE_TAG.subn(lambda _: tag, src, count=1)
+        if n != 1:
+            markup.die("%s 里找不到唯一一条 assets/notice.js 内联脚本" % rel)
+        if new != src:
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(new)
 
 
 def main() -> int:
     with open(SRC, encoding="utf-8") as f:
         md = f.read()
-    payload = "export default %s;\n" % json.dumps(parse_latest(md), ensure_ascii=False)
+    latest = parse_latest(md)
+    payload = "export default %s;\n" % json.dumps(latest, ensure_ascii=False)
     old = None
     if os.path.exists(OUT):
         with open(OUT, encoding="utf-8") as f:
@@ -86,7 +88,8 @@ def main() -> int:
     if old != payload:
         with open(OUT, "w", encoding="utf-8") as f:
             f.write(payload)
-    print("站内公告：已更新 assets/notice-data.js（当前 %s）" % parse_latest(md)["id"])
+    _sync_handwritten(shell.announce_tag(latest["id"]))
+    print("站内公告：已更新 assets/notice-data.js（当前 %s）" % latest["id"])
     return 0
 
 

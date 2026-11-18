@@ -18,6 +18,7 @@
 <script src="../assets/pinyin.js" defer></script>
 <script src="../assets/app.js" defer></script>
 <script type="module" src="../assets/sky-page.js"></script>
+<script src="../assets/armor-rng.js" defer></script>
 </head>
 <body>
 <div class="site-head">
@@ -34,10 +35,11 @@
 <h1>护甲 3.0 商人属性机制与推算</h1>
 </header>
 
-<main data-src="docs/armor-rng" data-src-hash="efcc8d27a89e22ec22c81fe5e342685be4a409e4">
+<main data-src="docs/armor-rng" data-src-hash="8f30a6b2c0f7596c7ac532c5df6e1ca3bb78dd71">
 <section class="block" id="sec-1">
-<h2 class="sect-label" data-b="9">底层随机种子机制</h2>
-<p data-b="2" class="formula">在线推算器已内嵌于光尘商店页面，点击可直接跳转使用：<a href="../eververse/index.html#xur">前往光尘商店 · 仄（Xûr）周货页使用仄护甲属性推算器 →</a></p>
+<h2 class="sect-label" data-b="10">底层随机种子机制</h2>
+<div class="armor-calc" data-armor-calc></div>
+<p data-b="2" class="formula">在线推算器已直接挂载于本节下方，亦可在光尘商店结合每周仄在售护甲推算：<a href="../eververse/index.html#xur">前往光尘商店 · 仄（Xûr）周货页 →</a></p>
 <p data-b="2">护甲 3.0 的每件商人护甲由两个独立抽取的随机插槽决定属性分布，未命中的其余 3 项属性固定为 +5：</p>
 <dl class="rules">
 <dt data-b="2">原型插槽<span class="from">Archetype · 插槽池 1315181101</span></dt>
@@ -84,7 +86,7 @@
 <tr><th scope="row">9</th><td>爆破专家</td><td>Demolitionist</td><td>手雷</td><td>职业</td><td>武器</td><td>生命</td><td>超能</td><td>近战</td></tr>
 <tr><th scope="row">10</th><td>突击手</td><td>Skirmisher</td><td>近战</td><td>武器</td><td>生命</td><td>手雷</td><td>超能</td><td>职业</td></tr>
 <tr><th scope="row">11</th><td>高能者</td><td>Powerhouse</td><td>武器</td><td>超能</td><td>生命</td><td>手雷</td><td>职业</td><td>近战</td></tr>
-<tr><th scope="row">12</th><td>装甲兵</td><td>Colossus</td><td>超能</td><td>生命</td><td>武器</td><td>手雷</td><td>超能</td><td>近战</td></tr>
+<tr><th scope="row">12</th><td>装甲兵</td><td>Colossus</td><td>超能</td><td>生命</td><td>武器</td><td>手雷</td><td>职业</td><td>近战</td></tr>
 </tbody>
 </table>
 <p data-b="13">实测推算示例（以仄出售的<span class="exotic">陨星胸甲</span>为例）：</p>
@@ -203,6 +205,6 @@
 <script>(function(){var d=new Date(Date.now()+288e5).toISOString().slice(0,10);var o=document.getElementById("sv"),f=1;try{f=localStorage.getItem("svd")===d?0:1;if(f)localStorage.setItem("svd",d)}catch(_){}if(!f){if(!o)return;try{var c=localStorage.getItem("svt")||"",i=c.indexOf("|"),a=Date.now()-c.slice(0,i);if(i>0&&a>=0&&a<6e5){o.textContent=c.slice(i+1);return}}catch(_){}}var r=f?fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api",{method:"POST",body:JSON.stringify({a:"hit",s:o?1:0})}):fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api?a=stats");r.then(function(x){return x.json()}).then(function(s){if(o){var t="今日 "+s.today+" 位访客 · 累计 "+s.total;o.textContent=t;try{localStorage.setItem("svt",Date.now()+"|"+t)}catch(_){}}},function(x){if(o)o.textContent="访客统计暂不可用："+x})})()</script>
 <script>try{if(localStorage.sa_at&&document.querySelector("main[data-src]")){var l=document.querySelector('link[href$="assets/site.css"]');if(l)import(l.href.replace("assets/site.css","admin/edit.js"))}}catch(_){}</script>
 <script>(function(){if(!/\.tcloudbase(app)?\.com$/.test(location.hostname))return;var u="https://starside.work"+location.pathname+location.search+location.hash;document.title="【测试地址】"+document.title;function link(t,big){var a=document.createElement("a");a.href=u;a.textContent=t;a.style.cssText=big?"padding:.7em 1.6em;border:1px solid var(--accent);border-radius:2px;color:var(--accent);text-decoration:none;font-size:16px":"color:var(--accent);white-space:nowrap";return a}var bar=document.createElement("div");bar.style.cssText="position:fixed;left:0;right:0;bottom:0;z-index:99;display:flex;flex-wrap:wrap;gap:.2em 1em;align-items:center;justify-content:center;padding:.55em 1em;background-color:var(--ink-lift);border-top:1px solid var(--hair-lit);color:var(--bone);font:13px/1.7 var(--font-cn)";bar.append("当前为测试域名，正式站点位于 starside.work ",link("前往正式站"));var box=document.createElement("div");box.style.cssText="position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;gap:1.4em;align-items:center;justify-content:center;padding:2em;text-align:center;background-color:var(--ink);color:var(--bone);font:15px/1.9 var(--font-cn)";var say=document.createElement("p");say.textContent="当前访问的是测试域名。请前往正式地址 starside.work 并更新书签。";say.style.cssText="margin:0;max-width:32em";var stay=document.createElement("button");stay.type="button";stay.disabled=true;stay.style.cssText="background:none;border:0;color:var(--bone-faint);font:13px/1.7 var(--font-cn);cursor:pointer";var n=5;stay.textContent="继续访问测试域名（"+n+"）";var t=setInterval(function(){n--;stay.textContent="继续访问测试域名"+(n?"（"+n+"）":"");if(!n){clearInterval(t);stay.disabled=false}},1000);stay.onclick=function(){box.remove();document.body.appendChild(bar)};box.append(say,link("前往 starside.work",1),stay);document.body.appendChild(box)})()</script>
-<script>try{if(window===top){var l=document.querySelector('link[href$="assets/site.css"]');if(l)import(l.href.replace("assets/site.css","assets/notice.js"))}}catch(_){}</script>
+<script>try{if(window===top){var _s=0;try{_s=localStorage.getItem("sn")==="2026.11.16-d22645d0"||sessionStorage.getItem("sn")==="2026.11.16-d22645d0"}catch(_){}if(!_s){var l=document.querySelector('link[href$="assets/site.css"]');if(l)import(l.href.replace("assets/site.css","assets/notice.js"))}}}catch(_){}</script>
 </body>
 </html>

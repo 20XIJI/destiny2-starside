@@ -238,7 +238,7 @@ def zh(rec):
 
 
 def name_of(key):
-    return zh(facts().at(key)).get("name") or ""
+    return resolve.text(facts().at(key))
 
 
 def combo(rec):
@@ -756,7 +756,7 @@ def exotic_perks(key):
         ]
         options = option_plugs(rec)
         arch = (rec.get("derived") or {}).get("archetype")
-        if arch and name_of(str(arch)) == zh(rec).get("name"):
+        if arch and name_of(str(arch)) == name_of(key):
             frame = str(arch)
     names, icons, picks, first = {}, {}, [], None
     for h in plugs:

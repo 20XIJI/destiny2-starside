@@ -9,6 +9,7 @@
 """
 
 import gzip
+import hashlib
 import json
 import os
 import re
@@ -284,21 +285,62 @@ NOTICE = (
     "document.body.appendChild(box)})()</script>" % SITE_URL
 )
 
-# 全站一次性更新公告：由 assets/notice.js 在客户端查 localStorage("sn") 去重，
-# 只有未读当前公告 ID 时才弹出居中 <dialog>；已读零额外请求，公告归档页本身不自弹。
-ANNOUNCE = (
-    "<script>try{if(window===top){"
-    "var l=document.querySelector('link[href$=\"assets/site.css\"]');"
-    'if(l)import(l.href.replace("assets/site.css","assets/notice.js"))'
-    "}}catch(_){}</script>"
-)
+_NOTICE_DATE_HEAD = re.compile(r"^(\d{4}\.\d{1,2}\.\d{1,2})\s*[·|:\-—]?\s*(.*)$")
+
+
+def parse_notice(md):
+    """提取 notices.md 最新一期分节：{id, date, title, chunk}；缺分节返回 None。"""
+    parts = re.split(r"^## ", md, flags=re.M)
+    if len(parts) < 2:
+        return None
+    first = parts[1]
+    raw_head, _, chunk = first.partition("\n")
+    head = raw_head.strip()
+    hit = _NOTICE_DATE_HEAD.match(head)
+    if hit:
+        date = hit.group(1)
+        title = markup.text_of(hit.group(2).strip()) or head
+    else:
+        date = markup.meta_of(md, "更新", required=False) or ""
+        title = markup.text_of(head)
+    digest = hashlib.sha1((head + "\n" + chunk.strip()).encode("utf-8")).hexdigest()[:8]
+    nid = "%s-%s" % (date, digest) if date else digest
+    return {"id": nid, "date": date, "title": title, "chunk": chunk}
+
+
+def notice_id():
+    """notices.md 当前公告 ID；夹具没有该文件时返回空串。"""
+    src = os.path.join(ROOT, "references", "docs", "notices.md")
+    if not os.path.exists(src):
+        return ""
+    with open(src, encoding="utf-8") as f:
+        got = parse_notice(f.read())
+    return got["id"] if got else ""
+
+
+def announce_tag(nid=None):
+    """内联公告脚本：已读当前公告 ID 时跳过 notice.js 与 notice-data.js 请求。"""
+    if nid is None:
+        nid = notice_id()
+    id_js = json.dumps(nid)
+    return (
+        "<script>try{if(window===top){var _s=0;"
+        'try{_s=localStorage.getItem("sn")===%s||sessionStorage.getItem("sn")===%s}catch(_){}'
+        'if(!_s){var l=document.querySelector(\'link[href$="assets/site.css"]\');'
+        'if(l)import(l.href.replace("assets/site.css","assets/notice.js"))'
+        "}}}catch(_){}</script>" % (id_js, id_js)
+    )
+
+
+# 全站一次性更新公告：由前置 ID 比对跳过已读访客，未读时才加载 assets/notice.js 弹出居中 <dialog>。
+ANNOUNCE = announce_tag()
 
 
 # 三条杠站标
 MARK = '<span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>'
 
 
-def head(title, desc, app_js=False, up=1, sheets=None, sky=False):
+def head(title, desc, app_js=False, up=1, sheets=None, sky=False, pinyin_js=None):
     """<!doctype> 到 <body> 为止。title 已含 · Starside 后缀。
 
     字体在 CSS 解析完才会被发现，preload 让它与样式表并行下载；只预载首屏用到的
@@ -341,7 +383,8 @@ def head(title, desc, app_js=False, up=1, sheets=None, sky=False):
     o += ['<link rel="stylesheet" href="%s">' % s for s in sheets]
     if app_js:
         # 拼音表要排在 app.js 前面：工具条在加载时就按 ?q= 过滤，那一刻表必须已经在。
-        o.append('<script src="%sassets/pinyin.js" defer></script>' % at)
+        if app_js if pinyin_js is None else pinyin_js:
+            o.append('<script src="%sassets/pinyin.js" defer></script>' % at)
         o.append('<script src="%sassets/app.js" defer></script>' % at)
     if sky:
         o.append('<script type="module" src="%sassets/sky-page.js"></script>' % at)
@@ -349,7 +392,7 @@ def head(title, desc, app_js=False, up=1, sheets=None, sky=False):
     return "\n".join(o)
 
 
-def nav(current, toolbar=None, up=1, parent=None, parent_href="../index.html"):
+def nav(current, toolbar=None, up=1, parent=None, parent_href="../index.html", aside=""):
     """顶部 sticky 单元：导航行 + 可选的工具条槽位。
 
     工具条内容由 assets/app.js 从 DOM 构建，这里不写任何源文本——写了就等于
@@ -379,8 +422,10 @@ def nav(current, toolbar=None, up=1, parent=None, parent_href="../index.html"):
     o += [
         '<span class="sep">/</span>',
         '<span aria-current="page">%s</span>' % current,
-        "</nav>",
     ]
+    if aside:
+        o.append(aside)
+    o.append("</nav>")
     if toolbar is not None:
         attrs = "".join(' %s="%s"' % (k, v) for k, v in toolbar.items())
         o.append('<div class="toolbar"%s></div>' % attrs)
@@ -541,7 +586,7 @@ REST_JS = (
     'var w=document.querySelectorAll("[data-rest-wait]"),i;'
     "for(i=0;i<w.length;i++)w[i].hidden=false;"
     'var gz=typeof DecompressionStream==="function";'
-    'window.starsideRest=fetch(gz?"' + REST_GZ + '":"' + REST + '").then(function(r){'
+    "function load(){return fetch(gz?\"" + REST_GZ + "\":\"" + REST + '").then(function(r){'
     'if(!r.ok)throw new Error(r.status+" "+r.url);'
     "if(!gz)return r.text();"
     "return r.arrayBuffer().then(function(b){var h=new Uint8Array(b,0,2);"
@@ -552,11 +597,13 @@ REST_JS = (
     'var ps=box.content.querySelectorAll("template[data-rest]");'
     "for(i=0;i<ps.length;i++){"
     "var at=document.querySelector('[data-rest-wait=\"'+ps[i].getAttribute(\"data-rest\")+'\"]');"
-    "at.parentNode.insertBefore(ps[i].content,at);at.remove()}"
+    "if(at){at.parentNode.insertBefore(ps[i].content,at);at.remove()}}"
     'document.dispatchEvent(new Event("starside:rest"))'
-    "});"
-    "window.starsideRest.catch(function(e){console.error(e);"
-    'for(i=0;i<w.length;i++)w[i].textContent="其余条目载入失败："+e.message+"，刷新重试"})'
+    "}).catch(function(e){console.error(e);"
+    'for(i=0;i<w.length;i++)w[i].textContent="其余条目载入失败："+e.message+"，刷新重试";'
+    "window.starsideRest=null;throw e})}"
+    "window.starsideLoadRest=function(){return window.starsideRest||(window.starsideRest=load())};"
+    "window.starsideLoadRest()"
     "})();</script>"
 )
 

@@ -203,6 +203,7 @@
   var MSG = {
     forbidden: '登录已过期，正在返回登录页',
     'no permission': '权限不足：此操作需要审核员级别',
+    'auth unavailable': '认证服务暂时不可用，请稍后重试',
     'no sub': '该投稿已不存在，请刷新',
     'no doc': '库中没有这一篇，请刷新',
     'bad id': '编号不合法',
@@ -222,7 +223,21 @@
     'bad rec': '该格指向的记录不合法',
     'bad path': '该格指向的字段不合法',
     // docs 那一路翻页取配装正文时的防跑飞闸，不是业务上限。
-    'too many builds': '库中配装数量异常，请联系超级管理员'
+    'too many builds': '库中配装数量异常，请联系超级管理员',
+    'bad doc': '文档标识不合法',
+    'bad text': '改动文本超过长度限制',
+    'bad blk': '行号不合法',
+    'bad cell': '格号不合法',
+    stale: '这一处的原文已变更或无法唯一定位，请刷新页面',
+    'bad action': '请求动作不合法',
+    'bad batch': '批次数量过多或为空',
+    'bad landed': '同步摘要不合法',
+    'bad operation': '操作参数不合法',
+    'operation mismatch': '操作状态不一致',
+    'stale operation': '操作序号已过期，请刷新',
+    'bad lv': '级别不合法',
+    'bad uid': 'UID 不能为空',
+    'missing BUNGIE_API_KEY': '未配置 Bungie API 密钥'
   }
 
   /* 令牌那一档不只是换句话：call() 已经拿 refresh 换过一张再打仍被拒，说明是

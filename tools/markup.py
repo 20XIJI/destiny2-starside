@@ -58,6 +58,12 @@ SCENE_TAGS = {'突袭': _RAID_TAGS, '地牢': _RAID_TAGS, 'PVP': ('3V3', '6V6'),
 OPEN = re.compile(r'\{([\w-]+)\|')
 # 一个完整的叶子标记：里面没有花括号也没有竖线。闸门认「整个标记就是这个词」用它。
 LEAF = re.compile(r'\{([\w-]+)\|([^{}|]+)\}')
+# Bungie 私用区字形（U+E000–F8FF），站点字体没有字形，会在输出成豆腐块。
+PUA = re.compile(r'[\ue000-\uf8ff]')
+
+
+def strip_pua(s: str) -> str:
+    return PUA.sub('', s)
 LINK = re.compile(r'\[([^\]]+)\]\(([^)]+)\)')
 # 图标：![](icons/xxx.png)。alt 恒空——图标都是行内的语义重复（旁边就是文字），
 # 给它们编 alt 只会让读屏软件把同一件事念两遍。

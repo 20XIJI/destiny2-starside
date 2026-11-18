@@ -146,15 +146,23 @@ function adaSignature(slots) {
   return crypto.createHash('sha1').update(hashes.join(',')).digest('hex')
 }
 
+function decodeEntities(s) {
+  return String(s || '')
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCodePoint(parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCodePoint(Number(dec)))
+    .replace(/&apos;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+}
+
 function parseEververseHtml(html) {
   const re = /data-ke-item=(?:"([^"]+)"|'([^']+)')/g
   let m
   const rawItems = []
   while ((m = re.exec(html)) !== null) {
-    const raw = (m[1] || m[2])
-      .replace(/&#039;/g, "'")
-      .replace(/&quot;/g, '"')
-      .replace(/&amp;/g, '&')
+    const raw = decodeEntities(m[1] || m[2])
     const parsed = JSON.parse(raw)
     const linkMatch = /\/items\/(\d+)/.exec(parsed.link || '') || /\/screenshots\/(\d+)\.jpg/.exec(parsed.screenshot || '')
     if (!linkMatch) continue
@@ -238,10 +246,7 @@ async function fetchAdaSlots() {
   const previewRe = /data-kdh-preview=(?:"([^"]+)"|'([^']+)')/g
   let m
   while ((m = previewRe.exec(secHtml)) !== null) {
-    const raw = (m[1] || m[2])
-      .replace(/&#039;/g, "'")
-      .replace(/&quot;/g, '"')
-      .replace(/&amp;/g, '&')
+    const raw = decodeEntities(m[1] || m[2])
     const parsed = JSON.parse(raw)
     if (parsed && parsed.hash) pushHash(parsed.hash)
   }
@@ -292,10 +297,6 @@ function eververseWindow(now = new Date()) {
     resetAt: reset.toISOString().replace(/\.\d{3}Z$/, 'Z'),
     cycleDate: cycleStart.slice(0, 10)
   }
-}
-
-function nextDailyReset() {
-  return eververseWindow().resetAt
 }
 
 async function fetchItem(slot, idx, apiKey) {
@@ -384,22 +385,20 @@ async function syncEververse(apiKey, customSlots = null, customAdaSlots = null, 
     }
   } else {
     const adaItems = []
-    let adaError = null
-    try {
-      const adaSlots = Array.isArray(options.prefetchedAdaSlots)
-        ? options.prefetchedAdaSlots
-        : (Array.isArray(customAdaSlots) ? customAdaSlots : await fetchAdaSlots())
-      if (options.adaError) {
-        adaError = options.adaError
-      } else {
+    let adaError = options.adaError || null
+    if (!adaError) {
+      try {
+        const adaSlots = Array.isArray(options.prefetchedAdaSlots)
+          ? options.prefetchedAdaSlots
+          : (Array.isArray(customAdaSlots) ? customAdaSlots : await fetchAdaSlots())
         for (let i = 0; i < adaSlots.length; i += BATCH) {
           const chunk = adaSlots.slice(i, i + BATCH)
           const part = await Promise.all(chunk.map((s, j) => fetchItem(s, slots.length + i + j, apiKey)))
           adaItems.push(...part)
         }
+      } catch (err) {
+        adaError = String(err && err.message ? err.message : err)
       }
-    } catch (err) {
-      adaError = String(err && err.message ? err.message : err)
     }
     adaBlock = {
       cycleStart: wk.cycleStart,

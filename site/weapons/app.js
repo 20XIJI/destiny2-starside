@@ -913,6 +913,8 @@
     return out;
   }
   var REPS = { wpn: repsOf('wpn'), armor: repsOf('armor'), sets: repsOf('sets') };
+  var GRP_FLAG = {};
+  WR.forEach(function (r) { GRP_FLAG[r[W_REP]] = (GRP_FLAG[r[W_REP]] || 0) | r[W_FLAG]; });
   var BY_HASH = { wpn: {}, armor: {}, sets: {} };
   (function () {
     for (var i = 0; i < WR.length; i++) { BY_HASH.wpn[WR[i][W_H]] = i; }
@@ -995,13 +997,20 @@
   function tokenize(src) {
     var s = normQ(src), out = [], i = 0, n = s.length;
     function value() {
-      var v = '', quoted = false;
+      var v = '', quoted = false, inner = 0;
       if (s[i] === '"') {
         quoted = true; i++;
         while (i < n && s[i] !== '"') { v += s[i++]; }
         if (i < n) { i++; }
       } else {
-        while (i < n && s[i] !== ' ' && s[i] !== ')' && s[i] !== '(') { v += s[i++]; }
+        while (i < n && s[i] !== ' ' && s[i] !== '\t') {
+          if (s[i] === '(') { inner++; v += s[i++]; continue; }
+          if (s[i] === ')') {
+            if (!inner) { break; }
+            inner--;
+          }
+          v += s[i++];
+        }
       }
       return { v: v, q: quoted };
     }
@@ -1092,6 +1101,8 @@
       }
     } else if (node.k === 'name') {
       if (scope !== 'sets') { atLeast('pool', MORE); }
+    } else if (scope === 'armor') {
+      if (node.k === 'perk') { atLeast('text', MORE); }
     } else if (scope === 'wpn') {
       if (has(POOL_KEYS, node.k)) { atLeast('pool', NEED); }
       if (node.k === 'perk') { atLeast('text', MORE); }
@@ -1100,7 +1111,7 @@
     return out;
   }
 
-  function fold(s) { return String(s).toLowerCase().replace(/\s+/g, ''); }
+  function fold(s) { return String(s).replace(/（/g, '(').replace(/）/g, ')').toLowerCase().replace(/\s+/g, ''); }
   /* source: 的值写不进引号与括号：它们是查询语法，而来源名里有（“飞狼再临”任务、永恒沙漠（史诗））。
      两边都去掉这几个字符再比，来源下拉写出的 source:飞狼再临任务 才认得原名。 */
   function srcFold(s) { return fold(s).replace(/[“”"()（）]/g, ''); }
@@ -1171,9 +1182,12 @@
       t[V.br[b][0]] = function (i) { return WR[i][W_BR] === k; };
     });
     var flags = { '可锻造': F_CRAFT, '可强化': F_ENH, '可升阶': F_TIER, '专家': F_ADEPT, '全息': F_HOLO, '复刻': F_REISSUE };
+    var gf = typeof GRP_FLAG !== 'undefined' ? GRP_FLAG : null;
     Object.keys(flags).forEach(function (n) {
       var f = flags[n];
-      t[n] = function (i) { return (WR[i][W_FLAG] & f) !== 0; };
+      t[n] = (gf && (f === F_ADEPT || f === F_HOLO))
+        ? function (i) { return ((gf[WR[i][W_REP]] || WR[i][W_FLAG]) & f) !== 0; }
+        : function (i) { return (WR[i][W_FLAG] & f) !== 0; };
     });
     t['已钉选'] = function (i) { return has(pins, 'w:' + WR[i][W_H]); };
     return t;
@@ -1181,7 +1195,7 @@
   var IS = { wpn: isTable('wpn'), armor: isTable('armor'), sets: isTable('sets') };
   /* is: 的英文写法：枪型、部位、元素、弹药等由 build-weapons.py 给（V.isen），标志的
      英文名在这里。键是 enFold() 之后的样子。 */
-  var FLAG_EN = { craftable: '可锻造', enhanceable: '可强化', adept: '专家', holofoil: '全息' };
+  var FLAG_EN = { craftable: '可锻造', enhanceable: '可强化', tiered: '可升阶', adept: '专家', holofoil: '全息', reissue: '复刻' };
   function enTable(scope) {
     var t = Object.create(null);
     var from = scope === 'wpn' ? [V.isen.wpn, FLAG_EN] : scope === 'armor' ? [V.isen.armor] : [];
@@ -1258,12 +1272,17 @@
     }
     return out;
   }
+  function plainHtml(s) { return s ? String(s).replace(/<[^>]+>/g, ' ') : ''; }
   function foldedTexts(i) {
     return cached('pt' + i, function () {
       var out = [], cols = poolRow(i)[2];
       for (var c = 0; c < cols.length; c++) {
         var cells = cellsOf(cols[c]);
-        for (var k = 0; k < cells.length; k++) { out.push(T.pd[shownPlug(cells[k])] || ''); }
+        for (var k = 0; k < cells.length; k++) {
+          var p = shownPlug(cells[k]);
+          out.push(T.pd[p] || '');
+          if (T.ps && T.ps[p] >= 0 && T.H && T.H[T.ps[p]]) { out.push(plainHtml(T.H[T.ps[p]])); }
+        }
       }
       return fold(out.join(' '));
     });
@@ -1313,7 +1332,19 @@
       switch (k) {
         case 'is': return isIn('armor', v, i);
         case 'name': return fold(r[A_NAME] + enOf('armor', i)).indexOf(f) !== -1 || pyName('armor', i, v);
-        case 'perk': return fold(r[A_PERKS]).indexOf(f) !== -1;
+        case 'perk': {
+          if (fold(r[A_PERKS]).indexOf(f) !== -1) { return true; }
+          if (!T) { return false; }
+          var repA = r[A_REP];
+          if (T.axs && T.axs[repA]) {
+            var ax = T.axs[repA];
+            if (fold(ax[0].map(function (c) { return c[0]; }).join(' ') + ' ' + plainHtml(ax[1])).indexOf(f) !== -1) { return true; }
+          }
+          if (T.ap && T.ap[repA]) {
+            if (fold(T.ap[repA].map(function (x) { return x[0] + ' ' + x[2]; }).join(' ')).indexOf(f) !== -1) { return true; }
+          }
+          return false;
+        }
         case 'season': return cmp(v, r[A_SSN]);
         case 'source': return srcsOf(r, A_SRC).some(function (s) { return named(q, srcFold(s), srcFold(v)); });
       }
@@ -1366,7 +1397,8 @@
     rail: recall('wpn.rail') || 240, railOff: !!recall('wpn.railOff'), rolls: recall('wpn.rolls') || {},
     syntax: false, pop: null, tip: null, hoverPlug: null, hoverRow: null, slotHover: false,
     statsMode: 'pve', pvpAcc: null, pvpStat: 0, pvpMag: null, pvpMagBlank: false,
-    fx: [], fxOpen: false, fxg: '', perkStep: {}, fxStep: {}
+    fx: [], fxOpen: false, fxg: '', perkStep: {}, fxStep: {},
+    hideAegis: !!recall('wpn.hideAegis')
   };
   function readUrl() {
     var u = new URLSearchParams(location.search);
@@ -2188,7 +2220,8 @@
           var m = /^([a-z0-9]+):/.exec(k[0]);
           return !m || has(keys, m[1]);
         }).map(function (k) {
-          return '<div class="sx-row">' + syntaxChip(k[0]) + '<span>' + esc(k[1]) + '</span></div>';
+          var row = S.scope === 'sets' && k[0] === 'season:>=26' ? ['season:凯旋纪念碑', '赛季或资料片名'] : k;
+          return '<div class="sx-row">' + syntaxChip(row[0]) + '<span>' + esc(row[1]) + '</span></div>';
         }).join('') + '</section>' +
         '<section class="sx-c3"><h3><code>is:</code> 的值</h3>' + syntaxVals().map(function (g) {
           return '<div class="sx-vg"><span class="sx-vl">' + g[0] + '</span><div>' + g[2].map(function (t) {
@@ -2551,10 +2584,26 @@
   function usedByHtml(hash) {
     var got = T && T.bd ? T.bd[String(hash)] : null;
     if (!got || !got.length) { return ''; }
-    return '<section><h3 class="sub-label">用过它的配装<b class="n">' + got.length +
-      '</b></h3><ul class="entries used-builds">' + got.map(function (k) {
-        return T.bdc[k];
-      }).join('') + '</ul></section>';
+    var aegisCount = 0;
+    var allCards = [];
+    var otherCards = [];
+    for (var idx = 0; idx < got.length; idx++) {
+      var html = T.bdc[got[idx]].replace(/(<span class="nm">[^<]*?)\s*\|\s*https?:\/\/[^<]+(<\/span>)/g, '$1$2');
+      allCards.push(html);
+      if (/\bdata-by="[^"]*\bAegis\b/.test(html)) { aegisCount++; }
+      else { otherCards.push(html); }
+    }
+    var cards = S.hideAegis && aegisCount ? otherCards : allCards;
+    var countText = S.hideAegis && aegisCount ? (cards.length + ' / ' + allCards.length) : String(allCards.length);
+    var toggleBtn = aegisCount
+      ? '<button type="button" class="toggle op" data-act="usedaegis" aria-pressed="' +
+        (S.hideAegis ? 'true' : 'false') + '">隐藏 Aegis (' + aegisCount + ')</button>'
+      : '';
+    var listHtml = cards.length
+      ? '<ul class="entries used-builds">' + cards.join('') + '</ul>'
+      : '<p class="src">已隐藏 ' + aegisCount + ' 套 Aegis 配装。</p>';
+    return '<section><h3 class="sub-label">用过它的配装<b class="n">' + countText +
+      '</b>' + toggleBtn + '</h3>' + listHtml + '</section>';
   }
 
   /* 作者在页面上的写法。数据里的键是 Aegis 与 LGpig。 */
@@ -2622,7 +2671,7 @@
     parts.push('<section><h3 class="sub-label">词条' + (choice ? haloLegend() : '') +
       (dirty ? '<button type="button" class="op" data-act="resetroll">重置配置</button>' : '') +
       '</h3><div class="matrix">' + matrix + '</div></section>');
-    var say = T && T.au[rep] ? T.au[rep] : null;
+    var say = weaponSays(i);
     if (say) { parts.push('<section><h3 class="sub-label">作者评语</h3><div class="says">' + saysHtml(say) + '</div></section>'); }
     parts.push(artifactSection(i));
     if (pr[8].length) { parts.push(catalystSection(i, roll)); }
@@ -2665,6 +2714,25 @@
   /* 类名不叫 xp：site.css 的 .xp 是资料页那一行的容器，带 margin-bottom，
      两个页面共用外壳样式表，用同名会给每枚 chip 多加一截下外边距 */
   function chipHtml(c) { return '<span class="wpn-xp">' + imgTag(c[1], '', '', true) + esc(c[0]) + '</span>'; }
+  function weaponSays(i) {
+    if (!T || !T.au) { return null; }
+    var r = WR[i], rep = r[W_REP];
+    var base = T.au[i] || T.au[rep] || [];
+    var have = {};
+    var out = base.slice();
+    out.forEach(function (b) { have[b[0]] = true; });
+    var fam = (V.fam && V.fam[r[W_FAM]]) || [];
+    for (var k = 0; k < fam.length; k++) {
+      var m = fam[k];
+      if (WR[m][W_REP] !== m || m === rep || !T.au[m]) { continue; }
+      T.au[m].forEach(function (b) {
+        if (have[b[0]]) { return; }
+        have[b[0]] = true;
+        out.push([b[0], b[1], b[2], b[3], WR[m][W_SSN]]);
+      });
+    }
+    return out.length ? out : null;
+  }
   function saysHtml(blocks) {
     return blocks.map(function (b) {
       /* 末一位只有组合有：这条评级说的是哪一枚固有配哪一种框架，画在评语正上方。 */
@@ -2677,7 +2745,8 @@
         return '<b>' + (t[0] ? '<span class="dim">' + esc(t[0]) + '</span>' : '') + esc(m ? m[1] : t[1]) +
           (m ? '<span class="aft">' + esc(m[2]) + '</span>' : '') + '</b>';
       }).join('');
-      return '<div class="say by-' + b[0].toLowerCase() + '"><div class="who">' + AUTHOR[b[0]] + tier +
+      var ssnNote = b[4] ? '<b><span class="aft">S' + b[4] + ' 版</span></b>' : '';
+      return '<div class="say by-' + b[0].toLowerCase() + '"><div class="who">' + AUTHOR[b[0]] + ssnNote + tier +
         '</div><div>' + roll + b[2].map(function (p) { return '<p>' + p + '</p>'; }).join('') + '</div></div>';
     }).join('');
   }
@@ -3075,7 +3144,7 @@
     var perks = (T.ap[rep] || []).map(function (p) {
       return '<div class="frame">' + (p[1] ? imgTag(p[1], '', '', true) : '<span></span>') + '<div><b>' + esc(p[0]) + '</b><p>' + esc(p[2]) + '</p></div></div>';
     }).join('');
-    var say = T.aau[rep];
+    var say = T.aau[i] || T.aau[rep];
     return '<article class="wpn-one' + (anim ? ' swap' : '') + '"><header class="one-head">' + armorGun(a, 'lg', 2) + '<div><h2 class="exo">' + esc(a[A_NAME]) +
       '</h2><p class="en">' + esc(enOf('armor', i)) + '</p><p class="lore">' + (T.fa[i] >= 0 ? esc(T.FL[T.fa[i]]) : '') +
       '</p></div><div class="one-acts"><button type="button" class="toggle" data-act="pin" aria-pressed="' +
@@ -3397,6 +3466,9 @@
   }
 
   /* ── 主流程 ────────────────────────────────────────────────────────── */
+  function hasNot(node) {
+    return !!node && (node.op === 'not' || (!!node.xs && node.xs.some(hasNot)));
+  }
   function evaluate() {
     tokens = tokenize(S.q);
     tree = parse(tokens, keysOf(S.scope));
@@ -3405,8 +3477,13 @@
     ['pool', 'text'].forEach(function (name) {
       if (!want[name] || have[name]) { return; }
       if ((want[name] === NEED || (loads[name] && loads[name].failed)) && !pending) { pending = name; }
-      /* 两份都要时先取 pool，到了重算时再取 text：两份分一条带宽，一起取会让 pool 晚到。 */
+    });
+    results = pending ? [] : run(S.scope, tree);
+    var wantPerkKw = tokens.some(function (t) { return t.t === 'kw' && t.k === 'perk'; });
+    ['pool', 'text'].forEach(function (name) {
+      if (!want[name] || have[name]) { return; }
       if (waiting[name] || (loads[name] && loads[name].failed) || (name === 'text' && want.pool && !P)) { return; }
+      if (name === 'text' && want.text === MORE && results.length > 0 && S.sel == null && !wantPerkKw && S.scope !== 'sets' && !hasNot(tree)) { return; }
       waiting[name] = true;
       need(name, function () {
         waiting[name] = false;
@@ -3415,7 +3492,6 @@
         if (was !== pending || !sameList(before, results)) { render(); }
       });
     });
-    results = pending ? [] : run(S.scope, tree);
   }
   function renderLoadErrors() {
     loadErrors.innerHTML = ['pool', 'text', 'pvp'].filter(function (name) {
@@ -3448,11 +3524,38 @@
     setQuery((q ? q + ' ' : '') + tok, false);
     input.value = S.q;
   }
+  function queryFlags() {
+    var f = 0;
+    (tokens || []).forEach(function (t) {
+      if (t.neg) { return; }
+      var val = t.t === 'kw' && t.k === 'is' ? t.v : (t.t === 'w' && bareIs('wpn', t.v, t.q) ? t.v : '');
+      if (!val) { return; }
+      var key = isKey('wpn', val);
+      if (key === '全息') { f |= F_HOLO; }
+      else if (key === '专家') { f |= F_ADEPT; }
+    });
+    return f;
+  }
   function open(scope, i) {
     if (typing) { setQuery(input.value, false); }
     var wasBrowse = (S.sel == null);
     if (wasBrowse) { S.savedScrollY = window.scrollY; }
     if (scope !== S.scope) { S.scope = scope; S.q = ''; input.value = ''; evaluate(); }
+    if (wasBrowse && scope === 'wpn') {
+      var wf = queryFlags();
+      if (wf && (WR[i][W_FLAG] & wf) !== wf) {
+        var rep = WR[i][W_REP], fam = V.fam[WR[i][W_FAM]] || [];
+        var best = i, bestHit = WR[i][W_FLAG] & wf;
+        for (var fi = 0; fi < fam.length; fi++) {
+          var m = fam[fi];
+          if (WR[m][W_REP] !== rep) { continue; }
+          var hit = WR[m][W_FLAG] & wf;
+          if (hit === wf) { best = m; break; }
+          if (hit && !bestHit) { best = m; bestHit = hit; }
+        }
+        i = best;
+      }
+    }
     if (S.sel !== i || S.scope !== scope) {
       S.pvpAcc = null;
       S.pvpMag = null;
@@ -3723,6 +3826,10 @@
         renderDetail(); return;
       case 'fxg':
         S.fxg = S.fxg === v ? '' : v;
+        renderDetail(); return;
+      case 'usedaegis':
+        S.hideAegis = !S.hideAegis;
+        store('wpn.hideAegis', S.hideAegis);
         renderDetail(); return;
 
     }

@@ -25,9 +25,6 @@ PARA = rows.PARA
 # 勇士名在参数列里缩成两个字：库里是反屏障／反过载／反势不可挡
 BREAKER_SHORT = {1: "屏障", 2: "过载", 3: "势不"}
 
-# Bungie 名字里的私用区字形（U+E000–F8FF）站点字体没有字形，会渲染成豆腐块
-PUA = re.compile("[\ue000-\uf8ff]")
-
 ABILITY_PLUGS = ("grenades", "melee", "class_abilities", "supers")
 
 AUTHORS = (
@@ -108,7 +105,7 @@ class Page:
         got = self.titles.get(key)
         if got:
             return markup.text_of(self.line(got), collapse=True)
-        return markup.spaced(PUA.sub("", rows.name_of(key) or "").strip())
+        return markup.spaced(markup.strip_pua(rows.name_of(key) or "").strip())
 
     def title_html(self, key):
         if (rows.facts().at(key) or {}).get("onSets"):
@@ -119,7 +116,7 @@ class Page:
     def name_html(self, key):
         """页面上显示的名字：名字里可能带着色标记与格内换行
         （「故我在\\（{el-arc|电弧}导体）\\波形」），所以走渲染，不转义。"""
-        return self.line(markup.spaced(PUA.sub("", rows.name_of(key) or "").strip()))
+        return self.line(markup.spaced(markup.strip_pua(rows.name_of(key) or "").strip()))
 
     def icon(self, key, size="", sized=True):
         got = rows.icon_file(key)
@@ -615,7 +612,7 @@ def panel_of(p, key):
     if key in p.panels:
         return p.panels[key]
     z = p.zh(key)
-    raw = (
+    raw = markup.strip_pua(
         rows.exotic_text(key, z.get("realgame_details", ""))
         if kind(key) == "exotic"
         else (
@@ -650,7 +647,9 @@ def rec_plain(p, key, cols, narrow="", fam="r-plain"):
     body = (
         members(p, key)
         + p.prose(
-            z.get("realgame_details") or z.get("效果") or z.get("database_details", ""),
+            markup.strip_pua(
+                z.get("realgame_details") or z.get("效果") or z.get("database_details", "")
+            ),
             p.mark(p.spot(key, "i18n/zh-CN/" + field, "说明")),
         )
         + member_text(p, key, mark=True)
@@ -698,7 +697,7 @@ def perk_chips(p, got):
     def one(n):
         return '<span class="xp-1">%s<span class="xp-n">%s</span></span>' % (
             p.icon(got.icons[n]),
-            html.escape(PUA.sub("", n)),
+            html.escape(markup.strip_pua(n)),
         )
 
     picked = {n for group in got.picks for n in group}

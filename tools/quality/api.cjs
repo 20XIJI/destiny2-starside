@@ -850,3 +850,86 @@ test('build like waits for the existing count before allowing a cancellation', a
   assert.equal(button.attrs['aria-pressed'], 'false')
   assert.equal(button.disabled, false)
 })
+
+test('allDocs paginates past 500 across admin/editor list endpoints and drop cleans likes', async () => {
+  const mkDoc = (i) => {
+    const id = `builds/s29-test/b-${String(i).padStart(4, '0')}`
+    const content = `# Build ${i}`
+    return { _id: id, md: content, hash: digest(content) }
+  }
+  const docs = Array.from({ length: 505 }, (_, i) => mkDoc(i))
+  const subs = Array.from({ length: 505 }, (_, i) => ({
+    _id: `sub-${String(i).padStart(4, '0')}`,
+    md: `# Sub ${i}`,
+    key: `k-${i}`,
+    ok: 0,
+    drop: 0,
+    at: '2026-11-01T00:00:00Z',
+  }))
+  const edits = Array.from({ length: 505 }, (_, i) => edit(`ed-${String(i).padStart(4, '0')}`, i, '甲', '乙'))
+  const h = harness({
+    docs: [...docs, { _id: 'docs/example', md: '甲\n乙', hash: digest('甲\n乙') }],
+    subs,
+    edits,
+    likes: [{ _id: 's29_b-0000', n: 7 }],
+  })
+  h.store.subs.set('sub-approved', {
+    _id: 'sub-approved',
+    season: 's29-test',
+    slug: 'b-0000',
+    ok: 1,
+    md: '# Build 0',
+  })
+
+  const listed = await h.request({ a: 'list', k: 'isolated-quality-token' })
+  assert.equal(listed.subs.length, 506)
+  const pulled = await h.request({ a: 'pull', heads: 1, k: 'isolated-quality-token' })
+  assert.equal(pulled.docs.length, 506)
+  assert.equal(pulled.more, 0)
+  const docList = await h.request({ a: 'docs' })
+  assert.equal(docList.docs.length, 506)
+  const subList = await h.request({ a: 'subs' })
+  assert.equal(subList.subs.length, 506)
+  const editList = await h.request({ a: 'edits' })
+  assert.equal(editList.edits.length, 505)
+
+  assert.equal((await h.request({ a: 'drop', id: 'builds/s29-test/b-0000', k: 'isolated-quality-token' })).ok, 1)
+  assert.equal(h.store.docs.has('builds/s29-test/b-0000'), false)
+  assert.equal(h.store.subs.has('sub-approved'), false)
+  assert.equal(h.store.likes.has('s29_b-0000'), false)
+  const afterLikes = await h.request({ a: 'likes' }, false)
+  assert.equal(afterLikes['s29_b-0000'], undefined)
+})
+
+test('chg, bsave, and ssave detect concurrent state or baseHash conflicts', async () => {
+  const docBody = '甲\n乙'
+  const h1 = harness({
+    docs: [{ _id: 'docs/example', md: docBody, hash: digest(docBody) }],
+    edits: [edit('e1', 0, '甲', '甲1', { uid: 'root', ok: 0 })],
+  }, {
+    query({ name, query, store }) {
+      if (name === 'edits' && query.blk === 0) store.edits.get('e1').ok = 1
+    },
+  })
+  const chgRes = await h1.request({ a: 'chg', doc: 'docs/example', blk: 0, cell: -1, before: '甲', after: '甲2' })
+  assert.equal(chgRes.error, 'conflict')
+  assert.equal(h1.store.edits.get('e1').after, '甲1')
+
+  const bMd = '# 套一\n旧内容'
+  const bId = 'builds/s29-test/b-1'
+  const bHash = digest(bMd)
+  const sMd = '# 投稿一\n旧内容'
+  const h2 = harness({
+    docs: [{ _id: bId, md: bMd, hash: bHash }],
+    subs: [submission({ canon: () => '', fingerprint: () => 'fp' }, 's1', { md: sMd, ok: 0 })],
+  })
+  assert.equal((await h2.request({ a: 'bsave', id: bId, md: '# 套一\n新', baseHash: 'wrong' })).error, 'conflict')
+  assert.equal((await h2.request({ a: 'ssave', id: 's1', md: '# 投稿一\n新', baseHash: 'wrong' })).error, 'conflict')
+  const okB = await h2.request({ a: 'bsave', id: bId, md: '# 套一\n新', baseHash: bHash })
+  assert.equal(okB.ok, 1)
+  assert.equal(okB.hash, digest('# 套一\n新'))
+  const okS = await h2.request({ a: 'ssave', id: 's1', md: '# 投稿一\n新', baseHash: digest(sMd) })
+  assert.equal(okS.ok, 1)
+  assert.equal(okS.hash, digest('# 投稿一\n新'))
+})
+

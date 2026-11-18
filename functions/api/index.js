@@ -20,7 +20,7 @@ const { same, id: buildId } = require('./source.js')
 // 永恒之诗 26 槽位定义与官方 API 强校验抓取逻辑，由 build-terms.py 从 tools/sync-eververse.js 复制。
 const { syncEververse, fetchLiveFeed, fetchAdaSlots, eververseWindow, weeklyCycleRange, slotsSignature, adaSignature } = require('./eververse.js')
 // 老九（Xûr）周货抓取与装备库推荐标注逻辑，由 build-terms.py 从 tools/sync-xur.js 复制。
-const { syncXur, fetchLiveXurInput, currentXurWindow, xurSignature } = require('./xur.js')
+const { syncXur, arrivalStaleReason, fetchLiveXurInput, currentXurWindow, xurSignature } = require('./xur.js')
 const app = tcb.init({ env: tcb.SYMBOL_CURRENT_ENV })
 const db = app.database()
 const _ = db.command
@@ -67,6 +67,16 @@ const SEED_PV = 4668
    已经不对（比如前缀写错把整库都框进来了），与其闷头拉到超时，不如抛出来。 */
 const BODY_PAGE = 200
 const BODY_CAP = 20000
+
+async function allDocs(q, pageSize = 500, maxPages = 40) {
+  const out = []
+  for (let p = 0; p < maxPages; p++) {
+    const r = await q.orderBy('_id', 'asc').skip(out.length).limit(pageSize).get()
+    out.push(...r.data)
+    if (r.data.length < pageSize) return { data: out, more: 0 }
+  }
+  return { data: out, more: 1 }
+}
 
 async function allBuildBodies() {
   const out = {}
@@ -127,7 +137,7 @@ async function hit() {
 let lk = { t: 0, m: null }
 async function likeMap() {
   if (lk.m && Date.now() - lk.t < 3e5) return lk.m
-  const r = await likes.limit(1000).get()
+  const r = await allDocs(likes, 1000)
   const m = {}
   for (const d of r.data) m[d._id] = d.n
   lk = { t: Date.now(), m }
@@ -324,6 +334,7 @@ async function syncRotation(customSlots, customAdaSlots, opts = {}) {
       }, 'cycleStart', 4)
     : adaHistory
 
+  await publish('eververse.json', publicEververse(payload))
   await saveDoc(rot, {
     ...payload,
     fresh: true,
@@ -333,7 +344,6 @@ async function syncRotation(customSlots, customAdaSlots, opts = {}) {
     history: nextHistory,
     adaHistory: nextAdaHistory
   })
-  await publish('eververse.json', publicEververse(payload))
   const res = {
     ok: 1,
     total: payload.total,
@@ -345,7 +355,7 @@ async function syncRotation(customSlots, customAdaSlots, opts = {}) {
   return res
 }
 
-// 老九（Xûr）周货数据写在 counters/xur 单条 doc 里（含近 4 周历史）：
+// 仄（Xûr）周货数据写在 counters/xur 单条 doc 里（含近 4 周历史）：
 // 定时器按 UTC+8 周六 01:03 / 02:03 / 03:03 触发，对比历史有更新才拉 Bungie API 并发布 rotation/xur.json。
 async function syncXurInventory(rawKyberData, opts = {}) {
   const force = Boolean(opts && opts.force)
@@ -366,13 +376,14 @@ async function syncXurInventory(rawKyberData, opts = {}) {
     }
   }
 
-  const input = hasCustom ? rawKyberData : await fetchLiveXurInput()
+  const input = hasCustom ? rawKyberData : await fetchLiveXurInput({ allowStale: true })
   const sig = xurSignature(input)
   const inArrival = normIsoSec(input.arrival || win.arrival)
 
   if (!force && !hasCustom) {
+    const arrReason = arrivalStaleReason(input)
     const curEntry = history.find((h) => normIsoSec(h.arrival) === inArrival)
-    if (curEntry && curEntry.sig === sig && prev && prev.fresh === true && !prev.stale) {
+    if (!arrReason && curEntry && curEntry.sig === sig && prev && prev.fresh === true && !prev.stale) {
       return {
         ok: 1,
         skipped: 1,
@@ -382,8 +393,9 @@ async function syncXurInventory(rawKyberData, opts = {}) {
         departure: prev.departure
       }
     }
-    if (!curEntry && history.some((h) => h.sig === sig)) {
-      const reason = '老九轮换源与前几周重复，疑似尚未刷新'
+    const dupSig = !curEntry && history.some((h) => h.sig === sig)
+    if (arrReason || dupSig) {
+      const reason = arrReason || '仄轮换源与前几周重复，疑似尚未刷新'
       if (prev && Array.isArray(prev.items) && prev.items.length && prev.arrival) {
         const stale = {
           arrival: win.arrival,
@@ -407,6 +419,7 @@ async function syncXurInventory(rawKyberData, opts = {}) {
     updatedAt: payload.updatedAt
   }, 'arrival', 4)
 
+  await publish('xur.json', publicXur(payload))
   await saveDoc(xurDoc, {
     ...payload,
     fresh: true,
@@ -414,7 +427,6 @@ async function syncXurInventory(rawKyberData, opts = {}) {
     sig,
     history: nextHistory
   })
-  await publish('xur.json', publicXur(payload))
   return { ok: 1, total: payload.total, updatedAt: payload.updatedAt, arrival: payload.arrival, departure: payload.departure }
 }
 
@@ -560,8 +572,17 @@ async function who(event, need) {
   let me = wc.get(t)
   if (!me || Date.now() - me.t > 3e5) {
     const sig = typeof AbortSignal !== 'undefined' && AbortSignal.timeout ? AbortSignal.timeout(15000) : undefined
-    const r = await fetch(AUTH + '/auth/v1/user/me', { headers: { authorization: 'Bearer ' + t }, ...(sig ? { signal: sig } : {}) })
-    const uid = r.ok ? String((await r.json()).sub || '') : ''
+    let r
+    try {
+      r = await fetch(AUTH + '/auth/v1/user/me', { headers: { authorization: 'Bearer ' + t }, ...(sig ? { signal: sig } : {}) })
+    } catch (_) {
+      throw new Error('auth unavailable')
+    }
+    if (!r.ok) {
+      if (r.status === 401 || r.status === 403) throw new Error('forbidden')
+      throw new Error('auth unavailable')
+    }
+    const uid = String(((await r.json()) || {}).sub || '')
     if (!uid) throw new Error('forbidden')
     const row = (await eds.doc(uid).get()).data[0]
     me = { t: Date.now(), uid, name: row ? row.name : '', lv: row ? Number(row.lv) || 0 : 0 }
@@ -610,8 +631,15 @@ async function editorRoute(a, body, event, me) {
       const rDoc = rSnap.data[0]
       const xDoc = xSnap.data[0]
       const evStale = rDoc && rDoc.stale && rDoc.stale.cycleStart === eververseWindow().cycleStart ? rDoc.stale : null
+      const adaErr = rDoc && rDoc.ada && rDoc.ada.error && rDoc.ada.cycleStart === weeklyCycleRange().cycleStart ? rDoc.ada.error : null
       const xurStale = xDoc && xDoc.stale && normIsoSec(xDoc.stale.arrival) === currentXurWindow().arrival ? xDoc.stale : null
-      if (evStale || xurStale) out.stale = { ...(evStale ? { eververse: evStale } : {}), ...(xurStale ? { xur: xurStale } : {}) }
+      if (evStale || xurStale || adaErr) {
+        out.stale = {
+          ...(evStale ? { eververse: evStale } : {}),
+          ...(xurStale ? { xur: xurStale } : {}),
+          ...(adaErr ? { ada: { reason: adaErr } } : {})
+        }
+      }
     }
     return out
   }
@@ -628,23 +656,23 @@ async function editorRoute(a, body, event, me) {
     // **第一发与翻页一起走。**互不依赖，串起来就是白等一个往返；而这一路每存
     // 一次配装都要重跑一遍（admin.js 存完走 load()），不是只在进场时跑一次。
     const [r, mds] = await Promise.all([
-      docs.field({ md: false }).limit(500).get(),
+      allDocs(docs.field({ md: false }), 500),
       allBuildBodies(),
     ])
     return {
       docs: r.data.map((d) => (mds[d._id] === undefined ? d : { ...d, md: mds[d._id] })),
-      // 第一发仍有上限：到顶之后返回哪一批由数据库的自然序说了算，多出来的在
-      // 编辑台上直接消失。那是「少一行」，看得见；配装正文取不全是「这一行在、
-      // 内容是旧的」，看不见——所以只有后者值得翻页，前者报一位即可。
-      more: r.data.length >= 500 ? 1 : 0,
+      more: r.more,
     }
   }
 
   // 配装投稿的队列。与 list/mark 同一张表，区别只在凭据：那两个走 ADMIN_TOKEN
   // 给本机的 sync.py，这两个走白名单给编辑台。
   if (a === 'subs') {
-    const r = await subs.limit(500).get()
-    return { subs: r.data, more: r.data.length >= 500 ? 1 : 0 }
+    const [r0, r1] = await Promise.all([
+      allDocs(subs.where({ ok: 0 }), 500),
+      subs.where({ ok: _.neq(0) }).orderBy('at', 'desc').limit(500).get(),
+    ])
+    return { subs: r0.data.concat(r1.data), more: r0.more || r1.data.length >= 500 ? 1 : 0 }
   }
 
   // 结案后留下的那一条改动记录：谁、什么时候、哪一篇、改了哪几行。
@@ -664,10 +692,13 @@ async function editorRoute(a, body, event, me) {
     const cur = (await subs.doc(String(body.id)).get()).data[0]
     if (!cur) throw new Error('no sub')
     if (cur.drop) throw new Error('bad sub type')
+    if (body.baseHash && sha1(String(cur.md || '')) !== String(body.baseHash)) throw new Error('conflict')
     const md = String(body.md || '')
     if (!md.startsWith('# ') || md.length > MAX_MD) throw new Error('bad md')
-    await subs.doc(String(body.id)).update({ md, at: new Date().toISOString(), edBy: me.name })
-    return { ok: 1 }
+    const q = body.baseHash ? subs.where({ _id: String(body.id), ok: cur.ok, md: cur.md }) : subs.doc(String(body.id))
+    const r = await q.update({ md, at: new Date().toISOString(), edBy: me.name })
+    if (body.baseHash && r.updated !== 1) throw new Error('conflict')
+    return { ok: 1, hash: sha1(md) }
   }
 
   // 已上站的配装就地改。**整篇替换，且只开给 builds/**：配装本来就是填表编辑，
@@ -679,8 +710,13 @@ async function editorRoute(a, body, event, me) {
     if (!md.startsWith('# ') || md.length > MAX_MD) throw new Error('bad md')
     const cur = (await docs.doc(id).get()).data[0]
     if (!cur) throw new Error('no doc')
-    await docs.doc(id).update({ md, hash: sha1(md), at: new Date().toISOString(), by: me.name })
-    return { ok: 1 }
+    const curHash = cur.hash || sha1(String(cur.md || ''))
+    if (body.baseHash && curHash !== String(body.baseHash)) throw new Error('conflict')
+    const hash = sha1(md)
+    const q = body.baseHash && cur.hash ? docs.where({ _id: id, hash: cur.hash }) : docs.doc(id)
+    const r = await q.update({ md, hash, at: new Date().toISOString(), by: me.name })
+    if (body.baseHash && r.updated !== 1) throw new Error('conflict')
+    return { ok: 1, hash }
   }
 
   // 删掉废稿。**只删已驳回的**：待审的还没结案，已通过的是站上那一份的来处。
@@ -830,10 +866,11 @@ async function editorRoute(a, body, event, me) {
   }
 
   if (a === 'edits') {
-    // 与 docs / subs 同一条：触顶就报一位。**这张表单调增长**——一处改动结案留
-    // 一条，删不掉也不过期，所以它是三张表里最先撞上限的那一张。
-    const r = await edits.limit(500).get()
-    return { edits: r.data, more: r.data.length >= 500 ? 1 : 0 }
+    const [r0, r1] = await Promise.all([
+      allDocs(edits.where({ ok: 0 }), 500),
+      edits.where({ ok: _.neq(0) }).orderBy('at', 'desc').limit(500).get(),
+    ])
+    return { edits: r0.data.concat(r1.data), more: r0.more || r1.data.length >= 500 ? 1 : 0 }
   }
 
   // ── 一处改动一条记录 ──
@@ -871,7 +908,8 @@ async function editorRoute(a, body, event, me) {
     // 同一格在几页上都有，从哪一页改都是同一处。
     const old = await edits.where({ rec, path, uid: me.uid, ok: 0 }).limit(1).get()
     if (old.data.length) {
-      await edits.doc(old.data[0]._id).update(set)
+      const u = await edits.where({ _id: old.data[0]._id, ok: 0 }).update(set)
+      if (u.updated !== 1) throw new Error('conflict')
       return { ok: 1, id: old.data[0]._id }
     }
     const r = await edits.add(set)
@@ -909,7 +947,8 @@ async function editorRoute(a, body, event, me) {
     // 同一个人在同一处只留一条待审，重改即改写，不堆第二份。
     const old = await edits.where({ doc, uid: me.uid, ok: 0, blk, cell }).limit(1).get()
     if (old.data.length) {
-      await edits.doc(old.data[0]._id).update(set)
+      const u = await edits.where({ _id: old.data[0]._id, ok: 0 }).update(set)
+      if (u.updated !== 1) throw new Error('conflict')
       return { ok: 1, id: old.data[0]._id }
     }
     const r = await edits.add(set)
@@ -952,7 +991,7 @@ async function editorRoute(a, body, event, me) {
       return rows
     }
     const [r, one, rp, rs] = await Promise.all([
-      edits.where({ doc, ok: 0 }).limit(200).get(),
+      allDocs(edits.where({ doc, ok: 0 }), 200),
       (body.judge || body.md) ? docs.doc(doc).get() : Promise.resolve(null),
       want ? pendRecsOf(want) : Promise.resolve(null),
       want ? recsOf(want, { json: true, hash: true, by: true, at: true }) : Promise.resolve(null),
@@ -989,7 +1028,7 @@ async function editorRoute(a, body, event, me) {
     if (body.md) { out.md = md; out.hash = cur ? cur.hash : '' }
     // hash 相等就没有待上站的改动，一条都不必取。
     if (body.stale || (body.hash && out.hash && body.hash !== out.hash)) {
-      out.done = (await edits.where({ doc, ok: 1 }).limit(200).get()).data
+      out.done = (await edits.where({ doc, ok: 1 }).orderBy('at', 'desc').limit(500).get()).data
         .filter((e) => e.kind !== 'rec')
     }
     return out
@@ -1134,7 +1173,7 @@ async function route(a, body, event) {
 
   // ── 审核台 ──
   if (a === 'list') {
-    const r = await subs.limit(500).get()
+    const r = await allDocs(subs, 500)
     return { subs: r.data }
   }
 
@@ -1194,8 +1233,9 @@ async function route(a, body, event) {
 
   // sync.py 专用：整库对账。走 ADMIN_TOKEN，不走白名单。
   if (a === 'pull') {
-    const r = await docs.limit(500).get()
-    return { docs: r.data }
+    const q = body.heads ? docs.field({ md: false }) : docs
+    const r = await allDocs(q, 500)
+    return { docs: r.data, more: r.more }
   }
 
   // HTTP 网关的请求体上限是 100 KB，而 exotic-weapon.md 有 159 KB。所以正文一律
@@ -1286,7 +1326,7 @@ async function route(a, body, event) {
   // 旧算法存的，对不上就认不出「这一套已经上站了」，重投会另开一个 slug。
   // 与 sync.py --seed 同一类：平时不用，改了判据才用。
   if (a === 'rekey') {
-    const r = await subs.limit(500).get()
+    const r = await allDocs(subs, 500)
     let n = 0
     for (const d of r.data) {
       const key = fingerprint(String(d.md || ''))
@@ -1319,6 +1359,8 @@ async function route(a, body, event) {
     if (m) {
       const done = await subs.where({ season: m[1], slug: m[2], ok: 1 }).limit(50).get()
       for (const one of done.data) await subs.doc(one._id).remove()
+      await likes.doc(`${m[1].split('-')[0]}_${m[2]}`).remove()
+      lk = { t: 0, m: null }
     }
     return { ok: 1 }
   }

@@ -7,10 +7,10 @@
 
 五条检查，前四条以 items.py 的 TERMS 那一张表为准：
 
-  G1 中文正名   源稿里不许出现禁用写法。
+  G1 中文正名   源稿、`data/*.json` 站内文本与手写页/脚本里不许出现禁用写法。
   G2 token 唯一 同一个术语只能落到同一个着色 token 上。渲染色相同的两个 token
                 （--el-solar 与 --deb-solar 同值）用眼睛看不出来，只有这里管得住。
-  G3 token 有定义 源稿里每个 {token|文字} 都要在 site.css 或该页样式表里有类；
+  G3 token 有定义 源稿与 `data/*.json` 里每个 {token|文字} 都要在 site.css 或样式表里有类；
                 反过来，site.css 的着色类一次都没被用到即死配置，当场报出。
   G4 更新时间一致 资料页页脚的「更新 YYYY.M.D」与首页卡片上那个必须相等。
   G5 更新日志的类型 只有新增、改动、订正三种，且同一天里每种只能连成一段——
@@ -20,28 +20,44 @@
                 认哪些类算着色类见 tint_classes()：源稿里写得出 {name|…} 的才算，
                 外壳与组件的类照样引强调色，但它们写不进源稿，不进色板页。
   G6 该着色的都着了 tools/items.json 里的词、items.py 的 MECH（元素机制名），以及
-                items.py 的 TERMS 里定了 token 的术语，正文里出现就得着色；已着色的那些
-                token 还必须与库里的归属一致。「骨灰余烬」属烈日、「连锁闪电」属电弧
-                是 Bungie 的 manifest 定的，不由人记；着成隔壁元素只差一点色相，
-                眼睛查不出来。G2 只管「着错了色」，没着色时它一句话也不说——
+                items.py 的 TERMS 里定了 token 的术语，源稿正文里出现就得着色；源稿与
+                `data/*.json` 里已着色的那些 token 还必须与库里的归属一致。
+                「骨灰余烬」属烈日、「连锁闪电」属电弧是 Bungie 的 manifest 定的，不由人记；
+                着成隔壁元素只差一点色相，眼睛查不出来。G2 只管「着错了色」，没着色时它一句话也不说——
                 「勇士」「守护者」「能量球」这类档位与拾取物不在 manifest 里，
                 曾因此全站漏了八百多处。漏着色跑 python3 tools/items.py --apply 补上。
 
-用法：python3 tools/check_terms.py    改源稿或改术语表之后跑一次。
+用法：python3 tools/check_terms.py    改源稿、记录或术语表之后跑一次。
 """
 
 import glob
 import importlib.util
+import json
 import os
 import re
 import sys
 
+import facts
 import items
 import markup
 import shell
 
 DOC_DIR = 'references/docs'
 KEY_DIR = 'references/keys'
+DATA_TABLES = (
+    'inventory-items',
+    'sandbox-perks',
+    'traits',
+    'stats',
+    'equipable-item-sets',
+    'minted',
+)
+HANDWRITTEN_G1 = (
+    'index.html',
+    'eververse/index.html',
+    'eververse/app.js',
+    'assets/armor-rng.js',
+)
 
 def read(path):
     # 配装源稿是结构化记录，就按它本身检——**不渲染回 markdown 再用正则扫**，
@@ -120,8 +136,91 @@ def sources():
 
 
 
+def _mask_spaces(m):
+    return re.sub(r'[^\n]', ' ', m.group(0))
+
+
+def _mask_html_tag(m):
+    tag = m.group(0)
+    out = [' '] * len(tag)
+    for attr in re.finditer(r'\b(?:aria-label|placeholder|title|alt)\s*=\s*(?:"([^"]*)"|\'([^\']*)\')', tag):
+        g = 1 if attr.group(1) is not None else 2
+        for i in range(attr.start(g), attr.end(g)):
+            out[i] = tag[i]
+    for i, ch in enumerate(tag):
+        if ch == '\n':
+            out[i] = '\n'
+    return ''.join(out)
+
+
+def mask_handwritten(rel, src):
+    """屏蔽手写 HTML/JS 里的注释、标签属性与 URL，只留可见文本供 G1 检查（保留换行）。"""
+    if rel.endswith('.html'):
+        src = re.sub(r'<!--.*?-->', _mask_spaces, src, flags=re.S)
+        src = re.sub(r'<script\b[^>]*>.*?</script>', _mask_spaces, src, flags=re.S | re.I)
+        src = re.sub(r'<style\b[^>]*>.*?</style>', _mask_spaces, src, flags=re.S | re.I)
+        src = re.sub(r'<[^>]+>', _mask_html_tag, src)
+    else:
+        src = re.sub(r'/\*.*?\*/', _mask_spaces, src, flags=re.S)
+        src = re.sub(r'//[^\n]*', _mask_spaces, src)
+    return re.sub(r'https?://[^\s"\'<>]+', _mask_spaces, src)
+
+
+def iter_data_texts():
+    """逐条产出现有 data/*.json 记录的 (定位串, 站内文本)。"""
+    data_dir = os.path.join(shell.ROOT, 'data')
+    if not os.path.isdir(data_dir):
+        return
+    for table in DATA_TABLES:
+        path = os.path.join(data_dir, table + '.json')
+        if not os.path.exists(path):
+            continue
+        with open(path, encoding='utf-8') as f:
+            rows = json.load(f)
+        for h, rec in rows.items():
+            for fp, txt in facts.site_text(table, rec).items():
+                yield ('data/%s.json#%s:%s' % (table, h, fp), txt)
+
+
+def all_site_classes(site):
+    """全站所有样式表（assets/site.css 与各目录 style.css）定义的 class 并集。"""
+    ok = classes_in(site)
+    if not os.path.isdir(shell.SITE):
+        return ok
+    for dirpath, _, filenames in os.walk(shell.SITE):
+        for name in filenames:
+            if name.endswith('.css'):
+                with open(os.path.join(dirpath, name), encoding='utf-8') as f:
+                    ok |= classes_in(f.read())
+    return ok
+
+
 def at_line(text, at):
     return text.count('\n', 0, at) + 1
+
+
+def _check_g1(loc, text, bad, *, with_line=True):
+    for at, wrong, right in items.misspelled(text):
+        where = '%s:%d' % (loc, at_line(text, at)) if with_line else loc
+        bad.append('G1 %s 用了「%s」，正名是「%s」' % (where, wrong, right))
+
+
+def _check_g2(loc, text, terms, bad, *, with_line=True):
+    # 括号索引每段建一次，92 条术语共用。**逐次现查是文档长度的平方**，
+    # 见 markup.Markers 的说明。
+    marks = markup.Markers(text)
+    for word, token, _ in items.TERMS:
+        if not token:
+            continue
+        for m in re.finditer(re.escape(word), text):
+            hit = marks.at(m.start())
+            # 只管「整个标记就是这个词」的那种。词嵌在更长的短语里时，
+            # 着色属于短语（{el-arc|电弧元素能量球}、{health|治疗能量球}），
+            # 按词强判会把整句的颜色拆碎。
+            want = items.expected_token(hit[0], word, terms) if hit and hit[1] == word else None
+            if hit and want:
+                where = '%s:%d' % (loc, at_line(text, m.start())) if with_line else loc
+                bad.append('G2 %s 「%s」着色成 {%s|…}，应是 {%s|…}' % (where, word, hit[0], want))
 
 
 def check_terms(files, bad):
@@ -129,24 +228,18 @@ def check_terms(files, bad):
     items.check_token_targets(terms)
     for rel in files:
         md = read(rel)
-        for at, wrong, right in items.misspelled(md):
-            bad.append('G1 %s:%d 用了「%s」，正名是「%s」'
-                       % (rel, at_line(md, at), wrong, right))
-        # 括号索引一份源稿建一次，92 条术语共用。**逐次现查是文档长度的平方**，
-        # 见 markup.Markers 的说明。
-        marks = markup.Markers(md)
-        for word, token, _ in items.TERMS:
-            if not token:
-                continue
-            for m in re.finditer(re.escape(word), md):
-                hit = marks.at(m.start())
-                # 只管「整个标记就是这个词」的那种。词嵌在更长的短语里时，
-                # 着色属于短语（{el-arc|电弧元素能量球}、{health|治疗能量球}），
-                # 按词强判会把整句的颜色拆碎。
-                want = items.expected_token(hit[0], word, terms) if hit and hit[1] == word else None
-                if hit and want:
-                    bad.append('G2 %s:%d 「%s」着色成 {%s|…}，应是 {%s|…}'
-                               % (rel, at_line(md, m.start()), word, hit[0], want))
+        _check_g1(rel, md, bad)
+        _check_g2(rel, md, terms, bad)
+    for rel_site in HANDWRITTEN_G1:
+        path = os.path.join(shell.SITE, rel_site)
+        if not os.path.exists(path):
+            continue
+        with open(path, encoding='utf-8') as f:
+            src = f.read()
+        _check_g1('site/' + rel_site, mask_handwritten(rel_site, src), bad)
+    for loc, txt in iter_data_texts():
+        _check_g1(loc, txt, bad, with_line=False)
+        _check_g2(loc, txt, terms, bad, with_line=False)
 
 
 def armor_sets_tokens(bad, site):
@@ -183,6 +276,14 @@ def check_tokens(pairs, site, bad):
                 bad.append('G3 %s:%d 用了 {%s|…}，样式表里没有这个类'
                            % (rel, at_line(md, m.start()), m.group(1)))
     used |= armor_sets_tokens(bad, site)
+    data_items = list(iter_data_texts())
+    if data_items:
+        all_ok = all_site_classes(site)
+        for loc, txt in data_items:
+            for m in markup.OPEN.finditer(txt):
+                used.add(m.group(1))
+                if m.group(1) not in all_ok:
+                    bad.append('G3 %s 用了 {%s|…}，样式表里没有这个类' % (loc, m.group(1)))
     # 只负责染色、别的什么都不做的单类规则一定是个 token；没人用就是死配置。
     for cls, (_, sole) in tint_classes(site).items():
         if sole and cls not in used:
@@ -232,23 +333,29 @@ def check_build_count(bad):
                        % (href, m.group(1), want))
 
 
+def _check_g6_reverse(loc, text, terms, bad, *, with_line=True):
+    # 只认「整个标记就是这个词」的那种，与 G2 同一条道理：词嵌在更长的短语里
+    # 时着色属于短语，按词强判会把整句的颜色拆碎。
+    for m in markup.LEAF.finditer(text):
+        token, word = m.group(1), m.group(2)
+        if token not in items.MANAGED:
+            continue
+        want = terms.get(items.norm(word))
+        target = items.expected_token(token, word, terms)
+        if want and want[0] in items.MANAGED and target:
+            where = '%s:%d' % (loc, at_line(text, m.start())) if with_line else loc
+            bad.append('G6 %s 「%s」着色成 {%s|…}，官方物品表说它是%s，应是 {%s|…}'
+                       % (where, word, token, want[1], target))
+
+
 def check_items(files, bad):
     # 反查：已着色的对不对
     terms, _ = items.load()
     items.check_token_targets(terms)
     for rel in files:
-        md = read(rel)
-        # 只认「整个标记就是这个词」的那种，与 G2 同一条道理：词嵌在更长的短语里
-        # 时着色属于短语，按词强判会把整句的颜色拆碎。
-        for m in markup.LEAF.finditer(md):
-            token, text = m.group(1), m.group(2)
-            if token not in items.MANAGED:
-                continue
-            want = terms.get(items.norm(text))
-            target = items.expected_token(token, text, terms)
-            if want and want[0] in items.MANAGED and target:
-                bad.append('G6 %s:%d 「%s」着色成 {%s|…}，官方物品表说它是%s，应是 {%s|…}'
-                           % (rel, at_line(md, m.start()), text, token, want[1], target))
+        _check_g6_reverse(rel, read(rel), terms, bad)
+    for loc, txt in iter_data_texts():
+        _check_g6_reverse(loc, txt, terms, bad, with_line=False)
 
     # 正查：表里的词出现了就得着色。新写的一页里提到「骨灰余烬」却留着素色，
     # 这一条当场报出——不必记得回去跑一趟 --suggest。

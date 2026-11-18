@@ -39,6 +39,7 @@ from markup import (
     loading_attr,
     must,
     source_context,
+    strip_pua,
     text_of,
     uncolor,
 )
@@ -1969,8 +1970,9 @@ BUCKET = {"1498876634": "k", "2465295065": "e", "953998645": "h"}
 
 
 def weapon_buckets(idx):
-    """`{武器名: 'k'|'e'|'h'}`：这把枪占哪个槽。
+    """`{武器主键或武器名: 'k'|'e'|'h'}`：这把枪占哪个槽。
 
+    主键键入在先，同名复刻枪各按自己的主键判槽；名称保留作旧稿无主键时的兜底。
     填表页靠它挡住「两把枪抢同一个槽」——异域选了能量枪，两把传说就只剩动能与
     威能可填。购物清单那四页按弹药分（主武器、特殊、威能），不是按槽位分：
     动能与能量两个槽都装得下主武器与特殊武器，按页面判会把半数选项判错。
@@ -1982,10 +1984,13 @@ def weapon_buckets(idx):
         for e in hits:
             if e.get("page") not in pages:
                 continue
-            rec = facts.items.get(str((e.get("keys") or [None])[0])) or {}
-            got = BUCKET.get(str((rec.get("inventory") or {}).get("bucketTypeHash")))
+            keys = [str(k) for k in (e.get("keys") or ()) if k]
+            rec = facts.items.get(keys[0]) if keys else None
+            got = BUCKET.get(str(((rec or {}).get("inventory") or {}).get("bucketTypeHash")))
             if got:
-                out[e["name"]] = got
+                for k in keys:
+                    out[k] = got
+                out.setdefault(e["name"], got)
     return out
 
 
@@ -2131,8 +2136,9 @@ def render_vocab(idx):
 
 
 def weapon_perks(idx, perk_at):
-    """`{武器名: [[Perk 一栏的下标…], [二栏…], [起源栏…]]}`：这把枪各栏开得出来的。
+    """`{武器主键或武器名: [[Perk 一栏的下标…], [二栏…], [起源栏…]]}`：这把枪各栏开得出来的。
 
+    主键键入在先，同名复刻枪各按自己的主键查池，不混并；名称保留作旧稿无主键时的兜底。
     整张武器 PERK 页（395 条）里选出来的组合，这把枪上多半开不出来；一栏的词条在
     另一栏上也开不出来。所以**栏序即下标**：第一格只列第一栏，第二格只列第二栏，
     起源特性那一格列起源栏。
@@ -2145,17 +2151,18 @@ def weapon_perks(idx, perk_at):
     """
     facts = rows.facts()
     pages = set(vocab.SLOTS["传说武器"] + vocab.SLOTS["异域武器"])
-    out = {}
+    out, name_key = {}, {}
     for hits in idx.values():
         for e in hits:
             if e.get("page") not in pages:
                 continue
-            key = (e.get("keys") or [None])[0]
-            rec = facts.items.get(str(key)) if key else None
+            keys = [str(k) for k in (e.get("keys") or ()) if k]
+            key = keys[0] if keys else None
+            rec = facts.items.get(key) if key else None
             if not rec or rec.get("itemType") != 3:
                 continue
             traits, origin = [], set()
-            for col in facts.pool(str(key)):
+            for col in facts.pool(key):
                 kind = (
                     (facts.socket_types.get(str(col["type"])) or {}).get("derived")
                     or {}
@@ -2176,11 +2183,15 @@ def weapon_perks(idx, perk_at):
             got = (traits + [set(), set()])[:2] + [origin]
             if not any(got):
                 continue
-            # 同一把枪在几页上各有一条索引，按栏并——不是按整把并。
-            have = out.setdefault(e["name"], [set(), set(), set()])
-            for a, b in zip(have, got):
-                a |= b
-    return {n: [sorted(c) for c in v] for n, v in out.items()}
+            for k in keys:
+                have = out.setdefault(k, [set(), set(), set()])
+                for a, b in zip(have, got):
+                    a |= b
+            name_key.setdefault(e["name"], keys[0])
+    res = {k: [sorted(c) for c in v] for k, v in out.items()}
+    for name, k in name_key.items():
+        res.setdefault(name, res[k])
+    return res
 
 
 def exotic_columns(idx):
@@ -2316,7 +2327,7 @@ def desc_table(idx):
                 continue
             if not any(e["page"] in pages for pages in vocab.SLOTS.values()):
                 continue
-            seen["%s\t%s\t%s" % (e["page"], e["name"], e["kind"])] = e["desc"]
+            seen["%s\t%s\t%s" % (e["page"], e["name"], e["kind"])] = strip_pua(e["desc"])
     return seen
 
 
@@ -2781,7 +2792,10 @@ def render_new(stamp, name_cn, sets=False):
         shell.nav(
             name,
             up=up,
-            **({"parent": [FORM_NAME], "parent_href": "../index.html"} if sets else {}),
+            parent=[FORM_NAME] if sets else [SITE_SECTION],
+            parent_href="../index.html",
+            aside='<a class="nav-aside" href="%s">%s →</a>'
+            % (("../index.html", FORM_NAME) if sets else ("set/index.html", SET_FORM_NAME)),
         ),
         '<main id="sheet"%s>' % (" data-set" if sets else ""),
     ]
@@ -2977,6 +2991,10 @@ def prune_details(expected):
                                     "清除无源稿配装页：%s/%s/%s/%s"
                                     % (OUT_DIR, season.name, detail.name, page.name)
                                 )
+                    with os.scandir(detail.path) as rem:
+                        empty = not any(rem)
+                    if empty:
+                        os.rmdir(detail.path)
 
 
 def main():

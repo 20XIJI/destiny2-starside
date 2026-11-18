@@ -227,7 +227,7 @@ def main() -> None:
         # 当场让云函数重新发布一次。
         import sync
         for action in ("sync_rotation", "sync_xur"):
-            print(f"重新发布 {action}：{sync.api(action)}")
+            print(f"重新发布 {action}：{sync.api(action, force=True)}")
     for p in gone:
         unchanged(target)
         tcb("hosting", "delete", f"{CLOUD}/{p}", env=env)

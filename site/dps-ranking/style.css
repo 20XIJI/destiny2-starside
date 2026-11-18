@@ -3,19 +3,25 @@
    这一页由 tools/convert-doc.py 从 references/docs/dps-ranking.md 生成，
    改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
 
-:root { --wrap: 1500px; --min: 1104px; }
+:root {
+  --wrap: 1500px;
+  --min: 1104px;
+  --dps-fun: #493454;
+  --dps-reference: #26485b;
+  --dps-bug: #5d3034;
+  --dps-difficult: #584126;
+}
 
 /* 列组多开时表宽超过 --wrap：main 平时收在 1500px 版心内，超宽时跟着表的
-   min-content 向两侧对称延展；页首与说明段始终锚在 1500px 版心内。 */
+   min-content 向两侧对称延展；页首与说明段始终锚在版心内。 */
 main {
   width: min-content;
   min-width: min(var(--wrap), 100%);
-  max-width: 100%;
 }
 
 .block > .sect-label,
 .block > p {
-  max-width: calc(var(--wrap) - 44px);
+  max-width: min(calc(var(--wrap) - 44px), calc(100vw - 44px));
   margin-right: auto;
   margin-left: auto;
 }
@@ -55,10 +61,10 @@ main {
 }
 
 /* 分类底色仅用于区分点评徽章，不表示元素归属。 */
-.dps-fun { background: #493454; }
-.dps-reference { background: #26485b; }
-.dps-bug { background: #5d3034; }
-.dps-difficult { background: #584126; }
+.dps-fun { background: var(--dps-fun); }
+.dps-reference { background: var(--dps-reference); }
+.dps-bug { background: var(--dps-bug); }
+.dps-difficult { background: var(--dps-difficult); }
 
 /* ── 排行 ── */
 .gen tbody td:nth-of-type(1) {
@@ -97,7 +103,7 @@ main {
 
 /* 核心 DPS */
 .gen tbody td:nth-of-type(4) {
-  font-size: 15px;
+  font-size: var(--fs-md);
   font-weight: 600;
 }
 
@@ -166,10 +172,13 @@ main {
 /* ── 神器模组与其他因素 ── */
 .gen tbody td:nth-of-type(24),
 .gen tbody td:nth-of-type(25) {
+  width: 14em;
+  min-width: 12em;
+  max-width: 15em;
   font-size: 12px;
   line-height: 1.5;
   text-align: center;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 /* ── 配装链接 ── */
@@ -182,8 +191,8 @@ main {
 
 /* ── 注解与点评 ── */
 .gen tbody td:nth-last-child(-n + 2) {
-  width: 18em;
-  min-width: 18em;
+  width: 16em;
+  min-width: 16em;
   padding-top: 4px;
   padding-bottom: 4px;
   font-size: 12px;
@@ -338,6 +347,7 @@ main {
   pointer-events: none;
   background: var(--panel-a);
   border: 1px solid var(--hair-lit);
+  border-radius: var(--r-sm);
   box-shadow: 0 8px 24px #00000080;
 }
 

@@ -28,8 +28,8 @@ import mods
 import pagedex
 import resolve
 import shell
-from markup import (OPEN, Markers, bmark, die, eq, loading_attr, meta_of,
-                    no_nested_span, plain, src_hash, text_of, typeset, uncolor)
+from markup import (OPEN, Markers, die, eq, loading_attr, meta_of,
+                    no_nested_span, plain, src_hash, strip_pua, text_of, typeset, uncolor)
 
 SRC = os.path.join(shell.KEY_DIR, 'armor-sets.md')
 OUT_DIR = os.path.join(shell.SITE, 'armor-sets')
@@ -192,7 +192,7 @@ def expand(md: str) -> tuple[str, list]:
         count, _, name = title.partition('｜')   # 「2 件｜拉斯普廷的怒火」
         order[-1][1].append(key)
         out += ['#### %s｜%s' % (count.strip(), name.strip() or zh.get('name', '')), '',
-                (zh.get('realgame_details') or zh.get('database_details') or '').strip(), '']
+                strip_pua(zh.get('realgame_details') or zh.get('database_details') or '').strip(), '']
     return '\n'.join(out), order
 
 
@@ -376,11 +376,9 @@ def render_blocks(blocks: list, finish=lambda html: html) -> str:
             note = content[0][1].startswith(('译注：', '注：'))
             cls = ' class="note"' if note else ''
             text = text if note else finish(text)
-            out.append('<p%s%s>%s</p>'
-                       % (cls, bmark(content[0][0], content[-1][0]), text))
+            out.append('<p%s>%s</p>' % (cls, text))
         else:
-            # 列表项一行一条，逐条戳——整段一个标记会让改一条要连着改整段
-            items = ''.join('<li%s>%s</li>' % (bmark(n), finish(inline(i))) for n, i in content)
+            items = ''.join('<li>%s</li>' % finish(inline(i)) for _, i in content)
             out.append('<ul>%s</ul>' % items)
     return ''.join(out)
 

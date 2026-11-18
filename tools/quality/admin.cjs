@@ -577,3 +577,35 @@ test('build editing warns before discarding changes made during save', async () 
   assert.equal(warnings, 1, 'editing during save must not be silently discarded')
   assert.ok(ctx.pane, 'canceling the warning keeps the editor open')
 })
+
+test('defaultSlug uses -set for build sets, and edit.js resolves data-cell & formatted numbers', () => {
+  const { api, shared } = adminApi()
+  assert.equal(typeof shared.MSG['auth unavailable'], 'string')
+  assert.equal(typeof shared.MSG['bad action'], 'string')
+  const { defaultSlug } = (() => {
+    const c = { B: () => require(path.join(site, 'builds/source.js')), RAND: 'a', LATIN: { 猎人: 'hunter', 泰坦: 'titan', 术士: 'warlock' } }
+    vm.createContext(c)
+    vm.runInContext(funcSource('admin/admin.js', 'defaultSlug') + '\nthis.defaultSlug=defaultSlug', c)
+    return c
+  })()
+  assert.ok(defaultSlug('# 合集\n合集：是\n职业：猎人\n').endsWith('-set'))
+  assert.ok(defaultSlug('# 单套\n职业：猎人\n').endsWith('-hunter'))
+
+  const cellEl = {
+    getAttribute: (k) => (k === 'data-cell' ? '1' : null),
+    closest: (sel) => (sel === '[data-cell]' ? cellEl : sel === '[data-b]' ? bossEl : null),
+    querySelector: () => ({}),
+    cloneNode: () => ({ querySelectorAll: () => [], textContent: '1,234,567' }),
+    textContent: '1,234,567',
+  }
+  const bossEl = {}
+  const ctx = {
+    ORIG: new Map(), LINES: new Map([[bossEl, [10, 10]]]),
+    lineOf: (n) => ctx.LINES.get(n) || null,
+  }
+  vm.createContext(ctx)
+  vm.runInContext(['where', 'bare', 'original'].map((n) => funcSource('admin/edit.js', n)).join('\n'), ctx)
+  assert.deepEqual({ ...ctx.where(cellEl) }, { blk: 10, end: 10, cell: 1 })
+  assert.equal(ctx.original(cellEl), '1234567')
+  void api
+})

@@ -36,8 +36,8 @@
 
   // buildBase 只有配装那条路用：刚灌完时填表页读回来的样子，脏判据比的就是它。
   // map 是本页的出处表（edit.json），recNow 是库里比页面新的那几条记录：{_id: {flat, by}}。
-  var S = { me: null, md: null, hash: '', lines: [], pend: [], done: [], on: false,
-            buildBase: null, map: null, recNow: {} }
+  var S = { me: null, md: null, hash: '', lines: [], pend: [], done: [], on: false, loading: false,
+            buildBase: null, buildHash: '', map: null, recNow: {} }
 
   var el = function (tag, cls, text) {
     var n = document.createElement(tag)
@@ -220,6 +220,12 @@
 
   // 点中的东西在源稿里是哪一处。cell 为 -1 即整块。
   function where (node) {
+    var dc = node.closest('[data-cell]')
+    var rb = dc && dc.closest('[data-b]')
+    if (dc && rb) {
+      var s0 = lineOf(rb)
+      return s0 ? { blk: s0[0], end: s0[0], cell: Number(dc.getAttribute('data-cell')) } : null
+    }
     var td = node.closest('td, th')
     var tr = node.closest('tr')
     if (td && tr && !tr.classList.contains('lane')) {
@@ -255,6 +261,7 @@
       .replace(/<[^>]*>/g, '')
       .replace(/\{[\w-]+\|/g, '').replace(/\}/g, '')
       .replace(/\\\\/g, '')
+      .replace(/(\d),(?=\d{3}(?!\d))/g, '$1')
       .replace(/[*\x60~,“”]/g, '')
       .replace(/\s/g, '')
   }
@@ -271,10 +278,18 @@
 
   // 永远读涂色前的 HTML，不把「新值 + 旧值 + 发起人」拿去定位。
   function original (node) {
-    if (!ORIG.has(node)) return bare(node.textContent)
-    var copy = document.createElement('div')
-    copy.innerHTML = ORIG.get(node)
-    return bare(copy.textContent)
+    if (ORIG.has(node)) {
+      var copy = document.createElement('div')
+      copy.innerHTML = ORIG.get(node)
+      copy.querySelectorAll('.rg-unit, .na').forEach(function (x) { x.remove() })
+      return bare(copy.textContent)
+    }
+    if (node.querySelector && node.querySelector('.rg-unit, .na')) {
+      var clone = node.cloneNode(true)
+      clone.querySelectorAll('.rg-unit, .na').forEach(function (x) { x.remove() })
+      return bare(clone.textContent)
+    }
+    return bare(node.textContent)
   }
 
   function shape (node, at) {
@@ -434,6 +449,8 @@
     document.querySelectorAll(TARGET).forEach(function (n) {
       if (n.tagName === 'TR') {
         n.querySelectorAll('td, th').forEach(function (c) { out.push(c) })
+      } else if (n.querySelector('[data-cell]')) {
+        n.querySelectorAll('[data-cell]').forEach(function (c) { out.push(c) })
       } else {
         out.push(n)
       }
@@ -521,11 +538,25 @@
           return
         }
         first[ids[0]] = 1
+        if (node.tagName === 'UL') {
+          var tags = String(p.after || '').split(/\\\\|\r?\n/).map(function (s) { return s.trim() }).filter(Boolean)
+          node.innerHTML = tags.map(function (s) { return '<li>' + show(s) + '</li>' }).join('')
+          var li = el('li', 'se-was')
+          if (S.map.e[ids[0]][2]) {
+            var oldUl = el('s')
+            oldUl.innerHTML = show(S.map.e[ids[0]][2])
+            li.appendChild(oldUl)
+          }
+          li.appendChild(el('span', 'se-by', (p.by || '?') + (p.ok === 1 ? ' · 待上线' : '')))
+          node.appendChild(li)
+          return
+        }
         var was = el('span', 'se-was')
-        var old = el('s')
-        // 旧值：同一个字段的每一段都要拼进来，不然划掉的只是第一段
-        old.innerHTML = show(S.map.e[ids[0]][2])
-        was.appendChild(old)
+        if (S.map.e[ids[0]][2]) {
+          var old = el('s')
+          old.innerHTML = show(S.map.e[ids[0]][2])
+          was.appendChild(old)
+        }
         was.appendChild(el('span', 'se-by', (p.by || '?') + (p.ok === 1 ? ' · 待上线' : '')))
         node.innerHTML = show(p.after)
         node.appendChild(was)
@@ -655,7 +686,7 @@
           notes.textContent = ''
           notes.appendChild(el('li', null, e.message === 'stale'
             ? '这一处的原文已变更或无法唯一定位，请等页面更新后重新提交。'
-            : '提交失败：' + e.message))
+            : '提交失败：' + (window.starsideShared ? window.starsideShared.say(e) : e.message)))
         })
     }
     acts.appendChild(send)
@@ -819,10 +850,12 @@
         S.recNow[id] = { flat: JSON.parse(r.recs[id].json), by: r.recs[id].by }
       })
       invalidate()
+      if (S.desk) S.desk.textContent = S.pend.length ? '编辑台 ' + S.pend.length : '编辑台'
     })
   }
 
   function toggle (chip) {
+    if (S.loading) return Promise.resolve()
     if (S.on) {
       S.on = false
       shut()
@@ -832,15 +865,17 @@
       chip.removeAttribute('aria-current')
       return Promise.resolve()
     }
+    S.loading = true
     chip.textContent = '载入中…'
     // 首屏之后另存的记录（shell.split_rest）插回来之前，data-b 的增量解不全：
-    // 按文档顺序累加，缺一段就整页错位。先等它。
-    return Promise.all([needShared().then(reload), window.starsideRest]).then(function () {
+    // 按文档顺序累加，缺一段就整页错位。先等它，若初始失败则重拉一次。
+    var rest = window.starsideLoadRest ? window.starsideLoadRest() : window.starsideRest
+    return Promise.all([needShared().then(reload), rest]).then(function () {
+      S.loading = false
       decode()
       S.on = true
       mark(true)
       shade()
-      if (S.pend.length) S.desk.textContent = '编辑台 ' + S.pend.length
       chip.textContent = '退出编辑'
       chip.setAttribute('aria-current', 'true')
       // 两个分支分开调：合写成 (requestIdleCallback || setTimeout)(fn, 1) 时，
@@ -848,8 +883,9 @@
       if (window.requestIdleCallback) requestIdleCallback(wantTerms)
       else setTimeout(wantTerms, 1)
     }, function (e) {
+      S.loading = false
       chip.textContent = '编辑'
-      alert('进入编辑失败：' + e.message)
+      alert('进入编辑失败：' + (window.starsideShared ? window.starsideShared.say(e) : e.message))
     })
   }
 
@@ -901,10 +937,11 @@
         if (now === null) { msg.textContent = '配装工具尚未载入完成，请稍后再保存。'; return }
         var savingPane = pane
         keep.disabled = true
-        call('bsave', { id: DOC, md: now }).then(function () {
+        call('bsave', { id: DOC, md: now, baseHash: S.buildHash || undefined }).then(function (r) {
           if (pane !== savingPane) return
           keep.disabled = false
           S.buildBase = now
+          if (r && r.hash) S.buildHash = r.hash
           msg.textContent = buildRead() === now
             ? '已保存，下次站点更新时上线。'
             : '已保存提交时的内容；后续修改尚未保存。'
@@ -944,20 +981,25 @@
   }
 
   function buildOpen (chip) {
+    if (S.loading) return Promise.resolve()
     if (pane) return buildShut(chip)
+    S.loading = true
     chip.textContent = '载入中…'
     // **两件一起等**：底稿那一发不依赖编辑台那两份脚本，串起来就是白等一段——
     // 90 KB 的脚本与一次云函数往返里较短的那一段，冷启时是几百毫秒，而 iframe
     // 要等两边都落地才开载。
     return Promise.all([needShared(), call('pend', { doc: DOC, md: 1 })])
       .then(function (r) {
+        S.loading = false
         var got = r[1]
         if (!got.md) throw new Error('这一页暂时无法在线编辑（' + DOC + ' 尚未收录），请联系超级管理员。')
+        S.buildHash = got.hash || ''
         buildPane(chip, got.md)
       })
       /* **收尾用 .catch，不用 .then 的第二个参数。**那一份只接前一环的失败，
          接不住成功回调自己抛的——chip 会永远停在「载入中…」，控制台外一声不响。 */
       .catch(function (e) {
+        S.loading = false
         chip.textContent = '编辑'
         // 走 say() 要 shared.js 已经在手里；载它那一步自己失败时退回原话。
         alert('进入编辑失败：'

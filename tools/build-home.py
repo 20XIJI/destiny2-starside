@@ -19,6 +19,7 @@ import markup
 import shell
 
 HOME = os.path.join(shell.SITE, "index.html")
+ROTA_JS = os.path.join(shell.SITE, "assets", "rota.js")
 
 # 人定的挑选。名字按页面上的正名写，页面里找不到即中止。
 PICK_PERKS = ("聚合充能", "元素磨砺", "加速突击", "失时弹匣")
@@ -110,8 +111,7 @@ ROTA_MARK = re.compile(r"<!--rota-->.*?<!--/rota-->", re.S)
 
 
 def read(rel):
-    with open(os.path.join(shell.SITE, rel), encoding="utf-8") as f:
-        return f.read()
+    return shell.read_page(os.path.join(shell.SITE, rel))
 
 
 def text(s):
@@ -594,20 +594,42 @@ def rota_data():
 EVERVERSE_ITEMS = (
     ("主要光尘优惠", "assets/icons/dust.webp"),
     ("银币新品", "assets/icons/silver.webp"),
-    ("老九 · 奇异硬币", "assets/icons/coin.webp"),
+    ("仄 · 奇异硬币", "assets/icons/coin.webp"),
     ("艾达-1 · 着色器", "assets/icons/glimmer.webp"),
 )
+
+
+def guide_hrefs():
+    """从 raid-guides.md 读出 副本中文名 → 站点相对攻略路径。"""
+    out = {}
+    src = os.path.join(shell.ROOT, "references", "docs", "raid-guides.md")
+    with open(src, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line.startswith("攻略："):
+                continue
+            parts = [p.strip() for p in line[3:].split("|")]
+            if len(parts) >= 3 and parts[2].endswith(".html"):
+                out[parts[0]] = "raid-guides/" + parts[2]
+    need(len(out) >= 20, "raid-guides.md 里只解析出 %d 条攻略路径" % len(out))
+    return out
 
 
 def hero_rota():
     """搜索带底栏的当前轮换与光尘商店快跳。轮换先写第 0 周与第 0 时段的那一组，由首页内联脚本按本机时钟更新。"""
     _, raids_, dungeons, chain = rota_data()
+    guides = guide_hrefs()
 
-    def unit(n, cls=""):
-        return (
-            '<span class="hr-unit%s"><img class="ri" src="rotation/icons/%s.webp" alt="" width="21" height="21">'
-            "<span>%s</span></span>" % (" " + cls if cls else "", ROTA_ICONS[n], esc(n))
+    def unit(n, cls="", link=False):
+        href = guides.get(n) if link else None
+        inner = (
+            '<img class="ri" src="rotation/icons/%s.webp" alt="" width="21" height="21">'
+            "<span>%s</span>" % (ROTA_ICONS[n], esc(n))
         )
+        c = (" " + cls) if cls else ""
+        if href:
+            return '<a class="hr-unit%s" href="%s">%s</a>' % (c, esc(href), inner)
+        return '<span class="hr-unit%s">%s</span>' % (c, inner)
 
     def ev_unit(name, icon):
         return (
@@ -615,12 +637,19 @@ def hero_rota():
             "<span>%s</span></span>" % (esc(icon), esc(name))
         )
 
-    def group(href, tag, k, a, sep, b, tag_k=""):
+    def group(href, tag, k, a, sep, b, tag_k="", split_links=False):
         tk = ' data-k="%s"' % tag_k if tag_k else ""
+        body = '%s<i class="hr-sep">%s</i>%s' % (a, sep, b)
+        if split_links:
+            return (
+                '<div class="hr-group"><a class="hr-tag"%s href="%s">%s</a>'
+                '<span class="hr-items" data-k="%s">%s</span></div>'
+                % (tk, href, esc(tag), k, body)
+            )
         return (
             '<a class="hr-group" href="%s"><span class="hr-tag"%s>%s</span>'
-            '<span class="hr-items" data-k="%s">%s<i class="hr-sep">%s</i>%s</span></a>'
-            % (href, tk, esc(tag), k, a, sep, b)
+            '<span class="hr-items" data-k="%s">%s</span></a>'
+            % (href, tk, esc(tag), k, body)
         )
 
     div = '<span class="hr-div" aria-hidden="true"></span>'
@@ -629,18 +658,20 @@ def hero_rota():
             "rotation/index.html",
             "本周突袭",
             "raid",
-            unit(raids_[0]),
+            unit(raids_[0], link=True),
             "·",
-            unit(raids_[4]),
+            unit(raids_[4], link=True),
+            split_links=True,
         ),
         div,
         group(
             "rotation/index.html",
             "本周地牢",
             "dungeon",
-            unit(dungeons[0]),
+            unit(dungeons[0], link=True),
             "·",
-            unit(dungeons[4]),
+            unit(dungeons[4], link=True),
+            split_links=True,
         ),
         div,
         group(
@@ -659,7 +690,7 @@ def hero_rota():
             "eververse",
             ev_unit("光尘优惠", "assets/icons/dust.webp"),
             "·",
-            ev_unit("老九周货", "assets/icons/coin.webp"),
+            ev_unit("仄周货", "assets/icons/coin.webp"),
         ),
     )
 
@@ -669,6 +700,8 @@ def rotation(_img):
     当前那一格；算法与 assets/rota.js 同一套，数据取自轮换页，不在首页另存一份。"""
     t0, raids_, dungeons, chain = rota_data()
     icons = "|".join(ROTA_ICONS[n] for n in raids_ + dungeons + chain)
+    all_guides = guide_hrefs()
+    guides = {n: all_guides[n] for n in raids_ + dungeons if n in all_guides}
 
     def line(k, label, names, note):
         return (
@@ -685,13 +718,14 @@ def rotation(_img):
         )
 
     return (
-        '<span class="pv pv-rota" data-t0="%s" data-raids="%s" data-dungeons="%s" data-chain="%s" data-icons="%s">%s%s%s</span>'
+        '<span class="pv pv-rota" data-t0="%s" data-raids="%s" data-dungeons="%s" data-chain="%s" data-icons="%s" data-guides="%s">%s%s%s</span>'
         % (
             esc(t0),
             esc("|".join(raids_)),
             esc("|".join(dungeons)),
             esc("|".join(chain)),
             esc(icons),
+            esc(json.dumps(guides, ensure_ascii=False, separators=(",", ":"))),
             line("raid", "突袭", raids_[:3], "每周"),
             line("dungeon", "地牢", dungeons[:3], "每周"),
             line("chain", "扭曲", chain[:3], "每小时"),
@@ -987,7 +1021,26 @@ def render(home):
     return out
 
 
+def sync_rota():
+    """把 raid-guides.md 里的攻略路径写回 assets/rota.js 的 ROTA_GUIDES。"""
+    guides = guide_hrefs()
+    literal = json.dumps(guides, ensure_ascii=False, separators=(",", ":"))
+    with open(ROTA_JS, encoding="utf-8") as f:
+        src = f.read()
+    new, n = re.subn(
+        r"var ROTA_GUIDES = \{[^;]*\};",
+        lambda _: "var ROTA_GUIDES = %s;" % literal,
+        src,
+        count=1,
+    )
+    need(n == 1, "assets/rota.js 里找不到 ROTA_GUIDES")
+    if new != src:
+        with open(ROTA_JS, "w", encoding="utf-8") as f:
+            f.write(new)
+
+
 def main():
+    sync_rota()
     with open(HOME, encoding="utf-8") as f:
         home = f.read()
     new = render(home)

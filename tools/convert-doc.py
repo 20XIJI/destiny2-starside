@@ -97,6 +97,7 @@ META_KEYS = (
     "默认曲线",
     "说明排印",
     "版式",
+    "推算器",
 )
 META_LINE = meta_line(META_KEYS)
 
@@ -1134,8 +1135,21 @@ def render(md, slug, digest):
     # 层数决定资源前缀与面包屑
     up = where_of(md, slug).count("/") + 1
     full = "%s · Starside" % title
+    has_search = (
+        toolbar is not None
+        and "data-chart" not in toolbar
+        and "data-cols" not in toolbar
+        and ("data-item" in toolbar or "data-section" not in toolbar)
+    )
     o = [
-        shell.head(full, desc, app_js=toolbar is not None, up=up, sky=True),
+        shell.head(
+            full,
+            desc,
+            app_js=toolbar is not None,
+            up=up,
+            sky=True,
+            pinyin_js=has_search,
+        ),
         shell.nav(
             title,
             toolbar,
@@ -1199,6 +1213,8 @@ def render(md, slug, digest):
         # 分节标题里也允许放图标：源表每个职业段前有一枚职业徽章，标题是它的位置
         head_html = inline(icon_sub(label), rich=True)
         o.append('<h2 class="sect-label"%s>%s%s</h2>' % (bmark(at), head_html, chip))
+        if si == 1 and flag_of(md, "推算器"):
+            o.append('<div class="armor-calc" data-armor-calc></div>')
         global SECTION
         SECTION = ("sec-%d" % si, text_of(head_html, collapse=True))
         dex = DEX
@@ -1267,6 +1283,12 @@ def render(md, slug, digest):
             "</head>",
             '<script>document.documentElement.classList.add("cols-loading")</script>\n'
             "<style>%s{display:none}</style>\n</head>" % ",".join(initial_rules),
+        )
+    if flag_of(md, "推算器"):
+        o[0] = o[0].replace(
+            "</head>",
+            '<script src="%sassets/armor-rng.js" defer></script>\n</head>'
+            % ("../" * up),
         )
     return "\n".join(o), title
 

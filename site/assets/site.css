@@ -398,6 +398,13 @@ a { color: var(--bone); }
   letter-spacing: .12em;
 }
 
+.site-nav a.nav-aside {
+  margin-left: auto;
+  color: var(--accent);
+}
+
+.site-nav a.nav-aside:hover { color: var(--bone-hi); }
+
 /* 工具条：搜索 + 神器跳转，整块由 assets/app.js 按 DOM 构建。
    不在 HTML 里重复任何源文本，否则生成器的保真自检会报重复。
 
@@ -2308,13 +2315,20 @@ body:has(.hero) .entries > li { position: relative; }
   transition: background-color .15s ease;
 }
 
-.hero-rota .hr-group:hover,
-.hero-rota .hr-group:focus-visible { background: var(--tint-2); }
+.hero-rota a.hr-group:hover,
+.hero-rota a.hr-group:focus-visible { background: var(--tint-2); }
 
 .hero-rota .hr-tag {
   color: var(--bone-dim);
   font: 600 11px/1 var(--font-disp);
   letter-spacing: .12em;
+  text-decoration: none;
+}
+
+.hero-rota a.hr-tag:hover,
+.hero-rota a.hr-tag:focus-visible {
+  color: var(--accent);
+  text-decoration: underline;
 }
 
 .hero-rota .hr-items {
@@ -2329,6 +2343,13 @@ body:has(.hero) .entries > li { position: relative; }
   gap: 6px;
   color: var(--bone-hi);
   font: 600 13px/1 var(--font-cn);
+  text-decoration: none;
+}
+
+.hero-rota a.hr-unit:hover,
+.hero-rota a.hr-unit:focus-visible {
+  color: var(--accent);
+  text-decoration: underline;
 }
 
 .hero-rota .ri {

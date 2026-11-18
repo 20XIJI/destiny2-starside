@@ -239,6 +239,37 @@ test('weapons: armor sets support pinning and split-view rail rendering', () => 
   assert.match(html, /发射基地 · S29/)
   assert.match(html, /data-scope="sets"/)
 })
+
+test('weapons: group flags match holo/adept reps, mid-token parens stay intact, and perk text searches T.H/T.axs/T.au', () => {
+  const deps = 'function has(list, x) { return list.indexOf(x) !== -1; }\n' +
+    'var W_H=0,W_NAME=1,W_SUB=2,W_EL=3,W_AMMO=4,W_SLOT=5,W_BR=6,W_SSN=7,W_TIER=8,W_FLAG=9,W_REP=15,W_FAM=16;\n' +
+    'var F_CRAFT=4,F_ENH=32,F_TIER=8,F_ADEPT=1,F_HOLO=2,F_REISSUE=64;\n' +
+    'var WR=[[1,"召唤灵师",1,1,1,0,0,29,5,0,0,0,0,0,0,0,0],[2,"召唤灵师（专家）",1,1,1,0,0,29,5,F_ADEPT|F_HOLO,0,0,0,0,0,0,0]];\n' +
+    'var AR=[],SR=[],TYPE_FACETS={},V={qt:[],ty:{1:["手炮"]},el:{1:["烈日"]},am:{1:["主弹药"]},slot:["主手"],rar:{5:"传说"},br:{},afam:[],fam:[[0,1]]},pins=[];\n' +
+    'var GRP_FLAG={0:F_ADEPT|F_HOLO};\nfunction typeFacet(){return null;}\n'
+  const { isTable, tokenize, normQ, fold } = weaponFns(['has', 'typeFacet', 'isTable', 'normQ', 'tokenize', 'fold'], deps)
+  const tbl = isTable('wpn')
+  assert.equal(tbl['全息'](0), true, 'rep inherits holofoil bit from member via GRP_FLAG')
+  assert.equal(tbl['专家'](0), true, 'rep inherits adept bit from member via GRP_FLAG')
+  const toks = tokenize('name:召唤灵师（专家） (is:手炮 or is:脉冲)')
+  assert.equal(toks[0].t, 'kw')
+  assert.equal(toks[0].v, '召唤灵师(专家)')
+  assert.equal(toks[1].t, '(')
+  assert.equal(fold('召唤灵师（专家）'), fold(toks[0].v))
+
+  const searchDeps = 'var T={pd:[""],ps:[0],H:["<p>命中目标触发<b>灼烧</b></p>"],axs:{0:[["独有"], "<p>虚空手雷充能</p>"]},ap:{0:[["特性A","", "官方说明"]]},au:{0:[["Aegis",[["","S"]],[ "<p>主版本</p>"]]],2:[["LGpig",[["","T0"]],[ "<p>旧版本</p>"]]]}};\n' +
+    'var WR=[[1,"无声",1,1,1,0,0,29,5,0,0,0,0,0,0,0,0],[2,"无声(S26)",1,1,1,0,0,26,5,0,0,0,0,0,0,1,0],[3,"无声26Rep",1,1,1,0,0,26,5,0,0,0,0,0,0,2,0]];\n' +
+    'WR[0][16]=0;WR[2][16]=0;\n' +
+    'var V={fam:[[0,1,2]]},W_REP=15,W_FAM=16,W_SSN=7,AUTHOR={Aegis:"Aegis",LGpig:"小棒猪"},hayCache={};\n' +
+    'function esc(s){return String(s);} function fold(s){return String(s).toLowerCase().replace(/\\s+/g,"");}\n' +
+    'function cached(k,fn){return fn();} function poolRow(){return [0,0,[["cols",[["0",[0]]]]]];} function cellsOf(c){return c[1];} function shownPlug(c){return c[0];} function chipHtml(c){return c[0];}\n'
+  const { foldedTexts, weaponSays, saysHtml } = weaponFns(['plainHtml', 'foldedTexts', 'weaponSays', 'saysHtml'], searchDeps)
+  assert.ok(foldedTexts(0).includes('灼烧'), 'foldedTexts searches stripped T.H[T.ps[p]]')
+  const says = weaponSays(0)
+  assert.equal(says.length, 2, 'cross-season missing author filled from V.fam')
+  const html = saysHtml(says)
+  assert.match(html, /S26 版/)
+})
 test('weapons: card, detail swap, resetroll, hoverRaf cancellation, and focusin/focusout invariants', () => {
   const appSrc = fs.readFileSync(path.join(site, 'weapons/app.js'), 'utf8')
     .replace(/\}\(\)\);\s*$/, 'window.__WPN_TEST = { S, card, weaponDetail, armorDetail, setDetail, factsHtml, defaultRoll, sameRoll, rollOf, renderDetail, renderBrowse, poolReady, textReady, getDetailKey: () => detailKey, getHoverRaf: () => hoverRaf, setHoverRaf: (id) => { hoverRaf = id } };\n}());\n')
@@ -766,4 +797,113 @@ test('weapons: pvp module loads only on demand, sets high priority, and surfaces
   assert.ok(retried >= 1, 'retry callback should run after pvp.js finishes loading')
   const readyHtml = T.statsBlock(0, T.compute(0, { sel: {}, mw: '', lv: 1, t: 1, mod: -1, cat: 0 }), null)
   assert.match(readyHtml, /class="pvp-stats"/)
+})
+
+test('weapons: usedByHtml toggles Aegis builds cleanly and evaluate defers text.js on name hits', () => {
+  const inserted = []
+  const wpnBox = { window: {} }
+  vm.runInNewContext(fs.readFileSync(path.join(site, 'weapons/index.js'), 'utf8'), wpnBox)
+  vm.runInNewContext(fs.readFileSync(path.join(site, 'weapons/pool.js'), 'utf8'), wpnBox)
+  const docListeners = {}
+  const fakeEl = () => ({
+    innerHTML: '', outerHTML: '', value: '', hidden: false,
+    style: { setProperty() {} },
+    classList: { add() {}, remove() {}, toggle() {}, contains: () => false },
+    setAttribute() {}, removeAttribute() {}, getAttribute: () => '',
+    addEventListener() {}, appendChild() {}, insertBefore() {}, insertAdjacentHTML() {}, prepend() {}, remove() {},
+    getBoundingClientRect: () => ({ height: 47, top: 0, left: 0, right: 100, bottom: 47, width: 100 }),
+    querySelector: () => fakeEl(), querySelectorAll: () => [],
+  })
+  const findEl = fakeEl()
+  const storeMap = new Map()
+  const ctx = {
+    window: {
+      WPN: wpnBox.window.WPN,
+      WPN_POOL: wpnBox.window.WPN_POOL,
+      addEventListener() {}, matchMedia: () => ({ matches: false }), scrollTo() {}, scrollX: 0, scrollY: 0, innerHeight: 900,
+    },
+    location: { href: 'http://localhost/weapons/index.html', pathname: '/weapons/index.html', search: '' },
+    history: { pushState() {}, replaceState() {} },
+    localStorage: { getItem: (k) => storeMap.get(k) ?? null, setItem: (k, v) => storeMap.set(k, v) },
+    URLSearchParams, URL,
+    ResizeObserver: function () { this.observe = () => {}; this.disconnect = () => {} },
+    IntersectionObserver: function () { this.observe = () => {}; this.disconnect = () => {} },
+    requestAnimationFrame: () => 1, cancelAnimationFrame() {}, setTimeout: () => 1, clearTimeout() {},
+    console: { error() {}, warn() {}, log() {} },
+    document: {
+      currentScript: { src: 'http://localhost/weapons/app.js' }, activeElement: null,
+      documentElement: { clientWidth: 1440, style: { setProperty() {} } },
+      body: { appendChild() {} },
+      head: { appendChild(el) { inserted.push(el) } },
+      createElement: () => fakeEl(), createElementNS: () => fakeEl(),
+      getElementById: (id) => id === 'find' ? findEl : fakeEl(),
+      querySelector: () => fakeEl(),
+      addEventListener(type, fn) { docListeners[type] = fn },
+    },
+  }
+  const appSrc = fs.readFileSync(path.join(site, 'weapons/app.js'), 'utf8')
+    .replace(/\}\(\)\);\s*$/, 'poolReady(); window.__B3 = { S, evaluate, usedByHtml, getT: () => T, setT: (v) => { T = v }, resetTextLoad: () => { waiting.text = false; delete loads.text; } };\n}());\n')
+  vm.runInNewContext(appSrc, ctx)
+  const B = ctx.window.__B3
+
+  // 1. Bare-word query matching index.js should NOT fetch text.js upfront
+  B.S.q = '枯萎囤积'
+  B.evaluate()
+  assert.equal(inserted.some((el) => String(el.src).endsWith('/weapons/text.js')), false,
+    '仅搜武器名命中时不应请求 2.1MB 的 text.js')
+
+  // 2. sets scope bare-word hitting set name SHOULD still fetch text.js for bonus body text
+  inserted.length = 0
+  B.S.scope = 'sets'
+  B.S.q = wpnBox.window.WPN.t[0][1]
+  B.evaluate()
+  assert.equal(inserted.some((el) => String(el.src).endsWith('/weapons/text.js')), true,
+    '套装范围裸词检索仍需拉取 text.js 以匹配套装效果正文')
+
+  // 3. Negated bare word with non-empty results SHOULD still fetch text.js
+  inserted.length = 0
+  B.resetTextLoad()
+  B.S.scope = 'wpn'
+  B.S.q = '-不存在的描述词'
+  B.evaluate()
+  assert.equal(inserted.some((el) => String(el.src).endsWith('/weapons/text.js')), true,
+    '带否定裸词且存在非命中结果时仍需拉取 text.js')
+
+  // 4. 0-hit bare-word or explicit perk: keyword SHOULD fetch text.js
+  inserted.length = 0
+  B.resetTextLoad()
+  B.S.q = '绝无此枪描述词'
+  B.evaluate()
+  assert.equal(inserted.some((el) => String(el.src).endsWith('/weapons/text.js')), true,
+    '零命中降级回查说明时应当触发载入 text.js')
+
+  // 3. usedByHtml toggles Aegis builds & strips accidental author URL
+  B.setT({
+    bd: { '123': [0, 1] },
+    bdc: [
+      '<li data-by="Aegis"><span class="nm">Aegis | https://youtube.com/@a</span></li>',
+      '<li data-by="路人甲"><span class="nm">路人甲</span></li>'
+    ]
+  })
+  B.S.hideAegis = false
+  const allHtml = B.usedByHtml('123')
+  assert.doesNotMatch(allHtml, /https:\/\/youtube\.com/)
+  assert.match(allHtml, /隐藏 Aegis \(1\)/)
+  assert.match(allHtml, /<b class="n">2<\/b>/)
+
+  B.S.hideAegis = true
+  const hiddenHtml = B.usedByHtml('123')
+  assert.match(hiddenHtml, /<b class="n">1 \/ 2<\/b>/)
+  assert.doesNotMatch(hiddenHtml, /data-by="Aegis"/)
+  assert.match(hiddenHtml, /data-by="路人甲"/)
+})
+
+test('builds form: byGun resolves reissue duplicates by item hash before bare name', () => {
+  const formBox = {}
+  vm.createContext(formBox)
+  vm.runInContext(funcSource('builds/new/form.js', 'byGun') + '\nthis.byGun = byGun', formBox)
+  const map = { '111': ['PerkOld'], '222': ['PerkNew'], '同名枪': ['LegacyFallback'] }
+  assert.deepEqual(formBox.byGun(map, ['同名枪', '', '', '', '', '', '', '222']), ['PerkNew'])
+  assert.deepEqual(formBox.byGun(map, ['同名枪', '', '', '', '', '', '', '999']), ['LegacyFallback'])
+  assert.equal(formBox.byGun(map, ['未知枪', '', '', '', '', '', '', '999']), null)
 })

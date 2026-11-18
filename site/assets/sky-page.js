@@ -20,7 +20,7 @@ canvas.setAttribute('aria-hidden', 'true');
 document.body.prepend(canvas);
 
 const b = brush(canvas), g = b.g;
-const R = rng(20260929);
+const Rm = rng(20260929);
 const PAGE = main.dataset.src || ph.querySelector('h1').textContent;
 const SECTIONS = document.querySelectorAll('main > section[id], main section.block[id]').length;
 const T0 = performance.now();
@@ -30,7 +30,7 @@ let stars = [], con = null, met = [], nextMet = T0 + 3200;
 let ox = 0, oy = 0, tx = 0, ty = 0;
 
 /* 窗里的恒星，文档坐标。四成沿一条斜带聚集，越靠近窗底越稀 */
-function field() {
+function field(R) {
   const bh = bandBot - bandTop, n = Math.round(W * bh / 1500), out = [];
   for (let tries = 0; out.length < n && tries < n * 6; tries++) {
     const u = R(), z = u < .5 ? .15 : u < .78 ? .35 : u < .94 ? .65 : 1;
@@ -78,6 +78,7 @@ function walk(Rn, n, w, h) {
 }
 
 function build() {
+  const R = rng(20260929);
   const d = Math.min(devicePixelRatio || 1, 2);
   W = canvas.clientWidth; H = canvas.clientHeight;
   canvas.width = Math.round(W * d); canvas.height = Math.round(H * d);
@@ -92,7 +93,7 @@ function build() {
   const rule = end || ph.querySelector('.head-row') || ph.querySelector('h1');
   bandTop = head.offsetHeight;
   bandBot = rule.getBoundingClientRect().bottom + scrollY;
-  stars = field();
+  stars = field(R);
 
   /* 星座站在标题右边；标题右缘与版心右缘之间放不下就不画 */
   con = null;
@@ -128,12 +129,12 @@ function frame(t) {
   if (con) b.con(con, i => [con.p[i][0] - ox * 8, con.p[i][1] - sy - oy * 5], t);
 
   if (!reduce && t > nextMet) {
-    nextMet = t + 4500 + R() * 7500;
+    nextMet = t + 4500 + Rm() * 7500;
     if (sy < bandBot * .4) {
-      const ang = (22 + R() * 16) * Math.PI / 180, sp = 820 + R() * 400;
+      const ang = (22 + Rm() * 16) * Math.PI / 180, sp = 820 + Rm() * 400;
       met.push({
-        x: W * (.04 + R() * .7), y: bandTop + 20 + R() * Math.max(10, bandBot - bandTop - 120),
-        vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp, t0: t, life: .7 + R() * .45, len: 120 + R() * 100,
+        x: W * (.04 + Rm() * .7), y: bandTop + 20 + Rm() * Math.max(10, bandBot - bandTop - 120),
+        vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp, t0: t, life: .7 + Rm() * .45, len: 120 + Rm() * 100,
       });
     }
   }

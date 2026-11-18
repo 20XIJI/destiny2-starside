@@ -13,8 +13,10 @@ import posixpath
 import re
 from typing import Any, Callable
 
+import check_type
 import markup
 import resolve
+import rows
 import shell
 from markup import (
     IMG,
@@ -86,29 +88,23 @@ def _weapon_info() -> dict[str, dict[str, str]]:
     if cached is not None:
         return cached
     out: dict[str, dict[str, str]] = {}
-    wpn_path = os.path.join(shell.SITE, "weapons", "index.js")
-    wpn_el: dict[str, tuple[str, str]] = {}
-    if os.path.exists(wpn_path):
-        with open(wpn_path, encoding="utf-8") as f:
-            js_src = f.read()
-        el_map = {
-            "1": ("el-kinetic", "动能"),
-            "2": ("el-arc", "电弧"),
-            "3": ("el-solar", "烈日"),
-            "4": ("el-void", "虚空"),
-            "6": ("el-stasis", "冰影"),
-            "7": ("el-strand", "缚丝"),
-        }
-        for m in re.finditer(r'\["(\d{6,})",\s*"[^"]*",\s*\d+,\s*(\d+),', js_src):
-            pair = el_map.get(m.group(2))
-            if pair:
-                wpn_el[m.group(1)] = pair
     facts, _ = resolve.shared()
-    for h, rec in facts.items.items():
-        if rec.get("sameAs"):
-            continue
-        if wpn_el and h not in wpn_el:
-            continue
+    weapons = [
+        (h, rec)
+        for h, rec in facts.items.items()
+        if rec.get("itemType") == 3
+        and not rec.get("sameAs")
+        and not rec.get("plug")
+        and (rec.get("defaultDamageType") or 0) in rows.ELEMENT
+    ]
+    weapons.sort(
+        key=lambda kv: (
+            0 if kv[1].get("collectibleHash") else 1,
+            -((kv[1].get("derived") or {}).get("season") or 0),
+            int(kv[0]),
+        )
+    )
+    for h, rec in weapons:
         zh = (rec.get("i18n") or {}).get("zh-CN") or {}
         nm = zh.get("name")
         if not nm or nm in out:
@@ -118,7 +114,7 @@ def _weapon_info() -> dict[str, dict[str, str]]:
         if arch is not None:
             frec = facts.items.get(str(arch)) or {}
             frame = ((frec.get("i18n") or {}).get("zh-CN") or {}).get("name") or ""
-        el_cls, el_zh = wpn_el.get(h, ("", ""))
+        el_cls, el_zh = rows.ELEMENT[rec["defaultDamageType"]]
         info = {
             "hash": h,
             "icon": rec.get("icon_local") or "",
@@ -374,12 +370,12 @@ def _render_boss_card(
     if note_raw:
         wm = markup.whole_marker(note_raw)
         if wm:
-            note_html = '<div class="rg-boss-note %s">%s</div>' % (
+            note_html = '<div class="rg-boss-note %s" data-cell="6">%s</div>' % (
                 wm[0],
                 inline(wm[1], rich=True),
             )
         else:
-            note_html = '<div class="rg-boss-note">%s</div>' % inline(
+            note_html = '<div class="rg-boss-note" data-cell="6">%s</div>' % inline(
                 note_raw, rich=True
             )
     else:
@@ -390,18 +386,18 @@ def _render_boss_card(
         '<header class="rg-boss-head">'
         "%s"
         '<div class="rg-boss-title">'
-        '<h3 class="rg-boss-name">%s</h3>'
+        '<h3 class="rg-boss-name" data-cell="0">%s</h3>'
         "</div>"
         '<div class="rg-boss-hp">'
         '<span class="rg-k">生命值</span>'
-        '<strong class="rg-hp"%s>%s</strong>'
+        '<strong class="rg-hp" data-cell="1"%s>%s</strong>'
         "</div>"
         "</header>"
         '<dl class="rg-boss-stats">'
-        "<div><dt>距离</dt><dd>%s</dd></div>"
-        "<div><dt>输出时间</dt><dd>%s</dd></div>"
-        "<div><dt>击杀 DPS</dt><dd>%s</dd></div>"
-        "<div><dt>一波 DPS</dt><dd>%s</dd></div>"
+        '<div><dt>距离</dt><dd data-cell="2">%s</dd></div>'
+        '<div><dt>输出时间</dt><dd data-cell="3">%s</dd></div>'
+        '<div><dt>击杀 DPS</dt><dd data-cell="4">%s</dd></div>'
+        '<div><dt>一波 DPS</dt><dd data-cell="5">%s</dd></div>'
         "</dl>"
         "%s"
         "</article>"
@@ -560,10 +556,10 @@ def _render_loot_row(
         '<article class="rg-loot-row"%s>'
         '<div class="rg-cell rg-cell-id">'
         '<span class="rg-enc-idx">%02d</span>'
-        '<h3 class="rg-enc-name">%s</h3>'
+        '<h3 class="rg-enc-name" data-cell="0">%s</h3>'
         "</div>"
-        '<div class="rg-cell rg-cell-wpns">%s</div>'
-        '<div class="rg-cell rg-cell-arms">%s</div>'
+        '<div class="rg-cell rg-cell-wpns" data-cell="1">%s</div>'
+        '<div class="rg-cell rg-cell-arms" data-cell="2">%s</div>'
         "</article>"
         % (
             row_attr,
@@ -647,7 +643,7 @@ def render(
 
     full = "%s · Starside" % title
     o: list[str] = [
-        shell.head(full, desc, app_js=False, up=up, sky=True),
+        shell.head(full, desc, app_js=False, up=up, sheets=["../style.css"], sky=True),
         shell.nav(
             title,
             None,
@@ -666,7 +662,6 @@ def render(
     boss_prose_pre: list[tuple[int, str]] = []
     boss_prose_post: list[tuple[int, str]] = []
     boss_cards: list[str] = []
-    boss_count = 0
     if boss_section is not None:
         _, b_chunk, b_at = boss_section
         scales: dict[str, list[float]] = {}
@@ -681,7 +676,6 @@ def render(
         if b_tables:
             t_off, t_lines = b_tables[0]
             headers, brows = _parse_table(t_lines, split_cells, is_rule)
-            boss_count = len(brows)
             for ri, row in enumerate(brows):
                 boss_cards.append(
                     _render_boss_card(
@@ -1021,17 +1015,28 @@ def check(
     scale_line: re.Pattern[str],
     meta_line: re.Pattern[str],
 ) -> None:
-    """校验副本页关键条目全部落进 <main>，无未展开标记与嵌套 span。"""
+    """校验副本页关键条目全部落进 <main>，无未展开标记、嵌套 span 或破损标签。"""
     main = out[out.index("<main ") : out.index("</main>")]
+    bad = check_type.check_html(main + "</main>", slug)
+    if bad:
+        die("%s HTML 结构损坏：%s" % (slug, bad[0]))
     if "{" in main or "}" in main:
         die("%s 有没转换的着色标记" % slug)
     no_nested_span(main, "%s（检查 raid.py 行内渲染）" % slug)
 
-    got = plain(text_of(main))
+    raw_txt = text_of(main)
+    if "](" in raw_txt or "**" in raw_txt:
+        die("%s 正文有未展开的 markdown 标记" % slug)
+    got = plain(raw_txt)
     body = scale_line.sub("", meta_line.sub("", md[md.index("\n") :]))
     missing: list[str] = []
     for raw in body.split("\n"):
         line = raw.strip()
+        if line.startswith("## "):
+            head_txt = plain(text_of(inline(line[3:].strip(), rich=True)))
+            if head_txt and head_txt not in got:
+                missing.append(head_txt)
+            continue
         if not line.startswith("|"):
             continue
         cells = split_cells(line)

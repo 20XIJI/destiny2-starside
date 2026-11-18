@@ -208,6 +208,21 @@ def english(url):
     return _EN[page]
 
 
+def has_search(url, src):
+    """产出在运行时是否渲染页内筛选框：没有的话首页跳转不拼 ?q=。"""
+    if url == "weapons/index.html":
+        return True
+    tb = re.search(r'<div class="toolbar"([^>]*)>', src)
+    if not tb:
+        return False
+    attrs = tb.group(1)
+    return (
+        "data-chart=" not in attrs
+        and "data-cols=" not in attrs
+        and ("data-item=" in attrs or "data-section=" not in attrs)
+    )
+
+
 def scan(url):
     src = read(url)
     title = title_of(url, src)
@@ -238,7 +253,10 @@ def scan(url):
                     "x": "%s %s" % (full, en) if en else full,
                 }
             )
-    return {"u": url, "t": title, "d": desc}, rows
+    page = {"u": url, "t": title, "d": desc}
+    if not has_search(url, src):
+        page["ns"] = 1
+    return page, rows
 
 
 def line(record):
@@ -303,9 +321,27 @@ def main() -> int:
         if url == shell.HOME:
             continue  # 首页本身就是搜索框所在的那一页，不必搜出自己
         if BUILD.match(url):
-            # 只读标题，不跑整趟 scan()：合集页里一套一个 <section id>，那些分节
+            # 只读标题与作者，不跑整趟 scan()：合集页里一套一个 <section id>，那些分节
             # 没有标题也不该出条目，扫它们除了报错什么也换不来。
-            out.append(line({"u": url, "t": title_of(url, read(url)), "d": ""}))
+            src = read(url)
+            authors = list(
+                dict.fromkeys(
+                    markup.text_of(a, collapse=True)
+                    for a in re.findall(
+                        r'<span class="who"><span class="nm">([^<]+)</span>', src
+                    )
+                )
+            )
+            out.append(
+                line(
+                    {
+                        "u": url,
+                        "t": title_of(url, src),
+                        "d": ("推荐者：" + " · ".join(authors)) if authors else "",
+                        "ns": 1,
+                    }
+                )
+            )
             continue
         page, rows = scan(url)
         if url in ddc:

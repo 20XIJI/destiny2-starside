@@ -182,3 +182,4 @@ site/weapons/prototype/
 # 每日/每周轮换商店的本地抓取快照，线上由云函数定时刷新与前端按天缓存提供，不入库。
 site/rotation/eververse.json
 site/rotation/xur.json
+*.remote
