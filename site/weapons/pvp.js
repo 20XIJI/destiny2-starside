@@ -1115,7 +1115,7 @@ window.WPN_PVP = function (H) {
     });
     return out;
   }
-  var PVP_ANIM_MS = 666, pvpTween = null, pvpShown = { body: null, crit: null }, pvpSel = null;
+  var PVP_ANIM_MS = 666, pvpTween = null, pvpShown = { body: null, head: null }, pvpSel = null;
   function easePvp(e) {
     if (e <= 0) { return 0; }
     if (e >= 1) { return 1; }
@@ -1459,7 +1459,7 @@ window.WPN_PVP = function (H) {
     updatePvpControls(pane, v);
     var to = pvpAnimSnapshot(v), from = pvpShown;
     if (pvpTween) { cancelAnimationFrame(pvpTween); pvpTween = null; }
-    var changed = from.body == null || from.body !== to.body || from.crit !== to.head || from.ttk !== to.ttk;
+    var changed = from.body == null || from.body !== to.body || from.head !== to.head || from.ttk !== to.ttk;
     if (reduceMotion() || from.body == null || !changed) {
       pvpShown = to;
       paintPvpNumbers(pane, v, to, '');
@@ -1575,7 +1575,7 @@ window.WPN_PVP = function (H) {
     if (!v.ttkData || !effW) { return '<div class="pvp-stats"><p class="src">该武器类型暂无 PvP 伤害数据。</p></div>'; }
     var useLive = pvpSel === i && pvpShown.body != null;
     var bodyN = useLive ? pvpShown.body : v.bodyDmg;
-    var critN = useLive ? pvpShown.crit : v.headDmg;
+    var critN = useLive && pvpShown.head != null ? pvpShown.head : v.headDmg;
     var ttkShow = useLive && pvpShown.ttk != null ? pvpShown.ttk : v.ttk;
     function pvpItem(k, val, extra, key) {
       return '<div class="pvp-stat-item"><span class="pvp-stat-label">' + k + '</span><span class="pvp-stat-value"' +
