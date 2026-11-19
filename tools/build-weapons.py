@@ -15,6 +15,7 @@
 import argparse
 import collections
 import gzip
+import hashlib
 import json
 import os
 import re
@@ -1628,6 +1629,15 @@ def build(facts):
     text["bd"] = {h: v for h, v in by_key.items() if h in live}
     text["bdc"] = cards
     index = {"v": vocab, "w": wrows, "a": arows, "t": srows}
+    ver = hashlib.md5(
+        (
+            json.dumps(pool, ensure_ascii=False, separators=(",", ":"))
+            + json.dumps(text, ensure_ascii=False, separators=(",", ":"))
+        ).encode()
+    ).hexdigest()[:10]
+    index["ver"] = ver
+    pool["ver"] = ver
+    text["ver"] = ver
     stats = {
         "weapons": len(wrows),
         "cards": len(reps),

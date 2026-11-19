@@ -933,3 +933,84 @@ test('chg, bsave, and ssave detect concurrent state or baseHash conflicts', asyn
   assert.equal(okS.hash, digest('# 投稿一\n新'))
 })
 
+test('who ignores SCF_NAMESPACE=default and targets CloudBase envId gateway', async () => {
+  const seen = []
+  let status = 401
+  const h = harness({}, {
+    env: { SCF_NAMESPACE: 'default' },
+    async fetch(url) {
+      seen.push(url)
+      return { ok: false, status, async json() { return {} } }
+    },
+  })
+  const denied400 = await h.as('user-token-400', { a: 'me' })
+  assert.equal(denied400.status, 400)
+  assert.equal(denied400.error, 'forbidden')
+  assert.deepEqual(seen, ['https://dea-mods-d1g0j2rile2323f73.api.tcloudbasegateway.com/auth/v1/user/me'])
+
+  status = 400
+  const denied400Again = await h.as('user-token-400-b', { a: 'me' })
+  assert.equal(denied400Again.status, 400)
+  assert.equal(denied400Again.error, 'forbidden')
+
+  status = 503
+  const unavailable = await h.as('user-token-503', { a: 'me' })
+  assert.equal(unavailable.status, 400)
+  assert.equal(unavailable.error, 'auth unavailable')
+})
+
+test('conditional push, drop, rpush, rdrop, smark, and live role lookup', async () => {
+  const oldMd = '# 原文'
+  const recJson1 = '{"i18n/zh-CN/name":"旧"}'
+  const recJson2 = '{"i18n/zh-CN/name":"新"}'
+  const h = harness({
+    docs: [{ _id: 'docs/x', md: oldMd, hash: digest(oldMd) }],
+    recs: [{ _id: 'inventory-items/1', json: recJson1, hash: digest(recJson1) }],
+    subs: [
+      { _id: 's-upd', md: '# 标题\n旧', ok: 0, drop: 0, updates: 1, season: 's29-test', slug: 'u-1' },
+      ...Array.from({ length: 55 }, (_, i) => ({
+        _id: 'done-' + i, season: 's29-test', slug: 'many-1', ok: 1, md: '# Old',
+      })),
+    ],
+  })
+  h.signIn('rev-tok', 2, 'u-rev')
+
+  // push / drop 条件冲突
+  const pushConflict = await h.request({ a: 'push', id: 'docs/x', md: '# 新', baseHash: 'wrong', k: 'isolated-quality-token' })
+  assert.equal(pushConflict.error, 'conflict')
+  const dropConflict = await h.request({ a: 'drop', id: 'docs/x', baseHash: 'wrong', k: 'isolated-quality-token' })
+  assert.equal(dropConflict.error, 'conflict')
+  assert.equal(h.store.docs.has('docs/x'), true)
+
+  // rpush / rdrop 条件冲突
+  const rpushBody = zlib.gzipSync(Buffer.from(JSON.stringify([['inventory-items/1', recJson2, 'wrong']]))).toString('base64')
+  const rpushConflict = await h.request({ a: 'rpush', gz: rpushBody, k: 'isolated-quality-token' })
+  assert.equal(rpushConflict.error, 'conflict')
+  const rdropConflict = await h.request({ a: 'rdrop', items: [['inventory-items/1', 'wrong']], k: 'isolated-quality-token' })
+  assert.equal(rdropConflict.error, 'conflict')
+  assert.equal(h.store.recs.has('inventory-items/1'), true)
+
+  // smark 绑定 baseHash 并事务更新 docs + subs
+  const smarkConflict = await h.as('rev-tok', { a: 'smark', id: 's-upd', ok: 1, md: '# 标题\n改', baseHash: 'wrong' })
+  assert.equal(smarkConflict.error, 'conflict')
+  const smarkOk = await h.as('rev-tok', {
+    a: 'smark', id: 's-upd', ok: 1, md: '# 标题\n改', baseHash: digest('# 标题\n旧'),
+  })
+  assert.equal(smarkOk.ok, 1)
+  assert.equal(h.store.docs.get('builds/s29-test/u-1').md, '# 标题\n改')
+  assert.equal(h.store.subs.get('s-upd').ok, 1)
+
+  // 撤权后即使 token 仍在 wc 缓存中，立即拒绝特权请求
+  h.store.editors.delete('u-rev')
+  const revoked = await h.as('rev-tok', { a: 'smark', id: 's-upd', ok: -1 })
+  assert.equal(revoked.error, 'no permission')
+
+  // drop 清掉超过 50 条的 ok=1 历史投稿
+  h.store.docs.set('builds/s29-test/many-1', { _id: 'builds/s29-test/many-1', md: '# Old', hash: digest('# Old') })
+  const dropMany = await h.request({ a: 'drop', id: 'builds/s29-test/many-1', baseHash: digest('# Old'), k: 'isolated-quality-token' })
+  assert.equal(dropMany.ok, 1)
+  const leftover = [...h.store.subs.values()].filter((r) => r.slug === 'many-1' && r.ok === 1)
+  assert.equal(leftover.length, 0)
+})
+
+

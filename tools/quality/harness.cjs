@@ -169,7 +169,8 @@ function harness(seed = {}, hooks = {}) {
         if (hooks.commit) await hooks.commit({ store, state, tx })
         for (const key of tx.writes) {
           const [name, id] = key.split('\0')
-          store[name].set(id, copy(state[name].get(id)))
+          if (state[name].has(id)) store[name].set(id, copy(state[name].get(id)))
+          else store[name].delete(id)
         }
         calls.push({ op: 'commit' })
         return result
@@ -181,7 +182,7 @@ function harness(seed = {}, hooks = {}) {
   }
   const sandbox = {
     exports: {}, Buffer, console,
-    process: { env: { ADMIN_TOKEN: 'isolated-quality-token', BUNGIE_API_KEY: 'test-bungie-key' } },
+    process: { env: { ADMIN_TOKEN: 'isolated-quality-token', BUNGIE_API_KEY: 'test-bungie-key', ...hooks.env } },
     fetch(...args) {
       if (hooks.fetch) return hooks.fetch(...args)
       throw new Error('network prohibited')
@@ -224,9 +225,11 @@ function harness(seed = {}, hooks = {}) {
     store, calls, published,
     fingerprint: sandbox.exports.quality.fingerprint,
     canon: sandbox.exports.quality.canon,
-    // 令牌缓存：种一个身份进去，who() 就不必 fetch，真正那条门跑得到。
-    signIn: (token, lv, uid = 'u' + lv) =>
-      sandbox.exports.quality.wc.set(token, { t: Date.now(), uid, name: '测试' + lv, lv }),
+    // 令牌缓存：种一个身份进去，who() 就不必 fetch，同时在 editors 里记下角色。
+    signIn: (token, lv, uid = 'u' + lv) => {
+      store.editors.set(uid, { _id: uid, name: '测试' + lv, lv })
+      sandbox.exports.quality.wc.set(token, { t: Date.now(), uid })
+    },
     level: sandbox.exports.quality.LEVEL,
     async as(token, body) {
       const response = await sandbox.exports.main({ httpMethod: 'POST', body: JSON.stringify(body),

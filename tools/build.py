@@ -11,6 +11,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import re
 import sys
 import time
 from pathlib import Path
@@ -179,12 +180,29 @@ def main() -> int:
 
     import shell  # noqa: WPS433  — 清单现扫，与生成器同一处
 
+    card_re = re.compile(r"^卡片：(.*)$", re.M)
+    link_re = re.compile(r"\[[^\]]+\]\((?!http)([^)#?]+/index\.html)\)")
+
+    def doc_refs(src: Path) -> list[Path]:
+        text = src.read_text(encoding="utf-8")
+        refs: list[str] = []
+        for m in card_re.finditer(text):
+            refs.extend(s.strip() for s in m.group(1).split("、") if s.strip())
+        for m in link_re.finditer(text):
+            refs.append(Path(m.group(1)).parent.name)
+        seen: dict[Path, None] = {}
+        for ref_slug in refs:
+            p = shell.source_path(ref_slug)
+            if p is not None:
+                seen[Path(p)] = None
+        return sorted(seen)
+
     slugs = doc_slugs(shell)
     page_gen = shared + under("tools/convert-doc.py", "references/pages/prismatic.json")
     page_dirty: list[str] = []
     for slug, path in slugs:
         key = "page:%s" % slug
-        if dirty(key, [path, *page_gen, *facts]):
+        if dirty(key, [path, *doc_refs(path), *page_gen, *facts]):
             page_dirty.append(slug)
     art_dirty = dirty(
         "artifact-mods",

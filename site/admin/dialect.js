@@ -132,7 +132,10 @@
 
   // ── 着色 ──────────────────────────────────────────────────────────
 
-  function esc (s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;') }
+  function esc (s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+  }
 
   // 源稿一段 → 着色后的 HTML，与 markup.inline() 同一条规则，支持嵌套。
   // 没闭合的层在末尾补上 </span>，预览照样画得出来；报错归 unclosed()。

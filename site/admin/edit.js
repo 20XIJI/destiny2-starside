@@ -77,7 +77,7 @@
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ grant_type: 'refresh_token', refresh_token: rt })
     }).then(function (r) {
-      return r.json().then(function (j) { return { ok: r.ok, j: j } })
+      return r.json().then(function (j) { return { ok: r.ok, status: r.status, j: j } })
     }).then(function (x) {
       renewing = null
       if (x.ok && x.j.access_token) {
@@ -86,7 +86,8 @@
         return
       }
       if (localStorage.getItem('sa_rt') !== rt) return
-      throw new Error(x.ok ? '登录状态刷新失败' : 'forbidden')
+      if (x.ok) throw new Error('登录状态刷新失败')
+      throw new Error(shared().authDenied(x.status) ? 'forbidden' : 'auth unavailable')
     }, function (e) { renewing = null; throw e })
     return renewing
   }
@@ -415,11 +416,29 @@
   // convert-doc.py 的 inline(rich=True) 里，浏览器里搬不动全套，只补格子里真会
   // 出现的那四样——换行（\\ 与 \n）、图标、链接、粗体。着色走 dialect.js 的 paint()，
   // 与 markup.inline() 同一条规则。
+  function unesc (s) {
+    return String(s).replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&gt;/g, '>')
+      .replace(/&lt;/g, '<').replace(/&amp;/g, '&')
+  }
+  function safeUrl (raw) {
+    var u = unesc(raw).trim()
+    if (!u || /[\u0000-\u0020\u007f"'<>\\]/.test(u) || /^\/\//.test(u)) return ''
+    var noEnt = u.replace(/&[#a-z0-9]+;?/gi, '')
+    var head = noEnt.split(/[/?#]/, 1)[0]
+    if (head.indexOf(':') !== -1 && !/^https?:$/i.test(head)) return ''
+    return u.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  }
   function show (t) {
     return window.starsideDialect.paint(String(t))
       .replace(/\\\\|\r?\n/g, '<br>')
-      .replace(/!\[\]\(([^)]+)\)/g, '<img src="$1" alt="">')
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+      .replace(/!\[\]\(([^)]+)\)/g, function (all, u) {
+        var safe = safeUrl(u)
+        return safe ? '<img src="' + safe + '" alt="">' : all
+      })
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, function (all, label, u) {
+        var safe = safeUrl(u)
+        return safe ? '<a href="' + safe + '">' + label + '</a>' : all
+      })
       .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
   }
 

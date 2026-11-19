@@ -286,7 +286,11 @@
     return readForm(w)
   }
 
-  var api = { tok: tok, MSG: MSG, say: say, lint: lint,
+  function authDenied (status) {
+    return status === 400 || status === 401 || status === 403
+  }
+
+  var api = { tok: tok, MSG: MSG, say: say, authDenied: authDenied, lint: lint,
               slotOf: slotOf, formSrc: formSrc, readForm: readForm,
               mountForm: mountForm }
   if (typeof module !== 'undefined' && module.exports) module.exports = api

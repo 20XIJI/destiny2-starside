@@ -31,7 +31,10 @@
       return r.json().then(function (j) {
         if (!r.ok) {
           var e = new Error(j.error_description || j.error || ('HTTP ' + r.status))
-          e.denied = true                 // 认证服务回了拒绝，不是网络断了
+          // 只有 400/401/403 才算令牌或凭据被拒；429/5xx 等暂时性故障保留本地会话。
+          e.denied = window.starsideShared
+            ? window.starsideShared.authDenied(r.status)
+            : (r.status === 400 || r.status === 401 || r.status === 403)
           throw e
         }
         return j
@@ -952,6 +955,14 @@
       return out
     }
     out.push(shot)
+    var sha1Hex = function (text) {
+      if (typeof crypto === 'undefined' || !crypto.subtle || typeof TextEncoder === 'undefined') return Promise.resolve(null)
+      return crypto.subtle.digest('SHA-1', new TextEncoder().encode(String(text || ''))).then(function (buf) {
+        return Array.prototype.map.call(new Uint8Array(buf), function (x) {
+          return (x < 16 ? '0' : '') + x.toString(16)
+        }).join('')
+      })
+    }
     var keep = btn('保存', '')
     keep.onclick = function () {
       busy(true)
@@ -967,13 +978,7 @@
           if (b.doc && b.doc.hash) payload.baseHash = b.doc.hash
           return
         }
-        if (typeof crypto !== 'undefined' && crypto.subtle && typeof TextEncoder !== 'undefined') {
-          return crypto.subtle.digest('SHA-1', new TextEncoder().encode(String(s.md || ''))).then(function (buf) {
-            payload.baseHash = Array.prototype.map.call(new Uint8Array(buf), function (x) {
-              return (x < 16 ? '0' : '') + x.toString(16)
-            }).join('')
-          })
-        }
+        return sha1Hex(s.md).then(function (h) { if (h) payload.baseHash = h })
       }).then(function () {
         return call(act, payload)
       }).then(function () {
@@ -998,7 +1003,10 @@
           body.slug = defaultSlug(body.md)
         }
         var order = queueIds()
-        call('smark', body).then(load).then(function () {
+        sha1Hex(s.md).then(function (h) {
+          if (h) body.baseHash = h
+          return call('smark', body)
+        }).then(load).then(function () {
           // 这一条改过的字已经随通过带走、或随驳回作废，切走不必再问「改了没保存」。
           formBase = null
           advance('b:' + idOf(b), order)

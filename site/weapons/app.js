@@ -121,10 +121,17 @@
       /* 详情或查询在等词条池、或用户切进 PvP 时提到高优先级：动态插入的脚本缺省
          是低优先级，会排在卡片图后面。load 之后的预取不带回调，照缺省。 */
       if (cb && (name === 'pool' || name === 'pvp')) { s.fetchPriority = 'high'; }
-      s.src = new URL(name + '.js', HERE).href;
+      var wpnVer = window.WPN && window.WPN.ver;
+      var ver = (name === 'pool' || name === 'text') && wpnVer ? '?v=' + wpnVer : '';
+      s.src = new URL(name + '.js' + ver, HERE).href;
       s.onload = function () {
         var loaded = name === 'pool' ? window.WPN_POOL : name === 'text' ? window.WPN_TEXT : window.WPN_PVP;
-        if (!loaded) { s.onerror(); return; }
+        if (!loaded || ((name === 'pool' || name === 'text') && wpnVer && loaded.ver !== wpnVer)) {
+          if (name === 'pool') { window.WPN_POOL = null; }
+          else if (name === 'text') { window.WPN_TEXT = null; }
+          s.onerror();
+          return;
+        }
         if (name === 'pool') { poolReady(); } else if (name === 'text') { textReady(); } else { pvpReady(); }
         var cbs = job.cbs; job.cbs = [];
         for (var i = 0; i < cbs.length; i++) { cbs[i](); }

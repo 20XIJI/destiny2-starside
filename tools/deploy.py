@@ -224,10 +224,16 @@ def main() -> None:
             shutil.rmtree(stage, ignore_errors=True)
     if prune:
         # rotation/ 下那两份 JSON 由云函数定时写入，不在 site/ 里，--prune 会把它们当多余文件删掉。
-        # 当场让云函数重新发布一次。
+        # 重发库里已持久化的有效快照，不重抓上游；两项独立执行，避免一项失败连带跳过另一项。
         import sync
+        errs = []
         for action in ("sync_rotation", "sync_xur"):
-            print(f"重新发布 {action}：{sync.api(action, force=True)}")
+            try:
+                print(f"重新发布 {action}：{sync.api(action, republish=True)}")
+            except Exception as why:
+                errs.append(f"{action}: {why}")
+        if errs:
+            raise RuntimeError("重新发布轮换快照失败：" + "; ".join(errs))
     for p in gone:
         unchanged(target)
         tcb("hosting", "delete", f"{CLOUD}/{p}", env=env)

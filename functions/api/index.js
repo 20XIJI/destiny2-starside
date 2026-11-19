@@ -216,6 +216,10 @@ async function syncRotation(customSlots, customAdaSlots, opts = {}) {
   const win = eververseWindow(now)
   const wk = weeklyCycleRange(now)
   const prev = (await rot.get()).data[0] || null
+  if (opts && opts.republish && prev && Array.isArray(prev.items) && prev.items.length) {
+    await publish('eververse.json', publicEververse(prev))
+    return { ok: 1, republished: 1, total: prev.total }
+  }
 
   const history = Array.isArray(prev && prev.history)
     ? prev.history
@@ -363,6 +367,10 @@ async function syncXurInventory(rawKyberData, opts = {}) {
   const now = new Date()
   const win = currentXurWindow()
   const prev = (await xurDoc.get()).data[0] || null
+  if (opts && opts.republish && prev && Array.isArray(prev.items) && prev.items.length) {
+    await publish('xur.json', publicXur(prev))
+    return { ok: 1, republished: 1, total: prev.total }
+  }
   const history = Array.isArray(prev && prev.history) ? prev.history : []
 
   if (!force && !hasCustom && prev && prev.fresh === true && !prev.stale && normIsoSec(prev.arrival) === win.arrival) {
@@ -443,7 +451,8 @@ function admin(body) {
 // ── 在线编辑台 ──
 
 // 身份认证 v2 的 HTTP 端点。envId 本来就是公开的（静态托管域名里就有它）。
-const ENV = process.env.TCB_ENV || process.env.SCF_NAMESPACE || 'dea-mods-d1g0j2rile2323f73'
+// SCF 运行时会注入 SCF_NAMESPACE=default（函数命名空间，并非 CloudBase envId），不可拿来拼网关域名。
+const ENV = process.env.TCB_ENV || 'dea-mods-d1g0j2rile2323f73'
 const AUTH = `https://${ENV}.api.tcloudbasegateway.com`
 
 // 待审 0、通过 1、驳回 -1。**不设草稿**：要改就当场改完再提，一份稿子挂在那里
@@ -569,8 +578,9 @@ async function who(event, need) {
   // 破窗若也是 4 就造不出超管，引导整个走不通。
   if (ADMIN && t === ADMIN) return { uid: 'root', name: '本机', lv: 5 }
 
-  let me = wc.get(t)
-  if (!me || Date.now() - me.t > 3e5) {
+  let cached = wc.get(t)
+  let uid = cached && Date.now() - cached.t <= 3e5 ? cached.uid : ''
+  if (!uid) {
     const sig = typeof AbortSignal !== 'undefined' && AbortSignal.timeout ? AbortSignal.timeout(15000) : undefined
     let r
     try {
@@ -579,19 +589,21 @@ async function who(event, need) {
       throw new Error('auth unavailable')
     }
     if (!r.ok) {
-      if (r.status === 401 || r.status === 403) throw new Error('forbidden')
+      // CloudBase Auth v2 对过期或畸形 JWT 返回 400 failed_precondition，与 401/403 同属令牌失效。
+      if (r.status === 400 || r.status === 401 || r.status === 403) throw new Error('forbidden')
       throw new Error('auth unavailable')
     }
-    const uid = String(((await r.json()) || {}).sub || '')
+    uid = String(((await r.json()) || {}).sub || '')
     if (!uid) throw new Error('forbidden')
-    const row = (await eds.doc(uid).get()).data[0]
-    me = { t: Date.now(), uid, name: row ? row.name : '', lv: row ? Number(row.lv) || 0 : 0 }
     if (wc.size > 200) {
       const now = Date.now()
       for (const [k, v] of wc) if (now - v.t > 3e5) wc.delete(k)
     }
-    wc.set(t, me)
+    wc.set(t, { t: Date.now(), uid })
   }
+  // 权限名单每次现查，避免撤权或降级后其他暖实例继续按旧角色放行。
+  const row = (await eds.doc(uid).get()).data[0]
+  const me = { uid, name: row ? row.name : '', lv: row ? Number(row.lv) || 0 : 0 }
   // **权限不足与令牌失效要分开**：前端收到 forbidden 会去换令牌再打一次，
   // 两件事共用一个词时，lv 不够的人点一下会白跑三趟，报出来的话还看不出是权限问题。
   if (me.lv < need) throw new Error('no permission')
@@ -765,103 +777,71 @@ async function editorRoute(a, body, event, me) {
     const raw = Number(body.ok)
     const ok = raw === 1 ? 1 : raw === 0 ? 0 : -1
     const set = { ok, okBy: me.name, at: new Date().toISOString() }
-    const cur = (await subs.doc(String(body.id)).get()).data[0]
+    const subId = String(body.id)
+    const cur = (await subs.doc(subId).get()).data[0]
     if (!cur) throw new Error('no sub')
+    const expectedHash = body.baseHash !== undefined ? String(body.baseHash) : null
+    if (expectedHash !== null && sha1(String(cur.md || '')) !== expectedHash) throw new Error('conflict')
 
-    // 审的人多半改完直接点通过，不先点保存（admin.js 的 mark() 把填表页现读的那一份
-    // 带过来）。所以「谁改的」不能只认 ssave：正文与库里那份比一下就知道动没动，
-    // cur 本来就要读，不多一次调用。驳回那一路不带 md，比不着也不必比。
     if (body.md !== undefined && String(body.md) !== cur.md) set.edBy = me.name
 
-    // 撤回：通过与驳回都退得回待审。两档的状态都只活在库里——通过只改了这条记录，
-    // 源稿要等 sync.py 拉下来才落盘；驳回连那一步都没走过。审的人点错了、或者审完
-    // 又改主意，在这一段里都还追得回来。
-    //
-    // **一旦上了站就不许走这条路**：那时盘上有源稿、站上有页面、点赞也挂上了 _id，
-    // 只把库里的状态退回去，库与站就此对不上，而且没有任何一侧会报出来。上了站要
-    // 撤只有「申请移除」那一条——它落成一条待审记录，由 sync.py 的 sweep() 连源稿
-    // 一起删。删除申请自己也不许撤，通过与驳回两档都不许：已通过的那些 sweep() 可能
-    // 已经跑过、源稿已经不在了；被驳回的那些里有一类是 `sync.py --mine` 打回的（本地
-    // 稿有改动），退回待审等于把本机已经拒掉的申请重新排进队列。
+    const was = Number(cur.ok)
     if (ok === 0) {
       if (cur.drop) throw new Error('bad sub type')
-      const was = Number(cur.ok)
       if (was !== 1 && was !== -1) throw new Error('already pending')
-      // 「已上站」那道门**只管通过这一档**：sub 认出「这一套已经上站了」时会把它的
-      // season/slug 一并记下（updates 那一路），而驳回只写 ok/okBy/at，那两截原样
-      // 留着。不收窄到 was === 1 的话，对已上站那一套的更新被驳回之后就再也退不回
-      // 待审，而它从来没落过盘。
       if (was === 1 && cur.season && cur.slug &&
           (await docs.doc(buildId(cur.season, cur.slug)).get()).data.length) {
         throw new Error('已上站，请走申请移除')
       }
-      // 退回待审要守住「同一 key 的待审只留一条」——sub 那一侧靠一次 find-one-and-
-      // update 维持。驳回之后投稿人又投了一份，这时撤回旧的那条就撞出第二条：两条
-      // 都能通过，而通过时的 slug 是现算的随机串、查重只看 ok=1 与 docs，站上因此
-      // 多出一份重复配装，没有任何一侧会报出来。
       if (was === -1 && cur.key) {
         const q = await subs.where({ key: cur.key, ok: 0, drop: _.neq(1) }).limit(1).get()
         if (q.data.length) throw new Error('已有新的待审投稿')
       }
-      await subs.doc(cur._id).update(set)
-      return { ok: 1 }
-    }
-    if (!cur.drop && ok === -1 && Number(cur.ok) === 1 && cur.season && cur.slug &&
+    } else if (!cur.drop && ok === -1 && was === 1 && cur.season && cur.slug &&
         (await docs.doc(buildId(cur.season, cur.slug)).get()).data.length) {
       throw new Error('已上站，请走申请移除')
     }
-    // 删除申请只标状态。**真正的删除在本机**：sync.py 的 sweep() 按这条记录删掉
-    // 那一篇源稿，再把库里那条一并清掉——与落盘同一侧，构建与部署也在那里。
-    if (cur.drop) {
-      if (Object.prototype.hasOwnProperty.call(body, 'md')) throw new Error('bad sub type')
-      await subs.doc(cur._id).update(set)
-      return { ok: 1 }
-    }
-    if (ok === 1) {
-      // 通过的是存过的那一份。带 md 就一并更新，不带就用库里现有的。
+    if (cur.drop && Object.prototype.hasOwnProperty.call(body, 'md')) throw new Error('bad sub type')
+
+    let docId = ''
+    let doc = null
+    if (!cur.drop && ok === 1) {
       const md = String(body.md || cur.md || '')
       if (!md.startsWith('# ') || md.length > MAX_MD) throw new Error('bad md')
       set.md = md
 
       let season, slug
       if (cur.updates && cur.season && cur.slug) {
-        // **这一条是对已上站那一套的更新**：沿用原来的 season/slug 覆盖过去。
-        // 查重在这里要跳过——「已经存在」正是它要更新的那一份。
         season = cur.season
         slug = cur.slug
       } else {
-        // **赛季与 slug 由前端现算**：赛季就是当前这一季，slug 是「八位随机串-职业」。
-        // 形状与查重照旧验在这里——slug 即文件名，也是点赞的 _id，
-        // 重了会把上一份源稿盖掉。撞了当场拒，前端换一个随机串再来。
         season = String(body.season || '')
         slug = String(body.slug || '').toLowerCase()
         if (!/^s\d+-\S+$/.test(season)) throw new Error('bad season')
         if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) throw new Error('bad slug')
         const dup = await subs.where({ season, slug, ok: 1 }).limit(1).get()
-        if (dup.data.length && dup.data[0]._id !== String(body.id)) throw new Error('slug 重了')
+        if (dup.data.length && dup.data[0]._id !== subId) throw new Error('slug 重了')
         if ((await docs.doc(buildId(season, slug)).get()).data.length) {
           throw new Error('slug 重了')
         }
       }
       set.season = season
       set.slug = slug
-      // 审的时候可能改过正文，指纹跟着重算——下一次再投同一套才认得出是更新
       set.key = fingerprint(md)
 
-      // 更新那一路要把正文直接写进 docs：sync.py 的 land() 只写盘上没有的，
-      // 已经在站上的那一份它不碰。写进 docs 之后走的是与资料页同一条对账路——
-      // 库变了、盘没变，下一次 sync 自然拉下来。
       if (cur.updates) {
-        const id = buildId(season, slug)
-        // by 写通过的那个人。**不写「投稿更新」这类词**：铭牌拿 docs.by 当「谁改的」，
-        // 一个状态词摆在人名的位置上读起来像有个人叫这个名字；这一版是不是投稿更新
-        // 来的，由 sub.updates 答，铭牌第一行已经写着。
-        const doc = { md, hash: sha1(md), at: set.at, by: me.name }
-        const r = await docs.doc(id).update(doc)
-        if (!r.updated) await docs.doc(id).set(doc)
+        docId = buildId(season, slug)
+        doc = { md, hash: sha1(md), at: set.at, by: me.name }
       }
     }
-    await subs.doc(String(body.id)).update(set)
+    await db.runTransaction(async (tx) => {
+      const live = (await tx.collection('subs').doc(subId).get()).data
+      if (!live) throw new Error('no sub')
+      if (expectedHash !== null && sha1(String(live.md || '')) !== expectedHash) throw new Error('conflict')
+      if (Number(live.ok) !== was) throw new Error('conflict')
+      if (docId) await tx.collection('docs').doc(docId).set(doc)
+      await tx.collection('subs').doc(subId).update(set)
+    }, 0)
     return { ok: 1 }
   }
 
@@ -1165,8 +1145,8 @@ async function editorRoute(a, body, event, me) {
 async function route(a, body, event) {
   const me = await guard(a, body, event)
   if (a === 'stats') return stats()
-  if (a === 'sync_rotation') return syncRotation(body.slots, body.adaSlots, { force: Boolean(body.force) })
-  if (a === 'sync_xur') return syncXurInventory(body.kyber, { force: Boolean(body.force) })
+  if (a === 'sync_rotation') return syncRotation(body.slots, body.adaSlots, { force: Boolean(body.force), republish: Boolean(body.republish) })
+  if (a === 'sync_xur') return syncXurInventory(body.kyber, { force: Boolean(body.force), republish: Boolean(body.republish) })
 
   const ed = await editorRoute(a, body, event, me)
   if (ed) return ed
@@ -1248,6 +1228,20 @@ async function route(a, body, event) {
     // landed 与 hash 一起写：推上去的那一刻库里这一版就是盘上那一版。
     const hash = sha1(md)
     const set = { md, hash, at: new Date().toISOString(), by: '本机', landed: hash }
+    if (body.baseHash !== undefined) {
+      const expected = String(body.baseHash)
+      await db.runTransaction(async (tx) => {
+        const cur = (await tx.collection('docs').doc(id).get()).data
+        if (expected === '') {
+          if (cur) throw new Error('conflict')
+          await tx.collection('docs').doc(id).set(set)
+        } else {
+          if (!cur || cur.hash !== expected) throw new Error('conflict')
+          await tx.collection('docs').doc(id).update(set)
+        }
+      }, 0)
+      return { ok: 1 }
+    }
     const r = await docs.doc(id).update(set)
     if (!r.updated) await docs.doc(id).set(set)
     return { ok: 1 }
@@ -1272,19 +1266,44 @@ async function route(a, body, event) {
     const sets = rows.map((row) => {
       const id = String((row || [])[0] || '')
       const json = String((row || [])[1] || '')
+      const baseHash = (row || []).length > 2 ? String(row[2] || '') : undefined
       if (!REC_ID.test(id)) throw new Error('bad rec')
       const flat = flatOf({ json })
       if (Object.keys(flat).some((k) => !REC_PATH.test(k)) || canon(flat) !== json) throw new Error('bad rec')
-      return [id, { json, hash: sha1(json), landed: sha1(json), at, by: '本机' }]
+      return [id, { json, hash: sha1(json), landed: sha1(json), at, by: '本机' }, baseHash]
     })
-    // 先全部验完再写：一批里有一条坏的就一条都不写，sync.py 那一侧不必猜写到了哪儿。
     for (let i = 0; i < sets.length; i += 20) {
-      await Promise.all(sets.slice(i, i + 20).map(([id, set]) => recs.doc(id).set(set)))
+      await Promise.all(sets.slice(i, i + 20).map(async ([id, set, baseHash]) => {
+        if (baseHash === undefined) return recs.doc(id).set(set)
+        if (baseHash === '') {
+          const cur = (await recs.doc(id).get()).data[0]
+          if (cur) throw new Error('conflict')
+          return recs.doc(id).set(set)
+        }
+        const r = await recs.where({ _id: id, hash: baseHash }).update(set)
+        if (r.updated !== 1) throw new Error('conflict')
+      }))
     }
     return { ok: 1, n: sets.length }
   }
 
   if (a === 'rdrop') {
+    if (Array.isArray(body.items)) {
+      const items = body.items
+      if (!items.length || items.length > REC_BATCH) throw new Error('bad batch')
+      for (const item of items) {
+        const id = String((item || [])[0] || '')
+        if (!REC_ID.test(id) || typeof (item || [])[1] !== 'string') throw new Error('bad batch')
+      }
+      for (let i = 0; i < items.length; i += 20) {
+        await Promise.all(items.slice(i, i + 20).map(async ([id, baseHash]) => {
+          const cur = (await recs.doc(String(id)).get()).data[0]
+          if (cur && cur.hash !== baseHash) throw new Error('conflict')
+          if (cur) await recs.doc(String(id)).remove()
+        }))
+      }
+      return { ok: 1 }
+    }
     const ids = Array.isArray(body.ids) ? body.ids.map(String) : []
     if (!ids.length || ids.length > REC_BATCH || ids.some((id) => !REC_ID.test(id))) throw new Error('bad batch')
     await Promise.all(ids.map((id) => recs.doc(id).remove()))
@@ -1354,10 +1373,23 @@ async function route(a, body, event) {
   // 待审（ok=0）与废稿（ok=-1）不动：前者可能是删除期间有人重投的新稿。
   if (a === 'drop') {
     const id = String(body.id)
-    await docs.doc(id).remove()
+    if (body.baseHash !== undefined) {
+      const expected = String(body.baseHash)
+      await db.runTransaction(async (tx) => {
+        const cur = (await tx.collection('docs').doc(id).get()).data
+        if (expected === '') {
+          if (cur) throw new Error('conflict')
+        } else {
+          if (!cur || cur.hash !== expected) throw new Error('conflict')
+          await tx.collection('docs').doc(id).remove()
+        }
+      }, 0)
+    } else {
+      await docs.doc(id).remove()
+    }
     const m = /^builds\/([^/]+)\/([^/]+)$/.exec(id)
     if (m) {
-      const done = await subs.where({ season: m[1], slug: m[2], ok: 1 }).limit(50).get()
+      const done = await allDocs(subs.where({ season: m[1], slug: m[2], ok: 1 }), 500)
       for (const one of done.data) await subs.doc(one._id).remove()
       await likes.doc(`${m[1].split('-')[0]}_${m[2]}`).remove()
       lk = { t: 0, m: null }

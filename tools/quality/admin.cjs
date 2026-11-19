@@ -521,8 +521,27 @@ test('only a refresh the auth service rejects counts as a lost login', async () 
   await api.refresh()
   assert.equal(store.sa_at, 'at3')
 
+  reply = answer(429, { error: 'rate_limited' })
+  await assert.rejects(api.refresh(), (e) => e.message !== 'forbidden', '429 限流不算登录失效')
+  reply = answer(503, { error: 'service_unavailable' })
+  await assert.rejects(api.refresh(), (e) => e.message !== 'forbidden', '503 暂时不可用不算登录失效')
+
   delete store.sa_rt
   await assert.rejects(api.refresh(), (e) => e.message === 'forbidden', '没有 refresh_token 就是没登录')
+})
+
+test('edit preview show() neutralizes XSS attributes and dangerous URLs', () => {
+  const dialect = require(path.join(root, 'site/admin/dialect.js'))
+  const box = { window: { starsideDialect: dialect } }
+  const src = ['unesc', 'safeUrl', 'show'].map((n) => funcSource('admin/edit.js', n)).join('\n')
+  vm.runInNewContext(src + '\nthis.show = show;', box)
+  const { show } = box
+  assert.equal(show('![](/a/b.webp)'), '<img src="/a/b.webp" alt="">')
+  assert.equal(show('[电弧](../arc/index.html)'), '<a href="../arc/index.html">电弧</a>')
+  assert.doesNotMatch(show('![](x" onerror="alert(1))'), /<img/i)
+  assert.doesNotMatch(show('[点我](javascript:alert(1))'), /<a\b|href=/i)
+  assert.doesNotMatch(show('[点我](java&#x09;script:alert(1))'), /<a\b|href=/i)
+  assert.doesNotMatch(show('[点我](//evil.example/x)'), /<a\b|href=/i)
 })
 
 test('console timestamps read in Beijing time', () => {

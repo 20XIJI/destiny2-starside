@@ -849,7 +849,7 @@ test('weapons: usedByHtml toggles Aegis builds cleanly and evaluate defers text.
   // 1. Bare-word query matching index.js should NOT fetch text.js upfront
   B.S.q = '枯萎囤积'
   B.evaluate()
-  assert.equal(inserted.some((el) => String(el.src).endsWith('/weapons/text.js')), false,
+  assert.equal(inserted.some((el) => /\/weapons\/text\.js(?:\?|$)/.test(String(el.src))), false,
     '仅搜武器名命中时不应请求 2.1MB 的 text.js')
 
   // 2. sets scope bare-word hitting set name SHOULD still fetch text.js for bonus body text
@@ -857,7 +857,7 @@ test('weapons: usedByHtml toggles Aegis builds cleanly and evaluate defers text.
   B.S.scope = 'sets'
   B.S.q = wpnBox.window.WPN.t[0][1]
   B.evaluate()
-  assert.equal(inserted.some((el) => String(el.src).endsWith('/weapons/text.js')), true,
+  assert.equal(inserted.some((el) => /\/weapons\/text\.js(?:\?|$)/.test(String(el.src))), true,
     '套装范围裸词检索仍需拉取 text.js 以匹配套装效果正文')
 
   // 3. Negated bare word with non-empty results SHOULD still fetch text.js
@@ -866,7 +866,7 @@ test('weapons: usedByHtml toggles Aegis builds cleanly and evaluate defers text.
   B.S.scope = 'wpn'
   B.S.q = '-不存在的描述词'
   B.evaluate()
-  assert.equal(inserted.some((el) => String(el.src).endsWith('/weapons/text.js')), true,
+  assert.equal(inserted.some((el) => /\/weapons\/text\.js(?:\?|$)/.test(String(el.src))), true,
     '带否定裸词且存在非命中结果时仍需拉取 text.js')
 
   // 4. 0-hit bare-word or explicit perk: keyword SHOULD fetch text.js
@@ -874,7 +874,7 @@ test('weapons: usedByHtml toggles Aegis builds cleanly and evaluate defers text.
   B.resetTextLoad()
   B.S.q = '绝无此枪描述词'
   B.evaluate()
-  assert.equal(inserted.some((el) => String(el.src).endsWith('/weapons/text.js')), true,
+  assert.equal(inserted.some((el) => /\/weapons\/text\.js(?:\?|$)/.test(String(el.src))), true,
     '零命中降级回查说明时应当触发载入 text.js')
 
   // 3. usedByHtml toggles Aegis builds & strips accidental author URL

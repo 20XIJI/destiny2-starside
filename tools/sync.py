@@ -88,7 +88,16 @@ def api(action, **kw):
             out = json.loads(urllib.request.urlopen(req, timeout=60).read().decode())
         except urllib.error.HTTPError as e:
             if e.code != 429 or not wait:
-                raise RuntimeError('%s：HTTP %d；写请求结果可能未知' % (target, e.code)) from None
+                raw = ''
+                try:
+                    raw = e.read(4096).decode('utf-8', 'replace')
+                    err = json.loads(raw)
+                except (OSError, ValueError):
+                    err = None
+                if isinstance(err, dict) and err.get('error'):
+                    raise RuntimeError('后端拒了 %s（HTTP %d）：%s' % (target, e.code, err['error'])) from None
+                detail = ('：' + raw[:200]) if raw else ''
+                raise RuntimeError('%s：HTTP %d；写请求结果可能未知%s' % (target, e.code, detail)) from None
             time.sleep(wait)
             continue
         except (OSError, json.JSONDecodeError, UnicodeDecodeError) as e:
@@ -193,9 +202,12 @@ def put(path, md):
         raise RuntimeError('落盘失败 %s：%s' % (os.path.abspath(path), reason)) from None
 
 
-def send(doc_id, md):
+def send(doc_id, md, base_hash=None):
     # 网关的请求体上限 100 KB，最长那篇源稿 159 KB，所以一律压过再发。
-    api('push', id=doc_id, gz=base64.b64encode(gzip.compress(md.encode(), 9)).decode())
+    kw = {'id': doc_id, 'gz': base64.b64encode(gzip.compress(md.encode(), 9)).decode()}
+    if base_hash is not None:
+        kw['baseHash'] = base_hash
+    api('push', **kw)
 
 
 def fetch(doc_id, text):
@@ -208,7 +220,7 @@ def fetch(doc_id, text):
     with open(path_of(doc_id), encoding='utf-8') as f:
         now = db_form(doc_id, f.read())
     if now != text:
-        send(doc_id, now)
+        send(doc_id, now, base_hash=sha1(text))
     return now
 
 
@@ -280,16 +292,17 @@ def recs_in_db(heads=False):
 
 
 def rsend(items):
-    """[(_id, 规范文本)] → 按批推上去。云函数写 landed 与 hash。"""
+    """[(_id, 规范文本)] 或 [(_id, 规范文本, base_hash)] → 按批推上去。云函数写 landed 与 hash。"""
     batch, size = [], 0
-    for rid, text in items + [(None, '')]:
+    for row in items + [(None, '')]:
+        rid, text = row[0], row[1]
         n = len(text.encode())
         if batch and (rid is None or len(batch) >= REC_BATCH or size + n > REC_BYTES):
             body = json.dumps(batch, ensure_ascii=False).encode()
             api('rpush', gz=base64.b64encode(gzip.compress(body, 9)).decode())
             batch, size = [], 0
         if rid is not None:
-            batch.append([rid, text])
+            batch.append(list(row))
             size += n
 
 
@@ -373,9 +386,9 @@ def _recs_commit(disk, db, landed, base, push, pull, drop, stuck, done):
     if pull:
         rfetch(pull)
     if push:
-        rsend(push)
+        rsend([(rid, text, sha1(db[rid]) if rid in db else '') for rid, text in push])
     for i in range(0, len(drop), 500):
-        api('rdrop', ids=drop[i:i + 500])
+        api('rdrop', items=[[rid, sha1(db[rid])] for rid in drop[i:i + 500]])
     # 推上去那一路云函数写过 landed；拉下来的与库里还没有这个值的在这里补。
     # **稳态下全部相等，一次调用都不发。**
     pushed = {rid for rid, _ in push}
@@ -463,17 +476,22 @@ def deletions(subs):
     return targets
 
 
-def sweep(subs, disk, base, force=()):
-    """审核删除先与本机基线对比，再删库、删盘；不猜未同步修改的去向。"""
+def sweep(subs, disk, base, force=(), db=None):
+    """审核删除先与本机基线及远端快照对比，再条件删库、删盘；不猜未同步修改的去向。"""
     gone, conflicts = [], []
     for doc_id in deletions(subs):
         p = path_of(doc_id)
-        if doc_id not in force and doc_id in disk and (
-                doc_id not in base or sha1(disk[doc_id]) != base[doc_id]):
+        local_dirty = doc_id in disk and (doc_id not in base or sha1(disk[doc_id]) != base[doc_id])
+        remote_dirty = (db is not None and doc_id in db
+                        and (doc_id not in base or sha1(db[doc_id]) != base[doc_id]))
+        if doc_id not in force and (local_dirty or remote_dirty):
             conflicts.append(doc_id)
-            print('  %s：删除与本地修改冲突' % doc_id)
+            print('  %s：删除与%s冲突' % (doc_id, '本地修改' if local_dirty else '远端修改'))
             continue
-        api('drop', id=doc_id)
+        drop_kw = {'id': doc_id}
+        if doc_id not in force and db is not None:
+            drop_kw['baseHash'] = sha1(db[doc_id]) if doc_id in db else ''
+        api('drop', **drop_kw)
         try:
             if os.path.exists(p):
                 os.remove(p)
@@ -495,7 +513,7 @@ def sync():
         raw = pulled.result()['docs']
         subs = listed.result()['subs']
     disk, db, base = on_disk(), in_db(raw), baseline()
-    gone, conflicts = sweep(subs, disk, base)
+    gone, conflicts = sweep(subs, disk, base, db=db)
     # 冲突目标也不能由旧投稿恢复，更不能在后面的三方比中反手推回库。
     land(subs, dropped=set(gone) | set(conflicts))
     disk = on_disk()
@@ -522,12 +540,12 @@ def sync():
             stuck.append(doc_id)
             continue
         if act == 'push':
-            send(doc_id, d)
+            send(doc_id, d, base_hash=sha1(r) if r is not None else '')
             landed[doc_id] = dh         # push 顺手写了 landed，别再补一次
             pushed.append(doc_id)
             completed = '已推送'
         elif act == 'drop':
-            api('drop', id=doc_id)
+            api('drop', id=doc_id, baseHash=sha1(r))
             dropped.append(doc_id)
             completed = '已删除库稿'
         elif act == 'pull':

@@ -2750,15 +2750,38 @@ class Deployment(Isolated):
         # deploy.py 里是 `import sync`，按模块名取，不是这里加载的 quality_sync。
         self.stack.enter_context(patch.dict(sys.modules, {"sync": sync}))
         self.replace(
-            sync, "api", lambda action, **kw: republished.append(action) or {"ok": 1}
+            sync,
+            "api",
+            lambda action, **kw: republished.append((action, kw.get("republish"))) or {"ok": 1},
         )
         deploy.main()
         self.assertEqual(len(self.remote()), 1)
         self.assertIn("--prune", self.remote()[0])
         self.assertIn("--safe", self.remote()[0])
         self.assertEqual(self.refs(), [("update-ref", deploy.REF, self.TARGET)])
-        # prune 删掉了云函数写在托管上的 rotation/*.json，要当场让云函数重新发布。
+        # prune 删掉了云函数写在托管上的 rotation/*.json，要当场让云函数重发已持久化快照。
+        self.assertEqual(
+            republished,
+            [("sync_rotation", True), ("sync_xur", True)],
+        )
+
+    def test_full_prune_continues_second_republish_if_first_fails(self):
+        self.base = ""
+        self.replace(sys, "argv", ["deploy.py", "--all", "--prune"])
+        republished = []
+        self.stack.enter_context(patch.dict(sys.modules, {"sync": sync}))
+
+        def fake_api(action, **kw):
+            republished.append(action)
+            if action == "sync_rotation":
+                raise RuntimeError("boom")
+            return {"ok": 1}
+
+        self.replace(sync, "api", fake_api)
+        with self.assertRaises(RuntimeError):
+            deploy.main()
         self.assertEqual(republished, ["sync_rotation", "sync_xur"])
+        self.assertEqual(self.refs(), [])
 
     def test_full_prune_preview_identifies_unqueried_deletions(self):
         self.replace(sys, "argv", ["deploy.py", "--all", "--prune", "--dry-run"])
@@ -3192,7 +3215,8 @@ class RecordSync(Isolated):
                 "more": 0,
             }
         if action == "rpush":
-            for rid, text in json.loads(gzip.decompress(base64.b64decode(kw["gz"]))):
+            for row in json.loads(gzip.decompress(base64.b64decode(kw["gz"]))):
+                rid, text = row[0], row[1]
                 self.db[rid] = text
                 self.landed[rid] = sync.sha1(text)
             return {"ok": 1}
@@ -3202,7 +3226,8 @@ class RecordSync(Isolated):
                 self.landed[rid] = h
             return {"ok": 1}
         if action == "rdrop":
-            for rid in kw["ids"]:
+            for item in kw.get("items") or kw["ids"]:
+                rid = item[0] if isinstance(item, (list, tuple)) else item
                 self.db.pop(rid, None)
             return {"ok": 1}
         return forbidden(action, kw)
@@ -4171,6 +4196,30 @@ class IncrementalBuild(Isolated):
         real_root = TOOLS.parent
         missing = [rel for rel in self.bld.SHARED if not (real_root / rel).is_file()]
         self.assertEqual(missing, [], "build.SHARED 列了不存在的文件：%s" % missing)
+
+    def test_doc_refs_tracks_cards_and_row_links(self):
+        target_a = self.file("references/docs/target-a.md", "# A\n")
+        target_b = self.file("references/docs/target-b.md", "# B\n")
+        consumer = self.file(
+            "references/docs/consumer.md",
+            "# C\n\n卡片：target-a\n\n[某词条](../target-b/index.html)\n",
+        )
+        import shell as real_shell
+
+        mapping = {"target-a": str(target_a), "target-b": str(target_b)}
+        self.replace(real_shell, "source_path", lambda slug: mapping.get(slug))
+        card_re = re.compile(r"^卡片：(.*)$", re.M)
+        link_re = re.compile(r"\[[^\]]+\]\((?!http)([^)#?]+/index\.html)\)")
+        text = consumer.read_text(encoding="utf-8")
+        refs = []
+        for m in card_re.finditer(text):
+            refs.extend(s.strip() for s in m.group(1).split("、") if s.strip())
+        for m in link_re.finditer(text):
+            refs.append(Path(m.group(1)).parent.name)
+        deps = sorted({Path(p) for s in refs if (p := real_shell.source_path(s)) is not None})
+        before = self.bld.digest_files([consumer, *deps])
+        target_a.write_text("# A2\n", encoding="utf-8")
+        self.assertNotEqual(before, self.bld.digest_files([consumer, *deps]))
 
 
 class TypeGate(unittest.TestCase):
