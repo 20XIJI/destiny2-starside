@@ -179,6 +179,29 @@ def in_db(docs=None):
     return {d['_id']: (d.get('md') or '') for d in docs}
 
 
+def docs_in_db(raw=None, *, heads=False):
+    """库里每篇的 (hashes, bodies, landed)。heads=True 时尽量只拉元信息，不传正文。"""
+    if raw is None:
+        raw = api('pull', **({'heads': 1} if heads else {}))['docs']
+    hashes, bodies, landed = {}, {}, {}
+    for d in raw:
+        doc_id = d['_id']
+        landed[doc_id] = d.get('landed') or ''
+        if 'md' in d:
+            md = d.get('md') or ''
+            bodies[doc_id] = md
+            hashes[doc_id] = sha1(md)
+        else:
+            hashes[doc_id] = d.get('hash') or ''
+    return hashes, bodies, landed
+
+
+def _drop_remote(doc_id):
+    leftover = path_of(doc_id) + '.remote'
+    if os.path.exists(leftover):
+        os.remove(leftover)
+
+
 def baseline(save=None):
     if save is not None:
         with open(BASE, 'w', encoding='utf-8') as f:
@@ -266,28 +289,26 @@ def recs_on_disk():
 
 
 def recs_in_db(heads=False):
-    """库里的全部记录：({_id: 规范文本或 hash}, {_id: landed})。按 _id 翻页取到底。
+    """库里的全部记录：(hashes, bodies, landed)。按 _id 翻页取到底。
 
-    heads=True 时请云函数不要带 json。旧函数不理这个旗、页里仍有 json：整次按
-    正文处理（canon 检查照做），调用方不必再拉一遍。新函数返回 hash，无正文。"""
-    out, landed, skip = {}, {}, 0
-    as_bodies = not heads
+    heads=True 时请云函数不带 json；若服务端仍返回 json，则顺带填满 bodies。"""
+    hashes, bodies, landed, skip = {}, {}, {}, 0
     while True:
         got = api('rpull', skip=skip, **({'heads': 1} if heads else {}))
         rows = got['recs']
-        if heads and not as_bodies and any('json' in row for row in rows):
-            as_bodies = True
         for row in rows:
-            landed[row['_id']] = row.get('landed') or ''
-            if as_bodies:
+            rid = row['_id']
+            landed[rid] = row.get('landed') or ''
+            if 'json' in row:
                 text = row.get('json') or ''
                 if facts.canon(json.loads(text)) != text:
-                    raise RuntimeError('库里 %s 那一份不是规范写法，两边的 canon() 分岔了' % row['_id'])
-                out[row['_id']] = text
+                    raise RuntimeError('库里 %s 那一份不是规范写法，两边的 canon() 分岔了' % rid)
+                bodies[rid] = text
+                hashes[rid] = sha1(text)
             else:
-                out[row['_id']] = row.get('hash') or ''
+                hashes[rid] = row.get('hash') or ''
         if not got.get('more'):
-            return out, landed
+            return hashes, bodies, landed
         skip += len(rows)
 
 
@@ -340,55 +361,44 @@ def rdiff(rid, d, r):
 def sync_recs(base):
     """记录那一路的三方比。回撞车的那几条 _id。"""
     disk = recs_on_disk()
-    db, landed = recs_in_db(heads=True)
-    if not any(v.startswith('{') for v in db.values()):
-        need_bodies = False
-        for rid in set(disk) | set(db):
-            act = plan(sha1(disk[rid]) if rid in disk else None,
-                       db.get(rid) if rid in db else None, base.get(rid))
-            if act in ('pull', 'stuck'):
-                need_bodies = True
-                break
-        if need_bodies:
-            db, landed = recs_in_db(heads=False)
-        else:
-            push, pull, drop, stuck, done = [], [], [], [], {}
-            for rid in sorted(set(disk) | set(db)):
-                d = disk.get(rid)
-                dh = sha1(d) if d is not None else None
-                act = plan(dh, db.get(rid) if rid in db else None, base.get(rid))
-                if act == 'push':
-                    push.append((rid, d))
-                elif act == 'drop':
-                    drop.append(rid)
-                done[rid] = dh
-            return _recs_commit(disk, db, landed, base, push, pull, drop, stuck, done)
+    hashes, bodies, landed = recs_in_db(heads=True)
+    need_bodies = False
+    for rid in set(disk) | set(hashes):
+        dh = sha1(disk[rid]) if rid in disk else None
+        act = plan(dh, hashes.get(rid), base.get(rid))
+        if act in ('pull', 'stuck') and rid in hashes and rid not in bodies:
+            need_bodies = True
+            break
+    if need_bodies:
+        hashes, bodies, landed = recs_in_db(heads=False)
+
     push, pull, drop, stuck, done = [], [], [], [], {}
-    for rid in sorted(set(disk) | set(db)):
-        d, r = disk.get(rid), db.get(rid)
+    for rid in sorted(set(disk) | set(hashes)):
+        d = disk.get(rid)
         dh = sha1(d) if d is not None else None
-        act = plan(dh, sha1(r) if r is not None else None, base.get(rid))
+        act = plan(dh, hashes.get(rid), base.get(rid))
         if act == 'stuck':
             stuck.append(rid)
             continue
         if act == 'push':
             push.append((rid, d))
         elif act == 'pull':
+            r = bodies[rid]
             pull.append((rid, r))
             dh = sha1(r)
         elif act == 'drop':
             drop.append(rid)
         done[rid] = dh
-    return _recs_commit(disk, db, landed, base, push, pull, drop, stuck, done)
+    return _recs_commit(disk, hashes, bodies, landed, base, push, pull, drop, stuck, done)
 
 
-def _recs_commit(disk, db, landed, base, push, pull, drop, stuck, done):
+def _recs_commit(disk, hashes, bodies, landed, base, push, pull, drop, stuck, done):
     if pull:
         rfetch(pull)
     if push:
-        rsend([(rid, text, sha1(db[rid]) if rid in db else '') for rid, text in push])
+        rsend([(rid, text, hashes.get(rid, '')) for rid, text in push])
     for i in range(0, len(drop), 500):
-        api('rdrop', items=[[rid, sha1(db[rid])] for rid in drop[i:i + 500]])
+        api('rdrop', items=[[rid, hashes[rid]] for rid in drop[i:i + 500]])
     # 推上去那一路云函数写过 landed；拉下来的与库里还没有这个值的在这里补。
     # **稳态下全部相等，一次调用都不发。**
     pushed = {rid for rid, _ in push}
@@ -406,7 +416,7 @@ def _recs_commit(disk, db, landed, base, push, pull, drop, stuck, done):
     if stuck:
         print('\n记录冲突 %d 条：这些记录未改动' % len(stuck))
         for rid in stuck:
-            rdiff(rid, disk.get(rid), db.get(rid))
+            rdiff(rid, disk.get(rid), bodies.get(rid))
     return stuck
 
 
@@ -476,21 +486,23 @@ def deletions(subs):
     return targets
 
 
-def sweep(subs, disk, base, force=(), db=None):
+def sweep(subs, disk, base, force=(), db_hashes=None, db=None):
     """审核删除先与本机基线及远端快照对比，再条件删库、删盘；不猜未同步修改的去向。"""
+    if db_hashes is None and db is not None:
+        db_hashes = {k: sha1(v) for k, v in db.items()}
     gone, conflicts = [], []
     for doc_id in deletions(subs):
         p = path_of(doc_id)
         local_dirty = doc_id in disk and (doc_id not in base or sha1(disk[doc_id]) != base[doc_id])
-        remote_dirty = (db is not None and doc_id in db
-                        and (doc_id not in base or sha1(db[doc_id]) != base[doc_id]))
+        remote_dirty = (db_hashes is not None and doc_id in db_hashes
+                        and (doc_id not in base or db_hashes[doc_id] != base[doc_id]))
         if doc_id not in force and (local_dirty or remote_dirty):
             conflicts.append(doc_id)
             print('  %s：删除与%s冲突' % (doc_id, '本地修改' if local_dirty else '远端修改'))
             continue
         drop_kw = {'id': doc_id}
-        if doc_id not in force and db is not None:
-            drop_kw['baseHash'] = sha1(db[doc_id]) if doc_id in db else ''
+        if doc_id not in force and db_hashes is not None:
+            drop_kw['baseHash'] = db_hashes.get(doc_id, '')
         api('drop', **drop_kw)
         try:
             if os.path.exists(p):
@@ -508,54 +520,81 @@ def sweep(subs, disk, base, force=(), db=None):
 
 def sync():
     with ThreadPoolExecutor(max_workers=2) as pool:
-        pulled = pool.submit(api, 'pull')
+        pulled = pool.submit(api, 'pull', heads=1)
         listed = pool.submit(api, 'list')
         raw = pulled.result()['docs']
         subs = listed.result()['subs']
-    disk, db, base = on_disk(), in_db(raw), baseline()
-    gone, conflicts = sweep(subs, disk, base, db=db)
+    disk, base = on_disk(), baseline()
+    hashes, bodies, landed = docs_in_db(raw)
+    gone, conflicts = sweep(subs, disk, base, db_hashes=hashes)
     # 冲突目标也不能由旧投稿恢复，更不能在后面的三方比中反手推回库。
-    land(subs, dropped=set(gone) | set(conflicts))
-    disk = on_disk()
+    wrote = land(subs, dropped=set(gone) | set(conflicts))
     for doc_id in gone:
-        db.pop(doc_id, None)
-    # landed 与正文出自同一次 pull：审核台判 hash != landed 即「线上改过、还没落盘」，
-    # 这一轮对完账之后每篇都该相等。sweep 删掉的从内存拿掉，不再拉第二次。
-    landed = {d['_id']: (d.get('landed') or '') for d in raw}
-    for doc_id in gone:
+        disk.pop(doc_id, None)
+        hashes.pop(doc_id, None)
+        bodies.pop(doc_id, None)
         landed.pop(doc_id, None)
+    for doc_id in wrote:
+        with open(path_of(doc_id), encoding='utf-8') as f:
+            disk[doc_id] = db_form(doc_id, f.read())
+
+    # 先按 heads 做三方比，只在存在 pull 或 stuck 且缺正文时再拉全量正文。
+    actions = {}
+    need_bodies = False
+    for doc_id in sorted(set(disk) | set(hashes)):
+        if doc_id in conflicts:
+            if doc_id in hashes and doc_id not in bodies:
+                need_bodies = True
+            continue
+        d = disk.get(doc_id)
+        dh = sha1(d) if d is not None else None
+        act = plan(dh, hashes.get(doc_id), base.get(doc_id))
+        actions[doc_id] = (act, dh)
+        if act in ('pull', 'stuck') and doc_id in hashes and doc_id not in bodies:
+            need_bodies = True
+
+    if need_bodies:
+        full_hashes, full_bodies, full_landed = docs_in_db(heads=False)
+        for doc_id in gone:
+            full_hashes.pop(doc_id, None)
+            full_bodies.pop(doc_id, None)
+            full_landed.pop(doc_id, None)
+        hashes, bodies, landed = full_hashes, full_bodies, full_landed
+        actions = {}
+        for doc_id in sorted(set(disk) | set(hashes)):
+            if doc_id in conflicts:
+                continue
+            d = disk.get(doc_id)
+            dh = sha1(d) if d is not None else None
+            actions[doc_id] = (plan(dh, hashes.get(doc_id), base.get(doc_id)), dh)
 
     pushed, pulled, dropped, stuck = [], [], [], list(conflicts)
 
-    for doc_id in sorted(set(disk) | set(db)):
-        if doc_id in conflicts:
-            continue
+    for doc_id, (act, dh) in actions.items():
         d = disk.get(doc_id)
-        r = db.get(doc_id)
         b = base.get(doc_id)
-        dh = sha1(d) if d is not None else None
-        act = plan(dh, sha1(r) if r is not None else None, b)
         completed = ''
         if act == 'stuck':
             stuck.append(doc_id)
             continue
         if act == 'push':
-            send(doc_id, d, base_hash=sha1(r) if r is not None else '')
+            send(doc_id, d, base_hash=hashes.get(doc_id, ''))
             landed[doc_id] = dh         # push 顺手写了 landed，别再补一次
             pushed.append(doc_id)
             completed = '已推送'
         elif act == 'drop':
-            api('drop', id=doc_id, baseHash=sha1(r))
+            api('drop', id=doc_id, baseHash=hashes[doc_id])
             dropped.append(doc_id)
             completed = '已删除库稿'
         elif act == 'pull':
+            r = bodies[doc_id]
             try:
                 dh = sha1(fetch(doc_id, r))
             except SystemExit as why:
                 print('  ? %s 拉取后解析失败，留在冲突列表：%s' % (doc_id, why))
                 stuck.append(doc_id)
                 continue
-            landed[doc_id] = dh if dh != sha1(r) else landed.get(doc_id)
+            landed[doc_id] = dh if dh != hashes[doc_id] else landed.get(doc_id)
             pulled.append(doc_id)
             completed = '已拉取'
         # 对完账之后盘上就是这一版，landed 记住它的 hash。推上去那一路云函数已经写过、
@@ -585,13 +624,13 @@ def sync():
         # 撞车的那几篇把库里那份写在旁边，好逐字比对再定夺；references/ 整个
         # 走「全忽略 + 白名单」，.remote 不是 .md，不会入库。
         for doc_id in stuck:
-            if doc_id in db:
+            if doc_id in bodies:
                 # 旁置的那一份留 markdown：它是给人比对用的，不是源稿。
-                put(path_of(doc_id) + '.remote', db[doc_id])
+                put(path_of(doc_id) + '.remote', bodies[doc_id])
         print('\n冲突 %d 篇：这些源稿未改动；其他已完成项见上方回执' % len(stuck))
         for doc_id in stuck:
             print('  %s' % doc_id + ('  库里那份写在 %s' % os.path.relpath(path_of(doc_id) + '.remote', ROOT)
-                                     if doc_id in db else ''))
+                                     if doc_id in bodies else ''))
         print('比过之后择一：')
         print('  python3 tools/sync.py --mine   ' + ' '.join(stuck))
         print('  python3 tools/sync.py --theirs ' + ' '.join(stuck))
@@ -619,17 +658,18 @@ def take(ids, mine):
 def take_recs(ids, mine):
     base = baseline()
     disk = recs_on_disk()
-    db, landed = recs_in_db()
+    hashes, bodies, landed = recs_in_db(heads=mine)
     for rid in ids:
         if mine:
             if rid in disk:
-                rsend([(rid, disk[rid])])
+                rsend([(rid, disk[rid], hashes.get(rid, ''))])
                 base[rid] = sha1(disk[rid])
             else:
-                api('rdrop', ids=[rid])
+                if rid in hashes:
+                    api('rdrop', items=[[rid, hashes[rid]]])
                 base.pop(rid, None)
         else:
-            if rid not in db:
+            if rid not in bodies:
                 if rid not in disk and rid not in base:
                     sys.exit('%s 库里没有，谈不上以库里的为准' % rid)
                 if rid in disk:
@@ -638,8 +678,8 @@ def take_recs(ids, mine):
                 baseline(base)
                 print('%s ← 库里那份（已清空）' % rid, flush=True)
                 continue
-            rfetch([(rid, db[rid])])
-            base[rid] = sha1(db[rid])
+            rfetch([(rid, bodies[rid])])
+            base[rid] = sha1(bodies[rid])
             if landed.get(rid) != base[rid]:
                 rlanded([[rid, base[rid]]])
         baseline(base)
@@ -647,9 +687,8 @@ def take_recs(ids, mine):
 
 
 def take_docs(ids, mine):
-    raw = api('pull')['docs']
-    disk, db, base = on_disk(), in_db(raw), baseline()
-    landed = {d['_id']: (d.get('landed') or '') for d in raw}
+    hashes, bodies, landed = docs_in_db(heads=mine)
+    disk, base = on_disk(), baseline()
     subs = api('list')['subs']
     targets = deletions(subs)
     for doc_id in ids:
@@ -661,45 +700,37 @@ def take_docs(ids, mine):
                     api('mark', id=sub['_id'], ok=-1)
             else:
                 sweep(targets[doc_id], disk, base, force={doc_id})
-                leftover = path_of(doc_id) + '.remote'
-                if os.path.exists(leftover):
-                    os.remove(leftover)
+                _drop_remote(doc_id)
                 print('%s ← 接受删除' % doc_id, flush=True)
                 continue
         if mine:
             if doc_id not in disk:
-                api('drop', id=doc_id)
+                if doc_id in hashes:
+                    api('drop', id=doc_id, baseHash=hashes[doc_id])
                 base.pop(doc_id, None)
             else:
-                send(doc_id, disk[doc_id])
+                send(doc_id, disk[doc_id], base_hash=hashes.get(doc_id, ''))
                 base[doc_id] = sha1(disk[doc_id])
         else:
-            if doc_id not in db:
+            if doc_id not in bodies:
                 if doc_id not in disk and doc_id not in base:
                     sys.exit('%s 库里没有，谈不上以库里的为准' % doc_id)
                 p = path_of(doc_id)
                 if os.path.exists(p):
                     os.remove(p)
                 base.pop(doc_id, None)
-                leftover = p + '.remote'
-                if os.path.exists(leftover):
-                    os.remove(leftover)
+                _drop_remote(doc_id)
                 baseline(base)
                 print('%s ← 库里那份（接受删除）' % doc_id, flush=True)
                 continue
-            now = fetch(doc_id, db[doc_id])
+            now = fetch(doc_id, bodies[doc_id])
             base[doc_id] = sha1(now)
-            if now != db[doc_id]:
+            if now != bodies[doc_id]:
                 landed[doc_id] = base[doc_id]   # fetch() 把规范过的那一份推回去了
-            # 盘上就是库里这一版了，landed 跟着走：不写的话审核台一直标着「已改」，
-            # 直到下一次整轮 sync 才收敛。**只在不等时才发**，与 sync() 同一个契约
-            # ——云函数据此把「写不进去」当成那条 doc 没了，当场报出来。
             if landed.get(doc_id) != base[doc_id]:
                 api('landed', id=doc_id, hash=base[doc_id])
         baseline(base)
-        leftover = path_of(doc_id) + '.remote'
-        if os.path.exists(leftover):
-            os.remove(leftover)
+        _drop_remote(doc_id)
         print('%s ← %s' % (doc_id, '盘上那份' if mine else '库里那份'), flush=True)
     baseline(base)
 

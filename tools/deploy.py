@@ -111,36 +111,54 @@ def tcb(*args: str, env: str, confirm: bool = False) -> None:
         sys.exit("tcb 失败，refs/deploy 不动，改完重跑即可")
 
 
-def stage_one(rel: str, dst: pathlib.Path) -> None:
+def stage_one(rel: str, dst: pathlib.Path) -> bool:
     """把一个文件放进暂存目录。CSS 与 JS 顺手剥掉块注释与缩进，别的原样复制。
-
-    site.css 有 38% 的字符在 /* */ 里，app.js 也差不多，而 .css/.js 的浏览器缓存
-    只有 5 分钟，站上也不压缩——那些设计依据与缩进每次访问都按原始字节重发一遍。
-    源稿一个字不动，剥只发生在这里，本地 npm start 服务的仍是带注释的那一份。
-
-    改过的 .js 落盘后过一遍 node --check，不过就中止部署并报出文件名。跳不跳过由
-    strippable() 与 dedentable() 在动手之前判定；动手之后语法坏了，说明剥的规则
-    本身有漏洞，原样发出去会把这个漏洞藏起来。
+    返回该文件是否为被改写过、需要做语法校验的 .js。
     """
     if not rel.endswith((".css", ".js")):
         shutil.copy2(SITE / rel, dst)
-        return
+        return False
     text = (SITE / rel).read_text(encoding="utf-8")
-    if not strippable(text):
-        print(f"  ! {rel} 的字符串里有 /* 或 */，原样发")
-        shutil.copy2(SITE / rel, dst)
-        return
-    out = uncomment(text)
+    out = text
+    if "/*" in text:
+        if not strippable(text):
+            print(f"  ! {rel} 的字符串里有 /* 或 */，原样发")
+            shutil.copy2(SITE / rel, dst)
+            return False
+        out = uncomment(text)
     if dedentable(rel, out):
         out = dedent(out)
     else:
         print(f"  ! {rel} 有反引号或行尾反斜杠，只剥注释、不去缩进")
+    if out == text:
+        shutil.copy2(SITE / rel, dst)
+        return False
     dst.write_text(out, encoding="utf-8")
-    if rel.endswith(".js") and out != text:
+    return rel.endswith(".js")
+
+
+def check_staged_js(staged_js: list[tuple[str, pathlib.Path]]) -> None:
+    """校验所有被改写过的暂存 .js。单文件走 node --check，多文件合并一次 node 进程批量校验。"""
+    if not staged_js:
+        return
+    if len(staged_js) == 1:
+        rel, dst = staged_js[0]
         r = subprocess.run(["node", "--check", str(dst)], cwd=ROOT, text=True, capture_output=True)
         if r.returncode:
             sys.exit(f"{rel} 剥完注释与缩进后 node --check 不过，未部署，refs/deploy 不变：\n"
                      f"{r.stderr.strip()}")
+        return
+    script = (
+        "const fs=require('fs'),vm=require('vm');"
+        "for(const [rel,p] of JSON.parse(process.argv[1])){"
+        "try{new vm.Script(fs.readFileSync(p,'utf8'),{filename:rel})}"
+        "catch(e){console.error(rel+': '+e.message);process.exit(1)}}"
+    )
+    payload = json.dumps([[rel, str(dst)] for rel, dst in staged_js])
+    r = subprocess.run(["node", "-e", script, payload], cwd=ROOT, text=True, capture_output=True)
+    if r.returncode:
+        sys.exit(f"剥完注释与缩进后 JS 语法校验不过，未部署，refs/deploy 不变：\n"
+                 f"{r.stderr.strip()}")
 
 
 def plan(full: bool, base: str, target: str) -> "tuple[list[str], list[str]]":
@@ -213,10 +231,13 @@ def main() -> None:
     if files:
         stage = pathlib.Path(tempfile.mkdtemp(prefix="starside-deploy-"))
         try:
+            staged_js: list[tuple[str, pathlib.Path]] = []
             for p in files:
                 dst = stage / p
                 dst.parent.mkdir(parents=True, exist_ok=True)
-                stage_one(p, dst)
+                if stage_one(p, dst):
+                    staged_js.append((p, dst))
+            check_staged_js(staged_js)
             extra = ["--prune", "--safe"] if prune else []
             unchanged(target)
             tcb("hosting", "deploy", str(stage), CLOUD, *extra, env=env, confirm=prune)

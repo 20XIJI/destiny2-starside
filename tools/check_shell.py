@@ -16,6 +16,7 @@ import os
 import re
 import sys
 
+import deploy
 import shell
 
 # head 里与页面无关的那几行。标题与描述是变量，用哨兵值生成后按前缀挑出不变量。
@@ -45,19 +46,13 @@ SHELL_PARTS = (
     "assets/app.js",
     "assets/fonts/chakra-petch-600.woff2",
 )
-BLOCK_COMMENT = re.compile(r"/\*.*?\*/", re.S)
-
-
 def shipped_size(rel):
     """这个文件发上去有多大。CSS 与 JS 按 deploy.py 剥完注释的样子算。"""
     raw = os.path.join(shell.SITE, rel)
     with open(raw, "rb") as f:
         blob = f.read()
     if rel.endswith((".css", ".js")):
-        text = blob.decode("utf-8")
-        blob = BLOCK_COMMENT.sub(lambda m: "\n" * m.group(0).count("\n"), text).encode(
-            "utf-8"
-        )
+        blob = deploy.uncomment(blob.decode("utf-8")).encode("utf-8")
     return len(gzip.compress(blob, 9))
 
 

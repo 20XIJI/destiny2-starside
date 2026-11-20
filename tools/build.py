@@ -135,14 +135,8 @@ def invoke(mod, extra_args: tuple[str, ...] = ()) -> None:
         code = mod.main()
     finally:
         sys.argv = old
-    print(
-        "  %s  %.1fs"
-        % (
-            Path(mod.__file__).resolve().relative_to(ROOT).as_posix(),
-            time.perf_counter() - t0,
-        ),
-        flush=True,
-    )
+    name = Path(mod.__file__).resolve().name
+    print("  · %-28s %4.1fs" % (name, time.perf_counter() - t0), flush=True)
     if code not in (0, None):
         sys.exit(code)
 
@@ -172,6 +166,8 @@ def main() -> int:
     next_stamp: dict = {}
     file_cache: dict[str, bytes] = {}
     ran = False
+    executed = 0
+    skipped = 0
 
     def dirty(key: str, paths, *, extra: str = "") -> bool:
         got = digest_files(paths, file_cache, extra=extra)
@@ -199,13 +195,14 @@ def main() -> int:
         items = load_tool("items.py")
         t = time.perf_counter()
         items.normalize()
-        print("  tools/items.py  %.1fs" % (time.perf_counter() - t), flush=True)
+        print("  · %-28s %4.1fs" % ("items.py", time.perf_counter() - t), flush=True)
         ran = True
+        executed += 1
         file_cache.clear()
         sources = source_files()
         next_stamp["normalize"] = digest_files(sources + norm_deps, file_cache)
     else:
-        print("  skip  items.py --normalize", flush=True)
+        skipped += 1
     if normalize_only:
         save_stamp(
             {**stamp, "orch": next_stamp["orch"], "normalize": next_stamp["normalize"]}
@@ -271,13 +268,15 @@ def main() -> int:
     if art_dirty:
         invoke(load_tool("convert-artifact-mods.py"))
         ran = True
+        executed += 1
     else:
-        print("  skip  convert-artifact-mods.py", flush=True)
+        skipped += 1
     if sets_dirty:
         invoke(load_tool("convert-armor-sets.py"))
         ran = True
+        executed += 1
     else:
-        print("  skip  convert-armor-sets.py", flush=True)
+        skipped += 1
     if page_dirty:
         cdoc = load_tool("convert-doc.py")
         t = time.perf_counter()
@@ -289,14 +288,12 @@ def main() -> int:
             cdoc.unbuilt()
         finally:
             shell.hush_emit(False)
-        print(
-            "  tools/convert-doc.py  %.1fs  %d pages"
-            % (time.perf_counter() - t, len(page_dirty)),
-            flush=True,
-        )
+        label = "convert-doc.py (%d pages)" % len(page_dirty)
+        print("  · %-28s %4.1fs" % (label, time.perf_counter() - t), flush=True)
         ran = True
+        executed += 1
     else:
-        print("  skip  convert-doc.py  %d pages" % len(slugs), flush=True)
+        skipped += 1
 
     notices_dirty = dirty(
         "notices",
@@ -310,8 +307,9 @@ def main() -> int:
     if notices_dirty:
         invoke(load_tool("build-notices.py"))
         ran = True
+        executed += 1
     else:
-        print("  skip  build-notices.py", flush=True)
+        skipped += 1
 
     index_files = sorted((ROOT / "data" / "index").glob("*.json"))
     index_files += sorted((ROOT / "data" / "index").glob("*/*.json"))
@@ -340,8 +338,9 @@ def main() -> int:
     if builds_dirty:
         invoke(load_tool("convert-build.py"))
         ran = True
+        executed += 1
     else:
-        print("  skip  convert-build.py", flush=True)
+        skipped += 1
 
     weapons_dirty = dirty(
         "weapons",
@@ -366,8 +365,9 @@ def main() -> int:
     if weapons_dirty:
         invoke(load_tool("build-weapons.py"))
         ran = True
+        executed += 1
     else:
-        print("  skip  build-weapons.py", flush=True)
+        skipped += 1
 
     home_inputs = under("tools/build-home.py", "site/assets/rota.js") + [
         ROOT / "site" / "index.html",
@@ -384,11 +384,12 @@ def main() -> int:
     if home_dirty:
         invoke(load_tool("build-home.py"))
         ran = True
+        executed += 1
         for p in home_inputs:
             file_cache.pop(str(p), None)
         next_stamp["home"] = digest_files(home_inputs, file_cache)
     else:
-        print("  skip  build-home.py", flush=True)
+        skipped += 1
 
     search_dirty = (
         dirty(
@@ -411,8 +412,9 @@ def main() -> int:
     if search_dirty:
         invoke(load_tool("build-search.py"))
         ran = True
+        executed += 1
     else:
-        print("  skip  build-search.py", flush=True)
+        skipped += 1
 
     css_files = sorted((ROOT / "site").rglob("*.css"))
     terms_dirty = dirty(
@@ -436,13 +438,15 @@ def main() -> int:
     if terms_dirty:
         invoke(load_tool("build-terms.py"))
         ran = True
+        executed += 1
     else:
-        print("  skip  build-terms.py", flush=True)
+        skipped += 1
 
     gates_dirty = dirty(
         "gates",
         under(
             "tools/check_shell.py",
+            "tools/deploy.py",
             "tools/check_terms.py",
             "tools/check_type.py",
             "tools/items.py",
@@ -466,14 +470,17 @@ def main() -> int:
         for name in ("check_shell.py", "check_terms.py", "check_type.py"):
             invoke(load_tool(name), gate_args if name == "check_terms.py" else ())
         ran = True
+        executed += 1
     else:
-        print("  skip  gates", flush=True)
+        skipped += 1
 
     save_stamp(next_stamp)
-    print(
-        "build  %.1fs%s" % (time.perf_counter() - t0, "" if ran else "  (up to date)"),
-        flush=True,
-    )
+    dt = time.perf_counter() - t0
+    if ran:
+        tail = "（跳过 %d 步）" % skipped if skipped else ""
+        print("✓ %-6s %4.1fs  执行 %d 步%s" % ("build", dt, executed, tail), flush=True)
+    else:
+        print("· %-6s %4.1fs  无改动（跳过 %d 步）" % ("build", dt, skipped), flush=True)
     return 0
 
 
