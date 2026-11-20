@@ -1209,26 +1209,41 @@ def build(facts):
         plain_m = [
             h for h in members if not info[h]["adept"] and not info[h]["holo"]
         ] or members
-        rep = max(
+        ordered_plain = sorted(
             plain_m,
             key=lambda h: (
                 info[h]["cells"],
                 bool(weapons[h].get("collectibleHash")),
                 weapons[h]["index"],
             ),
+            reverse=True,
         )
+        rep = ordered_plain[0]
         merged = {}
         for h in members:
             for k, v in info[h]["authors"].items():
                 merged.setdefault(k, v)
-        info[rep]["group_authors"] = merged
-        # 评级写在组合上时（故我在），卡片徽标与开屏排序取最好的那一条
-        info[rep]["rated"] = merged or (
-            info[rep]["rolls"][0]["au"] if info[rep]["rolls"] else {}
-        )
         for h in members:
+            info[h]["group_authors"] = merged
+            # 评级写在组合上时（故我在），卡片徽标与开屏排序取最好的那一条
+            info[h]["rated"] = merged or (
+                info[h]["rolls"][0]["au"] if info[h]["rolls"] else {}
+            )
             rep_of[h] = rep
         reps.append(rep)
+        covered = {
+            b.base_name(c[0]) for col in info[rep]["cols"] for c in col[2]
+        }
+        for h in ordered_plain[1:]:
+            if info[h]["adept"] or info[h]["holo"]:
+                continue
+            perks = {
+                b.base_name(c[0]) for col in info[h]["cols"] for c in col[2]
+            }
+            if perks - covered:
+                rep_of[h] = h
+                reps.append(h)
+                covered |= perks
     reps.sort(
         key=lambda h: (
             rank_of(info[h]["rated"]),
@@ -1237,6 +1252,8 @@ def build(facts):
             weapons[h]["itemSubType"],
             -info[h]["season"],
             info[h]["name"],
+            -info[h]["cells"],
+            -weapons[h]["index"],
         )
     )
     others = sorted(

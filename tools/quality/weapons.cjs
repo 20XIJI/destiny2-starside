@@ -223,6 +223,59 @@ test('weapons: every syntax row parses into known keywords', () => {
   }
 })
 
+test('weapons: perk1/perk2 swap trait columns while col1-col5 stay fixed', () => {
+  const deps = [
+    'function has(list, x) { return list.indexOf(x) !== -1; }',
+    'var W_NAME=1,W_BR=6,W_SSN=7,W_SRC=13,R_TRAIT=1,R_ORIGIN=2,P_NAME=1;',
+    'var WR=[[1,"枪甲",0,0,0,0,0,29,5,0,0,0,0,-1,"",0,0],[2,"枪乙",0,0,0,0,0,29,5,0,0,0,0,-1,"",1,1],[3,"枪丙",0,0,0,0,0,29,5,0,0,0,0,-1,"",2,2]];',
+    'var AR=[],SR=[],REPS={wpn:[0,1,2],armor:[],sets:[]},V={br:{}},T=null,hayCache={};',
+    'var P={p:[[10,"枪管A"],[11,"弹匣B"],[12,"治疗弹匣"],[13,"狂乱"],[14,"墓碑"],[15,"连锁反应"],[16,"加速突击"]],L:[[[0,0]],[[1,0]],[[2,0]],[[3,0]],[[4,0]],[[5,0]],[[6,0]],[[2,0],[3,0]]],w:[' +
+      '[0,[],[[0,0,0],[1,0,1],[2,1,2],[3,1,3],[4,2,6]]],' +
+      '[0,[],[[0,0,0],[1,0,1],[2,1,3],[3,1,2],[4,2,6]]],' +
+      '[0,[],[[0,0,0],[1,0,1],[2,1,7],[3,1,4],[4,2,6]]]' +
+    '],s:[]};',
+    'function poolRow(i){return P.w[i];}',
+    'function cellsOf(col){return P.L[col[2]];}',
+    'function shownPlug(cell){return cell[1]||cell[0];}',
+    'function plugName(p){return P.p[p][P_NAME];}',
+    'function bareIs(){return null;}',
+    'function isIn(){return false;}',
+    'function enOf(){return "";}',
+    'function pyName(){return false;}',
+    'function frameOf(){return [""];}',
+    'function srcsOf(){return [];}',
+    'function named(){return false;}',
+    'function srcFold(s){return s;}',
+    'function cmp(){return false;}',
+    'function hay(){return "";}',
+    'function foldedTexts(){return "";}',
+    'function defaultStat(){return -1;}',
+    'function statIndex(){return -1;}',
+  ].join('\n')
+  const { tokenize, parse, run } = weaponFns(
+    ['normQ', 'tokenize', 'parse', 'fold', 'cached', 'perkNames', 'colPerkNames', 'traitMask', 'test', 'kw', 'run'],
+    deps
+  )
+  const keys = ['perk', 'perk1', 'perk2', 'col1', 'col2', 'col3', 'col4', 'col5', 'origintrait']
+  const q = (s) => Array.from(run('wpn', parse(tokenize(s), keys)))
+  // perk1 + perk2 swap across trait columns (枪甲: 治疗弹匣|狂乱, 枪乙: 狂乱|治疗弹匣, 枪丙: 治疗弹匣+狂乱|墓碑)
+  assert.deepEqual(q('perk1:治疗弹匣 perk2:狂乱'), [0, 1], '双特性词条应自动换列，且不命中同栏双词条的枪丙')
+  assert.deepEqual(q('perk1:狂乱 perk2:治疗弹匣'), [0, 1], '互换写法结果应完全一致')
+  assert.deepEqual(q('(perk1:治疗弹匣 or perk1:墓碑) (perk2:狂乱 or perk2:连锁反应)'), [0, 1, 2], '括号组相与时也自动换列')
+  // single perk1 matches either trait column; negation excludes both trait columns
+  assert.deepEqual(q('perk1:墓碑'), [2], '单侧 perk1 应命中任一特性栏')
+  assert.deepEqual(q('-perk1:墓碑'), [0, 1], '单侧 -perk1 应排除任一特性栏含该词条的枪')
+  // negation combined with perk1 + perk2 must negate the full swapped predicate
+  assert.deepEqual(q('not (perk1:治疗弹匣 perk2:狂乱)'), [2], '对换列组合整体取反时应排除正反两序命中项')
+  assert.deepEqual(q('-perk1:墓碑 -perk2:狂乱'), [], '两个独立否定相与时不应因换列提升而反转')
+  assert.deepEqual(q('not (perk1:治疗弹匣 or perk2:墓碑)'), [], '对换列或组整体取反时应排除全部命中项')
+  assert.deepEqual(q('perk1:治疗弹匣 -perk2:墓碑'), [0, 1], '单侧正向与单侧否定相与应排除含墓碑的枪')
+  // col1-col5 stay strictly fixed
+  assert.deepEqual(q('col3:治疗弹匣 col4:狂乱'), [0], 'col3/col4 固定列不换列')
+  assert.deepEqual(q('col3:狂乱 col4:治疗弹匣'), [1], 'col3/col4 反写只命中反序枪')
+  assert.deepEqual(q('col1:枪管A col2:弹匣B col5:加速突击'), [0, 1, 2], 'col1/col2/col5 固定匹配对应栏')
+})
+
 test('weapons: armor sets support pinning and split-view rail rendering', () => {
   const deps = 'function has(list, x) { return list.indexOf(x) !== -1; }\n' +
     'function esc(s) { return String(s); }\n' +
