@@ -2148,6 +2148,7 @@
 .pvp-stat-hero-value {
   color: var(--bone-hi);
   font: 700 20px/1 var(--font-disp);
+  font-variant-numeric: tabular-nums;
 }
 .pvp-stat-hero-sub {
   margin-left: 2px;
@@ -2171,6 +2172,7 @@
 .pvp-stat-value {
   color: var(--bone-hi);
   font: 600 12px/1 var(--font-body);
+  font-variant-numeric: tabular-nums;
 }
 .pvp-sub {
   color: var(--bone-dim);

@@ -653,13 +653,16 @@
     var t = RANGE[tKey];
     if (!t) { return null; }
     var curve = t[fKey] || null;
-    if (!curve && bodyDmg && typeof PVP_FRAMES !== 'undefined' && PVP_FRAMES[tKey]) {
-      var bestK = null, bestD = Infinity, pft = PVP_FRAMES[tKey];
-      Object.keys(pft).forEach(function (pk) {
-        var diff = Math.abs(pft[pk].bodyDmg - bodyDmg);
-        if (diff < bestD) { bestD = diff; bestK = pk; }
-      });
-      if (bestK) { curve = t[bestK] || null; }
+    if (!curve && bodyDmg && PVP && PVP.PVP_FRAMES) {
+      var pft = PVP.PVP_FRAMES[TYPE_EN[tKey] || tKey];
+      if (pft) {
+        var bestK = null, bestD = Infinity;
+        Object.keys(pft).forEach(function (pk) {
+          var diff = Math.abs(pft[pk].bodyDmg - bodyDmg);
+          if (diff < bestD) { bestD = diff; bestK = pk; }
+        });
+        if (bestK) { curve = t[bestK] || null; }
+      }
     }
     if (!curve) { curve = t._ || null; }
     return curve;
@@ -668,7 +671,7 @@
     var o = opts && typeof opts === 'object' ? opts : {};
     var c = rangeCurve(typeZh, frameZh, o.intrinsicHash, o.bodyDmg);
     if (!c) { return null; }
-    var mods = o.mods || {};
+    var mods = o.modifiers || o.mods || {};
     var add = mods.rangeStatAdd || 0, adsAdd = mods.rangeAdsStatAdd || 0;
     var allS = mods.rangeAllScale == null ? 1 : mods.rangeAllScale;
     var hipS = mods.rangeHipScale == null ? 1 : mods.rangeHipScale;
@@ -681,7 +684,7 @@
     var z = c.z;
     if (zo) {
       if (o.intrinsicHash != null && zo[o.intrinsicHash] != null) { z = zo[o.intrinsicHash]; }
-      else if (c.z == null && zo.default != null) { z = zo.default; }
+      else if (zo.default != null) { z = zo.default; }
     }
     return {
       hip: hip * allS * hipS, hipEnd: endHip * allS * hipS,
@@ -3039,7 +3042,8 @@
     if (!SIDX) { return null; }
     var r = WR[i], ty = typeName(r), fr = frameOf(r)[0], v = effStatVal(res, x);
     if (x.name === '射程') {
-      var z = res.byStat[SIDX['变焦']], ttkData = PVP ? PVP.getTtkData(i, res.activeHashes) : null;
+      var z = res.byStat[SIDX['变焦']], rpmS = HSTAT ? res.byStat[HSTAT[STAT_HASH.RPM]] : null;
+      var ttkData = PVP ? PVP.getTtkData(i, res.activeHashes, rpmS ? rpmS.base : null) : null;
       var m = rangeMeters(ty, fr, v, {
         zoomStat: z ? z.value : null,
         intrinsicHash: res.intrinsicHash,
@@ -3227,9 +3231,9 @@
         var b = box.querySelector('[data-act="perk"][data-col="' + h.col + '"][data-plug="' + h.plug + '"]');
         if (b) { b.classList.add('is-hover'); }
       }
-      if (S.statsMode === 'pvp' && !PVP) { return; }
+      if (S.statsMode === 'pvp') { return; }
       var res = compute(i, roll), ghost = h ? compute(i, roll, { col: h.col, plug: h.plug }) : null;
-      pane.innerHTML = S.statsMode === 'pvp' ? PVP.pvpPanel(i, res) : statsPanel(i, res, ghost);
+      pane.innerHTML = statsPanel(i, res, ghost);
     });
   }
 

@@ -54,7 +54,7 @@ window.WPN_PVP = function (H) {
       Adaptive: { bodyDmg: 44.53, headDmg: 79.88 }, Aggressive: { bodyDmg: 48.73, headDmg: 90.3 },
       'Dynamic Heat': { bodyDmg: 46.45, headDmg: 72.41, ammoTypeOverrides: { Special: { bodyDmg: 60.05, headDmg: 90.08 } } },
       'Heavy Burst': { bodyDmg: 24.01, headDmg: 52.84 }, Lightweight: { bodyDmg: 44.52, headDmg: 80.1 },
-      Precision: { bodyDmg: 45.32, headDmg: 70.64 }, 'Spread Shot': { bodyDmg: 120.02, headDmg: 144.72 }
+      Precision: { bodyDmg: 45.32, headDmg: 70.64, rpmOverrides: { 140: { bodyDmg: 44.53, headDmg: 79.88 } } }, 'Spread Shot': { bodyDmg: 120.02, headDmg: 144.72 }
     },
     Sidearm: {
       Adaptive: { bodyDmg: 36.02, headDmg: 57.56 }, 'Adaptive Burst': { bodyDmg: 20.01, headDmg: 37.07, burstSize: 3 },
@@ -292,7 +292,7 @@ window.WPN_PVP = function (H) {
     var a = clamped / 1000;
     return { percent: 100 * a, reloadDurationScale: 1 - a, handlingDurationScale: 1 - a };
   }
-  function getTtkData(i, activeHashes) {
+  function getTtkData(i, activeHashes, baseRpm) {
     var P = H.getP();
     var r = WR[i];
     if (!r) { return null; }
@@ -325,9 +325,18 @@ window.WPN_PVP = function (H) {
     var fk = frameKey(frameOf(r)[0]);
     var row = fk ? byType[fk] : null;
     if (!row) { return null; }
-    if (!row.ammoTypeOverrides && !row.perkOverrides) { return row; }
+    if (!row.ammoTypeOverrides && !row.perkOverrides && !row.rpmOverrides) { return row; }
     var out = {};
-    for (k in row) { if (Object.prototype.hasOwnProperty.call(row, k) && k !== 'ammoTypeOverrides' && k !== 'perkOverrides') { out[k] = row[k]; } }
+    for (k in row) {
+      if (Object.prototype.hasOwnProperty.call(row, k) &&
+        k !== 'ammoTypeOverrides' && k !== 'perkOverrides' && k !== 'rpmOverrides') {
+        out[k] = row[k];
+      }
+    }
+    if (row.rpmOverrides) {
+      var rpmVal = baseRpm != null ? baseRpm : (frameOf(r)[2] && frameOf(r)[2][r[W_SUB]]);
+      if (rpmVal != null && row.rpmOverrides[rpmVal]) { Object.assign(out, row.rpmOverrides[rpmVal]); }
+    }
     var ammo = ammoEn(V.am[r[W_AMMO]][0]);
     if (row.ammoTypeOverrides && row.ammoTypeOverrides[ammo]) { Object.assign(out, row.ammoTypeOverrides[ammo]); }
     if (row.perkOverrides && activeHashes) {
@@ -1115,7 +1124,7 @@ window.WPN_PVP = function (H) {
     });
     return out;
   }
-  var PVP_ANIM_MS = 666, pvpTween = null, pvpShown = { body: null, head: null }, pvpSel = null;
+  var PVP_ANIM_MS = 666, pvpTween = null, pvpShown = { body: null, head: null }, pvpSel = null, pvpPending = null;
   function easePvp(e) {
     if (e <= 0) { return 0; }
     if (e >= 1) { return 1; }
@@ -1137,7 +1146,8 @@ window.WPN_PVP = function (H) {
     var r = WR[i], ty = typeName(r), fr = frameOf(r)[0], frEn = frameKey(fr);
     var ammoZh = V.am[r[W_AMMO]][0], ammo = ammoEn(ammoZh), tyEn = TYPE_EN[ty] || ty;
     var roll = rollOf(i);
-    var ttkData = getTtkData(i, res.activeHashes);
+    var baseRpmRow = HSTAT ? res.byStat[HSTAT[STAT_HASH.RPM]] : null;
+    var ttkData = getTtkData(i, res.activeHashes, baseRpmRow ? baseRpmRow.base : null);
     var ws = weaponsStatMods(S.pvpStat);
     var rpmKey = ttkData && ttkData.isBow ? STAT_HASH.DRAW_TIME
       : (ttkData && ttkData.isChargeTime ? STAT_HASH.CHARGE_TIME : STAT_HASH.RPM);
@@ -1453,13 +1463,20 @@ window.WPN_PVP = function (H) {
   function kickPvpAnim() {
     var P = H.getP(), SIDX = H.getSIDX();
     var pane = body.querySelector('.pvp-stats');
+    var cached = pvpPending;
+    pvpPending = null;
     if (!pane || S.sel == null || !P || !SIDX) { return; }
     if (pvpSel !== S.sel) { pvpShown = {}; pvpSel = S.sel; }
-    var v = pvpView(S.sel, compute(S.sel, rollOf(S.sel)));
+    var v = (cached && cached.sel === S.sel) ? cached.v : pvpView(S.sel, compute(S.sel, rollOf(S.sel)));
     updatePvpControls(pane, v);
     var to = pvpAnimSnapshot(v), from = pvpShown;
     if (pvpTween) { cancelAnimationFrame(pvpTween); pvpTween = null; }
-    var changed = from.body == null || from.body !== to.body || from.head !== to.head || from.ttk !== to.ttk;
+    var changed = from.body == null ||
+      from.body !== to.body || from.head !== to.head || from.ttk !== to.ttk ||
+      from.rpm !== to.rpm || from.hip !== to.hip || from.ads !== to.ads ||
+      from.reload !== to.reload || from.ready !== to.ready || from.stow !== to.stow ||
+      from.hAds !== to.hAds || from.bursts !== to.bursts || from.hits !== to.hits ||
+      from.pelKill !== to.pelKill;
     if (reduceMotion() || from.body == null || !changed) {
       pvpShown = to;
       paintPvpNumbers(pane, v, to, '');
@@ -1467,22 +1484,23 @@ window.WPN_PVP = function (H) {
     }
     var cls = ((to.body || 0) > (from.body || 0) || (to.head || 0) > (from.head || 0)) ? 'up'
       : ((to.body || 0) < (from.body || 0) || (to.head || 0) < (from.head || 0)) ? 'down' : '';
-    var t0 = null;
+    var t0 = performance.now();
     function lerp(a, b, e) { return a == null || b == null ? b : a + (b - a) * e; }
     function frame(now) {
-      if (t0 == null) { t0 = now; }
-      var u = Math.min((now - t0) / PVP_ANIM_MS, 1), e = easePvp(u);
-      var mid = {
+      if (!pane.isConnected) { pvpTween = null; return; }
+      var u = Math.min(Math.max(0, now - t0) / PVP_ANIM_MS, 1), e = easePvp(u);
+      var mid = u < 1 ? {
         ttk: lerp(from.ttk, to.ttk, e), body: lerp(from.body, to.body, e), head: lerp(from.head, to.head, e),
         rpm: lerp(from.rpm, to.rpm, e), hip: lerp(from.hip, to.hip, e), ads: lerp(from.ads, to.ads, e),
         reload: lerp(from.reload, to.reload, e), ready: lerp(from.ready, to.ready, e),
         stow: lerp(from.stow, to.stow, e), hAds: lerp(from.hAds, to.hAds, e),
         bursts: lerp(from.bursts, to.bursts, e), hits: lerp(from.hits, to.hits, e),
         pelKill: lerp(from.pelKill, to.pelKill, e), pelShot: to.pelShot
-      };
+      } : to;
+      pvpShown = mid;
       paintPvpNumbers(pane, v, mid, u < 1 ? cls : '');
       if (u < 1) { pvpTween = requestAnimationFrame(frame); }
-      else { pvpShown = to; pvpTween = null; }
+      else { pvpTween = null; }
     }
     paintPvpNumbers(pane, v, from, cls);
     pvpTween = requestAnimationFrame(frame);
@@ -1572,6 +1590,7 @@ window.WPN_PVP = function (H) {
       ensurePerkFx(function () { if (S.statsMode === 'pvp' && S.sel === i) { renderDetail(); } });
     }
     var v = pvpView(i, res), ttk = v.activeKill, rm = v.rm, rs = v.rs, effW = v.effW;
+    pvpPending = { sel: i, v: v };
     if (!v.ttkData || !effW) { return '<div class="pvp-stats"><p class="src">该武器类型暂无 PvP 伤害数据。</p></div>'; }
     var useLive = pvpSel === i && pvpShown.body != null;
     var bodyN = useLive ? pvpShown.body : v.bodyDmg;
@@ -1698,6 +1717,7 @@ window.WPN_PVP = function (H) {
     pvpView: pvpView,
     getPerkDamageModifier: getPerkDamageModifier,
     PVP_DISABLED: PVP_DISABLED,
-    PVP_STRIP_DMG: PVP_STRIP_DMG
+    PVP_STRIP_DMG: PVP_STRIP_DMG,
+    PVP_FRAMES: PVP_FRAMES
   };
 };
