@@ -2228,6 +2228,16 @@ class WeaponPage(unittest.TestCase):
                     "%s 与现跑生成器的产出对不上：跑 python3 tools/build-weapons.py"
                     % rel,
                 )
+            if rel.endswith(".js"):
+                gz_rel = rel[:-3] + ".json.gz"
+                with self.subTest(rel=gz_rel):
+                    disk_gz = (TOOLS.parent / "site" / gz_rel).read_bytes()
+                    self.assertEqual(
+                        disk_gz,
+                        weapons.gz_json(body),
+                        "%s 与现跑生成器的产出对不上：跑 python3 tools/build-weapons.py"
+                        % gz_rel,
+                    )
 
     def test_every_enhanced_perk_has_its_base_and_author_names_resolve(self):
         self.assertEqual(self.stats["orphans"], [])
@@ -2435,14 +2445,15 @@ class DeploySelection(unittest.TestCase):
         root = TOOLS.parent
         want = re.compile(r"(?<![\w-])data/")
         wired, seen = [], 0
-        for path in root.rglob("*"):
+        for path in (root / "site").rglob("*"):
             if path.suffix not in (".html", ".js", ".css") or not path.is_file():
                 continue
             rel = path.relative_to(root).as_posix()
             if not deploy.keep(rel):
                 continue
             seen += 1
-            if want.search(path.read_text(encoding="utf-8", errors="ignore")):
+            text = path.read_text(encoding="utf-8", errors="ignore")
+            if "data/" in text and want.search(text):
                 wired.append(rel)
         self.assertEqual(
             wired, [], "这些产出引用了 data/，而 keep() 不发它，线上会 404"
@@ -4221,6 +4232,26 @@ class IncrementalBuild(Isolated):
         target_a.write_text("# A2\n", encoding="utf-8")
         self.assertNotEqual(before, self.bld.digest_files([consumer, *deps]))
 
+    def test_digest_extra_changes_key_and_cache_matches_uncached(self):
+        path = self.file("a.md", "hello\n")
+        cache: dict[str, bytes] = {}
+        d1 = self.bld.digest_files([path], cache, extra="notice-1")
+        d2 = self.bld.digest_files([path], extra="notice-1")
+        d3 = self.bld.digest_files([path], cache, extra="notice-2")
+        self.assertEqual(d1, d2)
+        self.assertNotEqual(d1, d3)
+
+    def test_test_cache_skips_only_unchanged_and_never_caches_failures(self):
+        stamp = {"WeaponPage": "sig-a", "DimExport": "sig-b"}
+        current = {"WeaponPage": "sig-a", "DimExport": "sig-c"}
+        skipped = {k for k, v in current.items() if stamp.get(k) == v}
+        self.assertEqual(skipped, {"WeaponPage"})
+        # 模拟 DimExport 失败：不得把 sig-c 写入新缓存
+        failed_classes = {"DimExport"}
+        updated = _merge_test_stamp(stamp, current, failed_classes)
+        self.assertEqual(updated["WeaponPage"], "sig-a")
+        self.assertEqual(updated["DimExport"], "sig-b")
+
 
 class TypeGate(unittest.TestCase):
     """T3 认的是一份 HTML 字符串，不爬整站。"""
@@ -4301,5 +4332,239 @@ class TypeGate(unittest.TestCase):
         )
 
 
+_build_orch = load("quality_build_cache", "build.py")
+
+
+def _test_stamp_path(root: Path) -> Path:
+    return root / ".git" / "starside-test.json"
+
+
+def _load_test_stamp(root: Path) -> dict[str, str]:
+    try:
+        data = json.loads(_test_stamp_path(root).read_text(encoding="utf-8"))
+        return data if isinstance(data, dict) else {}
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def _save_test_stamp(root: Path, stamp: dict[str, str]) -> None:
+    path = _test_stamp_path(root)
+    if not path.parent.is_dir():
+        return
+    path.write_text(
+        json.dumps(stamp, indent=0, sort_keys=True) + "\n", encoding="utf-8"
+    )
+
+
+def _merge_test_stamp(
+    prev: dict[str, str], current: dict[str, str], failed_classes: set[str]
+) -> dict[str, str]:
+    out = dict(prev)
+    for name, sig in current.items():
+        if name not in failed_classes:
+            out[name] = sig
+    return out
+
+
+def _corpus_digests(root: Path) -> dict[str, str]:
+    """8 个全站语料/产物校验类的输入依赖指纹。输入未变则跳过整类，失败永不入缓存。"""
+    def files(*rels: str) -> list[Path]:
+        return [root / r for r in rels if (root / r).is_file()]
+
+    def glob_files(base: Path, pattern: str) -> list[Path]:
+        return sorted(p for p in base.glob(pattern) if p.is_file())
+
+    self_file = files("tools/check_quality.py")
+    core, sets, lookup = _build_orch.facts_groups()
+    entity = core + sets
+    all_facts = entity + lookup
+    docs_md = glob_files(root / "references" / "docs", "*.md")
+    keys_md = glob_files(root / "references" / "keys", "*.md")
+    builds_json = glob_files(root / "references" / "builds", "*/*.json")
+    index_json = glob_files(root / "data" / "index", "*.json") + glob_files(
+        root / "data" / "index", "*/*.json"
+    )
+    site_css = sorted((root / "site").rglob("*.css"))
+    build_pages = glob_files(root / "site" / "builds", "*/*/index.html")
+    edit_jsons = glob_files(root / "site", "*/edit.json") + glob_files(
+        root / "site", "*/*/edit.json"
+    )
+    weapons_site = sorted(p for p in (root / "site" / "weapons").glob("*") if p.is_file())
+
+    deps: dict[str, list[Path]] = {
+        "WeaponPage": self_file
+        + all_facts
+        + index_json
+        + builds_json
+        + weapons_site
+        + files(
+            "tools/build-weapons.py",
+            "tools/facts.py",
+            "tools/resolve.py",
+            "tools/shell.py",
+            "tools/markup.py",
+            "tools/items.py",
+            "tools/items.json",
+            "tools/perks.json",
+            "tools/type-icons.json",
+            "references/docs/ammo.md",
+            "references/docs/weapon-frames.md",
+            "site/builds/style.css",
+            "site/builds/index.html",
+            "site/builds/sets/index.html",
+        ),
+        "Generated": self_file
+        + entity
+        + docs_md
+        + keys_md
+        + builds_json
+        + site_css
+        + build_pages
+        + files(
+            "tools/build-terms.py",
+            "tools/build-home.py",
+            "tools/build-notices.py",
+            "tools/build-search.py",
+            "tools/convert-build.py",
+            "tools/convert-doc.py",
+            "tools/build-weapons.py",
+            "tools/check_terms.py",
+            "tools/items.py",
+            "tools/items.json",
+            "tools/perks.json",
+            "tools/pinyin.py",
+            "tools/pinyin.json",
+            "tools/pinyin-match.js",
+            "tools/shell.py",
+            "tools/markup.py",
+            "tools/resolve.py",
+            "tools/facts.py",
+            "tools/sync-eververse.js",
+            "tools/sync-xur.js",
+            "references/pages/prismatic.json",
+            "site/index.html",
+            "site/assets/notice-data.js",
+            "site/assets/rota.js",
+            "site/assets/pinyin.js",
+            "site/admin/terms.js",
+            "site/admin/pages.js",
+            "site/admin/dialect.js",
+            "site/builds/source.js",
+            "site/builds/vocab.js",
+            "site/builds/desc.js",
+            "site/builds/new/index.html",
+            "site/weapons/index.html",
+            "site/prismatic/index.html",
+            "functions/api/dialect.js",
+            "functions/api/source.js",
+            "functions/api/eververse.js",
+            "functions/api/xur.js",
+            "functions/api/xur-recs.json",
+        ),
+        "DimExport": self_file
+        + all_facts
+        + builds_json
+        + files(
+            "tools/dim.py",
+            "tools/vocab.py",
+            "tools/mods.py",
+            "tools/resolve.py",
+            "tools/facts.py",
+            "tools/items.py",
+            "tools/items.json",
+            "tools/mod-variants.json",
+            "tools/moves.json",
+            "tools/artifacts.json",
+        ),
+        "EditOrigins": self_file
+        + entity
+        + edit_jsons
+        + files(
+            "tools/editmap.py",
+            "tools/facts.py",
+            "tools/resolve.py",
+            "tools/shell.py",
+            "tools/markup.py",
+            "functions/api/index.js",
+        ),
+        "CellSplitting": self_file
+        + docs_md
+        + keys_md
+        + files("tools/rows.py", "tools/markup.py", "site/admin/dialect.js"),
+        "BuildKeys": self_file
+        + entity
+        + builds_json
+        + build_pages
+        + files(
+            "tools/convert-build.py",
+            "tools/vocab.py",
+            "tools/migrate.py",
+            "tools/resolve.py",
+            "tools/facts.py",
+            "site/builds/vocab.js",
+        ),
+        "MarkerIndex": self_file + docs_md + keys_md + files("tools/markup.py"),
+        "BuildSourceShape": self_file
+        + builds_json
+        + files("tools/migrate.py", "tools/convert-build.py", "site/builds/source.js"),
+    }
+    cache: dict[str, bytes] = {}
+    return {
+        name: _build_orch.digest_files(paths, cache) for name, paths in deps.items()
+    }
+
+
+def _run_cli() -> int:
+    argv = list(sys.argv[1:])
+    force = False
+    rest: list[str] = []
+    for arg in argv:
+        if arg in ("--all", "--force"):
+            force = True
+        else:
+            rest.append(arg)
+    # 传了具体测试名或 unittest 选项时直接交给 unittest.main，不做缓存跳过
+    if rest:
+        unittest.main(argv=[sys.argv[0], *rest], verbosity=0)
+        return 0
+
+    root = TOOLS.parent
+    prev = {} if force else _load_test_stamp(root)
+    current = _corpus_digests(root)
+    skipped = {name for name, sig in current.items() if prev.get(name) == sig}
+
+    loader = unittest.defaultTestLoader
+    mod = sys.modules[__name__]
+    suite = unittest.TestSuite()
+    for name, obj in vars(mod).items():
+        if (
+            isinstance(obj, type)
+            and issubclass(obj, unittest.TestCase)
+            and obj is not Isolated
+            and name not in skipped
+        ):
+            suite.addTests(loader.loadTestsFromTestCase(obj))
+
+    if skipped:
+        print(
+            "  skip  %d corpus suites (%s)"
+            % (len(skipped), ", ".join(sorted(skipped))),
+            file=sys.stderr,
+        )
+    runner = unittest.TextTestRunner(verbosity=0)
+    result = runner.run(suite)
+    failed_classes: set[str] = set()
+    for test, _ in (*result.failures, *result.errors):
+        cls_name = getattr(test.__class__, "__name__", "")
+        if cls_name:
+            failed_classes.add(cls_name)
+        desc = str(test)
+        for name in current:
+            if name in desc:
+                failed_classes.add(name)
+    _save_test_stamp(root, _merge_test_stamp(prev, current, failed_classes))
+    return 0 if result.wasSuccessful() else 1
+
+
 if __name__ == "__main__":
-    unittest.main(verbosity=0)
+    sys.exit(_run_cli())

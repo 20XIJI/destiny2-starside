@@ -27,6 +27,7 @@ Destiny 2 中文资料台（Starside）。零依赖纯静态站点（`site/`）+
 | `.agents/rules/backend.md` | CloudBase 认证、`LEVEL` 权限、四张集合表、`sync.py` 三方对账、在线编辑与审核台 |
 | `.agents/rules/frontend.md` | `assets/app.js`、星空模块 `sky*.js`、条件注入 `pinyin.js` 与 `assets/search.js` 全站搜索 |
 | `.agents/rules/weapons.md` | `weapons/` 三份载荷、DIM 查询语法、属性与 T 级算法、框架数值与作者光圈 |
+| `.agents/rules/deploy.md` | CloudBase 实测部署拓扑、`tcbgw` 协议/压缩/缓存硬约束与全站性能优化路线 |
 
 ### 站点与数据约定
 
@@ -75,7 +76,7 @@ oxlint --type-aware --type-check site/ functions/ tools/
 ## 前端性能与部署红线
 
 - **首屏与按需加载**：`markup.loading_attr()` 统一判定 `fetchpriority="high"` 与 `loading="lazy"`；`assets/pinyin.js` 仅在带搜索框页面加载；长页 `content-visibility: auto` 不可套在含 `sticky` 后代的容器上，且只写 `contain-intrinsic-height`（禁写含宽度的 `contain-intrinsic-size`）。
-- **静态资源与缓存**：`deploy.py` 上传时自动剥离非数据 JS/CSS 的块注释与缩进并做 `node --check`。除 `armor-sets/icons/*.png`（7 天缓存）外，图标均按内容 md5 前 10 位命名 `.webp`（1 年缓存），**严禁原地覆盖 `.webp`**。`.css`/`.js` 缓存 300s，`.html` 0s；不引入构建哈希文件名。
+- **静态资源与缓存**：`deploy.py` 上传时自动剥离非数据 JS/CSS 的块注释与缩进并做 `node --check`。图标均按内容 md5 前 10 位命名 `.webp`，**严禁原地覆盖 `.webp`**。线上 `starside.work` 走 CloudBase 个人版 HTTP 网关（`tcbgw`，HTTP/1.1、无服务端 gzip、全类型默认 `max-age=300`；详规见 `.agents/rules/deploy.md`），大体积纯数据载荷统一走 `.json.gz` + 客户端 `DecompressionStream('gzip')` 与 `Cache API` 持久缓存；不引入构建哈希文件名。
 - **发布纪律**：部署前工作区必须干净；`--prune` 禁止与增量部署混用；严禁使用 CloudBase 控制台「更新服务」（仅用于紧急回滚）。
 
 ## 验证与工作流

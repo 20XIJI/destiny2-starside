@@ -880,12 +880,15 @@ def forward_terms():
     return {k: v for k, v in terms.items() if k not in skip_words}
 
 
-def scan(slug=None):
+def scan(slug=None, files=None):
     """[(源稿路径, 行号, 起, 止, 词)]，按源稿顺序。"""
+    targets = pages(slug) if files is None else list(files)
+    if not targets:
+        return []
     terms = forward_terms()
     names = Names(terms)
     out = []
-    for rel in pages(slug):
+    for rel in targets:
         with open(os.path.join(shell.ROOT, rel), encoding="utf-8") as f:
             lines = f.read().split("\n")
         skip = head_rows(lines)

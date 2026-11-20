@@ -161,8 +161,11 @@ def main() -> int:
                 bad.append("%s：引了 app.js 却没引 pinyin.js，条目名的拼音检索会失效" % rel)
             if not has_search and "assets/pinyin.js" in src:
                 bad.append("%s：页面不带检索框却多余引入 assets/pinyin.js" % rel)
-        if "weapons/app.js" in src and "assets/pinyin.js" not in src:
-            bad.append("%s：装备库没引 pinyin.js，武器名的拼音检索会失效" % rel)
+        if rel == "weapons/index.html":
+            with open(os.path.join(shell.SITE, "weapons/app.js"), encoding="utf-8") as f:
+                wpn_app = f.read()
+            if "assets/pinyin.js" not in src and "assets/pinyin.js" not in wpn_app:
+                bad.append("%s：装备库未引入或按需加载 pinyin.js，武器名的拼音检索会失效" % rel)
         if "form.js" in src and "assets/pinyin.js" not in src:
             bad.append("%s：配装工具没引 pinyin.js，候选的拼音检索会失效" % rel)
 

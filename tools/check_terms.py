@@ -31,6 +31,7 @@
 """
 
 import glob
+import hashlib
 import importlib.util
 import json
 import os
@@ -44,6 +45,14 @@ import shell
 
 DOC_DIR = 'references/docs'
 KEY_DIR = 'references/keys'
+RULES_FILES = (
+    'tools/check_terms.py',
+    'tools/items.py',
+    'tools/items.json',
+    'tools/perks.json',
+    'tools/markup.py',
+    'tools/facts.py',
+)
 DATA_TABLES = (
     'inventory-items',
     'sandbox-perks',
@@ -166,20 +175,92 @@ def mask_handwritten(rel, src):
     return re.sub(r'https?://[^\s"\'<>]+', _mask_spaces, src)
 
 
+_ACTIVE_CACHE = None
+
+
+def _file_sha1(abs_path):
+    if _ACTIVE_CACHE is not None:
+        memo = _ACTIVE_CACHE.get('_sha1')
+        if memo is not None and abs_path in memo:
+            return memo[abs_path]
+    with open(abs_path, 'rb') as f:
+        digest = hashlib.sha1(f.read()).hexdigest()
+    if _ACTIVE_CACHE is not None:
+        memo = _ACTIVE_CACHE.get('_sha1')
+        if memo is not None:
+            memo[abs_path] = digest
+    return digest
+
+
+def _rules_digest():
+    h = hashlib.sha1()
+    for rel in RULES_FILES:
+        abs_path = os.path.join(shell.ROOT, rel)
+        if not os.path.isfile(abs_path):
+            return ''
+        h.update(rel.encode())
+        h.update(b'\0')
+        with open(abs_path, 'rb') as f:
+            h.update(f.read())
+    return h.hexdigest()
+
+
+def _cache_path():
+    git_dir = os.path.join(shell.ROOT, '.git')
+    if not os.path.isdir(git_dir):
+        return None
+    return os.path.join(git_dir, 'starside-terms.json')
+
+
+def _load_cache(force=False):
+    path = _cache_path()
+    rules = _rules_digest()
+    empty = {'rules': rules, 'g12': {}, 'g6': {}, '_sha1': {}}
+    if force or not path or not rules:
+        return empty
+    try:
+        with open(path, encoding='utf-8') as f:
+            data = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return empty
+    if not isinstance(data, dict) or data.get('rules') != rules:
+        return empty
+    return {
+        'rules': rules,
+        'g12': dict(data.get('g12') or {}),
+        'g6': dict(data.get('g6') or {}),
+        '_sha1': {},
+    }
+
+
+def _save_cache(cache):
+    path = _cache_path()
+    if not path or not cache.get('rules'):
+        return
+    payload = {'rules': cache['rules'], 'g12': cache['g12'], 'g6': cache['g6']}
+    with open(path, 'w', encoding='utf-8') as f:
+        json.dump(payload, f, indent=0, sort_keys=True)
+        f.write('\n')
+
+
+def _iter_table_texts(table):
+    path = os.path.join(shell.ROOT, 'data', table + '.json')
+    if not os.path.exists(path):
+        return
+    with open(path, encoding='utf-8') as f:
+        rows = json.load(f)
+    for h, rec in rows.items():
+        for fp, txt in facts.site_text(table, rec).items():
+            yield ('data/%s.json#%s:%s' % (table, h, fp), txt)
+
+
 def iter_data_texts():
     """逐条产出现有 data/*.json 记录的 (定位串, 站内文本)。"""
     data_dir = os.path.join(shell.ROOT, 'data')
     if not os.path.isdir(data_dir):
         return
     for table in DATA_TABLES:
-        path = os.path.join(data_dir, table + '.json')
-        if not os.path.exists(path):
-            continue
-        with open(path, encoding='utf-8') as f:
-            rows = json.load(f)
-        for h, rec in rows.items():
-            for fp, txt in facts.site_text(table, rec).items():
-                yield ('data/%s.json#%s:%s' % (table, h, fp), txt)
+        yield from _iter_table_texts(table)
 
 
 def all_site_classes(site):
@@ -205,41 +286,73 @@ def _check_g1(loc, text, bad, *, with_line=True):
         bad.append('G1 %s 用了「%s」，正名是「%s」' % (where, wrong, right))
 
 
-def _check_g2(loc, text, terms, bad, *, with_line=True):
-    # 括号索引每段建一次，92 条术语共用。**逐次现查是文档长度的平方**，
-    # 见 markup.Markers 的说明。
+def _check_g2(loc, text, terms, bad, *, with_line=True, g2_words=None):
+    if '{' not in text:
+        return
+    if g2_words is None:
+        g2_words = {word for word, token, _ in items.TERMS if token}
     marks = markup.Markers(text)
-    for word, token, _ in items.TERMS:
-        if not token:
+    for token, start, end in marks.frames:
+        if token is None or start >= end:
             continue
-        for m in re.finditer(re.escape(word), text):
-            hit = marks.at(m.start())
-            # 只管「整个标记就是这个词」的那种。词嵌在更长的短语里时，
-            # 着色属于短语（{el-arc|电弧元素能量球}、{health|治疗能量球}），
-            # 按词强判会把整句的颜色拆碎。
-            want = items.expected_token(hit[0], word, terms) if hit and hit[1] == word else None
-            if hit and want:
-                where = '%s:%d' % (loc, at_line(text, m.start())) if with_line else loc
-                bad.append('G2 %s 「%s」着色成 {%s|…}，应是 {%s|…}' % (where, word, hit[0], want))
+        word = text[start:end]
+        if word not in g2_words:
+            continue
+        # 只管「整个标记就是这个词」的那种。词嵌在更长的短语里时，
+        # 着色属于短语（{el-arc|电弧元素能量球}、{health|治疗能量球}），
+        # 按词强判会把整句的颜色拆碎。
+        want = items.expected_token(token, word, terms)
+        if want:
+            where = '%s:%d' % (loc, at_line(text, start)) if with_line else loc
+            bad.append('G2 %s 「%s」着色成 {%s|…}，应是 {%s|…}' % (where, word, token, want))
 
 
 def check_terms(files, bad):
     terms, _ = items.load()
     items.check_token_targets(terms)
+    g2_words = {word for word, token, _ in items.TERMS if token}
+    seen = _ACTIVE_CACHE['g12'] if _ACTIVE_CACHE is not None else None
     for rel in files:
+        abs_path = os.path.join(shell.ROOT, rel)
+        sig = _file_sha1(abs_path) if seen is not None else None
+        if seen is not None and seen.get(rel) == sig:
+            continue
+        before = len(bad)
         md = read(rel)
         _check_g1(rel, md, bad)
-        _check_g2(rel, md, terms, bad)
+        _check_g2(rel, md, terms, bad, g2_words=g2_words)
+        if seen is not None and len(bad) == before:
+            seen[rel] = sig
     for rel_site in HANDWRITTEN_G1:
         path = os.path.join(shell.SITE, rel_site)
         if not os.path.exists(path):
             continue
+        key = 'site:' + rel_site
+        sig = _file_sha1(path) if seen is not None else None
+        if seen is not None and seen.get(key) == sig:
+            continue
+        before = len(bad)
         with open(path, encoding='utf-8') as f:
             src = f.read()
         _check_g1('site/' + rel_site, mask_handwritten(rel_site, src), bad)
-    for loc, txt in iter_data_texts():
-        _check_g1(loc, txt, bad, with_line=False)
-        _check_g2(loc, txt, terms, bad, with_line=False)
+        if seen is not None and len(bad) == before:
+            seen[key] = sig
+    data_dir = os.path.join(shell.ROOT, 'data')
+    if os.path.isdir(data_dir):
+        for table in DATA_TABLES:
+            path = os.path.join(data_dir, table + '.json')
+            if not os.path.exists(path):
+                continue
+            key = 'data:' + table
+            sig = _file_sha1(path) if seen is not None else None
+            if seen is not None and seen.get(key) == sig:
+                continue
+            before = len(bad)
+            for loc, txt in _iter_table_texts(table):
+                _check_g1(loc, txt, bad, with_line=False)
+                _check_g2(loc, txt, terms, bad, with_line=False, g2_words=g2_words)
+            if seen is not None and len(bad) == before:
+                seen[key] = sig
 
 
 def armor_sets_tokens(bad, site):
@@ -352,17 +465,55 @@ def check_items(files, bad):
     # 反查：已着色的对不对
     terms, _ = items.load()
     items.check_token_targets(terms)
+    seen = _ACTIVE_CACHE['g6'] if _ACTIVE_CACHE is not None else None
+    dirty_rev: dict[str, str | None] = {}
     for rel in files:
+        abs_path = os.path.join(shell.ROOT, rel)
+        sig = _file_sha1(abs_path) if seen is not None else None
+        if seen is not None and seen.get(rel) == sig:
+            continue
+        before = len(bad)
         _check_g6_reverse(rel, read(rel), terms, bad)
-    for loc, txt in iter_data_texts():
-        _check_g6_reverse(loc, txt, terms, bad, with_line=False)
+        if seen is not None and len(bad) == before:
+            dirty_rev[rel] = sig
+    data_dir = os.path.join(shell.ROOT, 'data')
+    if os.path.isdir(data_dir):
+        for table in DATA_TABLES:
+            path = os.path.join(data_dir, table + '.json')
+            if not os.path.exists(path):
+                continue
+            key = 'data:' + table
+            sig = _file_sha1(path) if seen is not None else None
+            if seen is not None and seen.get(key) == sig:
+                continue
+            before = len(bad)
+            for loc, txt in _iter_table_texts(table):
+                _check_g6_reverse(loc, txt, terms, bad, with_line=False)
+            if seen is not None and len(bad) == before:
+                seen[key] = sig
 
     # 正查：表里的词出现了就得着色。新写的一页里提到「骨灰余烬」却留着素色，
     # 这一条当场报出——不必记得回去跑一趟 --suggest。
-    for rel, line, _, _, word in items.scan():
+    scan_pages = list(items.pages())
+    dirty_fwd: list[str] = []
+    if seen is None:
+        dirty_fwd = scan_pages
+    else:
+        for rel in scan_pages:
+            sig = dirty_rev.get(rel) or _file_sha1(os.path.join(shell.ROOT, rel))
+            if seen.get(rel) != sig:
+                dirty_fwd.append(rel)
+                dirty_rev.setdefault(rel, sig)
+    hit_files: set[str] = set()
+    for rel, line, _, _, word in items.scan(files=dirty_fwd):
+        hit_files.add(rel)
         bad.append('G6 %s:%d 「%s」没着色，应是 {%s|%s}；跑 '
                    'python3 tools/items.py --apply 落进去'
                    % (rel, line, word, terms[word][0], word))
+    if seen is not None:
+        for rel, sig in dirty_rev.items():
+            if rel not in hit_files:
+                seen[rel] = sig
 
 
 ACTS = ('新增', '改动', '订正')       # 顺序即同一天之内的排法
@@ -433,30 +584,39 @@ def check_palette(site, used, bad):
 
 
 def main() -> int:
-    site = read_site('assets/site.css')
-    pairs = sources()
-    bad: list[str] = []
+    global _ACTIVE_CACHE
+    force = '--all' in sys.argv[1:] or '--force' in sys.argv[1:]
+    cache = _load_cache(force=force)
+    prev_cache = _ACTIVE_CACHE
+    _ACTIVE_CACHE = cache
+    try:
+        site = read_site('assets/site.css')
+        pairs = sources()
+        bad: list[str] = []
 
-    # G1／G2 管两处：资料页的源稿（散文与主键骨架各一处），以及配装的结构化记录。
-    check_terms([rel for rel, _ in pairs
-                 if rel.startswith((DOC_DIR, KEY_DIR, 'references/builds/'))], bad)
-    used = check_tokens(pairs, site, bad)
-    check_stamps(bad)
-    check_build_count(bad)
-    check_acts(bad)
-    check_palette(site, used, bad)
-    # G6 的反查（已着色的对不对）是纯正则；正查那一半走 items.scan()，范围由
-    # items.pages() 定。
-    check_items([rel for rel, _ in pairs
-                 if rel.startswith((DOC_DIR, KEY_DIR))], bad)
+        # G1／G2 管两处：资料页的源稿（散文与主键骨架各一处），以及配装的结构化记录。
+        check_terms([rel for rel, _ in pairs
+                     if rel.startswith((DOC_DIR, KEY_DIR, 'references/builds/'))], bad)
+        used = check_tokens(pairs, site, bad)
+        check_stamps(bad)
+        check_build_count(bad)
+        check_acts(bad)
+        check_palette(site, used, bad)
+        # G6 的反查（已着色的对不对）是纯正则；正查那一半走 items.scan()，范围由
+        # items.pages() 定。
+        check_items([rel for rel, _ in pairs
+                     if rel.startswith((DOC_DIR, KEY_DIR))], bad)
 
-    if bad:
-        print('术语与着色不一致：', file=sys.stderr)
-        for line in bad:
-            print('  ' + line, file=sys.stderr)
-        return 1
-    print('术语一致：%d 条规则，%d 篇源稿' % (len(items.TERMS), len(pairs)))
-    return 0
+        if bad:
+            print('术语与着色不一致：', file=sys.stderr)
+            for line in bad:
+                print('  ' + line, file=sys.stderr)
+            return 1
+        _save_cache(cache)
+        print('术语一致：%d 条规则，%d 篇源稿' % (len(items.TERMS), len(pairs)))
+        return 0
+    finally:
+        _ACTIVE_CACHE = prev_cache
 
 
 if __name__ == '__main__':

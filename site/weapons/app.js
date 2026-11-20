@@ -1,9 +1,10 @@
 /* 装备库（武器与异域护甲）。数据三份，由 tools/build-weapons.py 从实体层生成，字段表写在
-   .claude/rules/weapons.md：
-     index.js  window.WPN        首屏：卡片墙、筛选、结果栏
-     pool.js   window.WPN_POOL   词条池、属性曲线、大师杰作与模组
-     text.js   window.WPN_TEXT   描述、说明、站内实测、作者评语
-   pool.js 在 load 之后取，text.js 不预取；查询或详情先用到哪一份就立刻取哪一份。
+   .agents/rules/weapons.md：
+     index.json.gz / index.js  window.WPN        首屏：卡片墙、筛选、结果栏
+     pool.json.gz  / pool.js   window.WPN_POOL   词条池、属性曲线、大师杰作与模组
+     text.json.gz  / text.js   window.WPN_TEXT   描述、说明、站内实测、作者评语
+   现代浏览器优先走 .json.gz + DecompressionStream + Cache API，旧浏览器降级 .js。
+   pool 在 load 之后预取，text 不预取；查询或详情先用到哪一份就立刻取哪一份。
    范围开关、查询条与首屏骨架写在页壳里（build-weapons.py 的 scope_row()、toolbar() 与
    skeleton()），这里接上事件、换成真内容。 */
 (function () {
@@ -103,9 +104,55 @@
   }
   function has(list, x) { return list.indexOf(x) !== -1; }
 
-  /* ── 载入：pool.js / text.js / pvp.js ──────────────────────────────── */
+  /* ── 载入：pool / text (.json.gz + Cache API，旧浏览器降级 .js) 与 pvp.js ── */
   var HERE = (document.currentScript && document.currentScript.src) || location.href;
   var loads = {};
+  var WPN_CACHE = 'starside-wpn-v1';
+  var IS_LOCAL = typeof location !== 'undefined' && (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+  function decodeGzBuffer(buf) {
+    var head = new Uint8Array(buf, 0, 2);
+    if (head[0] !== 31 || head[1] !== 139) {
+      return Promise.resolve(new TextDecoder().decode(buf));
+    }
+    return new Response(new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+  }
+  function loadGzData(name, ver, highPriority) {
+    var url = new URL(name + '.json.gz' + (ver ? '?v=' + ver : ''), HERE).href;
+    var useCache = !IS_LOCAL && typeof caches !== 'undefined';
+    var hit = false;
+    var fromCache = useCache
+      ? caches.open(WPN_CACHE).then(function (c) {
+          return c.match(url).then(function (r) { return r ? r.arrayBuffer() : null; });
+        }).catch(function () { return null; })
+      : Promise.resolve(null);
+    return fromCache.then(function (buf) {
+      if (buf) { hit = true; return buf; }
+      return fetch(url, highPriority ? { priority: 'high' } : undefined).then(function (r) {
+        if (!r.ok) { throw new Error(r.status + ' ' + url); }
+        return r.arrayBuffer();
+      });
+    }).then(function (buf) {
+      return decodeGzBuffer(buf).then(function (txt) {
+        var data = JSON.parse(txt);
+        if (!data || (ver && data.ver !== ver)) { throw new Error('version mismatch: ' + name); }
+        if (useCache && !hit) {
+          caches.open(WPN_CACHE).then(function (c) {
+            return c.put(url, new Response(buf)).then(function () { return c.keys(); }).then(function (ks) {
+              return Promise.all(ks.filter(function (k) {
+                return k.url.indexOf(name + '.json.gz') !== -1 && k.url !== url;
+              }).map(function (k) { return c.delete(k); }));
+            });
+          }).catch(function () {});
+        }
+        return data;
+      });
+    }).catch(function (err) {
+      if (useCache && hit) {
+        caches.open(WPN_CACHE).then(function (c) { return c.delete(url); }).catch(function () {});
+      }
+      throw err;
+    });
+  }
   function need(name, cb, retry) {
     var ready = name === 'pool' ? window.WPN_POOL : name === 'text' ? window.WPN_TEXT : window.WPN_PVP;
     if (ready) {
@@ -117,40 +164,67 @@
     if (job && job.failed && !retry) { return false; }
     if (!job || job.failed) {
       job = loads[name] = { cbs: job ? job.cbs : [], failed: false };
-      var s = document.createElement('script');
-      /* 详情或查询在等词条池、或用户切进 PvP 时提到高优先级：动态插入的脚本缺省
-         是低优先级，会排在卡片图后面。load 之后的预取不带回调，照缺省。 */
-      if (cb && (name === 'pool' || name === 'pvp')) { s.fetchPriority = 'high'; }
       var wpnVer = window.WPN && window.WPN.ver;
-      var ver = (name === 'pool' || name === 'text') && wpnVer ? '?v=' + wpnVer : '';
-      s.src = new URL(name + '.js' + ver, HERE).href;
-      s.onload = function () {
-        var loaded = name === 'pool' ? window.WPN_POOL : name === 'text' ? window.WPN_TEXT : window.WPN_PVP;
-        if (!loaded || ((name === 'pool' || name === 'text') && wpnVer && loaded.ver !== wpnVer)) {
-          if (name === 'pool') { window.WPN_POOL = null; }
-          else if (name === 'text') { window.WPN_TEXT = null; }
-          s.onerror();
-          return;
-        }
+      function finish() {
         if (name === 'pool') { poolReady(); } else if (name === 'text') { textReady(); } else { pvpReady(); }
         var cbs = job.cbs; job.cbs = [];
         for (var i = 0; i < cbs.length; i++) { cbs[i](); }
-      };
-      s.onerror = function () {
+      }
+      function fail() {
         var was = pending, before = results;
         job.failed = true;
-        console.error('载不动 weapons/' + name + '.js');
+        console.error('载不动 weapons/' + name);
         evaluate();
         if (was !== pending || pending === name || !sameList(before, results)) { render(); }
         else {
           renderLoadErrors();
           if (S.sel != null) { renderDetail(); }
         }
-      };
-      document.head.appendChild(s);
+      }
+      function loadScript() {
+        var s = document.createElement('script');
+        if (cb && (name === 'pool' || name === 'pvp')) { s.fetchPriority = 'high'; }
+        var ver = (name === 'pool' || name === 'text') && wpnVer ? '?v=' + wpnVer : '';
+        s.src = new URL(name + '.js' + ver, HERE).href;
+        s.onload = function () {
+          var loaded = name === 'pool' ? window.WPN_POOL : name === 'text' ? window.WPN_TEXT : window.WPN_PVP;
+          if (!loaded || ((name === 'pool' || name === 'text') && wpnVer && loaded.ver !== wpnVer)) {
+            if (name === 'pool') { window.WPN_POOL = null; }
+            else if (name === 'text') { window.WPN_TEXT = null; }
+            fail();
+            return;
+          }
+          finish();
+        };
+        s.onerror = fail;
+        document.head.appendChild(s);
+      }
+      if ((name === 'pool' || name === 'text') && typeof fetch === 'function' &&
+          typeof DecompressionStream === 'function' && typeof loadGzData === 'function') {
+        loadGzData(name, wpnVer, !!cb).then(function (data) {
+          if (name === 'pool') { window.WPN_POOL = data; } else { window.WPN_TEXT = data; }
+          finish();
+        }, function () {
+          loadScript();
+        });
+      } else {
+        loadScript();
+      }
     }
     if (cb) { job.cbs.push(cb); }
     return false;
+  }
+  var pinyinLoading = false;
+  function ensurePinyin() {
+    if (window.starsidePy || pinyinLoading) { return; }
+    pinyinLoading = true;
+    var s = document.createElement('script');
+    s.src = new URL('../assets/pinyin.js', HERE).href;
+    s.onload = function () {
+      if (S.q) { hayCache = {}; evaluate(); render(); }
+    };
+    s.onerror = function () { pinyinLoading = false; };
+    document.head.appendChild(s);
   }
   var P = null, T = null, PVP = null, PIDX = {}, SIDX = null, HSTAT = null;
   var PERK_FX = null, perkFxWait = null;
@@ -3647,6 +3721,8 @@
     typing = setTimeout(function () { typing = 0; setQuery(input.value, false); suggest(); }, 120);
   });
   input.addEventListener('click', suggest);
+  input.addEventListener('focus', ensurePinyin);
+  input.addEventListener('input', ensurePinyin);
   input.addEventListener('keydown', function (e) {
     if (acBox.hidden) {
       if (e.key === 'Escape') { input.blur(); }
@@ -4069,6 +4145,7 @@
     closeAc();
     var wasSel = (S.sel != null);
     readUrl();
+    if (S.q) { ensurePinyin(); }
     input.value = S.q;
     evaluate();
     if (S.sel != null && S.scope === 'wpn' && S.urlRoll) {
@@ -4088,6 +4165,7 @@
   readUrl();
   /* 查询框写在页壳里，脚本到之前读者可能已经敲了字：地址栏没带查询时接着用它。 */
   if (!S.q && input.value) { S.q = input.value; writeUrl(false); }
+  if (S.q) { ensurePinyin(); }
   input.value = S.q;
   evaluate();
   if (S.sel != null && S.scope === 'wpn' && S.urlRoll) {
@@ -4101,6 +4179,7 @@
   }
   render();
   /* 词条池等 load 之后再取：先取会与首屏的图抢带宽，load 也要等它下完。说明不预取。 */
-  window.addEventListener('load', function () { need('pool'); });
+  if (document.readyState === 'complete') { need('pool'); }
+  else { window.addEventListener('load', function () { need('pool'); }); }
 
 }());

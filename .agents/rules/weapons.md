@@ -12,7 +12,7 @@ paths:
 外圈的光圈。交互对齐 destiny.report。
 
 这一页**不写任何数据**。`tools/build-weapons.py` 只读实体层（`resolve.Facts()` 与 `rows.py` 的异域取法），产出
-`weapons/` 下四个文件；`weapons/app.js`、`weapons/pvp.js`（切换 PvP 属性模式时按需载入）与
+`weapons/` 下的页壳 `index.html` 与三份数据载荷（`.json.gz` 供现代浏览器 `DecompressionStream` + `Cache API` 载入，`.js` 作旧浏览器降级与离线单测）；`weapons/app.js`、`weapons/pvp.js`（切换 PvP 属性模式时按需载入）与
 `weapons/style.css` 是手写的。例外有五处，都是「那边已经有了，抄过来两处会各改各的」：
 弹药块拾取量现读弹药生成机制页的表（见《框架数值》），护甲套装效果的图现读护甲套装页
 的索引，神器模组的名字、归属与说明现读神器模组页的索引（见《神器模组》），配装卡与它的
@@ -22,11 +22,11 @@ paths:
 
 | 文件 | 何时载 | 内容 | gzip |
 |---|---|---|---|
-| `index.js` → `window.WPN` | 首屏 `defer` | 词表 `v` + 武器行 `w` + 护甲行 `a` | 134 KB |
-| `pool.js` → `window.WPN_POOL` | load 之后取；详情或查询先用到就立刻取，按高优先级 | 属性表、属性组曲线、插件字典、词条栏、大师杰作、模组、神器模组 | 175 KB |
+| `index.json.gz`（兜底 `index.js`）→ `window.WPN` | 首屏内联 `boot_script` 与 `preload app.js` 并行拉取，按 `ver` 持久化进 `Cache API` | 词表 `v` + 武器行 `w` + 护甲行 `a` + 套装行 `t` | 139 KB |
+| `pool.json.gz`（兜底 `pool.js`）→ `window.WPN_POOL` | load 之后预取；详情或查询先用到就立刻高优先级取，按 `ver` 持久化进 `Cache API` | 属性表、属性组曲线、插件字典、词条栏、大师杰作、模组、神器模组 | 175 KB |
 | `pvp.js` → `window.WPN_PVP` | 切到 PvP 属性模式时按需载入（高优先级） | PvP 伤害表、TTK 模拟器、PvP 面板与动画 | — |
-| `text.js` → `window.WPN_TEXT` | 不预取；默认列表/未选中且无需词条说明搜索时不请求，仅在打开详情，或查询要搜说明与描述时才取，同时要 pool 的排在 pool 之后 | 描述、Bungie 说明、站内实测、作者评语、异域站内详情、神器模组说明 | 342 KB |
-| `index.html` | — | 外壳（`shell.head/nav/foot`）+ 页首 + 范围开关 + 查询条 + 首屏骨架 + 类型小图标 sprite | — |
+| `text.json.gz`（兜底 `text.js`）→ `window.WPN_TEXT` | 不预取；仅打开详情或查询说明与描述时取，按 `ver` 持久化进 `Cache API` | 描述、Bungie 说明、站内实测、作者评语、异域站内详情、神器模组说明、配装卡 | 399 KB |
+| `index.html` | — | 外壳（`shell.head/nav/foot`）+ 页首 + 范围开关 + 查询条 + 首屏骨架 + 类型小图标 sprite + `boot_script` | — |
 
 页首、范围开关、查询条与首屏骨架写在页壳里（`shell.page_head()`、`scope_row()`、`toolbar()`、
 `skeleton()`），首次绘制就是页面的真实结构：查询条按真实高度占住，快速检索与条件条各占一块

@@ -1048,11 +1048,6 @@ test('eververse & xur: adaError short-circuits Ada fetch, entities decode, and w
   assert.equal(parseEververseHtml(html).slots.length, 18)
 
   let adaFetched = 0
-  const evRes = await syncEververse('k', [{ hash: 10, vendorHash: 1, group: 'g', currency: 'dust', cost: 100, isWide: false, expectedTier: 'exotic', expectedType: '动作' }], null, {
-    adaError: 'upstream down',
-    now: '2026-04-10T18:00:00Z',
-    async prefetchedAdaSlots() { adaFetched++ }
-  }).catch((e) => e)
   // Using real fetch stub: ensure global.fetch is not hit for ADA_FEED_URL when adaError is supplied
   const prevFetch = global.fetch
   global.fetch = async (url) => {
@@ -1081,7 +1076,6 @@ test('eververse & xur: adaError short-circuits Ada fetch, entities decode, and w
   } finally {
     global.fetch = prevFetch
   }
-  void evRes
 
   const h = harness({}, {
     async fetch() { return { ok: false, status: 503, async json() { return {} } } }

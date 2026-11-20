@@ -909,3 +909,99 @@ test('builds form: byGun resolves reissue duplicates by item hash before bare na
   assert.deepEqual(formBox.byGun(map, ['同名枪', '', '', '', '', '', '', '999']), ['LegacyFallback'])
   assert.equal(formBox.byGun(map, ['未知枪', '', '', '', '', '', '', '999']), null)
 })
+
+test('weapons: decodeGzBuffer, loadGzData cache lifecycle, and ensurePinyin lazy loader', async () => {
+  const cacheMap = new Map()
+  const deletedKeys = []
+  const fakeCache = {
+    async match(u) { return cacheMap.get(u) || null },
+    async put(u, res) { cacheMap.set(u, res) },
+    async keys() { return Array.from(cacheMap.keys(), (url) => ({ url })) },
+    async delete(k) {
+      const u = typeof k === 'string' ? k : k.url
+      deletedKeys.push(u)
+      return cacheMap.delete(u)
+    },
+  }
+  const fetchCalls = []
+  let fetchPayload = null
+  const appendedScripts = []
+  let evalCount = 0
+  let renderCount = 0
+  const ctx = {
+    URL, Blob, Response, TextDecoder, DecompressionStream, Promise, Uint8Array, Error, JSON,
+    HERE: 'https://starside.work/weapons/app.js',
+    WPN_CACHE: 'starside-wpn-v1',
+    IS_LOCAL: false,
+    caches: { async open() { return fakeCache } },
+    async fetch(u, opts) {
+      fetchCalls.push({ u, opts })
+      return {
+        ok: true,
+        status: 200,
+        async arrayBuffer() { return fetchPayload },
+      }
+    },
+    window: {},
+    S: { q: 'wmbl' },
+    hayCache: { old: 1 },
+    pinyinLoading: false,
+    document: {
+      createElement: () => ({}),
+      head: { appendChild(el) { appendedScripts.push(el) } },
+    },
+    evaluate() { evalCount++ },
+    render() { renderCount++ },
+  }
+  vm.createContext(ctx)
+  vm.runInContext(
+    funcSource('weapons/app.js', 'decodeGzBuffer') + '\n' +
+    funcSource('weapons/app.js', 'loadGzData') + '\n' +
+    funcSource('weapons/app.js', 'ensurePinyin'),
+    ctx
+  )
+
+  // 1. decodeGzBuffer handles both raw gzip bytes and already-decompressed UTF-8 JSON
+  const rawJson = JSON.stringify({ ver: 'v2', ok: true })
+  const gzBuf = zlib.gzipSync(Buffer.from(rawJson, 'utf8'))
+  const gzAB = gzBuf.buffer.slice(gzBuf.byteOffset, gzBuf.byteOffset + gzBuf.byteLength)
+  const plainBuf = Buffer.from(rawJson, 'utf8')
+  const plainAB = plainBuf.buffer.slice(plainBuf.byteOffset, plainBuf.byteOffset + plainBuf.byteLength)
+  assert.equal(await ctx.decodeGzBuffer(gzAB), rawJson)
+  assert.equal(await ctx.decodeGzBuffer(plainAB), rawJson)
+
+  // 2. loadGzData validates before caching, prunes older version keys, and serves cache hits without fetch
+  const staleUrl = 'https://starside.work/weapons/pool.json.gz?v=v1'
+  cacheMap.set(staleUrl, new Response(gzAB))
+  fetchPayload = gzAB
+  const got1 = await ctx.loadGzData('pool', 'v2', true)
+  assert.equal(got1.ver, 'v2')
+  assert.equal(fetchCalls.length, 1)
+  assert.equal(fetchCalls[0].opts.priority, 'high')
+  // Wait a microtask for async cache write + stale key prune
+  await new Promise((r) => setTimeout(r, 10))
+  assert.ok(cacheMap.has('https://starside.work/weapons/pool.json.gz?v=v2'))
+  assert.ok(!cacheMap.has(staleUrl), 'stale version key should be pruned')
+
+  const got2 = await ctx.loadGzData('pool', 'v2', false)
+  assert.equal(got2.ver, 'v2')
+  assert.equal(fetchCalls.length, 1, 'second call should hit Cache API without network fetch')
+
+  // 3. Poisoned cache entry fails validation and self-heals via cache.delete
+  const badUrl = 'https://starside.work/weapons/text.json.gz?v=v2'
+  const badBuf = Buffer.from('<html>502</html>', 'utf8')
+  cacheMap.set(badUrl, new Response(badBuf.buffer.slice(badBuf.byteOffset, badBuf.byteOffset + badBuf.byteLength)))
+  await assert.rejects(() => ctx.loadGzData('text', 'v2', true))
+  await new Promise((r) => setTimeout(r, 10))
+  assert.ok(!cacheMap.has(badUrl), 'poisoned cache entry must be evicted on validation failure')
+
+  // 4. ensurePinyin lazy-loads once and re-evaluates active query on load
+  ctx.ensurePinyin()
+  ctx.ensurePinyin()
+  assert.equal(appendedScripts.length, 1)
+  assert.equal(appendedScripts[0].src, 'https://starside.work/assets/pinyin.js')
+  appendedScripts[0].onload()
+  assert.equal(evalCount, 1)
+  assert.equal(renderCount, 1)
+  assert.equal(Object.keys(ctx.hayCache).length, 0)
+})

@@ -1631,7 +1631,8 @@ def build(facts):
     index = {"v": vocab, "w": wrows, "a": arows, "t": srows}
     ver = hashlib.md5(
         (
-            json.dumps(pool, ensure_ascii=False, separators=(",", ":"))
+            json.dumps(index, ensure_ascii=False, separators=(",", ":"))
+            + json.dumps(pool, ensure_ascii=False, separators=(",", ":"))
             + json.dumps(text, ensure_ascii=False, separators=(",", ":"))
         ).encode()
     ).hexdigest()[:10]
@@ -1651,7 +1652,7 @@ def build(facts):
         "weapons/index.js": js("WPN", index),
         "weapons/pool.js": js("WPN_POOL", pool),
         "weapons/text.js": js("WPN_TEXT", text),
-        "weapons/index.html": page(stats, glyphs),
+        "weapons/index.html": page(stats, glyphs, ver),
     }
     return out, stats
 
@@ -1781,7 +1782,41 @@ def skeleton():
     )
 
 
-def page(stats, glyphs):
+def gz_json(js_body):
+    """从 `window.X = {...};\\n` 提取纯 JSON 并确定性 gzip 压缩（mtime=0）。"""
+    raw = js_body.split(" = ", 1)[1].rstrip().rstrip(";").encode("utf-8")
+    return gzip.compress(raw, compresslevel=9, mtime=0)
+
+
+def boot_script(ver):
+    """首屏异步载入 index.json.gz（校验通过后再写 Cache API，坏缓存自动清除自愈），
+    就绪后拉起 app.js；不支持 DecompressionStream 的旧浏览器无缝降级 index.js。"""
+    return (
+        "<script>(function(){"
+        'var V="%s",C="starside-wpn-v1",L=location.hostname==="localhost"||location.hostname==="127.0.0.1";'
+        "function run(){var s=document.createElement(\"script\");s.src=\"app.js\";document.head.appendChild(s)}"
+        "function fb(){var s=document.createElement(\"script\");s.src=\"index.js?v=\"+V;s.onload=run;"
+        "s.onerror=function(){var r=document.getElementById(\"find\");if(r)r.innerHTML='<p class=\"empty\">武器数据载入失败，请刷新重试。</p>'};"
+        "document.head.appendChild(s)}"
+        "function dec(b){var h=new Uint8Array(b,0,2);if(h[0]!==31||h[1]!==139)return Promise.resolve(new TextDecoder().decode(b));"
+        'return new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream("gzip"))).text()}'
+        'if(typeof DecompressionStream!=="function"||typeof fetch!=="function"){fb();return}'
+        'var u=new URL("index.json.gz?v="+V,location.href).href,hit=false;'
+        'var useC=!L&&typeof caches!=="undefined";'
+        "(useC?caches.open(C).then(function(c){return c.match(u).then(function(r){return r?r.arrayBuffer():null})}):Promise.resolve(null))"
+        ".catch(function(){return null})"
+        ".then(function(b){if(b){hit=true;return b}return fetch(u,{priority:\"high\"}).then(function(r){"
+        "if(!r.ok)throw Error(r.status);return r.arrayBuffer()})})"
+        ".then(function(b){return dec(b).then(function(t){var d=JSON.parse(t);if(!d||d.ver!==V)throw Error(\"ver\");"
+        "if(useC&&!hit){caches.open(C).then(function(c){return c.put(u,new Response(b)).then(function(){return c.keys()}).then(function(ks){"
+        'return Promise.all(ks.filter(function(k){return k.url.indexOf("index.json.gz")!==-1&&k.url!==u}).map(function(k){return c.delete(k)}))})})'
+        ".catch(function(){})}return d})})"
+        ".catch(function(e){if(useC&&hit){caches.open(C).then(function(c){return c.delete(u)}).catch(function(){})}throw e})"
+        ".then(function(d){window.WPN=d;run()},fb)})()</script>"
+    ) % ver
+
+
+def page(stats, glyphs, ver):
     head = shell.head("装备库 · Starside", DESC, sky=True)
     nav = shell.nav("装备库")
     first = (
@@ -1796,9 +1831,7 @@ def page(stats, glyphs):
     body = [
         head.replace(
             "</head>",
-            '<script src="../assets/pinyin.js" defer></script>\n'
-            '<script src="index.js" defer></script>\n'
-            '<script src="app.js" defer></script>\n'
+            '<link rel="preload" href="app.js" as="script">\n'
             # 配装卡那一族的样式内联进来，不抄第二份：详情里「用过它的配装」
             # 摆的就是配装推荐页那张卡，强度光环、审核意见、合集马赛克与
             # 「3 套」角标都长在那份结构上。
@@ -1820,6 +1853,7 @@ def page(stats, glyphs):
         % (stats["weapons"], stats["armor"], skeleton()),
         "</main>",
         sprite(glyphs),
+        boot_script(ver),
         shell.foot(
             stamp(),
             first,
@@ -1862,9 +1896,13 @@ def main() -> int:
         with open(path, "w", encoding="utf-8") as f:
             f.write(body)
         raw = body.encode()
+        gz = gz_json(body)
+        gz_path = path[:-3] + ".json.gz"
+        with open(gz_path, "wb") as f:
+            f.write(gz)
         print(
-            "%s —— %.0f KB，gzip %.0f KB"
-            % (rel, len(raw) / 1024, len(gzip.compress(raw, 9)) / 1024)
+            "%s —— %.0f KB，json.gz %.0f KB"
+            % (rel, len(raw) / 1024, len(gz) / 1024)
         )
     print(
         "作者推荐落不到池里的词条名 %d 个（基线 %d）"

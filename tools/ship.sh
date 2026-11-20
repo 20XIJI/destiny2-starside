@@ -15,7 +15,7 @@ npm run build
 echo "build $(($(date +%s) - t))s"
 
 t=$(date +%s)
-npm test
+npm test -- --all
 echo "test $(($(date +%s) - t))s"
 
 t=$(date +%s)

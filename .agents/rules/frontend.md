@@ -53,7 +53,7 @@ paths:
 资料页工具条从行标题／`.r-nm`／`h4`／`h3` 取出且落在白名单里的那一截、装备库
 的武器／护甲／套装名。页面标题、介绍、首领名、副本名与词条说明仍是原文子串。
 全拼、简拼、中英混与多音字；英文名大小写、连字符与撇号不计。
-`shell.head(app_js=True)` 仅在页内带搜索框时（`has_search=True`，如含 `.toolbar` 搜索框的页面）于 `app.js` 之前 `defer` 载入 `assets/pinyin.js`；首页（交互时再懒加载 `search.js`）与装备库另在页壳自引。
+`shell.head(app_js=True)` 仅在页内带搜索框时（`has_search=True`，如含 `.toolbar` 搜索框的页面）于 `app.js` 之前 `defer` 载入 `assets/pinyin.js`；首页（交互时再懒加载 `search.js`）在页壳自引，装备库改为由 `weapons/app.js` 的 `ensurePinyin()` 在搜索框聚焦/输入或 URL 带 `q=` 时按需懒加载。
 `file://` 下同样可用。
 
 `assets/search.js` 由 `tools/build-search.py` 生成，**不手改**。

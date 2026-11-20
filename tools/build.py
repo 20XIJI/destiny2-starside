@@ -35,34 +35,62 @@ SHARED = (
     "tools/editmap.py",
     "tools/facts.py",
     "tools/icons.py",
-    "references/docs/notices.md",
 )
 ORCH = "tools/build.py"
 
+CORE_FACTS = (
+    "data/inventory-items.json",
+    "data/sandbox-perks.json",
+    "data/traits.json",
+    "data/stats.json",
+    "data/minted.json",
+)
+SET_FACTS = ("data/equipable-item-sets.json",)
+LOOKUP_FACTS = (
+    "data/lookup/plug-sets.json",
+    "data/lookup/socket-types.json",
+    "data/lookup/stat-groups.json",
+)
 
-def digest_files(paths) -> str:
+
+def digest_files(
+    paths, cache: dict[str, bytes] | None = None, extra: str = ""
+) -> str:
     """路径集合 + 各自字节 → sha1。输入文件必须存在，缺失当场抛 FileNotFoundError。"""
     h = hashlib.sha1()
-    for path in sorted({str(p) for p in paths}):
-        p = Path(path)
-        rel = p.as_posix()
-        try:
-            rel = p.resolve().relative_to(ROOT).as_posix()
-        except (ValueError, OSError):
-            pass
-        h.update(rel.encode())
+    if extra:
+        h.update(extra.encode())
         h.update(b"\0")
-        h.update(p.read_bytes())
-        h.update(b"\n")
+    for raw in sorted({str(p) for p in paths}):
+        entry = None if cache is None else cache.get(raw)
+        if entry is None:
+            p = Path(raw)
+            rel = p.as_posix()
+            try:
+                rel = p.resolve().relative_to(ROOT).as_posix()
+            except (ValueError, OSError):
+                pass
+            fh = hashlib.sha1()
+            fh.update(rel.encode())
+            fh.update(b"\0")
+            fh.update(p.read_bytes())
+            entry = fh.digest()
+            if cache is not None:
+                cache[raw] = entry
+        h.update(entry)
     return h.hexdigest()
 
 
+def facts_groups() -> tuple[list[Path], list[Path], list[Path]]:
+    core = [ROOT / r for r in CORE_FACTS if (ROOT / r).is_file()]
+    sets = [ROOT / r for r in SET_FACTS if (ROOT / r).is_file()]
+    lookup = [ROOT / r for r in LOOKUP_FACTS if (ROOT / r).is_file()]
+    return core, sets, lookup
+
+
 def facts_files() -> list[Path]:
-    out = sorted((ROOT / "data").glob("*.json"))
-    lookup = ROOT / "data" / "lookup"
-    if lookup.is_dir():
-        out.extend(sorted(lookup.glob("*.json")))
-    return out
+    core, sets, lookup = facts_groups()
+    return core + sets + lookup
 
 
 def source_files() -> list[Path]:
@@ -99,9 +127,9 @@ def load_tool(filename: str):
     return mod
 
 
-def invoke(mod) -> None:
+def invoke(mod, extra_args: tuple[str, ...] = ()) -> None:
     old = sys.argv
-    sys.argv = [str(Path(mod.__file__).resolve())]
+    sys.argv = [str(Path(mod.__file__).resolve()), *extra_args]
     t0 = time.perf_counter()
     try:
         code = mod.main()
@@ -142,16 +170,19 @@ def main() -> int:
 
     stamp = {} if force else load_stamp()
     next_stamp: dict = {}
+    file_cache: dict[str, bytes] = {}
     ran = False
 
-    def dirty(key: str, paths) -> bool:
-        got = digest_files(paths)
+    def dirty(key: str, paths, *, extra: str = "") -> bool:
+        got = digest_files(paths, file_cache, extra=extra)
         next_stamp[key] = got
         return force or stamp.get(key) != got
 
     orch = under(ORCH)
     shared = under(*SHARED)
-    facts = facts_files()
+    core_facts, set_facts, lookup_facts = facts_groups()
+    entity_facts = core_facts + set_facts
+    all_facts = entity_facts + lookup_facts
     sources = source_files()
 
     if dirty("orch", orch) and not force:
@@ -160,7 +191,9 @@ def main() -> int:
 
     # ── 纠正源稿：改的是 md，必须在算页哈希之前 ──
     norm_deps = (
-        under("tools/items.py", "tools/items.json", "tools/perks.json") + shared + facts
+        under("tools/items.py", "tools/items.json", "tools/perks.json")
+        + shared
+        + entity_facts
     )
     if dirty("normalize", sources + norm_deps):
         items = load_tool("items.py")
@@ -168,8 +201,9 @@ def main() -> int:
         items.normalize()
         print("  tools/items.py  %.1fs" % (time.perf_counter() - t), flush=True)
         ran = True
+        file_cache.clear()
         sources = source_files()
-        next_stamp["normalize"] = digest_files(sources + norm_deps)
+        next_stamp["normalize"] = digest_files(sources + norm_deps, file_cache)
     else:
         print("  skip  items.py --normalize", flush=True)
     if normalize_only:
@@ -179,6 +213,8 @@ def main() -> int:
         return 0
 
     import shell  # noqa: WPS433  — 清单现扫，与生成器同一处
+
+    notice_id = shell.notice_id()
 
     card_re = re.compile(r"^卡片：(.*)$", re.M)
     link_re = re.compile(r"\[[^\]]+\]\((?!http)([^)#?]+/index\.html)\)")
@@ -202,25 +238,27 @@ def main() -> int:
     page_dirty: list[str] = []
     for slug, path in slugs:
         key = "page:%s" % slug
-        if dirty(key, [path, *doc_refs(path), *page_gen, *facts]):
+        if dirty(key, [path, *doc_refs(path), *page_gen, *core_facts], extra=notice_id):
             page_dirty.append(slug)
     art_dirty = dirty(
         "artifact-mods",
         [
             ROOT / "references" / "keys" / "artifact-mods.md",
             *shared,
-            *facts,
+            *core_facts,
             *under("tools/convert-artifact-mods.py"),
         ],
+        extra=notice_id,
     )
     sets_dirty = dirty(
         "armor-sets",
         [
             ROOT / "references" / "keys" / "armor-sets.md",
             *shared,
-            *facts,
+            *entity_facts,
             *under("tools/convert-armor-sets.py"),
         ],
+        extra=notice_id,
     )
 
     if page_dirty or art_dirty or sets_dirty:
@@ -294,7 +332,8 @@ def main() -> int:
             "tools/artifacts.json",
         )
         + shared
-        + facts,
+        + all_facts,
+        extra=notice_id,
     )
     if builds_dirty:
         invoke(load_tool("convert-build.py"))
@@ -304,7 +343,7 @@ def main() -> int:
 
     weapons_dirty = dirty(
         "weapons",
-        facts
+        all_facts
         + index_files
         + build_json
         + under(
@@ -320,6 +359,7 @@ def main() -> int:
             "site/builds/sets/index.html",
         )
         + shared,
+        extra=notice_id,
     )
     if weapons_dirty:
         invoke(load_tool("build-weapons.py"))
@@ -342,14 +382,16 @@ def main() -> int:
     if home_dirty:
         invoke(load_tool("build-home.py"))
         ran = True
-        next_stamp["home"] = digest_files(home_inputs)
+        for p in home_inputs:
+            file_cache.pop(str(p), None)
+        next_stamp["home"] = digest_files(home_inputs, file_cache)
     else:
         print("  skip  build-home.py", flush=True)
 
     search_dirty = (
         dirty(
             "search",
-            facts
+            entity_facts
             + under(
                 "tools/build-search.py",
                 "tools/pinyin.py",
@@ -373,7 +415,7 @@ def main() -> int:
     css_files = sorted((ROOT / "site").rglob("*.css"))
     terms_dirty = dirty(
         "terms",
-        facts
+        entity_facts
         + css_files
         + under(
             "tools/build-terms.py",
@@ -411,13 +453,15 @@ def main() -> int:
             "design.md",
         )
         + shared
-        + facts
+        + entity_facts
         + sources
         + css_files,
+        extra=notice_id,
     )
     if ran or gates_dirty:
+        gate_args = ("--all",) if force else ()
         for name in ("check_shell.py", "check_terms.py", "check_type.py"):
-            invoke(load_tool(name))
+            invoke(load_tool(name), gate_args if name == "check_terms.py" else ())
         ran = True
     else:
         print("  skip  gates", flush=True)
