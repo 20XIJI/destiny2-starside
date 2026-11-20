@@ -356,12 +356,12 @@
   var ZOOM_OVERRIDES = {
     '手枪': { 2984682260: 2, default: 1.2 },
     '微型冲锋枪': { 903: 1.5, 1294026524: 1.5, default: 1.4 },
-    '手炮': { 2770223582: 1.1, 1030990989: 1.3, 3174300811: 2.4, 3923638944: 1.6, 907: 1.6, default: 1.5 },
+    '手炮': { 2770223582: 1.1, 1030990989: 1.3, 2427219599: 1.2, 3174300811: 2.4, 3923638944: 1.6, 907: 1.6, default: 1.5 },
     '自动步枪': { 901: 1.7, 1019291327: 1.7, default: 1.6 },
     '脉冲步枪': { 904: 1.8, 907: 1.8, 1634975868: 1.8, 901: 1.6, 911: 1.6, 1019291327: 1.6, 4172222323: 1.6, default: 1.7 },
     '战斗弓箭': { default: 1.8 },
     '斥候步枪': { default: 2 },
-    '霰弹枪': { 916: 1.2, 1394384862: 1.2, 536517534: 1.2, 918679156: 1.2, default: 1 },
+    '霰弹枪': { 916: 1.2, 1394384862: 1.2, 536517534: 1.2, 918679156: 1.2, 3923638944: 1.2, default: 1 },
     '融合步枪': { 3610750208: 1.7, default: 1.3 },
     '追踪步枪': { default: 1.6 },
     '线性融合步枪': { default: 2.5 },
@@ -1775,6 +1775,7 @@
     var perkInv = {}, flat = {}, fxInv = {};
     var rpmMod = 1, chargeTimeMod = 1, reloadDurationMod = 1, handlingDurationMod = 1;
     var rangeAllScale = 1, rangeHipScale = 1, rangeAdsStatAdd = 0, projectileVelocityScale = 1;
+    var effectiveZoomScale = 1, zoomScaleSources = [];
     var overflowPerks = [], baseMagazineRamps = [], magMultSources = [];
     fxAll().forEach(function (f) {
       if (!fxApplies(i, f)) { return; }
@@ -1821,6 +1822,13 @@
       if (spec.rangeAdsStatAdd != null) {
         var raa = pickStep(spec.rangeAdsStatAdd, step, ammo);
         if (raa != null) { rangeAdsStatAdd += raa; }
+      }
+      if (spec.effectiveZoomScale != null) {
+        var ezs = pickStep(spec.effectiveZoomScale, step, ammo);
+        if (ezs != null && ezs !== 1) {
+          effectiveZoomScale *= ezs;
+          zoomScaleSources.push([plugName(p), ezs]);
+        }
       }
       if (spec.projectileVelocityScale != null && (!spec.projectileVelocityWeaponTypes || has(spec.projectileVelocityWeaponTypes, tyEn))) {
         var pvs = pickStep(spec.projectileVelocityScale, step, ammo);
@@ -1955,6 +1963,7 @@
       reloadDurationMod: reloadDurationMod, handlingDurationMod: handlingDurationMod,
       rangeAllScale: rangeAllScale, rangeHipScale: rangeHipScale,
       rangeAdsStatAdd: rangeAdsStatAdd, projectileVelocityScale: projectileVelocityScale,
+      effectiveZoomScale: effectiveZoomScale, zoomScaleSources: zoomScaleSources,
       overflowPerks: overflowPerks, baseMagazineRamps: baseMagazineRamps,
       magMultSources: magMultSources, magBaseCap: magBaseCap
     };
@@ -3105,20 +3114,27 @@
     }
     return null;
   }
+  function displayStatVal(res, x) {
+    if (x.name === '变焦' && res && res.effectiveZoomScale && res.effectiveZoomScale !== 1) {
+      return Number((x.value * res.effectiveZoomScale).toFixed(1));
+    }
+    return x.value;
+  }
   function statValueHtml(i, res, x) {
     var conv = statConv(i, res, x);
     return (conv ? (conv.svg || '') + '<span class="conv"' + (conv.title ? ' title="' + esc(conv.title) + '"' : '') + '>' +
-      conv.text + '</span><span class="sep">/</span>' : '') + x.value;
+      conv.text + '</span><span class="sep">/</span>' : '') + displayStatVal(res, x);
   }
   function statsPanel(i, res, ghost) {
     var bars = res.rows.filter(function (x) { return !x.numeric; });
     var nums = res.rows.filter(function (x) { return x.numeric; });
     var o = ['<div class="stats-list">'];
     bars.forEach(function (x) {
-      var fill = Math.max(0, Math.min(100, x.value));
+      var val = displayStatVal(res, x);
+      var fill = Math.max(0, Math.min(100, val));
       var extra = '', d = '';
       if (ghost && ghost.byStat[x.s]) {
-        var gv = ghost.byStat[x.s].value, diff = gv - x.value;
+        var gv = displayStatVal(ghost, ghost.byStat[x.s]), diff = Number((gv - val).toFixed(1));
         if (diff > 0) { extra = '<i class="s-ghost" style="width:' + Math.min(100, gv) + '%"></i>'; }
         if (diff < 0) { extra = '<i class="g-neg" style="left:' + gv + '%;width:' + (-diff) + '%"></i>'; }
         if (diff) { d = '<span class="d' + (diff > 0 ? '' : ' dn') + '">' + (diff > 0 ? '+' : '−') + Math.abs(diff) + '</span>'; }
@@ -3131,14 +3147,14 @@
     if (nums.length) {
       o.push('<div class="special-stats">');
       nums.forEach(function (x) {
-        var d = '';
+        var val = displayStatVal(res, x), d = '';
         if (ghost && ghost.byStat[x.s]) {
-          var diff = ghost.byStat[x.s].value - x.value;
+          var diff = Number((displayStatVal(ghost, ghost.byStat[x.s]) - val).toFixed(1));
           if (diff) { d = '<span class="d' + (diff > 0 ? '' : ' dn') + '">' + (diff > 0 ? '+' : '−') + Math.abs(diff) + '</span>'; }
         }
         o.push('<div class="special-stat-item" data-act="statrow" data-s="' + x.s + '"><span class="special-stat-label">' +
-          esc(x.name) + '</span><span class="special-stat-value">' + (x.name === '后坐方向' ? recoilSvg(x.value) : '') +
-          x.value + d + '</span></div>');
+          esc(x.name) + '</span><span class="special-stat-value">' + (x.name === '后坐方向' ? recoilSvg(val) : '') +
+          val + d + '</span></div>');
       });
       o.push('</div>');
     }
@@ -3439,7 +3455,14 @@
       if (v !== prev) { out.push('<tr><td>' + esc(plugName(p)) + '</td><td class="n">' + (v > prev ? '+' : '') + (v - prev) + '</td></tr>'); }
       prev = v;
     });
-    out.push('<tr class="sum"><td>合计</td><td class="n">' + prev + '</td></tr>');
+    if (x.name === '变焦' && res.zoomScaleSources && res.zoomScaleSources.length) {
+      res.zoomScaleSources.forEach(function (src) {
+        out.push('<tr><td>' + esc(src[0]) + '</td><td class="n">×' + src[1].toFixed(2) + '</td></tr>');
+      });
+    }
+    var shownTotal = x.name === '变焦' && res.effectiveZoomScale && res.effectiveZoomScale !== 1
+      ? Number((prev * res.effectiveZoomScale).toFixed(1)) : prev;
+    out.push('<tr class="sum"><td>合计</td><td class="n">' + shownTotal + '</td></tr>');
     var vEff = effStatVal(res, x);
     if (x.name === '射程') {
       var m = rangeMeters(typeName(WR[i]), frameOf(WR[i])[0], vEff, {

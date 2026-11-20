@@ -276,6 +276,34 @@ test('weapons: perk1/perk2 swap trait columns while col1-col5 stay fixed', () =>
   assert.deepEqual(q('col1:枪管A col2:弹匣B col5:加速突击'), [0, 1, 2], 'col1/col2/col5 固定匹配对应栏')
 })
 
+test('weapons: Spread Shot HC and Heavy Burst Shotgun use 1.2x ADS scalar and effectiveZoomScale scales Zoom display', () => {
+  const appText = fs.readFileSync(path.join(site, 'weapons/app.js'), 'utf8')
+  const grabObj = (name) => {
+    const m = new RegExp('var ' + name + ' = (\\{[\\s\\S]*?\\n  \\});').exec(appText)
+    assert.notEqual(m, null, 'app.js 里找不到 ' + name)
+    return 'var ' + name + ' = ' + m[1] + ';\n'
+  }
+  const deps = grabObj('TYPE_EN') + grabObj('FRAME_EN') + grabObj('RANGE') + grabObj('ZOOM_OVERRIDES') +
+    grabObj('EXOTIC_RANGES') + grabObj('NO_FALLOFF_FRAMES') + grabObj('RANGE_FRAME_ALIAS') +
+    'var PVP = null;\n'
+  const { rangeMeters, displayStatVal } = weaponFns(
+    ['frameKey', 'rangeCurve', 'rangeMeters', 'displayStatVal'],
+    deps
+  )
+  const spread = rangeMeters('手炮', '散射', 50, { intrinsicHash: 2427219599 })
+  assert.equal(spread.zoom, 1.2, '散射手炮应使用 1.2x 开镜倍率')
+  assert.ok(Math.abs(spread.ads - spread.hip * 1.2) < 1e-6)
+  const hbShotgun = rangeMeters('霰弹枪', '重型点射', 50, { intrinsicHash: 3923638944 })
+  assert.equal(hbShotgun.zoom, 1.2, '重型点射霰弹应使用 1.2x 开镜倍率')
+  assert.ok(Math.abs(hbShotgun.ads - hbShotgun.hip * 1.2) < 1e-6)
+  const lfr = rangeMeters('线性融合步枪', '精密框架', 50)
+  assert.equal(lfr.zoom, 2.5, '线性融合步枪保持 2.5x')
+  const sniper = rangeMeters('狙击步枪', '适配框架', 50)
+  assert.equal(sniper.zoom, 4.5, '狙击步枪保持 4.5x')
+  assert.equal(displayStatVal({ effectiveZoomScale: 1.1 }, { name: '变焦', value: 14 }), 15.4)
+  assert.equal(displayStatVal({ effectiveZoomScale: 1.1 }, { name: '射程', value: 60 }), 60)
+})
+
 test('weapons: armor sets support pinning and split-view rail rendering', () => {
   const deps = 'function has(list, x) { return list.indexOf(x) !== -1; }\n' +
     'function esc(s) { return String(s); }\n' +
