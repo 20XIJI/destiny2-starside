@@ -20,7 +20,26 @@
 
   var $ = function (id) { return document.getElementById(id) }
   var LV = { 1: '编辑', 2: '审核员', 3: '管理员', 4: '超级管理员', 5: '本机' }
-  var S = { me: null, docs: [], edits: [], subs: [], more: false }
+  var S = { me: null, docs: [], edits: [], subs: [], more: false, histLoaded: false, histMore: false }
+
+  // 仅解码 JWT exp 提前判过期，不验签：距过期不足 60 秒时先换新再打接口，
+  // 省掉「发请求 → 云函数回 forbidden → 换令牌 → 重试」一整趟往返。
+  function tokenExpired (t) {
+    if (!t || typeof t !== 'string') return false
+    var parts = t.split('.')
+    if (parts.length !== 3) return false
+    try {
+      var b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
+      while (b64.length % 4) b64 += '='
+      var json = typeof atob === 'function'
+        ? atob(b64)
+        : (typeof Buffer !== 'undefined' ? Buffer.from(b64, 'base64').toString('utf8') : '')
+      var payload = JSON.parse(json)
+      return typeof payload.exp === 'number' && payload.exp * 1000 <= Date.now() + 60e3
+    } catch (_) {
+      return false
+    }
+  }
 
   function auth (path, body) {
     return fetch(AUTH + path, {
@@ -62,9 +81,13 @@
 
   // 每个管理动作带 Bearer。重试只放一次：刷新之后仍被拒就是真的过期了。
   function call (a, body, retry) {
+    var t = tok()
+    if (!retry && tokenExpired(t) && localStorage.getItem('sa_rt')) {
+      return refresh().then(function () { return call(a, body, 1) })
+    }
     return fetch(API, {
       method: 'POST',
-      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + tok() },
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + t },
       body: JSON.stringify(Object.assign({ a: a }, body || {}))
     }).then(function (r) { return r.json() }).then(function (j) {
       // 只有令牌那一类才值得换一张再打。权限不足回的是另一个词——两件事共用
@@ -281,9 +304,54 @@
   // 源稿的形状（头部怎么读、合集怎么切、缺了哪几项、_id 怎么拼）只有 builds/source.js
   // 一份定义，与填表页、云函数同一份。现读，不在模块顶层捕获，理由同 D()。
   function B () { return window.starsideSource }
-  function line (md, key) { return B().head(md)[key] || '' }
-  function nameOf (md) { return B().head(md)['#'] || '' }
   var MIXED = '多职业'
+  var EMPTY_META = { name: '', by: '', cls: '', branch: '', scene: '', tier: '', tag: '', cores: [], set: 0, miss: [], note: 0 }
+  var BODY_CACHE = {}       // 'doc:<id>' | 'sub:<id>' -> { md, hash }
+  var bodyInflight = {}
+
+  function bodyKey (b) { return b.doc ? 'doc:' + b.id : b.sub ? 'sub:' + b.sub._id : '' }
+  function cachedBody (b) {
+    var k = bodyKey(b)
+    return k && BODY_CACHE[k] ? BODY_CACHE[k] : null
+  }
+  function mdOf (b) {
+    var c = cachedBody(b)
+    return c ? c.md : (b.md || '')
+  }
+  function hasBody (b) {
+    if (cachedBody(b)) return true
+    if (b.doc) return Object.prototype.hasOwnProperty.call(b.doc, 'md')
+    return !!(b.sub && Object.prototype.hasOwnProperty.call(b.sub, 'md'))
+  }
+  function metaOf (b) {
+    var c = cachedBody(b)
+    if (c) return B().summary(c.md)
+    if (b.meta) return b.meta
+    if (b.md) return B().summary(b.md)
+    return EMPTY_META
+  }
+  function kindOf (b) {
+    if (hasBody(b)) return slotOf(mdOf(b))
+    return metaOf(b).set ? 'set' : 'single'
+  }
+  function loadBody (b) {
+    var k = bodyKey(b)
+    if (!k) return Promise.resolve({ md: b.md || '', hash: '' })
+    if (BODY_CACHE[k]) return Promise.resolve(BODY_CACHE[k])
+    if (hasBody(b)) return Promise.resolve({ md: b.md || '', hash: (b.doc && b.doc.hash) || (b.sub && b.sub.hash) || '' })
+    if (bodyInflight[k]) return bodyInflight[k]
+    var req = b.doc ? { kind: 'doc', id: b.id } : { kind: 'sub', id: b.sub._id }
+    bodyInflight[k] = call('body', req).then(function (r) {
+      var val = { md: r.md || '', hash: r.hash || '' }
+      BODY_CACHE[k] = val
+      delete bodyInflight[k]
+      return val
+    }, function (e) {
+      delete bodyInflight[k]
+      throw e
+    })
+    return bodyInflight[k]
+  }
 
   /* 线上改过、还没落盘：库里这一版的 hash 与 sync.py 记下的「上次落盘那一版」不等。
      那一套因此落进「通过」档而不是「完成」——那一档答的就是「这一轮要发什么」。
@@ -299,6 +367,16 @@
      编辑；拿它当底稿灌进填表页，按一下保存就把陈稿盖回库里，而界面上一切正常。 */
   function bodyOf (d) {
     return Object.prototype.hasOwnProperty.call(d, 'md') ? (d.md || '') : ''
+  }
+  function docMetaOf (d) {
+    if (d && d.meta) return d.meta
+    if (d && Object.prototype.hasOwnProperty.call(d, 'md')) return B().summary(d.md || '')
+    return null
+  }
+  function subMetaOf (s) {
+    if (s && s.meta) return s.meta
+    if (s && s.md) return B().summary(s.md)
+    return null
   }
 
   // 投稿与已上站的源稿并成一张表。已通过的投稿带着 season/slug，盘上那一篇的
@@ -340,7 +418,7 @@
       var id = s.season && s.slug ? B().id(s.season, s.slug) : ''
       // **删除申请自成一行**，不认领那一套：站上那一篇还在（要等本机 sync 才真的删）。
       if (s.drop) {
-        out.push({ sub: s, id: id, md: s.md, at: s.at,
+        out.push({ sub: s, id: id, md: s.md || '', meta: subMetaOf(s), at: s.at,
           state: ok === 0 ? 'wait' : ok === -1 ? 'no' : 'dropping' })
         return
       }
@@ -354,16 +432,18 @@
       // **正文上了站就以库里那份为准。**subs.md 是投稿当时冻住的那一份，而 bsave
       // 改的是 docs.md，从不回写投稿记录——只认 s.md 的话，线上改完再看还是改之前
       // 那一套，而且下一次保存会把这份陈稿原样盖回去。
-      out.push({ sub: s, id: ok === 1 ? id : '', doc: d, md: d ? bodyOf(d) : s.md,
+      out.push({ sub: s, id: ok === 1 ? id : '', doc: d,
+        md: d ? bodyOf(d) : (s.md || ''),
+        meta: d ? docMetaOf(d) : subMetaOf(s),
         at: d && d.at > (s.at || '') ? d.at : s.at,
         dirty: dirtyOf(d),
         state: ok === 0 ? 'wait' : ok === -1 ? 'no' : d ? 'live' : 'pass' })
     })
-    // 本机直接写的源稿没有对应投稿，照样要管。docs 那个动作给 builds/ 前缀的记录
-    // 带上了 md，所以它们在列表上也有名字、职业与强度，不再只剩一个 slug。
+    // 本机直接写的源稿没有对应投稿，照样要管。boot 那个动作给 builds/ 前缀的记录
+    // 带上了轻摘要 meta，列表上无需全文即有名字、职业与强度。
     Object.keys(live).forEach(function (id) {
       if (!seen[id] && !(id in going)) {
-        out.push({ sub: null, id: id, doc: live[id], md: bodyOf(live[id]), at: live[id].at,
+        out.push({ sub: null, id: id, doc: live[id], md: bodyOf(live[id]), meta: docMetaOf(live[id]), at: live[id].at,
           dirty: dirtyOf(live[id]), state: 'live' })
       }
     })
@@ -403,21 +483,9 @@
     { classes: [], scenes: [], tiers: [], sceneTags: {}, branch: {}, season: '' },
     window.starsideBuilds || {})
 
-  // 职业那一行写成「猎人#主键」，分组只按职业名。
-  function clsName (md) { return (line(md, '职业') || '').split('#')[0].trim() }
-  function clsOf (b) {
-    if (!B().isSet(b.md)) return clsName(b.md)
-    // 合集的职业由成员现算：一个角色的一组配装职业都一样，一队人各穿一套的
-    // 那种自成一格，与站上索引页那条规矩同源。
-    var all = []
-    B().sets(b.md).forEach(function (m) {
-      var c = clsName(m)
-      if (c && all.indexOf(c) < 0) all.push(c)
-    })
-    return all.length === 1 ? all[0] : all.length ? MIXED : ''
-  }
-  function scenesOf (b) { return (line(b.md, '场景') || '').split('、').filter(Boolean) }
-  function byOf (md) { return line(md, '推荐人').split('|')[0].trim() }
+  function clsOf (b) { return metaOf(b).cls }
+  function scenesOf (b) { return (metaOf(b).scene || '').split('、').filter(Boolean) }
+  function byOf (b) { return (metaOf(b).by || '').split('|')[0].trim() }
   function idOf (b) { return b.sub ? b.sub._id : b.id }
 
   /* 审完一条之后摊开哪一条：按审之前那份队列的次序，从这一条往后找第一条仍待审
@@ -491,9 +559,8 @@
   function findQ () { return V.q.trim().toLowerCase() }
   function inFind (b, q) {
     if (!q) return true
-    var md = b.md || ''
-    var hay = [nameOf(md), line(md, '推荐人'), b.id]
-      .concat(md.match(/^核心：.*$/gm) || []).join('\n').toLowerCase()
+    var m = metaOf(b)
+    var hay = [m.name, m.by, b.id].concat(m.cores || []).join('\n').toLowerCase()
     return hay.indexOf(q) >= 0
   }
 
@@ -504,7 +571,7 @@
     return (all || builds()).filter(function (b) {
       return bucket(b) === st && (!V.scene || scenesOf(b).indexOf(V.scene) >= 0)
         && (!V.cls || clsOf(b) === V.cls) && inFind(b, q)
-        && (!V.hideAegis || st !== 'live' || !/^Aegis\b/i.test(byOf(b.md)))
+        && (!V.hideAegis || st !== 'live' || !/^Aegis\b/i.test(byOf(b)))
     }).sort(function (a, b) {
       var x = a.at || ''
       var y = b.at || ''
@@ -582,7 +649,7 @@
   function mayLeave (sel) {
     if (!sel || sel.charAt(0) !== 'b' || !formDirty()) return true
     var it = lookup(sel)
-    if (!it || it.b.md === formFed) return true
+    if (!it || (hasBody(it.b) && mdOf(it.b) === formFed)) return true
     return window.confirm('当前配装有未保存的修改，切换后将丢失。仍要继续？')
   }
   function open (sel) {
@@ -685,16 +752,16 @@
   }
 
   function flagsOf (b) {
-    var md = b.md || ''
+    var m = metaOf(b)
     return [
       b.sub && b.sub.drop && h('span', { class: 'x-flag warn', text: '移除申请' }),
       b.dirty && h('span', { class: 'x-flag', text: '线上已修改' }),
-      B().isSet(md) && h('span', { class: 'x-flag', text: '合集，' + B().sets(md).length + ' 套' }),
+      m.set && h('span', { class: 'x-flag', text: '合集，' + m.set + ' 套' }),
       b.sub && b.sub.updates && h('span', { class: 'x-flag', text: '更新已上线配装' }),
-      /\n## 审核意见[ \t]*\n\s*\S/.test(md) && h('span', { class: 'x-flag', text: '含审核意见' })
+      m.note && h('span', { class: 'x-flag', text: '含审核意见' })
     ].filter(Boolean)
   }
-  function titleOf (b) { return (b.md && nameOf(b.md)) || (b.id ? b.id.split('/').pop() : '未命名') }
+  function titleOf (b) { return metaOf(b).name || (b.id ? b.id.split('/').pop() : '未命名') }
 
   function queueView () {
     var box = $('views')
@@ -742,18 +809,18 @@
         h('div', { class: 'th' }, ['名称', '职业', '分支', '场景', '强度', '推荐人',
           V.status === 'wait' ? '等待时长' : '更新日期'].map(function (t) { return h('span', { text: t }) })),
         bs.map(function (b) {
-          var md = b.md || ''
-          var slug = VOCAB.branch[line(md, '分支')]
-          var miss = md ? B().lacking(md) : []
+          var m = metaOf(b)
+          var slug = VOCAB.branch[m.branch]
+          var miss = m.miss || []
           var who = handOf(b)
           return h('button', { type: 'button', class: 'tr' + (slug ? ' br-' + slug : ''),
             title: who ? '最后由 ' + who + ' 修改' : null, onclick: function () { open('b:' + idOf(b)) } },
           h('span', { class: 'name' }, h('b', { text: titleOf(b) }), flagsOf(b)),
-          h('span', { text: clsOf(b) || '未填写' }),
-          h('span', { class: 'x-dim', text: line(md, '分支') }),
-          h('span', { class: 'x-dim', text: line(md, '场景') || '未填写' }),
-          h('span', { class: 'x-dim', text: line(md, '强度') }),
-          h('span', { class: 'x-dim', text: byOf(md) || '未填写' }),
+          h('span', { text: m.cls || '未填写' }),
+          h('span', { class: 'x-dim', text: m.branch }),
+          h('span', { class: 'x-dim', text: m.scene || '未填写' }),
+          h('span', { class: 'x-dim', text: m.tier }),
+          h('span', { class: 'x-dim', text: byOf(b) || '未填写' }),
           h('span', { class: 'at', text: V.status === 'wait' ? waited(b.at) : when(b.at).slice(5, 10) }),
           miss.length ? h('span', { class: 'sub', text: '缺少：' + miss.join('、') }) : null)
         })))
@@ -847,16 +914,16 @@
     if (bs.length) {
       list.appendChild(h('p', { class: 'q-sec' }, h('span', { text: '配装' }), h('span', { text: String(bs.length) })))
       bs.forEach(function (b) {
-        var md = b.md || ''
-        var slug = VOCAB.branch[line(md, '分支')]
+        var m = metaOf(b)
+        var slug = VOCAB.branch[m.branch]
         var sel = 'b:' + idOf(b)
-        var miss = md ? B().lacking(md) : []
+        var miss = m.miss || []
         list.appendChild(h('button', { type: 'button', class: 'item' + (slug ? ' br-' + slug : '') + (V.sel === sel ? ' on' : ''),
           onclick: function () { open(sel) } },
         h('span', { class: 'l1' }, h('b', { text: titleOf(b) }),
           h('span', { text: V.status === 'wait' ? waited(b.at) : when(b.at).slice(5, 10) })),
         h('span', { class: 'l2' }, b.sub && b.sub.drop ? h('i', { text: '移除申请' }) : null,
-          h('span', { text: clsOf(b) }), h('span', { text: line(md, '分支') }), h('span', { text: byOf(md) || '推荐人未填写' })),
+          h('span', { text: m.cls }), h('span', { text: m.branch }), h('span', { text: byOf(b) || '推荐人未填写' })),
         miss.length ? h('span', { class: 'l3', text: '缺少 ' + miss.length + ' 项' }) : null))
       })
     }
@@ -890,19 +957,21 @@
 
   // ── 配装详情 ───────────────────────────────────────────────────────
   function buildDetail (b) {
-    var s = b.sub || { _id: b.id, md: b.md }
-    var md = b.md || ''
-    $('detail').style.setProperty('--dw', FORM_WRAP[slotOf(md)] + 'px')
+    var ready = hasBody(b)
+    var md = ready ? mdOf(b) : ''
+    var s = b.sub || { _id: b.id, md: md }
+    var m = metaOf(b)
+    $('detail').style.setProperty('--dw', FORM_WRAP[kindOf(b)] + 'px')
     $('pane').hidden = true
     $('pane').textContent = ''
     $('stage').hidden = false
     var st = bucket(b)
-    var facts = [['职业', clsOf(b)], ['分支', line(md, '分支')], ['场景', line(md, '场景')],
-      ['标签', line(md, '标签') || line(md, '定位')], ['强度', line(md, '强度')],
-      ['核心', line(md, '核心')], ['推荐人', byOf(md) || '未填写']].filter(function (f) { return f[1] })
+    var facts = [['职业', m.cls], ['分支', m.branch], ['场景', m.scene],
+      ['标签', m.tag], ['强度', m.tier],
+      ['核心', (m.cores && m.cores[0]) || ''], ['推荐人', byOf(b) || '未填写']].filter(function (f) { return f[1] })
     var edBy = handOf(b)
     var okBy = (b.sub && b.sub.okBy) || ''
-    var miss = md ? B().lacking(md) : []
+    var miss = m.miss || []
     var ops = detailHead([
       h('p', { class: 'crumb' }, h('span', { class: 'x-st ' + st, text: b.sub && b.sub.drop ? '移除申请' : STATE[st] }),
         b.state === 'wait' ? '，已等待 ' + waited(b.at) : ''),
@@ -911,31 +980,47 @@
       h('p', { class: 'meta' }, h('span', { text: [edBy ? edBy + ' 修改过' : '', okBy ? okBy + ' 审核' : '',
         b.at ? '最后更新于 ' + when(b.at).slice(5) : ''].filter(Boolean).join('，') || '无经手记录' }), flagsOf(b)),
       miss.length ? h('p', { class: 'x-note', style: 'margin-top:6px', text: '缺少：' + miss.join('、') }) : null
-    ], buildActs(b, s))
+    ], buildActs(b, s, !ready))
+    var foot = $('stage-foot')
+    foot.textContent = ''
+    if (!ready) {
+      var reqSel = 'b:' + idOf(b)
+      foot.appendChild(h('p', { class: 'x-dim', text: '正在载入配装正文…' }))
+      loadBody(b).then(function () {
+        if (V.sel === reqSel && V.view === 'queue') buildDetail(b)
+      }, function (err) {
+        if (V.sel !== reqSel || V.view !== 'queue') return
+        foot.textContent = ''
+        foot.appendChild(h('div', { class: 'x-alert', role: 'alert' },
+          h('p', null, h('b', { text: '载入正文失败。' }), ' ' + say(err)),
+          btn('重试', '', { onclick: function () { buildDetail(b) } })))
+      })
+      return
+    }
     // 载进来的是**可以改的填表页**，不是一张只读的图。装备写错、描述要润色，
     // 审的人改完再通过比打回去让人重投快得多。**不替他按预览**——预览态下
     // #sheet.preview 把输入框与格子全设成 pointer-events: none，整页点不动；
     // 那一页右下角自己带着「预览配装」，想看成品点它即可。
     feed(md, function (err) { tip(ops, '载入失败：' + err.message, 1) })
-    var foot = $('stage-foot')
-    foot.textContent = ''
     foot.appendChild(h('details', null, h('summary', { text: '原文' }), h('pre', { text: md })))
   }
 
   // 改后的那一份从填表页现读；读不出来（脚本没载好）就退回原文，不交空的。
   function current (b) {
-    var md = formOf(slotOf(b.md))
-    return md === null ? b.md : md
+    var base = mdOf(b)
+    var md = formOf(kindOf(b))
+    return md === null ? base : md
   }
 
   /* 动作按这一套所在的档给。通过与驳回都退得回待审：两档的状态都只活在库里，
      源稿要等 sync.py 拉下来才落盘；上线之后要撤只有「申请移除」，后端也照这条挡。 */
-  function buildActs (b, s) {
+  function buildActs (b, s, loading) {
     var out = []
-    var shot = shotBtn(function () { return slotOf(b.md) })
+    var shot = shotBtn(function () { return kindOf(b) })
     if (S.me.lv < 2) {
       /* lv 1 照样载得进可编辑的填表页，而投稿按钮又被 feed() 摘掉了——不说这一句，
          人在表里改半天，找不到任何按钮，也不知道为什么。 */
+      if (loading) shot.disabled = true
       return [shot, h('span', { class: 'x-dim', style: 'font-size:12px', text: '只读：保存、通过与驳回需要审核员级别。' })]
     }
     var busy = function (on) { out.forEach(function (x) { if (x.tagName === 'BUTTON') x.disabled = on }) }
@@ -963,6 +1048,12 @@
         }).join('')
       })
     }
+    var subHashOf = function () {
+      var c = cachedBody(b)
+      if (c && c.hash) return Promise.resolve(c.hash)
+      if (b.sub && b.sub.hash) return Promise.resolve(b.sub.hash)
+      return sha1Hex(mdOf(b))
+    }
     var keep = btn('保存', '')
     keep.onclick = function () {
       busy(true)
@@ -975,14 +1066,18 @@
          一句「保存失败」会让人把已经进库的那一份再存一次。 */
       Promise.resolve().then(function () {
         if (b.state === 'live') {
-          if (b.doc && b.doc.hash) payload.baseHash = b.doc.hash
+          var c = cachedBody(b)
+          var bh = (c && c.hash) || (b.doc && b.doc.hash)
+          if (bh) payload.baseHash = bh
           return
         }
-        return sha1Hex(s.md).then(function (h) { if (h) payload.baseHash = h })
+        return subHashOf().then(function (h) { if (h) payload.baseHash = h })
       }).then(function () {
         return call(act, payload)
-      }).then(function () {
-        return load().then(function () {
+      }).then(function (saved) {
+        var key = bodyKey(b)
+        var seed = key && saved && saved.hash ? { key: key, md: md, hash: saved.hash } : null
+        return load(seed).then(function () {
           /* **基线要对。**不对的话，接下来那次重画拿着新正文再走一遍 feed()，它既与
              fed 不等、又算脏，会弹一个莫名其妙的确认。 */
           formSynced(md)
@@ -1003,7 +1098,7 @@
           body.slug = defaultSlug(body.md)
         }
         var order = queueIds()
-        sha1Hex(s.md).then(function (h) {
+        subHashOf().then(function (h) {
           if (h) body.baseHash = h
           return call('smark', body)
         }).then(load).then(function () {
@@ -1047,6 +1142,7 @@
         call('sdrop', { id: s._id }).then(load).then(function () { advance('b:' + idOf(b), order) }, fail('删除'))
       } }))
     }
+    if (loading) busy(true)
     return out
   }
   function opsOf () { return $('stage-head').querySelector('.ops') || $('stage-head') }
@@ -1347,8 +1443,52 @@
   }
   function verdict (e) { return h('span', { class: 'x-st ' + (e.ok === 1 ? 'pass' : 'no'), text: e.ok === 1 ? '通过' : '驳回' }) }
 
+  var histBusy = null
+  function ensureHist () {
+    if (S.histLoaded) return Promise.resolve()
+    if (histBusy) return histBusy
+    histBusy = call('edits', { closed: 1 }).then(function (r) {
+      var seen = {}
+      S.edits.forEach(function (e) { seen[e._id] = 1 })
+      ;(r.edits || []).forEach(function (e) {
+        e.ok = Number(e.ok)
+        if (!seen[e._id]) { seen[e._id] = 1; S.edits.push(e) }
+      })
+      S.histMore = !!r.more
+      S.histLoaded = true
+      histBusy = null
+    }, function (e) {
+      histBusy = null
+      throw e
+    })
+    return histBusy
+  }
+
   function histView () {
     var box = $('views')
+    if (!S.histLoaded) {
+      box.textContent = ''
+      box.appendChild(h('div', { class: 'sect' }, h('h1', { text: '记录' })))
+      var rows = []
+      for (var i = 0; i < 6; i++) {
+        rows.push(h('div', { class: 'tr', style: 'cursor:default' },
+          h('i', { class: 'sk', style: 'height:12px;width:32px' }),
+          h('i', { class: 'sk', style: 'height:12px;width:' + (42 + (i * 11 % 35)) + '%' }),
+          h('i', { class: 'sk', style: 'height:10px;width:65%' }),
+          h('i', { class: 'sk', style: 'height:10px;width:44px;justify-self:end' })))
+      }
+      box.appendChild(h('div', { class: 'grid hist' }, rows))
+      ensureHist().then(function () {
+        if (V.view === 'hist') render()
+      }, function (e) {
+        if (V.view !== 'hist') return
+        box.textContent = ''
+        box.appendChild(h('div', { class: 'x-alert', role: 'alert' },
+          h('p', null, h('b', { text: '读取改动记录失败。' }), ' ' + say(e)),
+          btn('重试', '', { onclick: function () { histView() } })))
+      })
+      return
+    }
     box.textContent = ''
     var all = closed()
     var list = histList()
@@ -1370,7 +1510,7 @@
       select('人员', V.hwho, [['', '全部人员']].concat(who.map(function (n) { return [n, n] })),
         function (v) { V.hwho = v; render() }),
       searchBox('hq', '搜索改动内容', render)))
-    if (S.more) box.appendChild(h('p', { class: 'more', text: '已达单次读取上限，部分记录未列出。' }))
+    if (S.more || S.histMore) box.appendChild(h('p', { class: 'more', text: '已达单次读取上限，部分记录未列出。' }))
     if (!list.length) {
       box.appendChild(h('div', { class: 'x-empty' }, h('h3', { text: all.length ? '没有符合条件的记录' : '暂无记录' }),
         h('p', { text: all.length ? '可调整筛选条件或清空搜索。' : '资料页改动审核后记录在此。' })))
@@ -1500,14 +1640,15 @@
   var renaming = ''
   function edsView (fresh) {
     var box = $('views')
-    if (!edsCache || fresh) {
+    if (!edsCache || fresh || !S.histLoaded) {
       if (!edsCache) {
         box.textContent = ''
         box.appendChild(h('div', { class: 'eds' }, h('main', null, h('i', { class: 'sk', style: 'height:22px;width:120px' }),
           h('div', { class: 'people' }, [0, 1, 2, 3].map(function () { return h('i', { class: 'sk', style: 'height:40px;margin:16px 0' }) })))))
       }
-      return call('eds', { op: 'list' }).then(function (r) {
-        edsCache = r.eds
+      var jobs = [!edsCache || fresh ? call('eds', { op: 'list' }) : Promise.resolve({ eds: edsCache }), ensureHist()]
+      return Promise.all(jobs).then(function (r) {
+        edsCache = r[0].eds
         if (V.view === 'eds') edsView()
       }, function (e) {
         box.textContent = ''
@@ -1622,16 +1763,26 @@
   }
 
   // ── 装载 ───────────────────────────────────────────────────────────
-  function load () {
-    return Promise.all([call('docs'), call('edits'), call('subs')]).then(function (r) {
-      S.docs = r[0].docs
-      S.edits = r[1].edits.map(function (e) { e.ok = Number(e.ok); return e })
-      S.subs = r[2].subs
-      // 后端那几条查询没有 orderBy，触到 limit 就静默截断。它报一位，这里显形。
-      S.more = !!(r[0].more || r[1].more || r[2].more)
-      PEND = {}
-      judgeErr = {}
-      badges()
+  function applyBoot (r, seed) {
+    S.docs = r.docs || []
+    S.edits = (r.edits || []).map(function (e) { e.ok = Number(e.ok); return e })
+    S.subs = r.subs || []
+    // 后端那几条查询没有 orderBy，触到 limit 就静默截断。它报一位，这里显形。
+    S.more = !!r.more
+    S.histLoaded = false
+    S.histMore = false
+    histBusy = null
+    PEND = {}
+    judgeErr = {}
+    BODY_CACHE = {}
+    bodyInflight = {}
+    if (seed && seed.key) BODY_CACHE[seed.key] = { md: seed.md, hash: seed.hash }
+    badges()
+  }
+
+  function load (seed) {
+    return call('boot', { lite: 1 }).then(function (r) {
+      applyBoot(r, seed)
     })
   }
 
@@ -1661,10 +1812,15 @@
   }
 
   function boot () {
-    return call('me').then(function (me) {
+    return call('boot').then(function (r) {
+      var me = r.me
       S.me = me
       if (!me.lv) {
-        // 登录了但不在名单里：同一个版面，右边换成 UID。
+        // 登录了但不在名单里：收掉骨架，回到门扉卡片并换成 UID。
+        $('top').hidden = true
+        $('views').hidden = true
+        $('ib').hidden = true
+        $('gate').hidden = false
         document.documentElement.classList.remove('signed')
         $('login').hidden = true
         $('stranger').hidden = false
@@ -1688,20 +1844,19 @@
       }
       // 编辑者那一屏只给超级管理员：云函数的 LEVEL.eds 是同一个门槛，不靠前端藏。
       document.querySelector('[data-view="eds"]').hidden = me.lv < 4
-      skeleton()
       // 链接指的那一条（?b= 配装、?p= 资料页）还在就直接开在它上面，找不到就退回
       // 列表，不报错——收到链接的人多半只是晚来了一步。**起手那一格必须是列表**：
       // 上面另压一格详情，退回来才有列表接着。
       var qs = new URLSearchParams(location.search)
       var want = qs.get('b') ? 'b:' + qs.get('b') : qs.get('p') ? 'p:' + qs.get('p') : null
       history.replaceState(stateOf(), '', urlOf())
-      return load().then(function () {
-        if (want && lookup(want)) {
-          V.sel = want
-          history.pushState(stateOf(), '', urlOf())
-        }
-        render()
-      })
+      applyBoot(r)
+      if (want && lookup(want)) {
+        V.sel = want
+        history.pushState(stateOf(), '', urlOf())
+      }
+      render()
+      return null
     })
   }
 
@@ -1806,9 +1961,16 @@
     // 否则登录页被 CSS 藏着，人看到的是一片空白。断网或后端报别的错时令牌留着，把原因
     // 摆出来：清掉令牌只会让人为一次网络抖动重新输密码。
     if (tok()) {
+      // 有本地令牌时先亮出顶栏与骨架，消除等 boot 返回前的整屏空白。
+      $('top').hidden = false
+      skeleton()
       boot().catch(function (e) {
         if (e.message === 'forbidden') {
           tok(null)
+          $('top').hidden = true
+          $('views').hidden = true
+          $('ib').hidden = true
+          $('gate').hidden = false
           document.documentElement.classList.remove('signed')
           return
         }
@@ -1836,7 +1998,7 @@
   // 并继续通过 starsideShared 导出。
   var api = { lint: lint,
               builds: builds, when: when, refresh: refresh, start: start,
-              nextWait: nextWait, changed: changed }
+              nextWait: nextWait, changed: changed, tokenExpired: tokenExpired }
   if (typeof module !== 'undefined' && module.exports) module.exports = api
   if (typeof document !== 'undefined') {
     window.starsideAdmin = api

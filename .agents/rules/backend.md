@@ -31,7 +31,7 @@ runtime 比整站首屏还大。
 | 读计数 | `GET ?a=stats` | 首页页脚那句「今日 X 位访客 · 累计 Y」 |
 | 点赞 | `POST {a:"like",id,actor,seq,before,on}` / `GET ?a=likes` | `likes` 的聚合数；`counters` 的浏览器状态 |
 | 投稿 | `POST {a:"sub",md}` | `subs`，`ok` 三档：0 待审、1 通过、-1 驳回 |
-| 编辑台读写 | `POST {a:"docs"/"chg"/"pend"/"edits"/"emark"/"eds"…}` | 带 Bearer，见《在线编辑台》 |
+| 编辑台读写 | `POST {a:"boot"/"body"/"docs"/"chg"/"pend"/"edits"/"emark"/"eds"…}` | 带 Bearer，见《在线编辑台》 |
 | 本机对账 | `POST {a:"pull"/"push"/"list"/"mark"/"landed",k}`，记录那一路 `rpull`/`rpush`/`rdrop`/`rlanded` | 要 `ADMIN_TOKEN` |
 
 本机那几个动作要 `k`，与云函数的 `ADMIN_TOKEN` 环境变量比对。
@@ -313,10 +313,7 @@ editors  { _id: uid, name, lv, at }
 三枚按钮都按 `state` 分路——把 `live` 换成 `pass`，保存就写去 `subs`（改动落不了盘）、
 申请移除整个消失、撤回换成一枚后端必拒的死按钮。并档由 `bucket()` 一处做。
 
-`docs` 列表按前缀分两半投影：配装那些带 `md`，资料页那些不带。投影是为资料页
-存在的（38 篇合计 1.5 MB）；配装 35 套合计 65 KB，而编辑台的列表要靠 `md` 读出名字、
-职业、分支、类别与推荐人。35 套里有 20 套是本机直接落盘的，`subs` 里没有对应的
-投稿记录，不带 `md` 的话它们在列表上连名字都只剩一个 slug，场景与职业的筛选也筛不到它们。
+`docs` 与 `subs` 在编辑台首屏由单发 `boot` 一并带回（同一次鉴权、同一云函数实例内并发查库，避免先 `me` 再三并发触发多次冷启动与重复 `/auth/v1/user/me`）；列表阶段只传 `source.js` 的 `summary()` 轻摘要而不下发整篇 `md`，点开某条进入收件箱时再走 `body` 按需取单条正文。改动历史（`edits` 中 `ok != 0`）不随首屏下发，切到「记录」或「编辑者」标签时再走 `edits { closed: 1 }` 按需补齐。前端在发请求前先解码 JWT `exp`，距过期不足 60 秒时先静默刷新，省去一次 `forbidden` 往返；云函数对 `@cloudbase/manager-node`、`eververse.js` 与 `xur.js` 按需 `require`，响应头带 `access-control-max-age: 86400`。`docs` / `subs` / `me` 旧动作保持向后兼容。
 
 一处改动一条记录，不是一份文稿。`blk` 是源稿行号、`cell` 是格号（`-1` 即整块，
 段落、列表项与表格整行都走它；用 `-1` 不用 `null` 是因为那一列要参与 `where` 查询），

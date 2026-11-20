@@ -7,20 +7,18 @@ const zlib = require('zlib')
 const fs = require('fs')
 const path = require('path')
 const tcb = require('@cloudbase/node-sdk')
-// 写静态托管用。凭证取运行时注入的 TENCENTCLOUD_SECRETID/SECRETKEY/SESSIONTOKEN，
-// 函数没绑执行角色、或角色没有托管桶的写权限时，上传当场报错。
-const Manager = require('@cloudbase/manager-node')
 // 源稿方言（切格、着色标记、一段文字能不能原样写进一格）JS 这一侧只有
 // admin/dialect.js 一份定义；这里这个文件是构建复制过去的，不手改（云函数只
 // require 得到自己目录下的东西）。
 const { cellSpans, rowOf, cellSafe, barePipe } = require('./dialect.js')
-// 配装源稿的形状（指纹取哪几项、库里的 _id 怎么拼）只有 builds/source.js 一份，
+// 配装源稿的形状（指纹取哪几项、库里的 _id 怎么拼、列表摘要怎么抽）只有 builds/source.js 一份，
 // 这里是构建复制过去的那一份，不手改。
-const { same, id: buildId } = require('./source.js')
-// 永恒之诗 26 槽位定义与官方 API 强校验抓取逻辑，由 build-terms.py 从 tools/sync-eververse.js 复制。
-const { syncEververse, fetchLiveFeed, fetchAdaSlots, eververseWindow, weeklyCycleRange, slotsSignature, adaSignature } = require('./eververse.js')
-// 老九（Xûr）周货抓取与装备库推荐标注逻辑，由 build-terms.py 从 tools/sync-xur.js 复制。
-const { syncXur, arrivalStaleReason, fetchLiveXurInput, currentXurWindow, xurSignature } = require('./xur.js')
+const { same, id: buildId, summary: buildSummary } = require('./source.js')
+// 定时同步商店才用到的重型依赖按需加载，避免拖慢常规访问与编辑台冷启动。
+let _eververseMod = null
+let _xurMod = null
+const eververseMod = () => (_eververseMod || (_eververseMod = require('./eververse.js')))
+const xurMod = () => (_xurMod || (_xurMod = require('./xur.js')))
 const app = tcb.init({ env: tcb.SYMBOL_CURRENT_ENV })
 const db = app.database()
 const _ = db.command
@@ -47,6 +45,7 @@ const HEAD = {
   'content-type': 'application/json; charset=utf-8',
   'access-control-allow-origin': '*',
   'access-control-allow-headers': 'content-type, authorization',
+  'access-control-max-age': '86400',
   'cache-control': 'no-store',
 }
 
@@ -80,7 +79,7 @@ async function allDocs(q, pageSize = 500, maxPages = 40) {
 
 async function allBuildBodies() {
   const out = {}
-  const q = docs.where({ _id: db.RegExp({ regexp: '^builds/', options: '' }) })
+  const q = docs.where({ _id: db.RegExp({ regexp: '^builds/', options: '' }) }).field({ md: true })
   for (let skip = 0; skip < BODY_CAP; skip += BODY_PAGE) {
     const page = await q.orderBy('_id', 'asc').skip(skip).limit(BODY_PAGE).get()
     for (const d of page.data) out[d._id] = d.md
@@ -161,7 +160,10 @@ async function stats() {
 const HOSTING_ROOT = 'destiny2-starside'
 let mgr = null
 async function publish(name, payload) {
-  if (!mgr) mgr = new Manager({ envId: ENV })
+  if (!mgr) {
+    const Manager = require('@cloudbase/manager-node')
+    mgr = new Manager({ envId: ENV })
+  }
   const local = path.join('/tmp', name)
   fs.writeFileSync(local, JSON.stringify(payload))
   await mgr.hosting.uploadFiles({ files: [{ localPath: local, cloudPath: HOSTING_ROOT + '/rotation/' + name }] })
@@ -209,6 +211,7 @@ async function saveDoc(ref, data) {
 // 光尘商店轮换数据写在 counters/rotation 单条 doc 里（含近 7 日光尘与近 4 周艾达历史）：
 // 定时器按 UTC+8 每天 01:03 / 01:10 / 02:03 触发，对比历史有更新才拉 Bungie API 并发布 rotation/eververse.json。
 async function syncRotation(customSlots, customAdaSlots, opts = {}) {
+  const { syncEververse, fetchLiveFeed, fetchAdaSlots, eververseWindow, weeklyCycleRange, slotsSignature, adaSignature } = eververseMod()
   const force = Boolean(opts && opts.force)
   const hasCustom = Array.isArray(customSlots) && customSlots.length > 0
   const hasCustomAda = Array.isArray(customAdaSlots)
@@ -362,6 +365,7 @@ async function syncRotation(customSlots, customAdaSlots, opts = {}) {
 // 仄（Xûr）周货数据写在 counters/xur 单条 doc 里（含近 4 周历史）：
 // 定时器按 UTC+8 周六 01:03 / 02:03 / 03:03 触发，对比历史有更新才拉 Bungie API 并发布 rotation/xur.json。
 async function syncXurInventory(rawKyberData, opts = {}) {
+  const { syncXur, arrivalStaleReason, fetchLiveXurInput, currentXurWindow, xurSignature } = xurMod()
   const force = Boolean(opts && opts.force)
   const hasCustom = Boolean(rawKyberData && typeof rawKyberData === 'object')
   const now = new Date()
@@ -615,13 +619,48 @@ async function who(event, need) {
    null 是公开（连令牌都不要），数字是 who() 的门槛，'admin' 走 ADMIN_TOKEN。
    sdrop 记的是它的下限：不带 id 的那一路是整批删除，分支体里另有一道 lv 4。 */
 const LEVEL = {
-  me: 0,
-  docs: 1, subs: 1, hist: 1, bdrop: 1, edits: 1, chg: 1, pend: 1,
+  me: 0, boot: 0,
+  docs: 1, subs: 1, hist: 1, bdrop: 1, edits: 1, chg: 1, pend: 1, body: 1,
   ssave: 2, bsave: 2, smark: 2, emark: 2, sdrop: 2, sync_rotation: 2, sync_xur: 2,
   eds: 4,
   stats: null, hit: null, likes: null, like: null, sub: null,
   list: 'admin', mark: 'admin', pull: 'admin', push: 'admin', rekey: 'admin', drop: 'admin',
   landed: 'admin', rpull: 'admin', rpush: 'admin', rdrop: 'admin', rlanded: 'admin',
+}
+
+async function shopStale() {
+  const snap = await db.collection('counters')
+    .where({ _id: _.in(['rotation', 'xur']) })
+    .field({ stale: true, ada: true })
+    .limit(2)
+    .get()
+  const byId = {}
+  for (const d of snap.data) byId[d._id] = d
+  const rDoc = byId.rotation
+  const xDoc = byId.xur
+  let evStale = null
+  let adaErr = null
+  let xurStale = null
+  if (rDoc && (rDoc.stale || (rDoc.ada && rDoc.ada.error))) {
+    const { eververseWindow, weeklyCycleRange } = eververseMod()
+    if (rDoc.stale && rDoc.stale.cycleStart === eververseWindow().cycleStart) evStale = rDoc.stale
+    if (rDoc.ada && rDoc.ada.error && rDoc.ada.cycleStart === weeklyCycleRange().cycleStart) adaErr = rDoc.ada.error
+  }
+  if (xDoc && xDoc.stale) {
+    const { currentXurWindow } = xurMod()
+    if (normIsoSec(xDoc.stale.arrival) === currentXurWindow().arrival) xurStale = xDoc.stale
+  }
+  if (!evStale && !xurStale && !adaErr) return null
+  return {
+    ...(evStale ? { eververse: evStale } : {}),
+    ...(xurStale ? { xur: xurStale } : {}),
+    ...(adaErr ? { ada: { reason: adaErr } } : {})
+  }
+}
+
+function stripSubBody(s) {
+  const { md, ...rest } = s
+  return { ...rest, meta: buildSummary(md || ''), hash: sha1(String(md || '')) }
 }
 
 // 进分支之前判一次。返回值是 me，分支要用名字或 uid 时直接拿，不再各自 await 一遍。
@@ -639,21 +678,49 @@ async function editorRoute(a, body, event, me) {
   if (a === 'me') {
     const out = { uid: me.uid, name: me.name, lv: me.lv }
     if (me.lv >= 2) {
-      const [rSnap, xSnap] = await Promise.all([rot.get(), xurDoc.get()])
-      const rDoc = rSnap.data[0]
-      const xDoc = xSnap.data[0]
-      const evStale = rDoc && rDoc.stale && rDoc.stale.cycleStart === eververseWindow().cycleStart ? rDoc.stale : null
-      const adaErr = rDoc && rDoc.ada && rDoc.ada.error && rDoc.ada.cycleStart === weeklyCycleRange().cycleStart ? rDoc.ada.error : null
-      const xurStale = xDoc && xDoc.stale && normIsoSec(xDoc.stale.arrival) === currentXurWindow().arrival ? xDoc.stale : null
-      if (evStale || xurStale || adaErr) {
-        out.stale = {
-          ...(evStale ? { eververse: evStale } : {}),
-          ...(xurStale ? { xur: xurStale } : {}),
-          ...(adaErr ? { ada: { reason: adaErr } } : {})
-        }
-      }
+      const stale = await shopStale()
+      if (stale) out.stale = stale
     }
     return out
+  }
+
+  // 编辑台首屏单发初始化：合并鉴权、商店状态、文档清单（配装仅带轻摘要）、投稿清单与待审改动，
+  // 避免前端串行 me 再 3 并发触发多次冷启动及重复 /auth/v1/user/me 校验。
+  if (a === 'boot') {
+    const meOut = { uid: me.uid, name: me.name, lv: me.lv }
+    if (me.lv < 1) return { me: meOut }
+    const [docRes, mds, subWait, subClosed, editWait, stale] = await Promise.all([
+      allDocs(docs.field({ md: false }), 500),
+      allBuildBodies(),
+      allDocs(subs.where({ ok: 0 }), 500),
+      subs.where({ ok: _.neq(0) }).orderBy('at', 'desc').limit(500).get(),
+      allDocs(edits.where({ ok: 0 }), 500),
+      me.lv >= 2 && !body.lite ? shopStale() : Promise.resolve(null),
+    ])
+    if (stale) meOut.stale = stale
+    const docList = docRes.data.map((d) => (mds[d._id] === undefined ? d : { ...d, meta: buildSummary(mds[d._id]) }))
+    const subList = subWait.data.concat(subClosed.data).map(stripSubBody)
+    const more = (docRes.more || subWait.more || subClosed.data.length >= 500 || editWait.more) ? 1 : 0
+    return { me: meOut, docs: docList, subs: subList, edits: editWait.data, more }
+  }
+
+  // 单条配装完整正文：点开收件箱才按需拉取，列表阶段不传输 MB 级全文。
+  if (a === 'body') {
+    const kind = String(body.kind || '')
+    const id = String(body.id || '')
+    if (kind === 'doc') {
+      if (!/^builds\/[^/]+\/[^/]+$/.test(id)) throw new Error('bad id')
+      const cur = (await docs.doc(id).get()).data[0]
+      if (!cur) throw new Error('no doc')
+      return { md: cur.md || '', hash: cur.hash || sha1(String(cur.md || '')) }
+    }
+    if (kind === 'sub') {
+      if (!id) throw new Error('bad id')
+      const cur = (await subs.doc(id).get()).data[0]
+      if (!cur) throw new Error('no sub')
+      return { md: cur.md || '', hash: sha1(String(cur.md || '')) }
+    }
+    throw new Error('bad kind')
   }
 
   if (a === 'docs') {
@@ -846,6 +913,10 @@ async function editorRoute(a, body, event, me) {
   }
 
   if (a === 'edits') {
+    if (body.closed) {
+      const r1 = await edits.where({ ok: _.neq(0) }).orderBy('at', 'desc').limit(500).get()
+      return { edits: r1.data, more: r1.data.length >= 500 ? 1 : 0 }
+    }
     const [r0, r1] = await Promise.all([
       allDocs(edits.where({ ok: 0 }), 500),
       edits.where({ ok: _.neq(0) }).orderBy('at', 'desc').limit(500).get(),

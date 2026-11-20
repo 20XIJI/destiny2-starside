@@ -177,11 +177,10 @@
 
   /* 作者推荐的光圈。两位作者各一色，只画在词条图标外圈，不上文字。装备库与
      购物清单共用，所以定义在这里。Aegis 天蓝（与最近的 --c-stasis ΔE 29.0）；
-     小棒猪（LGpig）取头像那只小猪的耳朵粉（与最近的 --c-prism ΔE 18.2）。两位都
-     推荐的那一圈是棱彩：六个元素色绕一圈，游戏里「棱镜」本来就是把全部元素并在一起。
+     小棒猪（LGpig）取暖桃黄粉，与双推荐棱彩品红拉开色相。
      这三个是 UI 槽位，不是着色 token：源稿里写不出来，所以不叫 --c-*，也不进色板页。 */
   --au-aegis: #3d8bff;
-  --au-lgpig: #ea6c96;
+  --au-lgpig: #f7a387;
   --halo-both: conic-gradient(var(--c-arc), var(--c-solar), var(--c-void), var(--c-stasis),
                               var(--c-strand), var(--c-prism), var(--c-arc));
 

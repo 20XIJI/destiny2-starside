@@ -2484,14 +2484,17 @@
   }
 
   /* ── 渲染：详情 ────────────────────────────────────────────────────── */
-  /* 选中的词条按栏序连成一条虚线，光点沿线走。一个 svg 铺满词条矩阵，坐标取各栏选中那一枚
-     图标的中心；线画在图标下面。矩阵宽度变了（窗口、拖结果栏）就重画。 */
+  /* 选中的词条按栏序从圆心到圆心以平滑 S 曲线串联，端点按各自推荐色平滑过渡，光点沿线穿梭。
+     一个 svg 铺满词条矩阵，线画在图标下面，矩阵宽度变化时重画。 */
   var linkObs = null;
   var STILL = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function perkLinks() {
     if (linkObs) { linkObs.disconnect(); linkObs = null; }
     var m = body.querySelector('.matrix');
     if (!m) { return; }
+    function endColor(bits) {
+      return bits === 3 ? '#ff56de' : bits === 1 ? 'var(--au-aegis)' : bits === 2 ? 'var(--au-lgpig)' : 'var(--bone)';
+    }
     function draw() {
       var old = m.querySelector('.links');
       if (old) { old.remove(); }
@@ -2500,31 +2503,42 @@
         var btn = col.querySelector('.plug[aria-pressed="true"]');
         var ico = btn && btn.querySelector('.ico');
         if (!ico) { return; }
-        var q = ico.getBoundingClientRect();
+        var iq = ico.getBoundingClientRect();
         var bits = btn.classList.contains('by-al') ? 3 : btn.classList.contains('by-a') ? 1 : btn.classList.contains('by-l') ? 2 : 0;
-        pts.push([q.left - r.left + q.width / 2, q.top - r.top + q.height / 2, bits]);
+        pts.push({
+          x: iq.left - r.left + iq.width / 2,
+          y: iq.top - r.top + iq.height / 2,
+          bits: bits
+        });
       });
       if (pts.length < 2) { return; }
-      var d = pts.map(function (p, k) { return (k ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join(' ');
-      var hi = [], dotBits = 0;
+      var defs = [], segs = [], fullD = 'M' + pts[0].x.toFixed(1) + ' ' + pts[0].y.toFixed(1);
       for (var k = 0; k < pts.length - 1; k++) {
-        var shared = pts[k][2] & pts[k + 1][2];
-        if (!shared) { continue; }
-        dotBits |= shared;
-        var stroke = shared === 3 ? 'url(#link-al)' : shared === 1 ? 'var(--au-aegis)' : 'var(--au-lgpig)';
-        hi.push('<line x1="' + pts[k][0].toFixed(1) + '" y1="' + pts[k][1].toFixed(1) + '" x2="' +
-          pts[k + 1][0].toFixed(1) + '" y2="' + pts[k + 1][1].toFixed(1) + '" style="stroke:' + stroke + ';stroke-opacity:.82" stroke-width="1.5"/>');
+        var a = pts[k], b = pts[k + 1];
+        var mx = ((a.x + b.x) / 2).toFixed(1);
+        var curve = ' C' + mx + ' ' + a.y.toFixed(1) + ' ' + mx + ' ' + b.y.toFixed(1) +
+          ' ' + b.x.toFixed(1) + ' ' + b.y.toFixed(1);
+        fullD += curve;
+        var d = 'M' + a.x.toFixed(1) + ' ' + a.y.toFixed(1) + curve;
+        var gid = 'link-g-' + k;
+        var c1 = endColor(a.bits), c2 = endColor(b.bits);
+        var stops = (a.bits === 3 && b.bits === 3)
+          ? '<stop offset="0%" stop-color="#ff56de"/><stop offset="38%" stop-color="#fff5fe"/><stop offset="66%" stop-color="#82edff"/><stop offset="100%" stop-color="#ff73b9"/>'
+          : (a.bits === 3
+              ? '<stop offset="0%" stop-color="#ff56de"/><stop offset="32%" stop-color="#82edff"/><stop offset="100%" stop-color="' + c2 + '"/>'
+              : (b.bits === 3
+                  ? '<stop offset="0%" stop-color="' + c1 + '"/><stop offset="68%" stop-color="#82edff"/><stop offset="100%" stop-color="#ff56de"/>'
+                  : '<stop offset="0%" stop-color="' + c1 + '"/><stop offset="100%" stop-color="' + c2 + '"/>'));
+        defs.push('<linearGradient id="' + gid + '" gradientUnits="userSpaceOnUse" x1="' + a.x.toFixed(1) +
+          '" y1="' + a.y.toFixed(1) + '" x2="' + b.x.toFixed(1) + '" y2="' + b.y.toFixed(1) + '">' + stops + '</linearGradient>');
+        segs.push('<path d="' + d + '" fill="none" stroke="url(#' + gid + ')" stroke-opacity=".62" stroke-width="1.5" stroke-linecap="round"/>');
       }
-      var defs = dotBits === 3 ? '<defs><linearGradient id="link-al" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="' +
-        Math.max(1, r.width).toFixed(1) + '" y2="0"><stop offset="0%" stop-color="var(--au-aegis)"/><stop offset="100%" stop-color="var(--au-lgpig)"/></linearGradient></defs>' : '';
-      var dotFill = dotBits === 3 ? 'url(#link-al)' : dotBits === 1 ? 'var(--au-aegis)' : dotBits === 2 ? 'var(--au-lgpig)' : 'var(--bone-hi)';
       var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
       svg.setAttribute('class', 'links');
       svg.setAttribute('aria-hidden', 'true');
-      svg.innerHTML = defs + '<path d="' + d + '" fill="none" style="stroke:var(--bone);stroke-opacity:.38" stroke-dasharray="3 4"/>' +
-        hi.join('') +
-        (STILL ? '' : '<circle r="' + (dotBits ? '2.4' : '2') + '" style="fill:' + dotFill + '"><animateMotion dur="' + (pts.length * 1.1).toFixed(1) +
-          's" repeatCount="indefinite" path="' + d + '"/></circle>');
+      svg.innerHTML = '<defs>' + defs.join('') + '</defs>' + segs.join('') +
+        (STILL ? '' : '<circle r="2.2" style="fill:var(--bone-hi)"><animateMotion dur="' + (pts.length * 1.1).toFixed(1) +
+          's" repeatCount="indefinite" path="' + fullD + '"/></circle>');
       m.prepend(svg);
     }
     draw();
@@ -2615,32 +2629,49 @@
 
   /* 作者在页面上的写法。数据里的键是 Aegis 与 LGpig。 */
   var AUTHOR = { Aegis: 'AEGIS', LGpig: '小棒猪' };
+  var AUTHOR_NOTE = {
+    Aegis: '顶级速通大神，理解偏速通',
+    LGpig: '很小很小的棒猪，更符合国内理解'
+  };
   var HALO = { 1: ['by-a', 'Aegis 推荐'], 2: ['by-l', '小棒猪推荐'], 3: ['by-al', '双方共同推荐'] };
   function plugButton(c, cell, marks, pressed, fixed, ammo, res) {
     var p = shownPlug(cell), bits = marks[cell[0]] || 0;
+    var showBadge = pressed && hasPerkBadge(p, ammo, res && res.magBaseCap, fixed);
     var cls = 'plug' + (cell[1] >= 0 ? ' is-enh' : '') + (bits ? ' ' + HALO[bits][0] : '') +
-      (S.hoverPlug && S.hoverPlug.col === c && S.hoverPlug.plug === p ? ' is-hover' : '') + (fixed ? ' fixed' : '');
-    var btn = '<button type="button" class="' + cls + '" aria-pressed="' + (pressed ? 'true' : 'false') + '"' +
-      (bits ? ' title="' + HALO[bits][1] + '"' : '') + ' data-act="perk" data-col="' + c + '" data-plug="' + p + '">' +
-      '<span class="ico">' + imgTag(P.p[p][P_ICON], '', '', true) + '</span><span class="nm">' + esc(plugName(p)) + '</span></button>';
-    if (!pressed || !hasPerkBadge(p, ammo, res && res.magBaseCap, fixed)) { return btn; }
-    var ph = P.p[p][P_HASH], isEC = !!ELEMENTAL_CAPACITOR_HASHES[ph];
-    var spec = resolveAmmoSpec(perkSpec(p), ammo), step = perkStepOf(p, ammo, false, fixed);
-    var total = perkSteps(spec, p, ammo, res && res.magBaseCap);
-    var ecKeys = ['3', '2', '4', '7', '6'];
-    var inner = isEC
-      ? (step < 0 ? '−' : imgTag(V.el[ecKeys[step] || '3'][2], 'element-icon', ELEMENTAL_CAPACITOR_ZH[step], true))
-      : (step < 0 ? '−' : (total > 1
-          ? '<span class="stack-current">×' + (step + 1) + '</span><span class="stack-max">/' + total + '</span>'
-          : '<span class="stack-current">✓</span>'));
-    var tipTitle = isEC ? (step < 0 ? '点击选择分支元素' : '元素电容：' + ELEMENTAL_CAPACITOR_ZH[step]) : (total > 1 ? '点击切换层数' : '点击切换生效状态');
-    return '<div class="plug-wrap">' + btn + '<button type="button" class="perk-stack-badge' + (step < 0 ? ' deactivated' : '') +
-      (isEC && step >= 0 ? ' element-badge' : '') + '" data-act="perkcolstep" data-v="' + p + '" data-n="' + total + '"' +
-      (fixed ? ' data-fixed="1"' : '') + ' title="' + esc(tipTitle) + '">' + inner + '</button></div>';
+      (S.hoverPlug && S.hoverPlug.col === c && S.hoverPlug.plug === p ? ' is-hover' : '') +
+      (fixed ? ' fixed' : '') + (showBadge ? ' has-badge' : '');
+    var badge = '', tipParts = bits ? [HALO[bits][1]] : [];
+    if (showBadge) {
+      var ph = P.p[p][P_HASH], isEC = !!ELEMENTAL_CAPACITOR_HASHES[ph];
+      var spec = resolveAmmoSpec(perkSpec(p), ammo), step = perkStepOf(p, ammo, false, fixed);
+      var total = perkSteps(spec, p, ammo, res && res.magBaseCap);
+      var ecKeys = ['3', '2', '4', '7', '6'];
+      var inner = isEC
+        ? (step < 0 ? '−' : imgTag(V.el[ecKeys[step] || '3'][2], 'element-icon', ELEMENTAL_CAPACITOR_ZH[step], true))
+        : (step < 0 ? '−' : (total > 1
+            ? '<span class="stack-current">×' + (step + 1) + '</span><span class="stack-max">/' + total + '</span>'
+            : '<span class="stack-current">✓</span>'));
+      tipParts.push(isEC ? (step < 0 ? '点击选择分支元素' : '元素电容：' + ELEMENTAL_CAPACITOR_ZH[step] + '（点击切换）') :
+        (total > 1 ? '点击递增层数，满层再点取消' : (fixed ? '点击切换生效状态' : '点击取消选中')));
+      badge = '<span class="perk-stack-badge' + (step < 0 ? ' deactivated' : '') +
+        (isEC && step >= 0 ? ' element-badge' : '') + '">' + inner + '</span>';
+    }
+    return '<button type="button" class="' + cls + '" aria-pressed="' + (pressed ? 'true' : 'false') + '"' +
+      (tipParts.length ? ' title="' + esc(tipParts.join(' · ')) + '"' : '') +
+      ' data-act="perk" data-col="' + c + '" data-plug="' + p + '">' +
+      '<span class="ico">' + imgTag(P.p[p][P_ICON], '', '', true) + '</span><span class="nm">' + esc(plugName(p)) + '</span>' +
+      badge + '</button>';
   }
   function haloLegend() {
-    return '<span class="aside halo-key"><i class="by-a"></i>Aegis 推荐<i class="by-l"></i>小棒猪推荐' +
-      '<i class="by-al"></i>双方共同推荐</span>';
+    return '<span class="aside halo-key">' +
+      '<span class="hk-item"><i class="by-a"></i>Aegis 推荐</span>' +
+      '<span class="hk-item"><i class="by-l"></i>小棒猪推荐</span>' +
+      '<span class="hk-item"><i class="by-al"></i>双方共同推荐</span></span>';
+  }
+  function haloNotes() {
+    return '<div class="halo-notes">' +
+      '<span class="hn-item by-a"><b>Aegis</b><span>' + AUTHOR_NOTE.Aegis + '</span></span>' +
+      '<span class="hn-item by-l"><b>小棒猪</b><span>' + AUTHOR_NOTE.LGpig + '</span></span></div>';
   }
   function tierText(i, roll, mw) {
     if (!roll.mw) { return 'T' + roll.t + ' 加成在装上大师杰作之后生效'; }
@@ -2677,7 +2708,7 @@
     if (isExotic(r) && T && T.xs[rep]) { parts.push(exoticBlock(T.xs[rep])); }
     parts.push('<section><h3 class="sub-label">词条' + (choice ? haloLegend() : '') +
       (dirty ? '<button type="button" class="op" data-act="resetroll">重置配置</button>' : '') +
-      '</h3><div class="matrix">' + matrix + '</div></section>');
+      '</h3>' + (choice ? haloNotes() : '') + '<div class="matrix">' + matrix + '</div></section>');
     var say = weaponSays(i);
     if (say) { parts.push('<section><h3 class="sub-label">作者评语</h3><div class="says">' + saysHtml(say) + '</div></section>'); }
     parts.push(artifactSection(i));
@@ -2753,8 +2784,9 @@
           (m ? '<span class="aft">' + esc(m[2]) + '</span>' : '') + '</b>';
       }).join('');
       var ssnNote = b[4] ? '<b><span class="aft">S' + b[4] + ' 版</span></b>' : '';
+      var auNote = AUTHOR_NOTE[b[0]] ? '<div class="au-note">' + AUTHOR_NOTE[b[0]] + '</div>' : '';
       return '<div class="say by-' + b[0].toLowerCase() + '"><div class="who">' + AUTHOR[b[0]] + ssnNote + tier +
-        '</div><div>' + roll + b[2].map(function (p) { return '<p>' + p + '</p>'; }).join('') + '</div></div>';
+        '</div><div>' + auNote + roll + b[2].map(function (p) { return '<p>' + p + '</p>'; }).join('') + '</div></div>';
     }).join('');
   }
   function pinKey(scope, i) {
@@ -3746,8 +3778,45 @@
         S.railOff = !S.railOff; store('wpn.railOff', S.railOff); render(); return;
       case 'perk': {
         var col = +el.getAttribute('data-col'), plug = +el.getAttribute('data-plug'), roll = rollOf(i);
-        if (cellsOf(poolRow(i)[2][col]).length === 1) { return; }
-        if (roll.sel[col] === plug) { delete roll.sel[col]; } else { roll.sel[col] = plug; }
+        var isFixedCol = cellsOf(poolRow(i)[2][col]).length === 1;
+        var ammoStr = ammoEn(V.am[WR[i][W_AMMO]][0]);
+        var curRes = compute(i, roll);
+        var hasBadge = hasPerkBadge(plug, ammoStr, curRes && curRes.magBaseCap, isFixedCol);
+        var ph = String(P.p[plug][P_HASH]);
+        if (isFixedCol) {
+          if (!hasBadge) { return; }
+          var fSpec = resolveAmmoSpec(perkSpec(plug), ammoStr);
+          var fTot = perkSteps(fSpec, plug, ammoStr, curRes && curRes.magBaseCap);
+          var fCur = perkStepOf(plug, ammoStr, false, true);
+          if (fCur < 0) { S.perkStep[ph] = fTot > 0 ? 0 : -1; }
+          else if (fCur + 1 < fTot) { S.perkStep[ph] = fCur + 1; }
+          else { S.perkStep[ph] = -1; }
+          S.hoverPlug = null; hideTip(); renderDetail(); return;
+        }
+        if (roll.sel[col] === plug) {
+          if (hasBadge) {
+            var spec = resolveAmmoSpec(perkSpec(plug), ammoStr);
+            var tot = perkSteps(spec, plug, ammoStr, curRes && curRes.magBaseCap);
+            var cur = perkStepOf(plug, ammoStr, false, false);
+            if (cur < 0) {
+              S.perkStep[ph] = tot > 0 ? 0 : -1;
+            } else if (cur + 1 < tot) {
+              S.perkStep[ph] = cur + 1;
+            } else {
+              delete roll.sel[col];
+              delete S.perkStep[ph];
+            }
+          } else {
+            delete roll.sel[col];
+          }
+        } else {
+          roll.sel[col] = plug;
+          if (hasBadge) {
+            var nSpec = resolveAmmoSpec(perkSpec(plug), ammoStr);
+            var nTot = perkSteps(nSpec, plug, ammoStr, curRes && curRes.magBaseCap);
+            S.perkStep[ph] = nTot > 0 ? 0 : -1;
+          }
+        }
         saveRoll(i); S.hoverPlug = null; hideTip(); renderDetail(); return;
       }
       case 'resetroll':
@@ -3806,17 +3875,6 @@
       case 'fxstep': {
         var ns = +el.getAttribute('data-n') || 1;
         S.fxStep[v] = ((S.fxStep[v] || 0) + 1) % ns;
-        renderDetail(); return;
-      }
-      case 'perkcolstep': {
-        e.stopPropagation();
-        var pIdx = +v, tot = +el.getAttribute('data-n') || 1, isFixedCol = el.getAttribute('data-fixed') === '1';
-        var ammoStr = S.sel != null ? ammoEn(V.am[WR[S.sel][W_AMMO]][0]) : 'Primary';
-        var ph = String(P.p[pIdx][P_HASH]);
-        var cur = perkStepOf(pIdx, ammoStr, false, isFixedCol);
-        if (cur < 0) { S.perkStep[ph] = tot > 0 ? 0 : -1; }
-        else if (cur + 1 < tot) { S.perkStep[ph] = cur + 1; }
-        else { S.perkStep[ph] = -1; }
         renderDetail(); return;
       }
       case 'perkstep': {

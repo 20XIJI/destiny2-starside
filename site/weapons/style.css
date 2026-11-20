@@ -1469,17 +1469,17 @@
   position: relative;
   width: 36px;
   height: 36px;
-  border: 1px solid var(--hair-lit);
   border-radius: 50%;
   background: #1c2230;
-  transition: border-color .15s ease, box-shadow .15s ease;
+  box-shadow: 0 0 0 1px var(--hair-lit);
+  transition: box-shadow .15s ease;
 }
 
 .plug .ico img {
   position: absolute;
-  inset: 1px;
-  width: calc(100% - 2px);
-  height: calc(100% - 2px);
+  inset: 0;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
 }
 
@@ -1491,7 +1491,8 @@
 
 /* 没选中的图标压暗一档：选中的与作者推荐的（光圈）才亮 */
 .plug:not([aria-pressed="true"]):not(:hover):not(.is-hover) .ico img { opacity: .72; }
-.plug[aria-pressed="true"] .ico { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+/* 仅无推荐光环的词条在选中时加骨白环，避免与推荐光环双圈重叠 */
+.plug[aria-pressed="true"]:not([class*="by-"]) .ico { box-shadow: 0 0 0 2px var(--accent); }
 
 .plug .nm { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 
@@ -1517,103 +1518,165 @@
   clip-path: polygon(33.3% 100%, 33.3% 40%, 0 40%, 50% 0, 100% 40%, 66.7% 40%, 66.7% 100%);
 }
 
-/* 光圈：画在图标外 3px，与选中态（图标自己的边框）分开两层，两件事同时成立时
-   都看得见。颜色由 --halo 给，棱彩那一圈是渐变，所以用遮罩把整块底色裁成环形。 */
+/* 光圈：放在 .ico 背后（.plug 已建堆叠上下文），靠不透明圆底裁出内缘、border-radius 抗锯齿外缘，
+   无 radial-gradient 遮罩毛边且紧贴图标。双推荐对齐配装页 meta 棱彩光环。 */
 .plug.by-a { --halo: var(--au-aegis); }
 .plug.by-l { --halo: var(--au-lgpig); }
-.plug.by-al { --halo: var(--halo-both); }
+
+.plug[class*="by-"] .ico { box-shadow: none; }
 
 .plug[class*="by-"] .ico::before {
   content: "";
   position: absolute;
-  inset: -5px;
+  z-index: -1;
+  inset: -2px;
   border-radius: 50%;
   background: var(--halo);
-  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
-  mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
+  pointer-events: none;
+}
+
+.plug.by-al .ico::before {
+  background: linear-gradient(
+    125deg in oklab,
+    #a8269b 0%,
+    #ff56de 24%,
+    #fff5fe 41%,
+    #82edff 50%,
+    #ff73b9 66%,
+    #b832a6 84%,
+    #a8269b 100%
+  );
+  background-size: 260% 260%;
+  box-shadow:
+    0 0 8px 1px rgba(255, 86, 222, .52),
+    0 0 16px 1px rgba(130, 237, 255, .22);
+  animation: halo-drift 9s ease-in-out infinite;
+}
+
+@keyframes halo-drift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
 /* 图例与大师杰作 chip 上那枚小环，同一套颜色。 */
 .halo-key {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 12px;
+}
+
+.halo-key .hk-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.halo-notes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: -8px 0 18px;
+}
+
+.halo-notes .hn-item {
+  --c-au: var(--au-aegis);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 7px 12px;
+  border: 1px solid var(--hair);
+  border-left: 2px solid var(--c-au);
+  border-radius: 2px;
+  background: linear-gradient(90deg, color-mix(in oklab, var(--c-au) 11%, transparent) 0%, var(--tint-1) 55%);
+  color: var(--bone);
+  font: 400 12px/1.6 var(--font-cn);
+}
+
+.halo-notes .hn-item.by-l { --c-au: var(--au-lgpig); }
+
+.halo-notes b {
+  flex: none;
+  color: var(--bone-hi);
+  font-weight: 600;
 }
 
 .halo-key i,
 .dot {
   display: inline-block;
-  width: 11px;
-  height: 11px;
-  margin-left: 8px;
+  flex: none;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  background: var(--halo);
-  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
-  mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
 }
 
 .dot { margin: 0 2px 0 0; }
-.halo-key i.by-a, .dot.by-a { --halo: var(--au-aegis); }
-.halo-key i.by-l { --halo: var(--au-lgpig); }
-.halo-key i.by-al { --halo: var(--halo-both); }
+.halo-key i.by-a, .dot.by-a { border: 2px solid var(--au-aegis); }
+.halo-key i.by-l { border: 2px solid var(--au-lgpig); }
+.halo-key i.by-al {
+  padding: 2px;
+  background: linear-gradient(
+    125deg in oklab,
+    #a8269b 0%,
+    #ff56de 24%,
+    #fff5fe 41%,
+    #82edff 50%,
+    #ff73b9 66%,
+    #b832a6 84%,
+    #a8269b 100%
+  );
+  background-size: 260% 260%;
+  box-shadow: 0 0 6px rgba(255, 86, 222, .45);
+  animation: halo-drift 9s ease-in-out infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+}
 
-/* 固定栏（起源特性只有一枚）：没有可选项，灰掉选择态。 */
+/* 固定栏（起源特性只有一枚）：没有可选项，灰掉选择态；带条件层数时仍可点击本体切换。 */
 .plug.fixed { cursor: default; }
-.plug.fixed:hover,
-.plug.fixed.is-hover { background: none; }
+.plug.fixed.has-badge { cursor: pointer; }
+.plug.fixed:not(.has-badge):hover,
+.plug.fixed:not(.has-badge).is-hover { background: none; }
 .plug.fixed[aria-pressed="true"] {
   color: var(--bone);
   font-weight: 400;
   background: none;
-}
-.plug.fixed[aria-pressed="true"] .ico {
-  border-color: var(--hair-lit);
   box-shadow: none;
 }
+.plug.fixed[aria-pressed="true"]:not([class*="by-"]) .ico {
+  box-shadow: 0 0 0 1px var(--hair-lit);
+}
 
-.plug-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
+.plug.has-badge {
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  gap: 0 6px;
 }
-.plug-wrap .plug { padding-right: 44px; }
+
 .perk-stack-badge {
-  position: absolute;
-  right: 4px;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 2;
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  align-items: baseline;
+  justify-content: flex-end;
   gap: 1px;
-  min-width: 24px;
-  height: 22px;
-  padding: 0 5px;
-  border: 1px solid var(--hair-lit);
-  border-radius: 4px;
-  background-color: var(--ink-lift);
+  padding: 0 3px 0 6px;
+  border-left: 1px solid var(--hair);
   color: var(--bone-hi);
-  font: 600 11px/1 var(--font-body);
-  cursor: pointer;
-  transition: border-color .15s ease, color .15s ease, background-color .15s ease;
+  font: 600 11px/1 var(--font-disp);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .02em;
+  pointer-events: none;
+  transition: color .15s ease, border-color .15s ease;
 }
-.perk-stack-badge:hover { border-color: var(--accent); color: #fff; }
-.perk-stack-badge.deactivated {
-  color: var(--bone-faint);
-  border-color: var(--hair);
-  background-color: var(--tint-1);
-}
+.plug:hover .perk-stack-badge { border-left-color: var(--hair-lit); color: #fff; }
+.perk-stack-badge.deactivated { color: var(--bone-faint); }
 .perk-stack-badge.element-badge {
-  width: 24px;
-  height: 24px;
-  padding: 2px;
-  border-radius: 50%;
+  align-items: center;
+  padding: 0 2px 0 6px;
 }
 .perk-stack-badge .element-icon {
   display: block;
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
 }
 .perk-stack-badge .stack-current { color: var(--bone-hi); }
 .perk-stack-badge .stack-max { color: var(--bone-faint); font-weight: 400; }
@@ -1869,6 +1932,12 @@
   color: var(--bone-faint);
   font: 400 12px/1 var(--font-cn);
   letter-spacing: 0;
+}
+
+.say .au-note {
+  margin-bottom: 6px;
+  color: var(--bone-dim);
+  font: 400 12px/1.6 var(--font-cn);
 }
 
 .say p {
@@ -2469,7 +2538,8 @@
   .pvp-stat-hero-value, .pvp-stat-value,
   .wpn-quick button::after, .fc::before { transition: none; }
   .wpn-syntax, .wpn-pill.is-new, .wpn-grid.swap, .wpn-one.swap,
-  .wpn-refine .pop, .picker, .fx-drop, .tip { animation: none; }
+  .wpn-refine .pop, .picker, .fx-drop, .tip,
+  .plug.by-al .ico::before, .halo-key i.by-al { animation: none; }
 }
 
 

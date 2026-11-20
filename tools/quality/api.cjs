@@ -1013,4 +1013,69 @@ test('conditional push, drop, rpush, rdrop, smark, and live role lookup', async 
   assert.equal(leftover.length, 0)
 })
 
+test('boot returns lightweight summaries, pending edits only, body fetches single md, and CORS caches preflight', async () => {
+  const buildMd = '# 火刀猎\n推荐人：张三\n职业：猎人#1\n分支：烈日\n场景：突袭\n强度：S\n核心：星界夜鹰\n\n## 审核意见\n注意换弹'
+  const subMd = '# 新投稿\n推荐人：李四\n职业：术士\n分支：虚空\n场景：地牢\n强度：A\n核心：反转之握\n'
+  const h = harness({
+    docs: [
+      { _id: 'builds/s29-test/a-hunter', md: buildMd, hash: digest(buildMd), landed: digest(buildMd), at: '2' },
+      { _id: 'docs/boss-hp', md: '# 首领生命值\n正文', hash: 'dh', landed: 'dh', at: '1' },
+    ],
+    subs: [
+      { _id: 's-wait', md: subMd, ok: 0, drop: 0, at: '3' },
+      { _id: 's-done', md: '# 旧稿\n', ok: 1, season: 's29-test', slug: 'a-hunter', at: '1' },
+    ],
+    edits: [
+      { _id: 'e-wait', doc: 'docs/boss-hp', ok: 0, at: '2', before: '旧', after: '新' },
+      { _id: 'e-done', doc: 'docs/boss-hp', ok: 1, at: '1', before: 'a', after: 'b', okBy: '审' },
+    ],
+  })
+
+  // 未授权用户（lv 0）短路，不带业务数据
+  h.signIn('stranger', 0, 'u0')
+  const zero = await h.as('stranger', { a: 'boot' })
+  assert.equal(zero.me.lv, 0)
+  assert.equal(zero.docs, undefined)
+
+  // 编辑员单发 boot：配装与投稿只带 meta 摘要、不带整篇 md；edits 只带 ok=0 待审
+  h.signIn('ed', 2, 'u2')
+  const booted = await h.as('ed', { a: 'boot' })
+  assert.equal(booted.me.lv, 2)
+  const bDoc = booted.docs.find((d) => d._id === 'builds/s29-test/a-hunter')
+  assert.equal(Object.hasOwn(bDoc, 'md'), false, 'boot 不应下发配装全文 md')
+  assert.equal(bDoc.meta.name, '火刀猎')
+  assert.equal(bDoc.meta.cls, '猎人')
+  assert.equal(bDoc.meta.note, 1)
+  const pDoc = booted.docs.find((d) => d._id === 'docs/boss-hp')
+  assert.equal(Object.hasOwn(pDoc, 'md'), false)
+  assert.equal(Object.hasOwn(pDoc, 'meta'), false)
+  const sWait = booted.subs.find((s) => s._id === 's-wait')
+  assert.equal(Object.hasOwn(sWait, 'md'), false, 'boot 不应下发投稿全文 md')
+  assert.equal(sWait.meta.name, '新投稿')
+  assert.equal(sWait.hash, digest(subMd))
+  assert.deepEqual(booted.edits.map((e) => e._id), ['e-wait'], 'boot 首屏只取待审改动')
+
+  // edits { closed: 1 } 按需补取已结案记录
+  const closed = await h.as('ed', { a: 'edits', closed: 1 })
+  assert.deepEqual(closed.edits.map((e) => e._id), ['e-done'])
+
+  // body 按需拉取单条完整正文，且拒绝非 builds/ 文档路径
+  const docBody = await h.as('ed', { a: 'body', kind: 'doc', id: 'builds/s29-test/a-hunter' })
+  assert.equal(docBody.md, buildMd)
+  assert.equal(docBody.hash, digest(buildMd))
+  const subBody = await h.as('ed', { a: 'body', kind: 'sub', id: 's-wait' })
+  assert.equal(subBody.md, subMd)
+  assert.equal(subBody.hash, digest(subMd))
+  const badDoc = await h.as('ed', { a: 'body', kind: 'doc', id: 'docs/boss-hp' })
+  assert.equal(badDoc.error, 'bad id')
+
+  // OPTIONS 预检带长缓存，且顶层不强载 @cloudbase/manager-node
+  const opt = await h.main({ httpMethod: 'OPTIONS' })
+  assert.equal(opt.statusCode, 204)
+  assert.equal(opt.headers['access-control-max-age'], '86400')
+  const src = fs.readFileSync(path.join(root, 'functions/api/index.js'), 'utf8')
+  assert.doesNotMatch(src, /^const Manager = require\('@cloudbase\/manager-node'\)/m)
+})
+
+
 

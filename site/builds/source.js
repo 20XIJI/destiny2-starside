@@ -117,6 +117,40 @@
   // 库里一套已上站配装的 _id，即源稿在 references/ 下的相对路径去掉扩展名。
   function id (season, slug) { return 'builds/' + season + '/' + slug }
 
+  // 审核台列表与队列只需头部元数据，不必下发整篇配装正文。服务端与前端共用同一份摘要结构。
+  function summary (md) {
+    var h = head(md)
+    var isS = isSet(md)
+    var members = isS ? sets(md) : null
+    var cls = ''
+    if (!isS) {
+      cls = (h['职业'] || '').split('#')[0].trim()
+    } else {
+      var all = []
+      members.forEach(function (m) {
+        var c = (head(m)['职业'] || '').split('#')[0].trim()
+        if (c && all.indexOf(c) < 0) all.push(c)
+      })
+      cls = all.length === 1 ? all[0] : all.length ? '多职业' : ''
+    }
+    var cores = (String(md || '').match(/^核心：.*$/gm) || []).map(function (l) {
+      return l.slice(3).trim()
+    }).filter(Boolean)
+    return {
+      name: h['#'] || '',
+      by: h['推荐人'] || '',
+      cls: cls,
+      branch: h['分支'] || '',
+      scene: h['场景'] || '',
+      tier: h['强度'] || '',
+      tag: h['标签'] || h['定位'] || '',
+      cores: cores,
+      set: isS ? members.length : 0,
+      miss: md ? lacking(md) : [],
+      note: /\n## 审核意见[ \t]*\n\s*\S/.test(md || '') ? 1 : 0
+    }
+  }
+
   return { SET_MAX: SET_MAX, head: head, isSet: isSet, sets: sets, lacking: lacking,
-           same: same, id: id }
+           same: same, id: id, summary: summary }
 })

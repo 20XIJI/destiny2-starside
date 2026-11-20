@@ -260,7 +260,7 @@ test('weapons: group flags match holo/adept reps, mid-token parens stay intact, 
   const searchDeps = 'var T={pd:[""],ps:[0],H:["<p>命中目标触发<b>灼烧</b></p>"],axs:{0:[["独有"], "<p>虚空手雷充能</p>"]},ap:{0:[["特性A","", "官方说明"]]},au:{0:[["Aegis",[["","S"]],[ "<p>主版本</p>"]]],2:[["LGpig",[["","T0"]],[ "<p>旧版本</p>"]]]}};\n' +
     'var WR=[[1,"无声",1,1,1,0,0,29,5,0,0,0,0,0,0,0,0],[2,"无声(S26)",1,1,1,0,0,26,5,0,0,0,0,0,0,1,0],[3,"无声26Rep",1,1,1,0,0,26,5,0,0,0,0,0,0,2,0]];\n' +
     'WR[0][16]=0;WR[2][16]=0;\n' +
-    'var V={fam:[[0,1,2]]},W_REP=15,W_FAM=16,W_SSN=7,AUTHOR={Aegis:"Aegis",LGpig:"小棒猪"},hayCache={};\n' +
+    'var V={fam:[[0,1,2]]},W_REP=15,W_FAM=16,W_SSN=7,AUTHOR={Aegis:"Aegis",LGpig:"小棒猪"},AUTHOR_NOTE={Aegis:"顶级速通大神，理解偏速通",LGpig:"很小很小的棒猪，更符合国内理解"},hayCache={};\n' +
     'function esc(s){return String(s);} function fold(s){return String(s).toLowerCase().replace(/\\s+/g,"");}\n' +
     'function cached(k,fn){return fn();} function poolRow(){return [0,0,[["cols",[["0",[0]]]]]];} function cellsOf(c){return c[1];} function shownPlug(c){return c[0];} function chipHtml(c){return c[0];}\n'
   const { foldedTexts, weaponSays, saysHtml } = weaponFns(['plainHtml', 'foldedTexts', 'weaponSays', 'saysHtml'], searchDeps)
@@ -269,6 +269,8 @@ test('weapons: group flags match holo/adept reps, mid-token parens stay intact, 
   assert.equal(says.length, 2, 'cross-season missing author filled from V.fam')
   const html = saysHtml(says)
   assert.match(html, /S26 版/)
+  assert.match(html, /顶级速通大神，理解偏速通/)
+  assert.match(html, /很小很小的棒猪，更符合国内理解/)
 })
 test('weapons: card, detail swap, resetroll, hoverRaf cancellation, and focusin/focusout invariants', () => {
   const appSrc = fs.readFileSync(path.join(site, 'weapons/app.js'), 'utf8')
@@ -668,11 +670,11 @@ test('weapons: PvP simulator, perk-fx, exotic overrides, and FX align with godro
   const vexResOff = T.compute(iVex, T.rollOf(iVex))
   assert.equal(T.pvpView(iVex, vexResOff).activeKill.ttk.toFixed(2), '0.75')
   const vexPerkCell = T.cellsOf(T.poolRow(iVex)[2][2])[0]
-  assert.match(T.plugButton(2, vexPerkCell, {}, true, true, 'Primary', vexResOff), /class="perk-stack-badge deactivated"[^>]*data-fixed="1"/)
+  assert.match(T.plugButton(2, vexPerkCell, {}, true, true, 'Primary', vexResOff), /class="plug fixed has-badge"[^>]*>.*<span class="perk-stack-badge deactivated">/)
   T.S.perkStep['806917387'] = 0
   const vexResOn = T.compute(iVex, T.rollOf(iVex))
   assert.equal(T.pvpView(iVex, vexResOn).activeKill.ttk.toFixed(2), '0.15')
-  assert.match(T.plugButton(2, vexPerkCell, {}, true, true, 'Primary', vexResOn), /class="perk-stack-badge"[^>]*data-fixed="1"[^>]*>.*✓/)
+  assert.match(T.plugButton(2, vexPerkCell, {}, true, true, 'Primary', vexResOn), /class="plug fixed has-badge"[^>]*>.*<span class="perk-stack-badge">.*✓/)
   T.S.perkStep = {}
 })
 

@@ -1,11 +1,9 @@
 window.starsideDesc = {
 "armor-mods\t专注打击\t护臂":"<p>造成充能近战伤害时：<br> 提供<span class=\"pickup\">职业技能能量</span>：<br> 12%<span class=\"pvp\">[6%]</span> ｜ 17%<span class=\"pvp\">[8.5%]</span> ｜ 20%<span class=\"pvp\">[10%]</span>。<br> <br> <span class=\"note\">触发后有 7 秒冷却。</span></p>",
-"armor-mods\t冰影武器激涌\t腿部":"<p><span class=\"armor-charge\">护甲充能</span>生效期间：<br> 与模组元素匹配的武器伤害提高：<br> 10%<span class=\"pvp\">[3%]</span> ｜ 17%<span class=\"pvp\">[4.5%]</span> ｜ 22%<span class=\"pvp\">[5.5%]</span> ｜ 25%<span class=\"pvp\">[6%]</span>。<br> <br> <span class=\"note\">×4 只能靠神器或异域护甲拿到。</span></p>",
 "armor-mods\t冰影灵巧\t护臂":"<p>装备与模组元素匹配的武器时：<br> 取出与收起动画时长 ×0.8 ｜ ×0.75 ｜ ×0.7。<br> <br> <span class=\"note\">收起动画时长不会超过 100 操控性对应的值。</span></p>",
 "armor-mods\t完全充能\t胸甲":"<p>提高<span class=\"armor-charge\">护甲充能</span>的层数上限：<br> 4 ｜ 5 ｜ 6 层。</p>",
 "armor-mods\t强力吸引\t职业物品":"<p>使用职业技能时：<br> 拾取 12.5 ｜ 18.5 米内的<span class=\"orb\">能量球</span>。<br> <br> <span class=\"note\">对微粒与纹章同样生效。</span></p>",
 "armor-mods\t时间膨胀\t职业物品":"<p>带有衰减效果的<span class=\"armor-charge\">护甲充能</span>衰减间隔延长：<br> 每 15 ｜ 18 ｜ 20 秒衰减一层。<br> <br> <span class=\"note\">默认情况下，装备衰减类模组时每 10 秒消耗一层护甲充能。</span></p>",
-"armor-mods\t烈日武器激涌\t腿部":"<p><span class=\"armor-charge\">护甲充能</span>生效期间：<br> 与模组元素匹配的武器伤害提高：<br> 10%<span class=\"pvp\">[3%]</span> ｜ 17%<span class=\"pvp\">[4.5%]</span> ｜ 22%<span class=\"pvp\">[5.5%]</span> ｜ 25%<span class=\"pvp\">[6%]</span>。<br> <br> <span class=\"note\">×4 只能靠神器或异域护甲拿到。</span></p>",
 "armor-mods\t烈日装弹装置\t护臂":"<p>装备与模组元素匹配的武器，取出约 0.5 秒后：<br> 填装速度 +10 ｜ +15 ｜ +18<br> 填装动画时长 ×0.85。</p>",
 "armor-mods\t电弧抗性\t胸甲":"<p>对<span class=\"enemy\">战斗人员</span>获得 15% ｜ 25% ｜ 30% 伤害抗性。<br> <br> <span class=\"note\">元素抗性模组只减免与该元素匹配的伤害。</span><br> <span class=\"note\">狙击抗性模组减免 30 米以外的伤害。</span><br> <span class=\"note\">近战抗性模组减免 5 米以内的伤害。</span><br> <span class=\"note\">模组「震荡阻尼器」减免范围、冲击与爆炸伤害。</span><br> <br> <span class=\"note\">不同抗性模组之间、抗性与其他减伤来源之间一律乘算叠加。</span></p>",
 "armor-mods\t电弧武器激涌\t腿部":"<p><span class=\"armor-charge\">护甲充能</span>生效期间：<br> 与模组元素匹配的武器伤害提高：<br> 10%<span class=\"pvp\">[3%]</span> ｜ 17%<span class=\"pvp\">[4.5%]</span> ｜ 22%<span class=\"pvp\">[5.5%]</span> ｜ 25%<span class=\"pvp\">[6%]</span>。<br> <br> <span class=\"note\">×4 只能靠神器或异域护甲拿到。</span></p>",

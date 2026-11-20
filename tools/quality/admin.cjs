@@ -92,7 +92,7 @@ test('the dialect splits every real table row into cells that agree with its own
 // 编辑台的 lint() 与 terms.js 一起跑：admin.js 在 Node 里只导出纯函数，
 // 但顶层有一句 window.addEventListener，所以 window 要给个壳。
 function adminApi(extra) {
-  const sandbox = { console, module: { exports: {} }, window: { addEventListener() {} }, ...extra }
+  const sandbox = { console, atob, module: { exports: {} }, window: { addEventListener() {} }, ...extra }
   vm.createContext(sandbox)
   for (const rel of ['admin/dialect.js', 'builds/source.js', 'admin/terms.js', 'admin/shared.js', 'admin/admin.js']) {
     vm.runInContext(fs.readFileSync(path.join(site, rel), 'utf8'), sandbox, { filename: rel })
@@ -626,5 +626,25 @@ test('defaultSlug uses -set for build sets, and edit.js resolves data-cell & for
   vm.runInContext(['where', 'bare', 'original'].map((n) => funcSource('admin/edit.js', n)).join('\n'), ctx)
   assert.deepEqual({ ...ctx.where(cellEl) }, { blk: 10, end: 10, cell: 1 })
   assert.equal(ctx.original(cellEl), '1234567')
-  void api
+
+  // tokenExpired 准确识别即将过期/未过期 JWT，不误判非 JWT 令牌
+  const makeJwt = (exp) => 'eyJhbGciOiJub25lIn0.' + Buffer.from(JSON.stringify({ exp })).toString('base64url') + '.sig'
+  const nowSec = Math.floor(Date.now() / 1000)
+  assert.equal(api.tokenExpired(makeJwt(nowSec - 10)), true)
+  assert.equal(api.tokenExpired(makeJwt(nowSec + 30)), true, '距过期不足 60 秒即提前刷新')
+  assert.equal(api.tokenExpired(makeJwt(nowSec + 600)), false)
+  assert.equal(api.tokenExpired('opaque-token'), false)
+
+  // boot 轻摘要路径下：live 配装读库侧 meta、不回退到投稿，且 summary() 覆盖单套与合集
+  const src = require(path.join(site, 'builds/source.js'))
+  const setSum = src.summary('# 双职业合集\n合集：是\n推荐人：甲\n场景：突袭\n强度：S\n核心：核心A\n# 第一套\n职业：猎人#1\n分支：烈日\n核心：核心1\n描述：清怪\n# 第二套\n职业：术士#2\n分支：虚空\n核心：核心2\n描述：输出\n')
+  assert.equal(setSum.name, '双职业合集')
+  assert.equal(setSum.cls, '多职业')
+  assert.equal(setSum.set, 2)
+  assert.deepEqual(setSum.cores, ['核心A', '核心1', '核心2'])
+  const liveRows = api.builds(
+    [{ _id: 'builds/s29-x/a-hunter', meta: { name: '库里新版', cls: '猎人', branch: '烈日', scene: '突袭', tier: 'S', by: '甲', tag: '', cores: [], set: 0, miss: [], note: 0 }, hash: 'h2', landed: 'h1', at: '2' }],
+    [{ _id: 's1', ok: 1, season: 's29-x', slug: 'a-hunter', meta: { name: '投稿旧版' }, at: '1' }])
+  assert.equal(liveRows[0].meta.name, '库里新版')
+  assert.equal(liveRows[0].md, '')
 })
