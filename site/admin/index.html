@@ -17,36 +17,56 @@
 </head>
 <body>
 
-<!-- 登录与未授权共用一个版面：左边一幅纯 CSS 的星图，右边表单。星图不请求任何图片。 -->
+<!-- 登录与未授权共用一张浮于星空之上的双层表壳面板：零外部图片，星空复用 assets/sky-core.js。 -->
 <div class="gate" id="gate">
-<div class="wall" aria-hidden="true">
-<div class="orrery">
-<i class="ring r1"></i><i class="ring r2"></i><i class="ring r3"></i><i class="ring r4"></i>
-<i class="rays"></i><i class="dial"></i><i class="dial fine"></i><i class="halo"></i><i class="sweep"></i>
-<span class="orbit o1"><i style="--a:0deg;--c:var(--c-arc)"></i><i style="--a:60deg;--c:var(--c-solar)"></i><i style="--a:120deg;--c:var(--c-void)"></i><i style="--a:180deg;--c:var(--c-stasis)"></i><i style="--a:240deg;--c:var(--c-strand)"></i><i style="--a:300deg;--c:var(--c-prism)"></i></span>
-<span class="orbit o2"><i style="--a:30deg"></i><i style="--a:150deg"></i><i style="--a:270deg"></i></span>
-<i class="core"></i><i class="core in"></i>
+<canvas class="gate-sky" aria-hidden="true"></canvas>
+<div class="gate-wrap">
+<div class="gate-bezel">
+<section class="gate-card">
+<div class="gate-brand">
+<span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>
+<b>STARSIDE</b>
+<span class="gate-rule" aria-hidden="true"></span>
+<span class="gate-code">ADMIN</span>
 </div>
-<div class="sign"><span class="mark"><i></i><i></i><i></i></span><b>STARSIDE</b><p>Destiny 2 中文资料台 · 编辑台</p></div>
-</div>
-<div class="gate-side">
-<div class="gate-form" id="login">
+<div class="gate-body" id="login">
+<div class="gate-title">
 <h1>登录编辑台</h1>
-<p>审核配装投稿与资料页改动。</p>
-<form id="f-pw">
-<label class="x-field"><span>用户名</span><input class="x-in" name="username" autocomplete="username" required></label>
-<label class="x-field"><span>密码</span><input class="x-in" name="password" type="password" autocomplete="current-password" required></label>
-<p class="x-tip" id="gate-tip" role="status"></p>
-<button type="submit" class="x-btn fill lg">登录</button>
-</form>
-<p class="foot">不开放注册，账号由超级管理员开通。<br><a href="../index.html">返回 Starside</a></p>
+<p>审核配装投稿与资料页改动</p>
 </div>
-<div class="gate-form" id="stranger" hidden>
+<form id="f-pw">
+<div class="x-field">
+<label for="gate-user">用户名</label>
+<input class="x-in" id="gate-user" name="username" placeholder="输入编辑者账号" autocomplete="username" spellcheck="false" autocapitalize="none" autocorrect="off" enterkeyhint="next" required>
+</div>
+<div class="x-field">
+<label for="gate-pw">密码</label>
+<div class="gate-pw-box">
+<input class="x-in" id="gate-pw" name="password" type="password" placeholder="输入密码" autocomplete="current-password" enterkeyhint="done" required>
+<button type="button" class="gate-eye" id="pw-toggle" aria-label="显示密码" aria-pressed="false"><svg viewBox="0 0 16 16" aria-hidden="true"><path class="eye-open" d="M1.5 8s2.4-4 6.5-4 6.5 4 6.5 4-2.4 4-6.5 4-6.5-4-6.5-4Z"/><circle class="eye-open" cx="8" cy="8" r="1.8"/><path class="eye-off" d="M2.2 2.2 13.8 13.8M6.4 4.3A7 7 0 0 1 8 4c4.1 0 6.5 4 6.5 4a11.3 11.3 0 0 1-2.2 2.6M9.5 11.7A7 7 0 0 1 8 12c-4.1 0-6.5-4-6.5-4a11.4 11.4 0 0 1 2.7-3"/></svg></button>
+</div>
+</div>
+<p class="x-tip" id="gate-tip" role="status"></p>
+<div class="gate-acts">
+<a class="gate-back" href="../index.html">← 返回主站</a>
+<button type="submit" class="gate-cta">登录</button>
+</div>
+</form>
+</div>
+<div class="gate-body" id="stranger" hidden>
+<div class="gate-title">
 <h1>账号未获授权</h1>
 <p>登录已成功，但该账号不在编辑者名单中。请将下方 UID 发送给超级管理员，加入名单后刷新本页。</p>
+</div>
 <div class="uid"><code id="my-uid"></code><button type="button" class="x-btn sm" id="copy-uid">复制</button></div>
 <p class="x-tip" id="uid-tip" role="status"></p>
-<div class="x-acts"><button type="button" class="x-btn fill" id="reload">刷新</button><button type="button" class="x-btn quiet" id="switch">切换账号</button></div>
+<div class="gate-acts gate-acts-3">
+<a class="gate-back" href="../index.html">← 返回主站</a>
+<button type="button" class="gate-sub" id="switch">切换账号</button>
+<button type="button" class="gate-cta" id="reload">刷新</button>
+</div>
+</div>
+</section>
 </div>
 </div>
 </div>
@@ -85,5 +105,6 @@
 <script src="../builds/source.js" defer></script>
 <script src="shared.js" defer></script>
 <script src="admin.js" defer></script>
+<script type="module" src="sky.js"></script>
 </body>
 </html>

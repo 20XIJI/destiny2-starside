@@ -151,7 +151,7 @@ envId 不进环境变量：它写在 `shell.API` 里、要落进每个页面的�
 首页不给卡片）。编辑与审核都在线上做，落盘、构建与部署仍在本机：闸门是 Python，
 搬不上云函数。
 
-四个文件手写，不进生成器：`admin/index.html`、`admin/shared.js`、`admin/admin.js`、`admin/style.css`；
+五个文件手写，不进生成器：`admin/index.html`、`admin/shared.js`、`admin/admin.js`、`admin/sky.js`、`admin/style.css`；
 另有生成物 `admin/terms.js` 与 `admin/pages.js`。颜色、字体只引 `assets/site.css` 的
 token，按钮、列表、收件箱与登录页都写在 `admin/style.css`，不借资料页的 `.op` /
 `.toggle`（理由见 design.md 五之二）。

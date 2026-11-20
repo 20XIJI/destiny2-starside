@@ -1710,9 +1710,20 @@
   // 网关默认策略对任何自注册的注册用户都放行云函数，少一条注册入口就少一整类要挡的东西。
   function gate () {
     var pw = $('f-pw')
+    var eye = $('pw-toggle')
+    if (eye) {
+      eye.onclick = function () {
+        var show = pw.password.type === 'password'
+        pw.password.type = show ? 'text' : 'password'
+        eye.setAttribute('aria-pressed', String(show))
+        eye.setAttribute('aria-label', show ? '隐藏密码' : '显示密码')
+      }
+    }
     pw.onsubmit = function (ev) {
       ev.preventDefault()
       var t = $('gate-tip')
+      var sub = pw.querySelector('[type="submit"]')
+      if (sub) sub.disabled = true
       t.classList.remove('bad')
       t.textContent = '登录中…'
       Array.prototype.forEach.call(pw.querySelectorAll('.x-in'), function (n) { n.classList.remove('bad') })
@@ -1728,6 +1739,8 @@
         // 认证服务拒了就是账号或密码不对；别的（断网、网关报错）照原话说出来。
         t.textContent = e.denied ? '用户名或密码错误。' : '登录失败：' + e.message
         if (e.denied) Array.prototype.forEach.call(pw.querySelectorAll('.x-in'), function (n) { n.classList.add('bad') })
+      }).finally(function () {
+        if (sub) sub.disabled = false
       })
     }
     $('copy-uid').onclick = function () {
