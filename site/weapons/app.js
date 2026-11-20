@@ -2659,8 +2659,7 @@
     return '<button type="button" class="' + cls + '" aria-pressed="' + (pressed ? 'true' : 'false') + '"' +
       (tipParts.length ? ' title="' + esc(tipParts.join(' · ')) + '"' : '') +
       ' data-act="perk" data-col="' + c + '" data-plug="' + p + '">' +
-      '<span class="ico">' + imgTag(P.p[p][P_ICON], '', '', true) + '</span><span class="nm">' + esc(plugName(p)) + '</span>' +
-      badge + '</button>';
+      '<span class="ico">' + imgTag(P.p[p][P_ICON], '', '', true) + badge + '</span><span class="nm">' + esc(plugName(p)) + '</span></button>';
   }
   function haloLegend() {
     return '<span class="aside halo-key">' +
