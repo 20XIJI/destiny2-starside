@@ -8,6 +8,7 @@ This directory is the maintained source for verifying the user-facing behavior o
 - Launch an isolated HTTP server serving `site/` at `http://127.0.0.1:$PORT` with `RUN_ID="ss-$(date +%s)"`, `SCRATCH="/tmp/starside-verify-$RUN_ID"`, and `EVIDENCE_DIR="$SCRATCH/evidence"`.
 - Run `playwright-cli` inside `$SCRATCH` using session `-s="$RUN_ID"` resized to `1440 900`.
 - Intercept CloudBase API calls (`https://*.service.tcloudbase.com/api*`) with `playwright-cli -s="$RUN_ID" route` so offline runs are deterministic and never mutate production counters or submissions.
+- On a clean browser profile, acknowledge `dialog.ss-notice` once (click `.ss-notice-ok`) unless testing the notice popup itself (`notices-and-raids.md`).
 - Run the Doctor check from [`SKILL.md`](../SKILL.md) and require the expected `$PORT`, live server PID, and clean repo working tree.
 - Never drive an instance or browser session that was not started by this verification run.
 
@@ -43,7 +44,10 @@ Keep implementation details out of the map. Name only user paths, stable handles
 ## Features
 
 - [Global search & home preview](./global-search.md) covers home page search by Chinese, pinyin, and English names, weapons armory jump links, landing-page row filtering, and empty state.
-- [Weapons armory & perk simulator](./weapons-armory.md) covers DIM-syntax queries, scope switching (weapons, exotic armor, armor sets), quick-filter presets, weapon detail perk selection, real-time stat calculation, and PvE/PvP mode switching.
+- [Weapons armory & perk simulator](./weapons-armory.md) covers `.json.gz` payload loading and fallback, DIM-syntax queries, scope switching (weapons, exotic armor, armor sets), quick-filter presets, weapon detail perk selection, real-time stat calculation, and PvE/PvP mode switching.
 - [Builds directory & facet filtering](./builds-directory.md) covers single-build and build-set directories, class/scene/tier facet bars, tucked branch/tag filter menu, scene regrouping, and zero-match reset.
 - [Build forge (creation, import & export)](./build-forge.md) covers interactive slot selection, candidate narrowing, live markdown export, text import round-trip, and submission validation.
-- [Reference pages & interactive toolbars](./reference-pages.md) covers in-page search and section chips (`artifact-mods`), column-group toggles (`weapon-frames`), and interactive SVG line charts (`power-delta`).
+- [Reference pages & interactive toolbars](./reference-pages.md) covers in-page search and section chips (`artifact-mods`), column-group toggles (`weapon-frames`), and the multi-view Power Delta observer (`power-delta`).
+- [Eververse, Xûr & Ada-1 rotation shop](./eververse-shop.md) covers vendor tab switching, cycle countdown/status bar rendering, and stubbed `rotation/eververse.json` + `rotation/xur.json` payloads.
+- [Site notices & Raid/Dungeon guides](./notices-and-raids.md) covers the first-visit `dialog.ss-notice` modal dismissal and `localStorage.sn` persistence, archive navigation, and `/raid-guides/index.html` section chips.
+- [Admin console login & review gate](./admin-gate.md) covers the starry dual-bezel login gate, password visibility toggle, stranger UID screen, and offline-stubbed `boot` queue rendering.
