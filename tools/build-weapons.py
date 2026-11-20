@@ -1789,15 +1789,17 @@ def gz_json(js_body):
 
 
 def boot_script(ver):
-    """首屏异步载入 index.json.gz（校验通过后再写 Cache API，坏缓存自动清除自愈），
+    """首屏异步载入 index.json.gz（校验版本与结构通过后再写 Cache API，坏缓存自动清除自愈），
     就绪后拉起 app.js；不支持 DecompressionStream 的旧浏览器无缝降级 index.js。"""
     return (
         "<script>(function(){"
         'var V="%s",C="starside-wpn-v1",L=location.hostname==="localhost"||location.hostname==="127.0.0.1";'
-        "function run(){var s=document.createElement(\"script\");s.src=\"app.js\";document.head.appendChild(s)}"
-        "function fb(){var s=document.createElement(\"script\");s.src=\"index.js?v=\"+V;s.onload=run;"
-        "s.onerror=function(){var r=document.getElementById(\"find\");if(r)r.innerHTML='<p class=\"empty\">武器数据载入失败，请刷新重试。</p>'};"
-        "document.head.appendChild(s)}"
+        "function ok(d){return !!(d&&d.ver===V&&d.v&&Array.isArray(d.v.qt)&&Array.isArray(d.w)&&Array.isArray(d.a)&&Array.isArray(d.t))}"
+        "function fail(e){if(e)console.error(e);var r=document.getElementById(\"find\");if(r)r.innerHTML='<p class=\"empty\">武器数据载入失败，请刷新重试。</p>'}"
+        "function run(){var s=document.createElement(\"script\");s.src=\"app.js\";s.onerror=function(){fail(Error(\"app.js\"))};document.head.appendChild(s)}"
+        "function fb(e){if(e)console.error(e);var s=document.createElement(\"script\");s.src=\"index.js?v=\"+V;"
+        "s.onload=function(){if(!ok(window.WPN)){window.WPN=null;fail(Error(\"index.js ver\"));return}run()};"
+        "s.onerror=function(){fail(Error(\"index.js\"))};document.head.appendChild(s)}"
         "function dec(b){var h=new Uint8Array(b,0,2);if(h[0]!==31||h[1]!==139)return Promise.resolve(new TextDecoder().decode(b));"
         'return new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream("gzip"))).text()}'
         'if(typeof DecompressionStream!=="function"||typeof fetch!=="function"){fb();return}'
@@ -1807,7 +1809,7 @@ def boot_script(ver):
         ".catch(function(){return null})"
         ".then(function(b){if(b){hit=true;return b}return fetch(u,{priority:\"high\"}).then(function(r){"
         "if(!r.ok)throw Error(r.status);return r.arrayBuffer()})})"
-        ".then(function(b){return dec(b).then(function(t){var d=JSON.parse(t);if(!d||d.ver!==V)throw Error(\"ver\");"
+        ".then(function(b){return dec(b).then(function(t){var d=JSON.parse(t);if(!ok(d))throw Error(\"shape\");"
         "if(useC&&!hit){caches.open(C).then(function(c){return c.put(u,new Response(b)).then(function(){return c.keys()}).then(function(ks){"
         'return Promise.all(ks.filter(function(k){return k.url.indexOf("index.json.gz")!==-1&&k.url!==u}).map(function(k){return c.delete(k)}))})})'
         ".catch(function(){})}return d})})"

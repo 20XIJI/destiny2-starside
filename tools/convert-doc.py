@@ -1391,6 +1391,31 @@ def check(md, out, slug):
         die("%s 有没转换的着色标记" % slug)
 
 
+CHANGELOG_ACTS = ("新增", "改动", "订正")
+
+
+def check_changelog_acts(md: str, rel: str) -> None:
+    """更新日志校验：改动类型限定三种，且同一天内同类型须连续成段。"""
+    seen: set[str] = set()
+    prev: str | None = None
+    for n, line in enumerate(md.split("\n"), start=1):
+        if line.startswith("## "):
+            seen, prev = set(), None
+            continue
+        hit = re.match(r"- \{act\|([^}]*)\}", line)
+        if not line.startswith("- ") or not hit:
+            if line.startswith("- "):
+                die("%s:%d 这一条没以 {act|类型} 开头" % (rel, n))
+            continue
+        act = hit.group(1)
+        if act not in CHANGELOG_ACTS:
+            die("%s:%d 写了「%s」，类型只有%s" % (rel, n, act, "、".join(CHANGELOG_ACTS)))
+        if act != prev and act in seen:
+            die("%s:%d 「%s」在这一天里断开了，同类型的几条要连成一段" % (rel, n, act))
+        seen.add(act)
+        prev = act
+
+
 def build(slug):
     global \
         ICONS, \
@@ -1412,6 +1437,8 @@ def build(slug):
             die("找不到源稿 %s" % src)
         with open(src, encoding="utf-8") as f:
             md = f.read()
+        if slug == "changelog":
+            check_changelog_acts(md, os.path.relpath(os.path.realpath(src), shell.ROOT))
         where = where_of(md, slug)
         # **盘上那一份的 sha1，在展开之前算**：编辑台拿它与库里 docs 那一条的 hash
         # 比，而库里存的正是盘上这一份。拿展开后的算，主键骨架页会永远被判成过期。

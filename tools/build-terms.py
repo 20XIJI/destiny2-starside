@@ -4,8 +4,8 @@
 **不另立词表**：三份都从现有的唯一真相现取，改一处两边同时生效。
 
     items.TERMS                → 中文正名（G1）与 token 唯一（G2）
-    check_terms.tint_classes   → token 有定义（G3），同时是着色芯片的调色板
-    items.forward_terms()      → 该着色的都着了（G6 正查），与构建同一份
+    check_terms.tint_classes   → token 有定义（G4），同时是着色芯片的调色板
+    items.forward_terms()      → 该着色的都着了（G3 正查），与构建同一份
 
 前端跑出来的是提示不是拦截：逐字保真、结构断言那几条要 Python，留在本地。
 一条记录一行，与 assets/search.js 同理——这份文件每改一次词表就要重生成并入库，
@@ -63,13 +63,11 @@ def build():
     # --c-orb 与 --c-stack 渲染色相同、名字不同，这一层让人靠名字分辨。
     tint = check_terms.tint_classes(css)
     known = check_terms.classes_in(css)
-    # 「源稿里真用过的 token」只有 check_tokens() 一处算得出，借它的返回值，
-    # 不在这里再数一遍。它顺带往 bad 里记 G3，那几条由 check_terms.py 自己报，
-    # 这里丢掉。
-    used = check_terms.check_tokens(check_terms.sources(), css, [])
+    pairs = check_terms.sources()
+    used = check_terms.used_tokens(css, pairs)
 
     terms = [[w, t, b] for w, t, b in items.TERMS if b or t]
-    # G6 正查用的那一份：只参与反查的词（items.no_forward()）不送，构建不要求它们着色，
+    # G3 正查用的那一份：只参与反查的词（items.no_forward()）不送，构建不要求它们着色，
     # 编辑台也不该提示。
     table = items.forward_terms()
     # **一个名字在源稿里写得出几种形状，就送过去几行**。表的键是归一化过的，
@@ -90,7 +88,7 @@ def build():
     lines += ["  %s," % j(t) for t in terms]
     lines.append("],")
     lines.append("tokens: {")
-    # **芯片只列源稿里真写得出的那些**，判据与 G7 的色板页同一条（tint_classes
+    # **芯片只列源稿里真写得出的那些**，判据与 G5 的色板页同一条（tint_classes
     # 再用 used 收一道）。不收这一道时 50 枚里有 18 枚是外壳与组件的类——
     # wordmark、site-foot、hero-sub、entry-stamp、tool-search、qq、pledge 这些，
     # 全站 75 份源稿里一次都没出现过，点一下只会生成一个不该有的标记。
@@ -100,11 +98,11 @@ def build():
         if c in used
     ]
     lines.append("},")
-    # G3 按页判：站内每页再叠一层自己的样式表（{ico|…} 只在 ability-cooldown 有）。
+    # G4 按页判：站内每页再叠一层自己的样式表（{ico|…} 只在 ability-cooldown 有）。
     # 只存相对 site.css 的增量——75 份各存一份全集就是把类名抄七十五遍。
     lines.append("classes: %s," % j(sorted(known)))
     extra = {}
-    for rel, ok in check_terms.sources():
+    for rel, ok in pairs:
         more = sorted(ok - known)
         if more:
             # 键是源稿的 _id：去掉 references/ 前缀与扩展名（配装是 .json，
@@ -114,7 +112,7 @@ def build():
     lines += ["  %s: %s," % (j(k), j(v)) for k, v in sorted(extra.items())]
     lines.append("},")
     lines.append("guard: %s," % j(items.GUARD))
-    # G1 的白名单与 G6 的正查范围，两处都照 Python 那一侧原样带过去，不在前端另立。
+    # G1 的白名单与 G3 的正查范围，两处都照 Python 那一侧原样带过去，不在前端另立。
     lines.append("keep: %s," % j(items.KEEP))
     lines.append("g6: %s," % j(sorted(os.path.basename(p)[:-3] for p in items.pages())))
     lines.append("items: [")

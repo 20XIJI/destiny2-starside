@@ -69,9 +69,9 @@ oxlint --type-aware --type-check site/ functions/ tools/
 
 ## 构建闸门（`npm run build` 自动执行）
 
-1. **`check_terms.py`（G1–G7）**：以 `tools/items.py`、`tools/items.json`、`tools/perks.json` 为唯一术语真相。覆盖全部源稿（G1–G7）、`data/*.json` `facts.site_text`（G1/G2/G3/G6 反查）及手写页面/脚本（`index.html`、`eververse/{index.html,app.js}`、`assets/armor-rng.js` 的 G1）；任何禁用词、错色 token、未定义 class、页脚/首页时间戳或色板不一致直接中止。
+1. **`check_terms.py`（G1–G5）**：以 `tools/items.py`、`tools/items.json`、`tools/perks.json` 为唯一术语真相。覆盖全部源稿（G1–G5）、`data/*.json` `facts.site_text`（G1/G2/G3 反查/G4）及手写页面/脚本（`index.html`、`eververse/{index.html,app.js}`、`assets/armor-rng.js` 的 G1）；任何禁用词、错色 token、未定义 class 或色板不一致直接中止。
 2. **`check_type.py`（T1–T5）**：禁止中文吃进宽字距（`>.2em`）、禁用非法 `background` 简写颜色层、检查 HTML 开闭标签、禁止小数像素字号与无 `.gen` 表残留规则、禁止资料页正文块加窄 `max-width`。
-3. **`check_shell.py`**：校验 `shell.py` 外壳在全站逐字一致及所有资料页进入搜索索引。改 `shell.HIT`/`shell.EDIT` 或公告内联检查需同步手写页面。
+3. **`check_shell.py`**：校验 `shell.py` 外壳在全站逐字一致、首页卡片时间戳与配装数与磁盘产出一致，以及所有资料页进入搜索索引。改 `shell.HIT`/`shell.EDIT` 或公告内联检查需同步手写页面。
 
 ## 前端性能与部署红线
 

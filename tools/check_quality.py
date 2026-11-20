@@ -1333,7 +1333,7 @@ class Generated(unittest.TestCase):
     管道的产物，而 `npm run build` 里 build-terms.py 排在三道闸门之前——闸门那一侧
     永远看到的是刚生成的那一份，查不出过期。这条放在 `npm test` 里才不是空转。
 
-    过期的后果不是少一个词：G6 的匹配规则（中英之间那个排版空格允许回来）
+    过期的后果不是少一个词：G3 的匹配规则（中英之间那个排版空格允许回来）
     如今也是随词表送过去的数据，词表旧了，编辑台的提示就按旧规则走。
     """
 
@@ -1507,6 +1507,13 @@ class Generated(unittest.TestCase):
                     Path(src).read_text(encoding="utf-8"),
                     "%s 与 %s 分家了，跑一次构建" % (dst, src),
                 )
+
+    def test_xur_recs_matches_its_sources(self):
+        self.assertEqual(
+            (TOOLS / "xur-recs.json").read_text(encoding="utf-8"),
+            build_terms.xur_recs(),
+            "tools/xur-recs.json 过期了，跑 python3 tools/build-terms.py",
+        )
 
     def test_weapons_inline_style_has_balanced_braces_and_complete_keyframes(self):
         html_text = self.read("weapons/index.html")
@@ -4056,15 +4063,6 @@ class Normalization(Isolated):
         self.replace(
             check_terms, "sources", lambda: [("references/docs/fixture.md", set())]
         )
-        for name in (
-            "check_tokens",
-            "check_stamps",
-            "check_build_count",
-            "check_acts",
-            "check_palette",
-            "check_items",
-        ):
-            self.replace(check_terms, name, lambda *args: set())
         errors = io.StringIO()
         with redirect_stderr(errors):
             self.assertEqual(check_terms.main(), 1)
@@ -4082,9 +4080,13 @@ class Normalization(Isolated):
             "# 示例\n\n## 正文\n填装后拾取{orb|能量球}\n"
             "{armor-charge|护甲充能} {el-solar|骨灰余烬}\n",
         )
-        bad = []
-        check_terms.check_terms(["references/docs/fixture.md"], bad)
-        check_terms.check_items(["references/docs/fixture.md"], bad)
+        self.file(
+            "site/assets/site.css",
+            ".orb { color: var(--c-orb); }\n"
+            ".armor-charge { color: var(--c-ac); }\n"
+            ".el-solar { color: var(--c-solar); }\n",
+        )
+        bad, _, _ = check_terms.check_all(force=True)
         self.assertEqual(bad, [])
 
     def test_urls_keep_nested_and_semantic_wrappers(self):
@@ -4165,15 +4167,27 @@ class Normalization(Isolated):
         result = items.normalize_text(text, **self.kw)[0]
         self.assertEqual(result, text)
         self.doc.write_text("## 正文\n" + result, encoding="utf-8")
-        bad = []
+        self.file("site/assets/site.css", "")
         self.file(
             "tools/convert-armor-sets.py",
             (TOOLS / "convert-armor-sets.py").read_text(encoding="utf-8"),
         )
-        check_terms.check_tokens([("references/docs/fixture.md", set())], "", bad)
-        self.assertTrue(any("unknown" in error for error in bad), bad)
-        doc = load("quality_doc", "convert-doc.py")
-        self.exits(lambda: doc.wrap("p", "{orb|能量球"))
+        bad, _, _ = check_terms.check_all(force=True)
+        self.assertTrue(any("G4 " in error and "unknown" in error for error in bad), bad)
+        doc_mod = load("quality_doc", "convert-doc.py")
+        self.exits(lambda: doc_mod.wrap("p", "{orb|能量球"))
+
+    def test_changelog_acts_checked_by_convert_doc(self):
+        doc_mod = load("quality_doc_acts", "convert-doc.py")
+        doc_mod.check_changelog_acts(
+            "## 2026.1.1\n- {act|新增} A\n- {act|改动} B\n", "changelog.md"
+        )
+        self.exits(
+            lambda: doc_mod.check_changelog_acts(
+                "## 2026.1.1\n- {act|新增} A\n- {act|改动} B\n- {act|新增} C\n",
+                "changelog.md",
+            )
+        )
 
 
 class IncrementalBuild(Isolated):
@@ -4386,8 +4400,15 @@ def _corpus_digests(root: Path) -> dict[str, str]:
     )
     site_css = sorted((root / "site").rglob("*.css"))
     build_pages = glob_files(root / "site" / "builds", "*/*/index.html")
+    build_descs = glob_files(root / "site" / "builds", "*/*/desc.js")
     edit_jsons = glob_files(root / "site", "*/edit.json") + glob_files(
         root / "site", "*/*/edit.json"
+    )
+    edit_pages = sorted(
+        f
+        for p in edit_jsons
+        for f in (p.parent / "index.html", p.parent / "rest.html")
+        if f.is_file()
     )
     weapons_site = sorted(p for p in (root / "site" / "weapons").glob("*") if p.is_file())
 
@@ -4414,12 +4435,13 @@ def _corpus_digests(root: Path) -> dict[str, str]:
             "site/builds/sets/index.html",
         ),
         "Generated": self_file
-        + entity
+        + all_facts
         + docs_md
         + keys_md
         + builds_json
         + site_css
         + build_pages
+        + build_descs
         + files(
             "tools/build-terms.py",
             "tools/build-home.py",
@@ -4441,6 +4463,7 @@ def _corpus_digests(root: Path) -> dict[str, str]:
             "tools/facts.py",
             "tools/sync-eververse.js",
             "tools/sync-xur.js",
+            "tools/xur-recs.json",
             "references/pages/prismatic.json",
             "site/index.html",
             "site/assets/notice-data.js",
@@ -4454,7 +4477,7 @@ def _corpus_digests(root: Path) -> dict[str, str]:
             "site/builds/desc.js",
             "site/builds/new/index.html",
             "site/weapons/index.html",
-            "site/prismatic/index.html",
+            "site/elements/prismatic/index.html",
             "functions/api/dialect.js",
             "functions/api/source.js",
             "functions/api/eververse.js",
@@ -4479,6 +4502,7 @@ def _corpus_digests(root: Path) -> dict[str, str]:
         "EditOrigins": self_file
         + entity
         + edit_jsons
+        + edit_pages
         + files(
             "tools/editmap.py",
             "tools/facts.py",

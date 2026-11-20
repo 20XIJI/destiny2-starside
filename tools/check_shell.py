@@ -10,6 +10,7 @@ index.html。本脚本从 shell.py 现取不变片段去比对每一个页面—
 页面清单取自 shell.pages()，从 references/docs/ 与 references/keys/ 现扫，新增一篇不必回来改这个文件。
 """
 
+import glob
 import gzip
 import os
 import re
@@ -106,9 +107,56 @@ def invariants(home=False):
     )
 
 
+def check_home_meta(home_src, bad):
+    """首页卡片上的更新日期与配装数量，必须与对应页面页脚及磁盘产出一致。"""
+    for m in re.finditer(
+        r'<a class="entry" href="([^"]+)".*?entry-stamp">更新 ([\d.]+)<',
+        home_src,
+        re.S,
+    ):
+        page, want = m.group(1), m.group(2)
+        path = os.path.join(shell.SITE, page)
+        if not os.path.exists(path):
+            bad.append("%s：首页卡片指向的文件不存在" % page)
+            continue
+        with open(path, encoding="utf-8") as f:
+            got = re.search(r'<span class="stamp">更新 ([\d.]+)</span>', f.read())
+        if not got:
+            bad.append("%s：页脚没有更新时间" % page)
+        elif got.group(1) != want:
+            bad.append("%s：页脚写 %s，首页卡片写 %s" % (page, got.group(1), want))
+
+    counts = {"builds/index.html": 0, "builds/sets/index.html": 0}
+    for path in sorted(
+        glob.glob(os.path.join(shell.SITE, "builds", shell.SEASON, "*", "index.html"))
+    ):
+        with open(path, encoding="utf-8") as f:
+            key = (
+                "builds/sets/index.html"
+                if '<main class="set ' in f.read()
+                else "builds/index.html"
+            )
+            counts[key] += 1
+    for href, want in counts.items():
+        card = re.search(
+            r'<a class="entry" href="%s".*?</a>' % re.escape(href), home_src, re.S
+        )
+        if not card:
+            if want == 0:
+                continue
+            bad.append("首页找不到 %s 那张卡" % href)
+            continue
+        m = re.search(r"<dd>(\d+)</dd>", card.group(0))
+        if not m:
+            bad.append("首页 %s 那张卡没写数" % href)
+        elif int(m.group(1)) != want:
+            bad.append("首页 %s 那张卡写 %s，站上是 %d" % (href, m.group(1), want))
+
+
 def main() -> int:
     listed = shell.pages()
     bad: list[str] = []
+    home_src = ""
     # 全站搜索的索引也按这份清单建。新增一页却没重跑 build-search.py 时，那一页
     # 在首页搜不出来——这里当场报出，不等读者搜不到才发现。
     with open(os.path.join(shell.SITE, "assets", "search.js"), encoding="utf-8") as f:
@@ -121,6 +169,8 @@ def main() -> int:
             continue
         with open(path, encoding="utf-8") as f:
             src = f.read()
+        if rel == shell.HOME:
+            home_src = src
 
         for frag in want:
             # 资源前缀按页面所在层数改写：首页在站点根，子目录页深一层
@@ -172,6 +222,8 @@ def main() -> int:
         if rel != shell.HOME and '"%s"' % rel not in index:
             bad.append("%s：不在全站搜索索引里，跑一次 tools/build-search.py" % rel)
 
+    if home_src:
+        check_home_meta(home_src, bad)
     weight, total, sizes = check_weight()
     bad += weight
 

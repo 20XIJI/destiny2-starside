@@ -272,8 +272,8 @@ python3 tools/convert-armor-sets.py --fill-icons                # 缺的按 mani
 
 段首之外的类型标签由生成器收掉：`convert-doc.py` 给相邻同类型的条目打上 `is-same`，
 `changelog/style.css` 用 `visibility: hidden` 让它留位不显形。那两个字必须留在 DOM 里：
-逐字保真是剥标签后与源稿比对，删掉即报错。`check_terms.py` 的 G5 钉住三种类型与「连成一段」，
-G3 钉住 `{act|…}` 的类定义。
+逐字保真是剥标签后与源稿比对，删掉即报错。`convert-doc.py` 的 `check_changelog_acts` 钉住三种类型与「连成一段」，
+`check_terms.py` 的 G4 钉住 `{act|…}` 的类定义。
 
 | 类型 | 用在 | 写法要求 |
 |---|---|---|

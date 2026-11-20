@@ -610,8 +610,8 @@ N 条提案、D 篇通过文档须满足 `N <= 49` 且 `2*N + 2*D + 2 <= 100`，
 
 `admin/terms.js` 由 `tools/build-terms.py` 从现有的唯一真相导出，不另立词表：
 `items.TERMS`（G1 正名、G2 token 唯一）、`check_terms.tint_classes`
-（G3 token 有定义，同时是芯片的调色板）、`items.forward_terms()`（G6 正查，与构建
-同一份；只参与反查的词不送）。改一处两边同时生效。芯片那一份再用 `check_tokens()` 返回的 `used` 收一道，与 G7 的色板页同一条
+（G4 token 有定义，同时是芯片的调色板）、`items.forward_terms()`（G3 正查，与构建
+同一份；只参与反查的词不送）。改一处两边同时生效。芯片那一份再用 `used_tokens()` 返回的 `used` 收一道，与 G5 的色板页同一条
 判据：不收时 50 枚里有 18 枚是外壳与组件的类（`wordmark`、`site-foot`、`entry-stamp`、
 `tool-search`…），全站源稿里一次都没出现过，点一下只会生成一个不该有的标记。
 收完剩 32 枚。一条记录一行，与 `assets/search.js` 同理，按行写让 git 存得下增量。
@@ -621,10 +621,10 @@ N 条提案、D 篇通过文档须满足 `N <= 49` 且 `2*N + 2*D + 2 <= 100`，
 
 三处照 Python 那一侧原样搬，少一条就满屏误报：
 
-1. G6 的六处跳过（`items.hits_in()`）：键行与标题行、表格里行标题那一格、链接目标、
+1. G3 的六处跳过（`items.hits_in()`）：键行与标题行、表格里行标题那一格、链接目标、
    `GUARD` 里更长的专名、已经在某个标记里的、表头行。表头行要跨块判：块是一行
    一个，分隔行落在下一块里，在块内看下一行永远判不出来，32 处列名曾因此被要求着色。
-2. G3 按页判：站内每页再叠一层自己的样式表，`{ico|…}` 只在 `ability-cooldown` 有。
+2. G4 按页判：站内每页再叠一层自己的样式表，`{ico|…}` 只在 `ability-cooldown` 有。
    只按 `site.css` 判会把九千多处整批报成没定义。`terms.js` 只存相对 `site.css` 的增量。
 3. G1 的 `KEEP` 白名单：`Destiny 2: Boss Damage` 这类官方专名整条放行，链接目标同理。
 

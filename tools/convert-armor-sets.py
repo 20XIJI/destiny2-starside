@@ -64,7 +64,7 @@ ALPHA_BITS = 4  # alpha 量化档数。剪影图 3x 放大与原图并排看不�
 # 长词必须排在短词前面：能量球 先于 能量、重型弹药 先于 弹药。
 # 这一页专有的词：全站术语不收的排版类与机制色。**元素与元素效果不写在这里**——
 # 那一份是全站的，在 items.py 的 MECH 上，下面 merge() 并进来。同一个术语在两处
-# 各写一份，就是漏着色的根子：MECH 里补了「增幅」，这一页照旧素着，而 G6 不管
+# 各写一份，就是漏着色的根子：MECH 里补了「增幅」，这一页照旧素着，而 G3 不管
 # 这一页（它走词表着色，源稿里没有 {token|…} 可查）。
 PAGE_TERMS: list[tuple[str, str]] = [
     # 只剩全站两份表都没收的：它们在别处按更长的短语着色，单词一级没有登记。
@@ -265,7 +265,7 @@ _QUOTED_TOKEN = {w: tok for w, (tok, _cat) in items.load()[0].items()}
 _QUOTED_TOKEN.update(dict(PAGE_TERMS))
 _GUARDS = items.GUARD_RX
 
-# inline() 的分支表自己发的三个 token，词表里没有。check_terms.py 的 G3 与 G7
+# inline() 的分支表自己发的三个 token，词表里没有。check_terms.py 的 G4 与 G5
 # 从这里取，不在那边另抄一份名单。
 INLINE_TOKENS = {'term', 'unsure', 'pvp'}
 
@@ -510,7 +510,7 @@ def check(cats: list[Category], out: str) -> None:
     if dead:
         die('词表里这些词一次都没命中，删掉或改写：%s' % '、'.join(dead))
 
-    # 全站术语出现在正文里就必须着色。这一页走词表着色，G6 那条正查够不着它，
+    # 全站术语出现在正文里就必须着色。这一页走词表着色，G3 那条正查够不着它，
     # 所以闸门放在这里：剥掉着色 span 之后，正文里不许再出现术语。
     # 只查效果正文：套装名、来源、标签与效果名不走 inline()，那几处本来就素色。
     naked = items.naked_text(

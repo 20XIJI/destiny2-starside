@@ -2887,7 +2887,7 @@ def check(out, slug):
         # 挪错了这一条静默不查任何东西。
         + re.findall(r'<h2 class="sect-label">注解</h2>(.*?)</section>', out, re.S)
         # 合集介绍与注解同为作者写的散文，一样归源稿管。漏了它，
-        # 合集正文里的术语裸着也过得去——配装源稿不进 G6 正查。
+        # 合集正文里的术语裸着也过得去——配装源稿不进 G3 正查。
         + re.findall(r'<h2 class="sect-label">合集介绍</h2>(.*?)</section>', out, re.S)
         # 审核意见也是人写的散文，与描述、注解同一条：术语裸着就是漏了。
         + re.findall(r'<aside class="verdict">(.*?)</aside>', out, re.S)
@@ -2928,7 +2928,7 @@ def check(out, slug):
 
 def sync_home(counts):
     """首页那三张配装卡的更新时间与套数随投稿漂，构建时按产出改写。
-    时间从各自的产出页脚现读——那正是 check_terms.py 的 G4 拿来比对的值。
+    时间从各自的产出页脚现读——那正是 check_shell.py 拿来比对的值。
     counts 是 {href: (小标题, 数)}，一张卡的改写在 shell.sync_card()。"""
     path = os.path.join(shell.SITE, "index.html")
     with open(path, encoding="utf-8") as f:

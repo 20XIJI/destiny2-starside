@@ -251,6 +251,7 @@ def replay_take_docs_mine_cas(sync_mod) -> list[str]:
             return {"ok": 1}
         raise AssertionError(f"unexpected api call: {action} {kw}")
 
+    cas_rejected = False
     with (
         mock.patch.object(sync_mod, "api", side_effect=fake_api),
         mock.patch.object(sync_mod, "on_disk", return_value={doc_id: vl}),
@@ -265,17 +266,34 @@ def replay_take_docs_mine_cas(sync_mod) -> list[str]:
             sync_mod.take_docs([doc_id], mine=True)
         except RuntimeError as exc:
             if "conflict" in str(exc):
-                print(
-                    "  [LIVE PASS] take_docs(--mine) rejected concurrent remote edit via baseHash"
-                )
-                return failures
-            raise
+                cas_rejected = True
+            else:
+                raise
+
+    if (
+        cas_rejected
+        and len(push_calls) == 1
+        and push_calls[0].get("baseHash") == sync_mod.sha1(vr1)
+        and remote_state["md"] == vr2
+    ):
+        print(
+            "  [LIVE PASS] take_docs(--mine) sent push with baseHash=sha1(vr1), "
+            "CAS rejected concurrent remote edit, and remote stayed vr2"
+        )
+        return failures
 
     if remote_state["md"] == vl:
         failures.append(
             "FINDING take_docs(--mine): replay confirmed TLC counterexample — "
             f"push omitted baseHash (keys={sorted(push_calls[0].keys()) if push_calls else []}) "
             "and silently overwrote concurrent remote edit vr2 with local edit vl"
+        )
+    else:
+        failures.append(
+            "take_docs(--mine) replay did not exercise expected CAS rejection: "
+            f"cas_rejected={cas_rejected}, push_calls={len(push_calls)}, "
+            f"baseHash={push_calls[0].get('baseHash') if push_calls else None}, "
+            f"remote_is_vr2={remote_state['md'] == vr2}"
         )
     return failures
 

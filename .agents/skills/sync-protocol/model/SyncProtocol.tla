@@ -198,6 +198,7 @@ SweepDropCrashBeforeSubs ==
 
 SweepRemoveLocal ==
   /\ syncPc = "drop_subs_done"
+  /\ unilateralLocalDel' = (unilateralLocalDel \/ (disk # NONE /\ (base = NONE \/ disk # base)))
   /\ disk' = NONE
   /\ base' = NONE
   /\ goneInRun' = TRUE
@@ -205,7 +206,7 @@ SweepRemoveLocal ==
   /\ syncPc' = "after_sweep"
   /\ UNCHANGED <<doc, landed, subOk, dropSub,
                  snapDoc, snapLanded, snapSubOk, snapDrop,
-                 conflictInRun, silentOverwrite, unilateralLocalDel>>
+                 conflictInRun, silentOverwrite>>
 
 SweepCrashBeforeLocal ==
   /\ syncPc = "drop_subs_done"

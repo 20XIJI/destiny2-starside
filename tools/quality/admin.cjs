@@ -45,7 +45,7 @@ test('no consumer keeps a private copy of the splitter', () => {
   // 从前这条规则在 JS 里有三份（云函数、edit.js、admin.js），且并不等价：
   // admin.js 的 titleEnd() 不记花括号深度，4563 行语料里 382 行把行标题截在
   // {token|…} 内部那个竖线上，于是行标题里的词在编辑台上被报「该着色」，
-  // 而构建时的 G6 不报。认的是切格独有的那一句剥空格循环：谁再抄一份回去，
+  // 而构建时的 G3 不报。认的是切格独有的那一句剥空格循环：谁再抄一份回去，
   // 那一句就跟着回去，这条就响。
   const MARK = "while (b > a && line[b - 1] === ' ') b--"
   const owns = ['site/admin/dialect.js', 'functions/api/dialect.js']
@@ -139,7 +139,7 @@ test('the editing console flags item names written with the typographic space', 
   // 源稿按 design.md 三节在汉字与拉丁之间补一个空格（语料里 117 处「Vex 揭秘者」
   // 这类写法），而 tools/items.json 的键是归一化过的、没有那个空格。Python 那侧
   // 靠 items.pattern() 把空格允许回来；terms.js 要把两种写法都带上，否则编辑台
-  // 对这批名字一声不吭，而构建时的 G6 照报——人在编辑台上看不出该着色。
+  // 对这批名字一声不吭，而构建时的 G3 照报——人在编辑台上看不出该着色。
   const { api, terms } = adminApi()
   const mixed = terms.items.filter((row) => BOUND.test(row[0]) && (BOUND.lastIndex = 0, true))
   assert.ok(mixed.length > 20, `terms.js 里中英混排的名字只有 ${mixed.length} 个，词表挪走了？`)
@@ -151,11 +151,11 @@ test('the editing console flags item names written with the typographic space', 
     if (!warns.some((w) => w.startsWith('「' + spaced + '」该着 ' + token))) missed.push(spaced)
   }
   assert.deepEqual(missed, [],
-    `这些名字按源稿的写法出现时，编辑台不提示该着色，而 npm run build 的 G6 会报：${missed.slice(0, 5).join('、')}`)
+    `这些名字按源稿的写法出现时，编辑台不提示该着色，而 npm run build 的 G3 会报：${missed.slice(0, 5).join('、')}`)
 })
 
 test('the editing console asks for no tint the build does not ask for', () => {
-  // terms.js 的 items 就是构建 G6 正查那一份（items.forward_terms()）。它曾送的是
+  // terms.js 的 items 就是构建 G3 正查那一份（items.forward_terms()）。它曾送的是
   // items.load() 全量，多出只参与反查的 355 条：编辑台对 48 个词报了 153 条「该着色」，
   // 而 npm run build 与 --apply 都不要求。构建过得去的源稿，这里一条都不许报。
   const { api, terms } = adminApi()

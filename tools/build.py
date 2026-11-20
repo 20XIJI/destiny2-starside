@@ -238,7 +238,9 @@ def main() -> int:
     page_dirty: list[str] = []
     for slug, path in slugs:
         key = "page:%s" % slug
-        if dirty(key, [path, *doc_refs(path), *page_gen, *core_facts], extra=notice_id):
+        if dirty(
+            key, [path, *doc_refs(path), *page_gen, *core_facts, *lookup_facts], extra=notice_id
+        ):
             page_dirty.append(slug)
     art_dirty = dirty(
         "artifact-mods",
@@ -415,7 +417,7 @@ def main() -> int:
     css_files = sorted((ROOT / "site").rglob("*.css"))
     terms_dirty = dirty(
         "terms",
-        entity_facts
+        all_facts
         + css_files
         + under(
             "tools/build-terms.py",
@@ -450,6 +452,7 @@ def main() -> int:
             "site/eververse/index.html",
             "site/eververse/app.js",
             "site/assets/armor-rng.js",
+            "site/weapons/app.js",
             "design.md",
         )
         + shared

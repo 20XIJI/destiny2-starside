@@ -466,7 +466,7 @@ def unsure_note(mark="[?]"):
 def sync_card(home, href, count=None):
     """首页一张卡随那一页改写：更新时间取那一页页脚，count=(小标题, 数) 时改那个数。
     返回改过的首页。**改数要带上小标题那个锚点**：一张卡里将来多一对 <dt><dd>，
-    不带锚点就把它也改了，而 check_terms 的 G4 只读第一个 <dd>，查不出来。"""
+    不带锚点就把它也改了，而 check_shell 的首页配装数校验只读第一个 <dd>，查不出来。"""
     card = markup.must(
         re.search(r'<a class="entry" href="%s".*?</a>' % re.escape(href), home, re.S),
         "首页找不到 %s 那张卡" % href,

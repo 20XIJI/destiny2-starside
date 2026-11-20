@@ -690,7 +690,7 @@ test('weapons: completing an unused prefetch preserves loaded browse results', (
   vm.createContext(ctx)
   vm.runInContext(funcSource('weapons/app.js', 'need'), ctx)
   ctx.need('pool')
-  ctx.window.WPN_POOL = {}
+  ctx.window.WPN_POOL = { p: [], s: [] }
   script.onload()
   assert.equal(cards.length, 240)
 })
@@ -962,7 +962,7 @@ test('weapons: decodeGzBuffer, loadGzData cache lifecycle, and ensurePinyin lazy
   )
 
   // 1. decodeGzBuffer handles both raw gzip bytes and already-decompressed UTF-8 JSON
-  const rawJson = JSON.stringify({ ver: 'v2', ok: true })
+  const rawJson = JSON.stringify({ ver: 'v2', p: [], s: [] })
   const gzBuf = zlib.gzipSync(Buffer.from(rawJson, 'utf8'))
   const gzAB = gzBuf.buffer.slice(gzBuf.byteOffset, gzBuf.byteOffset + gzBuf.byteLength)
   const plainBuf = Buffer.from(rawJson, 'utf8')
@@ -994,6 +994,13 @@ test('weapons: decodeGzBuffer, loadGzData cache lifecycle, and ensurePinyin lazy
   await assert.rejects(() => ctx.loadGzData('text', 'v2', true))
   await new Promise((r) => setTimeout(r, 10))
   assert.ok(!cacheMap.has(badUrl), 'poisoned cache entry must be evicted on validation failure')
+
+  // 3b. Valid ver but structurally malformed payload is rejected and never cached
+  const malformedBuf = zlib.gzipSync(Buffer.from(JSON.stringify({ ver: 'v3' }), 'utf8'))
+  fetchPayload = malformedBuf.buffer.slice(malformedBuf.byteOffset, malformedBuf.byteOffset + malformedBuf.byteLength)
+  await assert.rejects(() => ctx.loadGzData('text', 'v3', true))
+  await new Promise((r) => setTimeout(r, 10))
+  assert.ok(!cacheMap.has('https://starside.work/weapons/text.json.gz?v=v3'), 'malformed payload must not be cached')
 
   // 4. ensurePinyin lazy-loads once and re-evaluates active query on load
   ctx.ensurePinyin()

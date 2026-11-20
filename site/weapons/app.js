@@ -125,6 +125,12 @@
           return c.match(url).then(function (r) { return r ? r.arrayBuffer() : null; });
         }).catch(function () { return null; })
       : Promise.resolve(null);
+    function validPayload(data) {
+      if (!data || (ver && data.ver !== ver)) { return false; }
+      if (name === 'pool') { return Array.isArray(data.p) && Array.isArray(data.s); }
+      if (name === 'text') { return Array.isArray(data.pd) && Array.isArray(data.ps); }
+      return true;
+    }
     return fromCache.then(function (buf) {
       if (buf) { hit = true; return buf; }
       return fetch(url, highPriority ? { priority: 'high' } : undefined).then(function (r) {
@@ -134,7 +140,7 @@
     }).then(function (buf) {
       return decodeGzBuffer(buf).then(function (txt) {
         var data = JSON.parse(txt);
-        if (!data || (ver && data.ver !== ver)) { throw new Error('version mismatch: ' + name); }
+        if (!validPayload(data)) { throw new Error('invalid payload: ' + name); }
         if (useCache && !hit) {
           caches.open(WPN_CACHE).then(function (c) {
             return c.put(url, new Response(buf)).then(function () { return c.keys(); }).then(function (ks) {
@@ -154,6 +160,13 @@
     });
   }
   function need(name, cb, retry) {
+    function validLoaded(loaded, wpnVer) {
+      if (!loaded) { return false; }
+      if ((name === 'pool' || name === 'text') && wpnVer && loaded.ver !== wpnVer) { return false; }
+      if (name === 'pool') { return Array.isArray(loaded.p) && Array.isArray(loaded.s); }
+      if (name === 'text') { return Array.isArray(loaded.pd) && Array.isArray(loaded.ps); }
+      return true;
+    }
     var ready = name === 'pool' ? window.WPN_POOL : name === 'text' ? window.WPN_TEXT : window.WPN_PVP;
     if (ready) {
       if (name === 'pvp') { pvpReady(); }
@@ -188,7 +201,7 @@
         s.src = new URL(name + '.js' + ver, HERE).href;
         s.onload = function () {
           var loaded = name === 'pool' ? window.WPN_POOL : name === 'text' ? window.WPN_TEXT : window.WPN_PVP;
-          if (!loaded || ((name === 'pool' || name === 'text') && wpnVer && loaded.ver !== wpnVer)) {
+          if (!validLoaded(loaded, wpnVer)) {
             if (name === 'pool') { window.WPN_POOL = null; }
             else if (name === 'text') { window.WPN_TEXT = null; }
             fail();
@@ -204,7 +217,9 @@
         loadGzData(name, wpnVer, !!cb).then(function (data) {
           if (name === 'pool') { window.WPN_POOL = data; } else { window.WPN_TEXT = data; }
           finish();
-        }, function () {
+        }).catch(function (err) {
+          console.error(err);
+          if (name === 'pool') { window.WPN_POOL = null; } else { window.WPN_TEXT = null; }
           loadScript();
         });
       } else {
