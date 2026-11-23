@@ -149,10 +149,16 @@ def check_staged_js(staged_js: list[tuple[str, pathlib.Path]]) -> None:
                      f"{r.stderr.strip()}")
         return
     script = (
-        "const fs=require('fs'),vm=require('vm');"
+        "const fs=require('fs'),vm=require('vm'),cp=require('child_process');"
         "for(const [rel,p] of JSON.parse(process.argv[1])){"
-        "try{new vm.Script(fs.readFileSync(p,'utf8'),{filename:rel})}"
-        "catch(e){console.error(rel+': '+e.message);process.exit(1)}}"
+        "const code=fs.readFileSync(p,'utf8');"
+        "try{new vm.Script(code,{filename:rel})}"
+        "catch(e){"
+        "if(/\\b(?:import|export)\\b/.test(code)){"
+        "const r=cp.spawnSync(process.execPath,['--check',p],{encoding:'utf8'});"
+        "if(r.status===0)continue;"
+        "console.error(rel+': '+(r.stderr||e.message).trim());process.exit(1);}"
+        "console.error(rel+': '+e.message);process.exit(1)}}"
     )
     payload = json.dumps([[rel, str(dst)] for rel, dst in staged_js])
     r = subprocess.run(["node", "-e", script, payload], cwd=ROOT, text=True, capture_output=True)
