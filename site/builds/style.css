@@ -1,18 +1,10 @@
 /* 推荐配装：索引页、各套配装页与填表页共用这一份。深三层的配装页由 shell.head 的
    sheets 显式引它，不按层数推——每套配装各建一个 style.css 只会是空文件。
+   单套配装页与填表页走默认主档 1060px（design.md 第四节）。 */
 
-   版心走 1060px 那一档（design.md 第四节的「宽表」，不为这一页新开第四个数）。
-   页面由六行拉满版心的面板组成，每一行的左右缘都落在同一条垂直线上；1500px 下
-   一行只有四十来件装备，右侧会拖出一截空白，行与行之间反而对不上。 */
-:root {
-  --wrap: 1060px;
-  --min: 1104px;
-}
-
-/* 合集页左边多一列目录，配装那一列与单套页的行等宽。
-   1356 = 1016 行宽 + 268 目录 + 28 沟 + 44（版心与行宽之差）。 */
+/* 合集页左边多一列目录，并入超宽档 1400px。 */
 body:has(.set-wrap) {
-  --wrap: 1356px;
+  --wrap: var(--wrap-wide);
   --min: 1400px;
 }
 
@@ -124,7 +116,7 @@ body:has(.set-wrap) {
   gap: 10px;
   margin: 0;
   color: var(--bone);
-  font-size: 15px;
+  font-size: 14px;
 }
 
 /* **只放大铭牌自己那枚，写成直接子元素。**填表页的 .cls 里装的是职业 chip，
@@ -567,8 +559,8 @@ button.item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
 
 /* ── 索引页 ───────────────────────────────────────────────────────────
    横式档案卡，一排两张：左列 70px 核心图与强度光环，右列标题、身份带、一句话简介
-   与底部三格核心装备（合集为三行阶段切装时间轴）。版心走 1500px 那一档。 */
-body:has(.entries) { --wrap: 1500px; }
+   与底部三格核心装备（合集为三行阶段切装时间轴）。版心走超宽档 1400px。 */
+body:has(.entries) { --wrap: var(--wrap-wide); --min: 1188px; }
 
 .facet-bar:empty { display: none; }
 
@@ -1240,7 +1232,7 @@ body:has(.entries) { --wrap: 1500px; }
   display: block;
   width: 24px;
   height: 24px;
-  border-radius: 3px;
+  border-radius: var(--r-sm);
 }
 
 .entry .card-strip .pv-nm {
@@ -1295,7 +1287,7 @@ body:has(.entries) { --wrap: 1500px; }
   display: block;
   width: 22px;
   height: 22px;
-  border-radius: 3px;
+  border-radius: var(--r-sm);
 }
 
 .entry .set-stages .st-nm {
@@ -1377,7 +1369,7 @@ body:has(.entries) { --wrap: 1500px; }
   left: 50%;
   width: var(--fr);
   height: var(--fr);
-  border-radius: 9px;
+  border-radius: var(--r-lg);
   transform: translate(-50%, -50%);
   pointer-events: none;
 }
@@ -1688,7 +1680,7 @@ body:has(.entries) { --wrap: 1500px; }
 .head-portal:hover,
 .head-portal:focus-visible {
   color: var(--bone-hi);
-  background: linear-gradient(100deg, #1e2638, #151a27 72%);
+  background: linear-gradient(100deg, var(--surf-4), #151a27 72%);
   border-color: color-mix(in oklab, var(--accent) 48%, var(--hair-lit));
   outline: none;
 }
@@ -2141,8 +2133,8 @@ main > .dpanel { left: 22px; right: 22px; }
   width: var(--sz);
   height: var(--sz);
   border: 2px solid var(--ink);
-  border-radius: 6px;
-  background: radial-gradient(circle at 50% 35%, #202636 0%, #0b0d14 100%);
+  border-radius: var(--r-md);
+  background: radial-gradient(circle at 50% 35%, #202636 0%, var(--ink) 100%);
 }
 
 .build-head .core .core-mosaic img,
@@ -2150,7 +2142,7 @@ main > .dpanel { left: 22px; right: 22px; }
   width: var(--tile);
   height: var(--tile);
   border: 0;
-  border-radius: 3px;
+  border-radius: var(--r-sm);
 }
 
 .set-list a::before,
@@ -2387,7 +2379,7 @@ main > .dpanel { left: 22px; right: 22px; }
   margin: 0;
   color: var(--bone-hi);
   font-family: var(--font-cn);
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 600;
   letter-spacing: .04em;
 }

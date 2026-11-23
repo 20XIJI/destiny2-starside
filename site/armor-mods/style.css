@@ -3,9 +3,9 @@
    这一页由 tools/convert-doc.py 从 references/docs/armor-mods.md 生成，
    改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
 
-/* 三列并排，走满 1500px 那一档（design.md 四节的「并排对照」，与神器模组页同一个数）。
-   强调色取护甲充能的金：这一页十六张表里出现最多的就是它。 */
-:root { --wrap: 1500px; --min: 1064px; --accent: var(--c-orb); }
+/* 三列并排，走超宽档 1400px（design.md 四节）。
+   强调色取护甲充能的蓝，与首页卡片左缘 .k-charge 一致。 */
+:root { --wrap: var(--wrap-wide); --min: 1064px; --accent: var(--c-charge); }
 
 /* 副本徽标：源表每个副本段前挂一张横幅图，分节标题就是它的位置。
    显示宽度取原图的一半，两倍像素密度下仍然锐利。 */
@@ -149,7 +149,7 @@
   margin-left: 5px;
   color: var(--bone-faint);
   font-family: var(--font-cn);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 400;
   letter-spacing: .1em;
 }
@@ -176,7 +176,6 @@
 .gen tbody td:last-child b { color: var(--bone-hi); font-weight: 600; }
 
 .gen tbody td:last-child .cond b { color: var(--bone); }
-
 
 /* 屏外的分节不参与布局与绘制：这一页约 15400px 高，一屏只看得到其中一节。
    套在 .block 上而不是 .gen tr 上——content-visibility 对表格内部元素不生效。

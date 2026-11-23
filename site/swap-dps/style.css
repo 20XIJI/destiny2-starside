@@ -7,7 +7,7 @@
    首列装的是长句，宽度钉死——不给宽度时自动布局按 max-content 算它的首选宽，
    收起「倍率」「耗时」两组腾出来的位置立刻被它吃掉，列组就白收了（同 dps/）。
    --min 与 DPS 排行同一档：页面默认是收起的，下限跟着收起后的宽度走。 */
-:root { --wrap: 1500px; --min: 1104px; }
+:root { --wrap: var(--wrap-wide); --min: 1104px; }
 
 /* ── 首列：名字 ──
    两行一格：第一行是武器或技能名（源稿写 **粗体**），第二行是这一组配装。
@@ -88,7 +88,7 @@
 /* 两列 DPS 是这一页的主数值，放大一档、加一位字重 */
 .gen tbody td:nth-of-type(16),
 .gen tbody td:nth-of-type(17) {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -111,3 +111,8 @@
 
 /* 表头：十九列都短，不折行 */
 .gen thead th { white-space: nowrap; }
+
+.block {
+  content-visibility: auto;
+  contain-intrinsic-height: auto 1200px;
+}

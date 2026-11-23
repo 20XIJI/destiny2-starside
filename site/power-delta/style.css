@@ -6,8 +6,6 @@
    数据在页内那张 .gen 表里，assets/chart.js 现读现画并收起原表；
    无 JS 时表照常显示，201 行数值完整可读。 */
 
-:root { --wrap: 1060px; --min: 1104px; }
-
 .chart-loading .gen { display: none; }
 .chart-loading .block:has(.gen)::after {
   display: block;
@@ -290,7 +288,7 @@
   width: 12px;
   height: 12px;
   border: 1px solid var(--ink);
-  border-radius: 3px;
+  border-radius: var(--r-sm);
   background: var(--c-term);
   cursor: pointer;
 }
@@ -299,7 +297,7 @@
   width: 12px;
   height: 12px;
   border: 1px solid var(--ink);
-  border-radius: 3px;
+  border-radius: var(--r-sm);
   background: var(--c-term);
   cursor: pointer;
 }
@@ -362,7 +360,7 @@
   height: 7px;
   background: var(--surf-1);
   border: 1px solid var(--bd-tile);
-  border-radius: 3px;
+  border-radius: var(--r-sm);
   overflow: hidden;
 }
 

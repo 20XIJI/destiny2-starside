@@ -4,7 +4,6 @@
    改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
 
 /* 武器名一格能排到十把，760px 会把每行折成四五行；取宽表那一档（design.md 四节）。 */
-:root { --wrap: 1060px; --min: 1104px; }
 
 /* 来源列是行的身份，不折行；武器列是内容，让它自己折。 */
 .gen tbody th[scope="row"] { white-space: nowrap; }

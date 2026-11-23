@@ -1,6 +1,7 @@
 /* 异域护甲页组件：三个职业各 45 件，加三个永世教派与 36 枚职业物品之灵。
    记录网格版式在 /assets/site.css。 */
-:root { --wrap: 1060px; --min: 1104px; }
+
+:root { --accent: var(--c-exotic); }
 
 .block {
   content-visibility: auto;

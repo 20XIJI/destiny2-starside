@@ -85,6 +85,7 @@ META_KEYS = (
     "导航",
     "路径",
     "上级",
+    "上级路径",
     "列组",
     "互斥列组",
     "默认列组",
@@ -1157,6 +1158,11 @@ def render(md, slug, digest):
             parent=[
                 x.strip() for x in meta("上级", required=False).split("、") if x.strip()
             ],
+            parent_href=(
+                "%s%s/index.html" % ("../" * up, meta("上级路径", required=False))
+                if meta("上级路径", required=False)
+                else "../index.html"
+            ),
         ),
         shell.page_head(title),
         # data-src 是这一篇在库里的 _id（取法见 doc_id_of()），就地编辑靠它找回源稿。

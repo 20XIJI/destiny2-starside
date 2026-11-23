@@ -3,9 +3,7 @@
    这一页由 tools/convert-doc.py 从 references/docs/combatant-scalars.md 生成，
    改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
 
-/* 首列最长「{named|Vex 揭秘者 线融}」约 140px，六个数值列各约 90px，整表约 680px，
-   收在连续阅读版心里。骨架在 assets/site.css。 */
-:root { --wrap: 760px; --min: 804px; }
+:root { --accent: var(--c-enemy); }
 
 /* 表头不做 sticky：最长的威能表 18 行、约 640px，一屏之内看得完整，
    而三张表各自带一排表头，滚到哪一节都有列名。 */

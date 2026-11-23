@@ -5,7 +5,6 @@
 
 /* 1060px 版心下四列卡片约 244×137px，三行不顶满屏、两侧留出呼吸空间；子页同宽，
    与 boss-hp/ 共用同一套宽表尺度（design.md 四节）。 */
-:root { --wrap: 1060px; --min: 1104px; }
 
 .guides {
   display: grid;
@@ -507,7 +506,7 @@ a.rg-hero-pane:hover .rg-hero-hint {
   margin: 0;
   color: var(--bone-hi);
   font-family: var(--font-body);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -687,7 +686,7 @@ a.rg-wpn:hover {
 .rg-arm-lbl {
   color: var(--bone-hi);
   font-family: var(--font-cn);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 1.35;
 }
@@ -758,7 +757,7 @@ a.rg-wpn:hover {
 .rg-set-link {
   color: var(--bone-hi);
   font-family: var(--font-cn);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   text-decoration: underline;
   text-decoration-color: var(--hair-lit);
@@ -798,7 +797,7 @@ a.rg-wpn:hover {
 .rg-set-bname {
   color: var(--bone-hi);
   font-family: var(--font-cn);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
 }
 

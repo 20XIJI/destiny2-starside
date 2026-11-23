@@ -1869,6 +1869,8 @@ def render_index(made, sets=False):
         shell.nav(
             name,
             up=up,
+            parent=[SITE_SECTION] if sets else None,
+            parent_href="../index.html",
             toolbar={
                 "data-section": ".block",
                 "data-item": ".entries > li",

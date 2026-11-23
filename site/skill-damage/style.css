@@ -5,7 +5,6 @@
 
 /* 七列里两列钉死 19em + 15em 装长句，其余是短数值；版心走 site.css 默认的 1060px 主档，
    --min 与首领生命值、切枪 DPS 同档。 */
-:root { --min: 1104px; }
 
 /* ── 首列：名字 ──
    两行一格：第一行是技能名（源稿写 **粗体**），第二行是这一次实测的条件
@@ -90,7 +89,7 @@
    它走八档色阶，颜色由 site.css 的 .gen tbody td[data-tier="N"] 给，
    这里只写字号字重，不写 color——写了会压过色阶那条。 */
 .gen tbody td:nth-of-type(5) {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
 }
 

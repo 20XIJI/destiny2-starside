@@ -1,11 +1,11 @@
 /* 神器模组组件：介绍块、分节 sticky 单元、档位轨、模组行与模组卡片。
    通用主题、字体与 23 个配色 token 在 /assets/site.css。 */
 
-/* 三档并排：版心走满 1500px（design.md 四节），最小内容宽度 1020px + main
+/* 三档并排：版心走满 1400px（design.md 四节），最小内容宽度 1020px + main
    左右各 22px 内边距。横向溢出交给页面本身：main 上一旦开 overflow-x，它就成了
    滚动容器，内部的 position: sticky 不再相对视口生效。骨架在 assets/site.css。
    强调色取神器的青绿：游戏内的神器页面就是这个颜色，档位菱形与焦点环跟着它。 */
-:root { --wrap: 1500px; --min: 1064px; --accent: var(--c-artifact); }
+:root { --wrap: var(--wrap-wide); --min: 1064px; --accent: var(--c-artifact); }
 
 main { padding: 0 22px clamp(40px, calc(5 * var(--vw)), 72px); }
 
@@ -54,7 +54,7 @@ main { padding: 0 22px clamp(40px, calc(5 * var(--vw)), 72px); }
   margin: 0 0 4px;
   color: var(--bone-dim);
   font-family: var(--font-disp);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   /* 纯中文（「使用限制」），走中文那档字距；uppercase 对中文是空操作，不写。 */
   letter-spacing: .12em;
@@ -114,7 +114,7 @@ main { padding: 0 22px clamp(40px, calc(5 * var(--vw)), 72px); }
   margin: 0;
   color: var(--bone-hi);
   font-family: var(--font-cn);
-  font-size: 19px;
+  font-size: 20px;
   font-weight: 600;
   letter-spacing: .05em;
 }

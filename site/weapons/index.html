@@ -47,8 +47,8 @@
 }
 /* ── 索引页 ───────────────────────────────────────────────────────────
    横式档案卡，一排两张：左列 70px 核心图与强度光环，右列标题、身份带、一句话简介
-   与底部三格核心装备（合集为三行阶段切装时间轴）。版心走 1500px 那一档。 */
-body:has(.entries) { --wrap: 1500px; }
+   与底部三格核心装备（合集为三行阶段切装时间轴）。版心走超宽档 1400px。 */
+body:has(.entries) { --wrap: var(--wrap-wide); --min: 1188px; }
 .entries {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px 16px;
@@ -427,7 +427,7 @@ body:has(.entries) { --wrap: 1500px; }
   display: block;
   width: 24px;
   height: 24px;
-  border-radius: 3px;
+  border-radius: var(--r-sm);
 }
 .entry .card-strip .pv-nm {
   overflow: hidden;
@@ -476,7 +476,7 @@ body:has(.entries) { --wrap: 1500px; }
   display: block;
   width: 22px;
   height: 22px;
-  border-radius: 3px;
+  border-radius: var(--r-sm);
 }
 .entry .set-stages .st-nm {
   overflow: hidden;
@@ -546,7 +546,7 @@ body:has(.entries) { --wrap: 1500px; }
   left: 50%;
   width: var(--fr);
   height: var(--fr);
-  border-radius: 9px;
+  border-radius: var(--r-lg);
   transform: translate(-50%, -50%);
   pointer-events: none;
 }
@@ -612,15 +612,15 @@ body:has(.entries) { --wrap: 1500px; }
   width: var(--sz);
   height: var(--sz);
   border: 2px solid var(--ink);
-  border-radius: 6px;
-  background: radial-gradient(circle at 50% 35%, #202636 0%, #0b0d14 100%);
+  border-radius: var(--r-md);
+  background: radial-gradient(circle at 50% 35%, #202636 0%, var(--ink) 100%);
 }
 .build-head .core .core-mosaic img,
 .entry .node .core-mosaic img {
   width: var(--tile);
   height: var(--tile);
   border: 0;
-  border-radius: 3px;
+  border-radius: var(--r-sm);
 }</style>
 </head>
 <body>
@@ -640,7 +640,7 @@ body:has(.entries) { --wrap: 1500px; }
 
 <div class="wpn-scope" role="group" aria-label="范围"><button type="button" class="toggle" data-act="scope" data-v="wpn">武器</button><button type="button" class="toggle" data-act="scope" data-v="armor">异域护甲</button><button type="button" class="toggle" data-act="scope" data-v="sets">护甲套装</button></div>
 <div class="wpn-sentinel" aria-hidden="true"></div>
-<div class="wpn-bar"><div class="wpn-q"><p class="wpn-count" aria-live="polite"></p><div class="wpn-field"><input class="wpn-input" type="search" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="wpn-ac" aria-label="搜索装备" placeholder="名字、perk，或 is:手炮 perk:萤火虫 breaker:反屏障 stat:射程:&gt;=60"><ul class="wpn-suggest" id="wpn-ac" role="listbox" hidden></ul></div><div class="wpn-views"><button type="button" class="toggle" data-act="view" data-v="grid">卡片</button><button type="button" class="toggle" data-act="view" data-v="list">列表</button><button type="button" class="toggle" data-act="syntax" aria-expanded="false">语法</button></div><div class="wpn-syntax" role="dialog" aria-label="查询语法" hidden></div></div></div>
+<div class="wpn-bar"><div class="wpn-q"><p class="wpn-count" aria-live="polite"></p><div class="wpn-field"><input class="wpn-input" type="search" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="wpn-ac" aria-label="搜索装备" placeholder="名字、perk，或 is:手炮 perk:萤火虫 breaker:反屏障 stat:射程:&gt;=60"><button type="button" class="wpn-clear" aria-label="清空搜索" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 4.5 11.5 11.5M11.5 4.5 4.5 11.5"/></svg></button><div class="wpn-suggest" hidden><ul class="wpn-suggest-list" id="wpn-ac" role="listbox"></ul><div class="hint" role="presentation"></div></div></div><div class="wpn-views"><button type="button" class="toggle" data-act="view" data-v="grid">卡片</button><button type="button" class="toggle" data-act="view" data-v="list">列表</button><button type="button" class="toggle" data-act="syntax" aria-expanded="false">语法</button></div><div class="wpn-syntax" role="dialog" aria-label="查询语法" hidden></div></div></div>
 <main class="wpn">
 <section id="find" aria-label="装备库"><noscript><p class="empty">装备库需启用 JavaScript 运行（共收录 2208 把武器、348 件异域护甲）。</p></noscript><div class="wpn-presets skel" aria-hidden="true"><div class="wpn-quick"></div></div><div class="wpn-conds skel" aria-hidden="true"></div><div class="wpn-body"><ol class="wpn-grid skel" aria-hidden="true"><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li><li><div class="wpn-card"><span class="gun"></span><div><p class="nm">　</p><div class="wpn-meta">　</div><div class="wpn-frame">　</div><div class="wpn-grades">　</div></div></div></li></ol></div></section>
 </main>

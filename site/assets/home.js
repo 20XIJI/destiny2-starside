@@ -131,6 +131,9 @@ export default function init(box, deps) {
   }
 
   function home(box) {
+    var wrap = document.createElement('div');
+    wrap.className = 'hero-input-wrap';
+
     var input = document.createElement('input');
     input.type = 'search';
     input.className = 'tool-search';
@@ -141,9 +144,47 @@ export default function init(box, deps) {
     input.setAttribute('aria-expanded', 'false');
     input.setAttribute('aria-controls', 'hero-hits');
 
+    var clearBtn = document.createElement('button');
+    clearBtn.type = 'button';
+    clearBtn.className = 'hero-clear';
+    clearBtn.setAttribute('aria-label', '清空搜索');
+    clearBtn.hidden = true;
+    clearBtn.textContent = '×';
+
+    wrap.appendChild(input);
+    wrap.appendChild(clearBtn);
+
+    var panel = document.createElement('div');
+    panel.className = 'hero-panel';
+    panel.hidden = true;
+
+    var head = document.createElement('div');
+    head.className = 'hero-panel-head';
+
     var count = document.createElement('p');
     count.className = 'tool-count';
     count.setAttribute('role', 'status');
+
+    var headRight = document.createElement('div');
+    headRight.className = 'hero-panel-meta';
+
+    var hint = document.createElement('span');
+    hint.className = 'hero-panel-hint';
+    hint.textContent = '点击或 ↑↓ 选择 · 回车跳转 · Esc 收起';
+
+    var closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'hero-panel-close';
+    closeBtn.setAttribute('aria-label', '收起搜索结果');
+    closeBtn.textContent = '×';
+
+    headRight.appendChild(hint);
+    headRight.appendChild(closeBtn);
+    head.appendChild(count);
+    head.appendChild(headRight);
+
+    var body = document.createElement('div');
+    body.className = 'hero-panel-body';
 
     var list = document.createElement('ul');
     list.id = 'hero-hits';
@@ -155,10 +196,13 @@ export default function init(box, deps) {
     more.className = 'op hits-more';
     more.hidden = true;
 
-    box.appendChild(input);
-    box.appendChild(count);
-    box.appendChild(list);
-    box.appendChild(more);
+    body.appendChild(list);
+    body.appendChild(more);
+    panel.appendChild(head);
+    panel.appendChild(body);
+
+    box.appendChild(wrap);
+    box.appendChild(panel);
 
     var index = null, pending = false, pages = {};
 
@@ -242,6 +286,30 @@ export default function init(box, deps) {
 
     var queued = { rows: [], q: '', terms: [] };
     var active = -1;
+    var px = -1, py = -1;
+
+    function setPanel(open) {
+      var wasHidden = panel.hidden;
+      panel.hidden = !open;
+      input.setAttribute('aria-expanded', open && list.childElementCount ? 'true' : 'false');
+      if (open && wasHidden) {
+        body.scrollTop = 0;
+        panel.classList.add('is-in');
+      } else if (!open) {
+        panel.classList.remove('is-in');
+      }
+    }
+
+    function markActive(hits, next, scroll) {
+      active = next;
+      for (var i = 0; i < hits.length; i++) hits[i].setAttribute('aria-selected', i === active ? 'true' : 'false');
+      if (active >= 0 && hits[active]) {
+        input.setAttribute('aria-activedescendant', hits[active].id);
+        if (scroll && typeof hits[active].scrollIntoView === 'function') hits[active].scrollIntoView({ block: 'nearest' });
+      } else {
+        input.removeAttribute('aria-activedescendant');
+      }
+    }
 
     more.addEventListener('click', function () {
       show(queued.rows, queued.q, queued.terms);
@@ -249,56 +317,96 @@ export default function init(box, deps) {
       more.hidden = true;
     });
 
+    clearBtn.addEventListener('mousedown', function (e) { e.preventDefault(); });
+    clearBtn.addEventListener('click', function () {
+      input.value = '';
+      draw();
+      if (typeof input.focus === 'function') input.focus();
+    });
+
+    closeBtn.addEventListener('click', function () { setPanel(false); });
+
     /* 三档排序：页面、条目名命中、正文命中。名字命中的排在正文命中前面——
        搜「棱镜」时那一页本身与叫这个名字的条目，比正文里顺带提到的有用。
        同档内 Compendium 页优先；武器名命中再插一条跳到装备库。 */
     function draw() {
       var q = input.value.trim();
-      var had = list.childElementCount;
+      clearBtn.hidden = !input.value;
       list.textContent = '';
       seq = 0;
       active = -1;
+      px = -1;
+      py = -1;
       input.removeAttribute('aria-activedescendant');
-      input.setAttribute('aria-expanded', 'false');
       more.hidden = true;
       box.toggleAttribute('data-miss', false);
-      if (!q) { count.textContent = ''; return; }
-      if (!index) { count.textContent = '索引载入中…'; return; }
+      if (!q) {
+        count.textContent = '';
+        setPanel(false);
+        return;
+      }
+      if (!index) {
+        count.textContent = '索引载入中…';
+        setPanel(true);
+        return;
+      }
 
       var terms = words(q);
       var all = ranked(index, pages, terms, hit, q);
       var n = 0, i;
       for (i = 0; i < all.length; i++) if (!all[i].jump) n++;
       show(all.slice(0, CAP), q, terms);
-      input.setAttribute('aria-expanded', n ? 'true' : 'false');
       queued = { rows: all.slice(CAP), q: q, terms: terms };
       more.hidden = !queued.rows.length;
       more.textContent = '展开其余 ' + queued.rows.length + ' 条';
       count.textContent = n ? n + ' 条命中' : '没有命中';
       box.toggleAttribute('data-miss', !n);
-      /* 淡入只在结果从无到有时放一次：每敲一个字重放一遍会闪。 */
-      list.classList.toggle('is-in', !had && !!n);
+      setPanel(true);
     }
 
-    input.addEventListener('pointerdown', load);
-    input.addEventListener('focus', load);
+    input.addEventListener('pointerdown', function () {
+      load();
+      if (input.value.trim() && panel.hidden) setPanel(true);
+    });
+    input.addEventListener('focus', function () {
+      load();
+      if (input.value.trim() && panel.hidden) setPanel(true);
+    });
     input.addEventListener('input', function () { load(); draw(); });
+    list.addEventListener('pointermove', function (e) {
+      if (e.pointerType === 'touch') return;
+      if (e.clientX === px && e.clientY === py) return;
+      px = e.clientX;
+      py = e.clientY;
+      var a = e.target && typeof e.target.closest === 'function' ? e.target.closest('a.hit') : null;
+      if (!a) return;
+      var hits = list.querySelectorAll('a.hit');
+      var idx = Array.prototype.indexOf.call(hits, a);
+      if (idx >= 0 && idx !== active) markActive(hits, idx, false);
+    });
+    if (typeof document.addEventListener === 'function') {
+      document.addEventListener('pointerdown', function (e) {
+        if (!panel.hidden && typeof box.contains === 'function' && !box.contains(e.target)) {
+          setPanel(false);
+        }
+      });
+    }
     input.addEventListener('keydown', function (e) {
       if (e.isComposing || e.keyCode === 229) return;
       var hits = list.querySelectorAll('a.hit');
       if (e.key === 'Escape') {
-        if (input.value) { e.preventDefault(); input.value = ''; draw(); }
+        if (!panel.hidden) { e.preventDefault(); setPanel(false); }
+        else if (input.value) { e.preventDefault(); input.value = ''; draw(); }
         return;
       }
       if (!hits.length) return;
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         e.preventDefault();
-        active = e.key === 'ArrowDown'
+        if (panel.hidden) setPanel(true);
+        var next = e.key === 'ArrowDown'
           ? (active + 1) % hits.length
           : (active <= 0 ? hits.length - 1 : active - 1);
-        for (var i = 0; i < hits.length; i++) hits[i].setAttribute('aria-selected', i === active ? 'true' : 'false');
-        input.setAttribute('aria-activedescendant', hits[active].id);
-        hits[active].scrollIntoView({ block: 'nearest' });
+        markActive(hits, next, true);
       } else if (e.key === 'Enter') {
         e.preventDefault();
         location.href = hits[active >= 0 ? active : 0].href;

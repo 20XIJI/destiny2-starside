@@ -1,6 +1,6 @@
 /* 护甲 3.0 商人属性机制页与老九页 .armor-calc 推算器样式 */
 
-:root { --wrap: 1060px; --min: 1104px; }
+:root { --accent: var(--c-charge); }
 
 /* ── 资料页正文与规则块（保持 1060px 通栏对齐，靠块间节奏与行内分层拉开呼吸感） ── */
 .block p:not([class]) {

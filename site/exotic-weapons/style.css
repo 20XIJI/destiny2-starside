@@ -1,17 +1,9 @@
-/* 刷取清单-异域武器：83 把武器的评级、实测总伤与 DPS，以及每一档评级的理由。
+/* 刷取清单 · 异域武器：83 把武器的评级、实测总伤与 DPS，以及每一档评级的理由。
    记录网格版式在 /assets/site.css。 */
-:root { --wrap: 1500px; --min: 1104px; }
 
-.block p {
-  margin: 0 0 22px;
-  color: var(--bone-dim);
-  font-size: 14px;
+:root { --accent: var(--c-exotic); }
+
+.block {
+  content-visibility: auto;
+  contain-intrinsic-height: auto 3200px;
 }
-
-.block p a {
-  color: var(--bone);
-  text-decoration: none;
-  border-bottom: 1px solid var(--hair-lit);
-}
-
-.block p a:hover { color: var(--bone-hi); }

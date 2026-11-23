@@ -1,6 +1,8 @@
-# 刷取清单-护甲套装
+# 刷取清单 · 护甲套装
 
 描述：29 套护甲套装按泛用性、强度与使用频率排序，含件数、获取地点、应用场景与每一套的说明。
+上级：PvE 终局刷取指南
+上级路径：pve-farming
 更新：2026.9.6
 鸣谢：[小棒猪-LGpig](https://space.bilibili.com/169548478) 整理全部排序、场景与评语。
 数据源：[刷取清单](https://docs.google.com/spreadsheets/d/1qsKGrRzCePGaIM5gNtAQNh949d3OsMJ6qV6Fqtpj22k/htmlview)

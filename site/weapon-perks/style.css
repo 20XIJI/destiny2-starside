@@ -1,6 +1,7 @@
 /* 武器特性页组件：406 条特性、模组、框架固有与起源特性，按七个分节排。
    记录网格版式在 /assets/site.css。 */
-:root { --wrap: 1060px; --min: 1104px; }
+
+:root { --accent: var(--c-perk); }
 
 .block {
   content-visibility: auto;

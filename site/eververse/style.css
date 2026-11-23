@@ -2,14 +2,10 @@
    遵循 design.md：外壳去饱和为骨白与石墨发丝线，色彩归游戏内稀有度与货币编码，
    页首保留星空窗与标题底规线，分节复用全站 .block > .sect-label。 */
 
-:root {
-  --wrap: 1060px;
-  --min: 1104px;
-  /* 复用全站既有色板（assets/site.css :root）：光尘取暖金 --c-orb，银币取冷白 --c-kinetic，稀有取 --c-charge */
+:root { /* 复用全站既有色板（assets/site.css :root）：光尘取暖金 --c-orb，银币取冷白 --c-kinetic，稀有取 --c-charge */
   --c-dust: var(--c-orb);
   --c-silver: var(--c-kinetic);
-  --c-rare: var(--c-charge);
-}
+  --c-rare: var(--c-charge); }
 
 /* ── 页首与商人切换栏（对齐 weapons/style.css 的 .wpn-scope） ── */
 .page-head { padding-bottom: 18px; }
@@ -70,7 +66,7 @@
   font-family: var(--font-cn);
   font-size: 12px;
   color: var(--bone-dim);
-  background: linear-gradient(90deg, #ffffff06, transparent 68%), var(--panel-b);
+  background: linear-gradient(90deg, var(--tint-1), transparent 68%), var(--panel-b);
   border: 1px solid var(--bd-outer);
   border-left: 2px solid var(--c-dust);
   border-radius: var(--r-md);
@@ -376,7 +372,7 @@ body[data-vendor="ada"] .ev-prog i {
 .ev-name {
   color: var(--bone-hi);
   font-family: var(--font-cn);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 1.35;
   letter-spacing: .02em;
@@ -856,5 +852,4 @@ body[data-vendor="ada"] .ev-prog i {
   color: var(--accent);
   text-decoration: underline;
 }
-
 

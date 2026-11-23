@@ -196,11 +196,13 @@
   --grid: #ffffff06;
   --atmo: linear-gradient(180deg, #12172a, #0b0d1400);
 
-  /* 版心一档（design.md 第四节）与最小内容宽度。页面表只写这两个右值。
-     **--min 缺省写 0px 不写 auto**：块级 body 上两者等价（min-width: auto 对
-     非 flex 项即 0），但 auto 进不了 calc，下面那条 --vw 就没法一条式子通吃。 */
-  --wrap: 1060px;
-  --min: 0px;
+  /* 版心两档（design.md 第四节）：默认主档 1060px，超宽档 1400px。
+     --min 默认按版心加两侧 22px 边距自动推导；默认折叠态允许更窄视口的超宽页自行覆写 --min。 */
+  --wrap-std: 1060px;
+  --wrap-wide: 1400px;
+  --gutter: 22px;
+  --wrap: var(--wrap-std);
+  --min: calc(var(--wrap) + var(--gutter) * 2);
 }
 
 /* 分支色驱动那一块的 UI 强调色。--accent 是「子页面覆盖这一个即可换色」的槽位，
@@ -241,8 +243,7 @@ body {
   /* **vw 要按版面算，不按视口算。**版面被 --min 撑开之后视口还可能更窄，此时
      Nvw 按视口取值会缩到 clamp 的下限，字号浮在宽版面里，读作排版坏了：420px
      视口下 boss-hp 的 h1 只有 30px，而版面 1104px。给 vw 垫一个下限 = 版面最小
-     宽度的百分之一。没写 --min 的页面（--min: 0px）照旧就是 1vw。
-     下面各处的 Nvw 一律写成 N × var(--vw)。 */
+     宽度的百分之一。下面各处的 Nvw 一律写成 N × var(--vw)。 */
   --vw: max(1vw, calc(var(--min) / 100));
   margin: 0;
   /* **给 body 定位，好让绝对定位的后代按版面而不是按视口算宽。**body 静态时，
@@ -341,7 +342,7 @@ a { color: var(--bone); }
   display: flex;
   align-items: center;
   gap: 14px;
-  max-width: 1500px;
+  max-width: var(--wrap-wide);
   margin: 0 auto;
   padding: 12px 22px;
   font-family: var(--font-disp);
@@ -422,7 +423,7 @@ a { color: var(--bone); }
   display: flex;
   align-items: center;
   gap: 18px;
-  max-width: 1500px;
+  max-width: var(--wrap-wide);
   margin: 0 auto;
   padding: 0 22px 11px;
 }
@@ -945,6 +946,15 @@ main {
 
 .block p:last-child { margin-bottom: 0; }
 
+.block ul:not([class]) {
+  margin: 0 0 1.05em;
+  padding-left: 1.4em;
+  line-height: 1.95;
+}
+
+.block ul:not([class]):last-child { margin-bottom: 0; }
+.block ul:not([class]) > li + li { margin-top: 6px; }
+
 /* 行内强调：专有名词。不占色相，只提亮度与字重（design.md 一节） */
 .block em,
 .block strong {
@@ -1213,7 +1223,7 @@ body:has(.hero) .entries > li { position: relative; }
    搜索框居中因此是**那一条带自己的构图**，不再是两端对齐的版面里孤零零一个居中物件。 */
 .hero {
   position: relative;              /* 徽记绝对定位在右半边 */
-  max-width: 1500px;
+  max-width: var(--wrap-wide);
   margin: 0 auto;
   padding: 88px 22px 24px;
 }
@@ -1929,7 +1939,8 @@ body:has(.hero) .entries > li { position: relative; }
 /* 搜索带：上下各一道通栏细线，中间一道分隔线把带分成「搜索框」与「当前轮换」两层。 */
 .hero-band {
   position: relative;              /* 发电能量核绝对定位在带的右端 */
-  max-width: 1500px;
+  z-index: 30;
+  max-width: var(--wrap-wide);
   margin: 0 auto;
   padding: 18px 22px 0;
   border-top: 1px solid rgba(255, 255, 255, .08);
@@ -1985,11 +1996,22 @@ body:has(.hero) .entries > li { position: relative; }
   background: linear-gradient(270deg, transparent, var(--hair-lit) 28%, color-mix(in oklab, var(--accent) 55%, var(--hair-lit)));
 }
 
-.hero-search .tool-search {
-  display: block;
+.hero-input-wrap {
+  position: relative;
   width: min(100%, 704px);
   margin-inline: auto;
-  padding: 14px 22px 14px 44px;
+  /* 展宽走 width 而不是 transform: scale，缩放会把字一起拉变形 */
+  transition: width .34s cubic-bezier(.22, .68, .3, 1);
+}
+
+.hero-input-wrap:has(.tool-search:focus) {
+  width: min(100%, 792px);
+}
+
+.hero-search .tool-search {
+  display: block;
+  width: 100%;
+  padding: 14px 44px 14px 44px;
   font-size: 14px;
   border-radius: 999px;
   background-color: rgba(19, 24, 37, .86);
@@ -1999,9 +2021,7 @@ body:has(.hero) .entries > li { position: relative; }
   background-size: 15px 15px;
   border: 0;
   box-shadow: 0 0 0 1px rgba(255, 255, 255, .10), inset 0 1px 0 rgba(255, 255, 255, .04);
-  /* 展宽走 width 而不是 transform: scale，缩放会把字一起拉变形 */
-  transition: width .34s cubic-bezier(.22, .68, .3, 1), background-color .24s ease,
-    box-shadow .24s ease;
+  transition: background-color .24s ease, box-shadow .24s ease;
 }
 
 .hero-search .tool-search:hover {
@@ -2009,12 +2029,45 @@ body:has(.hero) .entries > li { position: relative; }
 }
 
 .hero-search .tool-search:focus {
-  width: min(100%, 792px);
   outline: none;
   background-color: var(--surf-3);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3%2eorg/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%235fd8e0' stroke-width='1.4'%3E%3Ccircle cx='7' cy='7' r='5'/%3E%3Cpath d='M10.5 10.5 14 14' stroke-linecap='round'/%3E%3C/svg%3E");
   box-shadow: 0 0 0 1px color-mix(in oklab, var(--accent) 72%, var(--hair-lit)),
     0 0 0 4px color-mix(in oklab, var(--accent) 14%, transparent);
+}
+
+.hero-clear {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  color: var(--bone-faint);
+  font-size: 18px;
+  line-height: 1;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: color .16s ease, background-color .16s ease, scale .14s ease;
+}
+
+.hero-clear[hidden] { display: none; }
+
+.hero-clear:hover {
+  color: var(--bone-hi);
+  background: var(--tint-2);
+}
+
+.hero-clear:active { scale: .92; }
+
+.hero-clear:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .hero-search[data-miss] .tool-search {
@@ -2023,22 +2076,101 @@ body:has(.hero) .entries > li { position: relative; }
 
 .hero-search .tool-search::-webkit-search-cancel-button { -webkit-appearance: none; }
 
-.hero-search .hits,
-.hero-search .hits-more {
-  justify-self: stretch;
+/* 锚定浮层面板：脱离文档流覆盖下方轮换条与卡片墙，页面主体零位移 */
+.hero-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 1060px);
+  max-height: min(56dvh, 520px);
+  overflow: hidden;
+  background: var(--ink-lift);
+  border: 1px solid var(--hair-lit);
+  border-radius: var(--r-md);
+  box-shadow: 0 22px 54px rgba(0, 0, 0, .72), inset 0 1px 0 rgba(255, 255, 255, .05);
+  transform: translateX(-50%);
 }
+
+.hero-panel[hidden] { display: none; }
+
+.hero-panel.is-in { animation: hero-panel-in .22s cubic-bezier(.22, .68, .3, 1) both; }
+
+@keyframes hero-panel-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -6px);
+  }
+}
+
+.hero-panel-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 14px 9px 18px;
+  border-bottom: 1px solid var(--hair);
+}
+
+.hero-panel-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hero-panel-hint {
+  color: var(--bone-faint);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.hero-panel-close {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  color: var(--bone-faint);
+  font-size: 17px;
+  line-height: 1;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: color .16s ease, background-color .16s ease, scale .14s ease;
+}
+
+.hero-panel-close:hover {
+  color: var(--bone-hi);
+  background: var(--tint-2);
+}
+
+.hero-panel-close:active { scale: .92; }
+
+.hero-panel-close:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.hero-panel-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px 8px 10px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--hair-lit) transparent;
+}
+
+.hero-panel-body:has(.hits:empty) { display: none; }
 
 .hero-search .tool-count {
-  margin-top: 16px;
-  text-align: center;
+  margin: 0;
+  text-align: left;
 }
-
-/* **空着的时候不占外边距。**计数行与命中列表都由 app.js 建，静置时高度为 0 却
-   照旧带着 16 / 24 的 margin-top（相邻塌陷取 24），搜索框因此在带里整体上移 24px，
-   看着就是上下两条线不等距。有内容时这两档间距照旧。 */
-.hero-search .tool-count:empty { margin-top: 0; }
-
-.hero-search .hits:empty { margin-top: 0; }
 
 /* ── 首屏那枚发电能量核 ──
    搜索框 704px 居中，带的右端因此空着三百多像素。这个站是随查随用的 wiki，
@@ -2205,8 +2337,7 @@ body:has(.hero) .entries > li { position: relative; }
 .hits {
   display: grid;
   grid-template-columns: minmax(7em, max-content) minmax(8em, max-content) minmax(0, 1fr);
-  max-width: 1060px;
-  margin: 24px auto 0;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
@@ -2281,12 +2412,18 @@ body:has(.hero) .entries > li { position: relative; }
 
 /* 动效是锦上添花，系统里关了就一概不放 */
 @media (prefers-reduced-motion: reduce) {
+  .hero-input-wrap,
   .hero-search .tool-search,
   .hits .hit {
     transition: none;
   }
 
+  .hero-panel.is-in,
   .hits.is-in { animation: none; }
+}
+
+@media (max-width: 720px) {
+  .hero-panel-hint { display: none; }
 }
 
 /* ── 搜索带底栏：当前轮换素字徽记行 ── */
@@ -2383,7 +2520,7 @@ body:has(.hero) .entries > li { position: relative; }
 }
 
 .index {
-  max-width: 1500px;
+  max-width: var(--wrap-wide);
   margin: 0 auto;
   padding: 44px 22px 88px;
 }
@@ -3113,7 +3250,7 @@ body:has(.hero) main.index { position: relative; }
 
 /* ── 页脚 ── */
 .site-foot {
-  max-width: 1500px;
+  max-width: var(--wrap-wide);
   margin: 0 auto;
   padding: 44px 22px 88px;
   color: var(--bone-dim);

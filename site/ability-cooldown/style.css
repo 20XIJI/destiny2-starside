@@ -1,6 +1,7 @@
-:root { --wrap: 1060px; --min: 1000px; }
-
 /* 技能名格：变体写在第二行（「巍峨屏障 / 乔木典狱官」），不许被挤到折行 */
+
+:root { --accent: var(--c-charge); }
+
 .gen tbody th[scope="row"] { min-width: 8.5em; }
 
 /* ── 图标格 ──

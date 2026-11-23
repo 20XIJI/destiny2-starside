@@ -5,7 +5,6 @@
 /* 「左栏索引 + 阅读栏」：左栏钉住套装身份供扫读，右栏正文收到阅读宽度。
    250 栏 + 44 沟 + 760 正文 = 1054，取整 1060。版心固定，不做窄屏适配
    （design.md 五节）。骨架在 assets/site.css。 */
-:root { --wrap: 1060px; --min: 1104px; }
 
 .page-note {
   margin: 20px 0 0;
@@ -67,7 +66,7 @@
   margin: 0;
   color: var(--bone-hi);
   font-family: var(--font-cn);
-  font-size: 21px;
+  font-size: 20px;
   font-weight: 600;
   line-height: 1.4;
   letter-spacing: .04em;
@@ -133,7 +132,7 @@
 .bonus + .bonus {
   margin-top: 22px;
   padding-top: 22px;
-  border-top: 1px solid #ffffff0d;
+  border-top: 1px solid var(--tint-3);
 }
 
 /* 图标、件数、名称一行排开 */
@@ -219,7 +218,7 @@ span.bonus-icon { display: block; }
   color: var(--bone-hi);
   font-family: var(--font-mono);
   font-size: .92em;
-  background: #ffffff08;
+  background: var(--tint-2);
   border-radius: var(--r-sm);
 }
 

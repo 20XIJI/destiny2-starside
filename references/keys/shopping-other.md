@@ -1,6 +1,8 @@
-# 购物清单-其他
+# 购物清单 · 其他
 
 描述：源表「其他」分页的 8 把武器，含框架、属性、勇士克制、Perk 推荐、来源与逐条注解。
+上级：PvE 终局刷取指南
+上级路径：pve-farming
 更新：2026.8.30
 数据源：[Destiny 2: Endgame Analysis](https://docs.google.com/spreadsheets/d/1JM-0SlxVDAi-C6rGVlLxa-J1WGewEeL8Qvq4htWZHhY) 的各武器类型分页
 鸣谢：[両儀式織](https://space.bilibili.com/2135345999) 校对全部注解。

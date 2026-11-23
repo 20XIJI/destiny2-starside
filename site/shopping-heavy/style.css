@@ -1,6 +1,6 @@
-/* 购物清单-威能：156 把威能位传说武器的评级、Perk 池、来源与注解。
+/* 购物清单 · 威能：156 把威能位传说武器的评级、Perk 池、来源与注解。
    记录网格版式在 /assets/site.css。 */
-:root { --wrap: 1240px; --min: 1104px; }
+:root { --wrap: var(--wrap-wide); --min: 1104px; }
 
 .block {
   content-visibility: auto;

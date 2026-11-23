@@ -3,9 +3,6 @@
    这一页由 tools/convert-doc.py 从 references/docs/notices.md 生成，
    改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
 
-/* 连续阅读版心（design.md 四节）。骨架在 assets/site.css。 */
-:root { --wrap: 760px; --min: 804px; }
-
 /* 每一期公告收进实色战术通报面板（--surf-1 + 1px 外框 + 顶缘高光），不裸排在背景网格上。 */
 .block {
   margin-bottom: var(--sp-6);
@@ -136,7 +133,7 @@
 
 .block li strong {
   color: var(--bone-hi);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
 }
 

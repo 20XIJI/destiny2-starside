@@ -12,12 +12,12 @@
   --x-mono: var(--font-mono);
   --x-raise: #10131c;
   --x-well: #080a10;
-  --x-line: #ffffff0d;
+  --x-line: var(--tint-3);
   /* 最暗一档小字。--bone-faint 在石墨底上对比度只有 3.2，这一台的小字都是要读的
      （时间、计数、列名），提到 5.1。 */
   --x-mute: #808796;
   --x-hover: #ffffff07;
-  --x-sel: #ffffff0d;
+  --x-sel: var(--tint-3);
   --x-warn: var(--c-solar);
   --x-go: var(--c-strand);
   --x-ease: cubic-bezier(.16, 1, .3, 1);
@@ -152,7 +152,7 @@ select.x-in option { background: var(--x-raise); color: var(--bone); }
 }
 .x-seg button:hover { color: var(--bone-hi); }
 .x-seg button[aria-pressed="true"] { background: #ffffff17; color: var(--bone-hi); font-weight: 600; }
-.x-seg button[disabled] { color: #5b6472; cursor: not-allowed; }
+.x-seg button[disabled] { color: var(--bone-faint); cursor: not-allowed; }
 
 /* 状态：一个词，颜色即语义。不画框：框会让每一行都长出一个按钮。 */
 .x-st { font-size: 12px; font-weight: 600; white-space: nowrap; }
@@ -225,10 +225,10 @@ select.x-in option { background: var(--x-raise); color: var(--bone); }
 .x-stale { display: flex; align-items: center; gap: 12px; margin-top: 12px; color: var(--x-warn); font-size: 12px; }
 
 /* 骨架：与成品同形的灰块。 */
-.sk { display: block; background: #ffffff08; }
+.sk { display: block; background: var(--tint-2); }
 @media (prefers-reduced-motion: no-preference) {
   .sk {
-    background: linear-gradient(90deg, #ffffff06 0 40%, #ffffff0f 50%, #ffffff06 60% 100%) 0 0 / 300% 100%;
+    background: linear-gradient(90deg, var(--tint-1) 0 40%, #ffffff0f 50%, var(--tint-1) 60% 100%) 0 0 / 300% 100%;
     animation: sk 1.3s linear infinite;
   }
   @keyframes sk { from { background-position: 100% 0; } to { background-position: 0 0; } }
@@ -236,7 +236,7 @@ select.x-in option { background: var(--x-raise); color: var(--bone); }
 
 /* 空态与出错：一句话说为什么，一句话说下一步。 */
 .x-empty { display: grid; justify-items: start; gap: 8px; padding: 56px 0; max-width: 480px; }
-.x-empty h3 { color: var(--bone-hi); font-size: 15px; font-weight: 600; }
+.x-empty h3 { color: var(--bone-hi); font-size: 14px; font-weight: 600; }
 .x-empty p { color: var(--bone-dim); }
 .x-empty .x-acts { margin-top: 8px; }
 .x-alert {
@@ -289,7 +289,7 @@ details pre { max-height: 40vh; overflow: auto; margin: 10px 0 0; padding: 12px 
 .gate-bezel {
   width: 424px;
   padding: 6px;
-  border-radius: 12px;
+  border-radius: var(--r-lg);
   border: 1px solid rgba(255, 255, 255, .07);
   background: rgba(14, 18, 28, .42);
   backdrop-filter: blur(18px);
@@ -510,8 +510,8 @@ details pre { max-height: 40vh; overflow: auto; margin: 10px 0 0; padding: 12px 
 .me b { color: var(--bone); font-weight: 500; }
 
 /* ── 列表版面 ─────────────────────────────────────────────────────────── */
-/* 列表是全量宽表，走 1500 那一档（design.md 四节）。 */
-.list { max-width: 1500px; margin: 0 auto; padding: 28px 32px 96px; }
+/* 列表走超宽档 1400px（design.md 第四节）。 */
+.list { max-width: var(--wrap-wide); margin: 0 auto; padding: 28px 32px 96px; }
 .list > .x-alert { margin-bottom: 20px; }
 
 /* 状态条：五档的计数是这一屏最要紧的读数，所以做成一级入口。
@@ -533,7 +533,7 @@ details pre { max-height: 40vh; overflow: auto; margin: 10px 0 0; padding: 12px 
   transition: box-shadow .2s var(--x-ease), background-color .12s;
 }
 .stage:first-child { padding-left: 0; }
-.stage:hover { background: linear-gradient(#ffffff00, #ffffff06); }
+.stage:hover { background: linear-gradient(#ffffff00, var(--tint-1)); }
 .stage b { color: var(--bone-hi); font: 600 28px/1.1 var(--font-disp); }
 .stage.hot b { color: var(--x-warn); }
 .stage.zero b { color: var(--x-mute); }
@@ -546,8 +546,8 @@ details pre { max-height: 40vh; overflow: auto; margin: 10px 0 0; padding: 12px 
 .bar .end { margin-left: auto; }
 
 .sect { display: flex; align-items: baseline; gap: 10px; margin-top: 30px; padding-bottom: 10px; }
-.sect h1 { color: var(--bone-hi); font-size: 22px; font-weight: 600; }
-.sect h2 { color: var(--bone-hi); font-size: 15px; font-weight: 600; }
+.sect h1 { color: var(--bone-hi); font-size: 20px; font-weight: 600; }
+.sect h2 { color: var(--bone-hi); font-size: 14px; font-weight: 600; }
 .sect:first-child { margin-top: 0; }
 .grid { border-top: 1px solid var(--hair); }
 .th, .tr {
@@ -661,7 +661,7 @@ details pre { max-height: 40vh; overflow: auto; margin: 10px 0 0; padding: 12px 
 /* ── 编辑者 ───────────────────────────────────────────────────────────── */
 .eds { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 48px; max-width: var(--wrap); margin: 8px auto 0; }
 .eds-head { display: flex; align-items: center; gap: 14px; }
-.eds-head h1 { color: var(--bone-hi); font-size: 22px; font-weight: 600; }
+.eds-head h1 { color: var(--bone-hi); font-size: 20px; font-weight: 600; }
 .eds-head .x-btn { margin-left: auto; }
 .add-panel { display: grid; gap: 16px; margin-top: 18px; padding: 20px; border: 1px solid var(--hair-lit); background: var(--x-raise); }
 .add-panel .row { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto; gap: 12px; align-items: end; }
@@ -678,7 +678,7 @@ details pre { max-height: 40vh; overflow: auto; margin: 10px 0 0; padding: 12px 
   width: 40px;
   height: 40px;
   border: 1px solid var(--hair);
-  background: #ffffff06;
+  background: var(--tint-1);
   color: var(--bone-hi);
   font-size: 16px;
   font-weight: 600;

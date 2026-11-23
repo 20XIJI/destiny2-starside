@@ -3,10 +3,11 @@
    这一页由 tools/convert-doc.py 从 references/docs/boss-hp.md 生成，
    改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
 
+:root { --accent: var(--c-enemy); }
+
 /* 宽表复用 1060px 那一档，不为它另定一个数（design.md 四节）：表格自己按内容
    定宽再居中，版心只是上限。版心固定，不做窄屏适配（design.md 五节）。
    骨架在 assets/site.css。 */
-:root { --wrap: 1060px; --min: 1104px; }
 
 /* 这一页的正文是表格的读表说明，退一档读作限定语。
    只给没有 class 的段：整段只有一个 {标记|…} 时 class 落在 <p> 本身，这条会压过
@@ -78,7 +79,7 @@
 .gen tbody th {
   color: var(--bone-hi);
   font-family: var(--font-cn);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: .04em;
   white-space: nowrap;
@@ -96,7 +97,7 @@
    放大一档，扫读时先落到它上面。颜色由下面的色阶给，这里不定 color。 */
 .gen:has(thead th:nth-child(8)) tbody td:nth-of-type(2) {
   font-family: var(--font-body);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   letter-spacing: .02em;
@@ -127,7 +128,7 @@
 .gen:has(thead th:nth-child(8)) tbody td:nth-of-type(6) {
   color: var(--bone);
   font-family: var(--font-body);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   letter-spacing: .02em;

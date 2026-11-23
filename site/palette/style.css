@@ -3,9 +3,6 @@
    这一页由 tools/convert-doc.py 从 references/docs/palette.md 生成，
    改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
 
-/* 四列都短，走连续阅读那一档（design.md 四节）。 */
-:root { --wrap: 760px; --min: 0px; }
-
 /* 色样类：只服务这一页的色样格，直接引渲染色，不经语义 token——这一节展示的
    就是渲染色本身。字重跟 site.css 的着色类一致，色样与正文的观感才可比。 */
 .c-arc,

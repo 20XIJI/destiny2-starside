@@ -4345,6 +4345,37 @@ class TypeGate(unittest.TestCase):
             ],
         )
 
+    def test_invalid_wrap_values_are_reported(self):
+        import check_type
+
+        self.assertEqual(
+            check_type.invalid_wrap_values(
+                ":root { --wrap: var(--wrap-wide); } body { --wrap: 1060px } /* --wrap: 900px; */"
+            ),
+            [],
+        )
+        self.assertEqual(
+            check_type.invalid_wrap_values(
+                ":root { --wrap: 1240px; } body:has(.x) { --wrap: 900px }"
+            ),
+            ["1240px", "900px"],
+        )
+        self.assertEqual(
+            check_type.out_of_scale_font_sizes(
+                ".a { font-size: 14px; } .b { font-size: 15px; } .c { font-size: 22px; }"
+            ),
+            ["15px", "22px"],
+        )
+
+    def test_home_accents_rejects_unknown_k_class(self):
+        import check_shell
+
+        bad: list[str] = []
+        check_shell.check_home_accents(
+            '<li class="k-nonexistent"><a href="ammo/index.html">x</a></li>', bad
+        )
+        self.assertTrue(any("k-nonexistent" in line for line in bad), bad)
+
 
 _build_orch = load("quality_build_cache", "build.py")
 

@@ -1,6 +1,7 @@
-/* 刷取清单-异域护甲：144 件异域护甲按三职业分节，写清每一件的定位与上榜理由。
+/* 刷取清单 · 异域护甲：144 件异域护甲按三职业分节，写清每一件的定位与上榜理由。
    记录网格版式在 /assets/site.css。 */
-:root { --wrap: 1500px; --min: 1104px; }
+
+:root { --accent: var(--c-exotic); }
 
 .block {
   content-visibility: auto;

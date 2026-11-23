@@ -148,6 +148,42 @@ def check_home_meta(home_src, bad):
             bad.append("首页 %s 那张卡写 %s，站上是 %d" % (href, m.group(1), want))
 
 
+def check_home_accents(home_src: str, bad: list[str]) -> None:
+    """首页带 k-* 左缘色的卡片，对应内页样式表的 --accent 必须取同一支颜色变量。"""
+    with open(os.path.join(shell.SITE, "assets/site.css"), encoding="utf-8") as f:
+        site_css = f.read()
+    edge_map = dict(
+        re.findall(
+            r"\.entries\s*>\s*li\.(k-[\w-]+)\s*\{\s*--edge:\s*([^;}\s]+)\s*;?\s*\}",
+            site_css,
+        )
+    )
+    for m in re.finditer(r'<li([^>]*)>\s*<a[^>]+href="([^"]+)"', home_src):
+        k_hit = re.search(r"\b(k-[\w-]+)\b", m.group(1))
+        if not k_hit:
+            continue
+        k_cls, href = k_hit.group(1), m.group(2)
+        want = edge_map.get(k_cls)
+        if not want:
+            bad.append("首页 %s 使用了未在 site.css 定义的左缘类 .%s" % (href, k_cls))
+            continue
+        css_path = os.path.join(shell.SITE, os.path.dirname(href), "style.css")
+        if not os.path.isfile(css_path):
+            bad.append(
+                "首页 %s（.%s → %s）缺少目标页样式表 %s" % (href, k_cls, want, css_path)
+            )
+            continue
+        with open(css_path, encoding="utf-8") as f:
+            css = re.sub(r"/\*.*?\*/", "", f.read(), flags=re.S)
+        acc = re.search(r"(?<![\w-])--accent\s*:\s*([^;{}]+)(?=[;}])", css)
+        got = acc.group(1).strip() if acc else "(未设置)"
+        if got != want:
+            bad.append(
+                "首页 %s 左缘 .%s 为 %s，但内页 %s 的 --accent 为 %s"
+                % (href, k_cls, want, os.path.relpath(css_path, shell.SITE), got)
+            )
+
+
 def main() -> int:
     listed = shell.pages()
     bad: list[str] = []
@@ -219,6 +255,7 @@ def main() -> int:
 
     if home_src:
         check_home_meta(home_src, bad)
+        check_home_accents(home_src, bad)
     weight, total, sizes = check_weight()
     bad += weight
 

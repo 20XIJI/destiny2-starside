@@ -1,6 +1,8 @@
-# 刷取清单-异域武器
+# 刷取清单 · 异域武器
 
 描述：139 把异域武器的输出、清怪与高难评级，含实测总伤与 DPS，以及每一档评级的理由。
+上级：PvE 终局刷取指南
+上级路径：pve-farming
 更新：2026.9.10
 鸣谢：[小棒猪-LGpig](https://space.bilibili.com/169548478) 整理全部评级、数值与评语。
 数据源：[刷取清单](https://docs.google.com/spreadsheets/d/1qsKGrRzCePGaIM5gNtAQNh949d3OsMJ6qV6Fqtpj22k/htmlview)

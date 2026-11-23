@@ -9,6 +9,7 @@ T1／T2 只看样式表。T3 在 shell.emit() 落盘前验刚写出的那一份 
   T3 产出的结构        开闭配对、开标签被复制一份时冒出的坏属性。生成页走 emit()。
   T4 整数阶梯与残留    禁小数像素字号、已退役的 --font-read，以及页面无 .gen 表时残留的 .gen 选择器。
   T5 资料页正文通栏    资料页正文块不许加窄 max-width，行宽统一跟 --wrap 走。
+  T6 版心两档白名单    页面样式表的 --wrap 只允许 var(--wrap-std) / var(--wrap-wide)（1060px / 1400px）。
 
 用法：python3 tools/check_type.py    改样式或改首页之后跑一次，已接进 npm run build。
 """
@@ -278,11 +279,22 @@ def check_shape(bad: list[str]) -> int:
 # ── T4 整数阶梯与残留 ────────────────────────────────────────────────────────
 
 FRAC_FONT = re.compile(r"(?<![\w-])font(?:-size)?\s*:\s*[^;{}]*?\b(\d+\.\d+px)\b")
+INT_FONT_SIZE = re.compile(r"(?<![\w-])font-size\s*:\s*(\d+)px\b")
+ALLOWED_FONT_PX = frozenset({0, 11, 12, 13, 14, 16, 20})
 
 
 def fractional_font_sizes(css: str) -> list[str]:
     """font-size 或 font 简写里出现的小数像素字号（如 12.5px）。"""
     return [m.group(1) for m in FRAC_FONT.finditer(strip_comments(css))]
+
+
+def out_of_scale_font_sizes(css: str) -> list[str]:
+    """页面样式表里不在六档整数字阶（11/12/13/14/16/20px）内的 font-size。"""
+    return [
+        m.group(1) + "px"
+        for m in INT_FONT_SIZE.finditer(strip_comments(css))
+        if int(m.group(1)) not in ALLOWED_FONT_PX
+    ]
 
 
 def check_tokens(bad: list[str]) -> int:
@@ -292,6 +304,13 @@ def check_tokens(bad: list[str]) -> int:
         for px in fractional_font_sizes(text):
             n += 1
             bad.append("T4 %s：字号 %s 带小数像素，应归入整数字号阶梯" % (rel, px))
+        if rel != "assets/site.css":
+            for px in out_of_scale_font_sizes(text):
+                n += 1
+                bad.append(
+                    "T4 %s：font-size %s 不在六档整数字阶（11/12/13/14/16/20px）内"
+                    % (rel, px)
+                )
         if "--font-read" in text:
             n += 1
             bad.append("T4 %s：引用了已退役的 --font-read，请改用 --font-body" % rel)
@@ -371,6 +390,35 @@ def check_prose_width(bad: list[str]) -> int:
     return n
 
 
+# ── T6 版心两档白名单 ────────────────────────────────────────────────────────
+
+ALLOWED_WRAPS = frozenset({"var(--wrap-std)", "var(--wrap-wide)", "1060px", "1400px"})
+
+
+def invalid_wrap_values(css: str) -> list[str]:
+    """返回不在两档白名单内的 --wrap 取值（含省略尾分号的末条声明）。"""
+    out = []
+    for m in re.finditer(r"(?<![\w-])--wrap\s*:\s*([^;{}]+)(?=[;}])", strip_comments(css)):
+        val = m.group(1).strip()
+        if val not in ALLOWED_WRAPS:
+            out.append(val)
+    return out
+
+
+def check_wrap_tiers(bad: list[str]) -> int:
+    n = 0
+    for rel in css_files():
+        if rel == "assets/site.css":
+            continue
+        for val in invalid_wrap_values(read(rel)):
+            n += 1
+            bad.append(
+                "T6 %s：--wrap: %s 不在两档白名单内（只允许 var(--wrap-std) / var(--wrap-wide)）"
+                % (rel, val)
+            )
+    return n
+
+
 def main() -> int:
     bad: list[str] = []
     n1 = check_tracking(bad)
@@ -378,14 +426,15 @@ def main() -> int:
     n3 = check_shape(bad)
     n4 = check_tokens(bad)
     n5 = check_prose_width(bad)
+    n6 = check_wrap_tiers(bad)
     if bad:
         print("排版与结构不一致：", file=sys.stderr)
         for line in bad:
             print("  " + line, file=sys.stderr)
         return 1
     print(
-        "排版与结构一致：%d 份样式表，手写 %d 页（字距 %d、简写 %d、结构 %d、阶梯 %d、版心 %d）"
-        % (len(css_files()), len(handwritten()), n1, n2, n3, n4, n5)
+        "排版与结构一致：%d 份样式表，手写 %d 页（字距 %d、简写 %d、结构 %d、阶梯 %d、通栏 %d、版心 %d）"
+        % (len(css_files()), len(handwritten()), n1, n2, n3, n4, n5, n6)
     )
     return 0
 

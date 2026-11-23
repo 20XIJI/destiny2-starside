@@ -1,27 +1,13 @@
-/* 刷取清单-白弹紫枪：53 把白弹位传说武器的评级、框架、推荐 Perk 与评级理由。
+/* 刷取清单 · 白弹紫枪：53 把白弹位传说武器的评级、框架、推荐 Perk 与评级理由。
    通用主题、字体与配色 token 在 /assets/site.css。
    这一页由 tools/convert-doc.py 从 references/docs/legendary-primary.md 生成，
    改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
 
 /* 全量宽表那一档（design.md 四节）：绿弹与重弹是 14 列，末列的评级理由是成段
    的正文，1060px 下会被挤成十来个字一行。 */
-:root { --wrap: 1240px; --min: 1104px; }
+:root { --wrap: var(--wrap-wide); --min: 1104px; }
 
 /* 分节导语：表之前的正文，退一档、不与表争。 */
-.block p {
-  margin: 0 0 18px;
-  color: var(--bone-dim);
-  font-size: 14px;
-  line-height: 1.95;
-}
-
-.block p a {
-  color: var(--bone);
-  text-decoration: none;
-  border-bottom: 1px solid var(--hair-lit);
-}
-
-.block p a:hover { color: var(--bone-hi); }
 
 /* 一页 8 张表，一张表一个枪械类型。**列宽写死、整表占满版心**——
    按内容定宽会让每张表各自量各自的，扫到下一节时武器名、图标、评级三列

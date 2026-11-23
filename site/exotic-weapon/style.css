@@ -1,6 +1,7 @@
 /* 异域武器页组件：146 把异域武器，按动能／能量／威能三个槽位分节。
    记录网格版式在 /assets/site.css。 */
-:root { --wrap: 1060px; --min: 1104px; }
+
+:root { --accent: var(--c-exotic); }
 
 .block {
   content-visibility: auto;

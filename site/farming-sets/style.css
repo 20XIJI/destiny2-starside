@@ -1,16 +1,5 @@
-/* 刷取清单-护甲套装：29 套护甲套装的排序、件数、获取地点、应用场景与说明。
+/* 刷取清单 · 护甲套装：29 套护甲套装的排序、件数、获取地点、应用场景与说明。
    记录网格版式在 /assets/site.css。 */
-:root { --wrap: 1060px; --min: 1104px; }
-
-.block ul {
-  margin: 0;
-  padding-left: 1.4em;
-  color: var(--bone-dim);
-  font-size: 14px;
-  line-height: 1.95;
-}
-
-.block li { margin-bottom: 10px; }
 
 .block {
   content-visibility: auto;

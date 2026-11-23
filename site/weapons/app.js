@@ -1971,7 +1971,10 @@
 
   /* ── 外壳：顶栏里的范围开关、查询框、计数与视图 ─────────────────── */
   var input = bar.querySelector('.wpn-input');
+  var clearBtn = bar.querySelector('.wpn-clear');
   var acBox = bar.querySelector('.wpn-suggest');
+  var acList = acBox.querySelector('.wpn-suggest-list');
+  var acHint = acBox.querySelector('.hint');
   var countBox = bar.querySelector('.wpn-count');
   var syntaxBox = bar.querySelector('.wpn-syntax');
   /* 词条池没到时卡片墙拿页壳里那块骨架占位，与首屏同一份。 */
@@ -2057,6 +2060,7 @@
     bar.querySelector('[data-act="syntax"]').setAttribute('aria-expanded', S.syntax ? 'true' : 'false');
     syntaxBox.hidden = !S.syntax;
     if (!typing && input.value !== S.q && document.activeElement !== input) { input.value = S.q; }
+    syncClear();
     var total = REPS[S.scope].length;
     var unit = S.scope === 'armor' ? '件' : S.scope === 'sets' ? '套' : '把';
     countBox.innerHTML = !S.q ? '<b>' + total + '</b> ' + unit
@@ -3502,7 +3506,10 @@
   }
 
   /* ── 自动补全 ──────────────────────────────────────────────────────── */
-  var ac = { items: [], at: -1, tok: null };
+  var ac = { items: [], at: -1, tok: null, px: -1, py: -1 };
+  function syncClear() {
+    if (clearBtn) { clearBtn.hidden = !input.value; }
+  }
   function currentToken() {
     var pos = input.selectionStart == null ? input.value.length : input.selectionStart;
     var list = tokenize(input.value);
@@ -3528,6 +3535,13 @@
   function suggest() {
     if (document.activeElement !== input) { closeAc(); return; }
     var t = currentToken();
+    if (!t) {
+      var pos = input.selectionStart == null ? input.value.length : input.selectionStart;
+      var before = input.value.slice(0, pos);
+      if (!before || /\s$/.test(before)) {
+        t = { t: 'empty', a: pos, b: pos, neg: false };
+      }
+    }
     ac.tok = t;
     ac.items = [];
     if (!t || t.neg) { closeAc(); return; }
@@ -3538,7 +3552,12 @@
     var keys = keysOf(S.scope);
     var groups = [];
     function count(fn) { var n = 0; for (var k = 0; k < pool.length; k++) { if (fn(pool[k])) { n++; } } return n; }
-    if (t.t === 'kw' && has(keys, t.k)) {
+    if (t.t === 'empty') {
+      var allKs = keys.map(function (k) {
+        return { text: k + ':', label: k + ':', n: -1, hint: KEY_LABEL[k], keep: true };
+      });
+      if (allKs.length) { groups.push(['筛选关键字', allKs]); }
+    } else if (t.t === 'kw' && has(keys, t.k)) {
       var f = fold(t.v), vals = [];
       if (t.k === 'is') {
         isMatches(S.scope, t.v).forEach(function (v) { vals.push([v, count(IS[S.scope][v])]); });
@@ -3618,23 +3637,27 @@
       });
     });
     if (!n) { closeAc(); return; }
-    acBox.innerHTML = html + '<li class="hint" role="presentation">↑↓ 选择 · Tab 或回车补全 · Esc 收起</li>';
+    acList.innerHTML = html;
+    acList.scrollTop = 0;
+    acHint.textContent = '点击或 ↑↓ 选择 · Tab / 回车补全 · Esc 收起';
     acBox.hidden = false;
     input.setAttribute('aria-expanded', 'true');
     ac.at = 0;
-    markAc();
+    ac.px = -1;
+    ac.py = -1;
+    markAc(false);
   }
-  function markAc() {
-    acBox.querySelectorAll('.opt').forEach(function (li) {
+  function markAc(scroll) {
+    acList.querySelectorAll('.opt').forEach(function (li) {
       var on = +li.getAttribute('data-k') === ac.at;
       li.setAttribute('aria-selected', on ? 'true' : 'false');
-      if (on) { li.scrollIntoView({ block: 'nearest' }); }
+      if (on && scroll) { li.scrollIntoView({ block: 'nearest' }); }
     });
     input.setAttribute('aria-activedescendant', ac.at >= 0 ? 'wpn-ac-' + ac.at : '');
   }
   function closeAc() {
     acBox.hidden = true;
-    acBox.innerHTML = '';
+    acList.innerHTML = '';
     ac.items = [];
     ac.at = -1;
     input.setAttribute('aria-expanded', 'false');
@@ -3799,20 +3822,42 @@
   input.addEventListener('click', suggest);
   input.addEventListener('focus', ensurePinyin);
   input.addEventListener('input', ensurePinyin);
+  input.addEventListener('input', syncClear);
+  if (clearBtn) {
+    clearBtn.addEventListener('mousedown', function (e) { e.preventDefault(); });
+    clearBtn.addEventListener('click', function () {
+      input.value = '';
+      syncClear();
+      setQuery('', false);
+      input.focus();
+      suggest();
+    });
+  }
   input.addEventListener('keydown', function (e) {
     if (acBox.hidden) {
       if (e.key === 'Escape') { input.blur(); }
       return;
     }
-    if (e.key === 'ArrowDown') { e.preventDefault(); ac.at = Math.min(ac.items.length - 1, ac.at + 1); markAc(); }
-    else if (e.key === 'ArrowUp') { e.preventDefault(); ac.at = Math.max(0, ac.at - 1); markAc(); }
+    if (e.key === 'ArrowDown') { e.preventDefault(); ac.at = Math.min(ac.items.length - 1, ac.at + 1); markAc(true); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); ac.at = Math.max(0, ac.at - 1); markAc(true); }
     else if (e.key === 'Tab' || e.key === 'Enter') { if (ac.at >= 0) { e.preventDefault(); acceptAc(ac.at); } }
     else if (e.key === 'Escape') { e.preventDefault(); closeAc(); }
   });
   input.addEventListener('blur', function () { setTimeout(closeAc, 150); });
-  acBox.addEventListener('mousedown', function (e) {
+  acBox.addEventListener('pointermove', function (e) {
+    if (e.pointerType === 'touch') { return; }
+    if (e.clientX === ac.px && e.clientY === ac.py) { return; }
+    ac.px = e.clientX;
+    ac.py = e.clientY;
     var li = e.target.closest('.opt');
-    if (li) { e.preventDefault(); acceptAc(+li.getAttribute('data-k')); }
+    if (!li) { return; }
+    var k = +li.getAttribute('data-k');
+    if (k !== ac.at) { ac.at = k; markAc(false); }
+  });
+  acBox.addEventListener('mousedown', function (e) {
+    e.preventDefault();
+    var li = e.target.closest('.opt');
+    if (li) { acceptAc(+li.getAttribute('data-k')); }
   });
 
   /* 按 / 聚焦查询框（不在输入框里时才拦），Esc 收起细分的下拉与语法卡片 */

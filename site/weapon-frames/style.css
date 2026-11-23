@@ -3,7 +3,7 @@
    这一页由 tools/convert-doc.py 从 references/docs/weapon-frames.md 生成，
    改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
 
-/* 全量宽表：42 列，装不进任何一档阅读版心。取并排对照那一档 1500px 作上限，
+/* 全量宽表：42 列，装不进任何一档阅读版心。取并排对照那一档 1400px 作上限，
    不为这一页再引入新的宽度数。
 
    **五个数值列组互斥，所以有 JS 时开不满 42 列**：最宽可达视图是身份 6 + 射速与
@@ -14,7 +14,7 @@
    横向溢出交给页面本身滚，不套 overflow 容器：套了里面的 sticky 就不再相对视口
    生效（design.md 五节）。版心固定，不做窄屏适配。骨架在 assets/site.css——
    版面宽度由那里的 fit-content 跟着当前列组走，--min 只作下限。 */
-:root { --wrap: 1500px; --min: 1104px; }
+:root { --wrap: var(--wrap-wide); --min: 1104px; }
 
 /* 这一页的正文是表格的读表说明，退一档读作限定语。
    只给没有 class 的段：整段只有一个 {标记|…} 时 class 落在 <p> 本身，这条会压过

@@ -1,6 +1,6 @@
-/* 购物清单-其他：源表「其他」分页的 8 把武器的评级、Perk 池、来源与注解。
+/* 购物清单 · 其他：源表「其他」分页的 8 把武器的评级、Perk 池、来源与注解。
    记录网格版式在 /assets/site.css。 */
-:root { --wrap: 1240px; --min: 1104px; }
+:root { --wrap: var(--wrap-wide); --min: 1104px; }
 
 .block {
   content-visibility: auto;

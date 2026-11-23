@@ -4,7 +4,7 @@
    改文案改 markdown，改结构改生成器的 render()，别手改 index.html。 */
 
 :root {
-  --wrap: 1500px;
+  --wrap: var(--wrap-wide);
   --min: 1104px;
   --dps-fun: #493454;
   --dps-reference: #26485b;
@@ -12,7 +12,7 @@
   --dps-difficult: #584126;
 }
 
-/* 列组多开时表宽超过 --wrap：main 平时收在 1500px 版心内，超宽时跟着表的
+/* 列组多开时表宽超过 --wrap：main 平时收在 1400px 版心内，超宽时跟着表的
    min-content 向两侧对称延展；页首与说明段始终锚在版心内。 */
 main {
   width: min-content;
