@@ -47,10 +47,14 @@ function libJump(q, rows) {
 }
 
 /* 三档仍是页面、条目名、正文；每一档里 Compendium 页（c:1）排在前面。
+   mode: 'name' 只搜页面标题与条目名；'body' 只搜页面描述与条目正文；'all' 全量三档。
    资料库物品名额外走拼音（全拼／简拼／混输）与英文名，页面标题与正文只走原文子串。
    武器名命中时在 DDC 条目名之后插一条跳到装备库；没有条目名、只命中了
    异域武器这类页标题时，插在 DDC 页面命中之后。 */
-function ranked(index, pages, terms, hit, q) {
+function ranked(index, pages, terms, hit, q, mode) {
+  var scope = mode || 'all';
+  var wantName = scope !== 'body';
+  var wantBody = scope !== 'name';
   var top = [], named = [], rest = [];
   function nameOk(r) {
     var py = typeof window !== 'undefined' && window.starsidePy;
@@ -58,9 +62,17 @@ function ranked(index, pages, terms, hit, q) {
     return hit(r._n, terms);
   }
   index.forEach(function (r) {
-    if (!r.n) { if (hit(r._t, terms)) top.push(r); }
-    else if (nameOk(r)) named.push(r);
-    else if (hit(r._x, terms)) rest.push(r);
+    if (!r.n) {
+      var titleHay = r._title != null ? r._title : r._t;
+      var descHay = r._desc != null ? r._desc : r._t;
+      if (scope === 'name') { if (hit(titleHay, terms)) top.push(r); }
+      else if (scope === 'body') { if (hit(descHay, terms)) rest.push(r); }
+      else if (hit(r._t, terms)) top.push(r);
+    } else if (wantName && nameOk(r)) {
+      named.push(r);
+    } else if (wantBody && hit(r._x, terms)) {
+      rest.push(r);
+    }
   });
   function cmp(a, b) {
     return (isDdc(pages, a) ? 0 : 1) - (isDdc(pages, b) ? 0 : 1);
@@ -68,7 +80,7 @@ function ranked(index, pages, terms, hit, q) {
   top.sort(cmp);
   named.sort(cmp);
   rest.sort(cmp);
-  var jump = libJump(q, named) || libJump(q, top);
+  var jump = wantName ? (libJump(q, named) || libJump(q, top)) : null;
   if (!jump) return top.concat(named, rest);
   var lane = named.length ? named : top;
   var at = 0;
@@ -131,6 +143,9 @@ export default function init(box, deps) {
   }
 
   function home(box) {
+    var shell = document.createElement('div');
+    shell.className = 'hero-shell';
+
     var wrap = document.createElement('div');
     wrap.className = 'hero-input-wrap';
 
@@ -144,15 +159,29 @@ export default function init(box, deps) {
     input.setAttribute('aria-expanded', 'false');
     input.setAttribute('aria-controls', 'hero-hits');
 
-    var clearBtn = document.createElement('button');
-    clearBtn.type = 'button';
-    clearBtn.className = 'hero-clear';
-    clearBtn.setAttribute('aria-label', '清空搜索');
-    clearBtn.hidden = true;
-    clearBtn.textContent = '×';
+    var scope = document.createElement('div');
+    scope.className = 'hero-scope';
+    scope.setAttribute('role', 'group');
+    scope.setAttribute('aria-label', '搜索范围');
+
+    var mode = 'name';
+    var scopeBtns = [
+      ['name', '名称'],
+      ['body', '详情'],
+      ['all', '全部'],
+    ].map(function (pair) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'hero-scope-btn';
+      btn.setAttribute('data-mode', pair[0]);
+      btn.setAttribute('aria-pressed', pair[0] === mode ? 'true' : 'false');
+      btn.textContent = pair[1];
+      scope.appendChild(btn);
+      return btn;
+    });
 
     wrap.appendChild(input);
-    wrap.appendChild(clearBtn);
+    wrap.appendChild(scope);
 
     var panel = document.createElement('div');
     panel.className = 'hero-panel';
@@ -165,23 +194,7 @@ export default function init(box, deps) {
     count.className = 'tool-count';
     count.setAttribute('role', 'status');
 
-    var headRight = document.createElement('div');
-    headRight.className = 'hero-panel-meta';
-
-    var hint = document.createElement('span');
-    hint.className = 'hero-panel-hint';
-    hint.textContent = '点击或 ↑↓ 选择 · 回车跳转 · Esc 收起';
-
-    var closeBtn = document.createElement('button');
-    closeBtn.type = 'button';
-    closeBtn.className = 'hero-panel-close';
-    closeBtn.setAttribute('aria-label', '收起搜索结果');
-    closeBtn.textContent = '×';
-
-    headRight.appendChild(hint);
-    headRight.appendChild(closeBtn);
     head.appendChild(count);
-    head.appendChild(headRight);
 
     var body = document.createElement('div');
     body.className = 'hero-panel-body';
@@ -201,8 +214,9 @@ export default function init(box, deps) {
     panel.appendChild(head);
     panel.appendChild(body);
 
-    box.appendChild(wrap);
-    box.appendChild(panel);
+    shell.appendChild(wrap);
+    shell.appendChild(panel);
+    box.appendChild(shell);
 
     var index = null, pending = false, pages = {};
 
@@ -217,8 +231,15 @@ export default function init(box, deps) {
            这边若改按 `r.d` 分，两个字段都为空的记录就走不到 `_t` 这一支，
            draw() 拿到 undefined 当正文，整只搜索框当场抛错。 */
         index.forEach(function (r) {
-          if (!r.n) { r._t = ((r.t || '') + ' ' + (r.d || '')).toLowerCase(); pages[r.u] = r; }
-          else { r._n = r.n.toLowerCase(); r._x = (r.x || '').toLowerCase(); }
+          if (!r.n) {
+            r._title = (r.t || '').toLowerCase();
+            r._desc = (r.d || '').toLowerCase();
+            r._t = (r._title + ' ' + r._desc).trim();
+            pages[r.u] = r;
+          } else {
+            r._n = r.n.toLowerCase();
+            r._x = (r.x || '').toLowerCase();
+          }
         });
         draw();
       };
@@ -291,6 +312,7 @@ export default function init(box, deps) {
     function setPanel(open) {
       var wasHidden = panel.hidden;
       panel.hidden = !open;
+      box.toggleAttribute('data-open', open);
       input.setAttribute('aria-expanded', open && list.childElementCount ? 'true' : 'false');
       if (open && wasHidden) {
         body.scrollTop = 0;
@@ -317,21 +339,25 @@ export default function init(box, deps) {
       more.hidden = true;
     });
 
-    clearBtn.addEventListener('mousedown', function (e) { e.preventDefault(); });
-    clearBtn.addEventListener('click', function () {
-      input.value = '';
-      draw();
-      if (typeof input.focus === 'function') input.focus();
+    scopeBtns.forEach(function (btn) {
+      btn.addEventListener('mousedown', function (e) { e.preventDefault(); });
+      btn.addEventListener('click', function () {
+        var next = btn.getAttribute('data-mode');
+        if (next === mode) return;
+        mode = next;
+        scopeBtns.forEach(function (b) {
+          b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+        });
+        if (input.value.trim()) { load(); draw(); }
+        if (typeof input.focus === 'function') input.focus();
+      });
     });
-
-    closeBtn.addEventListener('click', function () { setPanel(false); });
 
     /* 三档排序：页面、条目名命中、正文命中。名字命中的排在正文命中前面——
        搜「棱镜」时那一页本身与叫这个名字的条目，比正文里顺带提到的有用。
        同档内 Compendium 页优先；武器名命中再插一条跳到装备库。 */
     function draw() {
       var q = input.value.trim();
-      clearBtn.hidden = !input.value;
       list.textContent = '';
       seq = 0;
       active = -1;
@@ -352,14 +378,17 @@ export default function init(box, deps) {
       }
 
       var terms = words(q);
-      var all = ranked(index, pages, terms, hit, q);
+      var all = ranked(index, pages, terms, hit, q, mode);
       var n = 0, i;
       for (i = 0; i < all.length; i++) if (!all[i].jump) n++;
       show(all.slice(0, CAP), q, terms);
       queued = { rows: all.slice(CAP), q: q, terms: terms };
       more.hidden = !queued.rows.length;
       more.textContent = '展开其余 ' + queued.rows.length + ' 条';
-      count.textContent = n ? n + ' 条命中' : '没有命中';
+      var emptyText = mode === 'name'
+        ? '按名称没有命中'
+        : (mode === 'body' ? '按详情没有命中' : '没有命中');
+      count.textContent = n ? n + ' 条命中' : emptyText;
       box.toggleAttribute('data-miss', !n);
       setPanel(true);
     }

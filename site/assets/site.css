@@ -1984,19 +1984,24 @@ body:has(.hero) .entries > li { position: relative; }
   background: linear-gradient(270deg, transparent, var(--hair-lit) 36%, var(--bone-faint));
 }
 
-.hero-search:has(.tool-search:focus)::before {
+.hero-search:not([data-open]):has(.tool-search:focus)::before {
   right: calc(50% + 412px);
-  opacity: 1;
-  background: linear-gradient(90deg, transparent, var(--hair-lit) 28%, color-mix(in oklab, var(--accent) 55%, var(--hair-lit)));
+  opacity: .9;
+  background: linear-gradient(90deg, transparent, var(--hair-lit) 32%, var(--bone-dim));
 }
 
-.hero-search:has(.tool-search:focus)::after {
+.hero-search:not([data-open]):has(.tool-search:focus)::after {
   left: calc(50% + 412px);
-  opacity: 1;
-  background: linear-gradient(270deg, transparent, var(--hair-lit) 28%, color-mix(in oklab, var(--accent) 55%, var(--hair-lit)));
+  opacity: .9;
+  background: linear-gradient(270deg, transparent, var(--hair-lit) 32%, var(--bone-dim));
 }
 
-.hero-input-wrap {
+.hero-search[data-open]::before,
+.hero-search[data-open]::after {
+  opacity: 0;
+}
+
+.hero-shell {
   position: relative;
   width: min(100%, 704px);
   margin-inline: auto;
@@ -2004,104 +2009,134 @@ body:has(.hero) .entries > li { position: relative; }
   transition: width .34s cubic-bezier(.22, .68, .3, 1);
 }
 
-.hero-input-wrap:has(.tool-search:focus) {
+.hero-shell:has(.tool-search:focus) {
   width: min(100%, 792px);
+}
+
+.hero-search[data-open] .hero-shell {
+  width: min(100%, 860px);
+}
+
+.hero-input-wrap {
+  position: relative;
+  width: 100%;
 }
 
 .hero-search .tool-search {
   display: block;
   width: 100%;
-  padding: 14px 44px 14px 44px;
+  padding: 13px 164px 13px 44px;
   font-size: 14px;
-  border-radius: 999px;
-  background-color: rgba(19, 24, 37, .86);
+  border-radius: 25px;
+  background-color: var(--surf-2);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3%2eorg/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%239aa0ac' stroke-width='1.35'%3E%3Ccircle cx='7' cy='7' r='5'/%3E%3Cpath d='M10.5 10.5 14 14' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: 18px 50%;
+  background-position: 16px 50%;
   background-size: 15px 15px;
-  border: 0;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, .10), inset 0 1px 0 rgba(255, 255, 255, .04);
-  transition: background-color .24s ease, box-shadow .24s ease;
+  border: 1px solid var(--bd-outer);
+  box-shadow: var(--sh-block);
+  transition: background-color .2s ease, border-color .2s ease, border-radius .16s ease, box-shadow .2s ease;
 }
 
 .hero-search .tool-search:hover {
-  box-shadow: 0 0 0 1px var(--bone-faint), inset 0 1px 0 rgba(255, 255, 255, .04);
+  border-color: var(--hair-lit);
 }
 
 .hero-search .tool-search:focus {
   outline: none;
   background-color: var(--surf-3);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3%2eorg/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%235fd8e0' stroke-width='1.4'%3E%3Ccircle cx='7' cy='7' r='5'/%3E%3Cpath d='M10.5 10.5 14 14' stroke-linecap='round'/%3E%3C/svg%3E");
-  box-shadow: 0 0 0 1px color-mix(in oklab, var(--accent) 72%, var(--hair-lit)),
-    0 0 0 4px color-mix(in oklab, var(--accent) 14%, transparent);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3%2eorg/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23f4f1e8' stroke-width='1.4'%3E%3Ccircle cx='7' cy='7' r='5'/%3E%3Cpath d='M10.5 10.5 14 14' stroke-linecap='round'/%3E%3C/svg%3E");
+  border-color: var(--hair-lit);
+  box-shadow: var(--sh-block);
 }
 
-.hero-clear {
+.hero-search[data-open] .tool-search {
+  border-radius: 22px 22px 0 0;
+  background-color: var(--surf-1);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3%2eorg/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23f4f1e8' stroke-width='1.4'%3E%3Ccircle cx='7' cy='7' r='5'/%3E%3Cpath d='M10.5 10.5 14 14' stroke-linecap='round'/%3E%3C/svg%3E");
+  border-color: var(--hair-lit);
+  border-bottom-color: transparent;
+  box-shadow: var(--sh-block);
+}
+
+.hero-scope {
   position: absolute;
   top: 50%;
-  right: 12px;
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  padding: 0;
+  right: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding-left: 10px;
+  border-left: 1px solid var(--hair);
+  transform: translateY(-50%);
+}
+
+.hero-scope-btn {
+  padding: 5px 8px;
   color: var(--bone-faint);
-  font-size: 18px;
-  line-height: 1;
+  font: 500 12px/1.2 var(--font-cn);
   background: transparent;
   border: 0;
-  border-radius: 50%;
+  border-radius: 0;
   cursor: pointer;
-  transform: translateY(-50%);
-  transition: color .16s ease, background-color .16s ease, scale .14s ease;
+  transition: color .16s ease, box-shadow .16s ease;
 }
 
-.hero-clear[hidden] { display: none; }
+.hero-scope-btn:hover {
+  color: var(--bone);
+}
 
-.hero-clear:hover {
+.hero-scope-btn[aria-pressed="true"] {
   color: var(--bone-hi);
-  background: var(--tint-2);
+  font-weight: 600;
+  box-shadow: inset 0 -2px 0 var(--accent);
 }
 
-.hero-clear:active { scale: .92; }
-
-.hero-clear:focus-visible {
+.hero-scope-btn:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
 .hero-search[data-miss] .tool-search {
-  box-shadow: 0 0 0 1px var(--c-enemy);
+  border-color: var(--c-enemy);
+}
+
+.hero-search[data-miss][data-open] .tool-search {
+  border-bottom-color: transparent;
+}
+
+.hero-search[data-miss][data-open] .hero-panel {
+  border-color: var(--c-enemy);
 }
 
 .hero-search .tool-search::-webkit-search-cancel-button { -webkit-appearance: none; }
 
-/* 锚定浮层面板：脱离文档流覆盖下方轮换条与卡片墙，页面主体零位移 */
+/* 一体展开浮层：与上方输入框同宽、零缝隙衔接，脱离文档流不挤压下方轮换条与卡片墙 */
 .hero-panel {
   position: absolute;
-  top: calc(100% + 10px);
-  left: 50%;
+  top: calc(100% - 1px);
+  right: 0;
+  left: 0;
   z-index: 40;
   display: flex;
   flex-direction: column;
-  width: min(100%, 1060px);
   max-height: min(56dvh, 520px);
   overflow: hidden;
-  background: var(--ink-lift);
+  background: var(--surf-1);
   border: 1px solid var(--hair-lit);
-  border-radius: var(--r-md);
-  box-shadow: 0 22px 54px rgba(0, 0, 0, .72), inset 0 1px 0 rgba(255, 255, 255, .05);
-  transform: translateX(-50%);
+  border-top: 0;
+  border-radius: 0 0 22px 22px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .56);
 }
 
 .hero-panel[hidden] { display: none; }
 
-.hero-panel.is-in { animation: hero-panel-in .22s cubic-bezier(.22, .68, .3, 1) both; }
+.hero-panel.is-in { animation: hero-panel-in .16s cubic-bezier(.22, .68, .3, 1) both; }
 
 @keyframes hero-panel-in {
   from {
     opacity: 0;
-    transform: translate(-50%, -6px);
+    transform: translateY(-4px);
   }
 }
 
@@ -2111,48 +2146,9 @@ body:has(.hero) .entries > li { position: relative; }
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 9px 14px 9px 18px;
-  border-bottom: 1px solid var(--hair);
-}
-
-.hero-panel-meta {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.hero-panel-hint {
-  color: var(--bone-faint);
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-.hero-panel-close {
-  display: grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  padding: 0;
-  color: var(--bone-faint);
-  font-size: 17px;
-  line-height: 1;
-  background: transparent;
-  border: 0;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: color .16s ease, background-color .16s ease, scale .14s ease;
-}
-
-.hero-panel-close:hover {
-  color: var(--bone-hi);
-  background: var(--tint-2);
-}
-
-.hero-panel-close:active { scale: .92; }
-
-.hero-panel-close:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  margin: 0 16px;
+  padding: 8px 0 6px;
+  border-top: 1px solid var(--bd-row);
 }
 
 .hero-panel-body {
@@ -2160,7 +2156,7 @@ body:has(.hero) .entries > li { position: relative; }
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 4px 8px 10px;
+  padding: 0 0 8px;
   scrollbar-width: thin;
   scrollbar-color: var(--hair-lit) transparent;
 }
@@ -2169,6 +2165,8 @@ body:has(.hero) .entries > li { position: relative; }
 
 .hero-search .tool-count {
   margin: 0;
+  color: var(--bone-faint);
+  font-size: 11px;
   text-align: left;
 }
 
@@ -2198,7 +2196,7 @@ body:has(.hero) .entries > li { position: relative; }
 
 /* 搜索框聚焦时展宽到 880，视口窄于约 1256px 就会顶到这一枚。聚焦即让位：
    那一刻读者在搜东西，装饰退场。不支持 :has() 的浏览器两者略微交叠，不缺东西。 */
-.hero-band:has(.tool-search:focus) .pledge {
+.hero-band:has(.tool-search:focus, .hero-search[data-open]) .pledge {
   opacity: 0;
   pointer-events: none;
 }
@@ -2349,19 +2347,22 @@ body:has(.hero) .entries > li { position: relative; }
   grid-template-columns: subgrid;
 }
 
-.hits li + li { border-top: 1px solid var(--hair); }
+.hits li + li { border-top: 1px solid var(--bd-row); }
 
 .hits .hit {
   gap: 18px;
   align-items: baseline;
-  padding: 11px 14px;
-  border-radius: var(--r-md);
+  padding: 10px 16px 10px 14px;
+  border-left: 2px solid transparent;
   text-decoration: none;
-  transition: background-color .18s ease;
+  transition: background-color .16s ease, border-color .16s ease;
 }
 
 .hits .hit:hover,
-.hits .hit[aria-selected="true"] { background: var(--tint-2); }
+.hits .hit[aria-selected="true"] {
+  background: var(--surf-3);
+  border-left-color: var(--accent);
+}
 
 .hits .hit b {
   color: var(--bone-hi);
@@ -2412,7 +2413,7 @@ body:has(.hero) .entries > li { position: relative; }
 
 /* 动效是锦上添花，系统里关了就一概不放 */
 @media (prefers-reduced-motion: reduce) {
-  .hero-input-wrap,
+  .hero-shell,
   .hero-search .tool-search,
   .hits .hit {
     transition: none;
@@ -2420,10 +2421,6 @@ body:has(.hero) .entries > li { position: relative; }
 
   .hero-panel.is-in,
   .hits.is-in { animation: none; }
-}
-
-@media (max-width: 720px) {
-  .hero-panel-hint { display: none; }
 }
 
 /* ── 搜索带底栏：当前轮换素字徽记行 ── */

@@ -1085,21 +1085,63 @@
     return scope === 'armor' ? KEYS_ARMOR : scope === 'sets' ? KEYS_SETS : KEYS_WPN;
   }
   var POOL_KEYS = ['perk', 'perk1', 'perk2', 'col1', 'col2', 'col3', 'col4', 'col5', 'perkname', 'origintrait', 'stat'];
-  var KEY_LABEL = { is: '类型、元素、槽位、弹药、稀有度、勇士与标志', name: '名字', perk: '任一栏的词条',
-    perk1: '特性栏（与 perk2 可换列）', perk2: '特性栏（与 perk1 可换列）',
-    col1: '固定第 1 栏', col2: '固定第 2 栏', col3: '固定第 3 栏', col4: '固定第 4 栏', col5: '固定第 5 栏',
-    perkname: '词条名完全相同', perktext: '词条说明',
-    origintrait: '起源特性', frame: '框架', stat: '属性', season: '赛季', source: '来源', breaker: '勇士克制' };
+  var KEY_META = {
+    is:          { title: '类型 / 标签', alias: '类型 标签 是', hint: '枪型、元素、槽位、弹药、品质与标志' },
+    perk:        { title: 'Perk',        alias: '词条 特性',    hint: '任一栏的 Perk 名称或说明' },
+    stat:        { title: '属性',        alias: '属性 面板',    hint: '射速、射程、稳定性等数值比较' },
+    frame:       { title: '框架',        alias: '框架',         hint: '武器框架类型' },
+    source:      { title: '来源',        alias: '来源',         hint: '突袭、地牢、活动等获取途径' },
+    breaker:     { title: '勇士克制',    alias: '勇士 克制',    hint: '反屏障、反过载、反势不可挡' },
+    season:      { title: '赛季',        alias: '赛季',         hint: '赛季编号或资料片名' },
+    name:        { title: '名称',        alias: '名字 名称',    hint: '中英文武器名' },
+    origintrait: { title: '起源特性',    alias: '起源 起源特性', hint: '武器起源特性' },
+    perk1:       { title: 'Perk 特性栏 1', alias: '特性1',      hint: '与 perk2 可互换列' },
+    perk2:       { title: 'Perk 特性栏 2', alias: '特性2',      hint: '与 perk1 可互换列' },
+    col1:        { title: '第 1 栏',     alias: '第1栏',        hint: '固定第 1 栏（枪管/弓弦等）' },
+    col2:        { title: '第 2 栏',     alias: '第2栏',        hint: '固定第 2 栏（弹匣/箭矢等）' },
+    col3:        { title: '第 3 栏',     alias: '第3栏',        hint: '固定第 3 栏特性' },
+    col4:        { title: '第 4 栏',     alias: '第4栏',        hint: '固定第 4 栏特性' },
+    col5:        { title: '第 5 栏',     alias: '第5栏',        hint: '固定第 5 栏（起源特性）' },
+    perkname:    { title: '精确 Perk 名', alias: '精确词条',    hint: 'Perk 名称完全相同' },
+    perktext:    { title: 'Perk 说明',   alias: '说明 词条说明', hint: 'Perk 效果描述正文' }
+  };
+  var KEY_PRIMARY = ['is', 'perk', 'stat', 'frame', 'source', 'breaker', 'season', 'name', 'origintrait'];
   function isPerkKey(k) {
     return k === 'perk' || k === 'perkname' || k === 'perk1' || k === 'perk2' || k === 'origintrait' || /^col[1-5]$/.test(k);
+  }
+  function isIncompleteTok(t, keys) {
+    if (!t || t.t !== 'kw' || !has(keys, t.k)) { return false; }
+    if (!t.v) { return true; }
+    if (t.k === 'stat') { return !/^[^:]+:(?:>=|<=|[><=])?\d/.test(t.v); }
+    if (t.k === 'season') { return /^(?:>=|<=|[><=])$/.test(t.v); }
+    return false;
   }
 
   function normQ(s) {
     return s.replace(/：/g, ':').replace(/（/g, '(').replace(/）/g, ')').replace(/[“”]/g, '"').replace(/　/g, ' ');
   }
-  /* 切成 token，每个带它在原文里的 [a, b)。全角标点按半角认，长度不变，位置照旧对得上。 */
+  /* 切成 token，每个带它在原文里的 [a, b)。全角标点按半角认，长度不变，位置照旧对得上。
+     同时支持英文关键字与中文别名，宽容冒号与比较符后的误敲空格（如 stat:射速: 600）。 */
   function tokenize(src) {
+    var ALIAS = {
+      '类型': 'is', '标签': 'is', '是': 'is',
+      '名字': 'name', '名称': 'name',
+      '词条': 'perk', '特性': 'perk',
+      '特性1': 'perk1', '特性2': 'perk2',
+      '第1栏': 'col1', '第2栏': 'col2', '第3栏': 'col3', '第4栏': 'col4', '第5栏': 'col5',
+      '精确词条': 'perkname', '说明': 'perktext', '词条说明': 'perktext',
+      '起源': 'origintrait', '起源特性': 'origintrait',
+      '框架': 'frame', '属性': 'stat', '面板': 'stat',
+      '赛季': 'season', '来源': 'source', '勇士': 'breaker', '克制': 'breaker'
+    };
     var s = normQ(src), out = [], i = 0, n = s.length;
+    function matchKey(at) {
+      var m = /^([a-z][a-z0-9]*):/i.exec(s.slice(at));
+      if (m) { return { k: m[1].toLowerCase(), len: m[0].length }; }
+      var cm = /^([\u4e00-\u9fff0-9]+):/.exec(s.slice(at));
+      if (cm && ALIAS[cm[1]]) { return { k: ALIAS[cm[1]], len: cm[0].length }; }
+      return null;
+    }
     function value() {
       var v = '', quoted = false, inner = 0;
       if (s[i] === '"') {
@@ -1124,11 +1166,30 @@
       if (c === '(' || c === ')') { out.push({ t: c, a: i, b: i + 1 }); i++; continue; }
       var a = i, neg = false;
       if (c === '-' && i + 1 < n && s[i + 1] !== ' ') { neg = true; i++; }
-      var m = /^([a-z][a-z0-9]*):/i.exec(s.slice(i));
-      if (m) {
-        i += m[0].length;
+      var km = matchKey(i);
+      if (km) {
+        i += km.len;
         var got = value();
-        out.push({ t: 'kw', k: m[1].toLowerCase(), v: got.v, q: got.q || undefined, neg: neg, a: a, b: i });
+        /* 冒号后误敲空格且紧接一个普通值（非关键字/括号/逻辑词），自动合并 */
+        if (!got.v && !got.q) {
+          var j = i;
+          while (j < n && (s[j] === ' ' || s[j] === '\t')) { j++; }
+          if (j > i && j < n && s[j] !== '(' && s[j] !== ')' && s[j] !== '-' && !matchKey(j) && !/^(?:or|and|not)(?:[\s)]|$)/i.test(s.slice(j))) {
+            i = j;
+            got = value();
+          }
+        }
+        /* stat:射速: 600 或 stat:射速:>= 600 或 season:>= 26：宽容比较符与数字前的空格 */
+        if (!got.q && (km.k === 'stat' && /(?:[:>=<])$/.test(got.v) || km.k === 'season' && /^(?:>=|<=|[><=])$/.test(got.v))) {
+          var p = i;
+          while (p < n && (s[p] === ' ' || s[p] === '\t')) { p++; }
+          var tail = /^(?:>=|<=|[><=])?\s*\d+(?:\.\d+)?/.exec(s.slice(p));
+          if (tail && (p + tail[0].length === n || /[\s)]/.test(s[p + tail[0].length]))) {
+            got.v += tail[0].replace(/\s+/g, '');
+            i = p + tail[0].length;
+          }
+        }
+        out.push({ t: 'kw', k: km.k, v: got.v, q: got.q || undefined, neg: neg, a: a, b: i });
         continue;
       }
       var w = value();
@@ -1140,10 +1201,17 @@
     }
     return out;
   }
-  /* not > and > or；括号分组。未知关键字当裸词；悬空的 or 与不配对的括号忽略。 */
+  /* not > and > or；括号分组。未知关键字当裸词；悬空的 or、不配对的括号与未填完的空条件忽略。 */
   function parse(tokens, keys) {
     var at = 0;
     function peek() { return tokens[at]; }
+    function incomplete(t) {
+      if (!t || t.t !== 'kw' || !has(keys, t.k)) { return false; }
+      if (!t.v) { return true; }
+      if (t.k === 'stat') { return !/^[^:]+:(?:>=|<=|[><=])?\d/.test(t.v); }
+      if (t.k === 'season') { return /^(?:>=|<=|[><=])$/.test(t.v); }
+      return false;
+    }
     function unary() {
       var t = peek();
       if (!t) { return null; }
@@ -1156,6 +1224,7 @@
       }
       if (t.t === 'kw' || t.t === 'w') {
         at++;
+        if (incomplete(t)) { return null; }
         var node = t.t === 'kw' && has(keys, t.k) ? { op: 'kw', k: t.k, v: t.v, q: t.q, tok: t }
           : { op: 'w', v: t.t === 'kw' ? t.k + ':' + t.v : t.v, tok: t };
         return t.neg ? { op: 'not', x: node, tok: t } : node;
@@ -1509,9 +1578,36 @@
     }
     return false;
   }
+  var STAT_EN = {
+    rpm: '射速', rof: '射速', roundsperminute: '射速',
+    impact: '伤害', range: '射程', stability: '稳定性', stab: '稳定性',
+    handling: '操控性', reload: '填装速度', reloadspeed: '填装速度',
+    mag: '弹匣', magazine: '弹匣',
+    aim: '辅助瞄准', aa: '辅助瞄准', aimassist: '辅助瞄准', aimassistance: '辅助瞄准',
+    zoom: '变焦', recoil: '后坐方向', recoildirection: '后坐方向',
+    ae: '空中效率', airborne: '空中效率', airborneeffectiveness: '空中效率',
+    charge: '充能时间', chargetime: '充能时间',
+    draw: '拉弓时间', drawtime: '拉弓时间',
+    blast: '爆炸范围', blastradius: '爆炸范围',
+    velocity: '弹头速度', vel: '弹头速度',
+    swing: '挥舞速度', swingspeed: '挥舞速度',
+    shield: '护盾持续时间', shieldduration: '护盾持续时间',
+    guard: '防御效率', guardefficiency: '防御效率',
+    guardres: '防御抗性', guardresistance: '防御抗性',
+    chargerate: '充能速率', ammo: '弹药容量', ammocapacity: '弹药容量'
+  };
+  var STAT_TAG = {
+    '射速': 'rpm', '伤害': 'impact', '射程': 'range', '稳定性': 'stability', '操控性': 'handling',
+    '填装速度': 'reload', '弹匣': 'mag', '辅助瞄准': 'aa', '变焦': 'zoom', '后坐方向': 'recoil',
+    '空中效率': 'ae', '充能时间': 'charge', '拉弓时间': 'draw', '爆炸范围': 'blast',
+    '弹头速度': 'velocity', '挥舞速度': 'swing', '护盾持续时间': 'shield', '防御效率': 'guard',
+    '防御抗性': 'guardres', '充能速率': 'chargerate', '弹药容量': 'ammo'
+  };
   function statIndex(name) {
-    for (var s = 0; s < P.s.length; s++) { if (P.s[s][1] === name) { return s; } }
-    for (var t = 0; t < P.s.length; t++) { if (P.s[t][1].indexOf(name) !== -1) { return t; } }
+    var en = STAT_EN[enFold(name)];
+    var target = en || name;
+    for (var s = 0; s < P.s.length; s++) { if (P.s[s][1] === target) { return s; } }
+    for (var t = 0; t < P.s.length; t++) { if (P.s[t][1].indexOf(target) !== -1) { return t; } }
     return -1;
   }
   function run(scope, node) {
@@ -2022,6 +2118,22 @@
   /* ── 渲染：顶栏 ────────────────────────────────────────────────────── */
   /* pending：查询在等哪一份数据才算得出（'pool'、'text'），不等是空串。 */
   var tokens = [], tree = null, results = [], pending = '';
+  function acGlyph(key, cls) {
+    return '<span class="ac-ic' + (cls ? ' ' + cls : '') + '" aria-hidden="true">' + glyph(key) + '</span>';
+  }
+  function kwIcon() { return ''; }
+  var IS_GLYPH = {
+    '传说': ['engram', 'is-leg'], '异域': ['engram', 'is-exo'],
+    '主手': ['slot-kinetic', ''], '副手': ['slot-energy', ''], '威能': ['slot-power', ''],
+    '可锻造': ['shaped', 'is-craft'], '可强化': ['infuse', ''],
+    '泰坦': ['class-titan', ''], '猎人': ['class-hunter', ''], '术士': ['class-warlock', ''],
+    '头盔': ['armor-helmet', ''], '臂铠': ['armor-gloves', ''], '胸甲': ['armor-chest', ''],
+    '腿甲': ['armor-boots', ''], '职业物品': ['armor-class', '']
+  };
+  function isExtraIcon(v) {
+    var g = IS_GLYPH[v];
+    return g ? acGlyph(g[0], g[1]) : '';
+  }
   function pillIcon(t) {
     if (t.t === 'w' && bareIs(S.scope, t.v, t.q)) { t = { t: 'kw', k: 'is', v: t.v }; }
     if (t.t !== 'kw') { return ''; }
@@ -2063,7 +2175,7 @@
     syncClear();
     var total = REPS[S.scope].length;
     var unit = S.scope === 'armor' ? '件' : S.scope === 'sets' ? '套' : '把';
-    countBox.innerHTML = !S.q ? '<b>' + total + '</b> ' + unit
+    countBox.innerHTML = !tree ? '<b>' + total + '</b> ' + unit
       : '<b>' + (pending ? (loads[pending] && loads[pending].failed ? '—' : '…') : results.length) + '</b> / ' + total + ' ' + unit;
     if (S.syntax) { renderSyntax(); }
   }
@@ -2282,7 +2394,8 @@
   /* 条件条：数据没到时左边挂一行载入提示，右边留着上一次的内容；详情里右边不画。 */
   var prevPills = null;
   function renderConds() {
-    var pills = tokens.filter(function (t) { return t.t === 'kw' || t.t === 'w'; }), seen = {};
+    var keys = keysOf(S.scope);
+    var pills = tokens.filter(function (t) { return (t.t === 'kw' || t.t === 'w') && !isIncompleteTok(t, keys); }), seen = {};
     /* 只有点按钮加进来的药丸才淡入：敲字时每个字都会换一枚新药丸，第一次渲染也不动。 */
     var animate = prevPills != null && document.activeElement !== input;
     pillBox.innerHTML = pills.map(function (t) {
@@ -2376,8 +2489,8 @@
           }).join('') + '</div></div>';
         }).join('') +
         (S.scope === 'sets'
-          ? '<p class="sx-note">套装的 <code>is:</code> 值是来源或类型名，如 <code>is:发射基地</code>；来源也可以用条件条右边的下拉选。</p>'
-          : '<p class="sx-note">值也认英文，如 <code>is:handcannon</code>，不计大小写、空格与连字符。写全的值不带 <code>is:</code> 也按它算，加引号照字面搜。</p>') +
+          ? '<p class="sx-note">套装的 <code>is:</code> 值是来源或类型名，如 <code>is:发射基地</code>；关键字也支持中文，如 <code>来源:</code>、<code>赛季:</code>。</p>'
+          : '<p class="sx-note">关键字与值均支持中英双语，如 <code>属性:射速:>=600</code>、<code>stat:rpm:>=600</code>、<code>perk:萤火虫</code>、<code>is:handcannon</code>。写全的值不带 <code>is:</code> 也按它算。</p>') +
         '</section></div>';
     }
     syntaxBox.querySelectorAll('.sx-t').forEach(function (b) {
@@ -3519,18 +3632,23 @@
     return null;
   }
   var perkIndex = null;
-  function perkRows() {
-    if (!perkIndex) {
-      perkIndex = {};
+  function perkRows(k) {
+    if (!perkIndex) { perkIndex = {}; }
+    var key = /^col[1-5]$/.test(k) ? k : (k === 'origintrait' ? 'origintrait' : (k === 'perk1' || k === 'perk2' ? 'trait' : 'all'));
+    if (!perkIndex[key]) {
+      var idx = perkIndex[key] = {};
       REPS.wpn.forEach(function (i) {
-        var names = perkNames(i);
-        for (var k = 0; k < names.length; k++) {
-          var list = perkIndex[names[k]] || (perkIndex[names[k]] = []);
+        var names = /^col[1-5]$/.test(key) ? colPerkNames(i, +key.slice(3))
+          : key === 'origintrait' ? perkNames(i, R_ORIGIN)
+          : key === 'trait' ? perkNames(i, R_TRAIT, 0)
+          : perkNames(i);
+        for (var j = 0; j < names.length; j++) {
+          var list = idx[names[j]] || (idx[names[j]] = []);
           if (list[list.length - 1] !== i) { list.push(i); }
         }
       });
     }
-    return perkIndex;
+    return perkIndex[key];
   }
   function suggest() {
     if (document.activeElement !== input) { closeAc(); return; }
@@ -3551,20 +3669,57 @@
     pool.forEach(function (i) { mark[i] = 1; });
     var keys = keysOf(S.scope);
     var groups = [];
+    function kwItem(k) {
+      var m = KEY_META[k] || { title: k, hint: '' };
+      return { text: k + ':', label: m.title, badge: k + ':', hint: m.hint, n: -1, keep: true, icon: kwIcon(k) };
+    }
     function count(fn) { var n = 0; for (var k = 0; k < pool.length; k++) { if (fn(pool[k])) { n++; } } return n; }
     if (t.t === 'empty') {
-      var allKs = keys.map(function (k) {
-        return { text: k + ':', label: k + ':', n: -1, hint: KEY_LABEL[k], keep: true };
-      });
-      if (allKs.length) { groups.push(['筛选关键字', allKs]); }
+      var pri = KEY_PRIMARY.filter(function (k) { return has(keys, k); }).map(kwItem);
+      var adv = keys.filter(function (k) { return !has(KEY_PRIMARY, k); }).map(kwItem);
+      if (pri.length) { groups.push(['常用筛选', pri]); }
+      if (adv.length) { groups.push(['进阶栏位', adv]); }
     } else if (t.t === 'kw' && has(keys, t.k)) {
       var f = fold(t.v), vals = [];
       if (t.k === 'is') {
-        isMatches(S.scope, t.v).forEach(function (v) { vals.push([v, count(IS[S.scope][v])]); });
+        var matched = {};
+        isMatches(S.scope, t.v).forEach(function (v) { matched[v] = true; });
+        function pushIsGroup(title, list, sortByCount) {
+          var rows = [];
+          list.forEach(function (v) {
+            if (!matched[v]) { return; }
+            var c = count(IS[S.scope][v]);
+            if (c) { rows.push([v, c]); }
+          });
+          if (sortByCount) { rows.sort(function (a, b) { return b[1] - a[1]; }); }
+          if (rows.length) {
+            groups.push([title, rows.map(function (r) {
+              var val = /[\s()]/.test(r[0]) ? '"' + r[0] + '"' : r[0];
+              return { text: 'is:' + val, label: r[0], n: r[1], icon: pillIcon({ t: 'kw', k: 'is', v: r[0] }) || isExtraIcon(r[0]) };
+            })]);
+          }
+        }
+        if (S.scope === 'wpn') {
+          var tyNames = namesOf(V.ty, 0).concat(V.qt.map(function (e) { return e[0]; })).filter(function (v, idx, arr) { return arr.indexOf(v) === idx; });
+          pushIsGroup('槽位', V.slot, false);
+          pushIsGroup('元素', namesOf(V.el, 0), false);
+          pushIsGroup('弹药', namesOf(V.am, 0), false);
+          pushIsGroup('勇士', namesOf(V.br, 0), false);
+          pushIsGroup('品质', ['异域', '传说', '稀有', '罕见', '普通'], false);
+          pushIsGroup('武器类型', tyNames, true);
+          pushIsGroup('标志', ['可锻造', '可强化', '可升阶', '专家', '全息', '复刻', '已钉选'], false);
+        } else if (S.scope === 'armor') {
+          pushIsGroup('职业', V.cls, false);
+          pushIsGroup('部位', V.part, false);
+          pushIsGroup('标志', ['异域', '已钉选'], false);
+        } else {
+          isMatches(S.scope, t.v).forEach(function (v) { vals.push([v, count(IS[S.scope][v])]); });
+        }
       } else if (t.k === 'frame' && S.scope === 'wpn') {
         V.fr.forEach(function (fr) {
           if (fold(fr[0]).indexOf(f) !== -1 && !vals.some(function (v) { return v[0] === fr[0]; })) {
-            vals.push([fr[0], count(function (i) { return frameOf(WR[i])[0] === fr[0]; })]);
+            var n = count(function (i) { return !isExotic(WR[i]) && frameOf(WR[i])[0] === fr[0]; });
+            if (n) { vals.push([fr[0], n, fr[1] || '']); }
           }
         });
       } else if (t.k === 'source' && S.scope === 'sets') {
@@ -3591,47 +3746,129 @@
         Object.keys(V.br).forEach(function (b) {
           if (fold(V.br[b][0]).indexOf(f) !== -1) { vals.push([V.br[b][0], count(function (i) { return WR[i][W_BR] === +b; })]); }
         });
-      } else if (t.k === 'stat' && P) {
-        P.s.forEach(function (s) { if (fold(s[1]).indexOf(f) !== -1) { vals.push([s[1] + ':', -1]); } });
+      } else if (t.k === 'season') {
+        var ssnMap = {};
+        pool.forEach(function (i) {
+          var sv = S.scope === 'armor' ? AR[i][A_SSN] : S.scope === 'sets' ? SR[i][T_SSN] : WR[i][W_SSN];
+          if (sv == null || sv === '') { return; }
+          var key = String(sv);
+          if (!f || fold(key).indexOf(f) !== -1) { ssnMap[key] = (ssnMap[key] || 0) + 1; }
+        });
+        var ssnList = Object.keys(ssnMap).sort(function (a, b) { return (+b || 0) - (+a || 0) || b.localeCompare(a); });
+        if (ssnList.length) {
+          groups.push(['赛季' + (f ? ' · 含「' + t.v + '」' : ''), ssnList.slice(0, 20).map(function (sv) {
+            return { text: 'season:' + sv, label: /^\d+$/.test(sv) ? '第 ' + sv + ' 赛季' : sv, badge: /^\d+$/.test(sv) ? sv : '', n: ssnMap[sv], icon: '' };
+          })]);
+        }
+      } else if (t.k === 'stat') {
+        if (!P) { need('pool', suggest); }
+        else {
+          var sm = /^([^:]+):(.*)$/.exec(t.v);
+          if (!sm) {
+            var ef = enFold(t.v);
+            var stItems = P.s.filter(function (s) {
+              var tag = STAT_TAG[s[1]] || '';
+              return !f || fold(s[1]).indexOf(f) !== -1 || (ef && tag.indexOf(ef) !== -1) || (ef && STAT_EN[ef] === s[1]);
+            }).map(function (s) {
+              return { text: 'stat:' + s[1] + ':', label: s[1], badge: STAT_TAG[s[1]] || '', n: -1, keep: true, icon: '' };
+            });
+            if (stItems.length) { groups.push(['属性' + (f ? ' · 含「' + t.v + '」' : ''), stItems]); }
+          } else {
+            var si = statIndex(sm[1]);
+            var sName = si >= 0 ? P.s[si][1] : sm[1];
+            var restVal = sm[2];
+            if (si >= 0 && /^(?:>=|<=|[><=])?$/.test(restVal)) {
+              if (!restVal) {
+                var OPS = [
+                  ['>=', '≥', '大于等于'],
+                  ['<=', '≤', '小于等于'],
+                  ['=',  '=', '等于'],
+                  ['>',  '>', '大于'],
+                  ['<',  '<', '小于']
+                ];
+                groups.push([sName + ' · 比较符', OPS.map(function (o) {
+                  return { text: 'stat:' + sName + ':' + o[0], label: o[2], badge: o[0], n: -1, keep: true, icon: '<span class="ac-ic ac-op" aria-hidden="true">' + o[1] + '</span>' };
+                })]);
+              }
+              var freq = {};
+              pool.forEach(function (i) {
+                var g = defaultStat(i, si);
+                if (g >= 0) { freq[g] = (freq[g] || 0) + 1; }
+              });
+              var opStr = restVal || '';
+              var numList = Object.keys(freq).map(Number).sort(function (a, b) {
+                return freq[b] - freq[a] || b - a;
+              }).slice(0, 14);
+              if (opStr) {
+                numList = numList.map(function (v) {
+                  return [v, count(function (i) { var g = defaultStat(i, si); return g >= 0 && cmp(opStr + v, g); })];
+                }).filter(function (x) { return x[1] > 0; });
+              } else {
+                numList = numList.map(function (v) { return [v, freq[v]]; });
+              }
+              if (numList.length) {
+                groups.push([sName + (opStr ? ' ' + opStr + ' 常用数值' : ' · 常见档位（直接点选或输入数字）'), numList.map(function (x) {
+                  return { text: 'stat:' + sName + ':' + opStr + x[0], label: (opStr ? opStr + ' ' : '') + x[0], n: x[1], icon: '' };
+                })]);
+              }
+            }
+          }
+        }
       } else if (isPerkKey(t.k) && S.scope === 'wpn') {
         if (!P) { need('pool', suggest); }
         else {
-          var idx = perkRows();
+          var idx = perkRows(t.k);
           Object.keys(idx).forEach(function (n) {
-            if (f && fold(n).indexOf(f) !== -1) {
+            if (!f || fold(n).indexOf(f) !== -1) {
               var c = 0;
               idx[n].forEach(function (i) { if (mark[i]) { c++; } });
               if (c) { vals.push([n, c]); }
             }
           });
+          if (!f && vals.length > 24) {
+            vals.sort(function (a, b) { return b[1] - a[1]; });
+            vals = vals.slice(0, 24);
+          }
         }
       }
       vals = vals.filter(function (v) { return v[1] !== 0; });
       vals.sort(function (a, b) { return b[1] - a[1]; });
       if (vals.length) {
-        groups.push([t.k.toUpperCase() + (f ? ' · 含「' + t.v + '」' : ''), vals.map(function (v) {
+        var grpLabel = (KEY_META[t.k] ? KEY_META[t.k].title : t.k.toUpperCase()) + (f ? ' · 含「' + t.v + '」' : isPerkKey(t.k) ? ' · 热门' : '');
+        groups.push([grpLabel, vals.map(function (v) {
           var val = /[\s()]/.test(v[0]) ? '"' + v[0] + '"' : v[0];
-          return { text: t.k + ':' + val, label: v[0], n: v[1], icon: t.k === 'is' ? pillIcon({ t: 'kw', k: 'is', v: v[0] }) : isPerkKey(t.k) ? (P ? imgTag(perkIcon(v[0]), '', '', true) : '') : '' };
+          var ic = '';
+          if (t.k === 'is') { ic = pillIcon({ t: 'kw', k: 'is', v: v[0] }) || isExtraIcon(v[0]); }
+          else if (t.k === 'breaker') { ic = pillIcon({ t: 'kw', k: 'breaker', v: v[0] }); }
+          else if (t.k === 'frame') { ic = v[2] ? imgTag(v[2], '', '', true) : ''; }
+          else if (isPerkKey(t.k)) { ic = (P && perkIcon(v[0]) ? imgTag(perkIcon(v[0]), '', '', true) : ''); }
+          return { text: t.k + ':' + val, label: v[0], n: v[1], icon: ic };
         })]);
       }
     } else if (t.t === 'w') {
       var fw = fold(t.v);
-      var ks = keys.filter(function (k) { return k.indexOf(fw) === 0; }).map(function (k) {
-        return { text: k + ':', label: k + ':', n: -1, hint: KEY_LABEL[k], keep: true };
-      });
-      if (ks.length) { groups.push(['关键字', ks]); }
+      var ks = keys.filter(function (k) {
+        var m = KEY_META[k] || { title: '', alias: '' };
+        return k.indexOf(fw) === 0 || fold(m.title).indexOf(fw) !== -1 || fold(m.alias).indexOf(fw) !== -1;
+      }).map(kwItem);
+      if (ks.length) { groups.push(['筛选关键字', ks]); }
       var isv = isMatches(S.scope, t.v).map(function (v) {
-        return { text: 'is:' + v, label: 'is:' + v, n: count(IS[S.scope][v]), icon: pillIcon({ t: 'kw', k: 'is', v: v }) };
+        return { text: 'is:' + v, label: v, badge: 'is:' + v, n: count(IS[S.scope][v]), icon: pillIcon({ t: 'kw', k: 'is', v: v }) || isExtraIcon(v) };
       }).filter(function (x) { return x.n; });
-      if (isv.length) { groups.push(['IS', isv]); }
+      if (isv.length) { groups.push(['类型 / 标签', isv]); }
     }
     var html = '', n = 0, acUnit = S.scope === 'armor' ? '件' : S.scope === 'sets' ? '套' : '把';
     groups.forEach(function (g) {
+      var hasIco = g[1].some(function (it) { return !!it.icon; });
       html += '<li class="grp" role="presentation">' + esc(g[0]) + '</li>';
       g[1].forEach(function (it) {
         ac.items.push(it);
-        html += '<li class="opt" role="option" id="wpn-ac-' + n + '" data-k="' + n + '" aria-selected="false">' +
-          (it.icon || '<span></span>') + '<span>' + esc(it.label) + (it.hint ? ' <code>' + esc(it.hint) + '</code>' : '') + '</span>' +
+        var mc = it.badge && it.hint ? ' has-meta' : it.badge ? ' has-badge' : '';
+        html += '<li class="opt' + (hasIco ? '' : ' no-ico') + '" role="option" id="wpn-ac-' + n + '" data-k="' + n + '" aria-selected="false">' +
+          (hasIco ? (it.icon || '<span class="ac-ic" aria-hidden="true"></span>') : '') +
+          '<span class="opt-main' + mc + '"><b>' + esc(it.label) + '</b>' +
+          (it.badge ? '<code>' + esc(it.badge) + '</code>' : '') +
+          (it.hint ? '<span class="opt-hint">' + esc(it.hint) + '</span>' : '') + '</span>' +
           '<span class="n">' + (it.n >= 0 ? it.n + ' ' + acUnit : '') + '</span></li>';
         n++;
       });

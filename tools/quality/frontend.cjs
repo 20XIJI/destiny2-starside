@@ -116,6 +116,14 @@ test('homepage search ranks Compendium pages first and jumps to the weapons libr
   assert.ok(!run('异域护甲').some((r) => r.jump), '搜异域护甲不该跳出装备库')
 
   assert.ok(!run('卡鲁斯大帝').some((r) => r.jump), '搜首领不该跳出装备库')
+
+  // 三档范围：name 只命中名称/标题，body 只命中详情/描述，all 合集
+  const nameOnly = ctx.ranked(index, pages, ['悬停爆破'], hit, '悬停爆破', 'name')
+  const bodyOnly = ctx.ranked(index, pages, ['悬停爆破'], hit, '悬停爆破', 'body')
+  const allRows = ctx.ranked(index, pages, ['悬停爆破'], hit, '悬停爆破', 'all')
+  assert.equal(nameOnly.length, 0, '按名称搜正文词不该命中')
+  assert.ok(bodyOnly.length > 0, '按详情搜正文词应当命中')
+  assert.ok(allRows.length >= bodyOnly.length, '全部搜索应包含详情命中')
 })
 
 test('item names match full pinyin, initials, and mixed input, descriptions do not', () => {
