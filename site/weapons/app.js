@@ -1075,9 +1075,9 @@
   function modsOf(i) { var k = poolRow(i)[7]; return k >= 0 ? P.D[k] : []; }
 
   /* ── 查询：DIM 的语法，关键字英文、值写中文 ──────────────────────── */
-  var KEYS_WPN = ['is', 'name', 'perk', 'perk1', 'perk2', 'col1', 'col2', 'col3', 'col4', 'col5',
+  var KEYS_WPN = ['is', 'name', 'aegis', 'lgpig', 'perk', 'perk1', 'perk2', 'col1', 'col2', 'col3', 'col4', 'col5',
                   'perkname', 'perktext', 'origintrait', 'frame', 'stat', 'season', 'source', 'breaker'];
-  var KEYS_ARMOR = ['is', 'name', 'perk', 'season', 'source'];
+  var KEYS_ARMOR = ['is', 'name', 'lgpig', 'perk', 'season', 'source'];
   /* 护甲套装认得的关键字：kw() 那一段只写了这几个，别的放进来补全会列出 stat:、
      frame: 这些，选了永远是 0 条。 */
   var KEYS_SETS = ['is', 'name', 'perk', 'season', 'source'];
@@ -1087,6 +1087,8 @@
   var POOL_KEYS = ['perk', 'perk1', 'perk2', 'col1', 'col2', 'col3', 'col4', 'col5', 'perkname', 'origintrait', 'stat'];
   var KEY_META = {
     is:          { title: '类型 / 标签', alias: '类型 标签 是', hint: '枪型、元素、槽位、弹药、品质与标志' },
+    lgpig:       { title: '小棒猪评级',  alias: '小棒猪 lgpig', hint: 'T0–T4 / 场景配对（如 输出T0、>=T1、any）' },
+    aegis:       { title: 'Aegis 评级',  alias: 'aegis',       hint: 'S–F 梯队评级（支持 >=A、any）' },
     perk:        { title: 'Perk',        alias: '词条 特性',    hint: '任一栏的 Perk 名称或说明' },
     stat:        { title: '属性',        alias: '属性 面板',    hint: '射速、射程、稳定性等数值比较' },
     frame:       { title: '框架',        alias: '框架',         hint: '武器框架类型' },
@@ -1105,7 +1107,7 @@
     perkname:    { title: '精确 Perk 名', alias: '精确词条',    hint: 'Perk 名称完全相同' },
     perktext:    { title: 'Perk 说明',   alias: '说明 词条说明', hint: 'Perk 效果描述正文' }
   };
-  var KEY_PRIMARY = ['is', 'perk', 'stat', 'frame', 'source', 'breaker', 'season', 'name', 'origintrait'];
+  var KEY_PRIMARY = ['is', 'lgpig', 'aegis', 'perk', 'stat', 'frame', 'source', 'breaker', 'season', 'name', 'origintrait'];
   function isPerkKey(k) {
     return k === 'perk' || k === 'perkname' || k === 'perk1' || k === 'perk2' || k === 'origintrait' || /^col[1-5]$/.test(k);
   }
@@ -1113,7 +1115,8 @@
     if (!t || t.t !== 'kw' || !has(keys, t.k)) { return false; }
     if (!t.v) { return true; }
     if (t.k === 'stat') { return !/^[^:]+:(?:>=|<=|[><=])?\d/.test(t.v); }
-    if (t.k === 'season') { return /^(?:>=|<=|[><=])$/.test(t.v); }
+    if (t.k === 'season' || t.k === 'aegis') { return /^(?:>=|<=|[><=])$/.test(t.v); }
+    if (t.k === 'lgpig') { return /^(?:(?:输出|高难|清怪):?)?(?:>=|<=|[><=])$/.test(t.v) || /^(?:输出|高难|清怪):$/.test(t.v); }
     return false;
   }
 
@@ -1132,7 +1135,8 @@
       '精确词条': 'perkname', '说明': 'perktext', '词条说明': 'perktext',
       '起源': 'origintrait', '起源特性': 'origintrait',
       '框架': 'frame', '属性': 'stat', '面板': 'stat',
-      '赛季': 'season', '来源': 'source', '勇士': 'breaker', '克制': 'breaker'
+      '赛季': 'season', '来源': 'source', '勇士': 'breaker', '克制': 'breaker',
+      '小棒猪': 'lgpig'
     };
     var s = normQ(src), out = [], i = 0, n = s.length;
     function matchKey(at) {
@@ -1179,11 +1183,16 @@
             got = value();
           }
         }
-        /* stat:射速: 600 或 stat:射速:>= 600 或 season:>= 26：宽容比较符与数字前的空格 */
-        if (!got.q && (km.k === 'stat' && /(?:[:>=<])$/.test(got.v) || km.k === 'season' && /^(?:>=|<=|[><=])$/.test(got.v))) {
+        /* stat:射速: 600、season:>= 26、aegis:>= A、lgpig:输出: >=T0.5：宽容比较符后的空格 */
+        if (!got.q && (km.k === 'stat' && /(?:[:>=<])$/.test(got.v) ||
+            (km.k === 'season' || km.k === 'aegis') && /^(?:>=|<=|[><=])$/.test(got.v) ||
+            km.k === 'lgpig' && /(?:[:>=<])$/.test(got.v))) {
           var p = i;
           while (p < n && (s[p] === ' ' || s[p] === '\t')) { p++; }
-          var tail = /^(?:>=|<=|[><=])?\s*\d+(?:\.\d+)?/.exec(s.slice(p));
+          var rx = km.k === 'aegis' ? /^[sabcdef]/i
+            : km.k === 'lgpig' ? /^(?:>=|<=|[><=])?\s*(?:t\d+(?:\.\d+)?|独一档|工具枪|pvp|特殊(?:用途)?)/i
+            : /^(?:>=|<=|[><=])?\s*\d+(?:\.\d+)?/;
+          var tail = rx.exec(s.slice(p));
           if (tail && (p + tail[0].length === n || /[\s)]/.test(s[p + tail[0].length]))) {
             got.v += tail[0].replace(/\s+/g, '');
             i = p + tail[0].length;
@@ -1209,7 +1218,8 @@
       if (!t || t.t !== 'kw' || !has(keys, t.k)) { return false; }
       if (!t.v) { return true; }
       if (t.k === 'stat') { return !/^[^:]+:(?:>=|<=|[><=])?\d/.test(t.v); }
-      if (t.k === 'season') { return /^(?:>=|<=|[><=])$/.test(t.v); }
+      if (t.k === 'season' || t.k === 'aegis') { return /^(?:>=|<=|[><=])$/.test(t.v); }
+      if (t.k === 'lgpig') { return /^(?:(?:输出|高难|清怪):?)?(?:>=|<=|[><=])$/.test(t.v) || /^(?:输出|高难|清怪):$/.test(t.v); }
       return false;
     }
     function unary() {
@@ -1302,6 +1312,76 @@
       case '<': return n < x;
       default: return n === x;
     }
+  }
+  function cmpScore(op, got, want) {
+    switch (op || '=') {
+      case '>=': return got >= want;
+      case '<=': return got <= want;
+      case '>': return got > want;
+      case '<': return got < want;
+      default: return got === want;
+    }
+  }
+  function aegisScore(s) {
+    var idx = 'FEDCBA S'.replace(/\s/g, '').indexOf(s);
+    return idx;
+  }
+  function lgpigScore(s) {
+    if (s === '独一档') { return 100; }
+    var m = /^T(\d+(?:\.\d+)?)$/i.exec(s);
+    return m ? 10 - parseFloat(m[1]) : -1;
+  }
+  function matchAegis(g, v) {
+    var raw = g && g[0] ? String(g[0]).trim().toUpperCase() : '';
+    if (!raw) { return false; }
+    var q = String(v).trim().toLowerCase();
+    if (q === 'any' || q === '*') { return true; }
+    var m = /^(>=|<=|>|<|=)?([sabcdef])$/.exec(q);
+    if (!m) { return false; }
+    var got = aegisScore(raw), want = aegisScore(m[2].toUpperCase());
+    return got >= 0 && want >= 0 && cmpScore(m[1] || '=', got, want);
+  }
+  function parseLgTokens(raw) {
+    var out = [], parts = String(raw || '').trim().split(/\s+/);
+    for (var i = 0; i < parts.length; i++) {
+      var seg = parts[i].replace(/[（(][^）)]*[）)]/g, '').trim();
+      if (!seg) { continue; }
+      var m = /^(输出|高难|清怪)?(T\d+(?:\.\d+)?|独一档|工具枪|PVP|特殊(?:用途)?)$/i.exec(seg);
+      if (m) {
+        out.push({ sc: m[1] || '', tier: /^t/i.test(m[2]) ? m[2].toUpperCase() : m[2].toUpperCase() === 'PVP' ? 'PVP' : m[2] });
+      }
+    }
+    return out;
+  }
+  function matchLgWpn(g, v) {
+    var raw = g && g[1] ? String(g[1]).trim() : '';
+    if (!raw) { return false; }
+    var q = fold(v);
+    if (q === 'any' || q === '*') { return true; }
+    var toks = parseLgTokens(raw);
+    if (!toks.length) { return false; }
+    var m = /^(?:(输出|高难|清怪):?)?(>=|<=|>|<|=)?(t\d+(?:\.\d+)?|独一档|工具枪|pvp|特殊(?:用途)?)?$/.exec(q);
+    if (!m || (!m[1] && !m[3])) { return false; }
+    var sc = m[1] || '', op = m[2] || '', tgt = m[3] || '';
+    if (!tgt) {
+      return !op && toks.some(function (t) { return t.sc === sc; });
+    }
+    var tgtNorm = /^t/i.test(tgt) ? tgt.toUpperCase() : tgt === 'pvp' ? 'PVP' : tgt;
+    var wantScore = lgpigScore(tgtNorm);
+    return toks.some(function (t) {
+      if (sc && t.sc !== sc) { return false; }
+      if (op) {
+        var gs = lgpigScore(t.tier);
+        return gs >= 0 && wantScore >= 0 && cmpScore(op, gs, wantScore);
+      }
+      return t.tier === tgtNorm;
+    });
+  }
+  function matchLgArmor(role, v) {
+    if (!role) { return false; }
+    var q = fold(v);
+    if (q === 'any' || q === '*') { return true; }
+    return fold(role).indexOf(q) !== -1;
   }
 
   /* is: 的值 → 判定。武器与护甲各一张，值取自数据，标志是固定的几个。表不带原型：
@@ -1543,6 +1623,7 @@
         }
         case 'season': return cmp(v, r[A_SSN]);
         case 'source': return srcsOf(r, A_SRC).some(function (s) { return named(q, srcFold(s), srcFold(v)); });
+        case 'lgpig': return matchLgArmor(r[A_ROLE], v);
       }
       return false;
     }
@@ -1550,6 +1631,8 @@
     switch (k) {
       case 'is': return isIn('wpn', v, i);
       case 'name': return fold(r[W_NAME] + ' ' + enOf('wpn', i)).indexOf(f) !== -1 || pyName('wpn', i, v);
+      case 'aegis': return matchAegis(r[W_GRADE], v);
+      case 'lgpig': return matchLgWpn(r[W_GRADE], v);
       case 'frame': return named(q, fold(frameOf(r)[0]), f);
       case 'season': return cmp(v, r[W_SSN]);
       case 'source': return srcsOf(r, W_SRC).some(function (s) { return named(q, srcFold(s), srcFold(v)); });
@@ -2430,6 +2513,8 @@
   var SYNTAX_KEYS = [
     ['萤火虫', '不写关键字：搜名字、框架、词条与描述'],
     ['is:烈日', '类型、元素、槽位、弹药、标志，值见右'],
+    ['lgpig:T0', '小棒猪评级（支持 输出T0、>=T1、any，别名 小棒猪:）'],
+    ['aegis:S', 'Aegis 评级（S–F，支持 >=A、any）'],
     ['name:合唱', '名字或英文名'],
     ['frame:适配框架', '框架；加引号是整名相同'],
     ['source:玻璃拱顶', '来源；加引号是整名相同'],
@@ -2479,7 +2564,8 @@
           var m = /^([a-z0-9]+):/.exec(k[0]);
           return !m || has(keys, m[1]);
         }).map(function (k) {
-          var row = S.scope === 'sets' && k[0] === 'season:>=26' ? ['season:凯旋纪念碑', '赛季或资料片名'] : k;
+          var row = S.scope === 'sets' && k[0] === 'season:>=26' ? ['season:凯旋纪念碑', '赛季或资料片名']
+            : S.scope === 'armor' && k[0] === 'lgpig:T0' ? ['lgpig:输出', '小棒猪定位（输出 / 高难 / 清怪，别名 小棒猪:）'] : k;
           return '<div class="sx-row">' + syntaxChip(row[0]) + '<span>' + esc(row[1]) + '</span></div>';
         }).join('') + '</section>' +
         '<section class="sx-c3"><h3><code>is:</code> 的值</h3>' + syntaxVals().map(function (g) {
@@ -3742,6 +3828,36 @@
             })]);
           }
         });
+      } else if (t.k === 'aegis' && S.scope === 'wpn') {
+        var aOpts = ['S', 'A', 'B', 'C', 'D', 'E', 'F', '>=A', '>=B', 'any'];
+        var aRows = aOpts.filter(function (v) { return !f || fold(v).indexOf(f) !== -1; }).map(function (v) {
+          return [v, count(function (i) { return matchAegis(WR[i][W_GRADE], v); })];
+        }).filter(function (x) { return x[1] > 0; });
+        if (aRows.length) {
+          groups.push(['Aegis 评级', aRows.map(function (x) {
+            return { text: 'aegis:' + x[0], label: x[0] === 'any' ? '有 Aegis 评级' : x[0], badge: x[0] === 'any' ? 'any' : '', n: x[1], icon: '' };
+          })]);
+        }
+      } else if (t.k === 'lgpig' && S.scope === 'wpn') {
+        var lOpts = ['独一档', 'T0', 'T0.5', 'T1', 'T1.5', 'T2', 'T2.5', 'T3', 'T4', '工具枪', '输出T0', '高难T0', '清怪T0', '>=T1', '输出', '高难', '清怪', 'any'];
+        var lRows = lOpts.filter(function (v) { return !f || fold(v).indexOf(f) !== -1; }).map(function (v) {
+          return [v, count(function (i) { return matchLgWpn(WR[i][W_GRADE], v); })];
+        }).filter(function (x) { return x[1] > 0; });
+        if (lRows.length) {
+          groups.push(['小棒猪评级', lRows.map(function (x) {
+            return { text: 'lgpig:' + x[0], label: x[0] === 'any' ? '有小棒猪评级' : x[0], badge: x[0] === 'any' ? 'any' : '', n: x[1], icon: '' };
+          })]);
+        }
+      } else if (t.k === 'lgpig' && S.scope === 'armor') {
+        var arOpts = ['输出', '高难', '清怪', '割草', '跑图', 'any'];
+        var arRows = arOpts.filter(function (v) { return !f || fold(v).indexOf(f) !== -1; }).map(function (v) {
+          return [v, count(function (i) { return matchLgArmor(AR[i][A_ROLE], v); })];
+        }).filter(function (x) { return x[1] > 0; });
+        if (arRows.length) {
+          groups.push(['小棒猪定位', arRows.map(function (x) {
+            return { text: 'lgpig:' + x[0], label: x[0] === 'any' ? '有小棒猪定位' : x[0], badge: x[0] === 'any' ? 'any' : '', n: x[1], icon: '' };
+          })]);
+        }
       } else if (t.k === 'breaker') {
         Object.keys(V.br).forEach(function (b) {
           if (fold(V.br[b][0]).indexOf(f) !== -1) { vals.push([V.br[b][0], count(function (i) { return WR[i][W_BR] === +b; })]); }

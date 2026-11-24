@@ -28,7 +28,7 @@
 <span class="sep">/</span>
 <span aria-current="page">护甲 3.0 商人属性机制与推算</span>
 </nav>
-<div class="toolbar" data-section=".block" data-item=".gen tbody tr:not(.lane)" data-label=".sect-label" data-noun="条目" data-chip-label="分节"></div>
+<div class="toolbar" data-section=".block" data-item=".gen tbody tr:not(.lane)" data-label=".sect-label" data-chip-label="分节" data-noun="条目"></div>
 </div>
 
 <header class="page-head">
@@ -37,7 +37,7 @@
 
 <main data-src="docs/armor-rng" data-src-hash="8f30a6b2c0f7596c7ac532c5df6e1ca3bb78dd71">
 <section class="block" id="sec-1">
-<h2 class="sect-label" data-b="10">底层随机种子机制</h2>
+<h2 class="sect-label" data-b="10" data-chip="随机种子">底层随机种子机制</h2>
 <div class="armor-calc" data-armor-calc></div>
 <p data-b="2" class="formula">在线推算器已直接挂载于本节下方，亦可在光尘商店结合每周仄在售护甲推算：<a href="../eververse/index.html#xur">前往光尘商店 · 仄（Xûr）周货页 →</a></p>
 <p data-b="2">护甲 3.0 的每件商人护甲由两个独立抽取的随机插槽决定属性分布，未命中的其余 3 项属性固定为 +5：</p>
@@ -58,7 +58,7 @@
 </dl>
 </section>
 <section class="block" id="sec-2">
-<h2 class="sect-label" data-b="2">12 种护甲原型与第三属性映射表</h2>
+<h2 class="sect-label" data-b="2" data-chip="原型映射">12 种护甲原型与第三属性映射表</h2>
 <p data-b="2">Bungie 官方定义表（plugSet 445741600）中 6 项属性的内部顺序固定为：<strong>1. 武器、2. 生命、3. 手雷、4. 超能、5. 职业、6. 近战</strong>。任一护甲原型剔除自身的主属性（+30）与副属性（+25）后，余下 4 项属性保持原有顺序，依次对应 <strong>t.map = 1、2、3、4</strong>：</p>
 <table class="gen">
 <thead>
@@ -100,7 +100,7 @@
 </dl>
 </section>
 <section class="block" id="sec-3">
-<h2 class="sect-label" data-b="2">双读快速反查表（楷模典范 + 装甲兵 → X 与 Y）</h2>
+<h2 class="sect-label" data-b="2" data-chip="双读反查">双读快速反查表（楷模典范 + 装甲兵 → X 与 Y）</h2>
 <p data-b="2">依次记录机灵装备 <strong>1. 楷模典范</strong> 与 <strong>12. 装甲兵</strong> 时护甲显示的原型，按下表直接定位底层列号 <strong>X</strong>（1 至 23）及无模组原型 <strong>Y</strong>（1 至 12）：</p>
 <table class="gen">
 <thead>
@@ -140,7 +140,7 @@
 </table>
 </section>
 <section class="block" id="sec-4">
-<h2 class="sect-label" data-b="24">23 列机灵模组权重矩阵（XMap 全表）</h2>
+<h2 class="sect-label" data-b="24" data-chip="机灵权重">23 列机灵模组权重矩阵（XMap 全表）</h2>
 <p data-b="2">下表列出底层随机数落在第 1 至 23 列（X = 1…23）时，12 种机灵护甲模组各自产出的原型编号（1 至 12）：</p>
 <ul>
 <li data-b="2"><strong>第 2 至 11 号机灵模组 g</strong>：将该模组自身原型 g 的命中宽度扩充为连续 12 列（X = g 至 g + 11），占总权重 <strong>12/23 ≈ 52.2%</strong>，其余 11 种原型各占 1 列。</li>

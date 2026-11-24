@@ -505,6 +505,7 @@ export default function init(table, deps) {
           return '<span>' + cleanHead(h) + '</span>';
         }).join('');
       } else if (entry.mode === 'pipeline') {
+        entry.el.classList.add('is-center');
         subhead.hidden = false;
         subhead.style.gridTemplateColumns = '124px minmax(0, 1fr)';
         subhead.innerHTML = '<span>周期</span><span>遭遇推进流程</span>';

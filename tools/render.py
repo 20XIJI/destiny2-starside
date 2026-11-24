@@ -668,13 +668,6 @@ def rec_plain(p, key, cols, narrow="", fam="r-plain"):
             idcell(p, key, (), "exo"),
             cell("r-farm-main", '<div class="pf-mech-open">%s</div>%s' % (body, au_box)),
         )
-    if fam == "r-exotic":
-        return '<article class="rec r-exotic%s">%s%s%s</article>' % (
-            " has-au" if au else "",
-            idcell(p, key, (), "exo"),
-            cell("r-txt r-perk", body),
-            au,
-        )
     out = [idcell(p, key), cell("r-txt", body)]
     if "st" in cols:
         out.append(cell("r-mid r-val", stats_of(p, key, mark=True)))
@@ -1168,18 +1161,19 @@ def rec_weapon(p, key, rank, author):
 
     pri_tier = (A.get("aegis_tier") if author == "Aegis" else L.get("lgpig_tier")) or ""
     pri_tier_s = markup.text_of(markup.inline(pri_tier)).strip()
+    base_tier = re.sub(r"[（(][^）)]*[）)]", "", pri_tier_s).strip()
     t_cls = "by-a" if author == "Aegis" else "by-l"
-    if pri_tier_s and len(pri_tier_s) <= 4:
+    if base_tier and len(base_tier) <= 4:
         rank_html = '<span class="r-tier %s r-rank-t">%s</span><span class="r-rank-n">#%d</span>' % (
             t_cls,
-            html.escape(pri_tier_s),
+            html.escape(base_tier),
             rank,
         )
     else:
         rank_html = str(rank)
 
     fdata = {
-        "tier": [pri_tier_s] if pri_tier_s and len(pri_tier_s) <= 4 else [],
+        "tier": [base_tier] if base_tier and len(base_tier) <= 4 else [],
         "elem": [el[1]] if el else [],
         "champ": [BREAKER_SHORT[d["breakerType"]]] if d.get("breakerType") else [],
         "both": ["双推" if (A and L) else "单评"],
@@ -1330,7 +1324,6 @@ def matrix(p, section):
 
 # ── 一节 ────────────────────────────────────────────────────────────
 HEADS = {
-    "r-exotic": [("c", "异域"), ("l", "异域特性")],
     "r-farm-exo": [("c", "异域装备"), ("l", "评级 · 实测数值 · 推荐理由（机制可展开）")],
     "r-farm-set": [("c", "护甲套装"), ("l", "应用场景 · 获取地点 · 套装效果")],
     "r-weapon": [
@@ -1364,7 +1357,7 @@ def section_blocks(p, groups, section="", author="Aegis"):
         out.append(matrix(p, section))
     kinds = {kind(k) for k in keys}
     # 一节里以哪种记录为主就用哪种列名：异域页整页都是异域（哪怕单节全是永劫教派或
-    # 职业物品之灵这类插件），一律按 r-exotic 排，跨节列宽与作者区才对齐。
+    # 职业物品之灵这类插件），一律按 r-farm-exo 排，跨节列宽与作者区才对齐。
     main_kind = max(kinds, key=lambda k: sum(1 for x in keys if kind(x) == k))
     is_farm_exo = p.page in ("exotic-weapons", "exotic-armors")
     is_farm_set = p.page == "farming-sets"

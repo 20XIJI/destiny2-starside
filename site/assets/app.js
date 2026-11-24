@@ -451,45 +451,103 @@
   var chipNav = document.createElement('nav');
   chipNav.className = 'tool-chips';
   chipNav.setAttribute('aria-label', cfg.chipLabel || '神器');
-  /* data-chip-break：chip 从这一节起另起一行。分节多到一行放不下时按内容分组，
-     不交给自动折行随便断在哪（护甲模组页：五个部位一行，十一个副本一行）。 */
+  /* data-chip-break：语义分组位。宽屏单行放得下时显示为与站标同款的空心菱形，
+     放不下时（如护甲模组 16 节）由 syncWrap() 切到 .is-tworow 折成两行。 */
   var BREAK = cfg.chipBreak || '';
-  var chips = LABEL ? sections.map(function (sec) {
+  var chipBreakEl = null;
+  var breakIdx = -1;
+  var chips = LABEL ? sections.map(function (sec, i) {
+    var label = sec.querySelector(LABEL);
+    if (!label || (label.hasAttribute && label.hasAttribute('data-chip-skip'))) return null;
     var chip = document.createElement('a');
     chip.className = 'chip';
     chip.href = '#' + sec.id;
-    /* 取标题的文字：首节点是文本就用它（神器模组页的 h2 后面还挂着别的东西），
-       首节点是图标时退回整段文字——资料页的分节标题前面挂着职业徽章。 */
-    var label = sec.querySelector(LABEL);
     var first = label.firstChild;
-    chip.textContent = (first && first.nodeType === 3
+    var rawText = (first && first.nodeType === 3
       ? first.textContent : label.textContent).trim();
-    if (BREAK && chip.textContent === BREAK) {
-      var br = document.createElement('span');
-      br.className = 'chip-break';
-      br.setAttribute('aria-hidden', 'true');
-      chipNav.appendChild(br);
+    chip.textContent = (label.dataset && label.dataset.chip) || rawText;
+    if (BREAK && (rawText === BREAK || chip.textContent === BREAK)) {
+      breakIdx = i;
+      chipBreakEl = document.createElement('span');
+      chipBreakEl.className = 'chip-break';
+      chipBreakEl.setAttribute('aria-hidden', 'true');
+      chipNav.appendChild(chipBreakEl);
     }
     chipNav.appendChild(chip);
     return chip;
   }) : [];
+  var hasChips = chips.some(Boolean);
+  var glide = null;
+  if (hasChips) {
+    glide = document.createElement('span');
+    glide.className = 'chip-glide';
+    glide.setAttribute('aria-hidden', 'true');
+    chipNav.appendChild(glide);
+  }
 
-  /* 点一枚 chip 是在同一屏里换个位置，不是钻进去一层，所以拦下原生的片段导航、
-     自己滚过去，地址栏那一段就地改写。**不然点五枚就攒五格历史**，返回键要按
-     五下才出得去这一页。href 原样留着：右键复制链接、中键新开与无 JS 时照旧是
-     锚点。file:// 下 replaceState 抛 SecurityError，那时只是地址栏不同步，
-     滚动照旧，所以不必回退。 */
+  function syncWrap() {
+    if (!hasChips || !chipNav.getBoundingClientRect) return;
+    if (chipBreakEl) {
+      var visBefore = chips.some(function (c, i) { return i < breakIdx && c && !c.hidden; });
+      var visAfter = chips.some(function (c, i) { return i >= breakIdx && c && !c.hidden; });
+      chipBreakEl.hidden = !(visBefore && visAfter);
+    }
+    slot.classList.remove('is-tworow');
+    var vis = chips.filter(function (c) { return c && !c.hidden; });
+    if (vis.length > 1) {
+      var top0 = vis[0].getBoundingClientRect().top;
+      if (vis.some(function (c) { return Math.abs(c.getBoundingClientRect().top - top0) > 10; })) {
+        slot.classList.add('is-tworow');
+      }
+    }
+  }
+
+  function syncGlide(instant) {
+    if (!glide || !chipNav.getBoundingClientRect) return;
+    var active = chips.find(function (c) {
+      return c && !c.hidden && c.getAttribute('aria-current') === 'true';
+    });
+    if (!active) { glide.classList.remove('is-on'); return; }
+    var host = chipNav.getBoundingClientRect();
+    var r = active.getBoundingClientRect();
+    var jump = instant || !glide.classList.contains('is-on');
+    if (jump) glide.style.transition = 'none';
+    glide.style.width = Math.max(12, r.width - 12) + 'px';
+    glide.style.transform = 'translate3d(' + (r.left - host.left + 6) + 'px,' + (r.bottom - host.top) + 'px,0)';
+    glide.classList.add('is-on');
+    if (jump) { void glide.offsetWidth; glide.style.transition = ''; }
+  }
+
+  var pinned = -1;
+  function unpin() { pinned = -1; }
+  function setCurrent(idx) {
+    chips.forEach(function (chip, i) {
+      if (!chip) return;
+      if (i === idx) chip.setAttribute('aria-current', 'true');
+      else chip.removeAttribute('aria-current');
+    });
+    syncGlide(false);
+  }
+
   chipNav.addEventListener('click', function (ev) {
     var a = ev.target.closest && ev.target.closest('a.chip');
     if (!a) return;
     var sec = document.getElementById(a.getAttribute('href').slice(1));
     if (!sec) return;
     ev.preventDefault();
-    /* **瞬间到位，不吃全局那条 scroll-behavior: smooth。**读者点这一枚时已经挑定了
-       去处，中间那一段没人看；而这些页面动辄一万几千像素（护甲模组页 14900、
-       神器模组页 16700、护甲套装页 28700），一次平滑滚动只是一片模糊，还会把途经
-       的每个分节挨个点亮一遍。正文里的锚点链接不受影响，照旧平滑。 */
+    pinned = chips.indexOf(a);
+    setCurrent(pinned);
     sec.scrollIntoView({ behavior: 'instant' });
+    if (typeof requestAnimationFrame === 'function' && sec.getBoundingClientRect) {
+      requestAnimationFrame(function () {
+        if (Math.abs(sec.getBoundingClientRect().top - (stick + 16)) > 24) {
+          sec.scrollIntoView({ behavior: 'instant' });
+        }
+      });
+    }
+    ['wheel', 'touchstart', 'keydown'].forEach(function (t) {
+      addEventListener(t, unpin, { once: true, passive: true });
+    });
     try { history.replaceState(history.state, '', a.getAttribute('href')); } catch (e) {}
   });
 
@@ -499,7 +557,7 @@
   }
   /* 一枚跳转 chip 都没有时不挂这一层：它是 .toolbar 的 flex 项，空着照样吃掉
      一个 18px 的 gap，工具条右端因此空出一块。 */
-  if (chips.length) slot.appendChild(chipNav);
+  if (hasChips) slot.appendChild(chipNav);
 
   /* 每一维一个控件。**放哪由页面说了算**：页面给了 [data-facet="维度名"] 的空
      容器，就填在那里（配装索引页的场景——主轴，摊开成一排居中的素字开关）；
@@ -863,6 +921,8 @@
       : '';
     slot.toggleAttribute('data-miss', restState === 'ready' && active && !hits);
     syncEmpty(restState === 'ready' && active && !hits, hiddenHits);
+    syncWrap();
+    syncGlide(true);
     remember(query);
     return hits;
   }
@@ -888,11 +948,8 @@
   var io = null;
 
   function mark() {
-    var current = sections.findIndex(function (sec) { return onScreen.indexOf(sec) >= 0; });
-    chips.forEach(function (chip, i) {
-      if (i === current) chip.setAttribute('aria-current', 'true');
-      else chip.removeAttribute('aria-current');
-    });
+    if (pinned >= 0) return;
+    setCurrent(sections.findIndex(function (sec) { return onScreen.indexOf(sec) >= 0; }));
   }
 
   /* rootMargin 依赖实测的 stick，改了要重建观察者。
@@ -902,7 +959,7 @@
      断开重连一遍，看不出任何效果。 */
   function watch() {
     if (io) io.disconnect();
-    if (!chips.length) return;
+    if (!hasChips) return;
     onScreen = [];
     io = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) {
@@ -911,7 +968,7 @@
         else if (!e.isIntersecting && at >= 0) onScreen.splice(at, 1);
       });
       mark();
-    }, { rootMargin: -(stick + 8) + 'px 0px 0px 0px' });
+    }, { rootMargin: -(stick + 24) + 'px 0px 0px 0px' });
     sections.forEach(function (sec) { io.observe(sec); });
   }
 
@@ -944,9 +1001,13 @@
     /* 返回键回到这一页：按上次离开时的状态重放。取值不在了的（换过一版产出）丢掉。
        先于浏览器恢复滚动位置执行，读者落回原来那张卡。 */
     if (DIMS && kept.facets) DIMS.forEach(function (d, k) {
-      var seen = scan(k);
-      picked[d.name] = (kept.facets[d.name] || [])
-        .filter(function (x) { return seen.indexOf(x) >= 0; });
+      var prev = (kept.facets[d.name] || []).slice();
+      if (restState === 'loading') {
+        picked[d.name] = prev;
+      } else {
+        var seen = scan(k);
+        picked[d.name] = prev.filter(function (x) { return seen.indexOf(x) >= 0; });
+      }
       sync(d);
       if (d.groups && picked[d.name].length === 1) regroup(picked[d.name][0]);
     });
@@ -990,7 +1051,9 @@
     });
   }
 
+  syncWrap();
   measure();
   watch();
-  onResize(function () { measure(); watch(); });
+  syncGlide(true);
+  onResize(function () { syncWrap(); measure(); watch(); syncGlide(true); });
 })();

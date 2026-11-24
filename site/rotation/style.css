@@ -830,7 +830,8 @@
 }
 
 .cyc-board.is-center .cyc-curse,
-.cyc-board.is-center .cyc-with-ico {
+.cyc-board.is-center .cyc-with-ico,
+.cyc-board.is-center .cyc-pipe {
   justify-content: center;
 }
 

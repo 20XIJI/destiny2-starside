@@ -27,7 +27,7 @@
 <span class="sep">/</span>
 <span aria-current="page">游戏机制</span>
 </nav>
-<div class="toolbar" data-section=".block" data-item=".gen tbody tr:not(.lane)" data-label=".sect-label" data-noun="条目" data-chip-label="分节" data-chip-break="活动修改器"></div>
+<div class="toolbar" data-section=".block" data-item=".gen tbody tr:not(.lane)" data-label=".sect-label" data-chip-label="分节" data-noun="条目" data-chip-break="活动修改器"></div>
 </div>
 
 <header class="page-head">
@@ -338,7 +338,7 @@
 <p data-b="2">在职业物品上装备时间膨胀护甲模组，可以把衰减计时延长到 15 ｜ 18 ｜ 20 秒。</p>
 </section>
 <section class="block" id="sec-5">
-<h2 class="sect-label" data-b="2">超能能量生成</h2>
+<h2 class="sect-label" data-b="2" data-chip="超能生成">超能能量生成</h2>
 <p data-b="2">造成伤害、受到伤害、击杀与助攻都直接为超能技能充能。溢出伤害不计入超能生成。</p>
 <p data-b="2">主武器的伤害转超能比率最高。其余伤害来源都各自调过，普遍比主武器慢得多，且随武器框架差异极大。</p>
 <p data-b="2">击杀带来的超能能量按敌方档位缩放，模组与 Perk 也参与其中。助攻算半次击杀。</p>
@@ -493,7 +493,7 @@
 </table>
 </section>
 <section class="block" id="sec-7">
-<h2 class="sect-label" data-b="77">战斗人员分类</h2>
+<h2 class="sect-label" data-b="77" data-chip="战斗人员">战斗人员分类</h2>
 <p data-b="2"><span class="enemy">战斗人员</span>分成 4 个档位，每档把<span class="health">生命值</span>落在一定区间内的<span class="enemy">战斗人员</span>归到一起。</p>
 <p data-b="2+1"><span class="bar-orange">橙血</span><span class="enemy">战斗人员</span>的档位比同名的<span class="bar-red">红血</span>高一档。<br>例：辅助士兵（1 档）→ <span class="bar-orange">橙血</span>辅助士兵（2 档）；暴徒（2 档）→ <span class="bar-orange">橙血</span>暴徒（3 档）。</p>
 <p data-b="2"><span class="enemy">勇士</span>、<span class="bar-yellow">初级首领</span>与<span class="bar-yellow">首领</span>不进这套档位，它们要么算作可能的最高档，要么自成一类。</p>
@@ -531,7 +531,7 @@
 <p data-b="2">打在护盾上与打在<span class="health">生命值</span>上的伤害比例随活动难度变化，难度越高比例越大。</p>
 </section>
 <section class="block" id="sec-8">
-<h2 class="sect-label" data-b="2">战斗人员祸因</h2>
+<h2 class="sect-label" data-b="2" data-chip="祸因">战斗人员祸因</h2>
 <p data-b="2"><span class="bar-yellow">非首领</span>的<span class="enemy">战斗人员</span>可以带着祸因词缀出现，获得独特的干扰性技能。</p>
 <p data-b="2">带祸因的<span class="enemy">战斗人员</span>对所有伤害带 60% 伤害抗性，另有说明的除外。</p>
 <p data-b="2" class="note">全部祸因图标由 Court Projects 重绘并慷慨提供。他的信息图值得一看，更多作品在<a href="https://linktr.ee/CourtProjects" target="_blank" rel="noopener">这里</a>。</p>
@@ -570,7 +570,7 @@
 </table>
 </section>
 <section class="block" id="sec-9">
-<h2 class="sect-label" data-b="23">屏障勇士</h2>
+<h2 class="sect-label" data-b="23" data-chip="屏障">屏障勇士</h2>
 <p data-b="2"><img src="icons/77df7b534e.webp" alt="" width="100" height="100" loading="lazy"></p>
 <p data-b="2+1"><span class="enemy">屏障勇士</span>的<span class="health">生命值</span>降到由难度决定的阈值以下时，会召唤一层无法穿透的护盾。<br>护盾在场期间，<span class="enemy">屏障勇士</span>持续回复一部分<span class="health">生命值</span>。</p>
 <p data-b="2">护盾可以用破盾效果打掉，破盾会让<span class="enemy">勇士</span>短暂<span class="deb-arc">眩晕</span>。护盾的耐久度由难度决定。</p>
@@ -602,7 +602,7 @@
 </table>
 </section>
 <section class="block" id="sec-10">
-<h2 class="sect-label" data-b="10">过载勇士</h2>
+<h2 class="sect-label" data-b="10" data-chip="过载">过载勇士</h2>
 <p data-b="2"><img src="icons/42a8bca771.webp" alt="" width="100" height="100" loading="lazy"></p>
 <p data-b="2+1"><span class="enemy">过载勇士</span>随时间被动回复<span class="health">生命值</span>，使用技能与武器的频率更高，移动路线飘忽不定，除非被干扰打断。<br><span class="deb-arc">眩晕</span>期间<span class="enemy">勇士</span>无法攻击、移动或使用任何技能。</p>
 <p data-b="2+1">被干扰的<span class="enemy">战斗人员</span>有 Bug：它们不再在 5 秒内少造成 25% 伤害。<br>干扰<span class="bar-orange">守护者</span>会把其技能回复速度压到 0.4×。</p>
@@ -629,7 +629,7 @@
 </table>
 </section>
 <section class="block" id="sec-11">
-<h2 class="sect-label" data-b="6">势不可挡勇士</h2>
+<h2 class="sect-label" data-b="6" data-chip="势不可挡">势不可挡勇士</h2>
 <p data-b="2"><img src="icons/4aeb5426d8.webp" alt="" width="100" height="100" loading="lazy"></p>
 <p data-b="2+2"><span class="enemy">势不可挡勇士</span>会不知疲倦地追击，未被<span class="deb-arc">眩晕</span>时带 70% 伤害抗性。<br>打在它身上的伤害数字显示为斜体的暗粉色。<br><span class="deb-arc">眩晕</span>会移除这份伤害抗性，并在持续期间让<span class="enemy">勇士</span>无法攻击、移动或使用任何技能。</p>
 <p data-b="2">势不可挡射击普遍造成更强的硬直，某些武器与效果能强制打出硬直。</p>

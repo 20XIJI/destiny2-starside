@@ -27,7 +27,7 @@
 <span class="sep">/</span>
 <span aria-current="page">弹药生成机制</span>
 </nav>
-<div class="toolbar" data-section=".block" data-item=".gen tbody tr:not(.lane)" data-label=".sect-label" data-noun="条目" data-chip-label="分节"></div>
+<div class="toolbar" data-section=".block" data-item=".gen tbody tr:not(.lane)" data-label=".sect-label" data-chip-label="分节" data-noun="条目"></div>
 </div>
 
 <header class="page-head">
@@ -36,7 +36,7 @@
 
 <main data-src="docs/ammo" data-src-hash="60ab85e8aa808bd1ba2c1b00749e1f2b879aa463">
 <section class="block" id="sec-1">
-<h2 class="sect-label" data-b="8">武器弹药生成</h2>
+<h2 class="sect-label" data-b="8" data-chip="武器生成">武器弹药生成</h2>
 <p data-b="2">击杀<span class="enemy">战斗人员</span>按一个基础百分比生成弹药。这个百分比由四项决定：击杀所用的弹药类型、生成的弹药类型、<span class="enemy">战斗人员</span>等级，以及武器的弹药生成属性。</p>
 <table class="gen">
 <thead>
@@ -70,7 +70,7 @@
 <p data-b="2">刀剑没有弹药生成属性，也无法被弹药生成模组改变。刀剑击杀固定生成 3% <span class="ammo-special">特殊弹药</span>与 3% <span class="ammo-heavy">威能弹药</span>进度。</p>
 </section>
 <section class="block" id="sec-2">
-<h2 class="sect-label" data-b="2">技能与超能弹药生成</h2>
+<h2 class="sect-label" data-b="2" data-chip="技能与超能">技能与超能弹药生成</h2>
 <p data-b="2">技能生成的弹药远少于弹药生成属性合格的武器，靠技能补弹的收益有限。几乎所有技能对<span class="bar-red">红血</span>、<span class="bar-orange">橙血</span>、<span class="bar-yellow">初级首领</span><span class="enemy">战斗人员</span>分别生成 4%、8%、16% 的<span class="ammo-special">特殊弹药</span>与<span class="ammo-heavy">威能弹药</span>。偃月近战与未充能近战都在这一档。</p>
 <p data-b="2">两个例外。手雷生成<span class="ammo-special">特殊弹药</span>的速度高出 50%，对三档<span class="enemy">战斗人员</span>分别给 6%、12%、24%，<span class="ammo-heavy">威能弹药</span>那一档与其他技能相同。超能整整高出一档，<span class="el-strand">绿弹</span>给 12%、24%、48%，<span class="ammo-heavy">重弹</span>给 8%、16%、32%。</p>
 </section>
@@ -90,7 +90,7 @@
 </dl>
 </section>
 <section class="block" id="sec-4">
-<h2 class="sect-label" data-b="2">弹药生成属性</h2>
+<h2 class="sect-label" data-b="2" data-chip="生成属性">弹药生成属性</h2>
 <p data-b="2">弹药生成属性决定一次击杀落在上表区间的哪一档，100 属性即区间上限。以下来源直接加这个属性。</p>
 <dl class="rules">
 <dt data-b="2"><span class="perk">弹药带</span><span class="from">武器模组</span></dt>
@@ -111,7 +111,7 @@
 <p data-b="2">另有两条护甲套装效果临时抬高弹药生成属性，写在《护甲套装加成》一节。</p>
 </section>
 <section class="block" id="sec-5">
-<h2 class="sect-label" data-b="2">弹药生成系数</h2>
+<h2 class="sect-label" data-b="2" data-chip="生成系数">弹药生成系数</h2>
 <dl class="rules">
 <dt data-b="2"><span class="perk">光中藏弹</span><span class="from">武器 Perk</span></dt>
 <dd data-b="1"><span class="ammo-special">特殊弹药</span>生成系数 ×1.25<span class="note">（当前版本存在 Bug：加成对所有武器生效，且其他武器开火不消耗层数）</span>。</dd>
@@ -129,7 +129,7 @@
 <p data-b="2" class="formula">12% × (1 + 0.5 + 0.25 + 0.25 + 0.15) = <strong>25.8%</strong></p>
 </section>
 <section class="block" id="sec-6">
-<h2 class="sect-label" data-b="2">护甲套装加成</h2>
+<h2 class="sect-label" data-b="2" data-chip="套装加成">护甲套装加成</h2>
 <p data-b="2">56 套护甲里有 10 条效果直接作用于弹药：8 条给弹药进度，2 条抬高弹药生成属性。以下只摘与弹药有关的部分，完整触发条件与其余效果见<a href="../armor-sets/index.html">护甲套装效果</a>。</p>
 <p data-b="2">直接给弹药进度：</p>
 <dl class="rules">
@@ -161,7 +161,7 @@
 <p data-b="2" class="note">早期社区实测另给出<em>年事已高</em>终结<span class="bar-orange">橙血</span>战斗人员 +15%、终结<span class="bar-yellow">初级首领</span> +20%，以及<em>白手起家</em> ×1.2 弹药生成加成，与《护甲套装效果》页的写法对不上，此处以该页为准。</p>
 </section>
 <section class="block" id="sec-7">
-<h2 class="sect-label" data-b="2">弹药块拾取量</h2>
+<h2 class="sect-label" data-b="2" data-chip="弹药块拾取">弹药块拾取量</h2>
 <p data-b="2">以上各节算的是弹药进度，攒满即生成一块弹药块。弹药块拾起来给多少发是另一套规则，由武器类型、腿部模组<em>回收利用</em>，以及那块弹药块是不是强化的三项决定。</p>
 <p data-b="2">武器属性超过 100 的部分决定强化弹药块的掉率：每点 +1% 概率，200 属性时必出。判据见<a href="../game-mechanics/index.html">游戏机制</a>的武器属性一行。</p>
 <table class="gen">

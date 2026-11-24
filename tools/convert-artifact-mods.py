@@ -409,9 +409,10 @@ def render(page, digest="", dex=None, origins=None):
             '<header class="art-head">',
             s["icon"],
             s["emblems"][0],
-            "<h2%s>%s%s</h2>"
+            "<h2%s%s>%s%s</h2>"
             % (
                 bmark(s["at"]),
+                ' data-chip="药剂师背包"' if s["name"] == "杀手公爵药剂师背包" else "",
                 s["name"],
                 " <small>%s</small>" % s["paren"] if s["paren"] else "",
             ),

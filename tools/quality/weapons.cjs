@@ -1093,3 +1093,51 @@ test('weapons: decodeGzBuffer, loadGzData cache lifecycle, and ensurePinyin lazy
   assert.equal(renderCount, 1)
   assert.equal(Object.keys(ctx.hayCache).length, 0)
 })
+
+test('weapons: aegis: and lgpig: query matchers handle tiers, comparisons, paired scenes, and armor roles', () => {
+  const deps = 'function has(list, x) { return list.indexOf(x) !== -1; }\n'
+  const { normQ, tokenize, isIncompleteTok, fold, cmpScore, aegisScore, lgpigScore, matchAegis, parseLgTokens, matchLgWpn, matchLgArmor } =
+    weaponFns(['normQ', 'tokenize', 'isIncompleteTok', 'fold', 'cmpScore', 'aegisScore', 'lgpigScore', 'matchAegis', 'parseLgTokens', 'matchLgWpn', 'matchLgArmor'], deps)
+
+  // Tokenizer aliases, space tolerance, and incomplete-token detection
+  const t1 = tokenize('小棒猪:输出: >= T0.5 aegis:>= A lgpig:输出>=')
+  assert.equal(t1[0].k, 'lgpig')
+  assert.equal(t1[0].v, '输出:>=T0.5')
+  assert.equal(t1[1].k, 'aegis')
+  assert.equal(t1[1].v, '>=A')
+  assert.equal(isIncompleteTok(t1[2], ['lgpig', 'aegis']), true)
+  assert.equal(isIncompleteTok(t1[0], ['lgpig', 'aegis']), false)
+
+  // Aegis exact, comparison, any
+  assert.equal(matchAegis(['S', ''], 's'), true)
+  assert.equal(matchAegis(['A', ''], '>=A'), true)
+  assert.equal(matchAegis(['S', ''], '>=A'), true)
+  assert.equal(matchAegis(['B', ''], '>=A'), false)
+  assert.equal(matchAegis(['C', ''], '<=B'), true)
+  assert.equal(matchAegis(['A', ''], 'any'), true)
+  assert.equal(matchAegis(['', 'T0'], 'any'), false)
+
+  // LGpig weapon: exact T0 must not match T0.5; paired scene must not cross-match
+  assert.equal(matchLgWpn(['', 'T0'], 'T0'), true)
+  assert.equal(matchLgWpn(['', 'T0.5'], 'T0'), false)
+  assert.equal(matchLgWpn(['', 'T0（旧）'], 'T0'), true)
+  assert.equal(matchLgWpn(['', '独一档'], '>=T0'), true)
+  assert.equal(matchLgWpn(['', '清怪T0 输出T1.5 高难T3'], '输出T0'), false)
+  assert.equal(matchLgWpn(['', '清怪T0 输出T1.5 高难T3'], '清怪T0'), true)
+  assert.equal(matchLgWpn(['', '清怪T0 输出T1.5 高难T3'], '输出:>=T2'), true)
+  assert.equal(matchLgWpn(['', '清怪T0 输出T1.5 高难T3'], '输出:>=T1'), false)
+  assert.equal(matchLgWpn(['', '输出工具枪 清怪T0'], '工具枪'), true)
+  assert.equal(matchLgWpn(['', '输出工具枪 清怪T0'], '输出:工具枪'), true)
+  assert.equal(matchLgWpn(['', '输出T0 高难T0.5'], '输出'), true)
+  assert.equal(matchLgWpn(['', '输出T0 高难T0.5'], '清怪'), false)
+  assert.equal(matchLgWpn(['A', '特殊'], '特殊'), true)
+  assert.equal(matchLgWpn(['', '特殊用途'], '特殊用途'), true)
+  assert.equal(matchLgWpn(['', '输出T0'], 'any'), true)
+  assert.equal(matchLgWpn(['S', ''], 'any'), false)
+
+  // LGpig armor roles
+  assert.equal(matchLgArmor('输出 高难', '输出'), true)
+  assert.equal(matchLgArmor('输出 高难', '清怪'), false)
+  assert.equal(matchLgArmor('输出 高难', 'any'), true)
+  assert.equal(matchLgArmor('', 'any'), false)
+})

@@ -13,6 +13,7 @@
 解析不上的结构、对不上的正文一律抛错中止，不出半成品。
 """
 
+from html import escape
 import os
 import re
 import sys
@@ -158,6 +159,50 @@ META_KEYS = (
     "推算器",
 )
 META_LINE = meta_line(META_KEYS)
+
+# 仅 1–2 节或极短页不出跳转 chip（保留搜索框），避免导航栏堆放无意义按钮。
+NO_CHIPS = {"exotic-weapons", "farming-sets", "shopping-other", "sources"}
+
+# 刷取清单与购物清单首节的折叠说明就在页顶，不进顶栏跳转。
+SKIP_CHIP_TITLES = {"评级说明", "说明"}
+
+# 超长分节标题在顶栏跳转条里使用短名，正文标题保持完整。
+CHIP_SHORT = {
+    "armor-rng": {
+        "底层随机种子机制": "随机种子",
+        "12 种护甲原型与第三属性映射表": "原型映射",
+        "双读快速反查表（楷模典范 + 装甲兵 → X 与 Y）": "双读反查",
+        "23 列机灵模组权重矩阵（XMap 全表）": "机灵权重",
+    },
+    "game-mechanics": {
+        "超能能量生成": "超能生成",
+        "战斗人员分类": "战斗人员",
+        "战斗人员祸因": "祸因",
+        "屏障勇士": "屏障",
+        "过载勇士": "过载",
+        "势不可挡勇士": "势不可挡",
+    },
+    "legendary-primary": {
+        "自动步枪（奶枪）": "奶枪",
+    },
+    "shopping-special": {
+        "榴弹发射器-后膛": "后膛榴弹",
+    },
+    "shopping-heavy": {
+        "榴弹发射器-弹鼓": "弹鼓榴弹",
+    },
+    "exotic-weapon": {
+        "阅读说明": "说明",
+    },
+    "ammo": {
+        "武器弹药生成": "武器生成",
+        "技能与超能弹药生成": "技能与超能",
+        "弹药生成属性": "生成属性",
+        "弹药生成系数": "生成系数",
+        "护甲套装加成": "套装加成",
+        "弹药块拾取量": "弹药块拾取",
+    },
+}
 
 # 分节级声明：「色阶：列名 阈值 …」。同样按整行剥离，不进正文。
 SCALE_LINE = re.compile(r"^色阶：(.*)$", re.M)
@@ -1277,10 +1322,13 @@ def render(md, slug, digest):
         nav = {"data-section": ".block"}
         if has_items:
             nav["data-item"] = ".rec" if slug in NEW else ".gen tbody tr:not(.lane)"
-        nav["data-label"] = ".sect-label"
+        if slug in NO_CHIPS:
+            nav["data-label"] = ""
+        else:
+            nav["data-label"] = ".sect-label"
+            nav["data-chip-label"] = "分节"
         if has_items:
             nav["data-noun"] = "条目"
-        nav["data-chip-label"] = "分节"
         if slug in FARM_FACETS:
             nav["data-facets"] = FARM_FACETS[slug]
         toolbar = dict(toolbar or {}, **nav)
@@ -1383,11 +1431,17 @@ def render(md, slug, digest):
             )
         # 分节标题里也允许放图标：源表每个职业段前有一枚职业徽章，标题是它的位置
         head_html = inline(icon_sub(label), rich=True)
-        o.append('<h2 class="sect-label"%s>%s%s</h2>' % (bmark(at), head_html, chip))
+        sec_title = text_of(head_html, collapse=True)
+        chip_attr = ""
+        if SLUG.startswith(("legendary-", "shopping-")) and sec_title in SKIP_CHIP_TITLES:
+            chip_attr = " data-chip-skip"
+        elif sec_title in CHIP_SHORT.get(SLUG, {}):
+            chip_attr = ' data-chip="%s"' % escape(CHIP_SHORT[SLUG][sec_title], quote=True)
+        o.append('<h2 class="sect-label"%s%s>%s%s</h2>' % (bmark(at), chip_attr, head_html, chip))
         if si == 1 and flag_of(md, "推算器"):
             o.append('<div class="armor-calc" data-armor-calc></div>')
         global SECTION
-        SECTION = ("sec-%d" % si, text_of(head_html, collapse=True))
+        SECTION = ("sec-%d" % si, sec_title)
         dex = DEX
         if dex is not None:
             head_icon = pagedex.IMG.search(head_html)
