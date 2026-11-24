@@ -243,20 +243,23 @@ def cell(cls, inner, attr=""):
     return '<div class="r-cell %s"%s>%s</div>' % (cls, attr, inner)
 
 
-def idcell(p, key, subs=(), name_cls="", extra="", icon=None):
+def idcell(p, key, subs=(), name_cls="", extra="", icon=None, href=None):
     """身份格：图标在上，名字与副行在下，上下左右居中。
 
     icon 是调用方先画好的那枚主图。首屏高优先级按图标登记的先后分配（Icons.html），
     格子里别的小图标若先于主图登记，名额就落到小图标上、主图反而懒加载；所以
     extra 里还有图标的调用方先画主图再传进来。"""
     sub = "".join("<span>%s</span>" % s for s in subs if s)
+    nm = p.title_html(key)
+    if href:
+        nm = '<a class="r-link" href="%s">%s</a>' % (html.escape(href), nm)
     return cell(
         "r-id",
         '%s<div class="r-nm %s">%s</div>%s%s'
         % (
             p.icon(key) if icon is None else icon,
             name_cls,
-            p.title_html(key),
+            nm,
             '<div class="r-sub">%s</div>' % sub if sub else "",
             extra,
         ),
@@ -658,6 +661,13 @@ def rec_plain(p, key, cols, narrow="", fam="r-plain"):
         + combos(p, key)
     )
     au = author_rows(p, key, "LGpig")
+    if fam == "r-farm-exo":
+        au_rec = (rows.authors_of(rows.facts().at(key) or {}) or {}).get("LGpig") or {}
+        au_box = _exotic_au_box(p, key, au_rec)
+        return '<article class="rec r-farm-exo">%s%s</article>' % (
+            idcell(p, key, (), "exo"),
+            cell("r-farm-main", '<div class="pf-mech-open">%s</div>%s' % (body, au_box)),
+        )
     if fam == "r-exotic":
         return '<article class="rec r-exotic%s">%s%s%s</article>' % (
             " has-au" if au else "",
@@ -711,30 +721,270 @@ def perk_chips(p, got):
     return "".join('<div class="xp">%s</div>' % r for r in rows_ if r)
 
 
-def rec_exotic(p, key):
-    """异域武器与异域护甲：异域 | 异域特性 | 作者区。异域不画来源。"""
+def facet_attrs(data):
+    out = []
+    for k, vals in data.items():
+        clean = []
+        for v in vals:
+            s = str(v).strip()
+            if s and s not in clean:
+                clean.append(s)
+        if clean:
+            out.append(
+                ' data-%s="%s"' % (k, "&#9;".join(html.escape(x, quote=True) for x in clean))
+            )
+    return "".join(out)
+
+
+def _farm_tiers_scenes(tier_raw, role_raw):
+    tiers, scenes, pairs = [], [], []
+    for seg in (tier_raw or "").split(BR):
+        seg = seg.strip()
+        if not seg:
+            continue
+        m = re.match(r"^(输出|高难|清怪)[：:]\s*(T\d(?:\.\d)?)", seg)
+        if m:
+            sc, tr = m.group(1), m.group(2)
+            scenes.append(sc)
+            tiers.append(tr)
+            pairs.append("%s:%s" % (sc, tr))
+        elif "工具枪" in seg:
+            tiers.append("工具枪")
+            scs = ["输出", "工具"] if "输出" in seg else ["工具"]
+            for sc in scs:
+                scenes.append(sc)
+                pairs.append("%s:工具枪" % sc)
+    for sc in ("输出", "高难", "清怪", "工具"):
+        if sc in (role_raw or "") and sc not in scenes:
+            scenes.append(sc)
+    return tiers, scenes, pairs
+
+
+def rec_exotic_farm(p, key, rank):
+    """刷取清单 · 异域武器/护甲：评级、实测数值与推荐理由置顶，完整 DDC 机制折进 <details>。"""
     rec = rows.facts().at(key) or {}
     z = p.zh(key)
-    season = (rec.get("derived") or {}).get("season")
-    # 身份格排在异域特性前面，图标也按这个先后登记（见 idcell）
-    head = idcell(
-        p,
-        key,
-        [z.get("itemTypeDisplayName"), "赛季 %s" % season if season else ""],
-        "exo",
+    au = (rows.authors_of(rec) or {}).get("LGpig") or {}
+    d = rec.get("derived") or {}
+    season = d.get("season")
+    el = rows.ELEMENT.get(rec.get("defaultDamageType") or 0)
+    is_armor = rec.get("itemType") == 2 or p.page == "exotic-armors"
+    href = (
+        ("../weapons/index.html?s=armor&w=%s" % key if is_armor else "../weapons/index.html?w=%s" % key)
+        if key.isdigit()
+        else None
     )
+
+    gun = p.icon(key)
+    subs = [z.get("itemTypeDisplayName"), "赛季 %s" % season if season else ""]
+    extra_bits = []
+    if el and not is_armor:
+        extra_bits.append(
+            "<div>%s<span class=\"%s\">%s</span></div>"
+            % (p.path_icon(stem(icons_mod.ELEM[rec["defaultDamageType"]]), sized=False), el[0], el[1])
+        )
+    if d.get("breakerType"):
+        extra_bits.append(
+            "<div>%s%s</div>"
+            % (p.path_icon(rows.champ_path(d["breakerType"]), sized=False), BREAKER_SHORT[d["breakerType"]])
+        )
+    extra = '<span class="pf-idx">#%d</span>' % rank
+    if extra_bits:
+        extra += '<div class="x-mini">%s</div>' % "".join(extra_bits)
+    head = idcell(p, key, subs, "exo", extra, gun, href=href)
+
+    tier_k = "lgpig_tier" if "lgpig_tier" in au else ("评级" if "评级" in au else "lgpig_tier")
+    role_k = "role" if "role" in au else ("定位" if "定位" in au else "role")
+    tier_raw = au.get(tier_k) or ""
+    role_raw = au.get(role_k) or ""
+    role_list = [x.strip() for x in role_raw.split(BR) if x.strip()]
+
+    pills = []
+    if tier_raw:
+        t_mark = p.mark(au_spot(p, key, "LGpig", tier_k))
+        for seg in tier_raw.split(BR):
+            seg = seg.strip()
+            if seg:
+                pills.append('<b class="pf-tier-pill"%s>%s</b>' % (t_mark, p.line(seg)))
+    f_row = author_fields(p, au, key, "LGpig")
+    verdict = author_paras(p, au, key, "LGpig", role_list, role_k)
+    if not pills and role_list and 'class="why"' not in verdict:
+        r_mark = p.mark(au_spot(p, key, "LGpig", role_k))
+        for seg in role_list:
+            pills.append('<b class="pf-tier-pill"%s>%s</b>' % (r_mark, p.line(seg)))
+
+    verdict_head = (
+        '<div class="pf-verdict-head"><div class="pf-tiers">%s</div>%s</div>'
+        % ("".join(pills), f_row)
+        if (pills or f_row)
+        else ""
+    )
+    verdict_body = '<div class="pf-verdict-body">%s</div>' % verdict if verdict else ""
+
+    perk = perk_chips(p, rows.exotic_perks(key)) if kind(key) == "exotic" else ""
+    perk_strip = '<div class="pf-perk-strip">%s</div>' % perk if perk else ""
+
+    if kind(key) == "exotic":
+        text = "".join(
+            p.prose(t, p.mark(p.spot(k, "i18n/zh-CN/realgame_details", "说明")))
+            for k, t in rows.exotic_parts(key, z.get("realgame_details", ""))
+        )
+    else:
+        field = "realgame_details" if z.get("realgame_details") or not z.get("效果") else "效果"
+        text = p.prose(
+            markup.strip_pua(z.get("realgame_details") or z.get("效果") or z.get("database_details", "")),
+            p.mark(p.spot(key, "i18n/zh-CN/" + field, "说明")),
+        )
+    cb = combos(p, key)
+    mech = (
+        '<details class="pf-mech"><summary>完整机制与催化剂说明</summary>'
+        '<div class="pf-mech-body">%s%s</div></details>' % (text, cb)
+        if (text or cb)
+        else ""
+    )
+
+    tiers, scenes, pairs = _farm_tiers_scenes(tier_raw, role_raw)
+    fdata = {"scene": scenes}
+    if not is_armor:
+        fdata["tier"] = tiers
+        if pairs:
+            fdata["pairs"] = pairs
+        if el:
+            fdata["elem"] = [el[1]]
+    return '<article class="rec r-farm-exo"%s>%s%s</article>' % (
+        facet_attrs(fdata),
+        head,
+        cell("r-farm-main", verdict_head + verdict_body + perk_strip + mech),
+    )
+
+
+def rec_set_farm(p, key, rank):
+    """刷取清单 · 护甲套装：序号与件数收进左轨，应用场景与获取地点置顶。"""
+    rec = rows.facts().at(key) or {}
+    z = p.zh(key)
+    au = (rows.authors_of(rec) or {}).get("LGpig") or {}
+    pieces = markup.text_of(stats_of(p, key), collapse=True).strip()
+    extra = '<span class="pf-idx">#%d</span>' % rank
+    if pieces:
+        extra += '<b class="pf-piece-tag">%s</b>' % html.escape(pieces)
+    head = idcell(p, key, (), "", extra)
+
+    f_row = author_fields(p, au, key, "LGpig")
+    verdict = author_paras(p, au, key, "LGpig")
+    verdict_head = '<div class="pf-verdict-head">%s</div>' % f_row if f_row else ""
+    verdict_body = '<div class="pf-verdict-body">%s</div>' % verdict if verdict else ""
+
+    field = "realgame_details" if z.get("realgame_details") or not z.get("效果") else "效果"
+    effect = p.prose(
+        markup.strip_pua(z.get("realgame_details") or z.get("效果") or z.get("database_details", "")),
+        p.mark(p.spot(key, "i18n/zh-CN/" + field, "说明")),
+    )
+    effect_box = '<div class="pf-set-effect">%s</div>' % effect if effect else ""
+
+    return '<article class="rec r-farm-set"%s>%s%s</article>' % (
+        facet_attrs({"pieces": [pieces] if pieces else []}),
+        head,
+        cell("r-farm-main", verdict_head + verdict_body + effect_box),
+    )
+
+
+def _exotic_au_box(p, key, au):
+    """异域详解页底部的作者评语卡：与刷取清单同款评级药丸与实测数值条，默认全显示。"""
+    if not au:
+        return ""
+    tier_k = "lgpig_tier" if "lgpig_tier" in au else ("评级" if "评级" in au else "lgpig_tier")
+    role_k = "role" if "role" in au else ("定位" if "定位" in au else "role")
+    tier_raw = au.get(tier_k) or ""
+    role_raw = au.get(role_k) or ""
+    role_list = [x.strip() for x in role_raw.split(BR) if x.strip()]
+    pills = []
+    if tier_raw:
+        t_mark = p.mark(au_spot(p, key, "LGpig", tier_k))
+        for seg in tier_raw.split(BR):
+            seg = seg.strip()
+            if seg:
+                pills.append('<b class="pf-tier-pill"%s>%s</b>' % (t_mark, p.line(seg)))
+    f_row = author_fields(p, au, key, "LGpig")
+    verdict = author_paras(p, au, key, "LGpig", role_list, role_k)
+    if not pills and role_list and 'class="why"' not in verdict:
+        r_mark = p.mark(au_spot(p, key, "LGpig", role_k))
+        for seg in role_list:
+            pills.append('<b class="pf-tier-pill"%s>%s</b>' % (r_mark, p.line(seg)))
+    if not (pills or f_row or verdict):
+        return ""
+    head = (
+        '<div class="pf-verdict-head"><div class="pf-tiers">'
+        '<span class="pf-au-lbl">小棒猪</span>%s</div>%s</div>'
+        % ("".join(pills), f_row)
+    )
+    body = '<div class="pf-verdict-body">%s</div>' % verdict if verdict else ""
+    return '<div class="pf-exo-au">%s%s</div>' % (head, body)
+
+
+def rec_exotic(p, key):
+    """异域武器与异域护甲详解：与刷取清单同体系双栏卡，机制与催化剂默认全显示。"""
+    rec = rows.facts().at(key) or {}
+    z = p.zh(key)
+    au = (rows.authors_of(rec) or {}).get("LGpig") or {}
+    d = rec.get("derived") or {}
+    season = d.get("season")
+    el = rows.ELEMENT.get(rec.get("defaultDamageType") or 0)
+    is_armor = rec.get("itemType") == 2 or p.page == "exotic-armor"
+    href = (
+        ("../weapons/index.html?s=armor&w=%s" % key if is_armor else "../weapons/index.html?w=%s" % key)
+        if key.isdigit()
+        else None
+    )
+
+    gun = p.icon(key)
+    subs = [z.get("itemTypeDisplayName"), "赛季 %s" % season if season else ""]
+    extra_bits = []
+    if el and not is_armor:
+        extra_bits.append(
+            '<div>%s<span class="%s">%s</span></div>'
+            % (p.path_icon(stem(icons_mod.ELEM[rec["defaultDamageType"]]), sized=False), el[0], el[1])
+        )
+    if d.get("breakerType"):
+        extra_bits.append(
+            "<div>%s%s</div>"
+            % (p.path_icon(rows.champ_path(d["breakerType"]), sized=False), BREAKER_SHORT[d["breakerType"]])
+        )
+    extra = '<div class="x-mini">%s</div>' % "".join(extra_bits) if extra_bits else ""
+    head = idcell(p, key, subs, "exo", extra, gun, href=href)
+
     perk = perk_chips(p, rows.exotic_perks(key))
-    # 说明是几条记录的正文拼成的（装备本体、固有、催化剂），一段一段标各自的出处
     text = "".join(
         p.prose(t, p.mark(p.spot(k, "i18n/zh-CN/realgame_details", "说明")))
         for k, t in rows.exotic_parts(key, z.get("realgame_details", ""))
     )
-    au = author_rows(p, key, "LGpig")
-    return '<article class="rec r-exotic%s">%s%s%s</article>' % (
-        " has-au" if au else "",
+    cb = combos(p, key)
+    au_box = _exotic_au_box(p, key, au)
+
+    tier_k = "lgpig_tier" if "lgpig_tier" in au else ("评级" if "评级" in au else "lgpig_tier")
+    role_k = "role" if "role" in au else ("定位" if "定位" in au else "role")
+    tiers, scenes, _ = _farm_tiers_scenes(au.get(tier_k) or "", au.get(role_k) or "")
+    fdata = {}
+    if is_armor:
+        slot = z.get("itemTypeDisplayName") or ""
+        if slot:
+            fdata["slot"] = [slot]
+        if scenes:
+            fdata["scene"] = scenes
+    else:
+        if el:
+            fdata["elem"] = [el[1]]
+        if d.get("breakerType"):
+            fdata["champ"] = [BREAKER_SHORT[d["breakerType"]]]
+        if tiers:
+            fdata["tier"] = tiers
+
+    return '<article class="rec r-farm-exo"%s>%s%s</article>' % (
+        facet_attrs(fdata),
         head,
-        cell("r-txt r-perk", "%s%s%s" % (perk, text, combos(p, key))),
-        au,
+        cell(
+            "r-farm-main",
+            '<div class="pf-mech-open">%s%s%s</div>%s' % (perk, text, cb, au_box),
+        ),
     )
 
 
@@ -913,9 +1163,32 @@ def rec_weapon(p, key, rank, author):
     )
 
     au = author_rows(p, key, author)
-    return '<article class="rec r-weapon%s">%s%s%s%s%s</article>' % (
-        " has-au" if au else "",
-        cell("r-mid r-rank", str(rank)),
+    n_au = au.count("x-au-who")
+    au_cls = " has-au has-au2" if n_au >= 2 else (" has-au" if n_au == 1 else "")
+
+    pri_tier = (A.get("aegis_tier") if author == "Aegis" else L.get("lgpig_tier")) or ""
+    pri_tier_s = markup.text_of(markup.inline(pri_tier)).strip()
+    t_cls = "by-a" if author == "Aegis" else "by-l"
+    if pri_tier_s and len(pri_tier_s) <= 4:
+        rank_html = '<span class="r-tier %s r-rank-t">%s</span><span class="r-rank-n">#%d</span>' % (
+            t_cls,
+            html.escape(pri_tier_s),
+            rank,
+        )
+    else:
+        rank_html = str(rank)
+
+    fdata = {
+        "tier": [pri_tier_s] if pri_tier_s and len(pri_tier_s) <= 4 else [],
+        "elem": [el[1]] if el else [],
+        "champ": [BREAKER_SHORT[d["breakerType"]]] if d.get("breakerType") else [],
+        "both": ["双推" if (A and L) else "单评"],
+    }
+    href = "../weapons/index.html?w=%s" % key if key.isdigit() else None
+    return '<article class="rec r-weapon%s"%s>%s%s%s%s%s</article>' % (
+        au_cls,
+        facet_attrs(fdata),
+        cell("r-mid r-rank", rank_html),
         idcell(
             p,
             key,
@@ -923,6 +1196,7 @@ def rec_weapon(p, key, rank, author):
             "",
             '<div class="x-mini">%s</div>' % "".join("<div>%s</div>" % m for m in mini),
             gun,
+            href=href,
         ),
         cell(
             "x-facts",
@@ -1057,8 +1331,10 @@ def matrix(p, section):
 # ── 一节 ────────────────────────────────────────────────────────────
 HEADS = {
     "r-exotic": [("c", "异域"), ("l", "异域特性")],
+    "r-farm-exo": [("c", "异域装备"), ("l", "评级 · 实测数值 · 推荐理由（机制可展开）")],
+    "r-farm-set": [("c", "护甲套装"), ("l", "应用场景 · 获取地点 · 套装效果")],
     "r-weapon": [
-        ("c", "名次"),
+        ("c", "档位"),
         ("c", "武器"),
         ("c", "参数"),
         ("c", "枪管"),
@@ -1090,11 +1366,13 @@ def section_blocks(p, groups, section="", author="Aegis"):
     # 一节里以哪种记录为主就用哪种列名：异域页整页都是异域（哪怕单节全是永劫教派或
     # 职业物品之灵这类插件），一律按 r-exotic 排，跨节列宽与作者区才对齐。
     main_kind = max(kinds, key=lambda k: sum(1 for x in keys if kind(x) == k))
+    is_farm_exo = p.page in ("exotic-weapons", "exotic-armors")
+    is_farm_set = p.page == "farming-sets"
     fam = (
-        "r-exotic"
-        if main_kind == "exotic"
-        or p.page
-        in ("exotic-weapon", "exotic-weapons", "exotic-armor", "exotic-armors")
+        "r-farm-exo"
+        if is_farm_exo or main_kind == "exotic" or p.page in ("exotic-weapon", "exotic-armor")
+        else "r-farm-set"
+        if is_farm_set
         else "r-weapon"
         if main_kind == "weapon"
         else "r-plain"
@@ -1113,16 +1391,23 @@ def section_blocks(p, groups, section="", author="Aegis"):
         ]
         out.append(colhead("r-plain r-c%d%s" % (len(cols), narrow), heads))
     else:
-        out.append(colhead(fam, HEADS[fam]))
+        heads = HEADS[fam]
+        if p.page in ("exotic-weapon", "exotic-armor"):
+            heads = [("c", "异域装备"), ("l", "异域特性 · 机制详解 · 作者评价")]
+        out.append(colhead(fam, heads))
 
     for name, ks in groups:
         if name:
-            out.append('<div class="r-grp">%s</div>' % html.escape(name))
+            out.append('<div class="r-grp">%s</div>' % p.line(name))
         for i, k in enumerate(ks, 1):
             if k in p.matrix_rows:  # 矩阵行首那一条不再单独占一行
                 continue
             kd = kind(k)
-            if kd == "exotic":
+            if is_farm_exo:
+                out.append(rec_exotic_farm(p, k, i))
+            elif is_farm_set:
+                out.append(rec_set_farm(p, k, i))
+            elif kd == "exotic":
                 out.append(rec_exotic(p, k))
             elif kd == "weapon":
                 out.append(rec_weapon(p, k, i, author))

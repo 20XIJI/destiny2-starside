@@ -53,6 +53,9 @@ NEW = frozenset(
     {
         "weapon-perks",
         "farming-sets",
+        "legendary-primary",
+        "legendary-special",
+        "legendary-heavy",
         "shopping-primary",
         "shopping-special",
         "shopping-heavy",
@@ -70,6 +73,60 @@ NEW = frozenset(
         "class-abilities",
     }
 )
+
+# 刷取与购物清单子页：同级切换条与声明式多维筛选（app.js data-facets）。
+FARM_GROUPS = (
+    (
+        "小棒猪刷取清单",
+        (
+            ("exotic-weapons", "异域武器"),
+            ("exotic-armors", "异域护甲"),
+            ("legendary-primary", "白弹紫枪"),
+            ("legendary-special", "绿弹紫枪"),
+            ("legendary-heavy", "威能紫枪"),
+            ("farming-sets", "护甲套装"),
+        ),
+        ("shopping-primary", "Aegis 购物清单"),
+    ),
+    (
+        "Aegis 购物清单",
+        (
+            ("shopping-primary", "白弹"),
+            ("shopping-special", "绿弹"),
+            ("shopping-heavy", "威能"),
+            ("shopping-other", "其他"),
+        ),
+        ("exotic-weapons", "小棒猪刷取清单"),
+    ),
+    (
+        "异域图鉴",
+        (
+            ("exotic-weapon", "异域武器详解"),
+            ("exotic-armor", "异域护甲详解"),
+        ),
+        ("exotic-weapons", "小棒猪刷取清单"),
+    ),
+)
+FARM_FACETS = {
+    "exotic-weapons": "档位=tier:single;场景=scene:single;元素=elem:single",
+    "exotic-armors": "定位=scene:single",
+    "exotic-weapon": "元素=elem:single;勇士=champ:single;档位=tier:single",
+    "exotic-armor": "部位=slot:single;定位=scene:single",
+    "farming-sets": "件数=pieces:single",
+    **{
+        s: "档位=tier:single;元素=elem:single;勇士=champ:single;双推=both:single"
+        for s in (
+            "legendary-primary",
+            "legendary-special",
+            "legendary-heavy",
+            "shopping-primary",
+            "shopping-special",
+            "shopping-heavy",
+            "shopping-other",
+        )
+    },
+}
+FARM_GUIDE_SECS = frozenset({"评级说明", "说明", "排序说明"})
 COLS = re.compile(r"^列：")
 CTX = None  # render.Page，build() 里装上
 SLUG = ""
@@ -681,14 +738,16 @@ def index_row(dex, title, stamp, body, lane, perks=None):
 
 
 def cards_of(spec, up):
-    """「卡片：slug、slug」→ 首页那种 .entry 卡片，一条一张。
+    """「卡片：slug、slug」→ 实内容预览卡（pve-farming 总览页）。
 
-    标题、描述与更新时间从被指向的那篇源稿现读，**不在这里重抄一遍**——那三样
-    在那一篇源稿里已经写过，抄第二份就会各改各的。
-    卡片因此没有节点图标与右侧数值：那两样是首页手写的，一张一套，推导不出来。
+    标题、描述、更新时间、条目规模与前排装备图标均从目标源稿与 data/ 现取，不重抄。
     """
-    o = ['<ul class="entries">']
-    for slug in [x.strip() for x in spec.split("、") if x.strip()]:
+    slugs = [x.strip() for x in spec.split("、") if x.strip()]
+    cols = 1 if len(slugs) == 1 else (4 if len(slugs) == 4 else 3 if len(slugs) >= 5 else 2)
+    n_ico = 5 if cols == 3 else 4
+    prefix = "../" * up
+    o = ['<ul class="entries" data-cols="%d">' % cols]
+    for slug in slugs:
         path = shell.source_path(slug)
         if path is None:
             die("「卡片：」指的 %r 在 references/ 下没有源稿" % slug)
@@ -697,20 +756,122 @@ def cards_of(spec, up):
         hit = re.match(r"^#\s+(.+)$", doc.split("\n")[0])
         if not hit:
             die("「卡片：」指的 %r 源稿第一行不是「# 页面标题」" % slug)
-        o += [
-            "<li>",
-            '<a class="entry" href="%s%s/index.html">'
-            % ("../" * up, where_of(doc, slug)),
-            '<span class="entry-body">',
-            "<h3>%s</h3>" % hit.group(1).strip(),
-            "<p>%s</p>" % meta_of(doc, "描述"),
-            '<span class="entry-stamp">更新 %s</span>' % meta_of(doc, "更新"),
-            "</span>",
-            "</a>",
-            "</li>",
-        ]
+        full_title = hit.group(1).strip()
+        title = re.sub(r"^(?:刷取清单|购物清单)\s*·\s*", "", full_title)
+        desc = meta_of(doc, "描述")
+        stamp = meta_of(doc, "更新")
+        kcls = (
+            "k-exotic"
+            if slug.startswith("exotic-")
+            else "k-ammo"
+            if slug.endswith("-special")
+            else "k-heavy"
+            if slug.endswith("-heavy")
+            else ""
+        )
+        icons_html = ""
+        if rows.is_skeleton(doc):
+            heads = rows.heads(slug)
+            unit = "件" if slug == "exotic-armors" else "套" if slug == "farming-sets" else "把"
+            count_txt = "%d %s" % (len(heads), unit)
+            if cols > 1:
+                icos = []
+                for k in heads:
+                    p = rows.icon_file(k)
+                    if p and p not in icos:
+                        icos.append(p)
+                    if len(icos) >= n_ico:
+                        break
+                if icos:
+                    icons_html = '<div class="pf-icons">%s</div>' % "".join(
+                        '<img src="%s%s" alt="" width="38" height="38" loading="lazy">'
+                        % (prefix, p)
+                        for p in icos
+                    )
+        else:
+            n_rows = sum(
+                1
+                for line in doc.split("\n")
+                if line.startswith("|")
+                and not is_rule(split_cells(line))
+                and not line.startswith("| 分组 |")
+                and not line.startswith("| 目的地 |")
+                and not line.startswith("| 任务 |")
+                and not line.startswith("| 地牢 |")
+                and not line.startswith("| 突袭 |")
+            )
+            count_txt = "%d 条来源" % n_rows if n_rows else ""
+
+        li_cls = ' class="%s"' % kcls if kcls else ""
+        href = "%s%s/index.html" % (prefix, where_of(doc, slug))
+        if cols == 1:
+            o += [
+                "<li%s>" % li_cls,
+                '<a class="pf-card" href="%s">' % href,
+                '<div class="pf-card-head"><h3>%s</h3><p class="pf-desc">%s</p></div>'
+                % (title, desc),
+                '<div class="pf-foot"><span class="pf-count">%s</span>'
+                '<span class="pf-stamp">更新 %s</span>'
+                '<span class="pf-go" aria-hidden="true">查看 →</span></div>'
+                % (count_txt, stamp),
+                "</a>",
+                "</li>",
+            ]
+        else:
+            o += [
+                "<li%s>" % li_cls,
+                '<a class="pf-card" href="%s">' % href,
+                '<div class="pf-card-head"><h3>%s</h3><span class="pf-count">%s</span></div>'
+                % (title, count_txt),
+                '<p class="pf-desc">%s</p>' % desc,
+                icons_html,
+                '<div class="pf-foot"><span class="pf-stamp">更新 %s</span>'
+                '<span class="pf-go" aria-hidden="true">查看 →</span></div>' % stamp,
+                "</a>",
+                "</li>",
+            ]
     o.append("</ul>")
     return o
+
+
+def farm_chrome(slug, up):
+    """刷取与购物清单子页顶部的同级切换条与声明式筛选栏容器。"""
+    prefix = "../" * up
+    out = []
+    for label, items, (other_slug, other_label) in FARM_GROUPS:
+        if any(s == slug for s, _ in items):
+            tabs = "".join(
+                '<a class="pf-tab" href="%s%s/index.html"%s>%s</a>'
+                % (
+                    prefix,
+                    s,
+                    ' aria-current="page"' if s == slug else "",
+                    name,
+                )
+                for s, name in items
+            )
+            swap = '<a class="pf-swap" href="%s%s/index.html">切换到 %s →</a>' % (
+                prefix,
+                other_slug,
+                other_label,
+            )
+            out.append(
+                '<nav class="pf-subnav" aria-label="%s">'
+                '<span class="pf-subnav-lbl">%s</span>'
+                '<div class="pf-tabs">%s</div>%s</nav>' % (label, label, tabs, swap)
+            )
+            break
+    spec = FARM_FACETS.get(slug)
+    if spec:
+        bars = []
+        for dim in spec.split(";"):
+            name = dim.split("=", 1)[0]
+            bars.append(
+                '<nav class="facet-bar" data-facet="%s" aria-label="%s"></nav>'
+                % (name, name)
+            )
+        out.append('<div class="pf-facets">%s</div>' % "".join(bars))
+    return out
 
 
 def guides_of(spec):
@@ -1120,6 +1281,8 @@ def render(md, slug, digest):
         if has_items:
             nav["data-noun"] = "条目"
         nav["data-chip-label"] = "分节"
+        if slug in FARM_FACETS:
+            nav["data-facets"] = FARM_FACETS[slug]
         toolbar = dict(toolbar or {}, **nav)
 
     # 「跳转分行：<分节标题>」→ chip 从这一节起另起一行。分节多到一行放不下时，
@@ -1168,6 +1331,8 @@ def render(md, slug, digest):
         # data-src 是这一篇在库里的 _id（取法见 doc_id_of()），就地编辑靠它找回源稿。
         '<main data-src="%s" data-src-hash="%s">' % (doc_id_of(slug), digest),
     ]
+    if slug in FARM_FACETS:
+        o += farm_chrome(slug, up)
 
     body = META_LINE.sub("", md[md.index("\n") :])
     parts = re.split(r"^## ", body, flags=re.M)
@@ -1237,7 +1402,7 @@ def render(md, slug, digest):
                     icon=pagedex.site_path(PAGE, head_icon.group(1)),
                     q="",
                 )
-        o += render_blocks(
+        inner = render_blocks(
             chunk,
             scales,
             groups,
@@ -1249,6 +1414,14 @@ def render(md, slug, digest):
             default=default,
             initial_rules=initial_rules,
         )
+        if slug in FARM_FACETS and SECTION[1] in FARM_GUIDE_SECS and not COLS.search(chunk):
+            o.append(
+                '<details class="pf-guide"><summary>展开%s</summary>'
+                '<div class="pf-guide-body">%s</div></details>'
+                % (SECTION[1], "".join(inner))
+            )
+        else:
+            o += inner
         o.append("</section>")
 
     # 「数据源：是」用 shell.py 里那个 Destiny Data Compendium 出处，一字不改；
@@ -1379,7 +1552,7 @@ def check(md, out, slug):
 
     main = out[out.index("<main ") : out.index("</main>")]
     # 卡片的文字来自被指向的那篇源稿，不是本篇的正文，不进逐字保真
-    main = re.sub(r'<ul class="entries">.*?</ul>', "", main, flags=re.S)
+    main = re.sub(r'<ul class="entries"[^>]*>.*?</ul>', "", main, flags=re.S)
     # 攻略卡同理：标题与配图站内没有第二份，那一行整行剥离，两侧都不留
     main = re.sub(r'<ul class="guides">.*?</ul>', "", main, flags=re.S)
     got = text_of(main)

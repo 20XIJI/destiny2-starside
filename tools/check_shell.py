@@ -40,7 +40,7 @@ STAMP = re.compile(
 # 35.6K 与 20.4K，翻了三四倍，多出来的全是注释；没有人量，所以没有人知道。撑不下就
 # 回来改这个数字，像 convert-armor-sets.py 的 N_* 一样——那是「改了要人确认一次」，
 # 不是「放宽比对」。
-SHELL_BUDGET = 32 * 1024
+SHELL_BUDGET = 33 * 1024
 SHELL_PARTS = (
     "assets/site.css",
     "assets/app.js",

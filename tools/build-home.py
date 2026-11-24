@@ -31,11 +31,11 @@ PICK_SETS = (
     ("欧里克斯记忆", "2 件"),
 )
 PICK_FARMING = (
-    "购物清单 · 白弹",
-    "购物清单 · 绿弹",
-    "购物清单 · 威能",
-    "刷取清单 · 异域武器",
-    "刷取清单 · 护甲套装",
+    "异域武器",
+    "异域护甲",
+    "白弹紫枪",
+    "威能紫枪",
+    "护甲套装",
 )
 PICK_SOURCES = ("Destiny Data Compendium", "Destiny 2: Boss Damage", "DIM 社区")
 # 增伤：(名称里含, 触发里含, 首页上写的名字, 小字)。小字写 None 取「时长」那一格，
@@ -305,6 +305,7 @@ REC_TIER = re.compile(r'<span class="r-tier [^"]*"[^>]*>(.*?)</span>', re.S)
 REC_TAG = re.compile(r'<b class="r-tag"[^>]*>(.*?)</b>', re.S)
 # 评级写成一整句的那种不装徽标，单独一行（见 render.author_rows）
 REC_TIER_LONG = re.compile(r'<div class="r-tier-long"[^>]*>(.*?)</div>', re.S)
+REC_FARM_TIER = re.compile(r'<b class="pf-tier-pill"[^>]*>(.*?)</b>', re.S)
 
 
 def lg_list(slug):
@@ -328,6 +329,7 @@ def lg_list(slug):
             grade = (
                 REC_TIER.search(body)
                 or REC_TIER_LONG.search(body)
+                or REC_FARM_TIER.search(body)
                 or REC_TAG.search(body)
             )
             got.append(

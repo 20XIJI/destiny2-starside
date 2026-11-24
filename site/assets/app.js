@@ -390,7 +390,15 @@
   }
   function facetPass(i) {
     if (!DIMS) return true;
-    return DIMS.every(function (d, k) { return dimPass(i, k); });
+    if (!DIMS.every(function (d, k) { return dimPass(i, k); })) return false;
+    var pr = mods[i].dataset.pairs;
+    if (pr && picked['场景'] && picked['场景'].length && picked['档位'] && picked['档位'].length) {
+      return pr.split('\t').some(function (x) {
+        var p = x.split(':');
+        return picked['场景'].indexOf(p[0]) >= 0 && picked['档位'].indexOf(p[1]) >= 0;
+      });
+    }
+    return true;
   }
   function facetOn() {
     return Object.keys(picked).some(function (k) { return picked[k].length; });
@@ -581,6 +589,12 @@
     });
   }
 
+  function tierRank(s) {
+    if (s === '独一档') return -1;
+    if (/^T\d/.test(s)) return +s.slice(1);
+    return s.length < 2 && 'SABCDEF'.includes(s) ? 'SABCDEF'.indexOf(s) : 99;
+  }
+
   function scan(k) {
     /* 第 k 维的取值，一律扫全部卡片。**不随别的维收窄**：跟着别的维变的话，读者
        没碰这一维，它却自己少了几枚甚至整个消失。取值固定下来，控件就是常驻的。 */
@@ -588,6 +602,9 @@
     vals.forEach(function (v) {
       v[k].forEach(function (x) { if (x && seen.indexOf(x) < 0) seen.push(x); });
     });
+    if (DIMS[k].key === 'tier') {
+      seen.sort(function (a, b) { return tierRank(a) - tierRank(b); });
+    }
     return seen;
   }
 
@@ -954,7 +971,11 @@
     window.starsideRest.then(function () {
       restState = 'ready';
       collect();
-      if (DIMS) vals = valsOf();
+      if (DIMS) {
+        vals = valsOf();
+        DIMS.forEach(function (d, k) { paint(k); });
+        if (tuckBox) syncTuck();
+      }
       hadItems = (ROW || ITEM)
         ? sections.map(function (sec) { return !!sec.querySelector(ROW || ITEM); }) : [];
       search.placeholder = '搜索 ' + poolSize() + ' 个' + NOUN;
