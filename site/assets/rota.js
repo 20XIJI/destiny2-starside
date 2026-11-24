@@ -270,51 +270,372 @@ export default function init(table, deps) {
     draw();
   }
 
-  /* 固定周期轮换表（.gen 带 data-cycle 的表）：按北京时间 01:00 重置算当前落在第几行，
-     给当前行打 data-now-row、首格打 data-now-tag（本周／今日），跨过重置点自动切行。
-     多件带图条目拆成独立单元。 */
+  /* 固定周期轮换表（.gen 带 data-cycle 的表）：按北京时间 01:00 重置算当前周期，
+     按表结构自动分型为四种原生形态，原表收起保留无 JS 与搜索兜底，跨过重置点自动刷新：
+     - loot：永恒挑战传说掉落池（四列武器盘）
+     - drop：单件武器掉落时间轴（右侧 40×40 图标）
+     - pipeline：永恒挑战三段遭遇推进流（R1 → R2 → BOSS 等宽对齐）
+     - ribbon：独立单列轮换（横向日期轨道条）
+     - columns：多列纯文本轮换（顶部单行子表头 + 严格列轨对齐 + 诅咒 3 格强度条） */
+  var DEST_ICO = {
+    '异域任务': 'icons/7c1bb14539.webp',
+    '幽梦之城': 'icons/d0cb509d79.webp',
+    '内欧姆那': 'icons/2343bfd45e.webp',
+    '月球': 'icons/8b98ce6055.webp',
+    '王座世界': 'icons/9dc57beeac.webp',
+    '木卫二': 'icons/74caaa1a48.webp',
+    '苍白之心': 'icons/5149d5d45a.webp',
+    '开普勒': 'icons/e11b86c5c3.webp',
+    '永恒挑战': 'icons/731f73bcef.webp'
+  };
+  var RACE_ICO = [
+    ['邪魔族', 'icons/d8cc62b559.webp'],
+    ['Vex', 'icons/498a6c3b5e.webp'],
+    ['卡巴尔', 'icons/9650bac0bc.webp'],
+    ['堕落者', 'icons/f6d2ad0360.webp'],
+    ['堕落议会', 'icons/f6d2ad0360.webp'],
+    ['嗤魅', 'icons/bc70e1e4e0.webp'],
+    ['傀儡', 'icons/00ab7fe800.webp']
+  ];
+  var ROW_ICO = {
+    '光明行刑者': 'icons/f66f454174.webp'
+  };
+
   function cycles() {
-    [].slice.call(document.querySelectorAll('.gen[data-cycle]')).forEach(function (t) {
-      var rows = [].slice.call(t.querySelectorAll('tbody tr:not(.lane)'));
-      if (!rows.length) return;
-      [].slice.call(t.querySelectorAll('tbody th, tbody td')).forEach(function (cell) {
-        if (!cell.querySelector('img')) return;
-        if (cell.innerHTML.indexOf('<br>') < 0) {
-          cell.innerHTML = '<span class="cyc-item cyc-single">' + cell.innerHTML.trim() + '</span>';
-          return;
-        }
-        var parts = cell.innerHTML.split(/<br\s*\/?>/).map(function (s) { return s.trim(); }).filter(Boolean);
-        if (parts.length < 2) return;
-        var cls = parts.length >= 4 ? 'cyc-grid' : 'cyc-stack';
-        cell.innerHTML = '<span class="' + cls + '">'
-          + parts.map(function (p) { return '<span class="cyc-item">' + p + '</span>'; }).join('')
-          + '</span>';
+    var tables = [].slice.call(document.querySelectorAll('.gen[data-cycle]'));
+    if (!tables.length) return;
+    var boards = [];
+
+    function fmtDate(ms) {
+      var d = new Date(ms + 288e5);
+      return (d.getUTCMonth() + 1) + ' 月 ' + d.getUTCDate() + ' 日';
+    }
+
+    function splitCell(cell) {
+      var raw = cell.innerHTML.trim();
+      var parts = raw.split(/<br\s*\/?>/).map(function (s) { return s.trim(); }).filter(Boolean);
+      var imgs = cell.querySelectorAll('img');
+      return {
+        raw: raw,
+        text: cell.textContent.trim(),
+        parts: parts,
+        imgCount: imgs.length,
+        firstImg: imgs.length ? imgs[0].getAttribute('src') : ''
+      };
+    }
+
+    function stripImg(html) {
+      return html.replace(/<img\b[^>]*>/gi, '').trim();
+    }
+
+    function relTag(off, isDay) {
+      if (off === 0) return isDay ? '今日' : '本周';
+      if (off === -1) return isDay ? '昨日' : '上周';
+      if (off === 1) return isDay ? '明日' : '下周';
+      return off > 0 ? off + (isDay ? ' 日后' : ' 周后') : Math.abs(off) + (isDay ? ' 日前' : ' 周前');
+    }
+
+    function raceIcon(text) {
+      for (var i = 0; i < RACE_ICO.length; i++) {
+        if (text.indexOf(RACE_ICO[i][0]) >= 0) return RACE_ICO[i][1];
+      }
+      return '';
+    }
+
+    function decorateValue(html, text) {
+      var lvl = text === '弱诅咒' ? 1 : (text === '中诅咒' ? 2 : (text === '强诅咒' ? 3 : 0));
+      if (lvl) {
+        var bars = '';
+        for (var i = 1; i <= 3; i++) bars += '<i' + (i <= lvl ? ' class="on"' : '') + '></i>';
+        return '<span class="cyc-curse"><span class="cyc-meter" aria-hidden="true">' + bars + '</span><span>' + html + '</span></span>';
+      }
+      var rico = raceIcon(text);
+      if (rico) {
+        return '<span class="cyc-with-ico"><img class="cyc-race-ico" src="' + rico + '" alt="" width="16" height="16"><span>' + html + '</span></span>';
+      }
+      return html;
+    }
+
+    function cleanHead(s) {
+      return (s || '').replace(/[（(]每[周日][）)]/g, '').trim();
+    }
+
+    tables.forEach(function (t) {
+      var rawRows = [].slice.call(t.querySelectorAll('tbody tr:not(.lane)'));
+      if (!rawRows.length) return;
+      var heads = [].slice.call(t.querySelectorAll('thead th')).map(function (th) {
+        return th.textContent.trim();
       });
+      var data = rawRows.map(function (tr) {
+        return [].slice.call(tr.children).map(splitCell);
+      });
+
+      var isLoot = data.some(function (row) {
+        return row.some(function (c) { return c.parts.length >= 4 && c.imgCount >= 4; });
+      });
+      var hasDropIcon = !isLoot && data.some(function (row) {
+        return row.some(function (c) { return c.imgCount === 1 && c.parts.length <= 1; });
+      });
+      var isPipeline = !isLoot && !hasDropIcon && heads.length === 3
+        && heads[1].indexOf('第一轮') >= 0 && heads[2].indexOf('第二轮') >= 0;
+
       var spec = t.dataset.cycle.trim().split(/\s+/);
       var d0 = spec[0].split('.').map(Number);
       var hasTime = spec.length > 2;
       var hm = (hasTime ? spec[1] : '1:00').split(':').map(Number);
       var kind = spec[spec.length - 1];
-      var unit = kind === '日' ? MS_DAY : MS_WEEK;
-      var tag = kind === '日' ? '今日' : '本周';
+      var isDay = kind === '日';
+      var unit = isDay ? MS_DAY : MS_WEEK;
       var t0 = Date.UTC(d0[0], d0[1] - 1, d0[2], hm[0] - 8, hm[1]);
+
+      var title = cleanHead(heads[0]);
+      var cadence = isDay ? '每日 01:00' : '每周三 01:00';
+      var cycleLen = data.length + (isDay ? ' 日一轮' : ' 周一轮');
+
+      var sect = t.closest ? t.closest('.block') : null;
+      var sectLabel = sect && sect.querySelector('.sect-label')
+        ? sect.querySelector('.sect-label').textContent.trim()
+        : '';
+      var destIco = DEST_ICO[sectLabel] || '';
+
+      var board = document.createElement('div');
+      board.className = 'cyc-board';
+      board.innerHTML = '<div class="cyc-head">'
+        + '<span class="cyc-title-wrap">'
+        + (destIco ? '<img class="cyc-head-ico" src="' + destIco + '" alt="" width="18" height="18">' : '')
+        + '<span class="cyc-title-bar">' + title + '</span>'
+        + '</span>'
+        + '<span class="cyc-cadence">'
+        + '<span class="cyc-dot"></span>' + cadence
+        + '<span class="cyc-sep">·</span>' + cycleLen
+        + '</span></div>'
+        + '<div class="cyc-subhead" hidden></div>'
+        + '<div class="cyc-list"></div>';
+      t.parentNode.insertBefore(board, t);
+      tuck(t);
+
+      var baseCount = isLoot ? data.length : (data.length <= 3 ? 4 : (data.length === 4 ? 5 : data.length));
+      var mode = isLoot ? 'loot'
+        : (hasDropIcon ? 'drop'
+          : (isPipeline ? 'pipeline'
+            : (heads.length === 1 ? 'single' : 'columns')));
+
+      var entry = {
+        el: board,
+        parent: board.parentNode,
+        mode: mode,
+        cols: heads.length,
+        heads: heads,
+        data: data,
+        isDay: isDay,
+        unit: unit,
+        t0: t0,
+        rowCount: baseCount,
+        paired: false,
+        paint: null
+      };
+      boards.push(entry);
+    });
+
+    /* 同分节内紧邻的「掉落表 + 紧凑纯文本表（≤2列）」两两并排成双栏，
+       同步行数与子表头，保证左右卡片顶底、子表头与每一行严丝合缝水平对齐。
+       多列宽表（≥3列如幽梦之城诅咒/上维挑战）与独立单列轨道保持通栏展示。 */
+    var byParent = [];
+    boards.forEach(function (b) {
+      var g = byParent.find(function (x) { return x.parent === b.parent; });
+      if (!g) { g = { parent: b.parent, items: [] }; byParent.push(g); }
+      g.items.push(b);
+    });
+    byParent.forEach(function (g) {
+      var i = 0;
+      while (i + 1 < g.items.length) {
+        var a = g.items[i], b = g.items[i + 1];
+        var canPair = a.mode === 'drop' && (b.mode === 'single' || (b.mode === 'columns' && b.cols <= 2));
+        if (canPair) {
+          var maxRows = Math.max(a.rowCount, b.rowCount);
+          a.rowCount = maxRows;
+          b.rowCount = maxRows;
+          a.paired = true;
+          b.paired = true;
+          var pair = document.createElement('div');
+          pair.className = 'cyc-pair';
+          g.parent.insertBefore(pair, a.el);
+          pair.appendChild(a.el);
+          pair.appendChild(b.el);
+          i += 2;
+        } else {
+          i += 1;
+        }
+      }
+    });
+
+    boards.forEach(function (entry) {
+      if (entry.mode === 'single' && !entry.paired) entry.mode = 'ribbon';
+      entry.el.classList.add('is-' + entry.mode);
+      if (entry.paired) entry.el.classList.add('is-paired');
+
+      var subhead = entry.el.querySelector('.cyc-subhead');
+      var list = entry.el.querySelector('.cyc-list');
+      var heads = entry.heads;
+      var data = entry.data;
+      var isDay = entry.isDay;
+      var unit = entry.unit;
+      var t0 = entry.t0;
+
+      var colTemplate = '';
+      if (entry.mode === 'columns') {
+        if (entry.cols === 2) {
+          colTemplate = entry.paired ? '106px minmax(0, 1.35fr) minmax(0, 1fr)' : '124px minmax(0, 1fr) minmax(0, 1fr)';
+        } else if (entry.cols === 3) {
+          colTemplate = '124px minmax(0, 1.05fr) minmax(0, 1fr) minmax(0, 1.15fr)';
+        } else {
+          colTemplate = '124px 124px 140px minmax(0, 1.35fr) 120px';
+        }
+        subhead.hidden = false;
+        subhead.style.gridTemplateColumns = colTemplate;
+        subhead.innerHTML = '<span>周期</span>' + heads.map(function (h) {
+          return '<span>' + cleanHead(h) + '</span>';
+        }).join('');
+      } else if (entry.mode === 'pipeline') {
+        subhead.hidden = false;
+        subhead.style.gridTemplateColumns = '124px minmax(0, 1fr)';
+        subhead.innerHTML = '<span>周期</span><span>遭遇推进流程</span>';
+      } else if (entry.paired) {
+        subhead.hidden = false;
+        var hasRowIco = !!ROW_ICO[cleanHead(heads[0])];
+        if (entry.mode === 'drop' || hasRowIco) {
+          subhead.style.gridTemplateColumns = '106px minmax(0, 1fr) 44px';
+          subhead.innerHTML = '<span>周期</span><span>' + cleanHead(heads[0]) + '</span><span class="cyc-sh-r">' + (entry.mode === 'drop' ? '掉落' : '奖励') + '</span>';
+        } else {
+          subhead.style.gridTemplateColumns = '106px minmax(0, 1fr)';
+          subhead.innerHTML = '<span>周期</span><span>' + cleanHead(heads[0]) + '</span>';
+        }
+      }
+
+      if (entry.mode === 'ribbon') {
+        list.style.gridTemplateColumns = 'repeat(' + entry.rowCount + ', minmax(0, 1fr))';
+      }
+
+      function renderRow(row, off, slotMs) {
+        var state = off === 0 ? ' is-now' : (off < 0 ? ' is-past' : '');
+        var dateHtml = '<div class="cyc-date">'
+          + '<span class="cyc-day">' + fmtDate(slotMs) + '</span>'
+          + '<span class="cyc-rel">' + relTag(off, isDay) + '</span>'
+          + '</div>';
+
+        if (entry.mode === 'ribbon') {
+          return '<div class="cyc-rib-card' + state + '">'
+            + '<div class="cyc-rib-top">'
+            + '<span class="cyc-day">' + fmtDate(slotMs) + '</span>'
+            + '<span class="cyc-rel">' + relTag(off, isDay) + '</span>'
+            + '</div>'
+            + '<div class="cyc-rib-name">' + row[0].raw + '</div>'
+            + '</div>';
+        }
+
+        if (entry.mode === 'loot') {
+          var armors = row[0].parts.map(function (p) {
+            return '<span class="cyc-item">' + p + '</span>';
+          }).join('');
+          var weapons = (row[1] ? row[1].parts : []).map(function (p) {
+            return '<span class="cyc-item">' + p + '</span>';
+          }).join('');
+          return '<div class="cyc-row cyc-row-loot' + state + '">'
+            + '<div class="cyc-loot-top">' + dateHtml
+            + '<div class="cyc-armor-group">' + armors + '</div></div>'
+            + '<div class="cyc-loot-grid">' + weapons + '</div>'
+            + '</div>';
+        }
+
+        if (entry.mode === 'columns') {
+          var cells = row.map(function (c, ci) {
+            var cls = ci === 0 ? 'cyc-col cyc-col-main' : 'cyc-col';
+            return '<div class="' + cls + '">' + decorateValue(c.raw, c.text) + '</div>';
+          }).join('');
+          return '<div class="cyc-row cyc-row-grid' + state + '" style="grid-template-columns:' + colTemplate + '">'
+            + dateHtml + cells + '</div>';
+        }
+
+        if (entry.mode === 'pipeline') {
+          function stageNode(step, cell, isBoss) {
+            var rico = raceIcon(cell.text);
+            return '<span class="cyc-stage' + (isBoss ? ' cyc-stage-boss' : '') + '">'
+              + '<span class="cyc-step-k">' + step + '</span>'
+              + (rico ? '<img class="cyc-race-ico" src="' + rico + '" alt="" width="16" height="16">' : '')
+              + '<span class="cyc-step-v">' + cell.raw + '</span></span>';
+          }
+          return '<div class="cyc-row cyc-row-grid' + state + '" style="grid-template-columns:124px minmax(0, 1fr)">'
+            + dateHtml
+            + '<div class="cyc-pipe">'
+            + stageNode('R1', row[1], false)
+            + '<span class="cyc-arrow" aria-hidden="true">→</span>'
+            + stageNode('R2', row[2], false)
+            + '<span class="cyc-arrow" aria-hidden="true">→</span>'
+            + stageNode('BOSS', row[0], true)
+            + '</div></div>';
+        }
+
+        var iconSrc = '', iconNameHtml = '', iconCol = -1;
+        for (var ci = 0; ci < row.length; ci++) {
+          if (row[ci].imgCount === 1 && row[ci].parts.length <= 1) {
+            iconSrc = row[ci].firstImg;
+            iconNameHtml = stripImg(row[ci].raw);
+            iconCol = ci;
+            break;
+          }
+        }
+        if (!iconSrc && ROW_ICO[cleanHead(heads[0])]) {
+          iconSrc = ROW_ICO[cleanHead(heads[0])];
+        }
+
+        var mainTitle = iconCol === 0 ? iconNameHtml : row[0].raw;
+        var metas = [];
+        for (var mi = 1; mi < row.length; mi++) {
+          if (mi === iconCol) continue;
+          if (!row[mi].text) continue;
+          var label = heads[mi] ? '<span class="cyc-k">' + heads[mi] + '</span>' : '';
+          metas.push('<span class="cyc-kv">' + label + '<span class="cyc-v">' + row[mi].raw + '</span></span>');
+        }
+
+        var rightHtml = '';
+        if (iconSrc) {
+          var cap = iconCol > 0 && iconNameHtml
+            ? '<span class="cyc-drop-name">' + iconNameHtml + '</span>'
+            : '';
+          rightHtml = '<div class="cyc-drop">' + cap
+            + '<img class="cyc-drop-ico" src="' + iconSrc + '" alt="" width="40" height="40" loading="lazy">'
+            + '</div>';
+        }
+
+        return '<div class="cyc-row' + state + '">'
+          + dateHtml
+          + '<div class="cyc-main">'
+          + '<div class="cyc-name">' + mainTitle + '</div>'
+          + (metas.length ? '<div class="cyc-meta">' + metas.join('') + '</div>' : '')
+          + '</div>'
+          + rightHtml
+          + '</div>';
+      }
 
       function paint() {
         var elapsed = Date.now() - t0;
-        var idx = ((Math.floor(elapsed / unit) % rows.length) + rows.length) % rows.length;
-        rows.forEach(function (tr, i) {
-          var th = tr.firstElementChild;
-          if (i === idx) {
-            tr.setAttribute('data-now-row', '');
-            if (th) th.setAttribute('data-now-tag', tag);
-          } else {
-            tr.removeAttribute('data-now-row');
-            if (th) th.removeAttribute('data-now-tag');
-          }
-        });
+        var curSlot = Math.floor(elapsed / unit);
+        var n = data.length;
+        var offsets = [];
+        if (entry.mode === 'loot') {
+          for (var a = 0; a < entry.rowCount; a++) offsets.push(a);
+        } else {
+          for (var b = -1; b <= entry.rowCount - 2; b++) offsets.push(b);
+        }
+        list.innerHTML = offsets.map(function (off) {
+          var idx = (((curSlot + off) % n) + n) % n;
+          return renderRow(data[idx], off, t0 + (curSlot + off) * unit);
+        }).join('');
+
         var nextIn = unit - ((elapsed % unit) + unit) % unit + 1000;
         setTimeout(paint, Math.min(nextIn, MS_DAY));
       }
+      entry.paint = paint;
       paint();
     });
   }

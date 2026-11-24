@@ -4,7 +4,7 @@ window.starsidePages = [
   ["docs/dps-ranking","输出手法 DPS 排行","dps-ranking/index.html","刷取与攻略","","2026.11.12"],
   ["docs/pve-farming","PvE 终局刷取指南","pve-farming/index.html","刷取与攻略","","2026.9.10"],
   ["docs/raid-guides","Raid & 地牢","raid-guides/index.html","刷取与攻略","","2026.11.16"],
-  ["docs/rotation","轮换速查表","rotation/index.html","刷取与攻略","","2026.10.20"],
+  ["docs/rotation","轮换速查表","rotation/index.html","刷取与攻略","","2026.11.24"],
   ["docs/skill-damage","技能伤害排行","skill-damage/index.html","刷取与攻略","","2026.8.30"],
   ["docs/swap-dps","脱手 DPS 排行","swap-dps/index.html","刷取与攻略","","2026.8.30"],
   ["docs/crafting","锻造武器来源","crafting/index.html","刷取与攻略","docs/pve-farming","2026.8.30"],
