@@ -484,6 +484,14 @@ export default function init(table, deps) {
 
       var colTemplate = '';
       if (entry.mode === 'columns') {
+        var maxLen = 0;
+        data.forEach(function (row) {
+          row.forEach(function (c) {
+            if (c.text.length > maxLen) maxLen = c.text.length;
+          });
+        });
+        if (maxLen <= 10) entry.el.classList.add('is-center');
+
         if (entry.cols === 2) {
           colTemplate = entry.paired ? '106px minmax(0, 1.35fr) minmax(0, 1fr)' : '124px minmax(0, 1fr) minmax(0, 1fr)';
         } else if (entry.cols === 3) {
@@ -504,7 +512,7 @@ export default function init(table, deps) {
         subhead.hidden = false;
         var hasRowIco = !!ROW_ICO[cleanHead(heads[0])];
         if (entry.mode === 'drop' || hasRowIco) {
-          subhead.style.gridTemplateColumns = '106px minmax(0, 1fr) 44px';
+          subhead.style.gridTemplateColumns = '106px minmax(0, 1fr) 40px';
           subhead.innerHTML = '<span>周期</span><span>' + cleanHead(heads[0]) + '</span><span class="cyc-sh-r">' + (entry.mode === 'drop' ? '掉落' : '奖励') + '</span>';
         } else {
           subhead.style.gridTemplateColumns = '106px minmax(0, 1fr)';
@@ -589,10 +597,16 @@ export default function init(table, deps) {
         }
 
         var mainTitle = iconCol === 0 ? iconNameHtml : row[0].raw;
+        var modeBadge = '';
         var metas = [];
         for (var mi = 1; mi < row.length; mi++) {
           if (mi === iconCol) continue;
           if (!row[mi].text) continue;
+          if (heads[mi] === '攻防模式') {
+            var mCls = row[mi].text === '攻击' ? ' is-atk' : ' is-def';
+            modeBadge = '<span class="cyc-mode' + mCls + '">' + row[mi].text + '</span>';
+            continue;
+          }
           var label = heads[mi] ? '<span class="cyc-k">' + heads[mi] + '</span>' : '';
           metas.push('<span class="cyc-kv">' + label + '<span class="cyc-v">' + row[mi].raw + '</span></span>');
         }
@@ -610,7 +624,7 @@ export default function init(table, deps) {
         return '<div class="cyc-row' + state + '">'
           + dateHtml
           + '<div class="cyc-main">'
-          + '<div class="cyc-name">' + mainTitle + '</div>'
+          + '<div class="cyc-name-row">' + modeBadge + '<span class="cyc-name">' + mainTitle + '</span></div>'
           + (metas.length ? '<div class="cyc-meta">' + metas.join('') + '</div>' : '')
           + '</div>'
           + rightHtml
@@ -640,6 +654,55 @@ export default function init(table, deps) {
     });
   }
 
+  /* 页面顶部实时重置倒计时条：整点扭曲切换 + 每日 01:00 重置 + 每周三 01:00 重置，
+     全部按 UTC+8 精确计算，每秒刷新。 */
+  function clocks() {
+    if (!document.querySelector) return;
+    var main = document.querySelector('main');
+    var first = main && main.querySelector('.block');
+    if (!main || !first) return;
+
+    var bar = document.createElement('div');
+    bar.className = 'rota-clocks';
+    bar.innerHTML = ''
+      + '<div class="rc-item"><span class="rc-dot"></span><span class="rc-k">扭曲下站切换</span><span class="rc-v" data-rc="hour">--:--</span></div>'
+      + '<div class="rc-item"><span class="rc-dot"></span><span class="rc-k">每日 01:00 重置</span><span class="rc-v" data-rc="day">--:--:--</span></div>'
+      + '<div class="rc-item"><span class="rc-dot"></span><span class="rc-k">每周三 01:00 重置</span><span class="rc-v" data-rc="week">--</span></div>';
+    main.insertBefore(bar, first);
+
+    var elH = bar.querySelector('[data-rc="hour"]');
+    var elD = bar.querySelector('[data-rc="day"]');
+    var elW = bar.querySelector('[data-rc="week"]');
+    var WEEK_ANCHOR = Date.UTC(2026, 5, 10, 1 - 8, 0);
+
+    function pad(n) { return (n < 10 ? '0' : '') + n; }
+    function fmtHMS(ms) {
+      var s = Math.max(0, Math.floor(ms / 1000));
+      var h = Math.floor(s / 3600);
+      var m = Math.floor((s % 3600) / 60);
+      var sec = s % 60;
+      return pad(h) + ':' + pad(m) + ':' + pad(sec);
+    }
+
+    function tick() {
+      var now = Date.now();
+      var remH = 3600000 - (now % 3600000);
+      var remD = MS_DAY - (((now - WEEK_ANCHOR) % MS_DAY) + MS_DAY) % MS_DAY;
+      var remW = MS_WEEK - (((now - WEEK_ANCHOR) % MS_WEEK) + MS_WEEK) % MS_WEEK;
+
+      var hs = Math.max(0, Math.floor(remH / 1000));
+      elH.textContent = pad(Math.floor(hs / 60)) + ':' + pad(hs % 60);
+      elD.textContent = fmtHMS(remD);
+
+      var wd = Math.floor(remW / MS_DAY);
+      var wr = remW % MS_DAY;
+      elW.textContent = wd > 0 ? wd + ' 天 ' + fmtHMS(wr) : fmtHMS(wr);
+    }
+    tick();
+    setInterval(tick, 1000);
+  }
+
+  clocks();
   if (table) rota(table);
   cycles();
 }
