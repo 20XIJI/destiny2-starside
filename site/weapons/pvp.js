@@ -5,12 +5,12 @@ window.WPN_PVP = function (H) {
   var D = H.D, V = H.V, WR = H.WR, S = H.S, body = H.body;
   var W_H = H.W_H, W_AMMO = H.W_AMMO, P_HASH = H.P_HASH, P_ICON = H.P_ICON;
   var STAT_HASH = H.STAT_HASH, TYPE_EN = H.TYPE_EN, RANGE = H.RANGE, RELOAD = H.RELOAD;
-  var CHECK_ONLY_PERKS = H.CHECK_ONLY_PERKS, PVP_CHRONO_PERKS = H.PVP_CHRONO_PERKS, AUTO_PERKS = H.AUTO_PERKS;
+  var PVP_CHRONO_PERKS = H.PVP_CHRONO_PERKS, AUTO_PERKS = H.AUTO_PERKS;
   var esc = H.esc, imgTag = H.imgTag, typeName = H.typeName, frameOf = H.frameOf, frameKey = H.frameKey;
   var isExotic = H.isExotic, ammoEn = H.ammoEn, poolRow = H.poolRow, cellsOf = H.cellsOf;
   var isEnhancedPlug = H.isEnhancedPlug, plugName = H.plugName, rollOf = H.rollOf, compute = H.compute;
   var effStatVal = H.effStatVal, rangeMeters = H.rangeMeters, reloadSeconds = H.reloadSeconds;
-  var handlingTimes = H.handlingTimes, rangeFalloffSvg = H.rangeFalloffSvg, fmtM = H.fmtM, fmtS = H.fmtS;
+  var handlingTimes = H.handlingTimes;
   var ensurePerkFx = H.ensurePerkFx, perkSpec = H.perkSpec, resolvedPerkSpec = H.resolvedPerkSpec;
   var resolveAmmoSpec = H.resolveAmmoSpec, fxAll = H.fxAll, fxDmgOf = H.fxDmgOf, fxMulOf = H.fxMulOf;
   var perkStepOf = H.perkStepOf, perkSteps = H.perkSteps, pickStep = H.pickStep;
@@ -1053,9 +1053,7 @@ window.WPN_PVP = function (H) {
     entries.forEach(function (ent) {
       var p = ent.p, ph = String(P.p[p][P_HASH]);
       var step = AUTO_PERKS[ph] ? 0 : perkStepOf(p, ammo, ent.isCat, ent.isFixed);
-      var checkOnly = Object.prototype.hasOwnProperty.call(CHECK_ONLY_PERKS, ph) && step === CHECK_ONLY_PERKS[ph];
       if (step < 0 && ph !== '555281244' && ph !== '332733060') { return; }
-      if (checkOnly && ph === '65604327') { return; }
       var rec = resolvedPerkSpec(p), rawSpec = rec ? rec.s : null;
       var mod = getPerkDamageModifier(rawSpec, step, true, ph, typeEn, ammo);
       if (!mod) { return; }
@@ -1308,17 +1306,18 @@ window.WPN_PVP = function (H) {
     n.classList.remove('up', 'down', 'better', 'worse');
     if (cls) { n.classList.add(cls); }
   }
+  function fmtNum(v) { return v.toFixed(2); }
   function pvpHeroHtml(v, shownTtk, shownBursts, shownHits, shownPelKill, shownPelShot) {
     var effW = v.effW, ttkVal = shownTtk != null ? shownTtk : v.ttk;
     if (ttkVal == null) { return esc(v.kill || '—'); }
     if (v.tyEn === 'Sword' || (effW && effW.assumedOneHit)) { return '一击击杀'; }
     if (v.isFusion) {
       var b = shownBursts != null ? Math.round(shownBursts) : v.bursts;
-      return fmtS(ttkVal) + ' <span class="pvp-stat-hero-sub">(' + (b === 1 ? '单发蓄力' : b + ' 次蓄力') + ')</span>';
+      return fmtNum(ttkVal) + '<span class="pvp-hero-unit">s</span><span class="pvp-stat-hero-sub">(' + (b === 1 ? '单发蓄力' : b + ' 次蓄力') + ')</span>';
     }
     if (effW && effW.isBow) {
       var h = shownHits != null ? Math.round(shownHits) : v.hits;
-      return fmtS(ttkVal) + ' <span class="pvp-stat-hero-sub">(' + (h === 1 ? '一击击杀' : h + ' 箭') + ')</span>';
+      return fmtNum(ttkVal) + '<span class="pvp-hero-unit">s</span><span class="pvp-stat-hero-sub">(' + (h === 1 ? '一击击杀' : h + ' 箭') + ')</span>';
     }
     if (effW && effW.isShotgun) {
       var pk = shownPelKill != null ? Math.round(shownPelKill) : v.pelletsToKill;
@@ -1327,7 +1326,7 @@ window.WPN_PVP = function (H) {
       return pk + ' / ' + ps + ' <span class="pvp-stat-hero-sub">(' + (shots <= 1 ? '一枪击杀' : shots + ' 枪') + ')</span>';
     }
     if (ttkVal === 0) { return esc(v.kill || '一击击杀'); }
-    return fmtS(ttkVal);
+    return fmtNum(ttkVal) + '<span class="pvp-hero-unit">s</span>';
   }
   function pvpAnimSnapshot(v) {
     return {
@@ -1338,9 +1337,85 @@ window.WPN_PVP = function (H) {
       pelKill: v.pelletsToKill, pelShot: v.pelletsPerShot
     };
   }
+  function pvpDotsHtml(v) {
+    var effW = v.effW, ak = v.activeKill;
+    if (!ak && !effW) { return ''; }
+    if (v.tyEn === 'Sword' || (effW && effW.assumedOneHit)) {
+      return '<i class="pvp-dot crit"></i>';
+    }
+    if (v.isFusion && effW && effW.boltsPerBurst) {
+      var totalB = effW.boltsPerBurst, hitB = Math.round(totalB * v.acc / 100);
+      if (totalB <= 12) {
+        var fh = '';
+        for (var fb = 0; fb < totalB; fb++) {
+          fh += '<i class="pvp-dot sm ' + (fb < hitB ? 'crit' : 'miss') + '"></i>';
+        }
+        return fh;
+      }
+      return '<span class="pvp-ratio"><i class="pvp-ratio-c" style="width:' + Math.round(hitB / totalB * 100) + '%"></i></span>';
+    }
+    if (effW && effW.isShotgun && v.pelletsPerShot) {
+      var ps = v.pelletsPerShot, pk = Math.min(ps, v.pelletsToKill || 0);
+      if (ps <= 12) {
+        var sh = '';
+        for (var sp = 0; sp < ps; sp++) {
+          sh += '<i class="pvp-dot sm ' + (sp < pk ? 'crit' : 'miss') + '"></i>';
+        }
+        return sh;
+      }
+      return '<span class="pvp-ratio"><i class="pvp-ratio-c" style="width:' + Math.round(pk / ps * 100) + '%"></i></span>';
+    }
+    var crits = ak && ak.crits != null ? ak.crits : 0;
+    var bodies = ak && ak.bodies != null ? ak.bodies : 0;
+    var total = ak && ak.shots != null ? ak.shots : (crits + bodies);
+    if (!total) { return ''; }
+    if (total > 10) {
+      var cPct = Math.round((crits / total) * 100);
+      return '<span class="pvp-ratio"><i class="pvp-ratio-c" style="width:' + cPct + '%"></i><i class="pvp-ratio-b"></i></span>';
+    }
+    var out = '';
+    for (var c = 0; c < crits; c++) { out += '<i class="pvp-dot crit" style="animation-delay:' + (c * 22) + 'ms"></i>'; }
+    for (var b = 0; b < bodies; b++) { out += '<i class="pvp-dot body" style="animation-delay:' + ((crits + b) * 22) + 'ms"></i>'; }
+    return out;
+  }
+  function pvpHitsText(v) {
+    var ak = v.activeKill;
+    if (v.tyEn === 'Sword' || (v.effW && v.effW.assumedOneHit)) { return '<b>1 击</b>'; }
+    if (v.isFusion && v.effW && v.effW.boltsPerBurst) {
+      var totalB = v.effW.boltsPerBurst, hitB = Math.round(totalB * v.acc / 100);
+      var bPrefix = v.bursts > 1 ? v.bursts + ' 轮 · ' : '';
+      return bPrefix + '<span class="c">' + hitB + '</span>/' + totalB + ' 弹丸';
+    }
+    if (ak && (ak.crits != null || ak.bodies != null)) {
+      var c = ak.crits || 0, b = ak.bodies || 0, sh = ak.shots || (c + b);
+      if (c || b) {
+        return (c ? '<span class="c">' + c + ' 爆</span>' : '') +
+          (c && b ? ' · ' : '') +
+          (b ? '<b>' + b + ' 身</b>' : '') +
+          (sh > 1 ? ' · ' + sh + ' 发' : '');
+      }
+    }
+    return esc(v.kill || '—');
+  }
+  function setRangePct(el, val) {
+    if (!el) { return; }
+    var min = +el.min || 0, max = +el.max || 100;
+    var pct = max > min ? Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100)) : 100;
+    el.style.setProperty('--pct', pct.toFixed(1) + '%');
+  }
   function paintPvpNumbers(pane, v, snap, cls) {
     pvpNumSet(pane, 'ttk', pvpHeroHtml(v, snap.ttk, snap.bursts, snap.hits, snap.pelKill, snap.pelShot));
-    pvpSet(pane, 'kill', v.kill);
+    var dotsEl = pane.querySelector('[data-pvp="dots"]');
+    if (dotsEl) {
+      var ak = v.activeKill;
+      var dKey = (ak ? (ak.crits + ':' + ak.bodies + ':' + ak.shots) : '') + ':' + v.acc + ':' + (v.pelletsToKill || 0);
+      if (dotsEl.getAttribute('data-dkey') !== dKey) {
+        dotsEl.setAttribute('data-dkey', dKey);
+        dotsEl.innerHTML = pvpDotsHtml(v);
+      }
+    }
+    var hitsEl = pane.querySelector('[data-pvp="hits"]');
+    if (hitsEl) { hitsEl.innerHTML = pvpHitsText(v); }
     if (v.blastInfo && v.ttkData) {
       var imp = v.ttkData.impactDmg * (v.ws.percent > 0 && S.pvpStat > 100 ? 1 + 5e-4 * (S.pvpStat - 100) : 1) * ((v.aa && v.aa.dmg) || 1);
       var blast = (snap.body != null ? snap.body : v.bodyDmg || 0) - imp;
@@ -1350,18 +1425,23 @@ window.WPN_PVP = function (H) {
       if (snap.body != null) { pvpSet(pane, 'body', roundPvpDamage(snap.body)); }
       if (snap.head != null) { pvpSet(pane, 'crit', roundPvpDamage(snap.head)); }
     }
-    if (snap.rpm != null) {
-      pvpSet(pane, 'rpm', v.effW && v.effW.isChargeTime ? Math.round(snap.rpm) + 'ms' : String(Math.round(snap.rpm)));
-    }
-    if (snap.hip != null) { pvpSet(pane, 'hip', fmtM(snap.hip)); }
-    if (snap.ads != null) { pvpSet(pane, 'ads', fmtM(snap.ads)); }
-    if (snap.reload != null) { pvpSet(pane, 'reload', fmtS(snap.reload)); }
-    if (snap.ready != null) { pvpSet(pane, 'ready', fmtS(snap.ready)); }
-    if (snap.stow != null) { pvpSet(pane, 'stow', fmtS(snap.stow)); }
-    if (snap.hAds != null) { pvpSet(pane, 'hads', fmtS(snap.hAds)); }
-    pvpCls(pane, 'body', cls);
-    pvpCls(pane, 'crit', cls);
-    pvpCls(pane, 'ttk', cls);
+    if (snap.hip != null) { pvpSet(pane, 'hip', fmtNum(snap.hip)); }
+    if (snap.ads != null) { pvpSet(pane, 'ads', fmtNum(snap.ads)); }
+    if (snap.reload != null) { pvpSet(pane, 'reload', fmtNum(snap.reload)); }
+    if (snap.ready != null) { pvpSet(pane, 'ready', fmtNum(snap.ready)); }
+    if (snap.stow != null) { pvpSet(pane, 'stow', fmtNum(snap.stow)); }
+    if (snap.hAds != null) { pvpSet(pane, 'hads', fmtNum(snap.hAds)); }
+    var cMap = cls && typeof cls === 'object' ? cls : null;
+    function clsFor(key) { return cMap ? (cMap[key] || '') : (cls || ''); }
+    pvpCls(pane, 'body', clsFor('body'));
+    pvpCls(pane, 'crit', clsFor('crit'));
+    pvpCls(pane, 'ttk', clsFor('ttk'));
+    pvpCls(pane, 'hip', clsFor('hip'));
+    pvpCls(pane, 'ads', clsFor('ads'));
+    pvpCls(pane, 'reload', clsFor('reload'));
+    pvpCls(pane, 'ready', clsFor('ready'));
+    pvpCls(pane, 'stow', clsFor('stow'));
+    pvpCls(pane, 'hads', clsFor('hads'));
   }
   function pvpWeaponStatNoteHtml(v) {
     if (S.pvpStat === 0) { return '<span class="pvp-weapon-stat-note">超过 100 提升伤害 · 无加成</span>'; }
@@ -1384,10 +1464,12 @@ window.WPN_PVP = function (H) {
     if (rst) { rst.hidden = !v.accDirty; }
     var accSl = pane.querySelector('[data-act="pvpacc"]');
     if (accSl && document.activeElement !== accSl) { accSl.value = v.acc; }
+    setRangePct(accSl, v.acc);
     var wsNum = pane.querySelector('[data-act="pvpstatnum"]');
     if (wsNum && document.activeElement !== wsNum) { wsNum.value = String(S.pvpStat); }
     var wsSl = pane.querySelector('[data-act="pvpstat"]');
     if (wsSl && document.activeElement !== wsSl) { wsSl.value = S.pvpStat; }
+    setRangePct(wsSl, S.pvpStat);
     var wsRst = pane.querySelector('[data-act="pvpstatreset"]');
     if (wsRst) { wsRst.hidden = S.pvpStat === 0; }
     var wsDesc = pane.querySelector('[data-pvp="wnote"]');
@@ -1400,6 +1482,7 @@ window.WPN_PVP = function (H) {
       }
       var magSl = pane.querySelector('[data-act="pvpmag"]');
       if (magSl && document.activeElement !== magSl) { magSl.value = v.magStart; }
+      setRangePct(magSl, v.magStart);
       var magRst = pane.querySelector('[data-act="pvpmagreset"]');
       if (magRst) { magRst.hidden = v.magStart === v.magMax; }
     }
@@ -1440,8 +1523,24 @@ window.WPN_PVP = function (H) {
       paintPvpNumbers(pane, v, to, '');
       return;
     }
-    var cls = ((to.body || 0) > (from.body || 0) || (to.head || 0) > (from.head || 0)) ? 'up'
-      : ((to.body || 0) < (from.body || 0) || (to.head || 0) < (from.head || 0)) ? 'down' : '';
+    function dirCls(a, b, lowerGood) {
+      if (a == null || b == null || Math.abs(b - a) <= 1e-6) { return ''; }
+      var good = lowerGood ? b < a : b > a;
+      return good ? 'better' : 'worse';
+    }
+    var rpmLower = !!(v.effW && (v.effW.isChargeTime || v.effW.isBow));
+    var cls = {
+      ttk: dirCls(from.ttk, to.ttk, true),
+      body: dirCls(from.body, to.body, false),
+      crit: dirCls(from.head, to.head, false),
+      hip: dirCls(from.hip, to.hip, false),
+      ads: dirCls(from.ads, to.ads, false),
+      reload: dirCls(from.reload, to.reload, true),
+      rpm: dirCls(from.rpm, to.rpm, rpmLower),
+      ready: dirCls(from.ready, to.ready, true),
+      stow: dirCls(from.stow, to.stow, true),
+      hads: dirCls(from.hAds, to.hAds, true)
+    };
     var t0 = performance.now();
     function lerp(a, b, e) { return a == null || b == null ? b : a + (b - a) * e; }
     function frame(now) {
@@ -1534,7 +1633,7 @@ window.WPN_PVP = function (H) {
           (isPI ? ' data-pi="1"' : '') : '') + '>' +
         imgTag(row.icon, 'pvp-perk-icon', '', true) +
         '<span class="pvp-perk-info"><span class="pvp-perk-name">' + esc(row.name) +
-        (row.steps > 1 ? '<span class="pvp-perk-step"> ×' + (row.step + 1) + '</span>' : '') +
+        (row.steps > 1 && (!isPI || row.step >= 0) ? '<span class="pvp-perk-step"> ×' + (row.step + 1) + '</span>' : '') +
         '</span>' + lines.map(function (ln) {
           return '<span class="pvp-perk-effect' + (ln.neg ? ' negative' : '') + '">' + esc(ln.text) + '</span>';
         }).join('') + '</span></button>';
@@ -1554,104 +1653,96 @@ window.WPN_PVP = function (H) {
     var bodyN = useLive ? pvpShown.body : v.bodyDmg;
     var critN = useLive && pvpShown.head != null ? pvpShown.head : v.headDmg;
     var ttkShow = useLive && pvpShown.ttk != null ? pvpShown.ttk : v.ttk;
-    function pvpItem(k, val, extra, key) {
-      return '<div class="pvp-stat-item"><span class="pvp-stat-label">' + k + '</span><span class="pvp-stat-value"' +
-        (key ? ' data-pvp="' + key + '"' : '') + '>' + val + '</span></div>' + (extra || '');
-    }
-    var heroLabel = effW.hitCountOnly ? '击杀所需命中' : effW.isShotgun ? '击杀所需弹丸' : '击杀时间';
+    var heroLabel = effW.hitCountOnly ? '击杀命中' : effW.isShotgun ? '击杀弹丸' : '击杀时间';
     var sameDmg = effW.bodyDmg === effW.headDmg;
-    var hitOrAccHtml = '';
-    if (v.tyEn !== 'Sword') {
-      if (sameDmg && !v.isFusion) {
-        hitOrAccHtml = pvpItem(effW.areaDenial ? '伤害事件次数' : '命中次数', ttk ? String(ttk.shots) : '—');
-      } else {
-        var accDisp = v.isFusion ? Math.round(effW.boltsPerBurst * v.acc / 100) + '/' + effW.boltsPerBurst : v.acc + '%';
-        var accMin = v.isFusion ? Math.ceil(50 / effW.boltsPerBurst) : 0;
-        var optDisp = v.isFusion ? Math.round(effW.boltsPerBurst * v.optAcc / 100) + '/' + effW.boltsPerBurst + ' 发弹丸' : v.optAcc + '%';
-        hitOrAccHtml = pvpItem(
-          (v.isFusion ? '命中弹丸数' : '精准率') +
-          '<button type="button" class="pvp-crit-reset" data-act="pvpreset" title="重置为最优 (' + esc(optDisp) + ')"' +
-          (v.accDirty ? '' : ' hidden') + '>↺</button>',
-          accDisp,
-          '<div class="pvp-slat"><input class="pvp-crit-range" type="range" min="' + accMin + '" max="100" step="1" value="' +
-          v.acc + '" data-act="pvpacc"></div>',
-          'acc'
-        );
-      }
+    var accBlock = '';
+    if (v.tyEn !== 'Sword' && !(sameDmg && !v.isFusion)) {
+      var accDisp = v.isFusion ? Math.round(effW.boltsPerBurst * v.acc / 100) + '/' + effW.boltsPerBurst : v.acc + '%';
+      var accMin = v.isFusion ? Math.ceil(50 / effW.boltsPerBurst) : 0;
+      var optDisp = v.isFusion ? Math.round(effW.boltsPerBurst * v.optAcc / 100) + '/' + effW.boltsPerBurst + ' 发弹丸' : v.optAcc + '%';
+      var accPct = 100 > accMin ? ((v.acc - accMin) / (100 - accMin) * 100).toFixed(1) : '100';
+      accBlock = '<div class="pvp-slider-blk is-acc"><div class="pvp-stat-item"><span class="pvp-stat-label">' +
+        (v.isFusion ? '命中弹丸数' : '精准率') +
+        '<button type="button" class="pvp-crit-reset" data-act="pvpreset" title="重置为最优 (' + esc(optDisp) + ')"' +
+        (v.accDirty ? '' : ' hidden') + '>↺</button></span><span class="pvp-stat-value" data-pvp="acc">' + accDisp + '</span></div>' +
+        '<div class="pvp-slat"><input class="pvp-crit-range" type="range" min="' + accMin + '" max="100" step="1" value="' +
+        v.acc + '" style="--pct:' + accPct + '%" data-act="pvpacc"></div></div>';
     }
-    var dmgHtml = '';
-    if (v.tyEn !== 'Sword') {
-      if (v.isFusion) {
-        dmgHtml = bodyN != null ? pvpItem(v.bodyVaries ? '平均单发弹丸伤害' : '单发弹丸伤害', roundPvpDamage(bodyN), '', 'body') : '';
-      } else if (v.blastInfo) {
-        var impNow = v.ttkData.impactDmg * (S.pvpStat > 100 ? 1 + 5e-4 * (S.pvpStat - 100) : 1) * ((v.aa && v.aa.dmg) || 1);
-        var blastNow = (bodyN || 0) - impNow;
-        dmgHtml = pvpItem('直击伤害', roundPvpDamage(impNow), '', 'impact') +
-          pvpItem('爆炸伤害 <span class="pvp-sub">(' + v.blastInfo.blastValue + ')</span>', roundPvpDamage(blastNow), '', 'blast');
-      } else {
-        var bLbl = effW.areaDenial ? '平均事件伤害' : effW.isShotgun ? '单颗弹丸直击'
-          : !sameDmg ? (v.bodyVaries ? '平均直击伤害' : '直击伤害') : '伤害';
-        dmgHtml = bodyN != null ? pvpItem(bLbl, roundPvpDamage(bodyN), '', 'body') : '';
-        if (!sameDmg && critN != null) {
-          var cLbl = effW.isShotgun ? '单颗弹丸精准' : (v.headVaries ? '平均精准伤害' : '精准伤害');
-          dmgHtml += pvpItem(cLbl, roundPvpDamage(critN), '', 'crit');
-        }
-      }
-    }
-    var rpmHtml = '';
-    if (v.dispRpm != null) {
-      var rLbl = effW.isBow ? '蓄力时间' : effW.isChargeTime ? '充能时间' : '射速';
-      var rVal = effW.isChargeTime ? Math.round(useLive && pvpShown.rpm != null ? pvpShown.rpm : v.dispRpm) + 'ms'
-        : String(Math.round(useLive && pvpShown.rpm != null ? pvpShown.rpm : v.dispRpm));
-      rpmHtml = pvpItem(rLbl, rVal, '', 'rpm');
-    }
-    var rangeHtml = '';
+    var rangeRow = '';
     if (rm) {
       var hDisp = useLive && pvpShown.hip != null ? pvpShown.hip : rm.hip;
       var aDisp = useLive && pvpShown.ads != null ? pvpShown.ads : rm.ads;
-      rangeHtml = '<div class="pvp-stat-item pvp-range-row"><span class="pvp-stat-label">射程 <span class="pvp-sub">(' +
-        v.rangeStat + ')</span></span><span class="pvp-stat-value">' + rangeFalloffSvg(rm) +
-        '<span class="pvp-range-hip" data-pvp="hip">' + fmtM(hDisp) +
-        '</span><span class="pvp-range-sep">/</span><span class="pvp-range-ads" data-pvp="ads">' + fmtM(aDisp) + '</span></span></div>';
+      rangeRow = '<div class="pvp-duo">' +
+        '<div class="pvp-cell"><span>腰射</span><span class="pvp-stat-value"><span data-pvp="hip">' + fmtNum(hDisp) + '</span><span class="pvp-unit">m</span></span></div>' +
+        '<div class="pvp-cell"><span>瞄准</span><span class="pvp-stat-value"><span data-pvp="ads">' + fmtNum(aDisp) + '</span><span class="pvp-unit">m</span></span></div></div>';
     }
-    var reloadHtml = '';
+    var row2 = [];
+    if (v.tyEn !== 'Sword') {
+      if (v.isFusion && bodyN != null) {
+        row2.push('<div class="pvp-cell hi"><span>单发弹丸</span><span class="pvp-stat-value" data-pvp="body">' + roundPvpDamage(bodyN) + '</span></div>');
+      } else if (v.blastInfo) {
+        var impNow = v.ttkData.impactDmg * (S.pvpStat > 100 ? 1 + 5e-4 * (S.pvpStat - 100) : 1) * ((v.aa && v.aa.dmg) || 1);
+        var blastNow = (bodyN || 0) - impNow;
+        row2.push('<div class="pvp-cell hi"><span>直击</span><span class="pvp-stat-value" data-pvp="impact">' + roundPvpDamage(impNow) + '</span></div>');
+        row2.push('<div class="pvp-cell"><span>爆炸 <span class="pvp-sub">(' + v.blastInfo.blastValue + ')</span></span><span class="pvp-stat-value" data-pvp="blast">' + roundPvpDamage(blastNow) + '</span></div>');
+      } else {
+        if (!sameDmg && critN != null) {
+          var cLbl = effW.isShotgun ? '单丸精准' : '精准';
+          row2.push('<div class="pvp-cell hi"><span>' + cLbl + '</span><span class="pvp-stat-value" data-pvp="crit">' + roundPvpDamage(critN) + '</span></div>');
+        }
+        if (bodyN != null) {
+          var bLbl = effW.areaDenial ? '事件伤害' : effW.isShotgun ? '单丸直击' : (!sameDmg ? '身体' : '伤害');
+          row2.push('<div class="pvp-cell"><span>' + bLbl + '</span><span class="pvp-stat-value" data-pvp="body">' + roundPvpDamage(bodyN) + '</span></div>');
+        }
+      }
+    }
     if (rs != null) {
       var relDisp = useLive && pvpShown.reload != null ? pvpShown.reload : rs;
-      reloadHtml = '<div class="pvp-stat-item"><span class="pvp-stat-label">填装 <span class="pvp-sub">(' +
-        v.reloadStat + ')</span></span><span class="pvp-stat-value" data-pvp="reload">' + fmtS(relDisp) + '</span></div>';
+      row2.push('<div class="pvp-cell"><span>装填</span><span class="pvp-stat-value"><span data-pvp="reload">' + fmtNum(relDisp) + '</span><span class="pvp-unit">s</span></span></div>');
     }
-    var handHtml = '';
+    var handRow = '';
     if (v.handCur) {
       var rdy = useLive && pvpShown.ready != null ? pvpShown.ready : v.handCur.ready;
-      var stw = useLive && pvpShown.stow != null ? pvpShown.stow : v.handCur.stow;
       var ads = useLive && pvpShown.hAds != null ? pvpShown.hAds : v.handCur.ads;
-      handHtml = '<div class="pvp-stat-item"><span class="pvp-stat-label">操控 <span class="pvp-sub">(' +
-        v.handStat + ')</span></span><span class="pvp-stat-value">' +
-        '<span data-pvp="ready">' + fmtS(rdy) + '</span><span class="pvp-handling-sep"> / </span>' +
-        '<span data-pvp="stow">' + fmtS(stw) + '</span><span class="pvp-handling-sep"> / </span>' +
-        '<span data-pvp="hads">' + fmtS(ads) + '</span></span></div>';
+      var stw = useLive && pvpShown.stow != null ? pvpShown.stow : v.handCur.stow;
+      handRow = '<div class="pvp-tri">' +
+        '<div class="pvp-cell"><span>准备</span><span class="pvp-stat-value"><span data-pvp="ready">' + fmtNum(rdy) + '</span><span class="pvp-unit">s</span></span></div>' +
+        '<div class="pvp-cell"><span>瞄准</span><span class="pvp-stat-value"><span data-pvp="hads">' + fmtNum(ads) + '</span><span class="pvp-unit">s</span></span></div>' +
+        '<div class="pvp-cell"><span>收起</span><span class="pvp-stat-value"><span data-pvp="stow">' + fmtNum(stw) + '</span><span class="pvp-unit">s</span></span></div></div>';
     }
+    var row2Cls = row2.length === 2 ? 'pvp-duo' : 'pvp-tri';
+    var rowsHtml = (rangeRow || row2.length || handRow)
+      ? '<div class="pvp-rows">' +
+        rangeRow +
+        (row2.length ? '<div class="' + row2Cls + '">' + row2.join('') + '</div>' : '') +
+        handRow +
+        '</div>'
+      : '';
     var magHtml = '';
     if (v.magStart != null && v.magStart > 0) {
-      magHtml = '<div class="pvp-stat-item"><span class="pvp-stat-label pvp-magazine-label"><span>起始弹匣' +
+      var magPct = v.magMax > 1 ? ((v.magStart - 1) / (v.magMax - 1) * 100).toFixed(1) : '100';
+      magHtml = '<div class="pvp-slider-blk is-mag"><div class="pvp-stat-item"><span class="pvp-stat-label pvp-magazine-label"><span>起始弹匣' +
         '<button type="button" class="pvp-crit-reset" data-act="pvpmagreset" title="重置为满弹匣 (' + v.magMax + ')"' +
         (v.magStart !== v.magMax ? '' : ' hidden') + '>↺</button></span>' +
         '<input class="pvp-numeric-input pvp-magazine-input" type="number" inputmode="numeric" min="1" max="' + v.magMax +
         '" step="1" style="width:' + (S.pvpMagBlank ? 1 : String(v.magStart).length) + 'ch" value="' +
         (S.pvpMagBlank ? '' : v.magStart) + '" data-act="pvpmagnum" aria-label="起始弹匣数">' +
-        '</span></div>' +
-        '<div class="pvp-slat"><input class="pvp-crit-range" type="range" min="1" max="' + v.magMax +
-        '" step="1" value="' + v.magStart + '" data-act="pvpmag" aria-label="起始弹匣滑动条"></div>';
+        '</span></div><div class="pvp-slat"><input class="pvp-crit-range" type="range" min="1" max="' + v.magMax +
+        '" step="1" value="' + v.magStart + '" style="--pct:' + magPct + '%" data-act="pvpmag" aria-label="起始弹匣滑动条"></div></div>';
     }
     var notesHtml = effW.notes ? '<div class="pvp-stat-notes">' + esc(effW.notes) + '</div>' : '';
     var perksBlock = pvpPerkBadges(v.showPerks, v.flatBadges, v.tyEn, effW);
+    var wsPct = (S.pvpStat / 2).toFixed(1);
+    var dKey = (ttk ? (ttk.crits + ':' + ttk.bodies + ':' + ttk.shots) : '') + ':' + v.acc + ':' + (v.pelletsToKill || 0);
     return '<div class="pvp-stats">' +
-      '<div class="pvp-stat-hero"><span class="pvp-stat-label">' + heroLabel + '</span>' +
+      '<div class="pvp-stage">' +
+      '<div class="pvp-ttk-col"><span class="pvp-ttk-k">' + heroLabel + ' <i>230 HP</i></span>' +
       '<span class="pvp-stat-hero-value" data-pvp="ttk">' +
       pvpHeroHtml(v, ttkShow, useLive ? pvpShown.bursts : v.bursts, useLive ? pvpShown.hits : v.hits, useLive ? pvpShown.pelKill : v.pelletsToKill, v.pelletsPerShot) +
       '</span></div>' +
-      (v.tyEn !== 'Sword' ? pvpItem('最优击杀', esc(v.kill), '', 'kill') : '') +
-      hitOrAccHtml + dmgHtml + rpmHtml + rangeHtml + reloadHtml + handHtml + magHtml + notesHtml +
+      '<div class="pvp-hits-col"><div class="pvp-dots" data-pvp="dots" data-dkey="' + esc(dKey) + '">' + pvpDotsHtml(v) + '</div>' +
+      '<span class="pvp-hits-txt" data-pvp="hits">' + pvpHitsText(v) + '</span></div></div>' +
+      accBlock + rowsHtml + magHtml + notesHtml +
       '<div class="pvp-weapon-stat">' +
       '<div class="pvp-stat-item"><span class="pvp-stat-label pvp-magazine-label"><span>武器属性' +
       '<button type="button" class="pvp-crit-reset" data-act="pvpstatreset" title="重置为 0"' +
@@ -1660,7 +1751,7 @@ window.WPN_PVP = function (H) {
       S.pvpStat + '" data-act="pvpstatnum" aria-label="武器属性数值">' +
       '</span></div>' +
       '<div class="pvp-slat"><input class="pvp-crit-range" type="range" min="0" max="200" step="1" value="' + S.pvpStat +
-      '" data-act="pvpstat" aria-label="武器属性滑动条"></div>' +
+      '" style="--pct:' + wsPct + '%" data-act="pvpstat" aria-label="武器属性滑动条"></div>' +
       '<div class="pvp-weapon-stat-description" data-pvp="wnote">' + pvpWeaponStatNoteHtml(v) + '</div>' +
       '</div>' +
       '<div class="pvp-damage-perks" data-pvp="perks"' + (perksBlock ? '' : ' hidden') + '>' + perksBlock + '</div>' +

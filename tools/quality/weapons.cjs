@@ -528,7 +528,7 @@ test('weapons: PvP simulator, perk-fx, exotic overrides, and FX align with godro
   vm.runInNewContext(fs.readFileSync(path.join(site, 'weapons/pool.js'), 'utf8'), wpnBox)
   vm.runInNewContext(fs.readFileSync(path.join(site, 'weapons/text.js'), 'utf8'), wpnBox)
   const appSrc = fs.readFileSync(path.join(site, 'weapons/app.js'), 'utf8')
-    .replace(/\}\(\)\);\s*$/, 'PERK_FX = __PFX; poolReady(); textReady(); pvpReady(); window.__PVP_TEST = Object.assign({ S, WR, BY_HASH, V, P, HSTAT, SIDX, PIDX, rollOf, defaultRoll, compute, plugButton, plugName, cellsOf, shownPlug, poolRow, fxDmgOf, fxAll, resolvedPerkSpec, basePlugFor }, PVP);\n}());\n')
+    .replace(/\}\(\)\);\s*$/, 'PERK_FX = __PFX; poolReady(); textReady(); pvpReady(); window.__PVP_TEST = Object.assign({ S, WR, BY_HASH, V, P, HSTAT, SIDX, PIDX, rollOf, defaultRoll, compute, plugButton, plugName, cellsOf, shownPlug, poolRow, fxDmgOf, fxAll, resolvedPerkSpec, basePlugFor, hasPerkBadge, perkSteps, perkStepOf, perkSpec, resolveAmmoSpec }, PVP);\n}());\n')
   const pvpSrc = fs.readFileSync(path.join(site, 'weapons/pvp.js'), 'utf8')
   const fakeEl = () => ({
     innerHTML: '', outerHTML: '', value: '', hidden: false,
@@ -702,13 +702,31 @@ test('weapons: PvP simulator, perk-fx, exotic overrides, and FX align with godro
   const iPi = T.BY_HASH.wpn['120706239']
   const rollPi = T.rollOf(iPi)
   rollPi.sel[3] = pickByName(iPi, 3, '精准工具')
-  const piHash = String(T.P.p[rollPi.sel[3]][0])
+  const piPlug = rollPi.sel[3]
+  const piHash = String(T.P.p[piPlug][0])
+  assert.equal(T.hasPerkBadge(piPlug, 'Primary', 12, false), true, '精准工具必须显示多叠层角标')
+  assert.equal(T.perkSteps(T.resolveAmmoSpec(T.perkSpec(piPlug), 'Primary'), piPlug, 'Primary', 12), 6)
+  assert.equal(T.perkStepOf(piPlug, 'Primary', false, false), -1, '精准工具默认从 0 层起步')
   assert.equal(T.pvpView(iPi, T.compute(iPi, rollPi)).kill, '2 精准，2 直击')
+  assert.ok(!T.pvpPanel(iPi, T.compute(iPi, rollPi)).includes('×0'), 'PvP 卡片在 0 层起步时不显示 ×0')
   T.S.perkStep[piHash] = 0
   const piAct = T.pvpView(iPi, T.compute(iPi, rollPi))
   assert.equal(piAct.kill, '3 精准')
   assert.equal(piAct.ttk.toFixed(3), '0.667')
+  assert.ok(T.pvpPanel(iPi, T.compute(iPi, rollPi)).includes('×1'), 'PvP 卡片在初始 1 层时显示 ×1')
   delete T.S.perkStep[piHash]
+
+  // Enhanced Overcharged Battery (65604327) & Sword Logic (31345821 / 639190697) multi-stack badge regression
+  const enhOvb = T.PIDX[65604327]
+  assert.ok(enhOvb != null, '强化超充弹匣存在于词条池')
+  assert.equal(T.hasPerkBadge(enhOvb, 'Primary', 40, false), true, '强化超充弹匣必须有溢流多步角标')
+  assert.ok(T.perkSteps(T.resolveAmmoSpec(T.perkSpec(enhOvb), 'Primary'), enhOvb, 'Primary', 40) > 1)
+  for (const slHash of [31345821, 639190697]) {
+    const slPlug = T.PIDX[slHash]
+    assert.ok(slPlug != null, `邪剑守则 ${slHash} 存在于词条池`)
+    assert.equal(T.hasPerkBadge(slPlug, 'Primary', 30, false), true, `邪剑守则 ${slHash} 必须有多叠层角标`)
+    assert.equal(T.perkSteps(T.resolveAmmoSpec(T.perkSpec(slPlug), 'Primary'), slPlug, 'Primary', 30), 2)
+  }
 
   const iRb = T.BY_HASH.wpn['852069910']
   const rollRb = T.rollOf(iRb)

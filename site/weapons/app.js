@@ -265,7 +265,7 @@
       D: D, V: V, WR: WR, S: S, body: body,
       W_H: W_H, W_AMMO: W_AMMO, P_HASH: P_HASH, P_ICON: P_ICON,
       STAT_HASH: STAT_HASH, TYPE_EN: TYPE_EN, RANGE: RANGE, RELOAD: RELOAD,
-      CHECK_ONLY_PERKS: CHECK_ONLY_PERKS, PVP_CHRONO_PERKS: PVP_CHRONO_PERKS, AUTO_PERKS: AUTO_PERKS,
+      PVP_CHRONO_PERKS: PVP_CHRONO_PERKS, AUTO_PERKS: AUTO_PERKS,
       getP: function () { return P; },
       getPIDX: function () { return PIDX; },
       getSIDX: function () { return SIDX; },
@@ -275,7 +275,7 @@
       isExotic: isExotic, ammoEn: ammoEn, poolRow: poolRow, cellsOf: cellsOf,
       isEnhancedPlug: isEnhancedPlug, plugName: plugName, rollOf: rollOf, compute: compute,
       effStatVal: effStatVal, rangeMeters: rangeMeters, reloadSeconds: reloadSeconds,
-      handlingTimes: handlingTimes, rangeFalloffSvg: rangeFalloffSvg, fmtM: fmtM, fmtS: fmtS,
+      handlingTimes: handlingTimes, fmtM: fmtM, fmtS: fmtS,
       ensurePerkFx: ensurePerkFx, perkSpec: perkSpec, resolvedPerkSpec: resolvedPerkSpec,
       resolveAmmoSpec: resolveAmmoSpec, fxAll: fxAll, fxDmgOf: fxDmgOf, fxMulOf: fxMulOf,
       perkStepOf: perkStepOf, perkSteps: perkSteps, pickStep: pickStep,
@@ -765,7 +765,6 @@
     1015611457, 2923251173, 3047969693, 624891305, 3751912585, 331667533, 1427256713, 254337357,
     2213355989, 2002547233, 4204405035, 2551157718, 23371658, 365154968, 2939589096]
     .forEach(function (h) { AUTO_PERKS[h] = 1; });
-  var CHECK_ONLY_PERKS = { 555281244: -1, 332733060: -1, 65604327: -1 };
   var PVP_CHRONO_PERKS = {
     2720533289: { kind: 'magnificentHowl', enhanced: false }, 3042219245: { kind: 'magnificentHowl', enhanced: true },
     469285294: { kind: 'recombination', enhanced: false }, 3335686050: { kind: 'recombination', enhanced: true },
@@ -903,7 +902,7 @@
     for (var k in s) {
       if (!Object.prototype.hasOwnProperty.call(s, k)) { continue; }
       if (k === 'projectileVelocityWeaponTypes' || k === 'dmgByAmmo' || k === 'pvpDmgByAmmo') { continue; }
-      if (k === 'dmg' && s.pvpDmg != null) { continue; }
+      if (k === 'dmg' && Array.isArray(s.pvpDmg)) { continue; }
       if (Array.isArray(s[k]) && (!forBadge || !isAmmoTriple(s[k]))) { return true; }
     }
     return false;
@@ -921,7 +920,6 @@
     if (!P || !P.p[p]) { return 0; }
     var h = P.p[p][P_HASH];
     if (AUTO_PERKS[h]) { return 0; }
-    if (Object.prototype.hasOwnProperty.call(CHECK_ONLY_PERKS, h)) { return CHECK_ONLY_PERKS[h]; }
     if (isCat) { return 0; }
     var s = resolveAmmoSpec(perkSpec(p), ammo);
     if (ELEMENTAL_CAPACITOR_HASHES[h]) { return -1; }
@@ -965,7 +963,7 @@
     for (k in s) {
       if (!Object.prototype.hasOwnProperty.call(s, k)) { continue; }
       if (k === 'projectileVelocityWeaponTypes' || k === 'dmgByAmmo' || k === 'pvpDmgByAmmo') { continue; }
-      if (k === 'dmg' && s.pvpDmg != null) { continue; }
+      if (k === 'dmg' && Array.isArray(s.pvpDmg)) { continue; }
       v = s[k];
       if (Array.isArray(v) && !isAmmoTriple(v)) { n = Math.max(n, v.length); }
     }
@@ -974,7 +972,7 @@
   function hasPerkBadge(p, ammo, baseMag, isFixed) {
     if (!P || p == null || !P.p[p]) { return false; }
     var h = P.p[p][P_HASH];
-    if (AUTO_PERKS[h] || Object.prototype.hasOwnProperty.call(CHECK_ONLY_PERKS, h)) { return false; }
+    if (AUTO_PERKS[h]) { return false; }
     if (ELEMENTAL_CAPACITOR_HASHES[h]) { return true; }
     var s = resolveAmmoSpec(perkSpec(p), ammo);
     if (!s) { return false; }
@@ -985,20 +983,21 @@
 
 
 
-  /* 后坐方向扇形：DIM 的公式，参数照 destiny.report（竖向 0.8、最大张角 180°）。 */
+  /* 后坐方向扇形：DIM 经典公式（竖向 0.8、最大张角 180°），纯半圆柔化扇形。 */
   function recoilSvg(v) {
     var dir = Math.sin((v + 5) * (Math.PI / 10)) * (100 - v);
     var t = dir * 0.8 * (Math.PI / 180);
-    var spread = (100 - v) / 100 * 90 * (Math.PI / 180) * (t < 0 ? -1 : t > 0 ? 1 : 0);
+    var sp = (100 - v) / 100 * 90 * (Math.PI / 180);
     var shape;
     if (v >= 95) {
-      shape = '<line x1="' + (1 - Math.sin(t)) + '" y1="' + (1 + Math.cos(t)) + '" x2="' + (1 + Math.sin(t)) +
-        '" y2="' + (1 - Math.cos(t)) + '" stroke="#e6e2d6" stroke-width=".1"/>';
+      shape = '<line x1="1" y1="1" x2="' + (1 + Math.sin(t)).toFixed(3) +
+        '" y2="' + (1 - Math.cos(t)).toFixed(3) + '" stroke="var(--bone-hi)" stroke-width=".11" stroke-linecap="round"/>';
     } else {
-      shape = '<path d="M1,1 L' + (1 + Math.sin(t + spread)) + ',' + (1 - Math.cos(t + spread)) + ' A1,1 0 0,' +
-        (t < 0 ? 1 : 0) + ' ' + (1 + Math.sin(t - spread)) + ',' + (1 - Math.cos(t - spread)) + ' Z" fill="#e6e2d6"/>';
+      var x1 = (1 + Math.sin(t - sp)).toFixed(3), y1 = (1 - Math.cos(t - sp)).toFixed(3);
+      var x2 = (1 + Math.sin(t + sp)).toFixed(3), y2 = (1 - Math.cos(t + sp)).toFixed(3);
+      shape = '<path d="M1,1 L' + x1 + ',' + y1 + ' A1,1 0 0,1 ' + x2 + ',' + y2 + ' Z" fill="rgba(244,241,232,.84)"/>';
     }
-    return '<svg viewBox="0 0 2 1" aria-hidden="true"><circle r="1" cx="1" cy="1" fill="#ffffff10"/>' + shape + '</svg>';
+    return '<svg viewBox="0 0 2 1" aria-hidden="true"><path d="M0,1 A1,1 0 0,1 2,1 Z" fill="rgba(255,255,255,.08)"/>' + shape + '</svg>';
   }
 
   /* ── 行与分组 ──────────────────────────────────────────────────────── */
@@ -1805,7 +1804,7 @@
     rail: recall('wpn.rail') || 240, railOff: !!recall('wpn.railOff'), rolls: recall('wpn.rolls') || {},
     syntax: false, pop: null, tip: null, hoverPlug: null, hoverRow: null, slotHover: false,
     statsMode: 'pve', pvpAcc: null, pvpStat: 0, pvpMag: null, pvpMagBlank: false,
-    fx: [], fxOpen: false, fxg: '', perkStep: {}, fxStep: {}, cmpRoll: null,
+    fx: [], fxOpen: false, fxg: '', perkStep: {}, fxStep: {},
     hideAegis: !!recall('wpn.hideAegis')
   };
   function readUrl() {
@@ -2164,10 +2163,8 @@
         else { perkInv[si] = (perkInv[si] || 0) + picked; }
       }
     });
-    var pveExtra = {};
-    Object.keys(perkInv).forEach(function (k) { pveExtra[k] = (pveExtra[k] || 0) + perkInv[k]; });
-    Object.keys(fxInv).forEach(function (k) { pveExtra[k] = (pveExtra[k] || 0) + fxInv[k]; });
-    if (Object.keys(pveExtra).length) { stages.push(['s-perk', pveExtra]); }
+    if (Object.keys(perkInv).length) { stages.push(['s-perk', perkInv]); }
+    if (Object.keys(fxInv).length) { stages.push(['s-fx', fxInv]); }
     var rows = [], byStat = {};
     for (var g = 0; g < group.length; g++) {
       if (base[g] == null) { continue; }
@@ -3038,6 +3035,7 @@
     if (!P) { box.innerHTML = loads.pool && loads.pool.failed ? '<p class="empty">词条池载入失败。</p>' : '<p class="loading">词条池载入中…</p>'; need('pool', renderDetail); return; }
     if (!T) { need('text', renderDetail); }
     detailKey = nextKey;
+    statShown = {};
     box.innerHTML = weaponDetail(i, swap);
     perkLinks();
     if (S.statsMode === 'pvp' && PVP) { PVP.kickPvpAnim(); }
@@ -3094,17 +3092,21 @@
     var badge = '', tipParts = bits ? [HALO[bits][1]] : [];
     if (showBadge) {
       var ph = P.p[p][P_HASH], isEC = !!ELEMENTAL_CAPACITOR_HASHES[ph];
+      var isPI = !!(PVP_CHRONO_PERKS[ph] && PVP_CHRONO_PERKS[ph].kind === 'precisionInstrument');
       var spec = resolveAmmoSpec(perkSpec(p), ammo), step = perkStepOf(p, ammo, false, fixed);
       var total = perkSteps(spec, p, ammo, res && res.magBaseCap);
       var ecKeys = ['3', '2', '4', '7', '6'];
       var inner = isEC
         ? (step < 0 ? '−' : imgTag(V.el[ecKeys[step] || '3'][2], 'element-icon', ELEMENTAL_CAPACITOR_ZH[step], true))
-        : (step < 0 ? '−' : (total > 1
-            ? '<span class="stack-current">×' + (step + 1) + '</span><span class="stack-max">/' + total + '</span>'
-            : '<span class="stack-current">✓</span>'));
+        : (step < 0
+            ? (isPI ? '<span class="stack-current">0</span><span class="stack-max">/' + total + '</span>' : '−')
+            : (total > 1
+                ? '<span class="stack-current">×' + (step + 1) + '</span><span class="stack-max">/' + total + '</span>'
+                : '<span class="stack-current">✓</span>'));
       tipParts.push(isEC ? (step < 0 ? '点击选择分支元素' : '元素电容：' + ELEMENTAL_CAPACITOR_ZH[step] + '（点击切换）') :
-        (total > 1 ? '点击递增层数，满层再点取消' : (fixed ? '点击切换生效状态' : '点击取消选中')));
-      badge = '<span class="perk-stack-badge' + (step < 0 ? ' deactivated' : '') +
+        (isPI ? (step < 0 ? '0 层起步（随命中递增，点击预设初始层数）' : '初始 ' + (step + 1) + ' 层（点击递增，满层再点取消）') :
+          (total > 1 ? '点击递增层数，满层再点取消' : (fixed ? '点击切换生效状态' : '点击取消选中'))));
+      badge = '<span class="perk-stack-badge' + (step < 0 && !isPI ? ' deactivated' : '') +
         (isEC && step >= 0 ? ' element-badge' : '') + '">' + inner + '</span>';
     }
     return '<button type="button" class="' + cls + '" aria-pressed="' + (pressed ? 'true' : 'false') + '"' +
@@ -3139,9 +3141,8 @@
     var r = WR[i], pr = poolRow(i), roll = rollOf(i), rep = r[W_REP];
     var cols = pr[2], marks = marksOf(i), ammo = ammoEn(V.am[r[W_AMMO]][0]);
     var swap = S.hoverPlug ? { col: S.hoverPlug.col, plug: S.hoverPlug.plug } : null;
-    var hasCmp = !!(S.cmpRoll && S.cmpRoll.w === r[W_H]);
     var res = compute(i, roll);
-    var ghost = swap ? compute(i, roll, swap) : (hasCmp ? compute(i, S.cmpRoll.roll, null, S.cmpRoll.perkStep) : null);
+    var ghost = swap ? compute(i, roll, swap) : null;
     var matrix = cols.map(function (col, c) {
       var cells = cellsOf(col), fixed = cells.length === 1;
       return '<div class="col"><h4>' + esc(P.lb[col[0]]) + '</h4>' + cells.map(function (cell) {
@@ -3177,7 +3178,7 @@
     parts.push(usedByHtml(r[W_H]));
     parts.push('</div>');
     parts.push('<aside class="one-side"><section><div class="facts">' + factsHtml(i) + '</div></section>' +
-      statsBlock(i, res, ghost, !swap && hasCmp) +
+      statsBlock(i, res, ghost) +
       frameStatsHtml(i) + versionsHtml('wpn', i) + '</aside>');
     return '<article class="wpn-one' + (anim ? ' swap' : '') + '" data-el="' + r[W_EL] + '">' + parts.join('') + '</article>';
   }
@@ -3384,53 +3385,33 @@
       (roll.cat ? 'true' : 'false') + '">' + (roll.cat ? '已装上' : '装上') + '</button><div>' + effs + '</div></div></section>';
   }
 
-  function rangeFalloffSvg(m) {
-    if (!m || !m.ads) { return ''; }
-    var maxM = Math.max(45, m.ads * 1.45);
-    var hx = Math.max(4, Math.min(26, (m.hip / maxM) * 36)).toFixed(1);
-    var ax = m.ads > m.hip + 0.05 ? Math.max(+hx + 2.5, Math.min(31, (m.ads / maxM) * 36)).toFixed(1) : hx;
-    return '<svg class="falloff-svg" viewBox="0 0 36 11" aria-hidden="true">' +
-      '<path d="M0,2.5 L' + hx + ',2.5 L' + Math.min(35, +hx + 9).toFixed(1) + ',9.5 L36,9.5" fill="none" stroke="var(--bone-faint)" stroke-width="1" stroke-dasharray="1.5 1.5"/>' +
-      '<path d="M0,2.5 L' + ax + ',2.5 L35,9.5" fill="none" stroke="var(--bone-hi)" stroke-width="1.2"/>' +
-      '<circle cx="' + ax + '" cy="2.5" r="1.5" fill="var(--accent)"/></svg>';
-  }
   function effStatVal(res, x) {
     if (!x) { return 0; }
     var base = x.unclampedInCol != null ? x.unclampedInCol : x.value;
     return Math.max(0, Math.min(100, base + (res.perkInv[x.s] || 0) + (res.fxInv[x.s] || 0) + (res.flat[x.s] || 0)));
   }
-  function statConv(i, res, x) {
-    if (!SIDX) { return null; }
-    var r = WR[i], ty = typeName(r), fr = frameOf(r)[0], v = effStatVal(res, x);
-    if (x.name === '射程') {
+  function statsHeroData(i, res) {
+    if (!SIDX) { return { rng: null, hnd: null, rld: null }; }
+    var r = WR[i], ty = typeName(r), fr = frameOf(r)[0];
+    var rngX = res.byStat[SIDX['射程']], hndX = res.byStat[SIDX['操控性']], rldX = res.byStat[SIDX['填装速度']];
+    var rng = null, hnd = null, rld = null;
+    if (rngX) {
       var z = res.byStat[SIDX['变焦']], rpmS = HSTAT ? res.byStat[HSTAT[STAT_HASH.RPM]] : null;
       var ttkData = PVP ? PVP.getTtkData(i, res.activeHashes, rpmS ? rpmS.base : null) : null;
-      var m = rangeMeters(ty, fr, v, {
+      rng = rangeMeters(ty, fr, effStatVal(res, rngX), {
         zoomStat: z ? z.value : null,
         intrinsicHash: res.intrinsicHash,
         bodyDmg: ttkData ? ttkData.bodyDmg : null,
         modifiers: { rangeAllScale: res.rangeAllScale, rangeHipScale: res.rangeHipScale, rangeAdsStatAdd: res.rangeAdsStatAdd }
       });
-      return m ? {
-        text: fmtM(m.hip) + ' / ' + fmtM(m.ads),
-        svg: rangeFalloffSvg(m),
-        title: '腰射衰减 ' + fmtM(m.hip) + ' · 开镜衰减 ' + fmtM(m.ads)
-      } : null;
     }
-    if (x.name === '填装速度') {
-      var s = reloadSeconds(ty, V.am[r[W_AMMO]][0], v, res.reloadDurationMod, frameKey(fr));
-      return s != null ? { text: fmtS(s) } : null;
+    if (hndX) {
+      hnd = handlingTimes(ty, res.intrinsicHash, effStatVal(res, hndX), res.handlingDurationMod, res.activeHashes);
     }
-    if (x.name === '操控性') {
-      var h = handlingTimes(ty, res.intrinsicHash, v, res.handlingDurationMod, res.activeHashes);
-      if (!h) { return null; }
-      var ads = h.ads > 0.001;
-      return {
-        text: fmtS(ads ? h.ads : h.ready),
-        title: '抽出 ' + fmtS(h.ready) + ' · 收起 ' + fmtS(h.stow) + (ads ? ' · 开镜 ' + fmtS(h.ads) : '')
-      };
+    if (rldX) {
+      rld = reloadSeconds(ty, V.am[r[W_AMMO]][0], effStatVal(res, rldX), res.reloadDurationMod, frameKey(fr));
     }
-    return null;
+    return { rng: rng, hnd: hnd, rld: rld };
   }
   function displayStatVal(res, x) {
     if (x.name === '变焦' && res && res.effectiveZoomScale && res.effectiveZoomScale !== 1) {
@@ -3438,87 +3419,105 @@
     }
     return x.value;
   }
-  function statValueHtml(i, res, x) {
-    var conv = statConv(i, res, x);
-    return (conv ? (conv.svg || '') + '<span class="conv"' + (conv.title ? ' title="' + esc(conv.title) + '"' : '') + '>' +
-      conv.text + '</span><span class="sep">/</span>' : '') + displayStatVal(res, x);
+  function statBonusPart(x) {
+    if (!x || !x.segs) { return 0; }
+    var bonus = 0;
+    for (var k = 0; k < x.segs.length; k++) {
+      var tag = x.segs[k][0];
+      if (tag === 's-mw' || tag === 's-tier' || tag === 's-fx') { bonus += x.segs[k][1]; }
+    }
+    return bonus;
   }
-  function statsPanel(i, res, ghost, isBase) {
+  function statBaseRatio(x, fill) {
+    if (fill <= 0) { return 100; }
+    var bonus = Math.max(0, Math.min(fill, statBonusPart(x)));
+    return ((fill - bonus) / fill) * 100;
+  }
+  function statsPanel(i, res, ghost) {
     var bars = res.rows.filter(function (x) { return !x.numeric; });
     var nums = res.rows.filter(function (x) { return x.numeric; });
-    var o = ['<div class="stats-list">'];
-    bars.forEach(function (x) {
+    var hero = statsHeroData(i, res);
+    var o = [];
+    if (hero.rng || hero.hnd || hero.rld != null) {
+      var rngS = SIDX ? SIDX['射程'] : '', hndS = SIDX ? SIDX['操控性'] : '', rldS = SIDX ? SIDX['填装速度'] : '';
+      var adsSec = hero.hnd ? (hero.hnd.ads > 0.001 ? hero.hnd.ads : hero.hnd.ready) : null;
+      var adsLbl = hero.hnd && hero.hnd.ads > 0.001 ? '开镜耗时' : '抽出耗时';
+      o.push('<div class="tri-grid st-hero">');
+      if (hero.rng) {
+        o.push('<div class="st-metric" data-act="statrow" data-s="' + rngS + '"><span class="k">衰减射程</span>' +
+          '<span class="v"><span class="hip" data-kpi="hip">' + hero.rng.hip.toFixed(1) + '</span><span class="sep">/</span>' +
+          '<span data-kpi="ads">' + hero.rng.ads.toFixed(1) + '</span><small>m</small></span></div>');
+      }
+      if (adsSec != null) {
+        o.push('<div class="st-metric" data-act="statrow" data-s="' + hndS + '"><span class="k">' + adsLbl + '</span>' +
+          '<span class="v"><span data-kpi="adsS">' + adsSec.toFixed(2) + '</span><small>s</small></span></div>');
+      }
+      if (hero.rld != null) {
+        o.push('<div class="st-metric" data-act="statrow" data-s="' + rldS + '"><span class="k">填装耗时</span>' +
+          '<span class="v"><span data-kpi="rldS">' + hero.rld.toFixed(2) + '</span><small>s</small></span></div>');
+      }
+      o.push('</div>');
+    }
+    o.push('<div class="stats-list">');
+    bars.forEach(function (x, idx) {
       var val = displayStatVal(res, x);
       var fill = Math.max(0, Math.min(100, val));
-      var extra = '', d = '';
+      var baseRatio = statBaseRatio(x, fill).toFixed(2);
+      var diff = 0;
       if (ghost && ghost.byStat[x.s]) {
-        var gv = displayStatVal(ghost, ghost.byStat[x.s]);
-        var diff = Number((isBase ? (val - gv) : (gv - val)).toFixed(1));
-        if (isBase) {
-          if (diff > 0) { extra = '<i class="s-ghost" style="width:' + Math.min(100, val) + '%"></i>'; fill = Math.max(0, Math.min(100, gv)); }
-          if (diff < 0) { extra = '<i class="g-neg" style="left:' + val + '%;width:' + (-diff) + '%"></i>'; }
-        } else {
-          if (diff > 0) { extra = '<i class="s-ghost" style="width:' + Math.min(100, gv) + '%"></i>'; }
-          if (diff < 0) { extra = '<i class="g-neg" style="left:' + gv + '%;width:' + (-diff) + '%"></i>'; }
-        }
-        if (diff) { d = '<span class="d' + (diff > 0 ? '' : ' dn') + '">' + (diff > 0 ? '+' : '−') + Math.abs(diff) + '</span>'; }
+        diff = Number((displayStatVal(ghost, ghost.byStat[x.s]) - val).toFixed(1));
       }
+      var posStyle = diff > 0 ? 'left:' + fill + '%;width:' + Math.min(100 - fill, diff) + '%' : 'left:' + fill + '%;width:0%';
+      var negStyle = diff < 0 ? 'left:' + Math.max(0, fill + diff) + '%;width:' + Math.min(fill, -diff) + '%' : 'left:' + fill + '%;width:0%';
+      var delay = (idx * 13) + 'ms';
       o.push('<div class="stat-item' + (S.hoverRow === x.s ? ' is-hover' : '') + '" data-act="statrow" data-s="' + x.s + '">' +
-        '<div class="stat-label"><span>' + esc(x.name) + '</span><span class="stat-value">' + statValueHtml(i, res, x) + d +
-        '</span></div><div class="bar"><i class="stat-fill" style="width:' + fill + '%"></i>' + extra + '</div></div>');
+        '<span class="stat-name">' + esc(x.name) + '</span>' +
+        '<div class="bar"><div class="st-fill" style="width:' + fill + '%;transition-delay:' + delay + '" data-fill="' + x.s + '">' +
+        '<span class="st-fill-base" style="width:' + baseRatio + '%;transition-delay:' + delay + '" data-fbase="' + x.s + '"></span>' +
+        '<span class="st-fill-bonus"></span></div>' +
+        '<div class="st-prev-pos' + (diff > 0 ? ' show' : '') + '" style="' + posStyle + '" data-ppos="' + x.s + '"></div>' +
+        '<div class="st-prev-neg' + (diff < 0 ? ' show' : '') + '" style="' + negStyle + '" data-pneg="' + x.s + '"></div></div>' +
+        '<div class="stat-right"><span class="stat-num" data-num="' + x.s + '">' + val + '</span>' +
+        '<span class="stat-delta' + (diff ? (' show ' + (diff > 0 ? 'up' : 'dn')) : '') + '" data-delta="' + x.s + '">' +
+        (diff ? ((diff > 0 ? '+' : '−') + Math.abs(diff)) : '') + '</span></div></div>');
     });
     o.push('</div>');
     if (nums.length) {
-      o.push('<div class="special-stats">');
+      o.push('<div class="' + (nums.length === 3 ? 'tri-grid ' : '') + 'special-stats' + (nums.length < 3 ? ' cols-' + nums.length : '') + '">');
       nums.forEach(function (x) {
-        var val = displayStatVal(res, x), d = '';
+        var val = displayStatVal(res, x), diff = 0;
         if (ghost && ghost.byStat[x.s]) {
-          var gv2 = displayStatVal(ghost, ghost.byStat[x.s]);
-          var diff = Number((isBase ? (val - gv2) : (gv2 - val)).toFixed(1));
-          if (diff) { d = '<span class="d' + (diff > 0 ? '' : ' dn') + '">' + (diff > 0 ? '+' : '−') + Math.abs(diff) + '</span>'; }
+          diff = Number((displayStatVal(ghost, ghost.byStat[x.s]) - val).toFixed(1));
         }
-        o.push('<div class="special-stat-item" data-act="statrow" data-s="' + x.s + '"><span class="special-stat-label">' +
-          esc(x.name) + '</span><span class="special-stat-value">' + (x.name === '后坐方向' ? recoilSvg(val) : '') +
-          val + d + '</span></div>');
+        o.push('<div class="special-stat-item" data-act="statrow" data-s="' + x.s + '">' +
+          '<span class="special-stat-label">' + esc(x.name) + '</span>' +
+          '<span class="special-stat-value">' + (x.name === '后坐方向' ? '<span data-recoil="' + x.s + '">' + recoilSvg(val) + '</span>' : '') +
+          '<span data-num="' + x.s + '">' + val + '</span>' +
+          '<span class="stat-delta' + (diff ? (' show ' + (diff > 0 ? 'up' : 'dn')) : '') + '" data-delta="' + x.s + '">' +
+          (diff ? ((diff > 0 ? '+' : '−') + Math.abs(diff)) : '') + '</span></span></div>');
       });
       o.push('</div>');
     }
     return o.join('');
   }
-  function statsModeBtns(i) {
-    var note = 'PvP 相关为实验版功能，不保证准确。';
-    var cmpOn = !!(S.cmpRoll && i != null && S.cmpRoll.w === WR[i][W_H]);
-    var cmpBtn = S.statsMode === 'pve'
-      ? '<button type="button" class="stats-cmp-btn" data-act="cmp" aria-pressed="' + (cmpOn ? 'true' : 'false') +
-        '" title="锁定当前配置为基准 A，切换词条后直接对比属性差值">' + (cmpOn ? '清除基准' : '对比基准') + '</button>'
-      : '';
-    return '<div class="stats-mode-wrap">' + cmpBtn +
-      '<div class="stats-mode-toggle">' +
-      '<button type="button" class="stats-mode-btn" data-act="statsmode" data-v="pve" aria-pressed="' +
-      (S.statsMode === 'pve' ? 'true' : 'false') + '">PvE</button>' +
-      '<button type="button" class="stats-mode-btn" data-act="statsmode" data-v="pvp" aria-pressed="' +
-      (S.statsMode === 'pvp' ? 'true' : 'false') + '" aria-describedby="stats-pvp-note">PvP<span class="stats-pvp-tag">实验</span></button>' +
-      '</div><p class="stats-pvp-note" id="stats-pvp-note">' + note + '</p></div>';
-  }
   function sideMods(i, roll) {
     var mods = modsOf(i);
     if (!mods.length) { return ''; }
     var m = roll.mod >= 0 ? P.p[roll.mod] : null;
-    return '<div class="mods-side"><button type="button" class="slot' + (m ? '' : ' is-empty') +
-      '" data-act="modslot" aria-haspopup="dialog" aria-label="模组">' +
-      (m ? imgTag(m[P_ICON], '', '', true) : '') + '</button><div class="slot-now"><h3>模组</h3><span>' +
-      (m ? esc(m[P_NAME]) : '未装') + '</span></div></div>';
+    return '<div class="mods-side"><button type="button" class="st-slot" data-act="modslot" aria-haspopup="dialog" aria-label="模组">' +
+      '<span class="slot' + (m ? '' : ' is-empty') + '">' + (m ? imgTag(m[P_ICON], '', '', true) : '') + '</span>' +
+      '<span class="slot-now"><h3>模组</h3><span>' + (m ? esc(m[P_NAME]) : '未装') + '</span></span></button></div>';
   }
   function sideMw(i, roll) {
     var opts = optsOf(i), rec = poolRow(i)[5] || [], opt = null;
     if (!opts.length) { return ''; }
     opts.forEach(function (o) { if (o[0] === roll.mw) { opt = o; } });
-    return '<div class="mw-side"><button type="button" class="slot' + (opt ? '' : ' is-empty') +
-      (opt && has(rec, roll.mw) ? ' by-a' : '') + '" data-act="mwslot" aria-haspopup="dialog" aria-label="大师杰作">' +
-      (opt ? imgTag(P.p[opt[2]][P_ICON], '', '', true) : '') + '</button><div class="slot-now"><h3>大师杰作</h3><span>' +
-      esc(mwLabel(i, roll)) + '</span></div></div>';
+    return '<div class="mw-side"><button type="button" class="st-slot" data-act="mwslot" aria-haspopup="dialog" aria-label="大师杰作">' +
+      '<span class="slot' + (opt ? '' : ' is-empty') + (opt && has(rec, roll.mw) ? ' by-a' : '') + '">' +
+      (opt ? imgTag(P.p[opt[2]][P_ICON], '', '', true) : '') + '</span>' +
+      '<span class="slot-now"><h3>大师杰作</h3><span>' + esc(mwLabel(i, roll)) + '</span></span></button></div>';
   }
-  function sideTiers(i, roll, res) {
+  function sideTiers(i, roll) {
     var pr = poolRow(i);
     if (pr[4]) {
       var btns = '';
@@ -3526,7 +3525,8 @@
         btns += '<button type="button" class="toggle" data-act="tier" data-v="' + t + '" aria-pressed="' +
           (roll.t === t ? 'true' : 'false') + '">T' + t + '</button>';
       }
-      return '<div class="mw-tier">' + btns + '</div>';
+      var shift = Math.max(0, Math.min(4, (roll.t || 5) - 1)) * 100;
+      return '<div class="mw-tier"><div class="mw-tier-thumb" style="transform:translateX(' + shift + '%)"></div>' + btns + '</div>';
     }
     if (!roll.mw) { return ''; }
     var b = '';
@@ -3565,38 +3565,254 @@
           esc(g.name) + '<span>' + items.length + '</span></button>' + body + '</div>';
       }).join('') + '</div>';
     }
-    return '<div class="fx-side"><h3>主动效果</h3>' +
+    return '<div class="fx-side">' +
       (cards ? '<div class="fx-list">' + cards + '</div>' : '') +
       '<button type="button" class="fx-add" data-act="fxopen" aria-expanded="' + (S.fxOpen ? 'true' : 'false') + '" aria-label="添加主动效果">' +
-      '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">' +
-      '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>添加效果</span></button>' +
+      '<span class="fx-add-l"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">' +
+      '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>添加主动效果</span></span>' +
+      '<span class="fx-add-r">' + (cards ? '继续添加' : '可选增益') + '</span></button>' +
       drop + '</div>';
   }
-  function statsBlock(i, res, ghost, isBase) {
-    var roll = rollOf(i);
-    var inner;
-    if (S.statsMode === 'pvp') {
-      if (!PVP) {
-        inner = loads.pvp && loads.pvp.failed
-          ? '<p class="empty" role="alert">weapons/pvp.js 载入失败。 <button type="button" data-act="retry-load" data-v="pvp">重试</button></p>'
-          : '<p class="loading">PvP 模拟器载入中…</p>';
-        need('pvp', renderDetail);
-      } else {
-        inner = PVP.pvpPanel(i, res);
-      }
-    } else {
-      inner = statsPanel(i, res, ghost, isBase);
+  function statsModeBtns() {
+    var note = 'PvP 相关为实验版功能，不保证准确。';
+    var isPvp = S.statsMode === 'pvp';
+    return '<div class="stats-mode-wrap"><div class="stats-mode-toggle">' +
+      '<div class="stats-mode-thumb" style="transform:translateX(' + (isPvp ? '100%' : '0%') + ')"></div>' +
+      '<button type="button" class="stats-mode-btn" data-act="statsmode" data-v="pve" aria-pressed="' + (!isPvp ? 'true' : 'false') + '">PvE</button>' +
+      '<button type="button" class="stats-mode-btn" data-act="statsmode" data-v="pvp" aria-pressed="' + (isPvp ? 'true' : 'false') +
+      '" aria-describedby="stats-pvp-note">PvP<span class="stats-pvp-tag">实验</span></button>' +
+      '</div><p class="stats-pvp-note" id="stats-pvp-note">' + note + '</p></div>';
+  }
+  function pvpInnerHtml(i, res) {
+    if (!PVP) {
+      need('pvp', renderDetail);
+      return loads.pvp && loads.pvp.failed
+        ? '<p class="empty" role="alert">weapons/pvp.js 载入失败。 <button type="button" data-act="retry-load" data-v="pvp">重试</button></p>'
+        : '<p class="loading">PvP 模拟器载入中…</p>';
     }
+    return PVP.pvpPanel(i, res);
+  }
+  function statsBlock(i, res, ghost) {
+    var roll = rollOf(i);
+    var slotsHtml = sideMods(i, roll) + sideMw(i, roll);
+    var inner = S.statsMode === 'pvp' ? pvpInnerHtml(i, res) : statsPanel(i, res, ghost);
     return '<section class="stats-sec">' +
-      '<div class="stats-header"><h3>属性</h3>' + statsModeBtns(i) + '</div>' +
+      '<div class="stats-head"><h3 class="sub-label">属性</h3>' + statsModeBtns() + '</div>' +
       '<div class="stats-box">' + inner + '</div>' +
-      '<div class="side-aux"><div class="side-slots">' + sideMods(i, roll) + sideMw(i, roll) + '</div>' +
-      sideTiers(i, roll, res) +
+      '<div class="side-aux">' + (slotsHtml ? '<div class="side-slots">' + slotsHtml + '</div>' : '') +
+      sideTiers(i, roll) +
       (S.pop === 'mw' ? mwPicker(i, roll) : S.pop === 'mod' ? modPicker(i, roll) : '') +
       sideFx(i) + '</div></section>';
   }
-  /* 悬停词条只改两处：那枚按钮的 is-hover 与属性表的预览。详情有 400–750 个元素，
-     整张重画时指针扫过词条栏每换一枚就重排一次。 */
+
+  /* ── 属性 DOM 持久化补间与词条反向联动 ──────────────────────────────── */
+  var statShown = {}, statAnimToken = 0, statTweenRaf = 0;
+  function reduceMotionPref() {
+    return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+  function paintStatKey(pane, k, v) {
+    if (k === 'hip' || k === 'ads') {
+      var kpi = pane.querySelector('[data-kpi="' + k + '"]');
+      if (kpi) { kpi.textContent = v.toFixed(1); }
+      return;
+    }
+    if (k === 'adsS' || k === 'rldS') {
+      var kpi2 = pane.querySelector('[data-kpi="' + k + '"]');
+      if (kpi2) { kpi2.textContent = v.toFixed(2); }
+      return;
+    }
+    if (k.indexOf('rec:') === 0) {
+      var rs = k.slice(4);
+      var recEl = pane.querySelector('[data-recoil="' + rs + '"]');
+      if (recEl) { recEl.innerHTML = recoilSvg(v); }
+      return;
+    }
+    var numEl = pane.querySelector('[data-num="' + k + '"]');
+    if (numEl) {
+      numEl.textContent = Math.abs(v - Math.round(v)) > 0.05 ? v.toFixed(1) : String(Math.round(v));
+    }
+  }
+  function statTargetEl(pane, k) {
+    if (k === 'hip' || k === 'ads' || k === 'adsS' || k === 'rldS') {
+      return pane.querySelector('[data-kpi="' + k + '"]');
+    }
+    if (k.indexOf('rec:') === 0) { return null; }
+    return pane.querySelector('[data-num="' + k + '"]');
+  }
+  function setStatDirCls(pane, k, cls) {
+    var el = statTargetEl(pane, k);
+    if (!el) { return; }
+    el.classList.remove('is-up', 'is-dn');
+    if (cls) { el.classList.add(cls); }
+  }
+  function tweenStatNumbers(pane, targets, animate, lowerBetter) {
+    if (statTweenRaf) { cancelAnimationFrame(statTweenRaf); statTweenRaf = 0; }
+    statAnimToken++;
+    var my = statAnimToken;
+    var dur = animate && !reduceMotionPref() ? 360 : 0;
+    var from = {}, dirs = {}, hasDiff = false;
+    Object.keys(targets).forEach(function (k) {
+      var prev = statShown[k] != null ? statShown[k] : targets[k];
+      from[k] = prev;
+      var delta = targets[k] - prev;
+      if (Math.abs(delta) > 1e-6) {
+        hasDiff = true;
+        var better = lowerBetter && lowerBetter[k] ? delta < 0 : delta > 0;
+        dirs[k] = better ? 'is-up' : 'is-dn';
+      }
+    });
+    if (!dur || !hasDiff) {
+      Object.keys(targets).forEach(function (k) {
+        var v = targets[k];
+        statShown[k] = v;
+        paintStatKey(pane, k, v);
+        setStatDirCls(pane, k, '');
+      });
+      return;
+    }
+    Object.keys(targets).forEach(function (k) { setStatDirCls(pane, k, dirs[k] || ''); });
+    var t0 = performance.now();
+    function frame(now) {
+      if (my !== statAnimToken || !pane.isConnected) { statTweenRaf = 0; return; }
+      var u = Math.min(1, Math.max(0, (now - t0) / dur));
+      var ease = 1 - Math.pow(1 - u, 4);
+      Object.keys(targets).forEach(function (k) {
+        var v = u < 1 ? from[k] + (targets[k] - from[k]) * ease : targets[k];
+        statShown[k] = v;
+        paintStatKey(pane, k, v);
+        if (u >= 1 && dirs[k]) { setStatDirCls(pane, k, ''); }
+      });
+      if (u < 1) { statTweenRaf = requestAnimationFrame(frame); }
+      else { statTweenRaf = 0; }
+    }
+    statTweenRaf = requestAnimationFrame(frame);
+  }
+  function syncStatsDom(pane, i, res, ghost, animate) {
+    if (!pane) { return; }
+    var hero = statsHeroData(i, res);
+    var targets = {}, lowerBetter = { adsS: true, rldS: true };
+    if (hero.rng) { targets.hip = hero.rng.hip; targets.ads = hero.rng.ads; }
+    if (hero.hnd) { targets.adsS = hero.hnd.ads > 0.001 ? hero.hnd.ads : hero.hnd.ready; }
+    if (hero.rld != null) { targets.rldS = hero.rld; }
+    res.rows.forEach(function (x) {
+      var val = displayStatVal(res, x);
+      var diff = ghost && ghost.byStat[x.s] ? Number((displayStatVal(ghost, ghost.byStat[x.s]) - val).toFixed(1)) : 0;
+      targets[String(x.s)] = val;
+      if (x.name === '蓄力时间' || x.name === '充能时间') { lowerBetter[String(x.s)] = true; }
+      if (x.name === '后坐方向') { targets['rec:' + x.s] = val; }
+      var dEl = pane.querySelector('[data-delta="' + x.s + '"]');
+      if (dEl) {
+        dEl.textContent = diff ? ((diff > 0 ? '+' : '−') + Math.abs(diff)) : '';
+        dEl.className = 'stat-delta' + (diff ? (' show ' + (diff > 0 ? 'up' : 'dn')) : '');
+      }
+      if (x.numeric) { return; }
+      var fill = Math.max(0, Math.min(100, val));
+      var fEl = pane.querySelector('[data-fill="' + x.s + '"]');
+      var fbEl = pane.querySelector('[data-fbase="' + x.s + '"]');
+      if (fEl) { fEl.style.width = fill + '%'; }
+      if (fbEl) { fbEl.style.width = statBaseRatio(x, fill).toFixed(2) + '%'; }
+      var pPos = pane.querySelector('[data-ppos="' + x.s + '"]');
+      var pNeg = pane.querySelector('[data-pneg="' + x.s + '"]');
+      if (pPos) {
+        if (diff > 0) { pPos.style.left = fill + '%'; pPos.style.width = Math.min(100 - fill, diff) + '%'; pPos.classList.add('show'); }
+        else { pPos.classList.remove('show'); }
+      }
+      if (pNeg) {
+        if (diff < 0) { pNeg.style.left = Math.max(0, fill + diff) + '%'; pNeg.style.width = Math.min(fill, -diff) + '%'; pNeg.classList.add('show'); }
+        else { pNeg.classList.remove('show'); }
+      }
+    });
+    tweenStatNumbers(pane, targets, animate, lowerBetter);
+  }
+  function highlightLinkedPerks(box, i, statIdx) {
+    if (!box || !box.querySelectorAll) { return; }
+    var prev = box.querySelectorAll('.plug.is-linked');
+    for (var k = 0; k < prev.length; k++) { prev[k].classList.remove('is-linked'); }
+    if (statIdx == null || i == null) { return; }
+    var roll = rollOf(i), cols = poolRow(i)[2];
+    cols.forEach(function (col, c) {
+      var p = roll.sel[c];
+      if (p == null) { return; }
+      var hits = P.p[p][P_ST].some(function (y) { return y[0] == statIdx && y[1]; });
+      if (!hits) { return; }
+      var btn = box.querySelector('[data-act="perk"][data-col="' + c + '"][data-plug="' + p + '"]');
+      if (btn) { btn.classList.add('is-linked'); }
+    });
+  }
+  function patchWeaponDetail(i, modeSwap) {
+    var box = body.querySelector('.wpn-detail');
+    var pane = box && box.querySelector('.stats-box');
+    if (!pane || S.scope !== 'wpn' || S.sel !== i || !P) { renderDetail(); return; }
+    var roll = rollOf(i), res = compute(i, roll);
+    if (modeSwap) {
+      var mThumb = box.querySelector('.stats-mode-thumb');
+      if (mThumb) { mThumb.style.transform = 'translateX(' + (S.statsMode === 'pvp' ? '100%' : '0%') + ')'; }
+      var mBtns = box.querySelectorAll('[data-act="statsmode"]');
+      for (var mb = 0; mb < mBtns.length; mb++) {
+        mBtns[mb].setAttribute('aria-pressed', mBtns[mb].getAttribute('data-v') === S.statsMode ? 'true' : 'false');
+      }
+      statShown = {};
+      pane.innerHTML = S.statsMode === 'pvp' ? pvpInnerHtml(i, res) : statsPanel(i, res, null);
+      if (S.statsMode === 'pvp' && PVP) { PVP.kickPvpAnim(); }
+      return;
+    }
+    if (S.statsMode === 'pvp') {
+      pane.innerHTML = pvpInnerHtml(i, res);
+    } else {
+      syncStatsDom(pane, i, res, null, true);
+    }
+
+    var r = WR[i], pr = poolRow(i), cols = pr[2], marks = marksOf(i), ammo = ammoEn(V.am[r[W_AMMO]][0]);
+    var mat = box.querySelector('.matrix');
+    if (mat) {
+      mat.innerHTML = cols.map(function (col, c) {
+        var cells = cellsOf(col), fixed = cells.length === 1;
+        return '<div class="col"><h4>' + esc(P.lb[col[0]]) + '</h4>' + cells.map(function (cell) {
+          return plugButton(c, cell, marks, roll.sel[c] === shownPlug(cell), fixed, ammo, res);
+        }).join('') + '</div>';
+      }).join('');
+      perkLinks();
+    }
+    var dirty = !sameRoll(roll, defaultRoll(i));
+    var perkHead = mat && mat.parentNode ? mat.parentNode.querySelector('.sub-label') : null;
+    if (perkHead) {
+      var rst = perkHead.querySelector('[data-act="resetroll"]');
+      if (dirty && !rst) { perkHead.insertAdjacentHTML('beforeend', '<button type="button" class="op" data-act="resetroll">重置配置</button>'); }
+      else if (!dirty && rst) { rst.remove(); }
+    }
+    var aux = box.querySelector('.side-aux');
+    if (aux) {
+      var slotsEl = aux.querySelector('.side-slots');
+      if (slotsEl) { slotsEl.innerHTML = sideMods(i, roll) + sideMw(i, roll); }
+      var tierEl = aux.querySelector('.mw-tier');
+      if (pr[4] && tierEl) {
+        var thumb = tierEl.querySelector('.mw-tier-thumb');
+        if (thumb) { thumb.style.transform = 'translateX(' + (Math.max(0, Math.min(4, (roll.t || 5) - 1)) * 100) + '%)'; }
+        var tBtns = tierEl.querySelectorAll('[data-act="tier"]');
+        for (var tb = 0; tb < tBtns.length; tb++) {
+          tBtns[tb].setAttribute('aria-pressed', +tBtns[tb].getAttribute('data-v') === roll.t ? 'true' : 'false');
+        }
+      } else if (!pr[4]) {
+        var lvEl = aux.querySelector('.pk-lv');
+        var nextLv = sideTiers(i, roll);
+        if (lvEl && nextLv) { lvEl.outerHTML = nextLv; }
+        else if (lvEl && !nextLv) { lvEl.remove(); }
+        else if (!lvEl && nextLv && slotsEl) { slotsEl.insertAdjacentHTML('afterend', nextLv); }
+      }
+      var oldPick = aux.querySelector('.picker');
+      if (oldPick) { oldPick.remove(); }
+      var pickHtml = S.pop === 'mw' ? mwPicker(i, roll) : S.pop === 'mod' ? modPicker(i, roll) : '';
+      var fxEl = aux.querySelector('.fx-side');
+      if (fxEl) {
+        if (pickHtml) { fxEl.insertAdjacentHTML('beforebegin', pickHtml); }
+        fxEl.outerHTML = sideFx(i);
+      }
+    }
+    var catSec = box.querySelector('[data-act="cat"]');
+    if (catSec) { catSec.setAttribute('aria-pressed', roll.cat ? 'true' : 'false'); }
+    if (S.statsMode === 'pvp' && PVP) { PVP.kickPvpAnim(); }
+  }
+  /* 悬停词条原地同步属性条预览，不销毁重建 DOM，丝绸补间顺滑触发。 */
   var hoverRaf = 0;
   function renderHover() {
     if (hoverRaf) cancelAnimationFrame(hoverRaf);
@@ -3612,11 +3828,9 @@
         if (b) { b.classList.add('is-hover'); }
       }
       if (S.statsMode === 'pvp') { return; }
-      var hasCmp = !!(S.cmpRoll && S.cmpRoll.w === WR[i][W_H]);
       var res = compute(i, roll);
-      var ghost = h ? compute(i, roll, { col: h.col, plug: h.plug })
-        : (hasCmp ? compute(i, S.cmpRoll.roll, null, S.cmpRoll.perkStep) : null);
-      pane.innerHTML = statsPanel(i, res, ghost, !h && hasCmp);
+      var ghost = h ? compute(i, roll, { col: h.col, plug: h.plug }) : null;
+      syncStatsDom(pane, i, res, ghost, false);
     });
   }
 
@@ -3700,6 +3914,7 @@
   function leaveHover() {
     hideTip();
     S.hoverRow = null;
+    highlightLinkedPerks(body.querySelector('.wpn-detail'), S.sel, null);
     if (!S.hoverPlug) { return; }
     S.hoverPlug = null;
     renderHover();
@@ -4254,7 +4469,6 @@
       S.pvpAcc = null;
       S.pvpMag = null;
       S.pvpMagBlank = false;
-      S.cmpRoll = null;
     }
     S.sel = i;
     S.pop = null;
@@ -4494,10 +4708,11 @@
           if (hasBadge) {
             var nSpec = resolveAmmoSpec(perkSpec(plug), ammoStr);
             var nTot = perkSteps(nSpec, plug, ammoStr, curRes && curRes.magBaseCap);
-            S.perkStep[ph] = nTot > 0 ? 0 : -1;
+            var isPiSel = !!(PVP_CHRONO_PERKS[ph] && PVP_CHRONO_PERKS[ph].kind === 'precisionInstrument');
+            S.perkStep[ph] = isPiSel ? -1 : (nTot > 0 ? 0 : -1);
           }
         }
-        saveRoll(i); S.hoverPlug = null; hideTip(); renderDetail(); return;
+        saveRoll(i); S.hoverPlug = null; hideTip(); patchWeaponDetail(i); return;
       }
       case 'resetroll':
         delete S.rolls[WR[i][W_H]];
@@ -4506,39 +4721,31 @@
         S.hoverPlug = null;
         hideTip();
         writeUrl(false);
-        renderDetail();
+        patchWeaponDetail(i);
         return;
       case 'mwslot':
-        e.stopPropagation(); S.pop = S.pop === 'mw' ? null : 'mw'; hideTip(); renderDetail(); return;
+        e.stopPropagation(); S.pop = S.pop === 'mw' ? null : 'mw'; hideTip(); patchWeaponDetail(i); return;
       case 'modslot':
-        e.stopPropagation(); S.pop = S.pop === 'mod' ? null : 'mod'; hideTip(); renderDetail(); return;
+        e.stopPropagation(); S.pop = S.pop === 'mod' ? null : 'mod'; hideTip(); patchWeaponDetail(i); return;
       case 'mwpick': {
         var r1 = rollOf(i); r1.mw = v || ''; if (!v) { S.pop = null; }
-        saveRoll(i); renderDetail(); return;
+        saveRoll(i); patchWeaponDetail(i); return;
       }
       case 'level': {
-        var r2 = rollOf(i); r2.lv = +v; saveRoll(i); renderDetail(); return;
+        var r2 = rollOf(i); r2.lv = +v; saveRoll(i); patchWeaponDetail(i); return;
       }
       case 'tier': {
-        var r3 = rollOf(i); r3.t = +v; saveRoll(i); renderDetail(); return;
+        var r3 = rollOf(i); r3.t = +v; saveRoll(i); patchWeaponDetail(i); return;
       }
       case 'modpick': {
-        var r4 = rollOf(i); r4.mod = +v; S.pop = null; hideTip(); saveRoll(i); renderDetail(); return;
+        var r4 = rollOf(i); r4.mod = +v; S.pop = null; hideTip(); saveRoll(i); patchWeaponDetail(i); return;
       }
       case 'cat': {
-        var r5 = rollOf(i); r5.cat = r5.cat ? 0 : 1; saveRoll(i); renderDetail(); return;
+        var r5 = rollOf(i); r5.cat = r5.cat ? 0 : 1; saveRoll(i); patchWeaponDetail(i); return;
       }
       case 'statsmode':
-        S.statsMode = v; renderDetail(); return;
-      case 'cmp': {
-        var curH = WR[i][W_H];
-        if (S.cmpRoll && S.cmpRoll.w === curH) {
-          S.cmpRoll = null;
-        } else {
-          S.cmpRoll = { w: curH, roll: JSON.parse(JSON.stringify(rollOf(i))), perkStep: Object.assign({}, S.perkStep) };
-        }
-        renderDetail(); return;
-      }
+        if (S.statsMode === v) { return; }
+        S.statsMode = v; patchWeaponDetail(i, true); return;
       case 'pvpreset': {
         S.pvpAcc = null;
         if (PVP) { PVP.refreshPvpNumbers(); }
@@ -4559,28 +4766,28 @@
         var ix = S.fx.indexOf(v);
         if (ix >= 0) { S.fx.splice(ix, 1); delete S.fxStep[v]; }
         else { S.fx.push(v); S.fxStep[v] = 0; }
-        renderDetail(); return;
+        patchWeaponDetail(i); return;
       }
       case 'fxstep': {
         var ns = +el.getAttribute('data-n') || 1;
         S.fxStep[v] = ((S.fxStep[v] || 0) + 1) % ns;
-        renderDetail(); return;
+        patchWeaponDetail(i); return;
       }
       case 'perkstep': {
         var n = +el.getAttribute('data-n') || 1, isPI = el.getAttribute('data-pi') === '1';
         var ammoS = S.sel != null ? ammoEn(V.am[WR[S.sel][W_AMMO]][0]) : 'Primary';
         var pI = PIDX[+v], curS = pI != null ? perkStepOf(pI, ammoS) : (S.perkStep[v] || 0);
         S.perkStep[v] = isPI ? (curS + 2) % (n + 1) - 1 : (curS + 1) % n;
-        renderDetail(); return;
+        patchWeaponDetail(i); return;
       }
       case 'fxopen':
         e.stopPropagation();
         S.fxOpen = !S.fxOpen;
         if (!S.fxOpen) { S.fxg = ''; }
-        renderDetail(); return;
+        patchWeaponDetail(i); return;
       case 'fxg':
         S.fxg = S.fxg === v ? '' : v;
-        renderDetail(); return;
+        patchWeaponDetail(i); return;
       case 'usedaegis':
         S.hideAegis = !S.hideAegis;
         store('wpn.hideAegis', S.hideAegis);
@@ -4678,6 +4885,7 @@
         S.hoverRow = s;
         hoverAct = act;
         hoverKey = 's' + s;
+        highlightLinkedPerks(body.querySelector('.wpn-detail'), i, s);
         clearTimeout(tipTimer);
         tipTimer = setTimeout(function () {
           if (hoverKey !== 's' + s || !el.isConnected) { return; }
