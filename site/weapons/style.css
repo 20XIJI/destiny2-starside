@@ -3052,30 +3052,59 @@
   text-align: center;
 }
 .pvp-slat {
+  position: relative;
   display: flex;
   align-items: center;
-  height: 20px;
+  height: 24px;
   cursor: ew-resize;
+}
+.pvp-slat-knee {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 2px;
+  height: 11px;
+  border-radius: 1px;
+  background-color: rgba(245, 242, 234, .34);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 1;
+  transition: background-color .18s var(--ease-silk), height .18s var(--ease-silk);
+}
+.pvp-weapon-stat.is-over100 .pvp-slat-knee {
+  height: 13px;
+  background-color: var(--buff);
 }
 .pvp-crit-range {
   -webkit-appearance: none;
   appearance: none;
+  position: relative;
+  z-index: 2;
   width: 100%;
-  height: 5px;
+  height: 24px;
   margin: 0;
-  border-radius: 999px;
-  background-image: linear-gradient(90deg, rgba(235, 231, 221, .78) 0%, #f5f2ea var(--pct, 100%), rgba(255, 255, 255, .08) var(--pct, 100%));
+  padding: 0;
+  background-color: transparent;
   outline: none;
   cursor: ew-resize;
 }
+.pvp-crit-range::-webkit-slider-runnable-track {
+  height: 5px;
+  border-radius: 999px;
+  background-image: linear-gradient(90deg, rgba(235, 231, 221, .78) 0%, #f5f2ea var(--pct, 100%), rgba(255, 255, 255, .08) var(--pct, 100%));
+}
+.pvp-weapon-stat.is-over100 .pvp-crit-range::-webkit-slider-runnable-track {
+  background-image: linear-gradient(90deg, rgba(235, 231, 221, .78) 0%, #f5f2ea 50%, var(--buff) 50%, var(--buff) var(--pct, 100%), rgba(255, 255, 255, .08) var(--pct, 100%));
+}
 .pvp-crit-range:focus-visible {
   outline: 1px solid var(--accent);
-  outline-offset: 4px;
+  outline-offset: 2px;
 }
 .pvp-crit-range::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 12px;
   height: 12px;
+  margin-top: -3.5px;
   border: 0;
   border-radius: 50%;
   background-color: #f8f6ef;
@@ -3088,7 +3117,10 @@
   height: 5px;
   border: 0;
   border-radius: 999px;
-  background-color: rgba(255, 255, 255, .08);
+  background-image: linear-gradient(90deg, rgba(235, 231, 221, .78) 0%, #f5f2ea var(--pct, 100%), rgba(255, 255, 255, .08) var(--pct, 100%));
+}
+.pvp-weapon-stat.is-over100 .pvp-crit-range::-moz-range-track {
+  background-image: linear-gradient(90deg, rgba(235, 231, 221, .78) 0%, #f5f2ea 50%, var(--buff) 50%, var(--buff) var(--pct, 100%), rgba(255, 255, 255, .08) var(--pct, 100%));
 }
 .pvp-crit-range::-moz-range-thumb {
   width: 12px;
@@ -3128,6 +3160,10 @@
   transition: background-color .2s var(--ease-silk);
 }
 .pvp-cell:hover { background-color: rgba(255, 255, 255, .04); }
+.pvp-ttk-col.is-live .pvp-stat-hero-value,
+.pvp-slider-blk.is-live .pvp-stat-value {
+  color: var(--buff);
+}
 .pvp-cell > span {
   color: var(--bone-dim);
   font: 400 11px/1 var(--font-cn);
@@ -3156,6 +3192,12 @@
   font: 400 11px/1 var(--font-body);
 }
 .pvp-cell.hi .pvp-stat-value { color: var(--c-stack); }
+.pvp-cell.hi .pvp-stat-value.better,
+.pvp-cell .pvp-stat-value.better,
+.pvp-cell .pvp-stat-value [data-pvp].better { color: var(--buff); }
+.pvp-cell.hi .pvp-stat-value.worse,
+.pvp-cell .pvp-stat-value.worse,
+.pvp-cell .pvp-stat-value [data-pvp].worse { color: var(--enemy); }
 
 .pvp-stat-notes {
   padding: 7px 10px;

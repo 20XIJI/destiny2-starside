@@ -95,6 +95,12 @@ Store all verification proof in `$EVIDENCE_DIR` (outside `$SCRATCH/.playwright-c
   playwright-cli -s="$RUN_ID" screenshot --filename="evidence/<feature>-<step>.png"
   ```
 - **Never use `--full-page` or tall element screenshots:** off-screen `.mod-row` and `.set-bonuses` elements have `content-visibility: auto` and render as blank boxes in full-page captures; element screenshots composite sticky headers (`.site-head`, `.art-bar`) across the middle of the image. Scroll to the target position with `behavior: 'instant'` and capture the viewport.
+- **Continuous & linked controls (trajectory probe):** whenever verifying sliders, drag-and-drop, hover previews, or live-updating charts (e.g., `/weapons/index.html` PvP sliders, `/power-delta/index.html` `.cd-slider`), run the global trajectory probe against the active session and inspect its side-by-side contact sheet via `read_file`:
+  ```bash
+  python3 ~/.gemini/config/skills/playwright-cli/scripts/probe_interactive.py \
+    -s "$RUN_ID" --selector '<control-css>' --scope '<panel-css>' \
+    --thresholds '<comma-knees>' --out "$EVIDENCE_DIR/probe-<name>"
+  ```
 - **State and side-effect proof:** pair visual captures with `playwright-cli -s="$RUN_ID" --raw eval "<expr>"` assertions (URL query/hash, DOM counts, computed styles, `localStorage` keys, or exported markdown in `#out`).
 - **Build, test & static gate proof:** record exit code and summary of `npm run build` and `npm test` (plus `ruff check tools/*.py && pyright tools/*.py` when Python files changed, and `oxlint --type-aware --type-check site/ functions/ tools/` when JS changed).
 - **Dry-run boundary note:** `python3 tools/deploy.py --dry-run` skips `sync.py` and does not upload to CloudBase, whereas `python3 tools/deploy.py` without `--dry-run` mutates remote CloudBase storage and database state. Never run `deploy.py` without `--dry-run` during verification.

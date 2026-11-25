@@ -222,14 +222,20 @@ export default function init(deps) {
 
     /* 底部三格实战对照仪 */
     var deck = document.createElement('div');
+    var zeroMark = (loAll < 0 && hiAll > 0)
+      ? '<i class="cd-slider-zero" style="left:' + (((0 - loAll) / (hiAll - loAll)) * 100).toFixed(2) + '%" aria-hidden="true"></i>'
+      : '';
     deck.className = 'chart-deck';
     deck.innerHTML =
       '<div class="cd-cell">' +
         '<div class="cd-hd">' +
-          '<span>' + heads[0] + ' <strong class="cd-x"></strong></span>' +
+          '<span class="cd-x-wrap">' + heads[0] + ' <strong class="cd-x"></strong>' +
+            '<input class="cd-num" type="number" inputmode="numeric" min="' + loAll + '" max="' + hiAll + '" step="1" value="' + curX + '" aria-label="输入' + heads[0] + '数值">' +
+          '</span>' +
           '<span class="cd-badge"></span>' +
         '</div>' +
         '<div class="cd-slider-row">' +
+          zeroMark +
           '<input class="cd-slider" type="range" min="' + loAll + '" max="' + hiAll + '" value="' + curX + '" aria-label="选择' + heads[0] + '">' +
         '</div>' +
         '<div class="cd-quicks"></div>' +
@@ -280,6 +286,7 @@ export default function init(deps) {
     });
 
     var elX = deck.querySelector('.cd-x');
+    var elNum = deck.querySelector('.cd-num');
     var elBadge = deck.querySelector('.cd-badge');
     var elSlider = deck.querySelector('.cd-slider');
     var elQuicks = deck.querySelector('.cd-quicks');
@@ -314,8 +321,8 @@ export default function init(deps) {
       quickBtns.push(b);
     });
 
-    elSlider.addEventListener('input', function () {
-      curX = +elSlider.value;
+    function applySliderVal(v) {
+      curX = Math.max(loAll, Math.min(hiAll, Math.round(v)));
       if (zoomed && (curX < -50 || curX > 20)) {
         zoomed = false;
         if (zoomBtn) zoomBtn.setAttribute('aria-pressed', 'false');
@@ -324,7 +331,28 @@ export default function init(deps) {
         drawOverlay(curX);
         updateDeck(curX);
       }
+    }
+    elSlider.addEventListener('pointerdown', function () {
+      deck.classList.add('is-dragging');
     });
+    var endCdDrag = function () { deck.classList.remove('is-dragging'); };
+    window.addEventListener('pointerup', endCdDrag);
+    window.addEventListener('pointercancel', endCdDrag);
+    elSlider.addEventListener('blur', endCdDrag);
+    elSlider.addEventListener('input', function () {
+      applySliderVal(+elSlider.value);
+    });
+    if (elNum) {
+      elNum.addEventListener('input', function () {
+        var raw = String(elNum.value || '').trim();
+        if (raw === '' || raw === '-' || raw === '+') return;
+        var n = Number(raw);
+        if (!Number.isFinite(n)) return;
+        if (n < loAll || n > hiAll) return;
+        applySliderVal(n);
+      });
+      elNum.addEventListener('blur', function () { elNum.value = String(curX); });
+    }
 
     elClear.addEventListener('click', function () {
       pins = [];
@@ -346,6 +374,7 @@ export default function init(deps) {
 
       elX.textContent = signed(x);
       elSlider.value = String(x);
+      if (elNum && document.activeElement !== elNum) elNum.value = String(x);
 
       if (x <= -50) {
         elBadge.textContent = '极度衰减区';

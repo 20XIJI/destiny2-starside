@@ -1,7 +1,7 @@
 # 数据源与鸣谢
 
 描述：Starside 全站资料页的数据出处与社区贡献者汇总。
-更新：2026.11.8
+更新：2026.11.25
 导航：是
 页脚：各资料页页脚均附有单页出处，本页为全站汇总清单。
 
@@ -17,7 +17,8 @@
 | [刷取清单](https://docs.google.com/spreadsheets/d/1qsKGrRzCePGaIM5gNtAQNh949d3OsMJ6qV6Fqtpj22k/htmlview) | {exotic|异域}武器与传说武器的输出、清怪与高难评级，护甲套装的刷取排序与场景 | [刷取清单 · {exotic|异域}武器](../exotic-weapons/index.html)、[刷取清单 · 白弹紫枪](../legendary-primary/index.html)、[刷取清单 · 绿弹紫枪](../legendary-special/index.html)、[刷取清单 · 威能紫枪](../legendary-heavy/index.html)、[刷取清单 · 护甲套装](../farming-sets/index.html) |
 | [DIM 社区](https://discord.com/channels/591927598255439873/1453807417430245518) | 弹药生成的测试支持 | [弹药生成机制](../ammo/index.html) |
 | Aegis 的 [Destiny 2: Boss Damage](https://docs.google.com/spreadsheets/u/0/d/1_5wtBjRYHHxuF4oJKDb_iOGZs-wTkzB6RYbnyNLbuz4/htmlview) 技能分页 | 手雷、近战、超能与杂项技能的单次伤害实测 | [技能伤害排行](../skill-damage/index.html) |
-| [Ability Cooldowns & Scalers](https://docs.google.com/spreadsheets/d/1lEOY_Z0v5ZZVZJ1SVLJyleMBEG2a7KLq4aLIQA9zk0A) | 各技能的基础冷却、基础回复单位与属性倍率 | [技能冷却](../ability-cooldown/index.html) |
+| Clarity 的 [Character-Stats](https://github.com/Database-Clarity/Character-Stats) | Update 9.7.0 护甲属性冷却曲线与主动回能属性倍率 | [技能冷却](../ability-cooldown/index.html)、[游戏机制](../game-mechanics/index.html) |
+| [Ability Cooldowns & Scalers](https://docs.google.com/spreadsheets/d/1lEOY_Z0v5ZZVZJ1SVLJyleMBEG2a7KLq4aLIQA9zk0A) | 各技能的 0 属性基础冷却与回复倍率 | [技能冷却](../ability-cooldown/index.html) |
 | Clarity 的 [Chunk Energy Scalars](https://www.d2clarity.com/blog/destiny-science-6/chunk-energy-scalars-breakdown-12) | 整块系数的分档规则、职业物品模组的第二层系数与例外 | [技能冷却](../ability-cooldown/index.html) |
 | LFCarry 的 [Raid Loot Tables](https://lfcarry.com/guides/destiny-2-raid-loot-tables) 与 [Dungeon Loot Tables](https://lfcarry.com/guides/destiny-2-dungeon-loot-tables) | 全突袭与地牢按关卡区分的武器、{exotic|异域}装备与护甲部位掉落 | [Raid & 地牢](../raid-guides/index.html) |
 

@@ -1081,6 +1081,7 @@ window.WPN_PVP = function (H) {
     return out;
   }
   var PVP_ANIM_MS = 666, pvpTween = null, pvpShown = { body: null, head: null }, pvpSel = null, pvpPending = null;
+  var pvpDragBase = null, pvpDragTimer = null;
   function easePvp(e) {
     if (e <= 0) { return 0; }
     if (e >= 1) { return 1; }
@@ -1306,6 +1307,33 @@ window.WPN_PVP = function (H) {
     n.classList.remove('up', 'down', 'better', 'worse');
     if (cls) { n.classList.add(cls); }
   }
+  function pvpCellLive(pane, key, live) {
+    var n = pane.querySelector('[data-pvp="' + key + '"]');
+    if (!n) { return; }
+    var host = n.closest('.pvp-cell, .pvp-ttk-col, .pvp-slider-blk');
+    if (host) { host.classList.toggle('is-live', !!live); }
+  }
+  function clearPvpLive(pane) {
+    if (!pane) { return; }
+    pane.querySelectorAll('.is-live').forEach(function (el) { el.classList.remove('is-live'); });
+    ['ttk', 'body', 'crit', 'hip', 'ads', 'reload', 'ready', 'stow', 'hads'].forEach(function (k) {
+      pvpCls(pane, k, '');
+    });
+  }
+  function beginPvpDrag() {
+    if (pvpDragTimer) { clearTimeout(pvpDragTimer); pvpDragTimer = null; }
+    var P = H.getP(), SIDX = H.getSIDX();
+    if (S.sel == null || !P || !SIDX) { return; }
+    var v = pvpView(S.sel, compute(S.sel, rollOf(S.sel)));
+    pvpDragBase = pvpAnimSnapshot(v);
+    pvpDragBase.acc = v.acc;
+  }
+  function endPvpDrag() {
+    if (!pvpDragBase) { return; }
+    pvpDragBase = null;
+    if (pvpDragTimer) { clearTimeout(pvpDragTimer); pvpDragTimer = null; }
+    clearPvpLive(body.querySelector('.pvp-stats'));
+  }
   function fmtNum(v) { return v.toFixed(2); }
   function pvpHeroHtml(v, shownTtk, shownBursts, shownHits, shownPelKill, shownPelShot) {
     var effW = v.effW, ttkVal = shownTtk != null ? shownTtk : v.ttk;
@@ -1474,6 +1502,8 @@ window.WPN_PVP = function (H) {
     if (wsRst) { wsRst.hidden = S.pvpStat === 0; }
     var wsDesc = pane.querySelector('[data-pvp="wnote"]');
     if (wsDesc) { wsDesc.innerHTML = pvpWeaponStatNoteHtml(v); }
+    var wsWrap = pane.querySelector('.pvp-weapon-stat');
+    if (wsWrap) { wsWrap.classList.toggle('is-over100', S.pvpStat > 100); }
     if (v.magMax != null && v.magStart != null) {
       var magNum = pane.querySelector('[data-act="pvpmagnum"]');
       if (magNum && document.activeElement !== magNum && !S.pvpMagBlank) {
@@ -1487,16 +1517,49 @@ window.WPN_PVP = function (H) {
       if (magRst) { magRst.hidden = v.magStart === v.magMax; }
     }
   }
-  function refreshPvpNumbers() {
+  function refreshPvpNumbers(liveDrag) {
     var P = H.getP(), SIDX = H.getSIDX();
     var pane = body.querySelector('.pvp-stats');
     if (!pane || S.sel == null || !P || !SIDX) { return; }
     if (pvpTween) { cancelAnimationFrame(pvpTween); pvpTween = null; }
+    var prev = pvpShown;
     var v = pvpView(S.sel, compute(S.sel, rollOf(S.sel)));
     updatePvpControls(pane, v);
     var snap = pvpAnimSnapshot(v);
+    snap.acc = v.acc;
     pvpShown = snap;
-    paintPvpNumbers(pane, v, snap, '');
+    var cls = '';
+    if (liveDrag || pvpDragBase) {
+      var base = pvpDragBase || prev;
+      function diffDir(a, b, lowerGood) {
+        if (a == null || b == null || Math.abs(b - a) <= 1e-6) { return ''; }
+        return (lowerGood ? b < a : b > a) ? 'better' : 'worse';
+      }
+      var ttkDiff = diffDir(base.ttk, snap.ttk, true) || diffDir(base.pelKill, snap.pelKill, true);
+      cls = {
+        ttk: ttkDiff,
+        body: diffDir(base.body, snap.body, false),
+        crit: diffDir(base.head, snap.head, false),
+        hip: diffDir(base.hip, snap.hip, false),
+        ads: diffDir(base.ads, snap.ads, false),
+        reload: diffDir(base.reload, snap.reload, true),
+        ready: diffDir(base.ready, snap.ready, true),
+        stow: diffDir(base.stow, snap.stow, true),
+        hads: diffDir(base.hAds, snap.hAds, true)
+      };
+      Object.keys(cls).forEach(function (k) { pvpCellLive(pane, k, !!cls[k]); });
+      pvpCellLive(pane, 'acc', base.acc != null && base.acc !== snap.acc);
+      if (!pvpDragBase) {
+        if (pvpDragTimer) { clearTimeout(pvpDragTimer); }
+        pvpDragTimer = setTimeout(function () {
+          pvpDragTimer = null;
+          clearPvpLive(body.querySelector('.pvp-stats'));
+        }, 380);
+      }
+    } else {
+      clearPvpLive(pane);
+    }
+    paintPvpNumbers(pane, v, snap, cls);
     var perksHtml = pvpPerkBadges(v.showPerks, v.flatBadges, v.tyEn, v.effW);
     var perksEl = pane.querySelector('[data-pvp="perks"]');
     if (perksEl) { perksEl.innerHTML = perksHtml; perksEl.hidden = !perksHtml; }
@@ -1743,14 +1806,14 @@ window.WPN_PVP = function (H) {
       '<div class="pvp-hits-col"><div class="pvp-dots" data-pvp="dots" data-dkey="' + esc(dKey) + '">' + pvpDotsHtml(v) + '</div>' +
       '<span class="pvp-hits-txt" data-pvp="hits">' + pvpHitsText(v) + '</span></div></div>' +
       accBlock + rowsHtml + magHtml + notesHtml +
-      '<div class="pvp-weapon-stat">' +
+      '<div class="pvp-weapon-stat' + (S.pvpStat > 100 ? ' is-over100' : '') + '">' +
       '<div class="pvp-stat-item"><span class="pvp-stat-label pvp-magazine-label"><span>武器属性' +
       '<button type="button" class="pvp-crit-reset" data-act="pvpstatreset" title="重置为 0"' +
       (S.pvpStat === 0 ? ' hidden' : '') + '>↺</button></span>' +
       '<input class="pvp-numeric-input pvp-stat-input" type="number" inputmode="numeric" min="0" max="200" step="1" value="' +
       S.pvpStat + '" data-act="pvpstatnum" aria-label="武器属性数值">' +
       '</span></div>' +
-      '<div class="pvp-slat"><input class="pvp-crit-range" type="range" min="0" max="200" step="1" value="' + S.pvpStat +
+      '<div class="pvp-slat has-knee"><i class="pvp-slat-knee" aria-hidden="true"></i><input class="pvp-crit-range" type="range" min="0" max="200" step="1" value="' + S.pvpStat +
       '" style="--pct:' + wsPct + '%" data-act="pvpstat" aria-label="武器属性滑动条"></div>' +
       '<div class="pvp-weapon-stat-description" data-pvp="wnote">' + pvpWeaponStatNoteHtml(v) + '</div>' +
       '</div>' +
@@ -1762,6 +1825,8 @@ window.WPN_PVP = function (H) {
     pvpPanel: pvpPanel,
     kickPvpAnim: kickPvpAnim,
     refreshPvpNumbers: refreshPvpNumbers,
+    beginPvpDrag: beginPvpDrag,
+    endPvpDrag: endPvpDrag,
     getTtkData: getTtkData,
     pvpView: pvpView,
     getPerkDamageModifier: getPerkDamageModifier,

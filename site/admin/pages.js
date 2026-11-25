@@ -41,7 +41,7 @@ window.starsidePages = [
   ["docs/raid-salvations-edge","救赎的边缘","raid-guides/salvations-edge/index.html","刷取与攻略","docs/raid-guides","2026.11.16"],
   ["docs/raid-vault-of-glass","玻璃拱顶","raid-guides/vault-of-glass/index.html","刷取与攻略","docs/raid-guides","2026.11.16"],
   ["docs/raid-vow-of-the-disciple","门徒誓约","raid-guides/vow-of-the-disciple/index.html","刷取与攻略","docs/raid-guides","2026.11.16"],
-  ["docs/ability-cooldown","技能冷却","ability-cooldown/index.html","图鉴与数据","","2026.8.25"],
+  ["docs/ability-cooldown","技能冷却","ability-cooldown/index.html","图鉴与数据","","2026.11.25"],
   ["docs/boss-hp","首领生命值","boss-hp/index.html","图鉴与数据","","2026.8.30"],
   ["docs/elements","职业分支详解","elements/index.html","图鉴与数据","","2026.10.8"],
   ["docs/weapon-frames","武器框架","weapon-frames/index.html","图鉴与数据","","2026.8.22"],
@@ -62,11 +62,11 @@ window.starsidePages = [
   ["docs/armor-rng","护甲 3.0 商人属性机制与推算","armor-rng/index.html","机制","","2026.10.20"],
   ["docs/buff-debuffs","增伤 & 易伤","buff-debuffs/index.html","机制","","2026.8.30"],
   ["docs/combatant-scalars","战斗人员倍率","combatant-scalars/index.html","机制","","2026.8.14"],
-  ["docs/game-mechanics","游戏机制","game-mechanics/index.html","机制","","2026.10.8"],
+  ["docs/game-mechanics","游戏机制","game-mechanics/index.html","机制","","2026.11.25"],
   ["docs/power-delta","压光伤害","power-delta/index.html","机制","","2026.8.14"],
   ["docs/changelog","更新日志","changelog/index.html","站务","","2026.11.25"],
   ["docs/notices","站内公告","notices/index.html","站务","","2026.11.25"],
   ["docs/palette","配色总览","palette/index.html","站务","","2026.8.24"],
-  ["docs/sources","数据源与鸣谢","sources/index.html","站务","","2026.11.8"],
+  ["docs/sources","数据源与鸣谢","sources/index.html","站务","","2026.11.25"],
 ]
 window.starsideBuilds = {"classes":["猎人","泰坦","术士"],"scenes":["突袭","地牢","宗师/终极","日常","功能性","PVP"],"tiers":["meta","强力","创意"],"sceneTags":{"突袭":["输出","机制","五壮举"],"地牢":["输出","机制","五壮举"],"PVP":["3V3","6V6"],"宗师/终极":[],"日常":[],"功能性":[]},"branch":{"电弧":"arc","烈日":"solar","虚空":"void","冰影":"stasis","缚丝":"strand","棱镜":"prismatic"},"season":"s29-凯旋纪念碑"}

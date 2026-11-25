@@ -6,6 +6,7 @@
 
 ## 2026.11.25
 
+- {act|改动}[技能冷却](../ability-cooldown/index.html)与[游戏机制](../game-mechanics/index.html)：按 Update 9.7.0 技能回复曲线重算全表冷却秒数、基础回复单位与属性倍率
 - {act|改动}[装备库](../weapons/index.html)：重构属性面板视觉与动效，拼音检索扩至词条、框架与来源并带补全
 - {act|改动}[配装推荐](../builds/index.html)：武器图标可直通装备库并自动点选对应词条
 - {act|改动}全站：拼音索引改为按需懒加载，首页与记录页样式拆离主样式表
