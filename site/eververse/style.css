@@ -7,8 +7,8 @@
   --c-silver: var(--c-kinetic);
   --c-rare: var(--c-charge); }
 
-/* ── 页首与商人切换栏（对齐 weapons/style.css 的 .wpn-scope） ── */
-.page-head { padding-bottom: 18px; }
+/* ── 页首与商人切换栏（对齐 weapons/style.css 的紧凑工具页首与 .wpn-scope） ── */
+.page-head { padding: 44px 22px 18px; }
 .page-head h1 { padding-bottom: 0; border-bottom: 0; }
 
 .ev-scope {
@@ -119,19 +119,21 @@ body[data-vendor="ada"] .ev-bar-accent b {
   color: var(--bone-hi);
 }
 
-/* 菱形状态点：与站标、分节标记同一母题 */
+/* 实时状态圆点：与轮换速查表倒计时指示点同形 */
 .ev-dot {
+  --dot-c: var(--c-dust);
   display: inline-block;
   width: 6px;
   height: 6px;
   margin-right: 2px;
-  background-color: var(--c-dust);
-  transform: rotate(45deg);
+  border-radius: 50%;
+  background-color: var(--dot-c);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--dot-c) 65%, transparent);
 }
 
 body[data-vendor="xur"] .ev-dot,
 body[data-vendor="ada"] .ev-dot {
-  background-color: var(--bone-hi);
+  --dot-c: var(--bone-hi);
 }
 
 .ev-bar-right {
@@ -188,6 +190,10 @@ body[data-vendor="ada"] .ev-prog i {
 
 .ev-status-bar.is-stale {
   border-left-color: var(--c-enemy) !important;
+}
+
+.ev-status-bar.is-stale .ev-dot {
+  --dot-c: var(--c-enemy);
 }
 
 .ev-status-bar.is-stale .ev-dot,

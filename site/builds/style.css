@@ -77,7 +77,7 @@ body:has(.set-wrap) {
    改页头间距把这一块也带着走。 */
 .verdict .by-label {
   margin: 0;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font-size: 12px;
   letter-spacing: .08em;
 }

@@ -31,7 +31,7 @@ main { padding: 0 22px clamp(40px, calc(5 * var(--vw)), 72px); }
   gap: 12px;
   margin-top: 24px;
   padding: 16px 20px;
-  background: linear-gradient(90deg, #ffffff07, transparent 70%);
+  background: var(--surf-1);
   border: 1px solid var(--bd-outer);
   border-left: 2px solid var(--note);
   border-radius: var(--r-md);
