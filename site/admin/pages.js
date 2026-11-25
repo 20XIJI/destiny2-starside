@@ -64,8 +64,8 @@ window.starsidePages = [
   ["docs/combatant-scalars","战斗人员倍率","combatant-scalars/index.html","机制","","2026.8.14"],
   ["docs/game-mechanics","游戏机制","game-mechanics/index.html","机制","","2026.10.8"],
   ["docs/power-delta","压光伤害","power-delta/index.html","机制","","2026.8.14"],
-  ["docs/changelog","更新日志","changelog/index.html","站务","","2026.11.12"],
-  ["docs/notices","站内公告","notices/index.html","站务","","2026.11.16"],
+  ["docs/changelog","更新日志","changelog/index.html","站务","","2026.11.25"],
+  ["docs/notices","站内公告","notices/index.html","站务","","2026.11.25"],
   ["docs/palette","配色总览","palette/index.html","站务","","2026.8.24"],
   ["docs/sources","数据源与鸣谢","sources/index.html","站务","","2026.11.8"],
 ]
