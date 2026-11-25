@@ -223,7 +223,7 @@ test('weapons: every syntax row parses into known keywords', () => {
   }
 })
 
-test('weapons: perk1/perk2 swap trait columns while col1-col5 stay fixed', () => {
+test('weapons: perk1/perk2 match fixed trait columns 1 and 2 while col1-col5 match panel columns', () => {
   const deps = [
     'function has(list, x) { return list.indexOf(x) !== -1; }',
     'var W_NAME=1,W_BR=6,W_SSN=7,W_SRC=13,R_TRAIT=1,R_ORIGIN=2,P_NAME=1;',
@@ -256,23 +256,21 @@ test('weapons: perk1/perk2 swap trait columns while col1-col5 stay fixed', () =>
     'function statIndex(){return -1;}',
   ].join('\n')
   const { tokenize, parse, run } = weaponFns(
-    ['normQ', 'tokenize', 'parse', 'fold', 'cached', 'perkNames', 'colPerkNames', 'traitMask', 'test', 'kw', 'run'],
+    ['normQ', 'tokenize', 'parse', 'fold', 'cached', 'perkNames', 'colPerkNames', 'test', 'kw', 'run'],
     deps
   )
   const keys = ['perk', 'perk1', 'perk2', 'col1', 'col2', 'col3', 'col4', 'col5', 'origintrait']
   const q = (s) => Array.from(run('wpn', parse(tokenize(s), keys)))
-  // perk1 + perk2 swap across trait columns (枪甲: 治疗弹匣|狂乱, 枪乙: 狂乱|治疗弹匣, 枪丙: 治疗弹匣+狂乱|墓碑)
-  assert.deepEqual(q('perk1:治疗弹匣 perk2:狂乱'), [0, 1], '双特性词条应自动换列，且不命中同栏双词条的枪丙')
-  assert.deepEqual(q('perk1:狂乱 perk2:治疗弹匣'), [0, 1], '互换写法结果应完全一致')
-  assert.deepEqual(q('(perk1:治疗弹匣 or perk1:墓碑) (perk2:狂乱 or perk2:连锁反应)'), [0, 1, 2], '括号组相与时也自动换列')
-  // single perk1 matches either trait column; negation excludes both trait columns
-  assert.deepEqual(q('perk1:墓碑'), [2], '单侧 perk1 应命中任一特性栏')
-  assert.deepEqual(q('-perk1:墓碑'), [0, 1], '单侧 -perk1 应排除任一特性栏含该词条的枪')
-  // negation combined with perk1 + perk2 must negate the full swapped predicate
-  assert.deepEqual(q('not (perk1:治疗弹匣 perk2:狂乱)'), [2], '对换列组合整体取反时应排除正反两序命中项')
-  assert.deepEqual(q('-perk1:墓碑 -perk2:狂乱'), [], '两个独立否定相与时不应因换列提升而反转')
-  assert.deepEqual(q('not (perk1:治疗弹匣 or perk2:墓碑)'), [], '对换列或组整体取反时应排除全部命中项')
-  assert.deepEqual(q('perk1:治疗弹匣 -perk2:墓碑'), [0, 1], '单侧正向与单侧否定相与应排除含墓碑的枪')
+  // 枪甲: 治疗弹匣|狂乱, 枪乙: 狂乱|治疗弹匣, 枪丙: 治疗弹匣+狂乱|墓碑
+  assert.deepEqual(q('perk1:治疗弹匣 perk2:狂乱'), [0], 'perk1/perk2 应严格匹配各自特性栏，不自动换列')
+  assert.deepEqual(q('perk1:狂乱 perk2:治疗弹匣'), [1], '反写只命中反序武器')
+  assert.deepEqual(q('(perk1:治疗弹匣 or perk1:墓碑) (perk2:狂乱 or perk2:墓碑)'), [0, 2], '括号组相与时各自按固定特性栏匹配')
+  assert.deepEqual(q('perk1:墓碑'), [], 'perk1 不应命中只在第 2 特性栏出现的词条')
+  assert.deepEqual(q('perk2:墓碑'), [2], 'perk2 应命中第 2 特性栏词条')
+  assert.deepEqual(q('-perk1:墓碑'), [0, 1, 2], '-perk1 只排除第 1 特性栏含该词条的武器')
+  assert.deepEqual(q('-perk2:墓碑'), [0, 1], '-perk2 排除第 2 特性栏含该词条的武器')
+  assert.deepEqual(q('not (perk1:治疗弹匣 perk2:狂乱)'), [1, 2], '对组合取反只排除正序命中项')
+  assert.deepEqual(q('perk1:治疗弹匣 -perk2:墓碑'), [0], '正向 perk1 与否定 perk2 各自按固定特性栏判定')
   // col1-col5 stay strictly fixed
   assert.deepEqual(q('col3:治疗弹匣 col4:狂乱'), [0], 'col3/col4 固定列不换列')
   assert.deepEqual(q('col3:狂乱 col4:治疗弹匣'), [1], 'col3/col4 反写只命中反序枪')
@@ -1235,7 +1233,7 @@ test('weapons: pinyin matches perks, structured fields, and autocomplete across 
 
   const dualZh = query('wpn', 'perk1:治疗弹匣 perk2:狂乱')
   assert.ok(dualZh.length > 0, '基线：应存在治疗弹匣+狂乱武器')
-  assert.deepEqual(query('wpn', 'perk1:zhiliaodanxia perk2:kuangluan'), dualZh, 'perk1/perk2 拼音应支持换列')
+  assert.deepEqual(query('wpn', 'perk1:zhiliaodanxia perk2:kuangluan'), dualZh, 'perk1/perk2 拼音应与中文一致')
   assert.deepEqual(query('wpn', 'col3:zhiliaodanxia col4:kuangluan'), query('wpn', 'col3:治疗弹匣 col4:狂乱'), 'col1-col5 拼音应与中文一致')
 
   const origZh = query('wpn', 'origintrait:加速突击')

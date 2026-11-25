@@ -664,7 +664,9 @@ def rec_plain(p, key, cols, narrow="", fam="r-plain"):
     if fam == "r-farm-exo":
         au_rec = (rows.authors_of(rows.facts().at(key) or {}) or {}).get("LGpig") or {}
         au_box = _exotic_au_box(p, key, au_rec)
-        return '<article class="rec r-farm-exo">%s%s</article>' % (
+        attrs = facet_attrs({"slot": ["永劫教派"]}) if z.get("itemTypeDisplayName") == "永劫教派模组" else ""
+        return '<article class="rec r-farm-exo"%s>%s%s</article>' % (
+            attrs,
             idcell(p, key, (), "exo"),
             cell("r-farm-main", '<div class="pf-mech-open">%s</div>%s' % (body, au_box)),
         )
@@ -838,12 +840,22 @@ def rec_exotic_farm(p, key, rank):
 
     tiers, scenes, pairs = _farm_tiers_scenes(tier_raw, role_raw)
     fdata = {"scene": scenes}
-    if not is_armor:
+    if is_armor:
+        slot = z.get("itemTypeDisplayName") or ""
+        if slot == "固有":
+            fdata["slot"] = ["职业金"]
+        elif key in ("796577360", "859709617", "2615220262"):
+            fdata["slot"] = [slot, "永劫教派"] if slot else ["永劫教派"]
+        elif slot:
+            fdata["slot"] = [slot]
+    else:
         fdata["tier"] = tiers
         if pairs:
             fdata["pairs"] = pairs
         if el:
             fdata["elem"] = [el[1]]
+        if d.get("breakerType"):
+            fdata["champ"] = [BREAKER_SHORT[d["breakerType"]]]
     return '<article class="rec r-farm-exo"%s>%s%s</article>' % (
         facet_attrs(fdata),
         head,
@@ -955,21 +967,29 @@ def rec_exotic(p, key):
 
     tier_k = "lgpig_tier" if "lgpig_tier" in au else ("评级" if "评级" in au else "lgpig_tier")
     role_k = "role" if "role" in au else ("定位" if "定位" in au else "role")
-    tiers, scenes, _ = _farm_tiers_scenes(au.get(tier_k) or "", au.get(role_k) or "")
+    tiers, scenes, pairs = _farm_tiers_scenes(au.get(tier_k) or "", au.get(role_k) or "")
     fdata = {}
     if is_armor:
         slot = z.get("itemTypeDisplayName") or ""
-        if slot:
+        if slot == "固有":
+            fdata["slot"] = ["职业金"]
+        elif key in ("796577360", "859709617", "2615220262"):
+            fdata["slot"] = [slot, "永劫教派"] if slot else ["永劫教派"]
+        elif slot:
             fdata["slot"] = [slot]
         if scenes:
             fdata["scene"] = scenes
     else:
-        if el:
-            fdata["elem"] = [el[1]]
+        if scenes:
+            fdata["scene"] = scenes
         if d.get("breakerType"):
             fdata["champ"] = [BREAKER_SHORT[d["breakerType"]]]
         if tiers:
             fdata["tier"] = tiers
+        if pairs:
+            fdata["pairs"] = pairs
+        if el:
+            fdata["elem"] = [el[1]]
 
     return '<article class="rec r-farm-exo"%s>%s%s</article>' % (
         facet_attrs(fdata),
@@ -1240,7 +1260,7 @@ def class_items(p, keys):
 
     def block(title, left, right):
         body = "".join(
-            '<article class="sp-row rec">%s%s</article>'
+            '<article class="sp-row rec" data-slot="职业金">%s%s</article>'
             % (
                 spirit(p, left[i]) if i < len(left) else blank,
                 spirit(p, right[i]) if i < len(right) else blank,

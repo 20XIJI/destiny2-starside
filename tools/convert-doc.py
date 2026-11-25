@@ -108,9 +108,9 @@ FARM_GROUPS = (
     ),
 )
 FARM_FACETS = {
-    "exotic-weapons": "档位=tier:single;场景=scene:single;元素=elem:single",
-    "exotic-armors": "定位=scene:single",
-    "exotic-weapon": "元素=elem:single;勇士=champ:single;档位=tier:single",
+    "exotic-weapons": "场景=scene:single;勇士=champ:single;档位=tier:single;元素=elem:single",
+    "exotic-armors": "部位=slot:single;定位=scene:single",
+    "exotic-weapon": "场景=scene:single;勇士=champ:single;档位=tier:single;元素=elem:single",
     "exotic-armor": "部位=slot:single;定位=scene:single",
     "farming-sets": "件数=pieces:single",
     **{
@@ -902,7 +902,8 @@ def farm_chrome(slug, up):
                 '<nav class="facet-bar" data-facet="%s" aria-label="%s"></nav>'
                 % (name, name)
             )
-        out.append('<div class="pf-facets">%s</div>' % "".join(bars))
+        cls = "pf-facets pf-facets-2x2" if slug in ("exotic-weapon", "exotic-weapons") else "pf-facets"
+        out.append('<div class="%s">%s</div>' % (cls, "".join(bars)))
     return out
 
 

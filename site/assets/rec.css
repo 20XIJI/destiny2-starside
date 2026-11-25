@@ -252,6 +252,7 @@
 .pf-swap:hover { color: var(--bone-hi); }
 
 .pf-facets { gap: 8px 20px; margin-bottom: 20px; padding: 10px 16px; }
+.pf-facets.pf-facets-2x2 { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; }
 .pf-facets:empty, .pf-facets:not(:has(.facet-bar:not([hidden]):not(:empty))),
 .pf-facets .facet-bar[hidden], .pf-facets .facet-bar:empty { display: none; }
 

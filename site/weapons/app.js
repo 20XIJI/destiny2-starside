@@ -1098,8 +1098,8 @@
     season:      { title: '赛季',        alias: '赛季',         hint: '赛季编号或资料片名' },
     name:        { title: '名称',        alias: '名字 名称',    hint: '中英文武器名' },
     origintrait: { title: '起源特性',    alias: '起源 起源特性', hint: '武器起源特性' },
-    perk1:       { title: 'Perk 特性栏 1', alias: '特性1',      hint: '与 perk2 可互换列' },
-    perk2:       { title: 'Perk 特性栏 2', alias: '特性2',      hint: '与 perk1 可互换列' },
+    perk1:       { title: 'Perk 特性栏 1', alias: '特性1',      hint: '第 1 个特性栏（Perk 1）' },
+    perk2:       { title: 'Perk 特性栏 2', alias: '特性2',      hint: '第 2 个特性栏（Perk 2）' },
     col1:        { title: '第 1 栏',     alias: '第1栏',        hint: '固定第 1 栏（枪管/弓弦等）' },
     col2:        { title: '第 2 栏',     alias: '第2栏',        hint: '固定第 2 栏（弹匣/箭矢等）' },
     col3:        { title: '第 3 栏',     alias: '第3栏',        hint: '固定第 3 栏特性' },
@@ -1633,27 +1633,11 @@
     return statCache[key];
   }
 
-  function traitMask(node) {
-    if (!node || node.op === 'not') { return 0; }
-    if (node.op === 'kw') { return node.k === 'perk1' ? 1 : node.k === 'perk2' ? 2 : 0; }
-    if (node.xs) {
-      var m = 0;
-      for (var i = 0; i < node.xs.length; i++) { m |= traitMask(node.xs[i]); }
-      return m;
-    }
-    return 0;
-  }
-  function test(scope, node, i, mode) {
-    if (mode == null) {
-      if (scope === 'wpn' && traitMask(node) === 3) {
-        return test(scope, node, i, 1) || test(scope, node, i, 2);
-      }
-      return test(scope, node, i, 0);
-    }
+  function test(scope, node, i) {
     switch (node.op) {
-      case 'and': for (var a = 0; a < node.xs.length; a++) { if (!test(scope, node.xs[a], i, mode)) { return false; } } return true;
-      case 'or': for (var o = 0; o < node.xs.length; o++) { if (test(scope, node.xs[o], i, mode)) { return true; } } return false;
-      case 'not': return !test(scope, node.x, i, mode === 0 || traitMask(node.x) === 3 ? null : mode);
+      case 'and': for (var a = 0; a < node.xs.length; a++) { if (!test(scope, node.xs[a], i)) { return false; } } return true;
+      case 'or': for (var o = 0; o < node.xs.length; o++) { if (test(scope, node.xs[o], i)) { return true; } } return false;
+      case 'not': return !test(scope, node.x, i);
       /* 裸词写全了一个 is: 的值（虚空、手炮、主手、专家）就按 is: 算：按字面搜，「虚空」
          会把名字、词条名与描述里带这两个字的非虚空武器也搜进来。 */
       case 'w': {
@@ -1662,10 +1646,10 @@
         if (hay(scope, i).indexOf(fold(node.v)) !== -1) { return true; }
         return node.tok.q ? false : pyItem(scope, i, node.v);
       }
-      default: return kw(scope, node.k, node.v, i, node.q, mode);
+      default: return kw(scope, node.k, node.v, i, node.q);
     }
   }
-  function kw(scope, k, v, i, q, mode) {
+  function kw(scope, k, v, i, q) {
     var f = fold(v), r;
     if (scope === 'sets') {
       var t = SR[i];
@@ -1727,11 +1711,11 @@
         if (anyPyMatch(cached('pl' + i, function () { return perkNames(i); }), v)) { return true; }
         return T ? foldedTexts(i).indexOf(f) !== -1 : false;
       case 'perk1': {
-        var p1 = perkNames(i, R_TRAIT, mode === 1 ? 1 : mode === 2 ? 2 : 0);
+        var p1 = perkNames(i, R_TRAIT, 1);
         return fold(p1.join(' ')).indexOf(f) !== -1 || anyPyMatch(p1, v);
       }
       case 'perk2': {
-        var p2 = perkNames(i, R_TRAIT, mode === 1 ? 2 : mode === 2 ? 1 : 0);
+        var p2 = perkNames(i, R_TRAIT, 2);
         return fold(p2.join(' ')).indexOf(f) !== -1 || anyPyMatch(p2, v);
       }
       case 'col1': case 'col2': case 'col3': case 'col4': case 'col5': {
@@ -1792,10 +1776,7 @@
   function run(scope, node) {
     var reps = REPS[scope];
     if (!node) { return reps.slice(); }
-    var dual = scope === 'wpn' && traitMask(node) === 3;
-    return reps.filter(function (i) {
-      return dual ? (test(scope, node, i, 1) || test(scope, node, i, 2)) : test(scope, node, i, 0);
-    });
+    return reps.filter(function (i) { return test(scope, node, i); });
   }
 
   /* ── 状态与地址栏 ──────────────────────────────────────────────────── */
@@ -2631,8 +2612,8 @@
     ['season:>=26', '赛季，比较写 = > < >= <='],
     ['breaker:反屏障', '勇士克制'],
     ['perk:萤火虫', '任一栏词条，名字或说明'],
-    ['perk1:高爆载荷', '特性栏；配 perk2: 可互换列'],
-    ['col3:高爆载荷', '固定第 1–5 栏（col1:–col5:），不换列'],
+    ['perk1:高爆载荷', '固定第 1 特性栏（perk2: 为第 2 特性栏）'],
+    ['col3:高爆载荷', '固定第 1–5 栏（col1:–col5:）'],
     ['perkname:"全明星"', '词条名完全相同'],
     ['perktext:填装', '词条说明'],
     ['origintrait:失时弹匣', '起源特性'],
@@ -4065,13 +4046,14 @@
   var perkIndex = null;
   function perkRows(k) {
     if (!perkIndex) { perkIndex = {}; }
-    var key = /^col[1-5]$/.test(k) ? k : (k === 'origintrait' ? 'origintrait' : (k === 'perk1' || k === 'perk2' ? 'trait' : 'all'));
+    var key = /^col[1-5]$/.test(k) || k === 'origintrait' || k === 'perk1' || k === 'perk2' ? k : 'all';
     if (!perkIndex[key]) {
       var idx = perkIndex[key] = {};
       REPS.wpn.forEach(function (i) {
         var names = /^col[1-5]$/.test(key) ? colPerkNames(i, +key.slice(3))
           : key === 'origintrait' ? perkNames(i, R_ORIGIN)
-          : key === 'trait' ? perkNames(i, R_TRAIT, 0)
+          : key === 'perk1' ? perkNames(i, R_TRAIT, 1)
+          : key === 'perk2' ? perkNames(i, R_TRAIT, 2)
           : perkNames(i);
         for (var j = 0; j < names.length; j++) {
           var list = idx[names[j]] || (idx[names[j]] = []);
@@ -4795,27 +4777,38 @@
 
     }
   });
+  document.addEventListener('pointerdown', function (e) {
+    if (e.target && e.target.classList && e.target.classList.contains('pvp-crit-range')) {
+      if (PVP && PVP.beginPvpDrag) { PVP.beginPvpDrag(); }
+    }
+  });
+  window.addEventListener('pointerup', function () {
+    if (PVP && PVP.endPvpDrag) { PVP.endPvpDrag(); }
+  });
+  window.addEventListener('pointercancel', function () {
+    if (PVP && PVP.endPvpDrag) { PVP.endPvpDrag(); }
+  });
   document.addEventListener('input', function (e) {
     var el = e.target.closest('[data-act]');
     if (!el) { return; }
     var act = el.getAttribute('data-act');
-    if (act === 'pvpacc') { S.pvpAcc = +el.value; if (PVP) { PVP.refreshPvpNumbers(); } }
-    if (act === 'pvpstat') { S.pvpStat = +el.value; if (PVP) { PVP.refreshPvpNumbers(); } }
+    if (act === 'pvpacc') { S.pvpAcc = +el.value; if (PVP) { PVP.refreshPvpNumbers(true); } }
+    if (act === 'pvpstat') { S.pvpStat = +el.value; if (PVP) { PVP.refreshPvpNumbers(true); } }
     if (act === 'pvpstatnum') {
       var raw = String(el.value || '');
       if (raw === '' || !/^\d+$/.test(raw)) { return; }
       var num = +raw;
       if (num > 200) { return; }
-      S.pvpStat = num; if (PVP) { PVP.refreshPvpNumbers(); }
+      S.pvpStat = num; if (PVP) { PVP.refreshPvpNumbers(true); }
     }
-    if (act === 'pvpmag') { S.pvpMag = +el.value; S.pvpMagBlank = false; if (PVP) { PVP.refreshPvpNumbers(); } }
+    if (act === 'pvpmag') { S.pvpMag = +el.value; S.pvpMagBlank = false; if (PVP) { PVP.refreshPvpNumbers(true); } }
     if (act === 'pvpmagnum') {
       var mRaw = String(el.value || '');
       if (mRaw === '') { S.pvpMagBlank = true; el.style.width = '1ch'; return; }
       if (!/^\d+$/.test(mRaw)) { return; }
       var maxM = +el.max || 999, mNum = +mRaw;
       if (mNum < 1 || mNum > maxM) { return; }
-      S.pvpMagBlank = false; S.pvpMag = mNum; el.style.width = String(mNum).length + 'ch'; if (PVP) { PVP.refreshPvpNumbers(); }
+      S.pvpMagBlank = false; S.pvpMag = mNum; el.style.width = String(mNum).length + 'ch'; if (PVP) { PVP.refreshPvpNumbers(true); }
     }
   });
   document.addEventListener('focusin', function (e) {
@@ -4848,7 +4841,7 @@
     if (act === 'pvpacc') { S.pvpAcc = n; }
     else if (act === 'pvpmag') { S.pvpMag = n; S.pvpMagBlank = false; }
     else { S.pvpStat = n; }
-    if (PVP) { PVP.refreshPvpNumbers(); }
+    if (PVP) { PVP.refreshPvpNumbers(true); }
   }, { passive: false, capture: true });
 
 

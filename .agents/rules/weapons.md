@@ -232,7 +232,7 @@ destiny.report 另给锻造武器加一份强化固有特性的 +2，实体层�
 | `is:` | 类型、元素、槽位（主手／副手／威能）、弹药（主武器／特殊／威能）、稀有度、勇士、标志（可锻造、可强化、可升阶、专家、全息、复刻、已钉选）；护甲是职业、部位。值认中文、英文与拼音 | index |
 | `name:` `frame:` `season:` `source:` `breaker:` | 名字、框架、赛季（可比较）、来源、勇士。`name:`、`breaker:` 以及未加引号的 `frame:` / `source:` 走拼音 | index；`name:` 的英文名要 pool，到了重搜 |
 | `aegis:` `lgpig:`（别名 `小棒猪:`） | 作者评级：Aegis `S`–`F`（可比较 `>=A`、`any`）；小棒猪 `独一档` / `T0`–`T4` / 场景配对（`输出T0`、`输出:>=T0.5`、`工具枪`、`any`，场景与定位词支持拼音），异域护甲按定位匹配 | index |
-| `perk:` `perk1:` `perk2:` `col1:`–`col5:` `perkname:` `origintrait:` | 词条名（`perk:` 还查说明；`perk1:`/`perk2:` 查特性栏且同时出现时自动正反换列；`col1:`–`col5:` 固定按面板第 1–5 栏匹配，不换列）。除精确匹配的 `perkname:` 外，词条名与补全下拉均走拼音 | pool；`perk:` 的说明要 text，到了重搜 |
+| `perk:` `perk1:` `perk2:` `col1:`–`col5:` `perkname:` `origintrait:` | 词条名（`perk:` 还查说明；`perk1:`/`perk2:` 分别固定查第 1/2 个特性栏，不互换；`col1:`–`col5:` 固定按面板第 1–5 栏匹配）。除精确匹配的 `perkname:` 外，词条名与补全下拉均走拼音 | pool；`perk:` 的说明要 text，到了重搜 |
 | `stat:射程:>=60` | 缺省配置（固定栏选上、不装大师杰作）的显示值；属性名认中文、英文别名与拼音 | pool |
 | `perktext:` | 词条说明（不走拼音） | pool 与 text |
 
