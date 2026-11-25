@@ -136,7 +136,7 @@ export async function shot(root, opts = {}) {
 
   /* 交互控件不进图：点赞、复制配装、详情开关、截图自己，以及藏着整份源稿的那个 pre。
      [hidden] 一并清掉——填表页没展开的可选槽位就挂在上面。 */
-  clone.querySelectorAll('.head-acts, .src-tools, [hidden]').forEach((el) => el.remove());
+  clone.querySelectorAll('.head-acts, .src-tools, .to-wpn, [hidden]').forEach((el) => el.remove());
 
   /* 面板标题前那枚小图是一个 <use>，指向 <main> 开头那张 sprite 里的 <symbol>
      （convert-build.py 的 glyph()）。截的那一块不一定含着 sprite——合集里截的是某一套

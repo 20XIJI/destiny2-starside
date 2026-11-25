@@ -154,11 +154,6 @@ def item_catalog() -> tuple[list[str], list[str]]:
     return _CATALOG
 
 
-def item_names() -> list[str]:
-    """资料库物品、套装、护甲模组族的中文名。"""
-    return item_catalog()[0]
-
-
 def dict_chars() -> list[str]:
     """写入 window.starsidePinyin 字典的全部汉字（物品名 + 装备库结构化中文词）。"""
     return used_chars(item_catalog()[0] + weapon_extra_texts())

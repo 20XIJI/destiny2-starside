@@ -26,49 +26,8 @@ function getApiKey() {
 
 // 每日 26 个轮换槽位的主键表与商品结构约束
 // 每个槽位绑定对应的子商人表 (vendorHash)、预期品质 (expectedTier) 与预期类型关键字 (expectedType)，防止同名异物或槽位错位
-const ROTATION_SLOTS = [
-  // 主要光尘优惠 8 件
-  { hash: 1395580616, vendorHash: 2168194999, group: '主要光尘优惠', currency: 'dust', cost: 1250, isWide: true, expectedTier: 'exotic', expectedType: '武器皮肤' },
-  { hash: 1185631823, vendorHash: 2031393824, group: '主要光尘优惠', currency: 'dust', cost: 1500, isWide: true, expectedTier: 'exotic', expectedType: '泰坦皮肤' },
-  { hash: 2413288976, vendorHash: 2031393824, group: '主要光尘优惠', currency: 'dust', cost: 1500, isWide: true, expectedTier: 'exotic', expectedType: '猎人皮肤' },
-  { hash: 3736112681, vendorHash: 2031393824, group: '主要光尘优惠', currency: 'dust', cost: 1500, isWide: true, expectedTier: 'exotic', expectedType: '术士皮肤' },
-  { hash: 2988472427, vendorHash: 4020265966, group: '主要光尘优惠', currency: 'dust', cost: 2000, isWide: true, expectedTier: 'exotic', expectedType: '飞船' },
-  { hash: 340680574, vendorHash: 1105106638, group: '主要光尘优惠', currency: 'dust', cost: 2500, isWide: true, expectedTier: 'exotic', expectedType: '载具' },
-  { hash: 3157963939, vendorHash: 3118972542, group: '主要光尘优惠', currency: 'dust', cost: 3250, isWide: false, expectedTier: 'exotic', expectedType: '动作' },
-  { hash: 3105072597, vendorHash: 3702989297, group: '主要光尘优惠', currency: 'dust', cost: 2850, isWide: false, expectedTier: 'exotic', expectedType: '机灵外壳' },
-
-  // 其他光尘优惠 10 件
-  { hash: 1748123669, vendorHash: 1446296883, group: '其他光尘优惠', currency: 'dust', cost: 1500, isWide: false, expectedTier: 'legendary', expectedType: '机灵投影' },
-  { hash: 4080789277, vendorHash: 2184482416, group: '其他光尘优惠', currency: 'dust', cost: 700, isWide: false, expectedTier: 'legendary', expectedType: '动作' },
-  { hash: 2195752360, vendorHash: 2184482416, group: '其他光尘优惠', currency: 'dust', cost: 700, isWide: false, expectedTier: 'legendary', expectedType: '动作' },
-  { hash: 3344147835, vendorHash: 2041776156, group: '其他光尘优惠', currency: 'dust', cost: 300, isWide: false, expectedTier: 'legendary', expectedType: '着色器' },
-  { hash: 3906243540, vendorHash: 2041776156, group: '其他光尘优惠', currency: 'dust', cost: 300, isWide: false, expectedTier: 'legendary', expectedType: '着色器' },
-  { hash: 2776737690, vendorHash: 2041776156, group: '其他光尘优惠', currency: 'dust', cost: 300, isWide: false, expectedTier: 'legendary', expectedType: '着色器' },
-  { hash: 343789488, vendorHash: 2041776156, group: '其他光尘优惠', currency: 'dust', cost: 300, isWide: false, expectedTier: 'legendary', expectedType: '着色器' },
-  { hash: 3186457725, vendorHash: 213864513, group: '其他光尘优惠', currency: 'dust', cost: 450, isWide: false, expectedTier: 'legendary', expectedType: '传送效果' },
-  { hash: 1091850349, vendorHash: 213864513, group: '其他光尘优惠', currency: 'dust', cost: 450, isWide: false, expectedTier: 'legendary', expectedType: '传送效果' },
-  { hash: 1866581851, vendorHash: 213864513, group: '其他光尘优惠', currency: 'dust', cost: 450, isWide: false, expectedTier: 'legendary', expectedType: '传送效果' },
-
-  // 银币新品 8 件
-  { hash: 2990668491, vendorHash: 3358239265, group: '银币新品', currency: 'silver', cost: 600, isWide: false, expectedTier: 'exotic', expectedType: '机灵外壳' },
-  { hash: 4205434519, vendorHash: 2739911710, group: '银币新品', currency: 'silver', cost: 800, isWide: true, expectedTier: 'exotic', expectedType: '载具' },
-  { hash: 2110175464, vendorHash: 1400187966, group: '银币新品', currency: 'silver', cost: 800, isWide: true, expectedTier: 'exotic', expectedType: '飞船' },
-  { hash: 2352869761, vendorHash: 4228941413, group: '银币新品', currency: 'silver', cost: 500, isWide: false, expectedTier: 'legendary', expectedType: '动作' },
-  { hash: 2218275250, vendorHash: 3445703438, group: '银币新品', currency: 'silver', cost: 1000, isWide: false, expectedTier: 'exotic', expectedType: '动作' },
-  { hash: 588138826, vendorHash: 4228941413, group: '银币新品', currency: 'silver', cost: 500, isWide: false, expectedTier: 'legendary', expectedType: '动作' },
-  { hash: 3771412616, vendorHash: 3445703438, group: '银币新品', currency: 'silver', cost: 1200, isWide: false, expectedTier: 'exotic', expectedType: '动作' },
-  { hash: 3431752854, vendorHash: 249262409, group: '银币新品', currency: 'silver', cost: 800, isWide: false, expectedTier: 'legendary', expectedType: '终结技' }
-]
 
 // 艾达-1 每周 6 件着色器轮换槽位
-const ADA_SLOTS = [
-  { hash: 235397502, vendorHash: 350061650, group: '艾达-1 · 每周着色器', currency: 'glimmer', cost: 10000, isWide: false, expectedTier: null, expectedType: '着色器' },
-  { hash: 3366113619, vendorHash: 350061650, group: '艾达-1 · 每周着色器', currency: 'glimmer', cost: 10000, isWide: false, expectedTier: null, expectedType: '着色器' },
-  { hash: 1284563767, vendorHash: 350061650, group: '艾达-1 · 每周着色器', currency: 'glimmer', cost: 10000, isWide: false, expectedTier: null, expectedType: '着色器' },
-  { hash: 1284563764, vendorHash: 350061650, group: '艾达-1 · 每周着色器', currency: 'glimmer', cost: 10000, isWide: false, expectedTier: null, expectedType: '着色器' },
-  { hash: 3205869478, vendorHash: 350061650, group: '艾达-1 · 每周着色器', currency: 'glimmer', cost: 10000, isWide: false, expectedTier: null, expectedType: '着色器' },
-  { hash: 1017491637, vendorHash: 350061650, group: '艾达-1 · 每周着色器', currency: 'glimmer', cost: 10000, isWide: false, expectedTier: null, expectedType: '着色器' }
-]
 
 async function sleep(ms) {
   if (typeof setTimeout === 'function') {
@@ -450,7 +409,7 @@ async function run() {
 }
 
 module.exports = {
-  EVERVERSE_FEED_URL, ADA_FEED_URL, ROTATION_SLOTS, ADA_SLOTS,
+  EVERVERSE_FEED_URL, ADA_FEED_URL,
   eververseWindow, weeklyCycleRange, parseInventoryDate, parseEververseHtml,
   slotsSignature, adaSignature, fetchLiveFeed, fetchLiveSlots, fetchAdaSlots, fetchItem, syncEververse
 }

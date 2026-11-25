@@ -340,7 +340,7 @@ ANNOUNCE = announce_tag()
 MARK = '<span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>'
 
 
-def head(title, desc, app_js=False, up=1, sheets=None, sky=False, pinyin_js=None):
+def head(title, desc, app_js=False, up=1, sheets=None, sky=False, rec_css=False):
     """<!doctype> 到 <body> 为止。title 已含 · Starside 后缀。
 
     字体在 CSS 解析完才会被发现，preload 让它与样式表并行下载；只预载首屏用到的
@@ -378,13 +378,12 @@ def head(title, desc, app_js=False, up=1, sheets=None, sky=False, pinyin_js=None
         '<link rel="icon" href="%sassets/favicon.svg" type="image/svg+xml">' % at,
         '<link rel="stylesheet" href="%sassets/site.css">' % at,
     ]
+    if rec_css:
+        o.append('<link rel="stylesheet" href="%sassets/rec.css">' % at)
     if sheets is None:
         sheets = (["../style.css"] if up > 1 else []) + ["style.css"]
     o += ['<link rel="stylesheet" href="%s">' % s for s in sheets]
     if app_js:
-        # 拼音表要排在 app.js 前面：工具条在加载时就按 ?q= 过滤，那一刻表必须已经在。
-        if app_js if pinyin_js is None else pinyin_js:
-            o.append('<script src="%sassets/pinyin.js" defer></script>' % at)
         o.append('<script src="%sassets/app.js" defer></script>' % at)
     if sky:
         o.append('<script type="module" src="%sassets/sky-page.js"></script>' % at)

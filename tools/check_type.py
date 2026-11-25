@@ -304,7 +304,7 @@ def check_tokens(bad: list[str]) -> int:
         for px in fractional_font_sizes(text):
             n += 1
             bad.append("T4 %s：字号 %s 带小数像素，应归入整数字号阶梯" % (rel, px))
-        if rel != "assets/site.css":
+        if rel not in ("assets/site.css", "assets/home.css"):
             for px in out_of_scale_font_sizes(text):
                 n += 1
                 bad.append(

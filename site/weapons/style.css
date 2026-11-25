@@ -2190,7 +2190,27 @@
 }
 /* 声明挂包裹层，不写在胶囊里：.stats-mode-toggle 的 overflow:hidden 是圆角裁切，
    伪元素会被裁掉。悬停 / 聚焦 PvP 那枚立刻显，不走原生 title。 */
-.stats-mode-wrap { position: relative; }
+.stats-mode-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.stats-cmp-btn {
+  padding: 2px 7px;
+  color: var(--bone-dim);
+  background: var(--tint-1);
+  border: 1px solid var(--hair);
+  border-radius: 2px;
+  font: 500 11px/1.3 var(--font-cn);
+  cursor: pointer;
+}
+.stats-cmp-btn:hover { color: var(--bone-hi); border-color: var(--hair-lit); }
+.stats-cmp-btn[aria-pressed="true"] {
+  color: var(--bone-hi);
+  background: var(--tint-3);
+  border-color: var(--accent);
+}
 .stats-pvp-tag {
   margin-left: 4px;
   color: var(--bone-faint);

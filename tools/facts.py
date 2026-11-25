@@ -100,10 +100,6 @@ def IS_SUBCLASS(item):                                       # noqa: N802
     return (item.get('itemType') == SUBCLASS
             and bool((item.get('sockets') or {}).get('socketEntries')))
 
-# 物品记录上原样搬运的顶层字段。列在这里即入库，值不做任何判断。
-ITEM_FIELDS = ('index', 'itemType', 'itemSubType', 'classType',
-               'defaultDamageType', 'breakerType', 'collectibleHash',
-               'isAdept', 'isHolofoil', 'itemCategoryHashes')
 # 与 iconWatermark 并排的那张「本季主打」水印。manifest 里还有一位
 # iconWatermarkShelved（日落版），实测 13904 条**与 Featured 逐字节相同**，
 # Bungie 两位填的是同一个值，所以只收一张。

@@ -88,13 +88,24 @@ async function allBuildBodies() {
   throw new Error('too many builds')
 }
 
+// SDK 1.4.3 事务读写失败可能返回 { code } 而非抛异常，统一显式检查并映射并发冲突。
+function checked(r) {
+  if (r && r.code) throw Object.assign(new Error(r.message || r.code), { code: r.code })
+  return r
+}
+
+async function runTx(fn) {
+  try {
+    return await db.runTransaction(fn, 0)
+  } catch (e) {
+    if (e && e.code === 'DATABASE_TRANSACTION_CONFLICT') throw new Error('conflict')
+    throw e
+  }
+}
+
 // 同一浏览器对同一配装的状态与聚合数一起提交；序号使重发和乱序请求安全。
 async function applyLike(id, actor, seq, before, on) {
-  const checked = (r) => {
-    if (r.code) throw Object.assign(new Error(r.message || r.code), { code: r.code })
-    return r
-  }
-  return db.runTransaction(async (tx) => {
+  return runTx(async (tx) => {
     const receiptId = crypto.createHash('sha256').update(id + ':' + actor).digest('hex')
     const receipt = tx.collection('counters').doc('like-' + receiptId)
     const prior = checked(await receipt.get()).data
@@ -620,7 +631,7 @@ async function who(event, need) {
    sdrop 记的是它的下限：不带 id 的那一路是整批删除，分支体里另有一道 lv 4。 */
 const LEVEL = {
   me: 0, boot: 0,
-  docs: 1, subs: 1, hist: 1, bdrop: 1, edits: 1, chg: 1, pend: 1, body: 1,
+  hist: 1, bdrop: 1, edits: 1, chg: 1, pend: 1, body: 1,
   ssave: 2, bsave: 2, smark: 2, emark: 2, sdrop: 2, sync_rotation: 2, sync_xur: 2,
   eds: 4,
   stats: null, hit: null, likes: null, like: null, sub: null,
@@ -677,7 +688,7 @@ async function editorRoute(a, body, event, me) {
   // lv 0 也放行：没进白名单的人要看得见自己的 uid，才知道让管理员加谁。
   if (a === 'me') {
     const out = { uid: me.uid, name: me.name, lv: me.lv }
-    if (me.lv >= 2) {
+    if (me.lv >= 2 && body.stale) {
       const stale = await shopStale()
       if (stale) out.stale = stale
     }
@@ -721,37 +732,6 @@ async function editorRoute(a, body, event, me) {
       return { md: cur.md || '', hash: sha1(String(cur.md || '')) }
     }
     throw new Error('bad kind')
-  }
-
-  if (a === 'docs') {
-    // **配装那些要带上 md，资料页那些不带。**投影是为资料页存在的：39 篇合计
-    // 1.5 MB。配装 91 套合计 190 KB，而编辑台的列表要靠 md 读出名字、职业、分支、
-    // 强度与推荐人——本机直接落盘的那些在 subs 里没有投稿记录，不带 md 的话
-    // 列表上连名字都只能显示 slug。
-    //
-    // **配装那一发必须取全，取全靠翻到底、不靠一个够大的数。**翻页判据是「这一页没满」，
-    // 与总数无关，加多少套都不必回来改数字。
-    //
-    // **第一发与翻页一起走。**互不依赖，串起来就是白等一个往返；而这一路每存
-    // 一次配装都要重跑一遍（admin.js 存完走 load()），不是只在进场时跑一次。
-    const [r, mds] = await Promise.all([
-      allDocs(docs.field({ md: false }), 500),
-      allBuildBodies(),
-    ])
-    return {
-      docs: r.data.map((d) => (mds[d._id] === undefined ? d : { ...d, md: mds[d._id] })),
-      more: r.more,
-    }
-  }
-
-  // 配装投稿的队列。与 list/mark 同一张表，区别只在凭据：那两个走 ADMIN_TOKEN
-  // 给本机的 sync.py，这两个走白名单给编辑台。
-  if (a === 'subs') {
-    const [r0, r1] = await Promise.all([
-      allDocs(subs.where({ ok: 0 }), 500),
-      subs.where({ ok: _.neq(0) }).orderBy('at', 'desc').limit(500).get(),
-    ])
-    return { subs: r0.data.concat(r1.data), more: r0.more || r1.data.length >= 500 ? 1 : 0 }
   }
 
   // 结案后留下的那一条改动记录：谁、什么时候、哪一篇、改了哪几行。
@@ -901,27 +881,20 @@ async function editorRoute(a, body, event, me) {
         doc = { md, hash: sha1(md), at: set.at, by: me.name }
       }
     }
-    await db.runTransaction(async (tx) => {
-      const live = (await tx.collection('subs').doc(subId).get()).data
+    await runTx(async (tx) => {
+      const live = checked(await tx.collection('subs').doc(subId).get()).data
       if (!live) throw new Error('no sub')
       if (expectedHash !== null && sha1(String(live.md || '')) !== expectedHash) throw new Error('conflict')
       if (Number(live.ok) !== was) throw new Error('conflict')
-      if (docId) await tx.collection('docs').doc(docId).set(doc)
-      await tx.collection('subs').doc(subId).update(set)
-    }, 0)
+      if (docId) checked(await tx.collection('docs').doc(docId).set(doc))
+      checked(await tx.collection('subs').doc(subId).update(set))
+    })
     return { ok: 1 }
   }
 
   if (a === 'edits') {
-    if (body.closed) {
-      const r1 = await edits.where({ ok: _.neq(0) }).orderBy('at', 'desc').limit(500).get()
-      return { edits: r1.data, more: r1.data.length >= 500 ? 1 : 0 }
-    }
-    const [r0, r1] = await Promise.all([
-      allDocs(edits.where({ ok: 0 }), 500),
-      edits.where({ ok: _.neq(0) }).orderBy('at', 'desc').limit(500).get(),
-    ])
-    return { edits: r0.data.concat(r1.data), more: r0.more || r1.data.length >= 500 ? 1 : 0 }
+    const r1 = await edits.where({ ok: _.neq(0) }).orderBy('at', 'desc').limit(500).get()
+    return { edits: r1.data, more: r1.data.length >= 500 ? 1 : 0 }
   }
 
   // ── 一处改动一条记录 ──
@@ -1093,11 +1066,6 @@ async function editorRoute(a, body, event, me) {
         || new Set(jobs.map((j) => j.id)).size !== jobs.length) throw new Error('bad jobs')
     if (jobs.length > 49) throw new Error('batch too large')
     const at = new Date().toISOString()
-    // SDK 1.4.3 的事务 get 返回单对象，update 接平铺字段；失败也可能作为 code 返回。
-    const checked = (r) => {
-      if (r.code) throw Object.assign(new Error(r.message || r.code), { code: r.code })
-      return r
-    }
     const updated = (r) => {
       if (checked(r).updated !== 1) throw new Error('conflict')
     }
@@ -1301,16 +1269,16 @@ async function route(a, body, event) {
     const set = { md, hash, at: new Date().toISOString(), by: '本机', landed: hash }
     if (body.baseHash !== undefined) {
       const expected = String(body.baseHash)
-      await db.runTransaction(async (tx) => {
-        const cur = (await tx.collection('docs').doc(id).get()).data
+      await runTx(async (tx) => {
+        const cur = checked(await tx.collection('docs').doc(id).get()).data
         if (expected === '') {
           if (cur) throw new Error('conflict')
-          await tx.collection('docs').doc(id).set(set)
+          checked(await tx.collection('docs').doc(id).set(set))
         } else {
           if (!cur || cur.hash !== expected) throw new Error('conflict')
-          await tx.collection('docs').doc(id).update(set)
+          checked(await tx.collection('docs').doc(id).update(set))
         }
-      }, 0)
+      })
       return { ok: 1 }
     }
     const r = await docs.doc(id).update(set)
@@ -1359,25 +1327,21 @@ async function route(a, body, event) {
   }
 
   if (a === 'rdrop') {
-    if (Array.isArray(body.items)) {
-      const items = body.items
-      if (!items.length || items.length > REC_BATCH) throw new Error('bad batch')
-      for (const item of items) {
-        const id = String((item || [])[0] || '')
-        if (!REC_ID.test(id) || typeof (item || [])[1] !== 'string') throw new Error('bad batch')
-      }
-      for (let i = 0; i < items.length; i += 20) {
-        await Promise.all(items.slice(i, i + 20).map(async ([id, baseHash]) => {
-          const cur = (await recs.doc(String(id)).get()).data[0]
-          if (cur && cur.hash !== baseHash) throw new Error('conflict')
-          if (cur) await recs.doc(String(id)).remove()
-        }))
-      }
-      return { ok: 1 }
+    const items = Array.isArray(body.items) ? body.items : []
+    if (!items.length || items.length > REC_BATCH) throw new Error('bad batch')
+    for (const item of items) {
+      const id = String((item || [])[0] || '')
+      if (!REC_ID.test(id) || typeof (item || [])[1] !== 'string') throw new Error('bad batch')
     }
-    const ids = Array.isArray(body.ids) ? body.ids.map(String) : []
-    if (!ids.length || ids.length > REC_BATCH || ids.some((id) => !REC_ID.test(id))) throw new Error('bad batch')
-    await Promise.all(ids.map((id) => recs.doc(id).remove()))
+    for (let i = 0; i < items.length; i += 20) {
+      await Promise.all(items.slice(i, i + 20).map(async ([id, baseHash]) => {
+        await runTx(async (tx) => {
+          const cur = checked(await tx.collection('recs').doc(String(id)).get()).data
+          if (cur && cur.hash !== baseHash) throw new Error('conflict')
+          if (cur) checked(await tx.collection('recs').doc(String(id)).remove())
+        })
+      }))
+    }
     return { ok: 1 }
   }
 
@@ -1388,8 +1352,12 @@ async function route(a, body, event) {
     for (const [id, hash] of items) {
       if (!REC_ID.test(String(id)) || !/^[0-9a-f]{40}$/.test(String(hash))) throw new Error('bad landed')
     }
-    const r = await Promise.all(items.map(([id, hash]) => recs.doc(String(id)).update({ landed: String(hash) })))
-    if (r.some((x) => !x.updated)) throw new Error('no rec')
+    for (let i = 0; i < items.length; i += 20) {
+      const r = await Promise.all(
+        items.slice(i, i + 20).map(([id, hash]) => recs.doc(String(id)).update({ landed: String(hash) }))
+      )
+      if (r.some((x) => !x.updated)) throw new Error('no rec')
+    }
     return { ok: 1 }
   }
 
@@ -1446,22 +1414,21 @@ async function route(a, body, event) {
     const id = String(body.id)
     if (body.baseHash !== undefined) {
       const expected = String(body.baseHash)
-      await db.runTransaction(async (tx) => {
-        const cur = (await tx.collection('docs').doc(id).get()).data
+      await runTx(async (tx) => {
+        const cur = checked(await tx.collection('docs').doc(id).get()).data
         if (expected === '') {
           if (cur) throw new Error('conflict')
         } else {
           if (!cur || cur.hash !== expected) throw new Error('conflict')
-          await tx.collection('docs').doc(id).remove()
+          checked(await tx.collection('docs').doc(id).remove())
         }
-      }, 0)
+      })
     } else {
       await docs.doc(id).remove()
     }
     const m = /^builds\/([^/]+)\/([^/]+)$/.exec(id)
     if (m) {
-      const done = await allDocs(subs.where({ season: m[1], slug: m[2], ok: 1 }), 500)
-      for (const one of done.data) await subs.doc(one._id).remove()
+      await subs.where({ season: m[1], slug: m[2], ok: 1 }).remove()
       await likes.doc(`${m[1].split('-')[0]}_${m[2]}`).remove()
       lk = { t: 0, m: null }
     }

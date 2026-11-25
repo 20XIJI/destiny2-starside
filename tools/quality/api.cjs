@@ -576,7 +576,7 @@ test('sync pushes records in validated batches and pages through them in a stabl
   }
 
   assert.equal((await h.request({ a: 'rlanded', k: KEY, items: [['inventory-items/404', digest('x')]] })).error, 'no rec')
-  assert.equal((await h.request({ a: 'rdrop', k: KEY, ids: [REC] })).ok, 1)
+  assert.equal((await h.request({ a: 'rdrop', k: KEY, items: [[REC, digest(good)]] })).ok, 1)
   assert.equal(h.store.recs.has(REC), false)
 })
 
@@ -769,15 +769,14 @@ test('every live build comes back with its body, past any single page', async ()
 
   const h = harness({ docs: rows })
   h.signIn('reviewer', 2)
-  const out = await h.as('reviewer', { a: 'docs' })
+  const out = await h.as('reviewer', { a: 'boot' })
 
   const builds = out.docs.filter((d) => d._id.indexOf('builds/') === 0)
   assert.equal(builds.length, many, '配装记录本身一条都不该少')
-  const empty = builds.filter((d) => !d.md)
-  assert.deepEqual(empty.map((d) => d._id), [], '这些配装的正文没带回来')
-  // 每一条都要是自己那份：翻页错位会让 A 拿到 B 的正文，条数照样对得上。
-  const wrong = builds.filter((d) => d.md !== `# 第${d._id.slice(-11, -7)}套\n`)
-  assert.deepEqual(wrong.map((d) => d._id), [], '翻页把正文串行了')
+  const empty = builds.filter((d) => !d.meta || !d.meta.name)
+  assert.deepEqual(empty.map((d) => d._id), [], '这些配装的摘要没带回来')
+  const wrong = builds.filter((d) => d.meta.name !== `第${d._id.slice(-11, -7)}套`)
+  assert.deepEqual(wrong.map((d) => d._id), [], '翻页把配装摘要串行了')
 
   const doc = out.docs.find((d) => d._id === 'docs/example')
   assert.equal(Object.hasOwn(doc, 'md'), false, '资料页不该带 md，投影就是为它存在的')
@@ -886,12 +885,12 @@ test('allDocs paginates past 500 across admin/editor list endpoints and drop cle
   const pulled = await h.request({ a: 'pull', heads: 1, k: 'isolated-quality-token' })
   assert.equal(pulled.docs.length, 506)
   assert.equal(pulled.more, 0)
-  const docList = await h.request({ a: 'docs' })
-  assert.equal(docList.docs.length, 506)
-  const subList = await h.request({ a: 'subs' })
-  assert.equal(subList.subs.length, 506)
-  const editList = await h.request({ a: 'edits' })
-  assert.equal(editList.edits.length, 505)
+  const bootRes = await h.request({ a: 'boot' })
+  assert.equal(bootRes.docs.length, 506)
+  assert.equal(bootRes.subs.length, 506)
+  assert.equal(bootRes.edits.length, 505)
+  const editList = await h.request({ a: 'edits', closed: 1 })
+  assert.equal(editList.edits.length, 0)
 
   assert.equal((await h.request({ a: 'drop', id: 'builds/s29-test/b-0000', k: 'isolated-quality-token' })).ok, 1)
   assert.equal(h.store.docs.has('builds/s29-test/b-0000'), false)

@@ -351,19 +351,6 @@ window.WPN_PVP = function (H) {
     var r = Math.round((n + Number.EPSILON) * 100) / 100;
     return r.toFixed(2);
   }
-  function evalPerkStep(p, delta, ammo, baseMag, isFixed) {
-    var P = H.getP();
-    var h = P.p[p][P_HASH], spec = resolveAmmoSpec(perkSpec(p), ammo);
-    var total = perkSteps(spec, p, ammo, baseMag);
-    var cur = perkStepOf(p, ammo, false, isFixed);
-    if (delta != null) { return delta; }
-    if (cur > 0) { return cur - 1; }
-    if (cur === 0) {
-      if (spec && spec.overflow && Object.prototype.hasOwnProperty.call(CHECK_ONLY_PERKS, h)) { return -1; }
-      return total > 1 ? -1 : -1;
-    }
-    return total > 0 ? total - 1 : 0;
-  }
   function getPerkDamageModifier(spec, step, usePvp, perkHash, weaponTypeEn, ammoTypeEn) {
     var ph = String(perkHash);
     if (usePvp && PVP_DISABLED[ph]) { return null; }
@@ -524,16 +511,6 @@ window.WPN_PVP = function (H) {
       return 60 * (w.rpmPerBurst ? 1 : b) / rpm * burstIdx + (shotNum - 1) % b * intra;
     }
     return 60 / rpm * (shotNum - 1);
-  }
-  function withHitAssumption(res, hp) {
-    var first = res && res.shotSequence && res.shotSequence[0];
-    if (first && !first.crit && res.crits && res.bodies && !(first.headDmg + PVP_EPS < hp)) {
-      var a = (res.shotAssumptions || []).slice();
-      var msg = '当前精准率下假定首发射击为非精准；若首发射击命中精准将一击击杀。';
-      if (a.indexOf(msg) === -1) { a.push(msg); }
-      return Object.assign({}, res, { shotAssumptions: a });
-    }
-    return res;
   }
   function simAreaDenial(w, mod, hp) {
     var ad = w.areaDenial, ctx = Object.assign({}, w, (mod && mod.shotContext) || {});
@@ -1030,25 +1007,6 @@ window.WPN_PVP = function (H) {
       }
     }
     return null;
-  }
-  function buildHitBreakdown(w, res, hp) {
-    hp = hp == null ? PVP_HP : hp;
-    if (res && res.hitCountOnly) { return res; }
-    if (!res || (res.shotSequence && res.shotSequence.length)) { return withHitAssumption(res, hp); }
-    if (!Number.isInteger(res.shots) || res.shots < 1) { return res; }
-    var seq = [], boltsPerBurst = w.isFusion && res.bursts ? res.shots / res.bursts : null, sum = 0;
-    for (var r = 0; r < res.shots; r++) {
-      var crit = r >= res.bodies;
-      var shotIdx = boltsPerBurst ? Math.floor(r / boltsPerBurst) + 1 : (w.pelletsPerShot ? Math.floor(r / w.pelletsPerShot) + 1 : r + 1);
-      seq.push({ time: shotTimeAt(shotIdx, res.rpm, w), crit: crit, bodyDmg: res.bodyDmg, headDmg: res.headDmg });
-      sum += crit ? res.headDmg : res.bodyDmg;
-      if (sum + PVP_EPS >= hp) { break; }
-    }
-    return withHitAssumption(Object.assign({}, res, {
-      crits: seq.filter(function (s) { return s.crit; }).length,
-      bodies: seq.filter(function (s) { return !s.crit; }).length,
-      shotSequence: seq
-    }), hp);
   }
   function formatKillZh(opt, isFusion, hitOnly) {
     if (!opt) { return '—'; }

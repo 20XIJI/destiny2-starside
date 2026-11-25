@@ -1360,8 +1360,9 @@ class Generated(unittest.TestCase):
         self.assertIn('<div class="ex-perks">', detail)
         for rel in ("builds/new/index.html", "builds/new/set/index.html"):
             html = self.read(rel)
-            self.assertIn("assets/pinyin.js", html)
+            self.assertNotIn("assets/pinyin.js", html)
             self.assertIn('id="do-import"', html)
+        self.assertIn("assets/pinyin.js", self.read("builds/new/form.js"))
         self.assertIn(
             '<button type="button" class="op" data-set-copy>创建副本</button>',
             self.read("builds/new/set/index.html"),
@@ -1757,7 +1758,7 @@ class EntitySource(unittest.TestCase):
         # 记录的 site_perkColumns 上。
         self.assertEqual(
             (nrows, refs),
-            (2391, 3027),
+            (2391, 3029),
             "源稿的行数或主键引用数变了：%d 行、%d 个引用" % (nrows, refs),
         )
 

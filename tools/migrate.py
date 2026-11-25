@@ -271,99 +271,6 @@ def write(rec):
     return body + '\n'
 
 
-# ── 资料页分类 ────────────────────────────────────────────────────────
-
-# 行标题上的装饰：神器模组页写「### 一级 · 名称」，技能冷却页写「**闪电手雷**」，
-# 两者都不是名字的一部分。
-TIER_TAIL = re.compile(r'^[一二三]级\s*·\s*')
-BOLD = re.compile(r'\*\*([^*]+)\*\*')
-SEPARATOR = re.compile(r'^\|[\s|:-]+\|?\s*$')
-
-
-def row_title(cell):
-    text = TIER_TAIL.sub('', markup.strip_marks(cell).replace(markup.CELL_BREAK, '').strip())
-    hit = BOLD.fullmatch(text)
-    return (hit.group(1) if hit else text.replace('**', '')).strip()
-
-
-def row_titles(path):
-    """一页里所有行标题。
-
-    **表头按结构认，不按名字认**：下一行是 `|---|` 的那一行就是表头。列名各页不同
-    （「武器」「名字」「PERK」「光等差」），列一张名单永远漏，而分隔行的位置是确定的。"""
-    with open(path, encoding='utf-8') as f:
-        lines = f.read().split('\n')
-    out = []
-    for i, line in enumerate(lines):
-        if line.startswith('### '):
-            out.append(row_title(line[4:]))
-            continue
-        spans = markup.cells(line)
-        if not spans or len(spans) < 2:
-            continue
-        if i + 1 < len(lines) and SEPARATOR.match(lines[i + 1]):
-            continue
-        name = row_title(line[spans[0][0]:spans[0][1]])
-        if not name or name.startswith('==') or set(name) <= set('-'):
-            continue
-        out.append(name)
-    return out
-
-
-def classify():
-    """哪些资料页该转成结构化记录。**判据是机械的**：行标题能落到事实层的主键上
-    就结构化，否则继续 markdown。不靠人逐篇拍板，加一页也不必回来登记。"""
-    sys.path.insert(0, os.path.join(shell.ROOT, 'tools'))
-    import resolve
-    facts = resolve.Facts()
-    composite, effects = resolve.variants(), resolve.effects()
-    sources, hints = resolve.set_sources(), resolve.source_hints()
-
-    known = {resolve.norm(resolve.text(v)) for v in facts.items.values()}
-    known |= {resolve.norm(resolve.text(v)) for v in facts.perks.values()}
-    known |= {resolve.norm(resolve.text(v)) for v in facts.traits.values()}
-    known |= {resolve.norm(resolve.text(v)) for v in facts.stats.values()}
-    known |= {resolve.set_key(resolve.text(s)) for s in facts.sets.values()}
-
-    def lands(name, page):
-        """这个名字落不落得到主键上。
-
-        有范围定义的页走解析器那一条，别名、派生、复刻消歧都算数；没有范围定义的
-        页（刷取清单、传说武器榜、技能冷却这些不进配装词表的）只问「这个名字在
-        事实层里存不存在」——分类要判的是「行标题是不是具名实体」，范围收窄是
-        精化，不是前提。"""
-        if page in resolve.SCOPES:
-            # 主键那一位传空：分类要判的是「这个名字解析得出来吗」，此时页面还
-            # 没生成，索引里也就还没有它戳上的那一位。
-            where, _ = resolve.classify(facts, name, page, '', composite, effects,
-                                        sources, hints)
-            return where in ('物品', '套装', '来源别名', '效果', '派生', '待指定')
-        return resolve.norm(name) in known or resolve.set_key(name) in known
-
-    paths = [path for _, path in shell.sources()]
-    rows = []
-    for path in paths:
-        slug = os.path.basename(path)[:-3]
-        # 六个元素页在词表里挂在 elements/ 下，别处按文件名即页名。
-        page = ('elements/%s' % slug) if 'elements/%s' % slug in resolve.SCOPES else slug
-        names = row_titles(path)
-        hit = sum(1 for n in names if lands(n, page))
-        rows.append((slug, len(names), hit))
-
-    groups = {'结构化': [], 'markdown': [], '无表格行': []}
-    for name, total, hit in rows:
-        where = ('无表格行' if not total
-                 else '结构化' if 100 * hit / total >= 50 else 'markdown')
-        groups[where].append((name, total, hit))
-    for where in ('结构化', 'markdown', '无表格行'):
-        got = groups[where]
-        print('%s %d 篇' % (where, len(got)))
-        for name, total, hit in sorted(got, key=lambda r: -(r[2] / r[1] if r[1] else 0)):
-            pct = ('%5.1f%%' % (100 * hit / total)) if total else '    —'
-            print('    %-22s %4d 行，命中 %4d %s' % (name, total, hit, pct))
-    return 0
-
-
 # ── 验收 ──────────────────────────────────────────────────────────────
 
 
@@ -545,17 +452,14 @@ def stamp(write_back=False, only=None):
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--check', action='store_true', help='记录→markdown→记录 的回环')
-    ap.add_argument('--classify', action='store_true', help='资料页该结构化还是留 markdown')
     ap.add_argument('--stamp', action='store_true', help='给每个槽位值戳上主键')
     ap.add_argument('--write', action='store_true', help='与 --stamp 连用：写回源稿')
     ap.add_argument('only', nargs='?', help='只跑文件名含这一段的那些')
     a = ap.parse_args()
-    if a.classify:
-        return classify()
     if a.stamp:
         return stamp(a.write, a.only)
     if not a.check:
-        ap.error('要做什么？--check 跑回环比对，--classify 给资料页分类，--stamp 戳主键')
+        ap.error('要做什么？--check 跑回环比对，--stamp 戳主键')
     return check(a.only)
 
 

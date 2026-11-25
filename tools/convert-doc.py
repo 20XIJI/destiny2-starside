@@ -24,7 +24,6 @@ import markup
 import pagedex
 import raid
 import render as layout  # 本文件自己有个 render()，别名避开
-import resolve
 import rows
 import shell
 from markup import (
@@ -216,8 +215,6 @@ ROTA_LINE = re.compile(r"^轮换：(.*)$", re.M)
 # 落成表上的 data-cycle，由 assets/rota.js 按本机时钟高亮当前行。
 CYCLE_LINE = re.compile(r"^周期：(.*)$", re.M)
 
-# 行标题 → 主键的戳号器，按页装配；没有范围定义的页是 None。
-STAMP = None
 # 主键骨架那种源稿展开之后，表格行的行号（0 起）→ 源稿那一行写的主键，
 # 以及这一行「异域 PERK」格里每个名字的主键。有这两份就不必按名字去戳。
 ROW_KEYS: dict[int, list[str]] = {}
@@ -226,9 +223,6 @@ ROW_PERKS: dict[int, dict[str, str]] = {}
 ROW_SPOTS: dict[int, list] = {}
 # 本页的出处表（editmap.Origins），由 build() 装上，写页面之后落成 edit.json。
 ORIGINS: "editmap.Origins | None" = None
-# 异域那两页 PERK 列里那些名字 → 主键。与 STAMP 不同，它按这一行那件东西自己的
-# socket 池查，所以要连着行标题的主键一起给，全站共用一个。
-PERK = None
 # 本页的索引与当前分节（锚点, 标签）。与 ICONS 同一种写法：渲染要用、又隔着两层
 # 函数，所以由 build() 与 render() 逐层装上，不改中间那两个签名。
 DEX = None
@@ -694,14 +688,7 @@ def render_table(
             # 只有第一行有 <th>，而整块说的是同一件东西。
             # **取渲染后那一格**，与索引里的名字同一份：源稿原文里格内换行还是
             # 字面的两个反斜杠，拿它去查源稿线索一个都对不上（复刻那几把就是这么漏的）。
-            shown = text_of(row[0], collapse=True)
-            stamp = ROW_KEYS.get(at) or (STAMP(shown) if STAMP else [])
-            if STAMP and not stamp:
-                # 整行写的是一个组合（「复兴\\噬星者」「故我在\\（意外缓刑）\\涡流」），
-                # 格内换行把它切成几截。合起来查不到时逐截查，取并集。
-                stamp = STAMP(
-                    shown, [text_of(x, collapse=True) for x in BR.split(row[0])]
-                )
+            stamp = ROW_KEYS.get(at) or []
         for ci, c in enumerate(cells[1:], start=1):
             if ci in tiers:
                 tier = tier_of(c, tiers[ci])
@@ -954,7 +941,7 @@ def record_region(lines):
     源稿只剩「== 组 ==」与「主键  行标题」两种行；列头那一行（还留在源稿里的）
     直接跳过：列由记录的种类决定，不由它决定。
     """
-    groups, cur = [], None
+    groups, cur, covered = [], None, {}
     for raw in lines:
         line = raw.strip()
         if not line or COLS.match(line):
@@ -970,7 +957,10 @@ def record_region(lines):
         if cur is None:
             cur = (None, [])
             groups.append(cur)
-        key = hit.group(1).split()[0]
+        all_keys = hit.group(1).split()
+        key = all_keys[0]
+        if len(all_keys) > 1:
+            covered[key] = all_keys
         ctx0 = CTX
         if ctx0 is not None:
             ctx0.titles[key] = hit.group(2).strip()  # 行标题以源稿为准
@@ -986,7 +976,7 @@ def record_region(lines):
         def put(key, kind, q=None):
             icon = rows.icon_file(key)
             dex.add(
-                keys=[key],
+                keys=covered.get(key, [key]),
                 anchor=anchor,
                 kind=kind,
                 name=ctx.name(key),
@@ -1347,12 +1337,6 @@ def render(md, slug, digest):
     # 层数决定资源前缀与面包屑
     up = where_of(md, slug).count("/") + 1
     full = "%s · Starside" % title
-    has_search = (
-        toolbar is not None
-        and "data-chart" not in toolbar
-        and "data-cols" not in toolbar
-        and ("data-item" in toolbar or "data-section" not in toolbar)
-    )
     o = [
         shell.head(
             full,
@@ -1360,7 +1344,7 @@ def render(md, slug, digest):
             app_js=toolbar is not None,
             up=up,
             sky=True,
-            pinyin_js=has_search,
+            rec_css=slug in NEW,
         ),
         shell.nav(
             title,
@@ -1652,10 +1636,8 @@ def check_changelog_acts(md: str, rel: str) -> None:
 def build(slug):
     global \
         ICONS, \
-        STAMP, \
         DEX, \
         PAGE, \
-        PERK, \
         ROW_KEYS, \
         ROW_PERKS, \
         ROW_SPOTS, \
@@ -1696,9 +1678,6 @@ def build(slug):
         keep = meta_of(md, "首屏记录", required=False)
         if keep and not (keep.isdigit() and int(keep) > 0):
             die("「首屏记录：」要写一个正整数，源稿写的是 %r" % keep)
-        STAMP = resolve.stamper(where)
-        # PERK 列只长在有戳号器的那几页上，格子的形状再筛一道，不另列页名。
-        PERK = resolve.perk_stamper() if STAMP else None
         PAGE = where
         CTX = layout.Page(slug, where, ICONS.html, origins=ORIGINS)
         # 只给要被跨页引用的那些页建索引，与戳号同一条判据。

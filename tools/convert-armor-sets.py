@@ -16,7 +16,6 @@ markdown 源稿，改结构就改 render()，两种情况都要重跑本脚本�
 from __future__ import annotations
 
 import argparse
-import base64
 import html
 import io
 import os
@@ -45,8 +44,6 @@ N_CATEGORIES = 7
 N_SETS = 56
 N_BONUSES = 112
 N_ICONS = 112       # 页面引用的图标数，现在每条效果都有图
-N_TABLE_ICONS = 110  # 英文原表能给出的枚数；另 2 处原表是空白占位，
-                     # 由 --fill-icons 按 manifest 的效果图标补（054、056）
 
 # 1440×900 首屏内的图标数
 N_EAGER = 2
@@ -77,15 +74,6 @@ PAGE_TERMS: list[tuple[str, str]] = [
     ('治疗', 'health'),
     ('濒死', 'health'),
 ]
-
-# 英文原表按英文名字母序，中文稿按分类与推出时间排序。52 个套装靠效果名直接对上，
-# 余下 4 个英文侧的效果名没被机翻覆盖（留空），按来源 1:1 认领。
-MANUAL_PAIRS = {
-    '新通俗': 'New Demotic',
-    '变节者利刃': "变节者's Blade",
-    '深渊探索者': 'Deep Explorer',
-    '黑暗纪元': 'Dark Age',
-}
 
 
 # ── 解析 ──────────────────────────────────────────────────────────────
@@ -551,83 +539,6 @@ def check(cats: list[Category], out: str) -> None:
 # ── 图标 ──────────────────────────────────────────────────────────────
 
 
-def extract_icons(cats: list[Category], export: str) -> None:
-    """从英文原表导出文件抽 112 枚图标，按中文稿的文档顺序命名 001…112。
-
-    原图 70×70、纯白剪影 + alpha，三个色通道恒为白，丢掉彩色通道是无损的。
-    再降到 56px 并把 alpha 量化到 16 档，112 枚合计从 238 KB 降到约 114 KB。
-    """
-    try:
-        from PIL import Image
-    except ImportError:
-        die('抽图标需要 Pillow：pip install Pillow')
-
-    # alpha 量化查找表：256 级压到 2**ALPHA_BITS 级
-    levels = (1 << ALPHA_BITS) - 1
-    ramp = [round(round(v / 255 * levels) / levels * 255) for v in range(256)]
-
-    src = open(export, encoding='utf-8').read()
-    body = src[src.index('<body'):]
-    body = body[:body.index('</table>')]
-
-    # 英文侧：每个套装一格 rowspan=2 的名字，其后两行各带一枚图标与一条效果
-    eng_sets: list[str] = []
-    icons: dict[str, list[str | None]] = {}
-    labels: dict[str, set[str]] = {}
-    cur = ''
-    for row in body.split('<tr'):
-        m = re.search(r'<td class=s\d+ dir=ltr rowspan=2>(.*?)<td class=s', row, re.S)
-        if m:
-            txt = html.unescape(re.sub(r'<[^>]+>', '|', m.group(1)))
-            cur = next(p.strip() for p in txt.split('|') if p.strip())
-            eng_sets.append(cur)
-            icons[cur] = []
-        cell = re.search(r'<td class=s\d+[^>]*colspan=\d+>(.*)$', row, re.S)
-        if not (cell and cur and 'Piece |' in cell.group(1)):
-            continue
-        lab = re.search(r'([24]) Piece \|(.*?)(?:<br>|</span>)', cell.group(1))
-        if lab:
-            name = html.unescape(re.sub(r'<[^>]+>', '', lab.group(2))).strip()
-            if name:
-                labels.setdefault(name, set()).add(cur)
-        img = re.search(r'<img\s+src="?(data:image/([^;]+);base64,([A-Za-z0-9+/=]+))',
-                        row)
-        icons[cur].append(img.group(3) if img else None)
-
-    if len(eng_sets) != N_SETS:
-        die('英文原表读出 %d 个套装，应为 %d' % (len(eng_sets), N_SETS))
-
-    os.makedirs(os.path.join(OUT_DIR, 'icons'), exist_ok=True)
-    written = 0
-    idx = 0
-    for cat in cats:
-        for st in cat.sets:
-            found = set()
-            for b in st.bonuses:
-                found |= labels.get(b.name, set())
-            eng = found.pop() if len(found) == 1 else MANUAL_PAIRS.get(st.name)
-            if not eng or eng not in icons:
-                die('套装 %s 在英文原表里认不出对应项（候选 %s）' % (st.name, found))
-            if len(icons[eng]) != 2:
-                die('英文原表的 %s 读出 %d 枚图标，应为 2' % (eng, len(icons[eng])))
-            for b, b64 in zip(st.bonuses, icons[eng]):
-                idx += 1
-                if b64 is None:  # 原表本身就是空白占位
-                    continue
-                im = Image.open(io.BytesIO(base64.b64decode(b64))).convert('RGBA')
-                alpha = im.split()[3].resize((ICON_PX, ICON_PX),
-                                             Image.Resampling.LANCZOS)
-                flat = Image.new('LA', (ICON_PX, ICON_PX))
-                flat.putdata([(255, v) for v in alpha.point(ramp).tobytes()])
-                name = '%03d.png' % idx
-                flat.save(os.path.join(OUT_DIR, 'icons', name), optimize=True)
-                b.icon = name
-                written += 1
-    if written != N_TABLE_ICONS:
-        die('从英文原表写出 %d 枚图标，应为 %d' % (written, N_TABLE_ICONS))
-    print('图标：写出 %d 枚到 armor-sets/icons/' % written)
-
-
 def fill_icons(cats: list[Category]) -> None:
     """英文原表没给图的那几枚，按 manifest 的效果图标补上。
 
@@ -690,10 +601,8 @@ def attach_icons(cats: list[Category]) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description='护甲套装效果页生成器')
-    ap.add_argument('--icons', metavar='EXPORT.HTML',
-                    help='顺带从英文原表导出文件重抽图标（默认沿用 icons/ 里已有的）')
     ap.add_argument('--fill-icons', action='store_true',
-                    help='英文原表没给图的那几枚，按 manifest 的效果图标补上')
+                    help='按 manifest 的效果图标补齐缺失图标')
     args = ap.parse_args()
 
     md = open(SRC, encoding='utf-8').read()
@@ -705,12 +614,9 @@ def main() -> None:
     else:
         cats = parse(md)
 
-    if args.icons:
-        extract_icons(cats, args.icons)
-    else:
-        if args.fill_icons:
-            fill_icons(cats)
-        attach_icons(cats)
+    if args.fill_icons:
+        fill_icons(cats)
+    attach_icons(cats)
 
     dex = pagedex.Index('armor-sets', searchable=True)
     origins = editmap.Origins()

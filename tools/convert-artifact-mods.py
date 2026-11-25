@@ -15,7 +15,6 @@ import sys
 
 import editmap
 import pagedex
-import resolve
 import shell
 from markup import (
     OPEN,
@@ -39,49 +38,6 @@ OUT_DIR = os.path.join(shell.SITE, "artifact-mods")
 ICON_DIR = os.path.join(OUT_DIR, "icons")
 
 PAGE_TITLE = "神器模组 · Starside"
-
-_STAMP = None
-_ARTS = None
-
-
-def art_pool(artifact):
-    """这件神器自己那批模组的主键集合。
-
-    **同名的神器模组在库里有两条**（147 条里 36 处）：同名、同类、同图，只有 index
-    不同，光看物品表分不出。神器本体带着自己的模组槽，池里列的就是它那 21 个，
-    按它收窄即得唯一那一条。这份分组挂在神器本体那条物品记录的 derived.tiers 上。"""
-    global _ARTS
-    if _ARTS is None:
-        facts = resolve.shared()[0]
-        _ARTS = {
-            resolve.norm(resolve.text(v)): {
-                str(m["itemHash"])
-                for tier in v["derived"]["tiers"]
-                for m in tier["items"]
-            }
-            for v in facts.items.values()
-            if "tiers" in (v.get("derived") or {})
-        }
-    return _ARTS.get(resolve.norm(artifact), set())
-
-
-def stamp(name, artifact=""):
-    """模组的主键。这一页的单位是模组，不是表格行。
-
-    惰性装配：check_terms.py 会 importlib 载这个模块取着色词表，import 时就读
-    12 MB 事实层等于让闸门白等。"""
-    global _STAMP
-    if _STAMP is None:
-        _STAMP = resolve.stamper("artifact-mods") or (lambda _: [])
-    keys = list(_STAMP(name))
-    if len(keys) > 1 and artifact:
-        mine = [k for k in keys if k in art_pool(artifact)]
-        if len(mine) == 1:
-            return mine
-        if mine:
-            keys = mine
-    return keys
-
 
 N_SECTIONS = 7
 N_MODS = 147
@@ -445,9 +401,7 @@ def render(page, digest="", dex=None, origins=None):
             for mod in row:
                 name = text_of(mod["name"], collapse=True)
                 dex.add(
-                    keys=[mod["key"]]
-                    if mod["key"]
-                    else stamp(text_of(mod["name"]), s["name"]),
+                    keys=[mod["key"]] if mod["key"] else [],
                     anchor="art-%d" % i,
                     kind=label,
                     name=name,

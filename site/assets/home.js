@@ -220,7 +220,12 @@ export default function init(box, deps) {
 
     var index = null, pending = false, pages = {};
 
+    function onPyReady() {
+      if (input.value.trim()) draw();
+    }
+
     function load() {
+      if (!window.starsidePy && deps && deps.ensurePinyin) deps.ensurePinyin(onPyReady);
       if (index || pending) return;
       pending = true;
       var tag = document.createElement('script');

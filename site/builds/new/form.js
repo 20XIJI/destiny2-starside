@@ -352,12 +352,40 @@
     el.classList.add('inked');
     el._ink = { layer: layer, spans: [], prev: el.value };
     el.addEventListener('input', inkInput);
-    el.addEventListener('scroll', function () { inkSync(el); });
+    el.addEventListener('scroll', function () {
+      layer.scrollTop = el.scrollTop;
+      layer.scrollLeft = el.scrollLeft;
+    });
     inkDraw(el);
   });
-  window.addEventListener('resize', function () { inked.forEach(inkSync); });
+  var inkRaf = 0;
+  window.addEventListener('resize', function () {
+    if (inkRaf) return;
+    inkRaf = requestAnimationFrame(function () {
+      inkRaf = 0;
+      inked.forEach(inkSync);
+    });
+  });
 
   var picker = null;
+  var pyState = 0;
+  var pyWait = [];
+  function ensurePinyin(cb) {
+    if (window.starsidePy) return;
+    if (cb && pyWait.indexOf(cb) < 0) pyWait.push(cb);
+    if (pyState) return;
+    pyState = 1;
+    var l = document.querySelector('link[href$="assets/site.css"]');
+    var s = document.createElement('script');
+    s.src = l ? l.href.replace('assets/site.css', 'assets/pinyin.js') : '../../assets/pinyin.js';
+    s.onload = function () {
+      pyState = 2;
+      var q = pyWait.splice(0);
+      q.forEach(function (fn) { fn(); });
+    };
+    s.onerror = function () { pyState = 0; pyWait.length = 0; };
+    document.head.appendChild(s);
+  }
 
   var ELEM_CN = { arc: '电弧', solar: '烈日', void: '虚空',
                   stasis: '冰影', strand: '缚丝', prismatic: '棱镜' };
@@ -792,6 +820,10 @@
 
     var grid = document.createElement('ul');
     grid.className = 'picker-grid';
+
+    function onPyReady() { if (find.value) draw(find.value); }
+    find.addEventListener('focus', function () { if (!window.starsidePy) ensurePinyin(onPyReady); });
+    find.addEventListener('input', function () { if (!window.starsidePy) ensurePinyin(onPyReady); });
 
     // 按空格分词后取 AND，与 app.js 的 matches() 同一条规则：输「电弧 虹吸」要
     // 命中「电弧虹吸」。这一页不引 app.js——它 66% 的分支（折线图、全站搜索、

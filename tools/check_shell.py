@@ -237,18 +237,23 @@ def main() -> int:
             and "data-cols=" not in tb.group(1)
             and ("data-item=" in tb.group(1) or "data-section=" not in tb.group(1))
         )
-        if "assets/app.js" in src:
-            if has_search and "assets/pinyin.js" not in src:
-                bad.append("%s：引了 app.js 却没引 pinyin.js，条目名的拼音检索会失效" % rel)
-            if not has_search and "assets/pinyin.js" in src:
-                bad.append("%s：页面不带检索框却多余引入 assets/pinyin.js" % rel)
+        if "assets/pinyin.js" in src:
+            bad.append("%s：pinyin.js 已改为交互按需加载，不应在 HTML 中首屏硬引" % rel)
         if rel == "weapons/index.html":
             with open(os.path.join(shell.SITE, "weapons/app.js"), encoding="utf-8") as f:
                 wpn_app = f.read()
-            if "assets/pinyin.js" not in src and "assets/pinyin.js" not in wpn_app:
-                bad.append("%s：装备库未引入或按需加载 pinyin.js，武器名的拼音检索会失效" % rel)
-        if "form.js" in src and "assets/pinyin.js" not in src:
-            bad.append("%s：配装工具没引 pinyin.js，候选的拼音检索会失效" % rel)
+            if "assets/pinyin.js" not in wpn_app:
+                bad.append("%s：装备库未按需加载 pinyin.js，武器名的拼音检索会失效" % rel)
+        if "assets/app.js" in src and has_search:
+            with open(os.path.join(shell.SITE, "assets/app.js"), encoding="utf-8") as f:
+                app_js_src = f.read()
+            if "pinyin.js" not in app_js_src:
+                bad.append("%s：app.js 未按需加载 pinyin.js，条目名的拼音检索会失效" % rel)
+        if "form.js" in src:
+            with open(os.path.join(shell.SITE, "builds/new/form.js"), encoding="utf-8") as f:
+                form_js_src = f.read()
+            if "assets/pinyin.js" not in form_js_src:
+                bad.append("%s：form.js 未按需加载 pinyin.js，候选的拼音检索会失效" % rel)
 
         if rel != shell.HOME and '"%s"' % rel not in index:
             bad.append("%s：不在全站搜索索引里，跑一次 tools/build-search.py" % rel)

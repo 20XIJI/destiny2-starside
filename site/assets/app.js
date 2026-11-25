@@ -32,6 +32,23 @@
       throw e;
     });
   }
+  var pyState = 0;
+  var pyWait = [];
+  function ensurePinyin(cb) {
+    if (window.starsidePy) return;
+    if (cb && pyWait.indexOf(cb) < 0) pyWait.push(cb);
+    if (pyState) return;
+    pyState = 1;
+    var s = document.createElement('script');
+    s.src = new URL('pinyin.js', HERE).href;
+    s.onload = function () {
+      pyState = 2;
+      var q = pyWait.splice(0);
+      q.forEach(function (fn) { fn(); });
+    };
+    s.onerror = function () { pyState = 0; pyWait.length = 0; };
+    document.head.appendChild(s);
+  }
 
   var head = document.querySelector('.site-head');
   var slot = document.querySelector('.toolbar');
@@ -301,7 +318,7 @@
 
   var hero = document.querySelector('.hero-search');
   if (hero) {
-    lazy('home.js').then(function (m) { m.default(hero, { words: words, hit: hit }); });
+    lazy('home.js').then(function (m) { m.default(hero, { words: words, hit: hit, ensurePinyin: ensurePinyin }); });
     lazy('sky.js').then(function (m) { m.default(); });
     measure();
     return;
@@ -443,6 +460,13 @@
   search.className = 'tool-search';
   search.placeholder = restState === 'loading' ? '搜索' + NOUN + '（其余条目载入中）' : '搜索 ' + poolSize() + ' 个' + NOUN;
   search.setAttribute('aria-label', '搜索' + NOUN);
+  function onPyReady() { if (search.value) filter(search.value); }
+  search.addEventListener('focus', function () {
+    if (!window.starsidePy) ensurePinyin(onPyReady);
+  });
+  search.addEventListener('input', function () {
+    if (!window.starsidePy) ensurePinyin(onPyReady);
+  });
 
   var count = document.createElement('p');
   count.className = 'tool-count';
@@ -1012,9 +1036,11 @@
       if (d.groups && picked[d.name].length === 1) regroup(picked[d.name][0]);
     });
     search.value = kept.q || '';
+    if (search.value) ensurePinyin(function () { if (search.value) filter(search.value); });
     filter(search.value);
   } else if (came && ITEM) {
     search.value = came;
+    ensurePinyin(function () { if (search.value) filter(search.value); });
     filter(came);
   } else if (hideOn && ITEM) {
     filter('');

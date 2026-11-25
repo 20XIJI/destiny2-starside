@@ -172,13 +172,6 @@ def on_disk():
     return out
 
 
-def in_db(docs=None):
-    """库里每篇的正文。docs 给了就不再请求，与同一次 pull 的别的字段共用一次调用。"""
-    if docs is None:
-        docs = api('pull')['docs']
-    return {d['_id']: (d.get('md') or '') for d in docs}
-
-
 def docs_in_db(raw=None, *, heads=False):
     """库里每篇的 (hashes, bodies, landed)。heads=True 时尽量只拉元信息，不传正文。"""
     if raw is None:

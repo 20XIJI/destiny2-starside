@@ -155,12 +155,21 @@ let pending = 0;
 const redraw = () => { if (!pending) pending = requestAnimationFrame(t => { pending = 0; frame(t); }); };
 
 let rid = 0;
-const rebuild = () => { clearTimeout(rid); rid = setTimeout(() => { build(); if (reduce) redraw(); }, 120); };
+const rebuild = () => {
+  clearTimeout(rid);
+  rid = setTimeout(() => {
+    if (!inWindow()) return;
+    build();
+    if (reduce) redraw();
+  }, 120);
+};
 addEventListener('resize', rebuild);
 addEventListener('load', rebuild);
 addEventListener('starside:rest', rebuild);
 document.fonts.ready.then(rebuild);
-new ResizeObserver(rebuild).observe(document.body);
+const ro = new ResizeObserver(rebuild);
+ro.observe(ph);
+if (head) ro.observe(head);
 
 if (reduce) {
   redraw();

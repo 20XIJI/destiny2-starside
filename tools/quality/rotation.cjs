@@ -1,12 +1,11 @@
 'use strict'
-const {
-  assert, fs, path, vm, crypto, zlib, root, site, copy, digest,
+const { ROTATION_SLOTS, ADA_SLOTS, XUR_SLOTS } = require('./rotation-slots.cjs')
+const { assert, fs, path, vm, crypto, zlib, root, site, copy, digest,
   test, harness, md, submission, edit, reviewSeed, jobs, rejectedBatch,
-  funcSource, tableRows,
-} = require('./harness.cjs')
+  funcSource, tableRows } = require('./harness.cjs')
 
 test('eververse: timer trigger syncs 26 validated items into counters/rotation and publishes rotation/eververse.json to static hosting', async () => {
-  const { ROTATION_SLOTS, ADA_SLOTS, EVERVERSE_FEED_URL, ADA_FEED_URL } = require(path.join(root, 'tools/sync-eververse.js'))
+  const { EVERVERSE_FEED_URL, ADA_FEED_URL } = require(path.join(root, 'tools/sync-eververse.js'))
   const allSlots = [...ROTATION_SLOTS, ...ADA_SLOTS]
   const byHash = new Map(allSlots.map((s, i) => [String(s.hash), { s, i }]))
   const feedHtml = ROTATION_SLOTS.map((s) => {
@@ -108,7 +107,7 @@ test('eververse: timer trigger syncs 26 validated items into counters/rotation a
 })
 
 test('eververse: Bungie 503 maintenance or subclass mismatch aborts sync without overwriting existing rotation doc', async () => {
-  const { ROTATION_SLOTS, EVERVERSE_FEED_URL } = require(path.join(root, 'tools/sync-eververse.js'))
+  const { EVERVERSE_FEED_URL } = require(path.join(root, 'tools/sync-eververse.js'))
   const feedHtml = ROTATION_SLOTS.map((s) => {
     const item = {
       name: 'Item ' + s.hash,
@@ -214,7 +213,7 @@ test('eververse: Bungie 503 maintenance or subclass mismatch aborts sync without
 })
 
 test('eververse: universal armor ornaments, class finishers, and data-kdh-preview Ada-1 HTML sync cleanly', async () => {
-  const { ROTATION_SLOTS, ADA_SLOTS, EVERVERSE_FEED_URL, ADA_FEED_URL } = require(path.join(root, 'tools/sync-eververse.js'))
+  const { EVERVERSE_FEED_URL, ADA_FEED_URL } = require(path.join(root, 'tools/sync-eververse.js'))
   const customFeed = ROTATION_SLOTS.map((s, idx) => {
     let itemType = s.expectedType === '武器皮肤' ? 'Weapon Ornament'
       : s.expectedType === '泰坦皮肤' ? 'Titan Universal Ornament'
@@ -290,10 +289,8 @@ test('eververse: universal armor ornaments, class finishers, and data-kdh-previe
 })
 
 test('eververse: 7-day history, 4-week ada history, stale upstream detection, and idempotent retry', async () => {
-  const {
-    ROTATION_SLOTS, ADA_SLOTS, EVERVERSE_FEED_URL, ADA_FEED_URL,
-    eververseWindow, weeklyCycleRange, slotsSignature, adaSignature,
-  } = require(path.join(root, 'tools/sync-eververse.js'))
+  const { EVERVERSE_FEED_URL, ADA_FEED_URL,
+    eververseWindow, weeklyCycleRange, slotsSignature, adaSignature } = require(path.join(root, 'tools/sync-eververse.js'))
   const allSlots = [...ROTATION_SLOTS, ...ADA_SLOTS]
   const byHash = new Map(allSlots.map((s, i) => [String(s.hash), { s, i }]))
   const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
@@ -426,7 +423,9 @@ test('eververse: 7-day history, 4-week ada history, stale upstream detection, an
   assert.equal(pubAfterOld.history, undefined)
   assert.equal(pubAfterOld.adaHistory, undefined)
   h.signIn('lv2', 2)
-  const meStale = await h.as('lv2', { a: 'me' })
+  const meLite = await h.as('lv2', { a: 'me' })
+  assert.equal(meLite.stale, undefined, '未带 stale 时不查商店陈旧态')
+  const meStale = await h.as('lv2', { a: 'me', stale: 1 })
   assert.equal(meStale.stale.eververse.cycleStart, win.cycleStart)
 
   // 2) 页面日期看似今天但商品签名命中近7天历史：同样拒绝并保留旧数据
@@ -472,7 +471,7 @@ test('eververse: 7-day history, 4-week ada history, stale upstream detection, an
 })
 
 test('xur: timer trigger xur-sat-0103 syncs weekly inventory via Bungie official API with recommended perks and publishes rotation/xur.json to static hosting', async () => {
-  const { XUR_SLOTS, XUR_FEED_URL } = require(path.join(root, 'tools/sync-xur.js'))
+  const { XUR_FEED_URL } = require(path.join(root, 'tools/sync-xur.js'))
   const xurHtml = `<script id="kyber-xur-inline-data">\nwindow.KYBER_XUR_DATA = ${JSON.stringify({ slots: XUR_SLOTS, location: 'Bazaar, Tower' })};\n</script>`
   const h = harness({}, {
     async fetch(url) {
@@ -659,7 +658,7 @@ test('xur: timer trigger xur-sat-0103 syncs weekly inventory via Bungie official
 })
 
 test('xur: 4-week history in counters/xur, idempotent retry, and duplicate signature rejection', async () => {
-  const { XUR_SLOTS, XUR_FEED_URL, currentXurWindow, xurSignature } = require(path.join(root, 'tools/sync-xur.js'))
+  const { XUR_FEED_URL, currentXurWindow, xurSignature } = require(path.join(root, 'tools/sync-xur.js'))
   const wk = currentXurWindow()
   const altSlots = XUR_SLOTS.map((s, i) => (i === 0 ? { ...s, costs: [{ hash: 800069450, quantity: 999 }] } : s))
   assert.notEqual(

@@ -54,7 +54,11 @@ LOOKUP_FACTS = (
 
 
 def digest_files(
-    paths, cache: dict[str, bytes] | None = None, extra: str = ""
+    paths,
+    cache: dict[str, bytes] | None = None,
+    extra: str = "",
+    stat_cache: dict[str, list] | None = None,
+    next_stat: dict[str, list] | None = None,
 ) -> str:
     """路径集合 + 各自字节 → sha1。输入文件必须存在，缺失当场抛 FileNotFoundError。"""
     h = hashlib.sha1()
@@ -70,11 +74,19 @@ def digest_files(
                 rel = p.resolve().relative_to(ROOT).as_posix()
             except (ValueError, OSError):
                 pass
-            fh = hashlib.sha1()
-            fh.update(rel.encode())
-            fh.update(b"\0")
-            fh.update(p.read_bytes())
-            entry = fh.digest()
+            st = p.stat()
+            sig = [st.st_mtime_ns, st.st_size]
+            prev = stat_cache.get(rel) if stat_cache is not None else None
+            if prev is not None and len(prev) == 3 and prev[0] == sig[0] and prev[1] == sig[1]:
+                entry = bytes.fromhex(prev[2])
+            else:
+                fh = hashlib.sha1()
+                fh.update(rel.encode())
+                fh.update(b"\0")
+                fh.update(p.read_bytes())
+                entry = fh.digest()
+            if next_stat is not None:
+                next_stat[rel] = [sig[0], sig[1], entry.hex()]
             if cache is not None:
                 cache[raw] = entry
         h.update(entry)
@@ -86,11 +98,6 @@ def facts_groups() -> tuple[list[Path], list[Path], list[Path]]:
     sets = [ROOT / r for r in SET_FACTS if (ROOT / r).is_file()]
     lookup = [ROOT / r for r in LOOKUP_FACTS if (ROOT / r).is_file()]
     return core, sets, lookup
-
-
-def facts_files() -> list[Path]:
-    core, sets, lookup = facts_groups()
-    return core + sets + lookup
 
 
 def source_files() -> list[Path]:
@@ -163,14 +170,16 @@ def main() -> int:
         return 0
 
     stamp = {} if force else load_stamp()
-    next_stamp: dict = {}
+    stat_cache: dict[str, list] = {} if force else (stamp.get("_files") or {})
+    next_stat: dict[str, list] = {}
+    next_stamp: dict = {"_files": next_stat}
     file_cache: dict[str, bytes] = {}
     ran = False
     executed = 0
     skipped = 0
 
     def dirty(key: str, paths, *, extra: str = "") -> bool:
-        got = digest_files(paths, file_cache, extra=extra)
+        got = digest_files(paths, file_cache, extra=extra, stat_cache=stat_cache, next_stat=next_stat)
         next_stamp[key] = got
         return force or stamp.get(key) != got
 
@@ -184,6 +193,7 @@ def main() -> int:
     if dirty("orch", orch) and not force:
         force = True
         stamp = {}
+        stat_cache.clear()
 
     # ── 纠正源稿：改的是 md，必须在算页哈希之前 ──
     norm_deps = (
@@ -200,7 +210,7 @@ def main() -> int:
         executed += 1
         file_cache.clear()
         sources = source_files()
-        next_stamp["normalize"] = digest_files(sources + norm_deps, file_cache)
+        next_stamp["normalize"] = digest_files(sources + norm_deps, file_cache, next_stat=next_stat)
     else:
         skipped += 1
     if normalize_only:
@@ -231,7 +241,11 @@ def main() -> int:
         return sorted(seen)
 
     slugs = doc_slugs(shell)
-    page_gen = shared + under("tools/convert-doc.py", "references/pages/prismatic.json")
+    page_gen = shared + under(
+        "tools/convert-doc.py",
+        "references/pages/prismatic.json",
+        "references/keys/armor-sets.md",
+    )
     page_dirty: list[str] = []
     for slug, path in slugs:
         key = "page:%s" % slug
@@ -387,7 +401,7 @@ def main() -> int:
         executed += 1
         for p in home_inputs:
             file_cache.pop(str(p), None)
-        next_stamp["home"] = digest_files(home_inputs, file_cache)
+        next_stamp["home"] = digest_files(home_inputs, file_cache, next_stat=next_stat)
     else:
         skipped += 1
 

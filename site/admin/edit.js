@@ -87,7 +87,10 @@
       }
       if (localStorage.getItem('sa_rt') !== rt) return
       if (x.ok) throw new Error('登录状态刷新失败')
-      throw new Error(shared().authDenied(x.status) ? 'forbidden' : 'auth unavailable')
+      var denied = window.starsideShared
+        ? window.starsideShared.authDenied(x.status)
+        : (x.status === 400 || x.status === 401 || x.status === 403)
+      throw new Error(denied ? 'forbidden' : 'auth unavailable')
     }, function (e) { renewing = null; throw e })
     return renewing
   }
@@ -104,20 +107,14 @@
     })
   }
 
-  /* 两条编辑路都要先把共用模块（admin/shared.js）拉进来：资料页的闸门走 lint()，
-     配装页的填表页怎么载、怎么读、错误码怎么翻走 slotOf()/formSrc()/readForm()/
-     mountForm()/say()，不再把完整审核台 admin.js 整份拉过来。
-
-     **dialect 与 source 先落地。**shared.js 在函数体里现读 window.starsideDialect 与
-     window.starsideSource，不在模块顶层捕获，所以先后不影响求值，影响的是调用：
-     资料页那条路进去就切格、着色，配装页那条路进去就判单套还是合集。串着载是最省事的
-     保证，代价是开编辑态时多两次往返。
-     关掉再开时不重载：脚本已经在页面上了，再插一遍只是白执行一次。
-     **词表不在这条链上**：lint() 同样现读 window.starsideTerms，挪到进去之后空闲补。 */
+  /* 两条编辑路都要先把共用模块拉进来：按各自全局对象检查缺失项再并行加载，
+     避免单个脚本失败时残留全局对象毒化后续重试。 */
   function needShared () {
-    if (window.starsideShared) return Promise.resolve()
-    return script('admin/dialect.js').then(function () { return script('builds/source.js') })
-      .then(function () { return script('admin/shared.js') })
+    var need = []
+    if (!window.starsideDialect) need.push(script('admin/dialect.js'))
+    if (!window.starsideSource) need.push(script('builds/source.js'))
+    if (!window.starsideShared) need.push(script('admin/shared.js'))
+    return need.length ? Promise.all(need) : Promise.resolve()
   }
 
   // **词表不进「开编辑态」这条关键路径。**它 104 KB，只有闸门提示与调色板用得上；

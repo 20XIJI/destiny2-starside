@@ -1805,7 +1805,7 @@
     rail: recall('wpn.rail') || 240, railOff: !!recall('wpn.railOff'), rolls: recall('wpn.rolls') || {},
     syntax: false, pop: null, tip: null, hoverPlug: null, hoverRow: null, slotHover: false,
     statsMode: 'pve', pvpAcc: null, pvpStat: 0, pvpMag: null, pvpMagBlank: false,
-    fx: [], fxOpen: false, fxg: '', perkStep: {}, fxStep: {},
+    fx: [], fxOpen: false, fxg: '', perkStep: {}, fxStep: {}, cmpRoll: null,
     hideAegis: !!recall('wpn.hideAegis')
   };
   function readUrl() {
@@ -1815,8 +1815,8 @@
     var w = u.get('w');
     S.sel = w && BY_HASH[S.scope][w] != null ? BY_HASH[S.scope][w] : null;
     S.urlRoll = null;
-    if (S.sel != null && S.scope === 'wpn' && (u.get('p') || u.get('mw') || u.get('t') || u.get('mod') || u.get('cat'))) {
-      S.urlRoll = { p: u.get('p') || '', mw: u.get('mw'), lv: u.get('lv'), t: u.get('t'), mod: u.get('mod'), cat: u.get('cat') };
+    if (S.sel != null && S.scope === 'wpn' && (u.get('p') || u.get('perks') || u.get('mw') || u.get('t') || u.get('mod') || u.get('cat'))) {
+      S.urlRoll = { p: u.get('p') || '', perks: u.get('perks') || '', mw: u.get('mw'), lv: u.get('lv'), t: u.get('t'), mod: u.get('mod'), cat: u.get('cat') };
     }
   }
   function writeUrl(push) {
@@ -1877,12 +1877,24 @@
   }
   function decodeRoll(i, enc) {
     var roll = defaultRoll(i), cols = poolRow(i)[2];
-    var p = (enc.p || '').split(',');
-    for (var c = 0; c < cols.length && c < p.length; c++) {
-      if (p[c] === '-' || !p[c]) { if (cellsOf(cols[c]).length > 1) { delete roll.sel[c]; } continue; }
-      var k = PIDX[+p[c]];
-      var ok = cellsOf(cols[c]).some(function (cell) { return shownPlug(cell) === k; });
-      if (ok) { roll.sel[c] = k; }
+    if (enc.p) {
+      var p = enc.p.split(',');
+      for (var c = 0; c < cols.length && c < p.length; c++) {
+        if (p[c] === '-' || !p[c]) { if (cellsOf(cols[c]).length > 1) { delete roll.sel[c]; } continue; }
+        var k = PIDX[+p[c]];
+        var hit = k != null ? cellsOf(cols[c]).filter(function (cell) { return cell[0] === k || cell[1] === k; })[0] : null;
+        if (hit) { roll.sel[c] = shownPlug(hit); }
+      }
+    }
+    if (enc.perks) {
+      enc.perks.split(',').forEach(function (raw) {
+        var k = PIDX[+raw];
+        if (k == null) { return; }
+        for (var c2 = 0; c2 < cols.length; c2++) {
+          var hit2 = cellsOf(cols[c2]).filter(function (cell) { return cell[0] === k || cell[1] === k; })[0];
+          if (hit2) { roll.sel[c2] = shownPlug(hit2); break; }
+        }
+      });
     }
     if (enc.mw === '-') { roll.mw = ''; } else if (enc.mw && optsOf(i).some(function (o) { return o[0] === enc.mw; })) { roll.mw = enc.mw; }
     if (enc.lv) { roll.lv = Math.max(1, Math.min(10, +enc.lv || 10)); }
@@ -1948,7 +1960,12 @@
   }
 
   /* 一个配置的全部属性。swap 是悬停预览：{栏: 插件}，栏写 -1 表示去掉那一栏。 */
-  function compute(i, roll, swap) {
+  function compute(i, roll, swap, stepMap) {
+    var savedStep = S.perkStep;
+    if (stepMap) { S.perkStep = stepMap; }
+    try { return computeInner(i, roll, swap); } finally { S.perkStep = savedStep; }
+  }
+  function computeInner(i, roll, swap) {
     var pr = poolRow(i), group = P.g[pr[0]], base = pr[1], cols = pr[2];
     var ammo = V && V.am && WR[i][W_AMMO] != null ? ammoEn(V.am[WR[i][W_AMMO]][0]) : 'Primary';
     var tyEn = TYPE_EN[typeName(WR[i])] || typeName(WR[i]);
@@ -2301,7 +2318,6 @@
   function acGlyph(key, cls) {
     return '<span class="ac-ic' + (cls ? ' ' + cls : '') + '" aria-hidden="true">' + glyph(key) + '</span>';
   }
-  function kwIcon() { return ''; }
   var IS_GLYPH = {
     '传说': ['engram', 'is-leg'], '异域': ['engram', 'is-exo'],
     '主手': ['slot-kinetic', ''], '副手': ['slot-energy', ''], '威能': ['slot-power', ''],
@@ -3123,7 +3139,9 @@
     var r = WR[i], pr = poolRow(i), roll = rollOf(i), rep = r[W_REP];
     var cols = pr[2], marks = marksOf(i), ammo = ammoEn(V.am[r[W_AMMO]][0]);
     var swap = S.hoverPlug ? { col: S.hoverPlug.col, plug: S.hoverPlug.plug } : null;
-    var res = compute(i, roll), ghost = swap ? compute(i, roll, swap) : null;
+    var hasCmp = !!(S.cmpRoll && S.cmpRoll.w === r[W_H]);
+    var res = compute(i, roll);
+    var ghost = swap ? compute(i, roll, swap) : (hasCmp ? compute(i, S.cmpRoll.roll, null, S.cmpRoll.perkStep) : null);
     var matrix = cols.map(function (col, c) {
       var cells = cellsOf(col), fixed = cells.length === 1;
       return '<div class="col"><h4>' + esc(P.lb[col[0]]) + '</h4>' + cells.map(function (cell) {
@@ -3159,7 +3177,7 @@
     parts.push(usedByHtml(r[W_H]));
     parts.push('</div>');
     parts.push('<aside class="one-side"><section><div class="facts">' + factsHtml(i) + '</div></section>' +
-      statsBlock(i, res, ghost) +
+      statsBlock(i, res, ghost, !swap && hasCmp) +
       frameStatsHtml(i) + versionsHtml('wpn', i) + '</aside>');
     return '<article class="wpn-one' + (anim ? ' swap' : '') + '" data-el="' + r[W_EL] + '">' + parts.join('') + '</article>';
   }
@@ -3425,7 +3443,7 @@
     return (conv ? (conv.svg || '') + '<span class="conv"' + (conv.title ? ' title="' + esc(conv.title) + '"' : '') + '>' +
       conv.text + '</span><span class="sep">/</span>' : '') + displayStatVal(res, x);
   }
-  function statsPanel(i, res, ghost) {
+  function statsPanel(i, res, ghost, isBase) {
     var bars = res.rows.filter(function (x) { return !x.numeric; });
     var nums = res.rows.filter(function (x) { return x.numeric; });
     var o = ['<div class="stats-list">'];
@@ -3434,9 +3452,15 @@
       var fill = Math.max(0, Math.min(100, val));
       var extra = '', d = '';
       if (ghost && ghost.byStat[x.s]) {
-        var gv = displayStatVal(ghost, ghost.byStat[x.s]), diff = Number((gv - val).toFixed(1));
-        if (diff > 0) { extra = '<i class="s-ghost" style="width:' + Math.min(100, gv) + '%"></i>'; }
-        if (diff < 0) { extra = '<i class="g-neg" style="left:' + gv + '%;width:' + (-diff) + '%"></i>'; }
+        var gv = displayStatVal(ghost, ghost.byStat[x.s]);
+        var diff = Number((isBase ? (val - gv) : (gv - val)).toFixed(1));
+        if (isBase) {
+          if (diff > 0) { extra = '<i class="s-ghost" style="width:' + Math.min(100, val) + '%"></i>'; fill = Math.max(0, Math.min(100, gv)); }
+          if (diff < 0) { extra = '<i class="g-neg" style="left:' + val + '%;width:' + (-diff) + '%"></i>'; }
+        } else {
+          if (diff > 0) { extra = '<i class="s-ghost" style="width:' + Math.min(100, gv) + '%"></i>'; }
+          if (diff < 0) { extra = '<i class="g-neg" style="left:' + gv + '%;width:' + (-diff) + '%"></i>'; }
+        }
         if (diff) { d = '<span class="d' + (diff > 0 ? '' : ' dn') + '">' + (diff > 0 ? '+' : '−') + Math.abs(diff) + '</span>'; }
       }
       o.push('<div class="stat-item' + (S.hoverRow === x.s ? ' is-hover' : '') + '" data-act="statrow" data-s="' + x.s + '">' +
@@ -3449,7 +3473,8 @@
       nums.forEach(function (x) {
         var val = displayStatVal(res, x), d = '';
         if (ghost && ghost.byStat[x.s]) {
-          var diff = Number((displayStatVal(ghost, ghost.byStat[x.s]) - val).toFixed(1));
+          var gv2 = displayStatVal(ghost, ghost.byStat[x.s]);
+          var diff = Number((isBase ? (val - gv2) : (gv2 - val)).toFixed(1));
           if (diff) { d = '<span class="d' + (diff > 0 ? '' : ' dn') + '">' + (diff > 0 ? '+' : '−') + Math.abs(diff) + '</span>'; }
         }
         o.push('<div class="special-stat-item" data-act="statrow" data-s="' + x.s + '"><span class="special-stat-label">' +
@@ -3460,9 +3485,14 @@
     }
     return o.join('');
   }
-  function statsModeBtns() {
+  function statsModeBtns(i) {
     var note = 'PvP 相关为实验版功能，不保证准确。';
-    return '<div class="stats-mode-wrap">' +
+    var cmpOn = !!(S.cmpRoll && i != null && S.cmpRoll.w === WR[i][W_H]);
+    var cmpBtn = S.statsMode === 'pve'
+      ? '<button type="button" class="stats-cmp-btn" data-act="cmp" aria-pressed="' + (cmpOn ? 'true' : 'false') +
+        '" title="锁定当前配置为基准 A，切换词条后直接对比属性差值">' + (cmpOn ? '清除基准' : '对比基准') + '</button>'
+      : '';
+    return '<div class="stats-mode-wrap">' + cmpBtn +
       '<div class="stats-mode-toggle">' +
       '<button type="button" class="stats-mode-btn" data-act="statsmode" data-v="pve" aria-pressed="' +
       (S.statsMode === 'pve' ? 'true' : 'false') + '">PvE</button>' +
@@ -3542,7 +3572,7 @@
       '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>添加效果</span></button>' +
       drop + '</div>';
   }
-  function statsBlock(i, res, ghost) {
+  function statsBlock(i, res, ghost, isBase) {
     var roll = rollOf(i);
     var inner;
     if (S.statsMode === 'pvp') {
@@ -3555,10 +3585,10 @@
         inner = PVP.pvpPanel(i, res);
       }
     } else {
-      inner = statsPanel(i, res, ghost);
+      inner = statsPanel(i, res, ghost, isBase);
     }
     return '<section class="stats-sec">' +
-      '<div class="stats-header"><h3>属性</h3>' + statsModeBtns() + '</div>' +
+      '<div class="stats-header"><h3>属性</h3>' + statsModeBtns(i) + '</div>' +
       '<div class="stats-box">' + inner + '</div>' +
       '<div class="side-aux"><div class="side-slots">' + sideMods(i, roll) + sideMw(i, roll) + '</div>' +
       sideTiers(i, roll, res) +
@@ -3582,8 +3612,11 @@
         if (b) { b.classList.add('is-hover'); }
       }
       if (S.statsMode === 'pvp') { return; }
-      var res = compute(i, roll), ghost = h ? compute(i, roll, { col: h.col, plug: h.plug }) : null;
-      pane.innerHTML = statsPanel(i, res, ghost);
+      var hasCmp = !!(S.cmpRoll && S.cmpRoll.w === WR[i][W_H]);
+      var res = compute(i, roll);
+      var ghost = h ? compute(i, roll, { col: h.col, plug: h.plug })
+        : (hasCmp ? compute(i, S.cmpRoll.roll, null, S.cmpRoll.perkStep) : null);
+      pane.innerHTML = statsPanel(i, res, ghost, !h && hasCmp);
     });
   }
 
@@ -3854,7 +3887,7 @@
     var groups = [];
     function kwItem(k) {
       var m = KEY_META[k] || { title: k, hint: '' };
-      return { text: k + ':', label: m.title, badge: k + ':', hint: m.hint, n: -1, keep: true, icon: kwIcon(k) };
+      return { text: k + ':', label: m.title, badge: k + ':', hint: m.hint, n: -1, keep: true, icon: '' };
     }
     function count(fn) { var n = 0; for (var k = 0; k < pool.length; k++) { if (fn(pool[k])) { n++; } } return n; }
     if (t.t === 'empty') {
@@ -4221,6 +4254,7 @@
       S.pvpAcc = null;
       S.pvpMag = null;
       S.pvpMagBlank = false;
+      S.cmpRoll = null;
     }
     S.sel = i;
     S.pop = null;
@@ -4496,6 +4530,15 @@
       }
       case 'statsmode':
         S.statsMode = v; renderDetail(); return;
+      case 'cmp': {
+        var curH = WR[i][W_H];
+        if (S.cmpRoll && S.cmpRoll.w === curH) {
+          S.cmpRoll = null;
+        } else {
+          S.cmpRoll = { w: curH, roll: JSON.parse(JSON.stringify(rollOf(i))), perkStep: Object.assign({}, S.perkStep) };
+        }
+        renderDetail(); return;
+      }
       case 'pvpreset': {
         S.pvpAcc = null;
         if (PVP) { PVP.refreshPvpNumbers(); }

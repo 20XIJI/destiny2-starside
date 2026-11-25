@@ -89,6 +89,15 @@ function harness(seed = {}, hooks = {}) {
         }
         return { updated }
       },
+      async remove() {
+        assert.equal(tx, null)
+        calls.push({ op: 'queryRemove', name, query })
+        let deleted = 0
+        for (const [id, row] of [...state[name].entries()]) {
+          if (matches(row, query)) { state[name].delete(id); deleted++ }
+        }
+        return { deleted }
+      },
       async add(fields) {
         assert.equal(tx, null)
         const id = 'new-' + ++serial

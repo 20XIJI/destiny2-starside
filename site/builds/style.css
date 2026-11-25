@@ -224,12 +224,44 @@ a.who:hover { color: var(--accent); }
 
 .slot,
 .rig {
+  position: relative;
   min-width: 0;
   padding: 8px;
   background: var(--surf-1);
   border: 1px solid var(--bd-outer);
   border-radius: var(--r-md);
   box-shadow: var(--sh-block);
+}
+
+.slot .cells > li:has(.to-wpn) { position: relative; }
+
+.to-wpn {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  z-index: 2;
+  padding: 1px 5px;
+  color: var(--bone-faint);
+  font-size: 11px;
+  line-height: 1.4;
+  text-decoration: none;
+  background: var(--surf-2);
+  border: 1px solid var(--bd-row);
+  border-radius: var(--r-sm);
+  opacity: 0;
+  transition: opacity .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.rig:hover > .to-wpn,
+.rig:focus-within > .to-wpn,
+.slot .cells > li:hover > .to-wpn,
+.slot .cells > li:focus-within > .to-wpn,
+.to-wpn:focus-visible { opacity: 1; }
+
+.to-wpn:hover,
+.to-wpn:focus-visible {
+  color: var(--bone-hi);
+  border-color: var(--accent);
 }
 
 /* **份额要把面板自己的固定开销算进去。**`flex-basis: 0` 时 --n 只分到「按比例的

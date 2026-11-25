@@ -5,13 +5,14 @@
 ;(function () {
   'use strict'
 
-  var API = 'https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api'
-  var AUTH = 'https://dea-mods-d1g0j2rile2323f73.api.tcloudbasegateway.com'
-
   // 共用逻辑在 admin/shared.js；现读 window.starsideShared，Node 里退回 require。
   function SH () { return (typeof window !== 'undefined' && window.starsideShared) || require('./shared.js') }
   function tok (v) { return SH().tok(v) }
   function say (e) { return SH().say(e) }
+  function auth (path, body) { return SH().auth(path, body) }
+  function refresh () { return SH().refresh() }
+  function call (a, body, retry) { return SH().call(a, body, retry) }
+  function tokenExpired (t) { return SH().tokenExpired(t) }
   function lint (text, at, g6, ok) { return SH().lint(text, at, g6, ok) }
   function slotOf (md) { return SH().slotOf(md) }
   function formSrc (kind) { return SH().formSrc(kind) }
@@ -21,84 +22,6 @@
   var $ = function (id) { return document.getElementById(id) }
   var LV = { 1: '编辑', 2: '审核员', 3: '管理员', 4: '超级管理员', 5: '本机' }
   var S = { me: null, docs: [], edits: [], subs: [], more: false, histLoaded: false, histMore: false }
-
-  // 仅解码 JWT exp 提前判过期，不验签：距过期不足 60 秒时先换新再打接口，
-  // 省掉「发请求 → 云函数回 forbidden → 换令牌 → 重试」一整趟往返。
-  function tokenExpired (t) {
-    if (!t || typeof t !== 'string') return false
-    var parts = t.split('.')
-    if (parts.length !== 3) return false
-    try {
-      var b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
-      while (b64.length % 4) b64 += '='
-      var json = typeof atob === 'function'
-        ? atob(b64)
-        : (typeof Buffer !== 'undefined' ? Buffer.from(b64, 'base64').toString('utf8') : '')
-      var payload = JSON.parse(json)
-      return typeof payload.exp === 'number' && payload.exp * 1000 <= Date.now() + 60e3
-    } catch (_) {
-      return false
-    }
-  }
-
-  function auth (path, body) {
-    return fetch(AUTH + path, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(body)
-    }).then(function (r) {
-      return r.json().then(function (j) {
-        if (!r.ok) {
-          var e = new Error(j.error_description || j.error || ('HTTP ' + r.status))
-          // 只有 400/401/403 才算令牌或凭据被拒；429/5xx 等暂时性故障保留本地会话。
-          e.denied = window.starsideShared
-            ? window.starsideShared.authDenied(r.status)
-            : (r.status === 400 || r.status === 401 || r.status === 403)
-          throw e
-        }
-        return j
-      })
-    })
-  }
-
-  /* 只有认证服务拒了刷新，才算登录真的失效：报 forbidden，say() 与 start() 据此清令牌、
-     回登录框。断网这类错误原样抛出，令牌留着，刷新页面即可重试。
-     同一页里并发的几发共用一次刷新。拒之前 sa_rt 已被别的标签页换掉的，用那一页换回来的
-     令牌，不算失效。 */
-  var renewing = null
-  function refresh () {
-    if (renewing) return renewing
-    var rt = localStorage.getItem('sa_rt')
-    if (!rt) return Promise.reject(new Error('forbidden'))
-    renewing = auth('/auth/v1/token', { grant_type: 'refresh_token', refresh_token: rt })
-      .then(function (j) { renewing = null; tok(j) }, function (e) {
-        renewing = null
-        if (localStorage.getItem('sa_rt') !== rt) return
-        throw e.denied ? new Error('forbidden') : e
-      })
-    return renewing
-  }
-
-  // 每个管理动作带 Bearer。重试只放一次：刷新之后仍被拒就是真的过期了。
-  function call (a, body, retry) {
-    var t = tok()
-    if (!retry && tokenExpired(t) && localStorage.getItem('sa_rt')) {
-      return refresh().then(function () { return call(a, body, 1) })
-    }
-    return fetch(API, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + t },
-      body: JSON.stringify(Object.assign({ a: a }, body || {}))
-    }).then(function (r) { return r.json() }).then(function (j) {
-      // 只有令牌那一类才值得换一张再打。权限不足回的是另一个词——两件事共用
-      // 一个词时，lv 不够的人点一下要白跑三趟，报出来的话还看不出是权限问题。
-      if (j && j.error === 'forbidden' && !retry) {
-        return refresh().then(function () { return call(a, body, 1) })
-      }
-      if (j && j.error) throw new Error(j.error)
-      return j
-    })
-  }
 
   // 源稿方言（切格、行标题、着色标记）JS 这一侧只有 admin/dialect.js 一份定义。
   // 在函数体里现读 window.starsideDialect，不在模块顶层捕获：见 edit.js 里注入次序那一段。

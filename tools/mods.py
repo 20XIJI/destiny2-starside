@@ -190,10 +190,10 @@ def arts():
     投影，是按「有 derived.tiers」补进去的。站内那个写法（「NPA 斥力调节器」中间有
     排版空格）由 arts_of() 从索引现取，配装源稿按它查。
     """
+    facts = resolve.shared()[0]
     shown_by = library()
-    with open(os.path.join(shell.ROOT, 'data', 'inventory-items.json'), encoding='utf-8') as f:
-        lib = {h: v for h, v in json.load(f).items()
-               if 'tiers' in (v.get('derived') or {})}
+    lib = {h: v for h, v in facts.items.items()
+           if 'tiers' in (v.get('derived') or {})}
     old = {}
     if os.path.exists(ARTS):
         with open(ARTS, encoding='utf-8') as f:
@@ -220,13 +220,8 @@ def arts():
           % (os.path.relpath(ARTS, shell.ROOT), len(table), '、'.join(sorted(table))))
 
 
-def pull(type_zh, out_path, want, keep=None):
-    """官方物品表里某一类 → {名字: {url, icon}}。位移技能与神器共用这一份。
-
-    表里同名条目有好几份（位移技能每个职业各挂一份，神器有赛季版与常驻版），
-    按名字去重取一条即可——图与名字都一样。已下好的图标沿用，地址没变就不重下，
-    也不该换文件名：文件名换一次，读者的浏览器缓存就白掉一份。
-    """
+def pull(type_zh, out_path, want):
+    """官方物品表里某一类 → {名字: {url, icon}}。位移技能共用这一份。"""
     old = {}
     if os.path.exists(out_path):
         with open(out_path, encoding='utf-8') as f:
@@ -236,29 +231,20 @@ def pull(type_zh, out_path, want, keep=None):
     for v in table_in.values():
         if v.get('typeName_zh') != type_zh or not v.get('name_zh'):
             continue
-        if keep is not None and items.norm(v['name_zh']) not in keep:
-            continue
-        # 表里存站内那个写法：配装源稿与填表页的词表都按站内的名字查这张表。
-        name = keep[items.norm(v['name_zh'])] if keep is not None else v['name_zh']
+        name = v['name_zh']
         if not v.get('icon'):
             die('%s 没有图标地址' % name)
         cand.setdefault(name, []).append(v)
     table = {}
     for name, got in cand.items():
         was = old.get(name, {})
-        # 同名条目有好几份（位移技能每个职业各挂一份），图与名字都一样。
-        # **优先沿用已存的那一个地址**：换地址就要换本地文件名，而文件名换一次，
-        # 读者那一年的浏览器缓存就白掉一份。都对不上时按主键取最小的，保证可复现。
         pick = next((x for x in got if x['icon'] == was.get('url')), None)
         pick = pick or min(got, key=lambda x: int(x['hash']))
         table[name] = {'hash': pick['hash'], 'url': pick['icon'],
                        'icon': was.get('icon', '') if was.get('url') == pick['icon'] else ''}
     if len(table) != want:
-        missing = sorted(set((keep or {}).values()) - set(table))
-        die('「%s」应有 %d 条，实际 %d 条%s'
-            % (type_zh, want, len(table),
-               '，官方物品表里找不到：' + '、'.join(missing) if missing
-               else '：' + '、'.join(sorted(table))))
+        die('「%s」应有 %d 条，实际 %d 条：%s'
+            % (type_zh, want, len(table), '、'.join(sorted(table))))
     with open(out_path, 'w', encoding='utf-8') as f:
         json.dump(table, f, ensure_ascii=False, indent=0, sort_keys=True)
     print('%s —— %d 条「%s」：%s'

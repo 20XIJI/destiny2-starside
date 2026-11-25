@@ -130,7 +130,6 @@ AUTHOR_FIELDS = {
 }
 
 AMMO_GEN = "1931675084"  # 弹药生成
-CHARGE_RATE = "3022301683"  # 充能效率（刀剑）
 IMPACT = "4043523819"  # 伤害（刀剑）
 
 PERK_SOCKETS = ("intrinsic", "trait")
@@ -923,41 +922,6 @@ class Table:
         return got, f if isinstance(block.get(f), str) else None
 
 
-def _element(t, key):
-    got = ELEMENT.get(weapon_of(key).get("defaultDamageType") or 0)
-    return "{%s|%s}" % got if got else None
-
-
-def _frame(t, key):
-    arch = (weapon_of(key).get("derived") or {}).get("archetype")
-    return name_of(str(arch)) or None if arch else None
-
-
-def _frame_rate(t, key):
-    rec = weapon_of(key)
-    frame = _frame(t, key)
-    if frame is None:
-        return None
-    rate = (
-        ((facts().at(str(rec["derived"]["archetype"])) or {}).get("derived") or {})
-        .get("rate", {})
-        .get(str(rec.get("itemSubType")))
-    )
-    return "%s%s%s" % (frame, markup.CELL_BREAK, rate) if rate else frame
-
-
-def _season(t, key):
-    got = (weapon_of(key).get("derived") or {}).get("season")
-    return "{num|%d}" % got if got else None
-
-
-def _champ(t, key):
-    got = (weapon_of(key).get("derived") or {}).get("breakerType")
-    if not got:
-        return ""
-    return "{champ|![](%s)}" % rel(champ_path(got), t.where)
-
-
 def _cost(t, key):
     values = set()
     for h in t.keys or (key,):
@@ -971,11 +935,6 @@ def _cost(t, key):
 
 
 DERIVED = {
-    "属性": _element,
-    "框架": _frame,
-    "框架\\\\射速": _frame_rate,
-    "赛季": _season,
-    "勇士": _champ,
     "费用": _cost,
 }
 

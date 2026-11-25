@@ -343,6 +343,37 @@ def row(panels, cls=""):
     )
 
 
+def wpn_link(scope, raw_key, perks=()):
+    """直达装备库链接：武器可附带 &perks=，异域护甲走 s=armor，护甲套装走 s=sets。"""
+    k = raw_key.split("#", 1)[1].strip() if "#" in str(raw_key) else str(raw_key or "").strip()
+    if not k:
+        return ""
+    if scope == "sets":
+        if not k.startswith("set:"):
+            return ""
+        qs = "s=sets&w=%s" % quote(k)
+    elif scope == "armor":
+        if not k.isdigit():
+            return ""
+        qs = "s=armor&w=%s" % k
+    else:
+        if not k.isdigit():
+            return ""
+        qs = "w=%s" % k
+        pks = [
+            p.split("#", 1)[1].strip()
+            for p in perks
+            if "#" in str(p) and p.split("#", 1)[1].strip().isdigit()
+        ]
+        if pks:
+            qs += "&perks=%s" % ",".join(pks)
+    return (
+        '<a class="to-wpn" href="%sweapons/index.html?%s" '
+        'title="在装备库中查看与模拟属性" aria-label="在装备库中查看">装备库 ↗</a>'
+        % (UP, qs)
+    )
+
+
 def rig_of(cells, tool=""):
     """一把枪与它的 Perk 包成一组，换行时不会被拆开——「岁时之巅」跟「聚合充能」
     分处两行时，读者对不上哪个 Perk 属于哪把枪。
@@ -529,15 +560,22 @@ def sets_of(idx, spec):
             re.match(r"^(.+?)\s*([24])\s*件$", seg.strip()),
             "「套装：」要写「套装名 N 件」，N 是 2 或 4，源稿写的是 %r" % seg,
         )
+        seg_name = m.group(1).strip()
+        link = wpn_link("sets", seg_name)
         cells.append(
-            item(
-                idx,
-                "套装",
-                m.group(1).strip(),
-                "",
-                kind="%s 件" % m.group(2),
-                cls="item set",
-                tail='<span class="pc">%s 件</span>' % m.group(2),
+            "<li>%s%s</li>"
+            % (
+                item(
+                    idx,
+                    "套装",
+                    seg_name,
+                    "",
+                    kind="%s 件" % m.group(2),
+                    cls="item set",
+                    bare=True,
+                    tail='<span class="pc">%s 件</span>' % m.group(2),
+                ),
+                link,
             )
         )
     if len(cells) not in (1, 2):
@@ -1043,24 +1081,25 @@ def blocks_of(idx, mv, arts, md, ns=""):
     rigs = []
     if ex_gun:
         gun_cell = item(idx, "异域武器", ex_gun, prefer, cls="item gun", bare=True)
+        ex_link = wpn_link("wpn", ex_gun, ex_perks)
         if ex_perks:
             p_cells = "".join(
                 item(idx, ex_perk_slot(p), p, prefer, cls="item perk-cell", bare=True)
                 for p in ex_perks
             )
             rigs.append(
-                '<div class="rig ex-rig" style="--n:25;--c:2">%s<div class="ex-perks">%s</div></div>'
-                % (gun_cell, p_cells)
+                '<div class="rig ex-rig" style="--n:25;--c:2">%s<div class="ex-perks">%s</div>%s</div>'
+                % (gun_cell, p_cells, ex_link)
             )
         else:
-            rigs.append(rig_of([gun_cell]))
+            rigs.append(rig_of([gun_cell], tool=ex_link))
     for gun in guns(md):
         cells = [item(idx, "传说武器", gun["名字"], prefer, cls="item gun", bare=True)]
         cells += [
             item(idx, "Perk", p, prefer, cls="item perk-cell", bare=True)
             for p in gun["词条"]
         ]
-        rigs.append(rig_of(cells))
+        rigs.append(rig_of(cells, tool=wpn_link("wpn", gun["名字"], gun["词条"])))
     o += (
         [
             '<section class="block" id="%ssec-2">' % ns,
@@ -1108,7 +1147,7 @@ def blocks_of(idx, mv, arts, md, ns=""):
     # 自己的一栏里开，摊成三格会读成穿了三件异域。
     lead = (
         [
-            '<li class="pair">%s%s</li>'
+            '<li class="pair">%s%s%s</li>'
             % (
                 item(idx, "异域护甲", ex_armor[0], prefer, cls="item gear", bare=True),
                 '<div class="spirits">%s</div>'
@@ -1118,6 +1157,7 @@ def blocks_of(idx, mv, arts, md, ns=""):
                 )
                 if len(ex_armor) > 1
                 else "",
+                wpn_link("armor", ex_armor[0]),
             )
         ]
         if ex_armor
@@ -2863,7 +2903,6 @@ def render_new(stamp, name_cn, sets=False):
             back + "tip.js",
             back + "source.js",
             "../" * up + "admin/dialect.js",
-            "../" * up + "assets/pinyin.js",
             "../" * (up - 2) + "form.js",
         ],
     )

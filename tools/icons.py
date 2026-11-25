@@ -11,7 +11,6 @@
 
 import argparse
 import os
-import re
 import subprocess
 import sys
 import urllib.request
@@ -42,16 +41,6 @@ BASE = HOST + '/common/destiny2_content/icons/'
 # **一处定义**：武器库按它画标签，实体层按它把表格里那一格的破盾图标解成档位。
 BREAKER = {1: '反屏障', 2: '反过载', 3: '反势不可挡'}
 # 站内那张破盾图（内容 md5 前 10 位）→ 档位。
-CHAMP_FILE = {'a9911a3dfe': 1, '8b37bb6db2': 2, 'b7c4048b87': 3}
-CHAMP_CELL = re.compile(r'icons/(\w+)\.webp')
-
-
-def champ_of(cell):
-    """表格里那一格破盾图 → 档位名。认不出就回空串。"""
-    got = CHAMP_CELL.search(cell or '')
-    return BREAKER.get(CHAMP_FILE.get(got.group(1), 0), '') if got else ''
-
-
 CHAMP = {
     1: '/common/destiny2_content/icons/DestinyBreakerTypeDefinition_07b9ba0194e85e46b258b04783e93d5d.png',
     2: '/common/destiny2_content/icons/DestinyBreakerTypeDefinition_da558352b624d799cf50de14d7cb9565.png',

@@ -140,50 +140,43 @@ def _set_info() -> dict[str, dict[str, Any]]:
     cached = _CACHE.get("sets")
     if cached is not None:
         return cached
+    import pagedex
+
     out: dict[str, dict[str, Any]] = {}
-    sets_html = os.path.join(shell.SITE, "armor-sets", "index.html")
-    if os.path.exists(sets_html):
-        html_src = shell.read_page(sets_html)
-        for m in re.finditer(
-            r'<article class="set" id="([^"]+)">.*?<h3>([^<]+)</h3>(.*?)</article>',
-            html_src,
-            re.S,
-        ):
-            sid, sname, inner = (
-                m.group(1),
-                htmllib.unescape(m.group(2)).strip(),
-                m.group(3),
+    seen_bonus: set[tuple[str, str]] = set()
+    dex = pagedex.read("armor-sets")
+    if dex:
+        for entry in dex.get("entries") or ():
+            anchor = entry.get("anchor") or ""
+            kind = entry.get("kind") or ""
+            sname = entry.get("name") or ""
+            if not anchor or not sname or (anchor, kind) in seen_bonus:
+                continue
+            seen_bonus.add((anchor, kind))
+            desc = entry.get("desc") or ""
+            bm = re.match(r'<p class="bn">([^<]+)</p>(.*)', desc, re.S)
+            bname = htmllib.unescape(bm.group(1)).strip() if bm else ""
+            body_html = bm.group(2).strip() if bm else desc.strip()
+            icon_rel = (entry.get("icon") or "").lstrip("/")
+            icon_abs = os.path.join(shell.SITE, icon_rel)
+            w, h = 40, 40
+            if icon_rel and os.path.exists(icon_abs):
+                with open(icon_abs, "rb") as img_f:
+                    w, h = markup.img_size(img_f.read())
+            row = out.setdefault(
+                sname,
+                {"href": "armor-sets/index.html#" + anchor, "bonuses": [], "tags": ""},
             )
-            bonuses: list[dict[str, Any]] = []
-            for bm in re.finditer(
-                r'<section class="bonus">.*?<img[^>]*src="([^"]+)"[^>]*>\s*'
-                r'<span class="piece">([^<]+)</span>\s*<span class="bonus-name">([^<]+)</span>\s*</h4>\s*'
-                r'<div class="bonus-body"[^>]*>(.*?)</div>\s*</section>',
-                inner,
-                re.S,
-            ):
-                icon_rel = "armor-sets/" + bm.group(1).lstrip("/")
-                icon_abs = os.path.join(shell.SITE, icon_rel)
-                w, h = 40, 40
-                if os.path.exists(icon_abs):
-                    with open(icon_abs, "rb") as img_f:
-                        w, h = markup.img_size(img_f.read())
-                body_clean = re.sub(r'\sdata-(?:b|e)="[^"]*"', "", bm.group(4)).strip()
-                bonuses.append(
-                    {
-                        "icon": icon_rel,
-                        "w": w,
-                        "h": h,
-                        "pieces": bm.group(2).strip(),
-                        "name": bm.group(3).strip(),
-                        "body_html": body_clean,
-                    }
-                )
-            out[sname] = {
-                "href": "armor-sets/index.html#" + sid,
-                "bonuses": bonuses,
-                "tags": "",
-            }
+            row["bonuses"].append(
+                {
+                    "icon": icon_rel,
+                    "w": w,
+                    "h": h,
+                    "pieces": kind,
+                    "name": bname,
+                    "body_html": body_html,
+                }
+            )
     facts, _ = resolve.shared()
     for h, rec in facts.sets.items():
         zh = (rec.get("i18n") or {}).get("zh-CN") or {}

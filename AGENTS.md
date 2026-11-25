@@ -53,7 +53,6 @@ python3 tools/build-search.py                 # 全站搜索索引 search.js 与
 python3 tools/build-terms.py                  # 编辑台词表、页面树与复制共享模块到 functions/api/
 
 python3 tools/facts.py --link                 # 修改 data/*.json 站内字段后重算关联与图标
-python3 tools/resolve.py --audit              # 校验站内全部引用名可落到主键
 python3 tools/migrate.py --check              # 配装源稿 markdown ⇄ JSON 往返一致性
 python3 tools/icons.py --pull                 # 拉取缺失官方图转 WebP
 python3 tools/ddc.py --check                  # 检查上游 Destiny Data Compendium 差异（--update 刷新；例外记 data/ddc-ignore.json）
@@ -75,7 +74,7 @@ oxlint --type-aware --type-check site/ functions/ tools/
 
 ## 前端性能与部署红线
 
-- **首屏与按需加载**：`markup.loading_attr()` 统一判定 `fetchpriority="high"` 与 `loading="lazy"`；`assets/pinyin.js` 仅在带搜索框页面加载；长页 `content-visibility: auto` 不可套在含 `sticky` 后代的容器上，且只写 `contain-intrinsic-height`（禁写含宽度的 `contain-intrinsic-size`）。
+- **首屏与按需加载**：`markup.loading_attr()` 统一判定 `fetchpriority="high"` 与 `loading="lazy"`；`assets/site.css` 拆出首页 `assets/home.css` 与记录页 `assets/rec.css`；`assets/pinyin.js` 全站按搜索框聚焦/输入或 `?q=` 懒加载，不在 HTML 首屏硬引；长页 `content-visibility: auto` 不可套在含 `sticky` 后代的容器上，且只写 `contain-intrinsic-height`（禁写含宽度的 `contain-intrinsic-size`）。
 - **静态资源与缓存**：`deploy.py` 上传时自动剥离非数据 JS/CSS 的块注释与缩进并做 `node --check`。图标均按内容 md5 前 10 位命名 `.webp`，**严禁原地覆盖 `.webp`**。线上 `starside.work` 走 CloudBase 个人版 HTTP 网关（`tcbgw`，HTTP/1.1、无服务端 gzip、全类型默认 `max-age=300`；详规见 `.agents/rules/deploy.md`），大体积纯数据载荷统一走 `.json.gz` + 客户端 `DecompressionStream('gzip')` 与 `Cache API` 持久缓存；不引入构建哈希文件名。
 - **发布纪律**：部署前工作区必须干净；`--prune` 禁止与增量部署混用；严禁使用 CloudBase 控制台「更新服务」（仅用于紧急回滚）。
 

@@ -7,19 +7,6 @@
   var API_URL = '../rotation/eververse.json';
   var XUR_API_URL = '../rotation/xur.json';
 
-  try {
-    localStorage.removeItem('d2_eververse_cache');
-    localStorage.removeItem('d2_ev_cache_v1');
-    localStorage.removeItem('d2_ev_cache_v2');
-    localStorage.removeItem('d2_ev_cache_v3');
-    localStorage.removeItem('d2_ev_cache_v4');
-    localStorage.removeItem('d2_ev_cache_v5');
-    localStorage.removeItem('d2_ev_cache_v6');
-    localStorage.removeItem('d2_ev_cache_v7');
-    localStorage.removeItem('d2_ev_cache_v8');
-    localStorage.removeItem('d2_ev_cache_v9');
-  } catch (_) {}
-
   var primaryEl = document.getElementById('ev-primary');
   var secondaryEl = document.getElementById('ev-secondary');
   var silverEl = document.getElementById('ev-silver');

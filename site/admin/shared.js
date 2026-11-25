@@ -290,8 +290,78 @@
     return status === 400 || status === 401 || status === 403
   }
 
-  var api = { tok: tok, MSG: MSG, say: say, authDenied: authDenied, lint: lint,
-              slotOf: slotOf, formSrc: formSrc, readForm: readForm,
+  var API = 'https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api'
+  var AUTH = 'https://dea-mods-d1g0j2rile2323f73.api.tcloudbasegateway.com'
+
+  function tokenExpired (t) {
+    if (!t || typeof t !== 'string') return false
+    var parts = t.split('.')
+    if (parts.length !== 3) return false
+    try {
+      var b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
+      while (b64.length % 4) b64 += '='
+      var json = typeof atob === 'function'
+        ? atob(b64)
+        : (typeof Buffer !== 'undefined' ? Buffer.from(b64, 'base64').toString('utf8') : '')
+      var payload = JSON.parse(json)
+      return typeof payload.exp === 'number' && payload.exp * 1000 <= Date.now() + 60e3
+    } catch (_) {
+      return false
+    }
+  }
+
+  function auth (path, body) {
+    return fetch(AUTH + path, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function (r) {
+      return r.json().then(function (j) {
+        if (!r.ok) {
+          var e = new Error(j.error_description || j.error || ('HTTP ' + r.status))
+          e.denied = authDenied(r.status)
+          throw e
+        }
+        return j
+      })
+    })
+  }
+
+  var renewing = null
+  function refresh () {
+    if (renewing) return renewing
+    var rt = localStorage.getItem('sa_rt')
+    if (!rt) return Promise.reject(new Error('forbidden'))
+    renewing = auth('/auth/v1/token', { grant_type: 'refresh_token', refresh_token: rt })
+      .then(function (j) { renewing = null; tok(j) }, function (e) {
+        renewing = null
+        if (localStorage.getItem('sa_rt') !== rt) return
+        throw e.denied ? new Error('forbidden') : e
+      })
+    return renewing
+  }
+
+  function call (a, body, retry) {
+    var t = tok()
+    if (!retry && tokenExpired(t) && localStorage.getItem('sa_rt')) {
+      return refresh().then(function () { return call(a, body, 1) })
+    }
+    return fetch(API, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + t },
+      body: JSON.stringify(Object.assign({ a: a }, body || {}))
+    }).then(function (r) { return r.json() }).then(function (j) {
+      if (j && j.error === 'forbidden' && !retry) {
+        return refresh().then(function () { return call(a, body, 1) })
+      }
+      if (j && j.error) throw new Error(j.error)
+      return j
+    })
+  }
+
+  var api = { API: API, AUTH: AUTH, tok: tok, MSG: MSG, say: say, authDenied: authDenied,
+              tokenExpired: tokenExpired, auth: auth, refresh: refresh, call: call,
+              lint: lint, slotOf: slotOf, formSrc: formSrc, readForm: readForm,
               mountForm: mountForm }
   if (typeof module !== 'undefined' && module.exports) module.exports = api
   if (typeof window !== 'undefined') window.starsideShared = api

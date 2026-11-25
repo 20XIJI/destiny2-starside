@@ -118,7 +118,8 @@ def main() -> int:
         pc, pout, perr, pdt = f_push.result()
 
     if dc != 0:
-        return fail("deploy", ddt, "部署失败", dout, derr)
+        push_note = "git push 已完成" if pc == 0 else "git push 也失败（exit %d）" % pc
+        return fail("deploy", ddt, "部署失败（%s）" % push_note, dout, derr)
     dep_items = [ln.strip() for ln in dout.splitlines() if re.match(r"^\s+[+-]\s+", ln)]
     ref_m = re.search(r"refs/deploy = ([0-9a-f]+)", dout)
     if dep_items:
