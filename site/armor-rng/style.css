@@ -190,7 +190,7 @@
   font-variant-numeric: tabular-nums;
   background-color: var(--tint-1);
   border: 1px solid var(--hair-lit);
-  border-radius: 2px;
+  border-radius: var(--r-sm);
 }
 
 .ar-item-tag {
@@ -198,9 +198,9 @@
   color: var(--c-exotic);
   font-size: 12px;
   font-weight: 600;
-  background-color: rgba(232, 194, 102, .08);
-  border: 1px solid rgba(232, 194, 102, .35);
-  border-radius: 2px;
+  background-color: color-mix(in oklab, var(--c-exotic) 8%, transparent);
+  border: 1px solid color-mix(in oklab, var(--c-exotic) 35%, transparent);
+  border-radius: var(--r-sm);
 }
 
 .ar-head-note {
@@ -558,13 +558,13 @@
 }
 
 .ar-out-card.is-prio-hit {
-  background-color: rgba(232, 194, 102, .05);
-  border-color: rgba(232, 194, 102, .55);
+  background-color: color-mix(in oklab, var(--c-exotic) 5%, transparent);
+  border-color: color-mix(in oklab, var(--c-exotic) 55%, transparent);
   box-shadow: inset 2px 0 0 var(--c-exotic);
 }
 
 .ar-out-card.is-maybe {
-  background-color: rgba(14, 18, 25, .6);
+  background-color: color-mix(in oklab, var(--ink-lift) 60%, transparent);
 }
 
 .ar-out-stats {
@@ -615,7 +615,7 @@
 }
 
 .ar-stat-cell.is-hit {
-  background-color: rgba(232, 194, 102, .1);
+  background-color: color-mix(in oklab, var(--c-exotic) 10%, transparent);
 }
 
 .ar-stat-cell.is-hit .ar-cell-num,
@@ -644,20 +644,20 @@
   flex-shrink: 0;
   padding: 1px 6px;
   font-size: 11px;
-  border-radius: 2px;
+  border-radius: var(--r-sm);
   white-space: nowrap;
 }
 
 .ar-out-badge.is-gold {
   color: var(--c-exotic);
-  background-color: rgba(232, 194, 102, .1);
-  border: 1px solid rgba(232, 194, 102, .45);
+  background-color: color-mix(in oklab, var(--c-exotic) 10%, transparent);
+  border: 1px solid color-mix(in oklab, var(--c-exotic) 45%, transparent);
   font-weight: 600;
 }
 
 .ar-out-badge.is-cert {
   color: var(--c-strand);
-  border: 1px solid rgba(79, 211, 138, .35);
+  border: 1px solid color-mix(in oklab, var(--c-strand) 35%, transparent);
 }
 
 .ar-out-badge.is-amb {

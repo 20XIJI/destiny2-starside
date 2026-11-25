@@ -2578,7 +2578,7 @@
       return pillHtml(t, animate && !prevPills[k]);
     }).join('') +
       (pending && !(loads[pending] && loads[pending].failed) ? '<span class="loading">' + (pending === 'pool' ? '词条池载入中…' : '说明载入中…') + '</span>' : '') +
-      (pills.length > 1 ? '<button type="button" class="cs-clear" data-act="clear">清除</button>' : '');
+      (pills.length > 1 ? '<button type="button" class="cs-clear" data-act="clear">清空</button>' : '');
     prevPills = seen;
     condsBox.setAttribute('data-n', pills.length);
     hintBox.innerHTML = HINT[S.scope];
@@ -4540,26 +4540,19 @@
     if (li) { acceptAc(+li.getAttribute('data-k')); }
   });
 
-  /* 按 / 聚焦查询框（不在输入框里时才拦），Esc 收起细分的下拉与语法卡片 */
+  /* Esc 收起细分的下拉与语法卡片 */
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') {
-      closePops();
-      if (S.syntax) { S.syntax = false; renderBar(); }
-      if (S.pop) {
-        var prev = S.pop;
-        S.pop = null;
-        renderDetail();
-        var btn = body.querySelector('[data-act="' + prev + 'slot"]');
-        if (btn) { btn.focus(); }
-      }
-      if (S.fxOpen) { S.fxOpen = false; S.fxg = ''; renderDetail(); }
-      return;
+    if (e.key !== 'Escape') { return; }
+    closePops();
+    if (S.syntax) { S.syntax = false; renderBar(); }
+    if (S.pop) {
+      var prev = S.pop;
+      S.pop = null;
+      renderDetail();
+      var btn = body.querySelector('[data-act="' + prev + 'slot"]');
+      if (btn) { btn.focus(); }
     }
-    if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) { return; }
-    var a = document.activeElement;
-    if (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA')) { return; }
-    e.preventDefault();
-    input.focus();
+    if (S.fxOpen) { S.fxOpen = false; S.fxg = ''; renderDetail(); }
   });
 
   document.addEventListener('click', function (e) {

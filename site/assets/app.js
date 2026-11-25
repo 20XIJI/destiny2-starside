@@ -467,6 +467,12 @@
   search.addEventListener('input', function () {
     if (!window.starsidePy) ensurePinyin(onPyReady);
   });
+  search.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape' || e.isComposing || e.keyCode === 229) return;
+    e.preventDefault();
+    if (search.value) { search.value = ''; filter(''); }
+    else { search.blur(); }
+  });
 
   var count = document.createElement('p');
   count.className = 'tool-count';

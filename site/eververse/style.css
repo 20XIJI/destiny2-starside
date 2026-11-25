@@ -22,9 +22,9 @@
 .ev-scope .toggle {
   padding: 8px 14px 10px;
   margin-bottom: -1px;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font: 600 14px/1.4 var(--font-cn);
-  letter-spacing: .04em;
+  letter-spacing: .06em;
   background: none;
   border: 0;
   border-bottom: 2px solid transparent;
@@ -258,43 +258,43 @@ body[data-vendor="ada"] .ev-prog i {
 .ev-card.exotic {
   border-left: 2px solid color-mix(in oklab, var(--exotic) 78%, transparent);
   background:
-    linear-gradient(90deg, rgb(252 183 10 / .075) 0%, transparent 42%),
+    linear-gradient(90deg, color-mix(in oklab, var(--exotic) 7.5%, transparent) 0%, transparent 42%),
     linear-gradient(180deg, var(--panel-a), var(--panel-b));
 }
 
 .ev-card.exotic:hover {
   border-left-color: var(--exotic);
   background:
-    linear-gradient(90deg, rgb(252 183 10 / .115) 0%, transparent 48%),
-    linear-gradient(180deg, #191f2e, #141824);
+    linear-gradient(90deg, color-mix(in oklab, var(--exotic) 11.5%, transparent) 0%, transparent 48%),
+    linear-gradient(180deg, var(--surf-4), var(--surf-2));
 }
 
 .ev-card.legendary {
   border-left: 2px solid color-mix(in oklab, var(--c-legend) 72%, transparent);
   background:
-    linear-gradient(90deg, rgb(207 74 156 / .055) 0%, transparent 38%),
+    linear-gradient(90deg, color-mix(in oklab, var(--c-legend) 5.5%, transparent) 0%, transparent 38%),
     linear-gradient(180deg, var(--panel-a), var(--panel-b));
 }
 
 .ev-card.legendary:hover {
   border-left-color: var(--c-legend);
   background:
-    linear-gradient(90deg, rgb(207 74 156 / .09) 0%, transparent 44%),
-    linear-gradient(180deg, #191f2e, #141824);
+    linear-gradient(90deg, color-mix(in oklab, var(--c-legend) 9%, transparent) 0%, transparent 44%),
+    linear-gradient(180deg, var(--surf-4), var(--surf-2));
 }
 
 .ev-card.rare {
   border-left: 2px solid color-mix(in oklab, var(--c-rare) 72%, transparent);
   background:
-    linear-gradient(90deg, rgb(47 159 214 / .055) 0%, transparent 38%),
+    linear-gradient(90deg, color-mix(in oklab, var(--c-rare) 5.5%, transparent) 0%, transparent 38%),
     linear-gradient(180deg, var(--panel-a), var(--panel-b));
 }
 
 .ev-card.rare:hover {
   border-left-color: var(--c-rare);
   background:
-    linear-gradient(90deg, rgb(47 159 214 / .09) 0%, transparent 44%),
-    linear-gradient(180deg, #191f2e, #141824);
+    linear-gradient(90deg, color-mix(in oklab, var(--c-rare) 9%, transparent) 0%, transparent 44%),
+    linear-gradient(180deg, var(--surf-4), var(--surf-2));
 }
 
 .ev-card.basic {
@@ -303,7 +303,7 @@ body[data-vendor="ada"] .ev-prog i {
 
 .ev-card.basic:hover {
   border-left-color: var(--bone-dim);
-  background: linear-gradient(180deg, #191f2e, #141824);
+  background: linear-gradient(180deg, var(--surf-4), var(--surf-2));
 }
 
 /* ── 图标与文字身份层 ── */
@@ -575,6 +575,10 @@ body[data-vendor="ada"] .ev-prog i {
 @keyframes ev-shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ev-skeleton { animation: none; }
 }
 
 /* ── 老九：职业金三列网格 ── */

@@ -1726,7 +1726,7 @@ window.WPN_PVP = function (H) {
       var accPct = 100 > accMin ? ((v.acc - accMin) / (100 - accMin) * 100).toFixed(1) : '100';
       accBlock = '<div class="pvp-slider-blk is-acc"><div class="pvp-stat-item"><span class="pvp-stat-label">' +
         (v.isFusion ? '命中弹丸数' : '精准率') +
-        '<button type="button" class="pvp-crit-reset" data-act="pvpreset" title="重置为最优 (' + esc(optDisp) + ')"' +
+        '<button type="button" class="pvp-crit-reset" data-act="pvpreset" title="重置为最优（' + esc(optDisp) + '）"' +
         (v.accDirty ? '' : ' hidden') + '>↺</button></span><span class="pvp-stat-value" data-pvp="acc">' + accDisp + '</span></div>' +
         '<div class="pvp-slat"><input class="pvp-crit-range" type="range" min="' + accMin + '" max="100" step="1" value="' +
         v.acc + '" style="--pct:' + accPct + '%" data-act="pvpacc"></div></div>';
@@ -1761,7 +1761,7 @@ window.WPN_PVP = function (H) {
     }
     if (rs != null) {
       var relDisp = useLive && pvpShown.reload != null ? pvpShown.reload : rs;
-      row2.push('<div class="pvp-cell"><span>装填</span><span class="pvp-stat-value"><span data-pvp="reload">' + fmtNum(relDisp) + '</span><span class="pvp-unit">s</span></span></div>');
+      row2.push('<div class="pvp-cell"><span>填装</span><span class="pvp-stat-value"><span data-pvp="reload">' + fmtNum(relDisp) + '</span><span class="pvp-unit">s</span></span></div>');
     }
     var handRow = '';
     if (v.handCur) {
@@ -1785,7 +1785,7 @@ window.WPN_PVP = function (H) {
     if (v.magStart != null && v.magStart > 0) {
       var magPct = v.magMax > 1 ? ((v.magStart - 1) / (v.magMax - 1) * 100).toFixed(1) : '100';
       magHtml = '<div class="pvp-slider-blk is-mag"><div class="pvp-stat-item"><span class="pvp-stat-label pvp-magazine-label"><span>起始弹匣' +
-        '<button type="button" class="pvp-crit-reset" data-act="pvpmagreset" title="重置为满弹匣 (' + v.magMax + ')"' +
+        '<button type="button" class="pvp-crit-reset" data-act="pvpmagreset" title="重置为满弹匣（' + v.magMax + '）"' +
         (v.magStart !== v.magMax ? '' : ' hidden') + '>↺</button></span>' +
         '<input class="pvp-numeric-input pvp-magazine-input" type="number" inputmode="numeric" min="1" max="' + v.magMax +
         '" step="1" style="width:' + (S.pvpMagBlank ? 1 : String(v.magStart).length) + 'ch" value="' +

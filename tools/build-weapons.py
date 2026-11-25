@@ -924,7 +924,7 @@ def builds_by_key():
 CARD_SEL = re.compile(
     r"\.entry\b|\.entry-foot|\.entry-stamp|\.likes\b|"
     r"\.core-mosaic|\.n-sets|data-tier|\.entries\b|"
-    r"@keyframes tier-(?:drift|breathe)"
+    r"@keyframes tier-breathe"
 )
 
 

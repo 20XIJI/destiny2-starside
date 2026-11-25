@@ -1727,26 +1727,12 @@
 }
 
 .plug.by-al .ico::before {
-  background: linear-gradient(
-    125deg in oklab,
-    #a8269b 0%,
-    #ff56de 24%,
-    #fff5fe 41%,
-    #82edff 50%,
-    #ff73b9 66%,
-    #b832a6 84%,
-    #a8269b 100%
-  );
+  background: var(--prism-crystal);
   background-size: 260% 260%;
   box-shadow:
     0 0 8px 1px rgba(255, 86, 222, .52),
     0 0 16px 1px rgba(130, 237, 255, .22);
-  animation: halo-drift 9s ease-in-out infinite;
-}
-
-@keyframes halo-drift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  animation: prism-drift 9s ease-in-out infinite;
 }
 
 /* 图例与大师杰作 chip 上那枚小环，同一套颜色。 */
@@ -1805,19 +1791,10 @@
 .halo-key i.by-l { border: 2px solid var(--au-lgpig); }
 .halo-key i.by-al {
   padding: 2px;
-  background: linear-gradient(
-    125deg in oklab,
-    #a8269b 0%,
-    #ff56de 24%,
-    #fff5fe 41%,
-    #82edff 50%,
-    #ff73b9 66%,
-    #b832a6 84%,
-    #a8269b 100%
-  );
+  background: var(--prism-crystal);
   background-size: 260% 260%;
   box-shadow: 0 0 6px rgba(255, 86, 222, .45);
-  animation: halo-drift 9s ease-in-out infinite;
+  animation: prism-drift 9s ease-in-out infinite;
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);

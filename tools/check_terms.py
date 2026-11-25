@@ -49,6 +49,14 @@ HANDWRITTEN_G1 = (
     "eververse/index.html",
     "eververse/app.js",
     "assets/armor-rng.js",
+    "assets/app.js",
+    "assets/home.js",
+    "assets/chart.js",
+    "assets/notice.js",
+    "weapons/app.js",
+    "weapons/pvp.js",
+    "builds/new/form.js",
+    "dps-ranking/filter.js",
 )
 
 

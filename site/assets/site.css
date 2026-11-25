@@ -183,6 +183,16 @@
   --au-lgpig: #f7a387;
   --halo-both: conic-gradient(var(--c-arc), var(--c-solar), var(--c-void), var(--c-stasis),
                               var(--c-strand), var(--c-prism), var(--c-arc));
+  --prism-crystal: linear-gradient(
+    125deg in oklab,
+    #a8269b 0%,
+    #ff56de 24%,
+    #fff5fe 41%,
+    #82edff 50%,
+    #ff73b9 66%,
+    #b832a6 84%,
+    #a8269b 100%
+  );
 
   /* UI 强调色：焦点环、当前 chip、卡片左缘。子页面覆盖这一个变量即可换色。 */
   --accent: var(--c-arc);
@@ -1321,6 +1331,12 @@ main {
 .entries > li.k-enemy { --edge: var(--c-enemy); }
 .entries > li.k-buff { --edge: var(--c-buff); }
 .entries > li.k-ammo { --edge: var(--c-ammo-special); }
+.entries > li.k-term { --edge: var(--c-term); }
+
+@keyframes prism-drift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
 
 /* 节点图标：六边形框 + 中心菱形，与档位轨、favicon 同一套母题 */
 .entry-node {

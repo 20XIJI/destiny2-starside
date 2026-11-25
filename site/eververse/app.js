@@ -821,7 +821,7 @@
     mountXurCalc(data);
     if (xurCntTotalEl) xurCntTotalEl.textContent = String(data.items.length);
     if (xurVendorEl && data.location) {
-      xurVendorEl.textContent = '九之使者 · 仄 (Xûr) · ' + data.location;
+      xurVendorEl.textContent = '九之使者 · 仄（Xûr） · ' + data.location;
     }
     updateStatusBar();
     hasRenderedXur = true;
@@ -857,20 +857,20 @@
   }
 
   function renderError(msg) {
-    evLoadErr = msg || '加载失败';
+    evLoadErr = msg || '载入失败';
     updateStatusBar();
-    var html = '<p class="ev-error">光尘商店轮换数据加载失败：' + esc(msg) + '</p>';
+    var html = '<p class="ev-error">光尘商店轮换数据载入失败：' + esc(msg) + '</p>';
     if (primaryEl) primaryEl.innerHTML = html;
     if (secondaryEl) secondaryEl.innerHTML = '';
     if (silverEl) silverEl.innerHTML = '';
-    if (adaEl) adaEl.innerHTML = '<p class="ev-error">艾达-1（Ada-1）每周着色器数据加载失败：' + esc(msg) + '</p>';
+    if (adaEl) adaEl.innerHTML = '<p class="ev-error">艾达-1（Ada-1）每周着色器数据载入失败：' + esc(msg) + '</p>';
   }
 
   function renderXurError(msg) {
-    xurLoadErr = msg || '加载失败';
+    xurLoadErr = msg || '载入失败';
     updateStatusBar();
     if (xurContentEl) {
-      xurContentEl.innerHTML = '<p class="ev-error">仄（Xûr）周货数据加载失败：' + esc(msg) + '</p>';
+      xurContentEl.innerHTML = '<p class="ev-error">仄（Xûr）周货数据载入失败：' + esc(msg) + '</p>';
     }
   }
 

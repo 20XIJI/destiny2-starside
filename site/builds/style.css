@@ -1109,20 +1109,12 @@ body:has(.entries) { --wrap: var(--wrap-wide); --min: 1188px; }
    中间切一道极窄的 #fff4fd 镜面冷白高光锋，紧接一抹 #8aefff 电弧冰蓝折射边。 */
 .entry .id-tier[data-t="meta"] {
   color: transparent;
-  background-image: linear-gradient(
-    112deg in oklab,
-    #b832a6 0%,
-    #ff59de 26%,
-    #fff4fd 43%,
-    #8aefff 53%,
-    #f355d8 70%,
-    #b832a6 100%
-  );
+  background-image: var(--prism-crystal);
   background-size: 240% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   filter: drop-shadow(0 0 5px rgba(255, 89, 222, .32));
-  animation: tier-drift 9s ease-in-out infinite;
+  animation: prism-drift 9s ease-in-out infinite;
 }
 
 .entry .id-tier[data-t="强力"] {
@@ -1408,18 +1400,9 @@ body:has(.entries) { --wrap: var(--wrap-wide); --min: 1188px; }
 
 [data-tier="meta"] .node::before {
   padding: 3px;
-  background: linear-gradient(
-    125deg in oklab,
-    #a8269b 0%,
-    #ff56de 24%,
-    #fff5fe 41%,
-    #82edff 50%,
-    #ff73b9 66%,
-    #b832a6 84%,
-    #a8269b 100%
-  );
+  background: var(--prism-crystal);
   background-size: 260% 260%;
-  animation: tier-drift 9s ease-in-out infinite;
+  animation: prism-drift 9s ease-in-out infinite;
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -1461,30 +1444,17 @@ body:has(.entries) { --wrap: var(--wrap-wide); --min: 1188px; }
 
 .facet-bar[data-facet="强度"] .toggle[data-v="meta"] {
   color: transparent;
-  background: linear-gradient(
-    112deg in oklab,
-    #b832a6 0%,
-    #ff59de 26%,
-    #fff4fd 43%,
-    #8aefff 53%,
-    #f355d8 70%,
-    #b832a6 100%
-  );
+  background: var(--prism-crystal);
   background-size: 240% 100%;
   -webkit-background-clip: text;
   background-clip: text;
-  animation: tier-drift 9s ease-in-out infinite;
+  animation: prism-drift 9s ease-in-out infinite;
 }
 
 .facet-bar[data-facet="强度"] .toggle[data-v="meta"]::before,
 .facet-bar[data-facet="强度"] .toggle[data-v="meta"]::after { border-color: #ff4fd8; }
 
 .facet-bar[data-facet="强度"] .toggle[data-v][aria-pressed="true"] { font-weight: 600; }
-
-@keyframes tier-drift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
 
 @keyframes tier-breathe {
   0%, 100% { opacity: .6; }
@@ -1715,6 +1685,11 @@ body:has(.entries) { --wrap: var(--wrap-wide); --min: 1188px; }
   background: linear-gradient(100deg, var(--surf-4), #151a27 72%);
   border-color: color-mix(in oklab, var(--accent) 48%, var(--hair-lit));
   outline: none;
+}
+
+/* clip-path 会裁掉外置 outline，改用内嵌 box-shadow 画焦点环 */
+.head-portal:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--accent);
 }
 
 .head-portal:hover::before,

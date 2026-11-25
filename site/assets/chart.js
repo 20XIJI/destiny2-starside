@@ -265,7 +265,7 @@ export default function init(deps) {
       '<div class="cd-cell">' +
         '<div class="cd-hd">' +
           '<span class="cd-cmp-title"></span>' +
-          '<button type="button" class="cd-clear" hidden>清除对比</button>' +
+          '<button type="button" class="cd-clear" hidden>清空对比</button>' +
         '</div>' +
         '<div class="cd-cmp-main">' +
           '<span class="cd-cmp-num"></span>' +
@@ -404,7 +404,7 @@ export default function init(deps) {
       elCurVal.className = 'cd-mval cd-cur-val ' + (useS1 ? 's1' : 's0');
 
       if (activeVal <= 0.0005) {
-        elEhpVal.textContent = '免疫 (∞)';
+        elEhpVal.textContent = '免疫（∞）';
         elEhpVal.className = 'cd-ehp-val hard';
       } else {
         var ehp = 1 / activeVal;

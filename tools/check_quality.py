@@ -1526,10 +1526,11 @@ class Generated(unittest.TestCase):
                 css.count("}"),
                 "weapons/index.html 内联 <style> 大括号不配平",
             )
-            self.assertIn("@keyframes tier-drift", css)
-            self.assertIn("50% { background-position: 100% 50%; }", css)
             self.assertIn("@keyframes tier-breathe", css)
             self.assertIn("50% { opacity: 1; }", css)
+        site_css = self.read("assets/site.css")
+        self.assertIn("@keyframes prism-drift", site_css)
+        self.assertIn("50% { background-position: 100% 50%; }", site_css)
 
     def test_prismatic_page_renders_shared_abilities_matrix(self):
         html_text = self.read("elements/prismatic/index.html")
