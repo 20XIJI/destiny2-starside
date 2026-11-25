@@ -236,7 +236,9 @@
     var s = document.createElement('script');
     s.src = new URL('../assets/pinyin.js', HERE).href;
     s.onload = function () {
+      if (typeof pyCache !== 'undefined') { pyCache = Object.create(null); pyCacheKeys = 0; }
       if (S.q) { hayCache = {}; evaluate(); render(); }
+      if (typeof suggest === 'function' && typeof input !== 'undefined' && document.activeElement === input) { suggest(); }
     };
     s.onerror = function () { pinyinLoading = false; };
     document.head.appendChild(s);
@@ -1116,7 +1118,7 @@
     if (!t.v) { return true; }
     if (t.k === 'stat') { return !/^[^:]+:(?:>=|<=|[><=])?\d/.test(t.v); }
     if (t.k === 'season' || t.k === 'aegis') { return /^(?:>=|<=|[><=])$/.test(t.v); }
-    if (t.k === 'lgpig') { return /^(?:(?:输出|高难|清怪):?)?(?:>=|<=|[><=])$/.test(t.v) || /^(?:输出|高难|清怪):$/.test(t.v); }
+    if (t.k === 'lgpig') { return /^(?:(?:输出|高难|清怪|[a-z]+):?)?(?:>=|<=|[><=])$/i.test(t.v) || /^(?:输出|高难|清怪|[a-z]+):$/i.test(t.v); }
     return false;
   }
 
@@ -1219,7 +1221,7 @@
       if (!t.v) { return true; }
       if (t.k === 'stat') { return !/^[^:]+:(?:>=|<=|[><=])?\d/.test(t.v); }
       if (t.k === 'season' || t.k === 'aegis') { return /^(?:>=|<=|[><=])$/.test(t.v); }
-      if (t.k === 'lgpig') { return /^(?:(?:输出|高难|清怪):?)?(?:>=|<=|[><=])$/.test(t.v) || /^(?:输出|高难|清怪):$/.test(t.v); }
+      if (t.k === 'lgpig') { return /^(?:(?:输出|高难|清怪|[a-z]+):?)?(?:>=|<=|[><=])$/i.test(t.v) || /^(?:输出|高难|清怪|[a-z]+):$/i.test(t.v); }
       return false;
     }
     function unary() {
@@ -1361,6 +1363,28 @@
     var toks = parseLgTokens(raw);
     if (!toks.length) { return false; }
     var m = /^(?:(输出|高难|清怪):?)?(>=|<=|>|<|=)?(t\d+(?:\.\d+)?|独一档|工具枪|pvp|特殊(?:用途)?)?$/.exec(q);
+    if ((!m || (!m[1] && !m[3])) && window.starsidePy && /[a-z]/.test(q)) {
+      var pm = /^(?:([a-z]+):?)?(>=|<=|>|<|=)?(t\d+(?:\.\d+)?|pvp|[a-z]+)?$/.exec(q);
+      if (pm) {
+        var scenes = ['输出', '高难', '清怪'], specials = ['独一档', '工具枪', '特殊用途', '特殊'];
+        var pSc = pm[1] ? scenes.filter(function (s) { return pyMatch(s, pm[1]); }) : [''];
+        var pTgt = !pm[3] ? ['']
+          : (/^(?:t\d+(?:\.\d+)?|pvp)$/.test(pm[3]) ? [pm[3]] : specials.filter(function (s) { return pyMatch(s, pm[3]); }));
+        if (pm[1] && !pm[2] && !pm[3]) {
+          var asSpec = specials.filter(function (s) { return pyMatch(s, pm[1]); });
+          for (var si = 0; si < asSpec.length; si++) {
+            if (matchLgWpn(g, asSpec[si])) { return true; }
+          }
+        }
+        for (var a = 0; a < pSc.length; a++) {
+          for (var b = 0; b < pTgt.length; b++) {
+            if (!pSc[a] && !pTgt[b]) { continue; }
+            if (matchLgWpn(g, (pSc[a] ? pSc[a] + (pm[2] || pTgt[b] ? ':' : '') : '') + (pm[2] || '') + pTgt[b])) { return true; }
+          }
+        }
+      }
+      return false;
+    }
     if (!m || (!m[1] && !m[3])) { return false; }
     var sc = m[1] || '', op = m[2] || '', tgt = m[3] || '';
     if (!tgt) {
@@ -1381,7 +1405,7 @@
     if (!role) { return false; }
     var q = fold(v);
     if (q === 'any' || q === '*') { return true; }
-    return fold(role).indexOf(q) !== -1;
+    return fold(role).indexOf(q) !== -1 || anyPyMatch(String(role).split(/\s+/), v);
   }
 
   /* is: 的值 → 判定。武器与护甲各一张，值取自数据，标志是固定的几个。表不带原型：
@@ -1463,13 +1487,24 @@
   function enFold(s) { return String(s).toLowerCase().replace(/[\s-]+/g, ''); }
   /* is: 的值 → 表里那个键：中文照写，英文按 enFold() 比；认不出回空串。 */
   function isKey(scope, v) { return IS[scope][v] ? v : ISEN[scope][enFold(v)] || ''; }
-  function isIn(scope, v, i) { var k = isKey(scope, v); return k ? IS[scope][k](i) : false; }
+  function isIn(scope, v, i) {
+    var k = isKey(scope, v);
+    if (k) { return IS[scope][k](i); }
+    if (!window.starsidePy || !v || !/[a-z]/i.test(v)) { return false; }
+    var keys = Object.keys(IS[scope]);
+    for (var j = 0; j < keys.length; j++) {
+      if (pyMatch(keys[j], v) && IS[scope][keys[j]](i)) { return true; }
+    }
+    return false;
+  }
   /* 没加引号的裸词恰好是一个 is: 的值时，返回那个判定；加了引号照字面搜。 */
   function bareIs(scope, v, quoted) { return quoted ? null : IS[scope][isKey(scope, v)] || null; }
-  /* 写到一半的 is: 值能补全成哪几个：中文按包含，英文按比较键包含。 */
+  /* 写到一半的 is: 值能补全成哪几个：中文按包含，英文按比较键包含，中文键额外走拼音。 */
   function isMatches(scope, v) {
     var f = fold(v), ef = enFold(v), got = [];
-    Object.keys(IS[scope]).forEach(function (k) { if (fold(k).indexOf(f) !== -1) { got.push(k); } });
+    Object.keys(IS[scope]).forEach(function (k) {
+      if (fold(k).indexOf(f) !== -1 || pyMatch(k, v)) { got.push(k); }
+    });
     if (ef) {
       Object.keys(ISEN[scope]).forEach(function (e) {
         if (e.indexOf(ef) !== -1 && got.indexOf(ISEN[scope][e]) === -1) { got.push(ISEN[scope][e]); }
@@ -1481,13 +1516,55 @@
   /* 裸词搜的那一串：名字、英文名、类型、框架、词条名、描述。有什么数据就先搜什么，
      词条池与说明到了之后缓存作废、重搜一遍。 */
   var hayCache = {};
+  var pyCache = Object.create(null), pyCacheKeys = 0;
+  function pyMatch(text, q) {
+    if (!window.starsidePy || !text || !q) { return false; }
+    var fq = fold(q);
+    if (!fq || !/[a-z]/.test(fq)) { return false; }
+    var bucket = pyCache[fq];
+    if (!bucket) {
+      if (pyCacheKeys >= 64) { pyCache = Object.create(null); pyCacheKeys = 0; }
+      bucket = pyCache[fq] = Object.create(null);
+      pyCacheKeys++;
+    }
+    var hit = bucket[text];
+    if (hit !== undefined) { return hit; }
+    return (bucket[text] = window.starsidePy.match(text, fq));
+  }
+  function anyPyMatch(list, q) {
+    if (!window.starsidePy || !q || !/[a-z]/i.test(q)) { return false; }
+    for (var k = 0; k < list.length; k++) {
+      if (pyMatch(list[k], q)) { return true; }
+    }
+    return false;
+  }
   function itemName(scope, i) {
     if (scope === 'sets') return SR[i][T_NAME];
     if (scope === 'armor') return AR[i][A_NAME];
     return WR[i][W_NAME];
   }
   function pyName(scope, i, v) {
-    return window.starsidePy && v && window.starsidePy.match(itemName(scope, i), fold(v));
+    return pyMatch(itemName(scope, i), v);
+  }
+  function pyItem(scope, i, v) {
+    if (!window.starsidePy || !v || !/[a-z]/i.test(v)) { return false; }
+    if (pyName(scope, i, v)) { return true; }
+    if (scope === 'sets') {
+      var t = SR[i];
+      if (pyMatch(t[T_SRC], v) || pyMatch(t[T_KIND], v)) { return true; }
+      return anyPyMatch(t[T_FX].map(function (f) { return f[0]; }), v);
+    }
+    if (scope === 'armor') {
+      var a = AR[i];
+      if (pyMatch(V.cls[a[A_CLS]], v) || pyMatch(V.part[a[A_PART]], v)) { return true; }
+      if (anyPyMatch(String(a[A_PERKS] || '').split('、'), v)) { return true; }
+      if (a[A_ROLE] && anyPyMatch(String(a[A_ROLE]).split(/\s+/), v)) { return true; }
+      return anyPyMatch(srcsOf(a, A_SRC), v);
+    }
+    var r = WR[i];
+    if (pyMatch(typeName(r), v) || pyMatch(frameOf(r)[0], v)) { return true; }
+    if (anyPyMatch(srcsOf(r, W_SRC), v)) { return true; }
+    return P ? anyPyMatch(cached('pl' + i, function () { return perkNames(i); }), v) : false;
   }
   function hay(scope, i) {
     var key = scope + i;
@@ -1584,7 +1661,7 @@
         var hit = bareIs(scope, node.v, node.tok.q);
         if (hit) { return hit(i); }
         if (hay(scope, i).indexOf(fold(node.v)) !== -1) { return true; }
-        return pyName(scope, i, node.v);
+        return node.tok.q ? false : pyItem(scope, i, node.v);
       }
       default: return kw(scope, node.k, node.v, i, node.q, mode);
     }
@@ -1596,10 +1673,15 @@
       switch (k) {
         case 'is': return isIn('sets', v, i);
         case 'name': return fold(t[T_NAME] + ' ' + t[T_EN]).indexOf(f) !== -1 || pyName('sets', i, v);
-        case 'perk': return fold(t[T_FX].map(function (x) { return x[0]; }).join(' ')).indexOf(f) !== -1;
+        case 'perk': {
+          var sfx = t[T_FX].map(function (x) { return x[0]; });
+          return fold(sfx.join(' ')).indexOf(f) !== -1 || anyPyMatch(sfx, v);
+        }
         case 'season': return fold(t[T_SSN]).indexOf(f) !== -1;
         case 'source':
-          return q ? srcFold(setSrc(t)) === srcFold(v) : srcFold(t[T_SRC] + ' ' + t[T_KIND]).indexOf(srcFold(v)) !== -1;
+          return q
+            ? srcFold(setSrc(t)) === srcFold(v)
+            : (srcFold(t[T_SRC] + ' ' + t[T_KIND]).indexOf(srcFold(v)) !== -1 || pyMatch(t[T_SRC], v) || pyMatch(t[T_KIND], v));
       }
       return false;
     }
@@ -1609,7 +1691,7 @@
         case 'is': return isIn('armor', v, i);
         case 'name': return fold(r[A_NAME] + enOf('armor', i)).indexOf(f) !== -1 || pyName('armor', i, v);
         case 'perk': {
-          if (fold(r[A_PERKS]).indexOf(f) !== -1) { return true; }
+          if (fold(r[A_PERKS]).indexOf(f) !== -1 || anyPyMatch(String(r[A_PERKS] || '').split('、'), v)) { return true; }
           if (!T) { return false; }
           var repA = r[A_REP];
           if (T.axs && T.axs[repA]) {
@@ -1622,7 +1704,7 @@
           return false;
         }
         case 'season': return cmp(v, r[A_SSN]);
-        case 'source': return srcsOf(r, A_SRC).some(function (s) { return named(q, srcFold(s), srcFold(v)); });
+        case 'source': return srcsOf(r, A_SRC).some(function (s) { return named(q, srcFold(s), srcFold(v)) || (!q && pyMatch(s, v)); });
         case 'lgpig': return matchLgArmor(r[A_ROLE], v);
       }
       return false;
@@ -1633,23 +1715,35 @@
       case 'name': return fold(r[W_NAME] + ' ' + enOf('wpn', i)).indexOf(f) !== -1 || pyName('wpn', i, v);
       case 'aegis': return matchAegis(r[W_GRADE], v);
       case 'lgpig': return matchLgWpn(r[W_GRADE], v);
-      case 'frame': return named(q, fold(frameOf(r)[0]), f);
+      case 'frame': return named(q, fold(frameOf(r)[0]), f) || (!q && pyMatch(frameOf(r)[0], v));
       case 'season': return cmp(v, r[W_SSN]);
-      case 'source': return srcsOf(r, W_SRC).some(function (s) { return named(q, srcFold(s), srcFold(v)); });
-      case 'breaker': return r[W_BR] > 0 && fold(V.br[r[W_BR]][0]).indexOf(f) !== -1;
+      case 'source': return srcsOf(r, W_SRC).some(function (s) { return named(q, srcFold(s), srcFold(v)) || (!q && pyMatch(s, v)); });
+      case 'breaker': return r[W_BR] > 0 && (fold(V.br[r[W_BR]][0]).indexOf(f) !== -1 || pyMatch(V.br[r[W_BR]][0], v));
     }
     if (!P) { return false; }
     switch (k) {
       case 'perktext': return T ? foldedTexts(i).indexOf(f) !== -1 : false;
       case 'perk':
         if (cached('pn' + i, function () { return fold(perkNames(i).join(' ')); }).indexOf(f) !== -1) { return true; }
+        if (anyPyMatch(cached('pl' + i, function () { return perkNames(i); }), v)) { return true; }
         return T ? foldedTexts(i).indexOf(f) !== -1 : false;
-      case 'perk1': return fold(perkNames(i, R_TRAIT, mode === 1 ? 1 : mode === 2 ? 2 : 0).join(' ')).indexOf(f) !== -1;
-      case 'perk2': return fold(perkNames(i, R_TRAIT, mode === 1 ? 2 : mode === 2 ? 1 : 0).join(' ')).indexOf(f) !== -1;
-      case 'col1': case 'col2': case 'col3': case 'col4': case 'col5':
-        return fold(colPerkNames(i, +k.slice(3)).join(' ')).indexOf(f) !== -1;
+      case 'perk1': {
+        var p1 = perkNames(i, R_TRAIT, mode === 1 ? 1 : mode === 2 ? 2 : 0);
+        return fold(p1.join(' ')).indexOf(f) !== -1 || anyPyMatch(p1, v);
+      }
+      case 'perk2': {
+        var p2 = perkNames(i, R_TRAIT, mode === 1 ? 2 : mode === 2 ? 1 : 0);
+        return fold(p2.join(' ')).indexOf(f) !== -1 || anyPyMatch(p2, v);
+      }
+      case 'col1': case 'col2': case 'col3': case 'col4': case 'col5': {
+        var cp = colPerkNames(i, +k.slice(3));
+        return fold(cp.join(' ')).indexOf(f) !== -1 || anyPyMatch(cp, v);
+      }
       case 'perkname': return cached('pa' + i, function () { return perkNames(i).map(fold); }).indexOf(f) !== -1;
-      case 'origintrait': return fold(perkNames(i, R_ORIGIN).join(' ')).indexOf(f) !== -1;
+      case 'origintrait': {
+        var op = perkNames(i, R_ORIGIN);
+        return fold(op.join(' ')).indexOf(f) !== -1 || anyPyMatch(op, v);
+      }
       case 'stat': {
         var m = /^([^:]+):(.+)$/.exec(v);
         if (!m) { return false; }
@@ -1691,6 +1785,9 @@
     var target = en || name;
     for (var s = 0; s < P.s.length; s++) { if (P.s[s][1] === target) { return s; } }
     for (var t = 0; t < P.s.length; t++) { if (P.s[t][1].indexOf(target) !== -1) { return t; } }
+    if (!en) {
+      for (var u = 0; u < P.s.length; u++) { if (pyMatch(P.s[u][1], name)) { return u; } }
+    }
     return -1;
   }
   function run(scope, node) {
@@ -3803,7 +3900,7 @@
         }
       } else if (t.k === 'frame' && S.scope === 'wpn') {
         V.fr.forEach(function (fr) {
-          if (fold(fr[0]).indexOf(f) !== -1 && !vals.some(function (v) { return v[0] === fr[0]; })) {
+          if ((fold(fr[0]).indexOf(f) !== -1 || pyMatch(fr[0], t.v)) && !vals.some(function (v) { return v[0] === fr[0]; })) {
             var n = count(function (i) { return !isExotic(WR[i]) && frameOf(WR[i])[0] === fr[0]; });
             if (n) { vals.push([fr[0], n, fr[1] || '']); }
           }
@@ -3812,7 +3909,7 @@
         var seenSrc = {};
         SR.forEach(function (row) {
           [row[T_SRC], row[T_KIND]].forEach(function (s) {
-            if (!s || seenSrc[s] || srcFold(s).indexOf(srcFold(t.v)) === -1) { return; }
+            if (!s || seenSrc[s] || (srcFold(s).indexOf(srcFold(t.v)) === -1 && !pyMatch(s, t.v))) { return; }
             seenSrc[s] = 1;
             vals.push([s, count(function (i) {
               return srcFold(SR[i][T_SRC] + ' ' + SR[i][T_KIND]).indexOf(srcFold(s)) !== -1;
@@ -3821,7 +3918,7 @@
         });
       } else if (t.k === 'source') {
         V.src.forEach(function (s, k) {
-          if (fold(s).indexOf(f) !== -1) {
+          if (fold(s).indexOf(f) !== -1 || pyMatch(s, t.v)) {
             vals.push([s, count(function (i) {
               var v = (S.scope === 'armor' ? AR[i][A_SRC] : WR[i][W_SRC]);
               return Array.isArray(v) ? v.indexOf(k) !== -1 : v === k;
@@ -3840,7 +3937,7 @@
         }
       } else if (t.k === 'lgpig' && S.scope === 'wpn') {
         var lOpts = ['独一档', 'T0', 'T0.5', 'T1', 'T1.5', 'T2', 'T2.5', 'T3', 'T4', '工具枪', '输出T0', '高难T0', '清怪T0', '>=T1', '输出', '高难', '清怪', 'any'];
-        var lRows = lOpts.filter(function (v) { return !f || fold(v).indexOf(f) !== -1; }).map(function (v) {
+        var lRows = lOpts.filter(function (v) { return !f || fold(v).indexOf(f) !== -1 || pyMatch(v, t.v); }).map(function (v) {
           return [v, count(function (i) { return matchLgWpn(WR[i][W_GRADE], v); })];
         }).filter(function (x) { return x[1] > 0; });
         if (lRows.length) {
@@ -3850,7 +3947,7 @@
         }
       } else if (t.k === 'lgpig' && S.scope === 'armor') {
         var arOpts = ['输出', '高难', '清怪', '割草', '跑图', 'any'];
-        var arRows = arOpts.filter(function (v) { return !f || fold(v).indexOf(f) !== -1; }).map(function (v) {
+        var arRows = arOpts.filter(function (v) { return !f || fold(v).indexOf(f) !== -1 || pyMatch(v, t.v); }).map(function (v) {
           return [v, count(function (i) { return matchLgArmor(AR[i][A_ROLE], v); })];
         }).filter(function (x) { return x[1] > 0; });
         if (arRows.length) {
@@ -3860,7 +3957,7 @@
         }
       } else if (t.k === 'breaker') {
         Object.keys(V.br).forEach(function (b) {
-          if (fold(V.br[b][0]).indexOf(f) !== -1) { vals.push([V.br[b][0], count(function (i) { return WR[i][W_BR] === +b; })]); }
+          if (fold(V.br[b][0]).indexOf(f) !== -1 || pyMatch(V.br[b][0], t.v)) { vals.push([V.br[b][0], count(function (i) { return WR[i][W_BR] === +b; })]); }
         });
       } else if (t.k === 'season') {
         var ssnMap = {};
@@ -3884,7 +3981,7 @@
             var ef = enFold(t.v);
             var stItems = P.s.filter(function (s) {
               var tag = STAT_TAG[s[1]] || '';
-              return !f || fold(s[1]).indexOf(f) !== -1 || (ef && tag.indexOf(ef) !== -1) || (ef && STAT_EN[ef] === s[1]);
+              return !f || fold(s[1]).indexOf(f) !== -1 || (ef && tag.indexOf(ef) !== -1) || (ef && STAT_EN[ef] === s[1]) || pyMatch(s[1], t.v);
             }).map(function (s) {
               return { text: 'stat:' + s[1] + ':', label: s[1], badge: STAT_TAG[s[1]] || '', n: -1, keep: true, icon: '' };
             });
@@ -3935,7 +4032,7 @@
         else {
           var idx = perkRows(t.k);
           Object.keys(idx).forEach(function (n) {
-            if (!f || fold(n).indexOf(f) !== -1) {
+            if (!f || fold(n).indexOf(f) !== -1 || pyMatch(n, t.v)) {
               var c = 0;
               idx[n].forEach(function (i) { if (mark[i]) { c++; } });
               if (c) { vals.push([n, c]); }

@@ -57,6 +57,59 @@ def used_chars(names: list[str]) -> list[str]:
     return sorted(seen)
 
 
+WEAPON_UI_LABELS = (
+    '异域传说稀有罕见普通可锻造可强化可升阶专家全息复刻已钉选'
+    '独一档工具枪特殊用途输出高难清怪割草跑图'
+)
+
+
+def weapon_extra_texts() -> list[str]:
+    """装备库查询与补全用到的结构化中文词（来源、套装效果、类型、属性等）。
+
+    这些词只补进汉字拼音字典 window.starsidePinyin，不进首页/资料页的物品白名单
+    window.starsidePyItems，避免扩大首页拼音匹配范围。
+    """
+    out: list[str] = [WEAPON_UI_LABELS]
+    wpn_dir = os.path.join(shell.SITE, 'weapons')
+    idx_path = os.path.join(wpn_dir, 'index.js')
+    if os.path.isfile(idx_path):
+        with open(idx_path, encoding='utf-8') as f:
+            raw = f.read()
+        idx = json.loads(raw.split('=', 1)[1].rstrip(';\n '))
+        v = idx.get('v') or {}
+        out.extend(v.get('src') or ())
+        out.extend(v.get('slot') or ())
+        out.extend(v.get('cls') or ())
+        out.extend(v.get('part') or ())
+        for key in ('ty', 'el', 'am', 'br'):
+            for entry in (v.get(key) or {}).values():
+                if entry:
+                    out.append(str(entry[0]))
+        for entry in v.get('qt') or ():
+            if entry:
+                out.append(str(entry[0]))
+        for entry in v.get('fr') or ():
+            if entry:
+                out.append(str(entry[0]))
+        for row in idx.get('t') or ():
+            if len(row) > 4:
+                out.append(str(row[3] or ''))
+                out.append(str(row[4] or ''))
+            if len(row) > 7:
+                for fx in row[7] or ():
+                    if fx:
+                        out.append(str(fx[0]))
+    pool_path = os.path.join(wpn_dir, 'pool.js')
+    if os.path.isfile(pool_path):
+        with open(pool_path, encoding='utf-8') as f:
+            raw = f.read()
+        pool = json.loads(raw.split('=', 1)[1].rstrip(';\n '))
+        for stat in pool.get('s') or ():
+            if len(stat) > 1:
+                out.append(str(stat[1]))
+    return out
+
+
 _CATALOG: tuple[list[str], list[str]] | None = None
 
 
@@ -106,11 +159,16 @@ def item_names() -> list[str]:
     return item_catalog()[0]
 
 
+def dict_chars() -> list[str]:
+    """写入 window.starsidePinyin 字典的全部汉字（物品名 + 装备库结构化中文词）。"""
+    return used_chars(item_catalog()[0] + weapon_extra_texts())
+
+
 def build() -> str:
     """词典 + 中文白名单 + 英文名（与白名单同序）+ 匹配函数。"""
     names, ens = item_catalog()
     table = load()
-    used = used_chars(names)
+    used = dict_chars()
     missing = [ch for ch in used if ch not in table]
     if missing:
         markup.die('拼音表缺这些字：%s。跑 python3 tools/pinyin.py --distill'
@@ -189,7 +247,7 @@ def main() -> int:
     names, ens = item_catalog()
     body = emit()
     print('assets/pinyin.js —— %.1f KB，%d 个物品名 %d 个汉字 %d 个英文名'
-          % (len(body.encode()) / 1024, len(names), len(used_chars(names)),
+          % (len(body.encode()) / 1024, len(names), len(dict_chars()),
              sum(1 for e in ens if e)))
     return 0
 

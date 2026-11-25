@@ -363,7 +363,7 @@ def main() -> int:
         % (
             len(py.encode()) / 1024,
             len(names),
-            len(pinyin.used_chars(names)),
+            len(pinyin.dict_chars()),
             sum(1 for e in ens if e),
         )
     )

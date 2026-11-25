@@ -242,6 +242,9 @@ test('weapons: perk1/perk2 swap trait columns while col1-col5 stay fixed', () =>
     'function isIn(){return false;}',
     'function enOf(){return "";}',
     'function pyName(){return false;}',
+    'function pyItem(){return false;}',
+    'function pyMatch(){return false;}',
+    'function anyPyMatch(){return false;}',
     'function frameOf(){return [""];}',
     'function srcsOf(){return [];}',
     'function named(){return false;}',
@@ -1009,6 +1012,8 @@ test('weapons: decodeGzBuffer, loadGzData cache lifecycle, and ensurePinyin lazy
   const appendedScripts = []
   let evalCount = 0
   let renderCount = 0
+  let suggestCount = 0
+  const fakeInput = {}
   const ctx = {
     URL, Blob, Response, TextDecoder, DecompressionStream, Promise, Uint8Array, Error, JSON,
     HERE: 'https://starside.work/weapons/app.js',
@@ -1026,13 +1031,18 @@ test('weapons: decodeGzBuffer, loadGzData cache lifecycle, and ensurePinyin lazy
     window: {},
     S: { q: 'wmbl' },
     hayCache: { old: 1 },
+    pyCache: { stale: { a: true } },
+    pyCacheKeys: 1,
     pinyinLoading: false,
+    input: fakeInput,
     document: {
+      activeElement: fakeInput,
       createElement: () => ({}),
       head: { appendChild(el) { appendedScripts.push(el) } },
     },
     evaluate() { evalCount++ },
     render() { renderCount++ },
+    suggest() { suggestCount++ },
   }
   vm.createContext(ctx)
   vm.runInContext(
@@ -1091,11 +1101,14 @@ test('weapons: decodeGzBuffer, loadGzData cache lifecycle, and ensurePinyin lazy
   appendedScripts[0].onload()
   assert.equal(evalCount, 1)
   assert.equal(renderCount, 1)
+  assert.equal(suggestCount, 1, '焦点在搜索框时加载完 pinyin.js 应刷新补全下拉')
   assert.equal(Object.keys(ctx.hayCache).length, 0)
+  assert.equal(Object.keys(ctx.pyCache).length, 0)
+  assert.equal(ctx.pyCacheKeys, 0)
 })
 
 test('weapons: aegis: and lgpig: query matchers handle tiers, comparisons, paired scenes, and armor roles', () => {
-  const deps = 'function has(list, x) { return list.indexOf(x) !== -1; }\n'
+  const deps = 'var window = {};\nfunction has(list, x) { return list.indexOf(x) !== -1; }\nfunction pyMatch() { return false; }\nfunction anyPyMatch() { return false; }\n'
   const { normQ, tokenize, isIncompleteTok, fold, cmpScore, aegisScore, lgpigScore, matchAegis, parseLgTokens, matchLgWpn, matchLgArmor } =
     weaponFns(['normQ', 'tokenize', 'isIncompleteTok', 'fold', 'cmpScore', 'aegisScore', 'lgpigScore', 'matchAegis', 'parseLgTokens', 'matchLgWpn', 'matchLgArmor'], deps)
 
@@ -1140,4 +1153,139 @@ test('weapons: aegis: and lgpig: query matchers handle tiers, comparisons, paire
   assert.equal(matchLgArmor('输出 高难', '清怪'), false)
   assert.equal(matchLgArmor('输出 高难', 'any'), true)
   assert.equal(matchLgArmor('', 'any'), false)
+})
+
+test('weapons: pinyin matches perks, structured fields, and autocomplete across scopes', () => {
+  const wpnBox = { window: {} }
+  vm.runInNewContext(fs.readFileSync(path.join(site, 'assets/pinyin.js'), 'utf8'), wpnBox)
+  vm.runInNewContext(fs.readFileSync(path.join(site, 'weapons/index.js'), 'utf8'), wpnBox)
+  vm.runInNewContext(fs.readFileSync(path.join(site, 'weapons/pool.js'), 'utf8'), wpnBox)
+  const fakeEl = () => ({
+    innerHTML: '', outerHTML: '', value: '', hidden: true, selectionStart: 0, textContent: '',
+    scrollTop: 0,
+    style: { setProperty() {} },
+    classList: { add() {}, remove() {}, toggle() {}, contains: () => false },
+    setAttribute() {}, removeAttribute() {}, getAttribute: () => '',
+    addEventListener() {}, appendChild() {}, insertBefore() {}, insertAdjacentHTML() {}, prepend() {}, remove() {},
+    getBoundingClientRect: () => ({ height: 47, top: 0, left: 0, right: 100, bottom: 47, width: 100 }),
+    querySelector: () => fakeEl(), querySelectorAll: () => [],
+  })
+  const inputEl = fakeEl()
+  const acListEl = fakeEl()
+  const acBoxEl = fakeEl()
+  acBoxEl.querySelector = (sel) => sel === '.wpn-suggest-list' ? acListEl : fakeEl()
+  const barEl = fakeEl()
+  barEl.querySelector = (sel) => sel === '.wpn-suggest' ? acBoxEl : sel === '.wpn-input' ? inputEl : fakeEl()
+  const ctx = {
+    window: {
+      starsidePy: wpnBox.window.starsidePy,
+      WPN: wpnBox.window.WPN,
+      WPN_POOL: wpnBox.window.WPN_POOL,
+      addEventListener() {}, matchMedia: () => ({ matches: false }), scrollTo() {}, scrollX: 0, scrollY: 0, innerHeight: 900,
+    },
+    location: { href: 'http://localhost/weapons/index.html', pathname: '/weapons/index.html', search: '' },
+    history: { pushState() {}, replaceState() {} },
+    localStorage: { getItem: () => null, setItem() {} },
+    URLSearchParams, URL,
+    ResizeObserver: function () { this.observe = () => {}; this.disconnect = () => {} },
+    IntersectionObserver: function () { this.observe = () => {}; this.disconnect = () => {} },
+    requestAnimationFrame: () => 1, cancelAnimationFrame() {}, setTimeout: () => 1, clearTimeout() {},
+    console: { error() {}, warn() {}, log() {} },
+    document: {
+      currentScript: { src: 'http://localhost/weapons/app.js' },
+      activeElement: inputEl,
+      documentElement: { clientWidth: 1440, style: { setProperty() {} } },
+      body: { appendChild() {} },
+      head: { appendChild() {} },
+      createElement: () => fakeEl(), createElementNS: () => fakeEl(),
+      getElementById: () => fakeEl(),
+      querySelector: (sel) => sel === '.wpn-bar' ? barEl : fakeEl(),
+      addEventListener() {},
+    },
+  }
+  const appSrc = fs.readFileSync(path.join(site, 'weapons/app.js'), 'utf8')
+    .replace(/\}\(\)\);\s*$/, 'poolReady(); window.__PY = { S, run, parse, tokenize, isIncompleteTok, keysOf, suggest, ac };\n}());\n')
+  vm.runInNewContext(appSrc, ctx)
+  const api = ctx.window.__PY
+  const query = (scope, q) => Array.from(api.run(scope, api.parse(api.tokenize(q), api.keysOf(scope))))
+
+  // Perk keywords (full pinyin & initials) match the same weapons as Chinese
+  const yhcZh = query('wpn', 'perk:萤火虫')
+  assert.ok(yhcZh.length > 0, '基线：应存在带萤火虫的武器')
+  assert.deepEqual(query('wpn', 'perk:yinghuochong'), yhcZh, 'perk: 全拼应与中文一致')
+  assert.ok(yhcZh.every((i) => query('wpn', 'perk:yhc').includes(i)), 'perk: 简拼应包含全部萤火虫武器')
+
+  const dualZh = query('wpn', 'perk1:治疗弹匣 perk2:狂乱')
+  assert.ok(dualZh.length > 0, '基线：应存在治疗弹匣+狂乱武器')
+  assert.deepEqual(query('wpn', 'perk1:zhiliaodanxia perk2:kuangluan'), dualZh, 'perk1/perk2 拼音应支持换列')
+  assert.deepEqual(query('wpn', 'col3:zhiliaodanxia col4:kuangluan'), query('wpn', 'col3:治疗弹匣 col4:狂乱'), 'col1-col5 拼音应与中文一致')
+
+  const origZh = query('wpn', 'origintrait:加速突击')
+  assert.ok(origZh.length > 0, '基线：应存在加速突击起源特性武器')
+  assert.deepEqual(query('wpn', 'origintrait:jiasutuji'), origZh, 'origintrait: 全拼应与中文一致')
+
+  // Bare word matches perk pinyin, but quoted bare word stays literal
+  const barePy = query('wpn', 'yinghuochong')
+  assert.ok(yhcZh.every((i) => barePy.includes(i)), '裸词拼音应命中带该词条的武器')
+  assert.deepEqual(query('wpn', '"yinghuochong"'), [], '加引号裸词应保持字面搜索，不走拼音')
+  assert.deepEqual(query('wpn', '"shoupao"'), [], '加引号裸词不走拼音也不走 is:')
+
+  // Exact perkname: and quoted frame:/source: stay literal
+  assert.deepEqual(query('wpn', 'perkname:yinghuochong'), [], 'perkname: 精确词条名不走拼音')
+  const frZh = query('wpn', 'frame:适配框架')
+  assert.ok(frZh.length > 0)
+  assert.deepEqual(query('wpn', 'frame:shipeikuangjia'), frZh, '未加引号 frame: 支持拼音')
+  assert.deepEqual(query('wpn', 'frame:"shipeikuangjia"'), [], '加引号 frame: 保持字面精确匹配')
+
+  const srcZh = query('wpn', 'source:玻璃拱顶')
+  assert.ok(srcZh.length > 0)
+  assert.deepEqual(query('wpn', 'source:boligongding'), srcZh, '未加引号 source: 支持拼音')
+  assert.deepEqual(query('wpn', 'source:"boligongding"'), [], '加引号 source: 保持字面精确匹配')
+
+  // breaker:, is:, stat:, lgpig: pinyin (including special tiers & incomplete prefix)
+  assert.deepEqual(query('wpn', 'breaker:fanpingzhang'), query('wpn', 'breaker:反屏障'))
+  assert.deepEqual(query('wpn', 'is:shoupao'), query('wpn', 'is:手炮'))
+  assert.deepEqual(query('wpn', 'is:xukong'), query('wpn', 'is:虚空'))
+  assert.deepEqual(query('wpn', 'stat:shecheng:>=60'), query('wpn', 'stat:射程:>=60'))
+  assert.deepEqual(query('wpn', 'lgpig:shuchu:>=T1'), query('wpn', 'lgpig:输出:>=T1'))
+  assert.deepEqual(query('wpn', 'lgpig:shuchut0'), query('wpn', 'lgpig:输出T0'))
+  assert.deepEqual(query('wpn', 'lgpig:duyidang'), query('wpn', 'lgpig:独一档'))
+  assert.deepEqual(query('wpn', 'lgpig:gongjuqiang'), query('wpn', 'lgpig:工具枪'))
+  const teshuUnion = Array.from(new Set(query('wpn', 'lgpig:特殊').concat(query('wpn', 'lgpig:特殊用途')))).sort((a, b) => a - b)
+  assert.deepEqual(query('wpn', 'lgpig:teshu').sort((a, b) => a - b), teshuUnion, 'lgpig:teshu 应同时命中「特殊」与「特殊用途」')
+  for (const partial of ['lgpig:shuchu:', 'lgpig:shuchu:>=', 'lgpig:sc>']) {
+    const tok = api.tokenize(partial)[0]
+    assert.equal(api.isIncompleteTok(tok, api.keysOf('wpn')), true, partial + ' 应判为未完成 token')
+    assert.equal(api.parse(api.tokenize(partial), api.keysOf('wpn')), null, partial + ' 未输完前不应过滤为 0 条')
+  }
+
+  // Armor exotic perk, is:, & role pinyin; armor set perk & source pinyin
+  const armorPerkZh = query('armor', 'perk:长矛警戒')
+  assert.ok(armorPerkZh.length > 0)
+  assert.deepEqual(query('armor', 'perk:changmaojingjie'), armorPerkZh, '护甲 perk: 支持拼音')
+  assert.deepEqual(query('armor', 'is:lieren'), query('armor', 'is:猎人'), '护甲 is: 支持拼音')
+  assert.ok(query('armor', 'lgpig:shuchu').length > 0, '护甲 lgpig: 定位支持拼音')
+  assert.deepEqual(query('armor', 'lgpig:shuchu'), query('armor', 'lgpig:输出'))
+
+  const setWithSrc = wpnBox.window.WPN.t.find((t) => t[3] === '发射基地')
+  assert.ok(setWithSrc)
+  assert.deepEqual(query('sets', 'source:fashejidi'), query('sets', 'source:发射基地'))
+  const setPerkZh = query('sets', 'perk:主要链锁')
+  assert.ok(setPerkZh.length > 0)
+  assert.deepEqual(query('sets', 'perk:zhuyaoliansuo'), setPerkZh, '套装 perk: 效果名支持拼音')
+
+  // Autocomplete suggest() filters perks, frames, is:, breaker:, stat:, lgpig: by pinyin
+  api.S.scope = 'wpn'
+  const runSuggest = (q) => {
+    inputEl.value = q
+    inputEl.selectionStart = q.length
+    api.suggest()
+    return api.ac.items.map((x) => x.label)
+  }
+  assert.ok(runSuggest('perk:yhc').includes('萤火虫'), 'perk:yhc 补全应提示萤火虫')
+  assert.ok(runSuggest('frame:shipei').includes('适配框架'), 'frame:shipei 补全应提示适配框架')
+  assert.ok(runSuggest('is:shoupao').includes('手炮'), 'is:shoupao 补全应提示手炮')
+  assert.ok(runSuggest('breaker:fpz').includes('反屏障'), 'breaker:fpz 补全应提示反屏障')
+  assert.ok(runSuggest('stat:sc').includes('射程'), 'stat:sc 补全应提示射程')
+  assert.ok(runSuggest('lgpig:shuchu').includes('输出'), 'lgpig:shuchu 补全应提示输出')
 })
