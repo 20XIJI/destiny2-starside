@@ -12,6 +12,14 @@
 - {act|改动}全站：拼音索引改为按需懒加载，首页与记录页样式拆离主样式表
 - {act|订正}[装备库](../weapons/index.html)：精准工具等多叠层词条改为按层数循环切换
 - {act|订正}[配装推荐](../builds/index.html)：订正 41 处配装武器词条错配
+- {act|订正}[武器 PERK](../weapon-perks/index.html)：按 DDC 修订 219 处词条、框架与起源特性数值
+- {act|订正}[异域武器](../exotic-weapon/index.html)：按 DDC 修订 117 处武器、特性与催化数值
+- {act|订正}[神器模组](../artifact-mods/index.html)：按 DDC 修订 74 处模组数值、触发条件与实测值
+- {act|订正}[护甲套装效果](../armor-sets/index.html)：按 DDC 修订 73 处 2 件与 4 件套装效果数值
+- {act|订正}[护甲模组](../armor-mods/index.html)：按 DDC 修订 28 枚模组的冷却、能量与触发数值
+- {act|订正}[异域护甲](../exotic-armor/index.html)：按 DDC 修订 52 处异域护甲与职业金之灵数值
+- {act|订正}[职业分支](../elements/index.html)：按 DDC 修订六元素分支与职业技能 103 处数值
+- {act|订正}[游戏机制](../game-mechanics/index.html)：按 DDC 修订反勇士破盾、敏捷移速、护盾回复与活动修改器
 
 ## 2026.11.24
 

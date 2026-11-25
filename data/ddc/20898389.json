@@ -73,7 +73,6 @@
       "",
       "<span style=\"color:#ffd966\"><b>Biotic Enhancements:</b></span>",
       "<span style=\"color:#a4c2f4\"><b>165%</b></span> <span style=\"color:#ea9999\"><b>[100%]</b></span> <span style=\"color:#79bec3\"><b>Increased Melee Damage.</b></span>",
-      "<span style=\"color:#79bec3\"><b>100% Increased Glaive Melee Damage.</b></span>",
       "",
       "<span style=\"color:#e06666\"><b><i>Decreased effectiveness with Lightning Surge against Guardians.</i></b></span>"
     ]
@@ -173,14 +172,14 @@
     ],
     [],
     [
-      "<span style=\"color:#cccccc\"><b>Passively grants +10 Stability and 0.?x Ready Duration Multiplier.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Passively grants +10 Stability, +25 Handling, and 0.95x Ready/Stow Duration Multiplier.</b></span>",
       "",
       "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#b4a7d6\"><b><i>Class Ability Usage</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
-      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#ffd966\"><b>Wraithmetal Mail</b></span> <span style=\"color:#cccccc\"><b>for 9 seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#ffd966\"><b>Wraithmetal Mail</b></span> <span style=\"color:#cccccc\"><b>for 15 seconds.</b></span>",
       "<span style=\"color:#cccccc\"><b>Reloads all weapons and picks up</b></span> <span style=\"color:#63d275\"><b>Ammo</b></span> <span style=\"color:#a481e1\"><b>Bricks</b></span> <span style=\"color:#cccccc\"><b>within 15 meters. Activates On-Reload Perks.</b></span>",
       "",
-      "<span style=\"color:#ffd966\"><b>Wraithmetal Mail</b></span><span style=\"color:#cccccc\"><b>:</b></span>",
-      "<span style=\"color:#cccccc\"><b>+35 Stability and +? Handling.</b></span>"
+      "<span style=\"color:#ffd966\"><b>Wraithmetal Mail:</b></span>",
+      "<span style=\"color:#cccccc\"><b>Stat Bonus becomes +25 Stability, +35 Handling, and 0.9x Ready/Stow Duration Multiplier.</b></span>"
     ],
     [
       "<span style=\"color:#6d9eeb\"><b><i>Spirit of the Liar</i></b></span>"
@@ -460,7 +459,7 @@
     [],
     [
       "<span style=\"color:#cccccc\"><i>After</i> <b><i>1 second</i></b> <i>of placing a</i></span> <span style=\"color:#b4a7d6\"><b><i>Rift</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
-      "<span style=\"color:#cccccc\"><b>Triggers an</b></span> <span style=\"color:#89cdd1\"><b>Arc Shockwave</b></span> <span style=\"color:#cccccc\"><b>that deals</b></span> <span style=\"color:#a4c2f4\"><b>400</b></span> <span style=\"color:#ea9999\"><b>[100]</b></span> <span style=\"color:#89cdd1\"><b>Arc Damage</b></span> <span style=\"color:#cccccc\"><b>and staggers in a 7.5 metres radius.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Triggers an</b></span> <span style=\"color:#89cdd1\"><b>Arc Shockwave</b></span> <span style=\"color:#cccccc\"><b>that deals</b></span> <span style=\"color:#a4c2f4\"><b>360</b></span> <span style=\"color:#ea9999\"><b>[100]</b></span> <span style=\"color:#89cdd1\"><b>Arc Damage</b></span> <span style=\"color:#cccccc\"><b>and staggers in a 7.5 metres radius.</b></span>",
       "<span style=\"color:#cccccc\"><b>Additional</b></span> <span style=\"color:#89cdd1\"><b>shockwaves</b></span> <span style=\"color:#cccccc\"><b>occur every 5 seconds, until the</b></span> <span style=\"color:#b4a7d6\"><b>Rift</b></span> <span style=\"color:#cccccc\"><b>expires.</b></span>",
       "",
       "<span style=\"color:#cccccc\"><b>While an</b></span> <span style=\"color:#89cdd1\"><b>Arc</b></span> <span style=\"color:#ffd966\"><b>Super Ability</b></span> <span style=\"color:#cccccc\"><b>is equipped,</b></span> <span style=\"color:#89cdd1\"><b>shockwaves</b></span> <span style=\"color:#999999\"><b>blind</b></span><span style=\"color:#cccccc\"><b>.</b></span>"

@@ -98,10 +98,10 @@ class Grid(HTMLParser):
 
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
-        self.table: Node | None = None
+        self.tables: list[tuple[Node, list[Node]]] = []
+        self.container: Node | None = None
         self.stack: list[Node] = []
         self.outer: list[Node] = []
-        self.ancestors: list[Node] = []
         self.styles: list[str] = []
         self.in_style = False
         self.closed = False
@@ -115,11 +115,25 @@ class Grid(HTMLParser):
                 if tag not in VOID:
                     self.outer.append(Node(tag, values))
                 return
-            if self.table is not None:
-                raise ValueError('More than one waffle table; expected one /htmlview/sheet page.')
-            self.table = Node(tag, values)
-            self.ancestors = self.outer.copy()
-            self.stack.append(self.table)
+            if self.tables:
+                chunked = (
+                    self.container is not None
+                    and self.container in self.outer
+                    and any('grid-chunk' in ancestor.attrs.get('class', '').split()
+                            for ancestor in self.outer)
+                )
+                if not chunked:
+                    raise ValueError('More than one waffle table; expected one /htmlview/sheet page.')
+            else:
+                self.container = next(
+                    (ancestor for ancestor in reversed(self.outer)
+                     if 'ritz' in ancestor.attrs.get('class', '').split()),
+                    None,
+                )
+            table = Node(tag, values)
+            self.tables.append((table, self.outer.copy()))
+            self.closed = False
+            self.stack.append(table)
             return
         node = Node(tag, values)
         self.stack[-1].children.append(node)
@@ -219,6 +233,9 @@ def styled(node: Node, ancestors: list[Node], css: list[Rule]) -> dict[str, str]
 
 
 def color(value: str) -> str:
+    match = re.fullmatch(r'var\(\s*--[\w-]+\s*,\s*(.+)\s*\)', value)
+    if match:
+        return color(match[1].strip())
     if re.fullmatch(r'#[0-9a-f]{3}', value):
         return '#' + ''.join(char * 2 for char in value[1:])
     if re.fullmatch(r'#[0-9a-f]{6}(?:[0-9a-f]{2})?', value):
@@ -430,39 +447,40 @@ def sheet(html: str) -> list[list[list[str]]]:
     parser = Grid()
     parser.feed(html)
     parser.close()
-    if parser.table is None or not parser.closed or parser.stack:
+    if not parser.tables or not parser.closed or parser.stack:
         raise ValueError('No closed waffle table; check public access, login redirects, or truncated sheet HTML.')
     css = rules(parser.styles)
     result: list[list[list[str]]] = []
     carry: dict[int, int] = {}
-    for row, ancestors in rows(parser.table, parser.ancestors):
-        cells = [child for child in row.children if isinstance(child, Node) and child.tag == 'td']
-        if not cells and not carry:
-            continue
-        expanded: list[list[str]] = []
-        column = 0
-        for source in cells:
-            while column in carry:
-                expanded.append([])
-                column += 1
-            width, height = span(source, 'colspan'), span(source, 'rowspan')
-            if any(index in carry for index in range(column, column + width)):
-                raise ValueError('Overlapping merged cells in spreadsheet grid.')
-            expanded.append(cell(source, ancestors + [row], css))
-            expanded.extend([] for _ in range(width - 1))
-            for index in range(column, column + width):
-                if height > 1:
-                    # Include this row in the counter; decrement below, even on
-                    # empty rows, so rowspan expansion precedes empty-row removal.
-                    carry[index] = height
-            column += width
-        if carry:
-            expanded.extend([] for _ in range(max(carry) + 1 - len(expanded)))
-        carry = {index: count - 1 for index, count in carry.items() if count > 1}
-        while expanded and not expanded[-1]:
-            expanded.pop()
-        if any(expanded):
-            result.append(expanded)
+    for table, table_ancestors in parser.tables:
+        for row, ancestors in rows(table, table_ancestors):
+            cells = [child for child in row.children if isinstance(child, Node) and child.tag == 'td']
+            if not cells and not carry:
+                continue
+            expanded: list[list[str]] = []
+            column = 0
+            for source in cells:
+                while column in carry:
+                    expanded.append([])
+                    column += 1
+                width, height = span(source, 'colspan'), span(source, 'rowspan')
+                if any(index in carry for index in range(column, column + width)):
+                    raise ValueError('Overlapping merged cells in spreadsheet grid.')
+                expanded.append(cell(source, ancestors + [row], css))
+                expanded.extend([] for _ in range(width - 1))
+                for index in range(column, column + width):
+                    if height > 1:
+                        # Include this row in the counter; decrement below, even on
+                        # empty rows, so rowspan expansion precedes empty-row removal.
+                        carry[index] = height
+                column += width
+            if carry:
+                expanded.extend([] for _ in range(max(carry) + 1 - len(expanded)))
+            carry = {index: count - 1 for index, count in carry.items() if count > 1}
+            while expanded and not expanded[-1]:
+                expanded.pop()
+            if any(expanded):
+                result.append(expanded)
     if not result:
         raise ValueError('The waffle table has no text; refusing an empty upstream snapshot.')
     return result

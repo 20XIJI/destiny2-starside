@@ -1,7 +1,7 @@
 [
   [
     [
-      "<a href=\"#rangeid=1622386151\"><span style=\"color:#f6b26b\"><b><i><u>Go back to the top!</u></i></b></span></a>"
+      "<a href=\"#rangeid=1622386151\"><span style=\"color:#f6b26b\"><b><i>Go back to the top!</i></b></span></a>"
     ],
     [],
     [],
@@ -18,27 +18,27 @@
     [],
     [],
     [
-      "<a href=\"https://www.patreon.com/DataCompendium\"><span style=\"color:#9fc5e8\"><b><i><u>Support the Data Compendium</u></i></b></span></a>"
+      "<a href=\"https://www.patreon.com/DataCompendium\"><span style=\"color:#9fc5e8\"><b><i>Support the Data Compendium</i></b></span></a>"
     ]
   ],
   [
     [],
     [
-      "<a href=\"#rangeid=271530187\"><span style=\"color:#cccccc\"><b><u>Hunter</u></b></span></a>"
+      "<a href=\"#rangeid=271530187\"><span style=\"color:#cccccc\"><b>Hunter</b></span></a>"
     ],
     [],
     [],
     [],
     [],
     [
-      "<a href=\"#rangeid=331697527\"><span style=\"color:#cccccc\"><b><u>Titan</u></b></span></a>"
+      "<a href=\"#rangeid=331697527\"><span style=\"color:#cccccc\"><b>Titan</b></span></a>"
     ],
     [],
     [],
     [],
     [],
     [
-      "<a href=\"#rangeid=1431672841\"><span style=\"color:#cccccc\"><b><u>Warlock</u></b></span></a>"
+      "<a href=\"#rangeid=1431672841\"><span style=\"color:#cccccc\"><b>Warlock</b></span></a>"
     ]
   ],
   [
@@ -54,7 +54,8 @@
     ],
     [],
     [
-      "<span style=\"color:#dd7e6b\"><b>Restores</b></span> <span style=\"color:#a4c2f4\"><b>60</b></span> <span style=\"color:#ea9999\"><b>[30]</b></span> <span style=\"color:#dd7e6b\"><b>HP</b></span> <span style=\"color:#cccccc\"><b>per stack of</b></span> <span style=\"color:#dd7e6b\"><b>Cure</b></span> <span style=\"color:#cccccc\"><b>over 0.1 seconds.</b></span>",
+      "<span style=\"color:#dd7e6b\"><b>Restores health</b></span> <span style=\"color:#cccccc\"><b>per stack of</b></span> <span style=\"color:#dd7e6b\"><b>Cure</b></span> <span style=\"color:#cccccc\"><b>over 0.1 seconds.</b></span>",
+      "<span style=\"color:#dd7e6b\"><b>x1 =</b></span> <span style=\"color:#a4c2f4\"><b>60</b></span> <span style=\"color:#ea9999\"><b>[30]</b></span> <span style=\"color:#dd7e6b\"><b>| x2 =</b></span> <span style=\"color:#a4c2f4\"><b>120</b></span> <span style=\"color:#ea9999\"><b>[60]</b></span> <span style=\"color:#dd7e6b\"><b>| x3 =</b></span> <span style=\"color:#a4c2f4\"><b>240</b></span> <span style=\"color:#ea9999\"><b>[120]</b></span> <span style=\"color:#dd7e6b\"><b>HP</b></span>",
       "",
       "<span style=\"color:#e06666\"><i>Incurs a 1 second cooldown between Cure activations. Additional activations will not recover health.</i></span>"
     ]
@@ -394,7 +395,7 @@
       "<span style=\"color:#e06666\"><i>Picking up a Firesprite while a Solar Effect's timer is &gt;15 seconds will lower it to 15 seconds. <small>Eg: Stronghold + Solace + Doppler Efect = 26 seconds -&gt; 15 seconds</small></i></span>",
       "",
       "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Ally</i></b></span> <span style=\"color:#dd7e6b\"><b><i>Revival</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
-      "<span style=\"color:#dd7e6b\"><b>Restoration x1</b></span> <span style=\"color:#cccccc\"><b>for 5</b></span><span style=\"color:#f6b26b\"><b><small>+2.5</small></b></span> <span style=\"color:#cccccc\"><b>seconds to the user and</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>within ? meters.</b></span>"
+      "<span style=\"color:#dd7e6b\"><b>Restoration x1</b></span> <span style=\"color:#cccccc\"><b>for 5</b></span><span style=\"color:#f6b26b\"><b><small>+2.5</small></b></span> <span style=\"color:#cccccc\"><b>seconds to the user and</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>within 9 meters.</b></span>"
     ],
     [],
     [],
@@ -895,7 +896,7 @@
     [],
     [],
     [
-      "<span style=\"color:#cccccc\"><b>Base Cooldown:</b></span> <span style=\"color:#a4c2f4\"><b>56</b></span> <span style=\"color:#ea9999\"><b>[148.4]</b></span><span style=\"color:#cccccc\"><b>s</b></span>",
+      "<span style=\"color:#cccccc\"><b>Base Cooldown:</b></span> <span style=\"color:#a4c2f4\"><b>56</b></span> <span style=\"color:#ea9999\"><b>[148.5]</b></span><span style=\"color:#cccccc\"><b>s</b></span>",
       "",
       "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.5x</b></span>"
     ]
@@ -1114,9 +1115,9 @@
       "<span style=\"color:#ffd966\"><i>Radiant's damage bonus affects its damage output.</i></span>",
       "",
       "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#f1c232\"><b><i>Precision Hit:</i></b></span>",
-      "<span style=\"color:#cccccc\"><b>Grants a stack of</b></span> <span style=\"color:#f1c232\"><b>Line'Em Up</b></span><span style=\"color:#cccccc\"><b>, up to a maximum of</b></span> <span style=\"color:#f1c232\"><b>2 stacks</b></span><span style=\"color:#cccccc\"><b>, and spawns</b></span> <span style=\"color:#ffd966\"><b>2 Orbs of Power</b></span><span style=\"color:#cccccc\"><b>. Buff lasts until</b></span> <span style=\"color:#ffd966\"><b>Super End</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
-      "<span style=\"color:#f1c232\"><b>Line'Em Up x1 |</b></span> <span style=\"color:#cccccc\"><b>45.8% increased damage, and</b></span> <span style=\"color:#ffd966\"><b>25?% Decreased Passive Super Drain.</b></span>",
-      "<span style=\"color:#f1c232\"><b>Line'Em Up x2 |</b></span> <span style=\"color:#cccccc\"><b>90% increased damage, and</b></span> <span style=\"color:#ffd966\"><b>50?% Decreased Passive Super Drain</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants a stack of</b></span> <span style=\"color:#f1c232\"><b>Line'Em Up</b></span><span style=\"color:#cccccc\"><b>, up to a maximum of</b></span> <span style=\"color:#f1c232\"><b>2 stacks</b></span><span style=\"color:#cccccc\"><b>, and spawns</b></span> <span style=\"color:#ffd966\"><b>2 Orbs of Power</b></span><span style=\"color:#cccccc\"><b>.</b> <i>Buff persists until</i></span> <span style=\"color:#ffd966\"><i>Super End</i></span><span style=\"color:#cccccc\"><i>.</i></span>",
+      "<span style=\"color:#f1c232\"><b>Line'Em Up x1 |</b></span> <span style=\"color:#cccccc\"><b>45% increased damage, and</b></span> <span style=\"color:#ffd966\"><b>30% Decreased Passive Super Drain.</b></span>",
+      "<span style=\"color:#f1c232\"><b>Line'Em Up x2 |</b></span> <span style=\"color:#cccccc\"><b>90% increased damage, and</b></span> <span style=\"color:#ffd966\"><b>60% Decreased Passive Super Drain</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "",
       "<span style=\"color:#f1c232\"><b>Precision Hit</b></span> <span style=\"color:#ffd966\"><b>Orbs of Power Super Gains:</b></span>",
       "<span style=\"color:#a4c2f4\"><b>Non-Boss Combatants</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#ffd966\"><b>3.57% Super Energy</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>Boss Combatants</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#ffd966\"><b>2.85% Super Energy</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>Boss</b></span> <span style=\"color:#cccccc\"><b>+</b></span> <span style=\"color:#ffd966\"><b>Star-Eater Scales</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#ffd966\"><b>2.5% Super Energy</b></span>"
@@ -1173,7 +1174,7 @@
       "<span style=\"color:#e06666\"><i>No interaction with Celestial Nighthawk :(</i></span>",
       "",
       "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#e0a261\"><b><i>Crackshot Dodge</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
-      "<span style=\"color:#cccccc\"><b>Fires up to</b></span> <span style=\"color:#e0a261\"><b>3 Scorching Shots</b></span> <span style=\"color:#cccccc\"><b>at an average of 150RPM over 1.2 seconds.</b> <i>RPM varies based on FPS, lower framerate = slower same animation duration</i></span>",
+      "<span style=\"color:#cccccc\"><b>Fires up to</b></span> <span style=\"color:#e0a261\"><b>3 Scorching Shots</b></span> <span style=\"color:#cccccc\"><b>at an average of 150RPM over 1.2 seconds.</b> <i>RPM varies based on FPS. Lower framerate = Slower RPM at the same animation duration.</i></span>",
       "<span style=\"color:#e0a261\"><b>Scorching Shots</b></span> <span style=\"color:#cccccc\"><b>deal</b></span> <span style=\"color:#a4c2f4\"><b>354</b></span> <span style=\"color:#ea9999\"><b>[21]</b></span> <span style=\"color:#e0a261\"><b>Damage</b></span> <span style=\"color:#cccccc\"><b>and inflict</b></span> <span style=\"color:#e0a261\"><b>x20<small>+10</small> Scorch</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "<span style=\"color:#cccccc\"><b>Landing all</b></span> <span style=\"color:#e0a261\"><b>3 Scorching Shots</b></span> <span style=\"color:#cccccc\"><b>grants</b></span> <span style=\"color:#dd7e6b\"><b>Cure x1</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "<span style=\"color:#ffd966\"><b>Radiant</b></span> <span style=\"color:#cccccc\"><b>grants</b></span> <span style=\"color:#a4c2f4\"><b>20% Increased Crackshot Damage against Combatants</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
@@ -1208,7 +1209,7 @@
       "<span style=\"color:#cccccc\"><i>Activating</i></span> <span style=\"color:#ffd966\"><i>Radiant</i></span> <span style=\"color:#cccccc\"><i>from the same hit that kills</i> <b><i>will</i></b> <i>refund</i></span> <span style=\"color:#79bec3\"><i>Melee Ability</i></span><span style=\"color:#cccccc\"><i>.</i></span>",
       "",
       "<span style=\"color:#ffd966\"><b>Enhances Super Abilities:</b></span>",
-      "<span style=\"color:#ffd966\"><b>Marksman Golden Gun</b></span> <span style=\"color:#cccccc\"><b>lasts 4 seconds longer.</b></span>",
+      "<span style=\"color:#ffd966\"><b>Marksman Golden Gun</b></span> <span style=\"color:#cccccc\"><b>lasts 25% (4 seconds longer.</b></span>",
       "<span style=\"color:#ffd966\"><b>Deadshot Golden Gun</b></span> <span style=\"color:#cccccc\"><b>has 15% Damage Resist.</b></span>",
       "<span style=\"color:#ffd966\"><b>Blade Barrage</b></span> <span style=\"color:#cccccc\"><b>throws an additional 3 knives per fan.</b></span>",
       "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#dd7e6b\"><b>x1 Cure</b></span> <span style=\"color:#cccccc\"><b>on</b></span> <span style=\"color:#ffd966\"><b>Super Activation</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
@@ -1229,8 +1230,8 @@
       "<span style=\"color:#b4a7d6\"><b>Class Ability Usage</b></span> <span style=\"color:#cccccc\"><b>grants a</b></span> <span style=\"color:#e0a261\"><b>stack</b></span> <span style=\"color:#cccccc\"><b>of</b></span> <span style=\"color:#f6b26b\"><b>On Your Mark</b></span> <span style=\"color:#cccccc\"><b>to the user.</b></span>",
       "",
       "<span style=\"color:#f6b26b\"><b>On Your Mark:</b></span>",
-      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#6d9eeb\"><b>+5 Weapon Stat</b></span><span style=\"color:#cccccc\"><b>, +Reload Speed, and Reload Duration Multiplier per</b></span> <span style=\"color:#e0a261\"><b>stack</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
-      "<span style=\"color:#cccccc\"><b>Maxes out at</b></span> <span style=\"color:#6d9eeb\"><b>+50 Weapon Stat</b></span><span style=\"color:#cccccc\"><b>, +? Reload Speed, and 0.?x Reload Duration Multiplier.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#6d9eeb\"><b>+5 Weapon Stat</b></span><span style=\"color:#cccccc\"><b>, +4.5 Reload Speed, and 0.9855x Reload Duration Multiplier per</b></span> <span style=\"color:#e0a261\"><b>stack</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Maxes out at</b></span> <span style=\"color:#6d9eeb\"><b>+50 Weapon Stat</b></span><span style=\"color:#cccccc\"><b>, +45 Reload Speed, and 0.855x Reload Duration Multiplier.</b></span>",
       "",
       "<span style=\"color:#cccccc\"><i>While at</i></span> <span style=\"color:#e0a261\"><b><i>x10 On Your Mark</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "<span style=\"color:#cccccc\"><b>Kills while</b></span> <span style=\"color:#e0a261\"><b>On Your Mark</b></span> <span style=\"color:#cccccc\"><b>is equipped grant</b></span> <span style=\"color:#dd7e6b\"><b>Restoration x1</b></span> <span style=\"color:#cccccc\"><b>for 3</b></span><span style=\"color:#f6b26b\"><b><small>+1.5</small></b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>"
@@ -1334,6 +1335,8 @@
       "<span style=\"color:#cccccc\"><b>Damage Resistance:</b></span> <span style=\"color:#a4c2f4\"><b>90%</b></span> <span style=\"color:#ea9999\"><b>[53%]</b></span>",
       "<span style=\"color:#cccccc\"><b>Base Duration: 25 seconds, or</b></span> <span style=\"color:#ffd966\"><b>4% Super Drain per Second</b></span>",
       "<span style=\"color:#f6b26b\"><i>Sol Invictus creates a Sunspot on cast if grounded, and reduces Passive Drain by 40%, increasing duration to 42 seconds, or 2.4% Super Drain per second.</i></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Passively grants</b></span> <span style=\"color:#dd7e6b\"><b>+40 Health Stat</b></span> <span style=\"color:#cccccc\"><b>while</b></span> <span style=\"color:#ffd966\"><b>Super Ability is active</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "",
       "<span style=\"color:#f9cb9c\"><b>Light Attack |</b></span> <span style=\"color:#ffd966\"><b>Drains 4% Super Energy.</b></span>",
       "<span style=\"color:#cccccc\"><b>Spinning attack that deals</b></span> <span style=\"color:#a4c2f4\"><b>111</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage 4 times. Has a 0.67 second delay between light attacks.</b></span>",
@@ -1517,7 +1520,7 @@
       "",
       "<span style=\"color:#cccccc\"><i>While behind a</i></span> <span style=\"color:#b4a7d6\"><b><i>Rally Barricade</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#e0a261\"><b>Scorching Rounds</b></span> <span style=\"color:#cccccc\"><b>to</b></span> <span style=\"color:#999999\"><b>Kinetic</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#e0a261\"><b>Solar</b></span> <span style=\"color:#cccccc\"><b>Weapons.</b></span>",
-      "<a href=\"#rangeid=550859985\"><span style=\"color:#6d9eeb\"><b><i><u>For the sake of vertical screen accessibility, go to Song of Flame's section.</u></i></b></span></a>",
+      "<a href=\"#rangeid=550859985\"><span style=\"color:#6d9eeb\"><b><i>For the sake of vertical screen accessibility, go to Song of Flame's section.</i></b></span></a>",
       "",
       "<span style=\"color:#cccccc\"><i>While a</i></span> <span style=\"color:#b4a7d6\"><b><i>Barricade</i></b></span> <span style=\"color:#cccccc\"><i>is active:</i></span>",
       "<span style=\"color:#cccccc\"><b>Passively grants</b></span> <span style=\"color:#b4a7d6\"><b>Barricade-dependent</b></span> <span style=\"color:#cccccc\"><b><i><small>(</small></i></b></span><span style=\"color:#b4a7d6\"><b><i><small>34% Towering | 10% Rally</small></i></b></span><span style=\"color:#cccccc\"><b><i><small>)</small></i></b></span> <span style=\"color:#e0a261\"><b>Shieldbrust</b></span> <span style=\"color:#cccccc\"><b>progress.</b></span>",
@@ -1541,12 +1544,13 @@
     ],
     [],
     [
-      "<span style=\"color:#f6b26b\"><b>Solar Ability Kills</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#f6b26b\"><b>Scorched</b></span> <span style=\"color:#cccccc\"><b>Enemy Kills, and</b></span> <span style=\"color:#ffd966\"><b>Hammer of Sol</b></span> <span style=\"color:#cccccc\"><b>Impacts create a</b></span> <span style=\"color:#f6b26b\"><b>Sunspot</b></span> <span style=\"color:#cccccc\"><b>for ? seconds.</b></span>",
+      "<span style=\"color:#f6b26b\"><b>Solar Ability Kills</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#f6b26b\"><b>Scorched</b></span> <span style=\"color:#cccccc\"><b>Enemy Kills, and</b></span> <span style=\"color:#ffd966\"><b>Hammer of Sol</b></span> <span style=\"color:#cccccc\"><b>Impacts create a</b></span> <span style=\"color:#f6b26b\"><b>Sunspot</b></span> <span style=\"color:#cccccc\"><b>for 12 seconds.</b></span>",
       "<span style=\"color:#cccccc\"><b>Standing in a</b></span> <span style=\"color:#f6b26b\"><b>Sunspot</b></span> <span style=\"color:#cccccc\"><b>refreshes its duration, up to a maximum duration of 12 seconds.</b></span>",
       "",
+      "<span style=\"color:#f6b26b\"><b>Sunspots</b></span> <span style=\"color:#cccccc\"><b>deal</b></span> <span style=\"color:#a4c2f4\"><b>60</b></span> <span style=\"color:#ea9999\"><b>[22]</b></span> <span style=\"color:#cccccc\"><b>damage and inflict</b></span> <span style=\"color:#f6b26b\"><b>x5<small>+3</small> Scorch</b></span> <span style=\"color:#cccccc\"><b>every 0.167 seconds over a 3 meter radius.</b></span>",
+      "",
       "<span style=\"color:#f6b26b\"><b>Sunspots</b></span> <span style=\"color:#cccccc\"><b>grant</b></span> <span style=\"color:#f6b26b\"><b>Sol Invictus</b></span> <span style=\"color:#cccccc\"><b>for 5 seconds and</b></span> <span style=\"color:#dd7e6b\"><b>Restoration x1</b></span> <span style=\"color:#cccccc\"><b>for 5</b></span><span style=\"color:#f6b26b\"><b><small>+2.5</small></b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>",
-      "<span style=\"color:#f6b26b\"><b>Sol Invictus</b></span> <span style=\"color:#cccccc\"><b>grant 100% Additional Base</b></span> <span style=\"color:#e0a261\"><b>Grenade</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#67c9cf\"><b>Melee</b></span> <span style=\"color:#cccccc\"><b>Regeneration Rate, and</b></span> <span style=\"color:#ffd966\"><b>40% Decreased Passive Super Drain.</b></span>",
-      "<span style=\"color:#f6b26b\"><b>Sunspots</b></span> <span style=\"color:#cccccc\"><b>deal</b></span> <span style=\"color:#a4c2f4\"><b>60</b></span> <span style=\"color:#ea9999\"><b>[22]</b></span> <span style=\"color:#cccccc\"><b>damage and inflict</b></span> <span style=\"color:#f6b26b\"><b>x5<small>+3</small> Scorch</b></span> <span style=\"color:#cccccc\"><b>every 0.167 seconds.</b></span>"
+      "<span style=\"color:#f6b26b\"><b>Sol Invictus</b></span> <span style=\"color:#cccccc\"><b>grant 150% Additional Base</b></span> <span style=\"color:#e0a261\"><b>Grenade</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#67c9cf\"><b>Melee</b></span> <span style=\"color:#cccccc\"><b>Regeneration Rate, and</b></span> <span style=\"color:#ffd966\"><b>40% Decreased Passive Super Drain.</b></span>"
     ]
   ],
   [
@@ -1737,7 +1741,7 @@
       "",
       "<span style=\"color:#ffd966\"><b>Allows the usage of an enhanced Icarus Dash without cooldown that drains 4.2% Super Energy per usage.</b></span>",
       "",
-      "<span style=\"color:#e0a261\"><b>Phoenix Dive</b></span> <span style=\"color:#cccccc\"><b>is enhanced, dealing up to</b></span> <span style=\"color:#a4c2f4\"><b>642</b></span> <span style=\"color:#ea9999\"><b>[220?]</b></span> <span style=\"color:#e0a261\"><b>Damage</b></span><span style=\"color:#cccccc\"><b>, down to a minimum of</b></span> <span style=\"color:#a4c2f4\"><b>292</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#e0a261\"><b>Damage</b></span><span style=\"color:#cccccc\"><b>, and inflicting</b></span> <span style=\"color:#f6b26b\"><b>x60<small>+30</small> Scorch</b></span> <span style=\"color:#cccccc\"><b>over a 6 meter radius.</b> <i>Deals 45% damage at max falloff.</i></span>",
+      "<span style=\"color:#e0a261\"><b>Phoenix Dive</b></span> <span style=\"color:#cccccc\"><b>is enhanced, and has a 1 second cooldown, dealing up to</b></span> <span style=\"color:#a4c2f4\"><b>642</b></span> <span style=\"color:#ea9999\"><b>[220?]</b></span> <span style=\"color:#e0a261\"><b>Damage</b></span><span style=\"color:#cccccc\"><b>, down to a minimum of</b></span> <span style=\"color:#a4c2f4\"><b>292</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#e0a261\"><b>Damage</b></span><span style=\"color:#cccccc\"><b>, and inflicting</b></span> <span style=\"color:#f6b26b\"><b>x60<small>+30</small> Scorch</b></span> <span style=\"color:#cccccc\"><b>over a 6 meter radius.</b> <i>Deals 45% damage at max falloff.</i></span>",
       "<span style=\"color:#e0a261\"><i>Phoenix Dive</i></span> <span style=\"color:#cccccc\"><i>damage is enhanced by</i></span> <span style=\"color:#ffd966\"><i>Super Damage Increases</i></span><span style=\"color:#cccccc\"><i>.</i></span>"
     ],
     [],
@@ -1773,7 +1777,7 @@
       "<span style=\"color:#a4c2f4\"><b>Combatants</b></span> <span style=\"color:#cccccc\"><b>deal</b></span> <span style=\"color:#a4c2f4\"><b>0.25x Damage</b></span> <span style=\"color:#cccccc\"><b>against the</b></span> <span style=\"color:#ffd966\"><b>Well of Radiance</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "",
       "<span style=\"color:#cccccc\"><b>For Guardians inside the</b></span> <span style=\"color:#ffd966\"><b>Well of Radiance:</b></span>",
-      "<span style=\"color:#cccccc\"><b>25% Increased Weapon Damage,</b></span> <span style=\"color:#a4c2f4\"><b>20% Damage Resist against Combatants</b></span> <span style=\"color:#9fc5e8\"><b><i>(10% vs Boss Combatants)</i></b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#3d85c6\"><b>immunity to Stasis Effects</b></span><span style=\"color:#cccccc\"><b>, and</b></span> <span style=\"color:#dd7e6b\"><b>restores 50HP/s.</b></span>",
+      "<span style=\"color:#cccccc\"><b>25% Increased Weapon Damage,</b></span> <span style=\"color:#a4c2f4\"><b>20% DR against Rank-and-File, Elite, and Champion Combatants <i>(10% vs Miniboss and Boss)</i></b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#3d85c6\"><b>immunity to Stasis Effects</b></span><span style=\"color:#cccccc\"><b>, and</b></span> <span style=\"color:#dd7e6b\"><b>restores 50HP/s.</b></span>",
       "<span style=\"color:#ea9999\"><b>Guardians receive 50% Damage Resist against</b></span> <span style=\"color:#93c47d\"><b>Special</b></span> <span style=\"color:#ea9999\"><b>and</b></span> <span style=\"color:#a481e1\"><b>Power</b></span> <span style=\"color:#ea9999\"><b>Weapons, as well as Abilities.</b></span> <span style=\"color:#999999\"><b>Primary Weapons</b></span> <span style=\"color:#ea9999\"><b>remain at 40% Damage Resist.</b></span>",
       "<span style=\"color:#cccccc\"><i>Removes any active</i></span> <span style=\"color:#dd7e6b\"><i>Restoration</i></span> <span style=\"color:#cccccc\"><i>effect.</i></span>",
       "<span style=\"color:#cccccc\"><i>Weapon Damage dealt by the</i></span> <span style=\"color:#ffd966\"><i>Caster</i></span> <span style=\"color:#cccccc\"><i>is counted as</i></span> <span style=\"color:#ffd966\"><i>Super Ability Damage</i></span><span style=\"color:#cccccc\"><i>.</i></span> <span style=\"color:#ffd966\"><i>Caster</i></span> <span style=\"color:#cccccc\"><i>can spawn up to</i></span> <span style=\"color:#ffd966\"><i>5 Orbs</i></span> <span style=\"color:#cccccc\"><i>from scoring kills within the</i></span> <span style=\"color:#ffd966\"><i>Well</i></span><span style=\"color:#cccccc\"><i>.</i></span>"

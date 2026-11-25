@@ -16,7 +16,7 @@
     [],
     [],
     [
-      "<a href=\"https://www.patreon.com/DataCompendium\"><span style=\"color:#9fc5e8\"><b><i><u>Support the Data Compendium</u></i></b></span></a>"
+      "<a href=\"https://www.patreon.com/DataCompendium\"><span style=\"color:#9fc5e8\"><b><i>Support the Data Compendium</i></b></span></a>"
     ]
   ],
   [
@@ -62,7 +62,7 @@
       "<span style=\"color:#6d9eeb\"><b>Hunters</b></span> <span style=\"color:#cccccc\"><b>intrinsically possess the following traits over</b></span> <span style=\"color:#e06666\"><b>Titans</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#ffd966\"><b>Warlocks</b></span><span style=\"color:#cccccc\"><b>:</b></span>",
       "",
       "<span style=\"color:#cccccc\"><b>Base Sprint Speed is 8.5 meters per second, compared to their baseline of 8m/s.</b></span>",
-      "<span style=\"color:#cccccc\"><b>Baseline</b></span> <span style=\"color:#a4c2f4\"><b>100</b></span> <span style=\"color:#ea9999\"><b>[70]</b></span> <span style=\"color:#cccccc\"><b>Mobility and</b></span> <span style=\"color:#a4c2f4\"><b>0.9x</b></span> <span style=\"color:#ea9999\"><b>[0.95x]</b></span> <span style=\"color:#cccccc\"><b>Ready/Stow Animation Duration.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Additional</b></span> <span style=\"color:#a4c2f4\"><b>+70</b></span> <span style=\"color:#ea9999\"><b>[+40]</b></span> <span style=\"color:#cccccc\"><b>Mobility and</b></span> <span style=\"color:#a4c2f4\"><b>0.9x</b></span> <span style=\"color:#ea9999\"><b>[0.95x]</b></span> <span style=\"color:#cccccc\"><b>Ready/Stow Animation Duration.</b></span>",
       "<span style=\"color:#cccccc\"><i>Sprint Speed Increase is equivalent to that of an</i></span> <span style=\"color:#ffd966\"><i>Exotic Armor-based Sprint Boost</i></span><span style=\"color:#cccccc\"><i>, only being able to stack with a Lightweight Weapon.</i></span>"
     ]
   ],
@@ -86,7 +86,7 @@
     [],
     [],
     [
-      "<span style=\"color:#cccccc\"><b>Base Cooldown:</b></span> <span style=\"color:#a4c2f4\"><b>56</b></span> <span style=\"color:#ea9999\"><b>[148.4]</b></span><span style=\"color:#cccccc\"><b>s</b></span>",
+      "<span style=\"color:#cccccc\"><b>Base Cooldown:</b></span> <span style=\"color:#a4c2f4\"><b>56</b></span> <span style=\"color:#ea9999\"><b>[148.5]</b></span><span style=\"color:#cccccc\"><b>s</b></span>",
       "",
       "<span style=\"color:#cccccc\"><b>Chunk Scalar: 0.5x</b></span>"
     ]
@@ -196,7 +196,7 @@
     [],
     [
       "<span style=\"color:#cccccc\"><b>Creates a short, curved barricade construct in front of the caster that blocks all damage dealt to it.</b></span>",
-      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#a4c2f4\"><b>20%</b></span> <span style=\"color:#ea9999\"><b>[20%]</b></span> <span style=\"color:#cccccc\"><b>Damage Resist while in the</b></span> <span style=\"color:#b4a7d6\"><b>Barricade Placement</b></span> <span style=\"color:#cccccc\"><b>animation.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#a4c2f4\"><b>80%</b></span> <span style=\"color:#ea9999\"><b>[20%]</b></span> <span style=\"color:#cccccc\"><b>Damage Resist while in the</b></span> <span style=\"color:#b4a7d6\"><b>Barricade Placement</b></span> <span style=\"color:#cccccc\"><b>animation.</b></span>",
       "",
       "<span style=\"color:#b4a7d6\"><b>Barricade</b></span> <span style=\"color:#cccccc\"><b>lasts for 20 seconds, and has</b></span> <span style=\"color:#dd7e6b\"><b>500 Construct HP.</b></span> <span style=\"color:#a4c2f4\"><b>Barricades have 90% Damage Resist against Combatants, and ?% against Boss Combatants.</b></span>",
       "<span style=\"color:#cccccc\"><b>Enemies that pass through the</b></span> <span style=\"color:#b4a7d6\"><b>barricade</b></span> <span style=\"color:#cccccc\"><b>rapidly receive</b></span> <span style=\"color:#a4c2f4\"><b>?</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#e06666\"><b>non-lethal</b></span> <span style=\"color:#cccccc\"><b>damage every ? seconds.</b></span>",
@@ -230,8 +230,7 @@
     [
       "<span style=\"color:#cccccc\"><b>Performs an evasive first-person dash that removes</b></span> <span style=\"color:#a4c2f4\"><b>Combatant Projectile Tracking?</b></span><span style=\"color:#cccccc\"><b>, as well as</b></span> <span style=\"color:#ea9999\"><b>Aim Assist against Guardians</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>Quickly dashes 8 metres towards the currently held movement direction. Not inputting a movement direction will result in a 4 metre backwards dash.</b></span>",
-      "<span style=\"color:#cccccc\"><b><i>Only usable while on the ground.</i></b></span>"
+      "<span style=\"color:#cccccc\"><b>Quickly dashes 8 metres towards the currently held movement direction. Not inputting a movement direction will result in a 4 metre backwards dash.</b></span>"
     ],
     [],
     [],
@@ -256,7 +255,7 @@
     [],
     [
       "<span style=\"color:#cccccc\"><b>Creates a tall, slightly curved barricade construct in front of the caster that blocks all damage dealt to it.</b></span>",
-      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#a4c2f4\"><b>20%</b></span> <span style=\"color:#ea9999\"><b>[20%]</b></span> <span style=\"color:#cccccc\"><b>Damage Resist while in the</b></span> <span style=\"color:#b4a7d6\"><b>Barricade Placement</b></span> <span style=\"color:#cccccc\"><b>animation.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#a4c2f4\"><b>80%</b></span> <span style=\"color:#ea9999\"><b>[20%]</b></span> <span style=\"color:#cccccc\"><b>Damage Resist while in the</b></span> <span style=\"color:#b4a7d6\"><b>Barricade Placement</b></span> <span style=\"color:#cccccc\"><b>animation.</b></span>",
       "",
       "<span style=\"color:#b4a7d6\"><b>Barricade</b></span> <span style=\"color:#cccccc\"><b>lasts for 20 seconds, and has</b></span> <span style=\"color:#dd7e6b\"><b>500 Construct HP.</b></span> <span style=\"color:#a4c2f4\"><b>Barricades have 90% Damage Resist against Non-Boss Combatants, and ?% against Boss Combatants.</b></span>",
       "<span style=\"color:#cccccc\"><b>Enemies that pass through the</b></span> <span style=\"color:#b4a7d6\"><b>barricade</b></span> <span style=\"color:#cccccc\"><b>rapidly receive</b></span> <span style=\"color:#a4c2f4\"><b>?</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#e06666\"><b>non-lethal</b></span> <span style=\"color:#cccccc\"><b>damage every ? seconds.</b></span>",

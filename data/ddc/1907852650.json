@@ -1,7 +1,7 @@
 [
   [
     [
-      "<a href=\"#rangeid=442897221\"><span style=\"color:#bba5f3\"><b><i><u>Go back to the top!</u></i></b></span></a>"
+      "<a href=\"#rangeid=442897221\"><span style=\"color:#bba5f3\"><b><i>Go back to the top!</i></b></span></a>"
     ],
     [],
     [],
@@ -18,27 +18,27 @@
     [],
     [],
     [
-      "<a href=\"https://www.patreon.com/DataCompendium\"><span style=\"color:#9fc5e8\"><b><i><u>Support the Data Compendium</u></i></b></span></a>"
+      "<a href=\"https://www.patreon.com/DataCompendium\"><span style=\"color:#9fc5e8\"><b><i>Support the Data Compendium</i></b></span></a>"
     ]
   ],
   [
     [],
     [
-      "<a href=\"#rangeid=1770448244\"><span style=\"color:#cccccc\"><b><u>Hunter</u></b></span></a>"
+      "<a href=\"#rangeid=1770448244\"><span style=\"color:#cccccc\"><b>Hunter</b></span></a>"
     ],
     [],
     [],
     [],
     [],
     [
-      "<a href=\"#rangeid=187343583\"><span style=\"color:#cccccc\"><b><u>Titan</u></b></span></a>"
+      "<a href=\"#rangeid=187343583\"><span style=\"color:#cccccc\"><b>Titan</b></span></a>"
     ],
     [],
     [],
     [],
     [],
     [
-      "<a href=\"#rangeid=812970001\"><span style=\"color:#cccccc\"><b><u>Warlock</u></b></span></a>"
+      "<a href=\"#rangeid=812970001\"><span style=\"color:#cccccc\"><b>Warlock</b></span></a>"
     ]
   ],
   [
@@ -158,9 +158,9 @@
     ],
     [],
     [
-      "<span style=\"color:#c27ba0\"><b>Weakened Enemies</b></span> <span style=\"color:#cccccc\"><b>receive</b></span> <span style=\"color:#a4c2f4\"><b>15%</b></span> <span style=\"color:#ea9999\"><b>[7.5%]</b></span> <span style=\"color:#cccccc\"><b>increased damage and 20% Decreased Movement Speed for</b></span> <span style=\"color:#a4c2f4\"><b>6</b></span> <span style=\"color:#ea9999\"><b>[2.5]</b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>",
+      "<span style=\"color:#c27ba0\"><b>Weakened Enemies</b></span> <span style=\"color:#cccccc\"><b>receive</b></span> <span style=\"color:#a4c2f4\"><b>15%</b></span> <span style=\"color:#ea9999\"><b>[7.5%]</b></span> <span style=\"color:#cccccc\"><b>increased damage and -20% Movement Speed for</b></span> <span style=\"color:#a4c2f4\"><b>6</b></span> <span style=\"color:#ea9999\"><b>[3]</b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>",
       "",
-      "<span style=\"color:#c27ba0\"><b>Weakened</b></span> <span style=\"color:#a4c2f4\"><b>Combatants</b></span> <span style=\"color:#cccccc\"><b>become less accurate and slower.</b></span>",
+      "<span style=\"color:#c27ba0\"><b>Weakened</b></span> <span style=\"color:#a4c2f4\"><b>Combatants</b></span> <span style=\"color:#cccccc\"><b>become less accurate.</b></span>",
       "",
       "<span style=\"color:#c27ba0\"><b>Unique Weaken Effects:</b></span>",
       "<span style=\"color:#cccccc\"><b>Certain sources of</b></span> <span style=\"color:#c27ba0\"><b>Weaken</b></span> <span style=\"color:#cccccc\"><b>inflict a</b></span> <span style=\"color:#a64d79\"><b>dramatically stronger weaken</b></span> <span style=\"color:#cccccc\"><b>that grants</b></span> <span style=\"color:#a4c2f4\"><b>30%</b></span> <span style=\"color:#ea9999\"><b>[generally 50%]</b></span> <span style=\"color:#cccccc\"><b>increased damage.</b></span>",
@@ -228,8 +228,8 @@
     ],
     [],
     [
-      "<span style=\"color:#cccccc\"><b>Crouch Speed is set to 4 meters per second and grants doubled radar resolution while crouched.</b></span>",
-      "<span style=\"color:#cccccc\"><i>Crouch Speed cannot be decreased below 4m/s, identically to</i></span> <span style=\"color:#ffd966\"><i>Transversives Steps</i></span><span style=\"color:#cccccc\"><i>.</i></span>"
+      "<span style=\"color:#cccccc\"><i>While</i> <b><i>crouched</i></b><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Grants +100% Crouch Movement Speed and Enhanced Radar.</b> <i>(Has 12 sectors instead of 6)</i></span>"
     ],
     [],
     [],
@@ -252,8 +252,8 @@
     ],
     [],
     [
-      "<span style=\"color:#8e7cc3\"><b>Suppressing</b></span> <span style=\"color:#cccccc\"><b>an enemy grants</b></span> <span style=\"color:#6d9eeb\"><b>+30 Weapons</b></span> <span style=\"color:#cccccc\"><b>and 4% Forward Movement Speed Bonus for 10 seconds and refills the readied weapon.</b></span>",
-      "<span style=\"color:#e06666\"><b><i>Incurs a 4 second cooldown before it can be reactivated.</i></b></span>",
+      "<span style=\"color:#8e7cc3\"><b>Suppressing</b></span> <span style=\"color:#cccccc\"><b>an enemy grants</b></span> <span style=\"color:#6d9eeb\"><b>+30 Weapons</b></span> <span style=\"color:#cccccc\"><b>and +5% Standing Movement Speed for 10 seconds and refills the readied weapon.</b></span>",
+      "<span style=\"color:#e06666\"><i>Incurs a 4 second cooldown before it can be reactivated.</i></span>",
       "",
       "<span style=\"color:#cccccc\"><b>Killing</b></span> <span style=\"color:#8e7cc3\"><b>Suppressed Enemies</b></span> <span style=\"color:#cccccc\"><b>spawns a</b></span> <span style=\"color:#b4a7d6\"><b>Void Breach</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
     ],
@@ -371,7 +371,7 @@
     ],
     [],
     [
-      "<span style=\"color:#79bec3\"><b>Melee Kills</b></span> <span style=\"color:#dd7e6b\"><b>begin health regeneration</b></span> <span style=\"color:#cccccc\"><b>for the user and</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>within ? metres.</b></span>"
+      "<span style=\"color:#79bec3\"><b>Melee Kills</b></span> <span style=\"color:#dd7e6b\"><b>begin health regeneration</b></span> <span style=\"color:#cccccc\"><b>for the user and</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>within 12 metres.</b></span>"
     ],
     [],
     [],
@@ -498,7 +498,7 @@
       "<span style=\"color:#cccccc\"><b>Kills grant additional</b></span> <span style=\"color:#ffd966\"><b>Super Energy.</b></span>",
       "<span style=\"color:#cccccc\"><b>3 Enemies =</b></span> <span style=\"color:#ffd966\"><b>+0.3%</b></span> <span style=\"color:#cccccc\"><b>| 4 =</b></span> <span style=\"color:#ffd966\"><b>+0.65%</b></span> <span style=\"color:#cccccc\"><b>| 5 =</b></span> <span style=\"color:#ffd966\"><b>1%</b></span> <span style=\"color:#cccccc\"><b>| 6 =</b></span> <span style=\"color:#ffd966\"><b>+1.6%</b></span> <span style=\"color:#cccccc\"><b>| 7 =</b></span> <span style=\"color:#ffd966\"><b>+2.3%</b></span>",
       "",
-      "<span style=\"color:#e06666\"><i>Incurs a 1 second cooldown between activations.</i></span>"
+      "<span style=\"color:#e06666\"><i>Incurs a 0.75 second cooldown between activations.</i></span>"
     ],
     [],
     [],
@@ -567,7 +567,7 @@
     [
       "<span style=\"color:#cccccc\"><i>Upon</i> <b><i>killing</i></b> <i>an enemy while at</i></span> <span style=\"color:#dd7e6b\"><b><i>Critical Health</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#d5a6bd\"><b>Void Overshield</b></span> <span style=\"color:#cccccc\"><b>for 5</b></span><span style=\"color:#b4a7d6\"><b><small>+2.5</small></b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>",
-      "<span style=\"color:#e06666\"><i>Incurs a 8 second cooldown after activating.</i></span>"
+      "<span style=\"color:#e06666\"><i>Incurs a 10 second cooldown after activating.</i></span>"
     ],
     [],
     [],
@@ -911,7 +911,7 @@
     [
       "<span style=\"color:#cccccc\"><b>Slashes forward up to 12 meters away, dealing</b></span> <span style=\"color:#a4c2f4\"><b>595</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#bba5f3\"><b>Damage</b></span> <span style=\"color:#cccccc\"><b>to enemies within 2 meters while phasing through them.</b></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#d5a6bd\"><b>+10 Void Overshield</b></span> <span style=\"color:#cccccc\"><b>per enemy hit.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#d5a6bd\"><b>+25 Void Overshield</b></span> <span style=\"color:#cccccc\"><b>per enemy hit.</b></span>",
       "",
       "<span style=\"color:#cccccc\"><i>Against either</i></span> <span style=\"color:#8e7cc3\"><b><i>Void-Debuffed Enemies</i></b></span> <span style=\"color:#e06666\"><b><i>OR</i></b></span> <span style=\"color:#bba5f3\"><b><i>On The Prowl's</i></b></span> <span style=\"color:#e06666\"><b><i>Marked Enemy</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "<span style=\"color:#cccccc\"><b>Damage is increased by</b></span> <span style=\"color:#a4c2f4\"><b>100%</b></span> <span style=\"color:#ea9999\"><b>[?%]</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
@@ -948,7 +948,7 @@
       "<span style=\"color:#b4a7d6\"><b>Snare Bomb</b></span> <span style=\"color:#cccccc\"><b>deals</b></span> <span style=\"color:#a4c2f4\"><b>33</b></span> <span style=\"color:#ea9999\"><b>[10]</b></span> <span style=\"color:#cccccc\"><b>impact damage, and up to</b></span> <span style=\"color:#a4c2f4\"><b>120 + 24</b></span> <span style=\"color:#ea9999\"><b>[40 + ?]</b></span> <span style=\"color:#cccccc\"><b>explosion damage over ? meters. Impact and explosion</b></span> <span style=\"color:#c27ba0\"><b>weaken</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#999999\"><b>disorient</b></span> <span style=\"color:#cccccc\"><b>for</b></span> <span style=\"color:#a4c2f4\"><b>8</b></span> <span style=\"color:#ea9999\"><b>[2.5]</b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>",
       "",
       "<span style=\"color:#b4a7d6\"><b>Smoke Cloud</b></span>",
-      "<span style=\"color:#cccccc\"><b>Lasts for</b></span> <span style=\"color:#a4c2f4\"><b>5</b></span> <span style=\"color:#ea9999\"><b>[2]</b></span> <span style=\"color:#cccccc\"><b>seconds on detonation, dealing DoT every 0.6 seconds and</b></span> <span style=\"color:#999999\"><b>disorienting</b></span> <span style=\"color:#cccccc\"><b>enemies.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Lasts for</b></span> <span style=\"color:#a4c2f4\"><b>5</b></span> <span style=\"color:#ea9999\"><b>[2]</b></span> <span style=\"color:#cccccc\"><b>seconds on detonation, dealing DoT every 0.6 seconds, inflicting</b></span> <span style=\"color:#999999\"><b>disorient</b></span> <span style=\"color:#cccccc\"><b>and -20% Movement Speed on enemies.</b></span>",
       "<span style=\"color:#cccccc\"><b>Deals DoT after 0.87 seconds, starting at</b></span> <span style=\"color:#a4c2f4\"><b>12.65</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage, increasing by 13% per tick, up to</b></span> <span style=\"color:#a4c2f4\"><b>24.8</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage on its last 9th tick, dealing up to</b></span> <span style=\"color:#a4c2f4\"><b>156.7</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage over 5 seconds.</b></span>"
     ],
     [],
@@ -1026,6 +1026,7 @@
       "<span style=\"color:#cccccc\"><b>Deals</b></span> <span style=\"color:#a4c2f4\"><b>2,583</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#bba5f3\"><b>Damage</b></span> <span style=\"color:#cccccc\"><b>on impact, inflicting</b></span> <span style=\"color:#c874ff\"><b>Deadfall Weaken</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#8e7cc3\"><b>Suppression</b></span> <span style=\"color:#cccccc\"><b>to enemies within ? meters. Counts as a Construct with</b></span> <span style=\"color:#dd7e6b\"><b>? HP</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "<span style=\"color:#cccccc\"><b>Enemies within 12.5 meters of the</b></span> <span style=\"color:#bba5f3\"><b>anchor</b></span> <span style=\"color:#cccccc\"><b>are</b></span> <span style=\"color:#bba5f3\"><b>tethered</b></span><span style=\"color:#cccccc\"><b>.</b></span> <span style=\"color:#bba5f3\"><b>Tethered enemies</b></span> <span style=\"color:#cccccc\"><b>are inflicted with</b></span> <span style=\"color:#c874ff\"><b>Deadfall Weaken</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#8e7cc3\"><b>Suppression</b></span><span style=\"color:#cccccc\"><b>, and</b></span> <span style=\"color:#dd7e6b\"><b>Mark</b></span> <span style=\"color:#cccccc\"><b>for</b></span> <span style=\"color:#a4c2f4\"><b>30</b></span> <span style=\"color:#ea9999\"><b>[10]</b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>",
       "<span style=\"color:#cccccc\"><b>50% of the Bodyshot</b> <i><small>(Base)</small></i> <b>Damage dealt to</b></span> <span style=\"color:#bba5f3\"><b>tethered enemies</b></span> <span style=\"color:#cccccc\"><b>is also inflicted to other</b></span> <span style=\"color:#bba5f3\"><b>tethered enemies</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#a481e1\"><b>Tethered Enemies</b></span> <span style=\"color:#cccccc\"><b>additionally have</b></span> <span style=\"color:#e06666\"><b>-65% Movement Speed</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#e06666\"><b>-25% Jump Height</b></span><span style=\"color:#cccccc\"><b>, and</b></span> <span style=\"color:#e06666\"><b>-86% Sword Lunge Distance</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "",
       "<span style=\"color:#c874ff\"><b>Deadfall Weaken UNIQUELY increases damage taken by 35%.</b></span>",
       "",
@@ -1125,9 +1126,9 @@
       "<span style=\"color:#cccccc\"><b>Releases a</b></span> <span style=\"color:#c27ba0\"><b>weakening cloud of smoke</b></span> <span style=\"color:#cccccc\"><b>on</b></span> <span style=\"color:#dd7e6b\"><b>Enemy Death Location</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "<span style=\"color:#cccccc\"><b>Grants a</b></span> <span style=\"color:#bba5f3\"><b>stack</b></span> <span style=\"color:#cccccc\"><b>of</b></span> <span style=\"color:#bba5f3\"><b>Succesful Hunt</b></span> <span style=\"color:#cccccc\"><b>for ? seconds, up to a maximum of</b></span> <span style=\"color:#bba5f3\"><b>3 stacks</b></span><span style=\"color:#cccccc\"><b>, as well as ?%</b></span> <span style=\"color:#e0a261\"><b>Grenade</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#89cdd1\"><b>Melee</b></span><span style=\"color:#cccccc\"><b>, and</b></span> <span style=\"color:#b4a7d6\"><b>Class</b></span> <span style=\"color:#cccccc\"><b>Ability Energy.</b></span>",
       "",
-      "<span style=\"color:#bba5f3\"><b>Succesful Hunt x1</b></span> <span style=\"color:#cccccc\"><b>| +? Stability, +? Reload Speed, and 0.?x Reload Duration Multiplier</b></span>",
-      "<span style=\"color:#bba5f3\"><b>Succesful Hunt x2</b></span> <span style=\"color:#cccccc\"><b>| +? Stability, +? Reload Speed, and 0.?x Reload Duration Multiplier</b></span>",
-      "<span style=\"color:#bba5f3\"><b>Succesful Hunt x3</b></span> <span style=\"color:#cccccc\"><b>| +? Stability, +? Reload Speed, and 0.?x Reload Duration Multiplier</b></span>",
+      "<span style=\"color:#bba5f3\"><b>Succesful Hunt x1</b></span> <span style=\"color:#cccccc\"><b>| +10 Stability, +15 Handling, and +10 Reload Speed.</b></span>",
+      "<span style=\"color:#bba5f3\"><b>Succesful Hunt x2</b></span> <span style=\"color:#cccccc\"><b>| +20 Stability, +30 Handling, and +20 Reload Speed</b></span>",
+      "<span style=\"color:#bba5f3\"><b>Succesful Hunt x3</b></span> <span style=\"color:#cccccc\"><b>| +30 Stability, +45 Handling, and +30 Reload Speed</b></span>",
       "",
       "<span style=\"color:#c27ba0\"><b>Cloud of smoke</b></span><span style=\"color:#cccccc\"><b>:</b></span>",
       "<span style=\"color:#cccccc\"><b>Instantly deals up to</b></span> <span style=\"color:#a4c2f4\"><b>133</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#bba5f3\"><b>Void</b></span> <span style=\"color:#89cdd1\"><b>Melee</b></span> <span style=\"color:#bba5f3\"><b>Damage</b></span> <span style=\"color:#cccccc\"><b>over 5 meters.</b></span>",
@@ -1311,24 +1312,23 @@
       "<span style=\"color:#b4a7d6\"><b>Light Attack |</b></span> <span style=\"color:#ffd966\"><b>Drains 4.5% Super Energy per Attack. The Final Hit in the combo drains 2% Super Energy.</b></span>",
       "<span style=\"color:#cccccc\"><b>Grounded 3-Hit Combo, dealing</b></span> <span style=\"color:#a4c2f4\"><b>797</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#a4c2f4\"><b>856</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage.</b></span>",
       "<span style=\"color:#cccccc\"><b>Airborne 2-Hit Combo, dealing</b></span> <span style=\"color:#a4c2f4\"><b>797</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage</b></span>",
-      "<span style=\"color:#cccccc\"><b>The Final Hit in a combo deals</b></span> <span style=\"color:#a4c2f4\"><b>1,516</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage in a ? metre cone.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Combo Finisher deals</b></span> <span style=\"color:#a4c2f4\"><b>1,516</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage in a ? metre cone.</b></span>",
       "",
       "<span style=\"color:#8e7cc3\"><b>Heavy Attack</b></span>",
       "<span style=\"color:#cccccc\"><b>Generates an</b></span> <span style=\"color:#b4a7d6\"><b>impenetrable barrier</b></span> <span style=\"color:#cccccc\"><b>that</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>can shoot through, at the cost of 20% Decreased Movement Speed.</b></span>",
       "<span style=\"color:#ffd966\"><b>Caster is granted damage immunity from all frontal damage, including</b></span> <span style=\"color:#dd7e6b\"><b>Enemy Guardians</b></span><span style=\"color:#ffd966\"><b>.</b></span>",
       "<span style=\"color:#cccccc\"><b>Enemies that touch the</b></span> <span style=\"color:#b4a7d6\"><b>barrier</b></span> <span style=\"color:#cccccc\"><b>receive</b></span> <span style=\"color:#a4c2f4\"><b>7</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#bba5f3\"><b>Damage</b></span> <span style=\"color:#cccccc\"><b>every 0.05 seconds.</b></span>",
       "<span style=\"color:#cccccc\"><b>Blocking</b></span> <span style=\"color:#a4c2f4\"><b>?</b></span> <span style=\"color:#ea9999\"><b>[any]</b></span> <span style=\"color:#cccccc\"><b>damage generates an</b></span> <span style=\"color:#ffd966\"><b>Orb of Power</b></span> <span style=\"color:#cccccc\"><b>that grants</b></span> <span style=\"color:#ffd966\"><b>2.5?% Super Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span> <span style=\"color:#e06666\"><b><i>Incurs a 1.5 second cooldown between Orb of Power spawns.</i></b></span>",
-      "<span style=\"color:#cccccc\"><b>Enhances</b></span> <span style=\"color:#e0a261\"><b>Shield Throw Damage</b></span> <span style=\"color:#cccccc\"><b>as more damage is blocked, up to</b></span> <span style=\"color:#ffd966\"><b>1787% increased damage</b></span> <span style=\"color:#cccccc\"><b>after blocking ? damage.</b></span>",
-      "<span style=\"color:#ffd966\"><b>Extends Super Duration</b></span> <span style=\"color:#cccccc\"><b>by up to ?% by continuously blocking damage.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Enhances</b></span> <span style=\"color:#e0a261\"><b>Shield Throw Damage</b></span> <span style=\"color:#cccccc\"><b>as more damage is blocked or while</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>are</b></span> <span style=\"color:#b4a7d6\"><b>behind the barrier</b></span><span style=\"color:#cccccc\"><b>, up to</b></span> <span style=\"color:#ffd966\"><b>1787% increased damage</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#e0a261\"><b>Fully maxes damage</b></span> <span style=\"color:#cccccc\"><b>after 14 seconds with</b></span> <span style=\"color:#a4c2f4\"><b>1 ally</b></span><span style=\"color:#cccccc\"><b>, scaling down to 7 seconds with</b></span> <span style=\"color:#a4c2f4\"><b>5 allies</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#ffd966\"><b>Extends Super Duration</b></span> <span style=\"color:#cccccc\"><b>by continuously blocking damage.</b></span>",
       "<span style=\"color:#dd7e6b\"><b>Guardian Damage is completely nullified and do not proc on-hit related effects on the Impenetrable Barrier.</b></span>",
-      "<span style=\"color:#dd7e6b\"><b>Ability Damage removes Super Energy but partially extends it at the same time.</b></span>",
+      "<span style=\"color:#dd7e6b\"><b>Ability Damage removes Super Energy but partially extends it at the same time as it deals damage.</b></span>",
       "",
       "<span style=\"color:#a4c2f4\"><b>Allies</b></span> <span style=\"color:#cccccc\"><b>standing within 5m</b></span> <span style=\"color:#b4a7d6\"><b>behind the barrier</b></span> <span style=\"color:#cccccc\"><b>are granted 25% Increased Damage, a</b></span> <span style=\"color:#d5a6bd\"><b>45 HP Void Overshield,</b></span> <span style=\"color:#cccccc\"><b>+50 Handling, and +50 Reload Speed.</b></span>",
       "<span style=\"color:#cccccc\"><b>Additionally, all of their weapons are refilled every 2.5 seconds.</b></span>",
       "<span style=\"color:#a4c2f4\"><b>Allied Guardian's</b></span> <span style=\"color:#d5a6bd\"><b>Void Overshield</b></span> <span style=\"color:#cccccc\"><b>begins regenerating at a rate of</b></span> <span style=\"color:#d5a6bd\"><b>9HP/s</b></span> <span style=\"color:#cccccc\"><b>after not receiving damage for 3 seconds.</b></span>",
-      "",
-      "<span style=\"color:#ffd966\"><b>Passive Super Energy Drain while Blocking</b></span> <span style=\"color:#cccccc\"><b>can be decreased by having</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>behind the shield.</b></span>",
-      "<span style=\"color:#ffd966\"><b>x1 = 20% | x2 = 35% | x3 = ?% | x4 = ?% | x5 = 50%</b></span>",
+      "<span style=\"color:#ffd966\"><b>Passive Super Energy Drain while Blocking</b></span> <span style=\"color:#cccccc\"><b>can be decreased by having</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>behind the shield.</b></span> <span style=\"color:#a4c2f4\"><b>1 Ally</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#ffd966\"><b>25% |</b></span> <span style=\"color:#a4c2f4\"><b>2 Allies</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#ffd966\"><b>37.5%</b></span>",
       "",
       "<span style=\"color:#e0a261\"><b>Grenade Ability |</b></span> <span style=\"color:#ffd966\"><b>Does not drain Super Energy.</b></span> <span style=\"color:#dd7e6b\"><b>Incurs a 3 second cooldown between Shield Throws.</b></span>",
       "<span style=\"color:#cccccc\"><b>Performs a</b></span> <span style=\"color:#e0a261\"><b>Shield Throw</b></span><span style=\"color:#cccccc\"><b>, tossing the</b></span> <span style=\"color:#b4a7d6\"><b>Sentinel Shield</b></span> <span style=\"color:#cccccc\"><b>towards enemies.</b></span>",
@@ -1389,7 +1389,8 @@
   [
     [],
     [
-      "<span style=\"color:#bba5f3\"><b>Ward of Dawn</b></span>"
+      "<span style=\"color:#bba5f3\"><b>Ward of Dawn</b></span>",
+      "<span style=\"color:#2c2134\"><b>Bubble</b></span>"
     ],
     [],
     [
@@ -1790,7 +1791,7 @@
       "<span style=\"color:#dd7e6b\"><b>Healing Rift</b></span><span style=\"color:#cccccc\"><b>: Grants 4%</b></span> <span style=\"color:#e0a261\"><b>Grenade</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#79bec3\"><b>Melee</b></span> <span style=\"color:#cccccc\"><b>Energy every 1.4 seconds.</b></span>",
       "<span style=\"color:#a4c2f4\"><b>Empowering Rift</b></span><span style=\"color:#cccccc\"><b>:</b></span> <span style=\"color:#dd7e6b\"><b>Restores 25 HP</b></span> <span style=\"color:#cccccc\"><b>every 1.4 seconds.</b></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>Enemies killed within its</b></span> <span style=\"color:#b4a7d6\"><b>Draining Field</b></span> <span style=\"color:#cccccc\"><b>grant</b></span> <span style=\"color:#b4a7d6\"><b>Class Ability Energy</b></span> <span style=\"color:#cccccc\"><b>based on their</b></span> <a href=\"#rangeid=188614572\"><span style=\"color:#a4c2f4\"><b><i><u>Enemy Rank</u></i></b></span></a><span style=\"color:#cccccc\"><b>:</b></span>",
+      "<span style=\"color:#cccccc\"><b>Enemies killed within its</b></span> <span style=\"color:#b4a7d6\"><b>Draining Field</b></span> <span style=\"color:#cccccc\"><b>grant</b></span> <span style=\"color:#b4a7d6\"><b>Class Ability Energy</b></span> <span style=\"color:#cccccc\"><b>based on their</b></span> <a href=\"#rangeid=188614572\"><span style=\"color:#a4c2f4\"><b><i>Enemy Rank</i></b></span></a><span style=\"color:#cccccc\"><b>:</b></span>",
       "<span style=\"color:#a4c2f4\"><b>Tier 1 Combatant</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#b4a7d6\"><b>10%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>T2</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#b4a7d6\"><b>15%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>T3</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#b4a7d6\"><b>20%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>T4+</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#b4a7d6\"><b>50%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#ea9999\"><b>Guardian</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#b4a7d6\"><b>33.4%</b></span>"
     ]
   ],

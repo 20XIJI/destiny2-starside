@@ -1,7 +1,7 @@
 [
   [
     [
-      "<a href=\"#rangeid=2120273371\"><span style=\"color:#d9d9d9\"><b><i><u>Go back to the top!</u></i></b></span></a>"
+      "<a href=\"#rangeid=2120273371\"><span style=\"color:#d9d9d9\"><b><i>Go back to the top!</i></b></span></a>"
     ],
     [],
     [],
@@ -54,7 +54,7 @@
     [],
     [],
     [
-      "<a href=\"#rangeid=1870194883\"><span style=\"color:#d5a6bd\"><b><u>Ability Tiers and Energy Gains</u></b></span></a>"
+      "<a href=\"#rangeid=1870194883\"><span style=\"color:#d5a6bd\"><b>Ability Tiers and Energy Gains</b></span></a>"
     ]
   ],
   [
@@ -63,7 +63,7 @@
     [],
     [],
     [
-      "<a href=\"#rangeid=1302592986\"><span style=\"color:#6d9eeb\"><b><u>Activity Modifiers</u></b></span></a>"
+      "<a href=\"#rangeid=1302592986\"><span style=\"color:#6d9eeb\"><b>Activity Modifiers</b></span></a>"
     ]
   ],
   [
@@ -72,7 +72,7 @@
     [],
     [],
     [
-      "<a href=\"#rangeid=735614305\"><span style=\"color:#6fa8dc\"><b><u>Armor Charge</u></b></span></a>"
+      "<a href=\"#rangeid=735614305\"><span style=\"color:#6fa8dc\"><b>Armor Charge</b></span></a>"
     ]
   ],
   [
@@ -81,7 +81,7 @@
     [],
     [],
     [
-      "<a href=\"#rangeid=1234323879\"><span style=\"color:#cccccc\"><b><u>Armor &amp; Character Stats</u></b></span></a>"
+      "<a href=\"#rangeid=1234323879\"><span style=\"color:#cccccc\"><b>Armor &amp; Character Stats</b></span></a>"
     ]
   ],
   [
@@ -90,7 +90,7 @@
     [],
     [],
     [
-      "<a href=\"#rangeid=1209834310\"><span style=\"color:#cd6c59\"><b><u>Champions of the Darkness</u></b></span></a>"
+      "<a href=\"#rangeid=1209834310\"><span style=\"color:#cd6c59\"><b>Champions of the Darkness</b></span></a>"
     ]
   ],
   [
@@ -99,7 +99,7 @@
     [],
     [],
     [
-      "<a href=\"#rangeid=1150520535\"><span style=\"color:#9fc5e8\"><b><u>Combatant Information</u></b></span></a>"
+      "<a href=\"#rangeid=1150520535\"><span style=\"color:#9fc5e8\"><b>Combatant Information</b></span></a>"
     ]
   ],
   [
@@ -108,7 +108,7 @@
     [],
     [],
     [
-      "<a href=\"#rangeid=1049147000\"><span style=\"color:#e0a261\"><b><u>Heat Weapons</u></b> <i><u><small>(Blasters)</small></u></i></span></a>",
+      "<a href=\"#rangeid=1049147000\"><span style=\"color:#e0a261\"><b>Heat Weapons</b> <i><small>(Blasters)</small></i></span></a>",
       "<span style=\"color:#e0a261\"><b><u><small>Balanced Heat | Dynamic Heat</small></u></b></span>"
     ]
   ],
@@ -118,7 +118,7 @@
     [],
     [],
     [
-      "<a href=\"#rangeid=1017709050\"><span style=\"color:#ffd966\"><b><u>Super Ability Energy</u></b></span></a>"
+      "<a href=\"#rangeid=1017709050\"><span style=\"color:#ffd966\"><b>Super Ability Energy</b></span></a>"
     ]
   ],
   [
@@ -504,19 +504,19 @@
     [],
     [],
     [
-      "<span style=\"color:#cccccc\"><b>Battlefield Promotion</b></span>",
+      "<span style=\"color:#e8b903\"><b>Battlefield Promotion</b></span>",
       "<span style=\"color:#70d27a\"><b>▲▲▲▲</b></span>"
     ],
     [],
     [],
     [
-      "<span style=\"color:#cccccc\"><b>Promoted-Affixed Bane Combatants can now appear randomly.</b></span>",
+      "<span style=\"color:#e8b903\"><b>Promoted-Affixed Bane Combatants</b></span> <span style=\"color:#cccccc\"><b>can now appear randomly.</b></span>",
       "",
-      "<span style=\"color:#a4c2f4\"><b>Combatants</b></span> <span style=\"color:#cccccc\"><b>that kill a Guardian or another</b></span> <span style=\"color:#a4c2f4\"><b>Combatant</b></span> <span style=\"color:#cccccc\"><b>are granted the Promoted affix.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Combatants</b></span> <span style=\"color:#cccccc\"><b>that kill a Guardian or another</b></span> <span style=\"color:#a4c2f4\"><b>Combatant</b></span> <span style=\"color:#cccccc\"><b>are granted the</b></span> <span style=\"color:#e8b903\"><b>Promoted affix</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#dd7e6b\"><b>heal 500 HP</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>Promoted Combatants gain 60% Damage Resist, deal</b></span> <span style=\"color:#e06666\"><b>6.25% increased damage</b></span><span style=\"color:#cccccc\"><b>, and become ~50% physically larger.</b></span>",
+      "<span style=\"color:#e8b903\"><b>Promoted Combatants</b></span> <span style=\"color:#cccccc\"><b>gain 60% Damage Resist, deal</b></span> <span style=\"color:#e06666\"><b>10% increased damage</b></span><span style=\"color:#cccccc\"><b>, and become ~50% physically larger.</b></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>Inflicting</b></span> <span style=\"color:#8e7cc3\"><b>Suppresion</b></span> <span style=\"color:#cccccc\"><b>on a Promoted Combatant temporarily disables their Damage Resist and shrinks them down to regular size.</b></span>"
+      "<span style=\"color:#cccccc\"><b>Inflicting</b></span> <span style=\"color:#8e7cc3\"><b>Suppresion</b></span> <span style=\"color:#cccccc\"><b>on a</b></span> <span style=\"color:#e8b903\"><b>Promoted Combatant</b></span> <span style=\"color:#cccccc\"><b>temporarily disables their effects and shrinks them down to regular size.</b></span>"
     ]
   ],
   [
@@ -564,11 +564,13 @@
     [],
     [],
     [
-      "<span style=\"color:#cccccc\"><i>While</i> <b><i>Movement Speed</i></b> <i>is</i> <b>≤4 <i>meters per second</i></b> <i>for</i> <b><i>at least 5 seconds:</i></b></span>",
-      "<span style=\"color:#cccccc\"><b>Triggers</b></span> <span style=\"color:#e06666\"><b>Danger, Keep Moving!</b></span> <span style=\"color:#cccccc\"><b>for 4 seconds, then deals 12.5 damage every second until Movement Speed is ≥4 meters per second.</b></span>",
+      "<span style=\"color:#cccccc\"><i>While</i> <b><i>Movement Speed</i></b> <i>is</i> <b>≤4.5 <i>meters per second</i></b> <i>for</i> <b><i>at least 5 seconds:</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Triggers</b></span> <span style=\"color:#e06666\"><b>Danger, Keep Moving!</b></span> <span style=\"color:#cccccc\"><b>for 4 seconds, then deals 10 damage every second until Movement Speed is ≥4 meters per second.</b></span>",
       "",
       "<span style=\"color:#cccccc\"><i>After 0.75 seconds of having Movement Speed above 8m/s:</i></span>",
-      "<span style=\"color:#dd7e6b\"><b>Continuously restores 10 HP/s</b></span> <span style=\"color:#cccccc\"><b>until Movement Speed has decreased below ?m/s for ? seconds.</b></span>"
+      "<span style=\"color:#dd7e6b\"><b>Continuously restores 10 HP/s</b></span> <span style=\"color:#cccccc\"><b>until Movement Speed has decreased below 1.75m/s for 0.5 seconds.</b></span>",
+      "",
+      "<span style=\"color:#d5a6bd\"><b>Ability Usage</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#a4c2f4\"><b>Finishers</b></span> <span style=\"color:#cccccc\"><b>pauses all timers for 1 second.</b></span>"
     ]
   ],
   [
@@ -676,8 +678,8 @@
     [],
     [],
     [
-      "<span style=\"color:#cccccc\"><b>Gravity is</b></span> <span style=\"color:#e06666\"><b>significantly</b></span> <span style=\"color:#cccccc\"><b>reduced.</b></span>",
-      "<span style=\"color:#cccccc\"><i>how to even measure this lol</i></span>"
+      "<span style=\"color:#cccccc\"><b>Gravity is</b></span> <span style=\"color:#e06666\"><b>significantly</b></span> <span style=\"color:#cccccc\"><b>reduced and grants +100 Airborne Effectiveness.</b></span>",
+      "<span style=\"color:#cccccc\"><b>0.15x Global Gravity Scale | 0.2x Jumping Scale | 0.35x Falling Scale</b></span>"
     ]
   ],
   [
@@ -702,10 +704,10 @@
       "<span style=\"color:#d5a6bd\"><b><i>Overshield cap isn't changed, and all Overshield gains are also reduced by 70%.</i></b></span>",
       "",
       "<span style=\"color:#dd7e6b\"><b>Passive Health Regeneration</b></span> <span style=\"color:#cccccc\"><b>is</b></span> <span style=\"color:#e06666\"><b>completely disabled</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
-      "<span style=\"color:#dd7e6b\"><b>HP gains</b></span> <span style=\"color:#cccccc\"><b>are generally</b></span> <span style=\"color:#e06666\"><b>decreased</b></span> <span style=\"color:#cccccc\"><b>by 70%.</b> <i><small>(Varies by source, Weapon-based gains are generally stronger)</small></i></span>",
+      "<span style=\"color:#dd7e6b\"><b>HP gains</b></span> <span style=\"color:#cccccc\"><b>are</b></span> <span style=\"color:#e06666\"><b>decreased</b></span> <span style=\"color:#cccccc\"><b>by 70%.</b></span> <span style=\"color:#dd7e6b\"><b>Support Auto Healing</b></span> <span style=\"color:#cccccc\"><b>is reduced by -55%.</b></span>",
       "",
       "<span style=\"color:#a4c2f4\"><b>Combatants</b></span> <span style=\"color:#cccccc\"><b>have a chance to spawn a</b></span> <span style=\"color:#dd7e6b\"><b>Healing Orb</b></span> <span style=\"color:#cccccc\"><b>that</b></span> <span style=\"color:#dd7e6b\"><b>restores 70 HP</b></span> <span style=\"color:#cccccc\"><b>on pickup.</b> <i><small>HP restored is AFTER reductions.</small></i></span>",
-      "<span style=\"color:#a4c2f4\"><b>RnF</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#dd7e6b\"><b>25%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>Elites</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#dd7e6b\"><b>50%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>Miniboss+</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#dd7e6b\"><b>100%</b></span>"
+      "<span style=\"color:#a4c2f4\"><b>RnF</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#dd7e6b\"><b>10%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>Elites</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#dd7e6b\"><b>70%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>Miniboss+</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#dd7e6b\"><b>100%</b></span>"
     ]
   ],
   [
@@ -970,7 +972,7 @@
       "<span style=\"color:#cccccc\"><b>Fury!</b></span>",
       "<span style=\"color:#cccccc\"><b>Bullets trigger an</b></span> <span style=\"color:#d5a6bd\"><b>Elemental-Matching Explosion</b></span> <span style=\"color:#cccccc\"><b>on impact, dealing</b></span> <span style=\"color:#d5a6bd\"><b>40 Damage</b></span> <span style=\"color:#cccccc\"><b>over 1 meter.</b></span>",
       "<span style=\"color:#cccccc\"><b>?% Additional Base Ability Regeneration Rate.</b></span>",
-      "<span style=\"color:#cccccc\"><b>+A lot of? Handling, and +? Reload Speed.</b></span>",
+      "<span style=\"color:#cccccc\"><b>0.75x Handling Duration Multiplier and 0.75x Reload Duration Multiplier.</b></span>",
       "",
       "<span style=\"color:#cc4125\"><b>Fury!</b></span> <span style=\"color:#cccccc\"><b>cannot be refreshed until it expires.</b></span>"
     ]
@@ -1015,8 +1017,9 @@
     [],
     [],
     [
-      "<span style=\"color:#e06666\"><b>Dying</b></span> <span style=\"color:#cccccc\"><b>grants a permanent stack of</b></span> <span style=\"color:#e06666\"><b>Grit</b></span><span style=\"color:#cccccc\"><b>, up to a maximum of 30 stacks.</b></span>",
-      "<span style=\"color:#e06666\"><b>Grit</b></span> <span style=\"color:#cccccc\"><b>grants 3% Damage Resist, up to a maximum of 90% DR at 30 stacks.</b></span>"
+      "<span style=\"color:#e06666\"><b>Dying</b></span> <span style=\"color:#cccccc\"><b>grants a permanent stack of</b></span> <span style=\"color:#e06666\"><b>Grit</b></span><span style=\"color:#cccccc\"><b>, up to a maximum of</b></span> <span style=\"color:#e06666\"><b>30 stacks</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#e06666\"><b>Grit</b></span> <span style=\"color:#cccccc\"><b>grants 3.1% Damage Resist per</b></span> <span style=\"color:#e06666\"><b>stack</b></span> <span style=\"color:#cccccc\"><b>beyond the first one.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Scales up to a maximum of 90% Damage Resist at</b></span> <span style=\"color:#e06666\"><b>30 stacks</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
     ]
   ],
   [
@@ -1281,13 +1284,6 @@
   ],
   [
     [],
-    [],
-    [
-      "<span style=\"color:#cccccc\"><b>Guardians, by default, have</b></span> <span style=\"color:#6d9eeb\"><b>Tier 3 Mobility</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#e06666\"><b>T10 Resilience</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
-    ]
-  ],
-  [
-    [],
     [
       "<span style=\"color:#1e2021\">Mobility In-Depth</span>"
     ],
@@ -1296,66 +1292,71 @@
     [],
     [],
     [
-      "<span style=\"color:#cccccc\"><b>Movement Speed</b></span>"
+      "<span style=\"color:#6fa8dc\"><b>Movement Speed</b></span>"
     ]
   ],
   [
     [],
     [],
     [
-      "<span style=\"color:#cccccc\"><b>The base movement speed is 5.6</b> <i><small>(Base = 5m/s but +30 Mobility intrinsic)</small></i> <b>meters per second, which is the equivalent of moving forwards without any additional effect.</b></span>",
-      "<span style=\"color:#cccccc\"><b>Sprinting moves forward at a speed of 8 meters per second.</b></span>",
+      "<span style=\"color:#cccccc\"><b>The</b></span> <span style=\"color:#6fa8dc\"><b>base movement speed</b></span> <span style=\"color:#cccccc\"><b>is</b></span> <span style=\"color:#6fa8dc\"><b>5.6 meters per second</b></span><span style=\"color:#cccccc\"><b>, which is the equivalent of moving forwards without any additional effect.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Sprinting increases</b></span> <span style=\"color:#6fa8dc\"><b>base movement speed</b></span> <span style=\"color:#cccccc\"><b>to</b></span> <span style=\"color:#6fa8dc\"><b>8 meters per second</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#6fa8dc\"><b>Movement Acceleration</b></span> <span style=\"color:#cccccc\"><b>is capped to 30m/s^2 while standing, and 16m/s while crouched, which is the baseline value for</b></span> <span style=\"color:#f6b26b\"><b>Mouse and Keyboard</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#6fa8dc\"><b>Movement Acceleration</b></span> <span style=\"color:#cccccc\"><b>values only affect</b></span> <span style=\"color:#e06666\"><b>Controller</b></span> <span style=\"color:#cccccc\"><b>input, and are generally increased by either +20%, +100%, or the same value as</b></span> <span style=\"color:#6fa8dc\"><b>+% Movement Speed</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>Base Movement Speed <i><small>(Moving Forward, including diagonally to the left and right)</small></i> cannot exceed 9 meters per second.</b> <i>This includes Sprinting Speed.</i></span>",
-      "<span style=\"color:#cccccc\"><b>Strafe Movement <i><small>(Left, Right, or Backward)</small></i> has a 0.85x Movement Speed Multiplier, and cannot exceed 6 meters per second.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Forward Movement Speed</b> <i><small>(+Diagonal Forward)</small></i> <b>is limited to a maximum of</b></span> <span style=\"color:#6fa8dc\"><b>9 meters second</b></span><span style=\"color:#cccccc\"><b>.</b> <i>This includes Sprinting Speed.</i></span>",
+      "<span style=\"color:#cccccc\"><b>Strafe Movement</b> <i><small>(Sideways, and Backward)</small></i> <b>has a</b></span> <span style=\"color:#e06666\"><b>-15% Movement Speed Penalty</b></span><span style=\"color:#cccccc\"><b>. Limited to a maximum of</b></span> <span style=\"color:#6fa8dc\"><b>6 meters per second</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Crouching</b> <i>(Sneak)</i> <b>Speed has a</b></span> <span style=\"color:#e06666\"><b>-45% Movement Speed Penalty</b></span><span style=\"color:#cccccc\"><b>. Limited to a maximum of</b></span> <span style=\"color:#6fa8dc\"><b>4 meters per second</b></span> <span style=\"color:#cccccc\"><b>on all 4 directions.</b></span>",
+      "<span style=\"color:#a481e1\"><b>Power Weapons</b></span> <span style=\"color:#cccccc\"><b>have an additional</b></span> <span style=\"color:#e06666\"><b>Movement Speed Penalty</b></span> <span style=\"color:#cccccc\"><b>of</b></span> <span style=\"color:#e06666\"><b>-20%</b></span> <span style=\"color:#cccccc\"><b>at 0 Handling |</b></span> <span style=\"color:#e06666\"><b>-15%</b></span> <span style=\"color:#cccccc\"><b>at 50 Handling |</b></span> <span style=\"color:#e06666\"><b>-10%</b></span> <span style=\"color:#cccccc\"><b>at 100 Handling.</b></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>ADS has a 0.75x Movement Speed Multiplier, and adheres to either the Forward or Strafe movement speed cap.</b> <i>Sidearms have a 0.85x Movement Speed Multiplier.</i></span>",
-      "<span style=\"color:#cccccc\"><b>Crouching Speed has a 0.55x Movement Speed Multiplier that cannot exceed 4 meters per second.</b></span>",
+      "<span style=\"color:#cccccc\"><b>ADS has a Handling-based</b></span> <span style=\"color:#e06666\"><b>Movement Speed Penalty</b></span><span style=\"color:#cccccc\"><b>, and adheres to the respective Forward/Strafe movement speed cap.</b></span>",
+      "<span style=\"color:#e06666\"><b>-27.5%</b></span> <span style=\"color:#cccccc\"><b>at 0 Handling |</b></span> <span style=\"color:#e06666\"><b>-25%</b></span> <span style=\"color:#cccccc\"><b>at 50 Handling |</b></span> <span style=\"color:#e06666\"><b>22.5%</b></span> <span style=\"color:#cccccc\"><b>at 100 Handling.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Sidearms,</b></span> <span style=\"color:#a481e1\"><b>Crossbows</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#63d275\"><b>Rocket Pulse/Sidearms</b></span><span style=\"color:#cccccc\"><b>:</b></span> <span style=\"color:#e06666\"><b>-0.175%</b></span> <span style=\"color:#cccccc\"><b>at 0 Handling |</b></span> <span style=\"color:#e06666\"><b>-15%</b></span> <span style=\"color:#cccccc\"><b>at 50 Handling |</b></span> <span style=\"color:#e06666\"><b>-12.5%</b></span> <span style=\"color:#cccccc\"><b>at 100 Handling.</b></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>Readied</b></span> <span style=\"color:#a481e1\"><b>Machine Guns</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#a481e1\"><b>Rocket Launchers</b></span><span style=\"color:#cccccc\"><b>, certain</b></span> <span style=\"color:#ffd966\"><b>Exotic Power Weapons</b></span><span style=\"color:#cccccc\"><b>, and</b></span> <span style=\"color:#a481e1\"><b>Sword Guarding</b></span> <span style=\"color:#cccccc\"><b>have a 0.85x Movement Speed Multiplier.</b></span>",
+      "<span style=\"color:#cccccc\"><b>All Movement Speed Multipliers stack multiplicatively with each other.</b></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>All Movement Speed Multipliers stack with each other.</b></span>",
-      "<span style=\"color:#cccccc\"><i>Eg: T5 Mobility (6.00m/s), while ADS (0.75x), while strafing (0.85x) = 3.83 meters per second.</i></span>",
-      "<span style=\"color:#cccccc\"><i>Eg: T10 Mobility (7.00m/s) while ADS (0.85x), while moving forwards, while using a Lightweight Gun (1.075x) = 6.39 meters per second</i></span>"
+      "<span style=\"color:#cccccc\"><b>Examples:</b></span>",
+      "<span style=\"color:#cccccc\"><b>Strafing</b></span> <span style=\"color:#e06666\"><b>(-15%)</b></span> <span style=\"color:#cccccc\"><b>while at T2 Mobility</b></span> <span style=\"color:#6fa8dc\"><b>(6.00m/s)</b></span><span style=\"color:#cccccc\"><b>, while ADS at 50 Handling</b></span> <span style=\"color:#e06666\"><b>(-25%)</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#6fa8dc\"><b>3.825 meters per second</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Moving forward at T10 Mobility</b></span> <span style=\"color:#6fa8dc\"><b>(7.60m/s)</b></span> <span style=\"color:#cccccc\"><b>while ADS at 100 Handling on a Sidearm with Moving Target</b></span> <span style=\"color:#e06666\"><b>(-12.5% x 0.9 = -11.25%)</b></span> <span style=\"color:#cccccc\"><b>that has the Lightweight Intrinsic (</b></span><span style=\"color:#93c47d\"><b>+6.25%</b></span><span style=\"color:#cccccc\"><b>) = 7.17 meters per second</b></span>"
     ]
   ],
   [
     [],
     [
-      "<span style=\"color:#d9d9d9\"><b>Mobility Tier</b></span>"
+      "<span style=\"color:#d9d9d9\"><b>Mobility Stat</b></span>"
     ],
     [
-      "<span style=\"color:#cccccc\"><b>3</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>4</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>5</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>6</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>7</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>8</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>9</b></span>"
+      "<span style=\"color:#cccccc\"><b>0</b></span>"
     ],
     [
       "<span style=\"color:#cccccc\"><b>10</b></span>"
     ],
     [
-      "<span style=\"color:#cccccc\"><b>11</b></span>"
+      "<span style=\"color:#cccccc\"><b>20</b></span>"
     ],
     [
-      "<span style=\"color:#cccccc\"><b>12</b></span>"
+      "<span style=\"color:#cccccc\"><b>30</b></span>"
     ],
     [
-      "<span style=\"color:#cccccc\"><b>13</b></span>"
+      "<span style=\"color:#cccccc\"><b>40</b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>50</b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>60</b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>70</b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>80</b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>90</b></span>"
+    ],
+    [
+      "<span style=\"color:#cccccc\"><b>100</b></span>"
     ]
   ],
   [
@@ -1389,13 +1390,13 @@
       "<span style=\"color:#cccccc\"><b>7</b></span>"
     ],
     [
-      "<span style=\"color:#cccccc\"><b>7.2?</b></span>"
+      "<span style=\"color:#cccccc\"><b>7.20</b></span>"
     ],
     [
-      "<span style=\"color:#cccccc\"><b>7.4?</b></span>"
+      "<span style=\"color:#cccccc\"><b>7.4</b></span>"
     ],
     [
-      "<span style=\"color:#cccccc\"><b>7.6?</b></span>"
+      "<span style=\"color:#cccccc\"><b>7.60</b></span>"
     ]
   ],
   [
@@ -1428,19 +1429,19 @@
       "<span style=\"color:#cccccc\"><b>5.95</b></span>"
     ],
     [
-      "<span style=\"color:#cccccc\"><b>6.12?</b></span>"
+      "<span style=\"color:#cccccc\"><b>6.12</b></span>"
     ],
     [
-      "<span style=\"color:#cccccc\"><b>6.29?</b></span>"
+      "<span style=\"color:#cccccc\"><b>6.29</b></span>"
     ],
     [
-      "<span style=\"color:#cccccc\"><b>6.46?</b></span>"
+      "<span style=\"color:#cccccc\"><b>6.46</b></span>"
     ]
   ],
   [
     [],
     [
-      "<span style=\"color:#d9d9d9\"><b>Crouch Speed</b></span>"
+      "<span style=\"color:#d9d9d9\"><b>Crouch Speed [m/s]</b></span>"
     ],
     [
       "<span style=\"color:#cccccc\"><b>3.08</b></span>"
@@ -1467,13 +1468,13 @@
       "<span style=\"color:#cccccc\"><b>3.85</b></span>"
     ],
     [
-      "<span style=\"color:#cccccc\"><b>3.96?</b></span>"
+      "<span style=\"color:#cccccc\"><b>3.96</b></span>"
     ],
     [
-      "<span style=\"color:#cccccc\"><b>4.07?</b></span>"
+      "<span style=\"color:#cccccc\"><b>4.07</b></span>"
     ],
     [
-      "<span style=\"color:#cccccc\"><b>4.18?</b></span>"
+      "<span style=\"color:#cccccc\"><b>4.18</b></span>"
     ]
   ],
   [
@@ -1483,14 +1484,13 @@
     ],
     [
       "<span style=\"color:#cccccc\"><b>Base Movement Speed of 8 meters per second.</b></span>",
-      "<span style=\"color:#e06666\"><b>DOES NOT CHANGE WITH MOBILITY</b></span><span style=\"color:#cccccc\"><b>. ONLY WITH LIGHTWEIGHT WEAPONS AND SPRINT BONUSES, BOTH OF WHICH ADDITIVELY GRANT 6.25% FASTER SPRINT SPEED UP TO 12.5%</b></span>"
+      "<span style=\"color:#e06666\"><b>DOES NOT CHANGE WITH MOBILITY</b></span><span style=\"color:#cccccc\"><b>. ONLY WITH LIGHTWEIGHT WEAPONS, SPRINT SPEED BONUSES, AND MOVEMENT SPEED BONUSES, BOTH OF WHICH ADDITIVELY GRANT 6.25% FASTER SPRINT SPEED UP TO 12.5%</b></span>"
     ]
   ],
   [
     [],
     [],
     [
-      "<span style=\"color:#e06666\"><b>Titans</b></span> <span style=\"color:#d9d9d9\"><b>and</b></span> <span style=\"color:#ffd966\"><b>Warlocks</b></span> <span style=\"color:#d9d9d9\"><b>have a baseline of</b></span> <span style=\"color:#9fc5e8\"><b>30 Mobility</b></span><span style=\"color:#d9d9d9\"><b>.</b></span>",
       "<span style=\"color:#6d9eeb\"><b>Hunters</b></span> <span style=\"color:#d9d9d9\"><b>have</b></span> <span style=\"color:#a4c2f4\"><b>100</b></span> <span style=\"color:#ea9999\"><b>[70]</b></span> <span style=\"color:#9fc5e8\"><b>Mobility</b></span> <span style=\"color:#d9d9d9\"><b>and their baseline Sprint Speed is 8.5 meters per second.</b></span>",
       "",
       "<span style=\"color:#9fc5e8\"><b>Enhanced Athletics</b></span> <span style=\"color:#d9d9d9\"><b>Leg Mod grants</b></span> <span style=\"color:#9fc5e8\"><b>+30 | +50 | +60 Mobility</b></span><span style=\"color:#d9d9d9\"><b>.</b></span>"
@@ -1501,8 +1501,16 @@
     [],
     [],
     [
-      "<span style=\"color:#cccccc\"><b>Movement Speed Increases, such as</b></span> <span style=\"color:#ffd966\"><b>Heartshadow's Wraithwalk</b></span> <span style=\"color:#cccccc\"><b>or</b></span> <span style=\"color:#ffd966\"><b>Tractor Cannon's Scientific Method</b></span> <span style=\"color:#cccccc\"><b>only increase</b></span> <span style=\"color:#e06666\"><b>GROUNDED Movement Speed</b></span><span style=\"color:#cccccc\"><b>, they do not change Jump Height.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Movement Speed Increases, such as</b></span> <span style=\"color:#ffd966\"><b>Heartshadow's Wraithwalk</b></span> <span style=\"color:#cccccc\"><b>or</b></span> <span style=\"color:#ffd966\"><b>Tractor Cannon's Scientific Method</b></span> <span style=\"color:#cccccc\"><b>only increase</b></span> <span style=\"color:#e06666\"><b>GROUNDED Movement Speed</b></span><span style=\"color:#cccccc\"><b>, they do not change Jump Height as that is a separate buff.</b></span>",
       "<span style=\"color:#cccccc\"><b>The maximum movement speed is still limited to the aforementioned caps!</b></span>"
+    ]
+  ],
+  [
+    [],
+    [],
+    [
+      "<span style=\"color:#cccccc\"><b>Jumping Information:</b></span>",
+      "<span style=\"color:#cccccc\"><b>Gravity is 12.715m/s² :)</b></span>"
     ]
   ],
   [
@@ -1515,7 +1523,7 @@
     [],
     [],
     [
-      "<span style=\"color:#dd7e6b\"><b>Health</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#7cadff\"><b>Shields</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#ffd966\"><b>HP Recovery Mechanics</b></span>"
+      "<span style=\"color:#dd7e6b\"><b>Health</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#7cadff\"><b>Shields</b></span> <span style=\"color:#cccccc\"><b>| +Regeneration</b></span>"
     ]
   ],
   [
@@ -1525,14 +1533,24 @@
       "<span style=\"color:#cccccc\"><b>Guardians possess, by default,</b></span> <span style=\"color:#a4c2f4\"><b>70</b></span> <span style=\"color:#ea9999\"><b>[100]</b></span> <span style=\"color:#dd7e6b\"><b>Health Points</b></span> <span style=\"color:#cccccc\"><b>with</b></span> <span style=\"color:#a4c2f4\"><b>34.5% Damage Resist against Combatants</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#7cadff\"><b>130 Shield Points</b></span><span style=\"color:#cccccc\"><b>, totalling</b></span> <span style=\"color:#a4c2f4\"><b>~237 effective HP against Combatants</b></span><span style=\"color:#cccccc\"><b>, or</b></span> <span style=\"color:#dd7e6b\"><b>230 in Crucible</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "<span style=\"color:#dd7e6b\"><b>Health Stat</b></span> <span style=\"color:#cccccc\"><b>above 100 grants</b></span> <span style=\"color:#a4c2f4\"><b>additional</b></span> <span style=\"color:#7cadff\"><b>Shield HP</b></span> <span style=\"color:#a4c2f4\"><b>against Combatants</b></span><span style=\"color:#cccccc\"><b>, up to a maximum of</b></span> <span style=\"color:#7cadff\"><b>+20 Shield HP</b></span> <span style=\"color:#cccccc\"><b>at</b></span> <span style=\"color:#dd7e6b\"><b>200 Health Stat</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "",
-      "<span style=\"color:#dd7e6b\"><b>Health</b></span> <span style=\"color:#cccccc\"><b>| Start of</b></span> <span style=\"color:#dd7e6b\"><b>Health Recovery</b></span><span style=\"color:#cccccc\"><b>: 1.75 seconds.</b></span>",
-      "<span style=\"color:#dd7e6b\"><b>Health Recovery Rate</b></span><span style=\"color:#cccccc\"><b>: ~</b></span><span style=\"color:#dd7e6b\"><b>27.5% Health/s.</b></span> <span style=\"color:#cccccc\"><b><i>(</i></b></span><span style=\"color:#a4c2f4\"><b><i>20</i></b></span> <span style=\"color:#ea9999\"><b><i>[30]</i></b></span> <span style=\"color:#dd7e6b\"><b><i>HP/s</i></b></span><span style=\"color:#cccccc\"><b><i>)</i></b></span>",
+      "<span style=\"color:#cccccc\"><b>Guardians in their</b></span> <span style=\"color:#ffd966\"><b>Super Ability</b></span> <span style=\"color:#cccccc\"><b>have a built-in</b></span> <span style=\"color:#a4c2f4\"><b>80% (60% Golden Gun) Damage Resist against</b></span> <span style=\"color:#e06666\"><b>Non-Vehicle</b></span> <span style=\"color:#a4c2f4\"><b>Combatants</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#ea9999\"><b>40%</b></span> <span style=\"color:#cccccc\"><b>Damage Resist against Barricade Contact Damage .</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>PVE Damage Resist in</b></span> <span style=\"color:#ffd966\"><b>Super</b></span> <span style=\"color:#cccccc\"><b>= 1 - (PVP DR% x 0.2)</b></span>",
       "",
-      "<span style=\"color:#7cadff\"><b>Shields</b></span> <span style=\"color:#cccccc\"><b>| Start of</b></span> <span style=\"color:#7cadff\"><b>Shield Recharge</b></span><span style=\"color:#cccccc\"><b>: 5.3s.</b></span>",
-      "<span style=\"color:#7cadff\"><b>Shield Recharge Rate</b></span><span style=\"color:#cccccc\"><b>: ~</b></span><span style=\"color:#7cadff\"><b>30% Shield/s.</b></span> <span style=\"color:#cccccc\"><b><i>(</i></b></span><span style=\"color:#7cadff\"><b><i>39.5 Shields/s</i></b></span><span style=\"color:#cccccc\"><b><i>)</i></b></span>",
-      "<span style=\"color:#cccccc\"><b>Damage dealt to</b></span> <span style=\"color:#d5a6bd\"><b>Overshields</b></span> <span style=\"color:#cccccc\"><b>does not stop</b></span> <span style=\"color:#dd7e6b\"><b>Health Regeneration</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#dd7e6b\"><b>Health Regeneration:</b></span>",
+      "<span style=\"color:#dd7e6b\"><b>Delay</b></span><span style=\"color:#cccccc\"><b>: 1.75 seconds |</b></span> <span style=\"color:#dd7e6b\"><b>Refill Duration</b></span><span style=\"color:#cccccc\"><b>: 3.3 seconds <i><small>(</small></i></b></span><span style=\"color:#a4c2f4\"><b><i><small>21</small></i></b></span> <span style=\"color:#ea9999\"><b><i><small>[30.3]</small></i></b></span> <span style=\"color:#dd7e6b\"><b><i><small>HP/s</small></i></b></span><span style=\"color:#cccccc\"><b><i><small>)</small></i></b></span>",
+      "<span style=\"color:#dd7e6b\"><b>Health Regeneration</b></span> <span style=\"color:#cccccc\"><b>begins after 1.75 seconds of not taking damage,</b></span> <span style=\"color:#dd7e6b\"><b>regenerating</b></span> <span style=\"color:#cccccc\"><b>at a rate of</b></span> <span style=\"color:#dd7e6b\"><b>30.3%HP/s</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#dd7e6b\"><b>Health</b></span> <span style=\"color:#cccccc\"><b>is</b></span> <span style=\"color:#dd7e6b\"><b>fully recovered</b></span> <span style=\"color:#cccccc\"><b>after 5.05 seconds.</b></span>",
       "",
-      "<span style=\"color:#ffd966\"><b>↑Enhanced</b></span> <span style=\"color:#dd7e6b\"><b>Health Stat</b></span> <span style=\"color:#cccccc\"><b>grants up to</b></span> <span style=\"color:#7cadff\"><b>25% faster start of Shield Recharge</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#7cadff\"><b>50% increased Shield Recharge Rate</b></span> <span style=\"color:#cccccc\"><b>at</b></span> <span style=\"color:#dd7e6b\"><b>200 stat</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+      "<span style=\"color:#7cadff\"><b>Shield Regeneration:</b></span>",
+      "<span style=\"color:#7cadff\"><b>Delay</b></span><span style=\"color:#cccccc\"><b>: 5.3 seconds |</b></span> <span style=\"color:#7cadff\"><b>Refill Duration</b></span><span style=\"color:#cccccc\"><b>: 3.3 seconds <i><small>(</small></i></b></span><span style=\"color:#7cadff\"><b><i><small>39.4 Shields/s</small></i></b></span><span style=\"color:#cccccc\"><b><i><small>)</small></i></b></span>",
+      "<span style=\"color:#7cadff\"><b>Shield Regeneration</b></span> <span style=\"color:#cccccc\"><b>begins after 5.3 seconds of not taking damage, regenerating at a rate of</b></span> <span style=\"color:#7cadff\"><b>30.3% Shield%/s</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>Regeneration Delay is reset on the specific segment upon taking &gt;1% damage on that specific segment, except when taking</b></span> <span style=\"color:#dd7e6b\"><b>Health Damage</b></span> <span style=\"color:#cccccc\"><b>as it resets</b></span> <span style=\"color:#6fa8dc\"><b>Shield Delay</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>In practice, this means that</b></span> <span style=\"color:#d5a6bd\"><b>damage to Overshields</b></span> <span style=\"color:#cccccc\"><b>does not restart</b></span> <span style=\"color:#dd7e6b\"><b>Health</b></span><span style=\"color:#cccccc\"><b>/</b></span><span style=\"color:#7cadff\"><b>Shield Regeneration Delay</b></span> <span style=\"color:#cccccc\"><b>if it doesn't bleed-through, while</b></span> <span style=\"color:#7cadff\"><b>damage to Shields</b></span> <span style=\"color:#cccccc\"><b>does not reset</b></span> <span style=\"color:#dd7e6b\"><b>Health Regeneration</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Furthermore, taking less than</b></span> <span style=\"color:#a4c2f4\"><b>0.7</b></span> <span style=\"color:#ea9999\"><b>[1]</b></span> <span style=\"color:#dd7e6b\"><b>Health Damage</b></span><span style=\"color:#cccccc\"><b>, or</b></span> <span style=\"color:#7cadff\"><b>1.3 Shield Damage</b></span> <span style=\"color:#cccccc\"><b>will not reset the Regeneration Delay, nor stop any ongoing Regeneration effects.</b></span>",
+      "",
+      "<span style=\"color:#ffd966\"><b>↑Enhanced</b></span> <span style=\"color:#dd7e6b\"><b>Health Stat</b></span> <span style=\"color:#cccccc\"><b>grants up to</b></span> <span style=\"color:#7cadff\"><b>0.6x Shield Recharge Delay Multiplier</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#7cadff\"><b>0.5x Shield Refill Time Multiplier</b></span> <span style=\"color:#cccccc\"><b>at</b></span> <span style=\"color:#dd7e6b\"><b>200 stat</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Scales</b></span> <span style=\"color:#7cadff\"><b>Shield Regeneration Delay</b></span> <span style=\"color:#cccccc\"><b>to 3.18 seconds, and</b></span> <span style=\"color:#7cadff\"><b>Regeneration Rate</b></span> <span style=\"color:#cccccc\"><b>to</b></span> <span style=\"color:#7cadff\"><b>60.6% Shield%/s <i><small>(</small></i></b></span><span style=\"color:#a4c2f4\"><b><i><small>90.6</small></i></b></span> <span style=\"color:#ea9999\"><b><i><small>[78.78]</small></i></b></span> <span style=\"color:#7cadff\"><b><i><small>Shield/s)</small></i></b></span> <span style=\"color:#cccccc\"><b>at</b></span> <span style=\"color:#dd7e6b\"><b>200 stat</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
     ]
   ],
   [
@@ -1586,7 +1604,7 @@
   [
     [],
     [
-      "<span style=\"color:#dd7e6b\"><b>Health Regen Delay</b></span>"
+      "<span style=\"color:#dd7e6b\"><b>Regen Delay</b></span>"
     ],
     [
       "<span style=\"color:#dd7e6b\"><b>1.75s</b></span>"
@@ -1595,46 +1613,46 @@
   [
     [],
     [
-      "<span style=\"color:#dd7e6b\"><b>Health Regen Time</b></span>"
+      "<span style=\"color:#dd7e6b\"><b>Refill Time</b></span>"
     ],
     [
-      "<span style=\"color:#dd7e6b\"><b>3.2s |</b></span> <span style=\"color:#cccccc\"><b><i><small>(</small></i></b></span><span style=\"color:#a4c2f4\"><b><i><small>21.89</small></i></b></span> <span style=\"color:#ea9999\"><b><i><small>[31.25]</small></i></b></span> <span style=\"color:#dd7e6b\"><b><i><small>HP/s</small></i></b></span><span style=\"color:#cccccc\"><b><i><small>)</small></i></b></span>"
+      "<span style=\"color:#dd7e6b\"><b>3.3s | 30.3%</b></span>"
     ]
   ],
   [
     [],
     [
-      "<span style=\"color:#7cadff\"><b>Shield Amount against Combatants</b></span>"
+      "<span style=\"color:#7cadff\"><b>Total Shield Amount vs Combatants</b></span>"
     ],
     [
       "<span style=\"color:#7cadff\"><b>130</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>133</b></span>"
+      "<span style=\"color:#7cadff\"><b>134</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>136</b></span>"
+      "<span style=\"color:#7cadff\"><b>137.3</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>139</b></span>"
+      "<span style=\"color:#7cadff\"><b>140.1</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>142</b></span>"
+      "<span style=\"color:#7cadff\"><b>142.4</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>145</b></span>"
+      "<span style=\"color:#7cadff\"><b>144.2</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>146</b></span>"
+      "<span style=\"color:#7cadff\"><b>145.8</b></span>"
     ],
     [
       "<span style=\"color:#7cadff\"><b>147</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>148</b></span>"
+      "<span style=\"color:#7cadff\"><b>148.1</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>149</b></span>"
+      "<span style=\"color:#7cadff\"><b>149.1</b></span>"
     ],
     [
       "<span style=\"color:#7cadff\"><b>150</b></span>"
@@ -1643,197 +1661,157 @@
   [
     [],
     [
-      "<span style=\"color:#7cadff\"><b>Shield Regen Delay</b></span>"
+      "<span style=\"color:#7cadff\"><b>Regen Delay</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>4.9</b></span>"
+      "<span style=\"color:#7cadff\"><b>5.3</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>4.88</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>4.53</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>4.25</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>4.01</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>3.81</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>3.65</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>3.51</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>3.39</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>3.29</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>3.675s</b></span>"
+      "<span style=\"color:#7cadff\"><b>3.18</b></span>"
     ]
   ],
   [
     [],
     [
-      "<span style=\"color:#7cadff\"><b>% faster Start</b></span>"
+      "<span style=\"color:#7cadff\"><b>Delay Multiplier</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>1.00x</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>0.92x</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>0.86x</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>0.80x</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>0.76x</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>0.72x</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>0.69x</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>0.66x</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>0.64x</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>0.62x</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>25%</b></span>"
+      "<span style=\"color:#7cadff\"><b>0.60x</b></span>"
     ]
   ],
   [
     [],
     [
-      "<span style=\"color:#7cadff\"><b>Shield Regen</b></span>",
-      "<span style=\"color:#7cadff\"><b>Time | %</b></span>"
+      "<span style=\"color:#7cadff\"><b>Refill Time</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>2.9</b></span>"
+      "<span style=\"color:#7cadff\"><b>3.3</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>2.98</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>2.70</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>2.48</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>2.29</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>2.14</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>2.01</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>1.91</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>1.82</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>1.73</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>1.93s</b></span>"
+      "<span style=\"color:#7cadff\"><b>1.65</b></span>"
     ]
   ],
   [
     [],
     [
-      "<span style=\"color:#7cadff\"><b>% Recharge Rate</b></span>"
+      "<span style=\"color:#7cadff\"><b>Refill Time Multiplier</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>1.00x</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>0.90x</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>0.82x</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>0.75x</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>0.69x</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>0.65x</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>0.61x</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>0.58x</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>0.55x</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>0.53x</b></span>"
     ],
     [
-      "<span style=\"color:#7cadff\"><b>50%</b></span>"
-    ]
-  ],
-  [
-    [],
-    [
-      "<span style=\"color:#dd7e6b\"><b>Health+</b></span><span style=\"color:#a4c2f4\"><b>Shield</b></span> <span style=\"color:#dd7e6b\"><b>Regen Time</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>5.15</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
+      "<span style=\"color:#7cadff\"><b>0.50x</b></span>"
     ]
   ],
   [
@@ -1842,37 +1820,37 @@
       "<span style=\"color:#dd7e6b\"><b>Total Regen Time</b></span>"
     ],
     [
-      "<span style=\"color:#cccccc\"><b>7.8</b></span>"
+      "<span style=\"color:#cccccc\"><b>9</b></span>"
     ],
     [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
+      "<span style=\"color:#cccccc\"><b>7.86</b></span>"
     ],
     [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
+      "<span style=\"color:#cccccc\"><b>7.23</b></span>"
     ],
     [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
+      "<span style=\"color:#cccccc\"><b>6.72</b></span>"
     ],
     [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
+      "<span style=\"color:#cccccc\"><b>6.30</b></span>"
     ],
     [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
+      "<span style=\"color:#cccccc\"><b>5.94</b></span>"
     ],
     [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
+      "<span style=\"color:#cccccc\"><b>5.66</b></span>"
     ],
     [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
+      "<span style=\"color:#cccccc\"><b>5.42</b></span>"
     ],
     [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
+      "<span style=\"color:#cccccc\"><b>5.21</b></span>"
     ],
     [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
+      "<span style=\"color:#cccccc\"><b>5.02</b></span>"
     ],
     [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
+      "<span style=\"color:#cccccc\"><b>4.83</b></span>"
     ]
   ],
   [
@@ -1896,242 +1874,8 @@
       "<span style=\"color:#cccccc\"><b>Additionally grants 0.1% Flinch Resist while ADS per point, up to 10% Flinch Resist at 100 points.</b></span>",
       "",
       "<span style=\"color:#ffd966\"><b>↑ENHANCED BENEFIT</b></span>",
-      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#7cadff\"><b>faster Shield Regeneration</b></span> <span style=\"color:#cccccc\"><b>and increased</b></span> <span style=\"color:#7cadff\"><b>Shield HP</b></span> <span style=\"color:#cccccc\"><b>against</b></span> <span style=\"color:#a4c2f4\"><b>Combatants</b></span> <span style=\"color:#cccccc\"><b>per point above 100.</b></span>",
-      "<span style=\"color:#cccccc\"><b>Provides up to</b></span> <span style=\"color:#7cadff\"><b>25% faster start of Shield Recharge</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#7cadff\"><b>50% increased Shield Recharge Rate</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#7cadff\"><b>+20 Shield HP</b></span> <span style=\"color:#cccccc\"><b>against</b></span> <span style=\"color:#a4c2f4\"><b>Combatants</b></span> <span style=\"color:#cccccc\"><b>at 200 points.</b></span>"
-    ]
-  ],
-  [
-    [],
-    [
-      "<span style=\"color:#dd7e6b\"><b>Health Stat</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>0</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>10</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>20</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>30</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>40</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>50</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>60</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>70</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>80</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>90</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>100</b></span>"
-    ]
-  ],
-  [
-    [],
-    [
-      "<span style=\"color:#dd7e6b\"><b>HP per Orb</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>0</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>7</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>14</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>21</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>28</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>35</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>42</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>49</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>56</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>63</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>70</b></span>"
-    ]
-  ],
-  [
-    [],
-    [
-      "<span style=\"color:#dd7e6b\"><b>Flinch Resist</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>0</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>1%</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>2%</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>3%</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>4%</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>5%</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>6%</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>7%</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>8%</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>9%</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>10%</b></span>"
-    ]
-  ],
-  [
-    [],
-    [
-      "<span style=\"color:#ffd966\"><b>Enhanced Stat</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>100</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>110</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>120</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>130</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>140</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>150</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>160</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>170</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>180</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>190</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>200</b></span>"
-    ]
-  ],
-  [
-    [],
-    [
-      "<span style=\"color:#7cadff\"><b>Shield Recharge Rate</b></span>"
-    ],
-    [
-      "<span style=\"color:#7cadff\"><b>0.00%</b></span>"
-    ],
-    [
-      "<span style=\"color:#7cadff\"><b>-%</b></span>"
-    ],
-    [
-      "<span style=\"color:#7cadff\"><b>-%</b></span>"
-    ],
-    [
-      "<span style=\"color:#7cadff\"><b>-%</b></span>"
-    ],
-    [
-      "<span style=\"color:#7cadff\"><b>-%</b></span>"
-    ],
-    [
-      "<span style=\"color:#7cadff\"><b>-%</b></span>"
-    ],
-    [
-      "<span style=\"color:#7cadff\"><b>-%</b></span>"
-    ],
-    [
-      "<span style=\"color:#7cadff\"><b>-%</b></span>"
-    ],
-    [
-      "<span style=\"color:#7cadff\"><b>-%</b></span>"
-    ],
-    [
-      "<span style=\"color:#7cadff\"><b>-%</b></span>"
-    ],
-    [
-      "<span style=\"color:#7cadff\"><b>-%</b></span>"
-    ]
-  ],
-  [
-    [],
-    [
-      "<span style=\"color:#7cadff\"><b>Shield HP</b></span>"
-    ],
-    [
-      "<span style=\"color:#7cadff\"><b>130</b></span>"
-    ],
-    [
-      "<span style=\"color:#7cadff\"><b>133</b></span>"
-    ],
-    [
-      "<span style=\"color:#7cadff\"><b>136</b></span>"
-    ],
-    [
-      "<span style=\"color:#7cadff\"><b>139</b></span>"
-    ],
-    [
-      "<span style=\"color:#7cadff\"><b>142</b></span>"
-    ],
-    [
-      "<span style=\"color:#7cadff\"><b>145</b></span>"
-    ],
-    [
-      "<span style=\"color:#7cadff\"><b>146</b></span>"
-    ],
-    [
-      "<span style=\"color:#7cadff\"><b>147</b></span>"
-    ],
-    [
-      "<span style=\"color:#7cadff\"><b>148</b></span>"
-    ],
-    [
-      "<span style=\"color:#7cadff\"><b>149</b></span>"
-    ],
-    [
-      "<span style=\"color:#7cadff\"><b>150</b></span>"
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#7cadff\"><b>quicker Shield Regeneration</b></span> <span style=\"color:#cccccc\"><b>and increased</b></span> <span style=\"color:#7cadff\"><b>Shield HP</b></span> <span style=\"color:#cccccc\"><b>against</b></span> <span style=\"color:#a4c2f4\"><b>Combatants</b></span> <span style=\"color:#cccccc\"><b>per point above 100.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Provides up to</b></span> <span style=\"color:#7cadff\"><b>0.6x Shield Recharge Delay Multiplier</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#7cadff\"><b>0.5x Shield Refill Time Multiplier</b></span><span style=\"color:#cccccc\"><b>, and</b></span> <span style=\"color:#7cadff\"><b>+20 Shield HP</b></span> <span style=\"color:#cccccc\"><b>against</b></span> <span style=\"color:#a4c2f4\"><b>Combatants</b></span> <span style=\"color:#cccccc\"><b>at 200 points.</b></span>"
     ]
   ],
   [
@@ -2143,189 +1887,12 @@
     [],
     [
       "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#89cdd1\"><b>?% Additional Base Melee Ability Regeneration Rate</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#89cdd1\"><b>?% Increased Melee Ability Gains</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
-      "<span style=\"color:#cccccc\"><b>Stat provides up to</b></span> <span style=\"color:#89cdd1\"><b>?% Additional Base Melee Ability Regeneration Rate</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#89cdd1\"><b>?% Increased Melee Ability Gains</b></span> <span style=\"color:#cccccc\"><b>at 100 points.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Stat provides up to</b></span> <span style=\"color:#89cdd1\"><b>?% Additional Base Melee Ability Regeneration Rate</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#89cdd1\"><b>225% Increased Melee Ability Gains (0.4x -&gt; 0.9x)</b></span> <span style=\"color:#cccccc\"><b>at 100 points.</b></span>",
       "",
       "<span style=\"color:#ffd966\"><b>↑ENHANCED BENEFIT</b></span>",
       "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#a4c2f4\"><b>0.3%</b></span> <span style=\"color:#ea9999\"><b>[0.2%]</b></span> <span style=\"color:#89cdd1\"><b>more Melee Damage</b></span> <span style=\"color:#cccccc\"><b>per point above 100.</b></span>",
       "<span style=\"color:#cccccc\"><b>Provides up to</b></span> <span style=\"color:#a4c2f4\"><b>1.3x</b></span> <span style=\"color:#ea9999\"><b>[20%]</b></span> <span style=\"color:#89cdd1\"><b>Melee Damage</b></span> <span style=\"color:#cccccc\"><b>at 200 points.</b></span>",
       "<span style=\"color:#cccccc\"><i>Works with</i></span> <span style=\"color:#d0e0e3\"><i>Unpowered</i></span><span style=\"color:#cccccc\"><i>,</i></span> <span style=\"color:#89cdd1\"><i>Powered</i></span><span style=\"color:#cccccc\"><i>, and</i></span> <span style=\"color:#93c47d\"><i>Glaive Melee</i></span> <span style=\"color:#cccccc\"><i>Damage. Damage increase is</i> <b><i>multiplicative</i></b><i>.</i></span>"
-    ]
-  ],
-  [
-    [],
-    [
-      "<span style=\"color:#89cdd1\"><b>Melee Stat</b></span>"
-    ],
-    [
-      "<span style=\"color:#89cdd1\"><b>0</b></span>"
-    ],
-    [
-      "<span style=\"color:#89cdd1\"><b>10</b></span>"
-    ],
-    [
-      "<span style=\"color:#89cdd1\"><b>20</b></span>"
-    ],
-    [
-      "<span style=\"color:#89cdd1\"><b>30</b></span>"
-    ],
-    [
-      "<span style=\"color:#89cdd1\"><b>40</b></span>"
-    ],
-    [
-      "<span style=\"color:#89cdd1\"><b>50</b></span>"
-    ],
-    [
-      "<span style=\"color:#89cdd1\"><b>60</b></span>"
-    ],
-    [
-      "<span style=\"color:#89cdd1\"><b>70</b></span>"
-    ],
-    [
-      "<span style=\"color:#89cdd1\"><b>80</b></span>"
-    ],
-    [
-      "<span style=\"color:#89cdd1\"><b>90</b></span>"
-    ],
-    [
-      "<span style=\"color:#89cdd1\"><b>100</b></span>"
-    ]
-  ],
-  [
-    [],
-    [
-      "<span style=\"color:#89cdd1\"><b>Stat Scalars</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ]
-  ],
-  [
-    [],
-    [
-      "<span style=\"color:#89cdd1\"><b>Base Regen Units</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ]
-  ],
-  [
-    [],
-    [
-      "<span style=\"color:#ffd966\"><b>Enhanced Stat</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>100</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>110</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>120</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>130</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>140</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>150</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>160</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>170</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>180</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>190</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>200</b></span>"
-    ]
-  ],
-  [
-    [],
-    [
-      "<span style=\"color:#89cdd1\"><b>Melee Damage</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>0%</b></span>"
-    ],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [
-      "<span style=\"color:#cccccc\"><b>30%</b></span>"
     ]
   ],
   [
@@ -2337,188 +1904,11 @@
     [],
     [
       "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#e0a261\"><b>Additional Base Grenade Ability Regeneration Rate</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#e0a261\"><b>Increased Grenade Ability Gains</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
-      "<span style=\"color:#cccccc\"><b>Stat provides up to</b></span> <span style=\"color:#e0a261\"><b>?% Additional Base Grenade Ability Regeneration Rate</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#e0a261\"><b>211.5%% Increased Grenade Ability Gains</b></span> <span style=\"color:#cccccc\"><b>at 100 points.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Stat provides up to</b></span> <span style=\"color:#e0a261\"><b>?% Additional Base Grenade Ability Regeneration Rate</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#e0a261\"><b>225%% Increased Grenade Ability Gains (0.4x -&gt; 0.9x)</b></span> <span style=\"color:#cccccc\"><b>at 100 points.</b></span>",
       "",
       "<span style=\"color:#ffd966\"><b>↑ENHANCED BENEFIT</b></span>",
       "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#a4c2f4\"><b>0.65%</b></span> <span style=\"color:#ea9999\"><b>[0.2%]</b></span> <span style=\"color:#e0a261\"><b>increased Grenade Ability Damage</b></span> <span style=\"color:#cccccc\"><b>per point above 100.</b></span>",
       "<span style=\"color:#cccccc\"><b>Provides up to</b></span> <span style=\"color:#a4c2f4\"><b>65%</b></span> <span style=\"color:#ea9999\"><b>[20%]</b></span> <span style=\"color:#f6b26b\"><b>increased Grenade Ability Damage</b></span> <span style=\"color:#cccccc\"><b>at 200 points.</b></span>"
-    ]
-  ],
-  [
-    [],
-    [
-      "<span style=\"color:#e0a261\"><b>Grenade Stat</b></span>"
-    ],
-    [
-      "<span style=\"color:#e0a261\"><b>0</b></span>"
-    ],
-    [
-      "<span style=\"color:#e0a261\"><b>10</b></span>"
-    ],
-    [
-      "<span style=\"color:#e0a261\"><b>20</b></span>"
-    ],
-    [
-      "<span style=\"color:#e0a261\"><b>30</b></span>"
-    ],
-    [
-      "<span style=\"color:#e0a261\"><b>40</b></span>"
-    ],
-    [
-      "<span style=\"color:#e0a261\"><b>50</b></span>"
-    ],
-    [
-      "<span style=\"color:#e0a261\"><b>60</b></span>"
-    ],
-    [
-      "<span style=\"color:#e0a261\"><b>70</b></span>"
-    ],
-    [
-      "<span style=\"color:#e0a261\"><b>80</b></span>"
-    ],
-    [
-      "<span style=\"color:#e0a261\"><b>90</b></span>"
-    ],
-    [
-      "<span style=\"color:#e0a261\"><b>100</b></span>"
-    ]
-  ],
-  [
-    [],
-    [
-      "<span style=\"color:#e0a261\"><b>Stat Scalars</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ]
-  ],
-  [
-    [],
-    [
-      "<span style=\"color:#e0a261\"><b>Base Regen Units</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ]
-  ],
-  [
-    [],
-    [
-      "<span style=\"color:#ffd966\"><b>Enhanced Stat</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>100</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>110</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>120</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>130</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>140</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>150</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>160</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>170</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>180</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>190</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>200</b></span>"
-    ]
-  ],
-  [
-    [],
-    [
-      "<span style=\"color:#e0a261\"><b>Grenade Damage</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>0%</b></span>"
-    ],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [
-      "<span style=\"color:#cccccc\"><b>65%</b></span>"
     ]
   ],
   [
@@ -2529,8 +1919,8 @@
     ],
     [],
     [
-      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#ffd966\"><b>Increased Super Ability Gains</b></span> <span style=\"color:#cccccc\"><b>per point.</b></span>",
-      "<span style=\"color:#cccccc\"><b>Provides up to</b></span> <span style=\"color:#ffd966\"><b>?% Increased Super Ability Chunk Gains</b></span> <span style=\"color:#cccccc\"><b>at 100 points.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#ffd966\"><b>Increased Super Ability Chunk Gains</b></span><span style=\"color:#cccccc\"><b>.</b></span> <span style=\"color:#e06666\"><i>Passive Gains are unaffected</i></span><span style=\"color:#cccccc\"><i>.</i></span>",
+      "<span style=\"color:#cccccc\"><b>Provides up to</b></span> <span style=\"color:#a4c2f4\"><b>90%</b></span> <span style=\"color:#ea9999\"><b>[115%]</b></span> <span style=\"color:#ffd966\"><b>Increased Super Ability Chunk Gains</b></span> <span style=\"color:#cccccc\"><b>at 100 points.</b></span>",
       "",
       "<span style=\"color:#ffd966\"><b>↑ENHANCED BENEFIT</b></span>",
       "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#ffd966\"><b>0.45% increased Super Ability Damage</b></span> <span style=\"color:#cccccc\"><b>per point above 100.</b></span>",
@@ -2550,188 +1940,11 @@
       "<span style=\"color:#cccccc\"><b>Stat provides up to</b></span> <span style=\"color:#b4a7d6\"><b>?% Additional Base Class Ability Regeneration Rate</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#b4a7d6\"><b>90% Increased Class Ability Gains</b></span> <span style=\"color:#cccccc\"><b>at 100 points.</b></span>",
       "",
       "<span style=\"color:#ffd966\"><b>↑ENHANCED BENEFIT</b></span>",
-      "<span style=\"color:#b4a7d6\"><b>Class Ability Usage</b></span> <span style=\"color:#cccccc\"><b>grants a</b></span> <span style=\"color:#7cadff\"><b>Overshield</b></span> <span style=\"color:#cccccc\"><b>for (Thruster/Dodge = 5 | Rift/Barricades = 10) seconds.</b></span>",
+      "<span style=\"color:#b4a7d6\"><b>Class Ability Usage</b></span> <span style=\"color:#cccccc\"><b>grants a</b></span> <span style=\"color:#7cadff\"><b>Overshield</b></span> <span style=\"color:#cccccc\"><b>for (Thruster/Dodge/Air Move = 5 | Rift/Barricades = 10) seconds.</b></span>",
       "<span style=\"color:#7cadff\"><b>Overshield Health</b></span> <span style=\"color:#cccccc\"><b>scales at a rate of</b></span> <span style=\"color:#a4c2f4\"><b>0.4</b></span> <span style=\"color:#ea9999\"><b>[0.1]</b></span> <span style=\"color:#7cadff\"><b>HP</b></span> <span style=\"color:#cccccc\"><b>per point, up to a maximum of</b></span> <span style=\"color:#a4c2f4\"><b>40</b></span> <span style=\"color:#ea9999\"><b>[10]</b></span> <span style=\"color:#7cadff\"><b>HP Overshield</b></span> <span style=\"color:#cccccc\"><b>at 200 points.</b></span>",
-      "<span style=\"color:#ea9999\"><b>Damage dealt to the Overshield by Guardians is reduced by 50%, increasing its maximum eHP in PvP to 20.</b></span>",
+      "<span style=\"color:#7cadff\"><b>Overshield</b></span> <span style=\"color:#cccccc\"><b>has</b></span> <span style=\"color:#a4c2f4\"><b>25%</b></span> <span style=\"color:#ea9999\"><b>[50%]</b></span> <span style=\"color:#cccccc\"><b>Damage Resist.</b></span> <span style=\"color:#ea9999\"><i>Up to</i> <b><i>20eHP</i></b> <i>in PVP.</i></span>",
       "",
-      "<span style=\"color:#b4a7d6\"><b>Class Abilities</b></span> <span style=\"color:#cccccc\"><b>that deal damage scale up by</b></span> <span style=\"color:#a4c2f4\"><b>0.65%</b></span> <span style=\"color:#ea9999\"><b>[0.1?%]</b></span> <span style=\"color:#cccccc\"><b>increased damage per point, up to</b></span> <span style=\"color:#a4c2f4\"><b>65%</b></span> <span style=\"color:#ea9999\"><b>[10%]</b></span> <span style=\"color:#cccccc\"><b>increased damage at 200 points.</b></span>"
-    ]
-  ],
-  [
-    [],
-    [
-      "<span style=\"color:#b4a7d6\"><b>Class Stat</b></span>"
-    ],
-    [
-      "<span style=\"color:#b4a7d6\"><b>0</b></span>"
-    ],
-    [
-      "<span style=\"color:#b4a7d6\"><b>10</b></span>"
-    ],
-    [
-      "<span style=\"color:#b4a7d6\"><b>20</b></span>"
-    ],
-    [
-      "<span style=\"color:#b4a7d6\"><b>30</b></span>"
-    ],
-    [
-      "<span style=\"color:#b4a7d6\"><b>40</b></span>"
-    ],
-    [
-      "<span style=\"color:#b4a7d6\"><b>50</b></span>"
-    ],
-    [
-      "<span style=\"color:#b4a7d6\"><b>60</b></span>"
-    ],
-    [
-      "<span style=\"color:#b4a7d6\"><b>70</b></span>"
-    ],
-    [
-      "<span style=\"color:#b4a7d6\"><b>80</b></span>"
-    ],
-    [
-      "<span style=\"color:#b4a7d6\"><b>90</b></span>"
-    ],
-    [
-      "<span style=\"color:#b4a7d6\"><b>100</b></span>"
-    ]
-  ],
-  [
-    [],
-    [
-      "<span style=\"color:#b4a7d6\"><b>Stat Scalars</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-x</b></span>"
-    ]
-  ],
-  [
-    [],
-    [
-      "<span style=\"color:#b4a7d6\"><b>Base Regen Units</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>-</b></span>"
-    ]
-  ],
-  [
-    [],
-    [
-      "<span style=\"color:#ffd966\"><b>Enhanced Stat</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>100</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>110</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>120</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>130</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>140</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>150</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>160</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>170</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>180</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>190</b></span>"
-    ],
-    [
-      "<span style=\"color:#ffd966\"><b>200</b></span>"
-    ]
-  ],
-  [
-    [],
-    [
-      "<span style=\"color:#b4a7d6\"><b>Class Damage</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>0%</b></span>"
-    ],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [
-      "<span style=\"color:#cccccc\"><b>65%</b></span>"
+      "<span style=\"color:#b4a7d6\"><b>Class Abilities</b></span> <span style=\"color:#cccccc\"><b>that deal damage scale up by</b></span> <span style=\"color:#a4c2f4\"><b>0.65%</b></span> <span style=\"color:#ea9999\"><b>[0.1%]</b></span> <span style=\"color:#cccccc\"><b>increased damage per point, up to</b></span> <span style=\"color:#a4c2f4\"><b>65%</b></span> <span style=\"color:#ea9999\"><b>[10%]</b></span> <span style=\"color:#cccccc\"><b>increased damage at 200 points.</b></span>"
     ]
   ],
   [
@@ -2773,269 +1986,19 @@
     [],
     [],
     [
-      "<span style=\"color:#f9cb9c\"><b>Barrier Champions</b></span> <span style=\"color:#cccccc\">summon an</span> <span style=\"color:#f9cb9c\"><b>impenetrable Shield</b></span> <span style=\"color:#cccccc\">once their</span> <span style=\"color:#dd7e6b\"><b>Health</b></span> <span style=\"color:#cccccc\">is lowered past a <b>difficulty-determined</b></span> <span style=\"color:#dd7e6b\"><b>HP Threshold</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
-      "<span style=\"color:#f9cb9c\"><b>Barrier Champions</b></span> <span style=\"color:#dd7e6b\"><b>constantly regenerate a portion of their Health</b></span> <span style=\"color:#cccccc\">while</span> <span style=\"color:#f9cb9c\"><b>shielded</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#f9cb9c\"><b>Barrier Champions</b></span> <span style=\"color:#cccccc\"><b>summon an</b></span> <span style=\"color:#f9cb9c\"><b>impenetrable Shield</b></span> <span style=\"color:#cccccc\"><b>for 5 seconds once their</b></span> <span style=\"color:#dd7e6b\"><b>Health</b></span> <span style=\"color:#cccccc\"><b>is lowered past a difficulty-determined</b></span> <span style=\"color:#dd7e6b\"><b>HP Threshold</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#f9cb9c\"><b>Barrier Champions</b></span> <span style=\"color:#dd7e6b\"><b>constantly regenerate a portion of their Health</b></span> <span style=\"color:#cccccc\"><b>after 0.8 seconds of</b></span> <span style=\"color:#f9cb9c\"><b>shielding</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "",
-      "<span style=\"color:#cccccc\">The</span> <span style=\"color:#f9cb9c\"><b>Shield</b></span> <span style=\"color:#cccccc\">can be</span> <span style=\"color:#f9cb9c\"><b>damaged and broken</b></span> <span style=\"color:#cccccc\">through the usage of</span> <span style=\"color:#f9cb9c\"><b>Anti-Barrier Effects</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#a4c2f4\"><b>stunning</b></span> <span style=\"color:#cccccc\">the</span> <span style=\"color:#f9cb9c\"><b>Champion</b></span> <span style=\"color:#cccccc\">for a <b>brief time.</b></span>",
+      "<span style=\"color:#cccccc\"><b>The</b></span> <span style=\"color:#f9cb9c\"><b>Shield</b></span> <span style=\"color:#cccccc\"><b>can be</b></span> <span style=\"color:#f9cb9c\"><b>damaged</b></span> <span style=\"color:#cccccc\"><b>through the usage of</b></span> <span style=\"color:#f9cb9c\"><b>Anti-Barrier Effects</b></span><span style=\"color:#cccccc\"><b>, halting</b></span> <span style=\"color:#dd7e6b\"><b>Health Regeneration</b></span> <span style=\"color:#cccccc\"><b>for 1.6 seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Breaking the Barrier Shield</b></span> <span style=\"color:#a4c2f4\"><b>stuns</b></span> <span style=\"color:#cccccc\"><b>the</b></span> <span style=\"color:#f9cb9c\"><b>Champion</b></span> <span style=\"color:#cccccc\"><b>for a brief time.</b></span>",
       "<span style=\"color:#cccccc\"><i>The</i></span> <span style=\"color:#f9cb9c\"><i>Shield's</i></span> <span style=\"color:#dd7e6b\"><i>Durability</i></span> <span style=\"color:#cccccc\"><i>is determined by difficulty.</i></span>",
       "",
-      "<span style=\"color:#a4c2f4\"><b>Stunning</b></span> <span style=\"color:#cccccc\"><b>prevents</b> the</span> <span style=\"color:#f9cb9c\"><b>Champion</b></span> <span style=\"color:#cccccc\">from <b>attacking, moving, or using any abilities.</b></span>",
-      "<span style=\"color:#cccccc\"><i>Dealing damage to the</i></span> <span style=\"color:#f9cb9c\"><i>Shield</i></span> <span style=\"color:#cccccc\"><i>briefly stops</i></span> <span style=\"color:#dd7e6b\"><i>Health Regeneration</i></span><span style=\"color:#cccccc\"><i>.</i></span>",
+      "<span style=\"color:#a4c2f4\"><b>Stunning</b></span> <span style=\"color:#cccccc\"><b>prevents the</b></span> <span style=\"color:#f9cb9c\"><b>Champion</b></span> <span style=\"color:#cccccc\"><b>from attacking, moving, or using any abilities.</b></span>",
+      "<span style=\"color:#cccccc\"><b><i>Dealing damage to the</i></b></span> <span style=\"color:#f9cb9c\"><b><i>Shield</i></b></span> <span style=\"color:#cccccc\"><b><i>briefly stops</i></b></span> <span style=\"color:#dd7e6b\"><b><i>Health Regeneration</i></b></span><span style=\"color:#cccccc\"><b><i>.</i></b></span>",
       "",
       "<span style=\"color:#f9cb9c\"><b><i>Additional Shield-Piercing Effects:</i></b></span>",
       "<span style=\"color:#a4c2f4\"><b>Ignores Shielded-Affixed Bane Combatant Shields, Hydra Shields, Hobgoblin Immunity, (Taken) Phalanx Shields, Taken Vandal Shields, and Scorn Buckler Shields.</b></span>",
       "<span style=\"color:#ea9999\"><b>Weapons deal 30% increased damage towards Titan Barricades.</b></span>"
-    ]
-  ],
-  [
-    [],
-    [],
-    [
-      "<span style=\"color:#f6b26b\"><b>Information</b></span>"
-    ],
-    [],
-    [],
-    [
-      "<span style=\"color:#4c1130\"><b>Standard</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>Raid</b></span>",
-      "<span style=\"color:#4c1130\"><b>(Expert/Master)</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>Advanced</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>Expert</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>Master</b></span>",
-      "<span style=\"color:#4c1130\"><b>Grandmaster</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>Activity Difficulty governs the difficulty of the</b></span> <span style=\"color:#f9cb9c\"><b>Champion Mechanics</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
-    ]
-  ],
-  [
-    [],
-    [],
-    [
-      "<span style=\"color:#cd955b\"><b>Champion Health</b></span>"
-    ],
-    [],
-    [],
-    [
-      "<span style=\"color:#4c1130\"><b>2200 HP</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>3300 HP</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>4400 HP</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>5000 HP</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>5475 HP</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>Champion Health</b></span> <span style=\"color:#cccccc\"><b>is shared between all Races and Champion Types.</b></span>",
-      "<span style=\"color:#e06666\"><b>Master Difficulty</b></span> <span style=\"color:#dd7e6b\"><b>Champion Health</b></span> <span style=\"color:#cccccc\"><b>is reduced to</b></span> <span style=\"color:#f9cb9c\"><b>Expert-Tier</b></span> <span style=\"color:#dd7e6b\"><b>Health</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
-    ]
-  ],
-  [
-    [],
-    [],
-    [
-      "<span style=\"color:#cd955b\"><b>Shield Health</b></span>"
-    ],
-    [],
-    [],
-    [
-      "<span style=\"color:#4c1130\"><b>210</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>~333</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>~333 HP</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>~410 HP</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>~445 HP</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>Shield Health</b></span> <span style=\"color:#cccccc\"><b>is equal to ~10% of the</b></span> <span style=\"color:#f9cb9c\"><b>Champion's</b></span> <span style=\"color:#dd7e6b\"><b>Health</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
-    ]
-  ],
-  [
-    [],
-    [],
-    [
-      "<span style=\"color:#cd955b\"><b>Shield Summon Threshold</b></span>"
-    ],
-    [],
-    [],
-    [
-      "<span style=\"color:#4c1130\"><b>60%</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>60%</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>60%</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>75%</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>85%</b></span>"
-    ],
-    [
-      "<span style=\"color:#f9cb9c\"><b>Champion</b></span> <span style=\"color:#cccccc\"><b>automatically attempts to summon the</b></span> <span style=\"color:#f9cb9c\"><b>Shield</b></span> <span style=\"color:#cccccc\"><b>upon reaching the</b></span> <span style=\"color:#dd7e6b\"><b>Health Threshold</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
-      "<span style=\"color:#cccccc\"><b>Staggers can delay</b></span> <span style=\"color:#f9cb9c\"><b>Shield Summoning</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
-    ]
-  ],
-  [
-    [],
-    [],
-    [
-      "<span style=\"color:#cd955b\"><b>Health Regeneration while Shielded</b></span>"
-    ],
-    [],
-    [],
-    [
-      "<span style=\"color:#4c1130\"><b>15% HP/s</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>15% HP/s</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>15% HP/s</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>30% HP/s</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>45% HP/s</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>Health</b></span> <span style=\"color:#cccccc\"><b>is</b></span> <span style=\"color:#dd7e6b\"><b>continuously restored</b></span> <span style=\"color:#cccccc\"><b>at a rate of</b></span> <span style=\"color:#dd7e6b\"><b>1% HP</b></span> <span style=\"color:#cccccc\"><b>every</b></span> <span style=\"color:#b6d7a8\"><b>0.066</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>0.066</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#d5a6bd\"><b>0.066</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#f9cb9c\"><b>0.033</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#cd6c59\"><b>0.022</b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>"
-    ]
-  ],
-  [
-    [],
-    [],
-    [
-      "<span style=\"color:#cd955b\"><b>Time to Regen Health upon Shielding</b></span>"
-    ],
-    [],
-    [],
-    [
-      "<span style=\"color:#f6b26b\"><b>0.8 seconds.</b></span>"
-    ],
-    [],
-    [],
-    [],
-    [],
-    [
-      "<span style=\"color:#cccccc\"><b>There is a 0.8 seconds delay upon shielding before</b></span> <span style=\"color:#dd7e6b\"><b>Health Regeneration</b></span> <span style=\"color:#cccccc\"><b>occurs.</b></span>",
-      "<span style=\"color:#cccccc\"><b><i>Difficulty does not alter the timer.</i></b></span>"
-    ]
-  ],
-  [
-    [],
-    [],
-    [
-      "<span style=\"color:#cd955b\"><b>Maximum Shield Duration</b></span>"
-    ],
-    [],
-    [],
-    [
-      "<span style=\"color:#f6b26b\"><b>5</b></span>"
-    ],
-    [],
-    [],
-    [],
-    [],
-    [
-      "<span style=\"color:#cccccc\"><b>The</b></span> <span style=\"color:#f9cb9c\"><b>Shield</b></span> <span style=\"color:#cccccc\"><b>lasts for 5 seconds.</b></span>"
-    ]
-  ],
-  [
-    [],
-    [],
-    [
-      "<span style=\"color:#cd955b\"><b>Health Regeneration Delay upon receiving Shield-Piercing Damage</b></span>"
-    ],
-    [],
-    [],
-    [
-      "<span style=\"color:#f6b26b\"><b>1.6 seconds.</b></span>"
-    ],
-    [],
-    [],
-    [],
-    [],
-    [
-      "<span style=\"color:#cccccc\"><b>Dealing any</b></span> <span style=\"color:#f9cb9c\"><b>Shield-Piercing Damage</b></span> <span style=\"color:#cccccc\"><b>immediately halts</b></span> <span style=\"color:#dd7e6b\"><b>Health Regeneration</b></span><span style=\"color:#cccccc\"><b>, and delays it by 1.6 seconds.</b></span>"
-    ]
-  ],
-  [
-    [],
-    [],
-    [
-      "<span style=\"color:#cd955b\"><b>Stun Duration in Seconds after Shield Break</b></span>"
-    ],
-    [],
-    [],
-    [
-      "<span style=\"color:#4c1130\"><b>[?]</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>7</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>7</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>6</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>5.5</b></span>"
-    ],
-    [
-      "<span style=\"color:#f9cb9c\"><b>Champion</b></span> <span style=\"color:#cccccc\"><b>is stunned for</b></span> <span style=\"color:#b6d7a8\"><b>X</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>7</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#d5a6bd\"><b>7</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#f9cb9c\"><b>6</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#cd6c59\"><b>5.5</b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>"
-    ]
-  ],
-  [
-    [],
-    [],
-    [
-      "<span style=\"color:#cd955b\"><b>Shield Lockout after Shield Break</b></span>"
-    ],
-    [],
-    [],
-    [
-      "<span style=\"color:#4c1130\"><b>[?]</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>7</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>7</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>6</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>5.5</b></span>"
-    ],
-    [
-      "<span style=\"color:#f9cb9c\"><b>Champion</b></span> <span style=\"color:#cccccc\"><b>is unable to summon the</b></span> <span style=\"color:#f9cb9c\"><b>Shield</b></span> <span style=\"color:#cccccc\"><b>for a short period of time after being</b></span> <span style=\"color:#a4c2f4\"><b>stunned</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
     ]
   ],
   [
@@ -3049,175 +2012,17 @@
     [],
     [],
     [
-      "<span style=\"color:#b4a7d6\"><b>Overload Champions</b></span> <span style=\"color:#dd7e6b\"><b>passively restore their Health over time</b></span><span style=\"color:#cccccc\">, <b>use abilities and weapons more frequently</b>, and <b>move erratically</b> unless</span> <span style=\"color:#a4c2f4\"><b>stunned</b></span> <span style=\"color:#cccccc\"><b>through</b></span> <span style=\"color:#b4a7d6\"><b>Disruption</b></span><span style=\"color:#cccccc\">.</span>",
-      "<span style=\"color:#a4c2f4\"><b>Stunning</b></span> <span style=\"color:#cccccc\">prevents the</span> <span style=\"color:#b4a7d6\"><b>Champion</b></span> <span style=\"color:#cccccc\">from <b>attacking, moving, or using any abilities.</b></span>",
+      "<span style=\"color:#b4a7d6\"><b>Overload Champions</b></span> <span style=\"color:#dd7e6b\"><b>passively restore up to 4.5% Health over time</b></span><span style=\"color:#cccccc\"><b>, use abilities and weapons more frequently, and move erratically unless</b></span> <span style=\"color:#a4c2f4\"><b>stunned</b></span> <span style=\"color:#cccccc\"><b>through</b></span> <span style=\"color:#b4a7d6\"><b>Disruption</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Stunning</b></span> <span style=\"color:#cccccc\"><b>prevents the</b></span> <span style=\"color:#b4a7d6\"><b>Champion</b></span> <span style=\"color:#cccccc\"><b>from attacking, moving, or using any abilities, and their</b></span> <span style=\"color:#dd7e6b\"><b>Health Regeneration</b></span> <span style=\"color:#cccccc\"><b>is stopped for 6.5 seconds.</b></span>",
       "",
-      "<span style=\"color:#a4c2f4\"><b>Disrupted Combatants are bugged and no longer deal 25% less damage for 5 seconds.</b></span>",
-      "<span style=\"color:#dd7e6b\"><b>Disrupting Guardians lowers their Ability Regeneration Rate by 0.4x.</b></span>",
+      "<span style=\"color:#b4a7d6\"><b>Additional Disruption Effects:</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Disrupted Combatants seemingly have no effect since Monument of Triumph.</b></span>",
+      "<span style=\"color:#dd7e6b\"><b>Disrupting Guardians have 0.8x Grenade, Melee, Class, and Super Ability Regeneration Rate for 5 seconds.</b></span>",
       "",
-      "<span style=\"color:#b4a7d6\"><b><i>Overload Champion Stunning Application</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
-      "<span style=\"color:#89cdd1\"><b>Arc</b></span> <span style=\"color:#76a5af\"><b>Jolt</b></span> <span style=\"color:#a4c2f4\"><b>stuns</b></span> <span style=\"color:#cccccc\">upon <b>dealing damage to the</b></span> <span style=\"color:#b4a7d6\"><b>Champion</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
-      "<span style=\"color:#6fa8dc\"><b>Stasis Slow</b></span> <span style=\"color:#a4c2f4\"><b>stuns</b></span> <span style=\"color:#cccccc\">upon <b>inflicting</b></span> <span style=\"color:#6fa8dc\"><b>Slow Stacks</b></span> <span style=\"color:#cccccc\"><b>to the</b></span> <span style=\"color:#b4a7d6\"><b>Champion</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#b4a7d6\"><b><i>Overload Champion Stunning Application</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#89cdd1\"><b>Arc</b></span> <span style=\"color:#76a5af\"><b>Jolt</b></span> <span style=\"color:#a4c2f4\"><b>stuns</b></span> <span style=\"color:#cccccc\"><b>upon dealing damage to the</b></span> <span style=\"color:#b4a7d6\"><b>Champion</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#6fa8dc\"><b>Stasis Slow</b></span> <span style=\"color:#a4c2f4\"><b>stuns</b></span> <span style=\"color:#cccccc\"><b>upon inflicting</b></span> <span style=\"color:#6fa8dc\"><b>Slow Stacks</b></span> <span style=\"color:#cccccc\"><b>to the</b></span> <span style=\"color:#b4a7d6\"><b>Champion</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "<span style=\"color:#b4a7d6\"><b>Void</b></span> <span style=\"color:#8e7cc3\"><b>Suppression</b></span> <span style=\"color:#a4c2f4\"><b>stuns</b></span> <span style=\"color:#cccccc\"><b>upon</b></span> <span style=\"color:#8e7cc3\"><b>suppressing</b></span> <span style=\"color:#cccccc\"><b>the</b></span> <span style=\"color:#b4a7d6\"><b>Champion</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
-    ]
-  ],
-  [
-    [],
-    [],
-    [
-      "<span style=\"color:#b4a7d6\"><b>Information</b></span>"
-    ],
-    [],
-    [],
-    [
-      "<span style=\"color:#4c1130\"><b>Standard</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>Raid</b></span>",
-      "<span style=\"color:#4c1130\"><b>(Expert/Master)</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>Advanced</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>Expert</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>Master</b></span>",
-      "<span style=\"color:#4c1130\"><b>Grandmaster</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>Activity Difficulty governs the difficulty of the</b></span> <span style=\"color:#b4a7d6\"><b>Champion Mechanics</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
-    ]
-  ],
-  [
-    [],
-    [],
-    [
-      "<span style=\"color:#b4a7d6\"><b>Champion Health</b></span>"
-    ],
-    [],
-    [],
-    [
-      "<span style=\"color:#4c1130\"><b>2200 HP</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>3300 HP</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>4400 HP</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>5000 HP</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>5475 HP</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>Champion Health</b></span> <span style=\"color:#cccccc\"><b>is shared between all Races and Champion Types.</b></span>",
-      "<span style=\"color:#e06666\"><b>Master Difficulty</b></span> <span style=\"color:#dd7e6b\"><b>Champion Health</b></span> <span style=\"color:#cccccc\"><b>is reduced to</b></span> <span style=\"color:#f9cb9c\"><b>Expert-Tier</b></span> <span style=\"color:#dd7e6b\"><b>Health</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
-    ]
-  ],
-  [
-    [],
-    [],
-    [
-      "<span style=\"color:#b4a7d6\"><b>Passive Health Regeneration</b></span>"
-    ],
-    [],
-    [],
-    [
-      "<span style=\"color:#4c1130\"><b>4.5% HP/s</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>4.5% HP/s</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>4.5% HP/s</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>13.65% HP/s</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>27.4%</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>Health</b></span> <span style=\"color:#cccccc\"><b>is</b></span> <span style=\"color:#dd7e6b\"><b>continuously regenerated</b></span> <span style=\"color:#cccccc\"><b>by</b></span> <span style=\"color:#dd7e6b\"><b>1% HP</b></span> <span style=\"color:#cccccc\"><b>every</b></span> <span style=\"color:#b6d7a8\"><b>0.22</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>0.22</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#d5a6bd\"><b>0.22</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#f9cb9c\"><b>0.073</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#cd6c59\"><b>0.037</b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>",
-      "<span style=\"color:#6fa8dc\"><b>Frozen</b></span> <span style=\"color:#b4a7d6\"><b>Overload Champions</b></span> <span style=\"color:#dd7e6b\"><b>continuously regenerate 4.5% HP/s</b></span><span style=\"color:#cccccc\"><b>, regardless of Difficulty.</b></span>"
-    ]
-  ],
-  [
-    [],
-    [],
-    [
-      "<span style=\"color:#b4a7d6\"><b>Stun Duration in Seconds after Disrupting</b></span>"
-    ],
-    [],
-    [],
-    [
-      "<span style=\"color:#4c1130\"><b>[?]</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>7</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>7</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>6</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>5.5</b></span>"
-    ],
-    [
-      "<span style=\"color:#b4a7d6\"><b>Champion</b></span> <span style=\"color:#cccccc\"><b>is stunned for</b></span> <span style=\"color:#b6d7a8\"><b>X</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>7</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#d5a6bd\"><b>7</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#f9cb9c\"><b>6</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#cd6c59\"><b>5.5</b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>"
-    ]
-  ],
-  [
-    [],
-    [],
-    [
-      "<span style=\"color:#b4a7d6\"><b>Cooldown between Stuns in Seconds</b></span>"
-    ],
-    [],
-    [],
-    [
-      "<span style=\"color:#4c1130\"><b>N/A</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>N/A</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>N/A</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>2.5</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>4.5</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>Time that must pass before a</b></span> <span style=\"color:#a4c2f4\"><b>new stun</b></span> <span style=\"color:#cccccc\"><b>can occur, counting from when the</b></span> <span style=\"color:#a4c2f4\"><b>previous stun</b></span> <span style=\"color:#cccccc\"><b>is over.</b></span>"
-    ]
-  ],
-  [
-    [],
-    [],
-    [
-      "<span style=\"color:#b4a7d6\"><b>Time to Heal after Disrupting in Seconds</b></span>"
-    ],
-    [],
-    [],
-    [
-      "<span style=\"color:#b4a7d6\"><b>6.5 seconds</b></span>"
-    ],
-    [],
-    [],
-    [],
-    [],
-    [
-      "<span style=\"color:#dd7e6b\"><b>Health</b></span> <span style=\"color:#cccccc\"><b>only starts</b></span> <span style=\"color:#dd7e6b\"><b>regenerating</b></span> <span style=\"color:#cccccc\"><b>if the</b></span> <span style=\"color:#b4a7d6\"><b>Champion</b></span> <span style=\"color:#cccccc\"><b>remains</b></span> <span style=\"color:#b4a7d6\"><b>undisrupted</b></span> <span style=\"color:#cccccc\"><b>for 6.5 seconds.</b></span>",
-      "<span style=\"color:#cccccc\"><b>Reapplying</b></span> <span style=\"color:#b4a7d6\"><b>Disruption</b></span> <span style=\"color:#cccccc\"><b>refreshes the duration to 6.5 seconds.</b></span>"
     ]
   ],
   [
@@ -3232,146 +2037,16 @@
     [],
     [
       "<span style=\"color:#c67676\"><b>Unstoppable Champions</b></span> <span style=\"color:#cccccc\"><b>relentlessly chase enemies, and possess 70% Damage Resist unless</b></span> <span style=\"color:#a4c2f4\"><b>stunned</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
-      "<span style=\"color:#cccccc\">Damage Numbers visually appear as</span> <span style=\"color:#a1838b\"><b><i>Italic Desaturated Pink Numbers</i></b></span>",
-      "<span style=\"color:#a4c2f4\"><b>Stunning</b></span> <span style=\"color:#cccccc\">removes the <b>Damage Resist</b> and prevents the</span> <span style=\"color:#c67676\"><b>Champion</b></span> <span style=\"color:#cccccc\">from <b>attacking, moving,</b> or using any <b>abilities for the duration of the stun.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Damage Numbers visually appear as</b></span> <span style=\"color:#a1838b\"><b><i>Italic Desaturated Pink Numbers</i></b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Stunning</b></span> <span style=\"color:#cccccc\"><b>removes the Damage Resist and prevents the</b></span> <span style=\"color:#c67676\"><b>Champion</b></span> <span style=\"color:#cccccc\"><b>from attacking, moving, or using any abilities for the duration of the stun.</b></span>",
       "",
-      "<span style=\"color:#c67676\"><b>Unstoppable Shots</b></span> <span style=\"color:#cccccc\"><b>tend to inflict more</b></span> <span style=\"color:#a4c2f4\"><b>Stagger</b></span><span style=\"color:#cccccc\"><b>, with certain weapons/effects forcing a</b></span> <span style=\"color:#a4c2f4\"><b>stagger</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#c67676\"><b>Unstoppable Shots</b></span> <span style=\"color:#cccccc\"><b>tend to inflict more</b></span> <span style=\"color:#a4c2f4\"><b>Stagger</b></span><span style=\"color:#cccccc\"><b>, being the only method of staggering</b></span> <span style=\"color:#a4c2f4\"><b>Elite+ Combatants</b></span> <span style=\"color:#cccccc\"><b>on</b></span> <span style=\"color:#e06666\"><b>Ultimate Difficulty</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "",
-      "<span style=\"color:#a4c2f4\"><b><i>Stunning Methods</i></b></span> <span style=\"color:#cccccc\"><i>outside of</i></span> <span style=\"color:#c67676\"><b><i>Unstoppable Shots</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#a4c2f4\"><b><i>Stunning Methods</i></b></span> <span style=\"color:#cccccc\"><b><i>outside of</i></b></span> <span style=\"color:#c67676\"><b><i>Unstoppable Shots</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
       "<span style=\"color:#a2c4c9\"><b>Arc</b></span> <span style=\"color:#999999\"><b>Blind</b></span>",
       "<span style=\"color:#f6b26b\"><b>Solar</b></span> <span style=\"color:#ff9900\"><b>Ignition</b></span>",
       "<span style=\"color:#6fa8dc\"><b>Stasis Freeze/Shatter</b></span>",
       "<span style=\"color:#93c47d\"><b>Strand</b></span> <span style=\"color:#6aa84f\"><b>Suspension</b></span>"
-    ]
-  ],
-  [
-    [],
-    [],
-    [
-      "<span style=\"color:#c67676\"><b>Information</b></span>"
-    ],
-    [],
-    [],
-    [
-      "<span style=\"color:#4c1130\"><b>Standard</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>Raid</b></span>",
-      "<span style=\"color:#4c1130\"><b>(Expert/Master)</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>Advanced</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>Expert</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>Master</b></span>",
-      "<span style=\"color:#4c1130\"><b>Grandmaster</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>Activity Difficulty governs the difficulty of the</b></span> <span style=\"color:#c67676\"><b>Champion Mechanics.</b></span>"
-    ]
-  ],
-  [
-    [],
-    [],
-    [
-      "<span style=\"color:#c67676\"><b>Champion Health</b></span>"
-    ],
-    [],
-    [],
-    [
-      "<span style=\"color:#4c1130\"><b>2200 HP</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>3300 HP</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>4400 HP</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>5000 HP</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>5475 HP</b></span>"
-    ],
-    [
-      "<span style=\"color:#dd7e6b\"><b>Champion Health</b></span> <span style=\"color:#cccccc\"><b>is shared between all Races and Champion Types.</b></span>",
-      "<span style=\"color:#e06666\"><b>Master Difficulty</b></span> <span style=\"color:#dd7e6b\"><b>Champion Health</b></span> <span style=\"color:#cccccc\"><b>is reduced to</b></span> <span style=\"color:#f9cb9c\"><b>Expert-Tier</b></span> <span style=\"color:#dd7e6b\"><b>Health</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
-    ]
-  ],
-  [
-    [],
-    [],
-    [
-      "<span style=\"color:#c67676\"><b>Damage Resistance</b></span>"
-    ],
-    [],
-    [],
-    [
-      "<span style=\"color:#c67676\"><b>70% Damage Resist</b></span>"
-    ],
-    [],
-    [],
-    [],
-    [],
-    [
-      "<span style=\"color:#c67676\"><b>Champion</b></span> <span style=\"color:#cccccc\"><b>decreases all incoming damage by 70% while</b></span> <span style=\"color:#a4c2f4\"><b>unstunned</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
-    ]
-  ],
-  [
-    [],
-    [],
-    [
-      "<span style=\"color:#c67676\"><b>Stun Duration in Seconds after Disrupting</b></span>"
-    ],
-    [],
-    [],
-    [
-      "<span style=\"color:#4c1130\"><b>[?]</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>7</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>7</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>6</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>5.5</b></span>"
-    ],
-    [
-      "<span style=\"color:#c67676\"><b>Champion</b></span> <span style=\"color:#cccccc\"><b>is stunned for a minimum of</b></span> <span style=\"color:#b6d7a8\"><b>X</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>7</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#d5a6bd\"><b>7</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#f9cb9c\"><b>6</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#cd6c59\"><b>5.5</b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>"
-    ]
-  ],
-  [
-    [],
-    [],
-    [
-      "<span style=\"color:#c67676\"><b>Cooldown between Stuns in Seconds</b></span>"
-    ],
-    [],
-    [],
-    [
-      "<span style=\"color:#4c1130\"><b>N/A</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>N/A</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>N/A</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>2.5</b></span>"
-    ],
-    [
-      "<span style=\"color:#4c1130\"><b>4.5</b></span>"
-    ],
-    [
-      "<span style=\"color:#cccccc\"><b>Time that must pass before a</b></span> <span style=\"color:#a4c2f4\"><b>new stun</b></span> <span style=\"color:#cccccc\"><b>can occur, counting from when the</b></span> <span style=\"color:#a4c2f4\"><b>previous stun</b></span> <span style=\"color:#cccccc\"><b>is over.</b></span>"
     ]
   ],
   [
@@ -3441,7 +2116,7 @@
       "<span style=\"color:#c54229\"><b>Dread</b></span>"
     ],
     [
-      "<span style=\"color:#93c47d\"><b><i>Massive thanks to MossyMax for his</i></b></span> <a href=\"https://docs.google.com/spreadsheets/d/1b57Hb8m1L3daFfUckQQqvvN6VOpD03KEssvQLMFpC5I/edit#gid=1096943094\"><span style=\"color:#93c47d\"><b><i><u>Outgoing Damage Scaling Spreadsheet</u></i></b></span></a><span style=\"color:#93c47d\"><b><i>, which further details how HP enemy scales throughout different Activities, and more!</i></b></span>"
+      "<span style=\"color:#93c47d\"><b><i>Massive thanks to MossyMax for his</i></b></span> <a href=\"https://docs.google.com/spreadsheets/d/1b57Hb8m1L3daFfUckQQqvvN6VOpD03KEssvQLMFpC5I/edit#gid=1096943094\"><span style=\"color:#93c47d\"><b><i>Outgoing Damage Scaling Spreadsheet</i></b></span></a><span style=\"color:#93c47d\"><b><i>, which further details how HP enemy scales throughout different Activities, and more!</i></b></span>"
     ]
   ],
   [
@@ -3616,7 +2291,7 @@
     [],
     [],
     [
-      "<span style=\"color:#d9d9d9\"><b><i>Need information about</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Combatant Ranks</i></b></span><span style=\"color:#d9d9d9\"><b><i>, instead of their</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Tiers</i></b></span><span style=\"color:#d9d9d9\"><b><i>? Head over to</i></b></span> <a href=\"https://docs.google.com/spreadsheets/d/1i1KUwgVkd8qhwYj481gkV9sZNJQCE-C3Q-dpQutPCi4/edit#gid=828270348\"><span style=\"color:#6aa84f\"><b><i><u>Court's Infographic</u></i></b></span></a> <span style=\"color:#d9d9d9\"><b><i>to find out about their interactions!</i></b></span>"
+      "<span style=\"color:#d9d9d9\"><b><i>Need information about</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Combatant Ranks</i></b></span><span style=\"color:#d9d9d9\"><b><i>, instead of their</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Tiers</i></b></span><span style=\"color:#d9d9d9\"><b><i>? Head over to</i></b></span> <a href=\"https://docs.google.com/spreadsheets/d/1i1KUwgVkd8qhwYj481gkV9sZNJQCE-C3Q-dpQutPCi4/edit#gid=828270348\"><span style=\"color:#6aa84f\"><b><i>Court's Infographic</i></b></span></a> <span style=\"color:#d9d9d9\"><b><i>to find out about their interactions!</i></b></span>"
     ]
   ],
   [
@@ -3660,7 +2335,7 @@
     [],
     [
       "<span style=\"color:#27b97c\"><b>All Bane Icons recreated and graceously provided by Court Projects.</b></span>",
-      "<a href=\"https://linktr.ee/CourtProjects\"><span style=\"color:#6fa8dc\"><b><i><u>Support his awesome infographics and check out more of his work here.</u></i></b></span></a>"
+      "<a href=\"https://linktr.ee/CourtProjects\"><span style=\"color:#6fa8dc\"><b><i>Support his awesome infographics and check out more of his work here.</i></b></span></a>"
     ]
   ],
   [
@@ -3671,8 +2346,10 @@
     ],
     [],
     [
-      "<span style=\"color:#b68acf\"><b>Caltrops-Affixed Combatants</b></span> <span style=\"color:#cccccc\"><b>drop an</b></span> <span style=\"color:#d5a6bd\"><b>Elemental Pool</b></span> <span style=\"color:#cccccc\"><b>every 2 seconds and on death.</b></span>",
-      "<span style=\"color:#d5a6bd\"><b>Elemental Pools</b></span> <span style=\"color:#cccccc\"><b>deal damage 4 times a second over 6 meters seconds for 5 seconds.</b></span>",
+      "<span style=\"color:#b68acf\"><b>Caltrops-Affixed Combatants</b></span> <span style=\"color:#cccccc\"><b>drop a</b></span> <span style=\"color:#bba5f3\"><b>Void Pool</b></span> <span style=\"color:#cccccc\"><b>every 2 seconds and on death.</b></span>",
+      "",
+      "<span style=\"color:#bba5f3\"><b>Pools</b></span> <span style=\"color:#cccccc\"><b>deal</b></span> <span style=\"color:#bba5f3\"><b>10 Void Damage</b></span> <span style=\"color:#cccccc\"><b>every 0.5 seconds over 6 meters seconds for 5 seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Standing in a</b></span> <span style=\"color:#bba5f3\"><b>Void Pool</b></span> <span style=\"color:#cccccc\"><b>additionally reduces Movement Speed and Jump Height by 10%, on top of reducing the</b></span> <span style=\"color:#6fa8dc\"><b>Mobility</b></span> <span style=\"color:#cccccc\"><b>Stat by -25%.</b></span>",
       "",
       "<span style=\"color:#b68acf\"><b>Caltrop Combatants</b></span> <span style=\"color:#cccccc\"><b>will relentlessly chase after Guardians, preferring to stay within Melee Range.</b></span>",
       "<span style=\"color:#a4c2f4\"><b>Finishers</b></span> <span style=\"color:#e06666\"><b>are disabled</b></span> <span style=\"color:#cccccc\"><b>against</b></span> <span style=\"color:#b68acf\"><b>Caltrop Combatants</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
@@ -3825,7 +2502,7 @@
     ],
     [],
     [
-      "<span style=\"color:#e8b903\"><b>Promoted-Affixed Combatants</b></span> <span style=\"color:#cccccc\"><i><small>(from the Battlefield Promotion Modifier)</small></i> <b>gain 60% Damage Resist, deal</b></span> <span style=\"color:#e06666\"><b>6.25% increased damage</b></span><span style=\"color:#cccccc\"><b>, and become ~50% physically larger.</b></span>",
+      "<span style=\"color:#e8b903\"><b>Promoted-Affixed Combatants</b></span> <span style=\"color:#cccccc\"><i><small>(from the Battlefield Promotion Modifier)</small></i> <b>gain 60% Damage Resist, deal</b></span> <span style=\"color:#e06666\"><b>10% increased damage</b></span><span style=\"color:#cccccc\"><b>, and become ~50% physically larger.</b></span>",
       "<span style=\"color:#e06666\"><i>Champions, Bosses, and Affixed-Combatants cannot receive the Promoted Affix.</i></span>",
       "",
       "<span style=\"color:#cccccc\"><b>Inflicting</b></span> <span style=\"color:#8e7cc3\"><b>Suppresion</b></span> <span style=\"color:#cccccc\"><b>on a</b></span> <span style=\"color:#e8b903\"><b>Promoted Combatant</b></span> <span style=\"color:#cccccc\"><b>temporarily disables their Damage Resist and shrinks them down to regular size.</b></span>"
@@ -4183,7 +2860,7 @@
     [],
     [],
     [
-      "<span style=\"color:#6fa8dc\"><b>Adaptive SMG</b></span>"
+      "<span style=\"color:#6fa8dc\"><b>Lightweight SMG</b></span>"
     ],
     [],
     [],

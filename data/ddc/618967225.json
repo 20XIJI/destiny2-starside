@@ -1,7 +1,7 @@
 [
   [
     [
-      "<a href=\"#rangeid=984939131\"><span style=\"color:#89cdd1\"><b><i><u>Go back to the top!</u></i></b></span></a>"
+      "<a href=\"#rangeid=984939131\"><span style=\"color:#89cdd1\"><b><i>Go back to the top!</i></b></span></a>"
     ],
     [],
     [],
@@ -18,27 +18,27 @@
     [],
     [],
     [
-      "<a href=\"https://www.patreon.com/DataCompendium\"><span style=\"color:#9fc5e8\"><b><i><u>Support the Data Compendium</u></i></b></span></a>"
+      "<a href=\"https://www.patreon.com/DataCompendium\"><span style=\"color:#9fc5e8\"><b><i>Support the Data Compendium</i></b></span></a>"
     ]
   ],
   [
     [],
     [
-      "<a href=\"#rangeid=2063680218\"><span style=\"color:#cccccc\"><b><u>Hunter</u></b></span></a>"
+      "<a href=\"#rangeid=2063680218\"><span style=\"color:#cccccc\"><b>Hunter</b></span></a>"
     ],
     [],
     [],
     [],
     [],
     [
-      "<a href=\"#rangeid=546414595\"><span style=\"color:#cccccc\"><b><u>Titan</u></b></span></a>"
+      "<a href=\"#rangeid=546414595\"><span style=\"color:#cccccc\"><b>Titan</b></span></a>"
     ],
     [],
     [],
     [],
     [],
     [
-      "<a href=\"#rangeid=1678010845\"><span style=\"color:#cccccc\"><b><u>Warlock</u></b></span></a>"
+      "<a href=\"#rangeid=1678010845\"><span style=\"color:#cccccc\"><b>Warlock</b></span></a>"
     ]
   ],
   [
@@ -59,7 +59,7 @@
       "<span style=\"color:#a4c2f4\"><b>Rank-And-File</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#89cdd1\"><b>25%</b></span> <span style=\"color:#a4c2f4\"><b>| Elite</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#89cdd1\"><b>50%</b></span> <span style=\"color:#a4c2f4\"><b>| Miniboss+</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#89cdd1\"><b>100%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#ea9999\"><b>Guardians</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#89cdd1\"><b>50%</b></span>",
       "",
       "<span style=\"color:#79bec3\"><b>Amplified:</b></span>",
-      "<span style=\"color:#cccccc\"><b>+50 Mobility, increases Slide Distance to 8.5 meters, +40 Handling, and 0.95x Handling Duration Multiplier for 15 seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><b>+50 Mobility, increases Slide Distance to 8.5 meters, +30 Handling, and 0.9x Ready Duration Multiplier for 15 seconds.</b></span>",
       "<span style=\"color:#a4c2f4\"><b>Combatants are less accurate at targeting the wearer and grants 15% Damage Resist against Combatants while active.</b></span>",
       "<span style=\"color:#cccccc\"><b>While</b></span> <span style=\"color:#89cdd1\"><b>Amplified</b></span><span style=\"color:#cccccc\"><b>, sprinting for 2.5 seconds grants</b></span> <span style=\"color:#89cdd1\"><b>Speed Booster</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "",
@@ -198,7 +198,7 @@
     ],
     [],
     [
-      "<span style=\"color:#93c47d\"><b>Special</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#a481e1\"><b>Heavy</b></span> <span style=\"color:#cccccc\"><b>Ammo</b></span> <span style=\"color:#a2c4c9\"><b>Arc Weapon</b></span> <span style=\"color:#cccccc\"><b>Kills while</b></span> <span style=\"color:#79bec3\"><b>Amplified</b></span> <span style=\"color:#cccccc\"><b>create a</b></span> <span style=\"color:#999999\"><b>blinding blast</b></span><span style=\"color:#cccccc\"><b>, inflicting</b></span> <span style=\"color:#999999\"><b>Blind</b></span> <span style=\"color:#cccccc\"><b>to enemies within 7.5 metres.</b></span>"
+      "<span style=\"color:#93c47d\"><b>Special</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#a481e1\"><b>Heavy</b></span> <span style=\"color:#cccccc\"><b>Ammo</b></span> <span style=\"color:#a2c4c9\"><b>Arc Weapon</b></span> <span style=\"color:#cccccc\"><b>Kills while</b></span> <span style=\"color:#79bec3\"><b>Amplified</b></span> <span style=\"color:#cccccc\"><b>create a</b></span> <span style=\"color:#999999\"><b>blinding blast</b></span><span style=\"color:#cccccc\"><b>, inflicting</b></span> <span style=\"color:#999999\"><b>Blind</b></span> <span style=\"color:#cccccc\"><b>to enemies within 6 metres.</b></span>"
     ],
     [],
     [],
@@ -220,7 +220,7 @@
     ],
     [],
     [
-      "<span style=\"color:#f1c232\"><b>Precision Kills</b></span> <span style=\"color:#cccccc\"><b>against</b></span> <span style=\"color:#999999\"><b>Blinded Enemies</b></span> <span style=\"color:#cccccc\"><b>trigger a</b></span> <span style=\"color:#999999\"><b>Blinding blast,</b></span> <span style=\"color:#cccccc\"><b>inflicting</b></span> <span style=\"color:#999999\"><b>Blind</b></span> <span style=\"color:#cccccc\"><b>to enemies within 7.5 metres.</b></span>"
+      "<span style=\"color:#f1c232\"><b>Precision Kills</b></span> <span style=\"color:#cccccc\"><b>against</b></span> <span style=\"color:#999999\"><b>Blinded Enemies</b></span> <span style=\"color:#cccccc\"><b>trigger a</b></span> <span style=\"color:#999999\"><b>Blinding blast,</b></span> <span style=\"color:#cccccc\"><b>inflicting</b></span> <span style=\"color:#999999\"><b>Blind</b></span> <span style=\"color:#cccccc\"><b>to enemies within 6 metres.</b></span>"
     ],
     [],
     [],
@@ -344,7 +344,7 @@
     ],
     [],
     [
-      "<span style=\"color:#cccccc\"><i>After</i> <b><i>1.25 seconds</i></b> <i>of sprinting, while maintaining both sprint and a movement speed of at</i> <b><i>least 5m/s</i></b><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><i>After</i> <b><i>1 seconds</i></b> <i>of sprinting, while maintaining both sprint and a movement speed of at</i> <b><i>least 6.5m/s</i></b><i>:</i></span>",
       "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#dd7e6b\"><b>+50 Health Stat</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
     ],
     [],
@@ -368,8 +368,8 @@
     [],
     [
       "<span style=\"color:#cccccc\"><i>While at</i></span> <span style=\"color:#dd7e6b\"><b><i>Critical Health</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
-      "<span style=\"color:#cccccc\"><b>Being damaged releases a burst of</b></span> <span style=\"color:#76a5af\"><b>Arc Energy</b></span><span style=\"color:#cccccc\"><b>, dealing up to</b></span> <span style=\"color:#a4c2f4\"><b>46</b></span> <span style=\"color:#ea9999\"><b>[20]</b></span> <span style=\"color:#cccccc\"><b>damage and inflicting</b></span> <span style=\"color:#76a5af\"><b>Jolt</b></span> <span style=\"color:#cccccc\"><b>to enemies within ? metres.</b></span>",
-      "<span style=\"color:#e06666\"><i>Incurs a 15? second cooldown between activations.</i></span>"
+      "<span style=\"color:#cccccc\"><b>Being damaged releases a burst of</b></span> <span style=\"color:#76a5af\"><b>Arc Energy</b></span><span style=\"color:#cccccc\"><b>, dealing up to</b></span> <span style=\"color:#a4c2f4\"><b>46</b></span> <span style=\"color:#ea9999\"><b>[20]</b></span> <span style=\"color:#cccccc\"><b>damage and inflicting</b></span> <span style=\"color:#76a5af\"><b>Jolt</b></span> <span style=\"color:#cccccc\"><b>to enemies within 8 metres.</b></span>",
+      "<span style=\"color:#e06666\"><i>Incurs a 15 second cooldown between activations.</i></span>"
     ],
     [],
     [],
@@ -486,8 +486,12 @@
     [],
     [
       "<span style=\"color:#cccccc\"><i>While within</i> <b><i>15 metres</i></b> <i>of at least</i> <b><i>3 enemies</i></b><i>:</i></span>",
-      "<span style=\"color:#a4c2f4\"><b>25%</b></span> <span style=\"color:#ea9999\"><b>[10%]</b></span> <span style=\"color:#cccccc\"><b>Damage Resist.</b></span>",
-      "<span style=\"color:#cccccc\"><i>Lingers for 2 seconds.</i></span>"
+      "<span style=\"color:#cccccc\"><b>Up to</b></span> <span style=\"color:#a4c2f4\"><b>25%</b></span> <span style=\"color:#ea9999\"><b>[10%]</b></span> <span style=\"color:#cccccc\"><b>Damage Resist.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Lingers for 2 seconds.</i></span> <span style=\"color:#e06666\"><i>Disabled in Super Ability.</i></span>",
+      "",
+      "<span style=\"color:#89cdd1\"><b>Spark of Resistance's</b></span> <span style=\"color:#cccccc\"><b>Damage Resist is lowered based on the amount of Resist Stacks active, and whether</b></span> <span style=\"color:#6fa8dc\"><b>Frost Armor</b></span><span style=\"color:#cccccc\"><b>/</b></span><span style=\"color:#63d275\"><b>Woven Mail</b></span> <span style=\"color:#cccccc\"><b>is active or not.</b></span>",
+      "<span style=\"color:#cccccc\"><b>x0 =</b></span> <span style=\"color:#a4c2f4\"><b>25%</b></span> <span style=\"color:#ea9999\"><b>[10%]</b></span> <span style=\"color:#cccccc\"><b>| x1 =</b></span> <span style=\"color:#a4c2f4\"><b>15%</b></span> <span style=\"color:#ea9999\"><b>[0%]</b></span> <span style=\"color:#cccccc\"><b>| x2+ =</b></span> <span style=\"color:#e06666\"><b>DISABLED</b></span>",
+      "<span style=\"color:#cccccc\"><i>+</i></span><span style=\"color:#6fa8dc\"><b><i>Frost Armor</i></b></span><span style=\"color:#cccccc\"><b><i>/</i></b></span><span style=\"color:#63d275\"><b><i>Woven Mail</i></b></span><span style=\"color:#cccccc\"><b>: x0 =</b></span> <span style=\"color:#a4c2f4\"><b>15%</b></span> <span style=\"color:#ea9999\"><b>[?%]</b></span> <span style=\"color:#cccccc\"><b>| x1 =</b></span> <span style=\"color:#a4c2f4\"><b>7.5%</b></span> <span style=\"color:#ea9999\"><b>[?%]</b></span> <span style=\"color:#cccccc\"><b>| x2+ =</b></span> <span style=\"color:#e06666\"><b>DISABLED</b></span>"
     ],
     [],
     [],
@@ -919,7 +923,7 @@
       "<span style=\"color:#76a5af\"><b>Airborne Heavy Attack</b></span> <span style=\"color:#89cdd1\"><b>|</b></span> <span style=\"color:#ffd966\"><b>Drains 8%? Super Energy</b></span>",
       "<span style=\"color:#cccccc\"><b>Deals</b></span> <span style=\"color:#a4c2f4\"><b>1,264</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage and inflicts</b></span> <span style=\"color:#999999\"><b>blind</b></span> <span style=\"color:#cccccc\"><b>over 7 meters away</b></span>",
       "",
-      "<span style=\"color:#ffd966\"><b>Palm Strike</b></span> <span style=\"color:#76a5af\"><b>|</b></span> <span style=\"color:#89cdd1\"><b>Light-Light</b></span><span style=\"color:#cccccc\"><b>-</b></span><span style=\"color:#76a5af\"><b>Heavy</b></span> <span style=\"color:#cccccc\"><b>Combo.</b></span>",
+      "<span style=\"color:#ffd966\"><b>Palm Strike</b></span> <span style=\"color:#76a5af\"><b>|</b></span> <span style=\"color:#89cdd1\"><b>Light-Light</b></span><span style=\"color:#cccccc\"><b>-</b></span><span style=\"color:#76a5af\"><b>Heavy</b></span> <span style=\"color:#cccccc\"><b>Combo Finisher.</b></span>",
       "<span style=\"color:#cccccc\"><b>Deals</b></span> <span style=\"color:#a4c2f4\"><b>2,950</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#cccccc\"><b>damage and inflicts</b></span> <span style=\"color:#999999\"><b>blind</b></span> <span style=\"color:#cccccc\"><b>in a ~45° angle up to 8 meters away.</b></span>",
       "",
       "<span style=\"color:#ffd966\"><b>Guarding | Drains an additional ?% Super Energy per second.</b></span>",
@@ -1056,7 +1060,7 @@
       "",
       "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#79bec3\"><b><i>Amplified</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
       "<span style=\"color:#b4a7d6\"><b>200% Additional Base Class Ability Regeneration Rate</b></span><span style=\"color:#cccccc\"><b>, +50 Reload Speed, and 0.8x Reload Duration Multiplier.</b></span>",
-      "<span style=\"color:#a4c2f4\"><b>66%</b></span> <span style=\"color:#ea9999\"><b>[32%]</b></span> <span style=\"color:#cccccc\"><b>Damage Resist during</b></span> <span style=\"color:#b4a7d6\"><b>Dodge Animation</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+      "<span style=\"color:#cccccc\"><b>32% Damage Resist during</b></span> <span style=\"color:#b4a7d6\"><b>Dodge Animation</b></span><span style=\"color:#cccccc\"><b>.</b></span> <span style=\"color:#e06666\"><b>Reduced to 10% while in</b></span> <span style=\"color:#ffd966\"><b>Super Ability</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
     ]
   ],
   [
@@ -1490,7 +1494,7 @@
     [],
     [
       "<span style=\"color:#ffd966\"><b>General Super Information</b></span>",
-      "<span style=\"color:#cccccc\"><b>Damage Resistance:</b></span> <span style=\"color:#a4c2f4\"><b>90%</b></span> <span style=\"color:#ea9999\"><b>[55%]</b></span>",
+      "<span style=\"color:#cccccc\"><b>Damage Resistance:</b></span> <span style=\"color:#a4c2f4\"><b>80%</b></span> <span style=\"color:#ea9999\"><b>[55%]</b></span>",
       "<span style=\"color:#cccccc\"><b>Base Duration: 4 seconds</b>, or</span> <span style=\"color:#ffd966\"><b>25% Super Drain per Second</b></span>",
       "<span style=\"color:#cccccc\"><b>Movement Speed: 4.5 meters per second.</b></span>",
       "",
@@ -1523,7 +1527,7 @@
     [],
     [
       "<span style=\"color:#ffd966\"><b>General Super Information</b></span>",
-      "<span style=\"color:#cccccc\"><b>Damage Resistance:</b></span> <span style=\"color:#a4c2f4\"><b>90%</b></span> <span style=\"color:#ea9999\"><b>[58%]</b></span>",
+      "<span style=\"color:#cccccc\"><b>Damage Resistance:</b></span> <span style=\"color:#a4c2f4\"><b>80%</b></span> <span style=\"color:#ea9999\"><b>[58%]</b></span>",
       "<span style=\"color:#cccccc\"><b>Base Duration: 16 seconds, or</b></span> <span style=\"color:#ffd966\"><b>6.25% Super Drain per Second</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "",
       "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#ffd966\"><b><i>Super Cast</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",

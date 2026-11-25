@@ -1,7 +1,7 @@
 [
   [
     [
-      "<a href=\"#rangeid=2120273371\"><span style=\"color:#d9d9d9\"><b><i><u>Go back to the top!</u></i></b></span></a>"
+      "<a href=\"#rangeid=2120273371\"><span style=\"color:#d9d9d9\"><b><i>Go back to the top!</i></b></span></a>"
     ],
     [],
     [],
@@ -28,7 +28,7 @@
     [],
     [],
     [
-      "<a href=\"#rangeid=1870194883\"><span style=\"color:#d5a6bd\"><b><u>Ability Tiers and Energy Gains</u></b></span></a>"
+      "<a href=\"#rangeid=1870194883\"><span style=\"color:#d5a6bd\"><b>Ability Tiers and Energy Gains</b></span></a>"
     ]
   ],
   [
@@ -37,7 +37,7 @@
     [],
     [],
     [
-      "<a href=\"#rangeid=1302592986\"><span style=\"color:#6d9eeb\"><b><u>Activity Modifiers</u></b></span></a>"
+      "<a href=\"#rangeid=1302592986\"><span style=\"color:#6d9eeb\"><b>Activity Modifiers</b></span></a>"
     ]
   ],
   [
@@ -46,7 +46,7 @@
     [],
     [],
     [
-      "<a href=\"#rangeid=735614305\"><span style=\"color:#6fa8dc\"><b><u>Armor Charge</u></b></span></a>"
+      "<a href=\"#rangeid=735614305\"><span style=\"color:#6fa8dc\"><b>Armor Charge</b></span></a>"
     ]
   ],
   [
@@ -55,7 +55,7 @@
     [],
     [],
     [
-      "<a href=\"#rangeid=1234323879\"><span style=\"color:#cccccc\"><b><u>Character Stats</u></b></span></a>"
+      "<a href=\"#rangeid=1234323879\"><span style=\"color:#cccccc\"><b>Character Stats</b></span></a>"
     ]
   ],
   [
@@ -64,7 +64,7 @@
     [],
     [],
     [
-      "<a href=\"#rangeid=1209834310\"><span style=\"color:#cd6c59\"><b><u>Champions of the Darkness</u></b></span></a>"
+      "<a href=\"#rangeid=1209834310\"><span style=\"color:#cd6c59\"><b>Champions of the Darkness</b></span></a>"
     ]
   ],
   [
@@ -73,7 +73,7 @@
     [],
     [],
     [
-      "<a href=\"#rangeid=1150520535\"><span style=\"color:#9fc5e8\"><b><u>Combatant Information</u></b></span></a>"
+      "<a href=\"#rangeid=1150520535\"><span style=\"color:#9fc5e8\"><b>Combatant Information</b></span></a>"
     ]
   ],
   [
@@ -82,7 +82,7 @@
     [],
     [],
     [
-      "<a href=\"#rangeid=1302500297\"><span style=\"color:#d5a6bd\"><b><u>Elemental Orbs</u></b></span></a>"
+      "<a href=\"#rangeid=1302500297\"><span style=\"color:#d5a6bd\"><b>Elemental Orbs</b></span></a>"
     ]
   ],
   [
@@ -91,7 +91,7 @@
     [],
     [],
     [
-      "<a href=\"#rangeid=1017709050\"><span style=\"color:#ffd966\"><b><u>Super Ability Energy</u></b></span></a>"
+      "<a href=\"#rangeid=1017709050\"><span style=\"color:#ffd966\"><b>Super Ability Energy</b></span></a>"
     ]
   ],
   [
@@ -841,38 +841,38 @@
     [],
     [],
     [
-      "<a href=\"#rangeid=1814990324\"><span style=\"color:#a2c4c9\"><b><u>Mobility</u></b></span></a>"
+      "<a href=\"#rangeid=1814990324\"><span style=\"color:#a2c4c9\"><b>Mobility</b></span></a>"
     ],
     [],
     [],
     [],
     [
-      "<a href=\"#rangeid=1919723833\"><span style=\"color:#dd7e6b\"><b><u>Resilience</u></b></span></a>"
+      "<a href=\"#rangeid=1919723833\"><span style=\"color:#dd7e6b\"><b>Resilience</b></span></a>"
     ],
     [],
     [],
     [],
     [
-      "<a href=\"#rangeid=1042446970\"><span style=\"color:#ffd966\"><b><u>Recovery</u></b></span></a>"
+      "<a href=\"#rangeid=1042446970\"><span style=\"color:#ffd966\"><b>Recovery</b></span></a>"
     ]
   ],
   [
     [],
     [],
     [
-      "<a href=\"#rangeid=435886154\"><span style=\"color:#f6b26b\"><b><u>Discipline</u></b></span></a>"
+      "<a href=\"#rangeid=435886154\"><span style=\"color:#f6b26b\"><b>Discipline</b></span></a>"
     ],
     [],
     [],
     [],
     [
-      "<a href=\"#rangeid=909938578\"><span style=\"color:#ffd966\"><b><u>Intellect</u></b></span></a>"
+      "<a href=\"#rangeid=909938578\"><span style=\"color:#ffd966\"><b>Intellect</b></span></a>"
     ],
     [],
     [],
     [],
     [
-      "<a href=\"#rangeid=1479393979\"><span style=\"color:#79bec3\"><b><u>Strength</u></b></span></a>"
+      "<a href=\"#rangeid=1479393979\"><span style=\"color:#79bec3\"><b>Strength</b></span></a>"
     ]
   ],
   [
@@ -1946,7 +1946,7 @@
     [],
     [],
     [
-      "<a href=\"#rangeid=1017709050\"><span style=\"color:#ffd966\"><b><u>Head over to Super Ability Energy for a more detailed explanation.</u></b></span></a>"
+      "<a href=\"#rangeid=1017709050\"><span style=\"color:#ffd966\"><b>Head over to Super Ability Energy for a more detailed explanation.</b></span></a>"
     ]
   ],
   [
@@ -2742,7 +2742,7 @@
       "<span style=\"color:#c54229\"><b>Dread</b></span>"
     ],
     [
-      "<span style=\"color:#93c47d\"><b><i>Massive thanks to MossyMax for his</i></b></span> <a href=\"https://docs.google.com/spreadsheets/d/1b57Hb8m1L3daFfUckQQqvvN6VOpD03KEssvQLMFpC5I/edit#gid=1096943094\"><span style=\"color:#93c47d\"><b><i><u>Outgoing Damage Scaling Spreadsheet</u></i></b></span></a><span style=\"color:#93c47d\"><b><i>, which further details how HP enemy scales throughout different Activities, and more!</i></b></span>"
+      "<span style=\"color:#93c47d\"><b><i>Massive thanks to MossyMax for his</i></b></span> <a href=\"https://docs.google.com/spreadsheets/d/1b57Hb8m1L3daFfUckQQqvvN6VOpD03KEssvQLMFpC5I/edit#gid=1096943094\"><span style=\"color:#93c47d\"><b><i>Outgoing Damage Scaling Spreadsheet</i></b></span></a><span style=\"color:#93c47d\"><b><i>, which further details how HP enemy scales throughout different Activities, and more!</i></b></span>"
     ]
   ],
   [
@@ -2917,7 +2917,7 @@
     [],
     [],
     [
-      "<span style=\"color:#d9d9d9\"><b><i>Need information about</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Combatant Ranks</i></b></span><span style=\"color:#d9d9d9\"><b><i>, instead of their</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Tiers</i></b></span><span style=\"color:#d9d9d9\"><b><i>? Head over to</i></b></span> <a href=\"https://docs.google.com/spreadsheets/d/1i1KUwgVkd8qhwYj481gkV9sZNJQCE-C3Q-dpQutPCi4/edit#gid=828270348\"><span style=\"color:#6aa84f\"><b><i><u>Court's Infographic</u></i></b></span></a> <span style=\"color:#d9d9d9\"><b><i>to find out about their interactions!</i></b></span>"
+      "<span style=\"color:#d9d9d9\"><b><i>Need information about</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Combatant Ranks</i></b></span><span style=\"color:#d9d9d9\"><b><i>, instead of their</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Tiers</i></b></span><span style=\"color:#d9d9d9\"><b><i>? Head over to</i></b></span> <a href=\"https://docs.google.com/spreadsheets/d/1i1KUwgVkd8qhwYj481gkV9sZNJQCE-C3Q-dpQutPCi4/edit#gid=828270348\"><span style=\"color:#6aa84f\"><b><i>Court's Infographic</i></b></span></a> <span style=\"color:#d9d9d9\"><b><i>to find out about their interactions!</i></b></span>"
     ]
   ],
   [

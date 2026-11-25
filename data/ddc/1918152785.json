@@ -1,7 +1,7 @@
 [
   [
     [
-      "<a href=\"#rangeid=74612235\"><span style=\"color:#fbbdec\"><b><i><u>Go back to the top!</u></i></b></span></a>"
+      "<a href=\"#rangeid=74612235\"><span style=\"color:#fbbdec\"><b><i>Go back to the top!</i></b></span></a>"
     ],
     [],
     [],
@@ -18,27 +18,27 @@
     [],
     [],
     [
-      "<a href=\"https://www.patreon.com/DataCompendium\"><span style=\"color:#9fc5e8\"><b><i><u>Support the Data Compendium</u></i></b></span></a>"
+      "<a href=\"https://www.patreon.com/DataCompendium\"><span style=\"color:#9fc5e8\"><b><i>Support the Data Compendium</i></b></span></a>"
     ]
   ],
   [
     [],
     [
-      "<a href=\"#rangeid=174671826\"><span style=\"color:#d9d9d9\"><b><u>Hunter</u></b></span></a>"
+      "<a href=\"#rangeid=174671826\"><span style=\"color:#d9d9d9\"><b>Hunter</b></span></a>"
     ],
     [],
     [],
     [],
     [],
     [
-      "<a href=\"#rangeid=1928369825\"><span style=\"color:#d9d9d9\"><b><u>Titan</u></b></span></a>"
+      "<a href=\"#rangeid=1928369825\"><span style=\"color:#d9d9d9\"><b>Titan</b></span></a>"
     ],
     [],
     [],
     [],
     [],
     [
-      "<a href=\"#rangeid=1636315844\"><span style=\"color:#cccccc\"><b><u>Warlock</u></b></span></a>"
+      "<a href=\"#rangeid=1636315844\"><span style=\"color:#cccccc\"><b>Warlock</b></span></a>"
     ]
   ],
   [
@@ -210,7 +210,7 @@
     [],
     [
       "<span style=\"color:#89cdd1\"><b>Melee Kills</b></span> <span style=\"color:#dd7e6b\"><b>begin health regeneration</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
-      "<span style=\"color:#cccccc\"><b>Effect applies to</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>within ? metres while</b></span> <span style=\"color:#fbbdec\"><b>Transcendent</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+      "<span style=\"color:#cccccc\"><b>Effect applies to</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>within 12 metres while</b></span> <span style=\"color:#fbbdec\"><b>Transcendent</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
     ],
     [],
     [],
@@ -256,7 +256,7 @@
     ],
     [],
     [
-      "<span style=\"color:#8e7cc3\"><b>Suppressing</b></span> <span style=\"color:#cccccc\"><b>or</b></span> <span style=\"color:#3d85c6\"><b>Freezing</b></span> <span style=\"color:#cccccc\"><b>an enemy refills the readied weapon and grants +20? Stability, +? Aim Assist, and +40 Airborne Effectiveness for 11 seconds.</b></span>",
+      "<span style=\"color:#8e7cc3\"><b>Suppressing</b></span> <span style=\"color:#cccccc\"><b>or</b></span> <span style=\"color:#3d85c6\"><b>Freezing</b></span> <span style=\"color:#cccccc\"><b>an enemy refills the readied weapon and grants +20 Stability, +15 Aim Assist, and +40 Airborne Effectiveness for 11 seconds.</b></span>",
       "<span style=\"color:#e06666\"><b><i>Incurs a 4 second cooldown before it can be reactivated.</i></b></span>",
       "",
       "<span style=\"color:#cccccc\"><b>Killing</b></span> <span style=\"color:#3d85c6\"><b>Frozen</b></span> <span style=\"color:#cccccc\"><b>or</b></span> <span style=\"color:#8e7cc3\"><b>Suppressed</b></span> <span style=\"color:#cccccc\"><b>Enemies spawns a</b></span> <span style=\"color:#9fc5e8\"><b>Stasis Shard</b></span> <span style=\"color:#cccccc\"><b>or</b></span> <span style=\"color:#bba5f3\"><b>Void Breach</b></span> <span style=\"color:#cccccc\"><b>respectively.</b></span>"
@@ -307,7 +307,7 @@
     [
       "<span style=\"color:#89cdd1\"><b>Powered Melee Hits</b></span> <span style=\"color:#cccccc\"><b>grant</b></span> <span style=\"color:#ffd966\"><b>Radiant</b></span> <span style=\"color:#cccccc\"><b>for 5 seconds.</b></span>",
       "",
-      "<span style=\"color:#89cdd1\"><b>Powered Melee Kills</b></span> <span style=\"color:#cccccc\"><b>grant</b></span> <span style=\"color:#ffd966\"><b>Radiant</b></span> <span style=\"color:#cccccc\"><b>for 5 seconds to the user and</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>within ? metres.</b></span>"
+      "<span style=\"color:#89cdd1\"><b>Powered Melee Kills</b></span> <span style=\"color:#cccccc\"><b>grant</b></span> <span style=\"color:#ffd966\"><b>Radiant</b></span> <span style=\"color:#cccccc\"><b>for 5 seconds to the user and</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>within 8 metres.</b></span>"
     ],
     [],
     [],
@@ -429,7 +429,7 @@
     [
       "<span style=\"color:#999999\"><b>Kinetic Weapon Kills</b></span> <span style=\"color:#cccccc\"><b>grant an additional</b></span> <span style=\"color:#a4c2f4\"><b>2%</b></span> <span style=\"color:#ea9999\"><b>[?%]</b></span> <span style=\"color:#fbbdec\"><b>Transcendence energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "",
-      "<span style=\"color:#ffd966\"><b>Super Kills</b></span> <span style=\"color:#cccccc\"><b>grant an additional</b></span> <span style=\"color:#a4c2f4\"><b>2%</b></span> <span style=\"color:#ea9999\"><b>[?%]</b></span> <span style=\"color:#fbbdec\"><b>Transcendence Energy</b></span> <span style=\"color:#cccccc\"><b>to the user and</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>within ? metres.</b></span>"
+      "<span style=\"color:#ffd966\"><b>Super Kills</b></span> <span style=\"color:#cccccc\"><b>grant an additional</b></span> <span style=\"color:#a4c2f4\"><b>2%</b></span> <span style=\"color:#ea9999\"><b>[?%]</b></span> <span style=\"color:#fbbdec\"><b>Transcendence Energy</b></span> <span style=\"color:#cccccc\"><b>to the user and</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>within 15 metres.</b></span>"
     ],
     [],
     [],
@@ -545,9 +545,13 @@
     [],
     [
       "<span style=\"color:#cccccc\"><i>While within</i> <b><i>15 metres</i></b> <i>of</i> <b><i>3 enemies:</i></b></span>",
-      "<span style=\"color:#a4c2f4\"><b>15%</b></span> <span style=\"color:#ea9999\"><b>[?%]</b></span> <span style=\"color:#cccccc\"><b>Damage Resist.</b></span>",
-      "<span style=\"color:#e06666\"><b><i>In-Game Description is erroneous, the effect does NOT become increased while Transcendent.</i></b></span>",
-      "<span style=\"color:#e06666\"><b><i>Instead, the 15% DR from Protection stacks with Transcendence's 20%, totalling 32% DR.</i></b></span>"
+      "<span style=\"color:#cccccc\"><b>Up to</b></span> <span style=\"color:#a4c2f4\"><b>15%</b></span> <span style=\"color:#ea9999\"><b>[5%]</b></span> <span style=\"color:#cccccc\"><b>Damage Resist.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>25%</b></span> <span style=\"color:#ea9999\"><b>[10%]</b></span> <span style=\"color:#cccccc\"><b>Damage Resist while</b></span> <span style=\"color:#fbbdec\"><b>Transcendent</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Buff lingers for 2 seconds.</i></span> <span style=\"color:#e06666\"><i>Disabled in Super Ability.</i></span>",
+      "",
+      "<span style=\"color:#fbbdec\"><b>Facet of Protection's</b></span> <span style=\"color:#cccccc\"><b>Damage Resist is lowered based on the amount of Resist Stacks active.</b></span>",
+      "<span style=\"color:#cccccc\"><b>x0 =</b></span> <span style=\"color:#a4c2f4\"><b>15%</b></span> <span style=\"color:#ea9999\"><b>[0.95%]</b></span> <span style=\"color:#cccccc\"><b>| x1 =</b></span> <span style=\"color:#a4c2f4\"><b>7.5%</b></span> <span style=\"color:#ea9999\"><b>[0%]</b></span> <span style=\"color:#cccccc\"><b>| x2+ =</b></span> <span style=\"color:#e06666\"><b>DISABLED</b></span>",
+      "<span style=\"color:#fbbdec\"><b>+Transcendence</b></span><span style=\"color:#cccccc\"><b>: x0 =</b></span> <span style=\"color:#a4c2f4\"><b>25%</b></span> <span style=\"color:#ea9999\"><b>[10%]</b></span> <span style=\"color:#cccccc\"><b>| x1 =</b></span> <span style=\"color:#a4c2f4\"><b>15%</b></span> <span style=\"color:#ea9999\"><b>[0.95%]</b></span> <span style=\"color:#cccccc\"><b>| x2 =</b></span> <span style=\"color:#e06666\"><b>DISABLED</b></span>"
     ],
     [],
     [],
@@ -622,7 +626,8 @@
     ],
     [],
     [
-      "<span style=\"color:#d5a6bd\"><b>Ability Kills</b></span> <span style=\"color:#cccccc\"><b>while affected by an</b></span> <span style=\"color:#89cdd1\"><b>Arc</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#f6b26b\"><b>Solar</b></span><span style=\"color:#cccccc\"><b>, or</b></span> <span style=\"color:#bba5f3\"><b>Void</b></span> <span style=\"color:#d5a6bd\"><b>Elemental Buff</b></span> <span style=\"color:#cccccc\"><b>grant an additional</b></span> <span style=\"color:#a4c2f4\"><b>1%</b></span> <span style=\"color:#ea9999\"><b>[?%]</b></span> <span style=\"color:#b45f06\"><b>Darkness Transcendence Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+      "<span style=\"color:#d5a6bd\"><b>Ability Kills</b></span> <span style=\"color:#cccccc\"><b>while affected by an</b></span> <span style=\"color:#89cdd1\"><b>Arc</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#f6b26b\"><b>Solar</b></span><span style=\"color:#cccccc\"><b>, or</b></span> <span style=\"color:#bba5f3\"><b>Void</b></span> <span style=\"color:#d5a6bd\"><b>Elemental Buff</b></span> <span style=\"color:#cccccc\"><b>grant an additional</b></span> <span style=\"color:#b45f06\"><b>1% Darkness Transcendence Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#e06666\"><i>Technically filters by Enemy Rank properly, but always results in giving 1% Darkness Energy.</i></span>"
     ],
     [],
     [],
@@ -736,23 +741,23 @@
     [],
     [],
     [
-      "<a href=\"#rangeid=891033991\"><span style=\"color:#89cdd1\"><b><u>Arcbolt Grenade</u></b></span></a>"
+      "<a href=\"#rangeid=891033991\"><span style=\"color:#89cdd1\"><b>Arcbolt Grenade</b></span></a>"
     ],
     [],
     [
-      "<a href=\"#rangeid=1384208436\"><span style=\"color:#e0a261\"><b><u>Swarm Grenade</u></b></span></a>"
+      "<a href=\"#rangeid=1384208436\"><span style=\"color:#e0a261\"><b>Swarm Grenade</b></span></a>"
     ],
     [],
     [
-      "<a href=\"#rangeid=1293072120\"><span style=\"color:#bba5f3\"><b><u>Magnetic Grenade</u></b></span></a>"
+      "<a href=\"#rangeid=1293072120\"><span style=\"color:#bba5f3\"><b>Magnetic Grenade</b></span></a>"
     ],
     [],
     [
-      "<a href=\"#rangeid=827510140\"><span style=\"color:#6fa8dc\"><b><u>Duskfield Grenade</u></b></span></a>"
+      "<a href=\"#rangeid=827510140\"><span style=\"color:#6fa8dc\"><b>Duskfield Grenade</b></span></a>"
     ],
     [],
     [
-      "<a href=\"#rangeid=1521397141\"><span style=\"color:#63d275\"><b><u>Grapple</u></b></span></a>"
+      "<a href=\"#rangeid=1521397141\"><span style=\"color:#63d275\"><b>Grapple</b></span></a>"
     ]
   ],
   [
@@ -760,23 +765,23 @@
     [],
     [],
     [
-      "<a href=\"#rangeid=748172508\"><span style=\"color:#89cdd1\"><b><u>Combination Blow</u></b></span></a>"
+      "<a href=\"#rangeid=748172508\"><span style=\"color:#89cdd1\"><b>Combination Blow</b></span></a>"
     ],
     [],
     [
-      "<a href=\"#rangeid=122348616\"><span style=\"color:#e0a261\"><b><u>Knife Trick</u></b></span></a>"
+      "<a href=\"#rangeid=122348616\"><span style=\"color:#e0a261\"><b>Knife Trick</b></span></a>"
     ],
     [],
     [
-      "<a href=\"#rangeid=1949847365\"><span style=\"color:#bba5f3\"><b><u>Snare Bomb</u></b></span></a>"
+      "<a href=\"#rangeid=1949847365\"><span style=\"color:#bba5f3\"><b>Snare Bomb</b></span></a>"
     ],
     [],
     [
-      "<a href=\"#rangeid=821788189\"><span style=\"color:#6fa8dc\"><b><u>Withering Blade</u></b></span></a>"
+      "<a href=\"#rangeid=821788189\"><span style=\"color:#6fa8dc\"><b>Withering Blade</b></span></a>"
     ],
     [],
     [
-      "<a href=\"#rangeid=1460071069\"><span style=\"color:#63d275\"><b><u>Threaded Spike</u></b></span></a>"
+      "<a href=\"#rangeid=1460071069\"><span style=\"color:#63d275\"><b>Threaded Spike</b></span></a>"
     ]
   ],
   [
@@ -954,23 +959,23 @@
     [],
     [],
     [
-      "<a href=\"#rangeid=1779389161\"><span style=\"color:#89cdd1\"><b><u>Pulse Grenade</u></b></span></a>"
+      "<a href=\"#rangeid=1779389161\"><span style=\"color:#89cdd1\"><b>Pulse Grenade</b></span></a>"
     ],
     [],
     [
-      "<a href=\"#rangeid=1531448449\"><span style=\"color:#e0a261\"><b><u>Thermite Grenade</u></b></span></a>"
+      "<a href=\"#rangeid=1531448449\"><span style=\"color:#e0a261\"><b>Thermite Grenade</b></span></a>"
     ],
     [],
     [
-      "<a href=\"#rangeid=655031269\"><span style=\"color:#bba5f3\"><b><u>Suppressor Grenade</u></b></span></a>"
+      "<a href=\"#rangeid=655031269\"><span style=\"color:#bba5f3\"><b>Suppressor Grenade</b></span></a>"
     ],
     [],
     [
-      "<a href=\"#rangeid=2133662700\"><span style=\"color:#6fa8dc\"><b><u>Glacier Grenade</u></b></span></a>"
+      "<a href=\"#rangeid=2133662700\"><span style=\"color:#6fa8dc\"><b>Glacier Grenade</b></span></a>"
     ],
     [],
     [
-      "<a href=\"#rangeid=2006076164\"><span style=\"color:#63d275\"><b><u>Shackle Grenade</u></b></span></a>"
+      "<a href=\"#rangeid=2006076164\"><span style=\"color:#63d275\"><b>Shackle Grenade</b></span></a>"
     ]
   ],
   [
@@ -978,23 +983,23 @@
     [],
     [],
     [
-      "<a href=\"#rangeid=2023901648\"><span style=\"color:#89cdd1\"><b><u>Thunderclap</u></b></span></a>"
+      "<a href=\"#rangeid=2023901648\"><span style=\"color:#89cdd1\"><b>Thunderclap</b></span></a>"
     ],
     [],
     [
-      "<a href=\"#rangeid=2027843506\"><span style=\"color:#e0a261\"><b><u>Hammer Strike</u></b></span></a>"
+      "<a href=\"#rangeid=2027843506\"><span style=\"color:#e0a261\"><b>Hammer Strike</b></span></a>"
     ],
     [],
     [
-      "<a href=\"#rangeid=1104973326\"><span style=\"color:#bba5f3\"><b><u>Shield Throw</u></b></span></a>"
+      "<a href=\"#rangeid=1104973326\"><span style=\"color:#bba5f3\"><b>Shield Throw</b></span></a>"
     ],
     [],
     [
-      "<a href=\"#rangeid=179050183\"><span style=\"color:#6fa8dc\"><b><u>Shiver Strike</u></b></span></a>"
+      "<a href=\"#rangeid=179050183\"><span style=\"color:#6fa8dc\"><b>Shiver Strike</b></span></a>"
     ],
     [],
     [
-      "<a href=\"#rangeid=495798642\"><span style=\"color:#63d275\"><b><u>Frenzied Blade</u></b></span></a>"
+      "<a href=\"#rangeid=495798642\"><span style=\"color:#63d275\"><b>Frenzied Blade</b></span></a>"
     ]
   ],
   [
@@ -1189,23 +1194,23 @@
     [],
     [],
     [
-      "<a href=\"#rangeid=53665252\"><span style=\"color:#89cdd1\"><b><u>Storm Grenade</u></b></span></a>"
+      "<a href=\"#rangeid=53665252\"><span style=\"color:#89cdd1\"><b>Storm Grenade</b></span></a>"
     ],
     [],
     [
-      "<a href=\"#rangeid=637598285\"><span style=\"color:#e0a261\"><b><u>Healing Grenade</u></b></span></a>"
+      "<a href=\"#rangeid=637598285\"><span style=\"color:#e0a261\"><b>Healing Grenade</b></span></a>"
     ],
     [],
     [
-      "<a href=\"#rangeid=859759584\"><span style=\"color:#bba5f3\"><b><u>Vortex Grenade</u></b></span></a>"
+      "<a href=\"#rangeid=859759584\"><span style=\"color:#bba5f3\"><b>Vortex Grenade</b></span></a>"
     ],
     [],
     [
-      "<a href=\"#rangeid=1276848175\"><span style=\"color:#6fa8dc\"><b><u>Coldsnap Grenade</u></b></span></a>"
+      "<a href=\"#rangeid=1276848175\"><span style=\"color:#6fa8dc\"><b>Coldsnap Grenade</b></span></a>"
     ],
     [],
     [
-      "<a href=\"#rangeid=1596236605\"><span style=\"color:#63d275\"><b><u>Threadling Grenade</u></b></span></a>"
+      "<a href=\"#rangeid=1596236605\"><span style=\"color:#63d275\"><b>Threadling Grenade</b></span></a>"
     ]
   ],
   [
@@ -1213,23 +1218,23 @@
     [],
     [],
     [
-      "<a href=\"#rangeid=219810703\"><span style=\"color:#89cdd1\"><b><u>Chain Lightning</u></b></span></a>"
+      "<a href=\"#rangeid=219810703\"><span style=\"color:#89cdd1\"><b>Chain Lightning</b></span></a>"
     ],
     [],
     [
-      "<a href=\"#rangeid=1957231093\"><span style=\"color:#e0a261\"><b><u>Incinerator Snap</u></b></span></a>"
+      "<a href=\"#rangeid=1957231093\"><span style=\"color:#e0a261\"><b>Incinerator Snap</b></span></a>"
     ],
     [],
     [
-      "<a href=\"#rangeid=1582093136\"><span style=\"color:#bba5f3\"><b><u>Pocket Singularity</u></b></span></a>"
+      "<a href=\"#rangeid=1582093136\"><span style=\"color:#bba5f3\"><b>Pocket Singularity</b></span></a>"
     ],
     [],
     [
-      "<a href=\"#rangeid=1770395003\"><span style=\"color:#6fa8dc\"><b><u>Penumbral Blast</u></b></span></a>"
+      "<a href=\"#rangeid=1770395003\"><span style=\"color:#6fa8dc\"><b>Penumbral Blast</b></span></a>"
     ],
     [],
     [
-      "<a href=\"#rangeid=335415256\"><span style=\"color:#63d275\"><b><u>Arcane Needle</u></b></span></a>"
+      "<a href=\"#rangeid=335415256\"><span style=\"color:#63d275\"><b>Arcane Needle</b></span></a>"
     ]
   ],
   [

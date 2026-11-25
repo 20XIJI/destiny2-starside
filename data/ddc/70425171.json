@@ -279,7 +279,7 @@
       "<span style=\"color:#d5a6bd\"><b>Nanotech Tracer Rockets</b></span>",
       "<span style=\"color:#5bb661\"><b>Sundering</b></span>",
       "",
-      "<a href=\"#rangeid=1948232030\"><span style=\"color:#a2c4c9\"><b><u>Click Here to see their improved effects</u></b></span></a><span style=\"color:#a2c4c9\"><b>.</b></span>",
+      "<a href=\"#rangeid=1948232030\"><span style=\"color:#a2c4c9\"><b>Click Here to see their improved effects</b></span></a><span style=\"color:#a2c4c9\"><b>.</b></span>",
       "",
       "<span style=\"color:#cc4125\"><i>Does not affect</i></span> <span style=\"color:#ffd966\"><i>Quicksilver Storm's Micro-Rockets</i></span><span style=\"color:#cc4125\"><i>, despite what</i> <b><i>some</i></b> <i>may say.</i></span>"
     ],
@@ -294,7 +294,7 @@
       "<span style=\"color:#c2a037\"><b>Noble Deeds</b></span>",
       "<span style=\"color:#67c9cf\"><b>Unsated Hunger</b></span>",
       "",
-      "<a href=\"#rangeid=1948232030\"><span style=\"color:#a2c4c9\"><b><u>Click Here to see their improved effects</u></b></span></a><span style=\"color:#a2c4c9\"><b>.</b></span>"
+      "<a href=\"#rangeid=1948232030\"><span style=\"color:#a2c4c9\"><b>Click Here to see their improved effects</b></span></a><span style=\"color:#a2c4c9\"><b>.</b></span>"
     ],
     [],
     [],
@@ -580,7 +580,7 @@
       "<span style=\"color:#a5b5b5\"><b>Can be picked up and thrown.</b></span>",
       "<span style=\"color:#a5b5b5\"><b>Deal</b></span> <span style=\"color:#a4c2f4\"><b>450</b></span> <span style=\"color:#ea9999\"><b>[101]</b></span> <span style=\"color:#a5b5b5\"><b>damage and apply</b></span> <span style=\"color:#d5a6bd\"><b>Volatile</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
       "",
-      "<a href=\"#rangeid=1302500297\"><span style=\"color:#a4c2f4\"><b><i><u>For more information, head to Game Mechanics.</u></i></b></span></a>"
+      "<a href=\"#rangeid=1302500297\"><span style=\"color:#a4c2f4\"><b><i>For more information, head to Game Mechanics.</i></b></span></a>"
     ],
     [],
     [],
@@ -650,7 +650,7 @@
       "<span style=\"color:#d5a6bd\"><b>Nanotech Tracer Rockets</b></span>",
       "<span style=\"color:#67c9cf\"><b>Unsated Hunger</b></span>",
       "",
-      "<a href=\"#rangeid=1948232030\"><span style=\"color:#a2c4c9\"><b><u>Click Here to see their improved effects</u></b></span></a><span style=\"color:#a2c4c9\"><b>.</b></span>"
+      "<a href=\"#rangeid=1948232030\"><span style=\"color:#a2c4c9\"><b>Click Here to see their improved effects</b></span></a><span style=\"color:#a2c4c9\"><b>.</b></span>"
     ],
     [],
     [],
@@ -663,7 +663,7 @@
       "<span style=\"color:#a5b5b5\"><b>Can be picked up and thrown.</b></span>",
       "<span style=\"color:#a5b5b5\"><b>Deal</b></span> <span style=\"color:#a4c2f4\"><b>450</b></span> <span style=\"color:#ea9999\"><b>[101]</b></span> <span style=\"color:#a5b5b5\"><b>damage and apply</b></span> <span style=\"color:#76a5af\"><b>Jolt</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
       "",
-      "<a href=\"#rangeid=1302500297\"><span style=\"color:#a4c2f4\"><b><i><u>For more information, head to Game Mechanics.</u></i></b></span></a>"
+      "<a href=\"#rangeid=1302500297\"><span style=\"color:#a4c2f4\"><b><i>For more information, head to Game Mechanics.</i></b></span></a>"
     ],
     [],
     [],
@@ -732,7 +732,7 @@
       "<span style=\"color:#a5b5b5\"><b>Can be picked up and thrown.</b></span>",
       "<span style=\"color:#a5b5b5\"><b>Deals</b></span> <span style=\"color:#a4c2f4\"><b>450</b></span> <span style=\"color:#ea9999\"><b>[101]</b></span> <span style=\"color:#a5b5b5\"><b>damage and</b></span> <span style=\"color:#f6b26b\"><b>x40<small>+20</small> Scorch</b></span><span style=\"color:#a5b5b5\"><b>.</b></span>",
       "",
-      "<a href=\"#rangeid=1302500297\"><span style=\"color:#a4c2f4\"><b><i><u>For more information, head to Game Mechanics.</u></i></b></span></a>"
+      "<a href=\"#rangeid=1302500297\"><span style=\"color:#a4c2f4\"><b><i>For more information, head to Game Mechanics.</i></b></span></a>"
     ],
     [],
     [],
@@ -876,7 +876,7 @@
       "<span style=\"color:#c2a037\"><b>Noble Deeds</b></span>",
       "<span style=\"color:#67c9cf\"><b>Unsated Hunger</b></span>",
       "",
-      "<a href=\"#rangeid=1948232030\"><span style=\"color:#a2c4c9\"><b><u>Click Here to see their improved effects</u></b></span></a><span style=\"color:#a2c4c9\"><b>.</b></span>"
+      "<a href=\"#rangeid=1948232030\"><span style=\"color:#a2c4c9\"><b>Click Here to see their improved effects</b></span></a><span style=\"color:#a2c4c9\"><b>.</b></span>"
     ],
     [],
     [],
@@ -1724,7 +1724,7 @@
     [],
     [
       "<span style=\"color:#b2d6d7\"><b><i>For older Artifact Mods between Season 16 and Season 19:</i></b></span>",
-      "<span style=\"color:#b2d6d7\">Go to the</span> <a href=\"#gid=1925335732\"><span style=\"color:#d5a6bd\"><u>Old Armor Mods tab</u></span></a> <span style=\"color:#b2d6d7\">and scroll down.</span>"
+      "<span style=\"color:#b2d6d7\">Go to the</span> <a href=\"#gid=1925335732\"><span style=\"color:#d5a6bd\">Old Armor Mods tab</span></a> <span style=\"color:#b2d6d7\">and scroll down.</span>"
     ]
   ]
 ]

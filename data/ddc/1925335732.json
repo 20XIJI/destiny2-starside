@@ -27,7 +27,7 @@
     [],
     [],
     [
-      "<a href=\"#gid=1800463143\"><span style=\"color:#c9daf8\"><b><i><u>Don't know how Warmind Cells and Elemental Wells work? Click here to be redirected to Game Mechanics.</u></i></b></span></a>"
+      "<a href=\"#gid=1800463143\"><span style=\"color:#c9daf8\"><b><i>Don't know how Warmind Cells and Elemental Wells work? Click here to be redirected to Game Mechanics.</i></b></span></a>"
     ],
     [],
     [],
@@ -447,7 +447,7 @@
       "",
       "<span style=\"color:#a4c2f4\"><b><u>ONLY APPLIES IN PVE.</u></b></span>",
       "",
-      "<a href=\"https://docs.google.com/spreadsheets/d/1i1KUwgVkd8qhwYj481gkV9sZNJQCE-C3Q-dpQutPCi4/edit#gid=1048311855\"><span style=\"color:#b6d7a8\"><b><u>How does Damage Resist wor</u></b></span></a><span style=\"color:#b6d7a8\"><b><u>k?</u></b></span>"
+      "<a href=\"https://docs.google.com/spreadsheets/d/1i1KUwgVkd8qhwYj481gkV9sZNJQCE-C3Q-dpQutPCi4/edit#gid=1048311855\"><span style=\"color:#b6d7a8\"><b>How does Damage Resist wor</b></span></a><span style=\"color:#b6d7a8\"><b><u>k?</u></b></span>"
     ],
     [
       "<span style=\"color:#f9cb9c\"><b>Innervation</b></span>",
@@ -1552,10 +1552,11 @@
     [],
     [
       "<span style=\"color:#b6d7a8\"><b>If</b></span> <span style=\"color:#93c47d\"><b>CWL</b></span><span style=\"color:#b6d7a8\"><b>:</b></span>",
-      "<span style=\"color:#dd7e6b\"><b>Reviving</b></span> <span style=\"color:#b6d7a8\"><b>an ally grants</b></span> <span style=\"color:#dd7e6b\"><b>[?]HP.</b></span>",
+      "<span style=\"color:#dd7e6b\"><b>Reviving</b></span> <span style=\"color:#b6d7a8\"><b>an ally grants</b></span> <span style=\"color:#dd7e6b\"><b>50HP.</b></span>",
       "<span style=\"color:#b6d7a8\"><b>-1 Stack per Revive.</b></span>",
       "",
-      "<span style=\"color:#f9cb9c\"><b>+HP per Copy.</b></span>"
+      "<span style=\"color:#f9cb9c\"><b>+50 HP per Copy.</b></span>",
+      "<span style=\"color:#b6d7a8\"><i>Updating this in November 2026???</i></span>"
     ],
     [
       "<span style=\"color:#f9cb9c\"><b>Sustained Charge</b></span>",

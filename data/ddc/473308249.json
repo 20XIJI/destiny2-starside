@@ -64,7 +64,7 @@
     [
       "<span style=\"color:#cccccc\"><i>Upon</i> <b><i>breaking</i></b> <i>a</i></span> <span style=\"color:#a4c2f4\"><b><i>Combatant's Shield</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>+20 Stability, +20? Handling, and +20 Reload Speed for 10 seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><b>+20 Stability, +20 Handling, and +20 Reload Speed for 10 seconds.</b></span>",
       "<span style=\"color:#a481e1\"><b>Swords receive +20 Guard Resistance.</b></span>"
     ],
     [],
@@ -75,12 +75,14 @@
       "",
       "<span style=\"color:#cccccc\"><i>Upon scoring</i></span> <span style=\"color:#76a5af\"><b><i>3 Arc-Debuffed Enemy Kills</i></b></span> <span style=\"color:#cccccc\"><i>within</i> <b><i>6 seconds</i></b> <i>of each:</i></span>",
       "<span style=\"color:#cccccc\"><b>Spawns an</b></span> <span style=\"color:#ffd966\"><b>Orb of Power</b></span> <span style=\"color:#cccccc\"><b>that grants</b></span> <span style=\"color:#ffd966\"><b>7.15% Super Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
-      "<span style=\"color:#dd7e6b\"><b>Restores 40 HP.</b></span>"
+      "<span style=\"color:#dd7e6b\"><b>Restores 35 HP.</b></span>"
     ],
     [],
     [],
     [
-      "<span style=\"color:#cccccc\"><i>Upon scoring</i></span> <span style=\"color:#a4c2f4\"><b><i>6</i></b></span> <span style=\"color:#ea9999\"><b><i>[2?]</i></b></span> <span style=\"color:#89cdd1\"><b><i>Arc Weapon Kills</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><i>Upon reaching</i></span> <span style=\"color:#89cdd1\"><b><i>12 Counter Points</i></b></span> <span style=\"color:#cccccc\"><i>through</i></span> <span style=\"color:#89cdd1\"><b><i>Arc Weapon Kills</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#a4c2f4\"><b>Combatant = +2</b></span> <span style=\"color:#ea9999\"><b>| Guardian = +4</b></span>",
+      "<span style=\"color:#89cdd1\"><b>Arc Weapon Kills have a 20% chance of granting a bonus +1</b></span>",
       "<span style=\"color:#cccccc\"><b>Spawns an</b></span> <span style=\"color:#89cdd1\"><b>Arc Elemental Orb</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "",
       "<span style=\"color:#89cdd1\"><b><i>Arc Elemental Orb:</i></b></span>",
@@ -110,17 +112,17 @@
   [
     [],
     [
-      "<span style=\"color:#cccccc\"><b>Dealing</b></span> <span style=\"color:#999999\"><b>Kinetic Weapon Damage</b></span> <span style=\"color:#cccccc\"><b>and scoring</b></span> <span style=\"color:#999999\"><b>Kinetic Weapon Kills</b></span> <span style=\"color:#cccccc\"><b>progress a counter, spawning an unique</b></span> <span style=\"color:#999999\"><b>Kinetic Ammo Brick</b></span> <span style=\"color:#cccccc\"><b>upon reaching 100%.</b></span>",
-      "<span style=\"color:#cccccc\"><b>Counter lasts 15s and is refreshed upon dealing</b></span> <span style=\"color:#999999\"><b>Kinetic Weapon Damage</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Dealing</b></span> <span style=\"color:#999999\"><b>Kinetic Weapon Damage</b></span> <span style=\"color:#cccccc\"><b>and scoring</b></span> <span style=\"color:#999999\"><b>Kinetic Weapon Kills</b></span> <span style=\"color:#cccccc\"><b>progress a</b></span> <span style=\"color:#a481e1\"><b>125 point counter</b></span><span style=\"color:#cccccc\"><b>, spawning an unique</b></span> <span style=\"color:#999999\"><b>Kinetic Ammo Brick</b></span> <span style=\"color:#cccccc\"><b>upon reaching 100%.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Counter that lasts 15s and is refreshed upon dealing</b></span> <span style=\"color:#999999\"><b>Kinetic Weapon Damage</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>Each damage point grants 0.0265% progress, requiring 3770 damage to spawn a brick.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Each damage point grants 0.03% progress, requiring 3770 damage to spawn a brick.</b></span>",
       "<span style=\"color:#a481e1\"><b>A499</b></span> <span style=\"color:#cccccc\"><b>generates 75% less progress (15K damage for a brick).</b></span>",
-      "<span style=\"color:#a4c2f4\"><b>RnF Kill = 8% | Elite = 15% | Miniboss = 25%</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>RnF Kill = 8% | Elite = 16% | Miniboss = 32% | Champion+ = 100%</b></span>",
       "<span style=\"color:#cccccc\"><i>Damage requirement</i></span> <span style=\"color:#e06666\"><i>IGNORES Power-Delta</i></span><span style=\"color:#cccccc\"><i>, but considers ACTUAL DAMAGE DEALT.</i></span>",
       "<span style=\"color:#cccccc\"><i>This means it requires the same \"base damage\" regardless of reduced damage from PL deltas.</i></span>",
       "",
       "<span style=\"color:#cccccc\"><b><i>Upon collecting a</i></b></span> <span style=\"color:#999999\"><b><i>Kinetic Ammo Brick</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
-      "<span style=\"color:#63d275\"><b>+5% Special</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#a481e1\"><b>+5% Heavy</b></span> <span style=\"color:#cccccc\"><b>Ammo Progress.</b></span>",
+      "<span style=\"color:#63d275\"><b>+5% Special</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#a481e1\"><b>+5% Heavy</b></span> <span style=\"color:#cccccc\"><b>Ammo Progress.</b></span> <span style=\"color:#e06666\"><i>Cannot directly spawn a brick.</i></span>",
       "<span style=\"color:#cccccc\"><b>Refills equipped</b></span> <span style=\"color:#999999\"><b>Kinetic Damage Weapons</b></span> <span style=\"color:#cccccc\"><b>and generates</b></span> <span style=\"color:#63d275\"><b>Special</b></span><span style=\"color:#999999\"><b>/</b></span><span style=\"color:#a481e1\"><b>Heavy</b></span> <span style=\"color:#999999\"><b>Ammo</b></span> <span style=\"color:#cccccc\"><b>for them.</b></span>",
       "<span style=\"color:#cccccc\"><b>Generates (1/3rd of Magazine) + 1 Ammo, with certain exceptions.</b></span>",
       "<span style=\"color:#cccccc\"><b>Counts for Ammo Pickup effects.</b></span> <span style=\"color:#999999\"><b>Kinetic Ammo Generation</b></span> <span style=\"color:#cccccc\"><b>is unaffected by Scavenger Bricks.</b></span>",
@@ -133,14 +135,14 @@
       "<span style=\"color:#cccccc\"><i>Upon</i> <b><i>breaking</i></b> <i>a</i></span> <span style=\"color:#a4c2f4\"><b><i>Combatant's Shield</i></b></span> <span style=\"color:#cccccc\"><i>or performing a</i></span> <span style=\"color:#a4c2f4\"><b><i>Finisher</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "",
       "<span style=\"color:#a4c2f4\"><b>10%</b></span> <span style=\"color:#ea9999\"><b>[2.5%]</b></span> <span style=\"color:#cccccc\"><b>Damage Resist</b> <i><small>(Resist x1)</small></i> <b>for 6 seconds.</b></span>",
-      "<span style=\"color:#89cdd1\"><b>100% Increased Melee Damage</b></span> <span style=\"color:#cccccc\"><b>for 6 seconds</b><i>.</i></span>",
-      "<span style=\"color:#ffd966\"><b>Increases Super Melee Damage as well.</b></span>"
+      "<span style=\"color:#89cdd1\"><b>100% Increased Melee Damage</b></span> <span style=\"color:#cccccc\"><b>for 6 seconds</b><i>.</i></span>"
     ],
     [],
     [],
     [
       "<span style=\"color:#cccccc\"><i>Upon scoring enough</i></span> <span style=\"color:#999999\"><b><i>Kinetic Weapon Damage Instances</i></b></span> <span style=\"color:#cccccc\"><i>against</i></span> <span style=\"color:#a4c2f4\"><b><i>Elite+ Combatants</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "<span style=\"color:#cccccc\"><b>Spawns a</b></span> <span style=\"color:#999999\"><b>Kinetic Rupture</b></span> <span style=\"color:#cccccc\"><b>for ? seconds which counts as a</b></span> <span style=\"color:#e69138\"><b>Weakspot</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#e06666\"><i>Incurs a 4 second cooldown before additional Ruptures can spawn.</i></span>",
       "",
       "<span style=\"color:#999999\"><b>Kinetic Ruptures</b></span> <span style=\"color:#cccccc\"><b>can be damaged,</b></span> <span style=\"color:#999999\"><b>activating</b></span> <span style=\"color:#cccccc\"><b>after 0.3? seconds of being dealt damage, stunning</b></span> <span style=\"color:#dd7e6b\"><b>Unstoppable Champions</b></span> <span style=\"color:#cccccc\"><b>and dealing damage based on the amount of damage it received.</b></span>",
       "",
@@ -173,14 +175,16 @@
   [
     [],
     [
-      "<span style=\"color:#cccccc\"><i>Upon scoring a</i></span> <span style=\"color:#f1c232\"><b><i>Precision Hit</i></b></span> <span style=\"color:#cccccc\"><i>with a Bow or Sniper Rifle:</i></span>",
+      "<span style=\"color:#cccccc\"><i>Upon scoring a</i></span> <span style=\"color:#f1c232\"><b><i>Precision Hit</i></b></span> <span style=\"color:#cccccc\"><i>with a</i> <b><i>Bow</i></b> <i>or</i> <b><i>Sniper Rifle</i></b><i>:</i></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>Grants a stack of</b></span> <span style=\"color:#f1c232\"><b>Reload at Range</b></span> <span style=\"color:#cccccc\"><b>for ? seconds, up to</b></span> <span style=\"color:#f1c232\"><b>? stacks</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants a stack of</b></span> <span style=\"color:#f1c232\"><b>Reload at Range</b></span> <span style=\"color:#cccccc\"><b>for 5 seconds, up to</b></span> <span style=\"color:#f1c232\"><b>5 stacks</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "",
       "<span style=\"color:#f1c232\"><b>Reload at Range</b></span><span style=\"color:#cccccc\"><b>:</b></span>",
-      "<span style=\"color:#cccccc\"><b>x1 | +? Reload Speed</b></span>",
-      "<span style=\"color:#cccccc\"><b>x2 | +? Reload Speed</b></span>",
-      "<span style=\"color:#cccccc\"><b>x3 | +? Reload Speed</b></span>"
+      "<span style=\"color:#cccccc\"><b>x1 | +10 Reload Speed and 0.98x Reload Duration Multiplier.</b></span>",
+      "<span style=\"color:#cccccc\"><b>x2 | +20 Reload Speed and 0.96x Reload Duration Multiplier.</b></span>",
+      "<span style=\"color:#cccccc\"><b>x3 | +30 Reload Speed and 0.94x Reload Duration Multiplier.</b></span>",
+      "<span style=\"color:#cccccc\"><b>x4 | +40 Reload Speed and 0.92x Reload Duration Multiplier.</b></span>",
+      "<span style=\"color:#cccccc\"><b>x5 | +50 Reload Speed and 0.90x Reload Duration Multiplier.</b></span>"
     ],
     [],
     [],
@@ -201,7 +205,7 @@
       "<span style=\"color:#ffd966\"><b>Sniper's Meditation</b></span>",
       "<span style=\"color:#cccccc\"><b>Increased Damage, Stability, and Reload Speed.</b></span>",
       "<span style=\"color:#cccccc\"><b>2.8% | 5.7% | 9% | 12% | 15% Increased Damage</b></span>",
-      "<span style=\"color:#cccccc\"><b>+? | +? | +? | +? | +? Stability</b></span>",
+      "<span style=\"color:#cccccc\"><b>+15 | +30 | +35 | +40 | +45 Stability</b></span>",
       "<span style=\"color:#cccccc\"><b>+15 | +30 | +35 | +40 | +45 Reload Speed</b></span>"
     ]
   ],
@@ -234,7 +238,7 @@
     [],
     [],
     [
-      "<span style=\"color:#cccccc\"><i>Upon</i> <b><i>swinging</i></b><i>, then</i> <b><i>waiting for 0.5 seconds</i></b> <i>before</i> <b><i>swinging again while grounded</i></b><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><i>Upon</i> <b><i>swinging</i></b><i>, then</i> <b><i>waiting for 0.6 seconds</i></b> <i>before</i> <b><i>swinging again within 1.5 seconds while grounded</i></b><i>:</i></span>",
       "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#85cab7\"><b>Argent Blade</b></span> <span style=\"color:#cccccc\"><b>for 5 seconds.</b></span>",
       "<span style=\"color:#cccccc\"><i>Buff cannot be refreshed.</i></span>",
       "",
@@ -245,12 +249,12 @@
     [],
     [],
     [
-      "<span style=\"color:#cccccc\"><i>Upon doing</i> <b><i>3 Light Attacks</i></b> <i>followed by a</i> <b><i>Heavy Attack</i></b> <i>while grounded:</i></span>",
+      "<span style=\"color:#cccccc\"><i>Upon performing</i></span> <span style=\"color:#b4a7d6\"><b><i>3 Light Attacks</i></b></span> <span style=\"color:#cccccc\"><i>within 1s of each, followed by a</i></span> <span style=\"color:#a481e1\"><b><i>Heavy Attack</i></b></span> <span style=\"color:#cccccc\"><i>within 1.3s of the last attack, while grounded:</i></span>",
       "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#999999\"><b>Sword Storm Combo</b></span> <span style=\"color:#cccccc\"><b>for 5 seconds.</b></span>",
       "<span style=\"color:#cccccc\"><b>Scoring additional Sword Kills refresh the buff.</b></span>",
       "",
       "<span style=\"color:#999999\"><b>Sword Storm Combo</b></span><span style=\"color:#cccccc\"><b>:</b></span>",
-      "<span style=\"color:#cccccc\"><b>Automatically deals</b></span> <span style=\"color:#a4c2f4\"><b>103</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#999999\"><b>Sword Kinetic Damage</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#999999\"><b>disorients</b></span> <span style=\"color:#cccccc\"><b>on hit for 3 seconds every 0.53 seconds over 6 meters around the user.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Automatically deals</b></span> <span style=\"color:#a4c2f4\"><b>103</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#999999\"><b>Sword Kinetic Damage</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#999999\"><b>disorients</b></span> <span style=\"color:#cccccc\"><b>on hit for 4 seconds every 0.53 seconds over 6 meters around the user.</b></span>",
       "<span style=\"color:#cccccc\"><b>Deals up to 15% more damage at &lt;4 meters.</b></span>"
     ]
   ],
@@ -288,16 +292,17 @@
       "<span style=\"color:#cccccc\"><i>Checks on-hit, instead of snapshotting on-usage.</i></span>",
       "",
       "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#89cdd1\"><b><i>Melee</i></b></span> <span style=\"color:#cccccc\"><i>or</i> <b><i>Sword Kill</i></b> <i>while a</i></span> <span style=\"color:#bba5f3\"><b><i>Void Buff</i></b></span> <span style=\"color:#cccccc\"><i>is</i> <b><i>active</i></b><i>:</i></span>",
-      "<span style=\"color:#cccccc\"><b>Triggers a</b></span> <span style=\"color:#c27ba0\"><b>Weakening Burst</b></span><span style=\"color:#cccccc\"><b>, inflicting</b></span> <span style=\"color:#c27ba0\"><b>Weaken</b></span> <span style=\"color:#cccccc\"><b>to enemies within 4 meters for 6 seconds.</b></span>"
+      "<span style=\"color:#cccccc\"><b>Triggers a</b></span> <span style=\"color:#c27ba0\"><b>Weakening Burst</b></span><span style=\"color:#cccccc\"><b>, inflicting</b></span> <span style=\"color:#c27ba0\"><b>Weaken</b></span> <span style=\"color:#cccccc\"><b>to enemies within 4 meters for 6 seconds.</b></span>",
+      "<span style=\"color:#e06666\"><i>Incurs a 0.1s cooldown between triggers.</i></span>"
     ],
     [],
     [],
     [
       "<span style=\"color:#cccccc\"><i>Upon killing a</i></span> <span style=\"color:#c27ba0\"><i>Weakened Enemy</i></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>Spawns a</b></span> <span style=\"color:#bba5f3\"><b>tracking projectile</b></span> <span style=\"color:#cccccc\"><b>that seeks enemies within 15 meters.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Spawns a</b></span> <span style=\"color:#bba5f3\"><b>seeker projectile</b></span> <span style=\"color:#cccccc\"><b>that seeks enemies within 15 meters.</b></span>",
       "",
-      "<span style=\"color:#bba5f3\"><b>Projectile</b></span> <span style=\"color:#cccccc\"><b>deals</b></span> <span style=\"color:#a4c2f4\"><b>87</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#bba5f3\"><b>Void Damage</b></span> <span style=\"color:#cccccc\"><b>and inflicts</b></span> <span style=\"color:#c27ba0\"><b>Weaken</b></span> <span style=\"color:#cccccc\"><b>over ? meters.</b></span>"
+      "<span style=\"color:#bba5f3\"><b>Seeker</b></span> <span style=\"color:#cccccc\"><b>deals</b></span> <span style=\"color:#a4c2f4\"><b>87</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#bba5f3\"><b>Damage</b></span> <span style=\"color:#cccccc\"><b>and inflicts</b></span> <span style=\"color:#c27ba0\"><b>Weaken</b></span> <span style=\"color:#cccccc\"><b>over 1.5 meters.</b></span>"
     ]
   ],
   [
@@ -329,15 +334,17 @@
     [
       "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#76a5af\"><b><i>Jolted Enemy Kill</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>Inflicts</b></span> <span style=\"color:#999999\"><b>Blind</b></span> <span style=\"color:#cccccc\"><b>to enemies within 8 meters for 10 seconds.</b></span>"
+      "<span style=\"color:#cccccc\"><b>Inflicts</b></span> <span style=\"color:#999999\"><b>Blind</b></span> <span style=\"color:#cccccc\"><b>to enemies within 8 meters for 10 seconds.</b></span>",
+      "",
+      "<span style=\"color:#e06666\"><i>Incurs a 2 second cooldown between activations.</i></span>"
     ],
     [],
     [],
     [
       "<span style=\"color:#cccccc\"><i>Upon dealing</i></span> <span style=\"color:#89cdd1\"><b><i>Arc Melee Damage</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>Inflicts</b></span> <span style=\"color:#76a5af\"><b>Jolt</b></span> <span style=\"color:#cccccc\"><b>and deals</b></span> <span style=\"color:#89cdd1\"><b>23 Arc DoT</b></span> <span style=\"color:#cccccc\"><b>every 0.25 seconds.</b></span>",
-      "<span style=\"color:#cccccc\"><b>Deals a total of</b></span> <span style=\"color:#89cdd1\"><b>~800 Arc Damage</b></span> <span style=\"color:#cccccc\"><b>over 8.75 seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Inflicts</b></span> <span style=\"color:#76a5af\"><b>Jolt</b></span> <span style=\"color:#cccccc\"><b>and deals</b></span> <span style=\"color:#89cdd1\"><b>23 Arc DoT</b></span> <span style=\"color:#cccccc\"><b>every 0.269 seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Deals a total of</b></span> <span style=\"color:#89cdd1\"><b>~800 Arc Damage</b></span> <span style=\"color:#cccccc\"><b>over 10 seconds.</b></span>",
       "<span style=\"color:#a2c4c9\"><i>Not including Jolt damage! With Jolt, it is 1245 damage.</i></span>"
     ]
   ],
@@ -355,7 +362,7 @@
     [],
     [],
     [
-      "<span style=\"color:#999999\"><b>Sticker Shock</b></span>"
+      "<span style=\"color:#e0a261\"><b>Sticker Shock</b></span>"
     ]
   ],
   [
@@ -391,11 +398,10 @@
       "<span style=\"color:#e06666\"><i>Does not increase the Solar Effect Damage of Fusion Grenades.</i></span>",
       "",
       "<span style=\"color:#cccccc\"><i>Upon</i> <b><i>scoring a kill</i></b> <i>with the</i></span> <span style=\"color:#e0a261\"><b><i>aforementioned grenades</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
-      "<span style=\"color:#cccccc\"><b>Spawns</b></span> <span style=\"color:#999999\"><b>4 homing Kinetic Micro-Missiles</b></span> <span style=\"color:#cccccc\"><b>over the</b></span> <span style=\"color:#dd7e6b\"><b>Enemy Death Location</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
-      "<span style=\"color:#999999\"><b>Micro-missiles</b></span> <span style=\"color:#cccccc\"><b>track the closest enemy within 30 meters.</b></span>",
-      "",
-      "<span style=\"color:#999999\"><b>Micro-Missiles</b></span> <span style=\"color:#cccccc\"><b>deal</b></span> <span style=\"color:#a4c2f4\"><b>216</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#999999\"><b>Kinetic Damage</b></span> <span style=\"color:#cccccc\"><b>on impact.</b></span>",
-      "<span style=\"color:#cccccc\"><i><small>They're identical in behavior to Ancillary Ordinance's missiles.</small></i></span>"
+      "<span style=\"color:#cccccc\"><b>Spawns</b></span> <span style=\"color:#999999\"><b>4 homing Kinetic Micro-Missiles</b></span> <span style=\"color:#cccccc\"><b>on the</b></span> <span style=\"color:#dd7e6b\"><b>Enemy</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#999999\"><b>Micro-missiles</b></span> <span style=\"color:#cccccc\"><b>track the closest enemy within 30 meters, dealing</b></span> <span style=\"color:#a4c2f4\"><b>216</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#999999\"><b>Kinetic Damage</b></span> <span style=\"color:#cccccc\"><b>over 2 meters on impact.</b></span>",
+      "<span style=\"color:#cccccc\"><i><small>They're identical in behavior to Ancillary Ordinance's missiles.</small></i></span>",
+      "<span style=\"color:#e06666\"><i>Incurs a 3 second cooldown between spawns.</i></span>"
     ]
   ],
   [
@@ -456,7 +462,7 @@
     [
       "<span style=\"color:#cccccc\"><i>Upon destroying a</i></span> <span style=\"color:#93c47d\"><b><i>Tangle</i></b></span> <span style=\"color:#cccccc\"><i>with</i></span> <span style=\"color:#63d275\"><b><i>Strand Damage</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "",
-      "<span style=\"color:#63d275\"><b>Explosion</b></span> <span style=\"color:#cccccc\"><b>has an additional damage instance that deals</b></span> <span style=\"color:#a4c2f4\"><b>288</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#63d275\"><b>damage</b></span><span style=\"color:#cccccc\"><b>, down to 75% damage over a 17 meter radius.</b></span>",
+      "<span style=\"color:#63d275\"><b>Explosion</b></span> <span style=\"color:#cccccc\"><b>has an additional damage instance that deals</b></span> <span style=\"color:#a4c2f4\"><b>288</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#63d275\"><b>damage</b></span><span style=\"color:#cccccc\"><b>, down to 75% damage over a 16 meter radius.</b></span>",
       "<span style=\"color:#63d275\"><i>Additional damage counts as Tangle Damage for all interactions.</i></span>"
     ],
     [],
@@ -466,7 +472,7 @@
       "",
       "<span style=\"color:#cccccc\"><b>Target releases</b></span> <span style=\"color:#e0a261\"><b>1 Solar Shrapnel</b></span> <span style=\"color:#cccccc\"><b>that deals</b></span> <span style=\"color:#a4c2f4\"><b>54</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#e0a261\"><b>Impact Damage</b></span> <span style=\"color:#cccccc\"><b>and up to</b></span> <span style=\"color:#a4c2f4\"><b>289</b></span> <span style=\"color:#ea9999\"><b>[20]</b></span> <span style=\"color:#e0a261\"><b>Explosive Damage</b></span><span style=\"color:#cccccc\"><b>, inflicting</b></span> <span style=\"color:#e0a261\"><b>x20<small>+0</small> Scorch</b></span> <span style=\"color:#cccccc\"><b>over ? meters.</b></span>",
       "",
-      "<span style=\"color:#e06666\"><b><i>Incurs a 1 second cooldown between Shrapnel spawns.</i></b></span>",
+      "<span style=\"color:#e06666\"><b><i>Incurs a 0.8 second cooldown between Shrapnel spawns.</i></b></span>",
       "",
       "<span style=\"color:#cccccc\"><i><small>Shrapnel is slightly homing, and often misses the enemy it spawns on.</small></i></span>"
     ]
@@ -493,31 +499,32 @@
     [
       "<span style=\"color:#cccccc\"><i>Upon</i> <b><i>bestowing</i></b> <i>an</i></span> <span style=\"color:#d5a6bd\"><b><i>Elemental</i></b></span> <span style=\"color:#93c47d\"><b><i>Buff</i></b></span> <span style=\"color:#cccccc\"><i>to</i></span> <span style=\"color:#a4c2f4\"><b><i>allies</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "",
-      "<span style=\"color:#b4a7d6\"><b>~15?% Class Ability Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#b4a7d6\"><b>13% Class Ability Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "",
-      "<span style=\"color:#e06666\"><b><i>Incurs a ? second cooldown PER ALLY after activation.</i></b></span>"
+      "<span style=\"color:#e06666\"><b><i>Incurs a 3.5 second cooldown PER ALLY after activation.</i></b></span>"
     ],
     [],
     [],
     [
       "<span style=\"color:#cccccc\"><i>Upon inflicting a</i></span> <span style=\"color:#b45f06\"><b><i>Darkness Debuff</i></b></span> <span style=\"color:#cccccc\"><i>on a</i></span> <span style=\"color:#a4c2f4\"><b><i>Non-Boss Combatants</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
       "",
-      "<span style=\"color:#e0a261\"><b>75% Increased Solar Damage</b></span> <span style=\"color:#cccccc\"><b>dealt.</b></span>",
-      "<span style=\"color:#f1c232\"><i>Indicated by getting Yellow Numbers on Solar Damage.</i></span>",
+      "<span style=\"color:#a4c2f4\"><b>Combatant</b></span> <span style=\"color:#cccccc\"><b>takes</b></span> <span style=\"color:#e0a261\"><b>75% Increased Solar Damage</b></span> <span style=\"color:#cccccc\"><b>for 20 seconds.</b></span>",
+      "<span style=\"color:#f1c232\"><i>Indicated by getting Yellow Numbers on</i></span> <span style=\"color:#e0a261\"><i>Solar Damage</i></span><span style=\"color:#f1c232\"><i>.</i></span>",
+      "",
       "<span style=\"color:#c27ba0\"><b>Stacks with other Weaken sources.</b></span>",
       "",
-      "<span style=\"color:#e06666\"><b>Incurs a 2? second cooldown between additional Darkness Debuffs inflicting the Cauterized Darkness debuff.</b></span>"
+      "<span style=\"color:#e06666\"><b><i>Incurs a 2 second cooldown before another combatant can be inflicted by Cauterized Darkness.</i></b></span>"
     ],
     [],
     [],
     [
       "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#6fa8dc\"><b><i>Frost Armor</i></b></span><span style=\"color:#cccccc\"><i>,</i></span> <span style=\"color:#d5a6bd\"><b><i>Void Overshield</i></b></span><span style=\"color:#cccccc\"><i>, or</i></span> <span style=\"color:#93c47d\"><b><i>Woven Mail</i></b></span> <span style=\"color:#cccccc\"><i>are active:</i></span>",
-      "<span style=\"color:#a4c2f4\"><b>?%</b></span> <span style=\"color:#ea9999\"><b>[?%]</b></span> <span style=\"color:#89cdd1\"><b>Additional Base Melee Recharge Rate</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>25%</b></span> <span style=\"color:#ea9999\"><b>[?%]</b></span> <span style=\"color:#89cdd1\"><b>Additional Base Melee Recharge Rate</b></span>",
       "<span style=\"color:#a4c2f4\"><b>50%</b></span> <span style=\"color:#ea9999\"><b>[5%]</b></span> <span style=\"color:#89cdd1\"><b>Increased Powered Melee Damage</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "<span style=\"color:#cccccc\"><b><i>Also increases</i></b></span> <span style=\"color:#ffd966\"><b><i>Super Melee Damage</i></b></span> <span style=\"color:#cccccc\"><b><i>and</i></b></span> <span style=\"color:#ff9900\"><b><i>Ignition Damage</i></b></span><span style=\"color:#cccccc\"><b><i>.</i></b></span>",
       "",
       "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#89cdd1\"><b><i>Amplified</i></b></span> <span style=\"color:#cccccc\"><i>or</i></span> <span style=\"color:#f6b26b\"><b><i>Radiant</i></b></span> <span style=\"color:#cccccc\"><i>are active:</i></span>",
-      "<span style=\"color:#a4c2f4\"><b>?%</b></span> <span style=\"color:#ea9999\"><b>[?%]</b></span> <span style=\"color:#e0a261\"><b>Additional Base Grenade Recharge Rate</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>25%</b></span> <span style=\"color:#ea9999\"><b>[?%]</b></span> <span style=\"color:#e0a261\"><b>Additional Base Grenade Recharge Rate</b></span>",
       "<span style=\"color:#a4c2f4\"><b>25%</b></span> <span style=\"color:#ea9999\"><b>[5%]</b></span> <span style=\"color:#e0a261\"><b>Increased Grenade Damage</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "",
       "<span style=\"color:#63d275\"><i>Grapple Melee instead receives 12% Increased Damage for each half of the perk.</i></span>",
@@ -598,9 +605,13 @@
     [],
     [],
     [
-      "<span style=\"color:#cccccc\"><i>Upon dealing</i> <b><i>sustained</i></b></span> <span style=\"color:#f1c232\"><b><i>Precision Damage</i></b></span> <span style=\"color:#cccccc\"><i>while within 15 meters of</i></span> <span style=\"color:#a4c2f4\"><b><i>2 allies</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><i>Upon scoring</i></span> <span style=\"color:#f1c232\"><b><i>multiple Precision Hits</i></b></span> <span style=\"color:#cccccc\"><i>within</i> <b><i>3 seconds of each</i></b><i>, while within</i> <b><i>15 meters</i></b> <i>of</i></span> <span style=\"color:#a4c2f4\"><b><i>2 allies</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "",
-      "<span style=\"color:#a4c2f4\"><b>25% Damage Resist <i><small>(Resist x2)</small></i></b></span> <span style=\"color:#cccccc\"><b>for 10? seconds</b></span>"
+      "<span style=\"color:#a4c2f4\"><b>25% Damage Resist <i><small>(Resist x2)</small></i></b></span> <span style=\"color:#cccccc\"><b>for 3 seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Retriggering extends the duration to 5 seconds.</b></span>",
+      "",
+      "<span style=\"color:#f1c232\"><b>Precision Hits trigger:</b></span>",
+      "<span style=\"color:#f1c232\"><b>(25% of Magazine Size) + 1, rounded down.</b></span>"
     ],
     [],
     [],
@@ -633,7 +644,7 @@
     [
       "<span style=\"color:#cccccc\"><i>Upon</i> <b><i>picking up</i></b> <i>a</i></span> <span style=\"color:#ffd966\"><b><i>Super-Matching</i></b></span> <span style=\"color:#d5a6bd\"><b><i>Elemental Pickup</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "",
-      "<span style=\"color:#d5a6bd\"><b>25% Ability Energy</b></span> <span style=\"color:#cccccc\"><b>to the least-charged Ability.</b></span>",
+      "<span style=\"color:#d5a6bd\"><b>20% Ability Energy</b></span> <span style=\"color:#cccccc\"><b>to the least-charged Ability.</b></span>",
       "<span style=\"color:#cccccc\"><i>Also triggers with</i></span> <span style=\"color:#93c47d\"><b><i>Tangles</i></b></span> <span style=\"color:#cccccc\"><i>on</i></span> <span style=\"color:#63d275\"><b><i>Strand</i></b></span><span style=\"color:#cccccc\"><i>.</i></span>",
       "",
       "<span style=\"color:#e06666\"><b>Incurs a 0.3 second cooldown between triggers.</b></span>",
@@ -644,14 +655,16 @@
     [],
     [],
     [
-      "<span style=\"color:#cccccc\"><i>Upon</i> <b><i>scoring a random,</i></b></span> <span style=\"color:#d5a6bd\"><b><i>Pickup-based</i></b></span> <span style=\"color:#cccccc\"><b><i>amount of kills</i></b><i>:</i></span>",
-      "<span style=\"color:#cccccc\"><b>Spawns a</b></span> <span style=\"color:#ffd966\"><b>Super-Matching</b></span> <span style=\"color:#d5a6bd\"><b>Elemental Pickup</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Each kill scored has an 85% chance to count towards a</b></span> <span style=\"color:#d5a6bd\"><b>counter.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Spawns a</b></span> <span style=\"color:#ffd966\"><b>Super-Matching</b></span> <span style=\"color:#cccccc\"><b>Pickup upon reaching</b></span> <span style=\"color:#d5a6bd\"><b>4 points</b></span><span style=\"color:#cccccc\"><b>:</b></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>Kills needed to trigger vary per</b></span> <span style=\"color:#d5a6bd\"><b>Elemental Pickup</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
-      "<span style=\"color:#e0a261\"><b>Firesprites</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#bba5f3\"><b>Void Breaches</b></span><span style=\"color:#cccccc\"><b>: 4–7 kills.</b></span>",
-      "<span style=\"color:#89cdd1\"><b>Ionic Trace</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#6fa8dc\"><b>Stasis Shards</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#63d275\"><b>Tangles</b></span><span style=\"color:#cccccc\"><b>: 9–11 kills.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Kills needed to trigger | Points per Kill:</b></span>",
+      "<span style=\"color:#e0a261\"><b>Firesprites</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#bba5f3\"><b>Void Breaches</b></span> <span style=\"color:#cccccc\"><b>= 4–5 kills | +1</b></span>",
+      "<span style=\"color:#89cdd1\"><b>Ionic Trace</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#6fa8dc\"><b>Stasis Shards</b></span> <span style=\"color:#cccccc\"><b>= 8–10 kills | +0.5</b></span>",
+      "<span style=\"color:#63d275\"><b>Tangles</b></span> <span style=\"color:#cccccc\"><b>= 10–12 kills | +0.4</b></span>",
+      "<span style=\"color:#ea9999\"><i>Guardians give 2x points.</i></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>Triggers the</b></span> <span style=\"color:#e06666\"><b>global cooldown</b></span> <span style=\"color:#cccccc\"><b>for</b></span> <span style=\"color:#e0a261\"><b>Firesprites</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#bba5f3\"><b>Void Breaches</b></span><span style=\"color:#cccccc\"><b>, and</b></span> <span style=\"color:#63d275\"><b>Tangles</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Triggers the</b></span> <span style=\"color:#e06666\"><b>global cooldown</b></span> <span style=\"color:#cccccc\"><b>for</b></span> <span style=\"color:#e0a261\"><b>Firesprites</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#bba5f3\"><b>Breaches</b></span><span style=\"color:#cccccc\"><b>, and</b></span> <span style=\"color:#63d275\"><b>Tangles</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "<span style=\"color:#e06666\"><b>Kills scored during the cooldown do not count for the next pickup.</b></span>",
       "",
       "<span style=\"color:#cccccc\"><i>Matching the</i></span> <span style=\"color:#d5a6bd\"><i>Damage Type</i></span> <span style=\"color:#cccccc\"><i>to the</i></span> <span style=\"color:#ffd966\"><i>Super Element</i></span> <span style=\"color:#cccccc\"><i>has no bonus effects.</i></span>"
@@ -685,8 +698,8 @@
   [
     [],
     [
-      "<span style=\"color:#cccccc\"><b>Dealing</b></span> <span style=\"color:#63d275\"><b>Threadling Damage</b></span> <span style=\"color:#cccccc\"><b>grants a stack of</b></span> <span style=\"color:#63d275\"><b>Pack Tactic</b></span> <span style=\"color:#cccccc\"><b>for 10 seconds, up to a maximum of</b></span> <span style=\"color:#63d275\"><b>2 stacks</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
-      "<span style=\"color:#cccccc\"><b>Dealing</b></span> <span style=\"color:#63d275\"><b>additional Threadling damage</b></span> <span style=\"color:#cccccc\"><b>refreshes the buff duration.</b></span>",
+      "<span style=\"color:#63d275\"><b>Threadling Damage</b></span> <span style=\"color:#cccccc\"><b>grants a stack of</b></span> <span style=\"color:#63d275\"><b>Pack Tactic</b></span> <span style=\"color:#cccccc\"><b>for 10 seconds.</b></span>",
+      "<span style=\"color:#63d275\"><b>Additional Threadling damage</b></span> <span style=\"color:#cccccc\"><b>refreshes the buff duration.</b></span>",
       "",
       "<span style=\"color:#63d275\"><b>Pack Tactics x1</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#63d275\"><b>15% increased Threadling Damage</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "",
@@ -700,7 +713,7 @@
     [
       "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#63d275\"><b><i>Ammo</i></b></span> <span style=\"color:#a481e1\"><b><i>Brick</i></b></span> <span style=\"color:#cccccc\"><b><i>Pickup</i></b><i>:</i></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#999999\"><b>Kinetic Weapon Surge</b></span> <span style=\"color:#cccccc\"><b>for 11 seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#999999\"><b>Kinetic Weapon Surge</b></span> <span style=\"color:#cccccc\"><b>for 10 seconds.</b></span>",
       "<span style=\"color:#63d275\"><b>Special Brick</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#999999\"><b>x2 Kinetic Weapon Surge.</b></span>",
       "<span style=\"color:#a481e1\"><b>Heavy Brick</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#999999\"><b>x3 Kinetic Weapon Surge.</b></span>",
       "",
@@ -736,9 +749,7 @@
   [
     [],
     [
-      "<span style=\"color:#cccccc\"><i>While at</i></span> <span style=\"color:#a4c2f4\"><b><i>&lt;2 Armor Charges:</i></b></span>",
-      "",
-      "<span style=\"color:#cccccc\"><i>Upon scoring</i></span> <span style=\"color:#f1c232\"><b><i>multiple Precision Hits</i></b></span> <span style=\"color:#cccccc\"><i>within</i> <b><i>3 seconds of each</i></b> <i>with</i> <b><i>Bows</i></b><i>,</i> <b><i>Sniper Rifles</i></b><i>, or</i> <b><i>Scout Rifles</i></b><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><i>Upon scoring</i></span> <span style=\"color:#f1c232\"><b><i>multiple Precision Hits</i></b></span> <span style=\"color:#cccccc\"><i>within</i> <b><i>3 [4 Bow] seconds of each</i></b> <i>with</i> <b><i>Sniper Rifles</i></b><i>, or</i> <b><i>Scout Rifles</i></b> <i>while at</i></span> <span style=\"color:#a4c2f4\"><b><i>&lt;2 Armor Charges:</i></b></span>",
       "",
       "<span style=\"color:#cccccc\"><b>Grants an</b></span> <span style=\"color:#a4c2f4\"><b>Armor Charge</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "",
@@ -761,7 +772,8 @@
       "<span style=\"color:#e06666\"><i>Cannot consume Armor Charge or grant stacks while buff is active.</i></span>",
       "",
       "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#76a5af\"><b><i>Godslayer Broadhead</i></b></span> <span style=\"color:#cccccc\"><i>is active</i><b>:</b></span>",
-      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#a4c2f4\"><b>increased damage</b></span> <span style=\"color:#cccccc\"><b>and +? Reload Speed.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#a4c2f4\"><b>increased stacking damage</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>+50 Reload Speed, and 0.95x Reload Duration Multiplier.</b></span>",
       "<span style=\"color:#cccccc\"><b>Firing consumes a</b></span> <span style=\"color:#76a5af\"><b>stack</b></span><span style=\"color:#cccccc\"><b>.</b></span> <span style=\"color:#e06666\"><i>Stowing removes all stacks.</i></span>",
       "",
       "<span style=\"color:#999999\"><b>Primary</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#a4c2f4\"><b>35% increased damage to Combatants.</b></span>",
@@ -799,7 +811,7 @@
     [],
     [],
     [
-      "<span style=\"color:#93c47d\"><b>Particle</b></span> <span style=\"color:#a481e1\"><b>Reconstruction</b></span>"
+      "<span style=\"color:#63d275\"><b>Particle</b></span> <span style=\"color:#a481e1\"><b>Reconstruction</b></span>"
     ]
   ],
   [
@@ -807,8 +819,9 @@
     [
       "<span style=\"color:#cccccc\"><i>While within</i> <b><i>15 meters</i></b> <i>of</i> <b><i>3 enemies,</i></b> <i>while a</i> <b><i>Glaive</i></b> <i>or</i> <b><i>Machine Gun</i></b> <i>is</i> <b><i>readied</i></b><i>:</i></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>+? Stability and +30 Reload Speed for Glaives and</b></span> <span style=\"color:#a481e1\"><b>Machine Guns</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
-      "<span style=\"color:#cccccc\"><b>Glaive</b></span> <span style=\"color:#63d275\"><b>Projectile</b></span><span style=\"color:#cccccc\"><b>/</b></span><span style=\"color:#89cdd1\"><b>Melee</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#a481e1\"><b>Machine Gun</b></span> <span style=\"color:#cccccc\"><b>Kills</b></span> <span style=\"color:#dd7e6b\"><b>restore 55 HP.</b></span>",
+      "<span style=\"color:#cccccc\"><b>+35 Stability and +35 Reload Speed for Glaives and</b></span> <span style=\"color:#a481e1\"><b>Machine Guns</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Glaive</b></span> <span style=\"color:#63d275\"><b>Projectile</b></span><span style=\"color:#cccccc\"><b>/</b></span><span style=\"color:#89cdd1\"><b>Melee</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#a481e1\"><b>Machine Gun</b></span> <span style=\"color:#cccccc\"><b>Kills</b></span> <span style=\"color:#dd7e6b\"><b>restore 50 HP.</b></span>",
+      "<span style=\"color:#e06666\"><i>Incurs a 2 second cooldown between healing triggers.</i></span>",
       "",
       "<span style=\"color:#42c0c1\"><b>Stat Bonus</b></span> <span style=\"color:#cccccc\"><b>persist for 5 seconds once criteria isn''t met.</b></span>",
       "<span style=\"color:#e06666\"><i>Healing on Kill does not persist.</i></span>"
@@ -875,8 +888,8 @@
     [],
     [
       "<span style=\"color:#cccccc\"><i>Upon</i></span> <span style=\"color:#d5a6bd\"><b><i>inflicting Volatile</i></b></span> <span style=\"color:#cccccc\"><b><i>4 times</i></b> <i>within</i> <b><i>5 seconds</i></b> <i>of</i> <b><i>each</i>:</b></span>",
-      "",
-      "<span style=\"color:#cccccc\"><b>The next</b></span> <span style=\"color:#b4a7d6\"><b>Void Damage Instance</b></span> <span style=\"color:#cccccc\"><b>within 10 seconds releases a</b></span> <span style=\"color:#c27ba0\"><b>weakening burst</b></span><span style=\"color:#cccccc\"><b>, affecting enemies within 7 metres.</b></span>",
+      "<span style=\"color:#cccccc\"><b>The next</b></span> <span style=\"color:#b4a7d6\"><b>Void Damage Instance</b></span> <span style=\"color:#cccccc\"><b>within 10 seconds releases a</b></span> <span style=\"color:#c27ba0\"><b>weakening burst</b></span><span style=\"color:#cccccc\"><b>, affecting enemies within 8 metres.</b></span>",
+      "<span style=\"color:#e06666\"><i>Incurs a 3 second cooldown before counter increases again.</i></span>",
       "",
       "<span style=\"color:#cccccc\"><i>Upon</i> <b><i>inflicting</i></b></span> <span style=\"color:#d5a6bd\"><b><i>Weaken</i></b></span> <span style=\"color:#cccccc\"><i>on a</i></span> <span style=\"color:#d5a6bd\"><b><i>Non-Weakened Enemy</i></b><i>:</i></span>",
       "<span style=\"color:#d5a6bd\"><b>+25 Void Overshield HP</b></span> <span style=\"color:#cccccc\"><b>for 10</b></span><span style=\"color:#b4a7d6\"><b><small>+5</small></b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>",
@@ -890,7 +903,10 @@
     [
       "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#dd7e6b\"><b><i>Exhausted</i></b></span> <span style=\"color:#cccccc\"><i>or</i></span> <span style=\"color:#6aa84f\"><b><i>Severed</i></b></span> <span style=\"color:#cccccc\"><b><i>Enemy Kill</i></b> <i>with</i></span> <span style=\"color:#ffd966\"><b><i>Super-Matching Weapons</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#ffd966\"><b>2?% Additional Super Ability Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#ffd966\"><b>Additional Super Ability Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>RnF</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#ffd966\"><b>3.56%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>Elite</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#ffd966\"><b>4.4%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>Miniboss+</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#ffd966\"><b>7%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#ea9999\"><b>Guardian</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#ffd966\"><b>7%?</b></span>",
+      "",
+      "<span style=\"color:#e06666\"><i>Does not trigger with Sword Kills.</i></span>"
     ]
   ],
   [
@@ -937,11 +953,11 @@
     [],
     [
       "<span style=\"color:#cccccc\"><i>Upon scoring</i></span> <span style=\"color:#a481e1\"><b><i>8 Machine Gun damage instances</i></b></span><span style=\"color:#cccccc\"><i>, or</i></span> <span style=\"color:#a481e1\"><b><i>2 Rocket Launcher damage instances</i></b></span> <span style=\"color:#cccccc\"><i>within</i> <b><i>7 seconds</i></b> <i>of</i> <b><i>each</i></b><i>:</i></span>",
-      "<span style=\"color:#a4c2f4\"><b>25%</b></span> <span style=\"color:#ea9999\"><b>[5%]</b></span> <span style=\"color:#cccccc\"><b>Damage Resist</b> <i>(Resist x2)</i> <b>for 15.5 seconds</b></span>",
-      "<span style=\"color:#cccccc\"><b>85% Additional Base</b></span> <span style=\"color:#e0a261\"><b>Grenade</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#89cdd1\"><b>Melee</b></span> <span style=\"color:#cccccc\"><b>Ability Regeneration Rate for 10 seconds.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>25%</b></span> <span style=\"color:#ea9999\"><b>[5%]</b></span> <span style=\"color:#cccccc\"><b>Damage Resist</b> <i>(Resist x2)</i> <b>for 10.5 seconds</b></span>",
+      "<span style=\"color:#cccccc\"><b>100% Additional Base</b></span> <span style=\"color:#e0a261\"><b>Grenade</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#89cdd1\"><b>Melee</b></span> <span style=\"color:#cccccc\"><b>Ability Regeneration Rate for 10 seconds.</b></span>",
       "",
       "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#a481e1\"><b><i>Heavy Ordnance</i></b></span> <span style=\"color:#cccccc\"><i>is</i> <b><i>active</i></b><i>:</i></span>",
-      "<span style=\"color:#a4c2f4\"><b>Elite+ Combatants Kills</b></span> <span style=\"color:#999999\"><b>disorient</b></span> <span style=\"color:#a4c2f4\"><b>Rank-and-File Combatants</b></span> <span style=\"color:#cccccc\"><b>within 10 meters.</b></span>"
+      "<span style=\"color:#a4c2f4\"><b>Elite+ Combatants Kills</b></span> <span style=\"color:#999999\"><b>disorient</b></span> <span style=\"color:#a4c2f4\"><b>Rank-and-File Combatants</b></span> <span style=\"color:#cccccc\"><b>within 10 meters for 6 seconds.</b></span>"
     ]
   ],
   [
@@ -985,7 +1001,7 @@
       "<span style=\"color:#89cdd1\"><b>Bolt Discharge's Bolt Splash damage portion</b></span> <span style=\"color:#cccccc\"><b>now inflicts</b></span> <span style=\"color:#76a5af\"><b>Jolt</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "",
       "<span style=\"color:#cccccc\"><b>Upon triggering a</b></span> <span style=\"color:#89cdd1\"><b>Bolt Discharge</b></span><span style=\"color:#cccccc\"><b>:</b></span>",
-      "<span style=\"color:#dd7e6b\"><b>Restores ~55 HP.</b></span>",
+      "<span style=\"color:#dd7e6b\"><b>Restores 50 HP.</b></span>",
       "<span style=\"color:#dd7e6b\"><b>Begins Critical Health regeneration</b></span>",
       "<span style=\"color:#e06666\"><i>Does not begin recharging</i></span> <span style=\"color:#7cadff\"><i>Shields</i></span><span style=\"color:#e06666\"><i>.</i></span>"
     ]
@@ -1012,17 +1028,18 @@
     [
       "<span style=\"color:#cccccc\"><i>Upon</i> <b><i>killing</i></b> <i>an</i></span> <span style=\"color:#dd7e6b\"><b><i>Exhausted</i></b></span> <span style=\"color:#cccccc\"><i>or</i></span> <span style=\"color:#6aa84f\"><b><i>Severed</i></b></span> <span style=\"color:#cccccc\"><b><i>Enemy</i></b> <i>with</i></span> <span style=\"color:#89cdd1\"><b><i>Arc Damage</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>Triggers a</b></span> <span style=\"color:#999999\"><b>blinding burst</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#999999\"><b>blinding</b></span> <span style=\"color:#cccccc\"><b>enemies within 5? meters.</b></span>",
-      "<span style=\"color:#e06666\"><i>Incurs a 6? second cooldown between activations.</i></span>"
+      "<span style=\"color:#cccccc\"><b>Triggers a</b></span> <span style=\"color:#999999\"><b>blinding burst</b></span><span style=\"color:#cccccc\"><b>,</b></span> <span style=\"color:#999999\"><b>blinding</b></span> <span style=\"color:#cccccc\"><b>enemies within 8 meters.</b></span>",
+      "<span style=\"color:#e06666\"><i>Incurs a 5 second cooldown between activations.</i></span>"
     ],
     [],
     [],
     [
       "<span style=\"color:#cccccc\"><i>Upon scoring</i></span> <span style=\"color:#89cdd1\"><b><i>2 Glaive Melee Kills</i></b></span> <span style=\"color:#cccccc\"><i>within</i> <b><i>3 seconds</i></b> <i>of each:</i></span>",
       "<span style=\"color:#63d275\"><b>+2 Reserve Ammo</b></span> <span style=\"color:#cccccc\"><b>to</b></span> <span style=\"color:#63d275\"><b>Special Ammo Glaives</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#e06666\"><i>Incurs a 2 second cooldown between activations.</i></span>",
       "",
       "<span style=\"color:#cccccc\"><i>Upon blocking damage with a</i></span> <span style=\"color:#d5a6bd\"><i>Glaive Shield</i></span><span style=\"color:#cccccc\"><i>:</i></span>",
-      "<span style=\"color:#a4c2f4\"><b>85%</b></span> <span style=\"color:#ea9999\"><b>[?%]</b></span> <span style=\"color:#89cdd1\"><b>increased Glaive Melee Damage</b></span> <span style=\"color:#cccccc\"><b>for 6 seconds.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>85%</b></span> <span style=\"color:#ea9999\"><b>[?%]</b></span> <span style=\"color:#89cdd1\"><b>increased Glaive Melee Damage</b></span> <span style=\"color:#cccccc\"><b>for 6.5 seconds.</b></span>",
       "<span style=\"color:#cccccc\"><i>Also triggers if an</i></span> <span style=\"color:#a4c2f4\"><i>Ally</i></span> <span style=\"color:#cccccc\"><i>shoots the</i></span> <span style=\"color:#d5a6bd\"><i>shield</i></span><span style=\"color:#cccccc\"><i>.</i></span>"
     ],
     [],
@@ -1030,8 +1047,10 @@
     [
       "<span style=\"color:#cccccc\"><b><i>On</i></b></span> <span style=\"color:#c27ba0\"><b><i>Weakened Enemy Kill</i></b></span> <span style=\"color:#cccccc\"><b><i>with a</i></b></span> <span style=\"color:#bba5f3\"><b><i>Void Weapon</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>Inflicts</b></span> <span style=\"color:#d5a6bd\"><b>Volatile</b></span> <span style=\"color:#cccccc\"><b>to enemies within ? meters.</b></span>",
-      "<span style=\"color:#a4c2f4\"><b>Elite+? Combatants</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#ea9999\"><b>Guardians?</b></span> <span style=\"color:#cccccc\"><b>increase the radius to ? meters.</b></span>"
+      "<span style=\"color:#cccccc\"><b>Inflicts</b></span> <span style=\"color:#d5a6bd\"><b>Volatile</b></span> <span style=\"color:#cccccc\"><b>to enemies within 6 meters.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Elite+ Combatants</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#ea9999\"><b>Guardians</b></span> <span style=\"color:#cccccc\"><b>increase the radius to 15 meters.</b></span>",
+      "",
+      "<span style=\"color:#e06666\"><i>Incurs a 3 second cooldown upon triggering.</i></span>"
     ]
   ],
   [
@@ -1057,6 +1076,7 @@
       "<span style=\"color:#cccccc\"><i>Upon</i> <b><i>scoring 3 kills</i></b> <i>within</i> <b><i>3 seconds</i></b> <i>of each using a</i></span> <span style=\"color:#999999\"><b><i>Kinetic Weapon</i></b></span> <span style=\"color:#cccccc\"><i>or a</i></span> <span style=\"color:#ffd966\"><b><i>Super-Element Matching Weapon</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "",
       "<span style=\"color:#cccccc\"><b>Creates an</b></span> <span style=\"color:#d5a6bd\"><b>Elemental Pickup</b></span> <span style=\"color:#cccccc\"><b>that matches the equipped</b></span> <span style=\"color:#ffd966\"><b>Super Ability's element</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#e06666\"><i>Incurs a 0.5 second cooldown upon spawning a Pickup.</i></span>",
       "",
       "<span style=\"color:#cccccc\"><i>Upon</i> <b><i>collecting</i></b> <i>an</i></span> <span style=\"color:#d5a6bd\"><b><i>Elemental Pickup</i></b><i>:</i></span>",
       "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#a4c2f4\"><b>5%</b></span> <span style=\"color:#ea9999\"><b>[1%]</b></span> <span style=\"color:#d5a6bd\"><b>Element-Matching</b></span> <span style=\"color:#ffd966\"><b>Super Ability</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
@@ -1068,7 +1088,7 @@
       "<span style=\"color:#cccccc\"><i>Upon scoring</i> <b><i>3 Trace Rifle hits</i></b> <i>against enemies affected by</i></span> <span style=\"color:#c27ba0\"><b><i>Element-Matching Debuffs</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "<span style=\"color:#cccccc\"><b>Grants increased Trace Rifle damage for 4 seconds.</b></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>Legendary Trace Rifles = 50% increased damage</b></span>",
+      "<span style=\"color:#63d275\"><b>Legendary Trace Rifles</b></span> <span style=\"color:#cccccc\"><b>= 50% increased damage</b></span>",
       "<span style=\"color:#ffd966\"><b>Exotic</b></span> <span style=\"color:#93c47d\"><b>Special</b></span> <span style=\"color:#ffd966\"><b>Traces</b></span> <span style=\"color:#cccccc\"><b>/</b></span> <span style=\"color:#ffd966\"><b>Lodestar</b></span> <span style=\"color:#cccccc\"><b>= 35% increased damage</b></span>",
       "",
       "<span style=\"color:#ffd966\"><b>Microcosm</b></span> <span style=\"color:#cccccc\"><b>deals 20% increased damage after scoring 4 hits against enemies affected by</b></span> <span style=\"color:#c27ba0\"><b>ANY Elemental Debuff</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
@@ -1085,14 +1105,16 @@
       "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#ffd966\"><b><i>Super Cast</i></b></span><span style=\"color:#cccccc\"><i>, while at</i></span> <span style=\"color:#dd7e6b\"><b><i>Critical Health</i></b></span> <span style=\"color:#cccccc\"><i>or affected by an</i></span> <span style=\"color:#d5a6bd\"><b><i>Element-Matching Buff</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "",
       "<span style=\"color:#ffd966\"><b>15% Increased Super Ability Damage</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
-      "<span style=\"color:#ffd966\"><b>One-Off Supers</b></span> <span style=\"color:#cccccc\"><b>are only buffed for 8 seconds.</b></span>",
+      "<span style=\"color:#ffd966\"><b>One-Off Supers</b></span> <span style=\"color:#cccccc\"><b>are only buffed for 7 seconds.</b></span>",
       "<span style=\"color:#ffd966\"><b>Roaming Supers</b></span> <span style=\"color:#cccccc\"><b>are buffed until it runs out.</b></span>",
       "",
       "<span style=\"color:#89cdd1\"><b>Arc</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#93c47d\"><b>↑</b></span><span style=\"color:#89cdd1\"><b>Amplified</b></span> <span style=\"color:#93c47d\"><b>↑</b></span><span style=\"color:#89cdd1\"><b>Bolt Charge</b></span>",
       "<span style=\"color:#e0a261\"><b>Solar</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#93c47d\"><b>↑</b></span><span style=\"color:#dd7e6b\"><b>Cure</b></span> <span style=\"color:#93c47d\"><b>↑</b></span><span style=\"color:#ffd966\"><b>Radiant</b></span> <span style=\"color:#93c47d\"><b>↑</b></span><span style=\"color:#dd7e6b\"><b>Restoration</b></span>",
       "<span style=\"color:#bba5f3\"><b>Void</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#93c47d\"><b>↑</b></span><span style=\"color:#8e7cc3\"><b>Devour</b></span> <span style=\"color:#93c47d\"><b>↑</b></span><span style=\"color:#b4a7d6\"><b>Invisibility</b></span> <span style=\"color:#93c47d\"><b>↑</b></span><span style=\"color:#d5a6bd\"><b>Void Overshield</b></span>",
       "<span style=\"color:#6fa8dc\"><b>Stasis</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#93c47d\"><b>↑</b></span><span style=\"color:#6fa8dc\"><b>Frost Armor</b></span>",
-      "<span style=\"color:#63d275\"><b>Strand</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#93c47d\"><b>↑Woven Mail</b></span>"
+      "",
+      "<span style=\"color:#63d275\"><b>Strand can only function when cast at</b></span> <span style=\"color:#dd7e6b\"><b>Critical Health</b></span><span style=\"color:#63d275\"><b>.</b></span>",
+      "<span style=\"color:#63d275\"><i>(This is due to</i></span> <span style=\"color:#93c47d\"><i>Woven Mail</i></span> <span style=\"color:#63d275\"><i>being</i></span> <span style=\"color:#e06666\"><i>removed</i></span> <span style=\"color:#63d275\"><i>on</i></span> <span style=\"color:#ffd966\"><i>Super Cast</i></span><span style=\"color:#63d275\"><i>)</i></span>"
     ]
   ],
   [
@@ -1115,19 +1137,19 @@
   [
     [],
     [
-      "<span style=\"color:#e06666\"><b><i>Non-Exotic</i></b></span> <span style=\"color:#a481e1\"><b><i>Rocket Launcher Kills</i></b></span> <span style=\"color:#cccccc\"><i>within</i> <b><i>2-3? seconds</i></b> <i>of</i> <b><i>each</i></b></span> <span style=\"color:#a481e1\"><b><i>progress a counter</i></b></span><span style=\"color:#cccccc\"><b><i>.</i></b></span>",
+      "<span style=\"color:#e06666\"><b><i>Non-Exotic</i></b></span> <span style=\"color:#a481e1\"><b><i>Rocket Launcher Kills</i></b></span> <span style=\"color:#cccccc\"><i>within</i> <b><i>5 seconds</i></b> <i>of</i> <b><i>each</i></b></span> <span style=\"color:#a481e1\"><b><i>progress a counter</i></b></span><span style=\"color:#cccccc\"><b><i>.</i></b></span>",
       "<span style=\"color:#a4c2f4\"><b><i>Rank-and-File</i></b></span> <span style=\"color:#cccccc\"><i>=</i></span> <span style=\"color:#a481e1\"><b><i>25%</i></b></span> <span style=\"color:#cccccc\"><i>|</i></span> <span style=\"color:#a4c2f4\"><b><i>Elite</i></b></span> <span style=\"color:#cccccc\"><i>=</i></span> <span style=\"color:#a481e1\"><b><i>34%</i></b></span> <span style=\"color:#cccccc\"><i>|</i></span> <span style=\"color:#a4c2f4\"><b><i>Miniboss</i></b></span> <span style=\"color:#cccccc\"><i>=</i></span> <span style=\"color:#a481e1\"><b><i>100%</i></b></span>",
       "",
       "<span style=\"color:#cccccc\"><i>Upon reaching</i></span> <span style=\"color:#a481e1\"><b><i>100% Counter Progress</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
       "<span style=\"color:#a481e1\"><b>Rocket Launchers</b></span> <span style=\"color:#cccccc\"><b>are granted</b></span> <span style=\"color:#a481e1\"><b>+1 Ammo</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "<span style=\"color:#a481e1\"><b>Precision/High-Impact Rockets</b> <i>(or Bipod RLs)</i></span> <span style=\"color:#cccccc\"><b>receive</b></span> <span style=\"color:#a481e1\"><b>+2 Ammo</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
-      "<span style=\"color:#cccccc\"><b>+? Reload Speed and 0.?x Reload Duration Multiplier for 10 seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><b>+65 Reload Speed for 10 seconds.</b></span>",
       "<span style=\"color:#cccccc\"><i>Not affected by Scavenger Mods.</i></span>"
     ],
     [],
     [],
     [
-      "<span style=\"color:#cccccc\"><i>Upon picking up</i></span> <span style=\"color:#93c47d\"><b><i>5–6 Special Ammo Bricks</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><i>Upon picking up a</i></span> <span style=\"color:#93c47d\"><b><i>7th Special Ammo Bricks</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "<span style=\"color:#a481e1\"><b>Generates 8% Heavy Ammo</b></span><span style=\"color:#cccccc\"><b>, rounded up.</b></span>",
       "<span style=\"color:#93c47d\"><i>Pickup Counter</i></span> <span style=\"color:#cccccc\"><i>is reset on death.</i></span>",
       "<span style=\"color:#cccccc\"><i>Not affected by Scavenger Mods.</i></span>",
@@ -1137,11 +1159,12 @@
     [],
     [],
     [
-      "<span style=\"color:#cccccc\"><i>Upon scoring</i> <b><i>6 weapon damage instances</i></b> <i>against</i></span> <span style=\"color:#6aa84f\"><b><i>Severed Enemies</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><i>Upon scoring</i> <b><i>6 weapon damage instances</i></b> <i>within 7 seconds of each against</i></span> <span style=\"color:#6aa84f\"><b><i>Severed Enemies</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "<span style=\"color:#cccccc\"><b>Inflicts</b></span> <span style=\"color:#6aa84f\"><b>Unravel</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "",
       "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#6aa84f\"><b><i>Severed Enemy Kill</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
-      "<span style=\"color:#cccccc\"><b>Releases</b></span> <span style=\"color:#dd7e6b\"><b>3 healing pulses</b></span> <span style=\"color:#cccccc\"><b>on Enemy Death Location,</b></span> <span style=\"color:#dd7e6b\"><b>restoring 15 HP</b></span> <span style=\"color:#cccccc\"><b>and granting</b></span> <span style=\"color:#b6d7a8\"><b>Woven Mail</b></span> <span style=\"color:#cccccc\"><b>for</b></span> <span style=\"color:#b6d7a8\"><b>10 seconds</b></span> <span style=\"color:#cccccc\"><b>to the user and</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>within 10? metres every 2 seconds.</b></span>"
+      "<span style=\"color:#cccccc\"><b>Releases</b></span> <span style=\"color:#dd7e6b\"><b>3 healing pulses</b></span> <span style=\"color:#cccccc\"><b>on</b></span> <span style=\"color:#e06666\"><b>Enemy Death Location</b></span><span style=\"color:#cccccc\"><b>,</b></span>",
+      "<span style=\"color:#dd7e6b\"><b>Pulses restore 15 HP</b></span> <span style=\"color:#cccccc\"><b>and grant</b></span> <span style=\"color:#b6d7a8\"><b>Woven Mail</b></span> <span style=\"color:#cccccc\"><b>for</b></span> <span style=\"color:#b6d7a8\"><b>10 seconds</b></span> <span style=\"color:#cccccc\"><b>to the user and</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>within 10 metres every 2 seconds.</b></span>"
     ]
   ],
   [
@@ -1182,7 +1205,7 @@
     [
       "<span style=\"color:#cccccc\"><i>Upon scoring</i></span> <span style=\"color:#6fa8dc\"><b><i>multiple</i></b></span> <span style=\"color:#e06666\"><b><i>non-simultaneous</i></b></span> <span style=\"color:#6fa8dc\"><b><i>Stasis Weapon Damage instances</i></b></span> <span style=\"color:#cccccc\"><i>within</i> <b><i>3 seconds</i></b> <i>of each:</i></span>",
       "<span style=\"color:#cccccc\"><b>Grants a</b></span> <span style=\"color:#6fa8dc\"><b>stack</b></span> <span style=\"color:#cccccc\"><b>of</b></span> <span style=\"color:#6fa8dc\"><b>Frost Armor</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
-      "<span style=\"color:#e06666\"><i>Incurs a 0.45s cooldown between triggers. Additional hits during this time do not count.</i></span>",
+      "<span style=\"color:#e06666\"><i>Incurs a 0.5s cooldown between triggers. Additional hits during this time do not count.</i></span>",
       "<span style=\"color:#e06666\"><i>Counter resets on stow.</i></span>",
       "",
       "<span style=\"color:#cccccc\"><b>Instances to trigger</b></span> <span style=\"color:#6fa8dc\"><b>Frost Armor</b></span><span style=\"color:#cccccc\"><b>:</b></span>",
@@ -1206,7 +1229,7 @@
     [],
     [],
     [
-      "<span style=\"color:#3d85c6\"><b>Frozen Enemies</b></span> <span style=\"color:#cccccc\"><b>inflict</b></span> <span style=\"color:#6fa8dc\"><b>x? Slow</b></span> <span style=\"color:#cccccc\"><b>to enemies within 4? meters that aren't affected by</b></span> <span style=\"color:#6fa8dc\"><b>Stasis Debuffs</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+      "<span style=\"color:#3d85c6\"><b>Frozen Enemies</b></span> <span style=\"color:#cccccc\"><b>inflict</b></span> <span style=\"color:#6fa8dc\"><b>x40 Slow</b></span> <span style=\"color:#cccccc\"><b>to enemies within 4.5 meters that aren't affected by</b></span> <span style=\"color:#6fa8dc\"><b>Stasis Debuffs</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
     ]
   ],
   [
@@ -1245,18 +1268,18 @@
     [
       "<span style=\"color:#cccccc\"><i>Upon</i></span> <span style=\"color:#3c78d8\"><b><i>shattering</i></b></span> <span style=\"color:#cccccc\"><i>a</i></span> <span style=\"color:#6fa8dc\"><b><i>Stasis Crystal</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>Releases</b></span> <span style=\"color:#6fa8dc\"><b>5 Homing Ice Shards</b></span> <span style=\"color:#cccccc\"><b>in a * pattern, each dealing 46 damage and inflicting</b></span> <span style=\"color:#a4c2f4\"><b>x?</b></span> <span style=\"color:#ea9999\"><b>[x10]</b></span> <span style=\"color:#6fa8dc\"><b>Slow</b></span> <span style=\"color:#cccccc\"><b>for ? seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Releases</b></span> <span style=\"color:#6fa8dc\"><b>5 Homing Ice Shards</b></span> <span style=\"color:#cccccc\"><b>in a * pattern, each dealing 46 damage and inflicting</b></span> <span style=\"color:#a4c2f4\"><b>x15</b></span> <span style=\"color:#ea9999\"><b>[x10]</b></span> <span style=\"color:#6fa8dc\"><b>Slow</b></span> <span style=\"color:#cccccc\"><b>for 2 seconds.</b></span>",
       "<span style=\"color:#cccccc\"><i>Shards are spread uniformally, with one shard going towards the closest enemy and the others spreading.</i></span>",
       "",
-      "<span style=\"color:#3c78d8\"><b>Enemy Shatters</b></span> <span style=\"color:#cccccc\"><b>deal</b></span> <span style=\"color:#a4c2f4\"><b>12.5%</b></span> <span style=\"color:#ea9999\"><b>[?%]</b></span> <span style=\"color:#cccccc\"><b>increased damage.</b></span>",
-      "<span style=\"color:#6fa8dc\"><b>Crystal Shatters</b></span> <span style=\"color:#cccccc\"><b>deal</b></span> <span style=\"color:#a4c2f4\"><b>25%</b></span> <span style=\"color:#ea9999\"><b>[?%]</b></span> <span style=\"color:#cccccc\"><b>increased damage.</b></span>"
+      "<span style=\"color:#3c78d8\"><b>Enemy Shatters</b></span> <span style=\"color:#cccccc\"><b>deal</b></span> <span style=\"color:#a4c2f4\"><b>12.5%</b></span> <span style=\"color:#ea9999\"><b>[5%]</b></span> <span style=\"color:#cccccc\"><b>increased damage.</b></span>",
+      "<span style=\"color:#6fa8dc\"><b>Crystal Shatters</b></span> <span style=\"color:#cccccc\"><b>deal</b></span> <span style=\"color:#a4c2f4\"><b>25%</b></span> <span style=\"color:#ea9999\"><b>[10%]</b></span> <span style=\"color:#cccccc\"><b>increased damage.</b></span>"
     ],
     [],
     [],
     [
       "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#b4a7d6\"><b><i>Void Breach</i></b></span> <span style=\"color:#cccccc\"><b>Pickup:</b></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>The next</b></span> <span style=\"color:#b4a7d6\"><b>Void Damage Instance</b></span> <span style=\"color:#cccccc\"><b>within 10 seconds releases a</b></span> <span style=\"color:#c27ba0\"><b>weakening burst</b></span><span style=\"color:#cccccc\"><b>, inflicting</b></span> <span style=\"color:#c27ba0\"><b>Weaken</b></span> <span style=\"color:#cccccc\"><b>to enemies within 5? metres.</b></span>"
+      "<span style=\"color:#cccccc\"><b>The next</b></span> <span style=\"color:#b4a7d6\"><b>Void Damage Instance</b></span> <span style=\"color:#cccccc\"><b>within 10 seconds releases a</b></span> <span style=\"color:#c27ba0\"><b>weakening burst</b></span><span style=\"color:#cccccc\"><b>, inflicting</b></span> <span style=\"color:#c27ba0\"><b>Weaken</b></span> <span style=\"color:#cccccc\"><b>to enemies within 8 metres.</b></span>"
     ]
   ],
   [
@@ -1349,7 +1372,7 @@
     [
       "<span style=\"color:#6fa8dc\"><b>Stasis Shards</b></span> <span style=\"color:#cccccc\"><b>additionally grant</b></span> <span style=\"color:#b4a7d6\"><b>10% Class Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "",
-      "<span style=\"color:#bba5f3\"><b>Void Breaches</b></span> <span style=\"color:#cccccc\"><b>additionally grant</b></span> <span style=\"color:#89cdd1\"><b>10?% Melee Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+      "<span style=\"color:#bba5f3\"><b>Void Breaches</b></span> <span style=\"color:#cccccc\"><b>additionally grant</b></span> <span style=\"color:#89cdd1\"><b>10% Melee Energy</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
     ]
   ],
   [
@@ -1375,7 +1398,7 @@
       "<span style=\"color:#cccccc\"><i>Upon scoring</i></span> <span style=\"color:#f1c232\"><b><i>2 Precision Hits</i></b></span> <span style=\"color:#cccccc\"><i>within</i> <b><i>1 second of each</i></b> <i>against</i></span> <span style=\"color:#89cdd1\"><b><i>Arc-Debuffed Enemies</i></b></span><span style=\"color:#cccccc\"><i>,</i> <b><i>OR</i></b> <i>upon</i> <b><i>scoring</i></b></span> <span style=\"color:#89cdd1\"><b><i>3 Arc-Debuffed Enemy Kills</i></b></span> <span style=\"color:#cccccc\"><b><i>within 3 seconds of each</i></b><i>:</i></span>",
       "",
       "<span style=\"color:#cccccc\"><b>Spawns an</b></span> <span style=\"color:#a2c4c9\"><b>Ionic Trace</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
-      "<span style=\"color:#e06666\"><b><i>Incurs a 4 second cooldown between Ionic Trace spawns.</i></b></span>",
+      "<span style=\"color:#e06666\"><i>Incurs a 5 second cooldown between Ionic Trace spawns.</i></span>",
       "",
       "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#a2c4c9\"><b><i>Ionic Trace</i></b></span> <span style=\"color:#cccccc\"><b><i>Pickup</i></b><i>:</i></span>",
       "<span style=\"color:#cccccc\"><b>Grants a</b></span> <span style=\"color:#a4c2f4\"><b>stack</b></span> <span style=\"color:#cccccc\"><b>of</b></span> <span style=\"color:#a4c2f4\"><b>Armor Charge</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
@@ -1433,8 +1456,9 @@
     [
       "<span style=\"color:#cccccc\"><i>While within</i> <b><i>15 meters</i></b> <i>of</i> <b><i>3 enemies</i></b><i>:</i></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>+35? Handling and</b></span> <span style=\"color:#a481e1\"><b>+? Charge Rate.</b></span>",
-      "<span style=\"color:#cccccc\"><b>Scoring 3 Kills grants a</b></span> <span style=\"color:#a4c2f4\"><b>stack</b></span> <span style=\"color:#cccccc\"><b>of</b></span> <span style=\"color:#a4c2f4\"><b>Armor Charge.</b></span>",
+      "<span style=\"color:#cccccc\"><b>+30 Handling and 0.9x Handling Duration Multiplier</b></span>",
+      "<span style=\"color:#cccccc\"><b>Swords receive</b></span> <span style=\"color:#a481e1\"><b>+30 Charge Rate.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Scoring 3 Kills within 4s of each grants a</b></span> <span style=\"color:#a4c2f4\"><b>stack</b></span> <span style=\"color:#cccccc\"><b>of</b></span> <span style=\"color:#a4c2f4\"><b>Armor Charge.</b></span>",
       "",
       "<span style=\"color:#cccccc\"><i>Condition lingers for 1.5 seconds once criteria isn't met.</i></span>"
     ],
@@ -1447,7 +1471,8 @@
       "<span style=\"color:#a4c2f4\"><b>Performing a Finisher</b></span> <span style=\"color:#cccccc\"><b>on a</b></span> <span style=\"color:#a4c2f4\"><b>Combatant</b></span> <span style=\"color:#cccccc\"><b>that didn't trigger the effect will also spawn an</b></span> <span style=\"color:#ffd966\"><b>Orb of Power</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "",
       "<span style=\"color:#cccccc\"><i>Upon picking up an</i></span> <span style=\"color:#ffd966\"><b><i>Orb of Power</i></b></span><span style=\"color:#cccccc\"><i>, an</i></span> <span style=\"color:#d5a6bd\"><b><i>Elemental Pickup</i></b></span><span style=\"color:#cccccc\"><i>, or destroying a</i></span> <span style=\"color:#63d275\"><b><i>Tangle</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
-      "<span style=\"color:#dd7e6b\"><b>Restores 40 HP</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+      "<span style=\"color:#dd7e6b\"><b>Restores 40 HP</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#e06666\"><i>Incurs a 0.3 seconds cooldown between heals.</i></span>"
     ],
     [],
     [],
@@ -1476,9 +1501,12 @@
   [
     [],
     [
-      "<span style=\"color:#cccccc\"><i>Upon scoring</i> <b><i>3 Weapon Kills</i></b> <i>within</i> <b><i>3 seconds</i></b> <i>of</i> <b><i>each</i></b><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><b>Weapon Kills within 3 seconds of each progress a Counter.</b></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>+50? Mobility for 7 seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><i>Upon reaching</i> <b><i>100% Counter Progress</i></b><i>:</i></span>",
+      "<span style=\"color:#a4c2f4\"><b>RnF, Elite = 34%</b></span> <span style=\"color:#cccccc\">|</span> <span style=\"color:#a4c2f4\"><b>Miniboss+ = 50%</b></span> <span style=\"color:#cccccc\">|</span> <span style=\"color:#ea9999\"><b>Guardians = 50%</b></span>",
+      "",
+      "<span style=\"color:#cccccc\"><b>+40 Mobility for 7 seconds.</b></span>",
       "",
       "<span style=\"color:#cccccc\"><i>Buff can be refreshed by retriggering it.</i></span>"
     ],
@@ -1491,7 +1519,7 @@
       "<span style=\"color:#a4c2f4\"><b>RnF</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#b4a7d6\"><b>16.7%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>Elite</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#b4a7d6\"><b>34%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#a4c2f4\"><b>Miniboss+</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#b4a7d6\"><b>50%</b></span> <span style=\"color:#cccccc\"><b>|</b></span> <span style=\"color:#ea9999\"><b>Guardians</b></span> <span style=\"color:#cccccc\"><b>=</b></span> <span style=\"color:#b4a7d6\"><b>?%</b></span>",
       "",
       "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#b4a7d6\"><b><i>Void Breach Pickup</i></b><i>:</i></span>",
-      "<span style=\"color:#cccccc\"><b>+? Handling and +? Reload Speed for ? seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><b>+20 Handling and +20 Reload Speed for 10 seconds.</b></span>",
       "<span style=\"color:#cccccc\"><b>Refills Shotguns and Grenade Launchers.</b></span>"
     ],
     [],
@@ -1563,7 +1591,7 @@
     [
       "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#ffd966\"><b><i>Super Cast</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "",
-      "<span style=\"color:#a4c2f4\"><b>Allies</b></span> <span style=\"color:#cccccc\"><b>within 15 meters with a</b></span> <span style=\"color:#ffd966\"><b>Super Element</b></span> <span style=\"color:#cccccc\"><b>different from the</b></span> <span style=\"color:#ffd966\"><b>caster's</b></span> <span style=\"color:#cccccc\"><b>receive</b></span> <span style=\"color:#a4c2f4\"><b>20%</b></span> <span style=\"color:#ea9999\"><b>[10%]</b></span> <span style=\"color:#cccccc\"><b>increased damage for</b></span> <span style=\"color:#a4c2f4\"><b>10</b></span> <span style=\"color:#ea9999\"><b>[5]</b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Allies</b></span> <span style=\"color:#cccccc\"><b>within 30 meters with a</b></span> <span style=\"color:#ffd966\"><b>Super Element</b></span> <span style=\"color:#cccccc\"><b>different from the</b></span> <span style=\"color:#ffd966\"><b>caster's</b></span> <span style=\"color:#cccccc\"><b>receive</b></span> <span style=\"color:#a4c2f4\"><b>20%</b></span> <span style=\"color:#ea9999\"><b>[10%]</b></span> <span style=\"color:#cccccc\"><b>increased damage for</b></span> <span style=\"color:#a4c2f4\"><b>10</b></span> <span style=\"color:#ea9999\"><b>[5]</b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>",
       "<span style=\"color:#cccccc\"><i>Damage buff is not refreshable.</i></span>",
       "",
       "<span style=\"color:#cccccc\"><i>Doesn't stack with</i></span> <span style=\"color:#ffd966\"><i>Radiant</i></span> <span style=\"color:#cccccc\"><i>or other similar empowering buffs.</i></span>"
@@ -1589,7 +1617,7 @@
   [
     [],
     [
-      "<span style=\"color:#a4c2f4\"><b>5%? Damage Resist against Combatants.</b></span>"
+      "<span style=\"color:#a4c2f4\"><b>10% Damage Resist against Combatants.</b></span>"
     ],
     [],
     [],
@@ -1597,7 +1625,9 @@
       "<span style=\"color:#cccccc\"><i>Upon scoring</i></span> <span style=\"color:#a4c2f4\"><b><i>3 Combatant Kills</i></b></span> <span style=\"color:#cccccc\"><i>within</i> <b><i>5 seconds</i></b> <i>of each with a</i></span> <span style=\"color:#a481e1\"><b><i>Sword</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "",
       "<span style=\"color:#cccccc\"><b>Generates</b></span> <span style=\"color:#a481e1\"><b>+3 Ammo</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
-      "<span style=\"color:#ffd966\"><b>Praxic Blade</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#ffd966\"><b>Ergo Sum</b></span> <span style=\"color:#cccccc\"><b>receive</b></span> <span style=\"color:#63d275\"><b>+2 Ammo</b></span> <span style=\"color:#cccccc\"><b>instead.</b></span>"
+      "<span style=\"color:#ffd966\"><b>Praxic Blade</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#ffd966\"><b>Ergo Sum</b></span> <span style=\"color:#cccccc\"><b>receive</b></span> <span style=\"color:#63d275\"><b>+2 Ammo</b></span> <span style=\"color:#cccccc\"><b>instead.</b></span>",
+      "",
+      "<span style=\"color:#e06666\"><i>Incurs a 1 second cooldown upon triggering.</i></span>"
     ],
     [],
     [],
@@ -1636,17 +1666,16 @@
       "<span style=\"color:#cccccc\"><b>Triggers a</b></span> <span style=\"color:#6fa8dc\"><b>Slowing Burst</b></span> <span style=\"color:#cccccc\"><b>over 6 meters.</b></span>",
       "",
       "<span style=\"color:#6fa8dc\"><b>Slowing Burst</b></span>",
-      "<span style=\"color:#cccccc\"><b>Inflicts</b></span> <span style=\"color:#6fa8dc\"><b>x20 Slow</b></span> <span style=\"color:#cccccc\"><b>for 2?</b></span><span style=\"color:#6fa8dc\"><b><small>+?</small></b></span> <span style=\"color:#cccccc\"><b>seconds to enemies.</b></span>",
-      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#a4c2f4\"><b>x? Frost Armor</b></span> <span style=\"color:#cccccc\"><b>to the user and</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
-      "",
-      "<span style=\"color:#e06666\"><b>Has no effect.</b></span>"
+      "<span style=\"color:#cccccc\"><b>Inflicts</b></span> <span style=\"color:#6fa8dc\"><b>x10 Slow</b></span> <span style=\"color:#cccccc\"><b>for 2</b></span><span style=\"color:#6fa8dc\"><b><small>+?</small></b></span> <span style=\"color:#cccccc\"><b>seconds to enemies.</b></span>",
+      "<span style=\"color:#cccccc\"><b><s>Grants</s></b></span> <span style=\"color:#a4c2f4\"><b><s>x? Frost Armor</s></b></span> <span style=\"color:#cccccc\"><b><s>to the user and</s></b></span> <span style=\"color:#a4c2f4\"><b><s>allies</s></b></span><span style=\"color:#cccccc\"><b><s>.</s> Does not trigger.</b></span>"
     ],
     [],
     [],
     [
       "<span style=\"color:#cccccc\"><i>While a</i></span> <span style=\"color:#bba5f3\"><b><i>Void</i></b></span> <span style=\"color:#cccccc\"><i>or</i></span> <span style=\"color:#fbbdec\"><b><i>Prismatic</i></b></span> <span style=\"color:#cccccc\"><b><i>Subclass</i></b> <i>is equipped:</i></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>Killing</b></span> <span style=\"color:#c27ba0\"><b>Weakened Enemies</b></span> <span style=\"color:#cccccc\"><b>grants</b></span> <span style=\"color:#d5a6bd\"><b>15 Overshield HP</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+      "<span style=\"color:#cccccc\"><i>Upon</i> <b><i>killing</i></b> <i>a</i></span> <span style=\"color:#c27ba0\"><b><i>Weakened Enemy:</i></b></span>",
+      "<span style=\"color:#d5a6bd\"><b>15 Overshield HP</b></span> <span style=\"color:#cccccc\"><b>for</b></span> <span style=\"color:#a4c2f4\"><b>10</b></span><span style=\"color:#b4a7d6\"><b><small>+5</small></b></span> <span style=\"color:#ea9999\"><b>[5<small>+2.5</small>]</b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>"
     ],
     [],
     [],
@@ -1670,7 +1699,7 @@
     [],
     [],
     [
-      "<span style=\"color:#f9cb9c\"><b>Radiant Orbs</b></span>"
+      "<span style=\"color:#ffd966\"><b>Radiant Orbs</b></span>"
     ],
     [],
     [],
@@ -1683,7 +1712,7 @@
     [
       "<span style=\"color:#cccccc\"><i>Upon</i> <b><i>breaking</i></b> <i>a</i></span> <span style=\"color:#a4c2f4\"><b><i>Combatant's Shield</i></b><i>:</i></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>+20 Stability, +20? Handling, and +20 Reload Speed for 10 seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><b>+20 Stability, +20 Handling, and +20 Reload Speed for 10 seconds.</b></span>",
       "<span style=\"color:#a481e1\"><b>Swords receive +20 Guard Resistance.</b></span>"
     ],
     [],
@@ -1697,12 +1726,12 @@
     [],
     [
       "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#6fa8dc\"><b><i>Frost Armor</i></b></span><span style=\"color:#cccccc\"><i>,</i></span> <span style=\"color:#d5a6bd\"><b><i>Void Overshield</i></b></span><span style=\"color:#cccccc\"><i>, or</i></span> <span style=\"color:#93c47d\"><b><i>Woven Mail</i></b></span> <span style=\"color:#cccccc\"><i>are active:</i></span>",
-      "<span style=\"color:#a4c2f4\"><b>?%</b></span> <span style=\"color:#ea9999\"><b>[?%]</b></span> <span style=\"color:#89cdd1\"><b>Additional Base Melee Recharge Rate</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>25%</b></span> <span style=\"color:#ea9999\"><b>[?%]</b></span> <span style=\"color:#89cdd1\"><b>Additional Base Melee Recharge Rate</b></span>",
       "<span style=\"color:#a4c2f4\"><b>50%</b></span> <span style=\"color:#ea9999\"><b>[5%]</b></span> <span style=\"color:#89cdd1\"><b>Increased Powered Melee Damage</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "<span style=\"color:#cccccc\"><b><i>Also increases</i></b></span> <span style=\"color:#ffd966\"><b><i>Super Melee Damage</i></b></span> <span style=\"color:#cccccc\"><b><i>and</i></b></span> <span style=\"color:#ff9900\"><b><i>Ignition Damage</i></b></span><span style=\"color:#cccccc\"><b><i>.</i></b></span>",
       "",
       "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#89cdd1\"><b><i>Amplified</i></b></span> <span style=\"color:#cccccc\"><i>or</i></span> <span style=\"color:#f6b26b\"><b><i>Radiant</i></b></span> <span style=\"color:#cccccc\"><i>are active:</i></span>",
-      "<span style=\"color:#a4c2f4\"><b>?%</b></span> <span style=\"color:#ea9999\"><b>[?%]</b></span> <span style=\"color:#e0a261\"><b>Additional Base Grenade Recharge Rate</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>25%</b></span> <span style=\"color:#ea9999\"><b>[?%]</b></span> <span style=\"color:#e0a261\"><b>Additional Base Grenade Recharge Rate</b></span>",
       "<span style=\"color:#a4c2f4\"><b>25%</b></span> <span style=\"color:#ea9999\"><b>[5%]</b></span> <span style=\"color:#e0a261\"><b>Increased Grenade Damage</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "",
       "<span style=\"color:#63d275\"><i>Grapple Melee instead receives 12% Increased Damage for each half of the perk.</i></span>",
@@ -1723,7 +1752,7 @@
     [],
     [],
     [
-      "<span style=\"color:#c27ba0\"><b>Transference</b></span>"
+      "<span style=\"color:#fbbdec\"><b>Transference</b></span>"
     ]
   ],
   [
@@ -1731,7 +1760,7 @@
     [
       "<span style=\"color:#cccccc\"><i>Upon destroying a</i></span> <span style=\"color:#93c47d\"><b><i>Tangle</i></b></span> <span style=\"color:#cccccc\"><i>with</i></span> <span style=\"color:#63d275\"><b><i>Strand Damage</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "",
-      "<span style=\"color:#63d275\"><b>Explosion</b></span> <span style=\"color:#cccccc\"><b>has an additional damage instance that deals</b></span> <span style=\"color:#a4c2f4\"><b>288</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#63d275\"><b>damage</b></span><span style=\"color:#cccccc\"><b>, down to 75% damage over a 17 meter radius.</b></span>",
+      "<span style=\"color:#63d275\"><b>Explosion</b></span> <span style=\"color:#cccccc\"><b>has an additional damage instance that deals</b></span> <span style=\"color:#a4c2f4\"><b>288</b></span> <span style=\"color:#ea9999\"><b>[?]</b></span> <span style=\"color:#63d275\"><b>damage</b></span><span style=\"color:#cccccc\"><b>, down to 75% damage over a 16 meter radius.</b></span>",
       "<span style=\"color:#63d275\"><i>Additional damage counts as Tangle Damage for all interactions.</i></span>"
     ],
     [],
@@ -1747,7 +1776,7 @@
       "<span style=\"color:#cccccc\"><b>10% Increased</b></span> <span style=\"color:#e0a261\"><b>Grenade</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#89cdd1\"><b>Melee</b></span> <span style=\"color:#cccccc\"><b>Damage.</b></span>",
       "",
       "<span style=\"color:#cccccc\"><i>After</i></span> <span style=\"color:#fbbdec\"><b><i>Transcendence</i></b></span> <span style=\"color:#cccccc\"><i>ends:</i></span>",
-      "<span style=\"color:#cccccc\"><b>Each Weapon Kill scored grants</b></span> <span style=\"color:#fbbdec\"><b>4.2%</b></span> <span style=\"color:#a2c4c9\"><b>Light</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#b45f06\"><b>Darkness</b></span> <span style=\"color:#cccccc\"><b>Energy.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Each Weapon Kill scored grants</b></span> <span style=\"color:#fbbdec\"><b>4.17%</b></span> <span style=\"color:#a2c4c9\"><b>Light</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#b45f06\"><b>Darkness</b></span> <span style=\"color:#cccccc\"><b>Energy.</b></span>",
       "<span style=\"color:#cccccc\"><b>Grants up to</b></span> <span style=\"color:#fbbdec\"><b>50%</b></span> <span style=\"color:#a2c4c9\"><b>Light</b></span><span style=\"color:#fbbdec\"><b>/</b></span><span style=\"color:#b45f06\"><b>Dark</b></span> <span style=\"color:#fbbdec\"><b>Energy</b></span> <span style=\"color:#cccccc\"><b>after 12 kills.</b></span>"
     ]
   ],
@@ -1774,6 +1803,7 @@
       "<span style=\"color:#b7b7b7\"><i>Upon scoring a</i></span> <span style=\"color:#f6b26b\"><b><i>Solar Sniper Rifle</i></b></span> <span style=\"color:#ffd966\"><b><i>Precision Hit</i></b></span><span style=\"color:#b7b7b7\"><b><i>:</i></b></span>",
       "<span style=\"color:#cccccc\"><b>Inflicts</b></span> <span style=\"color:#f6b26b\"><b>x30<small>+15</small> Scorch.</b></span>",
       "",
+      "<span style=\"color:#e06666\"><i>Incurs a 0.25 second cooldown after triggering.</i></span>",
       "<span style=\"color:#cccccc\"><i>Unaffected by Weapon Frame or Ammo Type.</i></span>"
     ],
     [],
@@ -1781,7 +1811,7 @@
     [
       "<span style=\"color:#ff9900\"><b>Ignitions</b></span> <span style=\"color:#cccccc\"><b>deal an additional damage instance.</b></span>",
       "",
-      "<span style=\"color:#f6b26b\"><b>Fulmination</b></span> <span style=\"color:#cccccc\"><b>deal</b></span> <span style=\"color:#a4c2f4\"><b>171</b></span> <span style=\"color:#ea9999\"><b>[30]</b></span> <span style=\"color:#f6b26b\"><b>Solar Damage</b></span> <span style=\"color:#cccccc\"><b>in a 12? meter radius.</b></span>",
+      "<span style=\"color:#f6b26b\"><b>Fulmination</b></span> <span style=\"color:#cccccc\"><b>deal</b></span> <span style=\"color:#a4c2f4\"><b>171</b></span> <span style=\"color:#ea9999\"><b>[30]</b></span> <span style=\"color:#f6b26b\"><b>Solar Damage</b></span> <span style=\"color:#cccccc\"><b>in a 12 meter radius.</b></span>",
       "<span style=\"color:#f6b26b\"><i>Fulminations</i></span> <span style=\"color:#cccccc\"><i>count as an</i></span> <span style=\"color:#ff9900\"><i>Ignition</i></span> <span style=\"color:#cccccc\"><i>and</i></span> <span style=\"color:#a4c2f4\"><i>don't</i></span> <span style=\"color:#ea9999\"><i>[do]</i></span> <span style=\"color:#cccccc\"><i>have damage falloff.</i></span>",
       "<span style=\"color:#f6b26b\"><i>Fulmination Damage</i></span> <span style=\"color:#cccccc\"><i>can be scaled by</i></span> <span style=\"color:#ff9900\"><i>Ignition buffs</i></span> <span style=\"color:#cccccc\"><i>(Dawn Chorus)</i></span>",
       "",
@@ -1800,7 +1830,7 @@
       "<span style=\"color:#ffd966\"><b>Sniper's Meditation</b></span>",
       "<span style=\"color:#cccccc\"><b>Increased Damage, Stability, and Reload Speed.</b></span>",
       "<span style=\"color:#cccccc\"><b>2.8% | 5.7% | 9% | 12% | 15% Increased Damage</b></span>",
-      "<span style=\"color:#cccccc\"><b>+? | +? | +? | +? | +? Stability</b></span>",
+      "<span style=\"color:#cccccc\"><b>+15 | +30 | +35 | +40 | +45 Stability</b></span>",
       "<span style=\"color:#cccccc\"><b>+15 | +30 | +35 | +40 | +45 Reload Speed</b></span>"
     ]
   ],
@@ -1828,7 +1858,9 @@
       "",
       "<span style=\"color:#a4c2f4\"><b>Resist x2 (25% DR)</b></span> <span style=\"color:#cccccc\"><b>for 6 seconds.</b></span>",
       "<span style=\"color:#cccccc\"><i>Buff is refreshable and persists through stow.</i></span>",
-      "<span style=\"color:#dd7e6b\"><i>Support Autos</i></span> <span style=\"color:#cccccc\"><i>can also trigger the buff by</i></span> <span style=\"color:#dd7e6b\"><i>healing injured</i></span> <span style=\"color:#a4c2f4\"><i>allies</i></span><span style=\"color:#cccccc\"><i>.</i></span>"
+      "<span style=\"color:#e06666\"><i>Incurs a 2 second cooldown upon triggering.</i></span>",
+      "",
+      "<span style=\"color:#dd7e6b\"><i>Support Auto Rifles</i></span> <span style=\"color:#cccccc\"><i>can also trigger the effect by scoring</i></span> <span style=\"color:#dd7e6b\"><i>10 healing shots</i></span> <span style=\"color:#cccccc\"><i>on</i></span> <span style=\"color:#dd7e6b\"><i>injured</i></span> <span style=\"color:#a4c2f4\"><i>allies</i></span> <span style=\"color:#cccccc\"><i>within 7 seconds.</i></span>"
     ],
     [],
     [],
@@ -1952,6 +1984,8 @@
       "",
       "<span style=\"color:#cccccc\"><b>5% Increased Weapon Damage against</b></span> <span style=\"color:#a4c2f4\"><b>Non-Boss Combatants</b></span> <span style=\"color:#cccccc\"><b>that are affected by</b></span> <span style=\"color:#93c47d\"><b>Strand</b></span> <span style=\"color:#cccccc\"><b>or</b></span> <span style=\"color:#6fa8dc\"><b>Stasis</b></span> <span style=\"color:#cccccc\"><b>debuffs.</b></span>",
       "",
+      "<span style=\"color:#cccccc\"><b>20% Increased Weapon Damage against</b></span> <span style=\"color:#6fa8dc\"><b>Stasis Crystals</b></span> <span style=\"color:#cccccc\"><b>and</b></span> <span style=\"color:#63d275\"><b>Tangles</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "",
       "<span style=\"color:#63d275\"><b>Strand Debuffs</b></span><span style=\"color:#cccccc\"><b>:</b></span> <span style=\"color:#6aa84f\"><b>Unraveled, Severed, Suspended</b></span>",
       "<span style=\"color:#6fa8dc\"><b>Stasis Debuffs: Slowed</b></span><span style=\"color:#cccccc\"><b>, or</b></span> <span style=\"color:#3d85c6\"><b>Frozen</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
     ],
@@ -1962,19 +1996,20 @@
       "",
       "<span style=\"color:#cccccc\"><b>Spawns</b></span> <span style=\"color:#6fa8dc\"><b>1 Stasis Crystals</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "<span style=\"color:#a4c2f4\"><b>Bosses</b></span> <span style=\"color:#cccccc\"><b>spawn</b></span> <span style=\"color:#6fa8dc\"><b>2 Stasis Crystals</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
+      "<span style=\"color:#6fa8dc\"><i><small>Crystals</small></i></span> <span style=\"color:#cccccc\"><i><small>are spawned close to where the enemy dies.</small></i></span>",
       "",
-      "<span style=\"color:#6fa8dc\"><i><small>Crystals</small></i></span> <span style=\"color:#cccccc\"><i><small>are spawned close to where the enemy dies.</small></i></span>"
+      "<span style=\"color:#e06666\"><i>Incurs a 0.3 second cooldown between triggers.</i></span>"
     ],
     [],
     [],
     [
       "<span style=\"color:#cccccc\"><i>Upon</i></span> <span style=\"color:#3c78d8\"><b><i>shattering</i></b></span> <span style=\"color:#cccccc\"><i>a</i></span> <span style=\"color:#6fa8dc\"><b><i>Stasis Crystal</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>Releases</b></span> <span style=\"color:#6fa8dc\"><b>5 Homing Ice Shards</b></span> <span style=\"color:#cccccc\"><b>in a * pattern, each dealing 46 damage and inflicting</b></span> <span style=\"color:#a4c2f4\"><b>x?</b></span> <span style=\"color:#ea9999\"><b>[x10]</b></span> <span style=\"color:#6fa8dc\"><b>Slow</b></span> <span style=\"color:#cccccc\"><b>for ? seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><b>Releases</b></span> <span style=\"color:#6fa8dc\"><b>5 Homing Ice Shards</b></span> <span style=\"color:#cccccc\"><b>in a * pattern, each dealing 46 damage and inflicting</b></span> <span style=\"color:#a4c2f4\"><b>x15</b></span> <span style=\"color:#ea9999\"><b>[x10]</b></span> <span style=\"color:#6fa8dc\"><b>Slow</b></span> <span style=\"color:#cccccc\"><b>for 2 seconds.</b></span>",
       "<span style=\"color:#cccccc\"><i>Shards are spread uniformally, with one shard going towards the closest enemy and the others spreading.</i></span>",
       "",
-      "<span style=\"color:#3c78d8\"><b>Enemy Shatters</b></span> <span style=\"color:#cccccc\"><b>deal</b></span> <span style=\"color:#a4c2f4\"><b>12.5%</b></span> <span style=\"color:#ea9999\"><b>[?%]</b></span> <span style=\"color:#cccccc\"><b>increased damage.</b></span>",
-      "<span style=\"color:#6fa8dc\"><b>Crystal Shatters</b></span> <span style=\"color:#cccccc\"><b>deal</b></span> <span style=\"color:#a4c2f4\"><b>25%</b></span> <span style=\"color:#ea9999\"><b>[?%]</b></span> <span style=\"color:#cccccc\"><b>increased damage.</b></span>"
+      "<span style=\"color:#3c78d8\"><b>Enemy Shatters</b></span> <span style=\"color:#cccccc\"><b>deal</b></span> <span style=\"color:#a4c2f4\"><b>12.5%</b></span> <span style=\"color:#ea9999\"><b>[5%]</b></span> <span style=\"color:#cccccc\"><b>increased damage.</b></span>",
+      "<span style=\"color:#6fa8dc\"><b>Crystal Shatters</b></span> <span style=\"color:#cccccc\"><b>deal</b></span> <span style=\"color:#a4c2f4\"><b>25%</b></span> <span style=\"color:#ea9999\"><b>[10%]</b></span> <span style=\"color:#cccccc\"><b>increased damage.</b></span>"
     ]
   ],
   [
@@ -2017,7 +2052,7 @@
     [
       "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#ffd966\"><b><i>Radiant</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "",
-      "<span style=\"color:#f6b26b\"><b>Solar</b></span> <span style=\"color:#f1c232\"><b>Precision Kills</b></span> <span style=\"color:#cccccc\"><b>on</b></span> <span style=\"color:#a4c2f4\"><b>Combatants</b></span> <span style=\"color:#cccccc\"><b>cause an</b></span> <span style=\"color:#ff9900\"><b>Ignition</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
+      "<span style=\"color:#f6b26b\"><b>Solar</b></span> <span style=\"color:#f1c232\"><b>Precision Kills</b></span> <span style=\"color:#cccccc\"><b>on</b></span> <span style=\"color:#a4c2f4\"><b>Combatants</b></span> <span style=\"color:#cccccc\"><b>trigger an</b></span> <span style=\"color:#ff9900\"><b>Ignition</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
     ]
   ],
   [
@@ -2043,8 +2078,7 @@
       "<span style=\"color:#cccccc\"><i>Upon</i> <b><i>breaking</i></b> <i>a</i></span> <span style=\"color:#a4c2f4\"><b><i>Combatant's Shield</i></b></span> <span style=\"color:#cccccc\"><i>or performing a</i></span> <span style=\"color:#a4c2f4\"><b><i>Finisher</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "",
       "<span style=\"color:#a4c2f4\"><b>10%</b></span> <span style=\"color:#ea9999\"><b>[2.5%]</b></span> <span style=\"color:#cccccc\"><b>Damage Resist</b> <i><small>(Resist x1)</small></i> <b>for 6 seconds.</b></span>",
-      "<span style=\"color:#89cdd1\"><b>100% Increased Melee Damage</b></span> <span style=\"color:#cccccc\"><b>for 6 seconds</b><i>.</i></span>",
-      "<span style=\"color:#ffd966\"><b>Increases Super Melee Damage as well.</b></span>"
+      "<span style=\"color:#89cdd1\"><b>100% Increased Melee Damage</b></span> <span style=\"color:#cccccc\"><b>for 6 seconds</b><i>.</i></span>"
     ],
     [],
     [],
@@ -2085,13 +2119,13 @@
   [
     [],
     [
-      "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#ffd966\"><b><i>Super Energy</i></b></span> <span style=\"color:#cccccc\"><i>is</i> <b><i>above 60%</i></b> <i>but</i></span> <span style=\"color:#e06666\"><b><i><u>not</u></i></b></span> <span style=\"color:#ffd966\"><b><i>fully charged</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#cccccc\"><i>While</i></span> <span style=\"color:#ffd966\"><b><i>Super Energy</i></b></span> <span style=\"color:#cccccc\"><i>is</i> <b><i>between</i></b></span> <span style=\"color:#ffd966\"><b><i>60%–99%</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
       "",
       "<span style=\"color:#d5a6bd\"><b>Ability Kills</b></span> <span style=\"color:#cccccc\"><b>spawn</b></span> <span style=\"color:#ffd966\"><b>3 Orbs of Power</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "<span style=\"color:#ffd966\"><b>Orbs of Power</b></span> <span style=\"color:#cccccc\"><b>grant</b></span> <span style=\"color:#ffd966\"><b>7.15% Super Energy</b></span> <span style=\"color:#cccccc\"><b>each.</b></span>",
-      "<span style=\"color:#dd7e6b\"><b>Incurs a 30 second cooldown between spawning orbs.</b></span>",
+      "<span style=\"color:#e06666\"><b>Incurs a 30 second cooldown between spawning orbs.</b></span>",
       "",
-      "<span style=\"color:#cccccc\"><i>Works with</i></span> <span style=\"color:#ffd966\"><i>Roaming Supers</i></span> <span style=\"color:#cccccc\"><i>as long as</i></span> <span style=\"color:#ffd966\"><i>Super Energy</i></span> <span style=\"color:#cccccc\"><i>is above 60%.</i></span>"
+      "<span style=\"color:#cccccc\"><i>Works while in a</i></span> <span style=\"color:#ffd966\"><i>Roaming Super</i></span> <span style=\"color:#cccccc\"><i>as long as</i></span> <span style=\"color:#ffd966\"><i>Super Energy</i></span> <span style=\"color:#cccccc\"><i>is above 60%.</i></span>"
     ],
     [],
     [],
@@ -2108,7 +2142,7 @@
       "",
       "<span style=\"color:#f1c232\"><b>Godslayer Warheads</b></span><span style=\"color:#cccccc\"><b>:</b></span>",
       "<span style=\"color:#cccccc\"><b>15% Increased Damage.</b> <i>Stacks with everything.</i></span>",
-      "<span style=\"color:#cccccc\"><b>+? Reload Speed and 0.?x Reload Duration Multiplier.</b></span>",
+      "<span style=\"color:#cccccc\"><b>+100 Reload Speed and +20 Handling.</b></span>",
       "",
       "<span style=\"color:#cccccc\"><b><i>Does not</i></b></span> <span style=\"color:#ccae3b\"><b><i>consume</i></b></span> <span style=\"color:#cccccc\"><b><i>additional</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Armor Charges</i></b></span> <span style=\"color:#cccccc\"><b><i>while the buff is active.</i></b></span>"
     ]
@@ -2139,7 +2173,8 @@
       "",
       "<span style=\"color:#f6b26b\"><b><i>Solar Effects</i></b></span> <span style=\"color:#cccccc\"><i>initially triggered by</i></span> <span style=\"color:#f6b26b\"><b><i>Kindling Trigger</i></b></span> <span style=\"color:#cccccc\"><i>do not benefit from Weapon nor Ability Damage increases.</i></span>",
       "",
-      "<span style=\"color:#dd7e6b\"><b><i>Does not work while within a Well of Radiance.</i></b></span>"
+      "<span style=\"color:#e06666\"><b><i>Does not work while within a Well of Radiance.</i></b></span>",
+      "<span style=\"color:#e06666\"><b><i>Incurs a 0.3 second cooldown upon triggering.</i></b></span>"
     ],
     [],
     [],
@@ -2148,10 +2183,8 @@
       "<span style=\"color:#cccccc\"><b>Triggers a</b></span> <span style=\"color:#6fa8dc\"><b>Slowing Burst</b></span> <span style=\"color:#cccccc\"><b>over 6 meters.</b></span>",
       "",
       "<span style=\"color:#6fa8dc\"><b>Slowing Burst</b></span>",
-      "<span style=\"color:#cccccc\"><b>Inflicts</b></span> <span style=\"color:#6fa8dc\"><b>x20 Slow</b></span> <span style=\"color:#cccccc\"><b>for 2?</b></span><span style=\"color:#6fa8dc\"><b><small>+?</small></b></span> <span style=\"color:#cccccc\"><b>seconds to enemies.</b></span>",
-      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#6fa8dc\"><b>x? Frost Armor</b></span> <span style=\"color:#cccccc\"><b>to the user and</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
-      "",
-      "<span style=\"color:#e06666\"><b>Has no effect.</b></span>"
+      "<span style=\"color:#cccccc\"><b>Inflicts</b></span> <span style=\"color:#6fa8dc\"><b>x10 Slow</b></span> <span style=\"color:#cccccc\"><b>for 2</b></span><span style=\"color:#6fa8dc\"><b><small>+?</small></b></span> <span style=\"color:#cccccc\"><b>seconds to enemies.</b></span>",
+      "<span style=\"color:#cccccc\"><b><s>Grants</s></b></span> <span style=\"color:#a4c2f4\"><b><s>x? Frost Armor</s></b></span> <span style=\"color:#cccccc\"><b><s>to the user and</s></b></span> <span style=\"color:#a4c2f4\"><b><s>allies</s></b></span><span style=\"color:#cccccc\"><b><s>.</s> Does not trigger.</b></span>"
     ],
     [],
     [],
@@ -2182,30 +2215,31 @@
   [
     [],
     [
-      "<span style=\"color:#cccccc\"><i>Upon scoring</i> <b><i>2 Kills within ? seconds of each</i></b> <i>with</i> <b><i>Grenade Launchers</i></b> <i>or</i></span> <span style=\"color:#a481e1\"><b><i>Rocket Launchers</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
+      "<span style=\"color:#cccccc\"><i>Upon scoring</i> <b><i>2 Kills within 0.2 seconds of each</i></b> <i>with</i> <b><i>Grenade Launchers</i></b> <i>or a</i></span> <span style=\"color:#a481e1\"><b><i>single Rocket Launcher Kill</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
       "",
       "<span style=\"color:#cccccc\"><b>Grants a stack of</b></span> <span style=\"color:#a4c2f4\"><b>Armor Charge</b></span><span style=\"color:#cccccc\"><b>.</b></span>"
     ],
     [],
     [],
     [
-      "<span style=\"color:#e06666\"><b><i>Non-Exotic</i></b></span> <span style=\"color:#a481e1\"><b><i>Rocket Launcher Kills</i></b></span> <span style=\"color:#cccccc\"><i>within</i> <b><i>2-3? seconds</i></b> <i>of</i> <b><i>each</i></b></span> <span style=\"color:#a481e1\"><b><i>progress a counter</i></b></span><span style=\"color:#cccccc\"><b><i>.</i></b></span>",
+      "<span style=\"color:#e06666\"><b><i>Non-Exotic</i></b></span> <span style=\"color:#a481e1\"><b><i>Rocket Launcher Kills</i></b></span> <span style=\"color:#cccccc\"><i>within</i> <b><i>5 seconds</i></b> <i>of</i> <b><i>each</i></b></span> <span style=\"color:#a481e1\"><b><i>progress a counter</i></b></span><span style=\"color:#cccccc\"><b><i>.</i></b></span>",
       "<span style=\"color:#a4c2f4\"><b><i>Rank-and-File</i></b></span> <span style=\"color:#cccccc\"><i>=</i></span> <span style=\"color:#a481e1\"><b><i>25%</i></b></span> <span style=\"color:#cccccc\"><i>|</i></span> <span style=\"color:#a4c2f4\"><b><i>Elite</i></b></span> <span style=\"color:#cccccc\"><i>=</i></span> <span style=\"color:#a481e1\"><b><i>34%</i></b></span> <span style=\"color:#cccccc\"><i>|</i></span> <span style=\"color:#a4c2f4\"><b><i>Miniboss</i></b></span> <span style=\"color:#cccccc\"><i>=</i></span> <span style=\"color:#a481e1\"><b><i>100%</i></b></span>",
       "",
       "<span style=\"color:#cccccc\"><i>Upon reaching</i></span> <span style=\"color:#a481e1\"><b><i>100% Counter Progress</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
       "<span style=\"color:#a481e1\"><b>Rocket Launchers</b></span> <span style=\"color:#cccccc\"><b>are granted</b></span> <span style=\"color:#a481e1\"><b>+1 Ammo</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "<span style=\"color:#a481e1\"><b>Precision/High-Impact Rockets</b> <i>(or Bipod RLs)</i></span> <span style=\"color:#cccccc\"><b>receive</b></span> <span style=\"color:#a481e1\"><b>+2 Ammo</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
-      "<span style=\"color:#cccccc\"><b>+? Reload Speed and 0.?x Reload Duration Multiplier for 10 seconds.</b></span>",
+      "<span style=\"color:#cccccc\"><b>+65 Reload Speed for 10 seconds.</b></span>",
       "<span style=\"color:#cccccc\"><i>Not affected by Scavenger Mods.</i></span>"
     ],
     [],
     [],
     [
-      "<span style=\"color:#cccccc\"><i>Upon scoring</i> <b><i>6 weapon damage instances</i></b> <i>against</i></span> <span style=\"color:#6aa84f\"><b><i>Severed Enemies</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><i>Upon scoring</i> <b><i>6 weapon damage instances</i></b> <i>within 7 seconds of each against</i></span> <span style=\"color:#6aa84f\"><b><i>Severed Enemies</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "<span style=\"color:#cccccc\"><b>Inflicts</b></span> <span style=\"color:#6aa84f\"><b>Unravel</b></span><span style=\"color:#cccccc\"><b>.</b></span>",
       "",
       "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#6aa84f\"><b><i>Severed Enemy Kill</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
-      "<span style=\"color:#cccccc\"><b>Releases</b></span> <span style=\"color:#dd7e6b\"><b>3 healing pulses</b></span> <span style=\"color:#cccccc\"><b>on Enemy Death Location,</b></span> <span style=\"color:#dd7e6b\"><b>restoring 15 HP</b></span> <span style=\"color:#cccccc\"><b>and granting</b></span> <span style=\"color:#b6d7a8\"><b>Woven Mail</b></span> <span style=\"color:#cccccc\"><b>for</b></span> <span style=\"color:#b6d7a8\"><b>10 seconds</b></span> <span style=\"color:#cccccc\"><b>to the user and</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>within 10? metres every 2 seconds.</b></span>"
+      "<span style=\"color:#cccccc\"><b>Releases</b></span> <span style=\"color:#dd7e6b\"><b>3 healing pulses</b></span> <span style=\"color:#cccccc\"><b>on</b></span> <span style=\"color:#e06666\"><b>Enemy Death Location</b></span><span style=\"color:#cccccc\"><b>,</b></span>",
+      "<span style=\"color:#dd7e6b\"><b>Pulses restore 15 HP</b></span> <span style=\"color:#cccccc\"><b>and grant</b></span> <span style=\"color:#b6d7a8\"><b>Woven Mail</b></span> <span style=\"color:#cccccc\"><b>for</b></span> <span style=\"color:#b6d7a8\"><b>10 seconds</b></span> <span style=\"color:#cccccc\"><b>to the user and</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>within 10 metres every 2 seconds.</b></span>"
     ]
   ],
   [
@@ -2244,14 +2278,14 @@
   [
     [],
     [
-      "<span style=\"color:#6aa84f\"><b>Unraveling Threads</b></span> <span style=\"color:#cccccc\"><b>deal 15% increased damage.</b></span>"
+      "<span style=\"color:#6aa84f\"><b>Unraveling Threads</b></span> <span style=\"color:#cccccc\"><b>deal</b></span> <span style=\"color:#a4c2f4\"><b>15%</b></span> <span style=\"color:#ea9999\"><b>[10%]</b></span> <span style=\"color:#cccccc\"><b>increased damage.</b></span>"
     ],
     [],
     [],
     [
       "<span style=\"color:#cccccc\"><b><i>Upon receiving</i></b></span> <span style=\"color:#93c47d\"><b><i>Woven Mail</i></b></span><span style=\"color:#cccccc\"><b><i>, while on a</i></b></span> <span style=\"color:#93c47d\"><b><i>Strand</i></b></span> <span style=\"color:#cccccc\"><b><i>or</i></b></span> <span style=\"color:#fbbdec\"><b><i>Prismatic</i></b></span> <span style=\"color:#93c47d\"><b><i>Subclass</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#6aa84f\"><b>Unraveling Rounds</b></span> <span style=\"color:#cccccc\"><b>for 8 seconds.</b></span>"
+      "<span style=\"color:#cccccc\"><b>Grants</b></span> <span style=\"color:#6aa84f\"><b>Unraveling Rounds</b></span> <span style=\"color:#cccccc\"><b>for 10 seconds.</b></span>"
     ],
     [],
     [],
@@ -2334,14 +2368,14 @@
     [
       "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#b4a7d6\"><b><i>Void Breach Pickup</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "",
-      "<span style=\"color:#d5a6bd\"><b>+45 Void Overshield</b></span> <span style=\"color:#cccccc\"><b>for 10</b></span><span style=\"color:#d5a6bd\"><b><small>+5</small></b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>"
+      "<span style=\"color:#d5a6bd\"><b>+45 Void Overshield</b></span> <span style=\"color:#cccccc\"><b>for</b></span> <span style=\"color:#a4c2f4\"><b>10</b></span><span style=\"color:#b4a7d6\"><b><small>+5</small></b></span> <span style=\"color:#ea9999\"><b>[5</b></span><span style=\"color:#b4a7d6\"><b><small>+?</small></b></span><span style=\"color:#ea9999\"><b>]</b></span> <span style=\"color:#cccccc\"><b>seconds.</b></span>"
     ],
     [],
     [],
     [
       "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#b4a7d6\"><b><i>Void Breach</i></b></span> <span style=\"color:#cccccc\"><b>Pickup:</b></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>The next</b></span> <span style=\"color:#b4a7d6\"><b>Void Damage Instance</b></span> <span style=\"color:#cccccc\"><b>within 10 seconds releases a</b></span> <span style=\"color:#c27ba0\"><b>weakening burst</b></span><span style=\"color:#cccccc\"><b>, inflicting</b></span> <span style=\"color:#c27ba0\"><b>Weaken</b></span> <span style=\"color:#cccccc\"><b>to enemies within 5? metres for 8 seconds.</b></span>"
+      "<span style=\"color:#cccccc\"><b>The next</b></span> <span style=\"color:#b4a7d6\"><b>Void Damage Instance</b></span> <span style=\"color:#cccccc\"><b>within 10 seconds releases a</b></span> <span style=\"color:#c27ba0\"><b>weakening burst</b></span><span style=\"color:#cccccc\"><b>, inflicting</b></span> <span style=\"color:#c27ba0\"><b>Weaken</b></span> <span style=\"color:#cccccc\"><b>to enemies within 8 metres for 8 seconds.</b></span>"
     ]
   ],
   [
@@ -2379,7 +2413,7 @@
     [],
     [
       "<span style=\"color:#cccccc\"><i>On</i></span> <span style=\"color:#a4c2f4\"><b><i>Finisher</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
-      "<span style=\"color:#a4c2f4\"><b>Allies</b></span> <span style=\"color:#cccccc\"><b>within ? metres are</b></span> <span style=\"color:#a4c2f4\"><b>bestowed</b></span> <span style=\"color:#cccccc\"><b>an</b></span> <span style=\"color:#d5a6bd\"><b>Elemental Buff</b></span><span style=\"color:#cccccc\"><b>:</b></span>",
+      "<span style=\"color:#a4c2f4\"><b>Allies</b></span> <span style=\"color:#cccccc\"><b>within 15 metres are</b></span> <span style=\"color:#a4c2f4\"><b>bestowed</b></span> <span style=\"color:#cccccc\"><b>an</b></span> <span style=\"color:#d5a6bd\"><b>Elemental Buff</b></span><span style=\"color:#cccccc\"><b>:</b></span>",
       "",
       "<span style=\"color:#89cdd1\"><b>While Amplified is active: Amplified</b></span> <span style=\"color:#cccccc\"><b>for 15 seconds.</b></span>",
       "<span style=\"color:#8e7cc3\"><b>While Devour is active: Devour</b></span> <span style=\"color:#cccccc\"><b>for 5 seconds.</b></span>",
@@ -2410,16 +2444,16 @@
     [
       "<span style=\"color:#cccccc\"><b><i>While at</i></b></span> <span style=\"color:#dd7e6b\"><b><i>Critical Health</i></b></span> <span style=\"color:#cccccc\"><b><i>or</i></b></span> <span style=\"color:#67c9cf\"><b><i>Amplified</i></b></span><span style=\"color:#cccccc\"><b><i>:</i></b></span>",
       "",
-      "<span style=\"color:#cccccc\"><b>30% increased</b></span> <span style=\"color:#76a5af\"><b>Arc</b></span> <span style=\"color:#ffd966\"><b>Super</b></span> <span style=\"color:#cccccc\"><b>Damage.</b></span>",
+      "<span style=\"color:#cccccc\"><b>30% increased</b></span> <span style=\"color:#89cdd1\"><b>Arc</b></span> <span style=\"color:#ffd966\"><b>Super</b></span> <span style=\"color:#cccccc\"><b>Damage.</b></span>",
       "",
       "<span style=\"color:#cccccc\"><i>Only affects damage</i> <b><i>while</i></b> <i>in the</i></span> <span style=\"color:#ffd966\"><i>Super Animation</i></span><span style=\"color:#cccccc\"><i>, resulting in lowered bonuses for</i></span> <span style=\"color:#ffd966\"><i>Thundercrash</i></span> <span style=\"color:#cccccc\"><i>and</i></span> <span style=\"color:#ffd966\"><i>Gathering Storm.</i></span>"
     ],
     [],
     [],
     [
-      "<span style=\"color:#cccccc\"><i>Every</i></span> <span style=\"color:#a481e1\"><b><i>3?</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Elite+</i></b></span> <span style=\"color:#a481e1\"><b><i>Void Weapon Kills</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><i>Every</i></span> <span style=\"color:#a481e1\"><b><i>3</i></b></span> <span style=\"color:#a4c2f4\"><b><i>Elite+</i></b></span> <span style=\"color:#a481e1\"><b><i>Void Weapon Kills</i></b></span><span style=\"color:#cccccc\"><i>:</i></span>",
       "",
-      "<span style=\"color:#a481e1\"><b>50?% Heavy Ammo Progress</b></span> <span style=\"color:#cccccc\"><b>to the user and</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>within ? meters.</b></span>"
+      "<span style=\"color:#a481e1\"><b>35% Heavy Ammo Progress</b></span> <span style=\"color:#cccccc\"><b>to the user and</b></span> <span style=\"color:#a4c2f4\"><b>allies</b></span> <span style=\"color:#cccccc\"><b>within 15 meters.</b></span>"
     ],
     [],
     [],
@@ -2428,7 +2462,7 @@
       "",
       "<span style=\"color:#e0a261\"><b>130% Additional Grenade Base Recharge Rate</b></span> <span style=\"color:#cccccc\"><b>for 5 seconds.</b></span>",
       "",
-      "<span style=\"color:#89cdd1\"><b>Arc Kills</b></span> <span style=\"color:#cccccc\"><b>increase the buff duration by +3? seconds, up to 20 seconds.</b></span>"
+      "<span style=\"color:#89cdd1\"><b>Arc Kills</b></span> <span style=\"color:#cccccc\"><b>increase the buff duration by +3 seconds, up to 20 seconds.</b></span>"
     ]
   ],
   [
@@ -2455,6 +2489,8 @@
       "",
       "<span style=\"color:#a4c2f4\"><b>Resist x2 (25% DR)</b></span> <span style=\"color:#cccccc\"><b>for 6 seconds.</b></span>",
       "<span style=\"color:#cccccc\"><i>Buff is refreshable and persists through stow.</i></span>",
+      "<span style=\"color:#e06666\"><i>Incurs a 2 second cooldown upon triggering.</i></span>",
+      "",
       "<span style=\"color:#dd7e6b\"><i>Support Autos</i></span> <span style=\"color:#cccccc\"><i>can also trigger the buff by</i></span> <span style=\"color:#dd7e6b\"><i>healing</i></span> <span style=\"color:#a4c2f4\"><i>allies</i></span><span style=\"color:#cccccc\"><i>.</i></span>"
     ],
     [],
@@ -2465,9 +2501,9 @@
     [],
     [],
     [
-      "<span style=\"color:#cccccc\"><i>While a</i> <b><i>Glaive is readied</i></b><i>:</i></span>",
+      "<span style=\"color:#cccccc\"><i>While a</i> <b><i>Glaive is readied and loaded</i></b><i>:</i></span>",
       "",
-      "<span style=\"color:#a4c2f4\"><b>50% Damage Resist against Combatants</b></span> <span style=\"color:#cccccc\"><b>within ? meters.</b></span>"
+      "<span style=\"color:#a4c2f4\"><b>50% Damage Resist against Combatants</b></span> <span style=\"color:#cccccc\"><b>within 20 meters.</b></span>"
     ]
   ],
   [

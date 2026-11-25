@@ -431,12 +431,44 @@ Jolt<br>中文 &amp; Δ</td><td><span>Damage</span> <span>per stack</span></td>
             ],
         )
 
+    def test_var_fallback_colors_and_grid_chunks_are_parsed(self):
+        source = """<html><head><style>
+          body {color:var(--gm3-sys-color-on-surface,#1f1f1f);}
+          .ritz .waffle .s1 {color:var(--gm3-sys-color-on-primary,#fff);font-weight:bold;}
+          </style></head><body><div class="ritz grid-container">
+          <table class="waffle"><tbody>
+            <tr><th>1</th><td class="s1" rowspan="2">Span</td><td>Row 1</td></tr>
+          </tbody></table>
+          <div class="grid-chunk"><table class="waffle"><tbody>
+            <tr><th>2</th><td>Row 2</td></tr>
+          </tbody></table></div>
+          </div></body></html>"""
+        self.assertEqual(
+            ddc.sheet(source),
+            [
+                [
+                    ['<span style="color:#ffffff"><b>Span</b></span>'],
+                    ['<span style="color:#1f1f1f">Row 1</span>'],
+                ],
+                [
+                    [],
+                    ['<span style="color:#1f1f1f">Row 2</span>'],
+                ],
+            ],
+        )
+        with self.assertRaises(ValueError):
+            ddc.color("var(--gm3-sys-color-on-surface)")
+
     def test_login_empty_and_truncated_tables_are_rejected(self):
         for source in (
             "<html>Sign in to Google</html>",
             "<table><tr><td>not a sheet</td></tr></table>",
             '<table class="waffle"><tr><td></td></tr></table>',
             '<table class="waffle"><tr><td>Scorch 40</td></tr>',
+            '<div class="ritz"><table class="waffle"><tr><td>A</td></tr></table></div>'
+            '<div class="ritz"><table class="waffle"><tr><td>B</td></tr></table></div>',
+            '<div class="ritz"><table class="waffle"><tr><td>A</td></tr></table>'
+            '<div class="grid-chunk"><table class="waffle"><tr><td>B</td></tr></div></div>',
         ):
             with self.subTest(source=source), self.assertRaises(Exception):
                 ddc.sheet(source)
