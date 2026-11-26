@@ -4,9 +4,9 @@
 更新：2026.11.16
 路径：raid-guides/kings-fall
 上级：Raid & 地牢
-页脚：首领数值为固定难度下的实测值，不随光等浮动。
+页脚：首领数值为固定难度实测，不随光等浮动。
 数据源：[Destiny 2: Boss Damage](https://docs.google.com/spreadsheets/u/0/d/1_5wtBjRYHHxuF4oJKDb_iOGZs-wTkzB6RYbnyNLbuz4/htmlview#gid=1346678363) 与 LFCarry 的 [Raid Loot Tables](https://lfcarry.com/guides/destiny-2-raid-loot-tables)
-鸣谢：[遗忘Melt](https://space.bilibili.com/3706960595650983) 编写并维护图文攻略，小黑盒用户{buff|“压力一直天满光”}校对首领名称，蜃零#7456 整理{exotic|异域}武器与红框来源。
+鸣谢：[遗忘Melt](https://space.bilibili.com/3706960595650983) 编写图文攻略，小黑盒用户{buff|“压力一直天满光”}校对首领名称，蜃零#7456 整理{exotic|异域}武器与红框来源
 版式：副本
 首屏图标：5
 

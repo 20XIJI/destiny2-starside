@@ -4,7 +4,6 @@
 更新：2026.8.30
 导航：是
 首屏图标：0
-页脚：最后一次核对为 2026.7.7 的 9.7.0.3 版本。
 数据源：CourtProjects 的 [Destiny 2 Damage Buffs/Debuffs](https://docs.google.com/spreadsheets/u/0/d/1i1KUwgVkd8qhwYj481gkV9sZNJQCE-C3Q-dpQutPCi4/htmlview)
 
 ## 分类与叠加

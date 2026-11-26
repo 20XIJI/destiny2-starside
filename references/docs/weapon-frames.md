@@ -2,7 +2,7 @@
 
 描述：18 类武器 94 个框架的伤害、射速、填装、DPS 与评分实测数值，含勇士克制类型与逐条注解。
 更新：2026.8.22
-页脚：数值为满属性、指定 Perk 假定下的实测值，不代表实战表现。中文由本站译制。
+页脚：数值为满属性与指定 Perk 下的实测值。
 数据源：[Destiny 2: Endgame Analysis](https://docs.google.com/spreadsheets/d/1JM-0SlxVDAi-C6rGVlLxa-J1WGewEeL8Qvq4htWZHhY) 的「框架详情分解」页
 列组：身份 = 武器、框架、图标、示例、勇士、弹药
 列组：基础数值 = 基础伤害、红血倍率、橙血倍率、精准倍率、最大弹药、弹匣 Perk、瞄准衰减射程

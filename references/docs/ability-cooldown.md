@@ -3,7 +3,6 @@
 描述：手雷、近战与职业技能在 0 到 100 属性下的冷却秒数，分 PvE 与 PvP 两节，含每个技能的回复倍率、各档属性倍率与技能能量的整块获取规则。
 更新：2026.11.25
 数据源：[Character-Stats](https://github.com/Database-Clarity/Character-Stats)（Clarity，Update 9.7.0 曲线）与 [Ability Cooldowns & Scalers](https://docs.google.com/spreadsheets/d/1lEOY_Z0v5ZZVZJ1SVLJyleMBEG2a7KLq4aLIQA9zk0A)
-页脚：冷却秒数按 0 属性的基础值除以该档基础回复单位算得，手雷与近战、职业技能各取自己那一列。每秒回复百分比是冷却秒数的倒数，表内不另列。
 导航：是
 首屏图标：14
 

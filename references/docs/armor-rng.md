@@ -5,8 +5,7 @@
 导航：是
 推算器：是
 数据源：[Reverse Engineering Armor3 Rolls](https://docs.google.com/document/d/1VEeceUp5gqbFO2E-XfpnFPL8gvhTPom5_8hMFkUI1iI/preview)
-鸣谢：odo
-页脚：本页算法基于 odo 对护甲 3.0 商人随机种子与插槽池（plugSet 1315181101 / 445741600）的逆向验证整理。
+鸣谢：odo 逆向护甲 3.0 算法
 
 ## 底层随机种子机制
 

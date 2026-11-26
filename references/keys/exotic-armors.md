@@ -4,7 +4,7 @@
 上级：PvE 终局刷取指南
 上级路径：pve-farming
 更新：2026.9.10
-鸣谢：[小棒猪-LGpig](https://space.bilibili.com/169548478) 整理全部定位与评语。
+鸣谢：[小棒猪-LGpig](https://space.bilibili.com/169548478) 整理定位与评语
 首屏记录：6
 数据源：[刷取清单](https://docs.google.com/spreadsheets/d/1qsKGrRzCePGaIM5gNtAQNh949d3OsMJ6qV6Fqtpj22k/htmlview)
 导航：是

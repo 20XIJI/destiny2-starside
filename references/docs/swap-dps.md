@@ -3,7 +3,7 @@
 描述：198 组切枪配装的爆发输出排行，按切枪 DPS 降序，含伤害类型、倍率拆解与举枪、开火、收枪的逐段耗时。
 更新：2026.8.30
 数据源：[Destiny 2: Boss Damage](https://docs.google.com/spreadsheets/u/0/d/1_5wtBjRYHHxuF4oJKDb_iOGZs-wTkzB6RYbnyNLbuz4/htmlview) 的切枪分页
-鸣谢：[両儀式織](https://space.bilibili.com/2135345999) 整理与校对全部数值。
+鸣谢：[両儀式織](https://space.bilibili.com/2135345999) 校对数值与注解
 列组：结果 = 名字、图标、类型、最终伤害、切枪 DPS、真实 DPS、排行
 列组：倍率 = 基础伤害、发数、PERK、激涌、增益、减益、200 属性
 列组：耗时 = 举枪、开火、收枪、切枪耗时、总耗时

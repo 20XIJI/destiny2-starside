@@ -5,7 +5,7 @@
 上级路径：pve-farming
 更新：2026.8.30
 数据源：[Destiny 2: Endgame Analysis](https://docs.google.com/spreadsheets/d/1JM-0SlxVDAi-C6rGVlLxa-J1WGewEeL8Qvq4htWZHhY) 的各武器类型分页
-鸣谢：[両儀式織](https://space.bilibili.com/2135345999) 校对全部注解。
+鸣谢：[両儀式織](https://space.bilibili.com/2135345999) 校对注解
 导航：是
 首屏图标：6
 

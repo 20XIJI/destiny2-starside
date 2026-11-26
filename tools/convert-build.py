@@ -1993,7 +1993,7 @@ def render_index(made, sets=False):
         "</main>",
         "",
         LIKE_JS,
-        shell.foot(stamp, "，配装由各位推荐人提供，随赛季更新。"),
+        shell.foot(stamp, "，配装由推荐人提供，随赛季更新。"),
     ]
     out = "\n".join(x for x in o if x != "") + "\n"
     # **自己建目录**：合集索引页只在有合集时才出，站上从零变一时那个目录还不在，
@@ -2890,7 +2890,7 @@ def render_new(stamp, name_cn, sets=False):
     ]
     if sets:
         o += ["</div>", ""]  # 收 .set-wrap
-    o += ["</main>", "", shell.foot(stamp, "，候选条目与站内资料页共用同一份词表。")]
+    o += ["</main>", "", shell.foot(stamp, "，候选条目与站内资料共用词表。")]
     o = [x for x in o if x != ""]
     # vocab.js 与 tip.js 在 builds/ 下，form.js 在 builds/new/ 下——
     # 两处深浅差一层，前缀因此各算各的。form.js 读源稿形状走 builds/source.js、

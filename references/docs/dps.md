@@ -3,7 +3,7 @@
 描述：258 组单武器配置的持续输出实测排行，按 DPS 降序排列，含弹药类型、备弹、打空耗时、倍率拆解与测试注解。
 更新：2026.8.25
 数据源：[Destiny 2: Boss Damage](https://docs.google.com/spreadsheets/u/0/d/1_5wtBjRYHHxuF4oJKDb_iOGZs-wTkzB6RYbnyNLbuz4/htmlview) 的持续输出分页
-鸣谢：[両儀式織](https://space.bilibili.com/2135345999) 整理全部注解并校对数值。
+鸣谢：[両儀式織](https://space.bilibili.com/2135345999) 校对数值与注解
 列组：结果 = 名字、图标、弹药、最终伤害、总伤、DPS、排行、注解
 列组：细节 = 备弹、伤害间隔、打空耗时
 列组：增益 = 基础伤害、PERK、激涌、增益

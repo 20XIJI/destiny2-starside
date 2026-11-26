@@ -1842,11 +1842,11 @@ def page(stats, glyphs, ver):
     head = shell.head("装备库 · Starside", DESC, sky=True)
     nav = shell.nav("装备库")
     first = (
-        "装备基础数据取自 Bungie manifest，面板属性随所选词条、大师杰作与阶级实时计算。方括号内为 PvP 数值。"
+        "基础数据取自 Bungie manifest，面板属性随词条与阶级实时计算；方括号内为 PvP 数值。"
         + shell.unsure_note()
     )
     source = (
-        "Bungie manifest、%s（Aegis）与 %s（小棒猪）；异域的站内详情同"
+        "Bungie manifest、%s（Aegis）与 %s（小棒猪）；异域详情同"
         '<a href="../exotic-weapon/index.html">异域武器</a>与'
         '<a href="../exotic-armor/index.html">异域护甲</a>两页' % (AEGIS_SRC, LGPIG_SRC)
     )
