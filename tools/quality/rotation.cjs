@@ -860,26 +860,50 @@ test('armor-rng: manifest plugSet alignment, 23-column bijection, and Cuirass em
   assert.deepEqual(groups.map((g) => g.archId), [4, 5, 6, 7, 8, 9, 10, 11, 12])
   assert.ok(groups.every((g) => g.certain === true))
 
-  // 7. DOM mount renders 13 Ghost mod buttons (unmod + 12 pairs) and 6x6x6 stat buttons without archetype names
-  const prevDoc = global.document
-  global.document = {}
-  try {
-    const host = { innerHTML: '', addEventListener() {} }
-    const api = ArmorRng.mount(host, { itemName: '泰坦 · 坠星胸甲' })
-    assert.ok(api && typeof api.setItemName === 'function')
-    assert.match(host.innerHTML, /泰坦 · 坠星胸甲/)
-    assert.equal((host.innerHTML.match(/data-pick-mod="/g) || []).length, 13)
-    assert.deepEqual(
-      [...host.innerHTML.matchAll(/data-pick-pri="(\d)"/g)].map((m) => Number(m[1])),
-      [2, 6, 3, 4, 5, 1]
-    )
-    assert.equal((host.innerHTML.match(/data-pick-sec="/g) || []).length, 6)
-    assert.equal((host.innerHTML.match(/data-pick-tert="/g) || []).length, 6)
-    assert.doesNotMatch(host.innerHTML, /楷模|突围者|高能者|掷雷手|搏击手|掠夺者|爆破专家|装甲兵/)
-  } finally {
-    if (prevDoc === undefined) delete global.document
-    else global.document = prevDoc
-  }
+  // 7. Solver edge cases: even-X preserves both Y, contradictory unmodded obs rejected, multi-tMap not falsely certain
+  const modMissEven = ArmorRng.solveFromObservations([{ modId: 11, archId: 2, tertStat: 1 }])
+  assert.deepEqual(modMissEven.uniqueXs, [2])
+  assert.equal(modMissEven.ambiguous, false)
+  assert.deepEqual(modMissEven.candidates.map((c) => c.Y), [1, 2])
+  const contraUnmod = ArmorRng.solveFromObservations([{ modId: 0, archId: 1 }, { modId: 0, archId: 2 }])
+  assert.deepEqual(contraUnmod.candidates, [])
+  assert.deepEqual(contraUnmod.uniqueXs, [])
+  const multiTRes = ArmorRng.solveFromObservations([{ modId: 1, archId: 4 }])
+  const multiTGroups = ArmorRng.groupOutcomes(multiTRes.candidates)
+  assert.ok(multiTGroups.length > 0 && multiTGroups.every((g) => g.certain === false && g.tMap === 0 && g.tert === null))
+
+  // 8. Pure view-model invariants: sorted verdict, isSameMod consistency, activeArch after arch2, honest maxB > 1 copy
+  const vmSorted = ArmorRng.computeViewModel({ mod1: 0, pri1: 2, arch1: 8, tert1: 4, prio: [2, 3, 4] })
+  assert.equal(vmSorted.verdict.hit, true)
+  assert.equal(vmSorted.verdict.best.archId, 8)
+  assert.equal(vmSorted.verdict.directHit, true)
+  assert.equal(vmSorted.verdict.actText, '不插模组直接买')
+
+  const vmSame = ArmorRng.computeViewModel({ mod1: 11, pri1: 1, arch1: 11, tert1: 3, prio: [1] })
+  assert.equal(vmSame.isSameMod, true)
+  assert.deepEqual(vmSame.displayGroups.map((g) => g.archId), [11])
+  assert.equal(vmSame.verdict.best.archId, 11)
+
+  const vmArch2 = ArmorRng.computeViewModel({ mod1: 11, pri1: 1, arch1: 11, tert1: 3, mod2: 1, arch2: 4, prio: [6, 2] })
+  assert.equal(vmArch2.activeArch, 4)
+  assert.equal(vmArch2.verdict.best.archId, 4)
+  assert.equal(vmArch2.verdict.directHit, true)
+
+  const vmAmbigBefore = ArmorRng.computeViewModel({ mod1: 0, pri1: 5, arch1: 6, tert1: 2, prio: [] })
+  assert.equal(vmAmbigBefore.rec2.maxB, 2)
+  assert.doesNotMatch(vmAmbigBefore.verifyLead, /100% 锁定/)
+  const vmAmbigAfter = ArmorRng.computeViewModel({ mod1: 0, pri1: 5, arch1: 6, tert1: 2, mod2: 1, arch2: 1, prio: [] })
+  assert.equal(vmAmbigAfter.res.uniqueXs.length, 2)
+  assert.match(vmAmbigAfter.verifyLead, /收窄至 2 种可能/)
+
+  const unreachableByX = ArmorRng.explainUnreachable([1, 4, 3], 2)
+  assert.match(unreachableByX, /高能者/)
+  assert.doesNotMatch(unreachableByX, /固定为 \+20 手雷/)
+  const unreachableByT = ArmorRng.explainUnreachable([1, 4, 3], 1)
+  assert.match(unreachableByT, /固定为 \+20 生命/)
+  const rec2 = ArmorRng.recommendSecondMod([11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22], 11)
+  assert.equal(rec2.modId, 1)
+  assert.equal(rec2.maxB, 2)
 })
 
 test('rota: pointer drag tracks continuously and snaps with momentum on release', () => {

@@ -1,4 +1,4 @@
-/* 护甲 3.0 商人属性机制与机灵聚焦推算器（仄页精简版）
+/* 护甲 3.0 商人属性机制与机灵聚焦推算器
    数据依据：odo《Reverse Engineering Armor3 Rolls》与 Bungie DestinyPlugSetDefinition
    - 原型插槽池（1315181101）：12 种护甲原型，决定 +30 与 +25 属性
    - 第三属性插槽池（445741600）：6 项属性固定顺序，剔除前两项后余下 4 项对应 t.map = 1..4（+20）
@@ -12,6 +12,8 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
+  var STORAGE_MOD_KEY = 'starside:armor-rng:mod1';
+
   // 6 项护甲属性（内部顺序严格对应 plugSet 445741600；图标取自 game-mechanics 护甲属性表）
   var STATS = [
     { id: 1, key: 'weapons', name: '武器', en: 'Weapons', hash: 2041822466, icon: '../game-mechanics/icons/05a8b352f5.webp' },
@@ -24,18 +26,18 @@
 
   // 12 种护甲原型（内部顺序严格对应 plugSet 1315181101）
   var ARCHETYPES = [
-    { id: 1, name: '楷模典范', shortName: '楷模', en: 'Paragon', hash: 4227065942, primary: 4, secondary: 6, icon: 'a7520cb2f31ec33730b77cdb78e058a5.webp' },
-    { id: 2, name: '堡垒', shortName: '堡垒', en: 'Bulwark', hash: 549468645, primary: 2, secondary: 5, icon: '301b534fef656d07ee6486b17f1e9ce0.webp' },
-    { id: 3, name: '掷雷手', shortName: '掷雷手', en: 'Grenadier', hash: 2937665788, primary: 3, secondary: 4, icon: '5edbc054d836cc9f8504e938bd0c0a35.webp' },
-    { id: 4, name: '搏击手', shortName: '搏击手', en: 'Brawler', hash: 3349393475, primary: 6, secondary: 2, icon: 'fe487c4b4ad9a64f597df822d9f098b2.webp' },
-    { id: 5, name: '枪手', shortName: '枪手', en: 'Gunner', hash: 1807652646, primary: 1, secondary: 3, icon: 'd50bb589a2497a809716093ca7ea5300.webp' },
-    { id: 6, name: '专家', shortName: '专家', en: 'Specialist', hash: 2230428468, primary: 5, secondary: 1, icon: '859a93ee38aa9cf96d96c8a4b55d59a4.webp' },
-    { id: 7, name: '掠夺者', shortName: '掠夺者', en: 'Reaver', hash: 351770835, primary: 5, secondary: 6, icon: '859a93ee38aa9cf96d96c8a4b55d59a4.webp' },
-    { id: 8, name: '突围者', shortName: '突围者', en: 'Siegebreaker', hash: 2503381935, primary: 2, secondary: 3, icon: '301b534fef656d07ee6486b17f1e9ce0.webp' },
-    { id: 9, name: '爆破专家', shortName: '爆破专家', en: 'Demolitionist', hash: 2222960133, primary: 3, secondary: 5, icon: '5edbc054d836cc9f8504e938bd0c0a35.webp' },
-    { id: 10, name: '突击手', shortName: '突击手', en: 'Skirmisher', hash: 1687144140, primary: 6, secondary: 1, icon: 'fe487c4b4ad9a64f597df822d9f098b2.webp' },
-    { id: 11, name: '高能者', shortName: '高能者', en: 'Powerhouse', hash: 544009373, primary: 1, secondary: 4, icon: 'd50bb589a2497a809716093ca7ea5300.webp' },
-    { id: 12, name: '装甲兵', shortName: '装甲兵', en: 'Colossus', hash: 1418248448, primary: 4, secondary: 2, icon: 'a7520cb2f31ec33730b77cdb78e058a5.webp' }
+    { id: 1, name: '楷模典范', shortName: '楷模', en: 'Paragon', hash: 4227065942, primary: 4, secondary: 6 },
+    { id: 2, name: '堡垒', shortName: '堡垒', en: 'Bulwark', hash: 549468645, primary: 2, secondary: 5 },
+    { id: 3, name: '掷雷手', shortName: '掷雷手', en: 'Grenadier', hash: 2937665788, primary: 3, secondary: 4 },
+    { id: 4, name: '搏击手', shortName: '搏击手', en: 'Brawler', hash: 3349393475, primary: 6, secondary: 2 },
+    { id: 5, name: '枪手', shortName: '枪手', en: 'Gunner', hash: 1807652646, primary: 1, secondary: 3 },
+    { id: 6, name: '专家', shortName: '专家', en: 'Specialist', hash: 2230428468, primary: 5, secondary: 1 },
+    { id: 7, name: '掠夺者', shortName: '掠夺者', en: 'Reaver', hash: 351770835, primary: 5, secondary: 6 },
+    { id: 8, name: '突围者', shortName: '突围者', en: 'Siegebreaker', hash: 2503381935, primary: 2, secondary: 3 },
+    { id: 9, name: '爆破专家', shortName: '爆破专家', en: 'Demolitionist', hash: 2222960133, primary: 3, secondary: 5 },
+    { id: 10, name: '突击手', shortName: '突击手', en: 'Skirmisher', hash: 1687144140, primary: 6, secondary: 1 },
+    { id: 11, name: '高能者', shortName: '高能者', en: 'Powerhouse', hash: 544009373, primary: 1, secondary: 4 },
+    { id: 12, name: '装甲兵', shortName: '装甲兵', en: 'Colossus', hash: 1418248448, primary: 4, secondary: 2 }
   ];
 
   for (var ai = 0; ai < ARCHETYPES.length; ai++) {
@@ -49,6 +51,7 @@
       if (si !== archObj.primary && si !== archObj.secondary) archObj.tert.push(si);
     }
     archObj.pairLabel = '主' + archObj.primaryStat.name + ' · 副' + archObj.secondaryStat.name;
+    archObj.shortPair = archObj.primaryStat.name + ' / ' + archObj.secondaryStat.name;
   }
 
   // TERTIARY_MAP[tMap - 1][archId - 1] -> statId (1..6)
@@ -125,15 +128,6 @@
       }
     }
     return 0;
-  }
-
-  function archByPrimarySecondary(priId, secId) {
-    for (var i = 0; i < ARCHETYPES.length; i++) {
-      if (ARCHETYPES[i].primary === priId && ARCHETYPES[i].secondary === secId) {
-        return ARCHETYPES[i];
-      }
-    }
-    return null;
   }
 
   function archsByPrimary(priId) {
@@ -225,16 +219,16 @@
     for (var x = 1; x <= 23; x++) {
       var ys = xToYList(x);
       var matchX = true;
-      var matchedY = ys[0];
+      var observedY = 0;
       for (var j = 0; j < obs.length; j++) {
         var mId = Number(obs[j].modId || 0);
         var aId = archIdOf(obs[j].archId);
         if (mId === 0) {
-          if (ys.indexOf(aId) === -1) {
+          if (ys.indexOf(aId) === -1 || (observedY && observedY !== aId)) {
             matchX = false;
             break;
           }
-          matchedY = aId;
+          observedY = aId;
         } else {
           if (xOfGhost(mId, x) !== aId) {
             matchX = false;
@@ -244,37 +238,48 @@
       }
       if (!matchX) continue;
 
-      for (var k = 0; k < possibleT.length; k++) {
-        var tMap = possibleT[k];
-        var outcomes = [];
-        for (var g = 0; g <= 12; g++) {
-          var outArchId = (g === 0) ? matchedY : xOfGhost(g, x);
-          var r = rollOf(outArchId, tMap);
-          outcomes.push({
-            modId: g,
-            modName: g === 0 ? '未装模组' : archById(g).name,
-            archId: outArchId,
-            arch: r.arch,
-            tert: r.tert,
-            tertStat: r.tert.name,
-            primaryStat: r.primary.name,
-            secondaryStat: r.secondary.name,
+      // 偶数 X 跨过 12 等分边界时对应两个合法 Y；未观测 modId=0 时保留全部合法 Y 候选
+      var candidateYs = observedY ? [observedY] : ys;
+      for (var yi = 0; yi < candidateYs.length; yi++) {
+        var yVal = candidateYs[yi];
+        for (var k = 0; k < possibleT.length; k++) {
+          var tMap = possibleT[k];
+          var outcomes = [];
+          for (var g = 0; g <= 12; g++) {
+            var outArchId = (g === 0) ? yVal : xOfGhost(g, x);
+            var r = rollOf(outArchId, tMap);
+            outcomes.push({
+              modId: g,
+              modName: g === 0 ? '未装模组' : archById(g).name,
+              archId: outArchId,
+              arch: r.arch,
+              tert: r.tert,
+              tertStat: r.tert.name,
+              primaryStat: r.primary.name,
+              secondaryStat: r.secondary.name,
+              tMap: tMap,
+              values: r.values
+            });
+          }
+          candidates.push({
+            X: x,
+            Y: yVal,
+            yList: ys,
             tMap: tMap,
-            values: r.values
+            outcomes: outcomes
           });
         }
-        candidates.push({
-          X: x,
-          Y: matchedY,
-          yList: ys,
-          tMap: tMap,
-          outcomes: outcomes
-        });
       }
     }
 
+    var uniqueXs = [];
+    for (var ci = 0; ci < candidates.length; ci++) {
+      if (uniqueXs.indexOf(candidates[ci].X) === -1) uniqueXs.push(candidates[ci].X);
+    }
+
     return {
-      ambiguous: candidates.length > 1,
+      ambiguous: uniqueXs.length > 1 || possibleT.length > 1,
+      uniqueXs: uniqueXs,
       candidates: candidates
     };
   }
@@ -282,7 +287,15 @@
   function groupOutcomes(candidates) {
     if (!candidates || !candidates.length) return [];
     var totalCands = candidates.length;
-    var tMap = candidates[0].tMap;
+    var firstT = candidates[0].tMap;
+    var singleT = true;
+    for (var ti = 1; ti < totalCands; ti++) {
+      if (candidates[ti].tMap !== firstT) {
+        singleT = false;
+        break;
+      }
+    }
+    var tMap = singleT ? firstT : 0;
     var byArch = {};
 
     for (var g = 0; g <= 12; g++) {
@@ -295,13 +308,14 @@
         if (!Object.prototype.hasOwnProperty.call(counts, aKey)) continue;
         var aId = Number(aKey);
         if (!byArch[aId]) {
-          var r = rollOf(aId, tMap);
+          var aObj = archById(aId);
+          var r = tMap ? rollOf(aId, tMap) : null;
           byArch[aId] = {
             archId: aId,
-            arch: r.arch,
-            primary: r.primary,
-            secondary: r.secondary,
-            tert: r.tert,
+            arch: aObj,
+            primary: aObj.primaryStat,
+            secondary: aObj.secondaryStat,
+            tert: r ? r.tert : null,
             tMap: tMap,
             roll: r,
             certainMods: [],
@@ -314,12 +328,13 @@
         var gArch = g === 0 ? null : archById(g);
         var modInfo = {
           modId: g,
-          name: g === 0 ? '不插模组' : gArch.pairLabel,
+          name: g === 0 ? '未装模组' : gArch.name,
+          pairLabel: g === 0 ? '裸看' : gArch.pairLabel,
           isSelf: g === aId,
           hits: hits,
           total: totalCands
         };
-        if (hits === totalCands) {
+        if (hits === totalCands && singleT) {
           byArch[aId].certainMods.push(modInfo);
           if (g === aId) byArch[aId].selfModCertain = true;
         } else {
@@ -334,9 +349,47 @@
       if (!byArch[id]) continue;
       var item = byArch[id];
       item.certain = item.certainMods.length > 0;
+      var nonZeroCertain = item.certainMods.filter(function (m) { return m.modId > 0; });
+      var nonZeroPossible = item.possibleMods.filter(function (m) { return m.modId > 0; });
+      item.bestMod = item.selfModCertain
+        ? id
+        : (nonZeroCertain.length
+            ? nonZeroCertain[0].modId
+            : (item.selfModPossible
+                ? id
+                : (nonZeroPossible.length ? nonZeroPossible[0].modId : 0)));
       groups.push(item);
     }
     return groups;
+  }
+
+  function recommendSecondMod(xs, excludeModId) {
+    if (!xs || xs.length <= 1) return null;
+    var best = null;
+    var order = [1, 12, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+    for (var i = 0; i < order.length; i++) {
+      var g = order[i];
+      if (g === excludeModId) continue;
+      var buckets = {};
+      for (var k = 0; k < xs.length; k++) {
+        var a = xOfGhost(g, xs[k]);
+        buckets[a] = (buckets[a] || 0) + 1;
+      }
+      var keys = Object.keys(buckets).map(Number);
+      if (keys.length <= 1) continue;
+      var maxB = 0;
+      for (var bi = 0; bi < keys.length; bi++) {
+        if (buckets[keys[bi]] > maxB) maxB = buckets[keys[bi]];
+      }
+      if (!best || maxB < best.maxB) {
+        best = {
+          modId: g,
+          outcomes: keys.sort(function (a, b) { return a - b; }),
+          maxB: maxB
+        };
+      }
+    }
+    return best;
   }
 
   function allCombos() {
@@ -419,6 +472,17 @@
     return scored;
   }
 
+  function explainUnreachable(prioIds, tMap) {
+    var theo = filterCombosByPriority(prioIds);
+    if (!theo.length) return '护甲 3.0 没有这种属性搭配';
+    var t0 = theo[0];
+    var actualTert = tertStatOf(t0.archId, tMap);
+    if (actualTert && actualTert.id !== t0.roll.tert.id) {
+      return '需要「' + t0.arch.name + ' +20 ' + t0.roll.tert.name + '」，但这件护甲在 ' + t0.arch.name + ' 下第三属性固定为 +20 ' + actualTert.name;
+    }
+    return '这件护甲这周洗不到「' + t0.arch.name + '」原型';
+  }
+
   function esc(s) {
     return String(s == null ? '' : s)
       .replace(/&/g, '&amp;')
@@ -427,25 +491,136 @@
       .replace(/"/g, '&quot;');
   }
 
-  function formatModAction(group) {
-    var selfLabel = group.arch.pairLabel;
-    if (group.selfModCertain) {
-      return '机灵插：' + selfLabel;
+  function loadSavedMod() {
+    try {
+      if (typeof localStorage === 'undefined') return 11;
+      var raw = localStorage.getItem(STORAGE_MOD_KEY);
+      if (raw === null) return 11;
+      var num = Number(raw);
+      return (num >= 0 && num <= 12 && Math.floor(num) === num) ? num : 11;
+    } catch {
+      return 11;
     }
-    var nonZeroCertain = group.certainMods.filter(function (m) { return m.modId > 0; });
-    if (nonZeroCertain.length) {
-      return '机灵插：' + nonZeroCertain[0].name;
+  }
+
+  function saveMod(modId) {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(STORAGE_MOD_KEY, String(modId));
+      }
+    } catch {
+      // 隐私模式禁用存储时静默忽略
     }
-    if (group.certainMods.length && group.certainMods[0].modId === 0) {
-      return '不插机灵模组直接买';
+  }
+
+  function computeViewModel(input) {
+    var mod1 = Number(input.mod1 || 0);
+    var pri1 = Number(input.pri1 || 1);
+    var a1 = archById(input.arch1);
+    if (!a1 || a1.primary !== pri1) {
+      a1 = archsByPrimary(pri1)[0] || ARCHETYPES[0];
     }
-    if (group.selfModPossible) {
-      return '机灵插：' + selfLabel;
+    var tert1 = Number(input.tert1 || 0);
+    if (a1.tert.indexOf(tert1) === -1) {
+      tert1 = a1.tert[0];
     }
-    if (group.possibleMods.length) {
-      return '机灵插：' + group.possibleMods[0].name;
+
+    var obs1 = [{ modId: mod1, archId: a1.id, tertStat: tert1 }];
+    var baseRes = solveFromObservations(obs1);
+    var rec2 = recommendSecondMod(baseRes.uniqueXs, mod1);
+    var mod2 = rec2 ? rec2.modId : 0;
+    var arch2 = (rec2 && Number(input.mod2) === rec2.modId && rec2.outcomes.indexOf(Number(input.arch2)) !== -1)
+      ? Number(input.arch2)
+      : 0;
+
+    var fullObs = arch2 ? obs1.concat([{ modId: mod2, archId: arch2 }]) : obs1;
+    var res = solveFromObservations(fullObs);
+    var groups = groupOutcomes(res.candidates);
+    var isSameMod = mod1 > 0 && mod1 === a1.id && !arch2;
+    var certCount = groups.filter(function (g) { return g.certain; }).length;
+    var waitCount = groups.length - certCount;
+    var prio = Array.isArray(input.prio) ? input.prio.slice() : [];
+
+    var displayGroups = isSameMod
+      ? groups.filter(function (g) { return g.archId === a1.id; })
+      : groups.slice();
+
+    displayGroups.sort(function (a, b) {
+      var aH = prio.length ? (rollMatchesPriority(a.roll, prio, true) ? 2 : (rollMatchesPriority(a.roll, prio, false) ? 1 : 0)) : 0;
+      var bH = prio.length ? (rollMatchesPriority(b.roll, prio, true) ? 2 : (rollMatchesPriority(b.roll, prio, false) ? 1 : 0)) : 0;
+      if (bH !== aH) return bH - aH;
+      if (a.certain !== b.certain) return a.certain ? -1 : 1;
+      return a.archId - b.archId;
+    });
+
+    var activeArch = arch2 || a1.id;
+    var activeIsUnmod = !arch2 && mod1 === 0;
+    var hits = prio.length
+      ? displayGroups.filter(function (g) { return rollMatchesPriority(g.roll, prio, false); })
+      : [];
+    var bestHit = hits.length ? hits[0] : null;
+    var verdict = null;
+    if (prio.length) {
+      var wantText = prio.map(function (id) { return statById(id).name; }).join(' + ');
+      if (bestHit) {
+        var bm = bestHit.bestMod ? archById(bestHit.bestMod) : null;
+        var directHit = bestHit.archId === activeArch;
+        var actText = directHit
+          ? (activeIsUnmod ? '不插模组直接买' : '保持当前模组直接买')
+          : (bm ? ('改插 ' + bm.name + '（' + bm.shortPair + '）模组') : '不插模组直接买');
+        verdict = {
+          hit: true,
+          wantText: wantText,
+          best: bestHit,
+          directHit: directHit,
+          actText: actText
+        };
+      } else {
+        var tMapNow = res.candidates.length ? res.candidates[0].tMap : tMapOf(a1.id, tert1);
+        verdict = {
+          hit: false,
+          wantText: wantText,
+          reason: isSameMod
+            ? '当前模组仅锁定了 ' + a1.name + '，按上方提示换模组看一眼后再筛选其余组合'
+            : explainUnreachable(prio, tMapNow)
+        };
+      }
     }
-    return '';
+
+    var verifyOpen = Boolean(rec2 && (waitCount > 0 || arch2));
+    var verifyLead = '';
+    if (verifyOpen) {
+      var m2Arch = archById(rec2.modId);
+      if (isSameMod) {
+        verifyLead = '当前戴着的 <b>' + esc(archById(mod1).name) + '</b> 已命中这件护甲（直接买就是当前属性）。想看还能洗出什么，换 <b>' + esc(m2Arch.name) + '（' + esc(m2Arch.pairLabel) + '）</b> 看一眼并点选看到的原型：';
+      } else if (arch2) {
+        verifyLead = res.uniqueXs.length === 1
+          ? '已结合 <b>' + esc(m2Arch.name) + '（' + esc(m2Arch.pairLabel) + '）</b> 的二次读数锁定结果：'
+          : '已结合 <b>' + esc(m2Arch.name) + '（' + esc(m2Arch.pairLabel) + '）</b> 收窄至 ' + res.uniqueXs.length + ' 种可能（仍有待确认项，可改用楷模典范与装甲兵双读彻底锁定）：';
+      } else {
+        var lockPromise = rec2.maxB === 1 ? '即可 100% 锁定：' : '可进一步收窄范围：';
+        verifyLead = '想确认下方待确认项？把机灵换成 <b>' + esc(m2Arch.name) + '（' + esc(m2Arch.pairLabel) + '）</b> 看一眼，点选看到的原型' + lockPromise;
+      }
+    }
+
+    return {
+      a1: a1,
+      tert1: tert1,
+      rec2: rec2,
+      mod2: mod2,
+      arch2: arch2,
+      res: res,
+      groups: groups,
+      displayGroups: displayGroups,
+      isSameMod: isSameMod,
+      certCount: certCount,
+      waitCount: waitCount,
+      activeArch: activeArch,
+      activeIsUnmod: activeIsUnmod,
+      verdict: verdict,
+      verifyOpen: verifyOpen,
+      verifyLead: verifyLead
+    };
   }
 
   function mount(host, opts) {
@@ -453,355 +628,471 @@
     var options = opts || {};
     var state = {
       itemName: options.itemName || '',
-      // ① 看仄时我机灵插着的模组（0 = 未装护甲模组）
-      mod1: 0,
-      // ② 仄当前护甲的三档属性（默认：+30 生命 / +25 手雷 / +20 超能）
-      pri1: 2,
-      sec1: 3,
+      mod1: options.defaultMod != null ? Number(options.defaultMod) : loadSavedMod(),
+      pri1: 1,
+      arch1: 5,
       tert1: 4,
-      // ③ 目标属性筛选（最多 3 项，可空）
-      prio: []
+      mod2: 0,
+      arch2: 0,
+      prio: [],
+      rulerOpen: false,
+      hoverMod: 0
     };
 
-    function currentArch() {
-      var a = archByPrimarySecondary(state.pri1, state.sec1);
-      if (!a) {
-        var pair = archsByPrimary(state.pri1);
-        a = pair[0] || ARCHETYPES[0];
-        state.sec1 = a.secondary;
-      }
-      if (state.tert1 === state.pri1 || state.tert1 === state.sec1) {
-        state.tert1 = a.tert[0];
-      }
-      return a;
-    }
-
-    var FOCUS_ATTRS = [
-      'data-pick-mod',
-      'data-pick-pri',
-      'data-pick-sec',
-      'data-pick-tert',
-      'data-prio-stat',
-      'data-prio-clear'
-    ];
-
-    function render() {
-      var focusSel = '';
-      var ae = typeof document !== 'undefined' ? document.activeElement : null;
-      if (ae && host.contains(ae)) {
-        for (var fi = 0; fi < FOCUS_ATTRS.length; fi++) {
-          var attr = FOCUS_ATTRS[fi];
-          var val = ae.getAttribute(attr);
-          if (val !== null) {
-            focusSel = '[' + attr + '="' + val + '"]';
-            break;
-          }
-        }
-      }
-      var arch1 = currentArch();
-      var tMap1 = tMapOf(arch1.id, state.tert1);
-      var baseRoll = rollOf(arch1.id, tMap1);
-      var res = solveFromObservations([{ modId: state.mod1, archId: arch1.id, tertStat: state.tert1 }]);
-      var groups = groupOutcomes(res.candidates);
-      var isSameModHit = state.mod1 > 0 && state.mod1 === arch1.id;
-
-      // ① 看仄时我机灵插着什么模组？（左脊：未装护甲模组；右六列 × 二行：按六项主属性对齐的 12 种 主XX·副YY）
-      var modPairCells = '';
+    function modGridMarkup() {
+      var cells = (
+        '<button type="button" class="ac-mod-btn ac-mod-unmod' + (state.mod1 === 0 ? ' is-on' : '') + '" data-pick-mod="0">' +
+          '<span class="ac-socket-ring" aria-hidden="true"></span>' +
+          '<span class="ac-mod-n">未装护甲模组</span>' +
+          '<span class="ac-mod-p">裸看商人</span>' +
+        '</button>'
+      );
       for (var rIdx = 0; rIdx < 2; rIdx++) {
         for (var cIdx = 0; cIdx < UI_STATS.length; cIdx++) {
-          var pairArch = archsByPrimary(UI_STATS[cIdx].id)[rIdx];
-          var isModOn = state.mod1 === pairArch.id;
-          modPairCells += (
-            '<button type="button" class="ar-mod-btn' + (isModOn ? ' is-on' : '') + '" data-pick-mod="' + pairArch.id + '">' +
-              '<img class="ar-stat-ico" src="' + pairArch.primaryStat.icon + '" alt="" width="13" height="13" decoding="async">' +
-              '<span class="ar-mod-p">主' + esc(pairArch.primaryStat.name) + '</span>' +
-              '<span class="ar-mod-s">副' + esc(pairArch.secondaryStat.name) + '</span>' +
+          var pa = archsByPrimary(UI_STATS[cIdx].id)[rIdx];
+          cells += (
+            '<button type="button" class="ac-mod-btn' + (state.mod1 === pa.id ? ' is-on' : '') + '" data-pick-mod="' + pa.id + '">' +
+              '<span class="ac-mod-n">' + esc(pa.name) + '</span>' +
+              '<span class="ac-mod-p"><img class="ac-ico" src="' + pa.primaryStat.icon + '" alt="" width="11" height="11" decoding="async">' + esc(pa.shortPair) + '</span>' +
             '</button>'
           );
         }
       }
-      var mod1MatrixHtml = (
-        '<button type="button" class="ar-mod-btn ar-mod-unmod' + (state.mod1 === 0 ? ' is-on' : '') + '" data-pick-mod="0">' +
-          '<span class="ar-unmod-main">未装护甲模组</span>' +
-          '<span class="ar-unmod-sub">裸看仄 · 推荐</span>' +
-        '</button>' +
-        modPairCells
-      );
+      return cells;
+    }
 
-      // ② 仄这件护甲当前的 +30 / +25 / +20 三行点选（6 × 6 × 6 固定六列对齐）
+    function buildShellHtml() {
       var priBtns = UI_STATS.map(function (st) {
-        var isOn = st.id === state.pri1;
         return (
-          '<button type="button" class="ar-chip is-p' + (isOn ? ' is-on' : '') + '" data-pick-pri="' + st.id + '">' +
-            '<img class="ar-stat-ico" src="' + st.icon + '" alt="" width="14" height="14" decoding="async">' +
-            '<span class="ar-val">+30</span><span class="ar-stat">' + esc(st.name) + '</span>' +
-          '</button>'
-        );
-      }).join('');
-
-      var validSecIds = archsByPrimary(state.pri1).map(function (a) { return a.secondary; });
-      var secBtns = UI_STATS.map(function (st) {
-        var isOn = st.id === state.sec1;
-        var isValid = validSecIds.indexOf(st.id) !== -1;
-        var hint = isValid ? '' : (' title="主' + esc(statById(state.pri1).name) + '固定搭配副' + esc(statById(validSecIds[0]).name) + '或副' + esc(statById(validSecIds[1]).name) + '，点击将自动切换对应主属性"');
-        return (
-          '<button type="button" class="ar-chip is-s' + (isOn ? ' is-on' : '') + (!isValid ? ' is-dim' : '') + '" data-pick-sec="' + st.id + '"' + hint + '>' +
-            '<img class="ar-stat-ico" src="' + st.icon + '" alt="" width="14" height="14" decoding="async">' +
-            '<span class="ar-val">+25</span><span class="ar-stat">' + esc(st.name) + '</span>' +
-          '</button>'
-        );
-      }).join('');
-
-      var tertBtns = UI_STATS.map(function (st) {
-        var isOn = st.id === state.tert1;
-        var isValid = arch1.tert.indexOf(st.id) !== -1;
-        var hint = isValid ? '' : ' title="该属性已被当前主/副属性占用，点击将自动调整主/副属性"';
-        return (
-          '<button type="button" class="ar-chip is-t' + (isOn ? ' is-on' : '') + (!isValid ? ' is-dim' : '') + '" data-pick-tert="' + st.id + '"' + hint + '>' +
-            '<img class="ar-stat-ico" src="' + st.icon + '" alt="" width="14" height="14" decoding="async">' +
-            '<span class="ar-val">+20</span><span class="ar-stat">' + esc(st.name) + '</span>' +
-          '</button>'
-        );
-      }).join('');
-
-      // 同款模组命中提示
-      var sameModHtml = '';
-      if (isSameModHit) {
-        sameModHtml = (
-          '<div class="ar-same-mod-banner">' +
-            '<span><b>当前机灵模组已命中这件护甲的主副属性</b>——直接购买即为 <b>+30 ' + esc(baseRoll.primary.name) + ' · +25 ' + esc(baseRoll.secondary.name) + ' · +20 ' + esc(baseRoll.tert.name) + '</b>。若需推算其余可洗组合，请先摘下机灵护甲模组再查看仄。</span>' +
-          '</div>'
-        );
-      }
-
-      // ③ 属性筛选 + 结果卡片
-      var prioChips = UI_STATS.map(function (st) {
-        var idx = state.prio.indexOf(st.id);
-        var tag = idx === 0 ? '①' : (idx === 1 ? '②' : (idx === 2 ? '③' : ''));
-        return (
-          '<button type="button" class="ar-filter-btn' + (idx !== -1 ? ' is-on rank-' + (idx + 1) : '') + '" data-prio-stat="' + st.id + '">' +
-            '<img class="ar-stat-ico" src="' + st.icon + '" alt="" width="14" height="14" decoding="async">' +
+          '<button type="button" class="ac-seg-btn" data-pick-pri="' + st.id + '">' +
+            '<img class="ac-ico" src="' + st.icon + '" alt="" width="13" height="13" decoding="async">' +
             '<span>' + esc(st.name) + '</span>' +
-            (tag ? '<b class="ar-rank-tag">' + tag + '</b>' : '') +
           '</button>'
         );
       }).join('');
 
-      var sortedGroups = groups.slice().sort(function (a, b) {
-        var aHit = state.prio.length ? (rollMatchesPriority(a.roll, state.prio, true) ? 2 : (rollMatchesPriority(a.roll, state.prio, false) ? 1 : 0)) : 0;
-        var bHit = state.prio.length ? (rollMatchesPriority(b.roll, state.prio, true) ? 2 : (rollMatchesPriority(b.roll, state.prio, false) ? 1 : 0)) : 0;
-        if (bHit !== aHit) return bHit - aHit;
-        if (a.certain !== b.certain) return a.certain ? -1 : 1;
-        return a.archId - b.archId;
-      });
-
-      var filterVerdictHtml = '';
-      if (state.prio.length) {
-        var hitsInVendor = sortedGroups.filter(function (g) {
-          return rollMatchesPriority(g.roll, state.prio, false);
-        });
-        var wantedNames = state.prio.map(function (id, i) {
-          return (i === 0 ? '①' : (i === 1 ? '②' : '③')) + statById(id).name;
-        }).join(' ');
-        if (hitsInVendor.length) {
-          var best = hitsInVendor[0];
-          filterVerdictHtml = (
-            '<div class="ar-verdict is-yes">' +
-              '✓ 这件护甲<b>可以洗出</b>「' + esc(wantedNames) + '」——已在下方置顶标金（' + esc(formatModAction(best)) + '）' +
-            '</div>'
-          );
-        } else {
-          var theoretical = filterCombosByPriority(state.prio);
-          var theoHint = theoretical.length
-            ? ('理论上需「' + theoretical[0].arch.pairLabel + ' + ' + theoretical[0].roll.tert.name + ' +20」，但这件护甲在该组合下第三属性固定为 +20 ' + tertStatOf(theoretical[0].archId, tMap1).name)
-            : '无此组合';
-          filterVerdictHtml = (
-            '<div class="ar-verdict is-no">' +
-              '✗ 这件护甲<b>洗不出</b>同时包含「' + esc(wantedNames) + '」的组合（' + esc(theoHint) + '）' +
-            '</div>'
-          );
-        }
-      }
-
-      var cardsHtml = sortedGroups.map(function (g) {
-        var r = g.roll;
-        var matchExact = state.prio.length > 0 && rollMatchesPriority(r, state.prio, true);
-        var matchSet = state.prio.length > 0 && rollMatchesPriority(r, state.prio, false);
-        var ambText = '边界可出';
-        if (!g.certain && g.possibleMods.length) {
-          var pm = g.possibleMods[0];
-          ambText = '边界 ' + pm.hits + '/' + pm.total;
-        }
-        var badge = matchExact
-          ? '<span class="ar-out-badge is-gold">★ 完美顺位</span>'
-          : (matchSet
-              ? '<span class="ar-out-badge is-gold">★ 命中目标</span>'
-              : (g.certain
-                  ? '<span class="ar-out-badge is-cert">必出</span>'
-                  : '<span class="ar-out-badge is-amb">' + esc(ambText) + '</span>'));
-
-        var pHit = state.prio.indexOf(r.primary.id) !== -1;
-        var sHit = state.prio.indexOf(r.secondary.id) !== -1;
-        var tHit = state.prio.indexOf(r.tert.id) !== -1;
-
+      var miniBarsHtml = UI_STATS.map(function (st) {
         return (
-          '<div class="ar-out-card' + (matchSet ? ' is-prio-hit' : '') + (!g.certain ? ' is-maybe' : '') + '">' +
-            '<div class="ar-out-stats">' +
-              '<span class="ar-stat-cell is-p' + (pHit ? ' is-hit' : '') + '"><img class="ar-stat-ico" src="' + r.primary.icon + '" alt="" width="14" height="14" decoding="async"><b class="ar-cell-num">+30</b><span class="ar-cell-name">' + esc(r.primary.name) + '</span></span>' +
-              '<span class="ar-stat-cell is-s' + (sHit ? ' is-hit' : '') + '"><img class="ar-stat-ico" src="' + r.secondary.icon + '" alt="" width="14" height="14" decoding="async"><b class="ar-cell-num">+25</b><span class="ar-cell-name">' + esc(r.secondary.name) + '</span></span>' +
-              '<span class="ar-stat-cell is-t' + (tHit ? ' is-hit' : '') + '"><img class="ar-stat-ico" src="' + r.tert.icon + '" alt="" width="14" height="14" decoding="async"><b class="ar-cell-num">+20</b><span class="ar-cell-name">' + esc(r.tert.name) + '</span></span>' +
-            '</div>' +
-            '<div class="ar-out-foot">' +
-              '<span class="ar-out-mod">' + esc(formatModAction(g)) + '</span>' +
-              badge +
-            '</div>' +
+          '<div class="ac-mbar" data-mbar-key="' + st.key + '" data-lv="5">' +
+            '<span class="ac-mbar-top"><img class="ac-ico" src="' + st.icon + '" alt="" width="11" height="11" decoding="async"><span class="ac-mbar-num">5</span></span>' +
+            '<span class="ac-mbar-track"><span class="ac-mbar-fill"></span></span>' +
           '</div>'
         );
       }).join('');
 
-      var certCount = sortedGroups.filter(function (g) { return g.certain; }).length;
-      var ambCount = sortedGroups.length - certCount;
+      var headCols = UI_STATS.map(function (st) {
+        return (
+          '<th><button type="button" class="ac-th-btn" data-prio-stat="' + st.id + '">' +
+            '<img class="ac-ico" src="' + st.icon + '" alt="" width="13" height="13" decoding="async">' +
+            '<span>' + esc(st.name) + '</span><span class="ac-th-rank"></span>' +
+          '</button></th>'
+        );
+      }).join('');
 
-      host.innerHTML = (
-        '<div class="ar-panel">' +
-          '<div class="ar-step-block">' +
-            '<div class="ar-head">' +
-              '<div class="ar-title"><span class="ar-step-num">01</span><span>看仄时我机灵插着什么模组？</span></div>' +
-              '<span class="ar-head-note">未装模组裸看仄可一次锁定 8～9 种必出组合</span>' +
-            '</div>' +
-            '<div class="ar-mod-matrix">' + mod1MatrixHtml + '</div>' +
+      var rulerHtml = '';
+      for (var rx = 1; rx <= 23; rx++) {
+        rulerHtml += '<span class="ac-rcell" data-ruler-x="' + rx + '">' + rx + '</span>';
+      }
+
+      return (
+        '<div class="ac">' +
+          '<div class="ac-guide">' +
+            '<div class="ac-guide-step"><span class="ac-guide-num">1</span><span><b>选机灵模组</b>：点选你现在戴着的护甲模组</span></div>' +
+            '<div class="ac-guide-step"><span class="ac-guide-num">2</span><span><b>照抄商人面板</b>：点出这件护甲的 +30 原型与 +20 属性</span></div>' +
+            '<div class="ac-guide-step"><span class="ac-guide-num">3</span><span><b>换模组购买</b>：按表格最右列换好机灵模组再买</span></div>' +
           '</div>' +
 
-          '<div class="ar-step-block">' +
-            '<div class="ar-head">' +
-              '<div class="ar-title"><span class="ar-step-num">02</span><span>仄这件护甲当前的属性</span>' + (state.itemName ? '<span class="ar-item-tag">' + esc(state.itemName) + '</span>' : '') + '</div>' +
-              '<span class="ar-head-note">三档固定 +30 / +25 / +20 · 其余三项固定 +5</span>' +
+          '<div class="ac-sec ac-mod-sec">' +
+            '<div class="ac-sec-head">' +
+              '<div class="ac-sec-title"><span class="ac-dot"></span><span>我当前戴着的机灵模组</span></div>' +
+              '<div class="ac-status" data-ac="status"><span class="ac-pip"></span><span class="ac-status-txt" data-ac="status-txt"></span></div>' +
             '</div>' +
-            '<div class="ar-pick-rows">' +
-              '<div class="ar-pick-row">' +
-                '<span class="ar-pick-lbl"><span class="ar-lbl-name">主属性</span><b class="ar-lbl-val is-p">+30</b></span>' +
-                '<div class="ar-pick-btns">' + priBtns + '</div>' +
+            '<div class="ac-mod-grid" data-ac="mod-grid">' + modGridMarkup() + '</div>' +
+          '</div>' +
+
+          '<div class="ac-obs">' +
+            '<div class="ac-obs-col">' +
+              '<div class="ac-sec-head">' +
+                '<div class="ac-sec-title"><span class="ac-dot"></span><span class="ac-sec-num">+30</span><span>主属性与原型</span><span class="ac-item-tag" data-ac="item-tag"' + (state.itemName ? '' : ' hidden') + '>' + esc(state.itemName) + '</span></div>' +
+                '<span class="ac-sec-hint">商人面板所见</span>' +
               '</div>' +
-              '<div class="ar-pick-row">' +
-                '<span class="ar-pick-lbl"><span class="ar-lbl-name">副属性</span><b class="ar-lbl-val is-s">+25</b></span>' +
-                '<div class="ar-pick-btns">' + secBtns + '</div>' +
+              '<div class="ac-seg" data-ac="pri-seg"><div class="ac-seg-ind" data-ac="pri-ind"></div>' + priBtns + '</div>' +
+              '<div class="ac-arch-pair" data-ac="arch-pair"></div>' +
+            '</div>' +
+            '<div class="ac-obs-col">' +
+              '<div class="ac-sec-head">' +
+                '<div class="ac-sec-title"><span class="ac-dot"></span><span class="ac-sec-num">+20</span><span>第三属性</span></div>' +
+                '<span class="ac-sec-hint">其余三项固定 +5</span>' +
               '</div>' +
-              '<div class="ar-pick-row">' +
-                '<span class="ar-pick-lbl"><span class="ar-lbl-name">第三属性</span><b class="ar-lbl-val is-t">+20</b></span>' +
-                '<div class="ar-pick-btns">' + tertBtns + '</div>' +
-              '</div>' +
+              '<div class="ac-seg ac-seg-4" data-ac="tert-seg"><div class="ac-seg-ind" data-ac="tert-ind"></div></div>' +
+              '<div class="ac-mini-bars" data-ac="mini-bars">' + miniBarsHtml + '</div>' +
             '</div>' +
           '</div>' +
 
-          sameModHtml +
+          '<div class="ac-verify" data-ac="verify" inert><div class="ac-verify-in"><div class="ac-verify-body" data-ac="verify-body"></div></div></div>' +
+          '<div class="ac-verdict-wrap" data-ac="verdict-wrap" inert><div class="ac-verdict-in"><div class="ac-verdict" data-ac="verdict"></div></div></div>' +
 
-          '<div class="ar-filter-bar">' +
-            '<span class="ar-pick-lbl">' +
-              '<span class="ar-lbl-name"><b class="ar-step-inline">03</b>目标筛选</span>' +
-              (state.prio.length
-                ? '<button type="button" class="ar-clear-btn" data-prio-clear="1">重置</button>'
-                : '<span class="ar-lbl-sub">选 1～3 项</span>') +
-            '</span>' +
-            '<div class="ar-filter-btns">' + prioChips + '</div>' +
+          '<div class="ac-table-bar">' +
+            '<span data-ac="table-meta"></span>' +
+            '<button type="button" class="ac-link-btn" data-ruler-toggle="1">查看推算原理 ▾</button>' +
           '</div>' +
 
-          filterVerdictHtml +
+          '<table class="ac-tbl">' +
+            '<thead><tr><th>可洗出的护甲原型</th>' + headCols + '<th>购买时操作</th></tr></thead>' +
+            '<tbody data-ac="tbody"></tbody>' +
+          '</table>' +
 
-          '<div class="ar-out-sec">' +
-            '<div class="ar-sub-head">' +
-              '<span>可洗出的 <b>' + sortedGroups.length + '</b> 种属性组合（必出 <b>' + certCount + '</b> 种' + (ambCount ? ' · 边界可出 ' + ambCount + ' 种' : '') + '）</span>' +
-              '<span class="ar-sub-note">按卡片底部提示切换机灵模组后再向仄购买</span>' +
-            '</div>' +
-            '<div class="ar-out-grid">' + cardsHtml + '</div>' +
-          '</div>' +
+          '<div class="ac-ruler-wrap" data-ac="ruler-wrap"><div class="ac-ruler-in"><div class="ac-ruler-body">' +
+            '<div class="ac-ruler-meta"><span>23 格随机区间（亮格为当前护甲位置，悬停上方结果行可预览对应模组覆盖范围）</span><span data-ac="ruler-hover"></span></div>' +
+            '<div class="ac-ruler-cells" data-ac="ruler-cells">' + rulerHtml + '</div>' +
+          '</div></div></div>' +
         '</div>'
       );
-      if (focusSel) {
-        var nextBtn = host.querySelector(focusSel);
-        if (!nextBtn && focusSel.indexOf('[data-prio-clear=') === 0) {
-          nextBtn = host.querySelector('[data-prio-stat]');
+    }
+
+    host.innerHTML = buildShellHtml();
+
+    function q(sel) {
+      return host.querySelector ? host.querySelector(sel) : null;
+    }
+
+    function qa(sel) {
+      return host.querySelectorAll ? host.querySelectorAll(sel) : [];
+    }
+
+    function slideInd(el, activeIdx, count) {
+      if (!el || !el.style) return;
+      var pct = 100 / count;
+      el.style.width = 'calc(' + pct + '% - 6px / ' + count + ')';
+      el.style.transform = 'translateX(' + (activeIdx * 100) + '%)';
+    }
+
+    function currentObservations() {
+      var list = [{ modId: state.mod1, archId: state.arch1, tertStat: state.tert1 }];
+      if (state.mod2 && state.arch2) {
+        list.push({ modId: state.mod2, archId: state.arch2 });
+      }
+      return list;
+    }
+
+    function updateRuler(xs) {
+      var cells = qa('[data-ruler-x]');
+      for (var i = 0; i < cells.length; i++) {
+        var x = Number(cells[i].getAttribute('data-ruler-x'));
+        cells[i].classList.toggle('is-cand', xs.indexOf(x) !== -1);
+        var inWin = state.hoverMod > 0 && xOfGhost(state.hoverMod, x) === state.hoverMod;
+        cells[i].classList.toggle('is-hover-win', inWin);
+      }
+      var hoverEl = q('[data-ac="ruler-hover"]');
+      if (hoverEl) {
+        hoverEl.textContent = state.hoverMod
+          ? ('预览：' + archById(state.hoverMod).name + ' 模组覆盖区间')
+          : '';
+      }
+    }
+
+    function sync(animateRows) {
+      var vm = computeViewModel(state);
+      var a1 = vm.a1;
+      state.arch1 = a1.id;
+      state.tert1 = vm.tert1;
+      state.mod2 = vm.mod2;
+      state.arch2 = vm.arch2;
+
+      var itemTag = q('[data-ac="item-tag"]');
+      if (itemTag) {
+        itemTag.textContent = state.itemName || '';
+        itemTag.hidden = !state.itemName;
+      }
+
+      var modBtns = qa('[data-pick-mod]');
+      for (var mi = 0; mi < modBtns.length; mi++) {
+        modBtns[mi].classList.toggle('is-on', Number(modBtns[mi].getAttribute('data-pick-mod')) === state.mod1);
+      }
+
+      var priBtns = qa('[data-pick-pri]');
+      var priIdx = 0;
+      for (var pi = 0; pi < priBtns.length; pi++) {
+        var isPriOn = Number(priBtns[pi].getAttribute('data-pick-pri')) === state.pri1;
+        priBtns[pi].classList.toggle('is-on', isPriOn);
+        if (isPriOn) priIdx = pi;
+      }
+      slideInd(q('[data-ac="pri-ind"]'), priIdx, 6);
+
+      var pairHost = q('[data-ac="arch-pair"]');
+      if (pairHost) {
+        var pairList = archsByPrimary(state.pri1);
+        pairHost.innerHTML = pairList.map(function (pa) {
+          var on = pa.id === state.arch1;
+          return (
+            '<button type="button" class="ac-arch-opt' + (on ? ' is-on' : '') + '" data-pick-arch="' + pa.id + '">' +
+              '<span class="ac-arch-opt-name">' + esc(pa.name) + '</span>' +
+              '<span class="ac-arch-opt-stats"><span class="ac-num-p">+30 ' + esc(pa.primaryStat.name) + '</span><span class="ac-arch-sep"></span><span class="ac-num-s">+25 ' + esc(pa.secondaryStat.name) + '</span></span>' +
+            '</button>'
+          );
+        }).join('');
+      }
+
+      var tertSeg = q('[data-ac="tert-seg"]');
+      if (tertSeg) {
+        var validTerts = UI_STATS.filter(function (st) { return a1.tert.indexOf(st.id) !== -1; });
+        var oldTerts = tertSeg.querySelectorAll('[data-pick-tert]');
+        if (oldTerts.length !== 4) {
+          for (var ti = 0; ti < 4; ti++) {
+            var tb = document.createElement('button');
+            tb.type = 'button';
+            tb.className = 'ac-seg-btn';
+            tb.setAttribute('data-pick-tert', '0');
+            tertSeg.appendChild(tb);
+          }
+          oldTerts = tertSeg.querySelectorAll('[data-pick-tert]');
         }
-        if (nextBtn && typeof nextBtn.focus === 'function') {
-          nextBtn.focus({ preventScroll: true });
+        var tertIdx = 0;
+        for (var vi = 0; vi < validTerts.length; vi++) {
+          var st = validTerts[vi];
+          var b = oldTerts[vi];
+          var isTertOn = st.id === state.tert1;
+          b.setAttribute('data-pick-tert', String(st.id));
+          b.classList.toggle('is-on', isTertOn);
+          if (isTertOn) tertIdx = vi;
+          b.innerHTML = '<img class="ac-ico" src="' + st.icon + '" alt="" width="13" height="13" decoding="async"><span>' + esc(st.name) + '</span>';
+        }
+        slideInd(q('[data-ac="tert-ind"]'), tertIdx, 4);
+      }
+
+      var curRoll = rollOf(a1.id, tMapOf(a1.id, state.tert1));
+      var mbars = qa('[data-mbar-key]');
+      for (var bi = 0; bi < mbars.length; bi++) {
+        var mKey = mbars[bi].getAttribute('data-mbar-key');
+        var mVal = curRoll.values[mKey];
+        mbars[bi].setAttribute('data-lv', String(mVal));
+        var numEl = mbars[bi].querySelector('.ac-mbar-num');
+        if (numEl) numEl.textContent = String(mVal);
+      }
+
+      var res = vm.res;
+      var isSameMod = vm.isSameMod;
+      var certCount = vm.certCount;
+      var waitCount = vm.waitCount;
+
+      var statusEl = q('[data-ac="status"]');
+      var statusTxt = q('[data-ac="status-txt"]');
+      if (statusEl && statusTxt) {
+        if (res.uniqueXs.length === 1) {
+          statusEl.setAttribute('data-state', 'locked');
+          statusTxt.innerHTML = '已锁定 · 可洗出 <b>' + certCount + '</b> 种';
+        } else if (isSameMod) {
+          statusEl.setAttribute('data-state', 'same');
+          statusTxt.innerHTML = '当前模组已命中 · 换模组看一眼可解锁其余组合';
+        } else {
+          statusEl.setAttribute('data-state', 'ambig');
+          statusTxt.innerHTML = '必出 <b>' + certCount + '</b> 种' + (waitCount ? ' · 待确认 <b>' + waitCount + '</b> 种' : '');
         }
       }
+
+      var verifyEl = q('[data-ac="verify"]');
+      var verifyBody = q('[data-ac="verify-body"]');
+      if (verifyEl && verifyBody) {
+        verifyEl.classList.toggle('is-open', vm.verifyOpen);
+        verifyEl.inert = !vm.verifyOpen;
+        if (vm.verifyOpen) {
+          verifyBody.innerHTML = (
+            '<div class="ac-verify-head">' +
+              '<div class="ac-verify-msg">' + vm.verifyLead + '</div>' +
+              (state.arch2 ? '<button type="button" class="ac-link-btn" data-pick-arch2="0">清除二次读数</button>' : '') +
+            '</div>' +
+            '<div class="ac-verify-picks">' +
+              vm.rec2.outcomes.map(function (aid) {
+                var oa = archById(aid);
+                return (
+                  '<button type="button" class="ac-vbtn' + (state.arch2 === aid ? ' is-on' : '') + '" data-pick-arch2="' + aid + '">' +
+                    '<span class="ac-vbtn-n">' + esc(oa.name) + '</span>' +
+                    '<span class="ac-vbtn-p">' + esc(oa.shortPair) + '</span>' +
+                  '</button>'
+                );
+              }).join('') +
+            '</div>'
+          );
+        }
+      }
+
+      var thBtns = qa('[data-prio-stat]');
+      for (var hi = 0; hi < thBtns.length; hi++) {
+        var sid = Number(thBtns[hi].getAttribute('data-prio-stat'));
+        var idx = state.prio.indexOf(sid);
+        thBtns[hi].classList.toggle('is-on', idx !== -1);
+        var rankEl = thBtns[hi].querySelector('.ac-th-rank');
+        if (rankEl) rankEl.textContent = idx === -1 ? '' : String(idx + 1);
+      }
+
+      var verdictWrap = q('[data-ac="verdict-wrap"]');
+      var verdictEl = q('[data-ac="verdict"]');
+      if (verdictWrap && verdictEl) {
+        var hasVerdict = Boolean(vm.verdict);
+        verdictWrap.classList.toggle('is-open', hasVerdict);
+        verdictWrap.inert = !hasVerdict;
+        if (hasVerdict) {
+          if (vm.verdict.hit) {
+            var best = vm.verdict.best;
+            var bm = best.bestMod ? archById(best.bestMod) : null;
+            var actHtml = vm.verdict.directHit
+              ? esc(vm.verdict.actText)
+              : (bm ? ('改插 <b>' + esc(bm.name) + '（' + esc(bm.shortPair) + '）</b> 模组') : '不插模组直接买');
+            verdictEl.setAttribute('data-hit', 'yes');
+            verdictEl.innerHTML = (
+              '<span>可洗出「' + esc(vm.verdict.wantText) + '」— <b>' + esc(best.arch.name) + '（' + esc(best.arch.pairLabel) + ' · +20 ' + esc(best.roll.tert.name) + '）</b>，' + actHtml + (best.certain ? '必出' : '（需二次确认）') + '。</span>' +
+              '<button type="button" class="ac-link-btn" data-prio-clear="1">清除筛选</button>'
+            );
+          } else {
+            verdictEl.setAttribute('data-hit', 'no');
+            verdictEl.innerHTML = (
+              '<span><b>洗不出</b>同时包含「' + esc(vm.verdict.wantText) + '」的组合（' + esc(vm.verdict.reason) + '）。</span>' +
+              '<button type="button" class="ac-link-btn" data-prio-clear="1">清除筛选</button>'
+            );
+          }
+        }
+      }
+
+      var metaEl = q('[data-ac="table-meta"]');
+      if (metaEl) {
+        metaEl.textContent = isSameMod
+          ? '当前模组已锁定这一种结果；按上方提示换模组看一眼即可展开全部可洗组合'
+          : '点下方属性列头可筛选想要的属性（最多 3 项）';
+      }
+
+      var tbody = q('[data-ac="tbody"]');
+      if (tbody) {
+        tbody.innerHTML = vm.displayGroups.map(function (g, rowIdx) {
+          var r = g.roll;
+          var hit = state.prio.length > 0 && rollMatchesPriority(r, state.prio, false);
+          var dim = state.prio.length > 0 && !hit;
+          var isNow = g.archId === vm.activeArch;
+          var bm = g.bestMod ? archById(g.bestMod) : null;
+          var cols = UI_STATS.map(function (st) {
+            var val = r.values[st.key];
+            var cls = val === 30 ? 'v30' : (val === 25 ? 'v25' : (val === 20 ? 'v20' : 'v5'));
+            var colTrack = state.prio.indexOf(st.id) !== -1;
+            var colHit = val >= 20 && colTrack;
+            if (val === 5) {
+              return '<td class="' + (colTrack ? 'is-col-track' : '') + '"><span class="ac-v v5">·</span></td>';
+            }
+            return (
+              '<td class="' + (colTrack ? 'is-col-track' : '') + '">' +
+                '<span class="ac-cell">' +
+                  '<span class="ac-v ' + cls + (colHit ? ' is-col-hit' : '') + '">' + val + '</span>' +
+                  '<span class="ac-bar ' + cls + (colHit ? ' is-col-hit' : '') + '"><i></i></span>' +
+                '</span>' +
+              '</td>'
+            );
+          }).join('');
+          var modActionHtml = isNow
+            ? '<span class="ac-act-mod is-direct"><span class="ac-direct-dot"></span>当前直接买</span>'
+            : ('<span class="ac-act-mod">' + (bm ? ('插 ' + esc(bm.name)) : '不插模组') + '</span>');
+          var delayStyle = animateRows ? (' style="animation-delay:' + (rowIdx * 22) + 'ms"') : '';
+          return (
+            '<tr class="' + (hit ? 'is-hit' : '') + (dim ? ' is-dim' : '') + (isNow && !hit ? ' is-now' : '') + (animateRows ? ' is-enter' : '') + '"' + delayStyle + ' data-row-mod="' + (g.bestMod || 0) + '">' +
+              '<td><span class="ac-row-arch"><span class="ac-row-name">' + esc(g.arch.name) + '</span><span class="ac-row-sub">' + esc(g.arch.pairLabel) + '</span></span></td>' +
+              cols +
+              '<td><div class="ac-act-wrap">' + modActionHtml + '<span class="ac-act-tag ' + (g.certain ? 'is-cert' : 'is-wait') + '">' + (g.certain ? '必出' : '待确认') + '</span></div></td>' +
+            '</tr>'
+          );
+        }).join('');
+      }
+
+      var rulerWrap = q('[data-ac="ruler-wrap"]');
+      var rulerToggle = q('[data-ruler-toggle]');
+      if (rulerWrap) rulerWrap.classList.toggle('is-open', state.rulerOpen);
+      if (rulerToggle) rulerToggle.textContent = state.rulerOpen ? '收起推算原理 ▴' : '查看推算原理 ▾';
+      updateRuler(res.uniqueXs);
     }
 
     host.addEventListener('click', function (ev) {
       var t = ev.target;
-      var modBtn = t.closest && t.closest('[data-pick-mod]');
+      if (!t || !t.closest) return;
+      var modBtn = t.closest('[data-pick-mod]');
       if (modBtn) {
         state.mod1 = Number(modBtn.getAttribute('data-pick-mod'));
-        render();
+        saveMod(state.mod1);
+        state.arch2 = 0;
+        sync(true);
         return;
       }
-      var priBtn = t.closest && t.closest('[data-pick-pri]');
+      var priBtn = t.closest('[data-pick-pri]');
       if (priBtn) {
         state.pri1 = Number(priBtn.getAttribute('data-pick-pri'));
-        render();
+        state.arch2 = 0;
+        sync(true);
         return;
       }
-      var secBtn = t.closest && t.closest('[data-pick-sec]');
-      if (secBtn) {
-        var nextSec = Number(secBtn.getAttribute('data-pick-sec'));
-        if (!archByPrimarySecondary(state.pri1, nextSec)) {
-          var swapArch = archByPrimarySecondary(nextSec, state.pri1);
-          if (swapArch) {
-            state.pri1 = swapArch.primary;
-          } else {
-            var altArch = ARCHETYPES.filter(function (a) { return a.secondary === nextSec; })[0];
-            if (altArch) state.pri1 = altArch.primary;
-          }
-        }
-        state.sec1 = nextSec;
-        render();
+      var archBtn = t.closest('[data-pick-arch]');
+      if (archBtn) {
+        state.arch1 = Number(archBtn.getAttribute('data-pick-arch'));
+        state.arch2 = 0;
+        sync(true);
         return;
       }
-      var tertBtn = t.closest && t.closest('[data-pick-tert]');
+      var tertBtn = t.closest('[data-pick-tert]');
       if (tertBtn) {
-        var nextTert = Number(tertBtn.getAttribute('data-pick-tert'));
-        if (nextTert === state.sec1) {
-          var pair = archsByPrimary(state.pri1);
-          var other = pair[0] && pair[0].secondary !== nextTert ? pair[0] : pair[1];
-          if (other) state.sec1 = other.secondary;
-        } else if (nextTert === state.pri1) {
-          var bySec = ARCHETYPES.filter(function (a) { return a.secondary === state.sec1 && a.primary !== nextTert; })[0];
-          if (bySec) {
-            state.pri1 = bySec.primary;
-          } else {
-            var fallback = ARCHETYPES.filter(function (a) { return a.primary !== nextTert && a.secondary !== nextTert; })[0];
-            if (fallback) {
-              state.pri1 = fallback.primary;
-              state.sec1 = fallback.secondary;
-            }
-          }
-        }
-        state.tert1 = nextTert;
-        render();
+        state.tert1 = Number(tertBtn.getAttribute('data-pick-tert'));
+        sync(false);
         return;
       }
-      var prioBtn = t.closest && t.closest('[data-prio-stat]');
+      var arch2Btn = t.closest('[data-pick-arch2]');
+      if (arch2Btn) {
+        state.arch2 = Number(arch2Btn.getAttribute('data-pick-arch2'));
+        sync(true);
+        return;
+      }
+      var prioBtn = t.closest('[data-prio-stat]');
       if (prioBtn) {
         var sId = Number(prioBtn.getAttribute('data-prio-stat'));
         var idx = state.prio.indexOf(sId);
         if (idx !== -1) state.prio.splice(idx, 1);
         else if (state.prio.length < 3) state.prio.push(sId);
         else state.prio[2] = sId;
-        render();
+        sync(false);
         return;
       }
-      var clearBtn = t.closest && t.closest('[data-prio-clear]');
-      if (clearBtn) {
+      if (t.closest('[data-prio-clear]')) {
         state.prio = [];
-        render();
+        sync(false);
+        return;
+      }
+      if (t.closest('[data-ruler-toggle]')) {
+        state.rulerOpen = !state.rulerOpen;
+        sync(false);
       }
     });
 
-    render();
+    host.addEventListener('mouseover', function (ev) {
+      var t = ev.target;
+      if (!t || !t.closest) return;
+      var tr = t.closest('tr[data-row-mod]');
+      var next = tr ? Number(tr.getAttribute('data-row-mod')) : 0;
+      if (next !== state.hoverMod) {
+        state.hoverMod = next;
+        if (state.rulerOpen) {
+          var res = solveFromObservations(currentObservations());
+          updateRuler(res.uniqueXs);
+        }
+      }
+    });
+
+    host.addEventListener('mouseleave', function () {
+      if (state.hoverMod !== 0) {
+        state.hoverMod = 0;
+        if (state.rulerOpen) {
+          var res = solveFromObservations(currentObservations());
+          updateRuler(res.uniqueXs);
+        }
+      }
+    });
+
+    sync(true);
     return {
       setItemName: function (name) {
         state.itemName = name || '';
-        render();
+        sync(false);
       }
     };
   }
@@ -845,6 +1136,9 @@
     xToYList: xToYList,
     solveFromObservations: solveFromObservations,
     groupOutcomes: groupOutcomes,
+    recommendSecondMod: recommendSecondMod,
+    explainUnreachable: explainUnreachable,
+    computeViewModel: computeViewModel,
     allCombos: allCombos,
     rollMatchesPriority: rollMatchesPriority,
     filterCombosByPriority: filterCombosByPriority,
