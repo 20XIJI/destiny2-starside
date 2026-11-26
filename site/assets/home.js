@@ -143,80 +143,92 @@ export default function init(box, deps) {
   }
 
   function home(box) {
-    var shell = document.createElement('div');
-    shell.className = 'hero-shell';
-
-    var wrap = document.createElement('div');
-    wrap.className = 'hero-input-wrap';
-
-    var input = document.createElement('input');
-    input.type = 'search';
-    input.className = 'tool-search';
-    input.placeholder = '搜索全站资料';
-    input.setAttribute('aria-label', '搜索全站资料');
-    input.setAttribute('role', 'combobox');
-    input.setAttribute('aria-autocomplete', 'list');
-    input.setAttribute('aria-expanded', 'false');
-    input.setAttribute('aria-controls', 'hero-hits');
-
-    var scope = document.createElement('div');
-    scope.className = 'hero-scope';
-    scope.setAttribute('role', 'group');
-    scope.setAttribute('aria-label', '搜索范围');
-
     var mode = 'name';
-    var scopeBtns = [
-      ['name', '名称'],
-      ['body', '详情'],
-      ['all', '全部'],
-    ].map(function (pair) {
-      var btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'hero-scope-btn';
-      btn.setAttribute('data-mode', pair[0]);
-      btn.setAttribute('aria-pressed', pair[0] === mode ? 'true' : 'false');
-      btn.textContent = pair[1];
-      scope.appendChild(btn);
-      return btn;
-    });
+    var shell = typeof box.querySelector === 'function' ? box.querySelector('.hero-shell') : null;
+    var input, scopeBtns, panel, count, body, list, more;
+    if (shell) {
+      input = shell.querySelector('.tool-search');
+      scopeBtns = Array.prototype.slice.call(shell.querySelectorAll('.hero-scope-btn'));
+      panel = shell.querySelector('.hero-panel');
+      count = shell.querySelector('.tool-count');
+      body = shell.querySelector('.hero-panel-body');
+      list = shell.querySelector('#hero-hits');
+      more = shell.querySelector('.hits-more');
+    } else {
+      shell = document.createElement('div');
+      shell.className = 'hero-shell';
 
-    wrap.appendChild(input);
-    wrap.appendChild(scope);
+      var wrap = document.createElement('div');
+      wrap.className = 'hero-input-wrap';
 
-    var panel = document.createElement('div');
-    panel.className = 'hero-panel';
-    panel.hidden = true;
+      input = document.createElement('input');
+      input.type = 'search';
+      input.className = 'tool-search';
+      input.placeholder = '搜索全站资料';
+      input.setAttribute('aria-label', '搜索全站资料');
+      input.setAttribute('role', 'combobox');
+      input.setAttribute('aria-autocomplete', 'list');
+      input.setAttribute('aria-expanded', 'false');
+      input.setAttribute('aria-controls', 'hero-hits');
 
-    var head = document.createElement('div');
-    head.className = 'hero-panel-head';
+      var scope = document.createElement('div');
+      scope.className = 'hero-scope';
+      scope.setAttribute('role', 'group');
+      scope.setAttribute('aria-label', '搜索范围');
 
-    var count = document.createElement('p');
-    count.className = 'tool-count';
-    count.setAttribute('role', 'status');
+      scopeBtns = [
+        ['name', '名称'],
+        ['body', '详情'],
+        ['all', '全部'],
+      ].map(function (pair) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'hero-scope-btn';
+        btn.setAttribute('data-mode', pair[0]);
+        btn.setAttribute('aria-pressed', pair[0] === mode ? 'true' : 'false');
+        btn.textContent = pair[1];
+        scope.appendChild(btn);
+        return btn;
+      });
 
-    head.appendChild(count);
+      wrap.appendChild(input);
+      wrap.appendChild(scope);
 
-    var body = document.createElement('div');
-    body.className = 'hero-panel-body';
+      panel = document.createElement('div');
+      panel.className = 'hero-panel';
+      panel.hidden = true;
 
-    var list = document.createElement('ul');
-    list.id = 'hero-hits';
-    list.className = 'hits';
-    list.setAttribute('role', 'listbox');
+      var head = document.createElement('div');
+      head.className = 'hero-panel-head';
 
-    var more = document.createElement('button');
-    more.type = 'button';
-    more.className = 'op hits-more';
-    more.hidden = true;
+      count = document.createElement('p');
+      count.className = 'tool-count';
+      count.setAttribute('role', 'status');
 
-    body.appendChild(list);
-    body.appendChild(more);
-    panel.appendChild(head);
-    panel.appendChild(body);
+      head.appendChild(count);
 
-    shell.appendChild(wrap);
-    shell.appendChild(panel);
-    box.appendChild(shell);
+      body = document.createElement('div');
+      body.className = 'hero-panel-body';
+
+      list = document.createElement('ul');
+      list.id = 'hero-hits';
+      list.className = 'hits';
+      list.setAttribute('role', 'listbox');
+
+      more = document.createElement('button');
+      more.type = 'button';
+      more.className = 'op hits-more';
+      more.hidden = true;
+
+      body.appendChild(list);
+      body.appendChild(more);
+      panel.appendChild(head);
+      panel.appendChild(body);
+
+      shell.appendChild(wrap);
+      shell.appendChild(panel);
+      box.appendChild(shell);
+    }
 
     var index = null, pending = false, pages = {};
 
@@ -447,7 +459,10 @@ export default function init(box, deps) {
       }
     });
 
-    if (input.value.trim()) load();
+    if (document.activeElement === input || input.value.trim()) {
+      load();
+      if (input.value.trim()) draw();
+    }
   }
 
   return home(box);

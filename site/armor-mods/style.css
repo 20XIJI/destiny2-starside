@@ -65,12 +65,16 @@
 }
 
 .gen th,
-.gen td,
+.gen td {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+}
+
 .gen tbody tr:first-child > td:first-child,
 .gen tbody tr:first-child > td:last-child,
 .gen tbody tr:last-child > td:first-child,
 .gen tbody tr:last-child > td:last-child {
-  padding: 0;
   border: 0;
   border-radius: 0;
 }
