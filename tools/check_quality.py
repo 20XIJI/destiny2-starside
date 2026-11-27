@@ -2341,6 +2341,8 @@ class WeaponPage(unittest.TestCase):
                 target = items_.get(str(r["sameAs"]))
                 self.assertIsNotNone(target, "%s 的 sameAs 指到库外" % h)
                 self.assertNotIn("sameAs", target or {}, "%s 的 sameAs 跳了两层" % h)
+                zh = (r.get("i18n") or {}).get("zh-CN") or {}
+                self.assertFalse(zh.get("site_text"), "%s 带 sameAs 不应再挂 site_text" % h)
 
     def js_function(self, text, name):
         """与 check_quality.cjs 的 funcSource() 同一个判据：按缩进找收尾。"""

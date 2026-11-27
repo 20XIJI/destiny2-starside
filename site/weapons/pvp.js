@@ -1646,35 +1646,26 @@ window.WPN_PVP = function (H) {
     }
     if (m.shotEffects) {
       m.shotEffects.forEach(function (ef) {
-        var k = ef.kind, t = '';
-        if (k === 'focusedFury') { t = '+25% 伤害（命中弹匣 35% 精准后）· 持续 ' + (ef.enhanced ? 12 : 11) + 's'; }
-        else if (k === 'controlledBurst') { t = '+20% 伤害 · −10% 充能（全中一轮后）· 持续 ' + (ef.enhanced ? 2.5 : 2) + 's'; }
-        else if (k === 'backupPlan') { t = '−20% 伤害 · −30% 充能 · 持续 ' + (ef.enhanced ? 2.5 : 2) + 's'; }
-        else if (k === 'kickstart') { t = '+15% 伤害 · −20% 充能时间'; }
-        else if (k === 'bluntExecution') { t = '+100% 伤害 · 仅限首轮点射'; }
-        else if (k === 'archersTempo') { t = '精准命中后 −25% 蓄力时间 · 持续 ' + (ef.enhanced ? 4 : 3) + 's'; }
-        else if (k === 'archersGambit') { t = '腰射精准后 −60% 蓄力时间'; }
-        else if (k === 'successfulWarmup') { t = '−37.5% 充能/蓄力时间 · 持续 6s'; }
-        else if (k === 'adagio') { t = '+' + (ef.weaponType === 'Hand Cannon' ? 27 : 30) + '% 伤害 · +20% 射击间隔 · 持续 ' + (ef.enhanced ? 8 : 7) + 's'; }
-        else if (k === 'explosiveLight') { t = '初始 ' + (ef.enhanced ? 7 : 6) + ' 层 · 每发消耗 1 层'; }
-        else if (k === 'boxBreathing') { t = '首枪精准加成 +' + Math.round((ef.precisionMultiplier - 1) * 100) + '% · 预先瞄准 ' + (ef.enhanced ? '1.4' : '1.5') + 's'; }
-        else if (k === 'oneForAll') { t = '+35% 伤害 · 持续 ' + (ef.enhanced ? '11' : '10') + 's'; }
-        else if (k === 'harmony') { t = '+20% 伤害 · 持续 ' + (ef.enhanced ? '8' : '7') + 's'; }
-        else if (k === 'killClip') { t = '+25% 伤害 · 持续 ' + (ef.enhanced ? '5.5' : '5') + 's'; }
-        else if (k === 'magnificentHowl') { t = '+' + (ef.enhanced ? 55 : 50) + '% 伤害 · 每发消耗 1 层'; }
-        else if (k === 'recombination') { t = '+' + parseFloat((ef.stacks * (ef.enhanced ? 6.25 : 5)).toFixed(2)) + '% 伤害 · 仅限首枪'; }
-        else if (k === 'onslaught') { t = '射击延迟 −' + parseFloat(((1 - ef.delayScale) * 100).toFixed(1)) + '% · 持续 ' + (ef.enhanced ? 5 : 4.5) + 's'; }
-        else if (k === 'desperado') { t = '射击延迟 −30% · 持续 ' + (ef.enhanced ? '7' : '6') + 's'; }
-        else if (k === 'cascadePoint') { t = '射击延迟 −' + Math.round((1 - ef.delayScale) * 100) + '% · 持续 ' + (ef.enhanced ? '2.75' : '2.5') + 's'; }
-        else if (k === 'reservoirBurst') { t = '满弹及以上时 +' + (ef.enhanced ? '33' : '30') + '% 伤害'; }
-        else if (k === 'highImpactReserves') { t = '剩余 ≤' + (ef.enhanced ? '55' : '50') + '% 弹匣起最高 +6% 伤害'; }
-        else if (k === 'precisionInstrument') {
+        var k = ef.kind, t = H.pvpSummary ? H.pvpSummary(row.hash) : '';
+        if (!t) { return; }
+        if (k === 'adagio') {
+          t = t.replace('{dmg}', String(ef.weaponType === 'Hand Cannon' ? 27 : 30));
+        } else if (k === 'boxBreathing') {
+          t = t.replace('{prec}', String(Math.round((ef.precisionMultiplier - 1) * 100)));
+        } else if (k === 'recombination') {
+          t = t.replace('{dmg}', String(parseFloat((ef.stacks * (ef.enhanced ? 6.25 : 5)).toFixed(2))));
+        } else if (k === 'onslaught') {
+          t = t.replace('{delay}', String(parseFloat(((1 - ef.delayScale) * 100).toFixed(1))));
+        } else if (k === 'cascadePoint') {
+          t = t.replace('{delay}', String(Math.round((1 - ef.delayScale) * 100)));
+        } else if (k === 'precisionInstrument') {
           var maxP = ef.enhanced ? 30 : 25;
-          t = ef.initialStacks > 0
-            ? '+' + parseFloat((ef.initialStacks / 6 * maxP).toFixed(2)) + '% 精准伤害起步 · 递增至 +' + maxP + '%'
-            : '随连续命中递增至 +' + maxP + '% 精准伤害';
-        } else if (k === 'targetLock') { t = '随连续命中递增至 +' + (ef.enhanced ? 30 : 25) + '% 伤害'; }
-        if (t) { out.push({ text: t, neg: false }); }
+          var start = ef.initialStacks > 0
+            ? '+' + parseFloat((ef.initialStacks / 6 * maxP).toFixed(2)) + '% 精准伤害起步 · '
+            : '';
+          t = t.replace('{start}', start);
+        }
+        out.push({ text: t, neg: false });
       });
     }
     return out;

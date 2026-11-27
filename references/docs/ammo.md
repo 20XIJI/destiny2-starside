@@ -100,18 +100,18 @@
 直接给弹药进度：
 
 再补给{from|溢冰 2 件}
-: 造成最后一击时 {ammo-special|特殊弹药} +20%、{ammo-heavy|威能弹药} +20%，并生成一颗含 1% 超能能量的{orb|能量球}。{note|12 秒内置冷却。}
+: 造成最后一击时 {ammo-special|特殊弹药} +20%、{ammo-heavy|威能弹药} +20%，并生成一颗含 0.875% 超能能量的{orb|能量球}。{note|12 秒内置冷却。}
 钢铁的历练{from|欧里克斯记忆 2 件}
 : 消灭{bar-orange|守护者}、{bar-orange|橙血}或更高级{enemy|战斗人员}时 {ammo-special|特殊弹药} +12%、{ammo-heavy|威能弹药} +7.5%。
 丰富弹药{from|虚无赛博毒蛇 4 件}
 : *肾上腺素充沛*激活时，{ammo-special|特殊弹药}进度按目标分档：{bar-red|红血} +3%，{bar-orange|橙血}或更高级 +16%，傀儡{bar-orange|橙血}或更高级 +24%，{bar-orange|守护者} +{unsure|?}%。破坏可摧毁物件与构造体同样触发，给 +16%。
 年事已高{from|空降灭火套装 4 件}
-: 对{bar-orange|橙血}或更高级{enemy|战斗人员}使用{enemy|终结技}时 {ammo-special|特殊弹药} +16%，并恢复 32 {health|生命值}。
+: 对{bar-orange|橙血}或更高级{enemy|战斗人员}使用{enemy|终结技}时 {ammo-special|特殊弹药} +16%，并恢复 30 {health|生命值}。
 傀儡武装{from|伟大狩猎 4 件}
 : 手雷最后一击时 {ammo-heavy|威能弹药} +10%。
 致命编织{from|积雨云 4 件}
-: 对{deb-strand|瓦解}的{enemy|战斗人员}造成最后一击、且手雷技能能量已满时 {ammo-special|特殊弹药} +10%。
-能量填装{from|最后纪律 4 件}
+: 对{deb-strand|瓦解}的{enemy|战斗人员}造成最后一击、且手雷技能能量已满时 {ammo-special|特殊弹药} +7%。
+能量装填{from|最后纪律 4 件}
 : 拾取{orb|能量球}时 {ammo-special|特殊弹药} +6%{note|（无法被加成）}。
 白手起家{from|铁能 4 件}
 : {ammo-special|特殊弹药}储量低于 20% 时，主武器击杀给 +3% {ammo-special|特殊弹药}进度；{ammo-heavy|威能弹药}储量低于 20% 时，特殊武器击杀给 +2% {ammo-heavy|威能弹药}进度。{note|这部分额外进度不受搜寻者影响。}

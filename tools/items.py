@@ -308,7 +308,6 @@ TERMS = [
     ("不稳定", "deb-void", []),
     ("压制", "deb-void", []),
     ("减速", "deb-stasis", []),
-    ("灼烧", "deb-solar", []),
     ("点燃", "deb-solar", []),
     ("能量球", "orb", []),
     ("特殊弹药", "ammo-special", []),

@@ -1633,6 +1633,19 @@ def build(facts):
         "ap": {arow[h]: v for h, v in aperks.items() if arep_of[h] == h},
         "amd": [htmls.of(m[4]) if m[4] else -1 for m in amods],
     }
+    pvps = {}
+    for h in b.plugs:
+        rec = b.f.items.get(h) or {}
+        head = b.f.items.get(str(rec["sameAs"])) if rec.get("sameAs") else rec
+        raw = ((head or {}).get("i18n") or {}).get(resolve.ZH, {}).get("pvp_summary")
+        if raw:
+            enh = bool(rec.get("sameAs"))
+            pvps[h] = re.sub(
+                r"\[\[([^|\]]+)\|([^\]]+)\]\]",
+                lambda m: m.group(2 if enh else 1),
+                raw,
+            )
+    text["pvps"] = pvps
     srows, stexts = set_rows(b, htmls)
     text["st"] = stexts
     text["H"] = htmls.items

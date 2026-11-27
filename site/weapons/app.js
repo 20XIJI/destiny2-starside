@@ -271,6 +271,7 @@
       getSIDX: function () { return SIDX; },
       getHSTAT: function () { return HSTAT; },
       getPERK_FX: function () { return PERK_FX; },
+      pvpSummary: function (h) { return (T && T.pvps && T.pvps[String(h)]) || ''; },
       esc: esc, imgTag: imgTag, typeName: typeName, frameOf: frameOf, frameKey: frameKey,
       isExotic: isExotic, ammoEn: ammoEn, poolRow: poolRow, cellsOf: cellsOf,
       isEnhancedPlug: isEnhancedPlug, plugName: plugName, rollOf: rollOf, compute: compute,
