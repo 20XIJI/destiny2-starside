@@ -35,7 +35,7 @@
 .act {
   display: inline-block;
   width: 48px;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font-family: var(--font-cn);
   font-size: 12px;
   letter-spacing: .1em;
@@ -66,4 +66,4 @@
   border-bottom: 1px solid var(--hair-lit);
 }
 
-.block li a:hover { color: var(--bone-hi); }
+.block li a:hover { color: var(--bone); }

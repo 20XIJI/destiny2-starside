@@ -5,9 +5,9 @@
 
 /* 每一期公告收进实色战术通报面板（--surf-1 + 1px 外框 + 顶缘高光），不裸排在背景网格上。 */
 .block {
-  margin-bottom: var(--sp-6);
+  margin-bottom: 24px;
   background-color: var(--surf-1);
-  border: 1px solid var(--bd-outer);
+  border: 1px solid var(--hair);
   border-radius: var(--r-lg);
   box-shadow: var(--sh-block);
   overflow: hidden;
@@ -16,7 +16,7 @@
 .block:last-child { margin-bottom: 0; }
 
 #sec-1 {
-  border-color: color-mix(in srgb, var(--accent) 28%, var(--bd-outer));
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--hair));
   box-shadow: inset 0 1px 0 color-mix(in srgb, var(--accent) 24%, transparent), var(--sh-block);
 }
 
@@ -25,7 +25,7 @@
   gap: 12px;
   margin: 0;
   padding: 15px 22px;
-  color: var(--bone-hi);
+  color: var(--bone);
   font-family: var(--font-cn);
   font-size: var(--fs-xl);
   font-weight: 600;
@@ -34,7 +34,7 @@
   text-transform: none;
   font-variant-numeric: tabular-nums;
   background-color: var(--surf-2);
-  border-bottom: 1px solid var(--bd-row);
+  border-bottom: 1px solid var(--bd-in);
 }
 
 .block > .sect-label::before {
@@ -43,7 +43,7 @@
   height: 6px;
   margin-right: 0;
   vertical-align: 0;
-  background: var(--bone-faint);
+  background: var(--bone-ghost);
 }
 
 #sec-1 > .sect-label::before { background: var(--accent); }
@@ -59,8 +59,8 @@
 }
 
 .block > p:has(+ ul) {
-  background-color: var(--tint-1);
-  border-bottom: 1px solid var(--bd-row);
+  background-color: var(--tint);
+  border-bottom: 1px solid var(--bd-in);
 }
 
 .block > p + p { padding-top: 0; }
@@ -80,7 +80,7 @@
   font-size: var(--fs-md);
   line-height: 1.7;
   background-color: var(--surf-2);
-  border: 1px solid var(--bd-outer);
+  border: 1px solid var(--hair);
   border-radius: var(--r-md);
   box-shadow: var(--sh-block);
   transition: background-color .15s ease, border-color .15s ease, transform .15s ease;
@@ -91,7 +91,7 @@
   cursor: pointer;
 }
 
-.block li:hover { background-color: var(--surf-3); }
+.block li:hover { background-color: var(--surf-2); }
 
 .block li:has(a:only-of-type):hover {
   border-color: color-mix(in srgb, var(--accent) 45%, var(--hair-lit));
@@ -132,16 +132,16 @@
 }
 
 .block li strong {
-  color: var(--bone-hi);
+  color: var(--bone);
   font-size: 14px;
   font-weight: 600;
 }
 
 .block li a,
 .block p a {
-  color: var(--bone-hi);
+  color: var(--bone);
   text-decoration: none;
-  border-bottom: 1px solid color-mix(in srgb, var(--bone-faint) 65%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--bone-ghost) 65%, transparent);
   transition: color .15s ease, border-color .15s ease;
 }
 

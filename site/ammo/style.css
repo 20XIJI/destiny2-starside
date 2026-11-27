@@ -27,7 +27,7 @@
 }
 
 .gen tbody td {
-  color: var(--bone-hi);
+  color: var(--bone);
   text-align: center;
   white-space: nowrap;
 }
@@ -44,7 +44,7 @@
 
 /* 整格只有一个 {标记|…} 时 class 落在 <dt> 本身，.rules dt (0,1,1) 会压过
    单类的 .perk (0,1,0)。基色只给没有 class 的那些。 */
-.rules dt:not([class]) { color: var(--bone-hi); }
+.rules dt:not([class]) { color: var(--bone); }
 
 .rules dt {
   padding: 11px 0 0;
@@ -57,7 +57,7 @@
 /* 效果名后跟出处套装：退两档，不与效果名争 */
 .rules dt .from {
   margin-left: 10px;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font-family: var(--font-body);
   font-size: 12px;
   font-weight: 400;
@@ -78,7 +78,7 @@
 .formula {
   padding: 13px 18px;
   font-size: 14px;
-  background: var(--head-fill);
+  background: var(--surf-2);
   border-left: 2px solid var(--accent);
 }
 

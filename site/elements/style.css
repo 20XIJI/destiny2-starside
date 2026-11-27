@@ -54,7 +54,7 @@
   line-height: 1.75;
   text-decoration: none;
   background: var(--surf-1);
-  border: 1px solid var(--bd-outer);
+  border: 1px solid var(--hair);
   border-radius: var(--r-md);
   box-shadow: var(--sh-block);
   transition: border-color .15s ease, background .15s ease;
@@ -62,7 +62,7 @@
 
 .block li a:hover {
   color: var(--bone);
-  background: var(--head-fill);
+  background: var(--surf-2);
   border-color: var(--hair-lit);
 }
 
@@ -79,7 +79,7 @@
 .block li a > span:first-child::after {
   content: "→";
   float: right;
-  color: var(--bone-faint);
+  color: var(--bone-ghost);
   font-size: 14px;
   transition: color .15s ease, transform .15s ease;
 }
@@ -114,7 +114,7 @@
   word-break: keep-all;
 }
 
-.gen tbody th[scope="row"]:not([class]) { color: var(--bone-hi); }
+.gen tbody th[scope="row"]:not([class]) { color: var(--bone); }
 
 .gen tbody { color: var(--bone); }
 

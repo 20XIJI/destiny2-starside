@@ -17,7 +17,7 @@
 | --c-prism | #f58fc8 | {c-prism|Aa 汉字 123} | 棱镜与超凡 |
 | == 游戏内的其他编码 == |
 | --c-artifact | #20c4b0 | {c-artifact|Aa 汉字 123} | 神器模组名 |
-| --c-legend | #cf4a9c | {c-legend|Aa 汉字 123} | 稀有度：传说，行标题后那一截武器类别 |
+| --c-legend | #db57aa | {c-legend|Aa 汉字 123} | 稀有度：传说，行标题后那一截武器类别 |
 | --c-exotic | #fcb70a | {c-exotic|Aa 汉字 123} | 稀有度：异域，含专属 Perk 名 |
 | --c-orb | #dbc46a | {c-orb|Aa 汉字 123} | 能量球与超能能量 |
 | --c-stack | #dbc46a | {c-stack|Aa 汉字 123} | 精准命中与增益层数 |
@@ -25,7 +25,7 @@
 | --c-ammo | #cc44ff | {c-ammo|Aa 汉字 123} | 威能弹药 |
 | --c-ammo-special | #3ff24f | {c-ammo-special|Aa 汉字 123} | 特殊弹药 |
 | --c-health | #41b349 | {c-health|Aa 汉字 123} | 生命值与治疗 |
-| --c-enemy | #d94452 | {c-enemy|Aa 汉字 123} | 战斗人员、勇士与数值 |
+| --c-enemy | #e45865 | {c-enemy|Aa 汉字 123} | 战斗人员、勇士与数值 |
 | --c-term | #d6c39a | {c-term|Aa 汉字 123} | 词表着色里不属于元素的游戏术语，兼图表曲线、强调色与轮换页的突袭标签 |
 | --c-perk | #f9e9cd | {c-perk|Aa 汉字 123} | 武器 Perk 名 |
 | --c-buff | #2f9fd6 | {c-buff|Aa 汉字 123} | 增益与引号里的 buff 名，首领生命值页的减伤列 |
@@ -35,7 +35,7 @@
 | == 站点自己的话 == |
 | --c-debuff | #a2848c | {c-debuff|Aa 汉字 123} | 减益 |
 | --c-unsure | #a2848c | {c-unsure|Aa 汉字 123} | 待测数值 |
-| --c-pvp | #ee2746 | {c-pvp|Aa 汉字 123} | 方括号里的 PvP 数值 |
+| --c-pvp | #ff3b5a | {c-pvp|Aa 汉字 123} | 方括号里的 PvP 数值 |
 | --c-note | #eea6b7 | {c-note|Aa 汉字 123} | 注解：作者的话与限制说明，兼 DPS 页的模拟值 |
 
 ## 语义

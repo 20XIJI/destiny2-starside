@@ -121,7 +121,7 @@ tokens: {
   "el-strand": "el-strand",
   "el-void": "el-void",
   "enemy": "enemy",
-  "enh": "bone-hi",
+  "enh": "bone",
   "exotic": "exotic",
   "health": "health",
   "kind": "kind",

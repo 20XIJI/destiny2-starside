@@ -40,7 +40,7 @@
 /* ── 名称列 ──
    首格是行标题，不折行：一行一条效果，名称断开之后两行之间认不出边界。 */
 .gen tbody th[scope="row"] {
-  color: var(--bone-hi);
+  color: var(--bone);
   font-family: var(--font-cn);
   font-weight: 600;
   white-space: nowrap;
@@ -77,7 +77,7 @@
    `:not([class])` 挡住所有整格标记：整格只有一个 {标记|…} 时 class 落在 <td> 上，
    而列序这条带了 :has() 前缀、权重高过任何单类，不排除就会把占位词与批注一并染成本列基色。
    **这一列以后不能加「色阶：」**——site.css 的 data-tier 是单类，压不过这条，加了不生效且看不出来。 */
-.gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) tbody td:nth-child(5):not([class]) { color: var(--bone-hi); }
+.gen:has(thead th:nth-child(7)):not(:has(thead th:nth-child(8))) tbody td:nth-child(5):not([class]) { color: var(--bone); }
 
 /* ── 注解列 ──
    一句到四句不等，吃掉版心剩下的那一截，宽度在文件末尾那一节给。
@@ -96,7 +96,7 @@
 
 .rules dt {
   margin-top: 1.05em;
-  color: var(--bone-hi);
+  color: var(--bone);
   font-family: var(--font-cn);
   font-size: 14px;
   font-weight: 600;

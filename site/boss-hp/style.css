@@ -77,7 +77,7 @@
 /* 副本名：这一组的身份。rowspan 合并后纵向居中，一眼圈出该副本占几行。
    左右居中由 assets/site.css 的 .gen tbody th[scope="row"] 给，这里不重述。 */
 .gen tbody th {
-  color: var(--bone-hi);
+  color: var(--bone);
   font-family: var(--font-cn);
   font-size: 14px;
   font-weight: 600;

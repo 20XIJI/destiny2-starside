@@ -260,7 +260,7 @@ NOTICE = (
     'bar.style.cssText="position:fixed;left:0;right:0;bottom:0;z-index:99;'
     "display:flex;flex-wrap:wrap;gap:.2em 1em;align-items:center;"
     "justify-content:center;padding:.55em 1em;"
-    "background-color:var(--ink-lift);border-top:1px solid var(--hair-lit);"
+    "background-color:var(--surf-1);border-top:1px solid var(--hair-lit);"
     'color:var(--bone);font:13px/1.7 var(--font-cn)";'
     'bar.append("当前为测试域名，正式站点位于 starside.work ",link("前往正式站"));'
     'var box=document.createElement("div");'
@@ -274,7 +274,7 @@ NOTICE = (
     'say.style.cssText="margin:0;max-width:32em";'
     'var stay=document.createElement("button");'
     'stay.type="button";stay.disabled=true;'
-    'stay.style.cssText="background:none;border:0;color:var(--bone-faint);'
+    'stay.style.cssText="background:none;border:0;color:var(--bone-dim);'
     'font:13px/1.7 var(--font-cn);cursor:pointer";'
     'var n=5;stay.textContent="继续访问测试域名（"+n+"）";'
     "var t=setInterval(function(){n--;"

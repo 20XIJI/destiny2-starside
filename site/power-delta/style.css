@@ -17,7 +17,7 @@
 .chart {
   margin: 0;
   background: var(--surf-1);
-  border: 1px solid var(--bd-outer);
+  border: 1px solid var(--hair);
   border-radius: var(--r-lg);
   box-shadow: var(--sh-block);
   overflow: hidden;
@@ -31,7 +31,7 @@
   gap: 12px;
   padding: 10px 14px;
   background: var(--surf-2);
-  border-bottom: 1px solid var(--bd-row);
+  border-bottom: 1px solid var(--bd-in);
 }
 
 .chart-seg {
@@ -39,7 +39,7 @@
   gap: 2px;
   padding: 2px;
   background: var(--surf-1);
-  border: 1px solid var(--bd-outer);
+  border: 1px solid var(--hair);
   border-radius: var(--r-md);
 }
 
@@ -55,11 +55,11 @@
   cursor: pointer;
 }
 
-.chart-seg button:hover { color: var(--bone-hi); }
+.chart-seg button:hover { color: var(--bone); }
 
 .chart-seg button[aria-pressed="true"] {
-  background: var(--surf-4);
-  color: var(--bone-hi);
+  background: var(--surf-3);
+  color: var(--bone);
   font-weight: 500;
 }
 
@@ -75,9 +75,9 @@
   gap: 7px;
   height: 28px;
   padding: 0 10px;
-  border: 1px solid var(--bd-outer);
+  border: 1px solid var(--hair);
   border-radius: var(--r-sm);
-  background: var(--surf-3);
+  background: var(--surf-2);
   color: var(--bone-dim);
   font-family: var(--font-cn);
   font-size: 12px;
@@ -85,13 +85,13 @@
 }
 
 .chart-tog:hover {
-  background: var(--surf-4);
-  color: var(--bone-hi);
+  background: var(--surf-3);
+  color: var(--bone);
 }
 
 .chart-tog[aria-pressed="true"] {
-  background: var(--surf-4);
-  color: var(--bone-hi);
+  background: var(--surf-3);
+  color: var(--bone);
   border-color: var(--hair-lit);
 }
 
@@ -99,7 +99,7 @@
   width: 12px;
   height: 2px;
   border-radius: 1px;
-  background: var(--bone-faint);
+  background: var(--bone-ghost);
 }
 
 .chart-tog.s1[aria-pressed="true"] .sw { background: var(--accent); }
@@ -131,20 +131,20 @@
 .chart .zone-steep { fill: rgba(214, 195, 154, 0.025); }
 
 .chart .zone-lbl {
-  fill: var(--bone-faint);
+  fill: var(--bone-dim);
   font-family: var(--font-cn);
   font-size: 11px;
   letter-spacing: .04em;
 }
 
-.chart .grid { stroke: var(--bd-col); stroke-width: 1; }
-.chart .axis { stroke: var(--bd-outer); stroke-width: 1; }
-.chart .base-h { stroke: var(--bone-faint); stroke-width: 1; }
-.chart .base-v { stroke: var(--bone-faint); stroke-width: 1; stroke-dasharray: 4 3; }
+.chart .grid { stroke: var(--bd-in); stroke-width: 1; }
+.chart .axis { stroke: var(--hair); stroke-width: 1; }
+.chart .base-h { stroke: var(--bone-ghost); stroke-width: 1; }
+.chart .base-v { stroke: var(--bone-ghost); stroke-width: 1; stroke-dasharray: 4 3; }
 .chart .cliff-v { stroke: rgba(214, 195, 154, 0.25); stroke-width: 1; stroke-dasharray: 2 3; }
 
 .chart .tick {
-  fill: var(--bone-faint);
+  fill: var(--bone-dim);
   font-family: var(--font-body);
   font-size: 11px;
   text-anchor: middle;
@@ -174,7 +174,7 @@
 .chart .line.ehp { stroke: var(--c-enemy); }
 
 .chart .lead {
-  stroke: var(--bone-faint);
+  stroke: var(--bone-ghost);
   stroke-width: 1;
   fill: none;
 }
@@ -190,7 +190,7 @@
 
 .chart .pill {
   fill: rgba(15, 19, 29, 0.92);
-  stroke: var(--bd-outer);
+  stroke: var(--hair);
   stroke-width: 1;
 }
 
@@ -227,7 +227,7 @@
   display: grid;
   grid-template-columns: 1.25fr 1.2fr 1.05fr;
   background: var(--surf-2);
-  border-top: 1px solid var(--bd-row);
+  border-top: 1px solid var(--bd-in);
 }
 
 .cd-cell {
@@ -236,7 +236,7 @@
   justify-content: space-between;
   gap: 8px;
   padding: 12px 14px;
-  border-right: 1px solid var(--bd-col);
+  border-right: 1px solid var(--bd-in);
 }
 
 .cd-cell:last-child { border-right: 0; }
@@ -251,16 +251,16 @@
 }
 
 .cd-x {
-  color: var(--bone-hi);
+  color: var(--bone);
   font-size: 14px;
   font-weight: 600;
 }
 
 .cd-badge {
   padding: 2px 7px;
-  border: 1px solid var(--bd-tile);
+  border: 1px solid var(--bd-in);
   border-radius: var(--r-sm);
-  background: var(--surf-3);
+  background: var(--surf-2);
   color: var(--c-term);
   font-size: 11px;
 }
@@ -277,10 +277,10 @@
 .cd-num {
   width: 48px;
   padding: 1px 4px;
-  border: 1px solid var(--bd-outer);
+  border: 1px solid var(--hair);
   border-radius: var(--r-sm);
-  background-color: var(--tint-1);
-  color: var(--bone-hi);
+  background-color: var(--tint);
+  color: var(--bone);
   font-family: var(--font-body);
   font-size: 11px;
   font-weight: 600;
@@ -340,7 +340,7 @@
 .cd-slider::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 2px;
-  background-color: var(--bd-outer);
+  background-color: var(--hair);
 }
 
 .cd-slider::-webkit-slider-thumb {
@@ -358,7 +358,7 @@
   height: 4px;
   border: 0;
   border-radius: 2px;
-  background-color: var(--bd-outer);
+  background-color: var(--hair);
 }
 
 .cd-slider::-moz-range-thumb {
@@ -388,7 +388,7 @@
   padding: 0 7px;
   border: 1px solid transparent;
   border-radius: var(--r-sm);
-  background: var(--tint-2);
+  background: var(--tint);
   color: var(--bone-dim);
   font-family: var(--font-body);
   font-size: 11px;
@@ -396,12 +396,12 @@
 }
 
 .cd-qchip:hover {
-  background: var(--surf-4);
-  color: var(--bone-hi);
+  background: var(--surf-3);
+  color: var(--bone);
 }
 
 .cd-qchip.active {
-  background: var(--surf-4);
+  background: var(--surf-3);
   border-color: var(--c-term);
   color: var(--c-term);
 }
@@ -426,7 +426,7 @@
 .cd-mlbl {
   flex: none;
   width: 48px;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
 }
 
 .cd-track {
@@ -434,7 +434,7 @@
   flex: 1;
   height: 7px;
   background: var(--surf-1);
-  border: 1px solid var(--bd-tile);
+  border: 1px solid var(--bd-in);
   border-radius: var(--r-sm);
   overflow: hidden;
 }
@@ -477,7 +477,7 @@
 }
 
 .cd-ehp-val {
-  color: var(--bone-hi);
+  color: var(--bone);
   font-size: 13px;
   font-weight: 600;
 }
@@ -487,9 +487,9 @@
 
 .cd-clear {
   padding: 2px 8px;
-  border: 1px solid var(--bd-outer);
+  border: 1px solid var(--hair);
   border-radius: var(--r-sm);
-  background: var(--surf-3);
+  background: var(--surf-2);
   color: var(--bone-dim);
   font-family: var(--font-cn);
   font-size: 11px;
@@ -497,8 +497,8 @@
 }
 
 .cd-clear:hover {
-  background: var(--surf-4);
-  color: var(--bone-hi);
+  background: var(--surf-3);
+  color: var(--bone);
 }
 
 .cd-cmp-main {

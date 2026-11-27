@@ -992,7 +992,7 @@
     var shape;
     if (v >= 95) {
       shape = '<line x1="1" y1="1" x2="' + (1 + Math.sin(t)).toFixed(3) +
-        '" y2="' + (1 - Math.cos(t)).toFixed(3) + '" stroke="var(--bone-hi)" stroke-width=".11" stroke-linecap="round"/>';
+        '" y2="' + (1 - Math.cos(t)).toFixed(3) + '" stroke="var(--bone)" stroke-width=".11" stroke-linecap="round"/>';
     } else {
       var x1 = (1 + Math.sin(t - sp)).toFixed(3), y1 = (1 - Math.cos(t - sp)).toFixed(3);
       var x2 = (1 + Math.sin(t + sp)).toFixed(3), y2 = (1 - Math.cos(t + sp)).toFixed(3);
@@ -2967,7 +2967,7 @@
       svg.setAttribute('class', 'links');
       svg.setAttribute('aria-hidden', 'true');
       svg.innerHTML = '<defs>' + defs.join('') + '</defs>' + segs.join('') +
-        (STILL ? '' : '<circle r="2.2" style="fill:var(--bone-hi)"><animateMotion dur="' + (pts.length * 1.1).toFixed(1) +
+        (STILL ? '' : '<circle r="2.2" style="fill:var(--bone)"><animateMotion dur="' + (pts.length * 1.1).toFixed(1) +
           's" repeatCount="indefinite" path="' + fullD + '"/></circle>');
       m.prepend(svg);
     }
@@ -3921,7 +3921,7 @@
     function val(plug, s) { var v = 0; plug[P_ST].forEach(function (x) { if (x[0] == s) { v += x[1]; } }); return v; }
     var ks = Object.keys(keys);
     if (ks.length) {
-      statsTable = '<table><tr><td></td><td class="n" style="color:var(--bone-faint)">基础</td>' + (enh ? '<td class="e">强化</td>' : '') + '</tr>' +
+      statsTable = '<table><tr><td></td><td class="n" style="color:var(--bone-dim)">基础</td>' + (enh ? '<td class="e">强化</td>' : '') + '</tr>' +
         ks.map(function (s) {
           var b = val(base, s), e = enh ? val(enh, s) : 0;
           return '<tr><td>' + esc(P.s[s][1]) + '</td><td class="n">' + (b > 0 ? '+' : '') + b + '</td>' +

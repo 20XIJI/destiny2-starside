@@ -5,7 +5,7 @@
   --min: 1104px;
   /* 这一页满是元素编码：卡片、结果行、词条说明里到处是电弧青与烈日橙。站点缺省的
      青色焦点环在这里会被读成「电弧」，所以强调色退回骨白，只靠亮度区分。 */
-  --accent: var(--bone-hi);
+  --accent: var(--bone);
   /* 强化词条的金，取站内能量球／层数那一支：游戏里的强化金 #eade8b 与它
      ΔE 10.9，按 design.md 一节读作同一个颜色，不另造一支。依据是 Bungie 给强化
      物品专发的那张金色叠加图（enhanced-item-overlay.png）。只上词条圆圈。 */
@@ -33,7 +33,7 @@
 
 .page-note b {
   margin-right: 5px;
-  color: var(--bone-hi);
+  color: var(--bone);
   font: 600 16px/1 var(--font-disp);
   letter-spacing: .06em;
 }
@@ -44,7 +44,7 @@
   height: 4px;
   margin: 0 16px;
   vertical-align: 2px;
-  background: var(--bone-faint);
+  background: var(--bone-ghost);
   transform: rotate(45deg);
 }
 
@@ -73,7 +73,7 @@
 }
 
 .wpn-bar.is-stuck {
-  background: var(--ink-lift);
+  background: var(--surf-1);
   border-bottom-color: var(--hair-lit);
   box-shadow: 0 12px 28px rgba(0, 0, 0, .55);
 }
@@ -96,9 +96,9 @@
   display: block;
   width: 100%;
   padding: 13px 40px 13px 22px;
-  color: var(--bone-hi);
+  color: var(--bone);
   font: 400 14px/1.5 var(--font-body);
-  background: var(--panel-b);
+  background: var(--surf-1);
   border: 1px solid var(--hair-lit);
   border-radius: 999px;
   transition: border-color .24s ease, background-color .24s ease, box-shadow .24s ease;
@@ -113,7 +113,7 @@
   width: 28px;
   height: 28px;
   padding: 0;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   background: transparent;
   border: 0;
   border-radius: 50%;
@@ -134,8 +134,8 @@
 }
 
 .wpn-clear:hover {
-  color: var(--bone-hi);
-  background: var(--tint-2);
+  color: var(--bone);
+  background: var(--tint);
 }
 
 .wpn-clear:active { scale: .92; }
@@ -152,7 +152,7 @@
 
 .wpn-input:focus,
 .wpn-input.is-focus {
-  background: var(--panel-a);
+  background: var(--surf-2);
   border-color: var(--accent);
   box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent) 16%, transparent);
   outline: none;
@@ -169,7 +169,7 @@
   letter-spacing: .08em;
 }
 
-.wpn-count b { color: var(--bone-hi); font-weight: 600; }
+.wpn-count b { color: var(--bone); font-weight: 600; }
 
 /* 范围与视图：素字，选中的提亮，下面一道发丝线。一种写法用到底。视图第一枚按钮自带
    12px 内边距，往回收，字与输入框的间距才与左边的计数一样。 */
@@ -186,13 +186,13 @@
 .wpn-scope .toggle { padding: 6px 14px; font-size: 14px; }
 
 .wpn-scope .toggle:hover,
-.wpn-views > .toggle:hover { color: var(--bone-hi); }
+.wpn-views > .toggle:hover { color: var(--bone); }
 
 .wpn-scope .toggle[aria-pressed="true"],
 .wpn-views > .toggle[aria-pressed="true"] {
-  color: var(--bone-hi);
+  color: var(--bone);
   background: none;
-  border-color: transparent transparent var(--bone-hi);
+  border-color: transparent transparent var(--bone);
 }
 
 .wpn-views {
@@ -215,7 +215,7 @@
   max-height: calc(100vh - var(--stick, 140px) - 20px);
   overflow: auto;
   font: 400 12px/1.6 var(--font-cn);
-  background: var(--ink-lift);
+  background: var(--surf-1);
   border: 1px solid var(--hair-lit);
   border-radius: var(--r-lg);
   box-shadow: 0 28px 64px #000000a6;
@@ -236,8 +236,8 @@
   border-bottom: 1px solid var(--hair);
 }
 
-.sx-head h2 { margin: 0; color: var(--bone-hi); font: 600 14px/1.4 var(--font-cn); letter-spacing: .08em; }
-.sx-head span { color: var(--bone-faint); font-size: 12px; }
+.sx-head h2 { margin: 0; color: var(--bone); font: 600 14px/1.4 var(--font-cn); letter-spacing: .08em; }
+.sx-head span { color: var(--bone-dim); font-size: 12px; }
 
 .sx-body { display: grid; grid-template-columns: 330px minmax(0, 1fr) 290px; }
 .sx-body > section { padding: 16px 22px 18px; }
@@ -257,7 +257,7 @@
   content: "";
   width: 5px;
   height: 5px;
-  background: var(--bone-faint);
+  background: var(--bone-ghost);
   transform: rotate(45deg);
 }
 
@@ -269,14 +269,14 @@
   font: 400 12px/1.4 var(--font-body);
   text-align: left;
   white-space: nowrap;
-  background: var(--tint-2);
+  background: var(--tint);
   border: 1px solid transparent;
   cursor: pointer;
   transition: color .15s ease, border-color .15s ease, background-color .15s ease;
 }
 
-.sx-q b { color: var(--bone-hi); font-weight: 400; }
-.sx-q:hover { color: var(--bone-hi); background: var(--tint-3); border-color: var(--hair-lit); }
+.sx-q b { color: var(--bone); font-weight: 400; }
+.sx-q:hover { color: var(--bone); background: var(--tint); border-color: var(--hair-lit); }
 
 .sx-op {
   display: grid;
@@ -291,12 +291,12 @@
   place-items: center;
   width: 30px;
   height: 30px;
-  color: var(--bone-hi);
+  color: var(--bone);
   font: 600 14px/1 var(--font-cn);
   border: 1px solid var(--hair-lit);
 }
 
-.sx-op p { margin: 5px 0 0; color: var(--bone-faint); font-size: 12px; line-height: 1.5; }
+.sx-op p { margin: 5px 0 0; color: var(--bone-dim); font-size: 12px; line-height: 1.5; }
 .sx-op code { color: var(--bone-dim); font: 400 12px/1 var(--font-mono); }
 
 .sx-row {
@@ -310,7 +310,7 @@
 .sx-row > span { color: var(--bone-dim); }
 
 .sx-vg { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 0 6px; margin-bottom: 9px; }
-.sx-vl { padding-top: 4px; color: var(--bone-faint); font-size: 12px; }
+.sx-vl { padding-top: 4px; color: var(--bone-dim); font-size: 12px; }
 .sx-vg > div { display: flex; flex-wrap: wrap; gap: 4px; }
 
 .sx-t {
@@ -328,10 +328,10 @@
 }
 
 .sx-t img { width: 14px; height: 14px; }
-.sx-t:hover { color: var(--bone-hi); border-color: var(--hair-lit); }
-.sx-t[aria-pressed="true"] { color: var(--bone-hi); background: var(--tint-3); border-color: var(--bone-faint); }
+.sx-t:hover { color: var(--bone); border-color: var(--hair-lit); }
+.sx-t[aria-pressed="true"] { color: var(--bone); background: var(--tint); border-color: var(--bone-ghost); }
 
-.sx-note { margin: 4px 0 0; padding-top: 10px; color: var(--bone-faint); font-size: 12px; border-top: 1px solid var(--hair); }
+.sx-note { margin: 4px 0 0; padding-top: 10px; color: var(--bone-dim); font-size: 12px; border-top: 1px solid var(--hair); }
 .sx-note code { color: var(--bone-dim); font: 400 12px/1 var(--font-mono); }
 
 @media (max-width: 1140px) {
@@ -347,13 +347,13 @@
   padding: 2px 4px 2px 8px;
   color: var(--bone);
   font: 400 12px/1.6 var(--font-cn);
-  background: var(--tint-3);
+  background: var(--tint);
   border: 1px solid var(--hair-lit);
   border-radius: var(--r-sm);
 }
 
 .wpn-pill .k {
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font-family: var(--font-disp);
   font-size: 11px;
   letter-spacing: .06em;
@@ -368,14 +368,14 @@
   width: 20px;
   height: 20px;
   padding: 0;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font: 400 14px/1 var(--font-body);
   background: none;
   border: 0;
   cursor: pointer;
 }
 
-.wpn-pill button:hover { color: var(--bone-hi); }
+.wpn-pill button:hover { color: var(--bone); }
 
 /* 补全列表 */
 .wpn-suggest {
@@ -388,7 +388,7 @@
   width: 100%;
   max-height: min(420px, calc(100dvh - var(--stick, 120px) - 24px));
   overflow: hidden;
-  background: var(--ink-lift);
+  background: var(--surf-1);
   border: 1px solid var(--hair-lit);
   border-radius: var(--r-md);
 }
@@ -409,7 +409,7 @@
 
 .wpn-suggest .grp {
   padding: 6px 14px 2px;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font: 600 11px/1.6 var(--font-disp);
   letter-spacing: .12em;
   user-select: none;
@@ -430,17 +430,17 @@
 }
 
 .wpn-suggest .opt:hover:not([aria-selected="true"]) {
-  background: var(--tint-1);
+  background: var(--tint);
 }
 
 .wpn-suggest .opt[aria-selected="true"] {
-  color: var(--bone-hi);
-  background: var(--row-hover);
+  color: var(--bone);
+  background: var(--surf-3);
   border-left-color: var(--accent);
 }
 
 .wpn-suggest .opt:active {
-  background: var(--tint-3);
+  background: var(--tint);
 }
 
 .wpn-suggest .opt.no-ico {
@@ -465,7 +465,7 @@
   fill: currentColor;
 }
 
-.wpn-suggest .opt[aria-selected="true"] > svg.g { color: var(--bone-hi); }
+.wpn-suggest .opt[aria-selected="true"] > svg.g { color: var(--bone); }
 
 .wpn-suggest .opt [class^="ammo-"] {
   display: grid;
@@ -491,7 +491,7 @@
   color: var(--bone-dim);
 }
 
-.wpn-suggest .opt[aria-selected="true"] .ac-ic { color: var(--bone-hi); }
+.wpn-suggest .opt[aria-selected="true"] .ac-ic { color: var(--bone); }
 
 .wpn-suggest .opt .ac-ic svg {
   width: 16px;
@@ -511,7 +511,7 @@
 .wpn-suggest .opt .ac-ic.ac-col,
 .wpn-suggest .opt .ac-ic.ac-op {
   font: 600 11px/1 var(--font-disp);
-  background: var(--tint-2);
+  background: var(--tint);
   border: 1px solid var(--hair);
   border-radius: 4px;
 }
@@ -556,20 +556,20 @@
   padding: 1px 6px;
   color: var(--bone-dim);
   font: 400 11px/1.5 var(--font-body);
-  background: var(--tint-2);
+  background: var(--tint);
   border-radius: 4px;
 }
 
 .wpn-suggest .opt-hint {
   overflow: hidden;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font-size: 12px;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
 .wpn-suggest .opt .n {
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font: 400 12px/1.6 var(--font-body);
 }
 
@@ -577,7 +577,7 @@
   flex: none;
   margin: 0;
   padding: 7px 14px;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font: 400 12px/1.6 var(--font-cn);
   border-top: 1px solid var(--hair);
   user-select: none;
@@ -626,10 +626,10 @@
   transition: opacity .18s ease, color .15s ease, background-color .15s ease;
 }
 
-.wpn-quick button:hover { background: var(--tint-2); }
+.wpn-quick button:hover { background: var(--tint); }
 
 .wpn-quick button:hover,
-.wpn-quick button[aria-pressed="true"] { color: var(--bone-hi); }
+.wpn-quick button[aria-pressed="true"] { color: var(--bone); }
 
 .wpn-quick button::after {
   content: "";
@@ -639,7 +639,7 @@
   width: 4px;
   height: 4px;
   margin-left: -2px;
-  background: var(--bone-hi);
+  background: var(--bone);
   transform: rotate(45deg) scale(0);
   transition: transform .18s cubic-bezier(.22, 1, .36, 1);
 }
@@ -706,7 +706,7 @@
   height: 4px;
   margin-right: 10px;
   vertical-align: 2px;
-  background: var(--bone-faint);
+  background: var(--bone-ghost);
   transform: rotate(45deg);
 }
 
@@ -730,7 +730,7 @@
   cursor: pointer;
 }
 
-.cs-clear:hover { color: var(--bone-hi); }
+.cs-clear:hover { color: var(--bone); }
 
 .cs-right { display: flex; align-items: center; justify-content: flex-end; }
 .cs-facets { display: flex; align-items: center; }
@@ -755,19 +755,19 @@
   width: 4px;
   height: 4px;
   margin-top: -2px;
-  background: var(--bone-hi);
+  background: var(--bone);
   transform: rotate(45deg) scale(0);
   transition: transform .18s cubic-bezier(.22, 1, .36, 1);
 }
 
-.fc[aria-pressed="true"] { color: var(--bone-hi); }
+.fc[aria-pressed="true"] { color: var(--bone); }
 .fc[aria-pressed="true"]::before { transform: rotate(45deg) scale(1); }
-.fc:hover:not(:disabled) { color: var(--bone-hi); }
+.fc:hover:not(:disabled) { color: var(--bone); }
 .fc:disabled { opacity: .32; cursor: default; }
 
 .fc .n {
   margin-left: 7px;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font: 400 12px/1 var(--font-body);
 }
 
@@ -813,11 +813,11 @@
 }
 
 .wpn-refine button:hover,
-.wpn-refine .drop[aria-expanded="true"] { color: var(--bone-hi); }
+.wpn-refine .drop[aria-expanded="true"] { color: var(--bone); }
 
 .wpn-refine .n {
   margin-left: 7px;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font: 400 12px/1 var(--font-body);
 }
 
@@ -844,7 +844,7 @@
   height: 4px;
   margin-right: 8px;
   vertical-align: 2px;
-  background: var(--bone-hi);
+  background: var(--bone);
   transform: rotate(45deg);
 }
 
@@ -863,7 +863,7 @@
   max-height: 320px;
   padding: 10px 12px;
   overflow: auto;
-  background: var(--ink-lift);
+  background: var(--surf-1);
   border: 1px solid var(--hair-lit);
   border-radius: var(--r-md);
   animation: pop-in .15s cubic-bezier(.16, 1, .3, 1) both;
@@ -885,7 +885,7 @@
   text-align: left;
 }
 
-.wpn-refine .pop button[aria-pressed="true"] { color: var(--bone-hi); font-weight: 600; }
+.wpn-refine .pop button[aria-pressed="true"] { color: var(--bone); font-weight: 600; }
 
 .wpn-refine .pop button > span:first-child {
   overflow: hidden;
@@ -917,7 +917,7 @@
 }
 
 .wpn-row .toggle:hover,
-.wpn-row .toggle[aria-pressed="true"] { color: var(--bone-hi); }
+.wpn-row .toggle[aria-pressed="true"] { color: var(--bone); }
 
 .wpn-row .toggle code {
   font: 400 12px/1.5 var(--font-mono);
@@ -925,13 +925,13 @@
 }
 
 .wpn-row .toggle .n {
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font: 400 12px/1 var(--font-body);
 }
 
 .wpn-row .toggle img { width: 16px; height: 16px; }
 
-.wpn-row .toggle .k { color: var(--bone-faint); font-size: 12px; }
+.wpn-row .toggle .k { color: var(--bone-dim); font-size: 12px; }
 
 /* 卡片墙：每张一个结构、一个高度。
    五列。左边是图，右边固定四行：名字、元素弹药枪型与赛季、框架、评价。每行一行、超出截断，
@@ -954,7 +954,7 @@
   color: inherit;
   text-decoration: none;
   background: linear-gradient(180deg, rgba(20, 25, 36, .88) 0%, rgba(13, 16, 24, .92) 100%);
-  border: 1px solid var(--bd-outer);
+  border: 1px solid var(--hair);
   border-radius: var(--r-md);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
   transition: border-color .15s ease, box-shadow .15s ease;
@@ -983,7 +983,7 @@
 
 .wpn-card:not(.set-card):hover,
 .wpn-card:not(.set-card).is-hover {
-  border-left-color: color-mix(in oklab, var(--el-c) 82%, var(--bone-hi));
+  border-left-color: color-mix(in oklab, var(--el-c) 82%, var(--bone));
 }
 
 /* 异域卡片：左缘一道异域金亮边，底色叠一层从左缘漫出的暖金微光，不夺目但与普通卡片一眼可分。 */
@@ -1012,7 +1012,7 @@
   display: -webkit-box;
   overflow: hidden;
   margin: 0;
-  color: var(--bone-hi);
+  color: var(--bone);
   font: 600 14px/1.4 var(--font-cn);
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -1052,7 +1052,7 @@
 
 .wpn-meta .ssn {
   margin-left: auto;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font: 600 11px/1 var(--font-disp);
   letter-spacing: .06em;
 }
@@ -1096,7 +1096,7 @@
 
 .wpn-grades .by {
   margin-right: 4px;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font: 600 10px/1 var(--font-disp);
   letter-spacing: .1em;
 }
@@ -1130,14 +1130,14 @@
   height: 5px;
   margin-right: 7px;
   vertical-align: 2px;
-  background: var(--bone-faint);
+  background: var(--bone-ghost);
   transform: rotate(45deg);
 }
 
 .wpn-card .wpn-grades > .au-a::before { background: var(--au-aegis); }
 .wpn-card .wpn-grades > .au-l::before { background: var(--au-lgpig); }
 .wpn-grades .tg { font-family: var(--font-disp); font-weight: 600; letter-spacing: .02em; }
-.wpn-grades .tg-1 { color: var(--bone-hi); }
+.wpn-grades .tg-1 { color: var(--bone); }
 .wpn-grades .tg-2,
 .wpn-grades .tg-3 { color: var(--bone); font-weight: 400; }
 
@@ -1151,7 +1151,7 @@
   flex: none;
   overflow: hidden;
   border-radius: var(--r-sm);
-  background: var(--panel-b);
+  background: var(--surf-1);
   box-shadow: 0 0 0 1px rgba(255, 255, 255, .14);
   transition: box-shadow .15s ease;
 }
@@ -1276,17 +1276,17 @@
   border-bottom: 1px solid var(--hair);
 }
 
-.wpn-list li:nth-child(even) .wpn-lrow { background: var(--tint-2); }
-.wpn-list .wpn-lrow:hover { background: var(--row-hover); }
+.wpn-list li:nth-child(even) .wpn-lrow { background: var(--tint); }
+.wpn-list .wpn-lrow:hover { background: var(--surf-3); }
 .wpn-list img.el, .wpn-list img.br { width: 18px; height: 18px; }
 .wpn-list svg { height: 13px; fill: currentcolor; }
-.wpn-list .nm { color: var(--bone-hi); font-weight: 600; }
+.wpn-list .nm { color: var(--bone); font-weight: 600; }
 .wpn-list .ty { display: flex; align-items: center; gap: 8px; color: var(--bone-dim); }
 .wpn-list .fr { display: flex; align-items: center; gap: 8px; color: var(--bone-dim); }
 .wpn-list .fr img { width: 20px; height: 20px; }
-.wpn-list .ssn { color: var(--bone-faint); font: 600 11px/1 var(--font-disp); letter-spacing: .06em; }
+.wpn-list .ssn { color: var(--bone-dim); font: 600 11px/1 var(--font-disp); letter-spacing: .06em; }
 /* 同名的几版同时在结果里：赛季提亮，读者据此分得出是哪一版。 */
-.wpn-list .ssn.dup { color: var(--bone-hi); }
+.wpn-list .ssn.dup { color: var(--bone); }
 
 /* ── 结果栏 + 详情 ──────────────────────────────────────────── */
 .wpn-split {
@@ -1328,7 +1328,7 @@
   align-items: center;
   gap: 8px;
   padding: 4px 10px 6px 0;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font: 400 12px/1.6 var(--font-cn);
 }
 
@@ -1382,20 +1382,20 @@
   width: 6px;
   height: 6px;
   margin-top: -3px;
-  background: var(--ink-lift);
-  border: 1px solid var(--bone-faint);
+  background: var(--surf-1);
+  border: 1px solid var(--bone-ghost);
   transform: rotate(45deg);
 }
 
 .rail-list a[aria-current="page"]::before {
-  background: var(--bone-hi);
-  border-color: var(--bone-hi);
+  background: var(--bone);
+  border-color: var(--bone);
 }
 
 .rail-list a:hover,
-.rail-list a.is-hover { background: var(--row-hover); }
+.rail-list a.is-hover { background: var(--surf-3); }
 
-.rail-list a[aria-current="page"] { background: var(--tint-3); }
+.rail-list a[aria-current="page"] { background: var(--tint); }
 
 .rail-list .nm {
   overflow: hidden;
@@ -1405,13 +1405,13 @@
   text-overflow: ellipsis;
 }
 
-.rail-list a[aria-current="page"] .nm { color: var(--bone-hi); font-weight: 600; }
+.rail-list a[aria-current="page"] .nm { color: var(--bone); font-weight: 600; }
 
 .rail-list .sub {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font: 400 12px/1.4 var(--font-cn);
 }
 
@@ -1430,13 +1430,13 @@
 .rail-off .op { padding: 4px 7px; }
 
 .rail-off .n {
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font: 600 11px/1 var(--font-disp);
 }
 
 /* 详情 */
 .wpn-one {
-  --el-c: var(--bone-hi);
+  --el-c: var(--bone);
   display: grid;
   grid-template-columns: minmax(0, 1fr) 336px;
   gap: 0 36px;
@@ -1479,7 +1479,7 @@
 
 .one-head h2 {
   margin: 0;
-  color: var(--bone-hi);
+  color: var(--bone);
   font: 600 36px/1.15 var(--font-cn);
   letter-spacing: .04em;
 }
@@ -1488,7 +1488,7 @@
 
 .one-head .en {
   margin: 8px 0 12px;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font: 600 12px/1.4 var(--font-disp);
   letter-spacing: .24em;
 }
@@ -1524,7 +1524,7 @@
 }
 
 .facts .toggle:hover {
-  color: var(--bone-hi);
+  color: var(--bone);
   text-decoration: underline;
   text-decoration-color: var(--bone-dim);
   text-underline-offset: 4px;
@@ -1534,7 +1534,7 @@
 .facts .toggle svg { width: auto; height: 12px; fill: currentcolor; }
 .facts .ammo-2 { color: var(--ammo-special); }
 .facts .ammo-3 { color: var(--ammo-heavy); }
-.facts .toggle .k { color: var(--bone-faint); font-size: 12px; }
+.facts .toggle .k { color: var(--bone-dim); font-size: 12px; }
 
 .one-main > section,
 .one-side > section { margin-bottom: 40px; }
@@ -1549,7 +1549,7 @@
   color: var(--bone-dim);
 }
 
-.fr-top b { color: var(--bone-hi); font-weight: 600; }
+.fr-top b { color: var(--bone); font-weight: 600; }
 .fr-tier { font: 700 22px/1 var(--font-disp); letter-spacing: .02em; }
 
 .fr-list {
@@ -1561,18 +1561,18 @@
 }
 
 .fr-list dt { color: var(--bone-dim); }
-.fr-list dd { margin: 0; color: var(--bone-hi); font-variant-numeric: tabular-nums; text-align: right; }
+.fr-list dd { margin: 0; color: var(--bone); font-variant-numeric: tabular-nums; text-align: right; }
 .fr-list dd i { color: var(--bone-dim); font-style: normal; }
 
 .fr-note {
   margin: 8px 0 0;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font: 400 12px/1.6 var(--font-cn);
 }
 
 .fr-note b { color: var(--bone-dim); font-weight: 600; }
 .fr-top-note { margin: -2px 0 10px; }
-.fr-more { float: right; color: var(--bone-faint); font-weight: 400; letter-spacing: 0; }
+.fr-more { float: right; color: var(--bone-dim); font-weight: 400; letter-spacing: 0; }
 .fr-more:hover { color: var(--accent); }
 
 /* 分节标题：骨白加粗，比栏内的字高一档，前面一枚菱形（与站标同一枚） */
@@ -1581,7 +1581,7 @@
   align-items: baseline;
   gap: 12px;
   margin: 0 0 18px;
-  color: var(--bone-hi);
+  color: var(--bone);
   font: 600 14px/1.6 var(--font-cn);
   letter-spacing: .1em;
 }
@@ -1592,7 +1592,7 @@
   flex: none;
   width: 5px;
   height: 5px;
-  background: var(--bone-hi);
+  background: var(--bone);
   transform: rotate(45deg);
 }
 
@@ -1605,7 +1605,7 @@
 
 .sub-label .aside {
   order: 1;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font-size: 12px;
   font-weight: 400;
   letter-spacing: 0;
@@ -1654,7 +1654,7 @@
 }
 
 .plug:hover,
-.plug.is-hover { color: var(--bone-hi); background: var(--row-hover); }
+.plug.is-hover { color: var(--bone); background: var(--surf-3); }
 
 .plug .ico {
   position: relative;
@@ -1675,9 +1675,9 @@
 }
 
 .plug[aria-pressed="true"] {
-  color: var(--bone-hi);
+  color: var(--bone);
   font-weight: 600;
-  background: linear-gradient(90deg, var(--tint-3) 0%, transparent 94%);
+  background: linear-gradient(90deg, var(--tint) 0%, transparent 94%);
 }
 
 /* 没选中的图标压暗一档：选中的与作者推荐的（光圈）才亮 */
@@ -1764,7 +1764,7 @@
   border: 1px solid var(--hair);
   border-left: 2px solid var(--c-au);
   border-radius: 2px;
-  background: linear-gradient(90deg, color-mix(in oklab, var(--c-au) 11%, transparent) 0%, var(--tint-1) 55%);
+  background: linear-gradient(90deg, color-mix(in oklab, var(--c-au) 11%, transparent) 0%, var(--tint) 55%);
   color: var(--bone);
   font: 400 12px/1.6 var(--font-cn);
 }
@@ -1773,7 +1773,7 @@
 
 .halo-notes b {
   flex: none;
-  color: var(--bone-hi);
+  color: var(--bone);
   font-weight: 600;
 }
 
@@ -1837,8 +1837,8 @@
   pointer-events: none;
 }
 .perk-stack-badge.deactivated {
-  background: var(--ink-lift);
-  color: var(--bone-faint);
+  background: var(--surf-1);
+  color: var(--bone-ghost);
   box-shadow: inset 0 0 0 1px var(--hair), 0 0 0 1.5px var(--ink);
 }
 .perk-stack-badge.element-badge {
@@ -1866,7 +1866,7 @@
   margin: 0;
 }
 
-.amods dt { color: var(--bone-faint); font: 400 12px/28px var(--font-cn); }
+.amods dt { color: var(--bone-dim); font: 400 12px/28px var(--font-cn); }
 .amods dd { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0; }
 
 .amod {
@@ -1879,7 +1879,7 @@
 }
 
 .amod img { width: 24px; height: 24px; border-radius: var(--r-sm); opacity: .8; }
-.amod:hover { color: var(--bone-hi); }
+.amod:hover { color: var(--bone); }
 .amod:hover img { opacity: 1; }
 
 /* 大师杰作与模组：两个方形插槽，与游戏里武器页那一排同形。空着画虚线框加发丝十字。
@@ -1893,14 +1893,14 @@
   height: 40px;
   padding: 0;
   color: var(--bone-dim);
-  background: var(--tint-2);
+  background: var(--tint);
   border: 1px solid var(--hair-lit);
   cursor: pointer;
   transition: border-color .15s ease, color .15s ease;
 }
 
 .slot img { display: block; width: 100%; height: 100%; }
-.slot:hover, .slot.is-hover { color: var(--bone-hi); border-color: var(--accent); }
+.slot:hover, .slot.is-hover { color: var(--bone); border-color: var(--accent); }
 
 .slot.is-empty {
   background: none;
@@ -1937,7 +1937,7 @@
   z-index: 40;
   width: 460px;
   padding: 10px 14px 12px;
-  background: var(--ink-lift);
+  background: var(--surf-1);
   border: 1px solid var(--hair-lit);
   border-radius: var(--r-md);
 }
@@ -1949,7 +1949,7 @@
   align-items: center;
   gap: 10px;
   margin-bottom: 8px;
-  color: var(--bone-hi);
+  color: var(--bone);
   font: 600 13px/1.6 var(--font-cn);
 }
 
@@ -1975,8 +1975,8 @@
   cursor: pointer;
 }
 
-.pick:hover { background: var(--row-hover); color: var(--bone-hi); }
-.pick[aria-pressed="true"] { color: var(--bone-hi); border-color: var(--accent); background: var(--tint-3); }
+.pick:hover { background: var(--surf-3); color: var(--bone); }
+.pick[aria-pressed="true"] { color: var(--bone); border-color: var(--accent); background: var(--tint); }
 
 .pick .sq {
   position: relative;
@@ -1997,7 +1997,7 @@
   padding-top: 10px;
   border-top: 1px solid var(--hair);
   font: 400 12px/1.6 var(--font-cn);
-  color: var(--bone-faint);
+  color: var(--bone-dim);
 }
 
 .pk-lv .sum { color: var(--bone-dim); }
@@ -2013,7 +2013,7 @@
   width: 22px;
   height: 14px;
   padding: 0;
-  background: var(--tint-2);
+  background: var(--tint);
   border: 1px solid var(--hair-lit);
   cursor: pointer;
 }
@@ -2022,7 +2022,7 @@
 
 .lv .v {
   margin-left: 8px;
-  color: var(--bone-hi);
+  color: var(--bone);
   font: 600 12px/1 var(--font-disp);
   letter-spacing: .06em;
 }
@@ -2036,7 +2036,7 @@
 }
 
 .frame img { width: 44px; height: 44px; }
-.frame b { color: var(--bone-hi); font-weight: 600; }
+.frame b { color: var(--bone); font-weight: 600; }
 .frame .rate { margin-left: 10px; color: var(--bone-dim); font-family: var(--font-body); font-size: 12px; }
 .frame p { margin: 0; color: var(--bone-dim); }
 /* 固有随机的那把在这一块里排 8 条，条与条之间留一行 */
@@ -2045,7 +2045,7 @@
 
 .src {
   margin: 0;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font: 400 12px/1.7 var(--font-cn);
 }
 
@@ -2093,7 +2093,7 @@
   align-items: baseline;
   gap: 2px 6px;
   margin-top: 6px;
-  color: var(--bone-hi);
+  color: var(--bone);
   font: 700 21px/1.2 var(--font-disp);
   letter-spacing: .02em;
 }
@@ -2106,7 +2106,7 @@
 
 /* 评级后面括着的备注（「T0（旧）」）是小字，不与大号的档位挤在一格里折行 */
 .say .who .aft {
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font: 400 12px/1 var(--font-cn);
   letter-spacing: 0;
 }
@@ -2143,10 +2143,10 @@
   font: 400 13px/1.5 var(--font-cn);
 }
 
-.vers a:hover { background: var(--row-hover); }
-.vers a[aria-current="page"] { background: var(--tint-3); }
+.vers a:hover { background: var(--surf-3); }
+.vers a[aria-current="page"] { background: var(--tint); }
 .vers .nm { color: var(--bone); }
-.vers .sub { color: var(--bone-faint); font-size: 12px; }
+.vers .sub { color: var(--bone-dim); font-size: 12px; }
 .vers .now { color: var(--bone-dim); font-size: 12px; }
 
 /* ── 属性面板（无框呼吸 + 6px 丝绸真圆头条 + 精工凹槽微抬控件） ── */
@@ -2215,14 +2215,14 @@
   white-space: nowrap;
   transition: color .2s var(--ease-silk);
 }
-.stats-mode-btn:hover { color: var(--bone-hi); }
+.stats-mode-btn:hover { color: var(--bone); }
 .stats-mode-btn[aria-pressed="true"] {
-  color: var(--bone-hi);
+  color: var(--bone);
   font-weight: 600;
 }
 .stats-pvp-tag {
   margin-left: 3px;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font: 400 10px/1 var(--font-cn);
 }
 .stats-mode-btn[aria-pressed="true"] .stats-pvp-tag { color: var(--bone-dim); }
@@ -2236,9 +2236,9 @@
   margin: 0;
   padding: 7px 10px;
   border-radius: var(--r-md);
-  color: var(--bone-hi);
+  color: var(--bone);
   font: 400 12px/1.5 var(--font-cn);
-  background-color: var(--ink-lift);
+  background-color: var(--surf-1);
   border: 1px solid var(--hair-lit);
   opacity: 0;
   pointer-events: none;
@@ -2255,7 +2255,7 @@
 .st-hero {
   margin-bottom: 14px;
   padding-bottom: 13px;
-  border-bottom: 1px solid var(--bd-row);
+  border-bottom: 1px solid var(--bd-in);
 }
 .st-hero[hidden] { display: none; }
 .st-metric {
@@ -2279,7 +2279,7 @@
   display: flex;
   align-items: baseline;
   justify-content: center;
-  color: var(--bone-hi);
+  color: var(--bone);
   font: 600 15px/1.1 var(--font-body);
   font-variant-numeric: tabular-nums;
 }
@@ -2289,7 +2289,7 @@
   font-size: 13px;
 }
 .st-metric .v .sep {
-  color: var(--bone-faint);
+  color: var(--bone-ghost);
   margin: 0 4px;
   font-weight: 400;
   font-size: 12px;
@@ -2327,7 +2327,7 @@
   transition: color .18s var(--ease-silk);
 }
 .stat-item:hover .stat-name,
-.stat-item.is-hover .stat-name { color: var(--bone-hi); }
+.stat-item.is-hover .stat-name { color: var(--bone); }
 
 .bar {
   position: relative;
@@ -2392,7 +2392,7 @@
 .stat-num {
   min-width: 24px;
   text-align: right;
-  color: var(--bone-hi);
+  color: var(--bone);
   font: 600 13px/1 var(--font-body);
   font-variant-numeric: tabular-nums;
 }
@@ -2450,7 +2450,7 @@
 .special-stats {
   margin-top: 13px;
   padding-top: 13px;
-  border-top: 1px solid var(--bd-row);
+  border-top: 1px solid var(--bd-in);
 }
 .special-stats.cols-1 {
   display: grid;
@@ -2483,7 +2483,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  color: var(--bone-hi);
+  color: var(--bone);
   font: 600 14px/1 var(--font-body);
   font-variant-numeric: tabular-nums;
 }
@@ -2502,7 +2502,7 @@
 .plug.is-linked {
   background-color: color-mix(in oklab, var(--c-stack) 14%, transparent);
   box-shadow: inset 2px 0 0 var(--c-stack);
-  color: var(--bone-hi);
+  color: var(--bone);
 }
 
 /* ── 底部配置区：模组、大师杰作、T 级 / 旧枪等级与主动效果 ── */
@@ -2514,7 +2514,7 @@
   gap: 10px;
   margin-top: 14px;
   padding-top: 14px;
-  border-top: 1px solid var(--bd-row);
+  border-top: 1px solid var(--bd-in);
 }
 .side-slots {
   display: grid;
@@ -2581,7 +2581,7 @@
 }
 .slot-now span {
   overflow: hidden;
-  color: var(--bone-hi);
+  color: var(--bone);
   font: 500 12px/1.2 var(--font-cn);
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -2632,9 +2632,9 @@
   border-radius: 0;
   transition: color .2s var(--ease-silk);
 }
-.mw-tier .toggle:hover { color: var(--bone-hi); }
+.mw-tier .toggle:hover { color: var(--bone); }
 .mw-tier .toggle[aria-pressed="true"] {
-  color: var(--bone-hi);
+  color: var(--bone);
   background: none;
 }
 
@@ -2669,7 +2669,7 @@
   margin-left: 7px;
   min-width: 28px;
   text-align: right;
-  color: var(--bone-hi);
+  color: var(--bone);
   font: 600 11px/1 var(--font-disp);
 }
 
@@ -2710,12 +2710,12 @@
   gap: 6px;
 }
 .fx-add-r {
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font: 400 11px/1 var(--font-cn);
 }
 .fx-add:hover,
 .fx-add[aria-expanded="true"] {
-  color: var(--bone-hi);
+  color: var(--bone);
   background-color: var(--surf-2);
 }
 .fx-item {
@@ -2755,7 +2755,7 @@
   min-width: 0;
 }
 .fx-name {
-  color: var(--bone-hi);
+  color: var(--bone);
   font: 500 12px/1.25 var(--font-cn);
 }
 .fx-step {
@@ -2777,7 +2777,7 @@
   max-height: 360px;
   overflow: auto;
   border-radius: var(--r-lg);
-  background-color: var(--ink-lift);
+  background-color: var(--surf-1);
   border: 1px solid var(--hair-lit);
 }
 .fx-gh {
@@ -2786,13 +2786,13 @@
   width: 100%;
   padding: 8px 10px;
   border: 0;
-  border-bottom: 1px solid var(--bd-row);
+  border-bottom: 1px solid var(--bd-in);
   background: transparent;
   color: var(--bone);
   font: 500 12px/1.3 var(--font-cn);
   cursor: pointer;
 }
-.fx-gh span { color: var(--bone-faint); }
+.fx-gh span { color: var(--bone-dim); }
 .fx-pick {
   display: flex;
   flex-direction: row;
@@ -2806,8 +2806,8 @@
   text-align: left;
   cursor: pointer;
 }
-.fx-pick:hover { background-color: var(--tint-3); }
-.fx-pick.on { color: var(--bone-hi); }
+.fx-pick:hover { background-color: var(--tint); }
+.fx-pick.on { color: var(--bone); }
 .fx-pick-ico { flex: none; width: 24px; height: 24px; }
 .fx-pick-body { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .fx-pick-name { font: 500 12px/1.3 var(--font-cn); }
@@ -2840,14 +2840,14 @@
 }
 .pvp-ttk-k i {
   font-style: normal;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font-family: var(--font-body);
 }
 .pvp-stat-hero-value {
   display: flex;
   align-items: baseline;
   gap: 3px;
-  color: var(--bone-hi);
+  color: var(--bone);
   font: 700 30px/1 var(--font-disp);
   font-variant-numeric: tabular-nums;
   letter-spacing: -.01em;
@@ -2923,7 +2923,7 @@
   font: 400 11px/1 var(--font-cn);
   white-space: nowrap;
 }
-.pvp-hits-txt b { color: var(--bone-hi); font-weight: 500; }
+.pvp-hits-txt b { color: var(--bone); font-weight: 500; }
 .pvp-hits-txt .c { color: var(--c-stack); font-weight: 500; }
 @keyframes pvp-dot-pop {
   from { opacity: 0; transform: scale(.35); }
@@ -2938,11 +2938,11 @@
 }
 .pvp-slider-blk.is-acc {
   padding-bottom: 12px;
-  border-bottom: 1px solid var(--bd-row);
+  border-bottom: 1px solid var(--bd-in);
 }
 .pvp-slider-blk.is-mag {
   padding-top: 12px;
-  border-top: 1px solid var(--bd-row);
+  border-top: 1px solid var(--bd-in);
 }
 .pvp-stat-item {
   display: flex;
@@ -2959,7 +2959,7 @@
   transition: color .35s var(--ease-silk);
 }
 .pvp-stat-value {
-  color: var(--bone-hi);
+  color: var(--bone);
   font: 600 12px/1 var(--font-body);
   font-variant-numeric: tabular-nums;
 }
@@ -2972,13 +2972,13 @@
 .pvp-cell .pvp-range-hip.worse,
 .pvp-cell .pvp-range-ads.worse { color: var(--enemy); }
 .pvp-sub {
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font: 400 11px/1 var(--font-body);
 }
 .pvp-crit-reset {
   margin-left: 4px;
   padding: 0;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   background: none;
   border: 0;
   font: 600 12px/1 var(--font-body);
@@ -2986,7 +2986,7 @@
   transition: color .18s, transform .24s var(--ease-spring);
 }
 .pvp-crit-reset[hidden] { display: none; }
-.pvp-crit-reset:hover { color: var(--bone-hi); transform: rotate(-45deg); }
+.pvp-crit-reset:hover { color: var(--bone); transform: rotate(-45deg); }
 .pvp-magazine-label {
   flex: 1;
   display: flex;
@@ -3001,7 +3001,7 @@
   border: 0;
   box-shadow: var(--recess-sh);
   border-radius: var(--r-sm);
-  color: var(--bone-hi);
+  color: var(--bone);
   outline: none;
   transition: box-shadow .18s var(--ease-silk);
 }
@@ -3157,12 +3157,12 @@
   font-size: 13px;
 }
 .pvp-cell .pvp-range-sep {
-  color: var(--bone-faint);
+  color: var(--bone-ghost);
   margin: 0 3px;
   font-weight: 400;
   font-size: 12px;
 }
-.pvp-cell .pvp-range-ads { color: var(--bone-hi); }
+.pvp-cell .pvp-range-ads { color: var(--bone); }
 .pvp-cell .pvp-unit {
   margin-left: 2px;
   color: var(--bone-dim);
@@ -3179,7 +3179,7 @@
 .pvp-stat-notes {
   padding: 7px 10px;
   border-radius: var(--r-md);
-  background-color: var(--tint-1);
+  background-color: var(--tint);
   color: var(--bone-dim);
   font: 400 12px/1.5 var(--font-cn);
 }
@@ -3188,7 +3188,7 @@
   flex-direction: column;
   gap: 5px;
   padding-top: 10px;
-  border-top: 1px solid var(--bd-row);
+  border-top: 1px solid var(--bd-in);
 }
 .pvp-weapon-stat-description {
   display: flex;
@@ -3199,7 +3199,7 @@
   font: 400 11px/1.4 var(--font-cn);
 }
 .pvp-weapon-stat-note {
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font: 400 11px/1.4 var(--font-cn);
 }
 .pvp-ws-item {
@@ -3215,7 +3215,7 @@
   font-variant-numeric: tabular-nums;
 }
 .pvp-ws-sep {
-  color: var(--bone-faint);
+  color: var(--bone-ghost);
   font: 400 11px/1 var(--font-body);
 }
 
@@ -3262,7 +3262,7 @@
   box-shadow: var(--recess-sh);
 }
 .pvp-perk-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.pvp-perk-name { font: 500 12px/1.25 var(--font-cn); color: var(--bone-hi); }
+.pvp-perk-name { font: 500 12px/1.25 var(--font-cn); color: var(--bone); }
 .pvp-perk-step { margin-left: 4px; color: var(--buff); font: 600 11px/1 var(--font-disp); }
 .pvp-perk-effect { color: var(--buff); font: 400 11px/1.3 var(--font-cn); }
 .pvp-perk-effect.negative { color: var(--enemy); }
@@ -3291,7 +3291,7 @@
   width: 340px;
   padding: 12px 14px;
   font: 400 12px/1.75 var(--font-cn);
-  background: var(--ink-lift);
+  background: var(--surf-1);
   border: 1px solid var(--hair-lit);
   border-radius: var(--r-md);
   pointer-events: none;
@@ -3308,8 +3308,8 @@
 }
 
 .tip header img { width: 40px; height: 40px; border-radius: 50%; }
-.tip h5 { margin: 0; color: var(--bone-hi); font: 600 15px/1.3 var(--font-cn); }
-.tip .ty { color: var(--bone-faint); font-size: 12px; }
+.tip h5 { margin: 0; color: var(--bone); font: 600 15px/1.3 var(--font-cn); }
+.tip .ty { color: var(--bone-dim); font-size: 12px; }
 .tip .lab {
   margin: 10px 0 3px;
   padding-top: 6px;
@@ -3331,10 +3331,10 @@
 
 .tip td { padding: 1px 0; }
 .tip td:first-child { color: var(--bone-dim); font-family: var(--font-cn); }
-.tip td.n { text-align: right; color: var(--bone-hi); }
+.tip td.n { text-align: right; color: var(--bone); }
 .tip td.e { text-align: right; color: var(--c-enh); }
-.tip tr.sum td { border-top: 1px solid var(--hair); padding-top: 3px; color: var(--bone-hi); }
-.tip tr.cond td { color: var(--bone-faint); }
+.tip tr.sum td { border-top: 1px solid var(--hair); padding-top: 3px; color: var(--bone); }
+.tip tr.cond td { color: var(--bone-dim); }
 
 /* ── 边界态 ─────────────────────────────────────────────────── */
 .empty {
@@ -3345,7 +3345,7 @@
 
 .empty h3 {
   margin: 0 0 6px;
-  color: var(--bone-hi);
+  color: var(--bone);
   font: 600 18px/1.4 var(--font-cn);
 }
 
@@ -3355,7 +3355,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font: 400 12px/1.6 var(--font-cn);
 }
 
@@ -3370,14 +3370,14 @@
 
 @keyframes wpn-load { to { background-position: -100% 0; } }
 
-.wpn-pill.is-wait { color: var(--bone-faint); border-style: dashed; }
+.wpn-pill.is-wait { color: var(--bone-ghost); border-style: dashed; }
 
 /* 骨架：页壳里写好的首屏（build-weapons.py 的 skeleton()），词条池没到时也拿它占位。
    盒子沿用真卡片与开关的类，只把字换成色块；不加动画。 */
 .skel { pointer-events: none; }
 .skel .wpn-card { border-left-color: var(--hair); }
 .skel .gun,
-.skel .toggle { color: transparent; background: var(--tint-3); }
+.skel .toggle { color: transparent; background: var(--tint); }
 .skel .gun { box-shadow: none; }
 .skel .toggle { border-color: transparent; }
 /* 卡片里的几行只在行高正中涂一条 12px 的色带：元素那一行的行高来自继承的正文行高，
@@ -3387,7 +3387,7 @@
 .skel .wpn-frame,
 .skel .wpn-grades {
   color: transparent;
-  background: linear-gradient(var(--tint-3), var(--tint-3)) 0 50% / 100% 12px no-repeat;
+  background: linear-gradient(var(--tint), var(--tint)) 0 50% / 100% 12px no-repeat;
 }
 .skel .nm { width: 80%; }
 .skel .wpn-meta { width: 70%; }
@@ -3426,7 +3426,7 @@
 }
 
 .cat .toggle { padding: 2px 10px; font-family: var(--font-cn); font-size: 12px; letter-spacing: normal; }
-.cat b { color: var(--bone-hi); font-weight: 600; margin-right: 8px; }
+.cat b { color: var(--bone); font-weight: 600; margin-right: 8px; }
 .cat p { margin: 0; color: var(--bone-dim); }
 .cat-meta {
   display: flex;
@@ -3435,7 +3435,7 @@
   margin: 10px 0 0;
   padding: 8px 12px;
   background-color: var(--surf-2);
-  border: 1px solid var(--bd-row);
+  border: 1px solid var(--bd-in);
   border-left: 2px solid color-mix(in srgb, var(--c-exotic) 60%, transparent);
   border-radius: var(--r-sm);
 }
@@ -3446,18 +3446,18 @@
   align-items: baseline;
   font: 400 12px/1.6 var(--font-cn);
 }
-.cat-meta dt { margin: 0; color: var(--bone-faint); font-weight: 600; }
+.cat-meta dt { margin: 0; color: var(--bone-dim); font-weight: 600; }
 .cat-meta dd { margin: 0; color: var(--bone-dim); }
 
 /* 站内说明里的强化值标记（源稿方言 {enh|…}），与武器 PERK 页同一套：强调靠亮度。 */
-.enh { color: var(--bone-hi); font-weight: 600; }
+.enh { color: var(--bone); font-weight: 600; }
 
 /* 站内详情：异域那一整段展开写，不收进浮层。 */
 /* align-items 缺省是 stretch：选项框会被拉到整行高，里面的 28px 图标贴在内边距上，
    而「N 选 1」那行小字按拉伸后的高度居中，看起来图标偏上 */
 .xps { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; margin-bottom: 6px; }
 .xps:last-of-type { margin-bottom: 10px; }
-.wpn-xp { display: inline-flex; align-items: center; gap: 8px; color: var(--bone-hi); font: 600 14px/1.6 var(--font-cn); }
+.wpn-xp { display: inline-flex; align-items: center; gap: 8px; color: var(--bone); font: 600 14px/1.6 var(--font-cn); }
 .wpn-xp img { width: 28px; height: 28px; border-radius: 50%; }
 .prose { font: 400 14px/1.9 var(--font-cn); color: var(--bone); }
 .prose p, .prose .p { margin: 0 0 10px; }
@@ -3475,7 +3475,7 @@
 .wpn-one .entries.used-builds .entry .tags { flex-wrap: wrap; height: auto; }
 .wpn-one .entries.used-builds .entry .set-stages .st-gear { margin-left: 0; }
 
-.sub-label > .n { margin-left: 6px; color: var(--bone-faint); font-weight: 400; letter-spacing: 0; }
+.sub-label > .n { margin-left: 6px; color: var(--bone-dim); font-weight: 400; letter-spacing: 0; }
 
 /* ── 护甲套装 ─────────────────────────────────────────────────────────
    一套两条效果（2 件与 4 件）。卡片上两条各占一行：图、件数、效果名——一套的主角
@@ -3487,11 +3487,11 @@
                     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .set-lines img { flex: none; width: 20px; height: 20px; border-radius: var(--r-sm);
                  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1); }
-.set-lines b { flex: none; font: 600 11px/1.6 var(--font-disp); color: var(--bone-faint); }
+.set-lines b { flex: none; font: 600 11px/1.6 var(--font-disp); color: var(--bone-dim); }
 /* 详情页头那两枚图并排：两枚加缝正好 94px，装得进 96px 的图栏，标题不必让位。 */
 .set-fx.lg { display: flex; gap: 6px; align-items: center; }
 .set-fx.lg img { width: 44px; height: 44px; border-radius: var(--r-md); }
 /* 详情里一条效果一块：图在左，名字、件数与实测在右，与「框架／异域特性」同形。 */
 .wpn-one .frame > img { flex: none; width: 44px; height: 44px; border-radius: var(--r-md); }
 .wpn-one .frame .pieces { margin-left: 8px; font: 600 11px/1.6 var(--font-disp);
-                          color: var(--bone-faint); }
+                          color: var(--bone-dim); }

@@ -32,7 +32,7 @@ main { padding: 0 22px clamp(40px, calc(5 * var(--vw)), 72px); }
   margin-top: 24px;
   padding: 16px 20px;
   background: var(--surf-1);
-  border: 1px solid var(--bd-outer);
+  border: 1px solid var(--hair);
   border-left: 2px solid var(--note);
   border-radius: var(--r-md);
 }
@@ -70,9 +70,9 @@ main { padding: 0 22px clamp(40px, calc(5 * var(--vw)), 72px); }
 /* ── 分节 ── */
 .artifact {
   margin-bottom: clamp(30px, calc(3.6 * var(--vw)), 52px);
-  border: 1px solid var(--bd-outer);
+  border: 1px solid var(--hair);
   border-radius: var(--r-lg);
-  background: linear-gradient(180deg, var(--panel-a), var(--panel-b));
+  background: linear-gradient(180deg, var(--surf-2), var(--surf-1));
   box-shadow: var(--sh-block);
 }
 
@@ -82,8 +82,8 @@ main { padding: 0 22px clamp(40px, calc(5 * var(--vw)), 72px); }
   position: sticky;
   top: var(--stick);
   z-index: 10;
-  background: var(--ink-lift);
-  border-bottom: 1px solid var(--bd-row);
+  background: var(--surf-1);
+  border-bottom: 1px solid var(--bd-in);
   border-radius: calc(var(--r-lg) - 1px) calc(var(--r-lg) - 1px) 0 0;
 }
 
@@ -112,7 +112,7 @@ main { padding: 0 22px clamp(40px, calc(5 * var(--vw)), 72px); }
 
 .art-head h2 {
   margin: 0;
-  color: var(--bone-hi);
+  color: var(--bone);
   font-family: var(--font-cn);
   font-size: 20px;
   font-weight: 600;
@@ -149,12 +149,12 @@ main { padding: 0 22px clamp(40px, calc(5 * var(--vw)), 72px); }
   align-items: center;
   gap: 10px;
   padding: 10px 22px;
-  border-left: 1px solid var(--bd-col);
+  border-left: 1px solid var(--bd-in);
 }
 
 .tier-head:first-child { border-left: 0; }
 
-.tier-head .rhombi { color: var(--bone-faint); }
+.tier-head .rhombi { color: var(--bone-ghost); }
 
 .tier-head .rhombi i.on {
   color: var(--accent);
@@ -184,7 +184,7 @@ main { padding: 0 22px clamp(40px, calc(5 * var(--vw)), 72px); }
    那个值只是没渲染过时的初始估值，不必跟着内容维护（实测中位 278px）。 */
 .mod-row {
   grid-template-rows: auto auto;
-  border-top: 1px solid var(--bd-row);
+  border-top: 1px solid var(--bd-in);
   content-visibility: auto;
   contain-intrinsic-height: auto 278px;
 }
@@ -201,7 +201,7 @@ main { padding: 0 22px clamp(40px, calc(5 * var(--vw)), 72px); }
     "desc desc";
   min-width: 0;
   /* 列间线比行间线淡一档：一行三档是一组，行与行之间才是分组的边界 */
-  border-left: 1px solid var(--bd-col);
+  border-left: 1px solid var(--bd-in);
 }
 
 .mod[data-tier="1"] { grid-column: 1; border-left: 0; }
@@ -223,7 +223,7 @@ main { padding: 0 22px clamp(40px, calc(5 * var(--vw)), 72px); }
   align-self: center;
   margin: 0;
   padding: 20px 22px 4px 14px;
-  color: var(--bone-hi);
+  color: var(--bone);
   font-family: var(--font-cn);
   font-size: 16px;
   font-weight: 600;
@@ -250,7 +250,7 @@ main { padding: 0 22px clamp(40px, calc(5 * var(--vw)), 72px); }
 .mod-desc :is(p, .p) + :is(p, .p) { margin-top: .85em; }
 
 /* 素字里的数值（markup.typeset() 包的 <b>）提亮一档；条件行里的跟着条件行暗下来 */
-.mod-desc b { color: var(--bone-hi); font-weight: 600; }
+.mod-desc b { color: var(--bone); font-weight: 600; }
 
 .mod-desc .cond b { color: var(--bone); }
 

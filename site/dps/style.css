@@ -30,7 +30,7 @@
 .gen tbody th[scope="row"] strong {
   display: inline-block;
   margin-bottom: 2px;
-  color: var(--bone-hi);
+  color: var(--bone);
   font-family: var(--font-cn);
   font-size: 14px;
   font-weight: 600;
@@ -112,7 +112,7 @@
    隐藏行不重排，剩下几行各自的全表名次照旧读得出来。
    压暗一档、降一档字号：它是坐标，不与 DPS 本身抢注意。 */
 .gen tbody td:nth-of-type(13) {
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font-family: var(--font-body);
   font-size: 12px;
   font-variant-numeric: tabular-nums;

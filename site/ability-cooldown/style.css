@@ -96,7 +96,7 @@
   font-style: italic;
 }
 
-.var { color: var(--bone-hi); }
+.var { color: var(--bone); }
 
 /* 屏外的分节不参与布局与绘制：这一页约 16600px 高，一屏只看得到其中一节。
    套在 .block 上而不是 .gen tr 上——content-visibility 对表格内部元素不生效。

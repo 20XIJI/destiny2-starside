@@ -26,7 +26,7 @@ export function token(name) {
 /* 星等符号取制图惯例：点、十字芒、圈、加号。星座节点用站标那枚菱形 */
 export function brush(canvas) {
   const g = canvas.getContext('2d');
-  const BONE = token('--bone'), HI = token('--bone-hi'), ACCENT = token('--accent');
+  const BONE = token('--bone'), ACCENT = token('--accent');
   const FONT = '600 9px ' + getComputedStyle(document.documentElement).getPropertyValue('--font-disp');
 
   function diamond(x, y, r) {
@@ -78,7 +78,7 @@ export function brush(canvas) {
     tail.addColorStop(0, `rgba(${ACCENT},0)`); tail.addColorStop(1, `rgba(${ACCENT},.85)`);
     g.strokeStyle = tail; g.lineWidth = 1.4;
     g.beginPath(); g.moveTo(x1, y1); g.lineTo(hx, hy); g.stroke();
-    g.fillStyle = `rgba(${HI},${.9 * (1 - f * f)})`;
+    g.fillStyle = `rgba(${BONE},${.9 * (1 - f * f)})`;
     g.beginPath(); g.arc(hx, hy, 1.7, 0, TAU); g.fill();
   }
 
@@ -130,7 +130,7 @@ export function brush(canvas) {
     trail.addColorStop(0, `rgba(${BONE},0)`); trail.addColorStop(1, `rgba(${BONE},${al})`);
     g.strokeStyle = trail; g.lineWidth = 1.3;
     g.beginPath(); g.moveTo(x1, y1); g.lineTo(hx, hy); g.stroke();
-    g.fillStyle = `rgba(${HI},${al})`;
+    g.fillStyle = `rgba(${BONE},${al})`;
     g.beginPath(); g.arc(hx, hy, 1.5, 0, TAU); g.fill();
   }
 

@@ -86,7 +86,7 @@
   font-weight: 600;
   letter-spacing: .18em;
   text-indent: .18em;          /* 抵掉末字后面那一份字距，视觉上仍居中 */
-  background: var(--ink-lift);
+  background: var(--surf-1);
   border-top: 0;
   box-shadow: 0 1px 0 var(--hair-lit);
 }
@@ -132,7 +132,7 @@
    那条 [data-now-row]；当前行落进 06–12 或 18–24 时，行高亮会被这条底色顶掉、
    悄悄退回分段那一档——一天里有一半时间如此。显式让位比去调权重清楚。 */
 .gen:not([data-cycle]) tbody tr:nth-child(n + 7):nth-child(-n + 12):not([data-now-row]),
-.gen:not([data-cycle]) tbody tr:nth-child(n + 19):nth-child(-n + 24):not([data-now-row]) { background: var(--tint-1); }
+.gen:not([data-cycle]) tbody tr:nth-child(n + 19):nth-child(-n + 24):not([data-now-row]) { background: var(--tint); }
 
 /* ── 此刻：一行 + 一列 + 交点 ──
    两条高亮各答一个问题：竖着那条是「今天一天怎么转」，横着那条是「这个钟点各天
@@ -151,34 +151,34 @@
 
 /* 行的两道长边：改既有横线的颜色，不新增线，布局不动 */
 .gen tbody tr[data-now-row] > *,
-.gen tbody tr[data-now-row] + tr > * { border-top-color: var(--bone-faint); }
+.gen tbody tr[data-now-row] + tr > * { border-top-color: var(--bone-ghost); }
 
 /* 当前行落在末行时，下沿那道是表格的收口线，同样要提亮 */
-.gen tbody tr[data-now-row]:last-child > * { border-bottom-color: var(--bone-faint); }
+.gen tbody tr[data-now-row]:last-child > * { border-bottom-color: var(--bone-ghost); }
 
 /* 列的两道长边：**用 inset box-shadow，不用 border**。这一列本来没有竖线，
    加真边框会把它撑宽 2px、整表跟着位移；box-shadow 画在格子内侧，不占布局。 */
 .gen tbody td[data-now-col] {
-  box-shadow: inset 1px 0 0 var(--bone-faint), inset -1px 0 0 var(--bone-faint);
+  box-shadow: inset 1px 0 0 var(--bone-ghost), inset -1px 0 0 var(--bone-ghost);
 }
 
 /* 两条坐标的标头跟着亮起来，读者能反查「我看的是周几、哪个时段」。
    时段格左侧那道竖条与列表头下方那道横条是一对：各自标出本轴的起点。 */
 .gen tbody tr[data-now-row] > th[scope="row"] {
-  color: var(--bone-hi);
+  color: var(--bone);
   font-weight: 600;
-  box-shadow: inset 2px 0 0 var(--bone-hi);
+  box-shadow: inset 2px 0 0 var(--bone);
 }
 
 /* 表头是 sticky，底色必须不透明——这里不能用半透明白叠，直接给抬亮后的实色。
    值取 --ink-lift 叠 8% 白的结果，与上面两层的观感对齐。 */
 .gen thead th[data-now-col] {
-  color: var(--bone-hi);
+  color: var(--bone);
   background: #1c1f28;
   box-shadow: 0 1px 0 var(--hair-lit),
-    inset 0 -2px 0 var(--bone-hi),
-    inset 1px 0 0 var(--bone-faint),
-    inset -1px 0 0 var(--bone-faint);
+    inset 0 -2px 0 var(--bone),
+    inset 1px 0 0 var(--bone-ghost),
+    inset -1px 0 0 var(--bone-ghost);
 }
 
 /* 交点：**不另起一套画法，就是两条高亮叠出来的样子。**
@@ -187,7 +187,7 @@
    反白成实心牌子试过，那是第三种处理，跟两条高亮不是一回事，落在表里很跳。
    这里只再抬一次字：亮度与字重，不借色相（design.md 一节）。 */
 .gen tbody tr[data-now-row] > td[data-now-col] {
-  color: var(--bone-hi);
+  color: var(--bone);
   font-weight: 600;
 }
 
@@ -307,7 +307,7 @@
   align-items: center;
   gap: 5px;
   text-align: center;
-  background: linear-gradient(180deg, var(--panel-a), var(--panel-b));
+  background: linear-gradient(180deg, var(--surf-2), var(--surf-1));
   border: 1px solid var(--hair);
   border-radius: var(--r-lg);
   transition: border-color .2s ease;
@@ -328,7 +328,7 @@
 .rota-card:hover .rota-dial { border-color: var(--hair-lit); }
 
 .rota-card.is-mid .rota-dial {
-  border-color: var(--bone-faint);
+  border-color: var(--bone-ghost);
   box-shadow: inset 0 1px 0 #ffffff12;
 }
 
@@ -340,7 +340,7 @@
   border-color: color-mix(in srgb, var(--accent) 60%, transparent);
   background:
     radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%),
-    linear-gradient(180deg, var(--panel-a), var(--panel-b));
+    linear-gradient(180deg, var(--surf-2), var(--surf-1));
   box-shadow: inset 0 1px 0 color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
@@ -359,7 +359,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-.rota-card.is-mid .rota-badge { color: var(--bone-hi); }
+.rota-card.is-mid .rota-badge { color: var(--bone); }
 
 .rota-card.is-now .rota-badge {
   color: var(--accent);
@@ -389,7 +389,7 @@
   padding: 11px 12px;
   display: flex;
   align-items: stretch;
-  background: linear-gradient(180deg, var(--panel-a), var(--panel-b));
+  background: linear-gradient(180deg, var(--surf-2), var(--surf-1));
   border: 1px solid var(--hair);
   border-radius: var(--r-lg);
   transition: border-color .2s ease;
@@ -399,10 +399,10 @@
 
 .rota-card.is-mid .rota-body {
   border-color: var(--hair-lit);
-  box-shadow: inset 0 1px 0 var(--tint-3);
+  box-shadow: inset 0 1px 0 var(--tint);
 }
 
-.rota-card.is-now.is-mid .rota-body { border-color: var(--bone-faint); }
+.rota-card.is-now.is-mid .rota-body { border-color: var(--bone-ghost); }
 
 .rota-group {
   flex: 1;
@@ -485,7 +485,7 @@
 .rota-group[data-kind="raid"] .rota-pill { color: var(--c-term); }
 
 /* 中间那张是正在看的那一周，地牢那组再抬一档到最亮（突袭那组本就是暖亮色） */
-.rota-card.is-mid .rota-group[data-kind="dungeon"] .rota-pill { color: var(--bone-hi); }
+.rota-card.is-mid .rota-group[data-kind="dungeon"] .rota-pill { color: var(--bone); }
 
 /* ── 目的地与活动周期轮换时间轴（.cyc-board，由 assets/rota.js 从 .gen[data-cycle] 升格） ──
    无 JS 时原 .gen[data-cycle] 表照常展示；有 JS 时原表收起，改为带具体日期的
@@ -494,7 +494,7 @@
 
 .gen[data-cycle] thead th {
   position: static;
-  background: var(--head-fill);
+  background: var(--surf-2);
 }
 
 .cyc-pair {
@@ -519,7 +519,7 @@
   display: flex;
   flex-direction: column;
   background: var(--surf-1);
-  border: 1px solid var(--bd-outer);
+  border: 1px solid var(--hair);
   border-radius: var(--r-lg);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 10px 26px rgba(0, 0, 0, 0.24);
   overflow: hidden;
@@ -532,7 +532,7 @@
   justify-content: space-between;
   gap: 12px;
   padding: 13px 18px;
-  background: linear-gradient(180deg, var(--panel-a), var(--panel-b));
+  background: linear-gradient(180deg, var(--surf-2), var(--surf-1));
   border-bottom: 1px solid var(--hair);
 }
 
@@ -552,7 +552,7 @@
 }
 
 .cyc-title-bar {
-  color: var(--bone-hi);
+  color: var(--bone);
   font-family: var(--font-cn);
   font-size: 13px;
   font-weight: 600;
@@ -570,7 +570,7 @@
   font-size: 11px;
   font-weight: 500;
   letter-spacing: .06em;
-  background: var(--ink-lift);
+  background: var(--surf-1);
   border-bottom: 1px solid var(--hair);
 }
 
@@ -636,13 +636,13 @@
   gap: 10px;
   padding: 13px 14px;
   background: var(--surf-2);
-  border: 1px solid var(--bd-tile);
+  border: 1px solid var(--bd-in);
   border-radius: var(--r-md);
   transition: background-color .16s ease, border-color .16s ease, opacity .16s ease;
 }
 
 .cyc-rib-card:hover {
-  background: var(--surf-3);
+  background: var(--surf-2);
   border-color: var(--hair-lit);
 }
 
@@ -655,7 +655,7 @@
 }
 
 .cyc-rib-card.is-now {
-  background-color: var(--surf-3);
+  background-color: var(--surf-2);
   background-image: linear-gradient(180deg, color-mix(in srgb, var(--accent) 15%, transparent), transparent 72%);
   border-color: color-mix(in srgb, var(--accent) 52%, transparent);
   box-shadow: inset 0 2px 0 var(--accent), 0 0 16px color-mix(in srgb, var(--accent) 12%, transparent);
@@ -670,7 +670,7 @@
 }
 
 .cyc-rib-card.is-now .cyc-day {
-  color: var(--bone-hi);
+  color: var(--bone);
   font-weight: 600;
 }
 
@@ -693,7 +693,7 @@
 }
 
 .cyc-rib-card.is-now .cyc-rib-name {
-  color: var(--bone-hi);
+  color: var(--bone);
   font-weight: 600;
 }
 
@@ -723,7 +723,7 @@
 }
 
 .cyc-row.is-now .cyc-col {
-  color: var(--bone-hi);
+  color: var(--bone);
 }
 
 .cyc-row.is-now .cyc-col-main {
@@ -790,8 +790,8 @@
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  background: linear-gradient(180deg, var(--panel-a), var(--panel-b));
-  border: 1px solid var(--bd-outer);
+  background: linear-gradient(180deg, var(--surf-2), var(--surf-1));
+  border: 1px solid var(--hair);
   border-radius: var(--r-md);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
@@ -815,7 +815,7 @@
 
 .rc-v {
   margin-left: auto;
-  color: var(--bone-hi);
+  color: var(--bone);
   font-family: var(--font-mono);
   font-size: 13px;
   font-weight: 600;
@@ -889,14 +889,14 @@
   width: 264px;
   background: color-mix(in srgb, var(--c-term) 10%, transparent);
   border-color: color-mix(in srgb, var(--c-term) 34%, transparent);
-  color: var(--bone-hi);
+  color: var(--bone);
   font-weight: 500;
 }
 
 .cyc-row.is-now .cyc-stage {
   background: rgba(255, 255, 255, 0.065);
   border-color: rgba(255, 255, 255, 0.16);
-  color: var(--bone-hi);
+  color: var(--bone);
 }
 
 .cyc-row.is-now .cyc-stage-boss {
@@ -929,7 +929,7 @@
   min-height: 60px;
   padding: 12px 18px;
   background: var(--surf-1);
-  border-top: 1px solid var(--bd-row);
+  border-top: 1px solid var(--bd-in);
   transition: background-color .16s ease, opacity .16s ease;
 }
 
@@ -942,7 +942,7 @@
 }
 
 .cyc-row:hover {
-  background: var(--surf-3);
+  background: var(--surf-2);
 }
 
 .cyc-row.is-past {
@@ -954,7 +954,7 @@
 }
 
 .cyc-row.is-now {
-  background-color: var(--surf-3);
+  background-color: var(--surf-2);
   background-image: linear-gradient(90deg, color-mix(in srgb, var(--accent) 13%, transparent), color-mix(in srgb, var(--accent) 2%, transparent) 58%, transparent);
   border-top-color: color-mix(in srgb, var(--accent) 36%, transparent);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
@@ -980,7 +980,7 @@
   flex: none;
   width: 98px;
   padding-right: 14px;
-  border-right: 1px solid var(--bd-col);
+  border-right: 1px solid var(--bd-in);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -989,7 +989,7 @@
 }
 
 .cyc-row.is-now .cyc-date {
-  border-right-color: color-mix(in srgb, var(--accent) 28%, var(--bd-col));
+  border-right-color: color-mix(in srgb, var(--accent) 28%, var(--bd-in));
 }
 
 .cyc-day {
@@ -1002,7 +1002,7 @@
 }
 
 .cyc-row.is-now .cyc-day {
-  color: var(--bone-hi);
+  color: var(--bone);
   font-weight: 600;
 }
 
@@ -1043,7 +1043,7 @@
 }
 
 .cyc-row.is-now .cyc-name {
-  color: var(--bone-hi);
+  color: var(--bone);
   font-weight: 600;
 }
 
@@ -1082,7 +1082,7 @@
 }
 
 .cyc-row.is-now .cyc-v {
-  color: var(--bone-hi);
+  color: var(--bone);
 }
 
 .cyc-drop {
@@ -1112,7 +1112,7 @@
 
 .cyc-row.is-now .cyc-drop-ico {
   opacity: 1;
-  border-color: color-mix(in srgb, var(--accent) 62%, var(--bone-faint));
+  border-color: color-mix(in srgb, var(--accent) 62%, var(--bone-ghost));
   box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 24%, transparent);
 }
 
@@ -1142,8 +1142,8 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px 14px;
   padding: 12px 14px;
-  background: var(--ink-lift);
-  border: 1px solid var(--bd-tile);
+  background: var(--surf-1);
+  border: 1px solid var(--bd-in);
   border-radius: var(--r-md);
 }
 
@@ -1159,7 +1159,7 @@
 }
 
 .cyc-row.is-now .cyc-item {
-  color: var(--bone-hi);
+  color: var(--bone);
 }
 
 .cyc-item img {
@@ -1174,5 +1174,5 @@
 
 .cyc-row.is-now .cyc-item img {
   opacity: 1;
-  border-color: var(--bone-faint);
+  border-color: var(--bone-ghost);
 }

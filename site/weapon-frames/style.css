@@ -31,7 +31,7 @@
 
 .rules dt {
   margin-top: 1.05em;
-  color: var(--bone-hi);
+  color: var(--bone);
   font-family: var(--font-cn);
   font-size: 14px;
   font-weight: 600;
@@ -76,7 +76,7 @@
   padding-bottom: 9px;
   letter-spacing: .06em;
   /* sticky 的格子下面会滚过整张表，底色必须不透明 */
-  background: var(--ink-lift);
+  background: var(--surf-1);
   /* border-collapse: separate 下，sticky 表头滚动时下边缘要自己画 */
   box-shadow: inset 0 -1px 0 var(--hair);
 }
@@ -120,11 +120,11 @@
    底色不透明，否则钉住时能看见下面滚过的数字。 */
 .gen tbody th[scope="row"] {
   z-index: 2;
-  color: var(--bone-hi);
+  color: var(--bone);
   font-family: var(--font-cn);
   font-weight: 600;
   letter-spacing: .04em;
-  background: var(--ink-lift);
+  background: var(--surf-1);
 }
 
 /* 框架名：行的真正身份，比武器名再亮一档不必，与它同族即可。
@@ -138,7 +138,7 @@
   line-height: 1.45;
   text-align: center;
   white-space: normal;
-  background: var(--ink-lift);
+  background: var(--surf-1);
 }
 
 /* 测试配置：该行数值依赖的 Perk 假定。只有 26 行有，单独占一列会空出一大片，
@@ -147,7 +147,7 @@
 .cfg {
   display: block;
   margin-top: 2px;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font-size: 11px;
   font-style: italic;
   font-weight: 400;
@@ -254,6 +254,6 @@
    同一层白叠到 --ink-lift 上，不手算终值——手算的终值改了底色就对不上了。 */
 .gen tbody tr[data-band="1"] > th[scope="row"],
 .gen tbody tr[data-band="1"] > td:nth-of-type(1) {
-  background: color-mix(in srgb, #fff 2%, var(--ink-lift));
+  background: color-mix(in srgb, #fff 2%, var(--surf-1));
 }
 

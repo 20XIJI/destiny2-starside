@@ -35,7 +35,7 @@
   font-size: .86em;
   font-weight: 400;
 }
-.se-was s { text-decoration-color: var(--bone-faint); }
+.se-was s { text-decoration-color: var(--bone-ghost); }
 .se-was img { height: 1em; width: auto; }
 li.se-was { list-style: none; margin-left: 0; width: 100%; }
 
@@ -43,7 +43,7 @@ li.se-was { list-style: none; margin-left: 0; width: 100%; }
 .se-by {
   float: right;
   margin-left: .8em;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font-family: var(--font-disp);
   font-size: 11px;
   font-weight: 600;
@@ -68,13 +68,13 @@ th > .se-was { display: block; margin: 2px 0 0; }
   z-index: 50;
   width: min(520px, calc(100vw - 16px));
   padding: 10px 12px;
-  border: 1px solid var(--bone-faint);
-  background: var(--ink-lift);
+  border: 1px solid var(--bone-ghost);
+  background: var(--surf-1);
 }
 
 .se-where {
   margin-bottom: 6px;
-  color: var(--bone-faint);
+  color: var(--bone-dim);
   font-family: var(--font-disp);
   font-size: 11px;
   letter-spacing: .12em;
@@ -86,7 +86,7 @@ th > .se-was { display: block; margin: 2px 0 0; }
   padding: 6px 8px;
   border: 1px solid var(--hair);
   background: var(--ink);
-  color: var(--bone-hi);
+  color: var(--bone);
   font: inherit;
   font-size: 13px;
   line-height: 1.7;
@@ -109,7 +109,7 @@ th > .se-was { display: block; margin: 2px 0 0; }
 
 .se-notes { margin: 6px 0 0; padding: 0; list-style: none; font-size: 12px; line-height: 1.6; }
 .se-notes li { color: var(--c-enemy); }
-.se-notes li.warn { color: var(--bone-faint); }
+.se-notes li.warn { color: var(--bone-dim); }
 
 .se-acts { display: flex; gap: 8px; margin-top: 10px; }
 
@@ -154,7 +154,7 @@ th > .se-was { display: block; margin: 2px 0 0; }
 
 .se-build-id {
   margin-right: auto;
-  color: var(--bone-hi);
+  color: var(--bone);
   font-weight: 600;
 }
 

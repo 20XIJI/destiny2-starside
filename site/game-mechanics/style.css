@@ -102,7 +102,7 @@
    这里都不重述——名称长短差得远（「爆炸」到「无序边界 修改版生命值规则」），左对齐时
    带 ▲▲ 的第二行会吊在名称左下角；上下左右都居中之后名称与档位箭头是一叠的。 */
 .gen tbody th[scope="row"] {
-  color: var(--bone-hi);
+  color: var(--bone);
   font-family: var(--font-cn);
   font-weight: 600;
   white-space: nowrap;
