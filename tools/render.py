@@ -859,8 +859,21 @@ def rec_exotic_farm(p, key, rank):
     return '<article class="rec r-farm-exo"%s>%s%s</article>' % (
         facet_attrs(fdata),
         head,
-        cell("r-farm-main", verdict_head + verdict_body + perk_strip + mech),
+        cell("r-farm-main", verdict_head + verdict_body + perk_strip + _catalyst_meta(key) + mech),
     )
+
+
+def _catalyst_meta(key):
+    """异域武器催化剂的获取来源与解锁进度（只读，不挂 data-e）。"""
+    ci = ((rows.facts().at(key) or {}).get("derived") or {}).get("catalystInfo")
+    if not ci:
+        return ""
+    parts = []
+    if ci.get("source"):
+        parts.append("<div><dt>催化来源</dt><dd>%s</dd></div>" % html.escape(ci["source"]))
+    if ci.get("progress"):
+        parts.append("<div><dt>解锁进度</dt><dd>%s</dd></div>" % html.escape(ci["progress"]))
+    return '<dl class="cat-meta">%s</dl>' % "".join(parts) if parts else ""
 
 
 def rec_set_farm(p, key, rank):
@@ -996,7 +1009,7 @@ def rec_exotic(p, key):
         head,
         cell(
             "r-farm-main",
-            '<div class="pf-mech-open">%s%s%s</div>%s' % (perk, text, cb, au_box),
+            '<div class="pf-mech-open">%s%s%s</div>%s%s' % (perk, text, cb, _catalyst_meta(key), au_box),
         ),
     )
 

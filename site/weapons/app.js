@@ -3363,8 +3363,16 @@
       var lines = T && T.cp[p] ? T.cp[p] : [];
       return lines.map(function (e) { return '<p><b>' + esc(e[0]) + '</b>' + esc(e[1]) + '</p>'; }).join('');
     }).join('');
+    var ci = T && T.ci && T.ci[i];
+    var meta = '';
+    if (ci && (ci[0] || ci[1])) {
+      var rows = [];
+      if (ci[0]) { rows.push('<div><dt>催化来源</dt><dd>' + esc(ci[0]) + '</dd></div>'); }
+      if (ci[1]) { rows.push('<div><dt>解锁进度</dt><dd>' + esc(ci[1]) + '</dd></div>'); }
+      meta = '<dl class="cat-meta">' + rows.join('') + '</dl>';
+    }
     return '<section><h3 class="sub-label">催化剂</h3><div class="cat"><button type="button" class="toggle" data-act="cat" aria-pressed="' +
-      (roll.cat ? 'true' : 'false') + '">' + (roll.cat ? '已装上' : '装上') + '</button><div>' + effs + '</div></div></section>';
+      (roll.cat ? 'true' : 'false') + '">' + (roll.cat ? '已装上' : '装上') + '</button><div>' + effs + '</div></div>' + meta + '</section>';
   }
 
   function effStatVal(res, x) {

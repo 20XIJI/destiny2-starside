@@ -307,3 +307,11 @@
              background: var(--surf-2); border: 1px solid var(--bd-row);
              border-left: 2px solid var(--au-lgpig); border-radius: var(--r-sm); }
 .pf-au-lbl { color: var(--au-lgpig); font: 600 var(--fs-sm)/1 var(--font-cn); }
+.cat-meta { display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 8px 12px;
+            background-color: var(--surf-2); border: 1px solid var(--bd-row);
+            border-left: 2px solid color-mix(in srgb, var(--c-exotic) 60%, transparent);
+            border-radius: var(--r-sm); }
+.cat-meta > div { display: grid; grid-template-columns: 4.8em minmax(0, 1fr); gap: 8px;
+                  align-items: baseline; font: 400 var(--fs-sm)/1.6 var(--font-cn); }
+.cat-meta dt { margin: 0; color: var(--bone-faint); font-weight: 600; }
+.cat-meta dd { margin: 0; color: var(--bone-dim); }

@@ -1282,7 +1282,7 @@ def build(facts):
 
     frames, frame_idx = [], {}
     sources, source_idx = [], {}
-    wrows, wpool, wtext_fl, wauthors, xs, cats_text = [], {}, {}, {}, {}, {}
+    wrows, wpool, wtext_fl, wauthors, xs, cats_text, cats_info = [], {}, {}, {}, {}, {}, {}
     elements = set()
     amods, arts, _ = artifact_mods(F)
     precise, typed = precise_types()
@@ -1378,6 +1378,9 @@ def build(facts):
             cats_text[str(c)] = [
                 [b.text(e), b.say(b.text(e, "database_details"))] for e in effs
             ]
+        ci = d.get("catalystInfo")
+        if ci and (ci.get("source") or ci.get("progress")):
+            cats_info[h] = [ci.get("source") or "", ci.get("progress") or ""]
         wpool[h] = [
             str(r["stats"]["statGroupHash"]),
             [[k, base[k]] for k in present],
@@ -1630,6 +1633,7 @@ def build(facts):
         "xs": {wrow[h]: v for h, v in xs.items() if h in wrow and rep_of[h] == h},
         "axs": {arow[h]: v for h, v in xs.items() if h in arow and arep_of[h] == h},
         "cp": {pidx[h]: v for h, v in cats_text.items()},
+        "ci": {wrow[h]: v for h, v in cats_info.items() if h in wrow},
         "ap": {arow[h]: v for h, v in aperks.items() if arep_of[h] == h},
         "amd": [htmls.of(m[4]) if m[4] else -1 for m in amods],
     }

@@ -2086,6 +2086,7 @@ class ManifestLayer(unittest.TestCase):
             "tiers",
             "archetype",
             "catalyst",
+            "catalystInfo",
             "foundry",
             "rate",
             "kind",

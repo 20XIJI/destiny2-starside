@@ -626,6 +626,50 @@ def own_catalyst_cats(items, socket_types):
     return {k for k, n in use.items() if n == 1}
 
 
+CATALYST_NODE_SUBS = ('2538646043', '185103480', '3788273704')
+_CAT_SKIP_OBJ = ('放入催化', '找到催化', '插入催化', '发现催化', '已找到催化')
+
+
+def _cat_norm(s):
+    return re.sub(r'[\s\u00a0·•・：:「」『』()（）\[\]]+', '', s).lower()
+
+
+def catalyst_info_map(src):
+    """异域催化来源与解锁进度：从 PresentationNode#2744330515 的 Record 与 Objective 蒸馏。"""
+    pnodes = load(src, 'zh', 'DestinyPresentationNodeDefinition')
+    records = load(src, 'zh', 'DestinyRecordDefinition')
+    objectives = load(src, 'zh', 'DestinyObjectiveDefinition')
+    out = {}
+    for sub_h in CATALYST_NODE_SUBS:
+        for r in ((pnodes.get(sub_h) or {}).get('children') or {}).get('records') or ():
+            ro = records.get(str(r['recordHash'])) or {}
+            dp = ro.get('displayProperties') or {}
+            name = (dp.get('name') or '').strip()
+            if not name:
+                continue
+            obs = ((ro.get('stateInfo') or {}).get('obscuredDescription') or '').strip()
+            source = re.sub(r'^来源[：:]\s*', '', obs)
+            source = re.sub(r'\s+', ' ', source).rstrip('。')
+            parts = []
+            for oh in ro.get('objectiveHashes') or ():
+                oo = objectives.get(str(oh)) or {}
+                pd = (oo.get('progressDescription') or '').strip()
+                cv = oo.get('completionValue')
+                if not pd or any(sk in pd for sk in _CAT_SKIP_OBJ):
+                    continue
+                parts.append(f'{pd} {cv}' if cv and cv > 1 else pd)
+            if parts:
+                progress = '；'.join(parts)
+            else:
+                desc = (dp.get('description') or '').strip()
+                progress = re.sub(r'\s+', ' ', desc).rstrip('。')
+            info = {'source': source, 'progress': progress}
+            out[_cat_norm(name)] = info
+            if name.endswith('催化'):
+                out[_cat_norm(name[:-2])] = info
+    return out
+
+
 def catalysts_of(item, items, socket_types, plug_sets, by_cat):
     """这把枪的催化剂：催化槽里插得进去的那些。
 
@@ -1270,6 +1314,7 @@ def distill(src):
 
     socket_types = load(src, 'zh', 'DestinySocketTypeDefinition')
     plug_sets = load(src, 'zh', 'DestinyPlugSetDefinition')
+    cat_info = catalyst_info_map(src)
     perk_breaker = breaker_perks(src)
     own_cats = {}
     for cat in own_catalyst_cats(items, socket_types):
@@ -1319,6 +1364,13 @@ def distill(src):
             got = catalysts_of(item, items, socket_types, plug_sets, own_cats)
             if got:
                 derived['catalyst'] = got
+                cname = ((items.get(str(got[0])) or {}).get('displayProperties') or {}).get('name') or ''
+                wname = (item.get('displayProperties') or {}).get('name') or ''
+                cinfo = (cat_info.get(_cat_norm(cname))
+                         or cat_info.get(_cat_norm(wname))
+                         or cat_info.get(_cat_norm(wname + '催化')))
+                if cinfo:
+                    derived['catalystInfo'] = cinfo
         breaker = breaker_of(item, socket_types, perk_breaker, items)
         if breaker:
             # 推出来的，不是 manifest 的 breakerType——根上那一位是 Bungie 自己写的，
