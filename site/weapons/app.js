@@ -3149,7 +3149,8 @@
     var cats = poolRow(i)[8], multi = cats.length > 1;
     var btns = cats.map(function (p, idx) {
       var k = idx + 1, on = roll.cat === k;
-      var label = plugName(p);
+      var lines = T && T.cp[p] && T.cp[p].length ? T.cp[p] : null;
+      var label = lines && lines.length === 1 ? lines[0][0] : plugName(p);
       var hoverCls = S.hoverPlug && S.hoverPlug.cat === k ? ' is-hover' : '';
       return '<button type="button" class="plug is-cat' + hoverCls +
         '" aria-pressed="' + (on ? 'true' : 'false') +
