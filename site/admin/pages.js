@@ -65,7 +65,7 @@ window.starsidePages = [
   ["docs/game-mechanics","游戏机制","game-mechanics/index.html","机制","","2026.11.25"],
   ["docs/power-delta","压光伤害","power-delta/index.html","机制","","2026.8.14"],
   ["docs/changelog","更新日志","changelog/index.html","站务","","2026.11.27"],
-  ["docs/notices","站内公告","notices/index.html","站务","","2026.11.25"],
+  ["docs/notices","站内公告","notices/index.html","站务","","2026.11.27"],
   ["docs/palette","配色总览","palette/index.html","站务","","2026.8.24"],
   ["docs/sources","数据源与鸣谢","sources/index.html","站务","","2026.11.25"],
 ]
