@@ -2301,8 +2301,8 @@
     '主手': ['slot-kinetic', ''], '副手': ['slot-energy', ''], '威能': ['slot-power', ''],
     '可锻造': ['shaped', 'is-craft'], '可强化': ['infuse', ''],
     '泰坦': ['class-titan', ''], '猎人': ['class-hunter', ''], '术士': ['class-warlock', ''],
-    '头盔': ['armor-helmet', ''], '臂铠': ['armor-gloves', ''], '胸甲': ['armor-chest', ''],
-    '腿甲': ['armor-boots', ''], '职业物品': ['armor-class', '']
+    '头盔': ['armor-helmet', ''], '臂铠': ['armor-gloves', ''], '胸部护甲': ['armor-chest', ''],
+    '腿部护甲': ['armor-boots', ''], '职业物品': ['armor-class', '']
   };
   function isExtraIcon(v) {
     var g = IS_GLYPH[v];

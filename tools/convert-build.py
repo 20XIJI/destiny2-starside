@@ -61,6 +61,13 @@ SET_MAX = 12
 # 一队人各穿一套那种合集的职业格。索引页拿它当小节标题，与三个职业并列。
 MIXED = "多职业"
 PARTS = ("头盔", "护臂", "胸甲", "腿部", "职业物品")
+PART_LABEL = {
+    "头盔": "头盔",
+    "护臂": "臂铠",
+    "胸甲": "胸部护甲",
+    "腿部": "腿部护甲",
+    "职业物品": "职业物品",
+}
 # 职业、分支与配装三轴（场景·强度·标签）的表在 markup.py：那三样是源稿的词汇，而 build-terms.py
 # 要把它们导给编辑台（审核台左栏按场景与职业建树、列表按分支上色），本文件的
 # 名字带短横，import 不进去。分支同时决定同名条目查哪一页（星相「地狱火」在
@@ -1188,8 +1195,9 @@ def blocks_of(idx, mv, arts, md, ns=""):
         if got:
             parts.append(
                 group(
-                    part,
+                    PART_LABEL[part],
                     [item(idx, "护甲模组", n, prefer, kind=part) for n in got],
+                    key=part,
                     cols=1,
                 )
             )
@@ -2632,7 +2640,12 @@ def new_blocks():
         [
             x
             for part in PARTS
-            for x in group(part, [slot_cell("护甲模组", kind=part)] * 3, cols=1)
+            for x in group(
+                PART_LABEL[part],
+                [slot_cell("护甲模组", kind=part)] * 3,
+                key=part,
+                cols=1,
+            )
         ]
     )
     o += ["</section>", ""]

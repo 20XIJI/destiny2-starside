@@ -557,11 +557,11 @@
       var subLabel = esc(w.ty || '武器') + (shortFrame ? ' · ' + esc(shortFrame) : '');
       var gradesHtml = renderGradesHtml(w.grades);
 
-      var cBarrel = findColOps(w.cols, ['枪管', '刀刃', '发射管', '弓臂', '瞄具']);
-      var cMag = findColOps(w.cols, ['弹匣', '电池', '护手']);
+      var cBarrel = findColOps(w.cols, ['枪管', '刀片', '发射器枪管', '把手', '瞄准镜', '弓弦', '导轨']);
+      var cMag = findColOps(w.cols, ['弹匣', '电池', '刀剑格', '箭矢', '弩弹']);
       var cPerk1 = findColOps(w.cols, ['特性1']);
       var cPerk2 = findColOps(w.cols, ['特性2']);
-      var cOrigin = findColOps(w.cols, ['原始特性']);
+      var cOrigin = findColOps(w.cols, ['起源特性']);
 
       var mwInner = '<div class="r-plug-none">无</div>';
       if (w.mw && w.mw.stat) {

@@ -28,19 +28,23 @@ const CLS_EN_ZH = { Any: "通用", Titan: "泰坦", Hunter: "猎人", Warlock: "
 
 const ARMOR_KW = ["护甲", "头盔", "臂甲", "臂铠", "披风", "猎戏", "印记", "臂环"]
 const COL_LB = {
-  intrinsics: "固有特性",
+  intrinsics: "固有",
   barrels: "枪管",
-  blades: "刀刃",
-  tubes: "发射管",
+  blades: "刀片",
+  tubes: "发射器枪管",
   magazines: "弹匣",
   magazines_gl: "弹匣",
-  guards: "护手",
-  hafts: "弓臂",
-  origins: "原始特性",
-  scopes: "瞄具",
+  guards: "刀剑格",
+  hafts: "把手",
+  origins: "起源特性",
+  scopes: "瞄准镜",
   stocks: "枪托",
   grips: "握把",
   batteries: "电池",
+  bowstrings: "弓弦",
+  arrows: "箭矢",
+  rails: "导轨",
+  bolts: "弩弹",
   frames: "特性"
 }
 const SKIP_KW = ["记录器", "计数器"]
