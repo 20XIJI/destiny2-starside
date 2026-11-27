@@ -38,7 +38,7 @@
 <input class="who-in" data-key="推荐人" placeholder="推荐人昵称或 ID" aria-label="推荐人">
 </div>
 <div class="build-id">
-<div class="id-row"><h1><input data-key="合集名" placeholder="合集名称" aria-label="合集名称"></h1></div>
+<div class="id-row"><h1><input data-key="合集名" placeholder="合集名称" aria-label="合集名称"></h1><div class="head-acts"><button id="open-import" class="op" type="button">导入</button></div></div>
 <p class="cls"><span class="cls-id" data-mirror="合集铭牌"><span class="hint">职业与元素在各套内选择</span></span><span class="season">S29 · 凯旋纪念碑</span></p>
 <p class="desc"><input data-key="描述" placeholder="一句话介绍这组配装" aria-label="描述"></p>
 <div class="facets"><div><p class="by-label">适用环境</p><span class="tags tagset" data-single="" data-co="突袭&#9;地牢"><button type="button" aria-pressed="false">突袭</button><button type="button" aria-pressed="false">地牢</button><button type="button" aria-pressed="false">宗师/终极</button><button type="button" aria-pressed="false">日常</button><button type="button" aria-pressed="false" data-review="" hidden>功能性</button><button type="button" aria-pressed="false">PVP</button></span><input type="hidden" data-key="场景"></div><div><p class="by-label">强度</p><span class="tags tagset" data-single=""><button type="button" aria-pressed="false">meta</button><button type="button" aria-pressed="false">强力</button><button type="button" aria-pressed="false">创意</button></span><input type="hidden" data-key="强度"></div></div>
@@ -208,12 +208,15 @@
 <details id="src"><summary>展开配装文本</summary>
 <textarea id="out" readonly rows="28" spellcheck="false"></textarea>
 </details>
-<details id="imp"><summary>从配装文本导入</summary>
-<p class="note">粘贴一份已有的配装文本。可识别的装备会自动填入，无法识别的条目会跳过并在下方列出。导入将覆盖当前已填写的内容。</p>
-<textarea id="in" rows="10" spellcheck="false" placeholder="将配装文本粘贴至此" aria-label="待导入的配装文本"></textarea>
-<div class="imp-bar"><button id="do-import" class="op" type="button">执行导入</button><p id="imp-tip" role="status"></p></div>
-</details>
 </section>
+<dialog id="imp-dlg" class="imp-dlg" aria-labelledby="imp-title">
+<div class="imp-head"><span class="imp-mark" aria-hidden="true"><i></i><i></i></span><h3 id="imp-title">导入配装</h3><span class="imp-rule" aria-hidden="true"></span><button type="button" class="imp-x" data-imp-close aria-label="关闭">✕</button></div>
+<div class="imp-body">
+<p class="imp-note">粘贴本站配装文本，或 <code>dim.gg</code> / DIM 分享链接；导入将覆盖当前已填内容。</p>
+<textarea id="in" rows="7" spellcheck="false" placeholder="粘贴配装文本、dim.gg 链接或 DIM 导出 URL" aria-label="待导入内容"></textarea>
+</div>
+<div class="imp-bar"><p id="imp-tip" role="status"></p><button type="button" class="op" data-imp-close>取消</button><button id="do-import" class="op is-primary" type="button">导入</button></div>
+</dialog>
 <div class="src-tools">
 <button id="preview" class="toggle" type="button" aria-pressed="false">预览配装</button>
 <button id="tipsw" class="toggle" type="button" data-tip-sw>详情开关</button>
@@ -221,7 +224,6 @@
 <button id="copy" class="op" type="button">复制配装</button>
 <button id="shot" class="op" type="button" data-shot="#sheet">截图</button>
 <span id="copy-tip" role="status"></span>
-<button id="to-import" class="op" type="button">导入配装</button>
 <button id="send" class="op is-primary" type="button" data-api="https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api">投稿</button>
 </div>
 </div>

@@ -191,9 +191,17 @@
     var root = btn.closest(pick) || document.querySelector(pick);
     btn.disabled = true;
     say(btn, '生成中');
+    var preview = !!document.getElementById('sheet');
     import(SHOT).then(function (m) {
-      return m.shot(root, { preview: !!document.getElementById('sheet') })
-        .then(function (r) { m.show(r.blob); say(btn, ''); });
+      return m.shot(root, { preview: preview })
+        .then(function (r) {
+          m.show(r, {
+            rerender: function (compact) {
+              return m.shot(root, { preview: preview, compact: compact });
+            }
+          });
+          say(btn, '');
+        });
     }).catch(function (err) {
       say(btn, '截图失败：' + err.message);
       console.error(err);

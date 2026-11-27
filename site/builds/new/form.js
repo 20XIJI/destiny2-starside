@@ -2156,33 +2156,355 @@
     if (on) window.scrollTo(0, 0);
   });
 
-  /* 导入是一个动作，不是两个按钮：这一枚永远「导入」，文本框还空着时它带你去
-     粘贴。**两条路都要把那一节放出来并滚过去**——结果与跳过的条目写在那里，
-     按完看不见等于没报。预览态下那一节是收起来的，先退出预览。 */
+  /* ── DIM 反向导入 ──────────────────────────────────────────────────────── */
+  var DIM_SHARE_RE = /^(?:(?:https?:\/\/)?dim\.gg\/)?([a-z0-9]{7,})(?:\/.*)?$/i;
+  var DIM_CLASS = { 0: '泰坦', 1: '猎人', 2: '术士' };
+  var DIM_ARMOR_SLOTS = ['头盔', '护臂', '胸甲', '腿部', '职业物品'];
+  var DIM_SKILL_SLOTS = ['超能', '手雷', '近战', '移动', '职业技能', '星相', '碎片'];
+  var DIM_KIND_TO_SLOT = {
+    '超能技能': '超能', '手雷技能': '手雷', '近战技能': '近战',
+    '位移技能': '移动', '职业技能': '职业技能', '星相': '星相', '碎片': '碎片'
+  };
+  function dimSkillSlot(row, fallback) {
+    var k = bare(row[1]);
+    if (DIM_KIND_TO_SLOT[k]) return DIM_KIND_TO_SLOT[k];
+    if (row[2] === 'elements/class-abilities') return '职业技能';
+    if (row[2] === 'elements/prismatic' && (k === '猎人' || k === '泰坦' || k === '术士')) return '星相';
+    return fallback;
+  }
+
+  function parseDimInput(raw) {
+    var text = (raw || '').trim();
+    if (!text) return null;
+    var m = text.match(DIM_SHARE_RE);
+    if (m) return { kind: 'share', id: m[1] };
+    if (/^https?:\/\//i.test(text)) {
+      try {
+        var u = new URL(text);
+        var rawJson = u.searchParams.get('loadout');
+        if (rawJson) {
+          var parsed = JSON.parse(rawJson);
+          if (parsed && typeof parsed === 'object') return { kind: 'json', loadout: parsed };
+        }
+      } catch (e) {
+        return { kind: 'error', message: 'DIM 链接里的配装 JSON 解析失败：' + e.message };
+      }
+      if (/destinyitemmanager\.com/i.test(text)) {
+        return { kind: 'error', message: '未在 DIM 链接中找到 loadout 参数' };
+      }
+    }
+    if (text[0] === '{') {
+      try {
+        var obj = JSON.parse(text);
+        if (obj && typeof obj === 'object' && Array.isArray(obj.equipped)) {
+          return { kind: 'json', loadout: obj };
+        }
+      } catch (e) {
+        return { kind: 'error', message: 'JSON 格式有误：' + e.message };
+      }
+    }
+    return null;
+  }
+
+  function dimToMd(loadout) {
+    if (!loadout || typeof loadout !== 'object' || !Array.isArray(loadout.equipped)) {
+      throw new Error('不是有效的 DIM 配装数据');
+    }
+    var D = V.dim || { sub: {}, art: {}, plug: {} };
+    var skip = [];
+    var byKey = function (slot, key) {
+      var list = V.lists[V.slots[slot]] || [];
+      return list.filter(function (r) { return r[7] === String(key); });
+    };
+    var pickKey = function (slot, key, kind) {
+      var hits = byKey(slot, key);
+      if (kind) {
+        var narrow = hits.filter(function (r) { return bare(r[1]) === kind; });
+        if (narrow.length) hits = narrow;
+      }
+      return hits[0] || null;
+    };
+    var stamp = function (r) { return r[7] ? r[0] + MARK + r[7] : r[0]; };
+
+    var cls = DIM_CLASS[loadout.classType] || '';
+    var branch = '';
+    var skills = {};
+    DIM_SKILL_SLOTS.forEach(function (s) { skills[s] = []; });
+    var artName = '';
+    var artMods = [];
+    var exGuns = [];
+    var legGuns = [];
+    var exArmor = null;
+    var spirits = [];
+    var sets = [];
+    var armorMods = {};
+    DIM_ARMOR_SLOTS.forEach(function (p) { armorMods[p] = []; });
+
+    var resolvePlug = function (slotCandidates, hash) {
+      var sh = String(hash);
+      for (var i = 0; i < slotCandidates.length; i++) {
+        var hit = pickKey(slotCandidates[i], sh);
+        if (hit) {
+          return { slot: dimSkillSlot(hit, slotCandidates[i]), row: hit };
+        }
+      }
+      var name = D.plug && D.plug[sh];
+      if (!name) return null;
+      for (var j = 0; j < slotCandidates.length; j++) {
+        var list = V.lists[V.slots[slotCandidates[j]]] || [];
+        var byName = list.filter(function (r) { return r[0] === name; });
+        if (byName.length) {
+          return { slot: dimSkillSlot(byName[0], slotCandidates[j]), row: byName[0] };
+        }
+      }
+      return null;
+    };
+
+    var allItems = (loadout.equipped || []).concat(loadout.unequipped || []);
+    allItems.forEach(function (it) {
+      if (!it || it.hash == null) return;
+      var sh = String(it.hash);
+      if (D.sub && D.sub[sh]) {
+        cls = D.sub[sh][0];
+        branch = D.sub[sh][1];
+        if (it.socketOverrides) {
+          Object.keys(it.socketOverrides).sort(function (a, b) { return Number(a) - Number(b); }).forEach(function (idx) {
+            var ph = it.socketOverrides[idx];
+            var hit = resolvePlug(DIM_SKILL_SLOTS, ph);
+            if (hit && skills[hit.slot]) {
+              skills[hit.slot].push(stamp(hit.row));
+            } else {
+              skip.push('技能 #' + ph);
+            }
+          });
+        }
+        return;
+      }
+      if (D.art && D.art[sh]) {
+        artName = D.art[sh];
+        if (it.socketOverrides) {
+          Object.keys(it.socketOverrides).sort(function (a, b) { return Number(a) - Number(b); }).forEach(function (idx) {
+            var ph = it.socketOverrides[idx];
+            var hit = pickKey('神器', ph, artName);
+            if (!hit && D.plug && D.plug[String(ph)]) {
+              var list = V.lists[V.slots['神器']] || [];
+              hit = list.filter(function (r) { return r[0] === D.plug[String(ph)] && bare(r[1]) === artName; })[0]
+                || list.filter(function (r) { return r[0] === D.plug[String(ph)]; })[0];
+            }
+            if (hit) artMods.push(stamp(hit));
+            else skip.push('神器模组 #' + ph);
+          });
+        }
+        return;
+      }
+      var exW = pickKey('异域武器', sh);
+      if (exW) { exGuns.push(stamp(exW)); return; }
+      var legW = pickKey('传说武器', sh);
+      if (legW) { legGuns.push(stamp(legW)); return; }
+      var exA = pickKey('异域护甲', sh);
+      if (exA) { exArmor = stamp(exA); return; }
+    });
+
+    var params = loadout.parameters || {};
+    if (!exArmor && params.exoticArmorHash) {
+      var exP = pickKey('异域护甲', params.exoticArmorHash);
+      if (exP) exArmor = stamp(exP);
+    }
+    if (Array.isArray(params.perks)) {
+      params.perks.forEach(function (ph) {
+        var sp = pickKey('异域护甲', ph);
+        if (sp) spirits.push(stamp(sp));
+        else skip.push('词条 #' + ph);
+      });
+    }
+    if (params.setBonuses && typeof params.setBonuses === 'object') {
+      Object.keys(params.setBonuses).forEach(function (sh) {
+        var n = params.setBonuses[sh];
+        if (!n) return;
+        var hit = pickKey('套装', 'set:' + sh);
+        if (hit) {
+          sets.push(stamp(hit) + ' ' + n + ' 件');
+          if (n >= 4) sets.push(stamp(hit) + ' 2 件');
+        } else {
+          skip.push('套装 #' + sh);
+        }
+      });
+    } else if (D.piece) {
+      var counts = {};
+      (loadout.equipped || []).forEach(function (it) {
+        var sh = it && D.piece[String(it.hash)];
+        if (sh) counts[sh] = (counts[sh] || 0) + 1;
+      });
+      Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; }).forEach(function (sh) {
+        var n = counts[sh] >= 4 ? 4 : (counts[sh] >= 2 ? 2 : 0);
+        if (!n) return;
+        var hit = pickKey('套装', 'set:' + sh);
+        if (hit) {
+          sets.push(stamp(hit) + ' ' + n + ' 件');
+          if (n >= 4) sets.push(stamp(hit) + ' 2 件');
+        }
+      });
+    }
+    if (Array.isArray(params.mods)) {
+      params.mods.forEach(function (mh) {
+        var hit = pickKey('护甲模组', mh);
+        var part = hit && bare(hit[1]);
+        if (hit && armorMods[part] && armorMods[part].length < 3) {
+          armorMods[part].push(stamp(hit));
+        }
+      });
+    }
+
+    var lines = ['# ' + (loadout.name || '').trim()];
+    if (branch) lines.push('分支：' + branch);
+    lines.push('', '## 职业');
+    if (cls) lines.push('职业：' + cls);
+    lines.push('超能：' + skills['超能'].join('、'));
+    if (skills['手雷'].length) lines.push('手雷：' + skills['手雷'].join('、'));
+    if (skills['近战'].length) lines.push('近战：' + skills['近战'].join('、'));
+    if (skills['移动'].length) lines.push('移动：' + skills['移动'].join('、'));
+    if (skills['职业技能'].length) lines.push('职业技能：' + skills['职业技能'].join('、'));
+    lines.push('星相：' + skills['星相'].join('、'));
+    lines.push('碎片：' + skills['碎片'].join('、'));
+
+    lines.push('', '## 武器');
+    if (exGuns.length) lines.push('异域武器：' + exGuns[0]);
+    legGuns.forEach(function (g) { lines.push('传说武器：' + g); });
+
+    lines.push('', '## 护甲');
+    var armorLine = [];
+    if (exArmor) armorLine.push(exArmor);
+    spirits.forEach(function (s) { armorLine.push(s); });
+    if (armorLine.length) lines.push('异域护甲：' + armorLine.join('、'));
+    if (sets.length) lines.push('套装：' + sets.join(' × '));
+    DIM_ARMOR_SLOTS.forEach(function (p) {
+      if (armorMods[p].length) lines.push(p + '：' + armorMods[p].join('、'));
+    });
+
+    if (artName) {
+      lines.push('', '## 神器', '神器：' + artName);
+      if (artMods.length) lines.push('模组：' + artMods.join('、'));
+    }
+    return { md: lines.join('\n'), skip: skip, hasLegGuns: legGuns.length > 0 };
+  }
+
+  /* ── 导入浮层（支持本站配装文本与 DIM 分享链接） ─────────────────────────── */
+  var impDlg = document.getElementById('imp-dlg');
+  var impOpen = document.getElementById('open-import');
+  var impIn = document.getElementById('in');
+  var impTip = document.getElementById('imp-tip');
+  var doImp = document.getElementById('do-import');
+  var copyTip = document.getElementById('copy-tip');
+
+  var toastEl = null;
+  var toastTimer = 0;
+
+  function showFormNotice(msg) {
+    if (copyTip) copyTip.textContent = msg;
+    if (!toastEl) {
+      toastEl = document.createElement('div');
+      toastEl.className = 'imp-toast';
+      toastEl.setAttribute('role', 'status');
+      toastEl.innerHTML = '<span class="imp-toast-msg"></span>'
+        + '<button type="button" class="op is-quiet" aria-label="关闭提示">✕</button>';
+      toastEl.querySelector('button').addEventListener('click', function () {
+        toastEl.hidden = true;
+      });
+      document.body.appendChild(toastEl);
+    }
+    toastEl.querySelector('.imp-toast-msg').textContent = msg;
+    toastEl.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      if (toastEl) toastEl.hidden = true;
+    }, 8000);
+  }
+
+  function finishImport(skip, fromDim, hasLegGuns) {
+    if (impDlg && impDlg.open) impDlg.close();
+    if (impIn) impIn.value = '';
+    if (impTip) impTip.textContent = '';
+    var parts = [fromDim ? '已从 DIM 导入' : '导入完成'];
+    if (fromDim && hasLegGuns) parts.push('传说武器 Perk 需手动补充');
+    if (skip.length) parts.push('跳过 ' + skip.length + ' 条：' + skip.join('，'));
+    showFormNotice(parts.join('；'));
+  }
+
   function runImport() {
     if (sheet.classList.contains('preview')) preview.click();
-    var panel = document.getElementById('imp');
-    var area = document.getElementById('in');
-    var tip = document.getElementById('imp-tip');
-    panel.open = true;
-    panel.scrollIntoView({ block: 'center' });
-    var text = area.value.trim();
+    var text = (impIn ? impIn.value : '').trim();
     if (!text) {
-      area.focus();
-      tip.textContent = '请先将配装文本粘贴到上方文本框，再点击「执行导入」';
+      if (impTip) impTip.textContent = '请先粘贴配装文本或 DIM 分享链接';
+      if (impIn) impIn.focus();
       return;
     }
-    // **合集页走 importSet**：importMd 在第一个 `## 注解` 处切文本，第二套起的
-    // 整段正文会被当成注解吞进去，头部的键也塌成第一套的，而且一声不吭。
+    var dimReq = parseDimInput(text);
+    if (dimReq && dimReq.kind === 'error') {
+      if (impTip) impTip.textContent = dimReq.message;
+      return;
+    }
+    if (dimReq && dimReq.kind === 'json') {
+      try {
+        var res = dimToMd(dimReq.loadout);
+        var skip = importMd(res.md).concat(res.skip);
+        finishImport(skip, true, res.hasLegGuns);
+      } catch (e) {
+        if (impTip) impTip.textContent = 'DIM 配装解析失败：' + e.message;
+      }
+      return;
+    }
+    if (dimReq && dimReq.kind === 'share') {
+      if (doImp) doImp.disabled = true;
+      if (impTip) impTip.textContent = '正在读取 DIM 分享…';
+      fetch('https://api.destinyitemmanager.com/loadout_share?shareId=' + encodeURIComponent(dimReq.id))
+        .then(function (r) {
+          if (!r.ok) throw new Error('DIM 接口返回 ' + r.status + '（分享链接可能无效或已过期）');
+          return r.json();
+        })
+        .then(function (data) {
+          var loadout = (data && data.loadout) || data;
+          var res = dimToMd(loadout);
+          var skip = importMd(res.md).concat(res.skip);
+          finishImport(skip, true, res.hasLegGuns);
+        })
+        .catch(function (e) {
+          if (impTip) {
+            var msg = e && e.message ? e.message : '网络请求失败';
+            impTip.textContent = /Failed to fetch|NetworkError/i.test(msg)
+              ? '无法连接 DIM 接口，请检查网络/代理，或直接粘贴 DIM 导出 URL'
+              : msg;
+          }
+        })
+        .finally(function () {
+          if (doImp) doImp.disabled = false;
+        });
+      return;
+    }
     var skip = SETS ? importSet(text) : importMd(text);
-    document.getElementById('src').open = true;
-    tip.textContent = skip.length
-      ? '导入完成，跳过 ' + skip.length + ' 条：' + skip.join('，')
-      : '导入完成，全部条目已识别';
+    finishImport(skip, false, false);
   }
-  document.getElementById('to-import').addEventListener('click', runImport);
-  var doImp = document.getElementById('do-import');
+
+  if (impOpen && impDlg) {
+    impOpen.addEventListener('click', function () {
+      if (impTip) impTip.textContent = '';
+      impDlg.showModal();
+      if (impIn) impIn.focus();
+    });
+    impDlg.addEventListener('click', function (e) {
+      if (e.target.closest('[data-imp-close]')) impDlg.close();
+    });
+  }
   if (doImp) doImp.addEventListener('click', runImport);
+  if (impIn) {
+    impIn.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter') return;
+      var singleLine = impIn.value.indexOf('\n') === -1;
+      if (singleLine && !e.shiftKey || e.metaKey || e.ctrlKey) {
+        e.preventDefault();
+        runImport();
+      }
+    });
+  }
 
   /* 填过东西之后再离开或刷新要先问一句：这一页的内容只在这一个标签页里活着，
      刷掉就没了。判据是「生成的源稿与刚打开时那一份不同」，不另记一份脏标记。 */
@@ -2197,6 +2519,8 @@
      生成的那份取回去。**load() 之后重设基线**——不重设的话，离开时那一问会在
      刚打开、什么都没改的时候就弹。 */
   window.starsideForm = {
+    parseDimInput: parseDimInput,
+    dimToMd: dimToMd,
     load: function (md) {
       if (sheet.classList.contains('preview')) preview.click();
       var skip = SETS ? importSet(md) : importMd(md);
@@ -2225,9 +2549,12 @@
 
        shot.js 与本页深浅不同（builds/new/ 与 builds/new/set/），路径照 UP 那条
        现算，写死一个会让合集工具那页 404。 */
-    shot: function () {
+    syncPreview: function (root) {
+      syncPreviewRoot(root, true);
+    },
+    shot: function (opts) {
       return import(UP + 'builds/shot.js').then(function (m) {
-        return m.shot(sheet, { preview: true }).then(function (r) { return r.blob; });
+        return m.shot(sheet, Object.assign({ preview: true, review: reviewing }, opts));
       });
     }
   };

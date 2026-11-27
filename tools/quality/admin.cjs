@@ -367,7 +367,8 @@ test('form pages contain every focusMissing target and starsidePy.hit matches it
   assert.equal(PREVIEW_SLOT_SEL, '.slot:not(.stats-card):not([id$="sec-4"] .slot-row:not(.lead) > .slot)')
   const shotSrc = fs.readFileSync(path.join(site, 'builds/shot.js'), 'utf8')
   const formSrc = fs.readFileSync(path.join(site, 'builds/new/form.js'), 'utf8')
-  assert.ok(shotSrc.includes(PREVIEW_SLOT_SEL), 'shot.js 与 form.js 的预览面板选择器必须一致，跳过护甲部位列')
+  assert.match(formSrc, /syncPreview:\s*function\s*\(root\)\s*\{\s*syncPreviewRoot\(root,\s*true\)/, 'form.js 必须通过 starsideForm.syncPreview 暴露预览列数重算')
+  assert.match(shotSrc, /starsideForm\.syncPreview\(clone\)/, 'shot.js 必须复用 starsideForm.syncPreview，避免维护双份预览列数逻辑')
   assert.match(formSrc, /--sz:96px;--tile:45px/, '合集编辑台核心拼图尺寸与生成器 45px 对齐')
 
   const makeSlot = (editN, filledLiCount, hasSpirit) => {

@@ -1393,7 +1393,11 @@ class Generated(unittest.TestCase):
         for rel in ("builds/new/index.html", "builds/new/set/index.html"):
             html = self.read(rel)
             self.assertNotIn("assets/pinyin.js", html)
+            self.assertIn('id="open-import"', html)
+            self.assertIn('id="imp-dlg"', html)
             self.assertIn('id="do-import"', html)
+            self.assertNotIn('id="to-import"', html)
+            self.assertNotIn('id="imp"', html)
         self.assertIn("assets/pinyin.js", self.read("builds/new/form.js"))
         self.assertIn(
             '<button type="button" class="op" data-set-copy>创建副本</button>',

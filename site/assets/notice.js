@@ -226,9 +226,6 @@ function show() {
   }
   btnX.onclick = closeAndAck;
   btnOk.onclick = closeAndAck;
-  dlg.addEventListener("click", function (e) {
-    if (e.target === dlg) closeAndAck();
-  });
   dlg.addEventListener("cancel", markSeen);
   dlg.addEventListener("close", function () { dlg.remove(); });
 

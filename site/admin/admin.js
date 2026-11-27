@@ -1082,20 +1082,32 @@
   /* 截图：把 iframe 里那一套配装渲染成图，弹在**父窗口**。出图归 iframe
      （starsideForm.shot()，那边才有配装的 DOM 与样式），弹图归这边。
      待审稿在站上还没有详情页，这是审核员之间传图讨论的入口。 */
+  var shotTurn = 0
   function shotBtn (kindOf) {
     var b = btn('截图', 'quiet')
     b.onclick = function () {
+      var myTurn = ++shotTurn
+      var selAt = V.sel
       b.disabled = true
       var was = b.textContent
       b.textContent = '生成中'
       var done = function () { b.disabled = false; b.textContent = was }
+      var capture = function (opts) {
+        return stageFrame(kindOf()).contentWindow.starsideForm.shot(opts)
+      }
       Promise.resolve().then(function () {
-        return stageFrame(kindOf()).contentWindow.starsideForm.shot()
-      }).then(function (blob) {
-        return import('../builds/shot.js').then(function (m) { m.show(blob) })
+        return capture()
+      }).then(function (res) {
+        if (myTurn !== shotTurn || V.sel !== selAt) return
+        return import('../builds/shot.js').then(function (m) {
+          if (myTurn !== shotTurn || V.sel !== selAt) return
+          m.show(res, {
+            rerender: function (compact) { return capture({ compact: compact }) }
+          })
+        })
       }).then(done, function (e) {
         done()
-        tip(opsOf(), '截图失败：' + e.message, 1)
+        if (myTurn === shotTurn && V.sel === selAt) tip(opsOf(), '截图失败：' + e.message, 1)
       })
     }
     return b
@@ -1843,6 +1855,7 @@
     document.addEventListener('keydown', function (ev) {
       var t = ev.target
       if (!inbox() || ev.metaKey || ev.ctrlKey || ev.altKey) return
+      if (document.querySelector('dialog[open]')) return
       if (t.closest && t.closest('input, textarea, select, [contenteditable]')) return
       if (ev.key === 'Escape') return toList()
       if (ev.key !== 'j' && ev.key !== 'k') return

@@ -384,11 +384,11 @@ md5 命名，与护甲模组页自己的图标同放 `armor-mods/icons/`：同�
 
 | | 取值 | 依据 |
 |---|---|---|
-| 宽度 | 元素实测宽与 `--min` 的较小者 | 版心之外只是留白在长；配装页 1104 = 1060 版心 + `main` 左右 22px，合集里的 `.set-one` 本身就窄于它 |
-| 倍率 | 固定 2 倍 | 配料格名字 12px；跟 `devicePixelRatio` 走会让同一套配装在不同人机器上不一样大 |
+| 宽度 | 固定 1060px 版心 + 左右各 24px 留白（画布 1108px） | 不受当前窗口、手机窄屏或审核台 iframe 宽度影响；单套详情页、合集单套 `.set-one` 与填表页出图留白一致 |
+| 倍率 | 固定 2 倍（导出宽 2216px） | 配料格名字 12px；跟 `devicePixelRatio` 走会让同一套配装在不同人机器上不一样大 |
 | `--vw` | 钉成图宽的百分之一 | site.css 那条 `max(1vw, …)` 在离屏量高时取窗口、在 SVG 里取图宽，两处不是一个数，量出来的高与画出来的高对不上 |
 
-`shot(root, opts)` 出图，`show(blob)` 弹图，四处共用。**浮层只建一个反复用**：
+`shot(root, opts)` 出图（返回 `{ blob, width, height, title, branchClass, hasNotes, compact }`），`show(res, opts)` 弹图，四处共用。浮层支持吸顶工具条（尺寸/体积、一键「复制图片」、`保存 PNG`、含注解配装的「仅配置 / 显示注解」切换与关闭），点击背板或 `Esc` 均可关闭；顶部 2px 分支色细线与底部单行 Starside 来源脚标仅注入克隆体，不改动页面 DOM。合集工具页（`#sheet[data-set]`）截图时仅取当前编辑的 `.set-body` 并保留 `#sheet.preview` 与分支色类，预览列数统一复用 `starsideForm.syncPreview`。样式表、字体（仅内联 `@font-face`）与图标做模块级 `Map` 缓存与 `Promise.all` 并发转换。**浮层只建一个反复用**：
 每次新建、在 `close` 事件里 `remove` 的写法看着更干净，那个事件不一定来（headless
 Chrome 里就没来），来不了就每截一次多攒一个浮层，各攥着一个几兆的 blob URL。浮层
 样式由脚本自己注入一小段 `<style>`，不写进 `builds/style.css`——审核台不引那一份。
@@ -410,13 +410,12 @@ Chrome 里就没来），来不了就每截一次多攒一个浮层，各攥着�
    （两份样式表实测 1.97 倍对百分号编码的 3.38 倍），不修任何毛病——图那部分是纯 ASCII，
    百分号编码在那一段其实更省。
 
-审核台走「iframe 出图、父窗口弹图」：`form.js` 的 `starsideForm.shot()` 只返回 blob，
-`admin.js` 那枚按钮拿到之后自己 `import` `shot.js` 弹在父窗口。iframe 那一格 86vh，
+审核台走「iframe 出图、父窗口弹图」：`form.js` 的 `starsideForm.shot(opts)` 返回完整结果对象（含 `blob`、尺寸、标题与 `hasNotes`），`admin.js` 那枚按钮拿到之后自己 `import` `shot.js` 在父窗口弹图并透传 `rerender`。iframe 那一格 86vh，
 浮层落在里面看不成，与「动作不留在 iframe 底下」同一个取向。
 
 ### 填表页
 
-`builds/new/` 是给推荐人填的公开页：选完直接生成标准源稿，复制发过来即可挂站。
+`builds/new/` 是给推荐人填的公开页：选完直接生成标准源稿，复制发过来即可挂站。页头右端提供统一「导入」按钮（`#open-import`）与原生 `<dialog id="imp-dlg">`，自动识别本站配装文本、`dim.gg` 分享短链及 `loadout=` 导出 URL/JSON（`vocab.js` 附带 `dim` 反查表补齐子职业/神器/技能插件 hash）；从 DIM 导入后传说武器 Perk 留空并提示手动补充。
 `builds/new/set/` 是它的合集版。
 
 两页共用同一份 `form.js`，模式由 `#sheet` 上的 `data-set` 声明，与 `app.js` 从

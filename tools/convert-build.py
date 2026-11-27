@@ -19,6 +19,7 @@ import sys
 from urllib.parse import quote
 
 import dim
+import resolve
 import icons
 import items
 import migrate
@@ -2232,7 +2233,7 @@ def render_vocab(idx):
     # **分节括注的切分符号是契约**：由 vocab.KIND_TAIL 一处定义并发给前端。
     body = (
         "window.starsideVocab = {\nsep: %s,\nlists: {\n%s\n},\nslots: %s,"
-        "\nperks: %s,\nspirits: %s,\nexoticCols: %s,\nbuckets: %s\n};\n"
+        "\nperks: %s,\nspirits: %s,\nexoticCols: %s,\nbuckets: %s,\ndim: %s\n};\n"
         % (
             json.dumps(vocab.KIND_TAIL, ensure_ascii=False),
             ",\n".join(rows),
@@ -2241,6 +2242,7 @@ def render_vocab(idx):
             json.dumps(spirit_columns(idx), ensure_ascii=False, sort_keys=True),
             json.dumps(exotic_columns(idx), ensure_ascii=False, sort_keys=True),
             json.dumps(weapon_buckets(idx), ensure_ascii=False, sort_keys=True),
+            json.dumps(dim_lookup(by_slot), ensure_ascii=False, sort_keys=True),
         )
     )
     path = os.path.join(shell.SITE, OUT_DIR, "vocab.js")
@@ -2250,6 +2252,54 @@ def render_vocab(idx):
         "builds/vocab.js —— %.1f KB，%d 个槽位共 %d 份列表"
         % (len(body.encode()) / 1024, len(slots), len(owner))
     )
+
+
+def dim_lookup(by_slot):
+    """DIM 反向导入查表：只补 vocab.js lists[*][7] 里没有的三类 Bungie hash。"""
+    f = rows.facts()
+    known = {cols[7] for entries in by_slot.values() for cols in entries if cols[7]}
+    sub, art, plug = {}, {}, {}
+    skill_kinds = set(dim.SKILLS.values())
+    for cls in dim.CLASS_TYPE:
+        for branch in BRANCH:
+            h = dim.subclass_of(cls, branch)
+            sub[str(h)] = [cls, branch]
+            for _, kind, pool in dim.sockets(h):
+                if kind not in skill_kinds:
+                    continue
+                for p in pool:
+                    sp = str(p)
+                    if sp in known or sp in plug:
+                        continue
+                    name = resolve.text(f.items.get(sp))
+                    if name:
+                        plug[sp] = name
+    art_names = {items.norm(cols[0]): cols[0] for cols in by_slot.get("神器本体", ())}
+    for r in f.items.values():
+        shadow = (r.get("derived") or {}).get("socketed")
+        if r.get("itemType") != 28 or not shadow:
+            continue
+        name = art_names.get(items.norm(resolve.text(r)))
+        if not name:
+            continue
+        art[str(shadow)] = name
+        for _, kind, pool in dim.sockets(shadow):
+            if kind != "artifact":
+                continue
+            for p in pool:
+                sp = str(p)
+                if sp in known or sp in plug:
+                    continue
+                pname = resolve.text(f.items.get(sp))
+                if pname:
+                    plug[sp] = pname
+    piece = {}
+    for sh, srec in f.sets.items():
+        for p in (srec.get("derived") or {}).get("pieces") or ():
+            ih = p.get("itemHash")
+            if ih:
+                piece[str(ih)] = sh
+    return {"sub": sub, "art": art, "plug": plug, "piece": piece}
 
 
 def weapon_perks(idx, perk_at):
@@ -2748,7 +2798,8 @@ def set_form_head(name_cn):
         '<div class="build-id">',
         # h1 包进 .id-row：详情页的标题就在这一层里，不包的话上下间距差一截。
         '<div class="id-row"><h1><input data-key="合集名" placeholder="合集名称" '
-        'aria-label="合集名称"></h1></div>',
+        'aria-label="合集名称"></h1>'
+        '<div class="head-acts"><button id="open-import" class="op" type="button">导入</button></div></div>',
         # 铭牌照着下面各套显示「职业 · N 套 · 强度」，与详情页逐段同形。
         '<p class="cls"><span class="cls-id" data-mirror="合集铭牌">'
         '<span class="hint">职业与元素在各套内选择</span></span>'
@@ -2840,8 +2891,9 @@ def solo_form_head(name_cn):
         '<input class="who-in" data-key="推荐人" placeholder="推荐人昵称或 ID" aria-label="推荐人">',
         "</div>",
         '<div class="build-id">',
-        '<h1><input data-key="配装名" placeholder="配装名称" '
-        'aria-label="配装名称"></h1>',
+        '<div class="id-row"><h1><input data-key="配装名" placeholder="配装名称" '
+        'aria-label="配装名称"></h1>'
+        '<div class="head-acts"><button id="open-import" class="op" type="button">导入</button></div></div>',
         # 铭牌照着下面「职业」那两格显示，本身不可点——身份在那两格上选。
         '<p class="cls"><span class="cls-id" data-mirror="铭牌">'
         '<span class="hint">在下方「职业」区域选择职业与元素</span></span>'
@@ -2935,22 +2987,27 @@ def render_new(stamp, name_cn, sets=False):
         '<details id="src"><summary>展开配装文本</summary>',
         '<textarea id="out" readonly rows="28" spellcheck="false"></textarea>',
         "</details>",
-        '<details id="imp"><summary>从配装文本导入</summary>',
-        '<p class="note">粘贴一份已有的配装文本。可识别的装备会自动填入，'
-        "无法识别的条目会跳过并在下方列出。导入将覆盖当前已填写的内容。</p>",
-        '<textarea id="in" rows="10" spellcheck="false" '
-        'placeholder="将配装文本粘贴至此" aria-label="待导入的配装文本"></textarea>',
-        '<div class="imp-bar"><button id="do-import" class="op" type="button">执行导入</button>'
-        '<p id="imp-tip" role="status"></p></div>',
-        "</details>",
         "</section>",
+        "",
+        '<dialog id="imp-dlg" class="imp-dlg" aria-labelledby="imp-title">',
+        '<div class="imp-head">'
+        '<span class="imp-mark" aria-hidden="true"><i></i><i></i></span>'
+        '<h3 id="imp-title">导入配装</h3>'
+        '<span class="imp-rule" aria-hidden="true"></span>'
+        '<button type="button" class="imp-x" data-imp-close aria-label="关闭">✕</button></div>',
+        '<div class="imp-body">',
+        '<p class="imp-note">粘贴本站配装文本，或 <code>dim.gg</code> / DIM 分享链接；导入将覆盖当前已填内容。</p>',
+        '<textarea id="in" rows="7" spellcheck="false" '
+        'placeholder="粘贴配装文本、dim.gg 链接或 DIM 导出 URL" aria-label="待导入内容"></textarea>',
+        "</div>",
+        '<div class="imp-bar"><p id="imp-tip" role="status"></p>'
+        '<button type="button" class="op" data-imp-close>取消</button>'
+        '<button id="do-import" class="op is-primary" type="button">导入</button></div>',
+        "</dialog>",
         "",
         # 这一页的出口横排一条，落在正文末尾。**预览不另建一套 DOM**：它给 #sheet
         # 加一个类，把空槽、控件与源稿那一节收起来，剩下的就是成品；那时这一条
         # 也得够得着，所以它不在被收起的那一节里。
-        # 按用途分三组：左边看这一页（预览、详情开关），中间把这一套带走（复制、
-        # 截图），右端两枚是会改掉东西的（导入覆盖整页，投稿发出去）。回执跟着
-        # 它报告的那两枚走——导入自己的回执在下面那个面板里（#imp-tip）。
         '<div class="src-tools">',
         '<button id="preview" class="toggle" type="button" aria-pressed="false">预览配装</button>',
         TIP_SW_CHIP,
@@ -2958,8 +3015,6 @@ def render_new(stamp, name_cn, sets=False):
         '<button id="copy" class="op" type="button">复制配装</button>',
         SHOT_CHIP,
         '<span id="copy-tip" role="status"></span>',
-        # 导入是一个动作不是两个：这一枚永远「导入」，文本框还空着时它带你去粘贴。
-        '<button id="to-import" class="op" type="button">导入配装</button>',
         # 投稿直接把配装文本发到后端的待审队列。**接口地址由生成器写在
         # data-api 上**，form.js 现读——与 app.js 从 .toolbar 的 data-* 读配置
         # 同一条约定，地址仍只有 shell.API 一处定义。
