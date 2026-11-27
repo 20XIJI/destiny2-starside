@@ -40,12 +40,7 @@ BASE = HOST + '/common/destiny2_content/icons/'
 # （贯穿护盾／干扰／眩晕）——按站内出现频次定，见 .agents/rules/weapons.md。
 # **一处定义**：武器库按它画标签，实体层按它把表格里那一格的破盾图标解成档位。
 BREAKER = {1: '反屏障', 2: '反过载', 3: '反势不可挡'}
-# 站内那张破盾图（内容 md5 前 10 位）→ 档位。
-CHAMP = {
-    1: '/common/destiny2_content/icons/DestinyBreakerTypeDefinition_07b9ba0194e85e46b258b04783e93d5d.png',
-    2: '/common/destiny2_content/icons/DestinyBreakerTypeDefinition_da558352b624d799cf50de14d7cb9565.png',
-    3: '/common/destiny2_content/icons/DestinyBreakerTypeDefinition_825a438c85404efd6472ff9e97fc7251.png',
-}
+CHAMP = resolve.CHAMP
 
 # 六个元素的官方图标，路径取自 DestinyDamageTypeDefinition 的 displayProperties.icon
 # （键是 defaultDamageType 那个枚举）。5 是「突袭」，库里没图，站内也用不到。

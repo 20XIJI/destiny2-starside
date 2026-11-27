@@ -13,7 +13,6 @@ import posixpath
 import re
 from typing import Any, Callable
 
-import check_type
 import markup
 import resolve
 import rows
@@ -1010,7 +1009,7 @@ def check(
 ) -> None:
     """校验副本页关键条目全部落进 <main>，无未展开标记、嵌套 span 或破损标签。"""
     main = out[out.index("<main ") : out.index("</main>")]
-    bad = check_type.check_html(main + "</main>", slug)
+    bad = markup.check_html(main + "</main>", slug)
     if bad:
         die("%s HTML 结构损坏：%s" % (slug, bad[0]))
     if "{" in main or "}" in main:

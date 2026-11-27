@@ -17,33 +17,14 @@ T1／T2 只看样式表。T3 在 shell.emit() 落盘前验刚写出的那一份 
 import os
 import re
 import sys
-from html.parser import HTMLParser
 
+from markup import check_html
 import shell
 
 # 站内自己的判据：design.md 二节「可能是纯中文的位置用 .2em 封顶」
 CAP_EM = 0.2
 # 超过封顶仍合法的主语 class：英文专名，字距按拉丁排。
 LATIN = frozenset({"en"})
-# 跟踪这些标签的开闭配对。行内排版标签（em、strong、b、i、s）不跟——
-# 它们在正文里由生成器成对出，出错会被逐字保真闸门先抓到。
-PAIRED = (
-    "a",
-    "li",
-    "ul",
-    "ol",
-    "dl",
-    "table",
-    "thead",
-    "tbody",
-    "tr",
-    "section",
-    "main",
-    "header",
-    "footer",
-    "nav",
-    "figure",
-)
 
 
 def read(rel: str) -> str:
@@ -75,61 +56,6 @@ def handwritten() -> list[str]:
 
 def strip_comments(css: str) -> str:
     return re.sub(r"/\*.*?\*/", "", css, flags=re.S)
-
-
-class Page(HTMLParser):
-    """T3：PAIRED 标签开闭配对，以及开标签被复制一份时冒出来的坏属性。"""
-
-    def __init__(self) -> None:
-        super().__init__(convert_charrefs=True)
-        self.stack: list[str] = []
-        self.open: list[tuple[str, tuple[int, int]]] = []
-        self.bad: list[str] = []
-
-    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        for name, _ in attrs:
-            # `<a href="x"<a href="x">` 会被解析成一个名叫 `<a` 的属性
-            if "<" in name or ">" in name:
-                self.bad.append(
-                    "第 %d 行 <%s> 上有个名叫 %r 的属性，"
-                    "多半是开标签被复制了一份" % (self.getpos()[0], tag, name)
-                )
-        if tag in PAIRED:
-            self.open.append((tag, self.getpos()))
-        if tag in ("br", "img", "meta", "link", "input", "hr"):
-            return
-        self.stack.append(tag)
-
-    def handle_endtag(self, tag: str) -> None:
-        for i in range(len(self.stack) - 1, -1, -1):
-            if self.stack[i] == tag:
-                del self.stack[i:]
-                break
-        if tag not in PAIRED:
-            return
-        if self.open and self.open[-1][0] == tag:
-            self.open.pop()
-        else:
-            near = self.open[-1] if self.open else None
-            self.bad.append(
-                "第 %d 行 </%s> 配不上，最近的未闭合是 %s"
-                % (self.getpos()[0], tag, near)
-            )
-
-
-def check_html(html: str, rel: str) -> list[str]:
-    """一份 HTML 的 T3 报错行，不含文件名前缀。"""
-    p = Page()
-    p.feed(html)
-    p.close()
-    return p.bad + ["第 %d 行 <%s> 没有闭合" % (pos[0], tag) for tag, pos in p.open]
-
-
-def assert_shape(html: str, rel: str) -> None:
-    """emit() 落盘前调用。坏了当场中止，不写出半成品。"""
-    bad = check_html(html, rel)
-    if bad:
-        sys.exit("T3 %s：%s" % (rel, bad[0]))
 
 
 # ── T1 ───────────────────────────────────────────────────────────────────────

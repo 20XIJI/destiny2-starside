@@ -517,9 +517,7 @@ def emit(outdir, out, detail="", rest=0):
 
     path = os.path.join(outdir, "index.html")
     rel = os.path.relpath(path, SITE)
-    import check_type
-
-    check_type.assert_shape(out, rel)
+    markup.assert_shape(out, rel)
     page, frag = split_rest(out, rest) if rest else (out, "")
     if frag and merge_rest(page, frag) != out:
         markup.die("%s：拆出去的记录插不回原样，split_rest 与 merge_rest 对不上" % rel)

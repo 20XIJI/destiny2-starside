@@ -38,6 +38,13 @@ MASTERWORK_KEEP = '大师杰作'
 # 「空模组插槽」「空催化插槽」这类是没插东西时的占位，不是一个选项。
 EMPTY_SLOT = re.compile(r'^空.*插槽$')
 
+# 三种破盾的官方图标路径（DestinyBreakerTypeDefinition enum 1/2/3 ＝ 贯穿护盾／干扰／眩晕）。
+CHAMP = {
+    1: '/common/destiny2_content/icons/DestinyBreakerTypeDefinition_07b9ba0194e85e46b258b04783e93d5d.png',
+    2: '/common/destiny2_content/icons/DestinyBreakerTypeDefinition_da558352b624d799cf50de14d7cb9565.png',
+    3: '/common/destiny2_content/icons/DestinyBreakerTypeDefinition_825a438c85404efd6472ff9e97fc7251.png',
+}
+
 
 def text(rec, field='name', lang=ZH):
     """一条记录的某个字段在某种语言下的文本。**全站唯一的取文入口。**

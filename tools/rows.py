@@ -36,7 +36,6 @@ import functools
 import os
 import re
 
-import icons
 import markup
 import resolve
 import shell
@@ -308,7 +307,7 @@ def stat_of(rec, stat):
 def champ_path(breaker):
     return (
         "assets/icons/%s.webp"
-        % os.path.splitext(os.path.basename(icons.CHAMP[breaker]))[0]
+        % os.path.splitext(os.path.basename(resolve.CHAMP[breaker]))[0]
     )
 
 
