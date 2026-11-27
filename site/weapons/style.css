@@ -1593,7 +1593,7 @@
    是什么，读者扫不了一整栏。 */
 .matrix {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--cols, 5), minmax(0, 1fr));
   gap: 0 10px;
 }
 
@@ -3386,18 +3386,29 @@
   pointer-events: none;
 }
 
-/* 催化剂 */
-.cat {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 4px 14px;
-  align-items: start;
-  font: 400 13px/1.7 var(--font-cn);
+/* 催化剂列（嵌入 .matrix 末列）与获取来源条 */
+.matrix .col-cat h4 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  color: color-mix(in srgb, var(--c-exotic) 85%, var(--bone-dim));
 }
 
-.cat .toggle { padding: 2px 10px; font-family: var(--font-cn); font-size: 12px; letter-spacing: normal; }
-.cat b { color: var(--bone); font-weight: 600; margin-right: 8px; }
-.cat p { margin: 0; color: var(--bone-dim); }
+.matrix .col-cat .col-sub {
+  font-weight: 400;
+  color: var(--bone-ghost);
+  letter-spacing: normal;
+}
+
+.plug.is-cat[aria-pressed="true"] {
+  color: var(--c-exotic);
+}
+
+.plug.is-cat[aria-pressed="true"] .ico {
+  box-shadow: 0 0 0 2px var(--c-exotic);
+}
+
 .cat-meta {
   display: flex;
   flex-direction: column;

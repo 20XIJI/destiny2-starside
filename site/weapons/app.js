@@ -1853,7 +1853,10 @@
     if (roll.mw) { out.mw = roll.mw; if (!poolRow(i)[4]) { out.lv = roll.lv; } } else { out.mw = '-'; }
     if (poolRow(i)[4]) { out.t = roll.t; }
     if (roll.mod >= 0) { out.mod = P.p[roll.mod][P_HASH]; }
-    if (roll.cat) { out.cat = 1; }
+    var cats = poolRow(i)[8];
+    if (roll.cat > 0 && cats[roll.cat - 1] != null) {
+      out.cat = cats.length > 1 ? P.p[cats[roll.cat - 1]][P_HASH] : 1;
+    }
     return out;
   }
   function decodeRoll(i, enc) {
@@ -1881,7 +1884,17 @@
     if (enc.lv) { roll.lv = Math.max(1, Math.min(10, +enc.lv || 10)); }
     if (enc.t) { roll.t = Math.max(1, Math.min(5, +enc.t || 5)); }
     if (enc.mod && PIDX[+enc.mod] != null && has(modsOf(i), PIDX[+enc.mod])) { roll.mod = PIDX[+enc.mod]; }
-    roll.cat = enc.cat ? 1 : 0;
+    var cats = poolRow(i)[8];
+    if (enc.cat && cats.length) {
+      if (String(enc.cat) === '1') {
+        roll.cat = 1;
+      } else {
+        var ck = PIDX[+enc.cat], ci = ck != null ? cats.indexOf(ck) : -1;
+        roll.cat = ci >= 0 ? ci + 1 : 0;
+      }
+    } else {
+      roll.cat = 0;
+    }
     return roll;
   }
 
@@ -1960,13 +1973,13 @@
       nonMod.push(pick);
       activeHashes.push(P.p[pick][P_HASH]);
     }
-    if (roll.cat) {
-      pr[8].forEach(function (p) {
-        perks.push(p);
-        nonMod.push(p);
-        catMap[p] = 1;
-        activeHashes.push(P.p[p][P_HASH]);
-      });
+    var catIdx = swap && swap.cat != null ? swap.cat : roll.cat;
+    var catPlug = catIdx > 0 && pr[8][catIdx - 1] != null ? pr[8][catIdx - 1] : -1;
+    if (catPlug >= 0) {
+      perks.push(catPlug);
+      nonMod.push(catPlug);
+      catMap[catPlug] = 1;
+      activeHashes.push(P.p[catPlug][P_HASH]);
     }
     if (roll.mod >= 0) {
       perks.push(roll.mod);
@@ -3116,19 +3129,49 @@
     }
     return 'T' + roll.t + ' 加成：' + names.join('、') + ' 各 +' + roll.t;
   }
-  function weaponDetail(i, anim) {
-    if (!PERK_FX) { ensurePerkFx(function () { if (S.sel === i) { renderDetail(); } }); }
-    var r = WR[i], pr = poolRow(i), roll = rollOf(i), rep = r[W_REP];
-    var cols = pr[2], marks = marksOf(i), ammo = ammoEn(V.am[r[W_AMMO]][0]);
-    var swap = S.hoverPlug ? { col: S.hoverPlug.col, plug: S.hoverPlug.plug } : null;
-    var res = compute(i, roll);
-    var ghost = swap ? compute(i, roll, swap) : null;
-    var matrix = cols.map(function (col, c) {
+  function matrixInnerHtml(i, roll, res) {
+    var r = WR[i], pr = poolRow(i), cols = pr[2], marks = marksOf(i), ammo = ammoEn(V.am[r[W_AMMO]][0]);
+    var html = cols.map(function (col, c) {
       var cells = cellsOf(col), fixed = cells.length === 1;
       return '<div class="col"><h4>' + esc(P.lb[col[0]]) + '</h4>' + cells.map(function (cell) {
         return plugButton(c, cell, marks, roll.sel[c] === shownPlug(cell), fixed, ammo, res);
       }).join('') + '</div>';
     }).join('');
+    if (pr[8].length) { html += catalystColumn(i, roll); }
+    return html;
+  }
+  function catalystColumn(i, roll) {
+    var cats = poolRow(i)[8], multi = cats.length > 1;
+    var btns = cats.map(function (p, idx) {
+      var k = idx + 1, on = roll.cat === k;
+      var lines = T && T.cp[p] && T.cp[p].length ? T.cp[p] : null;
+      var label = lines && lines.length === 1 ? lines[0][0] : plugName(p);
+      var hoverCls = S.hoverPlug && S.hoverPlug.cat === k ? ' is-hover' : '';
+      return '<button type="button" class="plug is-cat' + hoverCls + '" aria-pressed="' + (on ? 'true' : 'false') +
+        '" data-act="cat" data-v="' + k + '" data-plug="' + p + '">' +
+        '<span class="ico">' + imgTag(P.p[p][P_ICON], '', '', true) + '</span>' +
+        '<span class="nm">' + esc(label) + '</span></button>';
+    }).join('');
+    return '<div class="col col-cat"><h4>催化剂' + (multi ? '<span class="col-sub">' + cats.length + ' 选 1</span>' : '') +
+      '</h4>' + btns + '</div>';
+  }
+  function catMetaHtml(i) {
+    var ci = T && T.ci && T.ci[i];
+    if (!ci || (!ci[0] && !ci[1])) { return ''; }
+    var rows = [];
+    if (ci[0]) { rows.push('<div><dt>催化来源</dt><dd>' + esc(ci[0]) + '</dd></div>'); }
+    if (ci[1]) { rows.push('<div><dt>解锁进度</dt><dd>' + esc(ci[1]) + '</dd></div>'); }
+    return '<dl class="cat-meta">' + rows.join('') + '</dl>';
+  }
+  function weaponDetail(i, anim) {
+    if (!PERK_FX) { ensurePerkFx(function () { if (S.sel === i) { renderDetail(); } }); }
+    var r = WR[i], pr = poolRow(i), roll = rollOf(i), rep = r[W_REP];
+    var cols = pr[2];
+    var swap = S.hoverPlug ? (S.hoverPlug.cat != null ? { cat: S.hoverPlug.cat } : { col: S.hoverPlug.col, plug: S.hoverPlug.plug }) : null;
+    var res = compute(i, roll);
+    var ghost = swap ? compute(i, roll, swap) : null;
+    var matrix = matrixInnerHtml(i, roll, res);
+    var totalCols = cols.length + (pr[8].length ? 1 : 0);
     var choice = cols.some(function (col) { return cellsOf(col).length > 1; });
     var dirty = !sameRoll(roll, defaultRoll(i));
     var parts = [];
@@ -3141,11 +3184,12 @@
     if (isExotic(r) && T && T.xs[rep]) { parts.push(exoticBlock(T.xs[rep])); }
     parts.push('<section><h3 class="sub-label">词条' + (choice ? haloLegend() : '') +
       (dirty ? '<button type="button" class="op" data-act="resetroll">重置配置</button>' : '') +
-      '</h3>' + (choice ? haloNotes() : '') + '<div class="matrix">' + matrix + '</div></section>');
+      '</h3>' + (choice ? haloNotes() : '') + '<div class="matrix"' +
+      (totalCols > 5 ? ' style="--cols:' + totalCols + '"' : '') + '>' + matrix + '</div>' +
+      (pr[8].length ? catMetaHtml(i) : '') + '</section>');
     var say = weaponSays(i);
     if (say) { parts.push('<section><h3 class="sub-label">作者评语</h3><div class="says">' + saysHtml(say) + '</div></section>'); }
     parts.push(artifactSection(i));
-    if (pr[8].length) { parts.push(catalystSection(i, roll)); }
     var fr = frameOf(r), fp = PIDX[fr[3]], icol = intrinsicCol(i);
     var frames = icol ? cellsOf(icol).map(function (cell) {
       var p = shownPlug(cell);
@@ -3355,22 +3399,37 @@
     return '<div class="picker wide" role="dialog" aria-label="模组"><div class="pk-head"><b>模组</b>' +
       '<button type="button" class="op" data-act="modpick" data-v="-1">卸下</button></div><div class="pk-grid">' + cells + '</div></div>';
   }
-  function catalystSection(i, roll) {
-    var pr = poolRow(i);
-    var effs = pr[8].map(function (p) {
-      var lines = T && T.cp[p] ? T.cp[p] : [];
-      return lines.map(function (e) { return '<p><b>' + esc(e[0]) + '</b>' + esc(e[1]) + '</p>'; }).join('');
-    }).join('');
+  function catTip(i, p) {
+    var plug = P.p[p];
+    if (!plug) { return ''; }
+    var byS = {}, order = [];
+    plug[P_ST].concat(plug[P_CD]).forEach(function (x) {
+      if (!x[1]) { return; }
+      if (!(x[0] in byS)) { order.push(x[0]); byS[x[0]] = 0; }
+      byS[x[0]] += x[1];
+    });
+    var statsTable = order.length ? '<table>' + order.map(function (s) {
+      var v = byS[s];
+      return v ? '<tr><td>' + esc(P.s[s][1]) + '</td><td class="n">' + (v > 0 ? '+' : '') + v + '</td></tr>' : '';
+    }).join('') + '</table>' : '';
+    var lines = T && T.cp[p] && T.cp[p].length ? T.cp[p] : [];
+    var title = lines.length === 1 ? lines[0][0] : plugName(p);
+    var descHtml = lines.length === 1
+      ? (lines[0][1] ? '<p class="lab">催化效果</p><p class="db">' + esc(lines[0][1]).replace(/\n/g, '<br>') + '</p>' : '')
+      : (lines.length ? '<p class="lab">催化效果</p>' + lines.map(function (e) {
+          return '<p class="db"><b>' + esc(e[0]) + '</b> ' + esc(e[1]) + '</p>';
+        }).join('') : '');
     var ci = T && T.ci && T.ci[i];
-    var meta = '';
+    var srcHtml = '';
     if (ci && (ci[0] || ci[1])) {
-      var rows = [];
-      if (ci[0]) { rows.push('<div><dt>催化来源</dt><dd>' + esc(ci[0]) + '</dd></div>'); }
-      if (ci[1]) { rows.push('<div><dt>解锁进度</dt><dd>' + esc(ci[1]) + '</dd></div>'); }
-      meta = '<dl class="cat-meta">' + rows.join('') + '</dl>';
+      var parts = [];
+      if (ci[0]) { parts.push('来源：' + esc(ci[0])); }
+      if (ci[1]) { parts.push('进度：' + esc(ci[1])); }
+      srcHtml = '<p class="lab">获取方式</p><p class="db">' + parts.join('<br>') + '</p>';
     }
-    return '<section><h3 class="sub-label">催化剂</h3><div class="cat"><button type="button" class="toggle" data-act="cat" aria-pressed="' +
-      (roll.cat ? 'true' : 'false') + '">' + (roll.cat ? '已装上' : '装上') + '</button><div>' + effs + '</div></div>' + meta + '</section>';
+    return '<header>' + imgTag(plug[P_ICON], '', '', true) + '<div><h5>' + esc(title) +
+      '</h5><span class="ty">异域催化剂 · 点击装上或卸下</span></div></header>' +
+      statsTable + descHtml + srcHtml;
   }
 
   function effStatVal(res, x) {
@@ -3750,15 +3809,10 @@
       syncStatsDom(pane, i, res, null, true);
     }
 
-    var r = WR[i], pr = poolRow(i), cols = pr[2], marks = marksOf(i), ammo = ammoEn(V.am[r[W_AMMO]][0]);
+    var pr = poolRow(i);
     var mat = box.querySelector('.matrix');
     if (mat) {
-      mat.innerHTML = cols.map(function (col, c) {
-        var cells = cellsOf(col), fixed = cells.length === 1;
-        return '<div class="col"><h4>' + esc(P.lb[col[0]]) + '</h4>' + cells.map(function (cell) {
-          return plugButton(c, cell, marks, roll.sel[c] === shownPlug(cell), fixed, ammo, res);
-        }).join('') + '</div>';
-      }).join('');
+      mat.innerHTML = matrixInnerHtml(i, roll, res);
       perkLinks();
     }
     var dirty = !sameRoll(roll, defaultRoll(i));
@@ -3796,8 +3850,6 @@
         fxEl.outerHTML = sideFx(i);
       }
     }
-    var catSec = box.querySelector('[data-act="cat"]');
-    if (catSec) { catSec.setAttribute('aria-pressed', roll.cat ? 'true' : 'false'); }
     if (S.statsMode === 'pvp' && PVP) { PVP.kickPvpAnim(); }
   }
   /* 悬停词条原地同步属性条预览，不销毁重建 DOM，丝绸补间顺滑触发。 */
@@ -3812,12 +3864,14 @@
       var on = box.querySelectorAll('.plug.is-hover');
       for (var k = 0; k < on.length; k++) { on[k].classList.remove('is-hover'); }
       if (h) {
-        var b = box.querySelector('[data-act="perk"][data-col="' + h.col + '"][data-plug="' + h.plug + '"]');
+        var b = h.cat != null
+          ? box.querySelector('[data-act="cat"][data-v="' + h.cat + '"]')
+          : box.querySelector('[data-act="perk"][data-col="' + h.col + '"][data-plug="' + h.plug + '"]');
         if (b) { b.classList.add('is-hover'); }
       }
       if (S.statsMode === 'pvp') { return; }
       var res = compute(i, roll);
-      var ghost = h ? compute(i, roll, { col: h.col, plug: h.plug }) : null;
+      var ghost = h ? compute(i, roll, h.cat != null ? { cat: h.cat } : { col: h.col, plug: h.plug }) : null;
       syncStatsDom(pane, i, res, ghost, false);
     });
   }
@@ -4709,7 +4763,13 @@
         var r4 = rollOf(i); r4.mod = +v; S.pop = null; hideTip(); saveRoll(i); patchWeaponDetail(i); return;
       }
       case 'cat': {
-        var r5 = rollOf(i); r5.cat = r5.cat ? 0 : 1; saveRoll(i); patchWeaponDetail(i); return;
+        var ck = +v || 1, r5 = rollOf(i);
+        r5.cat = r5.cat === ck ? 0 : ck;
+        S.hoverPlug = null;
+        hideTip();
+        saveRoll(i);
+        patchWeaponDetail(i);
+        return;
       }
       case 'statsmode':
         if (S.statsMode === v) { return; }
@@ -4858,6 +4918,16 @@
         hoverAct = act;
         hoverKey = key;
       }
+    } else if (act === 'cat') {
+      var ck = +el.getAttribute('data-v'), cp = +el.getAttribute('data-plug'), ckey = 'cat:' + ck;
+      if (hoverKey !== ckey) {
+        var croll = rollOf(i);
+        S.hoverPlug = croll.cat === ck ? null : { cat: ck };
+        renderHover();
+        showTip(catTip(i, cp), el);
+        hoverAct = act;
+        hoverKey = ckey;
+      }
     } else if (act === 'statrow') {
       var s = +el.getAttribute('data-s');
       if (hoverKey !== 's' + s) {
@@ -4899,6 +4969,14 @@
       showTip(perkTip(i, col, plug), el);
       hoverAct = act;
       hoverKey = col + ':' + plug;
+      focusEl = el;
+    } else if (act === 'cat') {
+      var ck2 = +el.getAttribute('data-v'), cp2 = +el.getAttribute('data-plug'), croll2 = rollOf(i);
+      S.hoverPlug = croll2.cat === ck2 ? null : { cat: ck2 };
+      renderHover();
+      showTip(catTip(i, cp2), el);
+      hoverAct = act;
+      hoverKey = 'cat:' + ck2;
       focusEl = el;
     } else if (act === 'mwslot' && !S.pop) {
       showTip(mwTip(i), el);

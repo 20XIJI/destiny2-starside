@@ -1368,16 +1368,37 @@ def build(facts):
                 present.append(s["statTypeHash"])
             if not s.get("isConditionallyActive"):
                 base[s["statTypeHash"]] += s["value"]
-        catalysts = [int(b.plug(c)) for c in d.get("catalyst") or ()]
-        for c in d.get("catalyst") or ():
+        raw_cats = list(d.get("catalyst") or ())
+        cat_effs = {}
+        for c in raw_cats:
             effs = [
                 F.perks[str(p["perkHash"])]
                 for p in F.items[str(c)].get("perks") or ()
                 if (F.perks.get(str(p["perkHash"])) or {}).get("isDisplayable")
             ]
-            cats_text[str(c)] = [
+            cat_effs[str(c)] = [
                 [b.text(e), b.say(b.text(e, "database_details"))] for e in effs
             ]
+        # 同一把枪若混有旧版无词条「升级大师杰作」壳或同名同效果重复催化，在此去重。
+        if len(raw_cats) > 1 and any(cat_effs[str(c)] for c in raw_cats):
+            raw_cats = [c for c in raw_cats if cat_effs[str(c)]]
+        dedup_cats, seen_cat_sig = [], set()
+        for c in raw_cats:
+            cr = F.items[str(c)]
+            st_sig = tuple(
+                sorted(
+                    (s["statTypeHash"], s["value"], bool(s.get("isConditionallyActive")))
+                    for s in (cr.get("investmentStats") or ())
+                )
+            )
+            sig = (b.text(cr), tuple(tuple(x) for x in cat_effs[str(c)]), st_sig)
+            if sig in seen_cat_sig:
+                continue
+            seen_cat_sig.add(sig)
+            dedup_cats.append(c)
+        catalysts = [int(b.plug(c)) for c in dedup_cats]
+        for c in dedup_cats:
+            cats_text[str(c)] = cat_effs[str(c)]
         ci = d.get("catalystInfo")
         if ci and (ci.get("source") or ci.get("progress")):
             cats_info[h] = [ci.get("source") or "", ci.get("progress") or ""]
