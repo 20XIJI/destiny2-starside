@@ -20,6 +20,7 @@
 }
 
 .ev-scope .toggle {
+  height: auto;
   padding: 8px 14px 10px;
   margin-bottom: -1px;
   color: var(--bone-dim);
@@ -28,17 +29,25 @@
   background: none;
   border: 0;
   border-bottom: 2px solid transparent;
+  box-shadow: none;
   transition: color .15s ease, border-color .15s ease;
 }
 
+.ev-scope .toggle::before { content: none; }
+
 .ev-scope .toggle:hover {
   color: var(--bone);
+  background: none;
+  box-shadow: none;
 }
+
+.ev-scope .toggle:active { transform: none; box-shadow: none; }
 
 .ev-scope .toggle[aria-pressed="true"] {
   color: var(--bone);
   background: none;
   border-color: transparent transparent var(--bone);
+  box-shadow: none;
 }
 
 .ev-tab-ico {

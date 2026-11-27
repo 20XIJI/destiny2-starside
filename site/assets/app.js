@@ -69,6 +69,7 @@
      再出一排跳转 chip 就是同一批字的第二个来源。 */
   var LABEL = 'label' in cfg ? cfg.label : '.art-head h2';
   var NOUN = cfg.noun || '模组';
+  var HINT = cfg.hint || '';
   /* 选择器为空串时 querySelectorAll 直接抛，不能只靠它返回空表。 */
   var sections = SEC ? Array.prototype.slice.call(document.querySelectorAll(SEC)) : [];
   var stick = 0;
@@ -324,7 +325,7 @@
     return;
   }
 
-  var rows, mods, lanes, groups, subs, text, names;
+  var rows, mods, lanes, groups, subs, text, names, gear;
   var restState = window.starsideRest ? 'loading' : 'ready';
   function all(sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); }
   /* 条目与跟着条目走的那几样，收一遍。首屏之后另存的页面（shell.split_rest）在
@@ -342,9 +343,17 @@
        **这一条只能在 JS 里做**：CSS 要写成 .sub-label:has(+ ul:not(:has(> li:not([hidden]))))，
        而 :has() 不许再套 :has()，整条是无效选择器——写在样式表里不报错也不生效。 */
     subs = ITEM ? all('.sub-label') : [];
+    /* 卡片上自带 data-q（以制表符隔开的装备/技能/超能/神器名）一并纳入全文与拼音检索。 */
+    gear = mods.map(function (mod) {
+      var q = mod.dataset && mod.dataset.q;
+      return q ? q.split('\t').filter(Boolean) : [];
+    });
     /* 上百个条目，每次按键都取 textContent 会重复遍历整棵子树，先缓存。
        直接存小写：`hit()` 要的就是它，每次按键再转一遍是几十万字符的临时垃圾。 */
-    text = mods.map(function (mod) { return mod.textContent.toLowerCase(); });
+    text = mods.map(function (mod, i) {
+      var q = gear[i].length ? ' ' + gear[i].join(' ') : '';
+      return (mod.textContent + q).toLowerCase();
+    });
     /* 拼音只打在条目名上。合并行没有自己的行标题，沿用上一行的名字，
        换一个父节点就断开，避免跨表把名字带到下一张去。 */
     var carry = '', parent = null;
@@ -455,10 +464,15 @@
     return n;
   }
 
+  function searchPlaceholder() {
+    if (restState === 'loading') return '搜索' + NOUN + '（其余条目载入中）';
+    return '搜索 ' + poolSize() + ' 个' + NOUN + (HINT ? '（' + HINT + '）' : '');
+  }
+
   var search = document.createElement('input');
   search.type = 'search';
   search.className = 'tool-search';
-  search.placeholder = restState === 'loading' ? '搜索' + NOUN + '（其余条目载入中）' : '搜索 ' + poolSize() + ' 个' + NOUN;
+  search.placeholder = searchPlaceholder();
   search.setAttribute('aria-label', '搜索' + NOUN);
   function onPyReady() { if (search.value) filter(search.value); }
   search.addEventListener('focus', function () {
@@ -652,6 +666,10 @@
       picked[d.name] = [];
       var page = document.querySelector('[data-facet="' + d.name + '"]');
       d.bar = !!page;
+      d.noAll = !!(page && page.dataset && page.dataset.noAll !== undefined);
+      d.noLabel = !!(page && page.dataset && page.dataset.noLabel !== undefined);
+      d.order = page && page.dataset && page.dataset.order ? page.dataset.order.split(',') : null;
+      d.icons = page && page.dataset && page.dataset.icons ? JSON.parse(page.dataset.icons) : null;
       d.host = page || tuckHost().appendChild(document.createElement('div'));
       if (!page) d.host.className = 'tuck-row';
     });
@@ -690,7 +708,14 @@
     vals.forEach(function (v) {
       v[k].forEach(function (x) { if (x && seen.indexOf(x) < 0) seen.push(x); });
     });
-    if (DIMS[k].key === 'tier') {
+    if (DIMS[k].order) {
+      var ord = DIMS[k].order;
+      seen.sort(function (a, b) {
+        var ia = ord.indexOf(a);
+        var ib = ord.indexOf(b);
+        return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
+      });
+    } else if (DIMS[k].key === 'tier') {
       seen.sort(function (a, b) { return tierRank(a) - tierRank(b); });
     }
     return seen;
@@ -828,32 +853,39 @@
   function chipFor(d, k, text, value) {
     var c = document.createElement('button');
     c.type = 'button';
-    c.className = 'toggle';
-    c.textContent = text;
+    if (value !== null && d.icons && d.icons[value]) {
+      c.className = 'toggle is-ico';
+      c.innerHTML = d.icons[value];
+      c.title = text;
+      c.setAttribute('aria-label', text);
+    } else {
+      c.className = 'toggle';
+      c.textContent = text;
+    }
     if (value !== null) c.dataset.v = value;
     c.setAttribute('aria-pressed', 'false');
     c.onclick = function () { pick(d, k, value); };
     return c;
   }
 
-  /* 正文那三排与面板里那两组同一个画法：维度名 + 一排素字开关。两处只差「全部」
-     那一枚与容器给的密度，不为面板另开一套控件——读者也就不必学两种。 */
+  /* 正文那几排与面板里共用同一个画法：维度名 + 开关。页面给了 data-no-all 时
+     单选维不出「全部」，点已选图标再点一次即回到全部。 */
   function paintBar(d, k, seen) {
-    var name = document.createElement('span');
-    name.className = 'facet-label';
-    name.textContent = d.name;
-    d.host.appendChild(name);
-    /* 「全部」排在最前，是这一维的默认态而不是第六个值：它不筛任何东西，
-       按下即清空。不给它一个位置的话，选了场景就再也回不到全部。
-       多选的那几维不给：点第二下即取消，一枚一枚点掉就是清空。 */
-    if (d.single) d.host.appendChild(chipFor(d, k, '全部', null));
+    if (!d.noLabel) {
+      var name = document.createElement('span');
+      name.className = 'facet-label';
+      name.textContent = d.name;
+      d.host.appendChild(name);
+    }
+    if (d.single && !d.noAll) d.host.appendChild(chipFor(d, k, '全部', null));
     seen.forEach(function (x) { d.host.appendChild(chipFor(d, k, x, x)); });
   }
 
   /* 0 命中时的正文空状态与一键重置。只在零命中那一刻惰性建出，平时不占 DOM。 */
   var emptyBox = null;
   var emptyMsg = null;
-  function resetAll() {
+  var resetBtn = document.querySelector('[data-facet-reset]');
+  function clearFilters() {
     search.value = '';
     if (DIMS) {
       DIMS.forEach(function (d) {
@@ -862,13 +894,20 @@
         if (d.groups) regroup('');
       });
     }
+    filter('');
+  }
+  if (resetBtn) {
+    resetBtn.onclick = clearFilters;
+    resetBtn.disabled = true;
+  }
+  function resetAll() {
     if (hideBtn && hideOn) {
       hideOn = false;
       hideBtn.setAttribute('aria-pressed', 'false');
-      search.placeholder = '搜索 ' + poolSize() + ' 个' + NOUN;
+      search.placeholder = searchPlaceholder();
       syncShare('');
     }
-    filter('');
+    clearFilters();
   }
   function syncEmpty(miss, hiddenHits) {
     if (!miss) {
@@ -900,6 +939,26 @@
   /* 命中即显示；整行原文不命中时再拿资料库物品名走拼音与英文。介绍不走这两条。
      整行三档皆不命中则整行隐藏，整节不命中则整节与其 chip 一同隐藏。
      检索期间三档并排对照关系失效，清空即恢复。 */
+  function matchItem(i, terms) {
+    if (hit(text[i], terms)) return true;
+    var py = window.starsidePy;
+    if (!py) return false;
+    var nm = names[i];
+    var list = gear[i];
+    if (!nm && !list.length) return false;
+    for (var k = 0; k < terms.length; k++) {
+      var t = terms[k];
+      if (text[i].indexOf(t) !== -1) continue;
+      if (nm && py.hit(nm, [t])) continue;
+      var ok = false;
+      for (var g = 0; g < list.length; g++) {
+        if (py.hit(list[g], [t])) { ok = true; break; }
+      }
+      if (!ok) return false;
+    }
+    return true;
+  }
+
   function filter(query) {
     var terms = words(query);
     var hits = 0;
@@ -907,9 +966,7 @@
     /* **值没变就不写。**`hidden` 对应 display:none，写一次就要重排整张表；
        weapon-perks 有 413 行，删掉一个字往往只有几行的可见状态真的变了。 */
     mods.forEach(function (mod, i) {
-      var matched = (hit(text[i], terms)
-        || (window.starsidePy && names[i] && window.starsidePy.hit(names[i], terms)))
-        && facetPass(i);
+      var matched = matchItem(i, terms) && facetPass(i);
       var byOk = byPass(mod);
       var on = matched && byOk;
       if (mod.hidden === on) mod.hidden = !on;
@@ -945,6 +1002,7 @@
       if (chips[i]) chips[i].hidden = empty;
     });
     var active = !!query.trim() || facetOn();
+    if (resetBtn) resetBtn.disabled = !active;
     count.textContent = restState === 'loading' ? '其余条目载入中，搜索结果尚不完整'
       : restState === 'failed' ? '其余条目载入失败，搜索结果不完整；请刷新重试'
       : active ? hits + ' / ' + poolSize() + (hiddenHits > 0 ? '（另有 ' + hiddenHits + ' 个已隐藏）' : '')
@@ -1008,7 +1066,7 @@
     hideBtn.onclick = function () {
       hideOn = !hideOn;
       hideBtn.setAttribute('aria-pressed', hideOn ? 'true' : 'false');
-      search.placeholder = '搜索 ' + poolSize() + ' 个' + NOUN;
+      search.placeholder = searchPlaceholder();
       var gDim = DIMS && DIMS.find(function (d) { return d.groups; });
       var want = gDim && picked[gDim.name] && picked[gDim.name].length === 1 ? picked[gDim.name][0] : '';
       syncShare(want);
@@ -1024,7 +1082,7 @@
   if (hideBtn && kept && typeof kept.hideBy === 'boolean') {
     hideOn = kept.hideBy;
     hideBtn.setAttribute('aria-pressed', hideOn ? 'true' : 'false');
-    search.placeholder = '搜索 ' + poolSize() + ' 个' + NOUN;
+    search.placeholder = searchPlaceholder();
     syncShare('');
   }
   if (ITEM && kept && (kept.q || kept.facets)) {
@@ -1071,7 +1129,7 @@
       }
       hadItems = (ROW || ITEM)
         ? sections.map(function (sec) { return !!sec.querySelector(ROW || ITEM); }) : [];
-      search.placeholder = '搜索 ' + poolSize() + ' 个' + NOUN;
+      search.placeholder = searchPlaceholder();
       trimSubs();
       filter(search.value);
       var at = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)));

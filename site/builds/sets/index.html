@@ -28,7 +28,6 @@
 <span class="sep">/</span>
 <span aria-current="page">配装合集</span>
 </nav>
-<div class="toolbar" data-section=".block" data-item=".entries > li" data-label="" data-noun="合集" data-facets="场景=scene:single:groups;强度=tier:single;职业=cls:single;分支=branch:tuck;标签=tag:tuck"></div>
 </div>
 
 <header class="page-head">
@@ -39,17 +38,33 @@
 </header>
 
 <div class="facet-block">
-<div class="facet-tuck" data-facet-tuck><button type="button" class="toggle" data-hide-by="Aegis" aria-pressed="true">隐藏 Aegis 配装</button></div>
-<nav class="facet-bar" data-facet="职业" aria-label="职业"></nav>
-<nav class="facet-bar" data-facet="场景" aria-label="适用场景"></nav>
-<nav class="facet-bar" data-facet="强度" aria-label="强度"></nav>
+<div class="facet-top">
+<div class="facet-search-box">
+<svg class="facet-s-ico" viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8.8" cy="8.8" r="5.6"/><path d="m13.1 13.1 4 4"/></svg>
+<div class="toolbar" data-section=".block" data-item=".entries > li" data-label="" data-noun="合集" data-hint="武器、金装、技能、超能、神器…" data-facets="场景=scene:single:groups;强度=tier:single;职业=cls:single;属性=branch:single;标签=tag:single"></div>
+</div>
+<div class="facet-tuck"><button type="button" class="toggle" data-hide-by="Aegis" aria-pressed="true" title="隐藏 Aegis 配装">隐藏 Aegis</button></div>
+</div>
+<div class="facet-dims">
+<button type="button" class="op is-quiet facet-reset" data-facet-reset disabled title="清空搜索与筛选">重置</button>
+<span class="facet-sep" aria-hidden="true"></span>
+<nav class="facet-bar" data-facet="职业" data-no-all data-no-label data-order="猎人,泰坦,术士,多职业" data-icons="{&quot;猎人&quot;:&quot;&lt;img src=\&quot;../../elements/class-abilities/icons/cba8013059.webp\&quot; alt=\&quot;\&quot; width=\&quot;16\&quot; height=\&quot;16\&quot;&gt;&quot;,&quot;泰坦&quot;:&quot;&lt;img src=\&quot;../../elements/class-abilities/icons/9b7d9d8088.webp\&quot; alt=\&quot;\&quot; width=\&quot;16\&quot; height=\&quot;16\&quot;&gt;&quot;,&quot;术士&quot;:&quot;&lt;img src=\&quot;../../elements/class-abilities/icons/20d0864b80.webp\&quot; alt=\&quot;\&quot; width=\&quot;16\&quot; height=\&quot;16\&quot;&gt;&quot;,&quot;多职业&quot;:&quot;&lt;span class=\&quot;cls-tri\&quot;&gt;&lt;img src=\&quot;../../elements/class-abilities/icons/cba8013059.webp\&quot; alt=\&quot;\&quot; width=\&quot;13\&quot; height=\&quot;13\&quot;&gt;&lt;img src=\&quot;../../elements/class-abilities/icons/9b7d9d8088.webp\&quot; alt=\&quot;\&quot; width=\&quot;13\&quot; height=\&quot;13\&quot;&gt;&lt;img src=\&quot;../../elements/class-abilities/icons/20d0864b80.webp\&quot; alt=\&quot;\&quot; width=\&quot;13\&quot; height=\&quot;13\&quot;&gt;&lt;/span&gt;&quot;}" aria-label="职业"></nav>
+<span class="facet-sep" aria-hidden="true"></span>
+<nav class="facet-bar" data-facet="属性" data-no-all data-no-label data-order="棱镜,烈日,电弧,虚空,冰影,缚丝" data-icons="{&quot;棱镜&quot;:&quot;&lt;svg viewBox=\&quot;0 0 24 24\&quot; width=\&quot;17\&quot; height=\&quot;17\&quot; aria-hidden=\&quot;true\&quot;&gt;&lt;path d=\&quot;M12 3.2 5.4 14.2h13.2L12 3.2Z\&quot; fill=\&quot;none\&quot; stroke=\&quot;var(--c-prism)\&quot; stroke-width=\&quot;1.75\&quot; stroke-linejoin=\&quot;round\&quot;/&gt;&lt;path d=\&quot;M12 7.4 8.8 12.9h6.4L12 7.4Z\&quot; fill=\&quot;var(--c-prism)\&quot;/&gt;&lt;path d=\&quot;M8.3 16.1 5.2 20.6M10.6 16.1 9.2 20.9M13.4 16.1l1.4 4.8M15.7 16.1l3.1 4.5\&quot; stroke=\&quot;var(--c-prism)\&quot; stroke-width=\&quot;1.65\&quot; stroke-linecap=\&quot;round\&quot;/&gt;&lt;/svg&gt;&quot;,&quot;电弧&quot;:&quot;&lt;img src=\&quot;../../assets/icons/DestinyDamageTypeDefinition_092d066688b879c807c3b460afdd61e6.webp\&quot; alt=\&quot;\&quot; width=\&quot;17\&quot; height=\&quot;17\&quot;&gt;&quot;,&quot;烈日&quot;:&quot;&lt;img src=\&quot;../../assets/icons/DestinyDamageTypeDefinition_2a1773e10968f2d088b97c22b22bba9e.webp\&quot; alt=\&quot;\&quot; width=\&quot;17\&quot; height=\&quot;17\&quot;&gt;&quot;,&quot;虚空&quot;:&quot;&lt;img src=\&quot;../../assets/icons/DestinyDamageTypeDefinition_ceb2f6197dccf3958bb31cc783eb97a0.webp\&quot; alt=\&quot;\&quot; width=\&quot;17\&quot; height=\&quot;17\&quot;&gt;&quot;,&quot;冰影&quot;:&quot;&lt;img src=\&quot;../../assets/icons/DestinyDamageTypeDefinition_530c4c3e7981dc2aefd24fd3293482bf.webp\&quot; alt=\&quot;\&quot; width=\&quot;17\&quot; height=\&quot;17\&quot;&gt;&quot;,&quot;缚丝&quot;:&quot;&lt;img src=\&quot;../../assets/icons/DestinyDamageTypeDefinition_b2fe51a94f3533f97079dfa0d27a4096.webp\&quot; alt=\&quot;\&quot; width=\&quot;17\&quot; height=\&quot;17\&quot;&gt;&quot;}" aria-label="属性"></nav>
+<span class="facet-sep" aria-hidden="true"></span>
+<nav class="facet-bar" data-facet="场景" data-no-all data-no-label aria-label="适用场景"></nav>
+<span class="facet-sep" aria-hidden="true"></span>
+<nav class="facet-bar" data-facet="标签" data-no-all data-no-label aria-label="标签"></nav>
+<span class="facet-sep" aria-hidden="true"></span>
+<nav class="facet-bar" data-facet="强度" data-no-all data-no-label aria-label="强度"></nav>
+</div>
 </div>
 <main>
 <section class="block" id="sec-1" data-scene="突袭">
 <h2 class="sect-label">突袭 &amp; 地牢</h2>
 <h3 class="sub-label">猎人</h3>
 <ul class="entries" data-cls="猎人">
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="meta" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="meta" data-by="Aegis" data-tag="输出" data-q="加拉诺碎片&#9;威胁等级&#9;级联点&#9;聚合充能&#9;多多罗的凝视&#9;速射瞄准&#9;精准连击&#9;轰鸣巨人&#9;持久印象&#9;收割者贡品&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;轻质飞刀&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;骨灰余烬&#9;光线余烬&#9;超能洗礼&#9;谐振装弹装置&#9;虚空灵巧&#9;冰影灵巧&#9;稳定谐振瞄准&#9;完全充能&#9;虚空武器激涌&#9;时间膨胀&#9;强力吸引&#9;极限突破&#9;三段跳&#9;废墟石板&#9;叛贼&#9;命运眷顾&#9;谐振灵巧&#9;电弧灵巧&#9;烈焰之心&#9;火种扳机&#9;银白重炮&#9;崩解&#9;女王兰香炉">
 <a class="entry" href="../s29/dps-004-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/39441735ec0f1e7f7760775f6ee4bd24.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -64,7 +79,7 @@
 </div>
 </a>
 </li>
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="meta" data-by="Aegis" data-tag="输出">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="meta" data-by="Aegis" data-tag="输出" data-q="领航员&#9;相对主义&#9;复兴之灵&#9;合成感受器之灵&#9;低阻之道&#9;边打边劫&#9;伏特子弹&#9;纳斯尔丁&#9;尖锐收割&#9;急切刀锋&#9;艾昂适配&#9;沉默狂啸&#9;抓钩&#9;组合打击&#9;赌徒闪身&#9;严冬帷幕&#9;飞升&#9;勇气琢面&#9;保护琢面&#9;奉献琢面&#9;荣耀琢面&#9;动能瞄准性能&#9;电弧虹吸&#9;强力伙伴&#9;回天掌法&#9;灼烧抗性&#9;震荡阻尼器&#9;强化运动&#9;动能武器激涌&#9;层层不绝&#9;职业洗礼&#9;投弹手&#9;轨迹证据&#9;置身其中&#9;冰霜复兴&#9;视网膜灼烧&#9;治疗能量球&#9;传导宇宙水晶&#9;电弧复合&#9;三段跳&#9;杀手公爵药剂师背包&#9;完美悖论&#9;威胁探测&#9;雪上加霜&#9;近战洗礼&#9;手雷洗礼&#9;动能灵巧&#9;完全充能&#9;时间膨胀">
 <a class="entry" href="../s29/dps-010-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/58ae63b773059e5bd7a4d43298f73a50.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/5d65ba9eb04c2f3760eba0b5eec9be8a.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -79,7 +94,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="meta" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="meta" data-by="Aegis" data-tag="输出" data-q="叛贼&#9;加拉诺碎片&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;光芒复仇&#9;集束炸弹&#9;聚合充能&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;光线余烬&#9;焦燃余烬&#9;火炬余烬&#9;骨灰余烬&#9;超能洗礼&#9;谐振装弹装置&#9;动能灵巧&#9;电弧抗性&#9;完全充能&#9;烈日武器激涌&#9;时间膨胀&#9;强力吸引&#9;瓦解能量球&#9;极限突破&#9;三段跳&#9;废墟石板&#9;命运眷顾&#9;谐振瞄准性能&#9;虚空灵巧&#9;谐振灵巧&#9;烈焰之心&#9;护甲匠&#9;火种扳机&#9;发热寒颤&#9;银白重炮&#9;崩解&#9;女王兰香炉">
 <a class="entry" href="../s29/dps-011-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/39441735ec0f1e7f7760775f6ee4bd24.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -94,7 +109,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="meta" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="meta" data-by="Aegis" data-tag="输出" data-q="寄生虫&#9;加拉诺碎片&#9;遗产&#9;转向&#9;聚合充能&#9;无声&#9;诱导推销&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;骨灰余烬&#9;光线余烬&#9;超能洗礼&#9;虚空灵巧&#9;缚丝灵巧&#9;谐振灵巧&#9;电弧抗性&#9;完全充能&#9;烈日武器激涌&#9;面面俱到&#9;强力吸引&#9;不稳定神枪手&#9;邪恶收割&#9;崩解&#9;极限突破&#9;三段跳&#9;废墟石板&#9;命运眷顾&#9;充沛&#9;动能灵巧&#9;动能武器激涌&#9;虚空武器激涌">
 <a class="entry" href="../s29/dps-013-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/0a71a14d8614d619a40649f09b28b466.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -109,7 +124,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="meta" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="meta" data-by="Aegis" data-tag="输出" data-q="真相&#9;加拉诺碎片&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;时间食者&#9;边打边劫&#9;失衡弹药&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;仁慈余烬&#9;光线余烬&#9;超能洗礼&#9;谐振装弹装置&#9;动能灵巧&#9;完全充能&#9;烈日武器激涌&#9;时间膨胀&#9;强力吸引&#9;瓦解能量球&#9;极限突破&#9;三段跳&#9;废墟石板&#9;命运眷顾&#9;食莲者&#9;虚空瞄准性能&#9;谐振灵巧&#9;虚空装弹装置&#9;虚空灵巧&#9;电弧抗性&#9;虚空武器激涌&#9;面面俱到&#9;烈焰之心&#9;火炬&#9;爆炸范围&#9;火种扳机&#9;银白重炮&#9;崩解&#9;女王兰香炉">
 <a class="entry" href="../s29/dps-017-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/b5021df721b66b6ab71e73b23e7b5392.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -124,7 +139,7 @@
 </div>
 </a>
 </li>
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="meta" data-by="Aegis" data-tag="输出">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="meta" data-by="Aegis" data-tag="输出" data-q="牵引器火炮&#9;星界夜鹰&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;裁决定论&#9;聚合充能&#9;战嚎炮管&#9;定制特机&#9;黄金枪：神枪手&#9;电光手雷&#9;线织尖刺&#9;赌徒闪身&#9;严冬帷幕&#9;飞升&#9;勇气琢面&#9;统御琢面&#9;正义琢面&#9;毁灭琢面&#9;超能洗礼&#9;谐振灵巧&#9;谐振装弹装置&#9;冰影灵巧&#9;完全充能&#9;电弧武器激涌&#9;时间膨胀&#9;强力吸引&#9;瓦解能量球&#9;极限突破&#9;三段跳&#9;废墟石板&#9;混乱无序&#9;命运眷顾&#9;驱逐引擎&#9;自动填装枪套&#9;磁性手雷&#9;陷阱炸弹&#9;充沛&#9;鼓舞爆弹&#9;电弧装弹装置&#9;近战洗礼&#9;电弧抗性&#9;面面俱到&#9;轨迹证据&#9;视网膜灼烧&#9;动能冲击&#9;电弧复合&#9;杀手公爵药剂师背包">
 <a class="entry" href="../s29/dps-070-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/a7c3ee955c5e8b1c20122206d1bf60ff.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/f24e3336a1142847d6bf47b56b492eea.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -139,7 +154,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="meta" data-by="小棒猪">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="meta" data-by="小棒猪" data-q="牵引器火炮&#9;加拉诺碎片&#9;玻璃拱顶&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;赌徒闪身&#9;击败他们&#9;速射神枪&#9;骨灰余烬&#9;火炬余烬&#9;焦燃余烬&#9;光线余烬&#9;超能洗礼&#9;充沛&#9;缚丝灵巧&#9;虚空灵巧&#9;抗性&#9;震荡阻尼器&#9;强力吸引&#9;时间膨胀&#9;面面俱到&#9;极限突破&#9;废墟石板&#9;混乱无序&#9;快速装弹松身裤&#9;裁决定论&#9;聚合充能&#9;战嚎炮管&#9;驱逐引擎&#9;电弧灵巧&#9;冰影灵巧&#9;近战洗礼&#9;电弧武器激涌&#9;风寒&#9;轨迹证据&#9;冰霜复兴&#9;削弱清敌&#9;视网膜灼烧&#9;动能冲击&#9;电弧复合&#9;杀手公爵药剂师背包&#9;狼毒&#9;复苏指令IV&#9;羸弱能量球&#9;食莲者&#9;枯萎凝视&#9;特技闪身&#9;谐振灵巧&#9;邪恶收割&#9;噬星者之鳞&#9;烈日武器激涌&#9;职业洗礼&#9;能量扩散基质&#9;焕光能量球&#9;烈日爆发&#9;护盾粉碎&#9;银白利刃&#9;猎人日志">
 <a class="entry" href="../s29/5nunme89-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/6afd31f787ff68d32e1f574686494606.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/cb2d44c8d1459ea43b0ea82976cf66e0.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/ff3a789b729978880907dc5dc08b3793.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -153,7 +168,7 @@
 </div>
 </a>
 </li>
-<li class="b-void" data-branch="虚空" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="meta" data-by="小棒猪">
+<li class="b-void" data-branch="虚空" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="meta" data-by="小棒猪" data-q="需求层级&#9;奥菲斯钻机&#9;完美逆行&#9;沙场备战&#9;狂乱&#9;拜龙教镰刀&#9;急切刀锋&#9;腹背受敌&#9;玻璃拱顶&#9;暗影箭矢：莫比乌斯箭袋&#9;饥饿回声&#9;坚韧回声&#9;收割回声&#9;超能洗礼&#9;烈日瞄准性能&#9;烈日灵巧&#9;烈日装弹装置&#9;稳定烈日瞄准&#9;抗性&#9;烈日武器激涌&#9;强力吸引&#9;时间膨胀&#9;职业洗礼&#9;发热寒颤&#9;半自动强袭&#9;并肩作战&#9;能量加速&#9;醒神丝线&#9;焕光碎片&#9;银白箭袋&#9;好奇之器&#9;利维坦之息&#9;命运眷顾&#9;裁决定论&#9;聚合充能&#9;战嚎炮管&#9;谐振瞄准性能&#9;谐振装弹装置&#9;谐振灵巧&#9;谐振弹药生成&#9;虚空武器激涌&#9;混乱无序&#9;幸运裤&#9;无礼言论&#9;冷却饰物&#9;精准工具&#9;阴谋淬砺&#9;斩首武器&#9;火线&#9;电弧瞄准性能&#9;电弧灵巧&#9;冰影灵巧&#9;稳定电弧瞄准&#9;电弧武器激涌&#9;冰影武器激涌&#9;风寒&#9;大肆屠杀&#9;冰霜复兴&#9;削弱清敌&#9;视网膜灼烧&#9;动能冲击&#9;电弧复合&#9;杀手公爵药剂师背包&#9;驱逐引擎&#9;自动填装枪套&#9;置身其中&#9;隐秘追猎&#9;星界夜鹰&#9;燃烧步枪弹药&#9;能量扩散基质&#9;虚空霸权&#9;烈日爆发&#9;护盾粉碎&#9;狙击手冥想&#9;猎人日志&#9;传家宝&#9;诱导推销&#9;好建议&#9;嫉妒军械库&#9;高地&#9;守望者尖塔&#9;射手闪身&#9;冰影瞄准性能&#9;震荡阻尼器&#9;火种扳机&#9;单人特工&#9;女王兰香炉&#9;庆典飞行&#9;虚空灵巧&#9;扩展深渊&#9;枯萎囤积&#9;紧急求生包&#9;威胁探测&#9;动能灵巧">
 <a class="entry" href="../s29/fbphxdoh-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/8c32410000243e6024130f755b23fbe6.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/fd892bb713040300ad944590892b0e50.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/2f4c271a310232896cf1100a078b2bae.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/1037e708755c7086c1ac467364ca4340.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -167,7 +182,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="meta" data-by="MK_D2#7555" data-tag="机制&#9;输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="meta" data-by="MK_D2#7555" data-tag="机制&#9;输出" data-q="狼毒&#9;命运眷顾&#9;红衣威尔&#9;动能震颤&#9;羸弱能量球&#9;韦兰迪夫-D&#9;治疗弹匣&#9;铤而走险&#9;应许之物&#9;国王的陨落&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;赌徒闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;抚慰余烬&#9;焦燃余烬&#9;骨灰余烬&#9;仁慈余烬&#9;重型弹药搜寻者&#9;特殊武器弹药搜寻者&#9;重型弹药斥候&#9;回天掌法&#9;伤害感应&#9;动能装弹装置&#9;震荡阻尼器&#9;抗性&#9;谐振回收器&#9;层层不绝&#9;强化运动&#9;特殊终结技&#9;时间膨胀&#9;职业洗礼&#9;能量扩散基质&#9;元素虹吸&#9;利刃耐力&#9;焕光能量球&#9;瞄准自动填装器&#9;护盾粉碎&#9;猎人日志&#9;加拉诺碎片&#9;埃希恩记忆&#9;辐射光能&#9;强力伙伴&#9;超能洗礼&#9;谐振灵巧&#9;近战洗礼&#9;烈日武器激涌&#9;强力吸引&#9;极限突破&#9;废墟石板&#9;噬星者之鳞&#9;玻璃拱顶&#9;充沛&#9;近战伤害抗性&#9;烈日爆发&#9;银白利刃">
 <a class="entry" href="../s29/0n05dhek-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/6acdff9af5ae274c70055f816aab2389.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/5b7f647435bbe18d2c83d3691758184c.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -182,7 +197,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭" data-cls="猎人" data-tier="meta" data-by="AKfro#9237" data-tag="机制&#9;输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭" data-cls="猎人" data-tier="meta" data-by="AKfro#9237" data-tag="机制&#9;输出" data-q="单人合唱&#9;命运眷顾&#9;阴谋淬砺&#9;斩首武器&#9;诱导推销&#9;陨落铡刀&#9;急切刀锋&#9;冲击支撑&#9;溢冰&#9;欧里克斯记忆&#9;利刃弹幕&#9;治愈手雷&#9;轻质飞刀&#9;特技闪身&#9;击败他们&#9;速射神枪&#9;光线余烬&#9;抚慰余烬&#9;焦燃余烬&#9;骨灰余烬&#9;特殊武器弹药搜寻者&#9;特殊弹药斥候&#9;重型弹药斥候&#9;手雷洗礼&#9;虚空装弹装置&#9;快速球&#9;抗性&#9;完全充能&#9;虚空弹药生成&#9;层层不绝&#9;药到病除&#9;虚空回收器&#9;特殊终结技&#9;感应护盾&#9;时间膨胀&#9;不稳定流动&#9;持续火力&#9;远方砖块&#9;瞄准自动填装器&#9;反制充能&#9;传导宇宙织针&#9;碎裂能量球&#9;NPA 斥力调节器&#9;混乱无序&#9;加拉诺碎片&#9;无誓&#9;边打边劫&#9;众神辉煌&#9;凯旋圣歌&#9;充沛&#9;超能洗礼&#9;回收利用&#9;面面俱到&#9;瓦解能量球&#9;弹中藏金&#9;元素超充器&#9;废墟石板&#9;驱逐引擎&#9;聚合充能&#9;裁决定论&#9;战嚎炮管&#9;埃希恩记忆&#9;电弧灵巧&#9;冰影灵巧&#9;电弧武器激涌&#9;强力吸引&#9;群敌飞梭&#9;除颤爆破&#9;极限突破&#9;快速装弹松身裤&#9;风寒&#9;晶体转换器&#9;冰霜复兴&#9;削弱清敌&#9;视网膜灼烧&#9;动能冲击&#9;电弧复合&#9;杀手公爵药剂师背包">
 <a class="entry" href="../s29/8p1f06qc-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/80cc90861aa83c63de2273457a6c9345.webp" alt="" width="29" height="29" loading="lazy"><img src="../../armor-sets/icons/047.png" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/cb2d44c8d1459ea43b0ea82976cf66e0.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -197,7 +212,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="冷酷无情&#9;加拉诺碎片&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;纳斯尔丁&#9;尖锐收割&#9;急切刀锋&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;骨灰余烬&#9;光线余烬&#9;超能洗礼&#9;谐振装弹装置&#9;动能灵巧&#9;完全充能&#9;电弧抗性&#9;烈日武器激涌&#9;时间膨胀&#9;强力吸引&#9;瓦解能量球&#9;极限突破&#9;三段跳&#9;废墟石板&#9;命运眷顾&#9;谐振瞄准性能&#9;缚丝灵巧&#9;谐振灵巧&#9;专注打击&#9;发热寒颤&#9;元素仁慈&#9;并肩作战&#9;醒神丝线&#9;半自动强袭&#9;元素超驰&#9;好奇之器">
 <a class="entry" href="../s29/dps-033-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/f3714197408d2c8935a2ce7be69a210c.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -212,7 +227,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="伊邪那岐的重担&#9;命运眷顾&#9;时间食者&#9;边打边劫&#9;失衡弹药&#9;史赛克的老练&#9;狂暴&#9;转向&#9;圣贤保护者&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;特技闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;骨灰余烬&#9;光线余烬&#9;强力伙伴&#9;虚空虹吸&#9;特殊武器弹药搜寻者&#9;光明利刃&#9;完全充能&#9;虚空武器激涌&#9;时间膨胀&#9;强力吸引&#9;元素虹吸&#9;焕光能量球&#9;银白利刃&#9;护盾粉碎&#9;三段跳&#9;猎人日志&#9;加拉诺碎片&#9;定制特机&#9;动能瞄准性能&#9;超能洗礼&#9;谐振灵巧&#9;动能灵巧&#9;动能武器激涌&#9;严酷折射&#9;极限突破&#9;废墟石板">
 <a class="entry" href="../s29/dps-024-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/aef3f0c6823ea0564d94ff81b40552f0.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/ad2fbd772a197f6e8ce123cd2c6cb755.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -227,7 +242,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="寄生虫&#9;加拉诺碎片&#9;星芒视界&#9;阻止力&#9;全明星&#9;邪冬的谎言&#9;级联点&#9;诱导推销&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;轻质飞刀&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;仁慈余烬&#9;光线余烬&#9;超能洗礼&#9;虚空灵巧&#9;缚丝灵巧&#9;谐振灵巧&#9;电弧抗性&#9;完全充能&#9;烈日武器激涌&#9;时间膨胀&#9;强力吸引&#9;不稳定神枪手&#9;邪恶收割&#9;崩解&#9;极限突破&#9;三段跳&#9;废墟石板&#9;命运眷顾&#9;动能灵巧&#9;动能武器激涌&#9;动能合成&#9;加密数据盘">
 <a class="entry" href="../s29/dps-037-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/0a71a14d8614d619a40649f09b28b466.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -242,7 +257,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="寄生虫&#9;加拉诺碎片&#9;威胁等级&#9;级联点&#9;全明星&#9;纯粹回忆&#9;嫉妒军械库&#9;诱导推销&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;骨灰余烬&#9;光线余烬&#9;超能洗礼&#9;谐振灵巧&#9;动能灵巧&#9;完全充能&#9;动能武器激涌&#9;强力吸引&#9;时间膨胀&#9;不稳定神枪手&#9;元素虹吸&#9;邪恶收割&#9;弹中藏金&#9;瓦解能量球&#9;崩解&#9;极限突破&#9;三段跳&#9;废墟石板&#9;快速装弹松身裤&#9;定制特机&#9;充沛&#9;虚空灵巧&#9;电弧抗性&#9;动能合成&#9;加密数据盘">
 <a class="entry" href="../s29/dps-038-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/0a71a14d8614d619a40649f09b28b466.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -257,7 +272,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="加拉诺碎片&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;食莲者&#9;边打边劫&#9;失衡弹药&#9;遗赠&#9;无情打击&#9;元素磨砺&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;骨灰余烬&#9;光线余烬&#9;超能洗礼&#9;谐振装弹装置&#9;虚空灵巧&#9;冰影灵巧&#9;完全充能&#9;电弧抗性&#9;虚空武器激涌&#9;时间膨胀&#9;投弹手&#9;瓦解能量球&#9;极限突破&#9;三段跳&#9;废墟石板&#9;命运眷顾&#9;驱逐引擎&#9;自动填装枪套&#9;聚合充能&#9;强力伙伴&#9;充沛&#9;电弧装弹装置&#9;电弧武器激涌&#9;面面俱到&#9;护盾粉碎&#9;银白利刃&#9;猎人日志">
 <a class="entry" href="../s29/dps-039-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/c51dd26c9db21b789afa7d24d96e39fa.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -272,7 +287,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="狼毒&#9;复苏指令IV&#9;燃烧野心&#9;加拉诺碎片&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;裁决定论&#9;聚合充能&#9;战嚎炮管&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;仁慈余烬&#9;焦燃余烬&#9;火炬余烬&#9;抚慰余烬&#9;超能洗礼&#9;缚丝装弹装置&#9;虚空灵巧&#9;缚丝灵巧&#9;完全充能&#9;电弧武器激涌&#9;时间膨胀&#9;强力吸引&#9;瓦解能量球&#9;极限突破&#9;三段跳&#9;废墟石板&#9;命运眷顾&#9;驱逐引擎&#9;自动填装枪套&#9;低阻之道&#9;边打边劫&#9;伏特子弹&#9;骨灰余烬&#9;充沛&#9;鼓舞爆弹&#9;冰影灵巧&#9;专注打击&#9;电弧抗性&#9;烈日武器激涌&#9;面面俱到&#9;能量扩散基质&#9;焕光能量球&#9;烈日爆发&#9;银白利刃&#9;护盾粉碎&#9;猎人日志">
 <a class="entry" href="../s29/dps-041-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/6acdff9af5ae274c70055f816aab2389.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -287,7 +302,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="混乱无序&#9;加拉诺碎片&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;裁决定论&#9;聚合充能&#9;战嚎炮管&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;仁慈余烬&#9;焦燃余烬&#9;火炬余烬&#9;骨灰余烬&#9;超能洗礼&#9;缚丝装弹装置&#9;虚空灵巧&#9;缚丝灵巧&#9;完全充能&#9;电弧武器激涌&#9;时间膨胀&#9;强力吸引&#9;瓦解能量球&#9;极限突破&#9;三段跳&#9;废墟石板&#9;命运眷顾&#9;驱逐引擎&#9;自动填装枪套&#9;定制特机&#9;充沛&#9;电弧灵巧&#9;电弧装弹装置&#9;专注打击&#9;虚空抗性&#9;面面俱到&#9;轨迹证据&#9;视网膜灼烧&#9;动能冲击&#9;电弧复合&#9;杀手公爵药剂师背包">
 <a class="entry" href="../s29/dps-043-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/f24e3336a1142847d6bf47b56b492eea.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -302,7 +317,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="伊邪那岐的重担&#9;加拉诺碎片&#9;送魂者&#9;自动填装枪套&#9;聚合充能&#9;翻新 A499&#9;速射瞄准&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;骨灰余烬&#9;光线余烬&#9;超能洗礼&#9;电弧装弹装置&#9;电弧灵巧&#9;完全充能&#9;电弧武器激涌&#9;强力吸引&#9;时间膨胀&#9;不稳定神枪手&#9;元素虹吸&#9;邪恶收割&#9;弹中藏金&#9;瓦解能量球&#9;崩解&#9;极限突破&#9;三段跳&#9;废墟石板&#9;快速装弹松身裤&#9;定制特机&#9;充沛&#9;谐振灵巧&#9;动能装弹装置&#9;动能灵巧&#9;电弧抗性&#9;动能武器激涌&#9;动能合成&#9;远距填装&#9;狙击手冥想&#9;加密数据盘">
 <a class="entry" href="../s29/dps-045-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/8763caf9bfb147a41f3e34ec7eaf876b.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -317,7 +332,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="阿克瑞斯传说&#9;加拉诺碎片&#9;驱逐引擎&#9;自动填装枪套&#9;聚合充能&#9;低阻之道&#9;边打边劫&#9;伏特子弹&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;骨灰余烬&#9;光线余烬&#9;超能洗礼&#9;谐振装弹装置&#9;动能灵巧&#9;完全充能&#9;电弧抗性&#9;烈日武器激涌&#9;时间膨胀&#9;强力吸引&#9;瓦解能量球&#9;极限突破&#9;三段跳&#9;废墟石板&#9;命运眷顾&#9;强力伙伴&#9;充沛&#9;冰影灵巧&#9;电弧灵巧&#9;电弧装弹装置&#9;电弧武器激涌&#9;面面俱到&#9;投弹手&#9;迎接风暴&#9;视网膜灼烧&#9;动能冲击&#9;电弧复合&#9;杀手公爵药剂师背包">
 <a class="entry" href="../s29/dps-046-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/6de5f786f39bf827de8490e97b672ddb.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -332,7 +347,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="破冰者&#9;加拉诺碎片&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;光芒复仇&#9;集束炸弹&#9;聚合充能&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;骨灰余烬&#9;光线余烬&#9;超能洗礼&#9;谐振装弹装置&#9;动能灵巧&#9;完全充能&#9;电弧抗性&#9;烈日武器激涌&#9;时间膨胀&#9;强力吸引&#9;瓦解能量球&#9;极限突破&#9;三段跳&#9;废墟石板&#9;快速装弹松身裤&#9;礼拜&#9;嫉妒军械库&#9;冰冷弹匣&#9;强力伙伴&#9;充沛&#9;冰影灵巧&#9;谐振灵巧&#9;专注打击&#9;面面俱到&#9;投弹手&#9;烈焰之心&#9;护甲匠&#9;龙之啮&#9;发热寒颤&#9;火种扳机&#9;银白重炮&#9;崩解&#9;女王兰香炉">
 <a class="entry" href="../s29/dps-048-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/5f3f44c8ec720f4ece9a8903ae29df60.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -347,7 +362,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="千语&#9;加拉诺碎片&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;裁决定论&#9;聚合充能&#9;战嚎炮管&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;仁慈余烬&#9;焦燃余烬&#9;火炬余烬&#9;骨灰余烬&#9;超能洗礼&#9;缚丝装弹装置&#9;虚空灵巧&#9;缚丝灵巧&#9;完全充能&#9;电弧武器激涌&#9;时间膨胀&#9;强力吸引&#9;瓦解能量球&#9;极限突破&#9;三段跳&#9;废墟石板&#9;命运眷顾&#9;驱逐引擎&#9;自动填装枪套&#9;低阻之道&#9;边打边劫&#9;伏特子弹&#9;充沛&#9;鼓舞爆弹&#9;谐振灵巧&#9;专注打击&#9;电弧抗性&#9;烈日武器激涌&#9;面面俱到&#9;粒子重建">
 <a class="entry" href="../s29/dps-049-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/51c53df606cca474dce3cadbf7d5ce28.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -362,7 +377,7 @@
 </div>
 </a>
 </li>
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="故我在&#9;涡流框架&#9;意外缓刑&#9;星界夜鹰&#9;驱逐引擎&#9;自动填装枪套&#9;聚合充能&#9;噩兆&#9;羸弱能量球&#9;居合连斩&#9;埃希恩记忆&#9;黄金枪：神枪手&#9;蜂群手雷&#9;线织尖刺&#9;赌徒闪身&#9;飞升&#9;线织幽灵&#9;黎明琢面&#9;勇气琢面&#9;毁灭琢面&#9;希望琢面&#9;正义琢面&#9;超能洗礼&#9;动能装弹装置&#9;动能灵巧&#9;谐振灵巧&#9;完全充能&#9;电弧武器激涌&#9;强力吸引&#9;时间膨胀&#9;元素虹吸&#9;焕光能量球&#9;烈日爆发&#9;银白利刃&#9;护盾粉碎&#9;三段跳&#9;猎人日志&#9;命运眷顾&#9;冰影瞄准性能&#9;近战洗礼&#9;手雷洗礼&#9;虚空武器激涌">
 <a class="entry" href="../s29/dps-051-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/a7c3ee955c5e8b1c20122206d1bf60ff.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/39a94c98eba4b9e007a76bbc067752f7.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -377,7 +392,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="混乱无序&#9;加拉诺碎片&#9;驱逐引擎&#9;自动填装枪套&#9;聚合充能&#9;快速增长&#9;事不过四&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;骨灰余烬&#9;光线余烬&#9;超能洗礼&#9;谐振装弹装置&#9;虚空灵巧&#9;冰影灵巧&#9;完全充能&#9;电弧抗性&#9;虚空武器激涌&#9;时间膨胀&#9;投弹手&#9;极限突破&#9;三段跳&#9;废墟石板&#9;命运眷顾&#9;强力伙伴&#9;充沛&#9;缚丝灵巧&#9;电弧灵巧&#9;电弧装弹装置&#9;电弧武器激涌&#9;面面俱到&#9;迎接风暴&#9;视网膜灼烧&#9;动能冲击&#9;电弧复合&#9;杀手公爵药剂师背包">
 <a class="entry" href="../s29/dps-055-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/f24e3336a1142847d6bf47b56b492eea.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -392,7 +407,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="伊邪那岐的重担&#9;命运眷顾&#9;时间食者&#9;边打边劫&#9;失衡弹药&#9;史赛克的老练&#9;狂暴&#9;转向&#9;圣贤保护者&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;特技闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;骨灰余烬&#9;光线余烬&#9;强力伙伴&#9;虚空虹吸&#9;特殊武器弹药搜寻者&#9;光明利刃&#9;虚空武器激涌&#9;时间膨胀&#9;强力吸引&#9;元素虹吸&#9;焕光能量球&#9;银白利刃&#9;护盾粉碎&#9;三段跳&#9;猎人日志&#9;机巧纬线&#9;空中扳机&#9;双脚架&#9;三色矛头蝮-4bl&#9;燃烧野心&#9;聚合充能&#9;埃希恩记忆&#9;充沛&#9;近战洗礼&#9;手雷洗礼&#9;谐振灵巧&#9;完全充能&#9;烈日武器激涌&#9;面面俱到&#9;能量扩散基质&#9;烈日爆发">
 <a class="entry" href="../s29/dps-056-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/aef3f0c6823ea0564d94ff81b40552f0.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/f7f663c090053f11ba9b061838bee946.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -407,7 +422,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="挽歌&#9;加拉诺碎片&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;时间食者&#9;边打边劫&#9;失衡弹药&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;仁慈余烬&#9;光线余烬&#9;超能洗礼&#9;谐振装弹装置&#9;动能灵巧&#9;完全充能&#9;烈日武器激涌&#9;时间膨胀&#9;强力吸引&#9;瓦解能量球&#9;极限突破&#9;三段跳&#9;废墟石板&#9;命运眷顾&#9;铭纹-41&#9;自动填装枪套&#9;动能瞄准性能&#9;充沛&#9;谐振灵巧&#9;电弧灵巧&#9;光明利刃&#9;面面俱到&#9;能量扩散基质&#9;乘胜追击&#9;焕光能量球&#9;烈日爆发&#9;护盾粉碎&#9;银白利刃&#9;猎人日志">
 <a class="entry" href="../s29/dps-057-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/f6844ca3eb572c546e97a340c24531d5.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -422,7 +437,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="混乱无序&#9;加拉诺碎片&#9;阴谋淬砺&#9;斩首武器&#9;诱导推销&#9;无礼言论&#9;冷却饰物&#9;精准工具&#9;凯旋圣歌&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;仁慈余烬&#9;焦燃余烬&#9;骨灰余烬&#9;光线余烬&#9;冰影瞄准性能&#9;电弧瞄准性能&#9;强力伙伴&#9;近战洗礼&#9;谐振灵巧&#9;谐振装弹装置&#9;电弧抗性&#9;完全充能&#9;冰影回收器&#9;电弧回收器&#9;层层不绝&#9;时间膨胀&#9;强力吸引&#9;不稳定神枪手&#9;元素虹吸&#9;邪恶收割&#9;弹中藏金&#9;瓦解能量球&#9;崩解&#9;极限突破&#9;三段跳&#9;废墟石板&#9;幸运裤&#9;定制特机&#9;融合手雷&#9;轻质飞刀&#9;火炬余烬&#9;冰影装弹装置&#9;电弧灵巧&#9;电弧武器激涌&#9;轨迹证据&#9;迎接风暴&#9;视网膜灼烧&#9;电弧复合&#9;动能冲击&#9;杀手公爵药剂师背包">
 <a class="entry" href="../s29/dps-058-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/f24e3336a1142847d6bf47b56b492eea.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -437,7 +452,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="监护人&#9;加拉诺碎片&#9;时间食者&#9;边打边劫&#9;失衡弹药&#9;纳斯尔丁&#9;尖锐收割&#9;急切刀锋&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;仁慈余烬&#9;光线余烬&#9;超能洗礼&#9;谐振装弹装置&#9;动能灵巧&#9;完全充能&#9;烈日武器激涌&#9;时间膨胀&#9;强力吸引&#9;瓦解能量球&#9;极限突破&#9;三段跳&#9;废墟石板&#9;命运眷顾&#9;铭纹-41&#9;自动填装枪套&#9;羸弱能量球&#9;动能瞄准性能&#9;充沛&#9;谐振灵巧&#9;电弧灵巧&#9;动能武器激涌&#9;面面俱到&#9;动能合成&#9;加密数据盘">
 <a class="entry" href="../s29/dps-059-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/1d387ba81462f8f5abb63b4492b10dbe.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -452,7 +467,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="寄生虫&#9;加拉诺碎片&#9;阴谋淬砺&#9;斩首武器&#9;诱导推销&#9;送魂者&#9;自动填装枪套&#9;聚合充能&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;骨灰余烬&#9;光线余烬&#9;超能洗礼&#9;谐振装弹装置&#9;动能灵巧&#9;完全充能&#9;烈日武器激涌&#9;时间膨胀&#9;强力吸引&#9;瓦解能量球&#9;极限突破&#9;三段跳&#9;废墟石板&#9;命运眷顾&#9;充沛&#9;冰影瞄准性能&#9;谐振灵巧&#9;电弧灵巧&#9;冰影灵巧&#9;电弧抗性&#9;冰影武器激涌&#9;面面俱到&#9;能量扩散基质&#9;乘胜追击&#9;焕光能量球&#9;烈日爆发&#9;护盾粉碎&#9;狙击手冥想&#9;猎人日志">
 <a class="entry" href="../s29/dps-060-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/0a71a14d8614d619a40649f09b28b466.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -467,7 +482,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="寄生虫&#9;加拉诺碎片&#9;巴拉巴拉&#9;精准连击&#9;全明星&#9;送魂者&#9;自动填装枪套&#9;聚合充能&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;骨灰余烬&#9;光线余烬&#9;超能洗礼&#9;谐振装弹装置&#9;动能灵巧&#9;完全充能&#9;烈日武器激涌&#9;时间膨胀&#9;强力吸引&#9;瓦解能量球&#9;极限突破&#9;三段跳&#9;废墟石板&#9;命运眷顾&#9;充沛&#9;动能瞄准性能&#9;谐振灵巧&#9;电弧灵巧&#9;电弧抗性&#9;动能武器激涌&#9;面面俱到&#9;动能合成&#9;远距填装&#9;狙击手冥想&#9;加密数据盘">
 <a class="entry" href="../s29/dps-061-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/0a71a14d8614d619a40649f09b28b466.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -482,7 +497,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="弑后者&#9;光速拔枪&#9;加拉诺碎片&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;时间食者&#9;边打边劫&#9;失衡弹药&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;仁慈余烬&#9;光线余烬&#9;超能洗礼&#9;谐振装弹装置&#9;动能灵巧&#9;完全充能&#9;烈日武器激涌&#9;时间膨胀&#9;强力吸引&#9;瓦解能量球&#9;极限突破&#9;三段跳&#9;废墟石板&#9;命运眷顾&#9;食莲者&#9;充沛&#9;谐振灵巧&#9;电弧灵巧&#9;电弧抗性&#9;电弧武器激涌&#9;面面俱到&#9;轨迹证据&#9;视网膜灼烧&#9;电弧复合&#9;杀手公爵药剂师背包">
 <a class="entry" href="../s29/dps-063-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/cc919daae4f005e9da7f2065fe8e29c4.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -497,7 +512,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="蠕虫低语&#9;沙场备战&#9;月牙白IV&#9;加拉诺碎片&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;时间食者&#9;边打边劫&#9;失衡弹药&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;仁慈余烬&#9;光线余烬&#9;超能洗礼&#9;谐振装弹装置&#9;动能灵巧&#9;完全充能&#9;烈日武器激涌&#9;时间膨胀&#9;强力吸引&#9;瓦解能量球&#9;极限突破&#9;三段跳&#9;废墟石板&#9;命运眷顾&#9;食莲者&#9;谐振瞄准性能&#9;谐振灵巧&#9;虚空装弹装置&#9;虚空灵巧&#9;电弧抗性&#9;能量扩散基质&#9;燃烧步枪弹药&#9;焕光能量球&#9;烈日爆发&#9;护盾粉碎&#9;狙击手冥想&#9;猎人日志">
 <a class="entry" href="../s29/dps-064-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/e47c31826843f6fd0aa863eac6fd093e.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -512,7 +527,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="加拉尔号角&#9;加拉诺碎片&#9;阴谋淬砺&#9;斩首武器&#9;诱导推销&#9;铭纹-41&#9;自动填装枪套&#9;定制特机&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;骨灰余烬&#9;光线余烬&#9;超能洗礼&#9;谐振灵巧&#9;电弧灵巧&#9;动能灵巧&#9;电弧抗性&#9;完全充能&#9;电弧武器激涌&#9;时间膨胀&#9;强力吸引&#9;严酷折射&#9;极限突破&#9;三段跳&#9;废墟石板&#9;快速装弹松身裤&#9;充沛&#9;谐振装弹装置&#9;冰影灵巧&#9;烈日武器激涌&#9;冰影武器激涌&#9;烈日爆发&#9;狙击手冥想&#9;护盾粉碎&#9;猎人日志">
 <a class="entry" href="../s29/dps-084-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/b62083eed6a4708e581fc9a061bcc8e9.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -527,7 +542,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="D.A.R.C.I&#9;加拉诺碎片&#9;驱逐引擎&#9;自动填装枪套&#9;聚合充能&#9;快速增长&#9;事不过四&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;骨灰余烬&#9;光线余烬&#9;超能洗礼&#9;谐振灵巧&#9;动能灵巧&#9;完全充能&#9;动能武器激涌&#9;强力吸引&#9;时间膨胀&#9;极限突破&#9;三段跳&#9;废墟石板&#9;快速装弹松身裤&#9;定制特机&#9;充沛&#9;电弧灵巧&#9;冰影灵巧&#9;电弧抗性&#9;电弧武器激涌&#9;烈日爆发&#9;狙击手冥想&#9;护盾粉碎&#9;猎人日志">
 <a class="entry" href="../s29/dps-098-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/eec16138c9fe69ff0b5d6c213e5cabb6.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -542,7 +557,7 @@
 </div>
 </a>
 </li>
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭" data-cls="猎人" data-tier="强力" data-by="超新星" data-tag="机制&#9;输出">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭" data-cls="猎人" data-tier="强力" data-by="超新星" data-tag="机制&#9;输出" data-q="隐秘追猎&#9;光辉跳舞机&#9;复仇低语&#9;弓手节奏&#9;弓手的智谋&#9;分离&#9;光芒复仇&#9;自动填装枪套&#9;持久印象&#9;失时弹匣&#9;黄金枪：神枪手&#9;磁性手雷&#9;陷阱炸弹&#9;特技闪身&#9;飞升&#9;线织幽灵&#9;勇气琢面&#9;使命琢面&#9;孤独琢面&#9;指挥琢面&#9;统御琢面&#9;燃烧步枪弹药&#9;能量扩散基质&#9;焕光能量球&#9;虚空霸权&#9;烈日爆发&#9;狙击手冥想&#9;护盾粉碎&#9;猎人日志&#9;多机系统 CCX&#9;羸弱能量球&#9;动能震颤&#9;战场检验&#9;玻璃拱顶&#9;特殊武器弹药搜寻者&#9;重型弹药搜寻者&#9;手雷洗礼&#9;近战洗礼&#9;快速球&#9;灼烧抗性&#9;完全充能&#9;震荡阻尼器&#9;回收利用&#9;复原&#9;层层不绝&#9;强力吸引&#9;收割者&#9;时间膨胀&#9;星界夜鹰&#9;星狐座&#9;边打边劫&#9;高爆载荷&#9;劣迹斑斑&#9;超能洗礼&#9;谐振灵巧&#9;烈日武器激涌">
 <a class="entry" href="../s29/bcndfero-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/6e6730467f11f156beace778dc748bce.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/c2dc5dee3368836a8a0f30a301ca490f.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/b995885ef6216361e63a093896f75735.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -557,7 +572,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出" data-q="混乱无序&#9;加拉诺碎片&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;舵手&#9;光能之触&#9;换挡&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;仁慈余烬&#9;光线余烬&#9;超能洗礼&#9;虚空灵巧&#9;缚丝灵巧&#9;谐振灵巧&#9;电弧抗性&#9;完全充能&#9;烈日武器激涌&#9;时间膨胀&#9;强力吸引&#9;瓦解能量球&#9;崩解&#9;极限突破&#9;三段跳&#9;废墟石板&#9;命运眷顾&#9;驱逐引擎&#9;自动填装枪套&#9;聚合充能&#9;充沛&#9;电弧装弹装置&#9;电弧灵巧&#9;电弧武器激涌&#9;面面俱到&#9;轨迹证据&#9;视网膜灼烧&#9;动能冲击&#9;电弧复合&#9;杀手公爵药剂师背包">
 <a class="entry" href="../s29/dps-068-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/f24e3336a1142847d6bf47b56b492eea.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -572,7 +587,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出" data-q="千语&#9;加拉诺碎片&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;铭纹-41&#9;自动填装枪套&#9;斩首武器&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;特技闪身&#9;速射神枪&#9;击败他们&#9;仁慈余烬&#9;焦燃余烬&#9;骨灰余烬&#9;光线余烬&#9;超能洗礼&#9;缚丝灵巧&#9;谐振灵巧&#9;谐振装弹装置&#9;电弧抗性&#9;完全充能&#9;烈日武器激涌&#9;强力吸引&#9;时间膨胀&#9;不稳定神枪手&#9;元素虹吸&#9;邪恶收割&#9;弹中藏金&#9;瓦解能量球&#9;崩解&#9;极限突破&#9;三段跳&#9;废墟石板&#9;快速装弹松身裤&#9;机巧纬线&#9;嫉妒军械库&#9;聚合充能&#9;充沛&#9;面面俱到&#9;能量扩散基质&#9;焕光能量球&#9;烈日爆发&#9;棱镜转移&#9;护盾粉碎&#9;猎人日志">
 <a class="entry" href="../s29/dps-069-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/51c53df606cca474dce3cadbf7d5ce28.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/cb2d44c8d1459ea43b0ea82976cf66e0.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -587,7 +602,7 @@
 </div>
 </a>
 </li>
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出" data-q="寒冬之啮&#9;特里同之罪&#9;机巧纬线&#9;空中扳机&#9;双脚架&#9;低阻之道&#9;边打边劫&#9;伏特子弹&#9;溢冰&#9;黄金枪：神枪手&#9;抓钩&#9;组合打击&#9;赌徒闪身&#9;飞升&#9;严冬帷幕&#9;毁灭琢面&#9;保护琢面&#9;奉献琢面&#9;荣耀琢面&#9;电弧虹吸&#9;超能洗礼&#9;强力伙伴&#9;回天掌法&#9;电弧抗性&#9;完全充能&#9;层层不绝&#9;强化运动&#9;宽恕&#9;职业洗礼&#9;强力吸引&#9;置身其中&#9;风寒&#9;杀戮之风&#9;冰霜复兴&#9;治疗能量球&#9;传导宇宙水晶&#9;冰冷伺候&#9;三段跳&#9;杀手公爵药剂师背包&#9;近战洗礼&#9;冰影灵巧&#9;灼烧抗性&#9;近战伤害抗性&#9;时间膨胀&#9;死守防线&#9;静铃无响&#9;废墟石板">
 <a class="entry" href="../s29/dps-072-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/8f4613a7a4d1d0cac4cddb50f81d965b.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/fdc14f2b28c77f9627f0629fdb540b76.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -602,7 +617,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出" data-q="加拉诺碎片&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;经纬仪&#9;重建&#9;元素磨砺&#9;揭纱露眼&#9;事不过四&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;仁慈余烬&#9;焦燃余烬&#9;火炬余烬&#9;骨灰余烬&#9;超能洗礼&#9;缚丝装弹装置&#9;虚空灵巧&#9;缚丝灵巧&#9;完全充能&#9;电弧武器激涌&#9;时间膨胀&#9;强力吸引&#9;瓦解能量球&#9;极限突破&#9;三段跳&#9;废墟石板&#9;命运眷顾&#9;驱逐引擎&#9;自动填装枪套&#9;聚合充能&#9;充沛&#9;电弧灵巧&#9;专注打击&#9;电弧抗性&#9;虚空武器激涌&#9;面面俱到&#9;不稳定神枪手&#9;粒子重建">
 <a class="entry" href="../s29/dps-074-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/1ffa0c9fba4b3cd1d64315760fe6978d.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -617,7 +632,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出" data-q="寄生虫&#9;加拉诺碎片&#9;普莱蒂斯的复仇&#9;事不过四&#9;全明星&#9;送魂者&#9;自动填装枪套&#9;聚合充能&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;骨灰余烬&#9;光线余烬&#9;超能洗礼&#9;谐振装弹装置&#9;动能灵巧&#9;完全充能&#9;烈日武器激涌&#9;时间膨胀&#9;强力吸引&#9;瓦解能量球&#9;极限突破&#9;三段跳&#9;废墟石板&#9;命运眷顾&#9;充沛&#9;动能瞄准性能&#9;谐振灵巧&#9;电弧灵巧&#9;电弧抗性&#9;动能武器激涌&#9;面面俱到&#9;动能合成&#9;远距填装&#9;狙击手冥想&#9;加密数据盘">
 <a class="entry" href="../s29/dps-075-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/0a71a14d8614d619a40649f09b28b466.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -632,7 +647,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出" data-q="彼岸新域&#9;加拉诺碎片&#9;送魂者&#9;自动填装枪套&#9;聚合充能&#9;纳斯尔丁&#9;尖锐收割&#9;急切刀锋&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;骨灰余烬&#9;光线余烬&#9;超能洗礼&#9;谐振装弹装置&#9;动能灵巧&#9;完全充能&#9;烈日武器激涌&#9;时间膨胀&#9;强力吸引&#9;瓦解能量球&#9;极限突破&#9;三段跳&#9;废墟石板&#9;命运眷顾&#9;充沛&#9;动能瞄准性能&#9;动能装弹装置&#9;电弧抗性&#9;动能武器激涌&#9;面面俱到&#9;动能合成&#9;远距填装&#9;狙击手冥想&#9;加密数据盘">
 <a class="entry" href="../s29/dps-078-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/ab5a4d92675023c3f565d4e8fa3db3a1.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -647,7 +662,7 @@
 </div>
 </a>
 </li>
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出" data-q="库尔之影&#9;魂火突刺&#9;相对主义&#9;复兴之灵&#9;合成感受器之灵&#9;低阻之道&#9;边打边劫&#9;伏特子弹&#9;纳斯尔丁&#9;尖锐收割&#9;急切刀锋&#9;艾昂适配&#9;沉默狂啸&#9;抓钩&#9;组合打击&#9;赌徒闪身&#9;严冬帷幕&#9;飞升&#9;勇气琢面&#9;保护琢面&#9;奉献琢面&#9;荣耀琢面&#9;动能瞄准性能&#9;电弧虹吸&#9;强力伙伴&#9;回天掌法&#9;灼烧抗性&#9;震荡阻尼器&#9;强化运动&#9;动能武器激涌&#9;层层不绝&#9;职业洗礼&#9;投弹手&#9;轨迹证据&#9;置身其中&#9;冰霜复兴&#9;视网膜灼烧&#9;治疗能量球&#9;传导宇宙水晶&#9;电弧复合&#9;三段跳&#9;杀手公爵药剂师背包&#9;近战洗礼&#9;手雷洗礼&#9;完全充能&#9;时间膨胀">
 <a class="entry" href="../s29/dps-080-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/58ae63b773059e5bd7a4d43298f73a50.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/d4f9351b75ec209ab6cc368b996dd6bc.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -662,7 +677,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出" data-q="狼王&#9;加拉诺碎片&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;纳斯尔丁&#9;尖锐收割&#9;急切刀锋&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;骨灰余烬&#9;光线余烬&#9;超能洗礼&#9;谐振装弹装置&#9;动能灵巧&#9;完全充能&#9;电弧抗性&#9;烈日武器激涌&#9;时间膨胀&#9;强力吸引&#9;瓦解能量球&#9;极限突破&#9;三段跳&#9;废墟石板&#9;快速装弹松身裤&#9;定制特机&#9;充沛&#9;谐振瞄准性能&#9;谐振灵巧&#9;电弧装弹装置&#9;面面俱到&#9;发热寒颤&#9;元素仁慈&#9;并肩作战&#9;醒神丝线&#9;半自动强袭&#9;元素超驰&#9;好奇之器">
 <a class="entry" href="../s29/dps-081-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/6bd65ae8981e4cac3c00825abedd3fbb.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -677,7 +692,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出" data-q="英勇利刃&#9;超利刃&#9;冲击核心&#9;加拉诺碎片&#9;送魂者&#9;自动填装枪套&#9;聚合充能&#9;纳斯尔丁&#9;尖锐收割&#9;急切刀锋&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;骨灰余烬&#9;光线余烬&#9;超能洗礼&#9;谐振装弹装置&#9;动能灵巧&#9;完全充能&#9;烈日武器激涌&#9;时间膨胀&#9;强力吸引&#9;瓦解能量球&#9;极限突破&#9;三段跳&#9;废墟石板&#9;命运眷顾&#9;充沛&#9;动能瞄准性能&#9;谐振灵巧&#9;电弧灵巧&#9;电弧抗性&#9;动能武器激涌&#9;面面俱到&#9;动能合成&#9;刀剑风暴连击&#9;组合银白利刃&#9;加密数据盘">
 <a class="entry" href="../s29/dps-082-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/d63292c9248c5e3ae823605307140199.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -692,7 +707,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出" data-q="加拉诺碎片&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;时间食者&#9;边打边劫&#9;失衡弹药&#9;阴沉利爪&#9;斩首武器&#9;旋风利刃&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;仁慈余烬&#9;光线余烬&#9;超能洗礼&#9;谐振装弹装置&#9;动能灵巧&#9;完全充能&#9;烈日武器激涌&#9;时间膨胀&#9;强力吸引&#9;瓦解能量球&#9;极限突破&#9;三段跳&#9;废墟石板&#9;命运眷顾&#9;送魂者&#9;自动填装枪套&#9;聚合充能&#9;充沛&#9;谐振灵巧&#9;电弧灵巧&#9;光明利刃&#9;虚空武器激涌&#9;面面俱到&#9;能量扩散基质&#9;乘胜追击&#9;焕光能量球&#9;烈日爆发&#9;护盾粉碎&#9;银白利刃&#9;猎人日志">
 <a class="entry" href="../s29/dps-085-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/2e37778d6c3cdcbd3d32819f735522c2.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -707,7 +722,7 @@
 </div>
 </a>
 </li>
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出" data-q="堡垒&#9;星界夜鹰&#9;回溯路径&#9;边打边劫&#9;爆破专家&#9;阴沉利爪&#9;急切刀锋&#9;失衡弹药&#9;埃希恩记忆&#9;黄金枪：神枪手&#9;抓钩&#9;线织尖刺&#9;射手闪身&#9;潇洒行刑者&#9;严冬帷幕&#9;正义琢面&#9;勇气琢面&#9;牺牲琢面&#9;奉献琢面&#9;超能洗礼&#9;动能灵巧&#9;谐振灵巧&#9;电弧抗性&#9;震荡阻尼器&#9;烈日回收器&#9;动能武器激涌&#9;强力吸引&#9;时间膨胀&#9;不稳定神枪手&#9;元素虹吸&#9;邪恶收割&#9;弹中藏金&#9;闪电过载&#9;元素超充器&#9;极限突破&#9;三段跳&#9;废墟石板&#9;命运眷顾&#9;星界虚无&#9;重建&#9;雪上加霜&#9;艾昂适配&#9;动能瞄准性能&#9;谐振瞄准性能&#9;近战洗礼&#9;手雷洗礼&#9;完全充能&#9;能量扩散基质&#9;乘胜追击&#9;焕光能量球&#9;护盾粉碎&#9;扩展深渊&#9;猎人日志">
 <a class="entry" href="../s29/dps-087-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/a7c3ee955c5e8b1c20122206d1bf60ff.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/805009e0c67a2dcf4f4f7bffb2dba493.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -722,7 +737,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出" data-q="缩影&#9;加拉诺碎片&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;时间食者&#9;边打边劫&#9;失衡弹药&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;仁慈余烬&#9;光线余烬&#9;超能洗礼&#9;谐振装弹装置&#9;动能灵巧&#9;完全充能&#9;烈日武器激涌&#9;时间膨胀&#9;强力吸引&#9;瓦解能量球&#9;极限突破&#9;三段跳&#9;废墟石板&#9;命运眷顾&#9;食莲者&#9;动能瞄准性能&#9;充沛&#9;谐振灵巧&#9;动能装弹装置&#9;电弧抗性&#9;动能武器激涌&#9;面面俱到&#9;严酷折射">
 <a class="entry" href="../s29/dps-088-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/8fc373a11adc417aab9a3ef4bab3bbe3.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -737,7 +752,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出" data-q="大序曲&#9;加拉诺碎片&#9;驱逐引擎&#9;自动填装枪套&#9;聚合充能&#9;低阻之道&#9;边打边劫&#9;伏特子弹&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;骨灰余烬&#9;光线余烬&#9;超能洗礼&#9;谐振装弹装置&#9;动能灵巧&#9;完全充能&#9;电弧抗性&#9;烈日武器激涌&#9;时间膨胀&#9;强力吸引&#9;瓦解能量球&#9;极限突破&#9;三段跳&#9;废墟石板&#9;命运眷顾&#9;强力伙伴&#9;充沛&#9;冰影灵巧&#9;电弧灵巧&#9;电弧装弹装置&#9;电弧武器激涌&#9;面面俱到&#9;投弹手&#9;迎接风暴&#9;视网膜灼烧&#9;动能冲击&#9;电弧复合&#9;杀手公爵药剂师背包">
 <a class="entry" href="../s29/dps-091-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/bc76e54c9cd266c09d8e08036ebcfd42.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -752,7 +767,7 @@
 </div>
 </a>
 </li>
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出" data-q="星界夜鹰&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;时间食者&#9;边打边劫&#9;失衡弹药&#9;21% 的亢奋&#9;事不过四&#9;换挡&#9;埃希恩记忆&#9;黄金枪：神枪手&#9;暮域手雷&#9;枯萎之刃&#9;射手闪身&#9;飞升&#9;严冬帷幕&#9;勇气琢面&#9;孤独琢面&#9;黎明琢面&#9;正义琢面&#9;超能洗礼&#9;谐振灵巧&#9;电弧灵巧&#9;电弧抗性&#9;完全充能&#9;冰影武器激涌&#9;电弧武器激涌&#9;时间膨胀&#9;强力吸引&#9;不稳定神枪手&#9;元素虹吸&#9;群敌飞梭&#9;瓦解能量球&#9;弹中藏金&#9;极限突破&#9;崩解&#9;三段跳&#9;废墟石板&#9;命运眷顾&#9;缚丝灵巧&#9;鼓舞爆弹&#9;面面俱到&#9;轨迹证据&#9;视网膜灼烧&#9;治疗能量球&#9;动能冲击&#9;电弧复合&#9;杀手公爵药剂师背包">
 <a class="entry" href="../s29/dps-092-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/a7c3ee955c5e8b1c20122206d1bf60ff.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/e875d248d8e2fece0117e855edc2dc02.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -767,7 +782,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="猎人" data-tier="创意" data-by="Aegis" data-tag="输出" data-q="加拉诺碎片&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;时间食者&#9;边打边劫&#9;失衡弹药&#9;时间子句&#9;事不过四&#9;目标锁定&#9;埃希恩记忆&#9;利刃弹幕&#9;治愈手雷&#9;飞刀戏法&#9;射手闪身&#9;速射神枪&#9;击败他们&#9;火炬余烬&#9;焦燃余烬&#9;骨灰余烬&#9;光线余烬&#9;超能洗礼&#9;虚空灵巧&#9;缚丝灵巧&#9;谐振灵巧&#9;电弧抗性&#9;完全充能&#9;冰影武器激涌&#9;电弧武器激涌&#9;时间膨胀&#9;强力吸引&#9;不稳定神枪手&#9;元素虹吸&#9;群敌飞梭&#9;瓦解能量球&#9;弹中藏金&#9;极限突破&#9;崩解&#9;三段跳&#9;废墟石板&#9;命运眷顾&#9;充沛&#9;鼓舞爆弹&#9;烈日武器激涌&#9;面面俱到&#9;烈焰之心&#9;火种扳机&#9;发热寒颤&#9;女王兰香炉">
 <a class="entry" href="../s29/dps-097-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/6259b7dba1d1c0897da675e58f456ec3.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -785,7 +800,7 @@
 </ul>
 <h3 class="sub-label">泰坦</h3>
 <ul class="entries" data-cls="泰坦">
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="meta" data-by="Aegis" data-tag="输出">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="meta" data-by="Aegis" data-tag="输出" data-q="叛贼&#9;陨星胸甲&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;光芒复仇&#9;集束炸弹&#9;聚合充能&#9;埃希恩记忆&#9;雷霆冲击&#9;铝热手雷&#9;圣盾投掷&#9;推进器&#9;神圣献祭&#9;重击&#9;勇气琢面&#9;孤独琢面&#9;正义琢面&#9;毁灭琢面&#9;超能洗礼&#9;快速球&#9;动能灵巧&#9;烈日灵巧&#9;完全充能&#9;电弧武器激涌&#9;时间膨胀&#9;强力吸引&#9;持久增幅&#9;雷霆反击&#9;两次闪电打击&#9;传导宇宙织针&#9;弹射跃升&#9;NPA 斥力调节器&#9;医疗设备&#9;烈日装弹装置&#9;电弧抗性&#9;烈日武器激涌&#9;火种扳机&#9;银白重炮&#9;崩解&#9;女王兰香炉">
 <a class="entry" href="../s29/dps-018-titan/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/23e3d07bead2936a80612419f3ee9f94.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/39441735ec0f1e7f7760775f6ee4bd24.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -800,7 +815,7 @@
 </div>
 </a>
 </li>
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="meta" data-by="Aegis" data-tag="输出">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="meta" data-by="Aegis" data-tag="输出" data-q="真相&#9;陨星胸甲&#9;无誓&#9;边打边劫&#9;幼雏&#9;固定低音&#9;盗墓者&#9;雪上加霜&#9;埃希恩记忆&#9;雷霆冲击&#9;铝热手雷&#9;狂暴利刃&#9;推进器&#9;神圣献祭&#9;重击&#9;勇气琢面&#9;孤独琢面&#9;正义琢面&#9;毁灭琢面&#9;超能洗礼&#9;谐振灵巧&#9;近战洗礼&#9;电弧抗性&#9;完全充能&#9;虚空武器激涌&#9;时间膨胀&#9;强力吸引&#9;持久增幅&#9;雷霆反击&#9;两次闪电打击&#9;传导宇宙织针&#9;弹射跃升&#9;NPA 斥力调节器&#9;虚空瞄准性能&#9;虚空装弹装置&#9;银白重炮&#9;女王兰香炉">
 <a class="entry" href="../s29/dps-019-titan/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/23e3d07bead2936a80612419f3ee9f94.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/b5021df721b66b6ab71e73b23e7b5392.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -815,7 +830,7 @@
 </div>
 </a>
 </li>
-<li class="b-arc" data-branch="电弧" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="meta" data-by="Aegis" data-tag="输出">
+<li class="b-arc" data-branch="电弧" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="meta" data-by="Aegis" data-tag="输出" data-q="陨星胸甲&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;铭纹-41&#9;自动填装枪套&#9;斩首武器&#9;光芒复仇&#9;集体爆破&#9;聚合充能&#9;埃希恩记忆&#9;雷霆冲击&#9;脉冲手雷&#9;雷霆一击&#9;集结屏障&#9;风暴要塞&#9;暴雷之触&#9;频率火花&#9;震颤火花&#9;光辉火花&#9;量级火花&#9;超能洗礼&#9;快速球&#9;动能灵巧&#9;烈日灵巧&#9;完全充能&#9;电弧武器激涌&#9;时间膨胀&#9;强力吸引&#9;持久增幅&#9;雷霆反击&#9;两次闪电打击&#9;传导宇宙织针&#9;弹射跃升&#9;NPA 斥力调节器&#9;枯萎囤积&#9;医疗设备&#9;渴望回响&#9;谐振瞄准性能&#9;动能瞄准性能&#9;强力伙伴&#9;鼓舞爆弹&#9;手雷洗礼&#9;电弧抗性&#9;烈日武器激涌&#9;面面俱到&#9;投弹手&#9;火种扳机&#9;银白重炮&#9;崩解&#9;女王兰香炉">
 <a class="entry" href="../s29/dps-022-titan/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/23e3d07bead2936a80612419f3ee9f94.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/3b17caa86d9bb7b83a19d809084fa93b.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -830,7 +845,7 @@
 </div>
 </a>
 </li>
-<li class="b-arc" data-branch="电弧" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="meta" data-by="Aegis" data-tag="输出">
+<li class="b-arc" data-branch="电弧" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="meta" data-by="Aegis" data-tag="输出" data-q="混乱无序&#9;陨星胸甲&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;拯救者的喝彩&#9;涓流充能&#9;换挡&#9;埃希恩记忆&#9;雷霆冲击&#9;脉冲手雷&#9;雷霆一击&#9;集结屏障&#9;风暴要塞&#9;暴雷之触&#9;频率火花&#9;震颤火花&#9;光辉火花&#9;量级火花&#9;超能洗礼&#9;快速球&#9;动能灵巧&#9;烈日灵巧&#9;完全充能&#9;电弧武器激涌&#9;时间膨胀&#9;强力吸引&#9;持久增幅&#9;雷霆反击&#9;两次闪电打击&#9;传导宇宙织针&#9;弹射跃升&#9;NPA 斥力调节器&#9;至纯光能护心甲&#9;机巧纬线&#9;嫉妒军械库&#9;诱导推销&#9;渴望回响&#9;谐振瞄准性能&#9;缚丝瞄准性能&#9;强力伙伴&#9;缚丝灵巧&#9;谐振灵巧&#9;手雷洗礼&#9;电弧抗性&#9;面面俱到&#9;投弹手&#9;醒神丝线&#9;元素仁慈&#9;元素超驰&#9;护盾粉碎&#9;好奇之器">
 <a class="entry" href="../s29/dps-023-titan/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/23e3d07bead2936a80612419f3ee9f94.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/f24e3336a1142847d6bf47b56b492eea.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -845,7 +860,7 @@
 </div>
 </a>
 </li>
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="meta" data-by="Aegis" data-tag="输出">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="meta" data-by="Aegis" data-tag="输出" data-q="伊邪那岐的重担&#9;陨星胸甲&#9;食莲者&#9;边打边劫&#9;失衡弹药&#9;翻新 A499&#9;速射瞄准&#9;聚合充能&#9;定制特机&#9;雷霆冲击&#9;铝热手雷&#9;狂暴利刃&#9;推进器&#9;神圣献祭&#9;重击&#9;勇气琢面&#9;孤独琢面&#9;正义琢面&#9;毁灭琢面&#9;超能洗礼&#9;动能装弹装置&#9;动能灵巧&#9;电弧抗性&#9;完全充能&#9;动能武器激涌&#9;时间膨胀&#9;强力吸引&#9;持久增幅&#9;雷霆反击&#9;两次闪电打击&#9;传导宇宙织针&#9;弹射跃升&#9;NPA 斥力调节器&#9;动能瞄准性能&#9;虚空瞄准性能&#9;强力伙伴&#9;动能合成&#9;远距填装&#9;狙击手冥想&#9;加密数据盘">
 <a class="entry" href="../s29/dps-035-titan/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/23e3d07bead2936a80612419f3ee9f94.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/8763caf9bfb147a41f3e34ec7eaf876b.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -860,7 +875,7 @@
 </div>
 </a>
 </li>
-<li class="b-arc" data-branch="电弧" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="meta" data-by="Aegis" data-tag="输出">
+<li class="b-arc" data-branch="电弧" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="meta" data-by="Aegis" data-tag="输出" data-q="加拉尔号角&#9;陨星胸甲&#9;阴谋淬砺&#9;斩首武器&#9;诱导推销&#9;铭纹-41&#9;自动填装枪套&#9;定制特机&#9;雷霆冲击&#9;闪电手雷&#9;雷霆一击&#9;集结屏障&#9;暴雷之触&#9;风暴要塞&#9;量级火花&#9;震颤火花&#9;光辉火花&#9;抗性火花&#9;超能洗礼&#9;谐振装弹装置&#9;冰影灵巧&#9;谐振灵巧&#9;完全充能&#9;电弧武器激涌&#9;时间膨胀&#9;持久增幅&#9;雷霆反击&#9;两次闪电打击&#9;传导宇宙织针&#9;弹射跃升&#9;NPA 斥力调节器&#9;医疗设备&#9;谐振瞄准性能&#9;冰影瞄准性能&#9;烈日瞄准性能&#9;烈日灵巧&#9;烈日装弹装置&#9;电弧抗性&#9;冰影武器激涌&#9;烈日武器激涌&#9;面面俱到&#9;强力吸引&#9;护盾粉碎&#9;狙击手冥想&#9;猎人日志">
 <a class="entry" href="../s29/dps-077-titan/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/23e3d07bead2936a80612419f3ee9f94.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/b62083eed6a4708e581fc9a061bcc8e9.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -875,7 +890,7 @@
 </div>
 </a>
 </li>
-<li class="b-arc" data-branch="电弧" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-arc" data-branch="电弧" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="混乱无序&#9;陨星胸甲&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;裁决定论&#9;聚合充能&#9;战嚎炮管&#9;埃希恩记忆&#9;雷霆冲击&#9;脉冲手雷&#9;雷霆一击&#9;集结屏障&#9;风暴要塞&#9;暴雷之触&#9;频率火花&#9;震颤火花&#9;光辉火花&#9;量级火花&#9;超能洗礼&#9;快速球&#9;动能灵巧&#9;烈日灵巧&#9;完全充能&#9;电弧武器激涌&#9;时间膨胀&#9;强力吸引&#9;持久增幅&#9;雷霆反击&#9;两次闪电打击&#9;传导宇宙织针&#9;弹射跃升&#9;NPA 斥力调节器&#9;至纯光能护心甲&#9;驱逐引擎&#9;自动填装枪套&#9;渴望回响&#9;谐振瞄准性能&#9;缚丝瞄准性能&#9;强力伙伴&#9;鼓舞爆弹&#9;谐振装弹装置&#9;手雷洗礼&#9;电弧抗性&#9;面面俱到&#9;投弹手&#9;醒神丝线&#9;元素仁慈&#9;元素超驰&#9;护盾粉碎&#9;好奇之器">
 <a class="entry" href="../s29/dps-050-titan/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/23e3d07bead2936a80612419f3ee9f94.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/f24e3336a1142847d6bf47b56b492eea.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -890,7 +905,7 @@
 </div>
 </a>
 </li>
-<li class="b-arc" data-branch="电弧" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-arc" data-branch="电弧" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="陨星胸甲&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;重现记忆&#9;治疗弹匣&#9;转向&#9;遗赠&#9;无情打击&#9;元素磨砺&#9;埃希恩记忆&#9;雷霆冲击&#9;脉冲手雷&#9;雷霆一击&#9;集结屏障&#9;风暴要塞&#9;暴雷之触&#9;频率火花&#9;震颤火花&#9;光辉火花&#9;量级火花&#9;超能洗礼&#9;快速球&#9;动能灵巧&#9;烈日灵巧&#9;完全充能&#9;电弧武器激涌&#9;时间膨胀&#9;强力吸引&#9;持久增幅&#9;雷霆反击&#9;两次闪电打击&#9;传导宇宙织针&#9;弹射跃升&#9;NPA 斥力调节器&#9;至纯光能护心甲&#9;驱逐引擎&#9;自动填装枪套&#9;聚合充能&#9;食莲者&#9;边打边劫&#9;失衡弹药&#9;渴望回响&#9;谐振瞄准性能&#9;缚丝瞄准性能&#9;强力伙伴&#9;虚空灵巧&#9;谐振灵巧&#9;手雷洗礼&#9;光明利刃&#9;面面俱到&#9;投弹手&#9;醒神丝线&#9;元素仁慈&#9;元素超驰&#9;护盾粉碎&#9;好奇之器">
 <a class="entry" href="../s29/dps-053-titan/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/23e3d07bead2936a80612419f3ee9f94.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/c51dd26c9db21b789afa7d24d96e39fa.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -905,7 +920,7 @@
 </div>
 </a>
 </li>
-<li class="b-arc" data-branch="电弧" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-arc" data-branch="电弧" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="千语&#9;陨星胸甲&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;铭纹-41&#9;自动填装枪套&#9;斩首武器&#9;埃希恩记忆&#9;雷霆冲击&#9;脉冲手雷&#9;雷霆一击&#9;集结屏障&#9;风暴要塞&#9;暴雷之触&#9;频率火花&#9;震颤火花&#9;光辉火花&#9;量级火花&#9;超能洗礼&#9;快速球&#9;动能灵巧&#9;烈日灵巧&#9;完全充能&#9;电弧武器激涌&#9;时间膨胀&#9;强力吸引&#9;持久增幅&#9;雷霆反击&#9;两次闪电打击&#9;传导宇宙织针&#9;弹射跃升&#9;NPA 斥力调节器&#9;电弧抗性&#9;烈日武器激涌&#9;不稳定神枪手&#9;瓦解能量球&#9;闪电过载&#9;元素虹吸&#9;粒子重建&#9;除颤爆破&#9;废墟石板">
 <a class="entry" href="../s29/dps-054-titan/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/23e3d07bead2936a80612419f3ee9f94.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/51c53df606cca474dce3cadbf7d5ce28.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -920,7 +935,7 @@
 </div>
 </a>
 </li>
-<li class="b-arc" data-branch="电弧" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-arc" data-branch="电弧" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="牵引器火炮&#9;陨星胸甲&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;裁决定论&#9;聚合充能&#9;战嚎炮管&#9;埃希恩记忆&#9;雷霆冲击&#9;脉冲手雷&#9;雷霆一击&#9;集结屏障&#9;风暴要塞&#9;暴雷之触&#9;频率火花&#9;震颤火花&#9;光辉火花&#9;量级火花&#9;超能洗礼&#9;快速球&#9;动能灵巧&#9;烈日灵巧&#9;完全充能&#9;电弧武器激涌&#9;时间膨胀&#9;强力吸引&#9;持久增幅&#9;雷霆反击&#9;两次闪电打击&#9;传导宇宙织针&#9;弹射跃升&#9;NPA 斥力调节器&#9;至纯光能护心甲&#9;驱逐引擎&#9;自动填装枪套&#9;渴望回响&#9;谐振瞄准性能&#9;缚丝瞄准性能&#9;强力伙伴&#9;鼓舞爆弹&#9;谐振装弹装置&#9;手雷洗礼&#9;电弧抗性&#9;面面俱到&#9;投弹手&#9;醒神丝线&#9;元素仁慈&#9;元素超驰&#9;护盾粉碎&#9;好奇之器">
 <a class="entry" href="../s29/dps-079-titan/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/23e3d07bead2936a80612419f3ee9f94.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/6afd31f787ff68d32e1f574686494606.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -935,7 +950,7 @@
 </div>
 </a>
 </li>
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="D.A.R.C.I&#9;陨星胸甲&#9;驱逐引擎&#9;自动填装枪套&#9;聚合充能&#9;快速增长&#9;事不过四&#9;定制特机&#9;雷霆冲击&#9;铝热手雷&#9;狂暴利刃&#9;推进器&#9;神圣献祭&#9;重击&#9;勇气琢面&#9;孤独琢面&#9;正义琢面&#9;毁灭琢面&#9;超能洗礼&#9;动能装弹装置&#9;动能灵巧&#9;谐振灵巧&#9;完全充能&#9;动能武器激涌&#9;时间膨胀&#9;强力吸引&#9;持久增幅&#9;雷霆反击&#9;两次闪电打击&#9;传导宇宙织针&#9;弹射跃升&#9;NPA 斥力调节器&#9;谐振瞄准性能&#9;冰影瞄准性能&#9;谐振装弹装置&#9;冰影灵巧&#9;电弧武器激涌&#9;远距填装&#9;狙击手冥想&#9;加密数据盘">
 <a class="entry" href="../s29/dps-100-titan/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/23e3d07bead2936a80612419f3ee9f94.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/eec16138c9fe69ff0b5d6c213e5cabb6.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -950,7 +965,7 @@
 </div>
 </a>
 </li>
-<li class="b-arc" data-branch="电弧" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-arc" data-branch="电弧" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="神圣裁决&#9;陨星胸甲&#9;驱逐引擎&#9;自动填装枪套&#9;聚合充能&#9;痛苦结局&#9;冷却饰物&#9;热能雾化&#9;定制特机&#9;雷霆冲击&#9;闪电手雷&#9;雷霆一击&#9;集结屏障&#9;暴雷之触&#9;风暴要塞&#9;量级火花&#9;震颤火花&#9;光辉火花&#9;抗性火花&#9;超能洗礼&#9;谐振装弹装置&#9;冰影灵巧&#9;谐振灵巧&#9;完全充能&#9;电弧武器激涌&#9;时间膨胀&#9;持久增幅&#9;雷霆反击&#9;两次闪电打击&#9;传导宇宙织针&#9;弹射跃升&#9;NPA 斥力调节器&#9;医疗设备&#9;谐振瞄准性能&#9;手雷洗礼&#9;电弧抗性&#9;面面俱到&#9;强力吸引&#9;闪电过载&#9;严酷折射&#9;废墟石板">
 <a class="entry" href="../s29/dps-103-titan/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/23e3d07bead2936a80612419f3ee9f94.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/c6aa03536fd68b5fca5ad6b83ea0cf1e.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -965,7 +980,7 @@
 </div>
 </a>
 </li>
-<li class="b-arc" data-branch="电弧" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="创意" data-by="Aegis" data-tag="输出">
+<li class="b-arc" data-branch="电弧" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="创意" data-by="Aegis" data-tag="输出" data-q="雷神&#9;陨星胸甲&#9;无誓&#9;边打边劫&#9;幼雏&#9;低阻之道&#9;伏特子弹&#9;埃希恩记忆&#9;雷霆冲击&#9;脉冲手雷&#9;雷霆一击&#9;集结屏障&#9;暴雷之触&#9;风暴要塞&#9;量级火花&#9;震颤火花&#9;光辉火花&#9;抗性火花&#9;超能洗礼&#9;谐振灵巧&#9;近战洗礼&#9;电弧抗性&#9;完全充能&#9;电弧武器激涌&#9;时间膨胀&#9;强力吸引&#9;持久增幅&#9;雷霆反击&#9;两次闪电打击&#9;传导宇宙织针&#9;弹射跃升&#9;NPA 斥力调节器&#9;亚克兴角战役钻机&#9;固定低音&#9;盗墓者&#9;雪上加霜&#9;谐振装弹装置&#9;手雷洗礼&#9;轨迹证据&#9;视网膜灼烧&#9;电弧复合&#9;杀手公爵药剂师背包">
 <a class="entry" href="../s29/dps-083-titan/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/23e3d07bead2936a80612419f3ee9f94.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/4a08027f7b5752f84d183ecc61682c3e.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -980,7 +995,7 @@
 </div>
 </a>
 </li>
-<li class="b-arc" data-branch="电弧" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="创意" data-by="Aegis" data-tag="输出">
+<li class="b-arc" data-branch="电弧" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="创意" data-by="Aegis" data-tag="输出" data-q="第四骑士&#9;陨星胸甲&#9;阴谋淬砺&#9;斩首武器&#9;诱导推销&#9;阴沉利爪&#9;急切刀锋&#9;失衡弹药&#9;定制特机&#9;雷霆冲击&#9;脉冲手雷&#9;雷霆一击&#9;集结屏障&#9;暴雷之触&#9;风暴要塞&#9;量级火花&#9;震颤火花&#9;光辉火花&#9;伏特火花&#9;超能洗礼&#9;烈日灵巧&#9;电弧抗性&#9;完全充能&#9;烈日武器激涌&#9;时间膨胀&#9;强力吸引&#9;持久增幅&#9;雷霆反击&#9;两次闪电打击&#9;传导宇宙织针&#9;弹射跃升&#9;NPA 斥力调节器&#9;需求层级&#9;充沛&#9;强力伙伴&#9;烈日装弹装置&#9;鼓舞爆弹&#9;元素仁慈&#9;半自动强袭&#9;醒神丝线&#9;并肩作战&#9;发热寒颤&#9;护盾粉碎&#9;银白箭袋&#9;好奇之器">
 <a class="entry" href="../s29/dps-086-titan/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/23e3d07bead2936a80612419f3ee9f94.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/8c32410000243e6024130f755b23fbe6.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -995,7 +1010,7 @@
 </div>
 </a>
 </li>
-<li class="b-arc" data-branch="电弧" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="创意" data-by="Aegis" data-tag="输出">
+<li class="b-arc" data-branch="电弧" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="创意" data-by="Aegis" data-tag="输出" data-q="混乱无序&#9;陨星胸甲&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;超前&#9;回转弹药&#9;目标锁定&#9;埃希恩记忆&#9;雷霆冲击&#9;脉冲手雷&#9;雷霆一击&#9;集结屏障&#9;风暴要塞&#9;暴雷之触&#9;频率火花&#9;震颤火花&#9;光辉火花&#9;量级火花&#9;超能洗礼&#9;快速球&#9;动能灵巧&#9;烈日灵巧&#9;完全充能&#9;电弧武器激涌&#9;时间膨胀&#9;强力吸引&#9;持久增幅&#9;雷霆反击&#9;两次闪电打击&#9;传导宇宙织针&#9;弹射跃升&#9;NPA 斥力调节器&#9;驱逐引擎&#9;自动填装枪套&#9;聚合充能&#9;定制特机&#9;强力伙伴&#9;鼓舞爆弹&#9;冰影灵巧&#9;谐振灵巧&#9;电弧抗性&#9;面面俱到&#9;轨迹证据&#9;视网膜灼烧&#9;电弧复合&#9;动能冲击&#9;杀手公爵药剂师背包">
 <a class="entry" href="../s29/dps-090-titan/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/23e3d07bead2936a80612419f3ee9f94.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/f24e3336a1142847d6bf47b56b492eea.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1010,7 +1025,7 @@
 </div>
 </a>
 </li>
-<li class="b-arc" data-branch="电弧" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="创意" data-by="Aegis" data-tag="输出">
+<li class="b-arc" data-branch="电弧" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="创意" data-by="Aegis" data-tag="输出" data-q="寄生虫&#9;陨星胸甲&#9;庆典飞行&#9;嫉妒军械库&#9;斩首武器&#9;无人幸存&#9;回转弹药&#9;目标锁定&#9;定制特机&#9;雷霆冲击&#9;脉冲手雷&#9;雷霆一击&#9;集结屏障&#9;暴雷之触&#9;风暴要塞&#9;量级火花&#9;震颤火花&#9;光辉火花&#9;伏特火花&#9;超能洗礼&#9;烈日装弹装置&#9;鼓舞爆弹&#9;电弧抗性&#9;完全充能&#9;电弧武器激涌&#9;时间膨胀&#9;强力吸引&#9;持久增幅&#9;雷霆反击&#9;两次闪电打击&#9;传导宇宙织针&#9;弹射跃升&#9;NPA 斥力调节器&#9;和平守护者&#9;充沛&#9;烈日瞄准性能&#9;强力伙伴&#9;缚丝灵巧&#9;烈日灵巧&#9;烈日武器激涌&#9;元素虹吸&#9;不稳定神枪手&#9;闪电过载&#9;电介质&#9;光子耀斑&#9;极限突破&#9;除颤爆破&#9;废墟石板">
 <a class="entry" href="../s29/dps-101-titan/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/23e3d07bead2936a80612419f3ee9f94.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/0a71a14d8614d619a40649f09b28b466.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1025,7 +1040,7 @@
 </div>
 </a>
 </li>
-<li class="b-arc" data-branch="电弧" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="创意" data-by="Aegis" data-tag="输出">
+<li class="b-arc" data-branch="电弧" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="创意" data-by="Aegis" data-tag="输出" data-q="第四骑士&#9;陨星胸甲&#9;阴谋淬砺&#9;斩首武器&#9;诱导推销&#9;阴沉利爪&#9;急切刀锋&#9;失衡弹药&#9;定制特机&#9;雷霆冲击&#9;脉冲手雷&#9;雷霆一击&#9;集结屏障&#9;暴雷之触&#9;风暴要塞&#9;量级火花&#9;震颤火花&#9;光辉火花&#9;伏特火花&#9;超能洗礼&#9;烈日灵巧&#9;电弧抗性&#9;完全充能&#9;烈日武器激涌&#9;时间膨胀&#9;强力吸引&#9;持久增幅&#9;雷霆反击&#9;两次闪电打击&#9;传导宇宙织针&#9;弹射跃升&#9;NPA 斥力调节器&#9;需求层级&#9;充沛&#9;强力伙伴&#9;烈日装弹装置&#9;鼓舞爆弹&#9;元素仁慈&#9;半自动强袭&#9;醒神丝线&#9;并肩作战&#9;发热寒颤&#9;护盾粉碎&#9;银白箭袋&#9;好奇之器">
 <a class="entry" href="../s29/dps-102-titan/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/23e3d07bead2936a80612419f3ee9f94.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/8c32410000243e6024130f755b23fbe6.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1040,7 +1055,7 @@
 </div>
 </a>
 </li>
-<li class="b-arc" data-branch="电弧" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="创意" data-by="Aegis" data-tag="输出">
+<li class="b-arc" data-branch="电弧" data-scene="突袭&#9;地牢" data-cls="泰坦" data-tier="创意" data-by="Aegis" data-tag="输出" data-q="帝王蝶&#9;陨星胸甲&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;阴沉利爪&#9;急切刀锋&#9;失衡弹药&#9;埃希恩记忆&#9;雷霆冲击&#9;脉冲手雷&#9;雷霆一击&#9;集结屏障&#9;风暴要塞&#9;暴雷之触&#9;频率火花&#9;震颤火花&#9;光辉火花&#9;量级火花&#9;超能洗礼&#9;快速球&#9;动能灵巧&#9;烈日灵巧&#9;完全充能&#9;电弧武器激涌&#9;时间膨胀&#9;强力吸引&#9;持久增幅&#9;雷霆反击&#9;两次闪电打击&#9;传导宇宙织针&#9;弹射跃升&#9;NPA 斥力调节器&#9;渴望回响&#9;充沛&#9;强力伙伴&#9;鼓舞爆弹&#9;虚空装弹装置&#9;手雷洗礼&#9;电弧抗性&#9;虚空武器激涌&#9;面面俱到&#9;投弹手&#9;不稳定神枪手&#9;闪电过载&#9;元素虹吸&#9;极限突破&#9;除颤爆破&#9;废墟石板">
 <a class="entry" href="../s29/dps-105-titan/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/23e3d07bead2936a80612419f3ee9f94.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/5f858cb4661c605d18e3dc0b62cc4aaa.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1058,7 +1073,7 @@
 </ul>
 <h3 class="sub-label">术士</h3>
 <ul class="entries" data-cls="术士">
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="meta" data-by="Aegis" data-tag="输出">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="meta" data-by="Aegis" data-tag="输出" data-q="牵引器火炮&#9;血红炼金术&#9;驱逐引擎&#9;自动填装枪套&#9;聚合充能&#9;裁决定论&#9;战嚎炮管&#9;定制特机&#9;新星炸弹：灾变&#9;涡流手雷&#9;神秘织针&#9;凤凰俯冲&#9;地狱火&#9;编织者之唤&#9;毁灭琢面&#9;正义琢面&#9;勇气琢面&#9;希望琢面&#9;统御琢面&#9;超能洗礼&#9;电弧灵巧&#9;电弧装弹装置&#9;专注打击&#9;电弧抗性&#9;完全充能&#9;电弧武器激涌&#9;时间膨胀&#9;强力吸引&#9;视网膜灼烧&#9;传导宇宙水晶&#9;电弧复合&#9;爆发滑翔&#9;杀手公爵药剂师背包&#9;混乱无序&#9;冰影灵巧&#9;烈日装弹装置">
 <a class="entry" href="../s29/dps-065-warlock/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e55c1cbf65fabab485bbc34272f59b11.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/f24e3336a1142847d6bf47b56b492eea.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1073,7 +1088,7 @@
 </div>
 </a>
 </li>
-<li class="b-strand" data-branch="缚丝" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="meta" data-by="Aegis" data-tag="输出">
+<li class="b-strand" data-branch="缚丝" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="meta" data-by="Aegis" data-tag="输出" data-q="叛贼&#9;血红炼金术&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;光芒复仇&#9;集束炸弹&#9;聚合充能&#9;埃希恩记忆&#9;织针风暴&#9;抓钩&#9;神秘织针&#9;强能裂痕&#9;编织者之唤&#9;编织微步&#9;守护丝线&#9;进化丝线&#9;生成丝线&#9;上升丝线&#9;持续丝线&#9;超能洗礼&#9;虚空灵巧&#9;烈日灵巧&#9;专注打击&#9;电弧抗性&#9;完全充能&#9;烈日武器激涌&#9;时间膨胀&#9;强力吸引&#9;元素仁慈&#9;集群战术&#9;爆发滑翔&#9;好奇之器&#9;谐振装弹装置&#9;谐振灵巧&#9;火种扳机&#9;银白重炮&#9;女王兰香炉">
 <a class="entry" href="../s29/dps-012-warlock/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e55c1cbf65fabab485bbc34272f59b11.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/39441735ec0f1e7f7760775f6ee4bd24.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1088,7 +1103,7 @@
 </div>
 </a>
 </li>
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="meta" data-by="Aegis" data-tag="输出">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="meta" data-by="Aegis" data-tag="输出" data-q="真相&#9;血红炼金术&#9;阴谋淬砺&#9;斩首武器&#9;诱导推销&#9;铭纹-41&#9;自动填装枪套&#9;埃希恩记忆&#9;新星炸弹：灾变&#9;涡流手雷&#9;神秘织针&#9;凤凰俯冲&#9;地狱火&#9;编织者之唤&#9;毁灭琢面&#9;正义琢面&#9;勇气琢面&#9;指挥琢面&#9;使命琢面&#9;超能洗礼&#9;谐振灵巧&#9;谐振装弹装置&#9;手雷洗礼&#9;电弧抗性&#9;完全充能&#9;虚空武器激涌&#9;时间膨胀&#9;强力吸引&#9;崩解&#9;极限突破&#9;爆发滑翔&#9;废墟石板&#9;谐振瞄准性能&#9;火种扳机&#9;银白重炮&#9;女王兰香炉">
 <a class="entry" href="../s29/dps-015-warlock/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e55c1cbf65fabab485bbc34272f59b11.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/b5021df721b66b6ab71e73b23e7b5392.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1103,7 +1118,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="meta" data-by="小棒猪">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="meta" data-by="小棒猪" data-q="牵引器火炮&#9;烈焰之歌&#9;治愈手雷&#9;星界之火&#9;治愈裂痕&#9;伊卡洛斯突进&#9;地狱火&#9;抚慰余烬&#9;骨灰余烬&#9;火炬余烬&#9;焦燃余烬&#9;仁慈余烬&#9;堡垒&#9;邪冬的头盔&#9;维烈妲-F&#9;枯萎凝视&#9;翻新 A499&#9;速射瞄准&#9;聚合充能&#9;玻璃拱顶&#9;强力伙伴&#9;动能瞄准性能&#9;虚空瞄准性能&#9;动能灵巧&#9;动能装弹装置&#9;虚空灵巧&#9;震荡阻尼器&#9;抗性&#9;动能武器激涌&#9;职业洗礼&#9;强力吸引&#9;能量扩散基质&#9;乘胜追击&#9;虚空霸权&#9;焕光能量球&#9;烈日爆发&#9;护盾粉碎&#9;狙击手冥想&#9;猎人日志&#9;单人合唱&#9;狡诈严冬&#9;驱逐引擎&#9;自动填装枪套&#9;混沌重塑&#9;阴沉利爪&#9;急切刀锋&#9;二元轨道&#9;空降灭火套装&#9;异端深渊&#9;烈焰手雷&#9;凤凰俯冲&#9;炙热升腾&#9;至高天余烬&#9;特殊武器弹药搜寻者&#9;虚空虹吸&#9;冰影虹吸&#9;回天掌法&#9;完全充能&#9;层层不绝&#9;虚空回收器&#9;冰影回收器&#9;感应护盾&#9;壁垒终结技&#9;时间膨胀&#9;风寒&#9;大肆屠杀&#9;冰霜复兴&#9;弱化波&#9;削弱清敌&#9;动能冲击&#9;治疗能量球&#9;杀手公爵药剂师背包&#9;完美悖论&#9;威胁探测&#9;雪上加霜&#9;裁决定论&#9;战嚎炮管&#9;电弧灵巧&#9;电弧武器激涌&#9;棱镜转移">
 <a class="entry" href="../s29/9bioso19-warlock/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/6afd31f787ff68d32e1f574686494606.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/805009e0c67a2dcf4f4f7bffb2dba493.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/f681e4b545a2917e7d38374a9f57907b.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/0c586f183b821e16dd9b696c8e871d2b.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1117,7 +1132,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="meta" data-by="小棒猪" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="meta" data-by="小棒猪" data-tag="输出" data-q="牵引器火炮&#9;汇编器战靴&#9;裁决定论&#9;聚合充能&#9;元素磨砺&#9;金刚磐石&#9;医治&#9;玻璃拱顶&#9;光焰之井&#9;治愈手雷&#9;焚烧响指&#9;治愈裂痕&#9;伊卡洛斯突进&#9;地狱火&#9;火炬余烬&#9;仁慈余烬&#9;抚慰余烬&#9;焦燃余烬&#9;骨灰余烬&#9;超能洗礼&#9;虚空灵巧&#9;电弧灵巧&#9;电弧装弹装置&#9;震荡阻尼器&#9;抗性&#9;电弧武器激涌&#9;职业洗礼&#9;强力吸引&#9;瓦解能量球&#9;闪电过载&#9;群敌飞梭&#9;弹中藏金&#9;极限突破&#9;崩解&#9;废墟石板&#9;乔科斯的长剑&#9;边打边劫&#9;枯萎凝视&#9;星界之火&#9;缚丝灵巧&#9;虚空枪套&#9;缚丝枪套&#9;加拉尔号角&#9;烈焰之心&#9;火种扳机&#9;爆炸范围&#9;银白重炮&#9;女王兰香炉&#9;阴谋淬砺&#9;斩首武器&#9;火线&#9;冰影瞄准性能&#9;冰影装弹装置&#9;冰影灵巧&#9;冰影武器激涌&#9;能量扩散基质&#9;乘胜追击&#9;焕光能量球&#9;烈日爆发&#9;扩展深渊&#9;狙击手冥想&#9;猎人日志&#9;谐振灵巧&#9;烈日武器激涌&#9;法夫纳&#9;光鳃之调&#9;超充弹匣&#9;完美逆行&#9;回转弹药&#9;切割&#9;稳定虚空瞄准&#9;虚空武器激涌&#9;虚空装弹装置&#9;稳定冰影瞄准&#9;持续火力&#9;永恒之尖&#9;脉冲增幅器&#9;反复记号&#9;高爆载荷">
 <a class="entry" href="../s29/gef8w7a4-warlock/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/6afd31f787ff68d32e1f574686494606.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/b62083eed6a4708e581fc9a061bcc8e9.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/b91b241c65b5743e4ac89ba77fda551b.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/c85a9ea48178254bb7dbc0eeb58e1f47.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1132,7 +1147,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭" data-cls="术士" data-tier="meta" data-by="両儀式織" data-tag="机制&#9;五壮举&#9;输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭" data-cls="术士" data-tier="meta" data-by="両儀式織" data-tag="机制&#9;五壮举&#9;输出" data-q="真相&#9;汇编器战靴&#9;完美逆行&#9;沙场备战&#9;武器大师&#9;问题解决者&#9;重现记忆&#9;治疗弹匣&#9;转向&#9;坚韧&#9;溢冰&#9;救赎的边缘&#9;光焰之井&#9;治愈手雷&#9;星界之火&#9;治愈裂痕&#9;伊卡洛斯突进&#9;地狱火&#9;焦燃余烬&#9;仁慈余烬&#9;火炬余烬&#9;抚慰余烬&#9;骨灰余烬&#9;特殊弹药斥候&#9;重型弹药斥候&#9;烈日虹吸&#9;鼓舞爆弹&#9;动量转移&#9;近战洗礼&#9;抗性&#9;药到病除&#9;缚丝回收器&#9;烈日回收器&#9;特殊终结技&#9;强力吸引&#9;时间膨胀&#9;发热寒颤&#9;元素仁慈&#9;元素聚合&#9;能量加速&#9;醒神丝线&#9;焕光碎片&#9;护盾粉碎&#9;好奇之器&#9;单人合唱&#9;翻新 A499&#9;速射瞄准&#9;聚合充能&#9;加速突击&#9;虚空虹吸&#9;虚空回收器&#9;不稳定流动&#9;持续火力&#9;防护裂口&#9;反制充能&#9;远方砖块&#9;瞄准自动填装器&#9;碎裂能量球&#9;NPA 斥力调节器&#9;月之阵营靴&#9;空洞拒绝&#9;金中藏弹&#9;泉源&#9;外向活泼&#9;凯旋圣歌&#9;众神辉煌&#9;辐射光能&#9;超能洗礼&#9;手雷洗礼&#9;完全充能&#9;动能回收器&#9;职业洗礼&#9;伊邪那岐的重担&#9;食莲者&#9;边打边劫&#9;枯萎凝视&#9;先锋平反&#9;玻璃拱顶&#9;埃希恩记忆&#9;强力伙伴&#9;动能瞄准性能&#9;空中补偿器&#9;动能装弹装置&#9;动能灵巧&#9;动能武器激涌&#9;动能合成&#9;远距填装&#9;动能裂口&#9;狙击手冥想&#9;加密数据盘&#9;血红炼金术">
 <a class="entry" href="../s29/trdpr8rf-warlock/index.html">
 <span class="node"><img src="../../assets/icons/2f3615ddcd86ab7c50653d2d1847c3bf.webp" alt="" width="64" height="64" loading="lazy"></span>
 <div class="entry-body">
@@ -1147,7 +1162,7 @@
 </div>
 </a>
 </li>
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="唯我主义&#9;坏死之灵&#9;噬星者之灵&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;低阻之道&#9;边打边劫&#9;伏特子弹&#9;噩兆&#9;居合连斩&#9;埃希恩记忆&#9;新星炸弹：灾变&#9;涡流手雷&#9;神秘织针&#9;凤凰俯冲&#9;凄凉观察者&#9;编织者之唤&#9;毁灭琢面&#9;正义琢面&#9;勇气琢面&#9;希望琢面&#9;使命琢面&#9;超能洗礼&#9;手雷洗礼&#9;专注打击&#9;鼓舞爆弹&#9;完全充能&#9;烈日武器激涌&#9;强力吸引&#9;时间膨胀&#9;瓦解能量球&#9;崩解&#9;极限突破&#9;爆发滑翔&#9;废墟石板&#9;故我在&#9;铸造者框架&#9;纯五度&#9;黎明副歌&#9;驱逐引擎&#9;自动填装枪套&#9;聚合充能&#9;充沛&#9;光明利刃&#9;面面俱到&#9;能量扩散基质&#9;焕光能量球&#9;烈日爆发&#9;银白利刃&#9;护盾粉碎&#9;猎人日志">
 <a class="entry" href="../s29/dps-028-warlock/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/7b57cd041db1987c3f566b96535daf9f.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/39a94c98eba4b9e007a76bbc067752f7.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1162,7 +1177,7 @@
 </div>
 </a>
 </li>
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="血红炼金术&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;裁决定论&#9;聚合充能&#9;战嚎炮管&#9;遗赠&#9;无情打击&#9;元素磨砺&#9;埃希恩记忆&#9;新星炸弹：灾变&#9;涡流手雷&#9;神秘织针&#9;凤凰俯冲&#9;地狱火&#9;编织者之唤&#9;毁灭琢面&#9;正义琢面&#9;勇气琢面&#9;希望琢面&#9;使命琢面&#9;超能洗礼&#9;虚空灵巧&#9;谐振装弹装置&#9;谐振灵巧&#9;完全充能&#9;电弧武器激涌&#9;时间膨胀&#9;强力吸引&#9;瓦解能量球&#9;崩解&#9;极限突破&#9;爆发滑翔&#9;废墟石板&#9;驱逐引擎&#9;自动填装枪套&#9;充沛&#9;手雷洗礼&#9;光明利刃&#9;面面俱到&#9;能量扩散基质&#9;焕光能量球&#9;烈日爆发&#9;银白利刃&#9;护盾粉碎&#9;猎人日志">
 <a class="entry" href="../s29/dps-030-warlock/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e55c1cbf65fabab485bbc34272f59b11.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/c51dd26c9db21b789afa7d24d96e39fa.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1177,7 +1192,7 @@
 </div>
 </a>
 </li>
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="唯我主义&#9;坏死之灵&#9;噬星者之灵&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;低阻之道&#9;边打边劫&#9;伏特子弹&#9;三色矛头蝮-4bl&#9;燃烧野心&#9;聚合充能&#9;埃希恩记忆&#9;新星炸弹：灾变&#9;涡流手雷&#9;神秘织针&#9;凤凰俯冲&#9;凄凉观察者&#9;编织者之唤&#9;毁灭琢面&#9;正义琢面&#9;勇气琢面&#9;希望琢面&#9;使命琢面&#9;超能洗礼&#9;手雷洗礼&#9;专注打击&#9;鼓舞爆弹&#9;完全充能&#9;烈日武器激涌&#9;强力吸引&#9;时间膨胀&#9;瓦解能量球&#9;崩解&#9;极限突破&#9;爆发滑翔&#9;废墟石板&#9;黎明副歌&#9;驱逐引擎&#9;自动填装枪套&#9;充沛&#9;光明利刃&#9;面面俱到&#9;能量扩散基质&#9;焕光能量球&#9;烈日爆发&#9;银白利刃&#9;护盾粉碎&#9;猎人日志">
 <a class="entry" href="../s29/dps-034-warlock/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/7b57cd041db1987c3f566b96535daf9f.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/f7f663c090053f11ba9b061838bee946.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1192,7 +1207,7 @@
 </div>
 </a>
 </li>
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="狼毒&#9;复苏指令IV&#9;燃烧野心&#9;唯我主义&#9;坏死之灵&#9;噬星者之灵&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;低阻之道&#9;边打边劫&#9;伏特子弹&#9;埃希恩记忆&#9;新星炸弹：灾变&#9;涡流手雷&#9;神秘织针&#9;凤凰俯冲&#9;凄凉观察者&#9;编织者之唤&#9;毁灭琢面&#9;正义琢面&#9;勇气琢面&#9;希望琢面&#9;使命琢面&#9;超能洗礼&#9;虚空灵巧&#9;谐振装弹装置&#9;谐振灵巧&#9;光明利刃&#9;完全充能&#9;电弧武器激涌&#9;强力吸引&#9;时间膨胀&#9;瓦解能量球&#9;崩解&#9;极限突破&#9;爆发滑翔&#9;废墟石板&#9;黎明副歌&#9;驱逐引擎&#9;自动填装枪套&#9;聚合充能&#9;充沛&#9;手雷洗礼&#9;专注打击&#9;鼓舞爆弹&#9;电弧抗性&#9;烈日武器激涌&#9;面面俱到&#9;能量扩散基质&#9;焕光能量球&#9;烈日爆发&#9;银白利刃&#9;护盾粉碎&#9;猎人日志">
 <a class="entry" href="../s29/dps-036-warlock/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/7b57cd041db1987c3f566b96535daf9f.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/6acdff9af5ae274c70055f816aab2389.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1207,7 +1222,7 @@
 </div>
 </a>
 </li>
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="挽歌&#9;血红炼金术&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;低阻之道&#9;边打边劫&#9;伏特子弹&#9;埃希恩记忆&#9;新星炸弹：灾变&#9;涡流手雷&#9;神秘织针&#9;凤凰俯冲&#9;凄凉观察者&#9;编织者之唤&#9;毁灭琢面&#9;正义琢面&#9;勇气琢面&#9;希望琢面&#9;使命琢面&#9;超能洗礼&#9;手雷洗礼&#9;专注打击&#9;鼓舞爆弹&#9;电弧抗性&#9;完全充能&#9;烈日武器激涌&#9;面面俱到&#9;瓦解能量球&#9;崩解&#9;极限突破&#9;爆发滑翔&#9;废墟石板&#9;驱逐引擎&#9;自动填装枪套&#9;聚合充能&#9;充沛&#9;能量扩散基质&#9;焕光能量球&#9;烈日爆发&#9;银白利刃&#9;护盾粉碎&#9;猎人日志">
 <a class="entry" href="../s29/dps-042-warlock/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e55c1cbf65fabab485bbc34272f59b11.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/f6844ca3eb572c546e97a340c24531d5.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1222,7 +1237,7 @@
 </div>
 </a>
 </li>
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="混乱无序&#9;血红炼金术&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;裁决定论&#9;聚合充能&#9;战嚎炮管&#9;埃希恩记忆&#9;新星炸弹：灾变&#9;线虫手雷&#9;神秘织针&#9;凤凰俯冲&#9;地狱火&#9;编织者之唤&#9;毁灭琢面&#9;正义琢面&#9;勇气琢面&#9;希望琢面&#9;使命琢面&#9;超能洗礼&#9;烈日灵巧&#9;动能灵巧&#9;完全充能&#9;烈日武器激涌&#9;时间膨胀&#9;强力吸引&#9;崩解&#9;极限突破&#9;爆发滑翔&#9;废墟石板&#9;驱逐引擎&#9;自动填装枪套&#9;定制特机&#9;充沛&#9;电弧装弹装置&#9;专注打击&#9;鼓舞爆弹&#9;电弧抗性&#9;电弧武器激涌&#9;面面俱到&#9;轨迹证据&#9;视网膜灼烧&#9;动能冲击&#9;电弧复合&#9;杀手公爵药剂师背包">
 <a class="entry" href="../s29/dps-052-warlock/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e55c1cbf65fabab485bbc34272f59b11.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/f24e3336a1142847d6bf47b56b492eea.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1237,7 +1252,7 @@
 </div>
 </a>
 </li>
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="第四骑士&#9;虚荣自负&#9;阴谋淬砺&#9;斩首武器&#9;诱导推销&#9;阴沉利爪&#9;急切刀锋&#9;失衡弹药&#9;埃希恩记忆&#9;织针风暴&#9;线虫手雷&#9;神秘织针&#9;凤凰俯冲&#9;地狱火&#9;编织者之唤&#9;毁灭琢面&#9;正义琢面&#9;勇气琢面&#9;希望琢面&#9;使命琢面&#9;超能洗礼&#9;虚空装弹装置&#9;虚空灵巧&#9;谐振灵巧&#9;电弧抗性&#9;完全充能&#9;层层不绝&#9;烈日武器激涌&#9;时间膨胀&#9;强力吸引&#9;集群战术&#9;半自动强袭&#9;并肩作战&#9;灼烧暗影&#9;群敌飞梭&#9;银白箭袋&#9;护盾粉碎&#9;爆发滑翔&#9;好奇之器&#9;需求层级&#9;黎明副歌&#9;充沛&#9;强力伙伴&#9;烈日装弹装置&#9;面面俱到">
 <a class="entry" href="../s29/dps-062-warlock/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/86e7918a1c286c31ded3093069ddb7b5.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/8c32410000243e6024130f755b23fbe6.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1252,7 +1267,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="强力" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="强力" data-by="Aegis" data-tag="输出" data-q="法夫纳&#9;月之阵营靴&#9;阴谋淬砺&#9;斩首武器&#9;诱导推销&#9;送魂者&#9;自动填装枪套&#9;聚合充能&#9;定制特机&#9;光焰之井&#9;治愈手雷&#9;焚烧响指&#9;凤凰俯冲&#9;伊卡洛斯突进&#9;炙热升腾&#9;仁慈余烬&#9;骨灰余烬&#9;焦燃余烬&#9;光线余烬&#9;火炬余烬&#9;超能洗礼&#9;冰影灵巧&#9;虚空装弹装置&#9;谐振灵巧&#9;电弧抗性&#9;完全充能&#9;时间膨胀&#9;强力吸引&#9;远距填装&#9;狙击手冥想&#9;爆发滑翔&#9;加密数据盘&#9;汇编器战靴&#9;冰影瞄准性能&#9;虚空瞄准性能&#9;冰影武器激涌">
 <a class="entry" href="../s29/dps-099-warlock/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/9d1fc1679008fedbf57cb732aebe05bf.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/b91b241c65b5743e4ac89ba77fda551b.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1267,7 +1282,7 @@
 </div>
 </a>
 </li>
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="创意" data-by="Aegis" data-tag="输出">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="创意" data-by="Aegis" data-tag="输出" data-q="血红炼金术&#9;威胁等级&#9;级联点&#9;全明星&#9;多多罗的凝视&#9;速射瞄准&#9;精准连击&#9;轰鸣巨人&#9;持久印象&#9;收割者贡品&#9;定制特机&#9;新星炸弹：灾变&#9;涡流手雷&#9;神秘织针&#9;凤凰俯冲&#9;地狱火&#9;编织者之唤&#9;毁灭琢面&#9;正义琢面&#9;勇气琢面&#9;希望琢面&#9;指挥琢面&#9;超能洗礼&#9;烈日灵巧&#9;动能灵巧&#9;谐振灵巧&#9;电弧抗性&#9;完全充能&#9;动能武器激涌&#9;时间膨胀&#9;强力吸引&#9;动能合成&#9;狙击手冥想&#9;爆发滑翔&#9;加密数据盘&#9;寄生虫&#9;纯粹回忆&#9;嫉妒军械库&#9;诱导推销">
 <a class="entry" href="../s29/dps-031-warlock/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e55c1cbf65fabab485bbc34272f59b11.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/0a71a14d8614d619a40649f09b28b466.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1282,7 +1297,7 @@
 </div>
 </a>
 </li>
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="创意" data-by="Aegis" data-tag="输出">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="创意" data-by="Aegis" data-tag="输出" data-q="回旋喝彩&#9;血红炼金术&#9;阴谋淬砺&#9;斩首武器&#9;诱导推销&#9;铭纹-41&#9;自动填装枪套&#9;羸弱能量球&#9;埃希恩记忆&#9;织针风暴&#9;线虫手雷&#9;神秘织针&#9;凤凰俯冲&#9;地狱火&#9;编织者之唤&#9;毁灭琢面&#9;正义琢面&#9;勇气琢面&#9;希望琢面&#9;指挥琢面&#9;超能洗礼&#9;冰影灵巧&#9;烈日灵巧&#9;谐振装弹装置&#9;电弧抗性&#9;完全充能&#9;烈日武器激涌&#9;冰影武器激涌&#9;时间膨胀&#9;强力吸引&#9;集群战术&#9;元素仁慈&#9;并肩作战&#9;灼烧暗影&#9;群敌飞梭&#9;焕光碎片&#9;护盾粉碎&#9;爆发滑翔&#9;好奇之器&#9;爆炸范围&#9;火炬&#9;愿望成真&#9;龙之啮&#9;永恒毁灭&#9;崩解&#9;银白重炮&#9;女王兰香炉">
 <a class="entry" href="../s29/dps-089-warlock/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e55c1cbf65fabab485bbc34272f59b11.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/c7fef3b2cd1832d11841b7f7e0b04604.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1297,7 +1312,7 @@
 </div>
 </a>
 </li>
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="创意" data-by="Aegis" data-tag="输出">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="创意" data-by="Aegis" data-tag="输出" data-q="第四骑士&#9;虚荣自负&#9;阴谋淬砺&#9;斩首武器&#9;诱导推销&#9;阴沉利爪&#9;急切刀锋&#9;失衡弹药&#9;埃希恩记忆&#9;织针风暴&#9;线虫手雷&#9;神秘织针&#9;凤凰俯冲&#9;地狱火&#9;编织者之唤&#9;毁灭琢面&#9;正义琢面&#9;勇气琢面&#9;希望琢面&#9;使命琢面&#9;超能洗礼&#9;虚空装弹装置&#9;虚空灵巧&#9;谐振灵巧&#9;电弧抗性&#9;完全充能&#9;层层不绝&#9;烈日武器激涌&#9;时间膨胀&#9;强力吸引&#9;集群战术&#9;半自动强袭&#9;并肩作战&#9;灼烧暗影&#9;群敌飞梭&#9;银白箭袋&#9;护盾粉碎&#9;爆发滑翔&#9;好奇之器&#9;需求层级&#9;黎明副歌&#9;充沛&#9;强力伙伴&#9;烈日装弹装置&#9;面面俱到">
 <a class="entry" href="../s29/dps-095-warlock/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/86e7918a1c286c31ded3093069ddb7b5.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/8c32410000243e6024130f755b23fbe6.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1312,7 +1327,7 @@
 </div>
 </a>
 </li>
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="创意" data-by="Aegis" data-tag="输出">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="创意" data-by="Aegis" data-tag="输出" data-q="龙息&#9;唯我主义&#9;坏死之灵&#9;噬星者之灵&#9;迷失信号&#9;自动填装枪套&#9;我为人人&#9;全知之眼&#9;事不过四&#9;元素磨砺&#9;埃希恩记忆&#9;新星炸弹：灾变&#9;涡流手雷&#9;神秘织针&#9;凤凰俯冲&#9;地狱火&#9;编织者之唤&#9;毁灭琢面&#9;正义琢面&#9;勇气琢面&#9;希望琢面&#9;指挥琢面&#9;超能洗礼&#9;冰影灵巧&#9;电弧灵巧&#9;谐振装弹装置&#9;电弧抗性&#9;完全充能&#9;动能武器激涌&#9;强力吸引&#9;时间膨胀&#9;不稳定神枪手&#9;元素虹吸&#9;邪恶收割&#9;群敌飞梭&#9;闪电过载&#9;崩解&#9;极限突破&#9;爆发滑翔&#9;废墟石板&#9;黎明副歌&#9;定制特机&#9;烈日瞄准性能&#9;充沛&#9;强力伙伴&#9;烈日装弹装置&#9;烈日灵巧&#9;鼓舞爆弹&#9;烈日武器激涌&#9;爆炸范围&#9;火炬&#9;愿望成真&#9;龙之啮&#9;火种扳机&#9;银白重炮&#9;女王兰香炉">
 <a class="entry" href="../s29/dps-096-warlock/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/7b57cd041db1987c3f566b96535daf9f.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/49197babe16ed546cec94b26b44f3447.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1327,7 +1342,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="创意" data-by="Aegis" data-tag="输出">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="术士" data-tier="创意" data-by="Aegis" data-tag="输出" data-q="牵引器火炮&#9;月之阵营靴&#9;阴谋淬砺&#9;斩首武器&#9;诱导推销&#9;永恒之尖&#9;脉冲增幅器&#9;枯萎凝视&#9;埃希恩记忆&#9;光焰之井&#9;治愈手雷&#9;焚烧响指&#9;凤凰俯冲&#9;伊卡洛斯突进&#9;炙热升腾&#9;仁慈余烬&#9;骨灰余烬&#9;焦燃余烬&#9;光线余烬&#9;火炬余烬&#9;超能洗礼&#9;动能灵巧&#9;鼓舞爆弹&#9;专注打击&#9;电弧抗性&#9;完全充能&#9;时间膨胀&#9;强力吸引&#9;烈日爆发&#9;狙击手冥想&#9;护盾粉碎&#9;爆发滑翔&#9;猎人日志&#9;加拉尔号角&#9;汇编器战靴&#9;充沛&#9;虚空瞄准性能&#9;冰影瞄准性能&#9;谐振装弹装置&#9;虚空灵巧&#9;烈日武器激涌&#9;冰影武器激涌">
 <a class="entry" href="../s29/dps-104-warlock/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/9d1fc1679008fedbf57cb732aebe05bf.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/b62083eed6a4708e581fc9a061bcc8e9.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1345,7 +1360,7 @@
 </ul>
 <h3 class="sub-label">多职业</h3>
 <ul class="entries" data-cls="多职业">
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="多职业" data-tier="meta" data-by="小棒猪">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="多职业" data-tier="meta" data-by="小棒猪" data-q="伊邪那岐的重担&#9;允诺&#9;边打边劫&#9;高爆载荷&#9;翻新 A499&#9;速射瞄准&#9;聚合充能&#9;定制特机&#9;玻璃拱顶&#9;动能瞄准性能&#9;动能灵巧&#9;动能装弹装置&#9;震荡阻尼器&#9;灼烧抗性&#9;虚空抗性&#9;武器激涌&#9;时间膨胀&#9;强力吸引&#9;动能合成&#9;远距填装&#9;护甲匠&#9;动能裂口&#9;狙击手冥想&#9;加密数据盘&#9;隐秘追猎&#9;星界夜鹰&#9;光芒复仇&#9;自动填装枪套&#9;持久印象&#9;星狐座&#9;埃希恩记忆&#9;黄金枪：神枪手&#9;磁性手雷&#9;陷阱炸弹&#9;特技闪身&#9;飞升&#9;线织幽灵&#9;孤独琢面&#9;使命琢面&#9;统御琢面&#9;勇气琢面&#9;指挥琢面&#9;谐振瞄准性能&#9;超能洗礼&#9;近战洗礼&#9;谐振灵巧&#9;完全充能&#9;抗性&#9;烈日武器激涌&#9;职业洗礼&#9;发热寒颤&#9;烈焰之心&#9;火炬&#9;愿望成真&#9;火种扳机&#9;单人特工&#9;银白重炮&#9;女王兰香炉&#9;集束炸弹&#9;抓钩&#9;保护琢面&#9;能量扩散基质&#9;燃烧步枪弹药&#9;焕光能量球&#9;烈日爆发&#9;虚空霸权&#9;护盾粉碎&#9;猎人日志&#9;新马尔帕伊斯&#9;陨星胸甲&#9;揭纱露眼&#9;事不过四&#9;元素磨砺&#9;黄道卷线杆&#9;脉冲增幅器&#9;枯萎凝视&#9;雷霆冲击&#9;雷霆一击&#9;集结屏障&#9;重击&#9;风暴要塞&#9;抗性火花&#9;频率火花&#9;缚丝灵巧&#9;虚空灵巧&#9;强化运动&#9;虚空武器激涌&#9;持久增幅&#9;雷霆反击&#9;压制偃月&#9;碎裂能量球&#9;不稳定流动&#9;传导宇宙织针&#9;被动攻击刀剑格&#9;NPA 斥力调节器&#9;危险推力&#9;铭纹-41&#9;斩首武器&#9;虚空瞄准性能&#9;烈日灵巧&#9;虚空装弹装置&#9;不稳定神枪手&#9;光子耀斑&#9;邪恶收割&#9;闪电过载&#9;群敌飞梭&#9;粒子重建&#9;除颤爆破&#9;废墟石板&#9;缚丝瞄准性能&#9;缚丝装弹装置&#9;缚丝武器激涌&#9;血红炼金术&#9;灾变&#9;烈焰之歌&#9;风暴手雷&#9;神秘织针&#9;强能裂痕&#9;地狱火&#9;虚空供养&#9;谐振装弹装置&#9;稳定谐振瞄准&#9;崩解&#9;冷酷无情&#9;无誓&#9;混沌重塑&#9;烈日瞄准性能&#9;烈日装弹装置&#9;电介质&#9;瓦解能量球&#9;严酷折射&#9;弹中藏金&#9;极限突破&#9;圣人14号的头盔&#9;精准工具&#9;黎明护罩&#9;堡垒&#9;进攻堡垒&#9;饥饿回声&#9;坚韧回声&#9;收割回声&#9;霸道回声">
 <a class="entry" href="../s29/rme36h0u-warlock/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/c0b504a8a098196ec5c54c510547d048.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/b995885ef6216361e63a093896f75735.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/1ffa0c9fba4b3cd1d64315760fe6978d.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/238e6c3afdc31870d15231656f2d6bcb.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1360,7 +1375,7 @@
 </div>
 </a>
 </li>
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="多职业" data-tier="meta" data-by="小棒猪">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="多职业" data-tier="meta" data-by="小棒猪" data-q="狼毒&#9;复苏指令IV&#9;羸弱能量球&#9;命运眷顾&#9;铭纹-41&#9;自动填装枪套&#9;斩首武器&#9;完美逆行&#9;玻璃拱顶&#9;暗影箭矢：狩猎陷阱&#9;抓钩&#9;陷阱炸弹&#9;特技闪身&#9;飞升&#9;线织幽灵&#9;保护琢面&#9;使命琢面&#9;希望琢面&#9;烈日灵巧&#9;抗性&#9;震荡阻尼器&#9;烈日武器激涌&#9;职业洗礼&#9;强力吸引&#9;能量扩散基质&#9;焕光能量球&#9;烈日爆发&#9;银白利刃&#9;猎人日志&#9;陨星胸甲&#9;无誓&#9;雷霆冲击&#9;集结屏障&#9;风暴要塞&#9;抗性火花&#9;频率火花&#9;超能洗礼&#9;瓦解能量球&#9;闪电过载&#9;群敌飞梭&#9;严酷折射&#9;除颤爆破&#9;极限突破&#9;废墟石板&#9;故我在&#9;狼群弹药&#9;逃逸艺术家&#9;阴沉利爪&#9;旋风利刃&#9;驱逐引擎&#9;聚合充能&#9;新星炸弹：灾变&#9;风暴手雷&#9;神秘织针&#9;凤凰俯冲&#9;地狱火&#9;编织者之唤&#9;统御琢面&#9;勇气琢面&#9;手雷洗礼&#9;谐振灵巧&#9;虚空武器激涌&#9;扩展深渊&#9;涡流框架&#9;意外缓刑&#9;陨落铡刀&#9;元素磨砺&#9;铸造者框架&#9;纯五度&#9;黎明副歌&#9;三色矛头蝮-4bl&#9;燃烧野心&#9;心影&#9;猝死&#9;重建">
 <a class="entry" href="../s29/86e70i3z-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/6acdff9af5ae274c70055f816aab2389.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/2e37778d6c3cdcbd3d32819f735522c2.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/39a94c98eba4b9e007a76bbc067752f7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/94c6933727fa885fb2002a8c7aee5e42.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1374,7 +1389,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="多职业" data-tier="meta" data-by="小棒猪">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="多职业" data-tier="meta" data-by="小棒猪" data-q="叛贼&#9;加拉诺碎片&#9;光芒复仇&#9;集束炸弹&#9;聚合充能&#9;刚玉战锤&#9;边打边劫&#9;高爆载荷&#9;玻璃拱顶&#9;利刃弹幕&#9;击败他们&#9;超能洗礼&#9;谐振灵巧&#9;缚丝灵巧&#9;虚空灵巧&#9;抗性&#9;完全充能&#9;烈日武器激涌&#9;时间膨胀&#9;强力吸引&#9;烈焰之心&#9;火种扳机&#9;瓦解能量球&#9;银白重炮&#9;女王兰香炉&#9;裂波者&#9;星界夜鹰&#9;丰盈满溢&#9;黄金枪：神枪手&#9;抓钩&#9;陷阱炸弹&#9;特技闪身&#9;线织幽灵&#9;飞升&#9;保护琢面&#9;黎明琢面&#9;勇气琢面&#9;希望琢面&#9;使命琢面&#9;震荡阻尼器&#9;快速装弹松身裤&#9;职业洗礼&#9;悦耳之声&#9;虚荣自负&#9;绽放兰花&#9;织针风暴&#9;神秘织针&#9;治愈裂痕&#9;编织者之唤&#9;编织微步&#9;上升丝线&#9;生成丝线&#9;进化丝线&#9;狂怒丝线&#9;守护丝线&#9;群敌飞梭&#9;集群战术&#9;好奇之器&#9;血红炼金术&#9;谐振瞄准性能&#9;爆炸范围&#9;冷酷无情&#9;命运眷顾&#9;无誓&#9;混沌重塑&#9;暗影箭矢：狩猎陷阱&#9;烈日装弹装置&#9;烈日灵巧&#9;近战洗礼&#9;单人特工&#9;医疗设备&#9;集体爆破&#9;集体行动&#9;贪婪之握&#9;雷霆冲击&#9;脉冲手雷&#9;集结屏障&#9;暴雷之触&#9;风暴要塞&#9;抗性火花&#9;频率火花&#9;量级火花&#9;手雷洗礼&#9;元素虹吸&#9;闪电过载&#9;严酷折射&#9;重型军械回复&#9;除颤爆破&#9;废墟石板&#9;陨星胸甲&#9;极限突破">
 <a class="entry" href="../s29/fs91z7ko-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/39441735ec0f1e7f7760775f6ee4bd24.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/a7c3ee955c5e8b1c20122206d1bf60ff.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/3b17caa86d9bb7b83a19d809084fa93b.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/86e7918a1c286c31ded3093069ddb7b5.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1388,7 +1403,7 @@
 </div>
 </a>
 </li>
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="多职业" data-tier="meta" data-by="小棒猪">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="多职业" data-tier="meta" data-by="小棒猪" data-q="牵引器火炮&#9;星界夜鹰&#9;完美逆行&#9;切割&#9;玻璃拱顶&#9;黄金枪：神枪手&#9;特技闪身&#9;飞升&#9;线织幽灵&#9;保护琢面&#9;黎明琢面&#9;使命琢面&#9;勇气琢面&#9;超能洗礼&#9;虚空灵巧&#9;缚丝灵巧&#9;强力吸引&#9;时间膨胀&#9;瓦解能量球&#9;邪恶收割&#9;崩解&#9;极限突破&#9;废墟石板&#9;混乱无序&#9;快速装弹松身裤&#9;驱逐引擎&#9;自动填装枪套&#9;聚合充能&#9;裁决定论&#9;战嚎炮管&#9;抓钩&#9;陷阱炸弹&#9;赌徒闪身&#9;近战洗礼&#9;电弧灵巧&#9;冰影灵巧&#9;抗性&#9;震荡阻尼器&#9;电弧武器激涌&#9;职业洗礼&#9;风寒&#9;轨迹证据&#9;冰霜复兴&#9;削弱清敌&#9;视网膜灼烧&#9;动能冲击&#9;电弧复合&#9;杀手公爵药剂师背包&#9;烈焰之心&#9;单人特工&#9;女王兰香炉&#9;庆典飞行&#9;元素磨砺&#9;护甲匠&#9;火炬&#9;逃逸艺术家&#9;新星炸弹：灾变&#9;风暴手雷&#9;神秘织针&#9;凤凰俯冲&#9;地狱火&#9;编织者之唤&#9;统御琢面&#9;群敌飞梭&#9;手雷洗礼&#9;没有B计划&#9;嫉妒军械库&#9;雷霆冲击&#9;雷霆一击&#9;集结屏障&#9;重击&#9;风暴要塞&#9;频率火花&#9;抗性火花&#9;谐振灵巧&#9;专注打击&#9;闪电过载&#9;除颤爆破&#9;无誓&#9;黎明护罩&#9;堡垒&#9;进攻堡垒&#9;坚韧回声&#9;收割回声&#9;饥饿回声">
 <a class="entry" href="../s29/tc0nc7u2-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/6afd31f787ff68d32e1f574686494606.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/1037e708755c7086c1ac467364ca4340.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1403,7 +1418,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="多职业" data-tier="meta" data-by="小棒猪">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="多职业" data-tier="meta" data-by="小棒猪" data-q="寄生虫&#9;加拉诺碎片&#9;纯粹回忆&#9;嫉妒军械库&#9;诱导推销&#9;威胁等级&#9;级联点&#9;全明星&#9;利刃弹幕&#9;飞刀戏法&#9;击败他们&#9;火炬余烬&#9;超能洗礼&#9;抗性&#9;震荡阻尼器&#9;时间膨胀&#9;强力吸引&#9;极限突破&#9;废墟石板&#9;命运眷顾&#9;凯旋圣歌&#9;众神辉煌&#9;动能武器激涌&#9;动能合成&#9;加密数据盘&#9;牵引器火炮&#9;黎明护罩&#9;堡垒&#9;进攻堡垒&#9;饥饿回声&#9;坚韧回声&#9;收割回声&#9;动能瞄准性能&#9;谐振瞄准性能&#9;烈日灵巧&#9;谐振灵巧&#9;动能灵巧">
 <a class="entry" href="../s29/uglrzreu-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/e266ef647863fafb1541890bcfa4a6c7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/b69872f33e6e36f254ccb7580a84a0cd.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/6afd31f787ff68d32e1f574686494606.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1417,7 +1432,7 @@
 </div>
 </a>
 </li>
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="多职业" data-tier="meta" data-by="小棒猪" data-tag="输出">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="多职业" data-tier="meta" data-by="小棒猪" data-tag="输出" data-q="真相&#9;命运眷顾&#9;食莲者&#9;边打边劫&#9;枯萎凝视&#9;绞刑判官 SR4&#9;高爆载荷&#9;玻璃拱顶&#9;暗影箭矢：狩猎陷阱&#9;抓钩&#9;陷阱炸弹&#9;特技闪身&#9;飞升&#9;线织幽灵&#9;保护琢面&#9;使命琢面&#9;指挥琢面&#9;黎明琢面&#9;强力伙伴&#9;谐振瞄准性能&#9;动能瞄准性能&#9;谐振装弹装置&#9;谐振灵巧&#9;近战洗礼&#9;震荡阻尼器&#9;完全充能&#9;抗性&#9;虚空武器激涌&#9;职业洗礼&#9;强力吸引&#9;爆炸范围&#9;护甲匠&#9;单人特工&#9;银白重炮&#9;女王兰香炉&#9;完美逆行&#9;回转弹药&#9;切割&#9;瓦解能量球&#9;崩解&#9;血红炼金术&#9;新星炸弹：灾变&#9;风暴手雷&#9;神秘织针&#9;治愈裂痕&#9;地狱火&#9;编织者之唤&#9;希望琢面&#9;勇气琢面&#9;修复琢面&#9;超能洗礼&#9;手雷洗礼&#9;鼓舞爆弹&#9;能量扩散基质&#9;乘胜追击&#9;烈日爆发&#9;虚空霸权&#9;焕光能量球&#9;扩展深渊&#9;护盾粉碎&#9;猎人日志&#9;维烈妲-F&#9;涡流手雷&#9;强能裂痕&#9;虚空供养&#9;统御琢面&#9;发热寒颤&#9;凤凰俯冲&#9;武器洗礼&#9;暮光军火&#9;束缚手雷&#9;圣盾投掷&#9;集结屏障&#9;重击&#9;危险推力&#9;深岩墓室&#9;堡垒&#9;进攻堡垒&#9;吸吮回声&#9;坚韧回声&#9;弱化回声&#9;饥饿回声&#9;愿望成真&#9;坚忍克己&#9;永恒战士之灵&#9;噬星者之灵&#9;狂暴利刃&#9;神圣献祭&#9;平衡琢面&#9;快速球">
 <a class="entry" href="../s29/wjp2i9lt-hunter/index.html">
 <span class="node"><img src="../../assets/icons/b5021df721b66b6ab71e73b23e7b5392.webp" alt="" width="64" height="64" loading="lazy"></span>
 <div class="entry-body">
@@ -1432,7 +1447,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="多职业" data-tier="强力" data-by="小棒猪">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="多职业" data-tier="强力" data-by="小棒猪" data-q="千语&#9;黎明副歌&#9;玻璃拱顶&#9;光焰之井&#9;治愈手雷&#9;星界之火&#9;治愈裂痕&#9;伊卡洛斯突进&#9;炙热升腾&#9;骨灰余烬&#9;火炬余烬&#9;焦燃余烬&#9;仁慈余烬&#9;超能洗礼&#9;抗性&#9;震荡阻尼器&#9;烈日武器激涌&#9;职业洗礼&#9;强力吸引&#9;闪电过载&#9;粒子重建&#9;极限突破&#9;废墟石板&#9;陨星胸甲&#9;雷霆冲击&#9;雷霆一击&#9;集结屏障&#9;重击&#9;风暴要塞&#9;抗性火花&#9;频率火花&#9;冷酷无情&#9;血红炼金术&#9;凯旋圣歌&#9;众神辉煌&#9;谐振灵巧&#9;谐振装弹装置&#9;弹中藏金&#9;阿克瑞斯传说&#9;汇编器战靴&#9;驱逐引擎&#9;自动填装枪套&#9;聚合充能&#9;地狱火&#9;电弧灵巧&#9;电弧装弹装置&#9;冰影灵巧&#9;电弧武器激涌&#9;风寒&#9;置身其中&#9;冰霜复兴&#9;削弱清敌&#9;视网膜灼烧&#9;动能冲击&#9;电弧复合&#9;杀手公爵药剂师背包&#9;大序曲">
 <a class="entry" href="../s29/7xs7id3x-warlock/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/51c53df606cca474dce3cadbf7d5ce28.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/f3714197408d2c8935a2ce7be69a210c.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/6de5f786f39bf827de8490e97b672ddb.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/bc76e54c9cd266c09d8e08036ebcfd42.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1446,7 +1461,7 @@
 </div>
 </a>
 </li>
-<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="多职业" data-tier="强力" data-by="小棒猪">
+<li class="b-solar" data-branch="烈日" data-scene="突袭&#9;地牢" data-cls="多职业" data-tier="强力" data-by="小棒猪" data-q="牵引器火炮&#9;虫神爱抚&#9;固定低音&#9;盗墓者&#9;雪上加霜&#9;驱逐引擎&#9;自动填装枪套&#9;聚合充能&#9;空降灭火套装&#9;深岩墓室&#9;烈焰战锤&#9;治愈手雷&#9;投掷飞锤&#9;咆哮烈焰&#9;无敌索尔&#9;抚慰余烬&#9;炽热余烬&#9;慈悲余烬&#9;至高天余烬&#9;特殊武器弹药搜寻者&#9;拳到力来&#9;回天掌法&#9;抗性&#9;震荡阻尼器&#9;虚空回收器&#9;冰影回收器&#9;恢复能量球&#9;感应护盾&#9;特殊终结技&#9;强力吸引&#9;风寒&#9;置身其中&#9;冰霜复兴&#9;削弱清敌&#9;治疗能量球&#9;动能冲击&#9;弱化波&#9;杀手公爵药剂师背包&#9;没有B计划&#9;猝死&#9;战嚎炮管&#9;无誓&#9;贪婪之握&#9;冰川震击&#9;冰川手雷&#9;战栗打击&#9;集结屏障&#9;风暴怒吼&#9;构造收割&#9;传导之吟&#9;刺激的低语&#9;韵律之吟&#9;破碎之吟&#9;超能洗礼&#9;虚空灵巧&#9;近战洗礼&#9;元素充能&#9;虚空武器激涌&#9;时间膨胀&#9;职业洗礼&#9;护甲匠&#9;愿望成真&#9;冰柱&#9;瓦解能量球&#9;迎接风暴&#9;单人特工&#9;女王兰香炉&#9;圣火护心甲&#9;裁决定论&#9;玻璃拱顶&#9;燃烧锻锤&#9;火炬余烬&#9;电弧灵巧&#9;电弧武器激涌&#9;元素虹吸&#9;群敌飞梭&#9;严酷折射&#9;邪恶编织&#9;极限突破&#9;崩解&#9;废墟石板&#9;坚忍克己&#9;噬星者之灵&#9;重击&#9;保护琢面&#9;黎明琢面&#9;使命琢面&#9;新马尔帕伊斯&#9;天赋信念&#9;谜团&#9;金中藏弹&#9;狂乱&#9;阴沉利爪&#9;急切刀锋&#9;二元轨道&#9;电弧法杖&#9;组合打击&#9;赌徒闪身&#9;裂空打击&#9;飞升&#9;抗性火花&#9;频率火花&#9;缚丝回收器&#9;缚丝武器激涌&#9;持久增幅&#9;碎裂能量球&#9;压制偃月&#9;改良版瓦解&#9;不稳定流动&#9;震慑行动&#9;被动攻击刀剑格&#9;NPA 斥力调节器&#9;雷电通流&#9;雷霆反击&#9;传导宇宙织针&#9;地磁安定靴&#9;拒绝召唤&#9;切割&#9;光耀万钧&#9;混沌之触&#9;电荷思维&#9;离子火花&#9;风暴舞者之拥&#9;雷霆万钧&#9;神秘织针&#9;凤凰俯冲&#9;闪电激涌&#9;勇气琢面&#9;相对主义&#9;复兴之灵&#9;丝线打击&#9;暮域手雷&#9;陷阱炸弹&#9;能量扩散基质&#9;虚空霸权&#9;焕光能量球&#9;护盾粉碎&#9;猎人日志&#9;唯我主义&#9;严冬之怒&#9;邪恶收割&#9;噬星者之鳞&#9;鬼灵利刃&#9;谐振灵巧&#9;扩展深渊">
 <a class="entry" href="../s29/mssk651x-titan/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/2db60293ac428ae066a5bb2fed04f6e7.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/a5e7aadf7e00089690951e52c35afcbb.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/8aacd27b76e68afe6287a3984adeb601.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/3c522f849a7d4d86d5224d7d5d5671a4.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1461,7 +1476,7 @@
 </div>
 </a>
 </li>
-<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="多职业" data-tier="强力" data-by="小棒猪">
+<li class="b-prismatic" data-branch="棱镜" data-scene="突袭&#9;地牢" data-cls="多职业" data-tier="强力" data-by="小棒猪" data-q="牵引器火炮&#9;星界夜鹰&#9;完美悖论&#9;阻止力&#9;全明星&#9;凯旋圣歌&#9;众神辉煌&#9;黄金枪：神枪手&#9;抓钩&#9;陷阱炸弹&#9;特技闪身&#9;飞升&#9;线织幽灵&#9;保护琢面&#9;黎明琢面&#9;使命琢面&#9;希望琢面&#9;勇气琢面&#9;超能洗礼&#9;近战洗礼&#9;手雷洗礼&#9;专注打击&#9;抗性&#9;震荡阻尼器&#9;动能武器激涌&#9;时间膨胀&#9;强力吸引&#9;职业洗礼&#9;动能合成&#9;加密数据盘&#9;汇编器战靴&#9;光焰之井&#9;治愈手雷&#9;焚烧响指&#9;治愈裂痕&#9;地狱火&#9;伊卡洛斯突进&#9;火炬余烬&#9;骨灰余烬&#9;仁慈余烬&#9;焦燃余烬&#9;动能灵巧&#9;虚空灵巧&#9;寄生虫&#9;星界虚无&#9;嫉妒军械库&#9;聚合充能&#9;庆典飞行&#9;斩首武器&#9;玻璃拱顶&#9;谐振灵巧&#9;缚丝灵巧&#9;烈日武器激涌&#9;瓦解能量球&#9;群敌飞梭&#9;极限突破&#9;废墟石板&#9;血红炼金术&#9;诱导推销&#9;驱逐引擎&#9;自动填装枪套&#9;冰影灵巧&#9;冰影武器激涌&#9;风寒&#9;置身其中&#9;冰霜复兴&#9;削弱清敌&#9;治疗能量球&#9;寒脑凝滞&#9;动能冲击&#9;杀手公爵药剂师背包&#9;没有B计划&#9;黎明护罩&#9;堡垒&#9;进攻堡垒&#9;饥饿回声&#9;坚韧回声&#9;收割回声&#9;烈日灵巧&#9;发热寒颤&#9;爆炸范围&#9;单人特工&#9;女王兰香炉&#9;鲁莽致险&#9;集结屏障&#9;武器激涌">
 <a class="entry" href="../s29/vr3e2iwd-hunter/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/fb27afcf6cb34ca3ef2540af6b87c034.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/ba50baf6a02c5923c8f825ce4594c053.webp" alt="" width="29" height="29" loading="lazy"><img src="../../artifact-mods/../assets/icons/0dfd63e45cf5b622a610301afebac679.webp" alt="" width="29" height="29" loading="lazy"><img src="../../artifact-mods/../assets/icons/cf96e4e6ccba04d4948a7bb0ca90761b.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">
@@ -1481,7 +1496,7 @@
 <h2 class="sect-label">宗师/终极</h2>
 <h3 class="sub-label">泰坦</h3>
 <ul class="entries" data-cls="泰坦">
-<li class="b-arc" data-branch="电弧" data-scene="宗师/终极" data-cls="泰坦" data-tier="强力" data-by="dydx">
+<li class="b-arc" data-branch="电弧" data-scene="宗师/终极" data-cls="泰坦" data-tier="强力" data-by="dydx" data-q="乔木典狱官&#9;庆典飞行&#9;切割&#9;羸弱能量球&#9;光鳃之调&#9;光中藏弹&#9;玻璃拱顶&#9;雷霆冲击&#9;闪光手雷&#9;地震打击&#9;集结屏障&#9;风暴要塞&#9;抗性火花&#9;频率火花&#9;专注火花&#9;增幅火花&#9;特殊武器弹药搜寻者&#9;重型弹药搜寻者&#9;缚丝装弹装置&#9;缚丝弹药生成&#9;狙击伤害抗性&#9;震荡阻尼器&#9;缚丝回收器&#9;恢复能量球&#9;收割者&#9;实用快速启动&#9;强力吸引&#9;瓦解能量球&#9;电介质&#9;闪电过载&#9;群敌飞梭&#9;光子耀斑&#9;除颤爆破&#9;废墟石板&#9;千语&#9;无誓&#9;边打边劫&#9;引爆光束&#9;征服&#9;超充弹匣&#9;暴雷之触&#9;烈日装弹装置&#9;快速球&#9;烈日回收器&#9;烈日武器激涌&#9;严酷折射&#9;粒子重建">
 <a class="entry" href="../s29/1aiw66lv-titan/index.html">
 <span class="node"><img src="../../assets/icons/58cee87c4df6399921797be06a7aa608.webp" alt="" width="64" height="64" loading="lazy"></span>
 <div class="entry-body">
@@ -1502,7 +1517,7 @@
 <h2 class="sect-label">日常</h2>
 <h3 class="sub-label">泰坦</h3>
 <ul class="entries" data-cls="泰坦">
-<li class="b-stasis" data-branch="冰影" data-scene="日常" data-cls="泰坦" data-tier="强力" data-by="emm">
+<li class="b-stasis" data-branch="冰影" data-scene="日常" data-cls="泰坦" data-tier="强力" data-by="emm" data-q="堡垒&#9;合成感受器&#9;巴西游走蛛&#9;滑行射击&#9;雪上加霜&#9;翻新 A499&#9;直击要害&#9;自动填装枪套&#9;涅索斯&#9;冰川震击&#9;冰川手雷&#9;战栗打击&#9;巍峨屏障&#9;构造收割&#9;风暴怒吼&#9;传导之吟&#9;裂隙之吟&#9;韵律之吟&#9;饥饿之吟&#9;拳到力来&#9;超能洗礼&#9;近战快速启动&#9;伤害感应&#9;手雷洗礼&#9;完全充能&#9;震荡阻尼器&#9;灼烧抗性&#9;层层不绝&#9;元素充能&#9;动能回收器&#9;特殊终结技&#9;职业洗礼&#9;感应护盾&#9;晶体转换器&#9;大肆屠杀&#9;治疗能量球&#9;迎接风暴&#9;冰霜复兴&#9;冰冷伺候&#9;寒脑凝滞&#9;杀手公爵药剂师背包&#9;渴望回响&#9;破碎之吟&#9;混乱无序&#9;冰瀑衣钵&#9;裁决定论&#9;聚合充能&#9;战嚎炮管&#9;虚无赛博毒蛇&#9;弹药搜寻者&#9;特殊武器弹药搜寻者&#9;特殊弹药斥候&#9;烈日弹药生成&#9;电弧回收器&#9;风寒&#9;削弱清敌&#9;动能冲击">
 <a class="entry" href="../s29/mbgvkw8f-titan/index.html">
 <span class="node"><span class="core-mosaic" style="--sz:64px;--tile:29px"><img src="../../assets/icons/9f51bbad83aeb142eb56d9faf7440662.webp" alt="" width="29" height="29" loading="lazy"><img src="../../assets/icons/8c6e9159014b670c7e316aee4b1df3a8.webp" alt="" width="29" height="29" loading="lazy"></span></span>
 <div class="entry-body">

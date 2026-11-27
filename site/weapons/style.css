@@ -175,24 +175,38 @@
    12px 内边距，往回收，字与输入框的间距才与左边的计数一样。 */
 .wpn-scope .toggle,
 .wpn-views > .toggle {
+  height: auto;
   padding: 5px 12px;
   color: var(--bone-dim);
   font: 600 13px/1.4 var(--font-cn);
   letter-spacing: .06em;
   background: none;
   border-color: transparent;
+  box-shadow: none;
 }
+
+.wpn-scope .toggle::before,
+.wpn-views > .toggle::before { content: none; }
 
 .wpn-scope .toggle { padding: 6px 14px; font-size: 14px; }
 
 .wpn-scope .toggle:hover,
-.wpn-views > .toggle:hover { color: var(--bone); }
+.wpn-views > .toggle:hover {
+  color: var(--bone);
+  background: none;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.wpn-scope .toggle:active,
+.wpn-views > .toggle:active { transform: none; box-shadow: none; }
 
 .wpn-scope .toggle[aria-pressed="true"],
 .wpn-views > .toggle[aria-pressed="true"] {
   color: var(--bone);
   background: none;
   border-color: transparent transparent var(--bone);
+  box-shadow: none;
 }
 
 .wpn-views {

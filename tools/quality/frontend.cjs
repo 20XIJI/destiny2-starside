@@ -317,6 +317,7 @@ function toolbar (opts = {}) {
   const slot = body.appendChild(new El('div', 'site-head')).appendChild(new El('div', 'toolbar'))
   slot.dataset = { section: '.block', item: '.entries > li', label: '', noun: '配装',
     facets: '场景=scene:single:groups;强度=tier:single;职业=cls:tuck;分支=branch:tuck;标签=tag:tuck' }
+  if (opts.hint) slot.dataset.hint = opts.hint
   let hideBtn = null
   if (opts.hideBy) {
     hideBtn = body.appendChild(new El('button', 'toggle'))
@@ -397,6 +398,7 @@ function toolbar (opts = {}) {
   }
   const secOf = (scene) => main.children.find((c) => c.dataset.scene === scene)
   return {
+    sandbox,
     slot,
     bar,
     main,
@@ -717,6 +719,120 @@ test('data-hide-by reports hidden-hit count on active filter and resetAll clears
   reset.onclick()
   assert.equal(t.hideBtn.getAttribute('aria-pressed'), 'false', 'resetAll 应当一并取消默认隐藏作者')
   assert.equal(t.live(), cards.length, '重置后应当展示含 Aegis 的全部卡片')
+})
+
+test('data-q enables cross-field search over weapons, exotics, skills, supers, and artifacts (Chinese + pinyin/English)', () => {
+  const cards = [
+    { scene: '突袭', cls: '猎人', tier: 'meta', branch: '棱镜', tag: '输出', q: '星界夜鹰\t黄金枪：神枪手\t飞升\t狙击手冥想' },
+    { scene: '突袭', cls: '术士', tier: '强力', branch: '烈日', tag: '机制', q: '神圣裁决\t光焰之井\t银白箭袋' }
+  ]
+  const t = toolbar({ cards, hint: '武器、金装、技能、超能、神器…' })
+  assert.match(t.slot.querySelector('.tool-search').placeholder, /武器、金装、技能、超能、神器/,
+    'data-hint 应当落进搜索框提示文案')
+  const filter = t.sandbox.window.starsideFilter
+  t.sandbox.window.starsidePy = {
+    hit(name, terms) {
+      const map = { '星界夜鹰': 'celestial xjyy', '黄金枪：神枪手': 'goldengun hjq', '狙击手冥想': 'jjsmx' }
+      const hay = (name + ' ' + (map[name] || '')).toLowerCase()
+      return terms.every((w) => hay.includes(w))
+    }
+  }
+  assert.equal(filter('飞升'), 1, '按星相/技能中文名应当命中配装')
+  assert.equal(filter('狙击手冥想'), 1, '按神器模组中文名应当命中配装')
+  assert.equal(filter('celestial 飞升'), 1, '英文金装名 + 中文技能名跨字段组合应当同时命中')
+  assert.equal(filter('xjyy jjsmx'), 1, '拼音首字母跨装备组合应当同时命中')
+  assert.equal(filter('星界夜鹰 光焰之井'), 0, '跨卡词不应误命中')
+  assert.equal(filter(''), 2, '清空搜索词应恢复全部卡片')
+})
+
+test('facet bars support data-no-all, data-order, and data-icons for icon-only filters', () => {
+  const El = domStub()
+  const body = new El('body')
+  const slot = body.appendChild(new El('div', 'toolbar'))
+  slot.dataset = {
+    section: '.block',
+    item: '.entries > li',
+    label: '',
+    noun: '配装',
+    facets: '职业=cls:single;属性=branch:single'
+  }
+  const clsBar = body.appendChild(new El('nav', 'facet-bar'))
+  const resetBtn = body.appendChild(new El('button', 'facet-reset'))
+  resetBtn.dataset = { facetReset: '' }
+  resetBtn.disabled = true
+  clsBar.dataset = {
+    facet: '职业',
+    noAll: '',
+    noLabel: '',
+    order: '猎人,泰坦,术士',
+    icons: JSON.stringify({ 猎人: '<img src="h.webp">', 泰坦: '<img src="t.webp">', 术士: '<img src="w.webp">' })
+  }
+  const elBar = body.appendChild(new El('nav', 'facet-bar'))
+  elBar.dataset = {
+    facet: '属性',
+    noAll: '',
+    noLabel: '',
+    order: '棱镜,烈日,虚空',
+    icons: JSON.stringify({ 棱镜: '<svg></svg>', 烈日: '<img src="s.webp">', 虚空: '<img src="v.webp">' })
+  }
+  const sec = body.appendChild(new El('section', 'block'))
+  sec.id = 'sec-1'
+  const ul = sec.appendChild(new El('ul', 'entries'))
+  const cards = [
+    { cls: '术士', branch: '虚空' },
+    { cls: '猎人', branch: '棱镜' },
+    { cls: '泰坦', branch: '烈日' }
+  ]
+  const lis = cards.map((c) => {
+    const li = ul.appendChild(new El('li'))
+    li.dataset = c
+    return li
+  })
+  const doc = {
+    documentElement: new El('html'),
+    body,
+    querySelector: (s) => body.querySelector(s),
+    querySelectorAll: (s) => body.querySelectorAll(s),
+    createElement: (t) => new El(t),
+    addEventListener () {}
+  }
+  const sandbox = {
+    window: { location: { search: '', hash: '', pathname: '/builds/index.html' }, history: { replaceState () {} }, addEventListener () {} },
+    document: doc,
+    location: { search: '', hash: '', pathname: '/builds/index.html' },
+    history: { replaceState () {} },
+    matchMedia: () => ({ matches: false }),
+    URLSearchParams,
+    addEventListener () {},
+    setTimeout () {},
+    console
+  }
+  vm.runInNewContext(fs.readFileSync(path.join(site, 'assets/app.js'), 'utf8'), sandbox)
+
+  const clsBtns = clsBar.querySelectorAll('button')
+  assert.deepEqual(clsBtns.map((b) => b.dataset.v), ['猎人', '泰坦', '术士'], 'data-no-all 不出「全部」且按 data-order 排序')
+  assert.ok(clsBtns.every((b) => b.className === 'toggle is-ico'), '带 data-icons 的选项应当渲染为 is-ico')
+  assert.equal(clsBtns[0].getAttribute('aria-label'), '猎人')
+  assert.equal(clsBtns[0].title, '猎人')
+  assert.equal(clsBtns[0].innerHTML, '<img src="h.webp">')
+
+  assert.equal(clsBar.querySelectorAll('.facet-label').length, 0, 'data-no-label 不应渲染维度前缀标签')
+  const elBtns = elBar.querySelectorAll('button')
+  assert.deepEqual(elBtns.map((b) => b.dataset.v), ['棱镜', '烈日', '虚空'], '属性图标应当严格遵循 data-order 顺序')
+
+  clsBtns[0].onclick()
+  assert.equal(lis.filter((li) => !li.hidden).length, 1, '点选猎人图标应当仅保留猎人配装')
+  clsBtns[0].onclick()
+  assert.equal(lis.filter((li) => !li.hidden).length, 3, '再点一次已选图标应当取消筛选回到全部')
+  elBtns[0].onclick()
+  elBtns[1].onclick()
+  assert.equal(elBtns[0].getAttribute('aria-pressed'), 'false', '属性维度互斥：选烈日应自动取消棱镜')
+  assert.equal(elBtns[1].getAttribute('aria-pressed'), 'true')
+  assert.equal(resetBtn.disabled, false, '选中任意维度后重置按钮应当激活可点')
+  resetBtn.onclick()
+  assert.equal(elBtns[1].getAttribute('aria-pressed'), 'false', '点击重置应当清空全部已选维度')
+  assert.equal(lis.filter((li) => !li.hidden).length, 3, '点击重置应当恢复全部卡片')
+  assert.equal(resetBtn.disabled, true, '重置后无激活筛选时重置按钮应当回到禁用态')
 })
 
 test('home search defers index load until interaction, sets role=presentation, and rewrites alias ?q= targets', () => {

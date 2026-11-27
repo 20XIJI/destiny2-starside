@@ -19,6 +19,7 @@ import sys
 from urllib.parse import quote
 
 import dim
+import icons
 import items
 import migrate
 import rows
@@ -1659,6 +1660,24 @@ def season_dirs():
     return out
 
 
+def gear_terms(md, members):
+    """提取配装（或合集所有成员）用到的武器、金装、套装、超能、技能、星相、碎片、神器与模组名，供索引页检索。"""
+    sources = members if members else [md]
+    seen = []
+    seen_set = set()
+    for rec in sources:
+        raw = [vocab.bare(name) for name, _, _ in page_items(rec)]
+        raw += [vocab.bare(n) for n in names(rec, "移动", required=False)]
+        art = meta(rec, "神器", required=False)
+        if art:
+            raw.append(vocab.bare(art))
+        for item in raw:
+            if item and item not in seen_set:
+                seen_set.add(item)
+                seen.append(item)
+    return seen
+
+
 def build(idx, descs, dirname, season, name_cn, slug):
     src = os.path.join(SRC_DIR, dirname, slug + ".json")
     with source_context(os.path.relpath(os.path.realpath(src), shell.ROOT)):
@@ -1721,6 +1740,7 @@ def build(idx, descs, dirname, season, name_cn, slug):
             "authors": [x.split("|")[0].strip() for x in head.get("推荐人") or ()],
             "core": core,
             "preview": preview,
+            "gear": gear_terms(md, members),
             "set": len(members),
         }
 
@@ -1761,7 +1781,7 @@ def card(m, href, up, sets):
     )
     return [
         '<li class="b-%s" data-branch="%s" data-scene="%s" data-cls="%s"'
-        ' data-tier="%s" data-by="%s"%s>'
+        ' data-tier="%s" data-by="%s"%s%s>'
         % (
             m["branch"],
             m["branch_cn"],
@@ -1770,6 +1790,9 @@ def card(m, href, up, sets):
             m["tier"],
             TAB.join(m["authors"]),
             ' data-tag="%s"' % TAB.join(m["tags"]) if m["tags"] else "",
+            ' data-q="%s"' % TAB.join(escape(x, quote=True) for x in m["gear"])
+            if m.get("gear")
+            else "",
         ),
         '<a class="entry" href="%s">' % (href % (m["season"], m["slug"])),
         core_node(m["core"], prefix),
@@ -1811,7 +1834,49 @@ def stamp_key(s):
     return tuple(int(x) for x in s.split("."))
 
 
-def render_index(made, sets=False):
+ELEM_ORDER = ("棱镜", "烈日", "电弧", "虚空", "冰影", "缚丝")
+ELEM_ICON_ID = {"电弧": 2, "烈日": 3, "虚空": 4, "冰影": 6, "缚丝": 7}
+PRISM_SVG = (
+    '<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">'
+    '<path d="M12 3.2 5.4 14.2h13.2L12 3.2Z" fill="none" stroke="var(--c-prism)"'
+    ' stroke-width="1.75" stroke-linejoin="round"/>'
+    '<path d="M12 7.4 8.8 12.9h6.4L12 7.4Z" fill="var(--c-prism)"/>'
+    '<path d="M8.3 16.1 5.2 20.6M10.6 16.1 9.2 20.9M13.4 16.1l1.4 4.8'
+    'M15.7 16.1l3.1 4.5" stroke="var(--c-prism)" stroke-width="1.65"'
+    ' stroke-linecap="round"/></svg>'
+)
+SEARCH_SVG = (
+    '<svg class="facet-s-ico" viewBox="0 0 20 20" width="15" height="15"'
+    ' fill="none" stroke="currentColor" stroke-width="1.6"'
+    ' stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+    '<circle cx="8.8" cy="8.8" r="5.6"/><path d="m13.1 13.1 4 4"/></svg>'
+)
+
+
+def facet_icons(idx, live, up, sets):
+    """生成索引页职业与属性图标映射，直接复用官方图标路径。"""
+    prefix = "../" * up
+    present = {m["class"] for m in live}
+    need_cls = CLASSES if (sets and MIXED in present) else tuple(c for c in CLASSES if c in present)
+    cls_map = {}
+    tri = []
+    for cls in need_cls:
+        src = prefix + vocab.pick(idx, cls, "职业", kind="分节")["icon"]
+        cls_map[cls] = '<img src="%s" alt="" width="16" height="16">' % src
+        tri.append('<img src="%s" alt="" width="13" height="13">' % src)
+    if sets and MIXED in present:
+        cls_map[MIXED] = '<span class="cls-tri">%s</span>' % "".join(tri)
+    elem_map = {"棱镜": PRISM_SVG}
+    for name, eid in ELEM_ICON_ID.items():
+        src = "%sassets/icons/%s" % (prefix, icons.file_of(icons.ELEM[eid]))
+        elem_map[name] = '<img src="%s" alt="" width="17" height="17">' % src
+    return (
+        escape(json.dumps(cls_map, ensure_ascii=False, separators=(",", ":")), quote=True),
+        escape(json.dumps(elem_map, ensure_ascii=False, separators=(",", ":")), quote=True),
+    )
+
+
+def render_index(idx, made, sets=False):
     """配装的两张索引页，同一份实现：
 
         builds/index.html       单套配装
@@ -1895,6 +1960,8 @@ def render_index(made, sets=False):
     aside = '<nav class="head-portals" aria-label="配装导航">%s</nav>' % "".join(
         nav_cards
     )
+    cls_icons, elem_icons = facet_icons(idx, live, up, sets)
+    has_aegis = any("Aegis" in m["authors"] for m in live)
     o = [
         shell.head(
             "%s · Starside" % name,
@@ -1904,51 +1971,51 @@ def render_index(made, sets=False):
             sky=True,
             sheets=["../style.css"] if sets else None,
         ),
-        # data-facets 是声明式的：`显示名=data 键[:修饰]`，分号隔开。
-        #   :single   一次只选一个（职业、场景与强度）
-        #   :groups   分节按这一维分，选定单一值时重叠的那几节并成一张网格
-        #   :tuck     收进工具条那块共用面板，不给它正文里的常驻一排
-        # 分支、标签走 :tuck：十次里有九次没人碰。**顺序即面板里的顺序**，职业、
-        # 场景与强度排在前面是因为它们有正文容器接着，落不进面板。
-        #
-        # **不出跳转 chip**（data-label 给空串）：那一排跳的是大节，而大节就是场景，
-        # 页面上那条居中的场景开关已经在干这件事，同一排字出现两遍读者分不出
-        # 哪一排管什么。
         shell.nav(
             name,
             up=up,
             parent=[SITE_SECTION] if sets else None,
             parent_href="../index.html",
-            toolbar={
-                "data-section": ".block",
-                "data-item": ".entries > li",
-                "data-label": "",
-                "data-noun": "合集" if sets else "配装",
-                "data-facets": "场景=scene:single:groups;强度=tier:single;"
-                "职业=cls:single;分支=branch:tuck;标签=tag:tuck",
-            },
         ),
         shell.page_head(name, aside=aside),
-        # 四个容器都是**空的由页面给、内容由 app.js 填**：值本来就从卡片现扫，
-        # 写进 HTML 就是同一批字的第二个来源。无 JS 时它们是空的、由
-        # .facet-bar:empty 收起，正文照旧可读。
+        # 两层原生发丝控台：上行通栏搜索 + 左缘灯条开关，下行五维互斥全明面铺开，选中以底轨小星芒标示。
         '<div class="facet-block">',
-        # 低频那两维收进这里的共用面板。**与主轴同一块**，不放工具条上：
-        # 工具条那一格前面是空着的 .tool-count，触发器停在中段像掉在半路上；
-        # 挨着职业、场景与强度，读者一眼看得出这几样是一类东西。
-        '<div class="facet-tuck" data-facet-tuck>%s</div>'
-        % (
+        '<div class="facet-top">',
+        '<div class="facet-search-box">',
+        SEARCH_SVG,
+        '<div class="toolbar" data-section=".block" data-item=".entries > li"'
+        ' data-label="" data-noun="%s" data-hint="武器、金装、技能、超能、神器…"'
+        ' data-facets="场景=scene:single:groups;强度=tier:single;'
+        '职业=cls:single;属性=branch:single;标签=tag:single"></div>'
+        % ("合集" if sets else "配装"),
+        "</div>",
+        (
+            '<div class="facet-tuck">'
             '<button type="button" class="toggle" data-hide-by="Aegis"'
-            ' aria-pressed="true">隐藏 Aegis 配装</button>'
-            if any("Aegis" in m["authors"] for m in live)
+            ' aria-pressed="true" title="隐藏 Aegis 配装">隐藏 Aegis</button>'
+            "</div>"
+            if has_aegis
             else ""
         ),
-        # 职业排在最上：进来先挑自己玩的那个职业，再挑在哪打。
-        '<nav class="facet-bar" data-facet="职业" aria-label="职业"></nav>',
-        '<nav class="facet-bar" data-facet="场景" aria-label="适用场景"></nav>',
-        # 强度与场景并列成第二条：它是「凭什么被推荐」，与「在哪打」一样是读者
-        # 一进来就要拿的主意，收进面板等于把它降到与分支同一档。
-        '<nav class="facet-bar" data-facet="强度" aria-label="强度"></nav>',
+        "</div>",
+        '<div class="facet-dims">',
+        '<button type="button" class="op is-quiet facet-reset" data-facet-reset disabled'
+        ' title="清空搜索与筛选">重置</button>',
+        '<span class="facet-sep" aria-hidden="true"></span>',
+        '<nav class="facet-bar" data-facet="职业" data-no-all data-no-label'
+        ' data-order="%s" data-icons="%s" aria-label="职业"></nav>'
+        % (",".join(CLASSES + (MIXED,)), cls_icons),
+        '<span class="facet-sep" aria-hidden="true"></span>',
+        '<nav class="facet-bar" data-facet="属性" data-no-all data-no-label'
+        ' data-order="%s" data-icons="%s" aria-label="属性"></nav>'
+        % (",".join(ELEM_ORDER), elem_icons),
+        '<span class="facet-sep" aria-hidden="true"></span>',
+        '<nav class="facet-bar" data-facet="场景" data-no-all data-no-label aria-label="适用场景"></nav>',
+        '<span class="facet-sep" aria-hidden="true"></span>',
+        '<nav class="facet-bar" data-facet="标签" data-no-all data-no-label aria-label="标签"></nav>',
+        '<span class="facet-sep" aria-hidden="true"></span>',
+        '<nav class="facet-bar" data-facet="强度" data-no-all data-no-label aria-label="强度"></nav>',
+        "</div>",
         "</div>",
         "<main>",
     ]
@@ -2896,7 +2963,7 @@ def render_new(stamp, name_cn, sets=False):
         # 投稿直接把配装文本发到后端的待审队列。**接口地址由生成器写在
         # data-api 上**，form.js 现读——与 app.js 从 .toolbar 的 data-* 读配置
         # 同一条约定，地址仍只有 shell.API 一处定义。
-        '<button id="send" class="op" type="button" data-api="%s">投稿</button>'
+        '<button id="send" class="op is-primary" type="button" data-api="%s">投稿</button>'
         % shell.API,
         "</div>",
         "",
@@ -3073,11 +3140,11 @@ def main():
     if not made:
         die("没有配装源稿可生成" + ("：找不到 %s.json" % only if only else ""))
     if not only:
-        render_index(made)
+        render_index(idx, made)
         # 没有合集就不出那一页：出一张空索引不如不出。shell.pages() 用同一条
         # 判据，两处因此不会一个出页一个不收。
         if any(m["set"] for m in made if m["season"] == SEASON):
-            render_index(made, sets=True)
+            render_index(idx, made, sets=True)
         render_vocab(idx)
         render_desc(descs)
         here = [n for _, sn, n in season_dirs() if sn == SEASON]
