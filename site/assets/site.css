@@ -427,6 +427,11 @@ a { color: var(--bone); }
 
 .tool-search::placeholder { color: var(--bone-dim); }
 
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 /* 只提亮底色与边框，不动 outline——:focus-visible 的描边是键盘可达性底线 */
 .tool-search:focus {
   background: var(--surf-3);

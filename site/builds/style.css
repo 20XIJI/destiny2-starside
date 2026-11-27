@@ -667,7 +667,7 @@ body:has(.entries) { --wrap: var(--wrap-wide); --min: 1188px; }
 
 .facet-top .tool-count {
   position: absolute;
-  right: 32px;
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
   min-width: 0;

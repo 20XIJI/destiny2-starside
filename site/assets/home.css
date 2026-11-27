@@ -933,8 +933,6 @@ body:has(.hero) .entries > li { position: relative; }
   border-color: var(--c-enemy);
 }
 
-.hero-search .tool-search::-webkit-search-cancel-button { -webkit-appearance: none; }
-
 /* 一体展开浮层：与上方输入框同宽、零缝隙衔接，脱离文档流不挤压下方轮换条与卡片墙 */
 .hero-panel {
   position: absolute;

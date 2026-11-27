@@ -2243,7 +2243,6 @@
 
   /* ── 外壳：顶栏里的范围开关、查询框、计数与视图 ─────────────────── */
   var input = bar.querySelector('.wpn-input');
-  var clearBtn = bar.querySelector('.wpn-clear');
   var acBox = bar.querySelector('.wpn-suggest');
   var acList = acBox.querySelector('.wpn-suggest-list');
   var acHint = acBox.querySelector('.hint');
@@ -2347,7 +2346,6 @@
     bar.querySelector('[data-act="syntax"]').setAttribute('aria-expanded', S.syntax ? 'true' : 'false');
     syntaxBox.hidden = !S.syntax;
     if (!typing && input.value !== S.q && document.activeElement !== input) { input.value = S.q; }
-    syncClear();
     var total = REPS[S.scope].length;
     var unit = S.scope === 'armor' ? '件' : S.scope === 'sets' ? '套' : '把';
     countBox.innerHTML = !tree ? '<b>' + total + '</b> ' + unit
@@ -4041,9 +4039,6 @@
 
   /* ── 自动补全 ──────────────────────────────────────────────────────── */
   var ac = { items: [], at: -1, tok: null, px: -1, py: -1 };
-  function syncClear() {
-    if (clearBtn) { clearBtn.hidden = !input.value; }
-  }
   function currentToken() {
     var pos = input.selectionStart == null ? input.value.length : input.selectionStart;
     var list = tokenize(input.value);
@@ -4511,17 +4506,6 @@
   input.addEventListener('click', suggest);
   input.addEventListener('focus', ensurePinyin);
   input.addEventListener('input', ensurePinyin);
-  input.addEventListener('input', syncClear);
-  if (clearBtn) {
-    clearBtn.addEventListener('mousedown', function (e) { e.preventDefault(); });
-    clearBtn.addEventListener('click', function () {
-      input.value = '';
-      syncClear();
-      setQuery('', false);
-      input.focus();
-      suggest();
-    });
-  }
   input.addEventListener('keydown', function (e) {
     if (acBox.hidden) {
       if (e.key === 'Escape') { input.blur(); }

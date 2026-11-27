@@ -95,7 +95,7 @@
 .wpn-input {
   display: block;
   width: 100%;
-  padding: 13px 40px 13px 22px;
+  padding: 13px 22px;
   color: var(--bone);
   font: 400 14px/1.5 var(--font-body);
   background: var(--surf-1);
@@ -104,51 +104,7 @@
   transition: border-color .24s ease, background-color .24s ease, box-shadow .24s ease;
 }
 
-.wpn-clear {
-  position: absolute;
-  top: 50%;
-  right: 10px;
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  color: var(--bone-dim);
-  background: transparent;
-  border: 0;
-  border-radius: 50%;
-  cursor: pointer;
-  transform: translateY(-50%);
-  transition: color .16s ease, background-color .16s ease, scale .14s ease;
-}
-
-.wpn-clear[hidden] { display: none; }
-
-.wpn-clear svg {
-  width: 14px;
-  height: 14px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.6;
-  stroke-linecap: round;
-}
-
-.wpn-clear:hover {
-  color: var(--bone);
-  background: var(--tint);
-}
-
-.wpn-clear:active { scale: .92; }
-
-.wpn-clear:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
 .wpn-input::placeholder { color: var(--bone-dim); }
-
-/* 浏览器自带的清空钮是一枚蓝叉，不在本站色板里；清掉条件走药丸上的 ×。 */
-.wpn-input::-webkit-search-cancel-button { -webkit-appearance: none; }
 
 .wpn-input:focus,
 .wpn-input.is-focus {
