@@ -133,7 +133,7 @@
 .chart .zone-lbl {
   fill: var(--bone-dim);
   font-family: var(--font-cn);
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: .04em;
 }
 
@@ -146,7 +146,7 @@
 .chart .tick {
   fill: var(--bone-dim);
   font-family: var(--font-body);
-  font-size: 11px;
+  font-size: 12px;
   text-anchor: middle;
 }
 
@@ -199,7 +199,7 @@
 
 .chart .tag {
   font-family: var(--font-body);
-  font-size: 11px;
+  font-size: 12px;
   dominant-baseline: middle;
 }
 
@@ -262,7 +262,7 @@
   border-radius: var(--r-sm);
   background: var(--surf-2);
   color: var(--c-term);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .cd-badge.danger { color: var(--c-bar-red); }
@@ -282,7 +282,7 @@
   background-color: var(--tint);
   color: var(--bone);
   font-family: var(--font-body);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   text-align: center;
@@ -391,7 +391,7 @@
   background: var(--tint);
   color: var(--bone-dim);
   font-family: var(--font-body);
-  font-size: 11px;
+  font-size: 12px;
   cursor: pointer;
 }
 
@@ -420,7 +420,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .cd-mlbl {
@@ -492,7 +492,7 @@
   background: var(--surf-2);
   color: var(--bone-dim);
   font-family: var(--font-cn);
-  font-size: 11px;
+  font-size: 12px;
   cursor: pointer;
 }
 
@@ -523,7 +523,7 @@
 
 .cd-cmp-desc {
   color: var(--bone-dim);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.5;
 }
 

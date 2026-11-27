@@ -77,7 +77,7 @@ function rootCss(width) {
   return `.shot-root {
   --vw: ${width / 100}px;
   color: var(--bone);
-  font: 400 15px/1.85 var(--font-body);
+  font: 400 14px/1.85 var(--font-body);
   font-variant-numeric: tabular-nums;
   background:
     repeating-linear-gradient(0deg, var(--grid) 0 1px, transparent 1px 88px),

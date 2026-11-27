@@ -82,7 +82,7 @@
   padding-bottom: 13px;
   color: var(--bone-dim);
   font-family: var(--font-cn);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: .18em;
   text-indent: .18em;          /* 抵掉末字后面那一份字距，视觉上仍居中 */
@@ -218,7 +218,7 @@
   margin-bottom: 10px;
   color: var(--bone-dim);
   font-family: var(--font-cn);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: .18em;
 }
@@ -352,7 +352,7 @@
 .rota-badge {
   color: var(--bone-dim);
   font-family: var(--font-cn);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: .12em;
   text-indent: .12em;
@@ -373,7 +373,7 @@
 .rota-date {
   color: var(--bone-dim);
   font-family: var(--font-cn);
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -567,7 +567,7 @@
   padding: 8px 18px;
   color: var(--bone-dim);
   font-family: var(--font-cn);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   letter-spacing: .06em;
   background: var(--surf-1);
@@ -589,7 +589,7 @@
   padding: 3px 10px;
   color: var(--bone-dim);
   font-family: var(--font-cn);
-  font-size: 11px;
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
   letter-spacing: .04em;
   white-space: nowrap;
@@ -908,7 +908,7 @@
 .cyc-step-k {
   color: var(--bone-dim);
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: .04em;
 }
 
@@ -1010,7 +1010,7 @@
   align-self: flex-start;
   color: var(--bone-dim);
   font-family: var(--font-cn);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.3;
   letter-spacing: .04em;
 }
@@ -1074,7 +1074,7 @@
 
 .cyc-k {
   color: var(--bone-dim);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .cyc-v {

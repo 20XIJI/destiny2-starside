@@ -56,7 +56,7 @@ main {
   border: 1px solid var(--hair);
   border-radius: var(--r-sm);
   color: var(--bone);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.5;
 }
 
@@ -103,7 +103,7 @@ main {
 
 /* 核心 DPS */
 .gen tbody td:nth-of-type(4) {
-  font-size: var(--fs-md);
+  font-size: 13px;
   font-weight: 600;
 }
 
@@ -149,7 +149,7 @@ main {
   max-width: 44px;
   padding-right: 2px;
   padding-left: 2px;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0;
 }
 

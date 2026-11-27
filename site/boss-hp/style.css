@@ -169,7 +169,7 @@
   font-size: 12px;
 }
 
-.gen:not(:has(thead th:nth-child(7))) thead th { font-size: 11px; }
+.gen:not(:has(thead th:nth-child(7))) thead th { font-size: 12px; }
 
 .gen:not(:has(thead th:nth-child(7))) tbody th[scope="row"],
 .gen:not(:has(thead th:nth-child(7))) tbody td:not(:last-child) {

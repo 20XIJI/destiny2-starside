@@ -4399,9 +4399,11 @@ class TypeGate(unittest.TestCase):
         )
         self.assertEqual(
             check_type.out_of_scale_font_sizes(
-                ".a { font-size: 14px; } .b { font-size: 15px; } .c { font-size: 22px; }"
+                ".a { font-size: 14px; } .b { font-size: 15px; } .c { font-size: 22px; } "
+                ".d { font-size: 11px; } .e { font: 600 10px/1 sans-serif; } "
+                ".ok { font: 400 12px/28px sans-serif; } .hero { font-size: 36px; }"
             ),
-            ["15px", "22px"],
+            ["15px", "22px", "11px", "10px"],
         )
 
     def test_home_accents_rejects_unknown_k_class(self):

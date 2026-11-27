@@ -10,7 +10,7 @@
 .block > p {
   margin: 0 0 16px;
   color: var(--bone-dim);
-  font-size: var(--fs-md);
+  font-size: 13px;
 }
 
 .entries[data-cols="3"] {
@@ -87,7 +87,7 @@
   margin: 0;
   color: var(--bone);
   font-family: var(--font-cn);
-  font-size: var(--fs-xl);
+  font-size: 16px;
   font-weight: 600;
   line-height: 1.3;
   letter-spacing: .02em;
@@ -96,7 +96,7 @@
 .pf-count {
   color: var(--edge, var(--accent));
   font-family: var(--font-disp);
-  font-size: var(--fs-md);
+  font-size: 13px;
   font-weight: 700;
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -106,7 +106,7 @@
 .pf-desc {
   margin: 0;
   color: var(--bone-dim);
-  font-size: var(--fs-md);
+  font-size: 13px;
   line-height: 1.6;
 }
 
@@ -139,8 +139,8 @@
 .pf-stamp {
   color: var(--bone-dim);
   font-family: var(--font-disp);
-  font-size: var(--fs-xs);
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 400;
   line-height: 1;
   letter-spacing: .08em;
 }
@@ -148,8 +148,8 @@
 .pf-go {
   color: var(--bone-dim);
   font-family: var(--font-cn);
-  font-size: var(--fs-sm);
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 400;
   line-height: 1;
   transition: color .16s ease, transform .16s ease;
 }

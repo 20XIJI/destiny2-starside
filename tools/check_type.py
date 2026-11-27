@@ -206,7 +206,10 @@ def check_shape(bad: list[str]) -> int:
 
 FRAC_FONT = re.compile(r"(?<![\w-])font(?:-size)?\s*:\s*[^;{}]*?\b(\d+\.\d+px)\b")
 INT_FONT_SIZE = re.compile(r"(?<![\w-])font-size\s*:\s*(\d+)px\b")
-ALLOWED_FONT_PX = frozenset({0, 11, 12, 13, 14, 16, 20})
+FONT_SHORT = re.compile(r"(?<![\w-])font\s*:\s*([^;{}]+)")
+SHORT_PX = re.compile(r"(?<![/\d.])(\d+)px\b")
+ALLOWED_FONT_PX = frozenset({0, 12, 13, 14, 16, 20})
+DISPLAY_FONT_MIN_PX = 28
 
 
 def fractional_font_sizes(css: str) -> list[str]:
@@ -215,12 +218,20 @@ def fractional_font_sizes(css: str) -> list[str]:
 
 
 def out_of_scale_font_sizes(css: str) -> list[str]:
-    """页面样式表里不在六档整数字阶（11/12/13/14/16/20px）内的 font-size。"""
-    return [
-        m.group(1) + "px"
-        for m in INT_FONT_SIZE.finditer(strip_comments(css))
-        if int(m.group(1)) not in ALLOWED_FONT_PX
-    ]
+    """全站样式表里不在五档整数字阶（12/13/14/16/20px，展示级 >= 28px）内的 font-size 与 font 简写字号。"""
+    plain = strip_comments(css)
+    bad = []
+    for m in INT_FONT_SIZE.finditer(plain):
+        px = int(m.group(1))
+        if px not in ALLOWED_FONT_PX and px < DISPLAY_FONT_MIN_PX:
+            bad.append(m.group(1) + "px")
+    for m in FONT_SHORT.finditer(plain):
+        hit = SHORT_PX.search(m.group(1))
+        if hit:
+            px = int(hit.group(1))
+            if px not in ALLOWED_FONT_PX and px < DISPLAY_FONT_MIN_PX:
+                bad.append(hit.group(1) + "px")
+    return bad
 
 
 def check_tokens(bad: list[str]) -> int:
@@ -230,16 +241,18 @@ def check_tokens(bad: list[str]) -> int:
         for px in fractional_font_sizes(text):
             n += 1
             bad.append("T4 %s：字号 %s 带小数像素，应归入整数字号阶梯" % (rel, px))
-        if rel not in ("assets/site.css", "assets/home.css"):
-            for px in out_of_scale_font_sizes(text):
-                n += 1
-                bad.append(
-                    "T4 %s：font-size %s 不在六档整数字阶（11/12/13/14/16/20px）内"
-                    % (rel, px)
-                )
+        for px in out_of_scale_font_sizes(text):
+            n += 1
+            bad.append(
+                "T4 %s：字号 %s 不在五档整数字阶（12/13/14/16/20px，展示级 >= 28px）内"
+                % (rel, px)
+            )
         if "--font-read" in text:
             n += 1
             bad.append("T4 %s：引用了已退役的 --font-read，请改用 --font-body" % rel)
+        if re.search(r"--fs-(?:xs|sm|md|lg|xl|2xl)\b", text):
+            n += 1
+            bad.append("T4 %s：引用了已退役的 --fs-*，请直接写五档整数字号" % rel)
         if rel != "assets/site.css" and re.search(r"\.gen\b", text):
             html_rel = os.path.join(os.path.dirname(rel), "index.html")
             html_path = os.path.join(shell.SITE, html_rel)

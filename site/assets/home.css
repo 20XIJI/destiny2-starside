@@ -542,7 +542,7 @@ body:has(.hero) .entries > li { position: relative; }
   color: var(--bone-dim);
   font-family: var(--font-disp);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 400;
   line-height: 1.3;
   letter-spacing: .12em;
 }
@@ -653,8 +653,8 @@ body:has(.hero) .entries > li { position: relative; }
   padding-left: 24px;
   color: var(--bone-dim);
   font-family: var(--font-disp);
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 400;
   line-height: 1.8;
   letter-spacing: .12em;
   text-transform: uppercase;
@@ -990,7 +990,7 @@ body:has(.hero) .entries > li { position: relative; }
 .hero-search .tool-count {
   margin: 0;
   color: var(--bone-dim);
-  font-size: 11px;
+  font-size: 12px;
   text-align: left;
 }
 
@@ -1196,7 +1196,7 @@ body:has(.hero) .entries > li { position: relative; }
 .hits .hit-at {
   color: var(--bone-dim);
   font-family: var(--font-disp);
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: .12em;
 }
 
@@ -1277,7 +1277,7 @@ body:has(.hero) .entries > li { position: relative; }
 
 .hero-rota .hr-tag {
   color: var(--bone-dim);
-  font: 600 11px/1 var(--font-disp);
+  font: 400 12px/1 var(--font-disp);
   letter-spacing: .12em;
   text-decoration: none;
 }
@@ -1364,7 +1364,7 @@ body:has(.hero) .entries > li { position: relative; }
   margin: 0 0 24px;
   color: var(--bone);
   font-family: var(--font-cn);
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   letter-spacing: .06em;
 }
@@ -1575,7 +1575,7 @@ body:has(.hero) main.index { position: relative; }
 
 .pv-rn {
   color: var(--bone-dim);
-  font: 600 11px/1 var(--font-disp);
+  font: 400 12px/1 var(--font-disp);
 }
 
 .pv-rank img {
@@ -1632,7 +1632,7 @@ body:has(.hero) main.index { position: relative; }
 
 .pv-curve text {
   fill: var(--bone-dim);
-  font: 600 11px var(--font-disp);
+  font: 600 12px var(--font-disp);
   text-anchor: middle;
 }
 
@@ -1641,7 +1641,7 @@ body:has(.hero) main.index { position: relative; }
   justify-content: space-between;
   margin-top: 4px;
   color: var(--bone-dim);
-  font: 11px/1.5 var(--font-cn);
+  font: 12px/1.5 var(--font-cn);
 }
 
 /* 文字块。**底色写在容器上、不写在 .pv-chip 上**：元素名那几块带着站内的着色类
@@ -1740,7 +1740,7 @@ body:has(.hero) main.index { position: relative; }
 
 .pv-st-node b {
   color: var(--st-c, var(--accent));
-  font: 700 11px/1 var(--font-disp);
+  font: 700 12px/1 var(--font-disp);
   letter-spacing: .08em;
 }
 
@@ -1816,7 +1816,7 @@ body:has(.hero) main.index { position: relative; }
 
 .pv-table small {
   color: var(--bone-dim);
-  font: 11px/1.4 var(--font-cn);
+  font: 12px/1.4 var(--font-cn);
   text-align: right;
 }
 
@@ -1829,7 +1829,7 @@ body:has(.hero) main.index { position: relative; }
 
 .pv-table b {
   color: var(--bone);
-  font: 700 15px/1.3 var(--font-disp);
+  font: 700 14px/1.3 var(--font-disp);
   text-align: right;
 }
 
@@ -1863,7 +1863,7 @@ body:has(.hero) main.index { position: relative; }
 
 .pv-rota em {
   color: var(--bone-dim);
-  font: 600 11px/1.4 var(--font-disp);
+  font: 400 12px/1.4 var(--font-disp);
   font-style: normal;
   letter-spacing: .12em;
   text-align: right;

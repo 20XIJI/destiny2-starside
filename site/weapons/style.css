@@ -249,7 +249,7 @@
   gap: 9px;
   margin: 0 0 12px;
   color: var(--bone-dim);
-  font: 600 11px/1 var(--font-disp);
+  font: 600 12px/1 var(--font-disp);
   letter-spacing: .16em;
 }
 
@@ -355,7 +355,7 @@
 .wpn-pill .k {
   color: var(--bone-dim);
   font-family: var(--font-disp);
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: .06em;
 }
 
@@ -410,7 +410,7 @@
 .wpn-suggest .grp {
   padding: 6px 14px 2px;
   color: var(--bone-dim);
-  font: 600 11px/1.6 var(--font-disp);
+  font: 400 12px/1.6 var(--font-disp);
   letter-spacing: .12em;
   user-select: none;
 }
@@ -510,7 +510,7 @@
 
 .wpn-suggest .opt .ac-ic.ac-col,
 .wpn-suggest .opt .ac-ic.ac-op {
-  font: 600 11px/1 var(--font-disp);
+  font: 600 12px/1 var(--font-disp);
   background: var(--tint);
   border: 1px solid var(--hair);
   border-radius: 4px;
@@ -555,7 +555,7 @@
   justify-self: start;
   padding: 1px 6px;
   color: var(--bone-dim);
-  font: 400 11px/1.5 var(--font-body);
+  font: 400 12px/1.5 var(--font-body);
   background: var(--tint);
   border-radius: 4px;
 }
@@ -1053,7 +1053,7 @@
 .wpn-meta .ssn {
   margin-left: auto;
   color: var(--bone-dim);
-  font: 600 11px/1 var(--font-disp);
+  font: 400 12px/1 var(--font-disp);
   letter-spacing: .06em;
 }
 
@@ -1097,7 +1097,7 @@
 .wpn-grades .by {
   margin-right: 4px;
   color: var(--bone-dim);
-  font: 600 10px/1 var(--font-disp);
+  font: 400 12px/1 var(--font-disp);
   letter-spacing: .1em;
 }
 
@@ -1284,7 +1284,7 @@
 .wpn-list .ty { display: flex; align-items: center; gap: 8px; color: var(--bone-dim); }
 .wpn-list .fr { display: flex; align-items: center; gap: 8px; color: var(--bone-dim); }
 .wpn-list .fr img { width: 20px; height: 20px; }
-.wpn-list .ssn { color: var(--bone-dim); font: 600 11px/1 var(--font-disp); letter-spacing: .06em; }
+.wpn-list .ssn { color: var(--bone-dim); font: 400 12px/1 var(--font-disp); letter-spacing: .06em; }
 /* 同名的几版同时在结果里：赛季提亮，读者据此分得出是哪一版。 */
 .wpn-list .ssn.dup { color: var(--bone); }
 
@@ -1334,7 +1334,7 @@
 
 .rail-head b {
   color: var(--bone-dim);
-  font: 600 11px/1 var(--font-disp);
+  font: 600 12px/1 var(--font-disp);
   letter-spacing: .08em;
 }
 
@@ -1431,7 +1431,7 @@
 
 .rail-off .n {
   color: var(--bone-dim);
-  font: 600 11px/1 var(--font-disp);
+  font: 400 12px/1 var(--font-disp);
 }
 
 /* 详情 */
@@ -1489,7 +1489,7 @@
 .one-head .en {
   margin: 8px 0 12px;
   color: var(--bone-dim);
-  font: 600 12px/1.4 var(--font-disp);
+  font: 400 12px/1.4 var(--font-disp);
   letter-spacing: .24em;
 }
 
@@ -1550,7 +1550,7 @@
 }
 
 .fr-top b { color: var(--bone); font-weight: 600; }
-.fr-tier { font: 700 22px/1 var(--font-disp); letter-spacing: .02em; }
+.fr-tier { font: 700 20px/1 var(--font-disp); letter-spacing: .02em; }
 
 .fr-list {
   display: grid;
@@ -1830,7 +1830,7 @@
   border-radius: var(--r-lg);
   background: #0f1422;
   color: #fff;
-  font: 700 10px/16px var(--font-disp);
+  font: 700 12px/16px var(--font-disp);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0;
   box-shadow: inset 0 0 0 1px rgba(232, 236, 244, .52), 0 0 0 1.5px var(--ink), 0 2px 6px rgba(0, 0, 0, .75);
@@ -2071,7 +2071,7 @@
 
 .say .who {
   color: var(--bone-dim);
-  font: 600 11px/1.6 var(--font-disp);
+  font: 600 12px/1.6 var(--font-disp);
   letter-spacing: .16em;
 }
 
@@ -2094,13 +2094,13 @@
   gap: 2px 6px;
   margin-top: 6px;
   color: var(--bone);
-  font: 700 21px/1.2 var(--font-disp);
+  font: 700 20px/1.2 var(--font-disp);
   letter-spacing: .02em;
 }
 
 .say .who .dim {
   color: var(--bone-dim);
-  font: 600 11px/1 var(--font-disp);
+  font: 400 12px/1 var(--font-disp);
   letter-spacing: .1em;
 }
 
@@ -2210,7 +2210,7 @@
   border: 0;
   background: none;
   color: var(--bone-dim);
-  font: 500 11px/1 var(--font-body);
+  font: 500 12px/1 var(--font-body);
   cursor: pointer;
   white-space: nowrap;
   transition: color .2s var(--ease-silk);
@@ -2223,7 +2223,7 @@
 .stats-pvp-tag {
   margin-left: 3px;
   color: var(--bone-dim);
-  font: 400 10px/1 var(--font-cn);
+  font: 400 12px/1 var(--font-cn);
 }
 .stats-mode-btn[aria-pressed="true"] .stats-pvp-tag { color: var(--bone-dim); }
 .stats-pvp-note {
@@ -2273,14 +2273,14 @@
 .st-metric:hover { background-color: rgba(255, 255, 255, .045); }
 .st-metric .k {
   color: var(--bone-dim);
-  font: 400 11px/1 var(--font-cn);
+  font: 400 12px/1 var(--font-cn);
 }
 .st-metric .v {
   display: flex;
   align-items: baseline;
   justify-content: center;
   color: var(--bone);
-  font: 600 15px/1.1 var(--font-body);
+  font: 600 16px/1.1 var(--font-body);
   font-variant-numeric: tabular-nums;
 }
 .st-metric .v .hip {
@@ -2297,7 +2297,7 @@
 .st-metric .v small {
   margin-left: 2px;
   color: var(--bone-dim);
-  font: 400 11px/1 var(--font-body);
+  font: 400 12px/1 var(--font-body);
 }
 
 .stats-list {
@@ -2416,7 +2416,7 @@
   padding: 2px 5px 2px 10px;
   border-radius: var(--r-sm);
   background-image: linear-gradient(90deg, rgba(11, 13, 20, 0) 0%, rgba(11, 13, 20, .92) 28%, rgba(11, 13, 20, .96) 100%);
-  font: 600 11px/1 var(--font-body);
+  font: 600 12px/1 var(--font-body);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   opacity: 0;
@@ -2431,7 +2431,7 @@
 .stat-delta {
   max-width: 0;
   overflow: hidden;
-  font: 600 11px/1 var(--font-body);
+  font: 600 12px/1 var(--font-body);
   font-variant-numeric: tabular-nums;
   opacity: 0;
   transition: max-width .22s var(--ease-silk), opacity .18s var(--ease-silk);
@@ -2476,7 +2476,7 @@
 .special-stat-item:hover { background-color: rgba(255, 255, 255, .045); }
 .special-stat-label {
   color: var(--bone-dim);
-  font: 400 11px/1 var(--font-cn);
+  font: 400 12px/1 var(--font-cn);
 }
 .special-stat-value {
   display: flex;
@@ -2577,7 +2577,7 @@
 .mw-side h3 {
   margin: 0;
   color: var(--bone-dim);
-  font: 400 11px/1 var(--font-cn);
+  font: 400 12px/1 var(--font-cn);
 }
 .slot-now span {
   overflow: hidden;
@@ -2625,7 +2625,7 @@
   justify-content: center;
   padding: 0;
   color: var(--bone-dim);
-  font: 600 11px/1 var(--font-disp);
+  font: 600 12px/1 var(--font-disp);
   letter-spacing: .04em;
   background: none;
   border: 0;
@@ -2670,7 +2670,7 @@
   min-width: 28px;
   text-align: right;
   color: var(--bone);
-  font: 600 11px/1 var(--font-disp);
+  font: 600 12px/1 var(--font-disp);
 }
 
 /* 主动效果：精工实体卡 + 凹槽添加条 */
@@ -2711,7 +2711,7 @@
 }
 .fx-add-r {
   color: var(--bone-dim);
-  font: 400 11px/1 var(--font-cn);
+  font: 400 12px/1 var(--font-cn);
 }
 .fx-add:hover,
 .fx-add[aria-expanded="true"] {
@@ -2761,11 +2761,11 @@
 .fx-step {
   margin-left: 4px;
   color: var(--buff);
-  font: 600 11px/1 var(--font-disp);
+  font: 600 12px/1 var(--font-disp);
 }
 .fx-hint {
   color: var(--buff);
-  font: 400 11px/1.35 var(--font-cn);
+  font: 400 12px/1.35 var(--font-cn);
 }
 .fx-drop {
   position: absolute;
@@ -2811,7 +2811,7 @@
 .fx-pick-ico { flex: none; width: 24px; height: 24px; }
 .fx-pick-body { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .fx-pick-name { font: 500 12px/1.3 var(--font-cn); }
-.fx-pick-stats { color: var(--buff); font: 400 11px/1.4 var(--font-cn); }
+.fx-pick-stats { color: var(--buff); font: 400 12px/1.4 var(--font-cn); }
 
 /* ── PvP 击杀模拟区（无框呼吸 · 瑞士计时表 + 弹丸点阵 + 同轴三列） ── */
 
@@ -2836,7 +2836,7 @@
   align-items: center;
   gap: 6px;
   color: var(--bone-dim);
-  font: 400 11px/1 var(--font-cn);
+  font: 400 12px/1 var(--font-cn);
 }
 .pvp-ttk-k i {
   font-style: normal;
@@ -2856,7 +2856,7 @@
 .pvp-hero-unit {
   margin-left: 1px;
   color: var(--bone-dim);
-  font: 500 18px/1 var(--font-disp);
+  font: 500 16px/1 var(--font-disp);
 }
 .pvp-stat-hero-sub {
   margin-left: 4px;
@@ -2920,7 +2920,7 @@
 }
 .pvp-hits-txt {
   color: var(--bone-dim);
-  font: 400 11px/1 var(--font-cn);
+  font: 400 12px/1 var(--font-cn);
   white-space: nowrap;
 }
 .pvp-hits-txt b { color: var(--bone); font-weight: 500; }
@@ -2952,7 +2952,7 @@
 }
 .pvp-stat-label {
   color: var(--bone-dim);
-  font: 400 11px/1.2 var(--font-cn);
+  font: 400 12px/1.2 var(--font-cn);
 }
 .pvp-stat-value,
 .pvp-stat-value [data-pvp] {
@@ -2973,7 +2973,7 @@
 .pvp-cell .pvp-range-ads.worse { color: var(--enemy); }
 .pvp-sub {
   color: var(--bone-dim);
-  font: 400 11px/1 var(--font-body);
+  font: 400 12px/1 var(--font-body);
 }
 .pvp-crit-reset {
   margin-left: 4px;
@@ -2981,7 +2981,7 @@
   color: var(--bone-dim);
   background: none;
   border: 0;
-  font: 600 12px/1 var(--font-body);
+  font: 400 12px/1 var(--font-body);
   cursor: pointer;
   transition: color .18s, transform .24s var(--ease-spring);
 }
@@ -3143,13 +3143,13 @@
 }
 .pvp-cell > span {
   color: var(--bone-dim);
-  font: 400 11px/1 var(--font-cn);
+  font: 400 12px/1 var(--font-cn);
 }
 .pvp-cell .pvp-stat-value {
   display: flex;
   align-items: baseline;
   justify-content: center;
-  font: 600 15px/1.1 var(--font-body);
+  font: 600 16px/1.1 var(--font-body);
 }
 .pvp-cell .pvp-range-hip {
   color: var(--bone-dim);
@@ -3166,7 +3166,7 @@
 .pvp-cell .pvp-unit {
   margin-left: 2px;
   color: var(--bone-dim);
-  font: 400 11px/1 var(--font-body);
+  font: 400 12px/1 var(--font-body);
 }
 .pvp-cell.hi .pvp-stat-value { color: var(--c-stack); }
 .pvp-cell.hi .pvp-stat-value.better,
@@ -3196,18 +3196,18 @@
   flex-wrap: wrap;
   gap: 2px 6px;
   color: var(--bone-dim);
-  font: 400 11px/1.4 var(--font-cn);
+  font: 400 12px/1.4 var(--font-cn);
 }
 .pvp-weapon-stat-note {
   color: var(--bone-dim);
-  font: 400 11px/1.4 var(--font-cn);
+  font: 400 12px/1.4 var(--font-cn);
 }
 .pvp-ws-item {
   display: inline-flex;
   align-items: baseline;
   gap: 3px;
   color: var(--bone);
-  font: 400 11px/1.4 var(--font-cn);
+  font: 400 12px/1.4 var(--font-cn);
 }
 .pvp-ws-val {
   color: var(--buff);
@@ -3216,7 +3216,7 @@
 }
 .pvp-ws-sep {
   color: var(--bone-ghost);
-  font: 400 11px/1 var(--font-body);
+  font: 400 12px/1 var(--font-body);
 }
 
 .pvp-damage-perks {
@@ -3227,7 +3227,7 @@
 .pvp-damage-perks[hidden] { display: none; }
 .pvp-damage-perks-title {
   color: var(--bone-dim);
-  font: 500 11px/1.3 var(--font-cn);
+  font: 500 12px/1.3 var(--font-cn);
   letter-spacing: .06em;
 }
 .pvp-perk-badge {
@@ -3263,8 +3263,8 @@
 }
 .pvp-perk-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .pvp-perk-name { font: 500 12px/1.25 var(--font-cn); color: var(--bone); }
-.pvp-perk-step { margin-left: 4px; color: var(--buff); font: 600 11px/1 var(--font-disp); }
-.pvp-perk-effect { color: var(--buff); font: 400 11px/1.3 var(--font-cn); }
+.pvp-perk-step { margin-left: 4px; color: var(--buff); font: 600 12px/1 var(--font-disp); }
+.pvp-perk-effect { color: var(--buff); font: 400 12px/1.3 var(--font-cn); }
 .pvp-perk-effect.negative { color: var(--enemy); }
 :is(.picker, .fx-drop, .tip) {
   animation: pop-in .15s cubic-bezier(.16, 1, .3, 1) both;
@@ -3308,14 +3308,14 @@
 }
 
 .tip header img { width: 40px; height: 40px; border-radius: 50%; }
-.tip h5 { margin: 0; color: var(--bone); font: 600 15px/1.3 var(--font-cn); }
+.tip h5 { margin: 0; color: var(--bone); font: 600 16px/1.3 var(--font-cn); }
 .tip .ty { color: var(--bone-dim); font-size: 12px; }
 .tip .lab {
   margin: 10px 0 3px;
   padding-top: 6px;
   color: var(--bone-dim);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 400;
   letter-spacing: .04em;
   border-top: 1px solid var(--hair);
 }
@@ -3346,7 +3346,7 @@
 .empty h3 {
   margin: 0 0 6px;
   color: var(--bone);
-  font: 600 18px/1.4 var(--font-cn);
+  font: 600 16px/1.4 var(--font-cn);
 }
 
 .empty .wpn-row { margin: 12px 0 0; }
@@ -3487,11 +3487,11 @@
                     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .set-lines img { flex: none; width: 20px; height: 20px; border-radius: var(--r-sm);
                  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1); }
-.set-lines b { flex: none; font: 600 11px/1.6 var(--font-disp); color: var(--bone-dim); }
+.set-lines b { flex: none; font: 400 12px/1.6 var(--font-disp); color: var(--bone-dim); }
 /* 详情页头那两枚图并排：两枚加缝正好 94px，装得进 96px 的图栏，标题不必让位。 */
 .set-fx.lg { display: flex; gap: 6px; align-items: center; }
 .set-fx.lg img { width: 44px; height: 44px; border-radius: var(--r-md); }
 /* 详情里一条效果一块：图在左，名字、件数与实测在右，与「框架／异域特性」同形。 */
 .wpn-one .frame > img { flex: none; width: 44px; height: 44px; border-radius: var(--r-md); }
-.wpn-one .frame .pieces { margin-left: 8px; font: 600 11px/1.6 var(--font-disp);
+.wpn-one .frame .pieces { margin-left: 8px; font: 400 12px/1.6 var(--font-disp);
                           color: var(--bone-dim); }
