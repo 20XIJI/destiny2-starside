@@ -401,7 +401,7 @@
           return renderCard(it, false, i);
         }).join('');
       } else {
-        var adaErr = (data.ada && data.ada.error) ? ('：' + esc(data.ada.error)) : '，待云函数刷新后展示。';
+        var adaErr = (data.ada && data.ada.error) ? ('：' + esc(data.ada.error)) : '，请稍后刷新查看。';
         adaEl.innerHTML = '<p class="ev-error">艾达-1（Ada-1）每周着色器数据暂未同步' + adaErr + '</p>';
       }
     }
@@ -488,7 +488,7 @@
   function renderXurExoticWeapon(it) {
     var dispName = esc(formatName(it.n));
     var dispType = esc(it.ty || '异域武器');
-    var rollTag = it.rolled ? '异域 · 本周随机卷' : '异域';
+    var rollTag = it.rolled ? '异域 · 本周随机 Perk' : '异域';
     var costVal = it.cost && it.cost.n ? esc(it.cost.n) : '-';
     var chips = [];
     if (it.intr) chips.push(renderPlugNode(it.intr, true));

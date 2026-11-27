@@ -2676,7 +2676,7 @@ def set_form_head(name_cn):
         '<span class="item empty" id="f-set-core" aria-hidden="true">'
         '<span class="nm">核心</span></span>',
         '<p class="by-label">推荐者：</p>',
-        '<input class="who-in" data-key="推荐人" placeholder="ID" aria-label="推荐者">',
+        '<input class="who-in" data-key="推荐人" placeholder="推荐人昵称或 ID" aria-label="推荐人">',
         "</div>",
         '<div class="build-id">',
         # h1 包进 .id-row：详情页的标题就在这一层里，不包的话上下间距差一截。
@@ -2770,7 +2770,7 @@ def solo_form_head(name_cn):
         '<button type="button" class="item empty" id="f-core-art" data-slot="核心" '
         'aria-expanded="false"><span class="nm">核心</span></button>',
         '<p class="by-label">推荐者：</p>',
-        '<input class="who-in" data-key="推荐人" placeholder="ID" aria-label="推荐者">',
+        '<input class="who-in" data-key="推荐人" placeholder="推荐人昵称或 ID" aria-label="推荐人">',
         "</div>",
         '<div class="build-id">',
         '<h1><input data-key="配装名" placeholder="配装名称" '

@@ -4,7 +4,7 @@
 更新：2026.11.16
 路径：raid-guides/prophecy
 上级：Raid & 地牢
-页脚：首领数值为固定难度实测，不随光等浮动。
+页脚：首领数值为固定难度实测，不随光等浮动；击杀 / 一波 DPS 为满编人均门槛（突袭 6 人、地牢 3 人）。
 数据源：[Destiny 2: Boss Damage](https://docs.google.com/spreadsheets/u/0/d/1_5wtBjRYHHxuF4oJKDb_iOGZs-wTkzB6RYbnyNLbuz4/htmlview#gid=1346678363) 与 LFCarry 的 [Dungeon Loot Tables](https://lfcarry.com/guides/destiny-2-dungeon-loot-tables)
 鸣谢：小黑盒用户{buff|“压力一直天满光”}校对首领名称
 版式：副本
@@ -14,7 +14,7 @@
 
 色阶：生命值 36000 105000 112295 140000 165000 210000 250000
 
-| 首领名称 | 生命值 | 距离 | 时间 | 击杀 DPS | 一波 DPS | 注解 |
+| 首领名称 | 生命值 | 距离 | 时间（秒） | 击杀 DPS | 一波 DPS | 注解 |
 |---|---|---|---|---|---|---|
 | ![](../icons/987a97cc16.webp) 方阵士兵 | 49678 | 近 | 50 | 110 | 331 |  |
 | ![](../icons/3de8e32050.webp) 凯尔回响 | 105803 | 远 | 105 | 112 | 336 | 团灭结算界面显示的伤害{note|为实际的 2 倍} |

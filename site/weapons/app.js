@@ -16,7 +16,7 @@
   var scopeBox = document.querySelector('.wpn-scope');
   if (!root || !bar || !scopeBox) { return; }
   if (!D) {
-    root.innerHTML = '<p class="empty">武器数据没有载入：weapons/index.js 取不到。</p>';
+    root.innerHTML = '<p class="empty">装备库核心数据载入失败，请刷新重试。</p>';
     return;
   }
 
@@ -2578,8 +2578,8 @@
       seen[k] = true;
       return pillHtml(t, animate && !prevPills[k]);
     }).join('') +
-      (pending && !(loads[pending] && loads[pending].failed) ? '<span class="loading">' + (pending === 'pool' ? '词条池载入中…' : '说明载入中…') + '</span>' : '') +
-      (pills.length > 1 ? '<button type="button" class="cs-clear" data-act="clear">清空</button>' : '');
+      (pending && !(loads[pending] && loads[pending].failed) ? '<span class="loading">' + (pending === 'pool' ? 'Perk 池载入中…' : '说明载入中…') + '</span>' : '') +
+      (pills.length > 1 ? '<button type="button" class="cs-clear" data-act="clear">清空筛选</button>' : '');
     prevPills = seen;
     condsBox.setAttribute('data-n', pills.length);
     hintBox.innerHTML = HINT[S.scope];
@@ -3014,7 +3014,7 @@
       restoreDetailFocus(box, f);
       return;
     }
-    if (!P) { box.innerHTML = loads.pool && loads.pool.failed ? '<p class="empty">词条池载入失败。</p>' : '<p class="loading">词条池载入中…</p>'; need('pool', renderDetail); return; }
+    if (!P) { box.innerHTML = loads.pool && loads.pool.failed ? '<p class="empty">Perk 池载入失败。</p>' : '<p class="loading">Perk 池载入中…</p>'; need('pool', renderDetail); return; }
     if (!T) { need('text', renderDetail); }
     detailKey = nextKey;
     statShown = {};
@@ -3569,7 +3569,7 @@
     if (!PVP) {
       need('pvp', renderDetail);
       return loads.pvp && loads.pvp.failed
-        ? '<p class="empty" role="alert">weapons/pvp.js 载入失败。 <button type="button" data-act="retry-load" data-v="pvp">重试</button></p>'
+        ? '<p class="empty" role="alert">PvP 模拟数据载入失败。 <button type="button" data-act="retry-load" data-v="pvp">重试</button></p>'
         : '<p class="loading">PvP 模拟器载入中…</p>';
     }
     return PVP.pvpPanel(i, res);
@@ -4389,7 +4389,7 @@
     loadErrors.innerHTML = ['pool', 'text', 'pvp'].filter(function (name) {
       return loads[name] && loads[name].failed;
     }).map(function (name) {
-      return '<p class="empty" role="alert">weapons/' + name + '.js 载入失败，相关查询和详情可能不完整。 <button type="button" data-act="retry-load" data-v="' + name + '">重试</button></p>';
+      return '<p class="empty" role="alert">部分装备数据载入失败，相关查询和详情可能不完整。 <button type="button" data-act="retry-load" data-v="' + name + '">重试</button></p>';
     }).join('');
   }
   function render() {

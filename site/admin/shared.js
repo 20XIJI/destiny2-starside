@@ -111,14 +111,13 @@
     // res 只能套一层 span，于是与里面的 orb 嵌套，构建当场中止。
     var inner = D().whole(text.trim())
     if (/<span[^>]*>[^<]*<span/.test(D().paint(inner === null ? text : inner))) {
-      errs.push('着色标记套了两层。整格只有一个标记时那一层不出 span，'
-        + '所以把外面的字挪进最外层标记里就好')
+      errs.push('着色标记不能嵌套，请将外层文字移入标记内或拆分为两段')
     }
 
     // G3：token 必须在 site.css 里有对应的类
     var t2 = /\{([\w-]+)\|/g
     while ((m = t2.exec(text))) {
-      if (!okSet.has(m[1])) errs.push('token「' + m[1] + '」在这一页的样式表里没有定义')
+      if (!okSet.has(m[1])) errs.push('着色标记「' + m[1] + '」在当前页面未定义')
     }
 
     // G1：整篇比一次。链接目标不是正文，KEEP 里那几条是官方专名，两者都放行。

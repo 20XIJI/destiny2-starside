@@ -33,7 +33,7 @@
 <h1>弹药生成机制</h1>
 </header>
 
-<main data-src="docs/ammo" data-src-hash="b84c13150a8f1f8f91ee2c9b389f68248244f06d">
+<main data-src="docs/ammo" data-src-hash="0c82149e5a6f14daea1400ac5f3c8eba331d74e1">
 <section class="block" id="sec-1">
 <h2 class="sect-label" data-b="8" data-chip="武器生成">武器弹药生成</h2>
 <p data-b="2">击杀<span class="enemy">战斗人员</span>按一个基础百分比生成弹药。这个百分比由四项决定：击杀所用的弹药类型、生成的弹药类型、<span class="enemy">战斗人员</span>等级，以及武器的弹药生成属性。</p>
@@ -47,31 +47,31 @@
 </tr>
 </thead>
 <tbody>
-<tr data-b="2"><th scope="row"><span class="el-kinetic">白弹</span> → <span class="el-strand">绿弹</span></th><td>6%–16%</td><td>12%–24%</td><td>24%–50%</td></tr>
-<tr><th scope="row"><span class="el-kinetic">白弹</span> → <span class="ammo-heavy">重弹</span></th><td>3%–8%</td><td>6%–16%</td><td>12%–32%</td></tr>
-<tr><th scope="row"><span class="el-strand">绿弹</span> → <span class="el-strand">绿弹</span></th><td>3%–12%</td><td>6%–18%</td><td>12%–40%</td></tr>
-<tr><th scope="row"><span class="el-strand">绿弹</span> → <span class="ammo-heavy">重弹</span></th><td>3%–8%</td><td>6%–16%</td><td>12%–32%</td></tr>
-<tr><th scope="row"><span class="ammo-heavy">重弹</span> → <span class="el-strand">绿弹</span></th><td>3%–16%</td><td>6%–24%</td><td>12%–50%</td></tr>
-<tr><th scope="row"><span class="ammo-heavy">重弹</span> → <span class="ammo-heavy">重弹</span></th><td>3%–4%</td><td>6%–8%</td><td>12%–16%</td></tr>
+<tr data-b="2"><th scope="row"><span class="el-kinetic">主武器弹药</span> → <span class="ammo-special">特殊弹药</span></th><td>6%–16%</td><td>12%–24%</td><td>24%–50%</td></tr>
+<tr><th scope="row"><span class="el-kinetic">主武器弹药</span> → <span class="ammo-heavy">威能弹药</span></th><td>3%–8%</td><td>6%–16%</td><td>12%–32%</td></tr>
+<tr><th scope="row"><span class="ammo-special">特殊弹药</span> → <span class="ammo-special">特殊弹药</span></th><td>3%–12%</td><td>6%–18%</td><td>12%–40%</td></tr>
+<tr><th scope="row"><span class="ammo-special">特殊弹药</span> → <span class="ammo-heavy">威能弹药</span></th><td>3%–8%</td><td>6%–16%</td><td>12%–32%</td></tr>
+<tr><th scope="row"><span class="ammo-heavy">威能弹药</span> → <span class="ammo-special">特殊弹药</span></th><td>3%–16%</td><td>6%–24%</td><td>12%–50%</td></tr>
+<tr><th scope="row"><span class="ammo-heavy">威能弹药</span> → <span class="ammo-heavy">威能弹药</span></th><td>3%–4%</td><td>6%–8%</td><td>12%–16%</td></tr>
 </tbody>
 <tbody>
-<tr data-b="7"><th scope="row">技能 → <span class="el-strand">绿弹</span></th><td>4%</td><td>8%</td><td>16%</td></tr>
-<tr><th scope="row">技能 → <span class="ammo-heavy">重弹</span></th><td>4%</td><td>8%</td><td>16%</td></tr>
-<tr><th scope="row">手雷 → <span class="el-strand">绿弹</span></th><td>6%</td><td>12%</td><td>24%</td></tr>
-<tr><th scope="row">手雷 → <span class="ammo-heavy">重弹</span></th><td>4%</td><td>8%</td><td>16%</td></tr>
-<tr><th scope="row">超能 → <span class="el-strand">绿弹</span></th><td>12%</td><td>24%</td><td>48%</td></tr>
-<tr><th scope="row">超能 → <span class="ammo-heavy">重弹</span></th><td>8%</td><td>16%</td><td>32%</td></tr>
+<tr data-b="7"><th scope="row">技能 → <span class="ammo-special">特殊弹药</span></th><td>4%</td><td>8%</td><td>16%</td></tr>
+<tr><th scope="row">技能 → <span class="ammo-heavy">威能弹药</span></th><td>4%</td><td>8%</td><td>16%</td></tr>
+<tr><th scope="row">手雷 → <span class="ammo-special">特殊弹药</span></th><td>6%</td><td>12%</td><td>24%</td></tr>
+<tr><th scope="row">手雷 → <span class="ammo-heavy">威能弹药</span></th><td>4%</td><td>8%</td><td>16%</td></tr>
+<tr><th scope="row">超能 → <span class="ammo-special">特殊弹药</span></th><td>12%</td><td>24%</td><td>48%</td></tr>
+<tr><th scope="row">超能 → <span class="ammo-heavy">威能弹药</span></th><td>8%</td><td>16%</td><td>32%</td></tr>
 </tbody>
 </table>
 <p data-b="7">表中的区间随武器的弹药生成属性线性变化。弹药生成属性 100 的特殊武器击杀一名<span class="bar-orange">橙血</span><span class="enemy">战斗人员</span>，生成 18% 的<span class="ammo-special">特殊弹药</span>与 16% 的<span class="ammo-heavy">威能弹药</span>，两者都落在各自区间的上限。</p>
 <p data-b="2">三档<span class="enemy">战斗人员</span>的进度近似呈倍数关系：<span class="bar-orange">橙血</span>约为<span class="bar-red">红血</span>的 2 倍，<span class="bar-yellow">初级首领</span>约为 4 倍。</p>
-<p data-b="2"><span class="ammo-heavy">重弹</span>击杀生成的<span class="ammo-heavy">重弹</span>进度仅为 3%–4%，为全表最低；依靠一、二号位的高弹药生成属性武器击杀产弹，是维持弹药经济的基础。</p>
+<p data-b="2"><span class="ammo-heavy">威能弹药</span>击杀生成的<span class="ammo-heavy">威能弹药</span>进度仅为 3%–4%，为全表最低；依靠一、二号位的高弹药生成属性武器击杀产弹，是维持弹药经济的基础。</p>
 <p data-b="2">刀剑没有弹药生成属性，也无法被弹药生成模组改变。刀剑击杀固定生成 3% <span class="ammo-special">特殊弹药</span>与 3% <span class="ammo-heavy">威能弹药</span>进度。</p>
 </section>
 <section class="block" id="sec-2">
 <h2 class="sect-label" data-b="2" data-chip="技能与超能">技能与超能弹药生成</h2>
 <p data-b="2">技能生成的弹药远少于弹药生成属性合格的武器，靠技能补弹的收益有限。几乎所有技能对<span class="bar-red">红血</span>、<span class="bar-orange">橙血</span>、<span class="bar-yellow">初级首领</span><span class="enemy">战斗人员</span>分别生成 4%、8%、16% 的<span class="ammo-special">特殊弹药</span>与<span class="ammo-heavy">威能弹药</span>。偃月近战与未充能近战都在这一档。</p>
-<p data-b="2">两个例外。手雷生成<span class="ammo-special">特殊弹药</span>的速度高出 50%，对三档<span class="enemy">战斗人员</span>分别给 6%、12%、24%，<span class="ammo-heavy">威能弹药</span>那一档与其他技能相同。超能整整高出一档，<span class="el-strand">绿弹</span>给 12%、24%、48%，<span class="ammo-heavy">重弹</span>给 8%、16%、32%。</p>
+<p data-b="2">两个例外。手雷生成<span class="ammo-special">特殊弹药</span>的速度高出 50%，对三档<span class="enemy">战斗人员</span>分别给 6%、12%、24%，<span class="ammo-heavy">威能弹药</span>那一档与其他技能相同。超能整整高出一档，<span class="ammo-special">特殊弹药</span>给 12%、24%、48%，<span class="ammo-heavy">威能弹药</span>给 8%、16%、32%。</p>
 </section>
 <section class="block" id="sec-3">
 <h2 class="sect-label" data-b="2">终结技与助攻</h2>
@@ -176,7 +176,7 @@
 <tbody>
 </tbody>
 <tbody>
-<tr class="lane" data-b="2"><th colspan="5" scope="colgroup" class="el-strand">绿弹</th></tr>
+<tr class="lane" data-b="2"><th colspan="5" scope="colgroup" class="ammo-special">特殊弹药</th></tr>
 <tr><th scope="row">霰弹枪</th><td>2–3</td><td>4</td><td>6</td><td>7–8</td></tr>
 <tr><th scope="row">榴弹发射器</th><td>3–4</td><td>4–5</td><td>6</td><td>7</td></tr>
 <tr><th scope="row">融合步枪</th><td>3</td><td>4</td><td>6–7</td><td>7–8</td></tr>
@@ -187,7 +187,7 @@
 <tr><th scope="row">火箭脉冲</th><td>3</td><td>4</td><td>5</td><td>6</td></tr>
 </tbody>
 <tbody>
-<tr class="lane"><th colspan="5" scope="colgroup" class="ammo-heavy">重弹</th></tr>
+<tr class="lane"><th colspan="5" scope="colgroup" class="ammo-heavy">威能弹药</th></tr>
 <tr><th scope="row">刀剑</th><td>9–13</td><td>15–21</td><td>11–16</td><td>16–24</td></tr>
 <tr><th scope="row">榴弹发射器</th><td>3</td><td>4</td><td>4</td><td>5</td></tr>
 <tr><th scope="row">火箭发射器</th><td>1</td><td>2</td><td>2</td><td>3</td></tr>
@@ -198,9 +198,9 @@
 </table>
 <ul>
 <li data-b="17"><em>回收利用</em>在追踪步枪、刀剑与火箭发射器上收益最高。</li>
-<li data-b="1"><span class="el-strand">绿弹</span>的强化弹药块几乎都翻倍。<span class="ammo-heavy">重弹</span>那一侧提升有限，其中火箭发射器、机枪与重型弩箭相对高。</li>
+<li data-b="1"><span class="ammo-special">特殊弹药</span>的强化弹药块几乎都翻倍。<span class="ammo-heavy">威能弹药</span>那一侧提升有限，其中火箭发射器、机枪与重型弩箭相对高。</li>
 <li data-b="1">副手的火箭脉冲吃不到<em>回收利用</em>。完美逆行能同时吃到自身与副手的那一份，拾取量从 4 发变 5 发、从 6 发变 7 发。</li>
-<li data-b="1">装两把<span class="ammo-special">特殊弹药</span>武器时，全部<span class="el-strand">绿弹</span>拾取量砍半并向下取整。火箭脉冲除外，仍按只装一把时的量拾取。</li>
+<li data-b="1">装两把<span class="ammo-special">特殊弹药</span>武器时，全部<span class="ammo-special">特殊弹药</span>拾取量砍半并向下取整。火箭脉冲除外，仍按只装一把时的量拾取。</li>
 <li data-b="1"><span class="exotic">千语</span>的强化弹药块没有任何收益，<em>回收利用</em>给 +1 发。</li>
 <li data-b="1"><em>弹药斥候</em>复制给<span class="enemy">盟友</span>的那一块，拾取量是常规弹药块的 37% ｜ 67% ｜ 100%。它的强化外观只是发光，不增加获取量。</li>
 </ul>
@@ -216,7 +216,7 @@
 <p class="legal">ICP备案/许可证号：<a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">鲁ICP备2026052166号-1</a> <a class="beian" href="https://beian.mps.gov.cn/#/query/webSearch?code=37010202700801" target="_blank" rel="noreferrer">鲁公网安备37010202700801号</a></p>
 </footer>
 <script type="speculationrules">{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}</script>
-<script>(function(){var d=new Date(Date.now()+288e5).toISOString().slice(0,10);var o=document.getElementById("sv"),f=1;try{f=localStorage.getItem("svd")===d?0:1;if(f)localStorage.setItem("svd",d)}catch(_){}if(!f){if(!o)return;try{var c=localStorage.getItem("svt")||"",i=c.indexOf("|"),a=Date.now()-c.slice(0,i);if(i>0&&a>=0&&a<6e5){o.textContent=c.slice(i+1);return}}catch(_){}}var r=f?fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api",{method:"POST",body:JSON.stringify({a:"hit",s:o?1:0})}):fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api?a=stats");r.then(function(x){return x.json()}).then(function(s){if(o){var t="今日 "+s.today+" 位访客 · 累计 "+s.total;o.textContent=t;try{localStorage.setItem("svt",Date.now()+"|"+t)}catch(_){}}},function(x){if(o)o.textContent="访客统计暂不可用："+x})})()</script>
+<script>(function(){var d=new Date(Date.now()+288e5).toISOString().slice(0,10);var o=document.getElementById("sv"),f=1;try{f=localStorage.getItem("svd")===d?0:1;if(f)localStorage.setItem("svd",d)}catch(_){}if(!f){if(!o)return;try{var c=localStorage.getItem("svt")||"",i=c.indexOf("|"),a=Date.now()-c.slice(0,i);if(i>0&&a>=0&&a<6e5){o.textContent=c.slice(i+1);return}}catch(_){}}var r=f?fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api",{method:"POST",body:JSON.stringify({a:"hit",s:o?1:0})}):fetch("https://dea-mods-d1g0j2rile2323f73.service.tcloudbase.com/api?a=stats");r.then(function(x){return x.json()}).then(function(s){if(o){var t="今日 "+s.today+" 位访客 · 累计 "+s.total;o.textContent=t;try{localStorage.setItem("svt",Date.now()+"|"+t)}catch(_){}}},function(x){if(o)o.textContent="访客统计暂不可用"})})()</script>
 <script>try{if(localStorage.sa_at&&document.querySelector("main[data-src]")){var l=document.querySelector('link[href$="assets/site.css"]');if(l)import(l.href.replace("assets/site.css","admin/edit.js"))}}catch(_){}</script>
 <script>(function(){if(!/\.tcloudbase(app)?\.com$/.test(location.hostname))return;var u="https://starside.work"+location.pathname+location.search+location.hash;document.title="【测试地址】"+document.title;function link(t,big){var a=document.createElement("a");a.href=u;a.textContent=t;a.style.cssText=big?"padding:.7em 1.6em;border:1px solid var(--accent);border-radius:2px;color:var(--accent);text-decoration:none;font-size:16px":"color:var(--accent);white-space:nowrap";return a}var bar=document.createElement("div");bar.style.cssText="position:fixed;left:0;right:0;bottom:0;z-index:99;display:flex;flex-wrap:wrap;gap:.2em 1em;align-items:center;justify-content:center;padding:.55em 1em;background-color:var(--ink-lift);border-top:1px solid var(--hair-lit);color:var(--bone);font:13px/1.7 var(--font-cn)";bar.append("当前为测试域名，正式站点位于 starside.work ",link("前往正式站"));var box=document.createElement("div");box.style.cssText="position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;gap:1.4em;align-items:center;justify-content:center;padding:2em;text-align:center;background-color:var(--ink);color:var(--bone);font:15px/1.9 var(--font-cn)";var say=document.createElement("p");say.textContent="当前访问的是测试域名。请前往正式地址 starside.work 并更新书签。";say.style.cssText="margin:0;max-width:32em";var stay=document.createElement("button");stay.type="button";stay.disabled=true;stay.style.cssText="background:none;border:0;color:var(--bone-faint);font:13px/1.7 var(--font-cn);cursor:pointer";var n=5;stay.textContent="继续访问测试域名（"+n+"）";var t=setInterval(function(){n--;stay.textContent="继续访问测试域名"+(n?"（"+n+"）":"");if(!n){clearInterval(t);stay.disabled=false}},1000);stay.onclick=function(){box.remove();document.body.appendChild(bar)};box.append(say,link("前往 starside.work",1),stay);document.body.appendChild(box)})()</script>
 <script>try{if(window===top){var _s=0;try{_s=localStorage.getItem("sn")==="2026.11.25-22b746d4"||sessionStorage.getItem("sn")==="2026.11.25-22b746d4"}catch(_){}if(!_s){var l=document.querySelector('link[href$="assets/site.css"]');if(l)import(l.href.replace("assets/site.css","assets/notice.js"))}}}catch(_){}</script>

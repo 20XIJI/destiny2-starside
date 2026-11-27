@@ -837,7 +837,7 @@ def scalars(_img):
 def armor_rng(_img):
     t = tables("armor-rng")[0]
     return pv_table(
-        ["原型", "+30", "+25", "t.map=1"],
+        ["原型", "+30", "+25", "+20"],
         [[r[1][0], r[3][0], r[4][0], r[5][0]] for r in rows("armor-rng", t)[:2]],
     )
 

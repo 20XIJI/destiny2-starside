@@ -40,7 +40,7 @@ function libJump(q, rows) {
   var WPN_HIT = /^(exotic-weapon|shopping-(primary|special|heavy)|weapon-|legendary-)/;
   for (var i = 0; i < rows.length; i++) {
     if (WPN_HIT.test(rows[i].u)) {
-      return { u: 'weapons/index.html', n: q, x: '按名称、词条、属性检索与模拟', jump: 1 };
+      return { u: 'weapons/index.html', n: q, x: '按名称、Perk、属性检索与模拟', jump: 1 };
     }
   }
   return null;

@@ -571,20 +571,20 @@ def sources_of(f_or_b, h, authors):
 # 库里按枚举分：火箭手枪是装特殊弹药的手枪，火箭脉冲是装特殊弹药的脉冲步枪，
 # 重型弩箭是装威能弹药的战斗弓箭。数值不在这里，见 brick_table()。
 BRICK_ROWS = {
-    ("绿弹", "霰弹枪"): (7, 2),
-    ("绿弹", "榴弹发射器"): (23, 2),
-    ("绿弹", "融合步枪"): (11, 2),
-    ("绿弹", "狙击枪"): (12, 2),
-    ("绿弹", "追踪步枪"): (25, 2),
-    ("绿弹", "偃月"): (33, 2),
-    ("绿弹", "火箭手枪"): (17, 2),
-    ("绿弹", "火箭脉冲"): (13, 2),
-    ("重弹", "刀剑"): (18, 3),
-    ("重弹", "榴弹发射器"): (23, 3),
-    ("重弹", "火箭发射器"): (10, 3),
-    ("重弹", "线性融合步枪"): (22, 3),
-    ("重弹", "机枪"): (8, 3),
-    ("重弹", "重型弩箭"): (31, 3),
+    ("特殊弹药", "霰弹枪"): (7, 2),
+    ("特殊弹药", "榴弹发射器"): (23, 2),
+    ("特殊弹药", "融合步枪"): (11, 2),
+    ("特殊弹药", "狙击枪"): (12, 2),
+    ("特殊弹药", "追踪步枪"): (25, 2),
+    ("特殊弹药", "偃月"): (33, 2),
+    ("特殊弹药", "火箭手枪"): (17, 2),
+    ("特殊弹药", "火箭脉冲"): (13, 2),
+    ("威能弹药", "刀剑"): (18, 3),
+    ("威能弹药", "榴弹发射器"): (23, 3),
+    ("威能弹药", "火箭发射器"): (10, 3),
+    ("威能弹药", "线性融合步枪"): (22, 3),
+    ("威能弹药", "机枪"): (8, 3),
+    ("威能弹药", "重型弩箭"): (31, 3),
 }
 BRICK_PAGE = os.path.join(shell.ROOT, "references", "docs", "ammo.md")
 # 框架行上页面的那几项，顺序即载荷里的下标；app.js 顶上那几行常量要跟着改。
@@ -1710,8 +1710,8 @@ def js(name, payload):
 
 # ── 页壳 ─────────────────────────────────────────────────────────────
 DESC = (
-    "Destiny 2 武器、异域护甲与护甲套装检索库：支持按名称、词条、属性与条件表达式筛选，"
-    "自选词条实时计算属性与 PvP 击杀时间，附 Aegis 与小棒猪评级及推荐词条。"
+    "Destiny 2 武器、异域护甲与护甲套装检索库：支持按名称、Perk、属性与条件表达式筛选，"
+    "自选 Perk 实时计算属性与 PvP 击杀时间，附 Aegis 与小棒猪评级及推荐 Perk。"
 )
 AEGIS_SRC = (
     '<a href="https://docs.google.com/spreadsheets/d/'
@@ -1770,7 +1770,7 @@ def toolbar():
         '<p class="wpn-count" aria-live="polite"></p>'
         '<div class="wpn-field"><input class="wpn-input" type="search" autocomplete="off" spellcheck="false" '
         'role="combobox" aria-expanded="false" aria-controls="wpn-ac" aria-label="搜索装备" '
-        'placeholder="名字、perk，或 is:手炮 perk:萤火虫 breaker:反屏障 stat:射程:&gt;=60">'
+        'placeholder="名字、Perk，或 is:手炮 perk:萤火虫 breaker:反屏障 stat:射程:&gt;=60">'
         '<button type="button" class="wpn-clear" aria-label="清空搜索" hidden>'
         '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 4.5 11.5 11.5M11.5 4.5 4.5 11.5"/></svg></button>'
         '<div class="wpn-suggest" hidden><ul class="wpn-suggest-list" id="wpn-ac" role="listbox"></ul>'
@@ -1855,7 +1855,7 @@ def page(stats, glyphs, ver):
     head = shell.head("装备库 · Starside", DESC, sky=True)
     nav = shell.nav("装备库")
     first = (
-        "基础数据取自 Bungie manifest，面板属性随词条与阶级实时计算；方括号内为 PvP 数值。"
+        "基础数据取自 Bungie manifest，面板属性随 Perk 与阶级实时计算；方括号内为 PvP 数值。"
         + shell.unsure_note()
     )
     source = (
@@ -1893,7 +1893,7 @@ def page(stats, glyphs, ver):
             stamp(),
             first,
             source=source,
-            thanks="Aegis 整理评级与推荐词条；%s 整理评级与评语" % LGPIG,
+            thanks="Aegis 整理评级与推荐 Perk；%s 整理评级与评语" % LGPIG,
         ),
     ]
     return "\n".join(body)

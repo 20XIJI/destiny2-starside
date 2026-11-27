@@ -18,6 +18,7 @@ terms: [
   ["震颤","deb-arc",["感电"]],
   ["精准命中","stack",["精密命中"]],
   ["精准击杀",null,["精密击杀"]],
+  ["精准伤害",null,["精确伤害"]],
   ["直击伤害",null,["接触伤害"]],
   ["势不可挡勇士","enemy",["不屈勇士"]],
   ["过载勇士","enemy",["超载勇士"]],
@@ -64,7 +65,7 @@ terms: [
   ["太阳黑子",null,["日斑"]],
   ["恢复炮台",null,["治疗炮台","治疗炮塔"]],
   ["虚空灵魂",null,["虚空之魂"]],
-  ["高贵追踪弹",null,["高尚追踪弹"]],
+  ["高贵追踪弹",null,["高尚追踪弹","高尚弹药","高尚追踪体"]],
   ["纳米蜂群",null,["纳米机器人","水银纳米机器"]],
   ["类虫机器人",null,["昆虫机器人"]],
   ["闪烁重击",null,["瞬移重击"]],
@@ -94,6 +95,7 @@ terms: [
   ["至日",null,["高塔二至点"]],
   ["守护者游戏",null,["高塔运动会"]],
   ["克洛塔的末日",null,["克洛塔末日"]],
+  ["内欧姆那",null,["内奥姆那","内欧姆纳"]],
   ["仄",null,["老九"]],
 ],
 tokens: {
@@ -432,7 +434,7 @@ pageClasses: {
   "keys/armor-sets": ["bonus","bonus-head","bonus-icon","bonus-name","cat-head","page-note","piece","set","set-bonuses","set-id","set-meta","set-tags","term"],
   "keys/artifact-mods": ["art-bar","art-emblem","art-head","art-icon","art-tags","emblem","intro","lede","mod","mod-icon","mod-row","notice","notice-body","p","tier-head","tier-rail"],
 },
-guard: ["千语魅痕","冻结计时","层数冻结","治愈裂痕","迷惑爆发","守护者游戏","动能震颤","震颤反馈","不稳定弹药","势不可挡射击","二象性地牢","快速启动模组","计时会冻结","逐渐减速","减速飞行","落地减速","准星悬停","权利的真相"],
+guard: ["千语魅痕","冻结计时","层数冻结","治愈裂痕","迷惑爆发","守护者游戏","动能震颤","震颤反馈","不稳定弹药","不稳定炮弹","势不可挡射击","二象性地牢","快速启动模组","计时会冻结","逐渐减速","减速飞行","落地减速","准星悬停","权利的真相"],
 keep: ["削弱清敌","Destiny 2: Boss Damage","吞食裂缝","卡巴尔：焦灼大地","残存回声","结晶残花","重型弹药搜寻者","重型弹药斥候","双重装填","种群削弱","能量装填"],
 g6: ["ability-cooldown","ammo","arc","armor-mods","armor-rng","artifact-mods","boss-hp","buff-debuffs","class-abilities","combatant-scalars","crafting","dps","dps-ranking","dungeon-duality","dungeon-equilibrium","dungeon-ghosts-of-the-deep","dungeon-grasp-of-avarice","dungeon-pit-of-heresy","dungeon-prophecy","dungeon-shattered-throne","dungeon-spire-of-the-watcher","dungeon-sundered-doctrine","dungeon-vespers-host","dungeon-warlords-ruin","elements","exotic-armor","exotic-armors","exotic-weapon","exotic-weapons","farming-sets","game-mechanics","legendary-heavy","legendary-primary","legendary-special","power-delta","prismatic","pve-farming","raid-crotas-end","raid-deep-stone-crypt","raid-desert-perpetual","raid-desert-perpetual-epic","raid-garden-of-salvation","raid-guides","raid-kings-fall","raid-last-wish","raid-pantheon","raid-root-of-nightmares","raid-salvations-edge","raid-vault-of-glass","raid-vow-of-the-disciple","rotation","shopping-heavy","shopping-other","shopping-primary","shopping-special","skill-damage","solar","sources","stasis","strand","swap-dps","void","weapon-frames","weapon-perks"],
 items: [

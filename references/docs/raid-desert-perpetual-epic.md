@@ -4,7 +4,7 @@
 更新：2026.11.16
 路径：raid-guides/desert-perpetual-epic
 上级：Raid & 地牢
-页脚：首领数值为固定难度实测，不随光等浮动。
+页脚：首领数值为固定难度实测，不随光等浮动；击杀 / 一波 DPS 为满编人均门槛（突袭 6 人、地牢 3 人）。
 数据源：[Destiny 2: Boss Damage](https://docs.google.com/spreadsheets/u/0/d/1_5wtBjRYHHxuF4oJKDb_iOGZs-wTkzB6RYbnyNLbuz4/htmlview#gid=1346678363) 与 LFCarry 的 [Raid Loot Tables](https://lfcarry.com/guides/destiny-2-raid-loot-tables)
 鸣谢：[遗忘Melt](https://space.bilibili.com/3706960595650983) 编写图文攻略，小黑盒用户{buff|“压力一直天满光”}校对首领名称，蜃零#7456 整理{exotic|异域}武器来源
 版式：副本
@@ -18,7 +18,7 @@
 
 色阶：生命值 170000 250155 290000 400000 500000 550000 868186
 
-| 首领名称 | 生命值 | 距离 | 时间 | 击杀 DPS | 一波 DPS | 注解 |
+| 首领名称 | 生命值 | 距离 | 时间（秒） | 击杀 DPS | 一波 DPS | 注解 |
 |---|---|---|---|---|---|---|
 | ![](../icons/a75bbd3091.webp) 固有者阿格莱奥斯 | 339461 | 近至远 | {na|未测} | {na|未测} | {na|未测} |  |
 | ![](../icons/9434c3d6b5.webp) 量子之主埃波普特斯 | 554669 | 中 | {na|未测} | {na|未测} | {na|未测} |  |
@@ -29,7 +29,7 @@
 
 ## 关卡掉落
 
-护甲套装：任性心灵套装；{exotic|异域}武器：{exotic|回旋喝彩}（尾王掉落，催化剂由任务同调获取）；无红框武器。
+护甲套装：任性心灵；{exotic|异域}武器：{exotic|回旋喝彩}（尾王掉落，催化剂由任务同调获取）；无红框武器。
 
 | 关卡 | 武器掉落 | 护甲部位 |
 |---|---|---|

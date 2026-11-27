@@ -1672,7 +1672,7 @@ window.WPN_PVP = function (H) {
   }
   function pvpPerkBadges(showPerks, flatBadges, tyEn, w) {
     if ((!showPerks || !showPerks.length) && (!flatBadges || !flatBadges.length)) { return ''; }
-    var html = '<span class="pvp-damage-perks-title">生效词条</span>';
+    var html = '<span class="pvp-damage-perks-title">生效 Perk</span>';
     (flatBadges || []).forEach(function (fb) {
       html += '<div class="pvp-perk-badge">' + imgTag(fb.icon, 'pvp-perk-icon', '', true) +
         '<span class="pvp-perk-info"><span class="pvp-perk-name">' + esc(fb.name) + '</span>' +
@@ -1696,7 +1696,7 @@ window.WPN_PVP = function (H) {
   }
   function pvpPanel(i, res) {
     var SIDX = H.getSIDX(), PERK_FX = H.getPERK_FX();
-    if (!SIDX) { return '<p class="src">词条池载入中，暂无法计算 PvP 数值。</p>'; }
+    if (!SIDX) { return '<p class="src">Perk 池载入中，暂无法计算 PvP 数值。</p>'; }
     if (!PERK_FX) {
       ensurePerkFx(function () { if (S.statsMode === 'pvp' && S.sel === i) { renderDetail(); } });
     }

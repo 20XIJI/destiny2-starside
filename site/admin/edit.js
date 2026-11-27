@@ -609,7 +609,7 @@
     shut()
     var at = resolve(node)
     if (!at) {
-      alert('这一处的原文已变更或无法唯一定位，请等页面更新后重新提交。')
+      alert('这一处的原文已变更或无法唯一定位，请等页面更新后重新提交')
       return
     }
     var before = at.before
@@ -701,7 +701,7 @@
           send.disabled = false
           notes.textContent = ''
           notes.appendChild(el('li', null, e.message === 'stale'
-            ? '这一处的原文已变更或无法唯一定位，请等页面更新后重新提交。'
+            ? '这一处的原文已变更或无法唯一定位，请等页面更新后重新提交'
             : '提交失败：' + (window.starsideShared ? window.starsideShared.say(e) : e.message)))
         })
     }
@@ -1008,7 +1008,7 @@
       .then(function (r) {
         S.loading = false
         var got = r[1]
-        if (!got.md) throw new Error('这一页暂时无法在线编辑（' + DOC + ' 尚未收录），请联系超级管理员。')
+        if (!got.md) throw new Error('当前页面暂不支持在线编辑（尚未收录），请联系超级管理员')
         S.buildHash = got.hash || ''
         buildPane(chip, got.md)
       })

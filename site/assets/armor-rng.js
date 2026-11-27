@@ -899,7 +899,7 @@
           verifyBody.innerHTML = (
             '<div class="ac-verify-head">' +
               '<div class="ac-verify-msg">' + vm.verifyLead + '</div>' +
-              (state.arch2 ? '<button type="button" class="ac-link-btn" data-pick-arch2="0">清除二次读数</button>' : '') +
+              (state.arch2 ? '<button type="button" class="ac-link-btn" data-pick-arch2="0">重置二次读数</button>' : '') +
             '</div>' +
             '<div class="ac-verify-picks">' +
               vm.rec2.outcomes.map(function (aid) {
@@ -941,13 +941,13 @@
             verdictEl.setAttribute('data-hit', 'yes');
             verdictEl.innerHTML = (
               '<span>可洗出「' + esc(vm.verdict.wantText) + '」— <b>' + esc(best.arch.name) + '（' + esc(best.arch.pairLabel) + ' · +20 ' + esc(best.roll.tert.name) + '）</b>，' + actHtml + (best.certain ? '必出' : '（需二次确认）') + '。</span>' +
-              '<button type="button" class="ac-link-btn" data-prio-clear="1">清除筛选</button>'
+              '<button type="button" class="ac-link-btn" data-prio-clear="1">清空筛选</button>'
             );
           } else {
             verdictEl.setAttribute('data-hit', 'no');
             verdictEl.innerHTML = (
               '<span><b>洗不出</b>同时包含「' + esc(vm.verdict.wantText) + '」的组合（' + esc(vm.verdict.reason) + '）。</span>' +
-              '<button type="button" class="ac-link-btn" data-prio-clear="1">清除筛选</button>'
+              '<button type="button" class="ac-link-btn" data-prio-clear="1">清空筛选</button>'
             );
           }
         }

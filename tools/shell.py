@@ -204,7 +204,7 @@ HIT = (
     "r.then(function(x){return x.json()})"
     '.then(function(s){if(o){var t="今日 "+s.today+" 位访客 · 累计 "+s.total;'
     'o.textContent=t;try{localStorage.setItem("svt",Date.now()+"|"+t)}catch(_){}}},'
-    'function(x){if(o)o.textContent="访客统计暂不可用："+x})})()</script>' % (API, API)
+    'function(x){if(o)o.textContent="访客统计暂不可用"})})()</script>' % (API, API)
 )
 
 
@@ -597,7 +597,7 @@ REST_JS = (
     "if(at){at.parentNode.insertBefore(ps[i].content,at);at.remove()}}"
     'document.dispatchEvent(new Event("starside:rest"))'
     "}).catch(function(e){console.error(e);"
-    'for(i=0;i<w.length;i++)w[i].textContent="其余条目载入失败："+e.message+"，刷新重试";'
+    'for(i=0;i<w.length;i++)w[i].textContent="其余条目载入失败，请刷新重试";'
     "window.starsideRest=null;throw e})}"
     "window.starsideLoadRest=function(){return window.starsideRest||(window.starsideRest=load())};"
     "window.starsideLoadRest()"

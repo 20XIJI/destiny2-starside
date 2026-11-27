@@ -193,7 +193,7 @@
      调整行列顺序时静默指错格子。取前两位而不是整格相等：首列写的是时段区间
      （00:00-01:00），起始时刻就在开头那两位。对不上就报出来，不静默留空。
      整点重排一次：页面开着跨过整点，高亮跟着走；跨过午夜时列也跟着换。 */
-  var WEEKDAYS = ['周天', '周一', '周二', '周三', '周四', '周五', '周六'];
+  var WEEKDAYS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 
   function nowCell() {
     /* 这一页还有轮换轴与周期表（data-rota／data-cycle），时钟高亮不认它们——
@@ -664,7 +664,7 @@
       var clr = tuckFoot.appendChild(document.createElement('button'));
       clr.type = 'button';
       clr.className = 'op';
-      clr.textContent = '清空已选';
+      clr.textContent = '清空筛选';
       clr.onclick = function () {
         DIMS.forEach(function (d) { if (!d.bar) { picked[d.name] = []; sync(d); } });
         filter(search.value);
@@ -885,7 +885,7 @@
       var btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'op';
-      btn.textContent = '重置筛选';
+      btn.textContent = '清空筛选';
       btn.onclick = resetAll;
       emptyBox.appendChild(emptyMsg);
       emptyBox.appendChild(btn);
