@@ -2934,18 +2934,23 @@
     var m = body.querySelector('.matrix');
     if (!m) { return; }
     function endColor(bits) {
-      return bits === 3 ? '#ff56de' : bits === 1 ? 'var(--au-aegis)' : bits === 2 ? 'var(--au-lgpig)' : 'var(--bone)';
+      return bits === 4 ? 'var(--c-exotic)' : bits === 3 ? '#ff56de' : bits === 1 ? 'var(--au-aegis)' : bits === 2 ? 'var(--au-lgpig)' : 'var(--bone)';
     }
     function draw() {
       var old = m.querySelector('.links');
       if (old) { old.remove(); }
+      /* 每一列都只有一行词条（固定词条异域）时不画连线，避免水平线横穿中文词条名。 */
+      var multiRow = [].some.call(m.querySelectorAll('.col'), function (col) {
+        return col.querySelectorAll('.plug').length > 1;
+      });
+      if (!multiRow) { return; }
       var r = m.getBoundingClientRect(), pts = [];
       m.querySelectorAll('.col').forEach(function (col) {
         var btn = col.querySelector('.plug[aria-pressed="true"]');
         var ico = btn && btn.querySelector('.ico');
         if (!ico) { return; }
         var iq = ico.getBoundingClientRect();
-        var bits = btn.classList.contains('by-al') ? 3 : btn.classList.contains('by-a') ? 1 : btn.classList.contains('by-l') ? 2 : 0;
+        var bits = btn.classList.contains('is-cat') ? 4 : btn.classList.contains('by-al') ? 3 : btn.classList.contains('by-a') ? 1 : btn.classList.contains('by-l') ? 2 : 0;
         pts.push({
           x: iq.left - r.left + iq.width / 2,
           y: iq.top - r.top + iq.height / 2,
@@ -3144,15 +3149,16 @@
     var cats = poolRow(i)[8], multi = cats.length > 1;
     var btns = cats.map(function (p, idx) {
       var k = idx + 1, on = roll.cat === k;
-      var lines = T && T.cp[p] && T.cp[p].length ? T.cp[p] : null;
-      var label = lines && lines.length === 1 ? lines[0][0] : plugName(p);
+      var label = plugName(p);
       var hoverCls = S.hoverPlug && S.hoverPlug.cat === k ? ' is-hover' : '';
-      return '<button type="button" class="plug is-cat' + hoverCls + '" aria-pressed="' + (on ? 'true' : 'false') +
+      return '<button type="button" class="plug is-cat' + hoverCls +
+        '" aria-pressed="' + (on ? 'true' : 'false') +
         '" data-act="cat" data-v="' + k + '" data-plug="' + p + '">' +
         '<span class="ico">' + imgTag(P.p[p][P_ICON], '', '', true) + '</span>' +
         '<span class="nm">' + esc(label) + '</span></button>';
     }).join('');
-    return '<div class="col col-cat"><h4>催化剂' + (multi ? '<span class="col-sub">' + cats.length + ' 选 1</span>' : '') +
+    return '<div class="col col-cat"><h4><span class="col-cat-t">催化剂</span>' +
+      (multi ? '<span class="col-sub">' + cats.length + ' 选 1</span>' : '') +
       '</h4>' + btns + '</div>';
   }
   function catMetaHtml(i) {
@@ -3413,12 +3419,15 @@
       return v ? '<tr><td>' + esc(P.s[s][1]) + '</td><td class="n">' + (v > 0 ? '+' : '') + v + '</td></tr>' : '';
     }).join('') + '</table>' : '';
     var lines = T && T.cp[p] && T.cp[p].length ? T.cp[p] : [];
+    var fallbackDesc = !lines.length && T && T.pd[p] ? T.pd[p] : '';
     var title = lines.length === 1 ? lines[0][0] : plugName(p);
     var descHtml = lines.length === 1
       ? (lines[0][1] ? '<p class="lab">催化效果</p><p class="db">' + esc(lines[0][1]).replace(/\n/g, '<br>') + '</p>' : '')
-      : (lines.length ? '<p class="lab">催化效果</p>' + lines.map(function (e) {
-          return '<p class="db"><b>' + esc(e[0]) + '</b> ' + esc(e[1]) + '</p>';
-        }).join('') : '');
+      : (lines.length ? '<p class="lab">内置词条（同时生效）</p>' + lines.map(function (e) {
+          var ic = e[2] ? '<img class="tip-mini" src="../assets/icons/' + esc(e[2]) + '" alt="" width="16" height="16">' : '';
+          return '<div class="tip-sub"><p class="tip-sub-h">' + ic + '<b>' + esc(e[0]) + '</b></p>' +
+            (e[1] ? '<p class="db">' + esc(e[1]).replace(/\n/g, '<br>') + '</p>' : '') + '</div>';
+        }).join('') : (fallbackDesc ? '<p class="lab">催化效果</p><p class="db">' + esc(fallbackDesc).replace(/\n/g, '<br>') + '</p>' : ''));
     var ci = T && T.ci && T.ci[i];
     var srcHtml = '';
     if (ci && (ci[0] || ci[1])) {
@@ -3428,7 +3437,7 @@
       srcHtml = '<p class="lab">获取方式</p><p class="db">' + parts.join('<br>') + '</p>';
     }
     return '<header>' + imgTag(plug[P_ICON], '', '', true) + '<div><h5>' + esc(title) +
-      '</h5><span class="ty">异域催化剂 · 点击装上或卸下</span></div></header>' +
+      '</h5><span class="ty">异域催化剂</span></div></header>' +
       statsTable + descHtml + srcHtml;
   }
 
@@ -3776,7 +3785,7 @@
     var prev = box.querySelectorAll('.plug.is-linked');
     for (var k = 0; k < prev.length; k++) { prev[k].classList.remove('is-linked'); }
     if (statIdx == null || i == null) { return; }
-    var roll = rollOf(i), cols = poolRow(i)[2];
+    var roll = rollOf(i), pr = poolRow(i), cols = pr[2];
     cols.forEach(function (col, c) {
       var p = roll.sel[c];
       if (p == null) { return; }
@@ -3785,6 +3794,14 @@
       var btn = box.querySelector('[data-act="perk"][data-col="' + c + '"][data-plug="' + p + '"]');
       if (btn) { btn.classList.add('is-linked'); }
     });
+    if (roll.cat > 0 && pr[8][roll.cat - 1] != null) {
+      var cp = pr[8][roll.cat - 1];
+      var cHits = P.p[cp][P_ST].concat(P.p[cp][P_CD]).some(function (y) { return y[0] == statIdx && y[1]; });
+      if (cHits) {
+        var cBtn = box.querySelector('[data-act="cat"][data-v="' + roll.cat + '"]');
+        if (cBtn) { cBtn.classList.add('is-linked'); }
+      }
+    }
   }
   function patchWeaponDetail(i, modeSwap) {
     var box = body.querySelector('.wpn-detail');

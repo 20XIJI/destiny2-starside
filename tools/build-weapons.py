@@ -1376,9 +1376,15 @@ def build(facts):
                 for p in F.items[str(c)].get("perks") or ()
                 if (F.perks.get(str(p["perkHash"])) or {}).get("isDisplayable")
             ]
-            cat_effs[str(c)] = [
-                [b.text(e), b.say(b.text(e, "database_details"))] for e in effs
-            ]
+            rows_e = []
+            for e in effs:
+                ic_stem = os.path.splitext(e.get("icon") or "")[0]
+                has_ic = bool(ic_stem and os.path.exists(os.path.join(shell.SITE, "assets", "icons", ic_stem + ".webp")))
+                entry = [b.text(e), b.say(b.text(e, "database_details"))]
+                if has_ic:
+                    entry.append(ic_stem + ".webp")
+                rows_e.append(entry)
+            cat_effs[str(c)] = rows_e
         # 同一把枪若混有旧版无词条「升级大师杰作」壳或同名同效果重复催化，在此去重。
         if len(raw_cats) > 1 and any(cat_effs[str(c)] for c in raw_cats):
             raw_cats = [c for c in raw_cats if cat_effs[str(c)]]

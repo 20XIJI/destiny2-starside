@@ -1603,6 +1603,7 @@
   color: var(--bone-dim);
   font: 600 12px/1.6 var(--font-cn);
   letter-spacing: .1em;
+  text-align: center;
   border-bottom: 1px solid var(--hair);
 }
 
@@ -3390,9 +3391,10 @@
 .matrix .col-cat h4 {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
+  justify-content: center;
   gap: 6px;
   color: color-mix(in srgb, var(--c-exotic) 85%, var(--bone-dim));
+  border-bottom-color: color-mix(in srgb, var(--c-exotic) 32%, var(--hair));
 }
 
 .matrix .col-cat .col-sub {
@@ -3401,33 +3403,70 @@
   letter-spacing: normal;
 }
 
+.plug.is-cat:not([aria-pressed="true"]) .ico {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--c-exotic) 34%, var(--hair-lit));
+}
+
+.plug.is-cat:hover .ico,
+.plug.is-cat.is-hover .ico {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--c-exotic) 78%, var(--hair-lit));
+}
+
 .plug.is-cat[aria-pressed="true"] {
   color: var(--c-exotic);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--c-exotic) 13%, transparent) 0%, transparent 94%);
 }
 
 .plug.is-cat[aria-pressed="true"] .ico {
-  box-shadow: 0 0 0 2px var(--c-exotic);
+  box-shadow: 0 0 0 2px var(--c-exotic), 0 0 12px color-mix(in srgb, var(--c-exotic) 36%, transparent);
+}
+
+.tip-sub {
+  margin-top: 6px;
+}
+
+.tip-sub + .tip-sub {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--bd-in);
+}
+
+.tip-sub-h {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 2px;
+  color: var(--bone);
+  font: 600 13px/1.4 var(--font-cn);
+}
+
+.tip-mini {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
 }
 
 .cat-meta {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin: 10px 0 0;
-  padding: 8px 12px;
-  background-color: var(--surf-2);
+  flex-wrap: wrap;
+  gap: 4px 24px;
+  margin: 12px 0 0;
+  padding: 7px 12px;
+  background-color: color-mix(in srgb, var(--surf-1) 70%, transparent);
   border: 1px solid var(--bd-in);
-  border-left: 2px solid color-mix(in srgb, var(--c-exotic) 60%, transparent);
+  border-left: 2px solid color-mix(in srgb, var(--c-exotic) 55%, transparent);
   border-radius: var(--r-sm);
 }
+
 .cat-meta > div {
-  display: grid;
-  grid-template-columns: 4.8em minmax(0, 1fr);
-  gap: 8px;
+  display: inline-flex;
   align-items: baseline;
+  gap: 8px;
   font: 400 12px/1.6 var(--font-cn);
 }
-.cat-meta dt { margin: 0; color: var(--bone-dim); font-weight: 600; }
+
+.cat-meta dt { margin: 0; color: var(--bone-ghost); font-weight: 600; white-space: nowrap; }
 .cat-meta dd { margin: 0; color: var(--bone-dim); }
 
 /* 站内说明里的强化值标记（源稿方言 {enh|…}），与武器 PERK 页同一套：强调靠亮度。 */
